@@ -1,0 +1,43 @@
+#
+#  Depends on envvar LOCAL_BASE which is set via env- precursor bash function
+#
+
+find_path(
+    CHROMAPHOTONLIST_INCLUDE_DIR 
+    NAMES ChromaPhotonList.hh
+    PATHS "$ENV{LOCAL_BASE}/env/chroma/ChromaPhotonList"
+    PATH_SUFFIXES include
+    NO_DEFAULT_PATH
+)
+
+find_library(
+    CHROMAPHOTONLIST_LIBRARY
+    NAMES ChromaPhotonList
+    PATHS "$ENV{LOCAL_BASE}/env/chroma/ChromaPhotonList"
+    PATH_SUFFIXES lib
+    NO_DEFAULT_PATH
+)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(
+    ChromaPhotonList
+    DEFAULT_MSG
+    CHROMAPHOTONLIST_LIBRARY
+    CHROMAPHOTONLIST_INCLUDE_DIR
+)
+
+if (CHROMAPHOTONLIST_FOUND)
+    set(CHROMAPHOTONLIST_LIBRARIES ${CHROMAPHOTONLIST_LIBRARY})
+    set(CHROMAPHOTONLIST_INCLUDE_DIRS ${CHROMAPHOTONLIST_INCLUDE_DIR})
+    set(CHROMAPHOTONLIST_DEFINITIONS -DCPL_WITH_GEANT4)
+else (CHROMAPHOTONLIST_FOUND)
+    set(CHROMAPHOTONLIST_LIBRARIES)
+    set(CHROMAPHOTONLIST_INCLUDE_DIRS)
+    set(CHROMAPHOTONLIST_DEFINITIONS)
+endif (CHROMAPHOTONLIST_FOUND)
+
+mark_as_advanced(
+    CHROMAPHOTONLIST_LIBRARY 
+    CHROMAPHOTONLIST_INCLUDE_DIR
+)
+
