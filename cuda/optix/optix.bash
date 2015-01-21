@@ -121,18 +121,115 @@ Turns out not to be necessary, the cmake flag does the trick::
 * http://stackoverflow.com/questions/12822205/nvidia-optix-geometrygroup
 
 
+
+Check Optix Raytrace Speed on DYB geometry
+--------------------------------------------
+
+::
+
+    In [3]: v=np.load(os.path.expandvars("$DAE_NAME_DYB_CHROMACACHE_MESH/vertices.npy"))
+
+    In [4]: v
+    Out[4]: 
+    array([[ -16585.725, -802008.375,   -3600.   ],
+           [ -16039.019, -801543.125,   -3600.   ],
+           [ -15631.369, -800952.188,   -3600.   ],
+           ..., 
+           [ -14297.924, -801935.812,  -12110.   ],
+           [ -14414.494, -801973.438,  -12026.   ],
+           [ -14414.494, -801973.438,  -12110.   ]], dtype=float32)
+
+    In [5]: v.shape
+    Out[5]: (1216452, 3)
+
+    In [6]: t = np.load(os.path.expandvars("$DAE_NAME_DYB_CHROMACACHE_MESH/triangles.npy"))
+
+    In [7]: t.shape
+    Out[7]: (2402432, 3)
+
+
+
+
 EOU
 }
 optix-bdir(){ echo $(local-base)/env/cuda/optix301 ; }
+optix-sdir(){ echo $(env-home)/cuda/optix/optix301 ; }
 optix-dir(){ echo /Developer/OptiX/SDK ; }
 optix-sdk-dir(){ echo /Developer/OptiX/SDK ; }
+optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
+
 optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-bdir); }
-optix-mate(){ mate $(optix-dir) ; }
-optix-get(){
-   local dir=$(dirname $(optix-dir)) &&  mkdir -p $dir && cd $dir
+optix-scd(){ cd $(optix-sdir); }
 
+optix-mate(){ mate $(optix-dir) ; }
+
+
+optix-samples-names(){ cat << EON
+CMakeLists.txt
+sampleConfig.h.in
+cuda
+CMake
+sample1
+sample2
+sample3
+sample4
+sample5
+sample5pp
+sample6
+sample7
+sample8
+simpleAnimation
+sutil
+EON
 }
+
+optix-samples-get(){
+   local sdir=$(optix-sdir)
+   mkdir -p $sdir
+
+   local src=$(optix-sdk-dir)
+   local dst=$sdir
+   local cmd
+   local name
+   optix-samples-names | while read name ; do 
+
+      if [ -d "$src/$name" ]
+      then 
+          if [ ! -d "$dst/$name" ] ; then 
+              cmd="cp -r $src/$name $dst/"
+          else
+              cmd="echo destination directory exists already $dst/$name"
+          fi
+      elif [ -f "$src/$name" ] 
+      then 
+          if [ ! -f "$dst/$name" ] ; then 
+              cmd="cp $src/$name $dst/$name"
+          else
+              cmd="echo destination file exists already $dst/$name"
+          fi
+      else
+          cmd="echo src $src/$name missing"
+      fi 
+      #echo $cmd
+      eval $cmd
+   done
+}
+
+
+optix-samples-cmake(){
+   local bdir=$(optix-bdir)
+   rm -rf $bdir   # starting clean everytime
+  
+   mkdir -p $bdir
+
+   optix-bcd
+
+   cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang" "$(optix-sdir)"
+}
+
+
+
 
 
 optix-export(){
