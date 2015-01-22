@@ -186,9 +186,11 @@ assimp-url(){ echo http://downloads.sourceforge.net/project/assimp/assimp-3.1/as
 assimp-dir(){ echo $(local-base)/env/graphics/assimp/$(assimp-name) ; }
 #assimp-prefix(){ echo $(assimp-dir)_install ; }
 assimp-prefix(){ echo $(local-base)/env/graphics ; }
+assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
 assimp-bdir(){ echo $(assimp-dir)_build ; }
 assimp-cd(){  cd $(assimp-dir); }
 assimp-bcd(){ cd $(assimp-bdir); }
+assimp-icd(){ cd $(assimp-idir); }
 assimp-mate(){ mate $(assimp-dir) ; }
 assimp-get(){
    local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir

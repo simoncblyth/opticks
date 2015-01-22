@@ -42,3 +42,19 @@ assimptest-make(){
    make $*
 }
 
+assimptest-run(){
+  export-
+  export-export
+  assimp-
+  local rc
+  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(assimptest-bdir)/AssimpTest 
+  rc=$?
+  echo rc $rc
+}
+
+
+assimptest--(){
+  assimptest-make
+  assimptest-run
+}
+

@@ -239,6 +239,8 @@ How to load COLLADA into OptiX ?
 
 * nvidia Scenix looks abandoned
 
+* plumped for assimp following example of oppr- example, see assimp- assimptest-
+
 * oppr- converts ASSIMP imported mesh into OptiX geometry::
 
     delta:OppositeRenderer blyth$ find . -name '*.cpp' -exec grep -H getSceneRootGroup {} \;
