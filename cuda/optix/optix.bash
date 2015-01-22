@@ -5,6 +5,79 @@ optix-vi(){       vi $(optix-source) ; }
 optix-env(){      elocal- ; }
 optix-usage(){ cat << EOU
 
+NVIDIA OptiX Ray Trace Toolkit
+================================== 
+
+Resources
+----------
+
+* https://devtalk.nvidia.com/default/board/90/optix/
+
+
+Version Switching
+------------------
+
+Use symbolic link for version switching::
+
+    delta:Developer blyth$ ll
+    total 8
+    drwxr-xr-x   7 root  admin   238 Aug  7  2013 OptiX_301
+    drwxr-xr-x   3 root  wheel   102 Jan 15  2014 NVIDIA
+    drwxr-xr-x   7 root  admin   238 Dec 18 07:08 OptiX_370b2
+    drwxr-xr-x  33 root  wheel  1190 Jan 15 08:46 ..
+    lrwxr-xr-x   1 root  wheel     9 Jan 22 11:27 OptiX -> OptiX_301
+    drwxr-xr-x   6 root  wheel   204 Jan 22 11:27 .
+
+
+
+OptiX-3.7.0-beta2
+-------------------
+
+* need to register with NVIDIA OptiX developer program to gain access 
+
+Package installs into same place as 301::
+
+    delta:Contents blyth$ pwd
+    /Volumes/NVIDIA-OptiX-SDK-3.7.0-mac64/NVIDIA-OptiX-SDK-3.7.0-mac64.pkg/Contents
+    delta:Contents blyth$ lsbom Archive.bom | head -5
+    .   40755   501/0
+    ./Developer 40755   501/0
+    ./Developer/OptiX   40755   0/80
+    ./Developer/OptiX/SDK   40755   0/80
+    ./Developer/OptiX/SDK/CMake 40755   0/80
+
+So move that aside::
+
+    delta:Developer blyth$ sudo mv OptiX OptiX_301
+
+
+* all precompiled samples failing 
+
+::
+
+    terminating with uncaught exception of type optix::Exception: Invalid context
+
+    8   libsutil.dylib                  0x000000010f8b71d6 optix::Handle<optix::ContextObj>::create() + 150
+    9   libsutil.dylib                  0x000000010f8b5b1b SampleScene::SampleScene() + 59
+    10  libsutil.dylib                  0x000000010f8a6a52 MeshScene::MeshScene(bool, bool, bool) + 34
+    11                                  0x000000010f870885 MeshViewer::MeshViewer() + 21
+
+
+    delta:SDK-precompiled-samples blyth$ open ocean.app
+    LSOpenURLsWithRole() failed with error -10810 for the file /Developer/OptiX/SDK-precompiled-samples/ocean.app.
+    delta:SDK-precompiled-samples blyth$ 
+
+
+    8   libsutil.dylib                  0x000000010e1141d6 optix::Handle<optix::ContextObj>::create() + 150
+    9   libsutil.dylib                  0x000000010e112b1b SampleScene::SampleScene() + 59
+    10                                  0x000000010e0d793c WhirligigScene::WhirligigScene(GLUTDisplay::contDraw_E) + 28
+
+
+
+
+OptiX 301 Install issues 
+--------------------------
+
 ::
 
     delta:~ blyth$ optix-cmake
@@ -44,12 +117,9 @@ optix-usage(){ cat << EOU
     delta:optix301 blyth$ 
 
 
-
-
 List the samples::
 
     delta:optix301 blyth$ optix-make help
-
 
 All giving error::
 
@@ -76,8 +146,8 @@ Seems that nvcc is running clang internally with non existing option::
     delta:optix301 blyth$ 
 
 
-
-Debug 
+cmake debug
+~~~~~~~~~~~~~
 
 * added "--verbose"
 * adding "-ccbin /usr/bin/clang" gets past the "--dumpspecs" failure, now get
@@ -101,6 +171,9 @@ Debug
     * http://public.kitware.com/Bug/view.php?id=13674
 
 
+cmake fix
+~~~~~~~~~~~~~~
+
 
 Kludge the cmake::
 
@@ -115,11 +188,7 @@ Turns out not to be necessary, the cmake flag does the trick::
 
 * :google:`cuda 5.5 clang`
 * http://stackoverflow.com/questions/19351219/cuda-clang-and-os-x-mavericks
-
-
-
 * http://stackoverflow.com/questions/12822205/nvidia-optix-geometrygroup
-
 
 
 Check Optix Raytrace Speed on DYB geometry
@@ -143,19 +212,136 @@ Check Optix Raytrace Speed on DYB geometry
     Out[5]: (1216452, 3)
 
     In [6]: t = np.load(os.path.expandvars("$DAE_NAME_DYB_CHROMACACHE_MESH/triangles.npy"))
-
     In [7]: t.shape
     Out[7]: (2402432, 3)
+    In [8]: t.max()
+    Out[8]: 1216451
+    In [9]: t.min()
+    Out[9]: 0
+
+
+Write geometry in obj format::
+
+    In [11]: fp = file("/tmp/dyb.obj", "w")
+    In [12]: np.savetxt(fp, v, fmt="v %.18e %.18e %.18e")
+    In [13]: np.savetxt(fp, t, fmt="f %d %d %d")
+    In [14]: fp.close()
+
+Geometry appears mangled, as obj format does not handle Russian doll geometry, 
+but the optix raytrace is interactive (unless some trickery being used, that is 
+greatly faster than chroma raytrace). Fast enough to keep me interested::
+
+    ./sample6 --cache --obj /tmp/dyb.obj --light-scale 5
+
+
+How to load COLLADA into OptiX ?
+-----------------------------------
+
+* nvidia Scenix looks abandoned
+
+* oppr- converts ASSIMP imported mesh into OptiX geometry::
+
+    delta:OppositeRenderer blyth$ find . -name '*.cpp' -exec grep -H getSceneRootGroup {} \;
+    ./RenderEngine/renderer/OptixRenderer.cpp:        m_sceneRootGroup = scene.getSceneRootGroup(m_context);
+    ./RenderEngine/scene/Cornell.cpp:optix::Group Cornell::getSceneRootGroup(optix::Context & context)
+    ./RenderEngine/scene/Scene.cpp:optix::Group Scene::getSceneRootGroup( optix::Context & context )
+    delta:OppositeRenderer blyth$ 
+
+
+/usr/local/env/cuda/optix/OppositeRenderer/OppositeRenderer/RenderEngine/scene/Scene.cpp::
+
+    298 optix::Group Scene::getSceneRootGroup( optix::Context & context )
+    299 {
+    300     if(!m_intersectionProgram)
+    301     {
+    302         std::string ptxFilename = "TriangleMesh.cu.ptx";
+    303         m_intersectionProgram = context->createProgramFromPTXFile( ptxFilename, "mesh_intersect" );
+    304         m_boundingBoxProgram = context->createProgramFromPTXFile( ptxFilename, "mesh_bounds" );
+    305     }
+    306 
+    307     //printf("Sizeof materials array: %d", materials.size());
+    308 
+    309     //QVector<optix::GeometryInstance> instances;
+    310 
+    311     // Convert meshes into Geometry objects
+    312 
+    313     QVector<optix::Geometry> geometries;
+    314     for(unsigned int i = 0; i < m_scene->mNumMeshes; i++)
+    315     {
+    316         optix::Geometry geometry = createGeometryFromMesh(m_scene->mMeshes[i], context);
+    317         geometries.push_back(geometry);
+    318         //optix::GeometryInstance instance = getGeometryInstanceFromMesh(m_scene->mMeshes[i], context, materials);
+    319         //instances.push_back(instance);
+    320     }
+    321 
+    322     // Convert nodes into a full scene Group
+    323 
+    324     optix::Group rootNodeGroup = getGroupFromNode(context, m_scene->mRootNode, geometries, m_materials);
+    ...
+    342     optix::Acceleration acceleration = context->createAcceleration("Sbvh", "Bvh");
+    343     rootNodeGroup->setAcceleration( acceleration );
+    344     acceleration->markDirty();
+    345     return rootNodeGroup;
+    346 }
+    ...
+    348 optix::Geometry Scene::createGeometryFromMesh(aiMesh* mesh, optix::Context & context)
+    349 {
+    350     unsigned int numFaces = mesh->mNumFaces;
+    351     unsigned int numVertices = mesh->mNumVertices;
+    352 
+    353     optix::Geometry geometry = context->createGeometry();
+    354     geometry->setPrimitiveCount(numFaces);
+    355     geometry->setIntersectionProgram(m_intersectionProgram);
+    356     geometry->setBoundingBoxProgram(m_boundingBoxProgram);
+    357 
+    358     // Create vertex, normal and texture buffer
+    359 
+    360     optix::Buffer vertexBuffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_FLOAT3, numVertices);
+    361     optix::float3* vertexBuffer_Host = static_cast<optix::float3*>( vertexBuffer->map() );
+    362 
+    363     optix::Buffer normalBuffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_FLOAT3, numVertices);
+    364     optix::float3* normalBuffer_Host = static_cast<optix::float3*>( normalBuffer->map() );
+    365 
+    366     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
+    367     geometry["normalBuffer"]->setBuffer(normalBuffer);
+    368 
+    369     // Copy vertex and normal buffers
+    370 
+    371     memcpy( static_cast<void*>( vertexBuffer_Host ),
+    372         static_cast<void*>( mesh->mVertices ),
+    373         sizeof( optix::float3 )*numVertices);
+    374     vertexBuffer->unmap();
+
+
+
 
 
 
 
 EOU
 }
-optix-bdir(){ echo $(local-base)/env/cuda/optix301 ; }
-optix-sdir(){ echo $(env-home)/cuda/optix/optix301 ; }
+
+
+#optix-name(){ echo optix301 ; }
+optix-name(){ echo optix301 ; }
+optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
+optix-sdir(){ echo $(env-home)/cuda/optix/$(optix-name) ; }
+
+
 optix-dir(){ echo /Developer/OptiX/SDK ; }
 optix-sdk-dir(){ echo /Developer/OptiX/SDK ; }
+optix-name(){   readlink /Developer/OptiX ; }
+optix-jump(){    
+   local iwd=$PWD
+   local ver=${1:-301}
+   cd /Developer
+   sudo ln -sfnv OptiX_$ver OptiX 
+   cd $iwd
+}
+optix-old(){   optix-jump 301 ; }
+optix-beta(){  optix-jump 370b2 ; }
+
+
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
 
 optix-cd(){  cd $(optix-dir); }
@@ -170,7 +356,6 @@ CMakeLists.txt
 sampleConfig.h.in
 cuda
 CMake
-sample1
 sample2
 sample3
 sample4
@@ -220,31 +405,23 @@ optix-samples-get(){
 optix-samples-cmake(){
    local bdir=$(optix-bdir)
    rm -rf $bdir   # starting clean everytime
-  
    mkdir -p $bdir
-
    optix-bcd
-
    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang" "$(optix-sdir)"
 }
 
 
-
-
-
 optix-export(){
    export OPTIX_SDK_DIR=$(optix-sdk-dir)
+   export OPTIX_INSTALL_DIR=$(optix-install-dir)
 }
 
 
 optix-cmake(){
-
    local bdir=$(optix-bdir)
    mkdir -p $bdir
    optix-bcd
-
    cmake $(optix-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang"
-
 }
 
 optix-make(){
