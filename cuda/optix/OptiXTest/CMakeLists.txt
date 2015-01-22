@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
 set(name OptiXTest)
+
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -10,7 +11,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 find_package(OptiX REQUIRED)
 
+find_package(CUDA 2.3 REQUIRED)
+
 include(FindSUtilGLUT)
+
 include(EnvBuildOptions)
 
 include_directories(
@@ -19,17 +23,48 @@ include_directories(
     $ENV{OPTIX_SDK_DIR}/sutil
 )
 
-
 add_definitions(
     ${OptiX_DEFINITIONS} 
 )
 
 
-add_executable(${name} ${name}.cc )
+function(add_optix_executable target_name)
 
-target_link_libraries( ${name} 
-                        /usr/local/env/cuda/OptiX_301/lib/libsutil.dylib
-                        optix
-                      )
+    # split arguments into three lists 
+    CUDA_GET_SOURCES_AND_OPTIONS(source_files cmake_options options ${ARGN})
 
-install(TARGETS ${name} DESTINATION bin)
+    # Create the rules to build the PTX from the CUDA files.
+    CUDA_WRAP_SRCS( ${target_name} PTX generated_files ${source_files} ${cmake_options} OPTIONS ${options} )
+
+    add_executable(${target_name}
+        ${source_files}
+        ${generated_files}
+        ${cmake_options}
+    )
+
+
+    find_library( SUTIL_LIBRARY
+              NAMES sutil
+              PATHS $ENV{OPTIX_SAMPLES_INSTALL_DIR}/lib )
+
+    message("SUTIL_LIBRARY ${SUTIL_LIBRARY} ")
+
+
+    target_link_libraries( ${target_name} 
+                           ${SUTIL_LIBRARY}
+                           optix
+                         )
+
+endfunction()
+
+
+
+add_optix_executable(${name} 
+                     ${name}.cc 
+                     draw_color.cu
+)
+
+# why have to manually find sutil, but not optix ?
+#install(TARGETS ${name} DESTINATION bin)
+
+

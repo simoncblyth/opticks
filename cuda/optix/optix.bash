@@ -29,6 +29,21 @@ Use symbolic link for version switching::
     drwxr-xr-x   6 root  wheel   204 Jan 22 11:27 .
 
 
+Path to SAMPLES_PTX_DIR gets compiled in
+-------------------------------------------
+
+::
+
+    delta:SDK blyth$ find . -name '*.*' -exec grep -H SAMPLES_PTX_DIR {} \;
+    ./CMakeLists.txt:set(SAMPLES_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the samples look for the PTX code.")
+    ./CMakeLists.txt:set(CUDA_GENERATED_OUTPUT_DIR ${SAMPLES_PTX_DIR})
+    ./CMakeLists.txt:  string(REPLACE "/" "\\\\" SAMPLES_PTX_DIR ${SAMPLES_PTX_DIR})
+    ./sampleConfig.h.in:#define SAMPLES_PTX_DIR "@SAMPLES_PTX_DIR@"
+    ./sutil/sutil.c:  dir = getenv( "OPTIX_SAMPLES_PTX_DIR" );
+    ./sutil/sutil.c:  if( dirExists(SAMPLES_PTX_DIR) )
+    ./sutil/sutil.c:    return SAMPLES_PTX_DIR;
+
+
 
 OptiX-3.7.0-beta2
 -------------------
@@ -329,6 +344,14 @@ optix-name(){ echo optix301 ; }
 optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
 optix-sdir(){ echo $(env-home)/cuda/optix/$(optix-name) ; }
 
+optix-samples-install-dir(){ echo $(optix-bdir) ; }
+
+optix-export(){
+   export OPTIX_SDK_DIR=$(optix-sdk-dir)
+   export OPTIX_INSTALL_DIR=$(optix-install-dir)
+   export OPTIX_SAMPLES_INSTALL_DIR=$(optix-samples-install-dir)
+}
+
 
 optix-dir(){ echo /Developer/OptiX/SDK ; }
 optix-sdk-dir(){ echo /Developer/OptiX/SDK ; }
@@ -358,6 +381,7 @@ CMakeLists.txt
 sampleConfig.h.in
 cuda
 CMake
+sample1
 sample2
 sample3
 sample4
@@ -410,12 +434,6 @@ optix-samples-cmake(){
    mkdir -p $bdir
    optix-bcd
    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang" "$(optix-sdir)"
-}
-
-
-optix-export(){
-   export OPTIX_SDK_DIR=$(optix-sdk-dir)
-   export OPTIX_INSTALL_DIR=$(optix-install-dir)
 }
 
 

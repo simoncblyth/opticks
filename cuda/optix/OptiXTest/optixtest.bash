@@ -26,7 +26,7 @@ optixtest-cmake(){
    mkdir -p $bdir
    optixtest-bcd
 
-   cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) $(optixtest-sdir)
+   cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang" $(optixtest-sdir)
 }
 
 optixtest-make(){
