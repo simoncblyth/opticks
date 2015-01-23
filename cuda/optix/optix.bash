@@ -494,6 +494,15 @@ optix-tutorial(){
     eval $cmd
 }
 
+optix-tutorial-cd(){
+   cd $(optix-sdk-dir)/tutorial
+}
+optix-tutorial-vi(){
+   vi $(optix-sdk-dir)/tutorial/*
+}
+
+
+
 
 optix-verbose(){
   export VERBOSE=1 

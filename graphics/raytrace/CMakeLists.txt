@@ -66,10 +66,8 @@ endfunction()
 add_optix_executable(${name} 
                      ${name}.cc 
                      AOScene.cc
-                     draw_color.cu
+                     tutorial0.cu
+                     TriangleMesh.cu
 )
-
-# why have to manually find sutil, but not optix ?
-#install(TARGETS ${name} DESTINATION bin)
 
 

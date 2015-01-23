@@ -12,6 +12,7 @@ EOU
 }
 raytrace-bdir(){ echo $(local-base)/env/graphics/raytrace ; }
 raytrace-sdir(){ echo $(env-home)/graphics/raytrace ; }
+raytrace-cd(){  cd $(raytrace-sdir); }
 raytrace-scd(){  cd $(raytrace-sdir); }
 raytrace-bcd(){  cd $(raytrace-bdir); }
 
@@ -19,6 +20,9 @@ raytrace-env(){
     elocal-  
     assimp-
     optix-
+    optix-export
+    export-
+    export-export
 }
 
 raytrace-name(){ echo RayTrace ; }
@@ -57,9 +61,9 @@ assimptest-run(){
 }
 
 
-
+raytrace-bin(){ echo $(raytrace-bdir)/$(raytrace-name) ; }
 raytrace-run-(){ cat << EOC
-  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(raytrace-bdir)/$(raytrace-name)
+  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(raytrace-bin)
 EOC
 }
 
@@ -69,10 +73,18 @@ raytrace-run(){
 }
 
 
+
+
 raytrace--(){
   raytrace-make
   raytrace-run $* 
-
 }
+
+raytrace-dbg(){
+  raytrace-bcd
+  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib lldb $(raytrace-bin)
+}
+
+
 
 

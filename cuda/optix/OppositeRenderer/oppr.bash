@@ -18,3 +18,12 @@ oppr-get(){
    local dir=$(dirname $(oppr-dir)) &&  mkdir -p $dir && cd $dir
    git clone https://github.com/apartridge/OppositeRenderer.git 
 }
+
+oppr-scene(){
+   vi $(oppr-dir)/OppositeRenderer/RenderEngine/scene/Scene.{h,cpp}
+}
+oppr-renderer(){
+   vi $(oppr-dir)/OppositeRenderer/RenderEngine/renderer/OptixRenderer.{h,cpp}
+}
+
+
