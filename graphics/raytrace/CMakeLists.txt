@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-set(name OptiXTest)
+set(name RayTrace)
 
 project(${name})
 
@@ -10,9 +10,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 find_package(OptiX REQUIRED)
-
 find_package(CUDA 2.3 REQUIRED)
-
+find_package(Assimp REQUIRED)
 
 
 include(FindSUtilGLUT)
@@ -24,6 +23,7 @@ include_directories(
     ${OptiX_INCLUDE}  
     $ENV{OPTIX_SDK_DIR}/sutil
     ${CUDA_INCLUDE_DIRS}
+    ${Assimp_INCLUDE_DIRS}  
 )
 
 add_definitions(
@@ -56,6 +56,7 @@ function(add_optix_executable target_name)
     target_link_libraries( ${target_name} 
                            ${SUTIL_LIBRARY}
                            optix
+                           ${Assimp_LIBRARIES} 
                          )
 
 endfunction()
@@ -64,6 +65,7 @@ endfunction()
 
 add_optix_executable(${name} 
                      ${name}.cc 
+                     AOScene.cc
                      draw_color.cu
 )
 

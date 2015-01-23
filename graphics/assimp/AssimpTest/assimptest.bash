@@ -29,17 +29,21 @@ assimptest-cd(){   cd $(assimptest-sdir); }
 
 
 assimptest-cmake(){
+   local iwd=$PWD
    local bdir=$(assimptest-bdir)
    mkdir -p $bdir
    assimptest-bcd
 
    cmake $(assimptest-sdir)
+   cd $iwd
 }
 
 
 assimptest-make(){
+   local iwd=$PWD
    assimptest-bcd
    make $*
+   cd $iwd
 }
 
 assimptest-run(){
@@ -47,7 +51,7 @@ assimptest-run(){
   export-export
   assimp-
   local rc
-  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(assimptest-bdir)/AssimpTest 
+  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(assimptest-bdir)/AssimpTestPP 
   rc=$?
   echo rc $rc
 }

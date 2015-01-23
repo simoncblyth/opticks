@@ -331,7 +331,48 @@ How to load COLLADA into OptiX ?
 
 
 
+OptiX Tutorial
+---------------
 
+* http://docs.nvidia.com/gameworks/content/gameworkslibrary/optix/optix_quickstart.htm
+
+Tutorials gt 5 asserting in rtContextCompile::
+
+    delta:bin blyth$ ./tutorial -T 5 
+    OptiX Error: Unknown error (Details: Function "RTresult _rtContextCompile(RTcontext_api*)" caught exception: Assertion failed: [1312612])
+
+Binary search reveals the culprit to be the *sin(phi)*::
+
+     74 rtTextureSampler<float4, 2> envmap;
+     75 RT_PROGRAM void envmap_miss()
+     76 {
+     77   float theta = atan2f( ray.direction.x, ray.direction.z );
+     78   float phi   = M_PIf * 0.5f -  acosf( ray.direction.y );
+     79   float u     = (theta + M_PIf) * (0.5f * M_1_PIf);
+     80   float v     = 0.5f * ( 1.0f + sin(phi) );
+     81   // the "sin" above causing an assert with OptiX_301 CUDA 5.5 without --use_fast_math 
+     82   prd_radiance.result = make_float3( tex2D(envmap, u, v) );
+     83 } 
+
+* https://devtalk.nvidia.com/default/topic/559505/apparently-an-unexplicable-error/
+
+Resolved by adding *--use_fast_math* to the cmake commandline setting CUDA_NVCC_FLAGS::
+
+   cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math " "$(optix-sdir)"
+
+After a few crashes like the above observe GPU memory to be almost full
+and attempts to run anything on the GPU fail with a system 
+exception report. To free up some GPU memory sleep/revive the machine::
+
+    delta:bin blyth$ cu
+    timestamp                Fri Jan 23 10:44:11 2015
+    tag                      default
+    name                     GeForce GT 750M
+    compute capability       (3, 0)
+    memory total             2.1G
+    memory used              2.1G
+    memory free              51.4M
+    delta:bin blyth$ 
 
 
 
@@ -339,12 +380,7 @@ EOU
 }
 
 
-#optix-name(){ echo optix301 ; }
-optix-name(){ echo optix301 ; }
-optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
-optix-sdir(){ echo $(env-home)/cuda/optix/$(optix-name) ; }
 
-optix-samples-install-dir(){ echo $(optix-bdir) ; }
 
 optix-export(){
    export OPTIX_SDK_DIR=$(optix-sdk-dir)
@@ -352,28 +388,30 @@ optix-export(){
    export OPTIX_SAMPLES_INSTALL_DIR=$(optix-samples-install-dir)
 }
 
-
-optix-dir(){ echo /Developer/OptiX/SDK ; }
-optix-sdk-dir(){ echo /Developer/OptiX/SDK ; }
-optix-name(){   readlink /Developer/OptiX ; }
-optix-jump(){    
-   local iwd=$PWD
-   local ver=${1:-301}
-   cd /Developer
-   sudo ln -sfnv OptiX_$ver OptiX 
-   cd $iwd
-}
-optix-old(){   optix-jump 301 ; }
-optix-beta(){  optix-jump 370b2 ; }
-
-
+optix-fold(){    echo /Developer ; }
+optix-dir(){     echo $(optix-fold)/OptiX/SDK ; }
+optix-sdk-dir(){ echo $(optix-fold)/OptiX/SDK ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
+optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
+optix-sdir(){ echo $(env-home)/cuda/optix/$(optix-name) ; }
+optix-samples-install-dir(){ echo $(optix-bdir) ; }
 
 optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-bdir); }
 optix-scd(){ cd $(optix-sdir); }
 
-optix-mate(){ mate $(optix-dir) ; }
+
+
+optix-name(){   readlink $(optix-fold)/OptiX ; }
+optix-jump(){    
+   local iwd=$PWD
+   local ver=${1:-301}
+   cd $(optix-fold)
+   sudo ln -sfnv OptiX_$ver OptiX 
+   cd $iwd
+}
+optix-old(){   optix-jump 301 ; }
+optix-beta(){  optix-jump 370b2 ; }
 
 
 optix-samples-names(){ cat << EON
@@ -392,6 +430,7 @@ sample7
 sample8
 simpleAnimation
 sutil
+tutorial
 EON
 }
 
@@ -429,33 +468,41 @@ optix-samples-get(){
 
 
 optix-samples-cmake(){
-   local bdir=$(optix-bdir)
-   rm -rf $bdir   # starting clean everytime
-   mkdir -p $bdir
-   optix-bcd
-   cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang" "$(optix-sdir)"
+    local iwd=$PWD
+    local bdir=$(optix-bdir)
+    #rm -rf $bdir   # starting clean 
+    mkdir -p $bdir
+    optix-bcd
+    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math " "$(optix-sdir)"
+    cd $iwd
+}
+
+optix-samples-make(){
+    local iwd=$PWD
+    optix-bcd
+    make $* 
+    cd $iwd
+}
+
+optix-tutorial(){
+    local tute=${1:-10}
+
+    optix-samples-make tutorial
+
+    local cmd="$(optix-bdir)/bin/tutorial -T $tute --texture-path $(optix-sdk-dir)/tutorial/data"
+    echo $cmd
+    eval $cmd
 }
 
 
-optix-cmake(){
-   local bdir=$(optix-bdir)
-   mkdir -p $bdir
-   optix-bcd
-   cmake $(optix-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang"
-}
-
-optix-make(){
-  optix-bcd
+optix-verbose(){
   export VERBOSE=1 
-  make $* 
+}
+optix-unverbose(){
+  unset VERBOSE
 }
 
 
-optix-check-notes(){ cat << EON
- 
-
-EON
-}
 
 optix-check(){
 /usr/local/cuda/bin/nvcc -ccbin /usr/bin/clang --verbose -M -D__CUDACC__ /Developer/OptiX/SDK/cuda/triangle_mesh_small.cu -o /usr/local/env/cuda/optix301/sutil/CMakeFiles/cuda_compile_ptx.dir/__/cuda/cuda_compile_ptx_generated_triangle_mesh_small.cu.ptx.NVCC-depend -ccbin /usr/bin/cc -m64 -DGLUT_FOUND -DGLUT_NO_LIB_PRAGMA --use_fast_math -U__BLOCKS__ -DNVCC -I/usr/local/cuda/include -I/Developer/OptiX/include -I/Developer/OptiX/SDK/sutil -I/Developer/OptiX/include/optixu -I/usr/local/env/cuda/optix301 -I/usr/local/cuda/include -I/System/Library/Frameworks/GLUT.framework/Headers -I/Developer/OptiX/SDK/sutil -I/Developer/OptiX/SDK/cuda
@@ -463,12 +510,19 @@ optix-check(){
 
 
 
-optix-sample-name(){ echo ${OPTIX_SAMPLE_NAME:-sample6} ; }
+optix-check-2(){
 
-optix-sample(){
-   local name=$($FUNCNAME-name)
-   local cmd="$(optix-bdir)/bin/$name $*"
-   echo $cmd
-   eval $cmd
+cd /usr/local/env/cuda/OptiX_301/tutorial && /usr/bin/c++   -DGLUT_FOUND -DGLUT_NO_LIB_PRAGMA -fPIC -O3 -DNDEBUG \
+     -I/Developer/OptiX/include \
+     -I/Users/blyth/env/cuda/optix/OptiX_301/sutil \
+     -I/Developer/OptiX/include/optixu \
+     -I/usr/local/env/cuda/OptiX_301 \
+     -I/usr/local/cuda/include \
+     -I/System/Library/Frameworks/GLUT.framework/Headers \
+       -o /dev/null \
+       -c /Users/blyth/env/cuda/optix/OptiX_301/tutorial/tutorial.cpp
+
 }
+
+
 
