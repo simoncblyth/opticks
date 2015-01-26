@@ -9,7 +9,7 @@ Test Combination of Assimp and OptiX
 
 ::
 
-    raytrace-- __dd__Geometry__AD__lvOIL0xbf5e0b8 --dim=256x256
+    raytrace-;raytrace-- __dd__Geometry__AD__lvOIL0xbf5e0b8 --dim=256x256
 
 
 * press "ctrl" and drag up/down to zoom out/on 

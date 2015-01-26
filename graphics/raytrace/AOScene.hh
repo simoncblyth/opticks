@@ -59,7 +59,9 @@ private:
 
     optix::Geometry convertGeometry(aiMesh* mesh);
 
-    optix::Group convertNode(aiNode* node);
+    void traverseNode(aiNode* node);
+
+    optix::GeometryGroup convertNode(aiNode* node);
 
 private:
     char* m_path ; 
@@ -91,6 +93,8 @@ private:
     std::vector<optix::Material> m_materials;
 
     std::vector<optix::Geometry> m_geometries;
+
+    std::vector<optix::GeometryInstance> m_gis ;
 
     std::map<std::string,optix::Program> m_programs;
 

@@ -311,12 +311,14 @@ void AOScene::initGeometry(optix::Context& context)
     } 
 
 
-    optix::Group top = convertNode(node);
+    optix::GeometryGroup top = convertNode(node);
 
-    // double egging pudding  ?
-    optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh"); 
+    optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
+    acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
+    acceleration->setProperty( "index_buffer_name", "indexBuffer" );
     top->setAcceleration( acceleration );
     acceleration->markDirty();
+
 
     m_context["top_object"]->set(top);
 }
@@ -351,93 +353,57 @@ void AOScene::dumpMaterial(aiMaterial* ai_material)
     }
 }
 
-optix::Group AOScene::convertNode(aiNode* node)
+
+optix::GeometryGroup AOScene::convertNode(aiNode* node)
+{
+    //
+    // aiming for fig2:  single gg containing many gi 
+    //
+    traverseNode(node);
+    optix::GeometryGroup gg = m_context->createGeometryGroup();
+    gg->setChildCount(m_gis.size());
+
+    for(unsigned int i=0 ; i <m_gis.size() ; i++)
+    {
+        gg->setChild(i, m_gis[i]);
+    }
+
+    return gg ;
+}
+
+
+void AOScene::traverseNode(aiNode* node)
 {
     aiString _name = node->mName;
     const char* name = _name.C_Str(); 
+
     //printf("AOScene::convertNode name %s #meshes %d #children %d \n", name, node->mNumMeshes, node->mNumChildren);
 
 
-    std::vector<optix::Group> groups;
+    for(unsigned int i = 0; i < node->mNumMeshes; i++)
+    {   
+        unsigned int meshIndex = node->mMeshes[i];
 
-    if(node->mNumMeshes > 0)
-    {  
-        // all node meshes into single geometry group of geometry instances
+        optix::Geometry geometry = m_geometries[meshIndex] ;
 
-        optix::GeometryGroup gg = m_context->createGeometryGroup();
+        aiMesh* mesh = m_scene->mMeshes[meshIndex];
 
-        gg->setChildCount(node->mNumMeshes);
+        unsigned int materialIndex = mesh->mMaterialIndex;
 
-        for(unsigned int i = 0; i < node->mNumMeshes; i++)
-        {   
-            unsigned int meshIndex = node->mMeshes[i];
+        std::vector<optix::Material>::iterator mit = m_materials.begin()+materialIndex ;
 
-            aiMesh* mesh = m_scene->mMeshes[meshIndex];
+        printf("AOScene::traverseNode i %d meshIndex %d materialIndex %d \n", i, meshIndex, materialIndex );
 
-            unsigned int materialIndex = mesh->mMaterialIndex;
+        optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, mit, mit+1  );
 
-            printf("AOScene::convertNode i %d meshIndex %d materialIndex %d \n", i, meshIndex, materialIndex );
+        m_gis.push_back(gi);
+    }   
 
-            optix::Geometry geometry = m_geometries[meshIndex] ;
-
-            std::vector<optix::Material>::iterator mit = m_materials.begin()+materialIndex ;
-
-            optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, mit, mit+1  );
-
-            gg->setChild(i, gi);
-
-        }   
-
-        {   
-            optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
-            acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
-            acceleration->setProperty( "index_buffer_name", "indexBuffer" );
-            gg->setAcceleration( acceleration );
-            acceleration->markDirty();
-        }   
-
-
-       
-        optix::Group group = m_context->createGroup();
-        group->setChildCount(1);
-        group->setChild(0, gg);
-        optix::Acceleration acceleration = m_context->createAcceleration("NoAccel", "NoAccel");
-        group->setAcceleration( acceleration );
-
-        groups.push_back(group);
-    }
-
-
-
-    if(node->mNumChildren > 0)
+    for(unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        for(unsigned int i = 0; i < node->mNumChildren; i++)
-        {
-            aiNode* childNode = node->mChildren[i];
-            optix::Group childGroup = convertNode(childNode);
-            if(childGroup)
-            {
-                groups.push_back(childGroup);
-            }
-        }
-
+        traverseNode(node->mChildren[i]);
     }
 
-
-    if(groups.size() > 0)
-    {
-        optix::Group group = m_context->createGroup(groups.begin(), groups.end());
-        optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
-        group->setAcceleration( acceleration );
-        printf("return containing group from %lu groups \n", groups.size()); 
-        return group;
-    }
-    
-
-    optix::Group empty = m_context->createGroup();
-    optix::Acceleration acceleration = m_context->createAcceleration("NoAccel", "NoAccel");
-    empty->setAcceleration(acceleration);
-    return empty;
 }
 
 
