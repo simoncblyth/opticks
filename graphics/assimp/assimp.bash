@@ -22,6 +22,25 @@ Written in C++, it is available under a liberal BSD license. There is a C API
 as well as bindings to various other languages, including C#/.net, Python and D. 
 
 
+G4DAE extra handling
+---------------------
+
+Flat 1 level C++ layout of ColladaLoader and ColladaParser would suggest the
+easiest way to add extra element handling for G4DAE material and surface
+properties is simply to fork the github assimp.
+
+* http://sourceforge.net/p/assimp/discussion/817653/thread/c3b115cd/
+
+
+fork on github
+----------------
+
+::
+
+    git clone git://github.com/assimp/assimp.git assimp
+
+
+
 config
 ------
 

@@ -12,6 +12,9 @@
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
 
+#include <string>
+#include <map>
+
 
 struct aiScene;
 struct aiMesh;
@@ -28,11 +31,9 @@ namespace Assimp
 class AOScene  : public SampleScene 
 {
 public:
-    AOScene(const char* path);
+    AOScene(const char* path, const char* ptxfold, const char* target);
     virtual ~AOScene();
-    static const char* const ptxpath( const std::string& target, const std::string& base );
-
-    static const char* TARGET ; 
+    const char* const ptxpath( const std::string& filename );
 
 public:
    // From SampleScene
@@ -46,14 +47,23 @@ public:
 public:
     optix::Program createProgram(const char* filename, const char* fname );
     void initGeometry(optix::Context& context);
-    void LoadMaterial(aiMaterial* material);
     void Info();
 
 private:
-    optix::Geometry createGeometryFromMesh(aiMesh* mesh, optix::Context& context);
+    void dumpMaterial(aiMaterial* ai_material);
+
+    optix::Material convertMaterial(aiMaterial* ai_material);
+
+    optix::Geometry convertGeometry(aiMesh* mesh);
+
+    optix::Group convertNode(aiNode* node);
 
 private:
     char* m_path ; 
+
+    char* m_ptxfold ; 
+
+    char* m_target ; 
 
     unsigned int m_width  ;
 
@@ -70,6 +80,14 @@ private:
     optix::Program m_intersectionProgram;
 
     optix::Program m_boundingBoxProgram;
+
+private:
+
+    std::vector<optix::Material> m_materials;
+
+    std::vector<optix::Geometry> m_geometries;
+
+    std::map<std::string,optix::Program> m_programs;
 
 };
 

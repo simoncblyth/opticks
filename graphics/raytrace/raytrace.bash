@@ -51,16 +51,6 @@ raytrace-make(){
 
 
 
-assimptest-run(){
-  export-
-  export-export
-  assimp-
-  local rc
-  rc=$?
-  echo rc $rc
-}
-
-
 raytrace-bin(){ echo $(raytrace-bdir)/$(raytrace-name) ; }
 raytrace-run-(){ cat << EOC
   DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(raytrace-bin)

@@ -14,6 +14,36 @@ Resources
 * https://devtalk.nvidia.com/default/board/90/optix/
 
 
+Optix and curand ?
+-------------------
+
+* :google:`optix curand`
+
+  * https://devtalk.nvidia.com/default/topic/759883/random-number-streams/?offset=1
+
+Caveats
+----------
+
+* https://devtalk.nvidia.com/default/topic/751906/?comment=4240594
+  
+  * rtPrintf not printf
+
+
+OptiX Usage Examples
+---------------------
+
+* https://code.google.com/p/hybrid-rendering-thesis/source/browse/trunk/src/Raytracer/OptixRender.cpp?r=44
+
+* https://github.com/keithroe/Legion/blob/master/src/Legion/Renderer/OptiXScene.cpp
+
+* https://github.com/pspkzar/OptiXRenderer/blob/master/src/OptixRenderer.cpp
+
+* https://github.com/nvpro-samples/gl_optix_composite
+
+* http://graphicsrunner.blogspot.tw/2011/03/instant-radiosity-using-optix-and.html
+
+
+
 Version Switching
 ------------------
 
@@ -431,8 +461,12 @@ sample8
 simpleAnimation
 sutil
 tutorial
+materials
 EON
 }
+
+
+optix-samples-cd(){ cd $(optix-sdir) ; }
 
 optix-samples-get(){
    local sdir=$(optix-sdir)
@@ -484,6 +518,17 @@ optix-samples-make(){
     cd $iwd
 }
 
+
+
+
+optix-samples-run(){
+    local name=${1:-materials}
+    optix-samples-make $name
+    local cmd="$(optix-bdir)/bin/$name"
+    echo $cmd
+    eval $cmd
+}
+
 optix-tutorial(){
     local tute=${1:-10}
 
@@ -493,6 +538,7 @@ optix-tutorial(){
     echo $cmd
     eval $cmd
 }
+
 
 optix-tutorial-cd(){
    cd $(optix-sdk-dir)/tutorial
