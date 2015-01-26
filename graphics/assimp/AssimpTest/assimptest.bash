@@ -34,7 +34,7 @@ assimptest-cmake(){
    mkdir -p $bdir
    assimptest-bcd
 
-   cmake $(assimptest-sdir)
+   cmake -DCMAKE_BUILD_TYPE=Debug $(assimptest-sdir)
    cd $iwd
 }
 
@@ -51,14 +51,15 @@ assimptest-run(){
   export-export
   assimp-
   local rc
-  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(assimptest-bdir)/AssimpTestPP 
+  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $LLDB $(assimptest-bdir)/AssimpTestPP $*
   rc=$?
   echo rc $rc
 }
 
 
+
 assimptest--(){
   assimptest-make
-  assimptest-run
+  assimptest-run  $*
 }
 

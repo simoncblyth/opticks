@@ -5,7 +5,9 @@
 
 int main(int argc, char* argv[])
 {
-    printf("argv0 %s \n", argv[0]);
+    const char* query = ( argc > 1 ) ? argv[1] : "/" ; 
+
+    printf("argv0 %s query %s \n", argv[0], query );
 
     GLUTDisplay::init( argc, argv );
 
@@ -20,9 +22,14 @@ int main(int argc, char* argv[])
     title << "AOScene " << key ;
     try 
     {
-        AOScene scene(path, ptxdir, target);
+        AOScene scene(path, ptxdir, target, query );
+
         scene.setDimensions( width, height );
+
         scene.Info();
+
+        printf("calling GLUTDisplay::run \n");
+ 
         GLUTDisplay::run( title.str(), &scene );
     } 
     catch( optix::Exception& e )

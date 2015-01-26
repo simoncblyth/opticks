@@ -68,7 +68,7 @@ add_optix_executable(${name}
                      AOScene.cc
                      tutorial0.cu
                      TriangleMesh.cu
-                     material0.cu
+                     material1.cu
 )
 
 

@@ -31,7 +31,7 @@ namespace Assimp
 class AOScene  : public SampleScene 
 {
 public:
-    AOScene(const char* path, const char* ptxfold, const char* target);
+    AOScene(const char* path, const char* ptxfold, const char* target, const char* query );
     virtual ~AOScene();
     const char* const ptxpath( const std::string& filename );
 
@@ -49,8 +49,11 @@ public:
     void initGeometry(optix::Context& context);
     void Info();
 
+    aiNode* searchNode(const char* query);
+
 private:
     void dumpMaterial(aiMaterial* ai_material);
+
 
     optix::Material convertMaterial(aiMaterial* ai_material);
 
@@ -64,6 +67,8 @@ private:
     char* m_ptxfold ; 
 
     char* m_target ; 
+
+    char* m_query ; 
 
     unsigned int m_width  ;
 

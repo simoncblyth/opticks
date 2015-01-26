@@ -7,6 +7,12 @@ raytrace-usage(){ cat << EOU
 Test Combination of Assimp and OptiX
 ======================================
 
+::
+
+    raytrace-- __dd__Geometry__AD__lvOIL0xbf5e0b8 --dim=256x256
+
+
+* press "ctrl" and drag up/down to zoom out/on 
 
 EOU
 }
@@ -35,7 +41,7 @@ raytrace-cmake(){
 
    raytrace-bcd
   
-   cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math" $(raytrace-sdir) 
+   cmake -DCMAKE_BUILD_TYPE=Debug -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math" $(raytrace-sdir) 
 
    cd $iwd
 }
@@ -53,13 +59,13 @@ raytrace-make(){
 
 raytrace-bin(){ echo $(raytrace-bdir)/$(raytrace-name) ; }
 raytrace-run-(){ cat << EOC
-  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(raytrace-bin)
+  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(raytrace-bin) $*
 EOC
 }
 
 raytrace-run(){
-   $FUNCNAME-
-   $FUNCNAME- | sh 
+   $FUNCNAME- $*
+   $FUNCNAME- $* | sh 
 }
 
 

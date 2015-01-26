@@ -14,26 +14,101 @@
 #include <optixu/optixu_vector_types.h>
 
 
+static unsigned int findNode_index = 0 ; 
+
+aiNode* findNode(const char* query, aiNode* node, unsigned int depth )
+{
+   if(depth == 0) findNode_index = 0 ; 
+
+   //dumpNode(node, depth); 
+
+   findNode_index++ ; 
+
+   const char* name = node->mName.C_Str(); 
+
+   if(strncmp(name,query,strlen(query)) == 0) return node;
+
+   for(unsigned int i = 0; i < node->mNumChildren; i++)
+   {   
+      aiNode* n = findNode(query, node->mChildren[i], depth + 1 );
+      if(n) return n ; 
+   }   
+   return NULL ; 
+}
 
 
-AOScene::AOScene(const char* path, const char* ptxfold, const char* target)
+void dumpNode(aiNode* node, unsigned int depth)
+{
+   if(!node)
+   {   
+      printf("dumpNode NULL \n");
+      return ; 
+   }   
+
+   unsigned int NumMeshes = node->mNumMeshes ;
+   unsigned int NumChildren = node->mNumChildren ;
+   const char* name = node->mName.C_Str(); 
+   printf("i %5d d %2d m %3d c %3d n %s \n", findNode_index, depth, NumMeshes, NumChildren, name); 
+
+   /*  
+   if(findNode_index > 0 )
+   {
+       // other than first, even node index have 1 mesh and odd have 0
+       assert( (findNode_index + 1) % 2 == NumMeshes );
+
+       // the odd zeros, always have children 
+       if(NumMeshes == 0) assert(NumChildren > 0 ); 
+   }
+   */
+}
+
+
+void dumpTree(aiNode* node, unsigned int depth)
+{
+
+   if(!node)
+   {
+      printf("dumpTree NULL \n");
+      return ;
+   }
+
+   if(depth == 0) findNode_index = 0 ;
+
+   dumpNode(node, depth);
+
+   findNode_index++ ;
+
+   for(unsigned int i = 0; i < node->mNumChildren; i++)
+   {
+       dumpTree(node->mChildren[i], depth + 1);
+   }
+}
+
+
+
+
+
+
+AOScene::AOScene(const char* path, const char* ptxfold, const char* target, const char* query )
         : 
         SampleScene(),
         m_scene(NULL),
         m_path(NULL),
         m_ptxfold(NULL),
         m_target(NULL),
+        m_query(NULL),
         m_width(1080u),
         m_height(720u),
         m_importer(new Assimp::Importer()),
         m_intersectionProgram(NULL),
         m_boundingBoxProgram(NULL)
 {
-    if(!path || !ptxfold || !target) return ; 
-    printf("AOScene::AOScene ctor path %s ptxfold %s target %s \n", path, ptxfold, target);
+    if(!path || !ptxfold || !target || !query) return ; 
+    printf("AOScene::AOScene ctor path %s ptxfold %s target %s query %s  \n", path, ptxfold, target, query );
     m_path = strdup(path);
     m_ptxfold = strdup(ptxfold);
     m_target = strdup(target);
+    m_query  = strdup(query);
 }
 
 AOScene::~AOScene(void)
@@ -44,6 +119,9 @@ AOScene::~AOScene(void)
     delete m_importer;
 
     free(m_path);
+    free(m_ptxfold);
+    free(m_target);
+    free(m_query);
 }
 
 
@@ -52,6 +130,22 @@ std::string generated_ptx_path( const char* folder, const char* target, const ch
   std::stringstream ss;
   ss << folder << "/" << target << "_generated_" << base << ".ptx" ;
   return ss.str() ;
+}
+
+
+aiNode* AOScene::searchNode(const char* query)
+{
+   aiNode* root = m_scene ? m_scene->mRootNode : NULL ;
+   if(!root)
+   {
+       printf("rootnode not defined \n");
+       return NULL ; 
+   }
+   aiNode* node = findNode(query, root, 0); 
+
+   dumpTree(node, 0 );
+
+   return node ; 
 }
 
 
@@ -84,6 +178,8 @@ optix::Program AOScene::createProgram(const char* filename, const char* fname )
 
 void AOScene::initScene( InitialCameraData& camera_data )
 {
+
+
   // set up path to ptx file associated with tutorial number
   std::stringstream ss;
   ss << "tutorial0.cu";
@@ -123,7 +219,7 @@ void AOScene::initScene( InitialCameraData& camera_data )
   camera_data = InitialCameraData( optix::make_float3( 7.0f, 9.2f, -6.0f ), // eye
                                    optix::make_float3( 0.0f, 4.0f,  0.0f ), // lookat
                                    optix::make_float3( 0.0f, 1.0f,  0.0f ), // up
-                                   60.0f );                          // vfov
+                                   50.0f );                          // vfov
 
   m_context["eye"]->setFloat( optix::make_float3( 0.0f, 0.0f, 0.0f ) );
   m_context["U"]->setFloat( optix::make_float3( 0.0f, 0.0f, 0.0f ) );
@@ -172,6 +268,7 @@ void AOScene::trace( const RayGenCameraData& camera_data )
 }
 
 
+
 void AOScene::initGeometry(optix::Context& context)
 {
     if(!m_intersectionProgram)
@@ -206,14 +303,22 @@ void AOScene::initGeometry(optix::Context& context)
     }
 
 
-    optix::Group root = convertNode(m_scene->mRootNode);
+
+    aiNode* node = searchNode(m_query); 
+    if(!node){
+        printf("failed to find node %s \n", m_query );
+        node = m_scene->mRootNode ;
+    } 
+
+
+    optix::Group top = convertNode(node);
 
     // double egging pudding  ?
     optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh"); 
-    root->setAcceleration( acceleration );
+    top->setAcceleration( acceleration );
     acceleration->markDirty();
 
-    m_context["top_object"]->set(root);
+    m_context["top_object"]->set(top);
 }
 
 void AOScene::Info()
@@ -248,21 +353,39 @@ void AOScene::dumpMaterial(aiMaterial* ai_material)
 
 optix::Group AOScene::convertNode(aiNode* node)
 {
+    aiString _name = node->mName;
+    const char* name = _name.C_Str(); 
+    //printf("AOScene::convertNode name %s #meshes %d #children %d \n", name, node->mNumMeshes, node->mNumChildren);
+
+
+    std::vector<optix::Group> groups;
+
     if(node->mNumMeshes > 0)
     {  
         // all node meshes into single geometry group of geometry instances
+
         optix::GeometryGroup gg = m_context->createGeometryGroup();
+
         gg->setChildCount(node->mNumMeshes);
+
         for(unsigned int i = 0; i < node->mNumMeshes; i++)
         {   
             unsigned int meshIndex = node->mMeshes[i];
+
             aiMesh* mesh = m_scene->mMeshes[meshIndex];
+
             unsigned int materialIndex = mesh->mMaterialIndex;
 
+            printf("AOScene::convertNode i %d meshIndex %d materialIndex %d \n", i, meshIndex, materialIndex );
+
             optix::Geometry geometry = m_geometries[meshIndex] ;
-            optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, m_materials.begin()+materialIndex , m_materials.begin() + materialIndex + 1  );
+
+            std::vector<optix::Material>::iterator mit = m_materials.begin()+materialIndex ;
+
+            optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, mit, mit+1  );
 
             gg->setChild(i, gi);
+
         }   
 
         {   
@@ -273,18 +396,21 @@ optix::Group AOScene::convertNode(aiNode* node)
             acceleration->markDirty();
         }   
 
+
+       
         optix::Group group = m_context->createGroup();
         group->setChildCount(1);
         group->setChild(0, gg);
-        {   
-            optix::Acceleration acceleration = m_context->createAcceleration("NoAccel", "NoAccel");
-            group->setAcceleration( acceleration );
-        }   
-        return group;
-    }   
-    else if(node->mNumChildren > 0)
+        optix::Acceleration acceleration = m_context->createAcceleration("NoAccel", "NoAccel");
+        group->setAcceleration( acceleration );
+
+        groups.push_back(group);
+    }
+
+
+
+    if(node->mNumChildren > 0)
     {
-        std::vector<optix::Group> groups;
         for(unsigned int i = 0; i < node->mNumChildren; i++)
         {
             aiNode* childNode = node->mChildren[i];
@@ -295,14 +421,18 @@ optix::Group AOScene::convertNode(aiNode* node)
             }
         }
 
-        if(groups.size() > 0)
-        {
-            optix::Group group = m_context->createGroup(groups.begin(), groups.end());
-            optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
-            group->setAcceleration( acceleration );
-            return group;
-        }
     }
+
+
+    if(groups.size() > 0)
+    {
+        optix::Group group = m_context->createGroup(groups.begin(), groups.end());
+        optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
+        group->setAcceleration( acceleration );
+        printf("return containing group from %lu groups \n", groups.size()); 
+        return group;
+    }
+    
 
     optix::Group empty = m_context->createGroup();
     optix::Acceleration acceleration = m_context->createAcceleration("NoAccel", "NoAccel");
@@ -321,7 +451,7 @@ optix::Material AOScene::convertMaterial(aiMaterial* ai_material)
     */
 
     optix::Material material = m_context->createMaterial();
-    const char* filename = "material0.cu" ; 
+    const char* filename = "material1.cu" ; 
     const char* fname = "closest_hit_radiance" ; 
     optix::Program  program = createProgram(filename, fname);
     material->setClosestHitProgram(0, program);
