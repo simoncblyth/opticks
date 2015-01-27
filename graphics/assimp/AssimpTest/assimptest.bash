@@ -63,3 +63,18 @@ assimptest--(){
   assimptest-run  $*
 }
 
+assimptest-out(){
+
+  local out=$(assimptest-bdir)/out.txt
+  if [ ! -f "$out" ]; then 
+      assimptest-run unnamed > $out
+  fi 
+
+  vi $out
+
+}
+
+
+
+
+

@@ -22,6 +22,32 @@ Written in C++, it is available under a liberal BSD license. There is a C API
 as well as bindings to various other languages, including C#/.net, Python and D. 
 
 
+RPATH kludge
+--------------
+
+Somehow executables have wrong path to libassimp::
+
+    delta:raytrace blyth$ otool -L AssimpGeometryTest 
+    AssimpGeometryTest:
+        /usr/local/env/graphics//libassimp.3.dylib (compatibility version 3.0.0, current version 3.1.1)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+    delta:raytrace blyth$ otool -L RayTrace
+    RayTrace:
+        /usr/local/env/cuda/OptiX_301/lib/libsutil.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/liboptix.1.dylib (compatibility version 1.0.0, current version 3.0.1)
+        /usr/local/env/graphics//libassimp.3.dylib (compatibility version 3.0.0, current version 3.1.1)
+        @rpath/libcudart.5.5.dylib (compatibility version 0.0.0, current version 5.5.28)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+
+
+So kludge it with a symbolic link::
+
+    delta:raytrace blyth$ cd /usr/local/env/graphics
+    delta:graphics blyth$ ln -s lib/libassimp.3.dylib 
+
+
 G4DAE extra handling
 ---------------------
 

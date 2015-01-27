@@ -57,30 +57,34 @@ raytrace-make(){
 
 
 
+raytrace-geo-bin(){ echo $(raytrace-bdir)/AssimpGeometryTest ; }
+
 raytrace-bin(){ echo $(raytrace-bdir)/$(raytrace-name) ; }
-raytrace-run-(){ cat << EOC
-  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib $(raytrace-bin) $*
-EOC
+
+raytrace-run(){ $LLDB $(raytrace-bin) $* ; }
+
+raytrace-dbg(){ LLDB=lldb raytrace-run $* ; }
+
+raytrace-export()
+{
+   export RAYTRACE_QUERY=__dd__Geometry__PMT__lvPmtHemi0xc133740
 }
-
-raytrace-run(){
-   $FUNCNAME- $*
-   $FUNCNAME- $* | sh 
-}
-
-
-
 
 raytrace--(){
   raytrace-make
-  raytrace-run $* 
+  raytrace-export 
+  raytrace-run $*
 }
 
-raytrace-dbg(){
-  raytrace-bcd
-  DYLD_LIBRARY_PATH=$(assimp-prefix)/lib lldb $(raytrace-bin)
+raytrace-pmt()
+{
+   export RAYTRACE_QUERY=__dd__Geometry__PMT__lvPmtHemi0xc133740
+   raytrace-run $*
 }
 
+raytrace-geo(){
+   $(raytrace-geo-bin) $* 
+}
 
 
 

@@ -1,32 +1,49 @@
 #include <stdlib.h>
 #include <libgen.h>
 #include <sstream>
-#include "AOScene.hh"
+
+#include "OptiXAssimpGeometry.hh"
+#include "OptiXProgram.hh"
+#include "OptiXScene.hh"
 
 int main(int argc, char* argv[])
 {
-    const char* query = ( argc > 1 ) ? argv[1] : "/" ; 
-
+    const char* query = getenv("RAYTRACE_QUERY");
+    if(!query) query = "__dd__Geometry__AD__lvOIL0xbf5e0b8" ;
     printf("argv0 %s query %s \n", argv[0], query );
 
     GLUTDisplay::init( argc, argv );
 
     unsigned int width = 1080u, height = 720u;
+
     const char* key = "DAE_NAME_DYB_NOEXTRA" ; 
     const char* path = getenv(key);
 
-    char* ptxdir = dirname(argv[0]);
-    const char* target = "RayTrace" ; 
-
     std::stringstream title;
-    title << "AOScene " << key ;
+    title << "RayTrace " << key ;
     try 
     {
-        AOScene scene(path, ptxdir, target, query );
+        OptiXScene scene;
+        optix::Context context = scene.getContext();
 
+        context->setRayTypeCount( 1 );
+        context->setEntryPointCount( 1 );
+        context->setStackSize( 4640 );
+
+        char* ptxdir = dirname(argv[0]);     // alongside the executable
+        OptiXProgram prog(ptxdir, "RayTrace");  // cmake target name
+        prog.setContext(context);
+
+        OptiXAssimpGeometry geom(path, query );
+        geom.import();
+
+        // must setContext and setProgram before convert 
+        geom.setContext(context);
+        geom.setProgram(&prog);
+        geom.convert(); 
+
+        scene.setProgram(&prog);
         scene.setDimensions( width, height );
-
-        scene.Info();
 
         printf("calling GLUTDisplay::run \n");
  

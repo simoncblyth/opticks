@@ -65,10 +65,30 @@ endfunction()
 
 add_optix_executable(${name} 
                      ${name}.cc 
-                     AOScene.cc
+                     OptiXProgram.cc
+                     AssimpGeometry.cc
+                     OptiXAssimpGeometry.cc
+                     OptiXScene.cc
                      tutorial0.cu
                      TriangleMesh.cu
                      material1.cu
 )
+
+
+
+
+
+add_executable( AssimpGeometryTest 
+                AssimpGeometryTest.cc
+                AssimpGeometry.cc
+)
+
+target_link_libraries( AssimpGeometryTest 
+                       ${Assimp_LIBRARIES} 
+                     )
+                        
+
+ 
+
 
 
