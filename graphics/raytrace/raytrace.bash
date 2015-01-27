@@ -78,12 +78,19 @@ raytrace--(){
 
 raytrace-pmt()
 {
-   export RAYTRACE_QUERY=__dd__Geometry__PMT__lvPmtHemi0xc133740
+   local q
+   q=__dd__Geometry__PMT__lvPmtHemi--pvPmtHemiVacuum0xc1340e8
+   #q=__dd__Geometry__PMT__lvPmtHemi0xc133740
+   #q=__dd__Geometry__PMT__lvPmtHemi
+
+   export RAYTRACE_QUERY=$q
    raytrace-run $*
 }
 
 raytrace-geo(){
-   $(raytrace-geo-bin) $* 
+  raytrace-make
+  raytrace-export 
+  $(raytrace-geo-bin) $* 
 }
 
 

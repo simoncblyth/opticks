@@ -34,13 +34,14 @@ int main(int argc, char* argv[])
         OptiXProgram prog(ptxdir, "RayTrace");  // cmake target name
         prog.setContext(context);
 
-        OptiXAssimpGeometry geom(path, query );
+        OptiXAssimpGeometry geom(path);
         geom.import();
+        //geom.select(query); 
 
         // must setContext and setProgram before convert 
         geom.setContext(context);
         geom.setProgram(&prog);
-        geom.convert(); 
+        geom.convert(query); 
 
         scene.setProgram(&prog);
         scene.setDimensions( width, height );

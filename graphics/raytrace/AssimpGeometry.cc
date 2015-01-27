@@ -1,5 +1,13 @@
 #include "AssimpGeometry.hh"
 
+/*
+   http://assimp.sourceforge.net/lib_html/data.html
+
+   http://www.tinysg.de/techGuides/tg7_assimpLoader.html
+
+
+*/
+
 #include <string.h>
 #include <stdlib.h>
 #include <sstream>
@@ -11,6 +19,9 @@
 
 
 static unsigned int findNode_index = 0 ; 
+
+
+
 
 aiNode* findNode(const char* query, aiNode* node, unsigned int depth )
 {
@@ -81,19 +92,51 @@ void dumpTree(aiNode* node, unsigned int depth)
 }
 
 
+void dumpMesh( aiMesh* mesh )
+{
+    unsigned int numFaces = mesh->mNumFaces;
+    unsigned int numVertices = mesh->mNumVertices;
+    for(unsigned int i=0 ; i < numVertices ; i++ )
+    {
+        aiVector3D& v = mesh->mVertices[i] ;
+        printf("i %d  xyz %10.3f %10.3f %10.3f \n", i, v.x, v.y, v.z ); 
+    }
+}
 
-AssimpGeometry::AssimpGeometry(const char* path, const char* query )
+
+
+
+
+
+
+void dumpMaterial( aiMaterial* material )
+{
+    aiString name;
+    material->Get(AI_MATKEY_NAME, name);
+    unsigned int numProperties = material->mNumProperties ;
+
+    for(unsigned int i = 0; i < material->mNumProperties; i++)
+    {
+        aiMaterialProperty* property = material->mProperties[i] ;
+        aiString key = property->mKey ; 
+        printf("key %s \n", key.C_Str());
+    }
+
+    printf("dumpMaterial props %2d %s \n", numProperties, name.C_Str());
+}
+
+
+
+AssimpGeometry::AssimpGeometry(const char* path)
           : 
           m_path(NULL),
-          m_query(NULL),
           m_importer(new Assimp::Importer()),
-          m_aiscene(NULL)
+          m_aiscene(NULL),
+          m_index(0)
 {
-    if(!path || !query) return ;          
-
-    printf("AssimpGeometry::AssimpGeometry ctor path %s query %s  \n", path, query );
+    if(!path) return ;          
+    printf("AssimpGeometry::AssimpGeometry ctor path %s  \n", path);
     m_path = strdup(path);
-    m_query = strdup(query);
 }
 
 AssimpGeometry::~AssimpGeometry()
@@ -101,7 +144,6 @@ AssimpGeometry::~AssimpGeometry()
     // deleting m_importer also deletes the scene (unconfirmed)
     delete m_importer;
     free(m_path);
-    free(m_query);
 }
 
 
@@ -138,14 +180,23 @@ void AssimpGeometry::import()
 }
 
 
-aiNode* AssimpGeometry::searchNode(const char* query)
+
+aiNode* AssimpGeometry::getRootNode()
 {
    aiNode* root = m_aiscene ? m_aiscene->mRootNode : NULL ;
+   return root ; 
+}
+
+
+aiNode* AssimpGeometry::searchNode(const char* query)
+{
+   aiNode* root = getRootNode();
    if(!root)
    {
        printf("rootnode not defined \n");
        return NULL ; 
    }
+
    aiNode* node = findNode(query, root, 0); 
 
    dumpTree(node, 0 );
@@ -154,19 +205,61 @@ aiNode* AssimpGeometry::searchNode(const char* query)
 }
 
 
-void AssimpGeometry::dumpMaterial(aiMaterial* ai_material)
+void AssimpGeometry::dump(aiMaterial* material)
 {
-    aiString name;
-    ai_material->Get(AI_MATKEY_NAME, name);
-    unsigned int numProperties = ai_material->mNumProperties ;
-    printf("Assimp::dumpMaterial props %2d %s \n", numProperties, name.C_Str());
+    dumpMaterial(material);
+}
 
-    for(unsigned int i = 0; i < ai_material->mNumProperties; i++)
+
+
+
+std::vector<aiNode*>& AssimpGeometry::getSelection()
+{
+    return m_selection ; 
+}
+
+unsigned int AssimpGeometry::select(const char* query)
+{
+    aiNode* root = m_aiscene ? m_aiscene->mRootNode : NULL ;
+    if(!root)
     {
-        aiMaterialProperty* property = ai_material->mProperties[i] ;
-        aiString key = property->mKey ; 
-        printf("key %s \n", key.C_Str());
+        printf("AssimpGeometry::select root node not defined \n");
+        return 0 ; 
     }
+
+
+    m_index = 0 ; 
+    m_selection.clear();
+
+    selectNodes(query, root, 0 );
+
+    printf("AssimpGeometry::select query %s matched %lu nodes \n", query, m_selection.size() ); 
+
+    return m_selection.size();
+}
+
+
+void AssimpGeometry::selectNodes(const char* query, aiNode* node, unsigned int depth )
+{
+
+   m_index++ ; 
+
+   const char* name = node->mName.C_Str(); 
+
+   if(strncmp(name,query,strlen(query)) == 0)
+   {
+      m_selection.push_back(node); 
+   }
+
+   for(unsigned int i = 0; i < node->mNumChildren; i++)
+   {   
+      selectNodes(query, node->mChildren[i], depth + 1 );
+   }   
+}
+
+void AssimpGeometry::dump(aiMesh* mesh)
+{
+   dumpMesh(mesh); 
 }
 
 

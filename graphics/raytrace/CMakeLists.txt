@@ -81,6 +81,9 @@ add_optix_executable(${name}
 add_executable( AssimpGeometryTest 
                 AssimpGeometryTest.cc
                 AssimpGeometry.cc
+                AssimpNode.cc
+                AssimpTree.cc
+                AssimpMesh.cc
 )
 
 target_link_libraries( AssimpGeometryTest 

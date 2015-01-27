@@ -11,11 +11,12 @@ namespace Assimp
     class Importer;
 }
 
+#include <vector>
 
 class AssimpGeometry 
 {
 public:
-    AssimpGeometry(const char* path, const char* query );
+    AssimpGeometry(const char* path);
 
     virtual ~AssimpGeometry();
 
@@ -23,24 +24,37 @@ public:
 
     void info();
 
+    aiNode* getRootNode();
+  
     aiNode* searchNode(const char* query);
 
-private:
+    std::vector<aiNode*>& getSelection();
 
-    void dumpMaterial(aiMaterial* ai_material);
+    unsigned int select(const char* query);
+
+    void selectNodes(const char* query, aiNode* node, unsigned int depth );
+
+public:
+
+    void dump(aiMaterial* material);
+
+    void dump(aiMesh* mesh);
 
 
 protected:
 
     const aiScene* m_aiscene;
 
-    char* m_query ; 
+    std::vector<aiNode*> m_selection ; 
+
+    unsigned int m_index ; 
 
 private:
 
     char* m_path ; 
 
     Assimp::Importer* m_importer;
+
 
 
 };

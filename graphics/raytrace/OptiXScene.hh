@@ -5,7 +5,7 @@
        /usr/local/env/cuda/optix/OppositeRenderer/OppositeRenderer/RenderEngine/scene/Scene.h 
 */
 
-#ifndef AOSCENE_H
+#ifndef OPTIXSCENE_H
 #define OPTIXSCENE_H
 
 #include <GLUTDisplay.h>

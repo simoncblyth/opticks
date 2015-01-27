@@ -14,9 +14,9 @@
 
 
 
-OptiXAssimpGeometry::OptiXAssimpGeometry(const char* path, const char* query )
+OptiXAssimpGeometry::OptiXAssimpGeometry(const char* path)
            : 
-           AssimpGeometry(path, query),
+           AssimpGeometry(path),
            m_context(NULL),
            m_program(NULL)
 {
@@ -40,7 +40,7 @@ void OptiXAssimpGeometry::setProgram(OptiXProgram* program)
 
 
 
-void OptiXAssimpGeometry::convert()
+void OptiXAssimpGeometry::convert(const char* query)
 {
     for(unsigned int i = 0; i < m_aiscene->mNumMaterials; i++)
     {
@@ -50,20 +50,28 @@ void OptiXAssimpGeometry::convert()
 
     for(unsigned int i = 0; i < m_aiscene->mNumMeshes; i++)
     {
+       // hmm probably convert after in world coordinates, not before ?
         optix::Geometry geometry = convertGeometry(m_aiscene->mMeshes[i]);
         m_geometries.push_back(geometry);
     }
 
 
+    unsigned int nai = select(query);
+    unsigned int ngi ; 
 
-    aiNode* node = searchNode(m_query); 
-    if(!node){
-        printf("failed to find node %s \n", m_query );
-        node = m_aiscene->mRootNode ;
+    if(nai == 0)
+    {
+        printf("query failed to find any nodes %s \n", query );
+        aiNode* root = m_aiscene->mRootNode ;
+        ngi = convertNode(root);  
+    } 
+    else
+    {
+        ngi = convertSelection();
     } 
 
-
-    optix::GeometryGroup top = convertNode(node);
+    printf("OptiXAssimpGeometry::convert  query %s finds %d nodes with %d gi \n", query, nai, ngi );
+    optix::GeometryGroup top = makeGeometryGroup();
 
     optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
     acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
@@ -97,6 +105,9 @@ optix::Material OptiXAssimpGeometry::convertMaterial(aiMaterial* ai_material)
 
 optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
 {
+
+    dump(mesh);
+
     unsigned int numFaces = mesh->mNumFaces;
     unsigned int numVertices = mesh->mNumVertices;
 
@@ -208,16 +219,43 @@ optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
 
 
 
-
-
-
-optix::GeometryGroup OptiXAssimpGeometry::convertNode(aiNode* node)
+unsigned int OptiXAssimpGeometry::convertSelection()
 {
-    //
-    // aiming for fig2:  single gg containing many gi 
-    //
+    // convert selection of aiNode into vector of gi 
+    m_gis.clear();
+
+    unsigned int mx ;
+    //mx = m_selection.size() ; 
+    mx = 1 ; 
+
+    for(unsigned int i=0 ; i < mx ; i++ )
+    {
+        aiNode* node = m_selection[i] ;
+        traverseNode(node);
+    } 
+
+    return m_selection.size();
+}
+
+
+unsigned int OptiXAssimpGeometry::convertNode(aiNode* node)
+{
+    // convert single aiNode into vector of gi 
+    m_gis.clear();
+
     traverseNode(node);
+
+    return m_selection.size();
+}
+
+
+
+optix::GeometryGroup OptiXAssimpGeometry::makeGeometryGroup()
+{
+    // fig2:  single gg containing many gi 
+
     optix::GeometryGroup gg = m_context->createGeometryGroup();
+
     gg->setChildCount(m_gis.size());
 
     for(unsigned int i=0 ; i <m_gis.size() ; i++)
@@ -227,6 +265,7 @@ optix::GeometryGroup OptiXAssimpGeometry::convertNode(aiNode* node)
 
     return gg ;
 }
+
 
 
 void OptiXAssimpGeometry::traverseNode(aiNode* node)

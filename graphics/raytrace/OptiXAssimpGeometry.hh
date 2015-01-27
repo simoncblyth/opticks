@@ -11,7 +11,7 @@ class OptiXProgram ;
 class OptiXAssimpGeometry  : public AssimpGeometry 
 {
 public:
-    OptiXAssimpGeometry(const char* path, const char* query );
+    OptiXAssimpGeometry(const char* path);
 
     virtual ~OptiXAssimpGeometry();
 
@@ -21,7 +21,7 @@ public:
 
     void setProgram(OptiXProgram* program);
 
-    void convert();
+    void convert(const char* query);
 
 private:
 
@@ -31,8 +31,11 @@ private:
 
     void traverseNode(aiNode* node);
 
-    optix::GeometryGroup convertNode(aiNode* node);
+    unsigned int convertNode(aiNode* node);
 
+    unsigned int convertSelection();
+
+    optix::GeometryGroup makeGeometryGroup();
 
 private:
 
