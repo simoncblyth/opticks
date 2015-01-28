@@ -13,6 +13,7 @@
 #include <optixu/optixu_math_namespace.h>
 
 class OptiXProgram ; 
+class OptiXAssimpGeometry ; 
 
 
 class OptiXScene  : public SampleScene 
@@ -24,6 +25,8 @@ public:
     optix::Context getContext();
 
     void setProgram(OptiXProgram* program);
+
+    void setGeometry(OptiXAssimpGeometry* geometry);
 
 public:
    // From SampleScene
@@ -45,6 +48,8 @@ private:
    unsigned int m_height ;
 
    OptiXProgram* m_program ;
+
+   OptiXAssimpGeometry* m_geometry ;
 
 };
 

@@ -15,6 +15,7 @@ namespace Assimp
     class Importer;
 }
 
+#include <assimp/types.h>
 #include <vector>
 
 class AssimpGeometry 
@@ -28,9 +29,17 @@ public:
 
     void info();
 
+    void dump();
+
     void traverse();
 
     AssimpNode* getRoot();
+
+public:
+    aiVector3D* getLow();
+    aiVector3D* getHigh();
+    aiVector3D* getCenter();
+    aiVector3D* getExtent();
 
 public:
 

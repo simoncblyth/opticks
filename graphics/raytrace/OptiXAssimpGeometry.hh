@@ -50,6 +50,12 @@ private:
 
     std::vector<optix::GeometryInstance> m_gis ;
 
+public:
+
+    optix::float3  getCenter();
+
+    optix::float3  getExtent();
+
 
 };
 

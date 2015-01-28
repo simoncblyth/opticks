@@ -1,7 +1,6 @@
 #include "AssimpNode.hh"
 #include "AssimpTree.hh"
 #include "AssimpCommon.hh"
-#include "AssimpMesh.hh"
 #include "assert.h"
 
 #include <assimp/scene.h>
@@ -12,7 +11,12 @@ AssimpNode::AssimpNode(aiNode* node, AssimpTree* tree)
    m_parent(NULL),
    m_tree(tree),
    m_raw(node),
-   m_index(0) 
+   m_index(0),
+   m_meshes(NULL),
+   m_numMeshes(0),
+   m_low(NULL),
+   m_high(NULL),
+   m_center(NULL)
 {
 }
 
@@ -36,9 +40,7 @@ void AssimpNode::setIndex(unsigned int index){
 void AssimpNode::setDepth(unsigned int depth){
     m_depth = depth ; 
 }
-void AssimpNode::setTransform(aiMatrix4x4 transform){
-    m_transform = transform ; 
-}
+
 void AssimpNode::addChild(AssimpNode* child)
 {
     m_children.push_back(child); 
@@ -66,6 +68,22 @@ AssimpNode* AssimpNode::getChild(unsigned int n){
 }
 
 
+
+
+void AssimpNode::traverse()
+{
+   summary("AssimpNode::traverse");
+   for(unsigned int i=0 ; i < getNumChildren() ; i++ ) getChild(i)->traverse(); 
+}
+
+void AssimpNode::summary(const char* msg)
+{
+    unsigned int nchild = getNumChildren();
+    unsigned int nmesh = getNumMeshes() ;
+    printf("%s index %5d depth %2d nchild %4d nmesh %d name %s  \n", msg, m_index, m_depth, nchild, nmesh, getName() );
+    bounds();
+}
+
 void AssimpNode::dump()
 {
     unsigned int nchild = getNumChildren();
@@ -74,34 +92,136 @@ void AssimpNode::dump()
 
     if(nchild > 8)
     {
-        printf("AssimpNode::dump index %5d depth %2d nchild %4d nprog %6d nmesh %d name %s  \n", m_index, m_depth, nchild, nprog, nmesh, getName() );
         for(unsigned int i = 0; i < nmesh ; i++)
         {   
+            unsigned int meshIndex = getMeshIndexRaw(i);
 
-            unsigned int meshIndex = m_raw->mMeshes[i];
-
-            aiMesh* mesh = getRawMesh(i);
+            aiMesh* rawmesh = getRawMesh(i);
 
             printf("AssimpNode::dump  i %d meshIndex %d \n", i, meshIndex);
 
-            dumpMesh(mesh);
+            dumpMesh(rawmesh);
 
-            // mesh in global coordinates
-            AssimpMesh* am = new AssimpMesh(mesh, m_transform);
-            dumpMesh(am->getRawMesh());
+            aiMesh* mesh = getMesh(i);
+
+            dumpMesh(mesh);
         }   
     }
 }
 
 
+void AssimpNode::bounds(const char* msg)
+{
+    if(m_center) printf("%s cen  %10.3f %10.3f %10.3f  \n", msg, m_center->x, m_center->y, m_center->z );
+    if(m_low)    printf("%s low  %10.3f %10.3f %10.3f  \n", msg, m_low->x, m_low->y, m_low->z );
+    if(m_high)   printf("%s high %10.3f %10.3f %10.3f \n",  msg, m_high->x, m_high->y, m_high->z );
+    if(m_low && m_high)
+               printf("%s diff %10.3f %10.3f %10.3f \n", msg, 
+                   m_high->x - m_low->x, 
+                   m_high->y - m_low->y, 
+                   m_high->z - m_low->z);
+}
+
+
+
+void AssimpNode::copyMeshes(aiMatrix4x4 transform)
+{
+     m_transform = transform ; 
+
+     m_numMeshes = m_raw->mNumMeshes ; 
+
+     m_meshes = new aiMesh*[m_numMeshes];   // array of pointers to meshes
+
+     aiVector3D  low( 1e10f, 1e10f, 1e10f);
+     aiVector3D high( -1e10f, -1e10f, -1e10f);
+
+     for(unsigned int i = 0; i < m_numMeshes ; i++)
+     {
+          aiMesh* src = getRawMesh(i);
+          m_meshes[i] = new aiMesh ; 
+          copyMesh(m_meshes[i], src, m_transform); 
+          meshBounds(m_meshes[i], low, high );
+     }
+
+     if(m_numMeshes > 0)
+     {
+         m_low  = new aiVector3D(low);
+         m_high = new aiVector3D(high);
+         m_center = new aiVector3D((high+low)/2.f);
+     }
+}
+
+
+void AssimpNode::updateBounds()
+{
+    aiVector3D  low( 1e10f, 1e10f, 1e10f);
+    aiVector3D high( -1e10f, -1e10f, -1e10f);
+
+    // containment and lv/pv alternation 
+    // should mean self and children is enough to always get some bounds ? 
+    //
+    updateBounds(low,high);
+
+    for(unsigned int i=0 ; i < getNumChildren() ; i++ ) getChild(i)->updateBounds(low, high); 
+
+    delete m_low ; 
+    m_low  = new aiVector3D(low);
+
+    delete m_high ;
+    m_high = new aiVector3D(high);
+
+    delete m_center ;
+    m_center = new aiVector3D((low + high)/2.f);
+
+}
+
+
+void AssimpNode::updateBounds(aiVector3D& low, aiVector3D& high)
+{
+    aiVector3D* nlow  = getLow();
+    aiVector3D* nhigh = getHigh();
+
+    if(m_low && m_high)
+    {
+        low.x = std::min( low.x, nlow->x);
+        low.y = std::min( low.y, nlow->y);
+        low.z = std::min( low.z, nlow->z);
+
+        high.x = std::max( high.x, nhigh->x);
+        high.y = std::max( high.y, nhigh->y);
+        high.z = std::max( high.z, nhigh->z);
+   } 
+}
+
+
+aiVector3D* AssimpNode::getLow()
+{
+    return m_low ; 
+}
+
+aiVector3D* AssimpNode::getHigh()
+{
+    return m_high ; 
+}
+
+aiVector3D* AssimpNode::getCenter()
+{
+    return m_center ; 
+}
+
 
 
 unsigned int AssimpNode::getNumMeshes()
 {
+    return m_numMeshes ; 
+}
+unsigned int AssimpNode::getNumMeshesRaw()
+{
     return m_raw->mNumMeshes ; 
 }
 
-unsigned int AssimpNode::getMeshIndex(unsigned int index)
+
+unsigned int AssimpNode::getMeshIndexRaw(unsigned int index)
 {
     // node index to "global" scene mesh index
     return m_raw->mMeshes[index];
@@ -109,21 +229,17 @@ unsigned int AssimpNode::getMeshIndex(unsigned int index)
 
 aiMesh* AssimpNode::getRawMesh(unsigned int index)
 {
-     unsigned int meshIndex = getMeshIndex(index);
-
+     unsigned int meshIndex = getMeshIndexRaw(index);
      aiMesh* mesh = m_tree->getRawMesh(meshIndex);
-
      return mesh ;
 }
 
-
-
-
-void AssimpNode::traverse()
+aiMesh* AssimpNode::getMesh(unsigned int index)
 {
-   dump();
-   for(unsigned int i=0 ; i < getNumChildren() ; i++ ) getChild(i)->traverse(); 
+    return index < m_numMeshes ? m_meshes[index] : NULL ;
 }
+
+
 
 void AssimpNode::ancestors()
 {

@@ -84,7 +84,9 @@ void AssimpGeometry::traverse()
 
 unsigned int AssimpGeometry::select(const char* query)
 {
-    return m_tree->select(query);
+    unsigned int n = m_tree->select(query);
+    dump();
+    return n ; 
 }
 
 AssimpNode* AssimpGeometry::getRoot()
@@ -101,6 +103,32 @@ AssimpNode* AssimpGeometry::getSelectedNode(unsigned int i)
 {
     return m_tree->getSelectedNode(i);
 }
+
+void AssimpGeometry::dump()
+{
+    m_tree->dump();
+}
+
+
+aiVector3D* AssimpGeometry::getLow()
+{
+    return m_tree->getLow();
+}
+aiVector3D* AssimpGeometry::getHigh()
+{
+    return m_tree->getHigh();
+}
+aiVector3D* AssimpGeometry::getCenter()
+{
+    return m_tree->getCenter();
+}
+aiVector3D* AssimpGeometry::getExtent()
+{
+    return m_tree->getExtent();
+}
+
+
+
 
 
 

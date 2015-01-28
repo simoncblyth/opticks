@@ -1,5 +1,6 @@
 #include "OptiXScene.hh"
 #include "OptiXProgram.hh"
+#include "OptiXAssimpGeometry.hh"
 
 #include <string.h>
 #include <stdlib.h>
@@ -14,7 +15,8 @@ OptiXScene::OptiXScene()
         SampleScene(),
         m_width(1080u),
         m_height(720u),
-        m_program(NULL)
+        m_program(NULL),
+        m_geometry(NULL)
 {
     printf("OptiXScene ctor\n");
 }
@@ -33,6 +35,12 @@ void OptiXScene::setProgram(OptiXProgram* program)
 {
     m_program = program ; 
 }
+
+void OptiXScene::setGeometry(OptiXAssimpGeometry* geometry)
+{
+    m_geometry = geometry ; 
+}
+
 
 void OptiXScene::setDimensions( const unsigned int w, const unsigned int h ) 
 { 
@@ -69,10 +77,18 @@ void OptiXScene::initScene( InitialCameraData& camera_data )
   
 
  // Set up camera
-  camera_data = InitialCameraData( optix::make_float3( 7.0f, 9.2f, -6.0f ), // eye
-                                   optix::make_float3( 0.0f, 4.0f,  0.0f ), // lookat
-                                   optix::make_float3( 0.0f, 1.0f,  0.0f ), // up
-                                   50.0f );                          // vfov
+
+  //optix::float3 eye  = optix::make_float3( 7.0f, 9.2f, -6.0f ) ;
+  //optix::float3 look = optix::make_float3( 0.0f, 4.0f,  0.0f ) ;
+
+  optix::float3 ext = m_geometry->getExtent();
+  optix::float3 look = m_geometry->getCenter();
+  optix::float3 eye =  look + ext ;
+
+  optix::float3 up   = optix::make_float3( 0.0f, 1.0f,  0.0f ) ; 
+
+
+  camera_data = InitialCameraData( eye , look, up, 50.0f );
 
   m_context["eye"]->setFloat( optix::make_float3( 0.0f, 0.0f, 0.0f ) );
   m_context["U"]->setFloat( optix::make_float3( 0.0f, 0.0f, 0.0f ) );

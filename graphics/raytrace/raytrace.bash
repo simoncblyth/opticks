@@ -67,7 +67,16 @@ raytrace-dbg(){ LLDB=lldb raytrace-run $* ; }
 
 raytrace-export()
 {
-   export RAYTRACE_QUERY=__dd__Geometry__PMT__lvPmtHemi0xc133740
+
+   local q
+   #q="name:__dd__Geometry__PMT__lvPmtHemi--pvPmtHemiVacuum0xc1340e8"
+   q="name:__dd__Geometry__PMT__lvPmtHemi0xc133740"
+   #q="name:__dd__Geometry__PMT__lvPmtHemi"
+   #q="index:2000"
+   #q="range:10000:10007"
+   #q="range:7995:8007"
+   q="range:7995:8007"
+   export RAYTRACE_QUERY=$q
 }
 
 raytrace--(){
@@ -78,20 +87,17 @@ raytrace--(){
 
 raytrace-pmt()
 {
-   local q
-   q=__dd__Geometry__PMT__lvPmtHemi--pvPmtHemiVacuum0xc1340e8
-   #q=__dd__Geometry__PMT__lvPmtHemi0xc133740
-   #q=__dd__Geometry__PMT__lvPmtHemi
-
-   export RAYTRACE_QUERY=$q
-   raytrace-run $*
+  raytrace-make
+  raytrace-export 
+  raytrace-run $*
 }
 
 raytrace-geo(){
   raytrace-make
   raytrace-export 
-  $(raytrace-geo-bin) $* 
+  $DEBUG $(raytrace-geo-bin) $* 
 }
 
-
-
+raytrace-geo-lldb(){
+  DEBUG=lldb raytrace-geo
+}

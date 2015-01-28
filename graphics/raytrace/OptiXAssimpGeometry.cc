@@ -49,13 +49,14 @@ void OptiXAssimpGeometry::convert(const char* query)
         m_materials.push_back(material);
     }
 
+   /*
     for(unsigned int i = 0; i < m_aiscene->mNumMeshes; i++)
     {
        // hmm probably convert after in world coordinates, not before ?
         optix::Geometry geometry = convertGeometry(m_aiscene->mMeshes[i]);
         m_geometries.push_back(geometry);
     }
-
+   */
 
     unsigned int nai = select(query);
     unsigned int ngi ; 
@@ -273,17 +274,18 @@ void OptiXAssimpGeometry::traverseNode(AssimpNode* node)
 
     for(unsigned int i = 0; i < node->getNumMeshes(); i++)
     {   
-        unsigned int meshIndex = node->getMeshIndex(i);
+        unsigned int meshIndex = node->getMeshIndexRaw(i);
 
-        aiMesh* mesh = node->getRawMesh(i);
+        aiMesh* mesh = node->getMesh(i);
 
-        optix::Geometry geometry = m_geometries[meshIndex] ; // on the way out 
+        //optix::Geometry geometry = m_geometries[meshIndex] ; // on the way out 
+        optix::Geometry geometry = convertGeometry(mesh) ;  // NB this is positioned geometry 
 
         unsigned int materialIndex = mesh->mMaterialIndex;
 
         std::vector<optix::Material>::iterator mit = m_materials.begin()+materialIndex ;
 
-        printf("OptiXAssimpGeometry::traverseNode i %d meshIndex %d materialIndex %d \n", i, meshIndex, materialIndex );
+        //printf("OptiXAssimpGeometry::traverseNode i %d meshIndex %d materialIndex %d \n", i, meshIndex, materialIndex );
 
         optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, mit, mit+1  );
 
@@ -295,6 +297,20 @@ void OptiXAssimpGeometry::traverseNode(AssimpNode* node)
         traverseNode(node->getChild(i));
     }
 
+}
+
+
+
+optix::float3  OptiXAssimpGeometry::getCenter()
+{
+    aiVector3D* p = AssimpGeometry::getCenter();
+    return optix::make_float3(p->x, p->y, p->z); 
+}
+
+optix::float3  OptiXAssimpGeometry::getExtent()
+{
+    aiVector3D* p = AssimpGeometry::getExtent();
+    return optix::make_float3(p->x, p->y, p->z); 
 }
 
 

@@ -36,7 +36,6 @@ int main(int argc, char* argv[])
 
         OptiXAssimpGeometry geom(path);
         geom.import();
-        //geom.select(query); 
 
         // must setContext and setProgram before convert 
         geom.setContext(context);
@@ -45,6 +44,7 @@ int main(int argc, char* argv[])
 
         scene.setProgram(&prog);
         scene.setDimensions( width, height );
+        scene.setGeometry(&geom);
 
         printf("calling GLUTDisplay::run \n");
  

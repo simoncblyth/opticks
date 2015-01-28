@@ -22,17 +22,6 @@ void dumpNode(aiNode* node, unsigned int depth){
    printf("d %2d m %3d c %3d n %s \n", depth, NumMeshes, NumChildren, name); 
 }
 
-void dumpMesh( aiMesh* mesh ){
-    unsigned int numFaces = mesh->mNumFaces;
-    unsigned int numVertices = mesh->mNumVertices;
-    for(unsigned int i=0 ; i < numVertices ; i++ )
-    {
-        aiVector3D& v = mesh->mVertices[i] ;
-        if( i == 0 || i == numVertices - 1) 
-        printf("i %4d  xyz %10.3f %10.3f %10.3f \n", i, v.x, v.y, v.z ); 
-    }
-}
-
 void dumpMaterial( aiMaterial* material )
 {
     aiString name;
@@ -58,7 +47,118 @@ void dumpTransform(aiMatrix4x4 t)
 
 
 
+void dumpMesh( aiMesh* mesh ){
+
+    printf("dumpMesh mat %d f %d v %d pt %d hp %d hf %d hn %d htb %d hb %d nuv %d ncc %d \n", 
+         mesh->mMaterialIndex, 
+         mesh->mNumFaces, 
+         mesh->mNumVertices, 
+         mesh->mPrimitiveTypes,
+         mesh->HasPositions(),
+         mesh->HasFaces(),
+         mesh->HasNormals(),
+         mesh->HasTangentsAndBitangents(),
+         mesh->HasBones(),
+         mesh->GetNumUVChannels(),
+         mesh->GetNumColorChannels()
+     );
+
+    for(unsigned int i=0 ; i < mesh->mNumVertices ; i++ )
+    {
+        aiVector3D& v = mesh->mVertices[i] ;
+        if( i == 0 || i == mesh->mNumVertices - 1) 
+        printf("i %4d  xyz %10.3f %10.3f %10.3f \n", i, v.x, v.y, v.z ); 
+    }
+
+    meshBounds(mesh);
+}
 
 
+
+
+
+void copyMesh(aiMesh* dst, aiMesh* src, const aiMatrix4x4& mat )
+{
+   // TODO: COMPLETE THE COPY 
+   //
+   //  /usr/local/env/graphics/assimp/assimp-3.1.1/code/PretransformVertices.cpp
+   //  /usr/local/env/graphics/assimp/assimp-3.1.1/code/ColladaLoader.cpp
+
+   dst->mMaterialIndex = src->mMaterialIndex ;
+   dst->mPrimitiveTypes = src->mPrimitiveTypes ;
+
+   if (src->HasPositions()) 
+   {
+       dst->mNumVertices    = src->mNumVertices ;
+       dst->mVertices = new aiVector3D[src->mNumVertices];
+       for (unsigned int i = 0; i < src->mNumVertices; ++i) {
+            dst->mVertices[i] = mat * src->mVertices[i];
+       }   
+   }   
+  
+   if (src->HasFaces()) 
+   {
+       dst->mNumFaces = src->mNumFaces ;
+       dst->mFaces = new aiFace[src->mNumFaces];
+
+       for (unsigned int i = 0; i < src->mNumFaces; ++i) {
+           dst->mFaces[i] = src->mFaces[i] ;
+       }
+   }
+
+
+   if (src->HasNormals() || src->HasTangentsAndBitangents()) 
+   {
+       aiMatrix4x4 mWorldIT = mat;
+       mWorldIT.Inverse().Transpose();
+
+       aiMatrix3x3 m = aiMatrix3x3(mWorldIT);
+
+       if (src->HasNormals()) 
+       {
+		   dst->mNormals = new aiVector3D[src->mNumVertices];
+           for (unsigned int i = 0; i < src->mNumVertices; ++i) {
+               dst->mNormals[i] = (m * src->mNormals[i]).Normalize();
+           }
+       }
+
+       if (src->HasTangentsAndBitangents()) 
+       {
+		   dst->mTangents = new aiVector3D[src->mNumVertices];
+		   dst->mBitangents = new aiVector3D[src->mNumVertices];
+           for (unsigned int i = 0; i < src->mNumVertices; ++i) {
+               dst->mTangents[i]   = (m * src->mTangents[i]).Normalize();
+               dst->mBitangents[i] = (m * src->mBitangents[i]).Normalize();
+           }
+       }
+   }
+}
+
+
+void meshBounds( aiMesh* mesh )
+{
+    aiVector3D  low( 1e10f, 1e10f, 1e10f);
+    aiVector3D high( -1e10f, -1e10f, -1e10f);
+    meshBounds(mesh, low, high );
+    printf("meshBounds low %10.3f %10.3f %10.3f   high %10.3f %10.3f %10.3f \n", low.x, low.y, low.z, high.x, high.y, high.z );
+}
+
+
+void meshBounds( aiMesh* mesh, aiVector3D& low, aiVector3D& high )
+{
+    for( unsigned int i = 0; i < mesh->mNumVertices ;++i )
+    {    
+        aiVector3D v = mesh->mVertices[i];
+
+        low.x = std::min( low.x, v.x);
+        low.y = std::min( low.y, v.y);
+        low.z = std::min( low.z, v.z);
+
+        high.x = std::max( high.x, v.x);
+        high.y = std::max( high.y, v.y);
+        high.z = std::max( high.z, v.z);
+        //printf("meshBounds low %10.3f %10.3f %10.3f   high %10.3f %10.3f %10.3f \n", low.x, low.y, low.z, high.x, high.y, high.z );
+    }
+}
 
 

@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 
     AssimpGeometry geom(path);
     geom.import();
-    geom.traverse();
+    //geom.traverse();
 
     geom.select(query);
 
