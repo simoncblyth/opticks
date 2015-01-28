@@ -16,7 +16,7 @@ private:
     void copy(aiMesh* mesh, const aiMatrix4x4& transform);
 
 public:
-    aiMesh* getMesh();
+    aiMesh* getRawMesh();
 
 private:
 

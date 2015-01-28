@@ -41,7 +41,7 @@ void AssimpMesh::copy(aiMesh* mesh, const aiMatrix4x4& mat )
 }
 
 
-aiMesh* AssimpMesh::getMesh()
+aiMesh* AssimpMesh::getRawMesh()
 {
    return m_mesh ;  
 }

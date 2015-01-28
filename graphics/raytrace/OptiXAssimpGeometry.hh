@@ -5,6 +5,7 @@
 #include <optixu/optixu_math_namespace.h>
 
 class OptiXProgram ; 
+class AssimpNode ; 
 
 #include "AssimpGeometry.hh"
 
@@ -29,9 +30,9 @@ private:
 
     optix::Geometry convertGeometry(aiMesh* mesh);
 
-    void traverseNode(aiNode* node);
+    void traverseNode(AssimpNode* node);
 
-    unsigned int convertNode(aiNode* node);
+    unsigned int convertNode(AssimpNode* node);
 
     unsigned int convertSelection();
 

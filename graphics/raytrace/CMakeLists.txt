@@ -67,6 +67,10 @@ add_optix_executable(${name}
                      ${name}.cc 
                      OptiXProgram.cc
                      AssimpGeometry.cc
+                     AssimpCommon.cc
+                     AssimpNode.cc
+                     AssimpTree.cc
+                     AssimpMesh.cc
                      OptiXAssimpGeometry.cc
                      OptiXScene.cc
                      tutorial0.cu
@@ -76,14 +80,14 @@ add_optix_executable(${name}
 
 
 
-
-
 add_executable( AssimpGeometryTest 
                 AssimpGeometryTest.cc
                 AssimpGeometry.cc
+                AssimpCommon.cc
                 AssimpNode.cc
                 AssimpTree.cc
                 AssimpMesh.cc
+
 )
 
 target_link_libraries( AssimpGeometryTest 

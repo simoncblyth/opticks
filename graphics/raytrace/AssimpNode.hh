@@ -4,13 +4,15 @@
 #include <vector>
 #include <assimp/types.h>
 
+class AssimpTree ; 
 struct aiNode ; 
+struct aiMesh ; 
 
 class AssimpNode {
       friend class AssimpTree ; 
 
   public:
-      AssimpNode(aiNode* node);
+      AssimpNode(aiNode* node, AssimpTree* tree);
       virtual ~AssimpNode();
 
   public:
@@ -20,7 +22,7 @@ class AssimpNode {
       void setParent(AssimpNode* parent);
       void setTransform(aiMatrix4x4 transform);
       void addChild(AssimpNode* child);
-      void traverse(AssimpNode* node=NULL);
+      void traverse();
       void dump();
 
   public:
@@ -31,6 +33,15 @@ class AssimpNode {
       unsigned int getDepth();
       aiMatrix4x4 getTransform();
 
+      const char* getName();
+      void ancestors(); 
+      unsigned int progeny(); 
+
+  public:
+      unsigned int getNumMeshes();
+      unsigned int getMeshIndex(unsigned int index);
+      aiMesh* getRawMesh(unsigned int index);
+
   protected: 
       aiNode* getRawNode();
 
@@ -39,9 +50,11 @@ class AssimpNode {
 
       unsigned int m_depth ; 
 
-      aiNode* m_rawnode ; 
+      aiNode* m_raw ; 
 
       aiMatrix4x4 m_transform ; 
+
+      AssimpTree* m_tree ; 
 
       AssimpNode* m_parent ; 
 

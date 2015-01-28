@@ -1,6 +1,10 @@
 #ifndef ASSIMPGEOMETRY_H
 #define ASSIMPGEOMETRY_H
 
+
+class AssimpTree ; 
+class AssimpNode ; 
+
 struct aiScene;
 struct aiMesh;
 struct aiNode;
@@ -24,28 +28,21 @@ public:
 
     void info();
 
-    aiNode* getRootNode();
-  
-    aiNode* searchNode(const char* query);
+    void traverse();
 
-    std::vector<aiNode*>& getSelection();
-
-    unsigned int select(const char* query);
-
-    void selectNodes(const char* query, aiNode* node, unsigned int depth );
+    AssimpNode* getRoot();
 
 public:
 
-    void dump(aiMaterial* material);
+    unsigned int select(const char* query);
 
-    void dump(aiMesh* mesh);
+    unsigned int getNumSelected();
 
+    AssimpNode* getSelectedNode(unsigned int i);
 
 protected:
 
     const aiScene* m_aiscene;
-
-    std::vector<aiNode*> m_selection ; 
 
     unsigned int m_index ; 
 
@@ -55,9 +52,11 @@ private:
 
     Assimp::Importer* m_importer;
 
+    AssimpTree* m_tree ; 
 
 
 };
+
 
 
 #endif

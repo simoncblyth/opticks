@@ -18,15 +18,10 @@ int main(int argc, char* argv[])
 
     AssimpGeometry geom(path);
     geom.import();
+    geom.traverse();
+
     geom.select(query);
 
-
-    AssimpTree tree(geom.getRootNode());
-
-
-    AssimpNode* root = tree.getRoot(); 
-    printf("root %p \n", root );
-    root->traverse(root);
 
     return 0 ; 
 }

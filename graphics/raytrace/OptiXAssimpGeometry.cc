@@ -1,4 +1,5 @@
 #include "OptiXAssimpGeometry.hh"
+#include "AssimpNode.hh"
 #include "OptiXProgram.hh"
 
 #include <string.h>
@@ -62,7 +63,7 @@ void OptiXAssimpGeometry::convert(const char* query)
     if(nai == 0)
     {
         printf("query failed to find any nodes %s \n", query );
-        aiNode* root = m_aiscene->mRootNode ;
+        AssimpNode* root = getRoot() ;
         ngi = convertNode(root);  
     } 
     else
@@ -105,9 +106,6 @@ optix::Material OptiXAssimpGeometry::convertMaterial(aiMaterial* ai_material)
 
 optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
 {
-
-    dump(mesh);
-
     unsigned int numFaces = mesh->mNumFaces;
     unsigned int numVertices = mesh->mNumVertices;
 
@@ -224,28 +222,26 @@ unsigned int OptiXAssimpGeometry::convertSelection()
     // convert selection of aiNode into vector of gi 
     m_gis.clear();
 
-    unsigned int mx ;
-    //mx = m_selection.size() ; 
-    mx = 1 ; 
+    unsigned int NumSelected = getNumSelected();
 
-    for(unsigned int i=0 ; i < mx ; i++ )
+    for(unsigned int i=0 ; i < NumSelected ; i++ )
     {
-        aiNode* node = m_selection[i] ;
+        AssimpNode* node = getSelectedNode(i) ;
         traverseNode(node);
     } 
 
-    return m_selection.size();
+    return m_gis.size();
 }
 
 
-unsigned int OptiXAssimpGeometry::convertNode(aiNode* node)
+unsigned int OptiXAssimpGeometry::convertNode(AssimpNode* node)
 {
     // convert single aiNode into vector of gi 
     m_gis.clear();
 
     traverseNode(node);
 
-    return m_selection.size();
+    return m_gis.size();
 }
 
 
@@ -268,21 +264,20 @@ optix::GeometryGroup OptiXAssimpGeometry::makeGeometryGroup()
 
 
 
-void OptiXAssimpGeometry::traverseNode(aiNode* node)
+void OptiXAssimpGeometry::traverseNode(AssimpNode* node)
 {
-    aiString _name = node->mName;
-    const char* name = _name.C_Str(); 
+    const char* name = node->getName(); 
 
     //printf("OptiXAssimpGeometry::traverseNode name %s #meshes %d #children %d \n", name, node->mNumMeshes, node->mNumChildren);
 
 
-    for(unsigned int i = 0; i < node->mNumMeshes; i++)
+    for(unsigned int i = 0; i < node->getNumMeshes(); i++)
     {   
-        unsigned int meshIndex = node->mMeshes[i];
+        unsigned int meshIndex = node->getMeshIndex(i);
 
-        optix::Geometry geometry = m_geometries[meshIndex] ;
+        aiMesh* mesh = node->getRawMesh(i);
 
-        aiMesh* mesh = m_aiscene->mMeshes[meshIndex];
+        optix::Geometry geometry = m_geometries[meshIndex] ; // on the way out 
 
         unsigned int materialIndex = mesh->mMaterialIndex;
 
@@ -295,9 +290,9 @@ void OptiXAssimpGeometry::traverseNode(aiNode* node)
         m_gis.push_back(gi);
     }   
 
-    for(unsigned int i = 0; i < node->mNumChildren; i++)
+    for(unsigned int i = 0; i < node->getNumChildren(); i++)
     {
-        traverseNode(node->mChildren[i]);
+        traverseNode(node->getChild(i));
     }
 
 }

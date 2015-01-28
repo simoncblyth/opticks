@@ -1,4 +1,7 @@
 #include "AssimpGeometry.hh"
+#include "AssimpCommon.hh"
+#include "AssimpTree.hh"
+#include "AssimpNode.hh"
 
 /*
    http://assimp.sourceforge.net/lib_html/data.html
@@ -13,125 +16,16 @@
 #include <sstream>
 
 #include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/material.h>
-#include <assimp/postprocess.h>
-
-
-static unsigned int findNode_index = 0 ; 
-
-
-
-
-aiNode* findNode(const char* query, aiNode* node, unsigned int depth )
-{
-   if(depth == 0) findNode_index = 0 ; 
-
-   //dumpNode(node, depth); 
-
-   findNode_index++ ; 
-
-   const char* name = node->mName.C_Str(); 
-
-   if(strncmp(name,query,strlen(query)) == 0) return node;
-
-   for(unsigned int i = 0; i < node->mNumChildren; i++)
-   {   
-      aiNode* n = findNode(query, node->mChildren[i], depth + 1 );
-      if(n) return n ; 
-   }   
-   return NULL ; 
-}
-
-
-void dumpNode(aiNode* node, unsigned int depth)
-{
-   if(!node)
-   {   
-      printf("dumpNode NULL \n");
-      return ; 
-   }   
-
-   unsigned int NumMeshes = node->mNumMeshes ;
-   unsigned int NumChildren = node->mNumChildren ;
-   const char* name = node->mName.C_Str(); 
-   printf("i %5d d %2d m %3d c %3d n %s \n", findNode_index, depth, NumMeshes, NumChildren, name); 
-
-   /*  
-   if(findNode_index > 0 )
-   {
-       // other than first, even node index have 1 mesh and odd have 0
-       assert( (findNode_index + 1) % 2 == NumMeshes );
-
-       // the odd zeros, always have children 
-       if(NumMeshes == 0) assert(NumChildren > 0 ); 
-   }
-   */
-}
-
-
-void dumpTree(aiNode* node, unsigned int depth)
-{
-
-   if(!node)
-   {
-      printf("dumpTree NULL \n");
-      return ;
-   }
-
-   if(depth == 0) findNode_index = 0 ;
-
-   dumpNode(node, depth);
-
-   findNode_index++ ;
-
-   for(unsigned int i = 0; i < node->mNumChildren; i++)
-   {
-       dumpTree(node->mChildren[i], depth + 1);
-   }
-}
-
-
-void dumpMesh( aiMesh* mesh )
-{
-    unsigned int numFaces = mesh->mNumFaces;
-    unsigned int numVertices = mesh->mNumVertices;
-    for(unsigned int i=0 ; i < numVertices ; i++ )
-    {
-        aiVector3D& v = mesh->mVertices[i] ;
-        printf("i %d  xyz %10.3f %10.3f %10.3f \n", i, v.x, v.y, v.z ); 
-    }
-}
-
-
-
-
-
-
-
-void dumpMaterial( aiMaterial* material )
-{
-    aiString name;
-    material->Get(AI_MATKEY_NAME, name);
-    unsigned int numProperties = material->mNumProperties ;
-
-    for(unsigned int i = 0; i < material->mNumProperties; i++)
-    {
-        aiMaterialProperty* property = material->mProperties[i] ;
-        aiString key = property->mKey ; 
-        printf("key %s \n", key.C_Str());
-    }
-
-    printf("dumpMaterial props %2d %s \n", numProperties, name.C_Str());
-}
-
-
 
 AssimpGeometry::AssimpGeometry(const char* path)
           : 
           m_path(NULL),
           m_importer(new Assimp::Importer()),
           m_aiscene(NULL),
+          m_tree(NULL),
           m_index(0)
 {
     if(!path) return ;          
@@ -173,94 +67,43 @@ void AssimpGeometry::import()
 
     if(!m_aiscene)
     {   
-        printf("import error : %s \n", m_importer->GetErrorString() );  
+        printf("AssimpGeometry::import ERROR : %s \n", m_importer->GetErrorString() );  
     }   
 
     info();
+
+    m_tree = new AssimpTree(m_aiscene);
 }
 
 
 
-aiNode* AssimpGeometry::getRootNode()
+void AssimpGeometry::traverse()
 {
-   aiNode* root = m_aiscene ? m_aiscene->mRootNode : NULL ;
-   return root ; 
-}
-
-
-aiNode* AssimpGeometry::searchNode(const char* query)
-{
-   aiNode* root = getRootNode();
-   if(!root)
-   {
-       printf("rootnode not defined \n");
-       return NULL ; 
-   }
-
-   aiNode* node = findNode(query, root, 0); 
-
-   dumpTree(node, 0 );
-
-   return node ; 
-}
-
-
-void AssimpGeometry::dump(aiMaterial* material)
-{
-    dumpMaterial(material);
-}
-
-
-
-
-std::vector<aiNode*>& AssimpGeometry::getSelection()
-{
-    return m_selection ; 
+    m_tree->traverse();
 }
 
 unsigned int AssimpGeometry::select(const char* query)
 {
-    aiNode* root = m_aiscene ? m_aiscene->mRootNode : NULL ;
-    if(!root)
-    {
-        printf("AssimpGeometry::select root node not defined \n");
-        return 0 ; 
-    }
-
-
-    m_index = 0 ; 
-    m_selection.clear();
-
-    selectNodes(query, root, 0 );
-
-    printf("AssimpGeometry::select query %s matched %lu nodes \n", query, m_selection.size() ); 
-
-    return m_selection.size();
+    return m_tree->select(query);
 }
 
-
-void AssimpGeometry::selectNodes(const char* query, aiNode* node, unsigned int depth )
+AssimpNode* AssimpGeometry::getRoot()
 {
-
-   m_index++ ; 
-
-   const char* name = node->mName.C_Str(); 
-
-   if(strncmp(name,query,strlen(query)) == 0)
-   {
-      m_selection.push_back(node); 
-   }
-
-   for(unsigned int i = 0; i < node->mNumChildren; i++)
-   {   
-      selectNodes(query, node->mChildren[i], depth + 1 );
-   }   
+    return m_tree->getRoot();
 }
 
-void AssimpGeometry::dump(aiMesh* mesh)
+unsigned int AssimpGeometry::getNumSelected()
 {
-   dumpMesh(mesh); 
+    return m_tree->getNumSelected();
 }
+
+AssimpNode* AssimpGeometry::getSelectedNode(unsigned int i)
+{
+    return m_tree->getSelectedNode(i);
+}
+
+
+
 
 
 
