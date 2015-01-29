@@ -6,18 +6,27 @@
 #include <assimp/scene.h>
 
 
-AssimpNode::AssimpNode(aiNode* node, AssimpTree* tree) 
+AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree) 
    : 
    m_parent(NULL),
    m_tree(tree),
-   m_raw(node),
+   m_nodepath(nodepath),
+   m_raw(nodepath.back()),
    m_index(0),
+   m_digest(0),
+   m_pdigest(0),
    m_meshes(NULL),
    m_numMeshes(0),
    m_low(NULL),
    m_high(NULL),
    m_center(NULL)
 {
+
+   unsigned int leafdepth = nodepath.size() ;
+   m_digest = hash(0, leafdepth);
+   if( leafdepth > 2 ) m_pdigest = hash(0,leafdepth-2);
+
+   setDepth(leafdepth);
 }
 
 AssimpNode::~AssimpNode()
@@ -25,8 +34,30 @@ AssimpNode::~AssimpNode()
 }
 
 aiNode* AssimpNode::getRawNode(){
-   return m_raw ; 
+   return m_nodepath.back() ; 
 }
+
+
+std::size_t AssimpNode::hash(unsigned int pyfirst, unsigned int pylast)
+{
+    unsigned int size = m_nodepath.size() ;
+    //printf("AssimpNode::hash pyfirst %u pylast %u size %u \n", pyfirst, pylast, size); 
+    assert(pyfirst <= size); 
+    assert(pylast  <= size);
+
+    std::size_t h = 0;
+    for(unsigned int i=pyfirst ; i < pylast ; ++i )
+    {  
+        aiNode* node = m_nodepath[i] ;
+        std::size_t inode = (std::size_t)node ; 
+        // come up with a more standard hashing 
+
+        h ^= inode + 0x9e3779b9 + ( h  << 6) + (h >> 2);
+    }
+    return h ;
+}
+
+
 const char* AssimpNode::getName() {
     return m_raw->mName.C_Str();
 }
@@ -80,8 +111,8 @@ void AssimpNode::summary(const char* msg)
 {
     unsigned int nchild = getNumChildren();
     unsigned int nmesh = getNumMeshes() ;
-    printf("%s index %5d depth %2d nchild %4d nmesh %d name %s  \n", msg, m_index, m_depth, nchild, nmesh, getName() );
-    bounds();
+    printf("%s index %5d depth %2d nchild %4d nmesh %d digest %20zu pdigest %20zu name %s  \n", msg, m_index, m_depth, nchild, nmesh, m_digest, m_pdigest, getName() );
+    //bounds();
 }
 
 void AssimpNode::dump()

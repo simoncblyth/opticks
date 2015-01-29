@@ -50,9 +50,14 @@ raytrace-cmake(){
 raytrace-make(){
    local iwd=$PWD
    raytrace-bcd
+   local rc
+
    make $*
+   rc=$?
 
    cd $iwd
+   [ $rc -ne 0 ] && echo $FUNCNAME ERROR && return 1 
+   return 0
 }
 
 
@@ -94,6 +99,8 @@ raytrace-pmt()
 
 raytrace-geo(){
   raytrace-make
+  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
+
   raytrace-export 
   $DEBUG $(raytrace-geo-bin) $* 
 }

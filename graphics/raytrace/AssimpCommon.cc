@@ -3,6 +3,18 @@
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
+#include <sstream>
+
+
+
+void split( std::vector<std::string>& elem, const char* line, char delim )
+{
+    if(line == NULL) return ; 
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, delim)) elem.push_back(s);
+}
+
 
 aiNode* findNode(const char* query, aiNode* node, unsigned int depth ){
    const char* name = node->mName.C_Str(); 
@@ -14,12 +26,31 @@ aiNode* findNode(const char* query, aiNode* node, unsigned int depth ){
    return NULL ; 
 }
 
-void dumpNode(aiNode* node, unsigned int depth){
-   if(!node) return ;
+bool selectNode( aiNode* node, unsigned int depth, unsigned int index )
+{
+   if(!node) return false ;
+   unsigned int NumMeshes = node->mNumMeshes ;
+   unsigned int NumChildren = node->mNumChildren ;
+
+   //if(NumMeshes > 1)                       //      0 with m>1 : all nodes have 0 or 1 meshes
+   //if(NumMeshes == 0 && NumChildren == 1)   //  12231 pv m:0 c:1 
+   //if(NumChildren == 0 && NumMeshes == 1)   //   9996 lv m:1 c:0  leaves 
+   //if(NumMeshes == 1)                       //  12230 lv m:1 
+   //if(NumChildren == 0)                     //   9996 lv c:0    leaves  (all of which have 1 mesh)   
+   //if(node->mTransformation.IsIdentity() && NumChildren == 0 && NumMeshes == 1) // 9996 lv c:0 m:1    leaves has identity transform
+
+   if(index < 10) return true ; 
+   return false ; 
+}
+
+
+void dumpNode(const char* msg, aiNode* node, unsigned int depth, unsigned int index){
+   assert(node);
    unsigned int NumMeshes = node->mNumMeshes ;
    unsigned int NumChildren = node->mNumChildren ;
    const char* name = node->mName.C_Str(); 
-   printf("d %2d m %3d c %3d n %s \n", depth, NumMeshes, NumChildren, name); 
+   printf("%s i %5d d %2d m %3d c %3d n %s \n", msg, index, depth, NumMeshes, NumChildren, name); 
+   //dumpTransform(node->mTransformation);
 }
 
 void dumpMaterial( aiMaterial* material )

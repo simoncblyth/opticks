@@ -12,7 +12,7 @@ class AssimpNode {
       friend class AssimpTree ; 
 
   public:
-      AssimpNode(aiNode* node, AssimpTree* tree);
+      AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree);
       virtual ~AssimpNode();
 
   public:
@@ -55,6 +55,8 @@ class AssimpNode {
       aiMesh* getRawMesh(unsigned int index);
       aiMesh* getMesh(unsigned int index);
 
+      std::size_t hash(unsigned int pyfirst, unsigned int pylast);
+
   protected: 
       aiNode* getRawNode();
 
@@ -64,6 +66,12 @@ class AssimpNode {
       unsigned int m_depth ; 
 
       aiNode* m_raw ; 
+
+      std::vector<aiNode*> m_nodepath ; 
+
+      std::size_t m_digest ;
+
+      std::size_t m_pdigest ;
 
       aiMesh** m_meshes; 
 

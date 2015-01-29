@@ -1,5 +1,6 @@
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
+#include "AssimpCommon.hh"
 #include <stdio.h>
 #include <assimp/scene.h>
 
@@ -8,25 +9,126 @@ AssimpTree::AssimpTree(const aiScene* scene)
   m_scene(scene),
   m_root(NULL),
   m_index(0),
+  m_raw_index(0),
+  m_wrap_index(0),
+  m_dump(0),
   m_low(NULL),
   m_high(NULL),
   m_center(NULL),
   m_extent(NULL),
   m_query(NULL)
 {
-   aiNode* top = scene->mRootNode ; 
+   
+   /*
+   aiNode* top = m_scene->mRootNode ; 
    m_root = new AssimpNode(top, this);
    m_root->setIndex(0);
 
    aiMatrix4x4 identity ; 
    wrap( m_root, 0, identity);
    printf("AssimpTree::AssimpTree created tree of %d AssimpNode \n", m_index );
+   */
+
+
+   //traverseRaw();
+   traverseWrap();
 }
 
 AssimpTree::~AssimpTree()
 {
 }
 
+
+
+//////////  raw tree traversal attempting to match pycollada/g4daenode.py addressing ///////
+
+void AssimpTree::traverseRaw(const char* msg)
+{
+   printf("%s\n", msg);
+
+   m_raw_index = 0 ;
+
+   m_dump = 0 ;
+
+   std::vector<aiNode*> ancestors ;
+
+   traverseRaw(m_scene->mRootNode, ancestors );
+
+   printf("%s raw_index %d dump %d \n", msg, m_raw_index, m_dump );
+}
+
+void AssimpTree::traverseRaw(aiNode* raw, std::vector<aiNode*> ancestors)
+{
+   if(raw->mNumMeshes > 0) visitRaw(raw, ancestors );        // all nodes have 0 or 1 meshes for G4DAE Collada 
+
+   ancestors.push_back(raw);
+
+   for(unsigned int i = 0; i < raw->mNumChildren; i++)
+   { 
+       traverseRaw(raw->mChildren[i], ancestors ); 
+   }
+}
+
+void AssimpTree::visitRaw(aiNode* raw, std::vector<aiNode*> ancestors )
+{
+   unsigned int depth = ancestors.size();
+
+   if(selectNode(raw, depth, m_raw_index))
+   {
+       for(unsigned int a=0 ; a < ancestors.size() ; a++)
+       dumpNode("AssimpTree::v-ancest", ancestors[a], a    , m_raw_index) ;
+       dumpNode("AssimpTree::visitRaw", raw         , depth, m_raw_index) ;
+       m_dump++ ;
+   }
+   m_raw_index++;
+}
+
+//////////////////////////////////////////////////////////////////
+
+void AssimpTree::traverseWrap(const char* msg)
+{
+   printf("%s\n", msg);
+   m_wrap_index = 0 ;
+   m_dump = 0 ;
+
+   std::vector<aiNode*> ancestors ;
+   traverseWrap(m_scene->mRootNode, ancestors);
+
+   printf("%s wrap_index %d dump %d \n", msg, m_wrap_index, m_dump );
+}
+
+void AssimpTree::traverseWrap(aiNode* node, std::vector<aiNode*> ancestors)
+{
+   //
+   // every node of the tree needs its own nodepath vector
+   // this is used to establish a digest for each node, and 
+   // a pdigest for the parent 
+   //
+   std::vector<aiNode*> nodepath = ancestors ; 
+   nodepath.push_back(node) ; 
+
+   if(node->mNumMeshes > 0)
+   {
+       AssimpNode* wrap = new AssimpNode(nodepath, this) ;       
+
+       wrap->setIndex(m_wrap_index);
+
+       if(m_wrap_index == 0) setRoot(wrap);
+
+       if(m_wrap_index < 10)
+       wrap->summary("AssimpTree::traverseWrap");
+
+       m_wrap_index++;
+   }
+
+   for(unsigned int i = 0; i < node->mNumChildren; i++)
+   { 
+       traverseWrap(node->mChildren[i], nodepath); 
+   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////
 
 aiMesh* AssimpTree::getRawMesh(unsigned int meshIndex )
 {
@@ -39,12 +141,18 @@ AssimpNode* AssimpTree::getRoot()
    return m_root ; 
 }
 
+void AssimpTree::setRoot(AssimpNode* root)
+{
+   m_root = root ;
+}
+
 void AssimpTree::traverse()
 {
    m_root->traverse();
 }
 
 
+/*
 void AssimpTree::wrap(AssimpNode* node, unsigned int depth, aiMatrix4x4 accTransform)
 {
    // wrapping the tree
@@ -76,9 +184,8 @@ void AssimpTree::wrap(AssimpNode* node, unsigned int depth, aiMatrix4x4 accTrans
 
    // includes bounds of immediate children, to handle 0 mesh levels
    node->updateBounds();
-
 }
-
+*/
 
 
 
@@ -89,7 +196,7 @@ void AssimpTree::dumpSelection()
    for(unsigned int i = 0 ; i < n ; i++)
    {
         AssimpNode* node = getSelectedNode(i);
-        //node->bounds("AssimpTree::dumpSelection");
+        node->bounds("AssimpTree::dumpSelection");
    } 
 }
 
@@ -248,26 +355,25 @@ void AssimpTree::selectNodes(const char* query, AssimpNode* node, unsigned int d
    }
    else if(strncmp(query,range_token, strlen(range_token)) == 0)
    {
-       char* q_range = strdup(query+strlen(range_token));
-       char* q_delim = strchr(q_range, ':' );
-       char* q_right = q_delim + 1  ;
-       char* q_left  = q_range ; 
-       q_delim = '\0' ; 
 
-       int q_index_left  = atoi(q_left);
-       int q_index_right = atoi(q_right);
+       std::vector<std::string> elem ; 
+       split(elem, query+strlen(range_token), ':'); 
 
-       free(q_range);
-
-       if( index >= q_index_left && index < q_index_right )
+       int* ie = new int[elem.size()];
+       for(int i=0 ; i<elem.size() ; ++i) ie[i] = atoi(elem[i].c_str()) ;
+       
+       if(elem.size() == 2)
        {
-           m_selection.push_back(node); 
+           if( index >= ie[0] && index < ie[1] )
+           {
+               m_selection.push_back(node); 
+           }
        }
-     
-
-
+       else
+       {
+           printf("AssimpTree::selectNodes unexpected range query %s \n", query );
+       }
    } 
-
 
    for(unsigned int i = 0; i < node->getNumChildren(); i++) 
    {   
@@ -277,14 +383,6 @@ void AssimpTree::selectNodes(const char* query, AssimpNode* node, unsigned int d
 
 
 
-
-
-
-AssimpNode* AssimpTree::searchNode(const char* query)
-{
-    // non-uniqueness of node names makes this a bit useless anyhow
-    return NULL ; 
-}
 
 
 

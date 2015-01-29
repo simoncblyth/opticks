@@ -5,6 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/*
+   comparing with pycollada
+
+      g4daenode.sh -i --daepath dyb_noextra
+
+
+*/
+
 int main(int argc, char* argv[])
 {
     const char* query = getenv("RAYTRACE_QUERY");
