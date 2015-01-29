@@ -24,7 +24,6 @@ class AssimpNode {
       void dump();
 
   public: 
-      aiMatrix4x4 getGlobalTransformRaw();
       aiMatrix4x4 getGlobalTransform();
 
   public:

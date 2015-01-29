@@ -12,7 +12,7 @@
 
 OptiXScene::OptiXScene()
         : 
-        SampleScene(),
+        MeshScene( false, false, false ),
         m_width(1080u),
         m_height(720u),
         m_program(NULL),
@@ -78,15 +78,10 @@ void OptiXScene::initScene( InitialCameraData& camera_data )
 
  // Set up camera
 
-  //optix::float3 eye  = optix::make_float3( 7.0f, 9.2f, -6.0f ) ;
-  //optix::float3 look = optix::make_float3( 0.0f, 4.0f,  0.0f ) ;
-
   optix::float3 ext = m_geometry->getExtent();
   optix::float3 look = m_geometry->getCenter();
+  optix::float3 up = m_geometry->getUp();
   optix::float3 eye =  look + ext ;
-
-  optix::float3 up   = optix::make_float3( 0.0f, 1.0f,  0.0f ) ; 
-
 
   camera_data = InitialCameraData( eye , look, up, 50.0f );
 

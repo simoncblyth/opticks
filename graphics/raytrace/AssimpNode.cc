@@ -4,7 +4,6 @@
 #include "assert.h"
 
 #include <assimp/scene.h>
-#include <deque>
 
 AssimpNode::~AssimpNode()
 {
@@ -36,7 +35,7 @@ AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree)
 
 
 
-aiMatrix4x4 AssimpNode::getGlobalTransformRaw()
+aiMatrix4x4 AssimpNode::getGlobalTransform()
 {
     // applies all transforms from the raw tree
     aiMatrix4x4 transform ;
@@ -47,29 +46,6 @@ aiMatrix4x4 AssimpNode::getGlobalTransformRaw()
     }
     return transform ; 
 }
-
-aiMatrix4x4 AssimpNode::getGlobalTransform()
-{
-    // hmm this one giving identity ???
-    //  its skipping the non-mesh nodes
-
-    AssimpNode* node = this ; 
-    std::deque<AssimpNode*> nodes ;
-    while( node )
-    {
-        nodes.push_front(node);
-        node = node->getParent(); 
-    }
-
-    aiMatrix4x4 transform ;
-    for(unsigned int i=0 ; i < nodes.size() ; ++i )
-    {  
-        AssimpNode* node = nodes[i] ;
-        transform = node->getRawNode()->mTransformation * transform ; 
-    }
-    return transform ; 
-}
-
 
 
 

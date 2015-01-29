@@ -126,6 +126,11 @@ aiVector3D* AssimpGeometry::getExtent()
 {
     return m_tree->getExtent();
 }
+aiVector3D* AssimpGeometry::getUp()
+{
+    return m_tree->getUp();
+}
+
 
 
 

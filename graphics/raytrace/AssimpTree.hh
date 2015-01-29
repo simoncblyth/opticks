@@ -40,12 +40,13 @@ public:
     aiVector3D* getHigh();
     aiVector3D* getCenter();
     aiVector3D* getExtent();
+    aiVector3D* getUp();
 
     void findBounds();
     void findBounds(AssimpNode* node, aiVector3D& low, aiVector3D& high );
 
 public:
-    // examination of raw tree
+    // debug traverse of raw tree
     void traverseRaw(const char* msg="AssimpTree::traverseRaw");
     void traverseRaw(aiNode* raw, std::vector<aiNode*> ancestors);
     void visitRaw(aiNode* raw, std::vector<aiNode*> ancestors);
@@ -54,10 +55,7 @@ public:
     // wrapping raw tree matching pycollada/g4daenode 
     void traverseWrap(const char* msg="AssimpTree::traverseWrap");
     void traverseWrap(aiNode* node, std::vector<aiNode*> ancestors);
-
-private:
-   // initial wrap attempt 
-   //void wrap(AssimpNode* node, unsigned int depth, aiMatrix4x4 transform);
+    void visitWrap(std::vector<aiNode*> nodepath);
 
 private:
     void selectNodes(const char* query, AssimpNode* node, unsigned int depth);
@@ -65,16 +63,6 @@ private:
 
 
 private:
-
-   std::vector<AssimpNode*> m_selection ; 
-
-   unsigned int m_index ; 
-
-   unsigned int m_raw_index ; 
-
-   unsigned int m_wrap_index ; 
-
-   unsigned int m_dump ; 
 
    const aiScene* m_scene ;  
 
@@ -84,6 +72,20 @@ private:
 
    char* m_query ; 
 
+   std::vector<AssimpNode*> m_selection ; 
+
+private:
+
+   unsigned int m_index ; 
+
+   unsigned int m_raw_index ; 
+
+   unsigned int m_wrap_index ; 
+
+   unsigned int m_dump ; 
+
+private:
+
    aiVector3D* m_low ; 
 
    aiVector3D* m_high ; 
@@ -91,6 +93,8 @@ private:
    aiVector3D* m_center ; 
 
    aiVector3D* m_extent ; 
+
+   aiVector3D* m_up ; 
 
 
 };

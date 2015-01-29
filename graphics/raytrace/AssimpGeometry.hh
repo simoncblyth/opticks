@@ -40,6 +40,7 @@ public:
     aiVector3D* getHigh();
     aiVector3D* getCenter();
     aiVector3D* getExtent();
+    aiVector3D* getUp();
 
 public:
 

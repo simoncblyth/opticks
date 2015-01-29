@@ -284,7 +284,7 @@ How to load COLLADA into OptiX ?
 
 * nvidia Scenix looks abandoned
 
-* plumped for assimp following example of oppr- example, see assimp- assimptest-
+* plumped for assimp following example of oppr- example, see assimp- assimptest- raytrace--
 
 * oppr- converts ASSIMP imported mesh into OptiX geometry::
 
@@ -422,6 +422,7 @@ optix-fold(){    echo /Developer ; }
 optix-dir(){     echo $(optix-fold)/OptiX/SDK ; }
 optix-sdk-dir(){ echo $(optix-fold)/OptiX/SDK ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
+optix-idir(){ echo $(dirname $(optix-sdk-dir))/include ; }
 optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
 optix-sdir(){ echo $(env-home)/cuda/optix/$(optix-name) ; }
 optix-samples-install-dir(){ echo $(optix-bdir) ; }
@@ -429,6 +430,7 @@ optix-samples-install-dir(){ echo $(optix-bdir) ; }
 optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-bdir); }
 optix-scd(){ cd $(optix-sdir); }
+optix-icd(){ cd $(optix-idir); }
 
 
 

@@ -63,12 +63,12 @@ raytrace-make(){
 
 
 raytrace-geo-bin(){ echo $(raytrace-bdir)/AssimpGeometryTest ; }
-
+raytrace-view-bin(){ echo $(raytrace-bdir)/MeshViewer ; }
 raytrace-bin(){ echo $(raytrace-bdir)/$(raytrace-name) ; }
 
 raytrace-run(){ $LLDB $(raytrace-bin) $* ; }
-
 raytrace-dbg(){ LLDB=lldb raytrace-run $* ; }
+
 
 raytrace-export()
 {
@@ -91,13 +91,6 @@ raytrace--(){
   raytrace-run $*
 }
 
-raytrace-pmt()
-{
-  raytrace-make
-  raytrace-export 
-  raytrace-run $*
-}
-
 raytrace-geo(){
   raytrace-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
@@ -105,6 +98,18 @@ raytrace-geo(){
   raytrace-export 
   $DEBUG $(raytrace-geo-bin) $* 
 }
+
+raytrace-view(){
+  raytrace-make
+  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
+
+  raytrace-export 
+  $DEBUG $(raytrace-view-bin) $* 
+}
+
+
+
+
 
 raytrace-geo-lldb(){
   DEBUG=lldb raytrace-geo

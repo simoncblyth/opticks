@@ -73,15 +73,21 @@ void OptiXAssimpGeometry::convert(const char* query)
     } 
 
     printf("OptiXAssimpGeometry::convert  query %s finds %d nodes with %d gi \n", query, nai, ngi );
-    optix::GeometryGroup top = makeGeometryGroup();
 
+    populateGeometryGroup();
+}
+
+void OptiXAssimpGeometry::setupAcceleration()
+{
     optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
     acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
     acceleration->setProperty( "index_buffer_name", "indexBuffer" );
-    top->setAcceleration( acceleration );
+
+    m_geometry_group->setAcceleration( acceleration );
+
     acceleration->markDirty();
 
-    m_context["top_object"]->set(top);
+    m_context["top_object"]->set(m_geometry_group);
 }
 
 
@@ -246,21 +252,25 @@ unsigned int OptiXAssimpGeometry::convertNode(AssimpNode* node)
 }
 
 
+optix::GeometryGroup OptiXAssimpGeometry::getGeometryGroup()
+{
+    return m_geometry_group ; 
+}
+void OptiXAssimpGeometry::setGeometryGroup(optix::GeometryGroup gg)
+{
+    m_geometry_group = gg ; 
+}
 
-optix::GeometryGroup OptiXAssimpGeometry::makeGeometryGroup()
+void OptiXAssimpGeometry::populateGeometryGroup()
 {
     // fig2:  single gg containing many gi 
 
-    optix::GeometryGroup gg = m_context->createGeometryGroup();
-
-    gg->setChildCount(m_gis.size());
+    m_geometry_group->setChildCount(m_gis.size());
 
     for(unsigned int i=0 ; i <m_gis.size() ; i++)
     {
-        gg->setChild(i, m_gis[i]);
+        m_geometry_group->setChild(i, m_gis[i]);
     }
-
-    return gg ;
 }
 
 
@@ -315,5 +325,31 @@ optix::float3  OptiXAssimpGeometry::getExtent()
     aiVector3D* p = AssimpGeometry::getExtent();
     return optix::make_float3(p->x, p->y, p->z); 
 }
+
+optix::float3 OptiXAssimpGeometry::getUp()
+{
+    aiVector3D* p = AssimpGeometry::getUp();
+    return optix::make_float3(p->x, p->y, p->z); 
+}
+
+optix::float3 OptiXAssimpGeometry::getMin()
+{
+    aiVector3D* p = AssimpGeometry::getLow();
+    return optix::make_float3(p->x, p->y, p->z); 
+}
+
+optix::float3 OptiXAssimpGeometry::getMax()
+{
+    aiVector3D* p = AssimpGeometry::getHigh();
+    return optix::make_float3(p->x, p->y, p->z); 
+}
+
+optix::Aabb OptiXAssimpGeometry::getAabb()
+{
+    return optix::Aabb(getMin(), getMax()); 
+}
+
+
+
 
 

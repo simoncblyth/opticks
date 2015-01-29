@@ -9,6 +9,9 @@
 #define OPTIXSCENE_H
 
 #include <GLUTDisplay.h>
+#include <sutil.h>
+#include <MeshScene.h>
+
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
 
@@ -16,7 +19,8 @@ class OptiXProgram ;
 class OptiXAssimpGeometry ; 
 
 
-class OptiXScene  : public SampleScene 
+//class OptiXScene  : public SampleScene 
+class OptiXScene  : public MeshScene 
 {
 public:
     OptiXScene();

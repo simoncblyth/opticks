@@ -56,6 +56,7 @@ function(add_optix_executable target_name)
     target_link_libraries( ${target_name} 
                            ${SUTIL_LIBRARY}
                            optix
+                           optixu
                            ${Assimp_LIBRARIES} 
                          )
 
@@ -78,7 +79,22 @@ add_optix_executable(${name}
                      material1.cu
 )
 
+add_optix_executable( MeshViewer
+                      MeshViewer.cpp
+                      OptiXProgram.cc
+                      AssimpGeometry.cc
+                      AssimpCommon.cc
+                      AssimpNode.cc
+                      AssimpTree.cc
+                      AssimpRegistry.cc
+                      OptiXAssimpGeometry.cc
+                      G4DAELoader.cc
+                      material1.cu
+                      TriangleMesh.cu
+)
 
+
+# non-optix geometry checking 
 
 add_executable( AssimpGeometryTest 
                 AssimpGeometryTest.cc
@@ -95,7 +111,8 @@ target_link_libraries( AssimpGeometryTest
                      )
                         
 
- 
 
+
+ 
 
 

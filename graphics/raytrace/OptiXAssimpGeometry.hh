@@ -3,6 +3,7 @@
 
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
+#include <optixu/optixu_aabb_namespace.h>
 
 class OptiXProgram ; 
 class AssimpNode ; 
@@ -24,6 +25,13 @@ public:
 
     void convert(const char* query);
 
+    void setupAcceleration();
+
+    void setGeometryGroup(optix::GeometryGroup gg);
+
+    optix::GeometryGroup getGeometryGroup();
+
+
 private:
 
     optix::Material convertMaterial(aiMaterial* ai_material);
@@ -36,13 +44,16 @@ private:
 
     unsigned int convertSelection();
 
-    optix::GeometryGroup makeGeometryGroup();
+    void populateGeometryGroup();
+
 
 private:
 
     OptiXProgram* m_program ; 
 
     optix::Context m_context ;
+
+    optix::GeometryGroup m_geometry_group ; 
 
     std::vector<optix::Material> m_materials;
 
@@ -52,10 +63,17 @@ private:
 
 public:
 
+    optix::float3  getMin();
+
+    optix::float3  getMax();
+
     optix::float3  getCenter();
 
     optix::float3  getExtent();
 
+    optix::float3  getUp();
+
+    optix::Aabb getAabb();
 
 };
 

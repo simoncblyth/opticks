@@ -18,6 +18,7 @@ AssimpTree::AssimpTree(const aiScene* scene)
   m_high(NULL),
   m_center(NULL),
   m_extent(NULL),
+  m_up(NULL),
   m_query(NULL)
 {
    
@@ -71,57 +72,53 @@ void AssimpTree::traverseWrap(aiNode* node, std::vector<aiNode*> ancestors)
    // this is used to establish a digest for each node, and 
    // a pdigest for the parent 
    //
+   // NB the nodepath is complete, ie agnostic regarding visit criteria
 
    std::vector<aiNode*> nodepath = ancestors ; 
    nodepath.push_back(node) ; 
 
    if(node->mNumMeshes > 0)
    {
-       AssimpNode* wrap = new AssimpNode(nodepath, this) ;       
-
-       wrap->setIndex(m_wrap_index);
-
-       if(m_wrap_index == 0) setRoot(wrap);
-
-       m_registry->add(wrap);
-
-       // hookup relationships via digest matching 
-       AssimpNode* parent = m_registry->lookup(wrap->getParentDigest());
-
-       if(parent)
-       {
-           wrap->setParent(parent);
-           parent->addChild(wrap);
-       }
-
-       aiMatrix4x4 transform = wrap->getGlobalTransformRaw() ; 
-       wrap->copyMeshes(transform);
-
-       // mesh handling must be after parent hookup, as need the transform
-       //aiMatrix4x4 transform2 = wrap->getGlobalTransform() ; 
-       //assert(transform2.IsIdentity());  AssimpNode parents skip the non-mesh raw nodes giving identity
-
-
-       
-       if(0)
-       { 
-           if(parent) parent->summary("AssimpTree::traW--parent");
-           wrap->summary("AssimpTree::traverseWrap");
-           dumpTransform("AssimpTree::traverseWrap transform", transform);
-           //dumpTransform("AssimpTree::traverseWrap transform2", transform2);
-       }
-
-
-
-
-
-       m_wrap_index++;
+       visitWrap(nodepath);
    }
 
    for(unsigned int i = 0; i < node->mNumChildren; i++)
    { 
        traverseWrap(node->mChildren[i], nodepath); 
    }
+}
+
+
+void AssimpTree::visitWrap(std::vector<aiNode*> nodepath)
+{
+   AssimpNode* wrap = new AssimpNode(nodepath, this) ;       
+
+   wrap->setIndex(m_wrap_index);
+
+   if(m_wrap_index == 0) setRoot(wrap);
+
+   m_registry->add(wrap);
+
+   // hookup relationships via digest matching 
+   AssimpNode* parent = m_registry->lookup(wrap->getParentDigest());
+
+   if(parent)
+   {
+       wrap->setParent(parent);
+       parent->addChild(wrap);
+   }
+
+   aiMatrix4x4 transform = wrap->getGlobalTransform() ; 
+   wrap->copyMeshes(transform);
+
+   if(0)
+   { 
+       if(parent) parent->summary("AssimpTree::traW--parent");
+       wrap->summary("AssimpTree::traverseWrap");
+       dumpTransform("AssimpTree::traverseWrap transform", transform);
+   }
+
+   m_wrap_index++;
 }
 
 
@@ -195,41 +192,6 @@ void AssimpTree::traverse()
 }
 
 
-/*
-void AssimpTree::wrap(AssimpNode* node, unsigned int depth, aiMatrix4x4 accTransform)
-{
-   // wrapping the tree
-   //
-   // accTransform     : accumulated transforms from parentage
-   // raw->mTransform  : this node relative to parent 
-   // transform        : this node global transform 
-   //
-
-   aiNode* raw = node->getRawNode(); 
-   aiMatrix4x4 transform = raw->mTransformation * accTransform ;
-
-   node->setIndex(m_index);
-   node->setDepth(depth);
-   node->copyMeshes(transform);
-
-   m_index++ ; 
-
-
-   for(unsigned int i = 0; i < raw->mNumChildren; i++) 
-   {
-       AssimpNode* child = new AssimpNode(raw->mChildren[i], this);
-
-       child->setParent(node);
-       node->addChild(child);
-
-       wrap(child, depth + 1, transform);
-   }
-
-   // includes bounds of immediate children, to handle 0 mesh levels
-   node->updateBounds();
-}
-*/
-
 
 
 void AssimpTree::dumpSelection()
@@ -242,7 +204,6 @@ void AssimpTree::dumpSelection()
         node->bounds("AssimpTree::dumpSelection");
    } 
 }
-
 
 
 unsigned int AssimpTree::getNumSelected()
@@ -258,6 +219,7 @@ AssimpNode* AssimpTree::getSelectedNode(unsigned int i)
 
 void AssimpTree::findBounds()
 {
+    aiVector3D  up( 0.f, 1.f, 0.f);
     aiVector3D  low( 1e10f, 1e10f, 1e10f);
     aiVector3D high( -1e10f, -1e10f, -1e10f);
 
@@ -282,6 +244,9 @@ void AssimpTree::findBounds()
 
       delete m_extent ;
       m_extent = new aiVector3D(high-low);
+
+      delete m_up ;
+      m_up = new aiVector3D(up);
 
    }
 }
@@ -365,6 +330,11 @@ aiVector3D* AssimpTree::getExtent()
 {
     return m_extent ; 
 }
+aiVector3D* AssimpTree::getUp()
+{
+    return m_up ; 
+}
+
 
 
 
