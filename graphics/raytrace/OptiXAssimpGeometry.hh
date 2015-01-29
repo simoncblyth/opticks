@@ -30,7 +30,7 @@ private:
 
     optix::Geometry convertGeometry(aiMesh* mesh);
 
-    void traverseNode(AssimpNode* node);
+    void traverseNode(AssimpNode* node, unsigned int depth);
 
     unsigned int convertNode(AssimpNode* node);
 

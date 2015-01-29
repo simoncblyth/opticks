@@ -5,6 +5,7 @@
 #include <vector>
 
 class AssimpNode ; 
+class AssimpRegistry ; 
 struct aiScene ; 
 struct aiMesh ; 
 struct aiNode ; 
@@ -78,6 +79,8 @@ private:
    const aiScene* m_scene ;  
 
    AssimpNode* m_root ;  
+
+   AssimpRegistry* m_registry ;  
 
    char* m_query ; 
 

@@ -4,7 +4,11 @@
 #include "assert.h"
 
 #include <assimp/scene.h>
+#include <deque>
 
+AssimpNode::~AssimpNode()
+{
+}
 
 AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree) 
    : 
@@ -19,7 +23,8 @@ AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree)
    m_numMeshes(0),
    m_low(NULL),
    m_high(NULL),
-   m_center(NULL)
+   m_center(NULL),
+   m_extent(NULL)
 {
 
    unsigned int leafdepth = nodepath.size() ;
@@ -29,14 +34,56 @@ AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree)
    setDepth(leafdepth);
 }
 
-AssimpNode::~AssimpNode()
+
+
+aiMatrix4x4 AssimpNode::getGlobalTransformRaw()
 {
+    // applies all transforms from the raw tree
+    aiMatrix4x4 transform ;
+    for(unsigned int i=0 ; i < m_nodepath.size() ; ++i )
+    {  
+        aiNode* node = m_nodepath[i] ;
+        transform *= node->mTransformation ; 
+    }
+    return transform ; 
 }
 
+aiMatrix4x4 AssimpNode::getGlobalTransform()
+{
+    // hmm this one giving identity ???
+    //  its skipping the non-mesh nodes
+
+    AssimpNode* node = this ; 
+    std::deque<AssimpNode*> nodes ;
+    while( node )
+    {
+        nodes.push_front(node);
+        node = node->getParent(); 
+    }
+
+    aiMatrix4x4 transform ;
+    for(unsigned int i=0 ; i < nodes.size() ; ++i )
+    {  
+        AssimpNode* node = nodes[i] ;
+        transform = node->getRawNode()->mTransformation * transform ; 
+    }
+    return transform ; 
+}
+
+
+
+
+std::size_t AssimpNode::getDigest()
+{
+   return m_digest ;
+}
+std::size_t AssimpNode::getParentDigest()
+{
+   return m_pdigest ;
+}
 aiNode* AssimpNode::getRawNode(){
-   return m_nodepath.back() ; 
+   return m_raw ; 
 }
-
 
 std::size_t AssimpNode::hash(unsigned int pyfirst, unsigned int pylast)
 {
@@ -51,7 +98,6 @@ std::size_t AssimpNode::hash(unsigned int pyfirst, unsigned int pylast)
         aiNode* node = m_nodepath[i] ;
         std::size_t inode = (std::size_t)node ; 
         // come up with a more standard hashing 
-
         h ^= inode + 0x9e3779b9 + ( h  << 6) + (h >> 2);
     }
     return h ;
@@ -112,7 +158,10 @@ void AssimpNode::summary(const char* msg)
     unsigned int nchild = getNumChildren();
     unsigned int nmesh = getNumMeshes() ;
     printf("%s index %5d depth %2d nchild %4d nmesh %d digest %20zu pdigest %20zu name %s  \n", msg, m_index, m_depth, nchild, nmesh, m_digest, m_pdigest, getName() );
-    //bounds();
+    bounds();
+
+
+
 }
 
 void AssimpNode::dump()
@@ -146,11 +195,7 @@ void AssimpNode::bounds(const char* msg)
     if(m_center) printf("%s cen  %10.3f %10.3f %10.3f  \n", msg, m_center->x, m_center->y, m_center->z );
     if(m_low)    printf("%s low  %10.3f %10.3f %10.3f  \n", msg, m_low->x, m_low->y, m_low->z );
     if(m_high)   printf("%s high %10.3f %10.3f %10.3f \n",  msg, m_high->x, m_high->y, m_high->z );
-    if(m_low && m_high)
-               printf("%s diff %10.3f %10.3f %10.3f \n", msg, 
-                   m_high->x - m_low->x, 
-                   m_high->y - m_low->y, 
-                   m_high->z - m_low->z);
+    if(m_extent) printf("%s ext %10.3f %10.3f %10.3f \n", msg, m_extent->x, m_extent->y, m_extent->z);
 }
 
 
@@ -179,6 +224,7 @@ void AssimpNode::copyMeshes(aiMatrix4x4 transform)
          m_low  = new aiVector3D(low);
          m_high = new aiVector3D(high);
          m_center = new aiVector3D((high+low)/2.f);
+         m_extent = new aiVector3D(high-low);
      }
 }
 
@@ -229,16 +275,19 @@ aiVector3D* AssimpNode::getLow()
 {
     return m_low ; 
 }
-
 aiVector3D* AssimpNode::getHigh()
 {
     return m_high ; 
 }
-
 aiVector3D* AssimpNode::getCenter()
 {
     return m_center ; 
 }
+aiVector3D* AssimpNode::getExtent()
+{
+    return m_extent ; 
+}
+
 
 
 

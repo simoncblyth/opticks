@@ -15,7 +15,7 @@ aiNode* findNode(const char* query, aiNode* node, unsigned int depth );
 void dumpNode(const char* msg, aiNode* node, unsigned int depth, unsigned int index);
 bool selectNode(aiNode* node, unsigned int depth, unsigned int index);
 void dumpMaterial( aiMaterial* material );
-void dumpTransform(aiMatrix4x4 t);
+void dumpTransform(const char* msg, aiMatrix4x4 t);
 
 void dumpMesh( aiMesh* mesh );
 void copyMesh(aiMesh* dst, aiMesh* src, const aiMatrix4x4& mat );

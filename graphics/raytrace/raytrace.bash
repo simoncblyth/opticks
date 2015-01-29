@@ -75,17 +75,18 @@ raytrace-export()
 
    local q
    #q="name:__dd__Geometry__PMT__lvPmtHemi--pvPmtHemiVacuum0xc1340e8"
-   q="name:__dd__Geometry__PMT__lvPmtHemi0xc133740"
+   #q="name:__dd__Geometry__PMT__lvPmtHemi0xc133740"
    #q="name:__dd__Geometry__PMT__lvPmtHemi"
-   #q="index:2000"
-   #q="range:10000:10007"
-   #q="range:7995:8007"
-   q="range:7995:8007"
+   #q="index:0"
+   #q="index:3153"
+   #q="index:3154"
+   q="index:3155"
    export RAYTRACE_QUERY=$q
 }
 
 raytrace--(){
   raytrace-make
+  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
   raytrace-export 
   raytrace-run $*
 }

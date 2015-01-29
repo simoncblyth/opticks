@@ -1,6 +1,7 @@
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
 #include "AssimpCommon.hh"
+#include "AssimpRegistry.hh"
 #include <stdio.h>
 #include <assimp/scene.h>
 
@@ -8,6 +9,7 @@ AssimpTree::AssimpTree(const aiScene* scene)
   : 
   m_scene(scene),
   m_root(NULL),
+  m_registry(NULL),
   m_index(0),
   m_raw_index(0),
   m_wrap_index(0),
@@ -31,13 +33,96 @@ AssimpTree::AssimpTree(const aiScene* scene)
 
 
    //traverseRaw();
+
+
+   m_registry = new AssimpRegistry ; 
+
    traverseWrap();
+
+   m_registry->summary();
+
+   //m_root->traverse();
+
 }
 
 AssimpTree::~AssimpTree()
 {
 }
 
+
+
+void AssimpTree::traverseWrap(const char* msg)
+{
+   printf("%s\n", msg);
+   m_wrap_index = 0 ;
+   m_dump = 0 ;
+
+   std::vector<aiNode*> ancestors ;
+
+   traverseWrap(m_scene->mRootNode, ancestors);
+
+   printf("%s wrap_index %d dump %d \n", msg, m_wrap_index, m_dump );
+}
+
+void AssimpTree::traverseWrap(aiNode* node, std::vector<aiNode*> ancestors)
+{
+   //
+   // every node of the tree needs its own nodepath vector
+   // this is used to establish a digest for each node, and 
+   // a pdigest for the parent 
+   //
+
+   std::vector<aiNode*> nodepath = ancestors ; 
+   nodepath.push_back(node) ; 
+
+   if(node->mNumMeshes > 0)
+   {
+       AssimpNode* wrap = new AssimpNode(nodepath, this) ;       
+
+       wrap->setIndex(m_wrap_index);
+
+       if(m_wrap_index == 0) setRoot(wrap);
+
+       m_registry->add(wrap);
+
+       // hookup relationships via digest matching 
+       AssimpNode* parent = m_registry->lookup(wrap->getParentDigest());
+
+       if(parent)
+       {
+           wrap->setParent(parent);
+           parent->addChild(wrap);
+       }
+
+       aiMatrix4x4 transform = wrap->getGlobalTransformRaw() ; 
+       wrap->copyMeshes(transform);
+
+       // mesh handling must be after parent hookup, as need the transform
+       //aiMatrix4x4 transform2 = wrap->getGlobalTransform() ; 
+       //assert(transform2.IsIdentity());  AssimpNode parents skip the non-mesh raw nodes giving identity
+
+
+       
+       if(0)
+       { 
+           if(parent) parent->summary("AssimpTree::traW--parent");
+           wrap->summary("AssimpTree::traverseWrap");
+           dumpTransform("AssimpTree::traverseWrap transform", transform);
+           //dumpTransform("AssimpTree::traverseWrap transform2", transform2);
+       }
+
+
+
+
+
+       m_wrap_index++;
+   }
+
+   for(unsigned int i = 0; i < node->mNumChildren; i++)
+   { 
+       traverseWrap(node->mChildren[i], nodepath); 
+   }
+}
 
 
 //////////  raw tree traversal attempting to match pycollada/g4daenode.py addressing ///////
@@ -83,49 +168,7 @@ void AssimpTree::visitRaw(aiNode* raw, std::vector<aiNode*> ancestors )
    m_raw_index++;
 }
 
-//////////////////////////////////////////////////////////////////
 
-void AssimpTree::traverseWrap(const char* msg)
-{
-   printf("%s\n", msg);
-   m_wrap_index = 0 ;
-   m_dump = 0 ;
-
-   std::vector<aiNode*> ancestors ;
-   traverseWrap(m_scene->mRootNode, ancestors);
-
-   printf("%s wrap_index %d dump %d \n", msg, m_wrap_index, m_dump );
-}
-
-void AssimpTree::traverseWrap(aiNode* node, std::vector<aiNode*> ancestors)
-{
-   //
-   // every node of the tree needs its own nodepath vector
-   // this is used to establish a digest for each node, and 
-   // a pdigest for the parent 
-   //
-   std::vector<aiNode*> nodepath = ancestors ; 
-   nodepath.push_back(node) ; 
-
-   if(node->mNumMeshes > 0)
-   {
-       AssimpNode* wrap = new AssimpNode(nodepath, this) ;       
-
-       wrap->setIndex(m_wrap_index);
-
-       if(m_wrap_index == 0) setRoot(wrap);
-
-       if(m_wrap_index < 10)
-       wrap->summary("AssimpTree::traverseWrap");
-
-       m_wrap_index++;
-   }
-
-   for(unsigned int i = 0; i < node->mNumChildren; i++)
-   { 
-       traverseWrap(node->mChildren[i], nodepath); 
-   }
-}
 
 
 ////////////////////////////////////////////////////////////////////////////

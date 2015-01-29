@@ -70,6 +70,7 @@ add_optix_executable(${name}
                      AssimpCommon.cc
                      AssimpNode.cc
                      AssimpTree.cc
+                     AssimpRegistry.cc
                      OptiXAssimpGeometry.cc
                      OptiXScene.cc
                      tutorial0.cu
@@ -85,6 +86,7 @@ add_executable( AssimpGeometryTest
                 AssimpCommon.cc
                 AssimpNode.cc
                 AssimpTree.cc
+                AssimpRegistry.cc
 
 )
 

@@ -23,12 +23,17 @@ class AssimpNode {
       void traverse();
       void dump();
 
+  public: 
+      aiMatrix4x4 getGlobalTransformRaw();
+      aiMatrix4x4 getGlobalTransform();
+
   public:
       void summary(const char* msg="AssimpNode::summary");
       void bounds(const char* msg="AssimpNode::bounds");
       aiVector3D* getLow();
       aiVector3D* getHigh();
       aiVector3D* getCenter();
+      aiVector3D* getExtent();
 
       void updateBounds();
       void updateBounds(aiVector3D& low, aiVector3D& high);
@@ -55,6 +60,10 @@ class AssimpNode {
       aiMesh* getRawMesh(unsigned int index);
       aiMesh* getMesh(unsigned int index);
 
+  public:
+      std::size_t getDigest();
+      std::size_t getParentDigest();
+  protected:
       std::size_t hash(unsigned int pyfirst, unsigned int pylast);
 
   protected: 
@@ -80,10 +89,9 @@ class AssimpNode {
       aiMatrix4x4 m_transform ; 
 
       aiVector3D* m_low ; 
-
       aiVector3D* m_high ; 
-
       aiVector3D* m_center ; 
+      aiVector3D* m_extent ; 
 
       AssimpTree* m_tree ; 
 

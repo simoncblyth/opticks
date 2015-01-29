@@ -67,9 +67,9 @@ void dumpMaterial( aiMaterial* material )
     printf("dumpMaterial props %2d %s \n", numProperties, name.C_Str());
 }
 
-void dumpTransform(aiMatrix4x4 t)
+void dumpTransform(const char* msg, aiMatrix4x4 t)
 {
-   printf("dumpTransform\n");
+   printf("%s\n", msg);
    printf("a %10.4f %10.4f %10.4f %10.4f \n", t.a1, t.a2, t.a3, t.a4 );
    printf("b %10.4f %10.4f %10.4f %10.4f \n", t.b1, t.b2, t.b3, t.b4 );
    printf("c %10.4f %10.4f %10.4f %10.4f \n", t.c1, t.c2, t.c3, t.c4 );
