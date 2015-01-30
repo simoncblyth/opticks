@@ -22,8 +22,8 @@ rtBuffer<int3> indexBuffer;
 rtDeclareVariable(unsigned int, hasTangentsAndBitangents, ,);
 
 rtDeclareVariable(float2, textureCoordinate, attribute textureCoordinate, ); 
-rtDeclareVariable(float3, geometricNormal, attribute geometricNormal, ); 
-rtDeclareVariable(float3, shadingNormal, attribute shadingNormal, ); 
+rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
+rtDeclareVariable(float3, shadingNormal, attribute shading_normal, ); 
 rtDeclareVariable(float3, tangent, attribute tangent, ); 
 rtDeclareVariable(float3, bitangent, attribute bitangent, ); 
 

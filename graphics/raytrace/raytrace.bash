@@ -99,12 +99,16 @@ raytrace-geo(){
   $DEBUG $(raytrace-geo-bin) $* 
 }
 
-raytrace-view(){
+raytrace-v-(){
   raytrace-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
 
   raytrace-export 
   $DEBUG $(raytrace-view-bin) $* 
+}
+
+raytrace-v(){
+  raytrace-v- --cache --obj $DAE_NAME_DYB_NOEXTRA $*
 }
 
 

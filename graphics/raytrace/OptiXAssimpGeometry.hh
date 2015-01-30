@@ -21,16 +21,27 @@ public:
 
     void setContext(optix::Context& context);
 
+    void setMaterial(optix::Material material);
+
     void setProgram(OptiXProgram* program);
+
+    void setMaxDepth(unsigned int maxdepth);
+
+    void setGeometryGroup(optix::GeometryGroup gg);
+
+public:
+
+    unsigned int getMaxDepth();
+
+    optix::GeometryGroup getGeometryGroup();
+
+    optix::Material getMaterial();
+
+public:
 
     void convert(const char* query);
 
     void setupAcceleration();
-
-    void setGeometryGroup(optix::GeometryGroup gg);
-
-    optix::GeometryGroup getGeometryGroup();
-
 
 private:
 
@@ -39,27 +50,6 @@ private:
     optix::Geometry convertGeometry(aiMesh* mesh);
 
     void traverseNode(AssimpNode* node, unsigned int depth);
-
-    unsigned int convertNode(AssimpNode* node);
-
-    unsigned int convertSelection();
-
-    void populateGeometryGroup();
-
-
-private:
-
-    OptiXProgram* m_program ; 
-
-    optix::Context m_context ;
-
-    optix::GeometryGroup m_geometry_group ; 
-
-    std::vector<optix::Material> m_materials;
-
-    std::vector<optix::Geometry> m_geometries;
-
-    std::vector<optix::GeometryInstance> m_gis ;
 
 public:
 
@@ -74,6 +64,24 @@ public:
     optix::float3  getUp();
 
     optix::Aabb getAabb();
+
+private:
+
+    OptiXProgram* m_program ; 
+
+    optix::Context m_context ;
+
+    optix::Material m_material ;
+
+    unsigned int m_maxdepth ; 
+
+    optix::GeometryGroup m_geometry_group ; 
+
+    std::vector<optix::Material> m_materials;
+
+    std::vector<optix::Geometry> m_geometries;
+
+    std::vector<optix::GeometryInstance> m_gis ;
 
 };
 

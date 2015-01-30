@@ -82,8 +82,9 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
   // must setContext and setProgram before convert 
   geom.setContext(m_context);
   geom.setProgram(&prog);
+  geom.setMaterial(m_material);  // override the material hailing from geometry 
   geom.convert(query); 
-
+  geom.setupAcceleration();
    
 
   m_aabb = geom.getAabb();

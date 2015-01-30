@@ -14,28 +14,53 @@
 #include <optixu/optixu_vector_types.h>
 
 
+OptiXAssimpGeometry::~OptiXAssimpGeometry()
+{
+}
 
 OptiXAssimpGeometry::OptiXAssimpGeometry(const char* path)
            : 
            AssimpGeometry(path),
            m_context(NULL),
-           m_program(NULL)
+           m_program(NULL),
+           m_material(NULL),
+           m_maxdepth(4)
 {
 }
-
-OptiXAssimpGeometry::~OptiXAssimpGeometry()
-{
-}
-
 
 void OptiXAssimpGeometry::setContext(optix::Context& context)
 {
     m_context = context ;   
 }
-
 void OptiXAssimpGeometry::setProgram(OptiXProgram* program)
 {
     m_program = program ;   
+}
+void OptiXAssimpGeometry::setMaterial(optix::Material material)
+{
+    m_material = material ;   
+}
+void OptiXAssimpGeometry::setGeometryGroup(optix::GeometryGroup gg)
+{
+    m_geometry_group = gg ; 
+}
+void OptiXAssimpGeometry::setMaxDepth(unsigned int  maxdepth)
+{
+    m_maxdepth = maxdepth ;
+}
+
+
+optix::GeometryGroup OptiXAssimpGeometry::getGeometryGroup()
+{
+    return m_geometry_group ; 
+}
+optix::Material OptiXAssimpGeometry::getMaterial()
+{
+    return m_material ; 
+}
+unsigned int OptiXAssimpGeometry::getMaxDepth()
+{
+    return m_maxdepth ; 
 }
 
 
@@ -43,42 +68,50 @@ void OptiXAssimpGeometry::setProgram(OptiXProgram* program)
 
 void OptiXAssimpGeometry::convert(const char* query)
 {
+    //
+    //  #. select AssimpNode based on query string
+    //  #. traverse the AssimpNode converting aiMesh into optix::GeometryInstance
+    //     collected into m_gis 
+    //
+
+    unsigned int nai = select(query);
+
     for(unsigned int i = 0; i < m_aiscene->mNumMaterials; i++)
     {
         optix::Material material = convertMaterial(m_aiscene->mMaterials[i]);
         m_materials.push_back(material);
     }
 
-   /*
-    for(unsigned int i = 0; i < m_aiscene->mNumMeshes; i++)
-    {
-       // hmm probably convert after in world coordinates, not before ?
-        optix::Geometry geometry = convertGeometry(m_aiscene->mMeshes[i]);
-        m_geometries.push_back(geometry);
-    }
-   */
 
-    unsigned int nai = select(query);
-    unsigned int ngi ; 
+    m_gis.clear();
 
-    if(nai == 0)
-    {
-        printf("query failed to find any nodes %s \n", query );
+    if(nai == 0){
+        printf("OptiXAssimpGeometry::convert WARNING query \"%s\" failed to find any nodes : converting root  \n", query );
         AssimpNode* root = getRoot() ;
-        ngi = convertNode(root);  
+        traverseNode(root, 0);
     } 
     else
     {
-        ngi = convertSelection();
+        for(unsigned int i=0 ; i < getNumSelected() ; i++ )
+        {
+            AssimpNode* node = getSelectedNode(i) ;
+            traverseNode(node, 0);
+        } 
     } 
 
-    printf("OptiXAssimpGeometry::convert  query %s finds %d nodes with %d gi \n", query, nai, ngi );
+    printf("OptiXAssimpGeometry::convert  query %s finds %d nodes with %lu gi \n", query, nai, m_gis.size() );
 
-    populateGeometryGroup();
+    // fig2:  single gg containing many gi 
+    m_geometry_group->setChildCount(m_gis.size());
+    for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
+
 }
+
 
 void OptiXAssimpGeometry::setupAcceleration()
 {
+   // huh : there are currently lots of separate buffers for each gi 
+
     optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
     acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
     acceleration->setProperty( "index_buffer_name", "indexBuffer" );
@@ -92,6 +125,47 @@ void OptiXAssimpGeometry::setupAcceleration()
 
 
 
+
+void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth)
+{
+   //
+   //  Recursive traverse of the AssimpNode converting aiMesh into optix::GeometryInstance 
+   //  and collecting into m_gis 
+   //
+   //  NB AssimpNode meshes have been copied from locals and globally positioned by AssimpTree
+   // 
+   //  TODO: 
+   //      try out instanced geometry and transforms, could then act on 
+   //      the small number of local coordinate meshes 
+   //             optix::Geometry geometry = convertGeometry(m_aiscene->mMeshes[i]);
+   //             unsigned int meshIndex = node->getMeshIndexRaw(i);  // was used with local mesh handling 
+   //
+   //      potential large reduction in GPU memory usage 
+   //
+   //
+
+    if(depth < m_maxdepth )
+    {
+        for(unsigned int i = 0; i < node->getNumMeshes(); i++)
+        {   
+            aiMesh* mesh = node->getMesh(i);   // these are copied and globally positioned meshes 
+
+            optix::Geometry geometry = convertGeometry(mesh) ;  
+
+            //std::vector<optix::Material>::iterator mit = m_materials.begin() + mesh->mMaterialIndex ;
+
+            //optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, mit, mit+1  ); // single material 
+
+            optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, &m_material, &m_material+1  ); // single material 
+
+            m_gis.push_back(gi);
+        }   
+    }
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverseNode(node->getChild(i), depth + 1);
+}
+
+
 optix::Material OptiXAssimpGeometry::convertMaterial(aiMaterial* ai_material)
 {
     /*
@@ -99,6 +173,8 @@ optix::Material OptiXAssimpGeometry::convertMaterial(aiMaterial* ai_material)
         get assimp to access wavelength dependant material properties
         and feed them through into the material program 
         * by code gen of tables ? referencing a buffer of structs ?
+
+        tis better to defer material association to the loader, for flexibility 
     */
 
     optix::Material material = m_context->createMaterial();
@@ -106,13 +182,68 @@ optix::Material OptiXAssimpGeometry::convertMaterial(aiMaterial* ai_material)
     const char* fname = "closest_hit_radiance" ; 
     optix::Program  program = m_program->createProgram(filename, fname);
     material->setClosestHitProgram(0, program);
-    material["Kd"]->setFloat( 0.7f, 0.7f, 0.7f);
+    //material["Kd"]->setFloat( 0.7f, 0.7f, 0.7f);   // not used for normal shader in material1.cu 
     return material ; 
 }
 
 
 optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
 {
+   //
+   //    optix::Geometry created and populated with data from aiMesh
+   //
+   //    #. TriangleMesh.cu intersection and bbox programs compiled 
+   //       and attached to the geometry, 
+   //
+   //    #. buffers/variables created and populated/set based on the aiMesh
+   //       are inputs to intersection and bbox programs
+   //  
+   //       * vertexBuffer
+   //       * normalBuffer
+   //       * texCoordBuffer
+   //       * tangentBuffer
+   //       * bitangentBuffer
+   //       * indexBuffer
+   //       * hasTangentsAndBitangents
+   //
+   //
+   //      32 RT_PROGRAM void mesh_intersect(int primIdx)
+   //      33 {
+   //      34     int3 index = indexBuffer[primIdx];
+   //      35 
+   //      36     float3 p0 = vertexBuffer[index.x];
+   //      37     float3 p1 = vertexBuffer[index.y];
+   //      38     float3 p2 = vertexBuffer[index.z];
+   //      39 
+   //      40     // Intersect ray with triangle
+   //      41     float3 n;
+   //      42     float  t, beta, gamma;
+   //                                   _____in_______     _______out________
+   //      43     if(intersect_triangle(ray, p0, p1, p2,     n, t, beta, gamma))  // from optixu_math_namespace.h
+   //      44     {
+   //      45         if(rtPotentialIntersection( t ))  // true means that the parametric t, may be the closest hit  
+   //      46         {
+   //      ..
+   //      ..             .... setting attributes ...
+   //      ..  
+   //      88             rtReportIntersection(0);  
+   //      ..                   argument specifies material index of primitive primIdx  
+   //      ..                   zero when only one material for the geometry
+   //      ..
+   //      89         }
+   //      90     }
+   //
+   //
+   //      #. attributes calculated in mesh_intersect are available in the closest_hit and any_hit programs
+   //
+   //         * textureCoordinate
+   //         * geometricNormal
+   //         * shadingNormal
+   //         * tangent
+   //         * bitangent
+   //
+   //
+
     unsigned int numFaces = mesh->mNumFaces;
     unsigned int numVertices = mesh->mNumVertices;
 
@@ -120,7 +251,7 @@ optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
 
     geometry->setPrimitiveCount(numFaces);
 
-    const char* filename = "TriangleMesh.cu" ;   // cached program is returned after first  
+    const char* filename = "TriangleMesh.cu" ;   // cached program is returned after creation at first call
     optix::Program intersectionProgram = m_program->createProgram( filename, "mesh_intersect" );
     optix::Program boundingBoxProgram = m_program->createProgram( filename, "mesh_bounds" );
 
@@ -219,97 +350,6 @@ optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
     indexBuffer->unmap();
 
     return geometry;
-
-}
-
-
-
-unsigned int OptiXAssimpGeometry::convertSelection()
-{
-    // convert selection of aiNode into vector of gi 
-    m_gis.clear();
-
-    unsigned int NumSelected = getNumSelected();
-
-    for(unsigned int i=0 ; i < NumSelected ; i++ )
-    {
-        AssimpNode* node = getSelectedNode(i) ;
-        traverseNode(node, 0);
-    } 
-
-    return m_gis.size();
-}
-
-
-unsigned int OptiXAssimpGeometry::convertNode(AssimpNode* node)
-{
-    // convert single aiNode into vector of gi 
-    m_gis.clear();
-
-    traverseNode(node, 0);
-
-    return m_gis.size();
-}
-
-
-optix::GeometryGroup OptiXAssimpGeometry::getGeometryGroup()
-{
-    return m_geometry_group ; 
-}
-void OptiXAssimpGeometry::setGeometryGroup(optix::GeometryGroup gg)
-{
-    m_geometry_group = gg ; 
-}
-
-void OptiXAssimpGeometry::populateGeometryGroup()
-{
-    // fig2:  single gg containing many gi 
-
-    m_geometry_group->setChildCount(m_gis.size());
-
-    for(unsigned int i=0 ; i <m_gis.size() ; i++)
-    {
-        m_geometry_group->setChild(i, m_gis[i]);
-    }
-}
-
-
-
-void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth)
-{
-    const char* name = node->getName(); 
-
-    //printf("OptiXAssimpGeometry::traverseNode name %s #meshes %d #children %d \n", name, node->mNumMeshes, node->mNumChildren);
-
-    if(depth < 4 )
-    {
-        for(unsigned int i = 0; i < node->getNumMeshes(); i++)
-        {   
-            unsigned int meshIndex = node->getMeshIndexRaw(i);
-
-            aiMesh* mesh = node->getMesh(i);
-
-            //optix::Geometry geometry = m_geometries[meshIndex] ; // on the way out 
-            optix::Geometry geometry = convertGeometry(mesh) ;  // NB this is positioned geometry 
-
-            unsigned int materialIndex = mesh->mMaterialIndex;
-
-            std::vector<optix::Material>::iterator mit = m_materials.begin()+materialIndex ;
-
-            //printf("OptiXAssimpGeometry::traverseNode i %d meshIndex %d materialIndex %d \n", i, meshIndex, materialIndex );
-
-            optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, mit, mit+1  );
-
-            m_gis.push_back(gi);
-        }   
-    }
-
-
-    for(unsigned int i = 0; i < node->getNumChildren(); i++)
-    {
-        traverseNode(node->getChild(i), depth + 1);
-    }
-
 }
 
 
@@ -348,8 +388,6 @@ optix::Aabb OptiXAssimpGeometry::getAabb()
 {
     return optix::Aabb(getMin(), getMax()); 
 }
-
-
 
 
 
