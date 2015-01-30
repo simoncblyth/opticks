@@ -39,7 +39,7 @@ public:
 
 public:
 
-    void convert(const char* query);
+    void convert();
 
     void setupAcceleration();
 
@@ -49,7 +49,7 @@ private:
 
     optix::Geometry convertGeometry(aiMesh* mesh);
 
-    void traverseNode(AssimpNode* node, unsigned int depth);
+    void traverseNode(AssimpNode* node, unsigned int depth, bool recurse);
 
 public:
 

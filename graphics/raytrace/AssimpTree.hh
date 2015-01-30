@@ -32,6 +32,7 @@ public:
     void dumpSelection();
     unsigned int getNumSelected();
     AssimpNode* getSelectedNode(unsigned int i);
+    bool isFlatSelection();
 
 public:
     // bounds
@@ -52,15 +53,29 @@ public:
     void visitRaw(aiNode* raw, std::vector<aiNode*> ancestors);
 
 public:
+    void MergeMeshes(AssimpNode* node);
+    void addToSelection(AssimpNode* node);
+
+
+public:
     // wrapping raw tree matching pycollada/g4daenode 
     void traverseWrap(const char* msg="AssimpTree::traverseWrap");
     void traverseWrap(aiNode* node, std::vector<aiNode*> ancestors);
     void visitWrap(std::vector<aiNode*> nodepath);
 
 private:
-    void selectNodes(const char* query, AssimpNode* node, unsigned int depth);
+    void selectNodes(AssimpNode* node, unsigned int depth);
 
+private:
+    void parseQuery(const char* query);
 
+    char* m_query_name ;
+
+    int m_query_index ; 
+
+    std::vector<int> m_query_range ; 
+
+    bool m_is_flat_selection ; 
 
 private:
 

@@ -137,9 +137,10 @@ MeshViewer::MeshViewer():
 void MeshViewer::initScene( InitialCameraData& camera_data )
 {
   initContext();
-  initLights();
+  //initLights();
   initMaterial();
   initGeometry();
+  initLights();   // move lights after geometry, for positioning relative to aabb
   initCamera( camera_data );
   preprocess();
 }
@@ -197,11 +198,15 @@ void MeshViewer::initContext()
 
 void MeshViewer::initLights()
 {
-  // Lights buffer
+   float extent = m_aabb.maxExtent();
+   float3 center = m_aabb.center();
+
+  // Lights buffer  : pos, color, casts_shadow, padding
+  //  flipped blue y from -1  to 1 cf g4daeview 
   BasicLight lights[] = {
-    { make_float3( -60.0f,  30.0f, -120.0f ), make_float3( 0.2f, 0.2f, 0.25f )*m_light_scale, 0, 0 },
-    { make_float3( -60.0f,   0.0f,  120.0f ), make_float3( 0.1f, 0.1f, 0.10f )*m_light_scale, 0, 0 },
-    { make_float3(  60.0f,  60.0f,   60.0f ), make_float3( 0.7f, 0.7f, 0.65f )*m_light_scale, 1, 0 }
+    { make_float3( -1.0f,  1.0f, -1.0f ) * extent, make_float3( 1.f, 0.f, 0.f )*m_light_scale, 1, 0 },
+    { make_float3(  1.0f,   1.0f,  1.0f ) * extent, make_float3( 0.f, 1.f, 0.f )*m_light_scale, 1, 0 },
+    { make_float3(  0.0f,   1.0f,  1.0f ) * extent, make_float3( 0.f, 0.f, 1.f )*m_light_scale, 1, 0 }
   };
 
   Buffer light_buffer = m_context->createBuffer(RT_BUFFER_INPUT);
@@ -576,11 +581,18 @@ int main( int argc, char** argv )
       scene.setCameraMode( MeshViewer::CM_ORTHO );
     } else if( arg == "-h" || arg == "--help" ) {
       printUsageAndExit( argv[0] ); 
+    } else if( arg == "-g" || arg == "--g4dae" ) {
+      if ( i == argc-1 ) {
+        printUsageAndExit( argv[0] );
+      }
+      scene.setMesh(G4DAELoader::identityFilename(argv[++i]));
     } else if( arg == "-o" || arg == "--obj" ) {
+
       if ( i == argc-1 ) {
         printUsageAndExit( argv[0] );
       }
       scene.setMesh( argv[++i] );
+
     } else if( arg == "--trav" ) {
       if ( i == argc-1 ) {
         printUsageAndExit( argv[0] );

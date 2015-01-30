@@ -66,15 +66,20 @@ unsigned int OptiXAssimpGeometry::getMaxDepth()
 
 
 
-void OptiXAssimpGeometry::convert(const char* query)
+void OptiXAssimpGeometry::convert()
 {
     //
-    //  #. select AssimpNode based on query string
-    //  #. traverse the AssimpNode converting aiMesh into optix::GeometryInstance
-    //     collected into m_gis 
+    //  Recursive traverse down from each selected AssimpNode
+    //  converting aiMesh into optix::GeometryInstance
+    //  collected into m_gis 
+    //  which is then placed into the GeometryGroup
+    //
+    //  Following fig2 of documentation:  single gg containing many gi 
+    //
+    //  TODO: AVOID OVERLAPPING OF THE TREES
     //
 
-    unsigned int nai = select(query);
+    assert(getNumSelected() > 0);  // must select some geometry before convert
 
     for(unsigned int i = 0; i < m_aiscene->mNumMaterials; i++)
     {
@@ -82,26 +87,17 @@ void OptiXAssimpGeometry::convert(const char* query)
         m_materials.push_back(material);
     }
 
-
     m_gis.clear();
 
-    if(nai == 0){
-        printf("OptiXAssimpGeometry::convert WARNING query \"%s\" failed to find any nodes : converting root  \n", query );
-        AssimpNode* root = getRoot() ;
-        traverseNode(root, 0);
-    } 
-    else
+    bool recurse = !isFlatSelection() ; 
+
+    for(unsigned int i=0 ; i < getNumSelected() ; i++ )
     {
-        for(unsigned int i=0 ; i < getNumSelected() ; i++ )
-        {
-            AssimpNode* node = getSelectedNode(i) ;
-            traverseNode(node, 0);
-        } 
+        traverseNode(getSelectedNode(i), 0, recurse);
     } 
 
-    printf("OptiXAssimpGeometry::convert  query %s finds %d nodes with %lu gi \n", query, nai, m_gis.size() );
+    printf("OptiXAssimpGeometry::convert : %d selected top nodes with %lu gi \n", getNumSelected(), m_gis.size() );
 
-    // fig2:  single gg containing many gi 
     m_geometry_group->setChildCount(m_gis.size());
     for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
 
@@ -126,7 +122,7 @@ void OptiXAssimpGeometry::setupAcceleration()
 
 
 
-void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth)
+void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth, bool recurse)
 {
    //
    //  Recursive traverse of the AssimpNode converting aiMesh into optix::GeometryInstance 
@@ -162,7 +158,10 @@ void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth)
         }   
     }
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverseNode(node->getChild(i), depth + 1);
+    if(recurse)
+    {
+        for(unsigned int i = 0; i < node->getNumChildren(); i++) traverseNode(node->getChild(i), depth + 1, recurse);
+    }
 }
 
 

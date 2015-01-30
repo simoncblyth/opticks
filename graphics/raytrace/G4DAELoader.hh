@@ -24,6 +24,8 @@ public:
   void load();
   void load( const optix::Matrix4x4& transform );
 
+  static const char* identityFilename(char* path);  
+
   optix::Aabb getSceneBBox()const { return m_aabb; }
 
   static bool isMyFile( const std::string& filename );

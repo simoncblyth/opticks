@@ -1,7 +1,8 @@
 #include "AssimpCommon.hh"
-
+#include "md5digest.h"
 #include <assimp/scene.h>
 #include <assimp/material.h>
+#include <assimp/postprocess.h>
 
 #include <sstream>
 
@@ -14,6 +15,87 @@ void split( std::vector<std::string>& elem, const char* line, char delim )
     std::string s;
     while (getline(f, s, delim)) elem.push_back(s);
 }
+
+
+std::string join(std::vector<std::string>& elem, char delim )
+{
+    typedef std::vector<std::string> Vec_t ;
+    std::stringstream ss ;
+    for(size_t i=0 ; i < elem.size() ; ++i)
+    {
+        ss << elem[i] ;
+        if( i < elem.size() - 1) ss << delim ;
+    }
+    return ss.str();
+}
+
+
+std::string removeField(const char* line, char delim, int index )
+{
+    //  
+    //   split the line with the delim
+    //   then reassemble skipping the field pointed to by rfield
+    //  
+    //    For example the below line with delim '.' and rfield -2
+    //  
+    //       /path/to/geometry.dae.noextra.abcdefghijklmnopqrstuvwxyz.dae
+    //       /path/to/geometry.dae.noextra.dae
+    //  
+
+    std::vector<std::string> elem ;
+    split(elem, line, delim);
+
+    if(index >= 0 && index < elem.size())
+    {
+        elem.erase( elem.begin() + index);
+    }
+    else if( index < 0 && -index < elem.size())
+    {
+        elem.erase( elem.end() + index );
+    }
+    else
+    {
+        printf("removeField line %s delim %c index %d : invalid index \n", line, delim, index );
+    }
+    return join(elem, delim);
+}
+
+
+std::string insertField(const char* line, char delim, int index, const char* field)
+{
+    std::vector<std::string> elem ;
+    split(elem, line, delim);    
+
+    std::string s(field);
+
+    if(index >= 0 && index < elem.size())
+    {   
+        elem.insert( elem.begin() + index, s); 
+    }   
+    else if( index < 0 && -index < elem.size())
+    {   
+        elem.insert( elem.end() + index, s );
+    }   
+    else
+    {   
+        printf("insertField line %s delim %c index %d : invalid index \n", line, delim, index );
+    }   
+    return join(elem, delim); 
+}
+
+
+
+std::string md5digest( const char* buffer, int len )
+{
+    char* out = md5digest_str2md5(buffer, len);
+    std::string digest(out);
+    free(out);
+    return digest;
+}
+
+
+
+
 
 
 aiNode* findNode(const char* query, aiNode* node, unsigned int depth ){
@@ -114,6 +196,10 @@ void copyMesh(aiMesh* dst, aiMesh* src, const aiMatrix4x4& mat )
    //
    //  /usr/local/env/graphics/assimp/assimp-3.1.1/code/PretransformVertices.cpp
    //  /usr/local/env/graphics/assimp/assimp-3.1.1/code/ColladaLoader.cpp
+   //
+   //  hmm maybe can use
+   //   /usr/local/env/graphics/assimp/assimp-3.1.1/code/SceneCombiner.cpp
+   // 
 
    dst->mMaterialIndex = src->mMaterialIndex ;
    dst->mPrimitiveTypes = src->mPrimitiveTypes ;
@@ -191,5 +277,111 @@ void meshBounds( aiMesh* mesh, aiVector3D& low, aiVector3D& high )
         //printf("meshBounds low %10.3f %10.3f %10.3f   high %10.3f %10.3f %10.3f \n", low.x, low.y, low.z, high.x, high.y, high.z );
     }
 }
+
+void dumpSceneFlags(const char* msg, unsigned int flags)
+{
+    printf("dumpSceneFlags %s flags 0x%x \n", msg, flags);
+
+    if(flags & AI_SCENE_FLAGS_INCOMPLETE)
+    printf("AI_SCENE_FLAGS_INCOMPLETE\n");
+
+    if(flags & AI_SCENE_FLAGS_VALIDATED)
+    printf("AI_SCENE_FLAGS_VALIDATED\n");
+
+    if(flags & AI_SCENE_FLAGS_VALIDATION_WARNING)
+    printf("AI_SCENE_FLAGS_VALIDATION_WARNING\n");
+
+    if(flags & AI_SCENE_FLAGS_NON_VERBOSE_FORMAT)
+    printf("AI_SCENE_FLAGS_NON_VERBOSE_FORMAT\n");
+
+    if(flags & AI_SCENE_FLAGS_TERRAIN)
+    printf("AI_SCENE_FLAGS_TERRAIN\n");
+}
+
+
+void dumpProcessFlags(const char* msg, unsigned int flags)
+{
+    printf("dumpProcessFlags %s flags 0x%x \n", msg, flags);
+
+    if(flags & aiProcess_CalcTangentSpace)      
+    printf("aiProcess_CalcTangentSpace\n"); 
+
+    if(flags & aiProcess_JoinIdenticalVertices) 
+    printf("aiProcess_JoinIdenticalVertices\n");
+
+    if(flags & aiProcess_MakeLeftHanded ) 
+    printf("aiProcess_MakeLeftHanded\n");
+
+    if(flags & aiProcess_Triangulate)
+    printf("aiProcess_Triangulate\n");
+
+    if(flags&aiProcess_RemoveComponent)
+    printf("aiProcess_RemoveComponent\n");
+
+    if(flags & aiProcess_GenNormals) 
+    printf("aiProcess_GenNormals\n");
+
+    if(flags & aiProcess_GenSmoothNormals) 
+    printf("aiProcess_GenSmoothNormals\n");
+
+    if(flags & aiProcess_SplitLargeMeshes) 
+    printf("aiProcess_SplitLargeMeshes\n");
+
+    if(flags & aiProcess_PreTransformVertices) 
+    printf("aiProcess_PreTransformVertices\n");
+
+    if(flags & aiProcess_LimitBoneWeights)
+    printf("aiProcess_LimitBoneWeights\n");
+
+    if(flags & aiProcess_ValidateDataStructure) 
+    printf("aiProcess_ValidateDataStructure\n");
+
+    if(flags & aiProcess_ImproveCacheLocality) 
+    printf("aiProcess_ImproveCacheLocality\n");
+
+    if(flags & aiProcess_RemoveRedundantMaterials) 
+    printf("aiProcess_RemoveRedundantMaterials\n");
+
+    if(flags & aiProcess_FixInfacingNormals) 
+    printf("aiProcess_FixInfacingNormals\n");
+
+    if(flags & aiProcess_SortByPType) 
+    printf("aiProcess_SortByPType\n");
+
+    if(flags & aiProcess_FindDegenerates) 
+    printf("aiProcess_FindDegenerates\n");
+
+    if(flags & aiProcess_FindInvalidData)
+    printf("aiProcess_FindInvalidData\n");
+
+    if(flags & aiProcess_GenUVCoords)
+    printf("aiProcess_GenUVCoords\n");
+
+    if(flags & aiProcess_TransformUVCoords)
+    printf("aiProcess_TransformUVCoords\n");
+
+    if(flags & aiProcess_FindInstances) 
+    printf("aiProcess_FindInstances\n");
+
+    if(flags & aiProcess_OptimizeMeshes)
+    printf("aiProcess_OptimizeMeshes\n");
+
+    if(flags & aiProcess_OptimizeGraph)
+    printf("aiProcess_OptimizeGraph\n");
+
+    if(flags & aiProcess_FlipUVs) 
+    printf("aiProcess_FlipUVs\n");
+
+    if(flags & aiProcess_FlipWindingOrder) 
+    printf("aiProcess_FlipWindingOrder\n");
+
+    if(flags & aiProcess_SplitByBoneCount) 
+    printf("aiProcess_SplitByBoneCount\n");
+
+    if(flags & aiProcess_Debone) 
+    printf("aiProcess_Debone\n");
+}
+
+
 
 

@@ -295,72 +295,6 @@ How to load COLLADA into OptiX ?
     delta:OppositeRenderer blyth$ 
 
 
-/usr/local/env/cuda/optix/OppositeRenderer/OppositeRenderer/RenderEngine/scene/Scene.cpp::
-
-    298 optix::Group Scene::getSceneRootGroup( optix::Context & context )
-    299 {
-    300     if(!m_intersectionProgram)
-    301     {
-    302         std::string ptxFilename = "TriangleMesh.cu.ptx";
-    303         m_intersectionProgram = context->createProgramFromPTXFile( ptxFilename, "mesh_intersect" );
-    304         m_boundingBoxProgram = context->createProgramFromPTXFile( ptxFilename, "mesh_bounds" );
-    305     }
-    306 
-    307     //printf("Sizeof materials array: %d", materials.size());
-    308 
-    309     //QVector<optix::GeometryInstance> instances;
-    310 
-    311     // Convert meshes into Geometry objects
-    312 
-    313     QVector<optix::Geometry> geometries;
-    314     for(unsigned int i = 0; i < m_scene->mNumMeshes; i++)
-    315     {
-    316         optix::Geometry geometry = createGeometryFromMesh(m_scene->mMeshes[i], context);
-    317         geometries.push_back(geometry);
-    318         //optix::GeometryInstance instance = getGeometryInstanceFromMesh(m_scene->mMeshes[i], context, materials);
-    319         //instances.push_back(instance);
-    320     }
-    321 
-    322     // Convert nodes into a full scene Group
-    323 
-    324     optix::Group rootNodeGroup = getGroupFromNode(context, m_scene->mRootNode, geometries, m_materials);
-    ...
-    342     optix::Acceleration acceleration = context->createAcceleration("Sbvh", "Bvh");
-    343     rootNodeGroup->setAcceleration( acceleration );
-    344     acceleration->markDirty();
-    345     return rootNodeGroup;
-    346 }
-    ...
-    348 optix::Geometry Scene::createGeometryFromMesh(aiMesh* mesh, optix::Context & context)
-    349 {
-    350     unsigned int numFaces = mesh->mNumFaces;
-    351     unsigned int numVertices = mesh->mNumVertices;
-    352 
-    353     optix::Geometry geometry = context->createGeometry();
-    354     geometry->setPrimitiveCount(numFaces);
-    355     geometry->setIntersectionProgram(m_intersectionProgram);
-    356     geometry->setBoundingBoxProgram(m_boundingBoxProgram);
-    357 
-    358     // Create vertex, normal and texture buffer
-    359 
-    360     optix::Buffer vertexBuffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_FLOAT3, numVertices);
-    361     optix::float3* vertexBuffer_Host = static_cast<optix::float3*>( vertexBuffer->map() );
-    362 
-    363     optix::Buffer normalBuffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_FLOAT3, numVertices);
-    364     optix::float3* normalBuffer_Host = static_cast<optix::float3*>( normalBuffer->map() );
-    365 
-    366     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
-    367     geometry["normalBuffer"]->setBuffer(normalBuffer);
-    368 
-    369     // Copy vertex and normal buffers
-    370 
-    371     memcpy( static_cast<void*>( vertexBuffer_Host ),
-    372         static_cast<void*>( mesh->mVertices ),
-    373         sizeof( optix::float3 )*numVertices);
-    374     vertexBuffer->unmap();
-
-
-
 OptiX Tutorial
 ---------------
 
@@ -464,7 +398,10 @@ simpleAnimation
 sutil
 tutorial
 materials
+transparency
 EON
+
+## remember that after adding a name here, need to uncomment in the CMakeLists.txt for it to get built
 }
 
 

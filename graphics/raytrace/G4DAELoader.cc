@@ -10,6 +10,8 @@
 #include <cstring> //memcpy
 #include <algorithm>
 
+#include "AssimpCommon.hh"
+#include "AssimpGeometry.hh"
 #include "OptiXAssimpGeometry.hh"
 #include "OptiXProgram.hh"
 
@@ -24,8 +26,10 @@ std::string getExtension( const std::string& filename )
            std::string();
 }
 
-
-
+const char* G4DAELoader::identityFilename( char* arg )
+{
+     return AssimpGeometry::identityFilename(arg);
+}
 
 G4DAELoader::G4DAELoader( const std::string&   filename,
                       optix::Context       context,
@@ -66,6 +70,8 @@ void G4DAELoader::load()
 }
 
 
+
+
 void G4DAELoader::load( const optix::Matrix4x4& transform )
 {
   char* ptxdir = getenv("RAYTRACE_PTXDIR");     
@@ -75,7 +81,10 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
   OptiXProgram prog(ptxdir, "MeshViewer");  // cmake target name
   prog.setContext(m_context);
 
-  OptiXAssimpGeometry geom(m_filename.c_str());
+  std::string path = removeField( m_filename.c_str(), '.' , -2 );
+  printf("G4DAELoader::load filename %s path %s \n", m_filename.c_str(), path.c_str() );
+
+  OptiXAssimpGeometry geom(path.c_str());
   geom.import();
   geom.setGeometryGroup(m_geometry_group);
 
@@ -83,7 +92,9 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
   geom.setContext(m_context);
   geom.setProgram(&prog);
   geom.setMaterial(m_material);  // override the material hailing from geometry 
-  geom.convert(query); 
+  geom.select(query);
+
+  geom.convert(); 
   geom.setupAcceleration();
    
 

@@ -26,6 +26,12 @@ public:
     virtual ~AssimpGeometry();
 
     void import();
+    void import(unsigned int flags);
+    unsigned int getProcessFlags();
+    unsigned int getSceneFlags();
+    unsigned int defaultProcessFlags();
+
+    static const char* identityFilename(char* arg);
 
     void info();
 
@@ -50,11 +56,15 @@ public:
 
     AssimpNode* getSelectedNode(unsigned int i);
 
+    bool isFlatSelection();
+
 protected:
 
     const aiScene* m_aiscene;
 
     unsigned int m_index ; 
+
+    unsigned int m_process_flags ; 
 
 private:
 

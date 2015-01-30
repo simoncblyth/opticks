@@ -35,15 +35,19 @@ int main(int argc, char* argv[])
         prog.setContext(context);
 
 
-        optix::GeometryGroup gg = context->createGeometryGroup();
         OptiXAssimpGeometry geom(path);
         geom.import();
-        geom.setGeometryGroup(gg);
+        geom.select(query); 
 
-        // must setContext and setProgram before convert 
-        geom.setContext(context);
+        // above uses functionality from AssimpGeometry base clase
+        // below uses functionality from OptiXAssimpGeometry subclass 
+
+        optix::GeometryGroup gg = context->createGeometryGroup();
+        geom.setGeometryGroup(gg);
+        geom.setContext(context); // must setContext and setProgram before convert 
         geom.setProgram(&prog);
-        geom.convert(query); 
+
+        geom.convert(); 
         geom.setupAcceleration();
 
         scene.setProgram(&prog);

@@ -26,6 +26,7 @@ AssimpGeometry::AssimpGeometry(const char* path)
           m_importer(new Assimp::Importer()),
           m_aiscene(NULL),
           m_tree(NULL),
+          m_process_flags(0),
           m_index(0)
 {
     if(!path) return ;          
@@ -55,20 +56,81 @@ void AssimpGeometry::info()
 }
 
 
+const char* AssimpGeometry::identityFilename( char* arg )
+{
+    // Used when geometry is loaded using options: -g/--g4dae path  
+    //
+    // #. command line argument real path is converted into one 
+    //    incorporating the digest of geometry selecting envvar 
+     //
+    //    This kludge makes the accelcache path incorporate the digest 
+    //    thus can get caching as vary the envvar that 
+    //    selects different geometries, while still ony having a single 
+    //    geometry file.
+    //
+    char* query = getenv("RAYTRACE_QUERY") ;
+    std::string digest = md5digest( query, strlen(query));
+    static std::string kfn = insertField( arg, '.', -1 , digest.c_str());
+    printf("AssimpGeometry::identityFilename\n arg %s\n query %s\n digest %s\n kfn %s \n", arg, query, digest.c_str(), kfn.c_str() );
+    return kfn.c_str();
+}
+
+
+
+unsigned int AssimpGeometry::defaultProcessFlags()
+{
+    unsigned int flags = 0 ;
+
+    flags |=  aiProcess_CalcTangentSpace ;
+    flags |=  aiProcess_Triangulate ;
+    flags |=  aiProcess_JoinIdenticalVertices ;
+    flags |=  aiProcess_SortByPType ;
+
+    // above flags were used initially 
+    // changing flags invalidates the accelcache, due to different geometry : so they are doing something 
+    //
+    // TODO: flags and maxdepth setting need to feed into the accelcache name 
+    //
+   //  flags |=  aiProcess_OptimizeMeshes  ;
+    // flags |=  aiProcess_OptimizeGraph ;
+
+    return flags ; 
+}
 
 void AssimpGeometry::import()
 {
+    import(defaultProcessFlags());
+}
 
-    m_aiscene = m_importer->ReadFile( m_path, 
-                     aiProcess_CalcTangentSpace       |   
-                     aiProcess_Triangulate            |   
-                     aiProcess_JoinIdenticalVertices  |
-                     aiProcess_SortByPType);
+
+
+
+unsigned int AssimpGeometry::getProcessFlags()
+{
+   return m_process_flags ; 
+}
+
+unsigned int AssimpGeometry::getSceneFlags()
+{
+    return m_aiscene->mFlags ; 
+}
+
+
+void AssimpGeometry::import(unsigned int flags)
+{
+    printf("AssimpGeometry::import path %s flags 0x%x \n", m_path, flags  );
+
+    m_process_flags = flags ; 
+    m_aiscene = m_importer->ReadFile( m_path, flags );
 
     if(!m_aiscene)
     {   
         printf("AssimpGeometry::import ERROR : %s \n", m_importer->GetErrorString() );  
+        return ;
     }   
+
+    dumpProcessFlags("AssimpGeometry::import", flags);
+    dumpSceneFlags("AssimpGeometry::import", m_aiscene->mFlags);
 
     info();
 
@@ -86,7 +148,13 @@ unsigned int AssimpGeometry::select(const char* query)
 {
     unsigned int n = m_tree->select(query);
     dump();
-    return n ; 
+    if(n == 0)
+    {
+        printf("AssimpGeometry::select WARNING query \"%s\" failed to find any nodes : fallback to adding root  \n", query );
+        AssimpNode* root = getRoot() ;
+        m_tree->addToSelection(root);
+    }
+    return m_tree->getNumSelected() ; 
 }
 
 AssimpNode* AssimpGeometry::getRoot()
@@ -132,8 +200,10 @@ aiVector3D* AssimpGeometry::getUp()
 }
 
 
-
-
+bool AssimpGeometry::isFlatSelection()
+{
+    return m_tree->isFlatSelection();
+}
 
 
 

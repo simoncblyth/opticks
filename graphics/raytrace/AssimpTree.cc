@@ -19,22 +19,11 @@ AssimpTree::AssimpTree(const aiScene* scene)
   m_center(NULL),
   m_extent(NULL),
   m_up(NULL),
-  m_query(NULL)
+  m_query(NULL),
+  m_query_name(NULL),
+  m_query_index(0), 
+  m_is_flat_selection(false)
 {
-   
-   /*
-   aiNode* top = m_scene->mRootNode ; 
-   m_root = new AssimpNode(top, this);
-   m_root->setIndex(0);
-
-   aiMatrix4x4 identity ; 
-   wrap( m_root, 0, identity);
-   printf("AssimpTree::AssimpTree created tree of %d AssimpNode \n", m_index );
-   */
-
-
-   //traverseRaw();
-
 
    m_registry = new AssimpRegistry ; 
 
@@ -43,7 +32,6 @@ AssimpTree::AssimpTree(const aiScene* scene)
    m_registry->summary();
 
    //m_root->traverse();
-
 }
 
 AssimpTree::~AssimpTree()
@@ -77,15 +65,9 @@ void AssimpTree::traverseWrap(aiNode* node, std::vector<aiNode*> ancestors)
    std::vector<aiNode*> nodepath = ancestors ; 
    nodepath.push_back(node) ; 
 
-   if(node->mNumMeshes > 0)
-   {
-       visitWrap(nodepath);
-   }
+   if(node->mNumMeshes > 0) visitWrap(nodepath);
 
-   for(unsigned int i = 0; i < node->mNumChildren; i++)
-   { 
-       traverseWrap(node->mChildren[i], nodepath); 
-   }
+   for(unsigned int i = 0; i < node->mNumChildren; i++) traverseWrap(node->mChildren[i], nodepath); 
 }
 
 
@@ -192,15 +174,16 @@ void AssimpTree::traverse()
 }
 
 
-
-
 void AssimpTree::dumpSelection()
 {
    unsigned int n = getNumSelected();
    printf("AssimpTree::dumpSelection n %d \n", n); 
+
    for(unsigned int i = 0 ; i < n ; i++)
    {
+        if( i > 10 ) break ; 
         AssimpNode* node = getSelectedNode(i);
+        node->summary("AssimpTree::dumpSelection");
         node->bounds("AssimpTree::dumpSelection");
    } 
 }
@@ -271,7 +254,11 @@ void AssimpTree::findBounds(AssimpNode* node, aiVector3D& low, aiVector3D& high 
 }
 
 
-
+void AssimpTree::MergeMeshes(AssimpNode* node)
+{
+    // /usr/local/env/graphics/assimp/assimp-3.1.1/code/SceneCombiner.cpp    SceneCombiner::MergeMeshes
+    // /usr/local/env/graphics/assimp/assimp-3.1.1/code/OptimizeMeshes.cpp
+}
 
 
 unsigned int AssimpTree::select(const char* query)
@@ -283,12 +270,16 @@ unsigned int AssimpTree::select(const char* query)
     } 
 
     free(m_query) ;
+
     m_query = strdup(query);
 
     m_index = 0 ; 
+
     m_selection.clear();
 
-    selectNodes(query, m_root, 0);
+    parseQuery(query);    
+
+    selectNodes(m_root, 0);
 
     findBounds();
 
@@ -336,66 +327,85 @@ aiVector3D* AssimpTree::getUp()
 }
 
 
-
-
-
-void AssimpTree::selectNodes(const char* query, AssimpNode* node, unsigned int depth)
+void AssimpTree::addToSelection(AssimpNode* node)
 {
-   m_index++ ; 
-   const char* name = node->getName(); 
-   unsigned int index = node->getIndex();
+   m_selection.push_back(node);
+}
+
+
+
+
+
+void AssimpTree::parseQuery(const char* query)
+{
 
    const char* name_token  = "name:" ;
    const char* index_token = "index:" ;
    const char* range_token = "range:" ;
 
-
    if(strncmp(query,name_token, strlen(name_token)) == 0)
    {
-       char* q_name = strdup(query+strlen(name_token));
-       if(strncmp(name,q_name,strlen(q_name)) == 0)
-       {
-           m_selection.push_back(node); 
-       }
+       m_query_name = strdup(query+strlen(name_token));
    }  
    else if(strncmp(query,index_token, strlen(index_token)) == 0)
    {
-       int q_index = atoi(query+strlen(index_token));
-       if( index == q_index )
-       {
-           m_selection.push_back(node); 
-       }
+       m_query_index = atoi(query+strlen(index_token));
    }
    else if(strncmp(query,range_token, strlen(range_token)) == 0)
    {
-
        std::vector<std::string> elem ; 
        split(elem, query+strlen(range_token), ':'); 
+       assert(elem.size() == 2);
+       m_query_range.clear();
+       for(int i=0 ; i<elem.size() ; ++i) m_query_range.push_back( atoi(elem[i].c_str()) ) ;
 
-       int* ie = new int[elem.size()];
-       for(int i=0 ; i<elem.size() ; ++i) ie[i] = atoi(elem[i].c_str()) ;
-       
-       if(elem.size() == 2)
-       {
-           if( index >= ie[0] && index < ie[1] )
-           {
-               m_selection.push_back(node); 
-           }
-       }
-       else
-       {
-           printf("AssimpTree::selectNodes unexpected range query %s \n", query );
-       }
-   } 
-
-   for(unsigned int i = 0; i < node->getNumChildren(); i++) 
-   {   
-       selectNodes(query, node->getChild(i), depth + 1);
-   }   
+       m_is_flat_selection = true ; 
+  } 
 }
 
 
 
+bool AssimpTree::isFlatSelection()
+{
+   return m_is_flat_selection ; 
+}
+
+
+
+
+
+void AssimpTree::selectNodes(AssimpNode* node, unsigned int depth)
+{
+   m_index++ ; 
+   const char* name = node->getName(); 
+   unsigned int index = node->getIndex();
+
+
+   if(m_query_name)
+   {
+       if(strncmp(name,m_query_name,strlen(m_query_name)) == 0)
+       {
+           m_selection.push_back(node); 
+       }
+   }
+   else if (m_query_index != 0)
+   {
+       if( index == m_query_index )
+       {
+           m_selection.push_back(node); 
+       }
+   }
+   else if(m_query_range.size() == 2)
+   {
+       if( index >= m_query_range[0] && index < m_query_range[1] )
+       {
+           m_selection.push_back(node); 
+       }
+   }
+   
+
+   for(unsigned int i = 0; i < node->getNumChildren(); i++) selectNodes(node->getChild(i), depth + 1);
+}
 
 
 
