@@ -13,8 +13,33 @@ Resources
 
 * https://devtalk.nvidia.com/default/board/90/optix/
 
+* http://on-demand-gtc.gputechconf.com/gtcnew/on-demand-gtc.php?searchByKeyword=Optix&searchItems=&sessionTopic=&sessionEvent=&sessionYear=&sessionFormat=&submit=&select=+
 
-Optix and curand ?
+  Many presentations (videos and pdfs) on OptiX
+
+
+Transparency/blending
+-----------------------
+
+* https://developer.nvidia.com/content/transparency-or-translucency-rendering
+
+* http://casual-effects.blogspot.tw/2014/03/weighted-blended-order-independent.html
+
+
+OptiX and atomics
+-------------------
+
+* https://devtalk.nvidia.com/default/topic/522795/optix/atomic-buffer-operations/
+
+  see zoneplate sample
+
+
+  One thing to keep in mind is that atomic operations will not work in multi-GPU
+  situations unless you specify RT_BUFFER_GPU_LOCAL. In that case the data stays
+  resident on the device and can only be read by the device that wrote it.
+
+
+OptiX and curand ?
 -------------------
 
 * :google:`optix curand`
@@ -57,6 +82,38 @@ Use symbolic link for version switching::
     drwxr-xr-x  33 root  wheel  1190 Jan 15 08:46 ..
     lrwxr-xr-x   1 root  wheel     9 Jan 22 11:27 OptiX -> OptiX_301
     drwxr-xr-x   6 root  wheel   204 Jan 22 11:27 .
+
+
+Building samples including sutil library 
+-------------------------------------------
+
+::
+
+    delta:OptiX blyth$ optix-name
+    OptiX_370b2
+    delta:OptiX blyth$ optix-samples-get-all   # copy samples to writable dir
+    delta:OptiX blyth$ optix-samples-cmake
+    ...
+    -- Found CUDA: /usr/local/cuda (Required is at least version "2.3") 
+    -- Found OpenGL: /System/Library/Frameworks/OpenGL.framework  
+    -- Found GLUT: -framework GLUT  
+    Cannot find Cg, hybridShadows will not be built
+    Cannot find Cg.h, hybridShadows will not be built
+    Disabling hybridShadows, which requires glut and opengl and Cg.
+    Cannot find Cg, isgReflections will not be built
+    Cannot find Cg.h, isgReflections will not be built
+    Disabling isgReflections, which requires glut and opengl and Cg.
+    Cannot find Cg, isgShadows will not be built
+    Cannot find Cg.h, isgShadows will not be built
+    Disabling isgShadows, which requires glut and opengl and Cg.
+    -- Configuring done
+    -- Generating done
+    -- Build files have been written to: /usr/local/env/cuda/OptiX_370b2_sdk_install
+
+    delta:OptiX blyth$ optix-samples-make
+
+
+
 
 
 Path to SAMPLES_PTX_DIR gets compiled in
@@ -119,6 +176,42 @@ So move that aside::
 
 
 
+::
+
+    delta:SDK-precompiled-samples blyth$ ./sample3
+    OptiX 3.7.0
+    Number of Devices = 1
+
+    Device 0: GeForce GT 750M
+      Compute Support: 3 0
+      Total Memory: 2147024896 bytes
+      Clock Rate: 925500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 2
+      Execution Timeout Enabled: 1
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 0
+
+    Constructing a context...
+    OptiX Error: Invalid context
+    (/Volumes/DATA/teamcity/agent/work/ad29186266c461fa/sw/wsapps/raytracing/rtsdk/rel3.7/samples/sample3/sample3.c:96)
+    delta:SDK-precompiled-samples blyth$ 
+
+::
+
+     95   printf("Constructing a context...\n");
+     96   RT_CHECK_ERROR(rtContextCreate(&context));
+     97 
+
+
+
+This is with
+
+* CUDA Driver Version: 5.5.47
+* GPU Driver Version: 8.26.26 310.40.45f01
+
+
 
 OptiX 301 Install issues 
 --------------------------
@@ -126,16 +219,7 @@ OptiX 301 Install issues
 ::
 
     delta:~ blyth$ optix-cmake
-    -- The C compiler identification is Clang 6.0.0
-    -- The CXX compiler identification is Clang 6.0.0
-    -- Check for working C compiler: /usr/bin/cc
-    -- Check for working C compiler: /usr/bin/cc -- works
-    -- Detecting C compiler ABI info
-    -- Detecting C compiler ABI info - done
-    -- Check for working CXX compiler: /usr/bin/c++
-    -- Check for working CXX compiler: /usr/bin/c++ -- works
-    -- Detecting CXX compiler ABI info
-    -- Detecting CXX compiler ABI info - done
+    ...
     Specified C compiler /usr/bin/cc is not recognized (gcc, icc).  Using CMake defaults.
     Specified CXX compiler /usr/bin/c++ is not recognized (g++, icpc).  Using CMake defaults.
     CMake Warning at CMake/ConfigCompilerFlags.cmake:195 (message):
@@ -339,6 +423,73 @@ exception report. To free up some GPU memory sleep/revive the machine::
     delta:bin blyth$ 
 
 
+f64 check
+-----------
+
+::
+
+    delta:raytrace blyth$ grep f64 *.ptx
+    MeshViewer_generated_TriangleMesh.cu.ptx:   .target sm_10, map_f64_to_f32
+    MeshViewer_generated_TriangleMesh.cu.ptx:   ld.global.f32   %f64, [ray+28];
+    MeshViewer_generated_TriangleMesh.cu.ptx:   set.lt.u32.f32  %r30, %f64, %f58;
+    MeshViewer_generated_material1.cu.ptx:  .target sm_10, map_f64_to_f32
+    RayTrace_generated_TriangleMesh.cu.ptx: .target sm_10, map_f64_to_f32
+    RayTrace_generated_TriangleMesh.cu.ptx: ld.global.f32   %f64, [ray+28];
+    RayTrace_generated_TriangleMesh.cu.ptx: set.lt.u32.f32  %r30, %f64, %f58;
+    RayTrace_generated_material0.cu.ptx:    .target sm_10, map_f64_to_f32
+    RayTrace_generated_material1.cu.ptx:    .target sm_10, map_f64_to_f32
+    RayTrace_generated_tutorial0.cu.ptx:    .target sm_10, map_f64_to_f32
+    RayTrace_generated_tutorial0.cu.ptx:    cvt.sat.f32.f32     %f64, %f63;
+    RayTrace_generated_tutorial0.cu.ptx:    mul.f32     %f66, %f64, %f65;
+    delta:raytrace blyth$ 
+
+
+Following updating CUDA from 5.5 to 6.5 get
+---------------------------------------------
+
+While still using OptiX301::
+
+    delta:sample3 blyth$ raytrace-v -n
+    [ 19%] Built target AssimpGeometryTest
+    Scanning dependencies of target MeshViewer
+    [ 22%] Building CXX object CMakeFiles/MeshViewer.dir/MeshViewer.cpp.o
+    Linking CXX executable MeshViewer
+    [ 61%] Built target MeshViewer
+    [100%] Built target RayTrace
+    dyld: Library not loaded: @rpath/libcudart.dylib
+      Referenced from: /Developer/OptiX/lib64/liboptix.1.dylib
+      Reason: Incompatible library version: liboptix.1.dylib requires version 1.1.0 or later, but libcudart.5.5.dylib provides version 0.0.0
+    Trace/BPT trap: 5
+    delta:sample3 blyth$ 
+
+
+
+But with the beta OptiX_370b2 the invalid context issue is gone::
+
+delta:SDK-precompiled-samples blyth$ ./sample3
+OptiX 3.7.0
+Number of Devices = 1
+
+Device 0: GeForce GT 750M
+  Compute Support: 3 0
+  Total Memory: 2147024896 bytes
+  Clock Rate: 925500 kilohertz
+  Max. Threads per Block: 1024
+  SM Count: 2
+  Execution Timeout Enabled: 1
+  Max. HW Texture Count: 128
+  TCC driver enabled: 0
+  CUDA Device Ordinal: 0
+
+Constructing a context...
+  Created with 1 device(s)
+  Supports 2147483647 simultaneous textures
+  Free memory:
+    Device 0: 1099292672 bytes
+
+
+
+
 
 EOU
 }
@@ -354,15 +505,20 @@ optix-export(){
 
 optix-fold(){    echo /Developer ; }
 optix-dir(){     echo $(optix-fold)/OptiX/SDK ; }
+optix-sdk-dir-old(){ echo $(optix-fold)/OptiX_301/SDK ; }
 optix-sdk-dir(){ echo $(optix-fold)/OptiX/SDK ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
 optix-idir(){ echo $(dirname $(optix-sdk-dir))/include ; }
 optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
 optix-sdir(){ echo $(env-home)/cuda/optix/$(optix-name) ; }
-optix-samples-install-dir(){ echo $(optix-bdir) ; }
+
+optix-samples-src-dir(){    echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
+optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }
+optix-samples-scd(){ cd $(optix-samples-src-dir) ; }
+optix-samples-cd(){ cd $(optix-samples-install-dir) ; }
 
 optix-cd(){  cd $(optix-dir); }
-optix-bcd(){ cd $(optix-bdir); }
+optix-bcd(){ cd $(optix-samples-install-dir); }
 optix-scd(){ cd $(optix-sdir); }
 optix-icd(){ cd $(optix-idir); }
 
@@ -405,10 +561,22 @@ EON
 }
 
 
-optix-samples-cd(){ cd $(optix-sdir) ; }
 
-optix-samples-get(){
-   local sdir=$(optix-sdir)
+optix-samples-get-all(){
+
+   local src=$(optix-sdk-dir)
+   local dst=$(optix-samples-src-dir)
+ 
+   mkdir -p $dst
+
+   echo $FUNCNAME copy all samples to somewhere writable 
+   cp -R $src/* $dst/
+ 
+}
+
+
+optix-samples-get-selected(){
+   local sdir=$(optix-samples-src-dir)
    mkdir -p $sdir
 
    local src=$(optix-sdk-dir)
@@ -442,11 +610,11 @@ optix-samples-get(){
 
 optix-samples-cmake(){
     local iwd=$PWD
-    local bdir=$(optix-bdir)
+    local bdir=$(optix-samples-install-dir)
     #rm -rf $bdir   # starting clean 
     mkdir -p $bdir
     optix-bcd
-    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math " "$(optix-sdir)"
+    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math " "$(optix-samples-src-dir)"
     cd $iwd
 }
 
@@ -517,6 +685,24 @@ cd /usr/local/env/cuda/OptiX_301/tutorial && /usr/bin/c++   -DGLUT_FOUND -DGLUT_
        -c /Users/blyth/env/cuda/optix/OptiX_301/tutorial/tutorial.cpp
 
 }
+
+
+
+optix-diff(){
+   local name=${1:-sutil/MeshScene.h}
+   local cmd="diff $(optix-sdk-dir-old)/$name $(optix-sdk-dir)/$name"
+   echo $cmd
+   eval $cmd
+}
+
+optix-rdiff(){
+   local rel="sutil"
+   local cmd="diff -r --brief $(optix-sdk-dir-old)/$rel $(optix-sdk-dir)/$rel"
+   echo $cmd
+   eval $cmd
+}
+
+
 
 
 

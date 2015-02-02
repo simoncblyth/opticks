@@ -1,13 +1,40 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 set(name RayTrace)
 
 project(${name})
 
+
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
                       "$ENV{OPTIX_SDK_DIR}/CMake"
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
+
+
+set(BUILD_SHARED_LIBS ON)
+
+
+# Include all CMake Macros.
+include(Macros)
+# Determine information about the compiler
+include (CompilerInfo)
+# Check for specific machine/compiler options.
+include (ConfigCompilerFlags)
+
+# Turn off the warning that NVCC issues when generating PTX from our CUDA samples.  This
+# is a custom extension to the FindCUDA code distributed by CMake.
+OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
+
+
+# For Xcode 5, gcc is actually clang, so we have to tell CUDA to treat the compiler as
+# clang, so that it doesn't mistake it for something else.
+if(USING_CLANG_C)
+  set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
+endif()
+
+
+
 
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)

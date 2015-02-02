@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// adapted from  /Developer/OptiX/SDK/sample6/sample6.cpp
+// adapted from OptiX301  /Developer/OptiX/SDK/sample6/sample6.cpp
 //  sample6.cpp: Renders an Obj model.
 //  
 //-----------------------------------------------------------------------------
@@ -9,9 +9,9 @@
 #include <optixu/optixu_aabb_namespace.h>
 #include <sutil.h>
 #include <GLUTDisplay.h>
-#include <PlyLoader.h>
-#include <ObjLoader.h>
 
+//#include <PlyLoader.h>
+//#include <ObjLoader.h>
 #include "G4DAELoader.hh"
 
 #include "commonStructs.h"
@@ -29,6 +29,17 @@
 #include <libgen.h>
 
 using namespace optix;
+
+
+
+const char* const ptxpath( const std::string& target, const std::string& base )
+{
+  static std::string path;
+  path = std::string(sutilSamplesPtxDir()) + "/" + target + "_generated_" + base + ".ptx";
+  return path.c_str();
+}
+
+
 
 
 //------------------------------------------------------------------------------
@@ -178,19 +189,19 @@ void MeshViewer::initContext()
     resetAccumulation();
   }
 
-  const std::string camera_ptx  = ptxpath( "sample6", camera_file );
+  const std::string camera_ptx  = ::ptxpath( "sample6", camera_file );
   Program ray_gen_program = m_context->createProgramFromPTXFile( camera_ptx, camera_name );
   m_context->setRayGenerationProgram( 0, ray_gen_program );
 
 
   // Exception program
-  const std::string except_ptx  = ptxpath( "sample6", camera_file );
+  const std::string except_ptx  = ::ptxpath( "sample6", camera_file );
   m_context->setExceptionProgram( 0, m_context->createProgramFromPTXFile( except_ptx, "exception" ) );
   m_context[ "bad_color" ]->setFloat( 0.0f, 1.0f, 0.0f );
 
 
   // Miss program 
-  const std::string miss_ptx = ptxpath( "sample6", "constantbg.cu" );
+  const std::string miss_ptx = ::ptxpath( "sample6", "constantbg.cu" );
   m_context->setMissProgram( 0, m_context->createProgramFromPTXFile( miss_ptx, "miss" ) );
   m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f );
 }
@@ -229,14 +240,14 @@ void MeshViewer::initMaterial()
     }
 
     case SM_NORMAL: {
-      const std::string ptx_path = ptxpath("sample6", "normal_shader.cu");
+      const std::string ptx_path = ::ptxpath("sample6", "normal_shader.cu");
       m_material = m_context->createMaterial();
       m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance" ) );
       break;
     }
 
     case SM_AO: {
-      const std::string ptx_path = ptxpath("sample6", "ambocc.cu");
+      const std::string ptx_path = ::ptxpath("sample6", "ambocc.cu");
       m_material = m_context->createMaterial();
       m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance" ) );
       m_material->setAnyHitProgram    ( 1, m_context->createProgramFromPTXFile( ptx_path, "any_hit_occlusion" ) );    
@@ -244,7 +255,7 @@ void MeshViewer::initMaterial()
     } 
     
     case SM_ONE_BOUNCE_DIFFUSE: {
-      const std::string ptx_path = ptxpath("sample6", "one_bounce_diffuse.cu");
+      const std::string ptx_path = ::ptxpath("sample6", "one_bounce_diffuse.cu");
       m_material = m_context->createMaterial();
       m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance" ) );
       m_material->setAnyHitProgram    ( 1, m_context->createProgramFromPTXFile( ptx_path, "any_hit_shadow" ) );
@@ -252,7 +263,7 @@ void MeshViewer::initMaterial()
     }
 
     case SM_AO_PHONG: {
-      const std::string ptx_path = ptxpath("sample6", "ambocc.cu");
+      const std::string ptx_path = ::ptxpath("sample6", "ambocc.cu");
       m_material = m_context->createMaterial();
       m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance_phong_ao" ) );
       m_material->setAnyHitProgram    ( 1, m_context->createProgramFromPTXFile( ptx_path, "any_hit_shadow" ) );
@@ -279,6 +290,8 @@ void MeshViewer::initGeometry()
 
   m_geometry_group = m_context->createGeometryGroup();
 
+
+/*
   if( ObjLoader::isMyFile( m_filename.c_str() ) ) 
   {
     // Load OBJ model 
@@ -303,7 +316,10 @@ void MeshViewer::initGeometry()
      m_aabb = loader.getSceneBBox();
 
   }
-  else if( G4DAELoader::isMyFile( m_filename ) )
+  else 
+*/
+
+  if( G4DAELoader::isMyFile( m_filename ) )
   {
      G4DAELoader loader( m_filename, m_context, m_geometry_group, m_material, m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
      loader.load();
@@ -643,7 +659,9 @@ int main( int argc, char** argv )
   if( !GLUTDisplay::isBenchmark() ) printUsageAndExit( argv[0], false );
 
   try {
-    GLUTDisplay::run( "MeshViewer", &scene, draw_mode );
+
+    const std::string title = "MeshViewer" ;
+    GLUTDisplay::run( title, &scene, draw_mode );
   } catch( Exception& e ){
     sutilReportError( e.getErrorString().c_str() );
     exit(1);

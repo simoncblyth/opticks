@@ -15,6 +15,24 @@ tips to free up GPU memory
 #. put the machine to sleep and go and have a coffee
 
 
+Updating to CUDA 6.5 (Feb 2, 2015)
+----------------------------------
+
+Using sysprefs panel to initiate the install, 
+going from:
+
+* CUDA Driver Version: 5.5.47
+* GPU Driver Version: 8.26.26 310.40.45f01
+
+
+To:
+
+* (No newer CUDA driver available)
+* CUDA Driver Version: 6.5.45   
+* GPU Driver Version: 8.26.26 310.40.45f01
+
+
+
 version available
 ------------------
 
