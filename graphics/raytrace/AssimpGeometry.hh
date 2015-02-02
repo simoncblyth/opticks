@@ -31,6 +31,8 @@ public:
     unsigned int getSceneFlags();
     unsigned int defaultProcessFlags();
 
+    int getQueryMerge();
+    int getQueryDepth();
     static const char* identityFilename(char* arg);
 
     void info();
@@ -40,6 +42,7 @@ public:
     void traverse();
 
     AssimpNode* getRoot();
+    aiMesh* createMergedMesh();
 
 public:
     aiVector3D* getLow();

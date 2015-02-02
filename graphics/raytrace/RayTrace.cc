@@ -9,15 +9,16 @@
 int main(int argc, char* argv[])
 {
     const char* query = getenv("RAYTRACE_QUERY");
-    if(!query) query = "__dd__Geometry__AD__lvOIL0xbf5e0b8" ;
-    printf("argv0 %s query %s \n", argv[0], query );
+    const char* key = "DAE_NAME_DYB_NOEXTRA" ; 
+    const char* path = getenv(key);
+
+    printf("argv0 %s query %s path %s \n", argv[0], query, path );
+    assert(query);
+    assert(path);
 
     GLUTDisplay::init( argc, argv );
 
     unsigned int width = 1080u, height = 720u;
-
-    const char* key = "DAE_NAME_DYB_NOEXTRA" ; 
-    const char* path = getenv(key);
 
     std::stringstream title;
     title << "RayTrace " << key ;

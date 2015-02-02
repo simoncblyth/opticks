@@ -24,6 +24,9 @@ public:
 
     aiMesh* getRawMesh(unsigned int meshIndex );
 
+    // merge selected meshes into a single mesh 
+    aiMesh* createMergedMesh();  
+
     void traverse();
     void dump();
 
@@ -33,6 +36,8 @@ public:
     unsigned int getNumSelected();
     AssimpNode* getSelectedNode(unsigned int i);
     bool isFlatSelection();
+    int getQueryMerge();
+    int getQueryDepth();
 
 public:
     // bounds
@@ -67,11 +72,16 @@ private:
     void selectNodes(AssimpNode* node, unsigned int depth);
 
 private:
+    void parseQueryElement(const char* query);
     void parseQuery(const char* query);
 
     char* m_query_name ;
 
     int m_query_index ; 
+
+    int m_query_merge ; 
+
+    int m_query_depth ; 
 
     std::vector<int> m_query_range ; 
 

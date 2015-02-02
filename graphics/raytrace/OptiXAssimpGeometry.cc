@@ -23,8 +23,7 @@ OptiXAssimpGeometry::OptiXAssimpGeometry(const char* path)
            AssimpGeometry(path),
            m_context(NULL),
            m_program(NULL),
-           m_material(NULL),
-           m_maxdepth(4)
+           m_material(NULL)
 {
 }
 
@@ -44,11 +43,6 @@ void OptiXAssimpGeometry::setGeometryGroup(optix::GeometryGroup gg)
 {
     m_geometry_group = gg ; 
 }
-void OptiXAssimpGeometry::setMaxDepth(unsigned int  maxdepth)
-{
-    m_maxdepth = maxdepth ;
-}
-
 
 optix::GeometryGroup OptiXAssimpGeometry::getGeometryGroup()
 {
@@ -60,7 +54,8 @@ optix::Material OptiXAssimpGeometry::getMaterial()
 }
 unsigned int OptiXAssimpGeometry::getMaxDepth()
 {
-    return m_maxdepth ; 
+    int qdepth = getQueryDepth();
+    return ( qdepth == 0 ) ? 100 : qdepth ;
 }
 
 
@@ -89,18 +84,35 @@ void OptiXAssimpGeometry::convert()
 
     m_gis.clear();
 
-    bool recurse = !isFlatSelection() ; 
 
-    for(unsigned int i=0 ; i < getNumSelected() ; i++ )
+    bool mergemesh = getQueryMerge();
+
+    if(mergemesh)
     {
-        traverseNode(getSelectedNode(i), 0, recurse);
+        printf("OptiXAssimpGeometry::convert createMergedMesh \n");
+
+        aiMesh* mesh = createMergedMesh(); 
+
+        optix::Geometry geometry = convertGeometry(mesh) ;  
+
+        optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, &m_material, &m_material+1  ); // single material 
+
+        m_gis.push_back(gi);
+
+    }
+    else
+    {
+        bool recurse = !isFlatSelection() ; 
+        for(unsigned int i=0 ; i < getNumSelected() ; i++ )
+        {
+            traverseNode(getSelectedNode(i), 0, recurse);
+        }
     } 
 
     printf("OptiXAssimpGeometry::convert : %d selected top nodes with %lu gi \n", getNumSelected(), m_gis.size() );
 
     m_geometry_group->setChildCount(m_gis.size());
     for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
-
 }
 
 
@@ -139,8 +151,9 @@ void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth, boo
    //      potential large reduction in GPU memory usage 
    //
    //
+    int maxdepth = getMaxDepth();
 
-    if(depth < m_maxdepth )
+    if(depth < maxdepth )
     {
         for(unsigned int i = 0; i < node->getNumMeshes(); i++)
         {   

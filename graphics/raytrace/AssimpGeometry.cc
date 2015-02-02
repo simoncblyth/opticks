@@ -148,12 +148,14 @@ unsigned int AssimpGeometry::select(const char* query)
 {
     unsigned int n = m_tree->select(query);
     dump();
+
     if(n == 0)
     {
         printf("AssimpGeometry::select WARNING query \"%s\" failed to find any nodes : fallback to adding root  \n", query );
-        AssimpNode* root = getRoot() ;
-        m_tree->addToSelection(root);
     }
+
+    assert(n>0);
+
     return m_tree->getNumSelected() ; 
 }
 
@@ -161,6 +163,23 @@ AssimpNode* AssimpGeometry::getRoot()
 {
     return m_tree->getRoot();
 }
+
+
+aiMesh* AssimpGeometry::createMergedMesh()
+{
+    return m_tree->createMergedMesh();
+}
+
+int AssimpGeometry::getQueryMerge()
+{
+    return m_tree->getQueryMerge();
+}
+
+int AssimpGeometry::getQueryDepth()
+{
+    return m_tree->getQueryDepth();
+}
+
 
 unsigned int AssimpGeometry::getNumSelected()
 {

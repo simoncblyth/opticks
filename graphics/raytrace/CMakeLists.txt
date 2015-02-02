@@ -116,9 +116,13 @@ add_optix_executable( MeshViewer
                       AssimpRegistry.cc
                       OptiXAssimpGeometry.cc
                       G4DAELoader.cc
+
                       material1.cu
                       TriangleMesh.cu
 )
+
+
+
 
 
 # non-optix geometry checking 
@@ -130,7 +134,6 @@ add_executable( AssimpGeometryTest
                 AssimpNode.cc
                 AssimpTree.cc
                 AssimpRegistry.cc
-
 )
 
 target_link_libraries( AssimpGeometryTest 

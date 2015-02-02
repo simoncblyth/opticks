@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
-// adapted from OptiX301  /Developer/OptiX/SDK/sample6/sample6.cpp
+//  adapted from /Developer/OptiX_301/SDK/sample6/sample6.cpp
+// 
 //  sample6.cpp: Renders an Obj model.
 //  
 //-----------------------------------------------------------------------------
@@ -36,7 +37,9 @@ const char* const ptxpath( const std::string& target, const std::string& base )
 {
   static std::string path;
   path = std::string(sutilSamplesPtxDir()) + "/" + target + "_generated_" + base + ".ptx";
-  return path.c_str();
+  const char* _path = path.c_str();
+  printf("ptxpath %s \n", _path); 
+  return _path ; 
 }
 
 
@@ -290,34 +293,6 @@ void MeshViewer::initGeometry()
 
   m_geometry_group = m_context->createGeometryGroup();
 
-
-/*
-  if( ObjLoader::isMyFile( m_filename.c_str() ) ) 
-  {
-    // Load OBJ model 
-    ObjLoader* loader = 0;
-    if( m_shade_mode == SM_NORMAL || m_shade_mode == SM_AO || m_shade_mode == SM_AO_PHONG ) {
-      loader = new ObjLoader( m_filename.c_str(), m_context, m_geometry_group, m_material, false,  m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
-    } else if ( m_shade_mode == SM_ONE_BOUNCE_DIFFUSE ) {
-      loader = new ObjLoader( m_filename.c_str(), m_context, m_geometry_group, m_material, true,  m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
-    } else {
-      loader = new ObjLoader( m_filename.c_str(), m_context, m_geometry_group, m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
-    }
-    loader->load();
-    m_aabb = loader->getSceneBBox();
-    delete loader;
-
-  } 
-  else if( PlyLoader::isMyFile( m_filename ) ) 
-  {
-     // Load PLY model 
-     PlyLoader loader( m_filename, m_context, m_geometry_group, m_material, m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
-     loader.load();
-     m_aabb = loader.getSceneBBox();
-
-  }
-  else 
-*/
 
   if( G4DAELoader::isMyFile( m_filename ) )
   {

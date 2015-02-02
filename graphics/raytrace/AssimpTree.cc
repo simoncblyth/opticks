@@ -22,6 +22,8 @@ AssimpTree::AssimpTree(const aiScene* scene)
   m_query(NULL),
   m_query_name(NULL),
   m_query_index(0), 
+  m_query_merge(0), 
+  m_query_depth(0), 
   m_is_flat_selection(false)
 {
 
@@ -179,6 +181,7 @@ void AssimpTree::dumpSelection()
    unsigned int n = getNumSelected();
    printf("AssimpTree::dumpSelection n %d \n", n); 
 
+   /*
    for(unsigned int i = 0 ; i < n ; i++)
    {
         if( i > 10 ) break ; 
@@ -186,6 +189,7 @@ void AssimpTree::dumpSelection()
         node->summary("AssimpTree::dumpSelection");
         node->bounds("AssimpTree::dumpSelection");
    } 
+   */
 }
 
 
@@ -254,10 +258,164 @@ void AssimpTree::findBounds(AssimpNode* node, aiVector3D& low, aiVector3D& high 
 }
 
 
-void AssimpTree::MergeMeshes(AssimpNode* node)
+aiMesh* AssimpTree::createMergedMesh()
 {
     // /usr/local/env/graphics/assimp/assimp-3.1.1/code/SceneCombiner.cpp    SceneCombiner::MergeMeshes
     // /usr/local/env/graphics/assimp/assimp-3.1.1/code/OptimizeMeshes.cpp
+
+    aiMesh* out = new aiMesh();
+
+    // 1st past : establish the size
+    for(unsigned int i=0 ; i < getNumSelected() ; i++ )
+    {
+        AssimpNode* node = getSelectedNode(i);
+        for(unsigned int i = 0; i < node->getNumMeshes(); i++)
+        {   
+            aiMesh* mesh = node->getMesh(i);   // these are copied and globally positioned meshes 
+            out->mNumVertices += mesh->mNumVertices;
+            out->mNumFaces += mesh->mNumFaces;
+            out->mNumBones += mesh->mNumBones;
+            out->mPrimitiveTypes |= mesh->mPrimitiveTypes;
+        } 
+    } 
+
+    assert(out->mNumVertices);
+    assert(!out->mNumBones);
+
+	aiVector3D* pv ; 
+	aiVector3D* pn ; 
+	aiVector3D* pt ; 
+	aiVector3D* pb ; 
+	aiVector3D* px ; 
+    aiColor4D* pc ;
+    aiFace* pf ;  
+
+    bool first = true ;
+    unsigned int n ;
+    unsigned int ofs = 0;
+
+    for(unsigned int i=0 ; i < getNumSelected() ; i++ )
+    {
+        AssimpNode* node = getSelectedNode(i);
+        for(unsigned int i = 0; i < node->getNumMeshes(); i++)
+        {
+            aiMesh* mesh = node->getMesh(i);   // these are copied and globally positioned meshes 
+
+            if(first)
+            {
+                if(mesh->HasPositions()) 
+                {
+                    pv = out->mVertices = new aiVector3D[out->mNumVertices];
+                }
+                if(mesh->HasNormals()) 
+                {
+                    pn = out->mNormals = new aiVector3D[out->mNumVertices];
+                }
+                if(mesh->HasTangentsAndBitangents()) 
+                {
+                    pt = out->mTangents = new aiVector3D[out->mNumVertices];
+                    pb = out->mBitangents = new aiVector3D[out->mNumVertices];
+                }
+
+                n = 0 ;
+		        while (mesh->HasTextureCoords(n))	
+                {
+			        out->mNumUVComponents[n] = mesh->mNumUVComponents[n];
+	 		        px = out->mTextureCoords[n] = new aiVector3D[out->mNumVertices];
+                    ++n ;
+                } 
+
+                n = 0 ;
+		        while (mesh->HasVertexColors(n))	
+                {
+	 		        pc = out->mColors[n] = new aiColor4D[out->mNumVertices];
+                    ++n ;
+                } 
+
+                if (out->mNumFaces) 
+                {
+		            pf = out->mFaces = new aiFace[out->mNumFaces];
+                }
+                first = false ; 
+            }
+
+            if (mesh->HasPositions())
+            {
+                if(mesh->mVertices)
+                {
+                    ::memcpy(pv,mesh->mVertices,mesh->mNumVertices*sizeof(aiVector3D));
+                }
+                pv += mesh->mNumVertices;
+            }
+
+            if (mesh->HasNormals())
+            {
+                if(mesh->mNormals)
+                {
+                    ::memcpy(pn,mesh->mNormals,mesh->mNumVertices*sizeof(aiVector3D));
+                }
+                pn += mesh->mNumVertices;
+            }
+ 
+            if (mesh->HasTangentsAndBitangents())
+            {
+                if(mesh->mTangents)
+                {
+                    ::memcpy(pt,mesh->mTangents,mesh->mNumVertices*sizeof(aiVector3D));
+                    ::memcpy(pb,mesh->mBitangents,mesh->mNumVertices*sizeof(aiVector3D));
+                }
+                pt += mesh->mNumVertices;
+                pb += mesh->mNumVertices;
+            }
+
+		    n = 0;
+		    while ((mesh->HasTextureCoords(n)))
+            {
+                out->mNumUVComponents[n] = mesh->mNumUVComponents[n];
+               
+                if(mesh->mTextureCoords[n])
+                {
+                    ::memcpy(px,mesh->mTextureCoords[n],mesh->mNumVertices*sizeof(aiVector3D));
+                }
+                px += mesh->mNumVertices;
+                ++n;
+            }
+
+		    n = 0;
+		    while ((mesh->HasVertexColors(n)))
+            {
+                if(mesh->mColors[n])
+                {
+                    ::memcpy(pc,mesh->mColors[n],mesh->mNumVertices*sizeof(aiColor4D));
+                }
+                pc += mesh->mNumVertices;
+                ++n;
+            }
+
+
+            if (out->mNumFaces) 
+            {
+                for (unsigned int m = 0; m < mesh->mNumFaces;++m,++pf)
+                {
+                    // aiFace assignment operator allocates on heap and does memcpy 
+                    aiFace& face = mesh->mFaces[m];   
+                    pf->mNumIndices = face.mNumIndices;
+                    pf->mIndices = face.mIndices;    //  record the heap pointer into the combi mesh  
+
+                    if (ofs)
+                    {
+                        for (unsigned int q = 0; q < face.mNumIndices; ++q) face.mIndices[q] += ofs;
+                    }
+                    face.mIndices = NULL;   // avoid deleting the indices out from underneath 
+                }
+                ofs += mesh->mNumVertices;
+            }
+
+
+        }   // over meshes (0 or 1 for G4DAE Collada)
+    }       // over selected nodes
+
+    return out ;  
 }
 
 
@@ -333,23 +491,41 @@ void AssimpTree::addToSelection(AssimpNode* node)
 }
 
 
-
-
-
 void AssimpTree::parseQuery(const char* query)
 {
+   std::vector<std::string> elem ; 
+   split(elem, query, ',');
+   for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
+}
 
+
+void AssimpTree::parseQueryElement(const char* query)
+{
    const char* name_token  = "name:" ;
    const char* index_token = "index:" ;
    const char* range_token = "range:" ;
+   const char* merge_token = "merge:" ;
+   const char* depth_token = "depth:" ;
 
    if(strncmp(query,name_token, strlen(name_token)) == 0)
    {
        m_query_name = strdup(query+strlen(name_token));
+       printf("AssimpTree::parseQueryElement query_name  %s \n", m_query_name );
    }  
    else if(strncmp(query,index_token, strlen(index_token)) == 0)
    {
        m_query_index = atoi(query+strlen(index_token));
+       printf("AssimpTree::parseQueryElement query_index  %d \n", m_query_index );
+   }
+   else if(strncmp(query,merge_token, strlen(merge_token)) == 0)
+   {
+       m_query_merge = atoi(query+strlen(merge_token));
+       printf("AssimpTree::parseQueryElement query_merge  %d \n", m_query_merge );
+   }
+   else if(strncmp(query,depth_token, strlen(depth_token)) == 0)
+   {
+       m_query_depth = atoi(query+strlen(depth_token));
+       printf("AssimpTree::parseQueryElement query_depth  %d \n", m_query_depth );
    }
    else if(strncmp(query,range_token, strlen(range_token)) == 0)
    {
@@ -357,13 +533,26 @@ void AssimpTree::parseQuery(const char* query)
        split(elem, query+strlen(range_token), ':'); 
        assert(elem.size() == 2);
        m_query_range.clear();
-       for(int i=0 ; i<elem.size() ; ++i) m_query_range.push_back( atoi(elem[i].c_str()) ) ;
-
+       for(int i=0 ; i<elem.size() ; ++i)
+       {
+           m_query_range.push_back( atoi(elem[i].c_str()) ) ;
+           printf("AssimpTree::parseQueryElement query_range  %d \n", m_query_range[i] );
+       }
        m_is_flat_selection = true ; 
   } 
 }
 
 
+
+int AssimpTree::getQueryMerge()
+{
+   return m_query_merge ;  
+}
+
+int AssimpTree::getQueryDepth()
+{
+   return m_query_depth ;  
+}
 
 bool AssimpTree::isFlatSelection()
 {
@@ -376,10 +565,12 @@ bool AssimpTree::isFlatSelection()
 
 void AssimpTree::selectNodes(AssimpNode* node, unsigned int depth)
 {
+   // recursive traverse, adding nodes fulfiling the selection
+   // criteria into m_selection 
+
    m_index++ ; 
    const char* name = node->getName(); 
    unsigned int index = node->getIndex();
-
 
    if(m_query_name)
    {

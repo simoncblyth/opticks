@@ -25,8 +25,6 @@ public:
 
     void setProgram(OptiXProgram* program);
 
-    void setMaxDepth(unsigned int maxdepth);
-
     void setGeometryGroup(optix::GeometryGroup gg);
 
 public:
@@ -72,8 +70,6 @@ private:
     optix::Context m_context ;
 
     optix::Material m_material ;
-
-    unsigned int m_maxdepth ; 
 
     optix::GeometryGroup m_geometry_group ; 
 
