@@ -13,7 +13,6 @@
 #include "AssimpCommon.hh"
 #include "AssimpGeometry.hh"
 #include "OptiXAssimpGeometry.hh"
-#include "OptiXProgram.hh"
 
 #include <stdlib.h>
 

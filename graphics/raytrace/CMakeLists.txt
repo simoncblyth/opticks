@@ -100,7 +100,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURREN
 #                     ${name}.cc 
 #                     RayTraceConfig.cc
 #                     ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
-#                     OptiXProgram.cc
 #                     AssimpGeometry.cc
 #                     AssimpCommon.cc
 #                     AssimpNode.cc
@@ -117,7 +116,6 @@ add_optix_executable( MeshViewer
                       MeshViewer.cpp
                       RayTraceConfig.cc
                       ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
-                      OptiXProgram.cc
                       AssimpGeometry.cc
                       AssimpCommon.cc
                       AssimpNode.cc

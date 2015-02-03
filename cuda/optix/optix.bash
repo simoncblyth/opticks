@@ -18,6 +18,159 @@ Resources
   Many presentations (videos and pdfs) on OptiX
 
 
+Release Notes OptiX Version 3.7 beta 3 (January 2015)
+--------------------------------------------------------
+
+The CUDA R343 or later driver is required. The latest available WHQL drivers
+are highly recommended. For the Mac, the driver extension module supplied with
+CUDA 5.0 or later will need to be installed. Note that the Linux and Mac
+drivers can only be obtained from the CUDA 6.5 download page at the moment.
+
+SLI is not required for OptiX to use multiple GPUs, and it interferes when
+OptiX uses either D3D or OpenGL interop. Disabling SLI will not degrade OptiX
+performance and will provide a more stable environment for OptiX applications
+to run. SLI is termed “Multi-GPU mode” in recent NVIDIA Control Panels, with
+the correct option being “Disable multi-GPU mode” to ensure OptiX is not
+encumbered by graphics overhead.
+
+
+hgpu01 install
+--------------
+
+Manual CUDA::
+
+    -bash-4.1$ cat /etc/redhat-release 
+    Scientific Linux release 6.5 (Carbon)
+
+    -bash-4.1$ rpm -qf /usr/local/cuda-5.5
+    file /usr/local/cuda-5.5 is not owned by any package
+
+Hmm getting "OptiX Error: Invalid context", with 370b3 
+I was getting this on laptop until I updated the driver.
+
+::
+
+    scp /Users/blyth/Downloads/NVIDIA-OptiX-SDK-3.5.1-linux64.run L6:/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/
+    scp /Users/blyth/Downloads/NVIDIA-OptiX-SDK-3.6.3-linux64.run L6:/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/
+    scp /Users/blyth/Downloads/NVIDIA-OptiX-SDK-3.7.0-linux64.sh L6:/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/
+
+    -bash-4.1$ chmod ugo+x NVIDIA-OptiX-SDK-3.5.1-linux64.run 
+    -bash-4.1$ chmod ugo+x NVIDIA-OptiX-SDK-3.6.3-linux64.run 
+    -bash-4.1$ chmod ugo+x NVIDIA-OptiX-SDK-3.7.0-linux64.sh 
+
+    -bash-4.1$ ./NVIDIA-OptiX-SDK-3.5.1-linux64.run --prefix=. --include-subdir
+    -bash-4.1$ ./NVIDIA-OptiX-SDK-3.6.3-linux64.run --prefix=. --include-subdir
+    -bash-4.1$ ./NVIDIA-OptiX-SDK-3.7.0-linux64.sh --prefix=. --include-subdir
+
+    -bash-4.1$ ln -sfnv NVIDIA-OptiX-SDK-3.5.1-PRO-linux64 OptiX
+    -bash-4.1$ ln -sfnv NVIDIA-OptiX-SDK-3.6.3-linux64 OptiX
+    -bash-4.1$ ln -sfnv NVIDIA-OptiX-SDK-3.7.0-linux64 OptiX
+
+    -bash-4.1$ pwd
+    /dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/OptiX/SDK-precompiled-samples
+
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
+    OptiX 3.7.0
+    Number of Devices = 2
+
+    Device 0: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 0
+
+    Device 1: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 1
+
+    Constructing a context...
+    OptiX Error: Invalid context
+    (/root/sw/wsapps/raytracing/rtsdk/rel3.7/samples/sample3/sample3.c:96)
+
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
+    OptiX 3.5.1
+    Number of Devices = 2
+
+    Device 0: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 0
+
+    Device 1: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 1
+
+    Constructing a context...
+      Created with 2 device(s)
+      Supports 2147483647 simultaneous textures
+      Free memory:
+        Device 0: 4952547328 bytes
+        Device 1: 4952547328 bytes
+
+
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
+    OptiX 3.6.3
+    Number of Devices = 2
+
+    Device 0: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 0
+
+    Device 1: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 1
+
+    Constructing a context...
+      Created with 2 device(s)
+      Supports 2147483647 simultaneous textures
+      Free memory:
+        Device 0: 4952547328 bytes
+        Device 1: 4952547328 bytes
+
+
+
+
+
+
 Transparency/blending
 -----------------------
 
@@ -503,7 +656,12 @@ optix-export(){
    export OPTIX_SAMPLES_INSTALL_DIR=$(optix-samples-install-dir)
 }
 
-optix-fold(){    echo /Developer ; }
+optix-fold(){ 
+   case $NODE_TAG in 
+      D)  echo /Developer ;;
+      G1) echo $(local-base) ;;
+   esac
+}
 optix-dir(){     echo $(optix-fold)/OptiX/SDK ; }
 optix-sdk-dir-old(){ echo $(optix-fold)/OptiX_301/SDK ; }
 optix-sdk-dir(){ echo $(optix-fold)/OptiX/SDK ; }
