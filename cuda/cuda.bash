@@ -32,13 +32,25 @@ To:
 * GPU Driver Version: 8.26.26 310.40.45f01
 
 
-
 version available
 ------------------
 
 From system prefs::
 
     Available: CUDA 6.5.18 Driver update is available
+
+
+samples install
+------------------
+
+::
+
+    cuda-samples-install
+    cuda-samples-cd
+
+    make
+
+
 
 
 versions
@@ -201,13 +213,33 @@ cuda-tmp(){ echo $(local-tmp)/env/cuda ; }
 cuda-cd(){  cd $(cuda-dir); }
 cuda-mate(){ mate $(cuda-dir) ; }
 cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
-cuda-dir(){ echo /Developer/NVIDIA/CUDA-5.5 ; }
+cuda-dir(){ 
+   case $NODE_TAG in 
+     D) echo /Developer/NVIDIA/CUDA-5.5 ;;
+     G1) echo /usr/local/cuda-5.5  ;;
+   esac
+}
+
+cuda-libdir(){
+   case $NODE_TAG in 
+      D) echo /usr/local/cuda/lib ;;
+      G1) echo /usr/local/cuda/lib64 ;;
+   esac
+}
+
+
 cuda-path(){
     local dir=$(cuda-dir)
     [ ! -d $dir ] && return 1
     export PATH=$dir/bin:$PATH
-    #export DYLD_LIBRARY_PATH=$dir/lib:$DYLD_LIBRARY_PATH
-    export DYLD_LIBRARY_PATH=/usr/local/cuda/lib:$DYLD_LIBRARY_PATH      # not documented ??? links from this to $dir/lib
+
+    local libdir=$(cuda-libdir)
+
+    if [ "$NODE_TAG" == "D" ]; then 
+       export DYLD_LIBRARY_PATH=$libdir:$DYLD_LIBRARY_PATH      # not documented ??? links from this to $dir/lib
+    else
+       export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+    fi
 
     # these are not seen by the pycuda build
 }
@@ -252,10 +284,34 @@ cuda-osx-kextstat(){
 
 cuda-samples-dir(){ echo $(cuda-writable-dir)/NVIDIA_CUDA-5.5_Samples ; }
 cuda-samples-cd(){ cd $(cuda-samples-dir) ; }
+cuda-samples-make(){
+   cuda-samples-cd
+   make $*
+}
 cuda-samples-install(){
+   local iwd=$PWD
    local dir=$(cuda-writable-dir)
    [ ! -d "$dir" ] && mkdir -p $dir
-   cuda-install-samples-5.5.sh $dir
+  
+   # cuda-install-samples-5.5.sh $dir
+   # have to do it manually to skip the doc folder which goes over afs quota
+
+   local src=$(dirname $(dirname $(which cuda-install-samples-5.5.sh)))/samples
+   local dst=$(cuda-samples-dir)
+   local path
+
+   cd $src
+   local name
+   ls -1 $src | while read path ; do
+      name=$(basename $path)
+      if [ "$name" == "doc" ]; then
+         echo skip $path
+      else
+         cp -R $path $dst/
+      fi
+   done
+   cd $iwd
+
 }
 cuda-samples-bin-dir(){ echo $(cuda-samples-dir)/bin/$(uname -m)/$(uname | tr '[:upper:]' '[:lower:]')/release ; }
 cuda-samples-bin-cd(){  cd $(cuda-samples-bin-dir) ; }
@@ -275,4 +331,4 @@ cuda-samples-bin-smokeParticles(){ cuda-samples-bin-run smokeParticles $* ; }
 cuda-samples-bin-fluidsGL(){       cuda-samples-bin-run fluidsGL $* ; }
 
 
-
+cuda-deviceQuery(){ cuda-samples-bin-run deviceQuery $* ; } 
