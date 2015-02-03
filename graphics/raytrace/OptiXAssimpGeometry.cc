@@ -1,6 +1,6 @@
 #include "OptiXAssimpGeometry.hh"
 #include "AssimpNode.hh"
-#include "OptiXProgram.hh"
+#include "RayTraceConfig.hh"
 
 #include <string.h>
 #include <stdlib.h>
@@ -22,7 +22,6 @@ OptiXAssimpGeometry::OptiXAssimpGeometry(const char* path)
            : 
            AssimpGeometry(path),
            m_context(NULL),
-           m_program(NULL),
            m_material(NULL)
 {
 }
@@ -31,10 +30,7 @@ void OptiXAssimpGeometry::setContext(optix::Context& context)
 {
     m_context = context ;   
 }
-void OptiXAssimpGeometry::setProgram(OptiXProgram* program)
-{
-    m_program = program ;   
-}
+
 void OptiXAssimpGeometry::setMaterial(optix::Material material)
 {
     m_material = material ;   
@@ -189,12 +185,9 @@ optix::Material OptiXAssimpGeometry::convertMaterial(aiMaterial* ai_material)
         tis better to defer material association to the loader, for flexibility 
     */
 
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
     optix::Material material = m_context->createMaterial();
-    const char* filename = "material1.cu" ; 
-    const char* fname = "closest_hit_radiance" ; 
-    optix::Program  program = m_program->createProgram(filename, fname);
-    material->setClosestHitProgram(0, program);
-    //material["Kd"]->setFloat( 0.7f, 0.7f, 0.7f);   // not used for normal shader in material1.cu 
+    material->setClosestHitProgram(0, cfg->createProgram("material1.cu", "closest_hit_radiance"));
     return material ; 
 }
 
@@ -256,19 +249,16 @@ optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
    //
    //
 
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+
     unsigned int numFaces = mesh->mNumFaces;
     unsigned int numVertices = mesh->mNumVertices;
 
     optix::Geometry geometry = m_context->createGeometry();
-
     geometry->setPrimitiveCount(numFaces);
 
-    const char* filename = "TriangleMesh.cu" ;   // cached program is returned after creation at first call
-    optix::Program intersectionProgram = m_program->createProgram( filename, "mesh_intersect" );
-    optix::Program boundingBoxProgram = m_program->createProgram( filename, "mesh_bounds" );
-
-    geometry->setIntersectionProgram(intersectionProgram);
-    geometry->setBoundingBoxProgram(boundingBoxProgram);
+    geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu", "mesh_intersect"));
+    geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu", "mesh_bounds"));
 
     // Create vertex, normal and texture buffer
 

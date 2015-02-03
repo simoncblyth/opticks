@@ -5,7 +5,6 @@
 #include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
-class OptiXProgram ; 
 class AssimpNode ; 
 
 #include "AssimpGeometry.hh"
@@ -22,8 +21,6 @@ public:
     void setContext(optix::Context& context);
 
     void setMaterial(optix::Material material);
-
-    void setProgram(OptiXProgram* program);
 
     void setGeometryGroup(optix::GeometryGroup gg);
 
@@ -64,8 +61,6 @@ public:
     optix::Aabb getAabb();
 
 private:
-
-    OptiXProgram* m_program ; 
 
     optix::Context m_context ;
 

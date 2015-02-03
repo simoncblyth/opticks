@@ -74,12 +74,8 @@ void G4DAELoader::load()
 
 void G4DAELoader::load( const optix::Matrix4x4& transform )
 {
-  char* ptxdir = getenv("RAYTRACE_PTXDIR");     
   char* query = getenv("RAYTRACE_QUERY");     
-  printf("G4DAELoader::load ptxdir %s query %s \n", ptxdir, query );
-
-  OptiXProgram prog(ptxdir, "MeshViewer");  // cmake target name
-  prog.setContext(m_context);
+  printf("G4DAELoader::load query %s \n", query );
 
   std::string path = removeField( m_filename.c_str(), '.' , -2 );
   printf("G4DAELoader::load filename %s path %s \n", m_filename.c_str(), path.c_str() );
@@ -88,9 +84,8 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
   geom.import();
   geom.setGeometryGroup(m_geometry_group);
 
-  // must setContext and setProgram before convert 
+  // must setContext before convert : can get rid of this via the cfg 
   geom.setContext(m_context);
-  geom.setProgram(&prog);
   geom.setMaterial(m_material);  // override the material hailing from geometry 
   geom.select(query);
 

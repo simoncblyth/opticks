@@ -23,6 +23,7 @@
 #include <cstring>
 
 #include "random.h"
+#include "RayTraceConfig.hh"
 #include "MeshScene.h"
 
 
@@ -30,18 +31,6 @@
 #include <libgen.h>
 
 using namespace optix;
-
-
-
-const char* const ptxpath( const std::string& target, const std::string& base )
-{
-  static std::string path;
-  path = std::string(sutilSamplesPtxDir()) + "/" + target + "_generated_" + base + ".ptx";
-  const char* _path = path.c_str();
-  printf("ptxpath %s \n", _path); 
-  return _path ; 
-}
-
 
 
 
@@ -95,6 +84,8 @@ public:
   virtual bool   keyPressed(unsigned char key, int x, int y);
   virtual Buffer getOutputBuffer();
 
+  optix::Context getContext();
+
 private:
   void initContext();
   void initLights();
@@ -132,6 +123,9 @@ private:
 //------------------------------------------------------------------------------
 
 
+
+
+
 MeshViewer::MeshViewer():
   MeshScene          ( false, false, false ),
   m_camera_mode       ( CM_PINHOLE ),
@@ -159,9 +153,15 @@ void MeshViewer::initScene( InitialCameraData& camera_data )
   preprocess();
 }
 
+optix::Context MeshViewer::getContext()
+{
+  return m_context ; 
+}
 
 void MeshViewer::initContext()
 {
+  RayTraceConfig* cfg = RayTraceConfig::getInstance(); 
+
   m_context->setRayTypeCount( 3 );
   m_context->setEntryPointCount( 1 );
   m_context->setStackSize( 1180 );
@@ -183,8 +183,8 @@ void MeshViewer::initContext()
   const std::string camera_file = m_accum_enabled             ? "accum_camera.cu" :
                                   m_camera_mode == CM_PINHOLE ? "pinhole_camera.cu"  :
                                                                "orthographic_camera.cu";
-
-  if( m_accum_enabled ) {
+  if( m_accum_enabled ) 
+  {
     // The raygen program needs accum_buffer
     m_accum_buffer = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_GPU_LOCAL, RT_FORMAT_FLOAT4,
                                             WIDTH, HEIGHT );
@@ -192,20 +192,12 @@ void MeshViewer::initContext()
     resetAccumulation();
   }
 
-  const std::string camera_ptx  = ::ptxpath( "sample6", camera_file );
-  Program ray_gen_program = m_context->createProgramFromPTXFile( camera_ptx, camera_name );
-  m_context->setRayGenerationProgram( 0, ray_gen_program );
+  cfg->setRayGenerationProgram(0, camera_file.c_str(), camera_name.c_str() ); 
 
-
-  // Exception program
-  const std::string except_ptx  = ::ptxpath( "sample6", camera_file );
-  m_context->setExceptionProgram( 0, m_context->createProgramFromPTXFile( except_ptx, "exception" ) );
+  cfg->setExceptionProgram(0, camera_file.c_str(), "exception");
   m_context[ "bad_color" ]->setFloat( 0.0f, 1.0f, 0.0f );
 
-
-  // Miss program 
-  const std::string miss_ptx = ::ptxpath( "sample6", "constantbg.cu" );
-  m_context->setMissProgram( 0, m_context->createProgramFromPTXFile( miss_ptx, "miss" ) );
+  cfg->setMissProgram(0, "constantbg.cu", "miss" ); 
   m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f );
 }
 
@@ -236,6 +228,8 @@ void MeshViewer::initLights()
 
 void MeshViewer::initMaterial()
 {
+  RayTraceConfig* cfg = RayTraceConfig::getInstance(); 
+
   switch( m_shade_mode ) {
     case SM_PHONG: {
       // Use the default obj_material created by ObjLoader
@@ -243,34 +237,30 @@ void MeshViewer::initMaterial()
     }
 
     case SM_NORMAL: {
-      const std::string ptx_path = ::ptxpath("sample6", "normal_shader.cu");
       m_material = m_context->createMaterial();
-      m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance" ) );
+      m_material->setClosestHitProgram( 0, cfg->createProgram( "normal_shader.cu", "closest_hit_radiance" ) );
       break;
     }
 
     case SM_AO: {
-      const std::string ptx_path = ::ptxpath("sample6", "ambocc.cu");
       m_material = m_context->createMaterial();
-      m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance" ) );
-      m_material->setAnyHitProgram    ( 1, m_context->createProgramFromPTXFile( ptx_path, "any_hit_occlusion" ) );    
+      m_material->setClosestHitProgram( 0, cfg->createProgram( "ambocc.cu", "closest_hit_radiance" ) );
+      m_material->setAnyHitProgram    ( 1, cfg->createProgram( "ambocc.cu", "any_hit_occlusion" ) );    
       break;
     } 
     
     case SM_ONE_BOUNCE_DIFFUSE: {
-      const std::string ptx_path = ::ptxpath("sample6", "one_bounce_diffuse.cu");
       m_material = m_context->createMaterial();
-      m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance" ) );
-      m_material->setAnyHitProgram    ( 1, m_context->createProgramFromPTXFile( ptx_path, "any_hit_shadow" ) );
+      m_material->setClosestHitProgram( 0, cfg->createProgram( "one_bounce_diffuse.cu", "closest_hit_radiance" ) );
+      m_material->setAnyHitProgram    ( 1, cfg->createProgram( "one_bounce_diffuse.cu", "any_hit_shadow" ) );
       break;
     }
 
     case SM_AO_PHONG: {
-      const std::string ptx_path = ::ptxpath("sample6", "ambocc.cu");
       m_material = m_context->createMaterial();
-      m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance_phong_ao" ) );
-      m_material->setAnyHitProgram    ( 1, m_context->createProgramFromPTXFile( ptx_path, "any_hit_shadow" ) );
-      m_material->setAnyHitProgram    ( 2, m_context->createProgramFromPTXFile( ptx_path, "any_hit_occlusion" ) );
+      m_material->setClosestHitProgram( 0, cfg->createProgram( "ambocc.cu", "closest_hit_radiance_phong_ao" ) );
+      m_material->setAnyHitProgram    ( 1, cfg->createProgram( "ambocc.cu", "any_hit_shadow" ) );
+      m_material->setAnyHitProgram    ( 2, cfg->createProgram( "ambocc.cu", "any_hit_occlusion" ) );
       m_context["Kd"]->setFloat(1.0f);
       m_context["Ka"]->setFloat(0.6f);
       m_context["Ks"]->setFloat(0.0f);
@@ -543,11 +533,14 @@ int main( int argc, char** argv )
   char* ptxdir = dirname(argv[0]);     // alongside the executable
   setenv("RAYTRACE_PTXDIR", ptxdir, 1 );
 
-
   GLUTDisplay::init( argc, argv );
   
   GLUTDisplay::contDraw_E draw_mode = GLUTDisplay::CDNone; 
   MeshViewer scene;
+
+  RayTraceConfig* cfg = RayTraceConfig::makeInstance(scene.getContext(), "MeshViewer");
+
+
   scene.setMesh( (std::string( sutilSamplesDir() ) + "/simpleAnimation/cow.obj").c_str() );
 
   for ( int i = 1; i < argc; ++i ) {

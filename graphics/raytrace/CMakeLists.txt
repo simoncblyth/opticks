@@ -90,24 +90,33 @@ function(add_optix_executable target_name)
 endfunction()
 
 
+set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
+set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
+set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h @ONLY)
 
-add_optix_executable(${name} 
-                     ${name}.cc 
-                     OptiXProgram.cc
-                     AssimpGeometry.cc
-                     AssimpCommon.cc
-                     AssimpNode.cc
-                     AssimpTree.cc
-                     AssimpRegistry.cc
-                     OptiXAssimpGeometry.cc
-                     OptiXScene.cc
-                     tutorial0.cu
-                     TriangleMesh.cu
-                     material1.cu
-)
+
+#add_optix_executable(${name} 
+#                     ${name}.cc 
+#                     RayTraceConfig.cc
+#                     ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
+#                     OptiXProgram.cc
+#                     AssimpGeometry.cc
+#                     AssimpCommon.cc
+#                     AssimpNode.cc
+#                     AssimpTree.cc
+#                     AssimpRegistry.cc
+#                     OptiXAssimpGeometry.cc
+#                     OptiXScene.cc
+#                     tutorial0.cu
+#                     TriangleMesh.cu
+#                     material1.cu
+#)
 
 add_optix_executable( MeshViewer
                       MeshViewer.cpp
+                      RayTraceConfig.cc
+                      ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
                       OptiXProgram.cc
                       AssimpGeometry.cc
                       AssimpCommon.cc
@@ -119,14 +128,22 @@ add_optix_executable( MeshViewer
 
                       material1.cu
                       TriangleMesh.cu
+                      
+                      sample6/accum_camera.cu
+                      sample6/ambocc.cu
+                      sample6/constantbg.cu
+                      sample6/normal_shader.cu
+                      sample6/one_bounce_diffuse.cu
+                      sample6/orthographic_camera.cu
+                      sample6/parallelogram.cu
+                      sample6/pinhole_camera.cu
 )
 
-
+include_directories(${CMAKE_CURRENT_BINARY_DIR})  # for RayTraceConfigInc.h
 
 
 
 # non-optix geometry checking 
-
 add_executable( AssimpGeometryTest 
                 AssimpGeometryTest.cc
                 AssimpGeometry.cc
