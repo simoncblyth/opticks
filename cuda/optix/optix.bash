@@ -17,6 +17,15 @@ Resources
 
   Many presentations (videos and pdfs) on OptiX
 
+Determine Driver Version
+---------------------------
+
+With nvidia-smi or::
+
+    -bash-4.1$ cat /proc/driver/nvidia/version
+    NVRM version: NVIDIA UNIX x86_64 Kernel Module  319.37  Wed Jul  3 17:08:50 PDT 2013
+    GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+
 
 Release Notes OptiX Version 3.7 beta 3 (January 2015)
 --------------------------------------------------------
@@ -29,9 +38,29 @@ drivers can only be obtained from the CUDA 6.5 download page at the moment.
 SLI is not required for OptiX to use multiple GPUs, and it interferes when
 OptiX uses either D3D or OpenGL interop. Disabling SLI will not degrade OptiX
 performance and will provide a more stable environment for OptiX applications
-to run. SLI is termed “Multi-GPU mode” in recent NVIDIA Control Panels, with
-the correct option being “Disable multi-GPU mode” to ensure OptiX is not
+to run. SLI is termed "Multi-GPU mode" in recent NVIDIA Control Panels, with
+the correct option being "Disable multi-GPU mode" to ensure OptiX is not
 encumbered by graphics overhead.
+
+Release Notes OptiX Version 3.6.3 (September 2014)
+----------------------------------------------------
+
+The CUDA R331 or later driver is required. The latest available WHQL drivers
+are highly recommended (343 or later for Windows, 343 for Linux and the CUDA
+6.0 driver extension for Mac). For the Mac, the driver extension module
+supplied with CUDA 5.0 or later will need to be installed. Note that the Linux
+and Mac drivers can only be obtained from the CUDA 6.0 download page at the
+moment.
+
+Release Notes OptiX Version 3.5 (January 2013)
+----------------------------------------------------
+
+The CUDA R319 or later driver is required. The latest available WHQL drivers
+are highly recommended (320.92 or later for Windows, 319.60 for Linux and the
+CUDA 5.5 driver extension for Mac). For the Mac, the driver extension module
+supplied with CUDA 5.0 or later will need to be installed. Note that the Linux
+and Mac drivers can only be obtained from the CUDA 5.5 download page at the
+moment.
 
 
 hgpu01 install
@@ -72,93 +101,15 @@ I was getting this on laptop until I updated the driver.
     -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
     OptiX 3.7.0
     Number of Devices = 2
-
-    Device 0: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 0
-
-    Device 1: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 1
-
+    ...
     Constructing a context...
     OptiX Error: Invalid context
     (/root/sw/wsapps/raytracing/rtsdk/rel3.7/samples/sample3/sample3.c:96)
 
     -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
-    OptiX 3.5.1
-    Number of Devices = 2
-
-    Device 0: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 0
-
-    Device 1: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 1
-
-    Constructing a context...
-      Created with 2 device(s)
-      Supports 2147483647 simultaneous textures
-      Free memory:
-        Device 0: 4952547328 bytes
-        Device 1: 4952547328 bytes
-
-
-    -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
     OptiX 3.6.3
     Number of Devices = 2
-
-    Device 0: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 0
-
-    Device 1: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 1
-
+    ...
     Constructing a context...
       Created with 2 device(s)
       Supports 2147483647 simultaneous textures
@@ -166,49 +117,22 @@ I was getting this on laptop until I updated the driver.
         Device 0: 4952547328 bytes
         Device 1: 4952547328 bytes
 
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
+    OptiX 3.5.1
+    Number of Devices = 2
+    ...
+    Constructing a context...
+      Created with 2 device(s)
+      Supports 2147483647 simultaneous textures
+      Free memory:
+        Device 0: 4952547328 bytes
+        Device 1: 4952547328 bytes
 
 ::
 
     -bash-4.1$ LD_LIBRARY_PATH=. ./sample7 -f sample7.ppm
     OptiX Error: Invalid context (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Unable to set the CUDA device., [3735714])
     -bash-4.1$ 
-    -bash-4.1$ 
-    -bash-4.1$ 
-    -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
-    OptiX 3.6.3
-    Number of Devices = 2
-
-    Device 0: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 0
-
-    Device 1: Tesla K20m
-      Compute Support: 3 5
-      Total Memory: 5032706048 bytes
-      Clock Rate: 705500 kilohertz
-      Max. Threads per Block: 1024
-      SM Count: 13
-      Execution Timeout Enabled: 0
-      Max. HW Texture Count: 128
-      TCC driver enabled: 0
-      CUDA Device Ordinal: 1
-
-    Constructing a context...
-      Created with 2 device(s)
-      Supports 2147483647 simultaneous textures
-      Free memory:
-        Device 0: 4952547328 bytes
-        Device 1: 4952547328 bytes
-
-    -bash-4.1$ 
-
 
 
 OptiX 3.6.3 problems
@@ -768,38 +692,68 @@ While still using OptiX301::
     delta:sample3 blyth$ 
 
 
-
 But with the beta OptiX_370b2 the invalid context issue is gone::
 
-delta:SDK-precompiled-samples blyth$ ./sample3
-OptiX 3.7.0
-Number of Devices = 1
+	delta:SDK-precompiled-samples blyth$ ./sample3
+	OptiX 3.7.0
+	Number of Devices = 1
 
-Device 0: GeForce GT 750M
-  Compute Support: 3 0
-  Total Memory: 2147024896 bytes
-  Clock Rate: 925500 kilohertz
-  Max. Threads per Block: 1024
-  SM Count: 2
-  Execution Timeout Enabled: 1
-  Max. HW Texture Count: 128
-  TCC driver enabled: 0
-  CUDA Device Ordinal: 0
+	Device 0: GeForce GT 750M
+	  Compute Support: 3 0
+	  Total Memory: 2147024896 bytes
+	  Clock Rate: 925500 kilohertz
+	  Max. Threads per Block: 1024
+	  SM Count: 2
+	  Execution Timeout Enabled: 1
+	  Max. HW Texture Count: 128
+	  TCC driver enabled: 0
+	  CUDA Device Ordinal: 0
 
-Constructing a context...
-  Created with 1 device(s)
-  Supports 2147483647 simultaneous textures
-  Free memory:
-    Device 0: 1099292672 bytes
+	Constructing a context...
+	  Created with 1 device(s)
+	  Supports 2147483647 simultaneous textures
+	  Free memory:
+	    Device 0: 1099292672 bytes
 
-OptiX cmake
--------------
+
+OptiX cmake claims needs 2.8.8 by appears to build ok with 2.6.4
+-------------------------------------------------------------------
 
 ::
 
     CMake Error at CMakeLists.txt:82 (cmake_minimum_required):
       CMake 2.8.8 or higher is required.  You are running version 2.6.4
 
+
+Each OptiX release requires a different driver release
+----------------------------------------------------------
+
+sample7 fails with OptiX 363
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+	-bash-4.1$ ./sample7 -f out.ppm
+	OptiX Error: Invalid context (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Unable to set the CUDA device., [3735714])
+	-bash-4.1$ 
+	-bash-4.1$ pwd
+	/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/env/cuda/NVIDIA-OptiX-SDK-3.6.3-linux64_sdk_install/bin
+	-bash-4.1$ 
+
+
+sample7 works with OptiX 351
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample7 -f sample7.ppm
+
+    delta:~ blyth$ scp L6:/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/OptiX/SDK-precompiled-samples/sample7.ppm .
+    delta:~ blyth$ libpng-
+    delta:~ blyth$ cat sample7.ppm | libpng-wpng > sample7.png
+    Encoding image data...
+    Done.
+    delta:~ blyth$ open sample7.png
 
 
 
@@ -851,6 +805,26 @@ optix-jump(){
 }
 optix-old(){   optix-jump 301 ; }
 optix-beta(){  optix-jump 370b2 ; }
+
+optix-linux-name(){
+   case $1 in 
+      351) echo NVIDIA-OptiX-SDK-3.5.1-PRO-linux64 ;;
+      363) echo NVIDIA-OptiX-SDK-3.6.3-linux64 ;;
+      371) echo NVIDIA-OptiX-SDK-3.7.1-linux64 ;;
+   esac
+}
+
+optix-linux-jump(){
+    local vers=${1:-351}
+    local name=$(optix-linux-name $vers)
+    [ -z "$name" ] && echo $msg version $vers unknown && type optix-linux-name && return 
+
+    cd $(optix-fold)    
+    ln -sfnv $name OptiX
+}
+
+   
+
 
 
 optix-samples-names(){ cat << EON
@@ -925,13 +899,22 @@ optix-samples-get-selected(){
 }
 
 
+optix-cuda-nvcc-flags(){
+    case $NODE_TAG in 
+       D) echo -ccbin /usr/bin/clang --use_fast_math ;;
+       *) echo --use_fast_math ;; 
+    esac
+}
+
 optix-samples-cmake(){
     local iwd=$PWD
     local bdir=$(optix-samples-install-dir)
     #rm -rf $bdir   # starting clean 
     mkdir -p $bdir
     optix-bcd
-    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math " "$(optix-samples-src-dir)"
+    cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+          -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
+           "$(optix-samples-src-dir)"
     cd $iwd
 }
 
