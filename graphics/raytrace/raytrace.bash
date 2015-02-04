@@ -23,6 +23,8 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+
+
 Dependencies
 --------------
 
@@ -310,20 +312,58 @@ raytrace-o(){
   raytrace-v- --cache  $*
 }
 
-raytrace-benchmark(){
-   #
-   # allows running on headless nodes saving a single ppm file at end
-   # of the configured warmup and timed frames
-   # 
-   local path=$(raytrace-odir)/benchmark
+
+raytrace-benchmark-name(){ echo benchmark ; }
+raytrace-benchmark-path(){ echo $(raytrace-odir)/$(raytrace-benchmark-name) ; }
+
+raytrace-benchmark()
+{
+   local path=$(raytrace-benchmark-path)
    local dir=$(dirname $path)
    mkdir -p $dir
 
    raytrace-v -a --benchmark-no-display=1x2 --save-frames=$path $*
 
-   [ -n $(which convert) ] && convert $path.ppm $path.png && ls -l $path*
+   # TODO: tidy output and record benchmark info named logs 
 
+   raytrace-benchmark-convert
 }
+
+raytrace-benchmark-convert()
+{ 
+   local ppm=$(raytrace-benchmark-path).ppm
+   local png=${ppm/.ppm}.png
+
+   [ ! -f "$ppm" ] && echo $msg no ppm $ppm && return
+
+   if [ -n "$(which convert)" ]
+   then 
+       echo $msg convert-ing ppm $ppm to png $png
+       convert $ppm $png 
+   else
+       echo $msg wpng-ing ppm $ppm to png $png
+       libpng-
+       cat $ppm | libpng-wpng > $png
+       open $png
+   fi 
+}
+
+
+raytrace-benchmark-optix(){ echo $(optix-linux-name 351) ; }
+raytrace-benchmark-node(){  echo L6 ; }
+raytrace-benchmark-get()
+{
+   local tag=$(raytrace-benchmark-node)
+   local rem=$(NODE_TAG=$tag OPTIX_NAME=$(raytrace-benchmark-optix) raytrace-benchmark-path) 
+   local loc=$(raytrace-benchmark-path)
+   local cmd="scp $tag:$rem.png $loc.$tag.png"
+   echo $cmd
+   eval $cmd
+   open $loc.$tag.png 
+}
+
+
+
 
 raytrace-geo-lldb(){
   DEBUG=lldb raytrace-geo

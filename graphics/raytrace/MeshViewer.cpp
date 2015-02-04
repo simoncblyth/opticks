@@ -24,9 +24,7 @@
 #include "RayTraceConfig.hh"
 #include "MeshScene.h"
 
-
 #include <stdlib.h>
-#include <libgen.h>
 
 using namespace optix;
 
@@ -82,7 +80,10 @@ public:
   virtual bool   keyPressed(unsigned char key, int x, int y);
   virtual Buffer getOutputBuffer();
 
+public:
   optix::Context getContext();
+  void setFile(const char* path ){ m_path = strdup(path) ; }
+  char* getFile(){ return m_path ; } 
 
 private:
   void initContext();
@@ -111,6 +112,7 @@ private:
   float         m_scene_epsilon;
   int           m_frame;
   bool          m_animation;
+  char*         m_path ;  
 };
 
 
@@ -135,7 +137,8 @@ MeshViewer::MeshViewer():
   m_accum_enabled     ( false ),
   m_scene_epsilon     ( 1e-4f ),
   m_frame             ( 0 ),
-  m_animation         ( false )
+  m_animation         ( false ),
+  m_path              ( NULL )
 {
 }
 
@@ -172,22 +175,24 @@ void MeshViewer::initContext()
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
   
   m_accum_enabled = m_aa_enabled                          ||
-                   m_shade_mode == SM_AO                 ||
-                   m_shade_mode == SM_ONE_BOUNCE_DIFFUSE ||
-                   m_shade_mode == SM_AO_PHONG;
+                    m_shade_mode == SM_AO                 ||
+                    m_shade_mode == SM_ONE_BOUNCE_DIFFUSE ||
+                    m_shade_mode == SM_AO_PHONG;
 
-  // Ray generation program setup
+
+  /////  Ray generation program setup
+
+  std::string camera_file ;
+  if(m_accum_enabled) camera_file = "accum_camera.cu" ;
+  else                camera_file = m_camera_mode == CM_PINHOLE ? "pinhole_camera.cu"  : "orthographic_camera.cu";
+
   const std::string camera_name = m_camera_mode == CM_PINHOLE ? "pinhole_camera" : "orthographic_camera"; 
-  const std::string camera_file = m_accum_enabled             ? "accum_camera.cu" :
-                                  m_camera_mode == CM_PINHOLE ? "pinhole_camera.cu"  :
-                                                               "orthographic_camera.cu";
+
   if( m_accum_enabled ) 
   {
-    // The raygen program needs accum_buffer
-    m_accum_buffer = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_GPU_LOCAL, RT_FORMAT_FLOAT4,
-                                            WIDTH, HEIGHT );
-    m_context["accum_buffer"]->set( m_accum_buffer );
-    resetAccumulation();
+      m_accum_buffer = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_GPU_LOCAL, RT_FORMAT_FLOAT4, WIDTH, HEIGHT );
+      m_context["accum_buffer"]->set( m_accum_buffer ); // keep m_ handle to buffer for resizing 
+      resetAccumulation();
   }
 
   cfg->setRayGenerationProgram(0, camera_file.c_str(), camera_name.c_str() ); 
@@ -217,7 +222,10 @@ void MeshViewer::initLights()
   light_buffer->setFormat(RT_FORMAT_USER);
   light_buffer->setElementSize(sizeof( BasicLight ) );
   light_buffer->setSize( sizeof(lights)/sizeof(lights[0]) );
-  memcpy(light_buffer->map(), lights, sizeof(lights));
+
+  // mapping buffer provides host side pointer to copy to
+  memcpy(light_buffer->map(), lights, sizeof(lights));  
+
   light_buffer->unmap();
 
   m_context[ "lights" ]->set( light_buffer );
@@ -371,11 +379,12 @@ bool MeshViewer::keyPressed(unsigned char key, int x, int y)
 void MeshViewer::doResize( unsigned int width, unsigned int height )
 {
   // output_buffer resizing handled in base class
-  if( m_accum_enabled ) {
-    m_accum_buffer->setSize( width, height );
-    m_rnd_seeds->setSize( width, height );
-    genRndSeeds( width, height );
-    resetAccumulation();
+  if( m_accum_enabled ) 
+  {
+      m_accum_buffer->setSize( width, height );
+      m_rnd_seeds->setSize( width, height );
+      genRndSeeds( width, height );
+      resetAccumulation();
   }
 }
 
@@ -462,25 +471,26 @@ Buffer MeshViewer::getOutputBuffer()
 
 void MeshViewer::resetAccumulation()
 {
-  m_frame = 0;
-  m_context[ "frame"                  ]->setInt( m_frame );
-  m_context[ "sqrt_occlusion_samples" ]->setInt( 1 * m_ao_sample_mult );
-  m_context[ "sqrt_diffuse_samples"   ]->setInt( 1 );
+    m_frame = 0;
+    m_context[ "frame"                  ]->setInt( m_frame );
+    m_context[ "sqrt_occlusion_samples" ]->setInt( 1 * m_ao_sample_mult );
+    m_context[ "sqrt_diffuse_samples"   ]->setInt( 1 );
 }
 
 
 void MeshViewer::genRndSeeds( unsigned int width, unsigned int height )
 {
-  // Init random number buffer if necessary.
-  if( m_rnd_seeds.get() == 0 ) {
-    m_rnd_seeds = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_GPU_LOCAL, RT_FORMAT_UNSIGNED_INT,
-                                         WIDTH, HEIGHT);
-    m_context["rnd_seeds"]->setBuffer(m_rnd_seeds);
-  }
+    // Init random number buffer if necessary.
+    if( m_rnd_seeds.get() == 0 ) 
+    {
+        m_rnd_seeds = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_GPU_LOCAL, RT_FORMAT_UNSIGNED_INT, WIDTH, HEIGHT);
+        m_context["rnd_seeds"]->setBuffer(m_rnd_seeds);
+    }
 
-  unsigned int* seeds = static_cast<unsigned int*>( m_rnd_seeds->map() );
-  fillRandBuffer(seeds, width*height);
-  m_rnd_seeds->unmap();
+    // map buffer to provide a host pointer
+    unsigned int* seeds = static_cast<unsigned int*>( m_rnd_seeds->map() );
+    fillRandBuffer(seeds, width*height);
+    m_rnd_seeds->unmap();
 }
 
 
@@ -525,22 +535,9 @@ void printUsageAndExit( const std::string& argv0, bool doExit = true )
 }
 
 
-int main( int argc, char** argv ) 
+
+void parseArgs(MeshViewer& scene, GLUTDisplay::contDraw_E& draw_mode, int argc, char** argv)
 {
-
-  char* ptxdir = dirname(argv[0]);     // alongside the executable
-  setenv("RAYTRACE_PTXDIR", ptxdir, 1 );
-
-  GLUTDisplay::init( argc, argv );
-  
-  GLUTDisplay::contDraw_E draw_mode = GLUTDisplay::CDNone; 
-  MeshViewer scene;
-
-  RayTraceConfig* cfg = RayTraceConfig::makeInstance(scene.getContext(), "MeshViewer");
-
-
-  scene.setMesh( (std::string( sutilSamplesDir() ) + "/simpleAnimation/cow.obj").c_str() );
-
   for ( int i = 1; i < argc; ++i ) {
     std::string arg( argv[i] );
     if ( arg == "-c" || arg == "--cache" ) {
@@ -564,31 +561,19 @@ int main( int argc, char** argv )
     } else if( arg == "-h" || arg == "--help" ) {
       printUsageAndExit( argv[0] ); 
     } else if( arg == "-g" || arg == "--g4dae" ) {
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setMesh(G4DAELoader::identityFilename(argv[++i]));
     } else if( arg == "-o" || arg == "--obj" ) {
-
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setMesh( argv[++i] );
-
     } else if( arg == "--trav" ) {
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setTraverser( argv[++i] );
     } else if( arg == "--build" ) {
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setBuilder( argv[++i] );
     } else if( arg == "--refine" ) { // N tree rotation passes to improve BVH quality
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setRefine( argv[++i] );
     } else if( arg == "--kd" ) {     // Keep this arg for a while for backward compatibility
       scene.setBuilder( "TriangleKdTree" );
@@ -602,35 +587,49 @@ int main( int argc, char** argv )
     } else if( arg == "--animation" ) {
       scene.setAnimation( true );
     } else if( arg == "-r" || arg == "--ao-radius" ) {
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setAORadius( static_cast<float>( atof( argv[++i] ) ) );
     } else if( arg == "-m" || arg == "--ao-sample-mult" ) {
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setAOSampleMultiplier( atoi( argv[++i] ) );
     } else if( arg == "-l" || arg == "--light-scale" ) {
-      if ( i == argc-1 ) {
-        printUsageAndExit( argv[0] );
-      }
+      if ( i == argc-1 ) printUsageAndExit( argv[0] );
       scene.setLightScale( static_cast<float>( atof( argv[++i] ) ) );
     } else {
       std::cerr << "Unknown option: '" << arg << "'" << std::endl;
       printUsageAndExit( argv[0] );
     }
   }
-  
+ 
   if( !GLUTDisplay::isBenchmark() ) printUsageAndExit( argv[0], false );
 
-  try {
+}
 
-    const std::string title = "MeshViewer" ;
-    GLUTDisplay::run( title, &scene, draw_mode );
-  } catch( Exception& e ){
-    sutilReportError( e.getErrorString().c_str() );
-    exit(1);
+
+
+
+int main( int argc, char** argv ) 
+{
+
+  const std::string target = "MeshViewer" ;
+
+  GLUTDisplay::init( argc, argv );
+  GLUTDisplay::contDraw_E draw_mode = GLUTDisplay::CDNone; 
+
+  MeshViewer scene;
+  optix::Context context = scene.getContext(); 
+  RayTraceConfig* cfg = RayTraceConfig::makeInstance(context, target.c_str());
+  scene.setMesh( (std::string( sutilSamplesDir() ) + "/simpleAnimation/cow.obj").c_str() );
+  parseArgs(scene, draw_mode, argc, argv );
+ 
+  try 
+  {
+      GLUTDisplay::run( target, &scene, draw_mode );
+  } 
+  catch( Exception& e )
+  {
+      sutilReportError( e.getErrorString().c_str() );
+      exit(1);
   }
 
   return 0;

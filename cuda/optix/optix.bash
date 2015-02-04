@@ -724,6 +724,17 @@ OptiX cmake claims needs 2.8.8 by appears to build ok with 2.6.4
     CMake Error at CMakeLists.txt:82 (cmake_minimum_required):
       CMake 2.8.8 or higher is required.  You are running version 2.6.4
 
+::
+
+    -bash-4.1$ grep 2.8.8 CMakeLists.txt 
+    cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+
+    -bash-4.1$ perl -pi -e 's,2.8.8,2.6.4,' CMakeLists.txt 
+
+    -bash-4.1$ grep 2.6.4 CMakeLists.txt 
+    cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+
+
 
 Each OptiX release requires a different driver release
 ----------------------------------------------------------
@@ -794,8 +805,8 @@ optix-scd(){ cd $(optix-sdir); }
 optix-icd(){ cd $(optix-idir); }
 
 
-
-optix-name(){   readlink $(optix-fold)/OptiX ; }
+optix-readlink(){ readlink $(optix-fold)/OptiX ; }
+optix-name(){  echo ${OPTIX_NAME:-$(optix-readlink)} ; }
 optix-jump(){    
    local iwd=$PWD
    local ver=${1:-301}
