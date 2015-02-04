@@ -124,7 +124,7 @@ add_optix_executable( MeshViewer
                       OptiXAssimpGeometry.cc
                       G4DAELoader.cc
 
-                      material1.cu
+                      materials/material1.cu
                       TriangleMesh.cu
                       
                       sample6/accum_camera.cu

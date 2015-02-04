@@ -256,9 +256,9 @@ raytrace-export()
    #q="index:3155"
    #q="range:2153:12221,merge:1" 
    #q="range:3153:12221,merge:0" 
-   #q="range:3153:12221,merge:1" 
+   q="range:3153:12221,merge:1" 
    #q="index:4998"
-   q="range:4998:5998,merge:1" 
+   #q="range:4998:5998,merge:1" 
    #q="range:4998:5998,merge:0" 
    export RAYTRACE_QUERY=$q
 }

@@ -11,8 +11,6 @@
 #include <sutil.h>
 #include <GLUTDisplay.h>
 
-//#include <PlyLoader.h>
-//#include <ObjLoader.h>
 #include "G4DAELoader.hh"
 
 #include "commonStructs.h"

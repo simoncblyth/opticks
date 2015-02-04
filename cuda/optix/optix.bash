@@ -167,8 +167,62 @@ I was getting this on laptop until I updated the driver.
         Device 1: 4952547328 bytes
 
 
+::
+
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample7 -f sample7.ppm
+    OptiX Error: Invalid context (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Unable to set the CUDA device., [3735714])
+    -bash-4.1$ 
+    -bash-4.1$ 
+    -bash-4.1$ 
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample3
+    OptiX 3.6.3
+    Number of Devices = 2
+
+    Device 0: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 0
+
+    Device 1: Tesla K20m
+      Compute Support: 3 5
+      Total Memory: 5032706048 bytes
+      Clock Rate: 705500 kilohertz
+      Max. Threads per Block: 1024
+      SM Count: 13
+      Execution Timeout Enabled: 0
+      Max. HW Texture Count: 128
+      TCC driver enabled: 0
+      CUDA Device Ordinal: 1
+
+    Constructing a context...
+      Created with 2 device(s)
+      Supports 2147483647 simultaneous textures
+      Free memory:
+        Device 0: 4952547328 bytes
+        Device 1: 4952547328 bytes
+
+    -bash-4.1$ 
 
 
+
+OptiX 3.6.3 problems
+----------------------
+
+
+* https://devtalk.nvidia.com/default/topic/763478/simplest-optix-code-unable-to-set-cuda-device/
+
+::
+
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample7 -f sample7.ppm
+    OptiX Error: Invalid context (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Unable to set the CUDA device., [3735714])
+    -bash-4.1$ 
+ 
 
 
 Transparency/blending
@@ -190,6 +244,104 @@ OptiX and atomics
   One thing to keep in mind is that atomic operations will not work in multi-GPU
   situations unless you specify RT_BUFFER_GPU_LOCAL. In that case the data stays
   resident on the device and can only be read by the device that wrote it.
+
+
+OptiX and OpenGL interop : OptiX depth buffer calculation
+------------------------------------------------------------
+
+* http://rickarkin.blogspot.tw/2012/03/optix-is-ray-tracing-framework-it-can.html
+
+
+Depth buffer combination may be the most important and a bit complicated. As a
+ray tracing engine, Optix need not to do depth buffer test, so one can only
+find the rtIntersectionDistance, which means the distance from the ray origin
+to current ray-surface intersection point. So handily generate an OpenGL
+compliant depth buffer is the first problem. A useful reference is
+http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+My realization of the depth value construction is  attached as below::
+
+    // eyeDist:  distance from eye to the intersection point.
+    // n:           near clipping plane
+    // f:            far clipping plane
+    __device__ float computeClipDepth( float eyeDist, float n, float f )
+    {
+        float clipDepth = (f+n)/(f-n) - (1/eyeDist)*2.0f*f*n/(f-n);
+        clipDepth = clipDepth*0.5 + 0.5f;
+        return clipDepth;
+    }
+
+The second problem is to use the generated depth buffer of Optix into OpenGL.
+Actually it is totally OpenGL operations. But maybe its not a daily used
+process like draw a triangle or shading a scene object, so there is little
+resource could be found on the web.  My realization of the depth value
+construction is  also attached as below, where depthImg contains per pixel
+depth value, coloredImg contains per pixel color value.::
+
+    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glDepthMask(GL_FALSE);    
+    glWindowPos2i(0, 0);
+    glDrawPixels(w, h, GL_RGBA , GL_FLOAT, coloredImg);
+
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_ALWAYS);
+    glWindowPos2i(0, 0);
+    glDrawPixels(w, h, GL_DEPTH_COMPONENT , GL_FLOAT, depthImg);
+
+    glPopClientAttrib();
+    glPopAttrib(); // GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+
+
+OptiX talks
+------------
+
+* http://on-demand.gputechconf.com/gtc/2012/presentations/SS107-GPU-Ray-Tracing-OptiX.pdf
+
+  Some details on multi GPU interop and avoiding unnecessary copying 
+
+
+OptiX without OpenGL
+----------------------
+
+::
+
+    delta:bin blyth$ ./sample7 -f out.ppm
+    delta:bin blyth$ libpng-
+    delta:bin blyth$ cat out.ppm | libpng-wpng > out.png 
+    Encoding image data...
+    Done.
+    delta:bin blyth$ open out.png
+
+ 
+OptiX and SLI handling of multiple GPUs
+----------------------------------------
+
+* http://en.wikipedia.org/wiki/Scalable_Link_Interface
+* http://devblogs.nvidia.com/parallelforall/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/
+
+OptiX doesnt like SLI, switch it off.
+
+::
+
+   export CUDA_VISIBLE_DEVICES=0,1,2
+
+
+
+OptiX OpenGL interop with PBO
+-------------------------------
+
+* http://rickarkin.blogspot.tw/2012/03/use-pbo-to-share-buffer-between-cuda.html
+
+OptiX OpenGL interop 
+---------------------
+
+* :google:`OptiX OpenGL interop`
+
 
 
 OptiX and curand ?
@@ -640,6 +792,13 @@ Constructing a context...
   Free memory:
     Device 0: 1099292672 bytes
 
+OptiX cmake
+-------------
+
+::
+
+    CMake Error at CMakeLists.txt:82 (cmake_minimum_required):
+      CMake 2.8.8 or higher is required.  You are running version 2.6.4
 
 
 
