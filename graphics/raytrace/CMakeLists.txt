@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+#cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 set(name RayTrace)
 
@@ -85,6 +86,8 @@ function(add_optix_executable target_name)
                            optix
                            optixu
                            ${Assimp_LIBRARIES} 
+                           ssl
+                           crypto 
                          )
 
 endfunction()

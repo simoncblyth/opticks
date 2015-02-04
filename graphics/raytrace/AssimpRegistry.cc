@@ -1,6 +1,7 @@
 #include "AssimpRegistry.hh"
 #include "AssimpNode.hh"
 #include "assert.h"
+#include "stdio.h"
 
 AssimpRegistry::AssimpRegistry()
 {

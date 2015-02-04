@@ -2,7 +2,7 @@
 #include "AssimpTree.hh"
 #include "AssimpCommon.hh"
 #include "assert.h"
-
+#include "stdio.h"
 #include <assimp/scene.h>
 
 AssimpNode::~AssimpNode()

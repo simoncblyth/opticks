@@ -1,5 +1,7 @@
 #include "RayTraceConfig.hh"
+#include "string.h"
 #include "stdio.h"
+#include "stdlib.h"
 
 RayTraceConfig* RayTraceConfig::g_instance = NULL ;  
 RayTraceConfig* RayTraceConfig::getInstance()

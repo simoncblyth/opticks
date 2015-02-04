@@ -23,10 +23,19 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+Dependencies
+--------------
+
+* NVIDIA CUDA 5.5, cuda- 
+* NVIDIA OptiX 3.5.1 or higher, optix-
+* assimp-
+
+
 Next Steps
 ------------
 
-* try merged meshes and check performance
+
+* measure merged meshes performance
 
 * all parameters that impact geometry need to 
   be included into the accelcache digest : for proper identity 
@@ -179,11 +188,15 @@ Mismatch between the libsutil.dylib symbols regarding std::string and those in M
 
 EOU
 }
+
+raytrace-odir(){ echo $(local-base)/env/graphics/$(optix-name)/raytrace_out ; }
 raytrace-bdir(){ echo $(local-base)/env/graphics/$(optix-name)/raytrace ; }
 raytrace-sdir(){ echo $(env-home)/graphics/raytrace ; }
+
 raytrace-cd(){  cd $(raytrace-sdir); }
 raytrace-scd(){  cd $(raytrace-sdir); }
 raytrace-bcd(){  cd $(raytrace-bdir); }
+raytrace-ocd(){  cd $(raytrace-odir); }
 
 raytrace-env(){      
     elocal-  
@@ -212,7 +225,10 @@ raytrace-cmake(){
 
    raytrace-bcd
   
-   cmake -DCMAKE_BUILD_TYPE=Debug -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math" $(raytrace-sdir) 
+   cmake -DCMAKE_BUILD_TYPE=Debug \
+         -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+         -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
+          $(raytrace-sdir) 
 
    cd $iwd
 }
@@ -294,9 +310,20 @@ raytrace-o(){
   raytrace-v- --cache  $*
 }
 
+raytrace-benchmark(){
+   #
+   # allows running on headless nodes saving a single ppm file at end
+   # of the configured warmup and timed frames
+   # 
+   local path=$(raytrace-odir)/benchmark
+   local dir=$(dirname $path)
+   mkdir -p $dir
 
+   raytrace-v -a --benchmark-no-display=1x2 --save-frames=$path $*
 
+   [ -n $(which convert) ] && convert $path.ppm $path.png && ls -l $path*
 
+}
 
 raytrace-geo-lldb(){
   DEBUG=lldb raytrace-geo

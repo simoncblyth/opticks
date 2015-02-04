@@ -32,6 +32,7 @@ Somehow executables have wrong path to libassimp::
         /usr/local/env/graphics//libassimp.3.dylib (compatibility version 3.0.0, current version 3.1.1)
         /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
         /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+
     delta:raytrace blyth$ otool -L RayTrace
     RayTrace:
         /usr/local/env/cuda/OptiX_301/lib/libsutil.dylib (compatibility version 0.0.0, current version 0.0.0)
@@ -263,6 +264,8 @@ assimp-install(){
    assimp-bcd
    #make DESTDIR=$(assimp-prefix) install
    make install
+
+   # huh : install says -- Removed runtime path from "/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/env/graphics/bin/assimp"
 }
 
 
@@ -270,11 +273,23 @@ assimp-test(){
    export-
    export-export
 
+   assimp-path-kludge
+
    local pfx=$(assimp-prefix)
-   DYLD_LIBRARY_PATH=$pfx/lib $pfx/bin/assimp info $DAE_NAME_DYB.noextra.dae 
+   $pfx/bin/assimp info $DAE_NAME_DYB.noextra.dae 
 
    # RPATH setup is broken (maybe only for non-default prefix), forcing DLP
 }
+
+
+assimp-path-kludge(){
+   local pfx=$(assimp-prefix)
+   case $(uname) in 
+     Darwin) export DYLD_LIBRARY_PATH=$pfx/lib:$DYLD_LIBRARY_PATH ;;
+      Linux) export LD_LIBRARY_PATH=$pfx/lib:$LD_LIBRARY_PATH ;;
+   esac
+}
+
 
 
 assimp-findcmake-(){ cat << EOF

@@ -14,6 +14,7 @@
 #include "AssimpGeometry.hh"
 #include "OptiXAssimpGeometry.hh"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 
