@@ -28,6 +28,79 @@ Dependencies
 * assimp-
 
 
+Mouse interaction
+-------------------
+
+left mouse           
+          Camera Rotate/Orbit 
+middle mouse         
+          Camera Pan/Truck
+          (pan means rotate camera direction)
+ 
+right mouse          
+          Camera Dolly  
+          (dolly means translate camera)
+
+right mouse + shift  
+          Camera FOV 
+
+
+Mac trackpad
+------------
+
+While running MeshView, visit Preferences
+and set to emulate 3-button mouse.
+
+            
+rotate
+      drag around 
+
+translate          
+      hold option key down while dragging around
+
+change fov
+      hold shift key down while making a firm two finger drag up/down
+
+
+
+Standard keystrokes:
+  q Quit
+  f Toggle full screen
+  r Toggle continuous mode (progressive refinement, animation, or benchmark)
+  R Set progressive refinement to never timeout and toggle continuous mode
+  b Start/stop a benchmark
+  d Toggle frame rate display
+  s Save a frame to 'out.ppm'
+  m Toggle memory usage printing
+  c Print camera pose
+
+
+
+
+Memory Requirements
+---------------------
+
+Default geometry selection requires approx 520MB of GPU memory free, otherwise crashes
+as show below. To free up some GPU memory, close non-used windows/apps and 
+sleep/wake cycle.::
+
+    Time to load geometry: 2.87298 s.
+    OptiX Error: Unknown error (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Insufficient device memory. GPU does not support paging., [16515528])
+    delta:env blyth$ 
+    delta:env blyth$ cu
+    timestamp                Thu Feb  5 20:25:36 2015
+    tag                      default
+    name                     GeForce GT 750M
+    compute capability       (3, 0)
+    memory total             2.1G
+    memory used              1.6G
+    memory free              500.9M
+
+
+* https://forums.adobe.com/thread/1326404
+
+
+
 Code Layout
 ------------
 

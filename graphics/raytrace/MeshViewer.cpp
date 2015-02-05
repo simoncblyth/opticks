@@ -381,6 +381,7 @@ void MeshViewer::preprocess()
 
 bool MeshViewer::keyPressed(unsigned char key, int x, int y)
 {
+   printf("MeshViewer::keyPressed %c x %d y %d \n", key, x, y);
    switch (key)
    {
      case 'e':
