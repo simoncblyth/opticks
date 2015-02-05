@@ -7,7 +7,7 @@
 
 class AssimpNode ; 
 
-#include "AssimpGeometry.hh"
+#include "AssimpWrap/AssimpGeometry.hh"
 
 class OptiXAssimpGeometry  : public AssimpGeometry 
 {

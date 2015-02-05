@@ -21,6 +21,7 @@
 #include <cstring>
 
 #include "random.h"
+
 #include "RayTraceConfig.hh"
 #include "MeshScene.h"
 
@@ -146,7 +147,6 @@ MeshViewer::MeshViewer():
 void MeshViewer::initScene( InitialCameraData& camera_data )
 {
   initContext();
-  //initLights();
   initMaterial();
   initGeometry();
   initLights();   // move lights after geometry, for positioning relative to aabb
@@ -170,7 +170,7 @@ void MeshViewer::initContext()
   m_context[ "radiance_ray_type"   ]->setUint( 0u );
   m_context[ "shadow_ray_type"     ]->setUint( 1u );
   m_context[ "max_depth"           ]->setInt( 5 );
-  m_context[ "ambient_light_color" ]->setFloat( 0.02f, 0.02f, 0.02f );
+  m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
   m_context[ "output_buffer"       ]->set( createOutputBuffer(RT_FORMAT_UNSIGNED_BYTE4, WIDTH, HEIGHT) );
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
   
@@ -210,6 +210,7 @@ void MeshViewer::initLights()
    // Lights buffer  : pos, color, casts_shadow, padding
    // flipped blue y from -1  to 1 cf g4daeview  (up/down flip somewhere ?) 
    // mapping buffer provides host side pointer to copy to
+   // NB BasicLight from commonStructs.h used on both host and device
 
    float extent = m_aabb.maxExtent() * 1.0 ;
    float light_scale = m_light_scale * 2.0 ; 
@@ -222,11 +223,18 @@ void MeshViewer::initLights()
    light_buffer->setFormat(RT_FORMAT_USER);
    light_buffer->setElementSize(sizeof( BasicLight ) );
 
+
+   float3 red  = make_float3(1.0f, 0.0f, 0.0f) ;
+   float3 green = make_float3(0.0f, 1.0f, 0.0f) ;
+   float3 blue = make_float3(0.0f, 0.0f, 1.0f) ;
+   float3 white = make_float3(1.0f, 1.0f, 1.0f) ;
+
+
    BasicLight lights[] = 
    {
-      { center + make_float3( -1.0f, 1.0f,-1.0f )*extent, make_float3( 1.f, 0.f, 0.f )*light_scale, casts_shadow, padding },
-      { center + make_float3(  1.0f, 1.0f, 1.0f )*extent, make_float3( 0.f, 1.f, 0.f )*light_scale, casts_shadow, padding },
-      { center + make_float3(  0.0f, 1.0f, 1.0f )*extent, make_float3( 0.f, 0.f, 1.f )*light_scale, casts_shadow, padding }
+      { center + make_float3( -1.0f, 1.0f,-1.0f )*extent, white*light_scale, casts_shadow, padding },
+      { center + make_float3(  1.0f, 1.0f, 1.0f )*extent, white*light_scale, casts_shadow, padding },
+      { center + make_float3(  0.0f, 1.0f, 1.0f )*extent, white*light_scale, casts_shadow, padding }
    };
 
    light_buffer->setSize( sizeof(lights)/sizeof(lights[0]) );
@@ -244,7 +252,15 @@ void MeshViewer::initMaterial()
 
   switch( m_shade_mode ) {
     case SM_PHONG: {
-      printf("MeshViewer::initMaterial using default material \n");
+      printf("MeshViewer::initMaterial using default SM_PHONG material \n");
+      m_material = m_context->createMaterial();
+      m_material->setClosestHitProgram( 0, cfg->createProgram("phong.cu", "closest_hit_radiance" ));
+      m_material->setAnyHitProgram    ( 1, cfg->createProgram("phong.cu", "any_hit_shadow" ));
+      m_material[ "Kd"           ]->setFloat( 0.50f, 0.50f, 0.50f );
+      m_material[ "Ks"           ]->setFloat( 0.10f, 0.10f, 0.10f );
+      m_material[ "Ka"           ]->setFloat( 0.00f, 0.00f, 0.00f );
+      m_material[ "reflectivity" ]->setFloat( 0.10f, 0.10f, 0.10f ); // high reflectivity makes for a confusing image
+      m_material[ "phong_exp"    ]->setFloat( 2.00f );
       break;
     }
 

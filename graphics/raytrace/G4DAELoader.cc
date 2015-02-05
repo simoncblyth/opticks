@@ -10,8 +10,8 @@
 #include <cstring> //memcpy
 #include <algorithm>
 
-#include "AssimpCommon.hh"
-#include "AssimpGeometry.hh"
+#include "AssimpWrap/AssimpCommon.hh"
+#include "AssimpWrap/AssimpGeometry.hh"
 #include "OptiXAssimpGeometry.hh"
 
 #include <stdio.h>
@@ -50,17 +50,7 @@ G4DAELoader::G4DAELoader( const std::string&   filename,
 {
   // Error checking on context and geometrygroup done in ModelLoader
 
-  if( material.get() == 0 ) {
-    const std::string ptx_path = std::string( sutilSamplesPtxDir() ) + "/cuda_compile_ptx_generated_phong.cu.ptx";
-    m_material = context->createMaterial();
-    m_material->setClosestHitProgram( 0, m_context->createProgramFromPTXFile( ptx_path, "closest_hit_radiance" ) );
-    m_material->setAnyHitProgram    ( 1, m_context->createProgramFromPTXFile( ptx_path, "any_hit_shadow" ) );
-    m_material[ "Kd"           ]->setFloat( 0.50f, 0.50f, 0.50f );
-    m_material[ "Ks"           ]->setFloat( 0.00f, 0.00f, 0.00f );
-    m_material[ "Ka"           ]->setFloat( 0.05f, 0.05f, 0.05f );
-    m_material[ "reflectivity" ]->setFloat( 0.00f, 0.00f, 0.00f );
-    m_material[ "phong_exp"    ]->setFloat( 1.00f );
-  }
+  assert(material.get()); // MUST DEFINE MATERIAL ELSEWHERE
 }
 
 
@@ -70,17 +60,18 @@ void G4DAELoader::load()
 }
 
 
-
-
 void G4DAELoader::load( const optix::Matrix4x4& transform )
 {
   char* query = getenv("RAYTRACE_QUERY");     
   printf("G4DAELoader::load query %s \n", query );
+  printf("G4DAELoader::load filename %s \n", m_filename.c_str() );
 
-  std::string path = removeField( m_filename.c_str(), '.' , -2 );
-  printf("G4DAELoader::load filename %s path %s \n", m_filename.c_str(), path.c_str() );
+  char* path = new char[m_filename.size()]; 
+  removeField( path , m_filename.c_str(), '.' , -2 );
 
-  OptiXAssimpGeometry geom(path.c_str());
+  printf("G4DAELoader::load path     %s \n", path );
+
+  OptiXAssimpGeometry geom(path);
   geom.import();
   geom.setGeometryGroup(m_geometry_group);
 

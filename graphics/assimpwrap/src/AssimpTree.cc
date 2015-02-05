@@ -510,22 +510,22 @@ void AssimpTree::parseQueryElement(const char* query)
    if(strncmp(query,name_token, strlen(name_token)) == 0)
    {
        m_query_name = strdup(query+strlen(name_token));
-       printf("AssimpTree::parseQueryElement query_name  %s \n", m_query_name );
+       //printf("AssimpTree::parseQueryElement query_name  %s \n", m_query_name );
    }  
    else if(strncmp(query,index_token, strlen(index_token)) == 0)
    {
        m_query_index = atoi(query+strlen(index_token));
-       printf("AssimpTree::parseQueryElement query_index  %d \n", m_query_index );
+       //printf("AssimpTree::parseQueryElement query_index  %d \n", m_query_index );
    }
    else if(strncmp(query,merge_token, strlen(merge_token)) == 0)
    {
        m_query_merge = atoi(query+strlen(merge_token));
-       printf("AssimpTree::parseQueryElement query_merge  %d \n", m_query_merge );
+       //printf("AssimpTree::parseQueryElement query_merge  %d \n", m_query_merge );
    }
    else if(strncmp(query,depth_token, strlen(depth_token)) == 0)
    {
        m_query_depth = atoi(query+strlen(depth_token));
-       printf("AssimpTree::parseQueryElement query_depth  %d \n", m_query_depth );
+       //printf("AssimpTree::parseQueryElement query_depth  %d \n", m_query_depth );
    }
    else if(strncmp(query,range_token, strlen(range_token)) == 0)
    {
@@ -536,7 +536,7 @@ void AssimpTree::parseQueryElement(const char* query)
        for(int i=0 ; i<elem.size() ; ++i)
        {
            m_query_range.push_back( atoi(elem[i].c_str()) ) ;
-           printf("AssimpTree::parseQueryElement query_range  %d \n", m_query_range[i] );
+           //printf("AssimpTree::parseQueryElement query_range  %d \n", m_query_range[i] );
        }
        m_is_flat_selection = true ; 
   } 

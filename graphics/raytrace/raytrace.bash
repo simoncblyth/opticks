@@ -9,20 +9,15 @@ Test Combination of Assimp and OptiX
 
 ::
 
-    raytrace-;raytrace-v -n
+    raytrace-
+    raytrace-v         # default phong shader, 3-colorful can see things inside AD once navigate there
+    raytrace-v -l 0    # default phong shader, lights off : black silhouette against blue bkgd 
 
-         # MeshViewer with accelcache 
-
-    raytrace-;raytrace-- __dd__Geometry__AD__lvOIL0xbf5e0b8 --dim=256x256
-
-         # old RayTrace has no accelcache support 
 
 
 * press "ctrl" and drag up/down to zoom out/in 
 
 * for fps display press "r" and then "d"
-
-
 
 
 Dependencies
@@ -31,6 +26,28 @@ Dependencies
 * NVIDIA CUDA 5.5, cuda- 
 * NVIDIA OptiX 3.5.1 or higher, optix-
 * assimp-
+
+
+Code Layout
+------------
+
+Note that OptiX program .cu sources can be arranged 
+however is convenient, they just need to be listed 
+in CMakeLists.txt in order to get compiled by nvcc 
+into .ptx placed in bdir/lib/ptx from which OptiX 
+pulls the ptx and assembles it into 
+the CUDA kernel.
+
+
+Class Layout
+-------------
+
+::
+
+    MeshViewer
+        MeshScene
+            SampleScene         
+
 
 
 Next Steps
@@ -209,14 +226,11 @@ raytrace-env(){
     export-export
 }
 
-raytrace-name(){ echo RayTrace ; }
-
+raytrace-name(){ echo MeshViewer ; }
 
 raytrace-wipe(){
-
    local bdir=$(raytrace-bdir)
    rm -rf $bdir
-
 }
 
 raytrace-cmake(){
@@ -251,13 +265,8 @@ raytrace-make(){
 
 
 
-raytrace-geo-bin(){ echo $(raytrace-bdir)/AssimpGeometryTest ; }
-raytrace-view-bin(){ echo $(raytrace-bdir)/MeshViewer ; }
+
 raytrace-bin(){ echo $(raytrace-bdir)/$(raytrace-name) ; }
-
-raytrace-run(){ $LLDB $(raytrace-bin) $* ; }
-raytrace-dbg(){ LLDB=lldb raytrace-run $* ; }
-
 
 raytrace-export()
 {
@@ -281,6 +290,9 @@ raytrace-export()
    export RAYTRACE_QUERY=$q
 }
 
+
+raytrace-run(){ $DEBUG $(raytrace-bin) $* ; }
+
 raytrace--(){
   raytrace-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
@@ -288,29 +300,16 @@ raytrace--(){
   raytrace-run $*
 }
 
-raytrace-geo(){
-  raytrace-make
-  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-
-  raytrace-export 
-  $DEBUG $(raytrace-geo-bin) $* 
-}
-
-raytrace-v-(){
-  raytrace-make
-  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-
-  raytrace-export 
-  $DEBUG $(raytrace-view-bin) $* 
-}
-
 raytrace-v(){
-  raytrace-v- --cache --g4dae $DAE_NAME_DYB_NOEXTRA $*
+  raytrace-- --cache --g4dae $DAE_NAME_DYB_NOEXTRA $*
 }
 
-raytrace-o(){
-  raytrace-v- --cache  $*
+raytrace-lldb(){
+  DEBUG=lldb raytrace-v $*
 }
+
+
+
 
 
 raytrace-benchmark-name(){ echo benchmark ; }
@@ -363,8 +362,3 @@ raytrace-benchmark-get()
 }
 
 
-
-
-raytrace-geo-lldb(){
-  DEBUG=lldb raytrace-geo
-}

@@ -16,30 +16,25 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 set(BUILD_SHARED_LIBS ON)
 
 
-# Include all CMake Macros.
 include(Macros)
-# Determine information about the compiler
+
 include (CompilerInfo)
-# Check for specific machine/compiler options.
+
 include (ConfigCompilerFlags)
 
-# Turn off the warning that NVCC issues when generating PTX from our CUDA samples.  This
-# is a custom extension to the FindCUDA code distributed by CMake.
 OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
 
-
-# For Xcode 5, gcc is actually clang, so we have to tell CUDA to treat the compiler as
-# clang, so that it doesn't mistake it for something else.
 if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
 
 
 
-
 find_package(OptiX REQUIRED)
+
 find_package(CUDA 2.3 REQUIRED)
-find_package(Assimp REQUIRED)
+
+find_package(AssimpWrap REQUIRED)
 
 
 include(FindSUtilGLUT)
@@ -51,7 +46,7 @@ include_directories(
     ${OptiX_INCLUDE}  
     $ENV{OPTIX_SDK_DIR}/sutil
     ${CUDA_INCLUDE_DIRS}
-    ${Assimp_INCLUDE_DIRS}  
+    ${AssimpWrap_INCLUDE_DIRS}  
 )
 
 add_definitions(
@@ -85,7 +80,7 @@ function(add_optix_executable target_name)
                            ${SUTIL_LIBRARY}
                            optix
                            optixu
-                           ${Assimp_LIBRARIES} 
+                           ${AssimpWrap_LIBRARIES} 
                            ssl
                            crypto 
                          )
@@ -94,41 +89,26 @@ endfunction()
 
 
 set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
+
 set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
+
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h @ONLY)
 
 
-#add_optix_executable(${name} 
-#                     ${name}.cc 
-#                     RayTraceConfig.cc
-#                     ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
-#                     AssimpGeometry.cc
-#                     AssimpCommon.cc
-#                     AssimpNode.cc
-#                     AssimpTree.cc
-#                     AssimpRegistry.cc
-#                     OptiXAssimpGeometry.cc
-#                     OptiXScene.cc
-#                     tutorial0.cu
-#                     TriangleMesh.cu
-#                     material1.cu
-#)
-
 add_optix_executable( MeshViewer
                       MeshViewer.cpp
+
                       RayTraceConfig.cc
                       ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
-                      AssimpGeometry.cc
-                      AssimpCommon.cc
-                      AssimpNode.cc
-                      AssimpTree.cc
-                      AssimpRegistry.cc
+
                       OptiXAssimpGeometry.cc
                       G4DAELoader.cc
 
+                      materials/phong.cu
                       materials/material1.cu
-                      TriangleMesh.cu
+                      materials/TriangleMesh.cu
                       
                       sample6/accum_camera.cu
                       sample6/ambocc.cu
@@ -142,22 +122,6 @@ add_optix_executable( MeshViewer
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})  # for RayTraceConfigInc.h
 
-
-
-# non-optix geometry checking 
-add_executable( AssimpGeometryTest 
-                AssimpGeometryTest.cc
-                AssimpGeometry.cc
-                AssimpCommon.cc
-                AssimpNode.cc
-                AssimpTree.cc
-                AssimpRegistry.cc
-)
-
-target_link_libraries( AssimpGeometryTest 
-                       ${Assimp_LIBRARIES} 
-                     )
-                        
 
 
 

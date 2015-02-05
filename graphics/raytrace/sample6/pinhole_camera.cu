@@ -73,6 +73,7 @@ RT_PROGRAM void pinhole_camera()
   output_buffer[launch_index] = make_color( make_float3(  pixel_time ) ); 
 #else
   output_buffer[launch_index] = make_color( prd.result );
+  //output_buffer[launch_index] = make_color(make_float3(0.5f));   // plain grey screen, not silhouette : all pixels go this way 
 #endif
 }
 

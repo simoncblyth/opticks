@@ -53,4 +53,5 @@ RT_PROGRAM void any_hit_shadow()
 RT_PROGRAM void closest_hit_radiance()
 {
   prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
+  //prd_radiance.result = make_float3(0.f);
 }

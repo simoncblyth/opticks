@@ -45,8 +45,11 @@ AssimpGeometry::~AssimpGeometry()
 
 void AssimpGeometry::info()
 {
-    printf("AssimpGeometry::info aiscene %p \n", m_aiscene);
     if(!m_aiscene) return ; 
+    printf("AssimpGeometry::info NumMaterial %d NumMeshes %d  \n", m_aiscene->mNumMaterials, m_aiscene->mNumMeshes );
+  
+   /* 
+    printf("AssimpGeometry::info aiscene %p \n", m_aiscene);
     printf("aiscene Flags         %d \n", m_aiscene->mFlags );
     printf("aiscene NumAnimations %d \n", m_aiscene->mNumAnimations );
     printf("aiscene NumCameras    %d \n", m_aiscene->mNumCameras );
@@ -54,6 +57,7 @@ void AssimpGeometry::info()
     printf("aiscene NumMaterials  %d \n", m_aiscene->mNumMaterials );
     printf("aiscene NumMeshes     %d \n", m_aiscene->mNumMeshes );
     printf("aiscene NumTextures   %d \n", m_aiscene->mNumTextures );
+   */
 }
 
 

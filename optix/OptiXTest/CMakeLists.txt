@@ -16,6 +16,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
+
+find_package(AssimpWrap REQUIRED)
+
 find_package(OptiX REQUIRED)
 
 find_package(CUDA 2.3 REQUIRED)

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 /*
    comparing with pycollada
@@ -15,14 +16,14 @@
 
 int main(int argc, char* argv[])
 {
-    const char* query = getenv("RAYTRACE_QUERY");
-    //if(!query) query = "__dd__Geometry__AD__lvOIL0xbf5e0b8" ;
-    if(!query) query = "__dd__Geometry__PMT__lvPmtHemiCathode" ;
+    const char* query = getenv("ASSIMPWRAP_QUERY");
+    const char* geokey = getenv("ASSIMPWRAP_GEOKEY");
+    assert(query);
+    assert(geokey);
 
-    printf("argv0 %s query %s \n", argv[0], query );
+    printf("argv0 %s query %s geokey %s \n", argv[0], query, geokey );
 
-    const char* key = "DAE_NAME_DYB_NOEXTRA" ; 
-    const char* path = getenv(key);
+    const char* path = getenv(geokey);
 
     AssimpGeometry geom(path);
     geom.import();

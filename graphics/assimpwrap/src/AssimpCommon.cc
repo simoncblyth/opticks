@@ -29,9 +29,9 @@ std::string join(std::vector<std::string>& elem, char delim )
     return ss.str();
 }
 
-
-std::string removeField(const char* line, char delim, int index )
+void removeField(char* dest, const char* line, char delim, int index )
 {
+
     //  
     //   split the line with the delim
     //   then reassemble skipping the field pointed to by rfield
@@ -42,8 +42,13 @@ std::string removeField(const char* line, char delim, int index )
     //       /path/to/geometry.dae.noextra.dae
     //  
 
+    //printf("AssimpCommon::removeField line %s delim %c index %d \n", line, delim, index);
+
+
     std::vector<std::string> elem ;
     split(elem, line, delim);
+
+    //printf("AssimpCommon:: size %lu \n", elem.size() );
 
     if(index >= 0 && index < elem.size())
     {
@@ -57,7 +62,10 @@ std::string removeField(const char* line, char delim, int index )
     {
         printf("removeField line %s delim %c index %d : invalid index \n", line, delim, index );
     }
-    return join(elem, delim);
+    std::string j = join(elem, delim);
+
+    //printf("AssimpCommon::removeField j %s \n", j.c_str() );
+    strcpy( dest, j.c_str()) ;
 }
 
 

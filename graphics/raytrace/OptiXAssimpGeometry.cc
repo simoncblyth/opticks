@@ -1,5 +1,6 @@
 #include "OptiXAssimpGeometry.hh"
-#include "AssimpNode.hh"
+#include "AssimpWrap/AssimpNode.hh"
+
 #include "RayTraceConfig.hh"
 
 #include <string.h>
