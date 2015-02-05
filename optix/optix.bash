@@ -1,5 +1,4 @@
-# === func-gen- : cuda/optix/optix fgp cuda/optix/optix.bash fgn optix fgh cuda/optix
-optix-src(){      echo cuda/optix/optix.bash ; }
+optix-src(){      echo optix/optix.bash ; }
 optix-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optix-src)} ; }
 optix-vi(){       vi $(optix-source) ; }
 optix-env(){      elocal- ; }
@@ -16,6 +15,19 @@ Resources
 * http://on-demand-gtc.gputechconf.com/gtcnew/on-demand-gtc.php?searchByKeyword=Optix&searchItems=&sessionTopic=&sessionEvent=&sessionYear=&sessionFormat=&submit=&select=+
 
   Many presentations (videos and pdfs) on OptiX
+
+* http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
+
+
+
+Docs
+-----
+
+
+
+
+
+
 
 Determine Driver Version
 ---------------------------
@@ -445,6 +457,16 @@ This is with
 OptiX 301 Install issues 
 --------------------------
 
+* attempting to open pkg complains of unidentified developer
+
+  * /Volumes/NVIDIA-OptiX-SDK-3.0.1-mac64/NVIDIA-OptiX-SDK-3.0.1-mac64.pkg
+
+* make exception in `SysPrefs > Security & Privacy > General` 
+
+  * hmm mavericks 10.9.4 "open anyway" doesnt work 
+  * authenticate and change to from "anywhere" 
+
+
 ::
 
     delta:~ blyth$ optix-cmake
@@ -792,7 +814,7 @@ optix-sdk-dir(){ echo $(optix-fold)/OptiX/SDK ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
 optix-idir(){ echo $(dirname $(optix-sdk-dir))/include ; }
 optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
-optix-sdir(){ echo $(env-home)/cuda/optix/$(optix-name) ; }
+optix-sdir(){ echo $(env-home)/optix/$(optix-name) ; }
 
 optix-samples-src-dir(){    echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
 optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }
