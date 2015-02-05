@@ -1,5 +1,4 @@
-# === func-gen- : cuda/optix/OptiXTest/optixtest fgp cuda/optix/OptiXTest/optixtest.bash fgn optixtest fgh cuda/optix/OptiXTest
-optixtest-src(){      echo cuda/optix/OptiXTest/optixtest.bash ; }
+optixtest-src(){      echo optix/OptiXTest/optixtest.bash ; }
 optixtest-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixtest-src)} ; }
 optixtest-vi(){       vi $(optixtest-source) ; }
 optixtest-env(){      
@@ -9,21 +8,25 @@ optixtest-env(){
 }
 optixtest-usage(){ cat << EOU
 
+OptiXTest : mimimal example of OptiX
+=======================================
 
-::
 
-    INFOnvcc_host_compiler_flags = ""
-    /Users/blyth/env/cuda/optix/OptixTest/draw_color.cu(13): Warning: Cannot tell what pointer points to, assuming global memory space
 
 EOU
 }
 
 optixtest-name(){ echo OptixTest ; }
 optixtest-bdir(){ echo $(local-base)/env/cuda/optix/$(optixtest-name) ; }
-optixtest-sdir(){ echo $(env-home)/cuda/optix/$(optixtest-name) ; }
+optixtest-sdir(){ echo $(env-home)/optix/$(optixtest-name) ; }
 optixtest-scd(){  cd $(optixtest-sdir); }
 optixtest-bcd(){  cd $(optixtest-bdir); }
 optixtest-cd(){   cd $(optixtest-sdir); }
+
+optixtest-wipe(){
+   local bdir=$(optixtest-bdir)
+   rm -rf $bdir
+}
 
 optixtest-cmake(){
    local iwd=$PWD
@@ -31,7 +34,10 @@ optixtest-cmake(){
    mkdir -p $bdir
    optixtest-bcd
 
-   cmake -DOptiX_INSTALL_DIR=$(optix-install-dir) -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/clang --use_fast_math" $(optixtest-sdir)
+   cmake \
+         -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+         -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
+         $(optixtest-sdir)
 
    cd $iwd
 }

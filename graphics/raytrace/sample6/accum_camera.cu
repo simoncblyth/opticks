@@ -51,7 +51,7 @@ rtDeclareVariable(float,         time_view_scale, , ) = 1e-6f;
 
 rtBuffer<unsigned int, 2>        rnd_seeds;
 
-#define TIME_VIEW
+//#define TIME_VIEW
 
 
 RT_PROGRAM void pinhole_camera()

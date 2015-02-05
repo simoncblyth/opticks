@@ -4,14 +4,11 @@
 #include <string.h>
 #include <sutil.h>
 
-
 #include "OptiXTestConfig.h"
-
 
 int main(int argc, char* argv[])
 {
-    OptiXTestConfig cfg ; 
-    cfg.ParseArgs(argc, argv );
+    OptiXTestConfig cfg(argc, argv );
 
     RTcontext context;
     RT_CHECK_ERROR( rtContextCreate( &context ) );

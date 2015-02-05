@@ -155,51 +155,58 @@ __device__ void phongShade( float3 p_Kd,
 
   // compute direct lighting
   unsigned int num_lights = lights.size();
-  for(int i = 0; i < num_lights; ++i) {
-    BasicLight light = lights[i];
-    float Ldist = optix::length(light.pos - hit_point);
-    float3 L = optix::normalize(light.pos - hit_point);
-    float nDl = optix::dot( p_normal, L);
+  for(int i = 0; i < num_lights; ++i) 
+  {
+      BasicLight light = lights[i];
+      float Ldist = optix::length(light.pos - hit_point);
+      float3 L = optix::normalize(light.pos - hit_point);
+      float nDl = optix::dot( p_normal, L);
 
-    // cast shadow ray
-    float3 light_attenuation = make_float3(static_cast<float>( nDl > 0.0f ));
-    if ( nDl > 0.0f && light.casts_shadow ) {
-      PerRayData_shadow shadow_prd;
-      shadow_prd.attenuation = make_float3(1.0f);
-      optix::Ray shadow_ray = optix::make_Ray( hit_point, L, shadow_ray_type, scene_epsilon, Ldist );
-      rtTrace(top_object, shadow_ray, shadow_prd);
-      light_attenuation = shadow_prd.attenuation;
-    }
+      float3 light_attenuation = make_float3(static_cast<float>( nDl > 0.0f ));
+      if ( nDl > 0.0f && light.casts_shadow ) // cast shadow ray
+      {
+          PerRayData_shadow shadow_prd;
+          shadow_prd.attenuation = make_float3(1.0f);
+          optix::Ray shadow_ray = optix::make_Ray( hit_point, L, shadow_ray_type, scene_epsilon, Ldist );
 
-    // If not completely shadowed, light the hit point
-    if( fmaxf(light_attenuation) > 0.0f ) {
-      float3 Lc = light.color * light_attenuation;
-
-      result += p_Kd * nDl * Lc;
-
-      float3 H = optix::normalize(L - ray.direction);
-      float nDh = optix::dot( p_normal, H );
-      if(nDh > 0) {
-        float power = pow(nDh, p_phong_exp);
-        result += p_Ks * power * Lc;
+          rtTrace(top_object, shadow_ray, shadow_prd);
+          light_attenuation = shadow_prd.attenuation;
       }
-    }
+
+      // If not completely shadowed, light the hit point
+      if( fmaxf(light_attenuation) > 0.0f ) 
+      {
+          float3 Lc = light.color * light_attenuation;
+
+          result += p_Kd * nDl * Lc;
+
+          float3 H = optix::normalize(L - ray.direction);
+          float nDh = optix::dot( p_normal, H );
+          if(nDh > 0) 
+          {
+              float power = pow(nDh, p_phong_exp);
+              result += p_Ks * power * Lc;
+          }
+      }
   }
 
-  if( fmaxf( p_reflectivity ) > 0 ) {
+  if( fmaxf( p_reflectivity ) > 0 ) 
+  {
 
-    // ray tree attenuation
-    PerRayData_radiance new_prd;
-    new_prd.importance = prd.importance * optix::luminance( p_reflectivity );
-    new_prd.depth = prd.depth + 1;
+      // ray tree attenuation
+      PerRayData_radiance new_prd;
+      new_prd.importance = prd.importance * optix::luminance( p_reflectivity );
+      new_prd.depth = prd.depth + 1;
 
-    // reflection ray
-    if( new_prd.importance >= 0.01f && new_prd.depth <= max_depth) {
-      float3 R = optix::reflect( ray.direction, p_normal );
-      optix::Ray refl_ray = optix::make_Ray( hit_point, R, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX );
-      rtTrace(top_object, refl_ray, new_prd);
-      result += p_reflectivity * new_prd.result;
-    }
+      // reflection ray
+      if( new_prd.importance >= 0.01f && new_prd.depth <= max_depth) 
+      {
+          float3 R = optix::reflect( ray.direction, p_normal );
+          optix::Ray refl_ray = optix::make_Ray( hit_point, R, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX );
+
+          rtTrace(top_object, refl_ray, new_prd);
+          result += p_reflectivity * new_prd.result;
+      }
   }
 
   // pass the color back up the tree

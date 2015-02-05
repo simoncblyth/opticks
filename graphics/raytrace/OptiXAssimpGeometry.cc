@@ -58,6 +58,12 @@ unsigned int OptiXAssimpGeometry::getMaxDepth()
 
 
 
+//optix::GeometryInstance OptiXAssimpGeometry::createGeometryInstance( optix::Geometry geometry )
+//{
+//}
+
+
+
 void OptiXAssimpGeometry::convert()
 {
     //
@@ -78,6 +84,8 @@ void OptiXAssimpGeometry::convert()
         optix::Material material = convertMaterial(m_aiscene->mMaterials[i]);
         m_materials.push_back(material);
     }
+    // hmm this above materials are currently ignored, the single material coming from m_material
+
 
     m_gis.clear();
 

@@ -170,7 +170,7 @@ void MeshViewer::initContext()
   m_context[ "radiance_ray_type"   ]->setUint( 0u );
   m_context[ "shadow_ray_type"     ]->setUint( 1u );
   m_context[ "max_depth"           ]->setInt( 5 );
-  m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
+  m_context[ "ambient_light_color" ]->setFloat( 0.02f, 0.02f, 0.02f );
   m_context[ "output_buffer"       ]->set( createOutputBuffer(RT_FORMAT_UNSIGNED_BYTE4, WIDTH, HEIGHT) );
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
   
@@ -207,28 +207,34 @@ void MeshViewer::initContext()
 
 void MeshViewer::initLights()
 {
-   float extent = m_aabb.maxExtent();
+   // Lights buffer  : pos, color, casts_shadow, padding
+   // flipped blue y from -1  to 1 cf g4daeview  (up/down flip somewhere ?) 
+   // mapping buffer provides host side pointer to copy to
+
+   float extent = m_aabb.maxExtent() * 1.0 ;
+   float light_scale = m_light_scale * 2.0 ; 
+   int casts_shadow = 0 ; 
+   int padding = 0 ; 
+
    float3 center = m_aabb.center();
 
-  // Lights buffer  : pos, color, casts_shadow, padding
-  //  flipped blue y from -1  to 1 cf g4daeview 
-  BasicLight lights[] = {
-    { make_float3( -1.0f,  1.0f, -1.0f ) * extent, make_float3( 1.f, 0.f, 0.f )*m_light_scale, 1, 0 },
-    { make_float3(  1.0f,   1.0f,  1.0f ) * extent, make_float3( 0.f, 1.f, 0.f )*m_light_scale, 1, 0 },
-    { make_float3(  0.0f,   1.0f,  1.0f ) * extent, make_float3( 0.f, 0.f, 1.f )*m_light_scale, 1, 0 }
-  };
+   Buffer light_buffer = m_context->createBuffer(RT_BUFFER_INPUT);
+   light_buffer->setFormat(RT_FORMAT_USER);
+   light_buffer->setElementSize(sizeof( BasicLight ) );
 
-  Buffer light_buffer = m_context->createBuffer(RT_BUFFER_INPUT);
-  light_buffer->setFormat(RT_FORMAT_USER);
-  light_buffer->setElementSize(sizeof( BasicLight ) );
-  light_buffer->setSize( sizeof(lights)/sizeof(lights[0]) );
+   BasicLight lights[] = 
+   {
+      { center + make_float3( -1.0f, 1.0f,-1.0f )*extent, make_float3( 1.f, 0.f, 0.f )*light_scale, casts_shadow, padding },
+      { center + make_float3(  1.0f, 1.0f, 1.0f )*extent, make_float3( 0.f, 1.f, 0.f )*light_scale, casts_shadow, padding },
+      { center + make_float3(  0.0f, 1.0f, 1.0f )*extent, make_float3( 0.f, 0.f, 1.f )*light_scale, casts_shadow, padding }
+   };
 
-  // mapping buffer provides host side pointer to copy to
-  memcpy(light_buffer->map(), lights, sizeof(lights));  
+   light_buffer->setSize( sizeof(lights)/sizeof(lights[0]) );
+   memcpy(light_buffer->map(), lights, sizeof(lights));  
 
-  light_buffer->unmap();
+   light_buffer->unmap();
 
-  m_context[ "lights" ]->set( light_buffer );
+   m_context[ "lights" ]->set( light_buffer );
 }
 
 
@@ -238,7 +244,7 @@ void MeshViewer::initMaterial()
 
   switch( m_shade_mode ) {
     case SM_PHONG: {
-      // Use the default obj_material created by ObjLoader
+      printf("MeshViewer::initMaterial using default material \n");
       break;
     }
 
@@ -268,8 +274,8 @@ void MeshViewer::initMaterial()
       m_material->setAnyHitProgram    ( 1, cfg->createProgram( "ambocc.cu", "any_hit_shadow" ) );
       m_material->setAnyHitProgram    ( 2, cfg->createProgram( "ambocc.cu", "any_hit_occlusion" ) );
       m_context["Kd"]->setFloat(1.0f);
-      m_context["Ka"]->setFloat(0.6f);
-      m_context["Ks"]->setFloat(0.0f);
+      m_context["Ka"]->setFloat(0.0f);
+      m_context["Ks"]->setFloat(0.5f);
       m_context["Kr"]->setFloat(0.0f);
       m_context["phong_exp"]->setFloat(0.0f);
       break;

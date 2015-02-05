@@ -20,15 +20,6 @@ Resources
 
 
 
-Docs
------
-
-
-
-
-
-
-
 Determine Driver Version
 ---------------------------
 
@@ -309,6 +300,11 @@ OptiX Usage Examples
 * http://graphicsrunner.blogspot.tw/2011/03/instant-radiosity-using-optix-and.html
 
 
+Large Codebases Using OptiX
+-----------------------------
+
+* macrosim-
+
 
 Version Switching
 ------------------
@@ -325,8 +321,34 @@ Use symbolic link for version switching::
     drwxr-xr-x   6 root  wheel   204 Jan 22 11:27 .
 
 
+
+
+Samples 
+-------
+
+::
+
+   open file:///Developer/OptiX/SDK/NVIDIA-OptiX-SDK-samples.html
+
+
+Above references a missing sample::
+
+   file:///Developer/OptiX/SDK/collision/
+
+
+* /Developer/OptiX/SDK-precompiled-samples/sample6.app
+
+  * ray traced geometry of a cow
+
+* /Developer/OptiX/SDK-precompiled-samples/shadeTree.app
+
+  * Christmas decorations 
+
+
+
 Building samples including sutil library 
 -------------------------------------------
+
 
 ::
 
@@ -814,7 +836,7 @@ optix-sdk-dir(){ echo $(optix-fold)/OptiX/SDK ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
 optix-idir(){ echo $(dirname $(optix-sdk-dir))/include ; }
 optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
-optix-sdir(){ echo $(env-home)/optix/$(optix-name) ; }
+optix-sdir(){ echo $(env-home)/optix ; }
 
 optix-samples-src-dir(){    echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
 optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }

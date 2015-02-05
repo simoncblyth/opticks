@@ -4,6 +4,13 @@ set(name OptiXTest)
 
 project(${name})
 
+
+
+# Turn off the warning that NVCC issues when generating PTX from our CUDA samples.  This
+# is a custom extension to the FindCUDA code distributed by CMake.
+OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
+
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
                       "$ENV{OPTIX_SDK_DIR}/CMake"
                       "$ENV{ENV_HOME}/cmake/Modules"

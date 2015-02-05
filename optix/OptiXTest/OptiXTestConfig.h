@@ -1,8 +1,13 @@
 #ifndef OPTIXTESTCONFIG
 #define OPTIXTESTCONFIG
 
+#include <string.h>
+#include <stdio.h>
+#include <libgen.h>
+
 struct OptiXTestConfig 
 {
+    char ptxdir[512];
     char path_to_ptx[512];
     char outfile[512];
     unsigned int width  ;
@@ -10,7 +15,7 @@ struct OptiXTestConfig
     int i ;
     int use_glut ;
 
-    OptiXTestConfig() 
+    OptiXTestConfig(int argc, char* argv[] ) 
           :  width(512u) 
           ,  height(384u) 
           ,  use_glut(1)
@@ -19,9 +24,14 @@ struct OptiXTestConfig
           outfile[0] = '\0';
           path_to_ptx[0] = '\0';
 
-          const char* ptxdir = "." ;  
+          strcpy( ptxdir, dirname(argv[0]));
+
+          // TODO: remote duplication of strings and make dynamic
           const char* target = "OptiXTest" ; 
           const char* cu = "draw_color.cu" ; 
+
+          ParseArgs(argc, argv);
+
           sprintf( path_to_ptx, "%s/%s_generated_%s.ptx", ptxdir, target, cu );
           printf("path_to_ptx %s \n", path_to_ptx );
     }
@@ -50,14 +60,8 @@ struct OptiXTestConfig
             } 
             else if( strcmp( argv[i], "--file" ) == 0 || strcmp( argv[i], "-f" ) == 0 ) 
             {
-                if( i < argc-1 ) 
-                {
-                    strcpy( outfile, argv[++i] );
-                } 
-                else 
-                {
-                    printUsageAndExit( argv[0] );
-                }
+                if( i < argc-1 ) strcpy( outfile, argv[++i] );
+                else printUsageAndExit( argv[0] );
             } 
             else if ( strncmp( argv[i], "--dim=", 6 ) == 0 ) 
             {
