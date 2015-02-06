@@ -17,9 +17,32 @@
 #include <sstream>
 
 #include <assimp/Importer.hpp>
+#include <assimp/DefaultLogger.hpp>
+
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/material.h>
+
+
+using namespace Assimp ; 
+
+
+class myStream : public LogStream
+{
+public:
+        myStream()
+        {
+        }
+        
+        ~myStream()
+        {
+        }
+        void write(const char* message)
+        {
+                ::printf("%s", message);
+        }
+};
+
 
 AssimpGeometry::AssimpGeometry(const char* path)
           : 
@@ -33,6 +56,15 @@ AssimpGeometry::AssimpGeometry(const char* path)
     if(!path) return ;          
     printf("AssimpGeometry::AssimpGeometry ctor path %s  \n", path);
     m_path = strdup(path);
+
+    DefaultLogger::create("",Logger::VERBOSE);
+    //const unsigned int severity = Logger::VERBOSE|Logger::NORMAL;
+    const unsigned int severity = Logger::Info | Logger::Err | Logger::Warn | Logger::Debugging;
+    
+    Assimp::DefaultLogger::get()->attachStream( new myStream(), severity );
+
+    DefaultLogger::get()->info("this is my info-call");
+    //DefaultLogger::get()->setLogSeverity(Logger::VERBOSE);
 }
 
 AssimpGeometry::~AssimpGeometry()
@@ -130,7 +162,7 @@ void AssimpGeometry::import(unsigned int flags)
 
     if(!m_aiscene)
     {   
-        printf("AssimpGeometry::import ERROR : %s \n", m_importer->GetErrorString() );  
+        printf("AssimpGeometry::import ERROR : \"%s\" \n", m_importer->GetErrorString() );  
         return ;
     }   
 
@@ -151,6 +183,13 @@ void AssimpGeometry::traverse()
 
 unsigned int AssimpGeometry::select(const char* query)
 {
+
+    if(!m_tree) 
+    {
+        printf("AssimpGeometry::select no tree \n");
+        return 0 ;
+    }
+
     unsigned int n = m_tree->select(query);
     dump();
 

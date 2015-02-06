@@ -59,13 +59,34 @@ properties is simply to fork the github assimp.
 * http://sourceforge.net/p/assimp/discussion/817653/thread/c3b115cd/
 
 
+Assimp COLLADA
+--------------
+
+Hmm maybe add G4DAELoader that inherits from ColladaLoader
+with extra element handling ?
+
+code/ImporterRegistry.cpp::
+
+    127 #ifndef ASSIMP_BUILD_NO_COLLADA_IMPORTER
+    128 #   include "ColladaLoader.h"
+    129 #endif
+    130 #ifndef ASSIMP_BUILD_NO_TERRAGEN_IMPORTER
+    131 #   include "TerragenLoader.h"
+    132 #endif
+    ...
+    252 #if (!defined ASSIMP_BUILD_NO_COLLADA_IMPORTER)
+    253     out.push_back( new ColladaLoader());
+    254 #endif
+
+
+
+
 fork on github
 ----------------
 
 ::
 
     git clone git://github.com/assimp/assimp.git assimp
-
 
 
 config
@@ -220,23 +241,25 @@ install test
 
 
 
-
-
-
 EOU
 }
 
-assimp-name(){ echo assimp-3.1.1 ; }
+assimp-fork-name(){ echo assimp-fork ; }
+assimp-name(){ echo $(assimp-fork-name) ; }
+assimp-release-name(){ echo assimp-3.1.1 ; }
 assimp-url(){ echo http://downloads.sourceforge.net/project/assimp/assimp-3.1/assimp-3.1.1_no_test_models.zip ; }
 
+assimp-fold(){ echo $(dirname $(assimp-dir)); }
 assimp-dir(){ echo $(local-base)/env/graphics/assimp/$(assimp-name) ; }
-#assimp-prefix(){ echo $(assimp-dir)_install ; }
 assimp-prefix(){ echo $(local-base)/env/graphics ; }
 assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
 assimp-bdir(){ echo $(assimp-dir)_build ; }
 assimp-cd(){  cd $(assimp-dir); }
 assimp-bcd(){ cd $(assimp-bdir); }
 assimp-icd(){ cd $(assimp-idir); }
+
+assimp-fold-cd(){ cd $(assimp-fold); }
+
 assimp-mate(){ mate $(assimp-dir) ; }
 assimp-get(){
    local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir
@@ -248,16 +271,74 @@ assimp-get(){
    [ ! -d "$nam" ] && unzip $zip 
 }
 
+assimp-fork-url(){
+   case $USER in
+     blyth) echo git@github.com:simoncblyth/assimp.git ;;
+         *) echo git://github.com/simoncblyth/assimp.git ;;
+   esac
+} 
+assimp-fork-get(){
+   local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir
+   local cmd="git clone $(assimp-fork-url) $(assimp-fork-name)"
+   echo $cmd
+   eval $cmd
+}
+
+assimp-rdiff(){
+   local rel=${1:-code}
+   assimp-fold-cd
+   diff -r --brief $(assimp-release-name)/$rel $(assimp-fork-name)/$rel 
+}
+assimp-diff(){
+   local rel=${1:-code/ColladaLoader.cpp}
+   assimp-fold-cd
+   local cmd="diff $(assimp-release-name)/$rel $(assimp-fork-name)/$rel"
+   echo 
+   echo $cmd
+   eval $cmd
+}
+
+assimp-ndiff(){
+  local name
+  assimp-names | while read name ; do 
+     assimp-diff $name 
+  done
+
+}
+
+
+assimp-names(){ cat << EON
+code/ColladaExporter.cpp
+code/ColladaExporter.h
+code/ColladaHelper.h
+code/ColladaLoader.cpp
+code/ColladaLoader.h
+code/ColladaParser.cpp
+code/ColladaParser.h
+EON
+}
+
+
+
+assimp-wipe(){
+   local bdir=$(assimp-bdir)
+   rm -rf $bdir
+}
+
+
 assimp-cmake(){
+   local iwd=$PWD
    local bdir=$(assimp-bdir)
    mkdir -p $bdir
    assimp-bcd
    cmake $(assimp-dir) -DCMAKE_INSTALL_PREFIX=$(assimp-prefix)
+   cd $iwd
 }
 
 assimp-make(){
+   local iwd=$PWD
    assimp-bcd
-   make $*
+   make $*  && cd $iwd
 }
 
 assimp-install(){

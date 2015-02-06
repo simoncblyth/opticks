@@ -56,12 +56,21 @@ assimpwrap-install(){
 assimpwrap-bbin(){ echo $(assimpwrap-bdir)/AssimpWrapTest ; }
 assimpwrap-bin(){ echo $(assimpwrap-idir)/bin/AssimpWrapTest ; }
 
+assimpwrap-geokey(){
+    case $1 in
+      extra) echo DAE_NAME_DYB ;; 
+          *) echo DAE_NAME_DYB_NOEXTRA  ;;
+    esac  
+}
+
 assimpwrap-export(){
+    export ASSIMPWRAP_GEOKEY="$(assimpwrap-geokey $1)"
     export ASSIMPWRAP_QUERY="index:1,depth:2" 
-    export ASSIMPWRAP_GEOKEY="DAE_NAME_DYB_NOEXTRA"
     export-
     export-export
+    env | grep ASSIMPWRAP
 }
+
 
 assimpwrap-run(){
     assimpwrap-make
@@ -77,8 +86,6 @@ assimpwrap--(){
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
 
     assimpwrap-install $*
- 
-    #assimpwrap-run $* 
 }
 
 assimpwrap-lldb(){
@@ -86,8 +93,20 @@ assimpwrap-lldb(){
 }
 
 assimpwrap-brun(){
+   echo running from bdir not idir : no install needed, but much set library path
    local bdir=$(assimpwrap-bdir)
-   DYLD_LIBRARY_PATH=$bdir $bdir/AssimpWrapTest 
+   DYLD_LIBRARY_PATH=$bdir $DEBUG $bdir/AssimpWrapTest 
+}
+
+
+
+assimpwrap-test(){
+    local arg=$1
+    assimpwrap-make
+    [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
+
+    assimpwrap-export $arg
+    DEBUG= assimpwrap-brun
 }
 
 
