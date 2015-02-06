@@ -33,11 +33,6 @@ assimpwrap-wipe(){
     rm -rf $bdir
 }
 
-assimpwrap-iwipe(){
-    local idir=$(assimpwrap-idir)
-    rm -rf $idir
-}
-
 
 assimpwrap-cmake(){
    local bdir=$(assimpwrap-bdir)
