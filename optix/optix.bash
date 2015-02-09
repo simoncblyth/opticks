@@ -19,15 +19,45 @@ Resources
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
 
+Update OptiX version and build samples
+---------------------------------------
 
-Determine Driver Version
----------------------------
+::
+
+    -bash-4.1$ optix-linux-jump 370         # modify the symbolic link
+    OptiX -> NVIDIA-OptiX-SDK-3.7.0-linux64
+
+    -bash-4.1$ optix-name
+    NVIDIA-OptiX-SDK-3.7.0-linux64     
+
+    -bash-4.1$ optix-samples-get-all   ## copy samples, to avoid touching originals
+
+    -bash-4.1$ optix-samples-cmake     ## fails due to cmake version 
+
+    -bash-4.1$ optix-samples-cmake-kludge   ## kludge the requirement, seems to work with 2.6.4
+    cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+    cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+
+    -bash-4.1$ optix-samples-cmake     ## now completes
+    -bash-4.1$ optix-samples-make      ## 
+
+
+
+
+Determine Driver Version on Linux (on Mac use SysPref panel)
+----------------------------------------------------------------
 
 With nvidia-smi or::
 
-    -bash-4.1$ cat /proc/driver/nvidia/version
+    -bash-4.1$ cat /proc/driver/nvidia/version   # original old driver
     NVRM version: NVIDIA UNIX x86_64 Kernel Module  319.37  Wed Jul  3 17:08:50 PDT 2013
     GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+
+    -bash-4.1$ cat /proc/driver/nvidia/version   # updated Feb ~7 2015 
+    NVRM version: NVIDIA UNIX x86_64 Kernel Module  340.65  Tue Dec  2 09:50:34 PST 2014
+    GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+    -bash-4.1$ 
+
 
 
 Release Notes OptiX Version 3.7 beta 3 (January 2015)
@@ -770,21 +800,34 @@ OptiX cmake claims needs 2.8.8 by appears to build ok with 2.6.4
 
 ::
 
-    -bash-4.1$ grep 2.8.8 CMakeLists.txt 
-    cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
-
-    -bash-4.1$ perl -pi -e 's,2.8.8,2.6.4,' CMakeLists.txt 
-
-    -bash-4.1$ grep 2.6.4 CMakeLists.txt 
-    cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+    cmake-samples-cmake-kludge  # inplace edit the version requirement
 
 
 
 Each OptiX release requires a different driver release
 ----------------------------------------------------------
 
-sample7 fails with OptiX 363
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sample7 works with Optix370 (new driver 340.65)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    -bash-4.1$ LD_LIBRARY_PATH=. ./sample7 -f out.ppm
+    -bash-4.1$ ll *.ppm
+    -rw-r--r-- 1 blyth dyw 2211856 Feb  9 11:53 out.ppm
+    -bash-4.1$ date
+    Mon Feb  9 11:54:10 CST 2015
+    -bash-4.1$ optix-name
+    NVIDIA-OptiX-SDK-3.7.0-linux64
+    -bash-4.1$ 
+
+    -bash-4.1$ cat /proc/driver/nvidia/version
+    NVRM version: NVIDIA UNIX x86_64 Kernel Module  340.65  Tue Dec  2 09:50:34 PST 2014
+    GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+
+
+sample7 fails with OptiX 363 (old driver)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -796,8 +839,8 @@ sample7 fails with OptiX 363
 	-bash-4.1$ 
 
 
-sample7 works with OptiX 351
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sample7 works with OptiX 351 (old driver)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -865,7 +908,7 @@ optix-linux-name(){
    case $1 in 
       351) echo NVIDIA-OptiX-SDK-3.5.1-PRO-linux64 ;;
       363) echo NVIDIA-OptiX-SDK-3.6.3-linux64 ;;
-      371) echo NVIDIA-OptiX-SDK-3.7.1-linux64 ;;
+      370) echo NVIDIA-OptiX-SDK-3.7.0-linux64 ;;
    esac
 }
 
@@ -960,6 +1003,16 @@ optix-cuda-nvcc-flags(){
        *) echo --use_fast_math ;; 
     esac
 }
+
+
+
+optix-samples-cmake-kludge(){
+    optix-samples-scd
+    grep cmake_minimum_required CMakeLists.txt 
+    perl -pi -e 's,2.8.8,2.6.4,' CMakeLists.txt 
+    grep cmake_minimum_required CMakeLists.txt 
+}
+
 
 optix-samples-cmake(){
     local iwd=$PWD
