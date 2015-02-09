@@ -375,6 +375,7 @@ raytrace-lldb(){
 
 raytrace-benchmark-name(){ echo benchmark ; }
 raytrace-benchmark-path(){ echo $(raytrace-odir)/$(raytrace-benchmark-name) ; }
+raytrace-benchmark-scaling(){ echo 1 ; }
 
 raytrace-benchmark()
 {
@@ -382,12 +383,23 @@ raytrace-benchmark()
    local dir=$(dirname $path)
    mkdir -p $dir
 
-   raytrace-v -a --benchmark-no-display=1x2 --save-frames=$path $*
+
+   if [ "$(raytrace-benchmark-scaling)" == "1" ] ; then
+       CUDA_VISIBLE_DEVICES=0 raytrace-v -a --benchmark-no-display=1x2 --save-frames=$path $*
+       CUDA_VISIBLE_DEVICES=1 raytrace-v -a --benchmark-no-display=1x2 --save-frames=$path $*
+       raytrace-v -a --benchmark-no-display=1x2 --save-frames=$path $*
+   else
+
+       raytrace-v -a --benchmark-no-display=1x2 --save-frames=$path $*
+
+   fi
 
    # TODO: tidy output and record benchmark info named logs 
 
    raytrace-benchmark-convert
 }
+
+
 
 raytrace-benchmark-convert()
 { 

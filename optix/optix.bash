@@ -855,6 +855,66 @@ sample7 works with OptiX 351 (old driver)
 
 
 
+Benchmark
+------------
+
+Quick look at scaling with GPU cores, close to linear 
+
+* CUDA_VISIBLE_DEVICES=0
+* CUDA_VISIBLE_DEVICES=1
+* unset 
+
+* K20m 2496 cores each,  total 4992 cores
+
+* 750m 384 cores 
+
+::
+
+    In [2]: 4992./384.
+    Out[2]: 13.0
+
+    In [3]: 345.154/28.03
+    Out[3]: 12.313735283624688
+
+    In [4]: 49.1/28.03
+    Out[4]: 1.7516946129147342
+
+
+1,1,2 K20m::
+
+
+    Time to load geometry: 5.05531 s.
+    Time to compile kernel: 0.220482 s.
+    Time to build AS      : 0.162403 s.
+    PREPROCESS: MeshViewer | compile 0.000169992 sec | accelbuild 0.0002141 sec
+    BENCHMARK: MeshViewer | 20.3645 fps | 1 (warmup) | 2 (timed) | 0.0982101 sec | 49.105 ms/f 
+
+    Time to load geometry: 4.99532 s.
+    Time to compile kernel: 0.218149 s.
+    Time to build AS      : 0.160232 s.
+    PREPROCESS: MeshViewer | compile 0.000129938 sec | accelbuild 0.000213146 sec
+    BENCHMARK: MeshViewer | 20.354 fps | 1 (warmup) | 2 (timed) | 0.0982609 sec | 49.1304 ms/f 
+
+    Time to load geometry: 4.9231 s.
+    Time to compile kernel: 0.22342 s.
+    Time to build AS      : 0.312235 s.
+    PREPROCESS: MeshViewer | compile 0.000135899 sec | accelbuild 0.000245094 sec
+    BENCHMARK: MeshViewer | 35.669 fps | 1 (warmup) | 2 (timed) | 0.056071 sec | 28.0355 ms/f 
+
+
+1 750m::
+
+    Time to load geometry: 3.05554 s.
+    Time to compile kernel: 0.160299 s.
+    Time to build AS      : 0.286529 s.
+    PREPROCESS: MeshViewer | compile 9.70364e-05 sec | accelbuild 0.000139952 sec
+    BENCHMARK: MeshViewer | 2.89726 fps | 1 (warmup) | 2 (timed) | 0.690308 sec | 345.154 ms/f 
+
+
+
+
+
+
 EOU
 }
 
