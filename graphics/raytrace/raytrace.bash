@@ -421,7 +421,7 @@ raytrace-benchmark-convert()
 }
 
 
-raytrace-benchmark-optix(){ echo $(optix-linux-name 351) ; }
+raytrace-benchmark-optix(){ echo $(optix-linux-name 370) ; }
 raytrace-benchmark-node(){  echo L6 ; }
 raytrace-benchmark-get()
 {
