@@ -57,9 +57,28 @@ std::size_t AssimpNode::getParentDigest()
 {
    return m_pdigest ;
 }
+
+
 aiNode* AssimpNode::getRawNode(){
    return m_raw ; 
 }
+aiNode* AssimpNode::getRawNode(unsigned int iback)
+{
+    unsigned int size = m_nodepath.size() ;
+    unsigned int index = size - 1 - iback ; 
+    return index < size ?  m_nodepath[index] : NULL  ; 
+}
+
+
+const char* AssimpNode::getName() {
+    return m_raw->mName.C_Str();
+}
+const char* AssimpNode::getName(unsigned int iback) 
+{
+    aiNode* raw = getRawNode(iback);
+    return raw ? raw->mName.C_Str() : "-" ;
+}
+
 
 std::size_t AssimpNode::hash(unsigned int pyfirst, unsigned int pylast)
 {
@@ -80,9 +99,8 @@ std::size_t AssimpNode::hash(unsigned int pyfirst, unsigned int pylast)
 }
 
 
-const char* AssimpNode::getName() {
-    return m_raw->mName.C_Str();
-}
+
+
 
 void AssimpNode::setParent(AssimpNode* parent){
     m_parent = parent ;
@@ -306,7 +324,7 @@ void AssimpNode::ancestors()
    unsigned int count = 0 ;
    while( node )
    {
-       printf("AssimpNode::ancestors %2d %s \n", count, node->getName() );
+       printf("AssimpNode::ancestors %2d n:%s  n0:%s n1:%s n2:%s \n", count, node->getName(), node->getName(0), node->getName(1), node->getName(2) );
        node = node->getParent();
        count++ ;
    }

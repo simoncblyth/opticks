@@ -83,7 +83,8 @@ void AssimpTree::visitWrap(std::vector<aiNode*> nodepath)
 
    m_registry->add(wrap);
 
-   // hookup relationships via digest matching 
+   // hookup relationships via digest matching : works on 1st pass as 
+   // parents always exist before children 
    AssimpNode* parent = m_registry->lookup(wrap->getParentDigest());
 
    if(parent)
@@ -94,6 +95,10 @@ void AssimpTree::visitWrap(std::vector<aiNode*> nodepath)
 
    aiMatrix4x4 transform = wrap->getGlobalTransform() ; 
    wrap->copyMeshes(transform);
+
+
+   if(m_wrap_index == 5000) wrap->ancestors();
+
 
    if(0)
    { 
@@ -599,5 +604,16 @@ void AssimpTree::selectNodes(AssimpNode* node, unsigned int depth)
 }
 
 
+
+
+void AssimpTree::dumpMaterials(const char* msg)
+{
+    printf("%s\n", msg );
+    for(unsigned int i = 0; i < m_scene->mNumMaterials; i++)
+    {   
+        aiMaterial* mat = m_scene->mMaterials[i] ;
+        dumpMaterial(mat);
+    }   
+}
 
 

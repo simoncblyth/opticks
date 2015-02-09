@@ -152,7 +152,8 @@ void dumpMaterial( aiMaterial* material )
     {
         aiMaterialProperty* property = material->mProperties[i] ;
         aiString key = property->mKey ; 
-        printf("key %s \n", key.C_Str());
+        unsigned int len = property->mDataLength ; 
+        printf("key %s len %u \n", key.C_Str(), len);
     }
     printf("dumpMaterial props %2d %s \n", numProperties, name.C_Str());
 }

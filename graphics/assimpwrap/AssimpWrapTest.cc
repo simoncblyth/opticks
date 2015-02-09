@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     AssimpGeometry geom(path);
     geom.import();
     geom.select(query);
-
+    geom.dumpMaterials();
 
     return 0 ; 
 }

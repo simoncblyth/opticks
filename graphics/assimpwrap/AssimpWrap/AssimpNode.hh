@@ -39,7 +39,6 @@ class AssimpNode {
 
 
   public:
-      const char* getName();
       AssimpNode* getParent();
       unsigned int getNumChildren();
       AssimpNode* getChild(unsigned int n);
@@ -67,6 +66,9 @@ class AssimpNode {
 
   protected: 
       aiNode* getRawNode();
+      const char* getName();
+      aiNode* getRawNode(unsigned int iback);
+      const char* getName(unsigned int iback);
 
   private:
       unsigned int m_index ; 

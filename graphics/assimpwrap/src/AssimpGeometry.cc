@@ -240,6 +240,12 @@ void AssimpGeometry::dump()
     m_tree->dump();
 }
 
+void AssimpGeometry::dumpMaterials(const char* msg)
+{
+    m_tree->dumpMaterials(msg);
+}
+
+
 
 aiVector3D* AssimpGeometry::getLow()
 {

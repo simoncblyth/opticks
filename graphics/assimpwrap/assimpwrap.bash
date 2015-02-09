@@ -14,6 +14,17 @@ Wrapping the Assimp 3D Asset Importer Library
 
 
 
+
+
+
+
+FUNCTIONS
+----------
+
+
+
+
+
 EOU
 }
 assimpwrap-idir(){ echo $(local-base)/env/graphics ; }  # prefix
@@ -106,7 +117,7 @@ assimpwrap-test(){
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
 
     assimpwrap-export $arg
-    DEBUG= assimpwrap-brun
+    DEBUG=lldb assimpwrap-brun
 }
 
 

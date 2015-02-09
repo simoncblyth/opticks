@@ -22,6 +22,40 @@ Written in C++, it is available under a liberal BSD license. There is a C API
 as well as bindings to various other languages, including C#/.net, Python and D. 
 
 
+Development Cycle Adding Extra Material/Surface Handling
+---------------------------------------------------------
+
+::
+
+    assimp-cd
+    assimp-build
+
+    assimpwrap-
+    assimpwrap-test extra
+
+
+How to add extra material and surface properties ?
+------------------------------------------------------
+
+* straightforward to incoporate additional material properties 
+  within existing aiMaterial/aiMaterialProperty structs
+
+* not so clear for optical surface properties
+
+  * perhaps make fake materials and put them there ?
+
+  * skinsurface reference a single lv
+  * bordersurface reference a pair of pv  
+
+  * or could abuse the aiMetadata that is present on every aiNode
+    (or just the root node for more global type things)
+
+
+Yep aiMetadata is meant for simple info, faking materials
+looks easiest.
+
+
+
 RPATH kludge
 --------------
 
@@ -342,11 +376,18 @@ assimp-make(){
 }
 
 assimp-install(){
+   local iwd=$PWD
    assimp-bcd
    #make DESTDIR=$(assimp-prefix) install
-   make install
+   make install  && cd $iwd
 
    # huh : install says -- Removed runtime path from "/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/env/graphics/bin/assimp"
+}
+
+
+assimp-build(){
+   assimp-make
+   assimp-install
 }
 
 

@@ -38,6 +38,7 @@ public:
     void info();
 
     void dump();
+    void dumpMaterials(const char* msg="AssimpGeometry::dumpMaterials");
 
     void traverse();
 
