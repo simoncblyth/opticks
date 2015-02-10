@@ -18,17 +18,19 @@ int main(int argc, char* argv[])
 {
     const char* query = getenv("ASSIMPWRAP_QUERY");
     const char* geokey = getenv("ASSIMPWRAP_GEOKEY");
+    const char* material = getenv("ASSIMPWRAP_MATERIAL");
     assert(query);
     assert(geokey);
+    assert(material);
 
-    printf("argv0 %s query %s geokey %s \n", argv[0], query, geokey );
+    printf("argv0 %s query %s geokey %s material %s \n", argv[0], query, geokey, material );
 
     const char* path = getenv(geokey);
 
     AssimpGeometry geom(path);
     geom.import();
     geom.select(query);
-    geom.dumpMaterials();
+    geom.dumpMaterials(material);
 
     return 0 ; 
 }

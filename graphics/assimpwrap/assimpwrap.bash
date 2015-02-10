@@ -74,9 +74,16 @@ assimpwrap-geokey(){
     esac  
 }
 
+assimpwrap-material(){
+    #echo __dd__Geometry__AdDetails__AdSurfacesAll__ESRAirSurfaceBot 
+    echo __dd__Materials__GdDopedLS0xc2a8ed0 
+}
+
+
 assimpwrap-export(){
     export ASSIMPWRAP_GEOKEY="$(assimpwrap-geokey $1)"
     export ASSIMPWRAP_QUERY="index:1,depth:2" 
+    export ASSIMPWRAP_MATERIAL="$(assimpwrap-material)" 
     export-
     export-export
     env | grep ASSIMPWRAP

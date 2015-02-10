@@ -147,13 +147,57 @@ void dumpMaterial( aiMaterial* material )
 {
     aiString name;
     material->Get(AI_MATKEY_NAME, name);
+
     unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
     {
         aiMaterialProperty* property = material->mProperties[i] ;
         aiString key = property->mKey ; 
+        aiPropertyTypeInfo type = property->mType ; 
+
         unsigned int len = property->mDataLength ; 
-        printf("key %s len %u \n", key.C_Str(), len);
+        printf("key %-35s len %4u type: ", key.C_Str(), len);
+
+        switch(type)
+        { 
+           case aiPTI_Float:   printf("aiPTI_Float   "); break ;
+           case aiPTI_String:  printf("aiPTI_String  "); break ;
+           case aiPTI_Integer: printf("aiPTI_Integer "); break ;
+           case aiPTI_Buffer:  printf("aiPTI_Buffer  "); break ;
+           default:            printf("aiPTI INVALID "); break ;
+        }
+
+        if(type == aiPTI_String) 
+        {
+           aiString val ; 
+           material->Get(property->mKey.C_Str(),0,0,val);
+           printf("%s", val.C_Str());
+        } 
+        else if(type == aiPTI_Float)
+        {
+           printf("\n");
+           unsigned int size = len/sizeof(float) ;
+           float* data = (float*)property->mData ;
+           for(unsigned int i=0 ; i < size ; i++)
+           {
+              if(i < 5 || i > size - 5)
+              printf("%4d %10.3e \n", i, data[i]);
+           }
+        } 
+        else if(type == aiPTI_Integer)
+        {
+           printf("\n");
+           unsigned int size = len/sizeof(int) ;
+           int* data = (int*)property->mData ;
+           for(unsigned int i=0 ; i < size ; i++)
+           {
+              if(i < 5 || i > size - 5)
+              printf("%4d %10d \n", i, data[i]);
+           }
+        } 
+        printf("\n");
+
+
     }
     printf("dumpMaterial props %2d %s \n", numProperties, name.C_Str());
 }

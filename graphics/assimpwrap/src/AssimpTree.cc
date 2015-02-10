@@ -606,13 +606,16 @@ void AssimpTree::selectNodes(AssimpNode* node, unsigned int depth)
 
 
 
-void AssimpTree::dumpMaterials(const char* msg)
+void AssimpTree::dumpMaterials(const char* query)
 {
-    printf("%s\n", msg );
+    printf("%s\n", query );
     for(unsigned int i = 0; i < m_scene->mNumMaterials; i++)
     {   
         aiMaterial* mat = m_scene->mMaterials[i] ;
-        dumpMaterial(mat);
+        aiString name;
+        mat->Get(AI_MATKEY_NAME, name);
+        printf("AssimpTree::dumpMaterials %s \n", name.C_Str());
+        if(strncmp(query, name.C_Str(), strlen(query))==0) dumpMaterial(mat);
     }   
 }
 

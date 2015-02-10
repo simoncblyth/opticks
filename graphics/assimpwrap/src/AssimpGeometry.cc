@@ -240,9 +240,9 @@ void AssimpGeometry::dump()
     m_tree->dump();
 }
 
-void AssimpGeometry::dumpMaterials(const char* msg)
+void AssimpGeometry::dumpMaterials(const char* query)
 {
-    m_tree->dumpMaterials(msg);
+    m_tree->dumpMaterials(query);
 }
 
 
