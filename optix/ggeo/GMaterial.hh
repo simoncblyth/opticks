@@ -18,6 +18,9 @@ class GMaterial : public GPropertyMap {
       GMaterial(const char* name);
       virtual ~GMaterial();
 
+  public: 
+      void Summary(const char* msg="GMaterial::Summary");
+
 };
 
 

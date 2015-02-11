@@ -9,6 +9,7 @@ class AssimpRegistry ;
 struct aiScene ; 
 struct aiMesh ; 
 struct aiNode ; 
+struct aiMaterial ; 
 
 // strings together a tree of AssimpNode
 
@@ -22,6 +23,7 @@ public:
     AssimpNode* getRoot();
     void setRoot(AssimpNode* root);
 
+    const aiScene* getScene();
     aiMesh* getRawMesh(unsigned int meshIndex );
 
     // merge selected meshes into a single mesh 

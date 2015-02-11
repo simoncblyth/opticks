@@ -18,12 +18,15 @@ namespace Assimp
 #include <assimp/types.h>
 #include <vector>
 
+
 class AssimpGeometry 
 {
 public:
     AssimpGeometry(const char* path);
 
     virtual ~AssimpGeometry();
+
+    AssimpTree* getTree();
 
     void import();
     void import(unsigned int flags);
@@ -39,6 +42,7 @@ public:
 
     void dump();
     void dumpMaterials(const char* msg="AssimpGeometry::dumpMaterials");
+
 
     void traverse();
 

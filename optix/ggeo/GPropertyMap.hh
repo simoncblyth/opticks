@@ -7,16 +7,30 @@
 
 
 class GPropertyMap {
+
+  typedef std::map<std::string,GPropertyF*> GPropertyMapF_t ;
   public:
-      GPropertyMap(const char* name);
+      GPropertyMap(const char* name, const char* type);
       virtual ~GPropertyMap();
+
+  public:
+      const char* getName();
+      const char* getType();
+
+      bool isSkinSurface();
+      bool isBorderSurface();
+      bool isMaterial();
+
+      void Summary(const char* msg="GPropertyMap::Summary");
+
   public:
       void AddProperty(const char* pname, float* values, float* domain, size_t length );
       GPropertyF* GetProperty(const char* pname);
 
   private:
       std::string m_name ;
-      std::map<std::string,GPropertyF*> m_prop ; 
+      std::string m_type ;
+      GPropertyMapF_t m_prop ; 
 };
 
 

@@ -1,5 +1,7 @@
 #include "GSolid.hh"
 
+#include "stdio.h"
+
 GSolid::GSolid( GMesh* mesh, GMaterial* material1, GMaterial* material2, GSurface* surface1, GSurface* surface2 )
          : 
          m_mesh(mesh),
@@ -14,4 +16,11 @@ GSolid::GSolid( GMesh* mesh, GMaterial* material1, GMaterial* material2, GSurfac
 GSolid::~GSolid()
 {
 }
+
+void GSolid::Summary(const char* msg )
+{
+   printf("%s\n", msg );
+}
+
+
  

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <assimp/scene.h>
 
+
 AssimpTree::AssimpTree(const aiScene* scene) 
   : 
   m_scene(scene),
@@ -40,6 +41,12 @@ AssimpTree::~AssimpTree()
 {
 }
 
+
+
+const aiScene* AssimpTree::getScene()
+{
+    return m_scene ;
+}
 
 
 void AssimpTree::traverseWrap(const char* msg)
@@ -614,9 +621,14 @@ void AssimpTree::dumpMaterials(const char* query)
         aiMaterial* mat = m_scene->mMaterials[i] ;
         aiString name;
         mat->Get(AI_MATKEY_NAME, name);
+
         printf("AssimpTree::dumpMaterials %s \n", name.C_Str());
         if(strncmp(query, name.C_Str(), strlen(query))==0) dumpMaterial(mat);
     }   
 }
+
+
+
+
 
 

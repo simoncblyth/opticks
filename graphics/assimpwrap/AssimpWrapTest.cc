@@ -1,6 +1,9 @@
 #include "AssimpGeometry.hh"
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
+#include "AssimpGGeo.hh"
+
+#include "GGeo.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +22,7 @@ int main(int argc, char* argv[])
     const char* query = getenv("ASSIMPWRAP_QUERY");
     const char* geokey = getenv("ASSIMPWRAP_GEOKEY");
     const char* material = getenv("ASSIMPWRAP_MATERIAL");
+    const char* ggctrl = getenv("ASSIMPWRAP_GGCTRL");
     assert(query);
     assert(geokey);
     assert(material);
@@ -30,7 +34,12 @@ int main(int argc, char* argv[])
     AssimpGeometry geom(path);
     geom.import();
     geom.select(query);
-    geom.dumpMaterials(material);
+    //geom.dumpMaterials(material);
+
+    AssimpGGeo agg(geom.getTree()); 
+    GGeo* gg = agg.convert(ggctrl);
+    gg->Summary("main");    
+
 
     return 0 ; 
 }

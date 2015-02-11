@@ -14,7 +14,7 @@ public:
    GProperty(T* values, T* domain, size_t len );
    virtual ~GProperty();
 
-   void Dump(const char* msg);
+   void Summary(const char* msg);
 
 private:
    size_t m_length ;
@@ -44,22 +44,26 @@ GProperty<T>::~GProperty()
 
 
 template <typename T>
-const char* GProperty<T>::DOMAIN_FMT = " %10.3e" ; 
+const char* GProperty<T>::DOMAIN_FMT = " %10.3f" ; 
 
 template <typename T>
-const char* GProperty<T>::VALUE_FMT = " %10.3e" ; 
+const char* GProperty<T>::VALUE_FMT = " %10.3f" ; 
 
 
 template <typename T>
-void GProperty<T>::Dump(const char* msg)
+void GProperty<T>::Summary(const char* msg)
 {
    printf("%s\n", msg );
 
    for(unsigned int i=0 ; i < m_length ; i++ )
    {
-      printf(DOMAIN_FMT, m_domain[i]);
-      printf(VALUE_FMT,  m_values[i]);
-      printf("\n");
+      if( i < 5 || i > m_length - 5 )
+      {
+          printf("%4u", i );
+          printf(DOMAIN_FMT, m_domain[i]);
+          printf(VALUE_FMT,  m_values[i]);
+          printf("\n");
+      }
    }
 }
 

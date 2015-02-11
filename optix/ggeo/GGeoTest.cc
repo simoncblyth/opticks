@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     mat->AddProperty("pname", vals, domain, sizeof(domain)/sizeof(domain[0]) );
 
     GProperty<float>* prop = mat->GetProperty("pname");
-    prop->Dump("prop dump");
+    prop->Summary("prop dump");
 
 
     return 0 ;

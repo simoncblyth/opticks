@@ -74,6 +74,11 @@ AssimpGeometry::~AssimpGeometry()
     free(m_path);
 }
 
+AssimpTree* AssimpGeometry::getTree()
+{
+    return m_tree ;
+}
+
 
 void AssimpGeometry::info()
 {
@@ -273,8 +278,6 @@ bool AssimpGeometry::isFlatSelection()
 {
     return m_tree->isFlatSelection();
 }
-
-
 
 
 

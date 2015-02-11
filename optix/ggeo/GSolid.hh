@@ -17,6 +17,9 @@ class GSolid {
   public:
       GSolid( GMesh* mesh, GMaterial* material1, GMaterial* material2, GSurface* surface1, GSurface* surface2 );
       virtual ~GSolid();
+
+  public: 
+      void Summary(const char* msg="GSolid::Summary");
  
   private:
       GMesh* m_mesh ; 

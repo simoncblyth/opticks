@@ -20,7 +20,8 @@ add_library(${name} SHARED
                 GProperty.cc
                 GPropertyMap.cc
                 GMaterial.cc
-                GSurface.cc
+                GSkinSurface.cc
+                GBorderSurface.cc
                 GSolid.cc
                 GMesh.cc
                 GGeo.cc
@@ -35,5 +36,19 @@ target_link_libraries(${name}Test
 install(TARGETS ${name}Test DESTINATION bin)
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 
+
+SET(hdrs 
+GGeo.hh
+GMaterial.hh
+GMesh.hh
+GProperty.hh
+GPropertyMap.hh
+GSolid.hh
+GSkinSurface.hh
+GBorderSurface.hh
+GVector.hh
+)
+
+install(FILES ${hdrs} DESTINATION include)
 
 

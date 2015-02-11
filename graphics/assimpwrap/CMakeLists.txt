@@ -11,12 +11,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 set(BUILD_SHARED_LIBS ON)
 
 find_package(Assimp REQUIRED)
+find_package(GGeo REQUIRED)
 
 include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/${name}
     ${Assimp_INCLUDE_DIRS}  
+    ${GGeo_INCLUDE_DIRS}  
 )
 
 add_definitions(
@@ -28,10 +30,12 @@ add_library(${name} SHARED
                 src/AssimpNode.cc
                 src/AssimpTree.cc
                 src/AssimpRegistry.cc
+                src/AssimpGGeo.cc
 )
 
 target_link_libraries(${name}
                        ${Assimp_LIBRARIES} 
+                       ${GGeo_LIBRARIES} 
                      )
 
 add_executable(${name}Test ${name}Test.cc)
@@ -39,6 +43,7 @@ add_executable(${name}Test ${name}Test.cc)
 target_link_libraries(${name}Test 
                        ${name}
                        ${Assimp_LIBRARIES} 
+                       ${GGeo_LIBRARIES} 
                        ssl
                        crypto 
                      )

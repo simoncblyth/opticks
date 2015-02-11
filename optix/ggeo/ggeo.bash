@@ -34,12 +34,17 @@ GGeo Geometry Model Objective
 * intended to be a rather constant model, from which 
   a variety of OptiX representations can be developed 
 
+* possible side-feature : geometry caching for fast starts
+  without having to parse COLLADA.
+
 
 Relationship to AssimpGeometry ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 AssimpGeometry/AssimpTree orchestrates creation of GGeo model
-from the imported Assimp model.
+from the imported Assimp model. The OptiX model should then 
+be created entirely from the GGeo model with no use of 
+the Assimp model.
 
 Analogs 
 --------
@@ -62,6 +67,7 @@ OptiX Geometry Model
 * Geometry (bbox program, intersection program) and params the programs use
 * GeometryInstance associate Geometry with usually one Material (can be more than one) 
 
+
 Chroma Geometry Model
 ----------------------
 
@@ -69,7 +75,6 @@ Single all encompassing Geometry instance containing:
 
 * arrays of materials and surfaces
 * material codes identifying material and surface indices for every triangle
-
 
 chroma/chroma/cuda/geometry_types.h::
 

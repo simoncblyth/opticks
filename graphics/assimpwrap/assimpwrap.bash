@@ -75,8 +75,12 @@ assimpwrap-geokey(){
 }
 
 assimpwrap-material(){
-    #echo __dd__Geometry__AdDetails__AdSurfacesAll__ESRAirSurfaceBot 
-    echo __dd__Materials__GdDopedLS0xc2a8ed0 
+    echo __dd__Geometry__AdDetails__AdSurfacesAll__ESRAirSurfaceBot 
+    #echo __dd__Materials__GdDopedLS0xc2a8ed0 
+}
+
+assimpwrap-ggctrl(){
+    echo __dd__
 }
 
 
@@ -84,6 +88,7 @@ assimpwrap-export(){
     export ASSIMPWRAP_GEOKEY="$(assimpwrap-geokey $1)"
     export ASSIMPWRAP_QUERY="index:1,depth:2" 
     export ASSIMPWRAP_MATERIAL="$(assimpwrap-material)" 
+    export ASSIMPWRAP_GGCTRL="$(assimpwrap-ggctrl)" 
     export-
     export-export
     env | grep ASSIMPWRAP
