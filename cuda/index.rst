@@ -26,6 +26,7 @@ cuda
     cuda_context_cleanup
     cuda_persistent_threads
     cuda_gpu_comparisons
+    texture/index
 
 
 

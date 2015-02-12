@@ -326,8 +326,32 @@ OptiX Usage Examples
 * https://github.com/pspkzar/OptiXRenderer/blob/master/src/OptixRenderer.cpp
 
 * https://github.com/nvpro-samples/gl_optix_composite
+* https://github.com/nvpro-samples/gl_optix_composite/blob/master/shaders/optix_triangle_mesh.cu
+
+  * texture lookup example
+
 
 * http://graphicsrunner.blogspot.tw/2011/03/instant-radiosity-using-optix-and.html
+
+
+nvfx : Generic Effect system for Graphic APIs, including OpenGL and OptiX
+---------------------------------------------------------------------------
+
+nvFx is a new approach for compositing shaders and compute kernels together,
+using an API-agnostic description of effects for objects materials and scene
+management (post-processing, management of rendering passes).
+
+* **curious how the OptiX side of things is implemented**
+
+  * specifically how material params are fed to the OptiX programs
+
+
+* :google:`nvfx`
+
+* https://github.com/tlorach/nvFX
+
+* http://lorachnroll.blogspot.tw/2013/07/nvfx-effect-system-on-top-of-many.html
+
 
 
 Large Codebases Using OptiX
