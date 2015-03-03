@@ -61,23 +61,23 @@ __global__ void kernel(int M, float *d_out)
 
 int main()
 {
-    int N = 256;
+    int N = 16;
     float *d_out;
     CUDA_SAFE_CALL( cudaMalloc((void**)&d_out, sizeof(float) * N) ); // memory for output
 
+    // make an array half the size of the output, fill array with increasing values
     int M = N/2;
-    // make an array half the size of the output
+    float *data = (float*)malloc(M*sizeof(float));
+    for (int i = 0; i < M; i++) data[i] = float(i);
+
+
     cudaArray* cuArray;
     CUDA_SAFE_CALL (cudaMallocArray (&cuArray, &tex.channelDesc, M, 1));
+
     CUDA_SAFE_CALL (cudaBindTextureToArray (tex, cuArray));
     tex.filterMode = cudaFilterModeLinear;
 
-    // data fill array with increasing values
-    float *data = (float*)malloc(M*sizeof(float));
-
-    for (int i = 0; i < M; i++) data[i] = float(i);
-
-    CUDA_SAFE_CALL( cudaMemcpyToArray(cuArray, 0, 0, data, sizeof(float)*M, cudaMemcpyHostToDevice) );
+     CUDA_SAFE_CALL( cudaMemcpyToArray(cuArray, 0, 0, data, sizeof(float)*M, cudaMemcpyHostToDevice) );
 
     kernel<<<1, N>>>(M, d_out);
 

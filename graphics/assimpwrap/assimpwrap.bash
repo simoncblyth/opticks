@@ -13,9 +13,12 @@ Wrapping the Assimp 3D Asset Importer Library
 * Used by raytrace-
 
 
+Workflow
+---------
 
+::
 
-
+   assimpwrap-extra
 
 
 FUNCTIONS
@@ -116,12 +119,10 @@ assimpwrap-lldb(){
 }
 
 assimpwrap-brun(){
-   echo running from bdir not idir : no install needed, but much set library path
+   echo running from bdir not idir : no install needed, but must set library path
    local bdir=$(assimpwrap-bdir)
    DYLD_LIBRARY_PATH=$bdir $DEBUG $bdir/AssimpWrapTest 
 }
-
-
 
 assimpwrap-test(){
     local arg=$1
@@ -132,7 +133,12 @@ assimpwrap-test(){
     DEBUG=lldb assimpwrap-brun
 }
 
+assimpwrap-extra(){
+   assimpwrap-test extra
+}
 
 assimpwrap-otool(){
    otool -L $(assimpwrap-bin)
 }
+
+

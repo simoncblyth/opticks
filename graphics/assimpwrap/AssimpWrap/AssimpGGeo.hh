@@ -31,6 +31,10 @@ protected:
     const char* getStringProperty(aiMaterial* mat, const char* query);
 
 protected:
+    void convertMeshes(const aiScene* scene, GGeo* gg, const char* ctrl);
+
+
+protected:
     void setDomainScale(float dscale);
     void setValuesScale(float vscale);
 

@@ -4,7 +4,9 @@
 #include <assimp/types.h>
 #include <assimp/scene.h>
 
+#include "GVector.hh"
 #include "GGeo.hh"
+#include "GMesh.hh"
 #include "GMaterial.hh"
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
@@ -37,6 +39,7 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     GGeo* gg = new GGeo();
     const aiScene* scene = m_tree->getScene();
     convertMaterials(scene, gg, ctrl);
+    convertMeshes(scene, gg, ctrl);
     return gg ;
 }
 
@@ -208,6 +211,44 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         free((void*)bspv1);
         free((void*)bspv2);
         free((void*)sslv);
+    }
+}
+
+
+void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query)
+{
+    for(unsigned int i = 0; i < scene->mNumMeshes; i++)
+    {
+
+        aiMesh* mesh = scene->mMeshes[i] ;
+        unsigned int numVertices = mesh->mNumVertices;
+
+        aiVector3D* vertices = mesh->mVertices ; 
+        gfloat3* gvertices = new gfloat3[numVertices];
+
+        for(unsigned int v = 0; v < mesh->mNumVertices; v++)
+        {
+            gvertices[v].x = vertices[v].x;
+            gvertices[v].y = vertices[v].y;
+            gvertices[v].z = vertices[v].z;
+        }
+
+
+        unsigned int numFaces = mesh->mNumFaces;
+        aiFace* faces = mesh->mFaces ; 
+        guint3*  gfaces = new guint3[numFaces];
+
+        for(unsigned int f = 0; f < mesh->mNumFaces; f++)
+        {
+            aiFace face = mesh->mFaces[f];
+            gfaces[f].x = face.mIndices[0];
+            gfaces[f].y = face.mIndices[1];
+            gfaces[f].z = face.mIndices[2];
+        }
+
+
+        GMesh* gmesh = new GMesh( gvertices, numVertices, gfaces, numFaces ); 
+        gg->add(gmesh);
     }
 }
 

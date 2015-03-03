@@ -1,24 +1,18 @@
-#ifndef OPTIXASSIMPGEOMETRY_H
-#define OPTIXASSIMPGEOMETRY_H
+#ifndef OPTIXGGEO_H
+#define OPTIXGGEO_H
 
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
-class AssimpNode ; 
+class GGeo ; 
 
-//#include "AssimpWrap/AssimpGeometry.hh"
-
-class AssimpGeometry ; 
-struct aiMaterial ; 
-struct aiMesh ;
-
-class OptiXAssimpGeometry   
+class OptiXGGeo 
 {
 public:
-    OptiXAssimpGeometry(AssimpGeometry* ageo);
+    OptiXGGeo(GGeo* gg);
 
-    virtual ~OptiXAssimpGeometry();
+    virtual ~OptiXGGeo();
 
 public:
 
@@ -42,16 +36,6 @@ public:
 
     void setupAcceleration();
 
-private:
-
-    AssimpGeometry* m_ageo ; 
-
-    optix::Material convertMaterial(aiMaterial* ai_material);
-
-    optix::Geometry convertGeometry(aiMesh* mesh);
-
-    void traverseNode(AssimpNode* node, unsigned int depth, bool recurse);
-
 public:
 
     optix::float3  getMin();
@@ -68,6 +52,8 @@ public:
 
 private:
 
+    GGeo* m_ggeo ;  
+
     optix::Context m_context ;
 
     optix::Material m_material ;
@@ -81,6 +67,5 @@ private:
     std::vector<optix::GeometryInstance> m_gis ;
 
 };
-
 
 #endif

@@ -50,6 +50,10 @@ public:
     aiMesh* createMergedMesh();
 
 public:
+    unsigned int getNumMaterials();
+    aiMaterial*  getMaterial(unsigned int index);
+
+public:
     aiVector3D* getLow();
     aiVector3D* getHigh();
     aiVector3D* getCenter();

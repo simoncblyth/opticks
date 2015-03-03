@@ -1,4 +1,5 @@
 #include "GMesh.hh"
+#include "stdio.h"
 
 GMesh::GMesh(gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces) 
       :
@@ -12,6 +13,11 @@ GMesh::GMesh(gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsign
 
 GMesh::~GMesh()
 {
+}
+
+void GMesh::Summary(const char* msg)
+{
+   printf("%s vx %u fc %u \n", msg, m_num_vertices, m_num_faces );
 }
 
 

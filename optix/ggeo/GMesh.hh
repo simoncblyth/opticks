@@ -8,6 +8,8 @@ class GMesh {
       GMesh(gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces);
       virtual ~GMesh();
 
+      void Summary(const char* msg="GMesh::Summary");
+
   private:
       unsigned int m_num_vertices ;
       unsigned int m_num_faces ; 

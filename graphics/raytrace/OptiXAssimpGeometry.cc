@@ -1,5 +1,6 @@
 #include "OptiXAssimpGeometry.hh"
 #include "AssimpWrap/AssimpNode.hh"
+#include "AssimpWrap/AssimpGeometry.hh"
 
 #include "RayTraceConfig.hh"
 
@@ -20,9 +21,9 @@ OptiXAssimpGeometry::~OptiXAssimpGeometry()
 {
 }
 
-OptiXAssimpGeometry::OptiXAssimpGeometry(const char* path)
+OptiXAssimpGeometry::OptiXAssimpGeometry(AssimpGeometry* ageo)
            : 
-           AssimpGeometry(path),
+           m_ageo(ageo),
            m_context(NULL),
            m_material(NULL)
 {
@@ -52,7 +53,7 @@ optix::Material OptiXAssimpGeometry::getMaterial()
 }
 unsigned int OptiXAssimpGeometry::getMaxDepth()
 {
-    int qdepth = getQueryDepth();
+    int qdepth = m_ageo->getQueryDepth();
     return ( qdepth == 0 ) ? 100 : qdepth ;
 }
 
@@ -78,11 +79,11 @@ void OptiXAssimpGeometry::convert()
     //  TODO: AVOID OVERLAPPING OF THE TREES
     //
 
-    assert(getNumSelected() > 0);  // must select some geometry before convert
+    assert(m_ageo->getNumSelected() > 0);  // must select some geometry before convert
 
-    for(unsigned int i = 0; i < m_aiscene->mNumMaterials; i++)
+    for(unsigned int i = 0; i < m_ageo->getNumMaterials(); i++)
     {
-        optix::Material material = convertMaterial(m_aiscene->mMaterials[i]);
+        optix::Material material = convertMaterial(m_ageo->getMaterial(i));
         m_materials.push_back(material);
     }
     // hmm this above materials are currently ignored, the single material coming from m_material
@@ -91,13 +92,13 @@ void OptiXAssimpGeometry::convert()
     m_gis.clear();
 
 
-    bool mergemesh = getQueryMerge();
+    bool mergemesh = m_ageo->getQueryMerge();
 
     if(mergemesh)
     {
         printf("OptiXAssimpGeometry::convert createMergedMesh \n");
 
-        aiMesh* mesh = createMergedMesh(); 
+        aiMesh* mesh = m_ageo->createMergedMesh(); 
 
         optix::Geometry geometry = convertGeometry(mesh) ;  
 
@@ -108,14 +109,14 @@ void OptiXAssimpGeometry::convert()
     }
     else
     {
-        bool recurse = !isFlatSelection() ; 
-        for(unsigned int i=0 ; i < getNumSelected() ; i++ )
+        bool recurse = !m_ageo->isFlatSelection() ; 
+        for(unsigned int i=0 ; i < m_ageo->getNumSelected() ; i++ )
         {
-            traverseNode(getSelectedNode(i), 0, recurse);
+            traverseNode(m_ageo->getSelectedNode(i), 0, recurse);
         }
     } 
 
-    printf("OptiXAssimpGeometry::convert : %d selected top nodes with %lu gi \n", getNumSelected(), m_gis.size() );
+    printf("OptiXAssimpGeometry::convert : %d selected top nodes with %lu gi \n", m_ageo->getNumSelected(), m_gis.size() );
 
     m_geometry_group->setChildCount(m_gis.size());
     for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
@@ -368,31 +369,31 @@ optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
 
 optix::float3  OptiXAssimpGeometry::getCenter()
 {
-    aiVector3D* p = AssimpGeometry::getCenter();
+    aiVector3D* p = m_ageo->getCenter();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3  OptiXAssimpGeometry::getExtent()
 {
-    aiVector3D* p = AssimpGeometry::getExtent();
+    aiVector3D* p = m_ageo->getExtent();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3 OptiXAssimpGeometry::getUp()
 {
-    aiVector3D* p = AssimpGeometry::getUp();
+    aiVector3D* p = m_ageo->getUp();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3 OptiXAssimpGeometry::getMin()
 {
-    aiVector3D* p = AssimpGeometry::getLow();
+    aiVector3D* p = m_ageo->getLow();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3 OptiXAssimpGeometry::getMax()
 {
-    aiVector3D* p = AssimpGeometry::getHigh();
+    aiVector3D* p = m_ageo->getHigh();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 

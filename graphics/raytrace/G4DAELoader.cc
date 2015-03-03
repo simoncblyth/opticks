@@ -71,18 +71,18 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
 
   printf("G4DAELoader::load path     %s \n", path );
 
-  OptiXAssimpGeometry geom(path);
-  geom.import();
-  geom.setGeometryGroup(m_geometry_group);
+  AssimpGeometry ageo(path);
+  ageo.import();
+  ageo.select(query);
 
-  // must setContext before convert : can get rid of this via the cfg 
-  geom.setContext(m_context);
+
+  OptiXAssimpGeometry geom(&ageo);
+  geom.setGeometryGroup(m_geometry_group);
+  geom.setContext(m_context);    // must setContext before convert : can get rid of this via the cfg 
   geom.setMaterial(m_material);  // override the material hailing from geometry 
-  geom.select(query);
 
   geom.convert(); 
   geom.setupAcceleration();
-   
 
   m_aabb = geom.getAabb();
 }

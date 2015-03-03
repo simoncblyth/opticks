@@ -36,6 +36,9 @@ find_package(CUDA 2.3 REQUIRED)
 
 find_package(AssimpWrap REQUIRED)
 
+find_package(GGeo REQUIRED)
+
+
 
 include(FindSUtilGLUT)
 
@@ -47,6 +50,7 @@ include_directories(
     $ENV{OPTIX_SDK_DIR}/sutil
     ${CUDA_INCLUDE_DIRS}
     ${AssimpWrap_INCLUDE_DIRS}  
+    ${GGeo_INCLUDE_DIRS}  
 )
 
 add_definitions(
@@ -81,6 +85,7 @@ function(add_optix_executable target_name)
                            optix
                            optixu
                            ${AssimpWrap_LIBRARIES} 
+                           ${GGeo_LIBRARIES} 
                            ssl
                            crypto 
                          )
@@ -104,6 +109,7 @@ add_optix_executable( MeshViewer
                       ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
 
                       OptiXAssimpGeometry.cc
+                      OptiXGGeo.cc
                       G4DAELoader.cc
 
                       materials/phong.cu

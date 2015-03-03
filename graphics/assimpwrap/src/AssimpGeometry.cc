@@ -180,6 +180,15 @@ void AssimpGeometry::import(unsigned int flags)
 }
 
 
+unsigned int AssimpGeometry::getNumMaterials()
+{
+    return m_aiscene->mNumMaterials ; 
+}
+
+aiMaterial* AssimpGeometry::getMaterial(unsigned int index)
+{
+    return m_aiscene->mMaterials[index] ; 
+}
 
 void AssimpGeometry::traverse()
 {

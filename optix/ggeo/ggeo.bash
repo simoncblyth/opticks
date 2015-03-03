@@ -58,6 +58,47 @@ Analogs
 * AssimpWrap/AssimpGeometry/AssimpTree 
   are analogs of g4daenode.py and collada_to_chroma.py 
 
+
+Basis Classes
+---------------
+::
+
+    GProperty.hh:template <class T>
+    GProperty.hh:class GProperty {
+
+       * domain and value arrays + length
+
+    GPropertyMap.hh:class GPropertyMap {
+
+       * string keyed map of GProperty<float>
+
+    GMaterial.hh:class GMaterial : public GPropertyMap {
+    GBorderSurface.hh:class GBorderSurface : public GPropertyMap {
+    GSkinSurface.hh:class GSkinSurface : public GPropertyMap {
+
+
+    GMesh.hh:class GMesh {
+
+        * vertices and faces
+
+
+Client Classes
+---------------
+
+::
+
+    GSolid.hh:class GSolid {
+
+        * mesh + inside/outside materials and surfaces
+        * nexus of structure
+
+    GGeo.hh:class GGeo {
+
+        * vectors of pointers to solids, materials, skin surfaces, border surfaces 
+
+
+
+
 OptiX Geometry Model
 ---------------------
 
@@ -66,6 +107,9 @@ OptiX Geometry Model
 * Material (closest hit program, anyhit program ) and params the programs use 
 * Geometry (bbox program, intersection program) and params the programs use
 * GeometryInstance associate Geometry with usually one Material (can be more than one) 
+
+* try: representing material/surface props into 1D(wavelength) textures 
+
 
 
 Chroma Geometry Model

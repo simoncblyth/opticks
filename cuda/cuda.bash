@@ -24,7 +24,6 @@ going from:
 * CUDA Driver Version: 5.5.47
 * GPU Driver Version: 8.26.26 310.40.45f01
 
-
 To:
 
 * (No newer CUDA driver available)
@@ -38,6 +37,34 @@ version available
 From system prefs::
 
     Available: CUDA 6.5.18 Driver update is available
+
+
+nvcc compilation for newer architectures
+------------------------------------------
+
+Some PTX instructions are only supported on devices of higher compute
+capabilities. For example, warp shuffle instructions are only supported on
+devices of compute capability 3.0 and above. The -arch compiler option
+specifies the compute capability that is assumed when compiling C to PTX code.
+So, code that contains warp shuffle, for example, must be compiled with
+-arch=sm_30 (or higher).
+
+PTX code produced for some specific compute capability can always be compiled
+to binary code of greater or equal compute capability.
+
+
+::
+
+    delta:~ blyth$ nvcc -o /usr/local/env/cuda/texture/cuda_texture_object -arch=sm_30 /Users/blyth/env/cuda/texture/cuda_texture_object.cu
+    delta:~ blyth$ nvcc -o /usr/local/env/cuda/texture/cuda_texture_object  /Users/blyth/env/cuda/texture/cuda_texture_object.cu
+    /Users/blyth/env/cuda/texture/cuda_texture_object.cu(10): error: type name is not allowed
+
+    /Users/blyth/env/cuda/texture/cuda_texture_object.cu(10): warning: expression has no effect
+
+    1 error detected in the compilation of "/tmp/tmpxft_00017bac_00000000-6_cuda_texture_object.cpp1.ii".
+    delta:~ blyth$ 
+
+
 
 
 samples install
