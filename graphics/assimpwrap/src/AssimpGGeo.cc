@@ -40,6 +40,7 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     const aiScene* scene = m_tree->getScene();
     convertMaterials(scene, gg, ctrl);
     convertMeshes(scene, gg, ctrl);
+    convertStructure();
     return gg ;
 }
 
@@ -253,6 +254,36 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 }
 
 
+void AssimpGGeo::convertStructure()
+{
+    convertStructure(m_tree->getRoot(), 0);
+}
+
+void AssimpGGeo::convertStructure(AssimpNode* node, unsigned int depth)
+{
+    // GNode* gn = new GNode();
+    //
+    // rubber hits road here ...  analog to collada_to_chroma.py:visit 
+    // find way to associate to solid with mesh and in/out materials/surfaces here  
+    //
+    //  need to find associations of nodes to:
+    //
+    //     * border surfaces, via pv pair names
+    //
+    //     * skin surfaces, via lv names
+    //
+    //     * outside/inside materials (parent/child assumption is expedient) 
+    //       via aiNode lists of aiMesh indices [always 0 or 1 mesh per aiNode for Collada?]
+    //       (into scene meshes) 
+    //       each aiMesh has single mMaterialIndex pointing to scene materials
+    //
+
+    unsigned int node->getNumMeshes()
+
+
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(node->getChild(i), depth + 1);
+}
 
 
 

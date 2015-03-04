@@ -1,18 +1,17 @@
-#ifndef OPTIXGGEO_H
-#define OPTIXGGEO_H
+#ifndef OPTIXGEOMETRY_H
+#define OPTIXGEOMETRY_H
 
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
-class GGeo ; 
 
-class OptiXGGeo 
+class OptiXGeometry   
 {
 public:
-    OptiXGGeo(GGeo* gg);
+    OptiXGeometry();
 
-    virtual ~OptiXGGeo();
+    virtual ~OptiXGeometry();
 
 public:
 
@@ -24,41 +23,37 @@ public:
 
 public:
 
-    unsigned int getMaxDepth();
-
-    optix::GeometryGroup getGeometryGroup();
+    optix::Context getContext();
 
     optix::Material getMaterial();
 
+    optix::GeometryGroup getGeometryGroup();
+
 public:
 
-    void convert();
+    void addInstance(optix::Geometry geometry, optix::Material material);
 
     void setupAcceleration();
 
 public:
 
-    optix::float3  getMin();
+    virtual optix::float3  getMin() = 0;
 
-    optix::float3  getMax();
+    virtual optix::float3  getMax() = 0;
 
-    optix::float3  getCenter();
-
-    optix::float3  getExtent();
-
-    optix::float3  getUp();
+public:
 
     optix::Aabb getAabb();
 
-private:
-
-    GGeo* m_ggeo ;  
+protected:
 
     optix::Context m_context ;
 
     optix::Material m_material ;
 
     optix::GeometryGroup m_geometry_group ; 
+
+protected:
 
     std::vector<optix::Material> m_materials;
 
@@ -67,5 +62,6 @@ private:
     std::vector<optix::GeometryInstance> m_gis ;
 
 };
+
 
 #endif

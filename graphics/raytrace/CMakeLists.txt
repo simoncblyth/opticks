@@ -108,8 +108,10 @@ add_optix_executable( MeshViewer
                       RayTraceConfig.cc
                       ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
 
-                      OptiXAssimpGeometry.cc
-                      OptiXGGeo.cc
+                      OptiXGeometry.cc
+                      AssimpOptiXGeometry.cc
+                      GGeoOptiXGeometry.cc
+
                       G4DAELoader.cc
 
                       materials/phong.cu

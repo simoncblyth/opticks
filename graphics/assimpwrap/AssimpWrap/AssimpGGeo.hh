@@ -2,6 +2,7 @@
 #define ASSIMPGGEO_H
 
 class AssimpTree ; 
+class AssimpNode ; 
 class GGeo ; 
 class GSurface ;
 class GMaterial ;
@@ -33,6 +34,9 @@ protected:
 protected:
     void convertMeshes(const aiScene* scene, GGeo* gg, const char* ctrl);
 
+protected:
+    void convertStructure();
+    void convertStructure(AssimpNode* node, unsigned int depth);
 
 protected:
     void setDomainScale(float dscale);

@@ -12,7 +12,10 @@
 
 #include "AssimpWrap/AssimpCommon.hh"
 #include "AssimpWrap/AssimpGeometry.hh"
-#include "OptiXAssimpGeometry.hh"
+#include "AssimpOptiXGeometry.hh"
+
+#include "AssimpWrap/AssimpGGeo.hh"
+#include "GGeoOptiXGeometry.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,16 +78,43 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
   ageo.import();
   ageo.select(query);
 
+  {
+     AssimpOptiXGeometry geom(&ageo);
+     geom.setGeometryGroup(m_geometry_group);
+     geom.setContext(m_context);    // must setContext before convert : can get rid of this via the cfg 
+     geom.setMaterial(m_material);  // override the material hailing from geometry 
 
-  OptiXAssimpGeometry geom(&ageo);
-  geom.setGeometryGroup(m_geometry_group);
-  geom.setContext(m_context);    // must setContext before convert : can get rid of this via the cfg 
-  geom.setMaterial(m_material);  // override the material hailing from geometry 
+     geom.convert(); 
+     geom.setupAcceleration();
 
-  geom.convert(); 
-  geom.setupAcceleration();
+     m_aabb = geom.getAabb();
+  }
 
-  m_aabb = geom.getAabb();
+
+
+
+  // experimenting with intermediary GGeo approach
+  {
+      const char* ggctrl = getenv("RAYTRACE_GGCTRL");
+
+      // from Assimp into GGeo
+      AssimpGGeo agg(ageo.getTree()); 
+      GGeo* ggeo = agg.convert(ggctrl);
+
+      // from GGeo into OptiX
+      GGeoOptiXGeometry geom(ggeo);
+      
+      geom.setGeometryGroup(m_geometry_group);
+      geom.setContext(m_context);    // must setContext before convert : can get rid of this via the cfg 
+      geom.setMaterial(m_material);  // override the material hailing from geometry 
+
+      geom.convert(); 
+      geom.setupAcceleration();
+  }
+
+
+
+
 }
 
 void G4DAELoader::createGeometryInstance( 

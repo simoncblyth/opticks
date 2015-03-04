@@ -197,8 +197,6 @@ void AssimpNode::bounds(const char* msg)
 void AssimpNode::copyMeshes(aiMatrix4x4 transform)
 {
 
-
-
      m_transform = transform ; 
 
      m_numMeshes = m_raw->mNumMeshes ; 

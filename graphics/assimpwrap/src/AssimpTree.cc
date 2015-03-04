@@ -33,8 +33,6 @@ AssimpTree::AssimpTree(const aiScene* scene)
    traverseWrap();
 
    m_registry->summary();
-
-   //m_root->traverse();
 }
 
 AssimpTree::~AssimpTree()
@@ -563,7 +561,7 @@ int AssimpTree::getQueryMerge()
 
 int AssimpTree::getQueryDepth()
 {
-   return m_query_depth ;  
+   return m_query_depth == 0 ? 100 : m_query_depth ;  
 }
 
 bool AssimpTree::isFlatSelection()

@@ -87,9 +87,49 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
+unsigned int GGeo::getNumMeshes()
+{
+    return m_meshes.size();
+}
+unsigned int GGeo::getNumSolids()
+{
+    return m_solids.size();
+}
+unsigned int GGeo::getNumMaterials()
+{
+    return m_materials.size();
+}
+unsigned int GGeo::getNumBorderSurfaces()
+{
+    return m_border_surfaces.size();
+}
+unsigned int GGeo::getNumSkinSurfaces()
+{
+    return m_skin_surfaces.size();
+}
 
 
 
+GMesh* GGeo::getMesh(unsigned int index)
+{
+    return m_meshes[index];
+}  
+GMaterial* GGeo::getMaterial(unsigned int index)
+{
+    return m_materials[index];
+}
+GSolid* GGeo::getSolid(unsigned int index)
+{
+    return m_solids[index];
+}
+GSkinSurface* GGeo::getSkinSurface(unsigned int index)
+{
+    return m_skin_surfaces[index];
+}
+GBorderSurface* GGeo::getBorderSurface(unsigned int index)
+{
+    return m_border_surfaces[index];
+}
 
 
 

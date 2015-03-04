@@ -46,8 +46,8 @@ from the imported Assimp model. The OptiX model should then
 be created entirely from the GGeo model with no use of 
 the Assimp model.
 
-Analogs 
---------
+Analogs to Chroma
+-------------------
 
 * GMaterial : chroma.geometry.Material
 * GSurface : chroma.geometry.Surface
@@ -61,23 +61,23 @@ Analogs
 
 Basis Classes
 ---------------
+
 ::
 
-    GProperty.hh:template <class T>
-    GProperty.hh:class GProperty {
+    template <class T>
+    class GProperty {
 
        * domain and value arrays + length
 
-    GPropertyMap.hh:class GPropertyMap {
+    class GPropertyMap {
 
        * string keyed map of GProperty<float>
 
-    GMaterial.hh:class GMaterial : public GPropertyMap {
-    GBorderSurface.hh:class GBorderSurface : public GPropertyMap {
-    GSkinSurface.hh:class GSkinSurface : public GPropertyMap {
+    class GMaterial      : public GPropertyMap {
+    class GBorderSurface : public GPropertyMap {
+    class GSkinSurface   : public GPropertyMap {
 
-
-    GMesh.hh:class GMesh {
+    class GMesh {
 
         * vertices and faces
 
@@ -87,14 +87,15 @@ Client Classes
 
 ::
 
-    GSolid.hh:class GSolid {
+    class GSolid {
 
         * mesh + inside/outside materials and surfaces
         * nexus of structure
 
-    GGeo.hh:class GGeo {
+    class GGeo {
 
         * vectors of pointers to solids, materials, skin surfaces, border surfaces 
+
 
 
 

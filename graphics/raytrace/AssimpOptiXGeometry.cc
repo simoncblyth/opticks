@@ -1,4 +1,4 @@
-#include "OptiXAssimpGeometry.hh"
+#include "AssimpOptiXGeometry.hh"
 #include "AssimpWrap/AssimpNode.hh"
 #include "AssimpWrap/AssimpGeometry.hh"
 
@@ -16,149 +16,79 @@
 
 #include <optixu/optixu_vector_types.h>
 
+#include "OptiXGeometry.hh"
 
-OptiXAssimpGeometry::~OptiXAssimpGeometry()
+AssimpOptiXGeometry::~AssimpOptiXGeometry()
 {
 }
 
-OptiXAssimpGeometry::OptiXAssimpGeometry(AssimpGeometry* ageo)
+AssimpOptiXGeometry::AssimpOptiXGeometry(AssimpGeometry* ageo)
            : 
-           m_ageo(ageo),
-           m_context(NULL),
-           m_material(NULL)
+           OptiXGeometry(),
+           m_ageo(ageo)
 {
 }
 
-void OptiXAssimpGeometry::setContext(optix::Context& context)
+
+void AssimpOptiXGeometry::convert()
 {
-    m_context = context ;   
+    convertMaterials();
+    convertStructure();
 }
 
-void OptiXAssimpGeometry::setMaterial(optix::Material material)
+void AssimpOptiXGeometry::convertMaterials()
 {
-    m_material = material ;   
-}
-void OptiXAssimpGeometry::setGeometryGroup(optix::GeometryGroup gg)
-{
-    m_geometry_group = gg ; 
-}
-
-optix::GeometryGroup OptiXAssimpGeometry::getGeometryGroup()
-{
-    return m_geometry_group ; 
-}
-optix::Material OptiXAssimpGeometry::getMaterial()
-{
-    return m_material ; 
-}
-unsigned int OptiXAssimpGeometry::getMaxDepth()
-{
-    int qdepth = m_ageo->getQueryDepth();
-    return ( qdepth == 0 ) ? 100 : qdepth ;
-}
-
-
-
-
-//optix::GeometryInstance OptiXAssimpGeometry::createGeometryInstance( optix::Geometry geometry )
-//{
-//}
-
-
-
-void OptiXAssimpGeometry::convert()
-{
+    // these materials are currently ignored, the single material coming from m_material
     //
-    //  Recursive traverse down from each selected AssimpNode
-    //  converting aiMesh into optix::GeometryInstance
-    //  collected into m_gis 
-    //  which is then placed into the GeometryGroup
-    //
-    //  Following fig2 of documentation:  single gg containing many gi 
-    //
-    //  TODO: AVOID OVERLAPPING OF THE TREES
-    //
-
-    assert(m_ageo->getNumSelected() > 0);  // must select some geometry before convert
-
     for(unsigned int i = 0; i < m_ageo->getNumMaterials(); i++)
     {
         optix::Material material = convertMaterial(m_ageo->getMaterial(i));
         m_materials.push_back(material);
     }
-    // hmm this above materials are currently ignored, the single material coming from m_material
+}
 
+void AssimpOptiXGeometry::convertStructure()
+{
+    //  Following fig2 of documentation:  single gg containing many gi 
+    //  converting aiMesh into optix::GeometryInstance collected into m_gis 
 
+    assert(m_ageo->getNumSelected() > 0);  // must select some geometry before convert
     m_gis.clear();
 
-
     bool mergemesh = m_ageo->getQueryMerge();
+    bool recurse = !m_ageo->isFlatSelection() ; 
 
     if(mergemesh)
     {
-        printf("OptiXAssimpGeometry::convert createMergedMesh \n");
+        printf("AssimpOptiXGeometry::convertStructure createMergedMesh \n");
 
         aiMesh* mesh = m_ageo->createMergedMesh(); 
 
         optix::Geometry geometry = convertGeometry(mesh) ;  
 
-        optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, &m_material, &m_material+1  ); // single material 
-
-        m_gis.push_back(gi);
-
+        addInstance(geometry, m_material );
     }
     else
     {
-        bool recurse = !m_ageo->isFlatSelection() ; 
+        //  Recursive traverse down from each selected AssimpNode
         for(unsigned int i=0 ; i < m_ageo->getNumSelected() ; i++ )
         {
             traverseNode(m_ageo->getSelectedNode(i), 0, recurse);
         }
     } 
 
-    printf("OptiXAssimpGeometry::convert : %d selected top nodes with %lu gi \n", m_ageo->getNumSelected(), m_gis.size() );
-
-    m_geometry_group->setChildCount(m_gis.size());
-    for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
+    printf("AssimpOptiXGeometry::convertStructure : %d selected top nodes with %lu gi \n", m_ageo->getNumSelected(), m_gis.size() );
+    assert(m_gis.size() > 0);
 }
 
 
-void OptiXAssimpGeometry::setupAcceleration()
-{
-   // huh : there are currently lots of separate buffers for each gi 
-
-    optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
-    acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
-    acceleration->setProperty( "index_buffer_name", "indexBuffer" );
-
-    m_geometry_group->setAcceleration( acceleration );
-
-    acceleration->markDirty();
-
-    m_context["top_object"]->set(m_geometry_group);
-}
-
-
-
-
-void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth, bool recurse)
+void AssimpOptiXGeometry::traverseNode(AssimpNode* node, unsigned int depth, bool recurse)
 {
    //
    //  Recursive traverse of the AssimpNode converting aiMesh into optix::GeometryInstance 
    //  and collecting into m_gis 
    //
-   //  NB AssimpNode meshes have been copied from locals and globally positioned by AssimpTree
-   // 
-   //  TODO: 
-   //      try out instanced geometry and transforms, could then act on 
-   //      the small number of local coordinate meshes 
-   //             optix::Geometry geometry = convertGeometry(m_aiscene->mMeshes[i]);
-   //             unsigned int meshIndex = node->getMeshIndexRaw(i);  // was used with local mesh handling 
-   //
-   //      potential large reduction in GPU memory usage 
-   //
-   //
-    int maxdepth = getMaxDepth();
+    int maxdepth = m_ageo->getQueryDepth();
 
     if(depth < maxdepth )
     {
@@ -168,13 +98,7 @@ void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth, boo
 
             optix::Geometry geometry = convertGeometry(mesh) ;  
 
-            //std::vector<optix::Material>::iterator mit = m_materials.begin() + mesh->mMaterialIndex ;
-
-            //optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, mit, mit+1  ); // single material 
-
-            optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, &m_material, &m_material+1  ); // single material 
-
-            m_gis.push_back(gi);
+            addInstance( geometry, m_material );
         }   
     }
 
@@ -185,25 +109,21 @@ void OptiXAssimpGeometry::traverseNode(AssimpNode* node, unsigned int depth, boo
 }
 
 
-optix::Material OptiXAssimpGeometry::convertMaterial(aiMaterial* ai_material)
+optix::Material AssimpOptiXGeometry::convertMaterial(aiMaterial* ai_material)
 {
-    /*
-    TODO:
-        get assimp to access wavelength dependant material properties
-        and feed them through into the material program 
-        * by code gen of tables ? referencing a buffer of structs ?
-
-        tis better to defer material association to the loader, for flexibility 
-    */
+    // NB material properties currently ignored
 
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
+
     optix::Material material = m_context->createMaterial();
+
     material->setClosestHitProgram(0, cfg->createProgram("material1.cu", "closest_hit_radiance"));
+
     return material ; 
 }
 
 
-optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
+optix::Geometry AssimpOptiXGeometry::convertGeometry(aiMesh* mesh)
 {
    //
    //    optix::Geometry created and populated with data from aiMesh
@@ -367,39 +287,37 @@ optix::Geometry OptiXAssimpGeometry::convertGeometry(aiMesh* mesh)
 
 
 
-optix::float3  OptiXAssimpGeometry::getCenter()
+
+
+
+optix::float3  AssimpOptiXGeometry::getCenter()
 {
     aiVector3D* p = m_ageo->getCenter();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
-optix::float3  OptiXAssimpGeometry::getExtent()
+optix::float3  AssimpOptiXGeometry::getExtent()
 {
     aiVector3D* p = m_ageo->getExtent();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
-optix::float3 OptiXAssimpGeometry::getUp()
+optix::float3 AssimpOptiXGeometry::getUp()
 {
     aiVector3D* p = m_ageo->getUp();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
-optix::float3 OptiXAssimpGeometry::getMin()
+optix::float3 AssimpOptiXGeometry::getMin()
 {
     aiVector3D* p = m_ageo->getLow();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
-optix::float3 OptiXAssimpGeometry::getMax()
+optix::float3 AssimpOptiXGeometry::getMax()
 {
     aiVector3D* p = m_ageo->getHigh();
     return optix::make_float3(p->x, p->y, p->z); 
-}
-
-optix::Aabb OptiXAssimpGeometry::getAabb()
-{
-    return optix::Aabb(getMin(), getMax()); 
 }
 
 

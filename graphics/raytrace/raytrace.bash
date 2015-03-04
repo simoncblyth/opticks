@@ -19,6 +19,13 @@ Test Combination of Assimp and OptiX
 
 * for fps display press "r" and then "d"
 
+Next Step 
+----------
+
+* common base geometry protocol class for geometry input 
+  instance AssimpGeometry or GGeo : that the OptiX conversion
+  codes against ?
+
 
 Pre-requisites
 --------------
@@ -364,6 +371,11 @@ raytrace--(){
 raytrace-v(){
   raytrace-- --cache --g4dae $DAE_NAME_DYB_NOEXTRA $*
 }
+
+raytrace-x(){
+  raytrace-- --cache --g4dae $DAE_NAME_DYB $*
+}
+
 
 raytrace-lldb(){
   DEBUG=lldb raytrace-v $*

@@ -2,6 +2,7 @@
 #define GGEO_H
 
 #include <vector>
+
 class GMesh ; 
 class GSolid ; 
 class GMaterial ; 
@@ -19,6 +20,20 @@ class GGeo {
       void add(GMaterial* material);
       void add(GSkinSurface*  surface);
       void add(GBorderSurface*  surface);
+
+   public:
+      unsigned int getNumMeshes();
+      unsigned int getNumSolids();
+      unsigned int getNumMaterials();
+      unsigned int getNumSkinSurfaces();
+      unsigned int getNumBorderSurfaces();
+
+   public:
+       GMesh* getMesh(unsigned int index);  
+       GMaterial* getMaterial(unsigned int index);  
+       GSolid* getSolid(unsigned int index);  
+       GSkinSurface* getSkinSurface(unsigned int index);  
+       GBorderSurface* getBorderSurface(unsigned int index);  
 
    public:
       void Summary(const char* msg="GGeo::Summary");
