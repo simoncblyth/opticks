@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 
     AssimpGGeo agg(geom.getTree()); 
     GGeo* gg = agg.convert(ggctrl);
-    gg->Summary("main");    
+    //gg->Summary("main");    
 
 
     return 0 ; 

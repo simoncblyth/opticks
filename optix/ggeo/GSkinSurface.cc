@@ -4,8 +4,8 @@
 #include "stdlib.h"
 #include "string.h"
 
-GSkinSurface::GSkinSurface(const char* name) : 
-    GPropertyMap(name, "skinsurface" ),
+GSkinSurface::GSkinSurface(const char* name, unsigned int index) : 
+    GPropertyMap(name, index, "skinsurface" ),
     m_skinsurface_vol(NULL) 
 {
 }
@@ -26,6 +26,12 @@ char* GSkinSurface::getSkinSurfaceVol()
 {
     return m_skinsurface_vol ; 
 }
+
+bool GSkinSurface::matches(const char* lv)
+{
+    return strncmp(m_skinsurface_vol, lv, strlen(lv)) == 0; 
+}
+
 
 void GSkinSurface::Summary(const char* msg)
 {

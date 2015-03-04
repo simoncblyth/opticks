@@ -10,11 +10,12 @@ class GPropertyMap {
 
   typedef std::map<std::string,GPropertyF*> GPropertyMapF_t ;
   public:
-      GPropertyMap(const char* name, const char* type);
+      GPropertyMap(const char* name, unsigned int index, const char* type);
       virtual ~GPropertyMap();
 
   public:
       const char* getName();
+      unsigned int getIndex();
       const char* getType();
 
       bool isSkinSurface();
@@ -29,6 +30,7 @@ class GPropertyMap {
 
   private:
       std::string m_name ;
+      unsigned int m_index ;
       std::string m_type ;
       GPropertyMapF_t m_prop ; 
 };

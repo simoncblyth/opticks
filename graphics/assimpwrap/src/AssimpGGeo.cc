@@ -1,5 +1,6 @@
 #include "AssimpGGeo.hh"
 #include "AssimpTree.hh"
+#include "AssimpNode.hh"
 
 #include <assimp/types.h>
 #include <assimp/scene.h>
@@ -17,7 +18,10 @@ AssimpGGeo::AssimpGGeo(AssimpTree* tree)
    m_tree(tree),
    m_domain_scale(1.f),
    m_values_scale(1.f),
-   m_domain_reciprocal(true)
+   m_domain_reciprocal(true),
+   m_inborder_surface(0),
+   m_outborder_surface(0),
+   m_skin_surface(0)
 {
     // see g4daenode.py as_optical_property_vector
 
@@ -40,7 +44,7 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     const aiScene* scene = m_tree->getScene();
     convertMaterials(scene, gg, ctrl);
     convertMeshes(scene, gg, ctrl);
-    convertStructure();
+    convertStructure(gg);
     return gg ;
 }
 
@@ -80,8 +84,8 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
                        ) ;   
 
 
-    if(noscale) 
-        printf("AssimpGGeo::addPropertyVector k %-35s nbyte %4u nfloat %4u npair %4u \n", k, nbyte, nfloat, npair);
+    //if(noscale) 
+    //    printf("AssimpGGeo::addPropertyVector k %-35s nbyte %4u nfloat %4u npair %4u \n", k, nbyte, nfloat, npair);
 
     for(unsigned int i=0 ; i < npair ; i++)
     {
@@ -91,8 +95,8 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
         domain.push_back( noscale ? d0 : d );
         vals.push_back(   data[2*i+1]*vscale  );
 
-        if( noscale && ( i < 5 || i > npair - 5) )
-        printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );
+        //if( noscale && ( i < 5 || i > npair - 5) )
+        //printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );
     }
     pmap->AddProperty(k, vals.data(), domain.data(), vals.size() );
 }
@@ -190,21 +194,24 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if( sslv )
         {
-            GSkinSurface*  gss = new GSkinSurface(name);
+            //printf("AssimpGGeo::convertMaterials materialIndex %u sslv %s  \n", i, sslv);
+            GSkinSurface*  gss = new GSkinSurface(name, i);
             gss->setSkinSurface(sslv);
             addProperties(gss, mat);
             gg->add(gss);
         } 
         else if (bspv1 && bspv2 )
         {
-            GBorderSurface* gbs = new GBorderSurface(name);
+            printf("AssimpGGeo::convertMaterials materialIndex %u\n    bspv1 %s\n    bspv2 %s \n", i, bspv1, bspv2 );
+            GBorderSurface* gbs = new GBorderSurface(name, i);
             gbs->setBorderSurface(bspv1, bspv2);
             addProperties(gbs, mat);
             gg->add(gbs);
         }
         else
         {
-            GMaterial* gmat = new GMaterial(name);
+            //printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
+            GMaterial* gmat = new GMaterial(name, i);
             addProperties(gmat, mat);
             gg->add(gmat);
         }
@@ -254,14 +261,19 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 }
 
 
-void AssimpGGeo::convertStructure()
+void AssimpGGeo::convertStructure(GGeo* gg)
 {
-    convertStructure(m_tree->getRoot(), 0);
+    convertStructure(gg, m_tree->getRoot(), 0);
 }
 
-void AssimpGGeo::convertStructure(AssimpNode* node, unsigned int depth)
+void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
-    // GNode* gn = new GNode();
+    convertStructureVisit( gg, node, depth);
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(gg, node->getChild(i), depth + 1);
+}
+
+void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
+{
     //
     // rubber hits road here ...  analog to collada_to_chroma.py:visit 
     // find way to associate to solid with mesh and in/out materials/surfaces here  
@@ -273,17 +285,65 @@ void AssimpGGeo::convertStructure(AssimpNode* node, unsigned int depth)
     //     * skin surfaces, via lv names
     //
     //     * outside/inside materials (parent/child assumption is expedient) 
-    //       via aiNode lists of aiMesh indices [always 0 or 1 mesh per aiNode for Collada?]
+    //       via aiNode lists of aiMesh indices [always 1 mesh per AssimpNode]
     //       (into scene meshes) 
     //       each aiMesh has single mMaterialIndex pointing to scene materials
     //
 
-    unsigned int node->getNumMeshes()
+
+    AssimpNode* pnode = node->getParent();
+    if(!pnode) pnode=node ; 
+
+    // in/out materials ...
+
+    unsigned int mti = node->getMaterialIndex() ;
+    unsigned int mti_p = pnode->getMaterialIndex();
+
+    GMaterial* mt   = gg->getMaterial(mti);
+    GMaterial* mt_p = gg->getMaterial(mti_p);
+
+    //if(node->getIndex() % 1000 == 0)
+    //printf("AssimpGGeo::convertStructureVisit nodeIndex %u mti %u mti_p %u  mt %s mt_p %s \n", node->getIndex(), mti, mti_p, mt->getName(), mt_p->getName() );
+
+    const char* lv   = node->getName(0); 
+    const char* pv   = node->getName(1); 
+    const char* pv_p = pnode->getName(1); 
+
+    GSkinSurface* ss = gg->findSkinSurface(lv);
+    if(ss)
+    {
+       //if(m_skin_surface % 1000 == 0) 
+       //  printf("AssimpGGeo::convertStructureVisit ss# %u nodeIndex %u lv %s ss %p \n", m_skin_surface, node->getIndex(), lv, ss );
+       m_skin_surface++ ; 
+    }
 
 
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(node->getChild(i), depth + 1);
+    // NB sibling border surfaces not handled 
+    //
+
+    if(node->getIndex() == 0)
+    printf("AssimpGGeo::convertStructureVisit border surface\n"); 
+
+    GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);
+    if(ibs)
+    {
+       printf("ibs# %u nodeIndex %u ibs %p idx %2d\n    pv   %s\n    pv_p %s\n", m_inborder_surface, node->getIndex(), ibs, ibs->getIndex(),pv, pv_p );
+       m_inborder_surface++ ; 
+    }
+
+    GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);
+    if(obs)
+    {
+       printf("obs# %u nodeIndex %u obs %p idx %2d\n    pv_p %s\n    pv   %s\n", m_outborder_surface, node->getIndex(), obs, obs->getIndex(),pv_p, pv);
+       m_outborder_surface++ ; 
+    }
+
+
+
+
 }
+
 
 
 

@@ -58,13 +58,13 @@ AssimpGeometry::AssimpGeometry(const char* path)
     m_path = strdup(path);
 
     DefaultLogger::create("",Logger::VERBOSE);
-    //const unsigned int severity = Logger::VERBOSE|Logger::NORMAL;
-    const unsigned int severity = Logger::Info | Logger::Err | Logger::Warn | Logger::Debugging;
+
+    //const unsigned int severity = Logger::Info | Logger::Err | Logger::Warn | Logger::Debugging;
+    const unsigned int severity = Logger::Err | Logger::Warn ;
     
     Assimp::DefaultLogger::get()->attachStream( new myStream(), severity );
 
     DefaultLogger::get()->info("this is my info-call");
-    //DefaultLogger::get()->setLogSeverity(Logger::VERBOSE);
 }
 
 AssimpGeometry::~AssimpGeometry()

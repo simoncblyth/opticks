@@ -15,9 +15,9 @@ class GGeo {
       virtual ~GGeo();
 
    public:
+      void add(GMaterial* material);
       void add(GMesh*    mesh);
       void add(GSolid*    solid);
-      void add(GMaterial* material);
       void add(GSkinSurface*  surface);
       void add(GBorderSurface*  surface);
 
@@ -34,6 +34,10 @@ class GGeo {
        GSolid* getSolid(unsigned int index);  
        GSkinSurface* getSkinSurface(unsigned int index);  
        GBorderSurface* getBorderSurface(unsigned int index);  
+
+   public:
+       GSkinSurface* findSkinSurface(const char* lv);  
+       GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
 
    public:
       void Summary(const char* msg="GGeo::Summary");

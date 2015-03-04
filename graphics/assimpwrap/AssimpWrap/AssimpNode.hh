@@ -57,6 +57,7 @@ class AssimpNode {
       unsigned int getMeshIndexRaw(unsigned int index);
       aiMesh* getRawMesh(unsigned int index);
       aiMesh* getMesh(unsigned int index);
+      unsigned int getMaterialIndex(unsigned int localMeshIndex=0);
 
   public:
       std::size_t getDigest();
@@ -64,7 +65,7 @@ class AssimpNode {
   protected:
       std::size_t hash(unsigned int pyfirst, unsigned int pylast);
 
-  protected: 
+  public: 
       aiNode* getRawNode();
       const char* getName();
       aiNode* getRawNode(unsigned int iback);

@@ -298,16 +298,29 @@ unsigned int AssimpNode::getNumMeshesRaw()
 
 unsigned int AssimpNode::getMeshIndexRaw(unsigned int index)
 {
-    // node index to "global" scene mesh index
+    // index within the node list of meshes (always 0 for COLLADA) to "global" scene mesh index
     return m_raw->mMeshes[index];
 }
 
-aiMesh* AssimpNode::getRawMesh(unsigned int index)
+
+
+aiMesh* AssimpNode::getRawMesh(unsigned int localMeshIndex)
 {
-     unsigned int meshIndex = getMeshIndexRaw(index);
+     unsigned int meshIndex = getMeshIndexRaw(localMeshIndex);
      aiMesh* mesh = m_tree->getRawMesh(meshIndex);
      return mesh ;
 }
+
+unsigned int AssimpNode::getMaterialIndex(unsigned int localMeshIndex)
+{
+    aiMesh* mesh = getRawMesh(localMeshIndex); 
+    return mesh->mMaterialIndex ;     
+}
+
+
+
+
+
 
 aiMesh* AssimpNode::getMesh(unsigned int index)
 {
@@ -322,7 +335,7 @@ void AssimpNode::ancestors()
    unsigned int count = 0 ;
    while( node )
    {
-       printf("AssimpNode::ancestors %2d n:%s  n0:%s n1:%s n2:%s \n", count, node->getName(), node->getName(0), node->getName(1), node->getName(2) );
+       printf("AssimpNode::ancestors count %2d index %4d  n0:%s n1:%s n2:%s \n", count, node->getIndex(), node->getName(0), node->getName(1), node->getName(2) );
        node = node->getParent();
        count++ ;
    }

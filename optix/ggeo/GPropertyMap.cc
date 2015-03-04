@@ -1,9 +1,10 @@
 #include "GPropertyMap.hh"
 
 
-GPropertyMap::GPropertyMap(const char* name, const char* type)
+GPropertyMap::GPropertyMap(const char* name, unsigned int index, const char* type)
 {
    m_name = name ;
+   m_index = index ;
    m_type = type ;
 }
 
@@ -15,7 +16,10 @@ const char* GPropertyMap::getName()
 {
     return m_name.c_str();
 }
-
+unsigned int GPropertyMap::getIndex()
+{
+    return m_index ; 
+}
 const char* GPropertyMap::getType()
 {
     return m_type.c_str();
@@ -49,7 +53,7 @@ GProperty<float>* GPropertyMap::GetProperty(const char* pname)
 
 void GPropertyMap::Summary(const char* msg)
 {
-   printf("%s %s %s\n", msg, getType(), getName()); 
+   printf("%s %s %d %s\n", msg, getType(), getIndex(), getName()); 
    for(GPropertyMapF_t::iterator it=m_prop.begin() ; it != m_prop.end() ; it++ )
    {
        std::string key = it->first ;

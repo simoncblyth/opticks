@@ -35,8 +35,9 @@ protected:
     void convertMeshes(const aiScene* scene, GGeo* gg, const char* ctrl);
 
 protected:
-    void convertStructure();
-    void convertStructure(AssimpNode* node, unsigned int depth);
+    void convertStructure(GGeo* gg);
+    void convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth);
+    void convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth);
 
 protected:
     void setDomainScale(float dscale);
@@ -48,6 +49,9 @@ private:
     float m_values_scale ; 
     bool m_domain_reciprocal ; 
 
+    unsigned int m_skin_surface ; 
+    unsigned int m_inborder_surface ; 
+    unsigned int m_outborder_surface ; 
 
 };
 

@@ -87,6 +87,10 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
+
+
+
+
 unsigned int GGeo::getNumMeshes()
 {
     return m_meshes.size();
@@ -114,10 +118,9 @@ GMesh* GGeo::getMesh(unsigned int index)
 {
     return m_meshes[index];
 }  
-GMaterial* GGeo::getMaterial(unsigned int index)
-{
-    return m_materials[index];
-}
+
+
+
 GSolid* GGeo::getSolid(unsigned int index)
 {
     return m_solids[index];
@@ -131,6 +134,54 @@ GBorderSurface* GGeo::getBorderSurface(unsigned int index)
     return m_border_surfaces[index];
 }
 
+
+
+
+GMaterial* GGeo::getMaterial(unsigned int aindex)
+{
+    GMaterial* mat = NULL ; 
+    for(unsigned int i=0 ; i < m_materials.size() ; i++ )
+    { 
+        if(m_materials[i]->getIndex() == aindex )
+        {
+            mat = m_materials[i] ; 
+            break ; 
+        }
+    }
+    return mat ;
+}
+
+
+
+GSkinSurface* GGeo::findSkinSurface(const char* lv)
+{
+    GSkinSurface* ss = NULL ; 
+    for(unsigned int i=0 ; i < m_skin_surfaces.size() ; i++ )
+    {
+         GSkinSurface* s = m_skin_surfaces[i];
+         if(s->matches(lv))   
+         {
+            ss = s ; 
+            break ; 
+         } 
+    }
+    return ss ;
+}
+
+GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2)
+{
+    GBorderSurface* bs = NULL ; 
+    for(unsigned int i=0 ; i < m_border_surfaces.size() ; i++ )
+    {
+         GBorderSurface* s = m_border_surfaces[i];
+         if(s->matches(pv1,pv2))   
+         {
+            bs = s ; 
+            break ; 
+         } 
+    }
+    return bs ;
+}
 
 
 

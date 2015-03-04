@@ -15,7 +15,7 @@
 
 class GMaterial : public GPropertyMap {
   public:
-      GMaterial(const char* name);
+      GMaterial(const char* name, unsigned int index);
       virtual ~GMaterial();
 
   public: 
