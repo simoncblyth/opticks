@@ -6,11 +6,13 @@
 #include <assimp/scene.h>
 
 #include "GVector.hh"
+#include "GMatrix.hh"
 #include "GGeo.hh"
 #include "GMesh.hh"
 #include "GMaterial.hh"
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
+#include "GSolid.hh"
 
 
 AssimpGGeo::AssimpGGeo(AssimpTree* tree) 
@@ -256,7 +258,7 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
         }
 
 
-        GMesh* gmesh = new GMesh( gvertices, numVertices, gfaces, numFaces ); 
+        GMesh* gmesh = new GMesh( i, gvertices, numVertices, gfaces, numFaces ); 
         gg->add(gmesh);
     }
 }
@@ -291,19 +293,35 @@ void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int 
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
     unsigned int mti = node->getMaterialIndex() ;
+    unsigned int msi = node->getMeshIndex();
 
     const char* lv_p   = pnode->getName(0); 
     const char* pv_p   = pnode->getName(1); 
     unsigned int mti_p = pnode->getMaterialIndex();
+    unsigned int msi_p = pnode->getMeshIndex();
 
     unsigned int mti_c = child ? child->getMaterialIndex() : 999 ;
 
 
     if(node->getIndex() == 0) printf("AssimpGGeo::convertStructureVisit\n");
+
+
+    aiMatrix4x4 m = node->getGlobalTransform();
+    
+    GMatrixF* transform = new GMatrixF(
+                     m.a1,m.a2,m.a3,m.a4,  
+                     m.b1,m.b2,m.b3,m.b4,  
+                     m.c1,m.c2,m.c3,m.c4,  
+                     m.d1,m.d2,m.d3,m.d4);
+    transform->Dump("node globalTransform");
+
+    GMesh* mesh    = gg->getMesh(msi);
  
     GMaterial*      mt = gg->getMaterial(mti);
     GMaterial*      mt_p = gg->getMaterial(mti_p);
     GMaterial*      mt_c = mti_c != 999 ? gg->getMaterial(mti_c) : NULL ;
+
+    GSolid* solid = new GSolid(transform, mesh, mt, mt_p, NULL, NULL );
 
     GBorderSurface* ibs = gg->findBorderSurface(pv_p, pv);  // inwards (parent->self)  : light from parent material impinging on self (inner) material 
     GBorderSurface* obs = gg->findBorderSurface(pv, pv_p);  // outwards (self->parent) : light from self material impinging onto parent (outer) material 
@@ -330,16 +348,21 @@ void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int 
     if(obs) nsurf++ ;
     assert(nsurf == 0 || nsurf == 1 ); 
 
+    
+
+
     char ctx[1024];
-    snprintf(ctx, 1024,"    pv   %5u [%4u] (%2u)%-50s %s\n    pv_p %5u [%4u] (%2u)%-50s %s\n    lv   %5u [%4u] (  )%-50s %s\n    lv_p %5u [%4u] (  )%-50s %s\n", 
+    snprintf(ctx, 1024,"    pv   %5u [%4u] (%2u,%3u)%-50s %s\n    pv_p %5u [%4u] (%2u,%3u)%-50s %s\n    lv   %5u [%4u] (      )%-50s %s\n    lv_p %5u [%4u] (      )%-50s %s\n", 
           node->getIndex(),
           node->getNumChildren(),
           mti, 
+          msi, 
           mt->getName(), 
           pv, 
           pnode->getIndex(),
           pnode->getNumChildren(),
           mti_p, 
+          msi_p, 
           mt_p->getName(), 
           pv_p, 
           node->getIndex(),
@@ -355,27 +378,36 @@ void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int 
 
     char msg[1024];
 
+    snprintf(msg, 1024,"msi   %u mesh   %p\n", msi, mesh );
+    mesh->Summary(msg);
+
+
     if(sks)
     {
        snprintf(msg, 1024,"sks# %u %p idx %2d mti_c %2u %s \n%s", m_skin_surface, sks, sks->getIndex(), mti_c, mt_c ? mt_c->getName() : "-",  ctx );
        sks->Summary(msg);
        m_skin_surface++ ; 
+
+       solid->setOuterSurface(sks);
     }
     else if(ibs)
     {
        snprintf(msg, 1024,"ibs# %u %p idx %2d\n%s", m_inborder_surface, ibs, ibs->getIndex(), ctx);
        ibs->Summary(msg);
        m_inborder_surface++ ; 
+
+       solid->setOuterSurface(ibs);
     }
     else if(obs)
     {
        snprintf(msg, 1024,"obs# %u %p idx %2d\n%s", m_outborder_surface, obs, obs->getIndex(), ctx);
        obs->Summary(msg);
        m_outborder_surface++ ; 
+
+       solid->setInnerSurface(obs);
     }
     else
     {
-       //printf("non# %u nodeIndex %4d\n", m_no_surface, node->getIndex());
        m_no_surface++ ;
     }
 
@@ -385,6 +417,8 @@ void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int 
     */
       
  
+
+    gg->add(solid);
 
 
 }

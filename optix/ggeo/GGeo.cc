@@ -114,12 +114,6 @@ unsigned int GGeo::getNumSkinSurfaces()
 
 
 
-GMesh* GGeo::getMesh(unsigned int index)
-{
-    return m_meshes[index];
-}  
-
-
 
 GSolid* GGeo::getSolid(unsigned int index)
 {
@@ -150,6 +144,27 @@ GMaterial* GGeo::getMaterial(unsigned int aindex)
     }
     return mat ;
 }
+
+
+
+
+GMesh* GGeo::getMesh(unsigned int aindex)
+{
+    GMesh* mesh = NULL ; 
+    for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
+    { 
+        if(m_meshes[i]->getIndex() == aindex )
+        {
+            mesh = m_meshes[i] ; 
+            break ; 
+        }
+    }
+    return mesh ;
+}  
+
+
+
+
 
 
 

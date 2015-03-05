@@ -54,10 +54,13 @@ class AssimpNode {
       aiMatrix4x4 getTransform();
       unsigned int getNumMeshes();
       unsigned int getNumMeshesRaw();
-      unsigned int getMeshIndexRaw(unsigned int index);
-      aiMesh* getRawMesh(unsigned int index);
+      //unsigned int getMeshIndexRaw(unsigned int index);
       aiMesh* getMesh(unsigned int index);
+
+  public:
+      aiMesh* getRawMesh(unsigned int localMeshindex=0);
       unsigned int getMaterialIndex(unsigned int localMeshIndex=0);
+      unsigned int getMeshIndex(unsigned int localMeshIndex=0);
 
   public:
       std::size_t getDigest();

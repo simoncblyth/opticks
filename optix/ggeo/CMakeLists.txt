@@ -25,6 +25,8 @@ add_library(${name} SHARED
                 GSolid.cc
                 GMesh.cc
                 GGeo.cc
+                GVector.cc
+                GMatrix.cc
 )
 
 add_executable(${name}Test ${name}Test.cc)
@@ -47,6 +49,7 @@ GSolid.hh
 GSkinSurface.hh
 GBorderSurface.hh
 GVector.hh
+GMatrix.hh
 )
 
 install(FILES ${hdrs} DESTINATION include)

@@ -170,11 +170,9 @@ void AssimpNode::dump()
     {
         for(unsigned int i = 0; i < nmesh ; i++)
         {   
-            unsigned int meshIndex = getMeshIndexRaw(i);
-
             aiMesh* rawmesh = getRawMesh(i);
 
-            printf("AssimpNode::dump  i %d meshIndex %d \n", i, meshIndex);
+            printf("AssimpNode::dump  i %d \n", i);
 
             dumpMesh(rawmesh);
 
@@ -208,11 +206,12 @@ void AssimpNode::copyMeshes(aiMatrix4x4 transform)
      aiVector3D  low( 1e10f, 1e10f, 1e10f);
      aiVector3D high( -1e10f, -1e10f, -1e10f);
 
-     for(unsigned int i = 0; i < m_numMeshes ; i++)
+     // typically only one mesh per node for COLLADA, but retaining generality
+     for(unsigned int i = 0; i < m_numMeshes ; i++)  
      {
           aiMesh* src = getRawMesh(i);
           m_meshes[i] = new aiMesh ; 
-          copyMesh(m_meshes[i], src, m_transform); 
+          copyMesh(m_meshes[i], src, m_transform);  // from   dst <-- transform * src 
           meshBounds(m_meshes[i], low, high );
      }
 
@@ -252,18 +251,15 @@ void AssimpNode::updateBounds()
 
 void AssimpNode::updateBounds(aiVector3D& low, aiVector3D& high)
 {
-    aiVector3D* nlow  = getLow();
-    aiVector3D* nhigh = getHigh();
-
     if(m_low && m_high)
     {
-        low.x = std::min( low.x, nlow->x);
-        low.y = std::min( low.y, nlow->y);
-        low.z = std::min( low.z, nlow->z);
+        low.x = std::min( low.x, m_low->x);
+        low.y = std::min( low.y, m_low->y);
+        low.z = std::min( low.z, m_low->z);
 
-        high.x = std::max( high.x, nhigh->x);
-        high.y = std::max( high.y, nhigh->y);
-        high.z = std::max( high.z, nhigh->z);
+        high.x = std::max( high.x, m_high->x);
+        high.y = std::max( high.y, m_high->y);
+        high.z = std::max( high.z, m_high->z);
    } 
 }
 
@@ -298,17 +294,17 @@ unsigned int AssimpNode::getNumMeshesRaw()
 }
 
 
-unsigned int AssimpNode::getMeshIndexRaw(unsigned int index)
-{
-    // index within the node list of meshes (always 0 for COLLADA) to "global" scene mesh index
-    return m_raw->mMeshes[index];
-}
+//unsigned int AssimpNode::getMeshIndexRaw(unsigned int index)
+//{
+//    // index within the node list of meshes (always 0 for COLLADA) to "global" scene mesh index
+//    return m_raw->mMeshes[index];
+//}
 
 
 
 aiMesh* AssimpNode::getRawMesh(unsigned int localMeshIndex)
 {
-     unsigned int meshIndex = getMeshIndexRaw(localMeshIndex);
+     unsigned int meshIndex = m_raw->mMeshes[localMeshIndex];
      aiMesh* mesh = m_tree->getRawMesh(meshIndex);
      return mesh ;
 }
@@ -317,6 +313,12 @@ unsigned int AssimpNode::getMaterialIndex(unsigned int localMeshIndex)
 {
     aiMesh* mesh = getRawMesh(localMeshIndex); 
     return mesh->mMaterialIndex ;     
+}
+
+unsigned int AssimpNode::getMeshIndex(unsigned int localMeshIndex)
+{
+    unsigned int meshIndex = m_raw->mMeshes[localMeshIndex];
+    return meshIndex ; 
 }
 
 

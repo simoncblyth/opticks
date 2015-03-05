@@ -2,13 +2,14 @@
 
 #include "stdio.h"
 
-GSolid::GSolid( GMesh* mesh, GMaterial* material1, GMaterial* material2, GSurface* surface1, GSurface* surface2 )
+GSolid::GSolid( GMatrixF* transform, GMesh* mesh, GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
          : 
+         m_transform(transform),
          m_mesh(mesh),
-         m_material1(material1),
-         m_material2(material2),
-         m_surface1(surface1),
-         m_surface2(surface2)
+         m_imaterial(imaterial),
+         m_omaterial(omaterial),
+         m_isurface(isurface),
+         m_osurface(osurface)
 {
     // NB not taking ownership yet 
 }
@@ -21,6 +22,44 @@ void GSolid::Summary(const char* msg )
 {
    printf("%s\n", msg );
 }
+
+
+
+void GSolid::setInnerMaterial(GPropertyMap* imaterial)
+{
+    m_imaterial = imaterial ; 
+}
+void GSolid::setOuterMaterial(GPropertyMap* omaterial)
+{
+    m_omaterial = omaterial ; 
+}
+
+void GSolid::setInnerSurface(GPropertyMap* isurface)
+{
+    m_isurface = isurface ; 
+}
+void GSolid::setOuterSurface(GPropertyMap* osurface)
+{
+    m_osurface = osurface ; 
+}
+
+GPropertyMap* GSolid::getInnerMaterial()
+{
+    return m_imaterial ; 
+}
+GPropertyMap* GSolid::getOuterMaterial()
+{
+    return m_omaterial ; 
+}
+GPropertyMap* GSolid::getInnerSurface()
+{
+    return m_isurface ; 
+}
+GPropertyMap* GSolid::getOuterSurface()
+{
+    return m_osurface ; 
+}
+
 
 
  
