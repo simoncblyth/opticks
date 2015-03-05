@@ -37,7 +37,7 @@ void GSkinSurface::Summary(const char* msg)
 {
     if (m_skinsurface_vol)
     {
-        printf("%s skinsurface vol %s \n", msg, m_skinsurface_vol );
+       //printf("%s skinsurface vol %s \n", msg, m_skinsurface_vol );
     }
     else
     {

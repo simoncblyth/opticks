@@ -67,9 +67,9 @@ void GBorderSurface::Summary(const char* msg)
 {
     if( m_bordersurface_pv1 && m_bordersurface_pv2 )
     { 
-        printf("%s bordersurface \n", msg  );
-        printf("pv1 %s \n", m_bordersurface_pv1 );
-        printf("pv2 %s \n", m_bordersurface_pv2 );
+        //printf("%s bordersurface \n", msg  );
+        //printf("pv1 %s \n", m_bordersurface_pv1 );
+        //printf("pv2 %s \n", m_bordersurface_pv2 );
     }
     else
     {

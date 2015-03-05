@@ -52,6 +52,7 @@ private:
     unsigned int m_skin_surface ; 
     unsigned int m_inborder_surface ; 
     unsigned int m_outborder_surface ; 
+    unsigned int m_no_surface ; 
 
 };
 

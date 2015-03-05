@@ -153,10 +153,12 @@ void AssimpNode::summary(const char* msg)
     unsigned int nmesh = getNumMeshes() ;
     printf("%s index %5d depth %2d nchild %4d nmesh %d digest %20zu pdigest %20zu name %s  \n", msg, m_index, m_depth, nchild, nmesh, m_digest, m_pdigest, getName() );
     bounds();
-
-
-
 }
+
+
+
+
+
 
 void AssimpNode::dump()
 {

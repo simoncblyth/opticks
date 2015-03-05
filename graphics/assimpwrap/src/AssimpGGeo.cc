@@ -21,7 +21,8 @@ AssimpGGeo::AssimpGGeo(AssimpTree* tree)
    m_domain_reciprocal(true),
    m_inborder_surface(0),
    m_outborder_surface(0),
-   m_skin_surface(0)
+   m_skin_surface(0),
+   m_no_surface(0)
 {
     // see g4daenode.py as_optical_property_vector
 
@@ -274,72 +275,116 @@ void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth
 
 void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
+    // Associations node to extra information analogous to collada_to_chroma.py:visit
     //
-    // rubber hits road here ...  analog to collada_to_chroma.py:visit 
-    // find way to associate to solid with mesh and in/out materials/surfaces here  
+    // * outside/inside materials (parent/child assumption is expedient) 
+    // * border surfaces, via pv pair names
+    // * skin surfaces, via lv names
     //
-    //  need to find associations of nodes to:
-    //
-    //     * border surfaces, via pv pair names
-    //
-    //     * skin surfaces, via lv names
-    //
-    //     * outside/inside materials (parent/child assumption is expedient) 
-    //       via aiNode lists of aiMesh indices [always 1 mesh per AssimpNode]
-    //       (into scene meshes) 
-    //       each aiMesh has single mMaterialIndex pointing to scene materials
-    //
-
 
     AssimpNode* pnode = node->getParent();
     if(!pnode) pnode=node ; 
 
-    // in/out materials ...
+    AssimpNode* child = node->getChild(0);   // first child, if any
 
-    unsigned int mti = node->getMaterialIndex() ;
-    unsigned int mti_p = pnode->getMaterialIndex();
-
-    GMaterial* mt   = gg->getMaterial(mti);
-    GMaterial* mt_p = gg->getMaterial(mti_p);
-
-    //if(node->getIndex() % 1000 == 0)
-    //printf("AssimpGGeo::convertStructureVisit nodeIndex %u mti %u mti_p %u  mt %s mt_p %s \n", node->getIndex(), mti, mti_p, mt->getName(), mt_p->getName() );
 
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
-    const char* pv_p = pnode->getName(1); 
+    unsigned int mti = node->getMaterialIndex() ;
 
-    GSkinSurface* ss = gg->findSkinSurface(lv);
-    if(ss)
-    {
-       //if(m_skin_surface % 1000 == 0) 
-       //  printf("AssimpGGeo::convertStructureVisit ss# %u nodeIndex %u lv %s ss %p \n", m_skin_surface, node->getIndex(), lv, ss );
-       m_skin_surface++ ; 
-    }
+    const char* lv_p   = pnode->getName(0); 
+    const char* pv_p   = pnode->getName(1); 
+    unsigned int mti_p = pnode->getMaterialIndex();
+
+    unsigned int mti_c = child ? child->getMaterialIndex() : 999 ;
 
 
+    if(node->getIndex() == 0) printf("AssimpGGeo::convertStructureVisit\n");
+ 
+    GMaterial*      mt = gg->getMaterial(mti);
+    GMaterial*      mt_p = gg->getMaterial(mti_p);
+    GMaterial*      mt_c = mti_c != 999 ? gg->getMaterial(mti_c) : NULL ;
 
-    // NB sibling border surfaces not handled 
+    GBorderSurface* ibs = gg->findBorderSurface(pv_p, pv);  // inwards (parent->self)  : light from parent material impinging on self (inner) material 
+    GBorderSurface* obs = gg->findBorderSurface(pv, pv_p);  // outwards (self->parent) : light from self material impinging onto parent (outer) material 
+
+    // NB inwards/outwards naming is according to photon direction, 
+    // which is the opposite perspective to more normal solid-centric nomenclature 
+    // which would have "outer" and "inner" surfaces corresponding to 
+    // inwards and outwards going photons  
+
+    GSkinSurface*   sks = gg->findSkinSurface(lv);          
+   
+    // Are skinsurface always leaves ?
+    //
+    //    mostly with exception of UnstStainlessSteel cable trays 
+    //    which have single child BPE inside 
+    //    .. expedient to treat skin surface like ibs anyhow ?
+    //
+    // NB sibling border surfaces are not handled, but there are none of these 
     //
 
-    if(node->getIndex() == 0)
-    printf("AssimpGGeo::convertStructureVisit border surface\n"); 
+    unsigned int nsurf = 0 ;
+    if(sks) nsurf++ ;
+    if(ibs) nsurf++ ;
+    if(obs) nsurf++ ;
+    assert(nsurf == 0 || nsurf == 1 ); 
 
-    GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);
-    if(ibs)
+    char ctx[1024];
+    snprintf(ctx, 1024,"    pv   %5u [%4u] (%2u)%-50s %s\n    pv_p %5u [%4u] (%2u)%-50s %s\n    lv   %5u [%4u] (  )%-50s %s\n    lv_p %5u [%4u] (  )%-50s %s\n", 
+          node->getIndex(),
+          node->getNumChildren(),
+          mti, 
+          mt->getName(), 
+          pv, 
+          pnode->getIndex(),
+          pnode->getNumChildren(),
+          mti_p, 
+          mt_p->getName(), 
+          pv_p, 
+          node->getIndex(),
+          node->getNumChildren(),
+          "",
+          lv,
+          pnode->getIndex(),
+          pnode->getNumChildren(),
+          "",
+          lv_p
+          );
+ 
+
+    char msg[1024];
+
+    if(sks)
     {
-       printf("ibs# %u nodeIndex %u ibs %p idx %2d\n    pv   %s\n    pv_p %s\n", m_inborder_surface, node->getIndex(), ibs, ibs->getIndex(),pv, pv_p );
+       snprintf(msg, 1024,"sks# %u %p idx %2d mti_c %2u %s \n%s", m_skin_surface, sks, sks->getIndex(), mti_c, mt_c ? mt_c->getName() : "-",  ctx );
+       sks->Summary(msg);
+       m_skin_surface++ ; 
+    }
+    else if(ibs)
+    {
+       snprintf(msg, 1024,"ibs# %u %p idx %2d\n%s", m_inborder_surface, ibs, ibs->getIndex(), ctx);
+       ibs->Summary(msg);
        m_inborder_surface++ ; 
     }
-
-    GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);
-    if(obs)
+    else if(obs)
     {
-       printf("obs# %u nodeIndex %u obs %p idx %2d\n    pv_p %s\n    pv   %s\n", m_outborder_surface, node->getIndex(), obs, obs->getIndex(),pv_p, pv);
+       snprintf(msg, 1024,"obs# %u %p idx %2d\n%s", m_outborder_surface, obs, obs->getIndex(), ctx);
+       obs->Summary(msg);
        m_outborder_surface++ ; 
     }
+    else
+    {
+       //printf("non# %u nodeIndex %4d\n", m_no_surface, node->getIndex());
+       m_no_surface++ ;
+    }
 
-
+    /*
+        g4daeview.sh -g 3148:3155
+        g4daeview.sh -g 4813:4816    Iws/SST/Oil  outside of SST high reflectivity 0.8, inside of SST low reflectivity 0.1
+    */
+      
+ 
 
 
 }
