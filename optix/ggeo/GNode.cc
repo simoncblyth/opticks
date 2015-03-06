@@ -1,12 +1,20 @@
 #include "GNode.hh"
+#include "GMesh.hh"
+
 #include "stdio.h"
 #include "stdlib.h"
 
-GNode::GNode(unsigned int index) :
+
+GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) :
     m_index(index), 
+    m_transform(transform),
+    m_mesh(mesh),
     m_parent(NULL),
-    m_description(NULL)
+    m_description(NULL),
+    m_low(NULL),
+    m_high(NULL)
 {
+    updateBounds();
 }
 
 GNode::~GNode()
@@ -60,5 +68,49 @@ unsigned int GNode::getNumChildren()
 }
 
  
+
+void GNode::updateBounds(gfloat3& low, gfloat3& high )
+{
+    m_mesh->updateBounds(low, high, *m_transform); 
+}
+
+void GNode::updateBounds()
+{
+    gfloat3  low( 1e10f, 1e10f, 1e10f);
+    gfloat3 high( -1e10f, -1e10f, -1e10f);
+
+    updateBounds(low, high);
+
+    /*
+    for( unsigned int i = 0; i < getNumChildren() ;++i )
+    {
+        GNode* child = getChild(i);
+        child->updateBounds(low, high);
+    }
+    */
+
+    m_low = new gfloat3(low.x, low.y, low.z) ;
+    m_high = new gfloat3(high.x, high.y, high.z);
+}
+
+gfloat3* GNode::getLow()
+{
+    return m_low ; 
+}
+gfloat3* GNode::getHigh()
+{
+    return m_high ; 
+}
+
+GMesh* GNode::getMesh()
+{
+   return m_mesh ;
+}
+GMatrixF* GNode::getTransform()
+{
+   return m_transform ;
+}
+
+
 
 

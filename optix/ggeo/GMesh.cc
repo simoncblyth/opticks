@@ -14,13 +14,37 @@ GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, g
       m_high(NULL)  
 {
    // not yet taking ownership, depends on continued existance of data source 
-   updateBounds(); 
+   updateBounds();
 }
 
 
 unsigned int GMesh::getIndex()
 {
-     return m_index ; 
+    return m_index ; 
+}
+unsigned int GMesh::getNumVertices()
+{
+    return m_num_vertices ; 
+}
+unsigned int GMesh::getNumFaces()
+{
+    return m_num_faces ; 
+}
+gfloat3* GMesh::getLow()
+{
+    return m_low ;
+}
+gfloat3* GMesh::getHigh()
+{
+    return m_high ;
+}
+gfloat3* GMesh::getVertices()
+{
+    return m_vertices ;
+}
+guint3*  GMesh::getFaces()
+{
+    return m_faces ;
 }
 
 
@@ -67,5 +91,45 @@ void GMesh::updateBounds()
     m_high = new gfloat3(high.x, high.y, high.z);
 
 }
+
+
+
+void GMesh::updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform)
+{
+    if(m_low && m_high)
+    {   
+        gfloat3 mlow(*m_low) ; 
+        gfloat3 mhigh(*m_high) ; 
+
+        mlow  *= transform ; 
+        mhigh *= transform ; 
+
+        low.x = std::min( low.x, mlow.x);
+        low.y = std::min( low.y, mlow.y);
+        low.z = std::min( low.z, mlow.z);
+
+        high.x = std::max( high.x, mhigh.x);
+        high.y = std::max( high.y, mhigh.y);
+        high.z = std::max( high.z, mhigh.z);
+   }
+}
+
+
+
+gfloat3* GMesh::getTransformedVertices(GMatrixF& transform )
+{
+     gfloat3* vertices = new gfloat3[m_num_vertices];
+     for(unsigned int i = 0; i < m_num_vertices; i++)
+     {  
+         vertices[i].x = m_vertices[i].x ;   
+         vertices[i].y = m_vertices[i].y ;   
+         vertices[i].z = m_vertices[i].z ;   
+
+         vertices[i] *= transform ;
+     }   
+     return vertices ;
+}
+
+
 
 

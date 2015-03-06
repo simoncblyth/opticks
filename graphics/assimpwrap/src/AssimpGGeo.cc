@@ -1,5 +1,6 @@
 #include "AssimpGGeo.hh"
 #include "AssimpTree.hh"
+#include "AssimpSelection.hh"
 #include "AssimpNode.hh"
 
 #include <assimp/types.h>
@@ -20,9 +21,10 @@
 */
 
 
-AssimpGGeo::AssimpGGeo(AssimpTree* tree) 
+AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection) 
    : 
    m_tree(tree),
+   m_selection(selection),
    m_domain_scale(1.f),
    m_values_scale(1.f),
    m_domain_reciprocal(true),
@@ -48,6 +50,7 @@ AssimpGGeo::~AssimpGGeo()
 
 GGeo* AssimpGGeo::convert(const char* ctrl)
 {
+    printf("AssimpGGeo::convert ctrl %s \n",ctrl);
     GGeo* gg = new GGeo();
     const aiScene* scene = m_tree->getScene();
     convertMaterials(scene, gg, ctrl);
@@ -275,11 +278,32 @@ void AssimpGGeo::convertStructure(GGeo* gg)
 {
     printf("AssimpGGeo::convertStructure\n");
     convertStructure(gg, m_tree->getRoot(), 0, NULL);
+
+    if(m_selection)
+    {
+
+        aiVector3D* alow  = m_selection->getLow() ;
+        gfloat3 low(alow->x, alow->y, alow->z);
+
+        aiVector3D* ahigh = m_selection->getHigh() ;
+        gfloat3 high(ahigh->x, ahigh->y, ahigh->z);
+
+        gg->setLow(low);
+        gg->setHigh(high);
+    }
+
+    gg->Summary("AssimpGGeo::convertStructure");
 }
 
 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 {
     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
+
+    bool selected = m_selection && m_selection->contains(node) ;  
+
+    solid->setSelected(selected);
+
+    gg->add(solid);
 
     if(parent) // GNode hookup
     {
@@ -317,6 +341,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     //
     // NB sibling border surfaces are not handled, but there are none of these 
     //
+
 
     AssimpNode* cnode = node->getChild(0);   // first child, if any
     AssimpNode* pnode = node->getParent();
@@ -380,7 +405,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     solid->setDescription(desc);
     free(desc);
 
-    gg->add(solid);
     return solid ; 
 }
 

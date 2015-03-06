@@ -2,6 +2,8 @@
 #define GMESH_H
 
 #include "GVector.hh"
+#include "GMatrix.hh"
+
 
 class GMesh {
   public:
@@ -14,8 +16,17 @@ class GMesh {
       gfloat3* getLow();
       gfloat3* getHigh();
 
-  private:
+  public:
+      unsigned int getNumVertices();
+      unsigned int getNumFaces();
+      gfloat3* getVertices();
+      guint3*  getFaces();
+  public:
+       gfloat3* getTransformedVertices(GMatrixF& transform );
+
+  public:
       void updateBounds();
+      void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
   private:
       unsigned int m_index ;

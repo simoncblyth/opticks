@@ -4,6 +4,7 @@
 
 class AssimpTree ; 
 class AssimpNode ; 
+class AssimpSelection ; 
 
 struct aiScene;
 struct aiMesh;
@@ -34,8 +35,6 @@ public:
     unsigned int getSceneFlags();
     unsigned int defaultProcessFlags();
 
-    int getQueryMerge();
-    int getQueryDepth();
     static const char* identityFilename(char* arg);
 
     void info();
@@ -47,28 +46,16 @@ public:
     void traverse();
 
     AssimpNode* getRoot();
-    aiMesh* createMergedMesh();
 
 public:
     unsigned int getNumMaterials();
     aiMaterial*  getMaterial(unsigned int index);
 
 public:
-    aiVector3D* getLow();
-    aiVector3D* getHigh();
-    aiVector3D* getCenter();
-    aiVector3D* getExtent();
-    aiVector3D* getUp();
 
-public:
+    AssimpSelection* select(const char* query);
 
-    unsigned int select(const char* query);
-
-    unsigned int getNumSelected();
-
-    AssimpNode* getSelectedNode(unsigned int i);
-
-    bool isFlatSelection();
+    aiMesh* createMergedMesh(AssimpSelection* selection);
 
 protected:
 
@@ -85,7 +72,6 @@ private:
     Assimp::Importer* m_importer;
 
     AssimpTree* m_tree ; 
-
 
 };
 

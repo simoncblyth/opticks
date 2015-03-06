@@ -19,6 +19,10 @@ class GSolid : public GNode {
       virtual ~GSolid();
 
   public:
+     void setSelected(bool selected);
+     bool isSelected();
+
+  public:
      void setInnerMaterial(GPropertyMap* imaterial);
      void setOuterMaterial(GPropertyMap* omaterial);
      void setInnerSurface(GPropertyMap* isurface);
@@ -34,12 +38,13 @@ class GSolid : public GNode {
       void Summary(const char* msg="GSolid::Summary");
  
   private:
-      GMatrixF* m_transform ; 
-      GMesh*     m_mesh ; 
       GPropertyMap*  m_imaterial ; 
       GPropertyMap*  m_omaterial ; 
       GPropertyMap*  m_isurface ; 
       GPropertyMap*  m_osurface ; 
+
+  private:
+      bool m_selected ;
 
 };
 

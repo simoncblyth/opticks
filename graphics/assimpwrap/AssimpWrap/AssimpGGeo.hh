@@ -2,7 +2,9 @@
 #define ASSIMPGGEO_H
 
 class AssimpTree ; 
+class AssimpSelection ; 
 class AssimpNode ; 
+
 class GGeo ; 
 class GSurface ;
 class GMaterial ;
@@ -15,7 +17,7 @@ struct aiScene ;
 
 class AssimpGGeo {
 public:
-    AssimpGGeo(AssimpTree* tree);
+    AssimpGGeo(AssimpTree* tree, AssimpSelection* selection);
     virtual ~AssimpGGeo();
 
 public:
@@ -45,7 +47,9 @@ protected:
     void setValuesScale(float vscale);
 
 private:
-    AssimpTree* m_tree ; 
+    AssimpTree*      m_tree ; 
+    AssimpSelection* m_selection ;
+ 
     float m_domain_scale ; 
     float m_values_scale ; 
     bool m_domain_reciprocal ; 

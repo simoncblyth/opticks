@@ -2,12 +2,15 @@
 #define GGEO_H
 
 #include <vector>
+#include "GVector.hh"
 
 class GMesh ; 
 class GSolid ; 
+class GNode ; 
 class GMaterial ; 
 class GSkinSurface ; 
 class GBorderSurface ; 
+
 
 class GGeo {
     public:
@@ -36,6 +39,14 @@ class GGeo {
         GBorderSurface* getBorderSurface(unsigned int index);  
 
     public:
+        gfloat3* getLow();
+        gfloat3* getHigh();
+        void setLow(const gfloat3& low);
+        void setHigh(const gfloat3& high);
+        void updateBounds(GNode* node); 
+
+
+    public:
         GSkinSurface* findSkinSurface(const char* lv);  
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
 
@@ -53,7 +64,8 @@ class GGeo {
         std::vector<GSkinSurface*>  m_skin_surfaces ; 
         std::vector<GBorderSurface*>  m_border_surfaces ; 
 
-        unsigned int m_check ;
+        gfloat3* m_low ; 
+        gfloat3* m_high ; 
 
 };
 

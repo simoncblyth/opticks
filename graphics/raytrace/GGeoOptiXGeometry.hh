@@ -9,6 +9,8 @@
 
 class GGeo ; 
 class GMaterial ; 
+class GSolid ; 
+class GNode ;
 
 class GGeoOptiXGeometry  : public OptiXGeometry 
 {
@@ -29,9 +31,9 @@ private:
 
     optix::Material convertMaterial(GMaterial* gmat);
 
-    //optix::Geometry convertGeometry(aiMesh* mesh);
+    optix::Geometry convertGeometry(GSolid* solid);
 
-    //void traverseNode(AssimpNode* node, unsigned int depth, bool recurse);
+    void traverseNode(GNode* node, unsigned int depth, bool recurse);
 
 private:
 

@@ -36,7 +36,9 @@ int main(int argc, char* argv[])
     geom.select(query);
     //geom.dumpMaterials(material);
 
-    AssimpGGeo agg(geom.getTree()); 
+    AssimpSelection* selection = NULL ;
+
+    AssimpGGeo agg(geom.getTree(), selection); 
     GGeo* gg = agg.convert(ggctrl);
     //gg->Summary("main");    
 

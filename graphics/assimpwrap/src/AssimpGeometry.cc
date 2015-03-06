@@ -2,6 +2,7 @@
 #include "AssimpCommon.hh"
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
+#include "AssimpSelection.hh"
 
 /*
    http://assimp.sourceforge.net/lib_html/data.html
@@ -195,7 +196,7 @@ void AssimpGeometry::traverse()
     m_tree->traverse();
 }
 
-unsigned int AssimpGeometry::select(const char* query)
+AssimpSelection* AssimpGeometry::select(const char* query)
 {
 
     if(!m_tree) 
@@ -204,17 +205,14 @@ unsigned int AssimpGeometry::select(const char* query)
         return 0 ;
     }
 
-    unsigned int n = m_tree->select(query);
-    dump();
+    AssimpSelection* selection = new AssimpSelection(m_tree->getRoot(), query);
+    selection->dump();
 
-    if(n == 0)
+    if(selection->getNumSelected() == 0)
     {
         printf("AssimpGeometry::select WARNING query \"%s\" failed to find any nodes : fallback to adding root  \n", query );
     }
-
-    assert(n>0);
-
-    return m_tree->getNumSelected() ; 
+    return selection ; 
 }
 
 AssimpNode* AssimpGeometry::getRoot()
@@ -222,31 +220,9 @@ AssimpNode* AssimpGeometry::getRoot()
     return m_tree->getRoot();
 }
 
-
-aiMesh* AssimpGeometry::createMergedMesh()
+aiMesh* AssimpGeometry::createMergedMesh(AssimpSelection* selection)
 {
-    return m_tree->createMergedMesh();
-}
-
-int AssimpGeometry::getQueryMerge()
-{
-    return m_tree->getQueryMerge();
-}
-
-int AssimpGeometry::getQueryDepth()
-{
-    return m_tree->getQueryDepth();
-}
-
-
-unsigned int AssimpGeometry::getNumSelected()
-{
-    return m_tree->getNumSelected();
-}
-
-AssimpNode* AssimpGeometry::getSelectedNode(unsigned int i)
-{
-    return m_tree->getSelectedNode(i);
+    return m_tree->createMergedMesh(selection);
 }
 
 void AssimpGeometry::dump()
@@ -261,6 +237,28 @@ void AssimpGeometry::dumpMaterials(const char* query)
 
 
 
+
+/*
+
+
+
+int AssimpGeometry::getQueryMerge()
+{
+    return m_tree->getQueryMerge();
+}
+int AssimpGeometry::getQueryDepth()
+{
+    return m_tree->getQueryDepth();
+}
+
+unsigned int AssimpGeometry::getNumSelected()
+{
+    return m_tree->getNumSelected();
+}
+AssimpNode* AssimpGeometry::getSelectedNode(unsigned int i)
+{
+    return m_tree->getSelectedNode(i);
+}
 aiVector3D* AssimpGeometry::getLow()
 {
     return m_tree->getLow();
@@ -281,13 +279,12 @@ aiVector3D* AssimpGeometry::getUp()
 {
     return m_tree->getUp();
 }
-
-
 bool AssimpGeometry::isFlatSelection()
 {
     return m_tree->isFlatSelection();
 }
 
+*/
 
 
 

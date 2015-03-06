@@ -308,7 +308,8 @@ raytrace-cmake(){
    mkdir -p $bdir
 
    raytrace-bcd
-  
+ 
+ 
    cmake -DCMAKE_BUILD_TYPE=Debug \
          -DOptiX_INSTALL_DIR=$(optix-install-dir) \
          -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
@@ -350,16 +351,30 @@ raytrace-export()
    #q="index:3154"
    #q="index:3155"
    #q="range:2153:12221,merge:1" 
-   #q="range:3153:12221,merge:0" 
-   q="range:3153:12221,merge:1" 
+   q="range:3153:12221,merge:0" 
+   #q="range:3153:12221,merge:1" 
    #q="index:4998"
+   #q="index:5000"
+   #q="range:5000:5010"
+   #q="range:3153:12221"
    #q="range:4998:5998,merge:1" 
    #q="range:4998:5998,merge:0" 
    export RAYTRACE_QUERY=$q
+
+
+   unset RAYTRACE_GGCTRL 
+   export RAYTRACE_GGCTRL=""
 }
 
 
-raytrace-run(){ $DEBUG $(raytrace-bin) $* ; }
+raytrace-run(){
+  if [ -n "$DEBUG" ]; then 
+      $DEBUG $(raytrace-bin) -- $* 
+  else
+      $(raytrace-bin) $* 
+  fi
+}
+
 
 raytrace--(){
   raytrace-make

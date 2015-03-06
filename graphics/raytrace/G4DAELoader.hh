@@ -21,6 +21,8 @@ public:
   ~G4DAELoader() {} // makes sure CRT objects are destroyed on the correct heap
 
   void setIntersectProgram( optix::Program program );
+
+
   void load();
   void load( const optix::Matrix4x4& transform );
 
@@ -38,15 +40,11 @@ private:
 
   optix::Context         m_context;
   optix::GeometryGroup   m_geometry_group;
-  //optix::Buffer          m_vbuffer;
-  //optix::Buffer          m_ibuffer;
   optix::Material        m_material;
   bool                   m_large_geom;
   const char*            m_ASBuilder;
   const char*            m_ASTraverser;
   const char*            m_ASRefine;
-
-  //optix::Program         m_intersect_program;
 
   optix::Aabb            m_aabb;
 };

@@ -12,21 +12,57 @@
 #define BSIZ 50
 
 GGeo::GGeo() :
-   m_check(0)
+   m_low(NULL),
+   m_high(NULL)
 {
    printf("GGeo::GGeo\n");
 }
 
 GGeo::~GGeo()
 {
+   delete m_low ; 
+   delete m_high ; 
 }
+
+gfloat3* GGeo::getLow()
+{
+   return m_low ; 
+}
+gfloat3* GGeo::getHigh()
+{
+   return m_high ; 
+}
+
+
+void GGeo::setLow(const gfloat3& low)
+{
+    m_low = new gfloat3(low);
+}
+void GGeo::setHigh(const gfloat3& high)
+{
+    m_high = new gfloat3(high);
+}
+
+
+void GGeo::updateBounds(GNode* node)
+{
+    if(!m_low)  m_low  = new gfloat3(1e10f, 1e10f, 1e10f) ;
+    if(!m_high) m_high = new gfloat3(-1e10f, -1e10f, -1e10f) ;
+  
+    node->updateBounds(*m_low, *m_high);
+}
+
 
 void GGeo::Summary(const char* msg)
 {
     printf("%s ms %lu so %lu mt %lu bs %lu ss %lu \n", msg, m_meshes.size(), m_solids.size(), m_materials.size(), m_border_surfaces.size(), m_skin_surfaces.size() );  
 
-    char mbuf[BSIZ];
+    if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
+    if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);
+ 
+    /*
 
+    char mbuf[BSIZ];
     for(unsigned int ims=0 ; ims < m_meshes.size()  ; ims++ )
     {
         GMesh* ms = m_meshes[ims];
@@ -59,6 +95,8 @@ void GGeo::Summary(const char* msg)
         snprintf(mbuf,BSIZ, "%s so %u", msg, isol);
         sol->Summary(mbuf);
     }
+
+    */
 }
 
 
@@ -99,7 +137,7 @@ void GGeo::materialConsistencyCheck()
 unsigned int GGeo::materialConsistencyCheck(GSolid* solid)
 {
     assert(solid);
-    solid->Summary(NULL);
+    //solid->Summary(NULL);
 
     GSolid* parent = dynamic_cast<GSolid*>(solid->getParent()) ; 
 

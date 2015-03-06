@@ -31,6 +31,7 @@ add_library(${name} SHARED
                 src/AssimpTree.cc
                 src/AssimpRegistry.cc
                 src/AssimpGGeo.cc
+                src/AssimpSelection.cc
 )
 
 target_link_libraries(${name}

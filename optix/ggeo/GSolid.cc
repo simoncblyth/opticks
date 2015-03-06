@@ -8,13 +8,12 @@
 //
 GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
          : 
-         GNode(index),
-         m_transform(transform),
-         m_mesh(mesh),
+         GNode(index, transform, mesh ),
          m_imaterial(imaterial),
          m_omaterial(omaterial),
          m_isurface(isurface),
-         m_osurface(osurface)
+         m_osurface(osurface),
+         m_selected(true)
 {
     // NB not taking ownership yet 
 }
@@ -22,6 +21,16 @@ GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GPropertyM
 GSolid::~GSolid()
 {
 }
+
+void GSolid::setSelected(bool selected)
+{
+    m_selected = selected ; 
+}
+bool GSolid::isSelected()
+{
+   return m_selected ; 
+}
+
 
 void GSolid::Summary(const char* msg )
 {
@@ -45,7 +54,6 @@ void GSolid::setOuterMaterial(GPropertyMap* omaterial)
 {
     m_omaterial = omaterial ; 
 }
-
 void GSolid::setInnerSurface(GPropertyMap* isurface)
 {
     m_isurface = isurface ; 
@@ -54,6 +62,7 @@ void GSolid::setOuterSurface(GPropertyMap* osurface)
 {
     m_osurface = osurface ; 
 }
+
 
 GPropertyMap* GSolid::getInnerMaterial()
 {

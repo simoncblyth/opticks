@@ -8,13 +8,15 @@
 
 class AssimpNode ; 
 class AssimpGeometry ; 
+class AssimpSelection ; 
+
 struct aiMaterial ; 
 struct aiMesh ;
 
 class AssimpOptiXGeometry  : public OptiXGeometry 
 {
 public:
-    AssimpOptiXGeometry(AssimpGeometry* ageo);
+    AssimpOptiXGeometry(AssimpGeometry* ageo, AssimpSelection* selection);
 
     virtual ~AssimpOptiXGeometry();
 
@@ -37,6 +39,8 @@ private:
 private:
 
     AssimpGeometry* m_ageo ; 
+
+    AssimpSelection* m_selection ; 
 
 public:
 

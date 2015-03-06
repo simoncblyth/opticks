@@ -76,46 +76,47 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
 
   AssimpGeometry ageo(path);
   ageo.import();
-  ageo.select(query);
+  AssimpSelection* selection = ageo.select(query);
 
+
+  const char* ggctrl = getenv("RAYTRACE_GGCTRL");
+  if(ggctrl) 
   {
-     AssimpOptiXGeometry geom(&ageo);
-     geom.setGeometryGroup(m_geometry_group);
-     geom.setContext(m_context);    // must setContext before convert : can get rid of this via the cfg 
-     geom.setMaterial(m_material);  // override the material hailing from geometry 
+      printf("G4DAELoader::load with GGeo intermediary using AssimpGGeo + GGeoOptixGeometry %s \n", ggctrl );
 
-     geom.convert(); 
-     geom.setupAcceleration();
-
-     m_aabb = geom.getAabb();
-  }
-
-
-
-
-  // experimenting with intermediary GGeo approach
-  {
-      const char* ggctrl = getenv("RAYTRACE_GGCTRL");
-
-      // from Assimp into GGeo
-      AssimpGGeo agg(ageo.getTree()); 
+      AssimpGGeo agg(ageo.getTree(), selection); 
       GGeo* ggeo = agg.convert(ggctrl);
 
-      // from GGeo into OptiX
       GGeoOptiXGeometry geom(ggeo);
       
       geom.setGeometryGroup(m_geometry_group);
-      geom.setContext(m_context);    // must setContext before convert : can get rid of this via the cfg 
-      geom.setMaterial(m_material);  // override the material hailing from geometry 
+      geom.setContext(m_context);   
+      geom.setMaterial(m_material);  // override
 
       geom.convert(); 
       geom.setupAcceleration();
+
+      m_aabb = geom.getAabb();
+  }
+  else
+  {
+      printf("G4DAELoader::load with AssimpOptixGeometry \n");
+      AssimpOptiXGeometry geom(&ageo, selection);
+
+      geom.setGeometryGroup(m_geometry_group);
+      geom.setContext(m_context);  
+      geom.setMaterial(m_material);  // override 
+
+      geom.convert(); 
+      geom.setupAcceleration();
+
+      m_aabb = geom.getAabb();
   }
 
-
-
-
+  
 }
+
+
 
 void G4DAELoader::createGeometryInstance( 
   unsigned nverts, 

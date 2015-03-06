@@ -1,6 +1,7 @@
 #include "AssimpOptiXGeometry.hh"
 #include "AssimpWrap/AssimpNode.hh"
 #include "AssimpWrap/AssimpGeometry.hh"
+#include "AssimpWrap/AssimpSelection.hh"
 
 #include "RayTraceConfig.hh"
 
@@ -22,10 +23,11 @@ AssimpOptiXGeometry::~AssimpOptiXGeometry()
 {
 }
 
-AssimpOptiXGeometry::AssimpOptiXGeometry(AssimpGeometry* ageo)
+AssimpOptiXGeometry::AssimpOptiXGeometry(AssimpGeometry* ageo, AssimpSelection* selection)
            : 
            OptiXGeometry(),
-           m_ageo(ageo)
+           m_ageo(ageo),
+           m_selection(selection)
 {
 }
 
@@ -39,7 +41,6 @@ void AssimpOptiXGeometry::convert()
 void AssimpOptiXGeometry::convertMaterials()
 {
     // these materials are currently ignored, the single material coming from m_material
-    //
     for(unsigned int i = 0; i < m_ageo->getNumMaterials(); i++)
     {
         optix::Material material = convertMaterial(m_ageo->getMaterial(i));
@@ -52,17 +53,18 @@ void AssimpOptiXGeometry::convertStructure()
     //  Following fig2 of documentation:  single gg containing many gi 
     //  converting aiMesh into optix::GeometryInstance collected into m_gis 
 
-    assert(m_ageo->getNumSelected() > 0);  // must select some geometry before convert
+
+    assert(m_selection->getNumSelected() > 0);  // must select some geometry before convert
     m_gis.clear();
 
-    bool mergemesh = m_ageo->getQueryMerge();
-    bool recurse = !m_ageo->isFlatSelection() ; 
+    bool mergemesh = m_selection->getQueryMerge();
+    bool recurse = !m_selection->isFlatSelection() ; 
 
     if(mergemesh)
     {
         printf("AssimpOptiXGeometry::convertStructure createMergedMesh \n");
 
-        aiMesh* mesh = m_ageo->createMergedMesh(); 
+        aiMesh* mesh = m_ageo->createMergedMesh(m_selection); 
 
         optix::Geometry geometry = convertGeometry(mesh) ;  
 
@@ -71,13 +73,13 @@ void AssimpOptiXGeometry::convertStructure()
     else
     {
         //  Recursive traverse down from each selected AssimpNode
-        for(unsigned int i=0 ; i < m_ageo->getNumSelected() ; i++ )
+        for(unsigned int i=0 ; i < m_selection->getNumSelected() ; i++ )
         {
-            traverseNode(m_ageo->getSelectedNode(i), 0, recurse);
+            traverseNode(m_selection->getSelectedNode(i), 0, recurse);
         }
     } 
 
-    printf("AssimpOptiXGeometry::convertStructure : %d selected top nodes with %lu gi \n", m_ageo->getNumSelected(), m_gis.size() );
+    printf("AssimpOptiXGeometry::convertStructure : %d selected top nodes with %lu gi \n", m_selection->getNumSelected(), m_gis.size() );
     assert(m_gis.size() > 0);
 }
 
@@ -88,7 +90,7 @@ void AssimpOptiXGeometry::traverseNode(AssimpNode* node, unsigned int depth, boo
    //  Recursive traverse of the AssimpNode converting aiMesh into optix::GeometryInstance 
    //  and collecting into m_gis 
    //
-    int maxdepth = m_ageo->getQueryDepth();
+    int maxdepth = m_selection->getQueryDepth();
 
     if(depth < maxdepth )
     {
@@ -292,31 +294,31 @@ optix::Geometry AssimpOptiXGeometry::convertGeometry(aiMesh* mesh)
 
 optix::float3  AssimpOptiXGeometry::getCenter()
 {
-    aiVector3D* p = m_ageo->getCenter();
+    aiVector3D* p = m_selection->getCenter();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3  AssimpOptiXGeometry::getExtent()
 {
-    aiVector3D* p = m_ageo->getExtent();
+    aiVector3D* p = m_selection->getExtent();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3 AssimpOptiXGeometry::getUp()
 {
-    aiVector3D* p = m_ageo->getUp();
+    aiVector3D* p = m_selection->getUp();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3 AssimpOptiXGeometry::getMin()
 {
-    aiVector3D* p = m_ageo->getLow();
+    aiVector3D* p = m_selection->getLow();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
 optix::float3 AssimpOptiXGeometry::getMax()
 {
-    aiVector3D* p = m_ageo->getHigh();
+    aiVector3D* p = m_selection->getHigh();
     return optix::make_float3(p->x, p->y, p->z); 
 }
 
