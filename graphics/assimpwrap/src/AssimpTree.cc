@@ -626,7 +626,13 @@ void AssimpTree::dumpMaterials(const char* query)
 }
 
 
-
+char* AssimpTree::getMaterialName(unsigned int materialIndex)
+{
+    aiMaterial* mat = m_scene->mMaterials[materialIndex] ;
+    aiString name;
+    mat->Get(AI_MATKEY_NAME, name);
+    return strdup(name.C_Str());  
+}
 
 
 

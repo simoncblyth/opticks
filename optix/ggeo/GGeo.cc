@@ -6,11 +6,13 @@
 #include "GSolid.hh"
 #include "GMesh.hh"
 
+#include "assert.h"
 #include "stdio.h"
 
 #define BSIZ 50
 
-GGeo::GGeo()
+GGeo::GGeo() :
+   m_check(0)
 {
    printf("GGeo::GGeo\n");
 }
@@ -86,9 +88,40 @@ void GGeo::add(GSkinSurface* surface)
 }
 
 
+void GGeo::materialConsistencyCheck()
+{
+    GSolid* solid = getSolid(0);
+    assert(solid);
+    unsigned int nok = materialConsistencyCheck(solid);
+    printf("GGeo::materialConsistencyCheck nok %u \n", nok );
+}
 
+unsigned int GGeo::materialConsistencyCheck(GSolid* solid)
+{
+    assert(solid);
+    solid->Summary(NULL);
 
+    GSolid* parent = dynamic_cast<GSolid*>(solid->getParent()) ; 
 
+    unsigned int nok = 0 ;
+    if(parent)
+    {
+        assert(parent->getInnerMaterial() == solid->getOuterMaterial());
+        nok += 1 ;
+    } 
+    else
+    {
+        assert(solid->getIndex() == 0); 
+    } 
+
+    for(unsigned int i=0 ; i < solid->getNumChildren() ; i++)
+    {
+        GSolid* child = dynamic_cast<GSolid*>(solid->getChild(i)) ;
+        assert(child); 
+        nok += materialConsistencyCheck(child);
+    }
+    return nok ;
+}
 
 
 unsigned int GGeo::getNumMeshes()

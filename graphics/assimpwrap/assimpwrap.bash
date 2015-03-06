@@ -125,8 +125,11 @@ assimpwrap-cmake(){
 assimpwrap-make(){
     local iwd=$PWD
     assimpwrap-bcd
+    local rc
     make $*
+    rc=$?
     cd $iwd
+    return $rc 
 }
 
 assimpwrap-install(){

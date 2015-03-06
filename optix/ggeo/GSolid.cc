@@ -1,9 +1,14 @@
 #include "GSolid.hh"
+#include "GPropertyMap.hh"
 
 #include "stdio.h"
 
-GSolid::GSolid( GMatrixF* transform, GMesh* mesh, GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
+//
+// hmm : maybe better to deal in material and surface indices rather than pointers ?
+//
+GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
          : 
+         GNode(index),
          m_transform(transform),
          m_mesh(mesh),
          m_imaterial(imaterial),
@@ -20,7 +25,14 @@ GSolid::~GSolid()
 
 void GSolid::Summary(const char* msg )
 {
+   if(!msg) msg = getDescription();
+   if(!msg) msg = "GSolid::Summary" ;
    printf("%s\n", msg );
+
+   if(m_imaterial) m_imaterial->Summary("imat");
+   if(m_omaterial) m_omaterial->Summary("omat");
+   if(m_isurface) m_isurface->Summary("isurf");
+   if(m_osurface) m_osurface->Summary("osurf");
 }
 
 

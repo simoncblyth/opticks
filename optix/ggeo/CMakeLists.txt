@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
-
 set(name GGeo)
 project(${name})
 
@@ -7,14 +6,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
-
 set(BUILD_SHARED_LIBS ON)
-
 
 include(EnvBuildOptions)
 
-add_definitions(
-)
+add_definitions()
 
 add_library(${name} SHARED 
                 GProperty.cc
@@ -27,6 +23,7 @@ add_library(${name} SHARED
                 GGeo.cc
                 GVector.cc
                 GMatrix.cc
+                GNode.cc
 )
 
 add_executable(${name}Test ${name}Test.cc)
@@ -37,7 +34,6 @@ target_link_libraries(${name}Test
                         
 install(TARGETS ${name}Test DESTINATION bin)
 install(TARGETS ${name} LIBRARY DESTINATION lib)
-
 
 SET(hdrs 
 GGeo.hh
@@ -50,8 +46,8 @@ GSkinSurface.hh
 GBorderSurface.hh
 GVector.hh
 GMatrix.hh
+GNode.hh
 )
 
 install(FILES ${hdrs} DESTINATION include)
-
 

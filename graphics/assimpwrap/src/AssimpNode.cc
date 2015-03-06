@@ -294,13 +294,6 @@ unsigned int AssimpNode::getNumMeshesRaw()
 }
 
 
-//unsigned int AssimpNode::getMeshIndexRaw(unsigned int index)
-//{
-//    // index within the node list of meshes (always 0 for COLLADA) to "global" scene mesh index
-//    return m_raw->mMeshes[index];
-//}
-
-
 
 aiMesh* AssimpNode::getRawMesh(unsigned int localMeshIndex)
 {
@@ -315,22 +308,68 @@ unsigned int AssimpNode::getMaterialIndex(unsigned int localMeshIndex)
     return mesh->mMaterialIndex ;     
 }
 
+char* AssimpNode::getMaterialName(unsigned int localMeshIndex)
+{
+    unsigned int materialIndex = getMaterialIndex(localMeshIndex);
+    return m_tree->getMaterialName(materialIndex); 
+}
+
+
+
+char* AssimpNode::getDescription(const char* label)
+{
+    AssimpNode* pnode = getParent();
+    if(!pnode) pnode = this ; 
+
+    char* mtn   = getMaterialName() ;
+    char* mtn_p = pnode->getMaterialName() ;
+
+    char desc[1024];
+    snprintf(desc, 1024,"%s\n    pv   %5u [%4u] (%2u,%3u)%-50s %s\n    pv_p %5u [%4u] (%2u,%3u)%-50s %s\n    lv   %5u [%4u] (      )%-50s %s\n    lv_p %5u [%4u] (      )%-50s %s\n", 
+          label,
+
+          getIndex(),
+          getNumChildren(),
+          getMaterialIndex(), 
+          getMeshIndex(), 
+          mtn,
+          getName(1), 
+
+          pnode->getIndex(),
+          pnode->getNumChildren(),
+          pnode->getMaterialIndex(), 
+          pnode->getMeshIndex(), 
+          mtn_p, 
+          pnode->getName(1), 
+
+          getIndex(),
+          getNumChildren(),
+          "",
+          getName(0),
+
+          pnode->getIndex(),
+          pnode->getNumChildren(),
+          "",
+          pnode->getName(0)
+          );
+
+     free(mtn);
+     free(mtn_p);
+     return strdup(desc);
+}
+
+
+
 unsigned int AssimpNode::getMeshIndex(unsigned int localMeshIndex)
 {
     unsigned int meshIndex = m_raw->mMeshes[localMeshIndex];
     return meshIndex ; 
 }
 
-
-
-
-
-
 aiMesh* AssimpNode::getMesh(unsigned int index)
 {
     return index < m_numMeshes ? m_meshes[index] : NULL ;
 }
-
 
 
 void AssimpNode::ancestors()

@@ -7,6 +7,7 @@ class GGeo ;
 class GSurface ;
 class GMaterial ;
 class GPropertyMap ;
+class GSolid ; 
 
 struct aiMaterial ;
 struct aiMaterialProperty ;
@@ -36,8 +37,8 @@ protected:
 
 protected:
     void convertStructure(GGeo* gg);
-    void convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth);
-    void convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth);
+    void convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent);
+    GSolid* convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent);
 
 protected:
     void setDomainScale(float dscale);

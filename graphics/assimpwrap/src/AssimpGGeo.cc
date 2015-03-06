@@ -14,6 +14,11 @@
 #include "GSkinSurface.hh"
 #include "GSolid.hh"
 
+/*
+        g4daeview.sh -g 3148:3155
+        g4daeview.sh -g 4813:4816    Iws/SST/Oil  outside of SST high reflectivity 0.8, inside of SST low reflectivity 0.1
+*/
+
 
 AssimpGGeo::AssimpGGeo(AssimpTree* tree) 
    : 
@@ -48,6 +53,8 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     convertMaterials(scene, gg, ctrl);
     convertMeshes(scene, gg, ctrl);
     convertStructure(gg);
+
+    gg->materialConsistencyCheck();
     return gg ;
 }
 
@@ -266,16 +273,28 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 
 void AssimpGGeo::convertStructure(GGeo* gg)
 {
-    convertStructure(gg, m_tree->getRoot(), 0);
+    printf("AssimpGGeo::convertStructure\n");
+    convertStructure(gg, m_tree->getRoot(), 0, NULL);
 }
 
-void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth)
+void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 {
-    convertStructureVisit( gg, node, depth);
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(gg, node->getChild(i), depth + 1);
+    GSolid* solid = convertStructureVisit( gg, node, depth, parent);
+
+    if(parent) // GNode hookup
+    {
+        parent->addChild(solid);
+        solid->setParent(parent);
+    }
+    else
+    {
+        assert(node->getIndex() == 0);   // only root node has no parent 
+    }
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(gg, node->getChild(i), depth + 1, solid);
 }
 
-void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
+GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 {
     // Associations node to extra information analogous to collada_to_chroma.py:visit
     //
@@ -283,144 +302,86 @@ void AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int 
     // * border surfaces, via pv pair names
     // * skin surfaces, via lv names
     //
+    // Solid-centric naming 
+    //
+    // outer-surface 
+    //      corresponds to inwards going photons, from parent to self
+    //
+    // inner-surface
+    //       corresponds to outwards going photons, from self to parent  
+    // 
+    //
+    // Skinsurface are not always leaves 
+    // (UnstStainlessSteel cable trays with single child BPE inside). 
+    // Nevetheless treat skinsurface like an outer border surface.
+    //
+    // NB sibling border surfaces are not handled, but there are none of these 
+    //
 
+    AssimpNode* cnode = node->getChild(0);   // first child, if any
     AssimpNode* pnode = node->getParent();
     if(!pnode) pnode=node ; 
 
-    AssimpNode* child = node->getChild(0);   // first child, if any
-
-
-    const char* lv   = node->getName(0); 
-    const char* pv   = node->getName(1); 
-    unsigned int mti = node->getMaterialIndex() ;
-    unsigned int msi = node->getMeshIndex();
-
-    const char* lv_p   = pnode->getName(0); 
-    const char* pv_p   = pnode->getName(1); 
-    unsigned int mti_p = pnode->getMaterialIndex();
-    unsigned int msi_p = pnode->getMeshIndex();
-
-    unsigned int mti_c = child ? child->getMaterialIndex() : 999 ;
-
-
-    if(node->getIndex() == 0) printf("AssimpGGeo::convertStructureVisit\n");
-
+    unsigned int nodeIndex = node->getIndex();
 
     aiMatrix4x4 m = node->getGlobalTransform();
-    
     GMatrixF* transform = new GMatrixF(
                      m.a1,m.a2,m.a3,m.a4,  
                      m.b1,m.b2,m.b3,m.b4,  
                      m.c1,m.c2,m.c3,m.c4,  
                      m.d1,m.d2,m.d3,m.d4);
-    transform->Dump("node globalTransform");
 
-    GMesh* mesh    = gg->getMesh(msi);
- 
-    GMaterial*      mt = gg->getMaterial(mti);
-    GMaterial*      mt_p = gg->getMaterial(mti_p);
-    GMaterial*      mt_c = mti_c != 999 ? gg->getMaterial(mti_c) : NULL ;
+    unsigned int msi = node->getMeshIndex();
+    GMesh* mesh = gg->getMesh(msi);
 
-    GSolid* solid = new GSolid(transform, mesh, mt, mt_p, NULL, NULL );
+    unsigned int mti = node->getMaterialIndex() ;
+    GMaterial* mt = gg->getMaterial(mti);
 
-    GBorderSurface* ibs = gg->findBorderSurface(pv_p, pv);  // inwards (parent->self)  : light from parent material impinging on self (inner) material 
-    GBorderSurface* obs = gg->findBorderSurface(pv, pv_p);  // outwards (self->parent) : light from self material impinging onto parent (outer) material 
+    unsigned int mti_p = pnode->getMaterialIndex();
+    GMaterial* mt_p = gg->getMaterial(mti_p);
 
-    // NB inwards/outwards naming is according to photon direction, 
-    // which is the opposite perspective to more normal solid-centric nomenclature 
-    // which would have "outer" and "inner" surfaces corresponding to 
-    // inwards and outwards going photons  
+    GSolid* solid = new GSolid(nodeIndex, transform, mesh, mt, mt_p, NULL, NULL );
 
+    const char* lv   = node->getName(0); 
+    const char* pv   = node->getName(1); 
+    const char* pv_p   = pnode->getName(1); 
+
+    GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
+    GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
     GSkinSurface*   sks = gg->findSkinSurface(lv);          
    
-    // Are skinsurface always leaves ?
-    //
-    //    mostly with exception of UnstStainlessSteel cable trays 
-    //    which have single child BPE inside 
-    //    .. expedient to treat skin surface like ibs anyhow ?
-    //
-    // NB sibling border surfaces are not handled, but there are none of these 
-    //
-
     unsigned int nsurf = 0 ;
     if(sks) nsurf++ ;
     if(ibs) nsurf++ ;
     if(obs) nsurf++ ;
     assert(nsurf == 0 || nsurf == 1 ); 
 
-    
-
-
-    char ctx[1024];
-    snprintf(ctx, 1024,"    pv   %5u [%4u] (%2u,%3u)%-50s %s\n    pv_p %5u [%4u] (%2u,%3u)%-50s %s\n    lv   %5u [%4u] (      )%-50s %s\n    lv_p %5u [%4u] (      )%-50s %s\n", 
-          node->getIndex(),
-          node->getNumChildren(),
-          mti, 
-          msi, 
-          mt->getName(), 
-          pv, 
-          pnode->getIndex(),
-          pnode->getNumChildren(),
-          mti_p, 
-          msi_p, 
-          mt_p->getName(), 
-          pv_p, 
-          node->getIndex(),
-          node->getNumChildren(),
-          "",
-          lv,
-          pnode->getIndex(),
-          pnode->getNumChildren(),
-          "",
-          lv_p
-          );
- 
-
-    char msg[1024];
-
-    snprintf(msg, 1024,"msi   %u mesh   %p\n", msi, mesh );
-    mesh->Summary(msg);
-
-
     if(sks)
     {
-       snprintf(msg, 1024,"sks# %u %p idx %2d mti_c %2u %s \n%s", m_skin_surface, sks, sks->getIndex(), mti_c, mt_c ? mt_c->getName() : "-",  ctx );
-       sks->Summary(msg);
-       m_skin_surface++ ; 
-
-       solid->setOuterSurface(sks);
-    }
-    else if(ibs)
-    {
-       snprintf(msg, 1024,"ibs# %u %p idx %2d\n%s", m_inborder_surface, ibs, ibs->getIndex(), ctx);
-       ibs->Summary(msg);
-       m_inborder_surface++ ; 
-
-       solid->setOuterSurface(ibs);
+        m_skin_surface++ ; 
+        solid->setOuterSurface(sks);
     }
     else if(obs)
     {
-       snprintf(msg, 1024,"obs# %u %p idx %2d\n%s", m_outborder_surface, obs, obs->getIndex(), ctx);
-       obs->Summary(msg);
-       m_outborder_surface++ ; 
-
-       solid->setInnerSurface(obs);
+        m_outborder_surface++ ; 
+        solid->setOuterSurface(obs);
+    }
+    else if(ibs)
+    {
+        m_inborder_surface++ ; 
+        solid->setInnerSurface(ibs);
     }
     else
     {
-       m_no_surface++ ;
+        m_no_surface++ ;
     }
 
-    /*
-        g4daeview.sh -g 3148:3155
-        g4daeview.sh -g 4813:4816    Iws/SST/Oil  outside of SST high reflectivity 0.8, inside of SST low reflectivity 0.1
-    */
-      
- 
+    char* desc = node->getDescription("\n\noriginal node description"); 
+    solid->setDescription(desc);
+    free(desc);
 
     gg->add(solid);
-
-
+    return solid ; 
 }
 
 

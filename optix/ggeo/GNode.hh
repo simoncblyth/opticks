@@ -3,24 +3,31 @@
 
 #include <vector>
 
-class GSolid ;
-
 class GNode {
   public:
-      GNode();
+      GNode(unsigned int index);
       virtual ~GNode();
 
   public: 
       void Summary(const char* msg="GNode::Summary");
 
-  public: 
+  public:
+      void setParent(GNode* parent);
+      void addChild(GNode* child);
+      void setDescription(char* desc);
+
+  public:
+      unsigned int getIndex();
+      GNode* getParent(); 
+      GNode* getChild(unsigned int index);
       unsigned int getNumChildren();
-      GNode* getChild(unsigned int n);
+      char* getDescription();
 
   private:
-      GSolid* m_solid ; 
-
+      unsigned int m_index ; 
+      GNode* m_parent ; 
       std::vector<GNode*> m_children ;
+      char* m_description ;
 
 };
 

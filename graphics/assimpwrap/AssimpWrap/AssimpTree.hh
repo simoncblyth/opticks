@@ -62,7 +62,10 @@ public:
 public:
     void MergeMeshes(AssimpNode* node);
     void addToSelection(AssimpNode* node);
+
+public:
     void dumpMaterials(const char* msg="AssimpTree::dumpMaterials");
+    char* getMaterialName(unsigned int materialIndex);    // caller should free
 
 public:
     // wrapping raw tree matching pycollada/g4daenode 
