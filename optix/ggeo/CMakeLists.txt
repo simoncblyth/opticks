@@ -13,6 +13,7 @@ include(EnvBuildOptions)
 add_definitions()
 
 add_library(${name} SHARED 
+                md5digest.cc
                 GProperty.cc
                 GPropertyMap.cc
                 GMaterial.cc
@@ -38,6 +39,7 @@ install(TARGETS ${name}Test DESTINATION bin)
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 
 SET(hdrs 
+md5digest.hh
 GGeo.hh
 GMaterial.hh
 GMesh.hh

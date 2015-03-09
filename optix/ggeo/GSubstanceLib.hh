@@ -1,9 +1,13 @@
 #ifndef GSUBSTANCELIB_H
 #define GSUBSTANCELIB_H
 
+#include <map>
 #include <vector>
+#include <string>
+
 class GSubstance ; 
 class GPropertyMap ; 
+
 
 class GSubstanceLib {
 
@@ -18,7 +22,8 @@ class GSubstanceLib {
       void Summary(const char* msg="GSubstanceLib::Summary");
 
   private:
-      std::vector<GSubstance*> g_registry ; 
+      std::map<std::string, GSubstance*> m_registry ; 
+      std::vector<std::string> m_keys ; 
 
 };
 

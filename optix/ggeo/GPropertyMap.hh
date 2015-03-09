@@ -14,6 +14,12 @@ class GPropertyMap {
       virtual ~GPropertyMap();
 
   public:
+     // caller should free the char* returned after dumping 
+      char* digest();
+      char* getShortName(const char* prefix); 
+      char* getKeys(); 
+
+  public:
       const char* getName();
       unsigned int getIndex();
       const char* getType();

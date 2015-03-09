@@ -31,6 +31,11 @@ class GSubstance {
   public:
       bool matches(GSubstance* other);
       void Summary(const char* msg="GSubstance::Summary");
+      char* digest();
+
+  public:
+      unsigned int getIndex();
+      void setIndex(unsigned int index);
 
   public:
       void setInnerMaterial(GPropertyMap* imaterial);
@@ -45,6 +50,8 @@ class GSubstance {
       GPropertyMap*  m_imaterial ; 
       GPropertyMap*  m_isurface ; 
       GPropertyMap*  m_osurface ; 
+
+      unsigned int m_index ; 
 
 
 };
