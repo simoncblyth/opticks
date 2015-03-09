@@ -10,6 +10,8 @@ class GNode ;
 class GMaterial ; 
 class GSkinSurface ; 
 class GBorderSurface ; 
+class GSubstance ;
+class GSubstanceLib ;
 
 
 class GGeo {
@@ -32,6 +34,9 @@ class GGeo {
         unsigned int getNumBorderSurfaces();
 
     public:
+        GSubstanceLib* getSubstanceLib();
+
+    public:
         GMesh* getMesh(unsigned int index);  
         GMaterial* getMaterial(unsigned int index);  
         GSolid* getSolid(unsigned int index);  
@@ -50,14 +55,17 @@ class GGeo {
         GSkinSurface* findSkinSurface(const char* lv);  
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
 
+#if 0
     public:
         void materialConsistencyCheck();
         unsigned int materialConsistencyCheck(GSolid* solid);
+#endif
 
     public:
         void Summary(const char* msg="GGeo::Summary");
 
     private:
+        GSubstanceLib* m_substance_lib ; 
         std::vector<GMesh*>    m_meshes ; 
         std::vector<GSolid*>    m_solids ; 
         std::vector<GMaterial*> m_materials ; 

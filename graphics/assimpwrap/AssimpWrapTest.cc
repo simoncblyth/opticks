@@ -4,6 +4,7 @@
 #include "AssimpGGeo.hh"
 
 #include "GGeo.hh"
+#include "GSubstanceLib.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +43,8 @@ int main(int argc, char* argv[])
     GGeo* gg = agg.convert(ggctrl);
     //gg->Summary("main");    
 
+    GSubstanceLib* lib = gg->getSubstanceLib();
+    lib->Summary("GSubstanceLib");
 
     return 0 ; 
 }

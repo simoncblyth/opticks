@@ -14,6 +14,8 @@
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
 #include "GSolid.hh"
+#include "GSubstance.hh"
+#include "GSubstanceLib.hh"
 
 /*
         g4daeview.sh -g 3148:3155
@@ -57,7 +59,9 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     convertMeshes(scene, gg, ctrl);
     convertStructure(gg);
 
+#if 0
     gg->materialConsistencyCheck();
+#endif
     return gg ;
 }
 
@@ -365,7 +369,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     unsigned int mti_p = pnode->getMaterialIndex();
     GMaterial* mt_p = gg->getMaterial(mti_p);
 
-    GSolid* solid = new GSolid(nodeIndex, transform, mesh, mt, mt_p, NULL, NULL );
+    GSolid* solid = new GSolid(nodeIndex, transform, mesh, NULL );
 
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
@@ -381,25 +385,52 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     if(obs) nsurf++ ;
     assert(nsurf == 0 || nsurf == 1 ); 
 
+
+    GPropertyMap* osurf = NULL ; 
+    GPropertyMap* isurf = NULL ; 
+
     if(sks)
     {
         m_skin_surface++ ; 
-        solid->setOuterSurface(sks);
+        osurf = sks ; 
     }
     else if(obs)
     {
         m_outborder_surface++ ; 
-        solid->setOuterSurface(obs);
+        osurf = obs ; 
     }
     else if(ibs)
     {
         m_inborder_surface++ ; 
-        solid->setInnerSurface(ibs);
+        isurf = ibs ; 
     }
     else
     {
         m_no_surface++ ;
     }
+
+
+    GSubstanceLib* lib = gg->getSubstanceLib();
+    GSubstance* substance = lib->get(mt, isurf, osurf ); 
+    //substance->Summary("subst");
+
+    solid->setSubstance(substance);
+
+
+    // G4 border surface is tied to particular geometry (pv pair), 
+    // but its just a bunch of properties so dont need to retain that   
+    //
+    //   
+    // hmm outer material doesnt belong in the substance, 
+    // but without it there means complication of finding the 
+    // parent in intersection code ?  
+    //
+    // Hmm maybe not, need to keep track of originating substance index then 
+    // current substance throughout the trace which then gets paired 
+    // up with the substance have impinged upon at intersections
+    //
+    // OptiX model is ray-centric, Chroma is more triangle-centric 
+    //
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);
@@ -410,4 +441,90 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
 
 
+/*
 
+Why does this show up with isurf rather than osurf ?
+
+
+GSubstanceLib substance index 16 
+imat material 59 __dd__Materials__MineralOil0xbf5c830
+ABSLENGTH
+   0    899.871    219.400
+   1    898.892    236.700
+   2    897.916    257.300
+   3    896.877    278.000
+   4    895.905    292.700
+ 539    190.977     10.800
+ 540    189.976     11.100
+ 541    120.023     11.100
+ 542     79.990     11.100
+RAYLEIGH
+   0    799.898 500000.000
+   1    699.922 300000.000
+   2    589.839 170000.000
+   3    549.819 100000.000
+   4    489.863  62000.000
+   7    299.986   7600.000
+   8    199.975    850.000
+   9    120.023    850.000
+  10     79.990    850.000
+RINDEX
+   0    799.898      1.456
+   1    690.701      1.458
+   2    589.002      1.462
+   3    546.001      1.464
+   4    486.001      1.468
+  14    139.984      1.642
+  15    129.990      1.534
+  16    120.023      1.434
+  17     79.990      1.434
+isurf bordersurface 4 __dd__Geometry__AdDetails__AdSurfacesAll__SSTOilSurface
+REFLECTIVITY
+   0    799.898      0.100
+   1    199.975      0.100
+   2    120.023      0.100
+   3     79.990      0.100
+
+
+
+
+Many instances of skin surfaces with differing names but the same 
+property values are causing total of 73 different substances ...
+
+
+GSubstanceLib substance index 62 
+imat material 75 __dd__Materials__UnstStainlessSteel0xc5c11e8
+ABSLENGTH
+   0    799.898      0.001
+   1    199.975      0.001
+   2    120.023      0.001
+   3     79.990      0.001
+osurf skinsurface 38 __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib5Surface
+REFLECTIVITY
+   0    826.562      0.400
+   1    190.745      0.400
+RINDEX
+   0      0.000      0.000
+   1      0.000      0.000
+GSubstanceLib substance index 63 
+imat material 75 __dd__Materials__UnstStainlessSteel0xc5c11e8
+ABSLENGTH
+   0    799.898      0.001
+   1    199.975      0.001
+   2    120.023      0.001
+   3     79.990      0.001
+osurf skinsurface 37 __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib4Surface
+REFLECTIVITY
+   0    826.562      0.400
+   1    190.745      0.400
+RINDEX
+   0      0.000      0.000
+   1      0.000      0.000
+
+
+
+Adjust identity to be based on a property name and hash alone ?
+
+
+
+*/

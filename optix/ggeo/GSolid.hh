@@ -2,7 +2,7 @@
 #define GSOLID_H
 
 class GMesh ;
-class GPropertyMap ;
+class GSubstance ; 
 
 #include "GNode.hh"
 #include "GMatrix.hh"
@@ -12,10 +12,9 @@ class GPropertyMap ;
 //  relationship between how many materials for each mesh is up for grabs
 //
 
-
 class GSolid : public GNode {
   public:
-      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
+      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GSubstance* substance);
       virtual ~GSolid();
 
   public:
@@ -23,27 +22,14 @@ class GSolid : public GNode {
      bool isSelected();
 
   public:
-     void setInnerMaterial(GPropertyMap* imaterial);
-     void setOuterMaterial(GPropertyMap* omaterial);
-     void setInnerSurface(GPropertyMap* isurface);
-     void setOuterSurface(GPropertyMap* osurface);
-
-  public:
-     GPropertyMap* getInnerMaterial();
-     GPropertyMap* getOuterMaterial();
-     GPropertyMap* getInnerSurface();
-     GPropertyMap* getOuterSurface();
+     void setSubstance(GSubstance* substance);
+     GSubstance* getSubstance();
 
   public: 
       void Summary(const char* msg="GSolid::Summary");
  
   private:
-      GPropertyMap*  m_imaterial ; 
-      GPropertyMap*  m_omaterial ; 
-      GPropertyMap*  m_isurface ; 
-      GPropertyMap*  m_osurface ; 
-
-  private:
+      GSubstance* m_substance ; 
       bool m_selected ;
 
 };

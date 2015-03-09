@@ -5,6 +5,7 @@
 #include "GMaterial.hh"
 #include "GSolid.hh"
 #include "GMesh.hh"
+#include "GSubstanceLib.hh"
 
 #include "assert.h"
 #include "stdio.h"
@@ -13,16 +14,28 @@
 
 GGeo::GGeo() :
    m_low(NULL),
-   m_high(NULL)
+   m_high(NULL),
+   m_substance_lib(NULL)
 {
    printf("GGeo::GGeo\n");
+
+   m_substance_lib = new GSubstanceLib();
 }
 
 GGeo::~GGeo()
 {
    delete m_low ; 
    delete m_high ; 
+   delete m_substance_lib ;
 }
+
+
+
+GSubstanceLib* GGeo::getSubstanceLib()
+{
+    return m_substance_lib ; 
+}
+
 
 gfloat3* GGeo::getLow()
 {
@@ -126,6 +139,11 @@ void GGeo::add(GSkinSurface* surface)
 }
 
 
+
+#if 0
+
+// cannot do this check any more in GSubstance approach 
+
 void GGeo::materialConsistencyCheck()
 {
     GSolid* solid = getSolid(0);
@@ -160,6 +178,9 @@ unsigned int GGeo::materialConsistencyCheck(GSolid* solid)
     }
     return nok ;
 }
+
+#endif
+
 
 
 unsigned int GGeo::getNumMeshes()

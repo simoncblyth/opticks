@@ -18,6 +18,8 @@ add_library(${name} SHARED
                 GMaterial.cc
                 GSkinSurface.cc
                 GBorderSurface.cc
+                GSubstance.cc
+                GSubstanceLib.cc
                 GSolid.cc
                 GMesh.cc
                 GGeo.cc
@@ -44,6 +46,8 @@ GPropertyMap.hh
 GSolid.hh
 GSkinSurface.hh
 GBorderSurface.hh
+GSubstance.hh
+GSubstanceLib.hh
 GVector.hh
 GMatrix.hh
 GNode.hh
