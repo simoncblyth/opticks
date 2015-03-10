@@ -23,13 +23,13 @@
 
 class GPropertyMap ;
 
+// hmm GSubstance, a better name would be GBoundary now ?
 class GSubstance {
   public:
-      GSubstance(GPropertyMap* imaterial, GPropertyMap* isurface, GPropertyMap* osurface );
+      GSubstance(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
       virtual ~GSubstance();
 
   public:
-      bool matches(GSubstance* other);
       void Summary(const char* msg="GSubstance::Summary");
       char* digest();
 
@@ -39,15 +39,18 @@ class GSubstance {
 
   public:
       void setInnerMaterial(GPropertyMap* imaterial);
+      void setOuterMaterial(GPropertyMap* omaterial);
       void setInnerSurface(GPropertyMap* isurface);
       void setOuterSurface(GPropertyMap* osurface);
 
       GPropertyMap* getInnerMaterial();
+      GPropertyMap* getOuterMaterial();
       GPropertyMap* getInnerSurface();
       GPropertyMap* getOuterSurface();
 
   private:
       GPropertyMap*  m_imaterial ; 
+      GPropertyMap*  m_omaterial ; 
       GPropertyMap*  m_isurface ; 
       GPropertyMap*  m_osurface ; 
 

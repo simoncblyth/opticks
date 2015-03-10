@@ -30,6 +30,8 @@ unsigned int GMesh::getNumFaces()
 {
     return m_num_faces ; 
 }
+
+
 gfloat3* GMesh::getLow()
 {
     return m_low ;

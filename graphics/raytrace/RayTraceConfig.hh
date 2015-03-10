@@ -24,6 +24,8 @@ public:
    static void Print(const char* msg="RayTraceConfig::Print");
    static const char* const ptxpath( const std::string& target, const std::string& base );
 
+   static optix::float3 make_contrast_color(int tag);
+
 public:
     RayTraceConfig(optix::Context context, const char* target);
     virtual ~RayTraceConfig();

@@ -12,11 +12,15 @@ class GPropertyMap ;
 class GSubstanceLib {
 
   public:
-      GSubstance* get(GPropertyMap* imaterial, GPropertyMap* isurface, GPropertyMap* osurface );
+      GSubstance* get(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
 
   public:
       GSubstanceLib();
       virtual ~GSubstanceLib();
+
+  public:
+      unsigned int getNumSubstances();
+      GSubstance* getSubstance(unsigned int index); 
 
   public:
       void Summary(const char* msg="GSubstanceLib::Summary");

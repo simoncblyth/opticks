@@ -7,9 +7,10 @@
 
 // for persistency convenience would be better to deal in indices rather than pointers
 //
-GSubstance::GSubstance( GPropertyMap* imaterial, GPropertyMap* isurface, GPropertyMap* osurface )
+GSubstance::GSubstance( GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
          : 
          m_imaterial(imaterial),
+         m_omaterial(omaterial),
          m_isurface(isurface),
          m_osurface(osurface),
          m_index(UINT_MAX)
@@ -39,6 +40,12 @@ char* GSubstance::digest()
        dig.update(pdig, strlen(pdig));
        free(pdig);
    }  
+   if(m_omaterial)
+   {
+       char* pdig = m_omaterial->digest();
+       dig.update(pdig, strlen(pdig));
+       free(pdig);
+   }  
    if(m_isurface)
    {
        char* pdig = m_isurface->digest();
@@ -63,17 +70,26 @@ void GSubstance::Summary(const char* msg )
    assert(m_imaterial);
 
    char* dig = digest();
+
    char* imat = m_imaterial->getShortName("__dd__Materials__");
    char* imatk = m_imaterial->getKeys() ;
+
+   char* omat = m_omaterial ? m_omaterial->getShortName("__dd__Materials__") : NULL  ;
+   char* omatk = m_omaterial ? m_omaterial->getKeys() : NULL  ;
  
    char* isurk = m_isurface ? m_isurface->getKeys() : NULL ; 
    char* osurk = m_osurface ? m_osurface->getKeys() : NULL ; 
 
-   printf("%s %4d [%s] imat %30s %s isur %s osur %s \n", msg, m_index, dig, imat, imatk, isurk, osurk );
+   char bmat[128];
+   snprintf(bmat, 128,"imat/omat %s/%s", imat, omat );  
+
+
+   printf("%s %4d [%s] %50s %s %s isur %s osur %s \n", msg, m_index, dig, bmat, imatk, omatk, isurk, osurk );
 
 
    /*
    if(m_imaterial) m_imaterial->Summary("imat");
+   if(m_omaterial) m_omaterial->Summary("omat");
    if(m_isurface) m_isurface->Summary("isurf");
    if(m_osurface) m_osurface->Summary("osurf");
     */
@@ -81,6 +97,9 @@ void GSubstance::Summary(const char* msg )
    free(dig);
    free(imat);
    free(imatk);
+   free(omat);
+   free(omatk);
+
    free(isurk);
    free(osurk);
 }
@@ -90,6 +109,10 @@ void GSubstance::Summary(const char* msg )
 void GSubstance::setInnerMaterial(GPropertyMap* imaterial)
 {
     m_imaterial = imaterial ; 
+}
+void GSubstance::setOuterMaterial(GPropertyMap* omaterial)
+{
+    m_omaterial = omaterial ; 
 }
 void GSubstance::setInnerSurface(GPropertyMap* isurface)
 {
@@ -105,6 +128,10 @@ GPropertyMap* GSubstance::getInnerMaterial()
 {
     return m_imaterial ; 
 }
+GPropertyMap* GSubstance::getOuterMaterial()
+{
+    return m_omaterial ; 
+}
 GPropertyMap* GSubstance::getInnerSurface()
 {
     return m_isurface ; 
@@ -116,14 +143,3 @@ GPropertyMap* GSubstance::getOuterSurface()
 
 
 
-bool GSubstance::matches(GSubstance* other)
-{
-    return 
-           getInnerMaterial() == other->getInnerMaterial() 
-           && 
-           getInnerSurface() == other->getInnerSurface() 
-           &&
-           getOuterSurface() == other->getOuterSurface() 
-           ;
-}
- 

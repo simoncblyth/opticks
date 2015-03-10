@@ -91,7 +91,7 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
       
       geom.setGeometryGroup(m_geometry_group);
       geom.setContext(m_context);   
-      geom.setMaterial(m_material);  // override
+      geom.setOverrideMaterial(m_material);  
 
       geom.convert(); 
       geom.setupAcceleration();
@@ -105,7 +105,7 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
 
       geom.setGeometryGroup(m_geometry_group);
       geom.setContext(m_context);  
-      geom.setMaterial(m_material);  // override 
+      geom.setOverrideMaterial(m_material);  
 
       geom.convert(); 
       geom.setupAcceleration();

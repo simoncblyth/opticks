@@ -11,6 +11,7 @@ class GGeo ;
 class GMaterial ; 
 class GSolid ; 
 class GNode ;
+class GSubstance ;
 
 class GGeoOptiXGeometry  : public OptiXGeometry 
 {
@@ -25,13 +26,17 @@ public:
 
 private:
 
-    void convertMaterials();
+    void convertSubstances();
 
     void convertStructure();
 
-    optix::Material convertMaterial(GMaterial* gmat);
+    optix::Material convertSubstance(GSubstance* substance);
+
+    optix::TextureSampler makeWavelengthTexture(GSubstance* substance);
 
     optix::Geometry convertGeometry(GSolid* solid);
+
+    optix::GeometryInstance convertGeometryInstance(GSolid* solid);
 
     void traverseNode(GNode* node, unsigned int depth, bool recurse);
 

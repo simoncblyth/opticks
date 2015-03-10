@@ -31,14 +31,26 @@ class GPropertyMap {
       void Summary(const char* msg="GPropertyMap::Summary");
 
   public:
-      void AddProperty(const char* pname, float* values, float* domain, size_t length );
-      GPropertyF* GetProperty(const char* pname);
+      void addProperty(const char* pname, float* values, float* domain, size_t length );
+      GPropertyF* getProperty(const char* pname);
+      void setStandardDomain( float low, float high, float step);
+      float getLow();
+      float getHigh();
+      float getStep();
+
 
   private:
       std::string m_name ;
       unsigned int m_index ;
       std::string m_type ;
       GPropertyMapF_t m_prop ; 
+
+  private:
+      float m_low ;
+      float m_high ;
+      float m_step ;
+
+
 };
 
 

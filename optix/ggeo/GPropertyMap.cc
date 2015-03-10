@@ -15,6 +15,26 @@ GPropertyMap::~GPropertyMap()
 {
 }
 
+void GPropertyMap::setStandardDomain( float low, float high, float step)
+{
+    m_low = low ;
+    m_high = high ;
+    m_step = step ;
+}
+float GPropertyMap::getLow()
+{
+    return m_low ; 
+}
+float GPropertyMap::getHigh()
+{
+    return m_high ; 
+}
+float GPropertyMap::getStep()
+{
+    return m_step ; 
+}
+
+
 
 char* GPropertyMap::digest()
 {
@@ -94,15 +114,14 @@ bool GPropertyMap::isMaterial()
 }
 
 
-
-
-
-void GPropertyMap::AddProperty(const char* pname, float* values, float* domain, size_t length )
+void GPropertyMap::addProperty(const char* pname, float* values, float* domain, size_t length )
 {
-   m_prop[pname] = new GProperty<float>(values, domain, length) ;  
+   GProperty<float>* prop = new GProperty<float>(values, domain, length) ;  
+   prop->setStandardDomain( getLow(), getHigh(), getStep() );
+   m_prop[pname] = prop ;  
 }
 
-GProperty<float>* GPropertyMap::GetProperty(const char* pname)
+GProperty<float>* GPropertyMap::getProperty(const char* pname)
 {
    return (m_prop.find(pname) != m_prop.end()) ? m_prop[pname] : NULL ;
 }

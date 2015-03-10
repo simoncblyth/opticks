@@ -115,7 +115,7 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
         //if( noscale && ( i < 5 || i > npair - 5) )
         //printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );
     }
-    pmap->AddProperty(k, vals.data(), domain.data(), vals.size() );
+    pmap->addProperty(k, vals.data(), domain.data(), vals.size() );
 }
 
 
@@ -147,6 +147,17 @@ const char* AssimpGGeo::getStringProperty(aiMaterial* material, const char* quer
 
 void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material)
 {
+    //
+    // TODO: pull this out into top level API
+    //  chroma/chroma/geometry.py
+    //  standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
+    //
+    float low(60.f);
+    float high(810.f);
+    float step(20.f);
+
+    pmap->setStandardDomain(low,high,step); 
+
     unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
     {
@@ -411,26 +422,12 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
 
     GSubstanceLib* lib = gg->getSubstanceLib();
-    GSubstance* substance = lib->get(mt, isurf, osurf ); 
+    GSubstance* substance = lib->get(mt, mt_p, isurf, osurf ); 
     //substance->Summary("subst");
 
-    solid->setSubstance(substance);
+    solid->setSubstance(substance);  
 
 
-    // G4 border surface is tied to particular geometry (pv pair), 
-    // but its just a bunch of properties so dont need to retain that   
-    //
-    //   
-    // hmm outer material doesnt belong in the substance, 
-    // but without it there means complication of finding the 
-    // parent in intersection code ?  
-    //
-    // Hmm maybe not, need to keep track of originating substance index then 
-    // current substance throughout the trace which then gets paired 
-    // up with the substance have impinged upon at intersections
-    //
-    // OptiX model is ray-centric, Chroma is more triangle-centric 
-    //
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);

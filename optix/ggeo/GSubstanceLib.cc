@@ -14,15 +14,32 @@ GSubstanceLib::~GSubstanceLib()
 {
 }
 
+unsigned int GSubstanceLib::getNumSubstances()
+{
+   return m_keys.size();
+}
+
+
+GSubstance* GSubstanceLib::getSubstance(unsigned int index)
+{
+    GSubstance* substance = NULL ;
+    if(index < m_keys.size())
+    {
+        std::string key = m_keys[index] ;  
+        substance = m_registry[key];
+        assert(substance->getIndex() == index );
+    }
+    return substance ; 
+}
+
+
 void GSubstanceLib::Summary(const char* msg)
 {
     printf("%s\n", msg );
     char buf[128];
-    for(unsigned int i=0 ; i < m_keys.size() ; i++)
+    for(unsigned int i=0 ; i < getNumSubstances() ; i++)
     {
-         std::string key = m_keys[i] ;  
-         GSubstance* substance = m_registry[key];
-         assert(substance->getIndex() == i );
+         GSubstance* substance = getSubstance(i);
          snprintf(buf, 128, "%s substance ", msg );
          substance->Summary(buf);
     } 
@@ -30,14 +47,14 @@ void GSubstanceLib::Summary(const char* msg)
 
 
 
-GSubstance* GSubstanceLib::get(GPropertyMap* imaterial, GPropertyMap* isurface, GPropertyMap* osurface )
+GSubstance* GSubstanceLib::get(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
 { 
-    //printf("GSubstanceLib::get imaterial %p isurface %p osurface %p \n", imaterial, isurface, osurface );
+    //printf("GSubstanceLib::get imaterial %p omaterial %p isurface %p osurface %p \n", imaterial, omaterial, isurface, osurface );
 
-    GSubstance* tmp = new GSubstance(imaterial, isurface, osurface);
+    GSubstance* tmp = new GSubstance(imaterial, omaterial, isurface, osurface);
     std::string key = tmp->digest();
 
-    if(m_registry.count(key) == 0) // substance not yet registered, with substance identity based on the digest 
+    if(m_registry.count(key) == 0) // not yet registered, identity based on the digest 
     { 
         tmp->setIndex(m_keys.size());
         m_keys.push_back(key);  // for simple ordering  

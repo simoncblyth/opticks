@@ -1,8 +1,10 @@
 #include "GNode.hh"
 #include "GMesh.hh"
 
+#include "assert.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include <algorithm>
 
 
 GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) :
@@ -112,5 +114,40 @@ GMatrixF* GNode::getTransform()
 }
 
 
+
+
+
+unsigned int* GNode::getSubstanceIndices()
+{
+    return m_substance_indices ; 
+}
+void GNode::setSubstanceIndices(unsigned int* substance_indices)
+{
+    m_substance_indices = substance_indices ; 
+}
+void GNode::setMeshSubstance(unsigned int index)
+{
+    unsigned int nface = m_mesh->getNumFaces(); 
+    unsigned int* indices = new unsigned int[nface] ;
+    while(nface--) indices[nface] = index ; 
+    setSubstanceIndices(indices);
+}
+
+
+void GNode::updateDistinctSubstanceIndices()
+{
+    for(unsigned int i=0 ; i < m_mesh->getNumFaces() ; i++)
+    {
+        unsigned int index = m_substance_indices[i] ;
+        if(std::count(m_distinct_substance_indices.begin(), m_distinct_substance_indices.end(), index ) == 0) m_distinct_substance_indices.push_back(index);
+    }  
+    std::sort( m_distinct_substance_indices.begin(), m_distinct_substance_indices.end() );
+}
+ 
+std::vector<unsigned int>& GNode::getDistinctSubstanceIndices()
+{
+    if(m_distinct_substance_indices.size()==0) updateDistinctSubstanceIndices();
+    return m_distinct_substance_indices ;
+}
 
 

@@ -1,5 +1,6 @@
 #include "GSolid.hh"
 #include "GPropertyMap.hh"
+#include "GSubstance.hh"
 
 #include "stdio.h"
 
@@ -37,6 +38,7 @@ void GSolid::Summary(const char* msg )
 void GSolid::setSubstance(GSubstance* substance)
 {
     m_substance = substance ; 
+    setMeshSubstance( substance->getIndex() );
 }
 
 GSubstance* GSolid::getSubstance()

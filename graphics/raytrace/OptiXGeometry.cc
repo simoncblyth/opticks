@@ -16,7 +16,7 @@ OptiXGeometry::~OptiXGeometry()
 OptiXGeometry::OptiXGeometry()
            : 
            m_context(NULL),
-           m_material(NULL),
+           m_override_material(NULL),
            m_geometry_group(NULL)
 {
 }
@@ -25,9 +25,9 @@ void OptiXGeometry::setContext(optix::Context& context)
 {
     m_context = context ;   
 }
-void OptiXGeometry::setMaterial(optix::Material material)
+void OptiXGeometry::setOverrideMaterial(optix::Material material)
 {
-    m_material = material ;   
+    m_override_material = material ;   
 }
 void OptiXGeometry::setGeometryGroup(optix::GeometryGroup gg)
 {
@@ -39,9 +39,9 @@ optix::Context OptiXGeometry::getContext()
 {
     return m_context ;
 }
-optix::Material OptiXGeometry::getMaterial()
+optix::Material OptiXGeometry::getOverrideMaterial()
 {
-    return m_material ; 
+    return m_override_material ; 
 }
 optix::GeometryGroup OptiXGeometry::getGeometryGroup()
 {
@@ -49,14 +49,11 @@ optix::GeometryGroup OptiXGeometry::getGeometryGroup()
 }
 
 
-
-void OptiXGeometry::addInstance(optix::Geometry geometry, optix::Material material)
+optix::Material OptiXGeometry::getMaterial(unsigned int index)
 {
-     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, &material, &material+1  );   // single material 
-
-     m_gis.push_back(gi);
-} 
-
+    assert(index < m_materials.size());
+    return m_materials[index] ; 
+}
 
 
 void OptiXGeometry::setupAcceleration()

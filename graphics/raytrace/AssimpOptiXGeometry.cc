@@ -68,7 +68,10 @@ void AssimpOptiXGeometry::convertStructure()
 
         optix::Geometry geometry = convertGeometry(mesh) ;  
 
-        addInstance(geometry, m_material );
+        optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, &m_override_material, &m_override_material + 1  );  
+     
+        m_gis.push_back(gi);   
+
     }
     else
     {
@@ -100,7 +103,9 @@ void AssimpOptiXGeometry::traverseNode(AssimpNode* node, unsigned int depth, boo
 
             optix::Geometry geometry = convertGeometry(mesh) ;  
 
-            addInstance( geometry, m_material );
+            optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, &m_override_material, &m_override_material + 1  );  
+
+            m_gis.push_back(gi);   
         }   
     }
 

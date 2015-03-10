@@ -113,6 +113,38 @@ void RayTraceConfig::setMissProgram( unsigned int index , const char* filename, 
 
 
 
+optix::float3 RayTraceConfig::make_contrast_color( int tag )
+{
+  static const unsigned char s_Colors[16][3] =
+  {
+    {  34, 139,  34}, // ForestGreen
+    { 210, 180, 140}, // Tan
+    { 250, 128, 114}, // Salmon
+    { 173, 255,  47}, // GreenYellow
+    { 255,   0, 255}, // Magenta
+    { 255,   0,   0}, // Red
+    {   0, 250, 154}, // MediumSpringGreen
+    { 255, 165,   0}, // Orange
+    { 240, 230, 140}, // Khaki
+    { 255, 215,   0}, // Gold
+    { 178,  34,  34}, // Firebrick
+    { 154, 205,  50}, // YellowGreen
+    {  64, 224, 208}, // Turquoise
+    {   0,   0, 255}, // Blue
+    { 100, 149, 237}, // CornflowerBlue
+    { 153, 153, 255}, // (bright blue)
+  };  
+  int i = tag & 0x0f;
+  optix::float3 color = optix::make_float3( s_Colors[i][0], s_Colors[i][1], s_Colors[i][2] );
+  color *= 1.f/255.f;
+  i = (tag >> 4) & 0x3;
+  color *= 1.f - float(i) * 0.23f;
+  return color;
+}    
+
+
+
+
 
 
 

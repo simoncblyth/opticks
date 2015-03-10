@@ -17,7 +17,7 @@ public:
 
     void setContext(optix::Context& context);
 
-    void setMaterial(optix::Material material);
+    void setOverrideMaterial(optix::Material material);
 
     void setGeometryGroup(optix::GeometryGroup gg);
 
@@ -25,7 +25,9 @@ public:
 
     optix::Context getContext();
 
-    optix::Material getMaterial();
+    optix::Material getOverrideMaterial();
+
+    optix::Material getMaterial(unsigned int index);
 
     optix::GeometryGroup getGeometryGroup();
 
@@ -49,7 +51,7 @@ protected:
 
     optix::Context m_context ;
 
-    optix::Material m_material ;
+    optix::Material m_override_material ;
 
     optix::GeometryGroup m_geometry_group ; 
 
