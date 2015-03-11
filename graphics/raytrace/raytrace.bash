@@ -179,6 +179,20 @@ Class Layout
             SampleScene         
 
 
+   OPTIX_SDK_DIR/sutil/SampleScene.h
+
+        
+
+
+
+Sources
+---------
+
+::
+
+
+
+
 
 Next Steps
 ------------

@@ -51,6 +51,12 @@ class GNode {
      gfloat3* getLow();
      gfloat3* getHigh();
 
+
+  public:
+      unsigned int* getNodeIndices();
+  private:
+      void updateNodeIndices(unsigned int index); 
+
   public:
      GMesh* getMesh();
      GMatrixF* getTransform();
@@ -69,6 +75,7 @@ class GNode {
 
   private: 
       unsigned int* m_substance_indices ;
+      unsigned int* m_node_indices ;
 
   private: 
       std::vector<unsigned int> m_distinct_substance_indices ;

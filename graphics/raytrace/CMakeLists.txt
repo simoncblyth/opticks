@@ -126,6 +126,7 @@ add_optix_executable( MeshViewer
                       sample6/orthographic_camera.cu
                       sample6/parallelogram.cu
                       sample6/pinhole_camera.cu
+                      sample6/touch_pinhole_camera.cu
 )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})  # for RayTraceConfigInc.h

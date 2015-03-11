@@ -2,6 +2,7 @@
 
 // shadingNormal is set by the closest hit intersection program 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
+rtDeclareVariable(unsigned int, node_index, attribute node_index, );
 
 rtDeclareVariable(float3, contrast_color, , );
 
@@ -16,5 +17,6 @@ RT_PROGRAM void closest_hit_radiance()
   //prd_radiance.result = make_float3(0.f);
 
   prd_radiance.result = contrast_color ; 
+  //prd_radiance.node = node_index ; 
 
 }

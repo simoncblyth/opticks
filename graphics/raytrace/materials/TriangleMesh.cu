@@ -19,7 +19,12 @@ rtBuffer<float3> tangentBuffer;
 rtBuffer<float3> bitangentBuffer;
 rtBuffer<float2> texCoordBuffer;
 rtBuffer<int3> indexBuffer; 
+rtBuffer<unsigned int> nodeBuffer; 
+
+
+
 rtDeclareVariable(unsigned int, hasTangentsAndBitangents, ,);
+rtDeclareVariable(unsigned int, nodeIndex, attribute node_index,);
 
 rtDeclareVariable(float2, textureCoordinate, attribute textureCoordinate, ); 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
@@ -32,7 +37,8 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 RT_PROGRAM void mesh_intersect(int primIdx)
 {
     int3 index = indexBuffer[primIdx];
-
+    nodeIndex = nodeBuffer[primIdx];
+ 
     float3 p0 = vertexBuffer[index.x];
     float3 p1 = vertexBuffer[index.y];
     float3 p2 = vertexBuffer[index.z];

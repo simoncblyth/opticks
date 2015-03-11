@@ -7,6 +7,7 @@ struct PerRayData_radiance
   float3 result;
   float  importance;  // This is ignored in this sample.  See phong.h for use.
   int    depth;
+  //unsigned int  node;
 };
 
 struct PerRayData_shadow

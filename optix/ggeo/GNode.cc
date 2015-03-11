@@ -13,10 +13,13 @@ GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) :
     m_mesh(mesh),
     m_parent(NULL),
     m_description(NULL),
+    m_node_indices(NULL),
+    m_substance_indices(NULL),
     m_low(NULL),
     m_high(NULL)
 {
     updateBounds();
+    updateNodeIndices(m_index);
 }
 
 GNode::~GNode()
@@ -131,6 +134,20 @@ void GNode::setMeshSubstance(unsigned int index)
     unsigned int* indices = new unsigned int[nface] ;
     while(nface--) indices[nface] = index ; 
     setSubstanceIndices(indices);
+}
+
+
+
+unsigned int* GNode::getNodeIndices()
+{
+    return m_node_indices ; 
+}
+void GNode::updateNodeIndices(unsigned int index)
+{
+    unsigned int nface = m_mesh->getNumFaces(); 
+    unsigned int* indices = new unsigned int[nface] ;
+    while(nface--) indices[nface] = index ; 
+    m_node_indices = indices ;
 }
 
 

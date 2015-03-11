@@ -31,6 +31,9 @@ using namespace optix;
 
 
 
+
+
+
 //------------------------------------------------------------------------------
 //
 // MeshViewer class 
@@ -71,6 +74,9 @@ public:
   void setAA( bool onoff )                         { m_aa_enabled = onoff;              }
   void setAnimation( bool anim )                   { m_animation = anim;                }
 
+
+
+
   //
   // From SampleScene
   //
@@ -80,6 +86,9 @@ public:
   virtual void   cleanUp();
   virtual bool   keyPressed(unsigned char key, int x, int y);
   virtual Buffer getOutputBuffer();
+
+  void touch(unsigned char key, int x, int y);
+  void dumpCamera(const char* msg, unsigned char key, int x, int y ); 
 
 public:
   optix::Context getContext();
@@ -163,15 +172,20 @@ void MeshViewer::initContext()
 {
   RayTraceConfig* cfg = RayTraceConfig::getInstance(); 
 
-  m_context->setRayTypeCount( 3 );
-  m_context->setEntryPointCount( 1 );
+  bool touch = true ;  
+
+  m_context->setRayTypeCount( touch ? 3 : 2 );
+  m_context->setEntryPointCount( touch ? 2 : 1 ); 
   m_context->setStackSize( 1180 );
 
   m_context[ "radiance_ray_type"   ]->setUint( 0u );
   m_context[ "shadow_ray_type"     ]->setUint( 1u );
+
   m_context[ "max_depth"           ]->setInt( 5 );
   m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
   m_context[ "output_buffer"       ]->set( createOutputBuffer(RT_FORMAT_UNSIGNED_BYTE4, WIDTH, HEIGHT) );
+
+
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
   
   m_accum_enabled = m_aa_enabled                          ||
@@ -201,7 +215,30 @@ void MeshViewer::initContext()
   m_context[ "bad_color" ]->setFloat( 0.0f, 1.0f, 0.0f );
 
   cfg->setMissProgram(0, "constantbg.cu", "miss" ); 
-  m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f );
+  m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // 
+
+//
+// In [6]: map(int,np.array([0.34,0.55,0.85])*255)
+// Out[6]: [86, 140, 216]
+//
+
+  if(touch)
+  {
+      //
+      // touch buffer doesnt need the OpenGL stuff done by createOutputBuffer, 
+      // just want to read the node index returned
+      //
+      m_context[ "touch_ray_type"     ]->setUint( 2u );
+      Buffer touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, 1, 1);
+      m_context[ "touch_buffer"        ]->set( touch_buffer );
+
+      const std::string touch_camera_file = "touch_" + camera_file ; 
+      const std::string touch_camera_name = "touch_" + camera_name ; 
+
+      cfg->setRayGenerationProgram(1, touch_camera_file.c_str(), touch_camera_name.c_str() ); 
+  }
+
+
 }
 
 
@@ -394,6 +431,9 @@ bool MeshViewer::keyPressed(unsigned char key, int x, int y)
        std::cerr << "scene_epsilon: " << m_scene_epsilon << std::endl;
        m_context[ "scene_epsilon" ]->setFloat( m_scene_epsilon );
        return true;
+     case 'z':
+       dumpCamera("MeshViewer::keyPressed dumpCamera", key, x, y);
+       return true ;
    }
    return false;
 }
@@ -411,71 +451,134 @@ void MeshViewer::doResize( unsigned int width, unsigned int height )
   }
 }
 
+
 void MeshViewer::trace( const RayGenCameraData& camera_data )
 {
-  if (m_animation && GLUTDisplay::isBenchmark() ) {
-    static float angleU = 0.0f, angleV = 0.0f, scale = 1.0f, dscale = 0.96f, backside = 0.0f;
-    static int phase = 0, accumed_frames = 0;
-    const float maxang = M_PIf * 0.2f;
-    const float rotvel = M_2_PIf*0.1f;
-    float3 c = m_aabb.center();
-    float3 e = camera_data.eye;
+  if (m_animation && GLUTDisplay::isBenchmark() ) 
+  {
+      static float angleU = 0.0f, angleV = 0.0f, scale = 1.0f, dscale = 0.96f, backside = 0.0f;
+      static int phase = 0, accumed_frames = 0;
+      const float maxang = M_PIf * 0.2f;
+      const float rotvel = M_2_PIf*0.1f;
+      float3 c = m_aabb.center();
+      float3 e = camera_data.eye;
 
-    Matrix3x3 m = make_matrix3x3(Matrix4x4::rotate(angleV + backside, normalize(camera_data.V)) * 
+      Matrix3x3 m = make_matrix3x3(Matrix4x4::rotate(angleV + backside, normalize(camera_data.V)) * 
       Matrix4x4::rotate(angleU, normalize(camera_data.U)) * Matrix4x4::scale(make_float3(scale, scale, scale)));
 
-    if( !m_accum_enabled || accumed_frames++ > 5 ) { // Accumulate 5 frames per animation step.
-      switch(phase) {
-      case 0: angleV += rotvel; if(angleV > maxang) { angleV =  maxang; phase++; } break;
-      case 1: angleU += rotvel; if(angleU > maxang) { angleU =  maxang; phase++; } break;
-      case 2: angleV -= rotvel; if(angleV <-maxang) { angleV = -maxang; phase++; } break;
-      case 3: angleU -= rotvel; if(angleU <-maxang) { angleU = -maxang; phase=0; } break;
+      if( !m_accum_enabled || accumed_frames++ > 5 ) 
+      { // Accumulate 5 frames per animation step.
+          switch(phase) 
+          {
+              case 0: angleV += rotvel; if(angleV > maxang) { angleV =  maxang; phase++; } break;
+              case 1: angleU += rotvel; if(angleU > maxang) { angleU =  maxang; phase++; } break;
+              case 2: angleV -= rotvel; if(angleV <-maxang) { angleV = -maxang; phase++; } break;
+              case 3: angleU -= rotvel; if(angleU <-maxang) { angleU = -maxang; phase=0; } break;
+          }
+
+          scale *= dscale;
+          if(scale < 0.1f) { dscale = 1.0f / dscale; backside = M_PIf - backside; }
+          if(scale > 1.0f) { dscale = 1.0f / dscale; }
+
+          accumed_frames = 0;
+          m_camera_changed = true;
       }
 
-      scale *= dscale;
-      if(scale < 0.1f) { dscale = 1.0f / dscale; backside = M_PIf - backside; }
-      if(scale > 1.0f) { dscale = 1.0f / dscale; }
-
-      accumed_frames = 0;
-      m_camera_changed = true;
-    }
-
-    m_context["eye"]->setFloat( c-m*(c-e) );
-    m_context["U"]->setFloat( m*camera_data.U );
-    m_context["V"]->setFloat( m*camera_data.V );
-    m_context["W"]->setFloat( m*camera_data.W );
-  } else {
-    m_context["eye"]->setFloat( camera_data.eye );
-    m_context["U"]->setFloat( camera_data.U );
-    m_context["V"]->setFloat( camera_data.V );
-    m_context["W"]->setFloat( camera_data.W );
+      m_context["eye"]->setFloat( c-m*(c-e) );
+      m_context["U"]->setFloat( m*camera_data.U );
+      m_context["V"]->setFloat( m*camera_data.V );
+      m_context["W"]->setFloat( m*camera_data.W );
+  } 
+  else 
+  {
+      m_context["eye"]->setFloat( camera_data.eye );
+      m_context["U"]->setFloat( camera_data.U );
+      m_context["V"]->setFloat( camera_data.V );
+      m_context["W"]->setFloat( camera_data.W );
   }
 
   Buffer buffer = m_context["output_buffer"]->getBuffer();
   RTsize buffer_width, buffer_height;
   buffer->getSize( buffer_width, buffer_height );
 
-  if( m_accum_enabled && !m_camera_changed ) {
-    // Use more AO samples if the camera is not moving, for increased !/$.
-    // Do this above launch to avoid overweighting the first frame
-    m_context["sqrt_occlusion_samples"]->setInt( 3 * m_ao_sample_mult );
-    m_context["sqrt_diffuse_samples"]->setInt( 3 );
+  if( m_accum_enabled && !m_camera_changed ) 
+  {
+      // Use more AO samples if the camera is not moving, for increased !/$.
+      // Do this above launch to avoid overweighting the first frame
+      m_context["sqrt_occlusion_samples"]->setInt( 3 * m_ao_sample_mult );
+      m_context["sqrt_diffuse_samples"]->setInt( 3 );
   }
 
   m_context->launch( 0, static_cast<unsigned int>(buffer_width), static_cast<unsigned int>(buffer_height) );
 
-  if( m_accum_enabled ) {
-    // Update frame number for accumulation.
-    ++m_frame;
-    if( m_camera_changed ) {
-      m_camera_changed = false;
-      resetAccumulation();
-    }
-
-    // The frame number is used as part of the random seed.
-    m_context["frame"]->setInt( m_frame );
+  if( m_accum_enabled ) 
+  {
+      ++m_frame; // Update frame number for accumulation.
+      if( m_camera_changed ) 
+      {
+          m_camera_changed = false;
+          resetAccumulation();
+      }
+      // The frame number is used as part of the random seed.
+      m_context["frame"]->setInt( m_frame );
   }
 }
+
+
+
+void MeshViewer::dumpCamera(const char* msg, unsigned char key, int x, int y )
+{
+    // see $OPTIX_SDK_DIR/sutil/SampleScene.h
+
+    float3 e = m_context["eye"]->getFloat3();
+    float3 u = m_context["U"]->getFloat3();
+    float3 v = m_context["V"]->getFloat3();
+    float3 w = m_context["W"]->getFloat3();
+
+    printf("%s\n", msg );
+    printf("eye     %10.3f %10.3f %10.3f    %10.3f  distance to origin  \n", e.x, e.y, e.z, length(e) );
+    printf("U ---   %10.3f %10.3f %10.3f    %10.3f  width at focal distance \n", u.x, u.y, u.z, length(u) );
+    printf("V  |    %10.3f %10.3f %10.3f    %10.3f  height at focal distance \n", v.x, v.y, v.z, length(v) );
+    printf("W  *    %10.3f %10.3f %10.3f    %10.3f  focal distance \n", w.x, w.y, w.z, length(w) );
+
+    Buffer buffer = m_context["output_buffer"]->getBuffer();
+    RTsize width, height;
+    buffer->getSize( width, height );
+
+    printf("pixel width x height  %lu x %lu  touch %d %d \n", width, height, x, y ); 
+
+    touch(key, x, y);
+}
+
+
+
+
+void MeshViewer::touch(unsigned char key, int x, int y)
+{
+    Buffer buffer = m_context["output_buffer"]->getBuffer();
+    RTsize width, height;
+    buffer->getSize( width, height );
+
+    m_context["touch_index"]->setUint(x, y );
+    m_context["touch_dim"]->setUint(width, height);
+    m_context->launch( 1, 1u, 1u );
+
+    Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
+
+    optix::uchar4* touchBuffer_Host = static_cast<optix::uchar4*>( touchBuffer->map() );
+
+    optix::uchar4 v = touchBuffer_Host[0] ;
+
+    //
+    // buffer BGRA layout discerned by comparison with bg_color 
+    //
+    //printf("MeshViewer::touch  BGRA %u %u %u %u \n", v.x,v.y,v.z,v.w ); 
+    printf("MeshViewer::touch  RGBA %u %u %u %u \n", v.z,v.y,v.x,v.w ); 
+
+    touchBuffer->unmap();
+}
+
+
 
 
 void MeshViewer::cleanUp()

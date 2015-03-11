@@ -43,6 +43,7 @@ rtDeclareVariable(unsigned int,  radiance_ray_type, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+
 rtDeclareVariable(float, time_view_scale, , ) = 1e-6f;
 
 //#define TIME_VIEW
@@ -83,3 +84,8 @@ RT_PROGRAM void exception()
   rtPrintf( "Caught exception 0x%X at launch index (%d,%d)\n", code, launch_index.x, launch_index.y );
   output_buffer[launch_index] = make_color( bad_color );
 }
+
+
+
+
+

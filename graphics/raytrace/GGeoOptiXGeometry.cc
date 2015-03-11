@@ -150,6 +150,18 @@ optix::Geometry GGeoOptiXGeometry::convertGeometry(GSolid* solid)
             sizeof( optix::int3 )*numFaces); 
     indexBuffer->unmap();
 
+
+   // hmm maybe use int4 for indexBuffer and stuff node index into slot4 rather than using separate nodeBuffer 
+    optix::Buffer nodeBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
+    unsigned int* nodeBuffer_Host = static_cast<unsigned int*>( nodeBuffer->map() );
+    geometry["nodeBuffer"]->setBuffer(nodeBuffer);
+    memcpy( static_cast<void*>( nodeBuffer_Host ),
+            static_cast<void*>( solid->getNodeIndices() ),
+            sizeof(unsigned int)*numFaces); 
+    nodeBuffer->unmap();
+
+
+
     optix::Buffer substanceBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
     unsigned int* substanceBuffer_Host = static_cast<unsigned int*>( substanceBuffer->map() );
     geometry["substanceBuffer"]->setBuffer(substanceBuffer);
