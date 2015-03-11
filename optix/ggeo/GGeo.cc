@@ -121,6 +121,12 @@ void GGeo::add(GMesh* mesh)
 void GGeo::add(GSolid* solid)
 {
     m_solids.push_back(solid);
+    unsigned int index = solid->getIndex(); // absolute node index, independent of the selection
+    //printf("GGeo::add solid %u \n", index);
+    m_solidmap[index] = solid ; 
+
+    GSolid* check = getSolid(index);
+    assert(check == solid);
 }
 
 void GGeo::add(GMaterial* material)
@@ -136,6 +142,19 @@ void GGeo::add(GBorderSurface* surface)
 void GGeo::add(GSkinSurface* surface)
 {
     m_skin_surfaces.push_back(surface);
+}
+
+
+
+GSolid* GGeo::getSolid(unsigned int index)
+{
+    GSolid* solid = NULL ; 
+    if(m_solidmap.find(index) != m_solidmap.end()) 
+    {
+        solid = m_solidmap[index] ;
+        assert(solid->getIndex() == index);
+    }
+    return solid ; 
 }
 
 
@@ -207,7 +226,7 @@ unsigned int GGeo::getNumSkinSurfaces()
 
 
 
-GSolid* GGeo::getSolid(unsigned int index)
+GSolid* GGeo::getSolidSimple(unsigned int index)
 {
     return m_solids[index];
 }

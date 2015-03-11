@@ -12,6 +12,9 @@
 #include <GLUTDisplay.h>
 
 #include "G4DAELoader.hh"
+#include "GSolid.hh"
+#include "GSubstance.hh"
+#include "GGeo.hh"
 
 #include "commonStructs.h"
 #include <string>
@@ -26,11 +29,17 @@
 #include "MeshScene.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 using namespace optix;
 
 
-
+enum RayType
+{ 
+   radiance_ray_type,
+   shadow_ray_type,
+   touch_ray_type
+};
 
 
 
@@ -45,6 +54,9 @@ public:
   //
   // Helper types
   //
+  
+  static unsigned int BAD_TOUCH ; 
+
   enum ShadeMode
   {
     SM_PHONG=0,
@@ -95,6 +107,11 @@ public:
   void setFile(const char* path ){ m_path = strdup(path) ; }
   char* getFile(){ return m_path ; } 
 
+public:
+  GGeo* getGGeo();
+private:
+  void setGGeo(GGeo* ggeo);  
+
 private:
   void initContext();
   void initLights();
@@ -123,6 +140,7 @@ private:
   int           m_frame;
   bool          m_animation;
   char*         m_path ;  
+  GGeo*         m_ggeo ;  
 };
 
 
@@ -133,7 +151,7 @@ private:
 //------------------------------------------------------------------------------
 
 
-
+unsigned int MeshViewer::BAD_TOUCH = 666666u ;
 
 
 MeshViewer::MeshViewer():
@@ -148,9 +166,22 @@ MeshViewer::MeshViewer():
   m_scene_epsilon     ( 1e-4f ),
   m_frame             ( 0 ),
   m_animation         ( false ),
-  m_path              ( NULL )
+  m_path              ( NULL ),
+  m_ggeo              ( NULL )
 {
 }
+
+
+GGeo* MeshViewer::getGGeo()
+{
+    return m_ggeo ; 
+}
+void MeshViewer::setGGeo(GGeo* ggeo)
+{
+    m_ggeo = ggeo ; 
+}
+
+
 
 
 void MeshViewer::initScene( InitialCameraData& camera_data )
@@ -178,8 +209,8 @@ void MeshViewer::initContext()
   m_context->setEntryPointCount( touch ? 2 : 1 ); 
   m_context->setStackSize( 1180 );
 
-  m_context[ "radiance_ray_type"   ]->setUint( 0u );
-  m_context[ "shadow_ray_type"     ]->setUint( 1u );
+  m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
+  m_context[ "shadow_ray_type"     ]->setUint( shadow_ray_type );
 
   m_context[ "max_depth"           ]->setInt( 5 );
   m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
@@ -228,9 +259,12 @@ void MeshViewer::initContext()
       // touch buffer doesnt need the OpenGL stuff done by createOutputBuffer, 
       // just want to read the node index returned
       //
-      m_context[ "touch_ray_type"     ]->setUint( 2u );
-      Buffer touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, 1, 1);
-      m_context[ "touch_buffer"        ]->set( touch_buffer );
+      m_context["touch_ray_type"]->setUint( touch_ray_type );
+
+      //RTformat format = RT_FORMAT_UNSIGNED_BYTE4 ;
+      RTformat format = RT_FORMAT_UNSIGNED_INT ;
+      m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, format, 1, 1));
+      m_context[ "bad_touch" ]->setUint( BAD_TOUCH );
 
       const std::string touch_camera_file = "touch_" + camera_file ; 
       const std::string touch_camera_name = "touch_" + camera_name ; 
@@ -353,6 +387,7 @@ void MeshViewer::initGeometry()
   {
      G4DAELoader loader( m_filename, m_context, m_geometry_group, m_material, m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
      loader.load();
+     setGGeo(loader.getGGeo());
      m_aabb = loader.getSceneBBox();
   } 
   else 
@@ -559,23 +594,47 @@ void MeshViewer::touch(unsigned char key, int x, int y)
     RTsize width, height;
     buffer->getSize( width, height );
 
-    m_context["touch_index"]->setUint(x, y );
+    m_context["touch_index"]->setUint(x, height - y ); // by inspection
     m_context["touch_dim"]->setUint(width, height);
-    m_context->launch( 1, 1u, 1u );
+
+    RTsize touch_width = 1u ; 
+    RTsize touch_height = 1u ; 
+    unsigned int touch_entry_point = 1u ; 
+
+    m_context->launch( touch_entry_point, touch_width, touch_height );
 
     Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
 
-    optix::uchar4* touchBuffer_Host = static_cast<optix::uchar4*>( touchBuffer->map() );
 
-    optix::uchar4 v = touchBuffer_Host[0] ;
-
-    //
+    //optix::uchar4* touchBuffer_Host = static_cast<optix::uchar4*>( touchBuffer->map() );
+    //optix::uchar4 v = touchBuffer_Host[0] ;
     // buffer BGRA layout discerned by comparison with bg_color 
-    //
     //printf("MeshViewer::touch  BGRA %u %u %u %u \n", v.x,v.y,v.z,v.w ); 
-    printf("MeshViewer::touch  RGBA %u %u %u %u \n", v.z,v.y,v.x,v.w ); 
+    //printf("MeshViewer::touch  RGBA %u %u %u %u \n", v.z,v.y,v.x,v.w ); 
+
+
+    unsigned int* touchBuffer_Host = static_cast<unsigned int*>( touchBuffer->map() );
+    unsigned int nodeIndex = touchBuffer_Host[0] ;
 
     touchBuffer->unmap();
+
+    assert(m_ggeo);
+
+    if(nodeIndex == BAD_TOUCH)
+    {
+        printf("MeshViewer::touch BAD_TOUCH %u \n", nodeIndex);
+    }
+    else
+    {
+        GSolid* solid = m_ggeo->getSolid(nodeIndex) ;
+        assert(solid);
+        printf("MeshViewer::touch nodeIndex %u solid %p  \n", nodeIndex, solid ); 
+        solid->Summary(NULL); // non-intuitive way to get the detail, fix this
+        GSubstance* substance = solid->getSubstance();
+        substance->Summary();
+    }
+
+
 }
 
 

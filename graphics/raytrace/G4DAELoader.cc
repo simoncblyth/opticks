@@ -49,13 +49,20 @@ G4DAELoader::G4DAELoader( const std::string&   filename,
   m_large_geom( large_geom),
   m_ASBuilder  (ASBuilder),
   m_ASTraverser(ASTraverser),
-  m_ASRefine   (ASRefine)
+  m_ASRefine   (ASRefine),
+  m_ggeo(NULL)
 {
   // Error checking on context and geometrygroup done in ModelLoader
 
   assert(material.get()); // MUST DEFINE MATERIAL ELSEWHERE
 }
 
+
+
+GGeo* G4DAELoader::getGGeo()
+{
+   return m_ggeo ; 
+}
 
 void G4DAELoader::load()
 {
@@ -85,9 +92,9 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
       printf("G4DAELoader::load with GGeo intermediary using AssimpGGeo + GGeoOptixGeometry %s \n", ggctrl );
 
       AssimpGGeo agg(ageo.getTree(), selection); 
-      GGeo* ggeo = agg.convert(ggctrl);
+      m_ggeo = agg.convert(ggctrl);
 
-      GGeoOptiXGeometry geom(ggeo);
+      GGeoOptiXGeometry geom(m_ggeo);
       
       geom.setGeometryGroup(m_geometry_group);
       geom.setContext(m_context);   

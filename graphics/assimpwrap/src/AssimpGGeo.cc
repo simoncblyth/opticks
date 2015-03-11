@@ -222,7 +222,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if( sslv )
         {
-            //printf("AssimpGGeo::convertMaterials materialIndex %u sslv %s  \n", i, sslv);
+            printf("AssimpGGeo::convertMaterials materialIndex %u sslv %s  \n", i, sslv);
             GSkinSurface*  gss = new GSkinSurface(name, i);
             gss->setSkinSurface(sslv);
             addProperties(gss, mat);
@@ -238,7 +238,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         }
         else
         {
-            //printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
+            printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
             GMaterial* gmat = new GMaterial(name, i);
             addProperties(gmat, mat);
             gg->add(gmat);

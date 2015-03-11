@@ -270,7 +270,11 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
 
     optix::Material material = m_context->createMaterial();
 
-    material->setClosestHitProgram(0, cfg->createProgram("material1.cu", "closest_hit_radiance"));
+    unsigned int raytype_radiance = 0 ;
+    material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1.cu", "closest_hit_radiance"));
+
+    unsigned int raytype_touch = 2 ;
+    material->setClosestHitProgram(raytype_touch   , cfg->createProgram("material1.cu", "closest_hit_touch"));
 
     unsigned int index = substance->getIndex();
 

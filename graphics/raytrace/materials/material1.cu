@@ -8,6 +8,7 @@ rtDeclareVariable(float3, contrast_color, , );
 
 
 rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
+rtDeclareVariable(PerRayData_touch, prd_touch, rtPayload, );
 
 //
 // 
@@ -15,8 +16,14 @@ RT_PROGRAM void closest_hit_radiance()
 {
   //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
   //prd_radiance.result = make_float3(0.f);
-
   prd_radiance.result = contrast_color ; 
-  //prd_radiance.node = node_index ; 
-
 }
+
+
+RT_PROGRAM void closest_hit_touch()
+{
+  prd_touch.result = contrast_color ; 
+  prd_touch.node = node_index ; 
+}
+
+

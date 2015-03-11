@@ -6,6 +6,9 @@
 #include <optixu/optixu_matrix_namespace.h>
 #include <string>
 
+
+class GGeo ; 
+
 class G4DAELoader
 {
 public:
@@ -22,6 +25,7 @@ public:
 
   void setIntersectProgram( optix::Program program );
 
+  GGeo* getGGeo(); 
 
   void load();
   void load( const optix::Matrix4x4& transform );
@@ -47,4 +51,6 @@ private:
   const char*            m_ASRefine;
 
   optix::Aabb            m_aabb;
+  GGeo*                  m_ggeo ; 
+
 };

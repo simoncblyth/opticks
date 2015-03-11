@@ -1,6 +1,7 @@
 #ifndef GGEO_H
 #define GGEO_H
 
+#include <map>
 #include <vector>
 #include "GVector.hh"
 
@@ -39,9 +40,12 @@ class GGeo {
     public:
         GMesh* getMesh(unsigned int index);  
         GMaterial* getMaterial(unsigned int index);  
-        GSolid* getSolid(unsigned int index);  
         GSkinSurface* getSkinSurface(unsigned int index);  
         GBorderSurface* getBorderSurface(unsigned int index);  
+
+    public:
+        GSolid* getSolid(unsigned int index);  
+        GSolid* getSolidSimple(unsigned int index);  
 
     public:
         gfloat3* getLow();
@@ -71,9 +75,11 @@ class GGeo {
         std::vector<GMaterial*> m_materials ; 
         std::vector<GSkinSurface*>  m_skin_surfaces ; 
         std::vector<GBorderSurface*>  m_border_surfaces ; 
-
         gfloat3* m_low ; 
         gfloat3* m_high ; 
+
+    private:
+        std::map<unsigned int, GSolid*>    m_solidmap ; 
 
 };
 
