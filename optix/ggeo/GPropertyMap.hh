@@ -8,7 +8,7 @@
 
 class GPropertyMap {
 
-  typedef std::map<std::string,GPropertyF*> GPropertyMapF_t ;
+  typedef std::map<std::string,GPropertyD*> GPropertyMapD_t ;
   public:
       GPropertyMap(const char* name, unsigned int index, const char* type);
       virtual ~GPropertyMap();
@@ -31,8 +31,8 @@ class GPropertyMap {
       void Summary(const char* msg="GPropertyMap::Summary");
 
   public:
-      void addProperty(const char* pname, float* values, float* domain, size_t length );
-      GPropertyF* getProperty(const char* pname);
+      void addProperty(const char* pname, float* values, float* domain, unsigned int length );
+      GPropertyD* getProperty(const char* pname);
       void setStandardDomain( float low, float high, float step);
       float getLow();
       float getHigh();
@@ -43,7 +43,7 @@ class GPropertyMap {
       std::string m_name ;
       unsigned int m_index ;
       std::string m_type ;
-      GPropertyMapF_t m_prop ; 
+      GPropertyMapD_t m_prop ; 
 
   private:
       float m_low ;

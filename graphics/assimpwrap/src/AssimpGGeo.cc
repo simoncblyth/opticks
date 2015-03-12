@@ -72,6 +72,7 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
     assert(nfloat % 2 == 0 && nfloat > 1 );
     unsigned int npair  = nfloat/2 ;
 
+    printf("AssimpGGeo::addPropertyVector k %s \n", k );
 
     std::vector<float> vals ; 
     std::vector<float> domain  ; 
@@ -115,6 +116,7 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
         //if( noscale && ( i < 5 || i > npair - 5) )
         //printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );
     }
+
     pmap->addProperty(k, vals.data(), domain.data(), vals.size() );
 }
 
@@ -164,6 +166,8 @@ void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material)
         aiMaterialProperty* property = material->mProperties[i] ;
         aiString key = property->mKey ; 
         const char* k = key.C_Str();
+
+        printf("AssimpGGeo::addProperties i %d k %s \n", i, k ); 
 
         // skip Assimp standard material props $clr.emissive $mat.shininess ?mat.name  etc..
         if( k[0] == '?' || k[0] == '$') continue ;   
@@ -293,6 +297,7 @@ void AssimpGGeo::convertStructure(GGeo* gg)
 {
     printf("AssimpGGeo::convertStructure\n");
     convertStructure(gg, m_tree->getRoot(), 0, NULL);
+    printf("AssimpGGeo::convertStructure found surfaces skin  %u outborder  %u inborder %u no %u \n", m_skin_surface, m_outborder_surface, m_inborder_surface, m_no_surface );
 
     if(m_selection)
     {
@@ -379,6 +384,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     unsigned int mti_p = pnode->getMaterialIndex();
     GMaterial* mt_p = gg->getMaterial(mti_p);
+
+    //printf("AssimpGGeo::convertStructureVisit nodeIndex %d mti %u mti_p %u msi %u \n", nodeIndex, mti, mti_p, msi );
 
     GSolid* solid = new GSolid(nodeIndex, transform, mesh, NULL );
 

@@ -159,7 +159,9 @@ assimpwrap-ggctrl(){
 
 assimpwrap-export(){
     export ASSIMPWRAP_GEOKEY="$(assimpwrap-geokey $1)"
-    export ASSIMPWRAP_QUERY="index:1,depth:2" 
+    #export ASSIMPWRAP_QUERY="index:1,depth:2" 
+    export ASSIMPWRAP_QUERY="range:5000:8000"
+
     export ASSIMPWRAP_MATERIAL="$(assimpwrap-material)" 
     export ASSIMPWRAP_GGCTRL="$(assimpwrap-ggctrl)" 
     export-

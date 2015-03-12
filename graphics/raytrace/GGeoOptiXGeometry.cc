@@ -187,7 +187,7 @@ optix::TextureSampler GGeoOptiXGeometry::makeWavelengthTexture(GSubstance* subst
     optix::TextureSampler sampler = m_context->createTextureSampler();
 
     GPropertyMap* imat = substance->getInnerMaterial();
-    GProperty<float>* abslength = imat->getProperty("ABSLENGTH");
+    GPropertyD* abslength = imat->getProperty("ABSLENGTH");
     substance->Summary( abslength ? "imat with ABSLENGTH" :  "imat miss ABSLENGTH" ); 
 
     //

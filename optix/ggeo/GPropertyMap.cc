@@ -40,11 +40,11 @@ char* GPropertyMap::digest()
 {
    // NB digest excludes the name
    MD5Digest dig ;
-   for(GPropertyMapF_t::iterator it=m_prop.begin() ; it != m_prop.end() ; it++ )
+   for(GPropertyMapD_t::iterator it=m_prop.begin() ; it != m_prop.end() ; it++ )
    {
        std::string key = it->first ;
        char* k = (char*)key.c_str();  
-       GPropertyF* prop = it->second ; 
+       GPropertyD* prop = it->second ; 
        dig.update(k, strlen(k));
 
        char* pdig = prop->digest();
@@ -62,7 +62,7 @@ const char* GPropertyMap::getName()
 char* GPropertyMap::getKeys()
 {
     std::stringstream ss ; 
-    for(GPropertyMapF_t::iterator it=m_prop.begin() ; it != m_prop.end() ; it++ )
+    for(GPropertyMapD_t::iterator it=m_prop.begin() ; it != m_prop.end() ; it++ )
     {
         ss << " " ;
         ss << it->first ;
@@ -114,14 +114,27 @@ bool GPropertyMap::isMaterial()
 }
 
 
-void GPropertyMap::addProperty(const char* pname, float* values, float* domain, size_t length )
+void GPropertyMap::addProperty(const char* pname, float* values, float* domain, unsigned int length )
 {
-   GProperty<float>* prop = new GProperty<float>(values, domain, length) ;  
-   prop->setStandardDomain( getLow(), getHigh(), getStep() );
+   printf("GPropertyMap::addProperty name %s pname %s length %u \n", getName(), pname, length );
+   assert(length < 1000);
+
+   double* dvalues = new double[length];
+   double* ddomain = new double[length];
+
+   for(unsigned int i=0 ; i < length ; i++)
+   {
+      dvalues[i] = values[i];
+      ddomain[i] = domain[i];
+   }
+
+   GProperty<double>* prop = new GProperty<double>(dvalues, ddomain, length) ;  
+   //prop->setStandardDomain( getLow(), getHigh(), getStep() );
+
    m_prop[pname] = prop ;  
 }
 
-GProperty<float>* GPropertyMap::getProperty(const char* pname)
+GPropertyD* GPropertyMap::getProperty(const char* pname)
 {
    return (m_prop.find(pname) != m_prop.end()) ? m_prop[pname] : NULL ;
 }
@@ -130,10 +143,10 @@ GProperty<float>* GPropertyMap::getProperty(const char* pname)
 void GPropertyMap::Summary(const char* msg)
 {
    printf("%s %s %d %s %s\n", msg, getType(), getIndex(), digest(), getName()); 
-   for(GPropertyMapF_t::iterator it=m_prop.begin() ; it != m_prop.end() ; it++ )
+   for(GPropertyMapD_t::iterator it=m_prop.begin() ; it != m_prop.end() ; it++ )
    {
        std::string key = it->first ;
-       GPropertyF* prop = it->second ; 
+       GPropertyD* prop = it->second ; 
        prop->Summary(key.c_str());
    } 
 }
