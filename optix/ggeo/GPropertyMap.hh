@@ -3,6 +3,7 @@
 
 #include "GProperty.hh"
 #include <string>
+#include <vector>
 #include <map>
 
 
@@ -10,6 +11,7 @@ class GPropertyMap {
 
   typedef std::map<std::string,GPropertyD*> GPropertyMapD_t ;
   public:
+      GPropertyMap(const char* name);
       GPropertyMap(const char* name, unsigned int index, const char* type);
       virtual ~GPropertyMap();
 
@@ -17,7 +19,7 @@ class GPropertyMap {
      // caller should free the char* returned after dumping 
       char* digest();
       char* getShortName(const char* prefix); 
-      char* getKeys(); 
+      std::string getKeysString(); 
 
   public:
       const char* getName();
@@ -31,24 +33,29 @@ class GPropertyMap {
       void Summary(const char* msg="GPropertyMap::Summary");
 
   public:
-      void addProperty(const char* pname, float* values, float* domain, unsigned int length );
-      GPropertyD* getProperty(const char* pname);
-      void setStandardDomain( float low, float high, float step);
-      float getLow();
-      float getHigh();
-      float getStep();
+      void setStandardDomain(GDomain<double>* standard_domain);
+      GDomain<double>* getStandardDomain();
 
+  public:
+      void addConstantProperty(const char* pname, double value );
+      void addProperty(const char* pname, double* values, double* domain, unsigned int length );
+      void addProperty(const char* pname, GPropertyD* prop);
+      unsigned int getNumProperties();
+
+  public:
+      GPropertyD* getPropertyByIndex(unsigned int index);
+      GPropertyD* getProperty(const char* pname);
+      std::vector<std::string>& getKeys();
 
   private:
       std::string m_name ;
-      unsigned int m_index ;
       std::string m_type ;
-      GPropertyMapD_t m_prop ; 
+      unsigned int m_index ;
 
-  private:
-      float m_low ;
-      float m_high ;
-      float m_step ;
+      GPropertyMapD_t m_prop ; 
+      std::vector<std::string> m_keys ;  // key ordering
+
+      GDomain<double>* m_standard_domain ; 
 
 
 };

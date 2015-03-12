@@ -10,14 +10,6 @@
 #include "GSubstance.hh"
 #include "GPropertyMap.hh"
 
-
-
-
-
-
-
-
-
 //  analog to AssimpOptiXGeometry based on intermediary GGeo 
 
 GGeoOptiXGeometry::~GGeoOptiXGeometry()
@@ -181,28 +173,43 @@ optix::Geometry GGeoOptiXGeometry::convertGeometry(GSolid* solid)
 
 
 
-
-optix::TextureSampler GGeoOptiXGeometry::makeWavelengthTexture(GSubstance* substance)
+GPropertyD* GGeoOptiXGeometry::getPropertyOrDefault(GPropertyMap* pmap, const char* pname)
 {
+    GSubstanceLib* lib = m_ggeo->getSubstanceLib();
+    GPropertyD* prop = pmap->getProperty(pname);
+    if(!prop)
+    {
+        prop = lib->getDefaultProperty(pname);
+        if(!prop) printf("GGeoOptiXGeometry::getPropertyOrDefault MISSING a default prop %s\n", pname);
+        assert(prop); // missing a default 
+    }
+    return prop;
+}
+
+
+void GGeoOptiXGeometry::addWavelengthTexture(optix::Material material, GSubstance* substance)
+{
+    substance->Summary(NULL); 
     optix::TextureSampler sampler = m_context->createTextureSampler();
 
     GPropertyMap* imat = substance->getInnerMaterial();
-    GPropertyD* abslength = imat->getProperty("ABSLENGTH");
-    substance->Summary( abslength ? "imat with ABSLENGTH" :  "imat miss ABSLENGTH" ); 
+    GDomain<double>* domain = imat->getStandardDomain();
+    unsigned int length = domain->getLength();
 
+    GPropertyMap* ptex = new GPropertyMap("ptex");
+    ptex->addProperty("refractive_index", getPropertyOrDefault( imat, "RINDEX" ));
+    ptex->addProperty("absorption_length",getPropertyOrDefault( imat, "ABSLENGTH" ));
+    ptex->addProperty("scattering_length",getPropertyOrDefault( imat, "RAYLEIGH" ));
+    ptex->addProperty("reemission_prob"  ,getPropertyOrDefault( imat, "REEMISSIONPROB" ));
+    ptex->Summary("ptex"); 
+
+
+    // GSubstance incorporates properties from innermaterial/outermaterial 
+    // and sometimes innersurface/outersurface so "GSubstanceBoundary" might be a better name 
     //
-    // GSubstance incorporates a variety of properties from 
-    //
-    //    innerMaterial
-    //    outerMaterial
-    //    innerSurface
-    //    outerSurface 
-    //
-    // * surface props are often not present
-    // * need to define a standard set of properties (enum and vector of keys)  
+    // * need to define a standard list of properties (enum and vector of keys)  
     // * handle missing qtys with default values ?  
-    // * need regularized wavelength domain, 
-    //   so all props are interpolated to standard wavelengths (like Chroma) 
+    //
     // * need to encode the wavelength ranges, so can correctly convert a wavelength into
     //   a texture coordinate to lookup
     // * textures have better performance when there is "spatial locality" ie repeated
@@ -211,8 +218,8 @@ optix::TextureSampler GGeoOptiXGeometry::makeWavelengthTexture(GSubstance* subst
     //
 
 
-    const unsigned int nx = 64 ;  // standard number of wavelength samples
-    const unsigned int ny = 64 ;  // number of wavelength dependent properties to include in the texture 
+    const unsigned int nx = length ;                      // standard number of wavelength samples
+    const unsigned int ny = ptex->getNumProperties()/4 ;  // number of wavelength dependent properties to include in the texture 
 
     optix::Buffer wavelengthBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
     float* buffer_data = static_cast<float*>( wavelengthBuffer->map() );
@@ -221,10 +228,11 @@ optix::TextureSampler GGeoOptiXGeometry::makeWavelengthTexture(GSubstance* subst
     for( unsigned int i = 0; i < nx; ++i ) { 
     for( unsigned int j = 0; j < ny; ++j ) { 
         unsigned int buf_index = ( (j)*nx + i )*4;  
-        buffer_data[buf_index] = 0.0f ;
-        buffer_data[buf_index] = 0.0f ;
-        buffer_data[buf_index] = 0.0f ;
-        buffer_data[buf_index] = 0.0f ;
+
+        buffer_data[buf_index]   = ptex->getPropertyByIndex(0)->getValue(i) ;
+        buffer_data[buf_index+1] = ptex->getPropertyByIndex(1)->getValue(i) ;
+        buffer_data[buf_index+2] = ptex->getPropertyByIndex(2)->getValue(i) ;
+        buffer_data[buf_index+3] = ptex->getPropertyByIndex(3)->getValue(i) ;
     }    
     }
     wavelengthBuffer->unmap(); 
@@ -259,7 +267,13 @@ optix::TextureSampler GGeoOptiXGeometry::makeWavelengthTexture(GSubstance* subst
     sampler->setArraySize(1u);        
     sampler->setBuffer(0u, 0u, wavelengthBuffer);
 
-    return sampler ; 
+
+    material["wavelength_texture"]->setTextureSampler(sampler);
+    material["wavelength_domain"]->setFloat(domain->getLow(), domain->getHigh(), domain->getStep() ); 
+
+    unsigned int index = substance->getIndex();
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+    material["contrast_color"]->setFloat(cfg->make_contrast_color(index));   // just for debugging
 }
 
 
@@ -276,13 +290,8 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
     unsigned int raytype_touch = 2 ;
     material->setClosestHitProgram(raytype_touch   , cfg->createProgram("material1.cu", "closest_hit_touch"));
 
-    unsigned int index = substance->getIndex();
+    addWavelengthTexture(material, substance);
 
-    material["contrast_color"]->setFloat(cfg->make_contrast_color(index));
-
-    optix::TextureSampler sampler = makeWavelengthTexture(substance);
-
-    material["wavelength_texture"]->setTextureSampler(sampler);
 
     return material ; 
 }

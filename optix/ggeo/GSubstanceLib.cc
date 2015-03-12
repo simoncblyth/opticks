@@ -6,8 +6,25 @@
 #include "stdio.h"
 #include "limits.h"
 
-GSubstanceLib::GSubstanceLib()
+GSubstanceLib::GSubstanceLib() : m_defaults(NULL) 
 {
+    // chroma/chroma/geometry.py
+    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
+
+    setStandardDomain( new GDomain<double>(60.f, 810.f, 20.f ));
+
+    GPropertyMap* defaults = new GPropertyMap("defaults", UINT_MAX, "defaults");
+    defaults->setStandardDomain(getStandardDomain());
+
+    // TODO: find way to avoid detector specific keys and default values being hardcoded ? 
+    // or at least move up to a higher level of the code 
+
+    defaults->addConstantProperty( "RINDEX",      1.f  );
+    defaults->addConstantProperty( "ABSLENGTH",     1e6  );
+    defaults->addConstantProperty( "RAYLEIGH",      1e6  );
+    defaults->addConstantProperty( "REEMISSIONPROB", 0.f );
+
+    setDefaults(defaults);
 }
 
 GSubstanceLib::~GSubstanceLib()
@@ -19,6 +36,29 @@ unsigned int GSubstanceLib::getNumSubstances()
    return m_keys.size();
 }
 
+void GSubstanceLib::setDefaults(GPropertyMap* defaults)
+{
+    m_defaults = defaults ;
+}
+GPropertyMap* GSubstanceLib::getDefaults()
+{
+    return m_defaults ;
+}
+void GSubstanceLib::setStandardDomain(GDomain<double>* standard_domain)
+{
+    m_standard_domain = standard_domain ; 
+}
+GDomain<double>* GSubstanceLib::getStandardDomain()
+{
+    return m_standard_domain ;
+}
+
+
+
+GProperty<double>* GSubstanceLib::getDefaultProperty(const char* name)
+{
+    return m_defaults ? m_defaults->getProperty(name) : NULL ;
+}
 
 GSubstance* GSubstanceLib::getSubstance(unsigned int index)
 {

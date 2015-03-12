@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include "GVector.hh"
+#include "GDomain.hh"
 
 class GMesh ; 
 class GSolid ; 

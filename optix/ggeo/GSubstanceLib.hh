@@ -5,9 +5,11 @@
 #include <vector>
 #include <string>
 
+#include "GDomain.hh"
+#include "GProperty.hh"
+
 class GSubstance ; 
 class GPropertyMap ; 
-
 
 class GSubstanceLib {
 
@@ -19,6 +21,15 @@ class GSubstanceLib {
       virtual ~GSubstanceLib();
 
   public:
+      void setStandardDomain(GDomain<double>* standard_domain);
+      GDomain<double>* getStandardDomain();
+
+  public:
+      void setDefaults(GPropertyMap* defaults);
+      GPropertyMap* getDefaults();
+      GProperty<double>* getDefaultProperty(const char* name);
+
+  public:
       unsigned int getNumSubstances();
       GSubstance* getSubstance(unsigned int index); 
 
@@ -28,6 +39,9 @@ class GSubstanceLib {
   private:
       std::map<std::string, GSubstance*> m_registry ; 
       std::vector<std::string> m_keys ; 
+
+      GDomain<double>* m_standard_domain ;  
+      GPropertyMap* m_defaults ;  
 
 };
 

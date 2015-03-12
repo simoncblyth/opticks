@@ -70,22 +70,18 @@ void GSubstance::Summary(const char* msg )
    assert(m_imaterial);
 
    char* dig = digest();
-
    char* imat = m_imaterial->getShortName("__dd__Materials__");
-   char* imatk = m_imaterial->getKeys() ;
-
    char* omat = m_omaterial ? m_omaterial->getShortName("__dd__Materials__") : NULL  ;
-   char* omatk = m_omaterial ? m_omaterial->getKeys() : NULL  ;
- 
-   char* isurk = m_isurface ? m_isurface->getKeys() : NULL ; 
-   char* osurk = m_osurface ? m_osurface->getKeys() : NULL ; 
+
+   std::string imatk = m_imaterial ? m_imaterial->getKeysString() : "" ;
+   std::string omatk = m_omaterial ? m_omaterial->getKeysString() : ""  ;
+   std::string isurk = m_isurface ? m_isurface->getKeysString() : "" ; 
+   std::string osurk = m_osurface ? m_osurface->getKeysString() : "" ; 
 
    char bmat[128];
    snprintf(bmat, 128,"imat/omat %s/%s", imat, omat );  
 
-
-   printf("%s %4d [%s] %50s %s %s isur %s osur %s \n", msg, m_index, dig, bmat, imatk, omatk, isurk, osurk );
-
+   printf("%s %4d [%s] %50s %s %s isur %s osur %s \n", msg, m_index, dig, bmat, imatk.c_str(), omatk.c_str(), isurk.c_str(), osurk.c_str() );
 
    /*
    if(m_imaterial) m_imaterial->Summary("imat");
@@ -96,12 +92,8 @@ void GSubstance::Summary(const char* msg )
 
    free(dig);
    free(imat);
-   free(imatk);
    free(omat);
-   free(omatk);
 
-   free(isurk);
-   free(osurk);
 }
 
 

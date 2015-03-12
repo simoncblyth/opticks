@@ -12,6 +12,9 @@ class GMaterial ;
 class GSolid ; 
 class GNode ;
 class GSubstance ;
+class GPropertyMap ;
+
+#include "GProperty.hh"
 
 class GGeoOptiXGeometry  : public OptiXGeometry 
 {
@@ -32,7 +35,9 @@ private:
 
     optix::Material convertSubstance(GSubstance* substance);
 
-    optix::TextureSampler makeWavelengthTexture(GSubstance* substance);
+    void addWavelengthTexture(optix::Material material, GSubstance* substance);
+
+    GPropertyD* getPropertyOrDefault(GPropertyMap* pmap, const char* pname);
 
     optix::Geometry convertGeometry(GSolid* solid);
 

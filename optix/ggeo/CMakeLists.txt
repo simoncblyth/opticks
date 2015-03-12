@@ -15,6 +15,8 @@ add_definitions()
 add_library(${name} SHARED 
                 md5digest.cc
                 GProperty.cc
+                GDomain.cc
+                GAry.cc
                 GPropertyMap.cc
                 GMaterial.cc
                 GSkinSurface.cc
@@ -44,6 +46,8 @@ GGeo.hh
 GMaterial.hh
 GMesh.hh
 GProperty.hh
+GDomain.hh
+GAry.hh
 GPropertyMap.hh
 GSolid.hh
 GSkinSurface.hh

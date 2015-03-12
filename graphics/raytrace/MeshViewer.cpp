@@ -207,6 +207,12 @@ void MeshViewer::initContext()
 
   m_context->setRayTypeCount( touch ? 3 : 2 );
   m_context->setEntryPointCount( touch ? 2 : 1 ); 
+
+  //bool printEnabled = false ; 
+  bool printEnabled = true ; 
+  m_context->setPrintEnabled(printEnabled); 
+  m_context->setPrintBufferSize(4096); 
+
   m_context->setStackSize( 1180 );
 
   m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );

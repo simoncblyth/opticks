@@ -5,6 +5,7 @@
 
 #include <assimp/types.h>
 #include <assimp/scene.h>
+#include <algorithm>
 
 #include "GVector.hh"
 #include "GMatrix.hh"
@@ -16,6 +17,8 @@
 #include "GSolid.hh"
 #include "GSubstance.hh"
 #include "GSubstanceLib.hh"
+#include "GDomain.hh"
+
 
 /*
         g4daeview.sh -g 3148:3155
@@ -33,7 +36,8 @@ AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection)
    m_inborder_surface(0),
    m_outborder_surface(0),
    m_skin_surface(0),
-   m_no_surface(0)
+   m_no_surface(0),
+   m_ggeo(NULL)
 {
     // see g4daenode.py as_optical_property_vector
 
@@ -43,6 +47,8 @@ AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection)
 
     m_domain_scale = hc_over_MeV ; 
     m_values_scale = 1.0f ; 
+
+
 }
 
 AssimpGGeo::~AssimpGGeo()
@@ -50,39 +56,38 @@ AssimpGGeo::~AssimpGGeo()
 }
 
 
+
 GGeo* AssimpGGeo::convert(const char* ctrl)
 {
     printf("AssimpGGeo::convert ctrl %s \n",ctrl);
-    GGeo* gg = new GGeo();
+
+    m_ggeo = new GGeo();
     const aiScene* scene = m_tree->getScene();
-    convertMaterials(scene, gg, ctrl);
-    convertMeshes(scene, gg, ctrl);
-    convertStructure(gg);
+
+    bool reverse = true ; // for ascending wavelength ordering
+    convertMaterials(scene, m_ggeo, ctrl, reverse );
+    convertMeshes(scene, m_ggeo, ctrl);
+    convertStructure(m_ggeo);
 
 #if 0
     gg->materialConsistencyCheck();
 #endif
-    return gg ;
+    return m_ggeo ;
 }
 
-void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterialProperty* property )
+void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterialProperty* property, bool reverse)
 {
+    float* data = (float*)property->mData ;
     unsigned int nbyte  = property->mDataLength ; 
     unsigned int nfloat = nbyte/sizeof(float) ;
     assert(nfloat % 2 == 0 && nfloat > 1 );
     unsigned int npair  = nfloat/2 ;
 
-    printf("AssimpGGeo::addPropertyVector k %s \n", k );
-
-    std::vector<float> vals ; 
-    std::vector<float> domain  ; 
-
-    float* data = (float*)property->mData ;
+    //printf("AssimpGGeo::addPropertyVector k %s \n", k );
 
     // dont scale placeholder -1 : 1 domain ranges
-    float dscale = data[0] > 0 && data[npair-1] > 0 ? m_domain_scale : 1.f ;   
-    float vscale = m_values_scale ; 
-
+    double dscale = data[0] > 0 && data[npair-1] > 0 ? m_domain_scale : 1.f ;   
+    double vscale = m_values_scale ; 
 
     // debug some funny domains : default zeros coming from somewhere 
     bool noscale =     ( pmap->isSkinSurface() 
@@ -105,16 +110,26 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
     //if(noscale) 
     //    printf("AssimpGGeo::addPropertyVector k %-35s nbyte %4u nfloat %4u npair %4u \n", k, nbyte, nfloat, npair);
 
-    for(unsigned int i=0 ; i < npair ; i++)
+    std::vector<double> vals ; 
+    std::vector<double> domain  ; 
+
+    for( unsigned int i = 0 ; i < npair ; i++ ) 
     {
-        float d0 = data[2*i] ; 
-        float d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ; 
+        double d0 = data[2*i] ; 
+        double d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ; 
+        double v = data[2*i+1]*vscale  ;
 
         domain.push_back( noscale ? d0 : d );
-        vals.push_back(   data[2*i+1]*vscale  );
+        vals.push_back( v );  
 
         //if( noscale && ( i < 5 || i > npair - 5) )
         //printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );
+    }
+
+    if(reverse)
+    {
+       std::reverse(vals.begin(), vals.end());
+       std::reverse(domain.begin(), domain.end());
     }
 
     pmap->addProperty(k, vals.data(), domain.data(), vals.size() );
@@ -147,19 +162,9 @@ const char* AssimpGGeo::getStringProperty(aiMaterial* material, const char* quer
 }
 
 
-void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material)
+void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material, bool reverse)
 {
     //
-    // TODO: pull this out into top level API
-    //  chroma/chroma/geometry.py
-    //  standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
-    //
-    float low(60.f);
-    float high(810.f);
-    float step(20.f);
-
-    pmap->setStandardDomain(low,high,step); 
-
     unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
     {
@@ -167,7 +172,7 @@ void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material)
         aiString key = property->mKey ; 
         const char* k = key.C_Str();
 
-        printf("AssimpGGeo::addProperties i %d k %s \n", i, k ); 
+        //printf("AssimpGGeo::addProperties i %d k %s \n", i, k ); 
 
         // skip Assimp standard material props $clr.emissive $mat.shininess ?mat.name  etc..
         if( k[0] == '?' || k[0] == '$') continue ;   
@@ -175,7 +180,7 @@ void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material)
         aiPropertyTypeInfo type = property->mType ; 
         if(type == aiPTI_Float)
         { 
-            addPropertyVector(pmap, k, property);
+            addPropertyVector(pmap, k, property, reverse);
         }
         else if( type == aiPTI_String )
         {
@@ -208,8 +213,10 @@ const char* AssimpGGeo::g4dae_bordersurface_physvolume1 = "g4dae_bordersurface_p
 const char* AssimpGGeo::g4dae_bordersurface_physvolume2 = "g4dae_bordersurface_physvolume2" ;
 const char* AssimpGGeo::g4dae_skinsurface_volume = "g4dae_skinsurface_volume" ;
 
-void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* query)
+void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* query, bool reverse)
 {
+    GDomain<double>* standard_domain = gg->getSubstanceLib()->getStandardDomain(); 
+
     for(unsigned int i = 0; i < scene->mNumMaterials; i++)
     {
         aiMaterial* mat = scene->mMaterials[i] ;
@@ -226,25 +233,28 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if( sslv )
         {
-            printf("AssimpGGeo::convertMaterials materialIndex %u sslv %s  \n", i, sslv);
+            //printf("AssimpGGeo::convertMaterials materialIndex %u sslv %s  \n", i, sslv);
             GSkinSurface*  gss = new GSkinSurface(name, i);
+            gss->setStandardDomain(standard_domain);
             gss->setSkinSurface(sslv);
-            addProperties(gss, mat);
+            addProperties(gss, mat, reverse);
             gg->add(gss);
         } 
         else if (bspv1 && bspv2 )
         {
-            printf("AssimpGGeo::convertMaterials materialIndex %u\n    bspv1 %s\n    bspv2 %s \n", i, bspv1, bspv2 );
+            //printf("AssimpGGeo::convertMaterials materialIndex %u\n    bspv1 %s\n    bspv2 %s \n", i, bspv1, bspv2 );
             GBorderSurface* gbs = new GBorderSurface(name, i);
+            gbs->setStandardDomain(standard_domain);
             gbs->setBorderSurface(bspv1, bspv2);
-            addProperties(gbs, mat);
+            addProperties(gbs, mat, reverse);
             gg->add(gbs);
         }
         else
         {
-            printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
+            //printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
             GMaterial* gmat = new GMaterial(name, i);
-            addProperties(gmat, mat);
+            gmat->setStandardDomain(standard_domain);
+            addProperties(gmat, mat, reverse);
             gg->add(gmat);
         }
 
@@ -433,8 +443,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     //substance->Summary("subst");
 
     solid->setSubstance(substance);  
-
-
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);

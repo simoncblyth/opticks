@@ -11,6 +11,7 @@ class GMaterial ;
 class GPropertyMap ;
 class GSolid ; 
 
+
 struct aiMaterial ;
 struct aiMaterialProperty ;
 struct aiScene ;
@@ -20,7 +21,6 @@ public:
     AssimpGGeo(AssimpTree* tree, AssimpSelection* selection);
     virtual ~AssimpGGeo();
 
-public:
     GGeo* convert(const char* ctrl);
 
 public:
@@ -29,9 +29,9 @@ public:
     static const char* g4dae_skinsurface_volume ; 
 
 protected:
-    void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl);
-    void addProperties(GPropertyMap* pmap, aiMaterial* material);
-    void addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterialProperty* property );
+    void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl, bool reverse );
+    void addProperties(GPropertyMap* pmap, aiMaterial* material, bool reverse);
+    void addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterialProperty* property, bool reverse);
     const char* getStringProperty(aiMaterial* mat, const char* query);
 
 protected:
@@ -53,6 +53,8 @@ private:
     float m_domain_scale ; 
     float m_values_scale ; 
     bool m_domain_reciprocal ; 
+
+    GGeo* m_ggeo ;
 
     unsigned int m_skin_surface ; 
     unsigned int m_inborder_surface ; 
