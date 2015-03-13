@@ -410,7 +410,7 @@ raytrace-x(){
 
 
 raytrace-lldb(){
-  DEBUG=lldb raytrace-v $*
+  DEBUG=lldb raytrace-x $*
 }
 
 

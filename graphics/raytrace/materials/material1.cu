@@ -39,12 +39,12 @@ RT_PROGRAM void closest_hit_touch()
   prd_touch.texlookup_g = wlookup( NM_GREEN , 0.5f ) ;
   prd_touch.texlookup_r = wlookup( NM_RED   , 0.5f ) ;
 
-  rtPrintf("material1.cu::closest_hit_touch node %d \n", node_index);
   for(int i=-5 ; i < 45 ; i++ )
   { 
      float wl = wavelength_domain.x + wavelength_domain.z*i ; 
      float4 lookup = wlookup( wl, 0.5f ); 
-     rtPrintf("i %2d wl %10.3f   lookup  %10.3f %10.3f %10.3f %10.3f \n", 
+     rtPrintf("material1.cu::closest_hit_touch node %d   i %2d wl %10.3f   lookup  %10.3f %10.3f %10.3f %10.3f \n", 
+        node_index,
         i,
         wl,
         lookup.x,
@@ -53,5 +53,4 @@ RT_PROGRAM void closest_hit_touch()
         lookup.w);
   } 
 }
-
 

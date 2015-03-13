@@ -219,6 +219,7 @@ void MeshViewer::initContext()
   bool printEnabled = true ; 
   m_context->setPrintEnabled(printEnabled); 
   m_context->setPrintBufferSize(8192); 
+  m_context->setPrintLaunchIndex(0,0,0);
 
   m_context->setStackSize( 1180 );  // original setting
   //m_context->setStackSize( 2180 );

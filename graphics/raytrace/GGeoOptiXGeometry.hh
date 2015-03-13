@@ -35,7 +35,7 @@ private:
 
     optix::Material convertSubstance(GSubstance* substance);
 
-    void addWavelengthTexture(optix::Material material, GSubstance* substance);
+    void addWavelengthTexture(optix::Material& material, GSubstance* substance);
 
     GPropertyD* getPropertyOrDefault(GPropertyMap* pmap, const char* pname);
 

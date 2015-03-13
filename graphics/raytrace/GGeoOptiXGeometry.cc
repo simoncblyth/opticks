@@ -188,7 +188,7 @@ GPropertyD* GGeoOptiXGeometry::getPropertyOrDefault(GPropertyMap* pmap, const ch
 }
 
 
-void GGeoOptiXGeometry::addWavelengthTexture(optix::Material material, GSubstance* substance)
+void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstance* substance)
 {
     substance->Summary(NULL); 
     optix::TextureSampler sampler = m_context->createTextureSampler();
@@ -203,9 +203,7 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material material, GSubstanc
     ptex->addProperty("scattering_length",getPropertyOrDefault( imat, "RAYLEIGH" ));
     ptex->addProperty("reemission_prob"  ,getPropertyOrDefault( imat, "REEMISSIONPROB" ));
 
-    ptex->addProperty("debug_ramp"  , m_ggeo->getSubstanceLib()->getRamp());
-
-
+    //ptex->addProperty("debug_ramp"  , m_ggeo->getSubstanceLib()->getRamp());
     //ptex->Summary("ptex"); 
 
 
@@ -225,6 +223,8 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material material, GSubstanc
 
     const unsigned int nx = length ;                      // standard number of wavelength samples
     const unsigned int ny = ptex->getNumProperties()/4 ;  // number of wavelength dependent properties to include in the texture 
+
+    printf("GGeoOptiXGeometry::addWavelengthTexture nx %u ny %u \n", nx, ny );
 
     optix::Buffer wavelengthBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
     float* buffer_data = static_cast<float*>( wavelengthBuffer->map() );

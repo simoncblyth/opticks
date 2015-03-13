@@ -181,6 +181,55 @@ OptiX 3.6.3 problems
     -bash-4.1$ 
  
 
+OptiX_370b2 rtPrintf bizarre bug
+----------------------------------
+
+Whilst debugging wavelength texture lookups with
+a program which is only invoked for the single touched pixel 
+under the mouse::
+
+     33 RT_PROGRAM void closest_hit_touch()
+     34 {
+     35   prd_touch.result = contrast_color ;
+     36   prd_touch.node = node_index ; 
+     37   
+     38   prd_touch.texlookup_b = wlookup( NM_BLUE  , 0.5f ) ;
+     39   prd_touch.texlookup_g = wlookup( NM_GREEN , 0.5f ) ;
+     40   prd_touch.texlookup_r = wlookup( NM_RED   , 0.5f ) ;
+     41   
+     42   for(int i=-5 ; i < 45 ; i++ )
+     43   { 
+     44      float wl = wavelength_domain.x + wavelength_domain.z*i ;
+     45      float4 lookup = wlookup( wl, 0.5f ); 
+     46      rtPrintf("material1.cu::closest_hit_touch node %d   i %2d wl %10.3f   lookup  %10.3f %10.3f %10.3f %10.3f \n",
+     47         node_index,
+     48         i,
+     49         wl,
+     50         lookup.x,
+     51         lookup.y,
+     52         lookup.z,
+     53         lookup.w);
+     54   }     
+     55 } 
+
+Get the expected output, BUT on splitting the rtPrintf 
+into two calls get **Unknown error**.  
+    OptiX Error: Unknown error (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Assertion failed: "Traits::getNext(m_cur) != 0", [7143516]) 
+
+Unfortunately the only way to discover the source of 
+the problem is by "binary search" trial and error::
+
+Moral:
+
+* never make largescale changes to optix programs without testing, 
+  always test after making small focussed changes 
+
+* limit use rtPrintf to only one per program ?
+
+* dont leave rtPrintf lying around, just use one at a time whilst debugging
+  and then comment them out
+
+
 
 Transparency/blending
 -----------------------
