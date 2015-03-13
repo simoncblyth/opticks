@@ -399,6 +399,95 @@ things to try
   with subsequent optix launches 
 
 
+
+OptiX and CUDA interop
+------------------------
+
+Doc says, if the application creates a CUDA context before OptiX, 
+the applicaton should make sure to use the below
+to ensure subsequent maximum performance from OptiX.::
+
+    cudaSetDeviceFlags(cudaDeviceMapHost | cudaDeviceLmemResizeToMax);
+
+
+::
+
+    delta:OptiX_370b2_sdk blyth$ find . -name '*.cpp' -exec grep -H cudaSet {} \;
+    ./ocean/ocean.cpp:    cudaSetDevice(m_cuda_device);
+    ./ocean/ocean.cpp:  cudaSetDevice( m_cuda_device );
+    ./simplePrime/simplePrimeCommon.cpp:    CHK_CUDA( cudaSetDevice(i) );
+    ./simplePrimeInstancing/simplePrimeCommon.cpp:    CHK_CUDA( cudaSetDevice(i) );
+    ./simplePrimeMasking/simplePrimeCommon.cpp:    CHK_CUDA( cudaSetDevice(i) );
+    ./simplePrimepp/simplePrimeCommon.cpp:    CHK_CUDA( cudaSetDevice(i) );
+    ./simplePrimeppMultiBuffering/simplePrimeCommon.cpp:    CHK_CUDA( cudaSetDevice(i) );
+    ./simplePrimeppMultiGpu/simplePrimeCommon.cpp:    CHK_CUDA( cudaSetDevice(i) );
+    ./simplePrimeppMultiGpu/simplePrimeppMultiGpu.cpp:      CHK_CUDA( cudaSetDevice(int(i)) );
+    ./simplePrimeppMultiGpu/simplePrimeppMultiGpu.cpp:      CHK_CUDA( cudaSetDevice(int(i)) );
+    ./simplePrimeppMultiGpu/simplePrimeppMultiGpu.cpp:      CHK_CUDA( cudaSetDevice(int(i)) );
+    ./simplePrimeppMultiGpu/simplePrimeppMultiGpu.cpp:      CHK_CUDA( cudaSetDevice(int(i)) );
+    delta:OptiX_370b2_sdk blyth$ 
+    delta:OptiX_370b2_sdk blyth$ 
+    delta:OptiX_370b2_sdk blyth$ 
+    delta:OptiX_370b2_sdk blyth$ pwd
+    /usr/local/env/cuda/OptiX_370b2_sdk
+
+
+
+/usr/local/env/cuda/OptiX_370b2_sdk/ocean/ocean.cpp::
+
+    340     //
+    341     // Setup cufft state
+    342     //
+    343 
+    344     const unsigned int fft_input_size  = FFT_WIDTH * FFT_HEIGHT * sizeof(float2);
+    345 
+    346     m_context->launch( 0, 0 );
+    ///
+    ///     presumably ensures OptiX is first to setup CUDA context 
+    ///
+    347 
+    348     m_cuda_device = OptiXDeviceToCUDADevice( m_context, 0 );
+    ///
+    ///     helper method: OptiX ordinal 0 -> CUDA ordinal 
+    ///    
+    349 
+    350     if ( m_cuda_device < 0 ) {
+    351       std::cerr << "OptiX device 0 must be a valid CUDA device number.\n";
+    352       exit(1);
+    353     }
+    354 
+    355     // output the CUFFT results directly into Optix buffer
+    356     cudaSetDevice(m_cuda_device);
+    357 
+    358     cutilSafeCall( cudaMalloc( reinterpret_cast<void**>( &m_d_h0 ), fft_input_size ) );
+    ///
+    ///     plain CUDA allocation of space on device 
+    ///
+    359 
+    360     m_h_h0      = new float2[FFT_WIDTH * FFT_HEIGHT];
+    361     generateH0( m_h_h0 );
+    /// 
+    ///     host side generation, but it didnt have to be
+    ///
+    362 
+    363     cutilSafeCall( cudaMemcpy( m_d_h0, m_h_h0, fft_input_size, cudaMemcpyHostToDevice) );
+    ///
+    ///     host to device copy  
+    364 
+    365     memcpy( m_h0_buffer->map(), m_h_h0, fft_input_size );
+    366     m_h0_buffer->unmap();
+    ///
+    ///    copy from host into OptiX buffer
+    ///
+    367 
+    368     // Finalize
+    369     m_context->validate();
+    370     m_context->compile();
+
+
+
+
+
 OptiX and OpenGL interop : OptiX depth buffer calculation
 ------------------------------------------------------------
 
@@ -1161,6 +1250,9 @@ optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-samples-install-dir); }
 optix-scd(){ cd $(optix-sdir); }
 optix-icd(){ cd $(optix-idir); }
+
+optix-doc(){ cd $(optix-fold)/OptiX/doc ; }
+
 
 
 optix-readlink(){ readlink $(optix-fold)/OptiX ; }
