@@ -203,6 +203,153 @@ OptiX and atomics
   resident on the device and can only be read by the device that wrote it.
 
 
+OptiX and curand ?
+-------------------
+
+* :google:`optix curand`
+
+* https://devtalk.nvidia.com/search/more/sitecommentsearch/curand%20optix/
+* https://devtalk.nvidia.com/default/topic/759883/random-number-streams/?offset=1
+* https://devtalk.nvidia.com/default/topic/770325/curand_init-within-optix/
+
+Suggest that it can be made to work
+
+Chroma curand
+~~~~~~~~~~~~~~
+
+chroma/chroma/cuda/random.h::
+
+    001 #ifndef __RANDOM_H__
+      2 #define __RANDOM_H__
+      3 
+      4 #include <curand_kernel.h>
+      5 
+      6 #include "physical_constants.h"
+      7 #include "interpolate.h"
+      8 
+      9 __device__ float
+     10 uniform(curandState *s, const float &low, const float &high)
+     11 {
+     12     return low + curand_uniform(s)*(high-low);
+     13 }
+    ///   all the random funcs have curandState* s argument 
+    ...
+    135 __global__ void
+    136 init_rng(int nthreads, curandState *s, unsigned long long seed,
+    137      unsigned long long offset)
+    138 {
+    139     int id = blockIdx.x*blockDim.x + threadIdx.x;
+    140 
+    141     if (id >= nthreads)
+    142     return;
+    143 
+    144     curand_init(seed, id, offset, &s[id]);
+    145 }
+
+
+chroma/chroma/cuda/propagate_hit.cu::
+
+    128 __global__ void
+    129 propagate_hit(
+    ...
+    134       curandState *rng_states,
+    ...   
+    ...  
+    164     int id = blockIdx.x*blockDim.x + threadIdx.x;
+    165 
+    166     if (id >= nthreads)
+    167     return;
+    168 
+    169     g = &sg;
+    170 
+    171     curandState rng = rng_states[id];
+    ...
+    208             generate_cerenkov_photon(p, cs, rng );
+
+
+chroma/chroma/gpu/tools.py::
+
+    107 init_rng_src = """
+    108 #include <curand_kernel.h>
+    109 
+    110 extern "C"
+    111 {
+    112 
+    113 __global__ void init_rng(int nthreads, curandState *s, unsigned long long seed, unsigned long long offset)
+    114 {
+    115     int id = blockIdx.x*blockDim.x + threadIdx.x;
+    116 
+    117     if (id >= nthreads)
+    118         return;
+    119 
+    120     curand_init(seed, id, offset, &s[id]);
+    121 }
+    122 
+    123 } // extern "C"
+    124 """
+    125 
+    126 def get_rng_states(size, seed=1):
+    127     "Return `size` number of CUDA random number generator states."
+    128     rng_states = cuda.mem_alloc(size*characterize.sizeof('curandStateXORWOW', '#include <curand_kernel.h>'))
+    129 
+    130     module = pycuda.compiler.SourceModule(init_rng_src, no_extern_c=True)
+    131     init_rng = module.get_function('init_rng')
+    132 
+    133     init_rng(np.int32(size), rng_states, np.uint64(seed), np.uint64(0), block=(64,1,1), grid=(size//64+1,1))
+    134 
+    135     return rng_states
+
+
+
+optix exception codes
+-----------------------
+
+/Developer/OptiX/include/internal/optix_declarations.h::
+
+    197 typedef enum
+    198 {
+    199   RT_EXCEPTION_PROGRAM_ID_INVALID           = 0x3EE,    /*!< Program ID not valid       */
+    200   RT_EXCEPTION_TEXTURE_ID_INVALID           = 0x3EF,    /*!< Texture ID not valid       */
+    201   RT_EXCEPTION_BUFFER_ID_INVALID            = 0x3FA,    /*!< Buffer ID not valid        */
+    202   RT_EXCEPTION_INDEX_OUT_OF_BOUNDS          = 0x3FB,    /*!< Index out of bounds        */
+    203   RT_EXCEPTION_STACK_OVERFLOW               = 0x3FC,    /*!< Stack overflow             */
+    204   RT_EXCEPTION_BUFFER_INDEX_OUT_OF_BOUNDS   = 0x3FD,    /*!< Buffer index out of bounds */
+    205   RT_EXCEPTION_INVALID_RAY                  = 0x3FE,    /*!< Invalid ray                */
+    206   RT_EXCEPTION_INTERNAL_ERROR               = 0x3FF,    /*!< Internal error             */
+    207   RT_EXCEPTION_USER                         = 0x400,    /*!< User exception             */
+    208 
+    209   RT_EXCEPTION_ALL                          = 0x7FFFFFFF  /*!< All exceptions        */
+    210 } RTexception;
+
+
+testing optix with curand
+---------------------------
+
+When attempting to use curand subsequences getting RT_EXCEPTION_STACK_OVERFLOW::
+
+    Caught exception 0x3FC at launch index (144,0)
+    Caught exception 0x3FC at launch index (0,0)
+    Caught exception 0x3FC at launch index (96,0)
+
+with the MeshViewer original setting of stack size::
+
+    m_context->setStackSize( 1180 );
+
+Winding up the stack size to 10000 succeeds to run, but unusably slowly.
+
+things to try
+~~~~~~~~~~~~~~
+
+* hmm, could subsequent optix launches reuse a buffer initialized on the
+  first launch ?  to enable a single initializing launch 
+* hmm, but optix is unusable with the large stacksizes needed 
+  for curand_init with subsequences and probably changing stack size 
+  will invalidate the context ?
+* what about using plain CUDA kernel call to 
+  do curand_init and prepare the curandState buffer for interop
+  with subsequent optix launches 
+
+
 OptiX and OpenGL interop : OptiX depth buffer calculation
 ------------------------------------------------------------
 
@@ -298,15 +445,6 @@ OptiX OpenGL interop
 ---------------------
 
 * :google:`OptiX OpenGL interop`
-
-
-
-OptiX and curand ?
--------------------
-
-* :google:`optix curand`
-
-  * https://devtalk.nvidia.com/default/topic/759883/random-number-streams/?offset=1
 
 Caveats
 ----------

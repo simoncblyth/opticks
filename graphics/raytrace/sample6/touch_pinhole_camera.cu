@@ -57,13 +57,38 @@ RT_PROGRAM void touch_pinhole_camera()
   optix::Ray ray = optix::make_Ray(ray_origin, ray_direction, touch_ray_type, scene_epsilon, RT_DEFAULT_MAX);
 
   PerRayData_touch prd;
-  prd.importance = 1.f;
   prd.depth = 0;
   prd.node = bad_touch ;  
 
   rtTrace(top_object, ray, prd);
 
   touch_buffer[launch_index] = prd.node ;
+
+  // only touch single pixels, so can be verbose here
+  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  node %d \n", prd.node );
+
+  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_l  %10.3f %10.3f %10.3f %10.3f \n", 
+     prd.texlookup_l.x,
+     prd.texlookup_l.y,
+     prd.texlookup_l.z,
+     prd.texlookup_l.w );
+
+  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_m  %10.3f %10.3f %10.3f %10.3f \n", 
+     prd.texlookup_m.x,
+     prd.texlookup_m.y,
+     prd.texlookup_m.z,
+     prd.texlookup_m.w );
+
+  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_r  %10.3f %10.3f %10.3f %10.3f \n", 
+     prd.texlookup_r.x,
+     prd.texlookup_r.y,
+     prd.texlookup_r.z,
+     prd.texlookup_r.w );
+
+
+
+
+
 }
 
 RT_PROGRAM void exception()

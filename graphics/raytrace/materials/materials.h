@@ -19,9 +19,12 @@ struct PerRayData_shadow
 struct PerRayData_touch
 {
   float3 result;
-  float  importance;  // This is ignored in this sample.  See phong.h for use.
   int    depth;
   unsigned int  node;
+  float4 texlookup_l ;
+  float4 texlookup_m ;
+  float4 texlookup_r ;
+
 };
 
 

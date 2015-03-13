@@ -31,7 +31,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+
+
 using namespace optix;
+
+#include "curand.h"
+#include "curand_kernel.h"
+
 
 
 enum RayType
@@ -213,7 +220,10 @@ void MeshViewer::initContext()
   m_context->setPrintEnabled(printEnabled); 
   m_context->setPrintBufferSize(4096); 
 
-  m_context->setStackSize( 1180 );
+  //m_context->setStackSize( 1180 );  // original setting
+  //m_context->setStackSize( 2180 );
+   m_context->setStackSize( 4096 );
+  //m_context->setStackSize( 10000 );  // very slow, but succeeds to curand_init with id subsequences
 
   m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
   m_context[ "shadow_ray_type"     ]->setUint( shadow_ray_type );
@@ -221,6 +231,14 @@ void MeshViewer::initContext()
   m_context[ "max_depth"           ]->setInt( 5 );
   m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
   m_context[ "output_buffer"       ]->set( createOutputBuffer(RT_FORMAT_UNSIGNED_BYTE4, WIDTH, HEIGHT) );
+
+
+  Buffer rng_states = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER, WIDTH*HEIGHT );
+
+  unsigned int curandState_size = sizeof(curandState) ; 
+  printf("MeshViewer::initContext curandState_size %u \n", curandState_size );
+  rng_states->setElementSize(curandState_size);
+  m_context[ "rng_states"          ]->set(rng_states);
 
 
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
@@ -252,12 +270,9 @@ void MeshViewer::initContext()
   m_context[ "bad_color" ]->setFloat( 0.0f, 1.0f, 0.0f );
 
   cfg->setMissProgram(0, "constantbg.cu", "miss" ); 
-  m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // 
+  m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
 
-//
-// In [6]: map(int,np.array([0.34,0.55,0.85])*255)
-// Out[6]: [86, 140, 216]
-//
+
 
   if(touch)
   {

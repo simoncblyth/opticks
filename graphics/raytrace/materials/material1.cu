@@ -25,10 +25,25 @@ RT_PROGRAM void closest_hit_touch()
 {
   prd_touch.result = contrast_color ; 
   prd_touch.node = node_index ; 
+  
+  //prd_touch.texlookup_l = tex2D( wavelength_texture, 0.f,  0.f ) ;
+  //prd_touch.texlookup_m = tex2D( wavelength_texture, 0.5f, 0.f ) ;
+  //prd_touch.texlookup_r = tex2D( wavelength_texture, 1.f,  0.f ) ;
 
-  float4 pt = tex2D( wavelength_texture, 0.f, 0.f ) ;
+  prd_touch.texlookup_l = tex2D( wavelength_texture, 0.0f,  0.0f ) ;
+  prd_touch.texlookup_m = tex2D( wavelength_texture, 0.0f,  0.5f ) ;
+  prd_touch.texlookup_r = tex2D( wavelength_texture, 0.0f,  1.0f ) ;
 
-  rtPrintf("material1.cu::closest_hit_touch %d %10.3f %10.3f %10.3f %10.3f \n", node_index, pt.x, pt.y, pt.z, pt.w );
+
+
+
+  /*
+  rtPrintf("material1.cu::closest_hit_touch %d %10.3f %10.3f %10.3f %10.3f \n", node_index, 
+    prd_touch.texlookup.x,
+    prd_touch.texlookup.y,
+    prd_touch.texlookup.z,
+    prd_touch.texlookup.w);
+  */
 
 }
 

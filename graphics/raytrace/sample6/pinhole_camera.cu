@@ -22,6 +22,12 @@
 #include <optix_world.h>
 #include "helpers.h"
 
+#define TEST_CURAND
+#ifdef TEST_CURAND
+#include <curand_kernel.h>
+#endif
+
+
 using namespace optix;
 
 struct PerRayData_radiance
@@ -47,6 +53,33 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 rtDeclareVariable(float, time_view_scale, , ) = 1e-6f;
 
 //#define TIME_VIEW
+
+#ifdef TEST_CURAND
+rtBuffer<curandState, 1> rng_states ;
+#endif
+
+
+
+RT_PROGRAM void initialization_camera()
+{
+#ifdef TEST_CURAND
+  unsigned long long     id = launch_index.x + launch_dim.x * launch_index.y ; 
+  
+  // using id as seed works
+  // unsigned long long   seed      = id ;
+  // unsigned long long subsequence = 0 ;
+  // unsigned long long offset      = 0 ;
+
+  // using id as subsequence (like chroma) gives exception  0x3FC : RT_EXCEPTION_STACK_OVERFLOW 
+  unsigned long long   seed      = 0 ;
+  unsigned long long subsequence = id ;
+  unsigned long long offset      = 0 ;
+
+  curand_init(seed, subsequence, offset, &rng_states[id]);
+
+#endif
+}
+
 
 RT_PROGRAM void pinhole_camera()
 {

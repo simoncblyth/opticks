@@ -201,7 +201,7 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material material, GSubstanc
     ptex->addProperty("absorption_length",getPropertyOrDefault( imat, "ABSLENGTH" ));
     ptex->addProperty("scattering_length",getPropertyOrDefault( imat, "RAYLEIGH" ));
     ptex->addProperty("reemission_prob"  ,getPropertyOrDefault( imat, "REEMISSIONPROB" ));
-    ptex->Summary("ptex"); 
+    //ptex->Summary("ptex"); 
 
 
     // GSubstance incorporates properties from innermaterial/outermaterial 
