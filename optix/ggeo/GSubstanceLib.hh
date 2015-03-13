@@ -28,6 +28,7 @@ class GSubstanceLib {
       void setDefaults(GPropertyMap* defaults);
       GPropertyMap* getDefaults();
       GProperty<double>* getDefaultProperty(const char* name);
+      GProperty<double>* getRamp();
 
   public:
       unsigned int getNumSubstances();
@@ -42,6 +43,7 @@ class GSubstanceLib {
 
       GDomain<double>* m_standard_domain ;  
       GPropertyMap* m_defaults ;  
+      GProperty<double>* m_ramp ;  
 
 };
 

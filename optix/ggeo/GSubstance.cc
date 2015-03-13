@@ -65,7 +65,7 @@ char* GSubstance::digest()
 
 
 
-void GSubstance::Summary(const char* msg )
+void GSubstance::Summary(const char* msg, unsigned int nline)
 {
    assert(m_imaterial);
 
@@ -80,20 +80,16 @@ void GSubstance::Summary(const char* msg )
 
    char bmat[128];
    snprintf(bmat, 128,"imat/omat %s/%s", imat, omat );  
-
    printf("%s %4d [%s] %50s %s %s isur %s osur %s \n", msg, m_index, dig, bmat, imatk.c_str(), omatk.c_str(), isurk.c_str(), osurk.c_str() );
 
-   /*
-   if(m_imaterial) m_imaterial->Summary("imat");
-   if(m_omaterial) m_omaterial->Summary("omat");
-   if(m_isurface) m_isurface->Summary("isurf");
-   if(m_osurface) m_osurface->Summary("osurf");
-    */
+   if(m_imaterial) m_imaterial->Summary("imat", nline);
+  // if(m_omaterial) m_omaterial->Summary("omat", nline);
+  // if(m_isurface)  m_isurface->Summary("isurf", nline);
+  // if(m_osurface)  m_osurface->Summary("osurf", nline);
 
    free(dig);
    free(imat);
    free(omat);
-
 }
 
 

@@ -67,17 +67,17 @@ RT_PROGRAM void touch_pinhole_camera()
   // only touch single pixels, so can be verbose here
   rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  node %d \n", prd.node );
 
-  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_l  %10.3f %10.3f %10.3f %10.3f \n", 
-     prd.texlookup_l.x,
-     prd.texlookup_l.y,
-     prd.texlookup_l.z,
-     prd.texlookup_l.w );
+  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_b  %10.3f %10.3f %10.3f %10.3f \n", 
+     prd.texlookup_b.x,
+     prd.texlookup_b.y,
+     prd.texlookup_b.z,
+     prd.texlookup_b.w );
 
-  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_m  %10.3f %10.3f %10.3f %10.3f \n", 
-     prd.texlookup_m.x,
-     prd.texlookup_m.y,
-     prd.texlookup_m.z,
-     prd.texlookup_m.w );
+  rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_g  %10.3f %10.3f %10.3f %10.3f \n", 
+     prd.texlookup_g.x,
+     prd.texlookup_g.y,
+     prd.texlookup_g.z,
+     prd.texlookup_g.w );
 
   rtPrintf("touch_pinhole_camera.cu::touch_pinhole_camera  texlookup_r  %10.3f %10.3f %10.3f %10.3f \n", 
      prd.texlookup_r.x,

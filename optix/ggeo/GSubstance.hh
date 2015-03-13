@@ -30,7 +30,7 @@ class GSubstance {
       virtual ~GSubstance();
 
   public:
-      void Summary(const char* msg="GSubstance::Summary");
+      void Summary(const char* msg="GSubstance::Summary", unsigned int nline=0);
       char* digest();
 
   public:

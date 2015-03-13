@@ -33,6 +33,7 @@ void GGeoOptiXGeometry::convert()
 
 void GGeoOptiXGeometry::convertSubstances()
 {
+    printf("GGeoOptiXGeometry::convertSubstances\n"); 
     GSubstanceLib* lib = m_ggeo->getSubstanceLib();
     unsigned int nsub = lib->getNumSubstances();
     for(unsigned int i=0 ; i < nsub ; i++)
@@ -201,6 +202,10 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material material, GSubstanc
     ptex->addProperty("absorption_length",getPropertyOrDefault( imat, "ABSLENGTH" ));
     ptex->addProperty("scattering_length",getPropertyOrDefault( imat, "RAYLEIGH" ));
     ptex->addProperty("reemission_prob"  ,getPropertyOrDefault( imat, "REEMISSIONPROB" ));
+
+    ptex->addProperty("debug_ramp"  , m_ggeo->getSubstanceLib()->getRamp());
+
+
     //ptex->Summary("ptex"); 
 
 
@@ -237,17 +242,21 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material material, GSubstanc
     }
     wavelengthBuffer->unmap(); 
 
-    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); // handling out of range tex coordinates (will that happen, reemission wavelength constrained to range: so no?)
+    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
     sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
 
     sampler->setFilteringModes(RT_FILTER_LINEAR, RT_FILTER_LINEAR, RT_FILTER_NONE);
 
     //sampler->setIndexingMode(RT_TEXTURE_INDEX_NORMALIZED_COORDINATES); 
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);
+    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
 
-    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT); //  texture read results automatically converted to normalized float values 
-    //sampler->setReadMode(RT_TEXTURE_READ_ELEMENT_TYPE);   //  
-
+    //sampler->setReadMode(RT_TEXTURE_READ_ELEMENT_TYPE);    
+    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
+    //
+    // RT_TEXTURE_READ_NORMALIZED_FLOAT : 
+    //    texture read results automatically converted to normalized float values 
+    //    (no normalization is apparent)
+    //
 
     // OptiX currently supports only a single MIP level and a single element texture array, 
     // so the below are almost entirely boilerplate

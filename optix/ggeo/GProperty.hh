@@ -27,6 +27,14 @@ public:
        return new GProperty<T>( vals, doms );
    }
 
+   static GProperty<T>* ramp(T low, T step, T* domain, unsigned int length ) 
+   {
+       GAry<T>* vals = GAry<T>::ramp(length, low, step );
+       GAry<T>* doms = new GAry<T>(length, domain);
+       return new GProperty<T>( vals, doms );
+   }
+
+
    GProperty(T* values, T* domain, unsigned int length ) : m_length(length)
    {
        assert(length < 1000);
@@ -60,7 +68,7 @@ public:
    GProperty<T>* createInterpolatedProperty(GDomain<T>* domain);
 
 public:
-   void Summary(const char* msg, unsigned int limit=5);
+   void Summary(const char* msg, unsigned int nline=5);
 
 private:
    unsigned int m_length ;
@@ -80,13 +88,13 @@ const char* GProperty<T>::VALUE_FMT = " %10.3f" ;
 
 
 template <typename T>
-void GProperty<T>::Summary(const char* msg, unsigned int limit )
+void GProperty<T>::Summary(const char* msg, unsigned int nline )
 {
+   if(nline == 0) return ;
    printf("%s : \n", msg );
-
    for(unsigned int i=0 ; i < m_length ; i++ )
    {
-      if( i < limit || i > m_length - limit )
+      if( i < nline || i > m_length - nline )
       {
           printf("%4u", i );
           printf(DOMAIN_FMT, m_domain->getValue(i));

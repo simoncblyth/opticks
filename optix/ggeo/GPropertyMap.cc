@@ -161,15 +161,16 @@ GPropertyD* GPropertyMap::getPropertyByIndex(unsigned int index)
 
 
 
-void GPropertyMap::Summary(const char* msg)
+void GPropertyMap::Summary(const char* msg, unsigned int nline)
 {
+   if(nline == 0) return ;
    printf("%s %s %d %s %s\n", msg, getType(), getIndex(), digest(), getName()); 
 
    for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
    {
        std::string key = *it ;
        GPropertyD* prop = m_prop[key] ; 
-       prop->Summary(key.c_str());
+       prop->Summary(key.c_str(), nline);
    } 
 }
 

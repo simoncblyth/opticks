@@ -11,7 +11,9 @@ GSubstanceLib::GSubstanceLib() : m_defaults(NULL)
     // chroma/chroma/geometry.py
     // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
 
-    setStandardDomain( new GDomain<double>(60.f, 810.f, 20.f ));
+
+    GDomain<double>* domain = new GDomain<double>(60.f, 810.f, 20.f );
+    setStandardDomain( domain );
 
     GPropertyMap* defaults = new GPropertyMap("defaults", UINT_MAX, "defaults");
     defaults->setStandardDomain(getStandardDomain());
@@ -25,6 +27,10 @@ GSubstanceLib::GSubstanceLib() : m_defaults(NULL)
     defaults->addConstantProperty( "REEMISSIONPROB", 0.f );
 
     setDefaults(defaults);
+
+    m_ramp = GProperty<double>::ramp( domain->getLow(), domain->getStep(), domain->getValues(), domain->getLength() );
+    //m_ramp->Summary("GSubstanceLib::GSubstanceLib ramp", 20 );
+
 }
 
 GSubstanceLib::~GSubstanceLib()
@@ -36,10 +42,17 @@ unsigned int GSubstanceLib::getNumSubstances()
    return m_keys.size();
 }
 
+GProperty<double>* GSubstanceLib::getRamp()
+{
+   return m_ramp ;
+}
+
+
 void GSubstanceLib::setDefaults(GPropertyMap* defaults)
 {
     m_defaults = defaults ;
 }
+
 GPropertyMap* GSubstanceLib::getDefaults()
 {
     return m_defaults ;

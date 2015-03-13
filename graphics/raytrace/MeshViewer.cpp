@@ -218,11 +218,11 @@ void MeshViewer::initContext()
   //bool printEnabled = false ; 
   bool printEnabled = true ; 
   m_context->setPrintEnabled(printEnabled); 
-  m_context->setPrintBufferSize(4096); 
+  m_context->setPrintBufferSize(8192); 
 
-  //m_context->setStackSize( 1180 );  // original setting
+  m_context->setStackSize( 1180 );  // original setting
   //m_context->setStackSize( 2180 );
-   m_context->setStackSize( 4096 );
+  //m_context->setStackSize( 4096 );
   //m_context->setStackSize( 10000 );  // very slow, but succeeds to curand_init with id subsequences
 
   m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
@@ -488,7 +488,7 @@ bool MeshViewer::keyPressed(unsigned char key, int x, int y)
        m_context[ "scene_epsilon" ]->setFloat( m_scene_epsilon );
        return true;
      case 'z':
-       dumpCamera("MeshViewer::keyPressed dumpCamera", key, x, y);
+       touch(key, x, y);
        return true ;
    }
    return false;
@@ -603,14 +603,14 @@ void MeshViewer::dumpCamera(const char* msg, unsigned char key, int x, int y )
 
     printf("pixel width x height  %lu x %lu  touch %d %d \n", width, height, x, y ); 
 
-    touch(key, x, y);
 }
-
 
 
 
 void MeshViewer::touch(unsigned char key, int x, int y)
 {
+    dumpCamera("MeshViewer::touch", key, x, y );
+
     Buffer buffer = m_context["output_buffer"]->getBuffer();
     RTsize width, height;
     buffer->getSize( width, height );
@@ -652,7 +652,7 @@ void MeshViewer::touch(unsigned char key, int x, int y)
         printf("MeshViewer::touch nodeIndex %u solid %p  \n", nodeIndex, solid ); 
         solid->Summary(NULL); // non-intuitive way to get the detail, fix this
         GSubstance* substance = solid->getSubstance();
-        substance->Summary();
+        substance->Summary("MeshViewer::touch", 20);
     }
 
 

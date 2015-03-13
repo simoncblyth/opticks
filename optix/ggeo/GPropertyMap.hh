@@ -30,7 +30,7 @@ class GPropertyMap {
       bool isBorderSurface();
       bool isMaterial();
 
-      void Summary(const char* msg="GPropertyMap::Summary");
+      void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=0);
 
   public:
       void setStandardDomain(GDomain<double>* standard_domain);
