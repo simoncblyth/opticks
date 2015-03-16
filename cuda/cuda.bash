@@ -240,6 +240,17 @@ cuda-tmp(){ echo $(local-tmp)/env/cuda ; }
 cuda-cd(){  cd $(cuda-dir); }
 cuda-mate(){ mate $(cuda-dir) ; }
 cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
+
+
+cuda-nvcc-flags(){
+    case $NODE_TAG in 
+       D) echo -ccbin /usr/bin/clang --use_fast_math ;;
+       *) echo --use_fast_math ;; 
+    esac 
+}
+
+
+
 cuda-dir(){ 
    case $NODE_TAG in 
      D) echo /Developer/NVIDIA/CUDA-5.5 ;;

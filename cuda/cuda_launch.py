@@ -294,8 +294,8 @@ class Config(object):
         parser = argparse.ArgumentParser(doc)
 
         defaults = OrderedDict()
-        defaults['threads_per_block'] = 64
-        defaults['max_blocks'] = 1024     # larger max_blocks reduces the number of separate launches, and increasing launch time (BEWARE TIMEOUT)
+        defaults['threads_per_block'] = os.environ.get("THREADS_PER_BLOCK", 64)
+        defaults['max_blocks'] = os.environ.get("MAX_BLOCKS", 1024)        # larger max_blocks reduces the number of separate launches, and increasing launch time (BEWARE TIMEOUT)
         defaults['dimension'] = 1
 
         defaults['block'] = "16,16,1"
