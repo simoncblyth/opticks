@@ -40,12 +40,17 @@ find_package(GGeo REQUIRED)
 
 
 
+
+
+
+
 include(FindSUtilGLUT)
 
 include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuda
     ${OptiX_INCLUDE}  
     $ENV{OPTIX_SDK_DIR}/sutil
     ${CUDA_INCLUDE_DIRS}
@@ -56,6 +61,17 @@ include_directories(
 add_definitions(
     ${OptiX_DEFINITIONS} 
 )
+
+
+
+
+
+CUDA_ADD_LIBRARY( init_rng_lib 
+                  cuda/init_rng.cu
+)
+
+
+
 
 
 function(add_optix_executable target_name)
@@ -88,6 +104,7 @@ function(add_optix_executable target_name)
                            ${GGeo_LIBRARIES} 
                            ssl
                            crypto 
+                           init_rng_lib
                          )
 
 endfunction()
@@ -100,6 +117,8 @@ set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h @ONLY)
+
+
 
 
 add_optix_executable( MeshViewer

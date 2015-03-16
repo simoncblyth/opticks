@@ -392,6 +392,15 @@ raytrace-run(){
   fi
 }
 
+raytrace-run-manual(){
+
+  local bin=$(raytrace-bin)
+  local dir=$(dirname $bin)
+
+  DYLD_LIBRARY_PATH=$dir $bin $*
+}
+
+
 
 raytrace--(){
   raytrace-make
@@ -400,6 +409,8 @@ raytrace--(){
   raytrace-run $*
 }
 
+
+
 raytrace-v(){
   raytrace-- --cache --g4dae $DAE_NAME_DYB_NOEXTRA $*
 }
@@ -407,6 +418,14 @@ raytrace-v(){
 raytrace-x(){
   raytrace-- --cache --g4dae $DAE_NAME_DYB $*
 }
+
+raytrace-x-manual(){
+  raytrace-make
+  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
+  raytrace-export
+  raytrace-run-manual --cache --g4dae $DAE_NAME_DYB $*
+}
+
 
 
 raytrace-lldb(){

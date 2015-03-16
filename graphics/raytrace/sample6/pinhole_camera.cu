@@ -22,7 +22,7 @@
 #include <optix_world.h>
 #include "helpers.h"
 
-#define TEST_CURAND
+//#define TEST_CURAND
 #ifdef TEST_CURAND
 #include <curand_kernel.h>
 #endif

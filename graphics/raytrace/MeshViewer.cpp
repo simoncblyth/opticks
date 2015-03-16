@@ -32,6 +32,7 @@
 #include <stdio.h>
 
 
+#include "init_rng.hh"
 
 
 using namespace optix;
@@ -93,7 +94,7 @@ public:
   void setAA( bool onoff )                         { m_aa_enabled = onoff;              }
   void setAnimation( bool anim )                   { m_animation = anim;                }
 
-
+  void init_rng(unsigned long long seed=0, unsigned long long offset=0);
 
 
   //
@@ -199,6 +200,8 @@ void MeshViewer::initScene( InitialCameraData& camera_data )
   initLights();   // move lights after geometry, for positioning relative to aabb
   initCamera( camera_data );
   preprocess();
+
+  init_rng(0,0); 
 }
 
 optix::Context MeshViewer::getContext()
@@ -232,14 +235,6 @@ void MeshViewer::initContext()
   m_context[ "max_depth"           ]->setInt( 5 );
   m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
   m_context[ "output_buffer"       ]->set( createOutputBuffer(RT_FORMAT_UNSIGNED_BYTE4, WIDTH, HEIGHT) );
-
-
-  Buffer rng_states = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER, WIDTH*HEIGHT );
-
-  unsigned int curandState_size = sizeof(curandState) ; 
-  printf("MeshViewer::initContext curandState_size %u \n", curandState_size );
-  rng_states->setElementSize(curandState_size);
-  m_context[ "rng_states"          ]->set(rng_states);
 
 
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
@@ -471,6 +466,64 @@ void MeshViewer::preprocess()
   sutilCurrentTime(&end_AS_build);
   std::cerr << "Time to build AS      : "<<end_AS_build-end_compile<<" s.\n";
 }
+
+
+void MeshViewer::init_rng(unsigned long long seed, unsigned long long offset)
+{
+  unsigned int curandState_size = sizeof(curandState) ; 
+
+  printf("MeshViewer::init_rng curandState_size %u seed %llu offset %llu \n", curandState_size, seed, offset );
+
+  Buffer rng_states = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER, WIDTH*HEIGHT );
+  rng_states->setElementSize(curandState_size);
+
+  m_context[ "rng_states"]->set(rng_states);
+
+  CUdeviceptr dev_rng_states ; 
+  unsigned int optix_device_number = 0u ; 
+
+  // getDevicePointer: OptiX allocates device memory and provides pointer
+  rng_states->getDevicePointer( optix_device_number, &dev_rng_states );
+
+  //unsigned int size = WIDTH*HEIGHT ;     // hmm have not handled resizing 
+  // cannot whole-in-one, runs into timeout 
+  //unsigned int size = 1024*512 ;   // even this causes timeouts on G
+
+  unsigned int size = 1024*256 ; 
+
+  unsigned int threads_per_block = 256 ; 
+
+  printf("MeshViewer::init_rng call init_rng_wrapper \n");
+
+  init_rng_wrapper( (void*)dev_rng_states, size, threads_per_block, seed, offset); 
+
+  printf("MeshViewer::init_rng call init_rng_wrapper DONE  \n");
+
+/*
+
+Initially without CUDA error checking the error gets seen first in OptiX::
+
+    MeshViewer::init_rng curandState_size 48 seed 0 offset 0 
+    MeshViewer::init_rng call init_rng_wrapper 
+    init_rng_wrapper  nthreads 786432 blocks_per_grid 12289 threads_per_block 64 seed 0 offset 0 
+    MeshViewer::init_rng call init_rng_wrapper DONE  
+    OptiX Error: Unknown error (Details: Function "RTresult _rtBufferGLUnregister(RTbuffer)" caught exception: Encountered a CUDA error: driver().cuGraphicsUnregisterResource(resource) returned (702): Launch timeout, [3735935])
+    delta:~ blyth$ 
+
+Adding cudaDeviceSyncronize() and error checking, see error sooner.  Threads per block of 64 taking a long time::
+
+    init_rng_wrapper  nthreads 786432 blocks_per_grid 12289 threads_per_block 64 seed 0 offset 0 
+    init_rng_wrapper kernel call completed
+    Cuda error in file '/Users/blyth/env/graphics/raytrace/cuda/init_rng.cu' in line 53 : the launch timed out and was terminated.
+    delta:~ blyth$ 
+
+
+
+*/
+
+
+}
+
 
 
 bool MeshViewer::keyPressed(unsigned char key, int x, int y)
