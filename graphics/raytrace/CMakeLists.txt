@@ -38,6 +38,7 @@ find_package(AssimpWrap REQUIRED)
 
 find_package(GGeo REQUIRED)
 
+find_package(CUDAWrap REQUIRED)
 
 
 
@@ -50,26 +51,18 @@ include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/cuda
     ${OptiX_INCLUDE}  
     $ENV{OPTIX_SDK_DIR}/sutil
     ${CUDA_INCLUDE_DIRS}
     ${AssimpWrap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
+    ${CUDAWrap_INCLUDE_DIRS}  
 )
 
 add_definitions(
     ${OptiX_DEFINITIONS} 
+    ${CUDAWrap_DEFINITIONS} 
 )
-
-
-
-
-
-CUDA_ADD_LIBRARY( init_rng_lib 
-                  cuda/init_rng.cu
-)
-
 
 
 
@@ -102,9 +95,10 @@ function(add_optix_executable target_name)
                            optixu
                            ${AssimpWrap_LIBRARIES} 
                            ${GGeo_LIBRARIES} 
+                           ${CUDAWrap_LIBRARIES}
                            ssl
                            crypto 
-                           init_rng_lib
+                           
                          )
 
 endfunction()

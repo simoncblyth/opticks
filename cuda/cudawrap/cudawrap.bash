@@ -1,16 +1,16 @@
-# === func-gen- : cuda/cudaenv/cudaenv fgp cuda/cudaenv/cudaenv.bash fgn cudaenv fgh cuda/cudaenv
-cudaenv-src(){      echo cuda/cudaenv/cudaenv.bash ; }
-cudaenv-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudaenv-src)} ; }
-cudaenv-vi(){       vi $(cudaenv-source) ; }
-cudaenv-env(){      
+# === func-gen- : cuda/cudawrap/cudawrap fgp cuda/cudawrap/cudawrap.bash fgn cudawrap fgh cuda/cudawrap
+cudawrap-src(){      echo cuda/cudawrap/cudawrap.bash ; }
+cudawrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudawrap-src)} ; }
+cudawrap-vi(){       vi $(cudawrap-source) ; }
+cudawrap-env(){      
   elocal-  
   cuda-
 }
-cudaenv-usage(){ cat << EOU
+cudawrap-usage(){ cat << EOU
 
 Warning::
 
-    delta:2015 blyth$ cudaenv-make
+    delta:2015 blyth$ cudawrap-make
     [ 16%] Building NVCC (Device) object CMakeFiles/CUDAEnv.dir//./CUDAEnv_generated_cuRANDWrapper_kernel.cu.o
     ptxas /tmp/tmpxft_00004fb0_00000000-5_cuRANDWrapper_kernel.ptx, line 894; warning : Double is not supported. Demoting to float
     Scanning dependencies of target CUDAEnv
@@ -82,9 +82,9 @@ see that copying boxmuller_extra_double is causing the warning::
 
 
     [ 16%] Building NVCC (Device) object CMakeFiles/CUDAEnv.dir//./CUDAEnv_generated_cuRANDWrapper_kernel.cu.o
-    /Users/blyth/env/cuda/cudaenv/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
+    /Users/blyth/env/cuda/cudawrap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
 
-    /Users/blyth/env/cuda/cudaenv/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
+    /Users/blyth/env/cuda/cudawrap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
 
 
 * http://stackoverflow.com/questions/19034321/cuda-double-demoted-to-float-and-understanding-ptx-output
@@ -93,7 +93,7 @@ see that copying boxmuller_extra_double is causing the warning::
 
 
 
-delta:cudaenv blyth$ DYLD_LIBRARY_PATH=. WORK=$(( 1024*128 )) ./cuRANDWrapperTest 
+delta:cudawrap blyth$ DYLD_LIBRARY_PATH=. WORK=$(( 1024*128 )) ./cuRANDWrapperTest 
 seq workitems  131072  threads_per_block   256  max_blocks    128 nlaunch   4 
  seq sequence_index   0  thread_offset      0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
  seq sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
@@ -103,14 +103,14 @@ seq workitems  131072  threads_per_block   256  max_blocks    128 nlaunch   4
  init_rng_wrapper sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
  init_rng_wrapper sequence_index   2  thread_offset  65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
  init_rng_wrapper sequence_index   3  thread_offset  98304  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
-delta:cudaenv blyth$ 
+delta:cudawrap blyth$ 
 
 
 
 Comparing LaunchSequenceTest with cuda_launch.py 
 Need to define all the envvars to get a match, as defaults not aligned::
 
-    delta:cudaenv blyth$ ITEMS=$(( 1024*768 )) THREADS_PER_BLOCK=256 MAX_BLOCKS=256 cudaenv-lst
+    delta:cudawrap blyth$ ITEMS=$(( 1024*768 )) THREADS_PER_BLOCK=256 MAX_BLOCKS=256 cudawrap-lst
     seq workitems  786432  threads_per_block   256  max_blocks    256 nlaunch  12 
      seq sequence_index   0  thread_offset      0  threads_per_launch  65536 blocks_per_launch    256   threads_per_block    256  
      seq sequence_index   1  thread_offset  65536  threads_per_launch  65536 blocks_per_launch    256   threads_per_block    256  
@@ -137,47 +137,51 @@ Need to define all the envvars to get a match, as defaults not aligned::
     offset     589824 count 65536 grid (256, 1) block (256, 1, 1) 
     offset     655360 count 65536 grid (256, 1) block (256, 1, 1) 
     offset     720896 count 65536 grid (256, 1) block (256, 1, 1) 
-    delta:cudaenv blyth$ 
+    delta:cudawrap blyth$ 
 
 
 EOU
 }
 
-cudaenv-name(){ echo CUDAEnv ; }
-cudaenv-bdir(){ echo $(local-base)/env/cuda/cudaenv ; }
-cudaenv-sdir(){ echo $(env-home)/cuda/cudaenv ; }
-cudaenv-scd(){  cd $(cudaenv-sdir); }
-cudaenv-bcd(){  cd $(cudaenv-bdir); }
+cudawrap-name(){ echo CUDAEnv ; }
+cudawrap-bdir(){ echo $(local-base)/env/cuda/cudawrap.build ; }
+cudawrap-idir(){ echo $(local-base)/env/cuda/cudawrap ; }
+cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
 
 
-cudaenv-wipe(){
+cudawrap-scd(){  cd $(cudawrap-sdir); }
+cudawrap-bcd(){  cd $(cudawrap-bdir); }
+
+
+cudawrap-wipe(){
    local msg=" === $FUNCNAME :"
    echo $msg 
-   local bdir=$(cudaenv-bdir)
+   local bdir=$(cudawrap-bdir)
    rm -rf $bdir
 }
 
 
-cudaenv-cmake(){
+cudawrap-cmake(){
    local iwd=$PWD
 
-   [ -n "$WIPE" ] && cudaenv-wipe
+   [ -n "$WIPE" ] && cudawrap-wipe
 
-   local bdir=$(cudaenv-bdir)
+   local bdir=$(cudawrap-bdir)
    mkdir -p $bdir
 
-   cudaenv-bcd
+   cudawrap-bcd
  
    cmake -DCMAKE_BUILD_TYPE=Debug \
+         -DCMAKE_INSTALL_PREFIX=$(cudawrap-idir) \
          -DCUDA_NVCC_FLAGS="$(cuda-nvcc-flags)" \
-          $(cudaenv-sdir) 
+          $(cudawrap-sdir) 
 
    cd $iwd
 }
 
-cudaenv-make(){
+cudawrap-make(){
    local iwd=$PWD
-   cudaenv-bcd
+   cudawrap-bcd
    local rc
 
    make $*
@@ -189,44 +193,47 @@ cudaenv-make(){
 }
 
 
-cudaenv-bin(){ echo $(cudaenv-bdir)/$(cudaenv-name)Test ; }
-cudaenv-lst-bin(){ echo $(cudaenv-bdir)/LaunchSequenceTest ; }
+cudawrap-bin(){ echo $(cudawrap-bdir)/$(cudawrap-name)Test ; }
+cudawrap-lst-bin(){ echo $(cudawrap-bdir)/LaunchSequenceTest ; }
 
-cudaenv-lst(){ 
-   local bin=$(cudaenv-lst-bin)
+cudawrap-lst(){ 
+   local bin=$(cudawrap-lst-bin)
    $bin $*
 
    cuda_launch.py ${ITEMS:-$(( 1024*768 ))}
 }
 
 
-cudaenv-export(){
+cudawrap-export(){
   echo -n
 }
 
-cudaenv-run(){
+cudawrap-run(){
   if [ -n "$DEBUG" ]; then
-      $DEBUG $(cudaenv-bin) -- $*
+      $DEBUG $(cudawrap-bin) -- $*
   else
-      $(cudaenv-bin) $*
+      $(cudawrap-bin) $*
   fi
 }
 
 
-cudaenv--(){
-  cudaenv-make
+cudawrap--(){
+  cudawrap-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
-  cudaenv-export 
-  cudaenv-run $*
+  cudawrap-install $*
 }
 
+cudawrap-install(){
+  cudawrap-make install 
+}
 
-
-cudaenv-test()
+cudawrap-test()
 {
    local iwd=$PWD
-   cudaenv-bcd
+   cudawrap-bcd
    DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
    cd $iwd
 }
+
+
 

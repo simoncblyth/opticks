@@ -35,3 +35,17 @@ add_executable( cuRANDWrapperTest cuRANDWrapperTest.cc )
 target_link_libraries( cuRANDWrapperTest ${name})
 
 
+install(TARGETS ${name} LIBRARY DESTINATION lib)
+install(TARGETS LaunchSequenceTest DESTINATION bin)
+install(TARGETS cuRANDWrapperTest  DESTINATION bin)
+
+SET(hdrs 
+LaunchCommon.hh
+LaunchSequence.hh
+cuRANDWrapper.hh
+cuRANDWrapper_kernel.hh
+)
+
+install(FILES ${hdrs} DESTINATION include)
+
+

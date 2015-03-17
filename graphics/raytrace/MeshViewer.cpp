@@ -31,9 +31,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-#include "init_rng.hh"
-
+#include "LaunchSequence.hh"
+#include "cuRANDWrapper.hh"
 
 using namespace optix;
 
@@ -201,7 +200,6 @@ void MeshViewer::initScene( InitialCameraData& camera_data )
   initCamera( camera_data );
   preprocess();
 
-  init_rng(0,0); 
 }
 
 optix::Context MeshViewer::getContext()
@@ -289,7 +287,7 @@ void MeshViewer::initContext()
       cfg->setRayGenerationProgram(1, touch_camera_file.c_str(), touch_camera_name.c_str() ); 
   }
 
-
+  init_rng(0,0); 
 }
 
 
@@ -485,42 +483,22 @@ void MeshViewer::init_rng(unsigned long long seed, unsigned long long offset)
   // getDevicePointer: OptiX allocates device memory and provides pointer
   rng_states->getDevicePointer( optix_device_number, &dev_rng_states );
 
-  //unsigned int size = WIDTH*HEIGHT ;     // hmm have not handled resizing 
-  // cannot whole-in-one, runs into timeout 
-  //unsigned int size = 1024*512 ;   // even this causes timeouts on G
+  unsigned int work = WIDTH*HEIGHT ;
+  unsigned int threads_per_block = 256 ;
+  unsigned int max_blocks = 128 ;
+  bool reverse = false ;  
 
-  unsigned int size = 1024*256 ; 
+  LaunchSequence* seq = new LaunchSequence( work, threads_per_block, max_blocks, reverse) ;
+  seq->Summary("seq"); 
 
-  unsigned int threads_per_block = 256 ; 
+  cuRANDWrapper* crw = new cuRANDWrapper(seq);
+  crw->setRngStates( (void*)dev_rng_states );
 
-  printf("MeshViewer::init_rng call init_rng_wrapper \n");
+  printf("MeshViewer::init_rng call cuRANDWrapper::init_rng \n");
 
-  init_rng_wrapper( (void*)dev_rng_states, size, threads_per_block, seed, offset); 
-
-  printf("MeshViewer::init_rng call init_rng_wrapper DONE  \n");
-
-/*
-
-Initially without CUDA error checking the error gets seen first in OptiX::
-
-    MeshViewer::init_rng curandState_size 48 seed 0 offset 0 
-    MeshViewer::init_rng call init_rng_wrapper 
-    init_rng_wrapper  nthreads 786432 blocks_per_grid 12289 threads_per_block 64 seed 0 offset 0 
-    MeshViewer::init_rng call init_rng_wrapper DONE  
-    OptiX Error: Unknown error (Details: Function "RTresult _rtBufferGLUnregister(RTbuffer)" caught exception: Encountered a CUDA error: driver().cuGraphicsUnregisterResource(resource) returned (702): Launch timeout, [3735935])
-    delta:~ blyth$ 
-
-Adding cudaDeviceSyncronize() and error checking, see error sooner.  Threads per block of 64 taking a long time::
-
-    init_rng_wrapper  nthreads 786432 blocks_per_grid 12289 threads_per_block 64 seed 0 offset 0 
-    init_rng_wrapper kernel call completed
-    Cuda error in file '/Users/blyth/env/graphics/raytrace/cuda/init_rng.cu' in line 53 : the launch timed out and was terminated.
-    delta:~ blyth$ 
-
-
-
-*/
-
+  crw->init_rng("init"); 
+  
+  printf("MeshViewer::init_rng call cuRANDWrapper::init_rng DONE  \n");
 
 }
 

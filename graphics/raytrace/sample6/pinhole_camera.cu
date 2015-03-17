@@ -1,28 +1,7 @@
-
-/*
- * Copyright (c) 2008 - 2009 NVIDIA Corporation.  All rights reserved.
- *
- * NVIDIA Corporation and its licensors retain all intellectual property and proprietary
- * rights in and to this software, related documentation and any modifications thereto.
- * Any use, reproduction, disclosure or distribution of this software and related
- * documentation without an express license agreement from NVIDIA Corporation is strictly
- * prohibited.
- *
- * TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THIS SOFTWARE IS PROVIDED *AS IS*
- * AND NVIDIA AND ITS SUPPLIERS DISCLAIM ALL WARRANTIES, EITHER EXPRESS OR IMPLIED,
- * INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE.  IN NO EVENT SHALL NVIDIA OR ITS SUPPLIERS BE LIABLE FOR ANY
- * SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT
- * LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF
- * BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE USE OF OR
- * INABILITY TO USE THIS SOFTWARE, EVEN IF NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGES
- */
-
 #include <optix_world.h>
 #include "helpers.h"
 
-//#define TEST_CURAND
+#define TEST_CURAND
 #ifdef TEST_CURAND
 #include <curand_kernel.h>
 #endif
@@ -59,28 +38,6 @@ rtBuffer<curandState, 1> rng_states ;
 #endif
 
 
-
-RT_PROGRAM void initialization_camera()
-{
-#ifdef TEST_CURAND
-  unsigned long long     id = launch_index.x + launch_dim.x * launch_index.y ; 
-  
-  // using id as seed works
-  // unsigned long long   seed      = id ;
-  // unsigned long long subsequence = 0 ;
-  // unsigned long long offset      = 0 ;
-
-  // using id as subsequence (like chroma) gives exception  0x3FC : RT_EXCEPTION_STACK_OVERFLOW 
-  unsigned long long   seed      = 0 ;
-  unsigned long long subsequence = id ;
-  unsigned long long offset      = 0 ;
-
-  curand_init(seed, subsequence, offset, &rng_states[id]);
-
-#endif
-}
-
-
 RT_PROGRAM void pinhole_camera()
 {
 #ifdef TIME_VIEW
@@ -91,6 +48,11 @@ RT_PROGRAM void pinhole_camera()
   float3 ray_origin = eye;
   float3 ray_direction = normalize(d.x*U + d.y*V + W);
   
+#ifdef TEST_CURAND
+  unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
+  curandState rng = rng_states[id];
+#endif
+
   optix::Ray ray = optix::make_Ray(ray_origin, ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX);
 
   PerRayData_radiance prd;
@@ -98,6 +60,14 @@ RT_PROGRAM void pinhole_camera()
   prd.depth = 0;
 
   rtTrace(top_object, ray, prd);
+
+
+#ifdef TEST_CURAND
+  float u = curand_uniform(&rng); 
+  prd.result.x = u ; 
+  rng_states[id] = rng ; 
+#endif
+
 
 #ifdef TIME_VIEW
   clock_t t1 = clock(); 

@@ -26,7 +26,7 @@ struct Launch {
    void Summary(const char* msg) const
    {
        printf(" %s sequence_index %3d  thread_offset %6u  threads_per_launch %6u blocks_per_launch %6u   threads_per_block %6u  kernel_time %10.4f ms \n", 
-           msg,
+           msg ? msg : "-" ,
            sequence_index,
            thread_offset, 
            threads_per_launch,
@@ -53,7 +53,8 @@ public:
         m_items(items),
         m_threads_per_block(threads_per_block),
         m_max_blocks(max_blocks),
-        m_reverse(reverse) 
+        m_reverse(reverse),
+        m_tag(0)
     {
         update();
     }
@@ -132,8 +133,8 @@ public:
     {
         unsigned int nlaunch = getNumLaunches();
         printf("%s tag %s workitems %7u  threads_per_block %5u  max_blocks %6u reverse %1d nlaunch %3u TotalTime %10.4f ms \n", 
-            msg,
-            m_tag,
+            msg ? msg : "" ,
+            m_tag ? m_tag : "",
             m_items,
             m_threads_per_block,
             m_max_blocks,
