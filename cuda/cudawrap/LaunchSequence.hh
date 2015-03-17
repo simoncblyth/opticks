@@ -25,7 +25,7 @@ struct Launch {
 
    void Summary(const char* msg) const
    {
-       printf(" %s sequence_index %3d  thread_offset %6u  threads_per_launch %6u blocks_per_launch %6u   threads_per_block %6u  kernel_time %10.4f ms \n", 
+       printf(" %s sequence_index %3d  thread_offset %7u  threads_per_launch %6u blocks_per_launch %6u   threads_per_block %6u  kernel_time %10.4f ms \n", 
            msg ? msg : "-" ,
            sequence_index,
            thread_offset, 

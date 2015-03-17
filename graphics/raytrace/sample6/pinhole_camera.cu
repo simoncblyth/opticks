@@ -1,8 +1,8 @@
 #include <optix_world.h>
 #include "helpers.h"
 
-#define TEST_CURAND
-#ifdef TEST_CURAND
+#include "RayTraceConfigInc.h"
+#if RAYTRACE_CURAND
 #include <curand_kernel.h>
 #endif
 
@@ -31,16 +31,15 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtDeclareVariable(float, time_view_scale, , ) = 1e-6f;
 
-//#define TIME_VIEW
 
-#ifdef TEST_CURAND
+#if RAYTRACE_CURAND
 rtBuffer<curandState, 1> rng_states ;
 #endif
 
 
 RT_PROGRAM void pinhole_camera()
 {
-#ifdef TIME_VIEW
+#if RAYTRACE_TIMEVIEW
   clock_t t0 = clock(); 
 #endif
   // pixel coordinates into  [ -1 : 1, -1 : 1 ]
@@ -48,7 +47,7 @@ RT_PROGRAM void pinhole_camera()
   float3 ray_origin = eye;
   float3 ray_direction = normalize(d.x*U + d.y*V + W);
   
-#ifdef TEST_CURAND
+#if RAYTRACE_CURAND
   unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
   curandState rng = rng_states[id];
 #endif
@@ -62,14 +61,14 @@ RT_PROGRAM void pinhole_camera()
   rtTrace(top_object, ray, prd);
 
 
-#ifdef TEST_CURAND
+#if RAYTRACE_CURAND
   float u = curand_uniform(&rng); 
   prd.result.x = u ; 
   rng_states[id] = rng ; 
 #endif
 
 
-#ifdef TIME_VIEW
+#if RAYTRACE_TIMEVIEW
   clock_t t1 = clock(); 
  
   float expected_fps   = 1.0f;

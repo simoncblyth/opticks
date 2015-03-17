@@ -22,6 +22,7 @@ include_directories(
 )
 
 CUDA_ADD_LIBRARY( ${name} 
+                  md5digest.cc
                   cuRANDWrapper.cc
                   cuRANDWrapper_kernel.cu
                   LaunchSequence.cc

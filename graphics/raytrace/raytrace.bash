@@ -317,6 +317,13 @@ raytrace-wipe(){
    rm -rf $bdir
 }
 
+
+# hmm these settings not propagated from cmake -Dargs, 
+# setting manually in CMakeLists.txt works
+raytrace-curand(){   echo 1 ; }
+raytrace-timeview(){ echo 0 ; }
+raytrace-config(){ cat $(raytrace-bdir)/RayTraceConfigInc.h ; }
+
 raytrace-cmake(){
    local iwd=$PWD
 
@@ -325,8 +332,9 @@ raytrace-cmake(){
 
    raytrace-bcd
  
- 
    cmake -DCMAKE_BUILD_TYPE=Debug \
+         -DRAYTRACE_CURAND=$(raytrace-curand) \
+         -DRAYTRACE_TIMEVIEW=$(raytrace-timeview) \
          -DOptiX_INSTALL_DIR=$(optix-install-dir) \
          -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
           $(raytrace-sdir) 

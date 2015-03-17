@@ -149,6 +149,7 @@ cudawrap-idir(){ echo $(local-base)/env/cuda/cudawrap ; }
 cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
 
 
+cudawrap-cd(){   cd $(cudawrap-sdir); }
 cudawrap-scd(){  cd $(cudawrap-sdir); }
 cudawrap-bcd(){  cd $(cudawrap-bdir); }
 
@@ -232,6 +233,7 @@ cudawrap-test()
    local iwd=$PWD
    cudawrap-bcd
    DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
+   #DYLD_LIBRARY_PATH=. WORK=$(( 1024*1 )) lldb ./cuRANDWrapperTest 
    cd $iwd
 }
 

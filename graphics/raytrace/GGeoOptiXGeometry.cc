@@ -190,7 +190,7 @@ GPropertyD* GGeoOptiXGeometry::getPropertyOrDefault(GPropertyMap* pmap, const ch
 
 void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstance* substance)
 {
-    substance->Summary(NULL); 
+    //substance->Summary("GGeoOptiXGeometry::addWavelengthTexture"); 
     optix::TextureSampler sampler = m_context->createTextureSampler();
 
     GPropertyMap* imat = substance->getInnerMaterial();
@@ -224,7 +224,7 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstan
     const unsigned int nx = length ;                      // standard number of wavelength samples
     const unsigned int ny = ptex->getNumProperties()/4 ;  // number of wavelength dependent properties to include in the texture 
 
-    printf("GGeoOptiXGeometry::addWavelengthTexture nx %u ny %u \n", nx, ny );
+    //printf("GGeoOptiXGeometry::addWavelengthTexture nx %u ny %u \n", nx, ny );
 
     optix::Buffer wavelengthBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
     float* buffer_data = static_cast<float*>( wavelengthBuffer->map() );

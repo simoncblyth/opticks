@@ -30,6 +30,46 @@ curandState* create_rng_wrapper(
 
 
 
+curandState* copytohost_rng_wrapper(
+    LaunchSequence* launchseq,
+    void* dev_rng_states
+)
+{
+    unsigned int items = launchseq->getItems(); 
+
+    void* host_rng_states = malloc(sizeof(curandState)*items);
+
+    CUDA_SAFE_CALL( cudaMemcpy(host_rng_states, dev_rng_states, sizeof(curandState)*items, cudaMemcpyDeviceToHost) );
+
+    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
+
+    return (curandState*)host_rng_states ;
+}
+
+
+curandState* copytodevice_rng_wrapper(
+    LaunchSequence* launchseq,
+    void* host_rng_states
+)
+{
+    unsigned int items = launchseq->getItems(); 
+
+    curandState* dev_rng_states; 
+
+    CUDA_SAFE_CALL( cudaMalloc((void**)&dev_rng_states, items*sizeof(curandState))); 
+
+    CUDA_SAFE_CALL( cudaMemcpy(dev_rng_states, host_rng_states, sizeof(curandState)*items, cudaMemcpyHostToDevice) );
+
+    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
+
+    return dev_rng_states ;
+}
+
+
+
+
+
+
 
 
 __global__ void init_rng(int threads_per_launch, int thread_offset, curandState* rng_states, unsigned long long seed, unsigned long long offset)

@@ -42,7 +42,7 @@ How to add extra material and surface properties ?
 
 * not so clear for optical surface properties
 
-  * perhaps make fake materials and put them there ?
+  * perhaps make fake materials and put them there ? YES this was approach taken
 
   * skinsurface reference a single lv
   * bordersurface reference a pair of pv  

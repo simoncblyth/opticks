@@ -24,5 +24,15 @@ curandState* create_rng_wrapper(
     LaunchSequence* launchseq
 );
 
+curandState* copytohost_rng_wrapper(
+    LaunchSequence* launchseq,
+    void* dev_rng_states
+);
+ 
+curandState* copytodevice_rng_wrapper(
+    LaunchSequence* launchseq,
+    void* host_rng_states
+);
+
 
 #endif

@@ -93,8 +93,16 @@ public:
   void setAA( bool onoff )                         { m_aa_enabled = onoff;              }
   void setAnimation( bool anim )                   { m_animation = anim;                }
 
-  void init_rng(unsigned long long seed=0, unsigned long long offset=0);
-
+  void* getDevRngStates(unsigned int optix_device_number=0);
+  void initDevRngStates(
+      unsigned int elements, 
+      unsigned long long seed=0, 
+      unsigned long long offset=0,
+      unsigned int optix_device_number=0,
+      unsigned int max_blocks=128,
+      unsigned int threads_per_block=256
+    );
+  void resizeDevRngStates(unsigned int elements);
 
   //
   // From SampleScene
@@ -143,6 +151,9 @@ private:
   Buffer        m_accum_buffer;
   bool          m_accum_enabled;
 
+  Buffer        m_rng_states ;
+  bool          m_rng_states_enabled;
+
   float         m_scene_epsilon;
   int           m_frame;
   bool          m_animation;
@@ -174,8 +185,16 @@ MeshViewer::MeshViewer():
   m_frame             ( 0 ),
   m_animation         ( false ),
   m_path              ( NULL ),
-  m_ggeo              ( NULL )
+  m_ggeo              ( NULL ),
+  m_rng_states_enabled( false )
 {
+#if RAYTRACE_CURAND
+  m_rng_states_enabled = true ;
+#else
+  m_rng_states_enabled = false ;
+#endif
+  printf("MeshViewer::MeshViewer rng_states_enabled RAYTRACE_CURAND  %d \n", m_rng_states_enabled );
+  printf("MeshViewer::MeshViewer WIDTH %d HEIGHT %d \n", WIDTH, HEIGHT );
 }
 
 
@@ -234,6 +253,18 @@ void MeshViewer::initContext()
   m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
   m_context[ "output_buffer"       ]->set( createOutputBuffer(RT_FORMAT_UNSIGNED_BYTE4, WIDTH, HEIGHT) );
 
+  if( m_rng_states_enabled )
+  { 
+      unsigned int elements = WIDTH*HEIGHT ;
+      m_rng_states = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER);
+      m_rng_states->setElementSize(sizeof(curandState));
+      m_rng_states->setSize(elements);       // does this destroy prior buffer ?
+      m_context[ "rng_states"]->set(m_rng_states);
+
+      // resizeDevRngStates(elements);   
+      // defer resize and init until the resize is signaled via doResize
+      // to avoid repeating the slow curand initialization CUDA launch sequence
+  }
 
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
   
@@ -287,8 +318,58 @@ void MeshViewer::initContext()
       cfg->setRayGenerationProgram(1, touch_camera_file.c_str(), touch_camera_name.c_str() ); 
   }
 
-  init_rng(0,0); 
 }
+
+
+void* MeshViewer::getDevRngStates(unsigned int optix_device_number)
+{
+    CUdeviceptr dev_rng_states ; 
+    m_rng_states->getDevicePointer( optix_device_number, &dev_rng_states ); // OptiX allocates device memory and provides pointer
+    return (void*)dev_rng_states ;
+}
+
+void MeshViewer::initDevRngStates(
+      unsigned int elements, 
+      unsigned long long seed, 
+      unsigned long long offset,
+      unsigned int optix_device_number,
+      unsigned int max_blocks,
+      unsigned int threads_per_block
+    )
+{
+    // hmm need a CUDAConfig object from CUDAWrap to handle 
+    // such commonalities as max_blocks and threads_per_block 
+
+    printf("MeshViewer::initDevRngStates elements %u seed %llu offset %llu \n", elements, seed, offset );
+    bool reverse = false ;
+    LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks, reverse) ;
+    seq->Summary("seq"); 
+
+    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset);
+    crw->setRngStates(getDevRngStates(optix_device_number));
+
+    printf("MeshViewer::initDevRngStates call cuRANDWrapper::init_rng \n");
+    crw->init_rng("init"); 
+    printf("MeshViewer::initDevRngStates call cuRANDWrapper::init_rng DONE  \n");
+
+    delete seq ; 
+}
+
+void MeshViewer::resizeDevRngStates(unsigned int elements)
+{
+    if(elements > 128*128)
+    {
+        printf("MeshViewer::resizeDevRngStates elements %u START \n",elements );
+        m_rng_states->setSize(elements); // assuming this destroys prior buffer 
+        initDevRngStates(elements);
+        printf("MeshViewer::resizeDevRngStates elements %u DONE \n",elements );
+    }
+    else
+    {
+        printf("MeshViewer::resizeDevRngStates IGNORING initial postage stamp sized elements %u \n",elements );
+    }
+}
+
 
 
 void MeshViewer::initLights()
@@ -466,42 +547,6 @@ void MeshViewer::preprocess()
 }
 
 
-void MeshViewer::init_rng(unsigned long long seed, unsigned long long offset)
-{
-  unsigned int curandState_size = sizeof(curandState) ; 
-
-  printf("MeshViewer::init_rng curandState_size %u seed %llu offset %llu \n", curandState_size, seed, offset );
-
-  Buffer rng_states = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER, WIDTH*HEIGHT );
-  rng_states->setElementSize(curandState_size);
-
-  m_context[ "rng_states"]->set(rng_states);
-
-  CUdeviceptr dev_rng_states ; 
-  unsigned int optix_device_number = 0u ; 
-
-  // getDevicePointer: OptiX allocates device memory and provides pointer
-  rng_states->getDevicePointer( optix_device_number, &dev_rng_states );
-
-  unsigned int work = WIDTH*HEIGHT ;
-  unsigned int threads_per_block = 256 ;
-  unsigned int max_blocks = 128 ;
-  bool reverse = false ;  
-
-  LaunchSequence* seq = new LaunchSequence( work, threads_per_block, max_blocks, reverse) ;
-  seq->Summary("seq"); 
-
-  cuRANDWrapper* crw = new cuRANDWrapper(seq);
-  crw->setRngStates( (void*)dev_rng_states );
-
-  printf("MeshViewer::init_rng call cuRANDWrapper::init_rng \n");
-
-  crw->init_rng("init"); 
-  
-  printf("MeshViewer::init_rng call cuRANDWrapper::init_rng DONE  \n");
-
-}
-
 
 
 bool MeshViewer::keyPressed(unsigned char key, int x, int y)
@@ -529,6 +574,8 @@ bool MeshViewer::keyPressed(unsigned char key, int x, int y)
           
 void MeshViewer::doResize( unsigned int width, unsigned int height )
 {
+  printf("MeshViewer::doResize width %d height %d \n", width, height);
+
   // output_buffer resizing handled in base class
   if( m_accum_enabled ) 
   {
@@ -537,6 +584,12 @@ void MeshViewer::doResize( unsigned int width, unsigned int height )
       genRndSeeds( width, height );
       resetAccumulation();
   }
+
+  if( m_rng_states_enabled )
+  {
+      resizeDevRngStates(width*height);
+  }  
+
 }
 
 

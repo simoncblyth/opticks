@@ -51,6 +51,7 @@ include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}   # for RayTraceConfigInc.h
     ${OptiX_INCLUDE}  
     $ENV{OPTIX_SDK_DIR}/sutil
     ${CUDA_INCLUDE_DIRS}
@@ -58,6 +59,7 @@ include_directories(
     ${GGeo_INCLUDE_DIRS}  
     ${CUDAWrap_INCLUDE_DIRS}  
 )
+
 
 add_definitions(
     ${OptiX_DEFINITIONS} 
@@ -104,15 +106,16 @@ function(add_optix_executable target_name)
 endfunction()
 
 
-set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
+# RAYTRACE_* are written to RayTraceConfigInc.h and available as defines from the code
 
+set(RAYTRACE_TIMEVIEW "0" )
+set(RAYTRACE_CURAND   "1" )
+set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
 set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
 
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h @ONLY)
-
-
 
 
 add_optix_executable( MeshViewer
@@ -142,11 +145,9 @@ add_optix_executable( MeshViewer
                       sample6/touch_pinhole_camera.cu
 )
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})  # for RayTraceConfigInc.h
-
-
 
 
  
 
+#include_directories(${CMAKE_CURRENT_BINARY_DIR})  # for RayTraceConfigInc.h
 
