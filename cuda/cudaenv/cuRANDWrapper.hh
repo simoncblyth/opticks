@@ -3,6 +3,9 @@
 
 class LaunchSequence ; 
 
+#include <vector>
+
+
 class cuRANDWrapper {
   public: 
      cuRANDWrapper(
@@ -22,6 +25,9 @@ class cuRANDWrapper {
 
      unsigned int getSeed(){   return m_seed ; }
      unsigned int getOffset(){ return m_offset ; }
+     LaunchSequence* getLaunchSequence(){ return m_launchseq ; }
+
+     void Summary(const char* msg);
 
      void setLaunchSequence(LaunchSequence* launchseq)
      {
@@ -36,10 +42,9 @@ class cuRANDWrapper {
          m_imod = imod ; 
      }
 
-
      void create_rng();
-     void init_rng();
-     void test_rng();
+     void init_rng(const char* tag="init_rng");
+     void test_rng(const char* tag="test_rng");
 
   private:
      unsigned long long m_seed ;
@@ -50,6 +55,8 @@ class cuRANDWrapper {
      float* m_test ;
      LaunchSequence* m_launchseq ; 
      unsigned int m_imod ;
+
+     std::vector<LaunchSequence*> m_launchrec ; 
 
 
 };
