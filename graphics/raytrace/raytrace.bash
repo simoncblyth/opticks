@@ -22,9 +22,9 @@ Test Combination of Assimp and OptiX
 Next Step 
 ----------
 
-* common base geometry protocol class for geometry input 
-  instance AssimpGeometry or GGeo : that the OptiX conversion
-  codes against ?
+* loadsa duplication in materials and sample6, need to take 
+  control of the optix RTprogram code arranging common 
+  definitions into headers etc..
 
 
 Pre-requisites

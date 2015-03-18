@@ -131,24 +131,23 @@ add_optix_executable( MeshViewer
 
                       G4DAELoader.cc
 
-                      materials/phong.cu
-                      materials/material1.cu
-                      materials/TriangleMesh.cu
+                      cu/phong.cu
+                      cu/material1.cu
+                      cu/TriangleMesh.cu
                       
-                      sample6/accum_camera.cu
-                      sample6/ambocc.cu
-                      sample6/constantbg.cu
-                      sample6/normal_shader.cu
-                      sample6/one_bounce_diffuse.cu
-                      sample6/orthographic_camera.cu
-                      sample6/parallelogram.cu
-                      sample6/pinhole_camera.cu
-                      sample6/touch_pinhole_camera.cu
+                      cu/accum_camera.cu
+                      cu/ambocc.cu
+                      cu/constantbg.cu
+                      cu/normal_shader.cu
+                      cu/one_bounce_diffuse.cu
+                      cu/orthographic_camera.cu
+                      cu/parallelogram.cu
+                      cu/pinhole_camera.cu
+                      cu/touch_pinhole_camera.cu
 )
 
 
 
  
 
-#include_directories(${CMAKE_CURRENT_BINARY_DIR})  # for RayTraceConfigInc.h
 

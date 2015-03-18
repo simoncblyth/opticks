@@ -14,6 +14,9 @@ struct PerRayData_radiance
   float3 result;
   float  importance;
   int    depth;
+#if RAYTRACE_CURAND
+  curandState rng;
+#endif
 };
 
 rtDeclareVariable(float3,        eye, , );
@@ -47,24 +50,23 @@ RT_PROGRAM void pinhole_camera()
   float3 ray_origin = eye;
   float3 ray_direction = normalize(d.x*U + d.y*V + W);
   
-#if RAYTRACE_CURAND
-  unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
-  curandState rng = rng_states[id];
-#endif
-
   optix::Ray ray = optix::make_Ray(ray_origin, ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX);
 
   PerRayData_radiance prd;
   prd.importance = 1.f;
   prd.depth = 0;
 
+#if RAYTRACE_CURAND
+  unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
+  prd.rng = rng_states[id];
+#endif
+
+
   rtTrace(top_object, ray, prd);
 
-
 #if RAYTRACE_CURAND
-  float u = curand_uniform(&rng); 
-  prd.result.x = u ; 
-  rng_states[id] = rng ; 
+  //prd.result.x = curand_uniform(&prd.rng); 
+  rng_states[id] = prd.rng ; 
 #endif
 
 

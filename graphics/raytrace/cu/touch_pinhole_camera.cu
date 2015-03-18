@@ -3,17 +3,8 @@
 
 using namespace optix;
 
-#include "../materials/materials.h"
+#include "materials.h"
 
-/*
-struct PerRayData_touch
-{
-  float3 result;
-  float  importance;
-  int    depth;
-  unsigned int node ;
-};
-*/
 
 rtDeclareVariable(float3,        eye, , );
 rtDeclareVariable(float3,        U, , );
