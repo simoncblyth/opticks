@@ -107,6 +107,18 @@ public:
         m_tag = strdup(tag) ;
     }
 
+    void setMaxBlocks(unsigned int max_blocks)
+    {
+        m_max_blocks = max_blocks ;
+        update();
+    }
+
+    void setThreadsPerBlock(unsigned int threads_per_block)
+    {
+        m_threads_per_block = threads_per_block ;
+        update();
+    }
+
     virtual ~LaunchSequence()
     {
         free(m_tag);
@@ -143,11 +155,7 @@ public:
             getTotalTime() 
         ); 
 
-        for(unsigned int i=0 ; i<nlaunch ; i++ )
-        {
-            Launch& l = getLaunch(i) ;
-            l.Summary(msg);
-        } 
+        //for(unsigned int i=0 ; i<nlaunch ; i++ ) getLaunch(i).Summary(msg);
     }
 
 

@@ -112,6 +112,7 @@ set(RAYTRACE_TIMEVIEW "0" )
 set(RAYTRACE_CURAND   "1" )
 set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
 set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
+set(RAYTRACE_RNG_DIR "${CMAKE_BINARY_DIR}/lib/rng" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
 
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
 

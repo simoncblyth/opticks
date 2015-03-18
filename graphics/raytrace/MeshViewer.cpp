@@ -229,6 +229,7 @@ optix::Context MeshViewer::getContext()
 void MeshViewer::initContext()
 {
   RayTraceConfig* cfg = RayTraceConfig::getInstance(); 
+  cfg->Print("MeshViewer::initContext"); 
 
   bool touch = true ;  
 
@@ -341,16 +342,27 @@ void MeshViewer::initDevRngStates(
     // such commonalities as max_blocks and threads_per_block 
 
     printf("MeshViewer::initDevRngStates elements %u seed %llu offset %llu \n", elements, seed, offset );
-    bool reverse = false ;
-    LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks, reverse) ;
-    seq->Summary("seq"); 
+
+    RayTraceConfig* cfg = RayTraceConfig::getInstance(); 
+
+    LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks ) ;
 
     cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset);
-    crw->setRngStates(getDevRngStates(optix_device_number));
 
-    printf("MeshViewer::initDevRngStates call cuRANDWrapper::init_rng \n");
-    crw->init_rng("init"); 
-    printf("MeshViewer::initDevRngStates call cuRANDWrapper::init_rng DONE  \n");
+    crw->setCacheDir(cfg->RngDir());
+
+    crw->setDevRngStates(getDevRngStates(optix_device_number));
+
+    printf("MeshViewer::initDevRngStates initialize cuRANDWrapper::Setup \n");
+
+    bool create = false ;  // not creating as using an OptiX managed device Buffer
+    crw->Setup(create);  
+    //
+    // loads initial rng_states from cache if available, 
+    // otherwise creates rng_states via CUDA LaunchSequence 
+    // and saves to cache
+    //
+    printf("MeshViewer::initDevRngStates call cuRANDWrapper::Setup DONE  \n");
 
     delete seq ; 
 }

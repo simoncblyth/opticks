@@ -28,11 +28,20 @@ const char* RayTraceConfig::PtxDir()
     return RAYTRACE_PTX_DIR ;
 } 
 
+const char* RayTraceConfig::RngDir()
+{
+    return RAYTRACE_RNG_DIR ;
+} 
+
+
+
+
 void RayTraceConfig::Print(const char* msg)
 {
     printf("%s \n", msg);
     printf("SrcDir %s \n", SrcDir() );
     printf("PtxDir %s \n", PtxDir() );
+    printf("RngDir %s \n", RngDir() );
 }
 
 
