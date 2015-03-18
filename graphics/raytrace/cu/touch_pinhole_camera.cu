@@ -3,7 +3,7 @@
 
 using namespace optix;
 
-#include "materials.h"
+#include "PerRayData.h"
 
 
 rtDeclareVariable(float3,        eye, , );
@@ -75,10 +75,6 @@ RT_PROGRAM void touch_pinhole_camera()
      prd.texlookup_r.y,
      prd.texlookup_r.z,
      prd.texlookup_r.w );
-
-
-
-
 
 }
 

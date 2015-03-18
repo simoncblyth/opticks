@@ -6,18 +6,11 @@
 #include <curand_kernel.h>
 #endif
 
+#include "PerRayData.h"
+
 
 using namespace optix;
 
-struct PerRayData_radiance
-{
-  float3 result;
-  float  importance;
-  int    depth;
-#if RAYTRACE_CURAND
-  curandState rng;
-#endif
-};
 
 rtDeclareVariable(float3,        eye, , );
 rtDeclareVariable(float3,        U, , );
@@ -33,7 +26,6 @@ rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtDeclareVariable(float, time_view_scale, , ) = 1e-6f;
-
 
 #if RAYTRACE_CURAND
 rtBuffer<curandState, 1> rng_states ;
@@ -85,7 +77,7 @@ RT_PROGRAM void pinhole_camera()
 RT_PROGRAM void exception()
 {
   const unsigned int code = rtGetExceptionCode();
-  rtPrintf( "Caught exception 0x%X at launch index (%d,%d)\n", code, launch_index.x, launch_index.y );
+  //rtPrintf( "Caught exception 0x%X at launch index (%d,%d)\n", code, launch_index.x, launch_index.y );
   output_buffer[launch_index] = make_color( bad_color );
 }
 

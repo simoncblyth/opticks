@@ -26,12 +26,8 @@
 
 using namespace optix;
 
-struct PerRayData_radiance
-{
-  float3 result;
-  float  importance;
-  int    depth;
-};
+#include "PerRayData.h"
+
 
 rtDeclareVariable(float3,        eye, , );
 rtDeclareVariable(float3,        U, , );

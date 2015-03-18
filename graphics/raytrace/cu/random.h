@@ -1,4 +1,4 @@
-///Developer/OptiX/SDK/sample6/random.h 
+///usr/local/env/cuda/OptiX_370b2_sdk/sample6/random.h
 /*
  * Copyright (c) 2008 - 2009 NVIDIA Corporation.  All rights reserved.
  *

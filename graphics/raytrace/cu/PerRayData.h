@@ -2,18 +2,24 @@
 #include <optix_math.h>
 #include "commonStructs.h"
 
+#include "RayTraceConfigInc.h"
+#if RAYTRACE_CURAND
+#include <curand_kernel.h>
+#endif
+
 #define NM_BLUE   475.f
 #define NM_GREEN  510.f
 #define NM_RED    650.f
 
-
 struct PerRayData_radiance
 {
   float3 result;
-  float  importance;  // This is ignored in this sample.  See phong.h for use.
+  float  importance;
   int    depth;
+#if RAYTRACE_CURAND
+  curandState rng;
+#endif
 };
-
 
 struct PerRayData_shadow
 {

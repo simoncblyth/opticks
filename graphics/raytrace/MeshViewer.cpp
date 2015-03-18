@@ -23,7 +23,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "random.h"
+#include "cu/random.h"
 
 #include "RayTraceConfig.hh"
 #include "MeshScene.h"

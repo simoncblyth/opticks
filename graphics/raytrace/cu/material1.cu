@@ -1,4 +1,4 @@
-#include "materials.h"
+#include "PerRayData.h"
 
 // shadingNormal is set by the closest hit intersection program 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
@@ -18,7 +18,13 @@ RT_PROGRAM void closest_hit_radiance()
 {
   //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
   //prd_radiance.result = make_float3(0.f);
-  prd_radiance.result = contrast_color ; 
+
+  float u = curand_uniform(&prd_radiance.rng); 
+  float v = curand_uniform(&prd_radiance.rng); 
+  //float w = curand_uniform(&prd_radiance.rng); 
+
+  prd_radiance.result = make_float3( u, v , contrast_color.z) ; 
+
 }
 
 
