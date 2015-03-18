@@ -112,7 +112,9 @@ set(RAYTRACE_TIMEVIEW "0" )
 set(RAYTRACE_CURAND   "1" )
 set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
 set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
-set(RAYTRACE_RNG_DIR "${CMAKE_BINARY_DIR}/lib/rng" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
+
+# placing this inside the CMAKE_BINARY_DIR makes its prone to being wiped
+set(RAYTRACE_RNG_DIR "/tmp/env/RAYTRACE_RNG_DIR" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
 
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
 
@@ -132,14 +134,12 @@ add_optix_executable( MeshViewer
                       G4DAELoader.cc
 
                       cu/phong.cu
-                      cu/material1.cu
+                      cu/material1_radiance.cu
+                      cu/material1_touch.cu
                       cu/TriangleMesh.cu
                       
-                      cu/accum_camera.cu
-                      cu/ambocc.cu
                       cu/constantbg.cu
                       cu/normal_shader.cu
-                      cu/one_bounce_diffuse.cu
                       cu/orthographic_camera.cu
                       cu/parallelogram.cu
                       cu/pinhole_camera.cu

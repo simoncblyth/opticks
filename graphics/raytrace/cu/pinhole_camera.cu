@@ -6,7 +6,7 @@
 #include <curand_kernel.h>
 #endif
 
-#include "PerRayData.h"
+#include "PerRayData_radiance.h"
 
 
 using namespace optix;

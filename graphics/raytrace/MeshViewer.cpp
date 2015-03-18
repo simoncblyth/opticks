@@ -242,8 +242,8 @@ void MeshViewer::initContext()
   m_context->setPrintBufferSize(8192); 
   m_context->setPrintLaunchIndex(0,0,0);
 
-  m_context->setStackSize( 1180 );  // original setting
-  //m_context->setStackSize( 2180 );
+  //m_context->setStackSize( 1180 );  // original setting
+  m_context->setStackSize( 2180 );
   //m_context->setStackSize( 4096 );
   //m_context->setStackSize( 10000 );  // very slow, but succeeds to curand_init with id subsequences
 
@@ -369,7 +369,8 @@ void MeshViewer::initDevRngStates(
 
 void MeshViewer::resizeDevRngStates(unsigned int elements)
 {
-    if(elements > 128*128)
+    //if(elements > 128*128)
+    if(elements > 0)
     {
         printf("MeshViewer::resizeDevRngStates elements %u START \n",elements );
         m_rng_states->setSize(elements); // assuming this destroys prior buffer 
@@ -449,6 +450,13 @@ void MeshViewer::initMaterial()
       break;
     }
 
+
+    case SM_AO:  break ;
+    case SM_ONE_BOUNCE_DIFFUSE: break ;
+    case SM_AO_PHONG: break ;
+
+
+#if 0
     case SM_AO: {
       m_material = m_context->createMaterial();
       m_material->setClosestHitProgram( 0, cfg->createProgram( "ambocc.cu", "closest_hit_radiance" ) );
@@ -475,7 +483,10 @@ void MeshViewer::initMaterial()
       m_context["phong_exp"]->setFloat(0.0f);
       break;
     }
+#endif
   }
+
+
 
   if( m_accum_enabled ) {
     genRndSeeds( WIDTH, HEIGHT );

@@ -124,7 +124,7 @@ optix::Material AssimpOptiXGeometry::convertMaterial(aiMaterial* ai_material)
 
     optix::Material material = m_context->createMaterial();
 
-    material->setClosestHitProgram(0, cfg->createProgram("material1.cu", "closest_hit_radiance"));
+    material->setClosestHitProgram(0, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
 
     return material ; 
 }

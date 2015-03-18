@@ -1,4 +1,5 @@
-#include "PerRayData.h"
+#include "PerRayData_touch.h"
+#include "nm_colors.h"
 
 // shadingNormal is set by the closest hit intersection program 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
@@ -8,24 +9,7 @@ rtDeclareVariable(float3, contrast_color, , );
 rtTextureSampler<float4, 2>  wavelength_texture ;
 rtDeclareVariable(float3, wavelength_domain, , );
 
-
-rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
 rtDeclareVariable(PerRayData_touch, prd_touch, rtPayload, );
-
-//
-// 
-RT_PROGRAM void closest_hit_radiance()
-{
-  //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
-  //prd_radiance.result = make_float3(0.f);
-
-  float u = curand_uniform(&prd_radiance.rng); 
-  float v = curand_uniform(&prd_radiance.rng); 
-  //float w = curand_uniform(&prd_radiance.rng); 
-
-  prd_radiance.result = make_float3( u, v , contrast_color.z) ; 
-
-}
 
 
 static __device__ __inline__ float4 wlookup(float wavelength, float line )

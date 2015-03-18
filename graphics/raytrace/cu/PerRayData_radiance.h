@@ -1,3 +1,6 @@
+#ifndef PERRAYDATA_RADIANCE_H
+#define PERRAYDATA_RADIANCE_H
+
 #include <optix.h>
 #include <optix_math.h>
 #include "commonStructs.h"
@@ -6,10 +9,6 @@
 #if RAYTRACE_CURAND
 #include <curand_kernel.h>
 #endif
-
-#define NM_BLUE   475.f
-#define NM_GREEN  510.f
-#define NM_RED    650.f
 
 struct PerRayData_radiance
 {
@@ -21,25 +20,5 @@ struct PerRayData_radiance
 #endif
 };
 
-struct PerRayData_shadow
-{
-  float3 attenuation;
-};
 
-
-struct PerRayData_touch
-{
-  float3 result;
-  int    depth;
-  unsigned int  node;
-
-  float4 texlookup_b ;
-  float4 texlookup_g ;
-  float4 texlookup_r ;
-
-};
-
-
-
-
-
+#endif

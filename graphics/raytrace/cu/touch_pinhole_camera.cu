@@ -3,7 +3,7 @@
 
 using namespace optix;
 
-#include "PerRayData.h"
+#include "PerRayData_touch.h"
 
 
 rtDeclareVariable(float3,        eye, , );

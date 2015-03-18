@@ -19,12 +19,69 @@ Test Combination of Assimp and OptiX
 
 * for fps display press "r" and then "d"
 
-Next Step 
-----------
+
+RTprogram Re-compilation Flakiness
+-------------------------------------------------
+
+* sometimes observe following a cu change and quick 
+  recompile with raytrace-x 
+  that the change does not take effect on first raytrace-x 
+  but does on 2nd try ? 
+
+  * cmake Makefile sees the cu change and rebuilds the ptx, but 
+    it seems that is not remaking the GPU program until the second call
+
+  * optix reads ptx, cmake ptx rebuild dependency issue ? 
+
+  * so far raytrace-x-clean that does a full rebuild including the caches
+    has not shown flakiness
+
+  * suspect the postage stamp 128x128 image that initially appears 
+    prior to rng cache loading is unhealthy 
+
+
+Launch failed : No binary for GPU
+-----------------------------------
+
+::
+
+    OptiX Error: Launch failed (Details: Function "RTresult
+    _rtContextCompile(RTcontext)" caught exception: : error: Encountered a CUDA
+    error: createFromMemoryPtx returned (209): No binary for GPU, [7340351]
+    [7340352]) delta:env blyth$ 
+
+
+Next Steps 
+-----------
 
 * loadsa duplication in materials and sample6, need to take 
   control of the optix RTprogram code arranging common 
   definitions into headers etc..
+
+* taming the flakiness
+
+  * flakiness manifests in that some minor code change results in a 
+    menagerie of errors : this is probably partial rebuild dependency
+    problem 
+
+  * make each ptx as simple as possible, minimize the number of functions
+    and top level declarations in each cu 
+
+  * check if curand caching is to blame, and the lack of this for
+    the initial 128x128 postage stamp image
+
+* port Chroma cuda/photon.h:fill_state to OptiX 
+
+  * geometricNormal 
+
+
+OptiX Questions
+-----------------
+
+* What are pros and cons of passing info between RTprogram via attribute or PerRayData 
+
+  * geometricNormal more natural as attribute, as this will be changing as the ray 
+    bounces around ?
 
 
 Pre-requisites
@@ -295,9 +352,20 @@ raytrace-bdir(){ echo $(local-base)/env/graphics/$(optix-name)/raytrace ; }
 raytrace-sdir(){ echo $(env-home)/graphics/raytrace ; }
 
 raytrace-cd(){  cd $(raytrace-sdir); }
+raytrace-cu(){  cd $(raytrace-sdir)/cu; }
 raytrace-scd(){  cd $(raytrace-sdir); }
 raytrace-bcd(){  cd $(raytrace-bdir); }
 raytrace-ocd(){  cd $(raytrace-odir); }
+
+raytrace-ptx(){ ls -l $(raytrace-bdir)/lib/ptx ; }
+raytrace-rng(){ ls -l $(raytrace-bdir)/lib/rng ; }
+
+raytrace-x-clean(){
+   raytrace-wipe
+   raytrace-cmake
+   raytrace-make
+   raytrace-x
+}
 
 raytrace-env(){      
     elocal-  
