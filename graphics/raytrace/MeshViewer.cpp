@@ -44,8 +44,7 @@ using namespace optix;
 enum RayType
 { 
    radiance_ray_type,
-   shadow_ray_type,
-   touch_ray_type
+   shadow_ray_type
 };
 
 
@@ -62,7 +61,7 @@ public:
   // Helper types
   //
   
-  static unsigned int BAD_TOUCH ; 
+  static unsigned int TOUCH_BAD ; 
 
   enum ShadeMode
   {
@@ -170,7 +169,7 @@ private:
 //------------------------------------------------------------------------------
 
 
-unsigned int MeshViewer::BAD_TOUCH = 666666u ;
+unsigned int MeshViewer::TOUCH_BAD = 666666u ;
 
 
 MeshViewer::MeshViewer():
@@ -234,9 +233,8 @@ void MeshViewer::initContext()
 
   bool touch = true ;  
 
-  m_context->setRayTypeCount( touch ? 3 : 2 );
+  m_context->setRayTypeCount( 2 );   // initially used touch ray type, but that leads to code duplication
   m_context->setEntryPointCount( touch ? 2 : 1 ); 
-  //m_context->setEntryPointCount( touch ? 1 : 1 ); 
 
   //bool printEnabled = false ; 
   bool printEnabled = true ; 
@@ -249,7 +247,7 @@ void MeshViewer::initContext()
   //m_context->setStackSize( 4096 );
   //m_context->setStackSize( 10000 );  // very slow, but succeeds to curand_init with id subsequences
 
-  m_context[ "touch"               ]->setUint( 0u );
+  m_context[ "touch_mode" ]->setUint( 0u );
   m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
   m_context[ "shadow_ray_type"     ]->setUint( shadow_ray_type );
 
@@ -305,23 +303,9 @@ void MeshViewer::initContext()
 
   if(touch)
   {
-      //
-      // touch buffer doesnt need the OpenGL stuff done by createOutputBuffer, 
-      // just want to read the node index returned
-      //
-      m_context["touch_ray_type"]->setUint( touch_ray_type );
+      m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
+      m_context["touch_bad" ]->setUint( TOUCH_BAD );
 
-      //RTformat format = RT_FORMAT_UNSIGNED_BYTE4 ;
-      RTformat format = RT_FORMAT_UNSIGNED_INT ;
-      m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, format, 1, 1));
-      m_context[ "bad_touch" ]->setUint( BAD_TOUCH );
-
-      /*
-      // TODO: avoid code duplication for this
-      const std::string touch_camera_file = "touch_" + camera_file ; 
-      const std::string touch_camera_name = "touch_" + camera_name ; 
-      cfg->setRayGenerationProgram(1, touch_camera_file.c_str(), touch_camera_name.c_str() ); 
-      */
       cfg->setRayGenerationProgram(1, camera_file.c_str(), camera_name.c_str() ); 
   }
 
@@ -758,9 +742,9 @@ void MeshViewer::touch(unsigned char key, int x, int y)
 void MeshViewer::dumpNode(unsigned int nodeIndex)
 {
     assert(m_ggeo);
-    if(nodeIndex == BAD_TOUCH)
+    if(nodeIndex == TOUCH_BAD)
     {
-        printf("MeshViewer::dumpNode BAD_TOUCH %u \n", nodeIndex);
+        printf("MeshViewer::dumpNode TOUCH_BAD %u \n", nodeIndex);
     }
     else
     {

@@ -1,6 +1,7 @@
 #include "GGeoOptiXGeometry.hh"
 
 #include <optixu/optixu_vector_types.h>
+#include "cu/enums.h"
 
 #include "RayTraceConfig.hh"
 #include "GGeo.hh"
@@ -9,6 +10,8 @@
 #include "GSubstanceLib.hh"
 #include "GSubstance.hh"
 #include "GPropertyMap.hh"
+
+
 
 //  analog to AssimpOptiXGeometry based on intermediary GGeo 
 
@@ -188,6 +191,41 @@ GPropertyD* GGeoOptiXGeometry::getPropertyOrDefault(GPropertyMap* pmap, const ch
 }
 
 
+
+const char* GGeoOptiXGeometry::refractive_index = "refractive_index" ; 
+const char* GGeoOptiXGeometry::absorption_length = "absorption_length" ; 
+const char* GGeoOptiXGeometry::scattering_length = "scattering_length" ; 
+const char* GGeoOptiXGeometry::reemission_prob = "reemission_prob" ; 
+
+
+void GGeoOptiXGeometry::checkProperties(GPropertyMap* ptex)
+{
+    const char* name ;
+
+    name = ptex->getPropertyNameByIndex(e_refractive_index);
+    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_refractive_index, name );
+    assert(strcmp(name,refractive_index)==0);
+
+    name = ptex->getPropertyNameByIndex(e_absorption_length);
+    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_absorption_length, name );
+    assert(strcmp(name,absorption_length)==0);
+
+    name = ptex->getPropertyNameByIndex(e_scattering_length);
+    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_scattering_length, name );
+    assert(strcmp(name,scattering_length)==0);
+
+    name = ptex->getPropertyNameByIndex(e_reemission_prob);
+    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_reemission_prob, name );
+    assert(strcmp(name,reemission_prob)==0);
+
+
+    assert(strcmp(ptex->getPropertyNameByIndex(e_refractive_index),refractive_index)==0); 
+    assert(strcmp(ptex->getPropertyNameByIndex(e_absorption_length),absorption_length)==0); 
+    assert(strcmp(ptex->getPropertyNameByIndex(e_scattering_length),scattering_length)==0); 
+    assert(strcmp(ptex->getPropertyNameByIndex(e_reemission_prob),reemission_prob)==0); 
+}
+
+
 void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstance* substance)
 {
     //substance->Summary("GGeoOptiXGeometry::addWavelengthTexture"); 
@@ -202,6 +240,8 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstan
     ptex->addProperty("absorption_length",getPropertyOrDefault( imat, "ABSLENGTH" ));
     ptex->addProperty("scattering_length",getPropertyOrDefault( imat, "RAYLEIGH" ));
     ptex->addProperty("reemission_prob"  ,getPropertyOrDefault( imat, "REEMISSIONPROB" ));
+
+    checkProperties(ptex);
 
     //ptex->addProperty("debug_ramp"  , m_ggeo->getSubstanceLib()->getRamp());
     //ptex->Summary("ptex"); 
@@ -300,9 +340,6 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
 
     unsigned int raytype_radiance = 0 ;
     material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
-
-    unsigned int raytype_touch = 2 ;
-    material->setClosestHitProgram(raytype_touch   , cfg->createProgram("material1_touch.cu", "closest_hit_touch"));
 
     addWavelengthTexture(material, substance);
 

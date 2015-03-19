@@ -1,5 +1,6 @@
 #include <optix.h>
 #include "PerRayData_radiance.h"
+#include "wavelength_lookup.h"
 
 //geometric_normal is set by the closest hit intersection program 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, );
@@ -10,6 +11,7 @@ rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 
+
 RT_PROGRAM void closest_hit_radiance()
 {
   const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
@@ -17,8 +19,23 @@ RT_PROGRAM void closest_hit_radiance()
   const float cos_theta = dot(n,ray.direction);
 
   //prd_radiance.result = n*0.5f + 0.5f;
+
   prd_radiance.result = make_float3( 0.5f*(1.0f-cos_theta) );
   prd_radiance.node = nodeIndex ;
+
+
+  /*
+  float4 props = wavelength_lookup( NM_GREEN  , 0.5f ) ;
+  float refractive_index  = props.x ; 
+  float absorption_length = props.y ; 
+  float scattering_length = props.z ; 
+  float reemission_prob   = props.w ; 
+
+  //prd_radiance.result.y = refractive_index - 1.0f  ; 
+  //prd_radiance.result.y = reemission_prob  ; 
+
+  */ 
+
 
 
   if(cos_theta > 0.0f )
@@ -56,6 +73,9 @@ RT_PROGRAM void closest_hit_radiance()
 
  
   //prd_radiance.result = make_float3( u0, u1 , contrast_color.z) ; 
+
+
+
 
 }
 

@@ -1,6 +1,8 @@
 #pragma once
 #include <optixu/optixu_vector_types.h>
 
+
+
 typedef struct struct_BasicLight
 {
 #if defined(__cplusplus)

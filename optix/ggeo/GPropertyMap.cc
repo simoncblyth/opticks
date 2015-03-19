@@ -159,6 +159,12 @@ GPropertyD* GPropertyMap::getPropertyByIndex(unsigned int index)
    return getProperty(key.c_str()); 
 }
 
+const char* GPropertyMap::getPropertyNameByIndex(unsigned int index)
+{
+   return m_keys[index].c_str(); 
+}
+
+
 
 
 void GPropertyMap::Summary(const char* msg, unsigned int nline)

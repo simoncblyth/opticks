@@ -135,7 +135,6 @@ add_optix_executable( MeshViewer
 
                       cu/phong.cu
                       cu/material1_radiance.cu
-                      cu/material1_touch.cu
                       cu/TriangleMesh.cu
                       
                       cu/constantbg.cu
@@ -144,7 +143,6 @@ add_optix_executable( MeshViewer
                       cu/parallelogram.cu
                       cu/pinhole_camera.cu
                       cu/pinhole_camera_hybrid.cu
-                      cu/touch_pinhole_camera.cu
 )
 
 

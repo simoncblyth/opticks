@@ -44,6 +44,7 @@ class GPropertyMap {
 
   public:
       GPropertyD* getPropertyByIndex(unsigned int index);
+      const char* getPropertyNameByIndex(unsigned int index);
       GPropertyD* getProperty(const char* pname);
       std::vector<std::string>& getKeys();
 
