@@ -143,6 +143,7 @@ add_optix_executable( MeshViewer
                       cu/orthographic_camera.cu
                       cu/parallelogram.cu
                       cu/pinhole_camera.cu
+                      cu/pinhole_camera_hybrid.cu
                       cu/touch_pinhole_camera.cu
 )
 

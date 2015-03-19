@@ -289,6 +289,11 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstan
 
 optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
 {
+    //
+    // Each GSubstance (representing boundaries between materials) 
+    // is 1-1 related to optix::Material
+    //
+
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
 
     optix::Material material = m_context->createMaterial();
@@ -300,7 +305,6 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
     material->setClosestHitProgram(raytype_touch   , cfg->createProgram("material1_touch.cu", "closest_hit_touch"));
 
     addWavelengthTexture(material, substance);
-
 
     return material ; 
 }

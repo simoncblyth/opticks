@@ -27,7 +27,6 @@ RT_PROGRAM void mesh_intersect(int primIdx)
     float3 p1 = vertexBuffer[index.y];
     float3 p2 = vertexBuffer[index.z];
 
-    // Intersect ray with triangle
     float3 n;
     float  t, beta, gamma;
     if(intersect_triangle(ray, p0, p1, p2, n, t, beta, gamma))
@@ -35,7 +34,31 @@ RT_PROGRAM void mesh_intersect(int primIdx)
         if(rtPotentialIntersection( t ))
         {
             geometricNormal = normalize(n);
-            rtReportIntersection(0);
+            rtReportIntersection(0);   
+            //
+            //
+            // hmm this needs to report the material index of the primitive, 
+            // if more than one material associated to the mesh
+            // but are still using separate GIs with one material for each
+            //
+            //
+            // sidedness determination in mesh_intersect ? Nope
+            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+            //
+            // Could encode the sidedness into the material index reported
+            // as the geometricNormal is already in register here
+            // (my optix "materials" are actually pairs of materials 
+            // and sometimes surface properties) 
+            //
+            // would that work ? need to transform normal from object to world space 
+            // could double up materials with pairs flipped ? 
+            //
+            // NOPE, better to defer sidedness checking and most everything else 
+            // to closest_hit as there will often be many mesh intersections 
+            // reporting different intersections that optix sifts through to
+            // find the closest
+            //
+            // 
         }
     }
 }

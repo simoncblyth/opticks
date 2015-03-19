@@ -115,6 +115,7 @@ public:
   virtual Buffer getOutputBuffer();
 
   void touch(unsigned char key, int x, int y);
+  void dumpNode(unsigned int nodeIndex);
   void dumpCamera(const char* msg, unsigned char key, int x, int y ); 
 
 public:
@@ -235,6 +236,7 @@ void MeshViewer::initContext()
 
   m_context->setRayTypeCount( touch ? 3 : 2 );
   m_context->setEntryPointCount( touch ? 2 : 1 ); 
+  //m_context->setEntryPointCount( touch ? 1 : 1 ); 
 
   //bool printEnabled = false ; 
   bool printEnabled = true ; 
@@ -247,6 +249,7 @@ void MeshViewer::initContext()
   //m_context->setStackSize( 4096 );
   //m_context->setStackSize( 10000 );  // very slow, but succeeds to curand_init with id subsequences
 
+  m_context[ "touch"               ]->setUint( 0u );
   m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
   m_context[ "shadow_ray_type"     ]->setUint( shadow_ray_type );
 
@@ -313,10 +316,13 @@ void MeshViewer::initContext()
       m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, format, 1, 1));
       m_context[ "bad_touch" ]->setUint( BAD_TOUCH );
 
+      /*
+      // TODO: avoid code duplication for this
       const std::string touch_camera_file = "touch_" + camera_file ; 
       const std::string touch_camera_name = "touch_" + camera_name ; 
-
       cfg->setRayGenerationProgram(1, touch_camera_file.c_str(), touch_camera_name.c_str() ); 
+      */
+      cfg->setRayGenerationProgram(1, camera_file.c_str(), camera_name.c_str() ); 
   }
 
 }
@@ -714,15 +720,21 @@ void MeshViewer::dumpCamera(const char* msg, unsigned char key, int x, int y )
 }
 
 
-
 void MeshViewer::touch(unsigned char key, int x, int y)
 {
+    /*
+       touch_mode launches touch_entry_point
+
+    */
+
+
     dumpCamera("MeshViewer::touch", key, x, y );
 
     Buffer buffer = m_context["output_buffer"]->getBuffer();
     RTsize width, height;
     buffer->getSize( width, height );
 
+    m_context["touch_mode"]->setUint(1u);
     m_context["touch_index"]->setUint(x, height - y ); // by inspection
     m_context["touch_dim"]->setUint(width, height);
 
@@ -733,25 +745,22 @@ void MeshViewer::touch(unsigned char key, int x, int y)
     m_context->launch( touch_entry_point, touch_width, touch_height );
 
     Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
-
-
-    //optix::uchar4* touchBuffer_Host = static_cast<optix::uchar4*>( touchBuffer->map() );
-    //optix::uchar4 v = touchBuffer_Host[0] ;
-    // buffer BGRA layout discerned by comparison with bg_color 
-    //printf("MeshViewer::touch  BGRA %u %u %u %u \n", v.x,v.y,v.z,v.w ); 
-    //printf("MeshViewer::touch  RGBA %u %u %u %u \n", v.z,v.y,v.x,v.w ); 
-
+    m_context["touch_mode"]->setUint(0u);
 
     unsigned int* touchBuffer_Host = static_cast<unsigned int*>( touchBuffer->map() );
     unsigned int nodeIndex = touchBuffer_Host[0] ;
-
     touchBuffer->unmap();
 
-    assert(m_ggeo);
+    dumpNode(nodeIndex);
+}
 
+
+void MeshViewer::dumpNode(unsigned int nodeIndex)
+{
+    assert(m_ggeo);
     if(nodeIndex == BAD_TOUCH)
     {
-        printf("MeshViewer::touch BAD_TOUCH %u \n", nodeIndex);
+        printf("MeshViewer::dumpNode BAD_TOUCH %u \n", nodeIndex);
     }
     else
     {
@@ -762,11 +771,7 @@ void MeshViewer::touch(unsigned char key, int x, int y)
         GSubstance* substance = solid->getSubstance();
         substance->Summary("MeshViewer::touch", 20);
     }
-
-
 }
-
-
 
 
 void MeshViewer::cleanUp()

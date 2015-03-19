@@ -15,6 +15,7 @@ struct PerRayData_radiance
   float3 result;
   float  importance;
   int    depth;
+  unsigned int node ; 
 #if RAYTRACE_CURAND
   curandState rng;
 #endif
