@@ -22,7 +22,8 @@ class cuRANDWrapper {
              m_host_rng_states(0),
              m_test(0),
              m_imod(100000),
-             m_cache_dir(0)
+             m_cache_dir(0),
+             m_cache_enabled(true)
            {
               setCacheDir("/tmp"); 
            }
@@ -34,6 +35,9 @@ class cuRANDWrapper {
      LaunchSequence* getLaunchSequence(){ return m_launchseq ; }
      unsigned int getItems();
 
+     void setCacheEnabled(bool enabled){ m_cache_enabled = enabled ; }
+     bool hasCacheEnabled(){ return m_cache_enabled ; }
+
      void Summary(const char* msg);
      void Dump(const char* msg="cuRANDWrapper::Dump", unsigned int imod=1000);
      char* digest();
@@ -43,6 +47,9 @@ class cuRANDWrapper {
      {
          m_dev_rng_states = dev_rng_states ;
      } 
+     void* getDevRngStates(){ return m_dev_rng_states ; }
+     
+
      void setImod(unsigned int imod)
      {
          m_imod = imod ; 
@@ -58,7 +65,7 @@ class cuRANDWrapper {
      int hasCache();
      int Init(bool create=false);
      int Save();
-     int Load(bool roundtrip=false);
+     int Load();
      int Test();
 
   private:
@@ -67,6 +74,7 @@ class cuRANDWrapper {
      int Load(const char* path);
 
   private: 
+     void devicesync();
      void create_rng();
      void init_rng(const char* tag="init_rng");
      void copytohost_rng();
@@ -84,6 +92,7 @@ class cuRANDWrapper {
      LaunchSequence* m_launchseq ; 
      unsigned int m_imod ;
      char* m_cache_dir ; 
+     bool m_cache_enabled ;
 
      std::vector<LaunchSequence*> m_launchrec ; 
 

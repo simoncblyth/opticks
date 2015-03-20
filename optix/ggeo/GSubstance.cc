@@ -13,7 +13,8 @@ GSubstance::GSubstance( GPropertyMap* imaterial, GPropertyMap* omaterial, GPrope
          m_omaterial(omaterial),
          m_isurface(isurface),
          m_osurface(osurface),
-         m_index(UINT_MAX)
+         m_index(UINT_MAX),
+         m_texprops(NULL)
 {
 }
 
@@ -30,6 +31,58 @@ unsigned int GSubstance::getIndex()
 {
     return m_index ;
 }
+
+
+void GSubstance::setTexProps(GPropertyMap* texprops)
+{
+    m_texprops = texprops ;
+}
+GPropertyMap* GSubstance::getTexProps()
+{
+    return m_texprops ;
+}
+void GSubstance::dumpTexProps(const char* msg, double wavelength)
+{
+    printf("%s wavelength %10.3f \n", msg, wavelength );
+    GPropertyMap* ptex = getTexProps();
+    assert(ptex);
+
+    GDomain<double>* domain = ptex->getStandardDomain();
+    unsigned int nprop = ptex->getNumProperties() ;
+    assert(nprop % 4 == 0 );    
+    assert(nprop == 16);
+
+    const unsigned int nx = domain->getLength(); 
+    const unsigned int ny = nprop/4 ; 
+    assert(nx == 39 && ny == 4); 
+
+    const char* mprop = "ridx/absl/sctl/reep" ;
+    const char* sprop = "dete/abso/resp/redi" ;
+
+    for( unsigned int line = 0; line < ny; ++line ) 
+    {   
+        unsigned int offset = line*ny ;   
+        GPropertyD* p0 = ptex->getPropertyByIndex(offset+0) ;
+        GPropertyD* p1 = ptex->getPropertyByIndex(offset+1) ;
+        GPropertyD* p2 = ptex->getPropertyByIndex(offset+2) ;
+        GPropertyD* p3 = ptex->getPropertyByIndex(offset+3) ;
+
+        double v0 = p0->getInterpolatedValue(wavelength);
+        double v1 = p1->getInterpolatedValue(wavelength);
+        double v2 = p2->getInterpolatedValue(wavelength);
+        double v3 = p3->getInterpolatedValue(wavelength);
+
+        printf("GSubstance::dumpTexProps %10.3f nm line %u %s vals %13.4f %13.4f %13.4f %13.4f \n",
+            wavelength,
+            line,
+            line < 2 ? mprop : sprop,
+            v0,
+            v1,
+            v2,
+            v3);
+    }
+}
+
 
 char* GSubstance::digest()
 {

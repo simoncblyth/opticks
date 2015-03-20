@@ -15,9 +15,7 @@
 
 
 
-curandState* create_rng_wrapper(
-    LaunchSequence* launchseq
-)
+curandState* create_rng_wrapper( LaunchSequence* launchseq)
 {
     unsigned int items = launchseq->getItems(); 
 
@@ -29,11 +27,7 @@ curandState* create_rng_wrapper(
 }
 
 
-
-curandState* copytohost_rng_wrapper(
-    LaunchSequence* launchseq,
-    void* dev_rng_states
-)
+curandState* copytohost_rng_wrapper( LaunchSequence* launchseq, void* dev_rng_states)
 {
     unsigned int items = launchseq->getItems(); 
 
@@ -47,10 +41,7 @@ curandState* copytohost_rng_wrapper(
 }
 
 
-curandState* copytodevice_rng_wrapper(
-    LaunchSequence* launchseq,
-    void* host_rng_states
-)
+curandState* copytodevice_rng_wrapper( LaunchSequence* launchseq, void* host_rng_states)
 {
     unsigned int items = launchseq->getItems(); 
 
@@ -120,16 +111,19 @@ void after_kernel( cudaEvent_t& start, cudaEvent_t& stop, float& kernel_time )
     CUDA_SAFE_CALL( cudaEventElapsedTime(&kernel_time, start, stop) );
     CUDA_SAFE_CALL( cudaEventDestroy( start ) );
     CUDA_SAFE_CALL( cudaEventDestroy( stop ) );
+
+    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 }
 
 
 
-void init_rng_wrapper(
-    LaunchSequence* launchseq,
-    void* dev_rng_states, 
-    unsigned long long seed, 
-    unsigned long long offset
-)
+void devicesync_wrapper()
+{
+    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
+}
+
+
+void init_rng_wrapper( LaunchSequence* launchseq, void* dev_rng_states, unsigned long long seed, unsigned long long offset)
 {
     cudaEvent_t start, stop ;
 

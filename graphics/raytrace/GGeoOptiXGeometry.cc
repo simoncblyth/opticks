@@ -180,23 +180,37 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GPropert
     const unsigned int nx = domain->getLength(); 
     const unsigned int ny = nprop/4 ; 
 
-    printf("GGeoOptiXGeometry::addWavelengthTexture nx %u ny %u \n", nx, ny );
+    assert(nx == 39 && ny == 4);
+    //printf("GGeoOptiXGeometry::addWavelengthTexture nx %u ny %u \n", nx, ny );
 
     optix::Buffer wavelengthBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
     float* buffer_data = static_cast<float*>( wavelengthBuffer->map() );
   
-    // following buffer layout gleaned from sutil/HDRLoader.cpp 
-    for( unsigned int i = 0; i < nx; ++i ) { 
-    for( unsigned int j = 0; j < ny; ++j ) { 
+    // cf sutil/HDRLoader.cpp 
+    for( unsigned int j = 0; j < ny; ++j ) 
+    { 
+        unsigned int offset = j*ny ;  
+        GPropertyD* p0 = ptex->getPropertyByIndex(offset+0) ;
+        GPropertyD* p1 = ptex->getPropertyByIndex(offset+1) ;
+        GPropertyD* p2 = ptex->getPropertyByIndex(offset+2) ;
+        GPropertyD* p3 = ptex->getPropertyByIndex(offset+3) ;
 
-        unsigned int buf_index = ( (j)*nx + i )*4;  
-        unsigned int offset = ny/4 ;  
-
-        buffer_data[buf_index+0] = ptex->getPropertyByIndex(offset+0)->getValue(i) ;
-        buffer_data[buf_index+1] = ptex->getPropertyByIndex(offset+1)->getValue(i) ;
-        buffer_data[buf_index+2] = ptex->getPropertyByIndex(offset+2)->getValue(i) ;
-        buffer_data[buf_index+3] = ptex->getPropertyByIndex(offset+3)->getValue(i) ;
-    }    
+        for( unsigned int i = 0; i < nx; ++i ) 
+        { 
+            unsigned int buf_index = ( j*nx + i )*4;  
+            buffer_data[buf_index+0] = p0->getValue(i) ;
+            buffer_data[buf_index+1] = p1->getValue(i) ;
+            buffer_data[buf_index+2] = p2->getValue(i) ;
+            buffer_data[buf_index+3] = p3->getValue(i) ;
+#if 0
+            printf("GGeoOptiXGeometry::addWavelengthTexture i %2u j %2u buf_index %4u offset %u buf  %10.3f %10.3f %10.3f %10.3f \n",
+               i,j,buf_index,offset,
+               buffer_data[buf_index+0],
+               buffer_data[buf_index+1],
+               buffer_data[buf_index+2],
+               buffer_data[buf_index+3]);
+#endif
+        }    
     }
     wavelengthBuffer->unmap(); 
 
@@ -258,6 +272,9 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
 
     GSubstanceLib* lib = m_ggeo->getSubstanceLib();
     GPropertyMap* ptex = lib->createStandardProperties("ptex", substance);
+    substance->setTexProps(ptex);
+    //substance->dumpTexProps("GGeoOptiXGeometry::convertSubstance", 510.f ); 
+
     addWavelengthTexture(material, ptex);
 
     unsigned int index = substance->getIndex();

@@ -6,9 +6,7 @@
 #include "commonStructs.h"
 
 #include "RayTraceConfigInc.h"
-#if RAYTRACE_CURAND
 #include <curand_kernel.h>
-#endif
 
 struct PerRayData_radiance
 {
@@ -16,9 +14,7 @@ struct PerRayData_radiance
   float  importance;
   int    depth;
   unsigned int node ; 
-#if RAYTRACE_CURAND
   curandState rng;
-#endif
 };
 
 

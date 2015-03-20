@@ -62,6 +62,9 @@ public:
    {
        return m_domain->getValue(index);
    }
+   T getInterpolatedValue(T val);
+ 
+
 
 
 public:
@@ -129,6 +132,11 @@ GProperty<T>* GProperty<T>::createInterpolatedProperty(GDomain<T>* domain)
     return prop ;
 }
 
+template <typename T>
+T GProperty<T>::getInterpolatedValue(T val)
+{
+    return np_interp( val , m_domain, m_values );
+}
 
 
 typedef GProperty<float>  GPropertyF ;

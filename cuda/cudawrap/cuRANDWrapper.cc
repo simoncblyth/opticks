@@ -75,6 +75,10 @@ int cuRANDWrapper::Test()
     return 0 ;
 }
 
+void cuRANDWrapper::devicesync()
+{
+    devicesync_wrapper();
+}
 
 void cuRANDWrapper::test_rng(const char* tag)
 {
@@ -85,11 +89,7 @@ void cuRANDWrapper::test_rng(const char* tag)
 
     m_test  = (float*)malloc(items*sizeof(float));
 
-    test_rng_wrapper(
-        seq, 
-        m_dev_rng_states, 
-        m_test
-    );
+    test_rng_wrapper( seq, m_dev_rng_states, m_test);
 
     char* test_digest = testdigest();
     printf("%s %s ", tag, test_digest);
@@ -173,16 +173,24 @@ void cuRANDWrapper::Dump(const char* msg, unsigned int imod)
 
 void cuRANDWrapper::Setup(bool create)
 {
-    if(hasCache())
+    if(!hasCacheEnabled())
     {
-        Load();
-        //Dump("loaded_from_cache",100000);
+        printf("cuRANDWrapper::Setup cache is disabled\n");
+        Init(create);
     }
     else
     {
-        Init(create);
-        Save();
-        //Dump("init_and_cached",100000);
+        if(hasCache())
+        {
+            Load();
+            //Dump("loaded_from_cache",100000);
+        }
+        else
+        {
+            Init(create);
+            Save();
+            //Dump("init_and_cached",100000);
+        }
     }
 }
 
@@ -202,22 +210,30 @@ int cuRANDWrapper::Init(bool create)
         create_rng();
     }
     init_rng("init");
+    devicesync();  
+    
     return 0 ;
 }
 
 int cuRANDWrapper::Save()
 {
     char* path = getCachePath() ;
-    printf("cuRANDWrapper::Save %u items to %s \n", getItems(), path);
 
     copytohost_rng();
+    devicesync();
+
+    char* save_digest = digest() ;
+
+    printf("cuRANDWrapper::Save %u items to %s save_digest %s \n", getItems(), path, save_digest);
+
     int rc = Save(path);
 
+    free(save_digest);
     free(path);
     return rc ; 
 }
 
-int cuRANDWrapper::Load(bool roundtrip)
+int cuRANDWrapper::Load()
 {
     char* path = getCachePath() ;
 
@@ -227,12 +243,16 @@ int cuRANDWrapper::Load(bool roundtrip)
     printf("cuRANDWrapper::Load %u items from %s load_digest %s \n", getItems(), path, load_digest);
 
     copytodevice_rng();
+    devicesync();
      
+    bool roundtrip = true ;
     if(roundtrip)
     {
        copytohost_rng();
+       devicesync();
+
        char* roundtrip_digest = digest();
-       //printf("cuRANDWrapper::Load roundtrip_digest %s \n", roundtrip_digest ); 
+       printf("cuRANDWrapper::Load roundtrip_digest %s \n", roundtrip_digest ); 
        assert(strcmp(load_digest, roundtrip_digest)==0);
        free(roundtrip_digest);
     }

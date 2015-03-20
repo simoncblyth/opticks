@@ -140,6 +140,83 @@ Need to define all the envvars to get a match, as defaults not aligned::
     delta:cudawrap blyth$ 
 
 
+
+Below demonstrates that curandState caching works in CUDA only running, 
+but mysteriously the test is a factor of three slower when curandState 
+was loaded from cache as opposed to being curand_init::
+
+    delta:cudawrap blyth$ cudawrap-test
+     init_rng_wrapper sequence_index   0  thread_offset       0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   135.4791 ms 
+     init_rng_wrapper sequence_index   1  thread_offset   32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   139.1703 ms 
+     init_rng_wrapper sequence_index   2  thread_offset   65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   138.1142 ms 
+     init_rng_wrapper sequence_index   3  thread_offset   98304  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   158.8427 ms 
+     init_rng_wrapper sequence_index   4  thread_offset  131072  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   138.6337 ms 
+     init_rng_wrapper sequence_index   5  thread_offset  163840  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   146.0475 ms 
+     init_rng_wrapper sequence_index   6  thread_offset  196608  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   157.7762 ms 
+     init_rng_wrapper sequence_index   7  thread_offset  229376  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   170.1313 ms 
+     init_rng_wrapper sequence_index   8  thread_offset  262144  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1070.4102 ms 
+     init_rng_wrapper sequence_index   9  thread_offset  294912  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1043.7632 ms 
+     init_rng_wrapper sequence_index  10  thread_offset  327680  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1057.3168 ms 
+     init_rng_wrapper sequence_index  11  thread_offset  360448  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1070.9830 ms 
+     init_rng_wrapper sequence_index  12  thread_offset  393216  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1084.1074 ms 
+     init_rng_wrapper sequence_index  13  thread_offset  425984  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1098.1005 ms 
+     init_rng_wrapper sequence_index  14  thread_offset  458752  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1112.0490 ms 
+     init_rng_wrapper sequence_index  15  thread_offset  491520  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1125.6128 ms 
+     init_rng_wrapper sequence_index  16  thread_offset  524288  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1037.1678 ms 
+     init_rng_wrapper sequence_index  17  thread_offset  557056  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1050.6687 ms 
+     init_rng_wrapper sequence_index  18  thread_offset  589824  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1064.1864 ms 
+     init_rng_wrapper sequence_index  19  thread_offset  622592  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1077.8341 ms 
+     init_rng_wrapper sequence_index  20  thread_offset  655360  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1091.3204 ms 
+     init_rng_wrapper sequence_index  21  thread_offset  688128  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1104.9775 ms 
+     init_rng_wrapper sequence_index  22  thread_offset  720896  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1118.7540 ms 
+     init_rng_wrapper sequence_index  23  thread_offset  753664  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time  1132.4813 ms 
+    init_rng_wrapper tag init workitems  786432  threads_per_block   256  max_blocks    128 reverse 0 nlaunch  24 TotalTime 18523.9277 ms 
+    cuRANDWrapper::Save 786432 items to /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin save_digest 98b4055e7205ed0841d70564dd30895b 
+    cuRANDWrapper::Save mkdirp for path /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin m_cache_dir /tmp/env/cuRANDWrapperTest/cachedir 
+    test_0 c98f62f34773d0213c1c641c0c57936e     0.7402     0.9012     0.3494     0.3829     0.4598     0.5884     0.3593     0.4285 
+    test_1 466072011433d91d56c3cac671a1b2da     0.4385     0.0628     0.8695     0.0006     0.1884     0.9480     0.1709     0.6487 
+    test_2 ff5a848aeeb57cac41c80964d6c0b1ca     0.5170     0.8406     0.2722     0.2081     0.3173     0.9427     0.7670     0.7851 
+    test_3 2c911501a3372c3d0476455d005b1ebe     0.1570     0.6885     0.8124     0.5285     0.0230     0.1309     0.2851     0.2959 
+    test_4 867f5171ec223d039b1614d3ef3d9887     0.0714     0.9468     0.3954     0.6760     0.5098     0.2924     0.6596     0.1359 
+    cuRANDWrapperTest::main tag init workitems  786432  threads_per_block   256  max_blocks    128 reverse 0 nlaunch  24 TotalTime 18523.9277 ms 
+    cuRANDWrapperTest::main tag test_0 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3581 ms 
+    cuRANDWrapperTest::main tag test_1 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3279 ms 
+    cuRANDWrapperTest::main tag test_2 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3420 ms 
+    cuRANDWrapperTest::main tag test_3 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3855 ms 
+    cuRANDWrapperTest::main tag test_4 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3906 ms 
+    delta:cudawrap blyth$ 
+    delta:cudawrap blyth$ cudawrap-test
+    cuRANDWrapper::Load 786432 items from /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin load_digest 98b4055e7205ed0841d70564dd30895b 
+    cuRANDWrapper::Load roundtrip_digest 98b4055e7205ed0841d70564dd30895b 
+    test_0 c98f62f34773d0213c1c641c0c57936e     0.7402     0.9012     0.3494     0.3829     0.4598     0.5884     0.3593     0.4285 
+    test_1 466072011433d91d56c3cac671a1b2da     0.4385     0.0628     0.8695     0.0006     0.1884     0.9480     0.1709     0.6487 
+    test_2 ff5a848aeeb57cac41c80964d6c0b1ca     0.5170     0.8406     0.2722     0.2081     0.3173     0.9427     0.7670     0.7851 
+    test_3 2c911501a3372c3d0476455d005b1ebe     0.1570     0.6885     0.8124     0.5285     0.0230     0.1309     0.2851     0.2959 
+    test_4 867f5171ec223d039b1614d3ef3d9887     0.0714     0.9468     0.3954     0.6760     0.5098     0.2924     0.6596     0.1359 
+    cuRANDWrapperTest::main tag test_0 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    14.9684 ms 
+    cuRANDWrapperTest::main tag test_1 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    17.5934 ms 
+    cuRANDWrapperTest::main tag test_2 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.8187 ms 
+    cuRANDWrapperTest::main tag test_3 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    15.0857 ms 
+    cuRANDWrapperTest::main tag test_4 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.4365 ms 
+    delta:cudawrap blyth$ 
+    delta:cudawrap blyth$ cudawrap-test
+    cuRANDWrapper::Load 786432 items from /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin load_digest 98b4055e7205ed0841d70564dd30895b 
+    cuRANDWrapper::Load roundtrip_digest 98b4055e7205ed0841d70564dd30895b 
+    test_0 c98f62f34773d0213c1c641c0c57936e     0.7402     0.9012     0.3494     0.3829     0.4598     0.5884     0.3593     0.4285 
+    test_1 466072011433d91d56c3cac671a1b2da     0.4385     0.0628     0.8695     0.0006     0.1884     0.9480     0.1709     0.6487 
+    test_2 ff5a848aeeb57cac41c80964d6c0b1ca     0.5170     0.8406     0.2722     0.2081     0.3173     0.9427     0.7670     0.7851 
+    test_3 2c911501a3372c3d0476455d005b1ebe     0.1570     0.6885     0.8124     0.5285     0.0230     0.1309     0.2851     0.2959 
+    test_4 867f5171ec223d039b1614d3ef3d9887     0.0714     0.9468     0.3954     0.6760     0.5098     0.2924     0.6596     0.1359 
+    cuRANDWrapperTest::main tag test_0 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    15.1265 ms 
+    cuRANDWrapperTest::main tag test_1 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    14.8927 ms 
+    cuRANDWrapperTest::main tag test_2 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.8397 ms 
+    cuRANDWrapperTest::main tag test_3 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    15.0116 ms 
+    cuRANDWrapperTest::main tag test_4 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.8369 ms 
+    delta:cudawrap blyth$ 
+
+
+
+
 EOU
 }
 

@@ -75,6 +75,13 @@ Next Steps
   * geometricNormal 
 
 
+cuRAND flakiness
+--------------------
+
+Disabling cuRAND caching appears to avoid the flakiness.
+
+
+
 OptiX Questions
 -----------------
 
@@ -448,8 +455,8 @@ raytrace-export()
    #q="index:4998"
    #q="index:5000"
    #q="range:5000:5010"
-   q="range:5000:8000"
-   #q="range:3153:12221"
+   #q="range:5000:8000"
+   q="range:3153:12221"
    #q="range:4998:5998,merge:1" 
    #q="range:4998:5998,merge:0" 
    export RAYTRACE_QUERY=$q
@@ -492,7 +499,7 @@ raytrace-v(){
 }
 
 raytrace-x(){
-  raytrace-- --cache --g4dae $DAE_NAME_DYB $*
+  raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 $*
 }
 
 raytrace-x-manual(){

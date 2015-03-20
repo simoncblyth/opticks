@@ -48,12 +48,20 @@ class GSubstance {
       GPropertyMap* getInnerSurface();
       GPropertyMap* getOuterSurface();
 
+  public:
+      void setTexProps(GPropertyMap* texprops);
+      GPropertyMap* getTexProps();
+      void dumpTexProps(const char* msg, double wavelength);
 
   private:
       GPropertyMap*  m_imaterial ; 
       GPropertyMap*  m_omaterial ; 
       GPropertyMap*  m_isurface ; 
       GPropertyMap*  m_osurface ; 
+
+  private:
+      GPropertyMap*  m_texprops ; 
+
 
       unsigned int m_index ; 
 

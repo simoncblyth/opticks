@@ -6,9 +6,7 @@
 #include "commonStructs.h"
 
 #include "RayTraceConfigInc.h"
-#if RAYTRACE_CURAND
 #include <curand_kernel.h>
-#endif
 
 struct PerRayData_hybrid
 {
@@ -25,9 +23,7 @@ struct PerRayData_hybrid
   float4 direction_wavelength ;  // hmm same as ray.direction ?  
   float4 polarization_weight ;  
 
-#if RAYTRACE_CURAND
   curandState rng;
-#endif
 };
 
 

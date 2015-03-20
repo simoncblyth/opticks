@@ -91,6 +91,39 @@ private:
 };
 
 
+
+template <typename T>
+T np_interp(const T z, GAry<T>* xp, GAry<T>* fp )
+{
+    // input domain and values
+    T* dx = xp->getValues();   
+    T* dy = fp->getValues();   
+    T left = fp->getLeft();
+    T right = fp->getRight();
+
+    T ival ;
+    int j = xp->binary_search(z);
+    if(j == -1)
+    {
+        ival = left;
+    }
+    else if(j == xp->getLength() - 1)
+    {
+        ival = dy[j];
+    }
+    else if(j == xp->getLength() )
+    {
+        ival = right;
+    }
+    else
+    {
+        const T slope  = (dy[j + 1] - dy[j])/(dx[j + 1] - dx[j]);
+        ival = slope*(z - dx[j]) + dy[j];
+    }
+    return ival ; 
+}
+
+
 template <typename T>
 GAry<T>* np_interp(GAry<T>* xi, GAry<T>* xp, GAry<T>* fp )
 {
@@ -101,37 +134,12 @@ GAry<T>* np_interp(GAry<T>* xi, GAry<T>* xp, GAry<T>* fp )
 
     assert(xp->getLength() == fp->getLength());  // input domain and values must be of same length
 
-    // input domain and values
-    T* dx = xp->getValues();   
-    T* dy = fp->getValues();   
-    T left = fp->getLeft();
-    T right = fp->getRight();
-
     GAry<T>* res = new GAry<T>(xi->getLength()); // Ary to be filled with interpolated values
     T* dres = res->getValues();
 
     for (unsigned int i = 0; i < res->getLength() ; i++) 
     {
-        const T z = xi->getValue(i);
-        int j = xp->binary_search(z);
-
-        if(j == -1)
-        {
-            dres[i] = left;
-        }
-        else if(j == xp->getLength() - 1)
-        {
-            dres[i] = dy[j];
-        }
-        else if(j == xp->getLength() )
-        {
-            dres[i] = right;
-        }
-        else
-        {
-            const T slope  = (dy[j + 1] - dy[j])/(dx[j + 1] - dx[j]);
-            dres[i] = slope*(z - dx[j]) + dy[j];
-        }
+        dres[i] = np_interp( xi->getValue(i), xp, fp ) ;
     }
     return res ;
 }
