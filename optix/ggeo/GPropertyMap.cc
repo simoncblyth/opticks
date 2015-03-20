@@ -32,6 +32,10 @@ GDomain<double>* GPropertyMap::getStandardDomain()
 {
     return m_standard_domain ;
 }
+bool GPropertyMap::hasStandardDomain()
+{
+    return m_standard_domain != NULL;
+}
 
 
 
@@ -103,14 +107,14 @@ bool GPropertyMap::isMaterial()
 }
 
 
-void GPropertyMap::addConstantProperty(const char* pname, double value )
+void GPropertyMap::addConstantProperty(const char* pname, double value, const char* prefix)
 {
    assert(m_standard_domain);
    GProperty<double>* prop = GProperty<double>::from_constant( value, m_standard_domain->getValues(), m_standard_domain->getLength() );
    addProperty(pname, prop);
 }
 
-void GPropertyMap::addProperty(const char* pname, double* values, double* domain, unsigned int length)
+void GPropertyMap::addProperty(const char* pname, double* values, double* domain, unsigned int length, const char* prefix)
 {
    //printf("GPropertyMap::addProperty name %s pname %s length %u \n", getName(), pname, length );
    assert(length < 1000);
@@ -126,18 +130,27 @@ void GPropertyMap::addProperty(const char* pname, double* values, double* domain
        //orig->Summary("orig", 10 );
        //ipol->Summary("ipol", 10 );
 
-       addProperty(pname, ipol) ;  
+       addProperty(pname, ipol, prefix) ;  
    } 
    else
    {
-       addProperty(pname, orig);
+       addProperty(pname, orig, prefix);
    }
 }
 
 
-void GPropertyMap::addProperty(const char* pname,  GProperty<double>* prop)
+void GPropertyMap::addProperty(const char* pname,  GProperty<double>* prop, const char* _prefix)
 {
-    std::string key(pname);
+    if(!prop)
+    {
+        printf("GPropertyMap::addProperty pname %s NULL PROPERTY \n", pname);
+    }
+    assert(prop); 
+
+
+    std::string key(pname) ;
+    if(_prefix) key = _prefix + key ;
+
     m_keys.push_back(key);
     m_prop[key] = prop ;  
 }
@@ -183,7 +196,13 @@ void GPropertyMap::Summary(const char* msg, unsigned int nline)
 
 unsigned int GPropertyMap::getNumProperties()
 {
-   assert(m_prop.size() == m_keys.size());
+
+   if(m_prop.size() != m_keys.size())
+   {
+      printf("GPropertyMap::getNumProperties prop/keys mismatch prop %lu  keys %lu \n", m_prop.size(), m_keys.size()); 
+   }
+
+   assert(m_prop.size() == m_keys.size()); // maybe a duplicated key can trigger this
    return m_prop.size();
 }
 

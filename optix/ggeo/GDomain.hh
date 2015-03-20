@@ -18,6 +18,7 @@ class GDomain {
      T getHigh(){ return m_high ; }   
      T getStep(){ return m_step ; }
   public: 
+     bool isEqual(GDomain<T>* other); 
      size_t getLength();   
      T* getValues();   
 
@@ -26,6 +27,16 @@ class GDomain {
      T m_high ; 
      T m_step ; 
 };
+
+
+template <typename T>
+bool GDomain<T>::isEqual(GDomain<T>* other)
+{
+    return 
+       getLow() == other->getLow()   &&
+       getHigh() == other->getHigh() &&
+       getStep() == other->getStep() ;
+}
 
 
 template <typename T>

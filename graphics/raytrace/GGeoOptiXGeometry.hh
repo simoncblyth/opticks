@@ -14,16 +14,8 @@ class GNode ;
 class GSubstance ;
 class GPropertyMap ;
 
-#include "GProperty.hh"
-
 class GGeoOptiXGeometry  : public OptiXGeometry 
 {
-public:
-    static const char* refractive_index ; 
-    static const char* absorption_length ; 
-    static const char* scattering_length ; 
-    static const char* reemission_prob ; 
-
 public:
     GGeoOptiXGeometry(GGeo* ggeo);
     virtual ~GGeoOptiXGeometry();
@@ -34,6 +26,7 @@ public:
 private:
     void convertSubstances();
     optix::Material convertSubstance(GSubstance* substance);
+    void addWavelengthTexture(optix::Material& material, GPropertyMap* ptex);
 
 private:
     void convertStructure();
@@ -43,25 +36,15 @@ private:
     optix::Geometry convertGeometry(GSolid* solid);
     optix::GeometryInstance convertGeometryInstance(GSolid* solid);
 
-private:
-    void addWavelengthTexture(optix::Material& material, GSubstance* substance);
-    void checkProperties(GPropertyMap* ptex);
-    GPropertyD* getPropertyOrDefault(GPropertyMap* pmap, const char* pname);
+public:
+    optix::float3  getMin();
+    optix::float3  getMax();
+    optix::float3  getCenter();
+    optix::float3  getExtent();
+    optix::float3  getUp();
 
 private:
     GGeo* m_ggeo ; 
-
-public:
-
-    optix::float3  getMin();
-
-    optix::float3  getMax();
-
-    optix::float3  getCenter();
-
-    optix::float3  getExtent();
-
-    optix::float3  getUp();
 
 };
 

@@ -48,6 +48,7 @@ class GSubstance {
       GPropertyMap* getInnerSurface();
       GPropertyMap* getOuterSurface();
 
+
   private:
       GPropertyMap*  m_imaterial ; 
       GPropertyMap*  m_omaterial ; 

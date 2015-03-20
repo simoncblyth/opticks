@@ -33,13 +33,14 @@ class GPropertyMap {
       void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=0);
 
   public:
+      bool hasStandardDomain();
       void setStandardDomain(GDomain<double>* standard_domain);
       GDomain<double>* getStandardDomain();
 
   public:
-      void addConstantProperty(const char* pname, double value );
-      void addProperty(const char* pname, double* values, double* domain, unsigned int length );
-      void addProperty(const char* pname, GPropertyD* prop);
+      void addConstantProperty(const char* pname, double value, const char* prefix=NULL);
+      void addProperty(const char* pname, double* values, double* domain, unsigned int length, const char* prefix=NULL);
+      void addProperty(const char* pname, GPropertyD* prop, const char* prefix=NULL);
       unsigned int getNumProperties();
 
   public:

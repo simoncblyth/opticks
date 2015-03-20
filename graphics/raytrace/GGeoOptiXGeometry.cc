@@ -26,7 +26,6 @@ GGeoOptiXGeometry::GGeoOptiXGeometry(GGeo* ggeo)
 {
 }
 
-
 void GGeoOptiXGeometry::convert()
 {
     convertSubstances();
@@ -54,13 +53,8 @@ void GGeoOptiXGeometry::convertSubstances()
 void GGeoOptiXGeometry::convertStructure()
 {
     m_gis.clear();
-
-    GSolid* solid = m_ggeo->getSolid(0);
-
-    traverseNode( solid, 0, true );
-
+    traverseNode( m_ggeo->getSolid(0), 0, true );
     printf("GGeoOptiXGeometry::convertStructure :  %lu gi \n", m_gis.size() );
-
     assert(m_gis.size() > 0);
 }
 
@@ -72,9 +66,7 @@ void GGeoOptiXGeometry::traverseNode(GNode* node, unsigned int depth, bool recur
     if(solid->isSelected())
     {
         optix::GeometryInstance gi = convertGeometryInstance(solid);
-
         m_gis.push_back(gi);
-
         m_ggeo->updateBounds(solid);
     }
 
@@ -90,20 +82,16 @@ optix::GeometryInstance GGeoOptiXGeometry::convertGeometryInstance(GSolid* solid
     optix::Geometry geometry = convertGeometry(solid) ;  
 
     std::vector<unsigned int>& substanceIndices = solid->getDistinctSubstanceIndices();
-
     assert(substanceIndices.size() == 1 );  // for now, maybe >1 for merged meshes 
 
     std::vector<optix::Material> materials ;
-
     for(unsigned int i=0 ; i < substanceIndices.size() ; i++)
     {
         unsigned int index = substanceIndices[i];
         optix::Material material = getMaterial(index) ;
         materials.push_back(material); 
     }
-
     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
-
     return gi ;
 }
 
@@ -157,7 +145,11 @@ optix::Geometry GGeoOptiXGeometry::convertGeometry(GSolid* solid)
     nodeBuffer->unmap();
 
 
-
+    //
+    // huh, is this in use ? NOT CURRENTLY
+    // while have one substance per mesh this isnt needed, if move to 
+    // merged meshes will need to identify which substance corresponds to which face
+    //
     optix::Buffer substanceBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
     unsigned int* substanceBuffer_Host = static_cast<unsigned int*>( substanceBuffer->map() );
     geometry["substanceBuffer"]->setBuffer(substanceBuffer);
@@ -177,131 +169,66 @@ optix::Geometry GGeoOptiXGeometry::convertGeometry(GSolid* solid)
 
 
 
-GPropertyD* GGeoOptiXGeometry::getPropertyOrDefault(GPropertyMap* pmap, const char* pname)
+void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GPropertyMap* ptex)
 {
-    GSubstanceLib* lib = m_ggeo->getSubstanceLib();
-    GPropertyD* prop = pmap->getProperty(pname);
-    if(!prop)
-    {
-        prop = lib->getDefaultProperty(pname);
-        if(!prop) printf("GGeoOptiXGeometry::getPropertyOrDefault MISSING a default prop %s\n", pname);
-        assert(prop); // missing a default 
-    }
-    return prop;
-}
+    GDomain<double>* domain = ptex->getStandardDomain();
+    material["wavelength_domain"]->setFloat(domain->getLow(), domain->getHigh(), domain->getStep() ); 
 
+    unsigned int nprop = ptex->getNumProperties() ;
+    assert(nprop % 4 == 0 );           
 
+    const unsigned int nx = domain->getLength(); 
+    const unsigned int ny = nprop/4 ; 
 
-const char* GGeoOptiXGeometry::refractive_index = "refractive_index" ; 
-const char* GGeoOptiXGeometry::absorption_length = "absorption_length" ; 
-const char* GGeoOptiXGeometry::scattering_length = "scattering_length" ; 
-const char* GGeoOptiXGeometry::reemission_prob = "reemission_prob" ; 
-
-
-void GGeoOptiXGeometry::checkProperties(GPropertyMap* ptex)
-{
-    const char* name ;
-
-    name = ptex->getPropertyNameByIndex(e_refractive_index);
-    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_refractive_index, name );
-    assert(strcmp(name,refractive_index)==0);
-
-    name = ptex->getPropertyNameByIndex(e_absorption_length);
-    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_absorption_length, name );
-    assert(strcmp(name,absorption_length)==0);
-
-    name = ptex->getPropertyNameByIndex(e_scattering_length);
-    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_scattering_length, name );
-    assert(strcmp(name,scattering_length)==0);
-
-    name = ptex->getPropertyNameByIndex(e_reemission_prob);
-    //printf("GGeoOptiXGeometry::checkProperties index %d name [%s] \n", e_reemission_prob, name );
-    assert(strcmp(name,reemission_prob)==0);
-
-
-    assert(strcmp(ptex->getPropertyNameByIndex(e_refractive_index),refractive_index)==0); 
-    assert(strcmp(ptex->getPropertyNameByIndex(e_absorption_length),absorption_length)==0); 
-    assert(strcmp(ptex->getPropertyNameByIndex(e_scattering_length),scattering_length)==0); 
-    assert(strcmp(ptex->getPropertyNameByIndex(e_reemission_prob),reemission_prob)==0); 
-}
-
-
-void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstance* substance)
-{
-    //substance->Summary("GGeoOptiXGeometry::addWavelengthTexture"); 
-    optix::TextureSampler sampler = m_context->createTextureSampler();
-
-    GPropertyMap* imat = substance->getInnerMaterial();
-    GDomain<double>* domain = imat->getStandardDomain();
-    unsigned int length = domain->getLength();
-
-    GPropertyMap* ptex = new GPropertyMap("ptex");
-    ptex->addProperty("refractive_index", getPropertyOrDefault( imat, "RINDEX" ));
-    ptex->addProperty("absorption_length",getPropertyOrDefault( imat, "ABSLENGTH" ));
-    ptex->addProperty("scattering_length",getPropertyOrDefault( imat, "RAYLEIGH" ));
-    ptex->addProperty("reemission_prob"  ,getPropertyOrDefault( imat, "REEMISSIONPROB" ));
-
-    checkProperties(ptex);
-
-    //ptex->addProperty("debug_ramp"  , m_ggeo->getSubstanceLib()->getRamp());
-    //ptex->Summary("ptex"); 
-
-
-    // GSubstance incorporates properties from innermaterial/outermaterial 
-    // and sometimes innersurface/outersurface so "GSubstanceBoundary" might be a better name 
-    //
-    // * need to define a standard list of properties (enum and vector of keys)  
-    // * handle missing qtys with default values ?  
-    //
-    // * need to encode the wavelength ranges, so can correctly convert a wavelength into
-    //   a texture coordinate to lookup
-    // * textures have better performance when there is "spatial locality" ie repeated
-    //   lookups tending to be in same region of the texture : so design the property enum
-    //   to put properties that are needed together at close tex coordinates  
-    //
-
-
-    const unsigned int nx = length ;                      // standard number of wavelength samples
-    const unsigned int ny = ptex->getNumProperties()/4 ;  // number of wavelength dependent properties to include in the texture 
-
-    //printf("GGeoOptiXGeometry::addWavelengthTexture nx %u ny %u \n", nx, ny );
+    printf("GGeoOptiXGeometry::addWavelengthTexture nx %u ny %u \n", nx, ny );
 
     optix::Buffer wavelengthBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
     float* buffer_data = static_cast<float*>( wavelengthBuffer->map() );
   
-    // sutil/HDRLoader.cpp  : is this the right buffer layout ?
+    // following buffer layout gleaned from sutil/HDRLoader.cpp 
     for( unsigned int i = 0; i < nx; ++i ) { 
     for( unsigned int j = 0; j < ny; ++j ) { 
-        unsigned int buf_index = ( (j)*nx + i )*4;  
 
-        buffer_data[buf_index]   = ptex->getPropertyByIndex(0)->getValue(i) ;
-        buffer_data[buf_index+1] = ptex->getPropertyByIndex(1)->getValue(i) ;
-        buffer_data[buf_index+2] = ptex->getPropertyByIndex(2)->getValue(i) ;
-        buffer_data[buf_index+3] = ptex->getPropertyByIndex(3)->getValue(i) ;
+        unsigned int buf_index = ( (j)*nx + i )*4;  
+        unsigned int offset = ny/4 ;  
+
+        buffer_data[buf_index+0] = ptex->getPropertyByIndex(offset+0)->getValue(i) ;
+        buffer_data[buf_index+1] = ptex->getPropertyByIndex(offset+1)->getValue(i) ;
+        buffer_data[buf_index+2] = ptex->getPropertyByIndex(offset+2)->getValue(i) ;
+        buffer_data[buf_index+3] = ptex->getPropertyByIndex(offset+3)->getValue(i) ;
     }    
     }
     wavelengthBuffer->unmap(); 
 
+
+    optix::TextureSampler sampler = m_context->createTextureSampler();
+
     sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
     sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
-
     sampler->setFilteringModes(RT_FILTER_LINEAR, RT_FILTER_LINEAR, RT_FILTER_NONE);
-
-    //sampler->setIndexingMode(RT_TEXTURE_INDEX_NORMALIZED_COORDINATES); 
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
-
-    //sampler->setReadMode(RT_TEXTURE_READ_ELEMENT_TYPE);    
     sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
+    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+    sampler->setMaxAnisotropy(1.0f);  
+    sampler->setMipLevelCount(1u);     
+    sampler->setArraySize(1u);        
+    sampler->setBuffer(0u, 0u, wavelengthBuffer);
+
+    material["wavelength_texture"]->setTextureSampler(sampler);
+
+
+    // 
+    // RT_TEXTURE_INDEX_NORMALIZED_COORDINATES
     //
     // RT_TEXTURE_READ_NORMALIZED_FLOAT : 
     //    texture read results automatically converted to normalized float values 
     //    (no normalization is apparent)
     //
-
-    // OptiX currently supports only a single MIP level and a single element texture array, 
-    // so the below are almost entirely boilerplate
+    // RT_TEXTURE_READ_ELEMENT_TYPE
+    //     ?
     //
-    // mipmaps are power of 2 reductions of textures, 
+    // OptiX currently supports only a single MIP level and a single element texture array, 
+    // so many of above settings are boilerplate.
+    // Mipmaps are power of 2 reductions of textures, 
     // so can apply appropriate sized texture at different object distances
     //
     // http://en.wikipedia.org/wiki/Anisotropic_filtering
@@ -310,20 +237,8 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GSubstan
     //
     // A MaxAnisotropy value greater than 0 will enable anisotropic filtering at the specified value.
     // (assuming this to be irrelevant in current OptiX)
-    //
-    sampler->setMaxAnisotropy(1.0f);  
-    sampler->setMipLevelCount(1u);     
-    sampler->setArraySize(1u);        
-    sampler->setBuffer(0u, 0u, wavelengthBuffer);
-
-
-    material["wavelength_texture"]->setTextureSampler(sampler);
-    material["wavelength_domain"]->setFloat(domain->getLow(), domain->getHigh(), domain->getStep() ); 
-
-    unsigned int index = substance->getIndex();
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    material["contrast_color"]->setFloat(cfg->make_contrast_color(index));   // just for debugging
 }
+
 
 
 
@@ -341,13 +256,15 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
     unsigned int raytype_radiance = 0 ;
     material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
 
-    addWavelengthTexture(material, substance);
+    GSubstanceLib* lib = m_ggeo->getSubstanceLib();
+    GPropertyMap* ptex = lib->createStandardProperties("ptex", substance);
+    addWavelengthTexture(material, ptex);
+
+    unsigned int index = substance->getIndex();
+    material["contrast_color"]->setFloat(cfg->make_contrast_color(index));   // just for debugging
 
     return material ; 
 }
-
-
-
 
 
 
@@ -365,7 +282,5 @@ optix::float3 GGeoOptiXGeometry::getMax()
     assert(p);
     return optix::make_float3(p->x, p->y, p->z); 
 }
-
-
 
 
