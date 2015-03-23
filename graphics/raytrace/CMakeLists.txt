@@ -114,7 +114,8 @@ set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytr
 set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
 
 # placing this inside the CMAKE_BINARY_DIR makes its prone to being wiped
-set(RAYTRACE_RNG_DIR "/tmp/env/RAYTRACE_RNG_DIR_2" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
+#set(RAYTRACE_RNG_DIR "$ENV{RAYTRACE_RNG_DIR}" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
+set(RAYTRACE_RNG_DIR "/usr/local/env/cuda/cudawrap/rngcache" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
 
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
 

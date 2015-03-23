@@ -225,6 +225,8 @@ cudawrap-bdir(){ echo $(local-base)/env/cuda/cudawrap.build ; }
 cudawrap-idir(){ echo $(local-base)/env/cuda/cudawrap ; }
 cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
 
+cudawrap-rng-dir(){ echo $(local-base)/env/cuda/cudawrap/rngcache ; }
+cudawrap-rng(){  ls -l $(cudawrap-rng-dir) ; }
 
 cudawrap-cd(){   cd $(cudawrap-sdir); }
 cudawrap-scd(){  cd $(cudawrap-sdir); }
@@ -309,10 +311,19 @@ cudawrap-test()
 {
    local iwd=$PWD
    cudawrap-bcd
-   DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
-   #DYLD_LIBRARY_PATH=. WORK=$(( 1024*1 )) lldb ./cuRANDWrapperTest 
+   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
    cd $iwd
 }
+
+cudawrap-test-full()
+{
+   local iwd=$PWD
+   cudawrap-bcd
+   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
+   cd $iwd
+}
+
+
 
 
 

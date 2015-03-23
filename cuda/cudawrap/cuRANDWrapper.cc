@@ -9,30 +9,45 @@
 #include "assert.h"
 
 
+cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset )
+           :
+           m_launchseq(launchseq),
+           m_seed(seed),
+           m_offset(offset),
+           m_dev_rng_states(0),
+           m_host_rng_states(0),
+           m_test(0),
+           m_imod(100000),
+           m_cache_dir(0),
+           m_cache_enabled(true),
+           m_owner(false),
+           m_first_resize(true)
+{
+    setCacheDir("/tmp"); 
+}
+
+void cuRANDWrapper::setCacheDir(const char* dir)
+{
+    m_cache_dir = strdup(dir);
+}
+cuRANDWrapper::~cuRANDWrapper()
+{
+    free(m_cache_dir);
+}
+ 
+void cuRANDWrapper::setItems(unsigned int items)
+{
+   m_launchseq->setItems(items); 
+}
 unsigned int cuRANDWrapper::getItems()
 { 
     return m_launchseq->getItems() ; 
 }
 
-void cuRANDWrapper::create_rng()
-{
-    m_dev_rng_states = create_rng_wrapper(m_launchseq);
-}
-
-void cuRANDWrapper::copytohost_rng()
-{
-    m_host_rng_states = copytohost_rng_wrapper(m_launchseq, m_dev_rng_states);
-}
-
-void cuRANDWrapper::copytodevice_rng()
-{
-    //TODO: avoid leaks 
-    m_dev_rng_states = copytodevice_rng_wrapper(m_launchseq, m_host_rng_states);
-}
-
-
 char* cuRANDWrapper::digest()
 {
+    if(!m_host_rng_states) return 0 ;
+
     MD5Digest dig ;
     dig.update( (char*)m_host_rng_states, sizeof(curandState)*getItems()) ; 
     return dig.finalize();
@@ -44,25 +59,6 @@ char* cuRANDWrapper::testdigest()
     dig.update( (char*)m_test, sizeof(float)*getItems()) ; 
     return dig.finalize();
 }
-
-
-
-void cuRANDWrapper::init_rng(const char* tag)
-{
-    LaunchSequence* seq = m_launchseq->copy() ;
-    seq->setTag(tag);
-
-    init_rng_wrapper(
-        seq,
-        m_dev_rng_states, 
-        m_seed, 
-        m_offset
-    );
-
-    m_launchrec.push_back(seq); 
-}
-
-
 
 int cuRANDWrapper::Test()
 {
@@ -130,14 +126,6 @@ char* cuRANDWrapper::getCachePath()
     return strdup(buf);
 }
 
-void cuRANDWrapper::setCacheDir(const char* dir)
-{
-    m_cache_dir = strdup(dir);
-}
-cuRANDWrapper::~cuRANDWrapper()
-{
-    free(m_cache_dir);
-}
 
 void cuRANDWrapper::Dump(const char* msg, unsigned int imod)
 {
@@ -171,28 +159,32 @@ void cuRANDWrapper::Dump(const char* msg, unsigned int imod)
 }
 
 
-void cuRANDWrapper::Setup(bool create)
+int cuRANDWrapper::InitFromCacheIfPossible()
 {
+    printf("cuRANDWrapper::InitFromCacheIfPossible\n");
     if(!hasCacheEnabled())
     {
-        printf("cuRANDWrapper::Setup cache is disabled\n");
-        Init(create);
+        printf("cuRANDWrapper::InitFromCacheIfPossible cache is disabled\n");
+        Init();
     }
     else
     {
         if(hasCache())
         {
+            printf("cuRANDWrapper::InitFromCacheIfPossible : loading from cache \n");
             Load();
-            //Dump("loaded_from_cache",100000);
         }
         else
         {
-            Init(create);
+            printf("cuRANDWrapper::InitFromCacheIfPossible : no cache initing and saving \n");
+            Init();
             Save();
-            //Dump("init_and_cached",100000);
         }
     }
+    return 0 ;
 }
+
+
 
 
 int cuRANDWrapper::hasCache()
@@ -203,23 +195,47 @@ int cuRANDWrapper::hasCache()
     return rc ; 
 }
 
-int cuRANDWrapper::Init(bool create)
+
+
+int cuRANDWrapper::Allocate()
 {
-    if(create)
-    {
-        create_rng();
-    }
-    init_rng("init");
+    printf("cuRANDWrapper::Allocate\n");
+    m_owner = true ; 
+    m_dev_rng_states = allocate_rng_wrapper(m_launchseq);
     devicesync();  
-    
+    return 0 ;
+}
+
+int cuRANDWrapper::Free()
+{
+    printf("cuRANDWrapper::Free\n");
+    assert(isOwner());
+
+    free_rng_wrapper(m_dev_rng_states);
+    devicesync();  
+    return 0 ;
+}
+
+int cuRANDWrapper::Init()
+{
+    printf("cuRANDWrapper::Init\n");
+
+    LaunchSequence* seq = m_launchseq->copy() ;
+    seq->setTag("init");
+    init_rng_wrapper( seq, m_dev_rng_states, m_seed, m_offset);
+    m_launchrec.push_back(seq); 
+
+    devicesync();  
     return 0 ;
 }
 
 int cuRANDWrapper::Save()
 {
+    printf("cuRANDWrapper::Save\n");
     char* path = getCachePath() ;
 
-    copytohost_rng();
+    m_host_rng_states = copytohost_rng_wrapper(m_launchseq, m_dev_rng_states);
+
     devicesync();
 
     char* save_digest = digest() ;
@@ -233,8 +249,49 @@ int cuRANDWrapper::Save()
     return rc ; 
 }
 
+
+int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements)
+{
+    printf("cuRANDWrapper::LoadIntoHostBuffer\n");
+
+    assert( elements == getItems()); 
+
+    if(!hasCacheEnabled())
+    {
+        printf("cuRANDWrapper::LoadIntoHostBuffer cache is disabled\n");
+        assert(0);
+    }
+    else
+    {
+        char* path = getCachePath() ;
+        if(hasCache())
+        {
+            printf("cuRANDWrapper::LoadIntoHostBuffer : loading from cache %s \n", path);
+
+            int rc = Load(path);
+            char* load_digest = digest() ;
+            printf("cuRANDWrapper::LoadIntoHostBuffer %u items from %s load_digest %s \n", getItems(), path, load_digest);
+            memcpy((void*)host_rng_states, (void*)m_host_rng_states, sizeof(curandState)*getItems());
+
+        }
+        else
+        {
+            printf("cuRANDWrapper::LoadIntoHostBuffer : no cache %s, initing and saving \n", path);
+            assert(0);
+        }
+    }
+ 
+
+
+
+    return 0 ; 
+}
+
+
+
 int cuRANDWrapper::Load()
 {
+    printf("cuRANDWrapper::Load\n");
     char* path = getCachePath() ;
 
     int rc = Load(path);
@@ -242,13 +299,13 @@ int cuRANDWrapper::Load()
     char* load_digest = digest() ;
     printf("cuRANDWrapper::Load %u items from %s load_digest %s \n", getItems(), path, load_digest);
 
-    copytodevice_rng();
+    m_dev_rng_states = copytodevice_rng_wrapper(m_launchseq, m_host_rng_states);
     devicesync();
      
     bool roundtrip = true ;
     if(roundtrip)
     {
-       copytohost_rng();
+       m_host_rng_states = copytohost_rng_wrapper(m_launchseq, m_dev_rng_states);
        devicesync();
 
        char* roundtrip_digest = digest();
@@ -285,13 +342,12 @@ int cuRANDWrapper::Save(const char* path)
 
     FILE *fp = fopen(path,"wb");
     if(fp == NULL) {
-        printf("cuRANDWrapper::Save error opening file %s", path);
+        printf("cuRANDWrapper::Save error opening file %s \n", path);
         return 1 ;
     }
-    curandState* rng_states = (curandState*)m_host_rng_states ; 
     for(unsigned int i = 0 ; i < getItems() ; ++i )
     {
-        curandState& rng = rng_states[i] ;
+        curandState& rng = m_host_rng_states[i] ;
         fwrite(&rng.d,                     sizeof(unsigned int),1,fp);
         fwrite(&rng.v,                     sizeof(unsigned int),5,fp);
         fwrite(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);
@@ -308,17 +364,16 @@ int cuRANDWrapper::Load(const char* path)
 {
     FILE *fp = fopen(path,"rb");
     if(fp == NULL) {
-        printf("cuRANDWrapper::Load ERROR opening file %s", path);
+        printf("cuRANDWrapper::Load ERROR opening file %s \n", path);
         return 1 ;
     }
 
     free(m_host_rng_states);
-    m_host_rng_states = malloc(sizeof(curandState)*getItems());
-    curandState* rng_states = (curandState*)m_host_rng_states ; 
+    m_host_rng_states = (curandState*)malloc(sizeof(curandState)*getItems());
 
     for(unsigned int i = 0 ; i < getItems() ; ++i )
     {
-        curandState& rng = rng_states[i] ;
+        curandState& rng = m_host_rng_states[i] ;
         fread(&rng.d,                     sizeof(unsigned int),1,fp);
         fread(&rng.v,                     sizeof(unsigned int),5,fp);
         fread(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);
@@ -329,6 +384,74 @@ int cuRANDWrapper::Load(const char* path)
     fclose(fp);
     return 0 ;
 }
+
+
+
+
+
+
+cuRANDWrapper* cuRANDWrapper::instanciate(
+         unsigned int elements, 
+         const char* cachedir,
+         unsigned long long seed,
+         unsigned long long offset,
+         unsigned int max_blocks,
+         unsigned int threads_per_block
+     )
+{
+    LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks ) ;
+    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset);
+    if(cachedir)
+    {
+        printf("cuRANDWrapper::instanciate with cache enabled : cachedir %s\n", cachedir);
+        crw->setCacheDir(cachedir);
+        crw->setCacheEnabled(true);
+    }
+    else
+    {
+        printf("cuRANDWrapper::instanciate with cache disabled\n");
+        crw->setCacheEnabled(false);
+    }
+    return crw ; 
+}
+
+
+
+void cuRANDWrapper::resize(unsigned int elements)
+{
+    printf("cuRANDWrapper::resize\n");
+    if(getItems() == elements && !m_first_resize)
+    {
+        printf("cuRANDWrapper::resize size is unchanged %u \n", elements);
+        return ;
+    }
+
+    setItems(elements);
+
+    if(isOwner())
+    {
+       if(!m_first_resize) Free();
+       Allocate();
+    }
+
+    InitFromCacheIfPossible();
+
+    m_first_resize = false ; 
+}
+
+
+
+int cuRANDWrapper::fillHostBuffer(curandState* host_rng_states, unsigned int elements)
+{
+    printf("cuRANDWrapper::fillHostBuffer\n");
+
+    int rc = LoadIntoHostBuffer(host_rng_states, elements );
+
+    return rc ;
+
+}
+
+
 
 
 

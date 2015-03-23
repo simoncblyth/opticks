@@ -9,18 +9,17 @@
 int main(int argc, char** argv)
 {
     unsigned int work              = getenvvar("WORK", WORK) ;
-    unsigned int threads_per_block = getenvvar("THREADS_PER_BLOCK", 256) ; 
+    unsigned long long seed        = 0 ;
+    unsigned long long offset      = 0 ;
     unsigned int max_blocks        = getenvvar("MAX_BLOCKS", 128) ;
-    bool reverse                   = false ; 
+    unsigned int threads_per_block = getenvvar("THREADS_PER_BLOCK", 256) ; 
+    char* cachedir = getenv("CUDAWRAP_RNG_DIR") ;
 
-    LaunchSequence* seq = new LaunchSequence( work, threads_per_block, max_blocks, reverse) ;
+    cuRANDWrapper* crw = cuRANDWrapper::instanciate( work, cachedir, seed, offset, max_blocks, threads_per_block );
 
-    cuRANDWrapper*  crw = new cuRANDWrapper(seq);
-
-    crw->setCacheDir("/tmp/env/cuRANDWrapperTest/cachedir");
-
-    bool create = true ; 
-    crw->Setup(create);
+    crw->Allocate();
+    crw->InitFromCacheIfPossible(); 
+    // CAUTION: without Init still provides random numbers but different ones every time
 
     // can increase max_blocks as generation much faster than initialization 
     crw->getLaunchSequence()->setMaxBlocks(max_blocks*32);  
@@ -28,6 +27,16 @@ int main(int argc, char** argv)
     crw->Test();
 
     crw->Summary("cuRANDWrapperTest::main");
+
+
+
+    crw->resize( 1024*10 );
+
+    crw->Test();
+
+    crw->Summary("cuRANDWrapperTest::main after resize");
+
+
 
 }
 

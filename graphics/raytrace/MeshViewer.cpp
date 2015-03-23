@@ -32,10 +32,10 @@
 #include <stdio.h>
 
 #include "LaunchSequence.hh"
-#include "cuRANDWrapper.hh"
 
 using namespace optix;
 
+#include "cuRANDWrapper.hh"
 #include "curand.h"
 #include "curand_kernel.h"
 
@@ -78,6 +78,13 @@ public:
     CM_ORTHO
   };
 
+  enum RngMode
+  {
+     RM_DISABLED=0,
+     RM_CUDA_OWNED,
+     RM_OPTIX_OWNED
+  };
+
   //
   // MeshViewer specific  
   //
@@ -86,28 +93,23 @@ public:
   // Setters for controlling application behavior
   void setShadeMode( ShadeMode mode )              { m_shade_mode = mode;               }
   void setCameraMode( CameraMode mode )            { m_camera_mode = mode;              }
+
   void setAORadius( float ao_radius )              { m_ao_radius = ao_radius;           }
   void setAOSampleMultiplier( int ao_sample_mult ) { m_ao_sample_mult = ao_sample_mult; }
   void setLightScale( float light_scale )          { m_light_scale = light_scale;       }
   void setAA( bool onoff )                         { m_aa_enabled = onoff;              }
   void setAnimation( bool anim )                   { m_animation = anim;                }
 
-  void createDevRngStates(
-      unsigned int elements, 
-      unsigned long long seed=0, 
-      unsigned long long offset=0,
-      unsigned int max_blocks=128,
-      unsigned int threads_per_block=256
-    );
+  void setRngMode( RngMode mode )                  { m_rng_mode = mode ;                } 
+  bool isRngCUDAOwned()                            { return m_rng_mode == RM_CUDA_OWNED ; } 
+  bool isRngOptiXOwned()                           { return m_rng_mode == RM_OPTIX_OWNED ; } 
+  bool isRngDisabled()                             { return m_rng_mode == RM_DISABLED ; } 
+  void setRngWrapper( cuRANDWrapper* crw )         { m_rng_wrapper = crw ; }
 
-  void initDevRngStates(
-      unsigned int elements, 
-      unsigned long long seed=0, 
-      unsigned long long offset=0,
-      unsigned int       max_blocks=128,
-      unsigned int       threads_per_block=256
-    );
-  void resizeDevRngStates(unsigned int elements, bool force=false);
+  unsigned int getElements(){ return WIDTH*HEIGHT ; }
+  unsigned int getMaxElements(){ return 1440*900 ; }
+
+  //void resizeDevRngStates(unsigned int elements, bool force=false);
 
   //
   // From SampleScene
@@ -142,6 +144,7 @@ private:
   void preprocess();
   void resetAccumulation();
   void genRndSeeds( unsigned int width, unsigned int height );
+  void rngSetup( unsigned int width, unsigned int height );
 
   CameraMode    m_camera_mode;
 
@@ -157,9 +160,9 @@ private:
   Buffer        m_accum_buffer;
   bool          m_accum_enabled;
 
-  Buffer        m_rng_states ;
-  bool          m_rng_states_enabled;
-  void*         m_dev_rng_states ;  
+  Buffer          m_rng_states ;
+  RngMode         m_rng_mode;
+  cuRANDWrapper*  m_rng_wrapper ;  
 
 
   float         m_scene_epsilon;
@@ -184,6 +187,7 @@ MeshViewer::MeshViewer():
   MeshScene          ( false, false, false ),
   m_camera_mode       ( CM_PINHOLE ),
   m_shade_mode        ( SM_PHONG ),
+  m_rng_mode          ( RM_OPTIX_OWNED ),
   m_aa_enabled        ( false ),
   m_ao_radius         ( 1.0f ),
   m_ao_sample_mult    ( 1 ),
@@ -193,16 +197,9 @@ MeshViewer::MeshViewer():
   m_frame             ( 0 ),
   m_animation         ( false ),
   m_path              ( NULL ),
-  m_ggeo              ( NULL ),
-  m_rng_states_enabled( false ),
-  m_dev_rng_states    ( NULL ) 
+  m_ggeo              ( NULL )
 {
-#if RAYTRACE_CURAND
-  m_rng_states_enabled = true ;
-#else
-  m_rng_states_enabled = false ;
-#endif
-  printf("MeshViewer::MeshViewer rng_states_enabled RAYTRACE_CURAND  %d \n", m_rng_states_enabled );
+  printf("MeshViewer::MeshViewer m_rng_mode %d \n", m_rng_mode );
   printf("MeshViewer::MeshViewer WIDTH %d HEIGHT %d \n", WIDTH, HEIGHT );
 }
 
@@ -226,6 +223,9 @@ void MeshViewer::initScene( InitialCameraData& camera_data )
   initGeometry();
   initLights();   // move lights after geometry, for positioning relative to aabb
   initCamera( camera_data );
+
+  rngSetup(WIDTH, HEIGHT);
+
   preprocess();
 
 }
@@ -264,37 +264,6 @@ void MeshViewer::initContext()
   m_context[ "ambient_light_color" ]->setFloat( 0.2f, 0.2f, 0.2f );
   m_context[ "output_buffer"       ]->set( createOutputBuffer(RT_FORMAT_UNSIGNED_BYTE4, WIDTH, HEIGHT) );
 
-  unsigned int elements = WIDTH*HEIGHT ;
-  unsigned int optix_device_number = 0u ; 
-
-   // optix managing the rng_states
-  if( m_rng_states_enabled )
-  { 
-      m_rng_states = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER);
-
-      m_rng_states->setElementSize(sizeof(curandState));
-      m_rng_states->setSize(elements);       // does this destroy prior buffer ?
-
-      m_context[ "rng_states"]->set(m_rng_states);
-
-      m_dev_rng_states = (void*)m_rng_states->getDevicePointer( optix_device_number); 
-
-      bool force = true ;   // forcing as first occasion, ensure start with desired dimension 
-      resizeDevRngStates(elements, force);   
-  }
-
-
-  // CUDA managing the rng_states, alternate CUDA-optix interop approach 
-  /*
-  createDevRngStates( elements ); 
-  m_rng_states = m_context->createBufferForCUDA( RT_BUFFER_OUTPUT, RT_FORMAT_USER,  elements );
-  m_rng_states->setElementSize(sizeof(curandState));
-  m_rng_states->setSize(elements);       // does this destroy prior buffer ?
-  m_rng_states->setDevicePointer( optix_device_number, m_dev_rng_states );
-  */
-
-
-
 
 
   m_context[ "jitter_factor"       ]->setFloat( m_aa_enabled ? 1.0f : 0.0f );
@@ -328,8 +297,6 @@ void MeshViewer::initContext()
   cfg->setMissProgram(0, "constantbg.cu", "miss" ); 
   m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
 
-
-
   if(touch)
   {
       m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
@@ -342,77 +309,9 @@ void MeshViewer::initContext()
 
 
 
-void MeshViewer::createDevRngStates(
-      unsigned int elements, 
-      unsigned long long seed, 
-      unsigned long long offset,
-      unsigned int max_blocks,
-      unsigned int threads_per_block
-    )
-{
-    LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks ) ;
- 
-    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset);
-
-    crw->setCacheDir(RayTraceConfig::RngDir());
-
-    crw->setCacheEnabled(false);
-    //crw->setCacheEnabled(true);
-
-    bool create = true ;    // not creating as using an OptiX managed device Buffer
-    crw->Setup(create);  
-
-    delete seq ; 
-
-    m_dev_rng_states = crw->getDevRngStates();
-
-    delete crw ; 
-}
 
 
-
-void MeshViewer::initDevRngStates(
-      unsigned int elements, 
-      unsigned long long seed, 
-      unsigned long long offset,
-      unsigned int max_blocks,
-      unsigned int threads_per_block
-    )
-{
-    // hmm need a CUDAConfig object from CUDAWrap to handle 
-    // such commonalities as max_blocks and threads_per_block 
-    //
-    // does this need protection to ensure this only gets run before OptiX launch ?
-    //
-
-    printf("MeshViewer::initDevRngStates elements %u seed %llu offset %llu \n", elements, seed, offset );
-
-    LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks ) ;
-
-    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset);
-
-    crw->setCacheDir(RayTraceConfig::RngDir());
-
-    crw->setCacheEnabled(false);
-    //crw->setCacheEnabled(true);
-
-    crw->setDevRngStates(m_dev_rng_states);
-
-    printf("MeshViewer::initDevRngStates initialize cuRANDWrapper::Setup \n");
-
-    bool create = false ;    // not creating as using an OptiX managed device Buffer
-    crw->Setup(create);  
-
-    //
-    // loads initial rng_states from cache if available and cache is enabled, 
-    // otherwise creates rng_states via CUDA LaunchSequence 
-    // and saves to cache
-    //
-    printf("MeshViewer::initDevRngStates call cuRANDWrapper::Setup DONE  \n");
-
-    delete seq ; 
-}
-
+/*
 void MeshViewer::resizeDevRngStates(unsigned int elements, bool force)
 {
     RTsize size ; 
@@ -425,17 +324,20 @@ void MeshViewer::resizeDevRngStates(unsigned int elements, bool force)
     else
     {
         printf("MeshViewer::resizeDevRngStates elements %u START \n",elements );
-        m_rng_states->setSize(elements); // assuming this destroys prior buffer 
+        m_rng_states->setSize(elements); 
+        // does this free the device buffer, and allocates a new one ?  with immediate effect ?
 
         unsigned int optix_device_number = 0u ; 
-        m_dev_rng_states = (void*)m_rng_states->getDevicePointer( optix_device_number); 
+        CUdeviceptr dev_rng_states = m_rng_states->getDevicePointer( optix_device_number); // perhaps this forces the allocation 
 
-        initDevRngStates(elements);
+        bool wrapper_is_owner = isRngCUDAOwned() ; 
+        m_rng_wrapper->setDevRngStates(dev_rng_states, wrapper_is_owner );
+        m_rng_wrapper->resize(elements);
 
         printf("MeshViewer::resizeDevRngStates elements %u DONE \n",elements );
     }
 }
-
+*/
 
 
 void MeshViewer::initLights()
@@ -540,7 +442,6 @@ void MeshViewer::initMaterial()
   }
 
 
-
   if( m_accum_enabled ) {
     genRndSeeds( WIDTH, HEIGHT );
   }
@@ -620,6 +521,9 @@ void MeshViewer::preprocess()
   m_context->launch(0,0);
   sutilCurrentTime(&end_AS_build);
   std::cerr << "Time to build AS      : "<<end_AS_build-end_compile<<" s.\n";
+
+
+
 }
 
 
@@ -661,9 +565,9 @@ void MeshViewer::doResize( unsigned int width, unsigned int height )
       resetAccumulation();
   }
 
-  if( m_rng_states_enabled )
+  if( m_rng_mode != RM_DISABLED )
   {
-      resizeDevRngStates(width*height);
+      rngSetup( width, height );
   }  
 
 }
@@ -860,6 +764,73 @@ void MeshViewer::genRndSeeds( unsigned int width, unsigned int height )
     m_rnd_seeds->unmap();
 }
 
+void MeshViewer::rngSetup( unsigned int width, unsigned int height )
+{
+    unsigned int elements = width*height ;
+    unsigned int elements_max = getMaxElements() ;
+
+    printf("MeshViewer::rngSetup elements %u * %u = %u  max elements %u \n", width, height, elements, elements_max);
+    assert(elements <= elements_max);
+
+    if( m_rng_states.get() == 0 ) 
+    {
+        if( m_rng_mode == RM_OPTIX_OWNED )
+        { 
+            printf("MeshViewer::rngSetup RM_OPTIX_OWNED buffer creation \n");
+            m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
+        }
+        else if( m_rng_mode == RM_CUDA_OWNED )
+        {
+            printf("MeshViewer::rngSetup RM_CUDA_OWNED buffer creation \n");
+            assert(0);
+            m_rng_states = m_context->createBufferForCUDA( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
+        }
+        m_rng_states->setElementSize(sizeof(curandState));
+        m_rng_states->setSize(elements_max);    
+        m_context[ "rng_states"]->setBuffer(m_rng_states);
+    }
+
+    if( m_rng_mode == RM_OPTIX_OWNED )
+    {
+        printf("MeshViewer::rngSetup RM_OPTIX_OWNED host buffer map/fill/unmap \n");
+
+        if( m_rng_wrapper->getItems() == elements_max && m_rng_wrapper->getHostRngStates()) 
+        {
+            printf("MeshViewer::rngSetup RM_OPTIX_OWNED elements unchanged and so skip \n");
+        }
+        else
+        { 
+            printf("MeshViewer::rngSetup mapping m_rng_states \n");
+            curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
+            printf("MeshViewer::rngSetup mapping m_rng_states DONE \n");
+            m_rng_wrapper->setItems(elements_max);
+            m_rng_wrapper->fillHostBuffer(host_rng_states, elements_max);
+
+            printf("MeshViewer::rngSetup unmapping m_rng_states \n");
+            m_rng_states->unmap();
+            printf("MeshViewer::rngSetup unmapping m_rng_states DONE \n");
+        }
+    }
+    else if( m_rng_mode == RM_CUDA_OWNED )
+    {
+        assert(0);
+        /*
+        resizeDevRngStates(elements,  true);   
+        bool wrapper_is_owner = false ; 
+        CUdeviceptr dev_rng_states = m_rng_states->getDevicePointer( optix_device_number); 
+        m_rng_wrapper->setDevRngStates(dev_rng_states, wrapper_is_owner );
+        CUdeviceptr dev_rng_states = m_rng_wrapper->getDevRngStates();
+        unsigned int optix_device_number = 0u ; 
+        m_rng_states->setDevicePointer( optix_device_number, dev_rng_states );
+        */
+    }
+
+}
+
+
+
+
+
 
 //-----------------------------------------------------------------------------
 //
@@ -925,6 +896,14 @@ void parseArgs(MeshViewer& scene, GLUTDisplay::contDraw_E& draw_mode, int argc, 
       draw_mode = GLUTDisplay::CDProgressive;
     } else if( arg == "-O" || arg == "--ortho" ) {
       scene.setCameraMode( MeshViewer::CM_ORTHO );
+
+    } else if( arg == "-rd" || arg == "--rng-disabled" ) {
+      scene.setRngMode( MeshViewer::RM_DISABLED );
+    } else if( arg == "-ro" || arg == "--rng-optix" ) {
+      scene.setRngMode( MeshViewer::RM_OPTIX_OWNED );
+    } else if( arg == "-rc" || arg == "--rng-cuda" ) {
+      scene.setRngMode( MeshViewer::RM_CUDA_OWNED );
+ 
     } else if( arg == "-h" || arg == "--help" ) {
       printUsageAndExit( argv[0] ); 
     } else if( arg == "-g" || arg == "--g4dae" ) {
@@ -984,10 +963,30 @@ int main( int argc, char** argv )
   GLUTDisplay::contDraw_E draw_mode = GLUTDisplay::CDNone; 
 
   MeshViewer scene;
-  optix::Context context = scene.getContext(); 
-  RayTraceConfig* cfg = RayTraceConfig::makeInstance(context, target.c_str());
   scene.setMesh( (std::string( sutilSamplesDir() ) + "/simpleAnimation/cow.obj").c_str() );
   parseArgs(scene, draw_mode, argc, argv );
+
+  if(scene.isRngCUDAOwned() || scene.isRngOptiXOwned())
+  {
+      const char* cachedir = RayTraceConfig::RngDir() ;
+      cuRANDWrapper* crw = cuRANDWrapper::instanciate( scene.getMaxElements(), cachedir );
+      scene.setRngWrapper(crw);
+
+      if(scene.isRngCUDAOwned())
+      {
+          assert(0);
+          crw->Allocate();
+          crw->InitFromCacheIfPossible();
+      }
+      else if(scene.isRngOptiXOwned())
+      {
+          // defer Rng setup
+      }
+  }
+
+  optix::Context context = scene.getContext(); 
+  RayTraceConfig* cfg = RayTraceConfig::makeInstance(context, target.c_str());
+
  
   try 
   {

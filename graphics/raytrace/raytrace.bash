@@ -20,6 +20,30 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+curand RNG cache handling
+---------------------------
+
+Tried two ways of doing OptiX/CUDA interop, eventually 
+avoided interop via a cache file.
+
+* **--rng-cuda** CUDA Owned curand buffer
+
+  * caching the curand buffer works, allowing fast starts
+  * resizing does not work, it causes hangs forcing hardware restart
+    DUE to this disabled this mode
+
+* **--rng-optix** OptiX Owned curand buffer
+
+  * loading the cached curand buffer can be made to work using 
+    host side map/memcpy/unmap, but only once. 
+    Resizing causes crashes. To workaround this adopt the maximum
+    buffer size needed for full screen and set that up once only.
+
+  * thusly CUDA/OptiX interop is avoided by writing the curandStates 
+    in a pure CUDA process and reading the cache from the OptiX process
+
+
+
 RTprogram Re-compilation Flakiness
 -------------------------------------------------
 
@@ -54,10 +78,6 @@ Launch failed : No binary for GPU
 Next Steps 
 -----------
 
-* loadsa duplication in materials and sample6, need to take 
-  control of the optix RTprogram code arranging common 
-  definitions into headers etc..
-
 * taming the flakiness
 
   * flakiness manifests in that some minor code change results in a 
@@ -67,18 +87,10 @@ Next Steps
   * make each ptx as simple as possible, minimize the number of functions
     and top level declarations in each cu 
 
-  * check if curand caching is to blame, and the lack of this for
-    the initial 128x128 postage stamp image
-
 * port Chroma cuda/photon.h:fill_state to OptiX 
 
   * geometricNormal 
 
-
-cuRAND flakiness
---------------------
-
-Disabling cuRAND caching appears to avoid the flakiness.
 
 
 
@@ -365,7 +377,8 @@ raytrace-bcd(){  cd $(raytrace-bdir); }
 raytrace-ocd(){  cd $(raytrace-odir); }
 
 raytrace-ptx(){ ls -l $(raytrace-bdir)/lib/ptx ; }
-raytrace-rng(){ ls -l $(raytrace-bdir)/lib/rng ; }
+raytrace-rng-dir(){ echo $(cudawrap-rng-dir) ; }
+raytrace-rng(){ ls -l $(raytrace-rng-dir) ; }
 
 raytrace-x-clean(){
    raytrace-wipe
@@ -381,6 +394,7 @@ raytrace-env(){
     optix-export
     export-
     export-export
+    cudawrap-
 }
 
 raytrace-name(){ echo MeshViewer ; }
@@ -406,6 +420,7 @@ raytrace-cmake(){
    mkdir -p $bdir
 
    raytrace-bcd
+   raytrace-export
  
    cmake -DCMAKE_BUILD_TYPE=Debug \
          -DRAYTRACE_CURAND=$(raytrace-curand) \
@@ -464,6 +479,12 @@ raytrace-export()
 
    unset RAYTRACE_GGCTRL 
    export RAYTRACE_GGCTRL=""
+
+   unset RAYTRACE_RNG_DIR
+   export RAYTRACE_RNG_DIR=$(raytrace-rng-dir)
+
+   env | grep RAYTRACE
+
 }
 
 
@@ -486,6 +507,8 @@ raytrace-run-manual(){
 
 
 raytrace--(){
+  echo $FUNCNAME $*
+ 
   raytrace-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
   raytrace-export 
@@ -499,7 +522,8 @@ raytrace-v(){
 }
 
 raytrace-x(){
-  raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 $*
+  #raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-cuda $*
+  raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-optix $*
 }
 
 raytrace-x-manual(){

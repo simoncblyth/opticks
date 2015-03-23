@@ -119,6 +119,15 @@ public:
         update();
     }
 
+    void setItems(unsigned int items)
+    {
+        m_items = items ;
+        update();
+    }
+
+
+
+
     virtual ~LaunchSequence()
     {
         free(m_tag);
