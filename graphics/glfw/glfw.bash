@@ -16,7 +16,29 @@ applications and does not lay claim to the main loop.
 
 Version 3.1.1 released on March 19, 2015
 
+pkg-config
+------------
 
+Uppercased the glfw3.pc in attempt to get oglplus- cmake to find it, 
+to no avail. 
+
+::
+
+    delta:oglplustest blyth$ ll $(glfw-idir)/lib/pkgconfig/
+    total 8
+    -rw-r--r--  1 blyth  staff  422 Mar 24 13:00 glfw3.pc
+    drwxr-xr-x  5 blyth  staff  170 Mar 24 13:00 ..
+
+    After renaming pkg-config from commamdline can find it, but not cmake 
+
+    delta:~ blyth$ PKG_CONFIG_PATH=$(glfw-idir)/lib/pkgconfig pkg-config GLFW3 --modversion
+    3.1.1
+
+    delta:pkgconfig blyth$ glfw-;glfw-pc GLFW3 --libs --static
+    -L/usr/local/env/graphics/glfw/3.1.1/lib -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreFoundation -framework CoreVideo 
+
+    delta:pkgconfig blyth$ glfw-;glfw-pc GLFW3 --libs 
+    -L/usr/local/env/graphics/glfw/3.1.1/lib -lglfw3 
 
 
 EOU
@@ -30,6 +52,15 @@ glfw-scd(){ cd $(glfw-sdir); }
 glfw-cd(){  cd $(glfw-dir); }
 glfw-bcd(){ cd $(glfw-bdir); }
 glfw-icd(){ cd $(glfw-idir); }
+
+glfw-pc(){
+  PKG_CONFIG_PATH=$(glfw-idir)/lib/pkgconfig pkg-config GLFW3 $*
+}
+
+glfw-pc-kludge(){
+   cd $(glfw-idir)/lib/pkgconfig
+   mv glfw3.pc GLFW3.pc
+}
 
 glfw-version(){ echo 3.1.1 ; }
 glfw-name(){ echo glfw-$(glfw-version) ; }
@@ -59,7 +90,7 @@ glfw-cmake(){
   mkdir -p $bdir
 
   glfw-bcd
-  cmake -DCMAKE_INSTALL_PREFIX=$(glfw-idir) $(glfw-dir)
+  cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-idir) $(glfw-dir)
 
   cd $iwd
 }

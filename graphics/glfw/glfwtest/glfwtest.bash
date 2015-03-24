@@ -16,6 +16,22 @@ Building GLFW using app with cmake
     Renderer: NVIDIA GeForce GT 750M OpenGL Engine
     OpenGL version supported 4.1 NVIDIA-8.26.26 310.40.45f01
 
+
+Find GLFW without using FindGLFW.cmake
+----------------------------------------
+
+Via pkg-config mechanism::
+
+    delta:glfwtest blyth$ PKG_CONFIG_PATH=$(glfw-idir)/lib/pkgconfig glfwtest-cmake
+    GLFW_INCLUDE_DIR:/usr/local/env/graphics/glfw/3.1.1/include
+    GLFW_LIBRARY:/usr/local/env/graphics/glfw/3.1.1/lib/libglfw3.a
+    GLFW_DEFINITIONS:
+    -- Configuring done
+
+
+http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
+
+
 EOU
 }
 glfwtest-sdir(){ echo $(env-home)/graphics/glfw/glfwtest ; }
@@ -32,6 +48,11 @@ glfwtest-name(){ echo GLFWTest ; }
 glfwtest-wipe(){
    local bdir=$(glfwtest-bdir)
    rm -rf $bdir
+}
+
+glfwtest-cmake-pc(){
+   glfw-
+   PKG_CONFIG_PATH=$(glfw-idir)/lib/pkgconfig glfwtest-cmake
 }
 
 glfwtest-cmake(){
@@ -67,5 +88,7 @@ glfwtest-run(){
    local bin=$(glfwtest-bin)
    $bin $*
 }
+
+
 
 
