@@ -20,6 +20,13 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+
+ortho mode
+-----------
+
+* need to hit "e" to adjust scene_epsilon to see any geometry
+
+
 curand RNG cache handling
 ---------------------------
 
@@ -523,7 +530,8 @@ raytrace-v(){
 
 raytrace-x(){
   #raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-cuda $*
-  raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-optix $*
+  raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-optix --ortho $*
+  #raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-optix  $*
 }
 
 raytrace-x-manual(){

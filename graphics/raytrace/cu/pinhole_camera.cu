@@ -54,7 +54,7 @@ RT_PROGRAM void pinhole_camera()
   float2 d = touch_mode ?  
                      make_float2(touch_index) / make_float2(touch_dim) * 2.f - 1.f 
                    : 
-                     make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f;
+                     make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f
                    ;
 
 

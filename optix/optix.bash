@@ -520,21 +520,36 @@ resource could be found on the web.  My realization of the depth value
 construction is  also attached as below, where depthImg contains per pixel
 depth value, coloredImg contains per pixel color value.::
 
-    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
+    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // save buffer bit attribs to stack 
+    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);            // save client attrib to stack
+    //
+    // above lines prep for changing attribs by saving current ones
+    //
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDepthMask(GL_FALSE);    
-    glWindowPos2i(0, 0);
+    glWindowPos2i(0, 0);  // specify the raster position in window coordinates for pixel operations
     glDrawPixels(w, h, GL_RGBA , GL_FLOAT, coloredImg);
 
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_ALWAYS);
+    //
+    // specify the value used for depth buffer comparisons
+    // 
+    //    GL_LESS
+    //         Passes if the incoming depth value is less than the stored depth value.
+    //    GL_ALWAYS
+    //         Always passes.  (unconditionally write to depth buffer)
+    //  
+
     glWindowPos2i(0, 0);
     glDrawPixels(w, h, GL_DEPTH_COMPONENT , GL_FLOAT, depthImg);
 
+    //
+    //  restore initial attribute state 
+    //
     glPopClientAttrib();
     glPopAttrib(); // GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
 
@@ -583,6 +598,7 @@ OptiX OpenGL interop
 ---------------------
 
 * :google:`OptiX OpenGL interop`
+
 
 Caveats
 ----------

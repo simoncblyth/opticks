@@ -8,9 +8,6 @@ class LaunchSequence ;
 #include "curand_kernel.h"
 
 
-//struct curandState ; 
-
-
 /*
 
   OptiX interop issues
