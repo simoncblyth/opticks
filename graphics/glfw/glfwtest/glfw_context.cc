@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 
@@ -21,14 +22,14 @@ int main () {
     glfwTerminate();
     return 1;
   }
-  glfwMakeContextCurrent (window);
-                   
-#if 0               
-  // start GLEW extension handler
+
+  // start GLEW extension handler, segfaults if done before glfwCreateWindow
   glewExperimental = GL_TRUE;
   glewInit ();
-#endif
 
+  glfwMakeContextCurrent (window);
+
+                   
   // get version info
   const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
   const GLubyte* version = glGetString (GL_VERSION); // version as a string

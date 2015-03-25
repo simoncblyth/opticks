@@ -39,10 +39,14 @@ glew-cmake fails
 
 EOU
 }
-glew-dir(){ echo $(local-base)/env/graphics/glew/$(glew-name) ; }
+glew-dir(){  echo $(local-base)/env/graphics/glew/$(glew-name) ; }
+glew-idir(){ echo $(local-base)/env/graphics/glew/$(glew-version) ; }
+glew-sdir(){ echo $(glew-dir) ; }
 glew-bdir(){ echo $(glew-dir).build ; }
-glew-cd(){  cd $(glew-dir); }
+
+glew-scd(){  cd $(glew-sdir); }
 glew-bcd(){  cd $(glew-bdir); }
+glew-icd(){  cd $(glew-idir); }
 
 glew-version(){ echo 1.12.0 ; }
 glew-name(){ echo glew-$(glew-version) ;}
@@ -60,27 +64,34 @@ glew-get(){
 
 }
 
-glew-cmake(){
-   local iwd=$PWD
-
-   local bdir=$(glew-bdir)
-   mkdir -p $bdir
-
-   glew-bcd
-   cmake $(glew-dir)
-
-   cd $iwd
-}
-
 glew-make(){
    local iwd=$PWD
-
-   glew-bcd
-   make $*
-
+   glew-scd
+   make GLEW_PREFIX=$(glew-idir) GLEW_DEST=$(glew-idir)  
+   cd $iwd
+}
+glew-install(){
+   local iwd=$PWD
+   glew-scd
+   make install GLEW_PREFIX=$(glew-idir) GLEW_DEST=$(glew-idir)  
    cd $iwd
 }
 
 
+
+glew-cmake-not-working(){
+   local iwd=$PWD
+   local bdir=$(glew-bdir)
+   mkdir -p $bdir
+   glew-bcd
+   cmake $(glew-dir)
+   cd $iwd
+}
+glew-make-not-working(){
+   local iwd=$PWD
+   glew-bcd
+   make $*
+   cd $iwd
+}
 
 

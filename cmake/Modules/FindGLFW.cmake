@@ -3,7 +3,7 @@
 set(GLFW_PREFIX "$ENV{LOCAL_BASE}/env/graphics/glfw/3.1.1")
 
 find_library( GLFW_LIBRARY 
-              NAMES glfw3
+              NAMES glfw3 glfw
               PATHS ${GLFW_PREFIX}/lib )
 
 set( GLFW_LIBRARIES ${GLFW_LIBRARY} )

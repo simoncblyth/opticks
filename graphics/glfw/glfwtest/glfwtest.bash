@@ -10,11 +10,17 @@ Building GLFW using app with cmake
 
 * http://antongerdelan.net/opengl/hellotriangle.html
 
-::
+With hinting get OpenGL 4.1::
 
     delta:glfwtest blyth$ glfwtest-run
     Renderer: NVIDIA GeForce GT 750M OpenGL Engine
     OpenGL version supported 4.1 NVIDIA-8.26.26 310.40.45f01
+
+Without hinting get OpenGL 2.1::
+
+    Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+    OpenGL version supported 2.1 NVIDIA-8.26.26 310.40.45f01
+
 
 
 Find GLFW without using FindGLFW.cmake
@@ -91,4 +97,11 @@ glfwtest-run(){
 
 
 
+glfwtest--()
+{
+    glfwtest-wipe
+    glfwtest-cmake
+    glfwtest-make
+    glfwtest-install
 
+}
