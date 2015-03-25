@@ -1,6 +1,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include <string>
 // http://antongerdelan.net/opengl/shaders.html
 
 class Shader {
@@ -8,14 +9,14 @@ class Shader {
       static const char* vertex_shader;
       static const char* fragment_shader;
 
-      Shader();
+      Shader(const char* dir, const char* vname="vert.glsl", const char* fname="frag.glsl");
       virtual ~Shader();
-      GLuint getProgram(); 
+      GLuint getId(); 
       void dump();
       bool isValid();
 
    private:
-      void init();
+      void init(const std::string& vsrc, const std::string& fsrc);
       void compile(GLuint index);
       void link(GLuint index);
 

@@ -65,11 +65,10 @@ add_definitions(
 add_executable( GLFWContext glfw_context.cc )
 add_executable( ${name} 
                 glfw_test.cc 
-                Geometry.cc
                 Array.cc
-                VertexAttribute.cc
-                VertexBuffer.cc
+                Scene.cc
                 Shader.cc
+                VertexAttribute.cc
 )
 add_executable( Simple simple.cc )
 

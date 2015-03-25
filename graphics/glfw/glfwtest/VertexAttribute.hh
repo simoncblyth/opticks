@@ -1,6 +1,8 @@
 #ifndef VERTEXATTRIBUTE_H
 #define VERTEXATTRIBUTE_H
 
+// little need for this with OpenGL 4
+// as VAOs now remember their attributes  
 
 class VertexAttribute {
    public:

@@ -6,24 +6,75 @@
 #include "stdio.h"
 #include "assert.h"
 
+#include <string>
+#include <iostream>
+#include <fstream>
+
 const char* Shader::vertex_shader =
 "#version 400\n"
-"in vec3 vp;"
+"layout(location = 0) in vec3 vertex_position;"
+"layout(location = 1) in vec3 vertex_colour;"
+"out vec3 colour;"
 "void main () {"
-"  gl_Position = vec4 (vp, 1.0);"
+"  colour = vertex_colour;"
+"  gl_Position = vec4 (vertex_position, 1.0);"
 "}";
 
 const char* Shader::fragment_shader =
 "#version 400\n"
+"in vec3 colour;"
 "out vec4 frag_colour;"
 "void main () {"
-"  frag_colour = vec4 (0.5, 0.0, 0.5, 1.0);"
+"  frag_colour = vec4 (colour, 1.0);"
 "}";
 
 
-Shader::Shader()
+
+std::string readFile(const char *path) 
 {
-   init(); 
+    std::cout << "readFile " << path << std::endl ; 
+
+    std::string content;
+    std::ifstream fs(path, std::ios::in);
+    if(!fs.is_open()) {
+        std::cerr << "readFile FAILED for : " << std::endl;
+        return "";
+    }
+
+    std::string line = "";
+    while(!fs.eof()) {
+        std::getline(fs, line);
+        content.append(line + "\n");
+    }
+
+    fs.close();
+    return content;
+}
+
+
+
+Shader::Shader(const char* dir, const char* vname, const char* fname)
+{
+   std::string vert ;
+   std::string frag ;
+
+   if(dir)
+   {
+       char vpath[256];
+       char fpath[256];
+       snprintf(vpath, 256, "%s/%s", dir, vname);
+       snprintf(fpath, 256, "%s/%s", dir, fname);
+       vert = readFile(vpath) ;
+       frag = readFile(fpath) ;
+   } 
+   else
+   {
+       printf("Shader::Shader WARNING using default shaders \n");
+       vert = vertex_shader ; 
+       frag = fragment_shader ; 
+   }
+
+   init(vert, frag); 
 }
 Shader::~Shader()
 {
@@ -186,14 +237,17 @@ void Shader::link(GLuint index)
     } 
 }
 
-void Shader::init()
+void Shader::init(const std::string& vert, const std::string& frag)
 {
     m_vs = glCreateShader (GL_VERTEX_SHADER);
-    glShaderSource (m_vs, 1, &vertex_shader, NULL);
+
+    const char* vert_c = vert.c_str();
+    glShaderSource (m_vs, 1, &vert_c, NULL);
     compile(m_vs);
 
+    const char* frag_c = frag.c_str();
     m_fs = glCreateShader (GL_FRAGMENT_SHADER);
-    glShaderSource (m_fs, 1, &fragment_shader, NULL);
+    glShaderSource (m_fs, 1, &frag_c, NULL);
     compile(m_fs);
     
     m_program = glCreateProgram ();
@@ -214,8 +268,7 @@ bool Shader::isValid()
     return _is_valid(m_program);
 }
 
-
-GLuint Shader::getProgram()
+GLuint Shader::getId()
 {
     return m_program ; 
 }

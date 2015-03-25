@@ -3,7 +3,7 @@
 #include <stdlib.h>  //exit()
 #include <stdio.h>
 
-#include "Geometry.hh"
+#include "Scene.hh"
 
 static void error_callback(int error, const char* description)
 {
@@ -81,7 +81,7 @@ int main(void)
     printf ("OpenGL version supported %s\n", version);
 
 
-    Geometry g ; 
+    Scene scene ; 
 
     while (!glfwWindowShouldClose(window))
     {
@@ -93,7 +93,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, width, height);
 
-        g.draw();
+        scene.draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

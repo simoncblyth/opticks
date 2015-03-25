@@ -90,8 +90,13 @@ glfwtest-install(){
 }
 
 glfwtest-bin(){ echo $(glfwtest-idir)/bin/$(glfwtest-name) ; }
+glfwtest-export()
+{
+   export SHADER_DIR=$(glfwtest-sdir)/glsl
+} 
 glfwtest-run(){ 
    local bin=$(glfwtest-bin)
+   glfwtest-export
    $bin $*
 }
 
