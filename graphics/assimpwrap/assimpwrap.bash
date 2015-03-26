@@ -8,9 +8,46 @@ assimpwrap-usage(){ cat << EOU
 AssimpWrap
 ============
 
-Wrapping the Assimp 3D Asset Importer Library
+AssimpWrap converts geometry and material property information 
+into unencumbered (no ai/AssimpWrap) GGeo instances.
 
-* Used by raytrace-
+Depends on my github fork of the Assimp 3D Asset Importer Library,
+which adds handling of G4DAE extra material/surface properties.
+
+* see AssimpWrapTest.cc for a demo of geometry conversion 
+* see ggeo-vi
+* used by raytrace-
+
+
+Classes/compilation units
+----------------------------
+
+AssimpGeometry
+    top level steering of the Assimp import of COLLADA G4DAE exported files
+
+AssimpTree
+    converts ai tree into a tree of AssimpNode with parent/child
+    hookups matching the original Geant4 pv/lv tree 
+
+AssimpNode
+    holds mesh data and transforms
+
+AssimpRegistry
+    hashed map of AssimpNode used for parent/child hookup
+
+AssimpSelection
+    geometry selection query parsing and execution
+
+AssimpGGeo
+    converts an AssimpTree and AssimpSelection into 
+    an unencumbered (no ai or AssimpWrap) GGeo instance, see ggeo-vi
+
+AssimpCommon
+    common aiNode/aiMesh handling functions
+
+md5digest
+    hashing 
+
 
 
 Workflow

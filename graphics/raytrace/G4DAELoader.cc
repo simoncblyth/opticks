@@ -76,6 +76,14 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
   printf("G4DAELoader::load query %s \n", query );
   printf("G4DAELoader::load filename %s \n", m_filename.c_str() );
 
+  // geometry selection query string is encoded into m_filename
+  // the digest of the query is removed from m_filename 
+  // into order to get the real path to load 
+  //
+  // This trickery is used in order for separate 
+  // optix accelcache to be layed down for 
+  // different geometry selections 
+
   char* path = new char[m_filename.size()]; 
   removeField( path , m_filename.c_str(), '.' , -2 );
 

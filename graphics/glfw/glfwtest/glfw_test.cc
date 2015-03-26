@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "Scene.hh"
+#include "Geometry.hh"
 
 static void error_callback(int error, const char* description)
 {
@@ -81,7 +82,10 @@ int main(void)
     printf ("OpenGL version supported %s\n", version);
 
 
+    Geometry geometry ;
+    geometry.load();
     Scene scene ; 
+    scene.init(&geometry) ;
 
     while (!glfwWindowShouldClose(window))
     {

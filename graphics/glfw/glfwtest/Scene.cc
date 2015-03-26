@@ -1,80 +1,109 @@
 #include <GL/glew.h>
 #include "Scene.hh"
+
 #include "Shader.hh"
 #include "Array.hh"
+#include "Buffer.hh"
+#include "IGeometry.hh"
+
 #include "stdio.h"
 #include "stdlib.h"
 
-const float Scene::pvertex[] = {
-   0.0f,  0.5f,  0.0f,
-   0.5f, -0.5f,  0.0f,
-  -0.5f, -0.5f,  0.0f
-};
-
-const float Scene::pcolor[] = {
-  1.0f, 0.0f,  0.0f,
-  0.0f, 1.0f,  0.0f,
-  0.0f, 0.0f,  1.0f
-};
-
-const unsigned int Scene::pindex[] = {
-      0,  1,  2
-};
-
-
 Scene::Scene()
+ 
+  :
+  m_shader(NULL),
+  m_shaderdir(NULL)
 {
-    init();
 }
 
 Scene::~Scene()
 {
 }
 
-void Scene::init()
+GLuint Scene::upload(GLenum target, GLenum usage, Buffer* buffer)
 {
-    Array<float>* vertices = new Array<float>(9, &pvertex[0]);
-    Array<float>* colors   = new Array<float>(9, &pcolor[0]);
-    Array<unsigned int>*   indices  = new Array<unsigned int>(3,  &pindex[0]);
+    GLuint id ; 
+    glGenBuffers(1, &id);
+    glBindBuffer(target, id);
+    glBufferData(target, buffer->getNumBytes(), buffer->getPointer(), usage);
+    return id ; 
+}
 
-    GLint nelem = indices->getLength();
+void Scene::setShaderDir(const char* dir)
+{
+    m_shaderdir = strdup(dir);
+}
 
-    vertices->upload(GL_ARRAY_BUFFER);
-    colors->upload(GL_ARRAY_BUFFER);
-    indices->upload(GL_ELEMENT_ARRAY_BUFFER);
+char* Scene::getShaderDir()
+{
+    return m_shaderdir ? m_shaderdir : getenv("SHADER_DIR") ;
+}
 
-    printf("vertices %u \n", vertices->getId());
-    printf("colors   %u \n", colors->getId());
-    printf("indices  %u \n", indices->getId());
 
+void Scene::dump(const char* msg)
+{
+    printf("%s\n", msg );
+    printf("nelem     %d \n", m_nelem);
+    printf("vertices  %u \n", m_vertices);
+    printf("colors    %u \n", m_colors);
+    printf("indices   %u \n", m_indices);
+    printf("shaderdir %s \n", getShaderDir());
+
+    m_shader->dump(msg);
+}
+
+void Scene::init(IGeometry* geometry)
+{
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
+
+    m_nelem    = geometry->getNumElements();
+    m_vertices = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  geometry->getVertices());
+    m_colors   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  geometry->getColors());
+    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, geometry->getIndices());
 
     GLboolean normalized = GL_FALSE ; 
     GLsizei stride = 0 ;
     const GLvoid* offset = NULL ;
  
-    glEnableVertexAttribArray (0);   
-    glBindBuffer (GL_ARRAY_BUFFER, vertices->getId());
-    glVertexAttribPointer(0, nelem, GL_FLOAT, normalized, stride, offset);
+    // as there are two GL_ARRAY_BUFFER for vertices and colors need
+    // to bind them again (despite bound in upload) in order to 
+    // make the desired one active when create the VertexAttribPointer :
+    // the currently active buffer being recorded "into" the VertexAttribPointer 
 
-    glEnableVertexAttribArray (1);   
-    glBindBuffer (GL_ARRAY_BUFFER, colors->getId());
-    glVertexAttribPointer(1, nelem, GL_FLOAT, normalized, stride, offset);
+    glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
+    glVertexAttribPointer(vPosition, m_nelem, GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vPosition);   
 
-    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, indices->getId());
+    glBindBuffer (GL_ARRAY_BUFFER, m_colors);
+    glVertexAttribPointer(vColor, m_nelem, GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vColor);   
 
-    char* glsldir = getenv("SHADER_DIR");
-    m_shader = new Shader(glsldir);
+    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
+
+    // without 
+    //     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
+    // got a blank despite being bound in the upload 
+    // when VAO creation was after upload. It appears necessary to 
+    // moving VAO creation to before the upload in order for it 
+    // to capture this state.
+    //
+    // As there is only one GL_ELEMENT_ARRAY_BUFFER there is 
+    // no need to repeat the bind, but doing so for clarity
+    //
+
+    m_shader = new Shader(getShaderDir());
     m_program = m_shader->getId();
-    m_shader->dump();
+    glUseProgram (m_program);       
+
+    dump("Scene::init");
 }
 
 void Scene::draw()
 { 
-    glUseProgram (m_program);       
     glBindVertexArray (m_vao);
-    glDrawElements( GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL ) ;
+    glDrawElements( GL_TRIANGLES, m_nelem, GL_UNSIGNED_INT, NULL ) ;
 }
 
 

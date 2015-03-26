@@ -68,6 +68,9 @@ add_executable( ${name}
                 Array.cc
                 Scene.cc
                 Shader.cc
+                Buffer.cc
+                Geometry.cc
+                IGeometry.cc
                 VertexAttribute.cc
 )
 add_executable( Simple simple.cc )

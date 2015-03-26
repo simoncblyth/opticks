@@ -8,7 +8,62 @@ ggeo-usage(){ cat << EOU
 GGEO : Intermediary Geometry Model
 =====================================
 
-Investigating how to represent Geometry with OptiX
+Unencumbered geometry and material/surface property
+model, intended for:
+
+* investigation of how to represent Geometry within OptiX
+
+
+Classes
+--------
+
+GGeo
+    top level control and holder of other instances:
+    GMesh GSolid GMaterial GSkinSurface GBorderSurface GSubstanceLib
+
+GMesh
+    holder of vertices, indices
+
+GSolid
+    GNode specialized with associated GSubstance
+
+GNode
+    identity index, GMesh and GMatrixF transform
+
+GSubstance
+    holder of inner/outer material and inner/outer surface GPropertMaps
+
+GSubstanceLib
+    manager of substances, ensures duplicates are not created via digests
+
+
+GBorderSurface
+    PropertyMap specialization, specialization only used for creation
+GSkinSurface
+    PropertyMap specialization, specialization only used for creation
+GMaterial
+    PropertyMap specialization, specialization only used for creation
+GPropertyMap
+    ordered holder of GProperty<double> and GDomain<double>
+GProperty<T>
+    pair of GAry<T> for values and domain
+GAry<T>
+    array of values with linear interpolation functionality
+GDomain
+    standard range for properties, eg wavelength range and step
+
+
+GVector
+    gfloat3 guint3 structs
+GMatrix
+    4x4 matrix
+GEnums
+    material/surface property enums 
+
+md5digest
+    hashing
+
+
 
 GGeo Geometry Model Objective
 ------------------------------
@@ -97,9 +152,6 @@ Client Classes
         * vectors of pointers to solids, materials, skin surfaces, border surfaces 
 
 
-
-
-
 OptiX Geometry Model
 ---------------------
 
@@ -110,8 +162,6 @@ OptiX Geometry Model
 * GeometryInstance associate Geometry with usually one Material (can be more than one) 
 
 * try: representing material/surface props into 1D(wavelength) textures 
-
-
 
 Chroma Geometry Model
 ----------------------

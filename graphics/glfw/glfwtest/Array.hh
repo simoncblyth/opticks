@@ -1,15 +1,15 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include <GL/glew.h>
+#include "Buffer.hh"
 
 template <class T>
-class Array {
+class Array : public Buffer {
   public:
      Array(unsigned int length, const T* values)
      :
-       m_length(length),
-       m_values(values)
+       Buffer(sizeof(T)*length, (void*)values),
+       m_length(length)
      {
      }
 
@@ -17,34 +17,18 @@ class Array {
      {
      }
 
-     unsigned int getNumBytes()
-     {
-         return sizeof(T)*m_length ;
-     }
      unsigned int getLength()
      {
          return m_length ;
      }
      const T* getValues()
      {
-         return m_values ;
-     }
-
-     void upload(GLenum target)
-     {
-         glGenBuffers(1, &m_id);
-         glBindBuffer(target, m_id);
-         glBufferData(target, sizeof(T)*m_length, m_values, GL_STATIC_DRAW);
-     }
-     GLuint getId()
-     {
-         return m_id ; 
+         return (T*)m_pointer ;
      }
 
   private:
      unsigned int m_length ;
      const T* m_values ;
-     GLuint   m_id ;
 
 };
 

@@ -12,7 +12,7 @@ class Shader {
       Shader(const char* dir, const char* vname="vert.glsl", const char* fname="frag.glsl");
       virtual ~Shader();
       GLuint getId(); 
-      void dump();
+      void dump(const char* msg="Shader::dump");
       bool isValid();
 
    private:

@@ -258,8 +258,9 @@ void Shader::init(const std::string& vert, const std::string& frag)
     assert( isValid() );
 } 
 
-void Shader::dump()
+void Shader::dump(const char* msg)
 {
+    printf("%s\n", msg);
     print_all(m_program);
 }
 
