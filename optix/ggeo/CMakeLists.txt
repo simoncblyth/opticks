@@ -25,6 +25,7 @@ add_library(${name} SHARED
                 GSubstanceLib.cc
                 GSolid.cc
                 GMesh.cc
+                GMergedMesh.cc
                 GGeo.cc
                 GVector.cc
                 GMatrix.cc
@@ -45,6 +46,7 @@ md5digest.hh
 GGeo.hh
 GMaterial.hh
 GMesh.hh
+GMergedMesh.hh
 GProperty.hh
 GDomain.hh
 GAry.hh

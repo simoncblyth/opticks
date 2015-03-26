@@ -21,6 +21,13 @@ class GMesh {
       unsigned int getNumFaces();
       gfloat3* getVertices();
       guint3*  getFaces();
+
+  public:
+      void setLow(gfloat3* low);
+      void setHigh(gfloat3* high);
+      void setVertices(gfloat3* vertices);
+      void setFaces(guint3* faces);
+ 
   public:
        gfloat3* getTransformedVertices(GMatrixF& transform );
 
@@ -28,7 +35,7 @@ class GMesh {
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
-  private:
+  protected:
       unsigned int m_index ;
       unsigned int m_num_vertices ;
       unsigned int m_num_faces ; 

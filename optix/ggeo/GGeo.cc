@@ -6,6 +6,7 @@
 #include "GSolid.hh"
 #include "GMesh.hh"
 #include "GSubstanceLib.hh"
+#include "GMergedMesh.hh"
 
 #include "assert.h"
 #include "stdio.h"
@@ -15,7 +16,8 @@
 GGeo::GGeo() :
    m_low(NULL),
    m_high(NULL),
-   m_substance_lib(NULL)
+   m_substance_lib(NULL),
+   m_merged_mesh(NULL)
 {
    printf("GGeo::GGeo\n");
 
@@ -318,5 +320,13 @@ GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2)
 
 
 
+GMergedMesh* GGeo::getMergedMesh(unsigned int index)
+{
+    if(!m_merged_mesh)
+    {
+        m_merged_mesh = GMergedMesh::create(index, this);
+    }
+    return m_merged_mesh ;
+}
 
 

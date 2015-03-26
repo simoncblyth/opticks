@@ -50,24 +50,53 @@ guint3*  GMesh::getFaces()
 }
 
 
+void GMesh::setVertices(gfloat3* vertices)
+{
+    m_vertices = vertices ;
+}
+void GMesh::setFaces(guint3* faces)
+{
+    m_faces = faces ;
+}
+
+
+void GMesh::setLow(gfloat3* low)
+{
+    m_low = low ;
+}
+void GMesh::setHigh(gfloat3* high)
+{
+    m_high = high ;
+}
+
+
+
+
+
+
+
 GMesh::~GMesh()
 {
 }
 
 void GMesh::Summary(const char* msg)
 {
-   printf("%s idx %u vx %u fc %u \nlow  %10.3f %10.3f %10.3f\nhigh %10.3f %10.3f %10.3f\n", 
+   printf("%s idx %u vx %u fc %u \n",
       msg, 
       m_index, 
       m_num_vertices, 
-      m_num_faces, 
-      m_low->x,
-      m_low->y,
-      m_low->z,
-      m_high->x,
-      m_high->y,
-      m_high->z
-   );
+      m_num_faces);
+
+   printf("low %10.3f %10.3f %10.3f\n",
+         m_low->x,
+         m_low->y,
+         m_low->z);
+
+   printf("high %10.3f %10.3f %10.3f\n", 
+          m_high->x,
+          m_high->y,
+          m_high->z);
+
 }
 
 

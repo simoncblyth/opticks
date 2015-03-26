@@ -14,6 +14,7 @@ class GSkinSurface ;
 class GBorderSurface ; 
 class GSubstance ;
 class GSubstanceLib ;
+class GMergedMesh ;
 
 
 class GGeo {
@@ -60,6 +61,9 @@ class GGeo {
         GSkinSurface* findSkinSurface(const char* lv);  
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
 
+    public:
+        GMergedMesh* getMergedMesh(unsigned int index=0);
+
 #if 0
     public:
         void materialConsistencyCheck();
@@ -78,6 +82,7 @@ class GGeo {
         std::vector<GBorderSurface*>  m_border_surfaces ; 
         gfloat3* m_low ; 
         gfloat3* m_high ; 
+        GMergedMesh* m_merged_mesh ; 
 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 

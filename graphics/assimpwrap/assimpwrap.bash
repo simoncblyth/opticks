@@ -190,7 +190,8 @@ assimpwrap-material(){
 }
 
 assimpwrap-ggctrl(){
-    echo __dd__
+    echo ""
+    #echo __dd__
 }
 
 

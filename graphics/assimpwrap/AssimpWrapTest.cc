@@ -5,6 +5,7 @@
 
 #include "GGeo.hh"
 #include "GSubstanceLib.hh"
+#include "GMergedMesh.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,19 +33,21 @@ int main(int argc, char* argv[])
 
     const char* path = getenv(geokey);
 
-    AssimpGeometry geom(path);
-    geom.import();
-    geom.select(query);
-    //geom.dumpMaterials(material);
+    AssimpGeometry ageo(path);
+    ageo.import();
+    AssimpSelection* selection = ageo.select(query);
 
-    AssimpSelection* selection = NULL ;
+    AssimpGGeo agg(ageo.getTree(), selection); 
+    GGeo* ggeo = agg.convert(ggctrl);
 
-    AssimpGGeo agg(geom.getTree(), selection); 
-    GGeo* gg = agg.convert(ggctrl);
-    //gg->Summary("main");    
+    //ggeo->Summary("main");    
 
-    GSubstanceLib* lib = gg->getSubstanceLib();
+    GSubstanceLib* lib = ggeo->getSubstanceLib();
     lib->Summary("GSubstanceLib");
+
+    GMergedMesh* mm = ggeo->getMergedMesh();
+    mm->Summary("GMergedMesh");
+  
 
     return 0 ; 
 }
