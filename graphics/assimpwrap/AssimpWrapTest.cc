@@ -25,12 +25,12 @@ int main(int argc, char* argv[])
     const char* geokey = getenv("ASSIMPWRAP_GEOKEY");
     const char* material = getenv("ASSIMPWRAP_MATERIAL");
     const char* ggctrl = getenv("ASSIMPWRAP_GGCTRL");
+
     assert(query);
     assert(geokey);
     assert(material);
 
     printf("argv0 %s query %s geokey %s material %s \n", argv[0], query, geokey, material );
-
     const char* path = getenv(geokey);
 
     AssimpGeometry ageo(path);
