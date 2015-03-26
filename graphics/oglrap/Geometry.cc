@@ -1,5 +1,6 @@
 #include "Geometry.hh"
 #include "stdio.h"
+#include "assert.h"
 
 const float Geometry::pvertex[] = {
    0.0f,  0.5f,  0.0f,
@@ -24,12 +25,13 @@ void Geometry::load_defaults()
     m_indices  = new Array<unsigned int>(3,  &pindex[0]);
 }
 
-Geometry::Geometry() :
+Geometry::Geometry(const char* path) :
     IGeometry(),
     m_vertices(NULL),
     m_colors(NULL),
     m_indices(NULL)
 {
+    load(path);
 }
 
 Geometry::~Geometry()
@@ -41,15 +43,15 @@ unsigned int Geometry::getNumElements()
     return m_indices ? m_indices->getLength() : 0 ; 
 }
 
-Array<float>* Geometry::getVertices()
+Buffer* Geometry::getVertices()
 {
     return m_vertices ; 
 }
-Array<float>* Geometry::getColors()
+Buffer* Geometry::getColors()
 {
     return m_colors ; 
 }
-Array<unsigned int>* Geometry::getIndices()
+Buffer* Geometry::getIndices()
 {
     return m_indices ; 
 }
@@ -63,6 +65,7 @@ void Geometry::load(const char* path)
     else
     {
          printf("Geometry::load %s \n", path );
+         assert(0); // not implemented
     }
 }
 

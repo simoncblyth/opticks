@@ -2,8 +2,17 @@
 #include "GGeo.hh"
 #include "GSolid.hh"
 
+GMergedMesh::GMergedMesh(GMergedMesh* other)
+       : 
+       GMesh(other),
+       m_cur_vertices(0),
+       m_cur_faces(0)
+{
+}
+
 GMergedMesh::GMergedMesh(unsigned int index)
-     : GMesh(index, NULL, 0, NULL, 0 ),
+       : 
+       GMesh(index, NULL, 0, NULL, 0 ),
        m_cur_vertices(0),
        m_cur_faces(0)
 {
@@ -21,8 +30,12 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     GMergedMesh* mmesh = new GMergedMesh( index );
 
     mmesh->traverse( solid, 0, pass_count ); 
+
     mmesh->setVertices(new gfloat3[mmesh->getNumVertices()]);
+    mmesh->setColors(  new gfloat3[mmesh->getNumVertices()]);
     mmesh->setFaces(   new guint3[mmesh->getNumFaces()]);
+
+    mmesh->setNumColors(mmesh->getNumVertices());
 
     mmesh->traverse( solid, 0, pass_merge ); 
     mmesh->updateBounds();
@@ -55,6 +68,11 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
             {
                 m_vertices[m_cur_vertices+i] = vertices[i] ; 
                 m_vertices[m_cur_vertices+i] *= *transform ;
+
+                // fake to mid grey for now
+                m_colors[m_cur_vertices+i].x  = 0.5 ;
+                m_colors[m_cur_vertices+i].y  = 0.5 ;
+                m_colors[m_cur_vertices+i].z  = 0.5 ;
             }
 
             guint3* faces = mesh->getFaces();

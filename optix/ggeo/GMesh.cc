@@ -3,6 +3,19 @@
 #include <algorithm>
 
 
+GMesh::GMesh(GMesh* other) 
+     :
+     m_index(other->getIndex()),
+     m_vertices(other->getVertices()),
+     m_num_vertices(other->getNumVertices()),
+     m_faces(other->getFaces()),
+     m_num_faces(other->getNumFaces()),
+     m_colors(other->getColors()),
+     m_num_colors(other->getNumColors())
+{
+   updateBounds();
+}
+
 GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces) 
       :
       m_index(index),
@@ -11,7 +24,8 @@ GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, g
       m_faces(faces),
       m_num_faces(num_faces),
       m_low(NULL),
-      m_high(NULL)  
+      m_high(NULL),
+      m_num_colors(num_vertices) 
 {
    // not yet taking ownership, depends on continued existance of data source 
    updateBounds();
@@ -22,9 +36,14 @@ unsigned int GMesh::getIndex()
 {
     return m_index ; 
 }
+
 unsigned int GMesh::getNumVertices()
 {
     return m_num_vertices ; 
+}
+unsigned int GMesh::getNumColors()
+{
+    return m_num_colors ;   
 }
 unsigned int GMesh::getNumFaces()
 {
@@ -44,6 +63,10 @@ gfloat3* GMesh::getVertices()
 {
     return m_vertices ;
 }
+gfloat3* GMesh::getColors()
+{
+    return m_colors ;
+}
 guint3*  GMesh::getFaces()
 {
     return m_faces ;
@@ -58,6 +81,11 @@ void GMesh::setFaces(guint3* faces)
 {
     m_faces = faces ;
 }
+void GMesh::setColors(gfloat3* colors)
+{
+    m_colors = colors ;
+}
+
 
 
 void GMesh::setLow(gfloat3* low)
@@ -70,7 +98,10 @@ void GMesh::setHigh(gfloat3* high)
 }
 
 
-
+void GMesh::setNumColors(unsigned int num_colors)
+{
+   m_num_colors = num_colors ;
+}
 
 
 
@@ -160,7 +191,6 @@ gfloat3* GMesh::getTransformedVertices(GMatrixF& transform )
      }   
      return vertices ;
 }
-
 
 
 

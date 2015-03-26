@@ -12,6 +12,7 @@ public:
 
     static GMergedMesh* create(unsigned int index, GGeo* ggeo);
 
+    GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;
     virtual ~GMergedMesh(); 
     void traverse( GNode* node, unsigned int depth, unsigned int pass);

@@ -34,7 +34,11 @@ add_definitions(
    ${GGeo_DEFINITIONS} 
 )
 
-add_executable( ${name} ggeoview.cc ) 
+add_executable( ${name} 
+                ggeoview.cc 
+                GGeoLoader.cc
+                GGeoInterConnect.cc
+) 
 
 target_link_libraries( ${name} 
    ${GLEW_LIBRARIES}

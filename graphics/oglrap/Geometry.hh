@@ -2,6 +2,7 @@
 #define GEOMETRY_H
 
 #include "stddef.h"
+#include "Array.hh"
 #include "IGeometry.hh"
 
 class Geometry : public IGeometry {
@@ -11,14 +12,14 @@ class Geometry : public IGeometry {
       static const unsigned int pindex[] ;
 
   public:
-      Geometry();
+      Geometry(const char* path=NULL);
       virtual ~Geometry();
-      void load(const char* path=NULL);
+      void load(const char* path);
 
       unsigned int getNumElements();
-      Array<float>* getVertices();
-      Array<float>* getColors();
-      Array<unsigned int>* getIndices();
+      Buffer* getVertices();
+      Buffer* getColors();
+      Buffer* getIndices();
 
   private:
       void load_defaults();

@@ -5,16 +5,8 @@
 
 #include "Scene.hh"
 #include "Geometry.hh"
-
-
-#include "AssimpWrap/AssimpGeometry.hh"
-#include "AssimpWrap/AssimpTree.hh"
-#include "AssimpWrap/AssimpNode.hh"
-#include "AssimpWrap/AssimpGGeo.hh"
-
-#include "GGeo.hh"
-#include "GSubstanceLib.hh"
-#include "GMergedMesh.hh"
+#include "GGeoLoader.hh"
+#include "GGeoInterConnect.hh"
 
 
 static void error_callback(int error, const char* description)
@@ -44,39 +36,6 @@ void _update_fps_counter (GLFWwindow* window) {
   }
   frame_count++;
 }
-
-
-
-class GGeoLoader {
-  public:
-     GGeoLoader()
-     {
-          const char* geokey = getenv("GGEOVIEW_GEOKEY");
-          const char* path = getenv(geokey);
-
-          const char* query = getenv("GGEOVIEW_QUERY");
-          AssimpGeometry ageo(path);
-          ageo.import();
-          AssimpSelection* selection = ageo.select(query);
-
-          AssimpGGeo agg(ageo.getTree(), selection); 
-          const char* ggctrl = getenv("GGEOVIEW_CTRL");
-          m_ggeo = agg.convert(ggctrl);
-     }
-     virtual ~GGeoLoader()
-     {
-     }
-
-     GGeo* getGGeo()
-     {
-         return m_ggeo ;  
-     }
-
-  private: 
-     GGeo* m_ggeo ; 
-};
-
-
 
 
 int main(void)
@@ -124,15 +83,22 @@ int main(void)
     printf ("OpenGL version supported %s\n", version);
 
 
+    /////////////////////////////////////////////////////
+
+    Scene scene ; 
+    Geometry geom ;
+
     GGeoLoader ggl ; 
     GGeo* ggeo = ggl.getGGeo();
     GMergedMesh* mm = ggeo->getMergedMesh();
+    GGeoInterConnect ggic(mm);
+    ggic.Summary();
 
-    Geometry geometry ;
-    geometry.load();
+    scene.init(&ggic) ;
+    //scene.init(&geom) ;
 
-    Scene scene ; 
-    scene.init(&geometry) ;
+
+    /////////////////////////////////////////////////////////
 
     while (!glfwWindowShouldClose(window))
     {

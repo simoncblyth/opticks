@@ -21,6 +21,9 @@ class Buffer {
           return m_pointer ;
       }
 
+      void Summary(const char* msg="Buffer::Summary");
+
+
   protected:
       unsigned int m_nbytes ;
       void*       m_pointer ; 
