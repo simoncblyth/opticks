@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "Scene.hh"
-#include "Geometry.hh"
+#include "Demo.hh"
 #include "GGeoLoader.hh"
 #include "GGeoInterConnect.hh"
 
@@ -84,20 +84,15 @@ int main(void)
 
 
     /////////////////////////////////////////////////////
-
     Scene scene ; 
-    Geometry geom ;
 
     GGeoLoader ggl ; 
     GGeo* ggeo = ggl.getGGeo();
-    GMergedMesh* mm = ggeo->getMergedMesh();
-    GGeoInterConnect ggic(mm);
-    ggic.Summary();
+    scene.setGeometry(ggeo->getMergedMesh()); 
 
-    scene.init(&ggic) ;
-    //scene.init(&geom) ;
+    //scene.setGeometry(new Demo); 
 
-
+    scene.init() ;
     /////////////////////////////////////////////////////////
 
     while (!glfwWindowShouldClose(window))
@@ -110,7 +105,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, width, height);
 
-        scene.draw();
+        scene.draw(width, height);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

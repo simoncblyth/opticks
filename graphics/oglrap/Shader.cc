@@ -12,12 +12,13 @@
 
 const char* Shader::vertex_shader =
 "#version 400\n"
+"uniform mat4 ModelViewProjection;"
 "layout(location = 0) in vec3 vertex_position;"
 "layout(location = 1) in vec3 vertex_colour;"
 "out vec3 colour;"
 "void main () {"
 "  colour = vertex_colour;"
-"  gl_Position = vec4 (vertex_position, 1.0);"
+"  gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);"
 "}";
 
 const char* Shader::fragment_shader =
@@ -235,6 +236,10 @@ void Shader::link(GLuint index)
         _print_program_info_log (index);
         exit(1); 
     } 
+
+
+
+
 }
 
 void Shader::init(const std::string& vert, const std::string& frag)
@@ -254,13 +259,23 @@ void Shader::init(const std::string& vert, const std::string& frag)
     glAttachShader (m_program, m_fs);
     glAttachShader (m_program, m_vs);
     link(m_program);
+    
+    m_mvp_location = glGetUniformLocation(m_program, "ModelViewProjection");
+    assert(m_mvp_location > -1);
 
     assert( isValid() );
 } 
 
+
+GLint Shader::getMVPLocation()
+{
+    return m_mvp_location ; 
+}
+
 void Shader::dump(const char* msg)
 {
     printf("%s\n", msg);
+    printf("m_mvp_location %d \n", m_mvp_location );
     print_all(m_program);
 }
 

@@ -15,6 +15,7 @@ find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
+#find_package(GLM REQUIRED)
 
 
 include_directories(
@@ -24,6 +25,7 @@ include_directories(
    ${OGLRap_INCLUDE_DIRS} 
    ${AssimpWrap_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
+ #  ${GLM_INCLUDE_DIRS} 
 )
 
 add_definitions(

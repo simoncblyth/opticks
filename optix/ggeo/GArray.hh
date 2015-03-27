@@ -1,19 +1,19 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef GARRAY_H
+#define GARRAY_H
 
-#include "Buffer.hh"
+#include "GBuffer.hh"
 
 template <class T>
-class Array : public Buffer {
+class GArray : public GBuffer {
   public:
-     Array(unsigned int length, const T* values)
+     GArray(unsigned int length, const T* values)
      :
-       Buffer(sizeof(T)*length, (void*)values),
+       GBuffer(sizeof(T)*length, (void*)values),
        m_length(length)
      {
      }
 
-     virtual ~Array()
+     virtual ~GArray()
      {
      }
 

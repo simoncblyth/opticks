@@ -15,15 +15,21 @@ class Shader {
       void dump(const char* msg="Shader::dump");
       bool isValid();
 
+      GLint getMVPLocation();
+
    private:
       void init(const std::string& vsrc, const std::string& fsrc);
       void compile(GLuint index);
       void link(GLuint index);
 
+
+      
+
   private:
       GLuint m_vs ;
       GLuint m_fs ;
       GLuint m_program ;
+      GLint m_mvp_location ;
 };      
 
 

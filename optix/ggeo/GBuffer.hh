@@ -1,27 +1,27 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#ifndef GBUFFER_H
+#define GBUFFER_H
 
-class Buffer {
+class GBuffer {
   public:
-      Buffer(unsigned int nbytes, void* pointer)
+      GBuffer(unsigned int nbytes, void* pointer)
          :
          m_nbytes(nbytes),
          m_pointer(pointer)
       {
       }
-      virtual ~Buffer()
+      virtual ~GBuffer()
       {
       }
-      unsigned int getNumBytes()
+      virtual unsigned int getNumBytes()
       {
           return m_nbytes ;
       }
-      void* getPointer()
+      virtual void* getPointer()
       {
           return m_pointer ;
       }
 
-      void Summary(const char* msg="Buffer::Summary");
+      void Summary(const char* msg="GBuffer::Summary");
 
 
   protected:

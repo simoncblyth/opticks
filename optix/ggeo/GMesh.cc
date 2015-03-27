@@ -1,17 +1,22 @@
 #include "GMesh.hh"
+#include "GBuffer.hh"
 #include "stdio.h"
+#include "assert.h"
 #include <algorithm>
-
 
 GMesh::GMesh(GMesh* other) 
      :
      m_index(other->getIndex()),
      m_vertices(other->getVertices()),
+     m_vertices_buffer(other->getVerticesBuffer()),
      m_num_vertices(other->getNumVertices()),
      m_faces(other->getFaces()),
+     m_faces_buffer(other->getFacesBuffer()),
      m_num_faces(other->getNumFaces()),
      m_colors(other->getColors()),
-     m_num_colors(other->getNumColors())
+     m_colors_buffer(other->getColorsBuffer()),
+     m_num_colors(other->getNumColors()),
+     GDrawable()
 {
    updateBounds();
 }
@@ -19,15 +24,27 @@ GMesh::GMesh(GMesh* other)
 GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces) 
       :
       m_index(index),
-      m_vertices(vertices),
+      m_vertices(NULL),
+      m_vertices_buffer(NULL),
       m_num_vertices(num_vertices), 
-      m_faces(faces),
+      m_faces(NULL),
+      m_faces_buffer(NULL),
       m_num_faces(num_faces),
+      m_colors(NULL),
+      m_colors_buffer(NULL),
       m_low(NULL),
       m_high(NULL),
-      m_num_colors(num_vertices) 
+      m_dimensions(NULL),
+      m_center(NULL),
+      m_model_to_world(NULL),
+      m_extent(0.f),
+      m_num_colors(num_vertices),
+      GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 
+
+   setVertices(vertices);
+   setFaces(faces);
    updateBounds();
 }
 
@@ -36,7 +53,6 @@ unsigned int GMesh::getIndex()
 {
     return m_index ; 
 }
-
 unsigned int GMesh::getNumVertices()
 {
     return m_num_vertices ; 
@@ -51,6 +67,16 @@ unsigned int GMesh::getNumFaces()
 }
 
 
+void GMesh::setNumColors(unsigned int num_colors)
+{
+   m_num_colors = num_colors ;
+}
+
+
+
+
+
+
 gfloat3* GMesh::getLow()
 {
     return m_low ;
@@ -59,6 +85,20 @@ gfloat3* GMesh::getHigh()
 {
     return m_high ;
 }
+gfloat3* GMesh::getDimensions()
+{
+    return m_dimensions ; 
+}
+
+GMatrix<float>* GMesh::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+
+
+
+
+
 gfloat3* GMesh::getVertices()
 {
     return m_vertices ;
@@ -73,17 +113,42 @@ guint3*  GMesh::getFaces()
 }
 
 
+GBuffer* GMesh::getVerticesBuffer()
+{
+    return m_vertices_buffer ;
+}
+GBuffer* GMesh::getColorsBuffer()
+{
+    return m_colors_buffer ;
+}
+GBuffer*  GMesh::getFacesBuffer()
+{
+    return m_faces_buffer ;
+}
+GBuffer*  GMesh::getModelToWorldBuffer()
+{
+    return (GBuffer*)m_model_to_world ;
+}
+
+
+
+
 void GMesh::setVertices(gfloat3* vertices)
 {
     m_vertices = vertices ;
+    m_vertices_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_vertices ) ;
+    assert(sizeof(gfloat3) == sizeof(float)*3);
 }
 void GMesh::setFaces(guint3* faces)
 {
     m_faces = faces ;
+    m_faces_buffer = new GBuffer( sizeof(guint3)*m_num_faces, (void*)m_faces ) ;
+    assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
 void GMesh::setColors(gfloat3* colors)
 {
     m_colors = colors ;
+    m_colors_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_colors ) ;
 }
 
 
@@ -97,11 +162,6 @@ void GMesh::setHigh(gfloat3* high)
     m_high = high ;
 }
 
-
-void GMesh::setNumColors(unsigned int num_colors)
-{
-   m_num_colors = num_colors ;
-}
 
 
 
@@ -152,6 +212,15 @@ void GMesh::updateBounds()
     m_low = new gfloat3(low.x, low.y, low.z) ;
     m_high = new gfloat3(high.x, high.y, high.z);
 
+    m_dimensions = new gfloat3(high.x - low.x, high.y - low.y, high.z - low.z );
+    m_center     = new gfloat3((high.x + low.x)/2.0f, (high.y + low.y)/2.0f , (high.z + low.z)/2.0f );
+    m_extent = 0.f ;
+    m_extent = std::max( m_dimensions->x , m_extent );
+    m_extent = std::max( m_dimensions->y , m_extent );
+    m_extent = std::max( m_dimensions->z , m_extent );
+    m_extent = m_extent / 2.0f ; 
+
+    m_model_to_world = new GMatrix<float>( m_center->x, m_center->y, m_center->z, m_extent );
 }
 
 
@@ -191,6 +260,7 @@ gfloat3* GMesh::getTransformedVertices(GMatrixF& transform )
      }   
      return vertices ;
 }
+
 
 
 

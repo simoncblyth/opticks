@@ -51,6 +51,8 @@ void test_matrix()
 
 }
 
+
+
 void test_material()
 {
     GMaterial* mat = new GMaterial("demo", 0);
@@ -65,14 +67,24 @@ void test_material()
 }
 
 
+void test_substancelib()
+{
+    GSubstanceLib* lib = new GSubstanceLib();
+    const char* ri = lib->getLocalKey("refractive_index");
+    printf("ri %s \n", ri );
+}
+
+
 
 
 int main(int argc, char* argv[])
 {
-    GSubstanceLib* lib = new GSubstanceLib();
 
-    const char* ri = lib->getLocalKey("refractive_index");
-    printf("ri %s \n", ri );
+    GMatrixF* m = new GMatrixF(100.f, 200.f, 100.f,  10.f );
+    m->Dump();
+
+    printf(" size %lu   %lu \n", sizeof(GMatrixF), sizeof(float)*4*4 );
+    
 
 
     return 0 ;

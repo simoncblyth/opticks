@@ -3,12 +3,16 @@
 
 #include "GVector.hh"
 #include "GMatrix.hh"
+#include "GDrawable.hh"
 
+class GBuffer ; 
 
-class GMesh {
+class GMesh : public GDrawable {
   public:
       GMesh(GMesh* other); // stealing copy ctor
-      GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces);
+      GMesh(unsigned int index, 
+            gfloat3* vertices, unsigned int num_vertices, 
+            guint3*  faces,     unsigned int num_faces );
       virtual ~GMesh();
 
   public:
@@ -16,6 +20,11 @@ class GMesh {
       unsigned int getIndex();
       gfloat3* getLow();
       gfloat3* getHigh();
+  public:
+      gfloat3* getCenter();
+      gfloat3* getDimensions();
+      float getExtent();
+      GMatrix<float>* getModelToWorld();
 
   public:
       unsigned int getNumVertices();
@@ -24,6 +33,13 @@ class GMesh {
       gfloat3* getVertices();
       gfloat3* getColors();
       guint3*  getFaces();
+
+  public:
+      // Buffer access for GDrawable protocol
+      GBuffer* getVerticesBuffer();
+      GBuffer* getColorsBuffer();
+      GBuffer* getFacesBuffer();
+      GBuffer* getModelToWorldBuffer();
 
   public:
       void setLow(gfloat3* low);
@@ -52,6 +68,16 @@ class GMesh {
       guint3*  m_faces ;
       gfloat3* m_low ;
       gfloat3* m_high ;
+      gfloat3* m_dimensions ;
+      gfloat3* m_center ;
+      float    m_extent ; 
+      GMatrix<float>* m_model_to_world ; 
+
+  private:
+      GBuffer* m_vertices_buffer ;
+      GBuffer* m_colors_buffer ;
+      GBuffer* m_faces_buffer ;
+      GBuffer* m_model_to_world_buffer ;
 
 
 };

@@ -30,6 +30,9 @@ add_library(${name} SHARED
                 GVector.cc
                 GMatrix.cc
                 GNode.cc
+                GBuffer.cc
+                GDrawable.cc
+                GArray.cc
 )
 
 add_executable(${name}Test ${name}Test.cc)
@@ -59,6 +62,9 @@ GSubstanceLib.hh
 GVector.hh
 GMatrix.hh
 GNode.hh
+GBuffer.hh
+GDrawable.hh
+GArray.hh
 )
 
 install(FILES ${hdrs} DESTINATION include)

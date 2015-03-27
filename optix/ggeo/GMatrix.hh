@@ -2,12 +2,14 @@
 #define GMATRIX_H
 
 #include <stdio.h>
-
+#include "GBuffer.hh"
 
 template<typename T>
-class GMatrix
+class GMatrix : public GBuffer 
 {
    public:
+       GMatrix(T _s);                   // homogenous scaling  matrix
+       GMatrix(T _x, T _y, T _z, T _s=1.0f); // homogenous translate then scale matrix (ie translation not scaled)
        GMatrix();
        GMatrix(const GMatrix& m);
        GMatrix(
@@ -24,6 +26,8 @@ class GMatrix
        GMatrix& operator *= (const GMatrix& m); 
        GMatrix  operator *  (const GMatrix& m) const;
 
+       void* getPointer();  // override GBuffer
+
    public:
        T a1, a2, a3, a4 ; 
        T b1, b2, b3, b4 ; 
@@ -36,6 +40,7 @@ class GMatrix
 
 template<typename T>
 GMatrix<T>::GMatrix() :
+      GBuffer( sizeof(T)*16, NULL ),
       a1(1.f), a2(0.f), a3(0.f), a4(0.f), 
       b1(0.f), b2(1.f), b3(0.f), b4(0.f), 
       c1(0.f), c2(0.f), c3(1.f), c4(0.f), 
@@ -43,8 +48,30 @@ GMatrix<T>::GMatrix() :
 {   
 }
 
+
+template<typename T>
+GMatrix<T>::GMatrix(T _s) :
+      GBuffer( sizeof(T)*16, NULL ),
+      a1( _s), a2(0.f), a3(0.f), a4(0.f), 
+      b1(0.f), b2( _s), b3(0.f), b4(0.f), 
+      c1(0.f), c2(0.f), c3( _s), c4(0.f), 
+      d1(0.f), d2(0.f), d3(0.f), d4(1.f) 
+{   
+}
+
+template<typename T>
+GMatrix<T>::GMatrix(T _x, T _y, T _z, T _s) :
+      GBuffer( sizeof(T)*16, NULL ),
+      a1( _s), a2(0.f), a3(0.f), a4(_x), 
+      b1(0.f), b2( _s), b3(0.f), b4(_y), 
+      c1(0.f), c2(0.f), c3( _s), c4(_z), 
+      d1(0.f), d2(0.f), d3(0.f), d4(1.f) 
+{   
+}
+
 template<typename T>
 GMatrix<T>::GMatrix(const GMatrix& m) : 
+      GBuffer( sizeof(T)*16, NULL ),
       a1(m.a1), a2(m.a2), a3(m.a3), a4(m.a4), 
       b1(m.b1), b2(m.b2), b3(m.b3), b4(m.b4), 
       c1(m.c1), c2(m.c2), c3(m.c3), c4(m.c4), 
@@ -59,6 +86,7 @@ GMatrix<T>::GMatrix(
           T _c1, T _c2, T _c3, T _c4,
           T _d1, T _d2, T _d3, T _d4
                 ) :
+      GBuffer( sizeof(T)*16, NULL ),
       a1(_a1), a2(_a2), a3(_a3), a4(_a4), 
       b1(_b1), b2(_b2), b3(_b3), b4(_b4), 
       c1(_c1), c2(_c2), c3(_c3), c4(_c4), 
@@ -66,6 +94,66 @@ GMatrix<T>::GMatrix(
 {   
 }
 
+
+template <typename T>
+void* GMatrix<T>::getPointer()
+{
+    bool flip = false ; 
+
+    if( !m_pointer )
+    {
+        T* buf = new T[16];
+
+        if(!flip)
+        {
+
+            buf[0] = a1 ;
+            buf[1] = a2 ;
+            buf[2] = a3 ;
+            buf[3] = a4 ;
+
+            buf[4] = b1 ;
+            buf[5] = b2 ;
+            buf[6] = b3 ;
+            buf[7] = b4 ;
+
+            buf[8] = c1 ;
+            buf[9] = c2 ;
+            buf[10] = c3 ;
+            buf[11] = c4 ;
+
+            buf[12] = d1 ;
+            buf[13] = d2 ;
+            buf[14] = d3 ;
+            buf[15] = d4 ;
+        }
+        else
+        {
+            buf[0] = a1 ;
+            buf[1] = b1 ;
+            buf[2] = c1 ;
+            buf[3] = d1 ;
+
+            buf[4] = a2 ;
+            buf[5] = b2 ;
+            buf[6] = c2 ;
+            buf[7] = d2 ;
+
+            buf[8] = a3 ;
+            buf[9] = b3 ;
+            buf[10] = c3 ;
+            buf[11] = d3 ;
+
+            buf[12] = a4 ;
+            buf[13] = b4 ;
+            buf[14] = c4 ;
+            buf[15] = d4 ;
+        } 
+
+        m_pointer = buf ;
+    }
+    return m_pointer ; 
+}
 
 
 
