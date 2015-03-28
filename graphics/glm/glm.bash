@@ -50,6 +50,13 @@ glm-get(){
    echo WARNING : symbolic link workaround for non-standard unziping to unversioned glm directory 
 }
 
+
+glm-find()
+{
+   glm-icd
+   find . -name '*.hpp' -exec grep -H ${1:-scale} {} \;
+}
+
 glm-test-cmake(){
    local iwd=$PWD
    local tdir=$(glm-tdir)

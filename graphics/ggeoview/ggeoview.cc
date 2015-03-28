@@ -6,7 +6,6 @@
 #include "Scene.hh"
 #include "Demo.hh"
 #include "GGeoLoader.hh"
-#include "GGeoInterConnect.hh"
 
 
 static void error_callback(int error, const char* description)
@@ -88,10 +87,16 @@ int main(void)
 
     GGeoLoader ggl ; 
     GGeo* ggeo = ggl.getGGeo();
-    scene.setGeometry(ggeo->getMergedMesh()); 
+    //GMergedMesh* geo = ggeo->getMergedMesh(); 
+    GMesh* geo = ggeo->getMesh(0); 
+    assert(geo);
+    geo->setColor(0.5,0.5,1.0);
 
-    //scene.setGeometry(new Demo); 
+    geo->Summary("mesh 0");
 
+    //Demo* geo = new Demo();
+
+    scene.setGeometry(geo);
     scene.init() ;
     /////////////////////////////////////////////////////////
 

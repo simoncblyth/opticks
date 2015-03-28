@@ -22,7 +22,7 @@ struct gfloat3
        return *this ;
     }
 
-    void Dump(const char* msg)
+    void Summary(const char* msg)
     {
         printf("%s %10.3f %10.3f %10.3f\n", msg, x, y, z);
     }

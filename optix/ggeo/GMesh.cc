@@ -11,7 +11,7 @@ GMesh::GMesh(GMesh* other)
      m_vertices_buffer(other->getVerticesBuffer()),
      m_num_vertices(other->getNumVertices()),
      m_faces(other->getFaces()),
-     m_faces_buffer(other->getFacesBuffer()),
+     m_indices_buffer(other->getIndicesBuffer()),
      m_num_faces(other->getNumFaces()),
      m_colors(other->getColors()),
      m_colors_buffer(other->getColorsBuffer()),
@@ -28,7 +28,7 @@ GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, g
       m_vertices_buffer(NULL),
       m_num_vertices(num_vertices), 
       m_faces(NULL),
-      m_faces_buffer(NULL),
+      m_indices_buffer(NULL),
       m_num_faces(num_faces),
       m_colors(NULL),
       m_colors_buffer(NULL),
@@ -38,7 +38,7 @@ GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, g
       m_center(NULL),
       m_model_to_world(NULL),
       m_extent(0.f),
-      m_num_colors(num_vertices),
+      m_num_colors(num_vertices),  // tie num_colors to num_vertices
       GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 
@@ -121,9 +121,9 @@ GBuffer* GMesh::getColorsBuffer()
 {
     return m_colors_buffer ;
 }
-GBuffer*  GMesh::getFacesBuffer()
+GBuffer*  GMesh::getIndicesBuffer()
 {
-    return m_faces_buffer ;
+    return m_indices_buffer ;
 }
 GBuffer*  GMesh::getModelToWorldBuffer()
 {
@@ -136,21 +136,36 @@ GBuffer*  GMesh::getModelToWorldBuffer()
 void GMesh::setVertices(gfloat3* vertices)
 {
     m_vertices = vertices ;
-    m_vertices_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_vertices ) ;
+    m_vertices_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_vertices, sizeof(gfloat3), 3 ) ;
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
 void GMesh::setFaces(guint3* faces)
 {
     m_faces = faces ;
-    m_faces_buffer = new GBuffer( sizeof(guint3)*m_num_faces, (void*)m_faces ) ;
+    m_indices_buffer = new GBuffer( sizeof(guint3)*m_num_faces, (void*)m_faces, sizeof(guint3)/3, 1 ) ;
     assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
 void GMesh::setColors(gfloat3* colors)
 {
     m_colors = colors ;
-    m_colors_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_colors ) ;
+    m_colors_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_colors, sizeof(gfloat3), 3  ) ;
+    assert(sizeof(gfloat3) == sizeof(float)*3);
 }
 
+void GMesh::setColor(float r, float g, float b)
+{
+    assert(m_num_colors == m_num_vertices);
+    if(!m_colors)
+    {
+        setColors(new gfloat3[m_num_colors]);
+    }
+    for(unsigned int i=0 ; i<m_num_colors ; ++i )
+    {
+        m_colors[i].x  = r ;
+        m_colors[i].y  = g ;
+        m_colors[i].z  = b ;
+    }
+}
 
 
 void GMesh::setLow(gfloat3* low)
@@ -169,6 +184,26 @@ void GMesh::setHigh(gfloat3* high)
 GMesh::~GMesh()
 {
 }
+void GMesh::Dump(const char* msg)
+{
+    printf("%s\n", msg);
+    for(unsigned int i=0 ; i < m_num_vertices ; i++)
+    {
+        gfloat3& vtx = m_vertices[i] ;
+        printf(" vtx %5u  %10.3f %10.3f %10.3f \n", i, vtx.x, vtx.y, vtx.z );
+    } 
+    for(unsigned int i=0 ; i < m_num_colors ; i++)
+    {
+        gfloat3& col = m_colors[i] ;
+        printf(" col %5u  %10.3f %10.3f %10.3f \n", i, col.x, col.y, col.z );
+    } 
+    for(unsigned int i=0 ; i < m_num_faces ; i++)
+    {
+        guint3& fac = m_faces[i] ;
+        printf(" fac %5u  %5u %5u %5u \n", i, fac.x, fac.y, fac.z );
+    } 
+}
+
 
 void GMesh::Summary(const char* msg)
 {
@@ -178,16 +213,34 @@ void GMesh::Summary(const char* msg)
       m_num_vertices, 
       m_num_faces);
 
-   printf("low %10.3f %10.3f %10.3f\n",
+   printf("%10s %10.3f %10.3f %10.3f\n",
+         "low",
          m_low->x,
          m_low->y,
          m_low->z);
 
-   printf("high %10.3f %10.3f %10.3f\n", 
+   printf("%10s %10.3f %10.3f %10.3f\n", 
+          "high",
           m_high->x,
           m_high->y,
           m_high->z);
 
+   printf("%10s %10.3f %10.3f %10.3f extent %10.3f\n", 
+          "dimen",
+          m_dimensions->x,
+          m_dimensions->y,
+          m_dimensions->z,
+          m_extent);
+
+   printf("%10s %10.3f %10.3f %10.3f\n", 
+          "center",
+          m_center->x,
+          m_center->y,
+          m_center->z);
+
+   m_model_to_world->Summary(msg);
+
+   Dump(msg);
 }
 
 
@@ -218,7 +271,22 @@ void GMesh::updateBounds()
     m_extent = std::max( m_dimensions->x , m_extent );
     m_extent = std::max( m_dimensions->y , m_extent );
     m_extent = std::max( m_dimensions->z , m_extent );
-    m_extent = m_extent / 2.0f ; 
+    m_extent = m_extent / 2.0f ;         
+    //
+    // extent is half the maximal dimension 
+    // 
+    // model coordinates definition
+    //      all vertices are contained within model coordinates box  (-1:1,-1:1,-1:1) 
+    //      model coordinates origin (0,0,0) corresponds to world coordinates  m_center
+    //  
+    // world -> model
+    //        * translate by -m_center 
+    //        * scale by 1/m_extent
+    //
+    //  model -> world
+    //        * scale by m_extent
+    //        * translate by m_center
+    //
 
     m_model_to_world = new GMatrix<float>( m_center->x, m_center->y, m_center->z, m_extent );
 }

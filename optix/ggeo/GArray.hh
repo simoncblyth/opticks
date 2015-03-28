@@ -8,7 +8,7 @@ class GArray : public GBuffer {
   public:
      GArray(unsigned int length, const T* values)
      :
-       GBuffer(sizeof(T)*length, (void*)values),
+       GBuffer(sizeof(T)*length, (void*)values, sizeof(T), 1),
        m_length(length)
      {
      }

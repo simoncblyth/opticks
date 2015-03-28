@@ -15,6 +15,8 @@
 #include "stdlib.h"
 
 #include <glm/glm.hpp>  
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -37,6 +39,10 @@ Scene::~Scene()
 {
 }
 
+float* Scene::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
 
 void Scene::setCamera(Camera* camera)
 {
@@ -74,6 +80,7 @@ char* Scene::getShaderDir()
 
 GLuint Scene::upload(GLenum target, GLenum usage, GBuffer* buffer)
 {
+    buffer->Summary("Scene::upload");
     GLuint id ; 
     glGenBuffers(1, &id);
     glBindBuffer(target, id);
@@ -87,10 +94,10 @@ GLuint Scene::upload(GLenum target, GLenum usage, GBuffer* buffer)
 void Scene::dump(const char* msg)
 {
     printf("%s\n", msg );
-    printf("nelem     %d \n", m_nelem);
     printf("vertices  %u \n", m_vertices);
     printf("colors    %u \n", m_colors);
     printf("indices   %u \n", m_indices);
+    printf("nelem     %d \n", m_indices_count);
     printf("shaderdir %s \n", getShaderDir());
 
     m_shader->dump(msg);
@@ -98,37 +105,11 @@ void Scene::dump(const char* msg)
 
 void Scene::init()
 {
-    assert(m_geometry);
-
-    glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
-    glBindVertexArray (m_vao);     
-
-    m_nelem    = m_geometry->getNumFaces();
-    // hmm the above duplicates info from the GBuffer ?  eliminate or assert on consistency
-
-    m_vertices = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_geometry->getVerticesBuffer());
-    m_colors   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_geometry->getColorsBuffer());
-    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, m_geometry->getFacesBuffer());
-
-    GLboolean normalized = GL_FALSE ; 
-    GLsizei stride = 0 ;
-    const GLvoid* offset = NULL ;
- 
     // as there are two GL_ARRAY_BUFFER for vertices and colors need
     // to bind them again (despite bound in upload) in order to 
     // make the desired one active when create the VertexAttribPointer :
     // the currently active buffer being recorded "into" the VertexAttribPointer 
-
-    glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
-    glVertexAttribPointer(vPosition, m_nelem, GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vPosition);   
-
-    glBindBuffer (GL_ARRAY_BUFFER, m_colors);
-    glVertexAttribPointer(vColor, m_nelem, GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vColor);   
-
-    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
-
+    //
     // without 
     //     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
     // got a blank despite being bound in the upload 
@@ -139,6 +120,42 @@ void Scene::init()
     // As there is only one GL_ELEMENT_ARRAY_BUFFER there is 
     // no need to repeat the bind, but doing so for clarity
     //
+    assert(m_geometry);
+
+    m_model_to_world  = (float*)m_geometry->getModelToWorldBuffer()->getPointer();
+
+    glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
+    glBindVertexArray (m_vao);     
+
+    GBuffer* vbuf = m_geometry->getVerticesBuffer();
+    GBuffer* cbuf = m_geometry->getColorsBuffer();
+    GBuffer* ibuf = m_geometry->getIndicesBuffer();
+
+    assert(vbuf->getNumBytes() == cbuf->getNumBytes());
+    assert(vbuf->getNumBytes() == cbuf->getNumBytes());
+
+    m_vertices = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf );
+    m_colors   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf );
+
+    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf );
+    m_indices_count = ibuf->getNumItems(); // number of indices
+
+    GLboolean normalized = GL_FALSE ; 
+    GLsizei stride = 0 ;
+    const GLvoid* offset = NULL ;
+ 
+    // the vbuf and cbuf NumElements refer to the number of elements 
+    // within the vertex and color items ie 3 in both cases
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
+    glVertexAttribPointer(vPosition, vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vPosition);   
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_colors);
+    glVertexAttribPointer(vColor, cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vColor);   
+
+    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
     m_shader = new Shader(getShaderDir());
     m_program = m_shader->getId();
@@ -150,57 +167,62 @@ void Scene::init()
 }
 
 
+void Scene::draw(int width, int height)
+{ 
+    setupView(width, height);
+    glBindVertexArray (m_vao);
+
+    // count is the number of indices (which point at vertices) to form into triangle faces
+    // in the single triangle Demo this would be 3 
+    GLsizei count = m_indices_count ; 
+    glDrawElements( GL_TRIANGLES, count, GL_UNSIGNED_INT, NULL ) ;
+    m_draw_count += 1 ; 
+}
+
+
 void Scene::setupView(int width, int height)
 {
-    bool debug = m_draw_count == 0 ; 
-
-    m_camera->setSize(width, height);    
-    m_camera->setParallel(true);
-    m_view->setEye(0,0,-2);
-
-    glm::mat4 identity ;
+    glm::mat4 MVP;
+    glm::mat4 lookat;
     glm::mat4 projection;
-    glm::mat4 modelview;
+    glm::mat4 M2W ;
+    glm::mat4 scale ;
+
+
+    // view inputs are in model coordinates (model coordinates are all within -1:1)
+    // model_to_world matrix constructed from geometry center and extent
+    // is used to construct the lookat matrix 
+   
+    m_view->setEye(0,0,1);
+    m_view->setLook(0,0,0);
+    m_view->setUp(0,1,0);
+
+    //scale = glm::scale(glm::vec3(1.0f/1000.f))  ;
+    M2W = glm::make_mat4(m_model_to_world);
+    lookat = m_view->getLookAt(M2W, m_draw_count == 0);
+
+
+    m_camera->setYfov(100);
+    m_camera->setSize(width, height);    
+    m_camera->setParallel(false);
 
     projection = m_camera->getProjection();
 
-    GBuffer* m2w_buf = m_geometry->getModelToWorldBuffer();
-    assert(m2w_buf->getNumBytes() == 16*sizeof(float));
-    glm::mat4 m2w = glm::make_mat4( (float*)m2w_buf->getPointer() );
+    MVP = projection * lookat * scale ;
 
-    glm::mat4 lka = m_view->getLookAt(m2w, debug);
+    glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(MVP));
 
-    modelview *= lka ; 
-
-    glm::mat4 MVP = projection * modelview ;
-
-    GLsizei count = 1; 
-    GLboolean transpose = GL_FALSE ; 
-    //glUniformMatrix4fv(m_mvp_location, count, transpose, glm::value_ptr(MVP));
-    glUniformMatrix4fv(m_mvp_location, count, transpose, glm::value_ptr(identity));
-
-    if(debug)
+    if(m_draw_count == 0)
     {
         m_camera->Summary("Scene::setupView m_camera");
         m_view->Summary("Scene::setupView m_view");
 
+        print(M2W, "M2W");
+        print(lookat, "lookat");
         print(projection, "projection");
-        print(m2w, "m2w");
-        print(lka, "lka");
-        print(modelview, "modelview");
         print(MVP, "MVP");
     }
 }
 
-
-void Scene::draw(int width, int height)
-{ 
-    setupView(width, height);
-
-
-    glBindVertexArray (m_vao);
-    glDrawElements( GL_TRIANGLES, m_nelem, GL_UNSIGNED_INT, NULL ) ;
-    m_draw_count += 1 ; 
-}
 
 

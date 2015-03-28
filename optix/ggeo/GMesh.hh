@@ -17,6 +17,7 @@ class GMesh : public GDrawable {
 
   public:
       void Summary(const char* msg="GMesh::Summary");
+      void Dump(const char* msg="GMesh::Dump");
       unsigned int getIndex();
       gfloat3* getLow();
       gfloat3* getHigh();
@@ -38,7 +39,7 @@ class GMesh : public GDrawable {
       // Buffer access for GDrawable protocol
       GBuffer* getVerticesBuffer();
       GBuffer* getColorsBuffer();
-      GBuffer* getFacesBuffer();
+      GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
 
   public:
@@ -50,6 +51,7 @@ class GMesh : public GDrawable {
 
   public:
       void setNumColors(unsigned int num_colors);
+      void setColor(float r, float g, float b);
  
   public:
        gfloat3* getTransformedVertices(GMatrixF& transform );
@@ -76,7 +78,7 @@ class GMesh : public GDrawable {
   private:
       GBuffer* m_vertices_buffer ;
       GBuffer* m_colors_buffer ;
-      GBuffer* m_faces_buffer ;
+      GBuffer* m_indices_buffer ;
       GBuffer* m_model_to_world_buffer ;
 
 

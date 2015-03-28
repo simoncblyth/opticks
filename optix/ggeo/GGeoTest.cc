@@ -11,7 +11,7 @@
 void test_matrix()
 {
     GMatrixF a ;
-    a.Dump("a");
+    a.Summary("a");
 
 
     GMatrixF b(
@@ -20,7 +20,7 @@ void test_matrix()
         0.f,0.f,2.f,0.f, 
         0.f,0.f,0.f,2.f);
 
-    b.Dump("b");
+    b.Summary("b");
      
     GMatrixF c(
         0.f,0.f,0.f,1.f, 
@@ -28,7 +28,7 @@ void test_matrix()
         0.f,1.f,0.f,0.f, 
         1.f,0.f,0.f,0.f);
 
-    c.Dump("c");
+    c.Summary("c");
      
 
 
@@ -37,7 +37,7 @@ void test_matrix()
     p *= b ;
     p *= c ;
 
-    p.Dump("p");
+    p.Summary("p");
 
     GMatrixF t(
         0.f,0.f,0.f,10.f, 
@@ -47,7 +47,7 @@ void test_matrix()
 
     gfloat3 v(0.f,0.f,0.f);
     v *= t ; 
-    v.Dump("v");
+    v.Summary("v");
 
 }
 
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 {
 
     GMatrixF* m = new GMatrixF(100.f, 200.f, 100.f,  10.f );
-    m->Dump();
+    m->Summary();
 
     printf(" size %lu   %lu \n", sizeof(GMatrixF), sizeof(float)*4*4 );
     

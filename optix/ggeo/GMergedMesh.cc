@@ -36,9 +36,13 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mmesh->setFaces(   new guint3[mmesh->getNumFaces()]);
 
     mmesh->setNumColors(mmesh->getNumVertices());
+    mmesh->setColor(0.5,0.5,0.5);
 
     mmesh->traverse( solid, 0, pass_merge ); 
     mmesh->updateBounds();
+
+    
+
 
     return mmesh ;
 }
@@ -68,11 +72,10 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
             {
                 m_vertices[m_cur_vertices+i] = vertices[i] ; 
                 m_vertices[m_cur_vertices+i] *= *transform ;
-
                 // fake to mid grey for now
-                m_colors[m_cur_vertices+i].x  = 0.5 ;
-                m_colors[m_cur_vertices+i].y  = 0.5 ;
-                m_colors[m_cur_vertices+i].z  = 0.5 ;
+                //m_colors[m_cur_vertices+i].x  = 0.5 ;
+                //m_colors[m_cur_vertices+i].y  = 0.5 ;
+                //m_colors[m_cur_vertices+i].z  = 0.5 ;
             }
 
             guint3* faces = mesh->getFaces();
