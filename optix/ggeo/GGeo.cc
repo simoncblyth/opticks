@@ -19,7 +19,7 @@ GGeo::GGeo() :
    m_substance_lib(NULL),
    m_merged_mesh(NULL)
 {
-   printf("GGeo::GGeo\n");
+   //printf("GGeo::GGeo\n");
 
    m_substance_lib = new GSubstanceLib();
 

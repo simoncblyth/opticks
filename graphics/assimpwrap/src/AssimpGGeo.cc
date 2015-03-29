@@ -1,4 +1,5 @@
 #include "AssimpGGeo.hh"
+#include "AssimpGeometry.hh"
 #include "AssimpTree.hh"
 #include "AssimpSelection.hh"
 #include "AssimpNode.hh"
@@ -24,6 +25,37 @@
         g4daeview.sh -g 3148:3155
         g4daeview.sh -g 4813:4816    Iws/SST/Oil  outside of SST high reflectivity 0.8, inside of SST low reflectivity 0.1
 */
+
+
+
+const char* getenvvar( const char* envprefix, const char* envkey )
+{
+    char envvar[128];
+    snprintf(envvar, 128, "%s%s", envprefix, envkey );
+    return getenv(envvar);
+}
+
+
+GGeo* AssimpGGeo::load(const char* envprefix)
+{
+    const char* geokey = getenvvar(envprefix, "GEOKEY" );
+    const char* path = getenv(geokey);
+    const char* query = getenvvar(envprefix, "QUERY");
+    const char* ctrl = getenvvar(envprefix, "CTRL");
+ 
+    printf("AssimpGGeo::load geokey %s path %s query %s ctrl %s \n", geokey, path, query, ctrl ); 
+
+    AssimpGeometry ageo(path);
+    ageo.import();
+    AssimpSelection* selection = ageo.select(query);
+
+    AssimpGGeo agg(ageo.getTree(), selection); 
+    GGeo* ggeo = agg.convert(ctrl);
+
+    return ggeo ;
+}
+
+
 
 
 AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection) 

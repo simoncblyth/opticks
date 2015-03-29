@@ -16,6 +16,7 @@ class GBuffer ;
 
 
 class Scene {
+  public:
 
   enum Attrib_IDs { vPosition=0, vColor=1 };
 
@@ -24,6 +25,7 @@ class Scene {
       virtual ~Scene();
 
   public: 
+      void load(const char* envprefix);
       void init();
       void draw(int width, int height);
 

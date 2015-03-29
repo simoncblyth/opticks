@@ -10,17 +10,9 @@
 void View::Summary(const char* msg)
 {
     printf("%s\n", msg);
-    printf("  eye  %10.3f %10.3f %10.3f \n", m_eye_x, m_eye_y, m_eye_z );
-    printf("  look %10.3f %10.3f %10.3f \n", m_look_x, m_look_y, m_look_z );
-    printf("  up   %10.3f %10.3f %10.3f \n", m_up_x, m_up_y, m_up_z );
-
-    glm::vec4 eye = getEye();
-    glm::vec4 look = getLook();
-    glm::vec4 up = getUp();
-   
-    print(eye, "eye");
-    print(look,"look");
-    print(up,  "up");
+    print(getEye() , "eye");
+    print(getLook(),"look");
+    print(getUp()  ,  "up");
 }
 
 glm::mat4 View::getLookAt(const glm::mat4& m2w, bool debug)
@@ -32,6 +24,7 @@ glm::mat4 View::getLookAt(const glm::mat4& m2w, bool debug)
 
     if(debug)
     {
+        printf("View::getLookAt debug\n");
         print(eye, "eye_w");
         print(look,"look_w");
         print(up,  "up_w");
@@ -66,4 +59,23 @@ glm::vec4 View::getUp(const glm::mat4& m2w)
 {
     return m2w * getUp(); // direction, not position so w=0
 }   
+
+glm::vec4 View::getGaze()
+{
+    return glm::vec4( m_look_x - m_eye_x, m_look_y - m_eye_y , m_look_z - m_eye_z, 0.0f );
+}
+
+glm::vec4 View::getGaze(const glm::mat4& m2w, bool debug)
+{
+    glm::vec4 a = m2w * getGaze() ;
+    if(debug)
+    {
+        glm::vec4 b = m2w * getLook() - m2w * getEye() ;
+        print(a, "View::getGaze a");
+        print(b, "View::getGaze b");
+    }
+    return a ; 
+}
+
+
 

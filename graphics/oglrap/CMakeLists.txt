@@ -13,6 +13,7 @@ find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(GGeo REQUIRED)  # bit reluctant on this 
+find_package(AssimpWrap REQUIRED)  # more reluctant still, the solution is to be able to persist/load GGeo to/from file 
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -20,12 +21,14 @@ include_directories(
    ${GLFW_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
+   ${AssimpWrap_INCLUDE_DIRS} 
 )
 
 add_definitions(
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
+   ${AssimpWrap_DEFINITIONS}
 )
 
 add_library( ${name}  SHARED
@@ -44,11 +47,13 @@ target_link_libraries( ${name}
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${GGeo_LIBRARIES}
+      ${AssimpWrap_LIBRARIES}
 )
 target_link_libraries( ${name}Test
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${GGeo_LIBRARIES}
+      ${AssimpWrap_LIBRARIES}
       ${name}
 )
 

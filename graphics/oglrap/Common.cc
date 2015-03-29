@@ -19,7 +19,7 @@ void print(const glm::mat4& m, const char* msg)
 
 void print(const glm::vec4& v, const char* msg)
 {
-    printf("%s   %10.3f %10.3f %10.3f %10.3f \n", msg, v.x, v.y, v.z, v.w);
+    printf("%15s   %10.3f %10.3f %10.3f %10.3f \n", msg, v.x, v.y, v.z, v.w);
 }
 
 

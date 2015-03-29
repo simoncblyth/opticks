@@ -239,8 +239,6 @@ void GMesh::Summary(const char* msg)
           m_center->z);
 
    m_model_to_world->Summary(msg);
-
-   Dump(msg);
 }
 
 

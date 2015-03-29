@@ -44,10 +44,12 @@ public:
    glm::vec4 getEye();
    glm::vec4 getLook();
    glm::vec4 getUp();
-
+   glm::vec4 getGaze();
+ 
    glm::vec4 getEye(const glm::mat4& m2w);
    glm::vec4 getLook(const glm::mat4& m2w);
    glm::vec4 getUp(const glm::mat4& m2w);
+   glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
 
    glm::mat4 getLookAt(const glm::mat4& m2w, bool debug=false);
 

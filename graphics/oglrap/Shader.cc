@@ -122,7 +122,7 @@ const char* GL_type_to_string (GLenum type) {
 
 
 void print_all (GLuint programme) {
-  printf ("--------------------\nshader programme %i info:\n", programme);
+  printf ("Shader:print_all -----------------\nshader programme %i info:\n", programme);
   int params = -1;
   glGetProgramiv (programme, GL_LINK_STATUS, &params);
   printf ("GL_LINK_STATUS = %i\n", params);
@@ -212,8 +212,6 @@ bool _is_valid(GLuint programme) {
 }
 
 
-
-
 void Shader::compile(GLuint index)
 {
     glCompileShader (index);
@@ -236,10 +234,6 @@ void Shader::link(GLuint index)
         _print_program_info_log (index);
         exit(1); 
     } 
-
-
-
-
 }
 
 void Shader::init(const std::string& vert, const std::string& frag)
@@ -274,7 +268,7 @@ GLint Shader::getMVPLocation()
 
 void Shader::dump(const char* msg)
 {
-    printf("%s\n", msg);
+    printf("%s Shader::dump\n", msg);
     printf("m_mvp_location %d \n", m_mvp_location );
     print_all(m_program);
 }

@@ -6,10 +6,16 @@
 #include "View.hh"
 #include "Common.hh"
 
+
+// assimpwrap
+#include "AssimpWrap/AssimpGGeo.hh"
+
 // ggeo
 #include "GArray.hh"
 #include "GBuffer.hh"
 #include "GDrawable.hh"
+#include "GMergedMesh.hh"
+#include "GGeo.hh"
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -78,6 +84,10 @@ char* Scene::getShaderDir()
 }
 
 
+
+
+
+
 GLuint Scene::upload(GLenum target, GLenum usage, GBuffer* buffer)
 {
     buffer->Summary("Scene::upload");
@@ -89,6 +99,21 @@ GLuint Scene::upload(GLenum target, GLenum usage, GBuffer* buffer)
 }
 
 
+void Scene::load(const char* envprefix)
+{
+    GGeo* ggeo = AssimpGGeo::load(envprefix);
+
+    GMergedMesh* geo = ggeo->getMergedMesh(); 
+    //GMesh* geo = ggeo->getMesh(0); 
+    //Demo* geo = new Demo()
+
+    assert(geo);
+    geo->setColor(0.5,0.5,1.0);
+    geo->Summary("Scene::load Sumary");
+    //geo->Dump("Scene::load Dump");
+
+    setGeometry(geo);
+}
 
 
 void Scene::dump(const char* msg)
@@ -123,6 +148,7 @@ void Scene::init()
     assert(m_geometry);
 
     m_model_to_world  = (float*)m_geometry->getModelToWorldBuffer()->getPointer();
+
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
@@ -187,6 +213,7 @@ void Scene::setupView(int width, int height)
     glm::mat4 projection;
     glm::mat4 M2W ;
     glm::mat4 scale ;
+    glm::vec4 gaze ;
 
 
     // view inputs are in model coordinates (model coordinates are all within -1:1)
@@ -200,6 +227,7 @@ void Scene::setupView(int width, int height)
     //scale = glm::scale(glm::vec3(1.0f/1000.f))  ;
     M2W = glm::make_mat4(m_model_to_world);
     lookat = m_view->getLookAt(M2W, m_draw_count == 0);
+    gaze = m_view->getGaze(M2W, m_draw_count == 0);
 
 
     m_camera->setYfov(100);
@@ -208,9 +236,21 @@ void Scene::setupView(int width, int height)
 
     projection = m_camera->getProjection();
 
-    MVP = projection * lookat * scale ;
+    MVP = projection * lookat ;
 
     glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(MVP));
+
+    // chain of transforms   
+    //
+    //    projection * lookat * (world vertices)
+    // 
+    // lookat transform (  world frame -> eye frame )
+    //
+    //    * no scaling, ie still world distances
+    //    * eye at (0,0,0)            
+    //    * look at (0,0,-gazelength) 
+    //   
+
 
     if(m_draw_count == 0)
     {
@@ -221,6 +261,8 @@ void Scene::setupView(int width, int height)
         print(lookat, "lookat");
         print(projection, "projection");
         print(MVP, "MVP");
+        print(gaze, "gaze");
+        printf("gaze length %10.3f \n", glm::length(gaze));
     }
 }
 

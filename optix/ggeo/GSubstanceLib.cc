@@ -171,7 +171,7 @@ void GSubstanceLib::setKeyMap(const char* spec)
         
         std::string dk = s.substr(0, colon);
         std::string lk = s.substr(colon+1);
-        printf("GSubstanceLib::setKeyMap dk [%s] lk [%s] \n", dk.c_str(), lk.c_str());
+        //printf("GSubstanceLib::setKeyMap dk [%s] lk [%s] \n", dk.c_str(), lk.c_str());
         m_keymap[dk] = lk ; 
     }
 }

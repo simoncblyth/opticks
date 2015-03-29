@@ -24,6 +24,9 @@ public:
     GGeo* convert(const char* ctrl);
 
 public:
+    static GGeo* load(const char* envprefix="GGEOVIEW_");
+
+public:
     static const char* g4dae_bordersurface_physvolume1 ; 
     static const char* g4dae_bordersurface_physvolume2 ; 
     static const char* g4dae_skinsurface_volume ; 

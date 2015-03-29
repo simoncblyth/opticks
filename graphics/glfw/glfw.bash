@@ -41,6 +41,44 @@ to no avail.
     -L/usr/local/env/graphics/glfw/3.1.1/lib -lglfw3 
 
 
+input events
+-------------
+
+::
+
+    glfw-bcd
+    cd tests
+    ./events   # blank window demo of all events 
+
+    delta:tests blyth$ pwd
+    /usr/local/env/graphics/glfw/glfw-3.1.1.build/tests
+    delta:tests blyth$ ./events -h
+    Library initialized
+    Usage: events [-f] [-h] [-n WINDOWS]
+    Options:
+      -f use full screen
+      -h show this help
+      -n the number of windows to create
+
+    00000433 to 2 at 70.437: Cursor position: 302.957031 217.011719
+    00000434 to 2 at 70.454: Cursor position: 310.250000 212.843750
+    00000435 to 2 at 70.471: Cursor position: 312.332031 211.800781
+
+Observations
+
+* origin of cursor coordinates is the top left of current focused window,
+* goes negative to the left and up, increases to right and down 
+  and continues beyond window dimensions 
+
+
+
+trackball
+------------
+
+*  https://github.com/ishikawash/glfw-example/blob/master/normal_map_demo/trackball.hpp
+
+
+
 EOU
 }
 glfw-sdir(){ echo $(env-home)/graphics/glfw ; }

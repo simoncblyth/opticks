@@ -50,7 +50,7 @@ glm-get(){
    echo WARNING : symbolic link workaround for non-standard unziping to unversioned glm directory 
 }
 
-
+glm-doc(){ open file://$(glm-dir)/doc/api/modules.html ; }
 glm-find()
 {
    glm-icd

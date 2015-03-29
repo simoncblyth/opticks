@@ -64,8 +64,8 @@ ggeoview-export()
    export-export
 
    export GGEOVIEW_GEOKEY="DAE_NAME_DYB"
-   #export GGEOVIEW_QUERY="range:5000:8000"
-   export GGEOVIEW_QUERY="index:5000"
+   export GGEOVIEW_QUERY="range:5000:8000"
+   #export GGEOVIEW_QUERY="index:5000"
    export GGEOVIEW_CTRL=""
    export SHADER_DIR=$(ggeoview-sdir)/glsl
 } 
