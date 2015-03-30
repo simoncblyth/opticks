@@ -92,6 +92,12 @@ glfwtest-install(){
 glfwtest-bin(){ echo $(glfwtest-idir)/bin/$(glfwtest-name) ; }
 glfwtest-export()
 {
+   export-
+   export-export
+
+   export GLFWTEST_GEOKEY="DAE_NAME_DYB"
+   export GLFWTEST_QUERY="range:5000:8000"
+   export GLFWTEST_CTRL=""
    export SHADER_DIR=$(glfwtest-sdir)/glsl
 } 
 glfwtest-run(){ 

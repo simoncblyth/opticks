@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "Scene.hh"
-#include "Geometry.hh"
 
 static void error_callback(int error, const char* description)
 {
@@ -82,10 +81,9 @@ int main(void)
     printf ("OpenGL version supported %s\n", version);
 
 
-    Geometry geometry ;
-    geometry.load();
     Scene scene ; 
-    scene.init(&geometry) ;
+    scene.load("GLFWTEST_") ;
+    scene.init();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -97,7 +95,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, width, height);
 
-        scene.draw();
+        scene.draw(width, height);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

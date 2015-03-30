@@ -79,6 +79,31 @@ trackball
 
 
 
+external events, eg messages from UDP,  ZeroMQ
+------------------------------------------------
+
+* https://github.com/elmindreda/Wendy
+
+
+GLEQ : simple single header event queue for GLFW 3
+----------------------------------------------------------
+
+By the author of GLFW
+
+* https://github.com/elmindreda/gleq
+* https://github.com/elmindreda/gleq/blob/master/test.c 
+* https://github.com/elmindreda/gleq/blob/master/test.c 
+
+When a window is tracked by GLEQ it handles setting all the 
+callbacks, which populate a unionized event struct. This
+yields a clean interface for consuming input events which 
+keeps the callbacks out of sight.
+
+
+
+
+
+
 EOU
 }
 glfw-sdir(){ echo $(env-home)/graphics/glfw ; }
