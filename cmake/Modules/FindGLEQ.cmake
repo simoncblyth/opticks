@@ -1,0 +1,6 @@
+
+set(GLEQ_PREFIX "$ENV{LOCAL_BASE}/env/graphics/gleq")
+set(GLEQ_LIBRARIES    "" )
+set(GLEQ_INCLUDE_DIRS "${GLEQ_PREFIX}")
+set(GLEQ_DEFINITIONS "")
+

@@ -8,6 +8,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-switch-enum" )
+
+
 ########### using env/cmake/Modules/*.cmake #####
 
 find_package(GLEW REQUIRED)
@@ -29,7 +32,7 @@ add_definitions(
 
 
 add_executable( GLFWContext glfw_context.cc )
-add_executable( ${name} glfw_test.cc ) 
+add_executable( ${name} glfw_test.cc app.cc ) 
 add_executable( Simple simple.cc )
 
 target_link_libraries( GLFWContext 

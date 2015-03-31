@@ -25,18 +25,15 @@ Conceptual Intro
 
 * file:///opt/local/share/doc/boost/doc/html/boost_asio/overview/core/basics.html
 
-
 Talks
 -------
 
 * http://theboostcpplibraries.com/boost.asio
 
-
 Boost inclusion
 ----------------
 
 Note: Boost.Asio 1.10.6 will also be included in Boost 1.58.
-
 
 Boost Asio that comes with macports boost 1.55
 -------------------------------------------------
@@ -131,7 +128,6 @@ boost::asio::strand class to synchronise callback handlers in a multithreaded pr
      75 }
 
 
-
 daytime1
 ~~~~~~~~~~
 
@@ -190,7 +186,6 @@ Library dependencies are -
 Boost 1.54 or later
 ZeroMQ 4.0.x
 
-
 boost::bind
 ------------
 
@@ -229,6 +224,11 @@ Peers
 * :google:`boost::asio alternatives`
 
 
+SDL_net
+~~~~~~~~
+
+* http://www.libsdl.org/projects/SDL_net/
+
 Community
 ----------
 
@@ -239,6 +239,12 @@ Community
 
 * http://alexott.net/en/cpp/BoostAsioNotes.html
 
+Event Loop Integration
+------------------------
+
+* http://www.zaphoyd.com/websocketpp/manual/common-patterns/io-strategies-and-event-loop-integration
+
+* http://stackoverflow.com/questions/1001032/how-to-integrate-boost-asio-main-loop-in-gui-framework-like-qt4-or-gtk
 
 Just ASIO without boost
 ---------------------------
