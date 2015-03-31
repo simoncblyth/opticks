@@ -10,10 +10,12 @@
 #include "app.hh"
 #include "Scene.hh"
 
-int main(void)
+
+int main(int argc, char** argv)
 {
-    Config config ;      
-    config.setUdpPort(8080);
+    Config config;
+    config.parse(argc,argv);
+    if(config.isAbort()) exit(EXIT_SUCCESS);
 
     App app(&config) ;
     app.setSize(640,480);
@@ -23,7 +25,6 @@ int main(void)
     Scene scene ; 
     scene.load("GLFWTEST_") ;
     scene.init();
-
     app.setScene(&scene);
 
     app.runloop();

@@ -140,13 +140,19 @@ void App::listen()
 void App::listenUDP()
 {
     boost::mutex::scoped_lock lock(m_eventQueueMutex);
+
+    std::vector<std::string> lines ;
     while (!m_eventQueue.isEmpty()) 
     {
         EventQueueItem_t tmp;
         tmp = m_eventQueue.pop();
         std::string msg(tmp.begin(), tmp.end());
+        lines.push_back(msg);
         printf("App::listenUDP [%s]\n", msg.c_str());
     }
+
+    m_config->parse(lines, ' ');
+
 }
 
 void App::runloop()
