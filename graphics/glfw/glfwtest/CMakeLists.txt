@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
-SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-switch-enum" )
+#SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-switch-enum" )
 
 
 ########### using env/cmake/Modules/*.cmake #####
@@ -16,12 +16,14 @@ SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-switch-enum" )
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
+find_package(Boost REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
    ${OGLRap_INCLUDE_DIRS} 
+   ${Boost_INCLUDE_DIRS} 
 )
 
 add_definitions(
@@ -32,7 +34,13 @@ add_definitions(
 
 
 add_executable( GLFWContext glfw_context.cc )
-add_executable( ${name} glfw_test.cc app.cc ) 
+add_executable( ${name} 
+                glfw_test.cc 
+                app.cc
+                udpServer.cc 
+                EventQueue.cc
+                Config.cc
+) 
 add_executable( Simple simple.cc )
 
 target_link_libraries( GLFWContext 
@@ -44,6 +52,7 @@ target_link_libraries( ${name}
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${OGLRap_LIBRARIES}
+      ${Boost_LIBRARIES}
 )
 target_link_libraries( Simple 
       ${GLEW_LIBRARIES}

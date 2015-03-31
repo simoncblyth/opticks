@@ -6,12 +6,16 @@
 #define GLEQ_IMPLEMENTATION
 #include "gleq.h"
 
+#include "Config.hh"
 #include "app.hh"
 #include "Scene.hh"
 
 int main(void)
 {
-    App app ;
+    Config config ;      
+    config.setUdpPort(8080);
+
+    App app(&config) ;
     app.setSize(640,480);
     app.setTitle("Demo");
     app.init();

@@ -10,6 +10,10 @@
 
 #include "app.hh"
 #include "Scene.hh"
+#include "Config.hh"
+
+#include <boost/bind.hpp>
+
 
 void _update_fps_counter (GLFWwindow* window) {
   static double previous_seconds = glfwGetTime ();
@@ -34,10 +38,13 @@ static void error_callback(int error, const char* description)
 }
 
 
-App::App() : 
+App::App(Config* config) : 
+     m_config(config),
      m_title(NULL),
      m_window(NULL),
-     m_scene(NULL)
+     m_scene(NULL),
+     m_eventQueue(),
+     m_udpServer(m_ioService,m_config->getUdpPort(),&m_eventQueue,&m_eventQueueMutex)
 {
 }
 
@@ -61,13 +68,20 @@ void App::setScene(Scene* scene)
     m_scene = scene ;
 }
 
-GLFWwindow* App::getWindow()
+
+void App::init()
 {
-    return m_window ;
+    init_net();
+    init_graphics();
+}
+
+void App::init_net()
+{
+    m_netThread = new boost::thread(boost::bind(&boost::asio::io_service::run, &m_ioService));
 }
 
 
-void App::init()
+void App::init_graphics()
 {
     glfwSetErrorCallback(error_callback);
 
@@ -87,7 +101,7 @@ void App::init()
         ::exit(EXIT_FAILURE);
     }
 
-
+    // hookup the callbacks and arranges outcomes into event queue 
     gleqTrackWindow(m_window);
 
     glfwMakeContextCurrent(m_window);
@@ -96,7 +110,7 @@ void App::init()
     glewExperimental = GL_TRUE;
     glewInit ();
 
-    glfwSwapInterval(1);
+    glfwSwapInterval(1);  // vsync hinting
 
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
@@ -107,33 +121,44 @@ void App::init()
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
     printf("FramebufferSize %d %d \n", width, height);    
- 
-
 }
 
 
-void App::runloop()
+void App::listen()
 {
-    assert(m_scene);
+    glfwPollEvents();
 
-    while (!glfwWindowShouldClose(m_window))
+    GLEQevent event;
+    while (gleqNextEvent(&event))
     {
-        glfwPollEvents();
-
-        GLEQevent event;
-        while (gleqNextEvent(&event))
-        {
-            dump_event(event);
-            handle_event(event);
-            gleqFreeEvent(&event);
-        }
-
-        render();
-
-        glfwSwapBuffers(m_window);
+        dump_event(event);
+        handle_event(event);
+        gleqFreeEvent(&event);
+    }
+}
+ 
+void App::listenUDP()
+{
+    boost::mutex::scoped_lock lock(m_eventQueueMutex);
+    while (!m_eventQueue.isEmpty()) 
+    {
+        EventQueueItem_t tmp;
+        tmp = m_eventQueue.pop();
+        std::string msg(tmp.begin(), tmp.end());
+        printf("App::listenUDP [%s]\n", msg.c_str());
     }
 }
 
+void App::runloop()
+{
+    while (!glfwWindowShouldClose(m_window))
+    {
+        listen(); 
+        listenUDP(); 
+        render();
+        glfwSwapBuffers(m_window);
+    }
+}
 
 
 void App::render()
