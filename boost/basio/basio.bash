@@ -30,6 +30,16 @@ Talks
 
 * http://theboostcpplibraries.com/boost.asio
 
+
+Message passing from netThread to mainThread
+----------------------------------------------
+
+* http://stackoverflow.com/questions/17976568/boost-asio-pattern-with-gui-and-worker-thread
+
+* http://stackoverflow.com/questions/17311512/howto-post-messages-between-threads-with-boostasio/17315567#17315567
+
+
+
 Boost inclusion
 ----------------
 

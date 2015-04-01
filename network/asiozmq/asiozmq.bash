@@ -126,11 +126,13 @@ asiozmq-dir(){  echo $(local-base)/env/network/asiozmq ; }
 asiozmq-idir(){ echo $(asiozmq-dir)/include ; }
 asiozmq-sdir(){ echo $(asiozmq-dir)/example ; }
 asiozmq-bdir(){ echo $(asiozmq-dir)/example.build ; }
+asiozmq-edir(){ echo $(env-home)/network/asiozmq; }
 
 asiozmq-cd(){   cd $(asiozmq-dir) ; }
 asiozmq-scd(){  cd $(asiozmq-sdir)  ; }
 asiozmq-bcd(){  cd $(asiozmq-bdir) ; }
 asiozmq-icd(){  cd $(asiozmq-idir)/asio-zmq ; }
+asiozmq-ecd(){  cd $(asiozmq-edir) ; }
 
 
 asiozmq-get(){
