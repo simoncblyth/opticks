@@ -97,7 +97,7 @@ void udp_server<Delegate>::handle_receive(const boost::system::error_code& error
         // msg back to the delegate, typically passing from work thread to main thread
         m_delegate->get_io_service().post(
                         boost::bind(
-                                &Delegate::on_message,
+                                &Delegate::on_msg,
                                 m_delegate,
                                 *smsg ));
 

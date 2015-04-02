@@ -41,6 +41,7 @@ udpserver-start()
 udpserver-test()
 {
     UDP_PORT=13 udp.py ${1:-hello_world} 
+    npysend.sh --tag 1
 }
 
 udpserver-wipe(){
