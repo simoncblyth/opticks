@@ -1,17 +1,16 @@
-//  clang++ -I/opt/local/include -L/opt/local/lib -lboost_system-mt udp_server_test.cpp udp_server.cpp -o udp_server_test
-
 /*
-Test with python client::
-
-    UDP_PORT=13 udp.py hello
+Test with udpserver-test OR  UDP_PORT=13 udp.py hello
 */
-
 
 #include "udp_manager.hpp"
 #include <iostream>
 #include <iomanip>
 #include <thread>
 #include <chrono>
+
+
+
+
 
 
 class App {
@@ -21,12 +20,15 @@ class App {
    udp_manager<App>                                 m_udp_manager ; 
 
 public:
-   App(unsigned int port)  
+
+   App(unsigned int udp_port, const char* zmq_backend)  
       :
-        m_udp_manager(this, port),   
-        m_io_service_work(new boost::asio::io_service::work(m_io_service)) 
+        m_io_service_work(new boost::asio::io_service::work(m_io_service)),
+        m_udp_manager(this, udp_port, zmq_backend)
    {
    }
+
+
 
    void poll_one()
    {
@@ -56,6 +58,19 @@ public:
                   << std::endl;
    }
 
+   void on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata)
+   {
+        std::cout << std::setw(20) << boost::this_thread::get_id() 
+                  << " App::on_npy " 
+                  << " shape dimension " << shape.size()
+                  << " data size "  << data.size()
+                  << " metadata [" << metadata << "]" 
+                  << std::endl;
+   }
+
+
+
+
 
 };
 
@@ -64,7 +79,7 @@ int main()
 {
     std::cout << std::setw(20) << boost::this_thread::get_id() << " main " << std::endl;
 
-    App app(13);
+    App app(13, "tcp://127.0.0.1:5002");
 
     for(unsigned int i=0 ; i < 20 ; ++i )
     {
