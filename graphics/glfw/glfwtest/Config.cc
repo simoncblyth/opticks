@@ -120,6 +120,7 @@ void Config::dump()
     // holding values together with defaults 
     std::cout << "Optimization level is " << m_opt << "\n";                
     std::cout << "UDP port level is " << m_udp_port << "\n";                
+    std::cout << "ZMQ Backend " << m_zmq_backend << "\n";                
     std::cout << "Yfov               " << m_yfov << "\n";                
 }
 
@@ -134,6 +135,7 @@ Config::Config()
     m_visible_options("Allowed options"),
     m_positional_options(),
     m_config_file_default("multiple_sources.cfg"),
+    m_zmq_backend_default("tcp://127.0.0.1:5002"),
     m_opt_default(10),
     m_udp_port(8080),
     m_udp_port_default(8080),
@@ -148,6 +150,11 @@ Config::Config()
 int Config::getUdpPort()
 {
     return m_udp_port ;
+}
+
+const char* Config::getZMQBackend()
+{
+    return m_zmq_backend.c_str() ;
 }
 
 float Config::getYfov()
@@ -182,6 +189,10 @@ void Config::create_descriptions()
        ("udp-port",   
                po::value<int>(&m_udp_port)->default_value(m_udp_port_default), 
                "UDP port on which to listen for external messages"
+       )
+       ("zmq-backend",   
+               po::value<std::string>(&m_zmq_backend)->default_value(m_zmq_backend_default), 
+               "ZMQ broker backend from which to listen for external messages bearing NPY serialized arrays"
        )
        ("include-path,I", 
                po::value< std::vector<std::string> >()->composing(), 

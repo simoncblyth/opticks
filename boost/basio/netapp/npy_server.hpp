@@ -20,6 +20,7 @@ class npy_server {
     boost::asio::zmq::socket             m_socket;
     std::vector<boost::asio::zmq::frame> m_buffer  ;
     Delegate*                            m_delegate ;
+    boost::asio::io_service&             m_delegate_io_service ;
 
     std::string                          m_metadata ; 
     std::vector<int>                     m_shape ;
@@ -29,13 +30,15 @@ public:
     npy_server(
                 boost::asio::io_service&    io_service_, 
                 Delegate*                   delegate,
+                boost::asio::io_service&    delegate_io_service, 
                 const char*                 backend
               )
                 : 
                    m_ctx(),
                    m_socket(io_service_, m_ctx, ZMQ_REP), 
                    m_buffer(),
-                   m_delegate(delegate)
+                   m_delegate(delegate),
+                   m_delegate_io_service(delegate_io_service)
     {
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
@@ -74,7 +77,7 @@ void npy_server<Delegate>::handle_req(boost::system::error_code const& ec)
     //dump(); 
     decode_buffer();
 
-    m_delegate->get_io_service().post(
+    m_delegate_io_service.post(
                         boost::bind(
                                 &Delegate::on_npy,
                                 m_delegate,

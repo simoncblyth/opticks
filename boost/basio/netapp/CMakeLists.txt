@@ -9,13 +9,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 include(EnvBuildOptions)
 
 
+## c++11 forced by AsioZMQ
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -stdlib=libc++")
 else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 endif ()
-
-
 
 
 find_package(Boost REQUIRED)
@@ -30,7 +29,7 @@ include_directories(
 )
 
 
-add_executable( ${name} main.cpp ) 
+add_executable( ${name} main.cpp app.cpp ) 
 
 target_link_libraries( ${name} 
       ${Boost_LIBRARIES}
@@ -38,4 +37,17 @@ target_link_libraries( ${name}
 )
 
 install(TARGETS ${name} DESTINATION bin)
+
+
+SET(hdrs 
+net_server.hpp
+net_manager.hpp
+npy_server.hpp
+udp_server.hpp
+numpy.hpp
+)
+
+install(FILES ${hdrs} DESTINATION include)
+
+
 

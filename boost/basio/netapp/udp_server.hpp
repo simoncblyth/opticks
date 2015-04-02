@@ -22,16 +22,20 @@ class udp_server
     boost::asio::ip::udp::endpoint  m_remote_endpoint;
     boost::array<char,1024>         m_recv_buffer;
     Delegate*                       m_delegate  ;
+    boost::asio::io_service&        m_delegate_io_service ;
 
 public:
     udp_server(
            boost::asio::io_service& io_service, 
            Delegate*                delegate,
+           boost::asio::io_service& delegate_io_service, 
            unsigned int port
            )
     : 
        m_socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)),
-       m_delegate(delegate)
+       m_delegate(delegate),
+       m_delegate_io_service(delegate_io_service)
+
     {
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
@@ -95,7 +99,7 @@ void udp_server<Delegate>::handle_receive(const boost::system::error_code& error
 
 
         // msg back to the delegate, typically passing from work thread to main thread
-        m_delegate->get_io_service().post(
+        m_delegate_io_service.post(
                         boost::bind(
                                 &Delegate::on_msg,
                                 m_delegate,

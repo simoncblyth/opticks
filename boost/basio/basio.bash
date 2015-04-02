@@ -223,6 +223,22 @@ posting to boost::bind delegate ?
     00034     }
 
 
+    00058     void frameReceived(const boost::system::error_code& error){
+    00059         if(!error){
+    00060             dispatchFrame(input_);
+    00061             triggerReadSome();
+    00062         }else{
+    00063             setErrorCode(error);
+    00064         }
+    00065     }
+    00066 
+    00067     AsioDriver(FrameDelegate frame_delegate, StateDelegate state_delegate)
+    00068     : frame_delegate_(frame_delegate), state_delegate_(state_delegate), socket_(io_service_)
+    00069     {}
+    00070 
+
+
+
 * http://wiki.ros.org/socketcan_interface   Robot Operating System (ROS)
 
 

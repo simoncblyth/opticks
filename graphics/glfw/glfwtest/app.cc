@@ -12,7 +12,7 @@
 #include "Scene.hh"
 #include "Config.hh"
 
-#include <boost/bind.hpp>
+//#include <boost/bind.hpp>
 
 
 void _update_fps_counter (GLFWwindow* window) {
@@ -42,10 +42,11 @@ App::App(Config* config) :
      m_config(config),
      m_title(NULL),
      m_window(NULL),
-     m_scene(NULL),
-     m_eventQueue(),
-     m_udpServer(m_ioService,m_config->getUdpPort(),&m_eventQueue,&m_eventQueueMutex)
+     m_scene(NULL)
+//     m_eventQueue(),
+//     m_udpServer(m_ioService,m_config->getUdpPort(),&m_eventQueue,&m_eventQueueMutex)
 {
+     m_config->dump();
 }
 
 App::~App()
@@ -71,14 +72,14 @@ void App::setScene(Scene* scene)
 
 void App::init()
 {
-    init_net();
+   // init_net();
     init_graphics();
 }
 
-void App::init_net()
-{
-    m_netThread = new boost::thread(boost::bind(&boost::asio::io_service::run, &m_ioService));
-}
+//void App::init_net()
+//{
+//    m_netThread = new boost::thread(boost::bind(&boost::asio::io_service::run, &m_ioService));
+//}
 
 
 void App::init_graphics()
@@ -137,6 +138,20 @@ void App::listen()
     }
 }
  
+void App::on_msg(std::string msg)
+{
+    printf("App::on_msg [%s]\n", msg.c_str());
+}
+
+void App::on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata)
+{
+    printf("App::on_npy [%s] shape %d,%d,%d \n", metadata.c_str(), shape[0], shape[1], shape[2]);
+}
+
+
+
+
+/*
 void App::listenUDP()
 {
     boost::mutex::scoped_lock lock(m_eventQueueMutex);
@@ -152,15 +167,19 @@ void App::listenUDP()
     }
 
     m_config->parse(lines, ' ');
-
 }
+*/
+
+
+
 
 void App::runloop()
 {
     while (!glfwWindowShouldClose(m_window))
     {
         listen(); 
-        listenUDP(); 
+        //listenUDP(); 
+        //poll_one();  // give net_app a few cycles, to complete posts from the net thread
         render();
         glfwSwapBuffers(m_window);
     }

@@ -8,7 +8,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
-#SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-switch-enum" )
+## c++11 forced by AsioZMQ
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -stdlib=libc++")
+else ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+endif ()
 
 
 ########### using env/cmake/Modules/*.cmake #####
@@ -18,12 +23,21 @@ find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
 find_package(Boost REQUIRED)
 
+find_package(ZMQ REQUIRED)    # can cmake handle pkg depending on other pkgs, to make this simpler ?
+find_package(AsioZMQ REQUIRED)
+find_package(NetApp REQUIRED)
+
+message(NetApp_INCLUDE_DIRS:${NetApp_INCLUDE_DIRS})
+
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
    ${OGLRap_INCLUDE_DIRS} 
    ${Boost_INCLUDE_DIRS} 
+   ${ZMQ_INCLUDE_DIRS} 
+   ${AsioZMQ_INCLUDE_DIRS} 
+   ${NetApp_INCLUDE_DIRS} 
 )
 
 add_definitions(
@@ -34,25 +48,21 @@ add_definitions(
 
 
 add_executable( GLFWContext glfw_context.cc )
+add_executable( Simple simple.cc )
+
 add_executable( ${name} 
-                glfw_test.cc 
+                main.cc 
                 app.cc
-                udpServer.cc 
-                EventQueue.cc
                 Config.cc
 ) 
-add_executable( Simple simple.cc )
+
+
+
 
 target_link_libraries( GLFWContext 
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${OGLRap_LIBRARIES}
-)
-target_link_libraries( ${name} 
-      ${GLEW_LIBRARIES}
-      ${GLFW_LIBRARIES}
-      ${OGLRap_LIBRARIES}
-      ${Boost_LIBRARIES}
 )
 target_link_libraries( Simple 
       ${GLEW_LIBRARIES}
@@ -60,6 +70,14 @@ target_link_libraries( Simple
       ${OGLRap_LIBRARIES}
 )
 
+
+target_link_libraries( ${name} 
+      ${GLEW_LIBRARIES}
+      ${GLFW_LIBRARIES}
+      ${OGLRap_LIBRARIES}
+      ${Boost_LIBRARIES}
+      ${ZMQ_LIBRARIES}
+)
 install(TARGETS GLFWContext DESTINATION bin)
 install(TARGETS ${name} DESTINATION bin)
 install(TARGETS Simple DESTINATION bin)
