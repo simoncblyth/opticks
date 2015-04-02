@@ -15,7 +15,7 @@ include_directories(
    ${Boost_INCLUDE_DIRS} 
 )
 
-add_executable( ${name} udp_server_test.cpp udp_server.cpp ) 
+add_executable( ${name} main.cpp udp_server.cpp ) 
 
 
 target_link_libraries( ${name} 

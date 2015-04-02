@@ -28,6 +28,12 @@ Conceptual Intro
 Talks
 -------
 
+* :google:`Thinking Asynchronously Christopher Kohlhoff`
+
+* https://www.youtube.com/watch?v=D-lTwGJRx0o
+
+  * at about 57min, description of posting between threads
+
 * http://theboostcpplibraries.com/boost.asio
 
 
@@ -37,6 +43,148 @@ Message passing from netThread to mainThread
 * http://stackoverflow.com/questions/17976568/boost-asio-pattern-with-gui-and-worker-thread
 
 * http://stackoverflow.com/questions/17311512/howto-post-messages-between-threads-with-boostasio/17315567#17315567
+
+* http://stackoverflow.com/questions/13680770/running-a-function-on-the-main-thread-from-a-boost-thread-and-passing-parameters
+
+* http://stackoverflow.com/questions/13785640/using-boostasioio-servicepost
+
+* http://stackoverflow.com/search?q=asio+io_service+post
+
+* http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/services/logger_service.hpp
+
+
+Distributed Examples
+----------------------
+
+* https://think-async.com/Asio/Examples
+
+* file:///opt/local/share/doc/boost/doc/html/boost_asio/examples/cpp03_examples.html
+
+::
+
+    basio-example-cd
+
+::
+
+    delta:cpp03 blyth$ basio-example-find post
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/chat/chat_client.cpp:    io_service_.post(boost::bind(&chat_client::do_write, this, msg));
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/chat/chat_client.cpp:    io_service_.post(boost::bind(&chat_client::do_close, this));
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/invocation/prioritised_handlers.cpp:  io_service.post(pri_queue.wrap(0, low_priority_handler));
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/serialization/connection.hpp:      socket_.get_io_service().post(boost::bind(handler, error));
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/services/logger_service.hpp:    work_io_service_.post(boost::bind(
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/services/logger_service.hpp:    work_io_service_.post(boost::bind(
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/windows/transmit_file.cpp:    // to be posted. When complete() is called, ownership of the OVERLAPPED-
+    /opt/local/share/doc/boost/libs/asio/example/cpp11/chat/chat_client.cpp:    io_service_.post(
+    /opt/local/share/doc/boost/libs/asio/example/cpp11/chat/chat_client.cpp:    io_service_.post([this]() { socket_.close(); });
+    delta:cpp03 blyth$ 
+
+
+
+cpp03/chat/chat_client.cpp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* file:///opt/local/share/doc/boost/doc/html/boost_asio/example/cpp03/chat/chat_client.cpp
+
+* single io_service from main
+* chat_client object 
+
+  * public methods write(msg) and close() 
+    post arguments to the private methods 
+    enabling these private methods to run on network thread
+
+  * simple, as only the network thread has called io_service.run() so
+    are sure that the task will run on the network thread
+
+  * what this misses is how to get results back from the network thread
+
+
+cpp03/serialization/connection.hpp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+Use of post with threads ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    delta:cpp03 blyth$ basio-example-lfind thread | grep -v Jam
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/chat/chat_client.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/echo/blocking_tcp_echo_server.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/fork/daemon.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/fork/process_per_connection.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/http/server2/io_service_pool.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/http/server2/main.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/http/server3/main.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/http/server3/server.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/http/server3/server.hpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/local/connect_pair.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/porthopper/client.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/services/logger_service.hpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/timeouts/blocking_tcp_client.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/timeouts/blocking_udp_client.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/tutorial/timer5/timer.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/tutorial/timer_dox.txt
+    /opt/local/share/doc/boost/libs/asio/example/cpp11/chat/chat_client.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp11/echo/blocking_tcp_echo_server.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp11/futures/daytime_client.cpp
+
+    delta:cpp03 blyth$ basio-example-lfind post
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/chat/chat_client.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/invocation/prioritised_handlers.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/serialization/connection.hpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/services/logger_service.hpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp03/windows/transmit_file.cpp
+    /opt/local/share/doc/boost/libs/asio/example/cpp11/chat/chat_client.cpp
+
+
+cpp03/services/logger_service.hpp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* file:///opt/local/share/doc/boost/doc/html/boost_asio/example/cpp03/services/logger_service.hpp
+
+::
+
+    /// Service implementation for the logger.
+    class logger_service
+      : public boost::asio::io_service::service
+    {
+
+
+    /// Constructor creates a thread to run a private io_service.
+    logger_service(boost::asio::io_service& io_service)
+        : boost::asio::io_service::service(io_service),
+          work_io_service_(),
+          work_(new boost::asio::io_service::work(work_io_service_)),
+          work_thread_(new boost::thread(
+                boost::bind(&boost::asio::io_service::run, &work_io_service_)))
+      {
+      }
+
+
+Public methods post to the private work_io_service_ and only work_thread_ has
+invoked run for it, so the posted handler private methods will run on the worker thread.
+
+::
+
+      /// Log a message.
+      void log(impl_type& impl, const std::string& message)
+      {
+        // Format the text to be logged.
+        std::ostringstream os;
+        os << impl->identifier << ": " << message;
+
+        // Pass the work of opening the file to the background thread.
+        work_io_service_.post(boost::bind(
+              &logger_service::log_impl, this, os.str()));
+      }
+
+
+
+Other Examples
+---------------
+
+See asiosamples-
 
 
 
@@ -289,9 +437,13 @@ basio-get(){
 
 }
 
+
+basio-contents(){ port contents boost  | grep asio ; }
+
 basio-doc(){ open file:///opt/local/share/doc/boost/doc/html/boost_asio.html ; }
 
-basio-example-src(){  echo /opt/local/share/doc/boost/libs/asio/example/cpp03 ; }
+basio-example-idir(){ echo /opt/local/share/doc/boost/libs/asio/example ; }
+basio-example-src(){  echo $(basio-example-idir)/cpp03 ; }
 basio-example-dst(){  echo $(basio-dir)/example/cpp03 ; }
 basio-example-get(){  
    local src=$(basio-example-src)
@@ -302,13 +454,23 @@ basio-example-get(){
 }
 basio-example-cd(){  cd $(basio-example-dst); }  
 
+basio-example-find(){
+  find $(basio-example-idir) -type f -exec grep -H ${1:-post} {} \;
+} 
+basio-example-lfind(){
+  find $(basio-example-idir) -type f -exec grep -l ${1:-post} {} \;
+} 
+
+
 
 basio-example-make(){ 
    local cpp=$1
    local bin=${cpp/.cpp}
    [ "$cpp" == "$bin" ] && echo invalid cpp $cpp && return 
 
-   local cmd="clang++ -I/opt/local/include -L/opt/local/lib -lboost_system-mt -lboost_thread-mt $cpp -o $bin "
+   local tmp=/tmp/env/boost/basio/$bin
+   mkdir -p $(dirname $tmp)
+   local cmd="clang++ -I/opt/local/include -L/opt/local/lib -lboost_system-mt -lboost_thread-mt $cpp -o $tmp "
    echo $cmd
    eval $cmd
  }
