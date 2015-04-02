@@ -25,6 +25,7 @@ udpserver-sdir(){ echo $(env-home)/boost/basio/udp_server ; }
 udpserver-idir(){ echo $(local-base)/env/boost/basio/udp_server ; }
 udpserver-bdir(){ echo $(local-base)/env/boost/basio/udp_server.build ; }
 
+udpserver-cd(){   cd $(udpserver-sdir); }
 udpserver-scd(){  cd $(udpserver-sdir); }
 udpserver-icd(){  cd $(udpserver-idir); }
 udpserver-bcd(){  cd $(udpserver-bdir); }

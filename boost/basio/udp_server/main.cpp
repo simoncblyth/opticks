@@ -17,14 +17,14 @@ Test with python client::
 class App {
 
    boost::asio::io_service                          m_io_service ;
-   boost::scoped_ptr<boost::asio::io_service::work> m_work ;
-   udp_manager                                      m_udp_manager ; 
+   boost::scoped_ptr<boost::asio::io_service::work> m_io_service_work ;
+   udp_manager<App>                                 m_udp_manager ; 
 
 public:
    App(unsigned int port)  
       :
-        m_udp_manager(m_io_service, port),   
-        m_work(new boost::asio::io_service::work(m_io_service)) // prevents m_io_service::run from terminating 
+        m_udp_manager(this, port),   
+        m_io_service_work(new boost::asio::io_service::work(m_io_service)) 
    {
    }
 
@@ -33,18 +33,28 @@ public:
        std::cout << std::setw(20) << boost::this_thread::get_id() << " App::poll_one " << std::endl;
        m_io_service.poll_one();
    } 
-   void run()
-   {
-       std::cout << std::setw(20) << boost::this_thread::get_id() << " App::run " << std::endl;
-       m_io_service.run();
-   } 
 
    void stop()
    {
        std::cout << std::setw(20) << boost::this_thread::get_id() << " App::stop " << std::endl;
-       m_work.reset();
+       m_io_service_work.reset();
    } 
 
+
+public:
+   // methods that allow App to act as delegate to udp_manager 
+   boost::asio::io_service& get_io_service()
+   {
+       return m_io_service ;  
+   }
+
+   void on_message(std::string msg)
+   {
+        std::cout << std::setw(20) << boost::this_thread::get_id() 
+                  << " App::on_message " 
+                  << " msg ["  << msg << "] "
+                  << std::endl;
+   }
 
 
 };

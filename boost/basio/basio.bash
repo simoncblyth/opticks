@@ -187,6 +187,48 @@ Other Examples
 See asiosamples-
 
 
+posting to boost::bind delegate ?
+------------------------------------
+
+* :google:`boost::asio post to delegate`
+
+* http://docs.ros.org/indigo/api/socketcan_interface/html/asio__base_8h_source.html
+
+::
+
+    00010 namespace can{
+    00011 
+    00012 
+    00013 template<typename FrameDelegate, typename StateDelegate, typename Socket> class AsioDriver : public DriverInterface{
+    00014     static void call_delegate(const FrameDelegate &delegate, const Frame &msg){
+    00015         delegate(msg);
+    00016     }
+    00017 
+    00018     State state_;
+    00019     boost::mutex state_mutex_;
+    00020     boost::mutex socket_mutex_;
+    00021     
+    00022     FrameDelegate frame_delegate_;
+    00023     StateDelegate state_delegate_;
+    00024 protected:
+    00025     boost::asio::io_service io_service_;
+    00026     Socket socket_;
+    00027     Frame input_;
+    00028     
+    00029     virtual void triggerReadSome() = 0;
+    00030     virtual bool enqueue(const Frame & msg) = 0;
+    00031     
+    00032     void dispatchFrame(const Frame &msg){
+    00033         io_service_.post(boost::bind(call_delegate, frame_delegate_,msg)); // copies msg
+    00034     }
+
+
+* http://wiki.ros.org/socketcan_interface   Robot Operating System (ROS)
+
+
+
+
+
 
 Boost inclusion
 ----------------
