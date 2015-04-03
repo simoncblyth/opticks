@@ -40,11 +40,13 @@ public:
                    m_delegate(delegate),
                    m_delegate_io_service(delegate_io_service)
     {
+#if VERBOSE
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
              << " npy_server::npy_server " 
              << " backend " << backend 
              << std::endl;
+#endif
 
         m_socket.connect(backend);   // async perhaps ?
         m_socket.async_read_message(
@@ -69,10 +71,12 @@ private:
 template <typename Delegate>
 void npy_server<Delegate>::handle_req(boost::system::error_code const& ec)
 {
+#if VERBOSE
     std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
              << " npy_server::handle_req  " 
              << std::endl;
+#endif
 
     //dump(); 
     decode_buffer();
@@ -87,7 +91,7 @@ void npy_server<Delegate>::handle_req(boost::system::error_code const& ec)
                               ));
 
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    //std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // just echoing
     m_socket.write_message(std::begin(m_buffer), std::end(m_buffer));
@@ -111,6 +115,7 @@ void npy_server<Delegate>::decode_buffer()
     decode_frame('{');
     decode_frame('\x93');
 
+#if VERBOSE
     std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
              << " npy_server::decode_buffer "
@@ -118,6 +123,7 @@ void npy_server<Delegate>::decode_buffer()
              << " shape dimensions " << m_shape.size() 
              << " data size " << m_data.size() 
              << std::endl;
+#endif
 }
 
 

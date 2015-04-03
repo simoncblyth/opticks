@@ -14,6 +14,8 @@
 
 #include "stdio.h"
 
+//#define VERBOSE 1
+
 
 template <class Delegate> 
 class udp_server
@@ -37,10 +39,11 @@ public:
        m_delegate_io_service(delegate_io_service)
 
     {
+#ifdef VERBOSE
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
              << " udp_server::udp_server " << std::endl;
-
+#endif
         start_receive();
     } 
 
@@ -58,10 +61,11 @@ private:
 template <typename Delegate>
 void udp_server<Delegate>::start_receive()
 {
+#ifdef VERBOSE
     std::cout 
          << std::setw(20) << boost::this_thread::get_id() 
          << " udp_server::start_receive " << std::endl;
-
+#endif
     m_socket.async_receive_from(
                             boost::asio::buffer(m_recv_buffer), 
                             m_remote_endpoint,
@@ -73,9 +77,11 @@ void udp_server<Delegate>::start_receive()
                                        )
                            );
 
+#ifdef VERBOSE
     std::cout 
          << std::setw(20) << boost::this_thread::get_id() 
          << " udp_server::start_receive DONE " << std::endl;
+#endif
 }  
 
 
@@ -90,13 +96,14 @@ void udp_server<Delegate>::handle_receive(const boost::system::error_code& error
         // surely just leaking should always work
         std::string* smsg = new std::string(m_recv_buffer.begin(), m_recv_buffer.begin() + nbytes);
         boost::shared_ptr<std::string> msg(smsg);
+#ifdef VERBOSE
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
              << " udp_server::handle_receive " 
              << " smsg [" << *smsg << "] "
              << " msg [" << *msg << "] "
              << std::endl;
-
+#endif
 
         // msg back to the delegate, typically passing from work thread to main thread
         m_delegate_io_service.post(
@@ -130,17 +137,20 @@ void udp_server<Delegate>::handle_send(
            const boost::system::error_code& error,
            std::size_t nbytes)
 {
+#ifdef VERBOSE
     std::cout 
          << std::setw(20) << boost::this_thread::get_id() 
          << " udp_server::handle_send " 
          << " nbytes " << nbytes
          << " msg " << message
          << std::endl;
+#endif
 }
 
 template <typename Delegate>
 void udp_server<Delegate>::dump(std::size_t nbytes )
 {
+#ifdef VERBOSE
     std::cout 
          << std::setw(20) << boost::this_thread::get_id() 
          << " udp_server::dump " 
@@ -150,6 +160,8 @@ void udp_server<Delegate>::dump(std::size_t nbytes )
     printf("udp_server::dump %lu\n", nbytes);
     for(unsigned int i=0;i<nbytes;i++) printf("%c",m_recv_buffer[i]);
     printf("\n");
+#endif
+
 }
 
 

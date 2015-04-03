@@ -12,6 +12,42 @@ Start server::
 
     netapp-start
 
+
+
+structure
+-----------
+
+
+
+netapp.bash
+
+
+example main and app using netapp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+main.cpp
+app.cpp
+app.hpp
+
+
+header only boost::asio and asio-zmq mechanics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+net_server.hpp
+
+net_manager.hpp
+
+npy_server.hpp
+
+udp_server.hpp
+
+numpy.hpp
+
+
+
+
+
+
 Test with python client::
 
     delta:~ blyth$ UDP_PORT=13 udp.py hello world
@@ -30,17 +66,25 @@ netapp-scd(){  cd $(netapp-sdir); }
 netapp-icd(){  cd $(netapp-idir); }
 netapp-bcd(){  cd $(netapp-bdir); }
 
+netapp-name(){ echo NumpyServer ; }
+netapp-bin(){ echo $(netapp-idir)/bin/$(netapp-name) ; }
 
-netapp-start()
+netapp-srun()
 {
-   local cmd="sudo $(netapp-idir)/bin/NetApp"
+   local cmd="sudo $(netapp-bin)"
    echo $cmd
    eval $cmd
 }
 
+netapp-run(){
+  local bin=$(netapp-bin) 
+  $bin $* 
+}
+netapp(){ $(netapp-bin) $* ; }
+
 netapp-test()
 {
-    UDP_PORT=13 udp.py ${1:-hello_world} 
+    UDP_PORT=8080 udp.py ${1:-hello_world} 
     npysend.sh --tag 1
 }
 

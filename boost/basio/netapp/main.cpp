@@ -9,20 +9,38 @@ Test with eg::
 
 */
 
-#include "app.hpp"
-#include "net_server.hpp"
+#include "numpydelegate.hpp"
+#include "numpyserver.hpp"
 
 int main()
 {
 
-    App app ;
+    numpydelegate nde ;  // example numpydelegate
 
-
-    net_server<App> srv(&app, 13, "tcp://127.0.0.1:5002");
+    numpyserver<numpydelegate> srv(&nde, 8080, "tcp://127.0.0.1:5002");
+    
+    // 
+    // Instanciation of numpyserver spins off a background network thread 
+    // that listens for UDP and ZMQ connections.
+    // The template type and first argument identify the type and instance
+    // of the delegate to me messaged.
+    // Other arguments identify the network locations.
+    //
+    // When messages arrive the numpydelegate *on_msg* or *on_npy* 
+    // handlers are invoked back on the main thread during
+    // calls to one of the pollers:: 
+    //
+    //       srv.poll_one()  
+    //       srv.poll()  
+    //
+    // These should be incorporated into the runloop, 
+    // they do not block.
+    // 
 
     for(unsigned int i=0 ; i < 20 ; ++i )
     {
-        srv.poll_one();
+        srv.poll();
+        //srv.poll_one();
         srv.sleep(1);
     }
     srv.stop();

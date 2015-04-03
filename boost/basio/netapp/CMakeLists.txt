@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name NetApp)
+set(name NumpyServer)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -29,6 +29,8 @@ include_directories(
 )
 
 
+#add_definitions( -DVERBOSE )
+
 add_executable( ${name} main.cpp app.cpp ) 
 
 target_link_libraries( ${name} 
@@ -40,7 +42,7 @@ install(TARGETS ${name} DESTINATION bin)
 
 
 SET(hdrs 
-net_server.hpp
+numpyserver.hpp
 net_manager.hpp
 npy_server.hpp
 udp_server.hpp

@@ -1,31 +1,29 @@
-#include "app.hpp"
+#include "numpydelegate.hpp"
 
 #include <iostream>
 #include <iomanip>
 #include <boost/thread.hpp>
 
-App::App()
+numpydelegate::numpydelegate()
 {
 }
 
-void App::on_msg(std::string msg)
+void numpydelegate::on_msg(std::string msg)
 {
-
     std::cout << std::setw(20) << boost::this_thread::get_id() 
-              << " App::on_msg " 
+              << " numpydelegate::on_msg " 
               << " msg ["  << msg << "] "
               << std::endl;
 }
 
-void App::on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata)
+void numpydelegate::on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata)
 {
     std::cout << std::setw(20) << boost::this_thread::get_id() 
-              << " App::on_npy "
+              << " numpydelegate::on_npy "
               << " shape dimension " << shape.size()
               << " data size " << data.size()
               << " metadata [" << metadata << "]" 
               << std::endl ; 
-
 } 
 
 

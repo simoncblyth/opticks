@@ -4,9 +4,9 @@
 #include <vector>
 
 
-class App {
+class numpydelegate {
 public:
-   App();
+   numpydelegate();
 
    void on_msg(std::string msg);
    void on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata);
