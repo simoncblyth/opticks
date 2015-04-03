@@ -47,11 +47,15 @@ public:
         start_receive();
     } 
 
+
+    void send(std::string msg );
+
 private:
     void start_receive();
     void handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred );
     void handle_send(boost::shared_ptr<std::string> /*message*/, const boost::system::error_code& /*error*/, std::size_t /*bytes_transferred*/);
     void dump(std::size_t nbytes );
+
 
 };
 
@@ -130,6 +134,25 @@ void udp_server<Delegate>::handle_receive(const boost::system::error_code& error
         start_receive();
     }
 }
+
+template <typename Delegate>
+void udp_server<Delegate>::send(std::string msg )
+{
+    boost::shared_ptr<std::string> message(new std::string(msg));
+
+    m_socket.async_send_to(
+                    boost::asio::buffer(*message), 
+                    m_remote_endpoint,
+                    boost::bind(
+                             &udp_server<Delegate>::handle_send, 
+                             this, 
+                             message,
+                             boost::asio::placeholders::error,
+                             boost::asio::placeholders::bytes_transferred
+                             ));
+}
+ 
+
 
 template <typename Delegate>
 void udp_server<Delegate>::handle_send(

@@ -34,6 +34,8 @@ public:
    void stop();
    boost::asio::io_service& get_io_service();
 
+   void send(std::string& msg);
+
 };
 
 
@@ -69,6 +71,12 @@ template <typename Delegate>
 boost::asio::io_service& numpyserver<Delegate>::get_io_service()
 {
     return m_io_service ;  
+}
+
+template <typename Delegate>
+void numpyserver<Delegate>::send(std::string& msg)
+{
+    m_net_manager.send(msg);
 }
 
 

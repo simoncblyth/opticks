@@ -43,6 +43,17 @@ public:
 #endif
     }
 
+    void send(std::string msg)
+    {
+        m_local_io_service.post(
+                   boost::bind(
+                        &udp_server<Delegate>::send, 
+                        &m_udp_server,
+                        msg));
+    }
+
+
+
 };
 
 
