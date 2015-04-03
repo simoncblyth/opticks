@@ -118,6 +118,51 @@ rrbroker/rrclient/rrworker
 
 
 
+FIXED : getting duplicate symbols with these three
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    boost::asio::error::zmq_category()
+    boost::asio::error::make_error_code(boost::asio::error::zmq_error)
+    std::to_string(boost::asio::zmq::frame const&)
+
+
+Whats special with those ?
+
+* symbols defined outside of class or struct definitions 
+  which do not have an inline
+
+* FIXED : by adding "inline" to those three::
+
+    -const system::error_category& zmq_category()
+    +inline const system::error_category& zmq_category()
+
+    -system::error_code make_error_code(zmq_error e)
+    +inline system::error_code make_error_code(zmq_error e)
+
+    -std::string to_string(boost::asio::zmq::frame const& frame)
+    +inline std::string to_string(boost::asio::zmq::frame const& frame)
+
+
+C++ duplicate symbols at linking
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* pragma once does not help, that is to avoid duplication 
+  of headers within one compilation unit, not between units
+
+* methods defined inside the class definition are implicitly 
+  inline and do not cause dyplicate symbols 
+
+* sometimes can use extern to avoid, how ?
+
+* as above shows adding "inline" can be an easy fix sometimes
+
+
+
+
+
+
 
 
 EOU

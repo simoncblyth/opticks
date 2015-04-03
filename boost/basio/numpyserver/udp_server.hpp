@@ -42,13 +42,20 @@ public:
 #ifdef VERBOSE
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
-             << " udp_server::udp_server " << std::endl;
+             << " udp_server::udp_server on port " << port <<  std::endl;
 #endif
         start_receive();
     } 
 
 
-    void send(std::string msg );
+    void send(std::string addr, unsigned short port, std::string msg); 
+    //
+    // problem with initiating a dialog is knowning 
+    // what remote endpoint to sendto 
+    // remote_endpoint starts as 0.0.0.0:0
+    // and after receiving a msg becomes smth like 
+    // 10.0.2.5:49970
+    // 
 
 private:
     void start_receive();
@@ -84,7 +91,8 @@ void udp_server<Delegate>::start_receive()
 #ifdef VERBOSE
     std::cout 
          << std::setw(20) << boost::this_thread::get_id() 
-         << " udp_server::start_receive DONE " << std::endl;
+         << " udp_server::start_receive DONE  " 
+         << std::endl;
 #endif
 }  
 
@@ -97,14 +105,18 @@ void udp_server<Delegate>::handle_receive(const boost::system::error_code& error
     {
         dump(nbytes);
 
-        // surely just leaking should always work
-        std::string* smsg = new std::string(m_recv_buffer.begin(), m_recv_buffer.begin() + nbytes);
-        boost::shared_ptr<std::string> msg(smsg);
+        // shared_ptr should keep objects alive beyond the scope without just leaking 
+        // and avoid having to cleanup ?
+        unsigned short port = m_remote_endpoint.port();
+        boost::shared_ptr<std::string> addr(new std::string(m_remote_endpoint.address().to_string()));
+        boost::shared_ptr<std::string> msg(new std::string(m_recv_buffer.begin(), m_recv_buffer.begin() + nbytes));
+
 #ifdef VERBOSE
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
              << " udp_server::handle_receive " 
-             << " smsg [" << *smsg << "] "
+             << " addr [" << *addr << "] "
+             << " port [" << port << "] "
              << " msg [" << *msg << "] "
              << std::endl;
 #endif
@@ -114,7 +126,10 @@ void udp_server<Delegate>::handle_receive(const boost::system::error_code& error
                         boost::bind(
                                 &Delegate::on_msg,
                                 m_delegate,
-                                *smsg ));
+                                *addr,
+                                port,
+                                *msg
+                                ));
 
 
         std::time_t now = std::time(0);
@@ -136,13 +151,23 @@ void udp_server<Delegate>::handle_receive(const boost::system::error_code& error
 }
 
 template <typename Delegate>
-void udp_server<Delegate>::send(std::string msg )
+void udp_server<Delegate>::send(std::string addr, unsigned short port, std::string msg )
 {
+    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(addr), port);
     boost::shared_ptr<std::string> message(new std::string(msg));
+
+#ifdef VERBOSE
+    std::cout 
+         << std::setw(20) << boost::this_thread::get_id() 
+         << " udp_server::send " 
+         << " endpoint " << endpoint
+         << " message " << *message
+         << std::endl;
+#endif
 
     m_socket.async_send_to(
                     boost::asio::buffer(*message), 
-                    m_remote_endpoint,
+                    endpoint,
                     boost::bind(
                              &udp_server<Delegate>::handle_send, 
                              this, 
@@ -166,6 +191,7 @@ void udp_server<Delegate>::handle_send(
          << " udp_server::handle_send " 
          << " nbytes " << nbytes
          << " msg " << message
+         << " *msg " << *message
          << std::endl;
 #endif
 }

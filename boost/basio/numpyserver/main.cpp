@@ -14,18 +14,16 @@ Test with eg::
 
 int main()
 {
-
     numpydelegate nde ;  // example numpydelegate
-
     numpyserver<numpydelegate> srv(&nde, 8080, "tcp://127.0.0.1:5002");
+    nde.setServer(&srv);
     
-    std::string msg("hi");
-
     for(unsigned int i=0 ; i < 20 ; ++i )
     {
         srv.poll();
         srv.sleep(1);
-        srv.send( msg );
+        //std::string msg = std::to_string(i) ;
+        //srv.send( msg );
     }
 
     return 0;

@@ -13,10 +13,43 @@
 
 // following /usr/local/env/network/asiozmq/example/rrworker.cpp
 
+
+
+inline void DumpBuffer(const char* buffer, size_t buflen, size_t maxlines ) 
+{
+   const char* hfmt = "  %s \n%06X : " ;
+
+   int ascii[2] = { 0x20 , 0x7E };
+   const int N = 16 ;
+   size_t halfmaxbytes = N*maxlines/2 ; 
+
+   char line[N+1] ;
+   int n = N ; 
+   line[n] = '\0' ;
+   while(n--) line[n] = ' ' ;
+
+   for (size_t i = 0; i < buflen ; i++){
+       int v = buffer[i] & 0xff ;
+       bool out = i < halfmaxbytes || i > buflen - halfmaxbytes - 1 ; 
+       if( i == halfmaxbytes || i == buflen - halfmaxbytes - 1  ) printf(hfmt, "...", i );  
+       if(!out) continue ; 
+
+       int j = i % N ; 
+       if(j == 0) printf(hfmt, line, i );  // output the prior line and start new one with byte counter  
+       line[j] = ( v >= ascii[0] && v < ascii[1] ) ? v : '.' ;  // ascii rep 
+       printf("%02X ", v );
+   }   
+   printf(hfmt, line, buflen );
+   printf("\n"); 
+}
+
+
+
+
+
 template <class Delegate>
 class npy_server {
 
-    //boost::asio::zmq::context&           m_ctx;
     boost::asio::zmq::socket             m_socket;
     std::vector<boost::asio::zmq::frame> m_buffer  ;
     Delegate*                            m_delegate ;
@@ -59,10 +92,17 @@ private:
 
 private:
     void dump();
-    void dump_npy( char* bytes, size_t size );
-    void decode_buffer();
+    static void dump(std::vector<boost::asio::zmq::frame>& buffer);
+    static void dump_npy( char* bytes, size_t size );
+
+    void decode_buffer();  // m_buffer -> m_metadata, m_shape and m_data 
+    void decode_buffer_roundtrip_test() ;
+
     void decode_frame(char wanted);
     void sleep(unsigned int secs);
+
+private:
+    std::vector<boost::asio::zmq::frame> make_frames(std::vector<int> shape, std::vector<float> data, std::string metadata);
 
 };
 
@@ -141,7 +181,84 @@ void npy_server<Delegate>::decode_buffer()
              << " data size " << m_data.size() 
              << std::endl;
 #endif
+
+
+    decode_buffer_roundtrip_test(); 
+
 }
+
+template <typename Delegate>
+void npy_server<Delegate>::decode_buffer_roundtrip_test()
+{
+    std::vector<boost::asio::zmq::frame> frames = make_frames(m_shape, m_data, m_metadata);
+
+    std::cout << "npy_server::roundtrip    frames.size() " <<   frames.size() << std::endl ; 
+    std::cout << "npy_server::roundtrip  m_buffer.size() " << m_buffer.size() << std::endl ; 
+    assert(frames.size() == m_buffer.size());
+
+    for(size_t i=0 ; i<frames.size() ; ++i)
+    {
+        const boost::asio::zmq::frame& a = m_buffer[i] ; 
+        const boost::asio::zmq::frame& b = frames[i] ; 
+        assert(a.size() == b.size());
+
+        if(*(char*)a.data() == '\x93')
+        {
+            size_t offset = 6*16 ; 
+            char* apt = (char*)a.data() + offset ;
+            char* bpt = (char*)b.data() + offset ;
+            int cmp = memcmp( apt, bpt, a.size()-offset );
+            if(cmp)
+            {
+               DumpBuffer( (char*)a.data(), a.size(), 50);
+               DumpBuffer( (char*)b.data(), b.size(), 50);
+            } 
+        }
+        //assert(memcmp( a.data(), b.data(), a.size()) == 0); 
+    }
+
+    //dump();
+    //dump(frames);
+ 
+}
+
+
+
+template <typename Delegate>
+std::vector<boost::asio::zmq::frame> npy_server<Delegate>::make_frames(std::vector<int> shape, std::vector<float> data, std::string metadata)
+{
+    // see G4DAEArray::SaveToBuffer()
+
+    size_t dim = shape.size() ;
+    std::stringstream ss ;
+
+    int itemcount = shape[0] ;
+    for(size_t i=1 ; i < dim ; ++i)
+    {
+        ss << shape[i] ;
+        if( i < dim - 1 ) ss << ", " ;  // need the space for buffer memcmp matching
+    } 
+    std::string itemshape = ss.str();
+
+    bool fortran_order = false ;
+
+    // pre-calculate total buffer size including the padded header
+    size_t nbytes = aoba::BufferSize<float>(shape[0], itemshape.c_str(), fortran_order  );
+
+    // allocate frame to hold 
+    boost::asio::zmq::frame npy_frame(nbytes);
+
+    size_t wbytes = aoba::BufferSaveArrayAsNumpy<float>( (char*)npy_frame.data(), fortran_order, itemcount, itemshape.c_str(), data.data() );
+    assert( wbytes == nbytes );
+
+    std::vector<boost::asio::zmq::frame> frames ; 
+    frames.push_back(npy_frame);
+    frames.push_back(boost::asio::zmq::frame(metadata));
+
+    return frames ; 
+}
+
+
 
 
 template <typename Delegate>
@@ -173,14 +290,22 @@ void npy_server<Delegate>::decode_frame(char wanted)
 }
 
 
+
 template <typename Delegate>
 void npy_server<Delegate>::dump()
 {
-    for(unsigned int i=0 ; i < m_buffer.size() ; ++i )
+    dump(m_buffer); 
+}
+ 
+
+template <typename Delegate>
+void npy_server<Delegate>::dump(std::vector<boost::asio::zmq::frame>& buffer)
+{
+    for(unsigned int i=0 ; i < buffer.size() ; ++i )
     {
-        const boost::asio::zmq::frame& frame = m_buffer[i] ; 
+        const boost::asio::zmq::frame& frame = buffer[i] ; 
         char peek = *(char*)frame.data() ;
-        printf("npy_server::dump frame %u/%lu size %8lu peek %c ", i, m_buffer.size(), frame.size(), peek );  
+        printf("npy_server::dump frame %u/%lu size %8lu peek %c ", i, buffer.size(), frame.size(), peek );  
         if(peek == '{' )
         {
             printf(" JSON \n["); 

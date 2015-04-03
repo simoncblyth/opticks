@@ -34,7 +34,7 @@ public:
    void stop();
    boost::asio::io_service& get_io_service();
 
-   void send(std::string& msg);
+   void send(std::string& addr, unsigned short port, std::string& msg );
 
 };
 
@@ -74,9 +74,9 @@ boost::asio::io_service& numpyserver<Delegate>::get_io_service()
 }
 
 template <typename Delegate>
-void numpyserver<Delegate>::send(std::string& msg)
+void numpyserver<Delegate>::send(std::string& addr, unsigned short port, std::string& msg )
 {
-    m_net_manager.send(msg);
+    m_net_manager.send(addr, port, msg);
 }
 
 

@@ -125,6 +125,28 @@ numpy.hpp
       Numpy array serialization/deserialization 
 
 
+UDP Reply to sender
+---------------------
+
+While numpyserver is running, sendrecv UDP.::
+
+    delta:~ blyth$ udpr.py --sendrecv hi
+    2015-04-03 19:31:52,011 __main__ INFO     sendrecv [hi] to ('delta.local', 8080) 
+    2015-04-03 19:31:52,311 __main__ INFO     revcfrom [('10.0.2.5', 8080)] [Fri Apr  3 19:31:52 2015
+    ] 
+    2015-04-03 19:31:52,374 __main__ INFO     revcfrom [('10.0.2.5', 8080)] [hi returned from numpydelegate ] 
+
+The time string is returned immediately from within the 
+worker thread, the other string comes from the delegate 
+on the main thread doing a send within the *on_msg* handler. 
+
+This works as the *on_msg* handler arguments include the 
+address and port of the sender.
+The advantage here of passing values around 
+and not maintaining state is presumably to make 
+more robust when have concurrency. 
+
+
 Testing
 ----------
 

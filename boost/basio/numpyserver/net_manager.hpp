@@ -8,9 +8,7 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 
-
 #include <asio-zmq.hpp>
-
 #include "udp_server.hpp"
 #include "npy_server.hpp"
 
@@ -43,13 +41,27 @@ public:
 #endif
     }
 
-    void send(std::string msg)
+    void send(std::string& addr, unsigned short port, std::string& msg)
     {
+
+#ifdef VERBOSE
+        std::cout << std::setw(20) << boost::this_thread::get_id() 
+                  << " net_manager::send [" << msg << "] " 
+                  << std::endl;
+#endif
+ 
+        // send by value to avoid grief 
+        std::string vaddr(addr);
+        std::string vmsg(msg);
+ 
         m_local_io_service.post(
                    boost::bind(
                         &udp_server<Delegate>::send, 
                         &m_udp_server,
-                        msg));
+                        vaddr,
+                        port,
+                        vmsg 
+                        ));
     }
 
 

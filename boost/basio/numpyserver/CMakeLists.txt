@@ -29,7 +29,7 @@ include_directories(
 )
 
 
-#add_definitions( -DVERBOSE )
+add_definitions( -DVERBOSE )
 
 add_executable( ${name} main.cpp numpydelegate.cpp ) 
 
