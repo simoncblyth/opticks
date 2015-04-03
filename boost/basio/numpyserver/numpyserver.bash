@@ -54,21 +54,6 @@ Test::
 
 
 
-issues
--------
-
-not cleaning up properly
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-::
-
-    delta:numpyserver blyth$ numpyserver
-          0x7fff742b1310 numpyserver::stop 
-    libc++abi.dylib: terminating with uncaught exception of type boost::asio::zmq::exception: Socket operation on non-socket
-    Abort trap: 6
-
-
-
 
 structure
 -----------
@@ -154,6 +139,23 @@ UDP testing with reply::
 NPY/ZMQ test::
 
       npysend.sh 
+
+
+
+issues
+-------
+
+FIXED npy_server Abort at exit 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Passing in ZMQ context ensures the context outlives the socket
+and avoids abort at exit::
+
+    delta:numpyserver blyth$ numpyserver
+    libc++abi.dylib: terminating with uncaught exception of type boost::asio::zmq::exception: Socket operation on non-socket
+    Abort trap: 6
+
+
 
 EOU
 }

@@ -8,12 +8,16 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 
+
+#include <asio-zmq.hpp>
+
 #include "udp_server.hpp"
 #include "npy_server.hpp"
 
 template <class Delegate>
 class net_manager {
 
+    boost::asio::zmq::context                        m_ctx;
     boost::asio::io_service                          m_local_io_service ;
     boost::scoped_ptr<boost::asio::io_service::work> m_local_io_service_work ;
     boost::scoped_ptr<boost::thread>                 m_work_thread;
@@ -31,7 +35,7 @@ public:
                                 &m_local_io_service
                                    ))),
        m_udp_server(m_local_io_service, delegate, delegate_io_service, udp_port),
-       m_npy_server(m_local_io_service, delegate, delegate_io_service, zmq_backend)
+       m_npy_server(m_ctx, m_local_io_service, delegate, delegate_io_service, zmq_backend)
     {
 #ifdef VERBOSE
         std::cout << std::setw(20) << boost::this_thread::get_id() 

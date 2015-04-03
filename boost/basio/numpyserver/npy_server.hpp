@@ -16,7 +16,7 @@
 template <class Delegate>
 class npy_server {
 
-    boost::asio::zmq::context            m_ctx;
+    //boost::asio::zmq::context&           m_ctx;
     boost::asio::zmq::socket             m_socket;
     std::vector<boost::asio::zmq::frame> m_buffer  ;
     Delegate*                            m_delegate ;
@@ -28,14 +28,14 @@ class npy_server {
 
 public:
     npy_server(
+                boost::asio::zmq::context&  zmq_ctx,
                 boost::asio::io_service&    io_service_, 
                 Delegate*                   delegate,
                 boost::asio::io_service&    delegate_io_service, 
                 const char*                 backend
               )
                 : 
-                   m_ctx(),
-                   m_socket(io_service_, m_ctx, ZMQ_REP), 
+                   m_socket(io_service_, zmq_ctx, ZMQ_REP), 
                    m_buffer(),
                    m_delegate(delegate),
                    m_delegate_io_service(delegate_io_service)
