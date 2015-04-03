@@ -43,7 +43,7 @@ int main()
         //srv.poll_one();
         srv.sleep(1);
     }
-    srv.stop();
+    //srv.stop();
 
     return 0;
 }

@@ -11,12 +11,6 @@
 #include "udp_server.hpp"
 #include "npy_server.hpp"
 
-
-// **net_manager<Delegate>** provides a layer between 
-// the application and the UDP and NPY(ZMQ)servers 
-// which just handles boost::asio io_service work and threading 
-//
-
 template <class Delegate>
 class net_manager {
 

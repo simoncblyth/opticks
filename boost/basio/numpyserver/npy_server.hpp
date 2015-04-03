@@ -48,39 +48,41 @@ public:
              << std::endl;
 #endif
 
-        m_socket.connect(backend);   // async perhaps ?
+        m_socket.connect(backend);   
         m_socket.async_read_message(
                      std::back_inserter(m_buffer),
-                     std::bind(&npy_server::handle_req, this, std::placeholders::_1)
+                     std::bind(&npy_server::handle_request, this, std::placeholders::_1)
                  );
     }
 private:
-    void handle_req(boost::system::error_code const& ec);
+    void handle_request(boost::system::error_code const& ec);
 
 private:
     void dump();
     void dump_npy( char* bytes, size_t size );
     void decode_buffer();
     void decode_frame(char wanted);
-
+    void sleep(unsigned int secs);
 
 };
 
-
+template <typename Delegate>
+void npy_server<Delegate>::sleep(unsigned int secs)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(secs));
+}
 
 template <typename Delegate>
-void npy_server<Delegate>::handle_req(boost::system::error_code const& ec)
+void npy_server<Delegate>::handle_request(boost::system::error_code const& ec)
 {
 #if VERBOSE
     std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
-             << " npy_server::handle_req  " 
+             << " npy_server::handle_request  " 
              << std::endl;
 #endif
 
-    //dump(); 
     decode_buffer();
-
     m_delegate_io_service.post(
                         boost::bind(
                                 &Delegate::on_npy,
@@ -91,15 +93,30 @@ void npy_server<Delegate>::handle_req(boost::system::error_code const& ec)
                               ));
 
 
-    //std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    // just echoing
     m_socket.write_message(std::begin(m_buffer), std::end(m_buffer));
+
+    // Currently just echoing : ZMQ demands a reply when using REQ/REP sockets 
+    //
+    // If need processing elsewhere (eg GPU thread) 
+    // would need to split into
+    //
+    // handle_request 
+    //       decode + post to delegate
+    //
+    // send_reply(processed_result msg)
+    //       the delegate (or another actor maybe GPU thread) 
+    //       needs to post to this as a result of receiving the on_npy
+    //       in order to send results back to the requester
+    //       then keep ball rolling by async_read_message with handle_request
+    // 
+    //
+    // async call with this method as handler, to pickup subsequent requests
+    // 
 
     m_buffer.clear();
     m_socket.async_read_message(
                      std::back_inserter(m_buffer),
-                     std::bind(&npy_server<Delegate>::handle_req, this, std::placeholders::_1)
+                     std::bind(&npy_server<Delegate>::handle_request, this, std::placeholders::_1)
                  );
 }
 

@@ -181,6 +181,17 @@ invoked run for it, so the posted handler private methods will run on the worker
 
 
 
+NumpyServer
+--------------
+
+See numpyserver-  
+
+* posts from network thread up to a delegate thread and io_service, typically main thread
+
+
+
+
+
 Other Examples
 ---------------
 

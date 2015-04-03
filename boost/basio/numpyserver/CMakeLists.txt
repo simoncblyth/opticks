@@ -31,7 +31,7 @@ include_directories(
 
 #add_definitions( -DVERBOSE )
 
-add_executable( ${name} main.cpp app.cpp ) 
+add_executable( ${name} main.cpp numpydelegate.cpp ) 
 
 target_link_libraries( ${name} 
       ${Boost_LIBRARIES}
