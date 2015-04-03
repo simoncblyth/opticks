@@ -12,7 +12,10 @@
 #include "Scene.hh"
 #include "Config.hh"
 
-//#include <boost/bind.hpp>
+#include <iostream>
+#include <iomanip>
+#include <boost/thread.hpp>
+
 
 
 void _update_fps_counter (GLFWwindow* window) {
@@ -43,8 +46,6 @@ App::App(Config* config) :
      m_title(NULL),
      m_window(NULL),
      m_scene(NULL)
-//     m_eventQueue(),
-//     m_udpServer(m_ioService,m_config->getUdpPort(),&m_eventQueue,&m_eventQueueMutex)
 {
      m_config->dump();
 }
@@ -69,20 +70,7 @@ void App::setScene(Scene* scene)
     m_scene = scene ;
 }
 
-
 void App::init()
-{
-   // init_net();
-    init_graphics();
-}
-
-//void App::init_net()
-//{
-//    m_netThread = new boost::thread(boost::bind(&boost::asio::io_service::run, &m_ioService));
-//}
-
-
-void App::init_graphics()
 {
     glfwSetErrorCallback(error_callback);
 
@@ -138,52 +126,30 @@ void App::listen()
     }
 }
  
+
 void App::on_msg(std::string msg)
 {
-    printf("App::on_msg [%s]\n", msg.c_str());
-}
-
+    std::cout << std::setw(20) << boost::this_thread::get_id()
+              << " Receiver::on_msg "
+              << " msg ["  << msg << "] "
+              << std::endl;
+}   
 void App::on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata)
-{
-    printf("App::on_npy [%s] shape %d,%d,%d \n", metadata.c_str(), shape[0], shape[1], shape[2]);
+{  
+    assert(shape.size() == 3); 
+    std::cout << std::setw(20) << boost::this_thread::get_id()
+              << " Receiver::on_npy "
+              << " shape dimension " << shape.size()
+              << shape[0] << "/"
+              << shape[1] << "/"
+              << shape[2] << " "
+              << " data size " << data.size()
+              << " metadata [" << metadata << "]"
+              << std::endl ;
 }
 
 
 
-
-/*
-void App::listenUDP()
-{
-    boost::mutex::scoped_lock lock(m_eventQueueMutex);
-
-    std::vector<std::string> lines ;
-    while (!m_eventQueue.isEmpty()) 
-    {
-        EventQueueItem_t tmp;
-        tmp = m_eventQueue.pop();
-        std::string msg(tmp.begin(), tmp.end());
-        lines.push_back(msg);
-        printf("App::listenUDP [%s]\n", msg.c_str());
-    }
-
-    m_config->parse(lines, ' ');
-}
-*/
-
-
-
-
-void App::runloop()
-{
-    while (!glfwWindowShouldClose(m_window))
-    {
-        listen(); 
-        //listenUDP(); 
-        //poll_one();  // give net_app a few cycles, to complete posts from the net thread
-        render();
-        glfwSwapBuffers(m_window);
-    }
-}
 
 
 void App::render()

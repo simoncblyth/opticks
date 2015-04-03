@@ -25,9 +25,9 @@ find_package(Boost REQUIRED)
 
 find_package(ZMQ REQUIRED)    # can cmake handle pkg depending on other pkgs, to make this simpler ?
 find_package(AsioZMQ REQUIRED)
-find_package(NetApp REQUIRED)
+find_package(NumpyServer REQUIRED)
 
-message(NetApp_INCLUDE_DIRS:${NetApp_INCLUDE_DIRS})
+#message(NumpyServer_INCLUDE_DIRS:${NumpyServer_INCLUDE_DIRS})
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -37,7 +37,7 @@ include_directories(
    ${Boost_INCLUDE_DIRS} 
    ${ZMQ_INCLUDE_DIRS} 
    ${AsioZMQ_INCLUDE_DIRS} 
-   ${NetApp_INCLUDE_DIRS} 
+   ${NumpyServer_INCLUDE_DIRS} 
 )
 
 add_definitions(
