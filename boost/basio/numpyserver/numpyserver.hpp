@@ -14,11 +14,13 @@ class numpyserver {
    net_manager<Delegate>                                m_net_manager ; 
 
 public:
-   numpyserver(Delegate* delegate, unsigned int udp_port, const char* zmq_backend)  
+   numpyserver(Delegate* delegate, unsigned int udp_port, const char* zmq_backend, bool npy_echo=false)  
       :
         m_io_service_work(new boost::asio::io_service::work(m_io_service)),
-        m_net_manager(delegate, m_io_service, udp_port, zmq_backend)
+        m_net_manager(delegate, m_io_service, udp_port, zmq_backend, npy_echo)
    {
+
+        delegate->setServer(this);  // allows the delegate to reply 
 
 #ifdef VERBOSE
         std::cout << std::setw(20) << boost::this_thread::get_id() 
@@ -34,7 +36,10 @@ public:
    void stop();
    boost::asio::io_service& get_io_service();
 
-   void send(std::string& addr, unsigned short port, std::string& msg );
+public:
+   // used by delegates that receive on_msg and on_npy posts
+   void send(std::string& addr, unsigned short port, std::string& msg );                   // "send" as UDP is connectionless
+   void response(std::vector<int>& shape, std::vector<float>& data, std::string& metadata );  // "response" as only works in response to ZMQ REQ
 
 };
 
@@ -78,6 +83,17 @@ void numpyserver<Delegate>::send(std::string& addr, unsigned short port, std::st
 {
     m_net_manager.send(addr, port, msg);
 }
+
+
+template <typename Delegate>
+void numpyserver<Delegate>::response(std::vector<int>& shape,std::vector<float>& data,  std::string& metadata )
+{
+    m_net_manager.response(shape, data, metadata);
+}
+
+
+
+
 
 
 

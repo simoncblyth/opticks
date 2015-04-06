@@ -128,13 +128,15 @@ numpy.hpp
 UDP Reply to sender
 ---------------------
 
-While numpyserver is running, sendrecv UDP.::
+While numpyserver OR glfwtest is running, sendrecv UDP.::
 
-    delta:~ blyth$ udpr.py --sendrecv hi
-    2015-04-03 19:31:52,011 __main__ INFO     sendrecv [hi] to ('delta.local', 8080) 
-    2015-04-03 19:31:52,311 __main__ INFO     revcfrom [('10.0.2.5', 8080)] [Fri Apr  3 19:31:52 2015
+
+    delta:~ blyth$ udpr.py --sendrecv -- --yfov 100
+    2015-04-06 13:02:36,462 __main__ INFO     sendrecv [--yfov 100] to ('delta.local', 8080) 
+    2015-04-06 13:02:36,731 __main__ INFO     revcfrom [('10.44.187.243', 8080)] [Mon Apr  6 13:02:36 2015
     ] 
-    2015-04-03 19:31:52,374 __main__ INFO     revcfrom [('10.0.2.5', 8080)] [hi returned from numpydelegate ] 
+    2015-04-06 13:02:36,743 __main__ INFO     revcfrom [('10.44.187.243', 8080)] [--yfov 100 returned from numpydelegate ] 
+
 
 The time string is returned immediately from within the 
 worker thread, the other string comes from the delegate 

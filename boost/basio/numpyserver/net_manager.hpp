@@ -7,13 +7,23 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
+#include <boost/enable_shared_from_this.hpp>
+
 
 #include <asio-zmq.hpp>
 #include "udp_server.hpp"
 #include "npy_server.hpp"
 
+/*
+   net_manager : 
+        no longer a good name for this, 
+        its becoming communication hub of the app 
+
+*/
+
+
 template <class Delegate>
-class net_manager {
+class net_manager : public boost::enable_shared_from_this<net_manager<Delegate>>  {
 
     boost::asio::zmq::context                        m_ctx;
     boost::asio::io_service                          m_local_io_service ;
@@ -21,10 +31,11 @@ class net_manager {
     boost::scoped_ptr<boost::thread>                 m_work_thread;
     udp_server<Delegate>                             m_udp_server ; 
     npy_server<Delegate>                             m_npy_server ; 
+    bool                                             m_npy_echo ;
 
 public:
 
-   net_manager(Delegate* delegate, boost::asio::io_service& delegate_io_service, unsigned int udp_port, const char* zmq_backend)
+   net_manager(Delegate* delegate, boost::asio::io_service& delegate_io_service, unsigned int udp_port, const char* zmq_backend, bool npy_echo)
        : 
        m_local_io_service(),
        m_local_io_service_work(new boost::asio::io_service::work(m_local_io_service)), 
@@ -33,7 +44,8 @@ public:
                                 &m_local_io_service
                                    ))),
        m_udp_server(m_local_io_service, delegate, delegate_io_service, udp_port),
-       m_npy_server(m_ctx, m_local_io_service, delegate, delegate_io_service, zmq_backend)
+       m_npy_server(m_local_io_service, delegate, delegate_io_service, m_ctx, zmq_backend, npy_echo),
+       m_npy_echo(npy_echo)
     {
 #ifdef VERBOSE
         std::cout << std::setw(20) << boost::this_thread::get_id() 
@@ -51,6 +63,9 @@ public:
 #endif
  
         // send by value to avoid grief 
+        // huh, looks like args going out of scope but 
+        // the bind is bundling them up by value ?
+
         std::string vaddr(addr);
         std::string vmsg(msg);
  
@@ -63,6 +78,27 @@ public:
                         vmsg 
                         ));
     }
+
+
+    void response(std::vector<int>& shape,std::vector<float>& data,  std::string& metadata )
+    {
+        std::vector<int>   vshape(shape);
+        std::vector<float> vdata(data);
+        std::string        vmetadata(metadata);
+
+        assert(!m_npy_echo); // response is invalid in npy_echo mode
+
+        m_local_io_service.post(
+                   boost::bind(
+                        &npy_server<Delegate>::response, 
+                        &m_npy_server,
+                        vshape,
+                        vdata,
+                        vmetadata 
+                        ));
+    }
+
+
 
 
 

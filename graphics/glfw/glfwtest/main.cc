@@ -10,6 +10,7 @@
 #include "app.hh"
 #include "Scene.hh"
 
+#include "numpydelegate.hh"
 #include "numpyserver.hpp"
 
 
@@ -20,7 +21,9 @@ int main(int argc, char** argv)
     if(config.isAbort()) exit(EXIT_SUCCESS);
 
     App app(&config) ;
-    numpyserver<App> srv(&app, config.getUdpPort(), config.getZMQBackend());
+
+    numpydelegate nde ; 
+    numpyserver<numpydelegate> srv(&nde, config.getUdpPort(), config.getZMQBackend());
 
     app.setSize(640,480);
     app.setTitle("Demo");
@@ -37,7 +40,10 @@ int main(int argc, char** argv)
     while (!glfwWindowShouldClose(window))
     {
         app.listen(); 
-        srv.poll_one();  // give numpyserver a few cycles, to complete posts from the net thread
+
+        // give numpyserver a few cycles, to complete posts from the net thread
+        // resulting in the non-blocking handler methods of the delegate being called
+        srv.poll_one();  
 
         app.render();
         glfwSwapBuffers(window);

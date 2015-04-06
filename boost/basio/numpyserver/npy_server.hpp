@@ -8,47 +8,19 @@
 #include <thread>
 
 #include <boost/asio.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <asio-zmq.hpp>
 #include "numpy.hpp"
+
+#ifdef DEBUG
+#include "dumpbuffer.hpp"
+#endif
 
 // following /usr/local/env/network/asiozmq/example/rrworker.cpp
 
 
-
-inline void DumpBuffer(const char* buffer, size_t buflen, size_t maxlines ) 
-{
-   const char* hfmt = "  %s \n%06X : " ;
-
-   int ascii[2] = { 0x20 , 0x7E };
-   const int N = 16 ;
-   size_t halfmaxbytes = N*maxlines/2 ; 
-
-   char line[N+1] ;
-   int n = N ; 
-   line[n] = '\0' ;
-   while(n--) line[n] = ' ' ;
-
-   for (size_t i = 0; i < buflen ; i++){
-       int v = buffer[i] & 0xff ;
-       bool out = i < halfmaxbytes || i > buflen - halfmaxbytes - 1 ; 
-       if( i == halfmaxbytes || i == buflen - halfmaxbytes - 1  ) printf(hfmt, "...", i );  
-       if(!out) continue ; 
-
-       int j = i % N ; 
-       if(j == 0) printf(hfmt, line, i );  // output the prior line and start new one with byte counter  
-       line[j] = ( v >= ascii[0] && v < ascii[1] ) ? v : '.' ;  // ascii rep 
-       printf("%02X ", v );
-   }   
-   printf(hfmt, line, buflen );
-   printf("\n"); 
-}
-
-
-
-
-
 template <class Delegate>
-class npy_server {
+class npy_server : public boost::enable_shared_from_this<npy_server<Delegate>>  {
 
     boost::asio::zmq::socket             m_socket;
     std::vector<boost::asio::zmq::frame> m_buffer  ;
@@ -58,20 +30,26 @@ class npy_server {
     std::string                          m_metadata ; 
     std::vector<int>                     m_shape ;
     std::vector<float>                   m_data ;
+    bool                                 m_echo ;
+
+    static const char JSON_MAGIC ; 
+    static const char NPY_MAGIC ; 
 
 public:
     npy_server(
-                boost::asio::zmq::context&  zmq_ctx,
                 boost::asio::io_service&    io_service_, 
                 Delegate*                   delegate,
                 boost::asio::io_service&    delegate_io_service, 
-                const char*                 backend
+                boost::asio::zmq::context&  zmq_ctx,
+                const char*                 backend, 
+                bool                        echo
               )
                 : 
                    m_socket(io_service_, zmq_ctx, ZMQ_REP), 
                    m_buffer(),
                    m_delegate(delegate),
-                   m_delegate_io_service(delegate_io_service)
+                   m_delegate_io_service(delegate_io_service),
+                   m_echo(echo)
     {
 #if VERBOSE
         std::cout 
@@ -87,24 +65,35 @@ public:
                      std::bind(&npy_server::handle_request, this, std::placeholders::_1)
                  );
     }
-private:
-    void handle_request(boost::system::error_code const& ec);
+
+    void response(std::vector<int> shape, std::vector<float> data,  std::string metadata );
 
 private:
+    void handle_request(boost::system::error_code const& ec);
+    void echo() ;
+    void decode_buffer();  // m_buffer -> m_metadata, m_shape and m_data 
+    void decode_frame(char wanted);
+
+private:
+    // debug methods
     void dump();
     static void dump(std::vector<boost::asio::zmq::frame>& buffer);
     static void dump_npy( char* bytes, size_t size );
-
-    void decode_buffer();  // m_buffer -> m_metadata, m_shape and m_data 
     void decode_buffer_roundtrip_test() ;
-
-    void decode_frame(char wanted);
     void sleep(unsigned int secs);
 
 private:
     std::vector<boost::asio::zmq::frame> make_frames(std::vector<int> shape, std::vector<float> data, std::string metadata);
 
 };
+
+
+template <typename Delegate>
+const char npy_server<Delegate>::NPY_MAGIC = '\x93' ;
+
+template <typename Delegate>
+const char npy_server<Delegate>::JSON_MAGIC = '{' ;
+
 
 template <typename Delegate>
 void npy_server<Delegate>::sleep(unsigned int secs)
@@ -123,6 +112,11 @@ void npy_server<Delegate>::handle_request(boost::system::error_code const& ec)
 #endif
 
     decode_buffer();
+#ifdef DEBUG
+    decode_buffer_roundtrip_test(); 
+#endif
+
+    // post decoded message to delegates on_npy handler
     m_delegate_io_service.post(
                         boost::bind(
                                 &Delegate::on_npy,
@@ -133,32 +127,65 @@ void npy_server<Delegate>::handle_request(boost::system::error_code const& ec)
                               ));
 
 
+
+    // ZMQ demands a reply when using REQ/REP sockets 
+    // so in non-echo mode the delegate must respond via "response" 
+    // to avoid dropping the ZMQ REQ-REP ball
+    //
+
+    if(m_echo)
+    {
+        echo();
+    }
+    else
+    {
+    }
+
+
+}
+
+
+template <typename Delegate>
+void npy_server<Delegate>::echo()
+{
+
     m_socket.write_message(std::begin(m_buffer), std::end(m_buffer));
 
-    // Currently just echoing : ZMQ demands a reply when using REQ/REP sockets 
-    //
-    // If need processing elsewhere (eg GPU thread) 
-    // would need to split into
-    //
-    // handle_request 
-    //       decode + post to delegate
-    //
-    // send_reply(processed_result msg)
-    //       the delegate (or another actor maybe GPU thread) 
-    //       needs to post to this as a result of receiving the on_npy
-    //       in order to send results back to the requester
-    //       then keep ball rolling by async_read_message with handle_request
-    // 
-    //
-    // async call with this method as handler, to pickup subsequent requests
-    // 
-
+    // async call to handle_request when any subsequent requests arrive
     m_buffer.clear();
     m_socket.async_read_message(
                      std::back_inserter(m_buffer),
                      std::bind(&npy_server<Delegate>::handle_request, this, std::placeholders::_1)
                  );
+
 }
+
+
+template <typename Delegate>
+void npy_server<Delegate>::response(std::vector<int> shape,std::vector<float> data,  std::string metadata )
+{
+
+#if VERBOSE
+    std::cout 
+             << std::setw(20) << boost::this_thread::get_id() 
+             << " npy_server::response " 
+             << std::endl;
+#endif
+
+    std::vector<boost::asio::zmq::frame> frames = make_frames(shape, data, metadata);
+
+    // sync 
+    m_socket.write_message(std::begin(frames), std::end(frames));
+
+    // async call to handle_request when any subsequent requests arrive
+    m_buffer.clear();
+    m_socket.async_read_message(
+                     std::back_inserter(m_buffer),
+                     std::bind(&npy_server<Delegate>::handle_request, this, std::placeholders::_1)
+                 );
+
+}
+
 
 
 
@@ -169,8 +196,9 @@ void npy_server<Delegate>::decode_buffer()
     m_shape.clear();
     m_data.clear();
 
-    decode_frame('{');
-    decode_frame('\x93');
+    // populates m_metadata/m_shape/m_data
+    decode_frame(JSON_MAGIC);
+    decode_frame(NPY_MAGIC);
 
 #if VERBOSE
     std::cout 
@@ -183,17 +211,19 @@ void npy_server<Delegate>::decode_buffer()
 #endif
 
 
-    decode_buffer_roundtrip_test(); 
-
 }
 
 template <typename Delegate>
 void npy_server<Delegate>::decode_buffer_roundtrip_test()
 {
+    // re-serializes the deserialized m_shape/m_data/m_metadata 
+    // and checks the frames are a bit-match for the original m_buffer 
+
     std::vector<boost::asio::zmq::frame> frames = make_frames(m_shape, m_data, m_metadata);
 
-    std::cout << "npy_server::roundtrip    frames.size() " <<   frames.size() << std::endl ; 
-    std::cout << "npy_server::roundtrip  m_buffer.size() " << m_buffer.size() << std::endl ; 
+    std::cout << "npy_server::decode_buffer_roundtrip_test    frames.size() " <<   frames.size() << std::endl ; 
+    std::cout << "npy_server::decode_buffer_roundtrip_test  m_buffer.size() " << m_buffer.size() << std::endl ; 
+
     assert(frames.size() == m_buffer.size());
 
     for(size_t i=0 ; i<frames.size() ; ++i)
@@ -201,10 +231,12 @@ void npy_server<Delegate>::decode_buffer_roundtrip_test()
         const boost::asio::zmq::frame& a = m_buffer[i] ; 
         const boost::asio::zmq::frame& b = frames[i] ; 
         assert(a.size() == b.size());
+        assert(memcmp( a.data(), b.data(), a.size()) == 0); 
 
-        if(*(char*)a.data() == '\x93')
+#ifdef DEBUG
+        if(*(char*)a.data() == NPY_MAGIC)
         {
-            size_t offset = 6*16 ; 
+            size_t offset = 0 ;   // 6*16 to skip header
             char* apt = (char*)a.data() + offset ;
             char* bpt = (char*)b.data() + offset ;
             int cmp = memcmp( apt, bpt, a.size()-offset );
@@ -214,13 +246,18 @@ void npy_server<Delegate>::decode_buffer_roundtrip_test()
                DumpBuffer( (char*)b.data(), b.size(), 50);
             } 
         }
-        //assert(memcmp( a.data(), b.data(), a.size()) == 0); 
+#endif
+
     }
 
     //dump();
     //dump(frames);
  
 }
+
+
+
+
 
 
 

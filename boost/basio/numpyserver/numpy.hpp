@@ -157,7 +157,8 @@ inline void CreateMetaData(
         for(int d=0; d<n_dims; ++d) {
             shape_stream << shape[d];
             if(d + 1 != n_dims) {
-                shape_stream << ",";
+                //shape_stream << ",";   
+                shape_stream << ", ";  // space after comma to match headers written by python/numpy
             }
         }
     } else {

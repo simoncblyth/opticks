@@ -36,6 +36,11 @@ Talks
 
 * http://theboostcpplibraries.com/boost.asio
 
+Refs
+-----
+
+* http://www.digitalpeer.com/blog/asio-is-my-go-to-cpp-application-framework
+
 
 Message passing from netThread to mainThread
 ----------------------------------------------

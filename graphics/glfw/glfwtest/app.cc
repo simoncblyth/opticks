@@ -56,10 +56,11 @@ App::~App()
 }
 
 
-void App::setSize(unsigned int width, unsigned int height)
+void App::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
     m_width = width ;
     m_height = height ;
+    m_coord2pixel = coord2pixel ;
 }
 void App::setTitle(const char* title)
 {
@@ -127,37 +128,15 @@ void App::listen()
 }
  
 
-void App::on_msg(std::string msg)
-{
-    std::cout << std::setw(20) << boost::this_thread::get_id()
-              << " Receiver::on_msg "
-              << " msg ["  << msg << "] "
-              << std::endl;
-}   
-void App::on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata)
-{  
-    assert(shape.size() == 3); 
-    std::cout << std::setw(20) << boost::this_thread::get_id()
-              << " Receiver::on_npy "
-              << " shape dimension " << shape.size()
-              << shape[0] << "/"
-              << shape[1] << "/"
-              << shape[2] << " "
-              << " data size " << data.size()
-              << " metadata [" << metadata << "]"
-              << std::endl ;
-}
-
-
-
-
 
 void App::render()
 {
      _update_fps_counter (m_window);
 
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-     glViewport(0, 0, m_width, m_height);
+
+     // glViewport needs pixels (on retina)  window needs screen coordinates
+     glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 
      m_scene->draw(m_width, m_height);
 }
@@ -167,7 +146,7 @@ void App::resize(unsigned int width, unsigned int height)
 {
      setSize(width, height);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-     glViewport(0, 0, m_width, m_height);
+     glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 }
 
 

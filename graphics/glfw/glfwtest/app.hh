@@ -12,7 +12,7 @@ class App {
        App(Config* config);
        virtual ~App();
        
-       void setSize(unsigned int width, unsigned int height);
+       void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
        void setTitle(const char* title);
        void setScene(Scene* scene);
 
@@ -22,12 +22,6 @@ class App {
        void listen();
        void render();
        GLFWwindow* getWindow(){ return m_window ; }
-
-   public:
-       // handlers arriving from the network thread via net_app and boost::asio magic 
-       // so long as call app.poll_one() within the event loop
-       void on_msg(std::string msg);
-       void on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata);
 
    private:
        void handle_event(GLEQevent& event);
@@ -39,6 +33,7 @@ class App {
        Config*       m_config ;
        unsigned int  m_width ; 
        unsigned int  m_height ; 
+       unsigned int  m_coord2pixel ; 
        const char*   m_title ;
        GLFWwindow*   m_window;
        Scene*        m_scene ;
