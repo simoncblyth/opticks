@@ -17,7 +17,9 @@
 int main(int argc, char** argv)
 {
     Config config;
+
     config.parse(argc,argv);
+
     if(config.isAbort()) exit(EXIT_SUCCESS);
 
     App app(&config) ;

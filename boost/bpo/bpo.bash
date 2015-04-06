@@ -31,10 +31,17 @@ Boost Program Options
 
 EOU
 }
+
+bpo-boost-prefix(){ echo /opt/local ; }
+
 bpo-dir(){  echo $(local-base)/env/boost/bpo ; }
 bpo-sdir(){ echo $(env-home)/boost/bpo ; }
+bpo-idir(){ echo $(bpo-boost-prefix)/include/boost/program_options ; }
+
 bpo-cd(){   cd $(bpo-dir); }
 bpo-scd(){  cd $(bpo-sdir); }
+bpo-icd(){  cd $(bpo-idir); }
+
 
 bpo-example-dir(){ echo /opt/local/share/doc/boost/libs/program_options/example ; }
 bpo-example-cd(){  cd $(bpo-example-dir) ; }

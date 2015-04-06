@@ -103,9 +103,30 @@ glfwtest-export()
 glfwtest-run(){ 
    local bin=$(glfwtest-bin)
    glfwtest-export
-   $bin $*
+   $bin $* 
 }
 
+glfwtest-runq(){
+   local bin=$(glfwtest-bin)
+   glfwtest-export
+
+   ## bash drops quotes, so put them back when the parameter
+   ## contains a space
+   ##
+   ## for example the liveline parameter quotes must be preserved
+   ##  
+   ## /usr/local/env/graphics/glfw/glfwtest/bin/GLFWTest --version --yfov 123 --yfov 456 --config demo.cfg --liveline "--yfov 1234"
+
+   local parms="" 
+   local p
+   for p in "$@" ; do
+      [ "${p/ /}" == "$p" ] && parms="${parms} $p" || parms="${parms} \"${p}\""
+   done
+
+   cat << EOC  | sh 
+   $bin $parms
+EOC
+}
 
 
 glfwtest--()
