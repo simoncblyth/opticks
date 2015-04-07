@@ -41,13 +41,11 @@ static void error_callback(int error, const char* description)
 }
 
 
-App::App(Config* config) : 
-     m_config(config),
+App::App() : 
      m_title(NULL),
      m_window(NULL),
      m_scene(NULL)
 {
-     m_config->dump();
 }
 
 App::~App()

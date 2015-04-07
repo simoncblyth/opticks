@@ -9,7 +9,7 @@ class Scene ;
 
 class App {
    public:
-       App(Config* config);
+       App();
        virtual ~App();
        
        void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
@@ -30,7 +30,6 @@ class App {
        void key_pressed(unsigned int key);
 
    private:
-       Config*       m_config ;
        unsigned int  m_width ; 
        unsigned int  m_height ; 
        unsigned int  m_coord2pixel ; 

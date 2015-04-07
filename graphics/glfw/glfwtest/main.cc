@@ -6,26 +6,31 @@
 #define GLEQ_IMPLEMENTATION
 #include "gleq.h"
 
-#include "Config.hh"
+
+#include "Camera.hh"
+#include "CameraCfg.hh"
+
 #include "app.hh"
 #include "Scene.hh"
 
 #include "numpydelegate.hh"
+#include "numpydelegateCfg.hh"
 #include "numpyserver.hpp"
 
 
 int main(int argc, char** argv)
 {
-    Config config;
+    //if(config.isAbort()) exit(EXIT_SUCCESS);
 
-    config.parse(argc,argv);
-
-    if(config.isAbort()) exit(EXIT_SUCCESS);
-
-    App app(&config) ;
+    App app ;
 
     numpydelegate nde ; 
-    numpyserver<numpydelegate> srv(&nde, config.getUdpPort(), config.getZMQBackend());
+    numpydelegateCfg<numpydelegate> ndeCfg("numpydelegate", &nde );
+
+    ndeCfg.commandline(argc, argv);
+
+    numpyserver<numpydelegate> srv(&nde);
+
 
     app.setSize(640,480);
     app.setTitle("Demo");
@@ -34,6 +39,15 @@ int main(int argc, char** argv)
     Scene scene ; 
     scene.load("GLFWTEST_") ;
     scene.init();
+
+    Camera* camera = scene.getCamera();
+
+    CameraCfg<Camera> camCfg("camera", camera);
+    camCfg.commandline(argc,argv);
+    camera->Print("************ CAMERA **** ");
+
+    nde.addLiveCfg(&camCfg);
+
 
     app.setScene(&scene);
 

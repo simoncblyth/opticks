@@ -5,6 +5,26 @@
 
 // split into application specific and general config handling in ConfigBase
 
+
+
+/*
+class CameraCfg {
+  public:
+        CameraCfg();
+        float       getYfov();
+
+        void Yfov_set(std::vector<float> yfov);
+
+  private:
+        float        m_yfov ;
+        float        m_yfov_default ;
+
+
+};
+*/
+
+
+
 class Config : public ConfigBase  {
     public:
         Config();
@@ -16,6 +36,8 @@ class Config : public ConfigBase  {
         float       getYfov();
 
         void Yfov_set(std::vector<float> yfov);
+
+
 
 
     private:
@@ -31,7 +53,6 @@ class Config : public ConfigBase  {
 
         float        m_yfov ;
         float        m_yfov_default ;
-
 
 };
 

@@ -30,8 +30,8 @@ public:
     udp_server(
            boost::asio::io_service& io_service, 
            Delegate*                delegate,
-           boost::asio::io_service& delegate_io_service, 
-           unsigned int port
+           boost::asio::io_service& delegate_io_service,
+           int port
            )
     : 
        m_socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)),

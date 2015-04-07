@@ -14,9 +14,9 @@ Test with eg::
 
 int main()
 {
-    numpydelegate nde ;  // example numpydelegate
-    numpyserver<numpydelegate> srv(&nde, 8080, "tcp://127.0.0.1:5002");
-    nde.setServer(&srv); // needed for replying to posts from delegate calls
+    numpydelegate nde ;  // example numpydelegate contains defaults 
+    numpyserver<numpydelegate> srv(&nde);
+    //nde.setServer(&srv); // needed for replying to posts from delegate calls
     
     for(unsigned int i=0 ; i < 20 ; ++i )
     {

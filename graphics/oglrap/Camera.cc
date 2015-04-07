@@ -4,6 +4,54 @@
 #include "stdio.h"
 #include <glm/gtc/matrix_transform.hpp>  
 
+
+const char* Camera::NEAR     = "near" ;
+const char* Camera::FAR      = "far" ;
+const char* Camera::YFOV     = "yfov" ;
+const char* Camera::PARALLEL = "parallel" ;
+
+
+
+void Camera::configureS(const char* name, std::vector<std::string> values)
+{
+}
+
+void Camera::configureI(const char* name, std::vector<int> values)
+{
+}
+
+void Camera::configureF(const char* name, std::vector<float> values)
+{
+     if(values.empty())
+     {
+         printf("Camera::parameter_set %s no values \n", name);
+     }
+     else         
+     {
+         float vlast = values.back() ;
+
+#ifdef VERBOSE
+         printf("Camera::parameter_set %s : %lu values : ", name, values.size());
+         for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
+         printf(" : vlast %10.3f \n", vlast );
+#endif
+
+         if(      strcmp(name, YFOV) ==  0)      setYfov(vlast);
+         else if( strcmp(name, NEAR) ==  0)      setNear(vlast);
+         else if( strcmp(name, FAR) ==  0)       setFar(vlast);
+         else if( strcmp(name, PARALLEL) ==  0)  setParallel( vlast==0.f ? false : true );
+         else
+              printf("Camera::parameter_set ignoring unknown parameter %s : %10.3f \n", name, vlast); 
+     }
+}
+ 
+
+void Camera::Print(const char* msg)
+{
+    printf("%s parallel %d  near %10.3f far %10.3f yfov %10.3f \n", msg, m_parallel, m_near, m_far, m_yfov );
+}
+
+
 void Camera::Summary(const char* msg)
 {
     printf("%s  parallel %d \n", msg, m_parallel );

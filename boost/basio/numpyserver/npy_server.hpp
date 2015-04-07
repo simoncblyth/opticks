@@ -40,26 +40,27 @@ public:
                 boost::asio::io_service&    io_service_, 
                 Delegate*                   delegate,
                 boost::asio::io_service&    delegate_io_service, 
-                boost::asio::zmq::context&  zmq_ctx,
-                const char*                 backend, 
-                bool                        echo
+                boost::asio::zmq::context&  zmq_ctx
               )
                 : 
                    m_socket(io_service_, zmq_ctx, ZMQ_REP), 
                    m_buffer(),
                    m_delegate(delegate),
                    m_delegate_io_service(delegate_io_service),
-                   m_echo(echo)
+                   m_echo(delegate->getNPYEcho())
     {
+
+        std::string& backend = delegate->getZMQBackend();
+
 #if VERBOSE
         std::cout 
              << std::setw(20) << boost::this_thread::get_id() 
              << " npy_server::npy_server " 
-             << " backend " << backend 
+             << " backend " << backend
              << std::endl;
 #endif
 
-        m_socket.connect(backend);   
+        m_socket.connect(backend.c_str());   
         m_socket.async_read_message(
                      std::back_inserter(m_buffer),
                      std::bind(&npy_server::handle_request, this, std::placeholders::_1)

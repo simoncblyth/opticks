@@ -26,6 +26,8 @@ find_package(Boost REQUIRED)
 find_package(ZMQ REQUIRED)    # can cmake handle pkg depending on other pkgs, to make this simpler ?
 find_package(AsioZMQ REQUIRED)
 find_package(NumpyServer REQUIRED)
+find_package(GLM  REQUIRED)
+find_package(Cfg REQUIRED)
 
 #message(NumpyServer_INCLUDE_DIRS:${NumpyServer_INCLUDE_DIRS})
 
@@ -38,6 +40,8 @@ include_directories(
    ${ZMQ_INCLUDE_DIRS} 
    ${AsioZMQ_INCLUDE_DIRS} 
    ${NumpyServer_INCLUDE_DIRS} 
+   ${Cfg_INCLUDE_DIRS} 
+   ${GLM_INCLUDE_DIRS} 
 )
 
 add_definitions(
@@ -79,6 +83,7 @@ target_link_libraries( ${name}
       ${OGLRap_LIBRARIES}
       ${Boost_LIBRARIES}
       ${ZMQ_LIBRARIES}
+      ${Cfg_LIBRARIES}
 )
 install(TARGETS GLFWContext DESTINATION bin)
 install(TARGETS ${name} DESTINATION bin)

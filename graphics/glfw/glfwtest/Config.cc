@@ -5,6 +5,20 @@
 
 namespace po = boost::program_options;
 
+
+
+/*
+CameraCfg::CameraCfg()
+   :
+    m_yfov(60.f),
+    m_yfov_default(60.f)
+{
+}
+
+*/
+
+
+
 Config::Config()
     : 
     ConfigBase(),
@@ -53,6 +67,9 @@ void Config::create_descriptions()
                "Vertical Field of view in degrees"
        )
        ;
+
+
+
 
    m_hidden.add_options()
        ("input-file", 

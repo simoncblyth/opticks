@@ -3,11 +3,19 @@
 
 #include <glm/glm.hpp>  
 #include <math.h> 
+#include "stdio.h"
+#include <vector>
+#include <string>
 
 class Camera {
   public:
 
-     Camera(int width, int height, float near=0.1f, float far=10000.f, float yfov=60.f, bool parallel=false) 
+     static const char* NEAR ; 
+     static const char* FAR ; 
+     static const char* YFOV ; 
+     static const char* PARALLEL ; 
+
+     Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float yfov=60.f, bool parallel=false) 
      {
          setSize(width, height);
 
@@ -25,6 +33,12 @@ class Camera {
      glm::mat4 getPerspective();
      glm::mat4 getOrtho();
      glm::mat4 getFrustum();
+
+
+     void configureF(const char* name, std::vector<float> values);
+     void configureI(const char* name, std::vector<int> values);
+     void configureS(const char* name, std::vector<std::string> values);
+
 
      void setNear(float near)
      {
@@ -113,6 +127,7 @@ class Camera {
          return getAspect() * getTop() ;
      } 
 
+     void Print(const char* msg="Camera::Print");
      void Summary(const char* msg="Camera::Summary");
 
 

@@ -14,10 +14,10 @@ class numpyserver {
    net_manager<Delegate>                                m_net_manager ; 
 
 public:
-   numpyserver(Delegate* delegate, unsigned int udp_port, const char* zmq_backend, bool npy_echo=false)  
+   numpyserver(Delegate* delegate)  
       :
         m_io_service_work(new boost::asio::io_service::work(m_io_service)),
-        m_net_manager(delegate, m_io_service, udp_port, zmq_backend, npy_echo)
+        m_net_manager(delegate, m_io_service)
    {
 
         delegate->setServer(this);  // allows the delegate to reply 

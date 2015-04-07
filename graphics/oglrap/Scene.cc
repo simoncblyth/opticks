@@ -230,9 +230,9 @@ void Scene::setupView(int width, int height)
     gaze = m_view->getGaze(M2W, m_draw_count == 0);
 
 
-    m_camera->setYfov(100);
+    //m_camera->setYfov(100);
     m_camera->setSize(width, height);    
-    m_camera->setParallel(false);
+    //m_camera->setParallel(false);
 
     projection = m_camera->getProjection();
 

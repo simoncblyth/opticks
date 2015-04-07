@@ -9,7 +9,10 @@
 
 numpydelegate::numpydelegate()
      :
-     m_server(NULL)
+     m_server(NULL),
+     m_udp_port(8080),
+     m_npy_echo(0),
+     m_zmq_backend("tcp://127.0.0.1:5002")
 {
 }
 
@@ -17,6 +20,49 @@ void numpydelegate::setServer(numpyserver<numpydelegate>* server)
 {
     m_server = server ; 
 }  
+
+void numpydelegate::configure(const char* name, std::vector<int> values)
+{
+    if(values.empty()) return ;
+    if(strcmp(name, "udpport")==0) setUDPPort(values.back());
+    if(strcmp(name, "npyecho")==0) setNPYEcho(values.back());
+}
+void numpydelegate::configure(const char* name, std::vector<std::string> values)
+{
+    if(values.empty()) return ;
+    if(strcmp(name, "zmqbackend")==0) setZMQBackend(values.back());
+}
+
+void numpydelegate::setUDPPort(int port)
+{
+    m_udp_port = port ;
+}
+void numpydelegate::setNPYEcho(int echo)
+{
+    m_npy_echo = echo ;
+}
+void numpydelegate::setZMQBackend(std::string& backend)
+{
+    m_zmq_backend = backend ;
+}
+
+int numpydelegate::getUDPPort()
+{
+    return m_udp_port ;
+}
+int numpydelegate::getNPYEcho()
+{
+    return m_npy_echo ;
+}
+std::string& numpydelegate::getZMQBackend()
+{
+    return m_zmq_backend ;
+}
+
+
+
+
+
 
 
 void numpydelegate::on_msg(std::string _addr, unsigned short port, std::string msg)

@@ -35,7 +35,7 @@ class net_manager : public boost::enable_shared_from_this<net_manager<Delegate>>
 
 public:
 
-   net_manager(Delegate* delegate, boost::asio::io_service& delegate_io_service, unsigned int udp_port, const char* zmq_backend, bool npy_echo)
+   net_manager(Delegate* delegate, boost::asio::io_service& delegate_io_service)
        : 
        m_local_io_service(),
        m_local_io_service_work(new boost::asio::io_service::work(m_local_io_service)), 
@@ -43,9 +43,9 @@ public:
                                 &boost::asio::io_service::run, 
                                 &m_local_io_service
                                    ))),
-       m_udp_server(m_local_io_service, delegate, delegate_io_service, udp_port),
-       m_npy_server(m_local_io_service, delegate, delegate_io_service, m_ctx, zmq_backend, npy_echo),
-       m_npy_echo(npy_echo)
+       m_udp_server(m_local_io_service, delegate, delegate_io_service, delegate->getUDPPort()),
+       m_npy_server(m_local_io_service, delegate, delegate_io_service, m_ctx ),
+       m_npy_echo(delegate->getNPYEcho())
     {
 #ifdef VERBOSE
         std::cout << std::setw(20) << boost::this_thread::get_id() 
