@@ -4,7 +4,7 @@
 template <class Listener>
 class CameraCfg : public Cfg {
 public:
-   CameraCfg(const char* name, Listener* listener) : Cfg(name) 
+   CameraCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
    {
        addOptionF<Listener>(listener, "yfov",     "Vertical Field of view in degrees");
        addOptionF<Listener>(listener, "near",     "Near distance");

@@ -27,10 +27,7 @@ protected:
     boost::program_options::variables_map       m_vm;
     boost::program_options::options_description m_desc ; 
 
- //   template <class Listener, class Type>
- //   void addOption(Listener* listener, const char* name, const char* description);
- //  
- //   binding to overloaded methods is problematic : so spell it out 
+    // binding to overloaded methods is problematic : so spell it out 
 
     template <class Listener>
     void addOptionF(Listener* listener, const char* name, const char* description);
@@ -42,9 +39,19 @@ protected:
     void addOptionS(Listener* listener, const char* name, const char* description);
 
 
+public:
+    Cfg(const char* name, bool live);
+    bool isLive();
 
 public:
-    Cfg(const char* name);
+    // holding others 
+    void add(Cfg* cfg);
+    bool containsOthers();
+    unsigned int getNumOthers();
+    Cfg* getOther(unsigned int index);
+
+public:
+    boost::program_options::options_description& getDesc();
 
     void commandline(int argc, char** argv);
     void liveline(const char* line);
@@ -62,6 +69,10 @@ public:
     static void dump(boost::program_options::variables_map&       vm, const char* msg);
     static void dump(boost::program_options::parsed_options& opts, const char* msg );
 
+private:
+    
+    std::vector<Cfg*> m_others ; 
+    bool m_live ; 
 
 };
 

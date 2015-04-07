@@ -62,13 +62,28 @@ std::string& numpydelegate::getZMQBackend()
 }
 
 
-void numpydelegate::addLiveCfg(Cfg* cfg)
+void numpydelegate::liveConnect(Cfg* cfg)
 {
-    m_live_cfg.push_back(cfg);
+    if( cfg->containsOthers())
+    {
+        for(size_t i=0 ; i<cfg->getNumOthers() ; i++)
+        { 
+            Cfg* other = cfg->getOther(i);
+            if(other->isLive())
+            {
+                m_live_cfg.push_back(other);
+            }
+        }
+    }
+    else
+    {
+        m_live_cfg.push_back(cfg);
+    }
 }
 
 void numpydelegate::interpretExternalMessage(std::string msg)
 {
+    printf("numpydelegate::interpretExternalMessage %s \n", msg.c_str());
     for(size_t i=0 ; i<m_live_cfg.size() ; ++i)
     {
         Cfg* cfg = m_live_cfg[i];

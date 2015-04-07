@@ -220,9 +220,10 @@ void Scene::setupView(int width, int height)
     // model_to_world matrix constructed from geometry center and extent
     // is used to construct the lookat matrix 
    
-    m_view->setEye(0,0,1);
-    m_view->setLook(0,0,0);
-    m_view->setUp(0,1,0);
+    //m_view->setEye(0,0,1);
+    //m_view->setLook(0,0,0);
+    //m_view->setUp(0,1,0);
+
 
     //scale = glm::scale(glm::vec3(1.0f/1000.f))  ;
     M2W = glm::make_mat4(m_model_to_world);

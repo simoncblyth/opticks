@@ -2,13 +2,20 @@
 #define VIEW_H
 
 #include <glm/glm.hpp>  
+#include <vector>
+#include <string>
+
 
 class View {
 public:
+   static const char* EYE ; 
+   static const char* LOOK ; 
+   static const char* UP ; 
+
    View()  : 
       m_eye_x(0.0f),
       m_eye_y(0.0f),
-      m_eye_z(-1.0f),
+      m_eye_z(1.0f),
       m_look_x(0.0f),
       m_look_y(0.0f),
       m_look_z(0.0f),
@@ -21,6 +28,9 @@ public:
    virtual ~View()
    {
    }
+
+   void configureS(const char* name, std::vector<std::string> values);
+   void set(const char* name, std::string& xyz);
 
    void setEye( float _x, float _y, float _z)
    {
@@ -54,6 +64,7 @@ public:
    glm::mat4 getLookAt(const glm::mat4& m2w, bool debug=false);
 
    void Summary(const char* msg="View::Summary");
+   void Print(const char* msg="View::Print");
 
 
 private:

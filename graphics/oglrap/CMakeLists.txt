@@ -41,6 +41,7 @@ add_library( ${name}  SHARED
                 Camera.cc
                 CameraCfg.cc
                 View.cc
+                ViewCfg.cc
                 Shader.cc
                 Demo.cc
                 VertexAttribute.cc
@@ -75,6 +76,7 @@ Scene.hh
 Camera.hh
 CameraCfg.hh
 View.hh
+ViewCfg.hh
 Shader.hh
 Demo.hh
 VertexAttribute.hh

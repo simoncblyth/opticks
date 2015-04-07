@@ -12,6 +12,7 @@ class App {
        App();
        virtual ~App();
        
+       void configureS(const char* name, std::vector<std::string> values);
        void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
        void setTitle(const char* title);
        void setScene(Scene* scene);

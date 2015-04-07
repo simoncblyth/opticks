@@ -6,6 +6,52 @@
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+
+
+const char* View::EYE = "eye" ;
+const char* View::LOOK = "look" ;
+const char* View::UP = "up" ;
+
+void View::configureS(const char* name, std::vector<std::string> values)
+{
+    if(values.empty()) return ;
+
+    std::string last = values.back();
+    set(name, last);
+}
+
+void View::set(const char* name, std::string& _xyz)
+{
+    std::vector<std::string> xyz;
+    boost::split(xyz, _xyz, boost::is_any_of(","));
+
+    if(xyz.size() == 3 )
+    {
+        float x = boost::lexical_cast<float>(xyz[0]); 
+        float y = boost::lexical_cast<float>(xyz[1]); 
+        float z = boost::lexical_cast<float>(xyz[2]); 
+
+        if(     strcmp(name,EYE)==0)    setEye(x,y,z);
+        else if(strcmp(name,LOOK)== 0 ) setLook(x,y,z);
+        else if(strcmp(name,UP)== 0 )   setUp(x,y,z);
+        else
+              printf("View::configureS bad name %s\n", name);
+
+    }
+    else
+    {
+        printf("View::set malformed %s : %s \n", name, _xyz.c_str() );
+    }
+}
+
+void View::Print(const char* msg)
+{
+    print(getEye(), getLook(), getUp() , "eye/look/up");
+}
+
+
 
 void View::Summary(const char* msg)
 {

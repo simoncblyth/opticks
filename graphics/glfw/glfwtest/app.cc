@@ -10,12 +10,11 @@
 
 #include "app.hh"
 #include "Scene.hh"
-#include "Config.hh"
 
 #include <iostream>
 #include <iomanip>
-#include <boost/thread.hpp>
-
+#include <boost/algorithm/string.hpp> 
+#include <boost/lexical_cast.hpp>
 
 
 void _update_fps_counter (GLFWwindow* window) {
@@ -53,6 +52,38 @@ App::~App()
     free((void*)m_title);
 }
 
+
+
+void App::configureS(const char* name, std::vector<std::string> values)
+{
+   if(values.empty()) return;
+
+   if(strcmp(name, "size") == 0)
+   {
+       std::string _whf = values.back();
+
+       std::vector<std::string> whf;
+       boost::split(whf, _whf, boost::is_any_of(","));
+   
+       if(whf.size() == 3 )
+       {
+           unsigned int width  = boost::lexical_cast<unsigned int>(whf[0]);  
+           unsigned int height = boost::lexical_cast<unsigned int>(whf[1]);  
+           unsigned int coord2pixel  = boost::lexical_cast<unsigned int>(whf[2]);  
+
+           printf("App::configureS param %s : %s  \n", name, _whf.c_str());
+           setSize(width, height, coord2pixel);
+       }
+       else
+       {
+           printf("App::configureS param %s malformed %s needs to be triplet eg 1024,768,2  \n", name, _whf.c_str());
+       }
+   }
+   else
+   {
+       printf("App::configureS param %s unknown \n", name);
+   }
+}
 
 void App::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
@@ -119,7 +150,7 @@ void App::listen()
     GLEQevent event;
     while (gleqNextEvent(&event))
     {
-        dump_event(event);
+        //dump_event(event);
         handle_event(event);
         gleqFreeEvent(&event);
     }
@@ -142,6 +173,8 @@ void App::render()
 
 void App::resize(unsigned int width, unsigned int height)
 {
+     if(width == 0 || height == 0) return ;  // ignore dud resizes
+
      setSize(width, height);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);

@@ -16,7 +16,7 @@ public:
    void on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata);
 
 public:
-   void addLiveCfg(Cfg* cfg);
+   void liveConnect(Cfg* cfg);
    void interpretExternalMessage(std::string msg);
 
    void configureI(const char* name, std::vector<int>         values);

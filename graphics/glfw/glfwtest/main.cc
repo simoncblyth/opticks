@@ -6,12 +6,14 @@
 #define GLEQ_IMPLEMENTATION
 #include "gleq.h"
 
+#include "app.hh"
+#include "AppCfg.hh"
 
+#include "Scene.hh"
 #include "Camera.hh"
 #include "CameraCfg.hh"
-
-#include "app.hh"
-#include "Scene.hh"
+#include "View.hh"
+#include "ViewCfg.hh"
 
 #include "numpydelegate.hh"
 #include "numpydelegateCfg.hh"
@@ -20,36 +22,33 @@
 
 int main(int argc, char** argv)
 {
-    //if(config.isAbort()) exit(EXIT_SUCCESS);
-
     App app ;
+    numpydelegate delegate ; 
+    Scene scene ;  // just instanciates Camera and View, allowing config hookup 
 
-    numpydelegate nde ; 
-    numpydelegateCfg<numpydelegate> ndeCfg("numpydelegate", &nde );
+    AppCfg<App>* appcfg = new AppCfg<App>("app", &app, false);
 
-    ndeCfg.commandline(argc, argv);
+    Cfg cfg("unbrella", false) ;  // collect other Cfg objects
+    cfg.add(appcfg);
+    cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
+    cfg.add(new CameraCfg<Camera>("camera", scene.getCamera(), true));
+    cfg.add(new ViewCfg<View>(    "view",   scene.getView(),   true));
 
-    numpyserver<numpydelegate> srv(&nde);
+    cfg.commandline(argc, argv);
+    delegate.liveConnect(&cfg);    
 
+    if(appcfg->isHelp())  std::cout << cfg.getDesc() << std::endl ;
+    if(appcfg->isAbort()) exit(EXIT_SUCCESS); 
 
+    numpyserver<numpydelegate> srv(&delegate);
+
+    app.setScene(&scene);
     app.setSize(640,480);
     app.setTitle("Demo");
     app.init();
 
-    Scene scene ; 
     scene.load("GLFWTEST_") ;
     scene.init();
-
-    Camera* camera = scene.getCamera();
-
-    CameraCfg<Camera> camCfg("camera", camera);
-    camCfg.commandline(argc,argv);
-    camera->Print("************ CAMERA **** ");
-
-    nde.addLiveCfg(&camCfg);
-
-
-    app.setScene(&scene);
 
     GLFWwindow* window = app.getWindow();
 

@@ -57,8 +57,6 @@ add_executable( Simple simple.cc )
 add_executable( ${name} 
                 main.cc 
                 app.cc
-                Config.cc
-                ConfigBase.cc
                 numpydelegate.cc
 ) 
 

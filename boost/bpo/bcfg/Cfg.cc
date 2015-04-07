@@ -8,32 +8,101 @@
 
 namespace po = boost::program_options;
 
-Cfg::Cfg(const char* name)
-    : m_desc(name)
+Cfg::Cfg(const char* name, bool live)
+    : m_desc(name), m_live(live)
 {
 }
 
+bool Cfg::isLive()
+{
+    return m_live ; 
+}
+
+
+bool Cfg::containsOthers()
+{
+    return !m_others.empty();
+}
+unsigned int Cfg::getNumOthers()
+{
+    return m_others.size();
+}
+Cfg* Cfg::getOther(unsigned int index)
+{
+    return m_others[index];
+}
+
+
+void Cfg::add(Cfg* other)
+{
+    m_desc.add(other->getDesc());
+    m_others.push_back(other);
+}
+
+boost::program_options::options_description& Cfg::getDesc()
+{
+    return m_desc ; 
+}
 
 void Cfg::commandline(int argc, char** argv)
 {
-    std::vector<std::string> unrecognized = parse_commandline(argc, argv);
+    if(m_others.empty())
+    {
+        std::vector<std::string> unrecognized = parse_commandline(argc, argv);
 #ifdef VERBOSE
-    dump(unrecognized, "unrecognized after parse_commandline"); 
+        dump(unrecognized, "unrecognized after parse_commandline"); 
 #endif
+    }
+    else
+    {
+        for(size_t i=0 ; i < m_others.size() ; i++)
+        {
+            Cfg* other = m_others[i];
+            other->commandline(argc, argv);
+        } 
+    }
 }
+
 void Cfg::liveline(const char* _line)
 {
-    std::vector<std::string> unrecognized = parse_liveline(_line);
-#ifdef VERBOSE
-    dump(unrecognized, "unrecognized after parse_liveline"); 
-#endif
+    if(m_others.empty())
+    {
+        printf("Cfg::liveline %s \n", _line);
+        std::vector<std::string> unrecognized = parse_liveline(_line);
+//#ifdef VERBOSE
+        dump(unrecognized, "unrecognized after parse_liveline"); 
+//#endif
+    }
+    else
+    {
+        for(size_t i=0 ; i < m_others.size() ; i++)
+        {
+            Cfg* other = m_others[i];
+            if(other->isLive())
+            {
+                other->liveline(_line);
+            }
+        } 
+    }
+
 }
 void Cfg::configfile(const char* path)
 {
-    std::vector<std::string> unrecognized = parse_configfile(path);
+    if(m_others.empty())
+    {
+        std::vector<std::string> unrecognized = parse_configfile(path);
 #ifdef VERBOSE
-    dump(unrecognized, "unrecognized after parse_configfile"); 
+        dump(unrecognized, "unrecognized after parse_configfile"); 
 #endif
+    }
+    else
+    {
+        for(size_t i=0 ; i < m_others.size() ; i++)
+        {
+            Cfg* other = m_others[i];
+            other->configfile(path);
+        } 
+    }
 }
 
 
