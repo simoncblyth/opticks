@@ -13,6 +13,12 @@ model, intended for:
 
 * investigation of how to represent Geometry within OptiX
 
+TODO
+-----
+
+* investigate mesh merging functionality of Assimp and GGeo, which is being used 
+* add normals handling to GMesh and GMergedMesh, as the Assimp import and wrapping
+* implement GLSL normal shader to check normals
 
 Classes
 --------
@@ -96,7 +102,8 @@ GGeo Geometry Model Objective
 Relationship to AssimpGeometry ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AssimpGeometry/AssimpTree orchestrates creation of GGeo model
+AssimpGGeo together with AssimpGeometry and AssimpTree 
+(all from AssimpWrap) orchestrate creation of GGeo model
 from the imported Assimp model. The OptiX model should then 
 be created entirely from the GGeo model with no use of 
 the Assimp model.

@@ -129,6 +129,8 @@ unsigned int AssimpGeometry::defaultProcessFlags()
     flags |=  aiProcess_JoinIdenticalVertices ;
     flags |=  aiProcess_SortByPType ;
 
+    //flags |=  aiProcess_GenNormals ;  // ADD Apr8 2015
+
     // above flags were used initially 
     // changing flags invalidates the accelcache, due to different geometry : so they are doing something 
     //
@@ -234,57 +236,6 @@ void AssimpGeometry::dumpMaterials(const char* query)
 {
     m_tree->dumpMaterials(query);
 }
-
-
-
-
-/*
-
-
-
-int AssimpGeometry::getQueryMerge()
-{
-    return m_tree->getQueryMerge();
-}
-int AssimpGeometry::getQueryDepth()
-{
-    return m_tree->getQueryDepth();
-}
-
-unsigned int AssimpGeometry::getNumSelected()
-{
-    return m_tree->getNumSelected();
-}
-AssimpNode* AssimpGeometry::getSelectedNode(unsigned int i)
-{
-    return m_tree->getSelectedNode(i);
-}
-aiVector3D* AssimpGeometry::getLow()
-{
-    return m_tree->getLow();
-}
-aiVector3D* AssimpGeometry::getHigh()
-{
-    return m_tree->getHigh();
-}
-aiVector3D* AssimpGeometry::getCenter()
-{
-    return m_tree->getCenter();
-}
-aiVector3D* AssimpGeometry::getExtent()
-{
-    return m_tree->getExtent();
-}
-aiVector3D* AssimpGeometry::getUp()
-{
-    return m_tree->getUp();
-}
-bool AssimpGeometry::isFlatSelection()
-{
-    return m_tree->isFlatSelection();
-}
-
-*/
 
 
 

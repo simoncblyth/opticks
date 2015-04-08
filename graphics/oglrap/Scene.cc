@@ -294,7 +294,7 @@ void Scene::setupView(int width, int height)
         print(gaze, "gaze");
         printf("gaze length %10.3f \n", glm::length(gaze));
     }
-    else if (m_draw_count % 100 == 0 )
+    else if (m_draw_count % 1000 == 0 )
     {
         m_trackball->Summary("Scene::setupView m_trackball");
     }

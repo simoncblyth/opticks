@@ -1,14 +1,19 @@
 #pragma once
 
+#include <vector>
+
 class Scene ; 
 class Camera ; 
 class View ; 
 class Trackball ;
 
+
 // maybe this belongs in oglrap- 
 
 class Interactor {
   public:
+       static const char* DRAGFACTOR ; 
+
        Interactor(); 
        void setScene(Scene* scene);
 
@@ -17,6 +22,8 @@ class Interactor {
        void key_pressed(unsigned int key);
        void key_released(unsigned int key);
        void Print(const char* msg);
+
+       void configureF(const char* name, std::vector<float> values);
 
   private:
        Scene*       m_scene ; 

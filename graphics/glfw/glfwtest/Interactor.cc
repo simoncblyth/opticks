@@ -8,6 +8,8 @@
 #include "Trackball.hh"
 
 
+const char* Interactor::DRAGFACTOR = "dragfactor" ; 
+
 Interactor::Interactor() 
    :
    m_scene(NULL),
@@ -23,6 +25,14 @@ Interactor::Interactor()
    m_dragfactor(1.f)
 {
 }
+
+
+void Interactor::configureF(const char* name, std::vector<float> values)
+{
+    printf("Interactor::configureF");
+}
+
+
 
 void Interactor::setScene(Scene* scene)
 {

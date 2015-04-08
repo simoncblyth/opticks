@@ -6,11 +6,11 @@ class TrackballCfg : public Cfg {
 public:
    TrackballCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
    {
-       addOptionF<Listener>(listener, "radius",          "Trackball radius");
-       addOptionF<Listener>(listener, "translatefactor", "Translation factor");
+       addOptionF<Listener>(listener, Listener::RADIUS,          "Trackball radius");
+       addOptionF<Listener>(listener, Listener::TRANSLATEFACTOR, "Translation factor");
 
-       addOptionS<Listener>(listener, "orientation",     "Comma delimited theta,phi in degress");
-       addOptionS<Listener>(listener, "translate",       "Comma delimited x,y,z translation triplet");
+       addOptionS<Listener>(listener, Listener::ORIENTATION,     "Comma delimited theta,phi in degress");
+       addOptionS<Listener>(listener, Listener::TRANSLATE,       "Comma delimited x,y,z translation triplet");
    }
 };
 

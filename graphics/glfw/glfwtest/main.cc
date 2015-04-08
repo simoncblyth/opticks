@@ -9,8 +9,10 @@
 #include "app.hh"
 #include "AppCfg.hh"
 
-#include "Interactor.hh"
 #include "Scene.hh"
+
+#include "Interactor.hh"
+#include "InteractorCfg.hh"
 #include "Camera.hh"
 #include "CameraCfg.hh"
 #include "View.hh"
@@ -43,6 +45,7 @@ int main(int argc, char** argv)
     cfg.add(new CameraCfg<Camera>("camera", scene.getCamera(), true));
     cfg.add(new ViewCfg<View>(    "view",   scene.getView(),   true));
     cfg.add(new TrackballCfg<Trackball>( "trackball",   scene.getTrackball(),   true));
+    cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
 
     cfg.commandline(argc, argv);
     delegate.liveConnect(&cfg);    
