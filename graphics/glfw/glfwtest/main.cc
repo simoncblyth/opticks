@@ -15,6 +15,8 @@
 #include "CameraCfg.hh"
 #include "View.hh"
 #include "ViewCfg.hh"
+#include "Trackball.hh"
+#include "TrackballCfg.hh"
 
 #include "numpydelegate.hh"
 #include "numpydelegateCfg.hh"
@@ -40,6 +42,7 @@ int main(int argc, char** argv)
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
     cfg.add(new CameraCfg<Camera>("camera", scene.getCamera(), true));
     cfg.add(new ViewCfg<View>(    "view",   scene.getView(),   true));
+    cfg.add(new TrackballCfg<Trackball>( "trackball",   scene.getTrackball(),   true));
 
     cfg.commandline(argc, argv);
     delegate.liveConnect(&cfg);    

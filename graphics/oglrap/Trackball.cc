@@ -6,6 +6,14 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+
+
+const char* Trackball::RADIUS = "radius" ;
+const char* Trackball::ORIENTATION = "orientation" ;
+const char* Trackball::TRANSLATE = "translate" ;
+const char* Trackball::TRANSLATEFACTOR = "translatefactor" ;
 
 
 glm::vec3 Trackball::getTranslation()
@@ -22,6 +30,90 @@ glm::mat4 Trackball::getCombinedMatrix()
 {
     return glm::translate( getOrientationMatrix(), glm::vec3(m_x, m_y, m_z));
 }
+
+
+void Trackball::configureF(const char* name, std::vector<float> values)
+{
+     if(values.empty())
+     {
+         printf("Trackball::configureF %s no values \n", name);
+     }
+     else         
+     {
+         float vlast = values.back() ;
+
+#ifdef VERBOSE
+         printf("Trackball::configureF %s : %lu values : ", name, values.size());
+         for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
+         printf(" : vlast %10.3f \n", vlast );
+#endif
+
+         if(      strcmp(name, RADIUS) ==  0)          setRadius(vlast);
+         else if( strcmp(name, TRANSLATEFACTOR) ==  0) setTranslateFactor(vlast);
+         else
+              printf("Trackball::configureF ignoring unknown parameter %s : %10.3f \n", name, vlast); 
+     }
+}
+ 
+
+void Trackball::configureS(const char* name, std::vector<std::string> values)
+{
+     if(values.empty())
+     {
+         printf("Trackball::configureS %s no values \n", name);
+     }
+     else         
+     {
+         std::string  vlast = values.back() ;
+
+#ifdef VERBOSE
+         printf("Trackball::configureS %s : %lu values : ", name, values.size());
+         for(size_t i=0 ; i < values.size() ; i++ ) printf("%20s ", values[i]);
+         printf(" : vlast %20s \n", vlast );
+#endif
+
+         if(      strcmp(name, TRANSLATE)   ==  0) setTranslate(vlast);
+         else if( strcmp(name, ORIENTATION) ==  0) setOrientation(vlast);
+         else
+              printf("Trackball::configureS ignoring unknown parameter %s : %s \n", name, vlast.c_str()); 
+     }
+}
+ 
+void Trackball::setOrientation(std::string _tp)
+{
+    std::vector<std::string> tp;
+    boost::split(tp, _tp, boost::is_any_of(","));
+
+    if(tp.size() == 2 )
+    {
+        float theta = boost::lexical_cast<float>(tp[0]); 
+        float phi   = boost::lexical_cast<float>(tp[1]); 
+        setOrientation(theta,phi);
+    }
+    else
+    {
+        printf("Trackball::setOrientation malformed _tp : %s \n", _tp.c_str() );
+    }
+}
+
+void Trackball::setTranslate(std::string _xyz)
+{
+    std::vector<std::string> xyz;
+    boost::split(xyz, _xyz, boost::is_any_of(","));
+
+    if(xyz.size() == 3 )
+    {
+        float x = boost::lexical_cast<float>(xyz[0]); 
+        float y = boost::lexical_cast<float>(xyz[1]); 
+        float z = boost::lexical_cast<float>(xyz[2]); 
+        setTranslate(x,y,z);
+    }
+    else
+    {
+        printf("Trackball::setTranslate malformed _xyz : %s \n", _xyz.c_str() );
+    }
+}
+
 
 
 

@@ -1,10 +1,19 @@
 #pragma once
 #include <glm/glm.hpp>  
 #include <glm/gtc/quaternion.hpp>
+#include <vector>
+#include <string>
 
 class Trackball {
 
    public:
+
+       static const char* RADIUS ;
+       static const char* ORIENTATION ;
+       static const char* TRANSLATE ;
+       static const char* TRANSLATEFACTOR ;
+
+
        Trackball() :
           m_radius(1.f),
           m_translatefactor(1.f)
@@ -29,6 +38,8 @@ class Trackball {
            m_x += dx*m_translatefactor ;
            m_y += dy*m_translatefactor ;
        } 
+
+  public:
        void setRadius(float r)
        {
            m_radius = r ; 
@@ -37,7 +48,17 @@ class Trackball {
        {
            m_translatefactor = tf ; 
        }
+       void setTranslate(std::string xyz);
+       void setTranslate(float x, float y, float z)
+       {
+           m_x = x;
+           m_y = y;
+           m_z = z;
+       }
+       void configureF(const char* name, std::vector<float> values);
+       void configureS(const char* name, std::vector<std::string> values);
 
+       void setOrientation(std::string tp);
        void setOrientation(float theta, float phi);
        void setOrientation(glm::quat& q);
 

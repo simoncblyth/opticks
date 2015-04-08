@@ -39,6 +39,7 @@ add_definitions(
 add_library( ${name}  SHARED
                 Scene.cc
                 Trackball.cc
+                TrackballCfg.cc
                 Camera.cc
                 CameraCfg.cc
                 View.cc
@@ -75,6 +76,7 @@ install(TARGETS ${name} DESTINATION lib)
 SET(hdrs 
 Scene.hh
 Trackball.hh
+TrackballCfg.hh
 Camera.hh
 CameraCfg.hh
 View.hh

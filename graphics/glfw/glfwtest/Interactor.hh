@@ -29,6 +29,8 @@ class Interactor {
        bool m_near_mode ;
        bool m_far_mode ;
        bool m_yfov_mode ;
+       bool m_rotate_mode ;
+
        float m_dragfactor ;
 
 };
