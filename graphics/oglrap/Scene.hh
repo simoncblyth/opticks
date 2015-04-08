@@ -5,6 +5,7 @@
 class Shader ; 
 class Camera ;
 class View ;
+class Trackball ; 
 
 // ggeo- coupling :
 //    difficult to avoid the renderer knowing about the geometry
@@ -26,7 +27,7 @@ class Scene {
 
   public: 
       void load(const char* envprefix);
-      void init();
+      void init_opengl();
       void draw(int width, int height);
 
   public: 
@@ -37,12 +38,14 @@ class Scene {
   public: 
       void setGeometry(GDrawable* geometry);
       void setCamera(Camera* camera);
+      void setTrackball(Trackball* trackball);
       void setView(View* view);
 
       float* getModelToWorld();
       GDrawable* getGeometry(); 
       Camera* getCamera(); 
       View* getView(); 
+      Trackball* getTrackball(); 
 
       void setupView(int width, int height);
 
@@ -62,6 +65,7 @@ class Scene {
 
   private:
       GDrawable* m_geometry ;
+      Trackball* m_trackball ;
       Camera* m_camera ;
       View*   m_view ;
       Shader* m_shader ;

@@ -10,6 +10,7 @@
 
 #include "app.hh"
 #include "Scene.hh"
+#include "Interactor.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -43,7 +44,11 @@ static void error_callback(int error, const char* description)
 App::App() : 
      m_title(NULL),
      m_window(NULL),
-     m_scene(NULL)
+     m_scene(NULL),
+     m_interactor(NULL),
+     m_cursor_inwindow(true),
+     m_cursor_x(-1.f),
+     m_cursor_y(-1.f)
 {
 }
 
@@ -99,8 +104,16 @@ void App::setScene(Scene* scene)
 {
     m_scene = scene ;
 }
+void App::setInteractor(Interactor* interactor)
+{
+    m_interactor = interactor ;
+}
 
-void App::init()
+
+
+
+
+void App::init_window()
 {
     glfwSetErrorCallback(error_callback);
 
@@ -203,8 +216,43 @@ void App::handle_event(GLEQevent& event)
         case GLEQ_BUTTON_PRESSED:
         case GLEQ_BUTTON_RELEASED:
         case GLEQ_CURSOR_MOVED:
+             if(m_cursor_inwindow)
+             {
+                  float cursor_dx = m_cursor_x > 0. ? event.pos.x - m_cursor_x : 0.f ; 
+                  float cursor_dy = m_cursor_y > 0. ? event.pos.y - m_cursor_y : 0.f ; 
+
+                  m_cursor_x = event.pos.x ;
+                  m_cursor_y = event.pos.y ;
+
+                  //printf("Cursor x,y %0.2f,%0.2f dx,dy  %0.2f,%0.2f \n", m_cursor_x, m_cursor_y, cursor_dx, cursor_dy );
+                  //
+                  // adjust to -1:1 -1:1 range with
+                  // 
+                  //       top right at (1,1)
+                  //       middle       (0,0)
+                  //       bottom left  (-1,-1)
+                  //
+
+                  float x = (2.*m_cursor_x - m_width)/m_width ;
+                  float y = (m_height - 2.*m_cursor_y)/m_height ;
+ 
+                  float dx = 2.*cursor_dx/m_width  ;
+                  float dy = -2.*cursor_dy/m_height ;
+
+                  //printf(" x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
+
+                  m_interactor->cursor_drag( x, y, dx, dy );
+
+             }
+             break;
         case GLEQ_CURSOR_ENTERED:
+             m_cursor_inwindow = true ;
+             printf("Cursor entered window\n");
+             break;
         case GLEQ_CURSOR_LEFT:
+             m_cursor_inwindow = false ;
+             printf("Cursor left window\n");
+             break;
         case GLEQ_SCROLLED:
         case GLEQ_KEY_PRESSED:
              key_pressed(event.key.key );
@@ -212,6 +260,9 @@ void App::handle_event(GLEQevent& event)
 
         case GLEQ_KEY_REPEATED:
         case GLEQ_KEY_RELEASED:
+             key_released(event.key.key );
+             break;
+
         case GLEQ_CHARACTER_INPUT:
         case GLEQ_FILE_DROPPED:
         case GLEQ_NONE:
@@ -221,14 +272,28 @@ void App::handle_event(GLEQevent& event)
 
 void App::key_pressed(unsigned int key)
 {
-    switch (key)
+    printf("App::key_pressed %u \n", key);
+
+    if( key == GLFW_KEY_ESCAPE)
     {
-        case GLFW_KEY_ESCAPE:
-            printf("escape\n");
-            glfwSetWindowShouldClose (m_window, 1);
-            break;
+        printf("App::key_pressed escape\n");
+        glfwSetWindowShouldClose (m_window, 1);
     }
+    else
+    {
+        m_interactor->key_pressed(key);
+    }
+
 }  
+
+void App::key_released(unsigned int key)
+{
+    //printf("App::key_released %u \n", key);
+    m_interactor->key_released(key);
+}  
+ 
+
+
  
 void App::dump_event(GLEQevent& event)
 {

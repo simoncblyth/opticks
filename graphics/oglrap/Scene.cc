@@ -3,6 +3,7 @@
 #include "Scene.hh"
 #include "Shader.hh"
 #include "Camera.hh"
+#include "Trackball.hh"
 #include "View.hh"
 #include "Common.hh"
 
@@ -33,12 +34,14 @@ Scene::Scene()
   m_shaderdir(NULL),
   m_camera(NULL),
   m_view(NULL),
+  m_trackball(NULL),
   m_geometry(NULL),
   m_draw_count(0)
 
 {
-  m_camera = new Camera(1024, 768) ;
+  m_camera = new Camera() ;
   m_view   = new View() ;
+  m_trackball = new Trackball() ;
 }
 
 Scene::~Scene()
@@ -66,6 +69,19 @@ View* Scene::getView()
 {
     return m_view ;
 }
+
+void Scene::setTrackball(Trackball* trackball)
+{
+    m_trackball = trackball ;
+}
+Trackball* Scene::getTrackball()
+{
+    return m_trackball ;
+}
+
+
+
+
 void Scene::setGeometry(GDrawable* geometry)
 {
     m_geometry = geometry ;
@@ -128,7 +144,7 @@ void Scene::dump(const char* msg)
     m_shader->dump(msg);
 }
 
-void Scene::init()
+void Scene::init_opengl()
 {
     // as there are two GL_ARRAY_BUFFER for vertices and colors need
     // to bind them again (despite bound in upload) in order to 
@@ -213,8 +229,12 @@ void Scene::setupView(int width, int height)
     glm::mat4 projection;
     glm::mat4 M2W ;
     glm::mat4 scale ;
-    glm::vec4 gaze ;
 
+    glm::mat4 shunt_to_look ;
+    glm::mat4 rotate_around_look ;
+    glm::mat4 shunt_back_to_eye ;
+
+    glm::vec4 gaze ;
 
     // view inputs are in model coordinates (model coordinates are all within -1:1)
     // model_to_world matrix constructed from geometry center and extent
@@ -224,20 +244,28 @@ void Scene::setupView(int width, int height)
     //m_view->setLook(0,0,0);
     //m_view->setUp(0,1,0);
 
-
     //scale = glm::scale(glm::vec3(1.0f/1000.f))  ;
     M2W = glm::make_mat4(m_model_to_world);
     lookat = m_view->getLookAt(M2W, m_draw_count == 0);
     gaze = m_view->getGaze(M2W, m_draw_count == 0);
 
+    float gazelen = glm::length(gaze);
 
-    //m_camera->setYfov(100);
     m_camera->setSize(width, height);    
-    //m_camera->setParallel(false);
 
     projection = m_camera->getProjection();
 
-    MVP = projection * lookat ;
+    // # look is at (0,0,-gazelen) in eye frame, so here we shunt to the look and back again
+
+    shunt_to_look = glm::translate( glm::mat4(1.), glm::vec3(0,0,gazelen));
+
+    //rotate_around_look = m_trackball->getOrientationMatrix();
+    rotate_around_look = m_trackball->getCombinedMatrix();
+
+    shunt_back_to_eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-gazelen));
+
+
+    MVP = projection * shunt_back_to_eye * rotate_around_look * shunt_to_look * lookat ;
 
     glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(MVP));
 
@@ -255,6 +283,7 @@ void Scene::setupView(int width, int height)
 
     if(m_draw_count == 0)
     {
+        m_trackball->Summary("Scene::setupView m_trackball");
         m_camera->Summary("Scene::setupView m_camera");
         m_view->Summary("Scene::setupView m_view");
 
@@ -265,6 +294,11 @@ void Scene::setupView(int width, int height)
         print(gaze, "gaze");
         printf("gaze length %10.3f \n", glm::length(gaze));
     }
+    else if (m_draw_count % 100 == 0 )
+    {
+        m_trackball->Summary("Scene::setupView m_trackball");
+    }
+
 }
 
 

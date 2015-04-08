@@ -58,6 +58,7 @@ add_executable( ${name}
                 main.cc 
                 app.cc
                 numpydelegate.cc
+                Interactor.cc
 ) 
 
 

@@ -35,6 +35,26 @@ class Camera {
      glm::mat4 getFrustum();
 
 
+     void near_to( float x, float y, float dx, float dy )
+     {
+         setNear(m_near + m_near*dy );
+         printf("Camera::near_to %10.3f \n", m_near);
+     }
+
+     void far_to( float x, float y, float dx, float dy )
+     {
+         setFar(m_far + m_far*dy );
+         printf("Camera::far_to %10.3f \n", m_far);
+     }
+
+     void yfov_to( float x, float y, float dx, float dy )
+     {
+         setYfov(m_yfov + 50.*dy) ;
+         printf("Camera::yfov_to %10.3f \n", m_yfov);
+     }
+
+
+
      void configureF(const char* name, std::vector<float> values);
      void configureI(const char* name, std::vector<int> values);
      void configureS(const char* name, std::vector<std::string> values);

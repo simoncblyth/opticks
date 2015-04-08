@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include  <glm/gtc/matrix_transform.hpp>  
+#include  <glm/gtc/quaternion.hpp>  
 
 
 void print(const glm::mat4& m, const char* msg)
@@ -14,6 +15,13 @@ void print(const glm::mat4& m, const char* msg)
         for (int i=0; i<4; i++) printf("%10.3f ",m[i][j]);
         printf("\n");
     }
+}
+
+
+
+void print(const glm::quat& q, const char* msg)
+{
+    printf("%15s  quat{ %10.3f : %10.3f %10.3f %10.3f } \n", msg, q.w, q.x, q.y, q.z);
 }
 
 

@@ -9,6 +9,7 @@
 #include "app.hh"
 #include "AppCfg.hh"
 
+#include "Interactor.hh"
 #include "Scene.hh"
 #include "Camera.hh"
 #include "CameraCfg.hh"
@@ -20,11 +21,17 @@
 #include "numpyserver.hpp"
 
 
+
 int main(int argc, char** argv)
 {
-    App app ;
+    App app ;  // misnomer : more like window Frame
     numpydelegate delegate ; 
     Scene scene ;  // just instanciates Camera and View, allowing config hookup 
+    Interactor interactor ; 
+
+    interactor.setScene(&scene);
+    app.setScene(&scene);
+    app.setInteractor(&interactor);
 
     AppCfg<App>* appcfg = new AppCfg<App>("app", &app, false);
 
@@ -42,13 +49,12 @@ int main(int argc, char** argv)
 
     numpyserver<numpydelegate> srv(&delegate);
 
-    app.setScene(&scene);
     app.setSize(640,480);
     app.setTitle("Demo");
-    app.init();
+    app.init_window();
 
     scene.load("GLFWTEST_") ;
-    scene.init();
+    scene.init_opengl();
 
     GLFWwindow* window = app.getWindow();
 
