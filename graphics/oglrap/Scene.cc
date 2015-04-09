@@ -143,7 +143,8 @@ void Scene::load(const char* envprefix)
     assert(geo);
     geo->setColor(0.5,0.5,1.0);
     geo->Summary("Scene::load Sumary");
-    //geo->Dump("Scene::load Dump");
+    geo->Dump("Scene::load Dump");
+    
 
     setGeometry(geo);
 }
@@ -153,6 +154,7 @@ void Scene::dump(const char* msg)
 {
     printf("%s\n", msg );
     printf("vertices  %u \n", m_vertices);
+    printf("normals   %u \n", m_normals);
     printf("colors    %u \n", m_colors);
     printf("indices   %u \n", m_indices);
     printf("nelem     %d \n", m_indices_count);
@@ -187,13 +189,15 @@ void Scene::init_opengl()
     glBindVertexArray (m_vao);     
 
     GBuffer* vbuf = m_geometry->getVerticesBuffer();
+    GBuffer* nbuf = m_geometry->getNormalsBuffer();
     GBuffer* cbuf = m_geometry->getColorsBuffer();
     GBuffer* ibuf = m_geometry->getIndicesBuffer();
 
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
-    assert(vbuf->getNumBytes() == cbuf->getNumBytes());
+    assert(nbuf->getNumBytes() == cbuf->getNumBytes());
 
     m_vertices = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf );
+    m_normals  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf );
     m_colors   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf );
 
     m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf );
@@ -208,7 +212,11 @@ void Scene::init_opengl()
 
     glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
     glVertexAttribPointer(vPosition, vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vPosition);   
+    glEnableVertexAttribArray (vPosition);  
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_normals);
+    glVertexAttribPointer(vNormal, nbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vNormal);  
 
     glBindBuffer (GL_ARRAY_BUFFER, m_colors);
     glVertexAttribPointer(vColor, cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
@@ -219,6 +227,7 @@ void Scene::init_opengl()
     m_shader = new Shader(getShaderDir());
     m_program = m_shader->getId();
     m_mvp_location = m_shader->getMVPLocation();
+    m_mv_location = m_shader->getMVLocation();
 
     glUseProgram (m_program);       
 
@@ -241,6 +250,7 @@ void Scene::draw(int width, int height)
 
 void Scene::setupView(int width, int height)
 {
+    glm::mat4 MV;
     glm::mat4 MVP;
     glm::mat4 lookat;
     glm::mat4 projection;
@@ -282,8 +292,10 @@ void Scene::setupView(int width, int height)
     shunt_back_to_eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-gazelen));
 
 
-    MVP = projection * shunt_back_to_eye * rotate_around_look * shunt_to_look * lookat ;
+    MV = shunt_back_to_eye * rotate_around_look * shunt_to_look * lookat ;
+    MVP = projection * MV ;
 
+    glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(MV));
     glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(MVP));
 
     // chain of transforms   

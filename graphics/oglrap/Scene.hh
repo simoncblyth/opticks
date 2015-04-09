@@ -21,7 +21,7 @@ class Scene {
   public:
 
   static const char* PRINT ;  
-  enum Attrib_IDs { vPosition=0, vColor=1 };
+  enum Attrib_IDs { vPosition=0, vColor=1, vNormal=2 };
 
   public:
       Scene();
@@ -60,8 +60,10 @@ class Scene {
       GLuint m_vao ; 
       GLuint m_program ;
       GLuint m_vertices ;
+      GLuint m_normals ;
       GLuint m_colors ;
       GLuint m_indices ;
+      GLint  m_mv_location ;
       GLint  m_mvp_location ;
       long   m_draw_count ;
       GLsizei m_indices_count ;

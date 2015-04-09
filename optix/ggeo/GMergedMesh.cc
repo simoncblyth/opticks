@@ -12,7 +12,7 @@ GMergedMesh::GMergedMesh(GMergedMesh* other)
 
 GMergedMesh::GMergedMesh(unsigned int index)
        : 
-       GMesh(index, NULL, 0, NULL, 0 ),
+       GMesh(index, NULL, 0, NULL, 0, NULL),
        m_cur_vertices(0),
        m_cur_faces(0)
 {
@@ -32,6 +32,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->traverse( solid, 0, pass_count ); 
 
     mm->setVertices(new gfloat3[mm->getNumVertices()]);
+    mm->setNormals( new gfloat3[mm->getNumVertices()]);
     mm->setColors(  new gfloat3[mm->getNumVertices()]);
     mm->setFaces(   new guint3[mm->getNumFaces()]);
 
@@ -68,6 +69,14 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
             for(unsigned int i=0 ; i<nvert ; ++i )
             {
                 m_vertices[m_cur_vertices+i] = vertices[i] ; 
+            }
+
+            // TODO: fix transform as : when scaling in play normal transform needs to be transpose of the inverse
+            //gfloat3* normals = mesh->getTransformedNormals(*transform);  
+            gfloat3* normals = mesh->getNormals();  
+            for(unsigned int i=0 ; i<nvert ; ++i )
+            {
+                m_normals[m_cur_vertices+i] = normals[i] ; 
             }
 
             guint3* faces = mesh->getFaces();

@@ -16,12 +16,14 @@ GMesh::GMesh(GMesh* other)
      m_colors(other->getColors()),
      m_colors_buffer(other->getColorsBuffer()),
      m_num_colors(other->getNumColors()),
+     m_normals(other->getNormals()),
+     m_normals_buffer(other->getNormalsBuffer()),
      GDrawable()
 {
    updateBounds();
 }
 
-GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces) 
+GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces, gfloat3* normals ) 
       :
       m_index(index),
       m_vertices(NULL),
@@ -39,12 +41,15 @@ GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, g
       m_model_to_world(NULL),
       m_extent(0.f),
       m_num_colors(num_vertices),  // tie num_colors to num_vertices
+      m_normals(NULL),
+      m_normals_buffer(NULL),
       GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 
 
    setVertices(vertices);
    setFaces(faces);
+   setNormals(normals);
    updateBounds();
 }
 
@@ -103,6 +108,13 @@ gfloat3* GMesh::getVertices()
 {
     return m_vertices ;
 }
+gfloat3* GMesh::getNormals()
+{
+    return m_normals ;
+}
+
+
+
 gfloat3* GMesh::getColors()
 {
     return m_colors ;
@@ -117,6 +129,13 @@ GBuffer* GMesh::getVerticesBuffer()
 {
     return m_vertices_buffer ;
 }
+GBuffer* GMesh::getNormalsBuffer()
+{
+    return m_normals_buffer ;
+}
+
+
+
 GBuffer* GMesh::getColorsBuffer()
 {
     return m_colors_buffer ;
@@ -139,6 +158,13 @@ void GMesh::setVertices(gfloat3* vertices)
     m_vertices_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_vertices, sizeof(gfloat3), 3 ) ;
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
+void GMesh::setNormals(gfloat3* normals)
+{
+    m_normals = normals ;
+    m_normals_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_normals, sizeof(gfloat3), 3 ) ;
+    assert(sizeof(gfloat3) == sizeof(float)*3);
+}
+
 void GMesh::setFaces(guint3* faces)
 {
     m_faces = faces ;
@@ -184,20 +210,27 @@ void GMesh::setHigh(gfloat3* high)
 GMesh::~GMesh()
 {
 }
-void GMesh::Dump(const char* msg)
+void GMesh::Dump(const char* msg, unsigned int nmax)
 {
     printf("%s\n", msg);
-    for(unsigned int i=0 ; i < m_num_vertices ; i++)
+    for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
     {
         gfloat3& vtx = m_vertices[i] ;
         printf(" vtx %5u  %10.3f %10.3f %10.3f \n", i, vtx.x, vtx.y, vtx.z );
     } 
-    for(unsigned int i=0 ; i < m_num_colors ; i++)
+
+    for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
+    {
+        gfloat3& nrm = m_normals[i] ;
+        printf(" nrm %5u  %10.3f %10.3f %10.3f \n", i, nrm.x, nrm.y, nrm.z );
+    } 
+
+    for(unsigned int i=0 ; i < std::min(nmax,m_num_colors) ; i++)
     {
         gfloat3& col = m_colors[i] ;
         printf(" col %5u  %10.3f %10.3f %10.3f \n", i, col.x, col.y, col.z );
     } 
-    for(unsigned int i=0 ; i < m_num_faces ; i++)
+    for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
     {
         guint3& fac = m_faces[i] ;
         printf(" fac %5u  %5u %5u %5u \n", i, fac.x, fac.y, fac.z );
@@ -326,6 +359,25 @@ gfloat3* GMesh::getTransformedVertices(GMatrixF& transform )
      }   
      return vertices ;
 }
+
+gfloat3* GMesh::getTransformedNormals(GMatrixF& transform )
+{
+     gfloat3* normals = new gfloat3[m_num_vertices];
+     for(unsigned int i = 0; i < m_num_vertices; i++)
+     {  
+         normals[i].x = m_normals[i].x ;   
+         normals[i].y = m_normals[i].y ;   
+         normals[i].z = m_normals[i].z ;   
+
+         normals[i] *= transform ;  // HMM THIS NEEDS TO BE A DIFFERENT TRANSFORM FOR NORMALS , AS THEY ARE DIRECTIONS ?
+     }   
+     return normals ;
+}
+
+
+
+
+
 
 
 

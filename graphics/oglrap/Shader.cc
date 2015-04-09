@@ -257,6 +257,9 @@ void Shader::init(const std::string& vert, const std::string& frag)
     m_mvp_location = glGetUniformLocation(m_program, "ModelViewProjection");
     assert(m_mvp_location > -1);
 
+    m_mv_location = glGetUniformLocation(m_program, "ModelView");
+    assert(m_mv_location > -1);
+
     assert( isValid() );
 } 
 
@@ -265,11 +268,18 @@ GLint Shader::getMVPLocation()
 {
     return m_mvp_location ; 
 }
+GLint Shader::getMVLocation()
+{
+    return m_mv_location ; 
+}
+
+
 
 void Shader::dump(const char* msg)
 {
     printf("%s Shader::dump\n", msg);
     printf("m_mvp_location %d \n", m_mvp_location );
+    printf("m_mv_location %d \n", m_mv_location );
     print_all(m_program);
 }
 

@@ -299,11 +299,16 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
 void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query)
 {
+    printf("AssimpGGeo::convertMeshes NumMeshes %d \n", scene->mNumMeshes );
+
     for(unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
 
         aiMesh* mesh = scene->mMeshes[i] ;
+
         unsigned int numVertices = mesh->mNumVertices;
+        //printf("AssimpGGeo::convertMeshes mesh %3u vert %5d normals? %d \n", i, mesh->mNumVertices, mesh->HasNormals() );
+        assert(mesh->HasNormals()); 
 
         aiVector3D* vertices = mesh->mVertices ; 
         gfloat3* gvertices = new gfloat3[numVertices];
@@ -315,6 +320,21 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
             gvertices[v].z = vertices[v].z;
         }
 
+        aiVector3D* normals = mesh->mNormals ; 
+        gfloat3* gnormals  = new gfloat3[numVertices];
+        for(unsigned int v = 0; v < mesh->mNumVertices; v++)
+        {
+            gnormals[v].x = normals[v].x;
+            gnormals[v].y = normals[v].y;
+            gnormals[v].z = normals[v].z;
+/*
+            printf("AssimpGGeo::convertMeshes  %u gnormals   %15.3f %15.3f %15.3f  \n", v, 
+                  gnormals[v].x ,  
+                  gnormals[v].y ,  
+                  gnormals[v].z );  
+*/
+
+        }
 
         unsigned int numFaces = mesh->mNumFaces;
         aiFace* faces = mesh->mFaces ; 
@@ -329,7 +349,7 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
         }
 
 
-        GMesh* gmesh = new GMesh( i, gvertices, numVertices, gfaces, numFaces ); 
+        GMesh* gmesh = new GMesh( i, gvertices, numVertices, gfaces, numFaces, gnormals ); 
         gg->add(gmesh);
     }
 }

@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 
     //ggeo->Summary("main");    
 
-    GSubstanceLib* lib = ggeo->getSubstanceLib();
-    lib->Summary("GSubstanceLib");
+    //GSubstanceLib* lib = ggeo->getSubstanceLib();
+    //lib->Summary("GSubstanceLib");
 
     GMergedMesh* mm = ggeo->getMergedMesh();
     mm->Summary("GMergedMesh");

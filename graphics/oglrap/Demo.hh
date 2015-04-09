@@ -6,6 +6,7 @@
 class Demo : public GMesh {
   private:
       static const float pvertex[] ;
+      static const float pnormal[] ;
       static const float pcolor[] ;
       static const unsigned int pindex[] ;
   public:

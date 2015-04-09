@@ -12,12 +12,13 @@ class GMesh : public GDrawable {
       GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index, 
             gfloat3* vertices, unsigned int num_vertices, 
-            guint3*  faces,     unsigned int num_faces );
+            guint3*  faces,     unsigned int num_faces,  
+            gfloat3* normals );
       virtual ~GMesh();
 
   public:
       void Summary(const char* msg="GMesh::Summary");
-      void Dump(const char* msg="GMesh::Dump");
+      void Dump(const char* msg="GMesh::Dump", unsigned int nmax=10);
       unsigned int getIndex();
       gfloat3* getLow();
       gfloat3* getHigh();
@@ -32,12 +33,14 @@ class GMesh : public GDrawable {
       unsigned int getNumColors();
       unsigned int getNumFaces();
       gfloat3* getVertices();
+      gfloat3* getNormals();
       gfloat3* getColors();
       guint3*  getFaces();
 
   public:
       // Buffer access for GDrawable protocol
       GBuffer* getVerticesBuffer();
+      GBuffer* getNormalsBuffer();
       GBuffer* getColorsBuffer();
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
@@ -46,6 +49,7 @@ class GMesh : public GDrawable {
       void setLow(gfloat3* low);
       void setHigh(gfloat3* high);
       void setVertices(gfloat3* vertices);
+      void setNormals(gfloat3* normals);
       void setColors(gfloat3* colors);
       void setFaces(guint3* faces);
 
@@ -55,6 +59,7 @@ class GMesh : public GDrawable {
  
   public:
        gfloat3* getTransformedVertices(GMatrixF& transform );
+       gfloat3* getTransformedNormals(GMatrixF& transform );
 
   public:
       void updateBounds();
@@ -66,6 +71,7 @@ class GMesh : public GDrawable {
       unsigned int m_num_colors ;
       unsigned int m_num_faces ; 
       gfloat3* m_vertices ;
+      gfloat3* m_normals ;
       gfloat3* m_colors ;
       guint3*  m_faces ;
       gfloat3* m_low ;
@@ -77,6 +83,7 @@ class GMesh : public GDrawable {
 
   private:
       GBuffer* m_vertices_buffer ;
+      GBuffer* m_normals_buffer ;
       GBuffer* m_colors_buffer ;
       GBuffer* m_indices_buffer ;
       GBuffer* m_model_to_world_buffer ;

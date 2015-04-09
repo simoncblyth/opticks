@@ -37,12 +37,21 @@ const float Demo::pcolor[] = {
   0.0f, 0.0f,  1.0f
 };
 
+const float Demo::pnormal[] = {
+  0.0f, 0.0f,  1.0f,
+  0.0f, 0.0f,  1.0f,
+  0.0f, 0.0f,  1.0f
+};
+
+
+
+
 const unsigned int Demo::pindex[] = {
       0,  1,  2
 };
 
 
-Demo::Demo() : GMesh(0, (gfloat3*)&pvertex[0],3, (guint3*)&pindex[0],1) 
+Demo::Demo() : GMesh(0, (gfloat3*)&pvertex[0],3, (guint3*)&pindex[0],1, (gfloat3*)&pnormal[0]) 
 {
     setColors( (gfloat3*)&pcolor[0] );
 }
