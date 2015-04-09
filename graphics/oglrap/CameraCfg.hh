@@ -6,10 +6,12 @@ class CameraCfg : public Cfg {
 public:
    CameraCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
    {
-       addOptionF<Listener>(listener, "yfov",     "Vertical Field of view in degrees");
-       addOptionF<Listener>(listener, "near",     "Near distance");
-       addOptionF<Listener>(listener, "far",      "Far distance" );
-       addOptionF<Listener>(listener, "parallel", "Parallel or perspective");
+       addOptionI<Listener>(listener, Listener::PRINT,    "Print");
+
+       addOptionF<Listener>(listener, Listener::YFOV,     "Vertical Field of view in degrees");
+       addOptionF<Listener>(listener, Listener::NEAR,     "Near distance");
+       addOptionF<Listener>(listener, Listener::FAR,      "Far distance" );
+       addOptionF<Listener>(listener, Listener::PARALLEL, "Parallel or perspective");
    }
 };
 

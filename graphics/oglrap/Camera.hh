@@ -10,6 +10,7 @@
 class Camera {
   public:
 
+     static const char* PRINT ; 
      static const char* NEAR ; 
      static const char* FAR ; 
      static const char* YFOV ; 

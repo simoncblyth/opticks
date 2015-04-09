@@ -10,7 +10,7 @@
 #include "AppCfg.hh"
 
 #include "Scene.hh"
-
+#include "SceneCfg.hh"
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 #include "Camera.hh"
@@ -35,13 +35,14 @@ int main(int argc, char** argv)
 
     interactor.setScene(&scene);
     app.setScene(&scene);
-    app.setInteractor(&interactor);
+    app.setInteractor(&interactor);  // TODO: decide on who contains who
 
     AppCfg<App>* appcfg = new AppCfg<App>("app", &app, false);
 
     Cfg cfg("unbrella", false) ;  // collect other Cfg objects
     cfg.add(appcfg);
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
+    cfg.add(new SceneCfg<Scene>("scene", &scene, true));
     cfg.add(new CameraCfg<Camera>("camera", scene.getCamera(), true));
     cfg.add(new ViewCfg<View>(    "view",   scene.getView(),   true));
     cfg.add(new TrackballCfg<Trackball>( "trackball",   scene.getTrackball(),   true));

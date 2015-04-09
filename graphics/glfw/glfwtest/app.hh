@@ -15,11 +15,13 @@ class App {
        App();
        virtual ~App();
        
+       void configureI(const char* name, std::vector<int> values);
        void configureS(const char* name, std::vector<std::string> values);
        void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
        void setTitle(const char* title);
        void setScene(Scene* scene);
        void setInteractor(Interactor* interactor);
+       void setDumpevent(int dumpevent);
 
        void init_window();
        void exit();
@@ -48,6 +50,7 @@ class App {
        bool          m_cursor_inwindow ; 
        float         m_cursor_x ; 
        float         m_cursor_y ; 
+       unsigned int  m_dumpevent ; 
 
 
 };

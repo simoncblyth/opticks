@@ -27,6 +27,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+const char* Scene::PRINT = "print" ; 
+
 Scene::Scene()
  
   :
@@ -47,6 +49,21 @@ Scene::Scene()
 Scene::~Scene()
 {
 }
+
+
+void Scene::configureI(const char* name, std::vector<int> values )
+{
+    printf("Scene::configureI\n");
+    if(values.empty()) return ; 
+    if(strcmp(name, PRINT)==0)
+    {
+        //int print = values.back();
+        Print("Scene::configureI");
+    }
+
+}
+
+
 
 float* Scene::getModelToWorld()
 {
@@ -294,12 +311,20 @@ void Scene::setupView(int width, int height)
         print(gaze, "gaze");
         printf("gaze length %10.3f \n", glm::length(gaze));
     }
-    else if (m_draw_count % 1000 == 0 )
-    {
-        m_trackball->Summary("Scene::setupView m_trackball");
-    }
+    //else if (m_draw_count % 1000 == 0 )
+    //{
+    //    m_trackball->Summary("Scene::setupView m_trackball");
+    //}
 
 }
 
+
+void Scene::Print(const char* msg)
+{
+    printf("%s\n", msg);
+    m_trackball->Summary("m_trackball");
+    m_camera->Summary("m_camera");
+    m_view->Summary("m_view");
+}
 
 

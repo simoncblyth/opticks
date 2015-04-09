@@ -48,7 +48,8 @@ App::App() :
      m_interactor(NULL),
      m_cursor_inwindow(true),
      m_cursor_x(-1.f),
-     m_cursor_y(-1.f)
+     m_cursor_y(-1.f),
+     m_dumpevent(0)
 {
 }
 
@@ -57,7 +58,22 @@ App::~App()
     free((void*)m_title);
 }
 
+void App::setDumpevent(int dumpevent)
+{
+    m_dumpevent = dumpevent ; 
+}
 
+void App::configureI(const char* name, std::vector<int> values)
+{
+   if(values.empty()) return;
+   int last = values.back(); 
+
+   if(strcmp(name,"dumpevent")==0)
+   {
+       setDumpevent(last);
+   }
+
+}
 
 void App::configureS(const char* name, std::vector<std::string> values)
 {
@@ -163,7 +179,7 @@ void App::listen()
     GLEQevent event;
     while (gleqNextEvent(&event))
     {
-        //dump_event(event);
+        if(m_dumpevent) dump_event(event);
         handle_event(event);
         gleqFreeEvent(&event);
     }
@@ -239,9 +255,22 @@ void App::handle_event(GLEQevent& event)
                   float dx = 2.*cursor_dx/m_width  ;
                   float dy = -2.*cursor_dy/m_height ;
 
-                  //printf(" x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
+                  // problem with this is how to end the drag, lifting finger and tapping 
+                  // screen comes over as sudden large drag, causing large trackball rotations
+                  //
+                  // so try a reset of the cursor position to being "undefined" when a jump is detected 
+                  //
+                  if(abs(dx) > 0.1 || abs(dy) > 0.1) 
+                  { 
+                      printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
+                      m_cursor_x = -1.f ; 
+                      m_cursor_y = -1.f ; 
+                  }
+                  else
+                  {
+                      m_interactor->cursor_drag( x, y, dx, dy );
+                  }
 
-                  m_interactor->cursor_drag( x, y, dx, dy );
 
              }
              break;

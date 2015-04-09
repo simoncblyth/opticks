@@ -67,11 +67,11 @@ void Cfg::liveline(const char* _line)
 {
     if(m_others.empty())
     {
-        printf("Cfg::liveline %s \n", _line);
         std::vector<std::string> unrecognized = parse_liveline(_line);
-//#ifdef VERBOSE
-        dump(unrecognized, "unrecognized after parse_liveline"); 
-//#endif
+#ifdef VERBOSE
+        printf("Cfg::liveline %s \n", _line);
+        dump(unrecognized, "Cfg::liveline unrecognized "); 
+#endif
     }
     else
     {

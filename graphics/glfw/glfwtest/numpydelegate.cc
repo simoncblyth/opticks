@@ -83,7 +83,7 @@ void numpydelegate::liveConnect(Cfg* cfg)
 
 void numpydelegate::interpretExternalMessage(std::string msg)
 {
-    printf("numpydelegate::interpretExternalMessage %s \n", msg.c_str());
+    //printf("numpydelegate::interpretExternalMessage %s \n", msg.c_str());
     for(size_t i=0 ; i<m_live_cfg.size() ; ++i)
     {
         Cfg* cfg = m_live_cfg[i];

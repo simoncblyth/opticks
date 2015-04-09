@@ -38,6 +38,7 @@ add_definitions(
 
 add_library( ${name}  SHARED
                 Scene.cc
+                SceneCfg.cc
                 Trackball.cc
                 TrackballCfg.cc
                 Camera.cc
@@ -66,6 +67,7 @@ target_link_libraries( ${name}Test
       ${GGeo_LIBRARIES}
       ${AssimpWrap_LIBRARIES}
       ${Boost_LIBRARIES}
+      ${Cfg_LIBRARIES}
       ${name}
 )
 
@@ -75,6 +77,7 @@ install(TARGETS ${name} DESTINATION lib)
 
 SET(hdrs 
 Scene.hh
+SceneCfg.hh
 Trackball.hh
 TrackballCfg.hh
 Camera.hh

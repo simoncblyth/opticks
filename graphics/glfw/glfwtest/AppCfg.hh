@@ -22,6 +22,7 @@ public:
                "string with spaces to be live parsed, as test of composed overrides");
 
        addOptionS<Listener>(listener, "size", "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
+       addOptionI<Listener>(listener, "dumpevent", "Control GLFW event dumping ");
    }   
 
 

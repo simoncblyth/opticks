@@ -1,6 +1,7 @@
 #ifndef SCENE_H 
 #define SCENE_H
 
+#include <vector>
 
 class Shader ; 
 class Camera ;
@@ -19,6 +20,7 @@ class GBuffer ;
 class Scene {
   public:
 
+  static const char* PRINT ;  
   enum Attrib_IDs { vPosition=0, vColor=1 };
 
   public:
@@ -31,7 +33,9 @@ class Scene {
       void draw(int width, int height);
 
   public: 
+      void configureI(const char* name, std::vector<int> values);
       void dump(const char* msg="Scene::dump");
+      void Print(const char* msg="Scene::Print");
       void setShaderDir(const char* dir);
       char* getShaderDir(); 
 

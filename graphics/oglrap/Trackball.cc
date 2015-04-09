@@ -124,7 +124,7 @@ void Trackball::setOrientation(float _theta, float _phi)
 
     glm::quat xrot(cos(0.5*theta),sin(0.5*theta),0,0);
     glm::quat zrot(cos(0.5*phi),  0,0,sin(0.5*phi));
-    glm::quat q = xrot + zrot ; 
+    glm::quat q = xrot * zrot ; 
     setOrientation(q);
 }
 
@@ -141,17 +141,26 @@ glm::mat4 Trackball::getOrientationMatrix()
 
 void Trackball::setOrientation(glm::quat& q)
 {
-    m_orientation = q ; 
+    m_orientation = q  ; 
 }
 
 void Trackball::drag_to(float x, float y, float dx, float dy)
 {
-    printf("Trackball::drag_to %10.3f %10.3f %10.3f %10.3f \n", x, y, dx, dy);
+    //printf("Trackball::drag_to %10.3f %10.3f %10.3f %10.3f \n", x, y, dx, dy);
 
-    glm::quat dragrot = rotate(x,y,dx,dy);
+    m_drag_count += 1 ; 
 
-    glm::quat qrot = getOrientation();
-    qrot += dragrot ;    // perturb orientation by dragrot  
+    glm::quat drag = rotate(x,y,dx,dy);
+
+    glm::quat qrot = m_orientation * drag ;   // perturb orientation by drag rotation  
+
+    if(m_drag_count > m_drag_renorm)
+    {
+        //print(qrot, "Trackball::drag_to before renorm");
+        qrot = glm::normalize(qrot);         
+        //print(qrot, "Trackball::drag_to after renorm");
+        m_drag_count = 0 ;
+    }
 
     setOrientation(qrot);
 }
@@ -159,28 +168,38 @@ void Trackball::drag_to(float x, float y, float dx, float dy)
 
 void Trackball::Summary(const char* msg)
 {
+    printf(" trackballradius  %10.3f \n", m_radius );
     print(getOrientation(), msg);
-    print(getOrientationMatrix(), msg);
+    //print(getOrientationMatrix(), msg);
 }
 
 
 glm::quat Trackball::rotate(float x, float y, float dx, float dy)
 {
-    //
     // p0, p1 are positions of screen before and after coordinates 
     // projected onto a deformed virtual trackball
 
     glm::vec3 p0(x   ,    y, project(m_radius,x,y)); 
     glm::vec3 p1(x+dx, y+dy, project(m_radius,x+dx,y+dy)); 
-    
+   
     // axis of rotation        
-    glm::vec3 axis = glm::cross(p0, p1);
+    glm::vec3 axis = glm::cross(p1, p0);
 
     // angle of rotation
     float t = glm::clamp(glm::length(p1-p0)/(2.*m_radius), -1., 1. ) ;
     float phi = 2.0 * asin(t) ;
 
-    return glm::angleAxis( phi, axis );
+    glm::quat q = glm::angleAxis( phi, glm::normalize(axis) );
+
+#ifdef DEBUG
+    print(p0,  "Trackball::rotate p0");
+    print(p1,  "Trackball::rotate p1");
+    print(axis,"Trackball::rotate axis");
+    printf("Trackball::rotate t %15.5f phi %15.5f \n", t, phi );
+    print(q,   "Trackball::rotate q");
+#endif
+
+    return q ; 
 }
  
 

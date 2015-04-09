@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>  
 
 
+const char* Camera::PRINT    = "print" ;
 const char* Camera::NEAR     = "near" ;
 const char* Camera::FAR      = "far" ;
 const char* Camera::YFOV     = "yfov" ;
@@ -18,6 +19,7 @@ void Camera::configureS(const char* name, std::vector<std::string> values)
 
 void Camera::configureI(const char* name, std::vector<int> values)
 {
+    if( strcmp(name, PRINT) ==  0)  Print("liveline --print");
 }
 
 void Camera::configureF(const char* name, std::vector<float> values)

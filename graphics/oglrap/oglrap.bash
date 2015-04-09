@@ -63,7 +63,7 @@ oglrap-install(){
    oglrap-make install
 }
 
-oglrap-bin(){ echo $(oglrap-idir)/bin/$(oglrap-name) ; }
+oglrap-bin(){ echo $(oglrap-idir)/bin/$(oglrap-name)Test ; }
 oglrap-export()
 {
    export SHADER_DIR=$(oglrap-sdir)/glsl
@@ -84,3 +84,11 @@ oglrap--()
     oglrap-install
 
 }
+
+oglrap-test()
+{   
+   local bin=$(oglrap-bin)
+   $bin $*
+}
+
+

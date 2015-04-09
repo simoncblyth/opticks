@@ -16,7 +16,9 @@ class Trackball {
 
        Trackball() :
           m_radius(1.f),
-          m_translatefactor(1.f)
+          m_translatefactor(1000.f),
+          m_drag_renorm(97),
+          m_drag_count(0)
        {
           home();
        }
@@ -84,6 +86,9 @@ class Trackball {
        float m_translatefactor ;
 
        glm::quat m_orientation ; 
+
+       int  m_drag_renorm ; 
+       int  m_drag_count ; 
 
 
 };
