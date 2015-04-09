@@ -20,6 +20,39 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+compilation units
+------------------
+
+OptiXGeometry
+    abstract base holder of OptiX context, geometries, materials, geometry intances  
+
+AssimpOptiXGeometry
+    deprecated specialization of OptiXGeometry using initial direct from Assimp
+    approach, lacks material/surface property handling : the complexity of this
+    inspired creation of GGeo 
+
+GGeoOptiXGeometry
+    specialization of OptiXGeometry, depending only on RayTraceConfig, GGeo, OptiX  
+    provides conversion of GGeo geometry into OptiX geometry including 
+    material and surface optical properties packed into textures 
+
+RayTraceConfig
+    holder of OptiX context and usage utilities (eg compiling OptiX programs) 
+    uses compiled in configuration header RayTraceConfigInc propagating values
+    such as RAYTRACE_SRC_DIR, RAYTRACE_PTX_DIR etc from CMakeLists.txt 
+    into header defines
+
+G4DAELoader
+    Mainlyneeded to integrate with MeshViewer(?) 
+    Uses AssimpWrap and GGeoOptixGeometry to load and convert geometry
+    into form needed by OptiX.
+
+MeshViewer/MeshScene
+    Main and MeshViewer class, based on messy GLUT base OptiX sample code 
+
+
+
+
 
 ortho mode
 -----------
@@ -383,9 +416,13 @@ raytrace-scd(){  cd $(raytrace-sdir); }
 raytrace-bcd(){  cd $(raytrace-bdir); }
 raytrace-ocd(){  cd $(raytrace-odir); }
 
-raytrace-ptx(){ ls -l $(raytrace-bdir)/lib/ptx ; }
+raytrace-src-dir(){ echo $(raytrace-sdir) ; }
+raytrace-ptx-dir(){ echo $(raytrace-bdir)/lib/ptx ; }
 raytrace-rng-dir(){ echo $(cudawrap-rng-dir) ; }
+
+raytrace-ptx(){ ls -l $(raytrace-ptx-bdir) ; }
 raytrace-rng(){ ls -l $(raytrace-rng-dir) ; }
+
 
 raytrace-x-clean(){
    raytrace-wipe
@@ -488,7 +525,13 @@ raytrace-export()
    export RAYTRACE_GGCTRL=""
 
    unset RAYTRACE_RNG_DIR
+   unset RAYTRACE_SRC_DIR
+   unset RAYTRACE_PTX_DIR
+
    export RAYTRACE_RNG_DIR=$(raytrace-rng-dir)
+   export RAYTRACE_SRC_DIR=$(raytrace-src-dir)
+   export RAYTRACE_PTX_DIR=$(raytrace-ptx-dir)
+
 
    env | grep RAYTRACE
 

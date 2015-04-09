@@ -15,34 +15,22 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 set(BUILD_SHARED_LIBS ON)
 
-
+#####################  for OptiX
 include(Macros)
-
 include (CompilerInfo)
-
 include (ConfigCompilerFlags)
-
 OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
-
 if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
-
-
-
 find_package(OptiX REQUIRED)
-
 find_package(CUDA 2.3 REQUIRED)
 
+
 find_package(AssimpWrap REQUIRED)
-
 find_package(GGeo REQUIRED)
-
 find_package(CUDAWrap REQUIRED)
-
-
-
-
+find_package(OptiXRap REQUIRED)
 
 
 include(FindSUtilGLUT)
@@ -58,12 +46,14 @@ include_directories(
     ${AssimpWrap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
     ${CUDAWrap_INCLUDE_DIRS}  
+    ${OptiXRap_INCLUDE_DIRS}  
 )
 
 
 add_definitions(
     ${OptiX_DEFINITIONS} 
     ${CUDAWrap_DEFINITIONS} 
+    ${OptiXRap_DEFINITIONS} 
 )
 
 
@@ -98,6 +88,7 @@ function(add_optix_executable target_name)
                            ${AssimpWrap_LIBRARIES} 
                            ${GGeo_LIBRARIES} 
                            ${CUDAWrap_LIBRARIES}
+                           ${OptiXRap_LIBRARIES}
                            ssl
                            crypto 
                            
@@ -113,24 +104,20 @@ set(RAYTRACE_CURAND   "1" )
 set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
 set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
 
+message("CMAKE_BINARY_DIR:" ${CMAKE_BINARY_DIR})
+
+
 # placing this inside the CMAKE_BINARY_DIR makes its prone to being wiped
 #set(RAYTRACE_RNG_DIR "$ENV{RAYTRACE_RNG_DIR}" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
 set(RAYTRACE_RNG_DIR "/usr/local/env/cuda/cudawrap/rngcache" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
 
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h @ONLY)
+#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h @ONLY)
 
 
 add_optix_executable( MeshViewer
                       MeshViewer.cpp
-
-                      RayTraceConfig.cc
-                      ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
-
-                      OptiXGeometry.cc
-                      AssimpOptiXGeometry.cc
-                      GGeoOptiXGeometry.cc
 
                       G4DAELoader.cc
 
@@ -147,7 +134,11 @@ add_optix_executable( MeshViewer
 )
 
 
-
+#                      RayTraceConfig.cc
+#                      ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
+#                      OptiXGeometry.cc
+#                      GGeoOptiXGeometry.cc
+#                      AssimpOptiXGeometry.cc
  
 
 

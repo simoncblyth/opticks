@@ -143,7 +143,7 @@ void Scene::load(const char* envprefix)
     assert(geo);
     geo->setColor(0.5,0.5,1.0);
     geo->Summary("Scene::load Sumary");
-    geo->Dump("Scene::load Dump");
+    geo->Dump("Scene::load Dump",10);
     
 
     setGeometry(geo);

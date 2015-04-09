@@ -9,6 +9,8 @@
 #include "app.hh"
 #include "AppCfg.hh"
 
+
+// oglrap-
 #include "Scene.hh"
 #include "SceneCfg.hh"
 #include "Interactor.hh"
@@ -22,7 +24,12 @@
 
 #include "numpydelegate.hh"
 #include "numpydelegateCfg.hh"
+
+// numpyserver-
 #include "numpyserver.hpp"
+
+
+#include "OptiXEngine.hh"
 
 
 
@@ -30,8 +37,9 @@ int main(int argc, char** argv)
 {
     App app ;  // misnomer : more like window Frame
     numpydelegate delegate ; 
-    Scene scene ;  // just instanciates Camera and View, allowing config hookup 
+    Scene scene ;  // ctor just instanciates Camera and View for early config
     Interactor interactor ; 
+    OptiXEngine engine ; 
 
     interactor.setScene(&scene);
     app.setScene(&scene);

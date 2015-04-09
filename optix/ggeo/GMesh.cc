@@ -365,11 +365,14 @@ gfloat3* GMesh::getTransformedNormals(GMatrixF& transform )
      gfloat3* normals = new gfloat3[m_num_vertices];
      for(unsigned int i = 0; i < m_num_vertices; i++)
      {  
-         normals[i].x = m_normals[i].x ;   
-         normals[i].y = m_normals[i].y ;   
-         normals[i].z = m_normals[i].z ;   
+         gfloat4 nrm(m_normals[i], 0.);   // w=0 as direction, not position 
 
-         normals[i] *= transform ;  // HMM THIS NEEDS TO BE A DIFFERENT TRANSFORM FOR NORMALS , AS THEY ARE DIRECTIONS ?
+         nrm *= transform ;      
+
+         normals[i].x = nrm.x ; 
+         normals[i].y = nrm.y ; 
+         normals[i].z = nrm.z ; 
+
      }   
      return normals ;
 }

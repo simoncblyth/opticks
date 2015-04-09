@@ -2,7 +2,6 @@
 glfwtest-src(){      echo graphics/glfw/glfwtest/glfwtest.bash ; }
 glfwtest-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glfwtest-src)} ; }
 glfwtest-vi(){       vi $(glfwtest-source) ; }
-glfwtest-env(){      elocal- ; }
 glfwtest-usage(){ cat << EOU
 
 Building GLFW using app with cmake
@@ -49,7 +48,15 @@ glfwtest-cd(){  cd $(glfwtest-sdir); }
 
 glfwtest-icd(){  cd $(glfwtest-idir); }
 glfwtest-bcd(){  cd $(glfwtest-bdir); }
-glfwtest-name(){ echo GLFWTest ; }
+#glfwtest-name(){ echo GLFWTest ; }
+glfwtest-name(){ echo GLFWTestOptiX ; }
+
+glfwtest-env(){      
+   elocal- 
+   optix-
+   optix-export 
+
+}
 
 glfwtest-wipe(){
    local bdir=$(glfwtest-bdir)
@@ -71,6 +78,8 @@ glfwtest-cmake(){
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(glfwtest-idir) \
+       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+       -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
        $(glfwtest-sdir)
 
    cd $iwd

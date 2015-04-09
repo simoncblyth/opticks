@@ -12,13 +12,17 @@
 
 #include "AssimpWrap/AssimpCommon.hh"
 #include "AssimpWrap/AssimpGeometry.hh"
+
+#ifdef DEPRECATED
 #include "AssimpOptiXGeometry.hh"
+#endif
 
 #include "AssimpWrap/AssimpGGeo.hh"
 #include "GGeoOptiXGeometry.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "assert.h"
 
 
 std::string getExtension( const std::string& filename )
@@ -115,7 +119,8 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
   }
   else
   {
-      printf("G4DAELoader::load with AssimpOptixGeometry \n");
+      printf("G4DAELoader::load with AssimpOptixGeometry IS DEPRECATED\n");
+#ifdef DEPRECATED
       AssimpOptiXGeometry geom(&ageo, selection);
 
       geom.setGeometryGroup(m_geometry_group);
@@ -126,6 +131,7 @@ void G4DAELoader::load( const optix::Matrix4x4& transform )
       geom.setupAcceleration();
 
       m_aabb = geom.getAabb();
+#endif
   }
 
   
@@ -139,6 +145,8 @@ void G4DAELoader::createGeometryInstance(
   optix::float3 const* normals, 
   unsigned ntris, optix::int3 const* tris )
 {
+  assert(0); // just checking if this in use
+
   if (m_large_geom) 
   {
     if( m_ASBuilder == std::string("Sbvh") || m_ASBuilder == std::string("KdTree")) {
