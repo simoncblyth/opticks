@@ -22,14 +22,11 @@
 #include "Trackball.hh"
 #include "TrackballCfg.hh"
 
-#include "numpydelegate.hh"
-#include "numpydelegateCfg.hh"
-
 // numpyserver-
+#include "numpydelegate.hpp"
+#include "numpydelegateCfg.hpp"
 #include "numpyserver.hpp"
 
-
-#include "OptiXEngine.hh"
 
 
 
@@ -39,7 +36,6 @@ int main(int argc, char** argv)
     numpydelegate delegate ; 
     Scene scene ;  // ctor just instanciates Camera and View for early config
     Interactor interactor ; 
-    OptiXEngine engine ; 
 
     interactor.setScene(&scene);
     app.setScene(&scene);

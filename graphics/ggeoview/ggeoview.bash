@@ -39,6 +39,8 @@ ggeoview-cmake(){
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(ggeoview-idir) \
+       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
+       -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
        $(ggeoview-sdir)
 
    cd $iwd

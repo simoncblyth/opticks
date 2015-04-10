@@ -78,8 +78,6 @@ glfwtest-cmake(){
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(glfwtest-idir) \
-       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
-       -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
        $(glfwtest-sdir)
 
    cd $iwd

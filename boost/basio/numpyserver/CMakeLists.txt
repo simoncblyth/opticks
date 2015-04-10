@@ -20,28 +20,46 @@ endif ()
 find_package(Boost REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(AsioZMQ REQUIRED)
+find_package(Cfg REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS} 
    ${ZMQ_INCLUDE_DIRS} 
-   ${AsioZMQ_INCLUDE_DIRS} 
+   ${AsioZMQ_INCLUDE_DIRS}
+   ${Cfg_INCLUDE_DIRS}  
 )
 
 
 add_definitions( -DVERBOSE )
 
-add_executable( ${name} main.cpp numpydelegate.cpp ) 
+add_executable( ${name}Test main.cpp  ) 
+
+# mostly header only 
+add_library( ${name}  SHARED
+    numpydelegate.cpp
+)
 
 target_link_libraries( ${name} 
       ${Boost_LIBRARIES}
       ${ZMQ_LIBRARIES} 
+      ${Cfg_LIBRARIES}
 )
 
-install(TARGETS ${name} DESTINATION bin)
+target_link_libraries( ${name}Test 
+      ${Boost_LIBRARIES}
+      ${ZMQ_LIBRARIES} 
+      ${Cfg_LIBRARIES}
+      ${name}
+)
+
+
+
 
 
 SET(hdrs 
+numpydelegate.hpp
+numpydelegateCfg.hpp
 numpyserver.hpp
 net_manager.hpp
 npy_server.hpp
@@ -49,6 +67,8 @@ udp_server.hpp
 numpy.hpp
 )
 
+install(TARGETS ${name}Test DESTINATION bin)
+install(TARGETS ${name}     DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
 
 

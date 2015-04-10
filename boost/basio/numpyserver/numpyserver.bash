@@ -194,7 +194,7 @@ numpyserver-icd(){  cd $(numpyserver-idir); }
 numpyserver-bcd(){  cd $(numpyserver-bdir); }
 
 numpyserver-name(){ echo NumpyServer ; }
-numpyserver-bin(){ echo $(numpyserver-idir)/bin/$(numpyserver-name) ; }
+numpyserver-bin(){ echo $(numpyserver-idir)/bin/$(numpyserver-name)Test ; }
 
 numpyserver-srun()
 {

@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-
+class Cfg;
 
 template <class numpydelegate>
 class numpyserver ;
@@ -16,8 +16,11 @@ public:
    void on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata);
 
 public:
-   void configure(const char* name, std::vector<int>         values);
-   void configure(const char* name, std::vector<std::string> values);
+   void liveConnect(Cfg* cfg);
+   void interpretExternalMessage(std::string msg);
+
+   void configureI(const char* name, std::vector<int>         values);
+   void configureS(const char* name, std::vector<std::string> values);
 
    void setNPYEcho(int echo);
    int  getNPYEcho();
@@ -35,7 +38,9 @@ private:
    int         m_npy_echo ;
    std::string m_zmq_backend ;    
 
+private:
 
+   std::vector<Cfg*> m_live_cfg ; 
 
 
 };
