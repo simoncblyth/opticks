@@ -5,8 +5,12 @@ ggeoview-vi(){       vi $(ggeoview-source) ; }
 ggeoview-env(){      elocal- ; }
 ggeoview-usage(){ cat << EOU
 
+GGeoView
+==========
 
+Start from glfwtest- and add in OptiX functionality from optixrap-
 
+* NB raytrace- is another user of optixwrap- 
 
 
 EOU
