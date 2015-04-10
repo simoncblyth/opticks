@@ -1,16 +1,10 @@
 #include <stdlib.h>  //exit()
 #include <stdio.h>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#define GLEQ_IMPLEMENTATION
-#include "gleq.h"
-
-#include "app.hh"
-#include "AppCfg.hh"
-
-
 // oglrap-
+//  Frame include brings in GL/glew.h GLFW/glfw3.h gleq.h
+#include "Frame.hh"
+#include "FrameCfg.hh"
 #include "Scene.hh"
 #include "SceneCfg.hh"
 #include "Interactor.hh"
@@ -28,23 +22,21 @@
 #include "numpyserver.hpp"
 
 
-
-
 int main(int argc, char** argv)
 {
-    App app ;  // misnomer : more like window Frame
+    Frame frame ;
     numpydelegate delegate ; 
     Scene scene ;  // ctor just instanciates Camera and View for early config
     Interactor interactor ; 
 
     interactor.setScene(&scene);
-    app.setScene(&scene);
-    app.setInteractor(&interactor);  // TODO: decide on who contains who
+    frame.setScene(&scene);
+    frame.setInteractor(&interactor);  // TODO: decide on who contains who
 
-    AppCfg<App>* appcfg = new AppCfg<App>("app", &app, false);
+    FrameCfg<Frame>* framecfg = new FrameCfg<Frame>("frame", &frame, false);
 
     Cfg cfg("unbrella", false) ;  // collect other Cfg objects
-    cfg.add(appcfg);
+    cfg.add(framecfg);
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
     cfg.add(new SceneCfg<Scene>("scene", &scene, true));
     cfg.add(new CameraCfg<Camera>("camera", scene.getCamera(), true));
@@ -55,35 +47,36 @@ int main(int argc, char** argv)
     cfg.commandline(argc, argv);
     delegate.liveConnect(&cfg);    
 
-    if(appcfg->isHelp())  std::cout << cfg.getDesc() << std::endl ;
-    if(appcfg->isAbort()) exit(EXIT_SUCCESS); 
+    // hmm these below elswhere, as are needed for non-GUI apps too
+    if(framecfg->isHelp())  std::cout << cfg.getDesc() << std::endl ;
+    if(framecfg->isAbort()) exit(EXIT_SUCCESS); 
 
     numpyserver<numpydelegate> srv(&delegate);
 
-    app.setSize(640,480);
-    app.setTitle("Demo");
-    app.init_window();
+    frame.setSize(640,480);
+    frame.setTitle("Demo");
+    frame.init_window();
 
     scene.load("GLFWTEST_") ;
     scene.init_opengl();
 
-    GLFWwindow* window = app.getWindow();
+    GLFWwindow* window = frame.getWindow();
 
     while (!glfwWindowShouldClose(window))
     {
-        app.listen(); 
+        frame.listen(); 
 
         // give numpyserver a few cycles, to complete posts from the net thread
         // resulting in the non-blocking handler methods of the delegate being called
         srv.poll_one();  
 
-        app.render();
+        frame.render();
         glfwSwapBuffers(window);
     }
     srv.stop();
 
 
-    app.exit();
+    frame.exit();
 
     exit(EXIT_SUCCESS);
 }

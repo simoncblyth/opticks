@@ -11,6 +11,13 @@ Featherweight OpenGL wrapper
 Just a few utility classes to make modern OpenGL 3, 4 
 easier to use.
 
+Originally was thinking could keep GLFW3 out of oglrap
+keeping pure OpenGL, but that has proved difficult.
+
+GLFW3 and GLEW are responsible for furnishing the 
+OpenGL headers, but wanted to avoid directly using 
+GLFW3 inside oglrap-
+
 
 
 

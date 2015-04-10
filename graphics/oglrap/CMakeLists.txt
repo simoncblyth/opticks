@@ -37,6 +37,10 @@ add_definitions(
 )
 
 add_library( ${name}  SHARED
+                Frame.cc
+                FrameCfg.cc
+                Interactor.cc
+                InteractorCfg.cc
                 Scene.cc
                 SceneCfg.cc
                 Trackball.cc
@@ -51,7 +55,6 @@ add_library( ${name}  SHARED
                 Common.cc
 )
 
-add_executable( ${name}Test ${name}Test.cc )
 
 target_link_libraries( ${name} 
       ${GLEW_LIBRARIES}
@@ -61,6 +64,9 @@ target_link_libraries( ${name}
       ${Boost_LIBRARIES}
       ${Cfg_LIBRARIES}
 )
+
+
+add_executable( ${name}Test ${name}Test.cc )
 target_link_libraries( ${name}Test
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
@@ -76,6 +82,10 @@ install(TARGETS ${name} DESTINATION lib)
 
 
 SET(hdrs 
+Frame.hh
+FrameCfg.hh
+Interactor.hh
+InteractorCfg.hh
 Scene.hh
 SceneCfg.hh
 Trackball.hh
@@ -87,6 +97,7 @@ ViewCfg.hh
 Shader.hh
 Demo.hh
 VertexAttribute.hh
+gleq.h
 )
 
 install(FILES ${hdrs} DESTINATION include)

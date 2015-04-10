@@ -1,5 +1,10 @@
-#ifndef APP_H
-#define APP_H
+#ifndef FRAME_H
+#define FRAME_H
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+//#define GLEQ_IMPLEMENTATION
+#include "gleq.h"
 
 #include <string>
 #include <vector>
@@ -9,11 +14,10 @@ class Scene ;
 class Interactor ; 
 
 
-// hmm App currently misnomer : acting more like a "Frame" for the GLFWwindow
-class App {
+class Frame {
    public:
-       App();
-       virtual ~App();
+       Frame();
+       virtual ~Frame();
        
        void configureI(const char* name, std::vector<int> values);
        void configureS(const char* name, std::vector<std::string> values);

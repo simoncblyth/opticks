@@ -55,12 +55,7 @@ add_definitions(
 
 add_executable( GLFWContext glfw_context.cc )
 add_executable( Simple simple.cc )
-add_executable( ${name} 
-                main.cc 
-                app.cc
-                Interactor.cc
-                InteractorCfg.cc
-) 
+add_executable( ${name} main.cc ) 
 
 target_link_libraries( GLFWContext 
       ${GLEW_LIBRARIES}

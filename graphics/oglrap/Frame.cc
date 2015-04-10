@@ -6,9 +6,10 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#define GLEQ_IMPLEMENTATION
 #include "gleq.h"
 
-#include "app.hh"
+#include "Frame.hh"
 #include "Scene.hh"
 #include "Interactor.hh"
 
@@ -41,7 +42,7 @@ static void error_callback(int error, const char* description)
 }
 
 
-App::App() : 
+Frame::Frame() : 
      m_title(NULL),
      m_window(NULL),
      m_scene(NULL),
@@ -53,17 +54,17 @@ App::App() :
 {
 }
 
-App::~App()
+Frame::~Frame()
 {
     free((void*)m_title);
 }
 
-void App::setDumpevent(int dumpevent)
+void Frame::setDumpevent(int dumpevent)
 {
     m_dumpevent = dumpevent ; 
 }
 
-void App::configureI(const char* name, std::vector<int> values)
+void Frame::configureI(const char* name, std::vector<int> values)
 {
    if(values.empty()) return;
    int last = values.back(); 
@@ -75,7 +76,7 @@ void App::configureI(const char* name, std::vector<int> values)
 
 }
 
-void App::configureS(const char* name, std::vector<std::string> values)
+void Frame::configureS(const char* name, std::vector<std::string> values)
 {
    if(values.empty()) return;
 
@@ -92,35 +93,35 @@ void App::configureS(const char* name, std::vector<std::string> values)
            unsigned int height = boost::lexical_cast<unsigned int>(whf[1]);  
            unsigned int coord2pixel  = boost::lexical_cast<unsigned int>(whf[2]);  
 
-           printf("App::configureS param %s : %s  \n", name, _whf.c_str());
+           printf("Frame::configureS param %s : %s  \n", name, _whf.c_str());
            setSize(width, height, coord2pixel);
        }
        else
        {
-           printf("App::configureS param %s malformed %s needs to be triplet eg 1024,768,2  \n", name, _whf.c_str());
+           printf("Frame::configureS param %s malformed %s needs to be triplet eg 1024,768,2  \n", name, _whf.c_str());
        }
    }
    else
    {
-       printf("App::configureS param %s unknown \n", name);
+       printf("Frame::configureS param %s unknown \n", name);
    }
 }
 
-void App::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
+void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
     m_width = width ;
     m_height = height ;
     m_coord2pixel = coord2pixel ;
 }
-void App::setTitle(const char* title)
+void Frame::setTitle(const char* title)
 {
     m_title = strdup(title);
 }
-void App::setScene(Scene* scene)
+void Frame::setScene(Scene* scene)
 {
     m_scene = scene ;
 }
-void App::setInteractor(Interactor* interactor)
+void Frame::setInteractor(Interactor* interactor)
 {
     m_interactor = interactor ;
 }
@@ -129,7 +130,7 @@ void App::setInteractor(Interactor* interactor)
 
 
 
-void App::init_window()
+void Frame::init_window()
 {
     glfwSetErrorCallback(error_callback);
 
@@ -172,7 +173,7 @@ void App::init_window()
 }
 
 
-void App::listen()
+void Frame::listen()
 {
     glfwPollEvents();
 
@@ -187,7 +188,7 @@ void App::listen()
  
 
 
-void App::render()
+void Frame::render()
 {
      _update_fps_counter (m_window);
 
@@ -200,7 +201,7 @@ void App::render()
 }
 
 
-void App::resize(unsigned int width, unsigned int height)
+void Frame::resize(unsigned int width, unsigned int height)
 {
      if(width == 0 || height == 0) return ;  // ignore dud resizes
 
@@ -210,7 +211,7 @@ void App::resize(unsigned int width, unsigned int height)
 }
 
 
-void App::handle_event(GLEQevent& event)
+void Frame::handle_event(GLEQevent& event)
 {
     switch (event.type)
     {
@@ -299,13 +300,13 @@ void App::handle_event(GLEQevent& event)
     }
 } 
 
-void App::key_pressed(unsigned int key)
+void Frame::key_pressed(unsigned int key)
 {
-    printf("App::key_pressed %u \n", key);
+    printf("Frame::key_pressed %u \n", key);
 
     if( key == GLFW_KEY_ESCAPE)
     {
-        printf("App::key_pressed escape\n");
+        printf("Frame::key_pressed escape\n");
         glfwSetWindowShouldClose (m_window, 1);
     }
     else
@@ -315,16 +316,16 @@ void App::key_pressed(unsigned int key)
 
 }  
 
-void App::key_released(unsigned int key)
+void Frame::key_released(unsigned int key)
 {
-    //printf("App::key_released %u \n", key);
+    //printf("Frame::key_released %u \n", key);
     m_interactor->key_released(key);
 }  
  
 
 
  
-void App::dump_event(GLEQevent& event)
+void Frame::dump_event(GLEQevent& event)
 {
     switch (event.type)
     {
@@ -397,7 +398,7 @@ void App::dump_event(GLEQevent& event)
 
 
 
-void App::exit()
+void Frame::exit()
 {
     glfwDestroyWindow(m_window);
     glfwTerminate();

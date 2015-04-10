@@ -2,9 +2,9 @@
 #include "Cfg.hh"
 
 template <class Listener>
-class AppCfg : public Cfg {
+class FrameCfg : public Cfg {
 public:
-   AppCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   FrameCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
    {   
 
        m_desc.add_options()
