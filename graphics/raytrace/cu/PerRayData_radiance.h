@@ -5,7 +5,7 @@
 #include <optix_math.h>
 #include "commonStructs.h"
 
-#include "RayTraceConfigInc.h"
+//#include "RayTraceConfigInc.h"
 #include <curand_kernel.h>
 
 struct PerRayData_radiance

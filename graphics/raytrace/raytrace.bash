@@ -14,10 +14,54 @@ Test Combination of Assimp and OptiX
     raytrace-v -l 0    # default phong shader, lights off : black silhouette against blue bkgd 
 
 
-
 * press "ctrl" and drag up/down to zoom out/in 
 
 * for fps display press "r" and then "d"
+
+
+Acceleration Cache Flakiness
+------------------------------
+
+Sometimes code changes somehow invalidate the cached acceleration structure 
+resulting in no error but causing a blank render.  Solution is 
+to recreate the acceleration cache by running without the "--cache" option
+ie::
+
+    raytrace-run --g4dae $DAE_NAME_DYB 
+
+As opposed to normal faster running::
+
+    raytrace-run --cache --g4dae $DAE_NAME_DYB 
+
+The **raytrace-clean** function wipes and rebuilds from scratch and then runs 
+without **--cache** in order to recreate everything (actually curand cache is not recreated).  
+
+
+std::string in interface causing linker problems
+-------------------------------------------------
+
+Hmm, I've seen this before switching std::string arguments for const char* 
+from interface to G4DAELoader avoids linking problems.  This suggests incompatible 
+compiler or compilation option differences between raytrace- and optixrap-. 
+Switching workaround fine in this case, but are more issues lurking ?
+
+* Moral : avoid std::string in public interfaces ?
+
+::
+
+    Undefined symbols for architecture x86_64:
+      "G4DAELoader::isMyFile(std::string const&)", referenced from:
+          MeshViewer::initGeometry() in MeshViewer.cpp.o
+      "G4DAELoader::G4DAELoader(std::string const&, optix::Handle<optix::ContextObj>, optix::Handle<optix::GeometryGroupObj>, optix::Handle<optix::MaterialObj>, char const*, char const*, char const*, bool)", referenced from:
+          MeshViewer::initGeometry() in MeshViewer.cpp.o
+    ld: symbol(s) not found for architecture x86_64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    make[2]: *** [MeshViewer] Error 1
+
+
+Strings args have different messier symbols invoking basic_string in the lib::
+
+    nm /usr/local/env/graphics/optixrap/lib/libOptiXRap.dylib | grep G4DAE | c++filt
 
 
 compilation units
@@ -49,8 +93,6 @@ G4DAELoader
 
 MeshViewer/MeshScene
     Main and MeshViewer class, based on messy GLUT base OptiX sample code 
-
-
 
 
 
@@ -300,16 +342,6 @@ Class Layout
         
 
 
-
-Sources
----------
-
-::
-
-
-
-
-
 Next Steps
 ------------
 
@@ -424,11 +456,11 @@ raytrace-ptx(){ ls -l $(raytrace-ptx-bdir) ; }
 raytrace-rng(){ ls -l $(raytrace-rng-dir) ; }
 
 
-raytrace-x-clean(){
+raytrace-clean(){
    raytrace-wipe
    raytrace-cmake
    raytrace-make
-   raytrace-x
+   raytrace-run --g4dae $DAE_NAME_DYB
 }
 
 raytrace-env(){      
@@ -467,8 +499,6 @@ raytrace-cmake(){
    raytrace-export
  
    cmake -DCMAKE_BUILD_TYPE=Debug \
-         -DRAYTRACE_CURAND=$(raytrace-curand) \
-         -DRAYTRACE_TIMEVIEW=$(raytrace-timeview) \
          -DOptiX_INSTALL_DIR=$(optix-install-dir) \
          -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
           $(raytrace-sdir) 
@@ -539,6 +569,7 @@ raytrace-export()
 
 
 raytrace-run(){
+  raytrace-export 
   if [ -n "$DEBUG" ]; then 
       $DEBUG $(raytrace-bin) -- $* 
   else
@@ -547,10 +578,9 @@ raytrace-run(){
 }
 
 raytrace-run-manual(){
-
   local bin=$(raytrace-bin)
   local dir=$(dirname $bin)
-
+  raytrace-export 
   DYLD_LIBRARY_PATH=$dir $bin $*
 }
 
@@ -558,11 +588,14 @@ raytrace-run-manual(){
 
 raytrace--(){
   echo $FUNCNAME $*
- 
+
+  #raytrace-wipe 
+  #raytrace-cmake
+
   raytrace-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-  raytrace-export 
-  raytrace-run $*
+
+  raytrace-run --g4dae $DAE_NAME_DYB $*
 }
 
 
@@ -575,6 +608,11 @@ raytrace-x(){
   #raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-cuda $*
   raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-optix --ortho $*
   #raytrace-- --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-optix  $*
+}
+
+
+raytrace-args(){
+    echo --cache --g4dae $DAE_NAME_DYB --dim=1024x768 --rng-optix --ortho $*
 }
 
 raytrace-x-manual(){

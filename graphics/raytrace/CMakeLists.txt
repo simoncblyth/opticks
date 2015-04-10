@@ -39,7 +39,6 @@ include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}   # for RayTraceConfigInc.h
     ${OptiX_INCLUDE}  
     $ENV{OPTIX_SDK_DIR}/sutil
     ${CUDA_INCLUDE_DIRS}
@@ -49,6 +48,7 @@ include_directories(
     ${OptiXRap_INCLUDE_DIRS}  
 )
 
+#    ${CMAKE_CURRENT_BINARY_DIR}   # for RayTraceConfigInc.h
 
 add_definitions(
     ${OptiX_DEFINITIONS} 
@@ -97,29 +97,30 @@ function(add_optix_executable target_name)
 endfunction()
 
 
-# RAYTRACE_* are written to RayTraceConfigInc.h and available as defines from the code
-
-set(RAYTRACE_TIMEVIEW "0" )
-set(RAYTRACE_CURAND   "1" )
-set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
-set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
-
-message("CMAKE_BINARY_DIR:" ${CMAKE_BINARY_DIR})
-
-
+# formerly RAYTRACE_* are written to RayTraceConfigInc.h and available as defines from the code
+#set(RAYTRACE_TIMEVIEW "0" )
+#set(RAYTRACE_CURAND   "1" )
+#set(RAYTRACE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to the raytrace source directory.")
 # placing this inside the CMAKE_BINARY_DIR makes its prone to being wiped
 #set(RAYTRACE_RNG_DIR "$ENV{RAYTRACE_RNG_DIR}" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
-set(RAYTRACE_RNG_DIR "/usr/local/env/cuda/cudawrap/rngcache" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
+#set(RAYTRACE_RNG_DIR "/usr/local/env/cuda/cudawrap/rngcache" CACHE PATH "Path to where the raytrace code looks for cached rng_state.")
+#message("RAYTRACE_SRC_DIR:" ${RAYTRACE_SRC_DIR})
+#message("RAYTRACE_PTX_DIR:" ${RAYTRACE_PTX_DIR})
+#message("RAYTRACE_RNG_DIR:" ${RAYTRACE_RNG_DIR})
 
+
+# who uses this ?
+set(RAYTRACE_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx" CACHE PATH "Path to where the raytrace code looks for nvcc generated PTX.")
 set(CUDA_GENERATED_OUTPUT_DIR ${RAYTRACE_PTX_DIR})
+message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
+
+# now using envvars rather than compiled in constants
 #configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RayTraceConfigInc.h.in ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h @ONLY)
 
 
 add_optix_executable( MeshViewer
                       MeshViewer.cpp
-
-                      G4DAELoader.cc
 
                       cu/phong.cu
                       cu/material1_radiance.cu
@@ -134,11 +135,14 @@ add_optix_executable( MeshViewer
 )
 
 
+
+# these have been moved to OptiXRap
+#
+#                      G4DAELoader.cc
 #                      RayTraceConfig.cc
 #                      ${CMAKE_CURRENT_BINARY_DIR}/RayTraceConfigInc.h
 #                      OptiXGeometry.cc
 #                      GGeoOptiXGeometry.cc
 #                      AssimpOptiXGeometry.cc
- 
-
+# 
 

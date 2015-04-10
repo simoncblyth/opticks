@@ -10,7 +10,9 @@
 #include <optix_world.h>
 #include "helpers.h"
 
-#include "RayTraceConfigInc.h"
+//#include "RayTraceConfigInc.h"
+
+#define RAYTRACE_CURAND 1
 #if RAYTRACE_CURAND
 #include <curand_kernel.h>
 #endif

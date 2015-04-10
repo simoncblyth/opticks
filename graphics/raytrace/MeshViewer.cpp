@@ -450,15 +450,18 @@ void MeshViewer::initMaterial()
 
 void MeshViewer::initGeometry()
 {
+  printf("\nMeshViewer::initGeometry\n\n");
+
   double start, end;
   sutilCurrentTime(&start);
 
   m_geometry_group = m_context->createGeometryGroup();
 
 
-  if( G4DAELoader::isMyFile( m_filename ) )
+  if( G4DAELoader::isMyFile( m_filename.c_str() ) )
   {
-     G4DAELoader loader( m_filename, m_context, m_geometry_group, m_material, m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
+     printf("MeshViewer::initGeometry loading with G4DAELoader \n");
+     G4DAELoader loader( m_filename.c_str(), m_context, m_geometry_group, m_material, m_accel_builder.c_str(), m_accel_traverser.c_str(), m_accel_refine.c_str(), m_accel_large_mesh );
      loader.load();
      setGGeo(loader.getGGeo());
      m_aabb = loader.getSceneBBox();
@@ -472,8 +475,10 @@ void MeshViewer::initGeometry()
   // Load acceleration structure from a file if that was enabled on the
   // command line, and if we can find a cache file. Note that the type of
   // acceleration used will be overridden by what is found in the file.
+  printf("MeshViewer::initGeometry loadAccelCache\n");
   loadAccelCache();
 
+  printf("MeshViewer::initGeometry loadAccelCache DONE\n");
   
   m_context[ "top_object" ]->set( m_geometry_group );
   m_context[ "top_shadower" ]->set( m_geometry_group );

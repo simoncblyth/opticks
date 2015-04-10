@@ -58,6 +58,7 @@ optix::Material OptiXGeometry::getMaterial(unsigned int index)
 
 void OptiXGeometry::setupAcceleration()
 {
+    printf("OptiXGeometry::setupAcceleration for %lu gis \n", m_gis.size());
     optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
     acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
     acceleration->setProperty( "index_buffer_name", "indexBuffer" );
@@ -69,7 +70,12 @@ void OptiXGeometry::setupAcceleration()
     m_geometry_group->setChildCount(m_gis.size());
     for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
 
-    m_context["top_object"]->set(m_geometry_group);
+    printf("OptiXGeometry::setupAcceleration NOT setting top_object \n");
+    // FOR UNKNOWN REASONS THIS CAUSES SEGFAULT WHEN USED FROM SEPARATE SO 
+    // AND NOT WHEN ALL COMPILED INTO SAME EXECUTABLE
+    // ... IT DUPLICATES A SETTING IN MeshViewer ANYHOW SO NO PROBLEM SKIPPING IT 
+    //m_context["top_object"]->set(m_geometry_group);
+    printf("OptiXGeometry::setupAcceleration DONE \n");
 }
 
 

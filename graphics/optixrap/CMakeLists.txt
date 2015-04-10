@@ -9,8 +9,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
-########################## for OptiX
 set(BUILD_SHARED_LIBS ON)
+
+########################## for OptiX
 include(Macros)
 include (CompilerInfo)
 include (ConfigCompilerFlags)
@@ -57,6 +58,7 @@ add_definitions(
 
 
 add_library( ${name}  SHARED
+       G4DAELoader.cc
        OptiXGeometry.cc
        GGeoOptiXGeometry.cc
        RayTraceConfig.cc
@@ -69,10 +71,10 @@ target_link_libraries( ${name}
       optixu
 )
 
-install(TARGETS ${name} DESTINATION lib)
 
 
 SET(hdrs 
+  G4DAELoader.hh
   OptixGeometry.hh
   GGeoOptixGeometry.hh
   RayTraceConfig.hh
@@ -80,6 +82,7 @@ SET(hdrs
 SET(cuhdrs 
   cu/enums.h
 )
+install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
 install(FILES ${cuhdrs} DESTINATION include/cu)
 

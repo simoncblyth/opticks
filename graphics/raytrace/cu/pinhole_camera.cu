@@ -1,7 +1,7 @@
 #include <optix_world.h>
 #include "helpers.h"
 
-#include "RayTraceConfigInc.h"
+//#include "RayTraceConfigInc.h"
 #include <curand_kernel.h>
 
 #include "PerRayData_radiance.h"

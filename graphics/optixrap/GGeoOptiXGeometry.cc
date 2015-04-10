@@ -54,8 +54,8 @@ void GGeoOptiXGeometry::convertStructure()
 {
     m_gis.clear();
     traverseNode( m_ggeo->getSolid(0), 0, true );
-    printf("GGeoOptiXGeometry::convertStructure :  %lu gi \n", m_gis.size() );
     assert(m_gis.size() > 0);
+    printf("GGeoOptiXGeometry::convertStructure :  converted %lu gi \n", m_gis.size() );
 }
 
 

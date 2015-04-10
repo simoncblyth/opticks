@@ -1,10 +1,9 @@
 // adapted from /Developer/OptiX/SDK/sutil/PlyLoader.h  
 #pragma once
-#include <sutil.h>
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 #include <optixu/optixu_matrix_namespace.h>
-#include <string>
+//#include <string>
 
 
 class GGeo ; 
@@ -12,7 +11,7 @@ class GGeo ;
 class G4DAELoader
 {
 public:
-  G4DAELoader( const std::string&   filename,
+  G4DAELoader( const char* filename,
                       optix::Context       context,
                       optix::GeometryGroup geometry_group,
                       optix::Material      material,
@@ -21,7 +20,7 @@ public:
                       const char* ASRefine    = "0",
                       bool large_geom = false);
 
-  ~G4DAELoader() {} // makes sure CRT objects are destroyed on the correct heap
+  virtual ~G4DAELoader();
 
   void setIntersectProgram( optix::Program program );
 
@@ -34,13 +33,13 @@ public:
 
   optix::Aabb getSceneBBox()const { return m_aabb; }
 
-  static bool isMyFile( const std::string& filename );
+  static bool isMyFile( const char* filename );
 
 private:
-  void createGeometryInstance( unsigned nverts, optix::float3 const* verts, optix::float3 const* normals,
-    unsigned ntris, optix::int3 const* tris );
+  //void createGeometryInstance( unsigned nverts, optix::float3 const* verts, optix::float3 const* normals,
+  //  unsigned ntris, optix::int3 const* tris );
 
-  std::string            m_filename;
+  const char*            m_filename;
 
   optix::Context         m_context;
   optix::GeometryGroup   m_geometry_group;
