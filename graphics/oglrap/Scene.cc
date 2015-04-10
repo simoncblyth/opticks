@@ -237,7 +237,7 @@ void Scene::init_opengl()
 
 void Scene::draw(int width, int height)
 { 
-    setupView(width, height);
+    setupView(width, height);  // m_view, m_trackball, m_camera --> MVP and MV 4x4 matrix uniforms
     glBindVertexArray (m_vao);
 
     // count is the number of indices (which point at vertices) to form into triangle faces

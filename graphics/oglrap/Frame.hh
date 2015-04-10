@@ -3,7 +3,6 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-//#define GLEQ_IMPLEMENTATION
 #include "gleq.h"
 
 #include <string>

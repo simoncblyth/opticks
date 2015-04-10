@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <sstream>
 
+#include "assert.h"
+
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
 
@@ -166,6 +168,8 @@ void AssimpGeometry::import(unsigned int flags)
     printf("AssimpGeometry::import path %s flags 0x%x \n", m_path, flags  );
 
     m_process_flags = flags ; 
+
+    assert(m_path);
     m_aiscene = m_importer->ReadFile( m_path, flags );
 
     if(!m_aiscene)

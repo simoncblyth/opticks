@@ -37,6 +37,7 @@ add_definitions(
 )
 
 add_library( ${name}  SHARED
+                Texture.cc
                 Frame.cc
                 FrameCfg.cc
                 Interactor.cc

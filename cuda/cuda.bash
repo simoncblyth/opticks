@@ -249,7 +249,9 @@ cuda-nvcc-flags(){
     esac 
 }
 
-
+cuda-idir(){ echo $(cuda-dir)/include ; }
+cuda-icd(){  cd $(cuda-idir); }
+cuda-find(){ find $(cuda-idir) -name '*.h' -exec grep -H ${1:-cudaGraphics} {} \; ; }
 
 cuda-dir(){ 
    case $NODE_TAG in 

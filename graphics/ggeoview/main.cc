@@ -22,12 +22,20 @@
 #include "numpyserver.hpp"
 
 
+#include "OptiXEngine.hh"
+#include "RayTraceConfig.hh"
+
+
 int main(int argc, char** argv)
 {
+    unsigned int width = 640 ;
+    unsigned int height = 480 ;
+
     Frame frame ;
     numpydelegate delegate ; 
     Scene scene ;  // ctor just instanciates Camera and View for early config
     Interactor interactor ; 
+
 
     interactor.setScene(&scene);
     frame.setScene(&scene);
@@ -53,12 +61,26 @@ int main(int argc, char** argv)
 
     numpyserver<numpydelegate> srv(&delegate);
 
-    frame.setSize(640,480);
+    frame.setSize(width,height);
     frame.setTitle("Demo");
     frame.init_window();
 
-    scene.load("GLFWTEST_") ;
+    scene.load("GGEOVIEW_") ;  // envvar prefixes
     scene.init_opengl();
+
+
+    // logically OptiX setup should not come after OpenGL stuff (as need for non-GUI running) 
+    // but when using VBO initContext needs to be after  OpenGL context creation
+    // otherwidth segfaults at glGenBuffers(1, &vbo);
+    //
+    OptiXEngine engine ;   // creates OptiX context
+    RayTraceConfig::makeInstance(engine.getContext(), "GGeoView");
+    engine.initContext(width, height); 
+
+
+
+
+
 
     GLFWwindow* window = frame.getWindow();
 

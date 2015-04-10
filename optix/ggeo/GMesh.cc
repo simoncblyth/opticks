@@ -367,7 +367,9 @@ gfloat3* GMesh::getTransformedNormals(GMatrixF& transform )
      {  
          gfloat4 nrm(m_normals[i], 0.);   // w=0 as direction, not position 
 
-         nrm *= transform ;      
+         nrm *= transform ; 
+         // NB should be transpose of inverse, 
+         // (so only OK if orthogonal, that means rotations only no scaling)
 
          normals[i].x = nrm.x ; 
          normals[i].y = nrm.y ; 

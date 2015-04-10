@@ -615,6 +615,8 @@ OptiX Usage Examples
 
 * https://github.com/keithroe/Legion/blob/master/src/Legion/Renderer/OptiXScene.cpp
 
+  * CMakeLists.txt CUDA macro usage that stuffs ptx into libraries 
+
 * https://github.com/pspkzar/OptiXRenderer/blob/master/src/OptixRenderer.cpp
 
 * https://github.com/nvpro-samples/gl_optix_composite
@@ -624,6 +626,15 @@ OptiX Usage Examples
 
 
 * http://graphicsrunner.blogspot.tw/2011/03/instant-radiosity-using-optix-and.html
+
+
+OptiX with GLFW
+-----------------
+
+* https://code.google.com/p/hybrid-rendering-thesis/source/browse/trunk/glfw_optix/src/main.cpp
+
+See hrt-
+
 
 
 nvfx : Generic Effect system for Graphic APIs, including OpenGL and OptiX
@@ -1266,6 +1277,8 @@ optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-samples-install-dir); }
 optix-scd(){ cd $(optix-sdir); }
 optix-icd(){ cd $(optix-idir); }
+
+optix-find(){ find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
 
 optix-doc(){ cd $(optix-fold)/OptiX/doc ; }
 

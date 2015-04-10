@@ -1,0 +1,138 @@
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+set(name GGeoView)
+project(${name})
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
+                      "$ENV{ENV_HOME}/cmake/Modules"
+                      "$ENV{OPTIX_SDK_DIR}/CMake"
+          ) 
+
+include(EnvBuildOptions)
+
+set(BUILD_SHARED_LIBS ON)
+
+#####################  for OptiX
+include(Macros)
+include(CompilerInfo)
+include(ConfigCompilerFlags)
+OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
+if(USING_CLANG_C)
+  set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
+endif()
+find_package(OptiX REQUIRED)
+find_package(CUDA 2.3 REQUIRED)
+
+
+## c++11 forced by AsioZMQ   needs to come after OptiX
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -stdlib=libc++")
+else ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+endif ()
+
+
+########### using env/cmake/Modules/*.cmake #####
+
+find_package(GLEW REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(OGLRap REQUIRED)
+find_package(Boost REQUIRED)
+
+find_package(ZMQ REQUIRED)  
+find_package(AsioZMQ REQUIRED)
+find_package(NumpyServer REQUIRED)
+find_package(GLM  REQUIRED)
+find_package(Cfg REQUIRED)
+
+find_package(OptiXRap REQUIRED)
+
+
+
+include_directories(
+   ${CMAKE_CURRENT_SOURCE_DIR}
+   ${GLEW_INCLUDE_DIRS} 
+   ${GLFW_INCLUDE_DIRS} 
+   ${OGLRap_INCLUDE_DIRS} 
+   ${Boost_INCLUDE_DIRS} 
+   ${ZMQ_INCLUDE_DIRS} 
+   ${AsioZMQ_INCLUDE_DIRS} 
+   ${NumpyServer_INCLUDE_DIRS} 
+   ${Cfg_INCLUDE_DIRS} 
+   ${GLM_INCLUDE_DIRS} 
+
+   ${CUDA_INCLUDE_DIRS}
+   ${OptiX_INCLUDE}  
+   ${OptiXRap_INCLUDE_DIRS}  
+)
+
+add_definitions(
+   ${GLEW_DEFINITIONS}
+   ${GLFW_DEFINITIONS}
+   ${OGLRap_DEFINITIONS}
+   ${OptiX_DEFINITIONS} 
+   ${OptiXRap_DEFINITIONS} 
+)
+
+
+
+function(add_optix_executable target_name)
+
+    # split arguments into three lists 
+    CUDA_GET_SOURCES_AND_OPTIONS(source_files cmake_options options ${ARGN})
+
+    # Create the rules to build the PTX from the CUDA files.
+    CUDA_WRAP_SRCS( ${target_name} PTX generated_files ${source_files} ${cmake_options} OPTIONS ${options} )
+
+    add_executable(${target_name}
+        ${source_files}
+        ${generated_files}
+        ${cmake_options}
+    )
+
+    target_link_libraries( ${target_name} 
+
+      optix
+      optixu
+
+      ${GLEW_LIBRARIES}
+      ${GLFW_LIBRARIES}
+      ${OGLRap_LIBRARIES}
+      ${Boost_LIBRARIES}
+      ${ZMQ_LIBRARIES}
+      ${Cfg_LIBRARIES}
+      ${NumpyServer_LIBRARIES}
+
+      ${AssimpWrap_LIBRARIES} 
+      ${GGeo_LIBRARIES} 
+      #   ${CUDAWrap_LIBRARIES}
+      ${OptiXRap_LIBRARIES}
+
+      ssl
+      crypto 
+      )
+
+endfunction()
+
+
+# CUDA_GENERATED_OUTPUT_DIR seems to an input to OptiX cmake macros
+# controlling where to put the compiled ptx, the location
+# needs to match that assumed/configured within RayTraceConfig.cc
+set(CUDA_GENERATED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/lib/ptx") 
+message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})  
+
+
+add_optix_executable( ${name} 
+      main.cc 
+      OptiXEngine.cc
+      OptiXDisplay.cc
+
+      cu/pinhole_camera.cu
+      cu/constantbg.cu
+) 
+
+
+install(TARGETS ${name} DESTINATION bin)
+
+
+
+

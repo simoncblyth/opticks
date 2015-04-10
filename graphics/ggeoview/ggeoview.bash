@@ -2,7 +2,6 @@
 ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
 ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }
 ggeoview-vi(){       vi $(ggeoview-source) ; }
-ggeoview-env(){      elocal- ; }
 ggeoview-usage(){ cat << EOU
 
 GGeoView
@@ -21,6 +20,9 @@ ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
 ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
 
+ggeoview-ptx-dir(){ echo $(ggeoview-bdir)/lib/ptx ; }
+ggeoview-ptx-ls(){  ls -l $(ggeoview-ptx-dir) ; }
+
 ggeoview-scd(){  cd $(ggeoview-sdir); }
 ggeoview-cd(){  cd $(ggeoview-sdir); }
 
@@ -31,6 +33,11 @@ ggeoview-name(){ echo GGeoView ; }
 ggeoview-wipe(){
    local bdir=$(ggeoview-bdir)
    rm -rf $bdir
+}
+ggeoview-env(){     
+    elocal- 
+    optix-
+    optix-export
 }
 
 ggeoview-cmake(){
@@ -74,6 +81,8 @@ ggeoview-export()
    #export GGEOVIEW_QUERY="index:5000"
    export GGEOVIEW_CTRL=""
    export SHADER_DIR=$(ggeoview-sdir)/glsl
+
+   export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
 } 
 ggeoview-run(){ 
    local bin=$(ggeoview-bin)
