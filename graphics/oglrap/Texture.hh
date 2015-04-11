@@ -5,10 +5,11 @@
 #include "GMesh.hh"
 
 struct Tex {
-   Tex() : width(0), height(0), data(NULL) {}
+   Tex() : width(0), height(0), rgb(NULL), rgba(NULL) {}
    int width  ;
    int height ;
-   unsigned char* data ;
+   unsigned char* rgb ;
+   unsigned char* rgba ;
 };
 
 
@@ -21,6 +22,7 @@ class Texture : public GMesh {
       static const float ptexcoord[] ;
 
        Texture();
+       void setSize(unsigned int width, unsigned int height);
        void loadPPM(char* path);  // does not need OpenGL context
        void create();
        //void resize(unsigned int width, unsigned int height, unsigned char* data);
@@ -32,8 +34,9 @@ class Texture : public GMesh {
        unsigned int getHeight();
 
    private:
-       void create(unsigned char* data);
-       void setSize(unsigned int width, unsigned int height);
+       void setup();
+       void create_rgb(unsigned char* data);
+       void create_rgba(unsigned char* data);
 
        unsigned int m_width ; 
        unsigned int m_height ; 

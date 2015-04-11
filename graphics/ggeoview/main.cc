@@ -15,6 +15,8 @@
 #include "ViewCfg.hh"
 #include "Trackball.hh"
 #include "TrackballCfg.hh"
+#include "Texture.hh"
+
 
 // numpyserver-
 #include "numpydelegate.hpp"
@@ -28,15 +30,21 @@
 
 int main(int argc, char** argv)
 {
-    unsigned int width = 640 ;
-    unsigned int height = 480 ;
+    unsigned int width ;
+    unsigned int height ;
 
     Frame frame ;
     numpydelegate delegate ; 
     Scene scene ;  // ctor just instanciates Camera and View for early config
     Interactor interactor ; 
+    Texture texture ;
 
-
+    {
+        texture.loadPPM("/tmp/teapot.ppm");
+        width = texture.getWidth();
+        height = texture.getHeight();
+    }
+ 
     interactor.setScene(&scene);
     frame.setScene(&scene);
     frame.setInteractor(&interactor);  // TODO: decide on who contains who
@@ -63,10 +71,13 @@ int main(int argc, char** argv)
 
     frame.setSize(width,height);
     frame.setTitle("Demo");
-    frame.init_window();
+    frame.init_window();       // OpenGL context created
 
-    scene.load("GGEOVIEW_") ;  // envvar prefixes
-    scene.init_opengl();
+    //scene.load("GGEOVIEW_") ;  // envvar prefixes
+
+
+    //texture.setSize(width, height);  incorrect to do so when texture loaded from PPM 
+    texture.create();
 
 
     // logically OptiX setup should not come after OpenGL stuff (as need for non-GUI running) 
@@ -75,11 +86,12 @@ int main(int argc, char** argv)
     //
     OptiXEngine engine ;   // creates OptiX context
     RayTraceConfig::makeInstance(engine.getContext(), "GGeoView");
-    engine.initContext(width, height); 
+    engine.initContext(width, height);  
 
+    engine.associate_PBO_to_Texture(texture.getTextureId());    // loose teapot with this
 
-
-
+    scene.setGeometry(&texture);  // override geometry
+    scene.init_opengl();          // GL uploads GDrawable buffers to GPU, m_geometry GDrawable must be set 
 
 
     GLFWwindow* window = frame.getWindow();

@@ -72,24 +72,34 @@ Texture::Texture() :
     setColors( (gfloat3*)&pcolor[0] );
 }
 
+
 void Texture::loadPPM(char* path)
 {
-    m_tex.data = ::loadPPM(path, &m_tex.width, &m_tex.height );
-    if(m_tex.data)
+    m_tex.rgb = ::loadPPM(path, &m_tex.width, &m_tex.height );
+    if(m_tex.rgb)
     {
         printf("Texture::loadPPM loaded %s into tex of width %d height %d \n", path, m_tex.width, m_tex.height);
         setSize(m_tex.width, m_tex.height);
+
+        m_tex.rgba = (unsigned char*)malloc(m_width*m_height*4);
+
+        for(unsigned int w=0; w<m_width;++w){
+        for(unsigned int h=0; h<m_height;++h)
+        {
+            unsigned char* rgb = m_tex.rgb + (h*m_width+w)*3 ;
+            unsigned char* rgba = m_tex.rgba + ((m_height-1-h)*m_width+w)*4 ;
+
+            *(rgba+0) = *(rgb+0); 
+            *(rgba+1) = *(rgb+1); 
+            *(rgba+2) = *(rgb+2); 
+            *(rgba+3) = 0x11 ; 
+        }
+        }
     }
     else
     {
         printf("Texture::loadPPM failed to load %s \n", path );
     }
-}
-
-void Texture::create()
-{
-    assert(m_tex.data);
-    create(m_tex.data);
 }
 
 void Texture::setSize(unsigned int width, unsigned int height)
@@ -99,23 +109,39 @@ void Texture::setSize(unsigned int width, unsigned int height)
 }
 
 
-void Texture::create(unsigned char* data)
+void Texture::setup()
 {
-    assert(m_width > 0 && m_height > 0);
     glGenTextures(1, &m_texture_id);
     glBindTexture( GL_TEXTURE_2D, m_texture_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+}
+
+void Texture::create()
+{
+    setup();
+    assert(m_width > 0 && m_height > 0);
+
+    if( m_tex.rgba )  // ie have loaded from PPM
+    {
+        create_rgba(m_tex.rgba);
+    }
+    else
+    {
+        create_rgba(NULL);
+    }
+}
+
+void Texture::create_rgb(unsigned char* data)
+{
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
+}
 
-
-   // glGenSamplers(1, &m_sampler_id);
-   // GLuint sampler_unit = 0 ; 
-   // glBindSampler(sampler_unit, sampler_id); 
-
+void Texture::create_rgba(unsigned char* data)
+{
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 }
 
 void Texture::cleanup()

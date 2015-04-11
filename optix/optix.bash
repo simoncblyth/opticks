@@ -599,6 +599,43 @@ OptiX OpenGL interop
 
 * :google:`OptiX OpenGL interop`
 
+OptiX_Programming_Guide_3.7.0.pdf
+-------------------------------------
+
+OpenGL Interop
+~~~~~~~~~~~~~~~~
+
+OptiX supports interop for:
+
+* OpenGL buffer objects
+* textures
+* render buffers
+
+OpenGL buffer objects can be read and written by OptiX program
+objects, whereas textures and render buffers can only be read.
+
+Buffer Objects
+~~~~~~~~~~~~~~
+
+OpenGL buffer objects like PBOs and VBOs can be encapsulated for use in OptiX
+with rtBufferCreateFromGLBO. The resulting buffer is a reference only to the
+OpenGL data; the size of the OptiX buffer as well as the format have to be set
+via rtBufferSetSize and rtBufferSetFormat. 
+When the OptiX buffer is destroyed, the state of the OpenGL buffer object is unaltered. 
+Once an OptiX buffer is created, the original GL buffer object is immutable, 
+meaning the properties of the GL object like its size cannot be changed 
+while registered with OptiX. However, it is still possible to read and write 
+to the GL buffer object using the appropriate GL functions. 
+If it is necessary to change properties of an object, first call rtBufferGLUnregister 
+before making changes. After the changes are made the object has to be 
+registered again with rtBufferGLRegister.
+This is necessary to allow OptiX to access the objects data again. Registration
+and unregistration calls are expensive and should be avoided if possible.
+
+
+
+
+
 
 Caveats
 ----------
