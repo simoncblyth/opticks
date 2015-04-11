@@ -13,12 +13,15 @@ int main()
     interactor.setScene(&scene);       // allows interactor to modify camera, view and trackball constituents of scene
     frame.setScene(&scene);            // only so frame.render() calls draw on scene  
 
-    frame.setSize(640,480);
+    Texture texture ;
+    texture.loadPPM("/tmp/teapot.ppm");
+
+    frame.setSize(texture.getWidth(),texture.getHeight());
     frame.setTitle("FrameTest");
     frame.init_window();
 
-    Texture texture ;
-    texture.create(frame.getWidth(), frame.getHeight()) ; 
+    texture.create();   // needs to be after OpenGL context creation, done in frame.init_window
+
     scene.setGeometry(&texture);
     scene.init_opengl();              // uploads geometry buffers
 

@@ -16,6 +16,7 @@ find_package(GGeo REQUIRED)  # bit reluctant on this
 find_package(AssimpWrap REQUIRED)  # more reluctant still, the solution is to be able to persist/load GGeo to/from file 
 find_package(Boost REQUIRED) 
 find_package(Cfg REQUIRED) 
+find_package(PPM REQUIRED) 
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -26,6 +27,7 @@ set(INCLUDE_DIRS
    ${AssimpWrap_INCLUDE_DIRS} 
    ${Boost_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS}
+   ${PPM_INCLUDE_DIRS}
 ) 
 
 set(DEFINITIONS

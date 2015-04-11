@@ -2,6 +2,14 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include "assert.h"
+
+#define LOADPPM_IMPLEMENTATION
+#include "loadPPM.h"
+
+
+
 /*
    "1" (-1,1) [0,1]          "0" (1,1) [1,1]
 
@@ -57,47 +65,95 @@ Texture::Texture() :
              (gfloat3*)&pnormal[0],
              (gfloat2*)&ptexcoord[0]
          ),
-    m_id(0)
+    m_texture_id(0),
+    m_sampler_id(0),
+    m_tex()
 {
     setColors( (gfloat3*)&pcolor[0] );
 }
 
+void Texture::loadPPM(char* path)
+{
+    m_tex.data = ::loadPPM(path, &m_tex.width, &m_tex.height );
+    if(m_tex.data)
+    {
+        printf("Texture::loadPPM loaded %s into tex of width %d height %d \n", path, m_tex.width, m_tex.height);
+        setSize(m_tex.width, m_tex.height);
+    }
+    else
+    {
+        printf("Texture::loadPPM failed to load %s \n", path );
+    }
+}
 
+void Texture::create()
+{
+    assert(m_tex.data);
+    create(m_tex.data);
+}
 
-
-
-void Texture::create(unsigned int width, unsigned int height)
+void Texture::setSize(unsigned int width, unsigned int height)
 {
     m_width = width ; 
     m_height = height ; 
+}
 
-    glGenTextures(1, &m_id);
-    glBindTexture( GL_TEXTURE_2D, m_id);
+
+void Texture::create(unsigned char* data)
+{
+    assert(m_width > 0 && m_height > 0);
+    glGenTextures(1, &m_texture_id);
+    glBindTexture( GL_TEXTURE_2D, m_texture_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
+
+
+   // glGenSamplers(1, &m_sampler_id);
+   // GLuint sampler_unit = 0 ; 
+   // glBindSampler(sampler_unit, sampler_id); 
+
 }
 
 void Texture::cleanup()
 {
-    glDeleteTextures(1, &m_id);
-    m_id = 0 ;
+    glDeleteTextures(1, &m_texture_id);
+    m_texture_id = 0 ;
 }
 
 
-void Texture::resize(unsigned int width, unsigned int height)
+/*
+void Texture::resize(unsigned int width, unsigned int height, unsigned char* data)
 {
     if(width == m_width && height == m_height) return ;
     cleanup();
-    create(width, height);
+    create(data);
 }
+*/
 
 
-unsigned int Texture::getId()
+unsigned int Texture::getTextureId()
 {
-    return m_id ;
+    return m_texture_id ;
 }
+unsigned int Texture::getSamplerId()
+{
+    return m_sampler_id ;
+}
+
+
+
+unsigned int Texture::getWidth()
+{
+    return m_width ;
+}
+unsigned int Texture::getHeight()
+{
+    return m_height ;
+}
+
 
 

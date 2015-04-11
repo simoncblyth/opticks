@@ -191,13 +191,15 @@ void Scene::init_opengl()
     GBuffer* nbuf = m_geometry->getNormalsBuffer();
     GBuffer* cbuf = m_geometry->getColorsBuffer();
     GBuffer* ibuf = m_geometry->getIndicesBuffer();
+    GBuffer* tbuf = m_geometry->getTexcoordsBuffer();
 
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());
 
-    m_vertices = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf );
-    m_normals  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf );
-    m_colors   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf );
+    m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf );
+    m_normals   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf );
+    m_colors    = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf );
+    m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf );
 
     m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf );
     m_indices_count = ibuf->getNumItems(); // number of indices
@@ -221,12 +223,18 @@ void Scene::init_opengl()
     glVertexAttribPointer(vColor, cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
     glEnableVertexAttribArray (vColor);   
 
+    glBindBuffer (GL_ARRAY_BUFFER, m_texcoords);
+    glVertexAttribPointer(vTexcoord, tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vTexcoord);   
+
+
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
     m_shader = new Shader(getShaderDir());
     m_program = m_shader->getId();
     m_mvp_location = m_shader->getMVPLocation();
     m_mv_location = m_shader->getMVLocation();
+    m_sampler_location = m_shader->getSamplerLocation();
 
     glUseProgram (m_program);       
 

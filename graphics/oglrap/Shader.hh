@@ -17,6 +17,7 @@ class Shader {
 
       GLint getMVPLocation();
       GLint getMVLocation();
+      GLint getSamplerLocation();
 
    private:
       void init(const std::string& vsrc, const std::string& fsrc);
@@ -27,8 +28,10 @@ class Shader {
       GLuint m_vs ;
       GLuint m_fs ;
       GLuint m_program ;
+
       GLint m_mvp_location ;
       GLint m_mv_location ;
+      GLint m_sampler_location ;
 };      
 
 

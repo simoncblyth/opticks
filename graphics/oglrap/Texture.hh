@@ -2,9 +2,15 @@
 
 // env/pycuda/pycuda_pyopengl_interop/pixel_buffer.py
 
-
-
 #include "GMesh.hh"
+
+struct Tex {
+   Tex() : width(0), height(0), data(NULL) {}
+   int width  ;
+   int height ;
+   unsigned char* data ;
+};
+
 
 class Texture : public GMesh {
    public:
@@ -15,17 +21,25 @@ class Texture : public GMesh {
       static const float ptexcoord[] ;
 
        Texture();
-
-       void create(unsigned int width, unsigned int height);
-       void resize(unsigned int width, unsigned int height);
+       void loadPPM(char* path);  // does not need OpenGL context
+       void create();
+       //void resize(unsigned int width, unsigned int height, unsigned char* data);
        void cleanup();
 
-       unsigned int getId();
+       unsigned int getTextureId();
+       unsigned int getSamplerId();
+       unsigned int getWidth();
+       unsigned int getHeight();
 
    private:
+       void create(unsigned char* data);
+       void setSize(unsigned int width, unsigned int height);
+
        unsigned int m_width ; 
        unsigned int m_height ; 
-       unsigned int m_id ; 
+       unsigned int m_texture_id ; 
+       unsigned int m_sampler_id ; 
+       Tex          m_tex ; 
 
 };
 

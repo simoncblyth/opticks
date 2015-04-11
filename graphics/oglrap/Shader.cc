@@ -17,18 +17,24 @@ const char* Shader::vertex_shader =
 "layout(location = 0) in vec3 vertex_position;"
 "layout(location = 1) in vec3 vertex_colour;"
 "layout(location = 2) in vec3 vertex_normal;"
+"layout(location = 3) in vec2 vertex_texcoord;"
 "out vec3 colour;"
+"out vec2 texcoord;"
 "void main () {"
 "  vec4 normal = ModelView * vec4 (vertex_normal, 0.0);"
 "  colour = normalize(vec3(normal))*0.5 + 0.5 ;"
 "  gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);"
+"  texcoord = vertex_texcoord;"
 "}";
 
 const char* Shader::fragment_shader =
 "#version 400\n"
 "in vec3 colour;"
+"in vec2 texcoord;"
 "out vec4 frag_colour;"
+"uniform sampler2D texSampler;"
 "void main () {"
+"  //frag_colour = texture(texSampler, texcoord);" 
 "  frag_colour = vec4 (colour, 1.0);"
 "}";
 
@@ -263,6 +269,9 @@ void Shader::init(const std::string& vert, const std::string& frag)
     m_mv_location = glGetUniformLocation(m_program, "ModelView");
     assert(m_mv_location > -1);
 
+    m_sampler_location = glGetUniformLocation(m_program, "texSampler");
+    assert(m_sampler_location > -1);
+
     assert( isValid() );
 } 
 
@@ -275,6 +284,11 @@ GLint Shader::getMVLocation()
 {
     return m_mv_location ; 
 }
+GLint Shader::getSamplerLocation()
+{
+    return m_sampler_location ; 
+}
+
 
 
 

@@ -29,6 +29,8 @@ oglrap-sdir(){ echo $(env-home)/graphics/oglrap ; }
 oglrap-idir(){ echo $(local-base)/env/graphics/oglrap ; }
 oglrap-bdir(){ echo $(oglrap-idir).build ; }
 
+oglrap-bindir(){ echo $(oglrap-idir)/bin ; }
+
 oglrap-scd(){  cd $(oglrap-sdir); }
 oglrap-cd(){   cd $(oglrap-sdir); }
 
@@ -70,17 +72,6 @@ oglrap-install(){
    oglrap-make install
 }
 
-oglrap-bin(){ echo $(oglrap-idir)/bin/$(oglrap-name)Test ; }
-oglrap-export()
-{
-   export SHADER_DIR=$(oglrap-sdir)/glsl
-} 
-oglrap-run(){ 
-   local bin=$(oglrap-bin)
-   oglrap-export
-   $bin $*
-}
-
 
 
 oglrap--()
@@ -92,9 +83,22 @@ oglrap--()
 
 }
 
-oglrap-test()
-{   
-   local bin=$(oglrap-bin)
+
+oglrap-export()
+{
+   export SHADER_DIR=$(oglrap-sdir)/glsl
+} 
+
+oglrap-run(){ 
+   local bin=$(oglrap-bindir)/OGLRapTest
+   oglrap-export
+   $bin $*
+}
+
+oglrap-frametest()
+{
+   local bin=$(oglrap-bindir)/FrameTest
+   oglrap-export
    $bin $*
 }
 
