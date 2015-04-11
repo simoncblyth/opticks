@@ -57,6 +57,8 @@ class Scene {
       Trackball* getTrackball(); 
 
       void setupView(int width, int height);
+      bool hasTex(){ return m_has_tex ; }
+      void setHasTex(bool hastex){ m_has_tex = hastex ; }
 
   private:
       GLuint upload(GLenum target, GLenum usage, GBuffer* buffer);
@@ -86,6 +88,7 @@ class Scene {
       View*   m_view ;
       Shader* m_shader ;
       char* m_shaderdir ; 
+      bool m_has_tex ; 
 };      
 
 

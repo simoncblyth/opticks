@@ -39,8 +39,9 @@ Scene::Scene()
   m_trackball(NULL),
   m_geometry(NULL),
   m_draw_count(0),
-  m_model_to_world(NULL)
-
+  m_model_to_world(NULL),
+  m_texcoords(0),
+  m_has_tex(false) 
 {
   m_camera = new Camera() ;
   m_view   = new View() ;
@@ -192,6 +193,7 @@ void Scene::init_opengl()
     GBuffer* cbuf = m_geometry->getColorsBuffer();
     GBuffer* ibuf = m_geometry->getIndicesBuffer();
     GBuffer* tbuf = m_geometry->getTexcoordsBuffer();
+    setHasTex(tbuf != NULL);
 
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());
@@ -199,7 +201,10 @@ void Scene::init_opengl()
     m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf );
     m_normals   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf );
     m_colors    = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf );
-    m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf );
+    if(hasTex())
+    {
+        m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf );
+    }
 
     m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf );
     m_indices_count = ibuf->getNumItems(); // number of indices
@@ -223,10 +228,12 @@ void Scene::init_opengl()
     glVertexAttribPointer(vColor, cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
     glEnableVertexAttribArray (vColor);   
 
-    glBindBuffer (GL_ARRAY_BUFFER, m_texcoords);
-    glVertexAttribPointer(vTexcoord, tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vTexcoord);   
-
+    if(hasTex())
+    {
+        glBindBuffer (GL_ARRAY_BUFFER, m_texcoords);
+        glVertexAttribPointer(vTexcoord, tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+        glEnableVertexAttribArray (vTexcoord);   
+    }
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
@@ -234,7 +241,11 @@ void Scene::init_opengl()
     m_program = m_shader->getId();
     m_mvp_location = m_shader->getMVPLocation();
     m_mv_location = m_shader->getMVLocation();
-    m_sampler_location = m_shader->getSamplerLocation();
+
+    if(hasTex())
+    {
+        m_sampler_location = m_shader->getSamplerLocation();
+    }
 
     glUseProgram (m_program);       
 

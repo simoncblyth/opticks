@@ -349,7 +349,9 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
         }
 
 
-        GMesh* gmesh = new GMesh( i, gvertices, numVertices, gfaces, numFaces, gnormals ); 
+        gfloat2* gtexcoords = NULL ;
+
+        GMesh* gmesh = new GMesh( i, gvertices, numVertices, gfaces, numFaces, gnormals, gtexcoords); 
         gg->add(gmesh);
     }
 }

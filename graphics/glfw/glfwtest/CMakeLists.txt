@@ -52,21 +52,8 @@ add_definitions(
    ${OGLRap_DEFINITIONS}
 )
 
-
-add_executable( GLFWContext glfw_context.cc )
-add_executable( Simple simple.cc )
 add_executable( ${name} main.cc ) 
 
-target_link_libraries( GLFWContext 
-      ${GLEW_LIBRARIES}
-      ${GLFW_LIBRARIES}
-      ${OGLRap_LIBRARIES}
-)
-target_link_libraries( Simple 
-      ${GLEW_LIBRARIES}
-      ${GLFW_LIBRARIES}
-      ${OGLRap_LIBRARIES}
-)
 target_link_libraries( ${name} 
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
@@ -77,10 +64,8 @@ target_link_libraries( ${name}
       ${NumpyServer_LIBRARIES}
 )
 
-install(TARGETS GLFWContext DESTINATION bin)
-install(TARGETS Simple DESTINATION bin)
 install(TARGETS ${name} DESTINATION bin)
 
-
+add_subdirectory(tests)
 
 

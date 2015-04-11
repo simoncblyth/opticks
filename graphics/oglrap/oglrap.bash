@@ -97,9 +97,11 @@ oglrap-run(){
 
 oglrap-frametest()
 {
+   local path=${1:-/tmp/teapot.ppm}
+   shift
    local bin=$(oglrap-bindir)/FrameTest
    oglrap-export
-   $bin $*
+   $bin $path $*
 }
 
 

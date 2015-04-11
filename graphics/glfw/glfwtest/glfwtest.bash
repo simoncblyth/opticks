@@ -142,5 +142,12 @@ glfwtest--()
     glfwtest-cmake
     glfwtest-make
     glfwtest-install
-
 }
+
+
+glfwtest-lldb()
+{
+   glfwtest-export
+   lldb $(glfwtest-bin) $*
+}
+

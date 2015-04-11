@@ -270,7 +270,15 @@ void Shader::init(const std::string& vert, const std::string& frag)
     assert(m_mv_location > -1);
 
     m_sampler_location = glGetUniformLocation(m_program, "texSampler");
-    assert(m_sampler_location > -1);
+    //assert(m_sampler_location > -1);
+    if(m_sampler_location > -1)
+    {
+        printf("Shader::init found texSampler at location %d \n", m_sampler_location );
+    }
+    else
+    {
+        printf("Shader::init DID NOT FIND texSampler, location %d \n", m_sampler_location );
+    }
 
     assert( isValid() );
 } 

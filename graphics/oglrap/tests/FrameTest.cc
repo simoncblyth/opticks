@@ -3,8 +3,15 @@
 #include "Interactor.hh"
 #include "Texture.hh"
 
-int main()
+int main(int argc, char** argv)
 {
+    if(argc < 2)  
+    {   
+        printf("%s : expecting argument with path to ppm file\n", argv[0]);
+        return 1;  
+    }   
+    char* ppmpath = argv[1] ;
+
     Frame frame ; 
     Scene scene ; 
     Interactor interactor ;
@@ -14,7 +21,7 @@ int main()
     frame.setScene(&scene);            // only so frame.render() calls draw on scene  
 
     Texture texture ;
-    texture.loadPPM("/tmp/teapot.ppm");
+    texture.loadPPM(ppmpath);
 
     frame.setSize(texture.getWidth(),texture.getHeight());
     frame.setTitle("FrameTest");
