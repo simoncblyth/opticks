@@ -2,15 +2,14 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name OGLRapTest)
 project(${name})
 
-add_executable( ${name} ${name}.cc )
-add_executable( TrackballTest TrackballTest.cc )
+file(GLOB TEST_CC_SRCS "*Test.cc")
 
-target_link_libraries( ${name} ${LIBRARIES} OGLRap )
-target_link_libraries( TrackballTest ${LIBRARIES} OGLRap )
-
-install(TARGETS ${name} DESTINATION bin)
-install(TARGETS TrackballTest DESTINATION bin)
-
+foreach(TEST_CC_SRC ${TEST_CC_SRCS})
+    get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
+    add_executable(${TGT} ${TEST_CC_SRC})
+    target_link_libraries(${TGT} ${LIBRARIES} OGLRap)
+    install(TARGETS ${TGT} DESTINATION bin)
+endforeach()
 
 
 

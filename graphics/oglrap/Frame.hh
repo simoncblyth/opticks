@@ -33,6 +33,11 @@ class Frame {
        void render();
        GLFWwindow* getWindow(){ return m_window ; }
 
+   public:
+       unsigned int getWidth(){  return m_width ; } 
+       unsigned int getHeight(){ return m_height ; } 
+       unsigned int getCoord2pixel(){ return m_coord2pixel ; } 
+
    private:
        void handle_event(GLEQevent& event);
        void dump_event(GLEQevent& event);

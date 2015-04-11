@@ -12,12 +12,15 @@
 
 const char* Shader::vertex_shader =
 "#version 400\n"
+"uniform mat4 ModelView;"
 "uniform mat4 ModelViewProjection;"
 "layout(location = 0) in vec3 vertex_position;"
 "layout(location = 1) in vec3 vertex_colour;"
+"layout(location = 2) in vec3 vertex_normal;"
 "out vec3 colour;"
 "void main () {"
-"  colour = vertex_colour;"
+"  vec4 normal = ModelView * vec4 (vertex_normal, 0.0);"
+"  colour = normalize(vec3(normal))*0.5 + 0.5 ;"
 "  gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);"
 "}";
 

@@ -38,7 +38,8 @@ Scene::Scene()
   m_view(NULL),
   m_trackball(NULL),
   m_geometry(NULL),
-  m_draw_count(0)
+  m_draw_count(0),
+  m_model_to_world(NULL)
 
 {
   m_camera = new Camera() ;
@@ -62,8 +63,6 @@ void Scene::configureI(const char* name, std::vector<int> values )
     }
 
 }
-
-
 
 float* Scene::getModelToWorld()
 {

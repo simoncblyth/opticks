@@ -107,6 +107,9 @@ void Frame::configureS(const char* name, std::vector<std::string> values)
    }
 }
 
+
+
+
 void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
     m_width = width ;
@@ -164,12 +167,12 @@ void Frame::init_window()
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
-    printf ("Renderer: %s\n", renderer);
-    printf ("OpenGL version supported %s\n", version);
+    printf ("Frame::init_window Renderer: %s\n", renderer);
+    printf ("Frame::init_window OpenGL version supported %s\n", version);
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
-    printf("FramebufferSize %d %d \n", width, height);    
+    printf("Frame::init_window FramebufferSize %d %d \n", width, height);    
 }
 
 
@@ -197,7 +200,8 @@ void Frame::render()
      // glViewport needs pixels (on retina)  window needs screen coordinates
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 
-     m_scene->draw(m_width, m_height);
+     m_scene->draw(m_width, m_height);  
+     // hmm only use of m_scene, maybe not stong enough cause for constituency
 }
 
 
@@ -269,7 +273,7 @@ void Frame::handle_event(GLEQevent& event)
                   }
                   else
                   {
-                      m_interactor->cursor_drag( x, y, dx, dy );
+                      if(m_interactor) m_interactor->cursor_drag( x, y, dx, dy );
                   }
 
 
