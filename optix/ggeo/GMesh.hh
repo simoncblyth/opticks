@@ -13,7 +13,7 @@ class GMesh : public GDrawable {
       GMesh(unsigned int index, 
             gfloat3* vertices, unsigned int num_vertices, 
             guint3*  faces,     unsigned int num_faces,  
-            gfloat3* normals );
+            gfloat3* normals, gfloat2* texcoords );
       virtual ~GMesh();
 
   public:
@@ -35,13 +35,17 @@ class GMesh : public GDrawable {
       gfloat3* getVertices();
       gfloat3* getNormals();
       gfloat3* getColors();
+      gfloat2* getTexcoords();
       guint3*  getFaces();
+
+      bool hasTexcoords();
 
   public:
       // Buffer access for GDrawable protocol
       GBuffer* getVerticesBuffer();
       GBuffer* getNormalsBuffer();
       GBuffer* getColorsBuffer();
+      GBuffer* getTexcoordsBuffer();
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
 
@@ -51,6 +55,7 @@ class GMesh : public GDrawable {
       void setVertices(gfloat3* vertices);
       void setNormals(gfloat3* normals);
       void setColors(gfloat3* colors);
+      void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
 
   public:
@@ -73,6 +78,7 @@ class GMesh : public GDrawable {
       gfloat3* m_vertices ;
       gfloat3* m_normals ;
       gfloat3* m_colors ;
+      gfloat2* m_texcoords ;
       guint3*  m_faces ;
       gfloat3* m_low ;
       gfloat3* m_high ;
@@ -85,6 +91,7 @@ class GMesh : public GDrawable {
       GBuffer* m_vertices_buffer ;
       GBuffer* m_normals_buffer ;
       GBuffer* m_colors_buffer ;
+      GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;
       GBuffer* m_model_to_world_buffer ;
 

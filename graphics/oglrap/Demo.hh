@@ -8,6 +8,7 @@ class Demo : public GMesh {
       static const float pvertex[] ;
       static const float pnormal[] ;
       static const float pcolor[] ;
+      static const float ptexcoord[] ;
       static const unsigned int pindex[] ;
   public:
       Demo();

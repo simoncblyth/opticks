@@ -15,6 +15,8 @@ GMesh::GMesh(GMesh* other)
      m_num_faces(other->getNumFaces()),
      m_colors(other->getColors()),
      m_colors_buffer(other->getColorsBuffer()),
+     m_texcoords(other->getTexcoords()),
+     m_texcoords_buffer(other->getTexcoordsBuffer()),
      m_num_colors(other->getNumColors()),
      m_normals(other->getNormals()),
      m_normals_buffer(other->getNormalsBuffer()),
@@ -23,8 +25,15 @@ GMesh::GMesh(GMesh* other)
    updateBounds();
 }
 
-GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, guint3* faces, unsigned int num_faces, gfloat3* normals ) 
-      :
+GMesh::GMesh(unsigned int index, 
+             gfloat3* vertices, 
+             unsigned int num_vertices, 
+             guint3* faces, 
+             unsigned int num_faces, 
+             gfloat3* normals, 
+             gfloat2* texcoords
+            ) 
+        :
       m_index(index),
       m_vertices(NULL),
       m_vertices_buffer(NULL),
@@ -34,6 +43,8 @@ GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, g
       m_num_faces(num_faces),
       m_colors(NULL),
       m_colors_buffer(NULL),
+      m_texcoords(NULL),
+      m_texcoords_buffer(NULL),
       m_low(NULL),
       m_high(NULL),
       m_dimensions(NULL),
@@ -50,6 +61,7 @@ GMesh::GMesh(unsigned int index, gfloat3* vertices, unsigned int num_vertices, g
    setVertices(vertices);
    setFaces(faces);
    setNormals(normals);
+   setTexcoords(texcoords);
    updateBounds();
 }
 
@@ -113,12 +125,18 @@ gfloat3* GMesh::getNormals()
     return m_normals ;
 }
 
-
-
 gfloat3* GMesh::getColors()
 {
     return m_colors ;
 }
+gfloat2* GMesh::getTexcoords()
+{
+    return m_texcoords ;
+}
+
+
+
+
 guint3*  GMesh::getFaces()
 {
     return m_faces ;
@@ -140,6 +158,13 @@ GBuffer* GMesh::getColorsBuffer()
 {
     return m_colors_buffer ;
 }
+GBuffer* GMesh::getTexcoordsBuffer()
+{
+    return m_texcoords_buffer ;
+}
+
+
+
 GBuffer*  GMesh::getIndicesBuffer()
 {
     return m_indices_buffer ;
@@ -178,6 +203,18 @@ void GMesh::setColors(gfloat3* colors)
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
 
+void GMesh::setTexcoords(gfloat2* texcoords)
+{
+    if(!texcoords) return ;
+    m_texcoords = texcoords ;
+    m_texcoords_buffer = new GBuffer( sizeof(gfloat2)*m_num_vertices, (void*)m_texcoords, sizeof(gfloat2), 2  ) ;
+    assert(sizeof(gfloat2) == sizeof(float)*2);
+}
+
+
+
+
+
 void GMesh::setColor(float r, float g, float b)
 {
     assert(m_num_colors == m_num_vertices);
@@ -203,8 +240,10 @@ void GMesh::setHigh(gfloat3* high)
     m_high = high ;
 }
 
-
-
+bool GMesh::hasTexcoords()
+{
+    return m_texcoords != NULL ;
+}
 
 
 GMesh::~GMesh()
@@ -225,11 +264,23 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
         printf(" nrm %5u  %10.3f %10.3f %10.3f \n", i, nrm.x, nrm.y, nrm.z );
     } 
 
+
+    if(hasTexcoords())
+    { 
+        for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
+        {
+            gfloat2& tex = m_texcoords[i] ;
+            printf(" tex %5u  %10.3f %10.3f  \n", i, tex.u, tex.v );
+        } 
+    }
+
     for(unsigned int i=0 ; i < std::min(nmax,m_num_colors) ; i++)
     {
         gfloat3& col = m_colors[i] ;
         printf(" col %5u  %10.3f %10.3f %10.3f \n", i, col.x, col.y, col.z );
     } 
+
+
     for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
     {
         guint3& fac = m_faces[i] ;

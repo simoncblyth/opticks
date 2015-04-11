@@ -19,8 +19,6 @@ class Texture : public GMesh {
        void create(unsigned int width, unsigned int height);
        void resize(unsigned int width, unsigned int height);
        void cleanup();
-       void init();
-       void draw();
 
        unsigned int getId();
 

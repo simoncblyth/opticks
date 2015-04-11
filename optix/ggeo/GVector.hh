@@ -3,6 +3,21 @@
 
 #include "GMatrix.hh"
 
+
+struct gfloat2 
+{
+    gfloat2() : u(0.f), v(0.f) {} ;
+    gfloat2(float _u, float _v) : u(_u), v(_v) {} ;
+
+    void Summary(const char* msg)
+    {
+        printf("%s gfloat2 %10.3f %10.3f \n", msg, u, v);
+    }
+
+    float u,v ;
+};
+
+
 struct gfloat3 
 {
     gfloat3() : x(0.f), y(0.f), z(0.f) {} ;

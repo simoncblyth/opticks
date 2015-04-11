@@ -49,11 +49,17 @@ const unsigned int Texture::pindex[] = {
 
 
 Texture::Texture() : 
-    GMesh(0, (gfloat3*)&pvertex[0],3, (guint3*)&pindex[0],1, (gfloat3*)&pnormal[0]),
+    GMesh(0, 
+             (gfloat3*)&pvertex[0],
+             4, 
+             (guint3*)&pindex[0],
+             2, 
+             (gfloat3*)&pnormal[0],
+             (gfloat2*)&ptexcoord[0]
+         ),
     m_id(0)
 {
     setColors( (gfloat3*)&pcolor[0] );
-    //setTexcoords( (gfloat2*)&ptexcoord[0] );
 }
 
 
@@ -94,9 +100,4 @@ unsigned int Texture::getId()
     return m_id ;
 }
 
-void Texture::init()
-{
 
-
-
-}
