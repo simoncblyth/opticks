@@ -17,7 +17,11 @@ rtDeclareVariable(float3,        W, , );
 rtDeclareVariable(float3,        bad_color, , );
 rtDeclareVariable(float,         scene_epsilon, , );
 rtBuffer<uchar4, 2>              output_buffer;
+
+
+#if 0
 rtDeclareVariable(rtObject,      top_object, , );
+#endif
 rtDeclareVariable(unsigned int,  radiance_ray_type, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
@@ -33,7 +37,7 @@ rtDeclareVariable(uint2,         touch_dim,  , );
 rtBuffer<unsigned int,2>         touch_buffer;
 
 
-rtBuffer<curandState, 1> rng_states ;
+//rtBuffer<curandState, 1> rng_states ;
 
 
 
@@ -51,6 +55,14 @@ RT_PROGRAM void pinhole_camera()
   // pixel coordinates -> normalized coordinates  [ -1:1, -1:1 ]
   //
 
+  PerRayData_radiance prd;
+  prd.importance = 1.f;
+  prd.depth = 0;
+  prd.node = touch_bad ;
+  prd.result = bad_color ;
+
+
+#if 0
   float2 d = touch_mode ?  
                      make_float2(touch_index) / make_float2(touch_dim) * 2.f - 1.f 
                    : 
@@ -63,19 +75,15 @@ RT_PROGRAM void pinhole_camera()
   
   optix::Ray ray = optix::make_Ray(ray_origin, ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX);
 
-  PerRayData_radiance prd;
-  prd.importance = 1.f;
-  prd.depth = 0;
-  prd.node = touch_bad ;
-
   unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
-  prd.rng = rng_states[id];
+  //prd.rng = rng_states[id];
 
   rtTrace(top_object, ray, prd);
 
+  ////prd.result.x = curand_uniform(&prd.rng); 
+  //rng_states[id] = prd.rng ; 
+#endif
 
-  //prd.result.x = curand_uniform(&prd.rng); 
-  rng_states[id] = prd.rng ; 
 
 #if RAYTRACE_TIMEVIEW
   clock_t t1 = clock(); 

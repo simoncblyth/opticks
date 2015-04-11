@@ -84,15 +84,16 @@ int main(int argc, char** argv)
     // but when using VBO initContext needs to be after  OpenGL context creation
     // otherwidth segfaults at glGenBuffers(1, &vbo);
     //
-    OptiXEngine engine ;   // creates OptiX context
+    OptiXEngine engine ;        // creates OptiX context
     RayTraceConfig::makeInstance(engine.getContext(), "GGeoView");
     engine.initContext(width, height);  
 
-    engine.associate_PBO_to_Texture(texture.getTextureId());    // loose teapot with this
+    engine.associate_PBO_to_Texture(texture.getTextureId());    // teapot replaced with plain grey
 
     scene.setGeometry(&texture);  // override geometry
     scene.init_opengl();          // GL uploads GDrawable buffers to GPU, m_geometry GDrawable must be set 
 
+    engine.preprocess();
 
     GLFWwindow* window = frame.getWindow();
 
@@ -104,12 +105,15 @@ int main(int argc, char** argv)
         // resulting in the non-blocking handler methods of the delegate being called
         srv.poll_one();  
 
+        engine.trace();
+        engine.displayFrame(texture.getTextureId());
+
         frame.render();
         glfwSwapBuffers(window);
     }
+
+    //srv.sleep(10);
     srv.stop();
-
-
     frame.exit();
 
     exit(EXIT_SUCCESS);

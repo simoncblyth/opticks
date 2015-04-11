@@ -13,6 +13,7 @@ class OptiXEngine {
         void preprocess(); 
         void trace(); 
         void fill_PBO();
+        void displayFrame(unsigned int texID);
 
     public:
         optix::Context& getContext();
@@ -27,6 +28,8 @@ class OptiXEngine {
 
     protected:
         optix::Context m_context; 
+        optix::Buffer  m_output_buffer ; 
+        optix::GeometryGroup m_geometry_group ;
 
         unsigned int m_width ;
         unsigned int m_height ;
@@ -35,6 +38,8 @@ class OptiXEngine {
 
         size_t m_vbo_element_size;
         size_t m_pbo_element_size;
+
+        unsigned char* m_pbo_data ; 
 
 
 };

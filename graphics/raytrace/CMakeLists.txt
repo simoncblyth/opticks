@@ -95,7 +95,7 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
 
 add_optix_executable( MeshViewer
-                      MeshViewer.cpp
+                      main.cpp
 
                       cu/phong.cu
                       cu/material1_radiance.cu

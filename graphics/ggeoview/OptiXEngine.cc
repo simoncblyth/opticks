@@ -32,10 +32,16 @@ OptiXEngine::OptiXEngine() :
     m_vbo(0),
     m_pbo(0),
     m_vbo_element_size(0),
-    m_pbo_element_size(0)
+    m_pbo_element_size(0),
+    m_pbo_data(NULL)
 {
     printf("OptiXEngine::OptiXEngine\n");
     m_context = Context::create();
+    m_geometry_group = m_context->createGeometryGroup();
+
+    // TODO: geometry loading
+    //m_context[ "top_object" ]->set( m_geometry_group );
+
 }
 void OptiXEngine::cleanUp()
 {
@@ -53,6 +59,29 @@ void OptiXEngine::setSize(unsigned int width, unsigned int height)
     m_width = width ;
     m_height = height ;
 }
+
+
+
+/*
+124 void SampleScene::resize(unsigned int width, unsigned int height)
+125 {
+126   try {
+127     Buffer buffer = getOutputBuffer();
+128     buffer->setSize( width, height );
+129 
+130     if(m_use_vbo_buffer)
+131     {
+132       buffer->unregisterGLBuffer();
+133       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->getGLBOId());
+134       glBufferData(GL_PIXEL_UNPACK_BUFFER, buffer->getElementSize() * width * height, 0, GL_STREAM_DRAW);
+135       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+136       buffer->registerGLBuffer();
+137     }
+
+*/
+
+
+
 
 
 optix::Buffer OptiXEngine::createOutputBuffer(RTformat format, unsigned int width, unsigned int height)
@@ -78,6 +107,7 @@ optix::Buffer OptiXEngine::createOutputBuffer_VBO(RTformat format, unsigned int 
 
     return buffer;
 }
+
 optix::Buffer OptiXEngine::createOutputBuffer_PBO(RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
@@ -86,7 +116,14 @@ optix::Buffer OptiXEngine::createOutputBuffer_PBO(RTformat format, unsigned int 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo);
 
     m_context->checkError(rtuGetSizeForRTformat(format, &m_pbo_element_size));
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, m_pbo_element_size * width * height, 0, GL_STREAM_DRAW);
+
+    assert(m_pbo_element_size == 4);
+    unsigned int nbytes = m_pbo_element_size * width * height ;
+
+    m_pbo_data = (unsigned char*)malloc(nbytes);
+    memset(m_pbo_data, 0x88, nbytes);  // initialize PBO to grey 
+
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, m_pbo_data, GL_STREAM_DRAW);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); 
 
     buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, m_pbo);
@@ -98,6 +135,91 @@ optix::Buffer OptiXEngine::createOutputBuffer_PBO(RTformat format, unsigned int 
   
     return buffer;
 }
+
+
+
+void OptiXEngine::associate_PBO_to_Texture(unsigned int texId)
+{
+    assert(m_pbo > 0);
+    glBindBuffer( GL_PIXEL_UNPACK_BUFFER, m_pbo);
+    glBindTexture( GL_TEXTURE_2D, texId );
+
+    // this kills the teapot
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, NULL );
+}
+
+
+
+void OptiXEngine::displayFrame(unsigned int texId)
+{
+   // see  GLUTDisplay::displayFrame() 
+
+    RTsize buffer_width_rts, buffer_height_rts;
+    m_output_buffer->getSize( buffer_width_rts, buffer_height_rts );
+
+    int buffer_width  = static_cast<int>(buffer_width_rts);
+    int buffer_height = static_cast<int>(buffer_height_rts);
+
+    RTformat buffer_format = m_output_buffer->getFormat();
+
+    //
+    // glTexImage2D specifies mutable texture storage characteristics and provides the data
+    //
+    //    *internalFormat* 
+    //         format with which OpenGL should store the texels in the texture
+    //    *data*
+    //         location of the initial texel data in host memory, 
+    //         if a buffer is bound to the GL_PIXEL_UNPACK_BUFFER binding point, 
+    //         texel data is read from that buffer object, and *data* is interpreted 
+    //         as an offset into that buffer object from which to read the data. 
+    //    *format* and *type*
+    //         initial source texel data layout which OpenGL will convert 
+    //         to the internalFormat
+    // 
+
+   // send pbo to texture
+
+    assert(m_pbo > 0);
+
+    glBindTexture(GL_TEXTURE_2D, texId );
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo);
+
+    RTsize elementSize = m_output_buffer->getElementSize();
+    if      ((elementSize % 8) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+    else if ((elementSize % 4) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    else if ((elementSize % 2) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+    else                             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    switch(buffer_format) 
+    {   //               target   miplevl  internalFormat                     border  format   type           data  
+        case RT_FORMAT_UNSIGNED_BYTE4:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, buffer_width, buffer_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+            break ; 
+        case RT_FORMAT_FLOAT4:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, buffer_width, buffer_height, 0, GL_RGBA, GL_FLOAT, 0);
+            break;
+        case RT_FORMAT_FLOAT3:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F_ARB, buffer_width, buffer_height, 0, GL_RGB, GL_FLOAT, 0);
+            break;
+        case RT_FORMAT_FLOAT:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE32F_ARB, buffer_width, buffer_height, 0, GL_LUMINANCE, GL_FLOAT, 0);
+            break;
+        default:
+            assert(0 && "Unknown buffer format");
+    }
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+
+}
+
+
+
+
+
+
+
 
 void OptiXEngine::fill_PBO()
 {
@@ -122,17 +244,6 @@ void OptiXEngine::fill_PBO()
 }
 
 
-void OptiXEngine::associate_PBO_to_Texture(unsigned int texId)
-{
-    assert(m_pbo > 0);
-    glBindBuffer( GL_PIXEL_UNPACK_BUFFER, m_pbo);
-    glBindTexture( GL_TEXTURE_2D, texId );
-
-    // this kills the teapot
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, NULL );
-}
-
-
 
 void OptiXEngine::initContext(unsigned int width, unsigned int height)
 {
@@ -146,7 +257,11 @@ void OptiXEngine::initContext(unsigned int width, unsigned int height)
 
     m_context->setStackSize( 2180 );
  
-    m_context["output_buffer"]->set( createOutputBuffer_PBO(RT_FORMAT_UNSIGNED_BYTE4, width, height) );
+    m_output_buffer = createOutputBuffer_PBO(RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
+    m_context["output_buffer"]->set( m_output_buffer );
+
+    m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
+
 
     unsigned int num_entry_points = 1;
     m_context->setEntryPointCount( num_entry_points );
@@ -172,13 +287,9 @@ void OptiXEngine::initContext(unsigned int width, unsigned int height)
 void OptiXEngine::preprocess()
 {
     m_context[ "scene_epsilon"]->setFloat(1.e-4f); //  * m_aabb.maxExtent() );
-
     m_context->validate();
-
     m_context->compile();
-
     m_context->launch(0,0);  // builds Accel Structure
-
 }
 
 void OptiXEngine::trace()
@@ -205,12 +316,7 @@ void OptiXEngine::trace()
 
    m_context->launch( 0, static_cast<unsigned int>(buffer_width), static_cast<unsigned int>(buffer_height) );
 
-
-
-
 }
-
-
 
 
 
