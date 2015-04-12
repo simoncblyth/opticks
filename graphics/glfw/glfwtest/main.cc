@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     Frame frame ;
     Composition composition ;
     Interactor interactor ; 
-    Renderer renderer ; 
+    Renderer renderer("nrm") ; 
     Geometry geometry ; 
     numpydelegate delegate ; 
 
@@ -52,8 +52,8 @@ int main(int argc, char** argv)
 
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
     interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
-    renderer.setComposition(&composition);   // renderer needs access to MV, MVP matrices
-    numpyserver<numpydelegate> server(&delegate);
+    renderer.setComposition(&composition);   // composition provides MV, MVP matrices to renderer
+    numpyserver<numpydelegate> server(&delegate);  // server routes external UDP/ZMQ messages to delegate, when polled
 
     frame.gl_init_window("GLFWTest", composition.getWidth(),composition.getHeight());
     geometry.load("GLFWTEST_") ;

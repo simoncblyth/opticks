@@ -12,9 +12,15 @@ class Trackball ;
 class Interactor {
   public:
        static const char* DRAGFACTOR ; 
+       static const char* OPTIXMODE ; 
 
        Interactor(); 
        void setup(Camera* camera, View* view, Trackball* trackball);
+
+  public:
+       bool isOptiXMode(){ return m_optix_mode > 0 ; }
+       void setOptiXMode(int optix_mode){ m_optix_mode =  optix_mode ; }
+
 
   public:
        void cursor_drag( float x, float y, float dx, float dy );
@@ -23,6 +29,9 @@ class Interactor {
        void Print(const char* msg);
 
        void configureF(const char* name, std::vector<float> values);
+       void configureI(const char* name, std::vector<int> values);
+
+       
 
   private:
        Camera*      m_camera ; 
@@ -35,6 +44,7 @@ class Interactor {
        bool m_far_mode ;
        bool m_yfov_mode ;
        bool m_rotate_mode ;
+       int  m_optix_mode ;
 
        float m_dragfactor ;
 

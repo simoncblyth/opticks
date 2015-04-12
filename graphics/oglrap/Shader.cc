@@ -266,13 +266,16 @@ void Shader::init(const std::string& vert, const std::string& frag)
     link(m_program);
     
     m_mvp_location = glGetUniformLocation(m_program, "ModelViewProjection");
-    assert(m_mvp_location > -1);
+    //assert(m_mvp_location > -1);
 
     m_mv_location = glGetUniformLocation(m_program, "ModelView");
-    assert(m_mv_location > -1);
+    //assert(m_mv_location > -1);
 
     m_sampler_location = glGetUniformLocation(m_program, "texSampler");
     //assert(m_sampler_location > -1);
+
+    Print("init");
+
     if(m_sampler_location > -1)
     {
         printf("Shader::init found texSampler at location %d \n", m_sampler_location );
@@ -284,6 +287,12 @@ void Shader::init(const std::string& vert, const std::string& frag)
 
     assert( isValid() );
 } 
+
+void Shader::Print(const char* msg)
+{
+    printf("Shader::%s locations mvp/mv/sampler : %d/%d/%d ", msg, m_mvp_location, m_mv_location, m_sampler_location );
+}
+
 
 
 GLint Shader::getMVPLocation()

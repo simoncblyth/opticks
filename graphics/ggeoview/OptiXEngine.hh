@@ -15,6 +15,7 @@ class OptiXEngine {
         void setSize(unsigned int width, unsigned int height);
         void setComposition(Composition* composition);
 
+        void initRenderer();
         void initContext();
 
         void cleanUp();
@@ -25,8 +26,12 @@ class OptiXEngine {
 
     public:
         optix::Context& getContext();
+        void render();
+        
+    private: 
         unsigned int getPBOId(){ return m_pbo ; }
         unsigned int getVBOId(){ return m_vbo ; }
+        void push_PBO_to_Texture(unsigned int texId);
         void associate_PBO_to_Texture(unsigned int texId);
 
     protected:

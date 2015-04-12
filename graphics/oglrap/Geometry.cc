@@ -38,8 +38,13 @@ void Geometry::load(const char* envprefix)
 
     assert(m_geo);
     m_geo->setColor(0.5,0.5,1.0);
-    m_geo->Summary("Geometry::load Sumary");
-    m_geo->Dump("Geometry::load Dump",10);
+}
+
+void Geometry::Summary(const char* msg)
+{
+    printf("%s\n", msg);
+    m_geo->Summary("Geometry::Summary");
+    m_geo->Dump("Geometry::Summary Dump",10);
 }
 
 

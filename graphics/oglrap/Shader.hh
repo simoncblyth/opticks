@@ -13,6 +13,7 @@ class Shader {
       virtual ~Shader();
       GLuint getId(); 
       void dump(const char* msg="Shader::dump");
+      void Print(const char* msg="Print");
       bool isValid();
 
       GLint getMVPLocation();

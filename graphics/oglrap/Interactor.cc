@@ -9,6 +9,7 @@
 
 
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
+const char* Interactor::OPTIXMODE  = "optixmode" ; 
 
 Interactor::Interactor() 
    :
@@ -21,14 +22,25 @@ Interactor::Interactor()
    m_far_mode(false), 
    m_yfov_mode(false),
    m_rotate_mode(false),
+   m_optix_mode(0),
    m_dragfactor(1.f)
 {
 }
 
-
 void Interactor::configureF(const char* name, std::vector<float> values)
 {
     printf("Interactor::configureF");
+}
+
+void Interactor::configureI(const char* name, std::vector<int> values)
+{
+    printf("Interactor::configureI");
+    if(values.empty()) return ;
+    if(strcmp(name, OPTIXMODE) == 0)
+    {
+        int last = values.back();
+        setOptiXMode(last);
+    }
 }
 
 
@@ -97,6 +109,9 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_R:
             m_rotate_mode = !m_rotate_mode ; 
             break;
+        case GLFW_KEY_O:
+            m_optix_mode = !m_optix_mode ; 
+            break;
         case GLFW_KEY_UP:
             m_dragfactor *= 2. ; 
             break;
@@ -140,13 +155,14 @@ void Interactor::key_released(unsigned int key)
 
 void Interactor::Print(const char* msg)
 {
-    printf("%s %s%s%s%s%s%s %10.3f \n", msg,
+    printf("%s %s%s%s%s%s%s%s %10.3f \n", msg,
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
            m_near_mode ? "n" : "-",
            m_yfov_mode ? "y" : "-",
            m_rotate_mode ? "r" : "-",
+           m_optix_mode ? "o" : "-",
            m_dragfactor );
 }
 

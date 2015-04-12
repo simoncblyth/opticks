@@ -47,12 +47,11 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
 
     m_config = RayTraceConfig::makeInstance(m_context, cmake_target);
 
-
     // TODO: geometry loading
     //m_context[ "top_object" ]->set( m_geometry_group );
 
-    m_renderer = new Renderer();
-    m_texture = new Texture();
+    m_renderer = new Renderer("tex");
+    m_texture = new Texture();   // QuadTexture would be better name
 
     printf("OptiXEngine::OptiXEngine DONE\n");
 }
@@ -61,9 +60,18 @@ void OptiXEngine::setComposition(Composition* composition)
 {
     assert(m_renderer);
     m_composition = composition ; 
-    m_renderer->setComposition(composition);
+    //m_renderer->setComposition(composition);
 }
 
+void OptiXEngine::initRenderer()
+{
+    unsigned int width  = m_composition->getWidth();
+    unsigned int height = m_composition->getHeight();
+    m_texture->setSize(width, height);
+    m_texture->create();
+    printf("OptiXEngine::initRenderer %u %u  texId %d  \n", width, height, m_texture->getTextureId());
+    m_renderer->setDrawable(m_texture);
+}
 
 void OptiXEngine::initContext()
 {
@@ -107,6 +115,7 @@ void OptiXEngine::initContext()
 
 void OptiXEngine::preprocess()
 {
+    printf("OptiXEngine::preprocess\n");
     m_context[ "scene_epsilon"]->setFloat(1.e-4f); //  * m_aabb.maxExtent() );
     m_context->validate();
     m_context->compile();
@@ -115,77 +124,22 @@ void OptiXEngine::preprocess()
 
 void OptiXEngine::trace()
 {
-
-   /*
-    m_context["eye"]->setFloat( camera_data.eye );
-    m_context["U"]->setFloat( camera_data.U );
-    m_context["V"]->setFloat( camera_data.V );
-    m_context["W"]->setFloat( camera_data.W );
-   */
-
-  m_context[ "eye"]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-  m_context[ "U"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-  m_context[ "V"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-  m_context[ "W"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-
-
+    m_context[ "eye"]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+    m_context[ "U"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+    m_context[ "V"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+    m_context[ "W"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
 
     Buffer buffer = m_context["output_buffer"]->getBuffer();
     RTsize buffer_width, buffer_height;
     buffer->getSize( buffer_width, buffer_height );
 
+    unsigned int width  = static_cast<unsigned int>(buffer_width) ;
+    unsigned int height = static_cast<unsigned int>(buffer_height) ;
 
-   m_context->launch( 0, static_cast<unsigned int>(buffer_width), static_cast<unsigned int>(buffer_height) );
+    //printf("OptiXEngine::trace %u %u\n", width, height );
 
+    m_context->launch( 0,  width, height );
 }
-
-
-
-
-
-void OptiXEngine::cleanUp()
-{
-    m_context->destroy();
-    m_context = 0;
-}
-
-optix::Context& OptiXEngine::getContext()
-{
-    return m_context ; 
-}
-
-void OptiXEngine::setSize(unsigned int width, unsigned int height)
-{
-    m_width = width ;
-    m_height = height ;
-
-    m_composition->setSize(width, height);
-    m_texture->setSize(width, height);
-    
-}
-
-
-
-/*
-124 void SampleScene::resize(unsigned int width, unsigned int height)
-125 {
-126   try {
-127     Buffer buffer = getOutputBuffer();
-128     buffer->setSize( width, height );
-129 
-130     if(m_use_vbo_buffer)
-131     {
-132       buffer->unregisterGLBuffer();
-133       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->getGLBOId());
-134       glBufferData(GL_PIXEL_UNPACK_BUFFER, buffer->getElementSize() * width * height, 0, GL_STREAM_DRAW);
-135       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-136       buffer->registerGLBuffer();
-137     }
-
-*/
-
-
-
 
 
 optix::Buffer OptiXEngine::createOutputBuffer(RTformat format, unsigned int width, unsigned int height)
@@ -194,6 +148,7 @@ optix::Buffer OptiXEngine::createOutputBuffer(RTformat format, unsigned int widt
     buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, format, width, height);
     return buffer ; 
 }
+
 optix::Buffer OptiXEngine::createOutputBuffer_VBO(RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
@@ -240,10 +195,10 @@ optix::Buffer OptiXEngine::createOutputBuffer_PBO(RTformat format, unsigned int 
     return buffer;
 }
 
-
-
 void OptiXEngine::associate_PBO_to_Texture(unsigned int texId)
 {
+    printf("OptiXEngine::associate_PBO_to_Texture texId %u \n", texId);
+
     assert(m_pbo > 0);
     glBindBuffer( GL_PIXEL_UNPACK_BUFFER, m_pbo);
     glBindTexture( GL_TEXTURE_2D, texId );
@@ -253,9 +208,9 @@ void OptiXEngine::associate_PBO_to_Texture(unsigned int texId)
 }
 
 
-
-void OptiXEngine::displayFrame(unsigned int texId)
+void OptiXEngine::push_PBO_to_Texture(unsigned int texId)
 {
+    //printf("OptiXEngine::push_PBO_to_Texture texId %u \n", texId);
    // see  GLUTDisplay::displayFrame() 
 
     RTsize buffer_width_rts, buffer_height_rts;
@@ -298,15 +253,19 @@ void OptiXEngine::displayFrame(unsigned int texId)
     switch(buffer_format) 
     {   //               target   miplevl  internalFormat                     border  format   type           data  
         case RT_FORMAT_UNSIGNED_BYTE4:
+            //printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_UNSIGNED_BYTE4 tex:%d \n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, buffer_width, buffer_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
             break ; 
         case RT_FORMAT_FLOAT4:
+            printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_FLOAT4 tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, buffer_width, buffer_height, 0, GL_RGBA, GL_FLOAT, 0);
             break;
         case RT_FORMAT_FLOAT3:
+            printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_FLOAT3 tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F_ARB, buffer_width, buffer_height, 0, GL_RGB, GL_FLOAT, 0);
             break;
         case RT_FORMAT_FLOAT:
+            printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_FLOAT tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE32F_ARB, buffer_width, buffer_height, 0, GL_LUMINANCE, GL_FLOAT, 0);
             break;
         default:
@@ -319,6 +278,13 @@ void OptiXEngine::displayFrame(unsigned int texId)
 }
 
 
+void OptiXEngine::render()
+{
+    unsigned int texId = m_texture->getTextureId() ;
+    //printf("OptiXEngine::render %d\n", texId);
+    push_PBO_to_Texture(texId);
+    m_renderer->render();
+}
 
 
 
@@ -351,5 +317,44 @@ void OptiXEngine::fill_PBO()
 
 
 
+
+void OptiXEngine::cleanUp()
+{
+    m_context->destroy();
+    m_context = 0;
+}
+
+optix::Context& OptiXEngine::getContext()
+{
+    return m_context ; 
+}
+
+void OptiXEngine::setSize(unsigned int width, unsigned int height)
+{
+    m_width = width ;
+    m_height = height ;
+
+    m_composition->setSize(width, height);
+    m_texture->setSize(width, height);
+    
+}
+
+/*
+124 void SampleScene::resize(unsigned int width, unsigned int height)
+125 {
+126   try {
+127     Buffer buffer = getOutputBuffer();
+128     buffer->setSize( width, height );
+129 
+130     if(m_use_vbo_buffer)
+131     {
+132       buffer->unregisterGLBuffer();
+133       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->getGLBOId());
+134       glBufferData(GL_PIXEL_UNPACK_BUFFER, buffer->getElementSize() * width * height, 0, GL_STREAM_DRAW);
+135       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+136       buffer->registerGLBuffer();
+137     }
+
+*/
 
 

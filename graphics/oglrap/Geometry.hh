@@ -8,6 +8,7 @@ class Geometry {
     public:
          Geometry();
          void load(const char* envprefix);
+         void Summary(const char* msg);
 
          GGeo*        getGGeo();
          GMergedMesh* getGeo();

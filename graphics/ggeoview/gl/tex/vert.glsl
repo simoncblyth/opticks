@@ -20,8 +20,8 @@ void main ()
     //colour = vertex_colour ;
     //colour = vec3(0,1.0,0) ;
 
-    gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);
-    //gl_Position = vec4 (vertex_position, 1.0);
+    //gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);
+    gl_Position = vec4 (vertex_position, 1.0);
 
     texcoord = vertex_texcoord;
 

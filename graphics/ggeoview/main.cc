@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     Frame frame ;
     Composition composition ;   
     Interactor interactor ; 
-    Renderer renderer ;  
+    Renderer renderer("nrm") ;  
     Geometry geometry ;
     numpydelegate delegate ; 
 
@@ -58,26 +58,39 @@ int main(int argc, char** argv)
     numpyserver<numpydelegate> server(&delegate);
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight()); // OpenGL context created
+
     geometry.load("GGEOVIEW_") ; 
-    renderer.setDrawable(geometry.getDrawable());
 
-    // to see the geometry normally need diffeerent shader without tex
+    if(!interactor.isOptiXMode())  // debug only
+    {
+       renderer.setDrawable(geometry.getDrawable());
+    }
 
-    //OptiXEngine engine("GGeoView") ;        // creates OptiX context
-    //engine.setComposition(&composition); 
-    //engine.initContext();
-    //engine.associate_PBO_to_Texture(texture.getTextureId());    // teapot replaced with plain grey
-    //engine.preprocess();
+
+    OptiXEngine engine("GGeoView") ;  // creates OptiX context
+    engine.setComposition(&composition); 
+    engine.initRenderer();
+    engine.initContext();
+    engine.preprocess();
+
 
     GLFWwindow* window = frame.getWindow();
     while (!glfwWindowShouldClose(window))
     {
         frame.listen(); 
         server.poll_one();  
-        //engine.trace();
-        //engine.displayFrame(texture.getTextureId());
         frame.render();
-        renderer.render();
+
+        if(interactor.isOptiXMode())
+        { 
+            engine.trace();
+            engine.render();
+        }
+        else
+        {
+            renderer.render();
+        }
+
         glfwSwapBuffers(window);
     }
     //server.sleep(10);

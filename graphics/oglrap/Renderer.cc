@@ -102,9 +102,11 @@ void Renderer::gl_upload_buffers()
     //
     assert(m_drawable);
 
-    float* model_to_world  = (float*)m_drawable->getModelToWorldBuffer()->getPointer();
-    m_composition->setModelToWorld(model_to_world);
-
+    if(m_composition)
+    { 
+        float* model_to_world  = (float*)m_drawable->getModelToWorldBuffer()->getPointer();
+        m_composition->setModelToWorld(model_to_world);
+    }
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
@@ -190,11 +192,15 @@ void Renderer::render()
     glm::mat4 MV ;
     glm::mat4 MVP ;
 
-    m_composition->defineViewMatrices(MV, MVP);
-   
+    if(m_composition)
+    {
+        m_composition->defineViewMatrices(MV, MVP);
+    }   
+
     glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(MV));
     glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(MVP));
 
+    //Print("render");
     if(m_draw_count == 0)
     {
         print(MV,  "MV");
@@ -214,11 +220,6 @@ void Renderer::render()
 }
 
 
-void Renderer::Print(const char* msg)
-{
-    printf("%s\n", msg);
-}
-
 void Renderer::dump(const char* msg)
 {
     printf("%s\n", msg );
@@ -232,6 +233,11 @@ void Renderer::dump(const char* msg)
     printf("shadertag %s \n", getShaderTag());
 
     m_shader->dump(msg);
+}
+
+void Renderer::Print(const char* msg)
+{
+    printf("Renderer::%s tag %s nelem %d vao %d \n", msg, getShaderTag(), m_indices_count, m_vao );
 }
 
 
