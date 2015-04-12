@@ -48,8 +48,7 @@ glfwtest-cd(){  cd $(glfwtest-sdir); }
 
 glfwtest-icd(){  cd $(glfwtest-idir); }
 glfwtest-bcd(){  cd $(glfwtest-bdir); }
-#glfwtest-name(){ echo GLFWTest ; }
-glfwtest-name(){ echo GLFWTestOptiX ; }
+glfwtest-name(){ echo GLFWTest ; }
 
 glfwtest-env(){      
    elocal- 

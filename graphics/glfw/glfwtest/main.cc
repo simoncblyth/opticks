@@ -5,8 +5,11 @@
 //  Frame include brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
 #include "FrameCfg.hh"
-#include "Scene.hh"
-#include "SceneCfg.hh"
+#include "Composition.hh"
+#include "CompositionCfg.hh"
+#include "Geometry.hh"
+#include "Renderer.hh"
+#include "RendererCfg.hh"
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 #include "Camera.hh"
@@ -25,23 +28,28 @@
 int main(int argc, char** argv)
 {
     Frame frame ;
-    numpydelegate delegate ; 
-    Scene scene ;  // ctor just instanciates Camera and View for early config
+    Composition composition ;
     Interactor interactor ; 
+    Renderer renderer ; 
+    Geometry geometry ; 
 
-    interactor.setScene(&scene);
-    frame.setScene(&scene);
-    frame.setInteractor(&interactor);  // TODO: decide on who contains who
+    numpydelegate delegate ; 
+
+    frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
+    interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
+    renderer.setComposition(&composition);
+
 
     FrameCfg<Frame>* framecfg = new FrameCfg<Frame>("frame", &frame, false);
 
     Cfg cfg("unbrella", false) ;  // collect other Cfg objects
     cfg.add(framecfg);
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
-    cfg.add(new SceneCfg<Scene>("scene", &scene, true));
-    cfg.add(new CameraCfg<Camera>("camera", scene.getCamera(), true));
-    cfg.add(new ViewCfg<View>(    "view",   scene.getView(),   true));
-    cfg.add(new TrackballCfg<Trackball>( "trackball",   scene.getTrackball(),   true));
+    cfg.add(new RendererCfg<Renderer>("renderer", &renderer, true));
+    cfg.add(new CompositionCfg<Composition>("composition", &composition, true));
+    cfg.add(new CameraCfg<Camera>("camera", composition.getCamera(), true));
+    cfg.add(new ViewCfg<View>(    "view",   composition.getView(),   true));
+    cfg.add(new TrackballCfg<Trackball>( "trackball",   composition.getTrackball(),   true));
     cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
 
     cfg.commandline(argc, argv);
@@ -55,10 +63,10 @@ int main(int argc, char** argv)
 
     frame.setSize(640,480);
     frame.setTitle("Demo");
-    frame.init_window();
+    frame.gl_init_window();
 
-    scene.load("GLFWTEST_") ;
-    scene.init_opengl();
+    geometry.load("GLFWTEST_") ;
+    renderer.setDrawable(geometry.getDrawable());
 
     GLFWwindow* window = frame.getWindow();
 
@@ -66,11 +74,11 @@ int main(int argc, char** argv)
     {
         frame.listen(); 
 
-        // give numpyserver a few cycles, to complete posts from the net thread
-        // resulting in the non-blocking handler methods of the delegate being called
         srv.poll_one();  
 
         frame.render();
+        renderer.render();
+
         glfwSwapBuffers(window);
     }
     srv.stop();

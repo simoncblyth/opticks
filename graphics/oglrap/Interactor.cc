@@ -3,7 +3,6 @@
 
 #include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
 
-#include "Scene.hh"
 #include "Camera.hh"
 #include "View.hh"
 #include "Trackball.hh"
@@ -13,7 +12,6 @@ const char* Interactor::DRAGFACTOR = "dragfactor" ;
 
 Interactor::Interactor() 
    :
-   m_scene(NULL),
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
@@ -34,14 +32,13 @@ void Interactor::configureF(const char* name, std::vector<float> values)
 }
 
 
-
-void Interactor::setScene(Scene* scene)
+void Interactor::setup(Camera* camera, View* view, Trackball* trackball)
 {
-    m_scene = scene ; 
-    m_camera = scene->getCamera();
-    m_view = scene->getView();
-    m_trackball = scene->getTrackball();
+    m_camera = camera ; 
+    m_view   = view ; 
+    m_trackball = trackball ; 
 }   
+
 
 void Interactor::cursor_drag(float x, float y, float dx, float dy )
 {

@@ -2,7 +2,6 @@
 
 #include <vector>
 
-class Scene ; 
 class Camera ; 
 class View ; 
 class Trackball ;
@@ -15,7 +14,7 @@ class Interactor {
        static const char* DRAGFACTOR ; 
 
        Interactor(); 
-       void setScene(Scene* scene);
+       void setup(Camera* camera, View* view, Trackball* trackball);
 
   public:
        void cursor_drag( float x, float y, float dx, float dy );
@@ -26,7 +25,6 @@ class Interactor {
        void configureF(const char* name, std::vector<float> values);
 
   private:
-       Scene*       m_scene ; 
        Camera*      m_camera ; 
        View*        m_view ; 
        Trackball*   m_trackball ; 

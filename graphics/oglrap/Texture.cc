@@ -73,9 +73,9 @@ Texture::Texture() :
 }
 
 
-void Texture::loadPPM(char* path)
+void Texture::loadPPM(const char* path)
 {
-    m_tex.rgb = ::loadPPM(path, &m_tex.width, &m_tex.height );
+    m_tex.rgb = ::loadPPM((char*)path, &m_tex.width, &m_tex.height );
     if(m_tex.rgb)
     {
         printf("Texture::loadPPM loaded %s into tex of width %d height %d \n", path, m_tex.width, m_tex.height);

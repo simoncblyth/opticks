@@ -223,6 +223,8 @@ void OptiXEngine::displayFrame(unsigned int texId)
 
 void OptiXEngine::fill_PBO()
 {
+    // not working
+    //
     //  https://www.opengl.org/wiki/Pixel_Buffer_Object
     //  https://www.opengl.org/wiki/Pixel_Transfer
 

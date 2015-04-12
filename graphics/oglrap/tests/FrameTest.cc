@@ -1,5 +1,6 @@
 #include "Frame.hh"
-#include "Scene.hh"
+#include "Composition.hh"
+#include "Renderer.hh"
 #include "Interactor.hh"
 #include "Texture.hh"
 
@@ -13,24 +14,27 @@ int main(int argc, char** argv)
     char* ppmpath = argv[1] ;
 
     Frame frame ; 
-    Scene scene ; 
+    Composition composition ; 
     Interactor interactor ;
+    Renderer renderer ; 
 
-    frame.setInteractor(&interactor);  // needed for the GLFW key and mouse events to be funneled to Interactor
-    interactor.setScene(&scene);       // allows interactor to modify camera, view and trackball constituents of scene
-    frame.setScene(&scene);            // only so frame.render() calls draw on scene  
+    frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
+    interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
+    renderer.setComposition(&composition);  // composition provides matrices to renderer 
+
 
     Texture texture ;
     texture.loadPPM(ppmpath);
 
-    frame.setSize(texture.getWidth(),texture.getHeight());
     frame.setTitle("FrameTest");
-    frame.init_window();
+    frame.setSize(texture.getWidth(),texture.getHeight());
+    composition.setSize(frame.getWidth(), frame.getHeight());
 
-    texture.create();   // needs to be after OpenGL context creation, done in frame.init_window
+    frame.gl_init_window();
 
-    scene.setGeometry(&texture);
-    scene.init_opengl();              // uploads geometry buffers
+
+    texture.create();   // after OpenGL context creation, done in frame.gl_init_window
+    renderer.setDrawable(&texture);
 
     GLFWwindow* window = frame.getWindow();
 
@@ -38,6 +42,7 @@ int main(int argc, char** argv)
     {
         frame.listen();
         frame.render();
+        renderer.render();
         glfwSwapBuffers(window);
     }
     frame.exit();

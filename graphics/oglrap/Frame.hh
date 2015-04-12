@@ -9,7 +9,6 @@
 #include <vector>
 
 class Config ;
-class Scene ;
 class Interactor ; 
 
 
@@ -22,11 +21,10 @@ class Frame {
        void configureS(const char* name, std::vector<std::string> values);
        void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
        void setTitle(const char* title);
-       void setScene(Scene* scene);
        void setInteractor(Interactor* interactor);
        void setDumpevent(int dumpevent);
 
-       void init_window();
+       void gl_init_window();
        void exit();
     
        void listen();
@@ -53,7 +51,6 @@ class Frame {
        unsigned int  m_coord2pixel ; 
        const char*   m_title ;
        GLFWwindow*   m_window;
-       Scene*        m_scene ;
        Interactor*   m_interactor ; 
        bool          m_cursor_inwindow ; 
        float         m_cursor_x ; 

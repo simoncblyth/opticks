@@ -23,7 +23,7 @@ class Texture : public GMesh {
 
        Texture();
        void setSize(unsigned int width, unsigned int height);
-       void loadPPM(char* path);  // does not need OpenGL context
+       void loadPPM(const char* path);  // does not need OpenGL context
        void create();
        //void resize(unsigned int width, unsigned int height, unsigned char* data);
        void cleanup();

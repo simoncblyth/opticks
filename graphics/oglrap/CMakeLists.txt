@@ -52,13 +52,16 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 add_library( ${name}  SHARED
+                Geometry.cc
+                Composition.cc
+                CompositionCfg.cc
                 Texture.cc
                 Frame.cc
                 FrameCfg.cc
                 Interactor.cc
                 InteractorCfg.cc
-                Scene.cc
-                SceneCfg.cc
+                Renderer.cc
+                RendererCfg.cc
                 Trackball.cc
                 TrackballCfg.cc
                 Camera.cc
@@ -72,13 +75,16 @@ add_library( ${name}  SHARED
 )
 
 SET(hdrs 
+        Geometry.hh
+        Composition.hh
+        CompositionCfg.hh
         Texture.hh
         Frame.hh
         FrameCfg.hh
         Interactor.hh
         InteractorCfg.hh
-        Scene.hh
-        SceneCfg.hh
+        Renderer.hh
+        RendererCfg.hh
         Trackball.hh
         TrackballCfg.hh
         Camera.hh

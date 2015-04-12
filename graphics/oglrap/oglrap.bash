@@ -101,7 +101,11 @@ oglrap-frametest()
    shift
    local bin=$(oglrap-bindir)/FrameTest
    oglrap-export
-   $bin $path $*
+   $LLDB $bin $path $*
 }
 
+oglrap-frametest-lldb()
+{
+   LLDB=lldb oglrap-frametest $*
+}
 

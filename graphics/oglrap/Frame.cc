@@ -10,7 +10,6 @@
 #include "gleq.h"
 
 #include "Frame.hh"
-#include "Scene.hh"
 #include "Interactor.hh"
 
 #include <iostream>
@@ -45,7 +44,6 @@ static void error_callback(int error, const char* description)
 Frame::Frame() : 
      m_title(NULL),
      m_window(NULL),
-     m_scene(NULL),
      m_interactor(NULL),
      m_cursor_inwindow(true),
      m_cursor_x(-1.f),
@@ -120,10 +118,6 @@ void Frame::setTitle(const char* title)
 {
     m_title = strdup(title);
 }
-void Frame::setScene(Scene* scene)
-{
-    m_scene = scene ;
-}
 void Frame::setInteractor(Interactor* interactor)
 {
     m_interactor = interactor ;
@@ -133,7 +127,7 @@ void Frame::setInteractor(Interactor* interactor)
 
 
 
-void Frame::init_window()
+void Frame::gl_init_window()
 {
     glfwSetErrorCallback(error_callback);
 
@@ -200,7 +194,7 @@ void Frame::render()
      // glViewport needs pixels (on retina)  window needs screen coordinates
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 
-     m_scene->draw(m_width, m_height);  
+     //m_scene->draw(m_width, m_height);  
      // hmm only use of m_scene, maybe not stong enough cause for constituency
 }
 
