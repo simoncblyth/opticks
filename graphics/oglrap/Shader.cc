@@ -63,19 +63,21 @@ std::string readFile(const char *path)
 
 
 
-Shader::Shader(const char* dir, const char* vname, const char* fname)
+Shader::Shader(const char* basedir, const char* tag, const char* vname, const char* fname)
 {
    std::string vert ;
    std::string frag ;
 
-   if(dir)
+   if(basedir)
    {
        char vpath[256];
        char fpath[256];
-       snprintf(vpath, 256, "%s/%s", dir, vname);
-       snprintf(fpath, 256, "%s/%s", dir, fname);
+       snprintf(vpath, 256, "%s/%s/%s", basedir, tag, vname);
+       snprintf(fpath, 256, "%s/%s/%s", basedir, tag, fname);
        vert = readFile(vpath) ;
        frag = readFile(fpath) ;
+       printf("Shader::Shader vpath %s\n", vpath);
+       printf("Shader::Shader fpath %s\n", fpath);
    } 
    else
    {

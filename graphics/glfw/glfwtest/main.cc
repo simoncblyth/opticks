@@ -32,18 +32,10 @@ int main(int argc, char** argv)
     Interactor interactor ; 
     Renderer renderer ; 
     Geometry geometry ; 
-
     numpydelegate delegate ; 
 
-    frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
-    interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
-    renderer.setComposition(&composition);
-
-
-    FrameCfg<Frame>* framecfg = new FrameCfg<Frame>("frame", &frame, false);
-
-    Cfg cfg("unbrella", false) ;  // collect other Cfg objects
-    cfg.add(framecfg);
+    Cfg cfg("umbrella", false) ;  // collect other Cfg objects
+    cfg.add(new FrameCfg<Frame>("frame", &frame, false));
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
     cfg.add(new RendererCfg<Renderer>("renderer", &renderer, true));
     cfg.add(new CompositionCfg<Composition>("composition", &composition, true));
@@ -55,37 +47,29 @@ int main(int argc, char** argv)
     cfg.commandline(argc, argv);
     delegate.liveConnect(&cfg);    
 
-    // hmm these below elswhere, as are needed for non-GUI apps too
-    if(framecfg->isHelp())  std::cout << cfg.getDesc() << std::endl ;
-    if(framecfg->isAbort()) exit(EXIT_SUCCESS); 
+    if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
+    if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 
-    numpyserver<numpydelegate> srv(&delegate);
+    frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
+    interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
+    renderer.setComposition(&composition);   // renderer needs access to MV, MVP matrices
+    numpyserver<numpydelegate> server(&delegate);
 
-    frame.setSize(640,480);
-    frame.setTitle("Demo");
-    frame.gl_init_window();
-
+    frame.gl_init_window("GLFWTest", composition.getWidth(),composition.getHeight());
     geometry.load("GLFWTEST_") ;
     renderer.setDrawable(geometry.getDrawable());
 
     GLFWwindow* window = frame.getWindow();
-
     while (!glfwWindowShouldClose(window))
     {
         frame.listen(); 
-
-        srv.poll_one();  
-
+        server.poll_one();  
         frame.render();
         renderer.render();
-
         glfwSwapBuffers(window);
     }
-    srv.stop();
-
-
+    server.stop();
     frame.exit();
-
     exit(EXIT_SUCCESS);
 }
 

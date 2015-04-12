@@ -86,7 +86,7 @@ oglrap--()
 
 oglrap-export()
 {
-   export SHADER_DIR=$(oglrap-sdir)/glsl
+   export SHADER_DIR=$(oglrap-sdir)/gl
 } 
 
 oglrap-run(){ 

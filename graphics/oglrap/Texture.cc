@@ -122,7 +122,7 @@ void Texture::setup()
 void Texture::create()
 {
     setup();
-    assert(m_width > 0 && m_height > 0);
+    assert(m_width > 0 && m_height > 0 && "must setSize before create");
 
     if( m_tex.rgba )  // ie have loaded from PPM
     {

@@ -22,17 +22,18 @@
 
 const char* Renderer::PRINT = "print" ; 
 
-Renderer::Renderer()
- 
-  :
-  m_shader(NULL),
-  m_shaderdir(NULL),
-  m_drawable(NULL),
-  m_composition(NULL),
-  m_draw_count(0),
-  m_texcoords(0),
-  m_has_tex(false) 
+Renderer::Renderer(const char* tag)
+    :
+    m_shader(NULL),
+    m_shaderdir(NULL),
+    m_shadertag(NULL),
+    m_drawable(NULL),
+    m_composition(NULL),
+    m_draw_count(0),
+    m_texcoords(0),
+    m_has_tex(false) 
 {
+    setShaderTag(tag);
 }
 
 Renderer::~Renderer()
@@ -59,12 +60,12 @@ void Renderer::setShaderDir(const char* dir)
 {
     m_shaderdir = strdup(dir);
 }
+void Renderer::setShaderTag(const char* tag)
+{
+    m_shadertag = strdup(tag);
+}
 
 
-//GDrawable* Renderer::getDrawable()
-//{
-//    return m_drawable ;
-//}
 Composition* Renderer::getComposition()
 {
     return m_composition ;
@@ -73,8 +74,10 @@ char* Renderer::getShaderDir()
 {
     return m_shaderdir ? m_shaderdir : getenv("SHADER_DIR") ;
 }
-
-
+char* Renderer::getShaderTag()
+{
+    return m_shadertag ? m_shadertag : getenv("SHADER_TAG") ;
+}
 
 
 
@@ -155,7 +158,7 @@ void Renderer::gl_upload_buffers()
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
-    m_shader = new Shader(getShaderDir());
+    m_shader = new Shader(getShaderDir(), getShaderTag());
     m_program = m_shader->getId();
     m_mvp_location = m_shader->getMVPLocation();
     m_mv_location = m_shader->getMVLocation();
@@ -224,7 +227,9 @@ void Renderer::dump(const char* msg)
     printf("colors    %u \n", m_colors);
     printf("indices   %u \n", m_indices);
     printf("nelem     %d \n", m_indices_count);
+    printf("hasTex    %d \n", hasTex());
     printf("shaderdir %s \n", getShaderDir());
+    printf("shadertag %s \n", getShaderTag());
 
     m_shader->dump(msg);
 }

@@ -21,13 +21,14 @@ class Renderer {
     };
 
   public:
-      Renderer();
+      Renderer(const char* tag);
       virtual ~Renderer();
 
   public: 
       void setDrawable(GDrawable* drawable);
       void setComposition(Composition* composition);
       void setShaderDir(const char* dir);
+      void setShaderTag(const char* tag);
 
   public: 
       void render();
@@ -39,10 +40,12 @@ class Renderer {
 
       Composition* getComposition(); 
       char* getShaderDir(); 
+      char* getShaderTag(); 
 
   private:
       void gl_upload_buffers();
       GLuint upload(GLenum target, GLenum usage, GBuffer* buffer);
+
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
 
@@ -68,6 +71,7 @@ class Renderer {
       Composition* m_composition ;
       Shader* m_shader ;
       char* m_shaderdir ; 
+      char* m_shadertag ; 
       bool m_has_tex ; 
 };      
 

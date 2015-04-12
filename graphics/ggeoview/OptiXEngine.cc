@@ -7,7 +7,11 @@
 #include <vector>
 #include <algorithm>
 
+#include "Composition.hh"
+#include "Renderer.hh"
+#include "Texture.hh"
 #include "RayTraceConfig.hh"
+
 
 #include "assert.h"
 #include "stdio.h"
@@ -23,26 +27,122 @@ enum RayType
 };
 
 
-
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
-OptiXEngine::OptiXEngine() :
-    m_width(0),
-    m_height(0),
+OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_vbo(0),
     m_pbo(0),
     m_vbo_element_size(0),
     m_pbo_element_size(0),
-    m_pbo_data(NULL)
+    m_pbo_data(NULL),
+    m_composition(NULL),
+    m_renderer(NULL),
+    m_texture(NULL),
+    m_config(NULL)
 {
     printf("OptiXEngine::OptiXEngine\n");
+
     m_context = Context::create();
     m_geometry_group = m_context->createGeometryGroup();
+
+    m_config = RayTraceConfig::makeInstance(m_context, cmake_target);
+
 
     // TODO: geometry loading
     //m_context[ "top_object" ]->set( m_geometry_group );
 
+    m_renderer = new Renderer();
+    m_texture = new Texture();
+
+    printf("OptiXEngine::OptiXEngine DONE\n");
 }
+
+void OptiXEngine::setComposition(Composition* composition)
+{
+    assert(m_renderer);
+    m_composition = composition ; 
+    m_renderer->setComposition(composition);
+}
+
+
+void OptiXEngine::initContext()
+{
+    unsigned int width  = m_composition->getWidth();
+    unsigned int height = m_composition->getHeight();
+
+    printf("OptiXEngine::initContext %u %u\n", width, height);
+
+    m_context->setPrintEnabled(true);
+    m_context->setPrintBufferSize(8192);
+    m_context->setPrintLaunchIndex(0,0,0);
+
+    m_context->setStackSize( 2180 );
+ 
+    m_output_buffer = createOutputBuffer_PBO(RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
+    m_context["output_buffer"]->set( m_output_buffer );
+
+    m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
+
+
+    unsigned int num_entry_points = 1;
+    m_context->setEntryPointCount( num_entry_points );
+
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+
+    unsigned int entry_point_index = 0 ; 
+    cfg->setRayGenerationProgram(entry_point_index, "pinhole_camera.cu", "pinhole_camera" );
+
+    cfg->setExceptionProgram(entry_point_index, "pinhole_camera.cu", "exception");
+    m_context[ "bad_color" ]->setFloat( 0.0f, 1.0f, 0.0f );
+    m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
+
+    unsigned int num_ray_types = 2 ; 
+    m_context->setRayTypeCount( num_ray_types );
+
+    unsigned int ray_type_index = 0 ; 
+    cfg->setMissProgram(ray_type_index, "constantbg.cu", "miss" );
+    m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
+}
+
+
+void OptiXEngine::preprocess()
+{
+    m_context[ "scene_epsilon"]->setFloat(1.e-4f); //  * m_aabb.maxExtent() );
+    m_context->validate();
+    m_context->compile();
+    m_context->launch(0,0);  // builds Accel Structure
+}
+
+void OptiXEngine::trace()
+{
+
+   /*
+    m_context["eye"]->setFloat( camera_data.eye );
+    m_context["U"]->setFloat( camera_data.U );
+    m_context["V"]->setFloat( camera_data.V );
+    m_context["W"]->setFloat( camera_data.W );
+   */
+
+  m_context[ "eye"]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+  m_context[ "U"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+  m_context[ "V"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+  m_context[ "W"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+
+
+
+    Buffer buffer = m_context["output_buffer"]->getBuffer();
+    RTsize buffer_width, buffer_height;
+    buffer->getSize( buffer_width, buffer_height );
+
+
+   m_context->launch( 0, static_cast<unsigned int>(buffer_width), static_cast<unsigned int>(buffer_height) );
+
+}
+
+
+
+
+
 void OptiXEngine::cleanUp()
 {
     m_context->destroy();
@@ -58,6 +158,10 @@ void OptiXEngine::setSize(unsigned int width, unsigned int height)
 {
     m_width = width ;
     m_height = height ;
+
+    m_composition->setSize(width, height);
+    m_texture->setSize(width, height);
+    
 }
 
 
@@ -246,79 +350,6 @@ void OptiXEngine::fill_PBO()
 }
 
 
-
-void OptiXEngine::initContext(unsigned int width, unsigned int height)
-{
-    setSize(width, height);
-
-    printf("OptiXEngine::initContext\n");
-
-    m_context->setPrintEnabled(true);
-    m_context->setPrintBufferSize(8192);
-    m_context->setPrintLaunchIndex(0,0,0);
-
-    m_context->setStackSize( 2180 );
- 
-    m_output_buffer = createOutputBuffer_PBO(RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
-    m_context["output_buffer"]->set( m_output_buffer );
-
-    m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
-
-
-    unsigned int num_entry_points = 1;
-    m_context->setEntryPointCount( num_entry_points );
-
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-
-    unsigned int entry_point_index = 0 ; 
-    cfg->setRayGenerationProgram(entry_point_index, "pinhole_camera.cu", "pinhole_camera" );
-
-    cfg->setExceptionProgram(entry_point_index, "pinhole_camera.cu", "exception");
-    m_context[ "bad_color" ]->setFloat( 0.0f, 1.0f, 0.0f );
-    m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
-
-    unsigned int num_ray_types = 2 ; 
-    m_context->setRayTypeCount( num_ray_types );
-
-    unsigned int ray_type_index = 0 ; 
-    cfg->setMissProgram(ray_type_index, "constantbg.cu", "miss" );
-    m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
-}
-
-
-void OptiXEngine::preprocess()
-{
-    m_context[ "scene_epsilon"]->setFloat(1.e-4f); //  * m_aabb.maxExtent() );
-    m_context->validate();
-    m_context->compile();
-    m_context->launch(0,0);  // builds Accel Structure
-}
-
-void OptiXEngine::trace()
-{
-
-   /*
-    m_context["eye"]->setFloat( camera_data.eye );
-    m_context["U"]->setFloat( camera_data.U );
-    m_context["V"]->setFloat( camera_data.V );
-    m_context["W"]->setFloat( camera_data.W );
-   */
-
-  m_context[ "eye"]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-  m_context[ "U"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-  m_context[ "V"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-  m_context[ "W"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-
-
-
-    Buffer buffer = m_context["output_buffer"]->getBuffer();
-    RTsize buffer_width, buffer_height;
-    buffer->getSize( buffer_width, buffer_height );
-
-
-   m_context->launch( 0, static_cast<unsigned int>(buffer_width), static_cast<unsigned int>(buffer_height) );
-
-}
 
 
 

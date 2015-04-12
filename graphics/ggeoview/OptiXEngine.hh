@@ -1,13 +1,21 @@
 #pragma once
 
+class Composition ; 
+class Renderer ; 
+class Texture ; 
+class RayTraceConfig ; 
+
+
 #include <optixu/optixpp_namespace.h>
 
 class OptiXEngine {
     public:
-        OptiXEngine();
+        OptiXEngine(const char* cmake_target);
 
         void setSize(unsigned int width, unsigned int height);
-        void initContext(unsigned int width, unsigned int height);
+        void setComposition(Composition* composition);
+
+        void initContext();
 
         void cleanUp();
         void preprocess(); 
@@ -40,6 +48,11 @@ class OptiXEngine {
         size_t m_pbo_element_size;
 
         unsigned char* m_pbo_data ; 
+
+        Composition*     m_composition ; 
+        Renderer*        m_renderer ; 
+        Texture*         m_texture ; 
+        RayTraceConfig*  m_config ; 
 
 
 };

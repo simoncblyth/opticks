@@ -21,10 +21,14 @@ class Frame {
        void configureS(const char* name, std::vector<std::string> values);
        void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
        void setTitle(const char* title);
+
+       void gl_init_window(const char* title, unsigned int width, unsigned int height, unsigned int coord2pixel=2);
+       void gl_init_window();
+
+
        void setInteractor(Interactor* interactor);
        void setDumpevent(int dumpevent);
 
-       void gl_init_window();
        void exit();
     
        void listen();

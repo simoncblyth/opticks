@@ -34,14 +34,6 @@ public:
    {
        return m_liveline ;
    }
-   bool isHelp()
-   {
-       return m_vm.count("help") ;
-   } 
-   bool isAbort()
-   {
-       return m_vm.count("help") || m_vm.count("version") ; 
-   } 
 
 private:
     std::string m_configpath ;

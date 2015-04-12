@@ -9,7 +9,7 @@ class Shader {
       static const char* vertex_shader;
       static const char* fragment_shader;
 
-      Shader(const char* dir, const char* vname="vert.glsl", const char* fname="frag.glsl");
+      Shader(const char* basedir, const char* tag, const char* vname="vert.glsl", const char* fname="frag.glsl");
       virtual ~Shader();
       GLuint getId(); 
       void dump(const char* msg="Shader::dump");

@@ -3,14 +3,27 @@
 #include <iomanip>
 #include <fstream>
 
+#include "string.h"
 #include <boost/tokenizer.hpp>
 
 
 namespace po = boost::program_options;
 
 Cfg::Cfg(const char* name, bool live)
-    : m_desc(name), m_live(live)
+    : 
+    m_desc(name), 
+    m_name(strdup(name)),
+    m_live(live)
 {
+}
+
+
+
+
+
+const char* Cfg::getName()
+{
+    return m_name ; 
 }
 
 bool Cfg::isLive()
@@ -32,6 +45,21 @@ Cfg* Cfg::getOther(unsigned int index)
     return m_others[index];
 }
 
+Cfg* Cfg::operator [](const char* name)
+{
+   Cfg* other = findOther(name);
+   return other ; 
+}
+
+Cfg* Cfg::findOther(const char* name)
+{
+    for(size_t i=0 ; i < m_others.size() ; i++)
+    {
+        Cfg* other = m_others[i];
+        if(strcmp(name, other->getName())==0) return other ;
+    }
+    return NULL;
+}
 
 void Cfg::add(Cfg* other)
 {

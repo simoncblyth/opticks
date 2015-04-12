@@ -42,6 +42,10 @@ protected:
 public:
     Cfg(const char* name, bool live);
     bool isLive();
+    const char* getName();
+    bool isHelp(){      return m_vm.count("help") ; }   
+    bool isVersion(){   return m_vm.count("version") ; }   
+    bool isAbort(){     return isHelp() || isVersion() ; }
 
 public:
     // holding others 
@@ -49,6 +53,8 @@ public:
     bool containsOthers();
     unsigned int getNumOthers();
     Cfg* getOther(unsigned int index);
+    Cfg* findOther(const char* name);
+    Cfg* operator [](const char* name);
 
 public:
     boost::program_options::options_description& getDesc();
@@ -70,7 +76,7 @@ public:
     static void dump(boost::program_options::parsed_options& opts, const char* msg );
 
 private:
-    
+    const char* m_name ;    
     std::vector<Cfg*> m_others ; 
     bool m_live ; 
 

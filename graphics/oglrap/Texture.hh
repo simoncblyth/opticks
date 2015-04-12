@@ -12,7 +12,7 @@ struct Tex {
    unsigned char* rgba ;
 };
 
-
+// hmm Texture is too general, QuadTexture better
 class Texture : public GMesh {
    public:
       static const float pvertex[] ;

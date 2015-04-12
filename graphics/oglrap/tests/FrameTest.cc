@@ -16,22 +16,17 @@ int main(int argc, char** argv)
     Frame frame ; 
     Composition composition ; 
     Interactor interactor ;
-    Renderer renderer ; 
+    Renderer renderer("tex") ; 
 
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
     interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
     renderer.setComposition(&composition);  // composition provides matrices to renderer 
 
-
     Texture texture ;
     texture.loadPPM(ppmpath);
 
-    frame.setTitle("FrameTest");
-    frame.setSize(texture.getWidth(),texture.getHeight());
+    frame.gl_init_window("FrameTest", texture.getWidth(), texture.getHeight());
     composition.setSize(frame.getWidth(), frame.getHeight());
-
-    frame.gl_init_window();
-
 
     texture.create();   // after OpenGL context creation, done in frame.gl_init_window
     renderer.setDrawable(&texture);

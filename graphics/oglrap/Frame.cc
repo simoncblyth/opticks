@@ -124,7 +124,12 @@ void Frame::setInteractor(Interactor* interactor)
 }
 
 
-
+void Frame::gl_init_window(const char* title, unsigned int width, unsigned int height, unsigned int coord2pixel)
+{
+    setSize(width, height, coord2pixel);
+    setTitle(title);
+    gl_init_window();
+}
 
 
 void Frame::gl_init_window()
