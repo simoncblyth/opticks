@@ -30,7 +30,11 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 endif ()
 
-
+# OptiXEngine rendering forces to depend on these
+find_package(GLEW REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(OGLRap REQUIRED)
+find_package(GLM  REQUIRED)
 
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
@@ -42,6 +46,12 @@ include(EnvBuildOptions)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}   # for RayTraceConfigInc.h
+
+    ${GLEW_INCLUDE_DIRS} 
+    ${GLFW_INCLUDE_DIRS} 
+    ${OGLRap_INCLUDE_DIRS}
+    ${GLM_INCLUDE_DIRS} 
+
     ${OptiX_INCLUDE}  
     ${CUDA_INCLUDE_DIRS}
     ${AssimpWrap_INCLUDE_DIRS}  
@@ -52,6 +62,10 @@ include_directories(
 
 
 add_definitions(
+    ${GLEW_DEFINITIONS}
+    ${GLFW_DEFINITIONS}
+    ${OGLRap_DEFINITIONS}
+
     ${OptiX_DEFINITIONS} 
 )
 #    ${CUDAWrap_DEFINITIONS} 
@@ -59,12 +73,16 @@ add_definitions(
 
 add_library( ${name}  SHARED
        G4DAELoader.cc
+       OptiXEngine.cc
        OptiXGeometry.cc
        GGeoOptiXGeometry.cc
        RayTraceConfig.cc
 )
  
 target_link_libraries( ${name} 
+      ${GLEW_LIBRARIES}
+      ${GLFW_LIBRARIES}
+      ${OGLRap_LIBRARIES}
       ${AssimpWrap_LIBRARIES}
       ${GGeo_LIBRARIES}
       optix
@@ -75,6 +93,7 @@ target_link_libraries( ${name}
 
 SET(hdrs 
   G4DAELoader.hh
+  OptixEngine.hh
   OptixGeometry.hh
   GGeoOptixGeometry.hh
   RayTraceConfig.hh
