@@ -66,6 +66,8 @@ public:
    void Summary(const char* msg="View::Summary");
    void Print(const char* msg="View::Print");
 
+   void getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm::vec3& v, glm::vec3& w);
+
 
 private:
    float m_eye_x ;

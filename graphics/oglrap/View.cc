@@ -80,6 +80,19 @@ glm::mat4 View::getLookAt(const glm::mat4& m2w, bool debug)
 }
 
 
+void View::getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm::vec3& v, glm::vec3& w)
+{
+    glm::vec3 eye  = glm::vec3(getEye(m2w));
+    glm::vec3 up   = glm::vec3(getUp(m2w));
+    glm::vec3 gaze = glm::vec3(getGaze(m2w));  // look - eye
+
+    e = eye ;    
+    u = glm::normalize(glm::cross(gaze, up)); // "x" to the right
+    v = glm::normalize(glm::cross(u,gaze));   // "y" to the top
+    w = gaze ;                     // "z" into target
+}  
+
+
 glm::vec4 View::getEye()
 {
     return glm::vec4(m_eye_x, m_eye_y, m_eye_z,1.0f);

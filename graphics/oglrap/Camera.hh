@@ -36,9 +36,6 @@ class Camera {
      glm::mat4 getFrustum();
 
 
-
-
-
      void near_to( float x, float y, float dx, float dy )
      {
          setNear(m_near + m_near*dy );
@@ -116,12 +113,10 @@ class Camera {
          m_yfovclip[1] = _max ;  
      }
 
-     float getAspect()
+     float getAspect() // width/height (> 1 for landscape)
      {
          return (float)m_size[0]/(float)m_size[1] ;  
      }
-
-     
 
 
      void setParallel(bool parallel)

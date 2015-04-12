@@ -31,6 +31,10 @@ class Composition {
       View* getView(); 
       glm::mat4& getModelToWorld();
 
+      // hmm doesnt incorporate the trackball ?
+      // presumably can use a more matrix style approach to do that
+      void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
+
   private:
       Camera* m_camera ;
       Trackball* m_trackball ;

@@ -4,13 +4,23 @@
 #include <GLFW/glfw3.h>
 
 #include <optixu/optixu.h>
+//#include <optixu/optixu_math_namespace.h>
+#include <optixu/optixu_math_stream_namespace.h>
 #include <vector>
 #include <algorithm>
 
+// oglrap-
+#include "Common.hh"
 #include "Composition.hh"
 #include "Renderer.hh"
 #include "Texture.hh"
+
+// ggeo-
+#include "GGeo.hh"
+
+// optixrap-
 #include "RayTraceConfig.hh"
+#include "GGeoOptiXGeometry.hh"
 
 
 #include "assert.h"
@@ -36,7 +46,8 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_composition(NULL),
     m_renderer(NULL),
     m_texture(NULL),
-    m_config(NULL)
+    m_config(NULL),
+    m_ggeo(NULL)
 {
     printf("OptiXEngine::OptiXEngine\n");
 
@@ -56,19 +67,21 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
 
 void OptiXEngine::setComposition(Composition* composition)
 {
-    assert(m_renderer);
     m_composition = composition ; 
-    //m_renderer->setComposition(composition);
 }
+void OptiXEngine::setGGeo(GGeo* ggeo)
+{
+    m_ggeo = ggeo ;
+}
+
 
 void OptiXEngine::init()
 {
     initRenderer();
     initContext();
+    initGeometry();
     preprocess();
 }
-
-
 
 void OptiXEngine::initRenderer()
 {
@@ -108,7 +121,7 @@ void OptiXEngine::initContext()
     cfg->setRayGenerationProgram(entry_point_index, "pinhole_camera.cu", "pinhole_camera" );
 
     cfg->setExceptionProgram(entry_point_index, "pinhole_camera.cu", "exception");
-    m_context[ "bad_color" ]->setFloat( 0.0f, 1.0f, 0.0f );
+    m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
     m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
 
     unsigned int num_ray_types = 2 ; 
@@ -117,6 +130,25 @@ void OptiXEngine::initContext()
     unsigned int ray_type_index = 0 ; 
     cfg->setMissProgram(ray_type_index, "constantbg.cu", "miss" );
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
+}
+
+void OptiXEngine::initGeometry()
+{
+    // TODO: use GMergedMesh instead of GGeo
+    GGeoOptiXGeometry geom(m_ggeo);
+    
+    geom.setGeometryGroup(m_geometry_group);
+    geom.setContext(m_context);   
+    //geom.setOverrideMaterial(m_material);  
+
+    geom.convert(); 
+    geom.setupAcceleration();
+
+    m_aabb = geom.getAabb();
+
+    m_context[ "top_object" ]->set( m_geometry_group );
+
+    // cf with MeshViewer::initGeometry
 }
 
 
@@ -131,10 +163,19 @@ void OptiXEngine::preprocess()
 
 void OptiXEngine::trace()
 {
-    m_context[ "eye"]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-    m_context[ "U"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-    m_context[ "V"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
-    m_context[ "W"  ]->setFloat( make_float3( 0.0f, 0.0f, 0.0f ) );
+    glm::vec3 eye ;
+    glm::vec3 U ;
+    glm::vec3 V ;
+    glm::vec3 W ;
+
+    m_composition->getEyeUVW(eye, U, V, W); // must set model_to_world in composition first
+
+    //print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
+
+    m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
+    m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
+    m_context[ "V"  ]->setFloat( make_float3( V.x, V.y, V.z ) );
+    m_context[ "W"  ]->setFloat( make_float3( W.x, W.y, W.z ) );
 
     Buffer buffer = m_context["output_buffer"]->getBuffer();
     RTsize buffer_width, buffer_height;

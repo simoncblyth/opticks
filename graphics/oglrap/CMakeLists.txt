@@ -75,6 +75,7 @@ add_library( ${name}  SHARED
 )
 
 SET(hdrs 
+        Common.hh
         Geometry.hh
         Composition.hh
         CompositionCfg.hh

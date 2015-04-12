@@ -53,3 +53,24 @@ void print( const glm::vec4& a, const glm::vec4& b, const glm::vec4& c, const ch
 }
 
 
+void print( const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& d, const char* msg)
+{
+    printf("%15s vec3*4 "
+      "%10.3f %10.3f %10.3f     "
+      "%10.3f %10.3f %10.3f     "
+      "%10.3f %10.3f %10.3f     "
+      "%10.3f %10.3f %10.3f     "
+      " \n", 
+       msg, 
+       a.x, a.y, a.z,
+       b.x, b.y, b.z,
+       c.x, c.y, c.z,
+       d.x, d.y, d.z
+     );
+}
+
+
+
+
+
+

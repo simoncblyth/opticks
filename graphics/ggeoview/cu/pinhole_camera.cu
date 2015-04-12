@@ -19,9 +19,9 @@ rtDeclareVariable(float,         scene_epsilon, , );
 rtBuffer<uchar4, 2>              output_buffer;
 
 
-#if 0
+//#if 0
 rtDeclareVariable(rtObject,      top_object, , );
-#endif
+//#endif
 rtDeclareVariable(unsigned int,  radiance_ray_type, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
@@ -62,17 +62,25 @@ RT_PROGRAM void pinhole_camera()
   prd.result = bad_color ;
 
 
-#if 0
   float2 d = touch_mode ?  
                      make_float2(touch_index) / make_float2(touch_dim) * 2.f - 1.f 
                    : 
                      make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f
                    ;
 
-
+   
   float3 ray_origin = eye;
-  float3 ray_direction = normalize(d.x*U + d.y*V + W);
-  
+  float3 ray_direction = normalize(d.x*U + d.y*V + W);   
+  //
+  // (d.x,d.y) spans screen pixels (-1:1,-1:1) 
+  //
+  //  Interpretation:
+  //
+  //   * eye : world frame position of camera  
+  //   * U,V : vectors defining dimension and direction of x,y axes of image plane expresses in world frame
+  //   * W   : is eye to image plane direction and dimension   
+  // 
+
   optix::Ray ray = optix::make_Ray(ray_origin, ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX);
 
   unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
@@ -82,7 +90,6 @@ RT_PROGRAM void pinhole_camera()
 
   ////prd.result.x = curand_uniform(&prd.rng); 
   //rng_states[id] = prd.rng ; 
-#endif
 
 
 #if RAYTRACE_TIMEVIEW

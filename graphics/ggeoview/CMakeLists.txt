@@ -129,6 +129,9 @@ add_optix_executable( ${name}
 
       cu/pinhole_camera.cu
       cu/constantbg.cu
+      cu/material1_radiance.cu 
+      cu/TriangleMesh.cu 
+      
 ) 
 
 

@@ -41,6 +41,28 @@ void Composition::configureI(const char* name, std::vector<int> values )
 }
 
 
+void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W)
+{
+   glm::vec3 e ;  
+   glm::vec3 unorm ;  
+   glm::vec3 vnorm ;  
+   glm::vec3 gaze ;  
+
+   m_view->getFocalBasis( m_model_to_world, e,unorm,vnorm, gaze );
+
+   float tanYfov = m_camera->getTanYfov();
+   float aspect = m_camera->getAspect();
+
+   float v_half_height = glm::length(gaze) * tanYfov ; 
+   float u_half_width  = v_half_height * aspect ; 
+
+   eye = e ;
+   U = unorm * u_half_width ; 
+   V = vnorm * v_half_height ; 
+   W = gaze ; 
+}
+
+
 unsigned int Composition::getWidth()
 {
    return m_camera->getWidth();

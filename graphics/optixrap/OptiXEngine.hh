@@ -4,9 +4,12 @@ class Composition ;
 class Renderer ; 
 class Texture ; 
 class RayTraceConfig ; 
-
+class GGeo ; 
 
 #include <optixu/optixpp_namespace.h>
+#include <optixu/optixu_aabb_namespace.h>
+
+// TODO: split off non-OpenGL OptiXCore for headless usage and easier testing
 
 class OptiXEngine {
     public:
@@ -14,10 +17,13 @@ class OptiXEngine {
 
         void setSize(unsigned int width, unsigned int height);
         void setComposition(Composition* composition);
+        void setGGeo(GGeo* ggeo);
 
         void init();
         void initRenderer();
         void initContext();
+        void initGeometry();
+
         void preprocess(); 
         void trace(); 
 
@@ -41,9 +47,10 @@ class OptiXEngine {
         optix::Buffer createOutputBuffer_PBO(RTformat format, unsigned int width, unsigned int height);
 
     protected:
-        optix::Context m_context; 
-        optix::Buffer  m_output_buffer ; 
-        optix::GeometryGroup m_geometry_group ;
+        optix::Context        m_context; 
+        optix::Buffer         m_output_buffer ; 
+        optix::GeometryGroup  m_geometry_group ;
+        optix::Aabb           m_aabb;
 
         unsigned int m_width ;
         unsigned int m_height ;
@@ -59,6 +66,7 @@ class OptiXEngine {
         Renderer*        m_renderer ; 
         Texture*         m_texture ; 
         RayTraceConfig*  m_config ; 
+        GGeo*            m_ggeo ; 
 
 
 };
