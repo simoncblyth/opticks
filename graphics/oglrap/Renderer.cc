@@ -170,7 +170,9 @@ void Renderer::gl_upload_buffers()
         m_sampler_location = m_shader->getSamplerLocation();
     }
 
-    glUseProgram (m_program);       
+    //glUseProgram (m_program);       
+
+    m_shader->use();
 
     dump("Renderer::init");
 }
@@ -189,6 +191,8 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
 
 void Renderer::render()
 { 
+    m_shader->use();
+
     glm::mat4 MV ;
     glm::mat4 MVP ;
 

@@ -18,8 +18,6 @@
 
 using namespace optix;
 
-
-
 enum RayType
 {
    radiance_ray_type,

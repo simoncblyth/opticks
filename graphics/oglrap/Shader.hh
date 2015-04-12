@@ -15,6 +15,7 @@ class Shader {
       void dump(const char* msg="Shader::dump");
       void Print(const char* msg="Print");
       bool isValid();
+      void use();
 
       GLint getMVPLocation();
       GLint getMVLocation();

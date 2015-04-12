@@ -288,6 +288,15 @@ void Shader::init(const std::string& vert, const std::string& frag)
     assert( isValid() );
 } 
 
+void Shader::use()
+{
+    glUseProgram(m_program);
+}
+
+
+
+
+
 void Shader::Print(const char* msg)
 {
     printf("Shader::%s locations mvp/mv/sampler : %d/%d/%d ", msg, m_mvp_location, m_mv_location, m_sampler_location );
