@@ -54,25 +54,16 @@ int main(int argc, char** argv)
 
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
     interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
-    renderer.setComposition(&composition);
+    renderer.setComposition(&composition);    // renderer needs access to view matrices
     numpyserver<numpydelegate> server(&delegate);
 
-    frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight()); // OpenGL context created
-
+    frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight()); // creates OpenGL context 
     geometry.load("GGEOVIEW_") ; 
+    renderer.setDrawable(geometry.getDrawable());
 
-    if(!interactor.isOptiXMode())  // debug only
-    {
-       renderer.setDrawable(geometry.getDrawable());
-    }
-
-
-    OptiXEngine engine("GGeoView") ;  // creates OptiX context
-    engine.setComposition(&composition); 
-    engine.initRenderer();
-    engine.initContext();
-    engine.preprocess();
-
+    OptiXEngine engine("GGeoView") ;       // creates OptiX context
+    engine.setComposition(&composition);   // engine needs access to the view matrices
+    engine.init();
 
     GLFWwindow* window = frame.getWindow();
     while (!glfwWindowShouldClose(window))
@@ -90,7 +81,6 @@ int main(int argc, char** argv)
         {
             renderer.render();
         }
-
         glfwSwapBuffers(window);
     }
     //server.sleep(10);

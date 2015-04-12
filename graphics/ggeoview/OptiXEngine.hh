@@ -15,12 +15,13 @@ class OptiXEngine {
         void setSize(unsigned int width, unsigned int height);
         void setComposition(Composition* composition);
 
+        void init();
         void initRenderer();
         void initContext();
-
-        void cleanUp();
         void preprocess(); 
         void trace(); 
+
+        void cleanUp();
         void fill_PBO();
         void displayFrame(unsigned int texID);
 

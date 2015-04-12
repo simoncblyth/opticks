@@ -61,6 +61,15 @@ void OptiXEngine::setComposition(Composition* composition)
     //m_renderer->setComposition(composition);
 }
 
+void OptiXEngine::init()
+{
+    initRenderer();
+    initContext();
+    preprocess();
+}
+
+
+
 void OptiXEngine::initRenderer()
 {
     unsigned int width  = m_composition->getWidth();
@@ -334,7 +343,6 @@ void OptiXEngine::setSize(unsigned int width, unsigned int height)
 
     m_composition->setSize(width, height);
     m_texture->setSize(width, height);
-    
 }
 
 /*
