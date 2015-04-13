@@ -2,9 +2,11 @@
 #include "Common.hh"
 #include "stdio.h"
 #include <math.h>  
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -28,8 +30,32 @@ glm::mat4 Trackball::getTranslationMatrix()
 
 glm::mat4 Trackball::getCombinedMatrix()
 {
+    // http://stackoverflow.com/questions/9920624/glm-combine-rotation-and-translation
+    //
+    // glm::translate,  translates before rotates
+    //
+    //        rot * trans;
+    //
+
     return glm::translate( getOrientationMatrix(), glm::vec3(m_x, m_y, m_z));
 }
+
+void Trackball::getCombinedMatrices(glm::mat4& rt, glm::mat4& rti)
+{
+    glm::mat4 rot  = getOrientationMatrix();  
+    glm::mat4 irot = glm::transpose(rot);
+
+    glm::mat4 tra(glm::translate(glm::vec3(m_x, m_y, m_z)));  
+    glm::mat4 itra(glm::translate(glm::vec3(-m_x, -m_y, -m_z)));  
+
+    rt = rot * tra  ;    // translates then rotate
+
+    rti = itra * irot ;  //    
+
+    //  rti * rt = itra * irot * rot * tra = identity 
+    //
+
+} 
 
 
 void Trackball::configureF(const char* name, std::vector<float> values)

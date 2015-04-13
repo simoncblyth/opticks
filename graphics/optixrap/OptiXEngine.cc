@@ -23,6 +23,8 @@
 #include "GGeoOptiXGeometry.hh"
 
 
+
+
 #include "assert.h"
 #include "stdio.h"
 
@@ -47,7 +49,8 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_renderer(NULL),
     m_texture(NULL),
     m_config(NULL),
-    m_ggeo(NULL)
+    m_ggeo(NULL),
+    m_trace_count(0)
 {
     printf("OptiXEngine::OptiXEngine\n");
 
@@ -170,7 +173,10 @@ void OptiXEngine::trace()
 
     m_composition->getEyeUVW(eye, U, V, W); // must set model_to_world in composition first
 
-    //print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
+    if(m_trace_count == 0)
+    {
+        print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
+    }
 
     m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
     m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
@@ -187,6 +193,8 @@ void OptiXEngine::trace()
     //printf("OptiXEngine::trace %u %u\n", width, height );
 
     m_context->launch( 0,  width, height );
+
+    m_trace_count += 1 ; 
 }
 
 

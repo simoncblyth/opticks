@@ -30,10 +30,13 @@ See also
 EOU
 }
 glm-dir(){  echo $(local-base)/env/graphics/glm/$(glm-name) ; }
+glm-idir(){  echo $(glm-dir)/glm ; }
+glm-sdir(){  echo $(env-home)/graphics/glm ; }
 glm-tdir(){ echo $(glm-dir)/_test ; }
 glm-cd(){   cd $(glm-dir); }
 glm-tcd(){  cd $(glm-tdir); }
-glm-icd(){  cd $(glm-dir)/glm; }
+glm-icd(){  cd $(glm-idir); }
+glm-scd(){  cd $(glm-sdir) ; }
 
 glm-version(){ echo 0.9.6.3 ; }
 glm-name(){    echo glm-$(glm-version) ; }
@@ -51,10 +54,13 @@ glm-get(){
 }
 
 glm-doc(){ open file://$(glm-dir)/doc/api/modules.html ; }
+glm-pdf(){ open file://$(glm-dir)/doc/glm.pdf ; }
+
 glm-find()
 {
    glm-icd
    find . -name '*.hpp' -exec grep -H ${1:-scale} {} \;
+   find . -name '*.inl' -exec grep -H ${1:-scale} {} \;
 }
 
 glm-test-cmake(){

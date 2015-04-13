@@ -69,6 +69,7 @@ class Trackball {
        glm::mat4 getOrientationMatrix();
        glm::mat4 getTranslationMatrix();
        glm::mat4 getCombinedMatrix();
+       void getCombinedMatrices(glm::mat4& rt, glm::mat4& rti);
 
    public:
        void Summary(const char* msg);

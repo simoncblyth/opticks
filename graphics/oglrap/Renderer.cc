@@ -193,12 +193,13 @@ void Renderer::render()
 { 
     m_shader->use();
 
-    glm::mat4 MV ;
+    glm::mat4 MV ;   //  world2eye
+    glm::mat4 IMV ;  //  eye2world
     glm::mat4 MVP ;
 
     if(m_composition)
     {
-        m_composition->defineViewMatrices(MV, MVP);
+        m_composition->defineViewMatrices(MV, IMV, MVP);
     }   
 
     glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(MV));

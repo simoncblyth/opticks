@@ -67,6 +67,7 @@ class OptiXEngine {
         Texture*         m_texture ; 
         RayTraceConfig*  m_config ; 
         GGeo*            m_ggeo ; 
+        unsigned int     m_trace_count ; 
 
 
 };

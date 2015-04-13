@@ -3,6 +3,7 @@
 #include "stdio.h"
 
 #include <glm/glm.hpp>  
+#include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 
@@ -89,8 +90,135 @@ void View::getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm:
     e = eye ;    
     u = glm::normalize(glm::cross(gaze, up)); // "x" to the right
     v = glm::normalize(glm::cross(u,gaze));   // "y" to the top
-    w = gaze ;                     // "z" into target
+    w = gaze ;                                // "-z" into target  (+z points out of screen as RHS)
 }  
+
+
+
+
+void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
+{
+    /*  
+    See 
+           env/geant4/geometry/collada/g4daeview/daeutil.py
+           env/graphics/glm/lookat.cc
+
+
+    OpenGL eye space convention with forward as -Z
+    means that have to negate the forward basis vector in order 
+    to create a right-handed coordinate system.
+
+    Construct matrix using the normalized basis vectors::    
+
+                             -Z
+                       +Y    .  
+                        |   .
+                  EY    |  .  -EZ forward 
+                  top   | .  
+                        |. 
+                        E-------- +X
+                       /  EX right
+                      /
+                     /
+                   +Z
+
+    */
+
+    glm::vec3 eye  = glm::vec3(getEye(m2w));
+    glm::vec3 up   = glm::vec3(getUp(m2w));
+    glm::vec3 gze  = glm::vec3(getGaze(m2w));  // look - eye
+
+    glm::vec3 forward = glm::normalize(gze);                        // -Z
+    glm::vec3 right   = glm::normalize(glm::cross(forward,up));     // +X
+    glm::vec3 top     = glm::normalize(glm::cross(right,forward));  // +Y
+       
+    glm::mat4 r ; 
+    r[0] = glm::vec4( right, 0.f );  
+    r[1] = glm::vec4( top  , 0.f );  
+    r[2] = glm::vec4( -forward, 0.f );  
+
+    glm::mat4 ti(glm::translate(glm::vec3(eye)));  
+
+    glm::mat4 t(glm::translate(glm::vec3(-eye)));  // eye to origin
+
+
+    world2camera = glm::transpose(r) * t  ;
+    //
+    //  must translate first putting the eye at the origin
+    //  then rotate to point -Z forward
+    //  this is equivalent to lookAt as used by OpenGL ModelView
+
+    camera2world = ti * r ;
+    //
+    // un-rotate first (eye already at origin)
+    // then translate back to world  
+    // 
+
+    gaze = glm::vec4( gze, 0.f );
+
+    //  not normalized, vector from eye -> look 
+
+}
+ 
+
+
+
+
+
+
+
+
+/*
+
+  glm::lookAt transforms from worldspace into OpenGL eye space 
+
+
+                Y
+                |   O
+                |  .
+                | .
+                |.
+                E----> X
+               /
+              /
+             /
+            Z
+
+
+
+ /usr/local/env/graphics/glm/glm-0.9.6.3/glm/gtc/matrix_transform.inl
+
+394         tvec3<T, P> const f(normalize(center - eye));
+395         tvec3<T, P> const s(normalize(cross(f, up)));
+396         tvec3<T, P> const u(cross(s, f));
+397 
+398         tmat4x4<T, P> Result(1);
+399         Result[0][0] = s.x;
+400         Result[1][0] = s.y;
+401         Result[2][0] = s.z;
+402         Result[0][1] = u.x;
+403         Result[1][1] = u.y;
+404         Result[2][1] = u.z;
+405         Result[0][2] =-f.x;
+406         Result[1][2] =-f.y;
+407         Result[2][2] =-f.z;
+408         Result[3][0] =-dot(s, eye);
+409         Result[3][1] =-dot(u, eye);
+410         Result[3][2] = dot(f, eye);
+411         return Result;
+
+
+
+
+*/
+
+
+
+
+
+
+
+
 
 
 glm::vec4 View::getEye()
