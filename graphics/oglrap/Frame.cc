@@ -168,6 +168,11 @@ void Frame::gl_init_window()
     glewExperimental = GL_TRUE;
     glewInit ();
 
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);  // overwrite if distance to camera is less
+
+
     glfwSwapInterval(1);  // vsync hinting
 
     // get version info

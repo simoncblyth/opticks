@@ -1,10 +1,12 @@
 #include "Common.hh"
 #include "stdio.h"
+#include "float.h"
+#include <algorithm>
 
 #include <glm/glm.hpp>
-#include  <glm/gtc/matrix_transform.hpp>  
-#include  <glm/gtc/quaternion.hpp>  
-
+#include <glm/gtc/matrix_transform.hpp>  
+#include <glm/gtc/quaternion.hpp>  
+#include <glm/gtc/type_ptr.hpp>
 
 void print(const glm::mat4& m, const char* msg)
 {
@@ -17,6 +19,25 @@ void print(const glm::mat4& m, const char* msg)
     }
 }
 
+void minmax(glm::mat4& m, float& mn, float& mx) 
+{
+    float* f = glm::value_ptr(m);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {   
+         float v = *(f+i);
+         if(v>mx) mx = v ; 
+         if(v<mn) mn = v ; 
+         printf(" %2d %f \n", i, v );
+    }   
+}
+
+float absmax(glm::mat4& m)
+{
+    float mn(FLT_MAX);
+    float mx(-FLT_MIN);
+    minmax(m, mn, mx);
+    return std::max( fabs(mn), fabs(mx));
+}
 
 
 void print(const glm::quat& q, const char* msg)

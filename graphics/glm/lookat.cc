@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include "float.h"
 
 
 void print(glm::vec4& v, const char* msg)
@@ -159,14 +160,10 @@ void check_lookat()
     glm::mat4 vtvti = vt * vti ;
     print(vtvti,"vt * vti");
 
-
-
-
 }
 
 
-
-int main()
+int test_mult()
 {
     glm::mat3 r ;
     r[0] = glm::vec3(1.0,1.1,1.2); 
@@ -195,6 +192,55 @@ int main()
 
     //glm::mat4 m2 = glm::translate( glm::mat4(r), t ); 
     //print(m2,"m2");  // hmm not matching 
+
+
+    return 0 ;
+}
+
+
+void minmax(glm::mat4& m, float& mn, float& mx)
+{
+    float* f = glm::value_ptr(m);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {
+         float v = *(f+i);
+         if(v>mx) mx = v ;
+         if(v<mn) mn = v ;
+         printf(" %2d %f \n", i, v );
+    }
+}
+
+float absmax(glm::mat4& m)
+{
+    float mn(FLT_MAX);
+    float mx(-FLT_MIN);
+    minmax(m, mn, mx);
+    return std::max( fabs(mn), fabs(mx));
+}
+
+
+int main()
+{
+    glm::mat4 m(1.0f);
+
+    m[0] = glm::vec4(1.0f, 1.1f, 1.2f, 1.3f);
+    m[1] = glm::vec4(2.0f, 2.1f, 2.2f, 2.3f);
+    m[2] = glm::vec4(3.0f, 3.1f, 3.2f, 3.3f);
+    m[3] = glm::vec4(4.0f, 4.1f, 4.2f, 4.3f);
+
+    float* f = glm::value_ptr(m);
+    for(unsigned int i=0 ; i < 16 ; i++) printf(" %2d %f \n", i, *(f+i) );
+
+    float mn(FLT_MAX);
+    float mx(-FLT_MIN);
+    minmax(m, mn, mx);
+
+    float amx = absmax(m);
+
+    printf("mn %f mx %f amx %f \n", mn, mx, amx);
+
+
+   
 
 
     return 0 ;

@@ -105,7 +105,8 @@ void Renderer::gl_upload_buffers()
     if(m_composition)
     { 
         float* model_to_world  = (float*)m_drawable->getModelToWorldBuffer()->getPointer();
-        m_composition->setModelToWorld(model_to_world);
+        float extent = m_drawable->getExtent();
+        m_composition->setModelToWorld_Extent(model_to_world, extent);
     }
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 

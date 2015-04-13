@@ -17,7 +17,8 @@ Composition::Composition()
   m_camera(NULL),
   m_view(NULL),
   m_trackball(NULL),
-  m_model_to_world()
+  m_model_to_world(),
+  m_extent(1.0f)
 {
     m_camera = new Camera() ;
     m_view   = new View() ;
@@ -71,10 +72,21 @@ glm::mat4& Composition::getModelToWorld()
 {
     return m_model_to_world ; 
 }
-
-void Composition::setModelToWorld(float* m2w)
+float Composition::getExtent()
+{
+    return m_extent ; 
+}
+void Composition::setModelToWorld_Extent(float* m2w, float extent)
 {
     m_model_to_world = glm::make_mat4(m2w);
+    m_extent = extent ; 
+    //
+    // too small near or to large far leads to flikering mess
+    // so initialize to something reasonable based on the 
+    // extext of the drawable
+    //
+    m_camera->setNear( m_extent/10.f ); 
+    m_camera->setFar(  m_extent*10.f );  
 }
 
 
@@ -138,31 +150,36 @@ void Composition::Details(const char* msg)
     print(m_camera2world, "m_camera2world");
     print(m_trackballing, "m_trackballing");
     print(m_itrackballing, "m_itrackballing");
-
 }
+
 
 
 void Composition::update()
 {
+    //  Update matrices based on 
+    //
+    //      m_view
+    //      m_camera
+    //      m_trackball
+    //
     // view inputs are in model coordinates (model coordinates are all within -1:1)
     // model_to_world matrix constructed from geometry center and extent
     // is used to construct the lookat matrix 
+    //
+    //   eye frame
+    //       eye  (0,0,0)
+    //       look (0,0,-m_gazelength) 
+    //
 
     m_view->getTransforms(m_model_to_world, m_world2camera, m_camera2world, m_gaze );   // model_to_world is input, the others are updated
 
     m_gazelength = glm::length(m_gaze);
 
-    //   eye frame
-    //       eye  (0,0,0)
-    //       look (0,0,-m_gazelength) 
-    //
     m_eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,m_gazelength));  
+
     m_look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-m_gazelength));
 
     m_trackball->getCombinedMatrices(m_trackballing, m_itrackballing);
-
-    //lookat = m_view->getLookAt(m_model_to_world);
-    // TODO: assert allclose(lookat, world2camera)
 
     m_world2eye = m_look2eye * m_trackballing * m_eye2look * m_world2camera ;           // ModelView
 
@@ -286,12 +303,6 @@ void Composition::getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3
    U = unorm * u_half_width ; 
    V = vnorm * v_half_height ; 
    W = gaze ; 
-}
-
-
-void Composition::getLookAt(glm::mat4& lookat)
-{
-    lookat = m_view->getLookAt(m_model_to_world);
 }
 
 

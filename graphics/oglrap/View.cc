@@ -158,8 +158,20 @@ void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat
 
     //  not normalized, vector from eye -> look 
 
+
+#ifdef DEBUG
+    glm::mat4 lookat = getLookAt(m2w);
+    glm::mat4 diff = lookat - world2camera ; 
+    print(diff, "lookat - world2camera ");
+    float amx = absmax(diff)*1e6;
+    printf("absmax*1e6 %f \n", amx);
+#endif
+
+
 }
  
+
+
 
 
 

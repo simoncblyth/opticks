@@ -25,7 +25,6 @@ class GMesh : public GDrawable {
   public:
       gfloat3* getCenter();
       gfloat3* getDimensions();
-      float getExtent();
       GMatrix<float>* getModelToWorld();
 
   public:
@@ -48,6 +47,7 @@ class GMesh : public GDrawable {
       GBuffer* getTexcoordsBuffer();
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
+      float getExtent();
 
   public:
       void setLow(gfloat3* low);

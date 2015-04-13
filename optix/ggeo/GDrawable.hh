@@ -13,6 +13,7 @@ class GDrawable {
       virtual GBuffer* getTexcoordsBuffer() = 0;
       virtual GBuffer* getIndicesBuffer() = 0;
       virtual GBuffer* getModelToWorldBuffer() = 0;
+      virtual float    getExtent() = 0;
 
 };      
 

@@ -326,6 +326,12 @@ void GMesh::Summary(const char* msg)
 }
 
 
+float GMesh::getExtent()
+{
+     return m_extent ;  
+}
+
+
 void GMesh::updateBounds()
 {
     gfloat3  low( 1e10f, 1e10f, 1e10f);

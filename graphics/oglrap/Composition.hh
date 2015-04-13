@@ -10,36 +10,38 @@ class Trackball ;
 
 class Composition {
   public:
-      static const char* PRINT ;  
  
       Composition();
       virtual ~Composition();
-      void configureI(const char* name, std::vector<int> values );
 
   public: 
-      void setModelToWorld(float* m2w);
+      void setModelToWorld_Extent(float* m2w, float extent);
       void setSize(unsigned int width, unsigned int height);
-      void defineViewMatrices(glm::mat4& ModelView, glm::mat4& ModelViewInverse, glm::mat4& ModelViewProjection);
-      void Summary(const char* msg);
-      void Details(const char* msg);
 
+  public:
       unsigned int getWidth();
       unsigned int getHeight();
 
   public: 
-      Camera* getCamera(); 
-      Trackball* getTrackball(); 
-      View* getView(); 
-      glm::mat4& getModelToWorld();
-
       void test_getEyeUVW();
       void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
-      void view_transform(const glm::vec3& eye, const glm::vec3& look, const glm::vec3& up, glm::mat4& world2camera, glm::mat4& camera2world );
 
       void update();
 
+  public: 
+      // getters of residents 
+      Camera* getCamera(); 
+      Trackball* getTrackball(); 
+      View* getView(); 
+  public: 
+      // getters of inputs 
+      glm::mat4& getModelToWorld();
+      float getExtent();
+
+  public:
+      // getters of the derived properties
       glm::vec4& getGaze();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
@@ -54,12 +56,18 @@ class Composition {
       glm::mat4& getITrackballing(); 
 
   private:
-      Camera* m_camera ;
-      Trackball* m_trackball ;
-      View*     m_view ;
+      // inputs 
       glm::mat4 m_model_to_world ; 
+      float     m_extent ; 
 
   private:
+      // residents
+      Camera*    m_camera ;
+      Trackball* m_trackball ;
+      View*      m_view ;
+
+  private:
+      // updated by *update* based on inputs and residents
       glm::vec4 m_gaze ; 
       float     m_gazelength ;
       glm::mat4 m_world2eye ;     
@@ -73,6 +81,12 @@ class Composition {
       glm::mat4 m_trackballing ;     
       glm::mat4 m_itrackballing ;     
 
+  public: 
+      // housekeeping
+      static const char* PRINT ;  
+      void configureI(const char* name, std::vector<int> values );
+      void Summary(const char* msg);
+      void Details(const char* msg);
 
 
 
