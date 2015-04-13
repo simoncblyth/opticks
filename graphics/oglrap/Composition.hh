@@ -18,9 +18,8 @@ class Composition {
       void setModelToWorld_Extent(float* m2w, float extent);
       void setSize(unsigned int width, unsigned int height);
 
-  public:
-      unsigned int getWidth();
-      unsigned int getHeight();
+  public: 
+      void update();
 
   public: 
       void test_getEyeUVW();
@@ -28,20 +27,23 @@ class Composition {
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
 
-      void update();
-
   public: 
       // getters of residents 
       Camera* getCamera(); 
       Trackball* getTrackball(); 
       View* getView(); 
+
   public: 
       // getters of inputs 
       glm::mat4& getModelToWorld();
       float getExtent();
+      float getNear();
+      float getFar();
+      unsigned int getWidth();
+      unsigned int getHeight();
 
   public:
-      // getters of the derived properties
+      // getters of the derived properties : need to call update first to make them current
       glm::vec4& getGaze();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing

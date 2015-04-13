@@ -68,14 +68,7 @@ Trackball* Composition::getTrackball()
 {
     return m_trackball ;
 }
-glm::mat4& Composition::getModelToWorld()
-{
-    return m_model_to_world ; 
-}
-float Composition::getExtent()
-{
-    return m_extent ; 
-}
+
 void Composition::setModelToWorld_Extent(float* m2w, float extent)
 {
     m_model_to_world = glm::make_mat4(m2w);
@@ -88,6 +81,25 @@ void Composition::setModelToWorld_Extent(float* m2w, float extent)
     m_camera->setNear( m_extent/10.f ); 
     m_camera->setFar(  m_extent*10.f );  
 }
+
+
+glm::mat4& Composition::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+float Composition::getExtent()
+{
+    return m_extent ; 
+}
+float Composition::getNear()
+{
+    return m_camera->getNear();
+}
+float Composition::getFar()
+{
+    return m_camera->getFar();
+}
+
 
 
 

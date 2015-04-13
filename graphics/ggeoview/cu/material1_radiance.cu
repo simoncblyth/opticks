@@ -52,7 +52,7 @@ RT_PROGRAM void closest_hit_radiance()
   //prd.result = make_float3( u0, u1, u2) ; 
   //prd.result = make_float3( u0, u1 , contrast_color.z) ; 
 
-  prd.result.x = curand_uniform(&prd.rng); 
+  // prd.result.x = curand_uniform(&prd.rng); 
 
   if(touch_mode)
   {

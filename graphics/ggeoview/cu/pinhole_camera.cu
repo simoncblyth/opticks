@@ -19,9 +19,7 @@ rtDeclareVariable(float,         scene_epsilon, , );
 rtBuffer<uchar4, 2>              output_buffer;
 
 
-//#if 0
 rtDeclareVariable(rtObject,      top_object, , );
-//#endif
 rtDeclareVariable(unsigned int,  radiance_ray_type, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
@@ -71,6 +69,18 @@ RT_PROGRAM void pinhole_camera()
    
   float3 ray_origin = eye;
   float3 ray_direction = normalize(d.x*U + d.y*V + W);   
+
+  //
+  // oglrap-
+  //     Composition::getEyeUVW provides : eye,U,V,W
+  //
+  // scene_epsilon is t_min
+  //
+  //     t=0 at origin
+  //     t=1 ray_origin + ray_direction 
+  //
+  // ray_direction is normalized 
+  // 
   //
   // (d.x,d.y) spans screen pixels (-1:1,-1:1) 
   //

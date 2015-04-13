@@ -158,7 +158,11 @@ void OptiXEngine::initGeometry()
 void OptiXEngine::preprocess()
 {
     printf("OptiXEngine::preprocess\n");
-    m_context[ "scene_epsilon"]->setFloat(1.e-4f); //  * m_aabb.maxExtent() );
+
+    //float scene_epsilon = 1.e-4*m_aabb.maxExtent();
+    float scene_epsilon = m_composition->getNear();
+
+    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
     m_context->validate();
     m_context->compile();
     m_context->launch(0,0);  // builds Accel Structure
@@ -177,6 +181,9 @@ void OptiXEngine::trace()
     {
         print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
     }
+
+    float scene_epsilon = m_composition->getNear();
+    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
 
     m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
     m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
