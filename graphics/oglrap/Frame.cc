@@ -19,6 +19,11 @@
 
 
 void _update_fps_counter (GLFWwindow* window) {
+  if(!window)
+  {
+      printf("_update_fps_counter NULL window \n");
+      return ; 
+  }   
   static double previous_seconds = glfwGetTime ();
   static int frame_count;
   double current_seconds = glfwGetTime ();
@@ -145,6 +150,8 @@ void Frame::gl_init_window()
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
+    printf("Frame::gl_init_window %d %d %s \n", m_width, m_height, m_title);
+
     m_window = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);
     if (!m_window)
     {
@@ -166,12 +173,12 @@ void Frame::gl_init_window()
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
-    printf ("Frame::init_window Renderer: %s\n", renderer);
-    printf ("Frame::init_window OpenGL version supported %s\n", version);
+    printf ("Frame::gl_init_window Renderer: %s\n", renderer);
+    printf ("Frame::gl_init_window OpenGL version supported %s\n", version);
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
-    printf("Frame::init_window FramebufferSize %d %d \n", width, height);    
+    printf("Frame::gl_init_window FramebufferSize %d %d \n", width, height);    
 }
 
 

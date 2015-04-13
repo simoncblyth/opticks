@@ -191,32 +191,29 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
 
 void Renderer::render()
 { 
-    m_shader->use();
-
-    glm::mat4 MV ;   //  world2eye
-    glm::mat4 IMV ;  //  eye2world
-    glm::mat4 MVP ;
 
     if(m_composition)
     {
-        m_composition->defineViewMatrices(MV, IMV, MVP);
-    }   
-
-    glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(MV));
-    glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(MVP));
-
-    //Print("render");
-    if(m_draw_count == 0)
-    {
-        print(MV,  "MV");
-        print(MVP, "MVP");
+        m_composition->update() ;
+        // could cache the ptrs they aint changing 
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Eye()));
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Clip()));
+    } 
+    else
+    { 
+        glm::mat4 identity ; 
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
     }
 
-    GLsizei count = m_indices_count ; 
+
+    m_shader->use();
 
     glBindVertexArray (m_vao);
 
-    glDrawElements( GL_TRIANGLES, count, GL_UNSIGNED_INT, NULL ) ;
+    //GLsizei count = m_indices_count ; 
+
+    glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ;
 
     m_draw_count += 1 ; 
 
