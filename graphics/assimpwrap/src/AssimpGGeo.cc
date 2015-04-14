@@ -60,6 +60,11 @@ GGeo* AssimpGGeo::load(const char* envprefix)
     AssimpGGeo agg(ageo.getTree(), selection); 
     GGeo* ggeo = agg.convert(ctrl);
 
+    ggeo->setPath(path);
+    ggeo->setQuery(query);
+    ggeo->setCtrl(ctrl);
+    ggeo->setIdentityPath(ageo.identityFilename(path,query));
+
     return ggeo ;
 }
 

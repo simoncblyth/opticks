@@ -10,6 +10,7 @@
 
 #include "assert.h"
 #include "stdio.h"
+#include "string.h"
 
 #define BSIZ 50
 
@@ -17,7 +18,11 @@ GGeo::GGeo() :
    m_low(NULL),
    m_high(NULL),
    m_substance_lib(NULL),
-   m_merged_mesh(NULL)
+   m_merged_mesh(NULL),
+   m_path(NULL),
+   m_query(NULL),
+   m_ctrl(NULL),
+   m_idpath(NULL)
 {
    //printf("GGeo::GGeo\n");
 
@@ -37,6 +42,51 @@ GGeo::~GGeo()
    delete m_high ; 
    delete m_substance_lib ;
 }
+
+
+void GGeo::setPath(const char* path)
+{
+   m_path = strdup(path);
+}
+void GGeo::setQuery(const char* query)
+{
+   m_query = strdup(query);
+}
+void GGeo::setCtrl(const char* ctrl)
+{
+   m_ctrl = strdup(ctrl);
+}
+void GGeo::setIdentityPath(const char* idpath)
+{
+   m_idpath = strdup(idpath);
+}
+
+
+char* GGeo::getPath()
+{
+   return m_path ;
+}
+char* GGeo::getQuery()
+{
+   return m_query ;
+}
+char* GGeo::getCtrl()
+{
+   return m_ctrl ;
+}
+char* GGeo::getIdentityPath()
+{
+   return m_idpath ;
+}
+
+
+
+
+
+
+
+
+
 
 
 GSubstanceLib* GGeo::getSubstanceLib()

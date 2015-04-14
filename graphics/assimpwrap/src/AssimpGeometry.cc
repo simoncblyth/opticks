@@ -108,7 +108,7 @@ void AssimpGeometry::info()
 }
 
 
-const char* AssimpGeometry::identityFilename( char* arg )
+const char* AssimpGeometry::identityFilename( const char* path, const char* query)
 {
     // Used when geometry is loaded using options: -g/--g4dae path  
     //
@@ -120,10 +120,9 @@ const char* AssimpGeometry::identityFilename( char* arg )
     //    selects different geometries, while still ony having a single 
     //    geometry file.
     //
-    char* query = getenv("RAYTRACE_QUERY") ;
     std::string digest = md5digest( query, strlen(query));
-    static std::string kfn = insertField( arg, '.', -1 , digest.c_str());
-    printf("AssimpGeometry::identityFilename\n arg %s\n query %s\n digest %s\n kfn %s \n", arg, query, digest.c_str(), kfn.c_str() );
+    static std::string kfn = insertField( path, '.', -1 , digest.c_str());
+    printf("AssimpGeometry::identityFilename\n path %s\n query %s\n digest %s\n kfn %s \n", path, query, digest.c_str(), kfn.c_str() );
     return kfn.c_str();
 }
 

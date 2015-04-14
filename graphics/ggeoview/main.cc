@@ -110,7 +110,7 @@ int main(int argc, char** argv)
         }
         glfwSwapBuffers(window);
     }
-    //server.sleep(10);
+    engine.cleanUp();
     server.stop();
     frame.exit();
     exit(EXIT_SUCCESS);

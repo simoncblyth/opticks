@@ -23,6 +23,16 @@ class GGeo {
         virtual ~GGeo();
 
     public:
+        void setPath(const char* path);
+        void setQuery(const char* query);
+        void setCtrl(const char* ctrl);
+        void setIdentityPath(const char* idpath);
+        char* getPath(); 
+        char* getQuery(); 
+        char* getCtrl(); 
+        char* getIdentityPath(); 
+
+    public:
         void add(GMaterial* material);
         void add(GMesh*    mesh);
         void add(GSolid*    solid);
@@ -83,6 +93,11 @@ class GGeo {
         gfloat3* m_low ; 
         gfloat3* m_high ; 
         GMergedMesh* m_merged_mesh ; 
+
+        char* m_path ;
+        char* m_query ;
+        char* m_ctrl ;
+        char* m_idpath ;
 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 

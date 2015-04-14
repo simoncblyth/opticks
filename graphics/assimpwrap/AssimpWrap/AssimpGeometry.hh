@@ -35,7 +35,7 @@ public:
     unsigned int getSceneFlags();
     unsigned int defaultProcessFlags();
 
-    static const char* identityFilename(char* arg);
+    static const char* identityFilename(const char* path, const char* query);
 
     void info();
 

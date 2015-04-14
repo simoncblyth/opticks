@@ -13,6 +13,8 @@
 #include <optixu/optixu_math_stream_namespace.h>
 #include <vector>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 
 // oglrap-
 #include "Common.hh"
@@ -61,7 +63,10 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_trace_count(0),
     m_cmake_target(strdup(cmake_target)),
     m_enabled(true),
-    m_texture_id(-1)
+    m_texture_id(-1),
+    m_filename(),
+    m_accel_cache_loaded(false),
+    m_accel_caching_on(true)
 {
     LOG(info) << "OptiXEngine::OptiXEngine" ;
 }
@@ -74,6 +79,13 @@ void OptiXEngine::setGGeo(GGeo* ggeo)
 {
     m_ggeo = ggeo ;
 }
+void OptiXEngine::setFilename(const char* filename)
+{
+    m_filename = filename ;
+}
+
+
+
 void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
 {
     m_mergedmesh = mergedmesh ;
@@ -167,7 +179,12 @@ void OptiXEngine::initGeometry()
     //geom.setOverrideMaterial(m_material);  
 
     geom.convert(); 
+
+    setFilename(m_ggeo->getIdentityPath());
+
     geom.setupAcceleration();
+
+    loadAccelCache();
 
     m_aabb = geom.getAabb();
 
@@ -405,6 +422,7 @@ void OptiXEngine::fill_PBO()
 
 void OptiXEngine::cleanUp()
 {
+    saveAccelCache();
     m_context->destroy();
     m_context = 0;
 }
@@ -440,5 +458,113 @@ void OptiXEngine::setSize(unsigned int width, unsigned int height)
 137     }
 
 */
+
+///usr/local/env/cuda/OptiX_370b2_sdk/sutil/MeshScene.cpp
+
+
+
+
+void OptiXEngine::loadAccelCache()
+{
+  // If acceleration caching is turned on and a cache file exists, load it.
+  if( m_accel_caching_on ) {
+  
+    if(m_filename.empty()) return ;  
+
+    const std::string cachefile = getCacheFileName();
+    LOG(info)<<"OptiXEngine::loadAccelCache cachefile " << cachefile ; 
+
+    std::ifstream in( cachefile.c_str(), std::ifstream::in | std::ifstream::binary );
+    if ( in ) {
+      unsigned long long int size = 0ull;
+
+#ifdef WIN32
+      // This is to work around a bug in Visual Studio where a pos_type is cast to an int before being cast to the requested type, thus wrapping file sizes at 2 GB. WTF? To be fixed in VS2011.
+      FILE *fp = fopen(cachefile.c_str(), "rb");
+
+      _fseeki64(fp, 0L, SEEK_END);
+      size = _ftelli64(fp);
+      fclose(fp);
+#else
+      // Read data from file
+      in.seekg (0, std::ios::end);
+      std::ifstream::pos_type szp = in.tellg();
+      in.seekg (0, std::ios::beg);
+      size = static_cast<unsigned long long int>(szp);
+#endif
+
+      std::cerr << "acceleration cache file found: '" << cachefile << "' (" << size << " bytes)\n";
+      
+      if(sizeof(size_t) <= 4 && size >= 0x80000000ULL) {
+        std::cerr << "[WARNING] acceleration cache file too large for 32-bit application.\n";
+        m_accel_cache_loaded = false;
+        return;
+      }
+
+      char* data = new char[static_cast<size_t>(size)];
+      in.read( data, static_cast<std::streamsize>(size) );
+      
+      // Load data into accel
+      Acceleration accel = m_geometry_group->getAcceleration();
+      try {
+        accel->setData( data, static_cast<RTsize>(size) );
+        m_accel_cache_loaded = true;
+
+      } catch( optix::Exception& e ) {
+        // Setting the acceleration cache failed, but that's not a problem. Since the acceleration
+        // is marked dirty and builder and traverser are both set already, it will simply build as usual,
+        // without using the cache. So we just warn the user here, but don't do anything else.
+        std::cerr << "[WARNING] could not use acceleration cache, reason: " << e.getErrorString() << std::endl;
+        m_accel_cache_loaded = false;
+      }
+
+      delete[] data;
+
+    } else {
+      m_accel_cache_loaded = false;
+      std::cerr << "no acceleration cache file found\n";
+    }
+  }
+}
+
+void OptiXEngine::saveAccelCache()
+{
+  // If accel caching on, marshallize the accel 
+
+  if( m_accel_caching_on && !m_accel_cache_loaded ) {
+
+    if(m_filename.empty()) return ;  
+
+    const std::string cachefile = getCacheFileName();
+
+    // Get data from accel
+    Acceleration accel = m_geometry_group->getAcceleration();
+    RTsize size = accel->getDataSize();
+    char* data  = new char[size];
+    accel->getData( data );
+
+    // Write to file
+    LOG(info)<<"OptiXEngine::saveAccelCache cachefile " << cachefile << " size " << size ;  
+
+    std::ofstream out( cachefile.c_str(), std::ofstream::out | std::ofstream::binary );
+    if( !out ) {
+      delete[] data;
+      std::cerr << "could not open acceleration cache file '" << cachefile << "'" << std::endl;
+      return;
+    }
+    out.write( data, size );
+    delete[] data;
+    std::cerr << "acceleration cache written: '" << cachefile << "'" << std::endl;
+  }
+}
+
+std::string OptiXEngine::getCacheFileName()
+{
+  std::string cachefile = m_filename;
+  size_t idx = cachefile.find_last_of( '.' );
+  cachefile.erase( idx );
+  cachefile.append( ".accelcache" );
+  return cachefile;
+}
 
 

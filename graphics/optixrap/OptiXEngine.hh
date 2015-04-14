@@ -77,6 +77,23 @@ class OptiXEngine {
         int              m_texture_id ; 
 
 
+   // from sutil/MeshScene.h
+   public:
+        void setFilename(const char* filename);
+        void loadAccelCache();
+        void saveAccelCache();
+        std::string getCacheFileName();
+
+   private:
+        std::string   m_filename;
+        std::string   m_accel_builder;
+        std::string   m_accel_traverser;
+        std::string   m_accel_refine;
+        bool          m_accel_cache_loaded;
+        bool          m_accel_caching_on;
+
+
+
 };
 
 

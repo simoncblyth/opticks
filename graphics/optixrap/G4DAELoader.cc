@@ -39,7 +39,8 @@ std::string getExtension( const std::string& filename )
 
 const char* G4DAELoader::identityFilename( char* arg )
 {
-     return AssimpGeometry::identityFilename(arg);
+     char* query = getenv("RAYTRACE_QUERY");  // expedient kludge
+     return AssimpGeometry::identityFilename(arg, query);
 }
 
 G4DAELoader::G4DAELoader( const char*   filename,
