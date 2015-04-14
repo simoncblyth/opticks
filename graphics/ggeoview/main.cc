@@ -63,8 +63,11 @@ int main(int argc, char** argv)
     renderer.setDrawable(geometry.getDrawable());
 
     OptiXEngine engine("GGeoView") ;       // creates OptiX context
+
+    // needing both is transitional
     engine.setGGeo(geometry.getGGeo());
-    //engine.setGeo(geometry.getGeo());
+    engine.setMergedMesh(geometry.getMergedMesh());
+
     engine.setComposition(&composition);   // engine needs access to the view matrices
     engine.init();
 

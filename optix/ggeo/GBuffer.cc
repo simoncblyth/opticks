@@ -4,6 +4,13 @@
 
 void GBuffer::Summary(const char* msg)
 {
-    printf("%s NumBytes %u Pointer %p ItemSize %u  NumElements_per_item %u NumItems %u \n", msg, getNumBytes(), getPointer(), getItemSize(), getNumElements(), getNumItems() );
+    printf("%s NumBytes %u Ptr %p ItemSize %u NumElements_PerItem %u NumItems(NumBytes/ItemSize) %u NumElementsTotal (NumItems*NumElements) %u \n", 
+          msg, 
+          getNumBytes(), 
+          getPointer(), 
+          getItemSize(), 
+          getNumElements(), 
+          getNumItems(),
+          getNumElementsTotal() );
 }
 

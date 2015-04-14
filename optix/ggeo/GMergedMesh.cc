@@ -90,19 +90,22 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
             // offset the vertex indices as are combining all meshes into single vertex list 
             guint3* faces = mesh->getFaces();
-            unsigned int* nodes = mesh->getNodes();
-            unsigned int* substances = mesh->getSubstances();
+
+            // NB from the GNode not the GMesh 
+            unsigned int* node_indices = node->getNodeIndices();
+            unsigned int* substance_indices = node->getSubstanceIndices();
+
+            assert(node_indices);
+            assert(substance_indices);
+
             for(unsigned int i=0 ; i<nface ; ++i )
             {
                 m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
                 m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
                 m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
 
-                if(nodes && substances)
-                { 
-                    m_nodes[m_cur_faces+i]      = nodes[i] ;
-                    m_substances[m_cur_faces+i] = substances[i] ;
-                }
+                m_nodes[m_cur_faces+i]      = node_indices[i] ;
+                m_substances[m_cur_faces+i] = substance_indices[i] ;
             }
 
             m_cur_vertices += nvert ;

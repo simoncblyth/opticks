@@ -5,6 +5,7 @@ class Renderer ;
 class Texture ; 
 class RayTraceConfig ; 
 class GGeo ; 
+class GMergedMesh ;
 
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
@@ -18,6 +19,7 @@ class OptiXEngine {
         void setSize(unsigned int width, unsigned int height);
         void setComposition(Composition* composition);
         void setGGeo(GGeo* ggeo);
+        void setMergedMesh(GMergedMesh* mergedmesh);
 
         void init();
         void initRenderer();
@@ -52,10 +54,10 @@ class OptiXEngine {
         optix::GeometryGroup  m_geometry_group ;
         optix::Aabb           m_aabb;
 
-        unsigned int m_width ;
-        unsigned int m_height ;
-        unsigned int m_vbo ;
-        unsigned int m_pbo ;
+        unsigned int          m_width ;
+        unsigned int          m_height ;
+        unsigned int          m_vbo ;
+        unsigned int          m_pbo ;
 
         size_t m_vbo_element_size;
         size_t m_pbo_element_size;
@@ -67,6 +69,7 @@ class OptiXEngine {
         Texture*         m_texture ; 
         RayTraceConfig*  m_config ; 
         GGeo*            m_ggeo ; 
+        GMergedMesh*     m_mergedmesh ; 
         unsigned int     m_trace_count ; 
 
 

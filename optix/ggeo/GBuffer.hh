@@ -34,7 +34,22 @@ class GBuffer {
       {
           return m_nbytes/m_itemsize ;
       }
+      virtual unsigned int getNumElementsTotal()
+      {
+          return m_nbytes/m_itemsize*m_nelem ;
+      }
 
+      /*
+
+          eg 10 float3 vertices, where the item is regarded at the float3 
+
+               NumBytes          10*3*4 = 120 bytes
+               ItemSize             3*4 = 12 bytes
+               NumElements            3      3 float elements make up the float3
+               NumItems              10  =  NumBytes/ItemSize  = 120 bytes/ 12 bytes 
+               NumElementsTotal      30  =  NumItems*NumElements = 10*3 
+
+      */ 
 
       void Summary(const char* msg="GBuffer::Summary");
 

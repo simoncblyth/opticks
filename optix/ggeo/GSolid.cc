@@ -38,7 +38,7 @@ void GSolid::Summary(const char* msg )
 void GSolid::setSubstance(GSubstance* substance)
 {
     m_substance = substance ; 
-    setMeshSubstance( substance->getIndex() );
+    setSubstanceIndices( substance->getIndex() );
 }
 
 GSubstance* GSolid::getSubstance()

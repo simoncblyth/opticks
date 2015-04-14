@@ -31,7 +31,7 @@ class GNode {
       // normally a single substance per-node but allow the 
       // possibility of compound substance nodes, eg for combined meshes
       //
-      void setMeshSubstance(unsigned int substance_index);
+      void setSubstanceIndices(unsigned int substance_index);
       void setSubstanceIndices(unsigned int* substance_indices);
 
       unsigned int* getSubstanceIndices();

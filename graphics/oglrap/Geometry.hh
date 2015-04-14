@@ -11,12 +11,12 @@ class Geometry {
          void Summary(const char* msg);
 
          GGeo*        getGGeo();
-         GMergedMesh* getGeo();
+         GMergedMesh* getMergedMesh();
          GDrawable*   getDrawable();
 
     private:
          GGeo*        m_ggeo ;    
-         GMergedMesh* m_geo ;
+         GMergedMesh* m_mergedmesh ;
      
 
 };

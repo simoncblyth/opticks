@@ -17,6 +17,7 @@
 
 // ggeo-
 #include "GGeo.hh"
+#include "GMergedMesh.hh"
 
 // optixrap-
 #include "RayTraceConfig.hh"
@@ -48,6 +49,7 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_texture(NULL),
     m_config(NULL),
     m_ggeo(NULL),
+    m_mergedmesh(NULL),
     m_trace_count(0)
 {
     printf("OptiXEngine::OptiXEngine\n");
@@ -65,6 +67,14 @@ void OptiXEngine::setGGeo(GGeo* ggeo)
 {
     m_ggeo = ggeo ;
 }
+void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
+{
+    m_mergedmesh = mergedmesh ;
+}
+
+
+
+
 
 
 void OptiXEngine::init()
@@ -130,7 +140,8 @@ void OptiXEngine::initContext()
 void OptiXEngine::initGeometry()
 {
     // TODO: use GMergedMesh instead of GGeo
-    GGeoOptiXGeometry geom(m_ggeo);
+    //GGeoOptiXGeometry geom(m_ggeo);
+    GGeoOptiXGeometry geom(m_ggeo, m_mergedmesh);
     
     geom.setGeometryGroup(m_geometry_group);
     geom.setContext(m_context);   

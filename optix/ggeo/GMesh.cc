@@ -232,8 +232,13 @@ void GMesh::setNormals(gfloat3* normals)
 
 void GMesh::setFaces(guint3* faces)
 {
+    assert(sizeof(guint3) == 3*4);
+    unsigned int totbytes = sizeof(guint3)*m_num_faces ;
+    unsigned int itemsize = sizeof(guint3)/3 ;           // this regards the item as the individual index integer
+    unsigned int nelem    = 1 ;                          // number of elements in the item
+
     m_faces = faces ;
-    m_indices_buffer = new GBuffer( sizeof(guint3)*m_num_faces, (void*)m_faces, sizeof(guint3)/3, 1 ) ;
+    m_indices_buffer = new GBuffer( totbytes, (void*)m_faces, itemsize, nelem ) ;
     assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
 

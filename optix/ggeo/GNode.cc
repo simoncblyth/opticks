@@ -128,9 +128,7 @@ void GNode::setSubstanceIndices(unsigned int* substance_indices)
 {
     m_substance_indices = substance_indices ; 
 }
-
-
-void GNode::setMeshSubstance(unsigned int index)
+void GNode::setSubstanceIndices(unsigned int index)
 {
     // unsigned int* array of the substance index repeated nface times
 
