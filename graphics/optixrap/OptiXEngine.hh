@@ -20,6 +20,7 @@ class OptiXEngine {
         void setComposition(Composition* composition);
         void setGGeo(GGeo* ggeo);
         void setMergedMesh(GMergedMesh* mergedmesh);
+        void setEnabled(bool enabled);
 
         void init();
         void initRenderer();
@@ -71,6 +72,9 @@ class OptiXEngine {
         GGeo*            m_ggeo ; 
         GMergedMesh*     m_mergedmesh ; 
         unsigned int     m_trace_count ; 
+        char*            m_cmake_target ;
+        bool             m_enabled ; 
+        int              m_texture_id ; 
 
 
 };

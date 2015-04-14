@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <assimp/scene.h>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 AssimpTree::AssimpTree(const aiScene* scene) 
   : 
@@ -22,7 +26,7 @@ AssimpTree::AssimpTree(const aiScene* scene)
 
    traverseWrap();
 
-   m_registry->summary();
+   //m_registry->summary();
 }
 
 AssimpTree::~AssimpTree()
@@ -37,7 +41,8 @@ const aiScene* AssimpTree::getScene()
 
 void AssimpTree::traverseWrap(const char* msg)
 {
-   printf("%s\n", msg);
+   LOG(info) << "AssimpTree::traverseWrap " << msg ; 
+
    m_wrap_index = 0 ;
    m_dump = 0 ;
 
@@ -45,7 +50,7 @@ void AssimpTree::traverseWrap(const char* msg)
 
    traverseWrap(m_scene->mRootNode, ancestors);
 
-   printf("%s wrap_index %d dump %d \n", msg, m_wrap_index, m_dump );
+   LOG(info) << "AssimpTree::traverseWrap m_wrap_index " << m_wrap_index << " m_dump " << m_dump ;  
 }
 
 void AssimpTree::traverseWrap(aiNode* node, std::vector<aiNode*> ancestors)

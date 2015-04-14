@@ -31,6 +31,7 @@ else ()
 endif ()
 
 # OptiXEngine rendering forces to depend on these
+find_package(Boost REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
@@ -47,6 +48,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}   # for RayTraceConfigInc.h
 
+    ${Boost_INCLUDE_DIRS} 
     ${GLEW_INCLUDE_DIRS} 
     ${GLFW_INCLUDE_DIRS} 
     ${OGLRap_INCLUDE_DIRS}
@@ -62,6 +64,7 @@ include_directories(
 
 
 add_definitions(
+    ${Boost_DEFINITIONS}
     ${GLEW_DEFINITIONS}
     ${GLFW_DEFINITIONS}
     ${OGLRap_DEFINITIONS}
@@ -80,6 +83,7 @@ add_library( ${name}  SHARED
 )
  
 target_link_libraries( ${name} 
+      ${Boost_LIBRARIES}
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${OGLRap_LIBRARIES}

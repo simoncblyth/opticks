@@ -21,6 +21,11 @@
 #include "GDomain.hh"
 
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 /*
         g4daeview.sh -g 3148:3155
         g4daeview.sh -g 4813:4816    Iws/SST/Oil  outside of SST high reflectivity 0.8, inside of SST low reflectivity 0.1
@@ -43,7 +48,10 @@ GGeo* AssimpGGeo::load(const char* envprefix)
     const char* query = getenvvar(envprefix, "QUERY");
     const char* ctrl = getenvvar(envprefix, "CTRL");
  
-    printf("AssimpGGeo::load geokey %s path %s query %s ctrl %s \n", geokey, path, query, ctrl ); 
+    LOG(info)<< "AssimpGGeo::load geokey " << geokey 
+                   << " path " << path 
+                   << " query " << query 
+                   << " ctrl " << ctrl ; 
 
     AssimpGeometry ageo(path);
     ageo.import();
@@ -91,8 +99,6 @@ AssimpGGeo::~AssimpGGeo()
 
 GGeo* AssimpGGeo::convert(const char* ctrl)
 {
-    printf("AssimpGGeo::convert ctrl %s \n",ctrl);
-
     m_ggeo = new GGeo();
     const aiScene* scene = m_tree->getScene();
 
@@ -101,9 +107,6 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     convertMeshes(scene, m_ggeo, ctrl);
     convertStructure(m_ggeo);
 
-#if 0
-    gg->materialConsistencyCheck();
-#endif
     return m_ggeo ;
 }
 
@@ -115,7 +118,6 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
     assert(nfloat % 2 == 0 && nfloat > 1 );
     unsigned int npair  = nfloat/2 ;
 
-    //printf("AssimpGGeo::addPropertyVector k %s \n", k );
 
     // dont scale placeholder -1 : 1 domain ranges
     double dscale = data[0] > 0 && data[npair-1] > 0 ? m_domain_scale : 1.f ;   
@@ -299,7 +301,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
 void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query)
 {
-    printf("AssimpGGeo::convertMeshes NumMeshes %d \n", scene->mNumMeshes );
+    LOG(debug)<< "AssimpGGeo::convertMeshes NumMeshes " << scene->mNumMeshes ;
 
     for(unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
@@ -359,9 +361,13 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 
 void AssimpGGeo::convertStructure(GGeo* gg)
 {
-    printf("AssimpGGeo::convertStructure\n");
+    LOG(info) << "AssimpGGeo::convertStructure ";
     convertStructure(gg, m_tree->getRoot(), 0, NULL);
-    printf("AssimpGGeo::convertStructure found surfaces skin  %u outborder  %u inborder %u no %u \n", m_skin_surface, m_outborder_surface, m_inborder_surface, m_no_surface );
+    LOG(info) << "AssimpGGeo::convertStructure found surfaces "
+              << " skin " << m_skin_surface 
+              << " outborder " << m_outborder_surface 
+              << " inborder " << m_inborder_surface 
+              << " no " << m_no_surface  ;
 
     if(m_selection)
     {
@@ -376,7 +382,7 @@ void AssimpGGeo::convertStructure(GGeo* gg)
         gg->setHigh(high);
     }
 
-    gg->Summary("AssimpGGeo::convertStructure");
+    //gg->Summary("AssimpGGeo::convertStructure");
 }
 
 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)

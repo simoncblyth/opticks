@@ -3,6 +3,11 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 #include <optixu/optixu.h>
 //#include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_math_stream_namespace.h>
@@ -26,6 +31,7 @@
 
 #include "assert.h"
 #include "stdio.h"
+#include "string.h"
 
 using namespace optix;
 
@@ -39,6 +45,8 @@ enum RayType
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
 OptiXEngine::OptiXEngine(const char* cmake_target) :
+    m_context(NULL),
+    m_geometry_group(NULL),
     m_vbo(0),
     m_pbo(0),
     m_vbo_element_size(0),
@@ -50,13 +58,12 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_config(NULL),
     m_ggeo(NULL),
     m_mergedmesh(NULL),
-    m_trace_count(0)
+    m_trace_count(0),
+    m_cmake_target(strdup(cmake_target)),
+    m_enabled(true),
+    m_texture_id(-1)
 {
-    printf("OptiXEngine::OptiXEngine\n");
-    m_context = Context::create();
-    m_geometry_group = m_context->createGeometryGroup();
-    m_config = RayTraceConfig::makeInstance(m_context, cmake_target);
-    printf("OptiXEngine::OptiXEngine DONE\n");
+    LOG(info) << "OptiXEngine::OptiXEngine" ;
 }
 
 void OptiXEngine::setComposition(Composition* composition)
@@ -71,18 +78,27 @@ void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
 {
     m_mergedmesh = mergedmesh ;
 }
-
-
-
-
+void OptiXEngine::setEnabled(bool enabled)
+{
+    m_enabled = enabled ; 
+}
 
 
 void OptiXEngine::init()
 {
+    if(!m_enabled) return ;
+
+    LOG(info) << "OptiXEngine::init " ;
+    m_context = Context::create();
+    m_geometry_group = m_context->createGeometryGroup();
+    m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
+
     initRenderer();
     initContext();
     initGeometry();
     preprocess();
+
+    LOG(info) << "OptiXEngine::init DONE " ;
 }
 
 void OptiXEngine::initRenderer()
@@ -94,7 +110,9 @@ void OptiXEngine::initRenderer()
     m_texture = new Texture();   // QuadTexture would be better name
     m_texture->setSize(width, height);
     m_texture->create();
-    printf("OptiXEngine::initRenderer %u %u  texId %d  \n", width, height, m_texture->getTextureId());
+    m_texture_id = m_texture->getTextureId() ;
+
+    LOG(info) << "OptiXEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
     m_renderer->setDrawable(m_texture);
 }
 
@@ -103,7 +121,7 @@ void OptiXEngine::initContext()
     unsigned int width  = m_composition->getWidth();
     unsigned int height = m_composition->getHeight();
 
-    printf("OptiXEngine::initContext %u %u\n", width, height);
+    LOG(info) << "OptiXEngine::initContext size (" << width << "," << height << ")" ;
 
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
@@ -139,6 +157,7 @@ void OptiXEngine::initContext()
 
 void OptiXEngine::initGeometry()
 {
+    LOG(info) << "OptiXEngine::initGeometry" ;
     // TODO: use GMergedMesh instead of GGeo
     //GGeoOptiXGeometry geom(m_ggeo);
     GGeoOptiXGeometry geom(m_ggeo, m_mergedmesh);
@@ -155,35 +174,37 @@ void OptiXEngine::initGeometry()
     m_context[ "top_object" ]->set( m_geometry_group );
 
     // cf with MeshViewer::initGeometry
+    LOG(info) << "OptiXEngine::initGeometry DONE " ;
 }
 
 
 void OptiXEngine::preprocess()
 {
-    printf("OptiXEngine::preprocess\n");
+    LOG(info)<< "OptiXEngine::preprocess";
 
-    //float scene_epsilon = 1.e-4*m_aabb.maxExtent();
-    float scene_epsilon = m_composition->getNear();
-
-    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
+    m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
+ 
+    LOG(info)<< "OptiXEngine::preprocess start validate ";
     m_context->validate();
+    LOG(info)<< "OptiXEngine::preprocess start compile ";
     m_context->compile();
-    m_context->launch(0,0);  // builds Accel Structure
+    LOG(info)<< "OptiXEngine::preprocess start building Accel structure ";
+    m_context->launch(0,0); 
+
+    LOG(info)<< "OptiXEngine::preprocess DONE ";
 }
 
 void OptiXEngine::trace()
 {
+    if(!m_enabled) return ;
+
     glm::vec3 eye ;
     glm::vec3 U ;
     glm::vec3 V ;
     glm::vec3 W ;
 
     m_composition->getEyeUVW(eye, U, V, W); // must setModelToworld_Extent in composition first
-
-    if(m_trace_count == 0)
-    {
-        print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
-    }
+    //if(m_trace_count == 0) print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
 
     float scene_epsilon = m_composition->getNear();
     m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
@@ -200,7 +221,7 @@ void OptiXEngine::trace()
     unsigned int width  = static_cast<unsigned int>(buffer_width) ;
     unsigned int height = static_cast<unsigned int>(buffer_height) ;
 
-    if(m_trace_count % 100 == 0) printf("OptiXEngine::trace %d : %u %u\n", m_trace_count, width, height );
+    if(m_trace_count % 100 == 0) LOG(info) << "OptiXEngine::trace " << m_trace_count << " size(" <<  width << "," <<  height << ")";
 
     m_context->launch( 0,  width, height );
 
@@ -255,8 +276,7 @@ optix::Buffer OptiXEngine::createOutputBuffer_PBO(RTformat format, unsigned int 
     buffer->setFormat(format);
     buffer->setSize( width, height );
 
-    printf("OptiXEngine::createOutputBuffer_PBO  m_pbo_element_size %lu width %u height %u m_pbo %u \n", m_pbo_element_size, width, height, m_pbo );  
-    //fill_PBO(); // dummy 
+    LOG(info) << "OptiXEngine::createOutputBuffer_PBO  m_pbo_element_size " << m_pbo_element_size << " size (" << width << "," << height << ") pbo " << m_pbo ;
   
     return buffer;
 }
@@ -346,9 +366,8 @@ void OptiXEngine::push_PBO_to_Texture(unsigned int texId)
 
 void OptiXEngine::render()
 {
-    unsigned int texId = m_texture->getTextureId() ;
-    //printf("OptiXEngine::render %d\n", texId);
-    push_PBO_to_Texture(texId);
+    if(!m_enabled) return ;
+    push_PBO_to_Texture(m_texture_id);
     m_renderer->render();
 }
 

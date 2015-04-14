@@ -1,6 +1,10 @@
 // http://antongerdelan.net/opengl/shaders.html
 
 #include <GL/glew.h>
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 #include "Shader.hh"
 #include "stdlib.h"
 #include "stdio.h"
@@ -42,7 +46,8 @@ const char* Shader::fragment_shader =
 
 std::string readFile(const char *path) 
 {
-    std::cout << "readFile " << path << std::endl ; 
+    //std::cout << "readFile " << path << std::endl ; 
+    LOG(debug) << "readFile " << path << std::endl ; 
 
     std::string content;
     std::ifstream fs(path, std::ios::in);
@@ -76,12 +81,12 @@ Shader::Shader(const char* basedir, const char* tag, const char* vname, const ch
        snprintf(fpath, 256, "%s/%s/%s", basedir, tag, fname);
        vert = readFile(vpath) ;
        frag = readFile(fpath) ;
-       printf("Shader::Shader vpath %s\n", vpath);
-       printf("Shader::Shader fpath %s\n", fpath);
+       LOG(info) << "Shader::Shader vpath " << vpath;
+       LOG(info) << "Shader::Shader fpath " << fpath;
    } 
    else
    {
-       printf("Shader::Shader WARNING using default shaders \n");
+       LOG(warning) << "Shader::Shader WARNING using default shaders ";
        vert = vertex_shader ; 
        frag = fragment_shader ; 
    }
@@ -214,7 +219,7 @@ bool _is_valid(GLuint programme) {
   glValidateProgram (programme);
   int params = -1;
   glGetProgramiv (programme, GL_VALIDATE_STATUS, &params);
-  printf ("program %i GL_VALIDATE_STATUS = %i\n", programme, params);
+  //printf ("program %i GL_VALIDATE_STATUS = %i\n", programme, params);
   if (GL_TRUE != params) {
     _print_program_info_log (programme);
     return false;
@@ -266,24 +271,10 @@ void Shader::init(const std::string& vert, const std::string& frag)
     link(m_program);
     
     m_mvp_location = glGetUniformLocation(m_program, "ModelViewProjection");
-    //assert(m_mvp_location > -1);
-
     m_mv_location = glGetUniformLocation(m_program, "ModelView");
-    //assert(m_mv_location > -1);
-
     m_sampler_location = glGetUniformLocation(m_program, "texSampler");
-    //assert(m_sampler_location > -1);
 
-    Print("init");
-
-    if(m_sampler_location > -1)
-    {
-        printf("Shader::init found texSampler at location %d \n", m_sampler_location );
-    }
-    else
-    {
-        printf("Shader::init DID NOT FIND texSampler, location %d \n", m_sampler_location );
-    }
+    //Print("init");
 
     assert( isValid() );
 } 
@@ -292,9 +283,6 @@ void Shader::use()
 {
     glUseProgram(m_program);
 }
-
-
-
 
 
 void Shader::Print(const char* msg)

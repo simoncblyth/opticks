@@ -1,4 +1,9 @@
 #include "RayTraceConfig.hh"
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -62,14 +67,12 @@ RayTraceConfig::RayTraceConfig(optix::Context context, const char* target )
         m_target(NULL)
 {
     if(!target ) return ; 
-    printf("RayTraceConfig::RayTraceConfig ctor ptxfold %s target %s  \n", PtxDir(), target );
-
+    LOG(info) << "RayTraceConfig::RayTraceConfig ptxdir " << PtxDir() << " target " <<  target ;
     m_target = strdup(target);
 }
 
 RayTraceConfig::~RayTraceConfig(void)
 {
-    printf("RayTraceConfig dtor\n");
     free(m_target);
 }
 
@@ -90,7 +93,7 @@ optix::Program RayTraceConfig::createProgram(const char* filename, const char* f
 
   if(m_programs.find(key) == m_programs.end())
   { 
-       printf("RayTraceConfig::createProgram key %s \n", key.c_str() );
+       LOG(info) << "RayTraceConfig::createProgram " << key ;
        optix::Program program = m_context->createProgramFromPTXFile( path.c_str(), fname ); 
        m_programs[key] = program ; 
   } 

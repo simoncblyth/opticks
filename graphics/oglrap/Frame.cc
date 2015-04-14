@@ -17,6 +17,11 @@
 #include <boost/algorithm/string.hpp> 
 #include <boost/lexical_cast.hpp>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 
 void _update_fps_counter (GLFWwindow* window) {
   if(!window)
@@ -150,7 +155,7 @@ void Frame::gl_init_window()
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-    printf("Frame::gl_init_window %d %d %s \n", m_width, m_height, m_title);
+    LOG(info) << "Frame::gl_init_window " << m_width << "," << m_height << " " << m_title ;
 
     m_window = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);
     if (!m_window)
@@ -178,12 +183,12 @@ void Frame::gl_init_window()
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
-    printf ("Frame::gl_init_window Renderer: %s\n", renderer);
-    printf ("Frame::gl_init_window OpenGL version supported %s\n", version);
+    LOG(info) << "Frame::gl_init_window Renderer: " << renderer ;
+    LOG(info) << "Frame::gl_init_window OpenGL version supported " <<  version ;
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
-    printf("Frame::gl_init_window FramebufferSize %d %d \n", width, height);    
+    LOG(info)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;    
 }
 
 
@@ -292,11 +297,11 @@ void Frame::handle_event(GLEQevent& event)
              break;
         case GLEQ_CURSOR_ENTERED:
              m_cursor_inwindow = true ;
-             printf("Cursor entered window\n");
+             LOG(info)<< "Cursor entered window\n";
              break;
         case GLEQ_CURSOR_LEFT:
              m_cursor_inwindow = false ;
-             printf("Cursor left window\n");
+             LOG(info) << "Cursor left window\n";
              break;
         case GLEQ_SCROLLED:
         case GLEQ_KEY_PRESSED:
@@ -317,11 +322,11 @@ void Frame::handle_event(GLEQevent& event)
 
 void Frame::key_pressed(unsigned int key)
 {
-    printf("Frame::key_pressed %u \n", key);
+    LOG(info)<<"Frame::key_pressed " <<  key ;
 
     if( key == GLFW_KEY_ESCAPE)
     {
-        printf("Frame::key_pressed escape\n");
+        LOG(info)<<"Frame::key_pressed escape";
         glfwSetWindowShouldClose (m_window, 1);
     }
     else

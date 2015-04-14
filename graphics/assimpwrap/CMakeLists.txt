@@ -10,6 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 set(BUILD_SHARED_LIBS ON)
 
+find_package(Boost REQUIRED)
 find_package(Assimp REQUIRED)
 find_package(GGeo REQUIRED)
 
@@ -17,11 +18,13 @@ include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/${name}
+    ${Boost_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
 )
 
 add_definitions(
+    ${Boost_DEFINITIONS}  
 )
 
 add_library(${name} SHARED 
@@ -35,6 +38,7 @@ add_library(${name} SHARED
 )
 
 target_link_libraries(${name}
+                       ${Boost_LIBRARIES} 
                        ${Assimp_LIBRARIES} 
                        ${GGeo_LIBRARIES} 
                      )
@@ -43,6 +47,7 @@ add_executable(${name}Test ${name}Test.cc)
 
 target_link_libraries(${name}Test 
                        ${name}
+                       ${Boost_LIBRARIES} 
                        ${Assimp_LIBRARIES} 
                        ${GGeo_LIBRARIES} 
                        ssl

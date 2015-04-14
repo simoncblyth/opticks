@@ -171,17 +171,15 @@ void Renderer::gl_upload_buffers()
         m_sampler_location = m_shader->getSamplerLocation();
     }
 
-    //glUseProgram (m_program);       
-
     m_shader->use();
 
-    dump("Renderer::init");
+    //dump("Renderer::init");
 }
 
 
 GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
 {
-    buffer->Summary("Renderer::upload");
+    //buffer->Summary("Renderer::upload");
     GLuint id ; 
     glGenBuffers(1, &id);
     glBindBuffer(target, id);

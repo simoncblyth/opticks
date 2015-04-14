@@ -73,6 +73,8 @@ add_definitions(
    ${OGLRap_DEFINITIONS}
    ${OptiX_DEFINITIONS} 
    ${OptiXRap_DEFINITIONS} 
+   ${Boost_DEFINITIONS} 
+
 )
 
 

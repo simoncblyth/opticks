@@ -20,6 +20,7 @@ class Interactor {
   public:
        bool isOptiXMode(){ return m_optix_mode > 0 ; }
        void setOptiXMode(int optix_mode){ m_optix_mode =  optix_mode ; }
+       int  getOptiXMode(){ return m_optix_mode ; }
 
 
   public:

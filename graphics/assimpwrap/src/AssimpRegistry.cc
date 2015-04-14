@@ -3,6 +3,12 @@
 #include "assert.h"
 #include "stdio.h"
 
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 AssimpRegistry::AssimpRegistry()
 {
 }

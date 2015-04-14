@@ -12,6 +12,10 @@
 #include "GPropertyMap.hh"
 #include "GMergedMesh.hh"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 
 //  analog to AssimpOptiXGeometry based on intermediary GGeo 
@@ -55,7 +59,7 @@ void GGeoOptiXGeometry::convert()
 
 void GGeoOptiXGeometry::convertSubstances()
 {
-    printf("GGeoOptiXGeometry::convertSubstances\n"); 
+    LOG(info) << "GGeoOptiXGeometry::convertSubstances"; 
     GSubstanceLib* lib = m_ggeo->getSubstanceLib();
     unsigned int nsub = lib->getNumSubstances();
     for(unsigned int i=0 ; i < nsub ; i++)
@@ -65,7 +69,7 @@ void GGeoOptiXGeometry::convertSubstances()
         m_materials.push_back(material);
     }
     assert(m_materials.size() == nsub);
-    printf("GGeoOptiXGeometry::convertSubstances converted %d substances into optix materials \n", nsub); 
+    LOG(info) << "GGeoOptiXGeometry::convertSubstances converted " << nsub << " substances into optix materials " ; 
 }
 
 
@@ -92,7 +96,7 @@ void GGeoOptiXGeometry::convertStructure()
     m_gis.clear();
     traverseNode( m_ggeo->getSolid(0), 0, true );
     assert(m_gis.size() > 0);
-    printf("GGeoOptiXGeometry::convertStructure :  converted %lu gi \n", m_gis.size() );
+    LOG(info) << "GGeoOptiXGeometry::convertStructure converted " << m_gis.size() << " gi " ; 
 }
 
 
@@ -327,7 +331,7 @@ optix::GeometryInstance GGeoOptiXGeometry::convertDrawableInstance(GMergedMesh* 
     optix::Geometry geometry = convertDrawable(mergedmesh) ;  
 
     std::vector<unsigned int>& substanceIndices = mergedmesh->getDistinctSubstances();
-    printf("GGeoOptiXGeometry::convertDrawableInstance number of distinct substance indices %u \n", substanceIndices.size()); 
+    LOG(info) << "GGeoOptiXGeometry::convertDrawableInstance distinct substance indices " << substanceIndices.size() ; 
     std::vector<optix::Material> materials ;
     for(unsigned int i=0 ; i < substanceIndices.size() ; i++)
     {
@@ -361,12 +365,12 @@ optix::Geometry GGeoOptiXGeometry::convertDrawable(GMergedMesh* drawable)
     unsigned int numFaces = ibuf->getNumItems()/3;    
     // items are the indices so divide by 3 to get faces
 
-    printf("GGeoOptiXGeometry::convertDrawable numVertices %u numFaces %u \n", numVertices, numFaces );
+    LOG(info) << "GGeoOptiXGeometry::convertDrawable numVertices " << numVertices << " numFaces " << numFaces ;
 
-    vbuf->Summary("GGeoOptiXGeometry::convertDrawable vbuf");
-    ibuf->Summary("GGeoOptiXGeometry::convertDrawable ibuf");
-    dbuf->Summary("GGeoOptiXGeometry::convertDrawable dbuf");
-    sbuf->Summary("GGeoOptiXGeometry::convertDrawable sbuf");
+    //vbuf->Summary("GGeoOptiXGeometry::convertDrawable vbuf");
+    //ibuf->Summary("GGeoOptiXGeometry::convertDrawable ibuf");
+    //dbuf->Summary("GGeoOptiXGeometry::convertDrawable dbuf");
+    //sbuf->Summary("GGeoOptiXGeometry::convertDrawable sbuf");
 
     geometry->setPrimitiveCount(numFaces);
     {

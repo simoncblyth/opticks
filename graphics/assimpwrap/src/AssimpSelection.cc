@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <assimp/scene.h>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 AssimpSelection::AssimpSelection(AssimpNode* root, const char* query) 
     : 
@@ -181,7 +185,6 @@ void AssimpSelection::findBounds()
     aiVector3D high( -1e10f, -1e10f, -1e10f);
 
    unsigned int n = getNumSelected();
-   printf("AssimpSelection::findBounds n %d \n", n); 
    for(unsigned int i = 0 ; i < n ; i++)
    {
        AssimpNode* node = getSelectedNode(i);

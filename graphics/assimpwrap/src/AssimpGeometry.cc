@@ -26,6 +26,11 @@
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 
 using namespace Assimp ; 
 
@@ -42,7 +47,7 @@ public:
         }
         void write(const char* message)
         {
-                ::printf("%s", message);
+                ::printf("myStream %s", message);
         }
 };
 
@@ -57,7 +62,7 @@ AssimpGeometry::AssimpGeometry(const char* path)
           m_index(0)
 {
     if(!path) return ;          
-    printf("AssimpGeometry::AssimpGeometry ctor path %s  \n", path);
+    //printf("AssimpGeometry::AssimpGeometry ctor path %s  \n", path);
     m_path = strdup(path);
 
     DefaultLogger::create("",Logger::VERBOSE);
@@ -86,7 +91,9 @@ AssimpTree* AssimpGeometry::getTree()
 void AssimpGeometry::info()
 {
     if(!m_aiscene) return ; 
-    printf("AssimpGeometry::info NumMaterial %d NumMeshes %d  \n", m_aiscene->mNumMaterials, m_aiscene->mNumMeshes );
+    LOG(debug) << "AssimpGeometry::info m_aiscene " 
+               << " NumMaterials " << m_aiscene->mNumMaterials
+               << " NumMeshes " << m_aiscene->mNumMeshes ;
   
    /* 
     printf("AssimpGeometry::info aiscene %p \n", m_aiscene);
@@ -165,8 +172,7 @@ unsigned int AssimpGeometry::getSceneFlags()
 
 void AssimpGeometry::import(unsigned int flags)
 {
-    printf("AssimpGeometry::import path %s flags 0x%x \n", m_path, flags  );
-
+    LOG(info) << "AssimpGeometry::import path " << m_path << " flags " << flags ;
     m_process_flags = flags ; 
 
     assert(m_path);
@@ -178,8 +184,8 @@ void AssimpGeometry::import(unsigned int flags)
         return ;
     }   
 
-    dumpProcessFlags("AssimpGeometry::import", flags);
-    dumpSceneFlags("AssimpGeometry::import", m_aiscene->mFlags);
+    //dumpProcessFlags("AssimpGeometry::import", flags);
+    //dumpSceneFlags("AssimpGeometry::import", m_aiscene->mFlags);
 
     info();
 
@@ -212,7 +218,7 @@ AssimpSelection* AssimpGeometry::select(const char* query)
     }
 
     AssimpSelection* selection = new AssimpSelection(m_tree->getRoot(), query);
-    selection->dump();
+    //selection->dump();
 
     if(selection->getNumSelected() == 0)
     {

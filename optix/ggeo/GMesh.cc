@@ -71,7 +71,7 @@ GMesh::GMesh(unsigned int index,
 
    g_instance_count += 1 ; 
 
-   printf("GMesh::GMesh  index %d g_instance_count %d \n", index, g_instance_count );
+   //printf("GMesh::GMesh  index %d g_instance_count %d \n", index, g_instance_count );
 
    setVertices(vertices);
    setFaces(faces);

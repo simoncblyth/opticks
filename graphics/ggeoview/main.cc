@@ -28,8 +28,28 @@
 #include "OptiXEngine.hh"
 #include "RayTraceConfig.hh"
 
+
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+void logging_init()
+{
+    boost::log::core::get()->set_filter
+    (
+        boost::log::trivial::severity >= boost::log::trivial::info
+    );
+}
+
+
+
 int main(int argc, char** argv)
 {
+    logging_init();
+    LOG(info) << argv[0] ; 
     Frame frame ;
     Composition composition ;   
     Interactor interactor ; 
@@ -62,23 +82,24 @@ int main(int argc, char** argv)
     geometry.load("GGEOVIEW_") ; 
     renderer.setDrawable(geometry.getDrawable());
 
-    OptiXEngine engine("GGeoView") ;       // creates OptiX context
 
+    OptiXEngine engine("GGeoView") ;       
     // needing both is transitional
     engine.setGGeo(geometry.getGGeo());
     engine.setMergedMesh(geometry.getMergedMesh());
-
     engine.setComposition(&composition);   // engine needs access to the view matrices
-    engine.init();
-
+    engine.setEnabled(interactor.getOptiXMode()>-1);
+    engine.init();    // creates OptiX context, when enabled
+ 
     GLFWwindow* window = frame.getWindow();
+    LOG(info) << "enter runloop" ; 
     while (!glfwWindowShouldClose(window))
     {
         frame.listen(); 
         server.poll_one();  
         frame.render();
 
-        if(interactor.isOptiXMode())
+        if(interactor.getOptiXMode()>0)
         { 
             engine.trace();
             engine.render();
