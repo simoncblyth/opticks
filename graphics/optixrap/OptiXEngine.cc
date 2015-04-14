@@ -23,8 +23,6 @@
 #include "GGeoOptiXGeometry.hh"
 
 
-
-
 #include "assert.h"
 #include "stdio.h"
 
@@ -53,18 +51,9 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_trace_count(0)
 {
     printf("OptiXEngine::OptiXEngine\n");
-
     m_context = Context::create();
     m_geometry_group = m_context->createGeometryGroup();
-
     m_config = RayTraceConfig::makeInstance(m_context, cmake_target);
-
-    // TODO: geometry loading
-    //m_context[ "top_object" ]->set( m_geometry_group );
-
-    m_renderer = new Renderer("tex");
-    m_texture = new Texture();   // QuadTexture would be better name
-
     printf("OptiXEngine::OptiXEngine DONE\n");
 }
 
@@ -90,6 +79,9 @@ void OptiXEngine::initRenderer()
 {
     unsigned int width  = m_composition->getWidth();
     unsigned int height = m_composition->getHeight();
+
+    m_renderer = new Renderer("tex");
+    m_texture = new Texture();   // QuadTexture would be better name
     m_texture->setSize(width, height);
     m_texture->create();
     printf("OptiXEngine::initRenderer %u %u  texId %d  \n", width, height, m_texture->getTextureId());
@@ -175,7 +167,7 @@ void OptiXEngine::trace()
     glm::vec3 V ;
     glm::vec3 W ;
 
-    m_composition->getEyeUVW(eye, U, V, W); // must set model_to_world in composition first
+    m_composition->getEyeUVW(eye, U, V, W); // must setModelToworld_Extent in composition first
 
     if(m_trace_count == 0)
     {
@@ -197,7 +189,7 @@ void OptiXEngine::trace()
     unsigned int width  = static_cast<unsigned int>(buffer_width) ;
     unsigned int height = static_cast<unsigned int>(buffer_height) ;
 
-    //printf("OptiXEngine::trace %u %u\n", width, height );
+    if(m_trace_count % 100 == 0) printf("OptiXEngine::trace %d : %u %u\n", m_trace_count, width, height );
 
     m_context->launch( 0,  width, height );
 

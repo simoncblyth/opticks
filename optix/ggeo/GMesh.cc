@@ -20,10 +20,17 @@ GMesh::GMesh(GMesh* other)
      m_num_colors(other->getNumColors()),
      m_normals(other->getNormals()),
      m_normals_buffer(other->getNormalsBuffer()),
+     m_nodes(other->getNodes()),
+     m_nodes_buffer(other->getNodesBuffer()),
+     m_substances(other->getSubstances()),
+     m_substances_buffer(other->getSubstancesBuffer()),
      GDrawable()
 {
    updateBounds();
 }
+
+
+int GMesh::g_instance_count = 0 ;
 
 GMesh::GMesh(unsigned int index, 
              gfloat3* vertices, 
@@ -40,6 +47,10 @@ GMesh::GMesh(unsigned int index,
       m_num_vertices(num_vertices), 
       m_faces(NULL),
       m_indices_buffer(NULL),
+      m_nodes(NULL),
+      m_nodes_buffer(NULL),
+      m_substances(NULL),
+      m_substances_buffer(NULL),
       m_num_faces(num_faces),
       m_colors(NULL),
       m_colors_buffer(NULL),
@@ -57,6 +68,10 @@ GMesh::GMesh(unsigned int index,
       GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 
+
+   g_instance_count += 1 ; 
+
+   printf("GMesh::GMesh  index %d g_instance_count %d \n", index, g_instance_count );
 
    setVertices(vertices);
    setFaces(faces);
@@ -135,12 +150,19 @@ gfloat2* GMesh::getTexcoords()
 }
 
 
-
-
 guint3*  GMesh::getFaces()
 {
     return m_faces ;
 }
+unsigned int* GMesh::getNodes()
+{
+    return m_nodes ;
+}
+unsigned int* GMesh::getSubstances()
+{
+    return m_substances ;
+}
+
 
 
 GBuffer* GMesh::getVerticesBuffer()
@@ -169,10 +191,25 @@ GBuffer*  GMesh::getIndicesBuffer()
 {
     return m_indices_buffer ;
 }
+GBuffer*  GMesh::getNodesBuffer()
+{
+    return m_nodes_buffer ;
+}
+GBuffer*  GMesh::getSubstancesBuffer()
+{
+    return m_substances_buffer ;
+}
+
+
+
+
+
 GBuffer*  GMesh::getModelToWorldBuffer()
 {
     return (GBuffer*)m_model_to_world ;
 }
+
+
 
 
 
@@ -196,6 +233,20 @@ void GMesh::setFaces(guint3* faces)
     m_indices_buffer = new GBuffer( sizeof(guint3)*m_num_faces, (void*)m_faces, sizeof(guint3)/3, 1 ) ;
     assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
+void GMesh::setNodes(unsigned int* nodes)
+{
+    m_nodes = nodes ;
+    m_nodes_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_nodes, sizeof(unsigned int), 1 ) ;
+    assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
+}
+void GMesh::setSubstances(unsigned int* substances)
+{
+    m_substances = substances ;
+    m_substances_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_substances, sizeof(unsigned int), 1 ) ;
+    assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
+}
+
+
 void GMesh::setColors(gfloat3* colors)
 {
     m_colors = colors ;
@@ -286,6 +337,17 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
         guint3& fac = m_faces[i] ;
         printf(" fac %5u  %5u %5u %5u \n", i, fac.x, fac.y, fac.z );
     } 
+
+    for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
+    {
+        unsigned int& node = m_nodes[i] ;
+        unsigned int& substance = m_substances[i] ;
+        printf(" fac %5u  node %5u substance %5u  \n", i, node, substance );
+    } 
+
+
+
+
 }
 
 
@@ -437,6 +499,22 @@ gfloat3* GMesh::getTransformedNormals(GMatrixF& transform )
 }
 
 
+
+void GMesh::updateDistinctSubstances()
+{
+    for(unsigned int i=0 ; i < getNumFaces() ; i++)
+    {
+        unsigned int index = m_substances[i] ;
+        if(std::count(m_distinct_substances.begin(), m_distinct_substances.end(), index ) == 0) m_distinct_substances.push_back(index);
+    }  
+    std::sort( m_distinct_substances.begin(), m_distinct_substances.end() );
+}
+ 
+std::vector<unsigned int>& GMesh::getDistinctSubstances()
+{
+    if(m_distinct_substances.size()==0) updateDistinctSubstances();
+    return m_distinct_substances ;
+}
 
 
 

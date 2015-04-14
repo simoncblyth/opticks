@@ -13,6 +13,7 @@ class GSolid ;
 class GNode ;
 class GSubstance ;
 class GPropertyMap ;
+class GDrawable ; 
 
 class GGeoOptiXGeometry  : public OptiXGeometry 
 {
@@ -35,6 +36,9 @@ private:
 private:
     optix::Geometry convertGeometry(GSolid* solid);
     optix::GeometryInstance convertGeometryInstance(GSolid* solid);
+private:
+    // start migration to GMergedMesh
+    optix::Geometry convertDrawable(GDrawable* drawable);
 
 public:
     optix::float3  getMin();

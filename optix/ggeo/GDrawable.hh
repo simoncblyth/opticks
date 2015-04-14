@@ -2,6 +2,7 @@
 #define GDRAWABLE_H
 
 #include "GBuffer.hh"
+#include <vector>
 
 class GDrawable {
   public:
@@ -12,7 +13,11 @@ class GDrawable {
       virtual GBuffer* getColorsBuffer() = 0;
       virtual GBuffer* getTexcoordsBuffer() = 0;
       virtual GBuffer* getIndicesBuffer() = 0;
+      virtual GBuffer* getNodesBuffer() = 0;
+      virtual GBuffer* getSubstancesBuffer() = 0;
       virtual GBuffer* getModelToWorldBuffer() = 0;
+      virtual std::vector<unsigned int>& getDistinctSubstances() = 0;
+
       virtual float    getExtent() = 0;
 
 };      

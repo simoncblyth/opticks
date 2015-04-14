@@ -23,7 +23,8 @@ class GNode {
 
   public:
       //
-      // substance indices live on the node rather than the mesh
+      // **substance indices live on the node rather than the mesh**
+      //
       // as there are a relatively small number of meshes and many nodes
       // that utilize them with different transforms
       //
@@ -32,8 +33,8 @@ class GNode {
       //
       void setMeshSubstance(unsigned int substance_index);
       void setSubstanceIndices(unsigned int* substance_indices);
-      unsigned int* getSubstanceIndices();
 
+      unsigned int* getSubstanceIndices();
       std::vector<unsigned int>& getDistinctSubstanceIndices();
       void updateDistinctSubstanceIndices();
 
@@ -55,7 +56,7 @@ class GNode {
   public:
       unsigned int* getNodeIndices();
   private:
-      void updateNodeIndices(unsigned int index); 
+      void setNodeIndices(unsigned int index); 
 
   public:
      GMesh* getMesh();

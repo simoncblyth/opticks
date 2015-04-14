@@ -19,7 +19,7 @@ GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) :
     m_high(NULL)
 {
     updateBounds();
-    updateNodeIndices(m_index);
+    setNodeIndices(m_index);
 }
 
 GNode::~GNode()
@@ -128,8 +128,12 @@ void GNode::setSubstanceIndices(unsigned int* substance_indices)
 {
     m_substance_indices = substance_indices ; 
 }
+
+
 void GNode::setMeshSubstance(unsigned int index)
 {
+    // unsigned int* array of the substance index repeated nface times
+
     unsigned int nface = m_mesh->getNumFaces(); 
     unsigned int* indices = new unsigned int[nface] ;
     while(nface--) indices[nface] = index ; 
@@ -137,18 +141,26 @@ void GNode::setMeshSubstance(unsigned int index)
 }
 
 
-
 unsigned int* GNode::getNodeIndices()
 {
     return m_node_indices ; 
 }
-void GNode::updateNodeIndices(unsigned int index)
+
+void GNode::setNodeIndices(unsigned int index)
 {
+    // unsigned int* array of the node index repeated nface times
+
     unsigned int nface = m_mesh->getNumFaces(); 
     unsigned int* indices = new unsigned int[nface] ;
     while(nface--) indices[nface] = index ; 
-    m_node_indices = indices ;
+
+    //m_mesh->setNodes(indices);
+    m_node_indices = indices ; 
 }
+
+// duplication done in the above setters seems silly, 
+// but this is to allow simple merging when flatten a tree 
+// of nodes into a single structure
 
 
 void GNode::updateDistinctSubstanceIndices()
@@ -166,5 +178,4 @@ std::vector<unsigned int>& GNode::getDistinctSubstanceIndices()
     if(m_distinct_substance_indices.size()==0) updateDistinctSubstanceIndices();
     return m_distinct_substance_indices ;
 }
-
 

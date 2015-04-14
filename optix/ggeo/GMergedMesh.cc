@@ -29,17 +29,23 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     GMergedMesh* mm = new GMergedMesh( index );
 
-    mm->traverse( solid, 0, pass_count ); 
+    // 1st pass counts vertices and faces
+    mm->traverse( solid, 0, pass_count );  
 
+    // allocate storage 
     mm->setVertices(new gfloat3[mm->getNumVertices()]);
     mm->setNormals( new gfloat3[mm->getNumVertices()]);
     mm->setColors(  new gfloat3[mm->getNumVertices()]);
     mm->setTexcoords( NULL );  
-    mm->setFaces(   new guint3[mm->getNumFaces()]);
+
+    mm->setFaces(        new guint3[mm->getNumFaces()]);
+    mm->setNodes(        new unsigned int[mm->getNumFaces()]);
+    mm->setSubstances(   new unsigned int[mm->getNumFaces()]);
 
     mm->setNumColors(mm->getNumVertices());
     mm->setColor(0.5,0.5,0.5);
 
+    // 2nd pass counts merge GMesh into GMergedMesh
     mm->traverse( solid, 0, pass_merge ); 
     mm->updateBounds();
 
@@ -72,24 +78,33 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
                 m_vertices[m_cur_vertices+i] = vertices[i] ; 
             }
 
-
-
-
-            // TODO: fix transform as : when scaling in play normal transform needs to be transpose of the inverse
+            // TODO: change transform to be the transpose of the inverse  ?
+            // But so long as othonormal?, not needed.  
+            // Ordinary rotation, translation, and uniform scaling are OK.
+            //
             gfloat3* normals = mesh->getTransformedNormals(*transform);  
-            //gfloat3* normals = mesh->getNormals();  
             for(unsigned int i=0 ; i<nvert ; ++i )
             {
                 m_normals[m_cur_vertices+i] = normals[i] ; 
             }
 
+            // offset the vertex indices as are combining all meshes into single vertex list 
             guint3* faces = mesh->getFaces();
+            unsigned int* nodes = mesh->getNodes();
+            unsigned int* substances = mesh->getSubstances();
             for(unsigned int i=0 ; i<nface ; ++i )
             {
                 m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
                 m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
                 m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
+
+                if(nodes && substances)
+                { 
+                    m_nodes[m_cur_faces+i]      = nodes[i] ;
+                    m_substances[m_cur_faces+i] = substances[i] ;
+                }
             }
+
             m_cur_vertices += nvert ;
             m_cur_faces    += nface ;
         }

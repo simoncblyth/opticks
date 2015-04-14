@@ -28,13 +28,40 @@ GGeo
     GMesh GSolid GMaterial GSkinSurface GBorderSurface GSubstanceLib
 
 GMesh
-    holder of vertices, indices
+    holder of vertices, indices which fulfils GDrawable
+    The GBuffer are created when setters like setVertices etc.. 
+    are called 
+
+GMergedMesh
+    specialization of GMesh that combines a tree of GMesh into itself
 
 GSolid
-    GNode specialized with associated GSubstance
+    GNode specialized with associated GSubstance and selection bit constituents
 
 GNode
-    identity index, GMesh and GMatrixF transform
+    identity index, GMesh and GMatrixF transform 
+    also constituent unsigned int* arrays of length matching the face count
+
+    m_substance_indices
+
+    m_node_indices
+
+
+GDrawable
+    abstract interface definition returning GBuffer for vertices, normals, colors, texcoordinates, ...
+    Only GMesh and GMergedMesh (by inheritance) fulfil the GDrawable interface
+
+GBuffer
+    holds pointer to some bytes together with integers describing the bytes : 
+    
+    nbytes 
+           total number of bytes
+    itemsize 
+           size of each item in bytes
+    nelem
+           number of elements within each item 
+           (eg item could be gfloat3 of itemsize 12, with nelem 3 
+           corresponding to 3 floats) 
 
 GSubstance
     holder of inner/outer material and inner/outer surface GPropertMaps
