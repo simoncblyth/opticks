@@ -32,8 +32,19 @@ GMesh
     The GBuffer are created when setters like setVertices etc.. 
     are called 
 
+    NB a relatively small number ~250 of GMesh instances are referenced
+    from a much larger number ~12k of GNode arranged in the geometry tree 
+
+    MUST THINK OF GMESH AS ABSTRACT SHAPES **NOT PLACED INSTANCES OF GEOMETRY**
+    IT IS INCORRECT TO ASCRIBE SUBSTANCE OR NODE INDICES FOR EXAMPLE  
+    SUCH THINGS BELONG ON THE GNODE
+
+
 GMergedMesh
-    specialization of GMesh that combines a tree of GMesh into itself
+    specialization of GMesh that combines a tree of GNode 
+    and referenced GNode shapes into a flattened single instance
+    with transforms applied
+
 
 GSolid
     GNode specialized with associated GSubstance and selection bit constituents

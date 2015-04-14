@@ -14,8 +14,16 @@ class GBuffer ;
 // in the GNode and not in GMesh 
 //
 // Is this true ?
+//
+//     YES, the use of substances and nodes lists 
+//     within the abstract unplaced shape GMesh 
+//     does not make sense...
+//
+//     These should really be moved to the 
+//     GMergedMesh subclass, but as a GDrawable 
+//     related expedient are keeping them in here 
+//     for now.
 // 
-
 
 class GMesh : public GDrawable {
   public:
@@ -49,9 +57,6 @@ class GMesh : public GDrawable {
       gfloat2*       getTexcoords();
       guint3*        getFaces();
 
-      unsigned int*  getNodes();
-      unsigned int*  getSubstances();
-
       bool hasTexcoords();
 
   public:
@@ -64,12 +69,30 @@ class GMesh : public GDrawable {
       GBuffer* getModelToWorldBuffer();
       float getExtent();
 
+  ///////// expedients /////////////////////////////////////
   public:
-      GBuffer* getNodesBuffer();
-      GBuffer* getSubstancesBuffer();
-      std::vector<unsigned int>& getDistinctSubstances();
+      virtual void setNodes(unsigned int* nodes);
+      virtual void setSubstances(unsigned int* substances);
+  public:
+      virtual unsigned int*  getNodes();
+      virtual unsigned int*  getSubstances();
+      virtual GBuffer* getNodesBuffer();
+      virtual GBuffer* getSubstancesBuffer();
+      virtual std::vector<unsigned int>& getDistinctSubstances();
   private:
-      void updateDistinctSubstances();
+      virtual void updateDistinctSubstances();
+
+  protected:
+      unsigned int* m_nodes ; 
+      unsigned int* m_substances ; 
+
+  private:
+      GBuffer* m_nodes_buffer ;
+      GBuffer* m_substances_buffer ;
+
+  private: 
+      std::vector<unsigned int> m_distinct_substances ;
+  //////////////////////////////////////////////////////////////// 
 
   public:
       void setLow(gfloat3* low);
@@ -79,10 +102,6 @@ class GMesh : public GDrawable {
       void setColors(gfloat3* colors);
       void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
-
-  public:
-      void setNodes(unsigned int* nodes);
-      void setSubstances(unsigned int* substances);
 
   public:
       void setNumColors(unsigned int num_colors);
@@ -97,25 +116,21 @@ class GMesh : public GDrawable {
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
   protected:
-      unsigned int m_index ;
-      unsigned int m_num_vertices ;
-      unsigned int m_num_colors ;
-      unsigned int m_num_faces ; 
-      gfloat3*     m_vertices ;
-      gfloat3*     m_normals ;
-      gfloat3*     m_colors ;
-      gfloat2*     m_texcoords ;
-      guint3*      m_faces ;
-
-      unsigned int* m_nodes ; 
-      unsigned int* m_substances ; 
-
-      gfloat3* m_low ;
-      gfloat3* m_high ;
-      gfloat3* m_dimensions ;
-      gfloat3* m_center ;
-      float    m_extent ; 
-      GMatrix<float>* m_model_to_world ; 
+      unsigned int    m_index ;
+      unsigned int    m_num_vertices ;
+      unsigned int    m_num_colors ;
+      unsigned int    m_num_faces ; 
+      gfloat3*        m_vertices ;
+      gfloat3*        m_normals ;
+      gfloat3*        m_colors ;
+      gfloat2*        m_texcoords ;
+      guint3*         m_faces ;
+      gfloat3*        m_low ;
+      gfloat3*        m_high ;
+      gfloat3*        m_dimensions ;
+      gfloat3*        m_center ;
+      float           m_extent ; 
+      GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "abstract" shape GMesh
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -124,12 +139,6 @@ class GMesh : public GDrawable {
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
       GBuffer* m_model_to_world_buffer ;
-
-  private:
-      GBuffer* m_nodes_buffer ;
-      GBuffer* m_substances_buffer ;
-  private: 
-      std::vector<unsigned int> m_distinct_substances ;
 
 
 };

@@ -47,7 +47,7 @@ GMesh::GMesh(unsigned int index,
       m_num_vertices(num_vertices), 
       m_faces(NULL),
       m_indices_buffer(NULL),
-      m_nodes(NULL),
+      m_nodes(NULL),           // nodes and substances are somwhat confusing : use only with subclasses like GMergedMesh
       m_nodes_buffer(NULL),
       m_substances(NULL),
       m_substances_buffer(NULL),
@@ -154,7 +154,10 @@ guint3*  GMesh::getFaces()
 {
     return m_faces ;
 }
-unsigned int* GMesh::getNodes()
+
+
+
+unsigned int* GMesh::getNodes()   // CAUTION USE FROM SUBCLASS ONLY
 {
     return m_nodes ;
 }
@@ -233,7 +236,11 @@ void GMesh::setFaces(guint3* faces)
     m_indices_buffer = new GBuffer( sizeof(guint3)*m_num_faces, (void*)m_faces, sizeof(guint3)/3, 1 ) ;
     assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
-void GMesh::setNodes(unsigned int* nodes)
+
+
+
+
+void GMesh::setNodes(unsigned int* nodes)   // only makes sense to use from single subclasses instances like GMergedMesh 
 {
     m_nodes = nodes ;
     m_nodes_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_nodes, sizeof(unsigned int), 1 ) ;
