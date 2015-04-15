@@ -3,13 +3,12 @@
 
 #include <vector>
 
-class Shader ; 
-class Composition ;
 class GDrawable ; 
 class GBuffer ;
 
+#include "RendererBase.hh"
 
-class Renderer {
+class Renderer : public RendererBase  {
   public:
 
   static const char* PRINT ;  
@@ -26,9 +25,6 @@ class Renderer {
 
   public: 
       void setDrawable(GDrawable* drawable);
-      void setComposition(Composition* composition);
-      void setShaderDir(const char* dir);
-      void setShaderTag(const char* tag);
 
   public: 
       void render();
@@ -37,10 +33,6 @@ class Renderer {
       void configureI(const char* name, std::vector<int> values);
       void dump(const char* msg="Renderer::dump");
       void Print(const char* msg="Renderer::Print");
-
-      Composition* getComposition(); 
-      char* getShaderDir(); 
-      char* getShaderTag(); 
 
   private:
       void gl_upload_buffers();
@@ -51,7 +43,6 @@ class Renderer {
 
   private:
       GLuint m_vao ; 
-      GLuint m_program ;
 
       GLuint m_vertices ;
       GLuint m_normals ;
@@ -68,10 +59,6 @@ class Renderer {
 
   private:
       GDrawable* m_drawable ;
-      Composition* m_composition ;
-      Shader* m_shader ;
-      char* m_shaderdir ; 
-      char* m_shadertag ; 
       bool m_has_tex ; 
 };      
 

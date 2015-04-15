@@ -24,16 +24,12 @@ const char* Renderer::PRINT = "print" ;
 
 Renderer::Renderer(const char* tag)
     :
-    m_shader(NULL),
-    m_shaderdir(NULL),
-    m_shadertag(NULL),
+    RendererBase(tag),
     m_drawable(NULL),
-    m_composition(NULL),
     m_draw_count(0),
     m_texcoords(0),
     m_has_tex(false) 
 {
-    setShaderTag(tag);
 }
 
 Renderer::~Renderer()
@@ -52,35 +48,6 @@ void Renderer::setDrawable(GDrawable* drawable)
     m_drawable = drawable ;
     gl_upload_buffers();
 }
-void Renderer::setComposition(Composition* composition)
-{
-    m_composition = composition ;
-}
-void Renderer::setShaderDir(const char* dir)
-{
-    m_shaderdir = strdup(dir);
-}
-void Renderer::setShaderTag(const char* tag)
-{
-    m_shadertag = strdup(tag);
-}
-
-
-Composition* Renderer::getComposition()
-{
-    return m_composition ;
-}
-char* Renderer::getShaderDir()
-{
-    return m_shaderdir ? m_shaderdir : getenv("SHADER_DIR") ;
-}
-char* Renderer::getShaderTag()
-{
-    return m_shadertag ? m_shadertag : getenv("SHADER_TAG") ;
-}
-
-
-
 
 
 void Renderer::gl_upload_buffers()
@@ -161,8 +128,9 @@ void Renderer::gl_upload_buffers()
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
-    m_shader = new Shader(getShaderDir(), getShaderTag());
-    m_program = m_shader->getId();
+
+    make_shader();
+
     m_mvp_location = m_shader->getMVPLocation();
     m_mv_location = m_shader->getMVLocation();
 
@@ -171,9 +139,7 @@ void Renderer::gl_upload_buffers()
         m_sampler_location = m_shader->getSamplerLocation();
     }
 
-    m_shader->use();
-
-    //dump("Renderer::init");
+    use_shader();
 }
 
 
@@ -205,12 +171,9 @@ void Renderer::render()
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
     }
 
-
-    m_shader->use();
+    use_shader();
 
     glBindVertexArray (m_vao);
-
-    //GLsizei count = m_indices_count ; 
 
     glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ;
 
