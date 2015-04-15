@@ -50,6 +50,7 @@ target_link_libraries( ${name} ${LIBRARIES} )
 SET(hdrs 
 NumpyEvt.hpp
 NPY.hpp
+G4StepNPY.hpp
 numpydelegate.hpp
 numpydelegateCfg.hpp
 numpyserver.hpp

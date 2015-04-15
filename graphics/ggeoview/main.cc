@@ -74,6 +74,10 @@ int main(int argc, char** argv)
     delegate.liveConnect(&cfg);     
     delegate.setNumpyEvt(&evt);
 
+    evt.setNPY(NPY::load("cerenkov", "1"));  // for dev avoid having to use npysend.sh and zmq-broker
+    LOG(info) << evt.description("main/NumpyEvt") ; 
+
+
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 

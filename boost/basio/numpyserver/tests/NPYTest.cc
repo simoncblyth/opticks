@@ -1,29 +1,6 @@
 #include "NPY.hpp"
-#include "numpy.hpp"
+#include "G4StepNPY.hpp"
 #include <iostream>
-
-std::string path_(const char* typ, const char* tag)
-{
-    char* TYP = strdup(typ);
-    char* p = TYP ;
-    while(*p)
-    {
-       if( *p >= 'a' && *p <= 'z') *p += 'A' - 'a' ;
-       p++ ; 
-    } 
-
-    char envvar[64];
-    snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
-    free(TYP); 
-
-    char* tmpl = getenv(envvar) ;
-    if(!tmpl) return "missing-template-envvar" ; 
-    
-    char path[256];
-    snprintf(path, 256, tmpl, tag );
-
-    return path ;   
-}
 
 
 void test_ctor()
@@ -38,27 +15,39 @@ void test_ctor()
 
 void test_path()
 {
-    std::string path = path_("cerenkov", "1");
+    std::string path = NPY::path("cerenkov", "1");
     std::cout << path << std::endl ; 
 }
 
 void test_load()
 {
-    std::string path = path_("cerenkov", "1");
-    std::vector<int> shape ;
-    std::vector<float> data ;
+    NPY* npy = NPY::load("cerenkov","1");
+    std::cout << npy->description("npy") << std::endl ; 
+}
 
-    aoba::LoadArrayFromNumpy<float>(path, shape, data );
+void test_load_missing()
+{
+    NPY* npy = NPY::load("cerenkov","missing");
+    if(npy) std::cout << npy->description("npy") << std::endl ; 
+}
 
-    std::string metadata = "{}";
-    NPY npy(shape,data,metadata) ;
-    std::cout << npy.description("npy") << std::endl ; 
+void test_g4stepnpy()
+{
+    NPY* npy = NPY::load("cerenkov","1");
+    G4StepNPY* step = new G4StepNPY(npy);   
+    step->dump("G4StepNPY");
 }
 
 
 
 int main()
 {
-    test_load();
+    //test_ctor();
+    //test_path();
+    //test_load();
+    //test_load_missing();
+
+    test_g4stepnpy();
+
     return 0 ;
 }
