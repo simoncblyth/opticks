@@ -405,6 +405,11 @@ float GMesh::getExtent()
      return m_extent ;  
 }
 
+float* GMesh::getModelToWorldPtr()
+{
+     return (float*)getModelToWorldBuffer()->getPointer() ; 
+}
+
 
 void GMesh::updateBounds()
 {

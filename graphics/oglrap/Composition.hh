@@ -47,12 +47,15 @@ class Composition {
       glm::vec4& getGaze();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
+      float*     getWorld2EyePtr();  // ModelView  including trackballing
       glm::mat4& getEye2World();
       glm::mat4& getWorld2Camera();
       glm::mat4& getCamera2World();
       glm::mat4& getEye2Look();
       glm::mat4& getLook2Eye();
-      glm::mat4& getWorld2Clip();  // ModelViewProjection  including trackballing
+      glm::mat4& getWorld2Clip();     // ModelViewProjection  including trackballing
+      float*     getWorld2ClipPtr();  // ModelViewProjection  including trackballing
+      float*     getIdentityPtr(); 
       glm::mat4& getProjection(); 
       glm::mat4& getTrackballing(); 
       glm::mat4& getITrackballing(); 
@@ -82,6 +85,7 @@ class Composition {
       glm::mat4 m_projection ;     
       glm::mat4 m_trackballing ;     
       glm::mat4 m_itrackballing ;     
+      glm::mat4 m_identity ;     
 
   public: 
       // housekeeping

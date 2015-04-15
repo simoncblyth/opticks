@@ -63,12 +63,18 @@ void Renderer::gl_upload_buffers()
     //
     assert(m_drawable);
 
+
+    /*
+     Effectively pointing the composition , doesnt belong here
+
     if(m_composition)
     { 
         float* model_to_world  = (float*)m_drawable->getModelToWorldBuffer()->getPointer();
         float extent = m_drawable->getExtent();
         m_composition->setModelToWorld_Extent(model_to_world, extent);
     }
+    */
+
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
@@ -79,6 +85,9 @@ void Renderer::gl_upload_buffers()
     GBuffer* ibuf = m_drawable->getIndicesBuffer();
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
+
+    RendererBase::dump( vbuf->getPointer(),vbuf->getNumBytes(),vbuf->getNumElements()*sizeof(float),0,vbuf->getNumItems() ); 
+
 
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());
@@ -122,7 +131,7 @@ void Renderer::gl_upload_buffers()
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
-
+    
     make_shader();
 
     if(hasTex())
@@ -130,7 +139,9 @@ void Renderer::gl_upload_buffers()
         m_sampler_location = m_shader->getSamplerLocation();
     }
 
-    use_shader();
+
+    glUseProgram(m_program);
+
 }
 
 
@@ -147,17 +158,17 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
 
 void Renderer::render()
 { 
-    update_uniforms();
+    glUseProgram(m_program);
 
-    use_shader();
+    update_uniforms();
 
     glBindVertexArray (m_vao);
 
-    glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
-    // indices_count would be 3 for a single triangle 
+    glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; // indices_count would be 3 for a single triangle 
 
     m_draw_count += 1 ; 
 
+    glUseProgram(0);
 }
 
 

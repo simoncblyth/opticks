@@ -10,6 +10,12 @@
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
+
 const char* Composition::PRINT = "print" ; 
 
 Composition::Composition()
@@ -73,6 +79,9 @@ void Composition::setModelToWorld_Extent(float* m2w, float extent)
 {
     m_model_to_world = glm::make_mat4(m2w);
     m_extent = extent ; 
+
+    LOG(info) << "Composition::setModelToWorld_Extent " << extent ;
+
     //
     // too small near or to large far leads to flikering mess
     // so initialize to something reasonable based on the 
@@ -102,6 +111,18 @@ float Composition::getFar()
 
 
 
+float* Composition::getWorld2EyePtr()
+{
+    return glm::value_ptr(m_world2eye);
+}
+float* Composition::getWorld2ClipPtr()
+{
+    return glm::value_ptr(m_world2clip);
+}
+float* Composition::getIdentityPtr()
+{
+    return glm::value_ptr(m_identity);
+}
 
 
 glm::mat4& Composition::getWorld2Eye()  // ModelView

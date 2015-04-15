@@ -20,7 +20,7 @@ class RendererBase {
   public:
       void make_shader();   
       void update_uniforms();   
-      void use_shader();   
+      void dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count );
 
   protected:
       Shader* m_shader ;

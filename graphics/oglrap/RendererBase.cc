@@ -12,6 +12,10 @@
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 RendererBase::RendererBase(const char* tag)
     :
@@ -59,8 +63,14 @@ void RendererBase::make_shader()
 
     m_mvp_location = m_shader->getMVPLocation();
     m_mv_location = m_shader->getMVLocation();
-}
 
+    LOG(info) << "RendererBase::make_shader "
+              << " shaderdir " << getShaderDir()
+              << " shadertag " << getShaderTag()
+              << " program " <<  m_program
+              << " mvp " << m_mvp_location
+              << " mv " << m_mv_location ;
+}
 
 
 void RendererBase::update_uniforms()
@@ -68,9 +78,16 @@ void RendererBase::update_uniforms()
     if(m_composition)
     {
         m_composition->update() ;
-        // could cache the ptrs they aint changing 
-        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Eye()));
-        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Clip()));
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+
+        /*
+        glm::mat4 w2e = glm::make_mat4(m_composition->getWorld2EyePtr()); 
+        glm::mat4 w2c = glm::make_mat4(m_composition->getWorld2ClipPtr()); 
+        print(w2e, "uu w2e MV");
+        print(w2c, "uu w2c MVP" );
+        */
+
     } 
     else
     { 
@@ -81,12 +98,54 @@ void RendererBase::update_uniforms()
 }
 
 
-void RendererBase::use_shader()
+
+
+
+
+void RendererBase::dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count )
 {
-    m_shader->use();
+    //assert(m_composition) rememeber OptiXEngine uses a renderer internally to draw the quad texture
+    if(m_composition) m_composition->update();
+
+    for(unsigned int i=0 ; i < count ; ++i )
+    {
+        if(i < 5 || i > count - 5)
+        {
+            char* ptr = (char*)data + offset + i*stride  ; 
+            float* f = (float*)ptr ; 
+
+            float x(*(f+0));
+            float y(*(f+1));
+            float z(*(f+2));
+
+            if(m_composition)
+            {
+                glm::vec4 w(x,y,z,1.f);
+                glm::mat4 w2e = glm::make_mat4(m_composition->getWorld2EyePtr()); 
+                glm::mat4 w2c = glm::make_mat4(m_composition->getWorld2ClipPtr()); 
+
+                //print(w2e, "w2e");
+                //print(w2c, "w2c");
+
+                glm::vec4 e  = w2e * w ;
+                glm::vec4 c =  w2c * w ;
+                glm::vec4 cdiv =  c/c.w ;
+
+                printf("RendererBase::dump %7u/%7u : world %10.1f %10.1f %10.1f   eye %10.1f %10.1f %10.1f   clip/w %10.3f %10.3f %10.3f   \n", i,count,
+                        w.x, w.y, w.z,
+                        e.x, e.y, e.z,
+                        cdiv.x, cdiv.y, cdiv.z
+                      );    
+            }
+            else
+            {
+                printf("RendererBase::dump %6u/%6u : world %15f %15f %15f  (no composition) \n", i,count,
+                        x, y, z
+                      );    
+ 
+            }
+        }
+    }
 }
-
-
-
 
 

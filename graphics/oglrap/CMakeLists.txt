@@ -63,6 +63,7 @@ add_library( ${name}  SHARED
                 RendererBase.cc
                 Renderer.cc
                 RendererCfg.cc
+                Rdr.cc
                 Trackball.cc
                 TrackballCfg.cc
                 Camera.cc
@@ -86,6 +87,7 @@ SET(hdrs
         Interactor.hh
         InteractorCfg.hh
         RendererBase.hh
+        Rdr.hh
         Renderer.hh
         RendererCfg.hh
         Trackball.hh

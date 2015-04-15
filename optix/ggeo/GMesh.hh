@@ -67,7 +67,8 @@ class GMesh : public GDrawable {
       GBuffer* getTexcoordsBuffer();
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
-      float getExtent();
+      float  getExtent();
+      float* getModelToWorldPtr();
 
   ///////// expedients /////////////////////////////////////
   public:

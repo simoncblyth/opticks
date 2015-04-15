@@ -1,6 +1,8 @@
 #include "NPY.hpp"
+#include "VecNPY.hpp"
 #include "G4StepNPY.hpp"
 #include <iostream>
+#include "assert.h"
 
 
 void test_ctor()
@@ -38,6 +40,37 @@ void test_g4stepnpy()
     step->dump("G4StepNPY");
 }
 
+void test_getData()
+{
+    NPY* npy = NPY::load("cerenkov","1");
+    float* data = npy->getFloats();
+
+    for(unsigned int i=0 ; i < 16 ; i++ )
+    {
+        uif_t uif ;
+        uif.f = *(data+i) ;
+        printf(" %3u : %15f f   %15d i  %15u u  \n", i, uif.f, uif.i, uif.u );
+    }
+
+    char* raw = (char*)data ;
+    for(unsigned int i=0 ; i < 16 ; i++ )
+    {
+        char c = *(raw+i) ;
+        printf(" %3u : %d i   %x x \n", i, c, c);
+    }
+    std::cout << npy->description("npy") << std::endl ; 
+}
+
+
+void test_VecNPY()
+{   
+    NPY* npy = NPY::load("cerenkov","1");
+
+    VecNPY v(npy,1,0);  // [:,1,0:3]
+    v.dump("vecNPY"); 
+}
+
+
 
 
 int main()
@@ -46,8 +79,10 @@ int main()
     //test_path();
     //test_load();
     //test_load_missing();
+    //test_g4stepnpy();
+    //test_getData();
 
-    test_g4stepnpy();
+    test_VecNPY();
 
     return 0 ;
 }
