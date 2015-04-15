@@ -19,6 +19,7 @@ class RendererBase {
 
   public:
       void make_shader();   
+      void update_uniforms();   
       void use_shader();   
 
   protected:
@@ -29,6 +30,9 @@ class RendererBase {
   private:
       char* m_shaderdir ; 
       char* m_shadertag ; 
+      GLint  m_mv_location ;
+      GLint  m_mvp_location ;
+
 
 };
 

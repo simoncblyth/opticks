@@ -7,6 +7,12 @@
 #include "Common.hh"
 
 
+#include <glm/glm.hpp>  
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>  
+#include <glm/gtc/type_ptr.hpp>
+
+
 RendererBase::RendererBase(const char* tag)
     :
     m_shader(NULL),
@@ -50,7 +56,30 @@ void RendererBase::make_shader()
 {
     m_shader = new Shader(getShaderDir(), getShaderTag());
     m_program = m_shader->getId();
+
+    m_mvp_location = m_shader->getMVPLocation();
+    m_mv_location = m_shader->getMVLocation();
 }
+
+
+
+void RendererBase::update_uniforms()
+{
+    if(m_composition)
+    {
+        m_composition->update() ;
+        // could cache the ptrs they aint changing 
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Eye()));
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Clip()));
+    } 
+    else
+    { 
+        glm::mat4 identity ; 
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
+    }
+}
+
 
 void RendererBase::use_shader()
 {

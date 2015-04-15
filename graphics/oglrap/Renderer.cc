@@ -14,12 +14,6 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include <glm/glm.hpp>  
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/type_ptr.hpp>
-
-
 const char* Renderer::PRINT = "print" ; 
 
 Renderer::Renderer(const char* tag)
@@ -131,9 +125,6 @@ void Renderer::gl_upload_buffers()
 
     make_shader();
 
-    m_mvp_location = m_shader->getMVPLocation();
-    m_mv_location = m_shader->getMVLocation();
-
     if(hasTex())
     {
         m_sampler_location = m_shader->getSamplerLocation();
@@ -156,31 +147,17 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
 
 void Renderer::render()
 { 
-
-    if(m_composition)
-    {
-        m_composition->update() ;
-        // could cache the ptrs they aint changing 
-        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Eye()));
-        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(m_composition->getWorld2Clip()));
-    } 
-    else
-    { 
-        glm::mat4 identity ; 
-        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
-        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
-    }
+    update_uniforms();
 
     use_shader();
 
     glBindVertexArray (m_vao);
 
-    glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ;
+    glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
+    // indices_count would be 3 for a single triangle 
 
     m_draw_count += 1 ; 
 
-    // count is the number of indices (which point at vertices) to form into triangle faces
-    // in the single triangle Demo this would be 3 
 }
 
 

@@ -25,8 +25,6 @@ class Renderer : public RendererBase  {
 
   public: 
       void setDrawable(GDrawable* drawable);
-
-  public: 
       void render();
 
   public: 
@@ -50,8 +48,6 @@ class Renderer : public RendererBase  {
       GLuint m_texcoords ;
       GLuint m_indices ;
 
-      GLint  m_mv_location ;
-      GLint  m_mvp_location ;
       GLint  m_sampler_location ;
 
       long   m_draw_count ;
