@@ -30,34 +30,26 @@ include_directories(
    ${Cfg_INCLUDE_DIRS}  
 )
 
+add_definitions( 
+   ${Boost_DEFINITIONS} 
+    -DVERBOSE 
+)
 
-add_definitions( -DVERBOSE )
-
-add_executable( ${name}Test main.cpp  ) 
-
-# mostly header only 
 add_library( ${name}  SHARED
     numpydelegate.cpp
 )
 
-target_link_libraries( ${name} 
+set(LIBRARIES
       ${Boost_LIBRARIES}
       ${ZMQ_LIBRARIES} 
       ${Cfg_LIBRARIES}
 )
 
-target_link_libraries( ${name}Test 
-      ${Boost_LIBRARIES}
-      ${ZMQ_LIBRARIES} 
-      ${Cfg_LIBRARIES}
-      ${name}
-)
-
-
-
-
+target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
+NumpyEvt.hpp
+NPY.hpp
 numpydelegate.hpp
 numpydelegateCfg.hpp
 numpyserver.hpp
@@ -67,9 +59,9 @@ udp_server.hpp
 numpy.hpp
 )
 
-install(TARGETS ${name}Test DESTINATION bin)
-install(TARGETS ${name}     DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include)
+install(TARGETS ${name}  DESTINATION lib)
+install(FILES ${hdrs}    DESTINATION include)
 
 
+add_subdirectory(tests)
 

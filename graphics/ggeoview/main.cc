@@ -23,6 +23,8 @@
 #include "numpydelegate.hpp"
 #include "numpydelegateCfg.hpp"
 #include "numpyserver.hpp"
+#include "NumpyEvt.hpp"
+
 
 // optixrap-
 #include "OptiXEngine.hh"
@@ -56,6 +58,7 @@ int main(int argc, char** argv)
     Renderer renderer("nrm") ;  
     Geometry geometry ;
     numpydelegate delegate ; 
+    NumpyEvt evt ; 
 
     Cfg cfg("umbrella", false) ;             // collect other Cfg objects
     cfg.add(new FrameCfg<Frame>("frame", &frame, false));
@@ -68,7 +71,8 @@ int main(int argc, char** argv)
     cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
 
     cfg.commandline(argc, argv);
-    delegate.liveConnect(&cfg);    
+    delegate.liveConnect(&cfg);     
+    delegate.setNumpyEvt(&evt);
 
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
@@ -98,6 +102,8 @@ int main(int argc, char** argv)
         frame.listen(); 
         server.poll_one();  
         frame.render();
+
+        //if(evt.hasNPY()) LOG(info)<< evt.description("NumpyEvt");
 
         if(interactor.getOptiXMode()>0)
         { 

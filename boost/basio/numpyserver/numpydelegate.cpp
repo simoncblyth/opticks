@@ -6,7 +6,12 @@
 #include <boost/thread.hpp>
 
 #include "numpyserver.hpp"
+#include "NumpyEvt.hpp"
 #include "Cfg.hh"
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
 
 
 numpydelegate::numpydelegate()
@@ -14,7 +19,8 @@ numpydelegate::numpydelegate()
      m_server(NULL),
      m_udp_port(8080),
      m_npy_echo(0),
-     m_zmq_backend("tcp://127.0.0.1:5002")
+     m_zmq_backend("tcp://127.0.0.1:5002"),
+     m_evt(NULL)
 {
 }
 
@@ -22,6 +28,10 @@ void numpydelegate::setServer(numpyserver<numpydelegate>* server)
 {
     m_server = server ; 
 }  
+void numpydelegate::setNumpyEvt(NumpyEvt* evt)
+{
+    m_evt = evt ; 
+}
 
 void numpydelegate::configureI(const char* name, std::vector<int> values)
 {
@@ -93,13 +103,12 @@ void numpydelegate::interpretExternalMessage(std::string msg)
 
 void numpydelegate::on_msg(std::string _addr, unsigned short port, std::string msg)
 {
-    std::cout << std::setw(20) << boost::this_thread::get_id() 
-              << " numpydelegate::on_msg " 
+    //std::cout << std::setw(20) << boost::this_thread::get_id() 
+    LOG(info) << "numpydelegate::on_msg " 
               << " addr ["  << _addr << "] "
               << " port ["  << port << "] "
               << " msg ["  << msg << "] "
               << std::endl;
-
 
     interpretExternalMessage(msg);
 
@@ -117,15 +126,16 @@ void numpydelegate::on_msg(std::string _addr, unsigned short port, std::string m
 void numpydelegate::on_npy(std::vector<int> _shape, std::vector<float> _data, std::string _metadata)
 {
     assert(_shape.size() == 3); 
-    std::cout << std::setw(20) << boost::this_thread::get_id() 
-              << " numpydelegate::on_npy "
-              << " shape dimension " << _shape.size()
+    //std::cout << std::setw(20) << boost::this_thread::get_id() 
+    LOG(info) << " numpydelegate::on_npy "
+              << " shape dimension " << _shape.size() << " ["
               << _shape[0] << "/"
               << _shape[1] << "/"
-              << _shape[2] << " "
+              << _shape[2] << "] "
               << " data size " << _data.size()
               << " metadata [" << _metadata << "]" 
               << std::endl ; 
+
 
   // copying and replying
 
@@ -133,9 +143,14 @@ void numpydelegate::on_npy(std::vector<int> _shape, std::vector<float> _data, st
    boost::shared_ptr<std::vector<float>> data(new std::vector<float>(_data)); 
    boost::shared_ptr<std::string>        metadata(new std::string(_metadata));
 
+   if(m_evt)
+   {
+       m_evt->setNPY(new NPY(*shape, *data, *metadata)); // TODO: avoid excessive copying 
+       LOG(info) << m_evt->description("NPY lodged into NumpyEvt"); 
+   }   
+
    // demo that can modify the npy 
    //for(size_t i=0 ; i< data->size() ; ++i) (*data)[i] = (*data)[i]*2.0f ; 
-
 
    m_server->response( *shape, *data, *metadata );  
 

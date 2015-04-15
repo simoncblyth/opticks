@@ -3,14 +3,17 @@
 #include <string>
 #include <vector>
 class Cfg;
+class NumpyEvt;
 
 template <class numpydelegate>
 class numpyserver ;
+
 
 class numpydelegate {
 public:
    numpydelegate();
    void setServer(numpyserver<numpydelegate>* server);
+   void setNumpyEvt(NumpyEvt* evt);
 
    void on_msg(std::string addr, unsigned short port, std::string msg);
    void on_npy(std::vector<int> shape, std::vector<float> data, std::string metadata);
@@ -34,13 +37,14 @@ public:
 private:
     numpyserver<numpydelegate>* m_server ;    
 
-   int         m_udp_port ;
-   int         m_npy_echo ;
-   std::string m_zmq_backend ;    
+    int         m_udp_port ;
+    int         m_npy_echo ;
+    std::string m_zmq_backend ;    
 
 private:
 
-   std::vector<Cfg*> m_live_cfg ; 
+    std::vector<Cfg*> m_live_cfg ; 
+    NumpyEvt*         m_evt ; 
 
 
 };

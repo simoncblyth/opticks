@@ -58,12 +58,36 @@ Test::
 structure
 -----------
 
-example main and numpydelegate
+Object Constituents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-main.cpp
-numpydelegate.cpp
-numpydelegate.hpp
+::
+
+    numpyserver<Delegate>
+
+         m_io_service    
+         m_io_service_work
+         net_manager<Delegate>   m_net_manager       
+  
+              m_ctx  (ZMQ)
+              m_local_io_service
+              m_local_io_service_work
+              m_work_thread
+              m_udp_server     udp_server<Delegate> 
+              m_npy_server     npy_server<Delegate> 
+
+                    m_socket
+                    m_buffer 
+                    m_delegate               Delegate*
+                    m_delegate_io_service    boost::asio::io_service&
+                    m_metadata               std::string
+                    m_shape                  std::vector<int>   
+                    m_data                   std::vector<float> 
+              
+                    Posts to the delegates on_npy method                          
+
+
+
 
 
 header only boost::asio and asio-zmq implementation
@@ -75,6 +99,9 @@ numpyserver.hpp
 
      Controls main thread boost::asio::io_service 
      and holds constitent net_manager<Delegate> 
+
+     Main thread io_service is polled to see if the 
+     net thread has any messages pending.  
 
 net_manager.hpp
 
