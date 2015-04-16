@@ -34,7 +34,6 @@ void Rdr::Print(const char* msg)
 
 void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset )
 {
-
     glGenVertexArrays (1, &m_vao); 
     glBindVertexArray (m_vao);     
 
@@ -52,13 +51,13 @@ void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned 
 
 
     GLuint index = vRdrPosition ;       //  generic vertex attribute to be modified
-    GLint  size = 3          ;       //  number of components per generic vertex attribute, must be 1,2,3,4
-    GLenum type = GL_FLOAT   ;       //  of each component in the array
+    GLint  size = 3          ;          //  number of components per generic vertex attribute, must be 1,2,3,4
+    GLenum type = GL_FLOAT   ;          //  of each component in the array
     GLboolean normalized = GL_FALSE ; 
-    GLsizei stride_ = stride ;                // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
+    GLsizei stride_ = stride ;          // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
     const GLvoid* offset_ = (const GLvoid*)offset ;      
 
-    //  offset of the first component of the first generic vertex attribute 
+    // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
 
     glVertexAttribPointer(index, size, type, normalized, stride_, offset_);
@@ -68,8 +67,6 @@ void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned 
 
     glUseProgram(m_program);
 }
-
-
 
 
 void Rdr::render(unsigned int count, unsigned int first)

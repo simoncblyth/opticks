@@ -14,14 +14,14 @@ public:
 
    View()  : 
       m_eye_x(0.0f),
-      m_eye_y(0.0f),
-      m_eye_z(1.0f),
+      m_eye_y(1.0f),
+      m_eye_z(0.0f),
       m_look_x(0.0f),
       m_look_y(0.0f),
       m_look_z(0.0f),
       m_up_x(0.0f),
-      m_up_y(1.0f),
-      m_up_z(0.0f)
+      m_up_y(0.0f),
+      m_up_z(1.0f)
    {
    }
 

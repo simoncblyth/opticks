@@ -138,7 +138,6 @@ int main(int argc, char** argv)
     unsigned int offset = npy->getByteIndex(0,1,0); 
     unsigned int count  = npy->getShape(0); 
     
-
     rdr.dump( data, nbytes, stride, offset, count );
     rdr.upload( data, nbytes, stride, offset);
 

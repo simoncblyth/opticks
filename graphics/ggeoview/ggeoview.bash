@@ -42,6 +42,75 @@ Advantages:
   amplify a point and momentum direction into a line
 
 
+Package Dependencies Tree of GGeoView
+--------------------------------------
+
+::
+
+    GLEW
+    GLFW
+    GLM
+    Cfg*
+    Boost
+    ZMQ
+    AsioZMQ
+
+    numpyserver*
+       Boost
+       ZMQ
+       AsioZMQ
+       Cfg*
+           Boost 
+       NPY*
+
+    OGLRap*
+       GLEW
+       GLFW
+       GLM
+       AssimpWrap*
+           Boost
+           Assimp
+           GGeo*
+       Boost 
+       Cfg*
+       PPM*
+
+    OptiXRap*
+       OptiX
+       CUDA
+
+       // OptiXEngine rendering forces to bring 
+       // in the graphical dependencies
+       // aiming to partition into non-graphics core 
+       // with separate rendering pkg ?
+
+       GLEW
+       GLFW 
+       GLM
+       OGLRap*
+           (see above)
+       AssimpWrap*
+           Boost
+           Assimp
+           GGeo* 
+       GGeo*    
+           (none)
+
+    GGeo
+       // no dependencies : as this or something derived from it 
+       // is slated to become persistable geometry
+       // which could eliminate geometry dependencies (AssimpWrap) 
+       // from the above packages, instead have a geometry 
+       // baking to file initial step
+
+
+
+ 
+
+
+
+
+
 Improvement
 -------------
 
