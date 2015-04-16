@@ -15,7 +15,7 @@ class Composition {
       virtual ~Composition();
 
   public: 
-      void setModelToWorld_Extent(float* m2w, float extent);
+      void setModelToWorld(float* m2w); // effectively points at what you want to look at 
       void setSize(unsigned int width, unsigned int height);
 
   public: 

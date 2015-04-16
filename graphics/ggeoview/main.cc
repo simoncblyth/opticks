@@ -93,7 +93,7 @@ int main(int argc, char** argv)
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
     interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
 
-    renderer.setComposition(&composition);    // renderer needs access to view matrices
+    renderer.setComposition(&composition);    // renderers needs access to view matrices
     rdr.setComposition(&composition);   
 
     numpyserver<numpydelegate> server(&delegate);
@@ -106,32 +106,26 @@ int main(int argc, char** argv)
     renderer.setDrawable(drawable);
 
 
-    float* model_to_world  = drawable->getModelToWorldPtr();
-    float extent = drawable->getExtent();
+    bool debug = false ; 
+    VecNPY* vnpy(NULL) ; 
+    NPY* npy(NULL);
 
-    composition.setModelToWorld_Extent(model_to_world, extent); 
-    // extent is on the scaling diagonal of the model_to_world matrix in triplicate, 
-    // TODO:remove this quadriplication
+    if(debug)
+    {
+        npy = NPY::make_vec3(drawable->getModelToWorldPtr(),100); // use M2W of geometry in order to place debug points in viscinity of geometry 
+        vnpy = new VecNPY(npy,0,0);   
+    }
+    else
+    {
+        npy = NPY::load("cerenkov", "1");  
+        vnpy = new VecNPY(npy,1,0);       // positions start at start of 2nd quad for GenStep
+    }
+    evt.setNPY(npy);   // for dev avoid having to use npysend.sh and zmq-broker
 
+    composition.setModelToWorld(drawable->getModelToWorldPtr());   // point at the geometry 
+    composition.setModelToWorld(vnpy->getModelToWorldPtr());        // point at "vnpy" instead of the geometry 
+    rdr.upload(vnpy);
 
-    glm::mat4 m2w = glm::make_mat4(model_to_world);
-    print(model_to_world, "model_to_world raw floats GMatrix::GetPointer() switches to OpenGL ordering convention at last possible moment");
-    print(m2w, "m2w");
-    print(glm::value_ptr(m2w), "glm::value_ptr(m2w)");
-
-    //evt.setNPY(NPY::load("cerenkov", "1"));  // for dev avoid having to use npysend.sh and zmq-broker
-    evt.setNPY(NPY::make_vec3(model_to_world,100));
-
-
-    //VecNPY vnpy(evt.getNPY(),1,0); // positions start at start of 2nd quad for GenStep
-    VecNPY vnpy(evt.getNPY(),0,0);   // debug vec3 just vec3s so zero offset and stride
-
-    // TODO:derive a model to world matrix for a VecNPY, by extracting the extent and center
-    // this will allow to point the composition at the VecNPY
-
-
-
-    rdr.upload(&vnpy);
 
 
     OptiXEngine engine("GGeoView") ;       
@@ -158,7 +152,7 @@ int main(int argc, char** argv)
         else
         {
             renderer.render();
-            rdr.render(vnpy.getCount());
+            rdr.render();
         }
         glfwSwapBuffers(window);
     }

@@ -78,12 +78,20 @@ Trackball* Composition::getTrackball()
     return m_trackball ;
 }
 
-void Composition::setModelToWorld_Extent(float* m2w, float extent)
+void Composition::setModelToWorld(float* m2w)
 {
-    m_model_to_world = glm::make_mat4(m2w);
-    m_extent = extent ; 
+    assert(m2w);
 
-    LOG(info) << "Composition::setModelToWorld_Extent " << extent ;
+    m_model_to_world = glm::make_mat4(m2w);
+    m_extent = *(m2w+0) ; 
+
+    {
+        print(m2w, "Composition::setModelToWorld raw floats (should be OpenGL conventional order, translation at end)");
+        print(m_model_to_world, "glm::mat4 m_model_to_world GLMPrint::print transposes into familiar presentation");
+        print(glm::value_ptr(m_model_to_world), "glm::value_ptr(m_model_to_world)");
+    }
+
+    LOG(info) << "Composition::setModelToWorld m_extent " << m_extent ;
 
     //
     // too small near or to large far leads to flikering mess

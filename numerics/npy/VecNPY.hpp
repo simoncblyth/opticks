@@ -21,6 +21,11 @@ class VecNPY {
         unsigned int getOffset(){ return m_offset ; }
         unsigned int getCount(){  return m_count ; }
 
+    public:
+        glm::mat4&   getModelToWorld();
+        float*       getModelToWorldPtr();
+        float        getExtent();
+
     private:
         void findBounds();
     private:

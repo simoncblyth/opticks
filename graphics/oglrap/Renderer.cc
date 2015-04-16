@@ -66,18 +66,6 @@ void Renderer::gl_upload_buffers()
     assert(m_drawable);
 
 
-    /*
-     Effectively pointing the composition , doesnt belong here
-
-    if(m_composition)
-    { 
-        float* model_to_world  = (float*)m_drawable->getModelToWorldBuffer()->getPointer();
-        float extent = m_drawable->getExtent();
-        m_composition->setModelToWorld_Extent(model_to_world, extent);
-    }
-    */
-
-
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
 

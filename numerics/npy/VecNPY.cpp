@@ -27,12 +27,25 @@ VecNPY::VecNPY(NPY* npy, unsigned int j, unsigned int k) :
     findBounds();
 }
 
+glm::mat4& VecNPY::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+float* VecNPY::getModelToWorldPtr()
+{
+    return glm::value_ptr(m_model_to_world) ; 
+}
+float VecNPY::getExtent()
+{
+    return m_extent ; 
+}
+
 
 void VecNPY::dump(const char* msg)
 {
-    float xx[4] = {-FLT_MAX, FLT_MAX, 0.f, 0.f};
-    float yy[4] = {-FLT_MAX, FLT_MAX, 0.f, 0.f};
-    float zz[4] = {-FLT_MAX, FLT_MAX, 0.f, 0.f};
+    float xx[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
+    float yy[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
+    float zz[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
 
     const char* fmt = "VecNPY::dump %5s %6u/%6u :  %15f %15f %15f \n";
 
@@ -44,14 +57,14 @@ void VecNPY::dump(const char* msg)
         float y(*(f+1));
         float z(*(f+2));
 
-        if( x>xx[0] ) xx[0] = x ;  
-        if( x<xx[1] ) xx[1] = x ;  
+        if( x<xx[0] ) xx[0] = x ;  
+        if( x>xx[1] ) xx[1] = x ;  
 
-        if( y>yy[0] ) yy[0] = y ;  
-        if( y<yy[1] ) yy[1] = y ;  
+        if( y<yy[0] ) yy[0] = y ;  
+        if( y>yy[1] ) yy[1] = y ;  
 
-        if( z>zz[0] ) zz[0] = z ;  
-        if( z<zz[1] ) zz[1] = z ;  
+        if( z<zz[0] ) zz[0] = z ;  
+        if( z>zz[1] ) zz[1] = z ;  
 
         if(i < 5 || i > m_count - 5) printf(fmt, "", i,m_count, x, y, z);
     }

@@ -84,6 +84,8 @@ add_library( ${name}  SHARED
                 Shader.cc
                 Demo.cc
                 VertexAttribute.cc
+                Prog.cc
+                Shdr.cc
 )
 
 SET(hdrs 

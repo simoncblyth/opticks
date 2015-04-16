@@ -286,9 +286,9 @@ ggeoview-export()
    export GGEOVIEW_GEOKEY="DAE_NAME_DYB"
 
    local q
-   #q="range:3153:12221"
+   q="range:3153:12221"
    #q="index:5000"
-   q="range:5000:8000"
+   #q="range:5000:8000"
 
    export GGEOVIEW_QUERY=$q
    export GGEOVIEW_CTRL=""

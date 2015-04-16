@@ -1,5 +1,4 @@
 #include "NPY.hpp"
-#include "VecNPY.hpp"
 #include "G4StepNPY.hpp"
 #include <iostream>
 #include "assert.h"
@@ -62,14 +61,6 @@ void test_getData()
 }
 
 
-void test_VecNPY()
-{   
-    NPY* npy = NPY::load("cerenkov","1");
-
-    VecNPY v(npy,1,0);  // [:,1,0:3]
-    v.dump("vecNPY"); 
-}
-
 
 
 
@@ -82,7 +73,6 @@ int main()
     //test_g4stepnpy();
     //test_getData();
 
-    test_VecNPY();
 
     return 0 ;
 }

@@ -109,3 +109,7 @@ oglrap-frametest-lldb()
    LLDB=lldb oglrap-frametest $*
 }
 
+oglrap-progtest()
+{
+   SHADER_DIR=~/env/graphics/ggeoview/gl $(oglrap-bindir)/ProgTest
+}
