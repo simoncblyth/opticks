@@ -422,6 +422,7 @@ void OptiXEngine::fill_PBO()
 
 void OptiXEngine::cleanUp()
 {
+    if(!m_enabled) return ;
     saveAccelCache();
     m_context->destroy();
     m_context = 0;

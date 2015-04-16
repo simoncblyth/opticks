@@ -17,6 +17,7 @@ find_package(AssimpWrap REQUIRED)  # more reluctant still, the solution is to be
 find_package(Boost REQUIRED) 
 find_package(Cfg REQUIRED) 
 find_package(PPM REQUIRED) 
+find_package(NPY REQUIRED) 
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -28,6 +29,7 @@ set(INCLUDE_DIRS
    ${Boost_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
+   ${NPY_INCLUDE_DIRS}
 ) 
 
 set(DEFINITIONS
@@ -45,6 +47,7 @@ set(LIBRARIES
    ${AssimpWrap_LIBRARIES}
    ${Boost_LIBRARIES}
    ${Cfg_LIBRARIES}
+   ${NPY_LIBRARIES}
 )
 
 

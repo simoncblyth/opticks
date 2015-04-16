@@ -11,6 +11,27 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 
 * NB raytrace- is another user of optixwrap- 
 
+Usage tips
+-----------
+
+Low GPU memory running
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When GPU memory is low OptiX startup causes a crash, 
+to run anyhow disable OptiX with::
+
+    ggeoview-run --optixmode -1
+
+To free up GPU memory restart the machine, or try sleep/unsleep and
+exit applications including Safari, Mail that all use GPU memory. 
+
+Check available GPU memory with **cu** if less than ~512MB OptiX will
+crash at startup::
+
+    delta:optixrap blyth$ t cu
+    cu is aliased to `cuda_info.sh'
+
+
 
 Old way of doing interpolated photon position animation
 -----------------------------------------------------------
@@ -54,6 +75,7 @@ Package Dependencies Tree of GGeoView
     Boost
     ZMQ
     AsioZMQ
+    NPY*
 
     numpyserver*
        Boost
@@ -74,6 +96,7 @@ Package Dependencies Tree of GGeoView
        Boost 
        Cfg*
        PPM*
+       NPY*
 
     OptiXRap*
        OptiX
@@ -283,7 +306,7 @@ ggeoview-lldb()
 {
    local bin=$(ggeoview-bin)
    ggeoview-export
-   lldb $bin $*
+   lldb $bin -- $*
 }
 
 ggeoview--()

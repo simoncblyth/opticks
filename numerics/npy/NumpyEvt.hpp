@@ -12,6 +12,10 @@ class NumpyEvt {
 
        void setNPY(NPY* npy);
        NPY* getNPY();
+
+       NPY* getVecNPY();
+
+
        bool hasNPY();
 
        std::string description(const char* msg);

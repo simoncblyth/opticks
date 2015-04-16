@@ -19,19 +19,22 @@
 #include "Trackball.hh"
 #include "TrackballCfg.hh"
 #include "Texture.hh"
+#include "Common.hh"
 
 // numpyserver-
 #include "numpydelegate.hpp"
 #include "numpydelegateCfg.hpp"
 #include "numpyserver.hpp"
+
+// npy-
 #include "NumpyEvt.hpp"
+#include "VecNPY.hpp"
 
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Common.hh"
 
 // optixrap-
 #include "OptiXEngine.hh"
@@ -82,10 +85,6 @@ int main(int argc, char** argv)
     delegate.liveConnect(&cfg);     
     delegate.setNumpyEvt(&evt);
 
-    evt.setNPY(NPY::load("cerenkov", "1"));  // for dev avoid having to use npysend.sh and zmq-broker
-    LOG(info) << evt.description("main/NumpyEvt") ; 
-
-
 
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
@@ -103,43 +102,32 @@ int main(int argc, char** argv)
 
 
     GDrawable* drawable = geometry.getDrawable();
-    float* model_to_world  = drawable->getModelToWorldPtr();
-    float extent = drawable->getExtent();
-    composition.setModelToWorld_Extent(model_to_world, extent);
-    glm::mat4 m2w = glm::make_mat4(model_to_world);
-    print(m2w, "m2w");
-
     renderer.setDrawable(drawable);
 
 
-/*
-    unsigned int npo = 100 ;
-    float* data = new float[3*npo] ;
-    unsigned int nbytes = 3*npo*sizeof(float);
-    unsigned int count = npo ; 
-    unsigned int offset = 0 ;
-    unsigned int stride = 0 ;
-    for(int i=0 ; i < npo ; i++ )
-    {
-        float scale = 1.f/float(npo);
-        glm::vec4 m(float(i)*scale, float(i)*scale, float(i)*scale, 1.f);
-        glm::vec4 w = m2w * m ;
-        data[3*i+0] = w.x ;     
-        data[3*i+1] = w.y ;     
-        data[3*i+2] = w.z ;     
-    } 
-*/
+    float* model_to_world  = drawable->getModelToWorldPtr();
+    float extent = drawable->getExtent();
+    composition.setModelToWorld_Extent(model_to_world, extent); 
+    // extent is on the scaling diagonal of the model_to_world matrix in triplicate, 
+    // TODO:remove this quadriplication
 
-    
-    NPY* npy = evt.getNPY(); 
-    void* data = npy->getBytes();
-    unsigned int nbytes = npy->getNumBytes(0); // from dimension 0, ie total bytes
-    unsigned int stride = npy->getNumBytes(1); // from dimension 1, ie item bytes  
-    unsigned int offset = npy->getByteIndex(0,1,0); 
-    unsigned int count  = npy->getShape(0); 
-    
-    rdr.dump( data, nbytes, stride, offset, count );
-    rdr.upload( data, nbytes, stride, offset);
+
+    glm::mat4 m2w = glm::make_mat4(model_to_world);
+    print(m2w, "m2w");
+
+    //evt.setNPY(NPY::load("cerenkov", "1"));  // for dev avoid having to use npysend.sh and zmq-broker
+    evt.setNPY(NPY::make_vec3(model_to_world,100));
+
+
+    //VecNPY vnpy(evt.getNPY(),1,0); // positions start at start of 2nd quad for GenStep
+    VecNPY vnpy(evt.getNPY(),0,0);   // debug vec3 just vec3s so zero offset and stride
+
+    // TODO:derive a model to world matrix for a VecNPY, by extracting the extent and center
+    // this will allow to point the composition at the VecNPY
+
+
+
+    rdr.upload(&vnpy);
 
 
     OptiXEngine engine("GGeoView") ;       
@@ -151,7 +139,7 @@ int main(int argc, char** argv)
     engine.init();    // creates OptiX context, when enabled
  
     GLFWwindow* window = frame.getWindow();
-    LOG(info) << "enter runloop : npy count " << count  ; 
+    LOG(info) << "enter runloop "; 
     while (!glfwWindowShouldClose(window))
     {
         frame.listen(); 
@@ -166,7 +154,7 @@ int main(int argc, char** argv)
         else
         {
             renderer.render();
-            rdr.render(count);
+            rdr.render(vnpy.getCount());
         }
         glfwSwapBuffers(window);
     }

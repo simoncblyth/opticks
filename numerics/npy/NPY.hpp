@@ -7,6 +7,11 @@ class G4StepNPY ;
 #include <string>
 #include <sstream>
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "string.h"
 #include "stdlib.h"
 #include "assert.h"
@@ -17,7 +22,9 @@ class NPY {
    public:
        static std::string path(const char* typ, const char* tag);
        static NPY* load(const char* typ, const char* tag);
+       static NPY* make_vec3(float* m2w, unsigned int npo=100);  
 
+       // ctor takes ownership of a copy of the inputs 
        NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) 
          :
          m_shape(shape),
@@ -188,5 +195,29 @@ NPY* NPY::load(const char* typ, const char* tag)
     return npy ;
 }
 
+
+NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
+{
+    glm::mat4 m2w ;
+    if(m2w_) m2w = glm::make_mat4(m2w_);
+
+    std::vector<float> data;
+    std::vector<int>   shape = {int(npo), 1, 3} ;
+    std::string metadata = "{}";
+
+    float scale = 1.f/float(npo);
+
+    for(int i=0 ; i < npo ; i++ )
+    {
+        glm::vec4 m(float(i)*scale, float(i)*scale, float(i)*scale, 1.f);
+        glm::vec4 w = m2w * m ;
+
+        data.push_back(w.x);
+        data.push_back(w.y);
+        data.push_back(w.z);
+    } 
+    NPY* npy = new NPY(shape,data,metadata) ;
+    return npy ;
+}
 
 

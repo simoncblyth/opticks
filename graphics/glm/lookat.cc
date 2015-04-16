@@ -25,10 +25,25 @@ void print(glm::mat4& m4, const char* msg)
 {
     std::cout << msg << std::endl ; 
 
+
+    //std::cout << glm::to_string(m4) << std::endl ; 
+
     std::cout << "[0] " << glm::to_string(m4[0]) << std::endl ;     
     std::cout << "[1] " << glm::to_string(m4[1]) << std::endl ;     
     std::cout << "[2] " << glm::to_string(m4[2]) << std::endl ;     
     std::cout << "[3] " << glm::to_string(m4[3]) << std::endl ;     
+
+ 
+    printf("16 raw floats");
+    float* f = glm::value_ptr(m4);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {
+        if(i % 4 == 0) printf("\n"); 
+        printf(" %15.3f ", *(f+i)) ;
+    }
+    printf("\n");
+
+
 
   /*
     glm::mat3 m3(m4);
@@ -219,7 +234,7 @@ float absmax(glm::mat4& m)
 }
 
 
-int main()
+void test_absmax()
 {
     glm::mat4 m(1.0f);
 
@@ -238,9 +253,39 @@ int main()
     float amx = absmax(m);
 
     printf("mn %f mx %f amx %f \n", mn, mx, amx);
+}
 
 
-   
+
+int main()
+{
+    glm::vec3 t(10,20,30);
+    glm::vec3 s(3);
+
+    //glm::mat4 ts = glm::transpose(glm::translate(glm::scale(glm::mat4(1.0), s), t));
+    //glm::mat4 st = glm::transpose(glm::scale(glm::translate(glm::mat4(1.0), t), s));
+
+    glm::mat4 ts = glm::translate(glm::scale(glm::mat4(1.0), s), t);
+    glm::mat4 st = glm::scale(glm::translate(glm::mat4(1.0), t), s);
+
+
+    // glm sticking translation along the bottom in m[3]
+
+    print(ts, "ts");   
+    print(st, "st");   
+
+    glm::vec4 ori(0,0,0,1);
+
+    glm::vec4 ts_ori = ts * ori ; 
+    glm::vec4 st_ori = st * ori ; 
+    glm::vec4 ori_ts = ori * ts ; 
+    glm::vec4 ori_st = ori * st ; 
+
+    print(ts_ori, "ts * ori");   
+    print(st_ori, "st * ori");   
+
+    print(ori_ts, "ori * ts");   
+    print(ori_st, "ori * st ");   
 
 
     return 0 ;

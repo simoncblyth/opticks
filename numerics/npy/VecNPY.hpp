@@ -3,10 +3,15 @@
 #include "NPY.hpp"
 #include "float.h"
 
+// Considered calling this SliceNPY but this 
+// is much less ambitious than NumPy slicing 
+// so stick with VecNPY to express the intended simplicity
+
 class VecNPY {
     public:
         VecNPY(NPY* npy, unsigned int j, unsigned int k) :
-            m_data(npy->getBytes()),
+            m_bytes(npy->getBytes()),
+            m_numbytes(npy->getNumBytes(0)),
          //   m_size(3),
             m_stride(npy->getNumBytes(1)),
             m_offset(npy->getByteIndex(0,j,k)),
@@ -17,9 +22,16 @@ class VecNPY {
     public:
         void dump(const char* msg);
 
+    void*        getBytes(){  return m_bytes ; }
+    unsigned int getNumBytes(){  return m_numbytes ; }
+    unsigned int getStride(){ return m_stride ; }
+    unsigned int getOffset(){ return m_offset ; }
+    unsigned int getCount(){  return m_count ; }
+
     private:
-        void*        m_data   ;
+        void*        m_bytes   ;
         //unsigned int m_size   ;    // typically 1,2,3,4 
+        unsigned int m_numbytes ;  
         unsigned int m_stride ;  
         unsigned int m_offset ;  
         unsigned int m_count ;  
@@ -37,7 +49,7 @@ void VecNPY::dump(const char* msg)
 
     for(unsigned int i=0 ; i < m_count ; ++i )
     {   
-        char* ptr = (char*)m_data + m_offset + i*m_stride  ;   
+        char* ptr = (char*)m_bytes + m_offset + i*m_stride  ;   
         float* f = (float*)ptr ; 
         float x(*(f+0));
         float y(*(f+1));

@@ -1,6 +1,9 @@
 #include <GL/glew.h>
 
 #include "Rdr.hh"
+#include "NPY.hpp"
+#include "VecNPY.hpp"
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -16,7 +19,8 @@ Rdr::Rdr(const char* tag)
     :
     RendererBase(tag),
     m_vao(0),
-    m_buffer(0) 
+    m_buffer(0),
+    m_countdefault(0)
 {
 }
 
@@ -31,9 +35,39 @@ void Rdr::Print(const char* msg)
     printf("%s\n", msg);
 }
 
-
-void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset )
+void Rdr::setCountDefault(unsigned int count)
 {
+    m_countdefault = count ;
+}
+unsigned int Rdr::getCountDefault()
+{
+    return m_countdefault ;
+}
+
+
+void Rdr::upload(VecNPY* vnpy)
+{
+    vnpy->dump("Rdr::upload");
+    upload( vnpy->getBytes(), vnpy->getNumBytes(), vnpy->getStride(), vnpy->getOffset(), vnpy->getCount() );
+}
+
+
+void Rdr::upload(NPY* npy, unsigned int j, unsigned int k )
+{
+    void* bytes = npy->getBytes();
+    unsigned int nbytes = npy->getNumBytes(0);      // from dimension 0, ie total bytes
+    unsigned int stride = npy->getNumBytes(1);      // from dimension 1, ie item bytes  
+    unsigned int offset = npy->getByteIndex(0,j,k); // length of 3rd dimension is usually 4 for efficient float4/quad handling  
+    unsigned int count  = npy->getShape(0); 
+
+    upload( bytes, nbytes, stride, offset, count );
+}
+
+
+void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int countdefault)
+{
+    setCountDefault(countdefault);
+
     glGenVertexArrays (1, &m_vao); 
     glBindVertexArray (m_vao);     
 
@@ -77,8 +111,8 @@ void Rdr::render(unsigned int count, unsigned int first)
 
     glBindVertexArray(m_vao);
 
-    GLint   first_ = first  ;  // starting index in the enabled arrays
-    GLsizei count_ = count ;   // number of indices to be rendered
+    GLint   first_ = first  ;                            // starting index in the enabled arrays
+    GLsizei count_ = count ? count : m_countdefault  ;   // number of indices to be rendered
 
     //glDrawArrays( GL_POINTS, first_, count_ );
     glDrawArrays( GL_LINES, first_, count_ );

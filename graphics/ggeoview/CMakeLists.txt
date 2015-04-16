@@ -41,6 +41,7 @@ find_package(Boost REQUIRED)
 find_package(ZMQ REQUIRED)  
 find_package(AsioZMQ REQUIRED)
 find_package(NumpyServer REQUIRED)
+find_package(NPY   REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(Cfg REQUIRED)
 
@@ -58,6 +59,7 @@ include_directories(
    ${ZMQ_INCLUDE_DIRS} 
    ${AsioZMQ_INCLUDE_DIRS} 
    ${NumpyServer_INCLUDE_DIRS} 
+   ${NPY_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
 
@@ -105,6 +107,7 @@ function(add_optix_executable target_name)
       ${ZMQ_LIBRARIES}
       ${Cfg_LIBRARIES}
       ${NumpyServer_LIBRARIES}
+      ${NPY_LIBRARIES}
 
       ${AssimpWrap_LIBRARIES} 
       ${GGeo_LIBRARIES} 

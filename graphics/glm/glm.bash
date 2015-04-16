@@ -85,3 +85,10 @@ glm--()
    glm-test-make
    glm-test-make test
 }
+
+
+glm-lookat(){
+   clang++ -I$(glm-dir) $(glm-sdir)/lookat.cc -o /tmp/lookat && /tmp/lookat 
+}
+
+
