@@ -1,5 +1,7 @@
 #include "Camera.hh"
-#include "Common.hh"
+
+// npy-
+#include "GLMPrint.hpp"
 
 #include "stdio.h"
 #include <glm/gtc/matrix_transform.hpp>  

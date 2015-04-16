@@ -1,11 +1,11 @@
 #include <GL/glew.h>
 
 #include "RendererBase.hh"
-
 #include "Shader.hh"
 #include "Composition.hh"
-#include "Common.hh"
 
+// npy-
+#include "GLMPrint.hpp"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>

@@ -64,49 +64,49 @@ class NPY {
 };
 
 
-unsigned int NPY::getNumFloats(unsigned int from_dim)
+inline unsigned int NPY::getNumFloats(unsigned int from_dim)
 {
     unsigned int nfloat = 1 ; 
     for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nfloat *= m_shape[i] ;
     return nfloat ;  
 }
-unsigned int NPY::getNumBytes(unsigned int from_dim)
+inline unsigned int NPY::getNumBytes(unsigned int from_dim)
 {
     assert(sizeof(float) == 4);
     return sizeof(float)*getNumFloats(from_dim);
 }
-unsigned int NPY::getDimensions()
+inline unsigned int NPY::getDimensions()
 {
     return m_shape.size();
 }
 
 
-unsigned int NPY::getShape(unsigned int n)
+inline unsigned int NPY::getShape(unsigned int n)
 {
     return n < m_shape.size() ? m_shape[n] : -1 ;
 }
-unsigned int NPY::getLength()
+inline unsigned int NPY::getLength()
 {
     return getShape(0);
 }
 
 
-float* NPY::getFloats()
+inline float* NPY::getFloats()
 {
     return m_data.data();
 }
-void* NPY::getBytes()
+inline void* NPY::getBytes()
 {
     return (void*)getFloats();
 }
 
 
-unsigned int NPY::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
+inline unsigned int NPY::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
 {
     return sizeof(float)*getFloatIndex(i,j,k);
 }
 
-unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned int k)
+inline unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(m_dim == 3 ); 
     unsigned int nj = m_len1 ;
@@ -115,7 +115,7 @@ unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned int k)
 }
 
 
-std::string NPY::description(const char* msg)
+inline std::string NPY::description(const char* msg)
 {
     std::stringstream ss ; 
 
@@ -146,7 +146,7 @@ std::string NPY::description(const char* msg)
 
 
 
-std::string NPY::path(const char* typ, const char* tag)
+inline std::string NPY::path(const char* typ, const char* tag)
 {
     char* TYP = strdup(typ);
     char* p = TYP ;
@@ -172,7 +172,7 @@ std::string NPY::path(const char* typ, const char* tag)
 
 
 
-NPY* NPY::load(const char* typ, const char* tag)
+inline NPY* NPY::load(const char* typ, const char* tag)
 {
     std::string path = NPY::path(typ, tag);
 
@@ -196,13 +196,19 @@ NPY* NPY::load(const char* typ, const char* tag)
 }
 
 
-NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
+inline NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
 {
     glm::mat4 m2w ;
     if(m2w_) m2w = glm::make_mat4(m2w_);
 
     std::vector<float> data;
-    std::vector<int>   shape = {int(npo), 1, 3} ;
+
+    //std::vector<int>   shape = {int(npo), 1, 3} ;   this is a C++11 thing
+    std::vector<int> shape ; 
+    shape.push_back(npo);
+    shape.push_back(1);
+    shape.push_back(3);
+
     std::string metadata = "{}";
 
     float scale = 1.f/float(npo);

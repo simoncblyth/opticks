@@ -19,7 +19,6 @@
 #include "Trackball.hh"
 #include "TrackballCfg.hh"
 #include "Texture.hh"
-#include "Common.hh"
 
 // numpyserver-
 #include "numpydelegate.hpp"
@@ -27,6 +26,8 @@
 #include "numpyserver.hpp"
 
 // npy-
+#include "NPY.hpp"
+#include "GLMPrint.hpp"
 #include "NumpyEvt.hpp"
 #include "VecNPY.hpp"
 
@@ -107,13 +108,16 @@ int main(int argc, char** argv)
 
     float* model_to_world  = drawable->getModelToWorldPtr();
     float extent = drawable->getExtent();
+
     composition.setModelToWorld_Extent(model_to_world, extent); 
     // extent is on the scaling diagonal of the model_to_world matrix in triplicate, 
     // TODO:remove this quadriplication
 
 
     glm::mat4 m2w = glm::make_mat4(model_to_world);
+    print(model_to_world, "model_to_world raw floats GMatrix::GetPointer() switches to OpenGL ordering convention at last possible moment");
     print(m2w, "m2w");
+    print(glm::value_ptr(m2w), "glm::value_ptr(m2w)");
 
     //evt.setNPY(NPY::load("cerenkov", "1"));  // for dev avoid having to use npysend.sh and zmq-broker
     evt.setNPY(NPY::make_vec3(model_to_world,100));

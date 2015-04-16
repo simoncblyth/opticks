@@ -7,7 +7,6 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
 #include <optixu/optixu.h>
 //#include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_math_stream_namespace.h>
@@ -16,8 +15,11 @@
 #include <iostream>
 #include <fstream>
 
+// npy-
+#include "GLMPrint.hpp"
+
+
 // oglrap-
-#include "Common.hh"
 #include "Composition.hh"
 #include "Renderer.hh"
 #include "Texture.hh"

@@ -8,6 +8,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
+###
+### CAUTION: this is still not using C++11 but  
+###          most other packages are 
+###          there is potential for interface difficulties
+###          (this might be the cause of std::string in interface problems
+###          that had before : dont recall exactly where)   
+###
+
 ########### using env/cmake/Modules/*.cmake #####
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
@@ -76,11 +84,9 @@ add_library( ${name}  SHARED
                 Shader.cc
                 Demo.cc
                 VertexAttribute.cc
-                Common.cc
 )
 
 SET(hdrs 
-        Common.hh
         Geometry.hh
         Composition.hh
         CompositionCfg.hh

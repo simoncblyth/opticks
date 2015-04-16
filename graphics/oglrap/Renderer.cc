@@ -3,7 +3,9 @@
 #include "Renderer.hh"
 #include "Shader.hh"
 #include "Composition.hh"
-#include "Common.hh"
+
+// npy-
+#include "GLMPrint.hpp"
 
 
 // ggeo

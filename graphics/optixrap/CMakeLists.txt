@@ -36,6 +36,7 @@ find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
 find_package(GLM  REQUIRED)
+find_package(NPY  REQUIRED)
 
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
@@ -53,6 +54,7 @@ include_directories(
     ${GLFW_INCLUDE_DIRS} 
     ${OGLRap_INCLUDE_DIRS}
     ${GLM_INCLUDE_DIRS} 
+    ${NPY_INCLUDE_DIRS} 
 
     ${OptiX_INCLUDE}  
     ${CUDA_INCLUDE_DIRS}
@@ -89,6 +91,7 @@ target_link_libraries( ${name}
       ${OGLRap_LIBRARIES}
       ${AssimpWrap_LIBRARIES}
       ${GGeo_LIBRARIES}
+      ${NPY_LIBRARIES}
       optix
       optixu
 )

@@ -1,6 +1,10 @@
 #include "View.hh"
-#include "Common.hh"
+
 #include "stdio.h"
+
+// npy-
+#include "GLMPrint.hpp"
+
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>

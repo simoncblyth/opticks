@@ -1,8 +1,11 @@
 #include "Composition.hh"
 
+// npy-
+#include "GLMPrint.hpp"
+
+// oglrap-
 #include "Camera.hh"
 #include "Trackball.hh"
-#include "Common.hh"
 #include "View.hh"
 
 #include <glm/glm.hpp>  

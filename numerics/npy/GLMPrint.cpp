@@ -1,4 +1,5 @@
-#include "Common.hh"
+#include "GLMPrint.hpp"
+
 #include "stdio.h"
 #include "float.h"
 #include <algorithm>
@@ -55,6 +56,17 @@ void print(const glm::vec4& v, const char* msg)
 void print(const glm::vec3& v, const char* msg)
 {
     printf("%15s vec3  %10.3f %10.3f %10.3f  \n", msg, v.x, v.y, v.z );
+}
+
+void print(float* f, const char* msg)
+{
+    printf("%s", msg);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {   
+        if(i % 4 == 0) printf("\n"); 
+        printf(" %15.3f ", *(f+i)) ;
+    }   
+    printf("\n");
 }
 
 

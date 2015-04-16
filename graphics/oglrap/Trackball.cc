@@ -1,7 +1,10 @@
 #include "Trackball.hh"
-#include "Common.hh"
+
 #include "stdio.h"
 #include <math.h>  
+
+// npy-
+#include "GLMPrint.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>

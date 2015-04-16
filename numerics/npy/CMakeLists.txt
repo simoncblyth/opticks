@@ -33,6 +33,8 @@ add_definitions(
 
 add_library( ${name}  SHARED
     NumpyEvt.cpp
+    VecNPY.cpp
+    GLMPrint.cpp
 )
 
 set(LIBRARIES
@@ -43,6 +45,7 @@ set(LIBRARIES
 target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
+GLMPrint.hpp
 NumpyEvt.hpp
 NPY.hpp
 VecNPY.hpp
