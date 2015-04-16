@@ -112,6 +112,7 @@ int main(int argc, char** argv)
     renderer.setDrawable(drawable);
 
 
+/*
     unsigned int npo = 100 ;
     float* data = new float[3*npo] ;
     unsigned int nbytes = 3*npo*sizeof(float);
@@ -127,16 +128,16 @@ int main(int argc, char** argv)
         data[3*i+1] = w.y ;     
         data[3*i+2] = w.z ;     
     } 
+*/
 
-
-    /*
+    
     NPY* npy = evt.getNPY(); 
     void* data = npy->getBytes();
     unsigned int nbytes = npy->getNumBytes(0); // from dimension 0, ie total bytes
     unsigned int stride = npy->getNumBytes(1); // from dimension 1, ie item bytes  
     unsigned int offset = npy->getByteIndex(0,1,0); 
     unsigned int count  = npy->getShape(0); 
-    */
+    
 
     rdr.dump( data, nbytes, stride, offset, count );
     rdr.upload( data, nbytes, stride, offset);

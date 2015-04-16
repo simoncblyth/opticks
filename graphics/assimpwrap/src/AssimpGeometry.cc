@@ -65,6 +65,10 @@ AssimpGeometry::AssimpGeometry(const char* path)
     //printf("AssimpGeometry::AssimpGeometry ctor path %s  \n", path);
     m_path = strdup(path);
 
+
+    m_importer->SetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION,1);
+
+
     DefaultLogger::create("",Logger::VERBOSE);
 
     //const unsigned int severity = Logger::Info | Logger::Err | Logger::Warn | Logger::Debugging;

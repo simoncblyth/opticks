@@ -50,6 +50,54 @@ md5digest
 
 
 
+Issues : rotation on import
+----------------------------
+
+::
+
+Coordinate Mismatch
+--------------------
+
+On attempting to visualize genstep data within the geometry 
+find the event data coordinates are not within the geometry.
+But the coordinates are related by a rotation.
+
+
+::
+
+   a.g4daeview.g4daeview:100 vbo.data array([ ([-16585.724609375, -802008.375, -3600.0]
+
+   RendererBase::dump       0/5475634 : world   -16585.7    -3600.0   802008.4
+
+   Theres a rotation about X causing,  (x,y,z) => (x,z,-y )
+
+              1  0  0
+              0  0  1
+              0 -1  0
+
+
+       -Y    Z                           
+          .  |                     
+           . |                       
+            .|                      
+     X ------+          
+              \
+               \ 
+                Y
+
+
+Turns out assimp is obeying rotating according to the up direction specified 
+in the DAE file. But there is an import switch to ignore this::
+
+    delta:assimp-fork blyth$ find . -type f -exec grep -H _COLLADA_IGNORE_UP_DIRECTION {} \;
+    ./code/ColladaLoader.cpp:   ignoreUpDirection = pImp->GetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION,0) != 0;
+    ./include/assimp/config.h:#define AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION "IMPORT_COLLADA_IGNORE_UP_DIRECTION"
+
+Switch this off in AssimpGeometry.cc::
+
+     m_importer->SetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION,1);
+
+
 Workflow
 ---------
 
