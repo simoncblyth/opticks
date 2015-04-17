@@ -32,6 +32,30 @@ crash at startup::
     cu is aliased to `cuda_info.sh'
 
 
+Clipping Planes and recording frames
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    udp.py --cutnormal 1,0,0 --eye -2,0,0 --cutpoint 0,0,0
+    udp.py --cutnormal 1,1,0 --cutpoint -0.1,-0.1,0
+
+
+Although model frame coordinates are useful for 
+intuitive data entry the fact that the meaning is relative
+to the selected geometry makes them less 
+useful as a way of recording a plane, 
+so record planes in world frame coordinates.
+
+This would allow to find the precise plane that 
+halves a piece of geometry by selecting that
+and providing a way to accept world planes, could 
+use --cutplane x,y,x,w to skip the model_to_world 
+conversion.
+
+The same thinking applies to recording viewpoint bookmarks.
+
+
 
 Old way of doing interpolated photon position animation
 -----------------------------------------------------------

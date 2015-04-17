@@ -41,7 +41,10 @@ class Renderer : public RendererBase  {
 
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
+
+      void check_uniforms();
       void update_uniforms();   
+
       void dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count );
 
 
@@ -54,9 +57,9 @@ class Renderer : public RendererBase  {
       GLuint m_texcoords ;
       GLuint m_indices ;
 
-      //GLint  m_sampler_location ;
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
+      GLint  m_clip_location ;
 
       long   m_draw_count ;
       GLsizei m_indices_count ;
@@ -66,6 +69,15 @@ class Renderer : public RendererBase  {
       Composition* m_composition ;
       bool m_has_tex ; 
 };      
+
+inline void Renderer::setComposition(Composition* composition)
+{
+    m_composition = composition ;
+}
+inline Composition* Renderer::getComposition()
+{
+    return m_composition ;
+}
 
 
 #endif

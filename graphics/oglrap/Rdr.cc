@@ -31,46 +31,11 @@ Rdr::Rdr(const char* tag)
 {
 }
 
-void Rdr::configureI(const char* name, std::vector<int> values )
-{
-    if(values.empty()) return ; 
-    if(strcmp(name, PRINT)==0) Print("Rdr::configureI");
-}
-
-void Rdr::Print(const char* msg)
-{
-    printf("%s\n", msg);
-}
-
-void Rdr::setCountDefault(unsigned int count)
-{
-    m_countdefault = count ;
-}
-unsigned int Rdr::getCountDefault()
-{
-    return m_countdefault ;
-}
-
-
-void Rdr::setComposition(Composition* composition)
-{
-    m_composition = composition ;
-}
-Composition* Rdr::getComposition()
-{
-    return m_composition ;
-}
-
-
-
-
-
 void Rdr::upload(VecNPY* vnpy, bool debug)
 {
     if(debug) vnpy->dump("Rdr::upload");
     upload( vnpy->getBytes(), vnpy->getNumBytes(), vnpy->getStride(), vnpy->getOffset(), vnpy->getCount() );
 }
-
 
 void Rdr::upload(NPY* npy, unsigned int j, unsigned int k )
 {
@@ -82,7 +47,6 @@ void Rdr::upload(NPY* npy, unsigned int j, unsigned int k )
 
     upload( bytes, nbytes, stride, offset, count );
 }
-
 
 void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int countdefault)
 {
@@ -119,7 +83,9 @@ void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned 
 
     make_shader();
 
-    // transitional
+    // the "tag" argument of the Rdr identifies the GLSL code being used
+    // determining which uniforms are required 
+
     m_mvp_location = m_shader->uniform("ModelViewProjection", false) ; 
     m_mv_location = m_shader->uniform("ModelView", false);      // not required
 
@@ -129,6 +95,24 @@ void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned 
 
 
     glUseProgram(m_program);
+}
+
+
+
+void Rdr::update_uniforms()
+{
+    if(m_composition)
+    {
+        m_composition->update() ;
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+    } 
+    else
+    { 
+        glm::mat4 identity ; 
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
+    }
 }
 
 
@@ -149,24 +133,6 @@ void Rdr::render(unsigned int count, unsigned int first)
     glBindVertexArray(0);
 
     glUseProgram(0);
-}
-
-
-
-void Rdr::update_uniforms()
-{
-    if(m_composition)
-    {
-        m_composition->update() ;
-        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
-        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
-    } 
-    else
-    { 
-        glm::mat4 identity ; 
-        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
-        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
-    }
 }
 
 

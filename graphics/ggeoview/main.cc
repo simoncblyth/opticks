@@ -18,6 +18,8 @@
 #include "ViewCfg.hh"
 #include "Trackball.hh"
 #include "TrackballCfg.hh"
+#include "Clipper.hh"
+#include "ClipperCfg.hh"
 #include "Texture.hh"
 
 // numpyserver-
@@ -80,6 +82,7 @@ int main(int argc, char** argv)
     cfg.add(new CameraCfg<Camera>("camera", composition.getCamera(), true));
     cfg.add(new ViewCfg<View>(    "view",   composition.getView(),   true));
     cfg.add(new TrackballCfg<Trackball>( "trackball",   composition.getTrackball(),   true));
+    cfg.add(new ClipperCfg<Clipper>( "clipper",   composition.getClipper(),   true));
     cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
 
     cfg.commandline(argc, argv);
@@ -91,7 +94,8 @@ int main(int argc, char** argv)
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
-    interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball());  // interactor changes camera, view, trackball 
+    interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball(), composition.getClipper());  
+    // interactor changes camera, view, trackball, clipper
 
     renderer.setComposition(&composition);    // renderers needs access to view matrices
     rdr.setComposition(&composition);   
@@ -125,8 +129,8 @@ int main(int argc, char** argv)
     }
     evt.setNPY(npy);   // for dev avoid having to use npysend.sh and zmq-broker
 
-    composition.setModelToWorld(drawable->getModelToWorldPtr());   // point at the geometry 
     composition.setModelToWorld(vnpy->getModelToWorldPtr());        // point at "vnpy" instead of the geometry 
+    composition.setModelToWorld(drawable->getModelToWorldPtr());   // point at the geometry is more unchanging 
     rdr.upload(vnpy);
 
 

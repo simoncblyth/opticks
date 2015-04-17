@@ -29,6 +29,81 @@ Better Shader Handling ?
   * https://github.com/OpenGLInsights/OpenGLInsightsCode
 
 
+TODO
+-----
+
+* add clipping planes to "nrm" shaders as check of 
+  shader uniform handling and as need to clip 
+
+
+Classes
+--------
+
+
+Frame
+       OpenGL context creation and window control 
+Interactor
+       GLFW event handling and passing off to Camera, Trackball, View etc..
+
+Composition
+       matrix manipulations based on the Camera, Trackball and View constituents
+Camera
+       near/far/...
+Trackball
+       quaternion calulation of perturbing rotations, and translations too
+View  
+       eye/look/up  
+
+Geometry
+      high level control of geometry loading 
+
+Rdr
+       specialization of RendererBase currently used for 
+       the below tags (ie sets of GLSL programs )
+
+       pos : used directly from GGeoView main for 
+             visualizing VecNPY event data
+Renderer 
+       specialization of RendererBase currently used 
+       the below tags (ie sets of GLSL programs )
+ 
+       nrm : normal shader used directly from GGeoView main
+       tex : quad texture used by OptiXEngine   
+
+       /// will continue with 2 renderers for a while
+       /// until experience dictates which approach is best 
+RendererBase
+       handles shader program access, compilation and linking 
+       using Prog and Shdr classes
+Prog 
+       representation of shader program pipeline 
+       comprised of one for more shaders
+Shdr
+       single shader
+
+
+Texture
+      misnamed : QuadTex might be better
+      Used for rendering OptiX generated PBOs Pixel Buffer Objects 
+      via OpenGL textures 
+
+Demo
+      GMesh subclass representing a single triangle geometry  
+
+
+CameraCfg
+CompositionCfg
+FrameCfg
+InteractorCfg
+RendererCfg
+TrackBallCfg
+ViewCfg
+      configuration connector classes enabling commandline or live 
+      config of objects
+
+
+
+
 
 EOU
 }

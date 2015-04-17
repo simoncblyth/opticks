@@ -6,6 +6,7 @@
 #include <string>
 
 
+
 class View {
 public:
    static const char* EYE ; 
@@ -13,8 +14,8 @@ public:
    static const char* UP ; 
 
    View()  : 
-      m_eye_x(0.0f),
-      m_eye_y(1.0f),
+      m_eye_x(-1.0f),
+      m_eye_y(-1.0f),
       m_eye_z(0.0f),
       m_look_x(0.0f),
       m_look_y(0.0f),

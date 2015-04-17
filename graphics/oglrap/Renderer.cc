@@ -38,7 +38,8 @@ Renderer::Renderer(const char* tag)
     m_has_tex(false),
     m_composition(NULL),
     m_mv_location(-1),
-    m_mvp_location(-1)
+    m_mvp_location(-1),
+    m_clip_location(-1)
 {
 }
 
@@ -52,25 +53,22 @@ void Renderer::configureI(const char* name, std::vector<int> values )
     if(strcmp(name, PRINT)==0) Print("Renderer::configureI");
 }
 
-
 void Renderer::setDrawable(GDrawable* drawable, bool debug)
 {
     m_drawable = drawable ;
     gl_upload_buffers(debug);
 }
 
-void Renderer::setComposition(Composition* composition)
+
+GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
 {
-    m_composition = composition ;
+    //buffer->Summary("Renderer::upload");
+    GLuint id ; 
+    glGenBuffers(1, &id);
+    glBindBuffer(target, id);
+    glBufferData(target, buffer->getNumBytes(), buffer->getPointer(), usage);
+    return id ; 
 }
-Composition* Renderer::getComposition()
-{
-    return m_composition ;
-}
-
-
-
-
 
 
 void Renderer::gl_upload_buffers(bool debug)
@@ -149,32 +147,76 @@ void Renderer::gl_upload_buffers(bool debug)
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
-    
+
+    glEnable(GL_CLIP_DISTANCE0); 
+ 
     make_shader();
 
-
-    // transitional
-    m_mvp_location = m_shader->uniform("ModelViewProjection", false) ; 
-    m_mv_location = m_shader->uniform("ModelView", false);      // not required
-    //if(hasTex()) m_sampler_location = m_shader->getSamplerLocation();
-
-    LOG(info) << "Renderer::make_shader "
-              << " mvp " << m_mvp_location
-              << " mv " << m_mv_location ;
+    check_uniforms();
 
     glUseProgram(m_program);
 }
 
 
-GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
+void Renderer::check_uniforms()
 {
-    //buffer->Summary("Renderer::upload");
-    GLuint id ; 
-    glGenBuffers(1, &id);
-    glBindBuffer(target, id);
-    glBufferData(target, buffer->getNumBytes(), buffer->getPointer(), usage);
-    return id ; 
+    char* tag = getShaderTag();
+ 
+    if(strcmp(tag,"nrm")==0)
+    {
+        m_mvp_location = m_shader->uniform("ModelViewProjection", true); 
+        m_mv_location =  m_shader->uniform("ModelView",           true);      
+        m_clip_location = m_shader->uniform("ClipPlane",          true); 
+    } 
+    else if(strcmp(tag,"tex")==0)
+    {
+        m_mv_location =  m_shader->uniform("ModelView",           true);    
+    } 
+    else
+    {
+        LOG(fatal) << "Renderer::checkUniforms unexpected shader tag " << tag ; 
+        assert(0); 
+    }
+
+    LOG(info) << "Renderer::check_uniforms "
+              << " tag " << tag 
+              << " mvp " << m_mvp_location
+              << " mv " << m_mv_location 
+              << " clip " << m_clip_location ;
+
 }
+
+void Renderer::update_uniforms()
+{
+    if(m_composition)
+    {
+        m_composition->update() ;
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+        glUniform4fv(m_clip_location, 1, m_composition->getClipPlanePtr() );
+
+        if(m_composition->getClipMode() == -1)
+        {
+            glDisable(GL_CLIP_DISTANCE0); 
+        }
+        else
+        {
+            glEnable(GL_CLIP_DISTANCE0); 
+        }
+
+        if(m_draw_count == 0)
+            print( m_composition->getClipPlanePtr(), "Renderer::update_uniforms ClipPlane", 4);
+
+    } 
+    else
+    { 
+        glm::mat4 identity ; 
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
+    }
+}
+
+
 
 
 void Renderer::render()
@@ -192,23 +234,6 @@ void Renderer::render()
     glUseProgram(0);
 }
 
-
-
-void Renderer::update_uniforms()
-{
-    if(m_composition)
-    {
-        m_composition->update() ;
-        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
-        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
-    } 
-    else
-    { 
-        glm::mat4 identity ; 
-        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
-        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
-    }
-}
 
 
 

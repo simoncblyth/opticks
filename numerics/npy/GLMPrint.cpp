@@ -58,16 +58,18 @@ void print(const glm::vec3& v, const char* msg)
     printf("%15s vec3  %10.3f %10.3f %10.3f  \n", msg, v.x, v.y, v.z );
 }
 
-void print(float* f, const char* msg)
+void print(float* f, const char* msg, unsigned int n)
 {
     printf("%s", msg);
-    for(unsigned int i=0 ; i < 16 ; i++)
+    for(unsigned int i=0 ; i < n ; i++)
     {   
         if(i % 4 == 0) printf("\n"); 
         printf(" %15.3f ", *(f+i)) ;
     }   
     printf("\n");
 }
+
+
 
 
 

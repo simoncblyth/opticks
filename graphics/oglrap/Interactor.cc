@@ -6,6 +6,7 @@
 #include "Camera.hh"
 #include "View.hh"
 #include "Trackball.hh"
+#include "Clipper.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -21,6 +22,7 @@ Interactor::Interactor()
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
+   m_clipper(NULL),
    m_zoom_mode(false), 
    m_pan_mode(false), 
    m_near_mode(false), 
@@ -49,11 +51,12 @@ void Interactor::configureI(const char* name, std::vector<int> values)
 }
 
 
-void Interactor::setup(Camera* camera, View* view, Trackball* trackball)
+void Interactor::setup(Camera* camera, View* view, Trackball* trackball, Clipper* clipper)
 {
     m_camera = camera ; 
     m_view   = view ; 
     m_trackball = trackball ; 
+    m_clipper = clipper ; 
 }   
 
 
@@ -126,7 +129,10 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_H:
             m_trackball->home(); 
             break;
- 
+        case GLFW_KEY_C:
+            m_clipper->next(); 
+            break;
+  
 
     } 
     Print("Interactor::key_pressed");

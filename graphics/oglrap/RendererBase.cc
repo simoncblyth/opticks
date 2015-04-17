@@ -15,12 +15,13 @@ RendererBase::RendererBase(const char* tag, const char* dir)
     m_shadertag(strdup(tag)),
     m_program(-1)
 {
+    // no context needed, just reads sources
+    m_shader = new Prog(m_shaderdir, m_shadertag, true); 
 }
 
 
 void RendererBase::make_shader()
 {
-    m_shader = new Prog(m_shaderdir, m_shadertag, true); 
     m_shader->createAndLink();
     m_shader->Summary("RendererBase::make_shader");
     m_program = m_shader->getId(); 

@@ -26,7 +26,7 @@ Prog::Prog(const char* basedir, const char* tag, bool live) :
 
     if(fs::exists(tagdir) && fs::is_directory(tagdir)) 
     {
-        examine(m_tagdir);
+        readSources(m_tagdir);
     }
     else
     {
@@ -47,7 +47,7 @@ void Prog::setup()
 }
 
 
-void Prog::examine(const char* tagdir)
+void Prog::readSources(const char* tagdir)
 {
     LOG(debug) << "Prog::examine  tag directory at [" << tagdir << "]"  ; 
 
@@ -58,7 +58,10 @@ void Prog::examine(const char* tagdir)
 
         if(fs::exists(glsl) && fs::is_regular_file(glsl))
         {
-            addShader( glsl.string().c_str(), m_codes[i] );
+            const char* path = glsl.string().c_str();
+            GLenum type = m_codes[i] ;
+            Shdr* shdr = new Shdr(path, type, m_live); 
+            m_shaders.push_back(shdr);
         }
         else
         {
@@ -66,14 +69,6 @@ void Prog::examine(const char* tagdir)
         } 
     }     
 }
-
-void Prog::addShader(const char* path, GLenum type )
-{
-    LOG(debug) << "Prog::addShader [" << path << "]" ; 
-    Shdr* shdr = new Shdr(path, type, m_live); 
-    m_shaders.push_back(shdr);
-}
-
 
 void Prog::createAndLink()
 {

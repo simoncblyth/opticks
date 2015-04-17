@@ -81,8 +81,9 @@ add_library( ${name}  SHARED
                 CameraCfg.cc
                 View.cc
                 ViewCfg.cc
+                Clipper.cc
+                ClipperCfg.cc
                 Demo.cc
-                VertexAttribute.cc
                 Prog.cc
                 Shdr.cc
 )
@@ -106,8 +107,9 @@ SET(hdrs
         CameraCfg.hh
         View.hh
         ViewCfg.hh
+        Clipper.hh
+        ClipperCfg.hh
         Demo.hh
-        VertexAttribute.hh
         gleq.h
         Prog.hh
         Shdr.hh

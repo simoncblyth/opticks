@@ -5,6 +5,7 @@
 class Camera ; 
 class View ; 
 class Trackball ;
+class Clipper ;
 
 
 // maybe this belongs in oglrap- 
@@ -15,7 +16,7 @@ class Interactor {
        static const char* OPTIXMODE ; 
 
        Interactor(); 
-       void setup(Camera* camera, View* view, Trackball* trackball);
+       void setup(Camera* camera, View* view, Trackball* trackball, Clipper* clipper);
 
   public:
        bool isOptiXMode(){ return m_optix_mode > 0 ; }
@@ -38,6 +39,7 @@ class Interactor {
        Camera*      m_camera ; 
        View*        m_view ; 
        Trackball*   m_trackball ; 
+       Clipper*     m_clipper ; 
 
        bool m_zoom_mode ;
        bool m_pan_mode ;

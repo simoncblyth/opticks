@@ -27,8 +27,8 @@ class Prog {
       enum Obj_t { Uniform=0, Attribute=1 } ;
 
       void setup();
-      void examine(const char* tagdir);
-      void addShader(const char* path, GLenum type);
+      void readSources(const char* tagdir);
+
       void traverseLocation(Obj_t obj, GLenum type,  const char* name, bool print);
       void traverseActive(Obj_t obj, bool print);
       void printStatus();

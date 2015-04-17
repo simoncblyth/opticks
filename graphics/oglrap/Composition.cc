@@ -1,12 +1,14 @@
 #include "Composition.hh"
 
-// npy-
-#include "GLMPrint.hpp"
-
 // oglrap-
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "View.hh"
+#include "Clipper.hh"
+
+
+// npy-
+#include "GLMPrint.hpp"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
@@ -26,12 +28,14 @@ Composition::Composition()
   m_camera(NULL),
   m_view(NULL),
   m_trackball(NULL),
+  m_clipper(NULL),
   m_model_to_world(),
   m_extent(1.0f)
 {
     m_camera = new Camera() ;
     m_view   = new View() ;
     m_trackball = new Trackball() ;
+    m_clipper = new Clipper() ;
 }
 
 Composition::~Composition()
@@ -63,19 +67,6 @@ unsigned int Composition::getHeight()
 void Composition::setSize(unsigned int width, unsigned int height)
 {
     m_camera->setSize(width, height);
-}
-
-Camera* Composition::getCamera()
-{
-    return m_camera ;
-}
-View* Composition::getView()
-{
-    return m_view ;
-}
-Trackball* Composition::getTrackball()
-{
-    return m_trackball ;
 }
 
 void Composition::setModelToWorld(float* m2w, bool debug)
@@ -135,6 +126,20 @@ float* Composition::getIdentityPtr()
 {
     return glm::value_ptr(m_identity);
 }
+
+
+
+
+float* Composition::getClipPlanePtr()
+{
+    return glm::value_ptr(m_clipplane);
+}
+int Composition::getClipMode()
+{
+    return m_clipper->getMode();
+}
+
+
 
 
 glm::mat4& Composition::getWorld2Eye()  // ModelView
@@ -233,6 +238,8 @@ void Composition::update()
     m_projection = m_camera->getProjection();
 
     m_world2clip = m_projection * m_world2eye ;
+
+    m_clipplane = m_clipper->getClipPlane(m_model_to_world) ;
 
 
 /*

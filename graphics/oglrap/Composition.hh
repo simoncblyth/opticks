@@ -7,6 +7,7 @@
 class Camera ;
 class View ;
 class Trackball ; 
+class Clipper ; 
 
 class Composition {
   public:
@@ -32,6 +33,7 @@ class Composition {
       Camera* getCamera(); 
       Trackball* getTrackball(); 
       View* getView(); 
+      Clipper* getClipper(); 
 
   public: 
       // getters of inputs 
@@ -60,6 +62,11 @@ class Composition {
       glm::mat4& getTrackballing(); 
       glm::mat4& getITrackballing(); 
 
+  public:
+      int        getClipMode();
+      glm::vec4& getClipPlane();
+      float*     getClipPlanePtr();
+
   private:
       // inputs 
       glm::mat4 m_model_to_world ; 
@@ -70,10 +77,12 @@ class Composition {
       Camera*    m_camera ;
       Trackball* m_trackball ;
       View*      m_view ;
+      Clipper*   m_clipper ;
 
   private:
       // updated by *update* based on inputs and residents
       glm::vec4 m_gaze ; 
+      glm::vec4 m_clipplane ; 
       float     m_gazelength ;
       glm::mat4 m_world2eye ;     
       glm::mat4 m_eye2world ;     
@@ -97,5 +106,31 @@ class Composition {
 
 
 };      
+
+
+
+inline Camera* Composition::getCamera()
+{
+    return m_camera ;
+}
+inline View* Composition::getView()
+{
+    return m_view ;
+}
+inline Trackball* Composition::getTrackball()
+{
+    return m_trackball ;
+}
+inline Clipper* Composition::getClipper()
+{
+    return m_clipper ;
+}
+
+
+
+
+
+
+
 
 #endif

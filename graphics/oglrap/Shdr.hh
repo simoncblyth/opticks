@@ -9,6 +9,7 @@ class Shdr {
    //friend class Prog ; 
 
    public:
+       // ctor only reads the file, no context needed
        Shdr(const char* path, GLenum type, bool live=false);
        void createAndCompile();
        void Print(const char* msg);
