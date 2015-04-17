@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 
 #include "Renderer.hh"
-#include "Shader.hh"
+//#include "Shader.hh"
 #include "Composition.hh"
 
 // npy-
@@ -125,10 +125,8 @@ void Renderer::gl_upload_buffers(bool debug)
     
     make_shader();
 
-    if(hasTex())
-    {
-        m_sampler_location = m_shader->getSamplerLocation();
-    }
+    
+    //if(hasTex()) m_sampler_location = m_shader->getSamplerLocation();
 
 
     glUseProgram(m_program);
@@ -175,7 +173,7 @@ void Renderer::dump(const char* msg)
     printf("shaderdir %s \n", getShaderDir());
     printf("shadertag %s \n", getShaderTag());
 
-    m_shader->dump(msg);
+    //m_shader->dump(msg);
 }
 
 void Renderer::Print(const char* msg)

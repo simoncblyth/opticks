@@ -1,8 +1,6 @@
 #pragma once
 
-
 class Composition ;
-class Shader ; 
 class Prog ;
 
 
@@ -24,13 +22,9 @@ class RendererBase {
       void dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count );
 
   protected:
-      Shader* m_shader ;
+      Prog*   m_shader ;
       GLuint m_program ;
       Composition* m_composition ;
-
-  protected:
-      // testing new shader handling 
-      Prog* m_shaderprog ;
 
   private:
       char* m_shaderdir ; 

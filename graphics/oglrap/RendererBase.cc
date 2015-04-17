@@ -1,12 +1,9 @@
 #include <GL/glew.h>
 
 #include "RendererBase.hh"
-#include "Shader.hh"
 #include "Composition.hh"
 
-// aiming to replace Shader
 #include "Prog.hh"
-
 
 // npy-
 #include "GLMPrint.hpp"
@@ -24,7 +21,6 @@
 RendererBase::RendererBase(const char* tag)
     :
     m_shader(NULL),
-    m_shaderprog(NULL),
     m_shaderdir(NULL),
     m_shadertag(NULL),
     m_composition(NULL),
@@ -64,21 +60,15 @@ char* RendererBase::getShaderTag()
 void RendererBase::make_shader()
 {
 
-#ifdef OLD_SHADER
-    m_shader = new Shader(getShaderDir(), getShaderTag());
-    m_program = m_shader->getId();
-    m_mvp_location = m_shader->getMVPLocation();
-    m_mv_location = m_shader->getMVLocation();
-#else
-    m_shaderprog = new Prog(getShaderDir(), getShaderTag(), true); 
-    m_shaderprog->createAndLink();
-    m_shaderprog->Summary("RendererBase::make_shader");
-    m_program = m_shaderprog->getId(); 
+    m_shader = new Prog(getShaderDir(), getShaderTag(), true); 
+    m_shader->createAndLink();
+    m_shader->Summary("RendererBase::make_shader");
+    m_program = m_shader->getId(); 
 
     // transitional
-    m_mvp_location = m_shaderprog->uniform("ModelViewProjection") ; 
-    m_mv_location = m_shaderprog->uniform("ModelView", false);      // not required
-#endif
+    // hmm this needs to be done at higher level, as differnent subclasses have differing needs 
+    m_mvp_location = m_shader->uniform("ModelViewProjection", false) ; 
+    m_mv_location = m_shader->uniform("ModelView", false);      // not required
 
     LOG(info) << "RendererBase::make_shader "
               << " shaderdir " << getShaderDir()

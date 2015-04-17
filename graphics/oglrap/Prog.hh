@@ -17,8 +17,11 @@ class Prog {
       void Print(const char* msg);
       GLuint getId();
 
-      GLuint attribute(const char* name, bool required=true);
-      GLuint uniform(const char* name, bool required=true);
+      // required attributes/uniforms cause exits when not found
+      // non-required return -1 when not found just like 
+      // glGetUniformLocation glGetAttribLocation when no such active U or A 
+      GLint attribute(const char* name, bool required=true);
+      GLint uniform(const char* name, bool required=true);
 
    private:
       enum Obj_t { Uniform=0, Attribute=1 } ;

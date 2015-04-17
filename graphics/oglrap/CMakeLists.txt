@@ -81,7 +81,6 @@ add_library( ${name}  SHARED
                 CameraCfg.cc
                 View.cc
                 ViewCfg.cc
-                Shader.cc
                 Demo.cc
                 VertexAttribute.cc
                 Prog.cc
@@ -107,7 +106,6 @@ SET(hdrs
         CameraCfg.hh
         View.hh
         ViewCfg.hh
-        Shader.hh
         Demo.hh
         VertexAttribute.hh
         gleq.h

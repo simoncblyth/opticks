@@ -133,7 +133,7 @@ void Prog::collectLocations()
 }
 
 
-GLuint Prog::attribute(const char* name_, bool required)
+GLint Prog::attribute(const char* name_, bool required)
 {
     std::string name(name_);
     if(m_attributes.find(name) == m_attributes.end())
@@ -147,12 +147,12 @@ GLuint Prog::attribute(const char* name_, bool required)
          {
              LOG(warning) << "Prog::attribute " << m_tagdir << " did not find optional attribute [" << name << "]" ;
          }
-         return 0 ; 
+         return -1 ; 
     }
     return m_attributes[name];
 }
 
-GLuint Prog::uniform(const char* name_, bool required)
+GLint Prog::uniform(const char* name_, bool required)
 {
     std::string name(name_);
     if(m_uniforms.find(name) == m_uniforms.end())
@@ -166,7 +166,7 @@ GLuint Prog::uniform(const char* name_, bool required)
          {
              LOG(warning) << "Prog::uniform " << m_tagdir << " did not find optional uniform [" << name << "]" ;
          }
-         return 0 ; 
+         return -1 ; 
     }
     return m_uniforms[name];
 }
@@ -308,18 +308,20 @@ void Prog::traverseLocation(Obj_t obj, GLenum type,  const char* name_, bool pri
     std::string name(name_);
 
     char t('?') ; 
-    int location(0) ;
+    GLint location(-1) ;
     switch(obj)
     {
         case Attribute: 
              t = 'A' ;
              location = glGetAttribLocation (m_id, name_);
+             assert(location > -1);
              m_attributes[name] = location ;
              m_atype[name] = type ;
              break ;
         case Uniform: 
              t = 'U' ;
              location = glGetUniformLocation (m_id, name_);
+             assert(location > -1);
              m_uniforms[name] = location ;
              m_utype[name] = type ;
              break ;

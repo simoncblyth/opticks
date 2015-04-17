@@ -48,7 +48,7 @@ class Renderer : public RendererBase  {
       GLuint m_texcoords ;
       GLuint m_indices ;
 
-      GLint  m_sampler_location ;
+      //GLint  m_sampler_location ;
 
       long   m_draw_count ;
       GLsizei m_indices_count ;
