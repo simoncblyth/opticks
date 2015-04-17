@@ -47,6 +47,7 @@ void VecNPY::dump(const char* msg)
     float yy[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
     float zz[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
 
+    printf("%s\n", msg);
     const char* fmt = "VecNPY::dump %5s %6u/%6u :  %15f %15f %15f \n";
 
     for(unsigned int i=0 ; i < m_count ; ++i )
@@ -122,7 +123,7 @@ void VecNPY::findBounds()
 
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), t), s); 
 
-    Summary("VecNPY::findBounds");
+    //Summary("VecNPY::findBounds");
 }
 
 

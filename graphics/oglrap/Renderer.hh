@@ -24,7 +24,7 @@ class Renderer : public RendererBase  {
       virtual ~Renderer();
 
   public: 
-      void setDrawable(GDrawable* drawable);
+      void setDrawable(GDrawable* drawable, bool debug=false);
       void render();
 
   public: 
@@ -33,7 +33,7 @@ class Renderer : public RendererBase  {
       void Print(const char* msg="Renderer::Print");
 
   private:
-      void gl_upload_buffers();
+      void gl_upload_buffers(bool debug);
       GLuint upload(GLenum target, GLenum usage, GBuffer* buffer);
 
       bool hasTex(){ return m_has_tex ; }

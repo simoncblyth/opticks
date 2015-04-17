@@ -111,6 +111,8 @@ SET(hdrs
         Demo.hh
         VertexAttribute.hh
         gleq.h
+        Prog.hh
+        Shdr.hh
 )
 
 

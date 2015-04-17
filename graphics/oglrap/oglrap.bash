@@ -19,6 +19,15 @@ OpenGL headers, but wanted to avoid directly using
 GLFW3 inside oglrap-
 
 
+Better Shader Handling ?
+--------------------------
+
+* want less tedium when adding/setting uniforms/attributes 
+ 
+  * https://github.com/mmmovania/opengl33_dev_cookbook_2013/blob/master/Chapter2/src/GLSLShader.cpp
+
+  * https://github.com/OpenGLInsights/OpenGLInsightsCode
+
 
 
 EOU

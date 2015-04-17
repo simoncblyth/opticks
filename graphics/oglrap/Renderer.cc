@@ -39,14 +39,14 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 }
 
 
-void Renderer::setDrawable(GDrawable* drawable)
+void Renderer::setDrawable(GDrawable* drawable, bool debug)
 {
     m_drawable = drawable ;
-    gl_upload_buffers();
+    gl_upload_buffers(debug);
 }
 
 
-void Renderer::gl_upload_buffers()
+void Renderer::gl_upload_buffers(bool debug)
 {
     // as there are two GL_ARRAY_BUFFER for vertices and colors need
     // to bind them again (despite bound in upload) in order to 
@@ -65,7 +65,6 @@ void Renderer::gl_upload_buffers()
     //
     assert(m_drawable);
 
-
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
 
@@ -76,8 +75,10 @@ void Renderer::gl_upload_buffers()
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 
-    RendererBase::dump( vbuf->getPointer(),vbuf->getNumBytes(),vbuf->getNumElements()*sizeof(float),0,vbuf->getNumItems() ); 
-
+    if(debug)
+    {
+        RendererBase::dump( vbuf->getPointer(),vbuf->getNumBytes(),vbuf->getNumElements()*sizeof(float),0,vbuf->getNumItems() ); 
+    }
 
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());

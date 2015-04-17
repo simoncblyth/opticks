@@ -78,13 +78,14 @@ Trackball* Composition::getTrackball()
     return m_trackball ;
 }
 
-void Composition::setModelToWorld(float* m2w)
+void Composition::setModelToWorld(float* m2w, bool debug)
 {
     assert(m2w);
 
     m_model_to_world = glm::make_mat4(m2w);
     m_extent = *(m2w+0) ; 
 
+    if(debug)
     {
         print(m2w, "Composition::setModelToWorld raw floats (should be OpenGL conventional order, translation at end)");
         print(m_model_to_world, "glm::mat4 m_model_to_world GLMPrint::print transposes into familiar presentation");

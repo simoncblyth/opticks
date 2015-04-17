@@ -16,7 +16,7 @@ class Rdr : public RendererBase  {
 
   public: 
       void render(unsigned int count=0, unsigned int first=0);
-      void upload(VecNPY* vnpy);
+      void upload(VecNPY* vnpy, bool debug=false);
       void upload(NPY* npy, unsigned int j, unsigned int k );
       void upload(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int countdefault);
 

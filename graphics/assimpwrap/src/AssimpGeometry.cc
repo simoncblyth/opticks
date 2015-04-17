@@ -126,7 +126,7 @@ const char* AssimpGeometry::identityFilename( const char* path, const char* quer
     //
     std::string digest = md5digest( query, strlen(query));
     static std::string kfn = insertField( path, '.', -1 , digest.c_str());
-    printf("AssimpGeometry::identityFilename\n path %s\n query %s\n digest %s\n kfn %s \n", path, query, digest.c_str(), kfn.c_str() );
+    //printf("AssimpGeometry::identityFilename\n path %s\n query %s\n digest %s\n kfn %s \n", path, query, digest.c_str(), kfn.c_str() );
     return kfn.c_str();
 }
 

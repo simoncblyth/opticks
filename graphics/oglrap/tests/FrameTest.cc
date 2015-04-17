@@ -27,6 +27,9 @@ int main(int argc, char** argv)
 
     frame.gl_init_window("FrameTest", texture.getWidth(), texture.getHeight());
     composition.setSize(frame.getWidth(), frame.getHeight());
+    composition.setModelToWorld(texture.getModelToWorldPtr());   // point at the geometry 
+    composition.update();
+    composition.Details("Composition::details");
 
     texture.create();   // after OpenGL context creation, done in frame.gl_init_window
     renderer.setDrawable(&texture);
@@ -37,6 +40,8 @@ int main(int argc, char** argv)
     {
         frame.listen();
         frame.render();
+        composition.update();
+
         renderer.render();
         glfwSwapBuffers(window);
     }

@@ -98,6 +98,9 @@ int main(int argc, char** argv)
 
     numpyserver<numpydelegate> server(&delegate);
 
+
+
+
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight()); // creates OpenGL context 
     geometry.load("GGEOVIEW_") ; 
 

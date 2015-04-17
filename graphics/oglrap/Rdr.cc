@@ -45,9 +45,9 @@ unsigned int Rdr::getCountDefault()
 }
 
 
-void Rdr::upload(VecNPY* vnpy)
+void Rdr::upload(VecNPY* vnpy, bool debug)
 {
-    vnpy->dump("Rdr::upload");
+    if(debug) vnpy->dump("Rdr::upload");
     upload( vnpy->getBytes(), vnpy->getNumBytes(), vnpy->getStride(), vnpy->getOffset(), vnpy->getCount() );
 }
 

@@ -255,13 +255,12 @@ void Shader::link(GLuint index)
 void Shader::init(const std::string& vert, const std::string& frag)
 {
     m_vs = glCreateShader (GL_VERTEX_SHADER);
-
     const char* vert_c = vert.c_str();
     glShaderSource (m_vs, 1, &vert_c, NULL);
     compile(m_vs);
 
-    const char* frag_c = frag.c_str();
     m_fs = glCreateShader (GL_FRAGMENT_SHADER);
+    const char* frag_c = frag.c_str();
     glShaderSource (m_fs, 1, &frag_c, NULL);
     compile(m_fs);
     

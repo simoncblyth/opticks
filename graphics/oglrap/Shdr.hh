@@ -5,12 +5,16 @@
 #include <vector>
 
 class Shdr {
+
+   //friend class Prog ; 
+
    public:
        Shdr(const char* path, GLenum type, bool live=false);
+       void createAndCompile();
        void Print(const char* msg);
+       GLuint getId();
  
    private:
-       void init();
        void readFile(const char* path);
        void _print_shader_info_log();
 
@@ -26,4 +30,8 @@ class Shdr {
 };
 
 
+inline GLuint Shdr::getId()
+{
+    return m_id ; 
+}
 

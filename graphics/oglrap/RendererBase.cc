@@ -4,6 +4,10 @@
 #include "Shader.hh"
 #include "Composition.hh"
 
+// aiming to replace Shader
+#include "Prog.hh"
+
+
 // npy-
 #include "GLMPrint.hpp"
 
@@ -20,6 +24,7 @@
 RendererBase::RendererBase(const char* tag)
     :
     m_shader(NULL),
+    m_shaderprog(NULL),
     m_shaderdir(NULL),
     m_shadertag(NULL),
     m_composition(NULL),
@@ -58,11 +63,22 @@ char* RendererBase::getShaderTag()
 
 void RendererBase::make_shader()
 {
+
+#ifdef OLD_SHADER
     m_shader = new Shader(getShaderDir(), getShaderTag());
     m_program = m_shader->getId();
-
     m_mvp_location = m_shader->getMVPLocation();
     m_mv_location = m_shader->getMVLocation();
+#else
+    m_shaderprog = new Prog(getShaderDir(), getShaderTag(), true); 
+    m_shaderprog->createAndLink();
+    m_shaderprog->Summary("RendererBase::make_shader");
+    m_program = m_shaderprog->getId(); 
+
+    // transitional
+    m_mvp_location = m_shaderprog->uniform("ModelViewProjection") ; 
+    m_mv_location = m_shaderprog->uniform("ModelView", false);      // not required
+#endif
 
     LOG(info) << "RendererBase::make_shader "
               << " shaderdir " << getShaderDir()
@@ -80,14 +96,6 @@ void RendererBase::update_uniforms()
         m_composition->update() ;
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
-
-        /*
-        glm::mat4 w2e = glm::make_mat4(m_composition->getWorld2EyePtr()); 
-        glm::mat4 w2c = glm::make_mat4(m_composition->getWorld2ClipPtr()); 
-        print(w2e, "uu w2e MV");
-        print(w2c, "uu w2c MVP" );
-        */
-
     } 
     else
     { 
@@ -96,8 +104,6 @@ void RendererBase::update_uniforms()
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
     }
 }
-
-
 
 
 
@@ -124,16 +130,17 @@ void RendererBase::dump(void* data, unsigned int nbytes, unsigned int stride, un
                 glm::mat4 w2e = glm::make_mat4(m_composition->getWorld2EyePtr()); 
                 glm::mat4 w2c = glm::make_mat4(m_composition->getWorld2ClipPtr()); 
 
-                //print(w2e, "w2e");
-                //print(w2c, "w2c");
+               // print(w2e, "w2e");
+               // print(w2c, "w2c");
 
                 glm::vec4 e  = w2e * w ;
                 glm::vec4 c =  w2c * w ;
                 glm::vec4 cdiv =  c/c.w ;
 
-                printf("RendererBase::dump %7u/%7u : world %10.1f %10.1f %10.1f   eye %10.1f %10.1f %10.1f   clip/w %10.3f %10.3f %10.3f   \n", i,count,
+                printf("RendererBase::dump %7u/%7u : w(%10.1f %10.1f %10.1f) e(%10.1f %10.1f %10.1f) c(%10.3f %10.3f %10.3f %10.3f) c/w(%10.3f %10.3f %10.3f) \n", i,count,
                         w.x, w.y, w.z,
                         e.x, e.y, e.z,
+                        c.x, c.y, c.z, c.w,
                         cdiv.x, cdiv.y, cdiv.z
                       );    
             }

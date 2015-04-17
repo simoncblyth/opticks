@@ -22,14 +22,12 @@ Shdr::Shdr(const char* path, GLenum type, bool live)
     m_id(0),
     m_live(live)
 {
-    init();
+    readFile(m_path);
 }
 
 
-void Shdr::init()
+void Shdr::createAndCompile()
 {
-    readFile(m_path);
-
     if(!m_live) return ;
  
     m_id = glCreateShader(m_type);
@@ -94,7 +92,7 @@ void Shdr::readFile(const char* path)
 
 void Shdr::Print(const char* msg)
 {
-    std::cout << msg << " " << m_path << std::endl ; 
+    std::cout << msg << " " << m_path << " linecount " << m_lines.size() << std::endl ; 
     for(unsigned int i=0 ; i<m_lines.size() ; ++i )
     {
         std::cout << std::setw(3) << i << " : "    

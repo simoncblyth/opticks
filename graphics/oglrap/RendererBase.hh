@@ -3,6 +3,7 @@
 
 class Composition ;
 class Shader ; 
+class Prog ;
 
 
 class RendererBase {
@@ -26,6 +27,10 @@ class RendererBase {
       Shader* m_shader ;
       GLuint m_program ;
       Composition* m_composition ;
+
+  protected:
+      // testing new shader handling 
+      Prog* m_shaderprog ;
 
   private:
       char* m_shaderdir ; 
