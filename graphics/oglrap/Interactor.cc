@@ -36,12 +36,12 @@ Interactor::Interactor()
 
 void Interactor::configureF(const char* name, std::vector<float> values)
 {
-    printf("Interactor::configureF");
+    LOG(debug)<<"Interactor::configureF";
 }
 
 void Interactor::configureI(const char* name, std::vector<int> values)
 {
-    printf("Interactor::configureI");
+    LOG(debug) << "Interactor::configureI";
     if(values.empty()) return ;
     if(strcmp(name, OPTIXMODE) == 0)
     {

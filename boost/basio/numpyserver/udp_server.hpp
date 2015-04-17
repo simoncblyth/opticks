@@ -12,6 +12,10 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 #include "stdio.h"
 
 //#define VERBOSE 1
@@ -157,8 +161,7 @@ void udp_server<Delegate>::send(std::string addr, unsigned short port, std::stri
     boost::shared_ptr<std::string> message(new std::string(msg));
 
 #ifdef VERBOSE
-    std::cout 
-         << std::setw(20) << boost::this_thread::get_id() 
+    LOG(debug) 
          << " udp_server::send " 
          << " endpoint " << endpoint
          << " message " << *message

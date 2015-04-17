@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <boost/thread.hpp>
 
+#include "NPY.hpp"
 #include "numpyserver.hpp"
 #include "NumpyEvt.hpp"
 #include "Cfg.hh"

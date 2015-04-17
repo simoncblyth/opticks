@@ -21,6 +21,7 @@ find_package(Boost REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(AsioZMQ REQUIRED)
 find_package(Cfg REQUIRED)
+find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 
 include_directories(
@@ -30,6 +31,7 @@ include_directories(
    ${AsioZMQ_INCLUDE_DIRS}
    ${Cfg_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
+   ${GLM_INCLUDE_DIRS}  
 )
 
 add_definitions( 

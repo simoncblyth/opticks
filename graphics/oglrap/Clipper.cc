@@ -18,7 +18,9 @@
 Clipper::Clipper() :
    m_mode(-1),
    m_point(0,0,0),
-   m_normal(1,0,0)
+   m_normal(1,0,0),
+   m_absolute(false), 
+   m_absplane(1,0,0,1)   // placeholder 
 {
 }
 
@@ -26,13 +28,16 @@ Clipper::Clipper() :
 const char* Clipper::CUTMODE    = "cutmode" ;
 const char* Clipper::CUTPOINT   = "cutpoint" ;
 const char* Clipper::CUTNORMAL  = "cutnormal" ;
+const char* Clipper::CUTPLANE   = "cutplane" ;
+const char* Clipper::CUTPRINT   = "cutprint" ;
 
 void Clipper::configureI(const char* name, std::vector<int> values)
 {
     if(values.empty()) return ;
     int last = values.back();
 
-    if(     strcmp(name,CUTMODE)==0) setMode(last);  
+    if(          strcmp(name,CUTMODE)==0)  setMode(last);  
+    else if(     strcmp(name,CUTPRINT)==0) dump("Clipper::configureI");  
     else
           printf("Clipper::configureI bad name %s\n", name);
 }
@@ -46,40 +51,71 @@ void Clipper::configureS(const char* name, std::vector<std::string> values)
 }
 
 
-void Clipper::set(const char* name, std::string& _xyz)
+void Clipper::set(const char* name, std::string& arg_)
 {
-    std::vector<std::string> xyz;
-    boost::split(xyz, _xyz, boost::is_any_of(","));
+    std::vector<std::string> arg;
+    boost::split(arg, arg_, boost::is_any_of(","));
 
-    if(xyz.size() == 3 )
+    if(arg.size() == 3 )
     {
-        float x = boost::lexical_cast<float>(xyz[0]); 
-        float y = boost::lexical_cast<float>(xyz[1]); 
-        float z = boost::lexical_cast<float>(xyz[2]); 
+        float x = boost::lexical_cast<float>(arg[0]); 
+        float y = boost::lexical_cast<float>(arg[1]); 
+        float z = boost::lexical_cast<float>(arg[2]); 
 
         glm::vec3 v(x, y, z);
 
-        if(     strcmp(name,CUTPOINT)==0)   setPoint(v);
+        if(     strcmp(name,CUTPOINT)==0)     setPoint(v);
         else if(strcmp(name,CUTNORMAL) == 0 ) setNormal(v);
         else
               printf("Clipper::configureS bad name %s\n", name);
     }
+    else if(arg.size() == 4)
+    {
+        float x = boost::lexical_cast<float>(arg[0]); 
+        float y = boost::lexical_cast<float>(arg[1]); 
+        float z = boost::lexical_cast<float>(arg[2]); 
+        float w = boost::lexical_cast<float>(arg[3]); 
+
+        glm::vec4 v(x, y, z, w);
+
+        if(     strcmp(name,CUTPLANE)==0)   setPlane(v);
+        else
+              printf("Clipper::configureS bad name %s\n", name);
+
+    }
     else
     {
-        printf("Clipper::set malformed %s : %s \n", name, _xyz.c_str() );
+        printf("Clipper::set malformed %s : %s \n", name, arg_.c_str() );
     }
+}
+
+void Clipper::setMode(int mode)
+{
+    m_mode = mode ;
+}
+void Clipper::setAbsolute(bool absolute)
+{
+    LOG(info)<<"Clipper::setAbsolute m_absolute -> absolute " << m_absolute << " -> " << absolute ; 
+    m_absolute = absolute ;
 }
 
 void Clipper::setPoint(glm::vec3& point)
 {
+    LOG(info)<<"Clipper::setPoint m_abolute: " << m_absolute ; 
     m_point = point ;
+    setAbsolute(false);
 }
-
 void Clipper::setNormal(glm::vec3& normal)
 {
+    LOG(info)<<"Clipper::setNormal m_abolute: " << m_absolute ; 
     m_normal = normal ;
+    setAbsolute(false);
 }
-
+void Clipper::setPlane(glm::vec4& absplane)
+{
+    m_absplane = absplane ;
+    setAbsolute(true);
+}
 
 
 
@@ -102,23 +138,27 @@ void Clipper::update(glm::mat4& model_to_world)
 
 glm::vec4& Clipper::getClipPlane(glm::mat4& model_to_world)
 {
-    update(model_to_world);
-
-    //print(model_to_world, "Clipper::getClipPlane model_to_world");
-    //dump("Clipper::getClipPlane");
-
-    return m_wplane ; 
+    if(m_absolute)
+    {
+        return m_absplane ; 
+    }
+    else
+    {
+        update(model_to_world);
+        return m_wplane ; 
+    }
 }
 
 void Clipper::dump(const char* msg)
 { 
-    printf("%s\n", msg);
+    printf("%s m_mode %d m_absolute %d \n", msg, m_mode, m_absolute);
 
     print( m_normal,  "m_normal : (model frame) vector normal to plane  ");
     print( m_point,   "m_point  : (model frame) point in the plane ");
     print( m_wnormal, "m_wnormal : (world frame) normalized normal to plane ");
     print( m_wpoint,  "m_wpoint  : (world frame) point in the plane  ");
     print( m_wplane,  "m_wplane  : (world frame) plane equation for shader consumption");
+    print( m_absplane,  "m_absplane  : (world frame) absolute input plane equation : for shader consumption");
 
 }
 

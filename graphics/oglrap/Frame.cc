@@ -297,11 +297,11 @@ void Frame::handle_event(GLEQevent& event)
              break;
         case GLEQ_CURSOR_ENTERED:
              m_cursor_inwindow = true ;
-             LOG(info)<< "Cursor entered window\n";
+             LOG(debug)<< "Cursor entered window";
              break;
         case GLEQ_CURSOR_LEFT:
              m_cursor_inwindow = false ;
-             LOG(info) << "Cursor left window\n";
+             LOG(debug) << "Cursor left window";
              break;
         case GLEQ_SCROLLED:
         case GLEQ_KEY_PRESSED:
@@ -322,7 +322,7 @@ void Frame::handle_event(GLEQevent& event)
 
 void Frame::key_pressed(unsigned int key)
 {
-    LOG(info)<<"Frame::key_pressed " <<  key ;
+    LOG(debug)<<"Frame::key_pressed " <<  key ;
 
     if( key == GLFW_KEY_ESCAPE)
     {
@@ -386,10 +386,10 @@ void Frame::dump_event(GLEQevent& event)
             printf("Cursor moved to (%0.2f %0.2f)\n", event.pos.x, event.pos.y);
             break;
         case GLEQ_CURSOR_ENTERED:
-            printf("Cursor entered window\n");
+            LOG(debug)<<"Cursor entered window\n";
             break;
         case GLEQ_CURSOR_LEFT:
-            printf("Cursor left window\n");
+            LOG(debug)<<"Cursor left window\n";
             break;
         case GLEQ_SCROLLED:
             printf("Scrolled (%0.2f %0.2f)\n", event.pos.x, event.pos.y);

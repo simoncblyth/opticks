@@ -10,6 +10,12 @@
 #include <boost/enable_shared_from_this.hpp>
 
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
+
 #include <asio-zmq.hpp>
 #include "udp_server.hpp"
 #include "npy_server.hpp"
@@ -57,8 +63,7 @@ public:
     {
 
 #ifdef VERBOSE
-        std::cout << std::setw(20) << boost::this_thread::get_id() 
-                  << " net_manager::send [" << msg << "] " 
+        LOG(debug)<< " net_manager::send [" << msg << "] " 
                   << std::endl;
 #endif
  

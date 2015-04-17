@@ -11,6 +11,8 @@ class Clipper {
         static const char* CUTPOINT ;
         static const char* CUTNORMAL ;
         static const char* CUTMODE  ;
+        static const char* CUTPLANE ;
+        static const char* CUTPRINT ;
 
         Clipper();
         glm::vec4& getClipPlane(glm::mat4& model_to_world);
@@ -20,33 +22,45 @@ class Clipper {
         void configureS(const char* name, std::vector<std::string> values);
         void configureI(const char* name, std::vector<int> values);
 
+        void setMode(int mode);
+        int getMode();
+        void next();  // toggles mode, Interactor invokes this on pressing C
+
+        // using setPoint or setNormal switches absolute mode OFF
         void setPoint( glm::vec3& point);
         void setNormal(glm::vec3& normal);
-        void setMode(int mode);
 
-        int getMode();
-        void next();
+        // using setPlane switches absolute mode ON
+        void setPlane( glm::vec4& plane);
+
 
    private:
+        void setAbsolute(bool absolute);
         void update(glm::mat4& model_to_world);
 
    private:
         int       m_mode ; 
+        bool      m_absolute ; 
         glm::vec3 m_point  ; 
         glm::vec3 m_normal ; 
    
         glm::vec3 m_wpoint ; 
         glm::vec3 m_wnormal ;
-        glm::vec4 m_wplane ;
+        glm::vec4 m_wplane ;   // plane derived from point, normal and model_to_world
+
+        glm::vec4 m_absplane ;  // plane directly set in world frame
 
 };
 
 
 
-inline void Clipper::setMode(int mode)
-{
-    m_mode = mode ;
-}
+
+
+
+
+
+
+
 
 inline int Clipper::getMode()
 {

@@ -11,6 +11,20 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 
 * NB raytrace- is another user of optixwrap- 
 
+
+TODO
+-----
+
+genstep vis
+~~~~~~~~~~~~
+
+g4daeview used ancient OpenGL geometry shader ext
+to amplify points into lines using positions and directions 
+
+Shaders in ~/env/geant4/geometry/collada/g4daeview/daephotonsshader.py
+
+
+
 Usage tips
 -----------
 
