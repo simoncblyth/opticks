@@ -5,6 +5,7 @@
 
 class GDrawable ; 
 class GBuffer ;
+class Composition ;
 
 #include "RendererBase.hh"
 
@@ -26,6 +27,8 @@ class Renderer : public RendererBase  {
   public: 
       void setDrawable(GDrawable* drawable, bool debug=false);
       void render();
+      void setComposition(Composition* composition);
+      Composition* getComposition(); 
 
   public: 
       void configureI(const char* name, std::vector<int> values);
@@ -38,6 +41,9 @@ class Renderer : public RendererBase  {
 
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
+      void update_uniforms();   
+      void dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count );
+
 
   private:
       GLuint m_vao ; 
@@ -49,12 +55,15 @@ class Renderer : public RendererBase  {
       GLuint m_indices ;
 
       //GLint  m_sampler_location ;
+      GLint  m_mv_location ;
+      GLint  m_mvp_location ;
 
       long   m_draw_count ;
       GLsizei m_indices_count ;
 
   private:
       GDrawable* m_drawable ;
+      Composition* m_composition ;
       bool m_has_tex ; 
 };      
 

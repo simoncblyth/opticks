@@ -1,6 +1,10 @@
 #include <GL/glew.h>
 
 #include "Rdr.hh"
+#include "Prog.hh"
+#include "Composition.hh"
+
+// npy-
 #include "NPY.hpp"
 #include "VecNPY.hpp"
 
@@ -20,7 +24,10 @@ Rdr::Rdr(const char* tag)
     RendererBase(tag),
     m_vao(0),
     m_buffer(0),
-    m_countdefault(0)
+    m_countdefault(0),
+    m_composition(NULL),
+    m_mv_location(-1),
+    m_mvp_location(-1)
 {
 }
 
@@ -43,6 +50,19 @@ unsigned int Rdr::getCountDefault()
 {
     return m_countdefault ;
 }
+
+
+void Rdr::setComposition(Composition* composition)
+{
+    m_composition = composition ;
+}
+Composition* Rdr::getComposition()
+{
+    return m_composition ;
+}
+
+
+
 
 
 void Rdr::upload(VecNPY* vnpy, bool debug)
@@ -99,6 +119,15 @@ void Rdr::upload(void* data, unsigned int nbytes, unsigned int stride, unsigned 
 
     make_shader();
 
+    // transitional
+    m_mvp_location = m_shader->uniform("ModelViewProjection", false) ; 
+    m_mv_location = m_shader->uniform("ModelView", false);      // not required
+
+    LOG(info) << "Rdr::make_shader "
+              << " mvp " << m_mvp_location
+              << " mv " << m_mv_location ;
+
+
     glUseProgram(m_program);
 }
 
@@ -122,5 +151,22 @@ void Rdr::render(unsigned int count, unsigned int first)
     glUseProgram(0);
 }
 
+
+
+void Rdr::update_uniforms()
+{
+    if(m_composition)
+    {
+        m_composition->update() ;
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+    } 
+    else
+    { 
+        glm::mat4 identity ; 
+        glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
+        glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
+    }
+}
 
 
