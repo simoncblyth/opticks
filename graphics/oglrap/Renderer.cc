@@ -108,6 +108,9 @@ void Renderer::gl_upload_buffers(bool debug)
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());
 
+    // hmm maybe give GBuffers names ? and collect these identifiers into map
+    // for more flexibility when NULL buf  
+ 
     m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf );
     m_normals   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf );
     m_colors    = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf );
@@ -125,6 +128,11 @@ void Renderer::gl_upload_buffers(bool debug)
  
     // the vbuf and cbuf NumElements refer to the number of elements 
     // within the vertex and color items ie 3 in both cases
+
+    // CAUTION enum values vPosition, vNormal, vColor, vTexcoord 
+    //         are duplicating layout numbers in the nrm/vert.glsl  
+    // THIS IS FRAGILE
+    //
 
     glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
     glVertexAttribPointer(vPosition, vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);

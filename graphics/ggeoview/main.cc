@@ -32,6 +32,7 @@
 #include "GLMPrint.hpp"
 #include "NumpyEvt.hpp"
 #include "VecNPY.hpp"
+#include "MultiVecNPY.hpp"
 
 
 #include <glm/glm.hpp>
@@ -69,10 +70,13 @@ int main(int argc, char** argv)
     Composition composition ;   
     Interactor interactor ; 
     Renderer renderer("nrm") ;  
-    Rdr rdr("pos") ;  
-    Geometry geometry ;
+    //Rdr rdr("pos") ;  
+    Rdr rdr("p2l") ;  
+    Geometry geometry ; // misnomer: its the loader 
     numpydelegate delegate ; 
-    NumpyEvt evt ; 
+
+    //NumpyEvt evt ; 
+    MultiVecNPY evt ;
 
     Cfg cfg("umbrella", false) ;             // collect other Cfg objects
     cfg.add(new FrameCfg<Frame>("frame", &frame, false));
@@ -87,7 +91,7 @@ int main(int argc, char** argv)
 
     cfg.commandline(argc, argv);
     delegate.liveConnect(&cfg);     
-    delegate.setNumpyEvt(&evt);
+    //delegate.setNumpyEvt(&evt);
 
 
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
@@ -102,9 +106,6 @@ int main(int argc, char** argv)
 
     numpyserver<numpydelegate> server(&delegate);
 
-
-
-
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight()); // creates OpenGL context 
     geometry.load("GGEOVIEW_") ; 
 
@@ -114,24 +115,29 @@ int main(int argc, char** argv)
 
 
     bool debug = false ; 
-    VecNPY* vnpy(NULL) ; 
-    NPY* npy(NULL);
-
     if(debug)
     {
-        npy = NPY::make_vec3(drawable->getModelToWorldPtr(),100); // use M2W of geometry in order to place debug points in viscinity of geometry 
-        vnpy = new VecNPY(npy,0,0);   
+        NPY* npy = NPY::make_vec3(drawable->getModelToWorldPtr(),100); // debug points in viscinity of drawable
+        evt.add(new VecNPY("vpos",npy,0,0));   
     }
     else
     {
-        npy = NPY::load("cerenkov", "1");  
-        vnpy = new VecNPY(npy,1,0);       // positions start at start of 2nd quad for GenStep
+        NPY* npy = NPY::load("cerenkov", "1");  // leaking, as usual
+        // VecNPY names must match shader attribute names 
+        evt.add(new VecNPY("vpos",npy,1,0));    // (x0, t0)                     2nd GenStep quad 
+        evt.add(new VecNPY("vdir",npy,2,0));    // (DeltaPosition, step_length) 3rd GenStep quad
     }
-    evt.setNPY(npy);   // for dev avoid having to use npysend.sh and zmq-broker
 
-    composition.setModelToWorld(vnpy->getModelToWorldPtr());        // point at "vnpy" instead of the geometry 
-    composition.setModelToWorld(drawable->getModelToWorldPtr());   // point at the geometry is more unchanging 
-    rdr.upload(vnpy);
+
+    // targeting viewpoint at evt data OR geometry 
+    //float* target = evt["vpos"]->getModelToWorldPtr();  
+    float* target = drawable->getModelToWorldPtr();     
+    composition.setModelToWorld(target);
+
+    // rdr upload is independent of setting composition, that only 
+    // comes into play when updating uniforms prior to rendering  
+
+    rdr.upload(&evt);
 
 
 

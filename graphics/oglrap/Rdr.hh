@@ -4,6 +4,7 @@
 #include "RendererBase.hh"
 
 class NPY ;
+class MultiVecNPY ;
 class VecNPY ;
 class Composition ; 
 
@@ -11,16 +12,26 @@ class Rdr : public RendererBase  {
   public:
       Rdr(const char* tag);
 
-      enum Attrib_IDs { 
-        vRdrPosition=10
+   
+       enum Attrib_IDs { 
+           vRdrPosition=10
       };
 
   public: 
       void render(unsigned int count=0, unsigned int first=0);
+      void check_uniforms();
       void update_uniforms();
-      void upload(VecNPY* vnpy, bool debug=false);
-      void upload(NPY* npy, unsigned int j, unsigned int k );
-      void upload(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int countdefault);
+
+  public: 
+      void upload(MultiVecNPY* mvn);
+
+  private:
+      void address(VecNPY* vnpy);
+      void upload(void* data, unsigned int nbytes);
+
+      //void upload(VecNPY* vnpy, bool debug=false);
+      //void upload(NPY* npy, unsigned int j, unsigned int k );
+      //void upload(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int countdefault);
 
   public: 
       static const char* PRINT ; 

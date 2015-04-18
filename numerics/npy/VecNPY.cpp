@@ -1,7 +1,8 @@
 #include "VecNPY.hpp"
 
-#include "NPY.hpp"
 #include "float.h"
+#include "string.h"
+#include "NPY.hpp"
 #include "GLMPrint.hpp"
 
 #include <glm/glm.hpp>
@@ -11,8 +12,11 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-VecNPY::VecNPY(NPY* npy, unsigned int j, unsigned int k) :
+VecNPY::VecNPY(const char* name, NPY* npy, unsigned int j, unsigned int k, unsigned int size) :
+            m_name(strdup(name)),
+            m_npy(npy),
             m_bytes(npy->getBytes()),
+            m_size(size),
             m_numbytes(npy->getNumBytes(0)),
             m_stride(npy->getNumBytes(1)),
             m_offset(npy->getByteIndex(0,j,k)),
@@ -26,6 +30,11 @@ VecNPY::VecNPY(NPY* npy, unsigned int j, unsigned int k) :
 {
     findBounds();
 }
+
+
+
+
+
 
 glm::mat4& VecNPY::getModelToWorld()
 {
@@ -47,7 +56,7 @@ void VecNPY::dump(const char* msg)
     float yy[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
     float zz[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
 
-    printf("%s\n", msg);
+    printf("%s name %s \n", msg, m_name);
     const char* fmt = "VecNPY::dump %5s %6u/%6u :  %15f %15f %15f \n";
 
     for(unsigned int i=0 ; i < m_count ; ++i )
@@ -125,11 +134,10 @@ void VecNPY::findBounds()
 
     //Summary("VecNPY::findBounds");
 }
-
-
 void VecNPY::Summary(const char* msg)
 {
-    printf("%s\n", msg);
+    Print(msg);
+
     if(!m_low) return ;
 
     print(*m_low,  "m_low");
@@ -138,6 +146,12 @@ void VecNPY::Summary(const char* msg)
     print(*m_center,     "m_center");
     print(m_model_to_world, "m_model_to_world");
     print(glm::value_ptr(m_model_to_world), "glm::value_ptr(m_model_to_world)");
+}
+
+
+void VecNPY::Print(const char* msg)
+{
+    printf("%s name %s numbytes %u stride %u offset %u count %u extent %f\n", msg, m_name, m_numbytes, m_stride, m_offset, m_count, m_extent );
 }
 
 

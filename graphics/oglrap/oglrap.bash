@@ -29,11 +29,147 @@ Better Shader Handling ?
   * https://github.com/OpenGLInsights/OpenGLInsightsCode
 
 
+Vertex Attributes
+-------------------
+
+* https://www.opengl.org/wiki/Vertex_Specification_Best_Practices
+
+what is best way to hookup shader attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://stackoverflow.com/questions/4635913/explicit-vs-automatic-attribute-location-binding-for-opengl-shaders
+* https://www.packtpub.com/books/content/tips-and-tricks-getting-started-opengl-and-glsl-40
+* https://www.youtube.com/watch?v=mL6BvXVtd9Y
+
+
+* glBindAttribLocation() before linking to explicitly define an attribute location.
+* glGetAttribLocation() after linking to obtain an automatically assigned attribute location.
+* layout(location=0) in vec4 position;   explicitly specify a location using layout
+
+  * this way you can skip the Bind or Get and just assume the layout in the GLSL, but that
+    duplicates a location numbers in host and device  : which is fragile
+
+  * using layout AND Get is explicit, and allows to avoid the repetition of a number, instead
+    repeat the attribute name which seems a lot less fragile
+
+  * caution regards layout, mat4 takes 4 layout slots     
+
+
+Currently using enum values in code that duplicate layout numbers in vert.glsl
+WHICH IS VERY FRAGILE::
+
+    delta:gl blyth$ grep layout */vert.glsl
+    nrm/vert.glsl:layout(location = 0) in vec3 vertex_position;
+    nrm/vert.glsl:layout(location = 1) in vec3 vertex_colour;
+    nrm/vert.glsl:layout(location = 2) in vec3 vertex_normal;
+    nrm/vert.glsl:layout(location = 3) in vec2 vertex_texcoord;
+    pos/vert.glsl:layout(location = 10) in vec3 vertex_position;
+    tex/vert.glsl:layout(location = 0) in vec3 vertex_position;
+    tex/vert.glsl:layout(location = 1) in vec3 vertex_colour;
+    tex/vert.glsl:layout(location = 2) in vec3 vertex_normal;
+    tex/vert.glsl:layout(location = 3) in vec2 vertex_texcoord;
+    delta:gl blyth$ 
+
+
+Better to compile and link shader first thing, then can grab locations
+and use those being care with which buffers are acitive::
+
+    int weightPosition = glGetAttribLocation(programID, "blendWeights");
+    // does this always give the "layout" value from the shader ? 
+
+    glVertexAttribPointer(weightPosition, 4, GL_FLOAT, GL_FALSE, sizeof(TVertex_VNTWI), info->weightOffset);
+    glEnableVertexAttribArray(weightPosition);
+
+
+Idea for step animation using line to point geometry shader alone
+--------------------------------------------------------------------
+
+1. start with zeroed out step buffer destined to contain 
+   (position,time) "post" quads for each step of the photons 
+   up to a fixed max steps
+
+   * need to zero out, or use -1. to enable distinguishing empty slots 
+     (time value needs to be arranged to never be 0. or negative) 
+
+   * even when generating photons on GPU the total number of photons 
+     is known ahead of time and max_steps is an input
+
+2. OptiX launch using OpenGL interop VBO for the step buffer 
+
+   * generates photons filling first slot with position_time
+
+   * subsequent propagation fills out subsequent slots up to
+     maxsteps, for any one photon the slots are contiguous
+
+   * could cheat by repeated overwriting the maximal recorded slot 
+     in order to capture the more interesting last step 
+     (up to some defined maximum steps to trace, 
+     which can be a lot larger than maximum steps to record)
+ 
+   * many blanks will remain in the buffer from early stops
+     
+     * the simple splayed buffer structure is to avoid 
+       concurrency complications, as every photon owns its own chunk of buffer 
+      
+     * dont really know any other way of doing this, even using atomics
+       to serialize writing into a tight buffer would then have all photons
+       steps interleaved, would need an additional structure to record 
+       indices corresponding to each photon, but that has concurrency problem 
+       too ?    
+ 
+3. glDrawArrays(GL_LINES,...) on the step buffer using Geometry 
+   shader that takes lines as input and emits points with a
+   uniform time float input.
+
+   Geometry shader has access to two (position,time) vertices
+   comparing times with the uniform can decide to either:
+
+   * cull when step times do not straddle the input time 
+   * interpolate positions between the steps based on their
+     times and the input time 
+
+
+Note that there is no need to distinguish between photons 
+in the draw call, the entire step buffer can be interpreted 
+as potential lines between steps to be interpolated.  
+Probably should arrange to always have a gap between recorded 
+steps in the buffer to avoid spurious interpolation 
+between separate photons, although its unlikely that 
+the step times would conspire to make this happen.
+
+Formerly used a separate CUDA kernel to do the find relevant 
+steps, interpolate between them and write into a top slot
+allowing an OpenGL fixed stride draw.
+
+
 TODO
+-----
+
+* genstep PDG code coloring ? maybe PDG code integer attribute
+  (unlike ancient OpenGL, shaders should be able to handle integers now)
+  If that proves difficult could pre-cook a color buffer
+
+* interoptix with the genstep VBO, and porting cerenkov and scintillation 
+  generation code to OptiX
+
+  * split OptiXEngine into 
+
+    * non-OpenGL OptiXCore 
+    * separate OptiXRenderer
+
+* visualizing generated photon initial positions
+
+
+DONE
 -----
 
 * add clipping planes to "nrm" shaders as check of 
   shader uniform handling and as need to clip 
+
+* genstep viz using Rdr with VecNPY addressing 
+  and p2l (point to line) geometry shader based on my ancient one
+
+
 
 
 Classes
@@ -43,35 +179,40 @@ Classes
 Frame
        OpenGL context creation and window control 
 Interactor
-       GLFW event handling and passing off to Camera, Trackball, View etc..
+       GLFW event handling and passing off to Camera, Trackball, View, Clipper etc..
+
 
 Composition
-       matrix manipulations based on the Camera, Trackball and View constituents
+       matrix calculations based on the Camera, Trackball, View and Clipper constituents
 Camera
        near/far/...
 Trackball
-       quaternion calulation of perturbing rotations, and translations too
+       quaternion calculation of perturbing rotations, and translations 
 View  
        eye/look/up  
+Clipper
+       clipping plane control
+
 
 Geometry
-      high level control of geometry loading 
+       high level control of geometry loading 
 
 Rdr
-       specialization of RendererBase currently used for 
-       the below tags (ie sets of GLSL programs )
+       Specialization of RendererBase used for 
+       event data rendering, ie not geometry,
+       with tags: 
 
        pos : used directly from GGeoView main for 
              visualizing VecNPY event data
+
 Renderer 
-       specialization of RendererBase currently used 
-       the below tags (ie sets of GLSL programs )
+       Specialization of RendererBase used for 
+       geometrical rendering and also OptiX texture/PBO 
+       presentation.
  
        nrm : normal shader used directly from GGeoView main
        tex : quad texture used by OptiXEngine   
 
-       /// will continue with 2 renderers for a while
-       /// until experience dictates which approach is best 
 RendererBase
        handles shader program access, compilation and linking 
        using Prog and Shdr classes
@@ -83,12 +224,12 @@ Shdr
 
 
 Texture
-      misnamed : QuadTex might be better
-      Used for rendering OptiX generated PBOs Pixel Buffer Objects 
-      via OpenGL textures 
+       (misnamed : Quad might be better)
+       GMesh subclass for a quadrangle, used for rendering 
+       OptiX generated PBOs Pixel Buffer Objects via OpenGL textures 
 
 Demo
-      GMesh subclass representing a single triangle geometry  
+       GMesh subclass representing a single triangle geometry  
 
 
 CameraCfg
@@ -98,6 +239,7 @@ InteractorCfg
 RendererCfg
 TrackBallCfg
 ViewCfg
+ClipperCfg
       configuration connector classes enabling commandline or live 
       config of objects
 

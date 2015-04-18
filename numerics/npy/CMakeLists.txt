@@ -34,6 +34,7 @@ add_definitions(
 add_library( ${name}  SHARED
     NumpyEvt.cpp
     VecNPY.cpp
+    MultiVecNPY.cpp
     GLMPrint.cpp
 )
 
@@ -49,6 +50,7 @@ GLMPrint.hpp
 NumpyEvt.hpp
 NPY.hpp
 VecNPY.hpp
+MultiVecNPY.hpp
 G4StepNPY.hpp
 numpy.hpp
 )
