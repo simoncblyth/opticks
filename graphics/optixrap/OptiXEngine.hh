@@ -104,5 +104,26 @@ class OptiXEngine {
 
 };
 
+inline void OptiXEngine::setComposition(Composition* composition)
+{
+    m_composition = composition ; 
+}
+inline void OptiXEngine::setGGeo(GGeo* ggeo)
+{
+    m_ggeo = ggeo ;
+}
+inline void OptiXEngine::setFilename(const char* filename)
+{
+    m_filename = filename ;
+}
+inline void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
+{
+    m_mergedmesh = mergedmesh ;
+}
+inline void OptiXEngine::setEnabled(bool enabled)
+{
+    m_enabled = enabled ; 
+}
+
 
 

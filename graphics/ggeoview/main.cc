@@ -78,8 +78,6 @@ int main(int argc, char** argv)
     NumpyEvt evt ;
     evt.setGenstepData(NPY::load("cerenkov", "1")); 
 
-
-
     Scene scene ;
     scene.setNumpyEvt(&evt);
     scene.setComposition(&composition);    

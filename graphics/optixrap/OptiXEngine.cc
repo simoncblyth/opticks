@@ -74,30 +74,6 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     LOG(info) << "OptiXEngine::OptiXEngine" ;
 }
 
-void OptiXEngine::setComposition(Composition* composition)
-{
-    m_composition = composition ; 
-}
-void OptiXEngine::setGGeo(GGeo* ggeo)
-{
-    m_ggeo = ggeo ;
-}
-void OptiXEngine::setFilename(const char* filename)
-{
-    m_filename = filename ;
-}
-
-
-
-void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
-{
-    m_mergedmesh = mergedmesh ;
-}
-void OptiXEngine::setEnabled(bool enabled)
-{
-    m_enabled = enabled ; 
-}
-
 
 void OptiXEngine::init()
 {
@@ -261,12 +237,20 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     if(genstep_buffer_id > -1)
     {
         unsigned int genstep_count = gensteps->getShape(0);
-        unsigned int genstep_qsize  = gensteps->getShape(1);  // in quads
-        unsigned int tot_quad = genstep_count * genstep_qsize ;  
+        unsigned int genstep_sizeq  = gensteps->getShape(1);  // in quads
+        unsigned int genstep_totquad = genstep_count * genstep_sizeq ;  
+        assert(genstep_sizeq == 6);
 
         m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, genstep_buffer_id);
         m_genstep_buffer->setFormat(RT_FORMAT_FLOAT4);
-        m_genstep_buffer->setSize( tot_quad );
+        m_genstep_buffer->setSize( genstep_totquad );
+        m_context["genstep_buffer"]->set( m_genstep_buffer );
+
+        LOG(info) << "OptiXEngine::initGenerate "
+                  << " genstep_buffer_id " << genstep_buffer_id 
+                  << " genstep_count " << genstep_count 
+                  << " genstep_sizeq " << genstep_sizeq 
+                  << " genstep_totquad " << genstep_totquad  ;
     } 
 
 
@@ -276,13 +260,22 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     if(photon_buffer_id > -1)
     {
         unsigned int photon_count = photons->getShape(0);
-        unsigned int photon_qsize = photons->getShape(1);  
-        assert(photon_qsize == 1);
-        unsigned int tot_quad = photon_count * photon_qsize ;  
+        unsigned int photon_sizeq = photons->getShape(1);  
+        unsigned int photon_totquad = photon_count * photon_sizeq ;  
+        assert(photon_sizeq == 1);
 
         m_photon_buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, photon_buffer_id);
         m_photon_buffer->setFormat(RT_FORMAT_FLOAT4);
-        m_photon_buffer->setSize( tot_quad );
+        m_photon_buffer->setSize( photon_totquad );
+        m_context["photon_buffer"]->set( m_photon_buffer );
+
+        LOG(info) << "OptiXEngine::initGenerate "
+                  << " photon_buffer_id " << photon_buffer_id 
+                  << " photon_count " << photon_count 
+                  << " photon_sizeq " << photon_sizeq 
+                  << " photon_totquad " << photon_totquad  ;
+ 
+
     }
 }
 

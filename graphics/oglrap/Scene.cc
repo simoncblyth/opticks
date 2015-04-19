@@ -13,7 +13,7 @@ void Scene::init()
     m_geometry_loader = new Geometry();
     m_geometry_renderer = new Renderer("nrm");
     m_genstep_renderer = new Rdr("p2l");
-    //m_photon_renderer = new Rdr("pos");
+    m_photon_renderer = new Rdr("pos");
 }
 
 void Scene::setComposition(Composition* composition)
@@ -21,7 +21,7 @@ void Scene::setComposition(Composition* composition)
     m_composition = composition ; 
     m_geometry_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
-    //m_photon_renderer->setComposition(composition);
+    m_photon_renderer->setComposition(composition);
 }
 
 
@@ -35,7 +35,7 @@ void Scene::loadGeometry(const char* prefix)
 void Scene::loadEvt()
 {
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
-    //m_photon_renderer->upload(m_evt->getPhotonAttr());
+    m_photon_renderer->upload(m_evt->getPhotonAttr());
 }
 
 float* Scene::getTarget()
@@ -51,7 +51,6 @@ void Scene::render()
 {
     m_geometry_renderer->render();
     m_genstep_renderer->render();   // no-show after switch to OptiX and back 
-    
     //m_photon_renderer->render();
 }
 

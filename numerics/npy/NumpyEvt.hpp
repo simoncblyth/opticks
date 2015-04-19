@@ -30,7 +30,6 @@ class NumpyEvt {
        std::string description(const char* msg);
 
    private:
-       void allocatePhotonData();
        void setPhotonData(NPY* photon_data);
 
    private:

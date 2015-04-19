@@ -52,6 +52,11 @@ class NPY {
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
        unsigned int getUSum(unsigned int j, unsigned int k);
 
+       float        getFloat(unsigned int i, unsigned int j, unsigned int k);
+       unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k);
+       void         setFloat(unsigned int i, unsigned int j, unsigned int k, float value);
+       void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);
+
        void         setBufferId(int buffer_id);
        std::string description(const char* msg);
 
@@ -133,6 +138,32 @@ inline unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned 
     unsigned int nk = m_len2 ;
     return  i*nj*nk + j*nk + k ;
 }
+
+inline float NPY::getFloat(unsigned int i, unsigned int j, unsigned int k)
+{
+    unsigned int idx = getFloatIndex(i,j,k);
+    float* data = getFloats();
+    return  *(data + idx);
+}
+inline void NPY::setFloat(unsigned int i, unsigned int j, unsigned int k, float value)
+{
+    unsigned int idx = getFloatIndex(i,j,k);
+    float* data = getFloats();
+    *(data + idx) = value ;
+}
+inline unsigned int NPY::getUInt(unsigned int i, unsigned int j, unsigned int k)
+{
+    uif_t uif ; 
+    uif.f = getFloat(i,j,k);
+    return uif.u ;
+}
+inline void NPY::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int value)
+{
+    uif_t uif ; 
+    uif.u = value ;
+    setFloat(i,j,k,uif.f); 
+}
+
 
 
 
@@ -262,16 +293,24 @@ inline NPY* NPY::make_vec4(unsigned int nvec, float value)
     std::string metadata = "{}";
     std::vector<float> data;
     std::vector<int> shape ; 
-    shape.push_back(nvec);
-    shape.push_back(1);
-    shape.push_back(4);
 
-    for(int i=0 ; i < nvec ; i++ )
-    {
+    unsigned int ni = nvec ;
+    unsigned int nj = 1 ;
+    unsigned int nk = 4 ;
+ 
+    shape.push_back(ni);
+    shape.push_back(nj);
+    shape.push_back(nk);
+
+    for(int i=0 ; i < ni ; i++ ){
+    for(int j=0 ; j < nj ; j++ ){
+    for(int k=0 ; k < nk ; k++ )
+    { 
         data.push_back(value);
-        data.push_back(value);
-        data.push_back(value);
+    }
     } 
+    }
+
     NPY* npy = new NPY(shape,data,metadata) ;
     return npy ;
 }
