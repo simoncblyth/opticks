@@ -46,6 +46,7 @@ set(LIBRARIES
 target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
+uif.h
 GLMPrint.hpp
 NumpyEvt.hpp
 NPY.hpp

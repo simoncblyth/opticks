@@ -2,6 +2,7 @@
 
 class G4StepNPY ; 
 
+#include "uif.h"
 #include "numpy.hpp"
 #include <vector>
 #include <string>
@@ -23,10 +24,12 @@ class NPY {
        static std::string path(const char* typ, const char* tag);
        static NPY* load(const char* typ, const char* tag);
        static NPY* make_vec3(float* m2w, unsigned int npo=100);  
+       static NPY* make_vec4(unsigned int npo, float value=0.f);
 
        // ctor takes ownership of a copy of the inputs 
        NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) 
          :
+         m_buffer_id(-1),
          m_shape(shape),
          m_data(data),
          m_metadata(metadata)
@@ -46,8 +49,10 @@ class NPY {
        void* getBytes();
        unsigned int getFloatIndex(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getByteIndex(unsigned int i, unsigned int j, unsigned int k);
-       
+       int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
+       unsigned int getUSum(unsigned int j, unsigned int k);
 
+       void         setBufferId(int buffer_id);
        std::string description(const char* msg);
 
    protected:
@@ -55,6 +60,7 @@ class NPY {
        unsigned int       m_len0 ; 
        unsigned int       m_len1 ; 
        unsigned int       m_len2 ; 
+       int                m_buffer_id ; 
 
    private:
        std::vector<int>   m_shape ; 
@@ -62,6 +68,20 @@ class NPY {
        std::string        m_metadata ; 
 
 };
+
+
+
+inline int NPY::getBufferId()
+{
+    return m_buffer_id ;
+}
+inline void NPY::setBufferId(int buffer_id)
+{
+    m_buffer_id = buffer_id  ;
+}
+
+
+
 
 
 inline unsigned int NPY::getNumFloats(unsigned int from_dim)
@@ -113,6 +133,7 @@ inline unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned 
     unsigned int nk = m_len2 ;
     return  i*nj*nk + j*nk + k ;
 }
+
 
 
 inline std::string NPY::description(const char* msg)
@@ -198,6 +219,14 @@ inline NPY* NPY::load(const char* typ, const char* tag)
 
 inline NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
 {
+/*
+   Usage example to create debug points in viscinity of a drawable
+
+   npy = NPY::make_vec3(dgeo->getModelToWorldPtr(),100); 
+   vgst.add(new VecNPY("vpos",npy,0,0));
+
+*/
+
     glm::mat4 m2w ;
     if(m2w_) m2w = glm::make_mat4(m2w_);
 
@@ -225,5 +254,53 @@ inline NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
     NPY* npy = new NPY(shape,data,metadata) ;
     return npy ;
 }
+
+
+
+inline NPY* NPY::make_vec4(unsigned int nvec, float value)
+{
+    std::string metadata = "{}";
+    std::vector<float> data;
+    std::vector<int> shape ; 
+    shape.push_back(nvec);
+    shape.push_back(1);
+    shape.push_back(4);
+
+    for(int i=0 ; i < nvec ; i++ )
+    {
+        data.push_back(value);
+        data.push_back(value);
+        data.push_back(value);
+    } 
+    NPY* npy = new NPY(shape,data,metadata) ;
+    return npy ;
+}
+
+
+
+
+
+
+inline unsigned int NPY::getUSum(unsigned int j, unsigned int k)
+{
+    unsigned int ni = m_len0 ;
+    unsigned int nj = m_len1 ;
+    unsigned int nk = m_len2 ;
+
+    assert(m_dim == 3 && j < nj && k < nk);
+
+    unsigned int usum = 0 ; 
+    uif_t uif ; 
+    for(unsigned int i=0 ; i<ni ; i++ )
+    {
+        unsigned int index = i*nj*nk + j*nk + k ;
+        uif.f = m_data[index] ;
+        usum += uif.u ;
+    }
+    return usum ; 
+}
+
+
+
 
 

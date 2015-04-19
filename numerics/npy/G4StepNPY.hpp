@@ -1,14 +1,7 @@
 #pragma once
 
 #include "assert.h"
-
-
-union uif_t {
-    unsigned int u;
-    int i ;
-    float f;
-} ;
-
+#include "uif.h"
 
 
 class NPY ;
@@ -32,8 +25,7 @@ class G4StepNPY {
 };
 
 
-G4StepNPY::G4StepNPY(NPY* npy) :
-     m_npy(npy)
+G4StepNPY::G4StepNPY(NPY* npy) :  m_npy(npy)
 {
 }
 

@@ -6,6 +6,8 @@ class Texture ;
 class RayTraceConfig ; 
 class GGeo ; 
 class GMergedMesh ;
+class NPY ;
+class NumpyEvt ; 
 
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
@@ -26,9 +28,11 @@ class OptiXEngine {
         void initRenderer();
         void initContext();
         void initGeometry();
+        void initGenerate(NumpyEvt* evt);
 
         void preprocess(); 
         void trace(); 
+        void generate();
 
         void cleanUp();
         void fill_PBO();
@@ -39,29 +43,33 @@ class OptiXEngine {
         void render();
         
     private: 
-        unsigned int getPBOId(){ return m_pbo ; }
-        unsigned int getVBOId(){ return m_vbo ; }
+        //unsigned int getPBOId(){ return m_pbo ; }
+        //unsigned int getVBOId(){ return m_vbo ; }
         void push_PBO_to_Texture(unsigned int texId);
         void associate_PBO_to_Texture(unsigned int texId);
 
     protected:
         optix::Buffer createOutputBuffer(RTformat format, unsigned int width, unsigned int height);
-        optix::Buffer createOutputBuffer_VBO(RTformat format, unsigned int width, unsigned int height);
-        optix::Buffer createOutputBuffer_PBO(RTformat format, unsigned int width, unsigned int height);
+
+        // create GL buffer VBO/PBO first then address it as OptiX buffer with optix::Context::createBufferFromGLBO  
+        // format can be RT_FORMAT_USER 
+        optix::Buffer createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
+        optix::Buffer createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
 
     protected:
         optix::Context        m_context; 
         optix::Buffer         m_output_buffer ; 
+        optix::Buffer         m_genstep_buffer ; 
+        optix::Buffer         m_photon_buffer ; 
         optix::GeometryGroup  m_geometry_group ;
         optix::Aabb           m_aabb;
 
         unsigned int          m_width ;
         unsigned int          m_height ;
-        unsigned int          m_vbo ;
+        unsigned int          m_photon_buffer_id ;
+        unsigned int          m_genstep_buffer_id ;
         unsigned int          m_pbo ;
 
-        size_t m_vbo_element_size;
-        size_t m_pbo_element_size;
 
         unsigned char* m_pbo_data ; 
 

@@ -12,9 +12,12 @@ VecNPY is ultra-lightweight, just managing
 * characteristics of the data 
   (high, low, center, dimensions, extent, model2world matrix)
 
-Considered calling this SliceNPY but this 
-is much less ambitious than NumPy slicing 
-so stick with VecNPY to express the intended simplicity
+
+* Considered calling this SliceNPY but this 
+  is much less ambitious than NumPy slicing 
+  so stick with VecNPY to express the intended simplicity
+
+* Hmm, maybe ViewNPY is better name.
 
 */
 
@@ -54,7 +57,7 @@ class VecNPY {
         unsigned int m_size   ;   
         unsigned int m_numbytes ;  
         unsigned int m_stride ;  
-        unsigned int m_offset ;  
+        unsigned long m_offset ;  
         unsigned int m_count ;  
 
     private:

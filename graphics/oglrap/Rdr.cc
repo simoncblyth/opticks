@@ -35,9 +35,9 @@ Rdr::Rdr(const char* tag)
 
 void Rdr::upload(MultiVecNPY* mvn)
 {
-    assert(mvn);
-
     LOG(info) << "Rdr::upload for shader tag " << getShaderTag() ;
+
+    assert(mvn);
 
     mvn->Print("Rdr::upload");    
 
@@ -66,10 +66,14 @@ void Rdr::upload(MultiVecNPY* mvn)
              setCountDefault(count);
 
              upload(npy->getBytes(), npy->getNumBytes(0));
+
+             npy->setBufferId(m_buffer); // record OpenGL buffer id with the data for convenience
+
          }
          else 
          {
              assert(npy == vnpy->getNPY());     // make sure all match
+             LOG(info) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
              assert(count == vnpy->getCount());
          }
 
@@ -168,28 +172,5 @@ void Rdr::render(unsigned int count, unsigned int first)
 
 
 
-
-
-
-
-
-/*
-void Rdr::upload(VecNPY* vnpy, bool debug)
-{
-    if(debug) vnpy->dump("Rdr::upload");
-    upload( vnpy->getBytes(), vnpy->getNumBytes(), vnpy->getStride(), vnpy->getOffset(), vnpy->getCount() );
-}
-
-void Rdr::upload(NPY* npy, unsigned int j, unsigned int k )
-{
-    void* bytes = npy->getBytes();
-    unsigned int nbytes = npy->getNumBytes(0);      // from dimension 0, ie total bytes
-    unsigned int stride = npy->getNumBytes(1);      // from dimension 1, ie item bytes  
-    unsigned int offset = npy->getByteIndex(0,j,k); // length of 3rd dimension is usually 4 for efficient float4/quad handling  
-    unsigned int count  = npy->getShape(0); 
-
-    upload( bytes, nbytes, stride, offset, count );
-}
-*/
 
 

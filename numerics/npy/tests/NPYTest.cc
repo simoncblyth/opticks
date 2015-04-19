@@ -60,7 +60,16 @@ void test_getData()
     std::cout << npy->description("npy") << std::endl ; 
 }
 
+void test_getUSum()
+{
+    NPY* c1 = NPY::load("cerenkov","1");
+    NPY* s1 = NPY::load("scintillation","1");
+    
+    unsigned int n_c1 = c1->getUSum(0, 3);
+    unsigned int n_s1 = s1->getUSum(0, 3);
+    printf("test_getUSum n_c1:%u n_c1:%u tot:%u \n", n_c1, n_s1, n_c1+n_s1);
 
+}
 
 
 
@@ -73,6 +82,7 @@ int main()
     //test_g4stepnpy();
     //test_getData();
 
+    test_getUSum();
 
     return 0 ;
 }

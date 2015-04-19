@@ -151,7 +151,7 @@ void VecNPY::Summary(const char* msg)
 
 void VecNPY::Print(const char* msg)
 {
-    printf("%s name %s numbytes %u stride %u offset %u count %u extent %f\n", msg, m_name, m_numbytes, m_stride, m_offset, m_count, m_extent );
+    printf("%s name %s numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_numbytes, m_stride, m_offset, m_count, m_extent );
 }
 
 

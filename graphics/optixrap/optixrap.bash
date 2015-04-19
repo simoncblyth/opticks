@@ -4,10 +4,23 @@ optixrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixrap-src)} ; }
 optixrap-vi(){       vi $(optixrap-source) ; }
 optixrap-usage(){ cat << EOU
 
+OptiX Engine
+==============
+
 Hmm OptiX CMakeLists are kinda compilicated making it difficult 
 to do an equvalent to oglrap- but maybe some of the
 component needed can be stuffed into a library without the 
 full CMakeLists machinery for compiling .cu to .ptx etc..
+
+Porting on GPU photon generation to OptiX
+--------------------------------------------
+
+Python prototype: 
+
+* /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
+   
+
+
 
 
 EOU

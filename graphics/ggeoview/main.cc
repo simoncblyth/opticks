@@ -7,9 +7,12 @@
 #include "Frame.hh"
 #include "FrameCfg.hh"
 #include "Geometry.hh"
+
+#include "Scene.hh"
 #include "Rdr.hh"
 #include "Renderer.hh"
 #include "RendererCfg.hh"
+
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 #include "Camera.hh"
@@ -66,22 +69,25 @@ int main(int argc, char** argv)
 {
     logging_init();
     LOG(info) << argv[0] ; 
+
     Frame frame ;
     Composition composition ;   
     Interactor interactor ; 
-    Renderer renderer("nrm") ;  
-    //Rdr rdr("pos") ;  
-    Rdr rdr("p2l") ;  
-    Geometry geometry ; // misnomer: its the loader 
     numpydelegate delegate ; 
 
-    //NumpyEvt evt ; 
-    MultiVecNPY evt ;
+    NumpyEvt evt ;
+    evt.setGenstepData(NPY::load("cerenkov", "1")); 
+
+
+
+    Scene scene ;
+    scene.setNumpyEvt(&evt);
+    scene.setComposition(&composition);    
 
     Cfg cfg("umbrella", false) ;             // collect other Cfg objects
     cfg.add(new FrameCfg<Frame>("frame", &frame, false));
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
-    cfg.add(new RendererCfg<Renderer>("renderer", &renderer, true));
+    cfg.add(new RendererCfg<Renderer>("renderer", scene.getGeometryRenderer(), true));
     cfg.add(new CompositionCfg<Composition>("composition", &composition, true));
     cfg.add(new CameraCfg<Camera>("camera", composition.getCamera(), true));
     cfg.add(new ViewCfg<View>(    "view",   composition.getView(),   true));
@@ -91,65 +97,40 @@ int main(int argc, char** argv)
 
     cfg.commandline(argc, argv);
     delegate.liveConnect(&cfg);     
-    //delegate.setNumpyEvt(&evt);
-
+    delegate.setNumpyEvt(&evt);
 
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 
-    frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
+    numpyserver<numpydelegate> server(&delegate); // connect to external messages 
+    frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
     interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball(), composition.getClipper());  
-    // interactor changes camera, view, trackball, clipper
-
-    renderer.setComposition(&composition);    // renderers needs access to view matrices
-    rdr.setComposition(&composition);   
-
-    numpyserver<numpydelegate> server(&delegate);
-
-    frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight()); // creates OpenGL context 
-    geometry.load("GGEOVIEW_") ; 
 
 
-    GDrawable* drawable = geometry.getDrawable();
-    renderer.setDrawable(drawable);
+    frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
+    scene.loadGeometry("GGEOVIEW_") ; 
+    composition.setModelToWorld(scene.getTarget());
+    scene.loadEvt();
 
-    bool debug = false ; 
-    if(debug)
-    {
-        NPY* npy = NPY::make_vec3(drawable->getModelToWorldPtr(),100); // debug points in viscinity of drawable
-        evt.add(new VecNPY("vpos",npy,0,0));   
-    }
-    else
-    {
-        NPY* npy = NPY::load("cerenkov", "1");  // leaking, as usual
-        // VecNPY names must match shader attribute names 
-        evt.add(new VecNPY("vpos",npy,1,0));    // (x0, t0)                     2nd GenStep quad 
-        evt.add(new VecNPY("vdir",npy,2,0));    // (DeltaPosition, step_length) 3rd GenStep quad
-    }
-
-
-    // targeting viewpoint at evt data OR geometry 
-    //float* target = evt["vpos"]->getModelToWorldPtr();  
-    float* target = drawable->getModelToWorldPtr();     
-    composition.setModelToWorld(target);
-
-    // rdr upload is independent of setting composition, that only 
-    // comes into play when updating uniforms prior to rendering  
-
-    rdr.upload(&evt);
-
-
-
+    //
+    // TODO:  
+    //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
+    //   * extract core OptiX processing into separate class
+    //   * hmm generation should not depend on renderers OpenGL buffers
+    //     but for OpenGL interop its expedient for now
+    //
     OptiXEngine engine("GGeoView") ;       
-    // needing both is transitional
-    engine.setGGeo(geometry.getGGeo());
-    engine.setMergedMesh(geometry.getMergedMesh());
-    engine.setComposition(&composition);   // engine needs access to the view matrices
+    Geometry* geoloader = scene.getGeometryLoader();     // needing both GGeo and GMergedMesh is transitional
+    engine.setGGeo(geoloader->getGGeo());            
+    engine.setMergedMesh(geoloader->getMergedMesh());
+    engine.setComposition(&composition);                 
     engine.setEnabled(interactor.getOptiXMode()>-1);
-    engine.init();    // creates OptiX context, when enabled
+    engine.init();                                        // creates OptiX context, when enabled
+    engine.initGenerate(&evt);
  
     GLFWwindow* window = frame.getWindow();
+
     LOG(info) << "enter runloop "; 
     while (!glfwWindowShouldClose(window))
     {
@@ -164,9 +145,9 @@ int main(int argc, char** argv)
         }
         else
         {
-            renderer.render();
-            rdr.render();
-        }
+            scene.render();
+       }
+
         glfwSwapBuffers(window);
     }
     engine.cleanUp();

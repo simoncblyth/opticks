@@ -17,6 +17,8 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "NPY.hpp"
+#include "NumpyEvt.hpp"
 
 
 // oglrap-
@@ -51,10 +53,9 @@ enum RayType
 OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_context(NULL),
     m_geometry_group(NULL),
-    m_vbo(0),
+    m_photon_buffer_id(0),
+    m_genstep_buffer_id(0),
     m_pbo(0),
-    m_vbo_element_size(0),
-    m_pbo_element_size(0),
     m_pbo_data(NULL),
     m_composition(NULL),
     m_renderer(NULL),
@@ -143,7 +144,7 @@ void OptiXEngine::initContext()
 
     m_context->setStackSize( 2180 );
  
-    m_output_buffer = createOutputBuffer_PBO(RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
+    m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
     m_context["output_buffer"]->set( m_output_buffer );
 
     m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
@@ -222,7 +223,7 @@ void OptiXEngine::trace()
     glm::vec3 V ;
     glm::vec3 W ;
 
-    m_composition->getEyeUVW(eye, U, V, W); // must setModelToworld_Extent in composition first
+    m_composition->getEyeUVW(eye, U, V, W); // must setModelToWorld in composition first
     //if(m_trace_count == 0) print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
 
     float scene_epsilon = m_composition->getNear();
@@ -248,6 +249,53 @@ void OptiXEngine::trace()
 }
 
 
+void OptiXEngine::initGenerate(NumpyEvt* evt)
+{
+    NPY* gensteps = evt->getGenstepData();
+
+    assert(gensteps->getDimensions() == 3);
+    assert(gensteps->getShape(1) == 6);
+    assert(gensteps->getShape(2) == 4);
+
+    int genstep_buffer_id = gensteps->getBufferId();
+    if(genstep_buffer_id > -1)
+    {
+        unsigned int genstep_count = gensteps->getShape(0);
+        unsigned int genstep_qsize  = gensteps->getShape(1);  // in quads
+        unsigned int tot_quad = genstep_count * genstep_qsize ;  
+
+        m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, genstep_buffer_id);
+        m_genstep_buffer->setFormat(RT_FORMAT_FLOAT4);
+        m_genstep_buffer->setSize( tot_quad );
+    } 
+
+
+    NPY* photons = evt->getPhotonData();
+
+    int photon_buffer_id = photons ? photons->getBufferId() : -1 ;
+    if(photon_buffer_id > -1)
+    {
+        unsigned int photon_count = photons->getShape(0);
+        unsigned int photon_qsize = photons->getShape(1);  
+        assert(photon_qsize == 1);
+        unsigned int tot_quad = photon_count * photon_qsize ;  
+
+        m_photon_buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, photon_buffer_id);
+        m_photon_buffer->setFormat(RT_FORMAT_FLOAT4);
+        m_photon_buffer->setSize( tot_quad );
+    }
+}
+
+
+
+void OptiXEngine::generate()
+{
+}
+
+
+
+
+
 optix::Buffer OptiXEngine::createOutputBuffer(RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
@@ -255,35 +303,40 @@ optix::Buffer OptiXEngine::createOutputBuffer(RTformat format, unsigned int widt
     return buffer ; 
 }
 
-optix::Buffer OptiXEngine::createOutputBuffer_VBO(RTformat format, unsigned int width, unsigned int height)
+optix::Buffer OptiXEngine::createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
 
-    glGenBuffers(1, &m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glGenBuffers(1, &id);
+    glBindBuffer(GL_ARRAY_BUFFER, id);
 
-    m_context->checkError(rtuGetSizeForRTformat(format, &m_vbo_element_size));
-    glBufferData(GL_ARRAY_BUFFER, m_vbo_element_size * width * height, 0, GL_STREAM_DRAW);
+    size_t element_size ; 
+    m_context->checkError(rtuGetSizeForRTformat(format, &element_size));
+    assert(element_size == 16);
+
+    const GLvoid *data = NULL ;
+    glBufferData(GL_ARRAY_BUFFER, element_size * width * height, data, GL_STREAM_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-    buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, m_vbo);
+    buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, id);
     buffer->setFormat(format);
     buffer->setSize( width, height );
 
     return buffer;
 }
 
-optix::Buffer OptiXEngine::createOutputBuffer_PBO(RTformat format, unsigned int width, unsigned int height)
+optix::Buffer OptiXEngine::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
 
-    glGenBuffers(1, &m_pbo);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo);
+    glGenBuffers(1, &id);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, id);
 
-    m_context->checkError(rtuGetSizeForRTformat(format, &m_pbo_element_size));
+    size_t element_size ; 
+    m_context->checkError(rtuGetSizeForRTformat(format, &element_size));
+    assert(element_size == 4);
 
-    assert(m_pbo_element_size == 4);
-    unsigned int nbytes = m_pbo_element_size * width * height ;
+    unsigned int nbytes = element_size * width * height ;
 
     m_pbo_data = (unsigned char*)malloc(nbytes);
     memset(m_pbo_data, 0x88, nbytes);  // initialize PBO to grey 
@@ -291,11 +344,11 @@ optix::Buffer OptiXEngine::createOutputBuffer_PBO(RTformat format, unsigned int 
     glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, m_pbo_data, GL_STREAM_DRAW);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); 
 
-    buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, m_pbo);
+    buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, id);
     buffer->setFormat(format);
     buffer->setSize( width, height );
 
-    LOG(info) << "OptiXEngine::createOutputBuffer_PBO  m_pbo_element_size " << m_pbo_element_size << " size (" << width << "," << height << ") pbo " << m_pbo ;
+    LOG(info) << "OptiXEngine::createOutputBuffer_PBO  element_size " << element_size << " size (" << width << "," << height << ") pbo id " << id ;
   
     return buffer;
 }
