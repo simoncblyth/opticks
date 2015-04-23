@@ -94,8 +94,8 @@ void OptiXEngine::init()
 
 void OptiXEngine::initRenderer()
 {
-    unsigned int width  = m_composition->getWidth();
-    unsigned int height = m_composition->getHeight();
+    unsigned int width  = m_composition->getPixelWidth();
+    unsigned int height = m_composition->getPixelHeight();
 
     m_renderer = new Renderer("tex");
     m_texture = new Texture();   // QuadTexture would be better name
@@ -109,8 +109,8 @@ void OptiXEngine::initRenderer()
 
 void OptiXEngine::initContext()
 {
-    unsigned int width  = m_composition->getWidth();
-    unsigned int height = m_composition->getHeight();
+    unsigned int width  = m_composition->getPixelWidth();
+    unsigned int height = m_composition->getPixelHeight();
 
     LOG(info) << "OptiXEngine::initContext size (" << width << "," << height << ")" ;
 

@@ -43,6 +43,10 @@ class Composition {
       float getFar();
       unsigned int getWidth();
       unsigned int getHeight();
+      unsigned int getPixelWidth(); // width*pixel_factor
+      unsigned int getPixelHeight();
+      unsigned int getPixelFactor();
+      void setPixelFactor(unsigned int factor); // 2 for retina display
 
   public:
       // getters of the derived properties : need to call update first to make them current

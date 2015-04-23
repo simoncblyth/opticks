@@ -24,7 +24,7 @@ public:
 
 private:
     void addToSelection(AssimpNode* node);
-    void selectNodes(AssimpNode* node, unsigned int depth);
+    void selectNodes(AssimpNode* node, unsigned int depth, bool rselect=false);
     void parseQueryElement(const char* query);
     void parseQuery(const char* query);
 

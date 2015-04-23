@@ -19,8 +19,8 @@ RT_PROGRAM void closest_hit_radiance()
 
   const float cos_theta = dot(n,ray.direction);
 
-  //prd.result = n*0.5f + 0.5f;                         // normal shader
-    prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+    prd.result = n*0.5f + 0.5f;                         // normal shader
+  //prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
   //prd.result = contrast_color ;   // according to substance index
   //prd.result = make_float3(0.f);
 

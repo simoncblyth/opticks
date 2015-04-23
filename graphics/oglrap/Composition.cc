@@ -56,6 +56,7 @@ void Composition::configureI(const char* name, std::vector<int> values )
 
 
 
+
 unsigned int Composition::getWidth()
 {
    return m_camera->getWidth();
@@ -64,6 +65,27 @@ unsigned int Composition::getHeight()
 {
    return m_camera->getHeight();
 }
+
+unsigned int Composition::getPixelWidth()
+{
+   return m_camera->getPixelWidth();
+}
+unsigned int Composition::getPixelHeight()
+{
+   return m_camera->getPixelHeight();
+}
+unsigned int Composition::getPixelFactor()
+{
+   return m_camera->getPixelFactor();
+}
+void Composition::setPixelFactor(unsigned int factor)
+{
+    m_camera->setPixelFactor(factor);
+}
+
+
+
+
 void Composition::setSize(unsigned int width, unsigned int height)
 {
     m_camera->setSize(width, height);

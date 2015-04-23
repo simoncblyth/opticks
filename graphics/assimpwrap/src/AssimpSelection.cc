@@ -31,7 +31,7 @@ AssimpSelection::AssimpSelection(AssimpNode* root, const char* query)
 
     m_selection.clear();
 
-    selectNodes(root, 0);
+    selectNodes(root, 0, false);
 
     findBounds();
 }
@@ -141,7 +141,7 @@ bool AssimpSelection::isFlatSelection()
 
 
 
-void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth)
+void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rselect )
 {
    // recursive traverse, adding nodes fulfiling the selection
    // criteria into m_selection 
@@ -162,6 +162,13 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth)
        if( index == m_query_index )
        {
            m_selection.push_back(node); 
+           rselect = true ;   
+           // kick-off recursive select, note it then never 
+           // gets turned off, bit it only causes selection for depth within range 
+       }
+       else if ( rselect ) 
+       {
+           if( m_query_depth > 0 && depth < m_query_depth ) m_selection.push_back(node); 
        }
    }
    else if(m_query_range.size() == 2)
@@ -173,7 +180,7 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth)
    }
    
 
-   for(unsigned int i = 0; i < node->getNumChildren(); i++) selectNodes(node->getChild(i), depth + 1);
+   for(unsigned int i = 0; i < node->getNumChildren(); i++) selectNodes(node->getChild(i), depth + 1, rselect );
 }
 
 

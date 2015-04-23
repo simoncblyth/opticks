@@ -804,7 +804,9 @@ void MeshViewer::rngSetup( unsigned int width, unsigned int height )
             printf("MeshViewer::rngSetup RM_OPTIX_OWNED elements unchanged and so skip \n");
         }
         else
-        { 
+        {
+           // https://devtalk.nvidia.com/default/topic/558491/using-cudamemcpy-to-copy-data-from-host-to-optix-buffer-object/?offset=3
+ 
             printf("MeshViewer::rngSetup mapping m_rng_states \n");
             curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
             printf("MeshViewer::rngSetup mapping m_rng_states DONE \n");

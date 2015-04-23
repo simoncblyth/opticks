@@ -20,6 +20,104 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
    
 
+OptiX Model
+------------
+
+Seven different user supplied program types are compiled together
+using GPU and ray tracing domain expertise to create a single
+optimized CUDA kernel.  
+
+Initially anyhow only need to implement two:
+
+#. *Ray Generation* programs provides the entry point into the ray tracing pipeline,
+   they start the trace and store results into output buffers.
+
+#. *Closest hit* programs are invoked once traversal has found the closest
+   intersection of a ray with the scene geometry. They can cast new rays
+   and store results into the ray payload.
+
+
+The other five mostly implement themselves when using triangle mesh::
+
+#. *Intersection* programs implement ray-geometry intersection tests which are
+   invoked to perform a geometric queries as acceleration structures are traversed.
+   Simple ray triangle intersection could be provided but also
+   analytic geometry intersection is possible.
+
+#. *Bounding box* programs compute the bounds associated with each primitive to
+   enable acceleration structures over arbitrary geometry
+
+#. *Any Hit* programs are called during traversal for every ray-object
+   intersection, the default of no operation is often appropriate.
+
+#. *Miss* programs are executed when the ray does not intersect any geometry
+
+#. *Exception* programs are called when problems such as stack overflow occur
+
+
+Chroma while stepping loop
+-----------------------------
+
+Chroma steers propagation with while stepping loop /usr/local/env/chroma_env/src/chroma/chroma/cuda/propagate_vbo.cu
+In pseudo-code this is structured::
+
+    generate photons from gen steps, setup RNG
+
+    while (steps < max_steps) {
+
+       steps++;
+
+       check for geometry intersection 
+       if (no_intersection) -> out to bookeeping and exit 
+
+       ------------inside closest hit ? ------------------------
+       lookup wavelength dependant properties
+       based on material at current photon location
+
+           absorption_length
+           scattering_length
+           reemission_probability
+
+
+       propagate_to_boundary 
+
+            Random draws dictate what happens on the way 
+
+            * time and position are advanced based on refractive index
+
+            ABSORB   end trace
+
+            REEMIT   direction, wavelength, polarization changed 
+            SCATTER  direction, polarization changed 
+                     -> continue to next step  
+
+            PASS      to boundary 
+
+
+       propagate_at_boundary/propagate_at_surface 
+
+       -------------------------------------------------
+
+   RNG state recording 
+   record photon 
+
+
+
+Porting GPU photon propagation to OptiX
+-----------------------------------------
+
+* Chroma while stepping loop needs to be chopped up to work with OptiX
+
+* pre-loop and post-loop obviously in "Ray Generation"
+
+* Where to draw the line between "Ray Generation" and "Closest Hit" ? 
+
+  * one option would be to minimalize "Closest Hit" and just 
+    use it to pass information back to "Ray Generation" via PerRayData
+
+* What needs to live in per-ray data struct 
+  
+
 
 
 

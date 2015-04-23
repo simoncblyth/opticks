@@ -19,6 +19,7 @@ class Camera {
      Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float yfov=60.f, bool parallel=false) 
      {
          setSize(width, height);
+         setPixelFactor(1); 
 
          setNearClip(1e-6, 1e6);
          setFarClip(1e-6, 1e6);
@@ -92,11 +93,17 @@ class Camera {
          return m_yfov ;
      }
 
-     void setSize(int width, int height)
+     void setSize(int width, int height )
      {
          m_size[0] = width ;
          m_size[1] = height ;
      }
+
+     void setPixelFactor(unsigned int factor)
+     {
+         m_pixel_factor = factor ; 
+     }
+
      void setNearClip(float _min, float _max)
      {
          m_nearclip[0] = _min ;  
@@ -161,6 +168,18 @@ class Camera {
          return m_size[1]; 
      }
 
+     unsigned int getPixelWidth()
+     {
+         return m_size[0]*m_pixel_factor; 
+     }
+     unsigned int getPixelHeight()
+     {
+         return m_size[1]*m_pixel_factor; 
+     }
+     unsigned int getPixelFactor()
+     {
+         return m_pixel_factor ; 
+     }
 
 
 
@@ -168,6 +187,7 @@ class Camera {
 
     
      int   m_size[2] ;
+     int   m_pixel_factor ; 
      float m_nearclip[2] ;
      float m_farclip[2] ;
      float m_yfovclip[2] ;

@@ -15,6 +15,15 @@ tips to free up GPU memory
 #. put the machine to sleep and go and have a coffee
 
 
+
+CUDA Driver and Runtime API interop
+------------------------------------
+
+* http://stackoverflow.com/questions/20539349/cuda-runtime-api-and-dynamic-kernel-definition
+
+  * http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DRIVER.html#group__CUDART__DRIVER
+
+
 Updating to CUDA 6.5 (Feb 2, 2015)
 ----------------------------------
 

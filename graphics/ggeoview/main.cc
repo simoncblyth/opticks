@@ -72,11 +72,15 @@ int main(int argc, char** argv)
 
     Frame frame ;
     Composition composition ;   
+    composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
+
     Interactor interactor ; 
     numpydelegate delegate ; 
 
     NumpyEvt evt ;
     evt.setGenstepData(NPY::load("cerenkov", "1")); 
+
+
 
     Scene scene ;
     scene.setNumpyEvt(&evt);
