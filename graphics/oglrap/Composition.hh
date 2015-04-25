@@ -35,6 +35,9 @@ class Composition {
       View* getView(); 
       Clipper* getClipper(); 
 
+      void setCamera(Camera* camera);
+      void setView(View* view);
+
   public: 
       // getters of inputs 
       glm::mat4& getModelToWorld();
@@ -129,6 +132,18 @@ inline Clipper* Composition::getClipper()
 {
     return m_clipper ;
 }
+
+inline void Composition::setCamera(Camera* camera)
+{
+    //delete m_camera ;
+    m_camera = camera ; 
+}
+inline void Composition::setView(View* view)
+{
+    //delete m_view ;
+    m_view = view ; 
+}
+
 
 
 

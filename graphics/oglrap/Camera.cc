@@ -5,6 +5,7 @@
 
 #include "stdio.h"
 #include <glm/gtc/matrix_transform.hpp>  
+#include <boost/lexical_cast.hpp>
 
 
 const char* Camera::PRINT    = "print" ;
@@ -14,6 +15,20 @@ const char* Camera::YFOV     = "yfov" ;
 const char* Camera::PARALLEL = "parallel" ;
 
 
+bool Camera::accepts(const char* name)
+{
+    return 
+          strcmp(name, NEAR) == 0  ||
+          strcmp(name, FAR ) == 0  || 
+          strcmp(name, YFOV) == 0  ;
+}  
+
+
+void Camera::configureS(const char* name, const char* value_)
+{
+    float value = boost::lexical_cast<float>(value_); 
+    configureF(name, value);
+}
 
 void Camera::configureS(const char* name, std::vector<std::string> values)
 {
@@ -39,16 +54,23 @@ void Camera::configureF(const char* name, std::vector<float> values)
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
          printf(" : vlast %10.3f \n", vlast );
 #endif
-
-         if(      strcmp(name, YFOV) ==  0)      setYfov(vlast);
-         else if( strcmp(name, NEAR) ==  0)      setNear(vlast);
-         else if( strcmp(name, FAR) ==  0)       setFar(vlast);
-         else if( strcmp(name, PARALLEL) ==  0)  setParallel( vlast==0.f ? false : true );
-         else
-              printf("Camera::parameter_set ignoring unknown parameter %s : %10.3f \n", name, vlast); 
+         configureF(name, vlast);  
      }
 }
  
+
+void Camera::configureF(const char* name, float value)
+{
+    if(      strcmp(name, YFOV) ==  0)      setYfov(value);
+    else if( strcmp(name, NEAR) ==  0)      setNear(value);
+    else if( strcmp(name, FAR) ==  0)       setFar(value);
+    else if( strcmp(name, PARALLEL) ==  0)  setParallel( value==0.f ? false : true );
+    else
+        printf("Camera::configureF ignoring unknown parameter %s : %10.3f \n", name, value); 
+}
+ 
+
+
 
 void Camera::Print(const char* msg)
 {

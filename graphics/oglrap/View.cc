@@ -19,6 +19,21 @@ const char* View::EYE = "eye" ;
 const char* View::LOOK = "look" ;
 const char* View::UP = "up" ;
 
+bool View::accepts(const char* name)
+{
+    return 
+         strcmp(name,EYE)==0  ||
+         strcmp(name,LOOK)==0 ||
+         strcmp(name,UP)==0 ;
+}
+
+
+void View::configureS(const char* name, const char* value_)
+{
+    std::string value(value_);
+    set(name, value);
+}
+
 void View::configureS(const char* name, std::vector<std::string> values)
 {
     if(values.empty()) return ;
@@ -26,6 +41,9 @@ void View::configureS(const char* name, std::vector<std::string> values)
     std::string last = values.back();
     set(name, last);
 }
+
+
+
 
 void View::set(const char* name, std::string& _xyz)
 {

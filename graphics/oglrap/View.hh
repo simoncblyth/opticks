@@ -30,6 +30,8 @@ public:
    {
    }
 
+   static bool accepts(const char* name);
+   void configureS(const char* name, const char* value);
    void configureS(const char* name, std::vector<std::string> values);
    void set(const char* name, std::string& xyz);
 

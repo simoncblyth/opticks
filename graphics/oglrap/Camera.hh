@@ -56,10 +56,13 @@ class Camera {
      }
 
 
+     static bool accepts(const char* name);
 
      void configureF(const char* name, std::vector<float> values);
      void configureI(const char* name, std::vector<int> values);
      void configureS(const char* name, std::vector<std::string> values);
+     void configureS(const char* name, const char* value);
+     void configureF(const char* name, float value);
 
 
      void setNear(float near)
