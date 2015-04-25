@@ -6,7 +6,10 @@ GMergedMesh::GMergedMesh(GMergedMesh* other)
        : 
        GMesh(other),
        m_cur_vertices(0),
-       m_cur_faces(0)
+       m_cur_faces(0),
+       m_cur_solid(0),
+       m_num_solids(0),
+       m_num_solids_selected(0)
 {
 }
 
@@ -14,7 +17,10 @@ GMergedMesh::GMergedMesh(unsigned int index)
        : 
        GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
        m_cur_vertices(0),
-       m_cur_faces(0)
+       m_cur_faces(0),
+       m_cur_solid(0),
+       m_num_solids(0),
+       m_num_solids_selected(0)
 {
 } 
 
@@ -24,16 +30,13 @@ GMergedMesh::~GMergedMesh()
 
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 {
-    //printf("GMergedMesh::create  %u  \n", index );
     GSolid* solid = ggeo->getSolid(0);
 
     GMergedMesh* mm = new GMergedMesh( index );
 
-    // 1st pass counts vertices and faces
-    mm->traverse( solid, 0, pass_count );  
+    mm->traverse( solid, 0, pass_count );  // 1st pass counts vertices and faces
 
-    // allocate storage 
-    mm->setVertices(new gfloat3[mm->getNumVertices()]);
+    mm->setVertices(new gfloat3[mm->getNumVertices()]); // allocate storage 
     mm->setNormals( new gfloat3[mm->getNumVertices()]);
     mm->setColors(  new gfloat3[mm->getNumVertices()]);
     mm->setTexcoords( NULL );  
@@ -45,9 +48,11 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->setNumColors(mm->getNumVertices());
     mm->setColor(0.5,0.5,0.5);
 
-    // 2nd pass counts merge GMesh into GMergedMesh
-    mm->traverse( solid, 0, pass_merge ); 
+    mm->setCenterExtent(new gfloat4[mm->getNumSolids()]);
+
+    mm->traverse( solid, 0, pass_merge ); // 2nd pass counts merge GMesh into GMergedMesh
     mm->updateBounds();
+
 
     return mm ;
 }
@@ -56,12 +61,16 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
     GMatrixF* transform = node->getTransform();    
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GMesh* mesh = solid->getMesh();
+    unsigned int nface = mesh->getNumFaces();
+    unsigned int nvert = mesh->getNumVertices();
+    gfloat3* vertices = pass == pass_merge ? mesh->getTransformedVertices(*transform) : NULL ;
 
-    if(solid->isSelected())
+
+    bool selected = solid->isSelected();
+
+    if(selected)
     {
-        GMesh* mesh = solid->getMesh();
-        unsigned int nvert = mesh->getNumVertices();
-        unsigned int nface = mesh->getNumFaces();
 
         //printf("GMergedMesh::traverse nvert %u nface %u \n", nvert, nface );
 
@@ -72,7 +81,6 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
         }
         else if(pass == pass_merge )
         {
-            gfloat3* vertices = mesh->getTransformedVertices(*transform);
             for(unsigned int i=0 ; i<nvert ; ++i )
             {
                 m_vertices[m_cur_vertices+i] = vertices[i] ; 
@@ -110,11 +118,33 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
             m_cur_vertices += nvert ;
             m_cur_faces    += nface ;
-        }
-    } 
+        } // count or merge passes
+    }     // selected
+
+
+
+    // for all (not just selected) as prefer absolute solid indexing 
+    if(pass == pass_count )
+    {
+        m_num_solids += 1 ; 
+        if(selected) m_num_solids_selected += 1;
+    }
+    else if( pass == pass_merge ) 
+    {
+        m_center_extent[m_cur_solid] = GMesh::findCenterExtent(vertices, nvert); // keep track of center_extent of all solids
+        m_cur_solid += 1 ; 
+    }
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1, pass);
 }
 
 
-
+void GMergedMesh::dumpSolids(const char* msg)
+{
+    printf("%s\n", msg);
+    for(unsigned int index=0 ; index < m_num_solids ; ++index)
+    {
+        gfloat4& ce = m_center_extent[index] ;
+        printf("  %u :    center %10.3f %10.3f %10.3f   extent %10.3f \n", index, ce.x, ce.y, ce.z, ce.w ); 
+    }
+}

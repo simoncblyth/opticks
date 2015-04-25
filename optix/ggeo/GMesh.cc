@@ -62,6 +62,7 @@ GMesh::GMesh(unsigned int index,
       m_center(NULL),
       m_model_to_world(NULL),
       m_extent(0.f),
+      m_center_extent(NULL),
       m_num_colors(num_vertices),  // tie num_colors to num_vertices
       m_normals(NULL),
       m_normals_buffer(NULL),
@@ -79,139 +80,6 @@ GMesh::GMesh(unsigned int index,
    setTexcoords(texcoords);
    updateBounds();
 }
-
-
-unsigned int GMesh::getIndex()
-{
-    return m_index ; 
-}
-unsigned int GMesh::getNumVertices()
-{
-    return m_num_vertices ; 
-}
-unsigned int GMesh::getNumColors()
-{
-    return m_num_colors ;   
-}
-unsigned int GMesh::getNumFaces()
-{
-    return m_num_faces ; 
-}
-
-
-void GMesh::setNumColors(unsigned int num_colors)
-{
-   m_num_colors = num_colors ;
-}
-
-
-
-
-
-
-gfloat3* GMesh::getLow()
-{
-    return m_low ;
-}
-gfloat3* GMesh::getHigh()
-{
-    return m_high ;
-}
-gfloat3* GMesh::getDimensions()
-{
-    return m_dimensions ; 
-}
-
-GMatrix<float>* GMesh::getModelToWorld()
-{
-    return m_model_to_world ; 
-}
-
-
-
-
-
-gfloat3* GMesh::getVertices()
-{
-    return m_vertices ;
-}
-gfloat3* GMesh::getNormals()
-{
-    return m_normals ;
-}
-
-gfloat3* GMesh::getColors()
-{
-    return m_colors ;
-}
-gfloat2* GMesh::getTexcoords()
-{
-    return m_texcoords ;
-}
-
-
-guint3*  GMesh::getFaces()
-{
-    return m_faces ;
-}
-
-
-
-unsigned int* GMesh::getNodes()   // CAUTION USE FROM SUBCLASS ONLY
-{
-    return m_nodes ;
-}
-unsigned int* GMesh::getSubstances()
-{
-    return m_substances ;
-}
-
-
-
-GBuffer* GMesh::getVerticesBuffer()
-{
-    return m_vertices_buffer ;
-}
-GBuffer* GMesh::getNormalsBuffer()
-{
-    return m_normals_buffer ;
-}
-
-
-
-GBuffer* GMesh::getColorsBuffer()
-{
-    return m_colors_buffer ;
-}
-GBuffer* GMesh::getTexcoordsBuffer()
-{
-    return m_texcoords_buffer ;
-}
-
-
-
-GBuffer*  GMesh::getIndicesBuffer()
-{
-    return m_indices_buffer ;
-}
-GBuffer*  GMesh::getNodesBuffer()
-{
-    return m_nodes_buffer ;
-}
-GBuffer*  GMesh::getSubstancesBuffer()
-{
-    return m_substances_buffer ;
-}
-
-
-
-
-
-GBuffer*  GMesh::getModelToWorldBuffer()
-{
-    return (GBuffer*)m_model_to_world ;
-}
-
 
 
 
@@ -293,20 +161,6 @@ void GMesh::setColor(float r, float g, float b)
     }
 }
 
-
-void GMesh::setLow(gfloat3* low)
-{
-    m_low = low ;
-}
-void GMesh::setHigh(gfloat3* high)
-{
-    m_high = high ;
-}
-
-bool GMesh::hasTexcoords()
-{
-    return m_texcoords != NULL ;
-}
 
 
 GMesh::~GMesh()
@@ -400,25 +254,15 @@ void GMesh::Summary(const char* msg)
 }
 
 
-float GMesh::getExtent()
-{
-     return m_extent ;  
-}
 
-float* GMesh::getModelToWorldPtr()
-{
-     return (float*)getModelToWorldBuffer()->getPointer() ; 
-}
-
-
-void GMesh::updateBounds()
+gfloat4 GMesh::findCenterExtent(gfloat3* vertices, unsigned int num_vertices)
 {
     gfloat3  low( 1e10f, 1e10f, 1e10f);
     gfloat3 high( -1e10f, -1e10f, -1e10f);
 
-    for( unsigned int i = 0; i < m_num_vertices ;++i )
+    for( unsigned int i = 0; i < num_vertices ;++i )
     {
-        gfloat3& v = m_vertices[i];
+        gfloat3& v = vertices[i];
 
         low.x = std::min( low.x, v.x);
         low.y = std::min( low.y, v.y);
@@ -429,16 +273,25 @@ void GMesh::updateBounds()
         high.z = std::max( high.z, v.z);
     }
 
-    m_low = new gfloat3(low.x, low.y, low.z) ;
-    m_high = new gfloat3(high.x, high.y, high.z);
+    gfloat3 dimensions(high.x - low.x, high.y - low.y, high.z - low.z );
+    float extent = 0.f ;
+    extent = std::max( dimensions.x , extent );
+    extent = std::max( dimensions.y , extent );
+    extent = std::max( dimensions.z , extent );
+    extent = extent / 2.0f ;         
+ 
+    gfloat4 center_extent((high.x + low.x)/2.0f, (high.y + low.y)/2.0f , (high.z + low.z)/2.0f, extent );
 
-    m_dimensions = new gfloat3(high.x - low.x, high.y - low.y, high.z - low.z );
-    m_center     = new gfloat3((high.x + low.x)/2.0f, (high.y + low.y)/2.0f , (high.z + low.z)/2.0f );
-    m_extent = 0.f ;
-    m_extent = std::max( m_dimensions->x , m_extent );
-    m_extent = std::max( m_dimensions->y , m_extent );
-    m_extent = std::max( m_dimensions->z , m_extent );
-    m_extent = m_extent / 2.0f ;         
+    return center_extent ; 
+}
+
+
+
+void GMesh::updateBounds()
+{
+
+     gfloat4 ce = findCenterExtent(m_vertices, m_num_vertices);
+
     //
     // extent is half the maximal dimension 
     // 
@@ -455,7 +308,22 @@ void GMesh::updateBounds()
     //        * translate by m_center
     //
 
-    m_model_to_world = new GMatrix<float>( m_center->x, m_center->y, m_center->z, m_extent );
+    if(m_center_extent == NULL)
+    {
+        m_center_extent = new gfloat4( ce.x, ce.y, ce.z, ce.w );
+    }
+    else
+    {
+        // avoid stomping on position of array of center_extent in case of MergedMesh, 
+        // instead just overwrite solid 0 
+        //
+        m_center_extent[0].x = ce.x ;
+        m_center_extent[0].y = ce.y ;
+        m_center_extent[0].z = ce.z ;
+        m_center_extent[0].w = ce.w ;
+    }
+
+    m_model_to_world = new GMatrix<float>( ce.x, ce.y, ce.z, ce.w );
 }
 
 
@@ -532,10 +400,6 @@ std::vector<unsigned int>& GMesh::getDistinctSubstances()
     if(m_distinct_substances.size()==0) updateDistinctSubstances();
     return m_distinct_substances ;
 }
-
-
-
-
 
 
 

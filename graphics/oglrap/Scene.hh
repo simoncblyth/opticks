@@ -18,13 +18,15 @@ class Scene {
             m_photon_renderer(NULL),
             m_evt(NULL),
             m_geometry(NULL),
-            m_composition(NULL)
+            m_composition(NULL),
+            m_target(NULL)
         {
             init();
         }
 
    public:
         void setComposition(Composition* composition);
+        void setTarget(unsigned int index=0);
         void setNumpyEvt(NumpyEvt* evt);
 
    public:
@@ -33,7 +35,7 @@ class Scene {
         void render();
  
    public:
-        float* getTarget();
+        float*        getTarget();
         Geometry*     getGeometryLoader();
         Renderer*     getGeometryRenderer();
         Rdr*          getGenstepRenderer();
@@ -53,6 +55,7 @@ class Scene {
         NumpyEvt*    m_evt ;
         GDrawable*   m_geometry ;
         Composition* m_composition ;
+        float*       m_target ;
 
 };
 

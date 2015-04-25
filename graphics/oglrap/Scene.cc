@@ -7,6 +7,11 @@
 #include "GDrawable.hh"
 #include "NumpyEvt.hpp"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 
 void Scene::init()
 {
@@ -30,6 +35,8 @@ void Scene::loadGeometry(const char* prefix)
     m_geometry_loader->load(prefix);
     m_geometry = m_geometry_loader->getDrawable();
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
+
+    setTarget(0);
 }
 
 void Scene::loadEvt()
@@ -38,12 +45,24 @@ void Scene::loadEvt()
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 }
 
+void Scene::setTarget(unsigned int index)
+{
+    if(index == 0)
+    {
+        //float* target = m_evt->getGenstepAttr()["vpos"]->getModelToWorldPtr();  
+        float* target = m_geometry->getModelToWorldPtr();
+        m_target = target ; 
+    }
+    else
+    {
+        LOG(warning)<<"Scene::setTarget " << index << " not implemented " ;        
+    }    
+}
+
+
 float* Scene::getTarget()
 {
-    // targeting viewpoint at evt data OR geometry 
-    //float* target = m_evt->getGenstepAttr()["vpos"]->getModelToWorldPtr();  
-    float* target = m_geometry->getModelToWorldPtr();
-    return target ;
+    return m_target ;
 }
 
 

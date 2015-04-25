@@ -34,11 +34,11 @@ void Bookmarks::load(const char* path)
 
             if(View::accepts(itk.c_str()))
             {
-                view->configureS(itk.c_str(), itv.c_str());
+                view->configure(itk.c_str(), itv.c_str());
             }
             else if(Camera::accepts(itk.c_str()))
             {
-                camera->configureS(itk.c_str(), itv.c_str());
+                camera->configure(itk.c_str(), itv.c_str());
             } 
             std::cout << "   " << itk << " : " << itv << std::endl ;
         }   

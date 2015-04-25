@@ -43,7 +43,8 @@ class GMesh : public GDrawable {
       gfloat3* getLow();
       gfloat3* getHigh();
   public:
-      gfloat3* getCenter();
+      gfloat3* getCenter();  // TODO: move all users to CenterExtent
+      gfloat4* getCenterExtent();
       gfloat3* getDimensions();
       GMatrix<float>* getModelToWorld();
 
@@ -103,6 +104,7 @@ class GMesh : public GDrawable {
       void setColors(gfloat3* colors);
       void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
+      void setCenterExtent(gfloat4* center_extent);
 
   public:
       void setNumColors(unsigned int num_colors);
@@ -113,6 +115,7 @@ class GMesh : public GDrawable {
        gfloat3* getTransformedNormals(GMatrixF& transform );
 
   public:
+      static gfloat4 findCenterExtent(gfloat3* vertices, unsigned int num_vertices);
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
@@ -131,6 +134,7 @@ class GMesh : public GDrawable {
       gfloat3*        m_dimensions ;
       gfloat3*        m_center ;
       float           m_extent ; 
+      gfloat4*        m_center_extent ;
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "abstract" shape GMesh
 
   private:
@@ -143,5 +147,180 @@ class GMesh : public GDrawable {
 
 
 };
+
+
+inline unsigned int GMesh::getIndex()
+{
+    return m_index ; 
+}
+inline unsigned int GMesh::getNumVertices()
+{
+    return m_num_vertices ; 
+}
+inline unsigned int GMesh::getNumColors()
+{
+    return m_num_colors ;   
+}
+inline unsigned int GMesh::getNumFaces()
+{
+    return m_num_faces ; 
+}
+
+
+inline void GMesh::setNumColors(unsigned int num_colors)
+{
+   m_num_colors = num_colors ;
+}
+inline void GMesh::setLow(gfloat3* low)
+{
+    m_low = low ;
+}
+inline void GMesh::setHigh(gfloat3* high)
+{
+    m_high = high ;
+}
+inline bool GMesh::hasTexcoords()
+{
+    return m_texcoords != NULL ;
+}
+
+
+
+
+
+
+
+inline gfloat3* GMesh::getLow()
+{
+    return m_low ;
+}
+inline gfloat3* GMesh::getHigh()
+{
+    return m_high ;
+}
+inline gfloat3* GMesh::getDimensions()
+{
+    return m_dimensions ; 
+}
+
+inline GMatrix<float>* GMesh::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+
+
+
+
+
+inline gfloat3* GMesh::getVertices()
+{
+    return m_vertices ;
+}
+inline gfloat3* GMesh::getNormals()
+{
+    return m_normals ;
+}
+
+inline gfloat3* GMesh::getColors()
+{
+    return m_colors ;
+}
+inline gfloat2* GMesh::getTexcoords()
+{
+    return m_texcoords ;
+}
+
+
+inline guint3*  GMesh::getFaces()
+{
+    return m_faces ;
+}
+
+inline gfloat4* GMesh::getCenterExtent()
+{
+     return m_center_extent ;  
+}
+inline void GMesh::setCenterExtent(gfloat4* center_extent)  // used from GMergedMesh
+{
+     m_center_extent = center_extent ;  
+}
+
+
+
+
+
+inline float GMesh::getExtent()
+{
+     return m_extent ;  
+}
+
+
+inline float* GMesh::getModelToWorldPtr()
+{
+     return (float*)getModelToWorldBuffer()->getPointer() ; 
+}
+
+
+
+inline unsigned int* GMesh::getNodes()   // CAUTION USE FROM SUBCLASS ONLY
+{
+    return m_nodes ;
+}
+inline unsigned int* GMesh::getSubstances()
+{
+    return m_substances ;
+}
+
+
+
+inline GBuffer* GMesh::getVerticesBuffer()
+{
+    return m_vertices_buffer ;
+}
+inline GBuffer* GMesh::getNormalsBuffer()
+{
+    return m_normals_buffer ;
+}
+
+
+
+inline GBuffer* GMesh::getColorsBuffer()
+{
+    return m_colors_buffer ;
+}
+inline GBuffer* GMesh::getTexcoordsBuffer()
+{
+    return m_texcoords_buffer ;
+}
+
+
+
+inline GBuffer*  GMesh::getIndicesBuffer()
+{
+    return m_indices_buffer ;
+}
+inline GBuffer*  GMesh::getNodesBuffer()
+{
+    return m_nodes_buffer ;
+}
+inline GBuffer*  GMesh::getSubstancesBuffer()
+{
+    return m_substances_buffer ;
+}
+
+
+
+
+
+inline GBuffer*  GMesh::getModelToWorldBuffer()
+{
+    return (GBuffer*)m_model_to_world ;
+}
+
+
+
+
+
+
 
 #endif

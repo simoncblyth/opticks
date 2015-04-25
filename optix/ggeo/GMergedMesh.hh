@@ -17,11 +17,30 @@ public:
     virtual ~GMergedMesh(); 
     void traverse( GNode* node, unsigned int depth, unsigned int pass);
 
+    unsigned int getNumSolids();
+    unsigned int getNumSolidsSelected();
+    void dumpSolids(const char* msg="GMergedMesh::dumpSolids");
+
 private:
      unsigned int m_cur_vertices ;
      unsigned int m_cur_faces ;
+     unsigned int m_cur_solid ;
+     unsigned int m_num_solids  ;
+     unsigned int m_num_solids_selected  ;
 
 
 };
+
+
+inline unsigned int GMergedMesh::getNumSolids()
+{
+    return m_num_solids ; 
+}
+inline unsigned int GMergedMesh::getNumSolidsSelected()
+{
+    return m_num_solids_selected ; 
+}
+
+
 
 #endif

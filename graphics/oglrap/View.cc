@@ -28,7 +28,7 @@ bool View::accepts(const char* name)
 }
 
 
-void View::configureS(const char* name, const char* value_)
+void View::configure(const char* name, const char* value_)
 {
     std::string value(value_);
     set(name, value);
