@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdlib.h"
+#include <vector>
 
 class Renderer ; 
 class Rdr ;
@@ -13,6 +14,8 @@ class GGeo ;
 
 class Scene {
    public:
+        static const char* TARGET ;
+
         Scene() :
             m_geometry_loader(NULL),
             m_geometry_renderer(NULL),
@@ -21,24 +24,31 @@ class Scene {
             m_evt(NULL),
             m_geometry(NULL),
             m_composition(NULL),
-            m_target(NULL)
+            m_target(0)
         {
             init();
         }
 
    public:
+        void configureI(const char* name, std::vector<int> values);
         void setComposition(Composition* composition);
         void setNumpyEvt(NumpyEvt* evt);
+
+   public:
+        // target cannot live in Composition, as needs geometry 
+        // to convert solid index into CenterExtent to give to Composition
+        //
+        void setTarget(unsigned int index=0); 
 
    public:
         void loadGeometry(const char* prefix);
         void loadEvt();
         void render();
- 
 
    public:
         GMergedMesh*  getMergedMesh();
         GGeo*         getGGeo();
+        unsigned int  getTarget(); 
 
    public:
         Geometry*     getGeometryLoader();
@@ -50,8 +60,6 @@ class Scene {
         NumpyEvt*     getNumpyEvt();
 
    private:
-        void setTarget(unsigned int index=0); // better in Composition
-        float*        getTarget(); // better in Composition
         void init();
 
    private:
@@ -62,13 +70,16 @@ class Scene {
         NumpyEvt*    m_evt ;
         GDrawable*   m_geometry ;
         Composition* m_composition ;
-        float*       m_target ;
+        unsigned int m_target ;
 
 };
 
 
 
-
+inline unsigned int Scene::getTarget()
+{
+    return m_target ;
+}
 inline Geometry* Scene::getGeometryLoader()
 {
     return m_geometry_loader ; 
@@ -93,14 +104,10 @@ inline GDrawable* Scene::getGeometry()
 {
     return m_geometry ; 
 }
-
-
 inline void Scene::setNumpyEvt(NumpyEvt* evt)
 {
     m_evt = evt ; 
 }
-
-
 
 
 

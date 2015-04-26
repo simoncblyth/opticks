@@ -72,6 +72,7 @@ add_library( ${name}  SHARED
                 Interactor.cc
                 InteractorCfg.cc
                 Scene.cc
+                SceneCfg.cc
                 RendererBase.cc
                 Renderer.cc
                 RendererCfg.cc
@@ -100,6 +101,7 @@ SET(hdrs
         Interactor.hh
         InteractorCfg.hh
         Scene.hh
+        SceneCfg.hh
         RendererBase.hh
         Rdr.hh
         Renderer.hh

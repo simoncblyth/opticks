@@ -1,17 +1,20 @@
 #include "Scene.hh"
 
 #include <GL/glew.h>
+#include "Composition.hh"
 #include "Geometry.hh"
 #include "Renderer.hh"
 #include "Rdr.hh"
 #include "GDrawable.hh"
 #include "NumpyEvt.hpp"
 
+
+
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
+const char* Scene::TARGET = "target" ; 
 
 void Scene::init()
 {
@@ -20,6 +23,22 @@ void Scene::init()
     m_genstep_renderer = new Rdr("p2l");
     m_photon_renderer = new Rdr("pos");
 }
+
+
+
+void Scene::configureI(const char* name, std::vector<int> values)
+{
+    LOG(info) << "Scene::configureI";
+    if(values.empty()) return ;
+
+    if(strcmp(name, TARGET) == 0)
+    {
+        int last = values.back();
+        setTarget(last);
+    }
+}
+
+
 
 void Scene::setComposition(Composition* composition)
 {
@@ -37,6 +56,22 @@ void Scene::loadGeometry(const char* prefix)
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
 
     setTarget(0);
+}
+
+
+void Scene::setTarget(unsigned int index)
+{
+    m_target = index ; 
+
+    gfloat4 ce = m_geometry->getCenterExtent(index);
+
+    LOG(info)<<"Scene::setTarget " << index << " ce " 
+             << " " << ce.x 
+             << " " << ce.y 
+             << " " << ce.z 
+             << " " << ce.w ;
+
+    m_composition->setCenterExtent(ce); 
 }
 
 
@@ -61,25 +96,7 @@ void Scene::loadEvt()
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 }
 
-void Scene::setTarget(unsigned int index)
-{
-    if(index == 0)
-    {
-        //float* target = m_evt->getGenstepAttr()["vpos"]->getModelToWorldPtr();  
-        float* target = m_geometry->getModelToWorldPtr(0);
-        m_target = target ; 
-    }
-    else
-    {
-        LOG(warning)<<"Scene::setTarget " << index << " not implemented " ;        
-    }    
-}
 
-
-float* Scene::getTarget()
-{
-    return m_target ;
-}
 
 
 void Scene::render()

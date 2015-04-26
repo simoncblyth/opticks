@@ -2,6 +2,7 @@
 #define GDRAWABLE_H
 
 #include "GBuffer.hh"
+#include "GVector.hh"
 #include <vector>
 
 class GDrawable {
@@ -18,8 +19,10 @@ class GDrawable {
       virtual GBuffer* getModelToWorldBuffer() = 0;
       virtual std::vector<unsigned int>& getDistinctSubstances() = 0;
 
-      virtual float* getModelToWorldPtr(unsigned int index) = 0;
-      virtual float    getExtent() = 0;
+      //virtual float* getModelToWorldPtr(unsigned int index) = 0;
+      //virtual float    getExtent() = 0;
+
+      virtual gfloat4 getCenterExtent(unsigned int index) = 0 ;
 
 };      
 

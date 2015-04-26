@@ -4,16 +4,16 @@
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
 #include "FrameCfg.hh"
-#include "Composition.hh"
-#include "Geometry.hh"
-
 #include "Scene.hh"
-#include "Rdr.hh"
+#include "SceneCfg.hh"
 #include "Renderer.hh"
 #include "RendererCfg.hh"
-
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
+
+#include "Composition.hh"
+#include "Geometry.hh"
+#include "Rdr.hh"
 #include "Texture.hh"
 
 // numpyserver-
@@ -83,6 +83,7 @@ int main(int argc, char** argv)
     Cfg cfg("umbrella", false) ;             // collect other Cfg objects
     cfg.add(new FrameCfg<Frame>("frame", &frame, false));
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
+    cfg.add(new SceneCfg<Scene>( "scene",  &scene,   true));
     cfg.add(new RendererCfg<Renderer>("renderer", scene.getGeometryRenderer(), true));
     cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
     composition.addConfig(&cfg); 
@@ -99,11 +100,6 @@ int main(int argc, char** argv)
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
     scene.loadGeometry("GGEOVIEW_") ; 
-
-    GMergedMesh* mm = scene.getMergedMesh();
-    gfloat4 ce = mm->getCenterExtent(0); 
-    composition.setCenterExtent(ce);
-    //composition.setModelToWorld(scene.getTarget());
     scene.loadEvt();
 
     //
