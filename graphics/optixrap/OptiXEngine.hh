@@ -15,6 +15,20 @@ class NumpyEvt ;
 // TODO: split off non-OpenGL OptiXCore for headless usage and easier testing
 
 class OptiXEngine {
+
+    public:
+        enum { 
+               e_pinhole_camera,
+               e_generate,
+               e_entryPointCount 
+            };
+
+        enum {
+                e_radiance_ray,
+                e_touch_ray,
+                e_rayTypeCount 
+             };
+
     public:
         OptiXEngine(const char* cmake_target);
 
@@ -82,6 +96,7 @@ class OptiXEngine {
         GGeo*            m_ggeo ; 
         GMergedMesh*     m_mergedmesh ; 
         unsigned int     m_trace_count ; 
+        unsigned int     m_generate_count ; 
         char*            m_cmake_target ;
         bool             m_enabled ; 
         int              m_texture_id ; 

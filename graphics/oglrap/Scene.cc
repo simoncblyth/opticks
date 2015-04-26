@@ -120,7 +120,7 @@ void Scene::render()
 {
     m_geometry_renderer->render();
     m_genstep_renderer->render();   // no-show after switch to OptiX and back 
-    //m_photon_renderer->render();
+    m_photon_renderer->render();
 }
 
 

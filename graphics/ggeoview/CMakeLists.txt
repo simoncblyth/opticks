@@ -136,6 +136,8 @@ add_optix_executable( ${name}
       cu/constantbg.cu
       cu/material1_radiance.cu 
       cu/TriangleMesh.cu 
+
+      cu/generate.cu
       
 ) 
 

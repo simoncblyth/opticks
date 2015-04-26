@@ -126,6 +126,9 @@ int main(int argc, char** argv)
     engine.setEnabled(interactor.getOptiXMode()>-1);
     engine.init();  // creates OptiX context, when enabled
 
+    engine.generate();
+    evt.dumpPhotonData(); 
+
  
     GLFWwindow* window = frame.getWindow();
 

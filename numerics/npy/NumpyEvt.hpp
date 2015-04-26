@@ -29,6 +29,9 @@ class NumpyEvt {
        unsigned int getNumPhotons();
        std::string description(const char* msg);
 
+   public:
+       void         dumpPhotonData();
+       static void  dumpPhotonData(NPY* photon_data);
    private:
        void setPhotonData(NPY* photon_data);
 

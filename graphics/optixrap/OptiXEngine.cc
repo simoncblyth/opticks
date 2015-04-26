@@ -64,6 +64,7 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_ggeo(NULL),
     m_mergedmesh(NULL),
     m_trace_count(0),
+    m_generate_count(0),
     m_cmake_target(strdup(cmake_target)),
     m_enabled(true),
     m_texture_id(-1),
@@ -88,10 +89,10 @@ void OptiXEngine::init()
     initRenderer();
     initContext();
     initGeometry();
+    initGenerate();  // hmm maybe should not be here, in normal usage only needed on NPY arrival
 
     preprocess();  // context is validated and accel structure built in here
 
-    initGenerate();  // hmm maybe should not be here, in normal usage only needed on NPY arrival
 
     LOG(info) << "OptiXEngine::init DONE " ;
 }
@@ -113,6 +114,8 @@ void OptiXEngine::initRenderer()
 
 void OptiXEngine::initContext()
 {
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
 
@@ -120,7 +123,7 @@ void OptiXEngine::initContext()
 
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
-    m_context->setPrintLaunchIndex(0,0,0);
+    //m_context->setPrintLaunchIndex(0,0,0);
 
     m_context->setStackSize( 2180 );
  
@@ -129,25 +132,22 @@ void OptiXEngine::initContext()
 
     m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
 
+    m_context->setEntryPointCount( e_entryPointCount );
+    cfg->setRayGenerationProgram(  e_pinhole_camera, "pinhole_camera.cu", "pinhole_camera" );
+    cfg->setExceptionProgram(      e_pinhole_camera, "pinhole_camera.cu", "exception");
 
-    unsigned int num_entry_points = 1;
-    m_context->setEntryPointCount( num_entry_points );
-
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-
-    unsigned int entry_point_index = 0 ; 
-    cfg->setRayGenerationProgram(entry_point_index, "pinhole_camera.cu", "pinhole_camera" );
-
-    cfg->setExceptionProgram(entry_point_index, "pinhole_camera.cu", "exception");
     m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
-    m_context[ "radiance_ray_type"   ]->setUint( radiance_ray_type );
+    m_context[ "radiance_ray_type"   ]->setUint( e_radiance_ray );
 
-    unsigned int num_ray_types = 2 ; 
-    m_context->setRayTypeCount( num_ray_types );
+    m_context->setRayTypeCount( e_rayTypeCount );
 
-    unsigned int ray_type_index = 0 ; 
-    cfg->setMissProgram(ray_type_index, "constantbg.cu", "miss" );
+    cfg->setMissProgram( e_radiance_ray , "constantbg.cu", "miss" );
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
+
+
+    cfg->setRayGenerationProgram(e_generate, "generate.cu", "generate" );
+    cfg->setExceptionProgram(    e_generate, "generate.cu", "exception");
+
 }
 
 void OptiXEngine::initGeometry()
@@ -189,7 +189,7 @@ void OptiXEngine::preprocess()
     LOG(info)<< "OptiXEngine::preprocess start compile ";
     m_context->compile();
     LOG(info)<< "OptiXEngine::preprocess start building Accel structure ";
-    m_context->launch(0,0); 
+    m_context->launch(e_pinhole_camera,0); 
 
     LOG(info)<< "OptiXEngine::preprocess DONE ";
 }
@@ -224,9 +224,27 @@ void OptiXEngine::trace()
 
     if(m_trace_count % 100 == 0) LOG(info) << "OptiXEngine::trace " << m_trace_count << " size(" <<  width << "," <<  height << ")";
 
-    m_context->launch( 0,  width, height );
+    m_context->launch( e_pinhole_camera,  width, height );
 
     m_trace_count += 1 ; 
+}
+
+
+
+void OptiXEngine::generate()
+{
+    Buffer buffer = m_context["photon_buffer"]->getBuffer();
+    RTsize buffer_width, buffer_height;
+    buffer->getSize( buffer_width, buffer_height );
+
+    unsigned int width  = static_cast<unsigned int>(buffer_width) ;
+    unsigned int height = static_cast<unsigned int>(buffer_height) ;
+
+    LOG(info) << "OptiXEngine::generate count " << m_generate_count << " size(" <<  width << "," <<  height << ")";
+
+    m_context->launch( e_generate,  width, height );
+
+    m_generate_count += 1 ; 
 }
 
 
@@ -256,6 +274,8 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
         // commenting below 4 lines prevents genstep disappearance
         // huh, its flaky : no longer disappearing 
         //  try switching RT_BUFFER_OUTPUT -> RT_BUFFER_INPUT  which is more appropriate
+        //  seems to be working ... 
+        //
         m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, genstep_buffer_id);
         m_genstep_buffer->setFormat(RT_FORMAT_FLOAT4);
         m_genstep_buffer->setSize( genstep_totquad );
@@ -279,7 +299,9 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
         unsigned int photon_totquad = photon_count * photon_sizeq ;  
         assert(photon_sizeq == 1);
 
-        m_photon_buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, photon_buffer_id);
+        // inside generate.cu::generate saw what looked like recycled memory 
+        // with nan sprinkles when this was incorrectly RT_BUFFER_OUTPUT
+        m_photon_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, photon_buffer_id);
         m_photon_buffer->setFormat(RT_FORMAT_FLOAT4);
         m_photon_buffer->setSize( photon_totquad );
         m_context["photon_buffer"]->set( m_photon_buffer );
@@ -295,10 +317,6 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
 }
 
 
-
-void OptiXEngine::generate()
-{
-}
 
 
 
