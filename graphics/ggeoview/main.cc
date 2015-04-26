@@ -119,14 +119,13 @@ int main(int argc, char** argv)
     //     but for OpenGL interop its expedient for now
     //
     OptiXEngine engine("GGeoView") ;       
-
     engine.setMergedMesh(scene.getMergedMesh()); // aiming for all geo info to come from GMergedMesh
     engine.setGGeo(scene.getGGeo());             // need for GGeo too is transitional, until sort out material/surface property buffers
-
+    engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(interactor.getOptiXMode()>-1);
-    engine.init();                                        // creates OptiX context, when enabled
-    engine.initGenerate(&evt);
+    engine.init();  // creates OptiX context, when enabled
+
  
     GLFWwindow* window = frame.getWindow();
 
@@ -139,8 +138,15 @@ int main(int argc, char** argv)
 
         if(interactor.getOptiXMode()>0)
         { 
-            engine.trace();
-            engine.render();
+             //  something in engine.trace is making gensteps disappear after on/off OptiX mode 
+             //  binary search reveals its the OptiX context launch 
+             //
+             //  --> keeping launch, skipping initGenerate avoids disappearance,
+             //      but flakiness observed: working now, but might not be fixed
+             //
+
+             engine.trace();
+             engine.render();
         }
         else
         {

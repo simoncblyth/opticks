@@ -23,11 +23,13 @@ class OptiXEngine {
         void setGGeo(GGeo* ggeo);
         void setMergedMesh(GMergedMesh* mergedmesh);
         void setEnabled(bool enabled);
+        void setNumpyEvt(NumpyEvt* evt);
 
         void init();
         void initRenderer();
         void initContext();
         void initGeometry();
+        void initGenerate();
         void initGenerate(NumpyEvt* evt);
 
         void preprocess(); 
@@ -83,6 +85,8 @@ class OptiXEngine {
         char*            m_cmake_target ;
         bool             m_enabled ; 
         int              m_texture_id ; 
+        NumpyEvt*        m_evt ; 
+
 
 
    // from sutil/MeshScene.h
@@ -103,6 +107,11 @@ class OptiXEngine {
 
 
 };
+
+inline void OptiXEngine::setNumpyEvt(NumpyEvt* evt)
+{
+    m_evt = evt ;
+}
 
 inline void OptiXEngine::setComposition(Composition* composition)
 {

@@ -67,6 +67,7 @@ OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_cmake_target(strdup(cmake_target)),
     m_enabled(true),
     m_texture_id(-1),
+    m_evt(NULL),
     m_filename(),
     m_accel_cache_loaded(false),
     m_accel_caching_on(true)
@@ -87,7 +88,10 @@ void OptiXEngine::init()
     initRenderer();
     initContext();
     initGeometry();
-    preprocess();
+
+    preprocess();  // context is validated and accel structure built in here
+
+    initGenerate();  // hmm maybe should not be here, in normal usage only needed on NPY arrival
 
     LOG(info) << "OptiXEngine::init DONE " ;
 }
@@ -194,6 +198,7 @@ void OptiXEngine::trace()
 {
     if(!m_enabled) return ;
 
+
     glm::vec3 eye ;
     glm::vec3 U ;
     glm::vec3 V ;
@@ -225,8 +230,15 @@ void OptiXEngine::trace()
 }
 
 
+void OptiXEngine::initGenerate()
+{
+    if(!m_evt) return ;
+    initGenerate(m_evt);
+}
+
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
+
     NPY* gensteps = evt->getGenstepData();
 
     assert(gensteps->getDimensions() == 3);
@@ -234,14 +246,17 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     assert(gensteps->getShape(2) == 4);
 
     int genstep_buffer_id = gensteps->getBufferId();
-    if(genstep_buffer_id > -1)
+    if(genstep_buffer_id > -1)  // gensteps already uploaded to GPU
     {
         unsigned int genstep_count = gensteps->getShape(0);
         unsigned int genstep_sizeq  = gensteps->getShape(1);  // in quads
         unsigned int genstep_totquad = genstep_count * genstep_sizeq ;  
         assert(genstep_sizeq == 6);
 
-        m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, genstep_buffer_id);
+        // commenting below 4 lines prevents genstep disappearance
+        // huh, its flaky : no longer disappearing 
+        //  try switching RT_BUFFER_OUTPUT -> RT_BUFFER_INPUT  which is more appropriate
+        m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, genstep_buffer_id);
         m_genstep_buffer->setFormat(RT_FORMAT_FLOAT4);
         m_genstep_buffer->setSize( genstep_totquad );
         m_context["genstep_buffer"]->set( m_genstep_buffer );
@@ -425,6 +440,7 @@ void OptiXEngine::push_PBO_to_Texture(unsigned int texId)
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
+    //glBindTexture(GL_TEXTURE_2D, 0 );   get blank screen when do this here
 
 }
 
@@ -432,8 +448,11 @@ void OptiXEngine::push_PBO_to_Texture(unsigned int texId)
 void OptiXEngine::render()
 {
     if(!m_enabled) return ;
+
     push_PBO_to_Texture(m_texture_id);
     m_renderer->render();
+
+    glBindTexture(GL_TEXTURE_2D, 0 );  
 }
 
 

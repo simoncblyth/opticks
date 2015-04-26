@@ -216,8 +216,6 @@ void Frame::render()
      // glViewport needs pixels (on retina)  window needs screen coordinates
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 
-     //m_scene->draw(m_width, m_height);  
-     // hmm only use of m_scene, maybe not stong enough cause for constituency
 }
 
 

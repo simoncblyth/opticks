@@ -239,6 +239,8 @@ void Renderer::render()
 
     m_draw_count += 1 ; 
 
+    glBindVertexArray(0);
+
     glUseProgram(0);
 }
 

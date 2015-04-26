@@ -110,19 +110,11 @@ GGeo* Scene::getGGeo()
     return m_geometry_loader ? m_geometry_loader->getGGeo() : NULL ;
 }
 
-
-
-
-
-
 void Scene::loadEvt()
 {
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 }
-
-
-
 
 void Scene::render()
 {
