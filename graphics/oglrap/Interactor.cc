@@ -3,6 +3,7 @@
 
 #include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
 
+#include "Composition.hh"
 #include "Camera.hh"
 #include "View.hh"
 #include "Trackball.hh"
@@ -19,6 +20,7 @@ const char* Interactor::OPTIXMODE  = "optixmode" ;
 
 Interactor::Interactor() 
    :
+   m_composition(NULL),
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
@@ -51,13 +53,14 @@ void Interactor::configureI(const char* name, std::vector<int> values)
 }
 
 
-void Interactor::setup(Camera* camera, View* view, Trackball* trackball, Clipper* clipper)
+void Interactor::setComposition(Composition* composition)
 {
-    m_camera = camera ; 
-    m_view   = view ; 
-    m_trackball = trackball ; 
-    m_clipper = clipper ; 
-}   
+    m_composition = composition ;
+    m_camera = composition->getCamera() ;
+    m_view   = composition->getView();
+    m_trackball = composition->getTrackball();
+    m_clipper  = composition->getClipper();
+}
 
 
 void Interactor::cursor_drag(float x, float y, float dx, float dy )

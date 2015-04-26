@@ -2,6 +2,9 @@
 
 #include <vector>
 
+
+class Composition ;
+
 class Camera ; 
 class View ; 
 class Trackball ;
@@ -16,7 +19,7 @@ class Interactor {
        static const char* OPTIXMODE ; 
 
        Interactor(); 
-       void setup(Camera* camera, View* view, Trackball* trackball, Clipper* clipper);
+       void setComposition(Composition* composition);
 
   public:
        bool isOptiXMode(){ return m_optix_mode > 0 ; }
@@ -36,6 +39,7 @@ class Interactor {
        
 
   private:
+       Composition* m_composition ; 
        Camera*      m_camera ; 
        View*        m_view ; 
        Trackball*   m_trackball ; 

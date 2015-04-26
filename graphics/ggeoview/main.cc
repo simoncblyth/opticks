@@ -3,7 +3,6 @@
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Composition.hh"
-#include "CompositionCfg.hh"
 #include "Frame.hh"
 #include "FrameCfg.hh"
 #include "Geometry.hh"
@@ -15,14 +14,8 @@
 
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
-#include "Camera.hh"
-#include "CameraCfg.hh"
-#include "View.hh"
-#include "ViewCfg.hh"
-#include "Trackball.hh"
-#include "TrackballCfg.hh"
-#include "Clipper.hh"
-#include "ClipperCfg.hh"
+
+
 #include "Texture.hh"
 
 // numpyserver-
@@ -81,7 +74,6 @@ int main(int argc, char** argv)
     evt.setGenstepData(NPY::load("cerenkov", "1")); 
 
 
-
     Scene scene ;
     scene.setNumpyEvt(&evt);
     scene.setComposition(&composition);    
@@ -90,12 +82,9 @@ int main(int argc, char** argv)
     cfg.add(new FrameCfg<Frame>("frame", &frame, false));
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
     cfg.add(new RendererCfg<Renderer>("renderer", scene.getGeometryRenderer(), true));
-    cfg.add(new CompositionCfg<Composition>("composition", &composition, true));
-    cfg.add(new CameraCfg<Camera>("camera", composition.getCamera(), true));
-    cfg.add(new ViewCfg<View>(    "view",   composition.getView(),   true));
-    cfg.add(new TrackballCfg<Trackball>( "trackball",   composition.getTrackball(),   true));
-    cfg.add(new ClipperCfg<Clipper>( "clipper",   composition.getClipper(),   true));
     cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
+    composition.addConfig(&cfg); 
+
 
     cfg.commandline(argc, argv);
     delegate.liveConnect(&cfg);     
@@ -106,8 +95,7 @@ int main(int argc, char** argv)
 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
-    interactor.setup(composition.getCamera(), composition.getView(), composition.getTrackball(), composition.getClipper());  
-
+    interactor.setComposition(&composition);
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 

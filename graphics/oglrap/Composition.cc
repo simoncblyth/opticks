@@ -6,6 +6,12 @@
 #include "View.hh"
 #include "Clipper.hh"
 
+#include "CameraCfg.hh"
+#include "TrackballCfg.hh"
+#include "ViewCfg.hh"
+#include "ClipperCfg.hh"
+
+#include "CompositionCfg.hh"
 
 // npy-
 #include "GLMPrint.hpp"
@@ -41,6 +47,21 @@ Composition::Composition()
 Composition::~Composition()
 {
 }
+
+
+
+void Composition::addConfig(Cfg* cfg)
+{
+    // hmm problematic with bookmarks that swap out Camera, View, ...
+    cfg->add(new CompositionCfg<Composition>("composition", this,          true));
+    cfg->add(new CameraCfg<Camera>(          "camera",      getCamera(),   true));
+    cfg->add(new ViewCfg<View>(              "view",        getView(),     true));
+    cfg->add(new TrackballCfg<Trackball>(    "trackball",   getTrackball(),true));
+    cfg->add(new ClipperCfg<Clipper>(        "clipper",     getClipper(),  true));
+}
+
+
+
 
 
 void Composition::configureI(const char* name, std::vector<int> values )

@@ -8,8 +8,11 @@ class Camera ;
 class View ;
 class Trackball ; 
 class Clipper ; 
+class Cfg ;
 
 class Composition {
+
+      friend class Interactor ;   
   public:
  
       Composition();
@@ -18,6 +21,7 @@ class Composition {
   public: 
       void setModelToWorld(float* m2w, bool debug=false); // effectively points at what you want to look at 
       void setSize(unsigned int width, unsigned int height);
+      void addConfig(Cfg* cfg);
 
   public: 
       void update();
@@ -28,8 +32,8 @@ class Composition {
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
 
-  public: 
-      // getters of residents 
+  private: 
+      // private getters of residents : usable by friend class
       Camera* getCamera(); 
       Trackball* getTrackball(); 
       View* getView(); 
