@@ -324,12 +324,12 @@ ggeoview-export()
    export GGEOVIEW_GEOKEY="DAE_NAME_DYB"
 
    local q
-   #q="range:3153:12221"
+   q="range:3153:12221"
    #q="range:3153:4814"     #  transition to 2 AD happens at 4814 
    #q="range:3153:4813"     #  this range constitutes full single AD
    #q="range:3161:4813"      #  push up the start to get rid of plain outer volumes, cutaway view: udp.py --eye 1.5,0,1.5 --look 0,0,0 --near 5000
    #q="index:5000"
-   q="index:3153,depth:25"
+   #q="index:3153,depth:25"
    #q="range:5000:8000"
 
    export GGEOVIEW_QUERY=$q

@@ -11,6 +11,7 @@
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 
+#include "Bookmarks.hh"
 #include "Composition.hh"
 #include "Geometry.hh"
 #include "Rdr.hh"
@@ -66,12 +67,14 @@ int main(int argc, char** argv)
 
     Frame frame ;
     Composition composition ;   
+    Bookmarks bookmarks ; 
     Interactor interactor ; 
     numpydelegate delegate ; 
 
     composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
     interactor.setComposition(&composition);
+    interactor.setBookmarks(&bookmarks);
 
     NumpyEvt evt ;
     evt.setGenstepData(NPY::load("cerenkov", "1")); 
@@ -80,12 +83,16 @@ int main(int argc, char** argv)
     scene.setNumpyEvt(&evt);
     scene.setComposition(&composition);    
 
-    Cfg cfg("umbrella", false) ;             // collect other Cfg objects
-    cfg.add(new FrameCfg<Frame>("frame", &frame, false));
+    bookmarks.setScene(&scene);
+    bookmarks.setComposition(&composition);
+
+    Cfg cfg("umbrella", false) ; // collect other Cfg objects
+    cfg.add(new FrameCfg<Frame>(                "frame",         &frame,    false));
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
-    cfg.add(new SceneCfg<Scene>( "scene",  &scene,   true));
-    cfg.add(new RendererCfg<Renderer>("renderer", scene.getGeometryRenderer(), true));
-    cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
+
+    cfg.add(new SceneCfg<Scene>(           "scene",       &scene,                      true));
+    cfg.add(new RendererCfg<Renderer>(     "renderer",    scene.getGeometryRenderer(), true));
+    cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,                 true));
     composition.addConfig(&cfg); 
 
     cfg.commandline(argc, argv);
@@ -99,6 +106,8 @@ int main(int argc, char** argv)
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
+
+    bookmarks.load("/tmp/bookmarks.ini"); // hmm need to tie bookmarks with the geomety 
     scene.loadGeometry("GGEOVIEW_") ; 
     scene.loadEvt();
 
@@ -136,7 +145,7 @@ int main(int argc, char** argv)
         else
         {
             scene.render();
-       }
+        }
 
         glfwSwapBuffers(window);
     }

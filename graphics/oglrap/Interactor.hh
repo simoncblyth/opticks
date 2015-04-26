@@ -4,6 +4,7 @@
 
 
 class Composition ;
+class Bookmarks ; 
 
 class Camera ; 
 class View ; 
@@ -20,6 +21,7 @@ class Interactor {
 
        Interactor(); 
        void setComposition(Composition* composition);
+       void setBookmarks(Bookmarks* bookmarks);
 
   public:
        bool isOptiXMode(){ return m_optix_mode > 0 ; }
@@ -29,6 +31,7 @@ class Interactor {
 
   public:
        void cursor_drag( float x, float y, float dx, float dy );
+       void number_key_pressed(unsigned int number);
        void key_pressed(unsigned int key);
        void key_released(unsigned int key);
        void Print(const char* msg);
@@ -40,6 +43,7 @@ class Interactor {
 
   private:
        Composition* m_composition ; 
+       Bookmarks*   m_bookmarks ; 
        Camera*      m_camera ; 
        View*        m_view ; 
        Trackball*   m_trackball ; 

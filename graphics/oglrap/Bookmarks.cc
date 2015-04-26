@@ -1,8 +1,15 @@
 #include "Bookmarks.hh"
+#include "Composition.hh"
 #include "Camera.hh"
 #include "View.hh"
+#include "Scene.hh"
 
-#include <boost/property_tree/ptree.hpp>
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+#include "string.h"
+
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/foreach.hpp>
 #include <string>
@@ -15,46 +22,69 @@ namespace pt = boost::property_tree;
 void Bookmarks::load(const char* path)
 {
    // transitionally : using the g4daeview.py bookmarks ini format 
+    pt::read_ini(path, m_tree);
+}
 
-    pt::ptree tree;
-    pt::read_ini(path, tree);
 
-    BOOST_FOREACH( boost::property_tree::ptree::value_type const& mk, tree.get_child("") ) 
+void Bookmarks::setComposition(Composition* composition)
+{
+    m_composition = composition ; 
+    m_camera = composition->getCamera();
+    m_view   = composition->getView();
+}
+
+
+void Bookmarks::apply(unsigned int number)
+{
+    char name[32];
+    snprintf(name, 32, "bookmark_%d", number );
+    apply(name);
+}
+
+
+void Bookmarks::apply(const char* name)
+{
+    BOOST_FOREACH( boost::property_tree::ptree::value_type const& mk, m_tree.get_child("") ) 
     {   
         std::string mkk = mk.first;
-        std::cout << mkk << std::endl ;
+        if(strcmp(name, mkk.c_str()) != 0) continue ; 
 
-        View* view = new View();
-        Camera* camera = new Camera();
+        LOG(info) << "Bookmarks::apply " << name ; 
 
         BOOST_FOREACH( boost::property_tree::ptree::value_type const& it, mk.second.get_child("") ) 
         {   
             std::string itk = it.first;
             std::string itv = it.second.data();
+            const char* key = itk.c_str();
+            const char* val = itv.c_str();
 
-            if(View::accepts(itk.c_str()))
+            if(View::accepts(key))
             {
-                view->configure(itk.c_str(), itv.c_str());
+                m_view->configure(key, val);
             }
-            else if(Camera::accepts(itk.c_str()))
+            else if(Camera::accepts(key))
             {
-                camera->configure(itk.c_str(), itv.c_str());
+                m_camera->configure(key, val);
             } 
-            std::cout << "   " << itk << " : " << itv << std::endl ;
+            else if(Scene::accepts(key))
+            {
+                m_scene->configure(key, val);
+            }
+            else
+            {
+                LOG(warning) << "Bookmarks::apply ignoring  " 
+                             << " name " << name 
+                             << " key " << key  
+                             << " val " << val  ; 
+
+            }
         }   
-
-        m_views[mkk] = view ; 
-        m_cameras[mkk] = camera ; 
-
-        view->Summary(mkk.c_str());
-        camera->Summary(mkk.c_str());
     }   
 }
 
 void Bookmarks::save(const char* path)
 {
-    pt::ptree tree;
-    pt::write_ini(path, tree);
+    pt::write_ini(path, m_tree);
 }
 
 

@@ -9,12 +9,37 @@
 #include "NumpyEvt.hpp"
 
 
-
+#include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
 const char* Scene::TARGET = "target" ; 
+
+bool Scene::accepts(const char* name)
+{
+    return 
+          strcmp(name, TARGET) == 0  ;
+}  
+
+void Scene::configure(const char* name, const char* value_)
+{
+    int value = boost::lexical_cast<int>(value_); 
+    configure(name, value);
+}
+
+void Scene::configure(const char* name, int value)
+{
+    if(strcmp(name, TARGET) == 0)
+    {
+        setTarget(value);   
+    }
+    else
+    {
+        LOG(warning)<<"Scene::configure ignoring " << name << " " << value ;
+    }
+}
+
 
 void Scene::init()
 {

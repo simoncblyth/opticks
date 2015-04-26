@@ -30,6 +30,11 @@ class Scene {
         }
 
    public:
+        static bool accepts(const char* name);
+        void configure(const char* name, const char* value_);
+        void configure(const char* name, int value);
+
+   public:
         void configureI(const char* name, std::vector<int> values);
         void setComposition(Composition* composition);
         void setNumpyEvt(NumpyEvt* evt);

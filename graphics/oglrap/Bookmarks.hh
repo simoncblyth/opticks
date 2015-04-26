@@ -4,10 +4,12 @@
 #include <string>
 #include <map>
 
+#include <boost/property_tree/ptree.hpp>
 
 class Composition ;
-class View ; 
-class Camera ; 
+class Camera ;
+class View ;
+class Scene ;
 
 
 // unclear how best to arrange 
@@ -18,29 +20,40 @@ class Camera ;
 class Bookmarks {
 public:
 
-   Bookmarks() 
+   Bookmarks()  
+       :
+       m_tree(),
+       m_composition(NULL),
+       m_scene(NULL),
+       m_camera(NULL),
+       m_view(NULL)
    {
    }
 
    void setComposition(Composition* composition);
+   void setScene(Scene* scene);
 
-   //void jump_to(const char* name);
-
+   void apply(unsigned int number);
+   void apply(const char* name);
    void load(const char* path);
    void save(const char* path);
 
 private:
-   Composition* m_composition ;
+   boost::property_tree::ptree   m_tree;
+   Composition*                  m_composition ;
+   Scene*                        m_scene ;
+   Camera*                       m_camera ;
+   View*                         m_view ;
 
-   std::map<std::string, View*>   m_views ; 
-   std::map<std::string, Camera*> m_cameras ; 
 
 };
 
 
-inline void Bookmarks::setComposition(Composition* composition)
+
+inline void Bookmarks::setScene(Scene* scene)
 {
-    m_composition = composition ; 
+    m_scene = scene ; 
 }
+
 
 

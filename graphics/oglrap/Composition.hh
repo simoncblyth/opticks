@@ -17,6 +17,7 @@ class Cfg ;
 class Composition {
 
       friend class Interactor ;   
+      friend class Bookmarks ;   
   public:
  
       Composition();

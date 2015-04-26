@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
 
 #include "Composition.hh"
+#include "Bookmarks.hh"
+
 #include "Camera.hh"
 #include "View.hh"
 #include "Trackball.hh"
@@ -21,6 +23,7 @@ const char* Interactor::OPTIXMODE  = "optixmode" ;
 Interactor::Interactor() 
    :
    m_composition(NULL),
+   m_bookmarks(NULL),
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
@@ -52,6 +55,13 @@ void Interactor::configureI(const char* name, std::vector<int> values)
     }
 }
 
+
+
+
+void Interactor::setBookmarks(Bookmarks* bookmarks)
+{
+    m_bookmarks = bookmarks ;
+}
 
 void Interactor::setComposition(Composition* composition)
 {
@@ -98,6 +108,11 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy )
     }
 }
 
+void Interactor::number_key_pressed(unsigned int number)
+{
+    m_bookmarks->apply(number);
+}
+
 void Interactor::key_pressed(unsigned int key)
 {
     switch (key)
@@ -135,8 +150,18 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_C:
             m_clipper->next(); 
             break;
-  
-
+        case GLFW_KEY_0:
+        case GLFW_KEY_1:
+        case GLFW_KEY_2:
+        case GLFW_KEY_3:
+        case GLFW_KEY_4:
+        case GLFW_KEY_5:
+        case GLFW_KEY_6:
+        case GLFW_KEY_7:
+        case GLFW_KEY_8:
+        case GLFW_KEY_9:
+            number_key_pressed(key - GLFW_KEY_0);
+            break; 
     } 
     Print("Interactor::key_pressed");
 }
