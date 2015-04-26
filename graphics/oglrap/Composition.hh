@@ -4,6 +4,10 @@
 #include <vector>
 #include <glm/glm.hpp>  
 
+// ggeo-
+#include "GVector.hh"
+
+
 class Camera ;
 class View ;
 class Trackball ; 
@@ -19,7 +23,9 @@ class Composition {
       virtual ~Composition();
 
   public: 
-      void setModelToWorld(float* m2w, bool debug=false); // effectively points at what you want to look at 
+      //void setModelToWorld(float* m2w, bool debug=false); // effectively points at what you want to look at 
+      void setCenterExtent(gfloat4 ce); // effectively points at what you want to look at 
+
       void setSize(unsigned int width, unsigned int height);
       void addConfig(Cfg* cfg);
 
@@ -39,6 +45,7 @@ class Composition {
       View* getView(); 
       Clipper* getClipper(); 
 
+      
       void setCamera(Camera* camera);
       void setView(View* view);
 
@@ -58,6 +65,7 @@ class Composition {
   public:
       // getters of the derived properties : need to call update first to make them current
       glm::vec4& getGaze();
+      glm::vec4& getCenterExtent();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
       float*     getWorld2EyePtr();  // ModelView  including trackballing
@@ -82,6 +90,7 @@ class Composition {
       // inputs 
       glm::mat4 m_model_to_world ; 
       float     m_extent ; 
+      glm::vec4 m_center_extent ; 
 
   private:
       // residents

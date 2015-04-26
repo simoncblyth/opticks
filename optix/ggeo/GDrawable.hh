@@ -18,7 +18,7 @@ class GDrawable {
       virtual GBuffer* getModelToWorldBuffer() = 0;
       virtual std::vector<unsigned int>& getDistinctSubstances() = 0;
 
-      virtual float* getModelToWorldPtr() = 0;
+      virtual float* getModelToWorldPtr(unsigned int index) = 0;
       virtual float    getExtent() = 0;
 
 };      

@@ -148,3 +148,23 @@ void GMergedMesh::dumpSolids(const char* msg)
         printf("  %u :    center %10.3f %10.3f %10.3f   extent %10.3f \n", index, ce.x, ce.y, ce.z, ce.w ); 
     }
 }
+
+
+float* GMergedMesh::getModelToWorldPtr(unsigned int index)
+{
+    if(index == 0)
+    {
+        return GMesh::getModelToWorldPtr(0);
+    }
+    else
+    {
+        return NULL ; 
+    }
+}
+
+gfloat4 GMergedMesh::getCenterExtent(unsigned int index)
+{
+    return m_center_extent[index] ;
+}
+
+

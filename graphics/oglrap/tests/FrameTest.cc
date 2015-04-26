@@ -27,7 +27,8 @@ int main(int argc, char** argv)
 
     frame.gl_init_window("FrameTest", texture.getWidth(), texture.getHeight());
     composition.setSize(frame.getWidth(), frame.getHeight());
-    composition.setModelToWorld(texture.getModelToWorldPtr());   // point at the geometry 
+    //composition.setModelToWorld(texture.getModelToWorldPtr(0));   // point at the geometry 
+    composition.setCenterExtent(texture.getCenterExtent(0));   // point at the geometry 
     composition.update();
     composition.Details("Composition::details");
 

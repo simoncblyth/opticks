@@ -39,6 +39,22 @@ void Scene::loadGeometry(const char* prefix)
     setTarget(0);
 }
 
+
+GMergedMesh* Scene::getMergedMesh()
+{
+    return m_geometry_loader ? m_geometry_loader->getMergedMesh() : NULL ;
+}
+
+GGeo* Scene::getGGeo()
+{
+    return m_geometry_loader ? m_geometry_loader->getGGeo() : NULL ;
+}
+
+
+
+
+
+
 void Scene::loadEvt()
 {
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
@@ -50,7 +66,7 @@ void Scene::setTarget(unsigned int index)
     if(index == 0)
     {
         //float* target = m_evt->getGenstepAttr()["vpos"]->getModelToWorldPtr();  
-        float* target = m_geometry->getModelToWorldPtr();
+        float* target = m_geometry->getModelToWorldPtr(0);
         m_target = target ; 
     }
     else

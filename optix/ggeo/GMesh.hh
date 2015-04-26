@@ -44,7 +44,7 @@ class GMesh : public GDrawable {
       gfloat3* getHigh();
   public:
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
-      gfloat4* getCenterExtent();
+      gfloat4  getCenterExtent(unsigned int index);
       gfloat3* getDimensions();
       GMatrix<float>* getModelToWorld();
 
@@ -69,7 +69,7 @@ class GMesh : public GDrawable {
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
       float  getExtent();
-      float* getModelToWorldPtr();
+      float* getModelToWorldPtr(unsigned int index);
 
   ///////// expedients /////////////////////////////////////
   public:
@@ -135,7 +135,7 @@ class GMesh : public GDrawable {
       gfloat3*        m_center ;
       float           m_extent ; 
       gfloat4*        m_center_extent ;
-      GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "abstract" shape GMesh
+      GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -143,7 +143,7 @@ class GMesh : public GDrawable {
       GBuffer* m_colors_buffer ;
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
-      GBuffer* m_model_to_world_buffer ;
+      //GBuffer* m_model_to_world_buffer ;  not needed a GMatrix<float> isa GBuffer
 
 
 };
@@ -236,9 +236,9 @@ inline guint3*  GMesh::getFaces()
     return m_faces ;
 }
 
-inline gfloat4* GMesh::getCenterExtent()
+inline gfloat4 GMesh::getCenterExtent(unsigned int index)
 {
-     return m_center_extent ;  
+     return m_center_extent[0] ;   // index is used in subclass
 }
 inline void GMesh::setCenterExtent(gfloat4* center_extent)  // used from GMergedMesh
 {
@@ -255,14 +255,21 @@ inline float GMesh::getExtent()
 }
 
 
-inline float* GMesh::getModelToWorldPtr()
+
+
+inline GBuffer*  GMesh::getModelToWorldBuffer()
+{
+    return (GBuffer*)m_model_to_world ;
+}
+
+inline float* GMesh::getModelToWorldPtr(unsigned int index)
 {
      return (float*)getModelToWorldBuffer()->getPointer() ; 
 }
 
 
 
-inline unsigned int* GMesh::getNodes()   // CAUTION USE FROM SUBCLASS ONLY
+inline unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
 {
     return m_nodes ;
 }
@@ -310,12 +317,6 @@ inline GBuffer*  GMesh::getSubstancesBuffer()
 
 
 
-
-
-inline GBuffer*  GMesh::getModelToWorldBuffer()
-{
-    return (GBuffer*)m_model_to_world ;
-}
 
 
 

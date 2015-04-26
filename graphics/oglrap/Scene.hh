@@ -8,6 +8,8 @@ class Composition ;
 class NumpyEvt ; 
 class Geometry ; 
 class GDrawable ;
+class GMergedMesh ;
+class GGeo ;
 
 class Scene {
    public:
@@ -26,7 +28,6 @@ class Scene {
 
    public:
         void setComposition(Composition* composition);
-        void setTarget(unsigned int index=0);
         void setNumpyEvt(NumpyEvt* evt);
 
    public:
@@ -34,8 +35,12 @@ class Scene {
         void loadEvt();
         void render();
  
+
    public:
-        float*        getTarget();
+        GMergedMesh*  getMergedMesh();
+        GGeo*         getGGeo();
+
+   public:
         Geometry*     getGeometryLoader();
         Renderer*     getGeometryRenderer();
         Rdr*          getGenstepRenderer();
@@ -45,6 +50,8 @@ class Scene {
         NumpyEvt*     getNumpyEvt();
 
    private:
+        void setTarget(unsigned int index=0); // better in Composition
+        float*        getTarget(); // better in Composition
         void init();
 
    private:
@@ -58,6 +65,8 @@ class Scene {
         float*       m_target ;
 
 };
+
+
 
 
 inline Geometry* Scene::getGeometryLoader()

@@ -2,9 +2,9 @@
 #include <stdio.h>
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
-#include "Composition.hh"
 #include "Frame.hh"
 #include "FrameCfg.hh"
+#include "Composition.hh"
 #include "Geometry.hh"
 
 #include "Scene.hh"
@@ -14,8 +14,6 @@
 
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
-
-
 #include "Texture.hh"
 
 // numpyserver-
@@ -41,6 +39,11 @@
 #include "RayTraceConfig.hh"
 
 
+// ggeo-
+#include "GMergedMesh.hh"
+
+
+
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 
@@ -56,8 +59,6 @@ void logging_init()
     );
 }
 
-
-
 int main(int argc, char** argv)
 {
     logging_init();
@@ -65,14 +66,15 @@ int main(int argc, char** argv)
 
     Frame frame ;
     Composition composition ;   
-    composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
-
     Interactor interactor ; 
     numpydelegate delegate ; 
 
+    composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
+    frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
+    interactor.setComposition(&composition);
+
     NumpyEvt evt ;
     evt.setGenstepData(NPY::load("cerenkov", "1")); 
-
 
     Scene scene ;
     scene.setNumpyEvt(&evt);
@@ -85,22 +87,23 @@ int main(int argc, char** argv)
     cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,   true));
     composition.addConfig(&cfg); 
 
-
     cfg.commandline(argc, argv);
-    delegate.liveConnect(&cfg);     
-    delegate.setNumpyEvt(&evt);
+    delegate.liveConnect(&cfg); // hookup live config via UDP messages
+    delegate.setNumpyEvt(&evt); // allows delegate to update evt when NPY messages arrive
 
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
-    frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
-    interactor.setComposition(&composition);
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
     scene.loadGeometry("GGEOVIEW_") ; 
-    composition.setModelToWorld(scene.getTarget());
+
+    GMergedMesh* mm = scene.getMergedMesh();
+    gfloat4 ce = mm->getCenterExtent(0); 
+    composition.setCenterExtent(ce);
+    //composition.setModelToWorld(scene.getTarget());
     scene.loadEvt();
 
     //
@@ -111,9 +114,10 @@ int main(int argc, char** argv)
     //     but for OpenGL interop its expedient for now
     //
     OptiXEngine engine("GGeoView") ;       
-    Geometry* geoloader = scene.getGeometryLoader();     // needing both GGeo and GMergedMesh is transitional
-    engine.setGGeo(geoloader->getGGeo());            
-    engine.setMergedMesh(geoloader->getMergedMesh());
+
+    engine.setMergedMesh(scene.getMergedMesh()); // aiming for all geo info to come from GMergedMesh
+    engine.setGGeo(scene.getGGeo());             // need for GGeo too is transitional, until sort out material/surface property buffers
+
     engine.setComposition(&composition);                 
     engine.setEnabled(interactor.getOptiXMode()>-1);
     engine.init();                                        // creates OptiX context, when enabled

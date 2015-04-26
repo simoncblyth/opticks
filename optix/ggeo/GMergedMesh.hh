@@ -17,6 +17,11 @@ public:
     virtual ~GMergedMesh(); 
     void traverse( GNode* node, unsigned int depth, unsigned int pass);
 
+
+    float* getModelToWorldPtr(unsigned int index);
+    gfloat4 getCenterExtent(unsigned int index);
+
+
     unsigned int getNumSolids();
     unsigned int getNumSolidsSelected();
     void dumpSolids(const char* msg="GMergedMesh::dumpSolids");
