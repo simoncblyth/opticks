@@ -210,16 +210,15 @@ under the mouse::
      52         lookup.z,
      53         lookup.w);
      54   }     
-     55 } 
+     55 }
 
 Get the expected output, BUT on splitting the rtPrintf 
-into two calls get **Unknown error**.  
+into two calls get **Unknown error**.::
+
     OptiX Error: Unknown error (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Assertion failed: "Traits::getNext(m_cur) != 0", [7143516]) 
 
-Unfortunately the only way to discover the source of 
-the problem is by "binary search" trial and error::
-
-Moral:
+Unfortunately the only way to discover the source of
+the problem is by "binary search" trial and error. Moral:
 
 * never make largescale changes to optix programs without testing, 
   always test after making small focussed changes 
