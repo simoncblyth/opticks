@@ -22,7 +22,17 @@ namespace pt = boost::property_tree;
 void Bookmarks::load(const char* path)
 {
    // transitionally : using the g4daeview.py bookmarks ini format 
-    pt::read_ini(path, m_tree);
+
+   try
+   {
+        pt::read_ini(path, m_tree);
+   }
+   catch(const pt::ptree_error &e)
+   {
+        LOG(warning) << "Bookmarks::load ERROR " << e.what() ;
+   }
+
+
 }
 
 

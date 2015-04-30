@@ -12,18 +12,6 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
-TODO
------
-
-genstep vis
-~~~~~~~~~~~~
-
-g4daeview used ancient OpenGL geometry shader ext
-to amplify points into lines using positions and directions 
-
-Shaders in ~/env/geant4/geometry/collada/g4daeview/daephotonsshader.py
-
-
 
 Usage tips
 -----------
@@ -43,7 +31,7 @@ Check available GPU memory with **cu** if less than ~512MB OptiX will
 crash at startup::
 
     delta:optixrap blyth$ t cu
-    cu is aliased to `cuda_info.sh'
+    cu is aliased to cuda_info.sh
 
 
 Clipping Planes and recording frames
@@ -69,6 +57,11 @@ conversion.
 
 The same thinking applies to recording viewpoint bookmarks.
 
+
+New way of interpolated photon position animation ?
+----------------------------------------------------
+
+See oglrap- for untested idea using geometry shaders alone.
 
 
 Old way of doing interpolated photon position animation
@@ -163,12 +156,6 @@ Package Dependencies Tree of GGeoView
        // which could eliminate geometry dependencies (AssimpWrap) 
        // from the above packages, instead have a geometry 
        // baking to file initial step
-
-
-
- 
-
-
 
 
 

@@ -127,7 +127,7 @@ int main(int argc, char** argv)
     engine.init();  // creates OptiX context, when enabled
 
     engine.generate();
-    evt.dumpPhotonData(); 
+    //evt.dumpPhotonData();    //TODO: download modified VBO back into evt 
 
  
     GLFWwindow* window = frame.getWindow();
