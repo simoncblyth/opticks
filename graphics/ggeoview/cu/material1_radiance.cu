@@ -15,13 +15,32 @@ rtDeclareVariable(unsigned int,  touch_mode, , );
 
 RT_PROGRAM void closest_hit_radiance()
 {
-  const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
+     const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
+  // const float3 n = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, geometricNormal)) ; 
+  // const float3 n = normalize(geometricNormal) ; 
+
+  // currently lambertian from all the above three looks the same
+  // because currently have no transforms in play and are 
+  // doing everything in world frame  
 
   const float cos_theta = dot(n,ray.direction);
 
-    prd.result = n*0.5f + 0.5f;                         // normal shader
-  //prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
-  //prd.result = contrast_color ;   // according to substance index
+   //
+   // normal shader colors dont match what getting with OpenGL normal shader ???
+   //  BGRA format in the mix but swapping x and z doesnt cause a match
+   //  CCW triangle winding maybe
+   //
+   // prd.result = make_float3(-n.z*0.5f + 0.5f,-n.y*0.5f + 0.5f, -n.x*0.5f + 0.5f );                         // normal shader
+   // prd.result = make_float3(n.x*0.5f + 0.5f, n.y*0.5f + 0.5f, n.z*0.5f + 0.5f );                         // normal shader
+   //
+   //prd.result = make_float3( 1.f, 0.f, 0.f ); //red
+   //prd.result = make_float3( 0.f, 1.f, 0.f ); //green
+   //prd.result = make_float3( 0.f, 0.f, 1.f ); //blue
+   //prd.result = make_float3(0.5f);            
+
+    prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+
+  //prd.result = contrast_color ;   // according to substance index, currently only one color
   //prd.result = make_float3(0.f);
 
   prd.node = nodeIndex ;

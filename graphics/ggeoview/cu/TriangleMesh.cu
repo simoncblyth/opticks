@@ -12,6 +12,11 @@ rtBuffer<float3> vertexBuffer;
 rtBuffer<int3> indexBuffer; 
 rtBuffer<unsigned int> nodeBuffer; 
 
+
+// attribute variables must be set 
+// inbetween rtPotentialIntersection and rtReportIntersection
+// they provide communication from intersection program to closest hit program
+ 
 rtDeclareVariable(unsigned int, nodeIndex, attribute node_index,);
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
 
@@ -21,11 +26,12 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 RT_PROGRAM void mesh_intersect(int primIdx)
 {
     int3 index = indexBuffer[primIdx];
-    nodeIndex = nodeBuffer[primIdx];
  
+    // flipped vertex order in unsuccessful attempt to 
+    //  get normal shader colors to match OpenGL
     float3 p0 = vertexBuffer[index.x];
-    float3 p1 = vertexBuffer[index.y];
-    float3 p2 = vertexBuffer[index.z];
+    float3 p1 = vertexBuffer[index.z];  
+    float3 p2 = vertexBuffer[index.y];
 
     float3 n;
     float  t, beta, gamma;
@@ -34,6 +40,7 @@ RT_PROGRAM void mesh_intersect(int primIdx)
         if(rtPotentialIntersection( t ))
         {
             geometricNormal = normalize(n);
+            nodeIndex = nodeBuffer[primIdx]; // attributes should be set between rtPotential and rtReport
             rtReportIntersection(0);   
             //
             //

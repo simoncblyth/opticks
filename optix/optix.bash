@@ -238,6 +238,40 @@ Transparency/blending
 * http://casual-effects.blogspot.tw/2014/03/weighted-blended-order-independent.html
 
 
+
+OptiX rtDeclareVariable attribute variables
+---------------------------------------------
+
+
+From optix-pdf section *4.1.4 Attribute Variables* p35
+
+Attribute variables provide a mechanism for communicating data between the
+intersection program and the shading programs (e.g., surface normal, texture
+coordinates). Attribute variables may only be written in an intersection
+program between calls to rtPotentialIntersection and rtReportIntersection.
+
+
+Do I need multiple OptiX materials ?
+--------------------------------------
+
+Aiming for different materials to just corresponds to 
+different substance indices used to lookup into a single texture, 
+as such no need for separate OptiX materials ? So just need::
+
+    rtReportIntersection(0)
+
+Only Bialkali needs some different behaviour to do PMT id lookups, 
+so that could benefit from being a different material.
+
+In mesh_intersect can communicate the primIdx via attribute 
+in order to do the substance lookup in closestHit 
+Remember mesh_intersect gets called the most, so avoid
+doing anything in there that can be done elsewhere.
+
+
+
+
+
 OptiX and atomics
 -------------------
 
@@ -1308,15 +1342,21 @@ optix-samples-src-dir(){    echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
 optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }
 optix-samples-scd(){ cd $(optix-samples-src-dir) ; }
 optix-samples-cd(){ cd $(optix-samples-install-dir) ; }
+optix-samples-find(){ find $(optix-samples-src-dir) -name '*.cu' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
+optix-samples-hfind(){ find $(optix-samples-src-dir) -name '*.h' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
 
 optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-samples-install-dir); }
 optix-scd(){ cd $(optix-sdir); }
 optix-icd(){ cd $(optix-idir); }
 
+
+
 optix-find(){ find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
+optix-ifind(){ find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
 
 optix-doc(){ cd $(optix-fold)/OptiX/doc ; }
+optix-pdf(){ open $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_3.7.0.pdf ; }
 
 
 
