@@ -12,12 +12,16 @@ rtBuffer<float3> vertexBuffer;
 rtBuffer<int3> indexBuffer; 
 rtBuffer<unsigned int> nodeBuffer; 
 
+// GSubstance indices 
+rtBuffer<unsigned int> substanceBuffer; 
+
 
 // attribute variables must be set 
 // inbetween rtPotentialIntersection and rtReportIntersection
 // they provide communication from intersection program to closest hit program
  
 rtDeclareVariable(unsigned int, nodeIndex, attribute node_index,);
+rtDeclareVariable(unsigned int, substanceIndex, attribute substance_index,);
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
 
 
@@ -27,11 +31,11 @@ RT_PROGRAM void mesh_intersect(int primIdx)
 {
     int3 index = indexBuffer[primIdx];
  
-    // flipped vertex order in unsuccessful attempt to 
+    //  tried flipping vertex order in unsuccessful attempt to 
     //  get normal shader colors to match OpenGL
     float3 p0 = vertexBuffer[index.x];
-    float3 p1 = vertexBuffer[index.z];  
-    float3 p2 = vertexBuffer[index.y];
+    float3 p1 = vertexBuffer[index.y];  
+    float3 p2 = vertexBuffer[index.z];
 
     float3 n;
     float  t, beta, gamma;
@@ -39,8 +43,11 @@ RT_PROGRAM void mesh_intersect(int primIdx)
     {
         if(rtPotentialIntersection( t ))
         {
+            // attributes should be set between rtPotential and rtReport
             geometricNormal = normalize(n);
-            nodeIndex = nodeBuffer[primIdx]; // attributes should be set between rtPotential and rtReport
+            nodeIndex = nodeBuffer[primIdx];
+            substanceIndex = substanceBuffer[primIdx];
+
             rtReportIntersection(0);   
             //
             //

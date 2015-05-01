@@ -34,6 +34,17 @@ class GSubstance {
       char* digest();
 
   public:
+      // 
+      // NB indices are assigned by GSubstanceLib::get based on distinct property values
+      //    this somewhat complicated approach is necessary as GSubstance incorporates info 
+      //    from inner/outer material/surface so GSubstance 
+      //    does not map to simple notions of identity it being a boundary between 
+      //    materials with specific surfaces(or maybe no associated surface) 
+      //
+      //    Where is the substance indice affixed to the triangles of the geometry ?
+      //         GSolid::getSubstanceIndices GSolid::setSubstance GNode::setSubstanceIndices
+      //    repeats the indice for every triangle 
+      //
       unsigned int getIndex();
       void setIndex(unsigned int index);
 

@@ -68,6 +68,7 @@ class GMesh : public GDrawable {
       GBuffer* getTexcoordsBuffer();
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
+      GBuffer* getWavelengthBuffer();
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
 
@@ -87,6 +88,7 @@ class GMesh : public GDrawable {
   protected:
       unsigned int* m_nodes ; 
       unsigned int* m_substances ; 
+      GBuffer* m_wavelength_buffer ;
 
   private:
       GBuffer* m_nodes_buffer ;
@@ -105,6 +107,7 @@ class GMesh : public GDrawable {
       void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
       void setCenterExtent(gfloat4* center_extent);
+      void setWavelengthBuffer(GBuffer* wavelength_buffer);
 
   public:
       void setNumColors(unsigned int num_colors);
@@ -143,7 +146,6 @@ class GMesh : public GDrawable {
       GBuffer* m_colors_buffer ;
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
-      //GBuffer* m_model_to_world_buffer ;  not needed a GMatrix<float> isa GBuffer
 
 
 };
@@ -256,7 +258,6 @@ inline float GMesh::getExtent()
 
 
 
-
 inline GBuffer*  GMesh::getModelToWorldBuffer()
 {
     return (GBuffer*)m_model_to_world ;
@@ -277,6 +278,16 @@ inline unsigned int* GMesh::getSubstances()
 {
     return m_substances ;
 }
+inline GBuffer*  GMesh::getWavelengthBuffer()
+{
+    return m_wavelength_buffer ;
+}
+inline void  GMesh::setWavelengthBuffer(GBuffer* wavelength_buffer)
+{
+    m_wavelength_buffer = wavelength_buffer ;
+}
+
+
 
 
 

@@ -10,12 +10,10 @@
 #include "GSubstanceLib.hh"
 #include "GSubstance.hh"
 #include "GPropertyMap.hh"
-#include "GMergedMesh.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
-
 
 
 //  analog to AssimpOptiXGeometry based on intermediary GGeo 
@@ -27,16 +25,7 @@ GGeoOptiXGeometry::~GGeoOptiXGeometry()
 GGeoOptiXGeometry::GGeoOptiXGeometry(GGeo* ggeo)
            : 
            OptiXGeometry(),
-           m_ggeo(ggeo),
-           m_mergedmesh(NULL)
-{
-}
-
-GGeoOptiXGeometry::GGeoOptiXGeometry(GGeo* ggeo, GMergedMesh* mergedmesh)
-           : 
-           OptiXGeometry(),
-           m_ggeo(ggeo),
-           m_mergedmesh(mergedmesh)
+           m_ggeo(ggeo)
 {
 }
 
@@ -44,16 +33,7 @@ GGeoOptiXGeometry::GGeoOptiXGeometry(GGeo* ggeo, GMergedMesh* mergedmesh)
 void GGeoOptiXGeometry::convert()
 {
     convertSubstances();
-
-    if( m_mergedmesh == NULL )
-    {
-        convertStructure();
-    }
-    else
-    {
-        optix::GeometryInstance gi = convertDrawableInstance(m_mergedmesh);
-        m_gis.push_back(gi);
-    }
+    convertStructure();
 }
 
 
@@ -70,21 +50,6 @@ void GGeoOptiXGeometry::convertSubstances()
     }
     assert(m_materials.size() == nsub);
     LOG(info) << "GGeoOptiXGeometry::convertSubstances converted " << nsub << " substances into optix materials " ; 
-}
-
-
-optix::float3 GGeoOptiXGeometry::getMin()
-{
-    gfloat3* p = m_ggeo->getLow();
-    assert(p);
-    return optix::make_float3(p->x, p->y, p->z); 
-}
-
-optix::float3 GGeoOptiXGeometry::getMax()
-{
-    gfloat3* p = m_ggeo->getHigh();
-    assert(p);
-    return optix::make_float3(p->x, p->y, p->z); 
 }
 
 
@@ -187,10 +152,8 @@ optix::Geometry GGeoOptiXGeometry::convertGeometry(GSolid* solid)
     nodeBuffer->unmap();
 
 
-    //
-    // huh, is this in use ? NOT CURRENTLY
-    // while have one substance per mesh this isnt needed, if move to 
-    // merged meshes will need to identify which substance corresponds to which face
+    // while have one substance per mesh this isnt needed, with 
+    // merged meshes this can identify which substance corresponds to which face
     //
     optix::Buffer substanceBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
     unsigned int* substanceBuffer_Host = static_cast<unsigned int*>( substanceBuffer->map() );
@@ -304,7 +267,7 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
     // Each GSubstance (representing boundaries between materials) 
     // is 1-1 related to optix::Material
     //
-
+ 
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
 
     optix::Material material = m_context->createMaterial();
@@ -325,94 +288,18 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
     return material ; 
 }
 
-
-optix::GeometryInstance GGeoOptiXGeometry::convertDrawableInstance(GMergedMesh* mergedmesh)
+optix::float3 GGeoOptiXGeometry::getMin()
 {
-    optix::Geometry geometry = convertDrawable(mergedmesh) ;  
-
-    std::vector<unsigned int>& substanceIndices = mergedmesh->getDistinctSubstances();
-    LOG(info) << "GGeoOptiXGeometry::convertDrawableInstance distinct substance indices " << substanceIndices.size() ; 
-    std::vector<optix::Material> materials ;
-    for(unsigned int i=0 ; i < substanceIndices.size() ; i++)
-    {
-        unsigned int index = substanceIndices[i];
-        optix::Material material = getMaterial(index) ;
-        materials.push_back(material); 
-    }
-    optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
-    return gi ;
+    gfloat3* p = m_ggeo->getLow();
+    assert(p);
+    return optix::make_float3(p->x, p->y, p->z); 
 }
 
-
-optix::Geometry GGeoOptiXGeometry::convertDrawable(GMergedMesh* drawable)
+optix::float3 GGeoOptiXGeometry::getMax()
 {
-    // aiming to replace convertGeometry and usage with GMergedMesh
-    // where the vertices etc.. have been transformed and combined already  
-
-    optix::Geometry geometry = m_context->createGeometry();
-
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu", "mesh_intersect"));
-    geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu", "mesh_bounds"));
-
-    // contrast with oglrap-/Renderer::gl_upload_buffers
-    GBuffer* vbuf = drawable->getVerticesBuffer();
-    GBuffer* ibuf = drawable->getIndicesBuffer();
-    GBuffer* dbuf = drawable->getNodesBuffer();
-    GBuffer* sbuf = drawable->getSubstancesBuffer();
-
-    unsigned int numVertices = vbuf->getNumItems() ;
-    unsigned int numFaces = ibuf->getNumItems()/3;    
-    // items are the indices so divide by 3 to get faces
-
-    LOG(info) << "GGeoOptiXGeometry::convertDrawable numVertices " << numVertices << " numFaces " << numFaces ;
-
-    //vbuf->Summary("GGeoOptiXGeometry::convertDrawable vbuf");
-    //ibuf->Summary("GGeoOptiXGeometry::convertDrawable ibuf");
-    //dbuf->Summary("GGeoOptiXGeometry::convertDrawable dbuf");
-    //sbuf->Summary("GGeoOptiXGeometry::convertDrawable sbuf");
-
-    geometry->setPrimitiveCount(numFaces);
-    {
-        assert(sizeof(optix::float3)*numVertices == vbuf->getNumBytes() && vbuf->getNumElements() == 3);
-        optix::Buffer vertexBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_FLOAT3, numVertices);
-        memcpy( vertexBuffer->map(), vbuf->getPointer(), vbuf->getNumBytes() );
-        vertexBuffer->unmap();
-        geometry["vertexBuffer"]->setBuffer(vertexBuffer);
-    }
-    {
-        assert(sizeof(optix::int3) == 4*3); 
-        assert(sizeof(optix::int3)*numFaces == ibuf->getNumBytes()); 
-        assert(ibuf->getNumElements() == 1);    // ibuf elements are individual integers
- 
-        optix::Buffer indexBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_INT3, numFaces );
-        memcpy( indexBuffer->map(), ibuf->getPointer(), ibuf->getNumBytes() );
-        indexBuffer->unmap();
-        geometry["indexBuffer"]->setBuffer(indexBuffer);
-    }
-    {
-        assert(sizeof(unsigned int)*numFaces == dbuf->getNumBytes() && dbuf->getNumElements() == 1);
-        optix::Buffer nodeBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
-        memcpy( nodeBuffer->map(), dbuf->getPointer(), dbuf->getNumBytes() );
-        nodeBuffer->unmap();
-        geometry["nodeBuffer"]->setBuffer(nodeBuffer);
-    }
-    {
-        assert(sizeof(unsigned int)*numFaces == sbuf->getNumBytes() && sbuf->getNumElements() == 1);
-        optix::Buffer substanceBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
-        memcpy( substanceBuffer->map(), sbuf->getPointer(), sbuf->getNumBytes() );
-        substanceBuffer->unmap();
-        geometry["substanceBuffer"]->setBuffer(substanceBuffer);
-    }
-
-
-    optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
-    geometry["tangentBuffer"]->setBuffer(emptyBuffer);
-    geometry["bitangentBuffer"]->setBuffer(emptyBuffer);
-    geometry["normalBuffer"]->setBuffer(emptyBuffer);
-    geometry["texCoordBuffer"]->setBuffer(emptyBuffer);
- 
-    return geometry ; 
+    gfloat3* p = m_ggeo->getHigh();
+    assert(p);
+    return optix::make_float3(p->x, p->y, p->z); 
 }
 
 

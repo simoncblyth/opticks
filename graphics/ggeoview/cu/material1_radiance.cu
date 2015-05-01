@@ -5,6 +5,7 @@
 //geometric_normal is set by the closest hit intersection program 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, );
 rtDeclareVariable(unsigned int, nodeIndex, attribute node_index, );
+rtDeclareVariable(unsigned int, substanceIndex, attribute substance_index, );
 rtDeclareVariable(float3, contrast_color, , );
 
 rtDeclareVariable(PerRayData_radiance, prd, rtPayload, );
@@ -38,9 +39,12 @@ RT_PROGRAM void closest_hit_radiance()
    //prd.result = make_float3( 0.f, 0.f, 1.f ); //blue
    //prd.result = make_float3(0.5f);            
 
-    prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+     prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
 
-  //prd.result = contrast_color ;   // according to substance index, currently only one color
+   //prd.result = contrast_color ;   // according to substance index, currently only one color as only one material ?
+   //prd.result = make_float3( substanceIndex/50.f );  // grey scale according to substance "boundary" index
+   
+
   //prd.result = make_float3(0.f);
 
   prd.node = nodeIndex ;

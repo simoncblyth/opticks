@@ -16,6 +16,20 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 Usage tips
 -----------
 
+
+Rebuild Order
+~~~~~~~~~~~~~~
+
+::
+
+    ggeo-install
+    assimpwrap-install
+    oglrap-install
+    optixrap-install 
+    ggeoview-install  
+
+
+
 Low GPU memory running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -303,6 +317,21 @@ ggeoview-install(){
 }
 
 ggeoview-bin(){ echo $(ggeoview-idir)/bin/$(ggeoview-name) ; }
+
+
+ggeoview-accelcache()
+{
+    ggeoview-export
+    ls -l ${DAE_NAME_DYB/.dae}.*.accelcache
+}
+ggeoview-accelcache-rm()
+{
+    ggeoview-export
+    rm ${DAE_NAME_DYB/.dae}.*.accelcache
+}
+
+
+
 ggeoview-export()
 {
    export-

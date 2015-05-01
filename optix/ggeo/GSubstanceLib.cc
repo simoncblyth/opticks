@@ -1,6 +1,7 @@
 #include "GSubstanceLib.hh"
 #include "GSubstance.hh"
 #include "GPropertyMap.hh"
+#include "GBuffer.hh"
 #include "GEnums.hh"
 
 #include <sstream>
@@ -64,6 +65,12 @@ GDomain<double>* GSubstanceLib::getStandardDomain()
 {
     return m_standard_domain ;
 }
+
+unsigned int GSubstanceLib::getStandardDomainLength()
+{
+    return m_standard_domain ? m_standard_domain->getLength() : 0 ;
+}
+
 
 
 GProperty<double>* GSubstanceLib::getDefaultProperty(const char* name)
@@ -202,6 +209,8 @@ GPropertyMap* GSubstanceLib::createStandardProperties(const char* pname, GSubsta
 }
 
 
+
+
 void GSubstanceLib::defineDefaults(GPropertyMap* defaults)
 {
 
@@ -307,5 +316,72 @@ void GSubstanceLib::checkSurfaceProperties(GPropertyMap* ptex, unsigned int offs
     pname = ptex->getPropertyNameByIndex(offset+e_reflect_diffuse);
     assert(xname == pname);
 }
+
+
+GBuffer* GSubstanceLib::createWavelengthBuffer()
+{
+    //
+    // 4 sets of 4 props  
+    //
+    //  The 4 sets for: 
+    //          (inner material, outer material, inner surface, outer surface) 
+    //
+    //  and the 4 props:
+    //         material: (refractive_index, absorption_length, scattering_length, reemission_prob)
+    //         surface:  (detect, absorb, reflect_specular, reflect_diffuse)    
+    //
+
+    GBuffer* buffer(NULL) ;
+    float* data(NULL) ;
+
+    unsigned int numSubstance = getNumSubstances() ;
+
+    for(unsigned int isub=0 ; isub < numSubstance ; isub++)
+    {
+        GSubstance* substance = getSubstance(isub);
+        unsigned int substanceIndex = substance->getIndex();
+        assert(substanceIndex < numSubstance);
+
+        printf("GSubstanceLib::createWavelengthBuffer isub %u substanceIndex  %u \n", isub, substanceIndex );
+
+        GPropertyMap* ptex = createStandardProperties("ptex", substance);
+        unsigned int numProp = ptex->getNumProperties() ;
+        assert(numProp == 16);
+        assert(numProp % 4 == 0);
+
+        GDomain<double>* domain = ptex->getStandardDomain();
+        const unsigned int domainLength = domain->getLength();
+
+        unsigned int subOffset = domainLength*numProp*substanceIndex ; 
+
+        if( buffer == NULL )
+        {
+            unsigned int numFloat = domainLength*numProp*numSubstance ; 
+            buffer = new GBuffer( sizeof(float)*numFloat, new float[numFloat], sizeof(float), 1 );
+            data = (float*)buffer->getPointer();
+        }
+
+        for( unsigned int p = 0; p < numProp/4 ; ++p ) 
+        {   
+            unsigned int propOffset = p*numProp/4 ;
+            GPropertyD* p0 = ptex->getPropertyByIndex(propOffset+0) ;
+            GPropertyD* p1 = ptex->getPropertyByIndex(propOffset+1) ;
+            GPropertyD* p2 = ptex->getPropertyByIndex(propOffset+2) ;
+            GPropertyD* p3 = ptex->getPropertyByIndex(propOffset+3) ;
+
+            for( unsigned int d = 0; d < domainLength; ++d ) 
+            {   
+                unsigned int dataOffset = ( p*domainLength + d )*4;  
+
+                data[subOffset+dataOffset+0] = p0->getValue(d) ;
+                data[subOffset+dataOffset+1] = p1->getValue(d) ;
+                data[subOffset+dataOffset+2] = p2->getValue(d) ;
+                data[subOffset+dataOffset+3] = p3->getValue(d) ;
+            }       
+        }   
+    }
+    return buffer ; 
+}
+
 
 

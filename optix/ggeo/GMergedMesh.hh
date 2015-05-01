@@ -25,6 +25,7 @@ public:
     unsigned int getNumSolids();
     unsigned int getNumSolidsSelected();
     void dumpSolids(const char* msg="GMergedMesh::dumpSolids");
+    void dumpWavelengthBuffer(unsigned int numSubstance, unsigned int numProp, unsigned int numSamples);
 
 private:
      unsigned int m_cur_vertices ;

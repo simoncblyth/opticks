@@ -10,6 +10,7 @@
 
 class GSubstance ; 
 class GPropertyMap ; 
+class GBuffer ; 
 
 class GSubstanceLib {
   public:
@@ -41,9 +42,11 @@ class GSubstanceLib {
   public:
       void setStandardDomain(GDomain<double>* standard_domain);
       GDomain<double>* getStandardDomain();
+      unsigned int getStandardDomainLength();
 
   public:
       GPropertyMap* createStandardProperties(const char* name, GSubstance* substance);
+      GBuffer* createWavelengthBuffer();  // SubstanceBuffer name taken already for substances indices only
 
   private:
       void addMaterialProperties(GPropertyMap* ptex, GPropertyMap* pmap, const char* prefix);

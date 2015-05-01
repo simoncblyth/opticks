@@ -108,6 +108,37 @@ md5digest
     hashing
 
 
+Where are substance indices formed and associated to every triangle ?
+-----------------------------------------------------------------------
+
+* indices are assigned by GSubstanceLib::get based on distinct property values
+  this somewhat complicated approach is necessary as GSubstance incorporates info 
+  from inner/outer material/surface so GSubstance 
+  does not map to simple notions of identity it being a boundary between 
+  materials with specific surfaces(or maybe no associated surface) 
+
+* substance indices are affixed to the triangles of the geometry 
+  by GSolid::setSubstance GNode::setSubstanceIndices
+  which repeats the indice for every triangle of the solid. 
+ 
+  This gets done within the AssimpGGeo::convertStructureVisit,
+  the visitor method of the recursive AssimpGGeo::convertStructure 
+  in assimpwrap-::
+
+    506     GSubstanceLib* lib = gg->getSubstanceLib();
+    507     GSubstance* substance = lib->get(mt, mt_p, isurf, osurf );
+    508     //substance->Summary("subst");
+    509 
+    510     solid->setSubstance(substance);
+    511 
+    512     char* desc = node->getDescription("\n\noriginal node description");
+    513     solid->setDescription(desc);
+    514     free(desc);
+
+* substances indices are collected/flattened into 
+  the unsigned int* substanceBuffer by GMergedMesh
+       
+ 
 
 GGeo Geometry Model Objective
 ------------------------------

@@ -33,6 +33,7 @@
 // optixrap-
 #include "RayTraceConfig.hh"
 #include "GGeoOptiXGeometry.hh"
+#include "GMergedMeshOptiXGeometry.hh"
 
 
 #include "assert.h"
@@ -154,13 +155,15 @@ void OptiXEngine::initGeometry()
 {
     LOG(info) << "OptiXEngine::initGeometry" ;
     // TODO: use GMergedMesh instead of GGeo
-    //GGeoOptiXGeometry geom(m_ggeo);
-    GGeoOptiXGeometry geom(m_ggeo, m_mergedmesh);
-    
+
+
+    GMergedMesh* mm = m_ggeo->getMergedMesh();
+
+    GGeoOptiXGeometry geom(m_ggeo);  //OLD_WAY
+    //GMergedMeshOptiXGeometry geom(mm);
+
     geom.setGeometryGroup(m_geometry_group);
     geom.setContext(m_context);   
-    //geom.setOverrideMaterial(m_material);  
-
     geom.convert(); 
 
     setFilename(m_ggeo->getIdentityPath());

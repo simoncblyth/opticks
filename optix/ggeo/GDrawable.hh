@@ -17,6 +17,7 @@ class GDrawable {
       virtual GBuffer* getNodesBuffer() = 0;
       virtual GBuffer* getSubstancesBuffer() = 0;
       virtual GBuffer* getModelToWorldBuffer() = 0;
+      virtual GBuffer* getWavelengthBuffer() = 0;
       virtual std::vector<unsigned int>& getDistinctSubstances() = 0;
 
       //virtual float* getModelToWorldPtr(unsigned int index) = 0;
