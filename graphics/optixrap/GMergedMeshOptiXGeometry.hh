@@ -41,6 +41,7 @@ Progress:
 
 
 class GMergedMesh ; 
+class GBuffer ; 
 
 class GMergedMeshOptiXGeometry  : public OptiXGeometry 
 {
@@ -53,6 +54,7 @@ public:
 private:
     optix::GeometryInstance convertDrawableInstance(GMergedMesh* mergedmesh);
     optix::Geometry convertDrawable(GMergedMesh* drawable);
+    optix::Material makeMaterial(GBuffer* wbuf);
 
 public:
     optix::float3  getMin();

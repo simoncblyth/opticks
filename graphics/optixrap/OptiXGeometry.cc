@@ -55,7 +55,7 @@ optix::GeometryGroup OptiXGeometry::getGeometryGroup()
 
 optix::Material OptiXGeometry::getMaterial(unsigned int index)
 {
-    printf("OptiXGeometry::getMaterial index %u %lu \n", index, m_materials.size() );  
+    printf("OptiXGeometry::getMaterial index %u size %lu \n", index, m_materials.size() );  
     assert(index < m_materials.size());
     return m_materials[index] ; 
 }

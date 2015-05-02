@@ -9,14 +9,30 @@
 #include "stdio.h"
 #include "limits.h"
 
+
+unsigned int GSubstanceLib::DOMAIN_LENGTH = 39  ; 
+
+
 GSubstanceLib::GSubstanceLib() : m_defaults(NULL) 
 {
     // chroma/chroma/geometry.py
-    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
+    //
+    //    In [4]: np.arange(60., 810., 20.).astype(np.float32)
+    //    Out[4]: 
+    //    array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
+    //            240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
+    //            420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
+    //            600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
+    //            780.,  800.], dtype=float32)
+    //
+    //    In [5]: len(np.arange(60., 810., 20.).astype(np.float32))
+    //    Out[5]: 38
+    //
+    //    TODO: get standard domain to match python OR maybe move to 32 or 64 slots ?
+    //
 
     setKeyMap(NULL);
-
-    GDomain<double>* domain = new GDomain<double>(60.f, 810.f, 20.f );
+    GDomain<double>* domain = new GDomain<double>(60.f, 810.f, 20.f ); 
     setStandardDomain( domain );
 
 
@@ -60,6 +76,7 @@ GPropertyMap* GSubstanceLib::getDefaults()
 void GSubstanceLib::setStandardDomain(GDomain<double>* standard_domain)
 {
     m_standard_domain = standard_domain ; 
+    assert(getStandardDomainLength() == DOMAIN_LENGTH );
 }
 GDomain<double>* GSubstanceLib::getStandardDomain()
 {

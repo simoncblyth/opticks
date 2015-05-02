@@ -17,6 +17,7 @@ class GSubstanceLib {
     // standard property prefixes
     static const char* inner; 
     static const char* outer; 
+    static unsigned int DOMAIN_LENGTH ; 
   public:
     // standard material property names
     static const char* refractive_index ; 

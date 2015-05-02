@@ -159,8 +159,8 @@ void OptiXEngine::initGeometry()
 
     GMergedMesh* mm = m_ggeo->getMergedMesh();
 
-    GGeoOptiXGeometry geom(m_ggeo);  //OLD_WAY
-    //GMergedMeshOptiXGeometry geom(mm);
+    //GGeoOptiXGeometry geom(m_ggeo);  //OLD_WAY
+    GMergedMeshOptiXGeometry geom(mm);
 
     geom.setGeometryGroup(m_geometry_group);
     geom.setContext(m_context);   

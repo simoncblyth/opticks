@@ -1,5 +1,6 @@
 #include "GMergedMeshOptiXGeometry.hh"
 #include "GMergedMesh.hh"
+#include "GSubstanceLib.hh"
 
 #include "RayTraceConfig.hh"
 
@@ -19,10 +20,52 @@ GMergedMeshOptiXGeometry::GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh)
 
 void GMergedMeshOptiXGeometry::convert()
 {
-    //convertSubstances();
-
     optix::GeometryInstance gi = convertDrawableInstance(m_mergedmesh);
     m_gis.push_back(gi);
+}
+
+
+optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)  
+{
+    unsigned int  domainLength = GSubstanceLib::DOMAIN_LENGTH ; 
+
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+
+    optix::Material material = m_context->createMaterial();
+
+    unsigned int raytype_radiance = 0 ;
+    material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+
+    unsigned int numElementsTotal = wbuf->getNumElementsTotal();
+    assert( numElementsTotal % domainLength == 0 );
+    unsigned int nx = domainLength ;
+    unsigned int ny = numElementsTotal / domainLength ;
+
+    LOG(info) << "GMergedMeshOptiXGeometry::makeMaterial "
+              << " numElementsTotal " << numElementsTotal  
+              << " (nx)domainLength " << domainLength 
+              << " ny (props*subs)  " << ny 
+              << " ny/16 " << ny/16 ; 
+
+    optix::Buffer wavelengthBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
+    memcpy( wavelengthBuffer->map(), wbuf->getPointer(), wbuf->getNumBytes() );
+    wavelengthBuffer->unmap(); 
+
+    optix::TextureSampler sampler = m_context->createTextureSampler();
+
+    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
+    sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
+    sampler->setFilteringModes(RT_FILTER_LINEAR, RT_FILTER_LINEAR, RT_FILTER_NONE);
+    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
+    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+    sampler->setMaxAnisotropy(1.0f);  
+    sampler->setMipLevelCount(1u);     
+    sampler->setArraySize(1u);        
+    sampler->setBuffer(0u, 0u, wavelengthBuffer);
+
+    material["wavelength_texture"]->setTextureSampler(sampler);
+
+    return material ; 
 }
 
 
@@ -33,15 +76,14 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
 
     // maybe go for single material, with substanceIndex attribute 
 
-    std::vector<unsigned int>& substanceIndices = mergedmesh->getDistinctSubstances();
-    LOG(info) << "GMergedMeshOptiXGeometry::convertDrawableInstance distinct substance indices " << substanceIndices.size() ; 
+    LOG(info) << "GMergedMeshOptiXGeometry::convertDrawableInstance using single material  " ; 
+
+    GBuffer* wbuf = mergedmesh->getWavelengthBuffer();
+    optix::Material material = makeMaterial(wbuf);
+
     std::vector<optix::Material> materials ;
-    for(unsigned int i=0 ; i < substanceIndices.size() ; i++)
-    {
-        unsigned int index = substanceIndices[i];
-        optix::Material material = getMaterial(index) ;
-        materials.push_back(material); 
-    }
+    materials.push_back(material);
+
     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
     return gi ;
 }
