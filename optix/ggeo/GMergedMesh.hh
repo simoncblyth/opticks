@@ -1,6 +1,7 @@
 #ifndef GMERGEDMESH_H
 #define GMERGEDMESH_H
 
+
 class GGeo ; 
 class GNode ;
 #include "GMesh.hh"
@@ -33,7 +34,6 @@ private:
      unsigned int m_cur_solid ;
      unsigned int m_num_solids  ;
      unsigned int m_num_solids_selected  ;
-
 
 };
 

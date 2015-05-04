@@ -20,9 +20,6 @@ class GDrawable {
       virtual GBuffer* getWavelengthBuffer() = 0;
       virtual std::vector<unsigned int>& getDistinctSubstances() = 0;
 
-      //virtual float* getModelToWorldPtr(unsigned int index) = 0;
-      //virtual float    getExtent() = 0;
-
       virtual gfloat4 getCenterExtent(unsigned int index) = 0 ;
 
 };      

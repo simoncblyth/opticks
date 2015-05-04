@@ -1,8 +1,43 @@
 #include "GMesh.hh"
 #include "GBuffer.hh"
+
 #include "stdio.h"
+#include "string.h"
 #include "assert.h"
+
 #include <algorithm>
+
+#include "numpy.hpp"
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
+const char* GMesh::vertices     = "vertices" ;
+const char* GMesh::normals      = "normals" ;
+const char* GMesh::colors       = "colors" ;
+const char* GMesh::texcoords    = "texcoords" ;
+const char* GMesh::indices      = "indices" ;
+const char* GMesh::nodes        = "nodes" ;
+const char* GMesh::substances   = "substances" ;
+const char* GMesh::modeltoworld = "modeltoworld" ;
+const char* GMesh::wavelength   = "wavelength" ;
+
+void GMesh::nameConstituents()
+{
+    m_names.push_back(vertices); 
+    m_names.push_back(normals); 
+    m_names.push_back(colors); 
+    m_names.push_back(texcoords); 
+    m_names.push_back(indices); 
+    m_names.push_back(nodes); 
+    m_names.push_back(substances); 
+    m_names.push_back(modeltoworld); 
+    m_names.push_back(wavelength); 
+}
+
+
+
 
 GMesh::GMesh(GMesh* other) 
      :
@@ -28,6 +63,7 @@ GMesh::GMesh(GMesh* other)
      GDrawable()
 {
    updateBounds();
+   nameConstituents();
 }
 
 
@@ -81,10 +117,23 @@ GMesh::GMesh(unsigned int index,
    setNormals(normals);
    setTexcoords(texcoords);
    updateBounds();
+   nameConstituents();
 }
 
 
-
+GBuffer* GMesh::getBuffer(const char* name)
+{
+    if(strcmp(name, vertices) == 0)     return m_vertices_buffer ; 
+    if(strcmp(name, normals) == 0)      return m_normals_buffer ; 
+    if(strcmp(name, colors) == 0)       return m_colors_buffer ; 
+    if(strcmp(name, texcoords) == 0)    return m_texcoords_buffer ; 
+    if(strcmp(name, indices) == 0)      return m_indices_buffer ; 
+    if(strcmp(name, nodes) == 0)        return m_nodes_buffer ; 
+    if(strcmp(name, substances) == 0)   return m_substances_buffer ; 
+    //if(strcmp(name, modeltoworld) == 0) return m_modeltoworld_buffer ; 
+    if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
+    return NULL ;
+}
 
 
 void GMesh::setVertices(gfloat3* vertices)
@@ -401,6 +450,88 @@ std::vector<unsigned int>& GMesh::getDistinctSubstances()
 {
     if(m_distinct_substances.size()==0) updateDistinctSubstances();
     return m_distinct_substances ;
+}
+
+
+
+void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
+{
+    printf("GMesh::saveBuffer name %s path %s \n", name, path );
+    buffer->Summary("GMesh::saveBuffer");
+
+    void* data = buffer->getPointer();
+    unsigned int numBytes   = buffer->getNumBytes();
+    unsigned int numElements = buffer->getNumElements();
+    unsigned int numItems = buffer->getNumItems();        
+    assert(numElements < 5); // elements within an item, eg 3/4 for float3/float4  
+
+    if( strcmp( name, vertices) == 0 || 
+        strcmp( name, normals) == 0  || 
+        strcmp( name, colors) == 0 )
+    {
+        assert(numElements*numItems*sizeof(float) == numBytes ); 
+        aoba::SaveArrayAsNumpy<float>( path, numItems, numElements, (float*)data );  
+    }
+    else if( strcmp( name, indices) == 0 || 
+             strcmp( name, nodes) == 0  || 
+             strcmp( name, substances) == 0 )
+    {
+        assert(numElements*numItems*sizeof(int) == numBytes ); 
+        aoba::SaveArrayAsNumpy<int>( path, numItems, numElements, (int*)data );
+        // numpy.hpp uses character codes, no char code for "unsigned int" implemented : is there one ?   
+        // or maybe use more verbose code in NPY description in the header  ?
+    }
+    else if( strcmp( name, wavelength ) == 0 )
+    {
+        assert(numElements*numItems*sizeof(float) == numBytes ); 
+        aoba::SaveArrayAsNumpy<float>( path, numItems, numElements, (float*)data );  
+    } 
+
+/*
+   Does the detailed shape of wavelengthBuffer need to be persisted ?
+
+In [14]: 58*4*39*4
+Out[14]: 36192
+
+In [15]: w.reshape((58,4,39,4))
+
+*/
+
+}
+
+void GMesh::save(const char* dir)
+{
+    fs::path cachedir(dir);
+    if(!fs::exists(cachedir))
+    {
+        if (fs::create_directory(cachedir))
+        {
+            printf("GMesh::save created directory %s \n", dir );
+        }
+    }
+
+    if(fs::exists(cachedir) && fs::is_directory(cachedir))
+    {
+        for(unsigned int i=0 ; i<m_names.size() ; i++)
+        {
+            std::string name = m_names[i];
+            fs::path bufpath(dir);
+            bufpath /= name + ".npy" ; 
+            GBuffer* buffer = getBuffer(name.c_str());
+            if(!buffer) continue ; 
+            saveBuffer(bufpath.string().c_str(), name.c_str(), buffer);  
+        } 
+    }
+    else
+    {
+        printf("GMesh::save directory %s DOES NOT EXIST \n", dir);
+    }
+}
+
+
+GMesh* GMesh::load(const char* dir)
+{
+    return NULL ; 
 }
 
 

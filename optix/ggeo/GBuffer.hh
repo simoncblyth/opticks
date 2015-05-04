@@ -53,7 +53,6 @@ class GBuffer {
 
       void Summary(const char* msg="GBuffer::Summary");
 
-
   protected:
       unsigned int m_nbytes ;
       void*        m_pointer ; 

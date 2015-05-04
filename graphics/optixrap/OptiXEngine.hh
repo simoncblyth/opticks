@@ -39,6 +39,8 @@ class OptiXEngine {
         void setEnabled(bool enabled);
         void setNumpyEvt(NumpyEvt* evt);
 
+        GMergedMesh* getMergedMesh();
+
         void init();
         void initRenderer();
         void initContext();
@@ -150,4 +152,7 @@ inline void OptiXEngine::setEnabled(bool enabled)
 }
 
 
-
+inline GMergedMesh* OptiXEngine::getMergedMesh()
+{
+    return m_mergedmesh ; 
+}

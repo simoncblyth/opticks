@@ -359,7 +359,8 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
         unsigned int substanceIndex = substance->getIndex();
         assert(substanceIndex < numSubstance);
 
-        printf("GSubstanceLib::createWavelengthBuffer isub %u substanceIndex  %u \n", isub, substanceIndex );
+        assert(isub == substanceIndex);
+        //printf("GSubstanceLib::createWavelengthBuffer isub %u substanceIndex  %u \n", isub, substanceIndex );
 
         GPropertyMap* ptex = createStandardProperties("ptex", substance);
         unsigned int numProp = ptex->getNumProperties() ;

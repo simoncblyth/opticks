@@ -5,6 +5,10 @@
 #include "GMatrix.hh"
 #include "GDrawable.hh"
 
+#include <vector>
+#include <string>
+
+
 class GBuffer ; 
 
 //
@@ -28,6 +32,16 @@ class GBuffer ;
 class GMesh : public GDrawable {
   public:
       static int g_instance_count ; 
+
+      static const char* vertices ; 
+      static const char* normals ; 
+      static const char* colors ; 
+      static const char* texcoords ; 
+      static const char* indices ; 
+      static const char* nodes ; 
+      static const char* substances ; 
+      static const char* modeltoworld ; 
+      static const char* wavelength ; 
 
       GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index, 
@@ -59,6 +73,8 @@ class GMesh : public GDrawable {
       guint3*        getFaces();
 
       bool hasTexcoords();
+  public:
+      GBuffer* getBuffer(const char* name);
 
   public:
       // Buffer access for GDrawable protocol
@@ -84,6 +100,8 @@ class GMesh : public GDrawable {
       virtual std::vector<unsigned int>& getDistinctSubstances();
   private:
       virtual void updateDistinctSubstances();
+      void nameConstituents();
+      void saveBuffer(const char* path, const char* name, GBuffer* buffer);
 
   protected:
       unsigned int* m_nodes ; 
@@ -122,6 +140,10 @@ class GMesh : public GDrawable {
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
+  public:
+    static GMesh* load(const char* dir);  
+    void save(const char* dir);
+
   protected:
       unsigned int    m_index ;
       unsigned int    m_num_vertices ;
@@ -139,6 +161,7 @@ class GMesh : public GDrawable {
       float           m_extent ; 
       gfloat4*        m_center_extent ;
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
+      std::vector<std::string> m_names ; 
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -146,6 +169,7 @@ class GMesh : public GDrawable {
       GBuffer* m_colors_buffer ;
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
+
 
 
 };

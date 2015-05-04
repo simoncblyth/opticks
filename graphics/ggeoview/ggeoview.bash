@@ -376,4 +376,18 @@ ggeoview--()
 }
 
 
+ggeoview-depinstall()
+{
+    ggeo-
+    ggeo-install
+    assimpwrap- 
+    assimpwrap-install
+    oglrap-
+    oglrap-install
+    optixrap-
+    optixrap-install 
+    ggeoview-
+    ggeoview-install  
+}
+
 

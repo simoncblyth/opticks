@@ -10,7 +10,30 @@ set(BUILD_SHARED_LIBS ON)
 
 include(EnvBuildOptions)
 
-add_definitions()
+
+find_package(Boost REQUIRED)
+find_package(NPY REQUIRED)
+
+set(INCLUDE_DIRS
+   ${CMAKE_CURRENT_SOURCE_DIR}
+   ${Boost_INCLUDE_DIRS} 
+   ${NPY_INCLUDE_DIRS}
+)
+
+set(LIBRARIES
+   ${Boost_LIBRARIES}
+   ${NPY_LIBRARIES}
+)
+
+set(DEFINITIONS
+   ${Boost_DEFINITIONS} 
+)
+
+
+
+include_directories(${INCLUDE_DIRS})   
+add_definitions(${DEFINITIONS})
+
 
 add_library(${name} SHARED 
                 md5digest.cc
@@ -37,9 +60,9 @@ add_library(${name} SHARED
 
 add_executable(${name}Test ${name}Test.cc)
 
-target_link_libraries(${name}Test 
-                       ${name}
-                     )
+target_link_libraries(${name} ${LIBRARIES})
+
+target_link_libraries(${name}Test ${name})
                         
 install(TARGETS ${name}Test DESTINATION bin)
 install(TARGETS ${name} LIBRARY DESTINATION lib)

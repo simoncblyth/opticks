@@ -4,7 +4,6 @@
 #include "GSubstanceLib.hh"
 #include <iostream>
 
-
 GMergedMesh::GMergedMesh(GMergedMesh* other)
        : 
        GMesh(other),
@@ -61,7 +60,10 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     GSubstanceLib* lib = ggeo->getSubstanceLib();
     GBuffer* wavelengthBuffer = lib->createWavelengthBuffer();
     mm->setWavelengthBuffer(wavelengthBuffer);
-    mm->dumpWavelengthBuffer(lib->getNumSubstances(), 16, lib->getStandardDomainLength()); 
+    //mm->dumpWavelengthBuffer(lib->getNumSubstances(), 16, lib->getStandardDomainLength()); 
+
+
+
 
     return mm ;
 }
@@ -215,6 +217,7 @@ void GMergedMesh::dumpWavelengthBuffer(unsigned int numSubstance, unsigned int n
         }
     }
 }
+
 
 
 

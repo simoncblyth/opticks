@@ -41,6 +41,7 @@
 
 
 // ggeo-
+#include "GGeo.hh"
 #include "GMergedMesh.hh"
 
 
@@ -111,6 +112,13 @@ int main(int argc, char** argv)
     scene.loadGeometry("GGEOVIEW_") ; 
     scene.loadEvt();
 
+
+    GMergedMesh* mm = scene.getMergedMesh(); 
+    mm->save("/tmp/mm");
+
+    const char* idpath = scene.getGGeo()->getIdentityPath(); 
+    printf("idpath %s \n", idpath);
+
     //
     // TODO:  
     //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
@@ -119,8 +127,11 @@ int main(int argc, char** argv)
     //     but for OpenGL interop its expedient for now
     //
     OptiXEngine engine("GGeoView") ;       
-    engine.setMergedMesh(scene.getMergedMesh()); // aiming for all geo info to come from GMergedMesh
-    engine.setGGeo(scene.getGGeo());             // need for GGeo too is transitional, until sort out material/surface property buffers
+    engine.setMergedMesh(mm);          // aiming for all geo info to come from GMergedMesh
+    //engine.setGGeo(scene.getGGeo());             // need for GGeo too is transitional, until sort out material/surface property buffers
+
+    engine.setFilename(idpath);
+
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(interactor.getOptiXMode()>-1);

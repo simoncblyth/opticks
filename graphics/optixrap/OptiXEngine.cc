@@ -157,7 +157,7 @@ void OptiXEngine::initGeometry()
     // TODO: use GMergedMesh instead of GGeo
 
 
-    GMergedMesh* mm = m_ggeo->getMergedMesh();
+    GMergedMesh* mm = getMergedMesh();
 
     //GGeoOptiXGeometry geom(m_ggeo);  //OLD_WAY
     GMergedMeshOptiXGeometry geom(mm);
@@ -166,7 +166,7 @@ void OptiXEngine::initGeometry()
     geom.setContext(m_context);   
     geom.convert(); 
 
-    setFilename(m_ggeo->getIdentityPath());
+    //setFilename(m_ggeo->getIdentityPath());
 
     geom.setupAcceleration();
 
@@ -236,6 +236,8 @@ void OptiXEngine::trace()
 
 void OptiXEngine::generate()
 {
+    if(!m_enabled) return ;
+
     Buffer buffer = m_context["photon_buffer"]->getBuffer();
     RTsize buffer_width, buffer_height;
     buffer->getSize( buffer_width, buffer_height );
