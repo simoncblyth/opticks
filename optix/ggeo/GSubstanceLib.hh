@@ -18,6 +18,9 @@ class GSubstanceLib {
     static const char* inner; 
     static const char* outer; 
     static unsigned int DOMAIN_LENGTH ; 
+    static float        DOMAIN_LOW ; 
+    static float        DOMAIN_HIGH ; 
+    static float        DOMAIN_STEP ; 
   public:
     // standard material property names
     static const char* refractive_index ; 

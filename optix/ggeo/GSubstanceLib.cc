@@ -10,6 +10,9 @@
 #include "limits.h"
 
 
+float        GSubstanceLib::DOMAIN_LOW  = 60.f ; 
+float        GSubstanceLib::DOMAIN_HIGH = 810.f ; 
+float        GSubstanceLib::DOMAIN_STEP = 20.f ; 
 unsigned int GSubstanceLib::DOMAIN_LENGTH = 39  ; 
 
 
@@ -32,7 +35,7 @@ GSubstanceLib::GSubstanceLib() : m_defaults(NULL)
     //
 
     setKeyMap(NULL);
-    GDomain<double>* domain = new GDomain<double>(60.f, 810.f, 20.f ); 
+    GDomain<double>* domain = new GDomain<double>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
     setStandardDomain( domain );
 
 
@@ -76,7 +79,12 @@ GPropertyMap* GSubstanceLib::getDefaults()
 void GSubstanceLib::setStandardDomain(GDomain<double>* standard_domain)
 {
     m_standard_domain = standard_domain ; 
+
     assert(getStandardDomainLength() == DOMAIN_LENGTH );
+    assert(m_standard_domain->getLow()  == DOMAIN_LOW );
+    assert(m_standard_domain->getHigh() == DOMAIN_HIGH );
+    assert(m_standard_domain->getStep() == DOMAIN_STEP );
+
 }
 GDomain<double>* GSubstanceLib::getStandardDomain()
 {

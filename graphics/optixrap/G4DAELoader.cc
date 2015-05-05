@@ -28,6 +28,8 @@
 
 #include <string>
 
+// npy-
+#include "stringutil.hpp"
 
 std::string getExtension( const std::string& filename )
 {

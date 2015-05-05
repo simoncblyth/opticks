@@ -66,6 +66,11 @@ optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)
 
     material["wavelength_texture"]->setTextureSampler(sampler);
 
+    float domainLow  = GSubstanceLib::DOMAIN_LOW ; 
+    float domainHigh = GSubstanceLib::DOMAIN_HIGH ; 
+    float domainStep = GSubstanceLib::DOMAIN_STEP ; 
+    material["wavelength_domain"]->setFloat(domainLow, domainHigh, domainStep ); 
+
     return material ; 
 }
 
