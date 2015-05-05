@@ -46,7 +46,7 @@ class Scene {
         void setTarget(unsigned int index=0); 
 
    public:
-        void loadGeometry(const char* prefix);
+        const char* loadGeometry(const char* prefix);
         void loadEvt();
         void render();
 

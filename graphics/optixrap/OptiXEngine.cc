@@ -651,11 +651,11 @@ void OptiXEngine::saveAccelCache()
 
 std::string OptiXEngine::getCacheFileName()
 {
-  std::string cachefile = m_filename;
-  size_t idx = cachefile.find_last_of( '.' );
-  cachefile.erase( idx );
-  cachefile.append( ".accelcache" );
-  return cachefile;
+    std::string cachefile = m_filename;
+    size_t idx = cachefile.find_last_of( '.' );
+    cachefile.erase( idx );
+    cachefile.append( ".accelcache" );
+    return cachefile;
 }
 
 

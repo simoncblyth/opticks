@@ -52,8 +52,6 @@ GGeo* AssimpGGeo::load(const char* envprefix)
     const char* idpath = ageo.identityFilename(path, query);
 
 
-
-
     ageo.import();
     AssimpSelection* selection = ageo.select(query);
 

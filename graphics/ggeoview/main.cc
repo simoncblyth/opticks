@@ -109,14 +109,11 @@ int main(int argc, char** argv)
 
 
     bookmarks.load("/tmp/bookmarks.ini"); // hmm need to tie bookmarks with the geomety 
+ 
+    const char* prefix = "GGEOVIEW_";
 
-    scene.loadGeometry("GGEOVIEW_") ; 
-
+    const char* idpath = scene.loadGeometry(prefix) ; 
     GMergedMesh* mm = scene.getMergedMesh(); 
-    mm->save("/tmp/mm");
-    const char* idpath = scene.getGGeo()->getIdentityPath(); 
-    printf("idpath %s \n", idpath);
-
 
     scene.loadEvt();
     //
@@ -127,8 +124,8 @@ int main(int argc, char** argv)
     //     but for OpenGL interop its expedient for now
     //
     OptiXEngine engine("GGeoView") ;       
-    engine.setMergedMesh(mm);    // aiming for all geo info to come from the persistable GMergedMesh
     engine.setFilename(idpath);
+    engine.setMergedMesh(mm);    // aiming for all geo info to come from the persistable GMergedMesh
 
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 

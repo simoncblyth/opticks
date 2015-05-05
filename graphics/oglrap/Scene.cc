@@ -74,13 +74,15 @@ void Scene::setComposition(Composition* composition)
 }
 
 
-void Scene::loadGeometry(const char* prefix)
+const char* Scene::loadGeometry(const char* prefix)
 {
-    m_geometry_loader->load(prefix);
+    const char* idpath = m_geometry_loader->load(prefix);
     m_geometry = m_geometry_loader->getDrawable();
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
 
     setTarget(0);
+
+    return idpath ;
 }
 
 
@@ -109,6 +111,8 @@ GGeo* Scene::getGGeo()
 {
     return m_geometry_loader ? m_geometry_loader->getGGeo() : NULL ;
 }
+
+
 
 void Scene::loadEvt()
 {

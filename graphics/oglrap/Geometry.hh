@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdlib.h"
+
 class GGeo ; 
 class GMergedMesh ; 
 class GDrawable ; 
@@ -8,13 +10,15 @@ class Geometry {
     public:
          Geometry();
 
-         const char* identityPath( const char* envprefix);
-         void load(const char* envprefix);
+         const char* load(const char* envprefix);
          void Summary(const char* msg);
 
          GGeo*        getGGeo();
          GMergedMesh* getMergedMesh();
          GDrawable*   getDrawable();
+
+    private:
+         const char* identityPath( const char* envprefix, const char* ext=NULL);
 
     private:
          GGeo*        m_ggeo ;    
