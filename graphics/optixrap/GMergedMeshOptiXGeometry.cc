@@ -25,24 +25,17 @@ void GMergedMeshOptiXGeometry::convert()
 }
 
 
-optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)  
+optix::TextureSampler GMergedMeshOptiXGeometry::makeTextureSampler(GBuffer* wbuf)
 {
    // handles different numbers of substances, but uses static domain length
     unsigned int  domainLength = GSubstanceLib::DOMAIN_LENGTH ; 
-
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-
-    optix::Material material = m_context->createMaterial();
-
-    unsigned int raytype_radiance = 0 ;
-    material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
 
     unsigned int numElementsTotal = wbuf->getNumElementsTotal();
     assert( numElementsTotal % domainLength == 0 );
     unsigned int nx = domainLength ;
     unsigned int ny = numElementsTotal / domainLength ;
 
-    LOG(info) << "GMergedMeshOptiXGeometry::makeMaterial "
+    LOG(info) << "GMergedMeshOptiXGeometry::makeTextureSampler "
               << " numElementsTotal " << numElementsTotal  
               << " (nx)domainLength " << domainLength 
               << " ny (props*subs)  " << ny 
@@ -64,17 +57,36 @@ optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)
     sampler->setArraySize(1u);        
     sampler->setBuffer(0u, 0u, wavelengthBuffer);
 
-    material["wavelength_texture"]->setTextureSampler(sampler);
+    return sampler ; 
+}
 
-    float domainLow  = GSubstanceLib::DOMAIN_LOW ; 
-    float domainHigh = GSubstanceLib::DOMAIN_HIGH ; 
-    float domainStep = GSubstanceLib::DOMAIN_STEP ; 
-    material["wavelength_domain"]->setFloat(domainLow, domainHigh, domainStep ); 
+
+optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)  
+{
+    optix::Material material = m_context->createMaterial();
+
+    unsigned int raytype_radiance = 0 ;
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+    material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+
+    optix::TextureSampler sampler = makeTextureSampler(wbuf);
+    optix::float3 domain = getDomain();
+
+    //material["wavelength_texture"]->setTextureSampler(sampler);
+    //material["wavelength_domain"]->setFloat(domain); 
+
+    m_context["wavelength_texture"]->setTextureSampler(sampler);
+    m_context["wavelength_domain"]->setFloat(domain); 
+    // lodge in context as needed from raygen program for generation 
+    // as well as closest hit 
 
     return material ; 
 }
 
-
+optix::float3 GMergedMeshOptiXGeometry::getDomain()
+{
+    return optix::make_float3(GSubstanceLib::DOMAIN_LOW, GSubstanceLib::DOMAIN_HIGH, GSubstanceLib::DOMAIN_STEP); 
+}
 
 optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMergedMesh* mergedmesh)
 {

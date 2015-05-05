@@ -50,6 +50,8 @@ public:
 
 public:
     void convert();
+    optix::TextureSampler makeTextureSampler(GBuffer* wbuf);
+    optix::float3 getDomain();
 
 private:
     optix::GeometryInstance convertDrawableInstance(GMergedMesh* mergedmesh);

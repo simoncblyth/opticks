@@ -5,6 +5,7 @@ using namespace optix;
 #include "uif.h"
 #include "quad.h"
 #include "cerenkovstep.h"
+#include "wavelength_lookup.h"
 
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
@@ -44,6 +45,7 @@ RT_PROGRAM void generate()
         if(photon_id == 0)
         {
             csdump(cs);
+            wavelength_check();
         }
     }
     else

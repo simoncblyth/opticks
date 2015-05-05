@@ -35,17 +35,24 @@ static __device__ __inline__ void wavelength_dump(unsigned int line )
 static __device__ __inline__ void wavelength_check()
 {
   float wavelength = NM_GREEN ;  
-  for(unsigned int line=0 ; line < 4 ; ++line)
+  for(unsigned int isub=0 ; isub < 100 ; ++isub)
+  {
+  for(unsigned int jqwn=0 ; jqwn < 1 ; ++jqwn)
   { 
+     unsigned int line = isub*4 + jqwn ; 
      float4 props = wavelength_lookup( wavelength, line ) ;
-     rtPrintf("wavelength_check %10.3f nm line %u props  %13.4f %13.4f %13.4f %13.4f \n",
+     rtPrintf("wavelength_check %10.3f nm isub %2u jqwn %u line %3u  props  %13.4f %13.4f %13.4f %13.4f \n",
           wavelength,
+          isub,
+          jqwn, 
           line,
           props.x, 
           props.y, 
           props.z, 
           props.w
      ); 
+  }
+
   }
 }
 
