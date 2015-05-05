@@ -27,6 +27,7 @@ void GMergedMeshOptiXGeometry::convert()
 
 optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)  
 {
+   // handles different numbers of substances, but uses static domain length
     unsigned int  domainLength = GSubstanceLib::DOMAIN_LENGTH ; 
 
     RayTraceConfig* cfg = RayTraceConfig::getInstance();

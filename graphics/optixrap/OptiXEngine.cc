@@ -154,25 +154,18 @@ void OptiXEngine::initContext()
 void OptiXEngine::initGeometry()
 {
     LOG(info) << "OptiXEngine::initGeometry" ;
-    // TODO: use GMergedMesh instead of GGeo
-
 
     GMergedMesh* mm = getMergedMesh();
-
-    //GGeoOptiXGeometry geom(m_ggeo);  //OLD_WAY
     GMergedMeshOptiXGeometry geom(mm);
 
     geom.setGeometryGroup(m_geometry_group);
     geom.setContext(m_context);   
     geom.convert(); 
-
-    //setFilename(m_ggeo->getIdentityPath());
-
     geom.setupAcceleration();
 
     loadAccelCache();
 
-    m_aabb = geom.getAabb();
+    //m_aabb = geom.getAabb();
 
     m_context[ "top_object" ]->set( m_geometry_group );
 

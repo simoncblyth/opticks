@@ -107,12 +107,10 @@ int main(int argc, char** argv)
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
-
-    bookmarks.load("/tmp/bookmarks.ini"); // hmm need to tie bookmarks with the geomety 
  
     const char* prefix = "GGEOVIEW_";
-
     const char* idpath = scene.loadGeometry(prefix) ; 
+    bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
 
     scene.loadEvt();
@@ -125,7 +123,7 @@ int main(int argc, char** argv)
     //
     OptiXEngine engine("GGeoView") ;       
     engine.setFilename(idpath);
-    engine.setMergedMesh(mm);    // aiming for all geo info to come from the persistable GMergedMesh
+    engine.setMergedMesh(mm);   
 
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 

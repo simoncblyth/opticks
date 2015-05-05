@@ -19,21 +19,45 @@
 
 namespace pt = boost::property_tree;
 
-void Bookmarks::load(const char* path)
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
+
+const char* Bookmarks::filename = "bookmarks.ini" ; 
+
+void Bookmarks::load(const char* dir)
 {
-   // transitionally : using the g4daeview.py bookmarks ini format 
+    fs::path bookmarks(dir);
+    bookmarks /= filename ;
 
-   try
-   {
-        pt::read_ini(path, m_tree);
-   }
-   catch(const pt::ptree_error &e)
-   {
+    try
+    {
+        pt::read_ini(bookmarks.string(), m_tree);
+    }
+    catch(const pt::ptree_error &e)
+    {
         LOG(warning) << "Bookmarks::load ERROR " << e.what() ;
-   }
-
+    }
 
 }
+
+void Bookmarks::save(const char* dir)
+{
+    fs::path bookmarks(dir);
+    bookmarks /= filename ;
+
+    try
+    {
+        pt::write_ini(bookmarks.string(), m_tree);
+    }
+    catch(const pt::ptree_error &e)
+    {
+        LOG(warning) << "Bookmarks::save ERROR " << e.what() ;
+    }
+}
+
 
 
 void Bookmarks::setComposition(Composition* composition)
@@ -90,11 +114,6 @@ void Bookmarks::apply(const char* name)
             }
         }   
     }   
-}
-
-void Bookmarks::save(const char* path)
-{
-    pt::write_ini(path, m_tree);
 }
 
 

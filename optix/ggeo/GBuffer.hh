@@ -102,13 +102,14 @@ inline GBuffer* GBuffer::load(const char* path)
     int numItems ; 
     int numElements ; 
 
-    aoba::LoadArrayFromNumpy<T>( path, numItems, numElements, vdata );  
-     
+    aoba::LoadArrayFromNumpy<T>( path, numItems, numElements, vdata );  // 2d load
     assert(numElements < 5);
 
     unsigned int numBytes = numItems*numElements*sizeof(T);
     unsigned int numValues = numBytes/sizeof(T);
     unsigned int itemSize = numElements*sizeof(T) ; 
+
+    assert(numValues == vdata.size());
 
     T* tdata = new T[numValues] ;
     memcpy((void*)tdata,  (void*)vdata.data(), numBytes );

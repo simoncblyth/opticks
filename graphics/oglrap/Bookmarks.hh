@@ -19,6 +19,7 @@ class Scene ;
 
 class Bookmarks {
 public:
+   static const char* filename ; 
 
    Bookmarks()  
        :
@@ -35,8 +36,8 @@ public:
 
    void apply(unsigned int number);
    void apply(const char* name);
-   void load(const char* path);
-   void save(const char* path);
+   void load(const char* dir);
+   void save(const char* dir);
 
 private:
    boost::property_tree::ptree   m_tree;

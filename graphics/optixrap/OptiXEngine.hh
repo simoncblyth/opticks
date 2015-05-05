@@ -80,7 +80,7 @@ class OptiXEngine {
         optix::Buffer         m_genstep_buffer ; 
         optix::Buffer         m_photon_buffer ; 
         optix::GeometryGroup  m_geometry_group ;
-        optix::Aabb           m_aabb;
+        //optix::Aabb           m_aabb;
 
         unsigned int          m_width ;
         unsigned int          m_height ;
