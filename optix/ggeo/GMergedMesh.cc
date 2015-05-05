@@ -4,14 +4,17 @@
 #include "GSubstanceLib.hh"
 #include <iostream>
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
 GMergedMesh::GMergedMesh(GMergedMesh* other)
        : 
        GMesh(other),
        m_cur_vertices(0),
        m_cur_faces(0),
-       m_cur_solid(0),
-       m_num_solids(0),
-       m_num_solids_selected(0)
+       m_cur_solid(0)
+
 {
 }
 
@@ -20,9 +23,7 @@ GMergedMesh::GMergedMesh(unsigned int index)
        GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
        m_cur_vertices(0),
        m_cur_faces(0),
-       m_cur_solid(0),
-       m_num_solids(0),
-       m_num_solids_selected(0)
+       m_cur_solid(0)
 {
 } 
 
@@ -33,7 +34,6 @@ GMergedMesh::~GMergedMesh()
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 {
     GSolid* solid = ggeo->getSolid(0);
-
 
     GMergedMesh* mm = new GMergedMesh( index );
 
@@ -56,17 +56,15 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->traverse( solid, 0, pass_merge ); // 2nd pass counts merge GMesh into GMergedMesh
     mm->updateBounds();
 
-
     GSubstanceLib* lib = ggeo->getSubstanceLib();
     GBuffer* wavelengthBuffer = lib->createWavelengthBuffer();
     mm->setWavelengthBuffer(wavelengthBuffer);
     //mm->dumpWavelengthBuffer(lib->getNumSubstances(), 16, lib->getStandardDomainLength()); 
 
-
-
-
     return mm ;
 }
+
+
 
 void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
@@ -151,12 +149,37 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 }
 
 
+
+
+GMergedMesh* GMergedMesh::load(const char* dir)
+{
+    GMergedMesh* mm(NULL);
+    fs::path cachedir(dir);
+    if(!fs::exists(cachedir))
+    {
+        printf("GMergedMesh::load directory %s DOES NOT EXIST \n", dir);
+    }
+    else
+    {
+        unsigned int index = 0 ; 
+        mm = new GMergedMesh(index);
+        mm->loadBuffers(dir);
+    }
+    return mm ; 
+}
+
+
+
+
+
+
 void GMergedMesh::dumpSolids(const char* msg)
 {
     printf("%s\n", msg);
-    for(unsigned int index=0 ; index < m_num_solids ; ++index)
+    for(unsigned int index=0 ; index < getNumSolids() ; ++index)
     {
-        gfloat4& ce = m_center_extent[index] ;
+        if(index % 1000 != 0) continue ; 
+        gfloat4 ce = getCenterExtent(index) ;
         printf("  %u :    center %10.3f %10.3f %10.3f   extent %10.3f \n", index, ce.x, ce.y, ce.z, ce.w ); 
     }
 }
@@ -174,18 +197,15 @@ float* GMergedMesh::getModelToWorldPtr(unsigned int index)
     }
 }
 
-gfloat4 GMergedMesh::getCenterExtent(unsigned int index)
-{
-    return m_center_extent[index] ;
-}
 
 void GMergedMesh::dumpWavelengthBuffer(unsigned int numSubstance, unsigned int numProp, unsigned int domainLength)
 {
-    if(!m_wavelength_buffer) return ;
+    GBuffer* buffer = getWavelengthBuffer();
+    if(!buffer) return ;
 
-    float* data = (float*)m_wavelength_buffer->getPointer();
+    float* data = (float*)buffer->getPointer();
 
-    unsigned int numElementsTotal = m_wavelength_buffer->getNumElementsTotal();
+    unsigned int numElementsTotal = buffer->getNumElementsTotal();
     assert(numElementsTotal == numSubstance*numProp*domainLength);
 
     std::cout << "GMergedMesh::dumpWavelengthBuffer " 

@@ -109,16 +109,16 @@ int main(int argc, char** argv)
 
 
     bookmarks.load("/tmp/bookmarks.ini"); // hmm need to tie bookmarks with the geomety 
-    scene.loadGeometry("GGEOVIEW_") ; 
-    scene.loadEvt();
 
+    scene.loadGeometry("GGEOVIEW_") ; 
 
     GMergedMesh* mm = scene.getMergedMesh(); 
     mm->save("/tmp/mm");
-
     const char* idpath = scene.getGGeo()->getIdentityPath(); 
     printf("idpath %s \n", idpath);
 
+
+    scene.loadEvt();
     //
     // TODO:  
     //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
@@ -127,9 +127,7 @@ int main(int argc, char** argv)
     //     but for OpenGL interop its expedient for now
     //
     OptiXEngine engine("GGeoView") ;       
-    engine.setMergedMesh(mm);          // aiming for all geo info to come from GMergedMesh
-    //engine.setGGeo(scene.getGGeo());             // need for GGeo too is transitional, until sort out material/surface property buffers
-
+    engine.setMergedMesh(mm);    // aiming for all geo info to come from the persistable GMergedMesh
     engine.setFilename(idpath);
 
     engine.setNumpyEvt(&evt);

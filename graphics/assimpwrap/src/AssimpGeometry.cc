@@ -19,6 +19,9 @@
 
 #include "assert.h"
 
+// npy-
+#include "stringutil.hpp"
+
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
 

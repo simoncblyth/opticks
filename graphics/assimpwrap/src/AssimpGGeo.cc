@@ -21,6 +21,9 @@
 #include "GDomain.hh"
 
 
+// npy-
+#include "stringutils.hpp"
+
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -31,14 +34,6 @@
         g4daeview.sh -g 4813:4816    Iws/SST/Oil  outside of SST high reflectivity 0.8, inside of SST low reflectivity 0.1
 */
 
-
-
-const char* getenvvar( const char* envprefix, const char* envkey )
-{
-    char envvar[128];
-    snprintf(envvar, 128, "%s%s", envprefix, envkey );
-    return getenv(envvar);
-}
 
 
 GGeo* AssimpGGeo::load(const char* envprefix)
@@ -54,6 +49,11 @@ GGeo* AssimpGGeo::load(const char* envprefix)
                    << " ctrl " << ctrl ; 
 
     AssimpGeometry ageo(path);
+    const char* idpath = ageo.identityFilename(path, query);
+
+
+
+
     ageo.import();
     AssimpSelection* selection = ageo.select(query);
 
@@ -63,7 +63,7 @@ GGeo* AssimpGGeo::load(const char* envprefix)
     ggeo->setPath(path);
     ggeo->setQuery(query);
     ggeo->setCtrl(ctrl);
-    ggeo->setIdentityPath(ageo.identityFilename(path,query));
+    ggeo->setIdentityPath(idpath);
 
     return ggeo ;
 }

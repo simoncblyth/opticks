@@ -13,6 +13,7 @@ set(BUILD_SHARED_LIBS ON)
 find_package(Boost REQUIRED)
 find_package(Assimp REQUIRED)
 find_package(GGeo REQUIRED)
+find_package(NPY REQUIRED)
 
 include(EnvBuildOptions)
 
@@ -21,6 +22,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
+    ${NPY_INCLUDE_DIRS}  
 )
 
 add_definitions(
@@ -41,6 +43,7 @@ target_link_libraries(${name}
                        ${Boost_LIBRARIES} 
                        ${Assimp_LIBRARIES} 
                        ${GGeo_LIBRARIES} 
+                       ${NPY_LIBRARIES} 
                      )
 
 add_executable(${name}Test ${name}Test.cc)

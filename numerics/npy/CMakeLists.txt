@@ -36,6 +36,7 @@ add_library( ${name}  SHARED
     VecNPY.cpp
     MultiVecNPY.cpp
     GLMPrint.cpp
+    stringutil.cpp
 )
 
 set(LIBRARIES
@@ -54,6 +55,7 @@ VecNPY.hpp
 MultiVecNPY.hpp
 G4StepNPY.hpp
 numpy.hpp
+stringutil.hpp
 )
 
 install(TARGETS ${name}  DESTINATION lib)

@@ -1,5 +1,4 @@
 #include "GBuffer.hh"
-
 #include "stdio.h"
 
 void GBuffer::Summary(const char* msg)
@@ -13,6 +12,5 @@ void GBuffer::Summary(const char* msg)
           getNumItems(),
           getNumElementsTotal() );
 }
-
 
 

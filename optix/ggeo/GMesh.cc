@@ -20,24 +20,21 @@ const char* GMesh::texcoords    = "texcoords" ;
 const char* GMesh::indices      = "indices" ;
 const char* GMesh::nodes        = "nodes" ;
 const char* GMesh::substances   = "substances" ;
-const char* GMesh::modeltoworld = "modeltoworld" ;
 const char* GMesh::wavelength   = "wavelength" ;
+const char* GMesh::center_extent = "center_extent" ;
 
-void GMesh::nameConstituents()
+void GMesh::nameConstituents(std::vector<std::string>& names)
 {
-    m_names.push_back(vertices); 
-    m_names.push_back(normals); 
-    m_names.push_back(colors); 
-    m_names.push_back(texcoords); 
-    m_names.push_back(indices); 
-    m_names.push_back(nodes); 
-    m_names.push_back(substances); 
-    m_names.push_back(modeltoworld); 
-    m_names.push_back(wavelength); 
+    names.push_back(vertices); 
+    names.push_back(normals); 
+    names.push_back(colors); 
+    names.push_back(texcoords); 
+    names.push_back(indices); 
+    names.push_back(nodes); 
+    names.push_back(substances); 
+    names.push_back(wavelength); 
+    names.push_back(center_extent); 
 }
-
-
-
 
 GMesh::GMesh(GMesh* other) 
      :
@@ -60,14 +57,19 @@ GMesh::GMesh(GMesh* other)
      m_nodes_buffer(other->getNodesBuffer()),
      m_substances(other->getSubstances()),
      m_substances_buffer(other->getSubstancesBuffer()),
+     m_center_extent_buffer(other->getCenterExtentBuffer()),
+     m_num_solids(other->getNumSolids()),
+     m_num_solids_selected(other->getNumSolidsSelected()),
      GDrawable()
 {
    updateBounds();
-   nameConstituents();
+   nameConstituents(m_names);
 }
 
 
 int GMesh::g_instance_count = 0 ;
+
+
 
 GMesh::GMesh(unsigned int index, 
              gfloat3* vertices, 
@@ -101,9 +103,12 @@ GMesh::GMesh(unsigned int index,
       m_model_to_world(NULL),
       m_extent(0.f),
       m_center_extent(NULL),
+      m_center_extent_buffer(NULL),
       m_num_colors(num_vertices),  // tie num_colors to num_vertices
       m_normals(NULL),
       m_normals_buffer(NULL),
+      m_num_solids(0),
+      m_num_solids_selected(0),
       GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 
@@ -117,7 +122,7 @@ GMesh::GMesh(unsigned int index,
    setNormals(normals);
    setTexcoords(texcoords);
    updateBounds();
-   nameConstituents();
+   nameConstituents(m_names);
 }
 
 
@@ -127,13 +132,35 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, normals) == 0)      return m_normals_buffer ; 
     if(strcmp(name, colors) == 0)       return m_colors_buffer ; 
     if(strcmp(name, texcoords) == 0)    return m_texcoords_buffer ; 
+
     if(strcmp(name, indices) == 0)      return m_indices_buffer ; 
     if(strcmp(name, nodes) == 0)        return m_nodes_buffer ; 
     if(strcmp(name, substances) == 0)   return m_substances_buffer ; 
-    //if(strcmp(name, modeltoworld) == 0) return m_modeltoworld_buffer ; 
+
     if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
+    if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
     return NULL ;
 }
+
+
+void GMesh::setBuffer(const char* name, GBuffer* buffer)
+{
+    if(strcmp(name, vertices) == 0)     setVerticesBuffer(buffer) ; 
+    if(strcmp(name, normals) == 0)      setNormalsBuffer(buffer) ; 
+    if(strcmp(name, colors) == 0)       setColorsBuffer(buffer) ; 
+    if(strcmp(name, texcoords) == 0)    setTexcoordsBuffer(buffer) ; 
+
+    if(strcmp(name, indices) == 0)      setIndicesBuffer(buffer) ; 
+    if(strcmp(name, nodes) == 0)        setNodesBuffer(buffer) ; 
+    if(strcmp(name, substances) == 0)   setSubstancesBuffer(buffer) ; 
+
+    if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
+    if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
+}
+
+
+
+
 
 
 void GMesh::setVertices(gfloat3* vertices)
@@ -142,12 +169,96 @@ void GMesh::setVertices(gfloat3* vertices)
     m_vertices_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_vertices, sizeof(gfloat3), 3 ) ;
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
+void GMesh::setVerticesBuffer(GBuffer* buffer)
+{
+    m_vertices_buffer = buffer ; 
+    if(!buffer) return ; 
+
+    m_vertices = (gfloat3*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    m_num_vertices = numBytes/sizeof(gfloat3);
+}
+
+
 void GMesh::setNormals(gfloat3* normals)
 {
     m_normals = normals ;
     m_normals_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_normals, sizeof(gfloat3), 3 ) ;
     assert(sizeof(gfloat3) == sizeof(float)*3);
 }
+void GMesh::setNormalsBuffer(GBuffer* buffer)
+{
+    m_normals_buffer = buffer ; 
+    if(!buffer) return ; 
+    m_normals = (gfloat3*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int num_normals = numBytes/sizeof(gfloat3);
+    assert( m_num_vertices == num_normals );  // must load vertices before normals
+}
+
+void GMesh::setColors(gfloat3* colors)
+{
+    m_colors = colors ;
+    m_colors_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_colors, sizeof(gfloat3), 3  ) ;
+    assert(sizeof(gfloat3) == sizeof(float)*3);
+}
+void GMesh::setColorsBuffer(GBuffer* buffer)
+{
+    m_colors_buffer = buffer ; 
+    if(!buffer) return ; 
+    
+    m_colors = (gfloat3*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int num_colors = numBytes/sizeof(gfloat3);
+
+    assert( m_num_vertices == num_colors );  // must load vertices before colors
+    m_num_colors = m_num_vertices ; // TODO: get rid of m_num_colors: duplication is evil
+}
+
+// used from GMergedMesh
+void GMesh::setCenterExtent(gfloat4* center_extent)  
+{
+    m_center_extent = center_extent ;  
+    assert(m_num_solids > 0);
+    m_center_extent_buffer = new GBuffer( sizeof(gfloat4)*m_num_solids, (void*)m_center_extent, sizeof(gfloat4), 4 ); 
+    assert(sizeof(gfloat4) == sizeof(float)*4);
+}
+void GMesh::setCenterExtentBuffer(GBuffer* buffer) 
+{
+    m_center_extent_buffer = buffer ;  
+    if(!buffer) return ; 
+
+    m_center_extent = (gfloat4*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    m_num_solids = numBytes/sizeof(gfloat4) ;
+}
+
+
+
+
+void GMesh::setTexcoords(gfloat2* texcoords)
+{
+    if(!texcoords) return ;
+    m_texcoords = texcoords ;
+    m_texcoords_buffer = new GBuffer( sizeof(gfloat2)*m_num_vertices, (void*)m_texcoords, sizeof(gfloat2), 2  ) ;
+    assert(sizeof(gfloat2) == sizeof(float)*2);
+}
+void GMesh::setTexcoordsBuffer(GBuffer* buffer)
+{
+    m_texcoords_buffer = buffer ; 
+    if(!buffer) return ; 
+
+    m_texcoords = (gfloat2*)buffer->getPointer(); 
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int num_texcoords = numBytes/sizeof(gfloat2);
+    assert( m_num_vertices == num_texcoords );  // must load vertices before texcoords
+}
+
+
+
+
+
+
 
 void GMesh::setFaces(guint3* faces)
 {
@@ -161,6 +272,19 @@ void GMesh::setFaces(guint3* faces)
     assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
 
+void GMesh::setIndicesBuffer(GBuffer* buffer)
+{
+    m_indices_buffer = buffer ; 
+    if(!buffer) return ;
+
+    m_faces = (guint3*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    m_num_faces = numBytes/sizeof(guint3);    // NB kludge equating "int" buffer to "unsigned int" 
+}
+
+
+
+
 
 
 
@@ -170,28 +294,43 @@ void GMesh::setNodes(unsigned int* nodes)   // only makes sense to use from sing
     m_nodes_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_nodes, sizeof(unsigned int), 1 ) ;
     assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
 }
+void GMesh::setNodesBuffer(GBuffer* buffer)
+{
+    m_nodes_buffer = buffer ; 
+    if(!buffer) return ;
+
+    m_nodes = (unsigned int*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int num_nodes = numBytes/sizeof(unsigned int);
+    assert(m_num_faces == num_nodes);   // must load indices before nodes
+}
+
+
 void GMesh::setSubstances(unsigned int* substances)
 {
     m_substances = substances ;
     m_substances_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_substances, sizeof(unsigned int), 1 ) ;
     assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
 }
-
-
-void GMesh::setColors(gfloat3* colors)
+void GMesh::setSubstancesBuffer(GBuffer* buffer)
 {
-    m_colors = colors ;
-    m_colors_buffer = new GBuffer( sizeof(gfloat3)*m_num_vertices, (void*)m_colors, sizeof(gfloat3), 3  ) ;
-    assert(sizeof(gfloat3) == sizeof(float)*3);
+    m_substances_buffer = buffer ; 
+    if(!buffer) return ;
+
+    m_substances = (unsigned int*)buffer->getPointer();
+
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int num_substances = numBytes/sizeof(unsigned int);
+    assert(m_num_faces == num_substances);   // must load indices before substances
 }
 
-void GMesh::setTexcoords(gfloat2* texcoords)
+
+
+void GMesh::setWavelengthBuffer(GBuffer* buffer)
 {
-    if(!texcoords) return ;
-    m_texcoords = texcoords ;
-    m_texcoords_buffer = new GBuffer( sizeof(gfloat2)*m_num_vertices, (void*)m_texcoords, sizeof(gfloat2), 2  ) ;
-    assert(sizeof(gfloat2) == sizeof(float)*2);
+    m_wavelength_buffer = buffer ; 
 }
+
 
 
 
@@ -261,10 +400,6 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
         unsigned int& substance = m_substances[i] ;
         printf(" fac %5u  node %5u substance %5u  \n", i, node, substance );
     } 
-
-
-
-
 }
 
 
@@ -276,30 +411,37 @@ void GMesh::Summary(const char* msg)
       m_num_vertices, 
       m_num_faces);
 
-   printf("%10s %10.3f %10.3f %10.3f\n",
+   if(m_low) printf("%10s %10.3f %10.3f %10.3f\n",
          "low",
          m_low->x,
          m_low->y,
          m_low->z);
 
-   printf("%10s %10.3f %10.3f %10.3f\n", 
+   if(m_high) printf("%10s %10.3f %10.3f %10.3f\n", 
           "high",
           m_high->x,
           m_high->y,
           m_high->z);
 
-   printf("%10s %10.3f %10.3f %10.3f extent %10.3f\n", 
+   if(m_dimensions) printf("%10s %10.3f %10.3f %10.3f extent %10.3f\n", 
           "dimen",
           m_dimensions->x,
           m_dimensions->y,
           m_dimensions->z,
           m_extent);
 
-   printf("%10s %10.3f %10.3f %10.3f\n", 
+   if(m_center) printf("%10s %10.3f %10.3f %10.3f\n", 
           "center",
           m_center->x,
           m_center->y,
           m_center->z);
+
+   if(m_center_extent) printf("%10s %10.3f %10.3f %10.3f %10.3f \n", 
+          "center_extent",
+          m_center_extent->x,
+          m_center_extent->y,
+          m_center_extent->z,
+          m_center_extent->w);
 
    m_model_to_world->Summary(msg);
 }
@@ -453,39 +595,36 @@ std::vector<unsigned int>& GMesh::getDistinctSubstances()
 }
 
 
+bool GMesh::isFloatBuffer(const char* name)
+{
+    return ( strcmp( name, vertices) == 0 || 
+             strcmp( name, normals) == 0  || 
+             strcmp( name, center_extent ) == 0  || 
+             strcmp( name, wavelength ) == 0  || 
+             strcmp( name, colors) == 0 );
+}
+
+bool GMesh::isIntBuffer(const char* name)
+{
+    return ( strcmp( name, indices) == 0 || 
+             strcmp( name, nodes) == 0  || 
+             strcmp( name, substances) == 0 );
+}
+
 
 void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
 {
     printf("GMesh::saveBuffer name %s path %s \n", name, path );
-    buffer->Summary("GMesh::saveBuffer");
+    //buffer->Summary("GMesh::saveBuffer");
 
-    void* data = buffer->getPointer();
-    unsigned int numBytes   = buffer->getNumBytes();
-    unsigned int numElements = buffer->getNumElements();
-    unsigned int numItems = buffer->getNumItems();        
-    assert(numElements < 5); // elements within an item, eg 3/4 for float3/float4  
+    if(isFloatBuffer(name))    buffer->save<float>(path);
+    else if(isIntBuffer(name)) buffer->save<int>(path);
+    else 
+       printf("GMesh::saveBuffer WARNING NOT saving uncharacterized buffer %s into %s \n", name, path );
+}
 
-    if( strcmp( name, vertices) == 0 || 
-        strcmp( name, normals) == 0  || 
-        strcmp( name, colors) == 0 )
-    {
-        assert(numElements*numItems*sizeof(float) == numBytes ); 
-        aoba::SaveArrayAsNumpy<float>( path, numItems, numElements, (float*)data );  
-    }
-    else if( strcmp( name, indices) == 0 || 
-             strcmp( name, nodes) == 0  || 
-             strcmp( name, substances) == 0 )
-    {
-        assert(numElements*numItems*sizeof(int) == numBytes ); 
-        aoba::SaveArrayAsNumpy<int>( path, numItems, numElements, (int*)data );
-        // numpy.hpp uses character codes, no char code for "unsigned int" implemented : is there one ?   
-        // or maybe use more verbose code in NPY description in the header  ?
-    }
-    else if( strcmp( name, wavelength ) == 0 )
-    {
-        assert(numElements*numItems*sizeof(float) == numBytes ); 
-        aoba::SaveArrayAsNumpy<float>( path, numItems, numElements, (float*)data );  
-    } 
+// numpy.hpp uses character codes, no char code for "unsigned int" implemented : is there one ?   
+// or maybe use more verbose code in NPY description in the header  ?
 
 /*
    Does the detailed shape of wavelengthBuffer need to be persisted ?
@@ -497,7 +636,20 @@ In [15]: w.reshape((58,4,39,4))
 
 */
 
+
+void GMesh::loadBuffer(const char* path, const char* name)
+{
+    GBuffer* buffer(NULL); 
+    if(isFloatBuffer(name))                    buffer = GBuffer::load<float>(path);
+    else if(isIntBuffer(name))                 buffer = GBuffer::load<int>(path);
+    else
+        printf("GMesh::loadBuffer WARNING not loading %s from %s \n", name, path ); 
+
+    if(buffer) setBuffer(name, buffer);
 }
+
+
+
 
 void GMesh::save(const char* dir)
 {
@@ -519,6 +671,7 @@ void GMesh::save(const char* dir)
             bufpath /= name + ".npy" ; 
             GBuffer* buffer = getBuffer(name.c_str());
             if(!buffer) continue ; 
+
             saveBuffer(bufpath.string().c_str(), name.c_str(), buffer);  
         } 
     }
@@ -529,9 +682,44 @@ void GMesh::save(const char* dir)
 }
 
 
+std::vector<std::string>& GMesh::getNames()
+{
+    return m_names ; 
+}
+
+
+
+void GMesh::loadBuffers(const char* dir)
+{
+    for(unsigned int i=0 ; i<m_names.size() ; i++)
+    {
+        std::string name = m_names[i];
+        fs::path bufpath(dir);
+        bufpath /= name + ".npy" ; 
+
+        if(fs::exists(bufpath) && fs::is_regular_file(bufpath))
+        { 
+            loadBuffer(bufpath.string().c_str(), name.c_str());
+        }
+    } 
+    updateBounds();
+}
+
+
 GMesh* GMesh::load(const char* dir)
 {
-    return NULL ; 
+    GMesh* mesh(NULL);
+    fs::path cachedir(dir);
+    if(!fs::exists(cachedir))
+    {
+        printf("GMesh::load directory %s DOES NOT EXIST \n", dir);
+    }
+    else
+    {
+        mesh = new GMesh(0, NULL, 0, NULL, 0, NULL, NULL );
+        mesh->loadBuffers(dir);
+    }
+    return mesh ; 
 }
 
 

@@ -7,6 +7,8 @@ class GDrawable ;
 class Geometry {
     public:
          Geometry();
+
+         const char* identityPath( const char* envprefix);
          void load(const char* envprefix);
          void Summary(const char* msg);
 

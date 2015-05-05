@@ -40,8 +40,9 @@ class GMesh : public GDrawable {
       static const char* indices ; 
       static const char* nodes ; 
       static const char* substances ; 
-      static const char* modeltoworld ; 
       static const char* wavelength ; 
+      static const char* center_extent ; 
+
 
       GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index, 
@@ -53,7 +54,7 @@ class GMesh : public GDrawable {
   public:
       void Summary(const char* msg="GMesh::Summary");
       void Dump(const char* msg="GMesh::Dump", unsigned int nmax=10);
-      unsigned int getIndex();
+
       gfloat3* getLow();
       gfloat3* getHigh();
   public:
@@ -63,9 +64,14 @@ class GMesh : public GDrawable {
       GMatrix<float>* getModelToWorld();
 
   public:
+      unsigned int   getIndex();
       unsigned int   getNumVertices();
       unsigned int   getNumColors();
       unsigned int   getNumFaces();
+      unsigned int   getNumSolids();
+      unsigned int   getNumSolidsSelected();
+
+  public:
       gfloat3*       getVertices();
       gfloat3*       getNormals();
       gfloat3*       getColors();
@@ -73,8 +79,30 @@ class GMesh : public GDrawable {
       guint3*        getFaces();
 
       bool hasTexcoords();
+
   public:
+      // methods supporting save/load from file
+      static GMesh* load(const char* dir);  
+      void loadBuffers(const char* dir);
+      void save(const char* dir);
       GBuffer* getBuffer(const char* name);
+      void setBuffer(const char* name, GBuffer* buffer);
+      bool isIntBuffer(const char* name);
+      bool isFloatBuffer(const char* name);
+      static void nameConstituents(std::vector<std::string>& names);
+      void saveBuffer(const char* path, const char* name, GBuffer* buffer);
+      void loadBuffer(const char* path, const char* name);
+
+  public:
+      void setVerticesBuffer(GBuffer* buffer);
+      void setNormalsBuffer(GBuffer* buffer);
+      void setColorsBuffer(GBuffer* buffer);
+      void setTexcoordsBuffer(GBuffer* buffer);
+      void setIndicesBuffer(GBuffer* buffer);
+      void setNodesBuffer(GBuffer* buffer);
+      void setSubstancesBuffer(GBuffer* buffer);
+      void setWavelengthBuffer(GBuffer* buffer);
+      void setCenterExtentBuffer(GBuffer* buffer);
 
   public:
       // Buffer access for GDrawable protocol
@@ -85,10 +113,12 @@ class GMesh : public GDrawable {
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
       GBuffer* getWavelengthBuffer();
+      GBuffer* getCenterExtentBuffer();
+
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
 
-  ///////// expedients /////////////////////////////////////
+  ///////// for use from subclass  /////////////////////////////////////
   public:
       virtual void setNodes(unsigned int* nodes);
       virtual void setSubstances(unsigned int* substances);
@@ -98,19 +128,14 @@ class GMesh : public GDrawable {
       virtual GBuffer* getNodesBuffer();
       virtual GBuffer* getSubstancesBuffer();
       virtual std::vector<unsigned int>& getDistinctSubstances();
+      std::vector<std::string>& getNames();
+
   private:
       virtual void updateDistinctSubstances();
-      void nameConstituents();
-      void saveBuffer(const char* path, const char* name, GBuffer* buffer);
 
   protected:
       unsigned int* m_nodes ; 
       unsigned int* m_substances ; 
-      GBuffer* m_wavelength_buffer ;
-
-  private:
-      GBuffer* m_nodes_buffer ;
-      GBuffer* m_substances_buffer ;
 
   private: 
       std::vector<unsigned int> m_distinct_substances ;
@@ -125,7 +150,6 @@ class GMesh : public GDrawable {
       void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
       void setCenterExtent(gfloat4* center_extent);
-      void setWavelengthBuffer(GBuffer* wavelength_buffer);
 
   public:
       void setNumColors(unsigned int num_colors);
@@ -140,26 +164,30 @@ class GMesh : public GDrawable {
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
-  public:
-    static GMesh* load(const char* dir);  
-    void save(const char* dir);
-
   protected:
       unsigned int    m_index ;
+
       unsigned int    m_num_vertices ;
       unsigned int    m_num_colors ;
-      unsigned int    m_num_faces ; 
+      unsigned int    m_num_faces ;
+      unsigned int    m_num_solids  ;         // used from GMergedMesh subclass
+      unsigned int    m_num_solids_selected  ;
+ 
       gfloat3*        m_vertices ;
       gfloat3*        m_normals ;
       gfloat3*        m_colors ;
       gfloat2*        m_texcoords ;
       guint3*         m_faces ;
+
+      // TODO: get rid of these
       gfloat3*        m_low ;
       gfloat3*        m_high ;
       gfloat3*        m_dimensions ;
       gfloat3*        m_center ;
       float           m_extent ; 
+
       gfloat4*        m_center_extent ;
+
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
       std::vector<std::string> m_names ; 
 
@@ -169,7 +197,10 @@ class GMesh : public GDrawable {
       GBuffer* m_colors_buffer ;
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
-
+      GBuffer* m_center_extent_buffer ;  
+      GBuffer* m_wavelength_buffer ;
+      GBuffer* m_nodes_buffer ;
+      GBuffer* m_substances_buffer ;
 
 
 };
@@ -191,6 +222,18 @@ inline unsigned int GMesh::getNumFaces()
 {
     return m_num_faces ; 
 }
+inline unsigned int GMesh::getNumSolids()
+{
+    return m_num_solids ; 
+}
+inline unsigned int GMesh::getNumSolidsSelected()
+{
+    return m_num_solids_selected ; 
+}
+
+
+
+
 
 
 inline void GMesh::setNumColors(unsigned int num_colors)
@@ -262,16 +305,12 @@ inline guint3*  GMesh::getFaces()
     return m_faces ;
 }
 
+
+// index is used from subclass
 inline gfloat4 GMesh::getCenterExtent(unsigned int index)
 {
-     return m_center_extent[0] ;   // index is used in subclass
+    return m_center_extent[index] ;
 }
-inline void GMesh::setCenterExtent(gfloat4* center_extent)  // used from GMergedMesh
-{
-     m_center_extent = center_extent ;  
-}
-
-
 
 
 
@@ -306,11 +345,6 @@ inline GBuffer*  GMesh::getWavelengthBuffer()
 {
     return m_wavelength_buffer ;
 }
-inline void  GMesh::setWavelengthBuffer(GBuffer* wavelength_buffer)
-{
-    m_wavelength_buffer = wavelength_buffer ;
-}
-
 
 
 
@@ -334,6 +368,11 @@ inline GBuffer* GMesh::getTexcoordsBuffer()
 {
     return m_texcoords_buffer ;
 }
+inline GBuffer*  GMesh::getCenterExtentBuffer()
+{
+    return m_center_extent_buffer ;
+}
+
 
 
 
@@ -349,6 +388,7 @@ inline GBuffer*  GMesh::getSubstancesBuffer()
 {
     return m_substances_buffer ;
 }
+
 
 
 

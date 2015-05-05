@@ -29,11 +29,8 @@ set(DEFINITIONS
    ${Boost_DEFINITIONS} 
 )
 
-
-
 include_directories(${INCLUDE_DIRS})   
 add_definitions(${DEFINITIONS})
-
 
 add_library(${name} SHARED 
                 md5digest.cc
@@ -58,15 +55,6 @@ add_library(${name} SHARED
                 GArray.cc
 )
 
-add_executable(${name}Test ${name}Test.cc)
-
-target_link_libraries(${name} ${LIBRARIES})
-
-target_link_libraries(${name}Test ${name})
-                        
-install(TARGETS ${name}Test DESTINATION bin)
-install(TARGETS ${name} LIBRARY DESTINATION lib)
-
 SET(hdrs 
 md5digest.hh
 GGeo.hh
@@ -90,5 +78,11 @@ GDrawable.hh
 GArray.hh
 )
 
+target_link_libraries(${name} ${LIBRARIES})
+
+install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
+
+add_subdirectory(tests)
+
 

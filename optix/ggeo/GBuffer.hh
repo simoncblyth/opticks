@@ -1,5 +1,9 @@
-#ifndef GBUFFER_H
-#define GBUFFER_H
+#pragma once
+
+#include "string.h"
+#include "assert.h"
+#include "numpy.hpp"
+
 
 class GBuffer {
     public:
@@ -53,6 +57,14 @@ class GBuffer {
 
       void Summary(const char* msg="GBuffer::Summary");
 
+
+      template<typename T>
+      void save(const char* path);
+
+      template<typename T>
+      static GBuffer* load(const char* path);
+
+
   protected:
       unsigned int m_nbytes ;
       void*        m_pointer ; 
@@ -61,5 +73,47 @@ class GBuffer {
 
 }; 
 
-#endif
+
+
+template<typename T>
+inline void GBuffer::save(const char* path)
+{
+    printf("GBuffer::save path %s \n", path );
+    Summary("GBuffer::save");
+
+    void* data = getPointer();
+    unsigned int numBytes    = getNumBytes();
+    unsigned int numItems    = getNumItems();        
+    unsigned int numElements = getNumElements();
+
+    assert(numElements < 5); // elements within an item, eg 3/4 for float3/float4  
+    assert(numElements*numItems*sizeof(T) == numBytes ); 
+
+    aoba::SaveArrayAsNumpy<T>( path, numItems, numElements, (T*)data );  
+}
+
+
+template<typename T>
+inline GBuffer* GBuffer::load(const char* path)
+{
+    printf("GBuffer::load path %s \n", path );
+
+    std::vector<T> vdata ;
+    int numItems ; 
+    int numElements ; 
+
+    aoba::LoadArrayFromNumpy<T>( path, numItems, numElements, vdata );  
+     
+    assert(numElements < 5);
+
+    unsigned int numBytes = numItems*numElements*sizeof(T);
+    unsigned int numValues = numBytes/sizeof(T);
+    unsigned int itemSize = numElements*sizeof(T) ; 
+
+    T* tdata = new T[numValues] ;
+    memcpy((void*)tdata,  (void*)vdata.data(), numBytes );
+
+    return new GBuffer( numBytes, (void*)tdata,  itemSize, numElements );
+}
+
 

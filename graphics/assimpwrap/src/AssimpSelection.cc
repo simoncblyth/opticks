@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <assimp/scene.h>
 
+// npy-
+#include "stringutil.hpp"
+
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
