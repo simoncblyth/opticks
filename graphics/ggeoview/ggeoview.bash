@@ -164,11 +164,16 @@ Package Dependencies Tree of GGeoView
            Assimp
            GGeo* 
        GGeo*    
-           (none)
+           NPY
+       cudawrap*
+           CUDA
 
-    GGeo
-       // no dependencies : as this or something derived from it 
-       // is slated to become persistable geometry
+
+    GGeo*
+       NPY
+
+       // few dependencies : as this supports persistable geometry
+       // using GMergedMesh/GBuffer load/save
        // which could eliminate geometry dependencies (AssimpWrap) 
        // from the above packages, instead have a geometry 
        // baking to file initial step
@@ -221,10 +226,8 @@ Does modern OpenGL have any features that allow a better way
     time and one for the keyframe after and a uniform that specifies 
     how much of a blend to do between them. 
 
-
-hmm not so easy 
-    for photon simulation as they all are on their own timeline :
-    so its not like traditional animation keyframes
+hmm not so easy for photon simulation as they all are on their own timeline :
+so not like traditional animation keyframes
  
 
 

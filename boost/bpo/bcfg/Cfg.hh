@@ -43,9 +43,10 @@ public:
     Cfg(const char* name, bool live);
     bool isLive();
     const char* getName();
-    bool isHelp(){      return m_vm.count("help") ; }   
-    bool isVersion(){   return m_vm.count("version") ; }   
-    bool isAbort(){     return isHelp() || isVersion() ; }
+    bool isHelp(){       return m_vm.count("help") ; }   
+    bool isNoGeoCache(){ return m_vm.count("nogeocache") ; }   
+    bool isVersion(){    return m_vm.count("version") ; }   
+    bool isAbort(){      return isHelp() || isVersion() ; }
 
 public:
     // holding others 

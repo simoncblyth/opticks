@@ -10,7 +10,7 @@ class Geometry {
     public:
          Geometry();
 
-         const char* load(const char* envprefix);
+         const char* load(const char* envprefix, bool nogeocache=false);
          void Summary(const char* msg);
 
          GGeo*        getGGeo();

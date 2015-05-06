@@ -74,9 +74,9 @@ void Scene::setComposition(Composition* composition)
 }
 
 
-const char* Scene::loadGeometry(const char* prefix)
+const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
 {
-    const char* idpath = m_geometry_loader->load(prefix);
+    const char* idpath = m_geometry_loader->load(prefix, nogeocache);
     m_geometry = m_geometry_loader->getDrawable();
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
 

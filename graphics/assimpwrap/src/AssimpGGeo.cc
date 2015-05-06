@@ -201,7 +201,6 @@ const char* AssimpGGeo::getStringProperty(aiMaterial* material, const char* quer
 
 void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material, bool reverse)
 {
-    //
     unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
     {
@@ -288,7 +287,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         }
         else
         {
-            //printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
+            printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
             GMaterial* gmat = new GMaterial(name, i);
             gmat->setStandardDomain(standard_domain);
             addProperties(gmat, mat, reverse);

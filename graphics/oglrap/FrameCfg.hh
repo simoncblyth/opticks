@@ -14,6 +14,9 @@ public:
            ("help,h",    "print help message") ;
 
        m_desc.add_options()
+           ("nogeocache,G",  "inhibit use of the geocache") ;
+
+       m_desc.add_options()
            ("config,c",   boost::program_options::value<std::string>(&m_configpath),
              "name of a file of a configuration.");
 

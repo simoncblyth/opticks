@@ -90,6 +90,7 @@ __device__ void csinit( CerenkovStep& cs /*, Geometry* g */)
 
     cs.MeanNumberOfPhotonsMax = max(cs.MeanNumberOfPhotons1, cs.MeanNumberOfPhotons2);
 
+    // hmm need to translate material index into substance index
     //cs.material = g->materials[cs.MaterialIndex] ;
     //cs.bialkaliMaterial = g->materials[cs.BialkaliMaterialIndex] ;
 

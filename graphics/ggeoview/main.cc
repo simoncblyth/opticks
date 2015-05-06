@@ -116,8 +116,8 @@ int main(int argc, char** argv)
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
- 
-    const char* idpath = scene.loadGeometry("GGEOVIEW_") ; 
+    bool nogeocache = cfg["frame"]->isNoGeoCache();
+    const char* idpath = scene.loadGeometry("GGEOVIEW_", nogeocache) ; 
     bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
 

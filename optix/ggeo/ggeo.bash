@@ -13,13 +13,6 @@ model, intended for:
 
 * investigation of how to represent Geometry within OptiX
 
-TODO
------
-
-* investigate mesh merging functionality of Assimp and GGeo, which is being used 
-* add normals handling to GMesh and GMergedMesh, as the Assimp import and wrapping
-* implement GLSL normal shader to check normals
-
 Classes
 --------
 
@@ -138,7 +131,152 @@ Where are substance indices formed and associated to every triangle ?
 * substances indices are collected/flattened into 
   the unsigned int* substanceBuffer by GMergedMesh
        
+
+How to map from Geant4 material indices into substance indices ?
+--------------------------------------------------------------------
+
+* chroma used a handshake to do this mapping using G4DAEChroma/G4DAEOpticks 
+  communication : is this needed here ?
+
+* ggeo is by design a dumb subtrate with which the geometry is represented, 
+  the brains of ggeo creation are in assimpwrap-/AssimpGGeo especially:
+
+  * AssimpGGeo::convertMaterials 
+  * AssimpGGeo::addPropertyVector (note untested m_domain_reciprocal)
+
+
+
+material code handshake between geant4<-->g4daechroma<-->chroma
+------------------------------------------------------------------
+
+Geant4/g4daechroma/chroma used metadata handshake resulting in 
+a lookup table used by G4DAEChroma to convert geant4 material
+codes into chroma ones, where is this implemented ?
  
+* gdc-
+* env/chroma/G4DAEChroma/G4DAEChroma/G4DAEMaterialMap.hh
+* env/chroma/G4DAEChroma/src/G4DAEMaterialMap.cc 
+* G4DAEChroma::SetMaterialLookup
+
+* dsc- huh cant find this one locally 
+* http://dayabay.ihep.ac.cn/tracs/dybsvn/browser/dybgaudi/trunk/Simulation/DetSimChroma/src 
+* http://dayabay.ihep.ac.cn/tracs/dybsvn/browser/dybgaudi/trunk/Simulation/DetSimChroma/src/DsChromaRunAction_BeginOfRunAction.icc
+
+
+G4/C++ side
+~~~~~~~~~~~~~
+
+DsChromaRunAction_BeginOfRunAction.icc::
+
+    68      G4DAETransport* transport = new G4DAETransport(_transport.c_str());
+    69      chroma->SetTransport( transport );
+    70      chroma->Handshake();
+    71  
+    72      G4DAEMetadata* handshake = chroma->GetHandshake();
+    73      //handshake->Print("DsChromaRunAction_BeginOfRunAction handshake");
+    74  
+    75      G4DAEMaterialMap* cmm = new G4DAEMaterialMap(handshake, "/chroma_material_map");
+    76      chroma->SetMaterialMap(cmm);
+    ..
+    79  
+    80  #ifndef NOT_NUWA
+    81      // full nuwa environment : allows to obtain g4 material map from materials table
+    82      G4DAEMaterialMap* gmm = new G4DAEMaterialMap();
+    83  #else
+    84      // non-nuwa : need to rely on handshake metadata for g4 material map
+    85      G4DAEMaterialMap* gmm = new G4DAEMaterialMap(handshake, "/geant4_material_map");
+    86  #endif
+    87      //gmm->Print("#geant4_material_map");
+    88  
+    89      int* g2c = G4DAEMaterialMap::MakeLookupArray( gmm, cmm );
+    90      chroma->SetMaterialLookup(g2c);
+    91  
+
+* http://dayabay.ihep.ac.cn/tracs/dybsvn/browser/dybgaudi/trunk/Simulation/DetSimChroma/src/DsChromaG4Cerenkov.cc
+
+Lookup conversion applied as steps are collected (the most efficient place to do it)::
+
+    308 #ifdef G4DAECHROMA_GPU_OPTICAL
+    309     {
+    310         // serialize DsG4Cerenkov::PostStepDoIt stack, just before the photon loop
+    311         G4DAEChroma* chroma = G4DAEChroma::GetG4DAEChroma();
+    312         G4DAECerenkovStepList* csl = chroma->GetCerenkovStepList();
+    313         int* g2c = chroma->GetMaterialLookup();
+    314 
+    315         const G4ParticleDefinition* definition = aParticle->GetDefinition(); 
+    316         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
+    317         G4double weight = fPhotonWeight*aTrack.GetWeight();
+    318         G4int materialIndex = aMaterial->GetIndex();
+    319 
+    320         // this relates Geant4 materialIndex to the chroma equivalent
+    321         G4int chromaMaterialIndex = g2c[materialIndex] ;
+
+ 
+::
+
+    104 void G4DAEChroma::Handshake(G4DAEMetadata* request)
+    105 {
+    106     if(!m_transport) return;
+    107     m_transport->Handshake(request);
+    108 }
+
+    066 void G4DAETransport::Handshake(G4DAEMetadata* request)
+     67 {
+     68     if(!request) request = new G4DAEMetadata("{}");
+     ..
+     76     m_handshake = reinterpret_cast<G4DAEMetadata*>(m_socket->SendReceiveObject(request));
+     ..
+     85 }
+
+
+
+python side
+~~~~~~~~~~~~~~
+
+Other end of that handshake:
+
+* env/geant4/geometry/collada/g4daeview/daedirectpropagator.py 
+
+::
+
+     38     def incoming(self, request):
+     39         """
+     40         Branch handling based on itemshape (excluding first dimension) 
+     41         of the request array 
+     42         """
+     43         self.chroma.incoming(request)  # do any config contained in request
+     44         itemshape = request.shape[1:]
+     ..
+     54         elif itemshape == ():
+     55 
+     56             log.warn("empty itemshape received %s " % str(itemshape))
+     57             extra = True
+     ..
+     76         return self.chroma.outgoing(response, results, extra=extra)
+
+* env/geant4/geometry/collada/g4daeview/daechromacontext.py 
+
+::
+
+    224     def outgoing(self, response, results, extra=False):
+    225         """
+    226         :param response: NPL propagated photons
+    227         :param results: dict of results from the propagation, eg times 
+    228         """
+    ...
+    230         metadata = {}
+    ...
+    235         if extra:
+    236             metadata['geometry'] = self.gpu_detector.metadata
+    237             metadata['cpumem'] = self.mem.metadata()
+    238             metadata['chroma_material_map'] = self.chroma_material_map
+    239             metadata['geant4_material_map'] = self.geant4_material_map
+    240         pass
+    241         response.meta = [metadata]
+    242         return response
+
+
+
 
 GGeo Geometry Model Objective
 ------------------------------

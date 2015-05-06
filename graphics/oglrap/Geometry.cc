@@ -70,14 +70,14 @@ const char* Geometry::identityPath( const char* envprefix, const char* ext)
 }
 
 
-const char* Geometry::load(const char* envprefix)
+const char* Geometry::load(const char* envprefix, bool nogeocache)
 {
     const char* idpath = identityPath(envprefix);
-    LOG(info) << "Geometry::load start idpath " << idpath  ;
+    LOG(info) << "Geometry::load start idpath " << idpath << " nogeocache " << nogeocache  ;
 
     fs::path geocache(idpath);
 
-    if(fs::exists(geocache) && fs::is_directory(geocache)) 
+    if(fs::exists(geocache) && fs::is_directory(geocache) && !nogeocache ) 
     {
         LOG(info) << "Geometry::load loading from cache directory " << idpath ;
         m_ggeo = NULL ; 
