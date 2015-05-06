@@ -22,15 +22,15 @@ class GPropertyMap {
       std::string getKeysString(); 
 
   public:
-      const char* getName();
-      unsigned int getIndex();
+      const char* getName();    // names like __dd__Materials__Nylon0xc3aa360 or __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
+      unsigned int getIndex();  // aiScene material index ("surfaces" and "materials" represented as Assimp materials)
       const char* getType();
 
       bool isSkinSurface();
       bool isBorderSurface();
       bool isMaterial();
 
-      void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=0);
+      void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=1);
 
   public:
       bool hasStandardDomain();

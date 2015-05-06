@@ -78,8 +78,8 @@ class GBuffer {
 template<typename T>
 inline void GBuffer::save(const char* path)
 {
-    printf("GBuffer::save path %s \n", path );
-    Summary("GBuffer::save");
+    //printf("GBuffer::save path %s \n", path );
+    //Summary("GBuffer::save");
 
     void* data = getPointer();
     unsigned int numBytes    = getNumBytes();
@@ -96,7 +96,7 @@ inline void GBuffer::save(const char* path)
 template<typename T>
 inline GBuffer* GBuffer::load(const char* path)
 {
-    printf("GBuffer::load path %s \n", path );
+    //printf("GBuffer::load path %s \n", path );
 
     std::vector<T> vdata ;
     int numItems ; 

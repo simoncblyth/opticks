@@ -131,16 +131,21 @@ void GGeo::Summary(const char* msg)
 
     if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
     if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);
- 
-    /*
+}
 
+void GGeo::Details(const char* msg)
+{
+    printf("%s  #border_surfaces %lu #skin_surfaces %lu #materials %lu \n", msg, m_border_surfaces.size(),  m_skin_surfaces.size(), m_materials.size()); 
     char mbuf[BSIZ];
+
+    /*
     for(unsigned int ims=0 ; ims < m_meshes.size()  ; ims++ )
     {
         GMesh* ms = m_meshes[ims];
         snprintf(mbuf,BSIZ, "%s ms %u", msg, ims);
         ms->Summary(mbuf);
     }
+    */
 
     for(unsigned int ibs=0 ; ibs < m_border_surfaces.size()  ; ibs++ )
     {
@@ -148,7 +153,6 @@ void GGeo::Summary(const char* msg)
         snprintf(mbuf,BSIZ, "%s bs %u", msg, ibs);
         bs->Summary(mbuf);
     }
-
     for(unsigned int iss=0 ; iss < m_skin_surfaces.size()  ; iss++ )
     {
         GSkinSurface* ss = m_skin_surfaces[iss];
@@ -161,13 +165,14 @@ void GGeo::Summary(const char* msg)
         snprintf(mbuf,BSIZ, "%s mt %u", msg, imat);
         mat->Summary(mbuf);
     }
+
+    /*
     for(unsigned int isol=0 ; isol < m_solids.size()  ; isol++ )
     {
         GSolid* sol = m_solids[isol];
         snprintf(mbuf,BSIZ, "%s so %u", msg, isol);
         sol->Summary(mbuf);
     }
-
     */
 }
 

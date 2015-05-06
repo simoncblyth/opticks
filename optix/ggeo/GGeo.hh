@@ -82,6 +82,7 @@ class GGeo {
 
     public:
         void Summary(const char* msg="GGeo::Summary");
+        void Details(const char* msg="GGeo::Details");
 
     private:
         GSubstanceLib* m_substance_lib ; 

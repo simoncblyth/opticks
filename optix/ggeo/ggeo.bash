@@ -276,6 +276,48 @@ Other end of that handshake:
     242         return response
 
 
+Where does chroma_material_map get written ?
+----------------------------------------------
+
+* env/geant4/geometry/collada/g4daeview/daegeometry.py 
+
+::
+
+     796         cc = ColladaToChroma(DAENode, bvh=bvh )
+     797         cc.convert_geometry(nodes=self.nodes())
+     798 
+     799         self.cc = cc
+     800         self.chroma_material_map = DAEChromaMaterialMap( self.config, cc.cmm )
+     801         self.chroma_material_map.write()
+     802         log.debug("completed DAEChromaMaterialMap.write")
+
+
+* env/geant4/geometry/collada/collada_to_chroma.py creates contiguous 0-based indices 
+  for each unique material, the chroma array of materials then gets copied to GPU 
+  hence the indices are as needed for GPU side material lookups
+
+::
+
+    634     def convert_make_maps(self):
+    635         self.cmm = self.make_chroma_material_map( self.chroma_geometry )
+    636         self.csm = self.make_chroma_surface_map( self.chroma_geometry )
+
+::
+
+    663     def make_chroma_material_map(self, chroma_geometry):
+    664         """
+    665         Curiously the order of chroma_geometry.unique_materials on different invokations is 
+    666         "fairly constant" but not precisely so. 
+    667         How is that possible ? Perfect or random would seem more likely outcomes. 
+    668         """
+    669         unique_materials = chroma_geometry.unique_materials
+    670         material_lookup = dict(zip(unique_materials, range(len(unique_materials))))
+    671         cmm = dict([(material_lookup[m],m.name) for m in filter(None,unique_materials)])
+    672         cmm[-1] = "ANY"
+    673         cmm[999] = "UNKNOWN"
+    674         return cmm
+
+
 
 
 GGeo Geometry Model Objective

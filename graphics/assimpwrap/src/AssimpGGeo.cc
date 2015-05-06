@@ -269,7 +269,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if( sslv )
         {
-            //printf("AssimpGGeo::convertMaterials materialIndex %u sslv %s  \n", i, sslv);
+            //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GSkinSurface) name %s sslv %s  \n", i, name, sslv);
             GSkinSurface*  gss = new GSkinSurface(name, i);
             gss->setStandardDomain(standard_domain);
             gss->setSkinSurface(sslv);
@@ -278,7 +278,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         } 
         else if (bspv1 && bspv2 )
         {
-            //printf("AssimpGGeo::convertMaterials materialIndex %u\n    bspv1 %s\n    bspv2 %s \n", i, bspv1, bspv2 );
+            //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GBorderSurface) name %s \n    bspv1 %s\n    bspv2 %s \n", i, name, bspv1, bspv2 );
             GBorderSurface* gbs = new GBorderSurface(name, i);
             gbs->setStandardDomain(standard_domain);
             gbs->setBorderSurface(bspv1, bspv2);
@@ -287,7 +287,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         }
         else
         {
-            printf("AssimpGGeo::convertMaterials materialIndex %u mt %s \n", i, name);
+            //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GMaterial) name %s \n", i, name);
             GMaterial* gmat = new GMaterial(name, i);
             gmat->setStandardDomain(standard_domain);
             addProperties(gmat, mat, reverse);

@@ -87,6 +87,9 @@ const char* Geometry::load(const char* envprefix, bool nogeocache)
     {
         LOG(info) << "Geometry::load slow loading using AssimpGGeo " << envprefix ;
         m_ggeo = AssimpGGeo::load(envprefix);
+
+        m_ggeo->Details("Geometry::load"); 
+
         m_mergedmesh = m_ggeo->getMergedMesh(); 
         m_mergedmesh->setColor(0.5,0.5,1.0);
         LOG(info) << "Geometry::load saving to cache directory " << idpath ;

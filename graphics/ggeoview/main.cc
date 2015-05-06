@@ -80,21 +80,21 @@ int main(int argc, char** argv)
     Bookmarks bookmarks ; 
     Interactor interactor ; 
     numpydelegate delegate ; 
+    NumpyEvt evt ;
+    Scene scene ;
 
     composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
+
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
+
     interactor.setComposition(&composition);
-    interactor.setBookmarks(&bookmarks);
-
-    NumpyEvt evt ;
-    evt.setGenstepData(NPY::load("cerenkov", "1")); 
-
-    Scene scene ;
-    scene.setNumpyEvt(&evt);
     scene.setComposition(&composition);    
-
-    bookmarks.setScene(&scene);
     bookmarks.setComposition(&composition);
+
+    interactor.setBookmarks(&bookmarks);
+    scene.setNumpyEvt(&evt);
+    bookmarks.setScene(&scene);
+
 
     Cfg cfg("umbrella", false) ; // collect other Cfg objects
     cfg.add(new FrameCfg<Frame>(                "frame",         &frame,    false));
@@ -111,6 +111,8 @@ int main(int argc, char** argv)
 
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
+
+    evt.setGenstepData(NPY::load("cerenkov", "1")); 
 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
 

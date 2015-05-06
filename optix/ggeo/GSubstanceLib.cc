@@ -208,7 +208,7 @@ void GSubstanceLib::setKeyMap(const char* spec)
     }
 }
 
-const char* GSubstanceLib::getLocalKey(const char* dkey) // mapping between standard keynames and local key names
+const char* GSubstanceLib::getLocalKey(const char* dkey) // mapping between standard keynames and local key names, eg refractive_index -> RINDEX
 {
     return m_keymap[dkey].c_str();
 }
