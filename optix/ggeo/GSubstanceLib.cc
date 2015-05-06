@@ -9,11 +9,17 @@
 #include "stdio.h"
 #include "limits.h"
 
+#include <boost/property_tree/json_parser.hpp>
+namespace pt = boost::property_tree;
+
 
 float        GSubstanceLib::DOMAIN_LOW  = 60.f ; 
 float        GSubstanceLib::DOMAIN_HIGH = 810.f ; 
 float        GSubstanceLib::DOMAIN_STEP = 20.f ; 
 unsigned int GSubstanceLib::DOMAIN_LENGTH = 39  ; 
+
+
+
 
 
 GSubstanceLib::GSubstanceLib() : m_defaults(NULL) 
@@ -218,6 +224,7 @@ const char* GSubstanceLib::getLocalKey(const char* dkey) // mapping between stan
 
 GPropertyMap* GSubstanceLib::createStandardProperties(const char* pname, GSubstance* substance)
 {
+    // hmm combining all 4-sets into one PropertyMap
     GPropertyMap* ptex = new GPropertyMap(pname);
 
     addMaterialProperties(ptex, substance->getInnerMaterial(), inner);
@@ -410,4 +417,58 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
 }
 
 
+void GSubstanceLib::addMetadata(unsigned int isub, const char* cat, const char* tag, const char* val)
+{
+    char key[64];
+    snprintf(key, 64, "lib.substance.%d.%s.%s", isub, cat, tag );
+    m_tree.add(key, val);
+}
+void GSubstanceLib::addMetadata(unsigned int isub, const char* cat, const char* tag, unsigned int val)
+{
+    char key[64];
+    snprintf(key, 64, "lib.substance.%d.%s.%s", isub, cat, tag );
+    m_tree.add(key, val);
+}
+void GSubstanceLib::addMetadata(unsigned int isub, const char* cat, GPropertyMap* pmap )
+{
+    if(!pmap) return ;
+
+    const char* name = pmap->getName() ;
+    const char* type = pmap->getType() ;
+    char* digest = pmap->digest() ;
+    std::string keys = pmap->getKeysString() ;
+
+    addMetadata(isub, cat, "name", name); 
+    addMetadata(isub, cat, "type", type);
+    addMetadata(isub, cat, "keys", keys.c_str());
+    addMetadata(isub, cat, "digest", digest );
+
+    free(digest);
+
+    if(strcmp(cat, "imat") == 0 || strcmp(cat, "omat") == 0)
+    {
+        char* shortname = pmap->getShortName("__dd__Materials__") ; 
+        addMetadata(isub, cat, "shortname", shortname); 
+        free(shortname);
+    }
+}
+
+void GSubstanceLib::writeMetadata(const char* path)
+{
+    unsigned int numSubstance = getNumSubstances() ;
+    for(unsigned int isub=0 ; isub < numSubstance ; isub++)
+    {
+        GSubstance* substance = getSubstance(isub);
+        unsigned int substanceIndex = substance->getIndex();
+        assert(isub == substanceIndex);
+
+        addMetadata(isub, "imat", substance->getInnerMaterial() );
+        addMetadata(isub, "omat", substance->getOuterMaterial() );
+        addMetadata(isub, "isur", substance->getInnerSurface() );
+        addMetadata(isub, "osur", substance->getOuterSurface() );
+
+        // hmm the standard ptex props are the relevant ones ? for matching against wavelength buffer 
+    }
+    pt::write_json(path, m_tree);
+}
 

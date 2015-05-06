@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+#include <boost/property_tree/ptree.hpp>
+
 #include "GDomain.hh"
 #include "GProperty.hh"
 
@@ -74,6 +76,13 @@ class GSubstanceLib {
       unsigned int getNumSubstances();
       GSubstance* getSubstance(unsigned int index); 
 
+  private:
+      void addMetadata(unsigned int isub, const char* cat, const char* tag, unsigned int val);
+      void addMetadata(unsigned int isub, const char* cat, const char* tag, const char* val);
+      void addMetadata(unsigned int isub, const char* cat, GPropertyMap* pmap );
+  public:
+      void writeMetadata(const char* path);
+
   public:
       void Summary(const char* msg="GSubstanceLib::Summary");
 
@@ -85,6 +94,8 @@ class GSubstanceLib {
       GDomain<double>* m_standard_domain ;  
       GPropertyMap* m_defaults ;  
       GProperty<double>* m_ramp ;  
+    
+      boost::property_tree::ptree   m_tree;
 
 };
 
