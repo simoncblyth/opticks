@@ -1,5 +1,9 @@
 #include "OptiXEngine.hh"
 
+#include "assert.h"
+#include "stdio.h"
+#include "string.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -35,12 +39,13 @@
 #include "GGeoOptiXGeometry.hh"
 #include "GMergedMeshOptiXGeometry.hh"
 
+// cudawrap-
+using namespace optix ; 
+#include "cuRANDWrapper.hh"
+#include "curand.h"
+#include "curand_kernel.h"
 
-#include "assert.h"
-#include "stdio.h"
-#include "string.h"
 
-using namespace optix;
 
 enum RayType
 {
@@ -52,6 +57,8 @@ enum RayType
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
 OptiXEngine::OptiXEngine(const char* cmake_target) :
+    m_rng_max(0),
+    m_rng_wrapper(NULL),
     m_context(NULL),
     m_geometry_group(NULL),
     m_photon_buffer_id(0),
@@ -91,6 +98,7 @@ void OptiXEngine::init()
     initContext();
     initGeometry();
     initGenerate();  // hmm maybe should not be here, in normal usage only needed on NPY arrival
+    initRng();
 
     preprocess();  // context is validated and accel structure built in here
 
@@ -225,6 +233,37 @@ void OptiXEngine::trace()
     m_trace_count += 1 ; 
 }
 
+
+void OptiXEngine::setRngMax(unsigned int rng_max)
+{
+// default of 0 disables Rng 
+// otherwise maximum number of RNG streams, 
+// should be a little more than the max number of photons to generate/propagate eg 3e6
+    m_rng_max = rng_max ;
+}
+unsigned int OptiXEngine::getRngMax()
+{
+    return m_rng_max ; 
+}
+
+void OptiXEngine::initRng()
+{
+    if(m_rng_max == 0 ) return ;
+
+    const char* rngCacheDir = RayTraceConfig::RngDir() ;
+    m_rng_wrapper = cuRANDWrapper::instanciate( m_rng_max, rngCacheDir );
+
+    // OptiX owned RNG states buffer (not CUDA owned)
+    m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
+    m_rng_states->setElementSize(sizeof(curandState));
+    m_rng_states->setSize(m_rng_max);
+    m_context["rng_states"]->setBuffer(m_rng_states);
+
+    curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
+    m_rng_wrapper->setItems(m_rng_max);
+    m_rng_wrapper->fillHostBuffer(host_rng_states, m_rng_max);
+    m_rng_states->unmap();
+}
 
 
 void OptiXEngine::generate()

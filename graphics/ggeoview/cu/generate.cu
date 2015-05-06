@@ -1,5 +1,10 @@
+
+#include <curand_kernel.h>
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
+
+#include "PerRayData_propagate.h"
+
 using namespace optix;
 
 #include "uif.h"
@@ -12,6 +17,9 @@ rtBuffer<float4>    photon_buffer;
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+
+rtBuffer<curandState, 1> rng_states ;
+
 
 // porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
 
@@ -29,6 +37,9 @@ RT_PROGRAM void generate()
     float4 gs1 = genstep_buffer[genstep_id*6+1];
     float4 gs2 = genstep_buffer[genstep_id*6+2];
 
+    PerRayData_propagate prd;
+    prd.depth = 0 ;
+    prd.rng = rng_states[photon_id];
 
     // first 4 bytes of genstep entry distinguishes 
     // cerenkov and scintillation by the sign of a 1-based index 
@@ -54,16 +65,14 @@ RT_PROGRAM void generate()
     }
 
 
-    //rtPrintf("generate.cu::generate iph %7d igs %7d  "
-    //         "gs2.xyzw %10.3f %10.3f %10.3f %10.3f \n", iph,  igs, gs2.x, gs2.y, gs2.z, gs2.w );
-    //    "gs1.xyzw %10.3f %10.3f %10.3f %10.3f \n", iph,  igs, gs1.x, gs1.y, gs1.z, gs1.w );
-    //
+    // arbitrarily setting photon positions to genstep position with offset : to check visualization of generated photons
+    //float scale = 100.f * (photon_id % 100) ;  
+    float scale = 10000.f * curand_uniform(&prd.rng);
 
-    // arbitrarily setting photon positions to genstep position 
-    // with offset : to check visualization of generated photons
-    //
-    float scale = 100.f * (photon_id % 100) ;  
     photon_buffer[launch_index.x] = make_float4( gs1.x + gs2.x*scale, gs1.y + gs2.y*scale, gs1.z + gs2.z*scale, 1.f );
+
+ 
+    rng_states[photon_id] = prd.rng ;
 }
 
 RT_PROGRAM void exception()

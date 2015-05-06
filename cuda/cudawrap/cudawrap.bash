@@ -8,6 +8,34 @@ cudawrap-env(){
 }
 cudawrap-usage(){ cat << EOU
 
+
+
+When place include without "using namespace optix" get::
+
+    [100%] Building CXX object CMakeFiles/GGeoView.dir/main.cc.o
+    In file included from /Users/blyth/env/graphics/ggeoview/main.cc:48:
+    In file included from /usr/local/env/cuda/CUDAWrap/include/cuRANDWrapper.hh:8:
+    In file included from /usr/local/cuda/include/curand_kernel.h:60:
+    In file included from /usr/local/cuda/include/curand.h:59:
+    In file included from /usr/local/cuda/include/cuda_runtime.h:68:
+    In file included from /usr/local/cuda/include/channel_descriptor.h:62:
+    /usr/local/cuda/include/cuda_runtime_api.h:193:17: error: unknown type name 'cudaError_t'; did you mean 'optix::cudaError_t'?
+    extern __host__ cudaError_t CUDARTAPI cudaDeviceReset(void);
+                    ^~~~~~~~~~~
+                    optix::cudaError_t
+
+Correct way to include::
+
+    // cudawrap-
+    using namespace optix ; 
+    #include "cuRANDWrapper.hh"
+    #include "curand.h"
+    #include "curand_kernel.h"
+
+* TODO: look into avoiding this requirement
+
+
+
 Warning::
 
     delta:2015 blyth$ cudawrap-make
@@ -224,6 +252,7 @@ cudawrap-name(){ echo CUDAEnv ; }
 cudawrap-bdir(){ echo $(local-base)/env/cuda/cudawrap.build ; }
 cudawrap-idir(){ echo $(local-base)/env/cuda/cudawrap ; }
 cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
+cudawrap-ibin(){ echo $(cudawrap-idir)/bin/cuRANDWrapperTest ; }
 
 cudawrap-rng-dir(){ echo $(local-base)/env/cuda/cudawrap/rngcache ; }
 cudawrap-rng(){  ls -l $(cudawrap-rng-dir) ; }

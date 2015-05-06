@@ -47,7 +47,7 @@ find_package(Cfg REQUIRED)
 
 find_package(OptiXRap REQUIRED)
 find_package(GGeo REQUIRED)
-
+find_package(CUDAWrap REQUIRED)
 
 
 include_directories(
@@ -67,6 +67,7 @@ include_directories(
    ${OptiX_INCLUDE}  
    ${OptiXRap_INCLUDE_DIRS}  
    ${GGeo_INCLUDE_DIRS}  
+   ${CUDAWrap_INCLUDE_DIRS}  
 )
 
 add_definitions(
@@ -76,7 +77,7 @@ add_definitions(
    ${OptiX_DEFINITIONS} 
    ${OptiXRap_DEFINITIONS} 
    ${Boost_DEFINITIONS} 
-
+   ${CUDAWrap_DEFINITIONS}
 )
 
 
@@ -111,9 +112,9 @@ function(add_optix_executable target_name)
 
       ${AssimpWrap_LIBRARIES} 
       ${GGeo_LIBRARIES} 
-      #   ${CUDAWrap_LIBRARIES}
       ${OptiXRap_LIBRARIES}
       ${GGeo_LIBRARIES}
+      ${CUDAWrap_LIBRARIES}
 
       ssl
       crypto 

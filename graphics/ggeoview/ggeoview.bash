@@ -40,6 +40,8 @@ to run anyhow disable OptiX with::
 
 To free up GPU memory restart the machine, or try sleep/unsleep and
 exit applications including Safari, Mail that all use GPU memory. 
+Observe that sleeping for ~1min rather than my typical few seconds 
+frees almost all GPU memory.
 
 Check available GPU memory with **cu** if less than ~512MB OptiX will
 crash at startup::
@@ -173,6 +175,28 @@ Package Dependencies Tree of GGeoView
 
 
 
+Pre-cook RNG Cache
+-------------------
+
+* currently the work number must precicely match the hardcoded 
+  value used for OptiXEngine::setRngMax  
+
+  * TODO: tie these together via envvar
+
+
+::
+
+    delta:ggeoview blyth$ ggeoview-rng-prep
+    cuRANDWrapper::instanciate with cache enabled : cachedir /usr/local/env/graphics/ggeoview.build/lib/rng
+    cuRANDWrapper::Allocate
+    cuRANDWrapper::InitFromCacheIfPossible
+    cuRANDWrapper::InitFromCacheIfPossible : no cache initing and saving 
+    cuRANDWrapper::Init
+     init_rng_wrapper sequence_index   0  thread_offset       0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   138.0750 ms 
+    ...
+
+
+
 Improvement
 -------------
 
@@ -266,7 +290,9 @@ ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
 ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
 
+ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }
 ggeoview-ptx-dir(){ echo $(ggeoview-bdir)/lib/ptx ; }
+ggeoview-rng-ls(){  ls -l $(ggeoview-rng-dir) ; }
 ggeoview-ptx-ls(){  ls -l $(ggeoview-ptx-dir) ; }
 
 ggeoview-scd(){  cd $(ggeoview-sdir); }
@@ -330,6 +356,12 @@ ggeoview-accelcache-rm()
     rm ${DAE_NAME_DYB/.dae}.*.accelcache
 }
 
+ggeoview-rng-prep()
+{
+   cudawrap-
+   CUDAWRAP_RNG_DIR=$(ggeoview-rng-dir) WORK=$(( 1000*1000 )) $(cudawrap-ibin)
+}
+
 
 
 ggeoview-export()
@@ -353,6 +385,7 @@ ggeoview-export()
    export SHADER_DIR=$(ggeoview-sdir)/gl
 
    export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
+   export RAYTRACE_RNG_DIR=$(ggeoview-rng-dir) 
 } 
 ggeoview-run(){ 
    local bin=$(ggeoview-bin)

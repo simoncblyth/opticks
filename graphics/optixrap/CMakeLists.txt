@@ -40,7 +40,7 @@ find_package(NPY  REQUIRED)
 
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
-#find_package(CUDAWrap REQUIRED)
+find_package(CUDAWrap REQUIRED)
 
 
 include(EnvBuildOptions)
@@ -60,9 +60,8 @@ include_directories(
     ${CUDA_INCLUDE_DIRS}
     ${AssimpWrap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
+    ${CUDAWrap_INCLUDE_DIRS}  
 )
-#   ${CUDAWrap_INCLUDE_DIRS}  
-#   $ENV{OPTIX_SDK_DIR}/sutil
 
 
 add_definitions(
@@ -72,8 +71,8 @@ add_definitions(
     ${OGLRap_DEFINITIONS}
 
     ${OptiX_DEFINITIONS} 
+    ${CUDAWrap_DEFINITIONS} 
 )
-#    ${CUDAWrap_DEFINITIONS} 
 
 
 add_library( ${name}  SHARED
@@ -95,6 +94,7 @@ target_link_libraries( ${name}
       ${NPY_LIBRARIES}
       optix
       optixu
+      ${CUDAWrap_LIBRARIES}
 )
 
 

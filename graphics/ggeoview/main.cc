@@ -35,14 +35,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// optixrap-
-#include "OptiXEngine.hh"
-#include "RayTraceConfig.hh"
-
-
 // ggeo-
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
+
 
 
 
@@ -52,6 +48,19 @@
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
+
+// optixrap-
+#include "OptiXEngine.hh"
+#include "RayTraceConfig.hh"
+
+
+// cudawrap-
+//using namespace optix ; 
+//#include "cuRANDWrapper.hh"
+//#include "curand.h"
+//#include "curand_kernel.h"
+
 
 void logging_init()
 {
@@ -108,8 +117,7 @@ int main(int argc, char** argv)
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
  
-    const char* prefix = "GGEOVIEW_";
-    const char* idpath = scene.loadGeometry(prefix) ; 
+    const char* idpath = scene.loadGeometry("GGEOVIEW_") ; 
     bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
 
@@ -124,10 +132,10 @@ int main(int argc, char** argv)
     OptiXEngine engine("GGeoView") ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
-
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(interactor.getOptiXMode()>-1);
+    engine.setRngMax(1e6);
     engine.init();  // creates OptiX context, when enabled
 
     engine.generate();
@@ -147,6 +155,7 @@ int main(int argc, char** argv)
         { 
              //  something in engine.trace is making gensteps disappear after on/off OptiX mode 
              //  binary search reveals its the OptiX context launch 
+             //  (rather than suspected OpenGL state "interference")
              //
              //  --> keeping launch, skipping initGenerate avoids disappearance,
              //      but flakiness observed: working now, but might not be fixed

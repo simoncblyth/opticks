@@ -8,11 +8,13 @@ class GGeo ;
 class GMergedMesh ;
 class NPY ;
 class NumpyEvt ; 
+class cuRANDWrapper ; 
 
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
 // TODO: split off non-OpenGL OptiXCore for headless usage and easier testing
+// TODO: this needs to be drawn and quartered, doing far too much for one class
 
 class OptiXEngine {
 
@@ -32,37 +34,40 @@ class OptiXEngine {
     public:
         OptiXEngine(const char* cmake_target);
 
+    public:
         void setSize(unsigned int width, unsigned int height);
         void setComposition(Composition* composition);
         void setGGeo(GGeo* ggeo);
         void setMergedMesh(GMergedMesh* mergedmesh);
         void setEnabled(bool enabled);
         void setNumpyEvt(NumpyEvt* evt);
+        void setRngMax(unsigned int rng_max);
 
+    public:
         GMergedMesh* getMergedMesh();
+        optix::Context& getContext();
+        unsigned int getRngMax();
 
+    public:
         void init();
+        void trace(); 
+        void generate();
+        void render();
+        void cleanUp();
+
+    private:
         void initRenderer();
         void initContext();
         void initGeometry();
         void initGenerate();
         void initGenerate(NumpyEvt* evt);
+        void initRng();
+        void preprocess();
 
-        void preprocess(); 
-        void trace(); 
-        void generate();
-
-        void cleanUp();
         void fill_PBO();
         void displayFrame(unsigned int texID);
 
-    public:
-        optix::Context& getContext();
-        void render();
-        
     private: 
-        //unsigned int getPBOId(){ return m_pbo ; }
-        //unsigned int getVBOId(){ return m_vbo ; }
         void push_PBO_to_Texture(unsigned int texId);
         void associate_PBO_to_Texture(unsigned int texId);
 
@@ -73,6 +78,11 @@ class OptiXEngine {
         // format can be RT_FORMAT_USER 
         optix::Buffer createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
         optix::Buffer createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
+
+    protected:
+        optix::Buffer         m_rng_states ;
+        unsigned int          m_rng_max ; 
+        cuRANDWrapper*        m_rng_wrapper ;
 
     protected:
         optix::Context        m_context; 
@@ -88,8 +98,7 @@ class OptiXEngine {
         unsigned int          m_genstep_buffer_id ;
         unsigned int          m_pbo ;
 
-
-        unsigned char* m_pbo_data ; 
+        unsigned char*   m_pbo_data ; 
 
         Composition*     m_composition ; 
         Renderer*        m_renderer ; 
@@ -103,7 +112,6 @@ class OptiXEngine {
         bool             m_enabled ; 
         int              m_texture_id ; 
         NumpyEvt*        m_evt ; 
-
 
 
    // from sutil/MeshScene.h
@@ -120,8 +128,6 @@ class OptiXEngine {
         std::string   m_accel_refine;
         bool          m_accel_cache_loaded;
         bool          m_accel_caching_on;
-
-
 
 };
 
