@@ -58,7 +58,6 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     GSubstanceLib* lib = ggeo->getSubstanceLib();
     GBuffer* wavelengthBuffer = lib->createWavelengthBuffer();
-    lib->writeMetadata("/tmp/GSubstanceLib.json");
 
     mm->setWavelengthBuffer(wavelengthBuffer);
     //mm->dumpWavelengthBuffer(lib->getNumSubstances(), 16, lib->getStandardDomainLength()); 

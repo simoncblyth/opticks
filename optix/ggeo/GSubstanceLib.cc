@@ -1,4 +1,5 @@
 #include "GSubstanceLib.hh"
+#include "GSubstanceLibMetadata.hh"
 #include "GSubstance.hh"
 #include "GPropertyMap.hh"
 #include "GBuffer.hh"
@@ -9,9 +10,6 @@
 #include "stdio.h"
 #include "limits.h"
 
-#include <boost/property_tree/json_parser.hpp>
-namespace pt = boost::property_tree;
-
 
 float        GSubstanceLib::DOMAIN_LOW  = 60.f ; 
 float        GSubstanceLib::DOMAIN_HIGH = 810.f ; 
@@ -19,10 +17,7 @@ float        GSubstanceLib::DOMAIN_STEP = 20.f ;
 unsigned int GSubstanceLib::DOMAIN_LENGTH = 39  ; 
 
 
-
-
-
-GSubstanceLib::GSubstanceLib() : m_defaults(NULL) 
+GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL)
 {
     // chroma/chroma/geometry.py
     //
@@ -366,6 +361,8 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
     GBuffer* buffer(NULL) ;
     float* data(NULL) ;
 
+    if(!m_meta) m_meta = new GSubstanceLibMetadata ; 
+
     unsigned int numSubstance = getNumSubstances() ;
 
     for(unsigned int isub=0 ; isub < numSubstance ; isub++)
@@ -376,6 +373,16 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
 
         assert(isub == substanceIndex);
         //printf("GSubstanceLib::createWavelengthBuffer isub %u substanceIndex  %u \n", isub, substanceIndex );
+
+    
+        const char* kfmt_subs = "lib.substance.%d.%s.%s" ;
+        m_meta->add(kfmt_subs, isub, "imat", substance->getInnerMaterial() );
+        m_meta->add(kfmt_subs, isub, "omat", substance->getOuterMaterial() );
+        m_meta->add(kfmt_subs, isub, "isur", substance->getInnerSurface() );
+        m_meta->add(kfmt_subs, isub, "osur", substance->getOuterSurface() );
+
+        m_meta->addMaterial(isub, "imat", substance->getInnerMaterial());
+        m_meta->addMaterial(isub, "omat", substance->getOuterMaterial());
 
         GPropertyMap* ptex = createStandardProperties("ptex", substance);
         unsigned int numProp = ptex->getNumProperties() ;
@@ -396,7 +403,7 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
 
         for( unsigned int p = 0; p < numProp/4 ; ++p ) 
         {   
-            unsigned int propOffset = p*numProp/4 ;
+            unsigned int propOffset = p*numProp/4 ;  // 0, 4, 8, 12
             GPropertyD* p0 = ptex->getPropertyByIndex(propOffset+0) ;
             GPropertyD* p1 = ptex->getPropertyByIndex(propOffset+1) ;
             GPropertyD* p2 = ptex->getPropertyByIndex(propOffset+2) ;
@@ -413,62 +420,8 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             }       
         }   
     }
+    m_meta->createMaterialMap();
     return buffer ; 
 }
 
-
-void GSubstanceLib::addMetadata(unsigned int isub, const char* cat, const char* tag, const char* val)
-{
-    char key[64];
-    snprintf(key, 64, "lib.substance.%d.%s.%s", isub, cat, tag );
-    m_tree.add(key, val);
-}
-void GSubstanceLib::addMetadata(unsigned int isub, const char* cat, const char* tag, unsigned int val)
-{
-    char key[64];
-    snprintf(key, 64, "lib.substance.%d.%s.%s", isub, cat, tag );
-    m_tree.add(key, val);
-}
-void GSubstanceLib::addMetadata(unsigned int isub, const char* cat, GPropertyMap* pmap )
-{
-    if(!pmap) return ;
-
-    const char* name = pmap->getName() ;
-    const char* type = pmap->getType() ;
-    char* digest = pmap->digest() ;
-    std::string keys = pmap->getKeysString() ;
-
-    addMetadata(isub, cat, "name", name); 
-    addMetadata(isub, cat, "type", type);
-    addMetadata(isub, cat, "keys", keys.c_str());
-    addMetadata(isub, cat, "digest", digest );
-
-    free(digest);
-
-    if(strcmp(cat, "imat") == 0 || strcmp(cat, "omat") == 0)
-    {
-        char* shortname = pmap->getShortName("__dd__Materials__") ; 
-        addMetadata(isub, cat, "shortname", shortname); 
-        free(shortname);
-    }
-}
-
-void GSubstanceLib::writeMetadata(const char* path)
-{
-    unsigned int numSubstance = getNumSubstances() ;
-    for(unsigned int isub=0 ; isub < numSubstance ; isub++)
-    {
-        GSubstance* substance = getSubstance(isub);
-        unsigned int substanceIndex = substance->getIndex();
-        assert(isub == substanceIndex);
-
-        addMetadata(isub, "imat", substance->getInnerMaterial() );
-        addMetadata(isub, "omat", substance->getOuterMaterial() );
-        addMetadata(isub, "isur", substance->getInnerSurface() );
-        addMetadata(isub, "osur", substance->getOuterSurface() );
-
-        // hmm the standard ptex props are the relevant ones ? for matching against wavelength buffer 
-    }
-    pt::write_json(path, m_tree);
-}
 

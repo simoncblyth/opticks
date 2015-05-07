@@ -43,6 +43,7 @@ add_library(${name} SHARED
                 GBorderSurface.cc
                 GSubstance.cc
                 GSubstanceLib.cc
+                GSubstanceLibMetadata.cc
                 GSolid.cc
                 GMesh.cc
                 GMergedMesh.cc
@@ -70,6 +71,7 @@ GSkinSurface.hh
 GBorderSurface.hh
 GSubstance.hh
 GSubstanceLib.hh
+GSubstanceLibMetadata.hh
 GVector.hh
 GMatrix.hh
 GNode.hh

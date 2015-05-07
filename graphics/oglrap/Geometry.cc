@@ -3,6 +3,8 @@
 // assimpwrap
 #include "AssimpWrap/AssimpGGeo.hh"
 #include "GMergedMesh.hh"
+#include "GSubstanceLib.hh"
+#include "GSubstanceLibMetadata.hh"
 #include "GGeo.hh"
 
 // npy-
@@ -20,25 +22,12 @@ namespace fs = boost::filesystem;
 Geometry::Geometry() 
    :
    m_ggeo(NULL),
-   m_mergedmesh(NULL)
+   m_mergedmesh(NULL),
+   m_metadata(NULL)
 {
 }
 
-GGeo* Geometry::getGGeo()
-{
-    return m_ggeo ; 
-}
-
-GMergedMesh* Geometry::getMergedMesh()
-{
-    return m_mergedmesh ; 
-}
-GDrawable* Geometry::getDrawable()
-{
-    return m_mergedmesh ; 
-}
-
-const char* Geometry::identityPath( const char* envprefix, const char* ext)
+const char* Geometry::identityPath( const char* envprefix)
 {
     const char* geokey = getenvvar(envprefix, "GEOKEY" );
     const char* path = getenv(geokey);
@@ -56,7 +45,6 @@ const char* Geometry::identityPath( const char* envprefix, const char* ext)
 
     std::string digest = md5digest( query, strlen(query));
     std::string kfn = insertField( path, '.', -1 , digest.c_str());
-    if(ext) kfn += ext ; 
 
     const char* idpath = strdup(kfn.c_str());
 
@@ -82,6 +70,7 @@ const char* Geometry::load(const char* envprefix, bool nogeocache)
         LOG(info) << "Geometry::load loading from cache directory " << idpath ;
         m_ggeo = NULL ; 
         m_mergedmesh = GMergedMesh::load(idpath);
+        m_metadata   = GSubstanceLibMetadata::load(idpath);
     } 
     else
     {
@@ -94,6 +83,11 @@ const char* Geometry::load(const char* envprefix, bool nogeocache)
         m_mergedmesh->setColor(0.5,0.5,1.0);
         LOG(info) << "Geometry::load saving to cache directory " << idpath ;
         m_mergedmesh->save(idpath); 
+
+        GSubstanceLib* lib = m_ggeo->getSubstanceLib();
+        m_metadata = lib->getMetadata();
+        m_metadata->save(idpath);
+
     } 
 
     LOG(info) << "Geometry::load done " << idpath ;
