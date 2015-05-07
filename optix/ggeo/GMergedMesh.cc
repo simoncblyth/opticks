@@ -60,7 +60,6 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     GBuffer* wavelengthBuffer = lib->createWavelengthBuffer();
 
     mm->setWavelengthBuffer(wavelengthBuffer);
-    //mm->dumpWavelengthBuffer(lib->getNumSubstances(), 16, lib->getStandardDomainLength()); 
 
     return mm ;
 }
@@ -197,48 +196,5 @@ float* GMergedMesh::getModelToWorldPtr(unsigned int index)
         return NULL ; 
     }
 }
-
-
-void GMergedMesh::dumpWavelengthBuffer(unsigned int numSubstance, unsigned int numProp, unsigned int domainLength)
-{
-    GBuffer* buffer = getWavelengthBuffer();
-    if(!buffer) return ;
-
-    float* data = (float*)buffer->getPointer();
-
-    unsigned int numElementsTotal = buffer->getNumElementsTotal();
-    assert(numElementsTotal == numSubstance*numProp*domainLength);
-
-    std::cout << "GMergedMesh::dumpWavelengthBuffer " 
-              << " numSubstance " << numSubstance
-              << " numProp " << numProp
-              << " domainLength " << domainLength
-              << std::endl ; 
-
-    assert(numProp % 4 == 0);
-
-    for(unsigned int isub=0 ; isub < numSubstance ; ++isub )
-    {
-        unsigned int subOffset = domainLength*numProp*isub ;
-
-        for(unsigned int p=0 ; p < numProp/4 ; ++p ) // property scrunch into float4 is the cause of the gymnastics
-        {
-             printf("sub %u/%u  prop %u/%u \n", isub, numSubstance, p, numProp/4 );
-
-             unsigned int offset = subOffset + ( p*domainLength*4 ) ;
-             for(unsigned int l=0 ; l < 4 ; ++l )
-             {
-                 for(unsigned int d=0 ; d < domainLength ; ++d )
-                 {
-                     if(d%5 == 0) printf(" %15.3f", data[offset+d*4+l] );  // too many numbers so display one in every 5
-                 }
-                 printf("\n");
-             }
-
-        }
-    }
-}
-
-
 
 

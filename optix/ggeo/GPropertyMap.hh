@@ -18,6 +18,7 @@ class GPropertyMap {
   public:
      // caller should free the char* returned after dumping 
       char* digest();
+      char* pdigest(int ifr, int ito); 
       char* getShortName(const char* prefix); 
       std::string getKeysString(); 
 
@@ -44,8 +45,8 @@ class GPropertyMap {
       unsigned int getNumProperties();
 
   public:
-      GPropertyD* getPropertyByIndex(unsigned int index);
-      const char* getPropertyNameByIndex(unsigned int index);
+      GPropertyD* getPropertyByIndex(int index);
+      const char* getPropertyNameByIndex(int index);
       GPropertyD* getProperty(const char* pname);
       std::vector<std::string>& getKeys();
 

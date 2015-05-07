@@ -1,5 +1,7 @@
 #include "GSubstanceLibMetadata.hh"
+#include "GSubstanceLib.hh"
 #include "GBuffer.hh"
+#include "GDomain.hh"
 #include "stdio.h"
 #include "string.h"
 
@@ -20,6 +22,15 @@ int main(int argc, char** argv)
     GBuffer* buffer = GBuffer::load<float>(wpath);
     buffer->Summary("wavelength buffer");
 
+    unsigned int numElementsTotal = buffer->getNumElementsTotal();
+    unsigned int numProp = 16 ; 
+    unsigned int domainLength = GSubstanceLib::DOMAIN_LENGTH ;
+    unsigned int numSubstance = numElementsTotal/(numProp*domainLength);
+
+    GDomain<double>* domain = GSubstanceLib::getDefaultDomain();
+    assert(domain->getLength() == domainLength);
+
+    GSubstanceLib::dumpWavelengthBuffer(buffer, numSubstance, numProp, domainLength );
 
     return 0 ;
 }

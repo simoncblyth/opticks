@@ -53,9 +53,25 @@ char* GPropertyMap::digest()
 
        char* pdig = prop->digest();
        dig.update(pdig, strlen(pdig));
+       free(pdig);
    } 
    return dig.finalize();
 }
+
+char* GPropertyMap::pdigest(int ifr, int ito)
+{
+    MD5Digest dig ;
+    assert(ito > ifr);
+    for(int i=ifr ; i < ito ; ++i )
+    {
+        GPropertyD* prop = getPropertyByIndex(i) ; 
+        char* pdig = prop->digest();
+        dig.update(pdig, strlen(pdig));
+        free(pdig);
+    }
+    return dig.finalize();
+}
+
 
 
 const char* GPropertyMap::getName()
@@ -166,14 +182,16 @@ GPropertyD* GPropertyMap::getProperty(const char* pname)
    return (m_prop.find(pname) != m_prop.end()) ? m_prop[pname] : NULL ;
 }
 
-GPropertyD* GPropertyMap::getPropertyByIndex(unsigned int index)
+GPropertyD* GPropertyMap::getPropertyByIndex(int index)
 {
+   if(index < 0) index += m_keys.size() ;
    std::string key = m_keys[index];
    return getProperty(key.c_str()); 
 }
 
-const char* GPropertyMap::getPropertyNameByIndex(unsigned int index)
+const char* GPropertyMap::getPropertyNameByIndex(int index)
 {
+   if(index < 0) index += m_keys.size() ;
    return m_keys[index].c_str(); 
 }
 

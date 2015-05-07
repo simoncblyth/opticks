@@ -63,6 +63,11 @@ unsigned int GSubstanceLib::getNumSubstances()
    return m_keys.size();
 }
 
+GDomain<double>* GSubstanceLib::getDefaultDomain()
+{
+   return new GDomain<double>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
+}
+
 GProperty<double>* GSubstanceLib::getRamp()
 {
    return m_ramp ;
@@ -465,6 +470,81 @@ char* GSubstanceLib::digest(std::vector<GPropertyD*>& props)
     }
     return dig.finalize();
 }
+
+
+void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer)
+{
+    dumpWavelengthBuffer(buffer, getNumSubstances(), 16, getStandardDomainLength());  
+}
+
+void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength)
+{
+    if(!buffer) return ;
+
+    float* data = (float*)buffer->getPointer();
+
+    unsigned int numElementsTotal = buffer->getNumElementsTotal();
+    assert(numElementsTotal == numSubstance*numProp*domainLength);
+
+    GDomain<double>* domain = GSubstanceLib::getDefaultDomain();
+    assert(domain->getLength() == domainLength);
+
+    std::cout << "GMergedMesh::dumpWavelengthBuffer " 
+              << " numSubstance " << numSubstance
+              << " numProp " << numProp
+              << " domainLength " << domainLength
+              << std::endl ; 
+
+    assert(numProp % 4 == 0);
+
+
+    std::vector<GPropertyMap*> pmaps ; 
+
+    for(unsigned int isub=0 ; isub < numSubstance ; ++isub )
+    {
+        unsigned int subOffset = domainLength*numProp*isub ;
+
+        GPropertyMap* pmap = new GPropertyMap("humpty", isub, "reconstructed");
+        pmaps.push_back(pmap);
+
+        for(unsigned int p=0 ; p < numProp/4 ; ++p ) // property scrunch into float4 is the cause of the gymnastics
+        {
+             unsigned int offset = subOffset + ( p*domainLength*4 ) ;
+
+             // un-interleaving the 4 properties
+             for(unsigned int l=0 ; l < 4 ; ++l )
+             {
+                 double* v = new double[domainLength];
+                 for(unsigned int d=0 ; d < domainLength ; ++d ) v[d] = data[offset+d*4+l];  
+                 char pname[32];
+                 snprintf(pname, 32, "p%ul%u", p, l);
+                 pmap->addProperty(pname, v, domain->getValues(), domainLength );
+                 delete v;
+             }
+
+             char* dig4 = pmap->pdigest(-4,0);  // last four properties digest-of-digest
+             printf("sub %u/%u  prop %u/%u offset %u dig4 %s \n", isub, numSubstance, p, numProp/4, offset, dig4 );
+             free(dig4);
+
+             for(unsigned int l=0 ; l < 4 ; ++l )
+             {
+                 for(unsigned int d=0 ; d < domainLength ; ++d )
+                 {
+                     if(d%5 == 0) printf(" %15.3f", data[offset+d*4+l] );  // too many numbers so display one in every 5
+                 }
+                 printf("\n");
+
+                 //GProperty<double>* prop = pmap->getPropertyByIndex(l-4);
+                 //char* dig = prop->digest();
+                 //printf(" %s\n", dig);          // single property digest
+                 //free(dig);
+             }
+
+
+        }
+    }
+}
+
 
 
 

@@ -48,6 +48,7 @@ class GSubstanceLib {
   public:
       void setStandardDomain(GDomain<double>* standard_domain);
       GDomain<double>* getStandardDomain();
+      static GDomain<double>* getDefaultDomain();
       unsigned int getStandardDomainLength();
       GSubstanceLibMetadata* getMetadata(); // populated by createWavelengthBuffer
       char* digest(std::vector<GPropertyD*>& props);
@@ -55,6 +56,8 @@ class GSubstanceLib {
   public:
       GPropertyMap* createStandardProperties(const char* name, GSubstance* substance);
       GBuffer* createWavelengthBuffer();  // SubstanceBuffer name taken already for substances indices only
+      void dumpWavelengthBuffer(GBuffer* buffer);
+      static void dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength);
 
   private:
       void addMaterialProperties(GPropertyMap* ptex, GPropertyMap* pmap, const char* prefix);
