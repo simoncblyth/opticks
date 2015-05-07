@@ -374,15 +374,14 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
         assert(isub == substanceIndex);
         //printf("GSubstanceLib::createWavelengthBuffer isub %u substanceIndex  %u \n", isub, substanceIndex );
 
-    
+        char* ishortname = substance->getInnerMaterial()->getShortName("__dd__Materials__") ; 
+        char* oshortname = substance->getOuterMaterial()->getShortName("__dd__Materials__") ; 
+     
         const char* kfmt_subs = "lib.substance.%d.%s.%s" ;
         m_meta->add(kfmt_subs, isub, "imat", substance->getInnerMaterial() );
         m_meta->add(kfmt_subs, isub, "omat", substance->getOuterMaterial() );
         m_meta->add(kfmt_subs, isub, "isur", substance->getInnerSurface() );
         m_meta->add(kfmt_subs, isub, "osur", substance->getOuterSurface() );
-
-        m_meta->addMaterial(isub, "imat", substance->getInnerMaterial());
-        m_meta->addMaterial(isub, "omat", substance->getOuterMaterial());
 
         GPropertyMap* ptex = createStandardProperties("ptex", substance);
         unsigned int numProp = ptex->getNumProperties() ;
@@ -401,27 +400,71 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             data = (float*)buffer->getPointer();
         }
 
-        for( unsigned int p = 0; p < numProp/4 ; ++p ) 
+        for( unsigned int p = 0; p < numProp/4 ; ++p )  // over 4 different sets (imat,omat,isur,osur)  
         {   
             unsigned int propOffset = p*numProp/4 ;  // 0, 4, 8, 12
+            
+            // 4 properties of the set 
             GPropertyD* p0 = ptex->getPropertyByIndex(propOffset+0) ;
             GPropertyD* p1 = ptex->getPropertyByIndex(propOffset+1) ;
             GPropertyD* p2 = ptex->getPropertyByIndex(propOffset+2) ;
             GPropertyD* p3 = ptex->getPropertyByIndex(propOffset+3) ;
 
+            // record standard property digest into metadata
+            std::vector<GPropertyD*> props ; 
+            props.push_back(p0);
+            props.push_back(p1);
+            props.push_back(p2);
+            props.push_back(p3);
+            char* pdig = digest(props);
+            switch(p)
+            {
+               case 0:
+                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "imat", pdig ); 
+                      m_meta->addMaterial(isub, "imat", ishortname, pdig );
+                      break ;
+               case 1:
+                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "omat", pdig ); 
+                      m_meta->addMaterial(isub, "omat", oshortname, pdig );
+                      break ;
+               case 2:
+                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "isur", pdig ); 
+                      break ;
+               case 3:
+                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "osur", pdig ); 
+                      break ;
+            }
+            free(pdig);
+
             for( unsigned int d = 0; d < domainLength; ++d ) 
             {   
                 unsigned int dataOffset = ( p*domainLength + d )*4;  
-
                 data[subOffset+dataOffset+0] = p0->getValue(d) ;
                 data[subOffset+dataOffset+1] = p1->getValue(d) ;
                 data[subOffset+dataOffset+2] = p2->getValue(d) ;
                 data[subOffset+dataOffset+3] = p3->getValue(d) ;
             }       
         }   
+        free(ishortname); 
+        free(oshortname); 
     }
     m_meta->createMaterialMap();
     return buffer ; 
 }
+
+
+char* GSubstanceLib::digest(std::vector<GPropertyD*>& props)
+{
+    MD5Digest dig ;            
+    for(unsigned int i=0 ; i < props.size() ; ++i)
+    {
+        GPropertyD* p = props[i]; 
+        char* pdig = p->digest();
+        dig.update(pdig, strlen(pdig));
+        free(pdig);
+    }
+    return dig.finalize();
+}
+
 
 

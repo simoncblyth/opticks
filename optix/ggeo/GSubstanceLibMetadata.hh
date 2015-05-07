@@ -19,7 +19,8 @@ class GSubstanceLibMetadata {
       std::string get(const char* kfmt, const char* idx);
       std::string get(const char* kfmt, unsigned int idx);
       void add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap* pmap );
-      void addMaterial(unsigned int isub, const char* cat, GPropertyMap* pmap );
+      void addDigest(const char* kfmt, unsigned int isub, const char* cat, char* dig );
+      void addMaterial(unsigned int isub, const char* cat, char* shortname, char* digest );
       void addMapEntry(unsigned int line, const char* shortname);
 
   private:

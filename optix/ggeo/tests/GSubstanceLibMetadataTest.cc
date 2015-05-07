@@ -1,5 +1,7 @@
 #include "GSubstanceLibMetadata.hh"
+#include "GBuffer.hh"
 #include "stdio.h"
+#include "string.h"
 
 int main(int argc, char** argv)
 {
@@ -12,7 +14,12 @@ int main(int argc, char** argv)
     const char* path = argv[1];
     GSubstanceLibMetadata* meta = GSubstanceLibMetadata::load(path);
     //meta->Summary(path);
-    meta->createMaterialMap();
+
+    char wpath[256];
+    snprintf(wpath, 256,"%s/wavelength.npy", path); 
+    GBuffer* buffer = GBuffer::load<float>(wpath);
+    buffer->Summary("wavelength buffer");
+
 
     return 0 ;
 }

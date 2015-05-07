@@ -30,6 +30,13 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
 }
 
 
+
+void GSubstanceLibMetadata::addDigest(const char* kfmt, unsigned int isub, const char* cat, char* dig )
+{
+    add(kfmt, isub, cat, "digest",  dig );
+}
+
+
 void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap* pmap )
 {
     if(!pmap) return ;
@@ -43,7 +50,7 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
     add(kfmt, isub, cat, "name",    name); 
     add(kfmt, isub, cat, "type",    type);
     add(kfmt, isub, cat, "keys",    keys.c_str());
-    add(kfmt, isub, cat, "digest",  digest );
+    add(kfmt, isub, cat, "pmap_digest",  digest ); // this is not the standard digest, hence the separate addDigest
 
     free(digest);
 
@@ -54,13 +61,8 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
         free(shortname);
     }
 }
-void GSubstanceLibMetadata::addMaterial(unsigned int isub, const char* cat, GPropertyMap* pmap )
+void GSubstanceLibMetadata::addMaterial(unsigned int isub, const char* cat, char* shortname, char* digest )
 {
-    char key[128];
-    char* shortname = pmap->getShortName("__dd__Materials__") ; 
-    char* digest = pmap->digest() ; 
-
-    
     bool imat = strcmp(cat, "imat") == 0 ;
     bool omat = strcmp(cat, "omat") == 0 ;
     assert(imat || omat) ;  
@@ -68,14 +70,12 @@ void GSubstanceLibMetadata::addMaterial(unsigned int isub, const char* cat, GPro
     unsigned int code = isub*10 ;
     if(omat) code += 1 ; 
 
+    char key[128];
     snprintf(key, 128, "lib.material.%s.%s.%u", shortname, cat, code );
     m_tree.add(key, digest);
 
     snprintf(key, 128, "lib.material.%s.%s.%u", shortname, "mat", code );
     m_tree.add(key, digest);
-
-    free(digest);
-    free(shortname);
 }
 
 
