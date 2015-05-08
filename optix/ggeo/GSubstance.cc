@@ -183,4 +183,3 @@ GPropertyMap* GSubstance::getOuterSurface()
 }
 
 
-

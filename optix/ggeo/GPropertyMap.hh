@@ -11,6 +11,7 @@ class GPropertyMap {
 
   typedef std::map<std::string,GPropertyD*> GPropertyMapD_t ;
   public:
+      GPropertyMap(GPropertyMap* other);
       GPropertyMap(const char* name);
       GPropertyMap(const char* name, unsigned int index, const char* type);
       virtual ~GPropertyMap();

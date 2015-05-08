@@ -13,6 +13,24 @@ model, intended for:
 
 * investigation of how to represent Geometry within OptiX
 
+
+TODO
+-----
+
+* rejig relationship between GSubstanceLib and GSubstance
+  
+  * lib doing too much, substance doing too little
+
+  * move standardization from the lib to the substance
+    so that lib keys are standard digests, this will 
+    allow the standard lib to be reconstructed from the 
+    wavelengthBuffer and will offer simple digest matching
+    to the metadata 
+
+  * can have a separate non-standardized lib intstance 
+    as a container for all properties 
+
+
 Classes
 --------
 

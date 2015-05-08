@@ -59,6 +59,16 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     GSubstanceLib* lib = ggeo->getSubstanceLib();
     GBuffer* wavelengthBuffer = lib->createWavelengthBuffer();
 
+    //GSubstanceLib* s_lib = lib->createStandardizedLib();
+    //GBuffer* s_wavelengthBuffer = s_lib->createWavelengthBuffer();
+    //if(!wavelengthBuffer->isEqual(s_wavelengthBuffer))
+    //{
+    //    float fractionDifferent = wavelengthBuffer->fractionDifferent(s_wavelengthBuffer);
+    //    printf("GMergedMesh::create wavelengthBuffer mismatch fractionDifferent %10.3f \n", fractionDifferent); 
+    //} 
+    //TODO: verify equivalence of the buffers while apply simplifications  
+    //assert(wavelengthBuffer->isEqual(s_wavelengthBuffer));
+
     mm->setWavelengthBuffer(wavelengthBuffer);
 
     return mm ;

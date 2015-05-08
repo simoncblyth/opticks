@@ -4,6 +4,16 @@
 #include "limits.h"
 #include <sstream>
 
+GPropertyMap::GPropertyMap(GPropertyMap* other) : 
+      m_name(other ? other->getName() : "?"),
+      m_index(other ? other->getIndex() : UINT_MAX ),
+      m_type(other ? other->getType() : "" ),
+      m_standard_domain(NULL)
+{
+}
+
+
+
 GPropertyMap::GPropertyMap(const char* name) : m_standard_domain(NULL)
 {
    m_name = name ; 

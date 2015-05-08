@@ -95,23 +95,12 @@ std::string GSubstanceLibMetadata::get(const char* kfmt, unsigned int idx)
 
 void GSubstanceLibMetadata::createMaterialMap()
 {
-   /*
-    BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_tree.get_child("lib.substance") ) 
-    {
-        unsigned int idx = boost::lexical_cast<unsigned int>(ak.first.c_str());
-        std::string imat = get("lib.substance.%u.imat.shortname", idx);
-        std::string omat = get("lib.substance.%u.omat.shortname", idx);
-        printf(" %2u %25s %25s \n", idx, imat.c_str(), omat.c_str() );          
-    }
-   */
-
-
     char key[128];
     BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_tree.get_child("lib.material") ) 
     {
         const char* matname = ak.first.c_str();
         snprintf(key, 128, "lib.material.%s.mat", matname);
-        printf(" %s \n", key);
+        printf("GSubstanceLibMetadata::createMaterialMap %s \n", key);
 
         std::string digest ;     
         BOOST_FOREACH( boost::property_tree::ptree::value_type const& bk, m_tree.get_child(key) ) // absolute key
@@ -132,11 +121,9 @@ void GSubstanceLibMetadata::createMaterialMap()
                 addMapEntry(line, matname);
             } 
 
-            printf(" code %4u isub %3u offset %u line %u dig %s matname %s \n", code, isub, offset, line, dig, matname );
+            printf("   code %4u isub %3u offset %u line %u dig %s matname %s \n", code, isub, offset, line, dig, matname );
         }
     }
-
-
 }
 
 void GSubstanceLibMetadata::addMapEntry(unsigned int line, const char* shortname)

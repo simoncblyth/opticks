@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stdio.h"
 #include "string.h"
 #include "assert.h"
 #include "numpy.hpp"
@@ -42,6 +43,63 @@ class GBuffer {
       {
           return m_nbytes/m_itemsize*m_nelem ;
       }
+
+      bool isEqual(GBuffer* other)
+      {
+          return other->getNumBytes() == getNumBytes() && memcmp(other->getPointer(), getPointer(), getNumBytes()) == 0 ;
+      }
+
+      float fractionDifferent(GBuffer* other)
+      {
+          unsigned int numBytes = getNumBytes();
+          assert(other->getNumBytes() == numBytes);
+          unsigned int numFloats = numBytes/sizeof(float);
+          unsigned int n = 0 ;
+          float* a = (float*)getPointer();
+          float* b = (float*)other->getPointer();
+
+          unsigned int divisor = 39*16 ;        // 624 
+          unsigned int qdivisor = divisor/4 ;   // 156
+
+          assert(numFloats % divisor == 0);
+
+          unsigned int numSub = numFloats/divisor ; 
+          printf("GBuffer::fractionDifferent numFloats %u divisor %u numFloats/divisor=numSub %u \n", numFloats, divisor, numSub );
+
+          for(unsigned int i=0 ; i < numFloats ; i++)
+          {
+              unsigned int isub = i/divisor ; 
+              unsigned int iquad = (i - isub*divisor)/qdivisor ; 
+
+              // about 2% of floats differ
+              // ~200 entries from isub(iquad) are discrepant : all b are zero 
+              //
+              //    3(0,1)     PPE/Air
+              //   12(0,1,3)   StainlessSteel/IwsWater/SST-watersurface
+              //   21(0,1)     Bialkali/Vacuum
+              //   52(0,1)     Nitrogen/Water
+/*
+GSubstanceLib::add WARNING adding duplicate substance key 33e6e0d528715b6f734c39dd38582d56 
+GSubstanceLib::add WARNING adding duplicate substance key 9df4c1f7eefca5ad172d41150e428490 
+GSubstanceLib::add WARNING adding duplicate substance key 07592c2f320ea0f9ab4b0469ef8e9860 
+GSubstanceLib::add WARNING adding duplicate substance key 8e4b6321e85ae1e60b6ff9c3fbbbdffe 
+
+GSubstanceLib::getSubstance WARNING substance index mismatch request 3 substance 39 key 9df4c1f7eefca5ad172d41150e428490 
+GSubstanceLib::getSubstance WARNING substance index mismatch request 12 substance 55 key 07592c2f320ea0f9ab4b0469ef8e9860 
+GSubstanceLib::getSubstance WARNING substance index mismatch request 21 substance 24 key 33e6e0d528715b6f734c39dd38582d56 
+GSubstanceLib::getSubstance WARNING substance index mismatch request 52 substance 56 key 8e4b6321e85ae1e60b6ff9c3fbbbdffe 
+*/
+
+              if(a[i] != b[i])
+              {
+                  n+= 1 ; 
+                  printf("GBuffer::fractionDifferent i %u isub %u iquad %u  n %u a %10.3f b %10.3f \n", i, isub, iquad, n, a[i], b[i] );  
+              }
+          }
+          return float(n)/float(numFloats) ; 
+      }
+
+
 
       /*
 

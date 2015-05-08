@@ -19,6 +19,7 @@ class GSubstanceLib {
     // standard property prefixes
     static const char* inner; 
     static const char* outer; 
+  public:
     static unsigned int DOMAIN_LENGTH ; 
     static float        DOMAIN_LOW ; 
     static float        DOMAIN_HIGH ; 
@@ -39,56 +40,73 @@ class GSubstanceLib {
     static const char* keymap ;
 
   public:
-      GSubstance* get(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
-
-  public:
       GSubstanceLib();
       virtual ~GSubstanceLib();
 
   public:
+      // primary methods : lifecycle
       void setStandardDomain(GDomain<double>* standard_domain);
-      GDomain<double>* getStandardDomain();
-      static GDomain<double>* getDefaultDomain();
-      unsigned int getStandardDomainLength();
-      GSubstanceLibMetadata* getMetadata(); // populated by createWavelengthBuffer
-      char* digest(std::vector<GPropertyD*>& props);
+      GSubstance* get(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
+      GBuffer*      createWavelengthBuffer();  
 
   public:
-      GPropertyMap* createStandardProperties(const char* name, GSubstance* substance);
-      GBuffer* createWavelengthBuffer();  // SubstanceBuffer name taken already for substances indices only
-      void dumpWavelengthBuffer(GBuffer* buffer);
-      static void dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength);
+      // primary methods : querying 
+      const char* getLocalKey(const char* dkey); // map standard -> local keys 
+      unsigned int getNumSubstances();
+      GSubstance* getSubstance(unsigned int index); 
+      GSubstanceLibMetadata* getMetadata(); // populated by createWavelengthBuffer
+      void Summary(const char* msg="GSubstanceLib::Summary");
 
   private:
-      void addMaterialProperties(GPropertyMap* ptex, GPropertyMap* pmap, const char* prefix);
-      void addSurfaceProperties(GPropertyMap* ptex, GPropertyMap* pmap, const char* prefix);
-      void checkMaterialProperties(GPropertyMap* ptex, unsigned int offset, const char* prefix);
-      void checkSurfaceProperties(GPropertyMap* ptex, unsigned int offset, const char* prefix);
+      // used for by "get" for standardization of substances, ready for serializing into wavelengthBuffer
+      GSubstance* createStandardSubstance(GSubstance* substance);
+      void addMaterialProperties(GPropertyMap* pstd, GPropertyMap* pmap, const char* prefix);
+      void addSurfaceProperties(GPropertyMap* pstd, GPropertyMap* pmap, const char* prefix);
       GPropertyD* getPropertyOrDefault(GPropertyMap* pmap, const char* pname);
 
-  public:
-      void setKeyMap(const char* spec);
-      const char* getLocalKey(const char* dkey); // map standard -> local keys 
-
-  public:
+  private:
+      // support for standardization 
       void defineDefaults(GPropertyMap* defaults);
       void setDefaults(GPropertyMap* defaults);
       GPropertyMap* getDefaults();
       GProperty<double>* getDefaultProperty(const char* name);
       GProperty<double>* getRamp();
+      void setKeyMap(const char* spec);
+      char*  digest(std::vector<GPropertyD*>& props);
 
   public:
-      unsigned int getNumSubstances();
-      GSubstance* getSubstance(unsigned int index); 
+      // another classes need access to "shape" of the standardization
+      GDomain<double>*        getStandardDomain();
+      static GDomain<double>* getDefaultDomain();
+      unsigned int            getStandardDomainLength();
 
   public:
-      void Summary(const char* msg="GSubstanceLib::Summary");
+      void setMetadata(GSubstanceLibMetadata* meta); 
 
+  public:
+      void          dumpWavelengthBuffer(GBuffer* buffer);
+      static void   dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength);
+
+
+#ifdef TRANSITIONAL
+      GSubstanceLib* createStandardizedLib();
+      void add(GSubstance* substance);
+      void setStandard(bool standard);
+      bool isStandard();
+#endif
+#ifdef LEGACY
+      GPropertyMap* createStandardProperties(const char* name, GSubstance* substance);
+      void checkMaterialProperties(GPropertyMap* ptex, unsigned int offset, const char* prefix);
+      void checkSurfaceProperties(GPropertyMap* ptex, unsigned int offset, const char* prefix);
+#endif
+
+  public:
   private:
-      std::map<std::string, std::string> m_keymap ; 
+      std::map<std::string, std::string> m_keymap ; //  
       std::map<std::string, GSubstance*> m_registry ; 
       std::vector<std::string> m_keys ; 
 
+      bool m_standard ; // transitional : keeping this set to true
       GDomain<double>* m_standard_domain ;  
       GPropertyMap* m_defaults ;  
       GProperty<double>* m_ramp ;  
@@ -101,6 +119,37 @@ inline GSubstanceLibMetadata* GSubstanceLib::getMetadata()
 {
     return m_meta ; 
 }
+inline void GSubstanceLib::setMetadata(GSubstanceLibMetadata* meta)
+{
+    m_meta = meta ; 
+}
+#ifdef TRANSITIONAL
+inline void GSubstanceLib::setStandard(bool standard)
+{
+    m_standard = standard ;
+}
+inline bool GSubstanceLib::isStandard()
+{
+    return m_standard ;
+}
+#endif
+inline void GSubstanceLib::setDefaults(GPropertyMap* defaults)
+{
+    m_defaults = defaults ;
+}
+inline GPropertyMap* GSubstanceLib::getDefaults()
+{
+    return m_defaults ;
+}
+inline GProperty<double>* GSubstanceLib::getRamp()
+{
+   return m_ramp ;
+}
+inline GDomain<double>* GSubstanceLib::getStandardDomain()
+{
+    return m_standard_domain ;
+}
+
 
 
 #endif
