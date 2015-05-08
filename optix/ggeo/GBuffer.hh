@@ -122,6 +122,10 @@ GSubstanceLib::getSubstance WARNING substance index mismatch request 52 substanc
       template<typename T>
       static GBuffer* load(const char* path);
 
+      template<typename T>
+      static GBuffer* load(const char* dir, const char* name);
+
+
 
   protected:
       unsigned int m_nbytes ;
@@ -150,6 +154,15 @@ inline void GBuffer::save(const char* path)
     aoba::SaveArrayAsNumpy<T>( path, numItems, numElements, (T*)data );  
 }
 
+
+
+template<typename T>
+inline GBuffer* GBuffer::load(const char* dir, const char* name)
+{
+    char path[256];
+    snprintf(path, 256,"%s/%s", dir, name);
+    return GBuffer::load<T>(path);
+}
 
 template<typename T>
 inline GBuffer* GBuffer::load(const char* path)

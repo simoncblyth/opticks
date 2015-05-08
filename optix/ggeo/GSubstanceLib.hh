@@ -56,6 +56,7 @@ class GSubstanceLib {
       GSubstance* getSubstance(unsigned int index); 
       GSubstanceLibMetadata* getMetadata(); // populated by createWavelengthBuffer
       void Summary(const char* msg="GSubstanceLib::Summary");
+      const char* getDigest(unsigned int index);
 
   private:
       // used for by "get" for standardization of substances, ready for serializing into wavelengthBuffer
@@ -101,12 +102,24 @@ class GSubstanceLib {
 #endif
 
   public:
+      unsigned int getNumProp();
+      const char* materialPropertyName(unsigned int i);
+      const char* surfacePropertyName(unsigned int i);
+      char* propertyName(unsigned int p, unsigned int i);
+
+  public:
+      static GSubstanceLib* load(const char* dir);
+      void loadWavelengthBuffer(GBuffer* buffer);
+      GSubstance* loadSubstance(float* subData, unsigned int isub);
+
+
   private:
       std::map<std::string, std::string> m_keymap ; //  
       std::map<std::string, GSubstance*> m_registry ; 
       std::vector<std::string> m_keys ; 
 
       bool m_standard ; // transitional : keeping this set to true
+      unsigned int m_num_prop ; 
       GDomain<double>* m_standard_domain ;  
       GPropertyMap* m_defaults ;  
       GProperty<double>* m_ramp ;  
@@ -123,6 +136,13 @@ inline void GSubstanceLib::setMetadata(GSubstanceLibMetadata* meta)
 {
     m_meta = meta ; 
 }
+inline unsigned int GSubstanceLib::getNumProp()
+{
+    return m_num_prop ; 
+}
+
+
+
 #ifdef TRANSITIONAL
 inline void GSubstanceLib::setStandard(bool standard)
 {

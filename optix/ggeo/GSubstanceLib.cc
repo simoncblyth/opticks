@@ -5,6 +5,12 @@
 #include "GBuffer.hh"
 #include "GEnums.hh"
 
+
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
+
+
 #include <sstream>
 #include "assert.h"
 #include "stdio.h"
@@ -28,7 +34,7 @@ const char* GSubstanceLib::absorb = "absorb" ;
 const char* GSubstanceLib::reflect_specular = "reflect_specular" ;
 const char* GSubstanceLib::reflect_diffuse  = "reflect_diffuse" ;
 
-GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true)
+GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true), m_num_prop(16)
 {
     setKeyMap(NULL);
     GDomain<double>* domain = new GDomain<double>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
@@ -374,6 +380,11 @@ void GSubstanceLib::checkSurfaceProperties(GPropertyMap* ptex, unsigned int offs
 }
 #endif
 
+const char* GSubstanceLib::getDigest(unsigned int index)
+{
+    return m_keys[index].c_str();
+}
+
 
 GBuffer* GSubstanceLib::createWavelengthBuffer()
 {
@@ -393,16 +404,23 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
 
     if(!m_meta) m_meta = new GSubstanceLibMetadata ; 
 
+    GDomain<double>* domain = getStandardDomain();
+    const unsigned int domainLength = domain->getLength();
     unsigned int numSubstance = getNumSubstances() ;
+    unsigned int numProp = getNumProp() ; 
+    unsigned int numFloat = domainLength*numProp*numSubstance ; 
 
     for(unsigned int isub=0 ; isub < numSubstance ; isub++)
     {
         GSubstance* substance = getSubstance(isub);
+        //const char* digest = getDigest(isub);
         unsigned int substanceIndex = substance->getIndex();
 
-        printf("GSubstanceLib::createWavelengthBuffer isub %u/%u substanceIndex  %u \n", isub, numSubstance, substanceIndex );
+        //printf("GSubstanceLib::createWavelengthBuffer isub %u/%u substanceIndex  %u \n", isub, numSubstance, substanceIndex );
         assert(substanceIndex < numSubstance);
-        //assert(isub == substanceIndex);
+        assert(isub == substanceIndex);
+
+        unsigned int subOffset = domainLength*numProp*substanceIndex ; 
 
         char* ishortname = substance->getInnerMaterial()->getShortName("__dd__Materials__") ; 
         char* oshortname = substance->getOuterMaterial()->getShortName("__dd__Materials__") ; 
@@ -414,30 +432,8 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             m_meta->add(kfmt, isub, "osur", substance->getOuterSurface() );
         }
 
-        GPropertyMap* ptex(NULL);
-        GDomain<double>* domain(NULL);
-        unsigned int numProp = 16 ; 
-
-
-#ifdef TRANSITIONAL
-        if(!isStandard())
-        {
-            ptex = createStandardProperties("ptex", substance);
-            domain = ptex->getStandardDomain();
-            assert(numProp == ptex->getNumProperties());
-        }
-        else
-#endif
-        {
-            domain = getStandardDomain();
-        }
-
-        const unsigned int domainLength = domain->getLength();
-        unsigned int subOffset = domainLength*numProp*substanceIndex ; 
-
         if( buffer == NULL )
         {
-            unsigned int numFloat = domainLength*numProp*numSubstance ; 
             buffer = new GBuffer( sizeof(float)*numFloat, new float[numFloat], sizeof(float), 1 );
             data = (float*)buffer->getPointer();
         }
@@ -446,38 +442,28 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
         { 
             // 4 properties of the set 
             GPropertyD *p0,*p1,*p2,*p3 ; 
-      //      if(isStandard())
-      //      {
-                GPropertyMap* psrc ; 
-                switch(p)
-                {
+            GPropertyMap* psrc ; 
+            switch(p)
+            {
                     case 0:psrc = substance->getInnerMaterial() ; break ; 
                     case 1:psrc = substance->getOuterMaterial() ; break ; 
                     case 2:psrc = substance->getInnerSurface()  ; break ; 
                     case 3:psrc = substance->getOuterSurface()  ; break ; 
-                } 
-                p0 = psrc->getPropertyByIndex(0);
-                p1 = psrc->getPropertyByIndex(1);
-                p2 = psrc->getPropertyByIndex(2);
-                p3 = psrc->getPropertyByIndex(3);
-      //      }
-      /*
-            else 
-            {
-                unsigned int propOffset = p*numProp/4 ;  // 0, 4, 8, 12
-                p0 = ptex->getPropertyByIndex(propOffset+0) ;
-                p1 = ptex->getPropertyByIndex(propOffset+1) ;
-                p2 = ptex->getPropertyByIndex(propOffset+2) ;
-                p3 = ptex->getPropertyByIndex(propOffset+3) ;
-            }
-      */
+            } 
+            p0 = psrc->getPropertyByIndex(0);
+            p1 = psrc->getPropertyByIndex(1);
+            p2 = psrc->getPropertyByIndex(2);
+            p3 = psrc->getPropertyByIndex(3);
+
             // record standard property digest into metadata
+
             std::vector<GPropertyD*> props ; 
             props.push_back(p0);
             props.push_back(p1);
             props.push_back(p2);
             props.push_back(p3);
             char* pdig = digest(props);
+
             switch(p)
             {
                case 0:
@@ -528,9 +514,128 @@ char* GSubstanceLib::digest(std::vector<GPropertyD*>& props)
 }
 
 
+const char* GSubstanceLib::materialPropertyName(unsigned int i)
+{
+    assert(i < 4);
+    if(i == 0) return refractive_index ;
+    if(i == 1) return absorption_length ;
+    if(i == 2) return scattering_length ;
+    if(i == 3) return reemission_prob ;
+    return "?" ;
+}
+
+const char* GSubstanceLib::surfacePropertyName(unsigned int i)
+{
+    assert(i < 4);
+    if(i == 0) return detect ;
+    if(i == 1) return absorb ;
+    if(i == 2) return reflect_specular;
+    if(i == 3) return reflect_diffuse ;
+    return "?" ;
+}
+
+
+char* GSubstanceLib::propertyName(unsigned int p, unsigned int i)
+{
+    assert(p < 4);
+    char name[64];
+    switch(p)
+    {
+       case 0: snprintf(name, 64, "%s%s", inner, materialPropertyName(i) ); break;
+       case 1: snprintf(name, 64, "%s%s", outer, materialPropertyName(i) ); break;
+       case 2: snprintf(name, 64, "%s%s", inner, surfacePropertyName(i) ); break;
+       case 3: snprintf(name, 64, "%s%s", outer, surfacePropertyName(i) ); break;
+    }
+    return strdup(name);
+}
+
+
+
+GSubstance* GSubstanceLib::loadSubstance(float* subData, unsigned int isub)
+{
+    GSubstance* substance = new GSubstance ; 
+    GDomain<double>* domain = GSubstanceLib::getDefaultDomain();
+    unsigned int domainLength = domain->getLength(); 
+    unsigned int numProp = getNumProp();
+    assert(numProp % 4 == 0 && numProp/4 == 4);
+
+    // property scrunch into float4 is the cause of the gymnastics
+    for(unsigned int p=0 ; p < numProp/4 ; ++p ) 
+    {
+         float* pdata = subData + p*domainLength*4 ; 
+
+         GPropertyMap* pmap = new GPropertyMap("humpty", isub, "reconstructed"); // names need to come from G
+
+         // un-interleaving the 4 properties
+         for(unsigned int l=0 ; l < 4 ; ++l )
+         {
+             double* v = new double[domainLength];
+             for(unsigned int d=0 ; d < domainLength ; ++d ) v[d] = pdata[d*4+l];  
+
+             char* pname = propertyName(p, l);
+             pmap->addProperty(pname, v, domain->getValues(), domainLength );
+             free(pname);             
+             delete v;
+         }
+
+         switch(p)
+         {
+            case 0:substance->setInnerMaterial(pmap);break;
+            case 1:substance->setOuterMaterial(pmap);break;
+            case 2:substance->setInnerSurface(pmap);break;
+            case 3:substance->setOuterSurface(pmap);break;
+         }
+     }
+     return substance ; 
+}
+
+
+
+GSubstanceLib* GSubstanceLib::load(const char* dir)
+{
+    GSubstanceLib* lib = new GSubstanceLib();
+
+    GSubstanceLibMetadata* meta = GSubstanceLibMetadata::load(dir);
+    lib->setMetadata(meta); 
+
+    GBuffer* buffer = GBuffer::load<float>(dir, "wavelength.npy");
+    buffer->Summary("wavelength buffer");
+    //lib->dumpWavelengthBuffer(buffer);
+    lib->loadWavelengthBuffer(buffer);
+
+    return lib ; 
+}
+
+
+void GSubstanceLib::loadWavelengthBuffer(GBuffer* buffer)
+{
+    if(!buffer) return ;
+    float* data = (float*)buffer->getPointer();
+
+    unsigned int numElementsTotal = buffer->getNumElementsTotal();
+
+    GDomain<double>* domain = GSubstanceLib::getDefaultDomain();
+    unsigned int domainLength = domain->getLength(); 
+    unsigned int numProp = getNumProp();
+    unsigned int numSubstance = numElementsTotal/(numProp*domainLength);
+    assert(numSubstance == 54);
+
+    for(unsigned int isub=0 ; isub < numSubstance ; ++isub )
+    {
+        unsigned int subOffset = domainLength*numProp*isub ;
+        GSubstance* substance = loadSubstance(data + subOffset, isub); 
+        substance->Summary("GSubstanceLib::loadWavelengthBuffer",1);
+
+        //TODO: digest check, as use as key to populate the lib, 
+        //      use metadata to reacreate the names 
+        //      find way to do roundtrip test (maybe via global digest of the lib) 
+        
+    }
+}
+
 void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer)
 {
-    dumpWavelengthBuffer(buffer, getNumSubstances(), 16, getStandardDomainLength());  
+    dumpWavelengthBuffer(buffer, getNumSubstances(), getNumProp(), getStandardDomainLength());  
 }
 
 void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength)
@@ -538,14 +643,12 @@ void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubsta
     if(!buffer) return ;
 
     float* data = (float*)buffer->getPointer();
-
     unsigned int numElementsTotal = buffer->getNumElementsTotal();
     assert(numElementsTotal == numSubstance*numProp*domainLength);
-
     GDomain<double>* domain = GSubstanceLib::getDefaultDomain();
     assert(domain->getLength() == domainLength);
 
-    std::cout << "GMergedMesh::dumpWavelengthBuffer " 
+    std::cout << "GSubstanceLib::dumpWavelengthBuffer " 
               << " numSubstance " << numSubstance
               << " numProp " << numProp
               << " domainLength " << domainLength
@@ -553,35 +656,12 @@ void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubsta
 
     assert(numProp % 4 == 0);
 
-
-    std::vector<GPropertyMap*> pmaps ; 
-
     for(unsigned int isub=0 ; isub < numSubstance ; ++isub )
     {
         unsigned int subOffset = domainLength*numProp*isub ;
-
-        GPropertyMap* pmap = new GPropertyMap("humpty", isub, "reconstructed");
-        pmaps.push_back(pmap);
-
         for(unsigned int p=0 ; p < numProp/4 ; ++p ) // property scrunch into float4 is the cause of the gymnastics
         {
              unsigned int offset = subOffset + ( p*domainLength*4 ) ;
-
-             // un-interleaving the 4 properties
-             for(unsigned int l=0 ; l < 4 ; ++l )
-             {
-                 double* v = new double[domainLength];
-                 for(unsigned int d=0 ; d < domainLength ; ++d ) v[d] = data[offset+d*4+l];  
-                 char pname[32];
-                 snprintf(pname, 32, "p%ul%u", p, l);
-                 pmap->addProperty(pname, v, domain->getValues(), domainLength );
-                 delete v;
-             }
-
-             char* dig4 = pmap->pdigest(-4,0);  // last four properties digest-of-digest
-             printf("sub %u/%u  prop %u/%u offset %u dig4 %s \n", isub, numSubstance, p, numProp/4, offset, dig4 );
-             free(dig4);
-
              for(unsigned int l=0 ; l < 4 ; ++l )
              {
                  for(unsigned int d=0 ; d < domainLength ; ++d )
@@ -589,14 +669,7 @@ void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubsta
                      if(d%5 == 0) printf(" %15.3f", data[offset+d*4+l] );  // too many numbers so display one in every 5
                  }
                  printf("\n");
-
-                 //GProperty<double>* prop = pmap->getPropertyByIndex(l-4);
-                 //char* dig = prop->digest();
-                 //printf(" %s\n", dig);          // single property digest
-                 //free(dig);
              }
-
-
         }
     }
 }

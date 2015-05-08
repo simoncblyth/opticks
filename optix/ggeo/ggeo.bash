@@ -595,7 +595,8 @@ ggeo-meta-path(){
 }
 
 ggeo-meta(){
-   local bin=$(ggeo-bin GSubstanceLibMetadataTest)
+   #local bin=$(ggeo-bin GSubstanceLibMetadataTest)
+   local bin=$(ggeo-bin GSubstanceLibTest)
    local cmd="$bin $(ggeo-meta-path)"
    echo $cmd
    eval $cmd

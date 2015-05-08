@@ -7,6 +7,17 @@
 
 // for persistency convenience would be better to deal in indices rather than pointers
 //
+GSubstance::GSubstance()
+         :
+         m_imaterial(NULL),
+         m_omaterial(NULL),
+         m_isurface(NULL),
+         m_osurface(NULL),
+         m_index(UINT_MAX),
+         m_texprops(NULL)
+{
+}
+
 GSubstance::GSubstance( GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
          : 
          m_imaterial(imaterial),

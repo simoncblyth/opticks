@@ -26,6 +26,7 @@ class GPropertyMap ;
 // hmm GSubstance, a better name would be GBoundary now ?
 class GSubstance {
   public:
+      GSubstance();
       GSubstance(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
       virtual ~GSubstance();
 
