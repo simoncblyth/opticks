@@ -177,17 +177,21 @@ void GSubstance::Summary(const char* msg, unsigned int nline)
 
    char* dig = pdigest(0,4);
    char* imat = m_imaterial->getShortName("__dd__Materials__");
-   char* omat = m_omaterial ? m_omaterial->getShortName("__dd__Materials__") : NULL  ;
+   char* omat = m_omaterial->getShortName("__dd__Materials__") ;
+   char* isur = m_isurface ? m_isurface->getShortName("__dd__Geometry__") : (char*)"" ; 
+   char* osur = m_osurface ? m_osurface->getShortName("__dd__Geometry__") : (char*)"" ; 
 
+   /*
    std::string imatk = m_imaterial ? m_imaterial->getKeysString() : "" ;
    std::string omatk = m_omaterial ? m_omaterial->getKeysString() : ""  ;
    std::string isurk = m_isurface  ? m_isurface->getKeysString() : "" ; 
    std::string osurk = m_osurface  ? m_osurface->getKeysString() : "" ; 
+   */
 
-   char bmat[128];
-   snprintf(bmat, 128,"%s/%s", imat, omat );  
+   char bmat[512];
+   snprintf(bmat, 512,"%s/%s/%s/%s", imat, omat, isur, osur );  
 
-   printf("%s : index %u %s %s \n", msg, m_index, dig, bmat);  
+   printf("%s : index %2u %s %s \n", msg, m_index, dig, bmat);  
 
 
    /*
@@ -200,6 +204,8 @@ void GSubstance::Summary(const char* msg, unsigned int nline)
    free(dig);
    free(imat);
    free(omat);
+   free(isur);
+   free(osur);
 }
 
 

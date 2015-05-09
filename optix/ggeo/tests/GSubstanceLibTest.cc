@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 
     const char* dir = argv[1];
     GSubstanceLib* lib = GSubstanceLib::load(dir);
-    lib->Summary(dir);
+    lib->Summary("load ");
 
     return 0 ;
 }

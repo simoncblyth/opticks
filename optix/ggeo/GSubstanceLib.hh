@@ -74,6 +74,7 @@ class GSubstanceLib {
       GProperty<float>* getRamp();
       void setKeyMap(const char* spec);
       char*  digest(std::vector<GProperty<float>*>& props);
+      void digestDebug(GSubstance* substance, unsigned int isub);
 
   public:
       // another classes need access to "shape" of the standardization

@@ -3,6 +3,16 @@
 #include "assert.h"
 #include "uif.h"
 
+#include <string>
+#include <iostream>
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/lexical_cast.hpp>
+
+namespace fs = boost::filesystem;
+namespace pt = boost::property_tree;
+
 
 class NPY ;
 
@@ -18,9 +28,13 @@ class G4StepNPY {
 
    public:  
        void dump(const char* msg);
+       void loadChromaMaterialMap(const char* path);
+       void dumpChromaMaterialMap();
+
  
    private:
         NPY* m_npy ; 
+        boost::property_tree::ptree   m_chroma_material_map ;
  
 };
 
@@ -82,5 +96,31 @@ void G4StepNPY::dump(const char* msg)
     }
     }
 }
+
+
+
+void G4StepNPY::loadChromaMaterialMap(const char* path)
+{
+    pt::read_json(path, m_chroma_material_map );
+}
+void G4StepNPY::dumpChromaMaterialMap()
+{
+    const char* prefix = "/dd/Materials/" ;
+    BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_chroma_material_map.get_child("") )
+    {
+        const char* name = ak.first.c_str() ; 
+        unsigned int code = boost::lexical_cast<unsigned int>(ak.second.data().c_str());
+
+        std::string shortname ;  
+        if(strncmp(name, prefix, strlen(prefix)) == 0)
+        {
+            shortname = name + strlen(prefix) ;
+            std::cout << shortname << " : " << code << std::endl ;
+        }
+    }
+}
+
+
+
 
 

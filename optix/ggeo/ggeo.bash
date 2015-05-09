@@ -31,6 +31,68 @@ TODO
     as a container for all properties 
 
 
+Material index mapping 
+------------------------
+
+Cerenkov steps contain indices which have been chroma mapped already::
+
+    In [4]: cs = CerenkovStep.get(1)
+
+    In [8]: cs.materialIndices
+    Out[8]: CerenkovStep([ 1,  8, 10, 12, 13, 14, 19], dtype=int32)
+
+    In [9]: cs.materialIndex
+    Out[9]: CerenkovStep([12, 12, 12, ...,  8,  8,  8], dtype=int32)
+
+    In [11]: np.unique(cs.materialIndex)
+    Out[11]: CerenkovStep([ 1,  8, 10, 12, 13, 14, 19], dtype=int32)
+
+
+Modified daechromacontext.py to dump the chroma mapping with 
+names translated into geant4 style::
+
+    In [13]: import json
+
+    In [15]: cmm = json.load(file("/tmp/ChromaMaterialMap.json"))
+
+    In [16]: cmm
+    Out[16]: 
+    {u'/dd/Materials/ADTableStainlessSteel': 0,
+     u'/dd/Materials/Acrylic': 1,
+     u'/dd/Materials/Air': 2,
+     u'/dd/Materials/Aluminium': 3,
+     u'/dd/Materials/BPE': 4,
+     u'/dd/Materials/Bialkali': 5,
+     u'/dd/Materials/C_13': 6,
+     u'/dd/Materials/Co_60': 7,
+     u'/dd/Materials/DeadWater': 8,
+     u'/dd/Materials/ESR': 9,
+     u'/dd/Materials/GdDopedLS': 10,
+     u'/dd/Materials/Ge_68': 11,
+     u'/dd/Materials/IwsWater': 12,
+     u'/dd/Materials/LiquidScintillator': 13,
+     u'/dd/Materials/MineralOil': 14,
+     u'/dd/Materials/Nitrogen': 15,
+     u'/dd/Materials/NitrogenGas': 16,
+     u'/dd/Materials/Nylon': 17,
+     u'/dd/Materials/OpaqueVacuum': 18,
+     u'/dd/Materials/OwsWater': 19,
+     u'/dd/Materials/PVC': 20,
+     u'/dd/Materials/Pyrex': 21,
+     u'/dd/Materials/Silver': 22,
+     u'/dd/Materials/StainlessSteel': 23,
+     u'/dd/Materials/Teflon': 24,
+     u'/dd/Materials/Tyvek': 25,
+     u'/dd/Materials/UnstStainlessSteel': 26,
+     u'/dd/Materials/Vacuum': 27,
+     u'/dd/Materials/Water': 28}
+
+
+
+
+
+
+
 Classes
 --------
 

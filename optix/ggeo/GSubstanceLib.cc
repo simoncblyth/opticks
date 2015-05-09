@@ -567,20 +567,12 @@ GSubstance* GSubstanceLib::loadSubstance(float* subData, unsigned int isub)
     // property scrunch into float4 is the cause of the gymnastics
     for(unsigned int p=0 ; p < numProp/4 ; ++p ) 
     {
-         float* pdata = subData + p*domainLength*4 ; 
-         std::string mapName ;
-         switch(p)
-         {
-            case 0:mapName = m_meta->getSubstanceQty(isub, "imat", "name");break;
-            case 1:mapName = m_meta->getSubstanceQty(isub, "omat", "name");break;
-            case 2:mapName = m_meta->getSubstanceQty(isub, "isur", "name");break;
-            case 3:mapName = m_meta->getSubstanceQty(isub, "osur", "name");break;
-         }
-
+         std::string mapName = m_meta->getSubstanceQtyByIndex(isub, p, "name");
          GPropertyMap<float>* pmap = new GPropertyMap<float>(mapName.c_str(), isub, "recon"); 
 
-         // un-interleaving the 4 properties
-         for(unsigned int l=0 ; l < 4 ; ++l )
+         float* pdata = subData + p*domainLength*4 ; 
+
+         for(unsigned int l=0 ; l < 4 ; ++l ) // un-interleaving the 4 properties
          {
              float* v = new float[domainLength];
              for(unsigned int d=0 ; d < domainLength ; ++d ) v[d] = pdata[d*4+l];  
@@ -600,47 +592,49 @@ GSubstance* GSubstanceLib::loadSubstance(float* subData, unsigned int isub)
          }
      }
 
-
      std::string sdig = substance->getPDigestString(0,4);
 
-     //assert(strcmp(sdig.c_str(), mdig.c_str()) == 0); 
      if(strcmp(sdig.c_str(), mdig.c_str()) != 0)
      {
          printf("GSubstanceLib::loadSubstance digest mismatch %u : %s %s \n", isub, sdig.c_str(), mdig.c_str());
-         for(unsigned int i=0 ; i<4 ; i++)
-         {
-             GPropertyMap<float>* q = substance->getConstituentByIndex(i);
-
-             std::string qdig   = q->getPDigestString(0,4);
-             std::string qdigm  = m_meta->getSubstanceQtyByIndex(isub, i, "digest");
-
-             if(strcmp(qdigm.c_str(), qdig.c_str())!=0)
-             {
-                 switch(i)
-                 {
-                    case 0:
-                    case 1:
-                            printf("xmat %20s %s %s \n", q->getShortNameString().c_str(), qdig.c_str(), qdigm.c_str());
-                            break ; 
-                    case 2:
-                    case 3:
-                            printf("xsur %20s %s %s \n", "", qdig.c_str(), qdigm.c_str());
-                            break ; 
-                 }
-                 GProperty<float>* prop ; 
-                 for(unsigned int p=0 ; p < 4 ; ++p)
-                 {
-                     prop = q->getPropertyByIndex(p);
-                     std::string pdig = prop->getDigestString();
-
-                 }
-             }
-         } 
+         digestDebug(substance, isub);
      }
-
-
+     assert(strcmp(sdig.c_str(), mdig.c_str()) == 0); 
      return substance ; 
 }
+
+void GSubstanceLib::digestDebug(GSubstance* substance, unsigned int isub)
+{
+    for(unsigned int i=0 ; i<4 ; i++)
+    {
+        GPropertyMap<float>* q = substance->getConstituentByIndex(i);
+        std::string qdig   = q->getPDigestString(0,4);
+        std::string qdigm  = m_meta->getSubstanceQtyByIndex(isub, i, "digest");
+
+        if(strcmp(qdigm.c_str(), qdig.c_str())!=0)
+        {
+            switch(i)
+            {
+                case 0:
+                case 1:
+                        printf("xmat %20s %s %s \n", q->getShortNameString().c_str(), qdig.c_str(), qdigm.c_str());
+                        break ; 
+                case 2:
+                case 3:
+                        printf("xsur %20s %s %s \n", "", qdig.c_str(), qdigm.c_str());
+                        break ; 
+            }
+            GProperty<float>* prop ; 
+            for(unsigned int p=0 ; p < 4 ; ++p)
+            {
+                prop = q->getPropertyByIndex(p);
+                std::string pdig = prop->getDigestString();
+                printf(" %u prop digest %s \n", p, pdig.c_str());
+            }
+         }
+     } 
+}
+
 
 
 
@@ -677,11 +671,17 @@ void GSubstanceLib::loadWavelengthBuffer(GBuffer* buffer)
     {
         unsigned int subOffset = domainLength*numProp*isub ;
         GSubstance* substance = loadSubstance(data + subOffset, isub); 
-        substance->Summary("GSubstanceLib::loadWavelengthBuffer",1);
+        //substance->Summary("GSubstanceLib::loadWavelengthBuffer",1);
 
-        //TODO: digest check, as use as key to populate the lib, 
-        //      use metadata to reacreate the names 
-        //      find way to do roundtrip test (maybe via global digest of the lib) 
+        std::string key = substance->pdigest(0,4);  
+        assert(m_registry.count(key) == 0); // there should be no digest duplicates in wavelengthBuffer
+
+        substance->setIndex(m_keys.size());
+        m_keys.push_back(key);  // for simple ordering  
+        m_registry[key] = substance ; 
+
+        // use metadata to reacreate the names 
+        // find way to do roundtrip test (maybe via global digest of the lib) 
         
     }
 }
