@@ -1,6 +1,7 @@
 #ifndef GPROPERTY_H
 #define GPROPERTY_H
 
+#include <string>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,6 +19,7 @@ public:
    static const char* DOMAIN_FMT ;
    static const char* VALUE_FMT ;
    char* digest();   
+   std::string getDigestString();
 
 
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length ) 
@@ -120,6 +122,14 @@ char* GProperty<T>::digest()
     dig.update( (char*)m_domain->getValues(), d_nbytes );
     return dig.finalize();
 }
+
+template <typename T>
+std::string GProperty<T>::getDigestString()
+{
+    return digest();
+}
+
+
 
 
 template <typename T>

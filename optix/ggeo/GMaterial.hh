@@ -13,7 +13,7 @@
 
 #include "GPropertyMap.hh"
 
-class GMaterial : public GPropertyMap {
+class GMaterial : public GPropertyMap<float> {
   public:
       GMaterial(const char* name, unsigned int index);
       virtual ~GMaterial();

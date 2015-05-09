@@ -31,7 +31,7 @@ GGeo::GGeo() :
    // chroma/chroma/geometry.py
    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
    //
-   GDomain<double>* standard_wavelengths = new GDomain<double>(60.f, 810.f, 20.f );  
+   GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
    m_substance_lib->setStandardDomain( standard_wavelengths );
 
 }

@@ -174,9 +174,9 @@ optix::Geometry GGeoOptiXGeometry::convertGeometry(GSolid* solid)
 
 
 
-void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GPropertyMap* ptex)
+void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GPropertyMap<float>* ptex)
 {
-    GDomain<double>* domain = ptex->getStandardDomain();
+    GDomain<float>* domain = ptex->getStandardDomain();
     material["wavelength_domain"]->setFloat(domain->getLow(), domain->getHigh(), domain->getStep() ); 
 
     unsigned int nprop = ptex->getNumProperties() ;
@@ -195,10 +195,10 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GPropert
     for( unsigned int j = 0; j < ny; ++j ) 
     { 
         unsigned int offset = j*ny ;  
-        GPropertyD* p0 = ptex->getPropertyByIndex(offset+0) ;
-        GPropertyD* p1 = ptex->getPropertyByIndex(offset+1) ;
-        GPropertyD* p2 = ptex->getPropertyByIndex(offset+2) ;
-        GPropertyD* p3 = ptex->getPropertyByIndex(offset+3) ;
+        GProperty<float>* p0 = ptex->getPropertyByIndex(offset+0) ;
+        GProperty<float>* p1 = ptex->getPropertyByIndex(offset+1) ;
+        GProperty<float>* p2 = ptex->getPropertyByIndex(offset+2) ;
+        GProperty<float>* p3 = ptex->getPropertyByIndex(offset+3) ;
 
         for( unsigned int i = 0; i < nx; ++i ) 
         { 
@@ -276,8 +276,10 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
     material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
 
     GSubstanceLib* lib = m_ggeo->getSubstanceLib();
-    GPropertyMap* ptex = lib->createStandardProperties("ptex", substance);
-    substance->setTexProps(ptex);
+
+    GPropertyMap<float>* ptex = lib->createStandardProperties("ptex", substance);
+
+    //substance->setTexProps(ptex);
     //substance->dumpTexProps("GGeoOptiXGeometry::convertSubstance", 510.f ); 
 
     addWavelengthTexture(material, ptex);

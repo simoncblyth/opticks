@@ -30,29 +30,29 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
 }
 
 
-
 void GSubstanceLibMetadata::addDigest(const char* kfmt, unsigned int isub, const char* cat, char* dig )
 {
     add(kfmt, isub, cat, "digest",  dig );
 }
 
 
-void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap* pmap )
+
+void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap<float>* pmap )
 {
     if(!pmap) return ;
 
     const char* name = pmap->getName() ;
     const char* type = pmap->getType() ;
-    char* digest = pmap->digest() ;
+    //char* digest = pmap->digest() ;
     std::string keys = pmap->getKeysString() ;
 
     // "lib.substance.%d.%s.%s" ;
     add(kfmt, isub, cat, "name",    name); 
     add(kfmt, isub, cat, "type",    type);
     add(kfmt, isub, cat, "keys",    keys.c_str());
-    add(kfmt, isub, cat, "pmap_digest",  digest ); // this is not the standard digest, hence the separate addDigest
+    //add(kfmt, isub, cat, "pmap_digest",  digest ); // this is not the standard digest, hence the separate addDigest
 
-    free(digest);
+    //free(digest);
 
     if(strcmp(cat, "imat") == 0 || strcmp(cat, "omat") == 0)
     {
@@ -92,6 +92,28 @@ std::string GSubstanceLibMetadata::get(const char* kfmt, unsigned int idx)
     snprintf(key, 128, kfmt, idx);
     return m_tree.get<std::string>(key);
 }
+
+
+std::string GSubstanceLibMetadata::getSubstanceQtyByIndex(unsigned int isub, unsigned int icat, const char* tag)
+{
+    const char* cat ;
+    switch(icat)
+    {
+       case 0:cat = "imat" ; break; 
+       case 1:cat = "omat" ; break; 
+       case 2:cat = "isur" ; break; 
+       case 3:cat = "osur" ; break; 
+    } 
+    return getSubstanceQty(isub, cat, tag);
+}
+
+std::string GSubstanceLibMetadata::getSubstanceQty(unsigned int isub, const char* cat, const char* tag)
+{
+    char key[128];
+    snprintf(key, 128, "lib.substance.%u.%s.%s", isub, cat, tag);
+    return m_tree.get<std::string>(key);
+}
+
 
 void GSubstanceLibMetadata::createMaterialMap()
 {

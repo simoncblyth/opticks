@@ -3,7 +3,7 @@
 
 #include "GPropertyMap.hh"
 
-class GBorderSurface : public GPropertyMap {
+class GBorderSurface : public GPropertyMap<float> {
   public:
       GBorderSurface(const char* name, unsigned int index);
       virtual ~GBorderSurface();

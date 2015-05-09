@@ -5,7 +5,7 @@
 #include "string.h"
 
 GSkinSurface::GSkinSurface(const char* name, unsigned int index) : 
-    GPropertyMap(name, index, "skinsurface" ),
+    GPropertyMap<float>(name, index, "skinsurface" ),
     m_skinsurface_vol(NULL) 
 {
 }
@@ -43,7 +43,7 @@ void GSkinSurface::Summary(const char* msg)
     {
         printf("%s INCOMPLETE \n", msg );
     }
-    GPropertyMap::Summary(msg);
+    GPropertyMap<float>::Summary(msg);
 }
 
 

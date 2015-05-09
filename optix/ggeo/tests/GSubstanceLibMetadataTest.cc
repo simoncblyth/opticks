@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     unsigned int domainLength = GSubstanceLib::DOMAIN_LENGTH ;
     unsigned int numSubstance = numElementsTotal/(numProp*domainLength);
 
-    GDomain<double>* domain = GSubstanceLib::getDefaultDomain();
+    GDomain<float>* domain = GSubstanceLib::getDefaultDomain();
     assert(domain->getLength() == domainLength);
 
     GSubstanceLib::dumpWavelengthBuffer(buffer, numSubstance, numProp, domainLength );

@@ -3,7 +3,7 @@
 
 #include "GPropertyMap.hh"
 
-class GSkinSurface : public GPropertyMap {
+class GSkinSurface : public GPropertyMap<float> {
   public:
       GSkinSurface(const char* name, unsigned int index);
       virtual ~GSkinSurface();

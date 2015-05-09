@@ -35,7 +35,7 @@ public:
    static GAry<T>* from_constant(unsigned int length, T value )
    {
        GAry<T>* ary = new GAry<T>( length, NULL );
-       double* vals = ary->getValues();
+       T* vals = ary->getValues();
        for(unsigned int i=0 ; i < length; i++) vals[i] = value ;
        return ary ;
    } 
@@ -43,7 +43,7 @@ public:
    static GAry<T>* ramp(unsigned int length, T low, T step )
    {
        GAry<T>* ary = new GAry<T>( length, NULL );
-       double* vals = ary->getValues();
+       T* vals = ary->getValues();
        for(unsigned int i=0 ; i < length; i++) vals[i] = low + step*i ;  
        return ary ;
    } 

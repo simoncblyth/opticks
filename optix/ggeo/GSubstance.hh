@@ -1,6 +1,7 @@
 #ifndef GSUBSTANCE_H
 #define GSUBSTANCE_H
 
+#include <string>
 //
 // Excluding "outer" material from GSubstance (more natural and prevents compounding)
 // means that will always need to consider pairs of substances, 
@@ -21,18 +22,22 @@
 //   surface and material properties 
 //
 
-class GPropertyMap ;
+
+#include "GPropertyMap.hh"
+
 
 // hmm GSubstance, a better name would be GBoundary now ?
 class GSubstance {
   public:
       GSubstance();
-      GSubstance(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
+      GSubstance(GPropertyMap<float>* imaterial, GPropertyMap<float>* omaterial, GPropertyMap<float>* isurface, GPropertyMap<float>* osurface );
       virtual ~GSubstance();
 
   public:
       void Summary(const char* msg="GSubstance::Summary", unsigned int nline=0);
-      char* digest();
+      //char* digest();
+      char* pdigest(int ifr, int ito);
+      std::string getPDigestString(int ifr, int ito);
 
   public:
       // 
@@ -50,29 +55,30 @@ class GSubstance {
       void setIndex(unsigned int index);
 
   public:
-      void setInnerMaterial(GPropertyMap* imaterial);
-      void setOuterMaterial(GPropertyMap* omaterial);
-      void setInnerSurface(GPropertyMap* isurface);
-      void setOuterSurface(GPropertyMap* osurface);
+      void setInnerMaterial(GPropertyMap<float>* imaterial);
+      void setOuterMaterial(GPropertyMap<float>* omaterial);
+      void setInnerSurface(GPropertyMap<float>* isurface);
+      void setOuterSurface(GPropertyMap<float>* osurface);
 
-      GPropertyMap* getInnerMaterial();
-      GPropertyMap* getOuterMaterial();
-      GPropertyMap* getInnerSurface();
-      GPropertyMap* getOuterSurface();
+      GPropertyMap<float>* getInnerMaterial();
+      GPropertyMap<float>* getOuterMaterial();
+      GPropertyMap<float>* getInnerSurface();
+      GPropertyMap<float>* getOuterSurface();
+      GPropertyMap<float>* getConstituentByIndex(unsigned int p);
 
   public:
-      void setTexProps(GPropertyMap* texprops);
-      GPropertyMap* getTexProps();
-      void dumpTexProps(const char* msg, double wavelength);
+     // void setTexProps(GPropertyMap<float>* texprops);
+     // GPropertyMap<float>* getTexProps();
+     // void dumpTexProps(const char* msg, double wavelength);
 
   private:
-      GPropertyMap*  m_imaterial ; 
-      GPropertyMap*  m_omaterial ; 
-      GPropertyMap*  m_isurface ; 
-      GPropertyMap*  m_osurface ; 
+      GPropertyMap<float>*  m_imaterial ; 
+      GPropertyMap<float>*  m_omaterial ; 
+      GPropertyMap<float>*  m_isurface ; 
+      GPropertyMap<float>*  m_osurface ; 
 
   private:
-      GPropertyMap*  m_texprops ; 
+      //GPropertyMap<float>*  m_texprops ; 
 
 
       unsigned int m_index ; 

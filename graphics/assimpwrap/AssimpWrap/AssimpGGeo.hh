@@ -1,6 +1,8 @@
 #ifndef ASSIMPGGEO_H
 #define ASSIMPGGEO_H
 
+#include "GPropertyMap.hh" 
+
 class AssimpTree ; 
 class AssimpSelection ; 
 class AssimpNode ; 
@@ -8,7 +10,6 @@ class AssimpNode ;
 class GGeo ; 
 class GSurface ;
 class GMaterial ;
-class GPropertyMap ;
 class GSolid ; 
 
 
@@ -33,8 +34,8 @@ public:
 
 protected:
     void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl, bool reverse );
-    void addProperties(GPropertyMap* pmap, aiMaterial* material, bool reverse);
-    void addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterialProperty* property, bool reverse);
+    void addProperties(GPropertyMap<float>* pmap, aiMaterial* material, bool reverse);
+    void addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property, bool reverse);
     const char* getStringProperty(aiMaterial* mat, const char* query);
 
 protected:

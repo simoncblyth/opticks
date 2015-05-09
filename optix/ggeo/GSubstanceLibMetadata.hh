@@ -2,7 +2,9 @@
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
-class GPropertyMap ; 
+
+#include "GPropertyMap.hh"
+
 
 class GSubstanceLibMetadata {
   public:
@@ -16,9 +18,13 @@ class GSubstanceLibMetadata {
       void createMaterialMap();
 
    public:
+      std::string getSubstanceQty(unsigned int isub, const char* cat, const char* key);
+      std::string getSubstanceQtyByIndex(unsigned int isub, unsigned int icat, const char* tag);
+
+   public:
       std::string get(const char* kfmt, const char* idx);
       std::string get(const char* kfmt, unsigned int idx);
-      void add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap* pmap );
+      void add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap<float>* pmap );
       void addDigest(const char* kfmt, unsigned int isub, const char* cat, char* dig );
       void addMaterial(unsigned int isub, const char* cat, char* shortname, char* digest );
       void addMapEntry(unsigned int line, const char* shortname);

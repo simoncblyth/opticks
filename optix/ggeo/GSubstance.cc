@@ -13,19 +13,19 @@ GSubstance::GSubstance()
          m_omaterial(NULL),
          m_isurface(NULL),
          m_osurface(NULL),
-         m_index(UINT_MAX),
-         m_texprops(NULL)
+         m_index(UINT_MAX)
+      //   m_texprops(NULL)
 {
 }
 
-GSubstance::GSubstance( GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface )
+GSubstance::GSubstance( GPropertyMap<float>* imaterial, GPropertyMap<float>* omaterial, GPropertyMap<float>* isurface, GPropertyMap<float>* osurface )
          : 
          m_imaterial(imaterial),
          m_omaterial(omaterial),
          m_isurface(isurface),
          m_osurface(osurface),
-         m_index(UINT_MAX),
-         m_texprops(NULL)
+         m_index(UINT_MAX)
+    //     m_texprops(NULL)
 {
 }
 
@@ -44,21 +44,22 @@ unsigned int GSubstance::getIndex()
 }
 
 
-void GSubstance::setTexProps(GPropertyMap* texprops)
+/*
+void GSubstance::setTexProps(GPropertyMap<float>* texprops)
 {
     m_texprops = texprops ;
 }
-GPropertyMap* GSubstance::getTexProps()
+GPropertyMap<float>* GSubstance::getTexProps()
 {
     return m_texprops ;
 }
 void GSubstance::dumpTexProps(const char* msg, double wavelength)
 {
     printf("%s wavelength %10.3f \n", msg, wavelength );
-    GPropertyMap* ptex = getTexProps();
+    GPropertyMap<float>* ptex = getTexProps();
     assert(ptex);
 
-    GDomain<double>* domain = ptex->getStandardDomain();
+    GDomain<float>* domain = ptex->getStandardDomain();
     unsigned int nprop = ptex->getNumProperties() ;
     assert(nprop % 4 == 0 );    
     assert(nprop == 16);
@@ -93,8 +94,49 @@ void GSubstance::dumpTexProps(const char* msg, double wavelength)
             v3);
     }
 }
+*/
 
 
+std::string GSubstance::getPDigestString(int ifr, int ito)
+{
+    return pdigest(ifr, ito);
+}
+
+
+
+char* GSubstance::pdigest(int ifr, int ito)
+{
+   MD5Digest dig ;
+
+   if(m_imaterial)
+   {
+       char* pdig = m_imaterial->pdigest(ifr, ito);
+       dig.update(pdig, strlen(pdig));
+       free(pdig);
+   }
+   if(m_omaterial)
+   {
+       char* pdig = m_omaterial->pdigest(ifr, ito);
+       dig.update(pdig, strlen(pdig));
+       free(pdig);
+   }
+   if(m_isurface)
+   {
+       char* pdig = m_isurface->pdigest(ifr, ito);
+       dig.update(pdig, strlen(pdig));
+       free(pdig);
+   }
+   if(m_osurface)
+   {
+       char* pdig = m_osurface->pdigest(ifr, ito);
+       dig.update(pdig, strlen(pdig));
+       free(pdig);
+   }
+   return dig.finalize();
+}
+
+
+/*
 char* GSubstance::digest()
 {
    MD5Digest dig ;
@@ -124,7 +166,7 @@ char* GSubstance::digest()
    }  
    return dig.finalize();
 }
-
+*/
 
 
 
@@ -133,24 +175,28 @@ void GSubstance::Summary(const char* msg, unsigned int nline)
 {
    assert(m_imaterial);
 
-   char* dig = digest();
+   char* dig = pdigest(0,4);
    char* imat = m_imaterial->getShortName("__dd__Materials__");
    char* omat = m_omaterial ? m_omaterial->getShortName("__dd__Materials__") : NULL  ;
 
    std::string imatk = m_imaterial ? m_imaterial->getKeysString() : "" ;
    std::string omatk = m_omaterial ? m_omaterial->getKeysString() : ""  ;
-   std::string isurk = m_isurface ? m_isurface->getKeysString() : "" ; 
-   std::string osurk = m_osurface ? m_osurface->getKeysString() : "" ; 
+   std::string isurk = m_isurface  ? m_isurface->getKeysString() : "" ; 
+   std::string osurk = m_osurface  ? m_osurface->getKeysString() : "" ; 
 
    char bmat[128];
-   snprintf(bmat, 128,"imat/omat %s/%s", imat, omat );  
-   printf("%s %4d [%s] %50s %s %s isur %s osur %s \n", msg, m_index, dig, bmat, imatk.c_str(), omatk.c_str(), isurk.c_str(), osurk.c_str() );
+   snprintf(bmat, 128,"%s/%s", imat, omat );  
 
+   printf("%s : index %u %s %s \n", msg, m_index, dig, bmat);  
+
+
+   /*
    if(m_imaterial) m_imaterial->Summary("imat", nline);
-  // if(m_omaterial) m_omaterial->Summary("omat", nline);
-  // if(m_isurface)  m_isurface->Summary("isurf", nline);
-  // if(m_osurface)  m_osurface->Summary("osurf", nline);
-
+   if(m_omaterial) m_omaterial->Summary("omat", nline);
+   if(m_isurface)   m_isurface->Summary("isur", nline);
+   if(m_osurface)   m_osurface->Summary("osur", nline);
+   */
+ 
    free(dig);
    free(imat);
    free(omat);
@@ -158,39 +204,50 @@ void GSubstance::Summary(const char* msg, unsigned int nline)
 
 
 
-void GSubstance::setInnerMaterial(GPropertyMap* imaterial)
+void GSubstance::setInnerMaterial(GPropertyMap<float>* imaterial)
 {
     m_imaterial = imaterial ; 
 }
-void GSubstance::setOuterMaterial(GPropertyMap* omaterial)
+void GSubstance::setOuterMaterial(GPropertyMap<float>* omaterial)
 {
     m_omaterial = omaterial ; 
 }
-void GSubstance::setInnerSurface(GPropertyMap* isurface)
+void GSubstance::setInnerSurface(GPropertyMap<float>* isurface)
 {
     m_isurface = isurface ; 
 }
-void GSubstance::setOuterSurface(GPropertyMap* osurface)
+void GSubstance::setOuterSurface(GPropertyMap<float>* osurface)
 {
     m_osurface = osurface ; 
 }
 
 
-GPropertyMap* GSubstance::getInnerMaterial()
+GPropertyMap<float>* GSubstance::getInnerMaterial()
 {
     return m_imaterial ; 
 }
-GPropertyMap* GSubstance::getOuterMaterial()
+GPropertyMap<float>* GSubstance::getOuterMaterial()
 {
     return m_omaterial ; 
 }
-GPropertyMap* GSubstance::getInnerSurface()
+GPropertyMap<float>* GSubstance::getInnerSurface()
 {
     return m_isurface ; 
 }
-GPropertyMap* GSubstance::getOuterSurface()
+GPropertyMap<float>* GSubstance::getOuterSurface()
 {
     return m_osurface ; 
 }
 
+GPropertyMap<float>* GSubstance::getConstituentByIndex(unsigned int p)
+{
+    switch(p)
+    {
+       case 0:return m_imaterial ; break;
+       case 1:return m_omaterial ; break;
+       case 2:return m_isurface  ; break;
+       case 3:return m_osurface  ; break;
+    }
+    return NULL ;
+}
 

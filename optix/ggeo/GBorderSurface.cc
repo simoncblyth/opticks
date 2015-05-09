@@ -5,7 +5,7 @@
 #include "string.h"
 
 GBorderSurface::GBorderSurface(const char* name, unsigned int index) : 
-    GPropertyMap(name, index, "bordersurface" ),
+    GPropertyMap<float>(name, index, "bordersurface" ),
     m_bordersurface_pv1(NULL),
     m_bordersurface_pv2(NULL)
 {
@@ -75,7 +75,7 @@ void GBorderSurface::Summary(const char* msg)
     {
         printf("%s INCOMPLETE %s \n", msg, getName() );
     }
-    GPropertyMap::Summary(msg);
+    GPropertyMap<float>::Summary(msg);
 }
 
 

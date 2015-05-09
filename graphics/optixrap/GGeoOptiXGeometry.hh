@@ -5,13 +5,13 @@
 #include <optixu/optixu_aabb_namespace.h>
 
 #include "OptiXGeometry.hh"
+#include "GPropertyMap.hh" 
 
 class GGeo ; 
 class GMaterial ; 
 class GSolid ; 
 class GNode ;
 class GSubstance ;
-class GPropertyMap ;
 class GDrawable ; 
 
 class GGeoOptiXGeometry  : public OptiXGeometry 
@@ -26,7 +26,7 @@ public:
 private:
     void convertSubstances();
     optix::Material convertSubstance(GSubstance* substance);
-    void addWavelengthTexture(optix::Material& material, GPropertyMap* ptex);
+    void addWavelengthTexture(optix::Material& material, GPropertyMap<float>* ptex);
 
 private:
     void convertStructure();

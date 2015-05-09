@@ -113,7 +113,7 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     return m_ggeo ;
 }
 
-void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterialProperty* property, bool reverse)
+void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property, bool reverse)
 {
     float* data = (float*)property->mData ;
     unsigned int nbyte  = property->mDataLength ; 
@@ -147,14 +147,14 @@ void AssimpGGeo::addPropertyVector(GPropertyMap* pmap, const char* k, aiMaterial
     //if(noscale) 
     //    printf("AssimpGGeo::addPropertyVector k %-35s nbyte %4u nfloat %4u npair %4u \n", k, nbyte, nfloat, npair);
 
-    std::vector<double> vals ; 
-    std::vector<double> domain  ; 
+    std::vector<float> vals ; 
+    std::vector<float> domain  ; 
 
     for( unsigned int i = 0 ; i < npair ; i++ ) 
     {
-        double d0 = data[2*i] ; 
-        double d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ; 
-        double v = data[2*i+1]*vscale  ;
+        float d0 = data[2*i] ; 
+        float d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ; 
+        float v = data[2*i+1]*vscale  ;
 
         domain.push_back( noscale ? d0 : d );
         vals.push_back( v );  
@@ -199,7 +199,7 @@ const char* AssimpGGeo::getStringProperty(aiMaterial* material, const char* quer
 }
 
 
-void AssimpGGeo::addProperties(GPropertyMap* pmap, aiMaterial* material, bool reverse)
+void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material, bool reverse)
 {
     unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
@@ -251,7 +251,7 @@ const char* AssimpGGeo::g4dae_skinsurface_volume = "g4dae_skinsurface_volume" ;
 
 void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* query, bool reverse)
 {
-    GDomain<double>* standard_domain = gg->getSubstanceLib()->getStandardDomain(); 
+    GDomain<float>* standard_domain = gg->getSubstanceLib()->getStandardDomain(); 
 
     for(unsigned int i = 0; i < scene->mNumMaterials; i++)
     {
@@ -476,8 +476,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     assert(nsurf == 0 || nsurf == 1 ); 
 
 
-    GPropertyMap* osurf = NULL ; 
-    GPropertyMap* isurf = NULL ; 
+    GPropertyMap<float>* osurf = NULL ; 
+    GPropertyMap<float>* isurf = NULL ; 
 
     if(sks)
     {

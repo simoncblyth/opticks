@@ -8,9 +8,9 @@
 
 #include "GDomain.hh"
 #include "GProperty.hh"
+#include "GPropertyMap.hh"
 
 class GSubstance ; 
-class GPropertyMap ; 
 class GBuffer ; 
 class GSubstanceLibMetadata ; 
 
@@ -45,8 +45,8 @@ class GSubstanceLib {
 
   public:
       // primary methods : lifecycle
-      void setStandardDomain(GDomain<double>* standard_domain);
-      GSubstance* get(GPropertyMap* imaterial, GPropertyMap* omaterial, GPropertyMap* isurface, GPropertyMap* osurface );
+      void setStandardDomain(GDomain<float>* standard_domain);
+      GSubstance* get(GPropertyMap<float>* imaterial, GPropertyMap<float>* omaterial, GPropertyMap<float>* isurface, GPropertyMap<float>* osurface );
       GBuffer*      createWavelengthBuffer();  
 
   public:
@@ -61,24 +61,24 @@ class GSubstanceLib {
   private:
       // used for by "get" for standardization of substances, ready for serializing into wavelengthBuffer
       GSubstance* createStandardSubstance(GSubstance* substance);
-      void addMaterialProperties(GPropertyMap* pstd, GPropertyMap* pmap, const char* prefix);
-      void addSurfaceProperties(GPropertyMap* pstd, GPropertyMap* pmap, const char* prefix);
-      GPropertyD* getPropertyOrDefault(GPropertyMap* pmap, const char* pname);
+      void addMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
+      void addSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
+      GProperty<float>* getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
 
   private:
       // support for standardization 
-      void defineDefaults(GPropertyMap* defaults);
-      void setDefaults(GPropertyMap* defaults);
-      GPropertyMap* getDefaults();
-      GProperty<double>* getDefaultProperty(const char* name);
-      GProperty<double>* getRamp();
+      void defineDefaults(GPropertyMap<float>* defaults);
+      void setDefaults(GPropertyMap<float>* defaults);
+      GPropertyMap<float>* getDefaults();
+      GProperty<float>* getDefaultProperty(const char* name);
+      GProperty<float>* getRamp();
       void setKeyMap(const char* spec);
-      char*  digest(std::vector<GPropertyD*>& props);
+      char*  digest(std::vector<GProperty<float>*>& props);
 
   public:
       // another classes need access to "shape" of the standardization
-      GDomain<double>*        getStandardDomain();
-      static GDomain<double>* getDefaultDomain();
+      GDomain<float>*        getStandardDomain();
+      static GDomain<float>* getDefaultDomain();
       unsigned int            getStandardDomainLength();
 
   public:
@@ -88,6 +88,9 @@ class GSubstanceLib {
       void          dumpWavelengthBuffer(GBuffer* buffer);
       static void   dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength);
 
+      GPropertyMap<float>* createStandardProperties(const char* name, GSubstance* substance);
+      void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
+      void checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
 
 #ifdef TRANSITIONAL
       GSubstanceLib* createStandardizedLib();
@@ -96,9 +99,6 @@ class GSubstanceLib {
       bool isStandard();
 #endif
 #ifdef LEGACY
-      GPropertyMap* createStandardProperties(const char* name, GSubstance* substance);
-      void checkMaterialProperties(GPropertyMap* ptex, unsigned int offset, const char* prefix);
-      void checkSurfaceProperties(GPropertyMap* ptex, unsigned int offset, const char* prefix);
 #endif
 
   public:
@@ -120,9 +120,9 @@ class GSubstanceLib {
 
       bool m_standard ; // transitional : keeping this set to true
       unsigned int m_num_prop ; 
-      GDomain<double>* m_standard_domain ;  
-      GPropertyMap* m_defaults ;  
-      GProperty<double>* m_ramp ;  
+      GDomain<float>* m_standard_domain ;  
+      GPropertyMap<float>* m_defaults ;  
+      GProperty<float>* m_ramp ;  
       GSubstanceLibMetadata* m_meta ;
 
 };
@@ -153,19 +153,19 @@ inline bool GSubstanceLib::isStandard()
     return m_standard ;
 }
 #endif
-inline void GSubstanceLib::setDefaults(GPropertyMap* defaults)
+inline void GSubstanceLib::setDefaults(GPropertyMap<float>* defaults)
 {
     m_defaults = defaults ;
 }
-inline GPropertyMap* GSubstanceLib::getDefaults()
+inline GPropertyMap<float>* GSubstanceLib::getDefaults()
 {
     return m_defaults ;
 }
-inline GProperty<double>* GSubstanceLib::getRamp()
+inline GProperty<float>* GSubstanceLib::getRamp()
 {
    return m_ramp ;
 }
-inline GDomain<double>* GSubstanceLib::getStandardDomain()
+inline GDomain<float>* GSubstanceLib::getStandardDomain()
 {
     return m_standard_domain ;
 }
