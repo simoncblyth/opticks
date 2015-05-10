@@ -5,24 +5,26 @@
 
 
 
-int main()
+int main(int argc, char** argv)
 {
-    NPY* npy = NPY::load("cerenkov", "1");
-
-    G4StepNPY cs(npy);
-
-    const char* apath = "/tmp/ChromaMaterialMap.json" ;
-    const char* aprefix = "/dd/Materials/" ;
-    Lookup lookup ; 
-    lookup.create(apath, aprefix, apath, aprefix);
-
-    for(unsigned int a=0; a < 35 ; a++ )
+    if(argc < 2)
     {
-        int b = lookup.a2b(a);
-        printf("  a => b %u -> %d \n", a, b );
+        printf("%s : expecting argument directory containing %s \n", argv[0], Lookup::BNAME);
+        return 1 ;
     }
 
+    Lookup lookup;
+    lookup.loada("/tmp");
+    lookup.loadb(argv[1]);
+    lookup.create();
+    lookup.dump("LookupTest");
 
+    G4StepNPY cs(NPY::load("cerenkov", "1"));
+    cs.setLookup(&lookup);
+    cs.applyLookup(0, 2); // materialIndex  (1st quad, 3rd number)
+
+    cs.dump("cs.dump");
+    cs.dumpLines("");
 
     return 0 ;
 }

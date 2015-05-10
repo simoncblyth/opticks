@@ -38,6 +38,7 @@ add_library( ${name}  SHARED
     GLMPrint.cpp
     stringutil.cpp
     Lookup.cpp
+    G4StepNPY.cpp
 )
 
 set(LIBRARIES

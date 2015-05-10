@@ -21,6 +21,8 @@ npy-scd(){  cd $(npy-sdir); }
 npy-icd(){  cd $(npy-idir); }
 npy-bcd(){  cd $(npy-bdir); }
 
+npy-bindir(){ echo $(npy-idir)/bin ; } 
+
 npy-wipe(){
    local bdir=$(npy-bdir)
    rm -rf $bdir
@@ -61,4 +63,20 @@ npy--()
     npy-make
     npy-install
 }
+
+npy-lookup-test()
+{
+    ggeo-
+    $(npy-bindir)/LookupTest $(ggeo-meta-dir)
+}
+
+npy-g4stepnpy-test()
+{
+    ggeo-
+    $(npy-bindir)/G4StepNPYTest $(ggeo-meta-dir)
+}
+
+
+
+
 

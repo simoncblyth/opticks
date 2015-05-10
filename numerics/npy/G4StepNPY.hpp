@@ -3,30 +3,10 @@
 #include "assert.h"
 #include "uif.h"
 #include <iostream>
+#include <set>
 
-
+class Lookup ; 
 class NPY ;
-
-// resist temptation to use inheritance here, 
-// it causes much grief for little benefit 
-// instead if needed use "friend class" status to 
-// give G4StepNPY access to innards of NPY
- 
-class G4StepNPY {
-   public:  
-       G4StepNPY(NPY* npy);
-   public:  
-       void dump(const char* msg);
-
-  private:
-        NPY* m_npy ; 
- 
-};
-
-
-G4StepNPY::G4StepNPY(NPY* npy) :  m_npy(npy)
-{
-}
 
 //
 // hmm CerenkovStep and ScintillationStep have same shapes but different meanings see
@@ -35,51 +15,50 @@ G4StepNPY::G4StepNPY(NPY* npy) :  m_npy(npy)
 //
 //  but whats needed for visualization should be in the same locations ?
 //
+//
+// resist temptation to use inheritance here, 
+// it causes much grief for little benefit 
+// instead if needed use "friend class" status to 
+// give G4StepNPY access to innards of NPY
+//
+ 
+class G4StepNPY {
+   public:  
+        typedef std::set<unsigned int> Set_t ; 
+   public:  
+       G4StepNPY(NPY* npy);
 
-void G4StepNPY::dump(const char* msg)
+   public:  
+       void setLookup(Lookup* lookup);
+       Lookup* getLookup();
+       void applyLookup(unsigned int jj, unsigned int kk);
+       void dump(const char* msg);
+       void dumpLines(const char* msg);
+
+  private:
+       bool applyLookup(unsigned int index);
+
+  private:
+        NPY*     m_npy ; 
+        Lookup*  m_lookup ; 
+        Set_t    m_lines ;
+ 
+};
+
+inline void G4StepNPY::setLookup(Lookup* lookup)
 {
-    if(!m_npy) return ;
+    m_lookup = lookup ;
+} 
+inline Lookup* G4StepNPY::getLookup()
+{
+    return m_lookup ;
+} 
 
-    printf("%s\n", msg);
-
-    unsigned int ni = m_npy->m_len0 ;
-    unsigned int nj = m_npy->m_len1 ;
-    unsigned int nk = m_npy->m_len2 ;
-    std::vector<float>& data = m_npy->m_data ; 
-
-    printf(" ni %u nj %u nk %u nj*nk %u \n", ni, nj, nk, nj*nk ); 
-
-    uif_t uif ; 
-
-    unsigned int check = 0 ;
-    for(unsigned int i=0 ; i<ni ; i++ ){
-    for(unsigned int j=0 ; j<nj ; j++ )
-    {
-       bool out = i == 0 || i == ni-1 ; 
-       if(out) printf(" (%5u,%5u) ", i,j );
-       for(unsigned int k=0 ; k<nk ; k++ )
-       {
-           unsigned int index = i*nj*nk + j*nk + k ;
-           if(out)
-           {
-               uif.f = data[index] ;
-               if( j == 0 || (j == 3 && k == 0)) printf(" %15d ",   uif.i );
-               else         printf(" %15.3f ", uif.f );
-           }
-           assert(index == check);
-           check += 1 ; 
-       }
-       if(out)
-       {
-           if( j == 0 ) printf(" sid/parentId/materialIndex/numPhotons ");
-           if( j == 1 ) printf(" position/time ");
-           if( j == 2 ) printf(" deltaPosition/stepLength ");
-           if( j == 3 ) printf(" code ");
-
-           printf("\n");
-       }
-    }
-    }
+inline G4StepNPY::G4StepNPY(NPY* npy) 
+       :  
+       m_npy(npy),
+       m_lookup(NULL)
+{
 }
 
 

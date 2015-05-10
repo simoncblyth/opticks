@@ -5,9 +5,10 @@
 #include "GBuffer.hh"
 #include "GEnums.hh"
 
+#include <string>
+#include <map>
 
 #include <boost/filesystem.hpp>
-
 namespace fs = boost::filesystem;
 
 
@@ -337,6 +338,12 @@ const char* GSubstanceLib::getDigest(unsigned int index)
     return m_keys[index].c_str();
 }
 
+unsigned int GSubstanceLib::getLine(unsigned int isub, unsigned int ioff)
+{
+    unsigned int numProp = getNumProp() ; 
+    return isub*numProp/4 + ioff ;   
+}
+
 
 GBuffer* GSubstanceLib::createWavelengthBuffer()
 {
@@ -381,8 +388,8 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
         const char* kfmt = "lib.substance.%d.%s.%s" ;
         m_meta->addDigest(kfmt, isub, "substance", (char*)dig ); 
 
-        char* ishortname = substance->getInnerMaterial()->getShortName("__dd__Materials__") ; 
-        char* oshortname = substance->getOuterMaterial()->getShortName("__dd__Materials__") ; 
+        std::string ishortname = substance->getInnerMaterial()->getShortNameString("__dd__Materials__") ; 
+        std::string oshortname = substance->getOuterMaterial()->getShortNameString("__dd__Materials__") ; 
         {
             m_meta->add(kfmt, isub, "imat", substance->getInnerMaterial() );
             m_meta->add(kfmt, isub, "omat", substance->getOuterMaterial() );
@@ -414,31 +421,30 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             props.push_back(p1);
             props.push_back(p2);
             props.push_back(p3);
-            char* pdig = digest(props);
+            std::string pdig = digestString(props);
 
             {
                std::string ckdig = psrc->getPDigestString(0,4);
-               assert(strcmp(pdig, ckdig.c_str())==0);
+               assert(strcmp(pdig.c_str(), ckdig.c_str())==0);
             }
 
             switch(p)
             {
                case 0:
-                      m_meta->addDigest(kfmt, isub, "imat", pdig ); 
-                      m_meta->addMaterial(isub, "imat", ishortname, pdig );
+                      m_meta->addDigest(kfmt, isub, "imat", pdig.c_str() ); 
+                      m_meta->addMaterial(isub, "imat", ishortname.c_str(), pdig.c_str() );
                       break ;
                case 1:
-                      m_meta->addDigest(kfmt, isub, "omat", pdig ); 
-                      m_meta->addMaterial(isub, "omat", oshortname, pdig );
+                      m_meta->addDigest(kfmt, isub, "omat", pdig.c_str() ); 
+                      m_meta->addMaterial(isub, "omat", oshortname.c_str(), pdig.c_str() );
                       break ;
                case 2:
-                      m_meta->addDigest(kfmt, isub, "isur", pdig ); 
+                      m_meta->addDigest(kfmt, isub, "isur", pdig.c_str() ); 
                       break ;
                case 3:
-                      m_meta->addDigest(kfmt, isub, "osur", pdig ); 
+                      m_meta->addDigest(kfmt, isub, "osur", pdig.c_str() ); 
                       break ;
             }
-            free(pdig);
 
             for( unsigned int d = 0; d < domainLength; ++d ) 
             {   
@@ -449,14 +455,16 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
                 data[subOffset+dataOffset+3] = p3->getValue(d) ;
             }       
         }   
-        free(ishortname); 
-        free(oshortname); 
     }
     m_meta->createMaterialMap();
     return buffer ; 
 }
 
 
+std::string GSubstanceLib::digestString(std::vector<GProperty<float>*>& props)
+{
+    return digest(props);
+}
 char* GSubstanceLib::digest(std::vector<GProperty<float>*>& props)
 {
     MD5Digest dig ;            

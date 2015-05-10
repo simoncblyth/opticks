@@ -652,14 +652,14 @@ ggeo-otool(){
    otool -L $(ggeo-bin)
 }
 
-ggeo-meta-path(){
+ggeo-meta-dir(){
    echo /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
 }
 
 ggeo-meta(){
    #local bin=$(ggeo-bin GSubstanceLibMetadataTest)
    local bin=$(ggeo-bin GSubstanceLibTest)
-   local cmd="$bin $(ggeo-meta-path)"
+   local cmd="$bin $(ggeo-meta-dir)"
    echo $cmd
    eval $cmd
 }

@@ -3,6 +3,8 @@
 
 #include "stdio.h"
 #include "string.h"
+
+#include <map>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -17,6 +19,7 @@ namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
 const char* GSubstanceLibMetadata::filename = "GSubstanceLibMetadata.json" ; 
+const char* GSubstanceLibMetadata::mapname  = "GSubstanceLibMetadataMaterialMap.json" ; 
 
 GSubstanceLibMetadata::GSubstanceLibMetadata()
 {
@@ -30,7 +33,7 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
 }
 
 
-void GSubstanceLibMetadata::addDigest(const char* kfmt, unsigned int isub, const char* cat, char* dig )
+void GSubstanceLibMetadata::addDigest(const char* kfmt, unsigned int isub, const char* cat, const char* dig )
 {
     add(kfmt, isub, cat, "digest",  dig );
 }
@@ -61,7 +64,7 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
         free(shortname);
     }
 }
-void GSubstanceLibMetadata::addMaterial(unsigned int isub, const char* cat, char* shortname, char* digest )
+void GSubstanceLibMetadata::addMaterial(unsigned int isub, const char* cat, const char* shortname, const char* digest )
 {
     bool imat = strcmp(cat, "imat") == 0 ;
     bool omat = strcmp(cat, "omat") == 0 ;
@@ -117,11 +120,14 @@ std::string GSubstanceLibMetadata::getSubstanceQty(unsigned int isub, const char
 
 void GSubstanceLibMetadata::createMaterialMap()
 {
+    typedef std::map<std::string, unsigned int> Map_t ;
+    Map_t name2line ; 
+
     char key[128];
     BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_tree.get_child("lib.material") ) 
     {
-        const char* matname = ak.first.c_str();
-        snprintf(key, 128, "lib.material.%s.mat", matname);
+        std::string matname = ak.first ;
+        snprintf(key, 128, "lib.material.%s.mat", matname.c_str());
         printf("GSubstanceLibMetadata::createMaterialMap %s \n", key);
 
         std::string digest ;     
@@ -138,22 +144,22 @@ void GSubstanceLibMetadata::createMaterialMap()
             if(first)          digest = dig ;
             else               assert(strcmp(digest.c_str(), dig) == 0);
 
-            if(first)
-            {
-                addMapEntry(line, matname);
-            } 
+            // only record line for 1st occurence of the name
+            if(name2line.find(matname) == name2line.end()) name2line[matname] = line ; 
 
-            printf("   code %4u isub %3u offset %u line %u dig %s matname %s \n", code, isub, offset, line, dig, matname );
+            printf("   code %4u isub %3u offset %u line %u dig %s matname %s \n", code, isub, offset, line, dig, matname.c_str() );
         }
     }
+
+    for(Map_t::iterator it=name2line.begin() ; name2line.end() != it ; it++)
+    {
+        printf(" %25s : %u \n", it->first.c_str(), it->second ); 
+        m_material_map.add( it->first, it->second );
+    }
+
 }
 
-void GSubstanceLibMetadata::addMapEntry(unsigned int line, const char* shortname)
-{
-    char key[128];
-    snprintf(key, 128, "lib.material_map.%u", line );
-    m_tree.add(key, shortname); 
-}
+
 
 
 
@@ -210,10 +216,14 @@ void GSubstanceLibMetadata::save(const char* dir)
 
     if(fs::exists(cachedir) && fs::is_directory(cachedir))
     {
-        fs::path path(dir);
-        path /= filename ; 
+        fs::path treepath(dir);
+        treepath /= filename ; 
+        pt::write_json(treepath.string().c_str(), m_tree);
 
-        pt::write_json(path.string().c_str(), m_tree);
+        fs::path mappath(dir);
+        mappath /= mapname ; 
+        pt::write_json(mappath.string().c_str(), m_material_map);
+
     }
     else
     {

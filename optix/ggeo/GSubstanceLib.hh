@@ -48,6 +48,7 @@ class GSubstanceLib {
       void setStandardDomain(GDomain<float>* standard_domain);
       GSubstance* get(GPropertyMap<float>* imaterial, GPropertyMap<float>* omaterial, GPropertyMap<float>* isurface, GPropertyMap<float>* osurface );
       GBuffer*      createWavelengthBuffer();  
+      unsigned int getLine(unsigned int isub, unsigned int ioff);
 
   public:
       // primary methods : querying 
@@ -73,7 +74,10 @@ class GSubstanceLib {
       GProperty<float>* getDefaultProperty(const char* name);
       GProperty<float>* getRamp();
       void setKeyMap(const char* spec);
+
       char*  digest(std::vector<GProperty<float>*>& props);
+      std::string digestString(std::vector<GProperty<float>*>& props);
+
       void digestDebug(GSubstance* substance, unsigned int isub);
 
   public:
@@ -133,19 +137,6 @@ inline unsigned int GSubstanceLib::getNumProp()
 {
     return m_num_prop ; 
 }
-
-
-
-#ifdef TRANSITIONAL
-inline void GSubstanceLib::setStandard(bool standard)
-{
-    m_standard = standard ;
-}
-inline bool GSubstanceLib::isStandard()
-{
-    return m_standard ;
-}
-#endif
 inline void GSubstanceLib::setDefaults(GPropertyMap<float>* defaults)
 {
     m_defaults = defaults ;
