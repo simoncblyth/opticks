@@ -414,6 +414,8 @@ ggeoview--()
 
 ggeoview-depinstall()
 {
+    npy-
+    npy-install
     ggeo-
     ggeo-install
     assimpwrap- 

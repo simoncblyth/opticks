@@ -65,8 +65,18 @@ void Lookup::loadb(const char* bdir, const char* bname, const char* bprefix)
     m_bpath = bpath;
 }
 
-void Lookup::create()
+void Lookup::create(const char* dir)
 {
+    // assuming the chroma map lives one level up from the ggeo map
+
+    char* fold = strdup(dir);
+    char* p = (char*)strrchr(fold, '/'); 
+    *p = '\0' ;         // terminate at the last slash, to give dirname
+    printf("fold [%s] p [%s] \n", fold, p);
+
+    loada(fold);
+    loadb(dir);
+
     m_a2b = _create(m_a, m_b);
     m_b2a = _create(m_b, m_a);
 }

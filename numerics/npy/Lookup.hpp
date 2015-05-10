@@ -15,9 +15,11 @@ class Lookup {
    public:  
        // setup
        Lookup();
+       void create(const char* dir);
+
+   private:
        void loada(const char* adir, const char* aname=ANAME, const char* aprefix="/dd/Materials/");
        void loadb(const char* bdir, const char* bname=BNAME, const char* bprefix="");
-       void create();
 
    public:  
        // use

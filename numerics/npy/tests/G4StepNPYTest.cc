@@ -13,10 +13,9 @@ int main(int argc, char** argv)
         return 1 ;
     }
 
+
     Lookup lookup;
-    lookup.loada("/tmp");
-    lookup.loadb(argv[1]);
-    lookup.create();
+    lookup.create(argv[1]);
     lookup.dump("LookupTest");
 
     G4StepNPY cs(NPY::load("cerenkov", "1"));

@@ -27,6 +27,7 @@ class G4StepNPY {
         typedef std::set<unsigned int> Set_t ; 
    public:  
        G4StepNPY(NPY* npy);
+       NPY* getNPY();
 
    public:  
        void setLookup(Lookup* lookup);
@@ -45,6 +46,10 @@ class G4StepNPY {
  
 };
 
+inline NPY* G4StepNPY::getNPY()
+{
+    return m_npy ; 
+}
 inline void G4StepNPY::setLookup(Lookup* lookup)
 {
     m_lookup = lookup ;

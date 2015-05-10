@@ -28,6 +28,8 @@
 #include "NumpyEvt.hpp"
 #include "VecNPY.hpp"
 #include "MultiVecNPY.hpp"
+#include "Lookup.hpp"
+#include "G4StepNPY.hpp"
 
 
 #include <glm/glm.hpp>
@@ -112,7 +114,6 @@ int main(int argc, char** argv)
     if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 
-    evt.setGenstepData(NPY::load("cerenkov", "1")); 
 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
 
@@ -122,6 +123,16 @@ int main(int argc, char** argv)
     const char* idpath = scene.loadGeometry("GGEOVIEW_", nogeocache) ; 
     bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
+
+
+
+    // probably move this into NumpyEvt ?
+    Lookup lookup ; 
+    lookup.create(idpath);
+    G4StepNPY cs(NPY::load("cerenkov", "1"));
+    cs.setLookup(&lookup); 
+    cs.applyLookup(0, 2); // materialIndex  (1st quad, 3rd number)
+    evt.setGenstepData(cs.getNPY()); 
 
     scene.loadEvt();
     //
