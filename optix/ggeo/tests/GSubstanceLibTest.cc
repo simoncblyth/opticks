@@ -13,5 +13,16 @@ int main(int argc, char** argv)
     GSubstanceLib* lib = GSubstanceLib::load(dir);
     lib->Summary("load ");
 
+
+    if(argc == 2)
+    {
+        lib->dumpWavelengthBuffer();        
+    }
+    else
+    {
+        for(unsigned int i=2 ; i < argc ; i++) lib->dumpWavelengthBuffer(atoi(argv[i]));        
+    }
+
+
     return 0 ;
 }

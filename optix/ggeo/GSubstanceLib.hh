@@ -13,6 +13,7 @@
 class GSubstance ; 
 class GBuffer ; 
 class GSubstanceLibMetadata ; 
+class GBuffer ; 
 
 class GSubstanceLib {
   public:
@@ -59,6 +60,12 @@ class GSubstanceLib {
       void Summary(const char* msg="GSubstanceLib::Summary");
       const char* getDigest(unsigned int index);
 
+
+  public:
+      // convenience methods
+      void setWavelengthBuffer(GBuffer* buffer);
+      GBuffer* getWavelengthBuffer();
+
   private:
       // used for by "get" for standardization of substances, ready for serializing into wavelengthBuffer
       GSubstance* createStandardSubstance(GSubstance* substance);
@@ -90,8 +97,8 @@ class GSubstanceLib {
       void setMetadata(GSubstanceLibMetadata* meta); 
 
   public:
-      void          dumpWavelengthBuffer(GBuffer* buffer);
-      static void   dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength);
+      void          dumpWavelengthBuffer(int wline=-1);
+      static void   dumpWavelengthBuffer(int wline, GBuffer* buffer, GSubstanceLibMetadata* metadata, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength);
 
       GPropertyMap<float>* createStandardProperties(const char* name, GSubstance* substance);
       void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
@@ -121,6 +128,7 @@ class GSubstanceLib {
       GPropertyMap<float>* m_defaults ;  
       GProperty<float>* m_ramp ;  
       GSubstanceLibMetadata* m_meta ;
+      GBuffer*  m_wavelength_buffer ;
 
 };
 
@@ -133,6 +141,17 @@ inline void GSubstanceLib::setMetadata(GSubstanceLibMetadata* meta)
 {
     m_meta = meta ; 
 }
+
+inline GBuffer* GSubstanceLib::getWavelengthBuffer()
+{
+    return m_wavelength_buffer ; 
+}
+inline void GSubstanceLib::setWavelengthBuffer(GBuffer* wavelength_buffer)
+{
+    m_wavelength_buffer = wavelength_buffer ; 
+}
+
+
 inline unsigned int GSubstanceLib::getNumProp()
 {
     return m_num_prop ; 

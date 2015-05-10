@@ -30,7 +30,8 @@ int main(int argc, char** argv)
     GDomain<float>* domain = GSubstanceLib::getDefaultDomain();
     assert(domain->getLength() == domainLength);
 
-    GSubstanceLib::dumpWavelengthBuffer(buffer, numSubstance, numProp, domainLength );
+    int wline = -1; 
+    GSubstanceLib::dumpWavelengthBuffer(wline, buffer, meta, numSubstance, numProp, domainLength );
 
     return 0 ;
 }

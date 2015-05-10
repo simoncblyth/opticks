@@ -89,7 +89,111 @@ names translated into geant4 style::
 
 
 
+::
 
+    delta:npy blyth$ npy-g4stepnpy-test 
+    Lookup::dump LookupTest 
+    A   29 entries from /tmp/ChromaMaterialMap.json
+    B   24 entries from /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GSubstanceLibMetadataMaterialMap.json
+    A2B 21 entries in lookup  
+      A    0 :     ADTableStainlessSteel  B  212 :     ADTableStainlessSteel 
+      A    1 :                   Acrylic  B   56 :                   Acrylic 
+      A    2 :                       Air  B    8 :                       Air 
+      A    3 :                 Aluminium  B   16 :                 Aluminium 
+      A    5 :                  Bialkali  B   84 :                  Bialkali 
+      A    8 :                 DeadWater  B   28 :                 DeadWater 
+      A    9 :                       ESR  B  104 :                       ESR 
+      A   10 :                 GdDopedLS  B   68 :                 GdDopedLS 
+      A   12 :                  IwsWater  B   44 :                  IwsWater 
+      A   13 :        LiquidScintillator  B   60 :        LiquidScintillator 
+      A   14 :                MineralOil  B   52 :                MineralOil 
+      A   15 :                  Nitrogen  B  128 :                  Nitrogen 
+      A   16 :               NitrogenGas  B  172 :               NitrogenGas 
+      A   17 :                     Nylon  B  140 :                     Nylon 
+      A   19 :                  OwsWater  B   36 :                  OwsWater 
+      A   21 :                     Pyrex  B   76 :                     Pyrex 
+      A   23 :            StainlessSteel  B   48 :            StainlessSteel 
+      A   25 :                     Tyvek  B   32 :                     Tyvek 
+      A   26 :        UnstStainlessSteel  B   88 :        UnstStainlessSteel 
+      A   27 :                    Vacuum  B    0 :                    Vacuum 
+      A   28 :                     Water  B  125 :                     Water 
+    cs.dump
+     ni 7836 nj 6 nk 4 nj*nk 24 
+     (    0,    0)               -1                1               44               80  sid/parentId/materialIndex/numPhotons 
+     (    0,    1)       -16536.295      -802084.812        -7066.000            0.844  position/time 
+     (    0,    2)           -2.057            3.180            0.000            3.788  deltaPosition/stepLength 
+     (    0,    3)               13           -1.000            1.000          299.791  code 
+     (    0,    4)            1.000            0.000            0.000            0.719 
+     (    0,    5)            0.482           79.201           79.201            0.000 
+     ( 7835,    0)            -7836                1               28               48  sid/parentId/materialIndex/numPhotons 
+     ( 7835,    1)       -20842.291      -795380.438        -7048.775           27.423  position/time 
+     ( 7835,    2)           -1.068            1.669            0.004            1.981  deltaPosition/stepLength 
+     ( 7835,    3)               13           -1.000            1.000          299.790  code 
+     ( 7835,    4)            1.000            0.000            0.000            0.719 
+     ( 7835,    5)            0.482           79.201           79.201            0.000 
+
+    ... 28 [DeadWater] 
+    ... 36 [OwsWater] 
+    ... 44 [IwsWater] 
+    ... 52 [MineralOil] 
+    ... 56 [Acrylic] 
+    ... 60 [LiquidScintillator] 
+    ... 68 [GdDopedLS] 
+    delta:npy blyth$ 
+
+    (chroma_env)delta:env blyth$ ggeo-meta 28 36 44 52 56 60 68
+    /usr/local/env/optix/ggeo/bin/GSubstanceLibTest /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae 28 36 44 52 56 60 68
+    wavelength buffer NumBytes 134784 Ptr 0x10acde000 ItemSize 4 NumElements_PerItem 1 NumItems(NumBytes/ItemSize) 33696 NumElementsTotal (NumItems*NumElements) 33696 
+
+    GSubstanceLib::dumpWavelengthBuffer wline 28 wsub 7 wprop 0 numSub 54 domainLength 39 numProp 16 
+
+      28 |   7/  0 __dd__Materials__DeadWater0xbf8a548 
+               1.390           1.390           1.372           1.357           1.352           1.346           1.341           1.335
+             273.208         273.208        3164.640       12811.072       28732.207       13644.791        2404.398         371.974
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+    GSubstanceLib::dumpWavelengthBuffer wline 36 wsub 9 wprop 0 numSub 54 domainLength 39 numProp 16 
+
+      36 |   9/  0 __dd__Materials__OwsWater0xbf90c10 
+               1.390           1.390           1.372           1.357           1.352           1.346           1.341           1.335
+             273.208         273.208        3164.640       12811.072       28732.207       13644.791        2404.398         371.974
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+    GSubstanceLib::dumpWavelengthBuffer wline 44 wsub 11 wprop 0 numSub 54 domainLength 39 numProp 16 
+
+      44 |  11/  0 __dd__Materials__IwsWater0xc288f98 
+               1.390           1.390           1.372           1.357           1.352           1.346           1.341           1.335
+             273.208         273.208        3164.640       12811.072       28732.207       13644.791        2404.398         371.974
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+    GSubstanceLib::dumpWavelengthBuffer wline 52 wsub 13 wprop 0 numSub 54 domainLength 39 numProp 16 
+
+      52 |  13/  0 __dd__Materials__MineralOil0xbf5c830 
+               1.434           1.758           1.540           1.488           1.471           1.464           1.459           1.457
+              11.100          11.100          11.394        1078.898       24925.316       21277.369        5311.868         837.710
+             850.000         850.000        4901.251       19819.381       52038.961      117807.406      252854.656      420184.219
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+    GSubstanceLib::dumpWavelengthBuffer wline 56 wsub 14 wprop 0 numSub 54 domainLength 39 numProp 16 
+
+      56 |  14/  0 __dd__Materials__Acrylic0xc02ab98 
+               1.462           1.793           1.573           1.519           1.500           1.494           1.490           1.488
+               0.008           0.008        4791.046        8000.000        8000.000        8000.000        8000.000        8000.000
+             850.000         850.000        4901.251       19819.381       52038.961      117807.406      252854.656      420184.219
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+    GSubstanceLib::dumpWavelengthBuffer wline 60 wsub 15 wprop 0 numSub 54 domainLength 39 numProp 16 
+
+      60 |  15/  0 __dd__Materials__LiquidScintillator0xc2308d0 
+               1.454           1.793           1.563           1.511           1.494           1.485           1.481           1.479
+               0.001           0.001           0.198           1.913       26433.846       31710.930        6875.426         978.836
+             850.000         850.000        4901.251       19819.381       52038.961      117807.406      252854.656      420184.219
+               0.400           0.400           0.599           0.800           0.169           0.072           0.023           0.000
+    GSubstanceLib::dumpWavelengthBuffer wline 68 wsub 17 wprop 0 numSub 54 domainLength 39 numProp 16 
+
+      68 |  17/  0 __dd__Materials__GdDopedLS0xc2a8ed0 
+               1.454           1.793           1.563           1.511           1.494           1.485           1.481           1.479
+               0.001           0.001           0.198           1.913       26623.084       27079.125        7315.331         989.154
+             850.000         850.000        4901.251       19819.381       52038.961      117807.406      252854.656      420184.219
+               0.400           0.400           0.599           0.800           0.169           0.072           0.023           0.000
 
 
 
@@ -659,7 +763,7 @@ ggeo-meta-dir(){
 ggeo-meta(){
    #local bin=$(ggeo-bin GSubstanceLibMetadataTest)
    local bin=$(ggeo-bin GSubstanceLibTest)
-   local cmd="$bin $(ggeo-meta-dir)"
+   local cmd="$bin $(ggeo-meta-dir) $*"
    echo $cmd
    eval $cmd
 }

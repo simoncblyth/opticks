@@ -36,7 +36,7 @@ const char* GSubstanceLib::absorb = "absorb" ;
 const char* GSubstanceLib::reflect_specular = "reflect_specular" ;
 const char* GSubstanceLib::reflect_diffuse  = "reflect_diffuse" ;
 
-GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true), m_num_prop(16)
+GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true), m_num_prop(16), m_wavelength_buffer(NULL)
 {
     setKeyMap(NULL);
     GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
@@ -405,24 +405,30 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
 
         for( unsigned int p = 0; p < numProp/4 ; ++p )  // over 4 different sets (imat,omat,isur,osur)  
         { 
-            // 4 properties of the set 
-            GPropertyF *p0,*p1,*p2,*p3 ; 
             GPropertyMap<float>* psrc = substance->getConstituentByIndex(p) ; 
 
+            GProperty<float> *p0,*p1,*p2,*p3 ; // 4 properties of the set 
             p0 = psrc->getPropertyByIndex(0);
             p1 = psrc->getPropertyByIndex(1);
             p2 = psrc->getPropertyByIndex(2);
             p3 = psrc->getPropertyByIndex(3);
 
-            // record standard 4-property digest into metadata
+            for( unsigned int d = 0; d < domainLength; ++d ) // interleave 4 properties into the buffer
+            {   
+                unsigned int dataOffset = ( p*domainLength + d )*4;  
+                data[subOffset+dataOffset+0] = p0->getValue(d) ;
+                data[subOffset+dataOffset+1] = p1->getValue(d) ;
+                data[subOffset+dataOffset+2] = p2->getValue(d) ;
+                data[subOffset+dataOffset+3] = p3->getValue(d) ;
+            } 
 
+            // record standard 4-property digest into metadata
             std::vector<GPropertyF*> props ; 
             props.push_back(p0);
             props.push_back(p1);
             props.push_back(p2);
             props.push_back(p3);
             std::string pdig = digestString(props);
-
             {
                std::string ckdig = psrc->getPDigestString(0,4);
                assert(strcmp(pdig.c_str(), ckdig.c_str())==0);
@@ -445,15 +451,6 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
                       m_meta->addDigest(kfmt, isub, "osur", pdig.c_str() ); 
                       break ;
             }
-
-            for( unsigned int d = 0; d < domainLength; ++d ) 
-            {   
-                unsigned int dataOffset = ( p*domainLength + d )*4;  
-                data[subOffset+dataOffset+0] = p0->getValue(d) ;
-                data[subOffset+dataOffset+1] = p1->getValue(d) ;
-                data[subOffset+dataOffset+2] = p2->getValue(d) ;
-                data[subOffset+dataOffset+3] = p3->getValue(d) ;
-            }       
         }   
     }
     m_meta->createMaterialMap();
@@ -611,8 +608,10 @@ GSubstanceLib* GSubstanceLib::load(const char* dir)
 
     GBuffer* buffer = GBuffer::load<float>(dir, "wavelength.npy");
     buffer->Summary("wavelength buffer");
-    //lib->dumpWavelengthBuffer(buffer);
     lib->loadWavelengthBuffer(buffer);
+    
+    lib->setWavelengthBuffer(buffer);
+    //lib->dumpWavelengthBuffer();
 
     return lib ; 
 }
@@ -621,6 +620,7 @@ GSubstanceLib* GSubstanceLib::load(const char* dir)
 void GSubstanceLib::loadWavelengthBuffer(GBuffer* buffer)
 {
     if(!buffer) return ;
+
     float* data = (float*)buffer->getPointer();
 
     unsigned int numElementsTotal = buffer->getNumElementsTotal();
@@ -650,12 +650,12 @@ void GSubstanceLib::loadWavelengthBuffer(GBuffer* buffer)
     }
 }
 
-void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer)
+void GSubstanceLib::dumpWavelengthBuffer(int wline)
 {
-    dumpWavelengthBuffer(buffer, getNumSubstances(), getNumProp(), getStandardDomainLength());  
+    dumpWavelengthBuffer(wline, getWavelengthBuffer(), getMetadata(), getNumSubstances(), getNumProp(), getStandardDomainLength());  
 }
 
-void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength)
+void GSubstanceLib::dumpWavelengthBuffer(int wline, GBuffer* buffer, GSubstanceLibMetadata* meta, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength)
 {
     if(!buffer) return ;
 
@@ -664,28 +664,38 @@ void GSubstanceLib::dumpWavelengthBuffer(GBuffer* buffer, unsigned int numSubsta
     assert(numElementsTotal == numSubstance*numProp*domainLength);
     GDomain<float>* domain = GSubstanceLib::getDefaultDomain();
     assert(domain->getLength() == domainLength);
-
-    std::cout << "GSubstanceLib::dumpWavelengthBuffer " 
-              << " numSubstance " << numSubstance
-              << " numProp " << numProp
-              << " domainLength " << domainLength
-              << std::endl ; 
-
     assert(numProp % 4 == 0);
+
+    int wsub(-1);
+    int wprop(-1);
+    if(wline > -1)
+    {
+        wsub  = wline / 4 ; 
+        wprop = wline % 4 ;  
+    }
+
+    printf("GSubstanceLib::dumpWavelengthBuffer wline %d wsub %d wprop %u numSub %u domainLength %u numProp %u \n", wline, wsub, wprop, numSubstance, domainLength, numProp );
 
     for(unsigned int isub=0 ; isub < numSubstance ; ++isub )
     {
         unsigned int subOffset = domainLength*numProp*isub ;
-        for(unsigned int p=0 ; p < numProp/4 ; ++p ) // property scrunch into float4 is the cause of the gymnastics
+        for(unsigned int p=0 ; p < numProp/4 ; ++p ) 
         {
-             unsigned int offset = subOffset + ( p*domainLength*4 ) ;
-             for(unsigned int l=0 ; l < 4 ; ++l )
+             std::string pname = meta ? meta->getSubstanceQtyByIndex(isub, p, "name") : "" ; 
+             unsigned int line = isub * 4 + p ;
+             bool wselect = ( wline == -1 ) ||  (wline == line  ) ;
+             if(wselect)
              {
-                 for(unsigned int d=0 ; d < domainLength ; ++d )
+                 printf("\n %3u | %3u/%3u %s \n", line,isub, p, pname.c_str());
+                 unsigned int offset = subOffset + ( p*domainLength*4 ) ;
+                 for(unsigned int l=0 ; l < 4 ; ++l )
                  {
-                     if(d%5 == 0) printf(" %15.3f", data[offset+d*4+l] );  // too many numbers so display one in every 5
+                     for(unsigned int d=0 ; d < domainLength ; ++d )
+                     {
+                         if(d%5 == 0) printf(" %15.3f", data[offset+d*4+l] );  // too many numbers so display one in every 5
+                     }
+                     printf("\n");
                  }
-                 printf("\n");
              }
         }
     }
