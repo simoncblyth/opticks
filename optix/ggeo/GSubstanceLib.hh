@@ -93,20 +93,12 @@ class GSubstanceLib {
       void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
 
-#ifdef TRANSITIONAL
-      GSubstanceLib* createStandardizedLib();
-      void add(GSubstance* substance);
-      void setStandard(bool standard);
-      bool isStandard();
-#endif
-#ifdef LEGACY
-#endif
-
   public:
       unsigned int getNumProp();
       const char* materialPropertyName(unsigned int i);
       const char* surfacePropertyName(unsigned int i);
       char* propertyName(unsigned int p, unsigned int i);
+      std::string propertyNameString(unsigned int p, unsigned int i);
 
   public:
       static GSubstanceLib* load(const char* dir);

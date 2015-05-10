@@ -205,52 +205,6 @@ const char* GSubstanceLib::getLocalKey(const char* dkey) // mapping between stan
 }
 
 
-#ifdef TRANSITIONAL
-GSubstanceLib* GSubstanceLib::createStandardizedLib()
-{
-    // hmm are preventing it for now, as using the index for the key for
-    // transitional comparison, but once resume digest keying this
-    // standardization will shrink the number of substances (expect by 4, from 58 to 54)
-
-    GSubstanceLib* s_lib = new GSubstanceLib(); 
-    for(unsigned int isub=0 ; isub < getNumSubstances() ; isub++)
-    {
-        GSubstance* a = getSubstance(isub);
-        GSubstance* b = createStandardSubstance(a);
-        s_lib->add(b);
-    }
-    s_lib->setStandard(true);
-    return s_lib ;
-}
-
-void GSubstanceLib::add(GSubstance* substance)
-{
-    // GSubstanceLib::add this only used for standardized lib formation
-    //
-    // transitionally using substance digest keys yielding duplicate keys 
-    // avoid that whilst still comparing against unstandardized by using the count 
-    //
-
-    //std::string key = substance->digest();   
-    std::stringstream ss ; 
-    ss << m_keys.size() ;
-    std::string key = ss.str() ;  
-     
-    if(m_registry.count(key) == 0) // not yet registered, identity based on GSubstance digest 
-    { 
-        substance->setIndex(m_keys.size());
-        m_keys.push_back(key);     // for simple ordering  
-        m_registry[key] = substance  ; 
-    }
-    else
-    {
-        printf("GSubstanceLib::add WARNING adding duplicate substance key %s \n", key.c_str());
-        assert(0);
-    } 
-}
-#endif
-
-
 
 GPropertyMap<float>* GSubstanceLib::createStandardProperties(const char* pname, GSubstance* substance)
 {
@@ -470,18 +424,18 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             switch(p)
             {
                case 0:
-                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "imat", pdig ); 
+                      m_meta->addDigest(kfmt, isub, "imat", pdig ); 
                       m_meta->addMaterial(isub, "imat", ishortname, pdig );
                       break ;
                case 1:
-                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "omat", pdig ); 
+                      m_meta->addDigest(kfmt, isub, "omat", pdig ); 
                       m_meta->addMaterial(isub, "omat", oshortname, pdig );
                       break ;
                case 2:
-                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "isur", pdig ); 
+                      m_meta->addDigest(kfmt, isub, "isur", pdig ); 
                       break ;
                case 3:
-                      m_meta->addDigest("lib.substance.%d.%s.%s", isub, "osur", pdig ); 
+                      m_meta->addDigest(kfmt, isub, "osur", pdig ); 
                       break ;
             }
             free(pdig);
@@ -552,7 +506,10 @@ char* GSubstanceLib::propertyName(unsigned int p, unsigned int i)
     return strdup(name);
 }
 
-
+std::string GSubstanceLib::propertyNameString(unsigned int p, unsigned int i)
+{
+    return propertyName(p,i);
+}
 
 GSubstance* GSubstanceLib::loadSubstance(float* subData, unsigned int isub)
 {
@@ -577,9 +534,8 @@ GSubstance* GSubstanceLib::loadSubstance(float* subData, unsigned int isub)
              float* v = new float[domainLength];
              for(unsigned int d=0 ; d < domainLength ; ++d ) v[d] = pdata[d*4+l];  
 
-             char* pname = propertyName(p, l);
-             pmap->addProperty(pname, v, domain->getValues(), domainLength );
-             free(pname);             
+             std::string pname = propertyNameString(p, l);
+             pmap->addProperty(pname.c_str(), v, domain->getValues(), domainLength );
              delete v;
          }
 
