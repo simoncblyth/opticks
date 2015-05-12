@@ -5,27 +5,44 @@
 #include "limits.h"
 #include "assert.h"
 
-// for persistency convenience would be better to deal in indices rather than pointers
-//
+
+
+const char* GSubstance::imaterial = "imat" ;
+const char* GSubstance::omaterial = "omat" ;
+const char* GSubstance::isurface  = "isur" ;
+const char* GSubstance::osurface  = "osur" ;
+const char* GSubstance::iextra    = "iext" ;
+const char* GSubstance::oextra    = "oext" ;
+
+
 GSubstance::GSubstance()
          :
          m_imaterial(NULL),
          m_omaterial(NULL),
          m_isurface(NULL),
          m_osurface(NULL),
+         m_iextra(NULL),
+         m_oextra(NULL),
          m_index(UINT_MAX)
-      //   m_texprops(NULL)
 {
 }
 
-GSubstance::GSubstance( GPropertyMap<float>* imaterial, GPropertyMap<float>* omaterial, GPropertyMap<float>* isurface, GPropertyMap<float>* osurface )
+GSubstance::GSubstance( 
+                 GPropertyMap<float>* imaterial, 
+                 GPropertyMap<float>* omaterial, 
+                 GPropertyMap<float>* isurface, 
+                 GPropertyMap<float>* osurface, 
+                 GPropertyMap<float>* iextra, 
+                 GPropertyMap<float>* oextra
+               )
          : 
          m_imaterial(imaterial),
          m_omaterial(omaterial),
          m_isurface(isurface),
          m_osurface(osurface),
+         m_iextra(iextra),
+         m_oextra(oextra),
          m_index(UINT_MAX)
-    //     m_texprops(NULL)
 {
 }
 
@@ -42,59 +59,6 @@ unsigned int GSubstance::getIndex()
 {
     return m_index ;
 }
-
-
-/*
-void GSubstance::setTexProps(GPropertyMap<float>* texprops)
-{
-    m_texprops = texprops ;
-}
-GPropertyMap<float>* GSubstance::getTexProps()
-{
-    return m_texprops ;
-}
-void GSubstance::dumpTexProps(const char* msg, double wavelength)
-{
-    printf("%s wavelength %10.3f \n", msg, wavelength );
-    GPropertyMap<float>* ptex = getTexProps();
-    assert(ptex);
-
-    GDomain<float>* domain = ptex->getStandardDomain();
-    unsigned int nprop = ptex->getNumProperties() ;
-    assert(nprop % 4 == 0 );    
-    assert(nprop == 16);
-
-    const unsigned int nx = domain->getLength(); 
-    const unsigned int ny = nprop/4 ; 
-    assert(nx == 39 && ny == 4); 
-
-    const char* mprop = "ridx/absl/sctl/reep" ;
-    const char* sprop = "dete/abso/resp/redi" ;
-
-    for( unsigned int line = 0; line < ny; ++line ) 
-    {   
-        unsigned int offset = line*ny ;   
-        GPropertyD* p0 = ptex->getPropertyByIndex(offset+0) ;
-        GPropertyD* p1 = ptex->getPropertyByIndex(offset+1) ;
-        GPropertyD* p2 = ptex->getPropertyByIndex(offset+2) ;
-        GPropertyD* p3 = ptex->getPropertyByIndex(offset+3) ;
-
-        double v0 = p0->getInterpolatedValue(wavelength);
-        double v1 = p1->getInterpolatedValue(wavelength);
-        double v2 = p2->getInterpolatedValue(wavelength);
-        double v3 = p3->getInterpolatedValue(wavelength);
-
-        printf("GSubstance::dumpTexProps %10.3f nm line %u %s vals %13.4f %13.4f %13.4f %13.4f \n",
-            wavelength,
-            line,
-            line < 2 ? mprop : sprop,
-            v0,
-            v1,
-            v2,
-            v3);
-    }
-}
-*/
 
 
 std::string GSubstance::getPDigestString(int ifr, int ito)
@@ -132,41 +96,20 @@ char* GSubstance::pdigest(int ifr, int ito)
        dig.update(pdig, strlen(pdig));
        free(pdig);
    }
+   if(m_iextra)
+   {
+       char* pdig = m_iextra->pdigest(ifr, ito);
+       dig.update(pdig, strlen(pdig));
+       free(pdig);
+   }
+   if(m_oextra)
+   {
+       char* pdig = m_oextra->pdigest(ifr, ito);
+       dig.update(pdig, strlen(pdig));
+       free(pdig);
+   }
    return dig.finalize();
 }
-
-
-/*
-char* GSubstance::digest()
-{
-   MD5Digest dig ;
-   if(m_imaterial)
-   {
-       char* pdig = m_imaterial->digest();
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
-   }  
-   if(m_omaterial)
-   {
-       char* pdig = m_omaterial->digest();
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
-   }  
-   if(m_isurface)
-   {
-       char* pdig = m_isurface->digest();
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
-   }  
-   if(m_osurface)
-   {
-       char* pdig = m_osurface->digest();
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
-   }  
-   return dig.finalize();
-}
-*/
 
 
 
@@ -226,6 +169,19 @@ void GSubstance::setOuterSurface(GPropertyMap<float>* osurface)
 {
     m_osurface = osurface ; 
 }
+void GSubstance::setInnerExtra(GPropertyMap<float>* iextra)
+{
+    m_iextra = iextra ; 
+}
+void GSubstance::setOuterExtra(GPropertyMap<float>* oextra)
+{
+    m_oextra = oextra ; 
+}
+
+
+
+
+
 
 
 GPropertyMap<float>* GSubstance::getInnerMaterial()
@@ -244,6 +200,16 @@ GPropertyMap<float>* GSubstance::getOuterSurface()
 {
     return m_osurface ; 
 }
+GPropertyMap<float>* GSubstance::getInnerExtra()
+{
+    return m_iextra ; 
+}
+GPropertyMap<float>* GSubstance::getOuterExtra()
+{
+    return m_oextra ; 
+}
+
+
 
 GPropertyMap<float>* GSubstance::getConstituentByIndex(unsigned int p)
 {
@@ -253,7 +219,25 @@ GPropertyMap<float>* GSubstance::getConstituentByIndex(unsigned int p)
        case 1:return m_omaterial ; break;
        case 2:return m_isurface  ; break;
        case 3:return m_osurface  ; break;
+       case 4:return m_iextra    ; break;
+       case 5:return m_oextra    ; break;
     }
     return NULL ;
 }
+
+const char* GSubstance::getConstituentNameByIndex(unsigned int p)
+{
+    switch(p)
+    {
+       case 0:return imaterial ; break;
+       case 1:return omaterial ; break;
+       case 2:return isurface  ; break;
+       case 3:return osurface  ; break;
+       case 4:return iextra    ; break;
+       case 5:return oextra    ; break;
+    }
+    return NULL ;
+}
+
+
 

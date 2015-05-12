@@ -21,6 +21,7 @@ class GSubstanceLib {
     static const char* inner; 
     static const char* outer; 
   public:
+    static unsigned int NUM_QUAD ; 
     static unsigned int DOMAIN_LENGTH ; 
     static float        DOMAIN_LOW ; 
     static float        DOMAIN_HIGH ; 
@@ -38,11 +39,23 @@ class GSubstanceLib {
     static const char* reflect_specular ;
     static const char* reflect_diffuse ;
   public:
-    // needs energywise 1/wavelength[::-1] handling 
+     // extra
     static const char* reemission_cdf ; 
+    static const char* extra_y ; 
+    static const char* extra_z ; 
+    static const char* extra_w ; 
   public:
     static const char* keymap ;
 
+  private:
+    // remission handling : needs energywise 1/wavelength[::-1] domain for CDF 
+    static const char* scintillators ;
+    static std::vector<std::string>* vscintillators ;
+    static const char* reemissionkey ;
+    static std::vector<std::string>* vreemissionkey;
+
+    static GProperty<float>* reemission_prop ; 
+    static std::string*      reemission_prop_digest ;  
   public:
       GSubstanceLib();
       virtual ~GSubstanceLib();
@@ -50,10 +63,22 @@ class GSubstanceLib {
   public:
       // primary methods : lifecycle
       void setStandardDomain(GDomain<float>* standard_domain);
-      GSubstance* get(GPropertyMap<float>* imaterial, GPropertyMap<float>* omaterial, GPropertyMap<float>* isurface, GPropertyMap<float>* osurface );
+      GSubstance* get(
+                      GPropertyMap<float>* imaterial, 
+                      GPropertyMap<float>* omaterial, 
+                      GPropertyMap<float>* isurface, 
+                      GPropertyMap<float>* osurface,
+                      GPropertyMap<float>* iextra, 
+                      GPropertyMap<float>* oextra 
+                 );
       GBuffer*      createWavelengthBuffer();  
-      unsigned int getLine(unsigned int isub, unsigned int ioff);
+      static unsigned int getLine(unsigned int isub, unsigned int ioff);
 
+  public:
+      // reemission handling 
+      bool isScintillator(std::string& matShortName);
+      bool isReemissionKey(std::string& lkey);
+      void collectReemissionProp(GPropertyMap<float>* pmap);
   public:
       // primary methods : querying 
       const char* getLocalKey(const char* dkey); // map standard -> local keys 
@@ -62,18 +87,20 @@ class GSubstanceLib {
       GSubstanceLibMetadata* getMetadata(); // populated by createWavelengthBuffer
       void Summary(const char* msg="GSubstanceLib::Summary");
       const char* getDigest(unsigned int index);
-
+      
 
   public:
       // convenience methods
       void setWavelengthBuffer(GBuffer* buffer);
       GBuffer* getWavelengthBuffer();
+      std::vector<std::string> splitString(std::string keys);
 
   private:
       // used for by "get" for standardization of substances, ready for serializing into wavelengthBuffer
       GSubstance* createStandardSubstance(GSubstance* substance);
-      void addMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
-      void addSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
+      void standardizeMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
+      void standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
+      void standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       GProperty<float>* getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
 
   private:
@@ -101,16 +128,19 @@ class GSubstanceLib {
 
   public:
       void          dumpWavelengthBuffer(int wline=-1);
-      static void   dumpWavelengthBuffer(int wline, GBuffer* buffer, GSubstanceLibMetadata* metadata, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength);
+      static void   dumpWavelengthBuffer(int wline, GBuffer* buffer, GSubstanceLibMetadata* metadata, unsigned int numSubstance, unsigned int domainLength);
 
       GPropertyMap<float>* createStandardProperties(const char* name, GSubstance* substance);
       void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
+      void checkExtraProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
 
   public:
-      unsigned int getNumProp();
+      static unsigned int getNumProp();
+      static unsigned int getNumQuad();
       const char* materialPropertyName(unsigned int i);
       const char* surfacePropertyName(unsigned int i);
+      const char* extraPropertyName(unsigned int i);
       char* propertyName(unsigned int p, unsigned int i);
       std::string propertyNameString(unsigned int p, unsigned int i);
 
@@ -121,17 +151,17 @@ class GSubstanceLib {
 
 
   private:
-      std::map<std::string, std::string> m_keymap ; //  
-      std::map<std::string, GSubstance*> m_registry ; 
-      std::vector<std::string> m_keys ; 
+      std::map<std::string, std::string>   m_keymap ; //  
+      std::map<std::string, GSubstance*>   m_registry ; 
+      std::vector<std::string>             m_keys ; 
 
-      bool m_standard ; // transitional : keeping this set to true
-      unsigned int m_num_prop ; 
-      GDomain<float>* m_standard_domain ;  
-      GPropertyMap<float>* m_defaults ;  
-      GProperty<float>* m_ramp ;  
+      bool                   m_standard ; // transitional : keeping this set to true
+      unsigned int           m_num_quad ; 
+      GDomain<float>*        m_standard_domain ;  
+      GPropertyMap<float>*   m_defaults ;  
+      GProperty<float>*      m_ramp ;  
       GSubstanceLibMetadata* m_meta ;
-      GBuffer*  m_wavelength_buffer ;
+      GBuffer*               m_wavelength_buffer ;
 
 };
 
@@ -157,8 +187,14 @@ inline void GSubstanceLib::setWavelengthBuffer(GBuffer* wavelength_buffer)
 
 inline unsigned int GSubstanceLib::getNumProp()
 {
-    return m_num_prop ; 
+    return NUM_QUAD*4 ; 
 }
+inline unsigned int GSubstanceLib::getNumQuad()
+{
+    return NUM_QUAD ; 
+}
+
+
 inline void GSubstanceLib::setDefaults(GPropertyMap<float>* defaults)
 {
     m_defaults = defaults ;

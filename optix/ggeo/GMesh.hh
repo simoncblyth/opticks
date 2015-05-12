@@ -102,6 +102,7 @@ class GMesh : public GDrawable {
       void setNodesBuffer(GBuffer* buffer);
       void setSubstancesBuffer(GBuffer* buffer);
       void setWavelengthBuffer(GBuffer* buffer);
+      void setReemissionBuffer(GBuffer* buffer);
       void setCenterExtentBuffer(GBuffer* buffer);
 
   public:
@@ -113,6 +114,7 @@ class GMesh : public GDrawable {
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
       GBuffer* getWavelengthBuffer();
+      GBuffer* getReemissionBuffer();
       GBuffer* getCenterExtentBuffer();
 
       float  getExtent();
@@ -345,6 +347,7 @@ inline GBuffer*  GMesh::getWavelengthBuffer()
 {
     return m_wavelength_buffer ;
 }
+
 
 
 

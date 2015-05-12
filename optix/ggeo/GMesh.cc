@@ -336,6 +336,7 @@ void GMesh::setWavelengthBuffer(GBuffer* buffer)
 
 
 
+
 void GMesh::setColor(float r, float g, float b)
 {
     assert(m_num_colors == m_num_vertices);

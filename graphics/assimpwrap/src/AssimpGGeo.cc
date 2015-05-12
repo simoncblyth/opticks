@@ -476,8 +476,10 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     assert(nsurf == 0 || nsurf == 1 ); 
 
 
-    GPropertyMap<float>* osurf = NULL ; 
-    GPropertyMap<float>* isurf = NULL ; 
+    GPropertyMap<float>* isurf  = NULL ; 
+    GPropertyMap<float>* osurf  = NULL ; 
+    GPropertyMap<float>* iextra = NULL ; 
+    GPropertyMap<float>* oextra = NULL ; 
 
     if(sks)
     {
@@ -501,7 +503,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
 
     GSubstanceLib* lib = gg->getSubstanceLib();
-    GSubstance* substance = lib->get(mt, mt_p, isurf, osurf ); 
+    GSubstance* substance = lib->get(mt, mt_p, isurf, osurf, iextra, oextra ); 
     //substance->Summary("subst");
 
     solid->setSubstance(substance);  

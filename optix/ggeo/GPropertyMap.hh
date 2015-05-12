@@ -354,10 +354,11 @@ template <typename T>
 std::string GPropertyMap<T>::getKeysString()
 {
     std::stringstream ss ; 
-    for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
+    unsigned int nkeys = m_keys.size();
+    for(unsigned int i=0 ; i < nkeys ; i++)
     {
-        ss << " " ;
-        ss << *it ;
+        ss << m_keys[i] ;
+        if( i < nkeys - 1) ss << " " ;
     }
     return ss.str() ;
 }

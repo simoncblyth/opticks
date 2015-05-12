@@ -74,6 +74,7 @@ public:
 
 public:
    void Summary(const char* msg, unsigned int nline=5);
+   void SummaryH(const char* msg, unsigned int imod=5 );
 
 private:
    unsigned int m_length ;
@@ -108,6 +109,33 @@ void GProperty<T>::Summary(const char* msg, unsigned int nline )
       }
    }
 }
+
+
+template <typename T>
+void GProperty<T>::SummaryH(const char* msg, unsigned int imod )
+{
+   char* pdig = digest();
+   printf("%s : %s : %u \n", msg, pdig, m_length );
+   free(pdig);
+
+   for(unsigned int p=0 ; p < 2 ; p++)
+   {
+       for(unsigned int i=0 ; i < m_length ; i++ )
+       {
+           if( i % imod == 0 )
+           { 
+               switch(p)
+               {
+                   case 0:printf(DOMAIN_FMT, m_domain->getValue(i));break;
+                   case 1:printf(VALUE_FMT,  m_values->getValue(i));break;
+               }
+           }
+       }
+       printf("\n");
+   }
+}
+
+
 
 
 template <typename T>

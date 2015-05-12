@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     buffer->Summary("wavelength buffer");
 
     unsigned int numElementsTotal = buffer->getNumElementsTotal();
-    unsigned int numProp = 16 ; 
+    unsigned int numProp = GSubstanceLib::NUM_QUAD*4  ; 
     unsigned int domainLength = GSubstanceLib::DOMAIN_LENGTH ;
     unsigned int numSubstance = numElementsTotal/(numProp*domainLength);
 
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     assert(domain->getLength() == domainLength);
 
     int wline = -1; 
-    GSubstanceLib::dumpWavelengthBuffer(wline, buffer, meta, numSubstance, numProp, domainLength );
+    GSubstanceLib::dumpWavelengthBuffer(wline, buffer, meta, numSubstance, domainLength );
 
     return 0 ;
 }

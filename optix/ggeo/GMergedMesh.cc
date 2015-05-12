@@ -58,8 +58,8 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     GSubstanceLib* lib = ggeo->getSubstanceLib();
     GBuffer* wavelengthBuffer = lib->createWavelengthBuffer();
-
     mm->setWavelengthBuffer(wavelengthBuffer);
+
 
     return mm ;
 }

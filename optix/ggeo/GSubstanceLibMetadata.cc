@@ -1,4 +1,6 @@
 #include "GSubstanceLibMetadata.hh"
+#include "GSubstanceLib.hh"
+#include "GSubstance.hh"
 #include "GPropertyMap.hh"
 
 #include "stdio.h"
@@ -21,7 +23,7 @@ namespace pt = boost::property_tree;
 const char* GSubstanceLibMetadata::filename = "GSubstanceLibMetadata.json" ; 
 const char* GSubstanceLibMetadata::mapname  = "GSubstanceLibMetadataMaterialMap.json" ; 
 
-GSubstanceLibMetadata::GSubstanceLibMetadata()
+GSubstanceLibMetadata::GSubstanceLibMetadata() 
 {
 }
 
@@ -46,16 +48,12 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
 
     const char* name = pmap->getName() ;
     const char* type = pmap->getType() ;
-    //char* digest = pmap->digest() ;
     std::string keys = pmap->getKeysString() ;
 
     // "lib.substance.%d.%s.%s" ;
     add(kfmt, isub, cat, "name",    name); 
     add(kfmt, isub, cat, "type",    type);
     add(kfmt, isub, cat, "keys",    keys.c_str());
-    //add(kfmt, isub, cat, "pmap_digest",  digest ); // this is not the standard digest, hence the separate addDigest
-
-    //free(digest);
 
     if(strcmp(cat, "imat") == 0 || strcmp(cat, "omat") == 0)
     {
@@ -99,14 +97,9 @@ std::string GSubstanceLibMetadata::get(const char* kfmt, unsigned int idx)
 
 std::string GSubstanceLibMetadata::getSubstanceQtyByIndex(unsigned int isub, unsigned int icat, const char* tag)
 {
-    const char* cat ;
-    switch(icat)
-    {
-       case 0:cat = "imat" ; break; 
-       case 1:cat = "omat" ; break; 
-       case 2:cat = "isur" ; break; 
-       case 3:cat = "osur" ; break; 
-    } 
+    unsigned int numQuad = GSubstanceLib::getNumQuad();
+    assert(icat < numQuad); 
+    const char* cat = GSubstance::getConstituentNameByIndex(icat);
     return getSubstanceQty(isub, cat, tag);
 }
 
@@ -128,7 +121,7 @@ void GSubstanceLibMetadata::createMaterialMap()
     {
         std::string matname = ak.first ;
         snprintf(key, 128, "lib.material.%s.mat", matname.c_str());
-        printf("GSubstanceLibMetadata::createMaterialMap %s \n", key);
+        //printf("GSubstanceLibMetadata::createMaterialMap %s \n", key);
 
         std::string digest ;     
         BOOST_FOREACH( boost::property_tree::ptree::value_type const& bk, m_tree.get_child(key) ) // absolute key
@@ -138,7 +131,7 @@ void GSubstanceLibMetadata::createMaterialMap()
 
             unsigned int isub   = code / 10 ;
             unsigned int offset = code % 10 ; 
-            unsigned int line   = isub*4 + offset ;   // into the wavelengthBuffer assuming the 4x4 layout
+            unsigned int line   = GSubstanceLib::getLine(isub, offset) ;   // into the wavelengthBuffer 
 
             bool first = digest.empty();
             if(first)          digest = dig ;
@@ -147,10 +140,11 @@ void GSubstanceLibMetadata::createMaterialMap()
             // only record line for 1st occurence of the name
             if(name2line.find(matname) == name2line.end()) name2line[matname] = line ; 
 
-            printf("   code %4u isub %3u offset %u line %u dig %s matname %s \n", code, isub, offset, line, dig, matname.c_str() );
+            //printf("   code %4u isub %3u offset %u line %u dig %s matname %s \n", code, isub, offset, line, dig, matname.c_str() );
         }
     }
 
+    printf("GSubstanceLibMetadata::createMaterialMap\n");
     for(Map_t::iterator it=name2line.begin() ; name2line.end() != it ; it++)
     {
         printf(" %25s : %u \n", it->first.c_str(), it->second ); 
@@ -248,7 +242,7 @@ GSubstanceLibMetadata* GSubstanceLibMetadata::load(const char* dir)
     {
         fs::path path(dir);
         path /= filename ; 
-        meta = new GSubstanceLibMetadata ;
+        meta = new GSubstanceLibMetadata  ;
         meta->read(path.string().c_str());
     }
     return meta ; 

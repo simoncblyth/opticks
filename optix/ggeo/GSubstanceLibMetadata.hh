@@ -9,6 +9,7 @@
 // is created by GSubstanceLib::createWavelengthBuffer
 // and is saved into the same cache directory as the wavelength buffer
 
+
 class GSubstanceLibMetadata {
   public:
       static const char* filename ; 

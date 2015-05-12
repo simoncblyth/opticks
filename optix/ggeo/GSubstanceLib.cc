@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -18,6 +19,7 @@ namespace fs = boost::filesystem;
 #include "limits.h"
 #include "string.h"
 
+unsigned int GSubstanceLib::NUM_QUAD    = 6  ; 
 float        GSubstanceLib::DOMAIN_LOW  = 60.f ; 
 float        GSubstanceLib::DOMAIN_HIGH = 810.f ; 
 float        GSubstanceLib::DOMAIN_STEP = 20.f ; 
@@ -26,22 +28,111 @@ unsigned int GSubstanceLib::DOMAIN_LENGTH = 39  ;
 const char* GSubstanceLib::inner = "inner_" ;
 const char* GSubstanceLib::outer = "outer_" ;
 
-const char* GSubstanceLib::refractive_index = "refractive_index" ;
+// NB below strings should match names in GEnums.hh
+// material
+const char* GSubstanceLib::refractive_index  = "refractive_index" ;
 const char* GSubstanceLib::absorption_length = "absorption_length" ;
 const char* GSubstanceLib::scattering_length = "scattering_length" ;
-const char* GSubstanceLib::reemission_prob = "reemission_prob" ;
+const char* GSubstanceLib::reemission_prob   = "reemission_prob" ;
 
-const char* GSubstanceLib::detect = "detect" ;
-const char* GSubstanceLib::absorb = "absorb" ;
-const char* GSubstanceLib::reflect_specular = "reflect_specular" ;
-const char* GSubstanceLib::reflect_diffuse  = "reflect_diffuse" ;
+// surface
+const char* GSubstanceLib::detect            = "detect" ;
+const char* GSubstanceLib::absorb            = "absorb" ;
+const char* GSubstanceLib::reflect_specular  = "reflect_specular" ;
+const char* GSubstanceLib::reflect_diffuse   = "reflect_diffuse" ;
+
+// extra
+const char* GSubstanceLib::reemission_cdf    = "reemission_cdf" ;
+const char* GSubstanceLib::extra_y           = "extra_y" ;
+const char* GSubstanceLib::extra_z           = "extra_z" ;
+const char* GSubstanceLib::extra_w           = "extra_w" ;
 
 
-const char* GSubstanceLib::reemission_cdf = "reemission_cdf" ;
+const char* GSubstanceLib::keymap = 
+"refractive_index:RINDEX,"
+"absorption_length:ABSLENGTH,"
+"scattering_length:RAYLEIGH,"
+"reemission_prob:REEMISSIONPROB," 
+"detect:EFFICIENCY," 
+"absorb:DUMMY," 
+"reflect_specular:REFLECTIVITY," 
+"reflect_diffuse:REFLECTIVITY," 
+"reemission_cdf:SLOWCOMPONENT," 
+;
+
+//  ggeo-meta 102 103 104 105 106 107 
+
+// hmm how to convey specular/diffuse
+
+
+const char* GSubstanceLib::scintillators = "LiquidScintillator,GdDopedLS" ;
+const char* GSubstanceLib::reemissionkey = "SLOWCOMPONENT,FASTCOMPONENT" ;
+
+std::vector<std::string>* GSubstanceLib::vscintillators = NULL ;
+std::vector<std::string>* GSubstanceLib::vreemissionkey = NULL ;
+
+GProperty<float>* GSubstanceLib::reemission_prop  = NULL ; 
+std::string*      GSubstanceLib::reemission_prop_digest = NULL ;  
+
+
+bool GSubstanceLib::isReemissionKey(std::string& lkey)
+{
+    if(vreemissionkey == NULL)
+    {
+        vreemissionkey = new std::vector<std::string> ;
+        boost::split(*vreemissionkey, reemissionkey, boost::is_any_of(","));
+    }
+    assert(vreemissionkey);
+    for(unsigned int i=0 ; i < vreemissionkey->size() ; i++)
+    {
+       if( strcmp(lkey.c_str(), (*vreemissionkey)[i].c_str()) == 0 ) return true ;
+    }
+    return false ; 
+}
+
+bool GSubstanceLib::isScintillator(std::string& matShortName)
+{
+    if(vscintillators == NULL)
+    {
+        vscintillators = new std::vector<std::string> ;
+        boost::split(*vscintillators, scintillators, boost::is_any_of(","));
+    }
+
+    assert(vscintillators);
+    for(unsigned int i=0 ; i < vscintillators->size() ; i++)
+    {
+       if( strcmp(matShortName.c_str(), (*vscintillators)[i].c_str()) == 0 ) return true ;
+    }
+    return false ; 
+}
+
+void GSubstanceLib::setKeyMap(const char* spec)
+{
+    m_keymap.clear();
+    const char* kmap = spec ? spec : keymap ; 
+
+    char delim = ',' ;
+    std::istringstream f(kmap);
+    std::string s;
+    while (getline(f, s, delim)) 
+    {
+        std::size_t colon = s.find(":");
+        if(colon == std::string::npos)
+        {
+            printf("GSubstanceLib::setKeyMap SKIPPING ENTRY WITHOUT COLON %s\n", s.c_str());
+            continue ;
+        }
+        
+        std::string dk = s.substr(0, colon);
+        std::string lk = s.substr(colon+1);
+        //printf("GSubstanceLib::setKeyMap dk [%s] lk [%s] \n", dk.c_str(), lk.c_str());
+        m_keymap[dk] = lk ; 
+    }
+}
 
 
 
-GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true), m_num_prop(16), m_wavelength_buffer(NULL)
+GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true), m_num_quad(6), m_wavelength_buffer(NULL)
 {
     setKeyMap(NULL);
     GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
@@ -111,20 +202,30 @@ void GSubstanceLib::Summary(const char* msg)
 {
     printf("%s\n", msg );
     char buf[128];
-    for(unsigned int i=0 ; i < getNumSubstances() ; i++)
+    for(unsigned int isub=0 ; isub < getNumSubstances() ; isub++)
     {
-         GSubstance* substance = getSubstance(i);
-         snprintf(buf, 128, "%s substance ", msg );
+         GSubstance* substance = getSubstance(isub);
+
+         unsigned int lineMin = getLine(isub, 0);
+         unsigned int lineMax = getLine(isub, NUM_QUAD-1);
+         snprintf(buf, 128, "%s lineMin/Max %3u:%3u ", msg, lineMin, lineMax );
          substance->Summary(buf);
     } 
 }
 
-GSubstance* GSubstanceLib::get(GPropertyMap<float>* imaterial, GPropertyMap<float>* omaterial, GPropertyMap<float>* isurface, GPropertyMap<float>* osurface )
+GSubstance* GSubstanceLib::get(
+           GPropertyMap<float>* imaterial, 
+           GPropertyMap<float>* omaterial, 
+           GPropertyMap<float>* isurface, 
+           GPropertyMap<float>* osurface,
+           GPropertyMap<float>* iextra,
+           GPropertyMap<float>* oextra
+      )
 { 
     // this "get" pulls the GSubstance into existance and populates the registry
     //printf("GSubstanceLib::get imaterial %p omaterial %p isurface %p osurface %p \n", imaterial, omaterial, isurface, osurface );
 
-    GSubstance raw(imaterial, omaterial, isurface, osurface);
+    GSubstance raw(imaterial, omaterial, isurface, osurface, iextra, oextra);
     GSubstance* standard = createStandardSubstance(&raw) ;
     std::string key = standard->pdigest(0,4);  // standard digest based identity 
 
@@ -152,57 +253,30 @@ GSubstance* GSubstanceLib::createStandardSubstance(GSubstance* substance)
     GPropertyMap<float>* omat = substance->getOuterMaterial();
     GPropertyMap<float>* isur = substance->getInnerSurface();
     GPropertyMap<float>* osur = substance->getOuterSurface();
+    GPropertyMap<float>* iext = substance->getInnerExtra();
+    GPropertyMap<float>* oext = substance->getOuterExtra();
+
+    // snag extra props from corresponding materials pmaps
+    if(iext == NULL) iext = imat ;
+    if(oext == NULL) oext = omat ;
 
     GPropertyMap<float>* s_imat = new GPropertyMap<float>(imat);
     GPropertyMap<float>* s_omat = new GPropertyMap<float>(omat);
     GPropertyMap<float>* s_isur = new GPropertyMap<float>(isur);
     GPropertyMap<float>* s_osur = new GPropertyMap<float>(osur);
+    GPropertyMap<float>* s_iext = new GPropertyMap<float>(iext);
+    GPropertyMap<float>* s_oext = new GPropertyMap<float>(oext);
 
-    addMaterialProperties( s_imat, imat, inner );
-    addMaterialProperties( s_omat, omat, outer );
-    addSurfaceProperties(  s_isur, isur, inner );
-    addSurfaceProperties(  s_osur, osur, outer );
+    standardizeMaterialProperties( s_imat, imat, inner );
+    standardizeMaterialProperties( s_omat, omat, outer );
+    standardizeSurfaceProperties(  s_isur, isur, inner );
+    standardizeSurfaceProperties(  s_osur, osur, outer );
+    standardizeExtraProperties(    s_iext, iext, inner );
+    standardizeExtraProperties(    s_oext, oext, outer );
 
-    GSubstance* s_substance = new GSubstance( s_imat , s_omat, s_isur, s_osur );
+    GSubstance* s_substance = new GSubstance( s_imat , s_omat, s_isur, s_osur, s_iext, s_oext);
+
     return s_substance ; 
-}
-
-
-const char* GSubstanceLib::keymap = 
-"refractive_index:RINDEX,"
-"absorption_length:ABSLENGTH,"
-"scattering_length:RAYLEIGH,"
-"reemission_prob:REEMISSIONPROB," 
-"detect:EFFICIENCY," 
-"absorb:DUMMY," 
-"reflect_specular:REFLECTIVITY," 
-"reflect_diffuse:REFLECTIVITY," 
-;
-// hmm how to convey specular/diffuse
-
-
-void GSubstanceLib::setKeyMap(const char* spec)
-{
-    m_keymap.clear();
-    const char* kmap = spec ? spec : keymap ; 
-
-    char delim = ',' ;
-    std::istringstream f(kmap);
-    std::string s;
-    while (getline(f, s, delim)) 
-    {
-        std::size_t colon = s.find(":");
-        if(colon == std::string::npos)
-        {
-            printf("GSubstanceLib::setKeyMap SKIPPING ENTRY WITHOUT COLON %s\n", s.c_str());
-            continue ;
-        }
-        
-        std::string dk = s.substr(0, colon);
-        std::string lk = s.substr(colon+1);
-        //printf("GSubstanceLib::setKeyMap dk [%s] lk [%s] \n", dk.c_str(), lk.c_str());
-        m_keymap[dk] = lk ; 
-    }
 }
 
 const char* GSubstanceLib::getLocalKey(const char* dkey) // mapping between standard keynames and local key names, eg refractive_index -> RINDEX
@@ -214,7 +288,7 @@ const char* GSubstanceLib::getLocalKey(const char* dkey) // mapping between stan
 
 GPropertyMap<float>* GSubstanceLib::createStandardProperties(const char* pname, GSubstance* substance)
 {
-    // combining all 4-sets into one PropertyMap : for insertion into wavelengthBuffer
+    // combining all 6 sets into one PropertyMap : for insertion into wavelengthBuffer
 
     GPropertyMap<float>* ptex = new GPropertyMap<float>(pname);
     
@@ -222,11 +296,15 @@ GPropertyMap<float>* GSubstanceLib::createStandardProperties(const char* pname, 
     ptex->add(substance->getOuterMaterial(), outer);
     ptex->add(substance->getInnerSurface(),  inner);
     ptex->add(substance->getOuterSurface(),  outer);
+    ptex->add(substance->getInnerExtra(),    inner);
+    ptex->add(substance->getOuterExtra(),    outer);
 
-    checkMaterialProperties(ptex,  0 , inner);
-    checkMaterialProperties(ptex,  4 , outer);
-    checkSurfaceProperties( ptex,  8 , inner);
-    checkSurfaceProperties( ptex, 12 , outer);
+    checkMaterialProperties(ptex,  0*4 , inner);
+    checkMaterialProperties(ptex,  1*4 , outer);
+    checkSurfaceProperties( ptex,  2*4 , inner);
+    checkSurfaceProperties( ptex,  3*4 , outer);
+    checkExtraProperties(   ptex,  4*4 , inner);
+    checkExtraProperties(   ptex,  5*4 , outer);
 
     return ptex ; 
 }
@@ -243,9 +321,23 @@ void GSubstanceLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( absorb          ,       0.f );
     defaults->addConstantProperty( reflect_specular,       0.f );
     defaults->addConstantProperty( reflect_diffuse ,       0.f );
+
+    defaults->addConstantProperty( reemission_cdf  ,       0.f );
+    defaults->addConstantProperty( extra_y         ,       0.f );
+    defaults->addConstantProperty( extra_z         ,       0.f );
+    defaults->addConstantProperty( extra_w         ,       0.f );
+
 }
 
-void GSubstanceLib::addMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
+std::vector<std::string> GSubstanceLib::splitString(std::string keys)
+{
+    std::vector<std::string> vkeys;
+    boost::split(vkeys, keys, boost::is_any_of(" "));
+    return vkeys ; 
+}
+
+
+void GSubstanceLib::standardizeMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
 {
     assert(pmap);  // materials must always be defined
     assert(pmap->isMaterial());
@@ -264,9 +356,21 @@ void GSubstanceLib::addMaterialProperties(GPropertyMap<float>* pstd, GPropertyMa
     pstd->addProperty(absorption_length,getPropertyOrDefault( pmap, absorption_length ), prefix);
     pstd->addProperty(scattering_length,getPropertyOrDefault( pmap, scattering_length ), prefix);
     pstd->addProperty(reemission_prob  ,getPropertyOrDefault( pmap, reemission_prob ), prefix);
+
 }
 
-void GSubstanceLib::addSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
+void GSubstanceLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
+{
+    pstd->addProperty(reemission_cdf   , getPropertyOrDefault( pmap, reemission_cdf ), prefix);
+    pstd->addProperty(extra_y          , getPropertyOrDefault( pmap, extra_y )       , prefix);
+    pstd->addProperty(extra_z          , getPropertyOrDefault( pmap, extra_z )       , prefix);
+    pstd->addProperty(extra_w          , getPropertyOrDefault( pmap, extra_w )       , prefix);
+}
+
+
+
+
+void GSubstanceLib::standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
 {
     if(pmap) // surfaces often not defined
     { 
@@ -338,6 +442,32 @@ void GSubstanceLib::checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned i
     assert(xname == pname);
 }
 
+void GSubstanceLib::checkExtraProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* _prefix)
+{
+    std::string prefix = _prefix ; 
+    std::string xname, pname ;
+
+    xname = prefix + reemission_cdf ; 
+    pname = ptex->getPropertyNameByIndex(offset+e_reemission_cdf);
+    assert(xname == pname);
+
+    xname = prefix + extra_y ; 
+    pname = ptex->getPropertyNameByIndex(offset+e_extra_y);
+    assert(xname == pname);
+
+    xname = prefix + extra_z ; 
+    pname = ptex->getPropertyNameByIndex(offset+e_extra_z);
+    assert(xname == pname);
+
+    xname = prefix + extra_w ; 
+    pname = ptex->getPropertyNameByIndex(offset+e_extra_w);
+    assert(xname == pname);
+}
+
+
+
+
+
 const char* GSubstanceLib::getDigest(unsigned int index)
 {
     return m_keys[index].c_str();
@@ -345,22 +475,59 @@ const char* GSubstanceLib::getDigest(unsigned int index)
 
 unsigned int GSubstanceLib::getLine(unsigned int isub, unsigned int ioff)
 {
-    unsigned int numProp = getNumProp() ; 
-    return isub*numProp/4 + ioff ;   
+    assert(ioff < NUM_QUAD);
+    return isub*NUM_QUAD + ioff ;   
+}
+
+
+
+void GSubstanceLib::collectReemissionProp(GPropertyMap<float>* pmap)
+{
+    // exploratory code
+
+    std::string name = pmap->getShortNameString();
+    if(isScintillator(name))   // LiquidScintillator,GdDopedLS
+    {
+        std::string keys = pmap->getKeysString();
+        std::vector<std::string> vkeys = splitString(keys);
+
+        for(unsigned int i=0 ; i < vkeys.size() ; i++)
+        {
+            std::string lkey = vkeys[i];
+            if(isReemissionKey(lkey))   // SLOWCOMPONENT,FASTCOMPONENT
+            {
+                GProperty<float>* prop = pmap->getProperty(lkey.c_str());
+
+                if(reemission_prop == NULL)
+                {
+                     printf("GSubstanceLib::collectReemissionProp %s : %lu props \n", name.c_str(), vkeys.size() );
+                     reemission_prop = prop ;
+                     reemission_prop_digest = new std::string(prop->digest()) ;  // hmm maybe prop should cache their digests
+                     reemission_prop->SummaryH(lkey.c_str(), 5 );            
+                }
+                else
+                {
+                     std::string pdig = prop->getDigestString();
+                     assert(*reemission_prop_digest == pdig);       // expecting single prop
+                }
+            }
+        }
+    }
 }
 
 
 GBuffer* GSubstanceLib::createWavelengthBuffer()
 {
     //
-    // 4 sets of 4 props  
+    //  6 sets of 4 props  
     //
-    //  The 4 sets for: 
-    //          (inner material, outer material, inner surface, outer surface) 
+    //  The 6 sets for: 
+    //          (inner material, outer material, inner surface, outer surface, inner extra, outer extra) 
     //
-    //  and the 4 props:
+    //  and the props:
     //         material: (refractive_index, absorption_length, scattering_length, reemission_prob)
     //         surface:  (detect, absorb, reflect_specular, reflect_diffuse)    
+    //         extra:    (reemission_cdf, extra_y, extra_z, extra_w )
     //
 
     GBuffer* buffer(NULL) ;
@@ -371,8 +538,7 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
     GDomain<float>* domain = getStandardDomain();
     const unsigned int domainLength = domain->getLength();
     unsigned int numSubstance = getNumSubstances() ;
-    unsigned int numProp = getNumProp() ; 
-    unsigned int numFloat = domainLength*numProp*numSubstance ; 
+    unsigned int numFloat = domainLength*NUM_QUAD*4*numSubstance ; 
 
     for(unsigned int isub=0 ; isub < numSubstance ; isub++)
     {
@@ -389,7 +555,7 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             assert(strcmp(ckdig, dig) == 0);
         }
 
-        unsigned int subOffset = domainLength*numProp*substanceIndex ; 
+        unsigned int subOffset = domainLength*NUM_QUAD*4*substanceIndex ; 
         const char* kfmt = "lib.substance.%d.%s.%s" ;
         m_meta->addDigest(kfmt, isub, "substance", (char*)dig ); 
 
@@ -400,6 +566,8 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             m_meta->add(kfmt, isub, "omat", substance->getOuterMaterial() );
             m_meta->add(kfmt, isub, "isur", substance->getInnerSurface() );
             m_meta->add(kfmt, isub, "osur", substance->getOuterSurface() );
+            m_meta->add(kfmt, isub, "iext", substance->getInnerExtra() );
+            m_meta->add(kfmt, isub, "oext", substance->getOuterExtra() );
         }
 
         if( buffer == NULL )
@@ -408,7 +576,14 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             data = (float*)buffer->getPointer();
         }
 
-        for( unsigned int p = 0; p < numProp/4 ; ++p )  // over 4 different sets (imat,omat,isur,osur)  
+
+        //
+        // * maybe add a fifth set "iore" for reemission
+        // * actually cleaner and to add two extra sets: iext, oext
+        //   so reemission_cdf will occupy 1 of the 4 slots leaving 3 spares
+        //
+ 
+        for( unsigned int p = 0; p < NUM_QUAD ; ++p )  // over NUM_QUAD different sets (imat,omat,isur,osur,iext,oext)  
         { 
             GPropertyMap<float>* psrc = substance->getConstituentByIndex(p) ; 
 
@@ -455,6 +630,12 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
                case 3:
                       m_meta->addDigest(kfmt, isub, "osur", pdig.c_str() ); 
                       break ;
+               case 4:
+                      m_meta->addDigest(kfmt, isub, "iext", pdig.c_str() ); 
+                      break ;
+               case 5:
+                      m_meta->addDigest(kfmt, isub, "oext", pdig.c_str() ); 
+                      break ;
             }
         }   
     }
@@ -500,11 +681,19 @@ const char* GSubstanceLib::surfacePropertyName(unsigned int i)
     if(i == 3) return reflect_diffuse ;
     return "?" ;
 }
-
+const char* GSubstanceLib::extraPropertyName(unsigned int i)
+{
+    assert(i < 4);
+    if(i == 0) return reemission_cdf ;
+    if(i == 1) return extra_y ;
+    if(i == 2) return extra_z ;
+    if(i == 3) return extra_w ;
+    return "?" ;
+}
 
 char* GSubstanceLib::propertyName(unsigned int p, unsigned int i)
 {
-    assert(p < 4);
+    assert(p < NUM_QUAD && i < 4);
     char name[64];
     switch(p)
     {
@@ -512,6 +701,8 @@ char* GSubstanceLib::propertyName(unsigned int p, unsigned int i)
        case 1: snprintf(name, 64, "%s%s", outer, materialPropertyName(i) ); break;
        case 2: snprintf(name, 64, "%s%s", inner, surfacePropertyName(i) ); break;
        case 3: snprintf(name, 64, "%s%s", outer, surfacePropertyName(i) ); break;
+       case 4: snprintf(name, 64, "%s%s", inner, extraPropertyName(i) ); break;
+       case 5: snprintf(name, 64, "%s%s", outer, extraPropertyName(i) ); break;
     }
     return strdup(name);
 }
@@ -526,13 +717,10 @@ GSubstance* GSubstanceLib::loadSubstance(float* subData, unsigned int isub)
     GSubstance* substance = new GSubstance ; 
     GDomain<float>* domain = GSubstanceLib::getDefaultDomain();
     unsigned int domainLength = domain->getLength(); 
-    unsigned int numProp = getNumProp();
-    assert(numProp % 4 == 0 && numProp/4 == 4);
 
     std::string mdig = m_meta->getSubstanceQty(isub, "substance", "digest");
 
-    // property scrunch into float4 is the cause of the gymnastics
-    for(unsigned int p=0 ; p < numProp/4 ; ++p ) 
+    for(unsigned int p=0 ; p < NUM_QUAD ; ++p ) 
     {
          std::string mapName = m_meta->getSubstanceQtyByIndex(isub, p, "name");
          GPropertyMap<float>* pmap = new GPropertyMap<float>(mapName.c_str(), isub, "recon"); 
@@ -555,6 +743,8 @@ GSubstance* GSubstanceLib::loadSubstance(float* subData, unsigned int isub)
             case 1:substance->setOuterMaterial(pmap);break;
             case 2:substance->setInnerSurface(pmap);break;
             case 3:substance->setOuterSurface(pmap);break;
+            case 4:substance->setInnerExtra(pmap);break;
+            case 5:substance->setOuterExtra(pmap);break;
          }
      }
 
@@ -613,10 +803,9 @@ GSubstanceLib* GSubstanceLib::load(const char* dir)
 
     GBuffer* buffer = GBuffer::load<float>(dir, "wavelength.npy");
     buffer->Summary("wavelength buffer");
+
     lib->loadWavelengthBuffer(buffer);
-    
     lib->setWavelengthBuffer(buffer);
-    //lib->dumpWavelengthBuffer();
 
     return lib ; 
 }
@@ -648,46 +837,34 @@ void GSubstanceLib::loadWavelengthBuffer(GBuffer* buffer)
         substance->setIndex(m_keys.size());
         m_keys.push_back(key);  // for simple ordering  
         m_registry[key] = substance ; 
-
-        // use metadata to reacreate the names 
-        // find way to do roundtrip test (maybe via global digest of the lib) 
         
     }
 }
 
 void GSubstanceLib::dumpWavelengthBuffer(int wline)
 {
-    dumpWavelengthBuffer(wline, getWavelengthBuffer(), getMetadata(), getNumSubstances(), getNumProp(), getStandardDomainLength());  
+    dumpWavelengthBuffer(wline, getWavelengthBuffer(), getMetadata(), getNumSubstances(), getStandardDomainLength());  
 }
 
-void GSubstanceLib::dumpWavelengthBuffer(int wline, GBuffer* buffer, GSubstanceLibMetadata* meta, unsigned int numSubstance, unsigned int numProp, unsigned int domainLength)
+void GSubstanceLib::dumpWavelengthBuffer(int wline, GBuffer* buffer, GSubstanceLibMetadata* meta, unsigned int numSubstance, unsigned int domainLength)
 {
     if(!buffer) return ;
 
     float* data = (float*)buffer->getPointer();
     unsigned int numElementsTotal = buffer->getNumElementsTotal();
-    assert(numElementsTotal == numSubstance*numProp*domainLength);
+    assert(numElementsTotal == numSubstance*NUM_QUAD*4*domainLength);
     GDomain<float>* domain = GSubstanceLib::getDefaultDomain();
     assert(domain->getLength() == domainLength);
-    assert(numProp % 4 == 0);
 
-    int wsub(-1);
-    int wprop(-1);
-    if(wline > -1)
-    {
-        wsub  = wline / 4 ; 
-        wprop = wline % 4 ;  
-    }
-
-    printf("GSubstanceLib::dumpWavelengthBuffer wline %d wsub %d wprop %u numSub %u domainLength %u numProp %u \n", wline, wsub, wprop, numSubstance, domainLength, numProp );
+    printf("GSubstanceLib::dumpWavelengthBuffer wline %d numSub %u domainLength %u numQuad %u \n", wline, numSubstance, domainLength, NUM_QUAD );
 
     for(unsigned int isub=0 ; isub < numSubstance ; ++isub )
     {
-        unsigned int subOffset = domainLength*numProp*isub ;
-        for(unsigned int p=0 ; p < numProp/4 ; ++p ) 
+        unsigned int subOffset = domainLength*NUM_QUAD*4*isub ;
+        for(unsigned int p=0 ; p < NUM_QUAD ; ++p ) 
         {
              std::string pname = meta ? meta->getSubstanceQtyByIndex(isub, p, "name") : "" ; 
-             unsigned int line = isub * 4 + p ;
+             unsigned int line = getLine(isub, p) ;
              bool wselect = ( wline == -1 ) ||  (wline == line  ) ;
              if(wselect)
              {
