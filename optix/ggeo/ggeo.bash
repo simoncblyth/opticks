@@ -196,6 +196,86 @@ names translated into geant4 style::
                0.400           0.400           0.599           0.800           0.169           0.072           0.023           0.000
 
 
+reemission_cdf reciprocation
+-----------------------------
+
+* for Geant4 match of photons generated in Chroma context needed to sample on 
+  an energywise domain 1/wavelength[::-1]  
+
+  * env/geant4/geometry/collada/collada_to_chroma.py::construct_cdf_energywise  
+
+  * sampling wavelength-wise gives poor match at the extremes of the distribution 
+
+  * i dont this there is anything fundamental here, its just matching precisely
+    what is done by Geant4/NuWa generation
+
+* this was implemented by special casing chroma material reemission_cdf property
+
+env/geant4/geometry/collada/collada_to_chroma.py::
+
+    515     def setup_cdf(self, material, props ):
+    516         """
+    517         Chroma uses "reemission_cdf" cumulative distribution function 
+    518         to generate the wavelength of reemission photons. 
+    519 
+    520         Currently think that the name "reemission_cdf" is misleading, 
+    521         as it is the RHS normalized CDF obtained from an intensity distribution
+    522         (photon intensity as function of wavelength) 
+    523 
+    524         NB REEMISSIONPROB->reemission_prob is handled as a 
+    525         normal keymapped property, no need to integrate to construct 
+    526         the cdf for that.
+    527     
+    528         Compare this with the C++
+    529 
+    530            DsChromaG4Scintillation::BuildThePhysicsTable()  
+    531 
+    532         """ 
+
+how to do this within ggeo/OptiX
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. check what properties beyond the gang-of-four for materials and surfaces 
+   are used by Chroma propagation
+
+   * looks like makes sense to use a separate ggeo texture holding just reemission_cdf
+
+/usr/local/env/chroma_env/src/chroma/chroma/cuda/geometry_types.h::
+
+     04 struct Material
+      5 {
+      6     float *refractive_index;
+      7     float *absorption_length;
+      8     float *scattering_length;
+      9     float *reemission_prob;
+     10     float *reemission_cdf;   // SCB ? misleading as not only applicable to reemission ?  maybe intensity_cdf better
+     11     unsigned int n;          // domain spec
+     12     float step;              // domain spec
+     13     float wavelength0;       // domain spec
+     14 };
+     ..
+     18 struct Surface
+     19 {
+     20     float *detect;                 
+     21     float *absorb;
+     22     float *reemit;              // only used by propagate_at_wls 
+     23     float *reflect_diffuse;
+     24     float *reflect_specular;
+     25     float *eta;                 // only used by propagate_complex
+     26     float *k;                   // only used by propagate_complex
+     27     float *reemission_cdf;      // only used by propagate_at_wls 
+     28 
+     29     unsigned int model;         // selects between SURFACE_DEFAULT, SURFACE_COMPLEX, SURFACE_WLS 
+     30     unsigned int n;             // domain spec
+     31     unsigned int transmissive;  // only used by propagate_complex
+     32     float step;                 // domain spec
+     33     float wavelength0;          // domain spec
+     34     float thickness;A           // only used by propagate_complex
+     35 };
+        
+
+
+
 
 Classes
 --------

@@ -26,17 +26,20 @@ class GSubstanceLib {
     static float        DOMAIN_HIGH ; 
     static float        DOMAIN_STEP ; 
   public:
-    // standard material property names
+    // 4 standard material property names : interleaved into float4 wavelength texture
     static const char* refractive_index ; 
     static const char* absorption_length ; 
     static const char* scattering_length ; 
     static const char* reemission_prob ; 
   public:
-    // standard surface property names
+    // 4 standard surface property names : interleaved into float4 wavelength texture
     static const char* detect ;
     static const char* absorb ;
     static const char* reflect_specular ;
     static const char* reflect_diffuse ;
+  public:
+    // needs energywise 1/wavelength[::-1] handling 
+    static const char* reemission_cdf ; 
   public:
     static const char* keymap ;
 

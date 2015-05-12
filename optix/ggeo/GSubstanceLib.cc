@@ -36,6 +36,11 @@ const char* GSubstanceLib::absorb = "absorb" ;
 const char* GSubstanceLib::reflect_specular = "reflect_specular" ;
 const char* GSubstanceLib::reflect_diffuse  = "reflect_diffuse" ;
 
+
+const char* GSubstanceLib::reemission_cdf = "reemission_cdf" ;
+
+
+
 GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true), m_num_prop(16), m_wavelength_buffer(NULL)
 {
     setKeyMap(NULL);
