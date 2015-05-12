@@ -47,6 +47,8 @@ const char* GSubstanceLib::extra_y           = "extra_y" ;
 const char* GSubstanceLib::extra_z           = "extra_z" ;
 const char* GSubstanceLib::extra_w           = "extra_w" ;
 
+// workings for "extra"
+const char* GSubstanceLib::intensity         = "intensity" ;
 
 const char* GSubstanceLib::keymap = 
 "refractive_index:RINDEX,"
@@ -57,7 +59,8 @@ const char* GSubstanceLib::keymap =
 "absorb:DUMMY," 
 "reflect_specular:REFLECTIVITY," 
 "reflect_diffuse:REFLECTIVITY," 
-"reemission_cdf:SLOWCOMPONENT," 
+"intensity:SLOWCOMPONENT," 
+"reemission_cdf:DUMMY," 
 ;
 
 //  ggeo-meta 102 103 104 105 106 107 
@@ -361,11 +364,28 @@ void GSubstanceLib::standardizeMaterialProperties(GPropertyMap<float>* pstd, GPr
 
 void GSubstanceLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
 {
-    pstd->addProperty(reemission_cdf   , getPropertyOrDefault( pmap, reemission_cdf ), prefix);
+    std::string name = pmap->getShortNameString();
+
+    GProperty<float>* p_reemission_cdf(NULL) ;
+
+    if(isScintillator(name))   // LiquidScintillator,GdDopedLS
+    {
+        GProperty<float>* p_intensity = getPropertyOrDefault(pmap, intensity);
+        p_reemission_cdf = GProperty<float>::createReciprocalCDF( p_intensity );
+    }
+    else
+    {
+        p_reemission_cdf = getPropertyOrDefault( pmap, reemission_cdf ) ;
+    }
+
+
+    pstd->addProperty(reemission_cdf   , p_reemission_cdf                            , prefix);
     pstd->addProperty(extra_y          , getPropertyOrDefault( pmap, extra_y )       , prefix);
     pstd->addProperty(extra_z          , getPropertyOrDefault( pmap, extra_z )       , prefix);
     pstd->addProperty(extra_w          , getPropertyOrDefault( pmap, extra_w )       , prefix);
 }
+
+
 
 
 

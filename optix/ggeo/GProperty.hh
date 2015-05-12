@@ -67,7 +67,9 @@ public:
    T getInterpolatedValue(T val);
  
 
-
+public:
+   static GProperty<T>* createCDF(GProperty<T>* intensity);
+   static GProperty<T>* createReciprocalCDF(GProperty<T>* intensity);
 
 public:
    GProperty<T>* createInterpolatedProperty(GDomain<T>* domain);
@@ -175,6 +177,53 @@ T GProperty<T>::getInterpolatedValue(T val)
 {
     return np_interp( val , m_domain, m_values );
 }
+
+template <typename T>
+GProperty<T>* GProperty<T>::createCDF(GProperty<T>* dist)
+{
+    return dist ; 
+}
+
+template <typename T>
+GProperty<T>* GProperty<T>::createReciprocalCDF(GProperty<T>* dist)
+{
+    return dist ; 
+}
+
+//  translation of NumPy based env/geant4/geometry/collada/collada_to_chroma.py::construct_cdf_energywise
+/*
+154 def construct_cdf_energywise(xy):
+155     """
+156     Duplicates DsChromaG4Scintillation::BuildThePhysicsTable     
+157     """
+158     assert len(xy.shape) == 2 and xy.shape[-1] == 2
+159 
+160     bcdf = np.empty( xy.shape )
+161 
+162     rxy = xy[::-1]              # reverse order, for ascending energy 
+163 
+164     x = 1/rxy[:,0]              # work in inverse wavelength 1/nm
+165 
+166     y = rxy[:,1]
+167 
+168     ymid = (y[:-1]+y[1:])/2     # looses entry as needs pair
+169 
+170     xdif = np.diff(x)
+171 
+172     #bcdf[:,0] = rxy[:,0]        # back to wavelength
+173     bcdf[:,0] = x                # keeping 1/wavelenth
+174 
+175     bcdf[0,1] = 0.
+176 
+177     np.cumsum(ymid*xdif, out=bcdf[1:,1])
+178 
+179     bcdf[1:,1] = bcdf[1:,1]/bcdf[1:,1].max()
+180 
+181     return bcdf
+*/
+
+
+
 
 
 typedef GProperty<float>  GPropertyF ;

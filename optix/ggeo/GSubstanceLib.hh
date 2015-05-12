@@ -44,6 +44,11 @@ class GSubstanceLib {
     static const char* extra_y ; 
     static const char* extra_z ; 
     static const char* extra_w ; 
+
+  public:
+     // workings for extra
+    static const char* intensity ; 
+
   public:
     static const char* keymap ;
 
