@@ -42,6 +42,15 @@ Update OptiX version and build samples
     -bash-4.1$ optix-samples-make      ## 
 
 
+Partial override warning
+---------------------------
+
+::
+
+    /Developer/OptiX/include/optixu/optixpp_namespace.h(588): warning: overloaded virtual function "optix::APIObj::checkError" is only partially overridden in class "optix::ContextObj"
+
+* http://stackoverflow.com/questions/21462908/warning-overloaded-virtual-function-baseprocess-is-only-partially-overridde
+
 
 
 Determine Driver Version on Linux (on Mac use SysPref panel)

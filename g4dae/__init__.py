@@ -681,10 +681,20 @@ def demo_standardize():
 
 def sample_reciprocal_cdf( u, nbin, x0, delta, cdf_y ):
     """
+    :param u:     random draw in range 0:1
+    :param nbin:  number of bins in the CDF
+    :param x0:    low wavelength edge
+    :param delta: bin width 
+    :param cdf_y: reciprocal domain CDF values in nbin bins
+
+    :return:       wavlength sample that is a member 
+                   of the distribution used to construct
+                   the CDF
+
     Due to the 1 to 1 mirror bin relationship 
     between the domain and its reciprocal, can 
     use a CDF on the reciprocal domain via reading 
-    from the right.
+    bins from the right.
 
     ::
 
@@ -695,6 +705,26 @@ def sample_reciprocal_cdf( u, nbin, x0, delta, cdf_y ):
 
         In [54]: x
         Out[54]: array([ 1.,  2.,  3.,  4.], dtype=float32)
+
+
+    Below while loop does a binary search to 
+    find the CDF bin in which the random draw resides. 
+    Then calulates a bin fraction and uses this together 
+    with domain spec to generate a value from the CDF.
+
+    This function mirrors chroma generation in:
+    /usr/local/env/chroma_env/src/chroma/chroma/cuda/random.h:sample_reciprocal_cdf
+
+    Can this binary search be replaced by texture lookup interpolation ?
+    
+    * question becomes: Is the inverted CDF approximation good-enough ? 
+
+      * how to invert ?  maybe using GAry<T>::np_interp 
+        to do a lot of lookups on 0:1:0.001
+
+    * :google:`sample cdf using interpolation`
+    * http://en.wikipedia.org/wiki/Inverse_transform_sampling
+    * https://inlieuofabettertitle.wordpress.com/2013/11/30/cant-invert-the-cdf-perhaps-interpolation-is-a-good-idea/
 
     """
 

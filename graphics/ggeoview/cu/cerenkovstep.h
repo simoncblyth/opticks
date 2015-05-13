@@ -152,17 +152,16 @@ __device__ void cscheck(CerenkovStep& cs)
     float nmmi = sample_reciprocal_domain(0.5f);   
     float nmhi = sample_reciprocal_domain(1.0f);
 
-    rtPrintf("cscheck sample wavelength lo/mi/hi   %f %f %f \n",
-           nmlo,nmmi,nmhi
-         );   
+    rtPrintf("cscheck sample wavelength lo/mi/hi   %f %f %f \n", nmlo,nmmi,nmhi);   
 
     float4 prlo = wavelength_lookup(nmlo, cs.MaterialIndex);
     float4 prmi = wavelength_lookup(nmmi, cs.MaterialIndex);
     float4 prhi = wavelength_lookup(nmhi, cs.MaterialIndex);
 
-    rtPrintf("cscheck sample rindex lo/mi/hi   %f %f %f \n",
-           prlo.x,prmi.x,prhi.x
-         );   
+    rtPrintf("cscheck sample rindex lo/mi/hi   %f %f %f \n", prlo.x,prmi.x,prhi.x);   
+    rtPrintf("cscheck sample abslen lo/mi/hi   %f %f %f \n", prlo.y,prmi.y,prhi.y);   
+    rtPrintf("cscheck sample scalen lo/mi/hi   %f %f %f \n", prlo.z,prmi.z,prhi.z);   
+    rtPrintf("cscheck sample reempr lo/mi/hi   %f %f %f \n", prlo.w,prmi.w,prhi.w);   
 
 /*
     float c[3];
