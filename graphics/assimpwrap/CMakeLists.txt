@@ -13,6 +13,7 @@ set(BUILD_SHARED_LIBS ON)
 find_package(Boost REQUIRED)
 find_package(Assimp REQUIRED)
 find_package(GGeo REQUIRED)
+find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 
 include(EnvBuildOptions)
@@ -22,6 +23,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
+    ${GLM_INCLUDE_DIRS}  
     ${NPY_INCLUDE_DIRS}  
 )
 

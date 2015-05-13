@@ -42,6 +42,11 @@ public:
        return np_product(a, b);
    }
 
+   static GAry<T>* subtract(GAry<T>* a, GAry<T>* b)
+   {
+       return np_subtract(a, b);
+   }
+
    static GAry<T>* from_constant(unsigned int length, T value )
    {
        GAry<T>* ary = new GAry<T>( length, NULL );
@@ -186,6 +191,19 @@ GAry<T>* np_product(GAry<T>* a, GAry<T>* b)
        prod->setValue(i, ab );
     }
     return prod ;
+}
+
+template <typename T>
+GAry<T>* np_subtract(GAry<T>* a, GAry<T>* b)
+{
+    assert(a->getLength() == b->getLength()); 
+    GAry<T>* result = new GAry<T>(a->getLength()); // Ary to be filled with interpolated values
+    for (unsigned int i = 0; i < result->getLength() ; i++) 
+    {
+       T ab = b->getValue(i) - a->getValue(i);
+       result->setValue(i, ab );
+    }
+    return result ;
 }
 
 

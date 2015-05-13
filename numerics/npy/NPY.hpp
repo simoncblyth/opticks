@@ -129,9 +129,6 @@ inline void* NPY::getBytes()
 }
 
 
-
-
-
 inline unsigned int NPY::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
 {
     return sizeof(float)*getFloatIndex(i,j,k);

@@ -47,7 +47,8 @@ class GSubstanceLib {
 
   public:
      // workings for extra
-    static const char* intensity ; 
+    static const char* slow_component; 
+    static const char* fast_component; 
 
   public:
     static const char* keymap ;
@@ -106,7 +107,9 @@ class GSubstanceLib {
       void standardizeMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
+
       GProperty<float>* getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
+      GProperty<float>* getProperty(GPropertyMap<float>* pmap, const char* dkey);
 
   private:
       // support for standardization 

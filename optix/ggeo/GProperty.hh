@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <math.h> 
 #include "assert.h"
 #include "md5digest.hh"
 
@@ -54,6 +55,30 @@ public:
        return new GProperty<T>(vals, doms) ; 
    }
 
+
+   static T maxdiff(GProperty<T>* a, GProperty<T>* b)
+   {
+       assert(a->getLength() == b->getLength());
+       T mv(0);
+       T md(0);
+       for(unsigned int i=0 ; i < a->getLength() ; i++)
+       {
+           T av = a->getValues()->getValue(i) ;
+           T bv = b->getValues()->getValue(i) ;
+           T dv = fabs(av-bv); 
+
+           if(dv > mv) mv = dv ;
+           //printf("av %10.3f bv %10.3f dv*1e9 %10.3f mv*1e9 %10.3f \n", av, bv, dv*1e9, mv*1e9); 
+
+           T ad = a->getDomain()->getValue(i) ;
+           T bd = b->getDomain()->getValue(i) ;
+           T dd = fabs(ad-bd); 
+           if(dd > md) md = dd ;
+           //printf("ad %10.3f bd %10.3f dd*1e9 %10.3f md*1e9 %10.3f \n", ad, bd, dd*1e9, md*1e9); 
+       }
+
+       return mv > md ? mv : md  ; 
+   }  
 
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length ) 
    {
@@ -104,6 +129,12 @@ public:
        return m_domain->getValue(index);
    }
    T getInterpolatedValue(T val);
+
+   unsigned int getLength()
+   {
+       assert(m_values->getLength() == m_domain->getLength());
+       return m_domain->getLength(); 
+   }
  
 
 public:
@@ -261,37 +292,36 @@ GProperty<T>* GProperty<T>::createCDF()
 template <typename T>
 GProperty<T>* GProperty<T>::createReciprocalCDF()
 {
-
     bool reciprocal = true ; 
     GAry<T>* x = getDomain()->reversed(reciprocal);   // 1/nm in reverse order 
     GAry<T>* y = getValues()->reversed();
 
-    unsigned int imod = x->getLength()/20  ; 
-    T psc = 1000.f ; // presentation scale
-
-    x->Summary("x [domain reversed reciprocal]", imod, psc);
-    y->Summary("y [values reversed]", imod, psc);
-
     // ymid, xdif, prod have one bin less as need pairs 
     GAry<T>* ymid = y->mid() ;  
-    ymid->Summary("ymid: y->mid()", imod, psc);
-
-    delete y ;
- 
     GAry<T>* xdif = x->diff() ;  
-    xdif->Summary("xdif: x->diff()", imod, psc);
     GAry<T>* prod = GAry<T>::product( ymid, xdif );
-    prod->Summary("prod:  ymid*xdif ", imod, psc);
-    delete ymid ;
-    delete xdif ;
 
     unsigned int offzero = 1 ;               // gives one extra zero bin
     GAry<T>* cy = prod->cumsum(offzero);
-    cy->Summary("cy: prod->cumsum(1)  ", imod, psc);
-    delete prod ; 
-
     cy->scale(1./cy->getRight());            // normalise by making RHS 1.
-    cy->Summary("cy: prod->cumsum(1) scaled  ", imod, psc);
+
+    bool debug = false ; 
+    if(debug)
+    {
+        unsigned int imod = x->getLength()/20  ; 
+        T psc = 1000.f ; // presentation scale
+        x->Summary("x [domain reversed reciprocal]", imod, psc);
+        y->Summary("y [values reversed]", imod, psc);
+        ymid->Summary("ymid: y->mid()", imod, psc);
+        xdif->Summary("xdif: x->diff()", imod, psc);
+        prod->Summary("prod:  ymid*xdif ", imod, psc);
+        cy->Summary("cy: prod->cumsum(1) scaled  ", imod, psc);
+    }
+
+    delete y ;
+    delete ymid ;
+    delete xdif ;
+    delete prod ; 
 
     return new GProperty<T>( cy, x );        // stealing ctor 
 }

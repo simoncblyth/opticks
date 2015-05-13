@@ -48,7 +48,8 @@ const char* GSubstanceLib::extra_z           = "extra_z" ;
 const char* GSubstanceLib::extra_w           = "extra_w" ;
 
 // workings for "extra"
-const char* GSubstanceLib::intensity         = "intensity" ;
+const char* GSubstanceLib::slow_component    = "slow_component" ;
+const char* GSubstanceLib::fast_component    = "fast_component" ;
 
 const char* GSubstanceLib::keymap = 
 "refractive_index:RINDEX,"
@@ -59,7 +60,8 @@ const char* GSubstanceLib::keymap =
 "absorb:DUMMY," 
 "reflect_specular:REFLECTIVITY," 
 "reflect_diffuse:REFLECTIVITY," 
-"intensity:SLOWCOMPONENT," 
+"slow_component:SLOWCOMPONENT," 
+"fast_component:FASTCOMPONENT," 
 "reemission_cdf:DUMMY," 
 ;
 
@@ -370,23 +372,24 @@ void GSubstanceLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GPrope
 
     if(isScintillator(name))   // LiquidScintillator,GdDopedLS
     {
-        GProperty<float>* p_intensity = getPropertyOrDefault(pmap, intensity);
-        p_reemission_cdf = p_intensity->createReciprocalCDF();
+        GProperty<float>* pslow = getProperty(pmap, slow_component);
+        GProperty<float>* pfast = getProperty(pmap, fast_component);
+        float mxdiff = GProperty<float>::maxdiff(pslow, pfast);
+       
+        //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
+        assert(mxdiff < 1e-6 );
+        p_reemission_cdf = pslow->createReciprocalCDF();
     }
     else
     {
-        p_reemission_cdf = getPropertyOrDefault( pmap, reemission_cdf ) ;
+        p_reemission_cdf = getDefaultProperty( reemission_cdf ) ;
     }
-
 
     pstd->addProperty(reemission_cdf   , p_reemission_cdf                            , prefix);
     pstd->addProperty(extra_y          , getPropertyOrDefault( pmap, extra_y )       , prefix);
     pstd->addProperty(extra_z          , getPropertyOrDefault( pmap, extra_z )       , prefix);
     pstd->addProperty(extra_w          , getPropertyOrDefault( pmap, extra_w )       , prefix);
 }
-
-
-
 
 
 
@@ -403,6 +406,20 @@ void GSubstanceLib::standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPro
     pstd->addProperty(reflect_specular, getPropertyOrDefault( pmap, reflect_specular ), prefix);
     pstd->addProperty(reflect_diffuse,  getPropertyOrDefault( pmap, reflect_diffuse  ), prefix);
 }
+
+GProperty<float>* GSubstanceLib::getProperty(GPropertyMap<float>* pmap, const char* dkey)
+{
+    assert(pmap);
+
+    const char* lkey = getLocalKey(dkey); assert(lkey);  // missing local key mapping 
+
+    GProperty<float>* prop = pmap->getProperty(lkey) ;
+
+    assert(prop);
+
+    return prop ;  
+}
+
 
 
 GProperty<float>* GSubstanceLib::getPropertyOrDefault(GPropertyMap<float>* pmap, const char* dkey)
