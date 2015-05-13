@@ -7,6 +7,7 @@
 
 rtTextureSampler<float4, 2>  wavelength_texture ;
 rtDeclareVariable(float3, wavelength_domain, , );
+rtDeclareVariable(float3, wavelength_domain_reciprocal, , );
 
 static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int line )
 {
@@ -14,6 +15,13 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
     float nmi = (nm - wavelength_domain.x)/wavelength_domain.z + 0.5 ;   
     return tex2D(wavelength_texture, nmi, line + 0.5f );
 }
+
+static __device__ __inline__ float sample_reciprocal_domain(const float& u)
+{
+    float iw = lerp( wavelength_domain_reciprocal.x , wavelength_domain_reciprocal.y, u ) ;
+    return 1.f/iw ;  // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
+}
+
 
 static __device__ __inline__ void wavelength_dump(unsigned int line )
 {

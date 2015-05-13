@@ -1,5 +1,7 @@
 #pragma once
 
+// porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/cerenkov.h
+
 #include "quad.h"
 
 struct CerenkovStep
@@ -84,15 +86,11 @@ __device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsig
 }
 
 
-__device__ void csinit( CerenkovStep& cs /*, Geometry* g */)
+__device__ void csinit( CerenkovStep& cs )
 {
     cs.p0 = normalize(cs.DeltaPosition);
 
     cs.MeanNumberOfPhotonsMax = max(cs.MeanNumberOfPhotons1, cs.MeanNumberOfPhotons2);
-
-    // hmm need to translate material index into substance index
-    //cs.material = g->materials[cs.MaterialIndex] ;
-    //cs.bialkaliMaterial = g->materials[cs.BialkaliMaterialIndex] ;
 
 }
 
@@ -147,5 +145,46 @@ __device__ void csdump( CerenkovStep& cs )
        );
 }
 
+
+__device__ void cscheck(CerenkovStep& cs)
+{
+    float nmlo = sample_reciprocal_domain(0.f);
+    float nmmi = sample_reciprocal_domain(0.5f);   
+    float nmhi = sample_reciprocal_domain(1.0f);
+
+    rtPrintf("cscheck sample wavelength lo/mi/hi   %f %f %f \n",
+           nmlo,nmmi,nmhi
+         );   
+
+    float4 prlo = wavelength_lookup(nmlo, cs.MaterialIndex);
+    float4 prmi = wavelength_lookup(nmmi, cs.MaterialIndex);
+    float4 prhi = wavelength_lookup(nmhi, cs.MaterialIndex);
+
+    rtPrintf("cscheck sample rindex lo/mi/hi   %f %f %f \n",
+           prlo.x,prmi.x,prhi.x
+         );   
+
+/*
+    float c[3];
+    c[0] = cs.BetaInverse / r[0];  
+    c[1] = cs.BetaInverse / r[1];  
+    c[2] = cs.BetaInverse / r[2];  
+
+    printf("cscheck sample cosTheta lo/mi/hi   %f %f %f \n",
+           c[0],c[1],c[2]
+         );   
+
+
+    float s[3];
+    s[0] = (1.0 - c[0])*(1.0 + c[0]);
+    s[1] = (1.0 - c[1])*(1.0 + c[1]);
+    s[2] = (1.0 - c[2])*(1.0 + c[2]);
+
+    printf("cscheck sample sin^2Theta lo/mi/hi   %f %f %f \n",
+           s[0],s[1],s[2]
+         );   
+ */
+
+}
 
 

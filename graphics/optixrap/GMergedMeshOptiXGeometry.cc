@@ -71,12 +71,14 @@ optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)
 
     optix::TextureSampler sampler = makeTextureSampler(wbuf);
     optix::float3 domain = getDomain();
+    optix::float3 domain_reciprocal = getDomainReciprocal();
 
     //material["wavelength_texture"]->setTextureSampler(sampler);
     //material["wavelength_domain"]->setFloat(domain); 
 
     m_context["wavelength_texture"]->setTextureSampler(sampler);
     m_context["wavelength_domain"]->setFloat(domain); 
+    m_context["wavelength_domain_reciprocal"]->setFloat(domain_reciprocal); 
     // lodge in context as needed from raygen program for generation 
     // as well as closest hit 
 
@@ -87,6 +89,14 @@ optix::float3 GMergedMeshOptiXGeometry::getDomain()
 {
     return optix::make_float3(GSubstanceLib::DOMAIN_LOW, GSubstanceLib::DOMAIN_HIGH, GSubstanceLib::DOMAIN_STEP); 
 }
+
+optix::float3 GMergedMeshOptiXGeometry::getDomainReciprocal()
+{
+    // only endpoints used for sampling, not the step 
+    return optix::make_float3(1./GSubstanceLib::DOMAIN_LOW, 1./GSubstanceLib::DOMAIN_HIGH, 0.f); // not flipping order 
+}
+
+
 
 optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMergedMesh* mergedmesh)
 {
