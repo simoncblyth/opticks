@@ -371,7 +371,7 @@ void GSubstanceLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GPrope
     if(isScintillator(name))   // LiquidScintillator,GdDopedLS
     {
         GProperty<float>* p_intensity = getPropertyOrDefault(pmap, intensity);
-        p_reemission_cdf = GProperty<float>::createReciprocalCDF( p_intensity );
+        p_reemission_cdf = p_intensity->createReciprocalCDF();
     }
     else
     {
@@ -523,7 +523,7 @@ void GSubstanceLib::collectReemissionProp(GPropertyMap<float>* pmap)
                      printf("GSubstanceLib::collectReemissionProp %s : %lu props \n", name.c_str(), vkeys.size() );
                      reemission_prop = prop ;
                      reemission_prop_digest = new std::string(prop->digest()) ;  // hmm maybe prop should cache their digests
-                     reemission_prop->SummaryH(lkey.c_str(), 5 );            
+                     reemission_prop->Summary(lkey.c_str(), 5 );            
                 }
                 else
                 {

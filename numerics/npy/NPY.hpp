@@ -22,6 +22,8 @@ class NPY {
 
    public:
        static std::string path(const char* typ, const char* tag);
+       static NPY* debugload(const char* path);
+       static NPY* load(const char* path);
        static NPY* load(const char* typ, const char* tag);
        static NPY* make_vec3(float* m2w, unsigned int npo=100);  
        static NPY* make_vec4(unsigned int npo, float value=0.f);
@@ -59,6 +61,7 @@ class NPY {
 
        void         setBufferId(int buffer_id);
        std::string description(const char* msg);
+       void Summary(const char* msg="NPY::Summary");
 
    protected:
        unsigned int       m_dim ; 
@@ -126,11 +129,13 @@ inline void* NPY::getBytes()
 }
 
 
+
+
+
 inline unsigned int NPY::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
 {
     return sizeof(float)*getFloatIndex(i,j,k);
 }
-
 inline unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(m_dim == 3 ); 
@@ -165,6 +170,11 @@ inline void NPY::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigne
 }
 
 
+inline void NPY::Summary(const char* msg)
+{
+    std::string desc = description(msg);
+    std::cout << desc << std::endl ; 
+}   
 
 
 inline std::string NPY::description(const char* msg)
@@ -223,14 +233,44 @@ inline std::string NPY::path(const char* typ, const char* tag)
 
 
 
-
-inline NPY* NPY::load(const char* typ, const char* tag)
+inline NPY* NPY::debugload(const char* path)
 {
-    std::string path = NPY::path(typ, tag);
+    std::vector<int> shape ;
+    std::vector<float> data ;
+    std::string metadata = "{}";
+
+    printf("NPY::debugload [%s]\n", path);
+
+    NPY* npy = NULL ;
+    aoba::LoadArrayFromNumpy<float>(path, shape, data );
+    npy = new NPY(shape,data,metadata) ;
+
+    return npy ;
+}
+
+
+
+inline NPY* NPY::load(const char* path)
+{
+   /*
+
+    Currently need to save as np.float32 for this to manage to load, do so with::
+
+    In [3]: a.dtype
+    Out[3]: dtype('float64')
+
+    In [4]: b = np.array(a, dtype=np.float32)
+
+    np.save("/tmp/slowcomponent.npy", b ) 
+
+   */
+
 
     std::vector<int> shape ;
     std::vector<float> data ;
     std::string metadata = "{}";
+
+    printf("NPY::load [%s]\n", path);
 
     NPY* npy = NULL ;
     try 
@@ -240,11 +280,17 @@ inline NPY* NPY::load(const char* typ, const char* tag)
     } 
     catch(const std::runtime_error& error)
     {
-        std::cout << "NPY::load failed " << std::endl ; 
+        std::cout << "NPY::load failed for path [" << path << "]" <<  std::endl ; 
     }
 
-
     return npy ;
+}
+
+
+inline NPY* NPY::load(const char* typ, const char* tag)
+{
+    std::string path = NPY::path(typ, tag);
+    return load(path.c_str());
 }
 
 

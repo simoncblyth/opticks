@@ -11,6 +11,7 @@
 
 #include "GDomain.hh"
 #include "GAry.hh"
+#include "NPY.hpp"
 
 
 template <class T>
@@ -20,6 +21,38 @@ public:
    static const char* VALUE_FMT ;
    char* digest();   
    std::string getDigestString();
+
+
+   static GProperty<T>* load(const char* path)
+   {
+       NPY* npy = NPY::load(path);
+       npy->Summary();
+
+       assert(npy->getDimensions() == 2);
+
+       unsigned int ni = npy->getShape(0);
+       unsigned int nj = npy->getShape(1);
+       assert(nj == 2);
+       T* data = npy->getFloats();
+
+       GAry<T>* doms = new GAry<T>(ni);
+       GAry<T>* vals = new GAry<T>(ni);
+
+       for(unsigned int i=0 ; i < ni ; i++){
+       for(unsigned int j=0 ; j < nj ; j++)
+       {
+            unsigned int index = i*nj + j ;
+            T v = data[index];
+            switch(j)
+            {
+               case 0:doms->setValue(i, v); break ; 
+               case 1:vals->setValue(i, v); break ;
+            }      
+            //printf(" i %u j %u index %u  val %10.3f \n", i,j, index, v ); 
+       }
+       }
+       return new GProperty<T>(vals, doms) ; 
+   }
 
 
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length ) 
@@ -36,6 +69,11 @@ public:
        return new GProperty<T>( vals, doms );
    }
 
+   GProperty(GProperty<T>* other) : m_length(other->getLength())
+   {
+       m_values = new GAry<T>(other->getValues());
+       m_domain = new GAry<T>(other->getDomain());
+   }
 
    GProperty(T* values, T* domain, unsigned int length ) : m_length(length)
    {
@@ -44,6 +82,7 @@ public:
        m_domain = new GAry<T>(length, domain);
    }
 
+   // stealing ctor, use with newly allocated GAry<T> 
    GProperty( GAry<T>* vals, GAry<T>* dom )  : m_values(vals), m_domain(dom) 
    {
        assert(vals->getLength() == dom->getLength());
@@ -68,15 +107,24 @@ public:
  
 
 public:
-   static GProperty<T>* createCDF(GProperty<T>* intensity);
-   static GProperty<T>* createReciprocalCDF(GProperty<T>* intensity);
+   GAry<T>* getValues()
+   {
+       return m_values ; 
+   }
+   GAry<T>* getDomain()
+   {
+       return m_domain ; 
+   }
+
+   GProperty<T>* createCDF();
+   GProperty<T>* createReciprocalCDF();
 
 public:
    GProperty<T>* createInterpolatedProperty(GDomain<T>* domain);
 
 public:
-   void Summary(const char* msg, unsigned int nline=5);
-   void SummaryH(const char* msg, unsigned int imod=5 );
+   void SummaryV(const char* msg, unsigned int nline=5);
+   void Summary(const char* msg, unsigned int imod=5 );
 
 private:
    unsigned int m_length ;
@@ -96,7 +144,7 @@ const char* GProperty<T>::VALUE_FMT = " %10.3f" ;
 
 
 template <typename T>
-void GProperty<T>::Summary(const char* msg, unsigned int nline )
+void GProperty<T>::SummaryV(const char* msg, unsigned int nline )
 {
    if(nline == 0) return ;
    printf("%s : \n", msg );
@@ -114,7 +162,7 @@ void GProperty<T>::Summary(const char* msg, unsigned int nline )
 
 
 template <typename T>
-void GProperty<T>::SummaryH(const char* msg, unsigned int imod )
+void GProperty<T>::Summary(const char* msg, unsigned int imod )
 {
    char* pdig = digest();
    printf("%s : %s : %u \n", msg, pdig, m_length );
@@ -122,6 +170,11 @@ void GProperty<T>::SummaryH(const char* msg, unsigned int imod )
 
    for(unsigned int p=0 ; p < 2 ; p++)
    {
+       switch(p)
+       {
+           case 0:printf("d ");break;
+           case 1:printf("v ");break;
+       }
        for(unsigned int i=0 ; i < m_length ; i++ )
        {
            if( i % imod == 0 )
@@ -179,15 +232,68 @@ T GProperty<T>::getInterpolatedValue(T val)
 }
 
 template <typename T>
-GProperty<T>* GProperty<T>::createCDF(GProperty<T>* dist)
+GProperty<T>* GProperty<T>::createCDF()
 {
-    return dist ; 
+    GAry<T>* x = new GAry<T>(getDomain());  // copy 
+    GAry<T>* cy = getValues()->cumsum();     
+    cy->scale(1./cy->getRight());            // normalise by making RHS 1.
+    return new GProperty<T>( cy, x );        // stealing ctor 
 }
 
+/*
+101 def construct_cdf( xy ):
+102     """
+103     :param xy:
+104 
+105     Creating cumulative density functions needed by chroma, 
+106     eg for generating a wavelengths of reemitted photons.::
+107 
+...
+146     assert len(xy.shape) == 2 and xy.shape[-1] == 2
+147     x,y  = xy[:,0], xy[:,1]
+148     cy = np.cumsum(y)
+149     cdf_y = cy/cy[-1]   # normalize to 1 at RHS
+150     return np.vstack([x,cdf_y]).T
+*/
+
+
+
 template <typename T>
-GProperty<T>* GProperty<T>::createReciprocalCDF(GProperty<T>* dist)
+GProperty<T>* GProperty<T>::createReciprocalCDF()
 {
-    return dist ; 
+
+    bool reciprocal = true ; 
+    GAry<T>* x = getDomain()->reversed(reciprocal);   // 1/nm in reverse order 
+    GAry<T>* y = getValues()->reversed();
+
+    unsigned int imod = x->getLength()/20  ; 
+    T psc = 1000.f ; // presentation scale
+
+    x->Summary("x [domain reversed reciprocal]", imod, psc);
+    y->Summary("y [values reversed]", imod, psc);
+
+    // ymid, xdif, prod have one bin less as need pairs 
+    GAry<T>* ymid = y->mid() ;  
+    ymid->Summary("ymid: y->mid()", imod, psc);
+
+    delete y ;
+ 
+    GAry<T>* xdif = x->diff() ;  
+    xdif->Summary("xdif: x->diff()", imod, psc);
+    GAry<T>* prod = GAry<T>::product( ymid, xdif );
+    prod->Summary("prod:  ymid*xdif ", imod, psc);
+    delete ymid ;
+    delete xdif ;
+
+    unsigned int offzero = 1 ;               // gives one extra zero bin
+    GAry<T>* cy = prod->cumsum(offzero);
+    cy->Summary("cy: prod->cumsum(1)  ", imod, psc);
+    delete prod ; 
+
+    cy->scale(1./cy->getRight());            // normalise by making RHS 1.
+    cy->Summary("cy: prod->cumsum(1) scaled  ", imod, psc);
+
+    return new GProperty<T>( cy, x );        // stealing ctor 
 }
 
 //  translation of NumPy based env/geant4/geometry/collada/collada_to_chroma.py::construct_cdf_energywise

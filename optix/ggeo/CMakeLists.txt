@@ -12,11 +12,13 @@ include(EnvBuildOptions)
 
 
 find_package(Boost REQUIRED)
+find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS} 
+   ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
 )
 

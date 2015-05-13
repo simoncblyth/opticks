@@ -26,6 +26,15 @@ void test_load()
     std::cout << npy->description("npy") << std::endl ; 
 }
 
+void test_load_path()
+{
+    const char* path = "/tmp/slowcomponent.npy" ;
+    //const char* path = "/usr/local/env/cerenkov/1.npy" ;
+    NPY* npy = NPY::debugload(path);
+    if(npy) npy->Summary(path);
+}
+
+
 void test_load_missing()
 {
     NPY* npy = NPY::load("cerenkov","missing");
@@ -82,7 +91,8 @@ int main()
     //test_g4stepnpy();
     //test_getData();
 
-    test_getUSum();
+    //test_getUSum();
+    test_load_path();
 
     return 0 ;
 }
