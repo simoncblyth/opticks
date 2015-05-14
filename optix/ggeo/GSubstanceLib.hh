@@ -85,6 +85,7 @@ class GSubstanceLib {
       bool isScintillator(std::string& matShortName);
       bool isReemissionKey(std::string& lkey);
       void collectReemissionProp(GPropertyMap<float>* pmap);
+      GProperty<float>* constructReemissionCDF(GPropertyMap<float>* pmap);
   public:
       // primary methods : querying 
       const char* getLocalKey(const char* dkey); // map standard -> local keys 

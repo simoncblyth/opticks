@@ -4,6 +4,7 @@
 #include "GPropertyMap.hh"
 #include "GBuffer.hh"
 #include "GEnums.hh"
+#include "md5digest.hh"
 
 #include <string>
 #include <map>
@@ -361,31 +362,31 @@ void GSubstanceLib::standardizeMaterialProperties(GPropertyMap<float>* pstd, GPr
     pstd->addProperty(absorption_length,getPropertyOrDefault( pmap, absorption_length ), prefix);
     pstd->addProperty(scattering_length,getPropertyOrDefault( pmap, scattering_length ), prefix);
     pstd->addProperty(reemission_prob  ,getPropertyOrDefault( pmap, reemission_prob ), prefix);
+}
+
+
+
+GProperty<float>* GSubstanceLib::constructReemissionCDF(GPropertyMap<float>* pmap)
+{
+    std::string name = pmap->getShortNameString();
+    if(!isScintillator(name)) return getDefaultProperty( reemission_cdf ) ;
+
+    // LiquidScintillator,GdDopedLS
+    GProperty<float>* pslow = getProperty(pmap, slow_component);
+    GProperty<float>* pfast = getProperty(pmap, fast_component);
+    float mxdiff = GProperty<float>::maxdiff(pslow, pfast);
+    //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
+    assert(mxdiff < 1e-6 );
+
+    GProperty<float>* p_reemission_cdf = pslow->createReciprocalCDF();
+    return p_reemission_cdf ;
 
 }
 
+
 void GSubstanceLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
 {
-    std::string name = pmap->getShortNameString();
-
-    GProperty<float>* p_reemission_cdf(NULL) ;
-
-    if(isScintillator(name))   // LiquidScintillator,GdDopedLS
-    {
-        GProperty<float>* pslow = getProperty(pmap, slow_component);
-        GProperty<float>* pfast = getProperty(pmap, fast_component);
-        float mxdiff = GProperty<float>::maxdiff(pslow, pfast);
-       
-        //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
-        assert(mxdiff < 1e-6 );
-        p_reemission_cdf = pslow->createReciprocalCDF();
-    }
-    else
-    {
-        p_reemission_cdf = getDefaultProperty( reemission_cdf ) ;
-    }
-
-    pstd->addProperty(reemission_cdf   , p_reemission_cdf                            , prefix);
+    pstd->addProperty(reemission_cdf   , constructReemissionCDF( pmap )              , prefix);
     pstd->addProperty(extra_y          , getPropertyOrDefault( pmap, extra_y )       , prefix);
     pstd->addProperty(extra_z          , getPropertyOrDefault( pmap, extra_z )       , prefix);
     pstd->addProperty(extra_w          , getPropertyOrDefault( pmap, extra_w )       , prefix);

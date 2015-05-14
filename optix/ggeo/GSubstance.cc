@@ -1,5 +1,6 @@
 #include "GSubstance.hh"
 #include "GPropertyMap.hh"
+#include "md5digest.hh"
 
 #include "stdio.h"
 #include "limits.h"

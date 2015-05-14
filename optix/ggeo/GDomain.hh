@@ -1,12 +1,4 @@
-#ifndef GDOMAIN_H
-#define GDOMAIN_H
-
-#include "assert.h"
-
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
+#pragma once
 
 template <class T>
 class GDomain {
@@ -19,7 +11,7 @@ class GDomain {
      T getStep(){ return m_step ; }
   public: 
      bool isEqual(GDomain<T>* other); 
-     size_t getLength();   
+     unsigned int getLength();   
      T* getValues();   
 
   private:
@@ -29,44 +21,4 @@ class GDomain {
 };
 
 
-template <typename T>
-bool GDomain<T>::isEqual(GDomain<T>* other)
-{
-    return 
-       getLow() == other->getLow()   &&
-       getHigh() == other->getHigh() &&
-       getStep() == other->getStep() ;
-}
 
-
-template <typename T>
-size_t GDomain<T>::getLength()
-{
-   T x = m_low ; 
-
-   unsigned int n = 0 ;
-   while( x <= m_high )
-   {
-      x += m_step ;
-      n++ ; 
-   }
-   assert(n < 500); // sanity check 
-
-   return n+1 ;
-} 
-
-
-template <typename T>
-T* GDomain<T>::getValues()
-{
-   unsigned int length = getLength(); 
-   T* domain = new T[length];
-   for(unsigned int i=0 ; i < length ; i++)
-   {
-      domain[i] = m_low + i*m_step ; 
-   }
-   return domain ;
-}
-
-
-#endif
