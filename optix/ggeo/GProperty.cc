@@ -13,12 +13,19 @@
 
 #include "NPY.hpp"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 template <typename T>
 const char* GProperty<T>::DOMAIN_FMT = " %10.3f" ; 
 
 template <typename T>
 const char* GProperty<T>::VALUE_FMT = " %10.3f" ; 
+
+
+ 
 
 
 template <typename T>
@@ -149,6 +156,34 @@ unsigned int GProperty<T>::getLength()
 }
 
 
+
+template <typename T>
+void GProperty<T>::save(const char* path)
+{
+    std::string metadata = "{}" ; 
+    std::vector<int> shape ; 
+    unsigned int len = getLength();
+    shape.push_back(len);
+    shape.push_back(2);
+
+    std::vector<float> data ; 
+    for(unsigned int i=0 ; i < len ; i++ ){ 
+    for(unsigned int j=0 ; j < 2 ; j++ )
+    { 
+       switch(j)
+       {
+           case 0:data.push_back(m_domain->getValue(i));break;
+           case 1:data.push_back(m_values->getValue(i));break;
+       }
+    }
+    }
+    LOG(info) << "GProperty::save 2d array of length " << len << " to : " << path ;  
+    NPY npy(shape, data, metadata);
+    npy.save(path);
+}
+
+
+
 template <typename T>
 void GProperty<T>::SummaryV(const char* msg, unsigned int nline )
 {
@@ -238,8 +273,9 @@ T GProperty<T>::getInterpolatedValue(T val)
 }
 
 template <typename T>
-GProperty<T>* GProperty<T>::createCDF()
+GProperty<T>* GProperty<T>::createCDFTrivially()
 {
+   // this makes assumptions like equal bins 
     GAry<T>* x = new GAry<T>(getDomain());  // copy 
     GAry<T>* cy = getValues()->cumsum();     
     cy->scale(1./cy->getRight());            // normalise by making RHS 1.
@@ -265,11 +301,20 @@ GProperty<T>* GProperty<T>::createCDF()
 
 
 template <typename T>
-GProperty<T>* GProperty<T>::createReciprocalCDF()
+GProperty<T>* GProperty<T>::createCDF(bool reciprocal_domain)
 {
-    bool reciprocal = true ; 
-    GAry<T>* x = getDomain()->reversed(reciprocal);   // 1/nm in reverse order 
-    GAry<T>* y = getValues()->reversed();
+    GAry<T> *x, *y ;
+
+    if(reciprocal_domain)
+    {
+        x = getDomain()->reversed(true);   // 1/nm in reverse order 
+        y = getValues()->reversed();
+    }
+    else
+    {
+         x = getDomain();
+         y = getValues();
+    }
 
     // numerical integration of input distribution
     // * ymid, xdif, prod have one bin less as pair based 
@@ -335,6 +380,124 @@ GProperty<T>* GProperty<T>::createReciprocalCDF()
 181     return bcdf
 */
 
+
+
+template <typename T>
+GProperty<T>* GProperty<T>::createInverseCDF(unsigned int n)
+{
+    // normally CDF values are in range 0:1 
+    // with the domain being specific to the case
+    //
+    // InverseCDF domain is here the range 0:1 
+    //
+    // the objective is to avoid having to do a binary search
+    // to find the bin, should be able to do a direct lookup
+    //
+    if(n == 0) n = getLength();
+    GAry<T>* domain = GAry<T>::linspace(n, 0, 1 );
+    GAry<T>* vals   = sampleCDF(domain);
+    return new GProperty<T>( vals, domain ); 
+}
+
+
+template <typename T>
+GAry<T>* GProperty<T>::lookupCDF(unsigned int n)
+{
+    GAry<T>* ua = GAry<T>::urandom(n); 
+    return lookupCDF(ua);
+}
+
+template <typename T>
+GAry<T>* GProperty<T>::lookupCDF(GAry<T>* ua)
+{
+    unsigned int len = ua->getLength();
+    T* u = ua->getValues();
+    GAry<T>* sample = new GAry<T>(len); 
+    for(unsigned int i=0 ; i < len ; i++)
+    {
+        sample->setValue(i,  m_values->getValueLookup(u[i]));
+    }
+    return sample ; 
+}
+
+
+template <typename T>
+GAry<T>* GProperty<T>::sampleCDF(unsigned int n)
+{
+    GAry<T>* ua = GAry<T>::urandom(n); 
+    return sampleCDF(ua);
+}
+ 
+template <typename T>
+GAry<T>* GProperty<T>::sampleCDF(GAry<T>* ua)
+{
+    unsigned int len = ua->getLength();
+    T* u = ua->getValues();
+    GAry<T>* sample = new GAry<T>(len); 
+    for(unsigned int i=0 ; i < len ; i++)
+    {
+         T f = m_values->fractional_binary_search(u[i]);
+         T d = m_domain->getValueFractional(f);
+         sample->setValue(i,  d );
+    }
+    return sample ; 
+}
+
+template <typename T>
+GAry<T>* GProperty<T>::sampleCDFDev(unsigned int n)
+{
+    GAry<T>* ua = GAry<T>::urandom(n); 
+    GAry<T>* sample = new GAry<T>(n); 
+
+    T* values = m_values->getValues();
+
+    for(unsigned int i=0 ; i < ua->getLength() ; i++)
+    {
+         T u = ua->getValue(i); 
+         T f = m_values->fractional_binary_search(u);
+
+         {
+             unsigned int idx2 = m_values->sample_cdf(u);
+             unsigned int idx = m_values->binary_search(u);
+             assert(idx == idx2);
+             unsigned int fi(f);
+             //assert(fi == idx );
+
+
+             T ulo    = values[idx];
+             T uhi    = values[idx+1];
+             T udelta = values[idx+1] - values[idx] ;
+             T uoff   = u - values[idx] ;
+             T ufrac  = (u - values[idx])/(values[idx+1]-values[idx]);
+             T ff = T(idx) + ufrac ; 
+
+             if(fi != idx)  // a few with ufrac almost 1 dont match
+             printf("i %u  idx %u      ulo %15.6f u %15.6f uhi %15.6f udelta %15.6f uoff %15.6f ufrac %15.6f f %15.6f ff %15.6f  \n", i, idx, ulo, u, uhi, udelta, uoff, ufrac, f, ff  );
+
+         }
+
+
+         // NB sampling depends on the values only up to here, 
+         //    domain only comes in at end to convert the fractional value index 
+         //    (sort of bin number) into a domain value
+
+         /*
+         unsigned int idx(f);
+         T dlo = m_domain->getValue(idx);
+         T dhi = m_domain->getValue(idx+1);
+         T frac(f - T(idx));
+         T dva = dlo + (dhi - dlo)*frac ;
+         */
+
+         T dva = m_domain->getValueFractional( f );
+
+
+         //  TODO: check fractional bin  
+         sample->setValue(i,  dva  );
+    }
+    delete ua ; 
+    return sample ; 
+}
 
 
 

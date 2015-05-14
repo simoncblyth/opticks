@@ -26,6 +26,15 @@ void test_load()
     std::cout << npy->description("npy") << std::endl ; 
 }
 
+void test_save_path()
+{
+    NPY* npy = NPY::load("cerenkov","1");
+    std::cout << npy->description("npy") << std::endl ; 
+    npy->save("/tmp/test_save_path.npy");
+}
+
+
+
 void test_load_path()
 {
     const char* path = "/tmp/slowcomponent.npy" ;
@@ -92,7 +101,8 @@ int main()
     //test_getData();
 
     //test_getUSum();
-    test_load_path();
+    //test_load_path();
+    test_save_path();
 
     return 0 ;
 }

@@ -33,6 +33,7 @@ add_definitions(
 
 add_library( ${name}  SHARED
     NumpyEvt.cpp
+    NPY.cpp
     VecNPY.cpp
     MultiVecNPY.cpp
     GLMPrint.cpp

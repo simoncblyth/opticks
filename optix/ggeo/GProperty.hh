@@ -23,6 +23,7 @@ public:
    virtual ~GProperty();
 
 public:
+   void save(const char* path);
    T getValue(unsigned int index);
    T getDomain(unsigned int index);
    T getInterpolatedValue(T val);
@@ -33,8 +34,24 @@ public:
    std::string getDigestString();
 
 public:
-   GProperty<T>* createCDF();
-   GProperty<T>* createReciprocalCDF();
+   // **lookup** here means that the input values are already within the domain 
+   // this is appropriate for InverseCDF where the domain is 0:1 and 
+   // the input values are uniform randoms within 0:1  
+   //
+   GAry<T>*      lookupCDF(GAry<T>* uvals);
+   GAry<T>*      lookupCDF(unsigned int n);
+
+   // **sample** means that must do binary values search to locate relevant index
+   // this is appropriate for CDF where domain is arbitrary and values 
+   // range from 0:1 the input being uniform randoms within 0:1
+   //  
+   GAry<T>*      sampleCDF(GAry<T>* uvals);
+   GAry<T>*      sampleCDF(unsigned int n);
+
+   GAry<T>*      sampleCDFDev(unsigned int n);
+   GProperty<T>* createCDFTrivially();
+   GProperty<T>* createCDF(bool reciprocal_domain=false);
+   GProperty<T>* createInverseCDF(unsigned int n=0);
    GProperty<T>* createInterpolatedProperty(GDomain<T>* domain);
 
 public:

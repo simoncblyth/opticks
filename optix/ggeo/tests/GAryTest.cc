@@ -11,7 +11,8 @@ int main(int argc, char** argv)
 
     GAry<float>* u = GAry<float>::urandom();
     u->Summary("u");
-
+    u->save("/tmp/urandom.npy");
+    
 
     return 0 ;
 }

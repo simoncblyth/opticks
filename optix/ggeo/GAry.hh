@@ -10,6 +10,8 @@ public:
    static GAry<T>* subtract(GAry<T>* a, GAry<T>* b);
    static GAry<T>* from_constant(unsigned int length, T value );
    static GAry<T>* ramp(unsigned int length, T low, T step );
+   static GAry<T>* linspace(T num, T start=0, T stop=1);
+   static T            step(T num, T start=0, T stop=1);
    static GAry<T>* np_interp(GAry<T>* xi, GAry<T>* xp, GAry<T>* fp );
    static T np_interp(const T z, GAry<T>* xp, GAry<T>* fp );
 
@@ -23,20 +25,35 @@ public:
    GAry<T>* diff(); // domain bin widths
    GAry<T>* mid();  // average of values at bin edges, ie linear approximation of mid bin value 
    GAry<T>* reversed(bool reciprocal=false);
+   void save(const char* path);
 
 public: 
    T getLeft(){                              return m_values[0] ; }
    T getRight(){                             return m_values[m_length-1] ; }
    T getValue(unsigned int index){           return m_values[index] ;}
-   void setValue(unsigned int index, T val){ m_values[index] = val ;}
    T* getValues(){                           return m_values ; }
    unsigned int getLength(){                 return m_length ; }
    unsigned int getNbytes(){                 return m_length*sizeof(T) ; }
 
 public: 
-   void Summary(const char* msg, unsigned int imod=1, T presentation_scale=1.0);
+   T min(unsigned int& idx); 
+   T max(unsigned int& idx); 
+   T getValueFractional(T findex); // fractional bin
+   T getValueLookup(T u);          // from u(0:1) to fractional bin to values
+
+public: 
+   void setValue(unsigned int index, T val){ m_values[index] = val ;}
+
+public: 
+   void Summary(const char* msg="GAry::Summary", unsigned int imod=1, T presentation_scale=1.0);
    void scale(T sc);
-   int binary_search(T key);
+   void reciprocate();
+
+   // find the index of the value closest to the random draw u on the low side
+   int binary_search(T u);
+   T fractional_binary_search(T u);  // like binary search but provides the fractional bin too
+
+   unsigned int sample_cdf(T u);
 
 private:
     T* m_values ; 

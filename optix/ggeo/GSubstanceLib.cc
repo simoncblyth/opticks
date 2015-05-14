@@ -378,7 +378,8 @@ GProperty<float>* GSubstanceLib::constructReemissionCDF(GPropertyMap<float>* pma
     //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
     assert(mxdiff < 1e-6 );
 
-    GProperty<float>* p_reemission_cdf = pslow->createReciprocalCDF();
+    bool reciprocal_domain = true ; 
+    GProperty<float>* p_reemission_cdf = pslow->createCDF(reciprocal_domain);
     return p_reemission_cdf ;
 
 }

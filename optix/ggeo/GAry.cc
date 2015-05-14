@@ -4,10 +4,17 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "float.h"
+#include <vector>
+#include "NPY.hpp"
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
 
 
 template <typename T>
@@ -218,6 +225,32 @@ GAry<T>* GAry<T>::ramp(unsigned int length, T low, T step )
 } 
 
 
+template <typename T>
+T GAry<T>::step(T num, T start, T stop)
+{
+    return (stop - start)/(num - 1) ; 
+}
+
+template <typename T>
+GAry<T>* GAry<T>::linspace(T num, T start, T stop)
+{
+   /*
+In [11]: np.linspace(0,1,10)
+Out[11]: 
+array([ 0.   ,  0.111,  0.222,  0.333,  0.444,  0.556,  0.667,  0.778,
+        0.889,  1.   ])
+
+In [12]: np.linspace(0,1,11)
+Out[12]: array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+
+   */
+    T step_ = step(num, start, stop);
+    GAry<T>* ary = new GAry<T>( num, NULL );
+    T* vals = ary->getValues();
+    for(unsigned int i=0 ; i < num ; i++) vals[i] = start + step_*i ;  
+    return ary ;
+} 
+
 
 
 
@@ -231,7 +264,6 @@ GAry<T>::GAry(GAry<T>* other) : m_length(other->getLength())
 template <typename T>
 GAry<T>::GAry(unsigned int length, T* values) : m_length(length)
 {
-    assert(length < 1000); //sanity check
     m_values = new T[m_length];
     if(values)
     {
@@ -279,9 +311,65 @@ template <typename T>
 void GAry<T>::Summary(const char* msg, unsigned int imod, T presentation_scale)
 {
     printf("%s length %u \n", msg, m_length);
-    for(unsigned int i=0 ; i < m_length ; i++ ) if(i%imod == 0) printf(" %10.3f ", getValue(i)*presentation_scale);
-    printf("\n");
+
+    if(m_length < 100)
+    {
+        for(unsigned int i=0 ; i < m_length ; i++ ) if(i%imod == 0) printf(" %10.3f ", getValue(i)*presentation_scale);
+        printf("\n");
+    }
+    else
+    {
+        for(unsigned int i=0 ; i < m_length ; i++ ) 
+        {
+            if( i < 10 || i > m_length - 10 )
+            {
+                printf(" %10.3f ", getValue(i)*presentation_scale);
+            } 
+            else if ( i == 10 )
+            {
+                printf(" ... ");
+            }
+        }
+        printf("\n");
+   }
+
+    T rng[2] ;
+    unsigned int idx[2] ;
+    rng[0] = min(idx[0]);
+    rng[1] = max(idx[1]);
+
+    printf("mi/mx idx %u %u  range %15.5f %15.5f  1/range %15.5f %15.5f \n", idx[0], idx[1], rng[0], rng[1], 1./rng[0], 1./rng[1] );
+
 } 
+
+
+template <typename T>
+T GAry<T>::getValueFractional(T findex)
+{
+    unsigned int idx(findex);
+    T dva ; 
+
+    if(idx + 1 < m_length)
+    {
+       T frac(findex - T(idx));
+       dva = m_values[idx]*(1-frac) + m_values[idx+1]*frac ;
+    }
+    else
+    {
+       dva = m_values[m_length-1]; 
+    } 
+    return dva ; 
+}
+
+template <typename T>
+T GAry<T>::getValueLookup(T u)
+{
+    // convert u (0:1) into fractional bin, and use that to lookup values
+    assert( u <= 1. && u >= 0. );
+    T findex = u * (m_length - 1) ; 
+    return getValueFractional(findex);
+}
+
 
 
 template <typename T>
@@ -291,8 +379,21 @@ void GAry<T>::scale(T sc)
 }  
 
 template <typename T>
+void GAry<T>::reciprocate()
+{
+    T one(1);
+    for(unsigned int i=0 ; i < m_length ; i++ ) m_values[i] = one/m_values[i] ; 
+}  
+
+
+
+
+
+template <typename T>
 int GAry<T>::binary_search(T key)
 {
+   // NB this is used by np_interp 
+
     if(key > m_values[m_length-1])
     {
         return m_length ;
@@ -313,8 +414,101 @@ int GAry<T>::binary_search(T key)
             imax = imid;
         }
     }
+
+    assert( imin == imax );
+    //if(imin != imax ) printf("GAry<T>::binary_search key %10.5f  imin %u imax %u len %u \n", key, imin, imax, m_length );
+
     return imin - 1; 
 } 
+
+
+template <typename T>
+T GAry<T>::fractional_binary_search(T u)
+{
+    // the advantage in dealing in fractional indices
+    // is can delay resorting to using domain information for a bit longer
+
+    int idx = binary_search(u);
+    T frac  = (u - m_values[idx])/(m_values[idx+1]-m_values[idx]);
+    return T(idx) + frac ; 
+}
+
+
+
+template <typename T>
+unsigned int GAry<T>::sample_cdf(T u)
+{
+    // other than edge cases, this gives same results as binary_search
+
+    int lower = 0;
+    int upper = m_length - 1;
+
+    while(lower < upper-1)
+    {   
+        int half = (lower + upper) / 2;
+        if (u < m_values[half])
+        {
+            upper = half;
+        }
+        else 
+        {
+            lower = half;
+        }
+    }   
+
+    assert( lower == upper - 1 );
+    return lower ; 
+}
+
+
+template <typename T>
+T GAry<T>::min(unsigned int& idx)
+{
+   T mi(FLT_MAX);
+   for(unsigned int i=0 ; i < m_length ; i++ )
+   {
+       T v = m_values[i];
+       if(v < mi)
+       {
+           mi = v ; 
+           idx = i ;
+       }
+   }
+   return mi ; 
+}
+
+template <typename T>
+T GAry<T>::max(unsigned int& idx)
+{
+   T mx(-FLT_MAX);
+   for(unsigned int i=0 ; i < m_length ; i++ )
+   {
+       T v = m_values[i];
+       if(v > mx)
+       {
+           mx = v ; 
+           idx = i ;
+       }
+   }
+   return mx ; 
+}
+
+
+template <typename T>
+void GAry<T>::save(const char* path)
+{
+    std::vector<int> shape ; 
+    shape.push_back(m_length);
+
+    std::string metadata = "{}" ; 
+
+    std::vector<float> data ; 
+    for(unsigned int i=0 ; i < m_length ; i++ ) data.push_back(m_values[i]) ;
+
+    LOG(info) << "GAry::save 1d array of length " << m_length << " to : " << path ;  
+    NPY npy(shape, data, metadata);
+    npy.save(path);
+}
 
 
 
@@ -329,7 +523,7 @@ head of the implementation.
 */
 
 template class GAry<float>;
-template class GAry<double>;
+template class GAry<double>;   // needs work on NPY for this
 
 
 
