@@ -21,22 +21,34 @@ template <typename T>
 T GAry<T>::np_interp(const T z, GAry<T>* xp, GAry<T>* fp )
 {
     // input domain and values
+    //   
+    //  :param z:   "x" domain value for which the interpolated "y" value is to be obtained
+    //  :param xp : x-coordinates of the data points, must be increasing.
+    //  :param fp : y-coordinates of the data points, same length as `xp`.
+    //  
+    //  :return:   y value (ie linear interpolation of fp values) corresponding to the ordinate supplied 
+    //   
+
     T* dx = xp->getValues();   
+
     T* dy = fp->getValues();   
     T left = fp->getLeft();
     T right = fp->getRight();
 
+    unsigned int len = xp->getLength();
+    assert(dy[len-1] == right );
+
     T ival ;
-    int j = xp->binary_search(z);
+    int j = xp->binary_search(z);  // find low side domain index corresponding to domain value z
     if(j == -1)
     {
         ival = left;
     }
-    else if(j == xp->getLength() - 1)
+    else if(j == len - 1)
     {
-        ival = dy[j];
+        ival = dy[j]; // right 
     }
-    else if(j == xp->getLength() )
+    else if(j == len )
     {
         ival = right;
     }
@@ -128,6 +140,52 @@ GAry<T>* np_reversed(GAry<T>* y, bool reciprocal)
     }
     return ry ;
 }
+
+
+
+template <typename T>
+GAry<T>* np_sliced(GAry<T>* a, int ifr, int ito)
+{
+   /*
+
+In [13]: a = np.linspace(0,1,11)
+
+In [14]: a
+Out[14]: array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+
+In [16]: a[0:-1]
+Out[16]: array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9])
+
+In [17]: a[0:11]
+Out[17]: array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+
+   */
+    unsigned int alen = a->getLength();
+    if(ifr < 0 ) ifr += alen ;   
+    if(ito < 0 ) ito += alen ;   
+    assert(ifr >=0 && ifr <  alen);
+    assert(ito >=0 && ito <= alen);
+
+    unsigned int blen = ito - ifr ;   // py style 0-based one-beyond "ito"
+
+    printf("np_sliced ifr %d ito %d  alen %u blen %u \n", ifr, ito, alen, blen );  
+
+    GAry<T>* b = new GAry<T>(blen); 
+
+    for (unsigned int ia = 0; ia < alen ; ia++)
+    {
+        if( ia >= ifr && ia < ito )
+        {
+            unsigned int ib = ia - ifr ;
+            T val = a->getValue(ia) ; 
+            b->setValue( ib, val );
+        }
+    }     
+    return b ;
+}
+
+
+
 
 
 template <typename T>
@@ -306,11 +364,18 @@ GAry<T>* GAry<T>::reversed(bool reciprocal)
      return np_reversed(this, reciprocal) ; 
 }
 
+template <typename T>
+GAry<T>* GAry<T>::sliced(int ifr, int ito)
+{ 
+     return np_sliced(this, ifr, ito) ; 
+}
+
+
 
 template <typename T>
 void GAry<T>::Summary(const char* msg, unsigned int imod, T presentation_scale)
 {
-    printf("%s length %u \n", msg, m_length);
+    printf("%s length %u  leftzero %u rightzero %u \n", msg, m_length, getLeftZero(), getRightZero() );
 
     if(m_length < 100)
     {
@@ -349,10 +414,10 @@ T GAry<T>::getValueFractional(T findex)
     unsigned int idx(findex);
     T dva ; 
 
-    if(idx + 1 < m_length)
+    if(idx + 1 < m_length )
     {
        T frac(findex - T(idx));
-       dva = m_values[idx]*(1-frac) + m_values[idx+1]*frac ;
+       dva = m_values[idx]*(1.-frac) + m_values[idx+1]*frac ;
     }
     else
     {
@@ -370,6 +435,45 @@ T GAry<T>::getValueLookup(T u)
     return getValueFractional(findex);
 }
 
+template <typename T>
+unsigned int GAry<T>::getLeftZero()
+{
+    // when the values start with a string of zeros, 
+    // return the index of rightmost such zero minus 1, 
+    // otherwise return 0
+
+    T zero(0);
+    int ifr(0);
+    for(unsigned int i=0 ; i < m_length ; i++)
+    {
+        if( m_values[i] == zero ) ifr = i  ;
+        else
+            break ; 
+    }
+
+    return ifr > 0 ? ifr - 1 : 0 ; 
+}
+
+
+template <typename T>
+unsigned int GAry<T>::getRightZero()
+{
+    // when the values end with a string of zeros, 
+    // return the lowest index + 1, 
+    // otherwise return m_length
+
+    T zero(0);
+    int ito(m_length);
+    for(unsigned int i=0 ; i < m_length ; i++)
+    {
+        unsigned int j = m_length - 1 - i ;
+        if( m_values[j] == zero ) ito = j  ;
+        else
+            break ; 
+    }
+    return ito < m_length ? ito + 1 : m_length ; 
+}
+
 
 
 template <typename T>
@@ -385,13 +489,51 @@ void GAry<T>::reciprocate()
     for(unsigned int i=0 ; i < m_length ; i++ ) m_values[i] = one/m_values[i] ; 
 }  
 
+template <typename T>
+int GAry<T>::linear_search(T key)
+{
+    // for checking edge case behaviour of binary_search
+    // expected to return same values as binary_search more slowly
 
-
+    if(key < m_values[0])          
+    {
+        return -1 ;        // indicates "below-lower-bound"
+    }
+    else if(key > m_values[m_length-1]) 
+    {
+        return m_length ;   // indicates "above-upper-bound"
+    }
+    else if(key == m_values[m_length-1])
+    {
+        return m_length - 1 ;   //  at upper bound   
+    }
+    else
+    {
+        for(unsigned int i=0 ; i < m_length - 1 ; ++i )
+        {
+            //   m_values[0] : m_values[1]
+            //   ...
+            //   m_values[m_length-2] : m_values[m_length-1]   
+            //
+            if(key >= m_values[i] && key < m_values[i+1]) return i ;
+        }
+    }  
+    assert(0); // not expected here
+    return -2 ; 
+}
+ 
 
 
 template <typename T>
 int GAry<T>::binary_search(T key)
 {
+   //
+   // :param key: value to be "placed" within the sequence of ascending values
+   // :return: index of the low side value  
+   //
+   //      * normally index is range 0:m_length-1
+   //      * if the key exceeds m_values[m_length-1] m_length is returned, meaning "to the right" 
+   //
    // NB this is used by np_interp 
 
     if(key > m_values[m_length-1])

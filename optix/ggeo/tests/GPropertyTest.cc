@@ -2,22 +2,55 @@
 #include "GProperty.hh"
 #include "assert.h"
 
+/*
+
+   TODO: 
+
+      * tidy up these tests, to make them more comprehensible
+
+      * vary inverseCDF length, to see how few bins can get away with 
+
+      * incorporate inverseCDF into GSubstanceLib texture prep
+        (may need to make separate texture if the standard domain 
+        length is insufficient) 
+
+      * test on GPU generation 
+
+*/
+
+
+typedef GAry<float> A ;
+typedef GProperty<float> P ;
+
+
+void test_createSliced()
+{
+    P* slow = P::load("/tmp/slowcomponent.npy");
+    slow->Summary("slow",20);
+
+    P* sslow = slow->createSliced(2, slow->getLength());
+    sslow->Summary("sslow", 20);
+
+    assert(sslow->getLength() == slow->getLength() - 2);
+}
 
 
 void test_createReciprocalCDF()
 {
-    GProperty<float>* slow = GProperty<float>::load("/tmp/slowcomponent.npy");
-    slow->Summary("slow",20);
-
-    GProperty<float>* pcdf = GProperty<float>::load("/tmp/reemission_cdf.npy");
+    P* pcdf = P::load("/tmp/reemission_cdf.npy");
     pcdf->Summary("pcdf",20);
 
-    bool reciprocal_domain = true ; 
-    GProperty<float>* rcdf = slow->createCDF(reciprocal_domain);
+
+
+    P* slow = P::load("/tmp/slowcomponent.npy");
+    slow->Summary("slow",20);
+
+    P* rrd = slow->createReversedReciprocalDomain();
+    P* rcdf = rrd->createCDF();
     rcdf->Summary("rcdf", 20);
 
     //  maxdiff (rcdf - pcdf)*1e9 :   596.0464
-    float mx = GProperty<float>::maxdiff( rcdf, pcdf );
+    float mx = P::maxdiff( rcdf, pcdf );
     assert(mx < 1e-6) ; 
     printf("maxdiff (rcdf - pcdf)*1e9 : %10.4f\n", mx*1e9 );
 
@@ -29,58 +62,20 @@ void test_createReciprocalCDF()
 }
 
 
-
-void test_sampling_0()
+void test_traditional_remission_cdf_sampling()
 {
-    GProperty<float>* pcdf = GProperty<float>::load("/tmp/reemission_cdf.npy");
-    pcdf->Summary("pcdf",20);
-
-    GAry<float>* vcdf = pcdf->getValues();
-    GAry<float>* ua = GAry<float>::urandom(10);
-
-    for(unsigned int i=0 ; i < ua->getLength() ; i++)
-    {
-         float u = ua->getValue(i); 
-         unsigned int a = vcdf->binary_search(u);
-         unsigned int b = vcdf->sample_cdf(u);
-         assert(a == b);
-         //printf("i %u  u %15.6f a %u b %u \n", i, u, a, b );
-    }
-}
-
-void test_sampling()
-{
-    GProperty<float>* pcdf = GProperty<float>::load("/tmp/reemission_cdf.npy");
-    pcdf->Summary("pcdf",20);
-    pcdf->save("/tmp/test_sampling_save.npy");
-
-    GAry<float>* psample = pcdf->sampleCDF(1e6); 
-    psample->Summary("pcdf sample *1e3", 1, 1e3);
-    psample->save("/tmp/psampleCDF.npy");
-
-    /*
-    Use ipython to plot the generated sample using::
-
-       i
-       a = np.load("/tmp/psampleCDF.npy")
-       plt.ion()
-       plt.hist(1/a, bins=100, log=True)
-
-    */
-}
-
-void test_createInverseCDF()
-{
-    GProperty<float>* pcdf = GProperty<float>::load("/tmp/reemission_cdf.npy");  // 79.98 -> 799.89
-    GAry<float>* psample = pcdf->sampleCDF(1e6); 
+    P* pcdf = P::load("/tmp/reemission_cdf.npy");  // 79.98 -> 799.89
+    A* psample = pcdf->sampleCDF(1e6); 
     psample->Summary("psample *1e3", 1, 1e3);
     psample->save("/tmp/psample.npy");
 
    /*
         psample = 1/np.load("/tmp/psample.npy")   199.9 -> 799
+        plt.ion()
         plt.hist(psample, bins=50, log=True)
 
-        Somehow this one avoids the problem, with clean turn on at ~199.9  
+        Somehow this one avoids the zero bin problem, with clean turn on at ~199.9 nm
+        (presumably a detail of the sampling implementation?)
 
         pcdf = np.load("/tmp/reemission_cdf.npy")
         plt.plot(1/pcdf[:,0],pcdf[:,1])     
@@ -104,13 +99,45 @@ void test_createInverseCDF()
 
 
    */
+}
 
 
-    GProperty<float>* slow = GProperty<float>::load("/tmp/slowcomponent.npy");   // 79.99 -> 799.898  odd zero bins at low end
+void test_createInverseCDF()
+{
+    P* slow = P::load("/tmp/slowcomponent.npy");        // 79.99 -> 799.898  three zero values at low nm end
+
+    P* rrd = slow->createReversedReciprocalDomain();    // have to used reciprocal "energywise" domain for G4/NuWa agreement
+
+    P* srrd = rrd->createZeroTrimmed();                 // trim extraneous zero values, leaving at most one zero at either extremity
+
+    assert( srrd->getLength() == rrd->getLength() - 2); // expect to trim 2 values
+
+    P* rcdf = srrd->createCDF();
+
+    P* icdf = rcdf->createInverseCDF(10001);
+
+    icdf->save("/tmp/icdf.npy");
+
+    A* isample = icdf->lookupCDF(1e6);
+
+    isample->Summary("icdf->lookupCDF(1e6)  *1e3", 1, 1e3);
+
+    isample->save("/tmp/isample.npy");
+}
+
+
+
+void test_createInverseCDF_Debug()
+{
+
+    P* slow = P::load("/tmp/slowcomponent.npy");   // 79.99 -> 799.898  odd zero bins at low end
     slow->Summary("slow",20);
 
    /*
      Odd zero bins may be implicated in  80..200 nm bizarreness  
+     YEP, trimming the zero bins allows to create an InverseCDF that yields
+     via lookup an agreeable sample
+
 
         In [31]: np.set_printoptions(precision=16)
 
@@ -126,8 +153,44 @@ void test_createInverseCDF()
    */
 
 
-    bool reciprocal_domain = true ; 
-    GProperty<float>* rcdf = slow->createCDF(reciprocal_domain);
+    P* rrd = slow->createReversedReciprocalDomain();
+    rrd->Summary("rrd", 20);  
+    rrd->save("/tmp/rrd.npy");        
+
+   /*
+
+    Leading zeros become trailing zeroes... 
+
+    In [10]: rrd[:5]
+    Out[10]: 
+    array([[ 0.00125016,  0.        ],
+           [ 0.00166666,  0.001787  ],
+           [ 0.00166945,  0.001729  ],
+           [ 0.00167224,  0.001969  ],
+           [ 0.00167504,  0.002015  ]], dtype=float32)
+
+    In [11]: rrd[-5:]
+    Out[11]: 
+    array([[ 0.00302115,  0.005694  ],
+           [ 0.0030303 ,  0.006073  ],
+           [ 0.00500064,  0.        ],
+           [ 0.0083317 ,  0.        ],
+           [ 0.01250159,  0.        ]], dtype=float32)
+
+
+        plt.plot(1/rrd[:,0], rrd[:,1])      silly top hat 
+
+   */
+
+    //P* srrd = rrd->createSliced(0, -2);  // trim the trailing 2 zero bins
+    P* srrd = rrd->createZeroTrimmed();  // trim the trailing 2 zero bins
+    srrd->Summary("srrd", 20);  
+    srrd->save("/tmp/srrd.npy");        
+    assert( srrd->getLength() == rrd->getLength() - 2);
+
+
+
+    P* rcdf = srrd->createCDF();
     rcdf->Summary("rcdf", 20);
     rcdf->save("/tmp/rcdf.npy");
 
@@ -150,7 +213,7 @@ void test_createInverseCDF()
     */
 
 
-    GProperty<float>* icdf = rcdf->createInverseCDF(10001);
+    P* icdf = rcdf->createInverseCDF(10001);
     icdf->save("/tmp/icdf.npy");
 
     /*
@@ -204,6 +267,9 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
 
        something funny on the low wavelength side  : between 80:200 nm
        seems to be a domain mismatch, some start from 80 and some from 200 ?
+
+       Trimming 2 extreme zero bins fixes this,
+
     */
 
 
@@ -222,8 +288,11 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
 
 int main(int argc, char** argv)
 {
+    //test_createSliced();
     //test_createReciprocalCDF();
     //test_sampling();
+
+    test_traditional_remission_cdf_sampling();
     test_createInverseCDF();
     return 0 ;
 }

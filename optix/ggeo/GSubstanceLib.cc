@@ -372,16 +372,16 @@ GProperty<float>* GSubstanceLib::constructReemissionCDF(GPropertyMap<float>* pma
     if(!isScintillator(name)) return getDefaultProperty( reemission_cdf ) ;
 
     // LiquidScintillator,GdDopedLS
-    GProperty<float>* pslow = getProperty(pmap, slow_component);
-    GProperty<float>* pfast = getProperty(pmap, fast_component);
-    float mxdiff = GProperty<float>::maxdiff(pslow, pfast);
+    GProperty<float>* slow = getProperty(pmap, slow_component);
+    GProperty<float>* fast = getProperty(pmap, fast_component);
+    float mxdiff = GProperty<float>::maxdiff(slow, fast);
     //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
     assert(mxdiff < 1e-6 );
 
-    bool reciprocal_domain = true ; 
-    GProperty<float>* p_reemission_cdf = pslow->createCDF(reciprocal_domain);
-    return p_reemission_cdf ;
-
+    GProperty<float>* rrd = slow->createReversedReciprocalDomain();
+    GProperty<float>* cdf = rrd->createCDF();
+    delete rrd ; 
+    return cdf ;
 }
 
 

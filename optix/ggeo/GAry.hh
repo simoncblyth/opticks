@@ -25,6 +25,7 @@ public:
    GAry<T>* diff(); // domain bin widths
    GAry<T>* mid();  // average of values at bin edges, ie linear approximation of mid bin value 
    GAry<T>* reversed(bool reciprocal=false);
+   GAry<T>* sliced(int ifr, int ito);
    void save(const char* path);
 
 public: 
@@ -40,6 +41,8 @@ public:
    T max(unsigned int& idx); 
    T getValueFractional(T findex); // fractional bin
    T getValueLookup(T u);          // from u(0:1) to fractional bin to values
+   unsigned int getLeftZero();
+   unsigned int getRightZero();
 
 public: 
    void setValue(unsigned int index, T val){ m_values[index] = val ;}
@@ -51,6 +54,7 @@ public:
 
    // find the index of the value closest to the random draw u on the low side
    int binary_search(T u);
+   int linear_search(T u);
    T fractional_binary_search(T u);  // like binary search but provides the fractional bin too
 
    unsigned int sample_cdf(T u);

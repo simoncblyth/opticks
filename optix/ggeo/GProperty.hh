@@ -50,7 +50,10 @@ public:
 
    GAry<T>*      sampleCDFDev(unsigned int n);
    GProperty<T>* createCDFTrivially();
-   GProperty<T>* createCDF(bool reciprocal_domain=false);
+   GProperty<T>* createCDF();
+   GProperty<T>* createReversedReciprocalDomain();
+   GProperty<T>* createSliced(int ifr, int ito);
+   GProperty<T>* createZeroTrimmed();  // trims extremes to create GProperty with at most one zero value entry at either end  
    GProperty<T>* createInverseCDF(unsigned int n=0);
    GProperty<T>* createInterpolatedProperty(GDomain<T>* domain);
 

@@ -25,7 +25,6 @@ template <typename T>
 const char* GProperty<T>::VALUE_FMT = " %10.3f" ; 
 
 
- 
 
 
 template <typename T>
@@ -301,20 +300,38 @@ GProperty<T>* GProperty<T>::createCDFTrivially()
 
 
 template <typename T>
-GProperty<T>* GProperty<T>::createCDF(bool reciprocal_domain)
+GProperty<T>* GProperty<T>::createReversedReciprocalDomain()
 {
-    GAry<T> *x, *y ;
+    bool reciprocal = true ; 
+    GAry<T>* x = getDomain()->reversed(reciprocal);   // 1/nm in reverse order 
+    GAry<T>* y = getValues()->reversed();
+    return new GProperty<T>( y, x );        // stealing ctor 
+}
 
-    if(reciprocal_domain)
-    {
-        x = getDomain()->reversed(true);   // 1/nm in reverse order 
-        y = getValues()->reversed();
-    }
-    else
-    {
-         x = getDomain();
-         y = getValues();
-    }
+template <typename T>
+GProperty<T>* GProperty<T>::createSliced(int ifr, int ito)
+{
+    GAry<T>* x = getDomain()->sliced(ifr, ito); 
+    GAry<T>* y = getValues()->sliced(ifr, ito);
+    return new GProperty<T>( y, x );        // stealing ctor
+}
+
+template <typename T>
+GProperty<T>* GProperty<T>::createZeroTrimmed()
+{
+    GAry<T>* y = getValues();
+    unsigned int ifr = y->getLeftZero();
+    unsigned int ito = y->getRightZero();
+    printf("createZeroTrimmed ifr %u ito %u \n", ifr, ito);
+    return createSliced(ifr, ito);
+}
+
+
+template <typename T>
+GProperty<T>* GProperty<T>::createCDF()
+{
+    GAry<T>* x = getDomain();
+    GAry<T>* y = getValues();
 
     // numerical integration of input distribution
     // * ymid, xdif, prod have one bin less as pair based 
@@ -415,7 +432,8 @@ GAry<T>* GProperty<T>::lookupCDF(GAry<T>* ua)
     GAry<T>* sample = new GAry<T>(len); 
     for(unsigned int i=0 ; i < len ; i++)
     {
-        sample->setValue(i,  m_values->getValueLookup(u[i]));
+        //sample->setValue(i,  m_values->getValueLookup(u[i]));
+        sample->setValue(i,  getInterpolatedValue(u[i]));
     }
     return sample ; 
 }
