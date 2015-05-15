@@ -5,6 +5,7 @@
 #include <vector>
 #include "GVector.hh"
 #include "GDomain.hh"
+#include "GPropertyMap.hh"
 
 class GMesh ; 
 class GSolid ; 
@@ -54,6 +55,9 @@ class GGeo {
         GMaterial* getMaterial(unsigned int index);  
         GSkinSurface* getSkinSurface(unsigned int index);  
         GBorderSurface* getBorderSurface(unsigned int index);  
+
+    public:
+        GPropertyMap<float>* findMaterial(const char* shortname);
 
     public:
         GSolid* getSolid(unsigned int index);  

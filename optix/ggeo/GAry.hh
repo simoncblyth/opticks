@@ -16,6 +16,7 @@ public:
    static T np_interp(const T z, GAry<T>* xp, GAry<T>* fp );
 
 public: 
+   GAry<T>* copy();
    GAry(GAry<T>* other);
    GAry(unsigned int length, T* values=0);
    virtual ~GAry();

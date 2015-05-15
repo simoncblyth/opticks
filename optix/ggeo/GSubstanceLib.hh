@@ -78,6 +78,7 @@ class GSubstanceLib {
                       GPropertyMap<float>* oextra 
                  );
       GBuffer*      createWavelengthBuffer();  
+      GBuffer*      createReemissionBuffer(GPropertyMap<float>* scint);  
       static unsigned int getLine(unsigned int isub, unsigned int ioff);
 
   public:
@@ -86,6 +87,7 @@ class GSubstanceLib {
       bool isReemissionKey(std::string& lkey);
       void collectReemissionProp(GPropertyMap<float>* pmap);
       GProperty<float>* constructReemissionCDF(GPropertyMap<float>* pmap);
+      GProperty<float>* constructInvertedReemissionCDF(GPropertyMap<float>* pmap);
   public:
       // primary methods : querying 
       const char* getLocalKey(const char* dkey); // map standard -> local keys 
@@ -100,6 +102,10 @@ class GSubstanceLib {
       // convenience methods
       void setWavelengthBuffer(GBuffer* buffer);
       GBuffer* getWavelengthBuffer();
+
+      void setReemissionBuffer(GBuffer* buffer);
+      GBuffer* getReemissionBuffer();
+
       std::vector<std::string> splitString(std::string keys);
 
   private:
@@ -171,6 +177,7 @@ class GSubstanceLib {
       GProperty<float>*      m_ramp ;  
       GSubstanceLibMetadata* m_meta ;
       GBuffer*               m_wavelength_buffer ;
+      GBuffer*               m_reemission_buffer ;
 
 };
 

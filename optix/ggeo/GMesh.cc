@@ -21,6 +21,7 @@ const char* GMesh::indices      = "indices" ;
 const char* GMesh::nodes        = "nodes" ;
 const char* GMesh::substances   = "substances" ;
 const char* GMesh::wavelength   = "wavelength" ;
+const char* GMesh::reemission   = "reemission" ;
 const char* GMesh::center_extent = "center_extent" ;
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
@@ -33,6 +34,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(nodes); 
     names.push_back(substances); 
     names.push_back(wavelength); 
+    names.push_back(reemission); 
     names.push_back(center_extent); 
 }
 
@@ -54,6 +56,7 @@ GMesh::GMesh(GMesh* other)
      m_normals_buffer(other->getNormalsBuffer()),
      m_nodes(other->getNodes()),
      m_wavelength_buffer(other->getWavelengthBuffer()),
+     m_reemission_buffer(other->getReemissionBuffer()),
      m_nodes_buffer(other->getNodesBuffer()),
      m_substances(other->getSubstances()),
      m_substances_buffer(other->getSubstancesBuffer()),
@@ -88,6 +91,7 @@ GMesh::GMesh(unsigned int index,
       m_indices_buffer(NULL),
       m_nodes(NULL),           // nodes and substances are somwhat confusing : use only with subclasses like GMergedMesh
       m_wavelength_buffer(NULL),
+      m_reemission_buffer(NULL),
       m_nodes_buffer(NULL),
       m_substances(NULL),
       m_substances_buffer(NULL),
@@ -138,6 +142,7 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, substances) == 0)   return m_substances_buffer ; 
 
     if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
+    if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
     if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
     return NULL ;
 }
@@ -155,6 +160,7 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, substances) == 0)   setSubstancesBuffer(buffer) ; 
 
     if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
+    if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
     if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
 }
 
@@ -325,11 +331,6 @@ void GMesh::setSubstancesBuffer(GBuffer* buffer)
 }
 
 
-
-void GMesh::setWavelengthBuffer(GBuffer* buffer)
-{
-    m_wavelength_buffer = buffer ; 
-}
 
 
 

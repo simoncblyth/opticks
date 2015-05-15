@@ -13,6 +13,12 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
+
 
 #include <sstream>
 #include "assert.h"
@@ -138,7 +144,14 @@ void GSubstanceLib::setKeyMap(const char* spec)
 
 
 
-GSubstanceLib::GSubstanceLib() : m_defaults(NULL), m_meta(NULL), m_standard(true), m_num_quad(6), m_wavelength_buffer(NULL)
+GSubstanceLib::GSubstanceLib() 
+          : 
+          m_defaults(NULL), 
+          m_meta(NULL), 
+          m_standard(true), 
+          m_num_quad(6), 
+          m_wavelength_buffer(NULL),
+          m_reemission_buffer(NULL)
 {
     setKeyMap(NULL);
     GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
@@ -366,6 +379,43 @@ void GSubstanceLib::standardizeMaterialProperties(GPropertyMap<float>* pstd, GPr
 
 
 
+
+GProperty<float>* GSubstanceLib::constructInvertedReemissionCDF(GPropertyMap<float>* pmap)
+{
+    std::string name = pmap->getShortNameString();
+
+    if(!isScintillator(name)) return NULL ;
+
+    typedef GProperty<float> P ; 
+
+    P* slow = getProperty(pmap, slow_component);
+    P* fast = getProperty(pmap, fast_component);
+    float mxdiff = GProperty<float>::maxdiff(slow, fast);
+    assert(mxdiff < 1e-6 );
+
+    P* rrd = slow->createReversedReciprocalDomain();    // have to used reciprocal "energywise" domain for G4/NuWa agreement
+
+    P* srrd = rrd->createZeroTrimmed();                 // trim extraneous zero values, leaving at most one zero at either extremity
+
+    assert( srrd->getLength() == rrd->getLength() - 2); // expect to trim 2 values
+
+    P* rcdf = srrd->createCDF();
+
+    unsigned int nicdf = 4096 ; //  minor discrep ~600nm
+
+    //
+    // Why does lookup "sampling" require so many more bins to get agreeable 
+    // results than standard sampling ?
+    //
+    // * maybe because "agree" means it matches a prior standard sampling and in
+    //   the limit of many bins the techniques converge ?
+    //
+
+    P* icdf = rcdf->createInverseCDF(nicdf); 
+
+    return icdf ; 
+}
+
 GProperty<float>* GSubstanceLib::constructReemissionCDF(GPropertyMap<float>* pmap)
 {
     std::string name = pmap->getShortNameString();
@@ -518,23 +568,26 @@ unsigned int GSubstanceLib::getLine(unsigned int isub, unsigned int ioff)
     return isub*NUM_QUAD + ioff ;   
 }
 
-
-
 void GSubstanceLib::collectReemissionProp(GPropertyMap<float>* pmap)
 {
+    // need to be called with raw pmap, not standardize ones to find the keys 
     // exploratory code
 
+
     std::string name = pmap->getShortNameString();
+    LOG(info) << "GSubstanceLib::collectReemissionProp " << name ;
     if(isScintillator(name))   // LiquidScintillator,GdDopedLS
     {
         std::string keys = pmap->getKeysString();
         std::vector<std::string> vkeys = splitString(keys);
+        LOG(info) << "GSubstanceLib::collectReemissionProp isScint keys [" << keys << "] " << vkeys.size()  ;
 
         for(unsigned int i=0 ; i < vkeys.size() ; i++)
         {
             std::string lkey = vkeys[i];
             if(isReemissionKey(lkey))   // SLOWCOMPONENT,FASTCOMPONENT
             {
+                LOG(info) << "GSubstanceLib::collectReemissionProp isReemissionKey " << lkey  ;
                 GProperty<float>* prop = pmap->getProperty(lkey.c_str());
 
                 if(reemission_prop == NULL)
@@ -553,6 +606,18 @@ void GSubstanceLib::collectReemissionProp(GPropertyMap<float>* pmap)
         }
     }
 }
+
+GBuffer* GSubstanceLib::createReemissionBuffer(GPropertyMap<float>* scint)
+{
+    assert(scint);
+    scint->Summary("GSubstanceLib::createReemissionBuffer");
+    if(!scint)
+    {
+         return NULL ; 
+    } 
+    return NULL ; 
+}
+
 
 
 GBuffer* GSubstanceLib::createWavelengthBuffer()
@@ -608,6 +673,11 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             m_meta->add(kfmt, isub, "iext", substance->getInnerExtra() );
             m_meta->add(kfmt, isub, "oext", substance->getOuterExtra() );
         }
+
+         
+        if(isScintillator(ishortname)) collectReemissionProp(substance->getInnerMaterial());
+        if(isScintillator(oshortname)) collectReemissionProp(substance->getOuterMaterial());
+
 
         if( buffer == NULL )
         {
@@ -678,7 +748,9 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             }
         }   
     }
+
     m_meta->createMaterialMap();
+
     return buffer ; 
 }
 

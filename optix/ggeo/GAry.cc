@@ -23,8 +23,8 @@ T GAry<T>::np_interp(const T z, GAry<T>* xp, GAry<T>* fp )
     // input domain and values
     //   
     //  :param z:   "x" domain value for which the interpolated "y" value is to be obtained
-    //  :param xp : x-coordinates of the data points, must be increasing.
-    //  :param fp : y-coordinates of the data points, same length as `xp`.
+    //  :param xp : domain x-coordinates of the data points, must be increasing.
+    //  :param fp : value  y-coordinates of the data points, same length as `xp`.
     //  
     //  :return:   y value (ie linear interpolation of fp values) corresponding to the ordinate supplied 
     //   
@@ -310,7 +310,11 @@ Out[12]: array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. 
 } 
 
 
-
+template <typename T>
+GAry<T>* GAry<T>::copy() 
+{
+    return new GAry<T>(this);
+}
 
 template <typename T>
 GAry<T>::GAry(GAry<T>* other) : m_length(other->getLength())

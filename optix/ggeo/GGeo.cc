@@ -321,6 +321,27 @@ GMaterial* GGeo::getMaterial(unsigned int aindex)
 }
 
 
+GPropertyMap<float>* GGeo::findMaterial(const char* shortname)
+{
+    GMaterial* mat = NULL ; 
+    for(unsigned int i=0 ; i < m_materials.size() ; i++ )
+    { 
+        std::string sn = m_materials[i]->getShortNameString();
+        printf("GGeo::findMaterial %d %s \n", i, sn.c_str()); 
+        if(strcmp(sn.c_str(), shortname)==0)
+        {
+            mat = m_materials[i] ; 
+            break ; 
+        }
+    }
+    return (GPropertyMap<float>*)mat ;
+}
+
+
+
+
+
+
 
 
 GMesh* GGeo::getMesh(unsigned int aindex)

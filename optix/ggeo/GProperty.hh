@@ -41,6 +41,11 @@ public:
    GAry<T>*      lookupCDF(GAry<T>* uvals);
    GAry<T>*      lookupCDF(unsigned int n);
 
+   GAry<T>*      lookupCDF_ValueLookup(GAry<T>* uvals);
+   GAry<T>*      lookupCDF_ValueLookup(unsigned int n);
+
+
+
    // **sample** means that must do binary values search to locate relevant index
    // this is appropriate for CDF where domain is arbitrary and values 
    // range from 0:1 the input being uniform randoms within 0:1

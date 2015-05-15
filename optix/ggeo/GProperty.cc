@@ -266,9 +266,11 @@ GProperty<T>* GProperty<T>::createInterpolatedProperty(GDomain<T>* domain)
 }
 
 template <typename T>
-T GProperty<T>::getInterpolatedValue(T val)
+T GProperty<T>::getInterpolatedValue(T x)
 {
-    return GAry<T>::np_interp( val , m_domain, m_values );
+    // find the value "y" at "x" by first placing "x" within the domain
+    // and then using linear interpolation of the above and below values
+    return GAry<T>::np_interp( x , m_domain, m_values );
 }
 
 template <typename T>
@@ -330,8 +332,8 @@ GProperty<T>* GProperty<T>::createZeroTrimmed()
 template <typename T>
 GProperty<T>* GProperty<T>::createCDF()
 {
-    GAry<T>* x = getDomain();
-    GAry<T>* y = getValues();
+    GAry<T>* x = getDomain()->copy();
+    GAry<T>* y = getValues()->copy();
 
     // numerical integration of input distribution
     // * ymid, xdif, prod have one bin less as pair based 
@@ -357,7 +359,7 @@ GProperty<T>* GProperty<T>::createCDF()
         cy->Summary("cy: prod->cumsum(1) scaled  ", imod, psc);
     }
 
-    delete y ;
+    delete y ; 
     delete ymid ;
     delete xdif ;
     delete prod ; 
@@ -425,18 +427,45 @@ GAry<T>* GProperty<T>::lookupCDF(unsigned int n)
 }
 
 template <typename T>
-GAry<T>* GProperty<T>::lookupCDF(GAry<T>* ua)
+GAry<T>* GProperty<T>::lookupCDF_ValueLookup(unsigned int n)
+{
+    GAry<T>* ua = GAry<T>::urandom(n); 
+    return lookupCDF_ValueLookup(ua);
+}
+
+
+
+
+template <typename T>
+GAry<T>* GProperty<T>::lookupCDF(GAry<T>* ua)   // start from domain, not values
 {
     unsigned int len = ua->getLength();
     T* u = ua->getValues();
     GAry<T>* sample = new GAry<T>(len); 
     for(unsigned int i=0 ; i < len ; i++)
     {
-        //sample->setValue(i,  m_values->getValueLookup(u[i]));
-        sample->setValue(i,  getInterpolatedValue(u[i]));
+        T x = u[i] ;                     // domain value 
+        T y = getInterpolatedValue(x);
+        sample->setValue(i,  y);
     }
     return sample ; 
 }
+
+
+template <typename T>
+GAry<T>* GProperty<T>::lookupCDF_ValueLookup(GAry<T>* ua)
+{
+    unsigned int len = ua->getLength();
+    T* u = ua->getValues();
+    GAry<T>* sample = new GAry<T>(len); 
+    for(unsigned int i=0 ; i < len ; i++)
+    {
+        sample->setValue(i,  m_values->getValueLookup(u[i]));
+    }
+    return sample ; 
+}
+
+
 
 
 template <typename T>
@@ -447,16 +476,19 @@ GAry<T>* GProperty<T>::sampleCDF(unsigned int n)
 }
  
 template <typename T>
-GAry<T>* GProperty<T>::sampleCDF(GAry<T>* ua)
+GAry<T>* GProperty<T>::sampleCDF(GAry<T>* ua)  // start from values, not domain
 {
     unsigned int len = ua->getLength();
     T* u = ua->getValues();
     GAry<T>* sample = new GAry<T>(len); 
     for(unsigned int i=0 ; i < len ; i++)
     {
-         T f = m_values->fractional_binary_search(u[i]);
+         T x = u[i] ;                     // domain value 
+         T f = m_values->fractional_binary_search(x);
          T d = m_domain->getValueFractional(f);
          sample->setValue(i,  d );
+
+         // hmm this is like interpolation but with a swap: values <-> domain
     }
     return sample ; 
 }

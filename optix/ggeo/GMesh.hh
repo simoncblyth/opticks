@@ -41,6 +41,7 @@ class GMesh : public GDrawable {
       static const char* nodes ; 
       static const char* substances ; 
       static const char* wavelength ; 
+      static const char* reemission ; 
       static const char* center_extent ; 
 
 
@@ -102,6 +103,7 @@ class GMesh : public GDrawable {
       void setNodesBuffer(GBuffer* buffer);
       void setSubstancesBuffer(GBuffer* buffer);
       void setWavelengthBuffer(GBuffer* buffer);
+      void setReemissionBuffer(GBuffer* buffer);
       void setCenterExtentBuffer(GBuffer* buffer);
 
   public:
@@ -113,6 +115,7 @@ class GMesh : public GDrawable {
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
       GBuffer* getWavelengthBuffer();
+      GBuffer* getReemissionBuffer();
       GBuffer* getCenterExtentBuffer();
 
       float  getExtent();
@@ -201,6 +204,7 @@ class GMesh : public GDrawable {
       GBuffer* m_wavelength_buffer ;
       GBuffer* m_nodes_buffer ;
       GBuffer* m_substances_buffer ;
+      GBuffer* m_reemission_buffer ;
 
 
 };
@@ -345,6 +349,11 @@ inline GBuffer*  GMesh::getWavelengthBuffer()
 {
     return m_wavelength_buffer ;
 }
+inline GBuffer*  GMesh::getReemissionBuffer()
+{
+    return m_reemission_buffer ;
+}
+
 
 
 
@@ -393,6 +402,17 @@ inline GBuffer*  GMesh::getSubstancesBuffer()
 
 
 
+
+
+inline void GMesh::setWavelengthBuffer(GBuffer* buffer)
+{
+    m_wavelength_buffer = buffer ; 
+}
+
+inline void GMesh::setReemissionBuffer(GBuffer* buffer)
+{
+    m_reemission_buffer = buffer ; 
+}
 
 
 

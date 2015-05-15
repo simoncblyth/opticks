@@ -847,3 +847,11 @@ ggeo-meta(){
    echo $cmd
    eval $cmd
 }
+
+
+ggeo-gpropertytest(){
+   local bin=$(ggeo-bin GPropertyTest)
+   echo $bin
+   eval $bin
+}
+
