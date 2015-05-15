@@ -28,13 +28,14 @@ class NPY {
        static NPY* make_vec4(unsigned int npo, float value=0.f);
 
        // ctor takes ownership of a copy of the inputs 
-       //NPY(std::vector<int>& shape, double* data, std::string& metadata) ;
-       //NPY(std::vector<int>& shape, float*  data, std::string& metadata) ;
+       NPY(std::vector<int>& shape, double* data, std::string& metadata) ;
+       NPY(std::vector<int>& shape, float*  data, std::string& metadata) ;
        NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) ;
 
        void save(const char* path);
        unsigned int getLength();
        unsigned int getDimensions();
+       std::vector<int>& getShapeVector();
        unsigned int getShape(unsigned int dim);
        unsigned int getNumFloats(unsigned int from_dim=1);
        unsigned int getNumBytes(unsigned int from_dim=1);
@@ -102,6 +103,11 @@ inline unsigned int NPY::getNumBytes(unsigned int from_dim)
 inline unsigned int NPY::getDimensions()
 {
     return m_shape.size();
+}
+
+inline std::vector<int>& NPY::getShapeVector()
+{
+    return m_shape ; 
 }
 
 

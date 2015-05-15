@@ -1,5 +1,4 @@
 #include "GProperty.hh"
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -207,6 +206,8 @@ void GProperty<T>::Summary(const char* msg, unsigned int imod )
    char* pdig = digest();
    printf("%s : %s : %u \n", msg, pdig, m_length );
    free(pdig);
+
+
 
    for(unsigned int p=0 ; p < 2 ; p++)
    {

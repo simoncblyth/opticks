@@ -292,6 +292,12 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             gmat->setStandardDomain(standard_domain);
             addProperties(gmat, mat, reverse);
             gg->add(gmat);
+
+            // without standard domain applied
+            GMaterial* gmat_raw = new GMaterial(name, i);
+            addProperties(gmat_raw, mat, reverse);
+            gg->addRaw(gmat_raw);
+
         }
 
         free((void*)bspv1);

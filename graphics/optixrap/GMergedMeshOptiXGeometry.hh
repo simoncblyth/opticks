@@ -50,14 +50,15 @@ public:
 
 public:
     void convert();
-    optix::TextureSampler makeTextureSampler(GBuffer* wbuf);
+    optix::TextureSampler makeWavelengthSampler(GBuffer* wavelengthBuffer);
+    optix::TextureSampler makeReemissionSampler(GBuffer* reemissionBuffer);
     optix::float3 getDomain();
     optix::float3 getDomainReciprocal();
 
 private:
     optix::GeometryInstance convertDrawableInstance(GMergedMesh* mergedmesh);
     optix::Geometry convertDrawable(GMergedMesh* drawable);
-    optix::Material makeMaterial(GBuffer* wbuf);
+    optix::Material makeMaterial();
 
 public:
     optix::float3  getMin();

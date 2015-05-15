@@ -291,6 +291,66 @@ void OptiXEngine::initGenerate()
     initGenerate(m_evt);
 }
 
+void OptiXEngine::readGenerate()
+{
+    if(!m_evt) return ;
+    NPY* photons = m_evt->getPhotonData();
+
+    int buffer_id = photons ? photons->getBufferId() : -1 ;
+    if(buffer_id == -1) return ;
+
+    photons->Summary();
+
+    unsigned int photon_count = photons->getShape(0);
+    unsigned int photon_sizeq = photons->getShape(1);  
+    unsigned int photon_totquad = photon_count * photon_sizeq ;  
+
+    LOG(info)<< "OptiXEngine::readGenerate " 
+             << " photon_count " << photon_count 
+             << " photon_totquad " << photon_totquad ; 
+
+    assert(photon_sizeq == 1);
+
+    // TODO: package up into a readBuffer method and move to OGLRap
+
+    GLenum target = GL_ARRAY_BUFFER ;
+    GLenum access = GL_READ_ONLY ; 
+    
+    glBindBuffer( target, buffer_id );
+    void* ptr = glMapBuffer( target, access ); 
+    
+    std::string meta = "{}" ;
+    NPY* read = new NPY(photons->getShapeVector(), (float*)ptr, meta );
+
+    float* data = (float*)ptr ; 
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {
+         if(i % 4 == 0) printf("\n");
+         printf(" %10.4f ", data[i]);
+    }
+    printf("\n");
+
+
+    glUnmapBuffer(target);
+    glBindBuffer(target, 0 );
+
+
+    read->Summary("read");
+    read->save("/tmp/read.npy");
+
+    /*
+        r = np.load("/tmp/read.npy")
+        plt.hist(r[:,0,3], bins=100, log=True)
+        plt.show()
+    */
+
+
+}
+
+
+
+
+
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
 

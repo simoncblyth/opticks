@@ -147,6 +147,8 @@ void test_inverseCDF_lookup()
 
     P* icdf = rcdf->createInverseCDF(nicdf); 
 
+    icdf->getValues()->reciprocate();
+
     icdf->save("/tmp/icdf.npy");
 
     // two ways yield same characteristics

@@ -603,6 +603,7 @@ bool GMesh::isFloatBuffer(const char* name)
              strcmp( name, normals) == 0  || 
              strcmp( name, center_extent ) == 0  || 
              strcmp( name, wavelength ) == 0  || 
+             strcmp( name, reemission ) == 0  || 
              strcmp( name, colors) == 0 );
 }
 

@@ -57,8 +57,9 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->updateBounds();
 
     GSubstanceLib* lib = ggeo->getSubstanceLib();
-    GPropertyMap<float>* scint = ggeo->findMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
     mm->setWavelengthBuffer(lib->createWavelengthBuffer());
+
+    GPropertyMap<float>* scint = ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
     mm->setReemissionBuffer(lib->createReemissionBuffer(scint));
 
     return mm ;

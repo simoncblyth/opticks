@@ -198,6 +198,12 @@ void GGeo::add(GMaterial* material)
     m_materials.push_back(material);
 }
 
+void GGeo::addRaw(GMaterial* material)
+{
+    m_raw_materials.push_back(material);
+}
+
+
 void GGeo::add(GBorderSurface* surface)
 {
     m_border_surfaces.push_back(surface);
@@ -321,16 +327,16 @@ GMaterial* GGeo::getMaterial(unsigned int aindex)
 }
 
 
-GPropertyMap<float>* GGeo::findMaterial(const char* shortname)
+GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname)
 {
     GMaterial* mat = NULL ; 
-    for(unsigned int i=0 ; i < m_materials.size() ; i++ )
+    for(unsigned int i=0 ; i < m_raw_materials.size() ; i++ )
     { 
-        std::string sn = m_materials[i]->getShortNameString();
-        printf("GGeo::findMaterial %d %s \n", i, sn.c_str()); 
+        std::string sn = m_raw_materials[i]->getShortNameString();
+        //printf("GGeo::findMaterial %d %s \n", i, sn.c_str()); 
         if(strcmp(sn.c_str(), shortname)==0)
         {
-            mat = m_materials[i] ; 
+            mat = m_raw_materials[i] ; 
             break ; 
         }
     }

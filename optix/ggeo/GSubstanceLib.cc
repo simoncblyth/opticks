@@ -83,8 +83,6 @@ const char* GSubstanceLib::reemissionkey = "SLOWCOMPONENT,FASTCOMPONENT" ;
 std::vector<std::string>* GSubstanceLib::vscintillators = NULL ;
 std::vector<std::string>* GSubstanceLib::vreemissionkey = NULL ;
 
-GProperty<float>* GSubstanceLib::reemission_prop  = NULL ; 
-std::string*      GSubstanceLib::reemission_prop_digest = NULL ;  
 
 
 bool GSubstanceLib::isReemissionKey(std::string& lkey)
@@ -413,6 +411,8 @@ GProperty<float>* GSubstanceLib::constructInvertedReemissionCDF(GPropertyMap<flo
 
     P* icdf = rcdf->createInverseCDF(nicdf); 
 
+    icdf->getValues()->reciprocate();  // avoid having to reciprocate lookup results : by doing it here 
+
     return icdf ; 
 }
 
@@ -568,54 +568,27 @@ unsigned int GSubstanceLib::getLine(unsigned int isub, unsigned int ioff)
     return isub*NUM_QUAD + ioff ;   
 }
 
-void GSubstanceLib::collectReemissionProp(GPropertyMap<float>* pmap)
-{
-    // need to be called with raw pmap, not standardize ones to find the keys 
-    // exploratory code
-
-
-    std::string name = pmap->getShortNameString();
-    LOG(info) << "GSubstanceLib::collectReemissionProp " << name ;
-    if(isScintillator(name))   // LiquidScintillator,GdDopedLS
-    {
-        std::string keys = pmap->getKeysString();
-        std::vector<std::string> vkeys = splitString(keys);
-        LOG(info) << "GSubstanceLib::collectReemissionProp isScint keys [" << keys << "] " << vkeys.size()  ;
-
-        for(unsigned int i=0 ; i < vkeys.size() ; i++)
-        {
-            std::string lkey = vkeys[i];
-            if(isReemissionKey(lkey))   // SLOWCOMPONENT,FASTCOMPONENT
-            {
-                LOG(info) << "GSubstanceLib::collectReemissionProp isReemissionKey " << lkey  ;
-                GProperty<float>* prop = pmap->getProperty(lkey.c_str());
-
-                if(reemission_prop == NULL)
-                {
-                     printf("GSubstanceLib::collectReemissionProp %s : %lu props \n", name.c_str(), vkeys.size() );
-                     reemission_prop = prop ;
-                     reemission_prop_digest = new std::string(prop->digest()) ;  // hmm maybe prop should cache their digests
-                     reemission_prop->Summary(lkey.c_str(), 5 );            
-                }
-                else
-                {
-                     std::string pdig = prop->getDigestString();
-                     assert(*reemission_prop_digest == pdig);       // expecting single prop
-                }
-            }
-        }
-    }
-}
-
 GBuffer* GSubstanceLib::createReemissionBuffer(GPropertyMap<float>* scint)
 {
     assert(scint);
-    scint->Summary("GSubstanceLib::createReemissionBuffer");
-    if(!scint)
+    GProperty<float>* icdf = constructInvertedReemissionCDF(scint);
+    icdf->Summary("GSubstanceLib::createReemissionBuffer icdf ", 256);
+
     {
-         return NULL ; 
-    } 
-    return NULL ; 
+         icdf->save("/tmp/invertedReemissionCDF.npy");
+         GAry<float>* insitu = icdf->lookupCDF(1e6);
+         insitu->Summary("icdf->lookupCDF(1e6)");
+         insitu->save("/tmp/insitu.npy");
+    }    
+
+    unsigned int numFloat = icdf->getLength();
+    LOG(info) << "GSubstanceLib::createReemissionBuffer numFloat " << numFloat ;  
+
+    GBuffer* buffer = new GBuffer( sizeof(float)*numFloat, new float[numFloat], sizeof(float), 1 );
+    float* data = (float*)buffer->getPointer();
+    for( unsigned int d = 0; d < numFloat ; ++d ) data[d] = icdf->getValue(d);
+
+    return buffer ; 
 }
 
 
@@ -673,10 +646,6 @@ GBuffer* GSubstanceLib::createWavelengthBuffer()
             m_meta->add(kfmt, isub, "iext", substance->getInnerExtra() );
             m_meta->add(kfmt, isub, "oext", substance->getOuterExtra() );
         }
-
-         
-        if(isScintillator(ishortname)) collectReemissionProp(substance->getInnerMaterial());
-        if(isScintillator(oshortname)) collectReemissionProp(substance->getOuterMaterial());
 
 
         if( buffer == NULL )

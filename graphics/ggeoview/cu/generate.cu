@@ -57,7 +57,8 @@ RT_PROGRAM void generate()
         {
             csdump(cs);
             cscheck(cs);
-            wavelength_check();
+            reemission_check();
+            //wavelength_check();
         }
     }
     else
@@ -65,13 +66,12 @@ RT_PROGRAM void generate()
 
     }
 
-
     // arbitrarily setting photon positions to genstep position with offset : to check visualization of generated photons
     //float scale = 100.f * (photon_id % 100) ;  
-    float scale = 10000.f * curand_uniform(&prd.rng);
-
-    photon_buffer[launch_index.x] = make_float4( gs1.x + gs2.x*scale, gs1.y + gs2.y*scale, gs1.z + gs2.z*scale, 1.f );
-
+    float u = curand_uniform(&prd.rng);
+    float nm = reemission_lookup(u);
+    float scale = 10000.f * u ;
+    photon_buffer[launch_index.x] = make_float4( gs1.x + gs2.x*scale, gs1.y + gs2.y*scale, gs1.z + gs2.z*scale, nm );
  
     rng_states[photon_id] = prd.rng ;
 }

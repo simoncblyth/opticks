@@ -17,7 +17,6 @@ NPY::NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadat
 } 
 
 
-/*
 NPY::NPY(std::vector<int>& shape, float* data, std::string& metadata) 
          :
          m_buffer_id(-1),
@@ -26,13 +25,14 @@ NPY::NPY(std::vector<int>& shape, float* data, std::string& metadata)
          m_metadata(metadata)
 {
     unsigned int numFloats = getNumFloats(0);
-    for(unsigned int i=0 ; i < numFloats ; i++)
-    {
-        m_data[i] = data[i] ;
-    }
+    m_data.reserve(numFloats);
+    memcpy(m_data.data(), data, getNumBytes(0) );
+    //for(unsigned int i=0 ; i < numFloats ; i++) m_data[i] = data[i] ;
 }
 
+
 // not expected to work : but needed to get to compile
+//  solution is to turn this into templated class
 NPY::NPY(std::vector<int>& shape, double* data, std::string& metadata) 
          :
          m_buffer_id(-1),
@@ -40,9 +40,10 @@ NPY::NPY(std::vector<int>& shape, double* data, std::string& metadata)
          m_data(),
          m_metadata(metadata)
 {
+    unsigned int numFloats = getNumFloats(0);
+    m_data.reserve(numFloats);
     memcpy(m_data.data(), data, getNumBytes(0) );
 }
-*/
 
 
 

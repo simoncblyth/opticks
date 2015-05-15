@@ -55,6 +55,10 @@ class OptiXEngine {
         void render();
         void cleanUp();
 
+    public:
+        //dev
+        void readGenerate();
+
     private:
         void initRenderer();
         void initContext();

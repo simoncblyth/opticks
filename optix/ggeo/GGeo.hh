@@ -39,7 +39,9 @@ class GGeo {
         void add(GSolid*    solid);
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
-
+    public:
+        void addRaw(GMaterial* material);
+ 
     public:
         unsigned int getNumMeshes();
         unsigned int getNumSolids();
@@ -57,7 +59,7 @@ class GGeo {
         GBorderSurface* getBorderSurface(unsigned int index);  
 
     public:
-        GPropertyMap<float>* findMaterial(const char* shortname);
+        GPropertyMap<float>* findRawMaterial(const char* shortname);
 
     public:
         GSolid* getSolid(unsigned int index);  
@@ -93,6 +95,7 @@ class GGeo {
         std::vector<GMesh*>    m_meshes ; 
         std::vector<GSolid*>    m_solids ; 
         std::vector<GMaterial*> m_materials ; 
+        std::vector<GMaterial*> m_raw_materials ; 
         std::vector<GSkinSurface*>  m_skin_surfaces ; 
         std::vector<GBorderSurface*>  m_border_surfaces ; 
         gfloat3* m_low ; 

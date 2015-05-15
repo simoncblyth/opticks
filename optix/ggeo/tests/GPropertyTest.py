@@ -13,8 +13,9 @@ import matplotlib.pyplot as plt
 
 
 psample = 1/np.load("/tmp/psample.npy") 
-isample = 1/np.load("/tmp/isample.npy") 
-#isample = np.load("/tmp/isample.npy") 
+
+isample = np.load("/tmp/isample.npy") 
+#isample = np.load("/tmp/insitu.npy") 
 
 
 params = dict(bins=100, 

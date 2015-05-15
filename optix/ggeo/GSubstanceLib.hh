@@ -60,8 +60,6 @@ class GSubstanceLib {
     static const char* reemissionkey ;
     static std::vector<std::string>* vreemissionkey;
 
-    static GProperty<float>* reemission_prop ; 
-    static std::string*      reemission_prop_digest ;  
   public:
       GSubstanceLib();
       virtual ~GSubstanceLib();
@@ -85,7 +83,6 @@ class GSubstanceLib {
       // reemission handling 
       bool isScintillator(std::string& matShortName);
       bool isReemissionKey(std::string& lkey);
-      void collectReemissionProp(GPropertyMap<float>* pmap);
       GProperty<float>* constructReemissionCDF(GPropertyMap<float>* pmap);
       GProperty<float>* constructInvertedReemissionCDF(GPropertyMap<float>* pmap);
   public:

@@ -25,63 +25,93 @@ void GMergedMeshOptiXGeometry::convert()
 }
 
 
-optix::TextureSampler GMergedMeshOptiXGeometry::makeTextureSampler(GBuffer* wbuf)
+optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* buffer)
 {
    // handles different numbers of substances, but uses static domain length
-    unsigned int  domainLength = GSubstanceLib::DOMAIN_LENGTH ; 
-
-    unsigned int numElementsTotal = wbuf->getNumElementsTotal();
+    unsigned int domainLength = GSubstanceLib::DOMAIN_LENGTH ;
+    unsigned int numElementsTotal = buffer->getNumElementsTotal();
     assert( numElementsTotal % domainLength == 0 );
+
     unsigned int nx = domainLength ;
     unsigned int ny = numElementsTotal / domainLength ;
 
-    LOG(info) << "GMergedMeshOptiXGeometry::makeTextureSampler "
+    LOG(info) << "GMergedMeshOptiXGeometry::makeWavelengthSampler "
               << " numElementsTotal " << numElementsTotal  
               << " (nx)domainLength " << domainLength 
               << " ny (props*subs)  " << ny 
               << " ny/16 " << ny/16 ; 
 
-    optix::Buffer wavelengthBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
-    memcpy( wavelengthBuffer->map(), wbuf->getPointer(), wbuf->getNumBytes() );
-    wavelengthBuffer->unmap(); 
+    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
+    memcpy( optixBuffer->map(), buffer->getPointer(), buffer->getNumBytes() );
+    optixBuffer->unmap(); 
 
     optix::TextureSampler sampler = m_context->createTextureSampler();
-
     sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
     sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
-    sampler->setFilteringModes(RT_FILTER_LINEAR, RT_FILTER_LINEAR, RT_FILTER_NONE);
+
+    RTfiltermode minification = RT_FILTER_LINEAR ;
+    RTfiltermode magnification = RT_FILTER_LINEAR ;
+    RTfiltermode mipmapping = RT_FILTER_NONE ;
+    sampler->setFilteringModes(minification, magnification, mipmapping);
+
     sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
     sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
     sampler->setMaxAnisotropy(1.0f);  
     sampler->setMipLevelCount(1u);     
     sampler->setArraySize(1u);        
-    sampler->setBuffer(0u, 0u, wavelengthBuffer);
+    sampler->setBuffer(0u, 0u, optixBuffer);
 
     return sampler ; 
 }
 
 
-optix::Material GMergedMeshOptiXGeometry::makeMaterial(GBuffer* wbuf)  
+
+
+optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* buffer)
+{
+    unsigned int domainLength = buffer->getNumElementsTotal();
+    unsigned int nx = domainLength ;
+    unsigned int ny = 1 ;
+
+    LOG(info) << "GMergedMeshOptiXGeometry::makeReemissionSampler "
+              << " (nx)domainLength " << domainLength 
+              << " ny " << ny  ;
+
+    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
+    memcpy( optixBuffer->map(), buffer->getPointer(), buffer->getNumBytes() );
+    optixBuffer->unmap(); 
+
+    optix::TextureSampler sampler = m_context->createTextureSampler();
+    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
+    sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
+
+    RTfiltermode minification = RT_FILTER_LINEAR ;
+    RTfiltermode magnification = RT_FILTER_LINEAR ;
+    RTfiltermode mipmapping = RT_FILTER_NONE ;
+    sampler->setFilteringModes(minification, magnification, mipmapping);
+
+    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
+    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+    sampler->setMaxAnisotropy(1.0f);  
+    sampler->setMipLevelCount(1u);     
+    sampler->setArraySize(1u);        
+    sampler->setBuffer(0u, 0u, optixBuffer);
+
+    return sampler ; 
+}
+
+
+
+
+
+
+
+optix::Material GMergedMeshOptiXGeometry::makeMaterial()  
 {
     optix::Material material = m_context->createMaterial();
-
     unsigned int raytype_radiance = 0 ;
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
     material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
-
-    optix::TextureSampler sampler = makeTextureSampler(wbuf);
-    optix::float3 domain = getDomain();
-    optix::float3 domain_reciprocal = getDomainReciprocal();
-
-    //material["wavelength_texture"]->setTextureSampler(sampler);
-    //material["wavelength_domain"]->setFloat(domain); 
-
-    m_context["wavelength_texture"]->setTextureSampler(sampler);
-    m_context["wavelength_domain"]->setFloat(domain); 
-    m_context["wavelength_domain_reciprocal"]->setFloat(domain_reciprocal); 
-    // lodge in context as needed from raygen program for generation 
-    // as well as closest hit 
-
     return material ; 
 }
 
@@ -106,13 +136,27 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
 
     LOG(info) << "GMergedMeshOptiXGeometry::convertDrawableInstance using single material  " ; 
 
-    GBuffer* wbuf = mergedmesh->getWavelengthBuffer();
-    optix::Material material = makeMaterial(wbuf);
+    GBuffer* wavelengthBuffer = mergedmesh->getWavelengthBuffer();
+    optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
+    optix::float3 wavelengthDomain = getDomain();
+    optix::float3 wavelengthDomainReciprocal = getDomainReciprocal();
+    m_context["wavelength_texture"]->setTextureSampler(wavelengthSampler);
+    m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
+    m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
 
+
+    GBuffer* reemissionBuffer = mergedmesh->getReemissionBuffer();
+    float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
+    optix::float3 reemissionDomain = optix::make_float3(0.f , 1.f, reemissionStep );
+    optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
+    m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
+    m_context["reemission_domain"]->setFloat(reemissionDomain);
+
+    optix::Material material = makeMaterial();
     std::vector<optix::Material> materials ;
     materials.push_back(material);
-
     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
+
     return gi ;
 }
 

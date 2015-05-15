@@ -153,6 +153,7 @@ int main(int argc, char** argv)
 
     engine.generate();
     //evt.dumpPhotonData();    //TODO: download modified VBO back into evt 
+    engine.readGenerate();
 
  
     GLFWwindow* window = frame.getWindow();
