@@ -25,7 +25,7 @@ class NPY {
        static NPY* load(const char* path);
        static NPY* load(const char* typ, const char* tag);
        static NPY* make_vec3(float* m2w, unsigned int npo=100);  
-       static NPY* make_vec4(unsigned int npo, float value=0.f);
+       static NPY* make_float4(unsigned int ni, unsigned int nj=1, float value=0.f);
 
        // ctor takes ownership of a copy of the inputs 
        NPY(std::vector<int>& shape, double* data, std::string& metadata) ;

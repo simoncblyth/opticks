@@ -1,6 +1,4 @@
-#ifndef __QUAD_H__
-#define __QUAD_H__
-
+#pragma once
 
 union quad
 {
@@ -9,6 +7,4 @@ union quad
    uint4  u ;
 };
 
-
-#endif
 

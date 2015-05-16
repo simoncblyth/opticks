@@ -3,6 +3,8 @@
 // porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/cerenkov.h
 
 #include "quad.h"
+#include "rotateUz.h"
+
 
 struct CerenkovStep
 {
@@ -185,5 +187,100 @@ __device__ void cscheck(CerenkovStep& cs)
  */
 
 }
+
+
+__device__ void
+generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
+{
+     float cosTheta ;
+     float sin2Theta ;
+     float wavelength ;
+     float sampledRI ;
+
+     // 
+     //  sampling to get wavelength and cone angle 
+     //
+     // pick wavelength from uniform 1/wavelength distribution within the range, 
+     // lookup refractive index
+     // calculate cosTheta and sinTheta for the refractive index
+     // 
+     do {
+
+        wavelength = sample_reciprocal_domain(curand_uniform(&rng));   
+
+        float4 props = wavelength_lookup(wavelength, cs.MaterialIndex);
+
+        sampledRI = props.x ; 
+
+        cosTheta = cs.BetaInverse / sampledRI;  
+
+        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);
+    
+      } while ( curand_uniform(&rng)*cs.maxSin2 > sin2Theta);
+
+
+      p.wavelength = wavelength ; 
+
+
+      // Generate random position of photon on cone surface defined by Theta 
+
+      float phi = 2.f*M_PIf*curand_uniform(&rng);
+      float sinPhi, cosPhi;
+      sincosf(phi,&sinPhi,&cosPhi);
+	
+      // calculate x,y, and z components of photon energy
+      // (in coord system with primary particle direction 
+      //  aligned with the z axis)
+      // then rotate momentum direction back to global reference system  
+
+      float sinTheta = sqrt(sin2Theta);
+      float3 photonMomentum = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
+      rotateUz(photonMomentum, cs.p0 );
+      p.direction = photonMomentum ;
+
+      // Determine polarization of new photon 
+      // and rotate back to original coord system 
+
+      float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta);
+      rotateUz(photonPolarization, cs.p0);
+      p.polarization = photonPolarization ;
+
+     
+      float fraction ; 
+      float delta ;
+      float NumberOfPhotons ;  
+      float N ;
+
+
+      float DeltaN = (cs.MeanNumberOfPhotons1-cs.MeanNumberOfPhotons2) ; 
+      do 
+      {
+
+          fraction = curand_uniform(&rng) ;
+
+          delta = fraction  * cs.step_length ;
+
+          NumberOfPhotons = cs.MeanNumberOfPhotons1 - fraction * DeltaN  ;
+
+          N = curand_uniform(&rng) * cs.MeanNumberOfPhotonsMax ;
+
+      }  while (N > NumberOfPhotons);
+
+
+
+      p.time = cs.t0 + delta / cs.MeanVelocity ;
+
+      p.position = cs.x0 + fraction * cs.DeltaPosition ; 
+
+      p.weight = cs.weight ;
+
+
+      p.flags.u.x = 0 ;
+      p.flags.u.y = 0 ;
+      p.flags.u.z = 0 ;
+      p.flags.u.w = 0 ;
+
+}
+
 
 

@@ -30,8 +30,9 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
 
 static __device__ __inline__ float sample_reciprocal_domain(const float& u)
 {
+    // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
     float iw = lerp( wavelength_domain_reciprocal.x , wavelength_domain_reciprocal.y, u ) ;
-    return 1.f/iw ;  // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
+    return 1.f/iw ;  
 }
 
 static __device__ __inline__ void wavelength_dump(unsigned int line )

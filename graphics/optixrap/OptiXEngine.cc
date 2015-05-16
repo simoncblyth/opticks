@@ -317,15 +317,10 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     if(genstep_buffer_id > -1)  // gensteps already uploaded to GPU
     {
         unsigned int genstep_count = gensteps->getShape(0);
-        unsigned int genstep_sizeq  = gensteps->getShape(1);  // in quads
-        unsigned int genstep_totquad = genstep_count * genstep_sizeq ;  
-        assert(genstep_sizeq == 6);
+        unsigned int genstep_numquad  = gensteps->getShape(1);  
+        unsigned int genstep_totquad = genstep_count * genstep_numquad ;  
+        assert(genstep_numquad == 6);
 
-        // commenting below 4 lines prevents genstep disappearance
-        // huh, its flaky : no longer disappearing 
-        //  try switching RT_BUFFER_OUTPUT -> RT_BUFFER_INPUT  which is more appropriate
-        //  seems to be working ... 
-        //
         m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, genstep_buffer_id);
         m_genstep_buffer->setFormat(RT_FORMAT_FLOAT4);
         m_genstep_buffer->setSize( genstep_totquad );
@@ -334,7 +329,7 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
         LOG(info) << "OptiXEngine::initGenerate "
                   << " genstep_buffer_id " << genstep_buffer_id 
                   << " genstep_count " << genstep_count 
-                  << " genstep_sizeq " << genstep_sizeq 
+                  << " genstep_numquad " << genstep_numquad 
                   << " genstep_totquad " << genstep_totquad  ;
     } 
 
@@ -345,9 +340,9 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     if(photon_buffer_id > -1)
     {
         unsigned int photon_count = photons->getShape(0);
-        unsigned int photon_sizeq = photons->getShape(1);  
-        unsigned int photon_totquad = photon_count * photon_sizeq ;  
-        assert(photon_sizeq == 1);
+        unsigned int photon_numquad = photons->getShape(1);  
+        unsigned int photon_totquad = photon_count * photon_numquad ;  
+        assert(photon_numquad == 4);  // must match GPU-side photon.h:PNUMQUAD
 
         // inside generate.cu::generate saw what looked like recycled memory 
         // with nan sprinkles when this was incorrectly RT_BUFFER_OUTPUT
@@ -359,7 +354,7 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
         LOG(info) << "OptiXEngine::initGenerate "
                   << " photon_buffer_id " << photon_buffer_id 
                   << " photon_count " << photon_count 
-                  << " photon_sizeq " << photon_sizeq 
+                  << " photon_numquad " << photon_numquad 
                   << " photon_totquad " << photon_totquad  ;
  
 

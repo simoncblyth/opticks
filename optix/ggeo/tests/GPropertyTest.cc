@@ -3,15 +3,38 @@
 #include "assert.h"
 
 /*
+// Why does lookup "sampling" require so many more bins to get good results than standard sampling ?
+//
+// * maybe because "good" means it matches a prior standard sampling and in
+//   the limit of many bins the techniques converge ?
+//   **Nope**
+//
+// * A simpler (and thus more believable) explanation is that domain lookup 
+//   is using a fixed raster on 0:1 to allow jumping to correct value in the 0:1 domain based 
+//   on a uniform random throw. This mimicks how GPU texture lookups are used.
+//   This means have to have loadsa values all the way from 0->1 even though 
+//   the action is in small portions of the range.  
+//
+//   Conversely binary search of CDF values doesnt need the regular
+//   raster, as the values are disposed according to the numerical integration
+//   kinda like a variable raster arranged precisely as appropriate.  Which means
+//   that binary bin search can work well with as low as ~50 domain values.
+//   Lookup sampling needs ~100x bins to match.  
+// 
+//   Of course the advantage of lookup sampling is can jump straight to the generated
+//   value with no binary searching.   
+//
+//
 
-   TODO: 
+    * not very sure of my terminology 
 
-      * incorporate inverseCDF into GSubstanceLib texture prep
+    * http://en.wikipedia.org/wiki/Cumulative_distribution_function
+    * http://en.wikipedia.org/wiki/Quantile_function
+    * http://en.wikipedia.org/wiki/Inverse_transform_sampling
+    * http://www.pbrt.org/chapters/pbrt_chapter7.pdf
 
-        Will need separate texture as 
-        property lookup domain length is insufficient by wide margin
+      * The inverse of the cdf is called the quantile function.
 
-      * test on GPU generation 
 
 */
 
@@ -138,12 +161,6 @@ void test_inverseCDF_lookup()
       unsigned int nicdf = 4096 ; //  minor discrep ~600nm
     //unsigned int nicdf = 8192 ; //  indistinguishable from standard sampling  
     //unsigned int nicdf = 10001 ; // indistinguishable from standard sampling 
-
-    // why does lookup "sampling" require so many more bins to get good results than standard sampling ?
-    //
-    // * maybe because "good" means it matches a prior standard sampling and in
-    //   the limit of many bins the techniques converge ?
-    //
 
     P* icdf = rcdf->createInverseCDF(nicdf); 
 

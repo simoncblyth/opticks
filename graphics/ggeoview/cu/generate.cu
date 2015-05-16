@@ -9,6 +9,7 @@ using namespace optix;
 
 #include "uif.h"
 #include "quad.h"
+#include "photon.h"
 #include "wavelength_lookup.h"
 #include "cerenkovstep.h"
 
@@ -26,13 +27,11 @@ rtBuffer<curandState, 1> rng_states ;
 RT_PROGRAM void generate()
 {
     unsigned long long photon_id = launch_index.x ;  
-    float4 ph = photon_buffer[photon_id] ;
+    float4 ph = photon_buffer[photon_id*PNUMQUAD] ;
 
-    // first 4 bytes of initiating empty photon_buffer contains genstep_id
     uif_t uif     ; 
-    uif.f = ph.x  ;   
+    uif.f = ph.x  ;   // first 4 bytes of initial photon_buffer items contains genstep_id
     unsigned int genstep_id = uif.u ; 
-
     float4 gs0 = genstep_buffer[genstep_id*6+0];
     float4 gs1 = genstep_buffer[genstep_id*6+1];
     float4 gs2 = genstep_buffer[genstep_id*6+2];
@@ -40,6 +39,8 @@ RT_PROGRAM void generate()
     PerRayData_propagate prd;
     prd.depth = 0 ;
     prd.rng = rng_states[photon_id];
+
+    Photon p ;  
 
     // first 4 bytes of genstep entry distinguishes 
     // cerenkov and scintillation by the sign of a 1-based index 
@@ -60,18 +61,27 @@ RT_PROGRAM void generate()
             reemission_check();
             //wavelength_check();
         }
+
+        generate_cerenkov_photon(p, cs, prd.rng );         
     }
     else
     {
-
+        // Scintillation 
     }
+
+
+    /*
 
     // arbitrarily setting photon positions to genstep position with offset : to check visualization of generated photons
     //float scale = 100.f * (photon_id % 100) ;  
+
     float u = curand_uniform(&prd.rng);
     float nm = reemission_lookup(u);
     float scale = 10000.f * u ;
     photon_buffer[launch_index.x] = make_float4( gs1.x + gs2.x*scale, gs1.y + gs2.y*scale, gs1.z + gs2.z*scale, nm );
+    */
+
+    psave(p, photon_buffer, photon_id ); 
  
     rng_states[photon_id] = prd.rng ;
 }

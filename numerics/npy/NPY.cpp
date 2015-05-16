@@ -243,14 +243,12 @@ NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
 
 
 
-NPY* NPY::make_vec4(unsigned int nvec, float value)
+NPY* NPY::make_float4(unsigned int ni, unsigned int nj, float value)
 {
     std::string metadata = "{}";
     std::vector<float> data;
     std::vector<int> shape ; 
 
-    unsigned int ni = nvec ;
-    unsigned int nj = 1 ;
     unsigned int nk = 4 ;
  
     shape.push_back(ni);

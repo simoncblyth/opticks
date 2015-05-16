@@ -17,7 +17,7 @@ void NumpyEvt::setGenstepData(NPY* genstep)
 
     m_num_photons = m_genstep_data->getUSum(0,3);
 
-    NPY* npy = NPY::make_vec4(m_num_photons);
+    NPY* npy = NPY::make_float4(m_num_photons, 4);  // must match GPU side photon.h:PQUAD
 
     setPhotonData(npy);   
 
