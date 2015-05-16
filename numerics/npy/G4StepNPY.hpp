@@ -26,7 +26,7 @@ class G4StepNPY {
    public:  
         typedef std::set<unsigned int> Set_t ; 
    public:  
-       G4StepNPY(NPY* npy);
+       G4StepNPY(NPY* npy); // stealing ctor
        NPY* getNPY();
 
    public:  

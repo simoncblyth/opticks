@@ -24,12 +24,9 @@ NPY::NPY(std::vector<int>& shape, float* data, std::string& metadata)
          m_data(),
          m_metadata(metadata)
 {
-    unsigned int numFloats = getNumFloats(0);
-    m_data.reserve(numFloats);
-    memcpy(m_data.data(), data, getNumBytes(0) );
-    //for(unsigned int i=0 ; i < numFloats ; i++) m_data[i] = data[i] ;
+    m_data.reserve(getNumValues(0));
+    read(data);
 }
-
 
 // not expected to work : but needed to get to compile
 //  solution is to turn this into templated class
@@ -40,12 +37,15 @@ NPY::NPY(std::vector<int>& shape, double* data, std::string& metadata)
          m_data(),
          m_metadata(metadata)
 {
-    unsigned int numFloats = getNumFloats(0);
-    m_data.reserve(numFloats);
-    memcpy(m_data.data(), data, getNumBytes(0) );
+    m_data.reserve(getNumValues(0));
+    read(data);
 }
 
 
+void NPY::read(void* ptr)
+{
+    memcpy(m_data.data(), ptr, getNumBytes(0) );
+}
 
 
 
@@ -75,8 +75,8 @@ std::string NPY::description(const char* msg)
 
     ss << " getNumBytes(0) " << getNumBytes(0) ;
     ss << " getNumBytes(1) " << getNumBytes(1) ;
-    ss << " getNumFloats(0) " << getNumFloats(0) ;
-    ss << " getNumFloats(1) " << getNumFloats(1) ;
+    ss << " getNumValues(0) " << getNumValues(0) ;
+    ss << " getNumValues(1) " << getNumValues(1) ;
 
     ss << m_metadata  ;
 
@@ -143,6 +143,19 @@ NPY* NPY::debugload(const char* path)
 
     return npy ;
 }
+
+
+void NPY::debugdump()
+{
+    float* data = getFloats() ; 
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {
+         if(i % 4 == 0) printf("\n");
+         printf(" %10.4f ", data[i]);
+    }
+    printf("\n");
+}
+
 
 
 

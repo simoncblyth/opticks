@@ -37,10 +37,11 @@ class NPY {
        unsigned int getDimensions();
        std::vector<int>& getShapeVector();
        unsigned int getShape(unsigned int dim);
-       unsigned int getNumFloats(unsigned int from_dim=1);
+       unsigned int getNumValues(unsigned int from_dim=1);
        unsigned int getNumBytes(unsigned int from_dim=1);
        float* getFloats();
        void* getBytes();
+       void read(void* ptr);
 
     public:
        // methods assuming 3D shape
@@ -59,6 +60,7 @@ class NPY {
        void         setBufferId(int buffer_id);
        std::string description(const char* msg);
        void Summary(const char* msg="NPY::Summary");
+       void debugdump();
 
    protected:
        unsigned int       m_dim ; 
@@ -89,7 +91,7 @@ inline void NPY::setBufferId(int buffer_id)
 
 
 
-inline unsigned int NPY::getNumFloats(unsigned int from_dim)
+inline unsigned int NPY::getNumValues(unsigned int from_dim)
 {
     unsigned int nfloat = 1 ; 
     for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nfloat *= m_shape[i] ;
@@ -98,7 +100,7 @@ inline unsigned int NPY::getNumFloats(unsigned int from_dim)
 inline unsigned int NPY::getNumBytes(unsigned int from_dim)
 {
     assert(sizeof(float) == 4);
-    return sizeof(float)*getNumFloats(from_dim);
+    return sizeof(float)*getNumValues(from_dim);
 }
 inline unsigned int NPY::getDimensions()
 {

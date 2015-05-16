@@ -4,7 +4,7 @@ chroma-
 
 ggeo-
 
-ggeo-install
-ggeo-gpropertytest
+#ggeo-install
+#ggeo-gpropertytest
 
 ipython GPropertyTest.py

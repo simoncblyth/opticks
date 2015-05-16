@@ -43,7 +43,7 @@ void NumpyEvt::setGenstepData(NPY* genstep)
     }
     printf(" photon %u m_num_photons %u \n", photon, m_num_photons );
     assert(photon == m_num_photons ); 
-    // not m_num_photons-1 as last photon value not used by setUInt
+    // not m_num_photons-1 as last incremented photon value not used by setUInt
 }
 
 void NumpyEvt::setPhotonData(NPY* photon_data)

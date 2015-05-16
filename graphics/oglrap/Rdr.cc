@@ -92,6 +92,27 @@ void Rdr::upload(void* data, unsigned int nbytes)
 }
 
 
+void Rdr::download( NPY* npy )
+{
+    int buffer_id = npy ? npy->getBufferId() : -1 ;
+    if(buffer_id == -1) return ;
+
+    LOG(info)<< "Rdr::download " << " buffer_id " << buffer_id  ;
+
+    GLenum target = GL_ARRAY_BUFFER ;
+    GLenum access = GL_READ_ONLY ; 
+
+    glBindBuffer( target, buffer_id );
+
+    void* ptr = glMapBuffer( target, access );  
+    npy->read(ptr);
+    glUnmapBuffer(target);
+
+    glBindBuffer(target, 0 );
+
+}
+
+
 void Rdr::address(VecNPY* vnpy)
 {
     const char* name = vnpy->getName();  

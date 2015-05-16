@@ -19,6 +19,9 @@ class Rdr : public RendererBase  {
 
   public: 
       void upload(MultiVecNPY* mvn);
+
+      // *download* : when an OpenGL buffer object is associated, glMapBuffer and read data from GPU into NPY instance 
+      static void download(NPY* npy);  
       unsigned int getBufferId();
 
   private:
