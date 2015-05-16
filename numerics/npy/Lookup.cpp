@@ -72,7 +72,7 @@ void Lookup::create(const char* dir)
     char* fold = strdup(dir);
     char* p = (char*)strrchr(fold, '/'); 
     *p = '\0' ;         // terminate at the last slash, to give dirname
-    printf("fold [%s] p [%s] \n", fold, p);
+    //printf("fold [%s] p [%s] \n", fold, p);
 
     loada(fold);
     loadb(dir);

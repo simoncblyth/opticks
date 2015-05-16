@@ -38,7 +38,7 @@ void Bookmarks::load(const char* dir)
     }
     catch(const pt::ptree_error &e)
     {
-        LOG(warning) << "Bookmarks::load ERROR " << e.what() ;
+        LOG(debug) << "Bookmarks::load ERROR " << e.what() ;
     }
 
 }

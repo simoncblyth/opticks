@@ -16,13 +16,12 @@ struct Photon
 
 };
 
-__device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_id )
+__device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_offset )
 {
-    unsigned int offset = PNUMQUAD*photon_id ; 
-    pbuffer[offset+0] = make_float4( p.position.x,    p.position.y,    p.position.z,     p.time ); 
-    pbuffer[offset+1] = make_float4( p.direction.x,   p.direction.y,   p.direction.z,    p.wavelength );
-    pbuffer[offset+2] = make_float4( p.polarization.x,p.polarization.y,p.polarization.z, p.weight );
-    pbuffer[offset+3] = make_float4( p.flags.f.x,     p.flags.f.y,     p.flags.f.z,      p.flags.f.w); 
+    pbuffer[photon_offset+0] = make_float4( p.position.x,    p.position.y,    p.position.z,     p.time ); 
+    pbuffer[photon_offset+1] = make_float4( p.direction.x,   p.direction.y,   p.direction.z,    p.wavelength );
+    pbuffer[photon_offset+2] = make_float4( p.polarization.x,p.polarization.y,p.polarization.z, p.weight );
+    pbuffer[photon_offset+3] = make_float4( p.flags.f.x,     p.flags.f.y,     p.flags.f.z,      p.flags.f.w); 
 }
 
 

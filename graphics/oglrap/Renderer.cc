@@ -186,7 +186,7 @@ void Renderer::check_uniforms()
         assert(0); 
     }
 
-    LOG(info) << "Renderer::check_uniforms "
+    LOG(debug) << "Renderer::check_uniforms "
               << " tag " << tag 
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 

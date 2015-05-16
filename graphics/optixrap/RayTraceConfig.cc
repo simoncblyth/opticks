@@ -67,7 +67,7 @@ RayTraceConfig::RayTraceConfig(optix::Context context, const char* target )
         m_target(NULL)
 {
     if(!target ) return ; 
-    LOG(info) << "RayTraceConfig::RayTraceConfig ptxdir " << PtxDir() << " target " <<  target ;
+    LOG(debug) << "RayTraceConfig::RayTraceConfig ptxdir " << PtxDir() << " target " <<  target ;
     m_target = strdup(target);
 }
 
@@ -93,7 +93,7 @@ optix::Program RayTraceConfig::createProgram(const char* filename, const char* f
 
   if(m_programs.find(key) == m_programs.end())
   { 
-       LOG(info) << "RayTraceConfig::createProgram " << key ;
+       LOG(debug) << "RayTraceConfig::createProgram " << key ;
        optix::Program program = m_context->createProgramFromPTXFile( path.c_str(), fname ); 
        m_programs[key] = program ; 
   } 

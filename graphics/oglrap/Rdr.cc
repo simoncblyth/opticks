@@ -35,11 +35,11 @@ Rdr::Rdr(const char* tag)
 
 void Rdr::upload(MultiVecNPY* mvn)
 {
-    LOG(info) << "Rdr::upload for shader tag " << getShaderTag() ;
+    LOG(debug) << "Rdr::upload for shader tag " << getShaderTag() ;
 
     assert(mvn);
 
-    mvn->Print("Rdr::upload");    
+    //mvn->Print("Rdr::upload");    
 
 
     make_shader();  // need to compile and link shader for access to attribute locations
@@ -73,7 +73,7 @@ void Rdr::upload(MultiVecNPY* mvn)
          else 
          {
              assert(npy == vnpy->getNPY());     // make sure all match
-             LOG(info) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
+             LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
              assert(count == vnpy->getCount());
          }
 
@@ -148,7 +148,7 @@ void Rdr::check_uniforms()
     // the "tag" argument of the Rdr identifies the GLSL code being used
     // determining which uniforms are required 
 
-    LOG(info) << "Rdr::check_uniforms "
+    LOG(debug) << "Rdr::check_uniforms "
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location ;
 

@@ -1,10 +1,8 @@
 #pragma once
-
 // porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/cerenkov.h
 
 #include "quad.h"
 #include "rotateUz.h"
-
 
 struct CerenkovStep
 {
@@ -37,23 +35,15 @@ struct CerenkovStep
     // above are loaded parameters, below are derived from them
     float MeanNumberOfPhotonsMax ; 
     float3 p0 ;
-    //
-    // hmm whats the OptiX equivalent ? index pointer to approriate line of substance texture atlas 
-    //Material* bialkaliMaterial ; 
-    //Material* material ; 
 
 };
 
 
-__device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsigned int csid )
+__device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsigned int offset )
 {
-
-    int offset = 6*csid ; // 6 quads per item 
-
     union quad ipmn, ccwv, mmmm  ;
  
     ipmn.f = cerenkov[offset+0];     
-
     cs.Id = ipmn.i.x ; 
     cs.ParentId = ipmn.i.y ; 
     cs.MaterialIndex = ipmn.i.z ; 
@@ -73,7 +63,6 @@ __device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsig
     cs.weight = ccwv.f.z ;
     cs.MeanVelocity = ccwv.f.w ;
 
-
     float4 bppm = cerenkov[offset+4] ;
     cs.BetaInverse = bppm.x ; 
     cs.Pmin = bppm.y ; 
@@ -85,16 +74,13 @@ __device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsig
     cs.MeanNumberOfPhotons1 = mmmm.f.y ; 
     cs.MeanNumberOfPhotons2 = mmmm.f.z ; 
     cs.BialkaliMaterialIndex = mmmm.i.w ; 
-}
 
 
-__device__ void csinit( CerenkovStep& cs )
-{
+    //  derived qtys
     cs.p0 = normalize(cs.DeltaPosition);
-
     cs.MeanNumberOfPhotonsMax = max(cs.MeanNumberOfPhotons1, cs.MeanNumberOfPhotons2);
-
 }
+
 
 __device__ void csdump( CerenkovStep& cs )
 {
@@ -271,6 +257,8 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       p.time = cs.t0 + delta / cs.MeanVelocity ;
 
       p.position = cs.x0 + fraction * cs.DeltaPosition ; 
+
+
 
       p.weight = cs.weight ;
 

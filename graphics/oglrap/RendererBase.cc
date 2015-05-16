@@ -23,10 +23,10 @@ RendererBase::RendererBase(const char* tag, const char* dir)
 void RendererBase::make_shader()
 {
     m_shader->createAndLink();
-    m_shader->Summary("RendererBase::make_shader");
+    //m_shader->Summary("RendererBase::make_shader");
     m_program = m_shader->getId(); 
 
-    LOG(info) << "RendererBase::make_shader "
+    LOG(debug) << "RendererBase::make_shader "
               << " shaderdir " << getShaderDir()
               << " shadertag " << getShaderTag()
               << " program " <<  m_program ;

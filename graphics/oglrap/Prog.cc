@@ -140,7 +140,7 @@ GLint Prog::attribute(const char* name_, bool required)
          }
          else
          {
-             LOG(warning) << "Prog::attribute " << m_tagdir << " did not find optional attribute [" << name << "]" ;
+             LOG(debug) << "Prog::attribute " << m_tagdir << " did not find optional attribute [" << name << "]" ;
          }
          return -1 ; 
     }
@@ -159,7 +159,7 @@ GLint Prog::uniform(const char* name_, bool required)
          }
          else
          {
-             LOG(warning) << "Prog::uniform " << m_tagdir << " did not find optional uniform [" << name << "]" ;
+             LOG(debug) << "Prog::uniform " << m_tagdir << " did not find optional uniform [" << name << "]" ;
          }
          return -1 ; 
     }

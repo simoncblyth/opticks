@@ -1,3 +1,4 @@
+// porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
 
 #include <curand_kernel.h>
 #include <optix_world.h>
@@ -15,26 +16,24 @@ using namespace optix;
 
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
+rtBuffer<curandState, 1> rng_states ;
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
-rtBuffer<curandState, 1> rng_states ;
-
-
-// porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
+#define GNUMQUAD 6
 
 RT_PROGRAM void generate()
 {
+    union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
-    float4 ph = photon_buffer[photon_id*PNUMQUAD] ;
+    unsigned int photon_offset = photon_id*PNUMQUAD ; 
+    phead.f = photon_buffer[photon_offset+0] ;
 
-    uif_t uif     ; 
-    uif.f = ph.x  ;   // first 4 bytes of initial photon_buffer items contains genstep_id
-    unsigned int genstep_id = uif.u ; 
-    float4 gs0 = genstep_buffer[genstep_id*6+0];
-    float4 gs1 = genstep_buffer[genstep_id*6+1];
-    float4 gs2 = genstep_buffer[genstep_id*6+2];
+    union quad ghead ; 
+    unsigned int genstep_id = phead.u.x ; // first 4 bytes seeded with genstep_id
+    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
+    ghead.f = genstep_buffer[genstep_offset+0]; 
 
     PerRayData_propagate prd;
     prd.depth = 0 ;
@@ -42,17 +41,10 @@ RT_PROGRAM void generate()
 
     Photon p ;  
 
-    // first 4 bytes of genstep entry distinguishes 
-    // cerenkov and scintillation by the sign of a 1-based index 
-    union quad genstep_head ; 
-    genstep_head.f = genstep_buffer[genstep_id*6+0]; 
-    int genstep_head_id = genstep_head.i.x ; 
-
-    if(genstep_head_id < 0)
+    if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
     {
         CerenkovStep cs ;
-        csload(cs, genstep_buffer, genstep_id);
-        csinit(cs);
+        csload(cs, genstep_buffer, genstep_offset);
 
         if(photon_id == 0)
         {
@@ -61,28 +53,18 @@ RT_PROGRAM void generate()
             reemission_check();
             //wavelength_check();
         }
-
         generate_cerenkov_photon(p, cs, prd.rng );         
     }
     else
     {
         // Scintillation 
+        // float nm = reemission_lookup(curand_uniform(&prd.rng));
     }
 
+    // TODO: fix shader to avoid having to do this kludge to see smth with OpenGL viz
+    p.position += p.direction*1000.f ; 
 
-    /*
-
-    // arbitrarily setting photon positions to genstep position with offset : to check visualization of generated photons
-    //float scale = 100.f * (photon_id % 100) ;  
-
-    float u = curand_uniform(&prd.rng);
-    float nm = reemission_lookup(u);
-    float scale = 10000.f * u ;
-    photon_buffer[launch_index.x] = make_float4( gs1.x + gs2.x*scale, gs1.y + gs2.y*scale, gs1.z + gs2.z*scale, nm );
-    */
-
-    psave(p, photon_buffer, photon_id ); 
- 
+    psave(p, photon_buffer, photon_offset ); 
     rng_states[photon_id] = prd.rng ;
 }
 

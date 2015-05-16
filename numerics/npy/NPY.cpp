@@ -1,6 +1,10 @@
 #include "NPY.hpp"
 #include <sstream>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 // ctor takes ownership of a copy of the inputs 
 NPY::NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) 
@@ -179,7 +183,7 @@ NPY* NPY::load(const char* path)
     std::vector<float> data ;
     std::string metadata = "{}";
 
-    printf("NPY::load [%s]\n", path);
+    LOG(debug) << "NPY::load " << path ; 
 
     NPY* npy = NULL ;
     try 

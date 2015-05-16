@@ -270,13 +270,10 @@ void OptiXEngine::initRng()
 void OptiXEngine::generate()
 {
     if(!m_enabled) return ;
+    if(!m_evt) return ;
 
-    Buffer buffer = m_context["photon_buffer"]->getBuffer();
-    RTsize buffer_width, buffer_height;
-    buffer->getSize( buffer_width, buffer_height );
-
-    unsigned int width  = static_cast<unsigned int>(buffer_width) ;
-    unsigned int height = static_cast<unsigned int>(buffer_height) ;
+    unsigned int width  = m_evt->getNumPhotons();
+    unsigned int height = 1 ;
 
     LOG(info) << "OptiXEngine::generate count " << m_generate_count << " size(" <<  width << "," <<  height << ")";
 
@@ -306,7 +303,6 @@ void OptiXEngine::readGenerate()
 
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
-
     NPY* gensteps = evt->getGenstepData();
 
     assert(gensteps->getDimensions() == 3);

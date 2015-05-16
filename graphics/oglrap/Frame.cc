@@ -155,7 +155,7 @@ void Frame::gl_init_window()
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-    LOG(info) << "Frame::gl_init_window " << m_width << "," << m_height << " " << m_title ;
+    LOG(debug) << "Frame::gl_init_window " << m_width << "," << m_height << " " << m_title ;
 
     m_window = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);
     if (!m_window)
@@ -183,12 +183,12 @@ void Frame::gl_init_window()
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
-    LOG(info) << "Frame::gl_init_window Renderer: " << renderer ;
-    LOG(info) << "Frame::gl_init_window OpenGL version supported " <<  version ;
+    LOG(debug) << "Frame::gl_init_window Renderer: " << renderer ;
+    LOG(debug) << "Frame::gl_init_window OpenGL version supported " <<  version ;
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
-    LOG(info)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;    
+    LOG(debug)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;    
 }
 
 

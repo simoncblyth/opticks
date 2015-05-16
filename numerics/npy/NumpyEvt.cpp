@@ -7,6 +7,10 @@
 
 #include <sstream>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 void NumpyEvt::setGenstepData(NPY* genstep)
 {
@@ -26,22 +30,24 @@ void NumpyEvt::setGenstepData(NPY* genstep)
 
     unsigned int srclen = m_genstep_data->getShape(0);
     unsigned int dstlen = m_photon_data->getShape(0);
-    printf("NumpyEvt::setGenstepData srclen %u (steps) dstlen %u (photons) \n", srclen, dstlen ); 
 
-    // repeat step index for every photon
     unsigned int photon(0) ;
     for(unsigned int step=0 ; step < srclen ; step++)
     {
         unsigned int npho = m_genstep_data->getUInt(step, 0, 3);
-        assert(npho > 0 && npho < 150); // by observation of Cerenkov steps
+        assert(npho > 0 && npho < 150);                     // by observation of Cerenkov steps
         for(unsigned int n=0 ; n < npho ; ++n)
         { 
             assert(photon < dstlen);
-            m_photon_data->setUInt(photon, 0,0, step );
+            m_photon_data->setUInt(photon, 0,0, step );    // repeat step index for every photon
             photon += 1 ;         
         }
     }
-    printf(" photon %u m_num_photons %u \n", photon, m_num_photons );
+
+    LOG(info) << "NumpyEvt::setGenstepData " 
+              << " genstep length " << srclen 
+              << " photon length " << dstlen 
+              << "  num_photons " << m_num_photons  ; 
     assert(photon == m_num_photons ); 
     // not m_num_photons-1 as last incremented photon value not used by setUInt
 }
