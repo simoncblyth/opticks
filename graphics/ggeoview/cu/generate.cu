@@ -21,6 +21,10 @@ rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
 rtBuffer<curandState, 1> rng_states ;
 
+rtDeclareVariable(float,         propagate_epsilon, , );
+rtDeclareVariable(unsigned int,  propagate_ray_type, , );
+rtDeclareVariable(rtObject,      top_object, , );
+
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
@@ -68,10 +72,14 @@ RT_PROGRAM void generate()
         generate_scintillation_photon(p, ss, prd.rng );         
     }
 
-    // TODO: fix shader to avoid having to do this kludge to see smth with OpenGL viz
-    //p.position += p.direction*1000.f ; 
+    optix::Ray ray = optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX);
+
+    rtTrace(top_object, ray, prd);
+
+    p.position = prd.intersection ; 
 
     psave(p, photon_buffer, photon_offset ); 
+
     rng_states[photon_id] = prd.rng ;
 }
 

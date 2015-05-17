@@ -43,10 +43,8 @@ public:
     Cfg(const char* name, bool live);
     bool isLive();
     const char* getName();
-    bool isHelp(){       return m_vm.count("help") ; }   
-    bool isNoGeoCache(){ return m_vm.count("nogeocache") ; }   
-    bool isVersion(){    return m_vm.count("version") ; }   
-    bool isAbort(){      return isHelp() || isVersion() ; }
+    bool hasOpt(const char* opt);   
+    bool isAbort();
 
 public:
     // holding others 
@@ -83,7 +81,15 @@ private:
 
 };
 
+inline bool Cfg::hasOpt(const char* opt)
+{ 
+   return m_vm.count(opt) ; 
+}   
 
+inline bool Cfg::isAbort()
+{
+    return hasOpt("help") || hasOpt("version") ; 
+}
 
 
 template <class Listener>

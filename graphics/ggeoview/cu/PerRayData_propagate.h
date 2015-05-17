@@ -8,10 +8,8 @@
 
 struct PerRayData_propagate
 {
-  //float3 result;
-  //float  importance;
+  float3 intersection ;
   int    depth;
-  //unsigned int node ; 
   curandState rng;
 };
 

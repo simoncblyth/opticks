@@ -100,7 +100,8 @@ int main(int argc, char** argv)
 
 
     Cfg cfg("umbrella", false) ; // collect other Cfg objects
-    cfg.add(new FrameCfg<Frame>(                "frame",         &frame,    false));
+    FrameCfg<Frame>* fcfg = new FrameCfg<Frame>("frame", &frame,false);
+    cfg.add(fcfg);
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
 
     cfg.add(new SceneCfg<Scene>(           "scene",       &scene,                      true));
@@ -112,7 +113,7 @@ int main(int argc, char** argv)
     delegate.liveConnect(&cfg); // hookup live config via UDP messages
     delegate.setNumpyEvt(&evt); // allows delegate to update evt when NPY messages arrive
 
-    if(cfg["frame"]->isHelp())  std::cout << cfg.getDesc() << std::endl ;
+    if(cfg["frame"]->hasOpt("help"))  std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 
 
@@ -120,15 +121,21 @@ int main(int argc, char** argv)
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
-    bool nogeocache = cfg["frame"]->isNoGeoCache();
+    bool nogeocache = cfg["frame"]->hasOpt("nogeocache");
     const char* idpath = scene.loadGeometry("GGEOVIEW_", nogeocache) ; 
     bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
 
 
-    const char* typ = "cerenkov" ;
-    //const char* typ = "scintillation" ;
-    const char* tag = "1" ; 
+    // hmm would be better placed into a NumpyEvtCfg 
+    const char* typ ; 
+    if(     cfg["frame"]->hasOpt("cerenkov"))      typ = "cerenkov" ;
+    else if(cfg["frame"]->hasOpt("scintillation")) typ = "scintillation" ;
+    else                                           typ = "cerenkov" ;
+
+    std::string tag_ = fcfg->getEventTag();
+    const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
+
     NPY* npy = NPY::load(typ, tag) ;
 
     G4StepNPY genstep(npy);    

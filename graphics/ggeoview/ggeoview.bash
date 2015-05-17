@@ -293,7 +293,9 @@ ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
 ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
 
-ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }
+#ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }  gets deleted too often for keeping RNG 
+ggeoview-rng-dir(){ echo $(ggeoview-idir)/cache/rng ; }
+
 ggeoview-ptx-dir(){ echo $(ggeoview-bdir)/lib/ptx ; }
 ggeoview-rng-ls(){  ls -l $(ggeoview-rng-dir) ; }
 ggeoview-ptx-ls(){  ls -l $(ggeoview-ptx-dir) ; }
@@ -422,6 +424,8 @@ ggeoview--()
 
 ggeoview-depinstall()
 {
+    bcfg-
+    bcfg-install
     npy-
     npy-install
     ggeo-

@@ -1,4 +1,5 @@
 #include "GMergedMeshOptiXGeometry.hh"
+#include "OptiXEngine.hh"
 #include "GMergedMesh.hh"
 #include "GSubstanceLib.hh"
 
@@ -109,9 +110,13 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* b
 optix::Material GMergedMeshOptiXGeometry::makeMaterial()  
 {
     optix::Material material = m_context->createMaterial();
-    unsigned int raytype_radiance = 0 ;
+
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+
+    material->setClosestHitProgram(OptiXEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+
+    material->setClosestHitProgram(OptiXEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
+
     return material ; 
 }
 

@@ -23,6 +23,7 @@ rtBuffer<unsigned int> substanceBuffer;
 rtDeclareVariable(unsigned int, nodeIndex, attribute node_index,);
 rtDeclareVariable(unsigned int, substanceIndex, attribute substance_index,);
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
+rtDeclareVariable(float3, intersectionPosition, attribute intersection_position, ); 
 
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
@@ -47,7 +48,9 @@ RT_PROGRAM void mesh_intersect(int primIdx)
             geometricNormal = normalize(n);
             nodeIndex = nodeBuffer[primIdx];
             substanceIndex = substanceBuffer[primIdx];
-
+            intersectionPosition = ray.origin + t*ray.direction  ;   
+            // http://en.wikipedia.org/wiki/Line–plane_intersection
+          
             rtReportIntersection(0);   
             //
             //

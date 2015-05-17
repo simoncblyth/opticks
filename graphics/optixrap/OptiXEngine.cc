@@ -47,13 +47,13 @@ using namespace optix ;
 #include "curand_kernel.h"
 
 
-
+/*
 enum RayType
 {
    radiance_ray_type,
    shadow_ray_type
 };
-
+*/
 
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
@@ -148,6 +148,7 @@ void OptiXEngine::initContext()
 
     m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
     m_context[ "radiance_ray_type"   ]->setUint( e_radiance_ray );
+    m_context[ "propagate_ray_type"   ]->setUint( e_propagate_ray );
 
     m_context->setRayTypeCount( e_rayTypeCount );
 
@@ -188,6 +189,9 @@ void OptiXEngine::preprocess()
     LOG(info)<< "OptiXEngine::preprocess";
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
+
+    float mm = 0.1f ; 
+    m_context[ "propagate_epsilon"]->setFloat(mm); 
  
     LOG(info)<< "OptiXEngine::preprocess start validate ";
     m_context->validate();

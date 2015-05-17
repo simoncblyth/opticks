@@ -28,6 +28,7 @@ class OptiXEngine {
         enum {
                 e_radiance_ray,
                 e_touch_ray,
+                e_propagate_ray,
                 e_rayTypeCount 
              };
 
