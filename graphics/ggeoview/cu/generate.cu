@@ -8,11 +8,14 @@
 
 using namespace optix;
 
-#include "uif.h"
+//#include "uif.h"
 #include "quad.h"
 #include "photon.h"
 #include "wavelength_lookup.h"
+
+#define GNUMQUAD 6
 #include "cerenkovstep.h"
+#include "scintillationstep.h"
 
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
@@ -20,8 +23,6 @@ rtBuffer<curandState, 1> rng_states ;
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
-
-#define GNUMQUAD 6
 
 RT_PROGRAM void generate()
 {
@@ -50,19 +51,25 @@ RT_PROGRAM void generate()
         {
             csdump(cs);
             cscheck(cs);
-            reemission_check();
             //wavelength_check();
         }
         generate_cerenkov_photon(p, cs, prd.rng );         
     }
     else
     {
-        // Scintillation 
-        // float nm = reemission_lookup(curand_uniform(&prd.rng));
+        ScintillationStep ss ;
+        ssload(ss, genstep_buffer, genstep_offset);
+
+        if(photon_id == 0)
+        {
+            ssdump(ss);
+            reemission_check();
+        }
+        generate_scintillation_photon(p, ss, prd.rng );         
     }
 
     // TODO: fix shader to avoid having to do this kludge to see smth with OpenGL viz
-    p.position += p.direction*1000.f ; 
+    //p.position += p.direction*1000.f ; 
 
     psave(p, photon_buffer, photon_offset ); 
     rng_states[photon_id] = prd.rng ;

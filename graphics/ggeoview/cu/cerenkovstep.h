@@ -22,6 +22,8 @@ struct CerenkovStep
     float weight ;
     float MeanVelocity ; 
 
+    /// the above first 4 quads are common to both CerenkovStep and ScintillationStep 
+
     float BetaInverse ; 
     float Pmin ; 
     float Pmax ; 
@@ -33,6 +35,7 @@ struct CerenkovStep
     int   BialkaliMaterialIndex  ;
 
     // above are loaded parameters, below are derived from them
+
     float MeanNumberOfPhotonsMax ; 
     float3 p0 ;
 
@@ -77,6 +80,7 @@ __device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsig
 
 
     //  derived qtys
+
     cs.p0 = normalize(cs.DeltaPosition);
     cs.MeanNumberOfPhotonsMax = max(cs.MeanNumberOfPhotons1, cs.MeanNumberOfPhotons2);
 }
@@ -258,17 +262,12 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
       p.position = cs.x0 + fraction * cs.DeltaPosition ; 
 
-
-
       p.weight = cs.weight ;
-
 
       p.flags.u.x = 0 ;
       p.flags.u.y = 0 ;
       p.flags.u.z = 0 ;
       p.flags.u.w = 0 ;
-
 }
-
 
 

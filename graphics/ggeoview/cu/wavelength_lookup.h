@@ -19,7 +19,6 @@ static __device__ __inline__ float reemission_lookup(float u)
     return tex2D(reemission_texture, ui, 0.5f );  // line 0
 }
 
-
 static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int line )
 {
     // x:low y:high z:step    tex coords are offset by 0.5 
@@ -34,6 +33,13 @@ static __device__ __inline__ float sample_reciprocal_domain(const float& u)
     float iw = lerp( wavelength_domain_reciprocal.x , wavelength_domain_reciprocal.y, u ) ;
     return 1.f/iw ;  
 }
+
+static __device__ __inline__ float sample_domain(const float& u)
+{
+    // return wavelength, from uniform sampling of wavelength domain
+    return lerp( wavelength_domain.x , wavelength_domain.y, u ) ;
+}
+
 
 static __device__ __inline__ void wavelength_dump(unsigned int line )
 {

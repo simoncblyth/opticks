@@ -359,10 +359,16 @@ ggeoview-accelcache-rm()
     rm ${DAE_NAME_DYB/.dae}.*.accelcache
 }
 
+ggeoview-rng-max()
+{
+   # maximal number of photons that can be handled
+    echo $(( 1000*1000*3 ))
+}
+
 ggeoview-rng-prep()
 {
    cudawrap-
-   CUDAWRAP_RNG_DIR=$(ggeoview-rng-dir) WORK=$(( 1000*1000 )) $(cudawrap-ibin)
+   CUDAWRAP_RNG_DIR=$(ggeoview-rng-dir) CUDAWRAP_RNG_MAX=$(ggeoview-rng-max) $(cudawrap-ibin)
 }
 
 
@@ -389,6 +395,8 @@ ggeoview-export()
 
    export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
    export RAYTRACE_RNG_DIR=$(ggeoview-rng-dir) 
+
+   export CUDAWRAP_RNG_MAX=$(ggeoview-rng-max)
 } 
 ggeoview-run(){ 
    local bin=$(ggeoview-bin)

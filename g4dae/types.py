@@ -11,6 +11,8 @@ stc_ = lambda _:load_("cerenkov",_)
 sts_ = lambda _:load_("scintillation",_)
 chc_ = lambda _:load_("opcerenkov",_)
 chs_ = lambda _:load_("opscintillation",_)
+oxc_ = lambda _:load_("oxcerenkov",_)
+oxs_ = lambda _:load_("oxscintillation",_)
 g4c_ = lambda _:load_("gopcerenkov",_)
 g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)
@@ -189,6 +191,12 @@ class ChCerenkovPhoton(Photon):
     pass
 typmap[ChCerenkovPhoton.typ] = ChCerenkovPhoton
 
+class OxCerenkovPhoton(Photon):
+    typ = "oxcerenkov"
+    pass
+typmap[OxCerenkovPhoton.typ] = OxCerenkovPhoton
+
+
 class ChCerenkovPhotonGen(Photon):
     typ = "opcerenkovgen"
     pass
@@ -204,6 +212,11 @@ class ChScintillationPhotonGen(Photon):
     typ = "opscintillationgen"
     pass
 typmap[ChScintillationPhotonGen.typ] = ChScintillationPhotonGen
+
+class OxScintillationPhoton(Photon):
+    typ = "oxscintillation"
+    pass
+typmap[OxScintillationPhoton.typ] = OxScintillationPhoton
 
 
 

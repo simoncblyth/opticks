@@ -55,10 +55,6 @@ class OptiXEngine {
         void render();
         void cleanUp();
 
-    public:
-        //dev
-        void readGenerate();
-
     private:
         void initRenderer();
         void initContext();
@@ -166,3 +162,23 @@ inline GMergedMesh* OptiXEngine::getMergedMesh()
 {
     return m_mergedmesh ; 
 }
+
+
+
+
+inline void OptiXEngine::setRngMax(unsigned int rng_max)
+{
+// default of 0 disables Rng 
+// otherwise maximum number of RNG streams, 
+// should be a little more than the max number of photons to generate/propagate eg 3e6
+    m_rng_max = rng_max ;
+}
+inline unsigned int OptiXEngine::getRngMax()
+{
+    return m_rng_max ; 
+}
+
+
+
+
+

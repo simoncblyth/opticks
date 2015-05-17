@@ -30,6 +30,7 @@
 #include "MultiVecNPY.hpp"
 #include "Lookup.hpp"
 #include "G4StepNPY.hpp"
+#include "stringutil.hpp"
 
 
 #include <glm/glm.hpp>
@@ -125,14 +126,18 @@ int main(int argc, char** argv)
     GMergedMesh* mm = scene.getMergedMesh(); 
 
 
+    const char* typ = "cerenkov" ;
+    //const char* typ = "scintillation" ;
+    const char* tag = "1" ; 
+    NPY* npy = NPY::load(typ, tag) ;
 
-    // probably move this into NumpyEvt ?
+    G4StepNPY genstep(npy);    
     Lookup lookup ; 
     lookup.create(idpath);
-    G4StepNPY cs(NPY::load("cerenkov", "1"));
-    cs.setLookup(&lookup); 
-    cs.applyLookup(0, 2); // materialIndex  (1st quad, 3rd number)
-    evt.setGenstepData(cs.getNPY()); 
+    genstep.setLookup(&lookup); 
+    genstep.applyLookup(0, 2); // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
+
+    evt.setGenstepData(npy); 
 
     scene.loadEvt();
     //
@@ -148,16 +153,23 @@ int main(int argc, char** argv)
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(interactor.getOptiXMode()>-1);
-    engine.setRngMax(1e6);
+
+    int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
+    assert(rng_max >= 1e6); 
+    engine.setRngMax(rng_max);
     engine.init();  // creates OptiX context, when enabled
 
     engine.generate();
-    //evt.dumpPhotonData();    //TODO: download modified VBO back into evt 
-    engine.readGenerate();
+
+    NPY* photons = evt.getPhotonData();
+    Rdr::download(photons);
+    char otyp[64];
+    snprintf(otyp, 64, "ox%s", typ );
+    photons->save(otyp, tag);
+
 
  
     GLFWwindow* window = frame.getWindow();
-
     LOG(info) << "enter runloop "; 
     while (!glfwWindowShouldClose(window))
     {
@@ -167,14 +179,6 @@ int main(int argc, char** argv)
 
         if(interactor.getOptiXMode()>0)
         { 
-             //  something in engine.trace is making gensteps disappear after on/off OptiX mode 
-             //  binary search reveals its the OptiX context launch 
-             //  (rather than suspected OpenGL state "interference")
-             //
-             //  --> keeping launch, skipping initGenerate avoids disappearance,
-             //      but flakiness observed: working now, but might not be fixed
-             //
-
              engine.trace();
              engine.render();
         }

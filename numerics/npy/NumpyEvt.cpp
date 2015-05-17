@@ -2,6 +2,7 @@
 
 #include "uif.h"
 #include "NPY.hpp"
+#include "G4StepNPY.hpp"
 #include "VecNPY.hpp"
 #include "MultiVecNPY.hpp"
 
@@ -14,6 +15,8 @@
 
 void NumpyEvt::setGenstepData(NPY* genstep)
 {
+    G4StepNPY gs(genstep);  
+
     m_genstep_data = genstep  ;
     m_genstep_attr = new MultiVecNPY();
     m_genstep_attr->add(new VecNPY("vpos",m_genstep_data,1,0));    // (x0, t0)                     2nd GenStep quad 
@@ -28,28 +31,40 @@ void NumpyEvt::setGenstepData(NPY* genstep)
     // stuff genstep index into the photon allocation 
     // to allow generation to access appropriate genstep 
 
-    unsigned int srclen = m_genstep_data->getShape(0);
-    unsigned int dstlen = m_photon_data->getShape(0);
+    unsigned int numStep   = m_genstep_data->getShape(0);
+    unsigned int numPhoton = m_photon_data->getShape(0);
 
-    unsigned int photon(0) ;
-    for(unsigned int step=0 ; step < srclen ; step++)
+    unsigned int count(0) ;
+    for(unsigned int index=0 ; index < numStep ; index++)
     {
-        unsigned int npho = m_genstep_data->getUInt(step, 0, 3);
-        assert(npho > 0 && npho < 150);                     // by observation of Cerenkov steps
+        unsigned int npho = m_genstep_data->getUInt(index, 0, 3);
+        if(gs.isCerenkovStep(index))
+        {
+            assert(npho > 0 && npho < 150);      // by observation of Cerenkov steps
+        }
+        else if(gs.isScintillationStep(index))
+        {
+            assert(npho >= 0 && npho < 1000);     // by observation of Scintillation steps                  
+        } 
+
         for(unsigned int n=0 ; n < npho ; ++n)
         { 
-            assert(photon < dstlen);
-            m_photon_data->setUInt(photon, 0,0, step );    // repeat step index for every photon
-            photon += 1 ;         
-        }
-    }
+            assert(count < numPhoton);
+            m_photon_data->setUInt(count, 0,0, index );  // set "phead" : repeating step index for every photon to be generated for the step
+            count += 1 ;         
+        }  // over photons for each step
+    }      // over gen steps
+
 
     LOG(info) << "NumpyEvt::setGenstepData " 
-              << " genstep length " << srclen 
-              << " photon length " << dstlen 
+              << " stepId(0) " << gs.getStepId(0) 
+              << " genstep length " << numStep 
+              << " photon length " << numPhoton
               << "  num_photons " << m_num_photons  ; 
-    assert(photon == m_num_photons ); 
-    // not m_num_photons-1 as last incremented photon value not used by setUInt
+
+    assert(count == m_num_photons ); 
+    assert(count == numPhoton ); 
+    // not m_num_photons-1 as last incremented count value is not used by setUInt
 }
 
 void NumpyEvt::setPhotonData(NPY* photon_data)

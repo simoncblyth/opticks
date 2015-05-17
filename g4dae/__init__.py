@@ -1,5 +1,13 @@
 #!/bin/env python
 """
+Photon distribution comparisons::
+
+    In [1]: generated_oxcerenkov_3xyzw()
+
+    In [2]: generated_oxscintillation_3xyzw()
+
+
+
 Shortcut functions for use from ipython. Usage::
 
     In [2]: from env.g4dae import chroma_geometry, geometry, daenode
@@ -159,15 +167,32 @@ def g4_cerenkov_wavelength(tag, **kwa):
 
 
 
+def generated_oxscintillation_3xyzw(tag=1):
+    typs = "gopscintillation oxscintillation"
+    suptitle = "GPU/OptiX Generated Scintillation Photons(blue) Compared to Geant4(red) (Single Event)"
+    cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
+
 def generated_scintillation_3xyzw(tag=1):
     typs = "gopscintillation opscintillationgen"
     suptitle = "GPU Generated Scintillation Photons(blue) Compared to Geant4(red) (Single Event)"
+    cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
+
+
+
+def generated_oxcerenkov_3xyzw(tag=1):
+    typs = "gopcerenkov oxcerenkov"
+    suptitle = "GPU/OptiX Generated Cerenkov Photons(blue) Compared to Geant4(red) (Single Event)"
     cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
 
 def generated_cerenkov_3xyzw(tag=1):
     typs = "gopcerenkov opcerenkovgen"
     suptitle = "GPU Generated Cerenkov Photons(blue) Compared to Geant4(red) (Single Event)"
     cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
+
+
+
+
+
 
 
 def generated_scintillation_time_wavelength(tag=1):

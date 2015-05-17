@@ -40,7 +40,7 @@ GProperty<T>* GProperty<T>::load(const char* path)
 
     unsigned int len = ni*nj ;
 
-    float* fdata = npy->getFloats();
+    float* fdata = npy->getValues();
 
 
     // translate into local type

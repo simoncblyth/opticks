@@ -408,6 +408,10 @@ GProperty<float>* GSubstanceLib::constructInvertedReemissionCDF(GPropertyMap<flo
     // * maybe because "agree" means it matches a prior standard sampling and in
     //   the limit of many bins the techniques converge ?
     //
+    // * Nope, its because of the fixed width raster across entire 0:1 in 
+    //   lookup compared to "effectively" variable raster when doing value binary search
+    //   as opposed to domain jump-to-the-bin : see notes in tests/GPropertyTest.cc
+    //
 
     P* icdf = rcdf->createInverseCDF(nicdf); 
 

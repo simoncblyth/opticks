@@ -234,19 +234,6 @@ void OptiXEngine::trace()
     m_trace_count += 1 ; 
 }
 
-
-void OptiXEngine::setRngMax(unsigned int rng_max)
-{
-// default of 0 disables Rng 
-// otherwise maximum number of RNG streams, 
-// should be a little more than the max number of photons to generate/propagate eg 3e6
-    m_rng_max = rng_max ;
-}
-unsigned int OptiXEngine::getRngMax()
-{
-    return m_rng_max ; 
-}
-
 void OptiXEngine::initRng()
 {
     if(m_rng_max == 0 ) return ;
@@ -272,7 +259,10 @@ void OptiXEngine::generate()
     if(!m_enabled) return ;
     if(!m_evt) return ;
 
-    unsigned int width  = m_evt->getNumPhotons();
+    unsigned int numPhotons = m_evt->getNumPhotons();
+    assert( numPhotons < getRngMax() && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
+
+    unsigned int width  = numPhotons ;
     unsigned int height = 1 ;
 
     LOG(info) << "OptiXEngine::generate count " << m_generate_count << " size(" <<  width << "," <<  height << ")";
@@ -287,17 +277,6 @@ void OptiXEngine::initGenerate()
 {
     if(!m_evt) return ;
     initGenerate(m_evt);
-}
-
-void OptiXEngine::readGenerate()
-{
-    if(!m_evt) return ;
-
-    NPY* photons = m_evt->getPhotonData();
-    Rdr::download( photons );
-
-    photons->Summary("downloaded photons");
-    photons->save("/tmp/photons.npy");
 }
 
 

@@ -88,6 +88,21 @@ bool G4StepNPY::applyLookup(unsigned int index)
 }
 
 
+int G4StepNPY::getStepId(unsigned int i)
+{
+    return m_npy->getInt(i,0,0);
+}
+bool G4StepNPY::isCerenkovStep(unsigned int i)
+{
+    return getStepId(i) < 0 ; 
+}
+bool G4StepNPY::isScintillationStep(unsigned int i)
+{
+    return getStepId(i) > 0 ; 
+}
+
+
+
 void G4StepNPY::applyLookup(unsigned int jj, unsigned int kk)
 {
     unsigned int nfail = 0 ;

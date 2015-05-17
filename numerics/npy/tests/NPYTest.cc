@@ -60,7 +60,7 @@ void test_g4stepnpy()
 void test_getData()
 {
     NPY* npy = NPY::load("cerenkov","1");
-    float* data = npy->getFloats();
+    float* data = npy->getValues();
 
     for(unsigned int i=0 ; i < 16 ; i++ )
     {

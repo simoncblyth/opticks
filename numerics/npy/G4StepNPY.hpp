@@ -26,7 +26,7 @@ class G4StepNPY {
    public:  
         typedef std::set<unsigned int> Set_t ; 
    public:  
-       G4StepNPY(NPY* npy); // stealing ctor
+       G4StepNPY(NPY* npy); // weak reference to NPY* only
        NPY* getNPY();
 
    public:  
@@ -35,6 +35,11 @@ class G4StepNPY {
        void applyLookup(unsigned int jj, unsigned int kk);
        void dump(const char* msg);
        void dumpLines(const char* msg);
+
+   public:  
+       int getStepId(unsigned int i=0);
+       bool isCerenkovStep(unsigned int i=0);
+       bool isScintillationStep(unsigned int i=0);
 
   private:
        bool applyLookup(unsigned int index);

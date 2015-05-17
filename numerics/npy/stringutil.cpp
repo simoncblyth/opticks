@@ -2,6 +2,15 @@
 #include "md5digest.h"
 
 #include <sstream>
+#include <boost/lexical_cast.hpp>
+
+
+int getenvint( const char* envkey, int fallback )
+{
+    char* val = getenv(envkey);
+    int ival = val ? boost::lexical_cast<int>(val) : fallback ;
+    return ival ; 
+}
 
 
 const char* getenvvar( const char* envprefix, const char* envkey )

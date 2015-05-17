@@ -20,10 +20,6 @@ class NPY {
    friend class G4StepNPY ; 
 
    public:
-       static std::string path(const char* typ, const char* tag);
-       static NPY* debugload(const char* path);
-       static NPY* load(const char* path);
-       static NPY* load(const char* typ, const char* tag);
        static NPY* make_vec3(float* m2w, unsigned int npo=100);  
        static NPY* make_float4(unsigned int ni, unsigned int nj=1, float value=0.f);
 
@@ -32,28 +28,41 @@ class NPY {
        NPY(std::vector<int>& shape, float*  data, std::string& metadata) ;
        NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) ;
 
+   public:
+       static std::string path(const char* typ, const char* tag);
+       static NPY* debugload(const char* path);
+       static NPY* load(const char* path);
+       static NPY* load(const char* typ, const char* tag);
+ 
        void save(const char* path);
+       void save(const char* typ, const char* tag);
+
+   public:
        unsigned int getLength();
        unsigned int getDimensions();
        std::vector<int>& getShapeVector();
        unsigned int getShape(unsigned int dim);
        unsigned int getNumValues(unsigned int from_dim=1);
        unsigned int getNumBytes(unsigned int from_dim=1);
-       float* getFloats();
+       float* getValues();
        void* getBytes();
        void read(void* ptr);
 
     public:
        // methods assuming 3D shape
-       unsigned int getFloatIndex(unsigned int i, unsigned int j, unsigned int k);
+       unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getByteIndex(unsigned int i, unsigned int j, unsigned int k);
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
+
        unsigned int getUSum(unsigned int j, unsigned int k);
 
        float        getFloat(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k);
+       int          getInt(  unsigned int i, unsigned int j, unsigned int k);
+
        void         setFloat(unsigned int i, unsigned int j, unsigned int k, float value);
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);
+       void         setInt(  unsigned int i, unsigned int j, unsigned int k, int value);
 
     public:
        std::string  getItemShape(unsigned int ifr=1);
@@ -123,21 +132,21 @@ inline unsigned int NPY::getLength()
 }
 
 
-inline float* NPY::getFloats()
+inline float* NPY::getValues()
 {
     return m_data.data();
 }
 inline void* NPY::getBytes()
 {
-    return (void*)getFloats();
+    return (void*)getValues();
 }
 
 
 inline unsigned int NPY::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
 {
-    return sizeof(float)*getFloatIndex(i,j,k);
+    return sizeof(float)*getValueIndex(i,j,k);
 }
-inline unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned int k)
+inline unsigned int NPY::getValueIndex(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(m_dim == 3 ); 
     unsigned int nj = m_len1 ;
@@ -147,14 +156,14 @@ inline unsigned int NPY::getFloatIndex(unsigned int i, unsigned int j, unsigned 
 
 inline float NPY::getFloat(unsigned int i, unsigned int j, unsigned int k)
 {
-    unsigned int idx = getFloatIndex(i,j,k);
-    float* data = getFloats();
+    unsigned int idx = getValueIndex(i,j,k);
+    float* data = getValues();
     return  *(data + idx);
 }
 inline void NPY::setFloat(unsigned int i, unsigned int j, unsigned int k, float value)
 {
-    unsigned int idx = getFloatIndex(i,j,k);
-    float* data = getFloats();
+    unsigned int idx = getValueIndex(i,j,k);
+    float* data = getValues();
     *(data + idx) = value ;
 }
 inline unsigned int NPY::getUInt(unsigned int i, unsigned int j, unsigned int k)
@@ -167,6 +176,19 @@ inline void NPY::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigne
 {
     uif_t uif ; 
     uif.u = value ;
+    setFloat(i,j,k,uif.f); 
+}
+
+inline int NPY::getInt(unsigned int i, unsigned int j, unsigned int k)
+{
+    uif_t uif ; 
+    uif.f = getFloat(i,j,k);
+    return uif.i ;
+}
+inline void NPY::setInt(unsigned int i, unsigned int j, unsigned int k, int value)
+{
+    uif_t uif ; 
+    uif.i = value ;
     setFloat(i,j,k,uif.f); 
 }
 

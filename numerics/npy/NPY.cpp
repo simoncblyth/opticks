@@ -5,6 +5,10 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
 
 // ctor takes ownership of a copy of the inputs 
 NPY::NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) 
@@ -99,6 +103,8 @@ std::string NPY::path(const char* typ, const char* tag)
        p++ ; 
     } 
 
+
+    // NB envvars and valid typ are defined in env/export-
     char envvar[64];
     snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
     free(TYP); 
@@ -112,12 +118,29 @@ std::string NPY::path(const char* typ, const char* tag)
     return path_ ;   
 }
 
-
-void NPY::save(const char* path)
+void NPY::save(const char* typ, const char* tag)
 {
+    std::string path = NPY::path(typ, tag);
+
+
+    save(path.c_str());
+}
+void NPY::save(const char* path_)
+{
+    fs::path path(path_);
+    fs::path dir = path.parent_path();
+
+    if(!fs::exists(dir))
+    {   
+        if (fs::create_directory(dir))
+        {   
+            LOG(info)<< "NPY::save created directory [" << dir.string() << "]" ;
+        }   
+    }   
+
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
-    aoba::SaveArrayAsNumpy<float>(path, itemcount, itemshape.c_str(), getFloats()  );
+    aoba::SaveArrayAsNumpy<float>(path_, itemcount, itemshape.c_str(), getValues()  );
 }
 
 
@@ -151,7 +174,7 @@ NPY* NPY::debugload(const char* path)
 
 void NPY::debugdump()
 {
-    float* data = getFloats() ; 
+    float* data = getValues() ; 
     for(unsigned int i=0 ; i < 16 ; i++)
     {
          if(i % 4 == 0) printf("\n");
@@ -166,7 +189,6 @@ void NPY::debugdump()
 NPY* NPY::load(const char* path)
 {
    /*
-
     Currently need to save as np.float32 for this to manage to load, do so with::
 
     In [3]: a.dtype
@@ -175,9 +197,7 @@ NPY* NPY::load(const char* path)
     In [4]: b = np.array(a, dtype=np.float32)
 
     np.save("/tmp/slowcomponent.npy", b ) 
-
    */
-
 
     std::vector<int> shape ;
     std::vector<float> data ;
