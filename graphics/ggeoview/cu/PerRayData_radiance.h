@@ -13,7 +13,7 @@ struct PerRayData_radiance
   float3 result;
   float  importance;
   int    depth;
-  unsigned int node ; 
+  uint4  touch ; 
   curandState rng;
 };
 

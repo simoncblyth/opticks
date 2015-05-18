@@ -32,7 +32,7 @@ rtDeclareVariable(unsigned int,  touch_mode, , );
 rtDeclareVariable(unsigned int,  touch_bad, , );
 rtDeclareVariable(uint2,         touch_index,  , );
 rtDeclareVariable(uint2,         touch_dim,  , );
-rtBuffer<unsigned int,2>         touch_buffer;
+rtBuffer<uint4,2>         touch_buffer;
 
 
 RT_PROGRAM void pinhole_camera()
@@ -52,7 +52,7 @@ RT_PROGRAM void pinhole_camera()
   PerRayData_radiance prd;
   prd.importance = 1.f;
   prd.depth = 0;
-  prd.node = touch_bad ;
+  prd.touch = make_uint4(0,0,0,0) ;
   prd.result = bad_color ;
 
   float2 d = touch_mode ?  
@@ -102,13 +102,8 @@ RT_PROGRAM void pinhole_camera()
 
   if(touch_mode)
   {
-      touch_buffer[launch_index] = prd.node ;  // returning the index of the node touched
-      rtPrintf("pinhole_camera.cu::pinhole_camera(touch_mode)  node %d \n", prd.node );
-
-      // cannot do wavelength lookups here, as wavelength_texture 
-      // not defined in scopes: Program, Context
-      // instead must do in closest_hit where Material scope
-      // is available 
+      touch_buffer[launch_index] = prd.touch  ;
+      //rtPrintf("pinhole_camera.cu::pinhole_camera(touch_mode)  node %d \n", prd.node );
   }
 
 #endif

@@ -29,6 +29,17 @@ Rebuild Order
     ggeoview-install  
 
 
+Thoughts on touch mode : OptiX single-ray-cast OR OpenGL depth buffer/unproject 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OptiX based touch mode, is not so useful operationally (although handy as a debug tool) as:
+
+#. it requires to do an OptiX render before it can operate
+#. will usually be using OpenGL rendering to see the geometry often with 
+   clipping planes etc.. that only OpenGL knows about.  
+
+Thus need an OpenGL depth buffer unproject approach too.
+
 
 Low GPU memory running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

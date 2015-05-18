@@ -177,7 +177,8 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
             number_key_pressed(key - GLFW_KEY_0);
             break; 
     } 
-    Print("Interactor::key_pressed");
+    //Print("Interactor::key_pressed");
+    updateStatus();
 }
 
 void Interactor::key_released(unsigned int key, int ix, int iy )
@@ -206,9 +207,11 @@ void Interactor::key_released(unsigned int key, int ix, int iy )
 }
 
 
-void Interactor::Print(const char* msg)
+
+void Interactor::updateStatus()
 {
-    printf("%s %s%s%s%s%s%s%s%s %10.3f \n", msg,
+    char status[64];
+    snprintf(status, 64, "%s%s%s%s%s%s%s%s %10.3f ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
@@ -218,6 +221,19 @@ void Interactor::Print(const char* msg)
            m_jump_mode ? "j" : "-",
            m_optix_mode ? "o" : "-",
            m_dragfactor );
+
+    m_status = status ; 
+}
+
+const char* Interactor::getStatus()
+{
+    return m_status.c_str();
+}
+
+void Interactor::Print(const char* msg)
+{
+    updateStatus();
+    printf("%s %s\n", msg, getStatus() );
 }
 
 

@@ -60,6 +60,19 @@ void Trackball::getCombinedMatrices(glm::mat4& rt, glm::mat4& rti)
 
 } 
 
+void Trackball::getOrientationMatrices(glm::mat4& rot, glm::mat4& irot)
+{
+    rot  = getOrientationMatrix();  
+    irot = glm::transpose(rot);
+} 
+
+void Trackball::getTranslationMatrices(glm::mat4& tra, glm::mat4& itra)
+{
+    tra = glm::translate(glm::vec3(m_x, m_y, m_z));  
+    itra = glm::translate(glm::vec3(-m_x, -m_y, -m_z));  
+} 
+
+
 
 void Trackball::configureF(const char* name, std::vector<float> values)
 {

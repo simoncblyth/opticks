@@ -49,6 +49,7 @@ class OptiXEngine : public Touchable {
         GMergedMesh* getMergedMesh();
         optix::Context& getContext();
         unsigned int getRngMax();
+        unsigned int getTraceCount();
 
     public:
         void init();
@@ -184,6 +185,11 @@ inline unsigned int OptiXEngine::getRngMax()
 {
     return m_rng_max ; 
 }
+inline unsigned int OptiXEngine::getTraceCount()
+{
+    return m_trace_count ; 
+}
+
 
 
 

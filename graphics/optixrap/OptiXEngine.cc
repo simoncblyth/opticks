@@ -130,7 +130,7 @@ void OptiXEngine::initContext()
     m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
     m_context["output_buffer"]->set( m_output_buffer );
 
-    m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1);
+    m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
     m_context["touch_buffer"]->set( m_touch_buffer );
     m_context["touch_mode" ]->setUint( 0u );
 
@@ -165,9 +165,19 @@ void OptiXEngine::initContext()
 // fulfil Touchable interface
 void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
 {
+
+    if(m_trace_count == 0)
+    {
+        LOG(warning) << "OptiXEngine::touch \"OptiX touch mode\" only works after performing an OptiX trace, press O to toggle OptiX tracing then try again " ; 
+        return ; 
+    }
+
+
     // (ix_, iy_) 
-    //        (0,0) at top left,  
-    //   (1024,768) at bottom right
+    //        (0,0)              at top left,  
+    //   (1024,768)*pixel_factor at bottom right
+
+
 
     RTsize width, height;
     m_output_buffer->getSize( width, height );
@@ -176,8 +186,8 @@ void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
     int iy = height - iy_;   
 
     // (ix,iy) 
-    //       (0,0)      at bottom left
-    //       (1024,768) at top right  
+    //   (0,0)                     at bottom left
+    //   (1024,768)*pixel_factor   at top right  
 
     m_context["touch_mode"]->setUint(1u);
     m_context["touch_index"]->setUint(ix, iy ); // by inspection
@@ -192,8 +202,8 @@ void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
     Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
     m_context["touch_mode"]->setUint(0u);
 
-    unsigned int* touchBuffer_Host = static_cast<unsigned int*>( touchBuffer->map() );
-    unsigned int nodeIndex = touchBuffer_Host[0] ;
+    uint4* touchBuffer_Host = static_cast<uint4*>( touchBuffer->map() );
+    uint4 touch = touchBuffer_Host[0] ;
     touchBuffer->unmap();
 
     LOG(info) << "OptiXEngine::touch "
@@ -204,7 +214,15 @@ void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
               << " iy " << iy   
               << " width " << width   
               << " height " << height 
-              << " nodeIndex " << nodeIndex ;  
+              << " touch.x nodeIndex " << touch.x 
+              << " touch.y " << touch.y 
+              << " touch.z " << touch.z   
+              << " touch.w " << touch.w 
+              ;  
+
+     unsigned int target = touch.x ; 
+     m_composition->setTarget(target); 
+
 }
 
 

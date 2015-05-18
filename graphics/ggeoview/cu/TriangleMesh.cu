@@ -23,7 +23,7 @@ rtBuffer<unsigned int> substanceBuffer;
 rtDeclareVariable(unsigned int, nodeIndex, attribute node_index,);
 rtDeclareVariable(unsigned int, substanceIndex, attribute substance_index,);
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
-rtDeclareVariable(float3, intersectionPosition, attribute intersection_position, ); 
+//rtDeclareVariable(float3, intersectionPosition, attribute intersection_position, ); 
 
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
@@ -34,6 +34,8 @@ RT_PROGRAM void mesh_intersect(int primIdx)
  
     //  tried flipping vertex order in unsuccessful attempt to 
     //  get normal shader colors to match OpenGL
+    //  observe with touch mode that n.z always small 
+    //
     float3 p0 = vertexBuffer[index.x];
     float3 p1 = vertexBuffer[index.y];  
     float3 p2 = vertexBuffer[index.z];
@@ -48,7 +50,12 @@ RT_PROGRAM void mesh_intersect(int primIdx)
             geometricNormal = normalize(n);
             nodeIndex = nodeBuffer[primIdx];
             substanceIndex = substanceBuffer[primIdx];
-            intersectionPosition = ray.origin + t*ray.direction  ;   
+            
+            // doing calculation here might (depending on OptiX compiler cleverness) 
+            // repeat for all intersections encountered unnecessarily   
+            // instead move the calculation into closest_hit
+            //
+            // intersectionPosition = ray.origin + t*ray.direction  ; 
             // http://en.wikipedia.org/wiki/Line–plane_intersection
           
             rtReportIntersection(0);   

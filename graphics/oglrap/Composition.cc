@@ -5,6 +5,7 @@
 #include "Trackball.hh"
 #include "View.hh"
 #include "Clipper.hh"
+#include "Scene.hh"
 
 #include "CameraCfg.hh"
 #include "TrackballCfg.hh"
@@ -35,6 +36,7 @@ Composition::Composition()
   m_view(NULL),
   m_trackball(NULL),
   m_clipper(NULL),
+  m_scene(NULL),
   m_model_to_world(),
   m_extent(1.0f),
   m_center_extent()
@@ -48,6 +50,8 @@ Composition::Composition()
 Composition::~Composition()
 {
 }
+
+
 
 
 
@@ -114,6 +118,16 @@ void Composition::setSize(unsigned int width, unsigned int height)
 }
 
 
+void Composition::setTarget(unsigned int target)
+{
+    if(!m_scene)
+    {
+        LOG(warning) << "Composition::setTarget requires composition.setScene(scene) " ; 
+        return ; 
+    }
+    m_scene->setTarget(target);
+}
+
 
 
 void Composition::setCenterExtent(gfloat4 ce) // replaces setModelToWorld
@@ -138,34 +152,6 @@ glm::vec4& Composition::getCenterExtent()
     return m_center_extent ; 
 }
 
-
-
-/*
-void Composition::setModelToWorld(float* m2w, bool debug)
-{
-    assert(m2w);
-
-    m_model_to_world = glm::make_mat4(m2w);
-    m_extent = *(m2w+0) ; 
-
-    if(debug)
-    {
-        print(m2w, "Composition::setModelToWorld raw floats (should be OpenGL conventional order, translation at end)");
-        print(m_model_to_world, "glm::mat4 m_model_to_world GLMPrint::print transposes into familiar presentation");
-        print(glm::value_ptr(m_model_to_world), "glm::value_ptr(m_model_to_world)");
-    }
-
-    LOG(info) << "Composition::setModelToWorld m_extent " << m_extent ;
-
-    //
-    // too small near or to large far leads to flikering mess
-    // so initialize to something reasonable based on the 
-    // extext of the drawable
-    //
-    m_camera->setNear( m_extent/10.f ); 
-    m_camera->setFar(  m_extent*10.f );  
-}
-*/
 
 
 
@@ -251,10 +237,12 @@ glm::mat4& Composition::getProjection()
 }
 glm::mat4& Composition::getTrackballing()  
 {
+     assert(0);
      return m_trackballing ;
 }
 glm::mat4& Composition::getITrackballing()  
 {
+     assert(0);
      return m_itrackballing ;
 }
 
@@ -287,11 +275,14 @@ void Composition::update()
 
     m_look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-m_gazelength));
 
-    m_trackball->getCombinedMatrices(m_trackballing, m_itrackballing);
 
-    m_world2eye = m_look2eye * m_trackballing * m_eye2look * m_world2camera ;           // ModelView
+    m_trackball->getOrientationMatrices(m_trackballrot, m_itrackballrot);
+    m_trackball->getTranslationMatrices(m_trackballtra, m_itrackballtra);
+    //m_trackball->getCombinedMatrices(m_trackballing, m_itrackballing);
 
-    m_eye2world = m_camera2world * m_look2eye * m_itrackballing * m_eye2look ;          // InverseModelView
+    m_world2eye = m_trackballtra * m_look2eye * m_trackballrot * m_eye2look * m_world2camera ;           // ModelView
+
+    m_eye2world = m_camera2world * m_look2eye * m_itrackballrot * m_eye2look * m_itrackballtra ;          // InverseModelView
 
     m_projection = m_camera->getProjection();
 

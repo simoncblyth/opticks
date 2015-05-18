@@ -23,7 +23,7 @@
 
 
 
-void _update_fps_counter (GLFWwindow* window) {
+void _update_fps_counter (GLFWwindow* window, const char* status) {
   if(!window)
   {
       printf("_update_fps_counter NULL window \n");
@@ -37,7 +37,7 @@ void _update_fps_counter (GLFWwindow* window) {
     previous_seconds = current_seconds;
     double fps = (double)frame_count / elapsed_seconds;
     char tmp[128];
-    sprintf (tmp, "opengl @ fps: %.2f", fps);
+    sprintf (tmp, "opengl @ fps: %.2f  %s ", fps, status );
     glfwSetWindowTitle (window, tmp);
     frame_count = 0;
   }
@@ -212,7 +212,7 @@ void Frame::listen()
 
 void Frame::render()
 {
-     _update_fps_counter (m_window);
+     _update_fps_counter (m_window, m_interactor ? m_interactor->getStatus() : "" );
 
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

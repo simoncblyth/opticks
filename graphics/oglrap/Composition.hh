@@ -13,6 +13,7 @@ class View ;
 class Trackball ; 
 class Clipper ; 
 class Cfg ;
+class Scene ; 
 
 class Composition {
 
@@ -27,6 +28,8 @@ class Composition {
       //void setModelToWorld(float* m2w, bool debug=false); // effectively points at what you want to look at 
       void setCenterExtent(gfloat4 ce); // effectively points at what you want to look at 
 
+      void setTarget(unsigned int target);
+      void setScene(Scene* scene);
       void setSize(unsigned int width, unsigned int height);
       void addConfig(Cfg* cfg);
 
@@ -45,6 +48,7 @@ class Composition {
       Trackball* getTrackball(); 
       View* getView(); 
       Clipper* getClipper(); 
+      Scene* getScene(); 
 
       
       void setCamera(Camera* camera);
@@ -79,6 +83,8 @@ class Composition {
       float*     getWorld2ClipPtr();  // ModelViewProjection  including trackballing
       float*     getIdentityPtr(); 
       glm::mat4& getProjection(); 
+
+  private:
       glm::mat4& getTrackballing(); 
       glm::mat4& getITrackballing(); 
 
@@ -99,6 +105,7 @@ class Composition {
       Trackball* m_trackball ;
       View*      m_view ;
       Clipper*   m_clipper ;
+      Scene*     m_scene ; 
 
   private:
       // updated by *update* based on inputs and residents
@@ -113,8 +120,15 @@ class Composition {
       glm::mat4 m_look2eye ;     
       glm::mat4 m_world2clip ;     
       glm::mat4 m_projection ;     
+
       glm::mat4 m_trackballing ;     
       glm::mat4 m_itrackballing ;     
+
+      glm::mat4 m_trackballrot ;     
+      glm::mat4 m_itrackballrot ;     
+      glm::mat4 m_trackballtra ;     
+      glm::mat4 m_itrackballtra ;     
+
       glm::mat4 m_identity ;     
 
   public: 
@@ -160,6 +174,14 @@ inline void Composition::setView(View* view)
 
 
 
+inline Scene* Composition::getScene()
+{
+    return m_scene ; 
+}
+inline void Composition::setScene(Scene* scene)
+{
+    m_scene = scene ; 
+}
 
 
 

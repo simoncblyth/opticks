@@ -86,6 +86,7 @@ int main(int argc, char** argv)
 
     interactor.setComposition(&composition);
     scene.setComposition(&composition);    
+    composition.setScene(&scene);
     bookmarks.setComposition(&composition);
 
     interactor.setBookmarks(&bookmarks);

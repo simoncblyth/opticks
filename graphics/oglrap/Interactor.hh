@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-
+#include <string>
 
 class Composition ;
 class Bookmarks ; 
@@ -37,11 +37,14 @@ class Interactor {
        void number_key_pressed(unsigned int number);
        void key_pressed(unsigned int key, int ix, int iy );
        void key_released(unsigned int key, int ix, int iy );
-       void Print(const char* msg);
 
        void configureF(const char* name, std::vector<float> values);
        void configureI(const char* name, std::vector<int> values);
 
+  public:
+       void Print(const char* msg);
+       void updateStatus();
+       const char* getStatus(); 
 
   private:
        Composition* m_composition ; 
@@ -63,6 +66,8 @@ class Interactor {
        int  m_optix_mode ;
 
        float m_dragfactor ;
+
+       std::string m_status ; 
 
 };
 

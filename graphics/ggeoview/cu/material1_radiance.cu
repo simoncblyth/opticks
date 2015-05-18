@@ -16,11 +16,6 @@ rtDeclareVariable(unsigned int,  touch_mode, , );
 
 RT_PROGRAM void closest_hit_radiance()
 {
-    if(touch_mode)
-    {
-       rtPrintf("material1_radiance.cu::closest_hit_radiance\n");
-    }
-
      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
   // const float3 n = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, geometricNormal)) ; 
   // const float3 n = normalize(geometricNormal) ; 
@@ -31,30 +26,45 @@ RT_PROGRAM void closest_hit_radiance()
 
   const float cos_theta = dot(n,ray.direction);
 
-   //
-   // normal shader colors dont match what getting with OpenGL normal shader ???
-   //  BGRA format in the mix but swapping x and z doesnt cause a match
-   //  CCW triangle winding maybe
-   //
-   // prd.result = make_float3(-n.z*0.5f + 0.5f,-n.y*0.5f + 0.5f, -n.x*0.5f + 0.5f );                         // normal shader
-   // prd.result = make_float3(n.x*0.5f + 0.5f, n.y*0.5f + 0.5f, n.z*0.5f + 0.5f );                         // normal shader
-   //
-   //prd.result = make_float3( 1.f, 0.f, 0.f ); //red
-   //prd.result = make_float3( 0.f, 1.f, 0.f ); //green
-   //prd.result = make_float3( 0.f, 0.f, 1.f ); //blue
-   //prd.result = make_float3(0.5f);            
 
-     prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+  if(touch_mode)
+  {
+      // n.z often coming out very small, ~1e-9 
+      //     this is just due to there being lots of vertical surfaces
+      //     so the surface normal has no up-down component
+      // 
+      //  click on a PMT, and the many triangles oriented in all directions will give appropriate normals
+      //
+      rtPrintf("(touch)material1_radiance.cu geometricNormal  %10.4f %10.4f %10.4f   n %10.4f %10.4f %10.4f  ct %10.4f  \n",
+          geometricNormal.x, 
+          geometricNormal.y, 
+          geometricNormal.z, 
+          n.x, 
+          n.y, 
+          n.z,
+          cos_theta  );
+      //wavelength_check();
+  }
 
-   //prd.result = contrast_color ;   // according to substance index, currently only one color as only one material ?
-   //prd.result = make_float3( substanceIndex/50.f );  // grey scale according to substance "boundary" index
-   
+  // normal shader colors dont match what getting with OpenGL normal shader ???
+  //  BGRA format in the mix but swapping x and z doesnt cause a match
+  //  CCW triangle winding maybe
+  //
+  // prd.result = make_float3(-n.z*0.5f + 0.5f,-n.y*0.5f + 0.5f, -n.x*0.5f + 0.5f );                         // normal shader
+  // prd.result = make_float3(n.x*0.5f + 0.5f, n.y*0.5f + 0.5f, n.z*0.5f + 0.5f );                         // normal shader
+  //
+  //prd.result = make_float3( 1.f, 0.f, 0.f ); //red
+  //prd.result = make_float3( 0.f, 1.f, 0.f ); //green
+  //prd.result = make_float3( 0.f, 0.f, 1.f ); //blue
+  //prd.result = make_float3(0.5f);            
 
+  prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+
+  //prd.result = contrast_color ;   // according to substance index, currently only one color as only one material ?
+  //prd.result = make_float3( substanceIndex/50.f );  // grey scale according to substance "boundary" index
   //prd.result = make_float3(0.f);
 
-  //prd.node = nodeIndex ;
-  prd.node = substanceIndex ;
-
+  prd.touch = make_uint4( nodeIndex, substanceIndex, 0, 0) ;
 
   // if(cos_theta > 0.0f ) prd.result.x = 0.5f ; 
   //
@@ -80,13 +90,7 @@ RT_PROGRAM void closest_hit_radiance()
   //float u2 = curand_uniform(&prd.rng); 
   //prd.result = make_float3( u0, u1, u2) ; 
   //prd.result = make_float3( u0, u1 , contrast_color.z) ; 
-
-  // prd.result.x = curand_uniform(&prd.rng); 
-
-  if(touch_mode)
-  {
-     wavelength_check();
-  } 
+  //prd.result.x = curand_uniform(&prd.rng); 
 
 
 
