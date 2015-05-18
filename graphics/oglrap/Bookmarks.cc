@@ -27,6 +27,20 @@ namespace fs = boost::filesystem;
 
 const char* Bookmarks::filename = "bookmarks.ini" ; 
 
+
+
+Bookmarks::Bookmarks()  
+       :
+       m_tree(),
+       m_composition(NULL),
+       m_scene(NULL),
+       m_camera(NULL),
+       m_view(NULL)
+{
+}
+
+
+
 void Bookmarks::load(const char* dir)
 {
     fs::path bookmarks(dir);
@@ -38,7 +52,7 @@ void Bookmarks::load(const char* dir)
     }
     catch(const pt::ptree_error &e)
     {
-        LOG(debug) << "Bookmarks::load ERROR " << e.what() ;
+        LOG(warning) << "Bookmarks::load ERROR " << e.what() ;
     }
 
 }
@@ -67,13 +81,32 @@ void Bookmarks::setComposition(Composition* composition)
     m_view   = composition->getView();
 }
 
-
-void Bookmarks::apply(unsigned int number)
+std::string Bookmarks::formName(unsigned int number)
 {
     char name[32];
     snprintf(name, 32, "bookmark_%d", number );
-    apply(name);
+    return name ;  
 }
+
+std::string Bookmarks::formKey(const char* name, const char* tag)
+{
+    char key[64];
+    snprintf(key, 64, "%s.%s", name, tag );
+    return key ;  
+}
+
+void Bookmarks::apply(unsigned int number)
+{
+    std::string name = formName(number);
+    apply(name.c_str());
+}
+
+void Bookmarks::add(unsigned int number)
+{
+    std::string name = formName(number);
+    add(name.c_str());
+}
+
 
 
 void Bookmarks::apply(const char* name)
@@ -115,5 +148,26 @@ void Bookmarks::apply(const char* name)
         }   
     }   
 }
+
+
+void Bookmarks::add(const char* name)
+{
+    addConfigurable(name, m_view);
+    //addConfigurable(name, m_camera);
+    //addConfigurable(name, m_scene);
+}
+
+void Bookmarks::addConfigurable(const char* name, Configurable* configurable)
+{
+    std::vector<std::string> tags = configurable->getTags();
+    for(unsigned int i=0 ; i < tags.size(); i++)
+    {
+        const char* tag = tags[i].c_str();
+        std::string val = configurable->get(tag);    
+        std::string key = formKey(name, tag);
+        m_tree.add(key, val);
+    }
+}
+
 
 

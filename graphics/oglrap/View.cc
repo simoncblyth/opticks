@@ -19,6 +19,18 @@ const char* View::EYE = "eye" ;
 const char* View::LOOK = "look" ;
 const char* View::UP = "up" ;
 
+
+std::vector<std::string> View::getTags()
+{
+    std::vector<std::string> tags ;
+    tags.push_back(EYE);
+    tags.push_back(LOOK);
+    tags.push_back(UP);
+    return tags ; 
+}
+
+
+
 bool View::accepts(const char* name)
 {
     return 
@@ -43,6 +55,20 @@ void View::configureS(const char* name, std::vector<std::string> values)
 }
 
 
+std::string View::get(const char* name)
+{
+    glm::vec4 v ; 
+
+    if(     strcmp(name,EYE)==0)    v = getEye();
+    else if(strcmp(name,LOOK)== 0 ) v = getLook();
+    else if(strcmp(name,UP)== 0 )   v = getUp();
+    else
+         printf("View::get bad name %s\n", name);
+
+    char xyz[128];
+    snprintf(xyz, 128, "%15.8f,%15.8f,%15.8f", v.x, v.y, v.z );
+    return xyz ; 
+}
 
 
 void View::set(const char* name, std::string& _xyz)
@@ -60,7 +86,7 @@ void View::set(const char* name, std::string& _xyz)
         else if(strcmp(name,LOOK)== 0 ) setLook(x,y,z);
         else if(strcmp(name,UP)== 0 )   setUp(x,y,z);
         else
-              printf("View::configureS bad name %s\n", name);
+              printf("View::set bad name %s\n", name);
 
     }
     else

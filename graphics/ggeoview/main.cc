@@ -120,6 +120,7 @@ int main(int argc, char** argv)
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
 
+    bool nooptix = cfg["frame"]->hasOpt("nooptix");
     bool nogeocache = cfg["frame"]->hasOpt("nogeocache");
     const char* idpath = scene.loadGeometry("GGEOVIEW_", nogeocache) ; 
     bookmarks.load(idpath); 
@@ -157,7 +158,7 @@ int main(int argc, char** argv)
     engine.setMergedMesh(mm);   
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
-    engine.setEnabled(interactor.getOptiXMode()>-1);
+    engine.setEnabled(!nooptix);
 
     interactor.setTouchable(&engine);
 

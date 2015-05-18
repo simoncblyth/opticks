@@ -20,6 +20,9 @@ public:
            ("nogeocache,G",  "inhibit use of the geocache") ;
 
        m_desc.add_options()
+           ("nooptix,O",  "inhibit use of OptiX") ;
+
+       m_desc.add_options()
            ("scintillation",  "load scintillation event") ;
 
        m_desc.add_options()

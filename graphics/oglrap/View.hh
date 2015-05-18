@@ -1,31 +1,18 @@
-#ifndef VIEW_H
-#define VIEW_H
+#pragma once
 
 #include <glm/glm.hpp>  
 #include <vector>
 #include <string>
 
+#include "Configurable.hh"
 
-
-class View {
+class View : public Configurable {
 public:
    static const char* EYE ; 
    static const char* LOOK ; 
    static const char* UP ; 
 
-   View()  : 
-      m_eye_x(-1.0f),
-      m_eye_y(-1.0f),
-      m_eye_z(0.0f),
-      m_look_x(0.0f),
-      m_look_y(0.0f),
-      m_look_z(0.0f),
-      m_up_x(0.0f),
-      m_up_y(0.0f),
-      m_up_z(1.0f)
-   {
-   }
-
+   View();
    virtual ~View()
    {
    }
@@ -33,7 +20,12 @@ public:
    static bool accepts(const char* name);
    void configure(const char* name, const char* value);
    void configureS(const char* name, std::vector<std::string> values);
+
+
+ public:
+   std::vector<std::string> getTags();
    void set(const char* name, std::string& xyz);
+   std::string get(const char* name);
 
    void setEye( float _x, float _y, float _z)
    {
@@ -88,4 +80,19 @@ private:
 
 };
 
-#endif
+
+
+inline View::View()  : 
+      m_eye_x(-1.0f),
+      m_eye_y(-1.0f),
+      m_eye_z(0.0f),
+      m_look_x(0.0f),
+      m_look_y(0.0f),
+      m_look_z(0.0f),
+      m_up_x(0.0f),
+      m_up_y(0.0f),
+      m_up_z(1.0f)
+{
+}
+
+
