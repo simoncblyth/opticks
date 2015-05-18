@@ -5,14 +5,17 @@
 #include <GLFW/glfw3.h>
 #include "gleq.h"
 
+#include "Touchable.hh"
 #include <string>
 #include <vector>
 
 class Config ;
 class Interactor ; 
+class Composition ; 
+class Scene ; 
 
 
-class Frame {
+class Frame : public Touchable {
    public:
        Frame();
        virtual ~Frame();
@@ -28,7 +31,11 @@ class Frame {
 
        void setPixelFactor(unsigned int factor);
        unsigned int getPixelFactor();
+
        void setInteractor(Interactor* interactor);
+       void setComposition(Composition* composition);
+       void setScene(Scene* scene);
+
        void setDumpevent(int dumpevent);
 
        void exit();
@@ -41,6 +48,14 @@ class Frame {
        unsigned int getWidth(); 
        unsigned int getHeight();
        unsigned int getCoord2pixel();
+
+   public:
+       // Touchable 
+       void touch(unsigned char key, int ix, int iy);
+   public:
+       static float readDepth( int x, int y, int height );
+       float readDepth( int x, int y);
+
 
    private:
        void getCursorPos();
@@ -58,7 +73,11 @@ class Frame {
        unsigned int  m_coord2pixel ; 
        const char*   m_title ;
        GLFWwindow*   m_window;
+
        Interactor*   m_interactor ; 
+       Composition*  m_composition; 
+       Scene*        m_scene ; 
+
        bool          m_cursor_inwindow ; 
        float         m_cursor_x ; 
        float         m_cursor_y ; 
@@ -102,6 +121,21 @@ inline void Frame::setPixelFactor(unsigned int factor)
    m_pixel_factor = factor ;  ; 
 } 
 
+
+
+
+inline void Frame::setInteractor(Interactor* interactor)
+{
+    m_interactor = interactor ;
+}
+inline void Frame::setComposition(Composition* composition)
+{
+   m_composition = composition ; 
+}
+inline void Frame::setScene(Scene* scene)
+{
+   m_scene = scene ; 
+}
 
 
 

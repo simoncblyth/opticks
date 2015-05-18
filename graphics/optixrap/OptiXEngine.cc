@@ -178,7 +178,6 @@ void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
     //   (1024,768)*pixel_factor at bottom right
 
 
-
     RTsize width, height;
     m_output_buffer->getSize( width, height );
 
@@ -221,6 +220,7 @@ void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
               ;  
 
      unsigned int target = touch.x ; 
+    // seems out of place
      m_composition->setTarget(target); 
 
 }

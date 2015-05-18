@@ -11,7 +11,7 @@ class View ;
 class Trackball ;
 class Clipper ;
 class Touchable ; 
-  
+class Frame ;   
 
 
 class Interactor {
@@ -23,6 +23,7 @@ class Interactor {
        void setComposition(Composition* composition);
        void setBookmarks(Bookmarks* bookmarks);
        void setTouchable(Touchable* touchable);
+       void setFrame(Frame* frame);
 
   public:
        bool isOptiXMode();
@@ -30,6 +31,7 @@ class Interactor {
        int  getOptiXMode();
 
        Touchable* getTouchable();
+       Frame*     getFrame();
 
 
   public:
@@ -54,6 +56,7 @@ class Interactor {
        Trackball*   m_trackball ; 
        Clipper*     m_clipper ; 
        Touchable*   m_touchable ; 
+       Frame*       m_frame; 
 
        bool m_zoom_mode ;
        bool m_pan_mode ;
@@ -80,6 +83,17 @@ inline Touchable* Interactor::getTouchable()
 {
     return m_touchable ; 
 }
+inline void Interactor::setFrame(Frame* frame)
+{
+    m_frame = frame ; 
+}
+inline Frame* Interactor::getFrame()
+{
+    return m_frame ; 
+}
+
+
+
 inline bool Interactor::isOptiXMode()
 { 
     return m_optix_mode > 0 ; 

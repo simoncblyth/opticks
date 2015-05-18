@@ -120,6 +120,7 @@ class GMesh : public GDrawable {
 
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
+      unsigned int findContainer(gfloat3 p);
 
   ///////// for use from subclass  /////////////////////////////////////
   public:

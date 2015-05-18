@@ -11,6 +11,8 @@
 
 #include "Frame.hh"
 #include "Interactor.hh"
+#include "Composition.hh"
+#include "Scene.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -131,11 +133,6 @@ void Frame::setTitle(const char* title)
 {
     m_title = strdup(title);
 }
-void Frame::setInteractor(Interactor* interactor)
-{
-    m_interactor = interactor ;
-}
-
 
 void Frame::gl_init_window(const char* title, unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
@@ -191,7 +188,7 @@ void Frame::gl_init_window()
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
-    LOG(debug)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;    
+    LOG(info)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;    
 }
 
 
@@ -230,6 +227,37 @@ void Frame::resize(unsigned int width, unsigned int height)
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 }
+
+
+
+void Frame::touch(unsigned char key, int ix, int iy )
+{
+    float depth = readDepth(ix, iy );
+    LOG(info)<<"Frame::touch " << depth ;
+
+    m_scene->touch(key, ix, iy, depth);
+
+}
+
+
+float Frame::readDepth( int x, int y )
+{
+   // window resize handling ?
+    return readDepth( x, y, m_height*m_coord2pixel );
+}
+
+
+float Frame::readDepth( int x, int y_, int yheight )
+{
+    GLint y = yheight - y_ ;
+    GLsizei width(1), height(1) ; 
+    GLenum format = GL_DEPTH_COMPONENT ; 
+    GLenum type = GL_FLOAT ;  
+    float depth ; 
+    glReadPixels(x, y, width, height, format, type, &depth ); 
+    return depth ; 
+}
+
 
 
 

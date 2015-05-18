@@ -1,6 +1,7 @@
 #include "GMesh.hh"
 #include "GBuffer.hh"
 
+#include "float.h"
 #include "stdio.h"
 #include "string.h"
 #include "assert.h"
@@ -238,6 +239,47 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
     unsigned int numBytes = buffer->getNumBytes();
     m_num_solids = numBytes/sizeof(gfloat4) ;
 }
+
+
+
+
+
+unsigned int GMesh::findContainer(gfloat3 p)
+{
+   // find volumes that contains the point
+   // returning the index of the volume with the smallest extent 
+   // or 0 if none found
+   //
+    unsigned int container(0);
+    float cext(FLT_MAX) ; 
+
+    for(unsigned int index=0 ; index < m_num_solids ; index++)
+    {
+         gfloat4 ce = m_center_extent[index] ;
+         gfloat3 hi(ce.x + ce.w, ce.y + ce.w, ce.z + ce.w );
+         gfloat3 lo(ce.x - ce.w, ce.y - ce.w, ce.z - ce.w );
+
+         if( 
+              p.x > lo.x && p.x < hi.x  &&
+              p.y > lo.y && p.y < hi.y  &&
+              p.z > lo.z && p.z < hi.z 
+           )
+          {
+               //printf("GMesh::findContainer %d   %10.4f %10.4f %10.4f %10.4f  \n", index, ce.x, ce.y, ce.z, ce.w  );
+               if(ce.w < cext)
+               {
+                   cext = ce.w ; 
+                   container = index ; 
+               }
+          }
+    }
+    return container ; 
+}
+
+
+
+
+
 
 
 

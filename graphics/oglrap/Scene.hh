@@ -44,6 +44,7 @@ class Scene {
         // to convert solid index into CenterExtent to give to Composition
         //
         void setTarget(unsigned int index=0); 
+        void touch(unsigned char key, int ix, int iy, float depth);
 
    public:
         const char* loadGeometry(const char* prefix, bool nogeocache=false);

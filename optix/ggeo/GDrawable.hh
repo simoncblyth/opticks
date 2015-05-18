@@ -21,6 +21,7 @@ class GDrawable {
       virtual std::vector<unsigned int>& getDistinctSubstances() = 0;
 
       virtual gfloat4 getCenterExtent(unsigned int index) = 0 ;
+      virtual unsigned int findContainer(gfloat3 p) = 0 ;
 
 };      
 

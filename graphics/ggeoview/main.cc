@@ -82,7 +82,11 @@ int main(int argc, char** argv)
     // NB another Coord2Pixel in Frame, TODO: unify all these
 
 
+    // hmm needs some untangling... need to review purpose of each and do some method swapping ?
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
+    frame.setComposition(&composition);
+    frame.setScene(&scene);
+    interactor.setFrame(&frame);
 
     interactor.setComposition(&composition);
     scene.setComposition(&composition);    

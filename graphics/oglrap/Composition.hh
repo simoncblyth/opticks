@@ -68,6 +68,9 @@ class Composition {
       void setPixelFactor(unsigned int factor); // 2 for retina display
 
   public:
+      glm::vec3 unProject(unsigned int x, unsigned int y, float z);
+
+  public:
       // getters of the derived properties : need to call update first to make them current
       glm::vec4& getGaze();
       glm::vec4& getCenterExtent();
@@ -109,6 +112,7 @@ class Composition {
 
   private:
       // updated by *update* based on inputs and residents
+      glm::vec4 m_viewport ; 
       glm::vec4 m_gaze ; 
       glm::vec4 m_clipplane ; 
       float     m_gazelength ;

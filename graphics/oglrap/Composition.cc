@@ -247,8 +247,11 @@ glm::mat4& Composition::getITrackballing()
 }
 
 
-
-
+glm::vec3 Composition::unProject(unsigned int x, unsigned int y, float z)
+{
+     glm::vec3 win(x,y,z);
+     return glm::unProject(win, m_world2eye, m_projection, m_viewport);
+}
 
 void Composition::update()
 {
@@ -266,6 +269,8 @@ void Composition::update()
     //       eye  (0,0,0)
     //       look (0,0,-m_gazelength) 
     //
+
+    m_viewport = glm::vec4( 0.f, 0.f, getPixelWidth(), getPixelHeight() );
 
     m_view->getTransforms(m_model_to_world, m_world2camera, m_camera2world, m_gaze );   // model_to_world is input, the others are updated
 

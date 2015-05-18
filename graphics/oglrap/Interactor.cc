@@ -1,7 +1,8 @@
 #include "Interactor.hh"
 #include "stdio.h"
 
-#include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
+#include "Frame.hh"
+//#include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
 
 #include "Composition.hh"
 #include "Bookmarks.hh"
@@ -30,6 +31,7 @@ Interactor::Interactor()
    m_trackball(NULL),
    m_clipper(NULL),
    m_touchable(NULL),
+   m_frame(NULL),
    m_zoom_mode(false), 
    m_pan_mode(false), 
    m_near_mode(false), 
@@ -136,12 +138,17 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
         case GLFW_KEY_F:
             m_far_mode = !m_far_mode ; 
             break;
+        case GLFW_KEY_U:
+            if(m_frame)
+            {
+                m_frame->touch(key, ix, iy );
+            } 
+            break;
         case GLFW_KEY_J:
             if(m_touchable)
             {
                 m_touchable->touch(key, ix, iy );
             } 
-            //m_jump_mode = !m_jump_mode ; 
             break;
         case GLFW_KEY_Y:
             m_yfov_mode = !m_yfov_mode ; 

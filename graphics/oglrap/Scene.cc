@@ -86,6 +86,29 @@ const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
 }
 
 
+void Scene::touch(unsigned char key, int ix, int iy, float depth)
+{
+    glm::vec3 t = m_composition->unProject(ix,iy, depth);
+    gfloat3 gt(t.x, t.y, t.z );
+
+    unsigned int container = m_geometry->findContainer(gt);
+    LOG(info)<<"Scene::touch " 
+             << " key " << key 
+             << " x " << t.x 
+             << " y " << t.y 
+             << " z " << t.z 
+             << " container " << container
+             ;
+
+   if(container > 0)
+   {
+      // TODO: matrix gymnastics to avoid the jarring jump
+       setTarget(container);
+   }
+}
+
+
+
 void Scene::setTarget(unsigned int index)
 {
     m_target = index ; 
