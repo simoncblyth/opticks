@@ -58,7 +58,10 @@ Frame::Frame() :
      m_cursor_inwindow(true),
      m_cursor_x(-1.f),
      m_cursor_y(-1.f),
-     m_dumpevent(0)
+     m_dumpevent(0),
+     m_pos_x(0),
+     m_pos_y(0),
+     m_pixel_factor(1)
 {
 }
 
@@ -229,8 +232,25 @@ void Frame::resize(unsigned int width, unsigned int height)
 }
 
 
+
+
+void Frame::getCursorPos()
+{
+    double xpos ;  
+    double ypos ;
+    glfwGetCursorPos(m_window, &xpos, &ypos );
+    m_pos_x = floor(xpos)*m_pixel_factor;
+    m_pos_y = floor(ypos)*m_pixel_factor;
+    //printf("Frame::getCursorPos    %d %d  (%d)    \n", m_pos_x, m_pos_y, m_pixel_factor );
+}
+
 void Frame::handle_event(GLEQevent& event)
 {
+    // some events like key presses scrub the position 
+    //m_pos_x = floor(event.pos.x);
+    //m_pos_y = floor(event.pos.y);
+    //printf("Frame::handle_event    %d %d    \n", m_pos_x, m_pos_y );
+
     switch (event.type)
     {
         case GLEQ_FRAMEBUFFER_RESIZED:
@@ -303,12 +323,12 @@ void Frame::handle_event(GLEQevent& event)
              break;
         case GLEQ_SCROLLED:
         case GLEQ_KEY_PRESSED:
-             key_pressed(event.key.key );
+             key_pressed(event.key.key);
              break;
 
         case GLEQ_KEY_REPEATED:
         case GLEQ_KEY_RELEASED:
-             key_released(event.key.key );
+             key_released(event.key.key);
              break;
 
         case GLEQ_CHARACTER_INPUT:
@@ -320,8 +340,6 @@ void Frame::handle_event(GLEQevent& event)
 
 void Frame::key_pressed(unsigned int key)
 {
-    LOG(debug)<<"Frame::key_pressed " <<  key ;
-
     if( key == GLFW_KEY_ESCAPE)
     {
         LOG(info)<<"Frame::key_pressed escape";
@@ -329,15 +347,18 @@ void Frame::key_pressed(unsigned int key)
     }
     else
     {
-        m_interactor->key_pressed(key);
+        LOG(debug)<<"Frame::key_pressed " <<  key ;
+        getCursorPos();
+        m_interactor->key_pressed(key, m_pos_x, m_pos_y );
     }
 
 }  
 
 void Frame::key_released(unsigned int key)
 {
-    //printf("Frame::key_released %u \n", key);
-    m_interactor->key_released(key);
+    LOG(debug)<<"Frame::key_released " <<  key ;
+    getCursorPos();
+    m_interactor->key_released(key, m_pos_x, m_pos_y );
 }  
  
 

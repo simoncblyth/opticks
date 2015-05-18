@@ -89,6 +89,7 @@ add_library( ${name}  SHARED
                 Demo.cc
                 Prog.cc
                 Shdr.cc
+                Touchable.cc
 )
 
 SET(hdrs 
@@ -119,6 +120,7 @@ SET(hdrs
         gleq.h
         Prog.hh
         Shdr.hh
+        Touchable.hh
 )
 
 

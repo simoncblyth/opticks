@@ -26,6 +26,8 @@ class Frame {
        void gl_init_window();
 
 
+       void setPixelFactor(unsigned int factor);
+       unsigned int getPixelFactor();
        void setInteractor(Interactor* interactor);
        void setDumpevent(int dumpevent);
 
@@ -33,14 +35,15 @@ class Frame {
     
        void listen();
        void render();
-       GLFWwindow* getWindow(){ return m_window ; }
+       GLFWwindow* getWindow();
 
    public:
-       unsigned int getWidth(){  return m_width ; } 
-       unsigned int getHeight(){ return m_height ; } 
-       unsigned int getCoord2pixel(){ return m_coord2pixel ; } 
+       unsigned int getWidth(); 
+       unsigned int getHeight();
+       unsigned int getCoord2pixel();
 
    private:
+       void getCursorPos();
        void handle_event(GLEQevent& event);
        void dump_event(GLEQevent& event);
        void resize(unsigned int width, unsigned int height);
@@ -61,8 +64,50 @@ class Frame {
        float         m_cursor_y ; 
        unsigned int  m_dumpevent ; 
 
+   private:
+       unsigned int  m_pixel_factor ; 
+       // updated by getCursorPos
+       int           m_pos_x ;
+       int           m_pos_y ;
+
 
 };
+
+
+inline GLFWwindow* Frame::getWindow()
+{ 
+    return m_window ; 
+}
+inline unsigned int Frame::getWidth()
+{  
+    return m_width ; 
+} 
+inline unsigned int Frame::getHeight()
+{ 
+   return m_height ; 
+} 
+inline unsigned int Frame::getCoord2pixel()
+{ 
+   return m_coord2pixel ; 
+} 
+
+
+// TODO: consolidate Coord2pixel and PixelFactor
+inline unsigned int Frame::getPixelFactor()
+{ 
+   return m_pixel_factor ; 
+} 
+inline void Frame::setPixelFactor(unsigned int factor)
+{ 
+   m_pixel_factor = factor ;  ; 
+} 
+
+
+
+
+
+
+
 
 #endif
 

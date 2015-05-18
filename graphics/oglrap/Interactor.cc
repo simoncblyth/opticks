@@ -10,6 +10,7 @@
 #include "View.hh"
 #include "Trackball.hh"
 #include "Clipper.hh"
+#include "Touchable.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -28,12 +29,14 @@ Interactor::Interactor()
    m_view(NULL),
    m_trackball(NULL),
    m_clipper(NULL),
+   m_touchable(NULL),
    m_zoom_mode(false), 
    m_pan_mode(false), 
    m_near_mode(false), 
    m_far_mode(false), 
    m_yfov_mode(false),
    m_rotate_mode(false),
+   m_jump_mode(false),
    m_optix_mode(0),
    m_dragfactor(1.f)
 {
@@ -103,6 +106,10 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy )
     {
         m_trackball->drag_to(df*x,df*y,df*dx,df*dy);
     }
+    else if( m_jump_mode && m_touchable )
+    {  
+        //m_touchable->touch('J', x, y );   
+    }
     else
     {
     }
@@ -113,7 +120,7 @@ void Interactor::number_key_pressed(unsigned int number)
     m_bookmarks->apply(number);
 }
 
-void Interactor::key_pressed(unsigned int key)
+void Interactor::key_pressed(unsigned int key, int ix, int iy)
 {
     switch (key)
     {
@@ -128,6 +135,13 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_F:
             m_far_mode = !m_far_mode ; 
+            break;
+        case GLFW_KEY_J:
+            if(m_touchable)
+            {
+                m_touchable->touch(key, ix, iy );
+            } 
+            //m_jump_mode = !m_jump_mode ; 
             break;
         case GLFW_KEY_Y:
             m_yfov_mode = !m_yfov_mode ; 
@@ -166,7 +180,7 @@ void Interactor::key_pressed(unsigned int key)
     Print("Interactor::key_pressed");
 }
 
-void Interactor::key_released(unsigned int key)
+void Interactor::key_released(unsigned int key, int ix, int iy )
 {
    /*
     switch (key)
@@ -194,13 +208,14 @@ void Interactor::key_released(unsigned int key)
 
 void Interactor::Print(const char* msg)
 {
-    printf("%s %s%s%s%s%s%s%s %10.3f \n", msg,
+    printf("%s %s%s%s%s%s%s%s%s %10.3f \n", msg,
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
            m_near_mode ? "n" : "-",
            m_yfov_mode ? "y" : "-",
            m_rotate_mode ? "r" : "-",
+           m_jump_mode ? "j" : "-",
            m_optix_mode ? "o" : "-",
            m_dragfactor );
 }

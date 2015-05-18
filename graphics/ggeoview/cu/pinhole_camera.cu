@@ -35,10 +35,6 @@ rtDeclareVariable(uint2,         touch_dim,  , );
 rtBuffer<unsigned int,2>         touch_buffer;
 
 
-//rtBuffer<curandState, 1> rng_states ;
-
-
-
 RT_PROGRAM void pinhole_camera()
 {
 #if RAYTRACE_TIMEVIEW
@@ -91,12 +87,8 @@ RT_PROGRAM void pinhole_camera()
   //
   //
   unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
-  //prd.rng = rng_states[id];
 
   rtTrace(top_object, ray, prd);
-
-  ////prd.result.x = curand_uniform(&prd.rng); 
-  //rng_states[id] = prd.rng ; 
 
 
 #if RAYTRACE_TIMEVIEW
@@ -111,7 +103,7 @@ RT_PROGRAM void pinhole_camera()
   if(touch_mode)
   {
       touch_buffer[launch_index] = prd.node ;  // returning the index of the node touched
-      rtPrintf("pinhole_camera.cu::pinhole_camera  node %d \n", prd.node );
+      rtPrintf("pinhole_camera.cu::pinhole_camera(touch_mode)  node %d \n", prd.node );
 
       // cannot do wavelength lookups here, as wavelength_texture 
       // not defined in scopes: Program, Context

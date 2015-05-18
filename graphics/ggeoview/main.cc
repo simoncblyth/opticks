@@ -43,8 +43,6 @@
 #include "GMergedMesh.hh"
 
 
-
-
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 
@@ -56,13 +54,6 @@
 // optixrap-
 #include "OptiXEngine.hh"
 #include "RayTraceConfig.hh"
-
-
-// cudawrap-
-//using namespace optix ; 
-//#include "cuRANDWrapper.hh"
-//#include "curand.h"
-//#include "curand_kernel.h"
 
 
 void logging_init()
@@ -87,6 +78,9 @@ int main(int argc, char** argv)
     Scene scene ;
 
     composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
+    frame.setPixelFactor(2);       // 2: makes OptiX render at retina resolution
+    // NB another Coord2Pixel in Frame, TODO: unify all these
+
 
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
 
@@ -126,7 +120,6 @@ int main(int argc, char** argv)
     bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
 
-
     // hmm would be better placed into a NumpyEvtCfg 
     const char* typ ; 
     if(     cfg["frame"]->hasOpt("cerenkov"))      typ = "cerenkov" ;
@@ -160,6 +153,8 @@ int main(int argc, char** argv)
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(interactor.getOptiXMode()>-1);
+
+    interactor.setTouchable(&engine);
 
     int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
     assert(rng_max >= 1e6); 

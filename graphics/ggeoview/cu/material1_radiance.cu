@@ -16,6 +16,11 @@ rtDeclareVariable(unsigned int,  touch_mode, , );
 
 RT_PROGRAM void closest_hit_radiance()
 {
+    if(touch_mode)
+    {
+       rtPrintf("material1_radiance.cu::closest_hit_radiance\n");
+    }
+
      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
   // const float3 n = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, geometricNormal)) ; 
   // const float3 n = normalize(geometricNormal) ; 
@@ -47,7 +52,8 @@ RT_PROGRAM void closest_hit_radiance()
 
   //prd.result = make_float3(0.f);
 
-  prd.node = nodeIndex ;
+  //prd.node = nodeIndex ;
+  prd.node = substanceIndex ;
 
 
   // if(cos_theta > 0.0f ) prd.result.x = 0.5f ; 

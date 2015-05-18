@@ -74,7 +74,6 @@ RT_PROGRAM void pinhole_camera()
   rtTrace(top_object, ray, prd);
 
 
-  //prd.result.x = curand_uniform(&prd.rng); 
   rng_states[id] = prd.rng ; 
 
 #if RAYTRACE_TIMEVIEW
@@ -89,12 +88,7 @@ RT_PROGRAM void pinhole_camera()
   if(touch_mode)
   {
       touch_buffer[launch_index] = prd.node ;  // returning the index of the node touched
-      rtPrintf("pinhole_camera.cu::pinhole_camera  node %d \n", prd.node );
-
-      // cannot do wavelength lookups here, as wavelength_texture 
-      // not defined in scopes: Program, Context
-      // instead must do in closest_hit where Material scope
-      // is available 
+      rtPrintf("pinhole_camera.cu::pinhole_camera (touch_mode)  node %d \n", prd.node );
   }
 
 #endif

@@ -1,3 +1,7 @@
+#include "GProperty.hh"
+#include "assert.h"
+
+typedef GProperty<float> P ; 
 
 
 void test_createInverseCDF_Debug()

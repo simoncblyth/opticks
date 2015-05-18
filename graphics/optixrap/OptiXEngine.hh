@@ -10,13 +10,14 @@ class NPY ;
 class NumpyEvt ; 
 class cuRANDWrapper ; 
 
+#include "Touchable.hh"
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
 // TODO: split off non-OpenGL OptiXCore for headless usage and easier testing
 // TODO: this needs to be drawn and quartered, doing far too much for one class
 
-class OptiXEngine {
+class OptiXEngine : public Touchable {
 
     public:
         enum { 
@@ -56,6 +57,10 @@ class OptiXEngine {
         void render();
         void cleanUp();
 
+    public:
+       // fulfil Touchable interface
+       void touch(unsigned char key, int ix, int iy);
+
     private:
         void initRenderer();
         void initContext();
@@ -90,6 +95,7 @@ class OptiXEngine {
         optix::Buffer         m_output_buffer ; 
         optix::Buffer         m_genstep_buffer ; 
         optix::Buffer         m_photon_buffer ; 
+        optix::Buffer         m_touch_buffer ; 
         optix::GeometryGroup  m_geometry_group ;
         //optix::Aabb           m_aabb;
 

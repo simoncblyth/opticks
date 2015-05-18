@@ -24,7 +24,6 @@
 #include "NPY.hpp"
 #include "NumpyEvt.hpp"
 
-
 // oglrap-
 #include "Composition.hh"
 #include "Renderer.hh"
@@ -45,15 +44,6 @@ using namespace optix ;
 #include "cuRANDWrapper.hh"
 #include "curand.h"
 #include "curand_kernel.h"
-
-
-/*
-enum RayType
-{
-   radiance_ray_type,
-   shadow_ray_type
-};
-*/
 
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
@@ -118,7 +108,7 @@ void OptiXEngine::initRenderer()
     m_texture->create();
     m_texture_id = m_texture->getTextureId() ;
 
-    LOG(info) << "OptiXEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
+    LOG(debug) << "OptiXEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
     m_renderer->setDrawable(m_texture);
 }
 
@@ -129,7 +119,7 @@ void OptiXEngine::initContext()
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
 
-    LOG(info) << "OptiXEngine::initContext size (" << width << "," << height << ")" ;
+    LOG(debug) << "OptiXEngine::initContext size (" << width << "," << height << ")" ;
 
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
@@ -140,26 +130,83 @@ void OptiXEngine::initContext()
     m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
     m_context["output_buffer"]->set( m_output_buffer );
 
-    m_context["touch_buffer"]->set( m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1));
+    m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT, 1, 1);
+    m_context["touch_buffer"]->set( m_touch_buffer );
+    m_context["touch_mode" ]->setUint( 0u );
 
-    m_context->setEntryPointCount( e_entryPointCount );
+    // "touch" mode is tied to the active rendering (currently only e_pinhole_camera)
+    // as the meaning of x,y mouse/trackpad touches depends on that rendering.  
+    // Because of this using a separate "touch" entry point may not so useful ?
+    // Try instead splitting at ray type level.
+    //
+    // But the output requirements are very different ? Which would argue for a separate entry point.
+    //
+
+    m_context->setEntryPointCount( e_entryPointCount );  
     cfg->setRayGenerationProgram(  e_pinhole_camera, "pinhole_camera.cu", "pinhole_camera" );
     cfg->setExceptionProgram(      e_pinhole_camera, "pinhole_camera.cu", "exception");
 
-    m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
     m_context[ "radiance_ray_type"   ]->setUint( e_radiance_ray );
-    m_context[ "propagate_ray_type"   ]->setUint( e_propagate_ray );
+    m_context[ "touch_ray_type"      ]->setUint( e_touch_ray );
+    m_context[ "propagate_ray_type"  ]->setUint( e_propagate_ray );
 
     m_context->setRayTypeCount( e_rayTypeCount );
 
     cfg->setMissProgram( e_radiance_ray , "constantbg.cu", "miss" );
-    m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
-
 
     cfg->setRayGenerationProgram(e_generate, "generate.cu", "generate" );
     cfg->setExceptionProgram(    e_generate, "generate.cu", "exception");
 
+    m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
+    m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
 }
+
+
+// fulfil Touchable interface
+void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
+{
+    // (ix_, iy_) 
+    //        (0,0) at top left,  
+    //   (1024,768) at bottom right
+
+    RTsize width, height;
+    m_output_buffer->getSize( width, height );
+
+    int ix = ix_ ; 
+    int iy = height - iy_;   
+
+    // (ix,iy) 
+    //       (0,0)      at bottom left
+    //       (1024,768) at top right  
+
+    m_context["touch_mode"]->setUint(1u);
+    m_context["touch_index"]->setUint(ix, iy ); // by inspection
+    m_context["touch_dim"]->setUint(width, height);
+
+    RTsize touch_width = 1u ; 
+    RTsize touch_height = 1u ; 
+
+    // TODO: generalize touch to work with the active camera (eg could be orthographic)
+    m_context->launch( e_pinhole_camera , touch_width, touch_height );
+
+    Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
+    m_context["touch_mode"]->setUint(0u);
+
+    unsigned int* touchBuffer_Host = static_cast<unsigned int*>( touchBuffer->map() );
+    unsigned int nodeIndex = touchBuffer_Host[0] ;
+    touchBuffer->unmap();
+
+    LOG(info) << "OptiXEngine::touch "
+              << " key " << key 
+              << " ix_ " << ix_ 
+              << " iy_ " << iy_   
+              << " ix " << ix 
+              << " iy " << iy   
+              << " width " << width   
+              << " height " << height 
+              << " nodeIndex " << nodeIndex ;  
+}
+
 
 void OptiXEngine::initGeometry()
 {
