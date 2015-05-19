@@ -13,38 +13,20 @@ public:
    static const char* UP ; 
 
    View();
-   virtual ~View()
-   {
-   }
+   virtual ~View();
 
    static bool accepts(const char* name);
    void configure(const char* name, const char* value);
    void configureS(const char* name, std::vector<std::string> values);
-
 
  public:
    std::vector<std::string> getTags();
    void set(const char* name, std::string& xyz);
    std::string get(const char* name);
 
-   void setEye( float _x, float _y, float _z)
-   {
-      m_eye_x = _x ;  
-      m_eye_y = _y ;  
-      m_eye_z = _z ;  
-   }  
-   void setLook(float _x, float _y, float _z)
-   {
-      m_look_x = _x ;  
-      m_look_y = _y ;  
-      m_look_z = _z ;  
-   }
-   void setUp(  float _x, float _y, float _z)
-   {
-      m_up_x = _x ;  
-      m_up_y = _y ;  
-      m_up_z = _z ;  
-   } 
+   void setEye( float _x, float _y, float _z);
+   void setLook(float _x, float _y, float _z);
+   void setUp(  float _x, float _y, float _z);
 
    glm::vec4 getEye();
    glm::vec4 getLook();
@@ -94,5 +76,32 @@ inline View::View()  :
       m_up_z(1.0f)
 {
 }
+
+inline View::~View()
+{
+}
+
+inline void View::setEye( float _x, float _y, float _z)
+{
+    m_eye_x = _x ;  
+    m_eye_y = _y ;  
+    m_eye_z = _z ;  
+}  
+
+inline void View::setLook(float _x, float _y, float _z)
+{
+    m_look_x = _x ;  
+    m_look_y = _y ;  
+    m_look_z = _z ;  
+}
+
+inline void View::setUp(  float _x, float _y, float _z)
+{
+    m_up_x = _x ;  
+    m_up_y = _y ;  
+    m_up_z = _z ;  
+} 
+
+
 
 

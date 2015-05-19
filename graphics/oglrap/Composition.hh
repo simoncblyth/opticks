@@ -42,7 +42,8 @@ class Composition {
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
 
-  private: 
+  //private: 
+  public: 
       // private getters of residents : usable by friend class
       Camera* getCamera(); 
       Trackball* getTrackball(); 
@@ -108,6 +109,8 @@ class Composition {
       Trackball* m_trackball ;
       View*      m_view ;
       Clipper*   m_clipper ;
+
+      // visitors
       Scene*     m_scene ; 
 
   private:

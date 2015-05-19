@@ -4,11 +4,11 @@
 #include "View.hh"
 #include "Scene.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
 #include "string.h"
+
+#ifdef COMPLEX
+#include <boost/bind.hpp>
+#endif
 
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/foreach.hpp>
@@ -17,17 +17,21 @@
 #include <exception>
 #include <iostream>
 
-namespace pt = boost::property_tree;
 
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
+
+namespace pt = boost::property_tree;
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
 
-
 const char* Bookmarks::filename = "bookmarks.ini" ; 
-
-
 
 Bookmarks::Bookmarks()  
        :
@@ -100,25 +104,30 @@ void Bookmarks::apply(unsigned int number)
     std::string name = formName(number);
     apply(name.c_str());
 }
-
 void Bookmarks::add(unsigned int number)
 {
     std::string name = formName(number);
     add(name.c_str());
 }
+void Bookmarks::dump(unsigned int number)
+{
+    std::string name = formName(number);
+    dump(name.c_str());
+}
+
 
 
 
 void Bookmarks::apply(const char* name)
 {
-    BOOST_FOREACH( boost::property_tree::ptree::value_type const& mk, m_tree.get_child("") ) 
+    BOOST_FOREACH( pt::ptree::value_type const& mk, m_tree.get_child("") ) 
     {   
         std::string mkk = mk.first;
         if(strcmp(name, mkk.c_str()) != 0) continue ; 
 
         LOG(info) << "Bookmarks::apply " << name ; 
 
-        BOOST_FOREACH( boost::property_tree::ptree::value_type const& it, mk.second.get_child("") ) 
+        BOOST_FOREACH( pt::ptree::value_type const& it, mk.second.get_child("") ) 
         {   
             std::string itk = it.first;
             std::string itv = it.second.data();
@@ -133,7 +142,7 @@ void Bookmarks::apply(const char* name)
             {
                 m_camera->configure(key, val);
             } 
-            else if(Scene::accepts(key))
+            else if(Scene::accepts(key) && m_scene)
             {
                 m_scene->configure(key, val);
             }
@@ -159,15 +168,122 @@ void Bookmarks::add(const char* name)
 
 void Bookmarks::addConfigurable(const char* name, Configurable* configurable)
 {
+    std::string empty ;
     std::vector<std::string> tags = configurable->getTags();
     for(unsigned int i=0 ; i < tags.size(); i++)
     {
         const char* tag = tags[i].c_str();
         std::string val = configurable->get(tag);    
         std::string key = formKey(name, tag);
-        m_tree.add(key, val);
+        printf("Bookmarks::addConfigurable %s : %s \n", key.c_str(), val.c_str());
+
+        std::string prior = m_tree.get(key, empty);
+        printf("prior %s \n", prior.c_str());
+
+        // m_tree.add just adds another, even when preexisting key : so check for non-empty prior
+        m_tree.put(key, val);           
+
+        /*
+        if(prior.empty())
+        {
+            m_tree.add(key, val);           
+        }
+        else
+        {
+            m_tree.put(key, val);           
+        }
+        */
+
+
     }
 }
 
+
+void Bookmarks::dump(const char* name)
+{
+    BOOST_FOREACH( pt::ptree::value_type const& mk, m_tree.get_child("") ) 
+    {   
+        std::string mkk = mk.first;
+        if(strcmp(name, mkk.c_str()) != 0) continue ; 
+        printf("%s\n", mkk.c_str());
+
+        BOOST_FOREACH( pt::ptree::value_type const& it, mk.second.get_child("") ) 
+        {   
+            std::string itk = it.first;
+            std::string itv = it.second.data();
+            const char* key = itk.c_str();
+            const char* val = itv.c_str();
+            printf("    %10s : %s \n", key, val );  
+        }
+    }
+}
+
+
+
+
+
+void Bookmarks::update( const boost::property_tree::ptree& upt )
+{
+    BOOST_FOREACH( pt::ptree::value_type const& up, upt.get_child("") ) 
+    {
+        LOG(info)<<"Bookmarks::update " << up.first.data()  << " : " << up.second.data() ; 
+        m_tree.put_child( up.first, up.second );
+    }
+}
+
+
+
+
+
+
+#ifdef COMPLEX
+// general soln not needed for simple ini format Bookmarks tree structure, 
+// but for future more complex structures...
+//
+// http://stackoverflow.com/questions/8154107/how-do-i-merge-update-a-boostproperty-treeptree 
+//
+// The only limitation is that it is possible to have several nodes with the same
+// path. Every one of them would be used, but only the last one will be merged.
+//
+// SO : restrict usage to unique key trees
+//
+
+void Bookmarks::complex_update(const boost::property_tree::ptree& pt) 
+{
+    traverse(pt, boost::bind(&Bookmarks::merge, this, _1, _2, _3));
+}
+
+template<typename T>
+void Bookmarks::_traverse(
+       const boost::property_tree::ptree &parent, 
+       const boost::property_tree::ptree::path_type &childPath, 
+       const boost::property_tree::ptree &child, 
+       T method
+       )
+{
+    method(parent, childPath, child);
+    for(pt::ptree::const_iterator it=child.begin() ; it!=child.end() ;++it ) 
+    {
+        pt::ptree::path_type curPath = childPath / pt::ptree::path_type(it->first);
+        _traverse(parent, curPath, it->second, method);
+    }
+}
+
+template<typename T>
+void Bookmarks::traverse(const boost::property_tree::ptree &parent, T method)
+{
+    _traverse(parent, "", parent, method);
+}
+
+void Bookmarks::merge(const boost::property_tree::ptree& parent, const boost::property_tree::ptree::path_type &childPath, const boost::property_tree::ptree &child) 
+{
+    LOG(info)<<"Bookmarks::merge " << childpath << " : " << child.data() ; 
+    m_tree.put(childPath, child.data());
+}    
+
+#endif
+
+
+ 
 
 
