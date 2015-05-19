@@ -1,13 +1,13 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 #include <glm/glm.hpp>  
 #include <math.h> 
 #include "stdio.h"
 #include <vector>
 #include <string>
+#include "Configurable.hh"
 
-class Camera {
+class Camera : public Configurable  {
   public:
 
      static const char* PRINT ; 
@@ -37,23 +37,14 @@ class Camera {
      glm::mat4 getFrustum();
 
 
-     void near_to( float x, float y, float dx, float dy )
-     {
-         setNear(m_near + m_near*dy );
-         printf("Camera::near_to %10.3f \n", m_near);
-     }
 
-     void far_to( float x, float y, float dx, float dy )
-     {
-         setFar(m_far + m_far*dy );
-         printf("Camera::far_to %10.3f \n", m_far);
-     }
+ public:
+     // Configurable
+     std::vector<std::string> getTags();
+     void set(const char* name, std::string& xyz);
+     std::string get(const char* name);
 
-     void yfov_to( float x, float y, float dx, float dy )
-     {
-         setYfov(m_yfov + 50.*dy) ;
-         printf("Camera::yfov_to %10.3f \n", m_yfov);
-     }
+
 
 
      static bool accepts(const char* name);
@@ -66,6 +57,26 @@ class Camera {
      void configure(const char* name, const char* value);
      void configure(const char* name, float value);
 
+
+
+
+     void near_to( float x, float y, float dx, float dy )
+     {
+         setNear(m_near + m_near*dy );
+         //printf("Camera::near_to %10.3f \n", m_near);
+     }
+
+     void far_to( float x, float y, float dx, float dy )
+     {
+         setFar(m_far + m_far*dy );
+         //printf("Camera::far_to %10.3f \n", m_far);
+     }
+
+     void yfov_to( float x, float y, float dx, float dy )
+     {
+         setYfov(m_yfov + 50.*dy) ;
+         //printf("Camera::yfov_to %10.3f \n", m_yfov);
+     }
 
      void setNear(float near)
      {
@@ -206,4 +217,3 @@ class Camera {
 };
 
 
-#endif

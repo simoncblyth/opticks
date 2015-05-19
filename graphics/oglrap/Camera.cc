@@ -2,6 +2,7 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
 #include "stdio.h"
 #include <glm/gtc/matrix_transform.hpp>  
@@ -24,12 +25,46 @@ bool Camera::accepts(const char* name)
 }  
 
 
-void Camera::configure(const char* name, const char* value_)
+
+std::vector<std::string> Camera::getTags()
 {
-    float value = boost::lexical_cast<float>(value_); 
-    configure(name, value);
+    std::vector<std::string> tags ;
+    tags.push_back(NEAR);
+    tags.push_back(FAR);
+    tags.push_back(YFOV);
+    return tags ; 
 }
 
+std::string Camera::get(const char* name)
+{
+    float v ; 
+
+    if(     strcmp(name,NEAR)==0)     v = getNear();
+    else if(strcmp(name,FAR)== 0 )    v = getFar();
+    else if(strcmp(name,YFOV)== 0 )   v = getYfov();
+    else
+         printf("Camera::get bad name %s\n", name);
+
+    return gformat(v);
+}
+
+void Camera::set(const char* name, std::string& s)
+{
+    float v = gfloat_(s); 
+
+    if(     strcmp(name,NEAR)==0)    setNear(v);
+    else if(strcmp(name,FAR)== 0 )   setFar(v);
+    else if(strcmp(name,YFOV)== 0 )  setYfov(v);
+    else
+         printf("Camera::set bad name %s\n", name);
+}
+
+
+void Camera::configure(const char* name, const char* val_)
+{
+    std::string val(val_);
+    configure(name, gfloat_(val));
+}
 
 void Camera::configure(const char* name, float value)
 {
@@ -38,7 +73,7 @@ void Camera::configure(const char* name, float value)
     else if( strcmp(name, FAR) ==  0)       setFar(value);
     else if( strcmp(name, PARALLEL) ==  0)  setParallel( value==0.f ? false : true );
     else
-        printf("Camera::configureF ignoring unknown parameter %s : %10.3f \n", name, value); 
+        printf("Camera::configure ignoring unknown parameter %s : %10.3f \n", name, value); 
 }
  
 

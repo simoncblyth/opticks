@@ -6,7 +6,10 @@
 
 
 // how to handle multiple planes ?
-class Clipper {
+
+#include "Configurable.hh"
+
+class Clipper : public Configurable {
    public:
         static const char* CUTPOINT ;
         static const char* CUTNORMAL ;
@@ -15,10 +18,20 @@ class Clipper {
         static const char* CUTPRINT ;
 
         Clipper();
+
+ public:
+        // Configurable
+        static bool accepts(const char* name);
+        void configure(const char* name, const char* value);
+        std::vector<std::string> getTags();
+        void set(const char* name, std::string& xyz);
+        std::string get(const char* name);
+
+
         glm::vec4& getClipPlane(glm::mat4& model_to_world);
         void dump(const char* msg);
 
-        void set(const char* name, std::string& _xyz);
+        //void set(const char* name, std::string& _xyz);
         void configureS(const char* name, std::vector<std::string> values);
         void configureI(const char* name, std::vector<int> values);
 
@@ -26,13 +39,21 @@ class Clipper {
         int getMode();
         void next();  // toggles mode, Interactor invokes this on pressing C
 
+
+        // TODO:  try to eliminate the modal switch by some input side helpers 
+        //        to make it easy to enter abs planes from non-abs inputs perhaps?
+
+   public:
         // using setPoint or setNormal switches absolute mode OFF
         void setPoint( glm::vec3& point);
         void setNormal(glm::vec3& normal);
+        glm::vec3& getPoint();
+        glm::vec3& getNormal();
 
+   public:
         // using setPlane switches absolute mode ON
         void setPlane( glm::vec4& plane);
-
+        glm::vec4& getPlane();
 
    private:
         void setAbsolute(bool absolute);
@@ -55,11 +76,18 @@ class Clipper {
 
 
 
-
-
-
-
-
+inline glm::vec3& Clipper::getPoint()
+{
+    return m_point ; 
+}
+inline glm::vec3& Clipper::getNormal()
+{
+    return m_normal ; 
+}
+inline glm::vec4& Clipper::getPlane()
+{
+    return m_absplane ; 
+}
 
 
 inline int Clipper::getMode()

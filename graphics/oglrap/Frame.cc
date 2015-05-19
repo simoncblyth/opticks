@@ -177,6 +177,7 @@ void Frame::gl_init_window()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);  // overwrite if distance to camera is less
 
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
     glfwSwapInterval(1);  // vsync hinting
 
@@ -230,13 +231,11 @@ void Frame::resize(unsigned int width, unsigned int height)
 
 
 
-void Frame::touch(unsigned char key, int ix, int iy )
+unsigned int Frame::touch(int ix, int iy )
 {
     float depth = readDepth(ix, iy );
     LOG(info)<<"Frame::touch " << depth ;
-
-    m_scene->touch(key, ix, iy, depth);
-
+    return m_scene->touch(ix, iy, depth);
 }
 
 

@@ -3,6 +3,6 @@
 class Touchable {
     public:
         virtual ~Touchable(){}
-        virtual void touch(unsigned char key, int ix, int iy) = 0 ;
+        virtual unsigned int touch(int ix, int iy) = 0 ;
   
 };

@@ -8,6 +8,9 @@
 #include "GDrawable.hh"
 #include "NumpyEvt.hpp"
 
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+
 
 #include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
@@ -16,15 +19,45 @@
 
 const char* Scene::TARGET = "target" ; 
 
+
+
 bool Scene::accepts(const char* name)
 {
     return 
           strcmp(name, TARGET) == 0  ;
 }  
 
+std::vector<std::string> Scene::getTags()
+{
+    std::vector<std::string> tags ;
+    tags.push_back(TARGET);
+    return tags ; 
+}
+
+std::string Scene::get(const char* name)
+{
+    int v(0) ; 
+
+    if(     strcmp(name,TARGET)==0) v = getTarget();
+    else
+         printf("Scene::get bad name %s\n", name);
+
+    return gformat(v);
+}
+
+void Scene::set(const char* name, std::string& s)
+{
+    int v = gint_(s); 
+    if(     strcmp(name,TARGET)==0)    setTarget(v);
+    else
+         printf("Scene::set bad name %s\n", name);
+}
+
+
 void Scene::configure(const char* name, const char* value_)
 {
-    int value = boost::lexical_cast<int>(value_); 
+    std::string val(value_);
+    int value = gint_(val); 
     configure(name, value);
 }
 
@@ -86,25 +119,21 @@ const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
 }
 
 
-void Scene::touch(unsigned char key, int ix, int iy, float depth)
+unsigned int Scene::touch(int ix, int iy, float depth)
 {
     glm::vec3 t = m_composition->unProject(ix,iy, depth);
     gfloat3 gt(t.x, t.y, t.z );
 
     unsigned int container = m_geometry->findContainer(gt);
     LOG(info)<<"Scene::touch " 
-             << " key " << key 
              << " x " << t.x 
              << " y " << t.y 
              << " z " << t.z 
              << " container " << container
              ;
 
-   if(container > 0)
-   {
-      // TODO: matrix gymnastics to avoid the jarring jump
-       setTarget(container);
-   }
+   //if(container > 0) setTarget(container);
+   return container ; 
 }
 
 
@@ -112,6 +141,12 @@ void Scene::touch(unsigned char key, int ix, int iy, float depth)
 void Scene::setTarget(unsigned int index)
 {
     m_target = index ; 
+
+    if( m_geometry == NULL )
+    {
+        LOG(fatal)<<"Scene::setTarget " << index << " finds no geometry : cannot set target  " ; 
+        return ;  
+    }
 
     gfloat4 ce = m_geometry->getCenterExtent(index);
 

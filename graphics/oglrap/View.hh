@@ -15,15 +15,17 @@ public:
    View();
    virtual ~View();
 
-   static bool accepts(const char* name);
-   void configure(const char* name, const char* value);
    void configureS(const char* name, std::vector<std::string> values);
 
  public:
+   // Configurable
+   static bool accepts(const char* name);
+   void configure(const char* name, const char* value);
    std::vector<std::string> getTags();
    void set(const char* name, std::string& xyz);
    std::string get(const char* name);
 
+ public:
    void setEye( float _x, float _y, float _z);
    void setLook(float _x, float _y, float _z);
    void setUp(  float _x, float _y, float _z);

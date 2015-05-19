@@ -5,6 +5,7 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -19,6 +20,18 @@ const char* Trackball::RADIUS = "radius" ;
 const char* Trackball::ORIENTATION = "orientation" ;
 const char* Trackball::TRANSLATE = "translate" ;
 const char* Trackball::TRANSLATEFACTOR = "translatefactor" ;
+
+
+
+std::vector<std::string> Trackball::getTags()
+{
+    std::vector<std::string> tags ;
+    tags.push_back(RADIUS);
+    tags.push_back(ORIENTATION);
+    tags.push_back(TRANSLATE);
+    tags.push_back(TRANSLATEFACTOR);
+    return tags ; 
+}
 
 
 glm::vec3 Trackball::getTranslation()
@@ -74,6 +87,12 @@ void Trackball::getTranslationMatrices(glm::mat4& tra, glm::mat4& itra)
 
 
 
+
+
+
+
+
+
 void Trackball::configureF(const char* name, std::vector<float> values)
 {
      if(values.empty())
@@ -107,19 +126,83 @@ void Trackball::configureS(const char* name, std::vector<std::string> values)
      else         
      {
          std::string  vlast = values.back() ;
-
 #ifdef VERBOSE
          printf("Trackball::configureS %s : %lu values : ", name, values.size());
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%20s ", values[i]);
          printf(" : vlast %20s \n", vlast );
 #endif
-
-         if(      strcmp(name, TRANSLATE)   ==  0) setTranslate(vlast);
-         else if( strcmp(name, ORIENTATION) ==  0) setOrientation(vlast);
-         else
-              printf("Trackball::configureS ignoring unknown parameter %s : %s \n", name, vlast.c_str()); 
-     }
+         set(name, vlast);
+    }
 }
+
+
+
+bool Trackball::accepts(const char* name)
+{
+    return 
+         strcmp(name,TRANSLATE)==0  ||
+         strcmp(name,TRANSLATEFACTOR)==0  ||
+         strcmp(name,ORIENTATION)==0 ||
+         strcmp(name,RADIUS)==0 ;
+}
+
+void Trackball::configure(const char* name, const char* value_)
+{
+    std::string value(value_);
+    set(name, value);
+}
+
+void Trackball::set(const char* name, std::string& s)
+{
+    if(      strcmp(name, TRANSLATE)   ==  0)     setTranslate(s);
+    else if( strcmp(name, ORIENTATION) ==  0)     setOrientation(s);
+    else if( strcmp(name, RADIUS) ==  0)          setRadius(s);
+    else if( strcmp(name, TRANSLATEFACTOR) ==  0) setTranslateFactor(s);
+    else
+        printf("Trackball::set ignoring unknown parameter %s : %s \n", name, s.c_str()); 
+}
+
+
+std::string Trackball::get(const char* name)
+{
+    std::string s ; 
+    if(strcmp(name,TRANSLATE)==0)
+    {
+         glm::vec3 v = getTranslation(); 
+         s = gformat(v);
+    }
+    else if( strcmp(name, ORIENTATION) ==  0)
+    {
+         glm::quat q = getOrientation();
+         s = gformat(q);
+    }
+    else if( strcmp(name, RADIUS) ==  0)
+    {
+         float r = getRadius();
+         s = gformat(r);
+    }
+    else if( strcmp(name, TRANSLATEFACTOR) ==  0)
+    {
+         float f = getTranslateFactor();
+         s = gformat(f);
+    }
+    else
+         printf("Trackball::get bad name %s\n", name);
+
+    return s ;
+}
+
+
+void Trackball::setRadius(std::string s)
+{
+    setRadius(gfloat_(s)); 
+}
+
+void Trackball::setTranslateFactor(std::string s)
+{
+    setTranslateFactor(gfloat_(s)); 
+}
+
  
 void Trackball::setOrientation(std::string _tp)
 {
@@ -132,6 +215,11 @@ void Trackball::setOrientation(std::string _tp)
         float phi   = boost::lexical_cast<float>(tp[1]); 
         setOrientation(theta,phi);
     }
+    else if(tp.size() == 4 )
+    {
+        glm::quat q = gquat(_tp);
+        setOrientation(q);  
+    }
     else
     {
         printf("Trackball::setOrientation malformed _tp : %s \n", _tp.c_str() );
@@ -140,23 +228,9 @@ void Trackball::setOrientation(std::string _tp)
 
 void Trackball::setTranslate(std::string _xyz)
 {
-    std::vector<std::string> xyz;
-    boost::split(xyz, _xyz, boost::is_any_of(","));
-
-    if(xyz.size() == 3 )
-    {
-        float x = boost::lexical_cast<float>(xyz[0]); 
-        float y = boost::lexical_cast<float>(xyz[1]); 
-        float z = boost::lexical_cast<float>(xyz[2]); 
-        setTranslate(x,y,z);
-    }
-    else
-    {
-        printf("Trackball::setTranslate malformed _xyz : %s \n", _xyz.c_str() );
-    }
+    glm::vec3 v = gvec3(_xyz);
+    setTranslate(v.x,v.y,v.z);
 }
-
-
 
 
 void Trackball::setOrientation(float _theta, float _phi)

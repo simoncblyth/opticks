@@ -92,10 +92,10 @@ int main(int argc, char** argv)
     scene.setComposition(&composition);    
     composition.setScene(&scene);
     bookmarks.setComposition(&composition);
+    bookmarks.setScene(&scene);
 
     interactor.setBookmarks(&bookmarks);
     scene.setNumpyEvt(&evt);
-    bookmarks.setScene(&scene);
 
 
     Cfg cfg("umbrella", false) ; // collect other Cfg objects

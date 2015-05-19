@@ -37,6 +37,7 @@ add_library( ${name}  SHARED
     VecNPY.cpp
     MultiVecNPY.cpp
     GLMPrint.cpp
+    GLMFormat.cpp
     stringutil.cpp
     Lookup.cpp
     G4StepNPY.cpp
@@ -52,6 +53,7 @@ target_link_libraries( ${name} ${LIBRARIES} )
 SET(hdrs 
 uif.h
 GLMPrint.hpp
+GLMFormat.hpp
 NumpyEvt.hpp
 NPY.hpp
 VecNPY.hpp

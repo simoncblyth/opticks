@@ -51,7 +51,7 @@ class Frame : public Touchable {
 
    public:
        // Touchable 
-       void touch(unsigned char key, int ix, int iy);
+       unsigned int touch(int ix, int iy);
    public:
        static float readDepth( int x, int y, int height );
        float readDepth( int x, int y);

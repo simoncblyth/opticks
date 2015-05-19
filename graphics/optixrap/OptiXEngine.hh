@@ -60,7 +60,7 @@ class OptiXEngine : public Touchable {
 
     public:
        // fulfil Touchable interface
-       void touch(unsigned char key, int ix, int iy);
+       unsigned int touch(int ix, int iy);
 
     private:
         void initRenderer();

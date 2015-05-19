@@ -15,7 +15,7 @@ RendererBase::RendererBase(const char* tag, const char* dir)
     m_shadertag(strdup(tag)),
     m_program(-1)
 {
-    // no context needed, just reads sources
+    // no OpenGL context needed, just reads sources
     m_shader = new Prog(m_shaderdir, m_shadertag, true); 
 }
 

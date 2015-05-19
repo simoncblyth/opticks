@@ -2,6 +2,9 @@
 #include "Composition.hh"
 #include "Camera.hh"
 #include "View.hh"
+#include "Trackball.hh"
+#include "Clipper.hh"
+
 #include "Scene.hh"
 
 #include "string.h"
@@ -31,15 +34,30 @@ namespace pt = boost::property_tree;
 namespace fs = boost::filesystem;
 
 
+
+template<class Ptree>
+inline const Ptree &empty_ptree()
+{
+   static Ptree pt;
+   return pt;
+}
+
+
+
+
+
 const char* Bookmarks::filename = "bookmarks.ini" ; 
 
 Bookmarks::Bookmarks()  
        :
+       m_current(0),
        m_tree(),
        m_composition(NULL),
        m_scene(NULL),
        m_camera(NULL),
-       m_view(NULL)
+       m_view(NULL),
+       m_trackball(NULL),
+       m_clipper(NULL)
 {
 }
 
@@ -76,6 +94,30 @@ void Bookmarks::save(const char* dir)
     }
 }
 
+void Bookmarks::number_key_released(unsigned int num)
+{
+    LOG(info) << "Bookmarks::number_key_released " << num ; 
+
+}
+void Bookmarks::number_key_pressed(unsigned int num, unsigned int container)
+{
+    LOG(info) << "Bookmarks::number_key_pressed "
+              << " num "  << num 
+              << " container "  << container
+              ; 
+
+    if(exists(num))
+    {
+        dump(num);
+        apply(num);
+    }
+    else
+    {
+       printf("no such bookmark yet\n");
+    }
+
+}
+
 
 
 void Bookmarks::setComposition(Composition* composition)
@@ -83,6 +125,8 @@ void Bookmarks::setComposition(Composition* composition)
     m_composition = composition ; 
     m_camera = composition->getCamera();
     m_view   = composition->getView();
+    m_trackball   = composition->getTrackball();
+    m_clipper = composition->getClipper();
 }
 
 std::string Bookmarks::formName(unsigned int number)
@@ -104,16 +148,22 @@ void Bookmarks::apply(unsigned int number)
     std::string name = formName(number);
     apply(name.c_str());
 }
-void Bookmarks::add(unsigned int number)
+unsigned int Bookmarks::collect(unsigned int number)
 {
     std::string name = formName(number);
-    add(name.c_str());
+    return collect(name.c_str());
 }
 void Bookmarks::dump(unsigned int number)
 {
     std::string name = formName(number);
     dump(name.c_str());
 }
+bool Bookmarks::exists(unsigned int num)
+{
+    std::string name = formName(num);
+    return m_tree.count(name) > 0 ;
+}
+
 
 
 
@@ -142,13 +192,21 @@ void Bookmarks::apply(const char* name)
             {
                 m_camera->configure(key, val);
             } 
+            else if(Trackball::accepts(key))
+            {
+                m_trackball->configure(key, val);
+            } 
+            else if(Clipper::accepts(key))
+            {
+                m_clipper->configure(key, val);
+            }
             else if(Scene::accepts(key) && m_scene)
             {
                 m_scene->configure(key, val);
             }
             else
             {
-                LOG(warning) << "Bookmarks::apply ignoring  " 
+                LOG(debug) << "Bookmarks::apply ignoring  " 
                              << " name " << name 
                              << " key " << key  
                              << " val " << val  ; 
@@ -159,43 +217,56 @@ void Bookmarks::apply(const char* name)
 }
 
 
-void Bookmarks::add(const char* name)
+
+
+
+unsigned int Bookmarks::collect(const char* name)
 {
-    addConfigurable(name, m_view);
-    //addConfigurable(name, m_camera);
-    //addConfigurable(name, m_scene);
+    // for bookmark "name" collect parameters of configurable objects into m_tree 
+    // so doing this updates the bookmark : so long as succeed to save it 
+    unsigned int changes(0);
+    changes += collectConfigurable(name, m_view);
+    changes += collectConfigurable(name, m_camera);
+    changes += collectConfigurable(name, m_scene);
+    changes += collectConfigurable(name, m_trackball);
+    changes += collectConfigurable(name, m_clipper);
+    return changes ; 
 }
 
-void Bookmarks::addConfigurable(const char* name, Configurable* configurable)
+
+unsigned int Bookmarks::collectConfigurable(const char* name, Configurable* configurable)
 {
     std::string empty ;
     std::vector<std::string> tags = configurable->getTags();
+
+    unsigned int changes(0);
+
     for(unsigned int i=0 ; i < tags.size(); i++)
     {
         const char* tag = tags[i].c_str();
-        std::string val = configurable->get(tag);    
         std::string key = formKey(name, tag);
-        printf("Bookmarks::addConfigurable %s : %s \n", key.c_str(), val.c_str());
-
+        std::string val = configurable->get(tag);    
         std::string prior = m_tree.get(key, empty);
-        printf("prior %s \n", prior.c_str());
+        
+        //printf("Bookmarks::collectConfigurable %s : %s   prior : %s \n", key.c_str(), val.c_str(), prior.c_str() );
 
-        // m_tree.add just adds another, even when preexisting key : so check for non-empty prior
-        m_tree.put(key, val);           
-
-        /*
         if(prior.empty())
         {
+            changes += 1 ; 
             m_tree.add(key, val);           
+        }
+        else if (strcmp(prior.c_str(), val.c_str())==0)
+        {
+            printf("unchanged key %s val %s \n", key.c_str(), val.c_str());
         }
         else
         {
+            changes += 1 ; 
             m_tree.put(key, val);           
         }
-        */
-
 
     }
+    return changes ; 
 }
 
 

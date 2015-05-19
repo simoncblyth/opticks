@@ -24,6 +24,7 @@ class Interactor {
        void setBookmarks(Bookmarks* bookmarks);
        void setTouchable(Touchable* touchable);
        void setFrame(Frame* frame);
+       void setContainer(unsigned int container);
 
   public:
        bool isOptiXMode();
@@ -36,10 +37,14 @@ class Interactor {
 
   public:
        void cursor_drag( float x, float y, float dx, float dy );
-       void number_key_pressed(unsigned int number);
+
+  public:
+       void number_key_pressed(unsigned int number, int ix, int iy);
+       void number_key_released(unsigned int number, int ix, int iy);
        void key_pressed(unsigned int key, int ix, int iy );
        void key_released(unsigned int key, int ix, int iy );
 
+  public:
        void configureF(const char* name, std::vector<float> values);
        void configureI(const char* name, std::vector<int> values);
 
@@ -65,14 +70,43 @@ class Interactor {
        bool m_yfov_mode ;
        bool m_rotate_mode ;
        bool m_jump_mode ;
+       bool m_bookmark_mode ;
 
        int  m_optix_mode ;
 
        float m_dragfactor ;
+       unsigned int m_container ;
 
        std::string m_status ; 
 
 };
+
+
+inline Interactor::Interactor() 
+   :
+   m_composition(NULL),
+   m_bookmarks(NULL),
+   m_camera(NULL),
+   m_view(NULL),
+   m_trackball(NULL),
+   m_clipper(NULL),
+   m_touchable(NULL),
+   m_frame(NULL),
+   m_zoom_mode(false), 
+   m_pan_mode(false), 
+   m_near_mode(false), 
+   m_far_mode(false), 
+   m_yfov_mode(false),
+   m_rotate_mode(false),
+   m_jump_mode(false),
+   m_bookmark_mode(false),
+   m_optix_mode(0),
+   m_dragfactor(1.f),
+   m_container(0)
+{
+}
+
+
 
 
 inline void Interactor::setTouchable(Touchable* touchable)
@@ -91,6 +125,14 @@ inline Frame* Interactor::getFrame()
 {
     return m_frame ; 
 }
+
+
+inline void Interactor::setContainer(unsigned int container)
+{
+    m_container = container ; 
+}
+
+
 
 
 

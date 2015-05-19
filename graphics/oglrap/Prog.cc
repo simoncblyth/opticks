@@ -17,6 +17,12 @@ Prog::Prog(const char* basedir, const char* tag, bool live) :
    m_live(live),
    m_tagdir(NULL)
 {
+    if(basedir == NULL )
+    {
+        LOG(fatal) << "Prog::Prog [" << tag << "] cannot read sources as no basedir provided " ; 
+        return ; 
+    }
+
     setup();
 
     fs::path tagdir(basedir);

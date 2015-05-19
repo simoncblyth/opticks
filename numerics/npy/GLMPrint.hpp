@@ -1,6 +1,12 @@
 #pragma once
 
 #include "glm/fwd.hpp"
+#include <string>
+
+
+std::string format(int i);
+std::string format(float f);
+std::string format(const glm::vec3& v );
 
 void print(const glm::mat4& m, const char* msg);
 void print(const glm::vec3& v, const char* msg);

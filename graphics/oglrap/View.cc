@@ -4,12 +4,15 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
+
+#include <sstream>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -28,7 +31,6 @@ std::vector<std::string> View::getTags()
     tags.push_back(UP);
     return tags ; 
 }
-
 
 
 bool View::accepts(const char* name)
@@ -55,45 +57,29 @@ void View::configureS(const char* name, std::vector<std::string> values)
 }
 
 
+void View::set(const char* name, std::string& _xyz)
+{
+    glm::vec3 v = gvec3(_xyz);
+    if(     strcmp(name,EYE)==0)    setEye(v.x,v.y,v.z);
+    else if(strcmp(name,LOOK)== 0 ) setLook(v.x,v.y,v.z);
+    else if(strcmp(name,UP)== 0 )   setUp(v.x,v.y,v.z);
+    else
+         printf("View::set bad name %s\n", name);
+}
+
 std::string View::get(const char* name)
 {
     glm::vec4 v ; 
-
     if(     strcmp(name,EYE)==0)    v = getEye();
     else if(strcmp(name,LOOK)== 0 ) v = getLook();
     else if(strcmp(name,UP)== 0 )   v = getUp();
     else
          printf("View::get bad name %s\n", name);
 
-    char xyz[128];
-    snprintf(xyz, 128, "%15.8f,%15.8f,%15.8f", v.x, v.y, v.z );
-    return xyz ; 
+    glm::vec3 v3(v); 
+    return gformat(v3);
 }
 
-
-void View::set(const char* name, std::string& _xyz)
-{
-    std::vector<std::string> xyz;
-    boost::split(xyz, _xyz, boost::is_any_of(","));
-
-    if(xyz.size() == 3 )
-    {
-        float x = boost::lexical_cast<float>(xyz[0]); 
-        float y = boost::lexical_cast<float>(xyz[1]); 
-        float z = boost::lexical_cast<float>(xyz[2]); 
-
-        if(     strcmp(name,EYE)==0)    setEye(x,y,z);
-        else if(strcmp(name,LOOK)== 0 ) setLook(x,y,z);
-        else if(strcmp(name,UP)== 0 )   setUp(x,y,z);
-        else
-              printf("View::set bad name %s\n", name);
-
-    }
-    else
-    {
-        printf("View::set malformed %s : %s \n", name, _xyz.c_str() );
-    }
-}
 
 void View::Print(const char* msg)
 {

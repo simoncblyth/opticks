@@ -121,6 +121,7 @@ SET(hdrs
         Prog.hh
         Shdr.hh
         Touchable.hh
+        Configurable.hh
 )
 
 

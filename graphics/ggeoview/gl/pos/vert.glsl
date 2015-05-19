@@ -10,6 +10,9 @@ void main ()
 {
     colour = vec3(0.0,1.0,0.0) ;
     gl_Position = ModelViewProjection * vec4 (vpos, 1.0);
+
+    gl_PointSize = 1.0;
+
 }
 
 

@@ -2,6 +2,7 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
@@ -31,6 +32,39 @@ const char* Clipper::CUTNORMAL  = "cutnormal" ;
 const char* Clipper::CUTPLANE   = "cutplane" ;
 const char* Clipper::CUTPRINT   = "cutprint" ;
 
+
+
+// Configurable
+bool Clipper::accepts(const char* name)
+{
+    return 
+         strcmp(name,CUTMODE)==0   ||
+         strcmp(name,CUTPOINT)==0  ||
+         strcmp(name,CUTNORMAL)==0 ||
+         strcmp(name,CUTPLANE)==0  ||
+         strcmp(name,CUTPRINT)==0  ;
+}
+
+std::vector<std::string> Clipper::getTags()
+{
+    std::vector<std::string> tags ;
+//    tags.push_back(CUTMODE);
+    tags.push_back(CUTPOINT);
+    tags.push_back(CUTNORMAL);
+    tags.push_back(CUTPLANE);
+//    tags.push_back(CUTPRINT);
+    return tags ; 
+}
+
+
+void Clipper::configure(const char* name, const char* value_)
+{
+    std::string value(value_);
+    set(name, value);
+}
+
+
+
 void Clipper::configureI(const char* name, std::vector<int> values)
 {
     if(values.empty()) return ;
@@ -51,6 +85,32 @@ void Clipper::configureS(const char* name, std::vector<std::string> values)
 }
 
 
+std::string Clipper::get(const char* name)
+{
+    std::string s ; 
+    if(strcmp(name,CUTPOINT)==0)
+    {
+        glm::vec3 v = getPoint();
+        s = gformat(v);
+    } 
+    else if(strcmp(name,CUTNORMAL)==0)
+    {
+        glm::vec3 v = getNormal();
+        s = gformat(v);
+    }
+    else if(strcmp(name,CUTPLANE)==0)
+    {
+        glm::vec4 v = getPlane();
+        s = gformat(v);
+    }
+    else
+         printf("Clipper::get bad name %s\n", name);
+
+    return s;
+}
+
+
+
 void Clipper::set(const char* name, std::string& arg_)
 {
     std::vector<std::string> arg;
@@ -58,11 +118,7 @@ void Clipper::set(const char* name, std::string& arg_)
 
     if(arg.size() == 3 )
     {
-        float x = boost::lexical_cast<float>(arg[0]); 
-        float y = boost::lexical_cast<float>(arg[1]); 
-        float z = boost::lexical_cast<float>(arg[2]); 
-
-        glm::vec3 v(x, y, z);
+        glm::vec3 v = gvec3(arg_);
 
         if(     strcmp(name,CUTPOINT)==0)     setPoint(v);
         else if(strcmp(name,CUTNORMAL) == 0 ) setNormal(v);
@@ -71,12 +127,7 @@ void Clipper::set(const char* name, std::string& arg_)
     }
     else if(arg.size() == 4)
     {
-        float x = boost::lexical_cast<float>(arg[0]); 
-        float y = boost::lexical_cast<float>(arg[1]); 
-        float z = boost::lexical_cast<float>(arg[2]); 
-        float w = boost::lexical_cast<float>(arg[3]); 
-
-        glm::vec4 v(x, y, z, w);
+        glm::vec4 v = gvec4(arg_);
 
         if(     strcmp(name,CUTPLANE)==0)   setPlane(v);
         else

@@ -163,13 +163,13 @@ void OptiXEngine::initContext()
 
 
 // fulfil Touchable interface
-void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
+unsigned int OptiXEngine::touch(int ix_, int iy_)
 {
 
     if(m_trace_count == 0)
     {
         LOG(warning) << "OptiXEngine::touch \"OptiX touch mode\" only works after performing an OptiX trace, press O to toggle OptiX tracing then try again " ; 
-        return ; 
+        return 0 ; 
     }
 
 
@@ -206,7 +206,6 @@ void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
     touchBuffer->unmap();
 
     LOG(info) << "OptiXEngine::touch "
-              << " key " << key 
               << " ix_ " << ix_ 
               << " iy_ " << iy_   
               << " ix " << ix 
@@ -221,8 +220,9 @@ void OptiXEngine::touch(unsigned char key, int ix_, int iy_)
 
      unsigned int target = touch.x ; 
     // seems out of place
-     m_composition->setTarget(target); 
+    // m_composition->setTarget(target); 
 
+    return target ; 
 }
 
 

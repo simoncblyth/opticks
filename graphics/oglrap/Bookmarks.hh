@@ -9,6 +9,9 @@
 class Composition ;
 class Camera ;
 class View ;
+class Trackball ; 
+class Clipper ; 
+
 class Scene ;
 class Configurable ; 
 
@@ -21,16 +24,26 @@ class Bookmarks {
 public:
    static const char* filename ; 
 
+public:
    Bookmarks();
    void setComposition(Composition* composition);
    void setScene(Scene* scene);
 
-   void apply(unsigned int number);
-   void add(unsigned int number);
-   void dump(unsigned int number);
+public:
+   void setCurrent(unsigned int num); 
+   unsigned int getCurrent(); 
 
-   void load(const char* dir);
-   void save(const char* dir);
+public:
+   void apply(unsigned int num);
+   void dump(unsigned int num);
+   bool exists(unsigned int num);
+
+   void number_key_pressed(unsigned int number, unsigned int container);
+   void number_key_released(unsigned int number);
+
+   void load(const char* dir);   // populate m_tree from the file
+   void save(const char* dir);   // write m_tree to the file
+   unsigned int collect(unsigned int num);  // collect changed values into m_tree under slot "num"
 
 
 public:
@@ -58,15 +71,18 @@ private:
 
    void dump(const char* name);
    void apply(const char* name);
-   void add(const char* name);
-   void addConfigurable(const char* name, Configurable* configurable);
+   unsigned int collect(const char* name);
+   unsigned int collectConfigurable(const char* name, Configurable* configurable);
 
 private:
+   unsigned int                  m_current ; 
    boost::property_tree::ptree   m_tree;
    Composition*                  m_composition ;
    Scene*                        m_scene ;
    Camera*                       m_camera ;
    View*                         m_view ;
+   Trackball*                    m_trackball ;
+   Clipper*                      m_clipper ;
 
 
 };
@@ -76,6 +92,15 @@ private:
 inline void Bookmarks::setScene(Scene* scene)
 {
     m_scene = scene ; 
+}
+
+inline void Bookmarks::setCurrent(unsigned int num)
+{
+    m_current = num ; 
+}
+inline unsigned int Bookmarks::getCurrent()
+{
+    return m_current ; 
 }
 
 

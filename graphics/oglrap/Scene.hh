@@ -12,22 +12,19 @@ class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
 
-class Scene {
+#include "Configurable.hh"
+
+class Scene : public Configurable {
    public:
         static const char* TARGET ;
 
-        Scene() :
-            m_geometry_loader(NULL),
-            m_geometry_renderer(NULL),
-            m_genstep_renderer(NULL),
-            m_photon_renderer(NULL),
-            m_evt(NULL),
-            m_geometry(NULL),
-            m_composition(NULL),
-            m_target(0)
-        {
-            init();
-        }
+        Scene();
+
+   public:
+        // Configurable
+        std::vector<std::string> getTags();
+        void set(const char* name, std::string& xyz);
+        std::string get(const char* name);
 
    public:
         static bool accepts(const char* name);
@@ -44,7 +41,7 @@ class Scene {
         // to convert solid index into CenterExtent to give to Composition
         //
         void setTarget(unsigned int index=0); 
-        void touch(unsigned char key, int ix, int iy, float depth);
+        unsigned int touch(int ix, int iy, float depth);
 
    public:
         const char* loadGeometry(const char* prefix, bool nogeocache=false);
@@ -116,6 +113,18 @@ inline void Scene::setNumpyEvt(NumpyEvt* evt)
 }
 
 
+inline Scene::Scene() :
+            m_geometry_loader(NULL),
+            m_geometry_renderer(NULL),
+            m_genstep_renderer(NULL),
+            m_photon_renderer(NULL),
+            m_evt(NULL),
+            m_geometry(NULL),
+            m_composition(NULL),
+            m_target(0)
+{
+    init();
+}
 
 
 

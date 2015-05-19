@@ -22,27 +22,6 @@
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
 
-Interactor::Interactor() 
-   :
-   m_composition(NULL),
-   m_bookmarks(NULL),
-   m_camera(NULL),
-   m_view(NULL),
-   m_trackball(NULL),
-   m_clipper(NULL),
-   m_touchable(NULL),
-   m_frame(NULL),
-   m_zoom_mode(false), 
-   m_pan_mode(false), 
-   m_near_mode(false), 
-   m_far_mode(false), 
-   m_yfov_mode(false),
-   m_rotate_mode(false),
-   m_jump_mode(false),
-   m_optix_mode(0),
-   m_dragfactor(1.f)
-{
-}
 
 void Interactor::configureF(const char* name, std::vector<float> values)
 {
@@ -117,10 +96,19 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy )
     }
 }
 
-void Interactor::number_key_pressed(unsigned int number)
+void Interactor::number_key_pressed(unsigned int number, int ix, int iy)
 {
-    m_bookmarks->apply(number);
+    m_bookmark_mode = true ; 
+    unsigned int container = m_frame->touch(ix, iy );  // unProjects cursor position, and identifiers smallest containing volume
+    m_bookmarks->number_key_pressed(number, container);
 }
+
+void Interactor::number_key_released(unsigned int number, int ix, int iy)
+{
+    m_bookmarks->number_key_released(number);
+    m_bookmark_mode = false ; 
+}
+
 
 void Interactor::key_pressed(unsigned int key, int ix, int iy)
 {
@@ -141,13 +129,15 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
         case GLFW_KEY_U:
             if(m_frame)
             {
-                m_frame->touch(key, ix, iy );
+                unsigned int container = m_frame->touch(ix, iy );
+                setContainer(container);
             } 
             break;
         case GLFW_KEY_J:
             if(m_touchable)
             {
-                m_touchable->touch(key, ix, iy );
+                unsigned int container = m_touchable->touch(ix, iy );
+                setContainer(container);
             } 
             break;
         case GLFW_KEY_Y:
@@ -181,7 +171,7 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
         case GLFW_KEY_7:
         case GLFW_KEY_8:
         case GLFW_KEY_9:
-            number_key_pressed(key - GLFW_KEY_0);
+            number_key_pressed(key - GLFW_KEY_0, ix, iy );
             break; 
     } 
     //Print("Interactor::key_pressed");
@@ -190,35 +180,32 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
 
 void Interactor::key_released(unsigned int key, int ix, int iy )
 {
-   /*
     switch (key)
     {
-        case GLFW_KEY_Z:
-            m_zoom_mode = false ; 
-            break;
-        case GLFW_KEY_X:
-            m_pan_mode = false ; 
-            break;
-        case GLFW_KEY_N:
-            m_near_mode = false ; 
-            break;
-        case GLFW_KEY_F:
-            m_far_mode = false ; 
-            break;
-        case GLFW_KEY_Y:
-            m_yfov_mode = false ; 
-            break;
+        case GLFW_KEY_0:
+        case GLFW_KEY_1:
+        case GLFW_KEY_2:
+        case GLFW_KEY_3:
+        case GLFW_KEY_4:
+        case GLFW_KEY_5:
+        case GLFW_KEY_6:
+        case GLFW_KEY_7:
+        case GLFW_KEY_8:
+        case GLFW_KEY_9:
+            number_key_released(key - GLFW_KEY_0, ix, iy );
+            break; 
     } 
-    Print("Interactor::key_released");
-   */
 }
+
+
+
 
 
 
 void Interactor::updateStatus()
 {
     char status[64];
-    snprintf(status, 64, "%s%s%s%s%s%s%s%s %10.3f ",
+    snprintf(status, 64, "%s%s%s%s%s%s%s%s %10.3f %u ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
@@ -227,7 +214,9 @@ void Interactor::updateStatus()
            m_rotate_mode ? "r" : "-",
            m_jump_mode ? "j" : "-",
            m_optix_mode ? "o" : "-",
-           m_dragfactor );
+           m_dragfactor,
+           m_container 
+           );
 
     m_status = status ; 
 }
