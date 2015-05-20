@@ -59,7 +59,7 @@ void Rdr::upload(MultiVecNPY* mvn)
          // MultiVecNPY are constrained to all refer to the same underlying NPY 
          // so only do upload and m_buffer creation for the first 
  
-         if(i == 0)
+         if(npy == NULL)
          {
              npy = vnpy->getNPY(); 
              count = vnpy->getCount();
@@ -125,9 +125,17 @@ void Rdr::address(VecNPY* vnpy)
          return ;
     }
 
+    GLenum type ;              //  of each component in the array
+    switch(vnpy->getType())
+    {
+        case 'f':type = GL_FLOAT        ; break ;
+        case 'i':type = GL_INT          ; break ;
+        case 'u':type = GL_UNSIGNED_INT ; break ;
+        default: assert(0)              ; break ; 
+    }
+
     GLuint       index = location  ;       //  generic vertex attribute to be modified
     GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4
-    GLenum        type = GL_FLOAT   ;      //  of each component in the array
     GLboolean     norm = GL_FALSE ; 
     GLsizei       stride = vnpy->getStride();  ;         // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
     const GLvoid* offset = (const GLvoid*)vnpy->getOffset() ;      
@@ -135,7 +143,18 @@ void Rdr::address(VecNPY* vnpy)
     // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
 
-    glVertexAttribPointer(index, size, type, norm, stride, offset);
+    if( type == GL_INT || type == GL_UNSIGNED_INT  )
+    {
+        glVertexAttribIPointer(index, size, type, stride, offset);
+    }
+    else if( type == GL_FLOAT )
+    {
+        glVertexAttribPointer(index, size, type, norm, stride, offset);
+    }
+    else
+    {
+        assert(0);
+    }
     glEnableVertexAttribArray(index);
 
 }

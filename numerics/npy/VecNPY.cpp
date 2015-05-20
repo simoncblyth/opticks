@@ -12,11 +12,12 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-VecNPY::VecNPY(const char* name, NPY* npy, unsigned int j, unsigned int k, unsigned int size) :
+VecNPY::VecNPY(const char* name, NPY* npy, unsigned int j, unsigned int k, unsigned int size, char type) :
             m_name(strdup(name)),
             m_npy(npy),
             m_bytes(npy->getBytes()),
             m_size(size),
+            m_type(type),
             m_numbytes(npy->getNumBytes(0)),
             m_stride(npy->getNumBytes(1)),
             m_offset(npy->getByteIndex(0,j,k)),
@@ -151,7 +152,7 @@ void VecNPY::Summary(const char* msg)
 
 void VecNPY::Print(const char* msg)
 {
-    printf("%s name %s numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_numbytes, m_stride, m_offset, m_count, m_extent );
+    printf("%s name %s type %c numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_type, m_numbytes, m_stride, m_offset, m_count, m_extent );
 }
 
 

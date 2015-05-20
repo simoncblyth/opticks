@@ -71,7 +71,13 @@ void NumpyEvt::setPhotonData(NPY* photon_data)
 {
     m_photon_data = photon_data  ;
     m_photon_attr = new MultiVecNPY();
-    m_photon_attr->add(new VecNPY("vpos",m_photon_data,0,0));
+    unsigned int size = 4 ; 
+    m_photon_attr->add(new VecNPY("vpos",m_photon_data,0,0,size));      // 1st quad
+    m_photon_attr->add(new VecNPY("vdir",m_photon_data,1,0,size));      // 2nd quad
+    m_photon_attr->add(new VecNPY("vpol",m_photon_data,2,0,size));      // 3rd quad
+    m_photon_attr->add(new VecNPY("iflg",m_photon_data,3,0,size,'i'));  // 4th quad
+
+    // corresponds to GPU side cu/photon.h:psave 
 }
 
 

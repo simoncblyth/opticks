@@ -27,7 +27,7 @@ class VecNPY {
         // Ctor assumes 3-dimensional NPY array structure 
         // with shapes like (10000,6,4) in which case j 0:5 k 0:3 size=1:4 (usually 4 as quads are most efficient)
         //
-        VecNPY(const char* name, NPY* npy, unsigned int j, unsigned int k, unsigned int size=4) ;
+        VecNPY(const char* name, NPY* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='f') ;
 
     public:
         void dump(const char* msg);
@@ -47,6 +47,7 @@ class VecNPY {
         float*       getModelToWorldPtr();
         float        getExtent();
         const char*  getName();
+        char         getType();
 
     private:
         void findBounds();
@@ -55,6 +56,7 @@ class VecNPY {
         NPY*         m_npy   ;
         void*        m_bytes   ;
         unsigned int m_size   ;   
+        char         m_type ; 
         unsigned int m_numbytes ;  
         unsigned int m_stride ;  
         unsigned long m_offset ;  
@@ -75,3 +77,10 @@ inline const char* VecNPY::getName()
 {
     return m_name ; 
 }
+
+inline char VecNPY::getType()
+{
+    return m_type ; 
+}
+
+

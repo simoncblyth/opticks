@@ -17,9 +17,7 @@ class GGeo ;
 class Scene : public Configurable {
    public:
         static const char* TARGET ;
-
         Scene();
-
    public:
         // Configurable
         std::vector<std::string> getTags();

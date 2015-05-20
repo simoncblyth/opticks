@@ -40,9 +40,11 @@ RT_PROGRAM void generate()
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
 
+    curandState rng = rng_states[photon_id];
+
     PerRayData_propagate prd;
-    prd.depth = 0 ;
-    prd.rng = rng_states[photon_id];
+    prd.boundary = -1 ;
+    prd.distance_to_boundary = -1.f ;
 
     Photon p ;  
 
@@ -50,38 +52,68 @@ RT_PROGRAM void generate()
     {
         CerenkovStep cs ;
         csload(cs, genstep_buffer, genstep_offset);
-
         if(photon_id == 0)
         {
             csdump(cs);
             cscheck(cs);
             //wavelength_check();
         }
-        generate_cerenkov_photon(p, cs, prd.rng );         
+        generate_cerenkov_photon(p, cs, rng );         
     }
     else
     {
         ScintillationStep ss ;
         ssload(ss, genstep_buffer, genstep_offset);
-
         if(photon_id == 0)
         {
             ssdump(ss);
             reemission_check();
         }
-        generate_scintillation_photon(p, ss, prd.rng );         
+        generate_scintillation_photon(p, ss, rng );         
     }
 
+
     optix::Ray ray = optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX);
+    rtTrace(top_object, ray, prd);       // see material1_propagate.cu:closest_hit_propagate
 
-    rtTrace(top_object, ray, prd);
+    p.position += prd.distance_to_boundary*p.direction ; 
 
-    p.position = prd.intersection ; 
+
+    p.flags.i.x = prd.boundary ;
+    p.flags.f.y = prd.cos_theta ; 
+    p.flags.f.z = prd.distance_to_boundary ; 
+
+    float4 imat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 0 );
+    float4 omat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 1 );
+
+    if(photon_id == 0)
+    {
+        rtPrintf(" prd t/ct/boundary %10.4f %10.4f %d \n", prd.distance_to_boundary, prd.cos_theta, prd.boundary );
+        rtPrintf(" imat %10.4f %10.4f %10.4f %10.4f \n", imat.x, imat.y, imat.z, imat.w );
+        rtPrintf(" omat %10.4f %10.4f %10.4f %10.4f \n", omat.x, omat.y, omat.z, omat.w );
+    }
 
     psave(p, photon_buffer, photon_offset ); 
-
-    rng_states[photon_id] = prd.rng ;
+    rng_states[photon_id] = rng ;
 }
+
+
+
+/*
+
+In [1]: a = oxc_(1)
+
+In [4]: a[:,3,0].view(np.int32)
+Out[4]: array([11, 11, 11, ..., -1, -1, -1], dtype=int32)
+
+In [5]: np.unique(a[:,3,0].view(np.int32))
+Out[5]: array([-1, 11, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 31, 32, 49, 50, 52], dtype=int32)
+
+plt.hist(a[:,3,1], bins=100, log=True)
+
+*/
+
+
 
 RT_PROGRAM void exception()
 {

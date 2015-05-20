@@ -11,15 +11,12 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
-
 #include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
 const char* Scene::TARGET = "target" ; 
-
-
 
 bool Scene::accepts(const char* name)
 {
@@ -37,7 +34,6 @@ std::vector<std::string> Scene::getTags()
 std::string Scene::get(const char* name)
 {
     int v(0) ; 
-
     if(     strcmp(name,TARGET)==0) v = getTarget();
     else
          printf("Scene::get bad name %s\n", name);
@@ -53,12 +49,19 @@ void Scene::set(const char* name, std::string& s)
          printf("Scene::set bad name %s\n", name);
 }
 
-
 void Scene::configure(const char* name, const char* value_)
 {
     std::string val(value_);
     int value = gint_(val); 
     configure(name, value);
+}
+
+void Scene::configureI(const char* name, std::vector<int> values)
+{
+    LOG(info) << "Scene::configureI";
+    if(values.empty()) return ;
+    int last = values.back();
+    configure(name, last);
 }
 
 void Scene::configure(const char* name, int value)
@@ -74,6 +77,7 @@ void Scene::configure(const char* name, int value)
 }
 
 
+
 void Scene::init()
 {
     m_geometry_loader = new Geometry();
@@ -82,22 +86,6 @@ void Scene::init()
     m_photon_renderer = new Rdr("pos");
 }
 
-
-
-void Scene::configureI(const char* name, std::vector<int> values)
-{
-    LOG(info) << "Scene::configureI";
-    if(values.empty()) return ;
-
-    if(strcmp(name, TARGET) == 0)
-    {
-        int last = values.back();
-        setTarget(last);
-    }
-}
-
-
-
 void Scene::setComposition(Composition* composition)
 {
     m_composition = composition ; 
@@ -105,7 +93,6 @@ void Scene::setComposition(Composition* composition)
     m_genstep_renderer->setComposition(composition);
     m_photon_renderer->setComposition(composition);
 }
-
 
 const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
 {
@@ -118,6 +105,18 @@ const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
     return idpath ;
 }
 
+void Scene::loadEvt()
+{
+    m_genstep_renderer->upload(m_evt->getGenstepAttr());
+    m_photon_renderer->upload(m_evt->getPhotonAttr());
+}
+
+void Scene::render()
+{
+    m_geometry_renderer->render();
+    m_genstep_renderer->render();  
+    m_photon_renderer->render();
+}
 
 unsigned int Scene::touch(int ix, int iy, float depth)
 {
@@ -135,8 +134,6 @@ unsigned int Scene::touch(int ix, int iy, float depth)
    //if(container > 0) setTarget(container);
    return container ; 
 }
-
-
 
 void Scene::setTarget(unsigned int index)
 {
@@ -159,7 +156,6 @@ void Scene::setTarget(unsigned int index)
     m_composition->setCenterExtent(ce); 
 }
 
-
 GMergedMesh* Scene::getMergedMesh()
 {
     return m_geometry_loader ? m_geometry_loader->getMergedMesh() : NULL ;
@@ -169,20 +165,4 @@ GGeo* Scene::getGGeo()
 {
     return m_geometry_loader ? m_geometry_loader->getGGeo() : NULL ;
 }
-
-
-
-void Scene::loadEvt()
-{
-    m_genstep_renderer->upload(m_evt->getGenstepAttr());
-    m_photon_renderer->upload(m_evt->getPhotonAttr());
-}
-
-void Scene::render()
-{
-    m_geometry_renderer->render();
-    m_genstep_renderer->render();   // no-show after switch to OptiX and back 
-    m_photon_renderer->render();
-}
-
 

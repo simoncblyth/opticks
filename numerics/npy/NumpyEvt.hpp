@@ -6,16 +6,8 @@ class MultiVecNPY ;
 
 class NumpyEvt {
    public:
-       NumpyEvt() 
-          :
-          m_genstep_data(NULL),
-          m_photon_data(NULL),
-          m_genstep_attr(NULL),
-          m_photon_attr(NULL),
-          m_num_photons(0)
-       {
-       }
-       
+       NumpyEvt();
+      
    public:
        void setGenstepData(NPY* genstep_data);
 
@@ -45,6 +37,15 @@ class NumpyEvt {
 };
 
 
+inline NumpyEvt::NumpyEvt() 
+          :
+          m_genstep_data(NULL),
+          m_photon_data(NULL),
+          m_genstep_attr(NULL),
+          m_photon_attr(NULL),
+          m_num_photons(0)
+{
+}
 
 inline NPY* NumpyEvt::getGenstepData()
 {
