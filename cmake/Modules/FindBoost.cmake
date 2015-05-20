@@ -16,6 +16,10 @@ find_library( Boost_log_LIBRARY
               NAMES boost_log-mt
               PATHS ${Boost_PREFIX}/lib )
 
+find_library( Boost_log_setup_LIBRARY 
+              NAMES boost_log_setup-mt
+              PATHS ${Boost_PREFIX}/lib )
+
 
 find_library( Boost_filesystem_LIBRARY 
               NAMES boost_filesystem-mt
@@ -27,6 +31,7 @@ set(Boost_LIBRARIES
      ${Boost_thread_LIBRARY}
      ${Boost_program_options_LIBRARY}
      ${Boost_log_LIBRARY}
+     ${Boost_log_setup_LIBRARY}
      ${Boost_filesystem_LIBRARY}
 )
 set(Boost_INCLUDE_DIRS "${Boost_PREFIX}/include")

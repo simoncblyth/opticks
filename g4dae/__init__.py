@@ -49,6 +49,17 @@ from env.g4dae.types import ScintillationStep, G4ScintillationPhoton, ChScintill
 
 a4inches = np.array((11.69, 8.28)) 
 
+
+
+def count_unique(vals):
+    """ 
+    http://stackoverflow.com/questions/10741346/numpy-frequency-counts-for-unique-values-in-an-array
+    """
+    uniq = np.unique(vals)
+    bins = uniq.searchsorted(vals)
+    return np.vstack((uniq, np.bincount(bins))).T
+
+
 cg = None
 def cg_get():
     global cg

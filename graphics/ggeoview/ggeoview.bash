@@ -385,11 +385,18 @@ ggeoview-rng-prep()
 }
 
 
-ggeoview-steal-bookmarks()
+
+ggeoview-idpath()
 {
-   cp ~/.g4daeview/dyb/bookmarks20141128-2053.cfg /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/bookmarks.ini
+   ggeoview-
+   ggeoview-run --idpath 2>/dev/null 
 }
 
+ggeoview-steal-bookmarks()
+{
+   local idpath=$(ggeoview-idpath)
+   cp ~/.g4daeview/dyb/bookmarks20141128-2053.cfg $idpath/bookmarks.ini
+}
 
 
 ggeoview-export()

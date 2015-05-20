@@ -15,7 +15,7 @@ blogg-cd(){  cd $(blogg-dir); }
 
 blogg-triv(){
    #clang++ -I/opt/local/include -L/opt/local/lib -DBOOST_LOG_DYN_LINK -lboost_system-mt -lboost_log-mt -lboost_log_setup-mt $(blogg-dir)/triv.cc -o /tmp/triv
-   clang++ -I/opt/local/include -L/opt/local/lib -DBOOST_LOG_DYN_LINK -lboost_log-mt $(blogg-dir)/triv.cc -o /tmp/triv
+   clang++ -I/opt/local/include -L/opt/local/lib -DBOOST_LOG_DYN_LINK -lboost_system-mt -lboost_thread-mt -lboost_log-mt -lboost_log_setup-mt  $(blogg-dir)/triv.cc -o /tmp/triv
 }
 
 

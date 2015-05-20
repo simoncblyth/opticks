@@ -47,6 +47,7 @@
 #include <boost/log/expressions.hpp>
 
 #include <boost/log/trivial.hpp>
+#include "boost/log/utility/setup.hpp"
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
@@ -58,15 +59,27 @@
 
 void logging_init()
 {
+   // see blogg-
     boost::log::core::get()->set_filter
     (
         boost::log::trivial::severity >= boost::log::trivial::info
     );
+
+    boost::log::add_console_log(
+        std::cerr, 
+        boost::log::keywords::format = "[%TimeStamp%]: %Message%",
+        boost::log::keywords::auto_flush = true
+    );  
+
+    boost::log::add_common_attributes();
+
 }
 
 int main(int argc, char** argv)
 {
     logging_init();
+    const char* prefix = "GGEOVIEW_" ;
+    const char* idpath = Geometry::identityPath(prefix) ;
     LOG(info) << argv[0] ; 
 
     Frame frame ;
@@ -112,7 +125,8 @@ int main(int argc, char** argv)
     delegate.liveConnect(&cfg); // hookup live config via UDP messages
     delegate.setNumpyEvt(&evt); // allows delegate to update evt when NPY messages arrive
 
-    if(cfg["frame"]->hasOpt("help"))  std::cout << cfg.getDesc() << std::endl ;
+    if(cfg["frame"]->hasOpt("idpath")) std::cout << idpath << std::endl ;
+    if(cfg["frame"]->hasOpt("help"))   std::cout << cfg.getDesc() << std::endl ;
     if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
 
 
@@ -122,7 +136,8 @@ int main(int argc, char** argv)
 
     bool nooptix = cfg["frame"]->hasOpt("nooptix");
     bool nogeocache = cfg["frame"]->hasOpt("nogeocache");
-    const char* idpath = scene.loadGeometry("GGEOVIEW_", nogeocache) ; 
+    const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
+    assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading 
     bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
 

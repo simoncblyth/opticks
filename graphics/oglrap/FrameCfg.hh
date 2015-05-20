@@ -13,6 +13,9 @@ public:
        m_desc.add_options()
            ("help,h",    "print help message") ;
 
+       m_desc.add_options()
+           ("idpath,i",  "print idpath based on input envvars") ;
+
 
        // TODO: move the below to somewhere more appropriate
 
@@ -24,6 +27,7 @@ public:
 
        m_desc.add_options()
            ("scintillation",  "load scintillation event") ;
+
 
        m_desc.add_options()
            ("cerenkov",  "load event event") ;

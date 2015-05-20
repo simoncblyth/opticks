@@ -88,7 +88,8 @@ inline bool Cfg::hasOpt(const char* opt)
 
 inline bool Cfg::isAbort()
 {
-    return hasOpt("help") || hasOpt("version") ; 
+    // TODO: eliminate this by supporting comma delimited hasOpt checking 
+    return hasOpt("help") || hasOpt("version") || hasOpt("idpath") ; 
 }
 
 
