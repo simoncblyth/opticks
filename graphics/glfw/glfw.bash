@@ -41,6 +41,12 @@ to no avail.
     -L/usr/local/env/graphics/glfw/3.1.1/lib -lglfw3 
 
 
+::
+
+    PKG_CONFIG_PATH=$(glfw-prefix)/lib/pkgconfig pkg-config --cflags glfw3
+    -I/usr/local/env/graphics/glfw/3.1.1/include 
+
+
 input events
 -------------
 
@@ -115,6 +121,16 @@ glfw-scd(){ cd $(glfw-sdir); }
 glfw-cd(){  cd $(glfw-dir); }
 glfw-bcd(){ cd $(glfw-bdir); }
 glfw-icd(){ cd $(glfw-idir); }
+
+
+glfw-prefix(){ echo $(glfw-idir) ; }
+
+glfw-export()
+{
+   # for atb- examples
+   export GLFW_PREFIX=$(glfw-prefix)
+}
+
 
 glfw-pc(){
   PKG_CONFIG_PATH=$(glfw-idir)/lib/pkgconfig pkg-config GLFW3 $*

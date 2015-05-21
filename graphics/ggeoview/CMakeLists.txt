@@ -50,6 +50,10 @@ find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
 
 
+find_package(ImGui REQUIRED)
+
+
+
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${GLEW_INCLUDE_DIRS} 
@@ -68,6 +72,7 @@ include_directories(
    ${OptiXRap_INCLUDE_DIRS}  
    ${GGeo_INCLUDE_DIRS}  
    ${CUDAWrap_INCLUDE_DIRS}  
+   ${ImGui_INCLUDE_DIRS}
 )
 
 add_definitions(
@@ -78,6 +83,7 @@ add_definitions(
    ${OptiXRap_DEFINITIONS} 
    ${Boost_DEFINITIONS} 
    ${CUDAWrap_DEFINITIONS}
+   ${ImGui_DEFINITIONS}
 )
 
 
@@ -115,6 +121,7 @@ function(add_optix_executable target_name)
       ${OptiXRap_LIBRARIES}
       ${GGeo_LIBRARIES}
       ${CUDAWrap_LIBRARIES}
+      ${ImGui_LIBRARIES}
 
       ssl
       crypto 
@@ -144,8 +151,15 @@ add_optix_executable( ${name}
 ) 
 
 
+
 install(TARGETS ${name} DESTINATION bin)
 
+message("ImGui_LIBRARIES:" ${ImGui_LIBRARIES})  
+message("ImGui_INCLUDE_DIRS:" ${ImGui_INCLUDE_DIRS})  
+
+add_executable( ImGuiTest imguitestmain.cc )
+target_link_libraries( ImGuiTest ${ImGui_LIBRARIES})
+install(TARGETS ImGuiTest DESTINATION bin)
 
 
 
