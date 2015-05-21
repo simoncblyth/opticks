@@ -17,6 +17,7 @@ find_package(GLFW REQUIRED)
 
 
 set(LIBRARIES
+   ${GLEW_LIBRARIES} 
    ${GLFW_LIBRARIES}
 )
 
@@ -28,7 +29,7 @@ if(APPLE)
     find_library( CoreVideo_LIBRARY NAMES CoreVideo )
 
     set( LIBRARIES 
-               ${GLFW_LIBRARIES} 
+               ${LIBRARIES} 
                ${Cocoa_LIBRARY}
                ${OpenGL_LIBRARY}
                ${IOKit_LIBRARY}

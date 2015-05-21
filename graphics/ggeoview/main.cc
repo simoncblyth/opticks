@@ -1,8 +1,22 @@
 #include <stdlib.h>  //exit()
 #include <stdio.h>
 
+
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
+
+
+#include <GL/glew.h>
+
 #include "Frame.hh"
+
+#define GUI 1
+#ifdef GUI
+#include <imgui.h>
+#include "imgui_impl_glfw_gl3.h"
+//#include <GL/gl3w.h>
+#endif
+
+
 #include "FrameCfg.hh"
 #include "Scene.hh"
 #include "SceneCfg.hh"
@@ -55,6 +69,8 @@
 // optixrap-
 #include "OptiXEngine.hh"
 #include "RayTraceConfig.hh"
+
+
 
 
 void logging_init()
@@ -133,6 +149,16 @@ int main(int argc, char** argv)
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
 
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
+    GLFWwindow* window = frame.getWindow();
+
+#ifdef GUI
+    //gl3wInit();
+    ImGui_ImplGlfwGL3_Init(window, true);
+    bool show_test_window = true;
+    bool show_another_window = false;
+    //ImVec4 clear_color = ImColor(114, 144, 154);
+#endif
+
 
     bool nooptix = cfg["frame"]->hasOpt("nooptix");
     bool nogeocache = cfg["frame"]->hasOpt("nogeocache");
@@ -192,11 +218,30 @@ int main(int argc, char** argv)
 
 
  
-    GLFWwindow* window = frame.getWindow();
     LOG(info) << "enter runloop "; 
     while (!glfwWindowShouldClose(window))
     {
+
+#ifdef GUI
+        ImGuiIO& io = ImGui::GetIO();
+#endif
         frame.listen(); 
+#ifdef GUI
+        ImGui_ImplGlfwGL3_NewFrame();
+
+        // 1. Show a simple window
+        // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
+        {
+            static float f = 0.0f;
+            ImGui::Text("Hello, world!");
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+            //ImGui::ColorEdit3("clear color", (float*)&clear_color);
+            if (ImGui::Button("Test Window")) show_test_window ^= 1;
+            if (ImGui::Button("Another Window")) show_another_window ^= 1;
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        }
+#endif
+
         server.poll_one();  
         frame.render();
 
@@ -210,10 +255,21 @@ int main(int argc, char** argv)
             scene.render();
         }
 
+#ifdef GUI
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        //glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        //glClear(GL_COLOR_BUFFER_BIT);
+        ImGui::Render();
+#endif
+
         glfwSwapBuffers(window);
     }
     engine.cleanUp();
     server.stop();
+
+#ifdef GUI
+    ImGui_ImplGlfwGL3_Shutdown();
+#endif
     frame.exit();
     exit(EXIT_SUCCESS);
 }

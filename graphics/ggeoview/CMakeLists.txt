@@ -49,7 +49,6 @@ find_package(OptiXRap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
 
-
 find_package(ImGui REQUIRED)
 
 
@@ -154,12 +153,8 @@ add_optix_executable( ${name}
 
 install(TARGETS ${name} DESTINATION bin)
 
-message("ImGui_LIBRARIES:" ${ImGui_LIBRARIES})  
-message("ImGui_INCLUDE_DIRS:" ${ImGui_INCLUDE_DIRS})  
-
-add_executable( ImGuiTest imguitestmain.cc )
-target_link_libraries( ImGuiTest ${ImGui_LIBRARIES})
-install(TARGETS ImGuiTest DESTINATION bin)
+#message("ImGui_LIBRARIES:" ${ImGui_LIBRARIES})  
+#message("ImGui_INCLUDE_DIRS:" ${ImGui_INCLUDE_DIRS})  
 
 
 

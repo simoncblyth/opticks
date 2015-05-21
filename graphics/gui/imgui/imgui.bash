@@ -77,7 +77,15 @@ to copy source into your tree
 
     cd imgui/examples/opengl3_example
 
-    
+   
+Building ggeoview which uses GLEW gets tangled
+------------------------------------------------
+
+* https://github.com/ocornut/imgui/commit/3ed38f331347f4f01b425fde7059f5c3cc5227a6
+
+The above commit looks to have replaced a contained 
+glew with a hand-rolled gl3w.
+When you have GLEW operational that is a reversion.
 
 
 EOU
