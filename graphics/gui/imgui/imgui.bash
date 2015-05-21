@@ -12,6 +12,15 @@ ImGUI (MIT) : Immediate Mode GUI
 
 * includes an embedded console : developer-centric
 
+
+Issues
+-------
+
+* keeps dropping a imgui.ini from the launch directory, how to control or change location ?
+
+* need to find way to share input events between GLEQ and ImGui
+
+
 Summarizing an article on IMGUI
 ---------------------------------
 
