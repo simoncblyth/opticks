@@ -27,6 +27,9 @@ find_package(Cfg REQUIRED)
 find_package(PPM REQUIRED) 
 find_package(NPY REQUIRED) 
 
+find_package(ImGui REQUIRED)
+
+
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${GLEW_INCLUDE_DIRS} 
@@ -38,6 +41,7 @@ set(INCLUDE_DIRS
    ${Cfg_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
+   ${ImGui_INCLUDE_DIRS}
 ) 
 
 set(DEFINITIONS
@@ -46,6 +50,7 @@ set(DEFINITIONS
    ${GGeo_DEFINITIONS}
    ${AssimpWrap_DEFINITIONS}
    ${Boost_DEFINITIONS}
+   ${ImGui_DEFINITIONS}
 )
 
 set(LIBRARIES
@@ -56,6 +61,7 @@ set(LIBRARIES
    ${Boost_LIBRARIES}
    ${Cfg_LIBRARIES}
    ${NPY_LIBRARIES}
+   ${ImGui_LIBRARIES}
 )
 
 
@@ -90,6 +96,7 @@ add_library( ${name}  SHARED
                 Prog.cc
                 Shdr.cc
                 Touchable.cc
+                GUI.cc
 )
 
 SET(hdrs 
@@ -122,6 +129,7 @@ SET(hdrs
         Shdr.hh
         Touchable.hh
         Configurable.hh
+        GUI.hh
 )
 
 

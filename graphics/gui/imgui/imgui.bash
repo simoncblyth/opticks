@@ -96,6 +96,28 @@ The above commit looks to have replaced a contained
 glew with a hand-rolled gl3w.
 When you have GLEW operational that is a reversion.
 
+ImGui gl3w vs glew
+-------------------
+
+gl3w does the same thing as glew : need to use one or other
+
+
+
+Event Sharing
+---------------
+
+imgui.cpp::
+
+    after calling ImGui::NewFrame() you can read back 
+
+    * 'io.WantCaptureMouse' and 'io.WantCaptureKeyboard' 
+
+    to tell if ImGui wants to use your inputs. 
+    If it does you can discard/hide the inputs from the rest of your application.
+
+
+
+
 
 EOU
 }
@@ -105,17 +127,15 @@ imgui-edir(){ echo $(env-home)/graphics/gui/imgui ; }
 imgui-idir(){ echo $(local-base)/env/graphics/gui/imgui.install ; }
 imgui-bdir(){ echo $(local-base)/env/graphics/gui/imgui.build   ; }
 imgui-sdir(){ echo $(local-base)/env/graphics/gui/imgui ; }
+imgui-dir(){  echo $(local-base)/env/graphics/gui/imgui ; }
 
 imgui-ecd(){  cd $(imgui-edir); }
 imgui-icd(){  cd $(imgui-idir); }
 imgui-bcd(){  cd $(imgui-bdir); }
 imgui-scd(){  cd $(imgui-sdir); }
 
-imgui-cd(){  cd $(imgui-sdir); }
+imgui-cd(){  cd $(imgui-dir)/$1; }
 
-
-imgui-cd(){  cd $(imgui-dir)/$1 ; }
-imgui-mate(){ mate $(imgui-dir) ; }
 imgui-get(){
    local dir=$(dirname $(imgui-dir)) &&  mkdir -p $dir && cd $dir
    git clone https://github.com/ocornut/imgui.git 

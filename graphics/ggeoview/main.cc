@@ -4,15 +4,10 @@
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
-
-#define GUI 1
-#ifdef GUI
-#include <imgui.h>
-#include "imgui_impl_glfw_gl3.h"
-// gl3w does the same thing as glew : need to use one or other
-//#include <GL/gl3w.h>
+#define GUI_ 1
+#ifdef GUI_
+#include "GUI.hh"
 #endif
-
 
 #include "FrameCfg.hh"
 #include "Scene.hh"
@@ -148,14 +143,6 @@ int main(int argc, char** argv)
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
     GLFWwindow* window = frame.getWindow();
 
-#ifdef GUI
-    //gl3wInit();
-    ImGui_ImplGlfwGL3_Init(window, true);
-    bool show_test_window = true;
-    bool show_another_window = false;
-    //ImVec4 clear_color = ImColor(114, 144, 154);
-#endif
-
 
     bool nooptix = cfg["frame"]->hasOpt("nooptix");
     bool nogeocache = cfg["frame"]->hasOpt("nogeocache");
@@ -214,6 +201,10 @@ int main(int argc, char** argv)
     photons->save(otyp, tag);
 
 
+#ifdef GUI_
+    GUI gui ;
+    gui.init(window);
+#endif
  
     LOG(info) << "enter runloop "; 
     while (!glfwWindowShouldClose(window))
@@ -233,58 +224,18 @@ int main(int argc, char** argv)
             scene.render();
         }
 
-
-#ifdef GUI
-        ImGuiIO& io = ImGui::GetIO();
-        ImGui_ImplGlfwGL3_NewFrame();
-
-        // 1. Show a simple window
-        // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-        {
-            static float f = 0.0f;
-            ImGui::Text("Hello, world!");
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-            //ImGui::ColorEdit3("clear color", (float*)&clear_color);
-            if (ImGui::Button("Test Window")) show_test_window ^= 1;
-            if (ImGui::Button("Another Window")) show_another_window ^= 1;
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        }
-
-       if (show_another_window)
-        {   
-            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
-            ImGui::Begin("Another Window", &show_another_window);
-            ImGui::Text("Hello");
-            ImGui::End();
-        }   
-
-        // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-        if (show_test_window)
-        {   
-            ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-            ImGui::ShowTestWindow(&show_test_window);
-        }   
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        //glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        //glClear(GL_COLOR_BUFFER_BIT);
-        ImGui::Render();
-
-
-        // https://github.com/ocornut/imgui/issues/109
-        // fix ImGui diddling of OpenGL state
-        glDisable(GL_BLEND);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
-
+#ifdef GUI_
+        gui.newframe();
+        gui.demo();
+        gui.render();
 #endif
 
         glfwSwapBuffers(window);
     }
     engine.cleanUp();
     server.stop();
-
-#ifdef GUI
-    ImGui_ImplGlfwGL3_Shutdown();
+#ifdef GUI_
+    gui.shutdown();
 #endif
     frame.exit();
     exit(EXIT_SUCCESS);
