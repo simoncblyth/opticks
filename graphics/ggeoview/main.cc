@@ -83,6 +83,18 @@ void logging_init()
 
 }
 
+/*
+struct App {
+   Frame frame ; 
+   Composition composition ;
+   Bookmarks bookmarks ; 
+   Interactor interactor ;
+   NumpyEvt evt ;
+   Scene scene ; 
+};
+*/
+
+
 int main(int argc, char** argv)
 {
     logging_init();
@@ -104,6 +116,7 @@ int main(int argc, char** argv)
 
 
     // hmm needs some untangling... need to review purpose of each and do some method swapping ?
+    // perhaps use an app class that just holds on to a instance of all objs ?
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
     frame.setComposition(&composition);
     frame.setScene(&scene);
@@ -210,7 +223,6 @@ int main(int argc, char** argv)
     while (!glfwWindowShouldClose(window))
     {
         frame.listen(); 
-
         server.poll_one();  
         frame.render();
 

@@ -28,9 +28,11 @@ Rdr::Rdr(const char* tag)
     m_countdefault(0),
     m_composition(NULL),
     m_mv_location(-1),
-    m_mvp_location(-1)
+    m_mvp_location(-1),
+    m_selection_location(-1)
 {
 }
+
 
 
 void Rdr::upload(MultiVecNPY* mvn)
@@ -162,15 +164,18 @@ void Rdr::address(VecNPY* vnpy)
 
 void Rdr::check_uniforms()
 {
-    m_mvp_location = m_shader->uniform("ModelViewProjection", false) ; 
-    m_mv_location = m_shader->uniform("ModelView", false);      // not required
+    bool required = false ; 
+    m_mvp_location = m_shader->uniform("ModelViewProjection", required) ; 
+    m_mv_location = m_shader->uniform("ModelView", required );     
+    m_selection_location = m_shader->uniform("Selection", required );     
 
     // the "tag" argument of the Rdr identifies the GLSL code being used
     // determining which uniforms are required 
 
-    LOG(debug) << "Rdr::check_uniforms "
+    LOG(info) << "Rdr::check_uniforms "
               << " mvp " << m_mvp_location
-              << " mv " << m_mv_location ;
+              << " mv " << m_mv_location 
+              << " sel " << m_selection_location ;
 
 }
 
@@ -182,6 +187,10 @@ void Rdr::update_uniforms()
         m_composition->update() ;
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+
+        glm::ivec4 sel = m_composition->getSelection();
+        glUniform4i(m_selection_location, sel.x, sel.y, sel.z, sel.w  );    
+
     } 
     else
     { 

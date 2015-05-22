@@ -41,6 +41,7 @@ add_library( ${name}  SHARED
     stringutil.cpp
     Lookup.cpp
     G4StepNPY.cpp
+    PhotonsNPY.cpp
 )
 
 set(LIBRARIES
@@ -59,6 +60,7 @@ NPY.hpp
 VecNPY.hpp
 MultiVecNPY.hpp
 G4StepNPY.hpp
+PhotonsNPY.hpp
 numpy.hpp
 stringutil.hpp
 Lookup.hpp

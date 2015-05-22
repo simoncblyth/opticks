@@ -6,6 +6,8 @@ class G4StepNPY ;
 #include "numpy.hpp"
 #include <vector>
 #include <string>
+#include <set>
+#include <map>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -17,6 +19,7 @@ class G4StepNPY ;
 #include "assert.h"
 
 class NPY {
+   friend class PhotonsNPY ; 
    friend class G4StepNPY ; 
 
    public:
@@ -50,6 +53,11 @@ class NPY {
 
     public:
        // methods assuming 3D shape
+       std::set<int> uniquei(unsigned int j, unsigned int k);
+       std::map<int,int> count_uniquei(unsigned int j, unsigned int k);
+
+    public:
+       // methods assuming 3D shape
        unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getByteIndex(unsigned int i, unsigned int j, unsigned int k);
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
@@ -59,6 +67,7 @@ class NPY {
        float        getFloat(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k);
        int          getInt(  unsigned int i, unsigned int j, unsigned int k);
+
 
        void         setFloat(unsigned int i, unsigned int j, unsigned int k, float value);
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);

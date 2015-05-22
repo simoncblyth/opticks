@@ -7,6 +7,7 @@ public:
    CompositionCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
    {
        addOptionI<Listener>(listener, Listener::PRINT,    "Print");
+       addOptionS<Listener>(listener, Listener::SELECT,   "Selection, four comma delimited integers");
    }
 };
 

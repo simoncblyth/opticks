@@ -8,7 +8,31 @@
 #include "stdio.h"
 #include "assert.h"
 
-int main()
+#include <vector>
+
+
+
+void test_ivec4()
+{
+    std::vector<std::string> ss ; 
+
+    //ss.push_back("");     // bad-lexical case TODO: trap this
+    ss.push_back("1");    
+    ss.push_back("1,2");    
+    ss.push_back("1,2,3");    
+    ss.push_back("1,2,3,4");    
+    ss.push_back("1,2,3,4,5");    
+
+    for(unsigned int i=0 ; i < ss.size() ; i++)
+    {
+         std::string s = ss[i];
+         glm::ivec4 v = givec4(s);
+         print(v, s.c_str());
+    }
+}
+
+
+void test_misc()
 {
     std::string sv = "1,2,3" ;
     glm::vec3 v = gvec3(sv);     
@@ -25,8 +49,12 @@ int main()
     print(qq, "qq:gquat(sqq)");
 
     assert( q == qq );
+}
 
 
+int main()
+{
+    test_ivec4();
     return 0 ; 
 }
 

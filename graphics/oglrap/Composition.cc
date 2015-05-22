@@ -16,6 +16,7 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
@@ -29,6 +30,7 @@
 
 
 const char* Composition::PRINT = "print" ; 
+const char* Composition::SELECT = "select" ; 
 
 Composition::Composition()
   :
@@ -39,7 +41,8 @@ Composition::Composition()
   m_scene(NULL),
   m_model_to_world(),
   m_extent(1.0f),
-  m_center_extent()
+  m_center_extent(),
+  m_selection(0,0,0,0)
 {
     m_camera = new Camera() ;
     m_view   = new View() ;
@@ -49,6 +52,63 @@ Composition::Composition()
 
 Composition::~Composition()
 {
+}
+
+std::vector<std::string> Composition::getTags()
+{
+    std::vector<std::string> tags ;
+    tags.push_back(SELECT);
+    return tags ; 
+}
+
+bool Composition::accepts(const char* name)
+{
+    return 
+         strcmp(name,SELECT)==0 ;
+}
+
+void Composition::set(const char* name, std::string& s)
+{
+    if(     strcmp(name,SELECT)==0) setSelection(s);
+    else
+         printf("Composition::set bad name %s\n", name);
+}
+
+std::string Composition::get(const char* name)
+{
+   std::string s ; 
+
+   if(     strcmp(name,SELECT)==0) s = gformat(getSelection()) ;
+   else
+         printf("Composition::get bad name %s\n", name);
+
+   return s ; 
+}
+
+void Composition::configure(const char* name, const char* value_)
+{
+    std::string value(value_);
+    set(name, value);
+}
+
+void Composition::configureS(const char* name, std::vector<std::string> values)
+{
+    if(values.empty()) return ;
+
+    std::string last = values.back();
+    set(name, last);
+}
+
+
+void Composition::configureI(const char* name, std::vector<int> values )
+{
+    printf("Composition::configureI\n");
+    if(values.empty()) return ; 
+    if(strcmp(name, PRINT)==0)
+    {
+        //int print = values.back();
+        Summary("Composition::configureI");
+    }
 }
 
 
@@ -66,19 +126,6 @@ void Composition::addConfig(Cfg* cfg)
 }
 
 
-
-
-
-void Composition::configureI(const char* name, std::vector<int> values )
-{
-    printf("Composition::configureI\n");
-    if(values.empty()) return ; 
-    if(strcmp(name, PRINT)==0)
-    {
-        //int print = values.back();
-        Summary("Composition::configureI");
-    }
-}
 
 
 
@@ -128,7 +175,16 @@ void Composition::setTarget(unsigned int target)
     m_scene->setTarget(target);
 }
 
+void Composition::setSelection(std::string selection)
+{
+    setSelection(givec4(selection));
+}
+ 
 
+void Composition::setSelection(glm::ivec4 selection) 
+{
+    m_selection = selection ;  
+}
 
 void Composition::setCenterExtent(gfloat4 ce) // replaces setModelToWorld
 {  
@@ -152,10 +208,10 @@ glm::vec4& Composition::getCenterExtent()
     return m_center_extent ; 
 }
 
-
-
-
-
+glm::ivec4& Composition::getSelection()
+{
+    return m_selection ; 
+}
 glm::mat4& Composition::getModelToWorld()
 {
     return m_model_to_world ; 

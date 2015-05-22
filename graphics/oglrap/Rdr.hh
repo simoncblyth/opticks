@@ -39,9 +39,6 @@ class Rdr : public RendererBase  {
       void setCountDefault(unsigned int countdefault);
       unsigned int getCountDefault();
       
-
-
-
   private:
       GLuint m_vao ; 
       GLuint m_buffer ;
@@ -50,10 +47,10 @@ class Rdr : public RendererBase  {
 
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
-
-
+      GLint  m_selection_location ;
 
 };      
+
 
 inline unsigned int Rdr::getBufferId()
 {

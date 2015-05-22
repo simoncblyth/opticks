@@ -742,6 +742,32 @@ chroma/chroma/cuda/geometry_types.h::
     };
 
 
+Boundary Check
+----------------
+
+::
+
+    In [1]: a = oxc_(1)
+
+    In [6]: count_unique(a[:,3,0].view(np.int32))
+    Out[6]: 
+    array([[    -1,  53472],
+           [    11,  10062],   IwsWater/IwsWater
+           [    12,   6612],   StainlessSteel/IwsWater
+           [    13,   9021],   MineralOil/StainlessSteel
+           [    14,  28583],   Acrylic/MineralOil
+           [    15,  45059],   LiquidScintillator/Acrylic
+           [    16,  95582],   Acrylic/LiquidScintillator
+           [    17, 311100],   GdDopedLS/Acrylic
+           [    19,    576],   Pyrex/MineralOil
+           [    20,    282],   Vacuum/Pyrex
+           [    22,   2776],   UnstStainlessSteel/MineralOil
+           [    24,  36214],   Acrylic/MineralOil
+           [    31,    710],   StainlessSteel/Water
+           [    32,    194],   Nitrogen/StainlessSteel
+           [    49,  11831],   UnstStainlessSteel/IwsWater
+           [    50,     23],   Nitrogen/Water
+           [    52,    744]])  Pyrex/IwsWater
 
  
 

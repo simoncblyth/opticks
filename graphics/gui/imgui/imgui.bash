@@ -102,7 +102,6 @@ ImGui gl3w vs glew
 gl3w does the same thing as glew : need to use one or other
 
 
-
 Event Sharing
 ---------------
 
@@ -116,7 +115,15 @@ imgui.cpp::
     If it does you can discard/hide the inputs from the rest of your application.
 
 
+Hmm disabling "install_callbacks" in init does not prevent interaction with the GUI ?
+And enables events to get through to my handling. How is this working ?
 
+
+GUI photon selector, so can display only certain boundaries
+------------------------------------------------------------
+
+* Rdr needs to hookup an integer uniform to provide selected boundary code 
+  to the shader : so can change color/visibility based on the selection
 
 
 EOU

@@ -319,3 +319,50 @@ unsigned int NPY::getUSum(unsigned int j, unsigned int k)
 
 
 
+std::set<int> NPY::uniquei(unsigned int j, unsigned int k)
+{
+    unsigned int ni = m_len0 ;
+    unsigned int nj = m_len1 ;
+    unsigned int nk = m_len2 ;
+    assert(m_dim == 3 && j < nj && k < nk);
+
+    std::set<int> uniq ; 
+    uif_t uif ; 
+    for(unsigned int i=0 ; i<ni ; i++ )
+    {
+        unsigned int index = i*nj*nk + j*nk + k ;
+        uif.f = m_data[index] ;
+        int ival = uif.i ;
+        uniq.insert(ival);
+    }
+    return uniq ; 
+}
+
+std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k)
+{
+    unsigned int ni = m_len0 ;
+    unsigned int nj = m_len1 ;
+    unsigned int nk = m_len2 ;
+    assert(m_dim == 3 && j < nj && k < nk);
+
+    std::map<int, int> uniqn ; 
+    uif_t uif ; 
+    for(unsigned int i=0 ; i<ni ; i++ )
+    {
+        unsigned int index = i*nj*nk + j*nk + k ;
+        uif.f = m_data[index] ;
+        int ival = uif.i ;
+        if(uniqn.count(ival) == 0)
+        {
+            uniqn[ival] = 1 ; 
+        }
+        else 
+        {  
+            uniqn[ival] += 1 ; 
+        }
+    }
+    return uniqn ; 
+}
+
+
+

@@ -10,8 +10,8 @@
 
 void GUI::init(GLFWwindow* window)
 {
-    //gl3wInit();
-    ImGui_ImplGlfwGL3_Init(window, true);
+    bool install_callbacks = false ; 
+    ImGui_ImplGlfwGL3_Init(window, install_callbacks );
 
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = "/tmp/imgui.ini";
@@ -21,7 +21,6 @@ void GUI::newframe()
 {
     ImGui_ImplGlfwGL3_NewFrame();
 }
-
 
 void GUI::demo()
 {
@@ -68,8 +67,6 @@ void GUI::shutdown()
 {
     ImGui_ImplGlfwGL3_Shutdown();
 }
-
-
 
 GUI::~GUI()
 {

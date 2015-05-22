@@ -15,7 +15,12 @@ class Clipper ;
 class Cfg ;
 class Scene ; 
 
-class Composition {
+#include "Configurable.hh"
+
+class Composition : public Configurable {
+  public:
+      static const char* PRINT ;  
+      static const char* SELECT ;  
 
       friend class Interactor ;   
       friend class Bookmarks ;   
@@ -24,9 +29,23 @@ class Composition {
       Composition();
       virtual ~Composition();
 
+ public:
+      // Configurable : for bookmarking 
+      static bool accepts(const char* name);
+      void configure(const char* name, const char* value);
+      std::vector<std::string> getTags();
+      void set(const char* name, std::string& s);
+      std::string get(const char* name);
+
+      // for cli/live updating 
+      void configureI(const char* name, std::vector<int> values );
+      void configureS(const char* name, std::vector<std::string> values);
+
   public: 
       //void setModelToWorld(float* m2w, bool debug=false); // effectively points at what you want to look at 
       void setCenterExtent(gfloat4 ce); // effectively points at what you want to look at 
+      void setSelection(glm::ivec4 sel);
+      void setSelection(std::string sel);
 
       void setTarget(unsigned int target);
       void setScene(Scene* scene);
@@ -57,6 +76,7 @@ class Composition {
 
   public: 
       // getters of inputs 
+      glm::ivec4& getSelection();
       glm::mat4& getModelToWorld();
       float getExtent();
       float getNear();
@@ -102,6 +122,7 @@ class Composition {
       glm::mat4 m_model_to_world ; 
       float     m_extent ; 
       glm::vec4 m_center_extent ; 
+      glm::ivec4 m_selection ;
 
   private:
       // residents
@@ -139,9 +160,6 @@ class Composition {
       glm::mat4 m_identity ;     
 
   public: 
-      // housekeeping
-      static const char* PRINT ;  
-      void configureI(const char* name, std::vector<int> values );
       void Summary(const char* msg);
       void Details(const char* msg);
 
