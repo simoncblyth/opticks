@@ -160,9 +160,12 @@ GMergedMesh* Scene::getMergedMesh()
 {
     return m_geometry_loader ? m_geometry_loader->getMergedMesh() : NULL ;
 }
-
 GGeo* Scene::getGGeo()
 {
     return m_geometry_loader ? m_geometry_loader->getGGeo() : NULL ;
+}
+GSubstanceLibMetadata* Scene::getMetadata()
+{
+    return m_geometry_loader ? m_geometry_loader->getMetadata() : NULL ;
 }
 

@@ -11,6 +11,7 @@ class Geometry ;
 class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
+class GSubstanceLibMetadata ;
 
 #include "Configurable.hh"
 
@@ -47,9 +48,13 @@ class Scene : public Configurable {
         void render();
 
    public:
-        GMergedMesh*  getMergedMesh();
-        GGeo*         getGGeo();
         unsigned int  getTarget(); 
+
+   public:
+        // pass throughs to the loader
+        GMergedMesh*            getMergedMesh();
+        GSubstanceLibMetadata*  getMetadata();
+        GGeo*                   getGGeo();
 
    public:
         Geometry*     getGeometryLoader();

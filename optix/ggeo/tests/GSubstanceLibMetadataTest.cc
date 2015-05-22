@@ -15,7 +15,9 @@ int main(int argc, char** argv)
 
     const char* path = argv[1];
     GSubstanceLibMetadata* meta = GSubstanceLibMetadata::load(path);
-    //meta->Summary(path);
+    meta->Summary(path);
+    meta->dumpNames();
+
 
     char wpath[256];
     snprintf(wpath, 256,"%s/wavelength.npy", path); 
@@ -30,8 +32,8 @@ int main(int argc, char** argv)
     GDomain<float>* domain = GSubstanceLib::getDefaultDomain();
     assert(domain->getLength() == domainLength);
 
-    int wline = -1; 
-    GSubstanceLib::dumpWavelengthBuffer(wline, buffer, meta, numSubstance, domainLength );
+    //int wline = -1; 
+    //GSubstanceLib::dumpWavelengthBuffer(wline, buffer, meta, numSubstance, domainLength );
 
     return 0 ;
 }

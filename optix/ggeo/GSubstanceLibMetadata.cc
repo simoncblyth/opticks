@@ -16,6 +16,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
+
+#include "stringutil.hpp"
+
+
 
 namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
@@ -109,6 +115,72 @@ std::string GSubstanceLibMetadata::getSubstanceQty(unsigned int isub, const char
     snprintf(key, 128, "lib.substance.%u.%s.%s", isub, cat, tag);
     return m_tree.get<std::string>(key);
 }
+
+
+unsigned int GSubstanceLibMetadata::getNumSubstance()
+{
+    unsigned int count(0);
+    BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_tree.get_child("lib.substance") ) 
+    {
+        unsigned int index = boost::lexical_cast<unsigned int>(ak.first.c_str());
+        assert(index == count);
+        count++;
+    }
+    return count ;
+}
+
+
+std::string GSubstanceLibMetadata::getSubstanceName(unsigned int isub)
+{
+    std::string imat = getSubstanceQty(isub, "imat", "shortname") ;
+    std::string omat = getSubstanceQty(isub, "omat", "shortname") ;
+    std::string isur = getSubstanceQty(isub, "isur", "name") ;
+    std::string osur = getSubstanceQty(isub, "osur", "name") ;
+
+    if(isur == "?" ) isur = "" ;
+    if(osur == "?" ) osur = "" ;
+
+    std::string isur_s = patternPickField(isur, "__", -1);
+    std::string osur_s = patternPickField(osur, "__", -1);
+
+    std::vector<std::string> vals ; 
+    vals.push_back(imat);
+    vals.push_back(omat);
+    vals.push_back(isur_s);
+    vals.push_back(osur_s);
+
+    return boost::algorithm::join(vals, ".");
+}
+
+
+std::map<int, std::string> GSubstanceLibMetadata::getBoundaryNames()
+{
+    std::map<int, std::string> nmap ; 
+    unsigned int nsub = getNumSubstance();
+    nmap[-1] = "unknown" ;
+    for(unsigned int isub=0 ; isub < nsub ; isub++)
+    {
+        std::string name = getSubstanceName(isub);
+        nmap[isub] = name ;        
+        //printf("%2d : %s \n", isub, name.c_str());
+    }
+    return nmap ; 
+}
+
+
+
+
+void GSubstanceLibMetadata::dumpNames()
+{
+    unsigned int nsub = getNumSubstance();
+    for(unsigned int isub=0 ; isub < nsub ; isub++)
+    {
+        std::string name = getSubstanceName(isub);
+        printf("%2d : %s \n", isub, name.c_str());
+    }
+}
+
+
 
 
 void GSubstanceLibMetadata::createMaterialMap()

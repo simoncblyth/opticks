@@ -36,6 +36,7 @@
 #include "MultiVecNPY.hpp"
 #include "Lookup.hpp"
 #include "G4StepNPY.hpp"
+#include "PhotonsNPY.hpp"
 #include "stringutil.hpp"
 
 
@@ -47,6 +48,7 @@
 // ggeo-
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
+#include "GSubstanceLibMetadata.hh"
 
 
 #include <boost/log/core.hpp>
@@ -163,6 +165,8 @@ int main(int argc, char** argv)
     assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading 
     bookmarks.load(idpath); 
     GMergedMesh* mm = scene.getMergedMesh(); 
+    GSubstanceLibMetadata* meta = scene.getMetadata(); 
+    std::map<int, std::string> boundaries = meta->getBoundaryNames();
 
     // hmm would be better placed into a NumpyEvtCfg 
     const char* typ ; 
@@ -213,6 +217,9 @@ int main(int argc, char** argv)
     snprintf(otyp, 64, "ox%s", typ );
     photons->save(otyp, tag);
 
+    PhotonsNPY pnpy(photons);
+    pnpy.setBoundaryNames(boundaries);
+    pnpy.classify();
 
 #ifdef GUI_
     GUI gui ;
@@ -239,6 +246,8 @@ int main(int argc, char** argv)
 #ifdef GUI_
         gui.newframe();
         gui.demo();
+        gui.choose( pnpy.getBoundaries(), pnpy.getBoundariesSelection() );
+        composition.setSelection(pnpy.getSelection());
         gui.render();
 #endif
 

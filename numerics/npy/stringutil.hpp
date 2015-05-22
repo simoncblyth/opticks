@@ -13,6 +13,8 @@ const char* getenvvar( const char* envprefix, const char* envkey );
 
 void split( std::vector<std::string>& elem, const char* line, char delim );
 
+std::string patternPickField(std::string str, std::string ptn, int num );
+
 std::string join(std::vector<std::string>& elem, char delim );
 std::string insertField(const char* line, char delim, int index, const char* field);
 std::string md5digest( const char* buffer, int len );

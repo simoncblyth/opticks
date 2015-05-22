@@ -361,6 +361,10 @@ std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k)
             uniqn[ival] += 1 ; 
         }
     }
+
+
+
+
     return uniqn ; 
 }
 

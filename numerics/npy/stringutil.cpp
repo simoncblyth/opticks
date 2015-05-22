@@ -4,6 +4,9 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
+#include <boost/regex.hpp>
+#include <boost/algorithm/string/regex.hpp>
+
 
 int getenvint( const char* envkey, int fallback )
 {
@@ -19,6 +22,22 @@ const char* getenvvar( const char* envprefix, const char* envkey )
     snprintf(envvar, 128, "%s%s", envprefix, envkey );
     return getenv(envvar);
 }
+
+
+std::string patternPickField(std::string str, std::string ptn, int num )
+{
+    std::vector<std::string> result;
+    boost::algorithm::split_regex( result, str, boost::regex(ptn) ) ;
+    unsigned int size = result.size();
+
+    //printf("patternPickField %u \n", size );
+    if(num < 0) num+= size ; 
+
+    assert(num > -1 && num < size);
+
+    return result[num];
+}
+
 
 
 

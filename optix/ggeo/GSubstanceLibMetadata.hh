@@ -24,6 +24,12 @@ class GSubstanceLibMetadata {
       void createMaterialMap();
 
    public:
+      std::string getSubstanceName(unsigned int isub);
+      unsigned int getNumSubstance();
+      void dumpNames();
+      std::map<int, std::string> getBoundaryNames();
+
+   public:
       std::string getSubstanceQty(unsigned int isub, const char* cat, const char* key);
       std::string getSubstanceQtyByIndex(unsigned int isub, unsigned int icat, const char* tag);
 

@@ -22,6 +22,29 @@ void GUI::newframe()
     ImGui_ImplGlfwGL3_NewFrame();
 }
 
+
+void GUI::choose( std::vector<std::pair<int, std::string> >& choices, bool* selection )
+{
+    for(unsigned int i=0 ; i < choices.size() ; i++)
+    {
+        std::pair<int, std::string> choice = choices[i];
+        ImGui::Checkbox(choice.second.c_str(), selection+i );
+    }
+}
+
+
+/*
+void GUI::choose( std::vector<std::pair<int, std::string> >& choices, std::vector<int>& selection )
+{
+    for(unsigned int i=0 ; i < choices.size() ; i++)
+    {
+        std::pair<int, std::string> choice = choices[i];
+        if(ImGui::Button(choice.second.c_str())) selection[i] ^= 1 ; 
+    }
+}
+*/
+
+
 void GUI::demo()
 {
     // 1. Show a simple window

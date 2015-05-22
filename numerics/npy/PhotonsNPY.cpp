@@ -1,26 +1,121 @@
 #include "PhotonsNPY.hpp"
 #include "uif.h"
 #include "NPY.hpp"
+
 #include <set>
 #include <map>
 
+#include <glm/glm.hpp>
+
+
+bool value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
+{
+    return a.second > b.second ;
+}
+
+
+
 void PhotonsNPY::classify()
 {
-    if(!m_npy) return ;
-    std::set<int> uniq = m_npy->uniquei(3,0) ;
-    for(std::set<int>::iterator it=uniq.begin() ; it != uniq.end() ; it++)
+    m_boundaries = findBoundaries();
+    m_boundaries_selection = initBooleanSelection(m_boundaries.size());
+    dumpBoundaries("PhotonsNPY::classify");
+}
+
+
+/*
+std::vector<int> PhotonsNPY::initIntegerSelection(unsigned int n)
+{
+    std::vector<int> selection ; 
+    for(unsigned int i=0 ; i < n ; i++) selection.push_back(0);
+    return selection ;
+}
+
+std::vector<bool> PhotonsNPY::initBooleanSelection(unsigned int n)
+{
+    std::vector<bool> selection ; 
+    for(unsigned int i=0 ; i < n ; i++) selection.push_back(false);
+    return selection ;
+}
+
+*/
+
+bool* PhotonsNPY::initBooleanSelection(unsigned int n)
+{
+    bool* selection = new bool[n];
+    while(n--) selection[n] = false ; 
+}
+
+glm::ivec4 PhotonsNPY::getSelection()
+{
+    int v[4] ;
+    unsigned int count(0) ; 
+    //assert(m_boundaries.size() == m_boundaries_selection.size());  
+    for(unsigned int i=0 ; i < m_boundaries.size() ; i++)
     {
-        int val = *it ; 
-        printf("%d \n", val );
+        if(m_boundaries_selection[i])
+        {
+            std::pair<int, std::string> p = m_boundaries[i];
+            if(count < 4)
+            {
+                v[count] = p.first ; 
+                count++ ; 
+            }
+            else
+            {
+                 break ;
+            }
+        }
     }  
+    glm::ivec4 iv(0,0,0,0);
+    if(count > 0) iv.x = v[0] ;
+    if(count > 1) iv.y = v[1] ;
+    if(count > 2) iv.z = v[2] ;
+    if(count > 3) iv.w = v[3] ;
+    return iv ;     
+}
 
-    std::map<int,int> uniqn = m_npy->count_uniquei(3,0) ;
-    for(std::map<int,int>::iterator it=uniqn.begin() ; it != uniqn.end() ; it++)
+
+
+void PhotonsNPY::dumpBoundaries(const char* msg)
+{
+    printf("%s\n", msg);
+    for(unsigned int i=0 ; i < m_boundaries.size() ; i++)
     {
-        printf("%d : %d \n", it->first, it->second );
+         std::pair<int, std::string> p = m_boundaries[i];
+         printf(" %2d : %s \n", p.first, p.second.c_str() );
     }
+}
 
 
+std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries()
+{
+    assert(m_npy);
+
+    std::vector<std::pair<int, std::string> > boundaries ;  
+
+    printf("PhotonsNPY::classify \n");
+    std::map<int,int> uniqn = m_npy->count_uniquei(3,0) ;
+
+    std::vector<std::pair<int,int> > pairs ; 
+
+    for(std::map<int,int>::iterator it=uniqn.begin() ; it != uniqn.end() ; it++) pairs.push_back(*it);
+
+    std::sort(pairs.begin(), pairs.end(), value_order );
+
+    for(unsigned int i=0 ; i < pairs.size() ; i++)
+    {
+        std::pair<int,int> p = pairs[i]; 
+        int code = p.first ;
+        std::string name ;
+        if(m_names.count(code) > 0) name = m_names[code] ; 
+
+        char line[128] ;
+        snprintf(line, 128, " %d : %7d %s ", p.first, p.second, name.c_str() );
+        boundaries.push_back( std::pair<int, std::string>( code, line ));
+    }   
+
+    return boundaries ;
 }
 
 
