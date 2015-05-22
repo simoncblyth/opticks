@@ -24,6 +24,8 @@ class GSubstanceLibMetadata {
       void createMaterialMap();
 
    public:
+      // 1-based substance code to allow cos_theta sign flipped boundary code, zero corresponds to "nohit"
+      unsigned int getSubstanceCode(unsigned int isub);
       std::string getSubstanceName(unsigned int isub);
       unsigned int getNumSubstance();
       void dumpNames();

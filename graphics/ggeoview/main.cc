@@ -224,6 +224,8 @@ int main(int argc, char** argv)
 #ifdef GUI_
     GUI gui ;
     gui.init(window);
+    gui.setupBoundarySelection( pnpy.getBoundariesPointer(), pnpy.getBoundariesSelection() );
+    bool show_gui_window = true ; 
 #endif
  
     LOG(info) << "enter runloop "; 
@@ -245,9 +247,14 @@ int main(int argc, char** argv)
 
 #ifdef GUI_
         gui.newframe();
-        gui.demo();
-        gui.choose( pnpy.getBoundaries(), pnpy.getBoundariesSelection() );
-        composition.setSelection(pnpy.getSelection());
+
+        if(show_gui_window)
+        {
+            gui.show(&show_gui_window);
+            gui.selectBoundary();
+            composition.setSelection(pnpy.getSelection());
+        }
+
         gui.render();
 #endif
 

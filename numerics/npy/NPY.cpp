@@ -338,12 +338,15 @@ std::set<int> NPY::uniquei(unsigned int j, unsigned int k)
     return uniq ; 
 }
 
-std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k)
+std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k, int sj, int sk )
 {
     unsigned int ni = m_len0 ;
     unsigned int nj = m_len1 ;
     unsigned int nk = m_len2 ;
     assert(m_dim == 3 && j < nj && k < nk);
+
+    bool sign = sj > -1 && sk > -1 ;
+ 
 
     std::map<int, int> uniqn ; 
     uif_t uif ; 
@@ -352,6 +355,14 @@ std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k)
         unsigned int index = i*nj*nk + j*nk + k ;
         uif.f = m_data[index] ;
         int ival = uif.i ;
+
+        if(sign)
+        {
+            unsigned int sign_index = i*nj*nk + sj*nk + sk ;
+            float sval = m_data[sign_index] ;
+            if( sval < 0.f ) ival = -ival ; 
+        }
+
         if(uniqn.count(ival) == 0)
         {
             uniqn[ival] = 1 ; 
@@ -362,11 +373,10 @@ std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k)
         }
     }
 
-
-
-
     return uniqn ; 
 }
+
+
 
 
 

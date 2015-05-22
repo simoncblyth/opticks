@@ -129,7 +129,10 @@ unsigned int GSubstanceLibMetadata::getNumSubstance()
     return count ;
 }
 
-
+unsigned int GSubstanceLibMetadata::getSubstanceCode(unsigned int isub)
+{
+    return isub + 1 ;   
+}
 std::string GSubstanceLibMetadata::getSubstanceName(unsigned int isub)
 {
     std::string imat = getSubstanceQty(isub, "imat", "shortname") ;
@@ -157,17 +160,16 @@ std::map<int, std::string> GSubstanceLibMetadata::getBoundaryNames()
 {
     std::map<int, std::string> nmap ; 
     unsigned int nsub = getNumSubstance();
-    nmap[-1] = "unknown" ;
+    nmap[0] = "Miss" ;
     for(unsigned int isub=0 ; isub < nsub ; isub++)
     {
         std::string name = getSubstanceName(isub);
-        nmap[isub] = name ;        
-        //printf("%2d : %s \n", isub, name.c_str());
+        unsigned int code = getSubstanceCode(isub);
+        assert(code != 0);
+        nmap[code] = name ;        
     }
     return nmap ; 
 }
-
-
 
 
 void GSubstanceLibMetadata::dumpNames()

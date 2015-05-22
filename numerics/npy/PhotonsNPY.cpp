@@ -14,43 +14,28 @@ bool value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
 }
 
 
-
-void PhotonsNPY::classify()
+void PhotonsNPY::classify(bool sign)
 {
-    m_boundaries = findBoundaries();
+    m_boundaries.clear();
+    m_boundaries = findBoundaries(sign);
+    delete m_boundaries_selection ; 
     m_boundaries_selection = initBooleanSelection(m_boundaries.size());
     dumpBoundaries("PhotonsNPY::classify");
 }
-
-
-/*
-std::vector<int> PhotonsNPY::initIntegerSelection(unsigned int n)
-{
-    std::vector<int> selection ; 
-    for(unsigned int i=0 ; i < n ; i++) selection.push_back(0);
-    return selection ;
-}
-
-std::vector<bool> PhotonsNPY::initBooleanSelection(unsigned int n)
-{
-    std::vector<bool> selection ; 
-    for(unsigned int i=0 ; i < n ; i++) selection.push_back(false);
-    return selection ;
-}
-
-*/
 
 bool* PhotonsNPY::initBooleanSelection(unsigned int n)
 {
     bool* selection = new bool[n];
     while(n--) selection[n] = false ; 
+    return selection ;
 }
 
 glm::ivec4 PhotonsNPY::getSelection()
 {
+    // ivec4 containing 1st four boundary codes provided by the selection
+
     int v[4] ;
     unsigned int count(0) ; 
-    //assert(m_boundaries.size() == m_boundaries_selection.size());  
     for(unsigned int i=0 ; i < m_boundaries.size() ; i++)
     {
         if(m_boundaries_selection[i])
@@ -88,30 +73,34 @@ void PhotonsNPY::dumpBoundaries(const char* msg)
 }
 
 
-std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries()
+std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries(bool sign)
 {
     assert(m_npy);
 
     std::vector<std::pair<int, std::string> > boundaries ;  
 
     printf("PhotonsNPY::classify \n");
-    std::map<int,int> uniqn = m_npy->count_uniquei(3,0) ;
+
+
+    std::map<int,int> uniqn = sign ? m_npy->count_uniquei(3,0,2,0) : m_npy->count_uniquei(3,0) ;
+
+    // To allow sorting by count
+    //      map<boundary_code, count> --> vector <pair<boundary_code,count>>
 
     std::vector<std::pair<int,int> > pairs ; 
-
     for(std::map<int,int>::iterator it=uniqn.begin() ; it != uniqn.end() ; it++) pairs.push_back(*it);
-
     std::sort(pairs.begin(), pairs.end(), value_order );
+
 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {
         std::pair<int,int> p = pairs[i]; 
         int code = p.first ;
         std::string name ;
-        if(m_names.count(code) > 0) name = m_names[code] ; 
+        if(m_names.count(abs(code)) > 0) name = m_names[abs(code)] ; 
 
         char line[128] ;
-        snprintf(line, 128, " %d : %7d %s ", p.first, p.second, name.c_str() );
+        snprintf(line, 128, " %3d : %7d %s ", p.first, p.second, name.c_str() );
         boundaries.push_back( std::pair<int, std::string>( code, line ));
     }   
 

@@ -74,6 +74,7 @@ bool G4StepNPY::applyLookup(unsigned int index)
 
     if( bcode > -1 )
     {
+        //unsigned int code = onebased ? bcode + 1 : bcode  ; 
         uif.u = bcode ; 
         data[index] = uif.f ;
         m_lines.insert(bcode);

@@ -79,9 +79,19 @@ RT_PROGRAM void generate()
     p.position += prd.distance_to_boundary*p.direction ; 
 
 
-    p.flags.i.x = prd.boundary ;
-    p.flags.f.y = prd.cos_theta ; 
-    p.flags.f.z = prd.distance_to_boundary ; 
+    // over-writing third quad : vpol as expedient for access from ../gl/pos/vert.glsl
+    p.polarization.x = prd.cos_theta ; 
+    p.polarization.y = prd.distance_to_boundary ; 
+    p.polarization.z = 0.f ; 
+    p.weight = 0.f ;   
+
+    // fourth quad : is accessible in shaders as ivec4 so keep int here 
+    unsigned int boundary_code = prd.boundary + 1 ;   // 1-based for cos_theta signing, 0 means miss
+    p.flags.i.x = prd.cos_theta < 0.f ? -boundary_code : boundary_code ;
+    p.flags.i.y = 0 ;
+    p.flags.i.z = 0 ; 
+    p.flags.i.w = 0 ; 
+
 
     float4 imat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 0 );
     float4 omat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 1 );

@@ -54,7 +54,10 @@ class NPY {
     public:
        // methods assuming 3D shape
        std::set<int> uniquei(unsigned int j, unsigned int k);
-       std::map<int,int> count_uniquei(unsigned int j, unsigned int k);
+       std::map<int,int> count_uniquei(unsigned int j, unsigned int k, int sj=-1, int sk=-1);
+
+       // when both sj and sk are >-1 the float specified is used 
+       // to sign the boundary code used in the map 
 
     public:
        // methods assuming 3D shape

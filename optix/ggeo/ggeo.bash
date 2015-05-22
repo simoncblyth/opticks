@@ -742,8 +742,8 @@ chroma/chroma/cuda/geometry_types.h::
     };
 
 
-Boundary Check
-----------------
+Boundary Check for Cerenkov
+------------------------------
 
 ::
 
@@ -769,7 +769,45 @@ Boundary Check
            [    50,     23],   Nitrogen/Water
            [    52,    744]])  Pyrex/IwsWater
 
+
+::
+
+    PhotonsNPY::classify
+     17 :  17 :  311100 GdDopedLS.Acrylic..  
+     16 :  16 :   95582 Acrylic.LiquidScintillator..  
+     -1 :  -1 :   53472 unknown  
+     15 :  15 :   45059 LiquidScintillator.Acrylic..  
+     24 :  24 :   36214 Acrylic.MineralOil..RSOilSurface  
+     14 :  14 :   28583 Acrylic.MineralOil..  
+     49 :  49 :   11831 UnstStainlessSteel.IwsWater..AdCableTraySurface  
+     11 :  11 :   10062 IwsWater.IwsWater..  
+     13 :  13 :    9021 MineralOil.StainlessSteel.SSTOilSurface.  
+     12 :  12 :    6612 StainlessSteel.IwsWater..SSTWaterSurfaceNear1  
+     22 :  22 :    2776 UnstStainlessSteel.MineralOil..  
+     52 :  52 :     744 Pyrex.IwsWater..  
+     31 :  31 :     710 StainlessSteel.Water..  
+     19 :  19 :     576 Pyrex.MineralOil..  
+     20 :  20 :     282 Vacuum.Pyrex..  
+     32 :  32 :     194 Nitrogen.StainlessSteel..  
+     50 :  50 :      23 Nitrogen.Water..  
+
+
+
  
+Sign of cos_theta
+--------------------
+
+For the major component GdDopedLS.Acrylic the sign coming out 
+
+::
+
+     34 RT_PROGRAM void closest_hit_propagate()
+     35 {       
+     ..
+     38      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ;
+     ..
+     42      prd.cos_theta = dot(n,-ray.direction);
+
 
 
 

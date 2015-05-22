@@ -7,5 +7,7 @@ int main(int argc, char** argv)
     oxc.dump("oxc.dump");
     oxc.classify();
 
+    oxc.classify(true);
+
     return 0 ;
 }

@@ -23,15 +23,6 @@ void GUI::newframe()
 }
 
 
-void GUI::choose( std::vector<std::pair<int, std::string> >& choices, bool* selection )
-{
-    for(unsigned int i=0 ; i < choices.size() ; i++)
-    {
-        std::pair<int, std::string> choice = choices[i];
-        ImGui::Checkbox(choice.second.c_str(), selection+i );
-    }
-}
-
 
 /*
 void GUI::choose( std::vector<std::pair<int, std::string> >& choices, std::vector<int>& selection )
@@ -43,6 +34,44 @@ void GUI::choose( std::vector<std::pair<int, std::string> >& choices, std::vecto
     }
 }
 */
+
+
+void GUI::choose( std::vector<std::pair<int, std::string> >& choices, bool* selection )
+{
+    for(unsigned int i=0 ; i < choices.size() ; i++)
+    {
+        std::pair<int, std::string> choice = choices[i];
+        ImGui::Checkbox(choice.second.c_str(), selection+i );
+    }
+}
+
+// follow pattern of ImGui::ShowTestWindow
+void GUI::show(bool* opened)
+{
+    static float bg_alpha = 0.65f;
+    ImGuiWindowFlags window_flags = 0;
+
+    if (!ImGui::Begin("GGeoView", opened, ImVec2(550,680), bg_alpha, window_flags)) 
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return ; 
+    }
+
+    ImGui::PushItemWidth(-140);  
+    ImGui::Text("ImGui says hello.");
+
+    ImGui::Spacing();
+
+    if (ImGui::CollapsingHeader("Photon Boundary Selection"))
+    {
+
+    }
+
+
+
+}
+
 
 
 void GUI::demo()
