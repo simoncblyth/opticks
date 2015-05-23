@@ -107,6 +107,7 @@ void Scene::gui()
      ImGui::Checkbox(GEOMETRY, &m_geometry_mode);
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
      ImGui::Checkbox(PHOTON,   &m_photon_mode);
+     ImGui::Text(" target: %u ", m_target );
 #endif    
 }
 
@@ -247,13 +248,16 @@ void Scene::setTarget(unsigned int index)
 
     gfloat4 ce = m_geometry->getCenterExtent(index);
 
+    bool autocam = true ; 
     LOG(info)<<"Scene::setTarget " << index << " ce " 
              << " " << ce.x 
              << " " << ce.y 
              << " " << ce.z 
-             << " " << ce.w ;
+             << " " << ce.w 
+             << " autocam " << autocam 
+             ;
 
-    m_composition->setCenterExtent(ce); 
+    m_composition->setCenterExtent(ce, autocam); 
 }
 
 GMergedMesh* Scene::getMergedMesh()

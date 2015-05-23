@@ -12,9 +12,9 @@ class View ;
 class Camera ;
 class Clipper ;
 class Trackball ;
+class Bookmarks ;
 
 #include "PhotonsNPY.hpp"
-
 
 /*
    Hmm controlling the layout of the GUI demands
@@ -39,6 +39,7 @@ class GUI {
        void setCamera(Camera* camera);
        void setClipper(Clipper* clipper);
        void setTrackball(Trackball* trackball);
+       void setBookmarks(Bookmarks* bookmarks);
 
        void init(GLFWwindow* window);
        void newframe();
@@ -71,6 +72,7 @@ class GUI {
        Camera*       m_camera; 
        Clipper*      m_clipper ; 
        Trackball*    m_trackball ; 
+       Bookmarks*    m_bookmarks ; 
 
 };
 
@@ -85,8 +87,9 @@ inline GUI::GUI()
    m_composition(NULL),
    m_view(NULL),
    m_camera(NULL),
+   m_clipper(NULL),
    m_trackball(NULL),
-   m_clipper(NULL)
+   m_bookmarks(NULL)
 {
 }
 
@@ -111,6 +114,11 @@ inline void GUI::setTrackball(Trackball* trackball)
 {
     m_trackball = trackball ; 
 }
+inline void GUI::setBookmarks(Bookmarks* bookmarks)
+{
+    m_bookmarks = bookmarks ; 
+}
+
 
 
 

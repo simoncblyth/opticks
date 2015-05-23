@@ -42,8 +42,10 @@ class Composition : public Configurable {
       void configureS(const char* name, std::vector<std::string> values);
 
   public: 
-      //void setModelToWorld(float* m2w, bool debug=false); // effectively points at what you want to look at 
-      void setCenterExtent(gfloat4 ce); // effectively points at what you want to look at 
+      void setCenterExtent(gfloat4 ce, bool autocam=false); // effectively points at what you want to look at 
+
+  public:
+      // avaiable as uniform inside shaders allowing GPU-side selections 
       void setSelection(glm::ivec4 sel);
       void setSelection(std::string sel);
 

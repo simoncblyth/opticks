@@ -21,18 +21,19 @@
 #include <iostream>
 
 
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
-
 namespace pt = boost::property_tree;
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-
 
 
 template<class Ptree>
@@ -42,25 +43,72 @@ inline const Ptree &empty_ptree()
    return pt;
 }
 
-
-
-
-
+unsigned int Bookmarks::N = 10 ; 
 const char* Bookmarks::filename = "bookmarks.ini" ; 
 
 Bookmarks::Bookmarks()  
        :
        m_current(0),
+       m_current_gui(0),
        m_tree(),
        m_composition(NULL),
        m_scene(NULL),
        m_camera(NULL),
        m_view(NULL),
        m_trackball(NULL),
-       m_clipper(NULL)
+       m_clipper(NULL),
+       m_exists(NULL),
+       m_names(NULL)
 {
+    setup();
 }
 
+void Bookmarks::setup()
+{
+    m_exists = new bool[N] ;
+    m_names  = new const char*[N] ;
+    for(unsigned int i=0 ; i < N ; i++) 
+    {
+        char name[4];
+        snprintf(name, 4, "%0.2d", i);
+        m_names[i] = strdup(name);
+        m_exists[i] = false ;
+    }
+}
+
+void Bookmarks::update()
+{
+    for(unsigned int i=0 ; i < N ; i++) m_exists[i] = exists_in_tree(i);
+}
+
+bool Bookmarks::exists(unsigned int num)
+{
+    return num < N ? m_exists[num] : false ; 
+}
+
+bool Bookmarks::exists_in_tree(unsigned int num)
+{
+    std::string name = formName(num);
+    return m_tree.count(name) > 0 ;
+}
+
+void Bookmarks::setCurrent(unsigned int num, bool create)
+{
+    assert(num < N);
+    if(create) 
+    {
+        if(!m_exists[num]) m_exists[num] = true ;  
+    } 
+
+    if(m_exists[num])
+    {
+        m_current = num ; 
+    }
+    else
+    {
+        printf("Bookmarks::setCurrent no bookmark %u\n", num);
+    }
+}
 
 
 void Bookmarks::load(const char* dir)
@@ -77,6 +125,8 @@ void Bookmarks::load(const char* dir)
         LOG(warning) << "Bookmarks::load ERROR " << e.what() ;
     }
 
+    update(); // existance
+    apply();  // bookmarks may have been externally changed
 }
 
 void Bookmarks::save(const char* dir)
@@ -97,8 +147,16 @@ void Bookmarks::save(const char* dir)
 void Bookmarks::number_key_released(unsigned int num)
 {
     LOG(info) << "Bookmarks::number_key_released " << num ; 
-
 }
+
+void Bookmarks::add(unsigned int num)
+{
+    bool create = true ; 
+    setCurrent(num, create);
+    collect();
+}
+
+
 void Bookmarks::number_key_pressed(unsigned int num, unsigned int container)
 {
     LOG(info) << "Bookmarks::number_key_pressed "
@@ -106,17 +164,26 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int container)
               << " container "  << container
               ; 
 
-    if(exists(num))
+
+    if(!exists(num))
     {
-        dump(num);
-        apply(num);
+       m_scene->setTarget(container);
+       add(num);    
     }
     else
     {
-       printf("no such bookmark yet\n");
+       setCurrent(num);
+       apply();
     }
-
 }
+
+void Bookmarks::roundtrip(const char* dir)
+{
+    LOG(info) << "Bookmarks::roundtrip " << dir ; 
+    save(dir);
+    load(dir);
+}
+
 
 
 
@@ -143,29 +210,28 @@ std::string Bookmarks::formKey(const char* name, const char* tag)
     return key ;  
 }
 
-void Bookmarks::apply(unsigned int number)
-{
-    std::string name = formName(number);
-    apply(name.c_str());
-}
-unsigned int Bookmarks::collect(unsigned int number)
-{
-    std::string name = formName(number);
-    return collect(name.c_str());
-}
+
+
 void Bookmarks::dump(unsigned int number)
 {
     std::string name = formName(number);
     dump(name.c_str());
 }
-bool Bookmarks::exists(unsigned int num)
+
+
+
+void Bookmarks::collect()
 {
-    std::string name = formName(num);
-    return m_tree.count(name) > 0 ;
+    if(m_current == 0 ) return ; 
+    std::string name = formName(m_current);
+    collect(name.c_str());
 }
-
-
-
+void Bookmarks::apply()
+{
+    if(m_current == 0 ) return ; 
+    std::string name = formName(m_current);
+    apply(name.c_str());
+}
 
 
 void Bookmarks::apply(const char* name)
@@ -217,6 +283,38 @@ void Bookmarks::apply(const char* name)
 }
 
 
+void Bookmarks::gui()
+{
+#ifdef GUI_
+
+    const char* tmp = "/tmp" ;
+    if(ImGui::Button("roundtrip")) roundtrip(tmp);
+    ImGui::SameLine();
+    if(ImGui::Button("tmpsave")) save(tmp);
+    ImGui::SameLine();
+    if(ImGui::Button("tmpload")) load(tmp);
+    ImGui::SameLine();
+    if(ImGui::Button("collect")) collect();
+    ImGui::SameLine();
+    if(ImGui::Button("apply")) apply();
+
+    for(unsigned int i=0 ; i < N ; i++)
+    {
+        if(m_exists[i])
+        {
+             ImGui::RadioButton(m_names[i], &m_current_gui, i);
+             ImGui::SameLine();
+        }
+    }
+    // not directly setting m_current as need to notice a change
+    if(m_current_gui != m_current ) 
+    {
+        setCurrent(m_current_gui);
+        ImGui::Text(" changed : %d ", m_current);
+        apply();
+    }
+#endif
+}
 
 
 
@@ -248,7 +346,7 @@ unsigned int Bookmarks::collectConfigurable(const char* name, Configurable* conf
         std::string val = configurable->get(tag);    
         std::string prior = m_tree.get(key, empty);
         
-        //printf("Bookmarks::collectConfigurable %s : %s   prior : %s \n", key.c_str(), val.c_str(), prior.c_str() );
+        printf("Bookmarks::collectConfigurable %s : %s   prior : %s \n", key.c_str(), val.c_str(), prior.c_str() );
 
         if(prior.empty())
         {
@@ -353,8 +451,5 @@ void Bookmarks::merge(const boost::property_tree::ptree& parent, const boost::pr
 }    
 
 #endif
-
-
- 
 
 

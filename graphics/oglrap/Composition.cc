@@ -186,7 +186,7 @@ void Composition::setSelection(glm::ivec4 selection)
     m_selection = selection ;  
 }
 
-void Composition::setCenterExtent(gfloat4 ce) // replaces setModelToWorld
+void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModelToWorld
 {  
     m_center_extent.x = ce.x ;
     m_center_extent.y = ce.y ;
@@ -199,8 +199,11 @@ void Composition::setCenterExtent(gfloat4 ce) // replaces setModelToWorld
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
     m_extent = ce.w ; 
 
-    m_camera->setNear( m_extent/10.f ); 
-    m_camera->setFar(  m_extent*10.f );  
+    if(autocam)
+    {
+        m_camera->setNear( m_extent/10.f ); 
+        m_camera->setFar(  m_extent*20.f );  
+    }
 }
 
 glm::vec4& Composition::getCenterExtent()

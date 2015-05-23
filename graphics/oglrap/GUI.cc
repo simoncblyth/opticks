@@ -10,7 +10,7 @@
 #include "View.hh"
 #include "Camera.hh"
 #include "Trackball.hh"
-
+#include "Bookmarks.hh"
 
 #include <imgui.h>
 #include "imgui_impl_glfw_gl3.h"
@@ -133,6 +133,11 @@ void GUI::show(bool* opened)
         m_trackball->gui(); 
     }
 
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Bookmarks"))
+    {
+        m_bookmarks->gui(); 
+    }
 
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Photon Boundary Selection"))

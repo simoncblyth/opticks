@@ -233,6 +233,7 @@ int main(int argc, char** argv)
     GUI gui ;
     gui.setScene(&scene);
     gui.setComposition(&composition);
+    gui.setBookmarks(&bookmarks);
 
     gui.init(window);
     gui.setupHelpText( cfg.getDescString() );

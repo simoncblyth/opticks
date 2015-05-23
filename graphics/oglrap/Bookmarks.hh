@@ -22,29 +22,38 @@ class Configurable ;
 
 class Bookmarks {
 public:
+   static unsigned int N ; 
    static const char* filename ; 
 
 public:
    Bookmarks();
    void setComposition(Composition* composition);
    void setScene(Scene* scene);
+   void gui();
 
 public:
-   void setCurrent(unsigned int num); 
-   unsigned int getCurrent(); 
-
-public:
-   void apply(unsigned int num);
-   void dump(unsigned int num);
-   bool exists(unsigned int num);
-
    void number_key_pressed(unsigned int number, unsigned int container);
    void number_key_released(unsigned int number);
 
-   void load(const char* dir);   // populate m_tree from the file
-   void save(const char* dir);   // write m_tree to the file
-   unsigned int collect(unsigned int num);  // collect changed values into m_tree under slot "num"
+public:
+   void setCurrent(unsigned int num, bool create=false); 
+   unsigned int getCurrent(); 
+   void collect();  // collect config from associated objects into tree for current selected slot 
+   void apply();    // apply config setting to associated objects using values from current selected slot of tree
+   void add(unsigned int num); 
 
+private: 
+   void update();   // update existance array, done after loading bookmarks 
+   void setup();    // setup existance array, done initially 
+
+public:
+   void dump(unsigned int num);
+   bool exists(unsigned int num);
+   bool exists_in_tree(unsigned int num);
+
+   void roundtrip(const char* dir);  // save and load to debug fidelity 
+   void load(const char* dir);       // populate m_tree from the file
+   void save(const char* dir);       // write m_tree to the file
 
 public:
     void update( const boost::property_tree::ptree& upt );
@@ -69,13 +78,16 @@ private:
    std::string formName(unsigned int number);
    std::string formKey(const char* name, const char* tag);
 
+private:
    void dump(const char* name);
    void apply(const char* name);
    unsigned int collect(const char* name);
    unsigned int collectConfigurable(const char* name, Configurable* configurable);
 
 private:
-   unsigned int                  m_current ; 
+   int                           m_current ; 
+   int                           m_current_gui ; 
+
    boost::property_tree::ptree   m_tree;
    Composition*                  m_composition ;
    Scene*                        m_scene ;
@@ -84,8 +96,13 @@ private:
    Trackball*                    m_trackball ;
    Clipper*                      m_clipper ;
 
+   bool*                         m_exists ; 
+   const char**                  m_names ;  
 
 };
+
+
+
 
 
 
@@ -94,10 +111,7 @@ inline void Bookmarks::setScene(Scene* scene)
     m_scene = scene ; 
 }
 
-inline void Bookmarks::setCurrent(unsigned int num)
-{
-    m_current = num ; 
-}
+
 inline unsigned int Bookmarks::getCurrent()
 {
     return m_current ; 
