@@ -72,6 +72,15 @@ boost::program_options::options_description& Cfg::getDesc()
     return m_desc ; 
 }
 
+
+std::string Cfg::getDescString()
+{
+    std::stringstream ss ; 
+    ss << getDesc() ;
+    return ss.str();
+}
+
+
 void Cfg::commandline(int argc, char** argv)
 {
     if(m_others.empty())

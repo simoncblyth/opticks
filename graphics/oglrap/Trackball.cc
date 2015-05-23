@@ -11,9 +11,14 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+
+#ifdef GUI_
+#include <imgui.h>
+#endif
 
 
 const char* Trackball::RADIUS = "radius" ;
@@ -36,12 +41,25 @@ std::vector<std::string> Trackball::getTags()
 
 glm::vec3 Trackball::getTranslation()
 {
-    return glm::vec3(m_x, m_y, m_z);
+    return m_translate;
 }
+
+float* Trackball::getTranslationPtr()
+{
+    return glm::value_ptr(m_translate);
+}
+
+float* Trackball::getOrientationPtr()
+{
+    return glm::value_ptr(m_orientation);
+}
+
+
+
 
 glm::mat4 Trackball::getTranslationMatrix()
 {
-    return glm::translate(  glm::mat4(1.0f), glm::vec3(m_x, m_y, m_z));
+    return glm::translate(  glm::mat4(1.0f), m_translate);
 }
 
 glm::mat4 Trackball::getCombinedMatrix()
@@ -53,7 +71,7 @@ glm::mat4 Trackball::getCombinedMatrix()
     //        rot * trans;
     //
 
-    return glm::translate( getOrientationMatrix(), glm::vec3(m_x, m_y, m_z));
+    return glm::translate( getOrientationMatrix(), m_translate);
 }
 
 void Trackball::getCombinedMatrices(glm::mat4& rt, glm::mat4& rti)
@@ -61,8 +79,8 @@ void Trackball::getCombinedMatrices(glm::mat4& rt, glm::mat4& rti)
     glm::mat4 rot  = getOrientationMatrix();  
     glm::mat4 irot = glm::transpose(rot);
 
-    glm::mat4 tra(glm::translate(glm::vec3(m_x, m_y, m_z)));  
-    glm::mat4 itra(glm::translate(glm::vec3(-m_x, -m_y, -m_z)));  
+    glm::mat4 tra(glm::translate(m_translate));  
+    glm::mat4 itra(glm::translate(-m_translate));  
 
     rt = rot * tra  ;    // translates then rotate
 
@@ -81,16 +99,23 @@ void Trackball::getOrientationMatrices(glm::mat4& rot, glm::mat4& irot)
 
 void Trackball::getTranslationMatrices(glm::mat4& tra, glm::mat4& itra)
 {
-    tra = glm::translate(glm::vec3(m_x, m_y, m_z));  
-    itra = glm::translate(glm::vec3(-m_x, -m_y, -m_z));  
+    tra = glm::translate(m_translate);  
+    itra = glm::translate(-m_translate);  
 } 
 
 
-
-
-
-
-
+void Trackball::gui()
+{
+#ifdef GUI_
+    if (ImGui::Button("Home")) home();
+    if (ImGui::Button("Summary")) Summary();
+    ImGui::SliderFloat3("translate",  getTranslationPtr(),  -m_translate_max, m_translate_max );
+    ImGui::SliderFloat("radius",   &m_radius,  m_radius_clip[0], m_radius_clip[1] );
+    ImGui::SliderFloat("tfactor",  &m_translatefactor,  m_translatefactor_clip[0], m_translatefactor_clip[1] );
+    ImGui::Text(" quat: %s", gformat(m_orientation).c_str() ) ;
+   // whats the range of values of the quat ?
+#endif    
+}
 
 
 void Trackball::configureF(const char* name, std::vector<float> values)

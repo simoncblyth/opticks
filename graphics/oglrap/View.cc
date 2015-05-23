@@ -18,6 +18,11 @@
 #include <boost/lexical_cast.hpp>
 
 
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
+
 const char* View::EYE = "eye" ;
 const char* View::LOOK = "look" ;
 const char* View::UP = "up" ;
@@ -86,6 +91,15 @@ void View::Print(const char* msg)
     print(getEye(), getLook(), getUp() , "eye/look/up");
 }
 
+
+void View::gui()
+{
+#ifdef GUI_
+    ImGui::SliderFloat3("eye",  getEyePtr(),  -1.0f, 1.0f);
+    ImGui::SliderFloat3("look", getLookPtr(), -1.0f, 1.0f);
+    ImGui::SliderFloat3("up",   getUpPtr(), -1.0f, 1.0f);
+#endif    
+}
 
 
 void View::Summary(const char* msg)
@@ -269,16 +283,36 @@ void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat
 
 glm::vec4 View::getEye()
 {
-    return glm::vec4(m_eye_x, m_eye_y, m_eye_z,1.0f);
+    return glm::vec4(m_eye.x, m_eye.y, m_eye.z,1.0f);
 }   
 glm::vec4 View::getLook()
 {
-    return glm::vec4(m_look_x, m_look_y, m_look_z,1.0f);
+    return glm::vec4(m_look.x, m_look.y, m_look.z,1.0f);
 }   
 glm::vec4 View::getUp()
 {
-    return glm::vec4(m_up_x, m_up_y, m_up_z, 0.0f); // direction, not position so w=0
+    return glm::vec4(m_up.x, m_up.y, m_up.z, 0.0f); // direction, not position so w=0
 }   
+
+
+
+float* View::getEyePtr()
+{
+    return glm::value_ptr(m_eye);
+}
+float* View::getLookPtr()
+{
+    return glm::value_ptr(m_look);
+}
+float* View::getUpPtr()
+{
+    return glm::value_ptr(m_up);
+}
+
+
+
+
+
 
 glm::vec4 View::getEye(const glm::mat4& m2w)
 {
@@ -295,7 +329,7 @@ glm::vec4 View::getUp(const glm::mat4& m2w)
 
 glm::vec4 View::getGaze()
 {
-    return glm::vec4( m_look_x - m_eye_x, m_look_y - m_eye_y , m_look_z - m_eye_z, 0.0f );
+    return glm::vec4( m_look.x - m_eye.x, m_look.y - m_eye.y , m_look.z - m_eye.z, 0.0f );
 }
 
 glm::vec4 View::getGaze(const glm::mat4& m2w, bool debug)

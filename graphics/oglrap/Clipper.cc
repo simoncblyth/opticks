@@ -16,14 +16,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-Clipper::Clipper() :
-   m_mode(-1),
-   m_point(0,0,0),
-   m_normal(1,0,0),
-   m_absolute(false), 
-   m_absplane(1,0,0,1)   // placeholder 
-{
-}
+
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
 
 
 const char* Clipper::CUTMODE    = "cutmode" ;
@@ -169,7 +166,32 @@ void Clipper::setPlane(glm::vec4& absplane)
 }
 
 
+float* Clipper::getPointPtr()
+{
+    return glm::value_ptr(m_point);
+}
+float* Clipper::getNormalPtr()
+{
+    return glm::value_ptr(m_normal);
+}
+float* Clipper::getPlanePtr()
+{
+    return glm::value_ptr(m_absplane);
+}
 
+
+void Clipper::gui()
+{
+#ifdef GUI_
+    // TODO: cut 2 degrees of freedom 
+    // point and direction overspecifies plane, causing whacky interface
+    // just need a scalar along the normal 
+
+    ImGui::SliderFloat3("point",  getPointPtr(),  -1.0f, 1.0f);
+    ImGui::SliderFloat3("normal", getNormalPtr(), -1.0f, 1.0f);
+    //ImGui::SliderFloat3("absplane", getPlanePtr(), -1.0f, 1.0f);
+#endif    
+}
 
 
 void Clipper::update(glm::mat4& model_to_world)
@@ -179,7 +201,9 @@ void Clipper::update(glm::mat4& model_to_world)
     // model_to_world does uniform extent scaling and a translation only
     // so does not change directions
 
-    m_wnormal = glm::normalize( m_normal );
+    m_normal = glm::normalize( m_normal );
+
+    m_wnormal = m_normal ;
 
     m_wpoint = glm::vec3( model_to_world * glm::vec4(m_point,  1.f));
 
@@ -189,6 +213,7 @@ void Clipper::update(glm::mat4& model_to_world)
 
 glm::vec4& Clipper::getClipPlane(glm::mat4& model_to_world)
 {
+    //dump("Clipper::getClipPlane");
     if(m_absolute)
     {
         return m_absplane ; 
@@ -210,6 +235,11 @@ void Clipper::dump(const char* msg)
     print( m_wpoint,  "m_wpoint  : (world frame) point in the plane  ");
     print( m_wplane,  "m_wplane  : (world frame) plane equation for shader consumption");
     print( m_absplane,  "m_absplane  : (world frame) absolute input plane equation : for shader consumption");
+
+    print( getPointPtr(),  "getPointPtr()", 3 );
+    print( getNormalPtr(), "getNormalPtr()", 3 );
+    print( getPlanePtr(),  "getPlanePtr()", 4 );
+    print( m_float3  ,  "m_float3", 3 );
 
 }
 

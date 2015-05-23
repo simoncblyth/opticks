@@ -55,25 +55,54 @@ class Clipper : public Configurable {
         void setPlane( glm::vec4& plane);
         glm::vec4& getPlane();
 
+   public:
+        void gui(); 
+
    private:
         void setAbsolute(bool absolute);
         void update(glm::mat4& model_to_world);
 
    private:
+        float* getPointPtr();
+        float* getNormalPtr();
+        float* getPlanePtr();
+
+   private:
         int       m_mode ; 
         bool      m_absolute ; 
+
+   private:
+        // input model frame definition of clipping plane
         glm::vec3 m_point  ; 
         glm::vec3 m_normal ; 
    
+   private:
+        // derived world frame qtys
         glm::vec3 m_wpoint ; 
         glm::vec3 m_wnormal ;
         glm::vec4 m_wplane ;   // plane derived from point, normal and model_to_world
 
+   private:
+        // pig in poke
         glm::vec4 m_absplane ;  // plane directly set in world frame
 
+        float*    m_float3 ; 
 };
 
 
+inline Clipper::Clipper() :
+   m_mode(-1),
+   m_point(0,0,0),
+   m_normal(1,0,0),
+   m_absolute(false), 
+   m_absplane(1,0,0,1),   // placeholder 
+   m_float3(NULL)
+{
+   m_float3 = new float[3];
+   m_float3[0] = 0.1f ;  
+   m_float3[1] = 0.2f ;  
+   m_float3[2] = 0.3f ;  
+}
 
 
 inline glm::vec3& Clipper::getPoint()

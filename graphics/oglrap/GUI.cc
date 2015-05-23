@@ -4,9 +4,26 @@
 #include <GLFW/glfw3.h>
 #include "gleq.h"
 
+#include "Scene.hh"
+#include "Composition.hh"
+#include "Clipper.hh"
+#include "View.hh"
+#include "Camera.hh"
+#include "Trackball.hh"
+
+
 #include <imgui.h>
 #include "imgui_impl_glfw_gl3.h"
 
+
+void GUI::setComposition(Composition* composition)
+{
+    m_composition = composition ; 
+    setClipper(composition->getClipper());
+    setView(composition->getView());
+    setCamera(composition->getCamera());
+    setTrackball(composition->getTrackball());
+}
 
 void GUI::init(GLFWwindow* window)
 {
@@ -22,6 +39,10 @@ void GUI::newframe()
     ImGui_ImplGlfwGL3_NewFrame();
 }
 
+void GUI::setupHelpText(std::string txt)
+{
+    m_help = txt ; 
+} 
 
 
 /*
@@ -36,22 +57,36 @@ void GUI::choose( std::vector<std::pair<int, std::string> >& choices, std::vecto
 */
 
 
-void GUI::choose( std::vector<std::pair<int, std::string> >& choices, bool* selection )
+void GUI::choose( std::vector<std::pair<int, std::string> >* choices, bool* selection )
 {
-    for(unsigned int i=0 ; i < choices.size() ; i++)
+    for(unsigned int i=0 ; i < choices->size() ; i++)
     {
-        std::pair<int, std::string> choice = choices[i];
+        std::pair<int, std::string> choice = (*choices)[i];
         ImGui::Checkbox(choice.second.c_str(), selection+i );
     }
 }
 
+void GUI::choose( unsigned int n, const char** choices, bool** selection )
+{
+    for(unsigned int i=0 ; i < n ; i++)
+    {
+        ImGui::Checkbox(choices[i], selection[i]);
+    }
+}
+
+
 // follow pattern of ImGui::ShowTestWindow
 void GUI::show(bool* opened)
 {
-    static float bg_alpha = 0.65f;
+    if (m_show_test_window)
+    {
+        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+        ImGui::ShowTestWindow(&m_show_test_window);
+    }
+
     ImGuiWindowFlags window_flags = 0;
 
-    if (!ImGui::Begin("GGeoView", opened, ImVec2(550,680), bg_alpha, window_flags)) 
+    if (!ImGui::Begin("GGeoView", opened, ImVec2(550,680), m_bg_alpha, window_flags)) 
     {
         // Early out if the window is collapsed, as an optimization.
         ImGui::End();
@@ -59,48 +94,63 @@ void GUI::show(bool* opened)
     }
 
     ImGui::PushItemWidth(-140);  
-    ImGui::Text("ImGui says hello.");
+
+    ImGui::SliderFloat("float", &m_bg_alpha, 0.0f, 1.0f);
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Help"))
+    {
+        ImGui::Text(m_help.c_str());
+    }
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Scene"))
+    {
+        m_scene->gui(); 
+    }
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("View"))
+    {
+        m_view->gui(); 
+    }
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Camera"))
+    {
+        m_camera->gui(); 
+    }
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Clipper"))
+    {
+        m_clipper->gui(); 
+    }
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Trackball"))
+    {
+        m_trackball->gui(); 
+    }
+
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Photon Boundary Selection"))
+    {
+        choose(m_boundary_choices, m_boundary_selection);
+    }
 
     ImGui::Spacing();
 
-    if (ImGui::CollapsingHeader("Photon Boundary Selection"))
+    if (ImGui::CollapsingHeader("Dev"))
     {
-
+        ImGui::Checkbox("ImGui::ShowTestWindow", &m_show_test_window);
     }
 
-
-
+    ImGui::End();
 }
 
 
-
-void GUI::demo()
-{
-    // 1. Show a simple window
-    // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-    {
-            ImGui::Text("Hello, world!");
-            ImGui::SliderFloat("float", &m_f, 0.0f, 1.0f);
-            if (ImGui::Button("Test Window")) m_show_test_window ^= 1;
-            if (ImGui::Button("Another Window")) m_show_another_window ^= 1;
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    }
-
-    if (m_show_another_window)
-    {
-        ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
-        ImGui::Begin("Another Window", &m_show_another_window);
-        ImGui::Text("Hello");
-        ImGui::End();
-    }
-
-    // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-    if (m_show_test_window)
-    {
-        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-        ImGui::ShowTestWindow(&m_show_test_window);
-    }
-}
 
 void GUI::render()
 {

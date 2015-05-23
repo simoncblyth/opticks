@@ -51,6 +51,7 @@ set(DEFINITIONS
    ${AssimpWrap_DEFINITIONS}
    ${Boost_DEFINITIONS}
    ${ImGui_DEFINITIONS}
+   -DGUI_
 )
 
 set(LIBRARIES

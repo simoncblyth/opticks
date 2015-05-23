@@ -21,6 +21,7 @@
 
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
+const char* Interactor::GUIMODE    = "gui" ; 
 
 
 void Interactor::configureF(const char* name, std::vector<float> values)
@@ -126,6 +127,9 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
         case GLFW_KEY_F:
             m_far_mode = !m_far_mode ; 
             break;
+        case GLFW_KEY_G:
+            m_gui_mode = !m_gui_mode ; 
+            break;
         case GLFW_KEY_U:
             if(m_frame)
             {
@@ -205,7 +209,7 @@ void Interactor::key_released(unsigned int key, int ix, int iy )
 void Interactor::updateStatus()
 {
     char status[64];
-    snprintf(status, 64, "%s%s%s%s%s%s%s%s %10.3f %u ",
+    snprintf(status, 64, "%s%s%s%s%s%s%s%s%s %10.3f %u ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
@@ -214,6 +218,7 @@ void Interactor::updateStatus()
            m_rotate_mode ? "r" : "-",
            m_jump_mode ? "j" : "-",
            m_optix_mode ? "o" : "-",
+           m_gui_mode ? "g" : "-",
            m_dragfactor,
            m_container 
            );

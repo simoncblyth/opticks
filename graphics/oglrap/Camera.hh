@@ -44,7 +44,7 @@ class Camera : public Configurable  {
      void set(const char* name, std::string& xyz);
      std::string get(const char* name);
 
-
+     void gui();
 
 
      static bool accepts(const char* name);

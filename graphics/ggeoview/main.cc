@@ -85,17 +85,25 @@ void logging_init()
 
 }
 
-/*
-struct App {
-   Frame frame ; 
-   Composition composition ;
-   Bookmarks bookmarks ; 
-   Interactor interactor ;
-   NumpyEvt evt ;
-   Scene scene ; 
-};
-*/
 
+/*
+struct Register 
+{
+   Frame* frame ; 
+   Composition* composition ;
+   Bookmarks* bookmarks ; 
+   Interactor* interactor ;
+   NumpyEvt* evt ;
+   Scene* scene ; 
+};
+Register reg = {.frame = &frame, 
+                    .composition=&composition,      
+                    .bookmarks =&bookmarks,      
+                    .interactor =&interactor,      
+                    .evt=&evt,
+                    .scene=&scene };      
+
+*/
 
 int main(int argc, char** argv)
 {
@@ -223,9 +231,13 @@ int main(int argc, char** argv)
 
 #ifdef GUI_
     GUI gui ;
+    gui.setScene(&scene);
+    gui.setComposition(&composition);
+
     gui.init(window);
+    gui.setupHelpText( cfg.getDescString() );
     gui.setupBoundarySelection( pnpy.getBoundariesPointer(), pnpy.getBoundariesSelection() );
-    bool show_gui_window = true ; 
+    bool* show_gui_window = interactor.getGuiModeAddress();
 #endif
  
     LOG(info) << "enter runloop "; 
@@ -247,14 +259,11 @@ int main(int argc, char** argv)
 
 #ifdef GUI_
         gui.newframe();
-
-        if(show_gui_window)
+        if(*show_gui_window)
         {
-            gui.show(&show_gui_window);
-            gui.selectBoundary();
+            gui.show(show_gui_window);
             composition.setSelection(pnpy.getSelection());
         }
-
         gui.render();
 #endif
 

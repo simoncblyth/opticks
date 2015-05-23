@@ -8,6 +8,10 @@
 #include <glm/gtc/matrix_transform.hpp>  
 #include <boost/lexical_cast.hpp>
 
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
 
 const char* Camera::PRINT    = "print" ;
 const char* Camera::NEAR     = "near" ;
@@ -109,6 +113,20 @@ void Camera::configureF(const char* name, std::vector<float> values)
      }
 }
  
+
+
+void Camera::gui()
+{
+#ifdef GUI_
+    float power = 2.0f ; 
+    ImGui::SliderFloat("near",  &m_near, m_nearclip[0], m_nearclip[1], "%.3f", power );  
+    ImGui::SliderFloat("far",   &m_far,  m_farclip[0],  m_farclip[1], "%.3f", power );
+    ImGui::SliderFloat("yfov",  &m_yfov, m_yfovclip[0], m_yfovclip[1]);
+    ImGui::Checkbox("parallel", &m_parallel);
+#endif  
+ }
+
+
 
 
 void Camera::Print(const char* msg)

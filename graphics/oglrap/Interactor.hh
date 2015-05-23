@@ -18,6 +18,7 @@ class Interactor {
   public:
        static const char* DRAGFACTOR ; 
        static const char* OPTIXMODE ; 
+       static const char* GUIMODE ; 
 
        Interactor(); 
        void setComposition(Composition* composition);
@@ -33,7 +34,8 @@ class Interactor {
 
        Touchable* getTouchable();
        Frame*     getFrame();
-
+       bool*      getGuiModeAddress();
+       bool*      getModeAddress(const char* name);
 
   public:
        void cursor_drag( float x, float y, float dx, float dy );
@@ -71,6 +73,7 @@ class Interactor {
        bool m_rotate_mode ;
        bool m_jump_mode ;
        bool m_bookmark_mode ;
+       bool m_gui_mode ;
 
        int  m_optix_mode ;
 
@@ -81,6 +84,16 @@ class Interactor {
 
 };
 
+inline bool* Interactor::getGuiModeAddress()
+{
+    return getModeAddress(GUIMODE);
+}
+
+inline bool* Interactor::getModeAddress(const char* name)
+{
+    if(strcmp(name, GUIMODE)==0) return &m_gui_mode ;
+    return NULL ;
+}
 
 inline Interactor::Interactor() 
    :
@@ -100,6 +113,7 @@ inline Interactor::Interactor()
    m_rotate_mode(false),
    m_jump_mode(false),
    m_bookmark_mode(false),
+   m_gui_mode(false),
    m_optix_mode(0),
    m_dragfactor(1.f),
    m_container(0)

@@ -16,6 +16,7 @@ public:
    virtual ~View();
 
    void configureS(const char* name, std::vector<std::string> values);
+   void gui();
 
  public:
    // Configurable
@@ -35,6 +36,10 @@ public:
    glm::vec4 getUp();
    glm::vec4 getGaze();
  
+   float* getEyePtr();
+   float* getLookPtr();
+   float* getUpPtr();
+
    glm::vec4 getEye(const glm::mat4& m2w);
    glm::vec4 getLook(const glm::mat4& m2w);
    glm::vec4 getUp(const glm::mat4& m2w);
@@ -48,34 +53,20 @@ public:
    void getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm::vec3& v, glm::vec3& w);
    void getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze );
 
-
 private:
-   float m_eye_x ;
-   float m_eye_y ;
-   float m_eye_z ;
+   glm::vec3 m_eye ; 
+   glm::vec3 m_look ; 
+   glm::vec3 m_up ; 
 
-   float m_look_x ;
-   float m_look_y ;
-   float m_look_z ;
-
-   float m_up_x ;
-   float m_up_y ;
-   float m_up_z ;
 
 };
 
 
 
 inline View::View()  : 
-      m_eye_x(-1.0f),
-      m_eye_y(-1.0f),
-      m_eye_z(0.0f),
-      m_look_x(0.0f),
-      m_look_y(0.0f),
-      m_look_z(0.0f),
-      m_up_x(0.0f),
-      m_up_y(0.0f),
-      m_up_z(1.0f)
+      m_eye(-1.f,-1.f,0.f),
+      m_look(0.f,0.f,0.f),
+      m_up(0.f,0.f,1.f)
 {
 }
 
@@ -85,23 +76,23 @@ inline View::~View()
 
 inline void View::setEye( float _x, float _y, float _z)
 {
-    m_eye_x = _x ;  
-    m_eye_y = _y ;  
-    m_eye_z = _z ;  
+    m_eye.x = _x ;  
+    m_eye.y = _y ;  
+    m_eye.z = _z ;  
 }  
 
 inline void View::setLook(float _x, float _y, float _z)
 {
-    m_look_x = _x ;  
-    m_look_y = _y ;  
-    m_look_z = _z ;  
+    m_look.x = _x ;  
+    m_look.y = _y ;  
+    m_look.z = _z ;  
 }
 
 inline void View::setUp(  float _x, float _y, float _z)
 {
-    m_up_x = _x ;  
-    m_up_y = _y ;  
-    m_up_z = _z ;  
+    m_up.x = _x ;  
+    m_up.y = _y ;  
+    m_up.z = _z ;  
 } 
 
 

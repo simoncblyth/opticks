@@ -11,10 +11,104 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
+
 #include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
+
+
+const char* Scene::PHOTON = "photon" ; 
+const char* Scene::GENSTEP = "genstep" ; 
+const char* Scene::GEOMETRY = "geometry" ; 
+
+#ifdef MODE_GYMNASTICS
+// simply moving ImGui code into the class obviates the need for the gymnastics
+// but retaining for now as an example
+
+const char** Scene::MODES = NULL ;
+bool**       Scene::MODES_PTR = NULL ;
+unsigned int Scene::N_MODES = 3 ;
+unsigned int Scene::getNumModes()
+{
+    return Scene::N_MODES ; 
+}
+const char** Scene::getModeNames()
+{
+    if(!MODES) MODES = makeModeNames();
+    return MODES ; 
+}
+bool** Scene::getModePointers()
+{
+    if(!MODES_PTR) MODES_PTR = makeModePointers();
+    return MODES_PTR ;
+}
+const char** Scene::makeModeNames()
+{
+    const char** c = new const char*[N_MODES] ; 
+    c[0] = Scene::GEOMETRY ; 
+    c[1] = Scene::GENSTEP ; 
+    c[2] = Scene::PHOTON ; 
+    return c ; 
+}
+bool** Scene::makeModePointers()
+{
+    bool** b = new bool*[N_MODES] ; 
+    b[0] = &m_geometry_mode ; 
+    b[1] = &m_genstep_mode ; 
+    b[2] = &m_photon_mode ; 
+    return b ;
+}
+const char* Scene::getModeName(unsigned int n)
+{
+    const char** modes = getModeNames();
+    return n < N_MODES ? modes[n] : "Scene::getModeName ERROR" ; 
+}
+bool* Scene::getModePointer(unsigned int n)
+{
+    bool** modes = getModePointers();
+    return n < N_MODES ? modes[n] : NULL ; 
+}
+void Scene::dumpModes(const char* msg)
+{
+    printf("%s\n", msg);
+    for(unsigned int i=0 ; i < N_MODES ; i++)
+    {
+        bool* b = getModePointer(i);
+        printf("%2d : %d :%s \n", i, *b, Scene::getModeName(i) );
+    }
+}
+void Scene::setMode(unsigned int i, bool mode)
+{
+    bool* b = getModePointer(i);
+    if(b)
+    {
+       *b = mode ;
+    }
+    else
+    {
+       printf("Scene::setMode ERRROR i %d \n", i );
+    }
+}
+#endif
+
+
+void Scene::gui()
+{
+#ifdef GUI_
+     // hmm scattering ImGui code has distinct advantages
+     // means the above gymnastics to line up the choices 
+     // and selection arrays is not needed
+     ImGui::Checkbox(GEOMETRY, &m_geometry_mode);
+     ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
+     ImGui::Checkbox(PHOTON,   &m_photon_mode);
+#endif    
+}
 
 const char* Scene::TARGET = "target" ; 
 
@@ -30,6 +124,11 @@ std::vector<std::string> Scene::getTags()
     tags.push_back(TARGET);
     return tags ; 
 }
+
+
+
+
+
 
 std::string Scene::get(const char* name)
 {
@@ -78,6 +177,7 @@ void Scene::configure(const char* name, int value)
 
 
 
+
 void Scene::init()
 {
     m_geometry_loader = new Geometry();
@@ -113,9 +213,9 @@ void Scene::loadEvt()
 
 void Scene::render()
 {
-    m_geometry_renderer->render();
-    m_genstep_renderer->render();  
-    m_photon_renderer->render();
+    if(m_geometry_mode) m_geometry_renderer->render();
+    if(m_genstep_mode)  m_genstep_renderer->render();  
+    if(m_photon_mode)   m_photon_renderer->render();
 }
 
 unsigned int Scene::touch(int ix, int iy, float depth)

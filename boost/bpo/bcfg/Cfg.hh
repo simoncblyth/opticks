@@ -57,6 +57,7 @@ public:
 
 public:
     boost::program_options::options_description& getDesc();
+    std::string getDescString();
 
     void commandline(int argc, char** argv);
     void liveline(const char* line);

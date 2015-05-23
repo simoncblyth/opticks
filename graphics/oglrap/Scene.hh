@@ -15,10 +15,37 @@ class GSubstanceLibMetadata ;
 
 #include "Configurable.hh"
 
+
 class Scene : public Configurable {
+
+#ifdef MODE_GYMNASTICS
    public:
-        static const char* TARGET ;
-        Scene();
+       static unsigned int getNumModes();
+       static const char** getModeNames();
+       static const char*  getModeName(unsigned int n);
+   public:
+       bool**              getModePointers(); 
+       bool*               getModePointer(unsigned int n); 
+       void                dumpModes(const char* msg="Scene::dumpModes");
+       void                setMode(unsigned int n, bool mode);
+   private:
+       static const char** makeModeNames();
+       static const char** MODES ;
+       static unsigned int N_MODES ;
+   private:
+       bool**              makeModePointers();
+       static bool**       MODES_PTR ;
+#endif
+
+   public:
+       static const char* PHOTON ;
+       static const char* GENSTEP ;
+       static const char* GEOMETRY ;
+   public:
+       static const char* TARGET ;
+   public:
+       Scene();
+       void gui();
    public:
         // Configurable
         std::vector<std::string> getTags();
@@ -64,6 +91,7 @@ class Scene : public Configurable {
         GDrawable*    getGeometry();
         Composition*  getComposition();
         NumpyEvt*     getNumpyEvt();
+        bool*         getModeAddress(const char* name);
 
    private:
         void init();
@@ -77,6 +105,10 @@ class Scene : public Configurable {
         GDrawable*   m_geometry ;
         Composition* m_composition ;
         unsigned int m_target ;
+   private:
+        bool         m_geometry_mode ; 
+        bool         m_genstep_mode ; 
+        bool         m_photon_mode ; 
 
 };
 
@@ -124,7 +156,10 @@ inline Scene::Scene() :
             m_evt(NULL),
             m_geometry(NULL),
             m_composition(NULL),
-            m_target(0)
+            m_target(0),
+            m_geometry_mode(true),
+            m_genstep_mode(true),
+            m_photon_mode(true)
 {
     init();
 }
