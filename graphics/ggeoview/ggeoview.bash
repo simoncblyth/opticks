@@ -124,70 +124,51 @@ Advantages:
 Package Dependencies Tree of GGeoView
 --------------------------------------
 
+* higher level repeated dependencies elided for clarity 
+
 ::
 
-    GLEW
-    GLFW
-    GLM
-    Cfg*
-    Boost
-    ZMQ
-    AsioZMQ
-    NPY*
-
-    numpyserver*
+    NPY*   (~11 classes)
        Boost
+       GLM         
+
+    Cfg*  (~1 class)
+       Boost 
+
+    numpyserver*  (~7 classes)
+       Boost.Asio
        ZMQ
        AsioZMQ
        Cfg*
-           Boost 
        NPY*
 
-    OGLRap*
-       GLEW
-       GLFW
-       GLM
-       AssimpWrap*
-           Boost
-           Assimp
-           GGeo*
-       Boost 
-       Cfg*
-       PPM*
-       NPY*
-
-    OptiXRap*
-       OptiX
+    cudawrap* (~5 classes)
        CUDA
 
-       // OptiXEngine rendering forces to bring 
-       // in the graphical dependencies
-       // aiming to partition into non-graphics core 
-       // with separate rendering pkg ?
 
+
+ 
+    GGeo*  (~22 classes)
+       NPY*
+
+    AssimpWrap* (~7 classes)
+       Assimp
+       GGeo* 
+
+    OGLRap*  (~29 classes)
        GLEW
-       GLFW 
-       GLM
-       OGLRap*
-           (see above)
+       GLFW
+       ImGui
        AssimpWrap*
-           Boost
-           Assimp
-           GGeo* 
+       Cfg*
+       NPY*
+
+    OptiXRap* (~7 classes)
+       OptiX
+       OGLRap*
+       AssimpWrap*
        GGeo*    
-           NPY
-       cudawrap*
-           CUDA
-
-
-    GGeo*
-       NPY
-
-       // few dependencies : as this supports persistable geometry
-       // using GMergedMesh/GBuffer load/save
-       // which could eliminate geometry dependencies (AssimpWrap) 
-       // from the above packages, instead have a geometry 
-       // baking to file initial step
+   
 
 
 
