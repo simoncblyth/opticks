@@ -178,26 +178,26 @@ def g4_cerenkov_wavelength(tag, **kwa):
 
 
 
-def generated_oxscintillation_3xyzw(tag=1):
-    typs = "gopscintillation oxscintillation"
-    suptitle = "GPU/OptiX Generated Scintillation Photons(blue) Compared to Geant4(red) (Single Event)"
-    cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
-
 def generated_scintillation_3xyzw(tag=1):
     typs = "gopscintillation opscintillationgen"
     suptitle = "GPU Generated Scintillation Photons(blue) Compared to Geant4(red) (Single Event)"
     cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
 
-
-
-def generated_oxcerenkov_3xyzw(tag=1):
-    typs = "gopcerenkov oxcerenkov"
-    suptitle = "GPU/OptiX Generated Cerenkov Photons(blue) Compared to Geant4(red) (Single Event)"
+def generated_oxscintillation_3xyzw(tag=1):
+    typs = "gopscintillation oxscintillation"
+    suptitle = "GGeo/OptiX Generated Scintillation Photons(blue) Compared to Geant4(red) (Single Event)"
     cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
+
+
 
 def generated_cerenkov_3xyzw(tag=1):
     typs = "gopcerenkov opcerenkovgen"
     suptitle = "GPU Generated Cerenkov Photons(blue) Compared to Geant4(red) (Single Event)"
+    cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
+
+def generated_oxcerenkov_3xyzw(tag=1):
+    typs = "gopcerenkov oxcerenkov"
+    suptitle = "GGeo/OptiX Generated Cerenkov Photons(blue) Compared to Geant4(red) (Single Event)"
     cf('3xyzw', tag=tag, typs=typs, legend=False, log=True, suptitle=suptitle )
 
 
@@ -212,11 +212,28 @@ def generated_scintillation_time_wavelength(tag=1):
     path = "generated_scintillation_time_wavelength"
     cf('time_wavelength',tag=tag, typs=typs, legend=[True, False], log=True, suptitle=suptitle, path=path)
 
+def generated_oxscintillation_time_wavelength(tag=1):
+    typs = "gopscintillation oxscintillation"
+    suptitle = "GGeo/OptiX Generated Scintillation Photons Compared to Geant4 (Single Event)"
+    path = "generated_scintillation_time_wavelength"
+    cf('time_wavelength',tag=tag, typs=typs, legend=[True, False], log=True, suptitle=suptitle, path=path)
+
+
+
+
+
 def generated_cerenkov_time_wavelength(tag=1):
     typs = "gopcerenkov opcerenkovgen"
     suptitle = "GPU Generated Cerenkov Photons Compared to Geant4 (Single Event)"
     path = "generated_cerenkov_time_wavelength"
     cf('time_wavelength',tag=tag, typs=typs, legend=[True, False], log=True, suptitle=suptitle, path=path)
+
+def generated_oxcerenkov_time_wavelength(tag=1):
+    typs = "gopcerenkov oxcerenkov"
+    suptitle = "GGeo/OptiX Generated Cerenkov Photons Compared to Geant4 (Single Event)"
+    path = "generated_cerenkov_time_wavelength"
+    cf('time_wavelength',tag=tag, typs=typs, legend=[True, False], log=True, suptitle=suptitle, path=path)
+
 
 
 
@@ -243,6 +260,10 @@ def catname(cat,ic):
 
 
 def plt_save(path):
+    """
+    Hmm tend to use screen captures rather than this for greater
+    control by window resizing and interactive clipping 
+    """
     if path is None:return
     base = os.path.expandvars('$STATIC_BASE/env/g4dae') 
     path =  os.path.join(base, "%s.png" % path)
@@ -874,7 +895,15 @@ def cf(qty, *arys, **kwa):
 
     for pl,qty in enumerate(qtys):
         plt.subplot(nr,nc,pl+1)
-        plt.title(qty) 
+
+        if qty == "wavelength":
+            title = "%s %s" % (qty, "(nm)" )
+        elif qty == "time":
+            title = "%s %s" % (qty, "(ns)" )
+        else:
+            title = qty
+
+        plt.title(title) 
         for i, ary in enumerate(arys):
             col = color[i] 
             cfg.update(label=getattr(ary,'label',col), color=col)
@@ -896,10 +925,37 @@ def cf(qty, *arys, **kwa):
 
 
 
+def core_linearity():
+    a = np.array([[382, 345.1], [2496,49.1], [4992, 28.0]])
+    l = np.array([[382, 345.1], [2496,49.1], [4992, 28.0], [5100, 0.]])
+    v = np.array([[382, 345.1], [2496,49.1], [4992, 28.0], [24576, 0.], [15*24576,0.])
+    
+
+    cfg = {}
+    cfg['suptitle'] = "OptiX Raytrace performance (normalized performance vs CUDA cores)"
+    fig = plt_figure(cfg)
+
+    suptitle = cfg.pop("suptitle", None)
+    if not suptitle is None:
+        fig.suptitle(suptitle, fontsize=14, fontweight='bold')
+   
+    nr = 1
+    nc = 1 
+    i = 0 
+ 
+    plt.subplot(nr, nc, i+1 ) 
+    plt.plot(a[:,0], a[0,1]/a[:,1], "o-")
+    plt.plot(l[:,0], l[:,0]/l[0,1], "--")
+    plt.plot(v[:,0], v[:,0]/v[0,1], "--")
+
+    plt.show()
+
+
+
+
 def reemission_src_cdf_icdf_smpl(dir_="/tmp"):
     cfg = {}
-    cfg['suptitle'] = "OptiX based Scintillation Photon Generation using inverted CDF lookup"
-
+    cfg['suptitle'] = "GGeo/OptiX based Scintillation Photon Generation using inverted CDF lookup"
     fig = plt_figure(cfg)
 
     suptitle = cfg.pop("suptitle", None)

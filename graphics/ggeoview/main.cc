@@ -189,6 +189,7 @@ int main(int argc, char** argv)
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(!nooptix);
+    engine.setBounceMax(0);  // 0:prevents any propagation leaving generated photons
 
     interactor.setTouchable(&engine);
 
