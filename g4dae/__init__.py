@@ -896,6 +896,76 @@ def cf(qty, *arys, **kwa):
 
 
 
+def reemission_src_cdf_icdf_smpl(dir_="/tmp"):
+    cfg = {}
+    cfg['suptitle'] = "OptiX based Scintillation Photon Generation using inverted CDF lookup"
+
+    fig = plt_figure(cfg)
+
+    suptitle = cfg.pop("suptitle", None)
+    if not suptitle is None:
+        fig.suptitle(suptitle, fontsize=14, fontweight='bold')
+
+ 
+    dd = { 'slow':{
+                   'name':"slowcomponent", 'sl':slice(20,200), 'recip':False, 
+                   'title':"SLOWCOMPONENT (nm)",
+                 },
+          'cdf':{
+                   'name':"reemissionCDF", 'recip':True, 
+                   'title':"Reemission CDF (nm, prob)  reciprocal 1/nm integration",
+                },
+          'icdf':{
+                   'name':"invertedReemissionCDF", 'recip':False, 
+                   'title':"Inverted Reemission CDF (prob, nm)",
+                 },
+          'smpl':{
+                   'name':"insitu", 'recip':False,
+                   'title':"Scintillation Sample (nm), OptiX cf G4/NuWa ",
+                 }
+        }
+
+
+    a = {}
+    for k, d in dd.items():
+        a[k] = np.load("%s/%s.npy" % (dir_,d['name']) )
+
+
+    g4s = G4ScintillationPhoton.get(1) 
+
+    nr, nc = 2, 2
+
+    for i,k in enumerate("slow cdf icdf smpl".split()):
+        plt.subplot(nr, nc, i+1 ) 
+        d = dd[k]
+
+        title = d['title']
+        plt.title(title)
+
+        if len(a[k].shape) == 2:
+            pcfg = dict(label=d['name'])
+            sl = d.get('sl', slice(0,len(a[k])))
+            q = a[k][sl]
+
+            if d['recip']:
+                plt.plot(1./q[:,0], q[:,1], **pcfg )
+            else:
+                plt.plot(q[:,0], q[:,1], **pcfg)
+            pass 
+
+        elif len(a[k].shape) == 1:
+            hcfg = dict(bins=100, log=True, histtype="step", range=(100,900), normed=True) 
+            plt.hist(a[k], **hcfg)
+            plt.hist(g4s[:,1,3], **hcfg)
+        else:
+            assert(0) 
+        pass
+    #plt.legend()
+    plt.show()
+
+    return a 
+
+
 
 
 

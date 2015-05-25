@@ -21,6 +21,12 @@ Issues
 * need to find way to share input events between GLEQ and ImGui
 
 
+Discussion
+-----------
+
+* https://www.allegro.cc/forums/thread/615234
+
+
 Summarizing an article on IMGUI
 ---------------------------------
 

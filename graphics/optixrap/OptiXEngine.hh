@@ -10,6 +10,7 @@ class NPY ;
 class NumpyEvt ; 
 class cuRANDWrapper ; 
 
+#include "string.h"
 #include "Touchable.hh"
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
@@ -44,11 +45,13 @@ class OptiXEngine : public Touchable {
         void setEnabled(bool enabled);
         void setNumpyEvt(NumpyEvt* evt);
         void setRngMax(unsigned int rng_max);
+        void setBounceMax(unsigned int bounce_max);
 
     public:
         GMergedMesh* getMergedMesh();
         optix::Context& getContext();
         unsigned int getRngMax();
+        unsigned int getBounceMax();
         unsigned int getTraceCount();
 
     public:
@@ -116,6 +119,7 @@ class OptiXEngine : public Touchable {
         GMergedMesh*     m_mergedmesh ; 
         unsigned int     m_trace_count ; 
         unsigned int     m_generate_count ; 
+        unsigned int     m_bounce_max ; 
         char*            m_cmake_target ;
         bool             m_enabled ; 
         int              m_texture_id ; 
@@ -138,6 +142,37 @@ class OptiXEngine : public Touchable {
         bool          m_accel_caching_on;
 
 };
+
+
+
+inline OptiXEngine::OptiXEngine(const char* cmake_target) :
+    m_rng_max(0),
+    m_rng_wrapper(NULL),
+    m_context(NULL),
+    m_geometry_group(NULL),
+    m_photon_buffer_id(0),
+    m_genstep_buffer_id(0),
+    m_pbo(0),
+    m_pbo_data(NULL),
+    m_composition(NULL),
+    m_renderer(NULL),
+    m_texture(NULL),
+    m_config(NULL),
+    m_ggeo(NULL),
+    m_mergedmesh(NULL),
+    m_trace_count(0),
+    m_generate_count(0),
+    m_bounce_max(1),
+    m_cmake_target(strdup(cmake_target)),
+    m_enabled(true),
+    m_texture_id(-1),
+    m_evt(NULL),
+    m_filename(),
+    m_accel_cache_loaded(false),
+    m_accel_caching_on(true)
+{
+}
+
 
 inline void OptiXEngine::setNumpyEvt(NumpyEvt* evt)
 {
@@ -185,6 +220,20 @@ inline unsigned int OptiXEngine::getRngMax()
 {
     return m_rng_max ; 
 }
+
+inline void OptiXEngine::setBounceMax(unsigned int bounce_max)
+{
+    m_bounce_max = bounce_max ;
+}
+inline unsigned int OptiXEngine::getBounceMax()
+{
+    return m_bounce_max ; 
+}
+
+
+
+
+
 inline unsigned int OptiXEngine::getTraceCount()
 {
     return m_trace_count ; 

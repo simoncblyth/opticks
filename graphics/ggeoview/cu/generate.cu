@@ -23,6 +23,7 @@ rtBuffer<curandState, 1> rng_states ;
 
 rtDeclareVariable(float,         propagate_epsilon, , );
 rtDeclareVariable(unsigned int,  propagate_ray_type, , );
+rtDeclareVariable(unsigned int,  bounce_max, , );
 rtDeclareVariable(rtObject,      top_object, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
@@ -73,35 +74,42 @@ RT_PROGRAM void generate()
     }
 
 
-    optix::Ray ray = optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX);
-    rtTrace(top_object, ray, prd);       // see material1_propagate.cu:closest_hit_propagate
-
-    p.position += prd.distance_to_boundary*p.direction ; 
-
-
-    // over-writing third quad : vpol as expedient for access from ../gl/pos/vert.glsl
-    p.polarization.x = prd.cos_theta ; 
-    p.polarization.y = prd.distance_to_boundary ; 
-    p.polarization.z = 0.f ; 
-    p.weight = 0.f ;   
-
-    // fourth quad : is accessible in shaders as ivec4 so keep int here 
-    unsigned int boundary_code = prd.boundary + 1 ;   // 1-based for cos_theta signing, 0 means miss
-    p.flags.i.x = prd.cos_theta < 0.f ? -boundary_code : boundary_code ;
-    p.flags.i.y = 0 ;
-    p.flags.i.z = 0 ; 
-    p.flags.i.w = 0 ; 
-
-
-    float4 imat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 0 );
-    float4 omat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 1 );
-
-    if(photon_id == 0)
+    int bounce = 0 ; 
+    while( bounce < bounce_max )
     {
-        rtPrintf(" prd t/ct/boundary %10.4f %10.4f %d \n", prd.distance_to_boundary, prd.cos_theta, prd.boundary );
-        rtPrintf(" imat %10.4f %10.4f %10.4f %10.4f \n", imat.x, imat.y, imat.z, imat.w );
-        rtPrintf(" omat %10.4f %10.4f %10.4f %10.4f \n", omat.x, omat.y, omat.z, omat.w );
-    }
+        bounce++;
+
+        optix::Ray ray = optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX);
+
+        rtTrace(top_object, ray, prd);       // see material1_propagate.cu:closest_hit_propagate
+
+        // what happens with photons that miss ? 
+        p.position += prd.distance_to_boundary*p.direction ; 
+
+        // over-writing third quad : vpol as expedient for access from ../gl/pos/vert.glsl
+        p.polarization.x = prd.cos_theta ; 
+        p.polarization.y = prd.distance_to_boundary ; 
+        p.polarization.z = 0.f ; 
+        p.weight = 0.f ;   
+
+        // fourth quad : is accessible in shaders as ivec4 so keep int here 
+        unsigned int boundary_code = prd.boundary + 1 ;   // 1-based for cos_theta signing, 0 means miss
+        p.flags.i.x = prd.cos_theta < 0.f ? -boundary_code : boundary_code ;
+        p.flags.i.y = 0 ;
+        p.flags.i.z = 0 ; 
+        p.flags.i.w = 0 ; 
+
+        float4 imat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 0 );
+        float4 omat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 1 );
+
+        if(photon_id == 0)
+        {
+            rtPrintf(" prd t/ct/boundary %10.4f %10.4f %d \n", prd.distance_to_boundary, prd.cos_theta, prd.boundary );
+            rtPrintf(" imat %10.4f %10.4f %10.4f %10.4f \n", imat.x, imat.y, imat.z, imat.w );
+            rtPrintf(" omat %10.4f %10.4f %10.4f %10.4f \n", omat.x, omat.y, omat.z, omat.w );
+        }
+
+    }  // bounce < max_bounce
 
     psave(p, photon_buffer, photon_offset ); 
     rng_states[photon_id] = rng ;

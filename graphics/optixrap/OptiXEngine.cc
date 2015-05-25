@@ -47,34 +47,6 @@ using namespace optix ;
 
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
-OptiXEngine::OptiXEngine(const char* cmake_target) :
-    m_rng_max(0),
-    m_rng_wrapper(NULL),
-    m_context(NULL),
-    m_geometry_group(NULL),
-    m_photon_buffer_id(0),
-    m_genstep_buffer_id(0),
-    m_pbo(0),
-    m_pbo_data(NULL),
-    m_composition(NULL),
-    m_renderer(NULL),
-    m_texture(NULL),
-    m_config(NULL),
-    m_ggeo(NULL),
-    m_mergedmesh(NULL),
-    m_trace_count(0),
-    m_generate_count(0),
-    m_cmake_target(strdup(cmake_target)),
-    m_enabled(true),
-    m_texture_id(-1),
-    m_evt(NULL),
-    m_filename(),
-    m_accel_cache_loaded(false),
-    m_accel_caching_on(true)
-{
-    LOG(info) << "OptiXEngine::OptiXEngine" ;
-}
-
 
 void OptiXEngine::init()
 {
@@ -149,6 +121,7 @@ void OptiXEngine::initContext()
     m_context[ "radiance_ray_type"   ]->setUint( e_radiance_ray );
     m_context[ "touch_ray_type"      ]->setUint( e_touch_ray );
     m_context[ "propagate_ray_type"  ]->setUint( e_propagate_ray );
+    m_context[ "bounce_max"          ]->setUint( m_bounce_max );
 
     m_context->setRayTypeCount( e_rayTypeCount );
 
