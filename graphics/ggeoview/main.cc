@@ -85,26 +85,6 @@ void logging_init()
 
 }
 
-
-/*
-struct Register 
-{
-   Frame* frame ; 
-   Composition* composition ;
-   Bookmarks* bookmarks ; 
-   Interactor* interactor ;
-   NumpyEvt* evt ;
-   Scene* scene ; 
-};
-Register reg = {.frame = &frame, 
-                    .composition=&composition,      
-                    .bookmarks =&bookmarks,      
-                    .interactor =&interactor,      
-                    .evt=&evt,
-                    .scene=&scene };      
-
-*/
-
 int main(int argc, char** argv)
 {
     logging_init();

@@ -15,7 +15,7 @@ rtDeclareVariable(float3, wavelength_domain_reciprocal, , );
 
 static __device__ __inline__ float reemission_lookup(float u)
 {
-    float ui = u/reemission_domain.z + 0.5 ;   
+    float ui = u/reemission_domain.z + 0.5f ;   
     return tex2D(reemission_texture, ui, 0.5f );  // line 0
 }
 
@@ -23,7 +23,7 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
 {
     // x:low y:high z:step    tex coords are offset by 0.5 
     // texture lookups benefit from hardware interpolation 
-    float nmi = (nm - wavelength_domain.x)/wavelength_domain.z + 0.5 ;   
+    float nmi = (nm - wavelength_domain.x)/wavelength_domain.z + 0.5f ;   
     return tex2D(wavelength_texture, nmi, line + 0.5f );
 }
 

@@ -575,6 +575,12 @@ unsigned int GSubstanceLib::getLine(unsigned int isub, unsigned int ioff)
 GBuffer* GSubstanceLib::createReemissionBuffer(GPropertyMap<float>* scint)
 {
     assert(scint);
+
+    // TODO: reposition the .npy inside idpath
+    // for comparison only
+    GProperty<float>* cdf = constructReemissionCDF(scint);
+    cdf->save("/tmp/reemissionCDF.npy");
+
     GProperty<float>* icdf = constructInvertedReemissionCDF(scint);
     icdf->Summary("GSubstanceLib::createReemissionBuffer icdf ", 256);
 

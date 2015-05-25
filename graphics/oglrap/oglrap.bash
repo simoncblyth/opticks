@@ -330,6 +330,16 @@ oglrap-frametest()
    $LLDB $bin $path $*
 }
 
+
+oglrap-geometrytest()
+{
+   ggeoview-
+   ggeoview-export
+   local bin=$(oglrap-bindir)/GeometryTest
+   $LLDB $bin $* 
+}
+
+
 oglrap-frametest-lldb()
 {
    LLDB=lldb oglrap-frametest $*

@@ -267,6 +267,9 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         const char* bspv2 = getStringProperty(mat, g4dae_bordersurface_physvolume2 );
         const char* sslv  = getStringProperty(mat, g4dae_skinsurface_volume );
 
+        // assimp "materials" are used to hold skinsurface and bordersurface properties, 
+        // as well as material properties
+
         if( sslv )
         {
             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GSkinSurface) name %s sslv %s  \n", i, name, sslv);
@@ -395,6 +398,8 @@ void AssimpGGeo::convertStructure(GGeo* gg)
 
 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 {
+    // recursive traversal of the AssimpNode tree
+
     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
 
     bool selected = m_selection && m_selection->contains(node) ;  

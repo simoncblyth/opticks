@@ -203,6 +203,19 @@ void GGeo::addRaw(GMaterial* material)
     m_raw_materials.push_back(material);
 }
 
+void GGeo::dumpRaw(const char* msg)
+{
+    printf("%s\n", msg);     
+
+    for(unsigned int i=0 ; i < m_raw_materials.size() ; i++)
+    {
+        GMaterial* mat = m_raw_materials[i];
+        mat->Summary();
+    }
+
+}
+
+
 
 void GGeo::add(GBorderSurface* surface)
 {
@@ -283,6 +296,10 @@ unsigned int GGeo::getNumSolids()
 unsigned int GGeo::getNumMaterials()
 {
     return m_materials.size();
+}
+unsigned int GGeo::getNumRawMaterials()
+{
+    return m_raw_materials.size();
 }
 unsigned int GGeo::getNumBorderSurfaces()
 {

@@ -33,6 +33,14 @@ const char* Geometry::identityPath( const char* envprefix)
     const char* path = getenv(geokey);
     const char* query = getenvvar(envprefix, "QUERY");
     const char* ctrl = getenvvar(envprefix, "CTRL");
+
+
+    if(query == NULL || path == NULL || geokey == NULL )
+    {
+        printf("Geometry::identityPath geokey %s path %s query %s ctrl %s \n", geokey, path, query, ctrl );
+        LOG(fatal) << "Geometry::identityPath envprefix[" << envprefix << "] missing required envvars " ; 
+        assert(0);
+    }
  
     //  
     // #. real path is converted into "fake" path 

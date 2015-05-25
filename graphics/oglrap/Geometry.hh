@@ -7,6 +7,8 @@ class GMergedMesh ;
 class GDrawable ; 
 class GSubstanceLibMetadata ; 
 
+
+// TODO: rename to GLoader? and move with GeometryTest->GLoaderTest into GGeo 
 class Geometry {
     public:
          Geometry();

@@ -64,7 +64,7 @@ public:
 
 public:
    void SummaryV(const char* msg, unsigned int nline=5);
-   void Summary(const char* msg, unsigned int imod=5 );
+   void Summary(const char* msg="GProperty::Summary", unsigned int imod=5 );
 
 private:
    unsigned int m_length ;

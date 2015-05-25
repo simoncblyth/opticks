@@ -41,6 +41,7 @@ class GGeo {
         void add(GBorderSurface*  surface);
     public:
         void addRaw(GMaterial* material);
+        void dumpRaw(const char* msg="GGeo::dumpRaw");
  
     public:
         unsigned int getNumMeshes();
@@ -48,6 +49,7 @@ class GGeo {
         unsigned int getNumMaterials();
         unsigned int getNumSkinSurfaces();
         unsigned int getNumBorderSurfaces();
+        unsigned int getNumRawMaterials();
 
     public:
         GSubstanceLib* getSubstanceLib();
