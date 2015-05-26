@@ -12,11 +12,15 @@
 #include "Trackball.hh"
 #include "Clipper.hh"
 #include "Touchable.hh"
+#include "Scene.hh"
+
+
+#include <string>
+#include <sstream>
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
-
 
 
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
@@ -58,7 +62,7 @@ void Interactor::setComposition(Composition* composition)
 }
 
 
-void Interactor::cursor_drag(float x, float y, float dx, float dy )
+void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int iy )
 {
     //printf("Interactor::cursor_drag x,y  %0.5f,%0.5f dx,dy  %0.5f,%0.5f \n", x,y,dx,dy );
 
@@ -88,31 +92,27 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy )
     {
         m_trackball->drag_to(df*x,df*y,df*dx,df*dy);
     }
-    else if( m_jump_mode && m_touchable )
-    {  
-        //m_touchable->touch('J', x, y );   
-    }
     else
     {
+        m_frame->touch(ix, iy );  
+        // unProjects cursor position and identifiers smallest containing volume
+        // frame records volume index of what is touched 
     }
 }
 
-void Interactor::number_key_pressed(unsigned int number, int ix, int iy)
-{
-    m_bookmark_mode = true ; 
-    unsigned int container = m_frame->touch(ix, iy );  // unProjects cursor position, and identifiers smallest containing volume
-    m_bookmarks->number_key_pressed(number, container);
-}
-
-void Interactor::number_key_released(unsigned int number, int ix, int iy)
-{
-    m_bookmarks->number_key_released(number);
-    m_bookmark_mode = false ; 
-}
 
 
-void Interactor::key_pressed(unsigned int key, int ix, int iy)
+
+void Interactor::key_pressed(unsigned int key)
 {
+    m_keys_down[key] = true ; 
+
+    if(key > 245) printf("Interactor::key_pressed %u \n", key );
+
+    
+
+
+
     switch (key)
     {
         case GLFW_KEY_Z:
@@ -130,19 +130,8 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
         case GLFW_KEY_G:
             m_gui_mode = !m_gui_mode ; 
             break;
-        case GLFW_KEY_U:
-            if(m_frame)
-            {
-                unsigned int container = m_frame->touch(ix, iy );
-                setContainer(container);
-            } 
-            break;
         case GLFW_KEY_J:
-            if(m_touchable)
-            {
-                unsigned int container = m_touchable->touch(ix, iy );
-                setContainer(container);
-            } 
+            m_scene->jump(); 
             break;
         case GLFW_KEY_Y:
             m_yfov_mode = !m_yfov_mode ; 
@@ -175,15 +164,57 @@ void Interactor::key_pressed(unsigned int key, int ix, int iy)
         case GLFW_KEY_7:
         case GLFW_KEY_8:
         case GLFW_KEY_9:
-            number_key_pressed(key - GLFW_KEY_0, ix, iy );
+            number_key_pressed(key - GLFW_KEY_0);
             break; 
     } 
-    //Print("Interactor::key_pressed");
     updateStatus();
 }
 
-void Interactor::key_released(unsigned int key, int ix, int iy )
+
+
+
+unsigned int Interactor::getModifiers()
 {
+    unsigned int modifiers = 0 ;
+    if( m_keys_down[GLFW_KEY_LEFT_SHIFT]   || m_keys_down[GLFW_KEY_RIGHT_SHIFT] )    modifiers += e_shift ;
+    if( m_keys_down[GLFW_KEY_LEFT_CONTROL] || m_keys_down[GLFW_KEY_RIGHT_CONTROL] )  modifiers += e_control ;
+    if( m_keys_down[GLFW_KEY_LEFT_ALT]     || m_keys_down[GLFW_KEY_RIGHT_ALT] )      modifiers += e_option ;
+    if( m_keys_down[GLFW_KEY_LEFT_SUPER]   || m_keys_down[GLFW_KEY_RIGHT_SUPER] )    modifiers += e_command ;
+    return modifiers ; 
+}
+
+
+std::string Interactor::describeModifiers(unsigned int modifiers)
+{
+    std::stringstream ss ; 
+    if(modifiers & e_shift)   ss << "shift " ; 
+    if(modifiers & e_control) ss << "control " ; 
+    if(modifiers & e_option)  ss << "option " ; 
+    if(modifiers & e_command) ss << "command " ;
+    return ss.str(); 
+}
+
+/*
+
+ /usr/local/env/graphics/glfw/glfw-3.1.1/include/GLFW/glfw3.h 
+
+                                                     mac keyboard
+ 382 #define GLFW_KEY_LEFT_SHIFT         340            "shift"
+ 383 #define GLFW_KEY_LEFT_CONTROL       341            "control"
+ 384 #define GLFW_KEY_LEFT_ALT           342            "option"
+ 385 #define GLFW_KEY_LEFT_SUPER         343            "command"
+ 386 #define GLFW_KEY_RIGHT_SHIFT        344
+ 387 #define GLFW_KEY_RIGHT_CONTROL      345
+ 388 #define GLFW_KEY_RIGHT_ALT          346
+ 389 #define GLFW_KEY_RIGHT_SUPER        347
+
+
+*/
+
+
+void Interactor::key_released(unsigned int key)
+{
+    m_keys_down[key] = false ; 
     switch (key)
     {
         case GLFW_KEY_0:
@@ -196,27 +227,33 @@ void Interactor::key_released(unsigned int key, int ix, int iy )
         case GLFW_KEY_7:
         case GLFW_KEY_8:
         case GLFW_KEY_9:
-            number_key_released(key - GLFW_KEY_0, ix, iy );
+            number_key_released(key - GLFW_KEY_0);
             break; 
     } 
 }
 
+void Interactor::number_key_pressed(unsigned int number)
+{
+    m_bookmark_mode = true ; 
+    m_bookmarks->number_key_pressed(number, getModifiers());
+}
 
-
-
-
+void Interactor::number_key_released(unsigned int number)
+{
+    m_bookmarks->number_key_released(number);
+    m_bookmark_mode = false ; 
+}
 
 void Interactor::updateStatus()
 {
     char status[64];
-    snprintf(status, 64, "%s%s%s%s%s%s%s%s%s %10.3f %u ",
+    snprintf(status, 64, "%s%s%s%s%s%s%s%s %10.3f %u ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
            m_near_mode ? "n" : "-",
            m_yfov_mode ? "y" : "-",
            m_rotate_mode ? "r" : "-",
-           m_jump_mode ? "j" : "-",
            m_optix_mode ? "o" : "-",
            m_gui_mode ? "g" : "-",
            m_dragfactor,
@@ -236,7 +273,5 @@ void Interactor::Print(const char* msg)
     updateStatus();
     printf("%s %s\n", msg, getStatus() );
 }
-
-
 
 

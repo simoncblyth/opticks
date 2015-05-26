@@ -166,7 +166,7 @@ void GUI::render()
     // https://github.com/ocornut/imgui/issues/109
     // fix ImGui diddling of OpenGL state
     glDisable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);  going-one-sided causes issues
     glEnable(GL_DEPTH_TEST);
 }
 

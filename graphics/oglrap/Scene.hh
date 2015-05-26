@@ -68,6 +68,9 @@ class Scene : public Configurable {
         //
         void setTarget(unsigned int index=0); 
         unsigned int touch(int ix, int iy, float depth);
+        void setTouch(unsigned int index); 
+        unsigned int getTouch();
+        void jump(); 
 
    public:
         const char* loadGeometry(const char* prefix, bool nogeocache=false);
@@ -105,6 +108,7 @@ class Scene : public Configurable {
         GDrawable*   m_geometry ;
         Composition* m_composition ;
         unsigned int m_target ;
+        unsigned int m_touch ;
    private:
         bool         m_geometry_mode ; 
         bool         m_genstep_mode ; 
@@ -118,6 +122,16 @@ inline unsigned int Scene::getTarget()
 {
     return m_target ;
 }
+inline unsigned int Scene::getTouch()
+{
+    return m_touch ;
+}
+inline void Scene::setTouch(unsigned int touch)
+{
+    m_touch = touch ; 
+}
+
+
 inline Geometry* Scene::getGeometryLoader()
 {
     return m_geometry_loader ; 
@@ -157,6 +171,7 @@ inline Scene::Scene() :
             m_geometry(NULL),
             m_composition(NULL),
             m_target(0),
+            m_touch(0),
             m_geometry_mode(true),
             m_genstep_mode(true),
             m_photon_mode(true)

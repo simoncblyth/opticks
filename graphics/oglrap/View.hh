@@ -27,6 +27,7 @@ public:
    std::string get(const char* name);
 
  public:
+   void home(); 
    void setEye( float _x, float _y, float _z);
    void setLook(float _x, float _y, float _z);
    void setUp(  float _x, float _y, float _z);
@@ -62,13 +63,27 @@ private:
 };
 
 
-
-inline View::View()  : 
-      m_eye(-1.f,-1.f,0.f),
-      m_look(0.f,0.f,0.f),
-      m_up(0.f,0.f,1.f)
+inline View::View() 
 {
+    home();
 }
+
+
+inline void View::home()
+{
+    m_eye.x = -1.f ; 
+    m_eye.y = -1.f ; 
+    m_eye.z =  0.f ;
+
+    m_look.x =  0.f ; 
+    m_look.y =  0.f ; 
+    m_look.z =  0.f ;
+
+    m_up.x =  0.f ; 
+    m_up.y =  0.f ; 
+    m_up.z =  1.f ;
+}
+
 
 inline View::~View()
 {

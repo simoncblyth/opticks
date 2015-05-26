@@ -201,6 +201,7 @@ void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModel
 
     if(autocam)
     {
+        m_trackball->home();
         m_camera->setNear( m_extent/10.f ); 
         m_camera->setFar(  m_extent*20.f );  
     }

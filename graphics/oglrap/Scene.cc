@@ -225,16 +225,28 @@ unsigned int Scene::touch(int ix, int iy, float depth)
     gfloat3 gt(t.x, t.y, t.z );
 
     unsigned int container = m_geometry->findContainer(gt);
-    LOG(info)<<"Scene::touch " 
+    LOG(debug)<<"Scene::touch " 
              << " x " << t.x 
              << " y " << t.y 
              << " z " << t.z 
              << " container " << container
              ;
 
-   //if(container > 0) setTarget(container);
+   if(container > 0) setTouch(container);
    return container ; 
 }
+
+
+
+void Scene::jump()
+{
+    if( m_touch > 0 && m_touch != m_target )
+    {
+        LOG(info)<<"Scene::jump-ing from  m_target -> m_touch  " << m_target << " -> " << m_touch  ;  
+        setTarget(m_touch);
+    }
+}
+
 
 void Scene::setTarget(unsigned int index)
 {

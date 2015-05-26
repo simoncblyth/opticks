@@ -95,6 +95,7 @@ void View::Print(const char* msg)
 void View::gui()
 {
 #ifdef GUI_
+    if(ImGui::Button("home")) home();
     ImGui::SliderFloat3("eye",  getEyePtr(),  -1.0f, 1.0f);
     ImGui::SliderFloat3("look", getLookPtr(), -1.0f, 1.0f);
     ImGui::SliderFloat3("up",   getUpPtr(), -1.0f, 1.0f);

@@ -4,7 +4,10 @@
 template <class Listener>
 class FrameCfg : public Cfg {
 public:
-   FrameCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   FrameCfg(const char* name, Listener* listener, bool live) 
+       : 
+       Cfg(name, live),
+       m_bouncemax(1)
    {   
 
        m_desc.add_options()
@@ -26,15 +29,18 @@ public:
            ("nooptix,O",  "inhibit use of OptiX") ;
 
        m_desc.add_options()
-           ("scintillation",  "load scintillation event") ;
-
-
-       m_desc.add_options()
-           ("cerenkov",  "load event event") ;
+           ("scintillation",  "load scintillation gensteps") ;
 
        m_desc.add_options()
-           ("tag",   boost::program_options::value<std::string>(&m_event_tag),
-             "eventtag to load" );
+           ("cerenkov",  "load cerenkov gensteps") ;
+
+       m_desc.add_options()
+           ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load" );
+
+       m_desc.add_options()
+           ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax),
+               "Maximum number of boundary bounces, 0:to just generate.");
+
 
        ///////////////
 
@@ -63,11 +69,17 @@ public:
    {
        return m_liveline ;
    }
+   int getBounceMax()
+   {
+        return m_bouncemax ; 
+   }
+
 
 private:
     std::string m_configpath ;
     std::string m_event_tag ;
     std::string m_liveline ;
+    int         m_bouncemax ; 
 
 };
 

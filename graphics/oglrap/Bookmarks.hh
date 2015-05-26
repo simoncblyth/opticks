@@ -20,6 +20,24 @@ class Configurable ;
 // constructed based on the bookmark values
 // and dispense those to the composition 
 
+
+/*
+
+Bookmarks:
+
+* do not initiate actions
+
+* record current state under a slot label 
+
+* provide way to return to prior labelled state
+
+* actions like navigating to a volume need to be implemented elsewhere 
+  (Frame/Interactor/Scene)
+
+
+*/
+
+
 class Bookmarks {
 public:
    static unsigned int N ; 
@@ -32,7 +50,7 @@ public:
    void gui();
 
 public:
-   void number_key_pressed(unsigned int number, unsigned int container);
+   void number_key_pressed(unsigned int number, unsigned int modifiers=0);
    void number_key_released(unsigned int number);
 
 public:

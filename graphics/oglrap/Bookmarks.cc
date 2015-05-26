@@ -4,7 +4,7 @@
 #include "View.hh"
 #include "Trackball.hh"
 #include "Clipper.hh"
-
+#include "Interactor.hh"
 #include "Scene.hh"
 
 #include "string.h"
@@ -157,17 +157,16 @@ void Bookmarks::add(unsigned int num)
 }
 
 
-void Bookmarks::number_key_pressed(unsigned int num, unsigned int container)
+void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
 {
     LOG(info) << "Bookmarks::number_key_pressed "
               << " num "  << num 
-              << " container "  << container
+              << " modifiers " << Interactor::describeModifiers(modifiers) 
               ; 
 
 
     if(!exists(num))
     {
-       m_scene->setTarget(container);
        add(num);    
     }
     else

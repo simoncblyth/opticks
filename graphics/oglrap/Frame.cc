@@ -234,7 +234,7 @@ void Frame::resize(unsigned int width, unsigned int height)
 unsigned int Frame::touch(int ix, int iy )
 {
     float depth = readDepth(ix, iy );
-    LOG(info)<<"Frame::touch " << depth ;
+    //LOG(info)<<"Frame::touch " << depth ;
     return m_scene->touch(ix, iy, depth);
 }
 
@@ -334,10 +334,12 @@ void Frame::handle_event(GLEQevent& event)
                   }
                   else
                   {
-                      if(m_interactor) m_interactor->cursor_drag( x, y, dx, dy );
+                      if(m_interactor)
+                      {
+                          getCursorPos();
+                          m_interactor->cursor_drag( x, y, dx, dy, m_pos_x, m_pos_y );
+                      }
                   }
-
-
              }
              break;
         case GLEQ_CURSOR_ENTERED:
@@ -376,7 +378,7 @@ void Frame::key_pressed(unsigned int key)
     {
         LOG(debug)<<"Frame::key_pressed " <<  key ;
         getCursorPos();
-        m_interactor->key_pressed(key, m_pos_x, m_pos_y );
+        m_interactor->key_pressed(key);
     }
 
 }  
@@ -385,7 +387,7 @@ void Frame::key_released(unsigned int key)
 {
     LOG(debug)<<"Frame::key_released " <<  key ;
     getCursorPos();
-    m_interactor->key_released(key, m_pos_x, m_pos_y );
+    m_interactor->key_released(key);
 }  
  
 
