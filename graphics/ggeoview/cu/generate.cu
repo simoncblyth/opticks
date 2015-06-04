@@ -126,16 +126,7 @@ RT_PROGRAM void generate()
         if(command == BREAK)    break ; 
         if(command == CONTINUE) continue ; 
 
-
-        /*
-        // DEBUG: over-writing third quad : vpol as expedient for access from ../gl/pos/vert.glsl
-        p.position += prd.distance_to_boundary*p.direction ; 
-        p.polarization.x = prd.cos_theta ; 
-        p.polarization.y = prd.distance_to_boundary ; 
-        p.polarization.z = 0.f ; 
-        p.weight = 0.f ;   
-        */
-
+        propagate_at_boundary(p, s, rng);
 
     }  // bounce < max_bounce
 

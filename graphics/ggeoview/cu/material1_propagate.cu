@@ -48,9 +48,12 @@ RT_PROGRAM void closest_hit_propagate()
      // this canonical situation
      //
      // however to work with typical snells law conventions
+     // need to point the normal in reflected direction ?
      //  
      //
-     // orient normal to point from material2 back into material1 
+     //  cos_theta > 0.f
+     //          ray pointing in same hemisphere as outward normal
+     //   
 
      float cos_theta = dot(n,ray.direction);
 
@@ -70,10 +73,12 @@ RT_PROGRAM void closest_hit_propagate()
 
      prd.boundary = cos_theta < 0.f ? -(substanceIndex + 1) : substanceIndex + 1 ;   // 1-based with cos_theta signing, 0 means miss
 
-     prd.surface_normal = n ;   // not flipping ?
-
-
-     // CAUTION: danger of doing a double flip
+     prd.surface_normal = cos_theta > 0.f ? -n : n ;   
+     //
+     // orient normal to point from material2 back into material1 
+     //
+     // CAUTION: danger of doing a double flip, but need to arrange surface_normal according 
+     //          to convention of fresnel derivation
      // 
      // Boundary sign arranges in fill_state that the raw (inner/outer material) 
      // are selected into: 

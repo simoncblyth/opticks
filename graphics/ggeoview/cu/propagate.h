@@ -70,60 +70,99 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 } // propagate_to_boundary
 
 
+
+
+//
+// normal incidence photons
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+// 
+// * no unique plane of incidence, 
+// * artifically setting incident_plane_normal to initial p.polarisation yields normal_coefficient = 1.0f 
+//   so always treated as S polarized 
+//   
+//
+//   initial momentum dir
+//            p.direction = -s.surface_normal 
+//
+//   final momentum dir
+//            p.direction + 2.0f*c1*(-p.direction)  = -p.direction 
+// 
+//                     c1
+//                   +----+      
+//                    \   .   /
+//                    i\  n  /          convention:  i pointing down to interface, n pointing up from interface
+//                      \ . /                        c1 = - dot(i, n)
+//         material1     \./
+//         ---------------+--------------------
+//         material2      .\
+//                        . \
+//                        .  \
+//                        .   \
+//
+//
+//
+
+
 __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
 {
+    // see g4op- for comparison of Geant4/Chroma/OptiX-refract
 
-    float eta = s.material1.x/s.material2.x ; // x:refractive_index  
+    float eta = s.material1.x/s.material2.x ;    // eta = n1/n2   x:refractive_index  PRE-FLIPPED
 
-    // normal incidence photons do not have a unique plane of incidence, 
-    // using polarisation direction will yield normal_coefficient = 1.0f 
-    // so will be treated as S polarized 
-    //
-    //     c1 = 1
-    //     c2 = 1
-    //
-    //
-   
     float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
 
-    float normal_coefficient = dot(p.polarization, incident_plane_normal);
+    float normal_coefficient = dot(p.polarization, incident_plane_normal);  // fraction of E vector perpendicular to plane of incidence, ie S polarization
 
-    const float c1 = -dot(p.direction, s.surface_normal );    // as-is (unflipped) geometry surface normal 
+    const float c1 = -dot(p.direction, s.surface_normal );    
 
+    // s.surface_normal : geometry normal flipped (based on photon direction) 
+    // to point from material2 back to material1 ??? so c1 should be +ve  ???
+    //
+    //   Snells:  
+    //        n1 s1 = n2 s2
+    //
+    //           s2 = eta * s1       eta = n1/n2
+    //
+    //    c2c2 = 1 - s2s2 = 1 - eta eta s1 s1  = 1 - eta eta (1 - c1c1) 
+    //
+    //
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ; 
 
-    const float c2 = c2c2 < 0.f ? 0.f : sqrtf(c2c2) ;        // TIR for <0.f
-
-    // NB artificially setting c2 to 0.f for TIR results in reflection_coefficient = 1.0f  for both S and P cases
+    const float c2 = c2c2 < 0.f ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, artificially set c2 = 0.f for TIR => reflection_coefficient = 1.0f  for both S and P cases
 
     const float eta_c1 = eta * c1 ; 
-    const float eta_c2 = eta * c2 ; 
+
+    const float eta_c2 = eta * c2 ;    
 
     bool s_polarized = curand_uniform(&rng) < normal_coefficient*normal_coefficient ;
 
-    const float reflection_coefficient = s_polarized ? 
+    const float reflection_coefficient = s_polarized 
+                      ? 
                          (eta_c1 - c2)/(eta_c1 + c2 )  
                       :
-                         (c1 - eta_c2)/(c1 + eta_c2)  ; 
+                         (c1 - eta_c2)/(c1 + eta_c2)  
+                      ; 
 
-    p.polarization = s_polarized ? 
+    p.polarization = s_polarized 
+                       ? 
                           incident_plane_normal
                        :
-                          normalize(cross(incident_plane_normal, p.direction));
+                          normalize(cross(incident_plane_normal, p.direction))
+                       ;
     
                     
     // S polarized : E field perpendicular to plane of incidence
     // P polarized : E field within plane of incidence 
 
-
     bool reflect = curand_uniform(&rng) < reflection_coefficient*reflection_coefficient ;
 
-    p.direction = reflect ? 
-                      p.direction + 2.0f*c1*s.surface_normal 
-                    : eta*p.direction + (eta_c1 - c2)*s.surface_normal ;   
+    p.direction = reflect 
+                    ? 
+                       p.direction + 2.0f*c1*s.surface_normal 
+                    : 
+                       eta*p.direction + (eta_c1 - c2)*s.surface_normal
+                    ;   
     
-    
-   
 
 }
 
