@@ -2,7 +2,7 @@
 
 
 uniform mat4 ModelViewProjection ;
-
+uniform vec4 Param ; 
 in vec3 colour[];
 in vec3 direction[];
 
@@ -20,7 +20,7 @@ void main ()
     fcolour = colour[0] ;
     EmitVertex();
 
-    gl_Position = ModelViewProjection * ( gl_in[0].gl_Position + 100.*vec4(direction[0], 0.) ) ;
+    gl_Position = ModelViewProjection * ( gl_in[0].gl_Position + Param.x*vec4(direction[0], 0.) ) ;
     fcolour = colour[0] ;
     EmitVertex();
 

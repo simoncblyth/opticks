@@ -16,6 +16,10 @@ using namespace optix;
 #define GNUMQUAD 6
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
+#include "state.h"
+#include "rayleigh.h"
+#include "propagate.h"
+
 
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
@@ -44,10 +48,18 @@ RT_PROGRAM void generate()
     curandState rng = rng_states[photon_id];
 
     PerRayData_propagate prd;
-    prd.boundary = -1 ;
+    prd.boundary = 0 ;
     prd.distance_to_boundary = -1.f ;
 
+    // combine State and PRD ?
+    //    * currently no, due to assumption that a minimal PRD
+    //      is worth the cost of shuffling some results from PRD to State
+
+    State s ; 
+
     Photon p ;  
+    pinit(p);
+
 
     if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
     {
@@ -71,43 +83,59 @@ RT_PROGRAM void generate()
             reemission_check();
         }
         generate_scintillation_photon(p, ss, rng );         
+
+        // pol and dir distrib for scintillation are flat, so 
+        // test rayleigh here 
+        // rayleigh_scatter(p, rng);
+
     }
 
 
     int bounce = 0 ; 
+    int command ; 
+
     while( bounce < bounce_max )
     {
         bounce++;
 
         optix::Ray ray = optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX);
 
-        rtTrace(top_object, ray, prd);       // see material1_propagate.cu:closest_hit_propagate
+        rtTrace(top_object, ray, prd);  // see material1_propagate.cu:closest_hit_propagate
 
-        // what happens with photons that miss ? 
+        if(prd.boundary == 0)
+        {
+            p.flags.i.w |= NO_HIT;
+            break ;
+        }     
+
+        p.flags.i.x = prd.boundary ;  
+
+        fill_state(s, prd.boundary, p.wavelength );
+
+        s.distance_to_boundary = prd.distance_to_boundary ; 
+        s.surface_normal = prd.surface_normal ; 
+        s.cos_theta = prd.cos_theta ; 
+
+        if(photon_id == 0)
+        {
+            dump_state(s);
+        }
+
+
+        command = propagate_to_boundary( p, s, rng );
+        if(command == BREAK)    break ; 
+        if(command == CONTINUE) continue ; 
+
+
+        /*
+        // DEBUG: over-writing third quad : vpol as expedient for access from ../gl/pos/vert.glsl
         p.position += prd.distance_to_boundary*p.direction ; 
-
-        // over-writing third quad : vpol as expedient for access from ../gl/pos/vert.glsl
         p.polarization.x = prd.cos_theta ; 
         p.polarization.y = prd.distance_to_boundary ; 
         p.polarization.z = 0.f ; 
         p.weight = 0.f ;   
+        */
 
-        // fourth quad : is accessible in shaders as ivec4 so keep int here 
-        unsigned int boundary_code = prd.boundary + 1 ;   // 1-based for cos_theta signing, 0 means miss
-        p.flags.i.x = prd.cos_theta < 0.f ? -boundary_code : boundary_code ;
-        p.flags.i.y = 0 ;
-        p.flags.i.z = 0 ; 
-        p.flags.i.w = 0 ; 
-
-        float4 imat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 0 );
-        float4 omat = wavelength_lookup( p.wavelength,  prd.boundary*6 + 1 );
-
-        if(photon_id == 0)
-        {
-            rtPrintf(" prd t/ct/boundary %10.4f %10.4f %d \n", prd.distance_to_boundary, prd.cos_theta, prd.boundary );
-            rtPrintf(" imat %10.4f %10.4f %10.4f %10.4f \n", imat.x, imat.y, imat.z, imat.w );
-            rtPrintf(" omat %10.4f %10.4f %10.4f %10.4f \n", omat.x, omat.y, omat.z, omat.w );
-        }
 
     }  // bounce < max_bounce
 

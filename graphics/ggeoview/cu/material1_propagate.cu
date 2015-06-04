@@ -39,14 +39,49 @@ RT_PROGRAM void closest_hit_propagate()
 
      //rtPrintf("closest_hit_propagate  n %10.4f %10.4f %10.4f     %10.4f \n", n.x, n.y, n.z, cos_theta );
 
-     prd.cos_theta = dot(n,-ray.direction);
+     //
+     // geometry normals expected to canonically be "outwards" (think cylinder) 
+     // this is controlled by triangle index winding order  
+     //
+     // canonical photon direction is "outwards" 
+     // so no sign flips to make cosTheta = +1 correspond to 
+     // this canonical situation
+     //
+     // however to work with typical snells law conventions
+     //  
+     //
+     // orient normal to point from material2 back into material1 
+
+     float cos_theta = dot(n,ray.direction);
+
+     prd.cos_theta = cos_theta ;
 
      prd.distance_to_boundary = t ; 
 
-     prd.boundary = substanceIndex ;   
+     // boundary sign identifies which of inner/outer-material is material1/material2 
+     //
+     //
+     //  cos_theta > 0.f
+     //        outward going photons, with p.direction in same hemi as the geometry normal
+     //
+     //  cos_theta < 0.f  
+     //        inward going photons, with p.direction in opposite hemi to geometry normal
+     //
 
-     // hmm maybe use 1-based substance index, signed according to cos_theta inner-to-outer  
+     prd.boundary = cos_theta < 0.f ? -(substanceIndex + 1) : substanceIndex + 1 ;   // 1-based with cos_theta signing, 0 means miss
 
+     prd.surface_normal = n ;   // not flipping ?
+
+
+     // CAUTION: danger of doing a double flip
+     // 
+     // Boundary sign arranges in fill_state that the raw (inner/outer material) 
+     // are selected into: 
+     //
+     // * material1 source material
+     // * material2 destination material
+     //
+ 
 }
 
 

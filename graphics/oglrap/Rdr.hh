@@ -48,8 +48,29 @@ class Rdr : public RendererBase  {
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
       GLint  m_selection_location ;
+      GLint  m_param_location ;
 
 };      
+
+
+inline Rdr::Rdr(const char* tag)
+    :
+    RendererBase(tag),
+    m_vao(0),
+    m_buffer(0),
+    m_countdefault(0),
+    m_composition(NULL),
+    m_mv_location(-1),
+    m_mvp_location(-1),
+    m_selection_location(-1),
+    m_param_location(-1)
+{
+}
+
+
+
+
+
 
 
 inline unsigned int Rdr::getBufferId()

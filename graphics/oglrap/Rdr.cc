@@ -20,19 +20,6 @@
 
 const char* Rdr::PRINT = "print" ; 
 
-Rdr::Rdr(const char* tag)
-    :
-    RendererBase(tag),
-    m_vao(0),
-    m_buffer(0),
-    m_countdefault(0),
-    m_composition(NULL),
-    m_mv_location(-1),
-    m_mvp_location(-1),
-    m_selection_location(-1)
-{
-}
-
 
 
 void Rdr::upload(MultiVecNPY* mvn)
@@ -168,6 +155,7 @@ void Rdr::check_uniforms()
     m_mvp_location = m_shader->uniform("ModelViewProjection", required) ; 
     m_mv_location = m_shader->uniform("ModelView", required );     
     m_selection_location = m_shader->uniform("Selection", required );     
+    m_param_location = m_shader->uniform("Param", required );     
 
     // the "tag" argument of the Rdr identifies the GLSL code being used
     // determining which uniforms are required 
@@ -175,7 +163,9 @@ void Rdr::check_uniforms()
     LOG(info) << "Rdr::check_uniforms "
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 
-              << " sel " << m_selection_location ;
+              << " sel " << m_selection_location 
+              << " param " << m_param_location 
+              ;
 
 }
 
@@ -190,6 +180,12 @@ void Rdr::update_uniforms()
 
         glm::ivec4 sel = m_composition->getSelection();
         glUniform4i(m_selection_location, sel.x, sel.y, sel.z, sel.w  );    
+
+        glm::vec4 par = m_composition->getParam();
+        glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
+
+
+
 
     } 
     else

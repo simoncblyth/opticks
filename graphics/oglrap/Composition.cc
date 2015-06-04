@@ -27,6 +27,10 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
 
 
 const char* Composition::PRINT = "print" ; 
@@ -42,7 +46,8 @@ Composition::Composition()
   m_model_to_world(),
   m_extent(1.0f),
   m_center_extent(),
-  m_selection(0,0,0,0)
+  m_selection(0,0,0,0),
+  m_param(0.f,0.f,0.f,0.f)
 {
     m_camera = new Camera() ;
     m_view   = new View() ;
@@ -127,7 +132,20 @@ void Composition::addConfig(Cfg* cfg)
 
 
 
+void Composition::gui()
+{
+#ifdef GUI_
+    if(ImGui::Button("home")) home();
+    ImGui::SliderFloat4("param", glm::value_ptr(m_param),  0.f, 1000.0f, "%0.3f", 2.0f);
+#endif    
+}
 
+
+void Composition::home()
+{
+    m_view->home();
+    m_trackball->home();
+}
 
 
 unsigned int Composition::getWidth()
@@ -179,12 +197,21 @@ void Composition::setSelection(std::string selection)
 {
     setSelection(givec4(selection));
 }
- 
-
 void Composition::setSelection(glm::ivec4 selection) 
 {
     m_selection = selection ;  
 }
+
+void Composition::setParam(std::string param)
+{
+    setParam(gvec4(param));
+}
+void Composition::setParam(glm::vec4 param)
+{
+    m_param = param ;
+}
+  
+
 
 void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModelToWorld
 {  
@@ -205,24 +232,6 @@ void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModel
         m_camera->setNear( m_extent/10.f ); 
         m_camera->setFar(  m_extent*20.f );  
     }
-}
-
-glm::vec4& Composition::getCenterExtent()
-{
-    return m_center_extent ; 
-}
-
-glm::ivec4& Composition::getSelection()
-{
-    return m_selection ; 
-}
-glm::mat4& Composition::getModelToWorld()
-{
-    return m_model_to_world ; 
-}
-float Composition::getExtent()
-{
-    return m_extent ; 
 }
 float Composition::getNear()
 {

@@ -110,6 +110,12 @@ void GUI::show(bool* opened)
     }
 
     ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Composition"))
+    {
+        m_composition->gui(); 
+    }
+
+    ImGui::Spacing();
     if (ImGui::CollapsingHeader("View"))
     {
         m_view->gui(); 

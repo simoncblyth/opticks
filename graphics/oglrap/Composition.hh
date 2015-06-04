@@ -40,6 +40,7 @@ class Composition : public Configurable {
       // for cli/live updating 
       void configureI(const char* name, std::vector<int> values );
       void configureS(const char* name, std::vector<std::string> values);
+      void gui();
 
   public: 
       void setCenterExtent(gfloat4 ce, bool autocam=false); // effectively points at what you want to look at 
@@ -48,6 +49,8 @@ class Composition : public Configurable {
       // avaiable as uniform inside shaders allowing GPU-side selections 
       void setSelection(glm::ivec4 sel);
       void setSelection(std::string sel);
+      void setParam(glm::vec4 par);
+      void setParam(std::string par);
 
       void setTarget(unsigned int target);
       void setScene(Scene* scene);
@@ -55,6 +58,7 @@ class Composition : public Configurable {
       void addConfig(Cfg* cfg);
 
   public: 
+      void home();
       void update();
 
   public: 
@@ -79,6 +83,7 @@ class Composition : public Configurable {
   public: 
       // getters of inputs 
       glm::ivec4& getSelection();
+      glm::vec4&  getParam();
       glm::mat4& getModelToWorld();
       float getExtent();
       float getNear();
@@ -125,6 +130,7 @@ class Composition : public Configurable {
       float     m_extent ; 
       glm::vec4 m_center_extent ; 
       glm::ivec4 m_selection ;
+      glm::vec4  m_param ;
 
   private:
       // residents
@@ -190,17 +196,12 @@ inline Clipper* Composition::getClipper()
 
 inline void Composition::setCamera(Camera* camera)
 {
-    //delete m_camera ;
     m_camera = camera ; 
 }
 inline void Composition::setView(View* view)
 {
-    //delete m_view ;
     m_view = view ; 
 }
-
-
-
 inline Scene* Composition::getScene()
 {
     return m_scene ; 
@@ -209,8 +210,26 @@ inline void Composition::setScene(Scene* scene)
 {
     m_scene = scene ; 
 }
-
-
+inline glm::vec4& Composition::getCenterExtent()
+{
+    return m_center_extent ; 
+}
+inline glm::ivec4& Composition::getSelection()
+{
+    return m_selection ; 
+}
+inline glm::vec4& Composition::getParam()
+{
+    return m_param ; 
+}
+inline glm::mat4& Composition::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+inline float Composition::getExtent()
+{
+    return m_extent ; 
+}
 
 
 

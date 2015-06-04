@@ -31,6 +31,28 @@ TODO
     as a container for all properties 
 
 
+Matplotlib based gui for looking at material properties ?
+-----------------------------------------------------------
+
+wxwidgets
+~~~~~~~~~~~
+
+* :google:`python matplotlib gui`
+* https://pypi.python.org/pypi/plotexplorer_gui
+* http://eli.thegreenplace.net/2008/08/01/matplotlib-with-wxpython-guis/
+
+* http://wiki.scipy.org/Cookbook/Matplotlib/EmbeddingInWx
+
+* http://agni.phys.iit.edu/~kmcivor/wxmpl/
+* http://agni.phys.iit.edu/~kmcivor/wxmpl/tutorial/
+
+qt
+~~~
+
+* http://pyqtgraph.org
+
+
+
 Material index mapping 
 ------------------------
 
