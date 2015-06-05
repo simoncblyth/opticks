@@ -953,13 +953,6 @@ ggeo-metatest(){
    eval $cmd
 }
 
-ggeo-loadtest(){
-   local bin=$(ggeo-bin GLoaderTest)
-   ggeoview-
-   ggeoview-export
-   $LLDB $bin $*  
-}
-
    
 
 
