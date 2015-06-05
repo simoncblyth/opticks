@@ -1,7 +1,7 @@
 #include "GLoader.hh"
 
 // assimpwrap
-#include "AssimpWrap/AssimpGGeo.hh"
+//#include "AssimpWrap/AssimpGGeo.hh"
 
 #include "GMergedMesh.hh"
 #include "GSubstanceLib.hh"
@@ -83,8 +83,9 @@ const char* GLoader::load(const char* envprefix, bool nogeocache)
     } 
     else
     {
-        LOG(info) << "GLoader::load slow loading using AssimpGGeo " << envprefix ;
-        m_ggeo = AssimpGGeo::load(envprefix);
+        LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
+        //m_ggeo = AssimpGGeo::load(envprefix);
+        m_ggeo = (*m_imp)(envprefix);    
 
         //m_ggeo->Details("GLoader::load"); 
 

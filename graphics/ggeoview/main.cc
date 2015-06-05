@@ -19,7 +19,6 @@
 
 #include "Bookmarks.hh"
 #include "Composition.hh"
-#include "Geometry.hh"
 #include "Rdr.hh"
 #include "Texture.hh"
 #include "Photons.hh"
@@ -50,6 +49,7 @@
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 #include "GSubstanceLibMetadata.hh"
+#include "GLoader.hh"
 
 
 #include <boost/log/core.hpp>
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 {
     logging_init();
     const char* prefix = "GGEOVIEW_" ;
-    const char* idpath = Geometry::identityPath(prefix) ;
+    const char* idpath = GLoader::identityPath(prefix) ;
     LOG(info) << argv[0] ; 
 
     Frame frame ;
@@ -249,7 +249,9 @@ int main(int argc, char** argv)
         if(*show_gui_window)
         {
             gui.show(show_gui_window);
-            composition.setSelection(photons.getSelection());
+            composition.setSelection(photons.getSelection()); 
+            // maybe imgui edit selection within the composition imgui, rather than shovelling ?
+            // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
         }
         gui.render();
 #endif

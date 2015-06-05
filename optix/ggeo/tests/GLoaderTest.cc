@@ -2,15 +2,22 @@
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 
+#include "AssimpWrap/AssimpGGeo.hh"
+
+
 
 int main(int argc, char** argv)
 {
     bool nogeocache = true ; 
 
     GLoader loader ; 
+
+    loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+
     loader.load("GGEOVIEW_", nogeocache);
 
     GMergedMesh* mm = loader.getMergedMesh();
+
     mm->dumpSolids(); 
 
     GGeo*  gg = loader.getGGeo();
@@ -19,14 +26,14 @@ int main(int argc, char** argv)
     gg->Summary();
     //gg->dumpRaw();
 
-    GPropertyMap<float>* scint = gg->findRawMaterial("LiquidScintillator");
-    //scint->Summary();
+    GProperty<float>* slow = gg->findRawMaterialProperty("LiquidScintillator", "SLOWCOMPONENT");
+    slow->save("/tmp/slowcomponent.npy");   // hmm should have permanent slot in idpath 
 
-    GProperty<float>* slow = scint->getProperty("SLOWCOMPONENT");
-    slow->Summary();
 
-    // hmm should have permanent slot in idpath 
-    slow->save("/tmp/slowcomponent.npy");
+    gg->dumpRawSkinSurface();
+
+    gg->dumpRawBorderSurface();
+
 
 
     return 0 ;

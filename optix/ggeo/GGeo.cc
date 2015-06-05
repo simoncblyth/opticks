@@ -14,17 +14,9 @@
 
 #define BSIZ 50
 
-GGeo::GGeo() :
-   m_low(NULL),
-   m_high(NULL),
-   m_substance_lib(NULL),
-   m_merged_mesh(NULL),
-   m_path(NULL),
-   m_query(NULL),
-   m_ctrl(NULL),
-   m_idpath(NULL)
+
+void GGeo::init()
 {
-   //printf("GGeo::GGeo\n");
 
    m_substance_lib = new GSubstanceLib();
 
@@ -33,8 +25,8 @@ GGeo::GGeo() :
    //
    GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
    m_substance_lib->setStandardDomain( standard_wavelengths );
-
 }
+
 
 GGeo::~GGeo()
 {
@@ -43,6 +35,14 @@ GGeo::~GGeo()
    delete m_substance_lib ;
 }
 
+void GGeo::setLow(const gfloat3& low)
+{
+    m_low = new gfloat3(low);
+}
+void GGeo::setHigh(const gfloat3& high)
+{
+    m_high = new gfloat3(high);
+}
 
 void GGeo::setPath(const char* path)
 {
@@ -60,61 +60,6 @@ void GGeo::setIdentityPath(const char* idpath)
 {
    m_idpath = strdup(idpath);
 }
-
-
-char* GGeo::getPath()
-{
-   return m_path ;
-}
-char* GGeo::getQuery()
-{
-   return m_query ;
-}
-char* GGeo::getCtrl()
-{
-   return m_ctrl ;
-}
-char* GGeo::getIdentityPath()
-{
-   return m_idpath ;
-}
-
-
-
-
-
-
-
-
-
-
-
-GSubstanceLib* GGeo::getSubstanceLib()
-{
-    return m_substance_lib ; 
-}
-
-
-
-gfloat3* GGeo::getLow()
-{
-   return m_low ; 
-}
-gfloat3* GGeo::getHigh()
-{
-   return m_high ; 
-}
-
-
-void GGeo::setLow(const gfloat3& low)
-{
-    m_low = new gfloat3(low);
-}
-void GGeo::setHigh(const gfloat3& high)
-{
-    m_high = new gfloat3(high);
-}
-
 
 void GGeo::updateBounds(GNode* node)
 {
@@ -193,40 +138,18 @@ void GGeo::add(GSolid* solid)
     assert(check == solid);
 }
 
-void GGeo::add(GMaterial* material)
-{
-    m_materials.push_back(material);
-}
-
-void GGeo::addRaw(GMaterial* material)
-{
-    m_raw_materials.push_back(material);
-}
 
 void GGeo::dumpRaw(const char* msg)
 {
     printf("%s\n", msg);     
 
-    for(unsigned int i=0 ; i < m_raw_materials.size() ; i++)
+    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
     {
-        GMaterial* mat = m_raw_materials[i];
+        GMaterial* mat = m_materials_raw[i];
         mat->Summary();
     }
 
 }
-
-
-
-void GGeo::add(GBorderSurface* surface)
-{
-    m_border_surfaces.push_back(surface);
-}
-
-void GGeo::add(GSkinSurface* surface)
-{
-    m_skin_surfaces.push_back(surface);
-}
-
 
 
 GSolid* GGeo::getSolid(unsigned int index)
@@ -285,48 +208,6 @@ unsigned int GGeo::materialConsistencyCheck(GSolid* solid)
 
 
 
-unsigned int GGeo::getNumMeshes()
-{
-    return m_meshes.size();
-}
-unsigned int GGeo::getNumSolids()
-{
-    return m_solids.size();
-}
-unsigned int GGeo::getNumMaterials()
-{
-    return m_materials.size();
-}
-unsigned int GGeo::getNumRawMaterials()
-{
-    return m_raw_materials.size();
-}
-unsigned int GGeo::getNumBorderSurfaces()
-{
-    return m_border_surfaces.size();
-}
-unsigned int GGeo::getNumSkinSurfaces()
-{
-    return m_skin_surfaces.size();
-}
-
-
-
-
-GSolid* GGeo::getSolidSimple(unsigned int index)
-{
-    return m_solids[index];
-}
-GSkinSurface* GGeo::getSkinSurface(unsigned int index)
-{
-    return m_skin_surfaces[index];
-}
-GBorderSurface* GGeo::getBorderSurface(unsigned int index)
-{
-    return m_border_surfaces[index];
-}
-
-
 
 
 GMaterial* GGeo::getMaterial(unsigned int aindex)
@@ -347,13 +228,13 @@ GMaterial* GGeo::getMaterial(unsigned int aindex)
 GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname)
 {
     GMaterial* mat = NULL ; 
-    for(unsigned int i=0 ; i < m_raw_materials.size() ; i++ )
+    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++ )
     { 
-        std::string sn = m_raw_materials[i]->getShortNameString();
+        std::string sn = m_materials_raw[i]->getShortNameString();
         //printf("GGeo::findMaterial %d %s \n", i, sn.c_str()); 
         if(strcmp(sn.c_str(), shortname)==0)
         {
-            mat = m_raw_materials[i] ; 
+            mat = m_materials_raw[i] ; 
             break ; 
         }
     }
@@ -363,6 +244,16 @@ GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname)
 
 
 
+GProperty<float>* GGeo::findRawMaterialProperty(const char* shortname, const char* propname)
+{
+    GPropertyMap<float>* mat = findRawMaterial(shortname);
+
+    GProperty<float>* prop = mat->getProperty(propname);
+    prop->Summary();
+
+    // hmm should have permanent slot in idpath 
+    return prop ;   
+}
 
 
 
@@ -427,5 +318,30 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
     }
     return m_merged_mesh ;
 }
+
+
+void GGeo::dumpRawSkinSurface(const char* name)
+{
+    GSkinSurface* ss = NULL ; 
+    unsigned int n = getNumRawSkinSurfaces();
+    for(unsigned int i = 0 ; i < n ; i++)
+    {
+        ss = m_skin_surfaces_raw[i];
+        ss->Summary("GGeo::dumpRawSkinSurface", 10); 
+    }
+}
+
+void GGeo::dumpRawBorderSurface(const char* name)
+{
+    GBorderSurface* bs = NULL ; 
+    unsigned int n = getNumRawBorderSurfaces();
+    for(unsigned int i = 0 ; i < n ; i++)
+    {
+        bs = m_border_surfaces_raw[i];
+        bs->Summary("GGeo::dumpRawBorderSurface", 10); 
+    }
+}
+
+
 
 

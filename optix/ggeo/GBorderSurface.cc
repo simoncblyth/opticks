@@ -63,7 +63,7 @@ bool GBorderSurface::matches_one(const char* pv1, const char* pv2)
 
 
 
-void GBorderSurface::Summary(const char* msg)
+void GBorderSurface::Summary(const char* msg, unsigned int imod)
 {
     if( m_bordersurface_pv1 && m_bordersurface_pv2 )
     { 
@@ -75,7 +75,7 @@ void GBorderSurface::Summary(const char* msg)
     {
         printf("%s INCOMPLETE %s \n", msg, getName() );
     }
-    GPropertyMap<float>::Summary(msg);
+    GPropertyMap<float>::Summary(msg, imod);
 }
 
 

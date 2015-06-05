@@ -17,6 +17,18 @@ model, intended for:
 TODO
 -----
 
+* equivalent of g4daenode.py:add_sensitive_surfaces
+* idmap handling, for PMTid into OptiX
+
+* migration of GLoader into GGeo has brought in an AssimpWrap dependency
+  thats kinda unhealthy : it builds OK but a bit circular
+ 
+  * lookinto arranging the GLoader to avoid that ? 
+
+
+REVIEW
+-------
+
 * rejig relationship between GSubstanceLib and GSubstance
   
   * lib doing too much, substance doing too little

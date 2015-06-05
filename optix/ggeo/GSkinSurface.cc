@@ -33,7 +33,7 @@ bool GSkinSurface::matches(const char* lv)
 }
 
 
-void GSkinSurface::Summary(const char* msg)
+void GSkinSurface::Summary(const char* msg, unsigned int imod)
 {
     if (m_skinsurface_vol)
     {
@@ -43,7 +43,7 @@ void GSkinSurface::Summary(const char* msg)
     {
         printf("%s INCOMPLETE \n", msg );
     }
-    GPropertyMap<float>::Summary(msg);
+    GPropertyMap<float>::Summary(msg, imod);
 }
 
 

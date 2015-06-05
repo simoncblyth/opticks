@@ -6,6 +6,9 @@
 #include "GLoader.hh"
 #include "GDrawable.hh"
 
+// assimpwrap
+#include "AssimpWrap/AssimpGGeo.hh"
+
 // oglrap-
 #include "Composition.hh"
 #include "Renderer.hh"
@@ -187,6 +190,8 @@ void Scene::configure(const char* name, int value)
 void Scene::init()
 {
     m_geometry_loader = new GLoader();
+    m_geometry_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+
     m_geometry_renderer = new Renderer("nrm");
     m_genstep_renderer = new Rdr("p2l");
     m_photon_renderer = new Rdr("pos");

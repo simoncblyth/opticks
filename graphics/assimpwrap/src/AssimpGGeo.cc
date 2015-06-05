@@ -278,6 +278,15 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             gss->setSkinSurface(sslv);
             addProperties(gss, mat, reverse);
             gg->add(gss);
+
+            {
+                // without standard domain applied
+                GSkinSurface*  gss_raw = new GSkinSurface(name, i);
+                gss_raw->setSkinSurface(sslv);
+                addProperties(gss_raw, mat, reverse);
+                gg->addRaw(gss);
+            }   
+
         } 
         else if (bspv1 && bspv2 )
         {
@@ -287,6 +296,14 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             gbs->setBorderSurface(bspv1, bspv2);
             addProperties(gbs, mat, reverse);
             gg->add(gbs);
+
+            {
+                // without standard domain applied
+                GBorderSurface* gbs_raw = new GBorderSurface(name, i);
+                gbs_raw->setBorderSurface(bspv1, bspv2);
+                addProperties(gbs_raw, mat, reverse);
+                gg->addRaw(gbs_raw);
+            }
         }
         else
         {
@@ -296,10 +313,12 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             addProperties(gmat, mat, reverse);
             gg->add(gmat);
 
-            // without standard domain applied
-            GMaterial* gmat_raw = new GMaterial(name, i);
-            addProperties(gmat_raw, mat, reverse);
-            gg->addRaw(gmat_raw);
+            {
+                // without standard domain applied
+                GMaterial* gmat_raw = new GMaterial(name, i);
+                addProperties(gmat_raw, mat, reverse);
+                gg->addRaw(gmat_raw);
+            }
 
         }
 

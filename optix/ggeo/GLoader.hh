@@ -6,12 +6,15 @@ class GGeo ;
 class GMergedMesh ; 
 class GDrawable ; 
 class GSubstanceLibMetadata ; 
+//class GLoaderImp ; 
 
-
-// TODO: rename to GLoader? and move with GeometryTest->GLoaderTest into GGeo 
 class GLoader {
+     public:
+         typedef GGeo* (*GLoaderImpFunctionPtr)(const char* );
+
     public:
          GLoader();
+         void setImp(GLoaderImpFunctionPtr imp);
 
          static const char* identityPath( const char* envprefix);
          const char* load(const char* envprefix, bool nogeocache=false);
@@ -23,13 +26,19 @@ class GLoader {
          GDrawable*             getDrawable();
 
     private:
-         GGeo*                  m_ggeo ;    
-         GMergedMesh*           m_mergedmesh ;
-         GSubstanceLibMetadata* m_metadata ;
+         GLoaderImpFunctionPtr     m_imp ;  
+         GGeo*                     m_ggeo ;    
+         GMergedMesh*              m_mergedmesh ;
+         GSubstanceLibMetadata*    m_metadata ;
      
 
 };
 
+
+inline void GLoader::setImp(GLoaderImpFunctionPtr imp)
+{
+    m_imp = imp ; 
+}
 
 inline GGeo* GLoader::getGGeo()
 {

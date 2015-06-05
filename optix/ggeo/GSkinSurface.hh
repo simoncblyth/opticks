@@ -7,7 +7,7 @@ class GSkinSurface : public GPropertyMap<float> {
   public:
       GSkinSurface(const char* name, unsigned int index);
       virtual ~GSkinSurface();
-      void Summary(const char* msg="GSkinSurface::Summary");
+      void Summary(const char* msg="GSkinSurface::Summary", unsigned int imod=1);
 
   public:
       void setSkinSurface(const char* vol);

@@ -7,7 +7,7 @@ class GBorderSurface : public GPropertyMap<float> {
   public:
       GBorderSurface(const char* name, unsigned int index);
       virtual ~GBorderSurface();
-      void Summary(const char* msg="GBorderSurface::Summary");
+      void Summary(const char* msg="GBorderSurface::Summary", unsigned int imod=1);
 
   public:
       void setBorderSurface(const char* pv1, const char* pv2);
