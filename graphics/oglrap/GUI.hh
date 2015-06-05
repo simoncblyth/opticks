@@ -13,15 +13,8 @@ class Camera ;
 class Clipper ;
 class Trackball ;
 class Bookmarks ;
+class Photons ; 
 
-#include "PhotonsNPY.hpp"
-
-/*
-   Hmm controlling the layout of the GUI demands
-   the setup and then do structure ?
-
-   Unless scatter the ImGui code ?
-*/
 
 class GUI {
   public:
@@ -35,6 +28,7 @@ class GUI {
 
        void setScene(Scene* scene);
        void setComposition(Composition* composition);
+       void setPhotons(Photons* photons);
        void setView(View* view);
        void setCamera(Camera* camera);
        void setClipper(Clipper* clipper);
@@ -48,7 +42,6 @@ class GUI {
        void shutdown();
 
        void setupHelpText(std::string txt);
-       void setupBoundarySelection(Choices_t* choices, bool* selection);
 
 
   private:
@@ -63,9 +56,6 @@ class GUI {
        float       m_bg_alpha ; 
        std::string m_help ; 
 
-       std::vector<std::pair<int, std::string> >* m_boundary_choices ;
-       bool*                                      m_boundary_selection ;
-
        Scene*        m_scene ; 
        Composition*  m_composition ; 
        View*         m_view; 
@@ -73,6 +63,7 @@ class GUI {
        Clipper*      m_clipper ; 
        Trackball*    m_trackball ; 
        Bookmarks*    m_bookmarks ; 
+       Photons*      m_photons ; 
 
 };
 
@@ -81,22 +72,22 @@ inline GUI::GUI()
    :
    m_show_test_window(false),
    m_bg_alpha(0.65f),
-   m_boundary_choices(NULL),
-   m_boundary_selection(NULL),
    m_scene(NULL),
    m_composition(NULL),
    m_view(NULL),
    m_camera(NULL),
    m_clipper(NULL),
    m_trackball(NULL),
-   m_bookmarks(NULL)
+   m_bookmarks(NULL),
+   m_photons(NULL)
 {
 }
 
 
-inline void GUI::setScene(Scene* scene)
+
+inline void GUI::setPhotons(Photons* photons)
 {
-    m_scene = scene ; 
+    m_photons = photons ; 
 }
 inline void GUI::setView(View* view)
 {
@@ -119,14 +110,5 @@ inline void GUI::setBookmarks(Bookmarks* bookmarks)
     m_bookmarks = bookmarks ; 
 }
 
-
-
-
-
-inline void GUI::setupBoundarySelection(Choices_t* choices, bool* selection)
-{
-    m_boundary_choices = choices ; 
-    m_boundary_selection = selection ; 
-}
 
 

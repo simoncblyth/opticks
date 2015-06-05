@@ -6,7 +6,7 @@
 #include <map>
 
 #include <glm/glm.hpp>
-
+#include "limits.h"
 
 bool value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
 {
@@ -52,7 +52,7 @@ glm::ivec4 PhotonsNPY::getSelection()
             }
         }
     }  
-    glm::ivec4 iv(0,0,0,0);
+    glm::ivec4 iv(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX);   // zero tends to be meaningful, so bad default for "unset"
     if(count > 0) iv.x = v[0] ;
     if(count > 1) iv.y = v[1] ;
     if(count > 2) iv.z = v[2] ;

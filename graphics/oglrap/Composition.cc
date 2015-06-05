@@ -31,6 +31,7 @@
 #include <imgui.h>
 #endif
 
+#include "limits.h"
 
 
 const char* Composition::PRINT = "print" ; 
@@ -46,7 +47,7 @@ Composition::Composition()
   m_model_to_world(),
   m_extent(1.0f),
   m_center_extent(),
-  m_selection(0,0,0,0),
+  m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
   m_param(0.f,0.f,0.f,0.f)
 {
     m_camera = new Camera() ;

@@ -12,6 +12,7 @@ class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
 class GSubstanceLibMetadata ;
+class Photons ; 
 
 #include "Configurable.hh"
 
@@ -61,6 +62,7 @@ class Scene : public Configurable {
         void configureI(const char* name, std::vector<int> values);
         void setComposition(Composition* composition);
         void setNumpyEvt(NumpyEvt* evt);
+        void setPhotons(Photons* photons);
 
    public:
         // target cannot live in Composition, as needs geometry 
@@ -94,6 +96,7 @@ class Scene : public Configurable {
         GDrawable*    getGeometry();
         Composition*  getComposition();
         NumpyEvt*     getNumpyEvt();
+        Photons*      getPhotons();
         bool*         getModeAddress(const char* name);
 
    private:
@@ -105,6 +108,7 @@ class Scene : public Configurable {
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
         NumpyEvt*    m_evt ;
+        Photons*     m_photons ; 
         GDrawable*   m_geometry ;
         Composition* m_composition ;
         unsigned int m_target ;
@@ -115,6 +119,25 @@ class Scene : public Configurable {
         bool         m_photon_mode ; 
 
 };
+
+
+inline Scene::Scene() :
+            m_geometry_loader(NULL),
+            m_geometry_renderer(NULL),
+            m_genstep_renderer(NULL),
+            m_photon_renderer(NULL),
+            m_evt(NULL),
+            m_photons(NULL),
+            m_geometry(NULL),
+            m_composition(NULL),
+            m_target(0),
+            m_touch(0),
+            m_geometry_mode(true),
+            m_genstep_mode(true),
+            m_photon_mode(true)
+{
+    init();
+}
 
 
 
@@ -152,6 +175,14 @@ inline NumpyEvt* Scene::getNumpyEvt()
 {
     return m_evt ; 
 }
+inline Photons* Scene::getPhotons()
+{
+    return m_photons ; 
+}
+
+
+
+
 inline GDrawable* Scene::getGeometry()
 {
     return m_geometry ; 
@@ -160,24 +191,11 @@ inline void Scene::setNumpyEvt(NumpyEvt* evt)
 {
     m_evt = evt ; 
 }
-
-
-inline Scene::Scene() :
-            m_geometry_loader(NULL),
-            m_geometry_renderer(NULL),
-            m_genstep_renderer(NULL),
-            m_photon_renderer(NULL),
-            m_evt(NULL),
-            m_geometry(NULL),
-            m_composition(NULL),
-            m_target(0),
-            m_touch(0),
-            m_geometry_mode(true),
-            m_genstep_mode(true),
-            m_photon_mode(true)
+inline void Scene::setPhotons(Photons* photons)
 {
-    init();
+    m_photons = photons ; 
 }
+
 
 
 

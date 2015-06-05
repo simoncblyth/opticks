@@ -98,6 +98,7 @@ add_library( ${name}  SHARED
                 Shdr.cc
                 Touchable.cc
                 GUI.cc
+                Photons.cc
 )
 
 SET(hdrs 
@@ -131,6 +132,7 @@ SET(hdrs
         Touchable.hh
         Configurable.hh
         GUI.hh
+        Photons.hh
 )
 
 

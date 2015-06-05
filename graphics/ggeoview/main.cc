@@ -22,6 +22,7 @@
 #include "Geometry.hh"
 #include "Rdr.hh"
 #include "Texture.hh"
+#include "Photons.hh"
 
 // numpyserver-
 #include "numpydelegate.hpp"
@@ -201,15 +202,18 @@ int main(int argc, char** argv)
 
     engine.generate();
 
-    NPY* photons = evt.getPhotonData();
-    Rdr::download(photons);
+    NPY* photonData = evt.getPhotonData();
+    Rdr::download(photonData);
     char otyp[64];
     snprintf(otyp, 64, "ox%s", typ );
-    photons->save(otyp, tag);
+    photonData->save(otyp, tag);
 
-    PhotonsNPY pnpy(photons);
-    pnpy.setBoundaryNames(boundaries);
-    pnpy.classify();
+
+    Photons photons(photonData) ;
+    photons.setBoundaryNames(boundaries);
+    photons.classify();
+
+    scene.setPhotons(&photons);
 
 #ifdef GUI_
     GUI gui ;
@@ -219,7 +223,7 @@ int main(int argc, char** argv)
 
     gui.init(window);
     gui.setupHelpText( cfg.getDescString() );
-    gui.setupBoundarySelection( pnpy.getBoundariesPointer(), pnpy.getBoundariesSelection() );
+
     bool* show_gui_window = interactor.getGuiModeAddress();
 #endif
  
@@ -245,7 +249,7 @@ int main(int argc, char** argv)
         if(*show_gui_window)
         {
             gui.show(show_gui_window);
-            composition.setSelection(pnpy.getSelection());
+            composition.setSelection(photons.getSelection());
         }
         gui.render();
 #endif

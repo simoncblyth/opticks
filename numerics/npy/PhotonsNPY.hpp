@@ -41,8 +41,10 @@ class PhotonsNPY {
    public:  
        void dump(const char* msg);
 
-  private:
+   private:
        NPY*                         m_npy ; 
+
+   protected:
        std::map<int, std::string>   m_names ; 
        Choices_t                    m_boundaries ; 
        bool*                        m_boundaries_selection ; 
@@ -69,19 +71,18 @@ inline void PhotonsNPY::setBoundaryNames(std::map<int, std::string> names)
 }
 
 
-//std::vector<bool>& PhotonsNPY::getBoundariesSelection()
-bool* PhotonsNPY::getBoundariesSelection()
+inline bool* PhotonsNPY::getBoundariesSelection()
 {
     return m_boundaries_selection ; 
 }
 
 
-PhotonsNPY::Choices_t& PhotonsNPY::getBoundaries()
+inline PhotonsNPY::Choices_t& PhotonsNPY::getBoundaries()
 {
     return m_boundaries ; 
 }
 
-PhotonsNPY::Choices_t* PhotonsNPY::getBoundariesPointer()
+inline PhotonsNPY::Choices_t* PhotonsNPY::getBoundariesPointer()
 {
     return &m_boundaries ; 
 }

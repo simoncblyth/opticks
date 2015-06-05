@@ -11,6 +11,7 @@
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "Bookmarks.hh"
+#include "Photons.hh"
 
 #include <imgui.h>
 #include "imgui_impl_glfw_gl3.h"
@@ -24,6 +25,13 @@ void GUI::setComposition(Composition* composition)
     setCamera(composition->getCamera());
     setTrackball(composition->getTrackball());
 }
+
+void GUI::setScene(Scene* scene)
+{
+    m_scene = scene ;
+    setPhotons(scene->getPhotons());
+}
+
 
 void GUI::init(GLFWwindow* window)
 {
@@ -43,19 +51,6 @@ void GUI::setupHelpText(std::string txt)
 {
     m_help = txt ; 
 } 
-
-
-/*
-void GUI::choose( std::vector<std::pair<int, std::string> >& choices, std::vector<int>& selection )
-{
-    for(unsigned int i=0 ; i < choices.size() ; i++)
-    {
-        std::pair<int, std::string> choice = choices[i];
-        if(ImGui::Button(choice.second.c_str())) selection[i] ^= 1 ; 
-    }
-}
-*/
-
 
 void GUI::choose( std::vector<std::pair<int, std::string> >* choices, bool* selection )
 {
@@ -145,11 +140,11 @@ void GUI::show(bool* opened)
         m_bookmarks->gui(); 
     }
 
+
     ImGui::Spacing();
-    if (ImGui::CollapsingHeader("Photon Boundary Selection"))
-    {
-        choose(m_boundary_choices, m_boundary_selection);
-    }
+
+    m_photons->gui(); 
+
 
     ImGui::Spacing();
 

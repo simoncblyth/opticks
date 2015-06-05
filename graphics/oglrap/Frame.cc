@@ -177,6 +177,12 @@ void Frame::gl_init_window()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);  // overwrite if distance to camera is less
 
+    // https://www.opengl.org/archives/resources/faq/technical/transparency.htm
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glEnable (GL_BLEND);
+    glClearColor(0.0,0.0,0.0,0.0);
+
+
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
     glfwSwapInterval(1);  // vsync hinting
