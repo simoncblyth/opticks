@@ -14,21 +14,26 @@ include(EnvBuildOptions)
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
+find_package(AssimpWrap REQUIRED) 
+
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
+   ${AssimpWrap_INCLUDE_DIRS} 
 )
 
 set(LIBRARIES
    ${Boost_LIBRARIES}
    ${NPY_LIBRARIES}
+   ${AssimpWrap_LIBRARIES} 
 )
 
 set(DEFINITIONS
    ${Boost_DEFINITIONS} 
+   ${AssimpWrap_DEFINITIONS}
 )
 
 include_directories(${INCLUDE_DIRS})   
@@ -56,6 +61,7 @@ add_library(${name} SHARED
                 GBuffer.cc
                 GDrawable.cc
                 GArray.cc
+                GLoader.cc
 )
 
 SET(hdrs 
@@ -80,6 +86,7 @@ GNode.hh
 GBuffer.hh
 GDrawable.hh
 GArray.hh
+GLoader.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

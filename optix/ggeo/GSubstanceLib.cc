@@ -459,6 +459,8 @@ void GSubstanceLib::standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPro
         assert(getStandardDomain()->isEqual(pmap->getStandardDomain()));
     }
 
+    // hmm using UNSET values, means that need to zero others ?
+
     pstd->addProperty(detect,           getPropertyOrDefault( pmap, detect ), prefix);
     pstd->addProperty(absorb,           getPropertyOrDefault( pmap, absorb ), prefix);
     pstd->addProperty(reflect_specular, getPropertyOrDefault( pmap, reflect_specular ), prefix);

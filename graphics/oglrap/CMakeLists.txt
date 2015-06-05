@@ -70,7 +70,6 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 add_library( ${name}  SHARED
-                Geometry.cc
                 Composition.cc
                 CompositionCfg.cc
                 Texture.cc
@@ -102,7 +101,6 @@ add_library( ${name}  SHARED
 )
 
 SET(hdrs 
-        Geometry.hh
         Composition.hh
         CompositionCfg.hh
         Texture.hh

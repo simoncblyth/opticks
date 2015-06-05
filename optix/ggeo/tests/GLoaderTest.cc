@@ -1,20 +1,19 @@
-#include "Geometry.hh"
+#include "GLoader.hh"
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 
-// TODO: move into GGeo
 
 int main(int argc, char** argv)
 {
     bool nogeocache = true ; 
 
-    Geometry geometry ; 
-    geometry.load("GGEOVIEW_", nogeocache);
+    GLoader loader ; 
+    loader.load("GGEOVIEW_", nogeocache);
 
-    GMergedMesh* mm = geometry.getMergedMesh();
+    GMergedMesh* mm = loader.getMergedMesh();
     mm->dumpSolids(); 
 
-    GGeo*  gg = geometry.getGGeo();
+    GGeo*  gg = loader.getGGeo();
     if(!gg) return 1 ; 
 
     gg->Summary();

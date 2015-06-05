@@ -1,7 +1,8 @@
-#include "Geometry.hh"
+#include "GLoader.hh"
 
 // assimpwrap
 #include "AssimpWrap/AssimpGGeo.hh"
+
 #include "GMergedMesh.hh"
 #include "GSubstanceLib.hh"
 #include "GSubstanceLibMetadata.hh"
@@ -19,7 +20,7 @@ namespace fs = boost::filesystem;
 
 
 
-Geometry::Geometry() 
+GLoader::GLoader() 
    :
    m_ggeo(NULL),
    m_mergedmesh(NULL),
@@ -27,7 +28,7 @@ Geometry::Geometry()
 {
 }
 
-const char* Geometry::identityPath( const char* envprefix)
+const char* GLoader::identityPath( const char* envprefix)
 {
     const char* geokey = getenvvar(envprefix, "GEOKEY" );
     const char* path = getenv(geokey);
@@ -37,8 +38,8 @@ const char* Geometry::identityPath( const char* envprefix)
 
     if(query == NULL || path == NULL || geokey == NULL )
     {
-        printf("Geometry::identityPath geokey %s path %s query %s ctrl %s \n", geokey, path, query, ctrl );
-        LOG(fatal) << "Geometry::identityPath envprefix[" << envprefix << "] missing required envvars " ; 
+        printf("GLoader::identityPath geokey %s path %s query %s ctrl %s \n", geokey, path, query, ctrl );
+        LOG(fatal) << "GLoader::identityPath envprefix[" << envprefix << "] missing required envvars " ; 
         assert(0);
     }
  
@@ -56,7 +57,7 @@ const char* Geometry::identityPath( const char* envprefix)
 
     const char* idpath = strdup(kfn.c_str());
 
-    LOG(info)<< "Geometry::identityPath geokey " << geokey 
+    LOG(info)<< "GLoader::identityPath geokey " << geokey 
                    << " path " << path 
                    << " query " << query 
                    << " ctrl " << ctrl 
@@ -66,30 +67,30 @@ const char* Geometry::identityPath( const char* envprefix)
 }
 
 
-const char* Geometry::load(const char* envprefix, bool nogeocache)
+const char* GLoader::load(const char* envprefix, bool nogeocache)
 {
     const char* idpath = identityPath(envprefix);
-    LOG(info) << "Geometry::load start idpath " << idpath << " nogeocache " << nogeocache  ;
+    LOG(info) << "GLoader::load start idpath " << idpath << " nogeocache " << nogeocache  ;
 
     fs::path geocache(idpath);
 
     if(fs::exists(geocache) && fs::is_directory(geocache) && !nogeocache ) 
     {
-        LOG(info) << "Geometry::load loading from cache directory " << idpath ;
+        LOG(info) << "GLoader::load loading from cache directory " << idpath ;
         m_ggeo = NULL ; 
         m_mergedmesh = GMergedMesh::load(idpath);
         m_metadata   = GSubstanceLibMetadata::load(idpath);
     } 
     else
     {
-        LOG(info) << "Geometry::load slow loading using AssimpGGeo " << envprefix ;
+        LOG(info) << "GLoader::load slow loading using AssimpGGeo " << envprefix ;
         m_ggeo = AssimpGGeo::load(envprefix);
 
-        //m_ggeo->Details("Geometry::load"); 
+        //m_ggeo->Details("GLoader::load"); 
 
         m_mergedmesh = m_ggeo->getMergedMesh(); 
         m_mergedmesh->setColor(0.5,0.5,1.0);
-        LOG(info) << "Geometry::load saving to cache directory " << idpath ;
+        LOG(info) << "GLoader::load saving to cache directory " << idpath ;
         m_mergedmesh->save(idpath); 
 
         GSubstanceLib* lib = m_ggeo->getSubstanceLib();
@@ -98,16 +99,16 @@ const char* Geometry::load(const char* envprefix, bool nogeocache)
 
     } 
 
-    LOG(info) << "Geometry::load done " << idpath ;
+    LOG(info) << "GLoader::load done " << idpath ;
     assert(m_mergedmesh);
     return idpath ;
 }
 
-void Geometry::Summary(const char* msg)
+void GLoader::Summary(const char* msg)
 {
     printf("%s\n", msg);
-    m_mergedmesh->Summary("Geometry::Summary");
-    m_mergedmesh->Dump("Geometry::Summary Dump",10);
+    m_mergedmesh->Summary("GLoader::Summary");
+    m_mergedmesh->Dump("GLoader::Summary Dump",10);
 }
 
 

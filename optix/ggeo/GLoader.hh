@@ -9,9 +9,9 @@ class GSubstanceLibMetadata ;
 
 
 // TODO: rename to GLoader? and move with GeometryTest->GLoaderTest into GGeo 
-class Geometry {
+class GLoader {
     public:
-         Geometry();
+         GLoader();
 
          static const char* identityPath( const char* envprefix);
          const char* load(const char* envprefix, bool nogeocache=false);
@@ -31,19 +31,19 @@ class Geometry {
 };
 
 
-inline GGeo* Geometry::getGGeo()
+inline GGeo* GLoader::getGGeo()
 {
     return m_ggeo ; 
 }
-inline GMergedMesh* Geometry::getMergedMesh()
+inline GMergedMesh* GLoader::getMergedMesh()
 {
     return m_mergedmesh ; 
 }
-inline GDrawable* Geometry::getDrawable()
+inline GDrawable* GLoader::getDrawable()
 {
     return (GDrawable*)m_mergedmesh ; 
 }
-inline GSubstanceLibMetadata* Geometry::getMetadata()
+inline GSubstanceLibMetadata* GLoader::getMetadata()
 {
     return m_metadata ; 
 }

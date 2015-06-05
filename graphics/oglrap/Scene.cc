@@ -1,13 +1,18 @@
 #include "Scene.hh"
 
 #include <GL/glew.h>
+
+// ggeo-
+#include "GLoader.hh"
+#include "GDrawable.hh"
+
+// oglrap-
 #include "Composition.hh"
-#include "Geometry.hh"
 #include "Renderer.hh"
 #include "Rdr.hh"
-#include "GDrawable.hh"
-#include "NumpyEvt.hpp"
 
+// npy-
+#include "NumpyEvt.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
@@ -181,7 +186,7 @@ void Scene::configure(const char* name, int value)
 
 void Scene::init()
 {
-    m_geometry_loader = new Geometry();
+    m_geometry_loader = new GLoader();
     m_geometry_renderer = new Renderer("nrm");
     m_genstep_renderer = new Rdr("p2l");
     m_photon_renderer = new Rdr("pos");

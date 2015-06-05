@@ -7,7 +7,7 @@ class Renderer ;
 class Rdr ;
 class Composition ; 
 class NumpyEvt ; 
-class Geometry ; 
+class GLoader ; 
 class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
@@ -89,7 +89,7 @@ class Scene : public Configurable {
         GGeo*                   getGGeo();
 
    public:
-        Geometry*     getGeometryLoader();
+        GLoader*      getGeometryLoader();
         Renderer*     getGeometryRenderer();
         Rdr*          getGenstepRenderer();
         Rdr*          getPhotonRenderer();
@@ -103,7 +103,7 @@ class Scene : public Configurable {
         void init();
 
    private:
-        Geometry*    m_geometry_loader ; 
+        GLoader*     m_geometry_loader ; 
         Renderer*    m_geometry_renderer ; 
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
@@ -155,7 +155,7 @@ inline void Scene::setTouch(unsigned int touch)
 }
 
 
-inline Geometry* Scene::getGeometryLoader()
+inline GLoader* Scene::getGeometryLoader()
 {
     return m_geometry_loader ; 
 }
