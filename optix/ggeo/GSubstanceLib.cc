@@ -31,6 +31,8 @@ float        GSubstanceLib::DOMAIN_LOW  = 60.f ;
 float        GSubstanceLib::DOMAIN_HIGH = 810.f ; 
 float        GSubstanceLib::DOMAIN_STEP = 20.f ; 
 unsigned int GSubstanceLib::DOMAIN_LENGTH = 39  ; 
+float        GSubstanceLib::SURFACE_UNSET = -1.f ; 
+float        GSubstanceLib::EXTRA_UNSET = -1.f ; 
 
 const char* GSubstanceLib::inner = "inner_" ;
 const char* GSubstanceLib::outer = "outer_" ;
@@ -334,15 +336,15 @@ void GSubstanceLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( scattering_length,     1e6  );
     defaults->addConstantProperty( reemission_prob,       0.f  );
 
-    defaults->addConstantProperty( detect          ,       0.f );
-    defaults->addConstantProperty( absorb          ,       0.f );
-    defaults->addConstantProperty( reflect_specular,       0.f );
-    defaults->addConstantProperty( reflect_diffuse ,       0.f );
+    defaults->addConstantProperty( detect          ,      SURFACE_UNSET );
+    defaults->addConstantProperty( absorb          ,      SURFACE_UNSET );
+    defaults->addConstantProperty( reflect_specular,      SURFACE_UNSET );
+    defaults->addConstantProperty( reflect_diffuse ,      SURFACE_UNSET );
 
-    defaults->addConstantProperty( reemission_cdf  ,       0.f );
-    defaults->addConstantProperty( extra_y         ,       0.f );
-    defaults->addConstantProperty( extra_z         ,       0.f );
-    defaults->addConstantProperty( extra_w         ,       0.f );
+    defaults->addConstantProperty( reemission_cdf  ,      EXTRA_UNSET );
+    defaults->addConstantProperty( extra_y         ,      EXTRA_UNSET );
+    defaults->addConstantProperty( extra_z         ,      EXTRA_UNSET );
+    defaults->addConstantProperty( extra_w         ,      EXTRA_UNSET );
 
 }
 

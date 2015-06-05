@@ -26,6 +26,8 @@ class GSubstanceLib {
     static float        DOMAIN_LOW ; 
     static float        DOMAIN_HIGH ; 
     static float        DOMAIN_STEP ; 
+    static float        SURFACE_UNSET ; 
+    static float        EXTRA_UNSET ; 
   public:
     // 4 standard material property names : interleaved into float4 wavelength texture
     static const char* refractive_index ; 

@@ -121,14 +121,22 @@ RT_PROGRAM void generate()
             dump_state(s);
         }
 
-
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ; 
         if(command == CONTINUE) continue ; 
 
-        propagate_at_boundary(p, s, rng);
+        if(s.surface.x > -1.f )      // x/y/z/w:detect/absorb/reflect_specular/reflect_diffuse
+        {
+            command = propagate_at_surface(p, s, rng);
+            if(command == BREAK)    break ; 
+            if(command == CONTINUE) continue ; 
+        }
+        else
+        {
+            propagate_at_boundary(p, s, rng);
+        }
 
-    }  // bounce < max_bounce
+    }   // bounce < max_bounce
 
     psave(p, photon_buffer, photon_offset ); 
     rng_states[photon_id] = rng ;

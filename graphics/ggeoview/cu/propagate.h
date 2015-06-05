@@ -194,14 +194,9 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
                          (c1 - eta_c2)/(c1 + eta_c2)  
                       ; 
 
-    p.polarization = s_polarized 
-                       ? 
-                          incident_plane_normal
-                       :
-                          normalize(cross(incident_plane_normal, p.direction))
-                       ;
-    
     bool reflect = curand_uniform(&rng) < reflection_coefficient*reflection_coefficient ;
+
+    // need to find new direction first as polarization depends on it for case P
 
     p.direction = reflect 
                     ? 
@@ -210,6 +205,13 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
                        eta*p.direction + (eta_c1 - c2)*s.surface_normal
                     ;   
 
+    p.polarization = s_polarized 
+                       ? 
+                          incident_plane_normal
+                       :
+                          normalize(cross(incident_plane_normal, p.direction))
+                       ;
+    
 
     p.flags.i.w |= reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
     p.flags.i.w |= s_polarized ? BOUNDARY_SPOL : BOUNDARY_PPOL ;
@@ -218,5 +220,88 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
 }
 
 
+
+__device__ int propagate_at_specular_reflector(Photon &p, State &s, curandState &rng)
+{
+    const float c1 = -dot(p.direction, s.surface_normal );     // c1 arranged to be +ve   
+
+    float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
+
+    float normal_coefficient = dot(p.polarization, incident_plane_normal);  // fraction of E vector perpendicular to plane of incidence, ie S polarization
+
+    p.direction += 2.0f*c1*s.surface_normal  ;  
+
+    bool s_polarized = curand_uniform(&rng) < normal_coefficient*normal_coefficient ;
+
+    p.polarization = s_polarized 
+                       ? 
+                          incident_plane_normal
+                       :
+                          normalize(cross(incident_plane_normal, p.direction))
+                       ;
+
+    p.flags.i.w |= REFLECT_SPECULAR;
+
+    return CONTINUE;
+} 
+
+__device__ int propagate_at_diffuse_reflector(Photon &p, State &s, curandState &rng)
+{
+    float ndotv;
+    do {
+	    p.direction = uniform_sphere(&rng);
+	    ndotv = dot(p.direction, s.surface_normal);
+	    if (ndotv < 0.0f) 
+        {
+	        p.direction = -p.direction;
+	        ndotv = -ndotv;
+	    }
+    } while (! (curand_uniform(&rng) < ndotv) );
+
+    p.polarization = normalize( cross(uniform_sphere(&rng), p.direction));
+    p.flags.i.w |= REFLECT_DIFFUSE;
+
+    return CONTINUE;
+}                       
+
+
+
+__device__ int
+propagate_at_surface(Photon &p, State &s, curandState &rng)
+{
+
+    // s.surface.x detect
+    // s.surface.y absorb
+    // s.surface.z reflect_specular
+    // s.surface.w reflect_diffuse
+
+    float u = curand_uniform(&rng);
+
+    if( u < s.surface.y )   // absorb
+    {
+        p.flags.i.w |= SURFACE_ABSORB ;
+        return BREAK ;
+    }
+    else if ( u < s.surface.y + s.surface.x )  // absorb + detect
+    {
+        p.flags.i.w |= SURFACE_DETECT ;
+        return BREAK ;
+    } 
+    else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
+    {
+        return propagate_at_diffuse_reflector(p, s, rng);
+    }
+    else
+    {
+        return propagate_at_specular_reflector(p, s, rng );
+    }
+
+
+    // TODO ENSURE:
+    //
+    //       absorb + detect + reflect_diffuse + reflect_specular  = 1 
+    //
+
+}
 
 
