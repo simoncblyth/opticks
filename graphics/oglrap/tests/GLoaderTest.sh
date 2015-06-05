@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
-ggeo-
-ggeo-loadtest $*
+oglrap-
+oglrap-loadtest $*
 
 
 

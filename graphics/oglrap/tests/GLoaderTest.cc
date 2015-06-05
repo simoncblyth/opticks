@@ -2,8 +2,8 @@
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 
+// this test is here in oglrap- rather than ggeo- due to dependency on AssimpWrap 
 #include "AssimpWrap/AssimpGGeo.hh"
-
 
 
 int main(int argc, char** argv)

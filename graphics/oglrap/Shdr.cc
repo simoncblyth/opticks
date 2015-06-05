@@ -9,11 +9,15 @@
 #include <iomanip>
 #include <fstream>
 
+
+#include <boost/algorithm/string.hpp>
+
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
+const char* Shdr::include_prefix = "#include" ; 
+const char* Shdr::enum_prefix = "#enum " ; 
 
 Shdr::Shdr(const char* path, GLenum type, bool live)
     :
@@ -67,6 +71,25 @@ void Shdr::_print_shader_info_log()
 
 
 
+void Shdr::setIncludePath(const char* include_path)
+{
+    boost::split(m_include_dirs,include_path,boost::is_any_of(":"));
+}
+
+
+std::string Shdr::resolve(const char* name)
+{ 
+    std::string path ; 
+    std::string dir ; 
+
+    for(unsigned int i=0 ; i < m_include_dirs.size() ; i++)
+    {
+        dir = m_include_dirs[i] ;
+        // TODO use boost fs to resolve existing paths
+    }
+  
+    return path ;  
+} 
 
 void Shdr::readFile(const char* path)
 {
@@ -79,12 +102,32 @@ void Shdr::readFile(const char* path)
         return ;
     }   
 
+    
+    std::string enum_name = "" ; 
     std::string line = ""; 
     while(!fs.eof()) 
     {
         std::getline(fs, line);
-        m_content.append(line + "\n");
-        m_lines.push_back(line);
+
+        // general #include not the target, 
+        // just want simple flags defines to be shared between glsl/C++/CUDA
+        
+        if(strncmp(line.c_str(), enum_prefix, strlen(enum_prefix))==0)
+        {
+            enum_name = line.c_str() + strlen(enum_prefix) ; 
+            std::string enum_path = resolve(enum_name.c_str());
+            LOG(info) << "Shdr::readFile " 
+                      << " enum_name:[" << enum_name << "]" 
+                      << " enum_path:[" << enum_path << "]" 
+                     ; 
+
+            // skipping for now
+        }
+        else
+        { 
+            m_content.append(line + "\n");
+            m_lines.push_back(line);
+        }
     }   
     fs.close();
 }
