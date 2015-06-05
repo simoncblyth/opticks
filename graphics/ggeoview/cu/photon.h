@@ -18,20 +18,28 @@ struct Photon
 
 enum
 {
-    NO_HIT           = 0x1 << 0,
-    BULK_ABSORB      = 0x1 << 1,
-    SURFACE_DETECT   = 0x1 << 2,
-    SURFACE_ABSORB   = 0x1 << 3,
-    RAYLEIGH_SCATTER = 0x1 << 4,
-    REFLECT_DIFFUSE  = 0x1 << 5,
-    REFLECT_SPECULAR = 0x1 << 6,
-    SURFACE_REEMIT   = 0x1 << 7,
-    SURFACE_TRANSMIT = 0x1 << 8,
-    BULK_REEMIT      = 0x1 << 9,
+    NO_HIT                 = 0x1 << 0,
+    BULK_ABSORB            = 0x1 << 1,
+    SURFACE_DETECT         = 0x1 << 2,
+    SURFACE_ABSORB         = 0x1 << 3,
+    RAYLEIGH_SCATTER       = 0x1 << 4,
+    REFLECT_DIFFUSE        = 0x1 << 5,
+    REFLECT_SPECULAR       = 0x1 << 6,
+    SURFACE_REEMIT         = 0x1 << 7,
+    SURFACE_TRANSMIT       = 0x1 << 8,
+    BULK_REEMIT            = 0x1 << 9,
     GENERATE_SCINTILLATION = 0x1 << 16, 
     GENERATE_CERENKOV      = 0x1 << 17, 
-    NAN_ABORT        = 0x1 << 31
+    BOUNDARY_SPOL          = 0x1 << 18,
+    BOUNDARY_PPOL          = 0x1 << 19,
+    BOUNDARY_REFLECT       = 0x1 << 20,
+    BOUNDARY_TRANSMIT      = 0x1 << 21,
+    BOUNDARY_TIR           = 0x1 << 22,
+    BOUNDARY_TIR_NOT       = 0x1 << 23,
+    NAN_ABORT              = 0x1 << 31
 }; // processes
+
+
 
 
 enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary

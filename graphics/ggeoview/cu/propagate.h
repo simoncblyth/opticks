@@ -70,8 +70,49 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 } // propagate_to_boundary
 
 
-
-
+//
+//  fresnel reflect/transmit conventional directions
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//                     s1
+//                   +----+          
+//                    \   .   /      ^
+//               c1   i\  .  / r    /|\
+//                      \ . /        |                      
+//         material1     \./         | n
+//         ---------------+----------+----------
+//         material2      .\
+//                        . \
+//                   c2   .  \ t
+//                        .   \
+//                        +----+
+//                          s2
+//   i, incident photons 
+//      pointing down to interface (from material1 towards material2)
+//
+//   n, surface normal (s.surface_normal)
+//      pointing up from interface (from material2 back into material1)
+//      Orientation is arranged by flipping geometric normal 
+//      based on photon direction.
+//
+//   t, transmitted photons
+//      from interface into material2
+//
+//   r, reflected photons
+//      from interface back into material1
+//
+//   c1, costheta_1 
+//      cosine of incident angle,  c1 = dot(-i, n) = - dot(i, n)
+//      arranged to be positive via normal flipping 
+//      and corresponding flip of which material is labelled 1 and 2 
+//     
+//
+//  polarisation
+//  ~~~~~~~~~~~~~~~
+//                    
+//   S polarized : E field perpendicular to plane of incidence
+//   P polarized : E field within plane of incidence 
+//
 //
 // normal incidence photons
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -82,22 +123,41 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 //   
 //
 //   initial momentum dir
-//            p.direction = -s.surface_normal 
+//            -s.surface_normal 
 //
-//   final momentum dir
-//            p.direction + 2.0f*c1*(-p.direction)  = -p.direction 
-// 
-//                     c1
-//                   +----+      
-//                    \   .   /
-//                    i\  n  /          convention:  i pointing down to interface, n pointing up from interface
-//                      \ . /                        c1 = - dot(i, n)
-//         material1     \./
-//         ---------------+--------------------
-//         material2      .\
-//                        . \
-//                        .  \
-//                        .   \
+//   final momentum dir (c1 = 1.f)
+//            -s.surface_normal + 2.0f*c1*s.surface_normal  = -p.direction 
+//                                                    
+//
+//  minimise use of trancendental functions 
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//  Obtain c2c2 from Snells Law without lots of expensive function calls.
+//  
+//        n1 s1 = n2 s2
+//
+//           s2 = eta * s1       eta = n1/n2
+//
+//
+//   
+//         c2c2 = 1 - s2s2 
+//              = 1 - eta eta s1 s1  
+//              = 1 - eta eta (1 - c1c1) 
+//
+//
+//         c2c2 - 1 = (c1c1 - 1) eta eta
+//
+//        
+//
+//  TIR
+//  ~~~~
+//
+//  Total internal reflection, occurs when c2c2 < 0.f  (c2 imaginary)
+//
+//  Handled by: 
+//
+//  * artificially setting c2 = 0.f 
+//  * results in reflection_coefficient = 1.0f so will always reflect for both S and P cases
 //
 //
 //
@@ -113,22 +173,13 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
 
     float normal_coefficient = dot(p.polarization, incident_plane_normal);  // fraction of E vector perpendicular to plane of incidence, ie S polarization
 
-    const float c1 = -dot(p.direction, s.surface_normal );    
+    const float c1 = -dot(p.direction, s.surface_normal ); // c1 arranged to be +ve   
 
-    // s.surface_normal : geometry normal flipped (based on photon direction) 
-    // to point from material2 back to material1 ??? so c1 should be +ve  ???
-    //
-    //   Snells:  
-    //        n1 s1 = n2 s2
-    //
-    //           s2 = eta * s1       eta = n1/n2
-    //
-    //    c2c2 = 1 - s2s2 = 1 - eta eta s1 s1  = 1 - eta eta (1 - c1c1) 
-    //
-    //
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ; 
 
-    const float c2 = c2c2 < 0.f ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, artificially set c2 = 0.f for TIR => reflection_coefficient = 1.0f  for both S and P cases
+    bool tir = c2c2 < 0.f ; 
+
+    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR
 
     const float eta_c1 = eta * c1 ; 
 
@@ -150,10 +201,6 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
                           normalize(cross(incident_plane_normal, p.direction))
                        ;
     
-                    
-    // S polarized : E field perpendicular to plane of incidence
-    // P polarized : E field within plane of incidence 
-
     bool reflect = curand_uniform(&rng) < reflection_coefficient*reflection_coefficient ;
 
     p.direction = reflect 
@@ -162,7 +209,11 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
                     : 
                        eta*p.direction + (eta_c1 - c2)*s.surface_normal
                     ;   
-    
+
+
+    p.flags.i.w |= reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
+    p.flags.i.w |= s_polarized ? BOUNDARY_SPOL : BOUNDARY_PPOL ;
+    p.flags.i.w |= tir ? BOUNDARY_TIR : BOUNDARY_TIR_NOT ; 
 
 }
 
