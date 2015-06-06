@@ -18,10 +18,15 @@ class PhotonsNPY {
 
        // boundary names corresponding to absolute integer codes 
        // TODO: offset codes by one to avoid confusion regarding sign of Vacuum/Vacuum 0 
+
        void setBoundaryNames(std::map<int, std::string> names);    
 
        // signed mode : signs the boundary code according to the sign of (2,0) vpol.x (currently cos_theta)
        void classify(bool sign=false);
+
+   public:
+       void readFlags(const char* path); // parse enum flags from photon.h
+       void dumpFlags(const char* msg="PhotonsNPY::dumpFlags");
 
    public:  
        // ivec4 containing 1st four boundary codes provided by the selection
@@ -46,8 +51,12 @@ class PhotonsNPY {
 
    protected:
        std::map<int, std::string>   m_names ; 
+
        Choices_t                    m_boundaries ; 
        bool*                        m_boundaries_selection ; 
+
+       Choices_t                    m_flags ; 
+       bool*                        m_flags_selection ; 
  
 };
 

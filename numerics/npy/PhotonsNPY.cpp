@@ -8,6 +8,9 @@
 #include <glm/glm.hpp>
 #include "limits.h"
 
+#include "regexsearch.hh"
+
+
 bool value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
 {
     return a.second > b.second ;
@@ -152,5 +155,29 @@ void PhotonsNPY::dump(const char* msg)
     }
     }
 }
+
+void PhotonsNPY::readFlags(const char* path)
+{
+    enum_regexsearch( m_flags, path);
+}
+
+void PhotonsNPY::dumpFlags(const char* msg)
+{
+    printf("%s\n", msg);
+    for(unsigned int i=0 ; i < m_flags.size() ; i++)
+    {
+         std::pair<int, std::string> p = m_flags[i];
+         printf(" %10d : %10x :  %s \n", p.first, p.first,  p.second.c_str() );
+    }
+}
+
+
+
+
+
+
+
+
+
 
 

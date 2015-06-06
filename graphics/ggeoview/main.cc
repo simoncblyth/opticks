@@ -39,6 +39,9 @@
 #include "PhotonsNPY.hpp"
 #include "stringutil.hpp"
 
+// bregex-
+#include "regexsearch.hh"
+
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -212,6 +215,9 @@ int main(int argc, char** argv)
     Photons photons(photonData) ;
     photons.setBoundaryNames(boundaries);
     photons.classify();
+    photons.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
+    photons.dumpFlags();
+
 
     scene.setPhotons(&photons);
 

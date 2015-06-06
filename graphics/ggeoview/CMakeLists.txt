@@ -50,6 +50,7 @@ find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
 
 find_package(ImGui REQUIRED)
+find_package(Bregex REQUIRED)
 
 
 
@@ -72,6 +73,7 @@ include_directories(
    ${GGeo_INCLUDE_DIRS}  
    ${CUDAWrap_INCLUDE_DIRS}  
    ${ImGui_INCLUDE_DIRS}
+   ${Bregex_INCLUDE_DIRS}
 )
 
 add_definitions(
@@ -83,6 +85,7 @@ add_definitions(
    ${Boost_DEFINITIONS} 
    ${CUDAWrap_DEFINITIONS}
    ${ImGui_DEFINITIONS}
+   ${Bregex_DEFINITIONS}
 )
 
 
@@ -121,6 +124,7 @@ function(add_optix_executable target_name)
       ${GGeo_LIBRARIES}
       ${CUDAWrap_LIBRARIES}
       ${ImGui_LIBRARIES}
+      ${Bregex_LIBRARIES}
 
       ssl
       crypto 
