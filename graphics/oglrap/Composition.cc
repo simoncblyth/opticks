@@ -203,6 +203,17 @@ void Composition::setSelection(glm::ivec4 selection)
     m_selection = selection ;  
 }
 
+
+void Composition::setFlags(std::string flags) 
+{
+    setFlags(givec4(flags));
+}
+void Composition::setFlags(glm::ivec4 flags) 
+{
+    m_flags = flags ;  
+}
+
+
 void Composition::setParam(std::string param)
 {
     setParam(gvec4(param));

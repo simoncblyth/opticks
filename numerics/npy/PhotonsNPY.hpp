@@ -27,6 +27,7 @@ class PhotonsNPY {
    public:
        void readFlags(const char* path); // parse enum flags from photon.h
        void dumpFlags(const char* msg="PhotonsNPY::dumpFlags");
+       glm::ivec4 getFlags();
 
    public:  
        // ivec4 containing 1st four boundary codes provided by the selection

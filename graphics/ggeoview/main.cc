@@ -256,6 +256,7 @@ int main(int argc, char** argv)
         {
             gui.show(show_gui_window);
             composition.setSelection(photons.getSelection()); 
+            composition.setFlags(photons.getFlags()); 
             // maybe imgui edit selection within the composition imgui, rather than shovelling ?
             // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
         }

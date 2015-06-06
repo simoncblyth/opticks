@@ -4,6 +4,7 @@
 uniform mat4 ModelViewProjection ;
 uniform mat4 ModelView ;
 uniform ivec4 Selection ; 
+uniform ivec4 Flags ; 
 
 layout(location = 0) in vec3  vpos;
 layout(location = 2) in vec3  vpol;
@@ -24,6 +25,7 @@ void main ()
     else if(iflg.x == Selection.y ) colour = vec4(1.0,0.0,0.0,1.0) ;
     else if(iflg.x == Selection.z ) colour = vec4(0.0,1.0,0.0,1.0) ;
     else if(iflg.x == Selection.w ) colour = vec4(0.0,0.0,1.0,1.0) ;
+    else if((iflg.w & Flags.x) != 0 ) colour = vec4(1.0,0.0,1.0,1.0) ;
     else                      
     {
         colour = vec4(0.0,0.0,0.0,0.0) ; 

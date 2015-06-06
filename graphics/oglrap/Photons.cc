@@ -46,8 +46,12 @@ void Photons::gui_boundary_selection()
 void Photons::gui_flag_selection()
 {
 #ifdef GUI_
+    for(unsigned int i=0 ; i < m_flags.size() ; i++)
+    {
+        std::pair<int, std::string> choice = m_flags[i];
+        ImGui::Checkbox(choice.second.c_str(), m_flags_selection+i );
+    }
 #endif
 }
-
 
 

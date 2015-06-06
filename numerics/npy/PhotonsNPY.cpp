@@ -156,9 +156,14 @@ void PhotonsNPY::dump(const char* msg)
     }
 }
 
+
+
+
+
 void PhotonsNPY::readFlags(const char* path)
 {
     enum_regexsearch( m_flags, path);
+    m_flags_selection = initBooleanSelection(m_flags.size());
 }
 
 void PhotonsNPY::dumpFlags(const char* msg)
@@ -167,11 +172,19 @@ void PhotonsNPY::dumpFlags(const char* msg)
     for(unsigned int i=0 ; i < m_flags.size() ; i++)
     {
          std::pair<int, std::string> p = m_flags[i];
-         printf(" %10d : %10x :  %s \n", p.first, p.first,  p.second.c_str() );
+         printf(" %10d : %10x :  %s  : %d \n", p.first, p.first,  p.second.c_str(), m_flags_selection[i] );
     }
 }
 
-
+glm::ivec4 PhotonsNPY::getFlags()
+{
+    int flags(0) ;
+    for(unsigned int i=0 ; i < m_flags.size() ; i++)
+    {
+        if(m_flags_selection[i]) flags |= m_flags[i].first ; 
+    } 
+    return glm::ivec4(flags,0,0,0) ;     
+}
 
 
 

@@ -49,9 +49,17 @@ class Composition : public Configurable {
       // avaiable as uniform inside shaders allowing GPU-side selections 
       void setSelection(glm::ivec4 sel);
       void setSelection(std::string sel);
+      glm::ivec4& getSelection();
+  public:
       void setParam(glm::vec4 par);
       void setParam(std::string par);
+      glm::vec4&  getParam();
+  public:
+      void setFlags(glm::ivec4 flags);
+      void setFlags(std::string flags);
+      glm::ivec4& getFlags();
 
+  public:
       void setTarget(unsigned int target);
       void setScene(Scene* scene);
       void setSize(unsigned int width, unsigned int height);
@@ -82,8 +90,6 @@ class Composition : public Configurable {
 
   public: 
       // getters of inputs 
-      glm::ivec4& getSelection();
-      glm::vec4&  getParam();
       glm::mat4& getModelToWorld();
       float getExtent();
       float getNear();
@@ -130,6 +136,7 @@ class Composition : public Configurable {
       float     m_extent ; 
       glm::vec4 m_center_extent ; 
       glm::ivec4 m_selection ;
+      glm::ivec4 m_flags ;
       glm::vec4  m_param ;
 
   private:
@@ -217,6 +224,10 @@ inline glm::vec4& Composition::getCenterExtent()
 inline glm::ivec4& Composition::getSelection()
 {
     return m_selection ; 
+}
+inline glm::ivec4& Composition::getFlags()
+{
+    return m_flags ; 
 }
 inline glm::vec4& Composition::getParam()
 {

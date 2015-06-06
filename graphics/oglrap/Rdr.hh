@@ -48,6 +48,7 @@ class Rdr : public RendererBase  {
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
       GLint  m_selection_location ;
+      GLint  m_flags_location ;
       GLint  m_param_location ;
 
 };      

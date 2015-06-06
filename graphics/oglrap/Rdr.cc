@@ -155,6 +155,7 @@ void Rdr::check_uniforms()
     m_mvp_location = m_shader->uniform("ModelViewProjection", required) ; 
     m_mv_location = m_shader->uniform("ModelView", required );     
     m_selection_location = m_shader->uniform("Selection", required );     
+    m_flags_location = m_shader->uniform("Flags", required );     
     m_param_location = m_shader->uniform("Param", required );     
 
     // the "tag" argument of the Rdr identifies the GLSL code being used
@@ -164,6 +165,7 @@ void Rdr::check_uniforms()
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 
               << " sel " << m_selection_location 
+              << " flg " << m_flags_location 
               << " param " << m_param_location 
               ;
 
@@ -180,6 +182,9 @@ void Rdr::update_uniforms()
 
         glm::ivec4 sel = m_composition->getSelection();
         glUniform4i(m_selection_location, sel.x, sel.y, sel.z, sel.w  );    
+
+        glm::ivec4 flg = m_composition->getFlags();
+        glUniform4i(m_flags_location, flg.x, flg.y, flg.z, flg.w  );    
 
         glm::vec4 par = m_composition->getParam();
         glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
