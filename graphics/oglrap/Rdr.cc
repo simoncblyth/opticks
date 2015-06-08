@@ -24,7 +24,7 @@ const char* Rdr::PRINT = "print" ;
 
 void Rdr::upload(MultiVecNPY* mvn)
 {
-    LOG(debug) << "Rdr::upload for shader tag " << getShaderTag() ;
+    LOG(info) << "Rdr::upload for shader tag " << getShaderTag() ;
 
     assert(mvn);
 
@@ -112,6 +112,8 @@ void Rdr::unmapbuffer(GLenum target)
 }
 
 
+
+// TODO: templated method
 void Rdr::download( NPY<float>* npy )
 {
     GLenum target = GL_ARRAY_BUFFER ;
@@ -157,6 +159,9 @@ void Rdr::address(VecNPY* vnpy)
         default: assert(0)              ; break ; 
     }
 
+
+    LOG(info) << "Rdr::address name " << name << " type " << vnpy->getType() ;
+
     GLuint       index = location  ;       //  generic vertex attribute to be modified
     GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4
     GLboolean     norm = vnpy->getNorm() ; 
@@ -193,6 +198,7 @@ void Rdr::check_uniforms()
     bool required = false ; 
     m_mvp_location = m_shader->uniform("ModelViewProjection", required) ; 
     m_mv_location = m_shader->uniform("ModelView", required );     
+    m_ceun_location = m_shader->uniform("CenterExtentUnNormalize", required );     
     m_selection_location = m_shader->uniform("Selection", required );     
     m_flags_location = m_shader->uniform("Flags", required );     
     m_param_location = m_shader->uniform("Param", required );     
@@ -206,6 +212,7 @@ void Rdr::check_uniforms()
               << " sel " << m_selection_location 
               << " flg " << m_flags_location 
               << " param " << m_param_location 
+              << " ceun " << m_ceun_location 
               ;
 
 }
@@ -213,11 +220,14 @@ void Rdr::check_uniforms()
 
 void Rdr::update_uniforms()
 {
+
     if(m_composition)
     {
         m_composition->update() ;
+
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+        glUniformMatrix4fv(m_ceun_location, 1, GL_FALSE, m_composition->getCenterExtentUnNormalizePtr());
 
         glm::ivec4 sel = m_composition->getSelection();
         glUniform4i(m_selection_location, sel.x, sel.y, sel.z, sel.w  );    
@@ -227,9 +237,6 @@ void Rdr::update_uniforms()
 
         glm::vec4 par = m_composition->getParam();
         glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
-
-
-
 
     } 
     else

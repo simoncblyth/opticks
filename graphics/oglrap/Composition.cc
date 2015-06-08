@@ -37,18 +37,7 @@
 const char* Composition::PRINT = "print" ; 
 const char* Composition::SELECT = "select" ; 
 
-Composition::Composition()
-  :
-  m_camera(NULL),
-  m_view(NULL),
-  m_trackball(NULL),
-  m_clipper(NULL),
-  m_scene(NULL),
-  m_model_to_world(),
-  m_extent(1.0f),
-  m_center_extent(),
-  m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
-  m_param(0.f,0.f,0.f,0.f)
+void Composition::init()
 {
     m_camera = new Camera() ;
     m_view   = new View() ;
@@ -238,6 +227,7 @@ void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModel
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
     m_extent = ce.w ; 
 
+
     if(autocam)
     {
         m_trackball->home();
@@ -253,8 +243,6 @@ float Composition::getFar()
 {
     return m_camera->getFar();
 }
-
-
 
 float* Composition::getWorld2EyePtr()
 {

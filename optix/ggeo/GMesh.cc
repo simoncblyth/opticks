@@ -561,6 +561,8 @@ void GMesh::updateBounds()
     }
 
     m_model_to_world = new GMatrix<float>( ce.x, ce.y, ce.z, ce.w );
+
+
 }
 
 

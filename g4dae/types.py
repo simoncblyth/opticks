@@ -13,6 +13,9 @@ chc_ = lambda _:load_("opcerenkov",_)
 chs_ = lambda _:load_("opscintillation",_)
 oxc_ = lambda _:load_("oxcerenkov",_)
 oxs_ = lambda _:load_("oxscintillation",_)
+rxc_ = lambda _:load_("rxcerenkov",_)
+rxs_ = lambda _:load_("rxscintillation",_)
+
 g4c_ = lambda _:load_("gopcerenkov",_)
 g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)
@@ -99,6 +102,15 @@ class NPY(np.ndarray):
         arys = map(lambda kls:kls.get(tag), klss)
         return arys
 
+
+class Record(NPY):
+    """
+    OpenGL normalized shorts, a form of float -1.f:1.f compression  
+    """
+    posx         = property(lambda self:self[:,0,0])
+    posy         = property(lambda self:self[:,0,1])
+    posz         = property(lambda self:self[:,0,2])
+    time         = property(lambda self:self[:,0,3])
 
 
 class Photon(NPY):
@@ -197,6 +209,9 @@ class OxCerenkovPhoton(Photon):
 typmap[OxCerenkovPhoton.typ] = OxCerenkovPhoton
 
 
+
+
+
 class ChCerenkovPhotonGen(Photon):
     typ = "opcerenkovgen"
     pass
@@ -218,6 +233,17 @@ class OxScintillationPhoton(Photon):
     pass
 typmap[OxScintillationPhoton.typ] = OxScintillationPhoton
 
+
+
+class RxScintillationRecord(Record):
+    typ = "rxscintillation"
+    pass
+typmap[RxScintillationRecord.typ] = RxScintillationRecord
+
+class RxCerenkovRecord(Record):
+    typ = "rxcerenkov"
+    pass
+typmap[RxCerenkovRecord.typ] = RxCerenkovRecord
 
 
 

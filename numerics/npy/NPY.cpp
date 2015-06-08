@@ -101,8 +101,16 @@ std::string NPY<T>::path(const char* typ, const char* tag)
     free(TYP); 
 
     char* tmpl = getenv(envvar) ;
-    if(!tmpl) return "missing-template-envvar" ; 
-    
+    if(!tmpl)
+    {
+         LOG(fatal)<< "NPY<T>::path missing envvar for "
+                   << " typ " << typ 
+                   << " envvar " << envvar  
+                   << " define new typs with env-;export-;export-vi " ; 
+         assert(0);
+         return "missing-template-envvar" ; 
+    }
+
     char path_[256];
     snprintf(path_, 256, tmpl, tag );
 
@@ -133,6 +141,7 @@ void NPY<T>::save(const char* path_)
 
     if(!fs::exists(dir))
     {   
+        LOG(info)<< "NPY<T>::save creating directory [" << dir.string() << "]" << path_ ;
         if (fs::create_directory(dir))
         {   
             LOG(info)<< "NPY<T>::save created directory [" << dir.string() << "]" ;

@@ -68,7 +68,18 @@
 #include "OptiXEngine.hh"
 #include "RayTraceConfig.hh"
 
+void dump(float* f, const char* msg)
+{
+    if(!f) return ;
 
+    printf("%s\n", msg);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {   
+        if(i%4 == 0) printf("\n");
+        printf(" %10.4f ", f[i] );
+    }   
+    printf("\n");
+}
 
 
 void logging_init()
@@ -157,7 +168,16 @@ int main(int argc, char** argv)
     const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
     assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading 
     bookmarks.load(idpath); 
+
     GMergedMesh* mm = scene.getMergedMesh(); 
+
+    float* f = (float*)mm->getModelToWorld()->getPointer();
+    dump(f, "f");
+    composition.setCenterExtentUnNormalizePtr(f);
+    dump(composition.getCenterExtentUnNormalizePtr(), "getCenterExtentUnNormalizePtr") ;
+
+
+
     GSubstanceLibMetadata* meta = scene.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
 
@@ -212,7 +232,7 @@ int main(int argc, char** argv)
 
     NPY<short>* rec = evt.getRecordData();
     Rdr::download(rec);
-    rec->save("rc%s", typ,  tag);
+    rec->save("rx%s", typ,  tag);
 
 
 

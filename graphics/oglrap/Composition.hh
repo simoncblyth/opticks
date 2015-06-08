@@ -1,5 +1,4 @@
-#ifndef COMPOSITION_H 
-#define COMPOSITION_H
+#pragma once
 
 #include <vector>
 #include <glm/glm.hpp>  
@@ -28,8 +27,10 @@ class Composition : public Configurable {
  
       Composition();
       virtual ~Composition();
+  private:
+      void init();
 
- public:
+  public:
       // Configurable : for bookmarking 
       static bool accepts(const char* name);
       void configure(const char* name, const char* value);
@@ -44,6 +45,13 @@ class Composition : public Configurable {
 
   public: 
       void setCenterExtent(gfloat4 ce, bool autocam=false); // effectively points at what you want to look at 
+
+  public: 
+      // center and extent used for OpenGL normalized short, ie matrix to un-squeeze 
+      // from float box -1.f:1.f 
+      void       setCenterExtentUnNormalizePtr(float* ptr); // typically done once only for entire geometry 
+      float*     getCenterExtentUnNormalizePtr();  
+
 
   public:
       // avaiable as uniform inside shaders allowing GPU-side selections 
@@ -173,6 +181,7 @@ class Composition : public Configurable {
       glm::mat4 m_itrackballtra ;     
 
       glm::mat4 m_identity ;     
+      float*    m_center_extent_unnormalize_ptr ;
 
   public: 
       void Summary(const char* msg);
@@ -181,6 +190,33 @@ class Composition : public Configurable {
 
 
 };      
+
+inline Composition::Composition()
+  :
+  m_model_to_world(),
+  m_extent(1.0f),
+  m_center_extent(),
+  m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
+  m_param(0.f,0.f,0.f,0.f),
+  m_camera(NULL),
+  m_trackball(NULL),
+  m_view(NULL),
+  m_clipper(NULL),
+  m_scene(NULL),
+  m_center_extent_unnormalize_ptr(NULL)
+{
+    init();
+}
+
+
+inline void Composition::setCenterExtentUnNormalizePtr(float* ptr)
+{
+    m_center_extent_unnormalize_ptr = ptr ;
+}
+inline float* Composition::getCenterExtentUnNormalizePtr()
+{
+    return m_center_extent_unnormalize_ptr ;
+}
 
 
 
@@ -245,4 +281,3 @@ inline float Composition::getExtent()
 
 
 
-#endif

@@ -50,6 +50,7 @@ class Rdr : public RendererBase  {
 
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
+      GLint  m_ceun_location ;
       GLint  m_selection_location ;
       GLint  m_flags_location ;
       GLint  m_param_location ;
@@ -66,6 +67,7 @@ inline Rdr::Rdr(const char* tag)
     m_composition(NULL),
     m_mv_location(-1),
     m_mvp_location(-1),
+    m_ceun_location(-1),
     m_selection_location(-1),
     m_flags_location(-1),
     m_param_location(-1)
