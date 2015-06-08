@@ -18,18 +18,27 @@ class G4StepNPY ;
 #include "stdlib.h"
 #include "assert.h"
 
+
+
+
+
+
+template <class T>
 class NPY {
    friend class PhotonsNPY ; 
    friend class G4StepNPY ; 
 
    public:
-       static NPY* make_vec3(float* m2w, unsigned int npo=100);  
-       static NPY* make_float4(unsigned int ni, unsigned int nj=1, float value=0.f);
+       static const char type ;  // for type branching 
+       enum { FLOAT, SHORT, DOUBLE };
+
+   public:
+       static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
+       static NPY<T>* make_vec4(unsigned int ni, unsigned int nj=1, T value=0);
 
        // ctor takes ownership of a copy of the inputs 
-       NPY(std::vector<int>& shape, double* data, std::string& metadata) ;
-       NPY(std::vector<int>& shape, float*  data, std::string& metadata) ;
-       NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) ;
+       NPY(std::vector<int>& shape, T*  data            , std::string& metadata) ;
+       NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;
 
    public:
        static std::string path(const char* typ, const char* tag);
@@ -39,6 +48,8 @@ class NPY {
  
        void save(const char* path);
        void save(const char* typ, const char* tag);
+       void save(const char* tfmt, const char* targ, const char* tag );
+       // manipulations typically change types, not tags:  tfmt % targ -> typ
 
    public:
        unsigned int getLength();
@@ -47,7 +58,7 @@ class NPY {
        unsigned int getShape(unsigned int dim);
        unsigned int getNumValues(unsigned int from_dim=1);
        unsigned int getNumBytes(unsigned int from_dim=1);
-       float* getValues();
+       T* getValues();
        void* getBytes();
        void read(void* ptr);
 
@@ -67,11 +78,12 @@ class NPY {
 
        unsigned int getUSum(unsigned int j, unsigned int k);
 
+       T            getValue(unsigned int i, unsigned int j, unsigned int k);
        float        getFloat(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k);
        int          getInt(  unsigned int i, unsigned int j, unsigned int k);
 
-
+       void         setValue(unsigned int i, unsigned int j, unsigned int k, T value);
        void         setFloat(unsigned int i, unsigned int j, unsigned int k, float value);
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);
        void         setInt(  unsigned int i, unsigned int j, unsigned int k, int value);
@@ -92,18 +104,22 @@ class NPY {
 
    private:
        std::vector<int>   m_shape ; 
-       std::vector<float> m_data ; 
+       std::vector<T>     m_data ; 
        std::string        m_metadata ; 
 
 };
 
 
 
-inline int NPY::getBufferId()
+
+template <typename T> 
+inline int NPY<T>::getBufferId()
 {
     return m_buffer_id ;
 }
-inline void NPY::setBufferId(int buffer_id)
+
+template <typename T> 
+inline void NPY<T>::setBufferId(int buffer_id)
 {
     m_buffer_id = buffer_id  ;
 }
@@ -111,54 +127,59 @@ inline void NPY::setBufferId(int buffer_id)
 
 
 
-
-inline unsigned int NPY::getNumValues(unsigned int from_dim)
+template <typename T> 
+inline unsigned int NPY<T>::getNumValues(unsigned int from_dim)
 {
-    unsigned int nfloat = 1 ; 
-    for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nfloat *= m_shape[i] ;
-    return nfloat ;  
+    unsigned int nvals = 1 ; 
+    for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nvals *= m_shape[i] ;
+    return nvals ;  
 }
-inline unsigned int NPY::getNumBytes(unsigned int from_dim)
+template <typename T> 
+inline unsigned int NPY<T>::getNumBytes(unsigned int from_dim)
 {
-    assert(sizeof(float) == 4);
-    return sizeof(float)*getNumValues(from_dim);
+    return sizeof(T)*getNumValues(from_dim);
 }
-inline unsigned int NPY::getDimensions()
+template <typename T> 
+inline unsigned int NPY<T>::getDimensions()
 {
     return m_shape.size();
 }
-
-inline std::vector<int>& NPY::getShapeVector()
+template <typename T> 
+inline std::vector<int>& NPY<T>::getShapeVector()
 {
     return m_shape ; 
 }
 
-
-inline unsigned int NPY::getShape(unsigned int n)
+template <typename T> 
+inline unsigned int NPY<T>::getShape(unsigned int n)
 {
     return n < m_shape.size() ? m_shape[n] : -1 ;
 }
-inline unsigned int NPY::getLength()
+template <typename T> 
+inline unsigned int NPY<T>::getLength()
 {
     return getShape(0);
 }
 
-
-inline float* NPY::getValues()
+template <typename T> 
+inline T* NPY<T>::getValues()
 {
     return m_data.data();
 }
-inline void* NPY::getBytes()
+template <typename T> 
+inline void* NPY<T>::getBytes()
 {
     return (void*)getValues();
 }
 
-
-inline unsigned int NPY::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
+template <typename T> 
+inline unsigned int NPY<T>::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
 {
-    return sizeof(float)*getValueIndex(i,j,k);
+    return sizeof(T)*getValueIndex(i,j,k);
 }
-inline unsigned int NPY::getValueIndex(unsigned int i, unsigned int j, unsigned int k)
+
+template <typename T> 
+inline unsigned int NPY<T>::getValueIndex(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(m_dim == 3 ); 
     unsigned int nj = m_len1 ;
@@ -166,42 +187,125 @@ inline unsigned int NPY::getValueIndex(unsigned int i, unsigned int j, unsigned 
     return  i*nj*nk + j*nk + k ;
 }
 
-inline float NPY::getFloat(unsigned int i, unsigned int j, unsigned int k)
+template <typename T> 
+inline T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k)
 {
     unsigned int idx = getValueIndex(i,j,k);
-    float* data = getValues();
+    T* data = getValues();
     return  *(data + idx);
 }
-inline void NPY::setFloat(unsigned int i, unsigned int j, unsigned int k, float value)
+
+
+template <typename T> 
+inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T value)
 {
     unsigned int idx = getValueIndex(i,j,k);
-    float* data = getValues();
+    T* data = getValues();
     *(data + idx) = value ;
 }
-inline unsigned int NPY::getUInt(unsigned int i, unsigned int j, unsigned int k)
+
+
+
+
+
+template <typename T> 
+inline float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k)
 {
     uif_t uif ; 
-    uif.f = getFloat(i,j,k);
+
+    T t = getValue(i,j,k);
+    switch(type)
+    {
+        case FLOAT:uif.f = t ; break ; 
+        case DOUBLE:uif.f = t ; break ; 
+        case SHORT:uif.i = t ; break ; 
+        default: assert(0);  break ;
+    }
+    return uif.f ;
+}
+
+template <typename T> 
+inline void NPY<T>::setFloat(unsigned int i, unsigned int j, unsigned int k, float  value)
+{
+    uif_t uif ; 
+    uif.f = value ;
+
+    T t ;
+    switch(type)
+    {
+        case FLOAT:t = uif.f ; break ; 
+        case DOUBLE:t = uif.f ; break ; 
+        case SHORT:t = uif.i ; break ; 
+        default: assert(0);  break ;
+    }
+    setValue(i,j,k,t); 
+}
+
+
+
+template <typename T> 
+inline unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int k)
+{
+    uif_t uif ; 
+
+    T t = getValue(i,j,k);
+    switch(type)
+    {
+        case FLOAT:uif.f = t ; break ; 
+        case DOUBLE:uif.f = t ; break ; 
+        case SHORT:uif.i = t ; break ; 
+        default: assert(0);  break ;
+    }
     return uif.u ;
 }
-inline void NPY::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int value)
+
+template <typename T> 
+inline void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int value)
 {
     uif_t uif ; 
     uif.u = value ;
-    setFloat(i,j,k,uif.f); 
+
+    T t ;
+    switch(type)
+    {
+        case FLOAT:t = uif.f ; break ; 
+        case DOUBLE:t = uif.f ; break ; 
+        case SHORT:t = uif.i ; break ; 
+        default: assert(0);  break ;
+    }
+    setValue(i,j,k,t); 
 }
 
-inline int NPY::getInt(unsigned int i, unsigned int j, unsigned int k)
+template <typename T> 
+inline int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k)
 {
-    uif_t uif ; 
-    uif.f = getFloat(i,j,k);
+    uif_t uif ;             // how does union handle different sizes ? 
+    T t = getValue(i,j,k);
+    switch(type)
+    {   
+        case FLOAT: uif.f = t ; break;
+        case DOUBLE: uif.f = t ; break;
+        case SHORT: uif.i = t ; break;
+        default: assert(0);   break;
+    }
     return uif.i ;
 }
-inline void NPY::setInt(unsigned int i, unsigned int j, unsigned int k, int value)
+
+template <typename T> 
+inline void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, int value)
 {
     uif_t uif ; 
     uif.i = value ;
-    setFloat(i,j,k,uif.f); 
+
+    T t ;
+    switch(type)
+    {
+        case FLOAT:t = uif.f ; break ; 
+        case DOUBLE:t = uif.f ; break ; 
+        case SHORT:t = uif.i ; break ; 
+        default: assert(0);  break ;
+    }
+    setValue(i,j,k,t); 
 }
 
 

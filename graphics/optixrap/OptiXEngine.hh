@@ -6,9 +6,9 @@ class Texture ;
 class RayTraceConfig ; 
 class GGeo ; 
 class GMergedMesh ;
-class NPY ;
 class NumpyEvt ; 
 class cuRANDWrapper ; 
+
 
 #include "string.h"
 #include "Touchable.hh"
@@ -99,6 +99,7 @@ class OptiXEngine : public Touchable {
         optix::Buffer         m_output_buffer ; 
         optix::Buffer         m_genstep_buffer ; 
         optix::Buffer         m_photon_buffer ; 
+        optix::Buffer         m_record_buffer ; 
         optix::Buffer         m_touch_buffer ; 
         optix::GeometryGroup  m_geometry_group ;
         //optix::Aabb           m_aabb;

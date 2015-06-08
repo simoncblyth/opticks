@@ -5,8 +5,8 @@
 #include <iostream>
 #include <set>
 
+#include "NPY.hpp"
 class Lookup ; 
-class NPY ;
 
 //
 // hmm CerenkovStep and ScintillationStep have same shapes but different meanings see
@@ -26,8 +26,8 @@ class G4StepNPY {
    public:  
         typedef std::set<unsigned int> Set_t ; 
    public:  
-       G4StepNPY(NPY* npy); // weak reference to NPY* only
-       NPY* getNPY();
+       G4StepNPY(NPY<float>* npy); // weak reference to NPY* only
+       NPY<float>* getNPY();
 
    public:  
        void setLookup(Lookup* lookup);
@@ -45,13 +45,13 @@ class G4StepNPY {
        bool applyLookup(unsigned int index);
 
   private:
-        NPY*     m_npy ; 
+        NPY<float>*  m_npy ; 
         Lookup*  m_lookup ; 
         Set_t    m_lines ;
  
 };
 
-inline NPY* G4StepNPY::getNPY()
+inline NPY<float>* G4StepNPY::getNPY()
 {
     return m_npy ; 
 }
@@ -64,7 +64,7 @@ inline Lookup* G4StepNPY::getLookup()
     return m_lookup ;
 } 
 
-inline G4StepNPY::G4StepNPY(NPY* npy) 
+inline G4StepNPY::G4StepNPY(NPY<float>* npy) 
        :  
        m_npy(npy),
        m_lookup(NULL)

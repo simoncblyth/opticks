@@ -19,29 +19,11 @@ class Photons ;
 
 class Scene : public Configurable {
 
-#ifdef MODE_GYMNASTICS
-   public:
-       static unsigned int getNumModes();
-       static const char** getModeNames();
-       static const char*  getModeName(unsigned int n);
-   public:
-       bool**              getModePointers(); 
-       bool*               getModePointer(unsigned int n); 
-       void                dumpModes(const char* msg="Scene::dumpModes");
-       void                setMode(unsigned int n, bool mode);
-   private:
-       static const char** makeModeNames();
-       static const char** MODES ;
-       static unsigned int N_MODES ;
-   private:
-       bool**              makeModePointers();
-       static bool**       MODES_PTR ;
-#endif
-
    public:
        static const char* PHOTON ;
        static const char* GENSTEP ;
        static const char* GEOMETRY ;
+       static const char* RECORD ;
    public:
        static const char* TARGET ;
    public:
@@ -76,7 +58,7 @@ class Scene : public Configurable {
 
    public:
         const char* loadGeometry(const char* prefix, bool nogeocache=false);
-        void loadEvt();
+        void uploadEvt();
         void render();
 
    public:
@@ -93,6 +75,7 @@ class Scene : public Configurable {
         Renderer*     getGeometryRenderer();
         Rdr*          getGenstepRenderer();
         Rdr*          getPhotonRenderer();
+        Rdr*          getRecordRenderer();
         GDrawable*    getGeometry();
         Composition*  getComposition();
         NumpyEvt*     getNumpyEvt();
@@ -107,6 +90,7 @@ class Scene : public Configurable {
         Renderer*    m_geometry_renderer ; 
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
+        Rdr*         m_record_renderer ; 
         NumpyEvt*    m_evt ;
         Photons*     m_photons ; 
         GDrawable*   m_geometry ;
@@ -117,6 +101,7 @@ class Scene : public Configurable {
         bool         m_geometry_mode ; 
         bool         m_genstep_mode ; 
         bool         m_photon_mode ; 
+        bool         m_record_mode ; 
 
 };
 
@@ -126,6 +111,7 @@ inline Scene::Scene() :
             m_geometry_renderer(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
+            m_record_renderer(NULL),
             m_evt(NULL),
             m_photons(NULL),
             m_geometry(NULL),
@@ -134,7 +120,8 @@ inline Scene::Scene() :
             m_touch(0),
             m_geometry_mode(true),
             m_genstep_mode(true),
-            m_photon_mode(true)
+            m_photon_mode(true),
+            m_record_mode(true)
 {
     init();
 }
@@ -159,6 +146,7 @@ inline GLoader* Scene::getGeometryLoader()
 {
     return m_geometry_loader ; 
 }
+
 inline Renderer* Scene::getGeometryRenderer()
 {
     return m_geometry_renderer ; 
@@ -171,6 +159,15 @@ inline Rdr* Scene::getPhotonRenderer()
 {
     return m_photon_renderer ; 
 }
+inline Rdr* Scene::getRecordRenderer()
+{
+    return m_record_renderer ; 
+}
+
+
+
+
+
 inline NumpyEvt* Scene::getNumpyEvt()
 {
     return m_evt ; 

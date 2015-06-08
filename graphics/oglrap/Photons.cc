@@ -6,7 +6,7 @@
 #endif
 
 
-Photons::Photons(NPY* photons) : PhotonsNPY(photons)
+Photons::Photons(NPY<float>* photons) : PhotonsNPY(photons)
 {
 }
 

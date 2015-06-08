@@ -13,7 +13,7 @@
 // trace/debug/info/warning/error/fatal
 
 
-void NumpyEvt::setGenstepData(NPY* genstep)
+void NumpyEvt::setGenstepData(NPY<float>* genstep)
 {
     G4StepNPY gs(genstep);  
 
@@ -24,9 +24,12 @@ void NumpyEvt::setGenstepData(NPY* genstep)
 
     m_num_photons = m_genstep_data->getUSum(0,3);
 
-    NPY* npy = NPY::make_float4(m_num_photons, 4);  // must match GPU side photon.h:PQUAD
+    NPY<float>* pho = NPY<float>::make_vec4(m_num_photons, 4); // must match GPU side photon.h:PQUAD
+    setPhotonData(pho);   
 
-    setPhotonData(npy);   
+    NPY<short>* rec = NPY<short>::make_vec4(m_num_photons, 2); 
+    setRecordData(rec);   
+
 
     // stuff genstep index into the photon allocation 
     // to allow generation to access appropriate genstep 
@@ -67,7 +70,7 @@ void NumpyEvt::setGenstepData(NPY* genstep)
     // not m_num_photons-1 as last incremented count value is not used by setUInt
 }
 
-void NumpyEvt::setPhotonData(NPY* photon_data)
+void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 {
     m_photon_data = photon_data  ;
     m_photon_attr = new MultiVecNPY();
@@ -80,6 +83,19 @@ void NumpyEvt::setPhotonData(NPY* photon_data)
     // corresponds to GPU side cu/photon.h:psave 
 }
 
+void NumpyEvt::setRecordData(NPY<short>* record_data)
+{
+    m_record_data = record_data  ;
+    m_record_attr = new MultiVecNPY();
+    unsigned int size = 4 ; 
+    m_record_attr->add(new VecNPY("rpos",m_record_data,0,0,size,'s',true));    // 4*signed short int to be normalized into -1.f:1.f by OpenGL     (1st half-quad)
+    m_record_attr->add(new VecNPY("rflg",m_record_data,1,0,size,'s',false));   // 4*signed short int                                              (2nd half-quad)
+}
+
+
+
+
+
 
 void NumpyEvt::dumpPhotonData()
 {
@@ -87,7 +103,7 @@ void NumpyEvt::dumpPhotonData()
     dumpPhotonData(m_photon_data);
 }
 
-void NumpyEvt::dumpPhotonData(NPY* photons)
+void NumpyEvt::dumpPhotonData(NPY<float>* photons)
 {
     std::cout << photons->description("NumpyEvt::dumpPhotonData") << std::endl ;
 

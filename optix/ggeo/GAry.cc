@@ -648,11 +648,11 @@ void GAry<T>::save(const char* path)
 
     std::string metadata = "{}" ; 
 
-    std::vector<float> data ; 
+    std::vector<T> data ; 
     for(unsigned int i=0 ; i < m_length ; i++ ) data.push_back(m_values[i]) ;
 
     LOG(info) << "GAry::save 1d array of length " << m_length << " to : " << path ;  
-    NPY npy(shape, data, metadata);
+    NPY<T> npy(shape, data, metadata);
     npy.save(path);
 }
 

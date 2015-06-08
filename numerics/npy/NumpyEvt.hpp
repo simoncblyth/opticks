@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-class NPY ;
+#include "NPY.hpp"
 class MultiVecNPY ;
 
 class NumpyEvt {
@@ -9,13 +9,20 @@ class NumpyEvt {
        NumpyEvt();
       
    public:
-       void setGenstepData(NPY* genstep_data);
+       void setGenstepData(NPY<float>* genstep_data);
+   private:
+       // only set internally 
+       void setPhotonData(NPY<float>* photon_data);
+       void setRecordData(NPY<short>* record_data);
 
    public:
-       NPY*         getGenstepData();
-       NPY*         getPhotonData();
+       NPY<float>*  getGenstepData();
+       NPY<float>*  getPhotonData();
+       NPY<short>*  getRecordData();
+
        MultiVecNPY* getGenstepAttr();
        MultiVecNPY* getPhotonAttr();
+       MultiVecNPY* getRecordAttr();
 
    public:
        unsigned int getNumPhotons();
@@ -23,15 +30,17 @@ class NumpyEvt {
 
    public:
        void         dumpPhotonData();
-       static void  dumpPhotonData(NPY* photon_data);
-   private:
-       void setPhotonData(NPY* photon_data);
+       static void  dumpPhotonData(NPY<float>* photon_data);
 
    private:
-       NPY*           m_genstep_data ;
-       NPY*           m_photon_data ;
+       NPY<float>*   m_genstep_data ;
+       NPY<float>*   m_photon_data ;
+       NPY<short>*   m_record_data ;
+
        MultiVecNPY*   m_genstep_attr ;
        MultiVecNPY*   m_photon_attr  ;
+       MultiVecNPY*   m_record_attr  ;
+
        unsigned int   m_num_photons ; 
 
 };
@@ -41,13 +50,15 @@ inline NumpyEvt::NumpyEvt()
           :
           m_genstep_data(NULL),
           m_photon_data(NULL),
+          m_record_data(NULL),
           m_genstep_attr(NULL),
           m_photon_attr(NULL),
+          m_record_attr(NULL),
           m_num_photons(0)
 {
 }
 
-inline NPY* NumpyEvt::getGenstepData()
+inline NPY<float>* NumpyEvt::getGenstepData()
 {
     return m_genstep_data ;
 }
@@ -56,13 +67,22 @@ inline MultiVecNPY* NumpyEvt::getGenstepAttr()
     return m_genstep_attr ;
 }
 
-inline NPY* NumpyEvt::getPhotonData()
+inline NPY<float>* NumpyEvt::getPhotonData()
 {
     return m_photon_data ;
 }
 inline MultiVecNPY* NumpyEvt::getPhotonAttr()
 {
     return m_photon_attr ;
+}
+
+inline NPY<short>* NumpyEvt::getRecordData()
+{
+    return m_record_data ;
+}
+inline MultiVecNPY* NumpyEvt::getRecordAttr()
+{
+    return m_record_attr ;
 }
 
 

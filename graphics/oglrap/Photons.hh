@@ -6,7 +6,7 @@
 
 class Photons : public PhotonsNPY {
    public:
-       Photons(NPY* photons);
+       Photons(NPY<float>* photons);
 
        void gui();
        void gui_boundary_selection();

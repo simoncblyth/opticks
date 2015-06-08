@@ -2,8 +2,8 @@
 
 #include <vector>
 #include "RendererBase.hh"
+#include "NPY.hpp"
 
-class NPY ;
 class MultiVecNPY ;
 class VecNPY ;
 class Composition ; 
@@ -21,7 +21,10 @@ class Rdr : public RendererBase  {
       void upload(MultiVecNPY* mvn);
 
       // *download* : when an OpenGL buffer object is associated, glMapBuffer and read data from GPU into NPY instance 
-      static void download(NPY* npy);  
+      static void download(NPY<float>* npy);  
+      static void download(NPY<short>* npy);  
+      static void* mapbuffer( int buffer_id, GLenum target );
+      static void unmapbuffer(GLenum target);
       unsigned int getBufferId();
 
   private:
@@ -64,6 +67,7 @@ inline Rdr::Rdr(const char* tag)
     m_mv_location(-1),
     m_mvp_location(-1),
     m_selection_location(-1),
+    m_flags_location(-1),
     m_param_location(-1)
 {
 }

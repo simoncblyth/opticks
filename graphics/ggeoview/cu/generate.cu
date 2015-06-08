@@ -23,8 +23,12 @@ using namespace optix;
 
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
+rtBuffer<short4>    record_buffer;   // 2 short4 take same space as 1 float4 quad
+
+
 rtBuffer<curandState, 1> rng_states ;
 
+rtDeclareVariable(float4,        center_extent, , );
 rtDeclareVariable(float,         propagate_epsilon, , );
 rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
@@ -38,6 +42,8 @@ RT_PROGRAM void generate()
     union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
+    unsigned int record_offset = photon_id*2 ;
+ 
     phead.f = photon_buffer[photon_offset+0] ;
 
     union quad ghead ; 
@@ -139,6 +145,9 @@ RT_PROGRAM void generate()
     }   // bounce < max_bounce
 
     psave(p, photon_buffer, photon_offset ); 
+
+    rsave(p, record_buffer, record_offset, center_extent );
+
     rng_states[photon_id] = rng ;
 }
 

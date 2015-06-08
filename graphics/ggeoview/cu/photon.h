@@ -63,4 +63,41 @@ __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int p
 }
 
 
+__device__ short shortnorm( float v, float center, float extent )
+{
+
+    // range of short is -32768 to 32767
+
+    float vnorm = 32767.0f * (v - center)/extent ;    // linear scaling into -1.f:1.f 
+
+    int inorm = __float2int_rz(vnorm) ;
+
+    return short(inorm) ;
+
+
+    //  Huh seems wrong ? should be 2^(b-1) ?  
+    //
+    //  http://www.informit.com/articles/article.aspx?p=2033340&seqNum=3
+    //
+    //   f = c / (2^b - 1)          for signed -1:1 case
+    //   f = (2c + 1)/( 2^b - 1)    for unsigned 0:1 
+    //
+    //    (1 << 16) - 1 = 65535
+    //
+    //  http://stereopsis.com/radix.html
+} 
+
+__device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent )
+{
+    // pack position and time into normalized shorts (16 bits)
+    rbuffer[record_offset+0] = make_short4( 
+                    shortnorm(p.position.x, center_extent.x, center_extent.w), 
+                    shortnorm(p.position.y, center_extent.y, center_extent.w), 
+                    shortnorm(p.position.z, center_extent.z, center_extent.w),   
+                    shortnorm(p.time      , 0.f            , 100.f )
+                    ); 
+    rbuffer[record_offset+1] = make_short4( p.flags.i.x & 0xFFFF , p.flags.i.y & 0xFFFF, p.flags.i.z, p.flags.i.w); 
+}
+
+
 

@@ -12,12 +12,37 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-VecNPY::VecNPY(const char* name, NPY* npy, unsigned int j, unsigned int k, unsigned int size, char type) :
+VecNPY::VecNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size, char type, bool norm) :
             m_name(strdup(name)),
-            m_npy(npy),
+            m_npy_f(npy),
+            m_npy_s(NULL),
             m_bytes(npy->getBytes()),
             m_size(size),
             m_type(type),
+            m_norm(norm),
+            m_numbytes(npy->getNumBytes(0)),
+            m_stride(npy->getNumBytes(1)),
+            m_offset(npy->getByteIndex(0,j,k)),
+            m_count(npy->getShape(0)),
+            m_low(NULL),
+            m_high(NULL),
+            m_dimensions(NULL),
+            m_center(NULL),
+            m_model_to_world(),
+            m_extent(0.f)
+{
+    findBounds();
+}
+
+
+VecNPY::VecNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size, char type, bool norm) :
+            m_name(strdup(name)),
+            m_npy_f(NULL),
+            m_npy_s(npy),
+            m_bytes(npy->getBytes()),
+            m_size(size),
+            m_type(type),
+            m_norm(norm),
             m_numbytes(npy->getNumBytes(0)),
             m_stride(npy->getNumBytes(1)),
             m_offset(npy->getByteIndex(0,j,k)),

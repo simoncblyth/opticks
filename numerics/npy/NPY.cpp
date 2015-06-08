@@ -11,7 +11,9 @@ namespace fs = boost::filesystem;
 
 
 // ctor takes ownership of a copy of the inputs 
-NPY::NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadata) 
+
+template <typename T>
+NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) 
          :
          m_buffer_id(-1),
          m_shape(shape),
@@ -25,20 +27,8 @@ NPY::NPY(std::vector<int>& shape, std::vector<float>& data, std::string& metadat
 } 
 
 
-NPY::NPY(std::vector<int>& shape, float* data, std::string& metadata) 
-         :
-         m_buffer_id(-1),
-         m_shape(shape),
-         m_data(),
-         m_metadata(metadata)
-{
-    m_data.reserve(getNumValues(0));
-    read(data);
-}
-
-// not expected to work : but needed to get to compile
-//  solution is to turn this into templated class
-NPY::NPY(std::vector<int>& shape, double* data, std::string& metadata) 
+template <typename T>
+NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata) 
          :
          m_buffer_id(-1),
          m_shape(shape),
@@ -50,21 +40,22 @@ NPY::NPY(std::vector<int>& shape, double* data, std::string& metadata)
 }
 
 
-void NPY::read(void* ptr)
+template <typename T>
+void NPY<T>::read(void* ptr)
 {
     memcpy(m_data.data(), ptr, getNumBytes(0) );
 }
 
 
-
-void NPY::Summary(const char* msg)
+template <typename T>
+void NPY<T>::Summary(const char* msg)
 {
     std::string desc = description(msg);
     std::cout << desc << std::endl ; 
 }   
 
-
-std::string NPY::description(const char* msg)
+template <typename T>
+std::string NPY<T>::description(const char* msg)
 {
     std::stringstream ss ; 
 
@@ -92,8 +83,8 @@ std::string NPY::description(const char* msg)
 }
 
 
-
-std::string NPY::path(const char* typ, const char* tag)
+template <typename T>
+std::string NPY<T>::path(const char* typ, const char* tag)
 {
     char* TYP = strdup(typ);
     char* p = TYP ;
@@ -118,14 +109,24 @@ std::string NPY::path(const char* typ, const char* tag)
     return path_ ;   
 }
 
-void NPY::save(const char* typ, const char* tag)
+
+template <typename T>
+void NPY<T>::save(const char* tfmt, const char* targ, const char* tag )
 {
-    std::string path = NPY::path(typ, tag);
+    char typ[64];
+    snprintf(typ, 64, tfmt, targ ); 
+    save(typ, tag);
+}
 
-
+template <typename T>
+void NPY<T>::save(const char* typ, const char* tag)
+{
+    std::string path = NPY<T>::path(typ, tag);
     save(path.c_str());
 }
-void NPY::save(const char* path_)
+
+template <typename T>
+void NPY<T>::save(const char* path_)
 {
     fs::path path(path_);
     fs::path dir = path.parent_path();
@@ -134,17 +135,17 @@ void NPY::save(const char* path_)
     {   
         if (fs::create_directory(dir))
         {   
-            LOG(info)<< "NPY::save created directory [" << dir.string() << "]" ;
+            LOG(info)<< "NPY<T>::save created directory [" << dir.string() << "]" ;
         }   
     }   
 
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
-    aoba::SaveArrayAsNumpy<float>(path_, itemcount, itemshape.c_str(), getValues()  );
+    aoba::SaveArrayAsNumpy<T>(path_, itemcount, itemshape.c_str(), getValues()  );
 }
 
-
-std::string NPY::getItemShape(unsigned int ifr)
+template <typename T>
+std::string NPY<T>::getItemShape(unsigned int ifr)
 {
     std::stringstream ss ; 
     for(size_t i=ifr ; i < m_shape.size() ; i++)
@@ -155,38 +156,44 @@ std::string NPY::getItemShape(unsigned int ifr)
     return ss.str(); 
 }
 
-
-NPY* NPY::debugload(const char* path)
+template <typename T>
+NPY<T>* NPY<T>::debugload(const char* path)
 {
     std::vector<int> shape ;
-    std::vector<float> data ;
+    std::vector<T> data ;
     std::string metadata = "{}";
 
-    printf("NPY::debugload [%s]\n", path);
+    printf("NPY<T>::debugload [%s]\n", path);
 
     NPY* npy = NULL ;
-    aoba::LoadArrayFromNumpy<float>(path, shape, data );
-    npy = new NPY(shape,data,metadata) ;
+    aoba::LoadArrayFromNumpy<T>(path, shape, data );
+    npy = new NPY<T>(shape,data,metadata) ;
 
     return npy ;
 }
 
-
-void NPY::debugdump()
+template <typename T>
+void NPY<T>::debugdump()
 {
-    float* data = getValues() ; 
+   /*
+    T* data = getValues() ; 
     for(unsigned int i=0 ; i < 16 ; i++)
     {
          if(i % 4 == 0) printf("\n");
-         printf(" %10.4f ", data[i]);
+         switch(type)
+         {
+             case 'f':printf(" %10.4f ", data[i]);break;
+             case 's':printf(" %10.4f ", data[i]);break;
+         }
     }
     printf("\n");
+   */
 }
 
 
 
-
-NPY* NPY::load(const char* path)
+template <typename T>
+NPY<T>* NPY<T>::load(const char* path)
 {
    /*
     Currently need to save as np.float32 for this to manage to load, do so with::
@@ -200,39 +207,42 @@ NPY* NPY::load(const char* path)
    */
 
     std::vector<int> shape ;
-    std::vector<float> data ;
+    std::vector<T> data ;
     std::string metadata = "{}";
 
-    LOG(debug) << "NPY::load " << path ; 
+    LOG(debug) << "NPY<T>::load " << path ; 
 
     NPY* npy = NULL ;
     try 
     {
-        aoba::LoadArrayFromNumpy<float>(path, shape, data );
-        npy = new NPY(shape,data,metadata) ;
+        aoba::LoadArrayFromNumpy<T>(path, shape, data );
+        npy = new NPY<T>(shape,data,metadata) ;
     } 
     catch(const std::runtime_error& error)
     {
-        std::cout << "NPY::load failed for path [" << path << "]" <<  std::endl ; 
+        std::cout << "NPY<T>::load failed for path [" << path << "]" <<  std::endl ; 
     }
 
     return npy ;
 }
 
 
-NPY* NPY::load(const char* typ, const char* tag)
+template <typename T>
+NPY<T>* NPY<T>::load(const char* typ, const char* tag)
 {
-    std::string path = NPY::path(typ, tag);
+    std::string path = NPY<T>::path(typ, tag);
     return load(path.c_str());
 }
 
 
-NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
+
+template <typename T>
+NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 {
 /*
    Usage example to create debug points in viscinity of a drawable
 
-   npy = NPY::make_vec3(dgeo->getModelToWorldPtr(),100); 
+   npy = NPY<T>::make_vec3(dgeo->getModelToWorldPtr(),100); 
    vgst.add(new VecNPY("vpos",npy,0,0));
 
 */
@@ -240,7 +250,7 @@ NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
     glm::mat4 m2w ;
     if(m2w_) m2w = glm::make_mat4(m2w_);
 
-    std::vector<float> data;
+    std::vector<T> data;
 
     //std::vector<int>   shape = {int(npo), 1, 3} ;   this is a C++11 thing
     std::vector<int> shape ; 
@@ -261,16 +271,17 @@ NPY* NPY::make_vec3(float* m2w_, unsigned int npo)
         data.push_back(w.y);
         data.push_back(w.z);
     } 
-    NPY* npy = new NPY(shape,data,metadata) ;
+    NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
     return npy ;
 }
 
 
 
-NPY* NPY::make_float4(unsigned int ni, unsigned int nj, float value)
+template <typename T>
+NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
 {
     std::string metadata = "{}";
-    std::vector<float> data;
+    std::vector<T> data;
     std::vector<int> shape ; 
 
     unsigned int nk = 4 ;
@@ -288,7 +299,7 @@ NPY* NPY::make_float4(unsigned int ni, unsigned int nj, float value)
     } 
     }
 
-    NPY* npy = new NPY(shape,data,metadata) ;
+    NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
     return npy ;
 }
 
@@ -296,8 +307,8 @@ NPY* NPY::make_float4(unsigned int ni, unsigned int nj, float value)
 
 
 
-
-unsigned int NPY::getUSum(unsigned int j, unsigned int k)
+template <typename T>
+unsigned int NPY<T>::getUSum(unsigned int j, unsigned int k)
 {
     unsigned int ni = m_len0 ;
     unsigned int nj = m_len1 ;
@@ -319,7 +330,8 @@ unsigned int NPY::getUSum(unsigned int j, unsigned int k)
 
 
 
-std::set<int> NPY::uniquei(unsigned int j, unsigned int k)
+template <typename T>
+std::set<int> NPY<T>::uniquei(unsigned int j, unsigned int k)
 {
     unsigned int ni = m_len0 ;
     unsigned int nj = m_len1 ;
@@ -338,7 +350,8 @@ std::set<int> NPY::uniquei(unsigned int j, unsigned int k)
     return uniq ; 
 }
 
-std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k, int sj, int sk )
+template <typename T>
+std::map<int,int> NPY<T>::count_uniquei(unsigned int j, unsigned int k, int sj, int sk )
 {
     unsigned int ni = m_len0 ;
     unsigned int nj = m_len1 ;
@@ -378,5 +391,52 @@ std::map<int,int> NPY::count_uniquei(unsigned int j, unsigned int k, int sj, int
 
 
 
+// template specializations 
+template<>
+const char NPY<float>::type = FLOAT ;
+template<>
+const char NPY<short>::type = SHORT ;
+template<>
+const char NPY<double>::type = DOUBLE ;
 
+
+
+/*
+* :google:`move templated class implementation out of header`
+* http://www.drdobbs.com/moving-templates-out-of-header-files/184403420
+
+A compiler warning "declaration does not declare anything" was avoided
+by putting the explicit template instantiation at the tail rather than the 
+head of the implementation.
+*/
+
+
+
+
+
+template class NPY<float>;
+template class NPY<double>;
+template class NPY<short>;
+
+
+
+/*
+// http://stackoverflow.com/questions/6448653/c-how-to-use-type-in-template-function-to-branch
+
+template<typename T>
+struct switch_value {};
+
+template<>
+struct switch_value<int>
+{
+    enum { value = 1 };
+};
+
+template<>
+struct switch_value<char>
+{
+    enum { value = 2 };
+};
+
+*/
 

@@ -217,8 +217,16 @@ void OptiXEngine::initGeometry()
 
     m_context[ "top_object" ]->set( m_geometry_group );
 
+    gfloat4 ce = mm->getCenterExtent(0);
+    m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
+
     // cf with MeshViewer::initGeometry
-    LOG(info) << "OptiXEngine::initGeometry DONE " ;
+    LOG(info) << "OptiXEngine::initGeometry DONE "
+              << " x: " << ce.x  
+              << " y: " << ce.y  
+              << " z: " << ce.z  
+              << " w: " << ce.w  ;
+              
 }
 
 
@@ -324,7 +332,7 @@ void OptiXEngine::initGenerate()
 
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
-    NPY* gensteps = evt->getGenstepData();
+    NPY<float>* gensteps = evt->getGenstepData();
 
     assert(gensteps->getDimensions() == 3);
     assert(gensteps->getShape(1) == 6);
@@ -351,7 +359,7 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     } 
 
 
-    NPY* photons = evt->getPhotonData();
+    NPY<float>* photons = evt->getPhotonData();
 
     int photon_buffer_id = photons ? photons->getBufferId() : -1 ;
     if(photon_buffer_id > -1)
@@ -373,9 +381,41 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
                   << " photon_count " << photon_count 
                   << " photon_numquad " << photon_numquad 
                   << " photon_totquad " << photon_totquad  ;
+    }
+
+
+    NPY<short>* records = evt->getRecordData();
+    assert(records);
+
+    int record_buffer_id = records ? records->getBufferId() : -1 ;
+    if(record_buffer_id > -1)
+    {
+        unsigned int record_count = records->getShape(0);
+        unsigned int record_numquad = records->getShape(1);  
+        unsigned int record_totquad = record_count * record_numquad ;  
+
+        // inside generate.cu::generate saw what looked like recycled memory 
+        // with nan sprinkles when this was incorrectly RT_BUFFER_OUTPUT
+        m_record_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, record_buffer_id);
+        m_record_buffer->setFormat(RT_FORMAT_SHORT4);
+        m_record_buffer->setSize( record_totquad );
+        m_context["record_buffer"]->set( m_record_buffer );
+
+        LOG(info) << "OptiXEngine::initGenerate "
+                  << " record_buffer_id " << record_buffer_id 
+                  << " record_count " << record_count 
+                  << " record_numquad " << record_numquad 
+                  << " record_totquad " << record_totquad  ;
+    }
+    else
+    {
+        LOG(fatal) << "OptiXEngine::initGenerate record buffer not uploaded to GPU " ;
+        assert(0); 
+    }
+
  
 
-    }
+
 }
 
 

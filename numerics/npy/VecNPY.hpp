@@ -1,8 +1,7 @@
 #pragma once
 
-class NPY ; 
 #include <glm/glm.hpp>
-
+#include "NPY.hpp"
 /*
 
 VecNPY is ultra-lightweight, just managing 
@@ -21,26 +20,33 @@ VecNPY is ultra-lightweight, just managing
 
 */
 
+
+
 class VecNPY {
     public:
         //
         // Ctor assumes 3-dimensional NPY array structure 
         // with shapes like (10000,6,4) in which case j 0:5 k 0:3 size=1:4 (usually 4 as quads are most efficient)
         //
-        VecNPY(const char* name, NPY* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='f') ;
+        VecNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='f', bool norm=false) ;
+        VecNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='s', bool norm=false) ;
 
     public:
         void dump(const char* msg);
         void Summary(const char* msg);
         void Print(const char* msg);
 
-        NPY*         getNPY(){    return m_npy ; }
+       // unclear how to pop off an NPY base class to hold the data, so kludging 
+        NPY<float>*  getNPYf(){   return m_npy_f ; }
+        NPY<short>*  getNPYs(){   return m_npy_s ; }
+
         void*        getBytes(){  return m_bytes ; }
         unsigned int getNumBytes(){  return m_numbytes ; }
         unsigned int getStride(){ return m_stride ; }
         unsigned long getOffset(){ return m_offset ; }
         unsigned int getCount(){  return m_count ; }
         unsigned int getSize(){   return m_size ; }  //typically 1,2,3,4 
+        bool         getNorm(){ return m_norm ; }
 
     public:
         glm::mat4&   getModelToWorld();
@@ -53,10 +59,12 @@ class VecNPY {
         void findBounds();
     private:
         char*        m_name   ; 
-        NPY*         m_npy   ;
+        NPY<float>*  m_npy_f   ;
+        NPY<short>*  m_npy_s   ;
         void*        m_bytes   ;
         unsigned int m_size   ;   
         char         m_type ; 
+        bool         m_norm ;
         unsigned int m_numbytes ;  
         unsigned int m_stride ;  
         unsigned long m_offset ;  

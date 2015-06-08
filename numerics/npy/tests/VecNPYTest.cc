@@ -7,7 +7,7 @@
 
 void test_VecNPY()
 {   
-    NPY* npy = NPY::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1");
 
     VecNPY v("test", npy,1,0);  // [:,1,0:3]
     v.dump("vecNPY"); 

@@ -19,6 +19,29 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+
+Specular Ray Trace
+---------------------
+
+* how to create an RGB image from mono single wavelength images ?
+
+* http://www.pjreddie.com/media/files/Redmon_Thesis.pdf
+
+
+* optix helpers.h has XYZ2rgb  (from CIE XYZ to RGB)
+
+::
+
+    static __host__ __device__ __inline__ optix::float3 XYZ2rgb( const optix::float3& xyz)
+
+
+
+Raytrace with OpenGL compute shaders
+--------------------------------------
+
+* https://github.com/LWJGL/lwjgl3-wiki/wiki/2.6.1.-Ray-tracing-with-OpenGL-Compute-Shaders-(Part-I)
+
+
 Acceleration Cache Flakiness
 ------------------------------
 

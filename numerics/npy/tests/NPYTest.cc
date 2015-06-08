@@ -12,25 +12,25 @@ void test_ctor()
     std::vector<float> data = {1.f,2.f,3.f,4.f}  ;
     std::string metadata = "{}";
 
-    NPY npy(shape,data,metadata) ;
+    NPY<float> npy(shape,data,metadata) ;
     std::cout << npy.description("npy") << std::endl ; 
 }
 
 void test_path()
 {
-    std::string path = NPY::path("cerenkov", "1");
+    std::string path = NPY<float>::path("cerenkov", "1");
     std::cout << path << std::endl ; 
 }
 
 void test_load()
 {
-    NPY* npy = NPY::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1");
     std::cout << npy->description("npy") << std::endl ; 
 }
 
 void test_save_path()
 {
-    NPY* npy = NPY::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1");
     std::cout << npy->description("npy") << std::endl ; 
     npy->save("/tmp/test_save_path.npy");
 }
@@ -41,27 +41,27 @@ void test_load_path()
 {
     const char* path = "/tmp/slowcomponent.npy" ;
     //const char* path = "/usr/local/env/cerenkov/1.npy" ;
-    NPY* npy = NPY::debugload(path);
+    NPY<float>* npy = NPY<float>::debugload(path);
     if(npy) npy->Summary(path);
 }
 
 
 void test_load_missing()
 {
-    NPY* npy = NPY::load("cerenkov","missing");
+    NPY<float>* npy = NPY<float>::load("cerenkov","missing");
     if(npy) std::cout << npy->description("npy") << std::endl ; 
 }
 
 void test_g4stepnpy()
 {
-    NPY* npy = NPY::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1");
     G4StepNPY* step = new G4StepNPY(npy);   
     step->dump("G4StepNPY");
 }
 
 void test_getData()
 {
-    NPY* npy = NPY::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1");
     float* data = npy->getValues();
 
     for(unsigned int i=0 ; i < 16 ; i++ )
@@ -82,8 +82,8 @@ void test_getData()
 
 void test_getUSum()
 {
-    NPY* c1 = NPY::load("cerenkov","1");
-    NPY* s1 = NPY::load("scintillation","1");
+    NPY<float>* c1 = NPY<float>::load("cerenkov","1");
+    NPY<float>* s1 = NPY<float>::load("scintillation","1");
     
     unsigned int n_c1 = c1->getUSum(0, 3);
     unsigned int n_s1 = s1->getUSum(0, 3);

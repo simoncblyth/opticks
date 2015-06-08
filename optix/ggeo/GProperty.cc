@@ -29,7 +29,7 @@ const char* GProperty<T>::VALUE_FMT = " %10.3f" ;
 template <typename T>
 GProperty<T>* GProperty<T>::load(const char* path)
 {
-    NPY* npy = NPY::load(path);
+    NPY<T>* npy = NPY<T>::load(path);
     npy->Summary();
 
     assert(npy->getDimensions() == 2);
@@ -40,10 +40,10 @@ GProperty<T>* GProperty<T>::load(const char* path)
 
     unsigned int len = ni*nj ;
 
-    float* fdata = npy->getValues();
+    T* fdata = npy->getValues();
 
 
-    // translate into local type
+    // translate into local type ? no longer needed have moved to templated NPY ?
     T* data = new T[len];
     for( unsigned int i = 0 ; i < len ; i++)
     {
@@ -164,7 +164,7 @@ void GProperty<T>::save(const char* path)
     shape.push_back(len);
     shape.push_back(2);
 
-    std::vector<float> data ; 
+    std::vector<T> data ; 
     for(unsigned int i=0 ; i < len ; i++ ){ 
     for(unsigned int j=0 ; j < 2 ; j++ )
     { 
@@ -176,7 +176,7 @@ void GProperty<T>::save(const char* path)
     }
     }
     LOG(info) << "GProperty::save 2d array of length " << len << " to : " << path ;  
-    NPY npy(shape, data, metadata);
+    NPY<T> npy(shape, data, metadata);
     npy.save(path);
 }
 

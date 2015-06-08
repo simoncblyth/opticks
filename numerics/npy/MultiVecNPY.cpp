@@ -15,7 +15,8 @@ void MultiVecNPY::add(VecNPY* vec)
     if(m_vecs.size() > 0)
     {
         VecNPY* prior = m_vecs.back();
-        assert(prior->getNPY() == vec->getNPY() && "LIMITATION : all VecNPY in a MultiVecNPY must be views of the same underlying NPY");        
+        assert(prior->getNPYf() == vec->getNPYf() && "LIMITATION : all VecNPY in a MultiVecNPY must be views of the same underlying NPY");        
+        assert(prior->getNPYs() == vec->getNPYs() && "LIMITATION : all VecNPY in a MultiVecNPY must be views of the same underlying NPY");        
     }
     m_vecs.push_back(vec);
 }

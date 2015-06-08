@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     lookup.create(argv[1]);
     lookup.dump("LookupTest");
 
-    G4StepNPY cs(NPY::load("cerenkov", "1"));
+    G4StepNPY cs(NPY<float>::load("cerenkov", "1"));
     cs.setLookup(&lookup);
     cs.applyLookup(0, 2); // materialIndex  (1st quad, 3rd number)
 

@@ -38,7 +38,9 @@ void Rdr::upload(MultiVecNPY* mvn)
     check_uniforms();
 
 
-    NPY *npy(NULL);
+    NPY<float>* npyf(NULL);
+    NPY<short>* npys(NULL);
+
     unsigned int count(0);
 
     for(unsigned int i=0 ; i<mvn->getNumVecs() ; i++)
@@ -48,20 +50,33 @@ void Rdr::upload(MultiVecNPY* mvn)
          // MultiVecNPY are constrained to all refer to the same underlying NPY 
          // so only do upload and m_buffer creation for the first 
  
-         if(npy == NULL)
+         if(npyf == NULL && npys == NULL)
          {
-             npy = vnpy->getNPY(); 
              count = vnpy->getCount();
              setCountDefault(count);
 
-             upload(npy->getBytes(), npy->getNumBytes(0));
+             npyf = vnpy->getNPYf(); 
 
-             npy->setBufferId(m_buffer); // record OpenGL buffer id with the data for convenience
+             if(npyf == NULL)
+             {
+                npys = vnpy->getNPYs();
+                upload(npys->getBytes(), npys->getNumBytes(0));
+                npys->setBufferId(m_buffer); 
+             }
+             else
+             {
+                 upload(npyf->getBytes(), npyf->getNumBytes(0));
+                 npyf->setBufferId(m_buffer); 
+                 // record OpenGL buffer id with the data for convenience
+             }
 
          }
          else 
          {
-             assert(npy == vnpy->getNPY());     // make sure all match
+             // when non-null they must match match
+             assert(npys == NULL || npys == vnpy->getNPYs());     
+             assert(npyf == NULL || npyf == vnpy->getNPYf());
+     
              LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
              assert(count == vnpy->getCount());
          }
@@ -80,27 +95,45 @@ void Rdr::upload(void* data, unsigned int nbytes)
     glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_STATIC_DRAW );
 }
 
-
-
-void Rdr::download( NPY* npy )
+void* Rdr::mapbuffer( int buffer_id, GLenum target )
 {
-    int buffer_id = npy ? npy->getBufferId() : -1 ;
-    if(buffer_id == -1) return ;
-
-    LOG(info)<< "Rdr::download " << " buffer_id " << buffer_id  ;
-
-    GLenum target = GL_ARRAY_BUFFER ;
+    LOG(info)<< "Rdr::mapbuffer " << " buffer_id " << buffer_id  ;
+    if(buffer_id == -1) return NULL ;
     GLenum access = GL_READ_ONLY ; 
-
     glBindBuffer( target, buffer_id );
-
     void* ptr = glMapBuffer( target, access );  
-    npy->read(ptr);
-    glUnmapBuffer(target);
-
-    glBindBuffer(target, 0 );
-
+    return ptr ;
 }
+
+void Rdr::unmapbuffer(GLenum target)
+{
+    glUnmapBuffer(target);
+    glBindBuffer(target, 0 );
+}
+
+
+void Rdr::download( NPY<float>* npy )
+{
+    GLenum target = GL_ARRAY_BUFFER ;
+    void* ptr = mapbuffer( npy->getBufferId(), target );
+    if(ptr)
+    {
+       npy->read(ptr);
+       unmapbuffer(target);
+    }
+}
+
+void Rdr::download( NPY<short>* npy )
+{
+    GLenum target = GL_ARRAY_BUFFER ;
+    void* ptr = mapbuffer( npy->getBufferId(), target );
+    if(ptr)
+    {
+       npy->read(ptr);
+       unmapbuffer(target);
+    }
+}
+
 
 
 void Rdr::address(VecNPY* vnpy)
@@ -120,12 +153,13 @@ void Rdr::address(VecNPY* vnpy)
         case 'f':type = GL_FLOAT        ; break ;
         case 'i':type = GL_INT          ; break ;
         case 'u':type = GL_UNSIGNED_INT ; break ;
+        case 's':type = GL_SHORT        ; break ;
         default: assert(0)              ; break ; 
     }
 
     GLuint       index = location  ;       //  generic vertex attribute to be modified
     GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4
-    GLboolean     norm = GL_FALSE ; 
+    GLboolean     norm = vnpy->getNorm() ; 
     GLsizei       stride = vnpy->getStride();  ;         // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
     const GLvoid* offset = (const GLvoid*)vnpy->getOffset() ;      
 
@@ -138,6 +172,11 @@ void Rdr::address(VecNPY* vnpy)
     }
     else if( type == GL_FLOAT )
     {
+        glVertexAttribPointer(index, size, type, norm, stride, offset);
+    }
+    else if( type == GL_SHORT )
+    {
+        assert(norm == true);
         glVertexAttribPointer(index, size, type, norm, stride, offset);
     }
     else

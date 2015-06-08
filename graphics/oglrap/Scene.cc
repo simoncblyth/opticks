@@ -34,76 +34,7 @@
 const char* Scene::PHOTON = "photon" ; 
 const char* Scene::GENSTEP = "genstep" ; 
 const char* Scene::GEOMETRY = "geometry" ; 
-
-#ifdef MODE_GYMNASTICS
-// simply moving ImGui code into the class obviates the need for the gymnastics
-// but retaining for now as an example
-
-const char** Scene::MODES = NULL ;
-bool**       Scene::MODES_PTR = NULL ;
-unsigned int Scene::N_MODES = 3 ;
-unsigned int Scene::getNumModes()
-{
-    return Scene::N_MODES ; 
-}
-const char** Scene::getModeNames()
-{
-    if(!MODES) MODES = makeModeNames();
-    return MODES ; 
-}
-bool** Scene::getModePointers()
-{
-    if(!MODES_PTR) MODES_PTR = makeModePointers();
-    return MODES_PTR ;
-}
-const char** Scene::makeModeNames()
-{
-    const char** c = new const char*[N_MODES] ; 
-    c[0] = Scene::GEOMETRY ; 
-    c[1] = Scene::GENSTEP ; 
-    c[2] = Scene::PHOTON ; 
-    return c ; 
-}
-bool** Scene::makeModePointers()
-{
-    bool** b = new bool*[N_MODES] ; 
-    b[0] = &m_geometry_mode ; 
-    b[1] = &m_genstep_mode ; 
-    b[2] = &m_photon_mode ; 
-    return b ;
-}
-const char* Scene::getModeName(unsigned int n)
-{
-    const char** modes = getModeNames();
-    return n < N_MODES ? modes[n] : "Scene::getModeName ERROR" ; 
-}
-bool* Scene::getModePointer(unsigned int n)
-{
-    bool** modes = getModePointers();
-    return n < N_MODES ? modes[n] : NULL ; 
-}
-void Scene::dumpModes(const char* msg)
-{
-    printf("%s\n", msg);
-    for(unsigned int i=0 ; i < N_MODES ; i++)
-    {
-        bool* b = getModePointer(i);
-        printf("%2d : %d :%s \n", i, *b, Scene::getModeName(i) );
-    }
-}
-void Scene::setMode(unsigned int i, bool mode)
-{
-    bool* b = getModePointer(i);
-    if(b)
-    {
-       *b = mode ;
-    }
-    else
-    {
-       printf("Scene::setMode ERRROR i %d \n", i );
-    }
-}
-#endif
+const char* Scene::RECORD   = "record" ; 
 
 
 void Scene::gui()
@@ -115,6 +46,7 @@ void Scene::gui()
      ImGui::Checkbox(GEOMETRY, &m_geometry_mode);
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
      ImGui::Checkbox(PHOTON,   &m_photon_mode);
+     ImGui::Checkbox(RECORD,   &m_record_mode);
      ImGui::Text(" target: %u ", m_target );
 #endif    
 }
@@ -195,6 +127,7 @@ void Scene::init()
     m_geometry_renderer = new Renderer("nrm");
     m_genstep_renderer = new Rdr("p2l");
     m_photon_renderer = new Rdr("pos");
+    m_record_renderer = new Rdr("rec");
 }
 
 void Scene::setComposition(Composition* composition)
@@ -203,6 +136,7 @@ void Scene::setComposition(Composition* composition)
     m_geometry_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
     m_photon_renderer->setComposition(composition);
+    m_record_renderer->setComposition(composition);
 }
 
 const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
@@ -216,10 +150,11 @@ const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
     return idpath ;
 }
 
-void Scene::loadEvt()
+void Scene::uploadEvt()
 {
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
     m_photon_renderer->upload(m_evt->getPhotonAttr());
+    m_record_renderer->upload(m_evt->getRecordAttr());
 }
 
 void Scene::render()
@@ -227,6 +162,7 @@ void Scene::render()
     if(m_geometry_mode) m_geometry_renderer->render();
     if(m_genstep_mode)  m_genstep_renderer->render();  
     if(m_photon_mode)   m_photon_renderer->render();
+    if(m_record_mode)   m_record_renderer->render();
 }
 
 unsigned int Scene::touch(int ix, int iy, float depth)

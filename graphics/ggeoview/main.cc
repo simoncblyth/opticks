@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     std::string tag_ = fcfg->getEventTag();
     const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
 
-    NPY* npy = NPY::load(typ, tag) ;
+    NPY<float>* npy = NPY<float>::load(typ, tag) ;
 
     G4StepNPY genstep(npy);    
     Lookup lookup ; 
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
 
     evt.setGenstepData(npy); 
 
-    scene.loadEvt();
+    scene.uploadEvt();
     //
     // TODO:  
     //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
@@ -205,11 +205,15 @@ int main(int argc, char** argv)
 
     engine.generate();
 
-    NPY* photonData = evt.getPhotonData();
+    NPY<float>* photonData = evt.getPhotonData();
     Rdr::download(photonData);
-    char otyp[64];
-    snprintf(otyp, 64, "ox%s", typ );
-    photonData->save(otyp, tag);
+    photonData->save("ox%s", typ,  tag);
+
+
+    NPY<short>* rec = evt.getRecordData();
+    Rdr::download(rec);
+    rec->save("rc%s", typ,  tag);
+
 
 
     Photons photons(photonData) ;

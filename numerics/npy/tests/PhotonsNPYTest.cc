@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv)
 {
-    PhotonsNPY oxc(NPY::load("oxcerenkov", "1"));
+    PhotonsNPY oxc(NPY<float>::load("oxcerenkov", "1"));
     oxc.dump("oxc.dump");
     oxc.classify();
 

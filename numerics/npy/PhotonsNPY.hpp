@@ -6,15 +6,14 @@
 #include <string>
 #include <vector>
 
-
-class NPY ;
+#include "NPY.hpp"
 
 class PhotonsNPY {
    public:  
        typedef std::vector< std::pair<int, std::string> >  Choices_t ; 
 
-       PhotonsNPY(NPY* npy); // weak reference to NPY* only
-       NPY* getNPY();
+       PhotonsNPY(NPY<float>* npy); // weak reference to NPY* only
+       NPY<float>* getNPY();
 
        // boundary names corresponding to absolute integer codes 
        // TODO: offset codes by one to avoid confusion regarding sign of Vacuum/Vacuum 0 
@@ -48,7 +47,7 @@ class PhotonsNPY {
        void dump(const char* msg);
 
    private:
-       NPY*                         m_npy ; 
+       NPY<float>*                  m_npy ; 
 
    protected:
        std::map<int, std::string>   m_names ; 
@@ -63,14 +62,14 @@ class PhotonsNPY {
 
 
 
-inline PhotonsNPY::PhotonsNPY(NPY* npy) 
+inline PhotonsNPY::PhotonsNPY(NPY<float>* npy) 
        :  
        m_npy(npy),
        m_boundaries_selection(NULL)
 {
 }
 
-inline NPY* PhotonsNPY::getNPY()
+inline NPY<float>* PhotonsNPY::getNPY()
 {
     return m_npy ; 
 }
