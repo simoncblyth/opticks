@@ -1,8 +1,6 @@
 #pragma once
 
-// mm/ns
-#define SPEED_OF_LIGHT 299.792458f
-
+#include "define.h"
 // /usr/local/env/chroma_env/src/chroma/chroma/cuda/photon.h
 
 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)

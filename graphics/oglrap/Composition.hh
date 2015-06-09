@@ -48,16 +48,18 @@ class Composition : public Configurable {
       void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain
       void setTimeDomain(gfloat4 td);
 
-
   public:
       // avaiable as uniform inside shaders allowing GPU-side selections 
       void setSelection(glm::ivec4 sel);
       void setSelection(std::string sel);
       glm::ivec4& getSelection();
+
   public:
       void setParam(glm::vec4 par);
       void setParam(std::string par);
       glm::vec4&  getParam();
+
+
   public:
       void setFlags(glm::ivec4 flags);
       void setFlags(std::string flags);

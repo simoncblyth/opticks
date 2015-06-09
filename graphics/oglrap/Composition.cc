@@ -23,6 +23,12 @@
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 
+
+// TODO: rearrange defines to avoid duplicating this
+// mm/ns
+#define SPEED_OF_LIGHT 299.792458f
+
+
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -131,7 +137,9 @@ void Composition::gui()
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "param.z", param + 2,  0.f, 1000.0f, "%0.3f", 2.0f);
-    ImGui::SliderFloat( "param.w", param + 3,  0.f, 100.0f,  "%0.3f");
+    ImGui::SliderFloat( "domain_time", param + 3,  m_domain_time.x, m_domain_time.y,  "%0.3f", 2.0f);
+
+    ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *(param + 3) * SPEED_OF_LIGHT / 1000.f );
 #endif    
 }
 
@@ -216,12 +224,12 @@ void Composition::setParam(glm::vec4 param)
 {
     m_param = param ;
 }
-  
+ 
+ 
 void Composition::setTimeDomain(gfloat4 td)
 {
     m_domain_time = glm::vec4(td.x, td.y, td.z, td.w); 
 }
-
 
 void Composition::setDomainCenterExtent(gfloat4 ce)
 {

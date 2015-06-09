@@ -179,6 +179,7 @@ void Rdr::check_uniforms()
     m_selection_location = m_shader->uniform("Selection", required );     
     m_flags_location = m_shader->uniform("Flags", required );     
     m_param_location = m_shader->uniform("Param", required );     
+    m_timedomain_location = m_shader->uniform("TimeDomain", required );     
 
     // the "tag" argument of the Rdr identifies the GLSL code being used
     // determining which uniforms are required 
@@ -207,6 +208,9 @@ void Rdr::update_uniforms()
 
         glm::vec4 par = m_composition->getParam();
         glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
+
+        glm::vec4 td = m_composition->getTimeDomain();
+        glUniform4f(m_timedomain_location, td.x, td.y, td.z, td.w  );    
 
     } 
     else
