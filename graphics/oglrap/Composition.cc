@@ -126,7 +126,12 @@ void Composition::gui()
 {
 #ifdef GUI_
     if(ImGui::Button("home")) home();
-    ImGui::SliderFloat4("param", glm::value_ptr(m_param),  0.f, 1000.0f, "%0.3f", 2.0f);
+    //ImGui::SliderFloat4("param", glm::value_ptr(m_param),  0.f, 1000.0f, "%0.3f", 2.0f);
+    float* param = glm::value_ptr(m_param) ;
+    ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
+    ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
+    ImGui::SliderFloat( "param.z", param + 2,  0.f, 1000.0f, "%0.3f", 2.0f);
+    ImGui::SliderFloat( "param.w", param + 3,  0.f, 100.0f,  "%0.3f");
 #endif    
 }
 
@@ -212,6 +217,11 @@ void Composition::setParam(glm::vec4 param)
     m_param = param ;
 }
   
+void Composition::setTimeDomain(gfloat4 td)
+{
+    m_domain_time = glm::vec4(td.x, td.y, td.z, td.w); 
+}
+
 
 void Composition::setDomainCenterExtent(gfloat4 ce)
 {

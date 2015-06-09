@@ -157,11 +157,14 @@ TODO
     * non-OpenGL OptiXCore 
     * separate OptiXRenderer
 
-* visualizing generated photon initial positions
+  Currently are basing off of OpenGL buffer objects, need to 
+  arrange OptiX setup code to be agnostic in this regard 
 
 
 DONE
 -----
+
+* visualizing generated photon initial positions
 
 * add clipping planes to "nrm" shaders as check of 
   shader uniform handling and as need to clip 

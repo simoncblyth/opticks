@@ -46,6 +46,7 @@ class Composition : public Configurable {
   public: 
       void setCenterExtent(gfloat4 ce, bool autocam=false); // effectively points at what you want to look at 
       void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain
+      void setTimeDomain(gfloat4 td);
 
 
   public:
@@ -112,6 +113,7 @@ class Composition : public Configurable {
       glm::vec4& getGaze();
       glm::vec4& getCenterExtent();
       glm::vec4& getDomainCenterExtent();
+      glm::vec4& getTimeDomain();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
       float*     getWorld2EyePtr();  // ModelView  including trackballing
@@ -149,6 +151,7 @@ class Composition : public Configurable {
       glm::vec4 m_center_extent ; 
       glm::vec4 m_domain_center_extent ; 
       glm::mat4 m_domain_isnorm ;     
+      glm::vec4 m_domain_time ; 
   private:
       glm::ivec4 m_selection ;
       glm::ivec4 m_flags ;
@@ -257,6 +260,12 @@ inline glm::vec4& Composition::getDomainCenterExtent()
 {
     return m_domain_center_extent ; 
 }
+inline glm::vec4& Composition::getTimeDomain()
+{
+    return m_domain_time ; 
+}
+
+
 inline glm::mat4& Composition::getDomainISNorm()
 {
     return m_domain_isnorm ; 

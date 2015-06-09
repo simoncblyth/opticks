@@ -6,6 +6,8 @@
 #include "VecNPY.hpp"
 #include "MultiVecNPY.hpp"
 
+#include "limits.h"
+#include "assert.h"
 #include <sstream>
 
 #include <boost/log/trivial.hpp>
@@ -24,10 +26,15 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
     m_num_photons = m_genstep_data->getUSum(0,3);
 
-    NPY<float>* pho = NPY<float>::make_vec4(m_num_photons, 4); // must match GPU side photon.h:PQUAD
+    NPY<float>* pho = NPY<float>::make_vec4(m_num_photons, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<short>* rec = NPY<short>::make_vec4(m_num_photons, 2); 
+
+
+
+    assert(SHRT_MIN == -(1 << 15));      // -32768
+    assert(SHRT_MAX ==  (1 << 15) - 1);  // +32767
+    NPY<short>* rec = NPY<short>::make_vec4(getNumRecords(), 2, SHRT_MIN); 
     setRecordData(rec);   
 
 
@@ -88,8 +95,8 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
     m_record_data = record_data  ;
     m_record_attr = new MultiVecNPY();
     unsigned int size = 4 ; 
-    m_record_attr->add(new VecNPY("rpos",m_record_data,0,0,size,'s',true));    // 4*signed short int to be normalized into -1.f:1.f by OpenGL     (1st half-quad)
-    m_record_attr->add(new VecNPY("rflg",m_record_data,1,0,size,'s',false));   // 4*signed short int                                              (2nd half-quad)
+    m_record_attr->add(new VecNPY("rpos",m_record_data,0,0,size,'s',true));    // 4*signed short int to be normalized into -1.f:1.f by OpenGL     (1st quad [half size])
+    m_record_attr->add(new VecNPY("rflg",m_record_data,1,0,size,'s',false));   // 4*signed short int                                              (2nd quad [half size])
 }
 
 

@@ -29,6 +29,7 @@ rtBuffer<short4>    record_buffer;   // 2 short4 take same space as 1 float4 qua
 rtBuffer<curandState, 1> rng_states ;
 
 rtDeclareVariable(float4,        center_extent, , );
+rtDeclareVariable(float4,        time_domain  , , );
 rtDeclareVariable(float,         propagate_epsilon, , );
 rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
@@ -98,6 +99,12 @@ RT_PROGRAM void generate()
 
 
     int bounce = 0 ; 
+
+
+
+
+
+
     int command ; 
 
     while( bounce < bounce_max )
@@ -146,7 +153,7 @@ RT_PROGRAM void generate()
 
     psave(p, photon_buffer, photon_offset ); 
 
-    rsave(p, record_buffer, record_offset, center_extent );
+    rsave(p, record_buffer, record_offset, center_extent, time_domain );
 
     rng_states[photon_id] = rng ;
 }

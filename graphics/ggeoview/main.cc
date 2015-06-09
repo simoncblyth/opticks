@@ -1,6 +1,7 @@
 #include <stdlib.h>  //exit()
 #include <stdio.h>
 
+#include "define.h"
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
@@ -171,6 +172,7 @@ int main(int argc, char** argv)
 
     GMergedMesh* mm = scene.getMergedMesh(); 
     composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
+    composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
 
 
     GSubstanceLibMetadata* meta = scene.getMetadata(); 
@@ -193,6 +195,7 @@ int main(int argc, char** argv)
     genstep.setLookup(&lookup); 
     genstep.applyLookup(0, 2); // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
 
+    evt.setMaxRec( MAXREC );  // must set this before setGenStepData to have effect
     evt.setGenstepData(npy); 
 
     scene.uploadEvt();

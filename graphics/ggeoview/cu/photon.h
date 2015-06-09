@@ -1,5 +1,11 @@
 #pragma once
+
 #define PNUMQUAD 4  // quads per photon  
+#define RNUMQUAD 2  // quads per record  
+
+// http://stackoverflow.com/questions/7337526/how-to-tell-if-a-32-bit-int-can-fit-in-a-16-bit-short
+// see npy-/numutil.cpp
+#define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
 
 struct Photon
 {
@@ -65,37 +71,49 @@ __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int p
 
 __device__ short shortnorm( float v, float center, float extent )
 {
-
     // range of short is -32768 to 32767
+    //
+    // TODO: handle out of rangers (observe a few -ve times presumably due to this)
+    //
+    // Expect no positions out of range, as constrained by the geometry are bouncing on,
+    // but out of time range eg 0.:100 ns is inevitable.
+    //
+    // http://mathematica.stackexchange.com/questions/2116/why-round-to-even-integers
 
     float vnorm = 32767.0f * (v - center)/extent ;    // linear scaling into -1.f:1.f 
 
-    int inorm = __float2int_rz(vnorm) ;
+    int inorm = __float2int_rn(vnorm) ;  // 
 
-    return short(inorm) ;
+    return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
 
 
-    //  Huh seems wrong ? should be 2^(b-1) ?  
-    //
-    //  http://www.informit.com/articles/article.aspx?p=2033340&seqNum=3
+    //  The below chapter, has a number of errors : not up to the 
+    //  general high standard of that book
+    //      http://www.informit.com/articles/article.aspx?p=2033340&seqNum=3
     //
     //   f = c / (2^b - 1)          for signed -1:1 case
     //   f = (2c + 1)/( 2^b - 1)    for unsigned 0:1 
     //
-    //    (1 << 16) - 1 = 65535
+    //        (1 << 16) - 1 = 65535
+    //
+    //  Huh seems wrong ? should be 2^(b-1) ?  
     //
     //  http://stereopsis.com/radix.html
 } 
 
-__device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent )
+__device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
 {
     // pack position and time into normalized shorts (16 bits)
     rbuffer[record_offset+0] = make_short4( 
                     shortnorm(p.position.x, center_extent.x, center_extent.w), 
                     shortnorm(p.position.y, center_extent.y, center_extent.w), 
                     shortnorm(p.position.z, center_extent.z, center_extent.w),   
-                    shortnorm(p.time      , 0.f            , 100.f )
+                    shortnorm(p.time      , time_domain.x  , time_domain.y  )
                     ); 
+
+    // TODO: rearrange bitfields to put more important ones into the lower 16 bits
+    //       little-endian : LSB at smallest address ?
+    //
     rbuffer[record_offset+1] = make_short4( p.flags.i.x & 0xFFFF , p.flags.i.y & 0xFFFF, p.flags.i.z, p.flags.i.w); 
 }
 

@@ -213,12 +213,14 @@ void OptiXEngine::initGeometry()
 
     loadAccelCache();
 
-    //m_aabb = geom.getAabb();
 
     m_context[ "top_object" ]->set( m_geometry_group );
 
-    gfloat4 ce = mm->getCenterExtent(0);
+    glm::vec4 ce = m_composition->getDomainCenterExtent();
+    glm::vec4 td = m_composition->getTimeDomain();
+
     m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
+    m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
 
     // cf with MeshViewer::initGeometry
     LOG(info) << "OptiXEngine::initGeometry DONE "
