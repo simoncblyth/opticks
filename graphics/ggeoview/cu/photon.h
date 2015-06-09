@@ -1,8 +1,5 @@
 #pragma once
 
-#define PNUMQUAD 4  // quads per photon  
-#define RNUMQUAD 2  // quads per record  
-
 // http://stackoverflow.com/questions/7337526/how-to-tell-if-a-32-bit-int-can-fit-in-a-16-bit-short
 // see npy-/numutil.cpp
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)

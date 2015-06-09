@@ -44,10 +44,16 @@ void Scene::gui()
      // means the above gymnastics to line up the choices 
      // and selection arrays is not needed
      ImGui::Checkbox(GEOMETRY, &m_geometry_mode);
+
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
      ImGui::Checkbox(PHOTON,   &m_photon_mode);
      ImGui::Checkbox(RECORD,   &m_record_mode);
      ImGui::Text(" target: %u ", m_target );
+     ImGui::Text(" genstep %d photon %d record %d \n", 
+             m_genstep_renderer->getCountDefault(),
+             m_photon_renderer->getCountDefault(),
+             m_record_renderer->getCountDefault()
+     );
 #endif    
 }
 
@@ -127,7 +133,10 @@ void Scene::init()
     m_geometry_renderer = new Renderer("nrm");
     m_genstep_renderer = new Rdr("p2l");
     m_photon_renderer = new Rdr("pos");
+
     m_record_renderer = new Rdr("rec");
+    m_record_renderer->setPrimitive(Rdr::LINES);
+
 }
 
 void Scene::setComposition(Composition* composition)

@@ -18,6 +18,9 @@ class Rdr : public RendererBase  {
       void update_uniforms();
       void dump_uniforms();
 
+      typedef enum { LINES, POINTS } Primitive_t ; 
+      void setPrimitive( Primitive_t prim );
+
   public: 
       void upload(MultiVecNPY* mvn);
 
@@ -58,6 +61,8 @@ class Rdr : public RendererBase  {
       GLint  m_param_location ;
       GLint  m_timedomain_location ;
 
+      GLenum m_primitive ; 
+
 };      
 
 
@@ -74,12 +79,10 @@ inline Rdr::Rdr(const char* tag)
     m_selection_location(-1),
     m_flags_location(-1),
     m_param_location(-1),
-    m_timedomain_location(-1)
+    m_timedomain_location(-1),
+    m_primitive(GL_POINTS)
 {
 }
-
-
-
 
 
 template <typename T>

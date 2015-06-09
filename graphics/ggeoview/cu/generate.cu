@@ -4,11 +4,11 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
+#include "define.h"
 #include "PerRayData_propagate.h"
 
 using namespace optix;
 
-//#include "uif.h"
 #include "quad.h"
 #include "photon.h"
 #include "wavelength_lookup.h"
@@ -19,6 +19,17 @@ using namespace optix;
 #include "state.h"
 #include "rayleigh.h"
 #include "propagate.h"
+
+
+
+// beyond MAXREC overwrite save into top slot
+#define RSAVE(p, slot)  \
+{    \
+    unsigned int slot_offset =  slot < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
+    rsave((p), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
+    (slot)++ ; \
+}   \
+
 
 
 rtBuffer<float4>    genstep_buffer;
@@ -43,7 +54,6 @@ RT_PROGRAM void generate()
     union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
-    unsigned int record_offset = photon_id*2 ;
  
     phead.f = photon_buffer[photon_offset+0] ;
 
@@ -98,13 +108,8 @@ RT_PROGRAM void generate()
     }
 
 
+    int slot = 0 ;
     int bounce = 0 ; 
-
-
-
-
-
-
     int command ; 
 
     while( bounce < bounce_max )
@@ -128,6 +133,8 @@ RT_PROGRAM void generate()
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
+
+        RSAVE(p, slot) ;
 
         if(photon_id == 0)
         {
@@ -153,7 +160,10 @@ RT_PROGRAM void generate()
 
     psave(p, photon_buffer, photon_offset ); 
 
-    rsave(p, record_buffer, record_offset, center_extent, time_domain );
+    //rsave(p, record_buffer, record_offset, center_extent, time_domain );
+
+    RSAVE(p, slot) ;
+
 
     rng_states[photon_id] = rng ;
 }

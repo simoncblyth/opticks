@@ -21,10 +21,19 @@
 const char* Rdr::PRINT = "print" ; 
 
 
+void Rdr::setPrimitive(Primitive_t prim )
+{
+    switch( prim )
+    {
+        case POINTS: m_primitive = GL_POINTS ; break ; 
+        case  LINES: m_primitive = GL_LINES  ; break ; 
+        default    : assert(0)               ; break ;
+    }
+}
+
 
 void Rdr::upload(MultiVecNPY* mvn)
 {
-    LOG(info) << "Rdr::upload for shader tag " << getShaderTag() ;
 
     assert(mvn);
 
@@ -239,10 +248,9 @@ void Rdr::render(unsigned int count, unsigned int first)
 
     GLsizei count_ = count ? count : m_countdefault  ;   // number of indices to be rendered
 
-    glDrawArrays( GL_POINTS, first_, count_ );
-    //glDrawArrays( GL_LINES, first_, count_ );
 
-    // TODO: draw style control, maybe via tags interpreted from shader source ? or a separate control file ?
+    glDrawArrays( m_primitive, first_, count_ );
+
 
     glBindVertexArray(0);
 
