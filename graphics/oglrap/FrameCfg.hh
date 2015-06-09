@@ -35,6 +35,10 @@ public:
            ("cerenkov",  "load cerenkov gensteps") ;
 
        m_desc.add_options()
+           ("alt,a",  "use alternative record renderer") ;
+
+
+       m_desc.add_options()
            ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load" );
 
        m_desc.add_options()

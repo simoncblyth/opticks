@@ -163,7 +163,6 @@ int main(int argc, char** argv)
     frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
     GLFWwindow* window = frame.getWindow();
 
-
     bool nooptix = cfg["frame"]->hasOpt("nooptix");
     bool nogeocache = cfg["frame"]->hasOpt("nogeocache");
     const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
@@ -197,6 +196,10 @@ int main(int argc, char** argv)
 
     evt.setMaxRec( MAXREC );  // must set this before setGenStepData to have effect
     evt.setGenstepData(npy); 
+
+    // RecordStyle must be set before scene.uploadEvt to have effect
+    bool alt = cfg["frame"]->hasOpt("alt") ;    
+    scene.setRecordStyle( alt ? Scene::ALTREC : Scene::REC );    
 
     scene.uploadEvt();
     //

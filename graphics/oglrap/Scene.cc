@@ -1,6 +1,7 @@
 #include "Scene.hh"
 
 #include <GL/glew.h>
+#include "string.h"
 
 // ggeo-
 #include "GLoader.hh"
@@ -137,6 +138,10 @@ void Scene::init()
     m_record_renderer = new Rdr("rec");
     m_record_renderer->setPrimitive(Rdr::LINES);
 
+    m_altrecord_renderer = new Rdr("altrec");
+    m_altrecord_renderer->setPrimitive(Rdr::LINES);
+
+    m_initialized = true ; 
 }
 
 void Scene::setComposition(Composition* composition)
@@ -146,10 +151,18 @@ void Scene::setComposition(Composition* composition)
     m_genstep_renderer->setComposition(composition);
     m_photon_renderer->setComposition(composition);
     m_record_renderer->setComposition(composition);
+    m_altrecord_renderer->setComposition(composition);
 }
 
 const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
 {
+    if(!m_initialized)
+    {
+        // defer init to allow changing 
+        init();
+        m_initialized = true ; 
+    } 
+
     const char* idpath = m_geometry_loader->load(prefix, nogeocache);
     m_geometry = m_geometry_loader->getDrawable();
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
@@ -159,11 +172,29 @@ const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
     return idpath ;
 }
 
+
+Rdr* Scene::getRecordRenderer()
+{
+    Rdr* rdr = NULL ; 
+    switch(m_record_style)
+    {
+        case    REC:rdr = m_record_renderer     ; break ;
+        case ALTREC:rdr = m_altrecord_renderer  ; break ;
+    }
+    return rdr ; 
+}
+
+
 void Scene::uploadEvt()
 {
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
     m_photon_renderer->upload(m_evt->getPhotonAttr());
-    m_record_renderer->upload(m_evt->getRecordAttr());
+    if(m_record_mode)
+    {
+        Rdr* rdr = getRecordRenderer();
+        assert(rdr);
+        rdr->upload(m_evt->getRecordAttr());
+    } 
 }
 
 void Scene::render()
@@ -171,7 +202,12 @@ void Scene::render()
     if(m_geometry_mode) m_geometry_renderer->render();
     if(m_genstep_mode)  m_genstep_renderer->render();  
     if(m_photon_mode)   m_photon_renderer->render();
-    if(m_record_mode)   m_record_renderer->render();
+    if(m_record_mode)
+    {
+        Rdr* rdr = getRecordRenderer();
+        assert(rdr);
+        rdr->render();
+    }
 }
 
 unsigned int Scene::touch(int ix, int iy, float depth)

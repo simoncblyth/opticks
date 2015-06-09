@@ -26,6 +26,10 @@ class Scene : public Configurable {
        static const char* RECORD ;
    public:
        static const char* TARGET ;
+
+       typedef enum { REC, ALTREC } RecordStyle_t ;
+       void setRecordStyle(Scene::RecordStyle_t style);
+
    public:
        Scene();
        void gui();
@@ -45,6 +49,9 @@ class Scene : public Configurable {
         void setComposition(Composition* composition);
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
+        //
+        // TODO: enable live switching of record renderer, 
+        //       currently this must be done prior to loadGeometry to have an effect
 
    public:
         // target cannot live in Composition, as needs geometry 
@@ -81,6 +88,7 @@ class Scene : public Configurable {
         NumpyEvt*     getNumpyEvt();
         Photons*      getPhotons();
         bool*         getModeAddress(const char* name);
+        const char*   getRecordTag();
 
    private:
         void init();
@@ -91,6 +99,7 @@ class Scene : public Configurable {
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
         Rdr*         m_record_renderer ; 
+        Rdr*         m_altrecord_renderer ; 
         NumpyEvt*    m_evt ;
         Photons*     m_photons ; 
         GDrawable*   m_geometry ;
@@ -102,6 +111,9 @@ class Scene : public Configurable {
         bool         m_genstep_mode ; 
         bool         m_photon_mode ; 
         bool         m_record_mode ; 
+   private:
+        RecordStyle_t m_record_style ; 
+        bool          m_initialized ;  
 
 };
 
@@ -112,6 +124,7 @@ inline Scene::Scene() :
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
             m_record_renderer(NULL),
+            m_altrecord_renderer(NULL),
             m_evt(NULL),
             m_photons(NULL),
             m_geometry(NULL),
@@ -121,10 +134,14 @@ inline Scene::Scene() :
             m_geometry_mode(true),
             m_genstep_mode(true),
             m_photon_mode(true),
-            m_record_mode(true)
+            m_record_mode(true),
+            m_record_style(REC),
+            m_initialized(false)
 {
-    init();
+    init();  // defer until loadGeometry
 }
+
+
 
 
 
@@ -159,11 +176,6 @@ inline Rdr* Scene::getPhotonRenderer()
 {
     return m_photon_renderer ; 
 }
-inline Rdr* Scene::getRecordRenderer()
-{
-    return m_record_renderer ; 
-}
-
 
 
 
@@ -193,6 +205,10 @@ inline void Scene::setPhotons(Photons* photons)
     m_photons = photons ; 
 }
 
+inline void Scene::setRecordStyle(RecordStyle_t style)
+{
+    m_record_style = style ; 
+}
 
 
 
