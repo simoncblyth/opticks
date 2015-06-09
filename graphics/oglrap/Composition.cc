@@ -213,6 +213,19 @@ void Composition::setParam(glm::vec4 param)
 }
   
 
+void Composition::setDomainCenterExtent(gfloat4 ce)
+{
+    m_domain_center_extent.x = ce.x ;
+    m_domain_center_extent.y = ce.y ;
+    m_domain_center_extent.z = ce.z ;
+    m_domain_center_extent.w = ce.w ;
+
+    glm::vec3 sc(ce.w);
+    glm::vec3 tr(ce.x, ce.y, ce.z);
+
+    m_domain_isnorm = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);   
+    // inverse signed normalize , ie letting coords out of signed unit box 
+}
 
 void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModelToWorld
 {  
@@ -252,6 +265,12 @@ float* Composition::getWorld2ClipPtr()
 {
     return glm::value_ptr(m_world2clip);
 }
+float* Composition::getWorld2ClipISNormPtr()
+{
+    return glm::value_ptr(m_world2clip_isnorm);
+}
+
+
 float* Composition::getIdentityPtr()
 {
     return glm::value_ptr(m_identity);
@@ -300,6 +319,13 @@ glm::mat4& Composition::getWorld2Clip()  // ModelViewProjection
 {
      return m_world2clip ;
 }
+glm::mat4& Composition::getWorld2ClipISNorm() 
+{
+     return m_world2clip_isnorm ;
+}
+
+
+
 glm::mat4& Composition::getProjection()  
 {
      return m_projection ;
@@ -361,6 +387,8 @@ void Composition::update()
     m_projection = m_camera->getProjection();
 
     m_world2clip = m_projection * m_world2eye ;
+
+    m_world2clip_isnorm = m_world2clip * m_domain_isnorm  ;   // inverse snorm (signed normalization)
 
     m_clipplane = m_clipper->getClipPlane(m_model_to_world) ;
 

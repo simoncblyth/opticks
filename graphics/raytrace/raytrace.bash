@@ -23,9 +23,18 @@ Test Combination of Assimp and OptiX
 Specular Ray Trace
 ---------------------
 
+* :google:`specular raytrace`
+
 * how to create an RGB image from mono single wavelength images ?
 
 * http://www.pjreddie.com/media/files/Redmon_Thesis.pdf
+
+
+Rendering Dispersion with composite spectral model 
+
+* https://www.cs.sfu.ca/~mark/ftp/Cgip00/dispersion_CGIP00.pdf
+
+
 
 
 * optix helpers.h has XYZ2rgb  (from CIE XYZ to RGB)

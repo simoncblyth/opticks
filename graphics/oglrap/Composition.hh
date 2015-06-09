@@ -45,12 +45,7 @@ class Composition : public Configurable {
 
   public: 
       void setCenterExtent(gfloat4 ce, bool autocam=false); // effectively points at what you want to look at 
-
-  public: 
-      // center and extent used for OpenGL normalized short, ie matrix to un-squeeze 
-      // from float box -1.f:1.f 
-      void       setCenterExtentUnNormalizePtr(float* ptr); // typically done once only for entire geometry 
-      float*     getCenterExtentUnNormalizePtr();  
+      void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain
 
 
   public:
@@ -116,6 +111,7 @@ class Composition : public Configurable {
       // getters of the derived properties : need to call update first to make them current
       glm::vec4& getGaze();
       glm::vec4& getCenterExtent();
+      glm::vec4& getDomainCenterExtent();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
       float*     getWorld2EyePtr();  // ModelView  including trackballing
@@ -124,8 +120,16 @@ class Composition : public Configurable {
       glm::mat4& getCamera2World();
       glm::mat4& getEye2Look();
       glm::mat4& getLook2Eye();
-      glm::mat4& getWorld2Clip();     // ModelViewProjection  including trackballing
-      float*     getWorld2ClipPtr();  // ModelViewProjection  including trackballing
+
+   public:
+      // ModelViewProjection including trackballing
+      glm::mat4& getWorld2Clip();   
+      float*     getWorld2ClipPtr();  
+      glm::mat4& getDomainISNorm();
+      glm::mat4& getWorld2ClipISNorm();      // with initial domain_isnorm
+      float*     getWorld2ClipISNormPtr();   
+
+   public:
       float*     getIdentityPtr(); 
       glm::mat4& getProjection(); 
 
@@ -143,6 +147,9 @@ class Composition : public Configurable {
       glm::mat4 m_model_to_world ; 
       float     m_extent ; 
       glm::vec4 m_center_extent ; 
+      glm::vec4 m_domain_center_extent ; 
+      glm::mat4 m_domain_isnorm ;     
+  private:
       glm::ivec4 m_selection ;
       glm::ivec4 m_flags ;
       glm::vec4  m_param ;
@@ -170,6 +177,7 @@ class Composition : public Configurable {
       glm::mat4 m_eye2look ;     
       glm::mat4 m_look2eye ;     
       glm::mat4 m_world2clip ;     
+      glm::mat4 m_world2clip_isnorm ;     
       glm::mat4 m_projection ;     
 
       glm::mat4 m_trackballing ;     
@@ -181,7 +189,6 @@ class Composition : public Configurable {
       glm::mat4 m_itrackballtra ;     
 
       glm::mat4 m_identity ;     
-      float*    m_center_extent_unnormalize_ptr ;
 
   public: 
       void Summary(const char* msg);
@@ -202,20 +209,9 @@ inline Composition::Composition()
   m_trackball(NULL),
   m_view(NULL),
   m_clipper(NULL),
-  m_scene(NULL),
-  m_center_extent_unnormalize_ptr(NULL)
+  m_scene(NULL)
 {
     init();
-}
-
-
-inline void Composition::setCenterExtentUnNormalizePtr(float* ptr)
-{
-    m_center_extent_unnormalize_ptr = ptr ;
-}
-inline float* Composition::getCenterExtentUnNormalizePtr()
-{
-    return m_center_extent_unnormalize_ptr ;
 }
 
 
@@ -257,6 +253,16 @@ inline glm::vec4& Composition::getCenterExtent()
 {
     return m_center_extent ; 
 }
+inline glm::vec4& Composition::getDomainCenterExtent()
+{
+    return m_domain_center_extent ; 
+}
+inline glm::mat4& Composition::getDomainISNorm()
+{
+    return m_domain_isnorm ; 
+}
+
+
 inline glm::ivec4& Composition::getSelection()
 {
     return m_selection ; 

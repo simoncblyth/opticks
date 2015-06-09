@@ -16,13 +16,15 @@ class Rdr : public RendererBase  {
       void render(unsigned int count=0, unsigned int first=0);
       void check_uniforms();
       void update_uniforms();
+      void dump_uniforms();
 
   public: 
       void upload(MultiVecNPY* mvn);
 
       // *download* : when an OpenGL buffer object is associated, glMapBuffer and read data from GPU into NPY instance 
-      static void download(NPY<float>* npy);  
-      static void download(NPY<short>* npy);  
+      template <typename T>
+      static void download(NPY<T>* npy);  
+
       static void* mapbuffer( int buffer_id, GLenum target );
       static void unmapbuffer(GLenum target);
       unsigned int getBufferId();
@@ -50,7 +52,7 @@ class Rdr : public RendererBase  {
 
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
-      GLint  m_ceun_location ;
+      GLint  m_isnorm_mvp_location ;
       GLint  m_selection_location ;
       GLint  m_flags_location ;
       GLint  m_param_location ;
@@ -67,7 +69,7 @@ inline Rdr::Rdr(const char* tag)
     m_composition(NULL),
     m_mv_location(-1),
     m_mvp_location(-1),
-    m_ceun_location(-1),
+    m_isnorm_mvp_location(-1),
     m_selection_location(-1),
     m_flags_location(-1),
     m_param_location(-1)
@@ -78,6 +80,17 @@ inline Rdr::Rdr(const char* tag)
 
 
 
+template <typename T>
+inline void Rdr::download( NPY<T>* npy )
+{
+    GLenum target = GL_ARRAY_BUFFER ;
+    void* ptr = mapbuffer( npy->getBufferId(), target );
+    if(ptr)
+    {
+       npy->read(ptr);
+       unmapbuffer(target);
+    }
+}
 
 
 inline unsigned int Rdr::getBufferId()

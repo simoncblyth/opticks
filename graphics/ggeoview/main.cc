@@ -170,12 +170,7 @@ int main(int argc, char** argv)
     bookmarks.load(idpath); 
 
     GMergedMesh* mm = scene.getMergedMesh(); 
-
-    float* f = (float*)mm->getModelToWorld()->getPointer();
-    dump(f, "f");
-    composition.setCenterExtentUnNormalizePtr(f);
-    dump(composition.getCenterExtentUnNormalizePtr(), "getCenterExtentUnNormalizePtr") ;
-
+    composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
 
 
     GSubstanceLibMetadata* meta = scene.getMetadata(); 

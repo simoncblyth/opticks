@@ -30,7 +30,6 @@ void Rdr::upload(MultiVecNPY* mvn)
 
     //mvn->Print("Rdr::upload");    
 
-
     make_shader();  // need to compile and link shader for access to attribute locations
 
     glUseProgram(m_program);
@@ -112,32 +111,6 @@ void Rdr::unmapbuffer(GLenum target)
 }
 
 
-
-// TODO: templated method
-void Rdr::download( NPY<float>* npy )
-{
-    GLenum target = GL_ARRAY_BUFFER ;
-    void* ptr = mapbuffer( npy->getBufferId(), target );
-    if(ptr)
-    {
-       npy->read(ptr);
-       unmapbuffer(target);
-    }
-}
-
-void Rdr::download( NPY<short>* npy )
-{
-    GLenum target = GL_ARRAY_BUFFER ;
-    void* ptr = mapbuffer( npy->getBufferId(), target );
-    if(ptr)
-    {
-       npy->read(ptr);
-       unmapbuffer(target);
-    }
-}
-
-
-
 void Rdr::address(VecNPY* vnpy)
 {
     const char* name = vnpy->getName();  
@@ -193,12 +166,16 @@ void Rdr::address(VecNPY* vnpy)
 }
 
 
+
+
+
+
 void Rdr::check_uniforms()
 {
     bool required = false ; 
     m_mvp_location = m_shader->uniform("ModelViewProjection", required) ; 
     m_mv_location = m_shader->uniform("ModelView", required );     
-    m_ceun_location = m_shader->uniform("CenterExtentUnNormalize", required );     
+    m_isnorm_mvp_location = m_shader->uniform("ISNormModelViewProjection", required );     
     m_selection_location = m_shader->uniform("Selection", required );     
     m_flags_location = m_shader->uniform("Flags", required );     
     m_param_location = m_shader->uniform("Param", required );     
@@ -206,15 +183,8 @@ void Rdr::check_uniforms()
     // the "tag" argument of the Rdr identifies the GLSL code being used
     // determining which uniforms are required 
 
-    LOG(info) << "Rdr::check_uniforms "
-              << " mvp " << m_mvp_location
-              << " mv " << m_mv_location 
-              << " sel " << m_selection_location 
-              << " flg " << m_flags_location 
-              << " param " << m_param_location 
-              << " ceun " << m_ceun_location 
-              ;
-
+    // TODO: more explicit control of which pipelines need which uniforms ?
+    //       currently using optional for everything 
 }
 
 
@@ -227,7 +197,7 @@ void Rdr::update_uniforms()
 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
-        glUniformMatrix4fv(m_ceun_location, 1, GL_FALSE, m_composition->getCenterExtentUnNormalizePtr());
+        glUniformMatrix4fv(m_isnorm_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipISNormPtr());
 
         glm::ivec4 sel = m_composition->getSelection();
         glUniform4i(m_selection_location, sel.x, sel.y, sel.z, sel.w  );    
@@ -248,8 +218,13 @@ void Rdr::update_uniforms()
 }
 
 
+
+
+
 void Rdr::render(unsigned int count, unsigned int first)
 {
+    // feed vertices into the pipeline
+
     glUseProgram(m_program);
 
     update_uniforms();
@@ -257,16 +232,32 @@ void Rdr::render(unsigned int count, unsigned int first)
     glBindVertexArray(m_vao);
 
     GLint   first_ = first  ;                            // starting index in the enabled arrays
+
     GLsizei count_ = count ? count : m_countdefault  ;   // number of indices to be rendered
 
     glDrawArrays( GL_POINTS, first_, count_ );
     //glDrawArrays( GL_LINES, first_, count_ );
+
+    // TODO: draw style control, maybe via tags interpreted from shader source ? or a separate control file ?
 
     glBindVertexArray(0);
 
     glUseProgram(0);
 }
 
+
+
+void Rdr::dump_uniforms()
+{
+    LOG(info) << "Rdr::dump_uniforms "
+              << " mvp " << m_mvp_location
+              << " mv " << m_mv_location 
+              << " sel " << m_selection_location 
+              << " flg " << m_flags_location 
+              << " param " << m_param_location 
+              << " isnorm_mvp " << m_isnorm_mvp_location 
+              ;
+}
 
 
 
