@@ -37,8 +37,8 @@ add_definitions(
 add_library( ${name}  SHARED
     NumpyEvt.cpp
     NPY.cpp
-    VecNPY.cpp
-    MultiVecNPY.cpp
+    ViewNPY.cpp
+    MultiViewNPY.cpp
     GLMPrint.cpp
     GLMFormat.cpp
     stringutil.cpp
@@ -61,8 +61,8 @@ GLMPrint.hpp
 GLMFormat.hpp
 NumpyEvt.hpp
 NPY.hpp
-VecNPY.hpp
-MultiVecNPY.hpp
+ViewNPY.hpp
+MultiViewNPY.hpp
 G4StepNPY.hpp
 PhotonsNPY.hpp
 numpy.hpp

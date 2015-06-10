@@ -6,8 +6,8 @@
 
 // npy-
 #include "NPY.hpp"
-#include "VecNPY.hpp"
-#include "MultiVecNPY.hpp"
+#include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -33,7 +33,7 @@ void Rdr::setPrimitive(Primitive_t prim )
 }
 
 
-void Rdr::upload(MultiVecNPY* mvn)
+void Rdr::upload(MultiViewNPY* mvn)
 {
 
     assert(mvn);
@@ -47,6 +47,7 @@ void Rdr::upload(MultiVecNPY* mvn)
     check_uniforms();
 
 
+    
     NPY<float>* npyf(NULL);
     NPY<short>* npys(NULL);
 
@@ -54,10 +55,14 @@ void Rdr::upload(MultiVecNPY* mvn)
 
     for(unsigned int i=0 ; i<mvn->getNumVecs() ; i++)
     {
-         VecNPY* vnpy = (*mvn)[i] ;
+         ViewNPY* vnpy = (*mvn)[i] ;
 
-         // MultiVecNPY are constrained to all refer to the same underlying NPY 
+         // MultiViewNPY are constrained to all refer to the same underlying NPY 
          // so only do upload and m_buffer creation for the first 
+         //
+         // TODO: handle case of multiple mvn referring to the same buffer without data duplication,
+         //       eg when have alternative renderers
+         // 
  
          if(npyf == NULL && npys == NULL)
          {
@@ -121,13 +126,13 @@ void Rdr::unmapbuffer(GLenum target)
 }
 
 
-void Rdr::address(VecNPY* vnpy)
+void Rdr::address(ViewNPY* vnpy)
 {
     const char* name = vnpy->getName();  
     GLint location = m_shader->attribute(name, false);
     if(location == -1)
     {
-         LOG(warning)<<"Rdr::address failed to find active attribute for VecNPY named " << name 
+         LOG(warning)<<"Rdr::address failed to find active attribute for ViewNPY named " << name 
                      << " in shader " << getShaderTag() ;
          return ;
     }

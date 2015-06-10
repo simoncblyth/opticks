@@ -1,4 +1,4 @@
-#include "VecNPY.hpp"
+#include "ViewNPY.hpp"
 
 #include "float.h"
 #include "string.h"
@@ -12,7 +12,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-VecNPY::VecNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size, char type, bool norm) :
+ViewNPY::ViewNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size, char type, bool norm) :
             m_name(strdup(name)),
             m_npy_f(npy),
             m_npy_s(NULL),
@@ -35,7 +35,7 @@ VecNPY::VecNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k
 }
 
 
-VecNPY::VecNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size, char type, bool norm) :
+ViewNPY::ViewNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size, char type, bool norm) :
             m_name(strdup(name)),
             m_npy_f(NULL),
             m_npy_s(npy),
@@ -62,28 +62,28 @@ VecNPY::VecNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k
 
 
 
-glm::mat4& VecNPY::getModelToWorld()
+glm::mat4& ViewNPY::getModelToWorld()
 {
     return m_model_to_world ; 
 }
-float* VecNPY::getModelToWorldPtr()
+float* ViewNPY::getModelToWorldPtr()
 {
     return glm::value_ptr(m_model_to_world) ; 
 }
-float VecNPY::getExtent()
+float ViewNPY::getExtent()
 {
     return m_extent ; 
 }
 
 
-void VecNPY::dump(const char* msg)
+void ViewNPY::dump(const char* msg)
 {
     float xx[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
     float yy[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
     float zz[4] = { FLT_MAX, -FLT_MAX, 0.f, 0.f};
 
     printf("%s name %s \n", msg, m_name);
-    const char* fmt = "VecNPY::dump %5s %6u/%6u :  %15f %15f %15f \n";
+    const char* fmt = "ViewNPY::dump %5s %6u/%6u :  %15f %15f %15f \n";
 
     for(unsigned int i=0 ; i < m_count ; ++i )
     {   
@@ -120,7 +120,7 @@ void VecNPY::dump(const char* msg)
 }
 
 
-void VecNPY::findBounds()
+void ViewNPY::findBounds()
 {
     glm::vec3 lo( FLT_MAX,  FLT_MAX,  FLT_MAX);
     glm::vec3 hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -158,9 +158,9 @@ void VecNPY::findBounds()
 
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), t), s); 
 
-    //Summary("VecNPY::findBounds");
+    //Summary("ViewNPY::findBounds");
 }
-void VecNPY::Summary(const char* msg)
+void ViewNPY::Summary(const char* msg)
 {
     Print(msg);
 
@@ -175,7 +175,7 @@ void VecNPY::Summary(const char* msg)
 }
 
 
-void VecNPY::Print(const char* msg)
+void ViewNPY::Print(const char* msg)
 {
     printf("%s name %s type %c numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_type, m_numbytes, m_stride, m_offset, m_count, m_extent );
 }

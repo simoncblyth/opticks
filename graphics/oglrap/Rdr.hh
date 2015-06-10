@@ -4,8 +4,8 @@
 #include "RendererBase.hh"
 #include "NPY.hpp"
 
-class MultiVecNPY ;
-class VecNPY ;
+class MultiViewNPY ;
+class ViewNPY ;
 class Composition ; 
 
 class Rdr : public RendererBase  {
@@ -22,7 +22,7 @@ class Rdr : public RendererBase  {
       void setPrimitive( Primitive_t prim );
 
   public: 
-      void upload(MultiVecNPY* mvn);
+      void upload(MultiViewNPY* mvn);
 
       // *download* : when an OpenGL buffer object is associated, glMapBuffer and read data from GPU into NPY instance 
       template <typename T>
@@ -33,7 +33,7 @@ class Rdr : public RendererBase  {
       unsigned int getBufferId();
 
   private:
-      void address(VecNPY* vnpy);
+      void address(ViewNPY* vnpy);
       void upload(void* data, unsigned int nbytes);
 
   public: 

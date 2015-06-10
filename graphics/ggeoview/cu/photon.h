@@ -5,6 +5,7 @@
 // http://en.wikipedia.org/wiki/Two's_complement
 // http://mathematica.stackexchange.com/questions/2116/why-round-to-even-integers
 // http://stereopsis.com/radix.html
+// https://graphics.stanford.edu/~seander/bithacks.html
 // http://www.informit.com/articles/article.aspx?p=2033340&seqNum=3
 
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)

@@ -3,8 +3,8 @@
 #include "uif.h"
 #include "NPY.hpp"
 #include "G4StepNPY.hpp"
-#include "VecNPY.hpp"
-#include "MultiVecNPY.hpp"
+#include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
 
 #include "limits.h"
 #include "assert.h"
@@ -20,9 +20,9 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     G4StepNPY gs(genstep);  
 
     m_genstep_data = genstep  ;
-    m_genstep_attr = new MultiVecNPY();
-    m_genstep_attr->add(new VecNPY("vpos",m_genstep_data,1,0));    // (x0, t0)                     2nd GenStep quad 
-    m_genstep_attr->add(new VecNPY("vdir",m_genstep_data,2,0));    // (DeltaPosition, step_length) 3rd GenStep quad
+    m_genstep_attr = new MultiViewNPY();
+    m_genstep_attr->add(new ViewNPY("vpos",m_genstep_data,1,0));    // (x0, t0)                     2nd GenStep quad 
+    m_genstep_attr->add(new ViewNPY("vdir",m_genstep_data,2,0));    // (DeltaPosition, step_length) 3rd GenStep quad
 
     m_num_photons = m_genstep_data->getUSum(0,3);
 
@@ -80,12 +80,12 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 {
     m_photon_data = photon_data  ;
-    m_photon_attr = new MultiVecNPY();
+    m_photon_attr = new MultiViewNPY();
     unsigned int size = 4 ; 
-    m_photon_attr->add(new VecNPY("vpos",m_photon_data,0,0,size));      // 1st quad
-    m_photon_attr->add(new VecNPY("vdir",m_photon_data,1,0,size));      // 2nd quad
-    m_photon_attr->add(new VecNPY("vpol",m_photon_data,2,0,size));      // 3rd quad
-    m_photon_attr->add(new VecNPY("iflg",m_photon_data,3,0,size,'i'));  // 4th quad
+    m_photon_attr->add(new ViewNPY("vpos",m_photon_data,0,0,size));      // 1st quad
+    m_photon_attr->add(new ViewNPY("vdir",m_photon_data,1,0,size));      // 2nd quad
+    m_photon_attr->add(new ViewNPY("vpol",m_photon_data,2,0,size));      // 3rd quad
+    m_photon_attr->add(new ViewNPY("iflg",m_photon_data,3,0,size,'i'));  // 4th quad
 
     // corresponds to GPU side cu/photon.h:psave 
 }
@@ -93,10 +93,11 @@ void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 void NumpyEvt::setRecordData(NPY<short>* record_data)
 {
     m_record_data = record_data  ;
-    m_record_attr = new MultiVecNPY();
+    m_record_attr = new MultiViewNPY();
     unsigned int size = 4 ; 
-    m_record_attr->add(new VecNPY("rpos",m_record_data,0,0,size,'s',true));    // 4*signed short int to be normalized into -1.f:1.f by OpenGL     (1st quad [half size])
-    m_record_attr->add(new VecNPY("rflg",m_record_data,1,0,size,'s',false));   // 4*signed short int                                              (2nd quad [half size])
+    m_record_attr->add(new ViewNPY("rpos",m_record_data,0,0,size,'s',true));    // 4*signed short int to be normalized into -1.f:1.f by OpenGL     (1st quad [half size])
+    m_record_attr->add(new ViewNPY("rflg",m_record_data,1,0,size,'s',false));   // 4*signed short int                                              (2nd quad [half size])
+    //m_record_attr->add(new ViewNPY("rpol",m_record_data,1,0,size,'s',false));   // 4*signed short int                                              (2nd quad [half size])
 }
 
 

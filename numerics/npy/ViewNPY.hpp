@@ -4,7 +4,7 @@
 #include "NPY.hpp"
 /*
 
-VecNPY is ultra-lightweight, just managing 
+ViewNPY is ultra-lightweight, just managing 
 
 * pointer to data
 * parameters for addressing the data (stride, offset, count)
@@ -20,16 +20,47 @@ VecNPY is ultra-lightweight, just managing
 
 */
 
-
-
-class VecNPY {
-    public:
         //
         // Ctor assumes 3-dimensional NPY array structure 
         // with shapes like (10000,6,4) in which case j 0:5 k 0:3 size=1:4 (usually 4 as quads are most efficient)
         //
-        VecNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='f', bool norm=false) ;
-        VecNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='s', bool norm=false) ;
+
+/*
+
+GL_BYTE, 
+GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, and
+GL_UNSIGNED_INT are accepted by glVertexAttribPointer and
+glVertexAttribIPointer. Additionally GL_HALF_FLOAT, GL_FLOAT, GL_DOUBLE,
+GL_FIXED, GL_INT_2_10_10_10_REV, GL_UNSIGNED_INT_2_10_10_10_REV and
+GL_UNSIGNED_INT_10F_11F_11F_REV are accepted by glVertexAttribPointer.
+GL_DOUBLE is also accepted by glVertexAttribLPointer and is the only token
+accepted by the type parameter for that function. The initial value is
+GL_FLOAT.
+
+*/
+
+
+
+class ViewNPY {
+    public:
+        typedef enum { 
+                   BYTE,
+                   UNSIGNED_BYTE,
+                   SHORT,
+                   UNSIGNED_SHORT,
+                   INT,
+                   UNSIGNED_INT,
+                   HALF_FLOAT,
+                   FLOAT,
+                   DOUBLE,
+                   FIXED,
+                   INT_2_10_10_10_REV,
+                   UNSIGNED_INT_2_10_10_10_REV,
+                   UNSIGNED_INT_10F_11F_11F_REV } Type_t ;
+         
+    public:
+        ViewNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='f', bool norm=false) ;
+        ViewNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='s', bool norm=false) ;
 
     public:
         void dump(const char* msg);
@@ -81,12 +112,12 @@ class VecNPY {
 };
 
 
-inline const char* VecNPY::getName()
+inline const char* ViewNPY::getName()
 {
     return m_name ; 
 }
 
-inline char VecNPY::getType()
+inline char ViewNPY::getType()
 {
     return m_type ; 
 }

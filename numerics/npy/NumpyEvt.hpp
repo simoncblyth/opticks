@@ -2,7 +2,7 @@
 #include <string>
 
 #include "NPY.hpp"
-class MultiVecNPY ;
+class MultiViewNPY ;
 
 class NumpyEvt {
    public:
@@ -21,9 +21,9 @@ class NumpyEvt {
        NPY<float>*  getPhotonData();
        NPY<short>*  getRecordData();
 
-       MultiVecNPY* getGenstepAttr();
-       MultiVecNPY* getPhotonAttr();
-       MultiVecNPY* getRecordAttr();
+       MultiViewNPY* getGenstepAttr();
+       MultiViewNPY* getPhotonAttr();
+       MultiViewNPY* getRecordAttr();
 
    public:
        unsigned int getNumPhotons();
@@ -40,9 +40,9 @@ class NumpyEvt {
        NPY<float>*   m_photon_data ;
        NPY<short>*   m_record_data ;
 
-       MultiVecNPY*   m_genstep_attr ;
-       MultiVecNPY*   m_photon_attr  ;
-       MultiVecNPY*   m_record_attr  ;
+       MultiViewNPY*   m_genstep_attr ;
+       MultiViewNPY*   m_photon_attr  ;
+       MultiViewNPY*   m_record_attr  ;
 
        unsigned int   m_num_photons ; 
        unsigned int   m_maxrec ; 
@@ -90,7 +90,7 @@ inline NPY<float>* NumpyEvt::getGenstepData()
 {
     return m_genstep_data ;
 }
-inline MultiVecNPY* NumpyEvt::getGenstepAttr()
+inline MultiViewNPY* NumpyEvt::getGenstepAttr()
 {
     return m_genstep_attr ;
 }
@@ -99,7 +99,7 @@ inline NPY<float>* NumpyEvt::getPhotonData()
 {
     return m_photon_data ;
 }
-inline MultiVecNPY* NumpyEvt::getPhotonAttr()
+inline MultiViewNPY* NumpyEvt::getPhotonAttr()
 {
     return m_photon_attr ;
 }
@@ -108,7 +108,7 @@ inline NPY<short>* NumpyEvt::getRecordData()
 {
     return m_record_data ;
 }
-inline MultiVecNPY* NumpyEvt::getRecordAttr()
+inline MultiViewNPY* NumpyEvt::getRecordAttr()
 {
     return m_record_attr ;
 }
