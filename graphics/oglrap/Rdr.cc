@@ -140,11 +140,20 @@ void Rdr::address(ViewNPY* vnpy)
     GLenum type ;              //  of each component in the array
     switch(vnpy->getType())
     {
-        case 'f':type = GL_FLOAT        ; break ;
-        case 'i':type = GL_INT          ; break ;
-        case 'u':type = GL_UNSIGNED_INT ; break ;
-        case 's':type = GL_SHORT        ; break ;
-        default: assert(0)              ; break ; 
+        case ViewNPY::BYTE:                         type = GL_BYTE           ; break ;
+        case ViewNPY::UNSIGNED_BYTE:                type = GL_UNSIGNED_BYTE  ; break ;
+        case ViewNPY::SHORT:                        type = GL_SHORT          ; break ;
+        case ViewNPY::UNSIGNED_SHORT:               type = GL_UNSIGNED_SHORT ; break ;
+        case ViewNPY::INT:                          type = GL_INT            ; break ;
+        case ViewNPY::UNSIGNED_INT:                 type = GL_UNSIGNED_INT   ; break ;
+        case ViewNPY::HALF_FLOAT:                   type = GL_HALF_FLOAT     ; break ;
+        case ViewNPY::FLOAT:                        type = GL_FLOAT          ; break ;
+        case ViewNPY::DOUBLE:                       type = GL_DOUBLE         ; break ;
+        case ViewNPY::FIXED:                        type = GL_FIXED                        ; break ;
+        case ViewNPY::INT_2_10_10_10_REV:           type = GL_INT_2_10_10_10_REV           ; break ; 
+        case ViewNPY::UNSIGNED_INT_2_10_10_10_REV:  type = GL_UNSIGNED_INT_2_10_10_10_REV  ; break ; 
+        //case ViewNPY::UNSIGNED_INT_10F_11F_11F_REV: type = GL_UNSIGNED_INT_10F_11F_11D_REV ; break ; 
+        default: assert(0)                                                                 ; break ; 
     }
 
 
@@ -159,22 +168,13 @@ void Rdr::address(ViewNPY* vnpy)
     // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
 
-    if( type == GL_INT || type == GL_UNSIGNED_INT  )
+    if( vnpy->getIatt() )
     {
         glVertexAttribIPointer(index, size, type, stride, offset);
     }
-    else if( type == GL_FLOAT )
-    {
-        glVertexAttribPointer(index, size, type, norm, stride, offset);
-    }
-    else if( type == GL_SHORT )
-    {
-        assert(norm == true);
-        glVertexAttribPointer(index, size, type, norm, stride, offset);
-    }
     else
     {
-        assert(0);
+        glVertexAttribPointer(index, size, type, norm, stride, offset);
     }
     glEnableVertexAttribArray(index);
 

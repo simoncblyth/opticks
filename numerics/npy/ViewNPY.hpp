@@ -4,41 +4,18 @@
 #include "NPY.hpp"
 /*
 
-ViewNPY is ultra-lightweight, just managing 
+ViewNPY is ultra-lightweight, just managing: 
 
-* pointer to data
+* pointer to NPY
 * parameters for addressing the data (stride, offset, count)
 * characteristics of the data 
   (high, low, center, dimensions, extent, model2world matrix)
 
-
-* Considered calling this SliceNPY but this 
-  is much less ambitious than NumPy slicing 
-  so stick with VecNPY to express the intended simplicity
-
-* Hmm, maybe ViewNPY is better name.
+Many methods assume a 3 dimensional NPY array structure, 
+eg with shapes like (10000,6,4) in which case j 0:5 k 0:3 size=1:4 
+Trailing dimension usually 4 as quads are convenient and efficient on GPU.
 
 */
-
-        //
-        // Ctor assumes 3-dimensional NPY array structure 
-        // with shapes like (10000,6,4) in which case j 0:5 k 0:3 size=1:4 (usually 4 as quads are most efficient)
-        //
-
-/*
-
-GL_BYTE, 
-GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, and
-GL_UNSIGNED_INT are accepted by glVertexAttribPointer and
-glVertexAttribIPointer. Additionally GL_HALF_FLOAT, GL_FLOAT, GL_DOUBLE,
-GL_FIXED, GL_INT_2_10_10_10_REV, GL_UNSIGNED_INT_2_10_10_10_REV and
-GL_UNSIGNED_INT_10F_11F_11F_REV are accepted by glVertexAttribPointer.
-GL_DOUBLE is also accepted by glVertexAttribLPointer and is the only token
-accepted by the type parameter for that function. The initial value is
-GL_FLOAT.
-
-*/
-
 
 
 class ViewNPY {
@@ -59,8 +36,11 @@ class ViewNPY {
                    UNSIGNED_INT_10F_11F_11F_REV } Type_t ;
          
     public:
-        ViewNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='f', bool norm=false) ;
-        ViewNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size=4, char type='s', bool norm=false) ;
+        ViewNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
+        ViewNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size=4, Type_t type=SHORT, bool norm=false, bool iatt=false) ;
+
+        void setCustomOffset(unsigned long offset);
+        unsigned int getValueOffset(); // ?? multiply by sizeof(att-type) to get byte offset
 
     public:
         void dump(const char* msg);
@@ -78,13 +58,14 @@ class ViewNPY {
         unsigned int getCount(){  return m_count ; }
         unsigned int getSize(){   return m_size ; }  //typically 1,2,3,4 
         bool         getNorm(){ return m_norm ; }
+        bool         getIatt(){ return m_iatt ; }
+        Type_t       getType(){ return m_type ; }
+        const char*  getName(){ return m_name ; }
 
     public:
         glm::mat4&   getModelToWorld();
         float*       getModelToWorldPtr();
         float        getExtent();
-        const char*  getName();
-        char         getType();
 
     private:
         void findBounds();
@@ -93,13 +74,18 @@ class ViewNPY {
         NPY<float>*  m_npy_f   ;
         NPY<short>*  m_npy_s   ;
         void*        m_bytes   ;
-        unsigned int m_size   ;   
-        char         m_type ; 
-        bool         m_norm ;
-        unsigned int m_numbytes ;  
-        unsigned int m_stride ;  
+    private:
+        unsigned char m_j ; 
+        unsigned char m_k ; 
+        unsigned int  m_size   ;   
+        Type_t        m_type ; 
+        bool          m_norm ;
+        bool          m_iatt ;
+    private:
+        unsigned int  m_numbytes ;  
+        unsigned int  m_stride ;  
         unsigned long m_offset ;  
-        unsigned int m_count ;  
+        unsigned int  m_count ;  
 
     private:
         glm::vec3*  m_low ;
@@ -111,15 +97,5 @@ class ViewNPY {
 
 };
 
-
-inline const char* ViewNPY::getName()
-{
-    return m_name ; 
-}
-
-inline char ViewNPY::getType()
-{
-    return m_type ; 
-}
 
 
