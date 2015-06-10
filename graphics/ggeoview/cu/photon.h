@@ -1,8 +1,14 @@
 #pragma once
 
-// http://stackoverflow.com/questions/7337526/how-to-tell-if-a-32-bit-int-can-fit-in-a-16-bit-short
 // see npy-/numutil.cpp
+// http://stackoverflow.com/questions/7337526/how-to-tell-if-a-32-bit-int-can-fit-in-a-16-bit-short
+// http://en.wikipedia.org/wiki/Two's_complement
+// http://mathematica.stackexchange.com/questions/2116/why-round-to-even-integers
+// http://stereopsis.com/radix.html
+// http://www.informit.com/articles/article.aspx?p=2033340&seqNum=3
+
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
+
 
 struct Photon
 {
@@ -69,38 +75,17 @@ __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int p
 __device__ short shortnorm( float v, float center, float extent )
 {
     // range of short is -32768 to 32767
-    //
-    // TODO: handle out of rangers (observe a few -ve times presumably due to this)
-    //
     // Expect no positions out of range, as constrained by the geometry are bouncing on,
-    // but out of time range eg 0.:100 ns is inevitable.
+    // but getting times beyond the range eg 0.:100 ns is expected
     //
-    // http://mathematica.stackexchange.com/questions/2116/why-round-to-even-integers
-
-    float vnorm = 32767.0f * (v - center)/extent ;    // linear scaling into -1.f:1.f 
-
-    int inorm = __float2int_rn(vnorm) ;  // 
-
+    int inorm = __float2int_rn(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
     return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
-
-
-    //  The below chapter, has a number of errors : not up to the 
-    //  general high standard of that book
-    //      http://www.informit.com/articles/article.aspx?p=2033340&seqNum=3
-    //
-    //   f = c / (2^b - 1)          for signed -1:1 case
-    //   f = (2c + 1)/( 2^b - 1)    for unsigned 0:1 
-    //
-    //        (1 << 16) - 1 = 65535
-    //
-    //  Huh seems wrong ? should be 2^(b-1) ?  
-    //
-    //  http://stereopsis.com/radix.html
 } 
+
 
 __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
 {
-    // pack position and time into normalized shorts (16 bits)
+    // pack position and time into normalized shorts (4*16 = 64 bits)
     rbuffer[record_offset+0] = make_short4( 
                     shortnorm(p.position.x, center_extent.x, center_extent.w), 
                     shortnorm(p.position.y, center_extent.y, center_extent.w), 
@@ -108,11 +93,83 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
                     shortnorm(p.time      , time_domain.x  , time_domain.y  )
                     ); 
 
-    // TODO: rearrange bitfields to put more important ones into the lower 16 bits
-    //       little-endian : LSB at smallest address ?
+    //  pack polarization and wavelength into 4*8 = 32 bits   
+    //  range of char is -128 to 127, normalization of polarization and wavelength expected bulletproof, so no handling of out-of-range 
     //
-    rbuffer[record_offset+1] = make_short4( p.flags.i.x & 0xFFFF , p.flags.i.y & 0xFFFF, p.flags.i.z, p.flags.i.w); 
+    //  polarization already normalized into -1.f:1.f
+    //  wavelenth normalized via  (wavelength - low)/range into 0.:1. 
+    //
+
+    float nwavelength = 255.f*(p.wavelength - wavelength_domain.x)/wavelength_domain.w ; // 255.f*0.f->1.f 
+
+
+    // lightly packed 
+    /*
+    rbuffer[record_offset+1] = make_short4( 
+                                __float2int_rn(p.polarization.x*127.f), 
+                                __float2int_rn(p.polarization.y*127.f),
+                                __float2int_rn(p.polarization.z*127.f),
+                                __float2int_rn(nwavelength*127.f)
+                              );
+    */
+
+
+    // range of uchar 0:255 
+    // tightly packed, stuff "unsigned short" into "short"   (take -1.f:1.f plus one => 0.f:2.f so scale by 127.f 
+
+    squad polw ; 
+    polw.u.x = __float2uint_rn((p.polarization.x+1.f)*127.f) << 0 | __float2int_rn((p.polarization.y+1.f)*127.f) << 8 ;
+    polw.u.y = __float2uint_rn((p.polarization.z+1.f)*127.f) << 0 | __float2int_rn(nwavelength) << 8 ;
+    polw.u.z = 0xFFFF ;    
+    polw.u.w = 0xFFFF ;    
+
+    rbuffer[record_offset+1] = polw.s ; 
+
+
 }
+
+/*
+
+    (lightly packed) 
+
+    check packing results using ::MAXREC to pick generated 0th slot only  
+
+    In [1]: a = rxc_(1)
+
+       plt.hist(a[::10,1,0], range=(-128,127), bins=256 )  # bins+1 edges 
+       plt.hist(a[::10,1,1], range=(-128,127), bins=256 )  # bins+1 edges 
+       plt.hist(a[::10,1,2], range=(-128,127), bins=256 )  # bins+1 edges 
+  
+       plt.hist(a[::10,1,3], range=(-128,127), bins=256 )  # bins+1 edges 
+
+
+    (tightly packed, using signed normalization)  
+
+     hmm get no negatives, for tight packing better to use unsigned 
+
+       plt.hist( a[::10,1,0] & 0xFF , bins=256, range=(-128,127) ) 
+
+
+    (tightly packed, using unsigned normalization)
+
+       plt.hist( a[::10,1,0] & 0xFF , bins=256, range=(0,256) )
+       plt.hist( a[::10,1,0] >> 8   , bins=256, range=(0,256) )
+       plt.hist( a[::10,1,1] & 0xFF , bins=256, range=(0,256) )
+
+       plt.hist( a[::10,1,1] >> 8   , bins=256, range=(0,256) )  ## oops runs into sign bit yields halfed and folded
+
+       plt.hist( a.view(np.uint16)[::10,1,1] >> 8, bins=256, range=(0,255) )   ## zero bin lower... due to bad number of bins
+       plt.hist( a.view(np.uint16)[::10,1,1] >> 8, bins=255, range=(0,255) )   ## better mpl provides bins+1 edges
+                                               
+       wavelength is occupyung the MSB, so runs into the sign bit 
+       hence its necessary to view(np.uint16)
+       its more correct to do that for all when using unorm but only matters for MSB
+
+ 
+
+
+
+*/
 
 
 

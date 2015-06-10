@@ -18,7 +18,7 @@ class Rdr : public RendererBase  {
       void update_uniforms();
       void dump_uniforms();
 
-      typedef enum { LINES, POINTS } Primitive_t ; 
+      typedef enum { LINES, LINE_STRIP, POINTS } Primitive_t ; 
       void setPrimitive( Primitive_t prim );
 
   public: 

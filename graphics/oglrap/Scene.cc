@@ -139,7 +139,7 @@ void Scene::init()
     m_record_renderer->setPrimitive(Rdr::LINES);
 
     m_altrecord_renderer = new Rdr("altrec");
-    m_altrecord_renderer->setPrimitive(Rdr::LINES);
+    m_altrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
 
     m_initialized = true ; 
 }

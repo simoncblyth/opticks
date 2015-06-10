@@ -52,8 +52,8 @@ public:
     void convert();
     optix::TextureSampler makeWavelengthSampler(GBuffer* wavelengthBuffer);
     optix::TextureSampler makeReemissionSampler(GBuffer* reemissionBuffer);
-    optix::float3 getDomain();
-    optix::float3 getDomainReciprocal();
+    optix::float4 getDomain();
+    optix::float4 getDomainReciprocal();
 
 private:
     optix::GeometryInstance convertDrawableInstance(GMergedMesh* mergedmesh);
@@ -63,11 +63,6 @@ private:
 public:
     optix::float3  getMin();
     optix::float3  getMax();
-/*
-    optix::float3  getCenter();
-    optix::float3  getExtent();
-    optix::float3  getUp();
-*/
 
 private:
     GMergedMesh* m_mergedmesh ; 

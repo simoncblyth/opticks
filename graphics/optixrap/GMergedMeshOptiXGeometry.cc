@@ -120,15 +120,16 @@ optix::Material GMergedMeshOptiXGeometry::makeMaterial()
     return material ; 
 }
 
-optix::float3 GMergedMeshOptiXGeometry::getDomain()
+optix::float4 GMergedMeshOptiXGeometry::getDomain()
 {
-    return optix::make_float3(GSubstanceLib::DOMAIN_LOW, GSubstanceLib::DOMAIN_HIGH, GSubstanceLib::DOMAIN_STEP); 
+    float domain_range = (GSubstanceLib::DOMAIN_HIGH - GSubstanceLib::DOMAIN_LOW); 
+    return optix::make_float4(GSubstanceLib::DOMAIN_LOW, GSubstanceLib::DOMAIN_HIGH, GSubstanceLib::DOMAIN_STEP, domain_range); 
 }
 
-optix::float3 GMergedMeshOptiXGeometry::getDomainReciprocal()
+optix::float4 GMergedMeshOptiXGeometry::getDomainReciprocal()
 {
     // only endpoints used for sampling, not the step 
-    return optix::make_float3(1./GSubstanceLib::DOMAIN_LOW, 1./GSubstanceLib::DOMAIN_HIGH, 0.f); // not flipping order 
+    return optix::make_float4(1./GSubstanceLib::DOMAIN_LOW, 1./GSubstanceLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
 }
 
 
@@ -143,8 +144,10 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
 
     GBuffer* wavelengthBuffer = mergedmesh->getWavelengthBuffer();
     optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
-    optix::float3 wavelengthDomain = getDomain();
-    optix::float3 wavelengthDomainReciprocal = getDomainReciprocal();
+
+    optix::float4 wavelengthDomain = getDomain();
+    optix::float4 wavelengthDomainReciprocal = getDomainReciprocal();
+
     m_context["wavelength_texture"]->setTextureSampler(wavelengthSampler);
     m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
     m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
@@ -152,7 +155,7 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
 
     GBuffer* reemissionBuffer = mergedmesh->getReemissionBuffer();
     float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
-    optix::float3 reemissionDomain = optix::make_float3(0.f , 1.f, reemissionStep );
+    optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
     optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
     m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
     m_context["reemission_domain"]->setFloat(reemissionDomain);

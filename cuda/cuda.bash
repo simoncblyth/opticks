@@ -24,6 +24,14 @@ CUDA Driver and Runtime API interop
   * http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DRIVER.html#group__CUDART__DRIVER
 
 
+Bit packing with CUDA vector types
+-------------------------------------
+
+* http://nvlabs.github.io/cub/index.html
+
+
+
+
 Updating to CUDA 6.5 (Feb 2, 2015)
 ----------------------------------
 

@@ -10,8 +10,8 @@
 using namespace optix;
 
 #include "quad.h"
-#include "photon.h"
 #include "wavelength_lookup.h"
+#include "photon.h"
 
 #define GNUMQUAD 6
 #include "cerenkovstep.h"
@@ -64,15 +64,13 @@ RT_PROGRAM void generate()
 
     curandState rng = rng_states[photon_id];
 
+    // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
+
+    State s ;   // perhaps rename to Boundary 
+
     PerRayData_propagate prd;
     prd.boundary = 0 ;
     prd.distance_to_boundary = -1.f ;
-
-    // combine State and PRD ?
-    //    * currently no, due to assumption that a minimal PRD
-    //      is worth the cost of shuffling some results from PRD to State
-
-    State s ; 
 
     Photon p ;  
     pinit(p);
@@ -82,29 +80,27 @@ RT_PROGRAM void generate()
     {
         CerenkovStep cs ;
         csload(cs, genstep_buffer, genstep_offset);
+#ifdef DEBUG
         if(photon_id == 0)
         {
             csdump(cs);
             cscheck(cs);
-            //wavelength_check();
         }
+#endif
         generate_cerenkov_photon(p, cs, rng );         
     }
     else
     {
         ScintillationStep ss ;
         ssload(ss, genstep_buffer, genstep_offset);
+#ifdef DEBUG
         if(photon_id == 0)
         {
             ssdump(ss);
             reemission_check();
         }
+#endif
         generate_scintillation_photon(p, ss, rng );         
-
-        // pol and dir distrib for scintillation are flat, so 
-        // test rayleigh here 
-        // rayleigh_scatter(p, rng);
-
     }
 
 
@@ -129,7 +125,6 @@ RT_PROGRAM void generate()
         p.flags.i.x = prd.boundary ;  
 
         fill_state(s, prd.boundary, p.wavelength );
-
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
@@ -160,29 +155,12 @@ RT_PROGRAM void generate()
 
     psave(p, photon_buffer, photon_offset ); 
 
-    //rsave(p, record_buffer, record_offset, center_extent, time_domain );
-
     RSAVE(p, slot) ;
 
 
     rng_states[photon_id] = rng ;
 }
 
-
-
-/*
-
-In [1]: a = oxc_(1)
-
-In [4]: a[:,3,0].view(np.int32)
-Out[4]: array([11, 11, 11, ..., -1, -1, -1], dtype=int32)
-
-In [5]: np.unique(a[:,3,0].view(np.int32))
-Out[5]: array([-1, 11, 12, 13, 14, 15, 16, 17, 19, 20, 22, 24, 31, 32, 49, 50, 52], dtype=int32)
-
-plt.hist(a[:,3,1], bins=100, log=True)
-
-*/
 
 
 

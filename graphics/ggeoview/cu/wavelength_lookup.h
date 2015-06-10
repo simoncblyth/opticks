@@ -1,16 +1,15 @@
-#ifndef WAVELENGTH_LOOKUP_H 
-#define WAVELENGTH_LOOKUP_H 
+#pragma once
 
 #define NM_BLUE   475.f
 #define NM_GREEN  510.f
 #define NM_RED    650.f
 
 rtTextureSampler<float, 2>  reemission_texture ;
-rtDeclareVariable(float3, reemission_domain, , );
+rtDeclareVariable(float4, reemission_domain, , );
 
 rtTextureSampler<float4, 2>  wavelength_texture ;
-rtDeclareVariable(float3, wavelength_domain, , );
-rtDeclareVariable(float3, wavelength_domain_reciprocal, , );
+rtDeclareVariable(float4, wavelength_domain, , );
+rtDeclareVariable(float4, wavelength_domain_reciprocal, , );
 
 
 static __device__ __inline__ float reemission_lookup(float u)
@@ -21,7 +20,7 @@ static __device__ __inline__ float reemission_lookup(float u)
 
 static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int line )
 {
-    // x:low y:high z:step    tex coords are offset by 0.5 
+    // x:low y:high z:step w:mid   tex coords are offset by 0.5 
     // texture lookups benefit from hardware interpolation 
     float nmi = (nm - wavelength_domain.x)/wavelength_domain.z + 0.5f ;   
     return tex2D(wavelength_texture, nmi, line + 0.5f );
@@ -92,4 +91,3 @@ static __device__ __inline__ void wavelength_check()
   }
 }
 
-#endif

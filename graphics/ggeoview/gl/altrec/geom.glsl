@@ -76,8 +76,39 @@ void main ()
 
         EndPrimitive();
     }
-    // hmm cannot form a line with only one valid point ?
-   
+    else if( valid == 0x7 && select == 0x5 ) // both valid and prior to tc 
+    {
+        gl_Position = ISNormModelViewProjection * vec4(vec3(p0), 1.0) ; 
+        EmitVertex();
 
+        gl_Position = ISNormModelViewProjection * vec4(vec3(p1), 1.0) ; 
+        EmitVertex();
+
+        EndPrimitive();
+    }
+
+    //
+    //  Cannot form a line with only one valid point ? unless conjure a constant direction.
+    //  The only hope is that a prior "thread" got the valid point as
+    //  the second of a pair. 
+    //  Perhaps that means must draw with GL_LINE_STRIP rather than GL_LINES in order
+    //  that the geometry shader sees each vertex twice (?) 
+    //  
+    //  Hmm how to select single photons/steps ?  
+    //  
+    //  * Storing photon identifies occupies ~22 bits at least (1 << 22)/1e6 ~ 4.19
+    //  * Step identifiers 
+    //
+    //  * https://www.opengl.org/wiki/Built-in_Variable_(GLSL) 
+    //
+    //  * https://www.opengl.org/sdk/docs/man/html/gl_VertexID.xhtml
+    // 
+    //    non-indexed: it is the effective index of the current vertex (number of vertices processed + *first* value)
+    //    indexed:   index used to fetch this vertex from the buffer
+    //
+    //  * control the the glDrawArrays first/count to pick the desired range.
+    //
+    //  * adopt glDrawElements and control the indices
+    //
 
 } 

@@ -25,9 +25,10 @@ void Rdr::setPrimitive(Primitive_t prim )
 {
     switch( prim )
     {
-        case POINTS: m_primitive = GL_POINTS ; break ; 
-        case  LINES: m_primitive = GL_LINES  ; break ; 
-        default    : assert(0)               ; break ;
+        case        POINTS: m_primitive = GL_POINTS      ; break ; 
+        case         LINES: m_primitive = GL_LINES       ; break ; 
+        case    LINE_STRIP: m_primitive = GL_LINE_STRIP  ; break ; 
+        default           : assert(0)                    ; break ;
     }
 }
 
