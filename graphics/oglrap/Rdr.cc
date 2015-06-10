@@ -193,6 +193,7 @@ void Rdr::check_uniforms()
     m_isnorm_mvp_location = m_shader->uniform("ISNormModelViewProjection", required );     
     m_selection_location = m_shader->uniform("Selection", required );     
     m_flags_location = m_shader->uniform("Flags", required );     
+    m_pick_location = m_shader->uniform("Pick", required );     
     m_param_location = m_shader->uniform("Param", required );     
     m_timedomain_location = m_shader->uniform("TimeDomain", required );     
 
@@ -220,6 +221,9 @@ void Rdr::update_uniforms()
 
         glm::ivec4 flg = m_composition->getFlags();
         glUniform4i(m_flags_location, flg.x, flg.y, flg.z, flg.w  );    
+
+        glm::ivec4 pick = m_composition->getPick();
+        glUniform4i(m_pick_location, pick.x, pick.y, pick.z, pick.w  );    
 
         glm::vec4 par = m_composition->getParam();
         glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    

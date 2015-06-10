@@ -58,6 +58,7 @@ class Rdr : public RendererBase  {
       GLint  m_isnorm_mvp_location ;
       GLint  m_selection_location ;
       GLint  m_flags_location ;
+      GLint  m_pick_location ;
       GLint  m_param_location ;
       GLint  m_timedomain_location ;
 
@@ -78,6 +79,7 @@ inline Rdr::Rdr(const char* tag)
     m_isnorm_mvp_location(-1),
     m_selection_location(-1),
     m_flags_location(-1),
+    m_pick_location(-1),
     m_param_location(-1),
     m_timedomain_location(-1),
     m_primitive(GL_POINTS)

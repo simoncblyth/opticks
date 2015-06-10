@@ -59,11 +59,15 @@ class Composition : public Configurable {
       void setParam(std::string par);
       glm::vec4&  getParam();
 
-
   public:
       void setFlags(glm::ivec4 flags);
       void setFlags(std::string flags);
       glm::ivec4& getFlags();
+
+  public:
+      void setPick(glm::ivec4 pick);
+      void setPick(std::string pick);
+      glm::ivec4& getPick();
 
   public:
       void setTarget(unsigned int target);
@@ -157,6 +161,8 @@ class Composition : public Configurable {
   private:
       glm::ivec4 m_selection ;
       glm::ivec4 m_flags ;
+      glm::ivec4 m_pick ;
+      glm::vec4  m_pick_f ; // for inputing pick using float slider 
       glm::vec4  m_param ;
 
   private:
@@ -281,6 +287,10 @@ inline glm::ivec4& Composition::getSelection()
 inline glm::ivec4& Composition::getFlags()
 {
     return m_flags ; 
+}
+inline glm::ivec4& Composition::getPick()
+{
+    return m_pick; 
 }
 inline glm::vec4& Composition::getParam()
 {

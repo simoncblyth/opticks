@@ -52,6 +52,7 @@ uniform mat4 ISNormModelViewProjection ;
 uniform vec4 TimeDomain ;
 uniform vec4 Param ; 
 uniform ivec4 Selection ;
+uniform ivec4 Pick ;
 
 in vec4 polarization[];
 layout (lines) in;
@@ -68,9 +69,14 @@ void main ()
     //fcolour = vec4(0.0,1.0,1.0,1.0) ;
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
-    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (1 << 2) ;
-
-    // (uint(gl_PrimitiveIDIn/10 == 1000) << 2) ;  TODO: check correspondence to record array 
+    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  
+    //(1 << 2) ;
+    //
+    //
+    // TODO: 
+    // * check ID correspondence to record array , try draw arrays approach to picking : maybe much more efficient 
+    // * rejig flags and provide gui for selection based on them
+    //
 
     uint vselect = valid & select ; 
 

@@ -140,6 +140,18 @@ void Composition::gui()
     ImGui::SliderFloat( "domain_time", param + 3,  m_domain_time.x, m_domain_time.y,  "%0.3f", 2.0f);
 
     ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *(param + 3) * SPEED_OF_LIGHT / 1000.f );
+
+
+    float* pick_f = glm::value_ptr(m_pick_f) ;
+    ImGui::SliderFloat( "pick_f.w", pick_f + 3,  0.f, 1e6f,  "%7.f");
+    m_pick.w = int(m_pick_f.w) ;
+
+    ImGui::Text("pick %d %d %d %d ",
+       m_pick.x, 
+       m_pick.y, 
+       m_pick.z, 
+       m_pick.w);
+
 #endif    
 }
 
@@ -214,6 +226,20 @@ void Composition::setFlags(glm::ivec4 flags)
 {
     m_flags = flags ;  
 }
+
+
+void Composition::setPick(std::string pick) 
+{
+    setPick(givec4(pick));
+}
+void Composition::setPick(glm::ivec4 pick) 
+{
+    m_pick = pick ;  
+}
+
+
+
+
 
 
 void Composition::setParam(std::string param)
