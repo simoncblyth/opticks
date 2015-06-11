@@ -26,22 +26,7 @@
 // trace/debug/info/warning/error/fatal
 
 
-
 const char* Renderer::PRINT = "print" ; 
-
-Renderer::Renderer(const char* tag)
-    :
-    RendererBase(tag),
-    m_drawable(NULL),
-    m_draw_count(0),
-    m_texcoords(0),
-    m_has_tex(false),
-    m_composition(NULL),
-    m_mv_location(-1),
-    m_mvp_location(-1),
-    m_clip_location(-1)
-{
-}
 
 Renderer::~Renderer()
 {
@@ -175,6 +160,7 @@ void Renderer::check_uniforms()
         m_mvp_location = m_shader->uniform("ModelViewProjection", true); 
         m_mv_location =  m_shader->uniform("ModelView",           true);      
         m_clip_location = m_shader->uniform("ClipPlane",          true); 
+        m_param_location = m_shader->uniform("Param",          true); 
     } 
     else if(strcmp(tag,"tex")==0)
     {
@@ -201,7 +187,14 @@ void Renderer::update_uniforms()
         m_composition->update() ;
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+
+        glm::vec4 par = m_composition->getParam();
+        glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
+
+
+
         glUniform4fv(m_clip_location, 1, m_composition->getClipPlanePtr() );
+
 
         if(m_composition->getClipMode() == -1)
         {
@@ -234,6 +227,12 @@ void Renderer::render()
     update_uniforms();
 
     glBindVertexArray (m_vao);
+
+    // https://www.opengl.org/archives/resources/faq/technical/transparency.htm
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glEnable (GL_BLEND);
+
+
 
     glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; // indices_count would be 3 for a single triangle 
 

@@ -1,5 +1,4 @@
-#ifndef RENDERER_H 
-#define RENDERER_H
+#pragma once
 
 #include <vector>
 
@@ -60,6 +59,7 @@ class Renderer : public RendererBase  {
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
       GLint  m_clip_location ;
+      GLint  m_param_location ;
 
       long   m_draw_count ;
       GLsizei m_indices_count ;
@@ -69,6 +69,26 @@ class Renderer : public RendererBase  {
       Composition* m_composition ;
       bool m_has_tex ; 
 };      
+
+
+inline Renderer::Renderer(const char* tag)
+    :
+    RendererBase(tag),
+    m_drawable(NULL),
+    m_draw_count(0),
+    m_texcoords(0),
+    m_has_tex(false),
+    m_composition(NULL),
+    m_mv_location(-1),
+    m_mvp_location(-1),
+    m_clip_location(-1),
+    m_param_location(-1)
+{
+}
+
+
+
+
 
 inline void Renderer::setComposition(Composition* composition)
 {
@@ -80,6 +100,5 @@ inline Composition* Renderer::getComposition()
 }
 
 
-#endif
 
  

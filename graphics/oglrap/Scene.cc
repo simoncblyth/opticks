@@ -145,7 +145,6 @@ void Scene::init()
     m_genstep_renderer = new Rdr(m_device, "p2l");
     m_photon_renderer = new Rdr(m_device, "pos");
 
-
     m_record_renderer = new Rdr(m_device, "rec");
     m_record_renderer->setPrimitive(Rdr::LINES);
 
@@ -154,7 +153,6 @@ void Scene::init()
 
     m_devrecord_renderer = new Rdr(m_device, "devrec");
     m_devrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
-
 
     m_initialized = true ; 
 }

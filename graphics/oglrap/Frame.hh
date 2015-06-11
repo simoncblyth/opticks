@@ -27,6 +27,7 @@ class Frame : public Touchable {
 
        void gl_init_window(const char* title, unsigned int width, unsigned int height, unsigned int coord2pixel=2);
        void gl_init_window();
+       void stipple();
 
 
        void setPixelFactor(unsigned int factor);

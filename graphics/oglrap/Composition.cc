@@ -136,8 +136,8 @@ void Composition::gui()
     float* param = glm::value_ptr(m_param) ;
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
-    ImGui::SliderFloat( "param.z", param + 2,  0.f, 1000.0f, "%0.3f", 2.0f);
-    ImGui::SliderFloat( "domain_time", param + 3,  m_domain_time.x, m_domain_time.y,  "%0.3f", 2.0f);
+    ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
+    ImGui::SliderFloat( "w:domain_time ", param + 3,  m_domain_time.x, m_domain_time.y,  "%0.3f", 2.0f);
 
     ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *(param + 3) * SPEED_OF_LIGHT / 1000.f );
 
