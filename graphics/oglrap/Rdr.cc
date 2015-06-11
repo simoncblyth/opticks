@@ -51,50 +51,11 @@ void Rdr::upload(MultiViewNPY* mvn)
     
     unsigned int count(0);
 
-
-#ifdef KLUDGE
-    NPY<float>* npyf(NULL);
-    NPY<short>* npys(NULL);
-#else
     NPYBase* npy(NULL);
-#endif
 
     for(unsigned int i=0 ; i<mvn->getNumVecs() ; i++)
     {
-         ViewNPY* vnpy = (*mvn)[i] ;
-
-
-
-#ifdef KLUDGE 
-         if(npyf == NULL && npys == NULL)
-         {
-             count = vnpy->getCount();
-             setCountDefault(count);
-             npyf = vnpy->getNPYf(); 
-
-             if(npyf == NULL)
-             {
-                npys = vnpy->getNPYs();
-                upload(npys->getBytes(), npys->getNumBytes(0));
-                npys->setBufferId(m_buffer); 
-             }
-             else
-             {
-                 upload(npyf->getBytes(), npyf->getNumBytes(0));
-                 npyf->setBufferId(m_buffer); 
-                 // record OpenGL buffer id with the data for convenience
-             }
-         }
-         else 
-         {
-             // when non-null they must match match
-             assert(npys == NULL || npys == vnpy->getNPYs());     
-             assert(npyf == NULL || npyf == vnpy->getNPYf());
-     
-             LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
-             assert(count == vnpy->getCount());
-         }
-#else
+       ViewNPY* vnpy = (*mvn)[i] ;
        if(npy == NULL)
        {
              count = vnpy->getCount();
@@ -110,9 +71,7 @@ void Rdr::upload(MultiViewNPY* mvn)
              LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
              assert(count == vnpy->getCount());
        } 
-#endif
-
-         address(vnpy); 
+       address(vnpy); 
     }
 }
 

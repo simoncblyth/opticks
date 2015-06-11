@@ -36,10 +36,6 @@ class ViewNPY {
                    UNSIGNED_INT_10F_11F_11F_REV } Type_t ;
          
     public:
-#ifdef KLUDGE
-        ViewNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
-        ViewNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int k, unsigned int size=4, Type_t type=SHORT, bool norm=false, bool iatt=false) ;
-#endif
         ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
 
         void setCustomOffset(unsigned long offset);
@@ -50,13 +46,7 @@ class ViewNPY {
         void Summary(const char* msg);
         void Print(const char* msg);
 
-       // unclear how to pop off an NPY base class to hold the data, so kludging 
-#ifdef KLUDGE
-        NPY<float>*  getNPYf(){   return m_npy_f ; }
-        NPY<short>*  getNPYs(){   return m_npy_s ; }
-#endif
         NPYBase*     getNPY(){    return m_npy   ; }
-
         void*        getBytes(){  return m_bytes ; }
         unsigned int getNumBytes(){  return m_numbytes ; }
         unsigned int getStride(){ return m_stride ; }
@@ -77,10 +67,6 @@ class ViewNPY {
         void findBounds();
     private:
         char*        m_name   ; 
-#ifdef KLUDGE
-        NPY<float>*  m_npy_f   ;
-        NPY<short>*  m_npy_s   ;
-#endif
         NPYBase*     m_npy ; 
         void*        m_bytes   ;
     private:
