@@ -5,6 +5,7 @@
 
 class Renderer ; 
 class Rdr ;
+class Device ; 
 class Composition ; 
 class NumpyEvt ; 
 class GLoader ; 
@@ -96,6 +97,7 @@ class Scene : public Configurable {
    private:
         GLoader*     m_geometry_loader ; 
         Renderer*    m_geometry_renderer ; 
+        Device*      m_device ; 
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
         Rdr*         m_record_renderer ; 
@@ -121,6 +123,7 @@ class Scene : public Configurable {
 inline Scene::Scene() :
             m_geometry_loader(NULL),
             m_geometry_renderer(NULL),
+            m_device(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
             m_record_renderer(NULL),

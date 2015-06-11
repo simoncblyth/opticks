@@ -7,10 +7,12 @@
 class MultiViewNPY ;
 class ViewNPY ;
 class Composition ; 
+class Device ; 
+
 
 class Rdr : public RendererBase  {
   public:
-      Rdr(const char* tag);
+      Rdr(Device* dev, const char* tag);
 
   public: 
       void render(unsigned int count=0, unsigned int first=0);
@@ -23,7 +25,11 @@ class Rdr : public RendererBase  {
 
   public: 
       void upload(MultiViewNPY* mvn);
+  private:
+      void upload(NPYBase* npy);
+      void upload(void* data, unsigned int nbytes);
 
+  public:
       // *download* : when an OpenGL buffer object is associated, glMapBuffer and read data from GPU into NPY instance 
       template <typename T>
       static void download(NPY<T>* npy);  
@@ -34,7 +40,6 @@ class Rdr : public RendererBase  {
 
   private:
       void address(ViewNPY* vnpy);
-      void upload(void* data, unsigned int nbytes);
 
   public: 
       static const char* PRINT ; 
@@ -48,6 +53,7 @@ class Rdr : public RendererBase  {
       unsigned int getCountDefault();
       
   private:
+      Device* m_device ; 
       GLuint m_vao ; 
       GLuint m_buffer ;
       unsigned int m_countdefault ; 
@@ -67,9 +73,10 @@ class Rdr : public RendererBase  {
 };      
 
 
-inline Rdr::Rdr(const char* tag)
+inline Rdr::Rdr(Device* device, const char* tag)
     :
     RendererBase(tag),
+    m_device(device),
     m_vao(0),
     m_buffer(0),
     m_countdefault(0),

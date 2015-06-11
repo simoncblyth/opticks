@@ -13,6 +13,7 @@
 // oglrap-
 #include "Composition.hh"
 #include "Renderer.hh"
+#include "Device.hh"
 #include "Rdr.hh"
 
 // npy-
@@ -130,15 +131,16 @@ void Scene::init()
 {
     m_geometry_loader = new GLoader();
     m_geometry_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-
     m_geometry_renderer = new Renderer("nrm");
-    m_genstep_renderer = new Rdr("p2l");
-    m_photon_renderer = new Rdr("pos");
 
-    m_record_renderer = new Rdr("rec");
+    m_device = new Device();
+
+    m_genstep_renderer = new Rdr(m_device, "p2l");
+    m_photon_renderer = new Rdr(m_device, "pos");
+    m_record_renderer = new Rdr(m_device, "rec");
     m_record_renderer->setPrimitive(Rdr::LINES);
 
-    m_altrecord_renderer = new Rdr("altrec");
+    m_altrecord_renderer = new Rdr(m_device, "altrec");
     m_altrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
 
     m_initialized = true ; 

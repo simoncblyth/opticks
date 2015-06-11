@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 
+#include "Device.hh"
 #include "Rdr.hh"
 #include "Prog.hh"
 #include "Composition.hh"
@@ -20,7 +21,6 @@
 
 const char* Rdr::PRINT = "print" ; 
 
-
 void Rdr::setPrimitive(Primitive_t prim )
 {
     switch( prim )
@@ -37,10 +37,7 @@ void Rdr::upload(MultiViewNPY* mvn)
 {
     // MultiViewNPY are constrained to all refer to the same underlying NPY 
     // so only do upload and m_buffer creation for the first 
-    //
-    // TODO: handle case of multiple mvn referring to the same buffer without data duplication,
-    //       eg when have alternative renderers
- 
+
     assert(mvn);
 
     make_shader();  // need to compile and link shader for access to attribute locations
@@ -50,7 +47,6 @@ void Rdr::upload(MultiViewNPY* mvn)
     check_uniforms();
     
     unsigned int count(0);
-
     NPYBase* npy(NULL);
 
     for(unsigned int i=0 ; i<mvn->getNumVecs() ; i++)
@@ -58,22 +54,40 @@ void Rdr::upload(MultiViewNPY* mvn)
        ViewNPY* vnpy = (*mvn)[i] ;
        if(npy == NULL)
        {
-             count = vnpy->getCount();
-             setCountDefault(count);
-             npy = vnpy->getNPY(); 
-
-             upload(npy->getBytes(), npy->getNumBytes(0));
-             npy->setBufferId(m_buffer); 
+           count = vnpy->getCount();
+           setCountDefault(count);
+           npy = vnpy->getNPY(); 
+           upload(npy);
        }
        else
        {
-             assert(npy == vnpy->getNPY());     
-             LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
-             assert(count == vnpy->getCount());
+           assert(npy == vnpy->getNPY());     
+           LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
+           assert(count == vnpy->getCount());
        } 
        address(vnpy); 
     }
 }
+
+
+void Rdr::upload(NPYBase* npy)
+{
+    // handles case of multiple mvn referring to the same buffer without data duplication,
+    // by maintaining a list of NPYBase which have been uploaded to the Device
+
+    if(m_device->isUploaded(npy))
+    {
+        LOG(info) << "Rdr::upload skip, already uploaded to device " ;
+    }
+    else
+    {
+        LOG(info) << "Rdr::upload " ;
+        upload(npy->getBytes(), npy->getNumBytes(0));
+        npy->setBufferId(m_buffer); 
+        m_device->add(npy);
+    }
+}
+
 
 void Rdr::upload(void* data, unsigned int nbytes)
 {
