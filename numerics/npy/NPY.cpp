@@ -1,13 +1,12 @@
 #include "NPY.hpp"
-#include <sstream>
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-
 
 
 // ctor takes ownership of a copy of the inputs 
@@ -15,25 +14,16 @@ namespace fs = boost::filesystem;
 template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) 
          :
-         m_buffer_id(-1),
-         m_shape(shape),
-         m_data(data),
-         m_metadata(metadata)
+         NPYBase(shape, sizeof(T), type, metadata),
+         m_data(data)
 {
-    m_len0 = getShape(0);
-    m_len1 = getShape(1);
-    m_len2 = getShape(2);
-    m_dim  = m_shape.size();
 } 
-
 
 template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata) 
          :
-         m_buffer_id(-1),
-         m_shape(shape),
-         m_data(),
-         m_metadata(metadata)
+         NPYBase(shape, sizeof(T), type, metadata),
+         m_data()
 {
     m_data.reserve(getNumValues(0));
     read(data);
@@ -47,123 +37,7 @@ void NPY<T>::read(void* ptr)
 }
 
 
-template <typename T>
-void NPY<T>::Summary(const char* msg)
-{
-    std::string desc = description(msg);
-    std::cout << desc << std::endl ; 
-}   
 
-template <typename T>
-std::string NPY<T>::description(const char* msg)
-{
-    std::stringstream ss ; 
-
-    ss << msg << " (" ;
-
-    for(size_t i=0 ; i < m_shape.size() ; i++)
-    {
-        ss << m_shape[i]  ;
-        if( i < m_shape.size() - 1) ss << "," ;
-    }
-    ss << ") " ;
-    ss << " len0 " << m_len0 ;
-    ss << " len1 " << m_len1 ;
-    ss << " len2 " << m_len2 ;
-    ss << " nfloat " << m_data.size() << " " ;
-
-    ss << " getNumBytes(0) " << getNumBytes(0) ;
-    ss << " getNumBytes(1) " << getNumBytes(1) ;
-    ss << " getNumValues(0) " << getNumValues(0) ;
-    ss << " getNumValues(1) " << getNumValues(1) ;
-
-    ss << m_metadata  ;
-
-    return ss.str();
-}
-
-
-template <typename T>
-std::string NPY<T>::path(const char* typ, const char* tag)
-{
-    char* TYP = strdup(typ);
-    char* p = TYP ;
-    while(*p)
-    {
-       if( *p >= 'a' && *p <= 'z') *p += 'A' - 'a' ;
-       p++ ; 
-    } 
-
-
-    // NB envvars and valid typ are defined in env/export-
-    char envvar[64];
-    snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
-    free(TYP); 
-
-    char* tmpl = getenv(envvar) ;
-    if(!tmpl)
-    {
-         LOG(fatal)<< "NPY<T>::path missing envvar for "
-                   << " typ " << typ 
-                   << " envvar " << envvar  
-                   << " define new typs with env-;export-;export-vi " ; 
-         assert(0);
-         return "missing-template-envvar" ; 
-    }
-
-    char path_[256];
-    snprintf(path_, 256, tmpl, tag );
-
-    return path_ ;   
-}
-
-
-template <typename T>
-void NPY<T>::save(const char* tfmt, const char* targ, const char* tag )
-{
-    char typ[64];
-    snprintf(typ, 64, tfmt, targ ); 
-    save(typ, tag);
-}
-
-template <typename T>
-void NPY<T>::save(const char* typ, const char* tag)
-{
-    std::string path = NPY<T>::path(typ, tag);
-    save(path.c_str());
-}
-
-template <typename T>
-void NPY<T>::save(const char* path_)
-{
-    fs::path path(path_);
-    fs::path dir = path.parent_path();
-
-    if(!fs::exists(dir))
-    {   
-        LOG(info)<< "NPY<T>::save creating directory [" << dir.string() << "]" << path_ ;
-        if (fs::create_directory(dir))
-        {   
-            LOG(info)<< "NPY<T>::save created directory [" << dir.string() << "]" ;
-        }   
-    }   
-
-    unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
-    std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
-    aoba::SaveArrayAsNumpy<T>(path_, itemcount, itemshape.c_str(), getValues()  );
-}
-
-template <typename T>
-std::string NPY<T>::getItemShape(unsigned int ifr)
-{
-    std::stringstream ss ; 
-    for(size_t i=ifr ; i < m_shape.size() ; i++)
-    {
-        ss << m_shape[i]  ;
-        if( i < m_shape.size() - 1) ss << "," ;
-    }
-    return ss.str(); 
-}
 
 template <typename T>
 NPY<T>* NPY<T>::debugload(const char* path)
@@ -181,40 +55,10 @@ NPY<T>* NPY<T>::debugload(const char* path)
     return npy ;
 }
 
-template <typename T>
-void NPY<T>::debugdump()
-{
-   /*
-    T* data = getValues() ; 
-    for(unsigned int i=0 ; i < 16 ; i++)
-    {
-         if(i % 4 == 0) printf("\n");
-         switch(type)
-         {
-             case 'f':printf(" %10.4f ", data[i]);break;
-             case 's':printf(" %10.4f ", data[i]);break;
-         }
-    }
-    printf("\n");
-   */
-}
-
-
 
 template <typename T>
 NPY<T>* NPY<T>::load(const char* path)
 {
-   /*
-    Currently need to save as np.float32 for this to manage to load, do so with::
-
-    In [3]: a.dtype
-    Out[3]: dtype('float64')
-
-    In [4]: b = np.array(a, dtype=np.float32)
-
-    np.save("/tmp/slowcomponent.npy", b ) 
-   */
-
     std::vector<int> shape ;
     std::vector<T> data ;
     std::string metadata = "{}";
@@ -239,9 +83,65 @@ NPY<T>* NPY<T>::load(const char* path)
 template <typename T>
 NPY<T>* NPY<T>::load(const char* typ, const char* tag)
 {
-    std::string path = NPY<T>::path(typ, tag);
+    std::string path = NPYBase::path(typ, tag);
     return load(path.c_str());
 }
+
+
+
+
+template <typename T>
+void NPY<T>::save(const char* tfmt, const char* targ, const char* tag )
+{
+    char typ[64];
+    snprintf(typ, 64, tfmt, targ ); 
+    save(typ, tag);
+}
+
+template <typename T>
+void NPY<T>::save(const char* typ, const char* tag)
+{
+    std::string path = NPYBase::path(typ, tag);
+    save(path.c_str());
+}
+
+template <typename T>
+void NPY<T>::save(const char* path_)
+{
+    fs::path path(path_);
+    fs::path dir = path.parent_path();
+
+    if(!fs::exists(dir))
+    {   
+        LOG(info)<< "NPYBase::save creating directory [" << dir.string() << "]" << path_ ;
+        if (fs::create_directory(dir))
+        {   
+            LOG(info)<< "NPYBase::save created directory [" << dir.string() << "]" ;
+        }   
+    }   
+
+    unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
+    std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
+
+    /*
+    switch(type)
+    {
+       case FLOAT:  aoba::SaveArrayAsNumpy<float>(path_, itemcount, itemshape.c_str(), getValues()  )  ;break;
+       case SHORT:  aoba::SaveArrayAsNumpy<short>(path_, itemcount, itemshape.c_str(), getValues()  )  ;break;
+       case DOUBLE: aoba::SaveArrayAsNumpy<double>(path_, itemcount, itemshape.c_str(), getValues()  )  ;break;
+       default:     assert(0); break;
+    }
+    */
+
+    aoba::SaveArrayAsNumpy<T>(path_, itemcount, itemshape.c_str(), getValues());
+}
+
+
+
+
+
+
+
 
 
 
@@ -398,17 +298,13 @@ std::map<int,int> NPY<T>::count_uniquei(unsigned int j, unsigned int k, int sj, 
     return uniqn ; 
 }
 
-
-
-// template specializations 
+// template specializations : allow branching on type
 template<>
-const char NPY<float>::type = FLOAT ;
+NPYBase::Type_t NPY<float>::type = FLOAT ;
 template<>
-const char NPY<short>::type = SHORT ;
+NPYBase::Type_t NPY<short>::type = SHORT ;
 template<>
-const char NPY<double>::type = DOUBLE ;
-
-
+NPYBase::Type_t NPY<double>::type = DOUBLE ;
 
 /*
 * :google:`move templated class implementation out of header`
@@ -419,33 +315,8 @@ by putting the explicit template instantiation at the tail rather than the
 head of the implementation.
 */
 
-
-
-
-
 template class NPY<float>;
 template class NPY<double>;
 template class NPY<short>;
 
-
-
-/*
-// http://stackoverflow.com/questions/6448653/c-how-to-use-type-in-template-function-to-branch
-
-template<typename T>
-struct switch_value {};
-
-template<>
-struct switch_value<int>
-{
-    enum { value = 1 };
-};
-
-template<>
-struct switch_value<char>
-{
-    enum { value = 2 };
-};
-
-*/
 

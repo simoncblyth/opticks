@@ -36,6 +36,7 @@ add_definitions(
 
 add_library( ${name}  SHARED
     NumpyEvt.cpp
+    NPYBase.cpp
     NPY.cpp
     ViewNPY.cpp
     MultiViewNPY.cpp
@@ -60,6 +61,7 @@ uif.h
 GLMPrint.hpp
 GLMFormat.hpp
 NumpyEvt.hpp
+NPYBase.hpp
 NPY.hpp
 ViewNPY.hpp
 MultiViewNPY.hpp

@@ -18,19 +18,40 @@ class G4StepNPY ;
 #include "stdlib.h"
 #include "assert.h"
 
+#include "NPYBase.hpp"
 
 
+/*
+Interop NumPy -> NPY
+======================
 
+The type of the NumPy array saved from python
+needs to match the NPY basis type 
+eg NPY<float> NPY<short> NPY<double>
+
+From python control the type, eg to save as float with::
+
+    In [3]: a.dtype
+    Out[3]: dtype('float64')
+
+    In [4]: b = np.array(a, dtype=np.float32)
+
+    np.save("/tmp/slowcomponent.npy", b ) 
+
+
+Going the other way, NPY -> NumPy just works as NumPy 
+recognises the type on loading, thanks to the numpy.hpp metadata header.
+
+*/
 
 
 template <class T>
-class NPY {
+class NPY : public NPYBase {
    friend class PhotonsNPY ; 
    friend class G4StepNPY ; 
 
    public:
-       static const char type ;  // for type branching 
-       enum { FLOAT, SHORT, DOUBLE };
+       static Type_t type ;  // for type branching 
 
    public:
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
@@ -41,10 +62,9 @@ class NPY {
        NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;
 
    public:
-       static std::string path(const char* typ, const char* tag);
-       static NPY* debugload(const char* path);
-       static NPY* load(const char* path);
-       static NPY* load(const char* typ, const char* tag);
+       static NPY<T>* debugload(const char* path);
+       static NPY<T>* load(const char* path);
+       static NPY<T>* load(const char* typ, const char* tag);
  
        void save(const char* path);
        void save(const char* typ, const char* tag);
@@ -52,12 +72,6 @@ class NPY {
        // manipulations typically change types, not tags:  tfmt % targ -> typ
 
    public:
-       unsigned int getLength();
-       unsigned int getDimensions();
-       std::vector<int>& getShapeVector();
-       unsigned int getShape(unsigned int dim);
-       unsigned int getNumValues(unsigned int from_dim=1);
-       unsigned int getNumBytes(unsigned int from_dim=1);
        T* getValues();
        void* getBytes();
        void read(void* ptr);
@@ -65,16 +79,13 @@ class NPY {
     public:
        // methods assuming 3D shape
        std::set<int> uniquei(unsigned int j, unsigned int k);
-       std::map<int,int> count_uniquei(unsigned int j, unsigned int k, int sj=-1, int sk=-1);
 
+       std::map<int,int> count_uniquei(unsigned int j, unsigned int k, int sj=-1, int sk=-1);
        // when both sj and sk are >-1 the float specified is used 
        // to sign the boundary code used in the map 
 
     public:
-       // methods assuming 3D shape
-       unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
-       unsigned int getByteIndex(unsigned int i, unsigned int j, unsigned int k);
-       int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
+       // type shifting get/set using union trick
 
        unsigned int getUSum(unsigned int j, unsigned int k);
 
@@ -88,103 +99,27 @@ class NPY {
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);
        void         setInt(  unsigned int i, unsigned int j, unsigned int k, int value);
 
-    public:
-       std::string  getItemShape(unsigned int ifr=1);
-       void         setBufferId(int buffer_id);
-       std::string description(const char* msg);
-       void Summary(const char* msg="NPY::Summary");
-       void debugdump();
-
-   protected:
-       unsigned int       m_dim ; 
-       unsigned int       m_len0 ; 
-       unsigned int       m_len1 ; 
-       unsigned int       m_len2 ; 
-       int                m_buffer_id ; 
 
    private:
-       std::vector<int>   m_shape ; 
        std::vector<T>     m_data ; 
-       std::string        m_metadata ; 
-
+ 
 };
 
 
 
 
-template <typename T> 
-inline int NPY<T>::getBufferId()
-{
-    return m_buffer_id ;
-}
 
-template <typename T> 
-inline void NPY<T>::setBufferId(int buffer_id)
-{
-    m_buffer_id = buffer_id  ;
-}
-
-
-
-
-template <typename T> 
-inline unsigned int NPY<T>::getNumValues(unsigned int from_dim)
-{
-    unsigned int nvals = 1 ; 
-    for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nvals *= m_shape[i] ;
-    return nvals ;  
-}
-template <typename T> 
-inline unsigned int NPY<T>::getNumBytes(unsigned int from_dim)
-{
-    return sizeof(T)*getNumValues(from_dim);
-}
-template <typename T> 
-inline unsigned int NPY<T>::getDimensions()
-{
-    return m_shape.size();
-}
-template <typename T> 
-inline std::vector<int>& NPY<T>::getShapeVector()
-{
-    return m_shape ; 
-}
-
-template <typename T> 
-inline unsigned int NPY<T>::getShape(unsigned int n)
-{
-    return n < m_shape.size() ? m_shape[n] : -1 ;
-}
-template <typename T> 
-inline unsigned int NPY<T>::getLength()
-{
-    return getShape(0);
-}
 
 template <typename T> 
 inline T* NPY<T>::getValues()
 {
     return m_data.data();
 }
+
 template <typename T> 
 inline void* NPY<T>::getBytes()
 {
     return (void*)getValues();
-}
-
-template <typename T> 
-inline unsigned int NPY<T>::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
-{
-    return sizeof(T)*getValueIndex(i,j,k);
-}
-
-template <typename T> 
-inline unsigned int NPY<T>::getValueIndex(unsigned int i, unsigned int j, unsigned int k)
-{
-    assert(m_dim == 3 ); 
-    unsigned int nj = m_len1 ;
-    unsigned int nk = m_len2 ;
-    return  i*nj*nk + j*nk + k ;
 }
 
 template <typename T> 
@@ -205,7 +140,7 @@ inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T v
 }
 
 
-
+// type shifting get/set using union trick
 
 
 template <typename T> 

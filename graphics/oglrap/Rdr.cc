@@ -38,14 +38,11 @@ void Rdr::upload(MultiViewNPY* mvn)
 
     assert(mvn);
 
-    //mvn->Print("Rdr::upload");    
-
     make_shader();  // need to compile and link shader for access to attribute locations
 
     glUseProgram(m_program);
 
     check_uniforms();
-
 
     
     NPY<float>* npyf(NULL);
