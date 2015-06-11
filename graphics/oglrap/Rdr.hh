@@ -27,6 +27,7 @@ class Rdr : public RendererBase  {
       void upload(MultiViewNPY* mvn);
   private:
       void upload(NPYBase* npy);
+      void attach(GLuint buffer_id);
       void upload(void* data, unsigned int nbytes);
 
   public:

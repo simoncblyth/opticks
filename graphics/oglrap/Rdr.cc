@@ -51,21 +51,21 @@ void Rdr::upload(MultiViewNPY* mvn)
 
     for(unsigned int i=0 ; i<mvn->getNumVecs() ; i++)
     {
-       ViewNPY* vnpy = (*mvn)[i] ;
-       if(npy == NULL)
-       {
-           count = vnpy->getCount();
-           setCountDefault(count);
-           npy = vnpy->getNPY(); 
-           upload(npy);
-       }
-       else
-       {
-           assert(npy == vnpy->getNPY());     
-           LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
-           assert(count == vnpy->getCount());
-       } 
-       address(vnpy); 
+        ViewNPY* vnpy = (*mvn)[i] ;
+        if(npy == NULL)
+        {
+            count = vnpy->getCount();
+            setCountDefault(count);
+            npy = vnpy->getNPY(); 
+            upload(npy);
+        }
+        else
+        {
+            assert(npy == vnpy->getNPY());     
+            LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
+            assert(count == vnpy->getCount());
+        } 
+        address(vnpy); 
     }
 }
 
@@ -77,17 +77,31 @@ void Rdr::upload(NPYBase* npy)
 
     if(m_device->isUploaded(npy))
     {
-        LOG(info) << "Rdr::upload skip, already uploaded to device " ;
+        GLuint buffer_id = npy->getBufferId();
+        LOG(info) << "Rdr::upload skip, already uploaded to device : attach to preexisting buffer  " << buffer_id  ;
+        attach(buffer_id);
     }
     else
     {
         LOG(info) << "Rdr::upload " ;
+
         upload(npy->getBytes(), npy->getNumBytes(0));
+
         npy->setBufferId(m_buffer); 
         m_device->add(npy);
     }
 }
 
+
+void Rdr::attach(GLuint buffer_id)
+{
+    // attach to preexisting buffer 
+    glGenVertexArrays (1, &m_vao); 
+    glBindVertexArray (m_vao);     
+
+    m_buffer = buffer_id ; 
+    glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+}
 
 void Rdr::upload(void* data, unsigned int nbytes)
 {

@@ -42,9 +42,6 @@ const char* Scene::RECORD   = "record" ;
 void Scene::gui()
 {
 #ifdef GUI_
-     // hmm scattering ImGui code has distinct advantages
-     // means the above gymnastics to line up the choices 
-     // and selection arrays is not needed
      ImGui::Checkbox(GEOMETRY, &m_geometry_mode);
 
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
@@ -56,6 +53,13 @@ void Scene::gui()
              m_photon_renderer->getCountDefault(),
              m_record_renderer->getCountDefault()
      );
+
+
+     int* record_style = (int*)&m_record_style ;  // address of enum cast to int*
+     ImGui::RadioButton("rec",    record_style, REC); 
+     ImGui::SameLine();
+     ImGui::RadioButton("altrec", record_style, ALTREC); 
+
 #endif    
 }
 
@@ -158,12 +162,7 @@ void Scene::setComposition(Composition* composition)
 
 const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
 {
-    if(!m_initialized)
-    {
-        // defer init to allow changing 
-        init();
-        m_initialized = true ; 
-    } 
+    if(!m_initialized) init();
 
     const char* idpath = m_geometry_loader->load(prefix, nogeocache);
     m_geometry = m_geometry_loader->getDrawable();
@@ -191,12 +190,22 @@ void Scene::uploadEvt()
 {
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
     m_photon_renderer->upload(m_evt->getPhotonAttr());
+
+#define OLD 0
+#if OLD
     if(m_record_mode)
     {
         Rdr* rdr = getRecordRenderer();
         assert(rdr);
         rdr->upload(m_evt->getRecordAttr());
     } 
+#else
+    // have both renderers ready to roll so can live switch between them, 
+    // data is not duplicated thanks to Device
+    m_record_renderer->upload(m_evt->getRecordAttr());
+    m_altrecord_renderer->upload(m_evt->getRecordAttr());
+#endif
+
 }
 
 void Scene::render()
@@ -211,6 +220,10 @@ void Scene::render()
         rdr->render();
     }
 }
+
+
+
+
 
 unsigned int Scene::touch(int ix, int iy, float depth)
 {

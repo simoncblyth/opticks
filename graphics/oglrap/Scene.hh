@@ -211,6 +211,7 @@ inline void Scene::setPhotons(Photons* photons)
 inline void Scene::setRecordStyle(RecordStyle_t style)
 {
     m_record_style = style ; 
+
 }
 
 

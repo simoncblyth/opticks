@@ -155,6 +155,9 @@ imgui-get(){
 }
 
 
+imgui-demo(){ vi $(imgui-dir)/imgui.cpp +9757 ; }
+
+
 imgui-wipe(){
    local bdir=$(imgui-bdir)
    rm -rf $bdir
