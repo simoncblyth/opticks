@@ -2,6 +2,7 @@
 #include <sstream>
 #include <boost/log/trivial.hpp>
 #include "string.h"
+#include "stringutil.hpp"
 #include <iostream>
 
 #define LOG BOOST_LOG_TRIVIAL
@@ -56,19 +57,26 @@ std::string NPYBase::description(const char* msg)
 
 std::string NPYBase::path(const char* typ, const char* tag)
 {
-    char* TYP = strdup(typ);
-    char* p = TYP ;
-    while(*p)
-    {
-       if( *p >= 'a' && *p <= 'z') *p += 'A' - 'a' ;
-       p++ ; 
-    } 
+/*
+:param typ: object type name, eg oxcerenkov rxcerenkov 
+:param tag: event tag, usually numerical 
 
+The typ is used to identify the name of an envvar 
+in which the template path at which to save/load such 
+objects must be found.
 
-    // NB envvars and valid typ are defined in env/export-
+For example for typ "rxcerenkov" the  below envvar
+must be present in the environment. 
+
+    DAE_RXCERENKOV_PATH_TEMPLATE 
+
+Envvars are defined in env/export-
+
+*/
+    const char* TYP = uppercase(typ);
     char envvar[64];
     snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
-    free(TYP); 
+    free((void*)TYP); 
 
     char* tmpl = getenv(envvar) ;
     if(!tmpl)

@@ -16,6 +16,19 @@ int getenvint( const char* envkey, int fallback )
 }
 
 
+const char* uppercase( const char* str )
+{
+    char* STR = strdup(str);
+    char* p = STR ;
+    while(*p)
+    {
+       if( *p >= 'a' && *p <= 'z') *p += 'A' - 'a' ;
+       p++ ; 
+    } 
+    return STR ;
+}
+
+
 const char* getenvvar( const char* envprefix, const char* envkey )
 {
     char envvar[128];

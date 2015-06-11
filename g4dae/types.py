@@ -15,6 +15,7 @@ oxc_ = lambda _:load_("oxcerenkov",_)
 oxs_ = lambda _:load_("oxscintillation",_)
 rxc_ = lambda _:load_("rxcerenkov",_)
 rxs_ = lambda _:load_("rxscintillation",_)
+dom_ = lambda _:load_("domain",_)
 
 g4c_ = lambda _:load_("gopcerenkov",_)
 g4s_ = lambda _:load_("gopscintillation",_)

@@ -56,6 +56,7 @@ void OptiXEngine::init()
     m_context = Context::create();
     m_geometry_group = m_context->createGeometryGroup();
     m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
+    m_domain = NPY<float>::make_vec4(e_number_domain,1,0.f) ;
 
     initRenderer();
     initContext();
@@ -199,6 +200,8 @@ unsigned int OptiXEngine::touch(int ix_, int iy_)
 }
 
 
+
+
 void OptiXEngine::initGeometry()
 {
     LOG(info) << "OptiXEngine::initGeometry" ;
@@ -222,13 +225,21 @@ void OptiXEngine::initGeometry()
     m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
     m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
 
+    m_domain->setQuad(e_center_extent, 0, ce );
+    m_domain->setQuad(e_time_domain  , 0, td );
+
+    glm::vec4 wd ;
+    m_context["wavelength_domain"]->getFloat(wd.x,wd.y,wd.z,wd.w);
+    m_domain->setQuad(e_wavelength_domain  , 0, wd );
+
     // cf with MeshViewer::initGeometry
     LOG(info) << "OptiXEngine::initGeometry DONE "
               << " x: " << ce.x  
               << " y: " << ce.y  
               << " z: " << ce.z  
               << " w: " << ce.w  ;
-              
+             
+
 }
 
 

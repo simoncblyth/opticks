@@ -4,6 +4,12 @@
 #include <string>
 #include "assert.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+
 class NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE } Type_t ;
@@ -40,7 +46,12 @@ class NPYBase {
    public:
        // provided by subclass
        virtual void* getBytes() = 0 ;
-
+       virtual void setQuad(unsigned int i, unsigned int j, glm::vec4&  vec ) = 0 ;
+       virtual void setQuad(unsigned int i, unsigned int j, glm::ivec4& vec ) = 0 ;
+       virtual void save(const char* path) = 0;
+       virtual void save(const char* typ, const char* tag) = 0;
+       virtual void save(const char* tfmt, const char* targ, const char* tag ) = 0;
+ 
     public:
        void Summary(const char* msg="NPY::Summary");
        std::string description(const char* msg);

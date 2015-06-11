@@ -5,6 +5,24 @@
 #include <iostream>
 #include "assert.h"
 
+#include <glm/glm.hpp>
+
+
+void test_setQuad()
+{
+   NPYBase* dom = NPY<float>::make_vec4(10,1,0.f) ;
+
+   glm::vec4 q0(0.f,1.f,2.f,3.f);
+   glm::vec4 q1(1.f,1.f,2.f,3.f);
+   glm::vec4 q9(9.f,1.f,2.f,3.f);
+
+   dom->setQuad(0,0, q0 );
+   dom->setQuad(1,0, q1 );
+   dom->setQuad(9,0, q9 );
+    
+   dom->save("/tmp/test_setQuad.npy");
+}
+
 
 void test_ctor()
 {
@@ -105,6 +123,7 @@ int main()
     //test_load_path();
     //test_save_path();
 
+    test_setQuad();
 
     return 0 ;
 }

@@ -59,6 +59,9 @@ void Scene::gui()
      ImGui::RadioButton("rec",    record_style, REC); 
      ImGui::SameLine();
      ImGui::RadioButton("altrec", record_style, ALTREC); 
+     ImGui::SameLine();
+     ImGui::RadioButton("devrec", record_style, DEVREC); 
+
 
 #endif    
 }
@@ -141,11 +144,17 @@ void Scene::init()
 
     m_genstep_renderer = new Rdr(m_device, "p2l");
     m_photon_renderer = new Rdr(m_device, "pos");
+
+
     m_record_renderer = new Rdr(m_device, "rec");
     m_record_renderer->setPrimitive(Rdr::LINES);
 
     m_altrecord_renderer = new Rdr(m_device, "altrec");
     m_altrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
+
+    m_devrecord_renderer = new Rdr(m_device, "devrec");
+    m_devrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
+
 
     m_initialized = true ; 
 }
@@ -158,6 +167,7 @@ void Scene::setComposition(Composition* composition)
     m_photon_renderer->setComposition(composition);
     m_record_renderer->setComposition(composition);
     m_altrecord_renderer->setComposition(composition);
+    m_devrecord_renderer->setComposition(composition);
 }
 
 const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
@@ -181,6 +191,7 @@ Rdr* Scene::getRecordRenderer()
     {
         case    REC:rdr = m_record_renderer     ; break ;
         case ALTREC:rdr = m_altrecord_renderer  ; break ;
+        case DEVREC:rdr = m_devrecord_renderer  ; break ;
     }
     return rdr ; 
 }
@@ -191,20 +202,12 @@ void Scene::uploadEvt()
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 
-#define OLD 0
-#if OLD
-    if(m_record_mode)
-    {
-        Rdr* rdr = getRecordRenderer();
-        assert(rdr);
-        rdr->upload(m_evt->getRecordAttr());
-    } 
-#else
     // have both renderers ready to roll so can live switch between them, 
     // data is not duplicated thanks to Device
+
     m_record_renderer->upload(m_evt->getRecordAttr());
     m_altrecord_renderer->upload(m_evt->getRecordAttr());
-#endif
+    m_devrecord_renderer->upload(m_evt->getRecordAttr());
 
 }
 
@@ -290,4 +293,6 @@ GSubstanceLibMetadata* Scene::getMetadata()
 {
     return m_geometry_loader ? m_geometry_loader->getMetadata() : NULL ;
 }
+
+
 

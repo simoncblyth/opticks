@@ -10,6 +10,7 @@
 
 int getenvint( const char* envkey, int fallback=-1 );
 const char* getenvvar( const char* envprefix, const char* envkey );
+const char* uppercase( const char* str );
 
 void split( std::vector<std::string>& elem, const char* line, char delim );
 

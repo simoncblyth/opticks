@@ -28,7 +28,7 @@ class Scene : public Configurable {
    public:
        static const char* TARGET ;
 
-       typedef enum { REC, ALTREC } RecordStyle_t ;
+       typedef enum { REC, ALTREC, DEVREC } RecordStyle_t ;
        void setRecordStyle(Scene::RecordStyle_t style);
 
    public:
@@ -50,9 +50,6 @@ class Scene : public Configurable {
         void setComposition(Composition* composition);
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
-        //
-        // TODO: enable live switching of record renderer, 
-        //       currently this must be done prior to loadGeometry to have an effect
 
    public:
         // target cannot live in Composition, as needs geometry 
@@ -102,6 +99,7 @@ class Scene : public Configurable {
         Rdr*         m_photon_renderer ; 
         Rdr*         m_record_renderer ; 
         Rdr*         m_altrecord_renderer ; 
+        Rdr*         m_devrecord_renderer ; 
         NumpyEvt*    m_evt ;
         Photons*     m_photons ; 
         GDrawable*   m_geometry ;
@@ -128,6 +126,7 @@ inline Scene::Scene() :
             m_photon_renderer(NULL),
             m_record_renderer(NULL),
             m_altrecord_renderer(NULL),
+            m_devrecord_renderer(NULL),
             m_evt(NULL),
             m_photons(NULL),
             m_geometry(NULL),

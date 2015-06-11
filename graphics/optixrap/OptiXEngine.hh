@@ -8,6 +8,7 @@ class GGeo ;
 class GMergedMesh ;
 class NumpyEvt ; 
 class cuRANDWrapper ; 
+class NPYBase ; 
 
 
 #include "string.h"
@@ -34,6 +35,13 @@ class OptiXEngine : public Touchable {
                 e_rayTypeCount 
              };
 
+        enum { 
+                e_center_extent, 
+                e_time_domain, 
+                e_wavelength_domain,
+                e_number_domain
+             } ;
+
     public:
         OptiXEngine(const char* cmake_target);
 
@@ -50,6 +58,7 @@ class OptiXEngine : public Touchable {
     public:
         GMergedMesh* getMergedMesh();
         optix::Context& getContext();
+        NPYBase* getDomain();
         unsigned int getRngMax();
         unsigned int getBounceMax();
         unsigned int getTraceCount();
@@ -125,6 +134,7 @@ class OptiXEngine : public Touchable {
         bool             m_enabled ; 
         int              m_texture_id ; 
         NumpyEvt*        m_evt ; 
+        NPYBase*         m_domain ;
 
 
    // from sutil/MeshScene.h
@@ -168,6 +178,7 @@ inline OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_enabled(true),
     m_texture_id(-1),
     m_evt(NULL),
+    m_domain(NULL),
     m_filename(),
     m_accel_cache_loaded(false),
     m_accel_caching_on(true)
@@ -238,6 +249,12 @@ inline unsigned int OptiXEngine::getBounceMax()
 inline unsigned int OptiXEngine::getTraceCount()
 {
     return m_trace_count ; 
+}
+
+
+inline NPYBase* OptiXEngine::getDomain()
+{
+    return m_domain ;
 }
 
 

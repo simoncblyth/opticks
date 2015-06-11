@@ -123,24 +123,8 @@ void NPY<T>::save(const char* path_)
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
 
-    /*
-    switch(type)
-    {
-       case FLOAT:  aoba::SaveArrayAsNumpy<float>(path_, itemcount, itemshape.c_str(), getValues()  )  ;break;
-       case SHORT:  aoba::SaveArrayAsNumpy<short>(path_, itemcount, itemshape.c_str(), getValues()  )  ;break;
-       case DOUBLE: aoba::SaveArrayAsNumpy<double>(path_, itemcount, itemshape.c_str(), getValues()  )  ;break;
-       default:     assert(0); break;
-    }
-    */
-
     aoba::SaveArrayAsNumpy<T>(path_, itemcount, itemshape.c_str(), getValues());
 }
-
-
-
-
-
-
 
 
 

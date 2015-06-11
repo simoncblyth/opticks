@@ -200,7 +200,6 @@ int main(int argc, char** argv)
     // RecordStyle must be set before scene.uploadEvt to have effect
     bool alt = cfg["frame"]->hasOpt("alt") ;    
     scene.setRecordStyle( alt ? Scene::ALTREC : Scene::REC );    
-
     scene.uploadEvt();
     //
     // TODO:  
@@ -223,6 +222,11 @@ int main(int argc, char** argv)
     assert(rng_max >= 1e6); 
     engine.setRngMax(rng_max);
     engine.init();  // creates OptiX context, when enabled
+
+    // persisting domain allows interpretation of packed photon record NPY arrays 
+    // from standalone NumPy
+    NPYBase* domain = engine.getDomain(); 
+    if(domain) domain->save("domain", "1");
 
     engine.generate();
 

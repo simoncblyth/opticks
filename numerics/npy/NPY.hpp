@@ -9,11 +9,6 @@ class G4StepNPY ;
 #include <set>
 #include <map>
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include "string.h"
 #include "stdlib.h"
 #include "assert.h"
@@ -69,7 +64,7 @@ class NPY : public NPYBase {
        void save(const char* path);
        void save(const char* typ, const char* tag);
        void save(const char* tfmt, const char* targ, const char* tag );
-       // manipulations typically change types, not tags:  tfmt % targ -> typ
+       // manipulations change types, not tags:  tfmt % targ -> typ
 
    public:
        T* getValues();
@@ -99,6 +94,8 @@ class NPY : public NPYBase {
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);
        void         setInt(  unsigned int i, unsigned int j, unsigned int k, int value);
 
+       void         setQuad(unsigned int i, unsigned int j, glm::vec4&  vec );
+       void         setQuad(unsigned int i, unsigned int j, glm::ivec4& vec );
 
    private:
        std::vector<T>     m_data ; 
@@ -137,6 +134,21 @@ inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T v
     unsigned int idx = getValueIndex(i,j,k);
     T* data = getValues();
     *(data + idx) = value ;
+}
+
+
+template <typename T> 
+inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::vec4& vec )
+{
+    assert( m_len2 == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
+}
+
+template <typename T> 
+inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::ivec4& vec )
+{
+    assert( m_len2 == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
 }
 
 
