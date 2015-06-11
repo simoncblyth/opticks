@@ -73,8 +73,6 @@ RT_PROGRAM void generate()
     prd.distance_to_boundary = -1.f ;
 
     Photon p ;  
-    pinit(p);
-
 
     if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
     {
@@ -103,6 +101,7 @@ RT_PROGRAM void generate()
         generate_scintillation_photon(p, ss, rng );         
     }
 
+    p.flags.u.y = photon_id ;   // no problem fitting uint  (1 << 32) - 1 = 4,294,967,295
 
     int slot = 0 ;
     int bounce = 0 ; 

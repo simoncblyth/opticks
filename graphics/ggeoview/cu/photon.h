@@ -55,15 +55,6 @@ enum
 enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
 
 
-__device__ void pinit( Photon& p)
-{
-   p.flags.i.x = 0 ;   
-   p.flags.i.y = 0 ;   
-   p.flags.i.z = 0 ;   
-   p.flags.i.w = 0 ;   
-}
-
-
 __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_offset )
 {
     pbuffer[photon_offset+0] = make_float4( p.position.x,    p.position.y,    p.position.z,     p.time ); 
@@ -121,15 +112,51 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     squad polw ; 
     polw.u.x = __float2uint_rn((p.polarization.x+1.f)*127.f) << 0 | __float2int_rn((p.polarization.y+1.f)*127.f) << 8 ;
     polw.u.y = __float2uint_rn((p.polarization.z+1.f)*127.f) << 0 | __float2int_rn(nwavelength) << 8 ;
-    polw.u.z = 0xFFFF ;    
-    polw.u.w = 0xFFFF ;    
+    
+
+    // identity check
+    unsigned int photon_id = p.flags.u.y ;
+    polw.u.z = photon_id & 0xFFFF ;     // least significant 16 bits first     
+    polw.u.w = photon_id >> 16  ;       // arranging this way allows scrunching to view two uint16 as one uint32 
+
+    // little-endian : increasing numeric significance with increasing memory addresses 
+    // both OSX intel and CUDA GPUs reported to be of this pursuasion
 
     rbuffer[record_offset+1] = polw.s ; 
-
 
 }
 
 /*
+
+   (identity check, depending on same endianness of host and device)
+
+::
+
+    In [1]: r = rxc_(1)
+
+    In [2]: (r.shape, r.dtype)
+    Out[2]: ((6128410, 2, 4), dtype('int16'))
+
+    In [7]: r.view(np.uint16).view(np.uint32)[::10,1,1]   # scrunch up 2 uint16 into a uint32
+    Out[7]: array([     0,      1,      2, ..., 612838, 612839, 612840], dtype=uint32)
+
+    In [8]: np.all(np.arange(0,612841,dtype=np.uint32) == r.view(np.uint32)[::10,1,1])  ## chaining views dont make much sense
+    Out[8]: True
+
+
+    ## alternatively without the dirty scrunching 
+
+    In [30]: lss = np.array( r.view(np.uint16)[::10,1,2], dtype=np.uint32 )
+
+    In [31]: mss = np.array( r.view(np.uint16)[::10,1,3], dtype=np.uint32 )
+
+    In [32]: mss << 16 | lss 
+    Out[32]: array([     0,      1,      2, ..., 612838, 612839, 612840], dtype=uint32)
+
+    In [33]: np.all( (mss << 16) | lss == np.arange(0,612841, dtype=np.uint32 ))
+    Out[33]: True
+
+
 
     (lightly packed) 
 
