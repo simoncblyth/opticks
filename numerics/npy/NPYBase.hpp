@@ -37,6 +37,10 @@ class NPYBase {
        // NumPy persistency
        static std::string path(const char* typ, const char* tag);
 
+   public:
+       // provided by subclass
+       virtual void* getBytes() = 0 ;
+
     public:
        void Summary(const char* msg="NPY::Summary");
        std::string description(const char* msg);

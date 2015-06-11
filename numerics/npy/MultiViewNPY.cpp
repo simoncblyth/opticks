@@ -15,8 +15,12 @@ void MultiViewNPY::add(ViewNPY* vec)
     if(m_vecs.size() > 0)
     {
         ViewNPY* prior = m_vecs.back();
+#ifdef KLUDGE
         assert(prior->getNPYf() == vec->getNPYf() && "LIMITATION : all ViewNPY in a MultiViewNPY must be views of the same underlying NPY");        
         assert(prior->getNPYs() == vec->getNPYs() && "LIMITATION : all ViewNPY in a MultiViewNPY must be views of the same underlying NPY");        
+#else
+        assert(prior->getNPY() == vec->getNPY() && "LIMITATION : all ViewNPY in a MultiViewNPY must be views of the same underlying NPY");
+#endif
     }
     m_vecs.push_back(vec);
 }

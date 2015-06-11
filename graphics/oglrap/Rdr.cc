@@ -35,7 +35,12 @@ void Rdr::setPrimitive(Primitive_t prim )
 
 void Rdr::upload(MultiViewNPY* mvn)
 {
-
+    // MultiViewNPY are constrained to all refer to the same underlying NPY 
+    // so only do upload and m_buffer creation for the first 
+    //
+    // TODO: handle case of multiple mvn referring to the same buffer without data duplication,
+    //       eg when have alternative renderers
+ 
     assert(mvn);
 
     make_shader();  // need to compile and link shader for access to attribute locations
@@ -43,29 +48,28 @@ void Rdr::upload(MultiViewNPY* mvn)
     glUseProgram(m_program);
 
     check_uniforms();
-
     
+    unsigned int count(0);
+
+
+#ifdef KLUDGE
     NPY<float>* npyf(NULL);
     NPY<short>* npys(NULL);
-
-    unsigned int count(0);
+#else
+    NPYBase* npy(NULL);
+#endif
 
     for(unsigned int i=0 ; i<mvn->getNumVecs() ; i++)
     {
          ViewNPY* vnpy = (*mvn)[i] ;
 
-         // MultiViewNPY are constrained to all refer to the same underlying NPY 
-         // so only do upload and m_buffer creation for the first 
-         //
-         // TODO: handle case of multiple mvn referring to the same buffer without data duplication,
-         //       eg when have alternative renderers
-         // 
- 
+
+
+#ifdef KLUDGE 
          if(npyf == NULL && npys == NULL)
          {
              count = vnpy->getCount();
              setCountDefault(count);
-
              npyf = vnpy->getNPYf(); 
 
              if(npyf == NULL)
@@ -80,7 +84,6 @@ void Rdr::upload(MultiViewNPY* mvn)
                  npyf->setBufferId(m_buffer); 
                  // record OpenGL buffer id with the data for convenience
              }
-
          }
          else 
          {
@@ -91,6 +94,23 @@ void Rdr::upload(MultiViewNPY* mvn)
              LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
              assert(count == vnpy->getCount());
          }
+#else
+       if(npy == NULL)
+       {
+             count = vnpy->getCount();
+             setCountDefault(count);
+             npy = vnpy->getNPY(); 
+
+             upload(npy->getBytes(), npy->getNumBytes(0));
+             npy->setBufferId(m_buffer); 
+       }
+       else
+       {
+             assert(npy == vnpy->getNPY());     
+             LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
+             assert(count == vnpy->getCount());
+       } 
+#endif
 
          address(vnpy); 
     }

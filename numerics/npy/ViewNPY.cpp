@@ -15,6 +15,37 @@
 // TODO: arrange a base class for NPY<T> to avoid duplication like this...
 //       dont want to make ViewNPY templated as that would complicate MultiViewNPY iteration
 
+
+
+ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int size, Type_t type, bool norm, bool iatt) :
+            m_name(strdup(name)),
+            m_npy(npy),
+            m_bytes(npy->getBytes()),
+            m_j(j),
+            m_k(k),
+            m_size(size),
+            m_type(type),
+            m_norm(norm),
+            m_iatt(iatt),
+            m_numbytes(npy->getNumBytes(0)),
+            m_stride(npy->getNumBytes(1)),
+            m_offset(npy->getByteIndex(0,j,k)),
+            m_count(npy->getShape(0)),
+            m_low(NULL),
+            m_high(NULL),
+            m_dimensions(NULL),
+            m_center(NULL),
+            m_model_to_world(),
+            m_extent(0.f)
+{
+    findBounds();
+}
+
+
+
+
+#ifdef KLUDGE
+
 ViewNPY::ViewNPY(const char* name, NPY<float>* npy, unsigned int j, unsigned int k, unsigned int size, Type_t type, bool norm, bool iatt) :
             m_name(strdup(name)),
             m_npy_f(npy),
@@ -66,6 +97,8 @@ ViewNPY::ViewNPY(const char* name, NPY<short>* npy, unsigned int j, unsigned int
     findBounds();
 }
 
+#endif
+
 
 unsigned int ViewNPY::getValueOffset()
 {
@@ -80,12 +113,19 @@ unsigned int ViewNPY::getValueOffset()
     //
     // TODO: split off non-type dependant parts of NPY<T> into base class
     //
+
+#ifdef KLUDGE
     unsigned int vix = m_npy_f ? 
               m_npy_f->getValueIndex(0,m_j,m_k) 
                 : 
               m_npy_s->getValueIndex(0,m_j,m_k)
                 ;
-    return vix ;    
+    return vix ; 
+#else
+    return m_npy->getValueIndex(0,m_j,m_k); 
+#endif
+
+
 }
 
 
