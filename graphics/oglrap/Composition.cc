@@ -141,10 +141,15 @@ void Composition::gui()
 
     ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *(param + 3) * SPEED_OF_LIGHT / 1000.f );
 
+    int* pick = glm::value_ptr(m_pick) ;
+    ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
+    ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
 
+/*
     float* pick_f = glm::value_ptr(m_pick_f) ;
     ImGui::SliderFloat( "pick_f.w", pick_f + 3,  0.f, 1e6f,  "%7.f");
     m_pick.w = int(m_pick_f.w) ;
+*/
 
     ImGui::Text("pick %d %d %d %d ",
        m_pick.x, 
@@ -184,17 +189,15 @@ unsigned int Composition::getPixelFactor()
 {
    return m_camera->getPixelFactor();
 }
-void Composition::setPixelFactor(unsigned int factor)
+
+void Composition::setSize(glm::uvec4 size)
 {
-    m_camera->setPixelFactor(factor);
+    setSize(size.x, size.y, size.z);
 }
-
-
-
-
-void Composition::setSize(unsigned int width, unsigned int height)
+void Composition::setSize(unsigned int width, unsigned int height, unsigned int factor)
 {
-    m_camera->setSize(width, height);
+    m_camera->setSize(width/factor,height/factor);
+    m_camera->setPixelFactor(factor);
 }
 
 

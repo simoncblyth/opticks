@@ -72,7 +72,6 @@ class Composition : public Configurable {
   public:
       void setTarget(unsigned int target);
       void setScene(Scene* scene);
-      void setSize(unsigned int width, unsigned int height);
       void addConfig(Cfg* cfg);
 
   public: 
@@ -104,12 +103,16 @@ class Composition : public Configurable {
       float getExtent();
       float getNear();
       float getFar();
+
+
+  public: 
       unsigned int getWidth();
       unsigned int getHeight();
       unsigned int getPixelWidth(); // width*pixel_factor
       unsigned int getPixelHeight();
       unsigned int getPixelFactor();
-      void setPixelFactor(unsigned int factor); // 2 for retina display
+      void setSize(unsigned int width, unsigned int height, unsigned int pixelfactor=1);
+      void setSize(glm::uvec4 size); // x, y will be scaled down by the pixelfactor
 
   public:
       glm::vec3 unProject(unsigned int x, unsigned int y, float z);

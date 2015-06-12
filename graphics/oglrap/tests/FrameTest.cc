@@ -22,11 +22,16 @@ int main(int argc, char** argv)
     interactor.setComposition(&composition); // interactor changes camera, view, trackball 
     renderer.setComposition(&composition);  // composition provides matrices to renderer 
 
+
+
     Texture texture ;
     texture.loadPPM(ppmpath);
+    composition.setSize(texture.getWidth(), texture.getHeight(),2 );
 
-    frame.gl_init_window("FrameTest", texture.getWidth(), texture.getHeight());
-    composition.setSize(frame.getWidth(), frame.getHeight());
+    frame.setComposition(&composition);
+    frame.setTitle("FrameTest");
+    frame.init(); // creates OpenGL context 
+
     //composition.setModelToWorld(texture.getModelToWorldPtr(0));   // point at the geometry 
     composition.setCenterExtent(texture.getCenterExtent(0));   // point at the geometry 
     composition.update();

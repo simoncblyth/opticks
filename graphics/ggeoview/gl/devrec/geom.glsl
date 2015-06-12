@@ -23,13 +23,11 @@ void main ()
     vec4 p1 = gl_in[1].gl_Position  ;
     float tc = Param.w / TimeDomain.y ;  // as time comparisons done before un-snorming 
 
-
-   //  TODO: visible comparisons with gl_PrimitiveIDIn/10 
-
-    uint photon_id = flags[0].x | flags[0].y << 16 ;    // from polw.u.z polw.u.w
+    uint photon_id = gl_PrimitiveIDIn/MAXREC ;                 // https://www.opengl.org/sdk/docs/man/html/gl_PrimitiveIDIn.xhtml
+    uint verify_photon_id = flags[0].x | flags[0].y << 16 ;    // from polw.u.z polw.u.w
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
-    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(gl_PrimitiveIDIn/MAXREC == photon_id) << 2 ) ;
+    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(photon_id % Pick.x == 0) << 2 ) ;
 
     //
     //   (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  

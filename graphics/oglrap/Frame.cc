@@ -53,20 +53,6 @@ static void error_callback(int error, const char* description)
 }
 
 
-Frame::Frame() : 
-     m_title(NULL),
-     m_window(NULL),
-     m_interactor(NULL),
-     m_cursor_inwindow(true),
-     m_cursor_x(-1.f),
-     m_cursor_y(-1.f),
-     m_dumpevent(0),
-     m_pos_x(0),
-     m_pos_y(0),
-     m_pixel_factor(1)
-{
-}
-
 Frame::~Frame()
 {
     free((void*)m_title);
@@ -134,16 +120,18 @@ void Frame::setTitle(const char* title)
     m_title = strdup(title);
 }
 
-void Frame::gl_init_window(const char* title, unsigned int width, unsigned int height, unsigned int coord2pixel)
+void Frame::setFullscreen(bool full)
 {
-    setSize(width, height, coord2pixel);
-    setTitle(title);
-    gl_init_window();
+    m_fullscreen = full ; 
 }
 
 
-void Frame::gl_init_window()
+
+void Frame::init()
 {
+    setSize(m_composition->getWidth(),m_composition->getHeight(),m_composition->getPixelFactor());
+
+
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit()) ::exit(EXIT_FAILURE);
@@ -157,7 +145,8 @@ void Frame::gl_init_window()
 
     LOG(debug) << "Frame::gl_init_window " << m_width << "," << m_height << " " << m_title ;
 
-    m_window = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);
+    GLFWmonitor* monitor = m_fullscreen ? glfwGetPrimaryMonitor() : NULL ;  
+    m_window = glfwCreateWindow(m_width, m_height, m_title, monitor, NULL);
     if (!m_window)
     {
         glfwTerminate();
@@ -299,9 +288,9 @@ void Frame::getCursorPos()
     double xpos ;  
     double ypos ;
     glfwGetCursorPos(m_window, &xpos, &ypos );
-    m_pos_x = floor(xpos)*m_pixel_factor;
-    m_pos_y = floor(ypos)*m_pixel_factor;
-    //printf("Frame::getCursorPos    %d %d  (%d)    \n", m_pos_x, m_pos_y, m_pixel_factor );
+    m_pos_x = floor(xpos)*m_coord2pixel;
+    m_pos_y = floor(ypos)*m_coord2pixel;
+    //printf("Frame::getCursorPos    %d %d  (%d)    \n", m_pos_x, m_pos_y, m_coord2pixel );
 }
 
 void Frame::handle_event(GLEQevent& event)

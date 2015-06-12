@@ -22,17 +22,19 @@ class Frame : public Touchable {
        
        void configureI(const char* name, std::vector<int> values);
        void configureS(const char* name, std::vector<std::string> values);
+
        void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
        void setTitle(const char* title);
+       void setFullscreen(bool fullscreen);
 
-       void gl_init_window(const char* title, unsigned int width, unsigned int height, unsigned int coord2pixel=2);
-       void gl_init_window();
+       void init();
+
+   private:
+       //void setPixelFactor(unsigned int factor);
+       unsigned int getPixelFactor();
        void stipple();
 
-
-       void setPixelFactor(unsigned int factor);
-       unsigned int getPixelFactor();
-
+   public:
        void setInteractor(Interactor* interactor);
        void setComposition(Composition* composition);
        void setScene(Scene* scene);
@@ -69,6 +71,9 @@ class Frame : public Touchable {
        void key_released(unsigned int key);
 
    private:
+       bool          m_fullscreen ;
+
+       // TODO: eliminate most of these, get from composition
        unsigned int  m_width ; 
        unsigned int  m_height ; 
        unsigned int  m_coord2pixel ; 
@@ -93,6 +98,21 @@ class Frame : public Touchable {
 
 };
 
+inline Frame::Frame() : 
+     m_fullscreen(false),
+     m_title(NULL),
+     m_window(NULL),
+     m_interactor(NULL),
+     m_cursor_inwindow(true),
+     m_cursor_x(-1.f),
+     m_cursor_y(-1.f),
+     m_dumpevent(0),
+     m_pixel_factor(1),
+     m_pos_x(0),
+     m_pos_y(0)
+{
+}
+
 
 inline GLFWwindow* Frame::getWindow()
 { 
@@ -110,18 +130,6 @@ inline unsigned int Frame::getCoord2pixel()
 { 
    return m_coord2pixel ; 
 } 
-
-
-// TODO: consolidate Coord2pixel and PixelFactor
-inline unsigned int Frame::getPixelFactor()
-{ 
-   return m_pixel_factor ; 
-} 
-inline void Frame::setPixelFactor(unsigned int factor)
-{ 
-   m_pixel_factor = factor ;  ; 
-} 
-
 
 
 

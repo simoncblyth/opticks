@@ -101,6 +101,19 @@ void logging_init()
 
 }
 
+
+/*
+
+Native resolution: 2880 by 1800 pixels (Retina); 
+scaled resolutions: 
+     1920 by 1200, 
+     1680 by 1050, 
+     1280 by 800, 
+     1024 by 640 
+
+*/
+
+
 int main(int argc, char** argv)
 {
     logging_init();
@@ -111,16 +124,17 @@ int main(int argc, char** argv)
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
     Scene scene(shader_dir, shader_incl_path) ;
-    Frame frame ;
     Composition composition ;   
+    Frame frame ;
     Bookmarks bookmarks ; 
     Interactor interactor ; 
     numpydelegate delegate ; 
     NumpyEvt evt ;
 
-    composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
-    frame.setPixelFactor(2);       // 2: makes OptiX render at retina resolution
-    // NB another Coord2Pixel in Frame, TODO: unify all these
+
+    glm::uvec4 size(2880,1800,2,0);  // x,y native resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
+    composition.setSize(size);     // will be scaled down by pixel factor  
+    // pixelfactor 2 makes OptiX render at retina resolution
 
 
     // hmm needs some untangling... need to review purpose of each and do some method swapping ?
@@ -128,6 +142,10 @@ int main(int argc, char** argv)
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
     frame.setComposition(&composition);
     frame.setScene(&scene);
+    frame.setTitle("GGeoView");
+    frame.setFullscreen(true);
+
+
     interactor.setFrame(&frame);
     interactor.setScene(&scene);
 
@@ -162,7 +180,9 @@ int main(int argc, char** argv)
 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
 
-    frame.gl_init_window("GGeoView", composition.getWidth(),composition.getHeight());    // creates OpenGL context 
+   // TODO: arrange to delay window popup until initialization sequence is complete ?
+    frame.init();  // creates OpenGL context
+    LOG(info) << "main: frame.init DONE "; 
     GLFWwindow* window = frame.getWindow();
 
     bool nooptix = cfg["frame"]->hasOpt("nooptix");
@@ -171,10 +191,10 @@ int main(int argc, char** argv)
     assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading 
     bookmarks.load(idpath); 
 
+
     GMergedMesh* mm = scene.getMergedMesh(); 
     composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
-
 
     GSubstanceLibMetadata* meta = scene.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
@@ -203,6 +223,7 @@ int main(int argc, char** argv)
     bool alt = cfg["frame"]->hasOpt("alt") ;    
     scene.setRecordStyle( alt ? Scene::ALTREC : Scene::REC );    
     scene.uploadEvt();
+    LOG(info) << "main: scene.uploadEvt DONE "; 
     //
     // TODO:  
     //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
@@ -224,6 +245,7 @@ int main(int argc, char** argv)
     assert(rng_max >= 1e6); 
     engine.setRngMax(rng_max);
     engine.init();  // creates OptiX context, when enabled
+    LOG(info) << "main: engine.init DONE "; 
 
     // persisting domain allows interpretation of packed photon record NPY arrays 
     // from standalone NumPy
@@ -231,6 +253,7 @@ int main(int argc, char** argv)
     if(domain) domain->save("domain", "1");
 
     engine.generate();
+    LOG(info) << "main: engine.generate DONE "; 
 
     NPY<float>* photonData = evt.getPhotonData();
     Rdr::download(photonData);
@@ -248,7 +271,6 @@ int main(int argc, char** argv)
     photons.classify();
     photons.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     photons.dumpFlags();
-
 
     scene.setPhotons(&photons);
 
