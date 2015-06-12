@@ -56,6 +56,7 @@ class ViewNPY {
         const char*  getName(){ return m_name ; }
 
     public:
+        glm::vec4&   getCenterExtent();
         glm::mat4&   getModelToWorld();
         float*       getModelToWorldPtr();
         float        getExtent();
@@ -86,8 +87,12 @@ class ViewNPY {
         glm::vec3*  m_center ;
         glm::mat4   m_model_to_world ; 
         float       m_extent ; 
+        glm::vec4   m_center_extent ; 
 
 };
 
 
-
+inline glm::vec4& ViewNPY::getCenterExtent()
+{
+    return m_center_extent ; 
+} 

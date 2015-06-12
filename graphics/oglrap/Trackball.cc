@@ -16,6 +16,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 #ifdef GUI_
 #include <imgui.h>
 #endif
@@ -292,6 +298,22 @@ void Trackball::drag_to(float x, float y, float dx, float dy)
     m_drag_count += 1 ; 
 
     glm::quat drag = rotate(x,y,dx,dy);
+
+    bool bad =
+                isnan(drag.x) || 
+                isnan(drag.y) || 
+                isnan(drag.z) || 
+                isnan(drag.w) ||
+                isinf(drag.x) || 
+                isinf(drag.y) || 
+                isinf(drag.z) || 
+                isinf(drag.w)  ;
+
+    if(bad)
+    {
+        LOG(warning) << "Trackball::drag_to IGNORING bad drag " ; 
+        return ;  
+    }
 
     glm::quat qrot = m_orientation * drag ;   // perturb orientation by drag rotation  
 

@@ -23,7 +23,7 @@ void PhotonsNPY::classify(bool sign)
     m_boundaries = findBoundaries(sign);
     delete m_boundaries_selection ; 
     m_boundaries_selection = initBooleanSelection(m_boundaries.size());
-    dumpBoundaries("PhotonsNPY::classify");
+    //dumpBoundaries("PhotonsNPY::classify");
 }
 
 bool* PhotonsNPY::initBooleanSelection(unsigned int n)

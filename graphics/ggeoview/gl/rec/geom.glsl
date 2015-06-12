@@ -19,9 +19,12 @@ void main ()
     vec4 p1 = gl_in[1].gl_Position  ;
 
     float dt = p1.w - p0.w ; 
+    if(dt <= 0 ) return ;
+
     float tc = Param.w / TimeDomain.y ;
 
-    if( dt > 0. && tc > p0.w && tc < p1.w  )     // tc between point times 
+
+    if( tc > p0.w && tc < p1.w  )     // tc between point times 
     {
         vec3 pt = mix( vec3(p0), vec3(p1), (tc - p0.w)/dt );
         gl_Position = ISNormModelViewProjection * vec4( pt, 1.0 ) ; 
@@ -30,4 +33,14 @@ void main ()
         EmitVertex();
         EndPrimitive();
     }
+    else if (tc > p0.w && tc > p1.w )
+    {
+        gl_Position = ISNormModelViewProjection * vec4( vec3(p1), 1.0 ) ; 
+
+        fcolour = colour[0] ;
+        EmitVertex();
+        EndPrimitive();
+    }
+
+
 } 

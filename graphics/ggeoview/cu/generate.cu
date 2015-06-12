@@ -101,7 +101,10 @@ RT_PROGRAM void generate()
         generate_scintillation_photon(p, ss, rng );         
     }
 
+
+
     p.flags.u.y = photon_id ;   // no problem fitting uint  (1 << 32) - 1 = 4,294,967,295
+
 
     int slot = 0 ;
     int bounce = 0 ; 

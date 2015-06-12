@@ -45,6 +45,7 @@ class Composition : public Configurable {
 
   public: 
       void setCenterExtent(gfloat4 ce, bool autocam=false); // effectively points at what you want to look at 
+      void setCenterExtent(glm::vec4& ce, bool autocam=false); // effectively points at what you want to look at 
       void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain
       void setTimeDomain(gfloat4 td);
 
@@ -218,7 +219,8 @@ inline Composition::Composition()
   m_extent(1.0f),
   m_center_extent(),
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
-  m_param(0.f,0.f,0.f,0.f),
+  m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
+  m_param(25.f,0.f,0.f,0.f),   // x: arbitrary scaling of genstep length 
   m_camera(NULL),
   m_trackball(NULL),
   m_view(NULL),

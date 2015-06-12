@@ -2,11 +2,16 @@
 #include <string>
 
 #include "NPY.hpp"
+class ViewNPY ;
 class MultiViewNPY ;
 
 class NumpyEvt {
    public:
        NumpyEvt();
+
+       static const char* genstep ;
+       static const char* photon ;
+       static const char* record  ;
       
    public:
        void setGenstepData(NPY<float>* genstep_data);
@@ -24,6 +29,8 @@ class NumpyEvt {
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
        MultiViewNPY* getRecordAttr();
+
+       ViewNPY* operator [](const char* spec);
 
    public:
        unsigned int getNumPhotons();

@@ -15,6 +15,7 @@ class GMergedMesh ;
 class GGeo ;
 class GSubstanceLibMetadata ;
 class Photons ; 
+class Animator ; 
 
 #include "Configurable.hh"
 
@@ -66,6 +67,7 @@ class Scene : public Configurable {
         const char* loadGeometry(const char* prefix, bool nogeocache=false);
         void uploadEvt();
         void render();
+        void tick();
 
    public:
         unsigned int  getTarget(); 
@@ -77,6 +79,7 @@ class Scene : public Configurable {
         GGeo*                   getGGeo();
 
    public:
+        Animator*     getAnimator();
         GLoader*      getGeometryLoader();
         Renderer*     getGeometryRenderer();
         Rdr*          getGenstepRenderer();
@@ -88,6 +91,7 @@ class Scene : public Configurable {
         Photons*      getPhotons();
         bool*         getModeAddress(const char* name);
         const char*   getRecordTag();
+        float         getTimeFraction();
 
    private:
         void init();
@@ -95,6 +99,7 @@ class Scene : public Configurable {
    private:
         char*        m_shader_dir ; 
         char*        m_shader_incl_path ; 
+        Animator*    m_animator ;  
         GLoader*     m_geometry_loader ; 
         Renderer*    m_geometry_renderer ; 
         Device*      m_device ; 
@@ -117,6 +122,7 @@ class Scene : public Configurable {
    private:
         RecordStyle_t m_record_style ; 
         bool          m_initialized ;  
+        float         m_time_fraction ;  
 
 };
 
@@ -124,6 +130,7 @@ class Scene : public Configurable {
 inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) :
             m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
+            m_animator(NULL),
             m_geometry_loader(NULL),
             m_geometry_renderer(NULL),
             m_device(NULL),
@@ -143,14 +150,18 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) :
             m_photon_mode(true),
             m_record_mode(true),
             m_record_style(REC),
-            m_initialized(false)
+            m_initialized(false),
+            m_time_fraction(0.f)
 {
     init();  // defer until loadGeometry
 }
 
 
 
-
+inline float Scene::getTimeFraction()
+{
+    return m_time_fraction ; 
+}
 
 inline unsigned int Scene::getTarget()
 {
@@ -166,6 +177,10 @@ inline void Scene::setTouch(unsigned int touch)
 }
 
 
+inline Animator* Scene::getAnimator()
+{
+    return m_animator ; 
+}
 inline GLoader* Scene::getGeometryLoader()
 {
     return m_geometry_loader ; 

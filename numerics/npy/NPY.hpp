@@ -96,6 +96,7 @@ class NPY : public NPYBase {
 
        void         setQuad(unsigned int i, unsigned int j, glm::vec4&  vec );
        void         setQuad(unsigned int i, unsigned int j, glm::ivec4& vec );
+       void         setQuad(unsigned int i, unsigned int j, float x, float y=0.f, float z=0.f, float w=0.f );
 
    private:
        std::vector<T>     m_data ; 
@@ -143,6 +144,16 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::vec4& vec )
     assert( m_len2 == 4 );  
     for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
 }
+
+
+template <typename T> 
+inline void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )
+{
+    glm::vec4 vec(x,y,z,w); 
+    setQuad(i, j, vec);
+}
+
+
 
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::ivec4& vec )

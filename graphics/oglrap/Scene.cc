@@ -15,6 +15,7 @@
 #include "Renderer.hh"
 #include "Device.hh"
 #include "Rdr.hh"
+#include "Animator.hh"
 
 // npy-
 #include "NumpyEvt.hpp"
@@ -82,10 +83,6 @@ std::vector<std::string> Scene::getTags()
 }
 
 
-
-
-
-
 std::string Scene::get(const char* name)
 {
     int v(0) ; 
@@ -136,6 +133,7 @@ void Scene::configure(const char* name, int value)
 
 void Scene::init()
 {
+    m_animator = new Animator(200);
     m_geometry_loader = new GLoader();
     m_geometry_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
@@ -178,9 +176,6 @@ const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
     const char* idpath = m_geometry_loader->load(prefix, nogeocache);
     m_geometry = m_geometry_loader->getDrawable();
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
-
-    setTarget(0);
-
     return idpath ;
 }
 
@@ -200,6 +195,12 @@ Rdr* Scene::getRecordRenderer()
 
 void Scene::uploadEvt()
 {
+    if(!m_evt) 
+    {
+       LOG(fatal) << "Scene::uploadEvt no evt " ;
+       assert(m_evt);
+    }
+
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 
@@ -212,8 +213,19 @@ void Scene::uploadEvt()
 
 }
 
+
+
+void Scene::tick()
+{    
+    bool bump(false);
+    m_time_fraction = m_animator->step(bump);
+}
+
+
 void Scene::render()
 {
+    tick();
+
     if(m_geometry_mode) m_geometry_renderer->render();
     if(m_genstep_mode)  m_genstep_renderer->render();  
     if(m_photon_mode)   m_photon_renderer->render();
@@ -224,8 +236,6 @@ void Scene::render()
         rdr->render();
     }
 }
-
-
 
 
 

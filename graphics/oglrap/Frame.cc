@@ -126,6 +126,15 @@ void Frame::setFullscreen(bool full)
 }
 
 
+void Frame::hintVisible(bool visible)
+{
+    glfwWindowHint(GLFW_VISIBLE, visible);
+}
+
+void Frame::show()
+{
+    glfwShowWindow(m_window);
+}
 
 void Frame::init()
 {
@@ -143,7 +152,9 @@ void Frame::init()
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-    LOG(debug) << "Frame::gl_init_window " << m_width << "," << m_height << " " << m_title ;
+    LOG(debug) << "Frame::init " << m_width << "," << m_height << " " << m_title ;
+
+    hintVisible(false);
 
     GLFWmonitor* monitor = m_fullscreen ? glfwGetPrimaryMonitor() : NULL ;  
     m_window = glfwCreateWindow(m_width, m_height, m_title, monitor, NULL);

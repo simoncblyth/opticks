@@ -27,6 +27,8 @@ class Frame : public Touchable {
        void setTitle(const char* title);
        void setFullscreen(bool fullscreen);
 
+       void hintVisible(bool visible);
+       void show();
        void init();
 
    private:

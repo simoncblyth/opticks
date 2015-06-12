@@ -7,7 +7,7 @@ public:
    FrameCfg(const char* name, Listener* listener, bool live) 
        : 
        Cfg(name, live),
-       m_bouncemax(1)
+       m_bouncemax(10)
    {   
 
        m_desc.add_options()
@@ -29,27 +29,29 @@ public:
            ("nooptix,O",  "inhibit use of OptiX") ;
 
        m_desc.add_options()
-           ("scintillation",  "load scintillation gensteps") ;
+           ("scintillation,s",  "load scintillation gensteps") ;
 
        m_desc.add_options()
-           ("cerenkov",  "load cerenkov gensteps") ;
+           ("cerenkov,c",  "load cerenkov gensteps") ;
 
        m_desc.add_options()
            ("alt,a",  "use alternative record renderer") ;
 
+       m_desc.add_options()
+           ("fullscreen,f",  "start in fullscreen mode") ;
 
        m_desc.add_options()
            ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load" );
 
+       char bouncemax[128];
+       snprintf(bouncemax,128, "Maximum number of boundary bounces, 0:to just generate. Default %d ", m_bouncemax);
        m_desc.add_options()
-           ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax),
-               "Maximum number of boundary bounces, 0:to just generate.");
-
+           ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
 
        ///////////////
 
        m_desc.add_options()
-           ("config,c",   boost::program_options::value<std::string>(&m_configpath),
+           ("config",   boost::program_options::value<std::string>(&m_configpath),
              "name of a file of a configuration.");
 
        m_desc.add_options()

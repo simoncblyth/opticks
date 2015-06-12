@@ -150,6 +150,11 @@ void ViewNPY::findBounds()
 
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), t), s); 
 
+    m_center_extent.x = (hi.x + lo.x)/2.0f ;
+    m_center_extent.y = (hi.y + lo.y)/2.0f ;
+    m_center_extent.z = (hi.z + lo.z)/2.0f ; 
+    m_center_extent.w =  m_extent ;
+
     //Summary("ViewNPY::findBounds");
 }
 void ViewNPY::Summary(const char* msg)

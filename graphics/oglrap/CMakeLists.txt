@@ -99,6 +99,7 @@ add_library( ${name}  SHARED
                 Touchable.cc
                 GUI.cc
                 Photons.cc
+                Animator.cc
 )
 
 SET(hdrs 
@@ -133,6 +134,7 @@ SET(hdrs
         Configurable.hh
         GUI.hh
         Photons.hh
+        Animator.hh
 )
 
 

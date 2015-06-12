@@ -78,12 +78,12 @@ void Rdr::upload(NPYBase* npy)
     if(m_device->isUploaded(npy))
     {
         GLuint buffer_id = npy->getBufferId();
-        LOG(info) << "Rdr::upload skip, already uploaded to device : attach to preexisting buffer  " << buffer_id  ;
+        LOG(debug) << "Rdr::upload skip, already uploaded to device : attach to preexisting buffer  " << buffer_id  ;
         attach(buffer_id);
     }
     else
     {
-        LOG(info) << "Rdr::upload " ;
+        LOG(debug) << "Rdr::upload " ;
 
         upload(npy->getBytes(), npy->getNumBytes(0));
 
@@ -115,7 +115,7 @@ void Rdr::upload(void* data, unsigned int nbytes)
 
 void* Rdr::mapbuffer( int buffer_id, GLenum target )
 {
-    LOG(info)<< "Rdr::mapbuffer " << " buffer_id " << buffer_id  ;
+    LOG(debug)<< "Rdr::mapbuffer " << " buffer_id " << buffer_id  ;
     if(buffer_id == -1) return NULL ;
     GLenum access = GL_READ_ONLY ; 
     glBindBuffer( target, buffer_id );
@@ -136,7 +136,7 @@ void Rdr::address(ViewNPY* vnpy)
     GLint location = m_shader->attribute(name, false);
     if(location == -1)
     {
-         LOG(warning)<<"Rdr::address failed to find active attribute for ViewNPY named " << name 
+         LOG(debug)<<"Rdr::address failed to find active attribute for ViewNPY named " << name 
                      << " in shader " << getShaderTag() ;
          return ;
     }
@@ -161,7 +161,7 @@ void Rdr::address(ViewNPY* vnpy)
     }
 
 
-    LOG(info) << "Rdr::address name " << name << " type " << vnpy->getType() ;
+    LOG(debug) << "Rdr::address name " << name << " type " << vnpy->getType() ;
 
     GLuint       index = location  ;       //  generic vertex attribute to be modified
     GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4

@@ -120,26 +120,36 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     */
 
 
-    // range of uchar 0:255 
-    // tightly packed, stuff "unsigned short" into "short"   (take -1.f:1.f plus one => 0.f:2.f so scale by 127.f 
+    // range of uchar 0:255   -1.f:1.f  + 1 => 0.f:2.f  so scale by 127.f 
+    qquad flags ;    
+    flags.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;
+    flags.uchar_.y = __float2uint_rn((p.polarization.y+1.f)*127.f) ;
+    flags.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
+    flags.uchar_.w = __float2uint_rn(nwavelength)  ;
 
-    squad polw ; 
-    polw.u.x = __float2uint_rn((p.polarization.x+1.f)*127.f) << 0 | __float2int_rn((p.polarization.y+1.f)*127.f) << 8 ;
-    polw.u.y = __float2uint_rn((p.polarization.z+1.f)*127.f) << 0 | __float2int_rn(nwavelength) << 8 ;
+    // tightly packed, 
+    hquad polw ; 
+    polw.ushort_.x = flags.uchar_.x | flags.uchar_.y << 8 ;
+    polw.ushort_.y = flags.uchar_.z | flags.uchar_.w << 8 ;
     
-
-    // identity check : spread uint32 photon_id across two uint16
-    unsigned int photon_id = p.flags.u.y ;
-    polw.u.z = photon_id & 0xFFFF ;     // least significant 16 bits first     
-    polw.u.w = photon_id >> 16  ;       // arranging this way allows scrunching to view two uint16 as one uint32 
-
     // maps to rflg.x rflg.y in shader
 
-    // little-endian : increasing numeric significance with increasing memory addresses 
-    // both OSX intel and CUDA GPUs reported to be of this pursuasion
+#ifdef IDENTITY_CHECK
+    // spread uint32 photon_id across two uint16
+    unsigned int photon_id = p.flags.u.y ;
+    polw.ushort_.z = photon_id & 0xFFFF ;     // least significant 16 bits first     
+    polw.ushort_.w = photon_id >> 16  ;       // arranging this way allows scrunching to view two uint16 as one uint32 
+    // OSX intel, CUDA GPUs are little-endian : increasing numeric significance with increasing memory addresses 
+#endif
 
-    rbuffer[record_offset+1] = polw.s ; 
+    // range of 8 bit char: -128 to 127 or 0 to 255
+    int boundary = p.flags.i.x ;  // range -55 : 55 
+    //polw.ushort_.z = (boundary & 0xFF) << 8 ;
+    polw.ushort_.z = boundary  ;
 
+
+
+    rbuffer[record_offset+1] = polw.short_ ; 
 }
 
 /*

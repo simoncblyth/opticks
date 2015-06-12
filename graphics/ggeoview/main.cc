@@ -102,17 +102,6 @@ void logging_init()
 }
 
 
-/*
-
-Native resolution: 2880 by 1800 pixels (Retina); 
-scaled resolutions: 
-     1920 by 1200, 
-     1680 by 1050, 
-     1280 by 800, 
-     1024 by 640 
-
-*/
-
 
 int main(int argc, char** argv)
 {
@@ -130,20 +119,6 @@ int main(int argc, char** argv)
     Interactor interactor ; 
     numpydelegate delegate ; 
     NumpyEvt evt ;
-
-
-    glm::uvec4 size(2880,1800,2,0);  // x,y native resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
-    composition.setSize(size);     // will be scaled down by pixel factor  
-    // pixelfactor 2 makes OptiX render at retina resolution
-
-
-    // hmm needs some untangling... need to review purpose of each and do some method swapping ?
-    // perhaps use an app class that just holds on to a instance of all objs ?
-    frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
-    frame.setComposition(&composition);
-    frame.setScene(&scene);
-    frame.setTitle("GGeoView");
-    frame.setFullscreen(true);
 
 
     interactor.setFrame(&frame);
@@ -173,9 +148,24 @@ int main(int argc, char** argv)
     delegate.liveConnect(&cfg); // hookup live config via UDP messages
     delegate.setNumpyEvt(&evt); // allows delegate to update evt when NPY messages arrive
 
-    if(cfg["frame"]->hasOpt("idpath")) std::cout << idpath << std::endl ;
-    if(cfg["frame"]->hasOpt("help"))   std::cout << cfg.getDesc() << std::endl ;
-    if(cfg["frame"]->isAbort()) exit(EXIT_SUCCESS); 
+    if(fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
+    if(fcfg->hasOpt("help"))   std::cout << cfg.getDesc() << std::endl ;
+    if(fcfg->isAbort()) exit(EXIT_SUCCESS); 
+
+    bool fullscreen = fcfg->hasOpt("fullscreen");
+
+    // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
+    // pixelfactor 2 makes OptiX render at retina resolution
+
+    composition.setSize( fullscreen ? glm::uvec4(2880,1800,2,0) : glm::uvec4(2880,1704,2,0) );  // 1800-44-44px native height of menubar  
+
+    // perhaps use an app class that just holds on to a instance of all objs ?
+    frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
+    frame.setComposition(&composition);
+    frame.setScene(&scene);
+    frame.setTitle("GGeoView");
+    frame.setFullscreen(fullscreen);
+
 
 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
@@ -185,9 +175,11 @@ int main(int argc, char** argv)
     LOG(info) << "main: frame.init DONE "; 
     GLFWwindow* window = frame.getWindow();
 
-    bool nooptix = cfg["frame"]->hasOpt("nooptix");
-    bool nogeocache = cfg["frame"]->hasOpt("nogeocache");
+    bool nooptix = fcfg->hasOpt("nooptix");
+    bool nogeocache = fcfg->hasOpt("nogeocache");
+
     const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
+    scene.setTarget(0);
     assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading 
     bookmarks.load(idpath); 
 
@@ -201,12 +193,14 @@ int main(int argc, char** argv)
 
     // hmm would be better placed into a NumpyEvtCfg 
     const char* typ ; 
-    if(     cfg["frame"]->hasOpt("cerenkov"))      typ = "cerenkov" ;
-    else if(cfg["frame"]->hasOpt("scintillation")) typ = "scintillation" ;
-    else                                           typ = "cerenkov" ;
+    if(     fcfg->hasOpt("cerenkov"))      typ = "cerenkov" ;
+    else if(fcfg->hasOpt("scintillation")) typ = "scintillation" ;
+    else                                   typ = "cerenkov" ;
 
     std::string tag_ = fcfg->getEventTag();
     const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
+
+
 
     NPY<float>* npy = NPY<float>::load(typ, tag) ;
 
@@ -219,9 +213,10 @@ int main(int argc, char** argv)
     evt.setMaxRec( MAXREC );  // must set this before setGenStepData to have effect
     evt.setGenstepData(npy); 
 
-    // RecordStyle must be set before scene.uploadEvt to have effect
-    bool alt = cfg["frame"]->hasOpt("alt") ;    
-    scene.setRecordStyle( alt ? Scene::ALTREC : Scene::REC );    
+    composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent());
+
+
+    scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
     scene.uploadEvt();
     LOG(info) << "main: scene.uploadEvt DONE "; 
     //
@@ -264,13 +259,11 @@ int main(int argc, char** argv)
     Rdr::download(rec);
     rec->save("rx%s", typ,  tag);
 
-
-
     Photons photons(photonData) ;
     photons.setBoundaryNames(boundaries);
     photons.classify();
     photons.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
-    photons.dumpFlags();
+    //photons.dumpFlags();
 
     scene.setPhotons(&photons);
 
@@ -287,6 +280,10 @@ int main(int argc, char** argv)
 #endif
  
     LOG(info) << "enter runloop "; 
+
+    frame.hintVisible(true);
+    frame.show();
+
     while (!glfwWindowShouldClose(window))
     {
         frame.listen(); 
@@ -308,7 +305,10 @@ int main(int argc, char** argv)
         if(*show_gui_window)
         {
             gui.show(show_gui_window);
-            composition.setSelection(photons.getSelection()); 
+
+            glm::ivec4 sel = photons.getSelection() ;
+            composition.setSelection(sel); 
+            composition.getPick().y = sel.x ;   //  1st boundary 
             composition.setFlags(photons.getFlags()); 
             // maybe imgui edit selection within the composition imgui, rather than shovelling ?
             // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?

@@ -274,6 +274,11 @@ void Composition::setDomainCenterExtent(gfloat4 ce)
     // inverse signed normalize , ie letting coords out of signed unit box 
 }
 
+void Composition::setCenterExtent(glm::vec4& ce, bool autocam)
+{
+    setCenterExtent(gfloat4(ce.x,ce.y,ce.z,ce.w), autocam);
+}
+
 void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModelToWorld
 {  
     m_center_extent.x = ce.x ;

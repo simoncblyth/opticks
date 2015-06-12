@@ -30,6 +30,7 @@ ViewNPY* MultiViewNPY::operator [](const char* name)
     return find(name);
 }
 
+
 ViewNPY* MultiViewNPY::operator [](unsigned int index)
 {
     return index < m_vecs.size() ? m_vecs[index] : NULL ;

@@ -5,6 +5,7 @@
 #include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
+#include "stringutil.hpp"
 
 #include "limits.h"
 #include "assert.h"
@@ -13,6 +14,27 @@
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
+
+const char* NumpyEvt::genstep = "genstep" ; 
+const char* NumpyEvt::photon  = "photon" ; 
+const char* NumpyEvt::record  = "record" ; 
+
+ViewNPY* NumpyEvt::operator [](const char* spec)
+{
+    std::vector<std::string> elem ; 
+    split(elem, spec, '.');
+
+    if(elem.size() != 2 ) assert(0);
+
+    MultiViewNPY* mvn(NULL); 
+    if(     elem[0] == genstep) mvn = m_genstep_attr ;  
+    else if(elem[0] == photon)  mvn = m_photon_attr ;
+    else if(elem[0] == record)  mvn = m_record_attr ;
+
+    assert(mvn);
+    return (*mvn)[elem[1].c_str()] ;
+}
 
 
 void NumpyEvt::setGenstepData(NPY<float>* genstep)

@@ -1,7 +1,8 @@
 #pragma once
 
+// see /Developer/NVIDIA/CUDA-5.5/include/vector_types.h for types with builtin handling
 
-// union of "standard" sized vector types, all 4*32 = 128 bit 
+// "standard" sized vector types, all 4*32 = 128 bit  (16 bytes)
 union quad
 {
    float4 f ;
@@ -10,13 +11,22 @@ union quad
 };
 
 
-// union of "half" sized vector types, all 4*16 = 64 bit 
-// see /Developer/NVIDIA/CUDA-5.5/include/vector_types.h
-union squad
+// "half" sized vector types, all 4*16 = 64 bit       (8 bytes)
+union hquad
 {
-   short4   s ;
-   ushort4  u ;
+   short4   short_ ;
+   ushort4  ushort_ ;
 };
+
+
+// "quarter" sized vector types, all 4*8 = 32 bit   (4 bytes)
+union qquad
+{
+   char4   char_   ;
+   uchar4  uchar_  ;
+};
+
+
 
 
 
