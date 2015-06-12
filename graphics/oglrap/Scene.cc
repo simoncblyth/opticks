@@ -138,20 +138,23 @@ void Scene::init()
 {
     m_geometry_loader = new GLoader();
     m_geometry_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    m_geometry_renderer = new Renderer("nrm");
+
+
+    m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
 
     m_device = new Device();
 
-    m_genstep_renderer = new Rdr(m_device, "p2l");
-    m_photon_renderer = new Rdr(m_device, "pos");
+    m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
 
-    m_record_renderer = new Rdr(m_device, "rec");
+    m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
+
+    m_record_renderer = new Rdr(m_device, "rec", m_shader_dir, m_shader_incl_path );
     m_record_renderer->setPrimitive(Rdr::LINES);
 
-    m_altrecord_renderer = new Rdr(m_device, "altrec");
+    m_altrecord_renderer = new Rdr(m_device, "altrec", m_shader_dir, m_shader_incl_path);
     m_altrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
 
-    m_devrecord_renderer = new Rdr(m_device, "devrec");
+    m_devrecord_renderer = new Rdr(m_device, "devrec", m_shader_dir, m_shader_incl_path);
     m_devrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
 
     m_initialized = true ; 

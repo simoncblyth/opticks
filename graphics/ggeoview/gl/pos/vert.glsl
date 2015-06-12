@@ -1,5 +1,4 @@
 #version 400
-#enum photon_flags.h
 
 uniform mat4 ModelViewProjection ;
 uniform mat4 ModelView ;

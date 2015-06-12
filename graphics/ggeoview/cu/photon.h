@@ -17,14 +17,19 @@ struct Photon
    float  time ;  
 
    float3 direction ;
-   float  wavelength ; 
+   float  weight ; 
 
    float3 polarization ;
-   float  weight ; 
+   float  wavelength ; 
 
    quad flags ; 
 
 };
+
+//
+// flipped wavelength/weight as that puts together the quad that will be dropped for records
+//  TODO: move to float4 eg position_time 
+//
 
 enum
 {
@@ -58,8 +63,8 @@ enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to
 __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_offset )
 {
     pbuffer[photon_offset+0] = make_float4( p.position.x,    p.position.y,    p.position.z,     p.time ); 
-    pbuffer[photon_offset+1] = make_float4( p.direction.x,   p.direction.y,   p.direction.z,    p.wavelength );
-    pbuffer[photon_offset+2] = make_float4( p.polarization.x,p.polarization.y,p.polarization.z, p.weight );
+    pbuffer[photon_offset+1] = make_float4( p.direction.x,   p.direction.y,   p.direction.z,    p.weight );
+    pbuffer[photon_offset+2] = make_float4( p.polarization.x,p.polarization.y,p.polarization.z, p.wavelength );
     pbuffer[photon_offset+3] = make_float4( p.flags.f.x,     p.flags.f.y,     p.flags.f.z,      p.flags.f.w); 
 }
 
@@ -77,7 +82,16 @@ __device__ short shortnorm( float v, float center, float extent )
 
 __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
 {
-    // pack position and time into normalized shorts (4*16 = 64 bits)
+    //  pack position and time into normalized shorts (4*16 = 64 bits)
+    //
+    //  TODO: use a more vectorized approach, ie
+    // 
+    //  * combine position and time domains into single float4 on the host 
+    //  * after verification can dispense with the fit checking for positions, just do time
+    //        
+    //  * adopt p.position_time  maybe p.polarization_wavelength
+    //  * simularly with domains of those ?
+    // 
     rbuffer[record_offset+0] = make_short4( 
                     shortnorm(p.position.x, center_extent.x, center_extent.w), 
                     shortnorm(p.position.y, center_extent.y, center_extent.w), 
@@ -114,10 +128,12 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     polw.u.y = __float2uint_rn((p.polarization.z+1.f)*127.f) << 0 | __float2int_rn(nwavelength) << 8 ;
     
 
-    // identity check
+    // identity check : spread uint32 photon_id across two uint16
     unsigned int photon_id = p.flags.u.y ;
     polw.u.z = photon_id & 0xFFFF ;     // least significant 16 bits first     
     polw.u.w = photon_id >> 16  ;       // arranging this way allows scrunching to view two uint16 as one uint32 
+
+    // maps to rflg.x rflg.y in shader
 
     // little-endian : increasing numeric significance with increasing memory addresses 
     // both OSX intel and CUDA GPUs reported to be of this pursuasion
@@ -146,9 +162,9 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
 
     ## alternatively without the dirty scrunching 
 
-    In [30]: lss = np.array( r.view(np.uint16)[::10,1,2], dtype=np.uint32 )
+    In [30]: lss = np.array( r.view(np.uint16)[::10,1,2], dtype=np.uint32 )  ## flags.z
 
-    In [31]: mss = np.array( r.view(np.uint16)[::10,1,3], dtype=np.uint32 )
+    In [31]: mss = np.array( r.view(np.uint16)[::10,1,3], dtype=np.uint32 )  ## flags.w
 
     In [32]: mss << 16 | lss 
     Out[32]: array([     0,      1,      2, ..., 612838, 612839, 612840], dtype=uint32)

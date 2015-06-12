@@ -108,13 +108,15 @@ int main(int argc, char** argv)
     const char* idpath = GLoader::identityPath(prefix) ;
     LOG(info) << argv[0] ; 
 
+    const char* shader_dir = getenv("SHADER_DIR"); 
+    const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
+    Scene scene(shader_dir, shader_incl_path) ;
     Frame frame ;
     Composition composition ;   
     Bookmarks bookmarks ; 
     Interactor interactor ; 
     numpydelegate delegate ; 
     NumpyEvt evt ;
-    Scene scene ;
 
     composition.setPixelFactor(2); // 2: makes OptiX render at retina resolution
     frame.setPixelFactor(2);       // 2: makes OptiX render at retina resolution

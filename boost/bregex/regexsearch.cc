@@ -6,6 +6,11 @@
 #include <iomanip>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 
 void dump( pairs_t& pairs, const char* msg)
 {
@@ -84,6 +89,42 @@ bool iparse( int& result, std::string expr )
 }
 
 
+std::string regex_extract_quoted(const char* line)
+{
+    std::string str = line ;
+
+
+    //char s = '\\' ; 
+    //char q = '\"' ; 
+    // "(.*?)"
+
+    const char* ptn = "\"(.*?)\""  ;
+
+    LOG(info) << "regexsearch::regex_extract_quoted "
+              << " ptn [" << ptn << "] " 
+              << " str [" << str << "] "
+              ;
+
+    std::stringstream ss ; 
+
+    boost::regex e(ptn);
+
+    if(boost::regex_match(line,e))
+    {
+        boost::sregex_iterator mt(str.begin(), str.end(), e);
+        boost::sregex_iterator me;
+
+        if(mt != me)
+        {
+             ss << (*mt)[1].str()  ;
+        }
+    }  
+    else
+    {
+        LOG(info) << "regexsearch::regex_extract_quoted failed to match " ; 
+    }
+    return ss.str();
+}
 
 
 std::string os_path_expandvars(const char* s)

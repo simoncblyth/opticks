@@ -10,7 +10,7 @@ class Shdr ;
 
 class Prog {
    public:
-      Prog(const char* basedir, const char* tag, bool live=false);
+      Prog(const char* basedir, const char* tag, const char* incl_path=NULL);
 
       void createAndLink();
       void Summary(const char* msg);
@@ -28,6 +28,7 @@ class Prog {
 
       void setup();
       void readSources(const char* tagdir);
+      void setInclPath(const char* path); // colon delimited list of directories to look for glsl inclusions
 
       void traverseLocation(Obj_t obj, GLenum type,  const char* name, bool print);
       void traverseActive(Obj_t obj, bool print);
@@ -59,6 +60,8 @@ class Prog {
       TypMap_t  m_atype ;
       TypMap_t  m_utype ;
 
+       std::string              m_incl_path ; 
+
 };
 
 inline GLuint Prog::getId()
@@ -66,5 +69,9 @@ inline GLuint Prog::getId()
     return m_id ; 
 }
 
-
+inline void Prog::setInclPath(const char* path)
+{   
+    if(!path) return ;
+    m_incl_path = path ; 
+}
 

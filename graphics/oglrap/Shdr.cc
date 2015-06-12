@@ -11,29 +11,28 @@
 
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-const char* Shdr::include_prefix = "#include" ; 
-const char* Shdr::enum_prefix = "#enum " ; 
+const char* Shdr::incl_prefix = "#incl" ;  // not "#include" to remind that this is non-standard
 
-Shdr::Shdr(const char* path, GLenum type, bool live)
+Shdr::Shdr(const char* path, GLenum type, const char* incl_path )
     :
     m_path(strdup(path)),
     m_type(type),
-    m_id(0),
-    m_live(live)
+    m_id(0)
 {
+    setInclPath(incl_path);
     readFile(m_path);
 }
 
 
 void Shdr::createAndCompile()
 {
-    if(!m_live) return ;
- 
     m_id = glCreateShader(m_type);
 
     const char* content_c = m_content.c_str();
@@ -48,7 +47,7 @@ void Shdr::createAndCompile()
 
     if (GL_TRUE != params) 
     {
-        fprintf (stderr, "ERROR: GL shader index %i did not compile\n", m_id );
+        LOG(fatal) << "Shdr::createAndCompile FAILED " << m_path  ; 
 
         _print_shader_info_log();
 
@@ -71,23 +70,25 @@ void Shdr::_print_shader_info_log()
 
 
 
-void Shdr::setIncludePath(const char* include_path)
+void Shdr::setInclPath(const char* incl_path)
 {
-    boost::split(m_include_dirs,include_path,boost::is_any_of(":"));
+    boost::split(m_incl_dirs,incl_path,boost::is_any_of(":"));
 }
 
 
 std::string Shdr::resolve(const char* name)
 { 
     std::string path ; 
-    std::string dir ; 
-
-    for(unsigned int i=0 ; i < m_include_dirs.size() ; i++)
+    for(unsigned int i=0 ; i < m_incl_dirs.size() ; i++)
     {
-        dir = m_include_dirs[i] ;
-        // TODO use boost fs to resolve existing paths
+        fs::path candidate(m_incl_dirs[i]) ;
+        candidate /= name ;
+        if(fs::exists(candidate) && fs::is_regular_file(candidate))
+        {
+            path = candidate.string() ;
+            break ;  
+        }
     }
-  
     return path ;  
 } 
 
@@ -103,25 +104,28 @@ void Shdr::readFile(const char* path)
     }   
 
     
-    std::string enum_name = "" ; 
+    std::string incl_name = "" ; 
     std::string line = ""; 
     while(!fs.eof()) 
     {
         std::getline(fs, line);
-
-        // general #include not the target, 
-        // just want simple flags defines to be shared between glsl/C++/CUDA
         
-        if(strncmp(line.c_str(), enum_prefix, strlen(enum_prefix))==0)
+        if(strncmp(line.c_str(), incl_prefix, strlen(incl_prefix))==0)
         {
-            enum_name = line.c_str() + strlen(enum_prefix) ; 
-            std::string enum_path = resolve(enum_name.c_str());
-            LOG(info) << "Shdr::readFile " 
-                      << " enum_name:[" << enum_name << "]" 
-                      << " enum_path:[" << enum_path << "]" 
-                     ; 
+            // TODO: make plucking of the incl path more robust using regexsearch, see bregex-/regex_extract_quoted
+            incl_name = line.c_str() + strlen(incl_prefix) + 1 ; 
+            std::string incl_path = resolve(incl_name.c_str());
 
-            // skipping for now
+            if(incl_path.empty())
+            {
+                LOG(warning) << "Shdr::readFile failed to resolve #incl [" << incl_name << "]"  ;
+                for(unsigned int i=0 ; i < m_incl_dirs.size() ; i++) LOG(warning) << "Shdr::readFile [" << i << "][" << m_incl_dirs[i] << "]" ; 
+            }
+            else
+            {
+                 LOG(info) << "Shdr::readFile " << incl_path ; 
+                 readFile(incl_path.c_str());
+            }
         }
         else
         { 

@@ -14,6 +14,17 @@ bregex-usage(){ cat << EOU
         bregex-test "\w*\d"
 
 
+::
+
+    simon:~ blyth$ bregex-test "\"(.*?)\""
+    search cin for text matching regex "(.*?)"
+    pairs plucked using regexp : 2
+                            path.h :           
+                      other_path.h :         
+
+
+
+
 *bregex-enum*
     plucking names and values from an enum string
 
@@ -121,6 +132,9 @@ bregex-test-(){ cat << EOT
    <hello>world4</hello>
 
     \$ENV_HOME/graphics/ggeoview/cu/photon.h
+
+#incl "path.h"
+#incl "other_path.h"
 
 EOT
 }

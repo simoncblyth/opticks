@@ -21,12 +21,9 @@ Trailing dimension usually 4 as quads are convenient and efficient on GPU.
 class ViewNPY {
     public:
         typedef enum { 
-                   BYTE,
-                   UNSIGNED_BYTE,
-                   SHORT,
-                   UNSIGNED_SHORT,
-                   INT,
-                   UNSIGNED_INT,
+                   BYTE,   UNSIGNED_BYTE,
+                   SHORT,  UNSIGNED_SHORT,
+                   INT,    UNSIGNED_INT,
                    HALF_FLOAT,
                    FLOAT,
                    DOUBLE,

@@ -1,6 +1,9 @@
 #version 400
 // devrec , see altrec for explanation of record structure
 
+#incl define.h
+
+
 uniform mat4 ISNormModelViewProjection ;
 uniform vec4 TimeDomain ;
 uniform vec4 Param ; 
@@ -8,7 +11,7 @@ uniform ivec4 Selection ;
 uniform ivec4 Pick ;
 
 in vec4 polarization[];
-in ivec4 flags[];
+in uvec4 flags[];
 layout (lines) in;
 layout (line_strip, max_vertices = 2) out;
 out vec4 fcolour ; 
@@ -20,17 +23,16 @@ void main ()
     vec4 p1 = gl_in[1].gl_Position  ;
     float tc = Param.w / TimeDomain.y ;  // as time comparisons done before un-snorming 
 
-    //fcolour = vec4(0.0,1.0,1.0,1.0) ;
-
 
    //  TODO: visible comparisons with gl_PrimitiveIDIn/10 
-   //  uint photon_id = flags.w << 16 | flags.z ;
 
+    uint photon_id = flags[0].x | flags[0].y << 16 ;    // from polw.u.z polw.u.w
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
-    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  
-    //(1 << 2) ;
+    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(gl_PrimitiveIDIn/MAXREC == photon_id) << 2 ) ;
+
     //
+    //   (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  
     //
     // TODO: 
     // * check ID correspondence to record array , try draw arrays approach to picking : maybe much more efficient 

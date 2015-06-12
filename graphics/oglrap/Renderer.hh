@@ -20,7 +20,7 @@ class Renderer : public RendererBase  {
     };
 
   public:
-      Renderer(const char* tag);
+      Renderer(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
       virtual ~Renderer();
 
   public: 
@@ -71,18 +71,19 @@ class Renderer : public RendererBase  {
 };      
 
 
-inline Renderer::Renderer(const char* tag)
+inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     :
-    RendererBase(tag),
-    m_drawable(NULL),
-    m_draw_count(0),
+    RendererBase(tag, dir, incl_path),
     m_texcoords(0),
-    m_has_tex(false),
-    m_composition(NULL),
     m_mv_location(-1),
     m_mvp_location(-1),
     m_clip_location(-1),
-    m_param_location(-1)
+    m_param_location(-1),
+    m_draw_count(0),
+    m_indices_count(0),
+    m_drawable(NULL),
+    m_composition(NULL),
+    m_has_tex(false)
 {
 }
 

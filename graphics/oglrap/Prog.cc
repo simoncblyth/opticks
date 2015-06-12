@@ -13,8 +13,7 @@ namespace fs = boost::filesystem;
 const char* GL_type_to_string (GLenum type);
 
 
-Prog::Prog(const char* basedir, const char* tag, bool live) :
-   m_live(live),
+Prog::Prog(const char* basedir, const char* tag, const char* incl_path) :
    m_tagdir(NULL)
 {
     if(basedir == NULL )
@@ -23,6 +22,7 @@ Prog::Prog(const char* basedir, const char* tag, bool live) :
         return ; 
     }
 
+    setInclPath(incl_path);
     setup();
 
     fs::path tagdir(basedir);
@@ -66,7 +66,7 @@ void Prog::readSources(const char* tagdir)
         {
             const char* path = glsl.string().c_str();
             GLenum type = m_codes[i] ;
-            Shdr* shdr = new Shdr(path, type, m_live); 
+            Shdr* shdr = new Shdr(path, type, m_incl_path.c_str()); 
             m_shaders.push_back(shdr);
         }
         else

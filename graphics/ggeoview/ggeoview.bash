@@ -399,6 +399,7 @@ ggeoview-export()
    export GGEOVIEW_QUERY=$q
    export GGEOVIEW_CTRL=""
    export SHADER_DIR=$(ggeoview-sdir)/gl
+   export SHADER_INCL_PATH=$(ggeoview-sdir)/gl:$(ggeoview-sdir)
 
    export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
    export RAYTRACE_RNG_DIR=$(ggeoview-rng-dir) 

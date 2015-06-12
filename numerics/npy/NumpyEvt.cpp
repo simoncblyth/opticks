@@ -91,17 +91,51 @@ void NumpyEvt::setPhotonData(NPY<float>* photon_data)
     m_photon_attr->add(new ViewNPY("vpol",m_photon_data,2,0,4,ViewNPY::FLOAT, false, false));      // 3rd quad
     m_photon_attr->add(new ViewNPY("iflg",m_photon_data,3,0,4,ViewNPY::INT  , false, true ));      // 4th quad
 
-    // corresponds to GPU side cu/photon.h:psave 
+    //
+    //  photon array 
+    //  ~~~~~~~~~~~~~
+    //     
+    //  vpos  xxxx yyyy zzzz wwww    position, time           [:,0,:4]
+    //  vdir  xxxx yyyy zzzz wwww    direction, wavelength    [:,1,:4]
+    //  vpol  xxxx yyyy zzzz wwww    polarization weight      [:,2,:4] 
+    //  iflg  xxxx yyyy zzzz wwww                             [:,3,:4]
+    //
+    //
+    //  record array
+    //  ~~~~~~~~~~~~~~
+    //       
+    //              4*short(snorm)
+    //          ________
+    //  rpos    xxyyzzww 
+    //  rpol->  xyzwaabb <-rflg 
+    //          ----^^^^
+    //     4*ubyte     2*ushort   
+    //     (unorm)     (iatt)
+    //
+    //
+    //
+    // corresponds to GPU side cu/photon.h:psave and rsave 
+    //
 }
 
 void NumpyEvt::setRecordData(NPY<short>* record_data)
 {
     m_record_data = record_data  ;
 
-    //                                               j k sz   type                norm   iatt
-    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,4,ViewNPY::SHORT        ,true,  false);
-    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,4,ViewNPY::UNSIGNED_BYTE,true,  false);   
-    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,2,ViewNPY::SHORT        ,false,  true);   
+    //                                               j k sz   type                  norm   iatt
+    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,4,ViewNPY::SHORT          ,true,  false);
+    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,4,ViewNPY::UNSIGNED_BYTE  ,true,  false);   
+    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,2,ViewNPY::UNSIGNED_SHORT ,false, true);   
+
+    // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
+    //
+    // ViewNPY::TYPE need not match the NPY<T>,
+    // OpenGL shaders will view the data as of the ViewNPY::TYPE, 
+    // informed via glVertexAttribPointer/glVertexAttribIPointer 
+    // in oglrap-/Rdr::address(ViewNPY* vnpy)
+ 
+
+
 
     // standard byte offsets obtained from from sizeof(T)*value_offset 
     //rpol->setCustomOffset(sizeof(unsigned char)*rpol->getValueOffset());

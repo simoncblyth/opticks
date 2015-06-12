@@ -16,6 +16,7 @@ void regexsearch( pairs_t& pairs, std::istream& is, boost::regex& e );
 void enum_regexsearch( ipairs_t& ipairs, const char* path );
 
 std::string os_path_expandvars(const char* s);
+std::string regex_extract_quoted(const char* line);
 
 
 void dump(  pairs_t& pairs, const char* msg="dump" );

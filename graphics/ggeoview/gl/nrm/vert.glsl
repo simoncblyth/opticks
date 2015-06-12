@@ -8,12 +8,12 @@ uniform vec4 Param ;
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_colour;
 layout(location = 2) in vec3 vertex_normal;
-layout(location = 3) in vec2 vertex_texcoord;
+//layout(location = 3) in vec2 vertex_texcoord;
 
 float gl_ClipDistance[1]; 
 
 out vec4 colour;
-out vec2 texcoord;
+//out vec2 texcoord;
 
 void main () 
 {
@@ -21,12 +21,11 @@ void main ()
 
     gl_ClipDistance[0] = dot(vec4(vertex_position, 1.0), ClipPlane);
 
-    colour = vec4( normalize(vec3(normal))*0.5 + 0.5, Param.z ) ;
+    colour = vec4( normalize(vec3(normal))*0.5 + 0.5, 1.0 - Param.z ) ;    // 1 - alpha 
 
     gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);
 
-
-    texcoord = vertex_texcoord;
+    //texcoord = vertex_texcoord;
 
 }
 

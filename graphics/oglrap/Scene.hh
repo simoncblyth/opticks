@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdlib.h"
+#include "string.h"
 #include <vector>
 
 class Renderer ; 
@@ -32,7 +33,7 @@ class Scene : public Configurable {
        void setRecordStyle(Scene::RecordStyle_t style);
 
    public:
-       Scene();
+       Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL);
        void gui();
    public:
         // Configurable
@@ -92,6 +93,8 @@ class Scene : public Configurable {
         void init();
 
    private:
+        char*        m_shader_dir ; 
+        char*        m_shader_incl_path ; 
         GLoader*     m_geometry_loader ; 
         Renderer*    m_geometry_renderer ; 
         Device*      m_device ; 
@@ -118,7 +121,9 @@ class Scene : public Configurable {
 };
 
 
-inline Scene::Scene() :
+inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) :
+            m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
+            m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
             m_geometry_loader(NULL),
             m_geometry_renderer(NULL),
             m_device(NULL),

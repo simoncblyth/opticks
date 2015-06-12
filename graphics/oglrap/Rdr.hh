@@ -12,7 +12,7 @@ class Device ;
 
 class Rdr : public RendererBase  {
   public:
-      Rdr(Device* dev, const char* tag);
+      Rdr(Device* dev, const char* tag, const char* dir=NULL, const char* incl_path=NULL);
 
   public: 
       void render(unsigned int count=0, unsigned int first=0);
@@ -74,9 +74,9 @@ class Rdr : public RendererBase  {
 };      
 
 
-inline Rdr::Rdr(Device* device, const char* tag)
+inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* incl_path)
     :
-    RendererBase(tag),
+    RendererBase(tag, dir, incl_path),  
     m_device(device),
     m_vao(0),
     m_buffer(0),
