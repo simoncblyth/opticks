@@ -282,6 +282,41 @@ std::map<int,int> NPY<T>::count_uniquei(unsigned int j, unsigned int k, int sj, 
     return uniqn ; 
 }
 
+
+
+
+template <typename T>
+std::map<unsigned int,unsigned int> NPY<T>::count_unique_u(unsigned int j, unsigned int k )
+{
+    unsigned int ni = m_len0 ;
+    unsigned int nj = m_len1 ;
+    unsigned int nk = m_len2 ;
+
+    assert(m_dim == 3 && j < nj && k < nk);
+
+    std::map<unsigned int, unsigned int> uniq ;
+ 
+    uif_t uif ; 
+    for(unsigned int i=0 ; i<ni ; i++ )
+    {
+        uif.f = m_data[i*nj*nk + j*nk + k] ;
+        unsigned int uval = uif.u ;
+        if(uniq.count(uval) == 0) uniq[uval] = 1 ; 
+        else                      uniq[uval] += 1 ; 
+    }
+    return uniq ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 // template specializations : allow branching on type
 template<>
 NPYBase::Type_t NPY<float>::type = FLOAT ;

@@ -178,6 +178,13 @@ __device__ void cscheck(CerenkovStep& cs)
 
 }
 
+__device__ void csdebug( CerenkovStep& cs )
+{
+     csdump(cs);
+     cscheck(cs);
+}
+
+
 
 __device__ void
 generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
@@ -268,6 +275,10 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       p.flags.u.y = 0 ;
       p.flags.u.z = 0 ;
       p.flags.u.w = 0 ;
+
+      p.flags.u.w |= GENERATE_CERENKOV ;
+
+
 }
 
 

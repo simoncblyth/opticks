@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "gleq.h"
 
+#include "Interactor.hh"
 #include "Scene.hh"
 #include "Composition.hh"
 #include "Clipper.hh"
@@ -99,16 +100,19 @@ void GUI::show(bool* opened)
     }
 
     ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Interactor"))
+    {
+        m_interactor->gui(); 
+    }
+
+    ImGui::Spacing();
     if (ImGui::CollapsingHeader("Scene"))
     {
         m_scene->gui(); 
     }
 
     ImGui::Spacing();
-    if (ImGui::CollapsingHeader("Composition"))
-    {
-        m_composition->gui(); 
-    }
+    m_composition->gui(); 
 
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("View"))

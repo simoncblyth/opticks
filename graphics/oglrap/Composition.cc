@@ -6,6 +6,7 @@
 #include "View.hh"
 #include "Clipper.hh"
 #include "Scene.hh"
+#include "Animator.hh"
 
 #include "CameraCfg.hh"
 #include "TrackballCfg.hh"
@@ -128,28 +129,53 @@ void Composition::addConfig(Cfg* cfg)
 
 
 
+void Composition::initAnimator()
+{
+    // must defer creation (to render time) as domain_time not set at initialization
+    float* target = glm::value_ptr(m_param) + 3 ;
+    m_animator = new Animator(target, 200, m_domain_time.x, m_domain_time.y/4.f ); // all fun in first 50ns
+    m_animator->Summary("Composition::gui setup Animation");
+}
+
+void Composition::toggleAnimator()
+{
+    if(!m_animator) initAnimator() ;
+    m_animator->toggle();
+}
+
+void Composition::tick()
+{
+    if(!m_animator) initAnimator();
+    bool bump(false);
+    m_animator->step(bump);
+}
+
+
+
 void Composition::gui()
 {
 #ifdef GUI_
+    if (!ImGui::CollapsingHeader("Composition")) return ;
+
+
     if(ImGui::Button("home")) home();
-    //ImGui::SliderFloat4("param", glm::value_ptr(m_param),  0.f, 1000.0f, "%0.3f", 2.0f);
+
     float* param = glm::value_ptr(m_param) ;
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
-    ImGui::SliderFloat( "w:domain_time ", param + 3,  m_domain_time.x, m_domain_time.y,  "%0.3f", 2.0f);
 
-    ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *(param + 3) * SPEED_OF_LIGHT / 1000.f );
+    ImGui::SliderFloat( "w:domain_time ", m_animator->getTarget(), m_animator->getLow(), m_animator->getHigh() ,  "%0.3f", 2.0f);
+    ImGui::Checkbox("animate", m_animator->isOnPtr());
+
+    //m_animator->Summary("Composition::gui");
+
+    ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *m_animator->getTarget() * SPEED_OF_LIGHT / 1000.f );
 
     int* pick = glm::value_ptr(m_pick) ;
     ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
     ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
 
-/*
-    float* pick_f = glm::value_ptr(m_pick_f) ;
-    ImGui::SliderFloat( "pick_f.w", pick_f + 3,  0.f, 1e6f,  "%7.f");
-    m_pick.w = int(m_pick_f.w) ;
-*/
 
     ImGui::Text("pick %d %d %d %d ",
        m_pick.x, 
@@ -159,6 +185,8 @@ void Composition::gui()
 
 #endif    
 }
+
+
 
 
 void Composition::home()

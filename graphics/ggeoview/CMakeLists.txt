@@ -89,22 +89,7 @@ add_definitions(
 )
 
 
-
-function(add_optix_executable target_name)
-
-    # split arguments into three lists 
-    CUDA_GET_SOURCES_AND_OPTIONS(source_files cmake_options options ${ARGN})
-
-    # Create the rules to build the PTX from the CUDA files.
-    CUDA_WRAP_SRCS( ${target_name} PTX generated_files ${source_files} ${cmake_options} OPTIONS ${options} )
-
-    add_executable(${target_name}
-        ${source_files}
-        ${generated_files}
-        ${cmake_options}
-    )
-
-    target_link_libraries( ${target_name} 
+set(LIBRARIES 
 
       optix
       optixu
@@ -128,6 +113,27 @@ function(add_optix_executable target_name)
 
       ssl
       crypto 
+)
+
+
+
+
+function(add_optix_executable target_name)
+
+    # split arguments into three lists 
+    CUDA_GET_SOURCES_AND_OPTIONS(source_files cmake_options options ${ARGN})
+
+    # Create the rules to build the PTX from the CUDA files.
+    CUDA_WRAP_SRCS( ${target_name} PTX generated_files ${source_files} ${cmake_options} OPTIONS ${options} )
+
+    add_executable(${target_name}
+        ${source_files}
+        ${generated_files}
+        ${cmake_options}
+    )
+
+    target_link_libraries( ${target_name} 
+        ${LIBRARIES} 
       )
 
 endfunction()
@@ -161,4 +167,4 @@ install(TARGETS ${name} DESTINATION bin)
 #message("ImGui_INCLUDE_DIRS:" ${ImGui_INCLUDE_DIRS})  
 
 
-
+add_subdirectory(tests)

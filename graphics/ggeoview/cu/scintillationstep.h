@@ -81,6 +81,7 @@ __device__ void ssload( ScintillationStep& ss, optix::buffer<float4>& scintillat
 
 }
 
+
 __device__ void ssdump( ScintillationStep& ss )
 {
     rtPrintf("ss.Id %d ParentId %d MaterialIndex %d NumPhotons %d \n", 
@@ -144,6 +145,16 @@ __device__ void sscheck(ScintillationStep& ss)
 }
 
 
+__device__ void ssdebug( ScintillationStep& ss )
+{
+    ssdump(ss);
+    sscheck(ss);
+    //reemission_check();
+}
+
+
+
+
 __device__ void
 generate_scintillation_photon(Photon& p, ScintillationStep& ss, curandState& rng)
 {
@@ -181,6 +192,7 @@ generate_scintillation_photon(Photon& p, ScintillationStep& ss, curandState& rng
     p.flags.u.z = 0 ;
     p.flags.u.w = 0 ;
 
+    p.flags.u.w |= GENERATE_SCINTILLATION ;
 
 }
 

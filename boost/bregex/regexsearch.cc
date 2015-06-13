@@ -26,17 +26,18 @@ void dump( pairs_t& pairs, const char* msg)
     } 
 }
 
-void dump( ipairs_t& pairs, const char* msg)
+
+
+//template <typename T>
+void udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const char* msg)
 {
     std::cout << msg << " : " << pairs.size() << std::endl ; 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {
-        ipair_t pair = pairs[i];
+        std::pair<unsigned int, std::string> pair = pairs[i];
 
-        //std::string k = pair.first ; 
-        //int v = pair.second ;
-        std::string k = pair.second ; 
-        int v = pair.first ;
+        unsigned int v = pair.first ;
+        std::string  k = pair.second ; 
 
         std::cout 
                  << std::setw(30) << k  
@@ -49,7 +50,10 @@ void dump( ipairs_t& pairs, const char* msg)
 }
 
 
-bool iparse( int& result, std::string expr )
+
+
+template <typename T>
+bool parse( T& result, std::string expr )
 {
     
     boost::regex eint("\\d*"); 
@@ -57,7 +61,7 @@ bool iparse( int& result, std::string expr )
  
     if(boost::regex_match(expr, eint))
     {
-        result = boost::lexical_cast<int>(expr);
+        result = boost::lexical_cast<T>(expr);
         return true ; 
     }
     else if(boost::regex_match(expr, eshift))
@@ -68,8 +72,8 @@ bool iparse( int& result, std::string expr )
          while(mt != me)
          {
              std::string base = (*mt)[1].str() ;
-             int ibase = hex_lexical_cast<int>(base.c_str()) ;
-             int ishift = boost::lexical_cast<int>((*mt)[2]) ;
+             int ibase = hex_lexical_cast<T>(base.c_str()) ;
+             int ishift = boost::lexical_cast<T>((*mt)[2]) ;
 
              /*
              std::cout << "matched " 
@@ -166,7 +170,7 @@ std::string os_path_expandvars(const char* s)
 
 
 
-void enum_regexsearch( ipairs_t& ipairs, const char* path )
+void enum_regexsearch( upairs_t& upairs, const char* path )
 {
 /*
 Extracts names and values from files containing enum definitions looking like:
@@ -192,8 +196,8 @@ enum
 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {
-        int iv ; 
-        if(iparse(iv, pairs[i].second)) ipairs.push_back(ipair_t(iv, pairs[i].first));   
+        unsigned int uv ; 
+        if(parse<unsigned int>(uv, pairs[i].second)) upairs.push_back(upair_t(uv, pairs[i].first));   
     } 
 }
 

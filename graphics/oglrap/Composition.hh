@@ -13,6 +13,7 @@ class Trackball ;
 class Clipper ; 
 class Cfg ;
 class Scene ; 
+class Animator ; 
 
 #include "Configurable.hh"
 
@@ -26,9 +27,14 @@ class Composition : public Configurable {
   public:
  
       Composition();
+
       virtual ~Composition();
+      void toggleAnimator();
+      void tick();
+
   private:
       void init();
+      void initAnimator();
 
   public:
       // Configurable : for bookmarking 
@@ -168,9 +174,11 @@ class Composition : public Configurable {
       glm::ivec4 m_pick ;
       glm::vec4  m_pick_f ; // for inputing pick using float slider 
       glm::vec4  m_param ;
+      bool       m_animated ; 
 
   private:
       // residents
+      Animator*   m_animator ; 
       Camera*    m_camera ;
       Trackball* m_trackball ;
       View*      m_view ;
@@ -221,6 +229,7 @@ inline Composition::Composition()
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
   m_param(25.f,0.f,0.f,0.f),   // x: arbitrary scaling of genstep length 
+  m_animator(NULL),
   m_camera(NULL),
   m_trackball(NULL),
   m_view(NULL),

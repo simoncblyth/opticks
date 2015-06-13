@@ -7,3 +7,10 @@ union uif_t {
 } ;
 
 
+union hui_t {
+   short          short_ ; 
+   unsigned short ushort_ ;   
+};
+
+
+

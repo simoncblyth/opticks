@@ -259,6 +259,7 @@ int main(int argc, char** argv)
     Rdr::download(rec);
     rec->save("rx%s", typ,  tag);
 
+
     Photons photons(photonData) ;
     photons.setBoundaryNames(boundaries);
     photons.classify();
@@ -272,6 +273,7 @@ int main(int argc, char** argv)
     gui.setScene(&scene);
     gui.setComposition(&composition);
     gui.setBookmarks(&bookmarks);
+    gui.setInteractor(&interactor);   // status line
 
     gui.init(window);
     gui.setupHelpText( cfg.getDescString() );
@@ -299,6 +301,8 @@ int main(int argc, char** argv)
         {
             scene.render();
         }
+
+        composition.tick();
 
 #ifdef GUI_
         gui.newframe();

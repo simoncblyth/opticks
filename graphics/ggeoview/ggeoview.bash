@@ -1,4 +1,8 @@
 # === func-gen- : graphics/ggeoview/ggeoview fgp graphics/ggeoview/ggeoview.bash fgn ggeoview fgh graphics/ggeoview
+
+ggv-cd(){ ggeoview-cd ; }
+ggv--(){  ggeoview-depinstall ; }
+
 ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
 ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }
 ggeoview-vi(){       vi $(ggeoview-source) ; }

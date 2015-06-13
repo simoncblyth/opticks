@@ -23,9 +23,27 @@
 // trace/debug/info/warning/error/fatal
 
 
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
+
+
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
 const char* Interactor::GUIMODE    = "gui" ; 
+
+
+
+void Interactor::gui()
+{
+#ifdef GUI_
+    ImGui::Text(" status: %s ", m_status );
+#endif    
+}
+
+
+
 
 
 void Interactor::configureF(const char* name, std::vector<float> values)
@@ -109,12 +127,13 @@ void Interactor::key_pressed(unsigned int key)
 
     if(key > 245) printf("Interactor::key_pressed %u \n", key );
 
-    
-
 
 
     switch (key)
     {
+        case GLFW_KEY_A:
+            m_composition->toggleAnimator() ; 
+            break;
         case GLFW_KEY_Z:
             m_zoom_mode = !m_zoom_mode ; 
             break;
@@ -132,6 +151,12 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_J:
             m_scene->jump(); 
+            break;
+        case GLFW_KEY_P:
+            m_scene->nextPhotonStyle(); 
+            break;
+        case GLFW_KEY_Q:
+            m_scene->toggleGeometry(); 
             break;
         case GLFW_KEY_Y:
             m_yfov_mode = !m_yfov_mode ; 
@@ -246,8 +271,7 @@ void Interactor::number_key_released(unsigned int number)
 
 void Interactor::updateStatus()
 {
-    char status[64];
-    snprintf(status, 64, "%s%s%s%s%s%s%s%s %10.3f %u ",
+    snprintf(m_status, 64, "%s%s%s%s%s%s%s%s %10.3f %u ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
@@ -259,13 +283,11 @@ void Interactor::updateStatus()
            m_dragfactor,
            m_container 
            );
-
-    m_status = status ; 
 }
 
 const char* Interactor::getStatus()
 {
-    return m_status.c_str();
+    return m_status ;
 }
 
 void Interactor::Print(const char* msg)

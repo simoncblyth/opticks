@@ -79,6 +79,8 @@ class NPY : public NPYBase {
        // when both sj and sk are >-1 the float specified is used 
        // to sign the boundary code used in the map 
 
+       std::map<unsigned int,unsigned int> count_unique_u(unsigned int j, unsigned int k);
+
     public:
        // type shifting get/set using union trick
 

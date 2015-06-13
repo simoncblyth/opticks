@@ -15,7 +15,6 @@ class GMergedMesh ;
 class GGeo ;
 class GSubstanceLibMetadata ;
 class Photons ; 
-class Animator ; 
 
 #include "Configurable.hh"
 
@@ -30,8 +29,10 @@ class Scene : public Configurable {
    public:
        static const char* TARGET ;
 
-       typedef enum { REC, ALTREC, DEVREC } RecordStyle_t ;
+       typedef enum { REC, ALTREC, DEVREC, NUMSTYLE } RecordStyle_t ;
        void setRecordStyle(Scene::RecordStyle_t style);
+       void toggleGeometry();
+       void nextPhotonStyle();
 
    public:
        Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL);
@@ -67,7 +68,6 @@ class Scene : public Configurable {
         const char* loadGeometry(const char* prefix, bool nogeocache=false);
         void uploadEvt();
         void render();
-        void tick();
 
    public:
         unsigned int  getTarget(); 
@@ -79,7 +79,6 @@ class Scene : public Configurable {
         GGeo*                   getGGeo();
 
    public:
-        Animator*     getAnimator();
         GLoader*      getGeometryLoader();
         Renderer*     getGeometryRenderer();
         Rdr*          getGenstepRenderer();
@@ -99,7 +98,6 @@ class Scene : public Configurable {
    private:
         char*        m_shader_dir ; 
         char*        m_shader_incl_path ; 
-        Animator*    m_animator ;  
         GLoader*     m_geometry_loader ; 
         Renderer*    m_geometry_renderer ; 
         Device*      m_device ; 
@@ -130,7 +128,6 @@ class Scene : public Configurable {
 inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) :
             m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
-            m_animator(NULL),
             m_geometry_loader(NULL),
             m_geometry_renderer(NULL),
             m_device(NULL),
@@ -177,10 +174,6 @@ inline void Scene::setTouch(unsigned int touch)
 }
 
 
-inline Animator* Scene::getAnimator()
-{
-    return m_animator ; 
-}
 inline GLoader* Scene::getGeometryLoader()
 {
     return m_geometry_loader ; 
@@ -231,6 +224,17 @@ inline void Scene::setRecordStyle(RecordStyle_t style)
 {
     m_record_style = style ; 
 
+}
+
+inline void Scene::nextPhotonStyle()
+{
+    int next = (m_record_style + 1) % NUMSTYLE ; 
+    m_record_style = (RecordStyle_t)next ; 
+}
+
+inline void Scene::toggleGeometry()
+{
+    m_geometry_mode = !m_geometry_mode ; 
 }
 
 

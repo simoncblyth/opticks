@@ -9,14 +9,28 @@ class Animator {
         static const int period_low ; 
         static const int period_high ; 
 
-        Animator(unsigned int period, float low=0.f, float high=1.f);
+        Animator(float* target, unsigned int period, float low=0.f, float high=1.f);
+
         void reset();
         float step(bool& bump); 
+        void Summary(const char* msg);
+
+        float getLow(); 
+        float getHigh(); 
+        float* getTarget(); 
+
+       
         void setPeriod(unsigned int period);
         char* description();
         void scalePeriod(float factor);
 
+        void setOn(bool on=true);
+        bool isOn();
+        bool* isOnPtr();
+        void toggle();
+
     private:
+        void setTarget(float* target); // qty to be stepped
         unsigned int  getIndex();
         float         getFraction();
         unsigned int  find_closest_index(float f);
@@ -24,10 +38,12 @@ class Animator {
 
 
 
+
     private:
         float* make_fractions(unsigned int num, float low=0.f , float high=1.f);
 
     private:
+        bool         m_on ; 
         unsigned int m_period ; 
         float        m_low ; 
         float        m_high ; 
@@ -35,21 +51,51 @@ class Animator {
         unsigned int m_count ; 
         unsigned int m_index ; 
         char         m_desc[32] ; 
+        float*       m_target ; 
 
 };
 
 
 
-inline Animator::Animator(unsigned int period, float low, float high)
+inline Animator::Animator(float* target, unsigned int period, float low, float high)
     :
+    m_on(false),
     m_period(period),
     m_low(low),
     m_high(high),
-    m_fractions(make_fractions(period)),
+    m_fractions(make_fractions(period,0.f,1.f)),
     m_count(0),
-    m_index(0)
+    m_index(0),
+    m_target(target)
 {
 }
+
+inline void Animator::setTarget(float* target)
+{
+    m_target = target ;
+}
+
+
+inline bool Animator::isOn()
+{
+   return m_on ; 
+}
+inline bool* Animator::isOnPtr()
+{
+   return &m_on ; 
+}
+
+inline void Animator::setOn(bool on)
+{
+   m_on = on ;  
+}
+inline void Animator::toggle()
+{
+   m_on = !m_on ;  
+}
+
+
+
 
 inline void Animator::scalePeriod(float factor)
 {
@@ -65,9 +111,17 @@ inline float Animator::step(bool& bump)
 {
     bump = isBump();
     float fraction = getFraction();
-    // NB increments only after getting the fraction and bump
-    m_count += 1 ; 
-    return m_low + (m_high-m_low)*fraction ;
+    float value = m_low + (m_high-m_low)*fraction ;
+
+    if(m_on)
+    {
+        // NB increments only when active and after getting the fraction and bump
+        m_count += 1 ; 
+        if(m_target) *m_target = value ; 
+    } 
+
+    //printf("Animator::step m_on %d m_count %d value %10.4f \n", m_on, m_count,  value );      
+    return value ; 
 }
 
 
@@ -118,11 +172,17 @@ inline float* Animator::make_fractions(unsigned int num, float low, float high)
 
 }
 
-
-inline char* Animator::description()
+inline float Animator::getLow()
 {
-    snprintf(m_desc, 32, "%d/%d", m_index, m_period );
-    return m_desc ; 
+    return m_low ; 
+}
+inline float Animator::getHigh()
+{
+    return m_high ; 
+}
+inline float* Animator::getTarget()
+{
+    return m_target ;
 }
 
 

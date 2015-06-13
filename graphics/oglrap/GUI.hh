@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+class Interactor ; 
 class Scene ; 
 class Composition ;
 class View ;
@@ -28,6 +29,7 @@ class GUI {
 
        void setScene(Scene* scene);
        void setComposition(Composition* composition);
+       void setInteractor(Interactor* interactor);
        void setPhotons(Photons* photons);
        void setView(View* view);
        void setCamera(Camera* camera);
@@ -56,6 +58,7 @@ class GUI {
        float       m_bg_alpha ; 
        std::string m_help ; 
 
+       Interactor*   m_interactor ; 
        Scene*        m_scene ; 
        Composition*  m_composition ; 
        View*         m_view; 
@@ -72,6 +75,7 @@ inline GUI::GUI()
    :
    m_show_test_window(false),
    m_bg_alpha(0.65f),
+   m_interactor(NULL),
    m_scene(NULL),
    m_composition(NULL),
    m_view(NULL),
@@ -83,8 +87,10 @@ inline GUI::GUI()
 {
 }
 
-
-
+inline void GUI::setInteractor(Interactor* interactor)
+{
+    m_interactor = interactor ; 
+}
 inline void GUI::setPhotons(Photons* photons)
 {
     m_photons = photons ; 

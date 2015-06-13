@@ -32,6 +32,7 @@ class Interactor {
        static const char* GUIMODE ; 
 
        Interactor(); 
+       void gui();
        void setComposition(Composition* composition);
        void setBookmarks(Bookmarks* bookmarks);
        void setTouchable(Touchable* touchable);
@@ -94,7 +95,7 @@ class Interactor {
        float m_dragfactor ;
        unsigned int m_container ;
 
-       std::string m_status ; 
+       char m_status[64] ; 
 
 };
 
@@ -133,6 +134,7 @@ inline Interactor::Interactor()
    m_container(0)
 {
    for(unsigned int i=0 ; i < NUM_KEYS ; i++) m_keys_down[i] = false ; 
+   m_status[0] = '\0' ;
 }
 
 

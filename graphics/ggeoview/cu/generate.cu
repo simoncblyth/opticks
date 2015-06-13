@@ -79,11 +79,7 @@ RT_PROGRAM void generate()
         CerenkovStep cs ;
         csload(cs, genstep_buffer, genstep_offset);
 #ifdef DEBUG
-        if(photon_id == 0)
-        {
-            csdump(cs);
-            cscheck(cs);
-        }
+        if(photon_id == 0) csdebug(cs);
 #endif
         generate_cerenkov_photon(p, cs, rng );         
     }
@@ -92,15 +88,10 @@ RT_PROGRAM void generate()
         ScintillationStep ss ;
         ssload(ss, genstep_buffer, genstep_offset);
 #ifdef DEBUG
-        if(photon_id == 0)
-        {
-            ssdump(ss);
-            reemission_check();
-        }
+        if(photon_id == 0) ssdebug(ss);
 #endif
         generate_scintillation_photon(p, ss, rng );         
     }
-
 
 
     p.flags.u.y = photon_id ;   // no problem fitting uint  (1 << 32) - 1 = 4,294,967,295
@@ -133,10 +124,9 @@ RT_PROGRAM void generate()
 
         RSAVE(p, slot) ;
 
-        if(photon_id == 0)
-        {
-            dump_state(s);
-        }
+#ifdef DEBUG
+        if(photon_id == 0) dump_state(s);
+#endif
 
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ; 

@@ -15,7 +15,6 @@
 #include "Renderer.hh"
 #include "Device.hh"
 #include "Rdr.hh"
-#include "Animator.hh"
 
 // npy-
 #include "NumpyEvt.hpp"
@@ -40,6 +39,8 @@ const char* Scene::GEOMETRY = "geometry" ;
 const char* Scene::RECORD   = "record" ; 
 
 
+
+
 void Scene::gui()
 {
 #ifdef GUI_
@@ -56,7 +57,8 @@ void Scene::gui()
      );
 
 
-     int* record_style = (int*)&m_record_style ;  // address of enum cast to int*
+
+     int* record_style = (int*)&m_record_style ;       // address of enum cast to int*
      ImGui::RadioButton("rec",    record_style, REC); 
      ImGui::SameLine();
      ImGui::RadioButton("altrec", record_style, ALTREC); 
@@ -133,7 +135,6 @@ void Scene::configure(const char* name, int value)
 
 void Scene::init()
 {
-    m_animator = new Animator(200);
     m_geometry_loader = new GLoader();
     m_geometry_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
@@ -146,8 +147,11 @@ void Scene::init()
 
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
 
+
+
     m_record_renderer = new Rdr(m_device, "rec", m_shader_dir, m_shader_incl_path );
     m_record_renderer->setPrimitive(Rdr::LINES);
+    //m_record_renderer->setPrimitive(Rdr::LINE_STRIP);
 
     m_altrecord_renderer = new Rdr(m_device, "altrec", m_shader_dir, m_shader_incl_path);
     m_altrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
@@ -185,9 +189,10 @@ Rdr* Scene::getRecordRenderer()
     Rdr* rdr = NULL ; 
     switch(m_record_style)
     {
-        case    REC:rdr = m_record_renderer     ; break ;
-        case ALTREC:rdr = m_altrecord_renderer  ; break ;
-        case DEVREC:rdr = m_devrecord_renderer  ; break ;
+        case      REC:rdr = m_record_renderer     ; break ;
+        case   ALTREC:rdr = m_altrecord_renderer  ; break ;
+        case   DEVREC:rdr = m_devrecord_renderer  ; break ;
+        case NUMSTYLE:                            ; break ;
     }
     return rdr ; 
 }
@@ -204,7 +209,7 @@ void Scene::uploadEvt()
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 
-    // have both renderers ready to roll so can live switch between them, 
+    // all renderers ready to roll so can live switch between them, 
     // data is not duplicated thanks to Device
 
     m_record_renderer->upload(m_evt->getRecordAttr());
@@ -215,16 +220,8 @@ void Scene::uploadEvt()
 
 
 
-void Scene::tick()
-{    
-    bool bump(false);
-    m_time_fraction = m_animator->step(bump);
-}
-
-
 void Scene::render()
 {
-    tick();
 
     if(m_geometry_mode) m_geometry_renderer->render();
     if(m_genstep_mode)  m_genstep_renderer->render();  

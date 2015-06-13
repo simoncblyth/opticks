@@ -33,28 +33,28 @@ struct Photon
 
 enum
 {
-    NO_HIT                 = 0x1 << 0,
-    BULK_ABSORB            = 0x1 << 1,
-    SURFACE_DETECT         = 0x1 << 2,
-    SURFACE_ABSORB         = 0x1 << 3,
-    RAYLEIGH_SCATTER       = 0x1 << 4,
-    REFLECT_DIFFUSE        = 0x1 << 5,
-    REFLECT_SPECULAR       = 0x1 << 6,
-    SURFACE_REEMIT         = 0x1 << 7,
-    SURFACE_TRANSMIT       = 0x1 << 8,
-    BULK_REEMIT            = 0x1 << 9,
-    GENERATE_SCINTILLATION = 0x1 << 16, 
-    GENERATE_CERENKOV      = 0x1 << 17, 
-    BOUNDARY_SPOL          = 0x1 << 18,
-    BOUNDARY_PPOL          = 0x1 << 19,
-    BOUNDARY_REFLECT       = 0x1 << 20,
-    BOUNDARY_TRANSMIT      = 0x1 << 21,
-    BOUNDARY_TIR           = 0x1 << 22,
-    BOUNDARY_TIR_NOT       = 0x1 << 23,
-    NAN_ABORT              = 0x1 << 31
+    GENERATE_CERENKOV      = 0x1 << 0, 
+    GENERATE_SCINTILLATION = 0x1 << 1, 
+    NO_HIT                 = 0x1 << 2,
+    BULK_ABSORB            = 0x1 << 3,
+    SURFACE_DETECT         = 0x1 << 4,
+    SURFACE_ABSORB         = 0x1 << 5,
+    RAYLEIGH_SCATTER       = 0x1 << 6,
+    BULK_REEMIT            = 0x1 << 7,
+    BOUNDARY_SPOL          = 0x1 << 8,
+    BOUNDARY_PPOL          = 0x1 << 9,
+    BOUNDARY_REFLECT       = 0x1 << 10,
+    BOUNDARY_TRANSMIT      = 0x1 << 11,
+    BOUNDARY_TIR           = 0x1 << 12,
+    NAN_ABORT              = 0x1 << 13,
+    REFLECT_DIFFUSE        = 0x1 << 14, 
+    REFLECT_SPECULAR       = 0x1 << 15,
+    SURFACE_REEMIT         = 0x1 << 17,
+    SURFACE_TRANSMIT       = 0x1 << 18,
+    BOUNDARY_TIR_NOT       = 0x1 << 19
 }; // processes
 
-
+//  only 0-15 make it into the record so debug flags only beyond 15 
 
 
 enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
@@ -145,9 +145,8 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     // range of 8 bit char: -128 to 127 or 0 to 255
     int boundary = p.flags.i.x ;  // range -55 : 55 
     //polw.ushort_.z = (boundary & 0xFF) << 8 ;
-    polw.ushort_.z = boundary  ;
-
-
+    polw.ushort_.z = boundary  ;                  // boundary could fit into 8 bits, so 8 bits going spare here 
+    polw.ushort_.w = p.flags.u.w & 0xFFFF  ;      // maybe store bitmask difference in the record ?
 
     rbuffer[record_offset+1] = polw.short_ ; 
 }
