@@ -140,7 +140,8 @@ void Composition::initAnimator()
 void Composition::toggleAnimator()
 {
     if(!m_animator) initAnimator() ;
-    m_animator->toggle();
+    //m_animator->toggle();
+    m_animator->nextMode();
 }
 
 void Composition::tick()
@@ -165,17 +166,18 @@ void Composition::gui()
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
 
-    ImGui::SliderFloat( "w:domain_time ", m_animator->getTarget(), m_animator->getLow(), m_animator->getHigh() ,  "%0.3f", 2.0f);
-    ImGui::Checkbox("animate", m_animator->isOnPtr());
 
-    //m_animator->Summary("Composition::gui");
+    if(m_animator)
+    {
+         m_animator->gui("time (ns)", "%0.3f", 2.0f);
 
-    ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *m_animator->getTarget() * SPEED_OF_LIGHT / 1000.f );
+         float* target = m_animator->getTarget();
+         ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *target * SPEED_OF_LIGHT / 1000.f );
+    }
 
     int* pick = glm::value_ptr(m_pick) ;
     ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
     ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
-
 
     ImGui::Text("pick %d %d %d %d ",
        m_pick.x, 

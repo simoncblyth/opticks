@@ -19,6 +19,12 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+Blogs on Ray Tracing
+----------------------
+
+* http://raytracey.blogspot.tw
+
+
 
 Specular Ray Trace
 ---------------------
