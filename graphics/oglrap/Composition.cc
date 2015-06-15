@@ -137,11 +137,10 @@ void Composition::initAnimator()
     m_animator->Summary("Composition::gui setup Animation");
 }
 
-void Composition::toggleAnimator()
+void Composition::nextMode(unsigned int modifiers)
 {
     if(!m_animator) initAnimator() ;
-    //m_animator->toggle();
-    m_animator->nextMode();
+    m_animator->nextMode(modifiers);
 }
 
 void Composition::tick()
@@ -149,6 +148,8 @@ void Composition::tick()
     if(!m_animator) initAnimator();
     bool bump(false);
     m_animator->step(bump);
+
+    m_view->tick();
 }
 
 

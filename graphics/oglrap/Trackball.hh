@@ -47,6 +47,7 @@ class Trackball : public Configurable {
        void setOrientation(float theta, float phi);
        void setOrientation(glm::quat& q);
        void setOrientation(std::string tp);
+       void setOrientation();
 
   public:
        float getRadius();
@@ -86,6 +87,11 @@ class Trackball : public Configurable {
 
        int  m_drag_renorm ; 
        int  m_drag_count ; 
+
+       // input qtys used to construct quaternion
+       float m_theta_deg ; 
+       float m_phi_deg   ; 
+
 
 };
 
@@ -154,7 +160,7 @@ inline void Trackball::home()
     m_translate.x = 0.f ; 
     m_translate.y = 0.f ; 
     m_translate.z = 0.f ; 
-    setOrientation(0.f, 0.f);
+   setOrientation(0.f, 0.f);
 }
 inline void Trackball::zoom_to(float x, float y, float dx, float dy)
 {

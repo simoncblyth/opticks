@@ -48,7 +48,7 @@ const char* Animator::getModeString()
 
 
 
-void Animator::gui(const char* label, const char* fmt, float power)
+bool Animator::gui(const char* label, const char* fmt, float power)
 {
 #ifdef GUI_
 
@@ -61,12 +61,29 @@ void Animator::gui(const char* label, const char* fmt, float power)
     ImGui::Text("animation mode: ");
 
     ImGui::RadioButton( OFF_ , mode, OFF); ImGui::SameLine();
-    ImGui::RadioButton(SLOW_, mode, SLOW); ImGui::SameLine();
-    ImGui::RadioButton(NORM_, mode, NORM); ImGui::SameLine();
-    ImGui::RadioButton(FAST_, mode, FAST); //ImGui::SameLine();
+
+
+    if( SLOW < m_restrict )
+    {
+        ImGui::RadioButton(SLOW_, mode, SLOW); 
+        ImGui::SameLine();
+    }
+
+    if( NORM < m_restrict )
+    {
+        ImGui::RadioButton(NORM_, mode, NORM); 
+        ImGui::SameLine();
+    }
+
+    if( FAST < m_restrict )
+    {
+        ImGui::RadioButton(FAST_, mode, FAST); //ImGui::SameLine();
+    }
 
     if(m_mode != prior) modeTransition(fraction);
 #endif
+
+    return m_mode != OFF ; 
 }
 
 

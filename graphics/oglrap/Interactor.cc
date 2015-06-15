@@ -132,7 +132,10 @@ void Interactor::key_pressed(unsigned int key)
     switch (key)
     {
         case GLFW_KEY_A:
-            m_composition->toggleAnimator() ; 
+            m_composition->nextMode(getModifiers()) ; 
+            break;
+        case GLFW_KEY_V:
+            m_view->nextMode(getModifiers()) ; 
             break;
         case GLFW_KEY_Z:
             m_zoom_mode = !m_zoom_mode ; 

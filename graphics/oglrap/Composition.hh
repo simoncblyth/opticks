@@ -29,7 +29,7 @@ class Composition : public Configurable {
       Composition();
 
       virtual ~Composition();
-      void toggleAnimator();
+      void nextMode(unsigned int modifiers);
       void tick();
 
   private:

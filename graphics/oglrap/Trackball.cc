@@ -119,6 +119,18 @@ void Trackball::gui()
     ImGui::SliderFloat("radius",   &m_radius,  m_radius_clip[0], m_radius_clip[1] );
     ImGui::SliderFloat("tfactor",  &m_translatefactor,  m_translatefactor_clip[0], m_translatefactor_clip[1] );
     ImGui::Text(" quat: %s", gformat(m_orientation).c_str() ) ;
+
+    float theta_deg = m_theta_deg ; 
+    float phi_deg = m_theta_deg ; 
+
+
+    ImGui::SliderFloat("theta",   &m_theta_deg, 0.f, 360.f );
+    ImGui::SliderFloat("phi",     &m_phi_deg,   0.f, 360.f );
+
+    // slightly dodgy as these are input qtys that yield the real state quaternion
+    if(m_theta_deg != theta_deg  || m_phi_deg != phi_deg) setOrientation(); 
+
+
    // whats the range of values of the quat ?
 #endif    
 }
@@ -266,8 +278,16 @@ void Trackball::setTranslate(std::string _xyz)
 
 void Trackball::setOrientation(float _theta, float _phi)
 {
-    float theta = _theta*M_PI/180. ;
-    float phi   = _phi*M_PI/180. ;
+    m_theta_deg = _theta ; 
+    m_phi_deg  = _phi ;  
+
+    setOrientation();
+}
+
+void Trackball::setOrientation()
+{
+    float theta = m_theta_deg*M_PI/180. ;
+    float phi   = m_phi_deg*M_PI/180. ;
 
     glm::quat xrot(cos(0.5*theta),sin(0.5*theta),0,0);
     glm::quat zrot(cos(0.5*phi),  0,0,sin(0.5*phi));

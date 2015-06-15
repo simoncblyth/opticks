@@ -1,4 +1,5 @@
 #include "View.hh"
+#include "Animator.hh"
 
 #include "stdio.h"
 
@@ -91,6 +92,23 @@ void View::Print(const char* msg)
     print(getEye(), getLook(), getUp() , "eye/look/up");
 }
 
+void View::nextMode(unsigned int modifiers)
+{
+    m_animator->nextMode(modifiers);
+}
+
+void View::initAnimator()
+{
+    m_animator = new Animator(&m_eye_phase, 200, -1.f, 1.f ); 
+    m_animator->setModeRestrict(Animator::NORM);  // only OFF and SLOW 
+    m_animator->Summary("View::initAnimator");
+}
+
+void View::tick()
+{
+    bool bump(false);
+    if(m_animator->step(bump)) setEyePhase(m_eye_phase);
+}
 
 void View::gui()
 {
@@ -99,6 +117,12 @@ void View::gui()
     ImGui::SliderFloat3("eye",  getEyePtr(),  -1.0f, 1.0f);
     ImGui::SliderFloat3("look", getLookPtr(), -1.0f, 1.0f);
     ImGui::SliderFloat3("up",   getUpPtr(), -1.0f, 1.0f);
+
+    updateEyePhase();
+    if(ImGui::SliderFloat("eyephase", &m_eye_phase,  -1.f, 1.f)) setEyePhase(m_eye_phase);
+
+    if(m_animator->gui("animate eyephase", "%0.3f", 1.0f)) setEyePhase(m_eye_phase) ;
+
 #endif    
 }
 
@@ -141,6 +165,7 @@ void View::getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm:
     v = glm::normalize(glm::cross(u,gaze));   // "y" to the top
     w = gaze ;                                // "-z" into target  (+z points out of screen as RHS)
 }  
+
 
 
 
