@@ -122,6 +122,7 @@ RT_PROGRAM void generate()
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
 
+
         RSAVE(p, slot) ;
 
 #ifdef DEBUG

@@ -1,4 +1,5 @@
 #include "GSubstanceLib.hh"
+#include "GSubstance.hh"
 #include "stdlib.h"
 #include "stdio.h"
 
@@ -12,18 +13,24 @@ int main(int argc, char** argv)
 
     const char* dir = argv[1];
     GSubstanceLib* lib = GSubstanceLib::load(dir);
-    lib->Summary("load ");
+    //lib->Summary("GSubstanceLib::Summary");
 
 
-    if(argc == 2)
+    for(unsigned int isub=0 ; isub < lib->getNumSubstances() ; isub++)
     {
-        lib->dumpWavelengthBuffer();        
-    }
-    else
-    {
-        for(unsigned int i=2 ; i < argc ; i++) lib->dumpWavelengthBuffer(atoi(argv[i]));        
+         GSubstance* substance = lib->getSubstance(isub);
+         substance->Summary("sub");
     }
 
+
+
+
+
+
+    /*
+    if(argc == 2) lib->dumpWavelengthBuffer();        
+    else          for(unsigned int i=2 ; i < argc ; i++) lib->dumpWavelengthBuffer(atoi(argv[i]));        
+    */
 
     return 0 ;
 }

@@ -917,7 +917,11 @@ void GSubstanceLib::loadWavelengthBuffer(GBuffer* buffer)
     unsigned int domainLength = domain->getLength(); 
     unsigned int numProp = getNumProp();
     unsigned int numSubstance = numElementsTotal/(numProp*domainLength);
-    assert(numSubstance == 54);
+    //assert(numSubstance == 54);
+    if(numSubstance != 54)
+    {
+        LOG(warning) << "GSubstanceLib::loadWavelengthBuffer didnt see 54, numSubstance: " << numSubstance ; 
+    }
 
     for(unsigned int isub=0 ; isub < numSubstance ; ++isub )
     {

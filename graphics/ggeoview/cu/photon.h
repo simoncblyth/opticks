@@ -149,6 +149,12 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     polw.ushort_.w = p.flags.u.w & 0xFFFF  ;      // maybe store bitmask difference in the record ?
 
     rbuffer[record_offset+1] = polw.short_ ; 
+
+    // flags intended to allow tracing photon propagation history via bitfields for each record 
+    // of a photon, each corresponding to bits set since the prior rsave (not the same as a step)
+    // although exclusive or on a "|=" incrementing mask almost does this 
+    // that would fail to see repeated flags  
+
 }
 
 /*
