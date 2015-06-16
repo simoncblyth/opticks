@@ -279,20 +279,26 @@ assimpwrap-lldb(){
 assimpwrap-brun(){
    echo running from bdir not idir : no install needed, but must set library path
    local bdir=$(assimpwrap-bdir)
-   DYLD_LIBRARY_PATH=$bdir $DEBUG $bdir/AssimpWrapTest 
+   DYLD_LIBRARY_PATH=$bdir $LLDB $bdir/AssimpWrapTest 
 }
 
+
 assimpwrap-test(){
+   local msg="$FUNCNAME : "
+   echo $msg extra arg is added by default : following principal of requiring zero arguments for the most often needed actions 
+   $FUNCNAME- extra 
+}
+assimpwrap-noextra(){
+   assimpwrap-test- extra
+}
+
+assimpwrap-test-(){
     local arg=$1
     assimpwrap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
 
     assimpwrap-export $arg
-    DEBUG=lldb assimpwrap-brun
-}
-
-assimpwrap-extra(){
-   assimpwrap-test extra
+    assimpwrap-brun
 }
 
 assimpwrap-otool(){

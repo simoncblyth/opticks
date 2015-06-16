@@ -59,6 +59,7 @@ class GPropertyMap {
 
   private:
       std::string m_name ;
+      std::string m_shortname ; 
       std::string m_type ;
       unsigned int m_index ;
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "GPropertyMap.hh"
+#include <string>
 
 class GOpticalSurface ; 
 
@@ -8,6 +9,7 @@ class GBorderSurface : public GPropertyMap<float> {
       GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface );
       virtual ~GBorderSurface();
       void Summary(const char* msg="GBorderSurface::Summary", unsigned int imod=1);
+      std::string description();
 
   public:
       GOpticalSurface* getOpticalSurface();

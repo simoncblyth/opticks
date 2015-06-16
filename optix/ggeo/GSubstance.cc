@@ -1,6 +1,7 @@
 #include "GSubstance.hh"
 #include "GPropertyMap.hh"
 #include "md5digest.hh"
+#include "GOpticalSurface.hh"
 
 #include "stdio.h"
 #include "limits.h"
@@ -15,6 +16,62 @@ const char* GSubstance::osurface  = "osur" ;
 const char* GSubstance::iextra    = "iext" ;
 const char* GSubstance::oextra    = "oext" ;
 
+const char* GSubstance::inner_optical    = "iopt" ;
+const char* GSubstance::outer_optical    = "oopt" ;
+
+
+
+
+
+//
+// How to handle optical_surface props ?
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// * not so easy to add m_optical_surface due to GSubstance funny identity 
+//   unless include it in the digest 
+//
+// * also it is associated with isurf or osurf, so better to attach there rather
+//   than here ?
+//
+// * unless can finangle to arrange that GPropertyMap props are modified
+//   based on optical_surface : then no need to change extant machinery 
+//
+//   but how to finangle ?  finish is obvious 
+//  
+//
+//  OR rather the portion of OpticalSurface relevant to boundary identity 
+//
+//      name   
+//             needs to be excluded : otherwise would get loadsa distinct boundaries 
+//             all with the same optical properties
+//
+//      type   
+//             no need to handle, as for Dayabay all surfaces are  dielectric_metal
+//             but include in digest for future 
+//
+//      model  
+//             (always unified) 
+//             but include in digest for future 
+//
+//      finish 
+//             (Dayabay: ground and polished occur)
+//
+//             can be expressed within GPropertyMap by 
+//             branching REFLECTIVITY -> reflect_specular / reflect_diffuse
+//
+//      value  
+//             in unified model this is SigmaAlpha
+//             used to control FacetNormal 
+//
+//
+//   simon:geant4.10.00.p01 blyth$ find source -name '*.cc' -exec grep -H SigmaAlpha {} \;
+//   source/persistency/gdml/src/G4GDMLWriteSolids.cc:   G4double sval = (smodel==glisur) ? surf->GetPolish() : surf->GetSigmaAlpha();
+//   source/processes/optical/src/G4OpBoundaryProcess.cc:       if (OpticalSurface) sigma_alpha = OpticalSurface->GetSigmaAlpha();
+//
+//
+//
+//
+
 
 GSubstance::GSubstance()
          :
@@ -24,7 +81,9 @@ GSubstance::GSubstance()
          m_osurface(NULL),
          m_iextra(NULL),
          m_oextra(NULL),
-         m_index(UINT_MAX)
+         m_index(UINT_MAX),
+         m_inner_optical(NULL),
+         m_outer_optical(NULL)
 {
 }
 
@@ -34,7 +93,9 @@ GSubstance::GSubstance(
                  GPropertyMap<float>* isurface, 
                  GPropertyMap<float>* osurface, 
                  GPropertyMap<float>* iextra, 
-                 GPropertyMap<float>* oextra
+                 GPropertyMap<float>* oextra,
+                 GOpticalSurface* inner_optical,
+                 GOpticalSurface* outer_optical
                )
          : 
          m_imaterial(imaterial),
@@ -43,22 +104,14 @@ GSubstance::GSubstance(
          m_osurface(osurface),
          m_iextra(iextra),
          m_oextra(oextra),
-         m_index(UINT_MAX)
+         m_index(UINT_MAX),
+         m_inner_optical(inner_optical),
+         m_outer_optical(outer_optical)
 {
 }
 
 GSubstance::~GSubstance()
 {
-}
-
-void GSubstance::setIndex(unsigned int index)
-{
-    m_index = index ;
-}
-
-unsigned int GSubstance::getIndex()
-{
-    return m_index ;
 }
 
 
@@ -109,6 +162,9 @@ char* GSubstance::pdigest(int ifr, int ito)
        dig.update(pdig, strlen(pdig));
        free(pdig);
    }
+
+   // TODO: inner_optical outer_optical
+
    return dig.finalize();
 }
 

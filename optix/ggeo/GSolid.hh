@@ -1,8 +1,8 @@
-#ifndef GSOLID_H
-#define GSOLID_H
+#pragma once
 
 class GMesh ;
 class GSubstance ; 
+//class GOpticalSurface ;
 
 #include "GNode.hh"
 #include "GMatrix.hh"
@@ -23,16 +23,57 @@ class GSolid : public GNode {
 
   public:
      void setSubstance(GSubstance* substance);
+ //    void setInnerOpticalSurface(GOpticalSurface* ios);
+ //    void setOuterOpticalSurface(GOpticalSurface* oos);
+
+  public:
      GSubstance* getSubstance();
+ //    GOpticalSurface* getInnerOpticalSurface();
+ //    GOpticalSurface* getOuterOpticalSurface();
 
   public: 
       void Summary(const char* msg="GSolid::Summary");
  
   private:
-      GSubstance* m_substance ; 
+      GSubstance*        m_substance ; 
+ //     GOpticalSurface*   m_inner_optical_surface ; 
+ //     GOpticalSurface*   m_outer_optical_surface ; 
       bool m_selected ;
 
 };
 
+inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GSubstance* substance)
+         : 
+         GNode(index, transform, mesh ),
+         m_substance(substance),
+//         m_inner_optical_surface(NULL),
+//         m_outer_optical_surface(NULL),
+         m_selected(true)
+{
+    // NB not taking ownership yet 
+}
 
-#endif
+inline GSolid::~GSolid()
+{
+}
+
+inline GSubstance* GSolid::getSubstance()
+{
+    return m_substance ; 
+}
+
+
+
+inline void GSolid::setSelected(bool selected)
+{
+    m_selected = selected ; 
+}
+inline bool GSolid::isSelected()
+{
+   return m_selected ; 
+}
+
+
+
+
+

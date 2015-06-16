@@ -1,6 +1,4 @@
-#ifndef GSUBSTANCE_H
-#define GSUBSTANCE_H
-
+#pragma once
 #include <string>
 //
 // Excluding "outer" material from GSubstance (more natural and prevents compounding)
@@ -25,6 +23,9 @@
 
 #include "GPropertyMap.hh"
 
+class GOpticalSurface ; 
+
+
 
 // hmm GSubstance, a better name would be GBoundary now ?
 // 
@@ -39,7 +40,7 @@
 // repeats the indice for every triangle 
 //
 
-class GSubstance {
+class GSubstance {   // TODO: rename together with associated classes to GBoundary et al
   public:
       static const char* imaterial ; 
       static const char* omaterial ; 
@@ -47,6 +48,9 @@ class GSubstance {
       static const char* osurface ; 
       static const char* iextra ; 
       static const char* oextra ; 
+      static const char* inner_optical ; 
+      static const char* outer_optical ; 
+
   public:
       GSubstance();
       GSubstance(
@@ -55,7 +59,9 @@ class GSubstance {
                  GPropertyMap<float>* isurface, 
                  GPropertyMap<float>* osurface,
                  GPropertyMap<float>* iextra,
-                 GPropertyMap<float>* oextra
+                 GPropertyMap<float>* oextra,
+                 GOpticalSurface*     inner_optical,
+                 GOpticalSurface*     outer_optical
                  );
       virtual ~GSubstance();
 
@@ -77,12 +83,26 @@ class GSubstance {
       void setInnerExtra(GPropertyMap<float>* iextra);
       void setOuterExtra(GPropertyMap<float>* oextra);
 
+  public:
+      //void setInnerOptical(GOpticalSurface* ioptical);
+      //void setOuterOptical(GOpticalSurface* ooptical);
+
+
+
+  public:
       GPropertyMap<float>* getInnerMaterial();
       GPropertyMap<float>* getOuterMaterial();
       GPropertyMap<float>* getInnerSurface();
       GPropertyMap<float>* getOuterSurface();
       GPropertyMap<float>* getInnerExtra();
       GPropertyMap<float>* getOuterExtra();
+
+      GOpticalSurface*     getInnerOptical();
+      GOpticalSurface*     getOuterOptical();
+
+
+
+  public:
       GPropertyMap<float>* getConstituentByIndex(unsigned int p);
       static const char* getConstituentNameByIndex(unsigned int p);
 
@@ -93,6 +113,10 @@ class GSubstance {
       GPropertyMap<float>*  m_osurface ; 
       GPropertyMap<float>*  m_iextra ; 
       GPropertyMap<float>*  m_oextra ; 
+  private:
+      GOpticalSurface*      m_inner_optical ; 
+      GOpticalSurface*      m_outer_optical ; 
+
 
   private:
       unsigned int m_index ; 
@@ -100,4 +124,28 @@ class GSubstance {
 
 };
 
-#endif
+
+inline void GSubstance::setIndex(unsigned int index)
+{
+    m_index = index ;
+}
+
+inline unsigned int GSubstance::getIndex()
+{
+    return m_index ;
+}
+
+
+
+
+inline GOpticalSurface* GSubstance::getInnerOptical()
+{
+   return m_inner_optical ; 
+}
+inline GOpticalSurface* GSubstance::getOuterOptical()
+{
+   return m_outer_optical ; 
+}
+
+
+

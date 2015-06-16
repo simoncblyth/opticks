@@ -4,6 +4,7 @@
 
 #include "stdlib.h"
 #include "string.h"
+#include <sstream>
 
 GBorderSurface::GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface ) : 
     GPropertyMap<float>(name, index, "bordersurface" ),
@@ -86,4 +87,9 @@ void GBorderSurface::Summary(const char* msg, unsigned int imod)
 
 
 
-
+std::string GBorderSurface::description()
+{
+    std::stringstream ss ; 
+    ss << "GBS:: " << m_optical_surface->description() << " keys " << getKeysString() ; 
+    return ss.str();
+}

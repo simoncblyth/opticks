@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 class GOpticalSurface {
   public:
@@ -6,7 +7,11 @@ class GOpticalSurface {
       GOpticalSurface(const char* name, const char* type, const char* model, const char* finish, const char* value);
       virtual ~GOpticalSurface();
 
+      std::string description();
       void Summary(const char* msg="GOpticalSurface::Summary", unsigned int imod=1);
+
+  private:
+      void findShortName(char marker='_');
 
   public:
       char* getName();
@@ -14,6 +19,7 @@ class GOpticalSurface {
       char* getModel();
       char* getFinish();
       char* getValue();
+      char* getShortName();
 
   private:
       char* m_name ;  
@@ -21,6 +27,7 @@ class GOpticalSurface {
       char* m_model ;  
       char* m_finish ;  
       char* m_value ;  
+      char* m_shortname ;  
 
 };
 
@@ -44,4 +51,10 @@ inline char* GOpticalSurface::getValue()
 {
     return m_value ; 
 }
+
+inline char* GOpticalSurface::getShortName()
+{
+    return m_shortname ; 
+}
+
 

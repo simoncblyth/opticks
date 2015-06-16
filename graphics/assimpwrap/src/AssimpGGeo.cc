@@ -7,6 +7,8 @@
 #include <assimp/types.h>
 #include <assimp/scene.h>
 #include <algorithm>
+#include <iomanip>
+
 
 #include "GVector.hh"
 #include "GMatrix.hh"
@@ -209,10 +211,10 @@ void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material, 
         aiString key = property->mKey ; 
         const char* k = key.C_Str();
 
-        //printf("AssimpGGeo::addProperties i %d k %s \n", i, k ); 
-
         // skip Assimp standard material props $clr.emissive $mat.shininess ?mat.name  etc..
         if( k[0] == '?' || k[0] == '$') continue ;   
+
+        //printf("AssimpGGeo::addProperties i %d k %s \n", i, k ); 
 
         aiPropertyTypeInfo type = property->mType ; 
         if(type == aiPTI_Float)
@@ -224,7 +226,7 @@ void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material, 
             aiString val ; 
             material->Get(k,0,0,val);
             const char* v = val.C_Str();
-            //printf("skip k %s v %s \n", k, v );
+            //printf("skip k %s v %s \n", k, v ); needs props are plucked elsewhere
         }
         else
         {
@@ -280,7 +282,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if(strncmp(query, name, strlen(query))!=0) continue ;  
 
-        LOG(info) << "AssimpGGeo::convertMaterials " << i << " " << name ;
+        //LOG(debug) << "AssimpGGeo::convertMaterials " << i << " " << name ;
 
         const char* bspv1 = getStringProperty(mat, g4dae_bordersurface_physvolume1 );
         const char* bspv2 = getStringProperty(mat, g4dae_bordersurface_physvolume2 );
@@ -294,20 +296,27 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         const char* osval = getStringProperty(mat, g4dae_opticalsurface_value );
 
         GOpticalSurface* os = osnam && ostyp && osmod && osfin && osval ? new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) : NULL ; 
-        if(os) os->Summary();
 
+        if(os)
+        {
+            assert(strcmp(osnam, name) == 0); 
+            // same-name convention between OpticalSurface and the skin or border surface that references it 
+        }
 
         // assimp "materials" are used to hold skinsurface and bordersurface properties, 
         // as well as material properties
 
         if( sslv )
         {
-            //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GSkinSurface) name %s sslv %s  \n", i, name, sslv);
-            assert(os);
-            GSkinSurface*  gss = new GSkinSurface(name, i, os);
+            assert(os && "all ss must have associated os");
+
+            GSkinSurface* gss = new GSkinSurface(name, i, os);
+
             gss->setStandardDomain(standard_domain);
             gss->setSkinSurface(sslv);
             addProperties(gss, mat, reverse);
+
+            LOG(info) << gss->description(); 
             gg->add(gss);
 
             {
@@ -321,12 +330,15 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         } 
         else if (bspv1 && bspv2 )
         {
-            assert(os);
-            //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GBorderSurface) name %s \n    bspv1 %s\n    bspv2 %s \n", i, name, bspv1, bspv2 );
+            assert(os && "all bs must have associated os");
             GBorderSurface* gbs = new GBorderSurface(name, i, os);
+
             gbs->setStandardDomain(standard_domain);
             gbs->setBorderSurface(bspv1, bspv2);
             addProperties(gbs, mat, reverse);
+
+            LOG(info) << gbs->description(); 
+
             gg->add(gbs);
 
             {
@@ -339,6 +351,8 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         }
         else
         {
+            assert(os==NULL);
+
             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GMaterial) name %s \n", i, name);
             GMaterial* gmat = new GMaterial(name, i);
             gmat->setStandardDomain(standard_domain);
@@ -430,7 +444,9 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 void AssimpGGeo::convertStructure(GGeo* gg)
 {
     LOG(info) << "AssimpGGeo::convertStructure ";
+
     convertStructure(gg, m_tree->getRoot(), 0, NULL);
+
     LOG(info) << "AssimpGGeo::convertStructure found surfaces "
               << " skin " << m_skin_surface 
               << " outborder " << m_outborder_surface 
@@ -480,7 +496,7 @@ void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth
 
 GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 {
-    // Associations node to extra information analogous to collada_to_chroma.py:visit
+    // Associates node to extra information analogous to collada_to_chroma.py:visit
     //
     // * outside/inside materials (parent/child assumption is expedient) 
     // * border surfaces, via pv pair names
@@ -489,10 +505,10 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     // Solid-centric naming 
     //
     // outer-surface 
-    //      corresponds to inwards going photons, from parent to self
+    //      relevant to inwards going photons, from parent to self
     //
     // inner-surface
-    //       corresponds to outwards going photons, from self to parent  
+    //      relevant to outwards going photons, from self to parent  
     // 
     //
     // Skinsurface are not always leaves 
@@ -536,7 +552,9 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
     GSkinSurface*   sks = gg->findSkinSurface(lv);          
-   
+
+
+  
     unsigned int nsurf = 0 ;
     if(sks) nsurf++ ;
     if(ibs) nsurf++ ;
@@ -549,32 +567,65 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GPropertyMap<float>* iextra = NULL ; 
     GPropertyMap<float>* oextra = NULL ; 
 
+    GOpticalSurface* isurf_optical = NULL  ; 
+    GOpticalSurface* osurf_optical = NULL ; 
+ 
     if(sks)
     {
-        m_skin_surface++ ; 
         osurf = sks ; 
+        osurf_optical = sks->getOpticalSurface(); 
+
+        if(m_skin_surface < 10)
+            LOG(info) << "AssimpGGeo::convertStructureVisit (SKIN)OSURF " 
+                      << std::setw(3) << m_skin_surface << " "
+                      << osurf->description() ;  
+
+        m_skin_surface++ ; 
     }
     else if(obs)
     {
-        m_outborder_surface++ ; 
         osurf = obs ; 
+        osurf_optical = obs->getOpticalSurface(); 
+
+        LOG(info) << "AssimpGGeo::convertStructureVisit OSURF " 
+                  << std::setw(3) << m_outborder_surface << " "
+                  << osurf->description() ;  
+
+        m_outborder_surface++ ; 
     }
     else if(ibs)
     {
-        m_inborder_surface++ ; 
         isurf = ibs ; 
+        isurf_optical = ibs->getOpticalSurface(); 
+
+        LOG(info) << "AssimpGGeo::convertStructureVisit ISURF " 
+                  << std::setw(3) << m_inborder_surface << " "
+                  << isurf->description() ;  
+
+        m_inborder_surface++ ; 
     }
     else
     {
         m_no_surface++ ;
     }
 
+    if(isurf && osurf) LOG(info) << "AssimpGGeo::convertStructureVisit substance with both ISURF and OSURF defined " ;
+    assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
-    GSubstanceLib* lib = gg->getSubstanceLib();
+    GSubstanceLib* lib = gg->getSubstanceLib();  // TODO: rename to GBoundaryLib
+    
     GSubstance* substance = lib->get(mt, mt_p, isurf, osurf, iextra, oextra ); 
-    //substance->Summary("subst");
+
+    // pulling new substances into existance or accessing pre-existing ones 
+    //
+    // NB tacking info on the substance is problematic as is arranged to 
+    // to minimize instances, so need to diddle with digests 
+    //
+    // no such problems with GSolid
 
     solid->setSubstance(substance);  
+    solid->setInnerOpticalSurface(isurf_optical);
+    solid->setOuterOpticalSurface(osurf_optical);
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);

@@ -76,8 +76,13 @@ const char* GSubstanceLib::keymap =
 ;
 
 //  ggeo-meta 102 103 104 105 106 107 
-
-// hmm how to convey specular/diffuse
+//
+//  need to branch REFLECTIVITY depending on *finish* property from GOpticalSurface
+//
+//     reflect_specular   finish = 0 (polished)
+//     reflect_diffuse    finish = 3 (ground)
+//        
+//
 
 
 const char* GSubstanceLib::scintillators = "LiquidScintillator,GdDopedLS" ;
@@ -239,13 +244,15 @@ GSubstance* GSubstanceLib::get(
            GPropertyMap<float>* isurface, 
            GPropertyMap<float>* osurface,
            GPropertyMap<float>* iextra,
-           GPropertyMap<float>* oextra
+           GPropertyMap<float>* oextra,
+           GOpticalSurface* inner_optical,
+           GOpticalSurface* outer_optical
       )
 { 
     // this "get" pulls the GSubstance into existance and populates the registry
     //printf("GSubstanceLib::get imaterial %p omaterial %p isurface %p osurface %p \n", imaterial, omaterial, isurface, osurface );
 
-    GSubstance raw(imaterial, omaterial, isurface, osurface, iextra, oextra);
+    GSubstance raw(imaterial, omaterial, isurface, osurface, iextra, oextra, inner_optical, outer_optical);
     GSubstance* standard = createStandardSubstance(&raw) ;
     std::string key = standard->pdigest(0,4);  // standard digest based identity 
 

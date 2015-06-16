@@ -93,6 +93,51 @@ bool parse( T& result, std::string expr )
 }
 
 
+
+
+std::string regex_matched_element(const char* line)
+{
+    const char* ptn = "__([^_\\s]+)\\s*$" ;
+    boost::regex re(ptn);
+    boost::cmatch matches;
+
+    std::string result ; 
+    if (boost::regex_search(line, matches, re))
+    {
+        result = matches[1] ;
+    }
+    else
+    {
+        LOG(warning)<<"regex_matched_element failed to match " ;
+    }
+
+    LOG(info)<<"regex_matched_element [" << line << "] [" << result << "]" ; 
+
+    return result ;
+}
+
+/*
+std::string regex_matched_element_0(const char* line)
+{
+    const char* ptn = "__([^_]*)$" ;
+    boost::regex e(ptn);
+    std::string str(line);
+    boost::sregex_iterator mt(str.begin(), str.end(), e);
+    boost::sregex_iterator me;
+    unsigned int i=0 ;
+    while(mt != me)
+    {
+       LOG(info) << " : " << (*mt)[1] ;
+       mt++; 
+    } 
+    std::string ret ;
+    //if( results.size() > 0 ) ret = results[0] ;
+    return ret ;
+}
+*/
+
+
+
 std::string regex_extract_quoted(const char* line)
 {
     std::string str = line ;

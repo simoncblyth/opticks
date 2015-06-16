@@ -1,5 +1,6 @@
 #pragma once
 #include "GPropertyMap.hh"
+#include <string>
 
 class GOpticalSurface ;
 
@@ -10,6 +11,7 @@ class GSkinSurface : public GPropertyMap<float> {
       void Summary(const char* msg="GSkinSurface::Summary", unsigned int imod=1);
 
   public:
+      std::string description();
       GOpticalSurface* getOpticalSurface();
   private:
       void setOpticalSurface(GOpticalSurface* os);

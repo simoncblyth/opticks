@@ -231,7 +231,7 @@ GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname)
     for(unsigned int i=0 ; i < m_materials_raw.size() ; i++ )
     { 
         std::string sn = m_materials_raw[i]->getShortNameString();
-        //printf("GGeo::findMaterial %d %s \n", i, sn.c_str()); 
+        //printf("GGeo::findRawMaterial %d %s \n", i, sn.c_str()); 
         if(strcmp(sn.c_str(), shortname)==0)
         {
             mat = m_materials_raw[i] ; 

@@ -119,23 +119,33 @@ std::string GPropertyMap<T>::getShortNameString(const char* prefix)
     return getShortName(prefix); 
 }
 
-
 template <typename T>
 char* GPropertyMap<T>::getShortName(const char* prefix)
 {
+    //printf("GPropertyMap<T>::getShortName %s \n", prefix);
+
     char* name = strdup(m_name.c_str());
 
-    const char* ox = "0x" ;
+    bool has_prefix = strncmp( name, prefix, strlen(prefix)) == 0  ;
 
-    //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
-
-    char* c = name + strlen(name) - 9 ;
-
-    if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';
-
-    if(strncmp( name, prefix, strlen(prefix)) == 0 ) name += strlen(prefix) ;
-
+    if(has_prefix)
+    {
+        //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
+        const char* ox = "0x" ;
+        char* c = name + strlen(name) - 9 ;              
+        if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
+        name += strlen(prefix) ;
+    }
+    else
+    {
+        // when doesnt match the prefix, eg for surface names
+        //     __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib1Surface
+        // just provide chars after the last _
+        name = strrchr(name, '_') + 1  ;   
+    }
     return strdup(name) ;
+    // have to strdup as thats was the invokers are expecting
+    // TODO: just add m_shortname member to avoid gymnastics and fix all usages
 }
 
 
@@ -143,8 +153,9 @@ template <typename T>
 std::string GPropertyMap<T>::description()
 {
     std::stringstream ss ; 
-    ss << "GPropertyMap<T> " 
-       << " name : " << getName()
+    ss << "GPropertyMap<T>:: " 
+       //<< " name : " << getName()
+       << getShortNameString()
        << " index : " << getIndex()
        << " type : " << getType()
        << " keys : " << getKeysString() 

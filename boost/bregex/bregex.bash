@@ -136,6 +136,8 @@ bregex-test-(){ cat << EOT
 #incl "path.h"
 #incl "other_path.h"
 
+    __dd__Geometry__AdDetails__AdSurfacesAll__AdCableTraySurface 
+
 EOT
 }
 
