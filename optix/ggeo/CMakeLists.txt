@@ -44,6 +44,7 @@ add_library(${name} SHARED
                 GMaterial.cc
                 GSkinSurface.cc
                 GBorderSurface.cc
+                GOpticalSurface.cc
                 GSubstance.cc
                 GSubstanceLib.cc
                 GSubstanceLibMetadata.cc
@@ -73,6 +74,7 @@ GPropertyMap.hh
 GSolid.hh
 GSkinSurface.hh
 GBorderSurface.hh
+GOpticalSurface.hh
 GSubstance.hh
 GSubstanceLib.hh
 GSubstanceLibMetadata.hh

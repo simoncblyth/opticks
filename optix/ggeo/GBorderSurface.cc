@@ -1,11 +1,13 @@
 #include "GBorderSurface.hh"
+#include "GOpticalSurface.hh"
 #include "GPropertyMap.hh"
 
 #include "stdlib.h"
 #include "string.h"
 
-GBorderSurface::GBorderSurface(const char* name, unsigned int index) : 
+GBorderSurface::GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface ) : 
     GPropertyMap<float>(name, index, "bordersurface" ),
+    m_optical_surface(new GOpticalSurface(optical_surface)),
     m_bordersurface_pv1(NULL),
     m_bordersurface_pv2(NULL)
 {
@@ -15,6 +17,8 @@ GBorderSurface::~GBorderSurface()
 {
     free(m_bordersurface_pv1);
     free(m_bordersurface_pv2);
+
+    delete m_optical_surface ; 
 }
 
 void GBorderSurface::setBorderSurface(const char* pv1, const char* pv2)
@@ -76,6 +80,8 @@ void GBorderSurface::Summary(const char* msg, unsigned int imod)
         printf("%s INCOMPLETE %s \n", msg, getName() );
     }
     GPropertyMap<float>::Summary(msg, imod);
+
+    if(m_optical_surface) m_optical_surface->Summary(msg, imod);
 }
 
 

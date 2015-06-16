@@ -6,7 +6,8 @@
 #include "assert.h"
 
 template <typename T>
-GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other) : 
+GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other) 
+      : 
       m_name(other ? other->getName() : "?"),
       m_index(other ? other->getIndex() : UINT_MAX ),
       m_type(other ? other->getType() : "" ),
@@ -138,6 +139,19 @@ char* GPropertyMap<T>::getShortName(const char* prefix)
 }
 
 
+template <typename T>
+std::string GPropertyMap<T>::description()
+{
+    std::stringstream ss ; 
+    ss << "GPropertyMap<T> " 
+       << " name : " << getName()
+       << " index : " << getIndex()
+       << " type : " << getType()
+       << " keys : " << getKeysString() 
+       ;
+    return ss.str();
+}
+  
 
 template <typename T>
 unsigned int GPropertyMap<T>::getIndex()

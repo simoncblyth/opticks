@@ -15,6 +15,7 @@
 #include "GMaterial.hh"
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
+#include "GOpticalSurface.hh"
 #include "GSolid.hh"
 #include "GSubstance.hh"
 #include "GSubstanceLib.hh"
@@ -247,10 +248,26 @@ void AssimpGGeo::setValuesScale(float values_scale)
 
 const char* AssimpGGeo::g4dae_bordersurface_physvolume1 = "g4dae_bordersurface_physvolume1" ;
 const char* AssimpGGeo::g4dae_bordersurface_physvolume2 = "g4dae_bordersurface_physvolume2" ;
-const char* AssimpGGeo::g4dae_skinsurface_volume = "g4dae_skinsurface_volume" ;
+const char* AssimpGGeo::g4dae_skinsurface_volume        = "g4dae_skinsurface_volume" ;
+
+const char* AssimpGGeo::g4dae_opticalsurface_name       = "g4dae_opticalsurface_name" ;
+const char* AssimpGGeo::g4dae_opticalsurface_type       = "g4dae_opticalsurface_type" ;
+const char* AssimpGGeo::g4dae_opticalsurface_model      = "g4dae_opticalsurface_model" ;
+const char* AssimpGGeo::g4dae_opticalsurface_finish     = "g4dae_opticalsurface_finish" ;
+const char* AssimpGGeo::g4dae_opticalsurface_value      = "g4dae_opticalsurface_value" ;
+
+
+
+
+
 
 void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* query, bool reverse)
 {
+    LOG(info)<<"AssimpGGeo::convertMaterials " 
+             << " query " << query 
+             << " mNumMaterials " << scene->mNumMaterials  
+             ;
+
     GDomain<float>* standard_domain = gg->getSubstanceLib()->getStandardDomain(); 
 
     for(unsigned int i = 0; i < scene->mNumMaterials; i++)
@@ -263,9 +280,22 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if(strncmp(query, name, strlen(query))!=0) continue ;  
 
+        LOG(info) << "AssimpGGeo::convertMaterials " << i << " " << name ;
+
         const char* bspv1 = getStringProperty(mat, g4dae_bordersurface_physvolume1 );
         const char* bspv2 = getStringProperty(mat, g4dae_bordersurface_physvolume2 );
+
         const char* sslv  = getStringProperty(mat, g4dae_skinsurface_volume );
+
+        const char* osnam = getStringProperty(mat, g4dae_opticalsurface_name );
+        const char* ostyp = getStringProperty(mat, g4dae_opticalsurface_type );
+        const char* osmod = getStringProperty(mat, g4dae_opticalsurface_model );
+        const char* osfin = getStringProperty(mat, g4dae_opticalsurface_finish );
+        const char* osval = getStringProperty(mat, g4dae_opticalsurface_value );
+
+        GOpticalSurface* os = osnam && ostyp && osmod && osfin && osval ? new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) : NULL ; 
+        if(os) os->Summary();
+
 
         // assimp "materials" are used to hold skinsurface and bordersurface properties, 
         // as well as material properties
@@ -273,7 +303,8 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         if( sslv )
         {
             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GSkinSurface) name %s sslv %s  \n", i, name, sslv);
-            GSkinSurface*  gss = new GSkinSurface(name, i);
+            assert(os);
+            GSkinSurface*  gss = new GSkinSurface(name, i, os);
             gss->setStandardDomain(standard_domain);
             gss->setSkinSurface(sslv);
             addProperties(gss, mat, reverse);
@@ -281,7 +312,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             {
                 // without standard domain applied
-                GSkinSurface*  gss_raw = new GSkinSurface(name, i);
+                GSkinSurface*  gss_raw = new GSkinSurface(name, i, os);
                 gss_raw->setSkinSurface(sslv);
                 addProperties(gss_raw, mat, reverse);
                 gg->addRaw(gss);
@@ -290,8 +321,9 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         } 
         else if (bspv1 && bspv2 )
         {
+            assert(os);
             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GBorderSurface) name %s \n    bspv1 %s\n    bspv2 %s \n", i, name, bspv1, bspv2 );
-            GBorderSurface* gbs = new GBorderSurface(name, i);
+            GBorderSurface* gbs = new GBorderSurface(name, i, os);
             gbs->setStandardDomain(standard_domain);
             gbs->setBorderSurface(bspv1, bspv2);
             addProperties(gbs, mat, reverse);
@@ -299,7 +331,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             {
                 // without standard domain applied
-                GBorderSurface* gbs_raw = new GBorderSurface(name, i);
+                GBorderSurface* gbs_raw = new GBorderSurface(name, i, os);
                 gbs_raw->setBorderSurface(bspv1, bspv2);
                 addProperties(gbs_raw, mat, reverse);
                 gg->addRaw(gbs_raw);
@@ -325,6 +357,12 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         free((void*)bspv1);
         free((void*)bspv2);
         free((void*)sslv);
+
+        free((void*)osnam);
+        free((void*)ostyp);
+        free((void*)osfin);
+        free((void*)osmod);
+        free((void*)osval);
     }
 }
 

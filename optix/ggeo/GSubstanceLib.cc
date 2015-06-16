@@ -51,7 +51,8 @@ const char* GSubstanceLib::reflect_specular  = "reflect_specular" ;
 const char* GSubstanceLib::reflect_diffuse   = "reflect_diffuse" ;
 
 // extra
-const char* GSubstanceLib::reemission_cdf    = "reemission_cdf" ;
+const char* GSubstanceLib::reemission_cdf    = "reemission_cdf" ; // NOT USED : AS NEEDED MORE BINS FOR inverted CDF SO USED SEPARATE reemission_buffer
+const char* GSubstanceLib::extra_x           = "extra_x" ;
 const char* GSubstanceLib::extra_y           = "extra_y" ;
 const char* GSubstanceLib::extra_z           = "extra_z" ;
 const char* GSubstanceLib::extra_w           = "extra_w" ;
@@ -275,9 +276,9 @@ GSubstance* GSubstanceLib::createStandardSubstance(GSubstance* substance)
     GPropertyMap<float>* iext = substance->getInnerExtra();
     GPropertyMap<float>* oext = substance->getOuterExtra();
 
-    // snag extra props from corresponding materials pmaps
-    if(iext == NULL) iext = imat ;
-    if(oext == NULL) oext = omat ;
+    // snag extra props from corresponding materials pmaps : HUH thats unhealthy
+    // if(iext == NULL) iext = imat ;
+    // if(oext == NULL) oext = omat ;
 
     GPropertyMap<float>* s_imat = new GPropertyMap<float>(imat);
     GPropertyMap<float>* s_omat = new GPropertyMap<float>(omat);
@@ -341,7 +342,8 @@ void GSubstanceLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( reflect_specular,      SURFACE_UNSET );
     defaults->addConstantProperty( reflect_diffuse ,      SURFACE_UNSET );
 
-    defaults->addConstantProperty( reemission_cdf  ,      EXTRA_UNSET );
+    //defaults->addConstantProperty( reemission_cdf  ,      EXTRA_UNSET );
+    defaults->addConstantProperty( extra_x         ,      EXTRA_UNSET );
     defaults->addConstantProperty( extra_y         ,      EXTRA_UNSET );
     defaults->addConstantProperty( extra_z         ,      EXTRA_UNSET );
     defaults->addConstantProperty( extra_w         ,      EXTRA_UNSET );
@@ -390,6 +392,13 @@ GProperty<float>* GSubstanceLib::constructInvertedReemissionCDF(GPropertyMap<flo
 
     P* slow = getProperty(pmap, slow_component);
     P* fast = getProperty(pmap, fast_component);
+
+    if( slow == NULL || fast == NULL)
+    {
+        LOG(warning) << "GSubstanceLib::constructInvertedReemissionCDF failed to find slow/fast for purported scintillator pmap: " << pmap->description() ;
+        return NULL ; 
+    }
+
     float mxdiff = GProperty<float>::maxdiff(slow, fast);
     assert(mxdiff < 1e-6 );
 
@@ -430,6 +439,14 @@ GProperty<float>* GSubstanceLib::constructReemissionCDF(GPropertyMap<float>* pma
     // LiquidScintillator,GdDopedLS
     GProperty<float>* slow = getProperty(pmap, slow_component);
     GProperty<float>* fast = getProperty(pmap, fast_component);
+
+    if(slow == NULL || fast == NULL )
+    {
+        LOG(warning)<<"GSubstanceLib::constructReemissionCDF failed to find slow/fast for pmap: " << pmap->description() ;
+        return getDefaultProperty( reemission_cdf ) ;
+    } 
+
+
     float mxdiff = GProperty<float>::maxdiff(slow, fast);
     //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
     assert(mxdiff < 1e-6 );
@@ -443,7 +460,8 @@ GProperty<float>* GSubstanceLib::constructReemissionCDF(GPropertyMap<float>* pma
 
 void GSubstanceLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
 {
-    pstd->addProperty(reemission_cdf   , constructReemissionCDF( pmap )              , prefix);
+    //pstd->addProperty(reemission_cdf   , constructReemissionCDF( pmap )              , prefix);
+    pstd->addProperty(extra_x          , getPropertyOrDefault( pmap, extra_x )       , prefix);
     pstd->addProperty(extra_y          , getPropertyOrDefault( pmap, extra_y )       , prefix);
     pstd->addProperty(extra_z          , getPropertyOrDefault( pmap, extra_z )       , prefix);
     pstd->addProperty(extra_w          , getPropertyOrDefault( pmap, extra_w )       , prefix);
@@ -475,7 +493,11 @@ GProperty<float>* GSubstanceLib::getProperty(GPropertyMap<float>* pmap, const ch
 
     GProperty<float>* prop = pmap->getProperty(lkey) ;
 
-    assert(prop);
+    //assert(prop);
+    if(!prop)
+    {
+        LOG(warning) << "GSubstanceLib::getProperty failed to find property " << dkey << "/" << lkey ;
+    }
 
     return prop ;  
 }
@@ -583,16 +605,26 @@ GBuffer* GSubstanceLib::createReemissionBuffer(GPropertyMap<float>* scint)
     // TODO: reposition the .npy inside idpath
     // for comparison only
     GProperty<float>* cdf = constructReemissionCDF(scint);
-    cdf->save("/tmp/reemissionCDF.npy");
+    if(cdf)
+    {
+        cdf->save("/tmp/reemissionCDF.npy");
+    }
+
 
     GProperty<float>* icdf = constructInvertedReemissionCDF(scint);
-    icdf->Summary("GSubstanceLib::createReemissionBuffer icdf ", 256);
-
+    if(icdf == NULL)
     {
-         icdf->save("/tmp/invertedReemissionCDF.npy");
-         GAry<float>* insitu = icdf->lookupCDF(1e6);
-         insitu->Summary("icdf->lookupCDF(1e6)");
-         insitu->save("/tmp/insitu.npy");
+        LOG(warning)<<"GSubstanceLib::createReemissionBuffer FAILED as no icdf from constructInvertedReemissionCDF for scint " << scint->description() ;
+        return NULL ; 
+    }
+
+     
+    icdf->Summary("GSubstanceLib::createReemissionBuffer icdf ", 256);
+    {
+        icdf->save("/tmp/invertedReemissionCDF.npy");
+        GAry<float>* insitu = icdf->lookupCDF(1e6);
+        insitu->Summary("icdf->lookupCDF(1e6)");
+        insitu->save("/tmp/insitu.npy");
     }    
 
     unsigned int numFloat = icdf->getLength();

@@ -31,6 +31,11 @@ public:
     static const char* g4dae_bordersurface_physvolume1 ; 
     static const char* g4dae_bordersurface_physvolume2 ; 
     static const char* g4dae_skinsurface_volume ; 
+    static const char* g4dae_opticalsurface_name ;
+    static const char* g4dae_opticalsurface_type ;
+    static const char* g4dae_opticalsurface_model ;
+    static const char* g4dae_opticalsurface_finish ;
+    static const char* g4dae_opticalsurface_value ;
 
 protected:
     void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl, bool reverse );

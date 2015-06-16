@@ -43,6 +43,7 @@ class GSubstanceLib {
   public:
      // extra
     static const char* reemission_cdf ; 
+    static const char* extra_x ; 
     static const char* extra_y ; 
     static const char* extra_z ; 
     static const char* extra_w ; 

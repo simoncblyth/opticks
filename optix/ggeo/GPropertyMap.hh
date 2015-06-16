@@ -26,6 +26,7 @@ class GPropertyMap {
       std::string getPDigestString(int ifr, int ito);
       std::string getShortNameString(const char* prefix="__dd__Materials__");
       std::string getKeysString(); 
+      std::string description();
 
   public:
       const char* getName();    // names like __dd__Materials__Nylon0xc3aa360 or __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
