@@ -672,6 +672,36 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
     //        name   : skipped as not needed on GPU, can be looked up via index for GUI selections 
     //
 
+/*
+
+In [1]: a = np.load("/tmp/optical_buffer_debug.npy")
+
+In [10]: a.reshape((-1,6,4))
+Out[10]: 
+array([[[ 76,   0,   0,   0],
+        [ 76,   0,   0,   0],
+        [  0,   0,   0,   0],
+        [  0,   0,   0,   0],
+        [  0,   0,   0,   0],
+        [  0,   0,   0,   0]],
+       ...
+       [[ 67,   0,   0,   0],
+        [ 57,   0,   0,   0],
+        [  0,   0,   0,   0],
+        [  9,   0,   3, 100],
+        [  0,   0,   0,   0],
+        [  0,   0,   0,   0]],
+
+       [[ 42,   0,   0,   0],
+        [ 74,   0,   0,   0],
+        [  0,   0,   0,   0],
+        [  0,   0,   0,   0],
+        [  0,   0,   0,   0],
+        [  0,   0,   0,   0]]], dtype=uint32)
+
+*/
+
+
 
     assert(m_wavelength_buffer == NULL && m_optical_buffer == NULL && "not expecting preexisting wavelength/optical buffers");
 
@@ -712,8 +742,8 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
         const char* kfmt = "lib.boundary.%d.%s.%s" ;
         m_meta->addDigest(kfmt, isub, "boundary", (char*)dig ); 
 
-        std::string ishortname = boundary->getInnerMaterial()->getShortNameString("__dd__Materials__") ; 
-        std::string oshortname = boundary->getOuterMaterial()->getShortNameString("__dd__Materials__") ; 
+        std::string ishortname = boundary->getInnerMaterial()->getShortName() ; 
+        std::string oshortname = boundary->getOuterMaterial()->getShortName() ; 
         {
             m_meta->add(kfmt, isub, "imat", boundary->getInnerMaterial() );
             m_meta->add(kfmt, isub, "omat", boundary->getOuterMaterial() );
@@ -734,25 +764,30 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
                 GOpticalSurface* os = psrc->getOpticalSurface();
                 assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
 
-                optical_data[opticalOffset + optical_index]  =  psrc->getIndex() ;  // these indices are currently original aiScene material indices 
-                optical_data[opticalOffset + optical_type]   =  boost::lexical_cast<unsigned int>(os->getType()); 
-                optical_data[opticalOffset + optical_finish] =  boost::lexical_cast<unsigned int>(os->getFinish()); 
-                optical_data[opticalOffset + optical_value]  =  boost::lexical_cast<float>(os->getValue())*100.f ;   // express as integer percentage 
+                optical_data[opticalOffset + p*4 + optical_index]  =  psrc->getIndex() ;  // these indices are currently original aiScene material indices 
+                optical_data[opticalOffset + p*4 + optical_type]   =  boost::lexical_cast<unsigned int>(os->getType()); 
+                optical_data[opticalOffset + p*4 + optical_finish] =  boost::lexical_cast<unsigned int>(os->getFinish()); 
+                optical_data[opticalOffset + p*4 + optical_value]  =  boost::lexical_cast<float>(os->getValue())*100.f ;   // express as integer percentage 
             } 
             else if(psrc->isMaterial())
             {
-                optical_data[opticalOffset + optical_index]  = psrc->getIndex() ;  // these indices are currently original aiScene material indices 
-                optical_data[opticalOffset + optical_type]   =  0 ;
-                optical_data[opticalOffset + optical_finish] =  0 ;
-                optical_data[opticalOffset + optical_value]  =  0 ;
+                optical_data[opticalOffset + p*4 + optical_index]  = psrc->getIndex() ;  // these indices are currently original aiScene material indices 
+                optical_data[opticalOffset + p*4 + optical_type]   =  0 ;
+                optical_data[opticalOffset + p*4 + optical_finish] =  0 ;
+                optical_data[opticalOffset + p*4 + optical_value]  =  0 ;
             }
             else
             {
-                optical_data[opticalOffset + optical_index]  =  0 ;
-                optical_data[opticalOffset + optical_type]   =  0 ;
-                optical_data[opticalOffset + optical_finish] =  0 ;
-                optical_data[opticalOffset + optical_value]  =  0 ;
+                optical_data[opticalOffset + p*4 + optical_index]  =  0 ;
+                optical_data[opticalOffset + p*4 + optical_type]   =  0 ;
+                optical_data[opticalOffset + p*4 + optical_finish] =  0 ;
+                optical_data[opticalOffset + p*4 + optical_value]  =  0 ;
             }
+
+
+            //printf("optical_data p %d : ", p); 
+            //for(unsigned int i=0 ; i < 4 ; i++) printf(" %4d ", optical_data[opticalOffset + p*4 + i] );
+            //printf("\n"); 
 
 
             GProperty<float> *p0,*p1,*p2,*p3 ; // 4 properties of the set 
@@ -777,10 +812,10 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
             props.push_back(p2);
             props.push_back(p3);
             std::string pdig = digestString(props);
-            {
-               std::string ckdig = psrc->getPDigestString(0,4);
-               assert(strcmp(pdig.c_str(), ckdig.c_str())==0);
-            }
+          
+            // no-longer-matches as optical surface info now in digest 
+            //std::string ckdig = psrc->getPDigestString(0,4);
+            //assert(strcmp(pdig.c_str(), ckdig.c_str())==0); 
 
             switch(p)
             {
@@ -809,6 +844,9 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
     }
 
     m_meta->createMaterialMap();
+
+    m_optical_buffer->save<unsigned int>("/tmp/optical_buffer_debug.npy");
+
 
 }
 
@@ -1019,6 +1057,44 @@ void GBoundaryLib::dumpWavelengthBuffer(int wline)
 {
     dumpWavelengthBuffer(wline, getWavelengthBuffer(), getMetadata(), getNumBoundary(), getStandardDomainLength());  
 }
+void GBoundaryLib::dumpOpticalBuffer(int wline)
+{
+    dumpOpticalBuffer(wline, getOpticalBuffer(), getMetadata(), getNumBoundary() );  
+}
+
+void GBoundaryLib::dumpOpticalBuffer(int wline, GBuffer* buffer, GBoundaryLibMetadata* meta, unsigned int numBoundary)
+{
+    if(!buffer) return ;
+    unsigned int* data = (unsigned int*)buffer->getPointer();
+    unsigned int numElementsTotal = buffer->getNumElementsTotal();
+    assert(numElementsTotal == numBoundary*NUM_QUAD*4);
+
+    printf("GBoundaryLib::dumpOpticalBuffer wline %d numBoundary %u numQuad %u \n", wline, numBoundary, NUM_QUAD );
+
+    for(unsigned int isub=0 ; isub < numBoundary ; ++isub )
+    {
+        unsigned int subOffset = NUM_QUAD*4*isub ;
+        for(unsigned int p=0 ; p < NUM_QUAD ; ++p ) 
+        {
+             if(p==0) printf("\n");
+             std::string pname = meta ? meta->getBoundaryQtyByIndex(isub, p, "name") : "" ; 
+             unsigned int line = getLine(isub, p) ;
+
+             bool wselect = ( wline == -1 ) ||  (wline == line  ) ;
+             if(wselect)
+             {
+                 printf(" %3u | %3u/%3u | ", line,isub, p );
+                 unsigned int offset = subOffset + ( p*4 ) ;
+                 for(unsigned int l=0 ; l < 4 ; ++l )
+                 {
+                     printf(" %5d ", data[offset+l] ); 
+                 }
+                 printf("   %s \n", pname.c_str() );
+             }
+        }
+    }
+}
+
 
 void GBoundaryLib::dumpWavelengthBuffer(int wline, GBuffer* buffer, GBoundaryLibMetadata* meta, unsigned int numBoundary, unsigned int domainLength)
 {

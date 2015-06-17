@@ -1,5 +1,6 @@
 #include "GOpticalSurface.hh"
 
+#include "md5digest.hh"
 #include "stdlib.h"
 #include "string.h"
 #include "stdio.h"
@@ -47,6 +48,17 @@ GOpticalSurface::~GOpticalSurface()
     free(m_value);
     free(m_shortname);
 }
+
+char* GOpticalSurface::digest()
+{
+    MD5Digest dig ;
+    dig.update( m_type,   strlen(m_type) );
+    dig.update( m_model,  strlen(m_model) );
+    dig.update( m_finish, strlen(m_finish) );
+    dig.update( m_value,  strlen(m_value) );
+    return dig.finalize();
+}
+
 
 void GOpticalSurface::Summary(const char* msg, unsigned int imod)
 {

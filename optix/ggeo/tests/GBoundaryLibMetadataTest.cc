@@ -14,17 +14,21 @@ int main(int argc, char** argv)
     }
 
     const char* path = argv[1];
+    int wline = argc > 2 ? atoi(argv[2]) : -2 ;
+ 
     GBoundaryLibMetadata* meta = GBoundaryLibMetadata::load(path);
     meta->Summary(path);
     meta->dumpNames();
 
 
-    char wpath[256];
-    snprintf(wpath, 256,"%s/wavelength.npy", path); 
-    GBuffer* buffer = GBuffer::load<float>(wpath);
-    buffer->Summary("wavelength buffer");
+    GBuffer* wbuf = GBuffer::load<float>(path, "wavelength.npy");
+    wbuf->Summary("wavelength buffer");
 
-    unsigned int numElementsTotal = buffer->getNumElementsTotal();
+    GBuffer* obuf = GBuffer::load<unsigned int>(path, "optical.npy");
+    obuf->Summary("optical buffer");
+
+
+    unsigned int numElementsTotal = wbuf->getNumElementsTotal();
     unsigned int numProp = GBoundaryLib::NUM_QUAD*4  ; 
     unsigned int domainLength = GBoundaryLib::DOMAIN_LENGTH ;
     unsigned int numBoundary = numElementsTotal/(numProp*domainLength);
@@ -32,8 +36,12 @@ int main(int argc, char** argv)
     GDomain<float>* domain = GBoundaryLib::getDefaultDomain();
     assert(domain->getLength() == domainLength);
 
-    //int wline = -1; 
-    //GBoundaryLib::dumpWavelengthBuffer(wline, buffer, meta, numBoundary, domainLength );
+    if(wline > -2)
+    {
+         GBoundaryLib::dumpWavelengthBuffer(wline, wbuf, meta, numBoundary, domainLength );
+         GBoundaryLib::dumpOpticalBuffer(   wline, obuf, meta, numBoundary );
+    }
+
 
     return 0 ;
 }

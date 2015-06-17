@@ -10,6 +10,8 @@ class GOpticalSurface {
       std::string description();
       void Summary(const char* msg="GOpticalSurface::Summary", unsigned int imod=1);
 
+      char* digest();
+
   private:
       void findShortName(char marker='_');
 

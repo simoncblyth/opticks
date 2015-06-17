@@ -16,14 +16,11 @@ int main(int argc, char** argv)
     //lib->Summary("GBoundaryLib::Summary");
 
 
-    for(unsigned int isub=0 ; isub < lib->getNumBoundary() ; isub++)
+    for(unsigned int ib=0 ; ib < lib->getNumBoundary() ; ib++)
     {
-         GBoundary* substance = lib->getBoundary(isub);
-         substance->Summary("sub");
+         GBoundary* boundary = lib->getBoundary(ib);
+         boundary->Summary("boundary");
     }
-
-
-
 
 
 

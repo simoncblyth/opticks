@@ -63,9 +63,9 @@ void GBoundaryLibMetadata::add(const char* kfmt, unsigned int isub, const char* 
 
     if(strcmp(cat, "imat") == 0 || strcmp(cat, "omat") == 0)
     {
-        char* shortname = pmap->getShortName("__dd__Materials__") ; 
+        const char* shortname = pmap->getShortName() ; 
         add(kfmt, isub, cat, "shortname", shortname); 
-        free(shortname);
+        //free(shortname);
     }
 }
 void GBoundaryLibMetadata::addMaterial(unsigned int isub, const char* cat, const char* shortname, const char* digest )

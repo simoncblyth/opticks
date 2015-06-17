@@ -934,7 +934,7 @@ ggeo-meta-dir(){
 
 ggeo-libtest(){
    local bin=$(ggeo-bin GBoundaryLibTest)
-   local cmd="$bin $(ggeo-meta-dir) $*"
+   local cmd="$LLDB $bin $(ggeo-meta-dir) $*"
    echo $cmd
    eval $cmd
 }
@@ -942,7 +942,7 @@ ggeo-libtest(){
 
 ggeo-metatest(){
    local bin=$(ggeo-bin GBoundaryLibMetadataTest)
-   local cmd="$bin $(ggeo-meta-dir) $*"
+   local cmd="$LLDB $bin $(ggeo-meta-dir) $*"
    echo $cmd
    eval $cmd
 }

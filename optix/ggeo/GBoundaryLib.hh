@@ -157,7 +157,11 @@ class GBoundaryLib {
   public:
       void          dumpWavelengthBuffer(int wline=-1);
       static void   dumpWavelengthBuffer(int wline, GBuffer* buffer, GBoundaryLibMetadata* metadata, unsigned int numBoundary, unsigned int domainLength);
+  public:
+      void          dumpOpticalBuffer(int wline=-1);
+      static void   dumpOpticalBuffer(   int wline, GBuffer* buffer, GBoundaryLibMetadata* metadata, unsigned int numBoundary);
 
+  public:
       GPropertyMap<float>* createStandardProperties(const char* name, GBoundary* boundary);
       void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);

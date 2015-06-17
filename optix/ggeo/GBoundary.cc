@@ -162,36 +162,22 @@ void GBoundary::Summary(const char* msg, unsigned int nline)
    assert(m_imaterial);
 
    char* dig = pdigest(0,4);
-   char* imat = m_imaterial->getShortName("__dd__Materials__");
-   char* omat = m_omaterial->getShortName("__dd__Materials__") ;
-   char* isur = m_isurface ? m_isurface->getShortName("__dd__Geometry__") : (char*)"" ; 
-   char* osur = m_osurface ? m_osurface->getShortName("__dd__Geometry__") : (char*)"" ; 
-
-   /*
-   std::string imatk = m_imaterial ? m_imaterial->getKeysString() : "" ;
-   std::string omatk = m_omaterial ? m_omaterial->getKeysString() : ""  ;
-   std::string isurk = m_isurface  ? m_isurface->getKeysString() : "" ; 
-   std::string osurk = m_osurface  ? m_osurface->getKeysString() : "" ; 
-   */
+   const char* imat = m_imaterial->getShortName();
+   const char* omat = m_omaterial->getShortName() ;
+   const char* isur = m_isurface ? m_isurface->getShortName() : "" ; 
+   const char* osur = m_osurface ? m_osurface->getShortName() : "" ; 
 
    char bmat[512];
    snprintf(bmat, 512,"%s/%s/%s/%s", imat, omat, isur, osur );  
 
    printf("%s : index %2u %s %s \n", msg, m_index, dig, bmat);  
 
-
-   /*
-   if(m_imaterial) m_imaterial->Summary("imat", nline);
-   if(m_omaterial) m_omaterial->Summary("omat", nline);
-   if(m_isurface)   m_isurface->Summary("isur", nline);
-   if(m_osurface)   m_osurface->Summary("osur", nline);
-   */
- 
    free(dig);
-   free(imat);
-   free(omat);
-   free(isur);
-   free(osur);
+
+   //free(imat);
+   //free(omat);
+   //free(isur);
+   //free(osur);
 }
 
 

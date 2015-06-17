@@ -1,5 +1,6 @@
 // porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
 
+
 #include <curand_kernel.h>
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
@@ -16,7 +17,11 @@ using namespace optix;
 #define GNUMQUAD 6
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
+
+
 #include "state.h"
+
+
 #include "rayleigh.h"
 #include "propagate.h"
 
@@ -118,16 +123,17 @@ RT_PROGRAM void generate()
         p.flags.i.x = prd.boundary ;  
 
         fill_state(s, prd.boundary, p.wavelength );
+
+
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
 
-
         RSAVE(p, slot) ;
 
-#ifdef DEBUG
+//#ifdef DEBUG
         if(photon_id == 0) dump_state(s);
-#endif
+//#endif
 
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ; 

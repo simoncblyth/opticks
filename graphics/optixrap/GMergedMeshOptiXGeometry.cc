@@ -149,6 +149,13 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
     m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
 
+    GBuffer* obuf = mergedmesh->getOpticalBuffer();
+    unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
+    assert(numBoundaries == 56);
+    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
+    memcpy( optical_buffer->map(), obuf->getPointer(), obuf->getNumBytes() );
+    optical_buffer->unmap();
+    m_context["optical_buffer"]->setBuffer(optical_buffer);
 
     GBuffer* reemissionBuffer = mergedmesh->getReemissionBuffer();
     float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
@@ -166,11 +173,8 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
 }
 
 
-optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* drawable)
+optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* mergedmesh)
 {
-    // aiming to replace convertGeometry and usage with GMergedMesh
-    // where the vertices etc.. have been transformed and combined already  
-
     optix::Geometry geometry = m_context->createGeometry();
 
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
@@ -178,13 +182,14 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* drawable)
     geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu", "mesh_bounds"));
 
     // contrast with oglrap-/Renderer::gl_upload_buffers
-    GBuffer* vbuf = drawable->getVerticesBuffer();
-    GBuffer* ibuf = drawable->getIndicesBuffer();
-    GBuffer* dbuf = drawable->getNodesBuffer();
-    GBuffer* bbuf = drawable->getBoundariesBuffer();
+    GBuffer* vbuf = mergedmesh->getVerticesBuffer();
+    GBuffer* ibuf = mergedmesh->getIndicesBuffer();
+    GBuffer* dbuf = mergedmesh->getNodesBuffer();
+    GBuffer* bbuf = mergedmesh->getBoundariesBuffer();
 
     unsigned int numVertices = vbuf->getNumItems() ;
     unsigned int numFaces = ibuf->getNumItems()/3;    
+
     // items are the indices so divide by 3 to get faces
 
     LOG(info) << "GMergedMeshOptiXGeometry::convertDrawable numVertices " << numVertices << " numFaces " << numFaces ;
@@ -214,6 +219,7 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* drawable)
         nodeBuffer->unmap();
         geometry["nodeBuffer"]->setBuffer(nodeBuffer);
     }
+
     {
         assert(sizeof(unsigned int)*numFaces == bbuf->getNumBytes() && bbuf->getNumElements() == 1);
         optix::Buffer boundaryBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
@@ -221,7 +227,6 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* drawable)
         boundaryBuffer->unmap();
         geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
     }
-
 
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
     geometry["tangentBuffer"]->setBuffer(emptyBuffer);

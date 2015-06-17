@@ -13,6 +13,7 @@ class GOpticalSurface ;
 template <class T>
 class GPropertyMap {
 
+  static const char* NOT_DEFINED ;
   typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
   public:
       GPropertyMap(GPropertyMap* other);
@@ -24,11 +25,14 @@ class GPropertyMap {
      // caller should free the char* returned after dumping 
       //char* digest();
       char* pdigest(int ifr, int ito); 
-      char* getShortName(const char* prefix); 
+      const char* getShortName(); 
+      std::string getShortNameString();
       std::string getPDigestString(int ifr, int ito);
-      std::string getShortNameString(const char* prefix="__dd__Materials__");
       std::string getKeysString(); 
       std::string description();
+
+  private:
+      void findShortName(const char* prefix="__dd__Materials__");
 
   public:
       const char* getName();    // names like __dd__Materials__Nylon0xc3aa360 or __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
@@ -64,8 +68,10 @@ class GPropertyMap {
 
   private:
       std::string m_name ;
-      std::string m_shortname ; 
+      const char* m_shortname ; 
+      //std::string m_shortname ; 
       std::string m_type ;
+
       unsigned int m_index ;
 
       GPropertyMap_t m_prop ; 

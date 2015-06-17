@@ -6,27 +6,39 @@
 #include <sstream>
 #include "assert.h"
 
+
+template <typename T>
+const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
+
+
+
+
 template <typename T>
 GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other) 
       : 
-      m_name(other ? other->getName() : "?"),
+      m_name(other ? other->getName() : NOT_DEFINED ),
+      m_shortname(NULL),
       m_index(other ? other->getIndex() : UINT_MAX ),
       m_type(other ? other->getType() : "" ),
       m_standard_domain(NULL),
       m_optical_surface(other ? other->getOpticalSurface() : NULL )
 {
+
+    findShortName();
 }
 
 
 template <typename T>
 GPropertyMap<T>::GPropertyMap(const char* name)
     : 
+    m_shortname(NULL),
     m_standard_domain(NULL),
     m_optical_surface(NULL)
 {
    m_name = name ; 
    m_index = UINT_MAX ;
    m_type = "" ;
+   findShortName();
 }
 
 template <typename T>
@@ -39,6 +51,7 @@ GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* 
    // set the std::string
    m_name = name ; 
    m_type = type ; 
+   findShortName();
 }
 
 template <typename T>
@@ -106,6 +119,14 @@ char* GPropertyMap<T>::pdigest(int ifr, int ito)
         free(pdig);
         
     }
+
+    if(m_optical_surface)
+    {
+        char* sdig = m_optical_surface->digest();
+        dig.update(sdig, strlen(sdig));
+        free(sdig);
+    }
+
     return dig.finalize();
 }
 
@@ -123,38 +144,45 @@ const char* GPropertyMap<T>::getName()
 }
 
 template <typename T>
-std::string GPropertyMap<T>::getShortNameString(const char* prefix)
+std::string GPropertyMap<T>::getShortNameString()
 {    
-    return getShortName(prefix); 
+    return getShortName(); 
+}
+template <typename T>
+const char* GPropertyMap<T>::getShortName()
+{
+    return m_shortname ; 
 }
 
 template <typename T>
-char* GPropertyMap<T>::getShortName(const char* prefix)
+void GPropertyMap<T>::findShortName(const char* prefix)
 {
     //printf("GPropertyMap<T>::getShortName %s \n", prefix);
 
-    char* name = strdup(m_name.c_str());
-
-    bool has_prefix = strncmp( name, prefix, strlen(prefix)) == 0  ;
-
-    if(has_prefix)
+    if(m_name.empty() || strcmp(m_name.c_str(), NOT_DEFINED) == 0)
+    { 
+        m_shortname = NOT_DEFINED ;
+    }  
+    else if(strncmp( m_name.c_str(), prefix, strlen(prefix)) == 0)
     {
         //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
         const char* ox = "0x" ;
+        char* name = strdup(m_name.c_str());
         char* c = name + strlen(name) - 9 ;              
         if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
         name += strlen(prefix) ;
+
+        m_shortname = name ; 
     }
     else
     {
         // when doesnt match the prefix, eg for surface names
         //     __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib1Surface
         // just provide chars after the last _
-        name = strrchr(name, '_') + 1  ;   
+
+        char* p = strrchr(m_name.c_str(), '_') ;
+        m_shortname = p ? p + 1 :  NOT_DEFINED ; 
     }
-    return strdup(name) ;
-    // have to strdup as thats was the invokers are expecting
-    // TODO: just add m_shortname member to avoid gymnastics and fix all usages
 }
 
 
