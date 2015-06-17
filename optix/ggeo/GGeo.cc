@@ -5,7 +5,7 @@
 #include "GMaterial.hh"
 #include "GSolid.hh"
 #include "GMesh.hh"
-#include "GSubstanceLib.hh"
+#include "GBoundaryLib.hh"
 #include "GMergedMesh.hh"
 
 #include "assert.h"
@@ -18,7 +18,7 @@
 void GGeo::init()
 {
 
-   m_substance_lib = new GSubstanceLib();
+   m_substance_lib = new GBoundaryLib();
 
    // chroma/chroma/geometry.py
    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
@@ -167,7 +167,7 @@ GSolid* GGeo::getSolid(unsigned int index)
 
 #if 0
 
-// cannot do this check any more in GSubstance approach 
+// cannot do this check any more in GBoundary approach 
 
 void GGeo::materialConsistencyCheck()
 {

@@ -5,7 +5,7 @@ log = logging.getLogger(__name__)
 
 
 def dump(idpath, sub=None):
-    path = os.path.join(idpath, 'GSubstanceLibMetadata.json')
+    path = os.path.join(idpath, 'GBoundaryLibMetadata.json')
 
     with open(path, 'r') as fp:
         js = json.load(fp)

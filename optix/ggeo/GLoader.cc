@@ -4,8 +4,8 @@
 //#include "AssimpWrap/AssimpGGeo.hh"
 
 #include "GMergedMesh.hh"
-#include "GSubstanceLib.hh"
-#include "GSubstanceLibMetadata.hh"
+#include "GBoundaryLib.hh"
+#include "GBoundaryLibMetadata.hh"
 #include "GGeo.hh"
 
 // npy-
@@ -79,7 +79,7 @@ const char* GLoader::load(const char* envprefix, bool nogeocache)
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
         m_ggeo = NULL ; 
         m_mergedmesh = GMergedMesh::load(idpath);
-        m_metadata   = GSubstanceLibMetadata::load(idpath);
+        m_metadata   = GBoundaryLibMetadata::load(idpath);
     } 
     else
     {
@@ -94,7 +94,7 @@ const char* GLoader::load(const char* envprefix, bool nogeocache)
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
         m_mergedmesh->save(idpath); 
 
-        GSubstanceLib* lib = m_ggeo->getSubstanceLib();
+        GBoundaryLib* lib = m_ggeo->getSubstanceLib();
         m_metadata = lib->getMetadata();
         m_metadata->save(idpath);
 

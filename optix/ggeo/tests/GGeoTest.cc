@@ -2,7 +2,7 @@
 #include "GProperty.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
-#include "GSubstanceLib.hh"
+#include "GBoundaryLib.hh"
 
 #include <string>
 #include <vector>
@@ -69,7 +69,7 @@ void test_material()
 
 void test_substancelib()
 {
-    GSubstanceLib* lib = new GSubstanceLib();
+    GBoundaryLib* lib = new GBoundaryLib();
     const char* ri = lib->getLocalKey("refractive_index");
     printf("ri %s \n", ri );
 }

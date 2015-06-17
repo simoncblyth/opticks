@@ -5,35 +5,35 @@
 
 #include "GPropertyMap.hh"
 
-// the canonical instance of GSubstanceLibMetadata 
-// is created by GSubstanceLib::createWavelengthBuffer
+// the canonical instance of GBoundaryLibMetadata 
+// is created by GBoundaryLib::createWavelengthBuffer
 // and is saved into the same cache directory as the wavelength buffer
 
 
-class GSubstanceLibMetadata {
+class GBoundaryLibMetadata {
   public:
       static const char* filename ; 
       static const char* mapname ; 
 
-      GSubstanceLibMetadata();
+      GBoundaryLibMetadata();
 
   public:
-      static GSubstanceLibMetadata* load(const char* dir);
+      static GBoundaryLibMetadata* load(const char* dir);
       void save(const char* dir);
       void Summary(const char* msg);
       void createMaterialMap();
 
    public:
       // 1-based substance code to allow cos_theta sign flipped boundary code, zero corresponds to "nohit"
-      unsigned int getSubstanceCode(unsigned int isub);
-      std::string getSubstanceName(unsigned int isub);
-      unsigned int getNumSubstance();
+      unsigned int getBoundaryCode(unsigned int isub);
+      std::string getBoundaryName(unsigned int isub);
+      unsigned int getNumBoundary();
       void dumpNames();
       std::map<int, std::string> getBoundaryNames();
 
    public:
-      std::string getSubstanceQty(unsigned int isub, const char* cat, const char* key);
-      std::string getSubstanceQtyByIndex(unsigned int isub, unsigned int icat, const char* tag);
+      std::string getBoundaryQty(unsigned int isub, const char* cat, const char* key);
+      std::string getBoundaryQtyByIndex(unsigned int isub, unsigned int icat, const char* tag);
 
    public:
       std::string get(const char* kfmt, const char* idx);

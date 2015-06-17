@@ -5,7 +5,7 @@
 class GGeo ; 
 class GMergedMesh ; 
 class GDrawable ; 
-class GSubstanceLibMetadata ; 
+class GBoundaryLibMetadata ; 
 //class GLoaderImp ; 
 
 class GLoader {
@@ -22,14 +22,14 @@ class GLoader {
 
          GGeo*                  getGGeo();
          GMergedMesh*           getMergedMesh();
-         GSubstanceLibMetadata* getMetadata();
+         GBoundaryLibMetadata* getMetadata();
          GDrawable*             getDrawable();
 
     private:
          GLoaderImpFunctionPtr     m_imp ;  
          GGeo*                     m_ggeo ;    
          GMergedMesh*              m_mergedmesh ;
-         GSubstanceLibMetadata*    m_metadata ;
+         GBoundaryLibMetadata*    m_metadata ;
      
 
 };
@@ -52,7 +52,7 @@ inline GDrawable* GLoader::getDrawable()
 {
     return (GDrawable*)m_mergedmesh ; 
 }
-inline GSubstanceLibMetadata* GLoader::getMetadata()
+inline GBoundaryLibMetadata* GLoader::getMetadata()
 {
     return m_metadata ; 
 }

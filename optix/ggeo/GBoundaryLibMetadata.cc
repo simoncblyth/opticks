@@ -1,6 +1,6 @@
-#include "GSubstanceLibMetadata.hh"
-#include "GSubstanceLib.hh"
-#include "GSubstance.hh"
+#include "GBoundaryLibMetadata.hh"
+#include "GBoundaryLib.hh"
+#include "GBoundary.hh"
 #include "GPropertyMap.hh"
 
 #include "stdio.h"
@@ -26,14 +26,14 @@
 namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
-const char* GSubstanceLibMetadata::filename = "GSubstanceLibMetadata.json" ; 
-const char* GSubstanceLibMetadata::mapname  = "GSubstanceLibMetadataMaterialMap.json" ; 
+const char* GBoundaryLibMetadata::filename = "GBoundaryLibMetadata.json" ; 
+const char* GBoundaryLibMetadata::mapname  = "GBoundaryLibMetadataMaterialMap.json" ; 
 
-GSubstanceLibMetadata::GSubstanceLibMetadata() 
+GBoundaryLibMetadata::GBoundaryLibMetadata() 
 {
 }
 
-void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, const char* tag, const char* val)
+void GBoundaryLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, const char* tag, const char* val)
 {
     char key[128];
     snprintf(key, 128, kfmt, isub, cat, tag );
@@ -41,14 +41,14 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
 }
 
 
-void GSubstanceLibMetadata::addDigest(const char* kfmt, unsigned int isub, const char* cat, const char* dig )
+void GBoundaryLibMetadata::addDigest(const char* kfmt, unsigned int isub, const char* cat, const char* dig )
 {
     add(kfmt, isub, cat, "digest",  dig );
 }
 
 
 
-void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap<float>* pmap )
+void GBoundaryLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, GPropertyMap<float>* pmap )
 {
     if(!pmap) return ;
 
@@ -68,7 +68,7 @@ void GSubstanceLibMetadata::add(const char* kfmt, unsigned int isub, const char*
         free(shortname);
     }
 }
-void GSubstanceLibMetadata::addMaterial(unsigned int isub, const char* cat, const char* shortname, const char* digest )
+void GBoundaryLibMetadata::addMaterial(unsigned int isub, const char* cat, const char* shortname, const char* digest )
 {
     bool imat = strcmp(cat, "imat") == 0 ;
     bool omat = strcmp(cat, "omat") == 0 ;
@@ -87,13 +87,13 @@ void GSubstanceLibMetadata::addMaterial(unsigned int isub, const char* cat, cons
 
 
 
-std::string GSubstanceLibMetadata::get(const char* kfmt, const char* idx)
+std::string GBoundaryLibMetadata::get(const char* kfmt, const char* idx)
 {
     char key[128];
     snprintf(key, 128, kfmt, idx);
     return m_tree.get<std::string>(key);
 }
-std::string GSubstanceLibMetadata::get(const char* kfmt, unsigned int idx)
+std::string GBoundaryLibMetadata::get(const char* kfmt, unsigned int idx)
 {
     char key[128];
     snprintf(key, 128, kfmt, idx);
@@ -101,15 +101,15 @@ std::string GSubstanceLibMetadata::get(const char* kfmt, unsigned int idx)
 }
 
 
-std::string GSubstanceLibMetadata::getSubstanceQtyByIndex(unsigned int isub, unsigned int icat, const char* tag)
+std::string GBoundaryLibMetadata::getBoundaryQtyByIndex(unsigned int isub, unsigned int icat, const char* tag)
 {
-    unsigned int numQuad = GSubstanceLib::getNumQuad();
+    unsigned int numQuad = GBoundaryLib::getNumQuad();
     assert(icat < numQuad); 
-    const char* cat = GSubstance::getConstituentNameByIndex(icat);
-    return getSubstanceQty(isub, cat, tag);
+    const char* cat = GBoundary::getConstituentNameByIndex(icat);
+    return getBoundaryQty(isub, cat, tag);
 }
 
-std::string GSubstanceLibMetadata::getSubstanceQty(unsigned int isub, const char* cat, const char* tag)
+std::string GBoundaryLibMetadata::getBoundaryQty(unsigned int isub, const char* cat, const char* tag)
 {
     char key[128];
     snprintf(key, 128, "lib.substance.%u.%s.%s", isub, cat, tag);
@@ -117,7 +117,7 @@ std::string GSubstanceLibMetadata::getSubstanceQty(unsigned int isub, const char
 }
 
 
-unsigned int GSubstanceLibMetadata::getNumSubstance()
+unsigned int GBoundaryLibMetadata::getNumBoundary()
 {
     unsigned int count(0);
     BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_tree.get_child("lib.substance") ) 
@@ -129,16 +129,16 @@ unsigned int GSubstanceLibMetadata::getNumSubstance()
     return count ;
 }
 
-unsigned int GSubstanceLibMetadata::getSubstanceCode(unsigned int isub)
+unsigned int GBoundaryLibMetadata::getBoundaryCode(unsigned int isub)
 {
     return isub + 1 ;   
 }
-std::string GSubstanceLibMetadata::getSubstanceName(unsigned int isub)
+std::string GBoundaryLibMetadata::getBoundaryName(unsigned int isub)
 {
-    std::string imat = getSubstanceQty(isub, "imat", "shortname") ;
-    std::string omat = getSubstanceQty(isub, "omat", "shortname") ;
-    std::string isur = getSubstanceQty(isub, "isur", "name") ;
-    std::string osur = getSubstanceQty(isub, "osur", "name") ;
+    std::string imat = getBoundaryQty(isub, "imat", "shortname") ;
+    std::string omat = getBoundaryQty(isub, "omat", "shortname") ;
+    std::string isur = getBoundaryQty(isub, "isur", "name") ;
+    std::string osur = getBoundaryQty(isub, "osur", "name") ;
 
     if(isur == "?" ) isur = "" ;
     if(osur == "?" ) osur = "" ;
@@ -156,15 +156,15 @@ std::string GSubstanceLibMetadata::getSubstanceName(unsigned int isub)
 }
 
 
-std::map<int, std::string> GSubstanceLibMetadata::getBoundaryNames()
+std::map<int, std::string> GBoundaryLibMetadata::getBoundaryNames()
 {
     std::map<int, std::string> nmap ; 
-    unsigned int nsub = getNumSubstance();
+    unsigned int nsub = getNumBoundary();
     nmap[0] = "Miss" ;
     for(unsigned int isub=0 ; isub < nsub ; isub++)
     {
-        std::string name = getSubstanceName(isub);
-        unsigned int code = getSubstanceCode(isub);
+        std::string name = getBoundaryName(isub);
+        unsigned int code = getBoundaryCode(isub);
         assert(code != 0);
         nmap[code] = name ;        
     }
@@ -172,12 +172,12 @@ std::map<int, std::string> GSubstanceLibMetadata::getBoundaryNames()
 }
 
 
-void GSubstanceLibMetadata::dumpNames()
+void GBoundaryLibMetadata::dumpNames()
 {
-    unsigned int nsub = getNumSubstance();
+    unsigned int nsub = getNumBoundary();
     for(unsigned int isub=0 ; isub < nsub ; isub++)
     {
-        std::string name = getSubstanceName(isub);
+        std::string name = getBoundaryName(isub);
         printf("%2d : %s \n", isub, name.c_str());
     }
 }
@@ -185,7 +185,7 @@ void GSubstanceLibMetadata::dumpNames()
 
 
 
-void GSubstanceLibMetadata::createMaterialMap()
+void GBoundaryLibMetadata::createMaterialMap()
 {
     typedef std::map<std::string, unsigned int> Map_t ;
     Map_t name2line ; 
@@ -195,7 +195,7 @@ void GSubstanceLibMetadata::createMaterialMap()
     {
         std::string matname = ak.first ;
         snprintf(key, 128, "lib.material.%s.mat", matname.c_str());
-        //printf("GSubstanceLibMetadata::createMaterialMap %s \n", key);
+        //printf("GBoundaryLibMetadata::createMaterialMap %s \n", key);
 
         std::string digest ;     
         BOOST_FOREACH( boost::property_tree::ptree::value_type const& bk, m_tree.get_child(key) ) // absolute key
@@ -205,7 +205,7 @@ void GSubstanceLibMetadata::createMaterialMap()
 
             unsigned int isub   = code / 10 ;
             unsigned int offset = code % 10 ; 
-            unsigned int line   = GSubstanceLib::getLine(isub, offset) ;   // into the wavelengthBuffer 
+            unsigned int line   = GBoundaryLib::getLine(isub, offset) ;   // into the wavelengthBuffer 
 
             bool first = digest.empty();
             if(first)          digest = dig ;
@@ -218,7 +218,7 @@ void GSubstanceLibMetadata::createMaterialMap()
         }
     }
 
-    printf("GSubstanceLibMetadata::createMaterialMap\n");
+    printf("GBoundaryLibMetadata::createMaterialMap\n");
     for(Map_t::iterator it=name2line.begin() ; name2line.end() != it ; it++)
     {
         printf(" %25s : %u \n", it->first.c_str(), it->second ); 
@@ -231,7 +231,7 @@ void GSubstanceLibMetadata::createMaterialMap()
 
 
 
-void GSubstanceLibMetadata::Summary(const char* msg)
+void GBoundaryLibMetadata::Summary(const char* msg)
 {    
     printf("%s\n", msg );
 
@@ -271,14 +271,14 @@ void GSubstanceLibMetadata::Summary(const char* msg)
 
 
 
-void GSubstanceLibMetadata::save(const char* dir)
+void GBoundaryLibMetadata::save(const char* dir)
 {
     fs::path cachedir(dir);
     if(!fs::exists(cachedir))
     {
         if (fs::create_directory(cachedir))
         {
-            printf("GSubstanceLibMetadata::save created directory %s \n", dir );
+            printf("GBoundaryLibMetadata::save created directory %s \n", dir );
         }
     }
 
@@ -295,28 +295,28 @@ void GSubstanceLibMetadata::save(const char* dir)
     }
     else
     {
-        printf("GSubstanceLibMetadata::save directory %s DOES NOT EXIST \n", dir);
+        printf("GBoundaryLibMetadata::save directory %s DOES NOT EXIST \n", dir);
     }
 }
 
-void GSubstanceLibMetadata::read(const char* path)
+void GBoundaryLibMetadata::read(const char* path)
 {
     pt::read_json(path, m_tree);
 }
 
-GSubstanceLibMetadata* GSubstanceLibMetadata::load(const char* dir)
+GBoundaryLibMetadata* GBoundaryLibMetadata::load(const char* dir)
 {
-    GSubstanceLibMetadata* meta(NULL);
+    GBoundaryLibMetadata* meta(NULL);
     fs::path cachedir(dir);
     if(!fs::exists(cachedir))
     {
-        printf("GSubstanceLibMetadata::load directory %s DOES NOT EXIST \n", dir);
+        printf("GBoundaryLibMetadata::load directory %s DOES NOT EXIST \n", dir);
     }
     else
     {
         fs::path path(dir);
         path /= filename ; 
-        meta = new GSubstanceLibMetadata  ;
+        meta = new GBoundaryLibMetadata  ;
         meta->read(path.string().c_str());
     }
     return meta ; 

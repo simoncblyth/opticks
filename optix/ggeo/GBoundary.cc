@@ -1,4 +1,4 @@
-#include "GSubstance.hh"
+#include "GBoundary.hh"
 #include "GPropertyMap.hh"
 #include "md5digest.hh"
 #include "GOpticalSurface.hh"
@@ -9,15 +9,15 @@
 
 
 
-const char* GSubstance::imaterial = "imat" ;
-const char* GSubstance::omaterial = "omat" ;
-const char* GSubstance::isurface  = "isur" ;
-const char* GSubstance::osurface  = "osur" ;
-const char* GSubstance::iextra    = "iext" ;
-const char* GSubstance::oextra    = "oext" ;
+const char* GBoundary::imaterial = "imat" ;
+const char* GBoundary::omaterial = "omat" ;
+const char* GBoundary::isurface  = "isur" ;
+const char* GBoundary::osurface  = "osur" ;
+const char* GBoundary::iextra    = "iext" ;
+const char* GBoundary::oextra    = "oext" ;
 
-const char* GSubstance::inner_optical    = "iopt" ;
-const char* GSubstance::outer_optical    = "oopt" ;
+const char* GBoundary::inner_optical    = "iopt" ;
+const char* GBoundary::outer_optical    = "oopt" ;
 
 
 
@@ -27,7 +27,7 @@ const char* GSubstance::outer_optical    = "oopt" ;
 // How to handle optical_surface props ?
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// * not so easy to add m_optical_surface due to GSubstance funny identity 
+// * not so easy to add m_optical_surface due to GBoundary funny identity 
 //   unless include it in the digest 
 //
 // * also it is associated with isurf or osurf, so better to attach there rather
@@ -73,7 +73,7 @@ const char* GSubstance::outer_optical    = "oopt" ;
 //
 
 
-GSubstance::GSubstance()
+GBoundary::GBoundary()
          :
          m_imaterial(NULL),
          m_omaterial(NULL),
@@ -87,7 +87,7 @@ GSubstance::GSubstance()
 {
 }
 
-GSubstance::GSubstance( 
+GBoundary::GBoundary( 
                  GPropertyMap<float>* imaterial, 
                  GPropertyMap<float>* omaterial, 
                  GPropertyMap<float>* isurface, 
@@ -110,19 +110,19 @@ GSubstance::GSubstance(
 {
 }
 
-GSubstance::~GSubstance()
+GBoundary::~GBoundary()
 {
 }
 
 
-std::string GSubstance::getPDigestString(int ifr, int ito)
+std::string GBoundary::getPDigestString(int ifr, int ito)
 {
     return pdigest(ifr, ito);
 }
 
 
 
-char* GSubstance::pdigest(int ifr, int ito)
+char* GBoundary::pdigest(int ifr, int ito)
 {
    MD5Digest dig ;
 
@@ -171,7 +171,7 @@ char* GSubstance::pdigest(int ifr, int ito)
 
 
 
-void GSubstance::Summary(const char* msg, unsigned int nline)
+void GBoundary::Summary(const char* msg, unsigned int nline)
 {
    assert(m_imaterial);
 
@@ -210,27 +210,27 @@ void GSubstance::Summary(const char* msg, unsigned int nline)
 
 
 
-void GSubstance::setInnerMaterial(GPropertyMap<float>* imaterial)
+void GBoundary::setInnerMaterial(GPropertyMap<float>* imaterial)
 {
     m_imaterial = imaterial ; 
 }
-void GSubstance::setOuterMaterial(GPropertyMap<float>* omaterial)
+void GBoundary::setOuterMaterial(GPropertyMap<float>* omaterial)
 {
     m_omaterial = omaterial ; 
 }
-void GSubstance::setInnerSurface(GPropertyMap<float>* isurface)
+void GBoundary::setInnerSurface(GPropertyMap<float>* isurface)
 {
     m_isurface = isurface ; 
 }
-void GSubstance::setOuterSurface(GPropertyMap<float>* osurface)
+void GBoundary::setOuterSurface(GPropertyMap<float>* osurface)
 {
     m_osurface = osurface ; 
 }
-void GSubstance::setInnerExtra(GPropertyMap<float>* iextra)
+void GBoundary::setInnerExtra(GPropertyMap<float>* iextra)
 {
     m_iextra = iextra ; 
 }
-void GSubstance::setOuterExtra(GPropertyMap<float>* oextra)
+void GBoundary::setOuterExtra(GPropertyMap<float>* oextra)
 {
     m_oextra = oextra ; 
 }
@@ -241,34 +241,34 @@ void GSubstance::setOuterExtra(GPropertyMap<float>* oextra)
 
 
 
-GPropertyMap<float>* GSubstance::getInnerMaterial()
+GPropertyMap<float>* GBoundary::getInnerMaterial()
 {
     return m_imaterial ; 
 }
-GPropertyMap<float>* GSubstance::getOuterMaterial()
+GPropertyMap<float>* GBoundary::getOuterMaterial()
 {
     return m_omaterial ; 
 }
-GPropertyMap<float>* GSubstance::getInnerSurface()
+GPropertyMap<float>* GBoundary::getInnerSurface()
 {
     return m_isurface ; 
 }
-GPropertyMap<float>* GSubstance::getOuterSurface()
+GPropertyMap<float>* GBoundary::getOuterSurface()
 {
     return m_osurface ; 
 }
-GPropertyMap<float>* GSubstance::getInnerExtra()
+GPropertyMap<float>* GBoundary::getInnerExtra()
 {
     return m_iextra ; 
 }
-GPropertyMap<float>* GSubstance::getOuterExtra()
+GPropertyMap<float>* GBoundary::getOuterExtra()
 {
     return m_oextra ; 
 }
 
 
 
-GPropertyMap<float>* GSubstance::getConstituentByIndex(unsigned int p)
+GPropertyMap<float>* GBoundary::getConstituentByIndex(unsigned int p)
 {
     switch(p)
     {
@@ -282,7 +282,7 @@ GPropertyMap<float>* GSubstance::getConstituentByIndex(unsigned int p)
     return NULL ;
 }
 
-const char* GSubstance::getConstituentNameByIndex(unsigned int p)
+const char* GBoundary::getConstituentNameByIndex(unsigned int p)
 {
     switch(p)
     {

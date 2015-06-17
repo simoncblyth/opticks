@@ -1,7 +1,7 @@
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 #include "GSolid.hh"
-#include "GSubstanceLib.hh"
+#include "GBoundaryLib.hh"
 #include <iostream>
 
 #include <boost/filesystem.hpp>
@@ -56,7 +56,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->traverse( solid, 0, pass_merge ); // 2nd pass counts merge GMesh into GMergedMesh
     mm->updateBounds();
 
-    GSubstanceLib* lib = ggeo->getSubstanceLib();
+    GBoundaryLib* lib = ggeo->getSubstanceLib();
     mm->setWavelengthBuffer(lib->createWavelengthBuffer());
 
     GPropertyMap<float>* scint = ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level

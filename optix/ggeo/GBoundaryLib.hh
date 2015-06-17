@@ -10,12 +10,13 @@
 #include "GProperty.hh"
 #include "GPropertyMap.hh"
 
-class GSubstance ; 
+class GBoundary ; 
 class GBuffer ; 
-class GSubstanceLibMetadata ; 
+class GBoundaryLibMetadata ; 
 class GBuffer ; 
+class GOpticalSurface ; 
 
-class GSubstanceLib {
+class GBoundaryLib {
   public:
     // standard property prefixes
     static const char* inner; 
@@ -64,19 +65,21 @@ class GSubstanceLib {
     static std::vector<std::string>* vreemissionkey;
 
   public:
-      GSubstanceLib();
-      virtual ~GSubstanceLib();
+      GBoundaryLib();
+      virtual ~GBoundaryLib();
 
   public:
       // primary methods : lifecycle
       void setStandardDomain(GDomain<float>* standard_domain);
-      GSubstance* get(
+      GBoundary* get(
                       GPropertyMap<float>* imaterial, 
                       GPropertyMap<float>* omaterial, 
                       GPropertyMap<float>* isurface, 
                       GPropertyMap<float>* osurface,
                       GPropertyMap<float>* iextra, 
-                      GPropertyMap<float>* oextra 
+                      GPropertyMap<float>* oextra,
+                      GOpticalSurface*   inner_optical,
+                      GOpticalSurface*   outer_optical
                  );
       GBuffer*      createWavelengthBuffer();  
       GBuffer*      createReemissionBuffer(GPropertyMap<float>* scint);  
@@ -91,10 +94,10 @@ class GSubstanceLib {
   public:
       // primary methods : querying 
       const char* getLocalKey(const char* dkey); // map standard -> local keys 
-      unsigned int getNumSubstances();
-      GSubstance* getSubstance(unsigned int index); 
-      GSubstanceLibMetadata* getMetadata(); // populated by createWavelengthBuffer
-      void Summary(const char* msg="GSubstanceLib::Summary");
+      unsigned int getNumBoundary();
+      GBoundary* getBoundary(unsigned int index); 
+      GBoundaryLibMetadata* getMetadata(); // populated by createWavelengthBuffer
+      void Summary(const char* msg="GBoundaryLib::Summary");
       const char* getDigest(unsigned int index);
       
 
@@ -110,7 +113,7 @@ class GSubstanceLib {
 
   private:
       // used for by "get" for standardization of substances, ready for serializing into wavelengthBuffer
-      GSubstance* createStandardSubstance(GSubstance* substance);
+      GBoundary* createStandardBoundary(GBoundary* substance);
       void standardizeMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
@@ -130,7 +133,7 @@ class GSubstanceLib {
       char*  digest(std::vector<GProperty<float>*>& props);
       std::string digestString(std::vector<GProperty<float>*>& props);
 
-      void digestDebug(GSubstance* substance, unsigned int isub);
+      void digestDebug(GBoundary* substance, unsigned int isub);
 
   public:
       // another classes need access to "shape" of the standardization
@@ -139,13 +142,13 @@ class GSubstanceLib {
       unsigned int            getStandardDomainLength();
 
   public:
-      void setMetadata(GSubstanceLibMetadata* meta); 
+      void setMetadata(GBoundaryLibMetadata* meta); 
 
   public:
       void          dumpWavelengthBuffer(int wline=-1);
-      static void   dumpWavelengthBuffer(int wline, GBuffer* buffer, GSubstanceLibMetadata* metadata, unsigned int numSubstance, unsigned int domainLength);
+      static void   dumpWavelengthBuffer(int wline, GBuffer* buffer, GBoundaryLibMetadata* metadata, unsigned int numBoundary, unsigned int domainLength);
 
-      GPropertyMap<float>* createStandardProperties(const char* name, GSubstance* substance);
+      GPropertyMap<float>* createStandardProperties(const char* name, GBoundary* substance);
       void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkExtraProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
@@ -160,14 +163,14 @@ class GSubstanceLib {
       std::string propertyNameString(unsigned int p, unsigned int i);
 
   public:
-      static GSubstanceLib* load(const char* dir);
+      static GBoundaryLib* load(const char* dir);
       void loadWavelengthBuffer(GBuffer* buffer);
-      GSubstance* loadSubstance(float* subData, unsigned int isub);
+      GBoundary* loadBoundary(float* subData, unsigned int isub);
 
 
   private:
       std::map<std::string, std::string>   m_keymap ; //  
-      std::map<std::string, GSubstance*>   m_registry ; 
+      std::map<std::string, GBoundary*>   m_registry ; 
       std::vector<std::string>             m_keys ; 
 
       bool                   m_standard ; // transitional : keeping this set to true
@@ -175,55 +178,55 @@ class GSubstanceLib {
       GDomain<float>*        m_standard_domain ;  
       GPropertyMap<float>*   m_defaults ;  
       GProperty<float>*      m_ramp ;  
-      GSubstanceLibMetadata* m_meta ;
+      GBoundaryLibMetadata* m_meta ;
       GBuffer*               m_wavelength_buffer ;
       GBuffer*               m_reemission_buffer ;
 
 };
 
 
-inline GSubstanceLibMetadata* GSubstanceLib::getMetadata()
+inline GBoundaryLibMetadata* GBoundaryLib::getMetadata()
 {
     return m_meta ; 
 }
-inline void GSubstanceLib::setMetadata(GSubstanceLibMetadata* meta)
+inline void GBoundaryLib::setMetadata(GBoundaryLibMetadata* meta)
 {
     m_meta = meta ; 
 }
 
-inline GBuffer* GSubstanceLib::getWavelengthBuffer()
+inline GBuffer* GBoundaryLib::getWavelengthBuffer()
 {
     return m_wavelength_buffer ; 
 }
-inline void GSubstanceLib::setWavelengthBuffer(GBuffer* wavelength_buffer)
+inline void GBoundaryLib::setWavelengthBuffer(GBuffer* wavelength_buffer)
 {
     m_wavelength_buffer = wavelength_buffer ; 
 }
 
 
-inline unsigned int GSubstanceLib::getNumProp()
+inline unsigned int GBoundaryLib::getNumProp()
 {
     return NUM_QUAD*4 ; 
 }
-inline unsigned int GSubstanceLib::getNumQuad()
+inline unsigned int GBoundaryLib::getNumQuad()
 {
     return NUM_QUAD ; 
 }
 
 
-inline void GSubstanceLib::setDefaults(GPropertyMap<float>* defaults)
+inline void GBoundaryLib::setDefaults(GPropertyMap<float>* defaults)
 {
     m_defaults = defaults ;
 }
-inline GPropertyMap<float>* GSubstanceLib::getDefaults()
+inline GPropertyMap<float>* GBoundaryLib::getDefaults()
 {
     return m_defaults ;
 }
-inline GProperty<float>* GSubstanceLib::getRamp()
+inline GProperty<float>* GBoundaryLib::getRamp()
 {
    return m_ramp ;
 }
-inline GDomain<float>* GSubstanceLib::getStandardDomain()
+inline GDomain<float>* GBoundaryLib::getStandardDomain()
 {
     return m_standard_domain ;
 }

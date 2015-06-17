@@ -1,6 +1,6 @@
 #include "GSolid.hh"
 #include "GPropertyMap.hh"
-#include "GSubstance.hh"
+#include "GBoundary.hh"
 
 #include "stdio.h"
 
@@ -12,7 +12,7 @@ void GSolid::Summary(const char* msg )
 }
 
 
-void GSolid::setSubstance(GSubstance* substance)
+void GSolid::setSubstance(GBoundary* substance)
 {
     m_substance = substance ; 
     setSubstanceIndices( substance->getIndex() );

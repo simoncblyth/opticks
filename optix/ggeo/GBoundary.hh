@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 //
-// Excluding "outer" material from GSubstance (more natural and prevents compounding)
+// Excluding "outer" material from GBoundary (more natural and prevents compounding)
 // means that will always need to consider pairs of substances, 
 // ordered according to light direction.
 //
@@ -16,7 +16,7 @@
 //     
 //    * may via a hash of all the properties of the PropertyMaps
 // 
-//   OptiX has no notion of surface, so using GSubstance to hold 
+//   OptiX has no notion of surface, so using GBoundary to hold 
 //   surface and material properties 
 //
 
@@ -27,11 +27,11 @@ class GOpticalSurface ;
 
 
 
-// hmm GSubstance, a better name would be GBoundary now ?
+// hmm GBoundary, a better name would be GBoundary now ?
 // 
-// Substance indices are assigned by GSubstanceLib::get based on distinct property values
-// this somewhat complicated approach is necessary as GSubstance incorporates info 
-// from inner/outer material/surface so GSubstance 
+// Substance indices are assigned by GBoundaryLib::get based on distinct property values
+// this somewhat complicated approach is necessary as GBoundary incorporates info 
+// from inner/outer material/surface so GBoundary 
 // does not map to simple notions of identity it being a boundary between 
 // materials with specific surfaces(or maybe no associated surface) 
 //
@@ -40,7 +40,7 @@ class GOpticalSurface ;
 // repeats the indice for every triangle 
 //
 
-class GSubstance {   // TODO: rename together with associated classes to GBoundary et al
+class GBoundary {   // TODO: rename together with associated classes to GBoundary et al
   public:
       static const char* imaterial ; 
       static const char* omaterial ; 
@@ -52,8 +52,8 @@ class GSubstance {   // TODO: rename together with associated classes to GBounda
       static const char* outer_optical ; 
 
   public:
-      GSubstance();
-      GSubstance(
+      GBoundary();
+      GBoundary(
                  GPropertyMap<float>* imaterial, 
                  GPropertyMap<float>* omaterial, 
                  GPropertyMap<float>* isurface, 
@@ -63,10 +63,10 @@ class GSubstance {   // TODO: rename together with associated classes to GBounda
                  GOpticalSurface*     inner_optical,
                  GOpticalSurface*     outer_optical
                  );
-      virtual ~GSubstance();
+      virtual ~GBoundary();
 
   public:
-      void Summary(const char* msg="GSubstance::Summary", unsigned int nline=0);
+      void Summary(const char* msg="GBoundary::Summary", unsigned int nline=0);
       //char* digest();
       char* pdigest(int ifr, int ito);
       std::string getPDigestString(int ifr, int ito);
@@ -125,12 +125,12 @@ class GSubstance {   // TODO: rename together with associated classes to GBounda
 };
 
 
-inline void GSubstance::setIndex(unsigned int index)
+inline void GBoundary::setIndex(unsigned int index)
 {
     m_index = index ;
 }
 
-inline unsigned int GSubstance::getIndex()
+inline unsigned int GBoundary::getIndex()
 {
     return m_index ;
 }
@@ -138,11 +138,11 @@ inline unsigned int GSubstance::getIndex()
 
 
 
-inline GOpticalSurface* GSubstance::getInnerOptical()
+inline GOpticalSurface* GBoundary::getInnerOptical()
 {
    return m_inner_optical ; 
 }
-inline GOpticalSurface* GSubstance::getOuterOptical()
+inline GOpticalSurface* GBoundary::getOuterOptical()
 {
    return m_outer_optical ; 
 }

@@ -29,7 +29,7 @@ TODO
 REVIEW
 -------
 
-* rejig relationship between GSubstanceLib and GSubstance
+* rejig relationship between GBoundaryLib and GBoundary
   
   * lib doing too much, substance doing too little
 
@@ -128,7 +128,7 @@ names translated into geant4 style::
     delta:npy blyth$ npy-g4stepnpy-test 
     Lookup::dump LookupTest 
     A   29 entries from /tmp/ChromaMaterialMap.json
-    B   24 entries from /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GSubstanceLibMetadataMaterialMap.json
+    B   24 entries from /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GBoundaryLibMetadataMaterialMap.json
     A2B 21 entries in lookup  
       A    0 :     ADTableStainlessSteel  B  212 :     ADTableStainlessSteel 
       A    1 :                   Acrylic  B   56 :                   Acrylic 
@@ -176,52 +176,52 @@ names translated into geant4 style::
     delta:npy blyth$ 
 
     (chroma_env)delta:env blyth$ ggeo-meta 28 36 44 52 56 60 68
-    /usr/local/env/optix/ggeo/bin/GSubstanceLibTest /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae 28 36 44 52 56 60 68
+    /usr/local/env/optix/ggeo/bin/GBoundaryLibTest /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae 28 36 44 52 56 60 68
     wavelength buffer NumBytes 134784 Ptr 0x10acde000 ItemSize 4 NumElements_PerItem 1 NumItems(NumBytes/ItemSize) 33696 NumElementsTotal (NumItems*NumElements) 33696 
 
-    GSubstanceLib::dumpWavelengthBuffer wline 28 wsub 7 wprop 0 numSub 54 domainLength 39 numProp 16 
+    GBoundaryLib::dumpWavelengthBuffer wline 28 wsub 7 wprop 0 numSub 54 domainLength 39 numProp 16 
 
       28 |   7/  0 __dd__Materials__DeadWater0xbf8a548 
                1.390           1.390           1.372           1.357           1.352           1.346           1.341           1.335
              273.208         273.208        3164.640       12811.072       28732.207       13644.791        2404.398         371.974
          1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
                0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
-    GSubstanceLib::dumpWavelengthBuffer wline 36 wsub 9 wprop 0 numSub 54 domainLength 39 numProp 16 
+    GBoundaryLib::dumpWavelengthBuffer wline 36 wsub 9 wprop 0 numSub 54 domainLength 39 numProp 16 
 
       36 |   9/  0 __dd__Materials__OwsWater0xbf90c10 
                1.390           1.390           1.372           1.357           1.352           1.346           1.341           1.335
              273.208         273.208        3164.640       12811.072       28732.207       13644.791        2404.398         371.974
          1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
                0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
-    GSubstanceLib::dumpWavelengthBuffer wline 44 wsub 11 wprop 0 numSub 54 domainLength 39 numProp 16 
+    GBoundaryLib::dumpWavelengthBuffer wline 44 wsub 11 wprop 0 numSub 54 domainLength 39 numProp 16 
 
       44 |  11/  0 __dd__Materials__IwsWater0xc288f98 
                1.390           1.390           1.372           1.357           1.352           1.346           1.341           1.335
              273.208         273.208        3164.640       12811.072       28732.207       13644.791        2404.398         371.974
          1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
                0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
-    GSubstanceLib::dumpWavelengthBuffer wline 52 wsub 13 wprop 0 numSub 54 domainLength 39 numProp 16 
+    GBoundaryLib::dumpWavelengthBuffer wline 52 wsub 13 wprop 0 numSub 54 domainLength 39 numProp 16 
 
       52 |  13/  0 __dd__Materials__MineralOil0xbf5c830 
                1.434           1.758           1.540           1.488           1.471           1.464           1.459           1.457
               11.100          11.100          11.394        1078.898       24925.316       21277.369        5311.868         837.710
              850.000         850.000        4901.251       19819.381       52038.961      117807.406      252854.656      420184.219
                0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
-    GSubstanceLib::dumpWavelengthBuffer wline 56 wsub 14 wprop 0 numSub 54 domainLength 39 numProp 16 
+    GBoundaryLib::dumpWavelengthBuffer wline 56 wsub 14 wprop 0 numSub 54 domainLength 39 numProp 16 
 
       56 |  14/  0 __dd__Materials__Acrylic0xc02ab98 
                1.462           1.793           1.573           1.519           1.500           1.494           1.490           1.488
                0.008           0.008        4791.046        8000.000        8000.000        8000.000        8000.000        8000.000
              850.000         850.000        4901.251       19819.381       52038.961      117807.406      252854.656      420184.219
                0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
-    GSubstanceLib::dumpWavelengthBuffer wline 60 wsub 15 wprop 0 numSub 54 domainLength 39 numProp 16 
+    GBoundaryLib::dumpWavelengthBuffer wline 60 wsub 15 wprop 0 numSub 54 domainLength 39 numProp 16 
 
       60 |  15/  0 __dd__Materials__LiquidScintillator0xc2308d0 
                1.454           1.793           1.563           1.511           1.494           1.485           1.481           1.479
                0.001           0.001           0.198           1.913       26433.846       31710.930        6875.426         978.836
              850.000         850.000        4901.251       19819.381       52038.961      117807.406      252854.656      420184.219
                0.400           0.400           0.599           0.800           0.169           0.072           0.023           0.000
-    GSubstanceLib::dumpWavelengthBuffer wline 68 wsub 17 wprop 0 numSub 54 domainLength 39 numProp 16 
+    GBoundaryLib::dumpWavelengthBuffer wline 68 wsub 17 wprop 0 numSub 54 domainLength 39 numProp 16 
 
       68 |  17/  0 __dd__Materials__GdDopedLS0xc2a8ed0 
                1.454           1.793           1.563           1.511           1.494           1.485           1.481           1.479
@@ -316,7 +316,7 @@ Classes
 
 GGeo
     top level control and holder of other instances:
-    GMesh GSolid GMaterial GSkinSurface GBorderSurface GSubstanceLib
+    GMesh GSolid GMaterial GSkinSurface GBorderSurface GBoundaryLib
 
 GMesh
     holder of vertices, indices which fulfils GDrawable
@@ -338,7 +338,7 @@ GMergedMesh
 
 
 GSolid
-    GNode specialized with associated GSubstance and selection bit constituents
+    GNode specialized with associated GBoundary and selection bit constituents
 
 GNode
     identity index, GMesh and GMatrixF transform 
@@ -365,10 +365,10 @@ GBuffer
            (eg item could be gfloat3 of itemsize 12, with nelem 3 
            corresponding to 3 floats) 
 
-GSubstance
+GBoundary
     holder of inner/outer material and inner/outer surface GPropertMaps
 
-GSubstanceLib
+GBoundaryLib
     manager of substances, ensures duplicates are not created via digests
 
 
@@ -402,9 +402,9 @@ md5digest
 Where are substance indices formed and associated to every triangle ?
 -----------------------------------------------------------------------
 
-* indices are assigned by GSubstanceLib::get based on distinct property values
-  this somewhat complicated approach is necessary as GSubstance incorporates info 
-  from inner/outer material/surface so GSubstance 
+* indices are assigned by GBoundaryLib::get based on distinct property values
+  this somewhat complicated approach is necessary as GBoundary incorporates info 
+  from inner/outer material/surface so GBoundary 
   does not map to simple notions of identity it being a boundary between 
   materials with specific surfaces(or maybe no associated surface) 
 
@@ -416,8 +416,8 @@ Where are substance indices formed and associated to every triangle ?
   the visitor method of the recursive AssimpGGeo::convertStructure 
   in assimpwrap-::
 
-    506     GSubstanceLib* lib = gg->getSubstanceLib();
-    507     GSubstance* substance = lib->get(mt, mt_p, isurf, osurf );
+    506     GBoundaryLib* lib = gg->getSubstanceLib();
+    507     GBoundary* substance = lib->get(mt, mt_p, isurf, osurf );
     508     //substance->Summary("subst");
     509 
     510     solid->setSubstance(substance);
@@ -939,7 +939,7 @@ ggeo-meta-dir(){
 }
 
 ggeo-libtest(){
-   local bin=$(ggeo-bin GSubstanceLibTest)
+   local bin=$(ggeo-bin GBoundaryLibTest)
    local cmd="$bin $(ggeo-meta-dir) $*"
    echo $cmd
    eval $cmd
@@ -947,7 +947,7 @@ ggeo-libtest(){
 
 
 ggeo-metatest(){
-   local bin=$(ggeo-bin GSubstanceLibMetadataTest)
+   local bin=$(ggeo-bin GBoundaryLibMetadataTest)
    local cmd="$bin $(ggeo-meta-dir) $*"
    echo $cmd
    eval $cmd

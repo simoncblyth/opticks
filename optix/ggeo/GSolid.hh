@@ -1,7 +1,7 @@
 #pragma once
 
 class GMesh ;
-class GSubstance ; 
+class GBoundary ; 
 //class GOpticalSurface ;
 
 #include "GNode.hh"
@@ -14,7 +14,7 @@ class GSubstance ;
 
 class GSolid : public GNode {
   public:
-      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GSubstance* substance);
+      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* substance);
       virtual ~GSolid();
 
   public:
@@ -22,12 +22,12 @@ class GSolid : public GNode {
      bool isSelected();
 
   public:
-     void setSubstance(GSubstance* substance);
+     void setSubstance(GBoundary* substance);
  //    void setInnerOpticalSurface(GOpticalSurface* ios);
  //    void setOuterOpticalSurface(GOpticalSurface* oos);
 
   public:
-     GSubstance* getSubstance();
+     GBoundary* getSubstance();
  //    GOpticalSurface* getInnerOpticalSurface();
  //    GOpticalSurface* getOuterOpticalSurface();
 
@@ -35,14 +35,14 @@ class GSolid : public GNode {
       void Summary(const char* msg="GSolid::Summary");
  
   private:
-      GSubstance*        m_substance ; 
+      GBoundary*        m_substance ; 
  //     GOpticalSurface*   m_inner_optical_surface ; 
  //     GOpticalSurface*   m_outer_optical_surface ; 
       bool m_selected ;
 
 };
 
-inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GSubstance* substance)
+inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* substance)
          : 
          GNode(index, transform, mesh ),
          m_substance(substance),
@@ -57,7 +57,7 @@ inline GSolid::~GSolid()
 {
 }
 
-inline GSubstance* GSolid::getSubstance()
+inline GBoundary* GSolid::getSubstance()
 {
     return m_substance ; 
 }
