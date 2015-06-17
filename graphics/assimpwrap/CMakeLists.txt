@@ -32,13 +32,13 @@ add_definitions(
 )
 
 add_library(${name} SHARED 
-                src/AssimpGeometry.cc
-                src/AssimpCommon.cc
-                src/AssimpNode.cc
-                src/AssimpTree.cc
-                src/AssimpRegistry.cc
-                src/AssimpGGeo.cc
-                src/AssimpSelection.cc
+                AssimpGeometry.cc
+                AssimpCommon.cc
+                AssimpNode.cc
+                AssimpTree.cc
+                AssimpRegistry.cc
+                AssimpGGeo.cc
+                AssimpSelection.cc
 )
 
 target_link_libraries(${name}
@@ -58,21 +58,32 @@ target_link_libraries(${name}Test
                        ssl
                        crypto 
                      )
-                        
+ 
+
+set(hdrs
+AssimpCommon.hh
+AssimpGGeo.hh
+AssimpGeometry.hh
+AssimpNode.hh
+AssimpRegistry.hh
+AssimpSelection.hh
+AssimpTree.hh
+)
+
 
 install(TARGETS ${name}Test DESTINATION bin)
 install(TARGETS ${name} LIBRARY DESTINATION lib)
+install(FILES ${hdrs} DESTINATION include) 
 
- 
 
-file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*/*.hh ${CMAKE_CURRENT_SOURCE_DIR}/*/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*/*.hpp )
-foreach(abspath ${headers})
-   string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" hdr "${abspath}")  # remove the SRC prefix 
-   get_filename_component(hbase ${hdr} NAME) 
-   get_filename_component(hpath ${hdr} PATH) 
-   get_filename_component(hfold ${hpath} NAME) 
-   #message( DEBUG " hdr ${hdr} hbase ${hbase} hpath ${hpath} hfold ${hfold}")
-   install(FILES ${abspath} DESTINATION include/${hfold})
-endforeach(abspath)
+#file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*/*.hh ${CMAKE_CURRENT_SOURCE_DIR}/*/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*/*.hpp )
+#foreach(abspath ${headers})
+#   string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" hdr "${abspath}")  # remove the SRC prefix 
+#   get_filename_component(hbase ${hdr} NAME) 
+#   get_filename_component(hpath ${hdr} PATH) 
+#   get_filename_component(hfold ${hpath} NAME) 
+#   message( DEBUG " hdr ${hdr} hbase ${hbase} hpath ${hpath} hfold ${hfold}")
+#   install(FILES ${abspath} DESTINATION include/${hfold})
+#endforeach(abspath)
 
 
