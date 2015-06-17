@@ -85,6 +85,6 @@ void GBorderSurface::Summary(const char* msg, unsigned int imod)
 std::string GBorderSurface::description()
 {
     std::stringstream ss ; 
-    ss << "GBS:: " << GPropertyMap<float>::description() << " keys " << getKeysString() ; 
+    ss << "GBS:: " << GPropertyMap<float>::description() ; 
     return ss.str();
 }

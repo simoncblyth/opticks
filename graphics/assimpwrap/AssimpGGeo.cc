@@ -274,6 +274,8 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
     for(unsigned int i = 0; i < scene->mNumMaterials; i++)
     {
+        unsigned int index = i ;  // hmm, make 1-based later 
+
         aiMaterial* mat = scene->mMaterials[i] ;
         aiString name_;
         mat->Get(AI_MATKEY_NAME, name_);
@@ -310,7 +312,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         {
             assert(os && "all ss must have associated os");
 
-            GSkinSurface* gss = new GSkinSurface(name, i, os);
+            GSkinSurface* gss = new GSkinSurface(name, index, os);
 
             gss->setStandardDomain(standard_domain);
             gss->setSkinSurface(sslv);
@@ -321,7 +323,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             {
                 // without standard domain applied
-                GSkinSurface*  gss_raw = new GSkinSurface(name, i, os);
+                GSkinSurface*  gss_raw = new GSkinSurface(name, index, os);
                 gss_raw->setSkinSurface(sslv);
                 addProperties(gss_raw, mat, reverse);
                 gg->addRaw(gss);
@@ -331,7 +333,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
         else if (bspv1 && bspv2 )
         {
             assert(os && "all bs must have associated os");
-            GBorderSurface* gbs = new GBorderSurface(name, i, os);
+            GBorderSurface* gbs = new GBorderSurface(name, index, os);
 
             gbs->setStandardDomain(standard_domain);
             gbs->setBorderSurface(bspv1, bspv2);
@@ -343,7 +345,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             {
                 // without standard domain applied
-                GBorderSurface* gbs_raw = new GBorderSurface(name, i, os);
+                GBorderSurface* gbs_raw = new GBorderSurface(name, index, os);
                 gbs_raw->setBorderSurface(bspv1, bspv2);
                 addProperties(gbs_raw, mat, reverse);
                 gg->addRaw(gbs_raw);
@@ -354,14 +356,14 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             assert(os==NULL);
 
             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GMaterial) name %s \n", i, name);
-            GMaterial* gmat = new GMaterial(name, i);
+            GMaterial* gmat = new GMaterial(name, index);
             gmat->setStandardDomain(standard_domain);
             addProperties(gmat, mat, reverse);
             gg->add(gmat);
 
             {
                 // without standard domain applied
-                GMaterial* gmat_raw = new GMaterial(name, i);
+                GMaterial* gmat_raw = new GMaterial(name, index);
                 addProperties(gmat_raw, mat, reverse);
                 gg->addRaw(gmat_raw);
             }
@@ -552,8 +554,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
     GSkinSurface*   sks = gg->findSkinSurface(lv);          
-
-
   
     unsigned int nsurf = 0 ;
     if(sks) nsurf++ ;
@@ -571,10 +571,10 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     {
         osurf = sks ; 
         if(m_skin_surface < 10)
-            LOG(info) << "AssimpGGeo::convertStructureVisit (SKIN)OSURF " 
+            LOG(info) << "AssimpGGeo::convertStructureVisit OSKIN " 
                       << std::setw(3) << m_skin_surface << " "
                       << osurf->description() ;  
-
+        // TODO: surface census, see if inner skin makes any sense
         m_skin_surface++ ; 
     }
     else if(obs)
@@ -601,18 +601,12 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     }
 
     if(isurf && osurf) LOG(info) << "AssimpGGeo::convertStructureVisit boundary with both ISURF and OSURF defined " ;
+
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
     GBoundaryLib* lib = gg->getBoundaryLib();  
     
-    GBoundary* boundary = lib->get(mt, mt_p, isurf, osurf, iextra, oextra ); 
-
-    // pulling new boundarys into existance or accessing pre-existing ones 
-    //
-    // NB tacking info on the boundary is problematic as is arranged to 
-    // to minimize instances, so need to diddle with digests 
-    //
-    // no such problems with GSolid
+    GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
 
     solid->setBoundary(boundary);  
 

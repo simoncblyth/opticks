@@ -58,6 +58,6 @@ void GSkinSurface::Summary(const char* msg, unsigned int imod)
 std::string GSkinSurface::description()
 {
     std::stringstream ss ; 
-    ss << "GSS:: " << GPropertyMap<float>::description() << " keys " << getKeysString() ; 
+    ss << "GSS:: " << GPropertyMap<float>::description() ; 
     return ss.str();
 }

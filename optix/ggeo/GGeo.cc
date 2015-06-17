@@ -242,6 +242,26 @@ GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname)
 }
 
 
+void GGeo::addToIndex(GPropertyMap<float>* psrc)
+{
+    unsigned int pindex = psrc->getIndex();
+    if(pindex < UINT_MAX)
+    {
+         if(m_index.count(pindex) == 0) 
+               m_index[pindex] = psrc->getShortName(); 
+         else
+               assert(strcmp(m_index[pindex].c_str(), psrc->getShortName()) == 0);
+    }
+}
+
+
+void  GGeo::dumpIndex(const char* msg)
+{
+    printf("%s\n", msg);
+    for(Index_t::iterator it=m_index.begin() ; it != m_index.end() ; it++)
+         printf("  %3u :  %s \n", it->first, it->second.c_str() );
+}
+
 
 
 GProperty<float>* GGeo::findRawMaterialProperty(const char* shortname, const char* propname)

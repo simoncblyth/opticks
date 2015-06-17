@@ -23,6 +23,8 @@ class GMergedMesh ;
 //
 class GGeo {
     public:
+     typedef std::map<unsigned int, std::string> Index_t ;
+    public:
         GGeo();
         virtual ~GGeo();
     private:
@@ -41,11 +43,16 @@ class GGeo {
         char* getIdentityPath(); 
 
     public:
-        void add(GMaterial* material);
         void add(GMesh*    mesh);
         void add(GSolid*    solid);
+
+    public:
+        void add(GMaterial* material);
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
+        void addToIndex(GPropertyMap<float>* obj);
+        void dumpIndex(const char* msg="GGeo::dumpIndex");
+
     public:
         void addRaw(GMaterial* material);
         void addRaw(GSkinSurface* surface);
@@ -131,9 +138,11 @@ class GGeo {
         char*                         m_query ;
         char*                         m_ctrl ;
         char*                         m_idpath ;
+      
 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
+        Index_t                            m_index ; 
 
 };
 
@@ -155,16 +164,18 @@ inline GGeo::GGeo() :
 inline void GGeo::add(GMaterial* material)
 {
     m_materials.push_back(material);
+    addToIndex((GPropertyMap<float>*)material);
 }
 inline void GGeo::add(GBorderSurface* surface)
 {
     m_border_surfaces.push_back(surface);
+    addToIndex((GPropertyMap<float>*)surface);
 }
 inline void GGeo::add(GSkinSurface* surface)
 {
     m_skin_surfaces.push_back(surface);
+    addToIndex((GPropertyMap<float>*)surface);
 }
-
 
 
 inline void GGeo::addRaw(GMaterial* material)

@@ -74,7 +74,7 @@ std::string GOpticalSurface::description()
        << " model " << m_model 
        << " finish " << m_finish
        << " value " << std::setw(5) << m_value
-       << std::setw(25) << m_shortname 
+       << std::setw(30) << m_shortname 
        ;
 
     return ss.str();

@@ -3,8 +3,9 @@
 #include "md5digest.hh"
 #include "string.h"
 #include "limits.h"
-#include <sstream>
 #include "assert.h"
+#include <sstream>
+#include <iomanip>
 
 
 template <typename T>
@@ -189,15 +190,22 @@ void GPropertyMap<T>::findShortName(const char* prefix)
 template <typename T>
 std::string GPropertyMap<T>::description()
 {
-    std::string odesc = m_optical_surface ? m_optical_surface->description() : "nos " ;
     std::stringstream ss ; 
     ss << "GPropertyMap<T>:: "  
-       << odesc
-       << getShortNameString()
-       << " index : " << getIndex()
-       << " type : " << getType()
-       << " keys : " << getKeysString() 
+       << std::setw(2)  << getIndex()
+       << std::setw(15) << getType()
        ;
+
+    if(m_optical_surface)
+    {
+        assert(strcmp(m_optical_surface->getShortName(), m_shortname)==0);
+        ss << " s:" << m_optical_surface->description() ;
+    }
+    else
+    {
+        ss << " m:" << getShortName() ;
+    }
+    ss << " k:" << getKeysString() ;
 
     return ss.str();
 }

@@ -6,6 +6,7 @@
 #include "GEnums.hh"
 #include "GOpticalSurface.hh"
 #include "md5digest.hh"
+#include "limits.h"
 
 #include <string>
 #include <map>
@@ -231,7 +232,7 @@ void GBoundaryLib::Summary(const char* msg)
     } 
 }
 
-GBoundary* GBoundaryLib::get(
+GBoundary* GBoundaryLib::getOrCreate(
            GPropertyMap<float>* imaterial, 
            GPropertyMap<float>* omaterial, 
            GPropertyMap<float>* isurface, 
@@ -242,6 +243,9 @@ GBoundary* GBoundaryLib::get(
 { 
     // this "get" pulls the GBoundary into existance and populates the registry
     //printf("GBoundaryLib::get imaterial %p omaterial %p isurface %p osurface %p \n", imaterial, omaterial, isurface, osurface );
+
+    assert(imaterial);
+    assert(omaterial);
 
     GBoundary raw(imaterial, omaterial, isurface, osurface, iextra, oextra);
     GBoundary* standard = createStandardBoundary(&raw) ;
@@ -267,6 +271,8 @@ GBoundary* GBoundaryLib::get(
 
 GBoundary* GBoundaryLib::createStandardBoundary(GBoundary* boundary)
 {
+    assert(boundary);
+
     GPropertyMap<float>* imat = boundary->getInnerMaterial();
     GPropertyMap<float>* omat = boundary->getOuterMaterial();
     GPropertyMap<float>* isur = boundary->getInnerSurface();
@@ -274,12 +280,18 @@ GBoundary* GBoundaryLib::createStandardBoundary(GBoundary* boundary)
     GPropertyMap<float>* iext = boundary->getInnerExtra();
     GPropertyMap<float>* oext = boundary->getOuterExtra();
 
+    assert(imat);
+    assert(omat);
+
     GPropertyMap<float>* s_imat = new GPropertyMap<float>(imat);
     GPropertyMap<float>* s_omat = new GPropertyMap<float>(omat);
     GPropertyMap<float>* s_isur = new GPropertyMap<float>(isur);
     GPropertyMap<float>* s_osur = new GPropertyMap<float>(osur);
     GPropertyMap<float>* s_iext = new GPropertyMap<float>(iext);
     GPropertyMap<float>* s_oext = new GPropertyMap<float>(oext);
+
+    assert(s_imat);
+    assert(s_omat);
 
     standardizeMaterialProperties( s_imat, imat, inner );
     standardizeMaterialProperties( s_omat, omat, outer );
@@ -628,7 +640,6 @@ GBuffer* GBoundaryLib::createReemissionBuffer(GPropertyMap<float>* scint)
 }
 
 
-
 void GBoundaryLib::createWavelengthAndOpticalBuffers()
 {
     //
@@ -757,7 +768,7 @@ array([[[ 76,   0,   0,   0],
         for( unsigned int p = 0; p < NUM_QUAD ; ++p )  // over NUM_QUAD different sets (imat,omat,isur,osur,iext,oext)  
         { 
             GPropertyMap<float>* psrc = boundary->getConstituentByIndex(p) ; 
-
+            addToIndex(psrc);  // this index includes only materials or surfaces used in boundaries, unlike the GGeo index
 
             if(psrc->isSkinSurface() || psrc->isBorderSurface())
             {
@@ -847,9 +858,27 @@ array([[[ 76,   0,   0,   0],
 
     m_optical_buffer->save<unsigned int>("/tmp/optical_buffer_debug.npy");
 
-
 }
 
+
+void GBoundaryLib::addToIndex(GPropertyMap<float>* psrc)
+{
+    unsigned int pindex = psrc->getIndex();
+    if(pindex < UINT_MAX)
+    {
+         if(m_index.count(pindex) == 0) 
+               m_index[pindex] = psrc->getShortName(); 
+         else
+               assert(strcmp(m_index[pindex].c_str(), psrc->getShortName()) == 0);
+    }
+}
+
+void  GBoundaryLib::dumpIndex(const char* msg)
+{
+    printf("%s\n", msg);
+    for(Index_t::iterator it=m_index.begin() ; it != m_index.end() ; it++)
+         printf("  %3u :  %s \n", it->first, it->second.c_str() );
+}
 
 std::string GBoundaryLib::digestString(std::vector<GProperty<float>*>& props)
 {

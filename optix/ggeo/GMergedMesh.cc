@@ -42,6 +42,9 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     GBoundaryLib* lib = ggeo->getBoundaryLib();
     lib->createWavelengthAndOpticalBuffers();
+    lib->dumpIndex("GMergedMesh::create GBoundaryLib::dumpIndex)");
+    ggeo->dumpIndex("GMergedMesh::create GGeo::dumpIndex"); 
+
     mm->setWavelengthBuffer(lib->getWavelengthBuffer());
     mm->setOpticalBuffer(lib->getOpticalBuffer());
 

@@ -17,6 +17,7 @@ class GBuffer ;
 
 class GBoundaryLib {
   public:
+     typedef std::map<unsigned int, std::string> Index_t ;
      enum {
          optical_index, 
          optical_type, 
@@ -78,7 +79,7 @@ class GBoundaryLib {
   public:
       // primary methods : lifecycle
       void setStandardDomain(GDomain<float>* standard_domain);
-      GBoundary* get(
+      GBoundary* getOrCreate(
                       GPropertyMap<float>* imaterial, 
                       GPropertyMap<float>* omaterial, 
                       GPropertyMap<float>* isurface, 
@@ -162,6 +163,10 @@ class GBoundaryLib {
       static void   dumpOpticalBuffer(   int wline, GBuffer* buffer, GBoundaryLibMetadata* metadata, unsigned int numBoundary);
 
   public:
+      void addToIndex(GPropertyMap<float>* obj);
+      void  dumpIndex(const char* msg="GBoundaryLib::dumpIndex");
+
+  public:
       GPropertyMap<float>* createStandardProperties(const char* name, GBoundary* boundary);
       void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
@@ -186,6 +191,7 @@ class GBoundaryLib {
       std::map<std::string, std::string>   m_keymap ; //  
       std::map<std::string, GBoundary*>    m_registry ; 
       std::vector<std::string>             m_keys ; 
+      Index_t                              m_index ; 
 
       bool                   m_standard ;     // transitional : keeping this set to true
       unsigned int           m_num_quad ; 
