@@ -14,7 +14,7 @@ GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) :
     m_parent(NULL),
     m_description(NULL),
     m_node_indices(NULL),
-    m_substance_indices(NULL),
+    m_boundary_indices(NULL),
     m_low(NULL),
     m_high(NULL)
 {
@@ -120,22 +120,22 @@ GMatrixF* GNode::getTransform()
 
 
 
-unsigned int* GNode::getSubstanceIndices()
+unsigned int* GNode::getBoundaryIndices()
 {
-    return m_substance_indices ; 
+    return m_boundary_indices ; 
 }
-void GNode::setSubstanceIndices(unsigned int* substance_indices)
+void GNode::setBoundaryIndices(unsigned int* boundary_indices)
 {
-    m_substance_indices = substance_indices ; 
+    m_boundary_indices = boundary_indices ; 
 }
-void GNode::setSubstanceIndices(unsigned int index)
+void GNode::setBoundaryIndices(unsigned int index)
 {
-    // unsigned int* array of the substance index repeated nface times
+    // unsigned int* array of the boundary index repeated nface times
 
     unsigned int nface = m_mesh->getNumFaces(); 
     unsigned int* indices = new unsigned int[nface] ;
     while(nface--) indices[nface] = index ; 
-    setSubstanceIndices(indices);
+    setBoundaryIndices(indices);
 }
 
 
@@ -161,19 +161,19 @@ void GNode::setNodeIndices(unsigned int index)
 // of nodes into a single structure
 
 
-void GNode::updateDistinctSubstanceIndices()
+void GNode::updateDistinctBoundaryIndices()
 {
     for(unsigned int i=0 ; i < m_mesh->getNumFaces() ; i++)
     {
-        unsigned int index = m_substance_indices[i] ;
-        if(std::count(m_distinct_substance_indices.begin(), m_distinct_substance_indices.end(), index ) == 0) m_distinct_substance_indices.push_back(index);
+        unsigned int index = m_boundary_indices[i] ;
+        if(std::count(m_distinct_boundary_indices.begin(), m_distinct_boundary_indices.end(), index ) == 0) m_distinct_boundary_indices.push_back(index);
     }  
-    std::sort( m_distinct_substance_indices.begin(), m_distinct_substance_indices.end() );
+    std::sort( m_distinct_boundary_indices.begin(), m_distinct_boundary_indices.end() );
 }
  
-std::vector<unsigned int>& GNode::getDistinctSubstanceIndices()
+std::vector<unsigned int>& GNode::getDistinctBoundaryIndices()
 {
-    if(m_distinct_substance_indices.size()==0) updateDistinctSubstanceIndices();
-    return m_distinct_substance_indices ;
+    if(m_distinct_boundary_indices.size()==0) updateDistinctBoundaryIndices();
+    return m_distinct_boundary_indices ;
 }
 

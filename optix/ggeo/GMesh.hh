@@ -19,7 +19,7 @@ class GBuffer ;
 //
 // Is this true ?
 //
-//     YES, the use of substances and nodes lists 
+//     YES, the use of boundaries and nodes lists 
 //     within the abstract unplaced shape GMesh 
 //     does not make sense...
 //
@@ -39,7 +39,7 @@ class GMesh : public GDrawable {
       static const char* texcoords ; 
       static const char* indices ; 
       static const char* nodes ; 
-      static const char* substances ; 
+      static const char* boundaries ; 
       static const char* wavelength ; 
       static const char* reemission ; 
       static const char* center_extent ; 
@@ -101,7 +101,7 @@ class GMesh : public GDrawable {
       void setTexcoordsBuffer(GBuffer* buffer);
       void setIndicesBuffer(GBuffer* buffer);
       void setNodesBuffer(GBuffer* buffer);
-      void setSubstancesBuffer(GBuffer* buffer);
+      void setBoundariesBuffer(GBuffer* buffer);
       void setWavelengthBuffer(GBuffer* buffer);
       void setReemissionBuffer(GBuffer* buffer);
       void setCenterExtentBuffer(GBuffer* buffer);
@@ -125,24 +125,24 @@ class GMesh : public GDrawable {
   ///////// for use from subclass  /////////////////////////////////////
   public:
       virtual void setNodes(unsigned int* nodes);
-      virtual void setSubstances(unsigned int* substances);
+      virtual void setBoundaries(unsigned int* boundaries);
   public:
       virtual unsigned int*  getNodes();
-      virtual unsigned int*  getSubstances();
+      virtual unsigned int*  getBoundaries();
       virtual GBuffer* getNodesBuffer();
-      virtual GBuffer* getSubstancesBuffer();
-      virtual std::vector<unsigned int>& getDistinctSubstances();
+      virtual GBuffer* getBoundariesBuffer();
+      virtual std::vector<unsigned int>& getDistinctBoundaries();
       std::vector<std::string>& getNames();
 
   private:
-      virtual void updateDistinctSubstances();
+      virtual void updateDistinctBoundaries();
 
   protected:
       unsigned int* m_nodes ; 
-      unsigned int* m_substances ; 
+      unsigned int* m_boundaries ; 
 
   private: 
-      std::vector<unsigned int> m_distinct_substances ;
+      std::vector<unsigned int> m_distinct_boundaries ;
   //////////////////////////////////////////////////////////////// 
 
   public:
@@ -204,7 +204,7 @@ class GMesh : public GDrawable {
       GBuffer* m_center_extent_buffer ;  
       GBuffer* m_wavelength_buffer ;
       GBuffer* m_nodes_buffer ;
-      GBuffer* m_substances_buffer ;
+      GBuffer* m_boundaries_buffer ;
       GBuffer* m_reemission_buffer ;
 
 
@@ -342,9 +342,9 @@ inline unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMerge
 {
     return m_nodes ;
 }
-inline unsigned int* GMesh::getSubstances()
+inline unsigned int* GMesh::getBoundaries()
 {
-    return m_substances ;
+    return m_boundaries ;
 }
 inline GBuffer*  GMesh::getWavelengthBuffer()
 {
@@ -395,9 +395,9 @@ inline GBuffer*  GMesh::getNodesBuffer()
 {
     return m_nodes_buffer ;
 }
-inline GBuffer*  GMesh::getSubstancesBuffer()
+inline GBuffer*  GMesh::getBoundariesBuffer()
 {
-    return m_substances_buffer ;
+    return m_boundaries_buffer ;
 }
 
 

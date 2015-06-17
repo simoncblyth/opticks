@@ -23,7 +23,7 @@ public:
     float* getModelToWorldPtr(unsigned int index);
 
     void dumpSolids(const char* msg="GMergedMesh::dumpSolids");
-    void dumpWavelengthBuffer(unsigned int numSubstance, unsigned int numProp, unsigned int numSamples);
+    void dumpWavelengthBuffer(unsigned int numBoundary, unsigned int numProp, unsigned int numSamples);
 
 private:
      // transients that do not need persisting

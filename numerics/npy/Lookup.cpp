@@ -39,7 +39,7 @@ Lookup::Lookup()
 {
 }
 const char* Lookup::ANAME = "ChromaMaterialMap.json";
-const char* Lookup::BNAME = "GSubstanceLibMetadataMaterialMap.json";
+const char* Lookup::BNAME = "GBoundaryLibMetadataMaterialMap.json";
 
 void Lookup::loada(const char* adir, const char* aname, const char* aprefix)
 {

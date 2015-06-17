@@ -409,24 +409,18 @@ Where are substance indices formed and associated to every triangle ?
   materials with specific surfaces(or maybe no associated surface) 
 
 * substance indices are affixed to the triangles of the geometry 
-  by GSolid::setSubstance GNode::setSubstanceIndices
+  by GSolid::setBoundary GNode::setBoundaryIndices
   which repeats the indice for every triangle of the solid. 
  
   This gets done within the AssimpGGeo::convertStructureVisit,
   the visitor method of the recursive AssimpGGeo::convertStructure 
   in assimpwrap-::
 
-    506     GBoundaryLib* lib = gg->getSubstanceLib();
-    507     GBoundary* substance = lib->get(mt, mt_p, isurf, osurf );
-    508     //substance->Summary("subst");
-    509 
-    510     solid->setSubstance(substance);
-    511 
-    512     char* desc = node->getDescription("\n\noriginal node description");
-    513     solid->setDescription(desc);
-    514     free(desc);
+    506     GBoundaryLib* lib = gg->getBoundaryLib();
+    507     GBoundary* boundary = lib->get(mt, mt_p, isurf, osurf, ...);
+    510     solid->setBoundary(boundary);
 
-* substances indices are collected/flattened into 
+* boundary indices are collected/flattened into 
   the unsigned int* substanceBuffer by GMergedMesh
        
 

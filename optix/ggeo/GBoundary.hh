@@ -29,14 +29,14 @@ class GOpticalSurface ;
 
 // hmm GBoundary, a better name would be GBoundary now ?
 // 
-// Substance indices are assigned by GBoundaryLib::get based on distinct property values
+// Boundary indices are assigned by GBoundaryLib::get based on distinct property values
 // this somewhat complicated approach is necessary as GBoundary incorporates info 
 // from inner/outer material/surface so GBoundary 
 // does not map to simple notions of identity it being a boundary between 
 // materials with specific surfaces(or maybe no associated surface) 
 //
-// Where is the substance indice affixed to the triangles of the geometry ?
-//      GSolid::getSubstanceIndices GSolid::setSubstance GNode::setSubstanceIndices
+// Where is the voundary indice affixed to the triangles of the geometry ?
+//      GSolid::getBoundaryIndices GSolid::setBoundary GNode::setBoundaryIndices
 // repeats the indice for every triangle 
 //
 
@@ -82,10 +82,8 @@ class GBoundary {   // TODO: rename together with associated classes to GBoundar
       void setOuterSurface(GPropertyMap<float>* osurface);
       void setInnerExtra(GPropertyMap<float>* iextra);
       void setOuterExtra(GPropertyMap<float>* oextra);
-
-  public:
-      //void setInnerOptical(GOpticalSurface* ioptical);
-      //void setOuterOptical(GOpticalSurface* ooptical);
+      void setInnerOptical(GOpticalSurface* ioptical);
+      void setOuterOptical(GOpticalSurface* ooptical);
 
 
 
@@ -138,6 +136,32 @@ inline unsigned int GBoundary::getIndex()
 
 
 
+
+inline GPropertyMap<float>* GBoundary::getInnerMaterial()
+{
+    return m_imaterial ; 
+}
+inline GPropertyMap<float>* GBoundary::getOuterMaterial()
+{
+    return m_omaterial ; 
+}
+inline GPropertyMap<float>* GBoundary::getInnerSurface()
+{
+    return m_isurface ; 
+}
+inline GPropertyMap<float>* GBoundary::getOuterSurface()
+{
+    return m_osurface ; 
+}
+inline GPropertyMap<float>* GBoundary::getInnerExtra()
+{
+    return m_iextra ; 
+}
+inline GPropertyMap<float>* GBoundary::getOuterExtra()
+{
+    return m_oextra ; 
+}
+
 inline GOpticalSurface* GBoundary::getInnerOptical()
 {
    return m_inner_optical ; 
@@ -145,6 +169,47 @@ inline GOpticalSurface* GBoundary::getInnerOptical()
 inline GOpticalSurface* GBoundary::getOuterOptical()
 {
    return m_outer_optical ; 
+}
+
+
+
+
+
+
+
+inline void GBoundary::setInnerMaterial(GPropertyMap<float>* imaterial)
+{
+    m_imaterial = imaterial ; 
+}
+inline void GBoundary::setOuterMaterial(GPropertyMap<float>* omaterial)
+{
+    m_omaterial = omaterial ; 
+}
+inline void GBoundary::setInnerSurface(GPropertyMap<float>* isurface)
+{
+    m_isurface = isurface ; 
+}
+inline void GBoundary::setOuterSurface(GPropertyMap<float>* osurface)
+{
+    m_osurface = osurface ; 
+}
+inline void GBoundary::setInnerExtra(GPropertyMap<float>* iextra)
+{
+    m_iextra = iextra ; 
+}
+inline void GBoundary::setOuterExtra(GPropertyMap<float>* oextra)
+{
+    m_oextra = oextra ; 
+}
+
+
+inline void GBoundary::setInnerOptical(GOpticalSurface* inner_optical)
+{
+    m_inner_optical = inner_optical ; 
+}
+inline void GBoundary::setOuterOptical(GOpticalSurface* outer_optical)
+{
+    m_outer_optical = outer_optical ; 
 }
 
 

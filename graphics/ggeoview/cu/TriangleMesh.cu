@@ -12,8 +12,8 @@ rtBuffer<float3> vertexBuffer;
 rtBuffer<int3> indexBuffer; 
 rtBuffer<unsigned int> nodeBuffer; 
 
-// GSubstance indices 
-rtBuffer<unsigned int> substanceBuffer; 
+// GBoundary indices 
+rtBuffer<unsigned int> boundaryBuffer; 
 
 
 // attribute variables must be set 
@@ -21,7 +21,7 @@ rtBuffer<unsigned int> substanceBuffer;
 // they provide communication from intersection program to closest hit program
  
 rtDeclareVariable(unsigned int, nodeIndex, attribute node_index,);
-rtDeclareVariable(unsigned int, substanceIndex, attribute substance_index,);
+rtDeclareVariable(unsigned int, boundaryIndex, attribute boundary_index,);
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
 //rtDeclareVariable(float3, intersectionPosition, attribute intersection_position, ); 
 
@@ -49,7 +49,7 @@ RT_PROGRAM void mesh_intersect(int primIdx)
             // attributes should be set between rtPotential and rtReport
             geometricNormal = normalize(n);
             nodeIndex = nodeBuffer[primIdx];
-            substanceIndex = substanceBuffer[primIdx];
+            boundaryIndex = boundaryBuffer[primIdx];
             
             // doing calculation here might (depending on OptiX compiler cleverness) 
             // repeat for all intersections encountered unnecessarily   

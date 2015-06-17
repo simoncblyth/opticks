@@ -14,7 +14,7 @@ class GBoundary ;
 
 class GSolid : public GNode {
   public:
-      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* substance);
+      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* boundary);
       virtual ~GSolid();
 
   public:
@@ -22,32 +22,24 @@ class GSolid : public GNode {
      bool isSelected();
 
   public:
-     void setSubstance(GBoundary* substance);
- //    void setInnerOpticalSurface(GOpticalSurface* ios);
- //    void setOuterOpticalSurface(GOpticalSurface* oos);
+     void setBoundary(GBoundary* boundary);
 
   public:
-     GBoundary* getSubstance();
- //    GOpticalSurface* getInnerOpticalSurface();
- //    GOpticalSurface* getOuterOpticalSurface();
+     GBoundary* getBoundary();
 
   public: 
       void Summary(const char* msg="GSolid::Summary");
  
   private:
-      GBoundary*        m_substance ; 
- //     GOpticalSurface*   m_inner_optical_surface ; 
- //     GOpticalSurface*   m_outer_optical_surface ; 
+      GBoundary*        m_boundary ; 
       bool m_selected ;
 
 };
 
-inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* substance)
+inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* boundary)
          : 
          GNode(index, transform, mesh ),
-         m_substance(substance),
-//         m_inner_optical_surface(NULL),
-//         m_outer_optical_surface(NULL),
+         m_boundary(boundary),
          m_selected(true)
 {
     // NB not taking ownership yet 
@@ -57,9 +49,9 @@ inline GSolid::~GSolid()
 {
 }
 
-inline GBoundary* GSolid::getSubstance()
+inline GBoundary* GSolid::getBoundary()
 {
-    return m_substance ; 
+    return m_boundary ; 
 }
 
 

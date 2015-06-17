@@ -297,7 +297,7 @@ GGeo* Scene::getGGeo()
 {
     return m_geometry_loader ? m_geometry_loader->getGGeo() : NULL ;
 }
-GSubstanceLibMetadata* Scene::getMetadata()
+GBoundaryLibMetadata* Scene::getMetadata()
 {
     return m_geometry_loader ? m_geometry_loader->getMetadata() : NULL ;
 }

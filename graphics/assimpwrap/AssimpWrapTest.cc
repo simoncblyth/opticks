@@ -4,7 +4,7 @@
 #include "AssimpGGeo.hh"
 
 #include "GGeo.hh"
-#include "GSubstanceLib.hh"
+#include "GBoundaryLib.hh"
 #include "GMergedMesh.hh"
 
 #include <stdio.h>
@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 
     //ggeo->Summary("main");    
 
-    //GSubstanceLib* lib = ggeo->getSubstanceLib();
-    //lib->Summary("GSubstanceLib");
+    //GBoundaryLib* lib = ggeo->getBoundaryLib();
+    //lib->Summary("GBoundaryLib");
 
     GMergedMesh* mm = ggeo->getMergedMesh();
     mm->Summary("GMergedMesh");

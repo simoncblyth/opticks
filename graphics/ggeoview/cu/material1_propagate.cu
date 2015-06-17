@@ -7,7 +7,7 @@
 
 rtDeclareVariable(float3,       geometricNormal, attribute geometric_normal, );
 rtDeclareVariable(unsigned int, nodeIndex,       attribute node_index, );
-rtDeclareVariable(unsigned int, substanceIndex,  attribute substance_index, );
+rtDeclareVariable(unsigned int, boundaryIndex,   attribute boundary_index, );
 
 rtDeclareVariable(PerRayData_propagate, prd, rtPayload, );
 rtDeclareVariable(optix::Ray,           ray, rtCurrentRay, );
@@ -71,7 +71,7 @@ RT_PROGRAM void closest_hit_propagate()
      //        inward going photons, with p.direction in opposite hemi to geometry normal
      //
 
-     prd.boundary = cos_theta < 0.f ? -(substanceIndex + 1) : substanceIndex + 1 ;   // 1-based with cos_theta signing, 0 means miss
+     prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   // 1-based with cos_theta signing, 0 means miss
 
      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
      //

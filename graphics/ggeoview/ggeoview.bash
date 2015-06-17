@@ -2,6 +2,7 @@
 
 ggv-cd(){ ggeoview-cd ; }
 ggv--(){  ggeoview-depinstall ; }
+ggv-lldb(){ ggeoview-lldb $* ; }
 
 ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
 ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }

@@ -52,7 +52,7 @@
 // ggeo-
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-#include "GSubstanceLibMetadata.hh"
+#include "GBoundaryLibMetadata.hh"
 #include "GLoader.hh"
 
 
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
     composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
 
-    GSubstanceLibMetadata* meta = scene.getMetadata(); 
+    GBoundaryLibMetadata* meta = scene.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
 
     // hmm would be better placed into a NumpyEvtCfg 

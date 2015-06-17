@@ -13,7 +13,7 @@ class GLoader ;
 class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
-class GSubstanceLibMetadata ;
+class GBoundaryLibMetadata ;
 class Photons ; 
 
 #include "Configurable.hh"
@@ -75,7 +75,7 @@ class Scene : public Configurable {
    public:
         // pass throughs to the loader
         GMergedMesh*            getMergedMesh();
-        GSubstanceLibMetadata*  getMetadata();
+        GBoundaryLibMetadata*   getMetadata();
         GGeo*                   getGGeo();
 
    public:

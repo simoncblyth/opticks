@@ -69,7 +69,7 @@ class GGeo {
         unsigned int getNumRawBorderSurfaces();
 
     public:
-        GBoundaryLib* getSubstanceLib();
+        GBoundaryLib* getBoundaryLib();
 
     public:
         GMesh* getMesh(unsigned int index);  
@@ -122,7 +122,7 @@ class GGeo {
         std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
         std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
 
-        GBoundaryLib*                m_substance_lib ; 
+        GBoundaryLib*                m_boundary_lib ; 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
         GMergedMesh*                  m_merged_mesh ; 
@@ -139,7 +139,7 @@ class GGeo {
 
 
 inline GGeo::GGeo() :
-   m_substance_lib(NULL),
+   m_boundary_lib(NULL),
    m_low(NULL),
    m_high(NULL),
    m_merged_mesh(NULL),
@@ -253,9 +253,9 @@ inline char* GGeo::getIdentityPath()
 }
 
 
-inline GBoundaryLib* GGeo::getSubstanceLib()
+inline GBoundaryLib* GGeo::getBoundaryLib()
 {
-    return m_substance_lib ; 
+    return m_boundary_lib ; 
 }
 inline gfloat3* GGeo::getLow()
 {

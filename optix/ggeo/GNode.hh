@@ -23,20 +23,20 @@ class GNode {
 
   public:
       //
-      // **substance indices live on the node rather than the mesh**
+      // **boundary indices live on the node rather than the mesh**
       //
       // as there are a relatively small number of meshes and many nodes
       // that utilize them with different transforms
       //
-      // normally a single substance per-node but allow the 
-      // possibility of compound substance nodes, eg for combined meshes
+      // normally a single boundary per-node but allow the 
+      // possibility of compound boundary nodes, eg for combined meshes
       //
-      void setSubstanceIndices(unsigned int substance_index);
-      void setSubstanceIndices(unsigned int* substance_indices);
+      void setBoundaryIndices(unsigned int boundary_index);
+      void setBoundaryIndices(unsigned int* boundary_indices);
 
-      unsigned int* getSubstanceIndices();
-      std::vector<unsigned int>& getDistinctSubstanceIndices();
-      void updateDistinctSubstanceIndices();
+      unsigned int* getBoundaryIndices();
+      std::vector<unsigned int>& getDistinctBoundaryIndices();
+      void updateDistinctBoundaryIndices();
 
   public:
       unsigned int getIndex();
@@ -75,11 +75,11 @@ class GNode {
       gfloat3*   m_high ; 
 
   private: 
-      unsigned int* m_substance_indices ;
+      unsigned int* m_boundary_indices ;
       unsigned int* m_node_indices ;
 
   private: 
-      std::vector<unsigned int> m_distinct_substance_indices ;
+      std::vector<unsigned int> m_distinct_boundary_indices ;
 
 };
 

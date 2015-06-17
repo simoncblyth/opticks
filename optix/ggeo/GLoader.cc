@@ -94,7 +94,7 @@ const char* GLoader::load(const char* envprefix, bool nogeocache)
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
         m_mergedmesh->save(idpath); 
 
-        GBoundaryLib* lib = m_ggeo->getSubstanceLib();
+        GBoundaryLib* lib = m_ggeo->getBoundaryLib();
         m_metadata = lib->getMetadata();
         m_metadata->save(idpath);
 

@@ -12,10 +12,10 @@ void GSolid::Summary(const char* msg )
 }
 
 
-void GSolid::setSubstance(GBoundary* substance)
+void GSolid::setBoundary(GBoundary* boundary)
 {
-    m_substance = substance ; 
-    setSubstanceIndices( substance->getIndex() );
+    m_boundary = boundary ; 
+    setBoundaryIndices( boundary->getIndex() );
 }
 
  

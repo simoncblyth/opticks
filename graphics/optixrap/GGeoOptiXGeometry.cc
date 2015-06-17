@@ -7,8 +7,8 @@
 #include "GGeo.hh"
 #include "GSolid.hh"
 #include "GMesh.hh"
-#include "GSubstanceLib.hh"
-#include "GSubstance.hh"
+#include "GBoundaryLib.hh"
+#include "GBoundary.hh"
 #include "GPropertyMap.hh"
 
 #include <boost/log/trivial.hpp>
@@ -32,24 +32,24 @@ GGeoOptiXGeometry::GGeoOptiXGeometry(GGeo* ggeo)
 
 void GGeoOptiXGeometry::convert()
 {
-    convertSubstances();
+    convertBoundaries();
     convertStructure();
 }
 
 
-void GGeoOptiXGeometry::convertSubstances()
+void GGeoOptiXGeometry::convertBoundaries()
 {
-    LOG(info) << "GGeoOptiXGeometry::convertSubstances"; 
-    GSubstanceLib* lib = m_ggeo->getSubstanceLib();
-    unsigned int nsub = lib->getNumSubstances();
-    for(unsigned int i=0 ; i < nsub ; i++)
+    LOG(info) << "GGeoOptiXGeometry::convertBoundaries"; 
+    GBoundaryLib* lib = m_ggeo->getBoundaryLib();
+    unsigned int nb = lib->getNumBoundary();
+    for(unsigned int i=0 ; i < nb ; i++)
     {
-        GSubstance* substance = lib->getSubstance(i);
-        optix::Material material = convertSubstance(substance);
+        GBoundary* boundary = lib->getBoundary(i);
+        optix::Material material = convertBoundary(boundary);
         m_materials.push_back(material);
     }
-    assert(m_materials.size() == nsub);
-    LOG(info) << "GGeoOptiXGeometry::convertSubstances converted " << nsub << " substances into optix materials " ; 
+    assert(m_materials.size() == nb);
+    LOG(info) << "GGeoOptiXGeometry::convertBoundaries converted " << nb << " boundarys into optix materials " ; 
 }
 
 
@@ -87,13 +87,13 @@ optix::GeometryInstance GGeoOptiXGeometry::convertGeometryInstance(GSolid* solid
 {
     optix::Geometry geometry = convertGeometry(solid) ;  
 
-    std::vector<unsigned int>& substanceIndices = solid->getDistinctSubstanceIndices();
-    assert(substanceIndices.size() == 1 );  // for now, maybe >1 for merged meshes 
+    std::vector<unsigned int>& boundaryIndices = solid->getDistinctBoundaryIndices();
+    assert(boundaryIndices.size() == 1 );  // for now, maybe >1 for merged meshes 
 
     std::vector<optix::Material> materials ;
-    for(unsigned int i=0 ; i < substanceIndices.size() ; i++)
+    for(unsigned int i=0 ; i < boundaryIndices.size() ; i++)
     {
-        unsigned int index = substanceIndices[i];
+        unsigned int index = boundaryIndices[i];
         optix::Material material = getMaterial(index) ;
         materials.push_back(material); 
     }
@@ -152,16 +152,16 @@ optix::Geometry GGeoOptiXGeometry::convertGeometry(GSolid* solid)
     nodeBuffer->unmap();
 
 
-    // while have one substance per mesh this isnt needed, with 
-    // merged meshes this can identify which substance corresponds to which face
+    // while have one boundary per mesh this isnt needed, with 
+    // merged meshes this can identify which boundary corresponds to which face
     //
-    optix::Buffer substanceBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
-    unsigned int* substanceBuffer_Host = static_cast<unsigned int*>( substanceBuffer->map() );
-    geometry["substanceBuffer"]->setBuffer(substanceBuffer);
-    memcpy( static_cast<void*>( substanceBuffer_Host ),
-            static_cast<void*>( solid->getSubstanceIndices() ),
+    optix::Buffer boundaryBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
+    unsigned int* boundaryBuffer_Host = static_cast<unsigned int*>( boundaryBuffer->map() );
+    geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
+    memcpy( static_cast<void*>( boundaryBuffer_Host ),
+            static_cast<void*>( solid->getBoundaryIndices() ),
             sizeof(unsigned int)*numFaces); 
-    substanceBuffer->unmap();
+    boundaryBuffer->unmap();
 
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
     geometry["tangentBuffer"]->setBuffer(emptyBuffer);
@@ -261,10 +261,10 @@ void GGeoOptiXGeometry::addWavelengthTexture(optix::Material& material, GPropert
 
 
 
-optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
+optix::Material GGeoOptiXGeometry::convertBoundary(GBoundary* boundary)
 {
     //
-    // Each GSubstance (representing boundaries between materials) 
+    // Each GBoundary (representing boundaries between materials) 
     // is 1-1 related to optix::Material
     //
  
@@ -275,16 +275,16 @@ optix::Material GGeoOptiXGeometry::convertSubstance(GSubstance* substance)
     unsigned int raytype_radiance = 0 ;
     material->setClosestHitProgram(raytype_radiance, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
 
-    GSubstanceLib* lib = m_ggeo->getSubstanceLib();
+    GBoundaryLib* lib = m_ggeo->getBoundaryLib();
 
-    GPropertyMap<float>* ptex = lib->createStandardProperties("ptex", substance);
+    GPropertyMap<float>* ptex = lib->createStandardProperties("ptex", boundary);
 
-    //substance->setTexProps(ptex);
-    //substance->dumpTexProps("GGeoOptiXGeometry::convertSubstance", 510.f ); 
+    //boundary->setTexProps(ptex);
+    //boundary->dumpTexProps("GGeoOptiXGeometry::convertBoundary", 510.f ); 
 
     addWavelengthTexture(material, ptex);
 
-    unsigned int index = substance->getIndex();
+    unsigned int index = boundary->getIndex();
     material["contrast_color"]->setFloat(cfg->make_contrast_color(index));   // just for debugging
 
     return material ; 

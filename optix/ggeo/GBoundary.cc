@@ -210,64 +210,6 @@ void GBoundary::Summary(const char* msg, unsigned int nline)
 
 
 
-void GBoundary::setInnerMaterial(GPropertyMap<float>* imaterial)
-{
-    m_imaterial = imaterial ; 
-}
-void GBoundary::setOuterMaterial(GPropertyMap<float>* omaterial)
-{
-    m_omaterial = omaterial ; 
-}
-void GBoundary::setInnerSurface(GPropertyMap<float>* isurface)
-{
-    m_isurface = isurface ; 
-}
-void GBoundary::setOuterSurface(GPropertyMap<float>* osurface)
-{
-    m_osurface = osurface ; 
-}
-void GBoundary::setInnerExtra(GPropertyMap<float>* iextra)
-{
-    m_iextra = iextra ; 
-}
-void GBoundary::setOuterExtra(GPropertyMap<float>* oextra)
-{
-    m_oextra = oextra ; 
-}
-
-
-
-
-
-
-
-GPropertyMap<float>* GBoundary::getInnerMaterial()
-{
-    return m_imaterial ; 
-}
-GPropertyMap<float>* GBoundary::getOuterMaterial()
-{
-    return m_omaterial ; 
-}
-GPropertyMap<float>* GBoundary::getInnerSurface()
-{
-    return m_isurface ; 
-}
-GPropertyMap<float>* GBoundary::getOuterSurface()
-{
-    return m_osurface ; 
-}
-GPropertyMap<float>* GBoundary::getInnerExtra()
-{
-    return m_iextra ; 
-}
-GPropertyMap<float>* GBoundary::getOuterExtra()
-{
-    return m_oextra ; 
-}
-
-
-
 GPropertyMap<float>* GBoundary::getConstituentByIndex(unsigned int p)
 {
     switch(p)

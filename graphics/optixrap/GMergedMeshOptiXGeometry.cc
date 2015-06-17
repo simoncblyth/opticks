@@ -1,7 +1,7 @@
 #include "GMergedMeshOptiXGeometry.hh"
 #include "OptiXEngine.hh"
 #include "GMergedMesh.hh"
-#include "GSubstanceLib.hh"
+#include "GBoundaryLib.hh"
 
 #include "RayTraceConfig.hh"
 
@@ -29,7 +29,7 @@ void GMergedMeshOptiXGeometry::convert()
 optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* buffer)
 {
    // handles different numbers of substances, but uses static domain length
-    unsigned int domainLength = GSubstanceLib::DOMAIN_LENGTH ;
+    unsigned int domainLength = GBoundaryLib::DOMAIN_LENGTH ;
     unsigned int numElementsTotal = buffer->getNumElementsTotal();
     assert( numElementsTotal % domainLength == 0 );
 
@@ -122,14 +122,14 @@ optix::Material GMergedMeshOptiXGeometry::makeMaterial()
 
 optix::float4 GMergedMeshOptiXGeometry::getDomain()
 {
-    float domain_range = (GSubstanceLib::DOMAIN_HIGH - GSubstanceLib::DOMAIN_LOW); 
-    return optix::make_float4(GSubstanceLib::DOMAIN_LOW, GSubstanceLib::DOMAIN_HIGH, GSubstanceLib::DOMAIN_STEP, domain_range); 
+    float domain_range = (GBoundaryLib::DOMAIN_HIGH - GBoundaryLib::DOMAIN_LOW); 
+    return optix::make_float4(GBoundaryLib::DOMAIN_LOW, GBoundaryLib::DOMAIN_HIGH, GBoundaryLib::DOMAIN_STEP, domain_range); 
 }
 
 optix::float4 GMergedMeshOptiXGeometry::getDomainReciprocal()
 {
     // only endpoints used for sampling, not the step 
-    return optix::make_float4(1./GSubstanceLib::DOMAIN_LOW, 1./GSubstanceLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
+    return optix::make_float4(1./GBoundaryLib::DOMAIN_LOW, 1./GBoundaryLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
 }
 
 
@@ -184,7 +184,7 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* drawable)
     GBuffer* vbuf = drawable->getVerticesBuffer();
     GBuffer* ibuf = drawable->getIndicesBuffer();
     GBuffer* dbuf = drawable->getNodesBuffer();
-    GBuffer* sbuf = drawable->getSubstancesBuffer();
+    GBuffer* bbuf = drawable->getBoundariesBuffer();
 
     unsigned int numVertices = vbuf->getNumItems() ;
     unsigned int numFaces = ibuf->getNumItems()/3;    
@@ -218,11 +218,11 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* drawable)
         geometry["nodeBuffer"]->setBuffer(nodeBuffer);
     }
     {
-        assert(sizeof(unsigned int)*numFaces == sbuf->getNumBytes() && sbuf->getNumElements() == 1);
-        optix::Buffer substanceBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
-        memcpy( substanceBuffer->map(), sbuf->getPointer(), sbuf->getNumBytes() );
-        substanceBuffer->unmap();
-        geometry["substanceBuffer"]->setBuffer(substanceBuffer);
+        assert(sizeof(unsigned int)*numFaces == bbuf->getNumBytes() && bbuf->getNumElements() == 1);
+        optix::Buffer boundaryBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
+        memcpy( boundaryBuffer->map(), bbuf->getPointer(), bbuf->getNumBytes() );
+        boundaryBuffer->unmap();
+        geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
     }
 
 

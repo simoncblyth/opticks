@@ -19,8 +19,8 @@
 #include "GSkinSurface.hh"
 #include "GOpticalSurface.hh"
 #include "GSolid.hh"
-#include "GSubstance.hh"
-#include "GSubstanceLib.hh"
+#include "GBoundary.hh"
+#include "GBoundaryLib.hh"
 #include "GDomain.hh"
 
 
@@ -270,7 +270,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
              << " mNumMaterials " << scene->mNumMaterials  
              ;
 
-    GDomain<float>* standard_domain = gg->getSubstanceLib()->getStandardDomain(); 
+    GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
 
     for(unsigned int i = 0; i < scene->mNumMaterials; i++)
     {
@@ -609,23 +609,21 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
         m_no_surface++ ;
     }
 
-    if(isurf && osurf) LOG(info) << "AssimpGGeo::convertStructureVisit substance with both ISURF and OSURF defined " ;
+    if(isurf && osurf) LOG(info) << "AssimpGGeo::convertStructureVisit boundary with both ISURF and OSURF defined " ;
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
-    GSubstanceLib* lib = gg->getSubstanceLib();  // TODO: rename to GBoundaryLib
+    GBoundaryLib* lib = gg->getBoundaryLib();  // TODO: rename to GBoundaryLib
     
-    GSubstance* substance = lib->get(mt, mt_p, isurf, osurf, iextra, oextra ); 
+    GBoundary* boundary = lib->get(mt, mt_p, isurf, osurf, iextra, oextra, isurf_optical, osurf_optical); 
 
-    // pulling new substances into existance or accessing pre-existing ones 
+    // pulling new boundarys into existance or accessing pre-existing ones 
     //
-    // NB tacking info on the substance is problematic as is arranged to 
+    // NB tacking info on the boundary is problematic as is arranged to 
     // to minimize instances, so need to diddle with digests 
     //
     // no such problems with GSolid
 
-    solid->setSubstance(substance);  
-    solid->setInnerOpticalSurface(isurf_optical);
-    solid->setOuterOpticalSurface(osurf_optical);
+    solid->setBoundary(boundary);  
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);
@@ -641,7 +639,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 Why does this show up with isurf rather than osurf ?
 
 
-GSubstanceLib substance index 16 
+GBoundaryLib boundary index 16 
 imat material 59 __dd__Materials__MineralOil0xbf5c830
 ABSLENGTH
    0    899.871    219.400
@@ -684,10 +682,10 @@ REFLECTIVITY
 
 
 Many instances of skin surfaces with differing names but the same 
-property values are causing total of 73 different substances ...
+property values are causing total of 73 different boundarys ...
 
 
-GSubstanceLib substance index 62 
+GBoundaryLib boundary index 62 
 imat material 75 __dd__Materials__UnstStainlessSteel0xc5c11e8
 ABSLENGTH
    0    799.898      0.001
@@ -701,7 +699,7 @@ REFLECTIVITY
 RINDEX
    0      0.000      0.000
    1      0.000      0.000
-GSubstanceLib substance index 63 
+GBoundaryLib boundary index 63 
 imat material 75 __dd__Materials__UnstStainlessSteel0xc5c11e8
 ABSLENGTH
    0    799.898      0.001

@@ -46,7 +46,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     mm->setFaces(        new guint3[mm->getNumFaces()]);
     mm->setNodes(        new unsigned int[mm->getNumFaces()]);
-    mm->setSubstances(   new unsigned int[mm->getNumFaces()]);
+    mm->setBoundaries(   new unsigned int[mm->getNumFaces()]);
 
     mm->setNumColors(mm->getNumVertices());
     mm->setColor(0.5,0.5,0.5);
@@ -56,7 +56,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->traverse( solid, 0, pass_merge ); // 2nd pass counts merge GMesh into GMergedMesh
     mm->updateBounds();
 
-    GBoundaryLib* lib = ggeo->getSubstanceLib();
+    GBoundaryLib* lib = ggeo->getBoundaryLib();
     mm->setWavelengthBuffer(lib->createWavelengthBuffer());
 
     GPropertyMap<float>* scint = ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
@@ -112,10 +112,10 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
             // NB from the GNode not the GMesh 
             // (there are only ~250 GMesh instances which are recycled by the ~12k GNode)
             unsigned int* node_indices = node->getNodeIndices();
-            unsigned int* substance_indices = node->getSubstanceIndices();
+            unsigned int* boundary_indices = node->getBoundaryIndices();
 
             assert(node_indices);
-            assert(substance_indices);
+            assert(boundary_indices);
 
             for(unsigned int i=0 ; i<nface ; ++i )
             {
@@ -124,7 +124,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
                 m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
 
                 m_nodes[m_cur_faces+i]      = node_indices[i] ;
-                m_substances[m_cur_faces+i] = substance_indices[i] ;
+                m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
             }
 
             m_cur_vertices += nvert ;

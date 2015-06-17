@@ -20,7 +20,7 @@ const char* GMesh::colors       = "colors" ;
 const char* GMesh::texcoords    = "texcoords" ;
 const char* GMesh::indices      = "indices" ;
 const char* GMesh::nodes        = "nodes" ;
-const char* GMesh::substances   = "substances" ;
+const char* GMesh::boundaries   = "boundaries" ;
 const char* GMesh::wavelength   = "wavelength" ;
 const char* GMesh::reemission   = "reemission" ;
 const char* GMesh::center_extent = "center_extent" ;
@@ -33,7 +33,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(texcoords); 
     names.push_back(indices); 
     names.push_back(nodes); 
-    names.push_back(substances); 
+    names.push_back(boundaries); 
     names.push_back(wavelength); 
     names.push_back(reemission); 
     names.push_back(center_extent); 
@@ -59,8 +59,8 @@ GMesh::GMesh(GMesh* other)
      m_wavelength_buffer(other->getWavelengthBuffer()),
      m_reemission_buffer(other->getReemissionBuffer()),
      m_nodes_buffer(other->getNodesBuffer()),
-     m_substances(other->getSubstances()),
-     m_substances_buffer(other->getSubstancesBuffer()),
+     m_boundaries(other->getBoundaries()),
+     m_boundaries_buffer(other->getBoundariesBuffer()),
      m_center_extent_buffer(other->getCenterExtentBuffer()),
      m_num_solids(other->getNumSolids()),
      m_num_solids_selected(other->getNumSolidsSelected()),
@@ -90,12 +90,12 @@ GMesh::GMesh(unsigned int index,
       m_num_vertices(num_vertices), 
       m_faces(NULL),
       m_indices_buffer(NULL),
-      m_nodes(NULL),           // nodes and substances are somwhat confusing : use only with subclasses like GMergedMesh
+      m_nodes(NULL),           // nodes and boundaries are somwhat confusing : use only with subclasses like GMergedMesh
       m_wavelength_buffer(NULL),
       m_reemission_buffer(NULL),
       m_nodes_buffer(NULL),
-      m_substances(NULL),
-      m_substances_buffer(NULL),
+      m_boundaries(NULL),
+      m_boundaries_buffer(NULL),
       m_num_faces(num_faces),
       m_colors(NULL),
       m_colors_buffer(NULL),
@@ -140,7 +140,7 @@ GBuffer* GMesh::getBuffer(const char* name)
 
     if(strcmp(name, indices) == 0)      return m_indices_buffer ; 
     if(strcmp(name, nodes) == 0)        return m_nodes_buffer ; 
-    if(strcmp(name, substances) == 0)   return m_substances_buffer ; 
+    if(strcmp(name, boundaries) == 0)   return m_boundaries_buffer ; 
 
     if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
     if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
@@ -158,7 +158,7 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
 
     if(strcmp(name, indices) == 0)      setIndicesBuffer(buffer) ; 
     if(strcmp(name, nodes) == 0)        setNodesBuffer(buffer) ; 
-    if(strcmp(name, substances) == 0)   setSubstancesBuffer(buffer) ; 
+    if(strcmp(name, boundaries) == 0)   setBoundariesBuffer(buffer) ; 
 
     if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
     if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
@@ -354,22 +354,22 @@ void GMesh::setNodesBuffer(GBuffer* buffer)
 }
 
 
-void GMesh::setSubstances(unsigned int* substances)
+void GMesh::setBoundaries(unsigned int* boundaries)
 {
-    m_substances = substances ;
-    m_substances_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_substances, sizeof(unsigned int), 1 ) ;
+    m_boundaries = boundaries ;
+    m_boundaries_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_boundaries, sizeof(unsigned int), 1 ) ;
     assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
 }
-void GMesh::setSubstancesBuffer(GBuffer* buffer)
+void GMesh::setBoundariesBuffer(GBuffer* buffer)
 {
-    m_substances_buffer = buffer ; 
+    m_boundaries_buffer = buffer ; 
     if(!buffer) return ;
 
-    m_substances = (unsigned int*)buffer->getPointer();
+    m_boundaries = (unsigned int*)buffer->getPointer();
 
     unsigned int numBytes = buffer->getNumBytes();
-    unsigned int num_substances = numBytes/sizeof(unsigned int);
-    assert(m_num_faces == num_substances);   // must load indices before substances
+    unsigned int num_boundaries = numBytes/sizeof(unsigned int);
+    assert(m_num_faces == num_boundaries);   // must load indices before boundaries
 }
 
 
@@ -441,8 +441,8 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
     for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
     {
         unsigned int& node = m_nodes[i] ;
-        unsigned int& substance = m_substances[i] ;
-        printf(" fac %5u  node %5u substance %5u  \n", i, node, substance );
+        unsigned int& boundary = m_boundaries[i] ;
+        printf(" fac %5u  node %5u boundary %5u  \n", i, node, boundary );
     } 
 }
 
@@ -624,20 +624,20 @@ gfloat3* GMesh::getTransformedNormals(GMatrixF& transform )
 
 
 
-void GMesh::updateDistinctSubstances()
+void GMesh::updateDistinctBoundaries()
 {
     for(unsigned int i=0 ; i < getNumFaces() ; i++)
     {
-        unsigned int index = m_substances[i] ;
-        if(std::count(m_distinct_substances.begin(), m_distinct_substances.end(), index ) == 0) m_distinct_substances.push_back(index);
+        unsigned int index = m_boundaries[i] ;
+        if(std::count(m_distinct_boundaries.begin(), m_distinct_boundaries.end(), index ) == 0) m_distinct_boundaries.push_back(index);
     }  
-    std::sort( m_distinct_substances.begin(), m_distinct_substances.end() );
+    std::sort( m_distinct_boundaries.begin(), m_distinct_boundaries.end() );
 }
  
-std::vector<unsigned int>& GMesh::getDistinctSubstances()
+std::vector<unsigned int>& GMesh::getDistinctBoundaries()
 {
-    if(m_distinct_substances.size()==0) updateDistinctSubstances();
-    return m_distinct_substances ;
+    if(m_distinct_boundaries.size()==0) updateDistinctBoundaries();
+    return m_distinct_boundaries ;
 }
 
 
@@ -655,7 +655,7 @@ bool GMesh::isIntBuffer(const char* name)
 {
     return ( strcmp( name, indices) == 0 || 
              strcmp( name, nodes) == 0  || 
-             strcmp( name, substances) == 0 );
+             strcmp( name, boundaries ) == 0 );
 }
 
 

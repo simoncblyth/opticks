@@ -18,13 +18,13 @@
 void GGeo::init()
 {
 
-   m_substance_lib = new GBoundaryLib();
+   m_boundary_lib = new GBoundaryLib();
 
    // chroma/chroma/geometry.py
    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
    //
    GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
-   m_substance_lib->setStandardDomain( standard_wavelengths );
+   m_boundary_lib->setStandardDomain( standard_wavelengths );
 }
 
 
@@ -32,7 +32,7 @@ GGeo::~GGeo()
 {
    delete m_low ; 
    delete m_high ; 
-   delete m_substance_lib ;
+   delete m_boundary_lib ;
 }
 
 void GGeo::setLow(const gfloat3& low)

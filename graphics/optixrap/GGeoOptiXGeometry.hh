@@ -11,7 +11,7 @@ class GGeo ;
 class GMaterial ; 
 class GSolid ; 
 class GNode ;
-class GSubstance ;
+class GBoundary ;
 class GDrawable ; 
 
 class GGeoOptiXGeometry  : public OptiXGeometry 
@@ -24,8 +24,8 @@ public:
     void convert();
 
 private:
-    void convertSubstances();
-    optix::Material convertSubstance(GSubstance* substance);
+    void convertBoundaries();
+    optix::Material convertBoundary(GBoundary* boundary);
     void addWavelengthTexture(optix::Material& material, GPropertyMap<float>* ptex);
 
 private:

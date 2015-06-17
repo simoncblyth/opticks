@@ -71,25 +71,6 @@ class GBuffer {
               unsigned int isub = i/divisor ; 
               unsigned int iquad = (i - isub*divisor)/qdivisor ; 
 
-              // about 2% of floats differ
-              // ~200 entries from isub(iquad) are discrepant : all b are zero 
-              //
-              //    3(0,1)     PPE/Air
-              //   12(0,1,3)   StainlessSteel/IwsWater/SST-watersurface
-              //   21(0,1)     Bialkali/Vacuum
-              //   52(0,1)     Nitrogen/Water
-/*
-GBoundaryLib::add WARNING adding duplicate substance key 33e6e0d528715b6f734c39dd38582d56 
-GBoundaryLib::add WARNING adding duplicate substance key 9df4c1f7eefca5ad172d41150e428490 
-GBoundaryLib::add WARNING adding duplicate substance key 07592c2f320ea0f9ab4b0469ef8e9860 
-GBoundaryLib::add WARNING adding duplicate substance key 8e4b6321e85ae1e60b6ff9c3fbbbdffe 
-
-GBoundaryLib::getSubstance WARNING substance index mismatch request 3 substance 39 key 9df4c1f7eefca5ad172d41150e428490 
-GBoundaryLib::getSubstance WARNING substance index mismatch request 12 substance 55 key 07592c2f320ea0f9ab4b0469ef8e9860 
-GBoundaryLib::getSubstance WARNING substance index mismatch request 21 substance 24 key 33e6e0d528715b6f734c39dd38582d56 
-GBoundaryLib::getSubstance WARNING substance index mismatch request 52 substance 56 key 8e4b6321e85ae1e60b6ff9c3fbbbdffe 
-*/
-
               if(a[i] != b[i])
               {
                   n+= 1 ; 
