@@ -18,8 +18,9 @@ enum {
    e_reflect_diffuse
 };
 
+   //e_reemission_cdf,
 enum {
-   e_reemission_cdf,
+   e_extra_x,
    e_extra_y,
    e_extra_z,
    e_extra_w

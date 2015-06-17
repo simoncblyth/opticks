@@ -1,5 +1,4 @@
-#ifndef GMESH_H
-#define GMESH_H
+#pragma once
 
 #include "GVector.hh"
 #include "GMatrix.hh"
@@ -43,6 +42,7 @@ class GMesh : public GDrawable {
       static const char* wavelength ; 
       static const char* reemission ; 
       static const char* center_extent ; 
+      static const char* optical ; 
 
 
       GMesh(GMesh* other); // stealing copy ctor
@@ -89,6 +89,7 @@ class GMesh : public GDrawable {
       GBuffer* getBuffer(const char* name);
       void setBuffer(const char* name, GBuffer* buffer);
       bool isIntBuffer(const char* name);
+      bool isUIntBuffer(const char* name);
       bool isFloatBuffer(const char* name);
       static void nameConstituents(std::vector<std::string>& names);
       void saveBuffer(const char* path, const char* name, GBuffer* buffer);
@@ -105,6 +106,7 @@ class GMesh : public GDrawable {
       void setWavelengthBuffer(GBuffer* buffer);
       void setReemissionBuffer(GBuffer* buffer);
       void setCenterExtentBuffer(GBuffer* buffer);
+      void setOpticalBuffer(GBuffer* buffer);
 
   public:
       // Buffer access for GDrawable protocol
@@ -117,6 +119,7 @@ class GMesh : public GDrawable {
       GBuffer* getWavelengthBuffer();
       GBuffer* getReemissionBuffer();
       GBuffer* getCenterExtentBuffer();
+      GBuffer* getOpticalBuffer();
 
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
@@ -206,6 +209,7 @@ class GMesh : public GDrawable {
       GBuffer* m_nodes_buffer ;
       GBuffer* m_boundaries_buffer ;
       GBuffer* m_reemission_buffer ;
+      GBuffer* m_optical_buffer ;
 
 
 };
@@ -354,6 +358,11 @@ inline GBuffer*  GMesh::getReemissionBuffer()
 {
     return m_reemission_buffer ;
 }
+inline GBuffer*  GMesh::getOpticalBuffer()
+{
+    return m_optical_buffer ;
+}
+
 
 
 
@@ -409,10 +418,13 @@ inline void GMesh::setWavelengthBuffer(GBuffer* buffer)
 {
     m_wavelength_buffer = buffer ; 
 }
-
 inline void GMesh::setReemissionBuffer(GBuffer* buffer)
 {
     m_reemission_buffer = buffer ; 
+}
+inline void GMesh::setOpticalBuffer(GBuffer* buffer)
+{
+    m_optical_buffer = buffer ; 
 }
 
 
@@ -421,4 +433,4 @@ inline void GMesh::setReemissionBuffer(GBuffer* buffer)
 
 
 
-#endif
+

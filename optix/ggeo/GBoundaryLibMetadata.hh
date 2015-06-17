@@ -24,7 +24,7 @@ class GBoundaryLibMetadata {
       void createMaterialMap();
 
    public:
-      // 1-based substance code to allow cos_theta sign flipped boundary code, zero corresponds to "nohit"
+      // 1-based boundary code to allow cos_theta sign flipped boundary code, zero corresponds to "nohit"
       unsigned int getBoundaryCode(unsigned int isub);
       std::string getBoundaryName(unsigned int isub);
       unsigned int getNumBoundary();

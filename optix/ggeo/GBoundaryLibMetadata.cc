@@ -56,7 +56,7 @@ void GBoundaryLibMetadata::add(const char* kfmt, unsigned int isub, const char* 
     const char* type = pmap->getType() ;
     std::string keys = pmap->getKeysString() ;
 
-    // "lib.substance.%d.%s.%s" ;
+    // "lib.boundary.%d.%s.%s" ;
     add(kfmt, isub, cat, "name",    name); 
     add(kfmt, isub, cat, "type",    type);
     add(kfmt, isub, cat, "keys",    keys.c_str());
@@ -112,7 +112,7 @@ std::string GBoundaryLibMetadata::getBoundaryQtyByIndex(unsigned int isub, unsig
 std::string GBoundaryLibMetadata::getBoundaryQty(unsigned int isub, const char* cat, const char* tag)
 {
     char key[128];
-    snprintf(key, 128, "lib.substance.%u.%s.%s", isub, cat, tag);
+    snprintf(key, 128, "lib.boundary.%u.%s.%s", isub, cat, tag);
     return m_tree.get<std::string>(key);
 }
 
@@ -120,7 +120,7 @@ std::string GBoundaryLibMetadata::getBoundaryQty(unsigned int isub, const char* 
 unsigned int GBoundaryLibMetadata::getNumBoundary()
 {
     unsigned int count(0);
-    BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_tree.get_child("lib.substance") ) 
+    BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, m_tree.get_child("lib.boundary") ) 
     {
         unsigned int index = boost::lexical_cast<unsigned int>(ak.first.c_str());
         assert(index == count);
@@ -243,7 +243,7 @@ void GBoundaryLibMetadata::Summary(const char* msg)
 
         BOOST_FOREACH( boost::property_tree::ptree::value_type const& bk, ak.second.get_child("") ) 
         {   
-            std::cout << bk.first << std::endl ;   // substance
+            std::cout << bk.first << std::endl ;   // boundary
 
             BOOST_FOREACH( boost::property_tree::ptree::value_type const& ck, bk.second.get_child("") ) 
             {

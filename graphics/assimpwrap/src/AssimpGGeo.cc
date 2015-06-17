@@ -567,14 +567,9 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GPropertyMap<float>* iextra = NULL ; 
     GPropertyMap<float>* oextra = NULL ; 
 
-    GOpticalSurface* isurf_optical = NULL  ; 
-    GOpticalSurface* osurf_optical = NULL ; 
- 
     if(sks)
     {
         osurf = sks ; 
-        osurf_optical = sks->getOpticalSurface(); 
-
         if(m_skin_surface < 10)
             LOG(info) << "AssimpGGeo::convertStructureVisit (SKIN)OSURF " 
                       << std::setw(3) << m_skin_surface << " "
@@ -585,8 +580,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     else if(obs)
     {
         osurf = obs ; 
-        osurf_optical = obs->getOpticalSurface(); 
-
         LOG(info) << "AssimpGGeo::convertStructureVisit OSURF " 
                   << std::setw(3) << m_outborder_surface << " "
                   << osurf->description() ;  
@@ -596,8 +589,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     else if(ibs)
     {
         isurf = ibs ; 
-        isurf_optical = ibs->getOpticalSurface(); 
-
         LOG(info) << "AssimpGGeo::convertStructureVisit ISURF " 
                   << std::setw(3) << m_inborder_surface << " "
                   << isurf->description() ;  
@@ -612,9 +603,9 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     if(isurf && osurf) LOG(info) << "AssimpGGeo::convertStructureVisit boundary with both ISURF and OSURF defined " ;
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
-    GBoundaryLib* lib = gg->getBoundaryLib();  // TODO: rename to GBoundaryLib
+    GBoundaryLib* lib = gg->getBoundaryLib();  
     
-    GBoundary* boundary = lib->get(mt, mt_p, isurf, osurf, iextra, oextra, isurf_optical, osurf_optical); 
+    GBoundary* boundary = lib->get(mt, mt_p, isurf, osurf, iextra, oextra ); 
 
     // pulling new boundarys into existance or accessing pre-existing ones 
     //

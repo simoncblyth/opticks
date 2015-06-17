@@ -14,9 +14,15 @@ class GBoundary ;
 class GBuffer ; 
 class GBoundaryLibMetadata ; 
 class GBuffer ; 
-class GOpticalSurface ; 
 
 class GBoundaryLib {
+  public:
+     enum {
+         optical_index, 
+         optical_type, 
+         optical_finish, 
+         optical_value }; 
+
   public:
     // standard property prefixes
     static const char* inner; 
@@ -67,7 +73,8 @@ class GBoundaryLib {
   public:
       GBoundaryLib();
       virtual ~GBoundaryLib();
-
+  private:
+      void init();
   public:
       // primary methods : lifecycle
       void setStandardDomain(GDomain<float>* standard_domain);
@@ -77,13 +84,11 @@ class GBoundaryLib {
                       GPropertyMap<float>* isurface, 
                       GPropertyMap<float>* osurface,
                       GPropertyMap<float>* iextra, 
-                      GPropertyMap<float>* oextra,
-                      GOpticalSurface*   inner_optical,
-                      GOpticalSurface*   outer_optical
+                      GPropertyMap<float>* oextra
                  );
-      GBuffer*      createWavelengthBuffer();  
-      GBuffer*      createReemissionBuffer(GPropertyMap<float>* scint);  
       static unsigned int getLine(unsigned int isub, unsigned int ioff);
+      void          createWavelengthAndOpticalBuffers();  
+      GBuffer*      createReemissionBuffer(GPropertyMap<float>* scint);  
 
   public:
       // reemission handling 
@@ -109,11 +114,16 @@ class GBoundaryLib {
       void setReemissionBuffer(GBuffer* buffer);
       GBuffer* getReemissionBuffer();
 
+      void setOpticalBuffer(GBuffer* buffer);
+      GBuffer* getOpticalBuffer();
+
+
+
       std::vector<std::string> splitString(std::string keys);
 
   private:
-      // used for by "get" for standardization of substances, ready for serializing into wavelengthBuffer
-      GBoundary* createStandardBoundary(GBoundary* substance);
+      // used for by "get" for standardization of boundaries, ready for serializing into wavelengthBuffer
+      GBoundary* createStandardBoundary(GBoundary* boundary);
       void standardizeMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
@@ -133,7 +143,7 @@ class GBoundaryLib {
       char*  digest(std::vector<GProperty<float>*>& props);
       std::string digestString(std::vector<GProperty<float>*>& props);
 
-      void digestDebug(GBoundary* substance, unsigned int isub);
+      void digestDebug(GBoundary* boundary, unsigned int isub);
 
   public:
       // another classes need access to "shape" of the standardization
@@ -148,7 +158,7 @@ class GBoundaryLib {
       void          dumpWavelengthBuffer(int wline=-1);
       static void   dumpWavelengthBuffer(int wline, GBuffer* buffer, GBoundaryLibMetadata* metadata, unsigned int numBoundary, unsigned int domainLength);
 
-      GPropertyMap<float>* createStandardProperties(const char* name, GBoundary* substance);
+      GPropertyMap<float>* createStandardProperties(const char* name, GBoundary* boundary);
       void checkMaterialProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkSurfaceProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
       void checkExtraProperties(GPropertyMap<float>* ptex, unsigned int offset, const char* prefix);
@@ -170,19 +180,40 @@ class GBoundaryLib {
 
   private:
       std::map<std::string, std::string>   m_keymap ; //  
-      std::map<std::string, GBoundary*>   m_registry ; 
+      std::map<std::string, GBoundary*>    m_registry ; 
       std::vector<std::string>             m_keys ; 
 
-      bool                   m_standard ; // transitional : keeping this set to true
+      bool                   m_standard ;     // transitional : keeping this set to true
       unsigned int           m_num_quad ; 
       GDomain<float>*        m_standard_domain ;  
       GPropertyMap<float>*   m_defaults ;  
       GProperty<float>*      m_ramp ;  
-      GBoundaryLibMetadata* m_meta ;
+      GBoundaryLibMetadata*  m_meta ;
       GBuffer*               m_wavelength_buffer ;
       GBuffer*               m_reemission_buffer ;
+      GBuffer*               m_optical_buffer ;
 
 };
+
+
+inline GBoundaryLib::GBoundaryLib() 
+          : 
+          m_standard(true), 
+          m_num_quad(6), 
+          m_standard_domain(NULL),
+          m_defaults(NULL), 
+          m_ramp(NULL), 
+          m_meta(NULL), 
+          m_wavelength_buffer(NULL),
+          m_reemission_buffer(NULL),
+          m_optical_buffer(NULL)
+{
+     init();
+}
+
+inline GBoundaryLib::~GBoundaryLib()
+{
+}
 
 
 inline GBoundaryLibMetadata* GBoundaryLib::getMetadata()
@@ -194,6 +225,7 @@ inline void GBoundaryLib::setMetadata(GBoundaryLibMetadata* meta)
     m_meta = meta ; 
 }
 
+
 inline GBuffer* GBoundaryLib::getWavelengthBuffer()
 {
     return m_wavelength_buffer ; 
@@ -202,6 +234,20 @@ inline void GBoundaryLib::setWavelengthBuffer(GBuffer* wavelength_buffer)
 {
     m_wavelength_buffer = wavelength_buffer ; 
 }
+
+
+inline GBuffer* GBoundaryLib::getOpticalBuffer()
+{
+    return m_optical_buffer ; 
+}
+inline void GBoundaryLib::setOpticalBuffer(GBuffer* optical_buffer)
+{
+    m_optical_buffer = optical_buffer ; 
+}
+
+
+
+
 
 
 inline unsigned int GBoundaryLib::getNumProp()

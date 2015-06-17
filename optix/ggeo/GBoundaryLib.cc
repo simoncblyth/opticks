@@ -10,6 +10,7 @@
 #include <string>
 #include <map>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -151,14 +152,8 @@ void GBoundaryLib::setKeyMap(const char* spec)
 
 
 
-GBoundaryLib::GBoundaryLib() 
-          : 
-          m_defaults(NULL), 
-          m_meta(NULL), 
-          m_standard(true), 
-          m_num_quad(6), 
-          m_wavelength_buffer(NULL),
-          m_reemission_buffer(NULL)
+
+void GBoundaryLib::init()
 {
     setKeyMap(NULL);
     GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
@@ -173,9 +168,6 @@ GBoundaryLib::GBoundaryLib()
     m_ramp = GProperty<float>::ramp( domain->getLow(), domain->getStep(), domain->getValues(), domain->getLength() );
 }
 
-GBoundaryLib::~GBoundaryLib()
-{
-}
 
 unsigned int GBoundaryLib::getNumBoundary()
 {
@@ -245,15 +237,13 @@ GBoundary* GBoundaryLib::get(
            GPropertyMap<float>* isurface, 
            GPropertyMap<float>* osurface,
            GPropertyMap<float>* iextra,
-           GPropertyMap<float>* oextra,
-           GOpticalSurface* inner_optical,
-           GOpticalSurface* outer_optical
+           GPropertyMap<float>* oextra
       )
 { 
     // this "get" pulls the GBoundary into existance and populates the registry
     //printf("GBoundaryLib::get imaterial %p omaterial %p isurface %p osurface %p \n", imaterial, omaterial, isurface, osurface );
 
-    GBoundary raw(imaterial, omaterial, isurface, osurface, iextra, oextra, inner_optical, outer_optical);
+    GBoundary raw(imaterial, omaterial, isurface, osurface, iextra, oextra);
     GBoundary* standard = createStandardBoundary(&raw) ;
     std::string key = standard->pdigest(0,4);  // standard digest based identity 
 
@@ -284,14 +274,6 @@ GBoundary* GBoundaryLib::createStandardBoundary(GBoundary* boundary)
     GPropertyMap<float>* iext = boundary->getInnerExtra();
     GPropertyMap<float>* oext = boundary->getOuterExtra();
 
-    GOpticalSurface* inner_optical = boundary->getInnerOptical();
-    GOpticalSurface* outer_optical = boundary->getOuterOptical();
-
-
-    // snag extra props from corresponding materials pmaps : HUH thats unhealthy
-    // if(iext == NULL) iext = imat ;
-    // if(oext == NULL) oext = omat ;
-
     GPropertyMap<float>* s_imat = new GPropertyMap<float>(imat);
     GPropertyMap<float>* s_omat = new GPropertyMap<float>(omat);
     GPropertyMap<float>* s_isur = new GPropertyMap<float>(isur);
@@ -306,7 +288,7 @@ GBoundary* GBoundaryLib::createStandardBoundary(GBoundary* boundary)
     standardizeExtraProperties(    s_iext, iext, inner );
     standardizeExtraProperties(    s_oext, oext, outer );
 
-    GBoundary* s_boundary = new GBoundary( s_imat , s_omat, s_isur, s_osur, s_iext, s_oext, inner_optical, outer_optical);
+    GBoundary* s_boundary = new GBoundary( s_imat , s_omat, s_isur, s_osur, s_iext, s_oext);
 
     return s_boundary ; 
 }
@@ -489,10 +471,8 @@ void GBoundaryLib::standardizeSurfaceProperties(GPropertyMap<float>* pstd, GProp
         assert(getStandardDomain()->isEqual(pmap->getStandardDomain()));
     }
 
-    // hmm using UNSET values, means that need to zero others ?
-
-    pstd->addProperty(detect,           getPropertyOrDefault( pmap, detect ), prefix);
-    pstd->addProperty(absorb,           getPropertyOrDefault( pmap, absorb ), prefix);
+    pstd->addProperty(detect,           getPropertyOrDefault( pmap, detect           ), prefix);
+    pstd->addProperty(absorb,           getPropertyOrDefault( pmap, absorb           ), prefix);
     pstd->addProperty(reflect_specular, getPropertyOrDefault( pmap, reflect_specular ), prefix);
     pstd->addProperty(reflect_diffuse,  getPropertyOrDefault( pmap, reflect_diffuse  ), prefix);
 }
@@ -505,11 +485,8 @@ GProperty<float>* GBoundaryLib::getProperty(GPropertyMap<float>* pmap, const cha
 
     GProperty<float>* prop = pmap->getProperty(lkey) ;
 
-    //assert(prop);
-    if(!prop)
-    {
-        LOG(warning) << "GBoundaryLib::getProperty failed to find property " << dkey << "/" << lkey ;
-    }
+    assert(prop);
+    //if(!prop) LOG(warning) << "GBoundaryLib::getProperty failed to find property " << dkey << "/" << lkey ;
 
     return prop ;  
 }
@@ -578,8 +555,9 @@ void GBoundaryLib::checkExtraProperties(GPropertyMap<float>* ptex, unsigned int 
     std::string prefix = _prefix ; 
     std::string xname, pname ;
 
-    xname = prefix + reemission_cdf ; 
-    pname = ptex->getPropertyNameByIndex(offset+e_reemission_cdf);
+    //xname = prefix + reemission_cdf ; 
+    xname = prefix + extra_x ; 
+    pname = ptex->getPropertyNameByIndex(offset+e_extra_x);
     assert(xname == pname);
 
     xname = prefix + extra_y ; 
@@ -651,12 +629,13 @@ GBuffer* GBoundaryLib::createReemissionBuffer(GPropertyMap<float>* scint)
 
 
 
-GBuffer* GBoundaryLib::createWavelengthBuffer()
+void GBoundaryLib::createWavelengthAndOpticalBuffers()
 {
     //
-    //  6 sets of 4 props  
+    //  wavelength_buffer floats (6 sets of 4 props)  
+    //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //
-    //  The 6 sets for: 
+    //  Six sets for: 
     //          (inner material, outer material, inner surface, outer surface, inner extra, outer extra) 
     //
     //  and the props:
@@ -664,9 +643,37 @@ GBuffer* GBoundaryLib::createWavelengthBuffer()
     //         surface:  (detect, absorb, reflect_specular, reflect_diffuse)    
     //         extra:    (reemission_cdf, extra_y, extra_z, extra_w )
     //
+    //
+    //  optical_buffer unsigned ints (6 sets of 4 values)
+    //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //
+    //  Same six sets as wavelength_buffer, with a single quad uint for 
+    //  each set, with differing meanings
+    //
+    //
+    //                   material        surface          extra
+    //
+    //          .x         index            index         -
+    //          .y         -                type          -
+    //          .z         -                finish        -
+    //          .w         -                value         -
+    //
+    //
+    //   Optical surface props
+    //
+    //        type                : 0:dielectric_metal/... 
+    //        finish              : 0:polished  3:ground
+    //        value(sigma alpha)  : expressed as integer percentage value, used in facet normal calculation 
+    //                              for non-polished 
+    //
+    //   Other optical surface props
+    //
+    //        model  : assumed to always be "unified" so omitted
+    //        name   : skipped as not needed on GPU, can be looked up via index for GUI selections 
+    //
 
-    GBuffer* buffer(NULL) ;
-    float* data(NULL) ;
+
+    assert(m_wavelength_buffer == NULL && m_optical_buffer == NULL && "not expecting preexisting wavelength/optical buffers");
 
     if(!m_meta) m_meta = new GBoundaryLibMetadata ; 
 
@@ -674,6 +681,15 @@ GBuffer* GBoundaryLib::createWavelengthBuffer()
     const unsigned int domainLength = domain->getLength();
     unsigned int numBoundary = getNumBoundary() ;
     unsigned int numFloat = domainLength*NUM_QUAD*4*numBoundary ; 
+    unsigned int numUInt  =              NUM_QUAD*4*numBoundary ; 
+
+
+    m_wavelength_buffer = new GBuffer( sizeof(float)*numFloat, new float[numFloat], sizeof(float), 1 );
+    float* wavelength_data = (float*)m_wavelength_buffer->getPointer();
+
+    m_optical_buffer = new GBuffer( sizeof(unsigned int)*numUInt, new unsigned int[numUInt], sizeof(unsigned int), 1 );
+    unsigned int* optical_data = (unsigned int*)m_optical_buffer->getPointer();
+
 
     for(unsigned int isub=0 ; isub < numBoundary ; isub++)
     {
@@ -690,7 +706,9 @@ GBuffer* GBoundaryLib::createWavelengthBuffer()
             assert(strcmp(ckdig, dig) == 0);
         }
 
+        unsigned int opticalOffset =          NUM_QUAD*4*boundaryIndex ; 
         unsigned int subOffset = domainLength*NUM_QUAD*4*boundaryIndex ; 
+
         const char* kfmt = "lib.boundary.%d.%s.%s" ;
         m_meta->addDigest(kfmt, isub, "boundary", (char*)dig ); 
 
@@ -705,23 +723,37 @@ GBuffer* GBoundaryLib::createWavelengthBuffer()
             m_meta->add(kfmt, isub, "oext", boundary->getOuterExtra() );
         }
 
-
-        if( buffer == NULL )
-        {
-            buffer = new GBuffer( sizeof(float)*numFloat, new float[numFloat], sizeof(float), 1 );
-            data = (float*)buffer->getPointer();
-        }
-
-
-        //
-        // * maybe add a fifth set "iore" for reemission
-        // * actually cleaner and to add two extra sets: iext, oext
-        //   so reemission_cdf will occupy 1 of the 4 slots leaving 3 spares
-        //
  
         for( unsigned int p = 0; p < NUM_QUAD ; ++p )  // over NUM_QUAD different sets (imat,omat,isur,osur,iext,oext)  
         { 
             GPropertyMap<float>* psrc = boundary->getConstituentByIndex(p) ; 
+
+
+            if(psrc->isSkinSurface() || psrc->isBorderSurface())
+            {
+                GOpticalSurface* os = psrc->getOpticalSurface();
+                assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
+
+                optical_data[opticalOffset + optical_index]  =  psrc->getIndex() ;  // these indices are currently original aiScene material indices 
+                optical_data[opticalOffset + optical_type]   =  boost::lexical_cast<unsigned int>(os->getType()); 
+                optical_data[opticalOffset + optical_finish] =  boost::lexical_cast<unsigned int>(os->getFinish()); 
+                optical_data[opticalOffset + optical_value]  =  boost::lexical_cast<float>(os->getValue())*100.f ;   // express as integer percentage 
+            } 
+            else if(psrc->isMaterial())
+            {
+                optical_data[opticalOffset + optical_index]  = psrc->getIndex() ;  // these indices are currently original aiScene material indices 
+                optical_data[opticalOffset + optical_type]   =  0 ;
+                optical_data[opticalOffset + optical_finish] =  0 ;
+                optical_data[opticalOffset + optical_value]  =  0 ;
+            }
+            else
+            {
+                optical_data[opticalOffset + optical_index]  =  0 ;
+                optical_data[opticalOffset + optical_type]   =  0 ;
+                optical_data[opticalOffset + optical_finish] =  0 ;
+                optical_data[opticalOffset + optical_value]  =  0 ;
+            }
+
 
             GProperty<float> *p0,*p1,*p2,*p3 ; // 4 properties of the set 
             p0 = psrc->getPropertyByIndex(0);
@@ -732,10 +764,10 @@ GBuffer* GBoundaryLib::createWavelengthBuffer()
             for( unsigned int d = 0; d < domainLength; ++d ) // interleave 4 properties into the buffer
             {   
                 unsigned int dataOffset = ( p*domainLength + d )*4;  
-                data[subOffset+dataOffset+0] = p0->getValue(d) ;
-                data[subOffset+dataOffset+1] = p1->getValue(d) ;
-                data[subOffset+dataOffset+2] = p2->getValue(d) ;
-                data[subOffset+dataOffset+3] = p3->getValue(d) ;
+                wavelength_data[subOffset+dataOffset+0] = p0->getValue(d) ;
+                wavelength_data[subOffset+dataOffset+1] = p1->getValue(d) ;
+                wavelength_data[subOffset+dataOffset+2] = p2->getValue(d) ;
+                wavelength_data[subOffset+dataOffset+3] = p3->getValue(d) ;
             } 
 
             // record standard 4-property digest into metadata
@@ -778,7 +810,6 @@ GBuffer* GBoundaryLib::createWavelengthBuffer()
 
     m_meta->createMaterialMap();
 
-    return buffer ; 
 }
 
 
@@ -822,7 +853,8 @@ const char* GBoundaryLib::surfacePropertyName(unsigned int i)
 const char* GBoundaryLib::extraPropertyName(unsigned int i)
 {
     assert(i < 4);
-    if(i == 0) return reemission_cdf ;
+    //if(i == 0) return reemission_cdf ;
+    if(i == 0) return extra_x ;
     if(i == 1) return extra_y ;
     if(i == 2) return extra_z ;
     if(i == 3) return extra_w ;

@@ -108,14 +108,25 @@ inline uint16_t ReorderInteger(const uint16_t& x) {
 
 template<typename Scalar>
 struct DescriptorDataType {};
+
 template<>
 struct DescriptorDataType<double> { static const char value = 'f'; };
 template<>
 struct DescriptorDataType<float> { static const char value = 'f'; };
+
 template<>
 struct DescriptorDataType<int> { static const char value = 'i'; };
 template<>
 struct DescriptorDataType<short> { static const char value = 'i'; };
+
+template<>
+struct DescriptorDataType<unsigned int> { static const char value = 'u'; };
+template<>
+struct DescriptorDataType<unsigned short> { static const char value = 'u'; };
+template<>
+struct DescriptorDataType<unsigned char> { static const char value = 'u'; };
+
+
 template<>
 struct DescriptorDataType<std::complex<float> > { static const char value = 'c'; };
 template<>

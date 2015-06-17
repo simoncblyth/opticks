@@ -137,9 +137,6 @@ optix::float4 GMergedMeshOptiXGeometry::getDomainReciprocal()
 optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMergedMesh* mergedmesh)
 {
     optix::Geometry geometry = convertDrawable(mergedmesh) ;  
-
-    // maybe go for single material, with substanceIndex attribute 
-
     LOG(info) << "GMergedMeshOptiXGeometry::convertDrawableInstance using single material  " ; 
 
     GBuffer* wavelengthBuffer = mergedmesh->getWavelengthBuffer();

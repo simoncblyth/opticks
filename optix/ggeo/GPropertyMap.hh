@@ -3,6 +3,8 @@
 #include "GProperty.hh"
 #include "GDomain.hh"
 
+class GOpticalSurface ; 
+
 #include <string>
 #include <vector>
 #include <map>
@@ -15,7 +17,7 @@ class GPropertyMap {
   public:
       GPropertyMap(GPropertyMap* other);
       GPropertyMap(const char* name);
-      GPropertyMap(const char* name, unsigned int index, const char* type);
+      GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL);
       virtual ~GPropertyMap();
 
   public:
@@ -36,6 +38,9 @@ class GPropertyMap {
       bool isSkinSurface();
       bool isBorderSurface();
       bool isMaterial();
+      void setOpticalSurface(GOpticalSurface* optical_surface);
+      GOpticalSurface* getOpticalSurface(); 
+
 
       void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=1);
 
@@ -67,9 +72,21 @@ class GPropertyMap {
       std::vector<std::string> m_keys ;  // key ordering
 
       GDomain<T>* m_standard_domain ; 
+      GOpticalSurface* m_optical_surface ; 
 
 };
 
+
+template <class T>
+inline void GPropertyMap<T>::setOpticalSurface(GOpticalSurface* optical_surface)
+{
+    m_optical_surface = optical_surface ;
+}
+template <class T>
+inline GOpticalSurface* GPropertyMap<T>::getOpticalSurface()
+{
+    return m_optical_surface ; 
+}
 
 
 

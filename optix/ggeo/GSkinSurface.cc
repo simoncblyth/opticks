@@ -9,8 +9,7 @@
 
 
 GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface) : 
-    GPropertyMap<float>(name, index, "skinsurface" ),
-    m_optical_surface( optical_surface ? new GOpticalSurface(optical_surface) : NULL ),
+    GPropertyMap<float>(name, index, "skinsurface", optical_surface ),
     m_skinsurface_vol(NULL)
 {
 }
@@ -18,7 +17,6 @@ GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface
 GSkinSurface::~GSkinSurface()
 {
     free(m_skinsurface_vol);
-    delete m_optical_surface ; 
 }
 
 
@@ -52,7 +50,6 @@ void GSkinSurface::Summary(const char* msg, unsigned int imod)
     GPropertyMap<float>::Summary(msg, imod);
 
 
-    if(m_optical_surface) m_optical_surface->Summary(msg, imod);
 }
 
 
@@ -61,7 +58,6 @@ void GSkinSurface::Summary(const char* msg, unsigned int imod)
 std::string GSkinSurface::description()
 {
     std::stringstream ss ; 
-    assert(m_optical_surface);
-    ss << "GSS:: " << m_optical_surface->description() << " keys " << getKeysString() ; 
+    ss << "GSS:: " << GPropertyMap<float>::description() << " keys " << getKeysString() ; 
     return ss.str();
 }

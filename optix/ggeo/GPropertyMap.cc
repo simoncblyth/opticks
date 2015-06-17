@@ -1,4 +1,5 @@
 #include "GPropertyMap.hh"
+#include "GOpticalSurface.hh"
 #include "md5digest.hh"
 #include "string.h"
 #include "limits.h"
@@ -11,13 +12,17 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other)
       m_name(other ? other->getName() : "?"),
       m_index(other ? other->getIndex() : UINT_MAX ),
       m_type(other ? other->getType() : "" ),
-      m_standard_domain(NULL)
+      m_standard_domain(NULL),
+      m_optical_surface(other ? other->getOpticalSurface() : NULL )
 {
 }
 
 
 template <typename T>
-GPropertyMap<T>::GPropertyMap(const char* name) : m_standard_domain(NULL)
+GPropertyMap<T>::GPropertyMap(const char* name)
+    : 
+    m_standard_domain(NULL),
+    m_optical_surface(NULL)
 {
    m_name = name ; 
    m_index = UINT_MAX ;
@@ -25,7 +30,11 @@ GPropertyMap<T>::GPropertyMap(const char* name) : m_standard_domain(NULL)
 }
 
 template <typename T>
-GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type) : m_index(index), m_standard_domain(NULL)
+GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface) 
+   : 
+   m_index(index), 
+   m_standard_domain(NULL),
+   m_optical_surface(optical_surface)
 {
    // set the std::string
    m_name = name ; 
@@ -152,14 +161,16 @@ char* GPropertyMap<T>::getShortName(const char* prefix)
 template <typename T>
 std::string GPropertyMap<T>::description()
 {
+    std::string odesc = m_optical_surface ? m_optical_surface->description() : "nos " ;
     std::stringstream ss ; 
-    ss << "GPropertyMap<T>:: " 
-       //<< " name : " << getName()
+    ss << "GPropertyMap<T>:: "  
+       << odesc
        << getShortNameString()
        << " index : " << getIndex()
        << " type : " << getType()
        << " keys : " << getKeysString() 
        ;
+
     return ss.str();
 }
   
@@ -290,6 +301,8 @@ void GPropertyMap<T>::Summary(const char* msg, unsigned int nline)
        GProperty<T>* prop = m_prop[key] ; 
        prop->Summary(key.c_str(), nline);
    } 
+
+   if(m_optical_surface) m_optical_surface->Summary(msg, nline);
 }
 
 

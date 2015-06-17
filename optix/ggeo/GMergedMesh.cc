@@ -7,37 +7,17 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-
-GMergedMesh::GMergedMesh(GMergedMesh* other)
-       : 
-       GMesh(other),
-       m_cur_vertices(0),
-       m_cur_faces(0),
-       m_cur_solid(0)
-
-{
-}
-
-GMergedMesh::GMergedMesh(unsigned int index)
-       : 
-       GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
-       m_cur_vertices(0),
-       m_cur_faces(0),
-       m_cur_solid(0)
-{
-} 
-
-GMergedMesh::~GMergedMesh()
-{
-}
-
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 {
-    GSolid* solid = ggeo->getSolid(0);
+    GSolid* root = ggeo->getSolid(0);
 
     GMergedMesh* mm = new GMergedMesh( index );
 
-    mm->traverse( solid, 0, pass_count );  // 1st pass counts vertices and faces
+    // 1st pass traversal : counts vertices and faces
+
+    mm->traverse( root, 0, pass_count );  
+
+    // allocate space for flattened arrays
 
     mm->setVertices(new gfloat3[mm->getNumVertices()]); // allocate storage 
     mm->setNormals( new gfloat3[mm->getNumVertices()]);
@@ -53,14 +33,21 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     mm->setCenterExtent(new gfloat4[mm->getNumSolids()]);
 
-    mm->traverse( solid, 0, pass_merge ); // 2nd pass counts merge GMesh into GMergedMesh
+    // 2nd pass traversal : merge GMesh into GMergedMesh
+
+    mm->traverse( root, 0, pass_merge );  
     mm->updateBounds();
 
+    // material/surface properties as function of wavelength collected into wavelengthBuffer
+
     GBoundaryLib* lib = ggeo->getBoundaryLib();
-    mm->setWavelengthBuffer(lib->createWavelengthBuffer());
+    lib->createWavelengthAndOpticalBuffers();
+    mm->setWavelengthBuffer(lib->getWavelengthBuffer());
+    mm->setOpticalBuffer(lib->getOpticalBuffer());
 
     GPropertyMap<float>* scint = ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
     mm->setReemissionBuffer(lib->createReemissionBuffer(scint));
+
 
     return mm ;
 }

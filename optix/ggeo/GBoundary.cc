@@ -1,7 +1,6 @@
 #include "GBoundary.hh"
 #include "GPropertyMap.hh"
 #include "md5digest.hh"
-#include "GOpticalSurface.hh"
 
 #include "stdio.h"
 #include "limits.h"
@@ -15,12 +14,6 @@ const char* GBoundary::isurface  = "isur" ;
 const char* GBoundary::osurface  = "osur" ;
 const char* GBoundary::iextra    = "iext" ;
 const char* GBoundary::oextra    = "oext" ;
-
-const char* GBoundary::inner_optical    = "iopt" ;
-const char* GBoundary::outer_optical    = "oopt" ;
-
-
-
 
 
 //
@@ -81,9 +74,7 @@ GBoundary::GBoundary()
          m_osurface(NULL),
          m_iextra(NULL),
          m_oextra(NULL),
-         m_index(UINT_MAX),
-         m_inner_optical(NULL),
-         m_outer_optical(NULL)
+         m_index(UINT_MAX)
 {
 }
 
@@ -93,9 +84,7 @@ GBoundary::GBoundary(
                  GPropertyMap<float>* isurface, 
                  GPropertyMap<float>* osurface, 
                  GPropertyMap<float>* iextra, 
-                 GPropertyMap<float>* oextra,
-                 GOpticalSurface* inner_optical,
-                 GOpticalSurface* outer_optical
+                 GPropertyMap<float>* oextra
                )
          : 
          m_imaterial(imaterial),
@@ -104,9 +93,7 @@ GBoundary::GBoundary(
          m_osurface(osurface),
          m_iextra(iextra),
          m_oextra(oextra),
-         m_index(UINT_MAX),
-         m_inner_optical(inner_optical),
-         m_outer_optical(outer_optical)
+         m_index(UINT_MAX)
 {
 }
 
@@ -163,7 +150,6 @@ char* GBoundary::pdigest(int ifr, int ito)
        free(pdig);
    }
 
-   // TODO: inner_optical outer_optical
 
    return dig.finalize();
 }

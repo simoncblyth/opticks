@@ -24,6 +24,7 @@ const char* GMesh::boundaries   = "boundaries" ;
 const char* GMesh::wavelength   = "wavelength" ;
 const char* GMesh::reemission   = "reemission" ;
 const char* GMesh::center_extent = "center_extent" ;
+const char* GMesh::optical       = "optical" ;
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
 {
@@ -37,6 +38,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(wavelength); 
     names.push_back(reemission); 
     names.push_back(center_extent); 
+    names.push_back(optical); 
 }
 
 GMesh::GMesh(GMesh* other) 
@@ -64,6 +66,7 @@ GMesh::GMesh(GMesh* other)
      m_center_extent_buffer(other->getCenterExtentBuffer()),
      m_num_solids(other->getNumSolids()),
      m_num_solids_selected(other->getNumSolidsSelected()),
+     m_optical_buffer(other->getOpticalBuffer()),
      GDrawable()
 {
    updateBounds();
@@ -114,6 +117,7 @@ GMesh::GMesh(unsigned int index,
       m_normals_buffer(NULL),
       m_num_solids(0),
       m_num_solids_selected(0),
+      m_optical_buffer(NULL),
       GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 
@@ -145,6 +149,8 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
     if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
     if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
+    if(strcmp(name, optical) == 0)         return m_optical_buffer ; 
+
     return NULL ;
 }
 
@@ -163,6 +169,7 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
     if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
     if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
+    if(strcmp(name, optical) == 0)         setOpticalBuffer(buffer) ; 
 }
 
 
@@ -657,6 +664,11 @@ bool GMesh::isIntBuffer(const char* name)
              strcmp( name, nodes) == 0  || 
              strcmp( name, boundaries ) == 0 );
 }
+bool GMesh::isUIntBuffer(const char* name)
+{
+    return strcmp( name, optical) == 0 ;  
+}
+
 
 
 void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
@@ -664,8 +676,9 @@ void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
     printf("GMesh::saveBuffer name %s path %s \n", name, path );
     //buffer->Summary("GMesh::saveBuffer");
 
-    if(isFloatBuffer(name))    buffer->save<float>(path);
-    else if(isIntBuffer(name)) buffer->save<int>(path);
+    if(isFloatBuffer(name))     buffer->save<float>(path);
+    else if(isIntBuffer(name))  buffer->save<int>(path);
+    else if(isUIntBuffer(name)) buffer->save<unsigned int>(path);
     else 
        printf("GMesh::saveBuffer WARNING NOT saving uncharacterized buffer %s into %s \n", name, path );
 }
@@ -689,6 +702,7 @@ void GMesh::loadBuffer(const char* path, const char* name)
     GBuffer* buffer(NULL); 
     if(isFloatBuffer(name))                    buffer = GBuffer::load<float>(path);
     else if(isIntBuffer(name))                 buffer = GBuffer::load<int>(path);
+    else if(isUIntBuffer(name))                buffer = GBuffer::load<unsigned int>(path);
     else
         printf("GMesh::loadBuffer WARNING not loading %s from %s \n", name, path ); 
 

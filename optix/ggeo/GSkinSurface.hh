@@ -12,9 +12,6 @@ class GSkinSurface : public GPropertyMap<float> {
 
   public:
       std::string description();
-      GOpticalSurface* getOpticalSurface();
-  private:
-      void setOpticalSurface(GOpticalSurface* os);
 
   public:
       void setSkinSurface(const char* vol);
@@ -23,21 +20,8 @@ class GSkinSurface : public GPropertyMap<float> {
 
   private:
       char*              m_skinsurface_vol ;  
-      GOpticalSurface*   m_optical_surface ; 
-
 
 };
-
-
-inline GOpticalSurface* GSkinSurface::getOpticalSurface()
-{
-    return m_optical_surface ; 
-}
-inline void GSkinSurface::setOpticalSurface(GOpticalSurface* optical_surface)
-{
-    m_optical_surface = optical_surface ; 
-}
-
 
 
 

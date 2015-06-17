@@ -11,14 +11,14 @@ def dump(idpath, sub=None):
         js = json.load(fp)
 
     if sub is None:
-        isubs = sorted(map(int, js['lib']['substance'].keys() ))
+        isubs = sorted(map(int, js['lib']['boundary'].keys() ))
         print isubs
         for isub in isubs:
-            sub = js['lib']['substance'][str(isub)]
+            sub = js['lib']['boundary'][str(isub)]
             print " %2s :  %25s %25s %25s %25s " % ( isub, sub['imat']['shortname'], sub['omat']['shortname'], sub['isur']['name'], sub['osur']['name'] )
         pass
     else:
-        sub = js['lib']['substance'][str(sub)]
+        sub = js['lib']['boundary'][str(sub)]
 
         print sub['imat'].keys() 
 
