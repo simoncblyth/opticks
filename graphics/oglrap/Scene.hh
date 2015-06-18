@@ -9,7 +9,6 @@ class Rdr ;
 class Device ; 
 class Composition ; 
 class NumpyEvt ; 
-class GLoader ; 
 class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
@@ -53,6 +52,7 @@ class Scene : public Configurable {
         void setComposition(Composition* composition);
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
+        void setGeometry(GDrawable* geometry);
 
    public:
         // target cannot live in Composition, as needs geometry 
@@ -65,7 +65,6 @@ class Scene : public Configurable {
         void jump(); 
 
    public:
-        const char* loadGeometry(const char* prefix, bool nogeocache=false);
         void uploadEvt();
         void render();
 
@@ -73,13 +72,6 @@ class Scene : public Configurable {
         unsigned int  getTarget(); 
 
    public:
-        // pass throughs to the loader
-        GMergedMesh*            getMergedMesh();
-        GBoundaryLibMetadata*   getMetadata();
-        GGeo*                   getGGeo();
-
-   public:
-        GLoader*      getGeometryLoader();
         Renderer*     getGeometryRenderer();
         Rdr*          getGenstepRenderer();
         Rdr*          getPhotonRenderer();
@@ -98,7 +90,6 @@ class Scene : public Configurable {
    private:
         char*        m_shader_dir ; 
         char*        m_shader_incl_path ; 
-        GLoader*     m_geometry_loader ; 
         Renderer*    m_geometry_renderer ; 
         Device*      m_device ; 
         Rdr*         m_genstep_renderer ; 
@@ -125,10 +116,10 @@ class Scene : public Configurable {
 };
 
 
-inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) :
+inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) 
+            :
             m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
-            m_geometry_loader(NULL),
             m_geometry_renderer(NULL),
             m_device(NULL),
             m_genstep_renderer(NULL),
@@ -150,7 +141,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) :
             m_initialized(false),
             m_time_fraction(0.f)
 {
-    init();  // defer until loadGeometry
+    init();  
 }
 
 
@@ -173,11 +164,6 @@ inline void Scene::setTouch(unsigned int touch)
     m_touch = touch ; 
 }
 
-
-inline GLoader* Scene::getGeometryLoader()
-{
-    return m_geometry_loader ; 
-}
 
 inline Renderer* Scene::getGeometryRenderer()
 {

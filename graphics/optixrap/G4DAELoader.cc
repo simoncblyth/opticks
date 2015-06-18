@@ -11,14 +11,14 @@
 #include <cstring> //memcpy
 #include <algorithm>
 
-#include "AssimpWrap/AssimpCommon.hh"
-#include "AssimpWrap/AssimpGeometry.hh"
+#include "AssimpCommon.hh"
+#include "AssimpGeometry.hh"
 
 #ifdef DEPRECATED
 #include "AssimpOptiXGeometry.hh"
 #endif
 
-#include "AssimpWrap/AssimpGGeo.hh"
+#include "AssimpGGeo.hh"
 #include "GGeoOptiXGeometry.hh"
 
 #include <stdio.h>

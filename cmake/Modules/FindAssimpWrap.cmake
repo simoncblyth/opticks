@@ -1,5 +1,5 @@
 
-set(AssimpWrap_PREFIX "$ENV{LOCAL_BASE}/env/graphics")
+set(AssimpWrap_PREFIX "$ENV{LOCAL_BASE}/env/graphics/assimpwrap")
 
 find_library( AssimpWrap_LIBRARIES 
               NAMES AssimpWrap

@@ -38,6 +38,7 @@ find_package(OGLRap REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 
+find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
@@ -58,6 +59,7 @@ include_directories(
 
     ${OptiX_INCLUDE}  
     ${CUDA_INCLUDE_DIRS}
+    ${Assimp_INCLUDE_DIRS}  
     ${AssimpWrap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
     ${CUDAWrap_INCLUDE_DIRS}  
@@ -70,6 +72,7 @@ add_definitions(
     ${GLFW_DEFINITIONS}
     ${OGLRap_DEFINITIONS}
 
+    ${Assimp_DEFINITIONS} 
     ${OptiX_DEFINITIONS} 
     ${CUDAWrap_DEFINITIONS} 
 )
@@ -89,6 +92,7 @@ target_link_libraries( ${name}
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${OGLRap_LIBRARIES}
+      ${Assimp_LIBRARIES}
       ${AssimpWrap_LIBRARIES}
       ${GGeo_LIBRARIES}
       ${NPY_LIBRARIES}

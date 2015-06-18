@@ -182,7 +182,7 @@ Border Surfaces Looking Reasonable with expected AD symmetry
 
 EOU
 }
-assimpwrap-idir(){ echo $(local-base)/env/graphics ; }  # prefix
+assimpwrap-idir(){ echo $(local-base)/env/graphics/assimpwrap ; }  # prefix
 assimpwrap-bdir(){ echo $(local-base)/env/graphics/assimpwrap.build ; }
 assimpwrap-sdir(){ echo $(env-home)/graphics/assimpwrap ; }
 

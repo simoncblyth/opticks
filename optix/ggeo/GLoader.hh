@@ -7,6 +7,10 @@ class GMergedMesh ;
 class GDrawable ; 
 class GBoundaryLibMetadata ; 
 
+
+class Lookup ; 
+class Sensor ; 
+
 class GLoader {
      public:
          typedef GGeo* (*GLoaderImpFunctionPtr)(const char* );
@@ -24,17 +28,39 @@ class GLoader {
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
 
+         Lookup*                getMaterialLookup();
+         Sensor*                getSensor();
+
     private:
          GLoaderImpFunctionPtr     m_imp ;  
          GGeo*                     m_ggeo ;    
          GMergedMesh*              m_mergedmesh ;
-         GBoundaryLibMetadata*    m_metadata ;
+         GBoundaryLibMetadata*     m_metadata ;
+
+         Lookup*                   m_lookup ; 
+         Sensor*                   m_sensor ; 
      
 
 };
 
 
-// sets implementation that does the actual loading
+
+
+
+inline GLoader::GLoader() 
+   :
+   m_ggeo(NULL),
+   m_mergedmesh(NULL),
+   m_metadata(NULL),
+   m_lookup(NULL),
+   m_sensor(NULL)
+{
+}
+
+
+
+
+// setImp : sets implementation that does the actual loading
 // using a function pointer to the implementation 
 // allows ggeo-/GLoader depending on all the implementations
 
@@ -59,5 +85,22 @@ inline GBoundaryLibMetadata* GLoader::getMetadata()
 {
     return m_metadata ; 
 }
+inline Lookup* GLoader::getMaterialLookup()
+{
+    return m_lookup ; 
+}
+inline Sensor* GLoader::getSensor()
+{
+    return m_sensor ; 
+}
+
+
+
+
+
+
+
+
+
 
 

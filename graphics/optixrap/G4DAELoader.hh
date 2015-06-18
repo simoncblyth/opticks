@@ -3,7 +3,6 @@
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 #include <optixu/optixu_matrix_namespace.h>
-//#include <string>
 
 
 class GGeo ; 
@@ -36,8 +35,6 @@ public:
   static bool isMyFile( const char* filename );
 
 private:
-  //void createGeometryInstance( unsigned nverts, optix::float3 const* verts, optix::float3 const* normals,
-  //  unsigned ntris, optix::int3 const* tris );
 
   const char*            m_filename;
 

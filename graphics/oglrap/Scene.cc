@@ -4,11 +4,8 @@
 #include "string.h"
 
 // ggeo-
-#include "GLoader.hh"
 #include "GDrawable.hh"
 
-// assimpwrap
-#include "AssimpWrap/AssimpGGeo.hh"
 
 // oglrap-
 #include "Composition.hh"
@@ -135,10 +132,6 @@ void Scene::configure(const char* name, int value)
 
 void Scene::init()
 {
-    m_geometry_loader = new GLoader();
-    m_geometry_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-
-
     m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
 
     m_device = new Device();
@@ -173,17 +166,11 @@ void Scene::setComposition(Composition* composition)
     m_devrecord_renderer->setComposition(composition);
 }
 
-const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
+
+void Scene::setGeometry(GDrawable* geometry)
 {
-    if(!m_initialized) init();
-
-    const char* idpath = m_geometry_loader->load(prefix, nogeocache);
-
-    m_geometry = m_geometry_loader->getDrawable();
-
+    m_geometry = geometry ;
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
-
-    return idpath ;
 }
 
 
@@ -291,19 +278,5 @@ void Scene::setTarget(unsigned int index)
 
     m_composition->setCenterExtent(ce, autocam); 
 }
-
-GMergedMesh* Scene::getMergedMesh()
-{
-    return m_geometry_loader ? m_geometry_loader->getMergedMesh() : NULL ;
-}
-GGeo* Scene::getGGeo()
-{
-    return m_geometry_loader ? m_geometry_loader->getGGeo() : NULL ;
-}
-GBoundaryLibMetadata* Scene::getMetadata()
-{
-    return m_geometry_loader ? m_geometry_loader->getMetadata() : NULL ;
-}
-
 
 

@@ -48,6 +48,7 @@ find_package(NPY   REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(Cfg REQUIRED)
 
+find_package(AssimpWrap REQUIRED)
 find_package(OptiXRap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
@@ -70,6 +71,7 @@ include_directories(
    ${Cfg_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
 
+   ${AssimpWrap_INCLUDE_DIRS}  
    ${CUDA_INCLUDE_DIRS}
    ${OptiX_INCLUDE}  
    ${OptiXRap_INCLUDE_DIRS}  
@@ -83,6 +85,7 @@ add_definitions(
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
    ${OGLRap_DEFINITIONS}
+   ${AssimpWrap_DEFINITIONS}  
    ${OptiX_DEFINITIONS} 
    ${OptiXRap_DEFINITIONS} 
    ${Boost_DEFINITIONS} 

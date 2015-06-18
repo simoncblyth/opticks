@@ -18,15 +18,6 @@ namespace fs = boost::filesystem;
 // trace/debug/info/warning/error/fatal
 
 
-
-GLoader::GLoader() 
-   :
-   m_ggeo(NULL),
-   m_mergedmesh(NULL),
-   m_metadata(NULL)
-{
-}
-
 const char* GLoader::identityPath( const char* envprefix)
 {
 /*

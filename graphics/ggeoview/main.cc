@@ -57,6 +57,10 @@
 #include "GLoader.hh"
 
 
+// assimpwrap
+#include "AssimpGGeo.hh"
+
+
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 
@@ -179,17 +183,25 @@ int main(int argc, char** argv)
     bool nooptix = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
 
-    const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
+
+    GLoader gloader ;
+    gloader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+    gloader.load(prefix, nogeocache);
+
+    scene.setGeometry(gloader.getDrawable());
     scene.setTarget(0);
-    assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading, needs modif in AssimpGGeo::load
+
+    //const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
+    //assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading, needs modif in AssimpGGeo::load
+
     bookmarks.load(idpath); 
 
 
-    GMergedMesh* mm = scene.getMergedMesh(); 
+    GMergedMesh* mm = gloader.getMergedMesh(); 
     composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
 
-    GBoundaryLibMetadata* meta = scene.getMetadata(); 
+    GBoundaryLibMetadata* meta = gloader.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
 
     // hmm would be better placed into a NumpyEvtCfg 
