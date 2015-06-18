@@ -6,19 +6,29 @@
 #include "GSolid.hh"
 #include "GMesh.hh"
 #include "GBoundaryLib.hh"
+#include "GSensorList.hh"
+#include "GSensor.hh"
 #include "GMergedMesh.hh"
 
 #include "assert.h"
 #include "stdio.h"
 #include "string.h"
 
+#include <iomanip>
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 #define BSIZ 50
 
 
 void GGeo::init()
 {
-
    m_boundary_lib = new GBoundaryLib();
+
+   m_sensor_list = new GSensorList();
 
    // chroma/chroma/geometry.py
    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
@@ -363,5 +373,40 @@ void GGeo::dumpRawBorderSurface(const char* name)
 }
 
 
+void GGeo::sensitize(const char* idpath, const char* ext)
+{
+    m_sensor_list->load(idpath, ext);
 
+    LOG(info) << "GGeo::sensitize " << m_sensor_list->description() ; 
+
+    GSolid* root = getSolid(0);
+
+    sensitize_traverse(root, 0 );
+
+    LOG(info) << "GGeo::sensitize sensitize_count " << m_sensitize_count  ; 
+}
+
+void GGeo::sensitize_traverse( GNode* node, unsigned int depth)
+{
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+
+    unsigned int nodeIndex = node->getIndex();
+
+    GSensor* sensor = m_sensor_list->findSensorForNode(nodeIndex);
+
+    if(sensor)
+    {
+        m_sensitize_count++ ; 
+
+        solid->setSensor(sensor);  
+        //LOG(info) << "[" << std::setw(5) << m_sensitize_count << "] " << sensor->description() ; 
+    }
+    else
+    {
+        // every triangle needs an unsigned int, for non-sensitized provide a 0 (which means real indices must be 1-based)
+        solid->setSensor(NULL);  
+    }
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) sensitize_traverse(node->getChild(i), depth + 1);
+}
 

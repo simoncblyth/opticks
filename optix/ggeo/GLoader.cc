@@ -4,11 +4,13 @@
 
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
+#include "GSensorList.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GGeo.hh"
 
 // npy-
 #include "stringutil.hpp"
+#include "Lookup.hpp"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -132,12 +134,12 @@ const char* GLoader::load(const char* envprefix, bool nogeocache)
     else
     {
         LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
-        //m_ggeo = AssimpGGeo::load(envprefix);
-        m_ggeo = (*m_imp)(envprefix);    
-
+        m_ggeo = (*m_imp)(envprefix);        // formerly AssimpGGeo::load(envprefix);
         //m_ggeo->Details("GLoader::load"); 
 
-        m_mergedmesh = m_ggeo->getMergedMesh(); 
+        m_ggeo->sensitize(idpath, "idmap");  // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
+
+        m_mergedmesh = m_ggeo->getMergedMesh();  // creates merged mesh, doing the flattening  
         m_mergedmesh->setColor(0.5,0.5,1.0);
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
         m_mergedmesh->save(idpath); 
@@ -145,8 +147,11 @@ const char* GLoader::load(const char* envprefix, bool nogeocache)
         GBoundaryLib* lib = m_ggeo->getBoundaryLib();
         m_metadata = lib->getMetadata();
         m_metadata->save(idpath);
-
     } 
+  
+    // hmm not routing via cache 
+    m_lookup = new Lookup() ; 
+    m_lookup->create(idpath);
 
     LOG(info) << "GLoader::load done " << idpath ;
     assert(m_mergedmesh);

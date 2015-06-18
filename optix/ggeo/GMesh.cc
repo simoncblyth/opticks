@@ -21,6 +21,7 @@ const char* GMesh::texcoords    = "texcoords" ;
 const char* GMesh::indices      = "indices" ;
 const char* GMesh::nodes        = "nodes" ;
 const char* GMesh::boundaries   = "boundaries" ;
+const char* GMesh::sensors      = "sensors" ;
 const char* GMesh::wavelength   = "wavelength" ;
 const char* GMesh::reemission   = "reemission" ;
 const char* GMesh::center_extent = "center_extent" ;
@@ -35,6 +36,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(indices); 
     names.push_back(nodes); 
     names.push_back(boundaries); 
+    names.push_back(sensors); 
     names.push_back(wavelength); 
     names.push_back(reemission); 
     names.push_back(center_extent); 
@@ -99,6 +101,8 @@ GMesh::GMesh(unsigned int index,
       m_nodes_buffer(NULL),
       m_boundaries(NULL),
       m_boundaries_buffer(NULL),
+      m_sensors(NULL),
+      m_sensors_buffer(NULL),
       m_num_faces(num_faces),
       m_colors(NULL),
       m_colors_buffer(NULL),
@@ -145,6 +149,7 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, indices) == 0)      return m_indices_buffer ; 
     if(strcmp(name, nodes) == 0)        return m_nodes_buffer ; 
     if(strcmp(name, boundaries) == 0)   return m_boundaries_buffer ; 
+    if(strcmp(name, sensors) == 0)      return m_sensors_buffer ; 
 
     if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
     if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
@@ -165,6 +170,7 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, indices) == 0)      setIndicesBuffer(buffer) ; 
     if(strcmp(name, nodes) == 0)        setNodesBuffer(buffer) ; 
     if(strcmp(name, boundaries) == 0)   setBoundariesBuffer(buffer) ; 
+    if(strcmp(name, sensors) == 0)      setSensorsBuffer(buffer) ; 
 
     if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
     if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
@@ -376,9 +382,27 @@ void GMesh::setBoundariesBuffer(GBuffer* buffer)
 
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int num_boundaries = numBytes/sizeof(unsigned int);
-    assert(m_num_faces == num_boundaries);   // must load indices before boundaries
+    assert(m_num_faces == num_boundaries);   // must load indices before boundaries, for m_num_faces
 }
 
+
+void GMesh::setSensors(unsigned int* sensors)
+{
+    m_sensors = sensors ;
+    m_sensors_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_sensors, sizeof(unsigned int), 1 ) ;
+    assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
+}
+void GMesh::setSensorsBuffer(GBuffer* buffer)
+{
+    m_sensors_buffer = buffer ; 
+    if(!buffer) return ;
+
+    m_sensors = (unsigned int*)buffer->getPointer();
+
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int num_sensors = numBytes/sizeof(unsigned int);
+    assert(m_num_faces == num_sensors);   // must load indices before sensors, for m_num_faces
+}
 
 
 
@@ -660,9 +684,12 @@ bool GMesh::isFloatBuffer(const char* name)
 
 bool GMesh::isIntBuffer(const char* name)
 {
-    return ( strcmp( name, indices) == 0 || 
-             strcmp( name, nodes) == 0  || 
-             strcmp( name, boundaries ) == 0 );
+    return ( 
+             strcmp( name, indices) == 0     || 
+             strcmp( name, nodes) == 0       || 
+             strcmp( name, sensors) == 0     || 
+             strcmp( name, boundaries ) == 0 
+          );
 }
 bool GMesh::isUIntBuffer(const char* name)
 {
@@ -673,7 +700,7 @@ bool GMesh::isUIntBuffer(const char* name)
 
 void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
 {
-    printf("GMesh::saveBuffer name %s path %s \n", name, path );
+    printf("GMesh::saveBuffer name %25s path %s \n", name, path );
     //buffer->Summary("GMesh::saveBuffer");
 
     if(isFloatBuffer(name))     buffer->save<float>(path);

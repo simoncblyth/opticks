@@ -39,6 +39,7 @@ class GMesh : public GDrawable {
       static const char* indices ; 
       static const char* nodes ; 
       static const char* boundaries ; 
+      static const char* sensors ; 
       static const char* wavelength ; 
       static const char* reemission ; 
       static const char* center_extent ; 
@@ -100,9 +101,12 @@ class GMesh : public GDrawable {
       void setNormalsBuffer(GBuffer* buffer);
       void setColorsBuffer(GBuffer* buffer);
       void setTexcoordsBuffer(GBuffer* buffer);
+
       void setIndicesBuffer(GBuffer* buffer);
       void setNodesBuffer(GBuffer* buffer);
       void setBoundariesBuffer(GBuffer* buffer);
+      void setSensorsBuffer(GBuffer* buffer);
+
       void setWavelengthBuffer(GBuffer* buffer);
       void setReemissionBuffer(GBuffer* buffer);
       void setCenterExtentBuffer(GBuffer* buffer);
@@ -129,11 +133,16 @@ class GMesh : public GDrawable {
   public:
       virtual void setNodes(unsigned int* nodes);
       virtual void setBoundaries(unsigned int* boundaries);
+      virtual void setSensors(   unsigned int* sensors);
   public:
       virtual unsigned int*  getNodes();
       virtual unsigned int*  getBoundaries();
+      virtual unsigned int*  getSensors();
+
       virtual GBuffer* getNodesBuffer();
       virtual GBuffer* getBoundariesBuffer();
+      virtual GBuffer* getSensorsBuffer();
+
       virtual std::vector<unsigned int>& getDistinctBoundaries();
       std::vector<std::string>& getNames();
 
@@ -143,6 +152,7 @@ class GMesh : public GDrawable {
   protected:
       unsigned int* m_nodes ; 
       unsigned int* m_boundaries ; 
+      unsigned int* m_sensors ; 
 
   private: 
       std::vector<unsigned int> m_distinct_boundaries ;
@@ -208,6 +218,7 @@ class GMesh : public GDrawable {
       GBuffer* m_wavelength_buffer ;
       GBuffer* m_nodes_buffer ;
       GBuffer* m_boundaries_buffer ;
+      GBuffer* m_sensors_buffer ;
       GBuffer* m_reemission_buffer ;
       GBuffer* m_optical_buffer ;
 
@@ -350,6 +361,13 @@ inline unsigned int* GMesh::getBoundaries()
 {
     return m_boundaries ;
 }
+inline unsigned int* GMesh::getSensors()
+{
+    return m_sensors ;
+}
+
+
+
 inline GBuffer*  GMesh::getWavelengthBuffer()
 {
     return m_wavelength_buffer ;
@@ -408,6 +426,11 @@ inline GBuffer*  GMesh::getBoundariesBuffer()
 {
     return m_boundaries_buffer ;
 }
+inline GBuffer*  GMesh::getSensorsBuffer()
+{
+    return m_sensors_buffer ;
+}
+
 
 
 

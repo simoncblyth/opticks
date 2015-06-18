@@ -183,7 +183,6 @@ int main(int argc, char** argv)
     bool nooptix = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
 
-
     GLoader gloader ;
     gloader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     gloader.load(prefix, nogeocache);
@@ -191,8 +190,6 @@ int main(int argc, char** argv)
     scene.setGeometry(gloader.getDrawable());
     scene.setTarget(0);
 
-    //const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
-    //assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading, needs modif in AssimpGGeo::load
 
     bookmarks.load(idpath); 
 
@@ -214,23 +211,13 @@ int main(int argc, char** argv)
     const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
 
 
-
     NPY<float>* npy = NPY<float>::load(typ, tag) ;
 
     G4StepNPY genstep(npy);    
+    genstep.setLookup(gloader.getMaterialLookup()); 
+    genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
 
-    Lookup lookup ; 
-    lookup.create(idpath);
-
-    // hmm probably this belongs with geometry loading 
-    Sensor sensor ; 
-    sensor.load(idpath, "idmap");
-
-
-    genstep.setLookup(&lookup); 
-    genstep.applyLookup(0, 2); // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
-
-    evt.setMaxRec( MAXREC );  // must set this before setGenStepData to have effect
+    evt.setMaxRec(MAXREC);          // must set this before setGenStepData to have effect
     evt.setGenstepData(npy); 
 
     composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent());

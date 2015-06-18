@@ -59,6 +59,8 @@ add_library(${name} SHARED
                 GDrawable.cc
                 GArray.cc
                 GLoader.cc
+                GSensor.cc
+                GSensorList.cc
 )
 
 SET(hdrs 
@@ -85,6 +87,8 @@ GBuffer.hh
 GDrawable.hh
 GArray.hh
 GLoader.hh
+GSensor.hh
+GSensorList.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

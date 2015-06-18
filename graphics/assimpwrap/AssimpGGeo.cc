@@ -545,7 +545,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     //printf("AssimpGGeo::convertStructureVisit nodeIndex %d mti %u mti_p %u msi %u \n", nodeIndex, mti, mti_p, msi );
 
-    GSolid* solid = new GSolid(nodeIndex, transform, mesh, NULL );
+    GSolid* solid = new GSolid(nodeIndex, transform, mesh, NULL, NULL ); // boundary and sensor start NULL
 
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
@@ -605,10 +605,18 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
     GBoundaryLib* lib = gg->getBoundaryLib();  
+
     
     GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
 
     solid->setBoundary(boundary);  
+
+    //not convenient to set sensor here 
+    //as would have to break into potentially multiple geometry loader implementations
+    //.. so need to do a node traverse in GGeo 
+    //GSensorList* sens = gg->getSensorList();  
+    //GSensor* sensor = sens->getSensor( nodeIndex ); 
+    //solid->setSensor( sensor );  
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);

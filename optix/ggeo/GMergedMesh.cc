@@ -7,6 +7,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 {
     GSolid* root = ggeo->getSolid(0);
@@ -19,21 +20,27 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     // allocate space for flattened arrays
 
-    mm->setVertices(new gfloat3[mm->getNumVertices()]); // allocate storage 
-    mm->setNormals( new gfloat3[mm->getNumVertices()]);
-    mm->setColors(  new gfloat3[mm->getNumVertices()]);
+    unsigned int numVertices = mm->getNumVertices();
+    mm->setVertices(new gfloat3[numVertices]); 
+    mm->setNormals( new gfloat3[numVertices]);
+    mm->setColors(  new gfloat3[numVertices]);
     mm->setTexcoords( NULL );  
-
-    mm->setFaces(        new guint3[mm->getNumFaces()]);
-    mm->setNodes(        new unsigned int[mm->getNumFaces()]);
-    mm->setBoundaries(   new unsigned int[mm->getNumFaces()]);
-
-    mm->setNumColors(mm->getNumVertices());
+    mm->setNumColors(numVertices);
     mm->setColor(0.5,0.5,0.5);
 
-    mm->setCenterExtent(new gfloat4[mm->getNumSolids()]);
+    // consolidate into guint4 
+    unsigned int numFaces = mm->getNumFaces();
+    mm->setFaces(        new guint3[numFaces]);
 
-    // 2nd pass traversal : merge GMesh into GMergedMesh
+    // TODO: consolidate into uint4 with one spare
+    mm->setNodes(        new unsigned int[numFaces]);
+    mm->setBoundaries(   new unsigned int[numFaces]);
+    mm->setSensors(      new unsigned int[numFaces]);
+
+    unsigned int numSolids = mm->getNumSolids();
+    mm->setCenterExtent(new gfloat4[numSolids]);
+
+    // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
     mm->traverse( root, 0, pass_merge );  
     mm->updateBounds();
@@ -101,11 +108,15 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
             // NB from the GNode not the GMesh 
             // (there are only ~250 GMesh instances which are recycled by the ~12k GNode)
+
+            // TODO: consolidate into uint4 (with one spare)
             unsigned int* node_indices = node->getNodeIndices();
             unsigned int* boundary_indices = node->getBoundaryIndices();
+            unsigned int* sensor_indices = node->getSensorIndices();
 
             assert(node_indices);
             assert(boundary_indices);
+            assert(sensor_indices);
 
             for(unsigned int i=0 ; i<nface ; ++i )
             {
@@ -115,10 +126,13 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
                 m_nodes[m_cur_faces+i]      = node_indices[i] ;
                 m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
+                m_sensors[m_cur_faces+i]    = sensor_indices[i] ;
             }
 
+            // offset within the flat arrays
             m_cur_vertices += nvert ;
             m_cur_faces    += nface ;
+
         } // count or merge passes
     }     // selected
 

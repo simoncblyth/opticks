@@ -2,7 +2,7 @@
 
 class GMesh ;
 class GBoundary ; 
-//class GOpticalSurface ;
+class GSensor ; 
 
 #include "GNode.hh"
 #include "GMatrix.hh"
@@ -14,7 +14,7 @@ class GBoundary ;
 
 class GSolid : public GNode {
   public:
-      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* boundary);
+      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* boundary, GSensor* sensor);
       virtual ~GSolid();
 
   public:
@@ -23,26 +23,29 @@ class GSolid : public GNode {
 
   public:
      void setBoundary(GBoundary* boundary);
+     void setSensor(GSensor* sensor);
 
   public:
      GBoundary* getBoundary();
+     GSensor*   getSensor();
 
   public: 
       void Summary(const char* msg="GSolid::Summary");
  
   private:
       GBoundary*        m_boundary ; 
-      bool m_selected ;
+      GSensor*          m_sensor ; 
+      bool              m_selected ;
 
 };
 
-inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* boundary)
+inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* boundary, GSensor* sensor)
          : 
          GNode(index, transform, mesh ),
          m_boundary(boundary),
+         m_sensor(sensor),
          m_selected(true)
 {
-    // NB not taking ownership yet 
 }
 
 inline GSolid::~GSolid()
@@ -53,8 +56,10 @@ inline GBoundary* GSolid::getBoundary()
 {
     return m_boundary ; 
 }
-
-
+inline GSensor* GSolid::getSensor()
+{
+    return m_sensor ; 
+}
 
 inline void GSolid::setSelected(bool selected)
 {

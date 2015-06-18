@@ -11,12 +11,12 @@ struct State
    float cos_theta ; 
    float distance_to_boundary ;
    uint4 optical ;   // x/y/z/w index/type/finish/value  
-   uint4 index ;
+   uint4 index ;     // indices of m1/m2/surf/sensor
 
 };
 
 
-__device__ void fill_state( State& s, int boundary, float wavelength )
+__device__ void fill_state( State& s, int boundary, int sensor, float wavelength )
 {
     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
     // >0 outward going photon
@@ -39,7 +39,7 @@ __device__ void fill_state( State& s, int boundary, float wavelength )
     s.index.x = optical_buffer[m1].x ;
     s.index.y = optical_buffer[m2].x ;
     s.index.z = optical_buffer[su].x ;
-    s.index.w = 0 ;
+    s.index.w = sensor  ;
 
 }
 

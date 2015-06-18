@@ -114,6 +114,7 @@ RT_PROGRAM void generate()
 
         rtTrace(top_object, ray, prd);  // see material1_propagate.cu:closest_hit_propagate
 
+        //if(prd.sensor == 0)
         if(prd.boundary == 0)
         {
             p.flags.i.w |= NO_HIT;
@@ -122,8 +123,7 @@ RT_PROGRAM void generate()
 
         p.flags.i.x = prd.boundary ;  
 
-        fill_state(s, prd.boundary, p.wavelength );
-
+        fill_state(s, prd.boundary, prd.sensor, p.wavelength );
 
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 

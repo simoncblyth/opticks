@@ -16,6 +16,7 @@ class GBorderSurface ;
 class GBoundary ;
 class GBoundaryLib ;
 class GMergedMesh ;
+class GSensorList ; 
 
 //
 // NB GGeo is a dumb substrate from which the geometry model is created,
@@ -63,6 +64,11 @@ class GGeo {
         void dumpRawSkinSurface(const char* name=NULL);
         void dumpRawBorderSurface(const char* name=NULL);
 
+    public:
+        // load idmap, traverse GNode tree calling GSolid::setSensor nodes with associated sensor identifier
+        void sensitize(const char* idpath, const char* ext="idmap");
+    private:
+        void sensitize_traverse(GNode* node, unsigned int depth);
  
     public:
         unsigned int getNumMeshes();
@@ -77,6 +83,7 @@ class GGeo {
 
     public:
         GBoundaryLib* getBoundaryLib();
+        GSensorList*  getSensorList();
 
     public:
         GMesh* getMesh(unsigned int index);  
@@ -129,7 +136,8 @@ class GGeo {
         std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
         std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
 
-        GBoundaryLib*                m_boundary_lib ; 
+        GBoundaryLib*                 m_boundary_lib ; 
+        GSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
         GMergedMesh*                  m_merged_mesh ; 
@@ -143,19 +151,22 @@ class GGeo {
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         Index_t                            m_index ; 
+        unsigned int                       m_sensitize_count ;  
 
 };
 
 
 inline GGeo::GGeo() :
    m_boundary_lib(NULL),
+   m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
    m_merged_mesh(NULL),
    m_path(NULL),
    m_query(NULL),
    m_ctrl(NULL),
-   m_idpath(NULL)
+   m_idpath(NULL),
+   m_sensitize_count(0)
 {
    init(); 
 }
@@ -268,6 +279,13 @@ inline GBoundaryLib* GGeo::getBoundaryLib()
 {
     return m_boundary_lib ; 
 }
+inline GSensorList* GGeo::getSensorList()
+{
+    return m_sensor_list ; 
+}
+
+
+
 inline gfloat3* GGeo::getLow()
 {
    return m_low ; 
