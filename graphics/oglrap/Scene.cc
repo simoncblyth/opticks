@@ -178,8 +178,11 @@ const char* Scene::loadGeometry(const char* prefix, bool nogeocache)
     if(!m_initialized) init();
 
     const char* idpath = m_geometry_loader->load(prefix, nogeocache);
+
     m_geometry = m_geometry_loader->getDrawable();
+
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
+
     return idpath ;
 }
 

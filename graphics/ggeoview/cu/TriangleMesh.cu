@@ -34,7 +34,8 @@ RT_PROGRAM void mesh_intersect(int primIdx)
  
     //  tried flipping vertex order in unsuccessful attempt to 
     //  get normal shader colors to match OpenGL
-    //  observe with touch mode that n.z always small 
+    //  observe with touch mode that n.z often small
+    //  ... this is just because surfaces are very often vertical
     //
     float3 p0 = vertexBuffer[index.x];
     float3 p1 = vertexBuffer[index.y];  

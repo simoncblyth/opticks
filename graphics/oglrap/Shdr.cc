@@ -123,7 +123,7 @@ void Shdr::readFile(const char* path)
             }
             else
             {
-                 LOG(info) << "Shdr::readFile " << incl_path ; 
+                 LOG(debug) << "Shdr::readFile " << incl_path ; 
                  readFile(incl_path.c_str());
             }
         }

@@ -6,7 +6,6 @@ class GGeo ;
 class GMergedMesh ; 
 class GDrawable ; 
 class GBoundaryLibMetadata ; 
-//class GLoaderImp ; 
 
 class GLoader {
      public:
@@ -22,7 +21,7 @@ class GLoader {
 
          GGeo*                  getGGeo();
          GMergedMesh*           getMergedMesh();
-         GBoundaryLibMetadata* getMetadata();
+         GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
 
     private:
@@ -34,6 +33,10 @@ class GLoader {
 
 };
 
+
+// sets implementation that does the actual loading
+// using a function pointer to the implementation 
+// allows ggeo-/GLoader depending on all the implementations
 
 inline void GLoader::setImp(GLoaderImpFunctionPtr imp)
 {

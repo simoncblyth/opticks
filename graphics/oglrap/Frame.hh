@@ -15,6 +15,39 @@ class Composition ;
 class Scene ; 
 
 
+//  
+// The window is created invisble by frame.init() 
+// near the start of launch (this is necessary to create OpenGL context),
+// then just before enter runloop the window is hinted visible and shown.
+//  
+// Unfortunately this trick does not work in fullscreen mode, 
+// where a blank screen is presented until initialization completes.
+//  
+// TODO find solution/workaround
+//  
+// * when fullscreen is requested, start with an ordinary invisiblized window
+//   then convert to fullscreen when context is ready 
+//  
+//   * :google:`glfw switch fullscreen`
+//   * http://www.java-gaming.org/index.php?topic=34882.0
+//   * https://github.com/glfw/glfw/issues/43  
+//  
+//     * window mode switching in pipeline for GLFW 3.2 ? which is a long way off
+//     * Currently using 3.1.1 released March 2015
+//  
+//   * http://www.glfw.org/docs/3.0/context.html
+//  
+//     * :google:`GLFW context object sharing glfwCreateWindow`
+//     * in GLFW3 the window is the context
+//  
+//  
+// * splash screen with a progress message 
+// * https://github.com/elliotwoods/ofxSplashScreen just presents an image, 
+//    
+// * trim some seconds off initialization
+
+
+
 class Frame : public Touchable {
    public:
        Frame();
@@ -27,9 +60,14 @@ class Frame : public Touchable {
        void setTitle(const char* title);
        void setFullscreen(bool fullscreen);
 
+       void toggleFullscreen_NOT_WORKING(bool fullscreen);
+
        void hintVisible(bool visible);
        void show();
        void init();
+
+   private:
+       void initContext();
 
    private:
        //void setPixelFactor(unsigned int factor);
@@ -74,10 +112,14 @@ class Frame : public Touchable {
 
    private:
        bool          m_fullscreen ;
+       bool          m_is_fullscreen ;
 
        // TODO: eliminate most of these, get from composition
        unsigned int  m_width ; 
        unsigned int  m_height ; 
+       unsigned int  m_width_prior ; 
+       unsigned int  m_height_prior ; 
+
        unsigned int  m_coord2pixel ; 
        const char*   m_title ;
        GLFWwindow*   m_window;
@@ -102,6 +144,7 @@ class Frame : public Touchable {
 
 inline Frame::Frame() : 
      m_fullscreen(false),
+     m_is_fullscreen(false),
      m_title(NULL),
      m_window(NULL),
      m_interactor(NULL),

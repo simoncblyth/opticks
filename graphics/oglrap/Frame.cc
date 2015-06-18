@@ -25,6 +25,8 @@
 
 
 
+
+
 void _update_fps_counter (GLFWwindow* window, const char* status) {
   if(!window)
   {
@@ -140,7 +142,6 @@ void Frame::init()
 {
     setSize(m_composition->getWidth(),m_composition->getHeight(),m_composition->getPixelFactor());
 
-
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit()) ::exit(EXIT_FAILURE);
@@ -157,22 +158,29 @@ void Frame::init()
     hintVisible(false);
 
     GLFWmonitor* monitor = m_fullscreen ? glfwGetPrimaryMonitor() : NULL ;  
-    m_window = glfwCreateWindow(m_width, m_height, m_title, monitor, NULL);
+    GLFWwindow* share = NULL ;  // window whose context to share resources with, or NULL to not share resources
+
+    m_window = glfwCreateWindow(m_width, m_height, m_title, monitor, share );
     if (!m_window)
     {
         glfwTerminate();
         ::exit(EXIT_FAILURE);
     }
 
+    glfwMakeContextCurrent(m_window);
+
+    initContext();  
+}
+
+
+void Frame::initContext()
+{
     // hookup the callbacks and arranges outcomes into event queue 
     gleqTrackWindow(m_window);
-
-    glfwMakeContextCurrent(m_window);
 
     // start GLEW extension handler, segfaults if done before glfwCreateWindow
     glewExperimental = GL_TRUE;
     glewInit ();
-
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);  // overwrite if distance to camera is less
@@ -188,13 +196,77 @@ void Frame::init()
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
-    LOG(debug) << "Frame::gl_init_window Renderer: " << renderer ;
-    LOG(debug) << "Frame::gl_init_window OpenGL version supported " <<  version ;
+    LOG(info) << "Frame::gl_init_window Renderer: " << renderer ;
+    LOG(info) << "Frame::gl_init_window OpenGL version supported " <<  version ;
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
-    LOG(info)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;    
+    LOG(info)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;  
 }
+
+
+void Frame::toggleFullscreen_NOT_WORKING(bool fullscreen)
+{
+   // http://www.java-gaming.org/index.php?topic=34882.0
+   //  http://www.glfw.org/docs/latest/monitor.html
+   //   resolution of a video mode is specified in screen coordinates, not pixels.
+   if( m_is_fullscreen == fullscreen )
+   {
+       LOG(info) << "Frame::toggleFullscreen already in that screen mode fullscreen? " << fullscreen  ;
+       return ; 
+   } 
+
+   const GLFWvidmode* vm = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+   LOG(info) << "Frame::toggleFullscreen VideoMode  " 
+             << " width " << vm->width 
+             << " height " << vm->height
+             << " red " << vm->redBits
+             << " green " << vm->greenBits
+             << " blue " << vm->blueBits
+             << " refresh " << vm->refreshRate
+             << " fullscreen " << fullscreen 
+             ;
+
+
+    m_is_fullscreen = fullscreen ; 
+
+    if(fullscreen)
+    {
+        m_width_prior = m_width ; 
+        m_height_prior = m_height ; 
+        m_width = vm->width ; 
+        m_height = vm->height ; 
+    }
+    else
+    {
+        m_width = m_width_prior ; 
+        m_height = m_height_prior ; 
+    }
+
+   
+    // trying to keep the context alive while hopping between windows
+ 
+    GLFWmonitor* monitor = fullscreen ? glfwGetPrimaryMonitor() : NULL ;  
+
+    GLFWwindow* window = glfwCreateWindow(m_width, m_height, m_title, monitor, m_window );
+
+    if (!window)
+    {
+        glfwTerminate();
+        ::exit(EXIT_FAILURE);
+    }
+
+    glfwDestroyWindow(m_window);
+
+    m_window = window ;  
+
+    glfwMakeContextCurrent(m_window);
+
+    initContext();  
+
+}
+
 
 
 

@@ -36,6 +36,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "Lookup.hpp"
+#include "Sensor.hpp"
 #include "G4StepNPY.hpp"
 #include "PhotonsNPY.hpp"
 #include "stringutil.hpp"
@@ -108,11 +109,12 @@ int main(int argc, char** argv)
     logging_init();
     const char* prefix = "GGEOVIEW_" ;
     const char* idpath = GLoader::identityPath(prefix) ;
-    LOG(info) << argv[0] ; 
+    LOG(debug) << argv[0] ; 
 
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
     Scene scene(shader_dir, shader_incl_path) ;
+
     Composition composition ;   
     Frame frame ;
     Bookmarks bookmarks ; 
@@ -156,8 +158,9 @@ int main(int argc, char** argv)
 
     // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
     // pixelfactor 2 makes OptiX render at retina resolution
-
+    // TODO: use GLFW to pluck the video mode screen size
     composition.setSize( fullscreen ? glm::uvec4(2880,1800,2,0) : glm::uvec4(2880,1704,2,0) );  // 1800-44-44px native height of menubar  
+                                          //     1440  900
 
     // perhaps use an app class that just holds on to a instance of all objs ?
     frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
@@ -166,11 +169,9 @@ int main(int argc, char** argv)
     frame.setTitle("GGeoView");
     frame.setFullscreen(fullscreen);
 
-
-
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
 
-   // TODO: arrange to delay window popup until initialization sequence is complete ?
+
     frame.init();  // creates OpenGL context
     LOG(info) << "main: frame.init DONE "; 
     GLFWwindow* window = frame.getWindow();
@@ -180,7 +181,7 @@ int main(int argc, char** argv)
 
     const char* idpath_ = scene.loadGeometry(prefix, nogeocache) ; 
     scene.setTarget(0);
-    assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading 
+    assert(strcmp(idpath_,idpath) == 0);  // TODO: use idpath in the loading, needs modif in AssimpGGeo::load
     bookmarks.load(idpath); 
 
 
@@ -205,8 +206,15 @@ int main(int argc, char** argv)
     NPY<float>* npy = NPY<float>::load(typ, tag) ;
 
     G4StepNPY genstep(npy);    
+
     Lookup lookup ; 
     lookup.create(idpath);
+
+    // hmm probably this belongs with geometry loading 
+    Sensor sensor ; 
+    sensor.load(idpath, "idmap");
+
+
     genstep.setLookup(&lookup); 
     genstep.applyLookup(0, 2); // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
 
@@ -283,6 +291,8 @@ int main(int argc, char** argv)
  
     LOG(info) << "enter runloop "; 
 
+
+    //frame.toggleFullscreen(true); causing blankscreen then segv
     frame.hintVisible(true);
     frame.show();
 

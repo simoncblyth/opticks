@@ -101,7 +101,7 @@ void View::initAnimator()
 {
     m_animator = new Animator(&m_eye_phase, 200, -1.f, 1.f ); 
     m_animator->setModeRestrict(Animator::NORM);  // only OFF and SLOW 
-    m_animator->Summary("View::initAnimator");
+    //m_animator->Summary("View::initAnimator");
 }
 
 void View::tick()

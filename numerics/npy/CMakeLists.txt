@@ -46,6 +46,7 @@ add_library( ${name}  SHARED
     Lookup.cpp
     G4StepNPY.cpp
     PhotonsNPY.cpp
+    Sensor.cpp
 )
 
 set(LIBRARIES
@@ -70,6 +71,7 @@ PhotonsNPY.hpp
 numpy.hpp
 stringutil.hpp
 Lookup.hpp
+Sensor.hpp
 )
 
 install(TARGETS ${name}  DESTINATION lib)
