@@ -30,7 +30,7 @@ using namespace optix;
 // beyond MAXREC overwrite save into top slot
 #define RSAVE(p, slot)  \
 {    \
-    unsigned int slot_offset =  slot < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
+    unsigned int slot_offset =  (slot) < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
     rsave((p), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
     (slot)++ ; \
 }   \
@@ -71,12 +71,7 @@ RT_PROGRAM void generate()
 
     // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
 
-    State s ;   // perhaps rename to Boundary 
-
-    PerRayData_propagate prd;
-    prd.boundary = 0 ;
-    prd.distance_to_boundary = -1.f ;
-
+    State s ;   // perhaps rename to Step (as in propagation, not generation) 
     Photon p ;  
 
     if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
@@ -98,64 +93,119 @@ RT_PROGRAM void generate()
         generate_scintillation_photon(p, ss, rng );         
     }
 
-
     p.flags.u.y = photon_id ;   // no problem fitting uint  (1 << 32) - 1 = 4,294,967,295
 
 
     int slot = 0 ;
     int bounce = 0 ; 
-    int command ; 
+    int command = START ; 
+
+    PerRayData_propagate prd ;
 
     while( bounce < bounce_max )
     {
-        bounce++;
+        bounce++;   // increment at head, not tail, as CONTINUE skips the tail
+        prd.boundary = 0 ;
+        prd.sensor = 0 ;
+        prd.boundary = 0 ;
+        prd.distance_to_boundary = -1.f ;
 
-        optix::Ray ray = optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX);
+        rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+        // see material1_propagate.cu:closest_hit_propagate
 
-        rtTrace(top_object, ray, prd);  // see material1_propagate.cu:closest_hit_propagate
-
-        //if(prd.sensor == 0)
         if(prd.boundary == 0)
         {
             p.flags.i.w |= NO_HIT;
             break ;
         }     
-
         p.flags.i.x = prd.boundary ;  
 
+        // use boundary index at intersection point to do optical constant + material/surface property lookups 
         fill_state(s, prd.boundary, prd.sensor, p.wavelength );
-
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
 
+        p.flags.u.z = s.index.x ;   // material1 index 
+
+        //if(photon_id == 0) dump_state(s);
+
         RSAVE(p, slot) ;
 
-//#ifdef DEBUG
-        if(photon_id == 0) dump_state(s);
-//#endif
+
+        // Where best to record the propagation ? 
+        // =======================================
+        //
+        // The above code: 
+        // ~~~~~~~~~~~~~~~~   
+        //                             /\
+        //      *--> . . . . . . m1  ./* \ - m2 - - - -
+        //     p                     / su \
+        //                          /______\
+        //
+        // * finds intersected triangle along ray from p.position along p.direction
+        // * uses triangle primIdx to find boundaryIndex 
+        // * use boundaryIndex and p.wavelength to look up surface/material properties 
+        //   including s.index.x/y/z  m1/m2/su indices 
+        // 
+        // * **NB ABOVE CODE DOES NOT change p.direction/p.position/p.time** 
+        //   they are still at their generated OR last changed positions 
+        //   from CONTINUE-ers from the below propagation code 
+        //
+        //  In summary the above code is looking ahead to see where to go next
+        //  while the photon remains with exitant position and direction
+        //  and flags from the last "step"
+        //
+        // The below code:
+        // ~~~~~~~~~~~~~~~~
+        //
+        // * changes p.position p.time p.direction p.polarization ... 
+        //   then CONTINUEs back to the above to find the next intersection
+        //   or BREAKs
+        //
+        //
+        //         RAYLEIGH_SCATTER/BULK_REEMIT
+        //                 ^
+        //                 |           /\
+        //      *--> . # . *. . . m1  /* \ - m2 - - - -
+        //     p       .             / su \
+        //          BULK_ABSORB     /______\
+        //
+        //
+        //
+        // TODO:
+        //
+        // * arrange for every record to have a single flag
+        //   control the or-ing of that flag into photon history at this level
+        //
+        // * integrate surface optical props: finish=polished/ground
+        //
 
         command = propagate_to_boundary( p, s, rng );
-        if(command == BREAK)    break ; 
-        if(command == CONTINUE) continue ; 
-
-        if(s.surface.x > -1.f )      // x/y/z/w:detect/absorb/reflect_specular/reflect_diffuse
+        if(command == BREAK)    break ;           // BULK_ABSORB
+        if(command == CONTINUE) continue ;        // BULK_REEMIT/RAYLEIGH_SCATTER
+        //
+        // PASS : survivors will go on to pick up one of the below flags, 
+        //        so no need for "BULK_SURVIVE"
+       
+        if(s.surface.x > -1.f )  // x/y/z/w:detect/absorb/reflect_specular/reflect_diffuse
         {
             command = propagate_at_surface(p, s, rng);
-            if(command == BREAK)    break ; 
-            if(command == CONTINUE) continue ; 
+            if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+            if(command == CONTINUE) continue ;    // REFLECT_DIFFUSE/REFLECT_SPECULAR
         }
         else
         {
-            propagate_at_boundary(p, s, rng);
+            propagate_at_boundary(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+            // tacit CONTINUE
         }
 
     }   // bounce < max_bounce
 
+
+    // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 
-
     RSAVE(p, slot) ;
-
 
     rng_states[photon_id] = rng ;
 }

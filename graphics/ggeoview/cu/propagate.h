@@ -1,50 +1,96 @@
 #pragma once
 
-// /usr/local/env/chroma_env/src/chroma/chroma/cuda/photon.h
+/*
+propagate_to_boundary absorb/scatter/sail ? 
+=============================================
+
+see /usr/local/env/chroma_env/src/chroma/chroma/cuda/photon.h
+
+* absorb 
+
+  #. advance .time and .position to absorption point
+  #. if BULK_REEMIT(CONTINUE) change .direction .polarization .wavelength
+  #. if BULK_ABSORB(BREAK)  .last_hit_triangle -1  
+
+* scatter
+
+  #. advance .time and .position to scattering point
+  #. RAYLEIGH_SCATTER(CONTINUE)  .direction .polarization twiddled 
+
+* sail
+
+  #. advance .position .time to boundary 
+  #. sail to boundary(PASS)  
+
+Inputs:
+
+* p.time
+* p.position
+* p.direction
+
+* s.distance_to_boundary
+* s.material1.x  refractive_index
+* s.material1.y  absorption_length
+* s.material1.z  scattering_length
+* s.material1.w  reemission_prob
+
+Outputs:
+
+* p.time
+* p.position
+* p.direction
+* p.wavelength
+* p.polarization
+* p.flags.i.x    (boundary)
+* p.flags.i.w    (history)
+
+Returns:
+
+* BREAK(BULK_ABSORB)
+* CONTINUE(BULK_REEMIT)
+* CONTINUE(RAYLEIGH_SCATTER)
+* PASS("SAIL")
+
+
+*/
 
 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 {
-    float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));
-    float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));
+    float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
+    float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
 
-    // absorption 
-    //   #. advance .time and .position to absorption point
-    //   #. if BULK_REEMIT(CONTINUE) change .direction .polarization .wavelength
-    //   #. if BULK_ABSORB(BREAK)  .last_hit_triangle -1  
-    //
     if (absorption_distance <= scattering_distance) 
     {
         if (absorption_distance <= s.distance_to_boundary) 
         {
-            p.time += absorption_distance/(SPEED_OF_LIGHT/s.material1.x);  // x:refractive_index
+            p.time += absorption_distance/(SPEED_OF_LIGHT/s.material1.x);    // .x:refractive_index
             p.position += absorption_distance*p.direction;
 
             float uniform_sample_reemit = curand_uniform(&rng);
-            if (uniform_sample_reemit < s.material1.w)   //w:reemission_prob
+            if (uniform_sample_reemit < s.material1.w)                       // .w:reemission_prob
             {
                 // no materialIndex input to reemission_lookup as both scintillators share same CDF 
                 // non-scintillators have zero reemission_prob
                 p.wavelength = reemission_lookup(curand_uniform(&rng));
                 p.direction = uniform_sphere(&rng);
                 p.polarization = normalize(cross(uniform_sphere(&rng), p.direction));
-                p.flags.i.x = 0 ;  // no-boundary-yet for new direction
+                p.flags.i.x = 0 ;   // no-boundary-yet for new direction
                 p.flags.i.w |= BULK_REEMIT;
                 return CONTINUE;
-            }   // photon is reemitted isotropically
+            }                           
             else 
             {
                 p.flags.i.w |= BULK_ABSORB;
                 return BREAK;
-            }   // photon is absorbed in material1
+            }                         
         }
+        //  otherwise sail to boundary  
     }
-    //  RAYLEIGH_SCATTER(CONTINUE)  .time .position advanced to scatter point .direction .polarization twiddled 
-    //
     else 
     {
         if (scattering_distance <= s.distance_to_boundary) 
         {
-            p.time += scattering_distance/(SPEED_OF_LIGHT/s.material1.x);  // x:refractive_index
+            p.time += scattering_distance/(SPEED_OF_LIGHT/s.material1.x);  // .x:refractive_index
             p.position += scattering_distance*p.direction;
 
             rayleigh_scatter(p, rng);
@@ -53,14 +99,14 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
             p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 
             return CONTINUE;
-        } // photon is scattered in material1
+        } 
+        //  otherwise sail to boundary  
+         
     }     // if scattering_distance < absorption_distance
 
 
-    //  Survive to boundary(PASS)  .position .time advanced to boundary 
-    //
     p.position += s.distance_to_boundary*p.direction;
-    p.time += s.distance_to_boundary/(SPEED_OF_LIGHT/s.material1.x);   // x:refractive_index
+    p.time += s.distance_to_boundary/(SPEED_OF_LIGHT/s.material1.x);   // .x:refractive_index
 
     return PASS;
 
@@ -159,10 +205,35 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 //
 //
 
+/*
+propagate_at_boundary
+======================
+
+See g4op- for comparison of Geant4/Chroma/OptiX-refract
+
+Inputs:
+
+* p.direction
+* p.polarization
+
+* s.material1.x    : refractive index 
+* s.material2.x    : refractive index
+* s.surface_normal 
+* s.cos_theta       (for noting normal incidence)
+
+Outputs:
+
+* p.direction
+* p.polarization
+* p.flags.i.x     (boundary) 
+* p.flags.i.w     (history)
+
+Tacitly returns CONTINUE
+
+*/
 
 __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
 {
-    // see g4op- for comparison of Geant4/Chroma/OptiX-refract
 
     float eta = s.material1.x/s.material2.x ;    // eta = n1/n2   x:refractive_index  PRE-FLIPPED
 
@@ -176,7 +247,7 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
 
     bool tir = c2c2 < 0.f ; 
 
-    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR
+    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
 
     const float eta_c1 = eta * c1 ; 
 
@@ -210,18 +281,47 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
                        ;
     
 
-    p.flags.i.w |= reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
-    p.flags.i.w |= s_polarized ? BOUNDARY_SPOL : BOUNDARY_PPOL ;
-    p.flags.i.w |= tir ? BOUNDARY_TIR : BOUNDARY_TIR_NOT ; 
+    p.flags.i.w |= reflect     ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
+    p.flags.i.w |= s_polarized ? BOUNDARY_SPOL    : BOUNDARY_PPOL ;
+    p.flags.i.w |= tir         ? BOUNDARY_TIR     : BOUNDARY_TIR_NOT ; 
 
+    p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 }
 
 
+
+/*
+propagate_at_specular_reflector / propagate_at_diffuse_reflector
+===================================================================
+
+Inputs:
+
+* p.direction
+* p.polarization
+
+* s.surface_normal
+* s.cos_theta
+
+Outputs:
+
+* p.direction
+* p.polarization
+* p.flags.i.x
+* p.flags.i.w
+
+Returns:
+
+CONTINUE
+
+
+*/
 
 __device__ int propagate_at_specular_reflector(Photon &p, State &s, curandState &rng)
 {
     const float c1 = -dot(p.direction, s.surface_normal );     // c1 arranged to be +ve   
 
+    // TODO: make change to c1 for normal incidence detection
+ 
     float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
 
     float normal_coefficient = dot(p.polarization, incident_plane_normal);  // fraction of E vector perpendicular to plane of incidence, ie S polarization
@@ -238,9 +338,11 @@ __device__ int propagate_at_specular_reflector(Photon &p, State &s, curandState 
                        ;
 
     p.flags.i.w |= REFLECT_SPECULAR;
+    p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 
     return CONTINUE;
 } 
+
 
 __device__ int propagate_at_diffuse_reflector(Photon &p, State &s, curandState &rng)
 {
@@ -257,24 +359,52 @@ __device__ int propagate_at_diffuse_reflector(Photon &p, State &s, curandState &
 
     p.polarization = normalize( cross(uniform_sphere(&rng), p.direction));
     p.flags.i.w |= REFLECT_DIFFUSE;
+    p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 
     return CONTINUE;
 }                       
 
 
+/*
+propagate_at_surface
+======================
+
+Inputs:
+
+* s.surface.x detect
+* s.surface.y absorb              (1.f - reflectivity ) ?
+* s.surface.z reflect_specular
+* s.surface.w reflect_diffuse
+
+Returns:
+
+* BREAK(SURFACE_ABSORB) 
+* BREAK(SURFACE_DETECT) 
+* CONTINUE(REFLECT_DIFFUSE) 
+* CONTINUE(REFLECT_SPECULAR) 
+
+
+TODO
+-----
+
+* arrange values to do equivalent to G4 ?
+
+   absorb + detect + reflect_diffuse + reflect_specular  = 1   ??
+
+* How to handle special casing of some surfaces...
+
+  * SPECULARLOBE...
+
+
+*/
 
 __device__ int
 propagate_at_surface(Photon &p, State &s, curandState &rng)
 {
 
-    // s.surface.x detect
-    // s.surface.y absorb
-    // s.surface.z reflect_specular
-    // s.surface.w reflect_diffuse
-
     float u = curand_uniform(&rng);
 
-    if( u < s.surface.y )   // absorb
+    if( u < s.surface.y )   // absorb   
     {
         p.flags.i.w |= SURFACE_ABSORB ;
         return BREAK ;
@@ -292,13 +422,6 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
     {
         return propagate_at_specular_reflector(p, s, rng );
     }
-
-
-    // TODO ENSURE:
-    //
-    //       absorb + detect + reflect_diffuse + reflect_specular  = 1 
-    //
-
 }
 
 

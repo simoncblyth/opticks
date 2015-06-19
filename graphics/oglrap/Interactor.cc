@@ -123,7 +123,7 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
 
 void Interactor::key_pressed(unsigned int key)
 {
-    m_keys_down[key] = true ; 
+    if(key < NUM_KEYS) m_keys_down[key] = true ; 
 
     if(key > 245) printf("Interactor::key_pressed %u \n", key );
 
@@ -242,7 +242,7 @@ std::string Interactor::describeModifiers(unsigned int modifiers)
 
 void Interactor::key_released(unsigned int key)
 {
-    m_keys_down[key] = false ; 
+    if(key < NUM_KEYS) m_keys_down[key] = false ; 
     switch (key)
     {
         case GLFW_KEY_0:

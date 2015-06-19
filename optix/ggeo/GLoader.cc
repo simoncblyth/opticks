@@ -104,7 +104,7 @@ GGeoview application reports the idpath via::
 
     const char* idpath = strdup(kfn.c_str());
 
-    LOG(info)<< "GLoader::identityPath "
+    LOG(debug)<< "GLoader::identityPath "
              << "\n envprefix " << envprefix 
              << "\n geokey    " << geokey 
              << "\n path      " << path 

@@ -17,6 +17,26 @@ out vec4 fcolour ;
 
 // PICK_MODULO_PHOTON uint(photon_id % Pick.x == 0)
 // PICK_BOUNDARY      uint(boundary == Pick.y)
+//
+//
+// Correspondence to OptiX qtys
+//
+//   flags[0].x  <=>  polw.ushort_.z    boundary / m1
+//   flags[0].y  <=>  polw.ushort_.w    16 bits of history 
+//
+// For example did IDENTIY_CHECK with 
+// 
+//   uint verify_photon_id = flags[0].x | flags[0].y << 16 ;  
+//
+// TODO: 
+//
+// * try draw arrays approach to picking : maybe much more efficient 
+// * rejig flags and provide gui for selection based on them
+//
+// * will (p1.w - p0.w) <= 0  identify all invalids ? 
+//
+//   * two ways to be invalid : UNSET and ABUTTING
+//
 
 void main () 
 {
@@ -24,21 +44,13 @@ void main ()
     vec4 p1 = gl_in[1].gl_Position  ;
     float tc = Param.w / TimeDomain.y ;  // as time comparisons done before un-snorming 
 
+     
+
+
     uint photon_id = gl_PrimitiveIDIn/MAXREC ;                 // https://www.opengl.org/sdk/docs/man/html/gl_PrimitiveIDIn.xhtml
-
-    // uint verify_photon_id = flags[0].x | flags[0].y << 16 ;    // from polw.u.z polw.u.w
-
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
     uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(flags[0].x == Pick.y) << 2 ) ;
-
-    // TODO: 
-    // * try draw arrays approach to picking : maybe much more efficient 
-    // * rejig flags and provide gui for selection based on them
-    //
-    // * will (p1.w - p0.w) <= 0  identify all invalids ? 
-    //
-
     uint vselect = valid & select ; 
 
     if(vselect == 0x7) // both valid and straddling tc 

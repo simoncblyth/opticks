@@ -22,9 +22,26 @@ struct Photon
    float3 polarization ;
    float  wavelength ; 
 
-   quad flags ; 
-
+   quad flags ;     // x:boundary  y:photon_id   z:spare   w:history 
+                    //             [debug-only]
 };
+
+
+/*
+
+In [5]: p.view(np.int32)[:,3]
+Out[5]: 
+array([[   -14,      0,      0, 526857],
+       [     0,      1,      0, 531973],
+       [   -12,      2,      0,      9],
+       ..., 
+       [     0, 612838,      0,      5],
+       [     0, 612839,      0,      5],
+       [     0, 612840,      0,      5]], dtype=int32)
+
+*/
+
+
 
 //
 // flipped wavelength/weight as that puts together the quad that will be dropped for records
@@ -100,39 +117,24 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
                     ); 
 
     //  pack polarization and wavelength into 4*8 = 32 bits   
-    //  range of char is -128 to 127, normalization of polarization and wavelength expected bulletproof, so no handling of out-of-range 
+    //  range of char -128:127  normalization of polarization and wavelength expected bulletproof, so no handling of out-of-range 
+    //  range of uchar 0:255   -1.f:1.f  + 1 => 0.f:2.f  so scale by 127.f 
     //
     //  polarization already normalized into -1.f:1.f
     //  wavelenth normalized via  (wavelength - low)/range into 0.:1. 
-    //
 
     float nwavelength = 255.f*(p.wavelength - wavelength_domain.x)/wavelength_domain.w ; // 255.f*0.f->1.f 
 
+    qquad qpolw ;    
+    qpolw.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;
+    qpolw.uchar_.y = __float2uint_rn((p.polarization.y+1.f)*127.f) ;
+    qpolw.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
+    qpolw.uchar_.w = __float2uint_rn(nwavelength)  ;
 
-    // lightly packed 
-    /*
-    rbuffer[record_offset+1] = make_short4( 
-                                __float2int_rn(p.polarization.x*127.f), 
-                                __float2int_rn(p.polarization.y*127.f),
-                                __float2int_rn(p.polarization.z*127.f),
-                                __float2int_rn(nwavelength*127.f)
-                              );
-    */
-
-
-    // range of uchar 0:255   -1.f:1.f  + 1 => 0.f:2.f  so scale by 127.f 
-    qquad flags ;    
-    flags.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;
-    flags.uchar_.y = __float2uint_rn((p.polarization.y+1.f)*127.f) ;
-    flags.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
-    flags.uchar_.w = __float2uint_rn(nwavelength)  ;
-
-    // tightly packed, 
-    hquad polw ; 
-    polw.ushort_.x = flags.uchar_.x | flags.uchar_.y << 8 ;
-    polw.ushort_.y = flags.uchar_.z | flags.uchar_.w << 8 ;
+    hquad polw ; // tightly packed, polarization and wavelength  
+    polw.ushort_.x = qpolw.uchar_.x | qpolw.uchar_.y << 8 ;
+    polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
     
-    // maps to rflg.x rflg.y in shader
 
 #ifdef IDENTITY_CHECK
     // spread uint32 photon_id across two uint16
@@ -142,11 +144,13 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     // OSX intel, CUDA GPUs are little-endian : increasing numeric significance with increasing memory addresses 
 #endif
 
-    // range of 8 bit char: -128 to 127 or 0 to 255
-    int boundary = p.flags.i.x ;  // range -55 : 55 
-    //polw.ushort_.z = (boundary & 0xFF) << 8 ;
-    polw.ushort_.z = boundary  ;                  // boundary could fit into 8 bits, so 8 bits going spare here 
-    polw.ushort_.w = p.flags.u.w & 0xFFFF  ;      // maybe store bitmask difference in the record ?
+
+    qquad qaux ;  // boundary int and m1 index uint are known to be within char/uchar ranges 
+    qaux.char_.x  =  p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
+    qaux.uchar_.y =  p.flags.u.z ;  //  m1 index                 uchar: 0 to 255
+
+    polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8 ;
+    polw.ushort_.w = p.flags.u.w & 0xFFFF  ;      // 16 bits of history 
 
     rbuffer[record_offset+1] = polw.short_ ; 
 
@@ -158,6 +162,58 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
 }
 
 /*
+
+   (m1/bd check)
+
+::
+
+    In [3]: a = rxc_(1)
+
+
+    In [55]: m1 = np.array( a[:,1,2] >> 8, dtype=np.int8 )    ## all records, 2nd quad, z, high char
+
+    In [56]: m1
+    Out[56]: array([  57,   57,   72, ..., -128, -128, -128], dtype=int8)
+
+    In [57]: m1[:1000].reshape(-1,10)
+    Out[57]: 
+    array([[  57,   57,   72,   72, -128, -128, -128, -128, -128, -128],
+           [  57,   57,   57,   57, -128, -128, -128, -128, -128, -128],
+           [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
+           [  57,   57,   57,   57, -128, -128, -128, -128, -128, -128],
+           [  57,   57,   57,   57, -128, -128, -128, -128, -128, -128],
+           [  57,   57,   57, -128, -128, -128, -128, -128, -128, -128],
+           [  57,   57,   57, -128, -128, -128, -128, -128, -128, -128],
+           [  57,   57,   57, -128, -128, -128, -128, -128, -128, -128],
+           [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
+           [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
+
+
+
+    In [50]: bd = np.array( a[:,1,2] & 0xFF , dtype=np.int8 )
+
+    In [51]: bd
+    Out[51]: array([-12, -13, -14, ...,   0,   0,   0], dtype=int8)
+
+    In [52]: bd[:1000].reshape(-1,10)
+    Out[52]: 
+    array([[-12, -13, -14, -14,   0,   0,   0,   0,   0,   0],
+           [-12, -13,  12,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -12,   0,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -13,  12,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -13,  12,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -13, -13,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -13, -13,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -13, -13,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -12,   0,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -12,   0,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -12,   0,   0,   0,   0,   0,   0,   0,   0],
+           [-12, -13,  12, -12, -12,   0,   0,   0,   0,   0],
+           [-12, -13, -13,   0,   0,   0,   0,   0,   0,   0],
+
+
+
+
 
    (identity check, depending on same endianness of host and device)
 
