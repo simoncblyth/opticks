@@ -1,6 +1,18 @@
 #include "stringutil.hpp"
 
 
+
+
+void test_saveIndexJSON()
+{
+   std::map<unsigned int, std::string> index ;
+   index[0] = "hello0" ; 
+   index[1] = "hello1" ; 
+   index[10] = "hello10" ; 
+   saveIndexJSON(index, "/tmp/test_saveIndexJSON.json");
+}
+
+
 void test_patternPickField()
 {
     std::string str = "aaaa__bbbb__cccccccccccccc__d__e" ;
@@ -18,7 +30,8 @@ void test_patternPickField()
 
 int main()
 {
-    test_patternPickField();
+    //test_patternPickField();
+    test_saveIndexJSON();
     return 0 ; 
 }
 

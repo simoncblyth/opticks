@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 //
 // returning std::string is fussy wrt compiler details, making inconvenient 
@@ -21,5 +22,9 @@ std::string insertField(const char* line, char delim, int index, const char* fie
 std::string md5digest( const char* buffer, int len );
 
 void removeField(char* dest, const char* line, char delim, int index );
+
+unsigned char* make_uchar4_colors(unsigned int n);
+void saveIndexJSON( std::map<unsigned int, std::string>& index, const char* path);
+
 
 

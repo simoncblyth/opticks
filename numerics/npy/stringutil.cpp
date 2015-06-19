@@ -7,6 +7,11 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+namespace pt = boost::property_tree;
+
 
 int getenvint( const char* envkey, int fallback )
 {
@@ -141,9 +146,91 @@ std::string md5digest( const char* buffer, int len )
     return digest;
 }
 
+#define RGBA(r,g,b,a) \
+{ \
+    colors[offset + 0] = (r) ; \
+    colors[offset + 1] = (g) ; \
+    colors[offset + 2] = (b);  \
+    colors[offset + 3] = (a) ; \
+} \
 
 
 
+
+unsigned char* make_uchar4_colors(unsigned int n)
+{
+    unsigned char* colors = new unsigned char[n*4] ; 
+    for(unsigned int i=0 ; i < n ; i++ )
+    {   
+        unsigned int offset = i*4 ; 
+        switch(i % 5)
+        {   
+           case 0:RGBA(0xff,0x00,0x00,0xff);break; // R
+           case 1:RGBA(0x00,0xff,0x00,0xff);break; // G 
+           case 2:RGBA(0xff,0x00,0xff,0xff);break; // M 
+           case 3:RGBA(0xff,0xff,0x00,0xff);break; // Y 
+           case 4:RGBA(0x00,0xff,0xff,0xff);break; // C
+        }   
+    }   
+
+   /*
+In [1]: np.linspace(0.,1.,5 )
+Out[1]: array([ 0.  ,  0.25,  0.5 ,  0.75,  1.  ])
+                
+In [2]: np.linspace(0.,1.,5+1 )
+Out[2]: array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ])
+                RRRRRRRRGGGGGGMMMMMM
+
+In [10]: (np.arange(0,5) + 0.5)/5              (i + 0.5)/5.0  lands mid-bin
+Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
+
+
+     // -0.10  R
+     //  0.00  R 
+     //  0.200 R
+     ---------------
+     //  0.201 G 
+     //  0.205 G 
+     //  0.250 G 
+     //  0.300 G 
+     //  0.400 G  
+     ---------------
+     //  0.401 M
+     //  0.5   M
+     //  0.6   M 
+     ---------------
+     //  0.601 Y
+     //  0.7   Y
+     //  0.8   Y
+     --------------
+     //  0.801 C
+     //  0.9   C
+     //  1.0   C
+     --------------
+     //  1.1   C
+     //  1.5   C    
+     //   
+  */
+
+
+    return colors ; 
+}
+
+
+
+
+void saveIndexJSON( std::map<unsigned int, std::string>& index, const char* path)
+{
+    typedef std::map<unsigned int, std::string> Index_t ; 
+
+    pt::ptree t;
+    for(Index_t::iterator it=index.begin() ; it != index.end() ; it++)
+    {
+        printf("  %3u :  %s \n", it->first, it->second.c_str() );
+        t.put( boost::lexical_cast<std::string>(it->first), it->second );
+    }
+    pt::write_json(path, t );
+}
 
 
 

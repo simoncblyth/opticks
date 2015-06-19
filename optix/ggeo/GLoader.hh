@@ -2,6 +2,7 @@
 
 #include "stdlib.h"
 
+class GCache ; 
 class GGeo ; 
 class GMergedMesh ; 
 class GDrawable ; 
@@ -15,11 +16,12 @@ class GLoader {
 
     public:
          GLoader();
+         void setCache(GCache* cache);
          void setImp(GLoaderImpFunctionPtr imp);
-         const char* load(const char* envprefix, bool nogeocache=false);
+         void load(bool nogeocache=false);
 
     public:
-         static const char* identityPath( const char* envprefix);
+         //static const char* identityPath( const char* envprefix);
          void Summary(const char* msg);
 
     public:
@@ -31,6 +33,7 @@ class GLoader {
          Lookup*                getMaterialLookup();
 
     private:
+         GCache*                   m_cache ; 
          GLoaderImpFunctionPtr     m_imp ;  
          GGeo*                     m_ggeo ;    
          GMergedMesh*              m_mergedmesh ;
@@ -47,6 +50,7 @@ class GLoader {
 
 inline GLoader::GLoader() 
    :
+   m_cache(NULL),
    m_ggeo(NULL),
    m_mergedmesh(NULL),
    m_metadata(NULL),
@@ -66,10 +70,17 @@ inline void GLoader::setImp(GLoaderImpFunctionPtr imp)
     m_imp = imp ; 
 }
 
+inline void GLoader::setCache(GCache* cache)
+{
+    m_cache = cache ; 
+}
+
 inline GGeo* GLoader::getGGeo()
 {
     return m_ggeo ; 
 }
+
+
 inline GMergedMesh* GLoader::getMergedMesh()
 {
     return m_mergedmesh ; 

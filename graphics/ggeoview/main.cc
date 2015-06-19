@@ -55,6 +55,7 @@
 #include "GMergedMesh.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GLoader.hh"
+#include "GCache.hh"
 
 
 // assimpwrap
@@ -111,13 +112,15 @@ void logging_init()
 int main(int argc, char** argv)
 {
     logging_init();
-    const char* prefix = "GGEOVIEW_" ;
-    const char* idpath = GLoader::identityPath(prefix) ;
+    GCache cache("GGEOVIEW_") ; 
+    const char* idpath = cache.getIdPath();
     LOG(debug) << argv[0] ; 
 
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
     Scene scene(shader_dir, shader_incl_path) ;
+
+
 
     Composition composition ;   
     Frame frame ;
@@ -184,12 +187,12 @@ int main(int argc, char** argv)
     bool nogeocache = fcfg->hasOpt("nogeocache");
 
     GLoader gloader ;
+    gloader.setCache(&cache);
     gloader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    gloader.load(prefix, nogeocache);
+    gloader.load(nogeocache);
 
     scene.setGeometry(gloader.getDrawable());
     scene.setTarget(0);
-
 
     bookmarks.load(idpath); 
 

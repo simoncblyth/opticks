@@ -25,6 +25,7 @@ class Rdr : public RendererBase  {
 
   public: 
       void upload(MultiViewNPY* mvn);
+      void upload_colors();
   private:
       void upload(NPYBase* npy);
       void attach(GLuint buffer_id);
@@ -57,6 +58,9 @@ class Rdr : public RendererBase  {
       Device* m_device ; 
       GLuint m_vao ; 
       GLuint m_buffer ;
+      GLuint m_colors ;
+      bool   m_colors_uploaded ; 
+
       unsigned int m_countdefault ; 
       Composition* m_composition ;
 
@@ -68,6 +72,7 @@ class Rdr : public RendererBase  {
       GLint  m_pick_location ;
       GLint  m_param_location ;
       GLint  m_timedomain_location ;
+      GLint  m_colors_location ;
 
       GLenum m_primitive ; 
 
@@ -80,6 +85,8 @@ inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* in
     m_device(device),
     m_vao(0),
     m_buffer(0),
+    m_colors(0),
+    m_colors_uploaded(false),
     m_countdefault(0),
     m_composition(NULL),
     m_mv_location(-1),
@@ -90,6 +97,7 @@ inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* in
     m_pick_location(-1),
     m_param_location(-1),
     m_timedomain_location(-1),
+    m_colors_location(-1),
     m_primitive(GL_POINTS)
 {
 }

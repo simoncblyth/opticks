@@ -141,7 +141,7 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     unsigned int photon_id = p.flags.u.y ;
     polw.ushort_.z = photon_id & 0xFFFF ;     // least significant 16 bits first     
     polw.ushort_.w = photon_id >> 16  ;       // arranging this way allows scrunching to view two uint16 as one uint32 
-    // OSX intel, CUDA GPUs are little-endian : increasing numeric significance with increasing memory addresses 
+    // OSX intel + CUDA GPUs are little-endian : increasing numeric significance with increasing memory addresses 
 #endif
 
 
@@ -149,8 +149,11 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     qaux.char_.x  =  p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
     qaux.uchar_.y =  p.flags.u.z ;  //  m1 index                 uchar: 0 to 255
 
-    polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8 ;
+
+    polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;  
     polw.ushort_.w = p.flags.u.w & 0xFFFF  ;      // 16 bits of history 
+
+
 
     rbuffer[record_offset+1] = polw.short_ ; 
 
@@ -187,6 +190,88 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
            [  57,   57,   57, -128, -128, -128, -128, -128, -128, -128],
            [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
            [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
+
+
+
+GMergedMesh::create GBoundaryLib::dumpIndex)
+    0 :  AdCableTraySurface 
+    2 :  ESRAirSurfaceTop 
+    3 :  RSOilSurface 
+    4 :  SSTOilSurface 
+    5 :  SSTWaterSurfaceNear1 
+    7 :  NearDeadLinerSurface 
+    9 :  NearInnInPiperSurface 
+   11 :  NearOWSLinerSurface 
+   14 :  NearPoolCoverSurface 
+   42 :  ADTableStainlessSteel 
+   43 :  Acrylic 
+   44 :  Air 
+   45 :  Aluminium 
+   48 :  Bialkali 
+   51 :  DeadWater 
+   52 :  ESR 
+   53 :  Foam 
+   54 :  GdDopedLS 
+   57 :  IwsWater 
+   58 :  LiquidScintillator 
+   59 :  MineralOil 
+   61 :  Nitrogen 
+   62 :  NitrogenGas 
+   63 :  Nylon 
+   65 :  OwsWater 
+   66 :  PPE 
+   67 :  PVC 
+   68 :  Pyrex 
+   70 :  Rock 
+   72 :  StainlessSteel 
+   74 :  Tyvek 
+   75 :  UnstStainlessSteel 
+   76 :  Vacuum 
+   77 :  Water 
+
+
+
+In [27]: count_unique(m1[m1>0])
+Out[27]: 
+array([[    43, 690070],
+       [    44,   7588],
+       [    48,    584],
+       [    52,  25401],
+       [    54, 687130],
+       [    57,  66096],
+       [    58, 383238],
+       [    59, 483114],
+       [    61,      6],
+       [    67,      7],
+       [    68,  27962],
+       [    70,   6745],
+       [    72, 127872],
+       [    75,   8804],
+       [    76,  23905],
+       [    77,   1623]])
+
+
+
+
+
+
+   bd = np.array( a[:,1,2] & 0xFF , dtype=np.int8 )   # huh these are m1
+
+In [20]: bd[100000:100000+100].reshape(-1,10)
+Out[20]: 
+array([[58, 58, 43, 59, 43, 59, 59, 43, 59, 43],
+       [43, 58, 43, 59, 43, 44, 52, 52,  0,  0],
+       [58, 58,  0,  0,  0,  0,  0,  0,  0,  0],
+       [58, 58, 58, 58, 43, 54, 43, 58, 43, 59],
+       [58, 43, 59, 43, 59, 59, 43, 59, 43, 58],
+       [58, 58,  0,  0,  0,  0,  0,  0,  0,  0],
+       [58, 58,  0,  0,  0,  0,  0,  0,  0,  0],
+       [58, 58,  0,  0,  0,  0,  0,  0,  0,  0],
+       [58, 58,  0,  0,  0,  0,  0,  0,  0,  0],
+       [58, 58,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=int8)
+
+
+
 
 
 

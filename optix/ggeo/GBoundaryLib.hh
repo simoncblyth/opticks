@@ -164,7 +164,8 @@ class GBoundaryLib {
 
   public:
       void addToIndex(GPropertyMap<float>* obj);
-      void  dumpIndex(const char* msg="GBoundaryLib::dumpIndex");
+      void dumpIndex(const char* msg="GBoundaryLib::dumpIndex");
+      void saveIndex(const char* cachedir, const char* filename="GBoundaryLibIndex.json");
 
   public:
       GPropertyMap<float>* createStandardProperties(const char* name, GBoundary* boundary);

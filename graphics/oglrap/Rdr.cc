@@ -9,6 +9,7 @@
 #include "NPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
+#include "stringutil.hpp"
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -57,6 +58,7 @@ void Rdr::upload(MultiViewNPY* mvn)
             count = vnpy->getCount();
             setCountDefault(count);
             npy = vnpy->getNPY(); 
+
             upload(npy);
         }
         else
@@ -85,6 +87,13 @@ void Rdr::upload(NPYBase* npy)
     {
         LOG(debug) << "Rdr::upload " ;
 
+        if(!m_colors_uploaded)
+        {
+            upload_colors();
+            m_colors_uploaded = true ; 
+        }
+
+
         upload(npy->getBytes(), npy->getNumBytes(0));
 
         npy->setBufferId(m_buffer); 
@@ -103,6 +112,8 @@ void Rdr::attach(GLuint buffer_id)
     glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
 }
 
+
+
 void Rdr::upload(void* data, unsigned int nbytes)
 {
     glGenVertexArrays (1, &m_vao); 
@@ -112,6 +123,81 @@ void Rdr::upload(void* data, unsigned int nbytes)
     glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
     glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_STATIC_DRAW );
 }
+
+
+void Rdr::upload_colors()
+{
+    unsigned int ncol = 5 ; 
+
+    // https://open.gl/textures
+    GLenum  target = GL_TEXTURE_1D ;   // Must be GL_TEXTURE_1D or GL_PROXY_TEXTURE_1D
+
+    glGenTextures(1, &m_colors);
+    glBindTexture(target, m_colors);
+
+    GLint   level = 0 ;                // level-of-detail number, Level 0 is the base image level
+    GLint   internalFormat = GL_RGBA  ;  // number of color components in the texture
+    GLsizei width = ncol ;                // width of the texture image including the border if any (powers of 2 are better)
+    GLint   border = 0 ;               // width of the border. Must be either 0 or 1
+    GLenum  format = GL_RGBA ;         // format of the pixel data
+    GLenum  type = GL_UNSIGNED_BYTE ;  // type of the pixel data
+
+    unsigned char* colors = make_uchar4_colors(ncol) ;      // pointer to the image data in memory
+    glTexImage1D(target, level, internalFormat, width, border, format, type, colors );
+    delete colors ; 
+
+    glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    /*
+       With ncol = 5 and using WRAP_S: GL_CLAMP_TO_EDGE, MIN_FILTER : GL_NEAREST, MAG_FILTER : GL_NEAREST
+       With colors  R G M Y C  scanned float values to probe the texture algo find...
+
+      
+        -0.10  R
+     ---------------
+         0.00  R 
+         0.200 R
+     ---------------
+         0.201 G 
+         0.205 G 
+         ...
+         0.400 G  
+     ---------------
+         0.401 M
+         0.5   M
+         0.6   M 
+     ---------------
+         0.601 Y
+         0.7   Y
+         0.8   Y
+     --------------
+         0.801 C
+         0.9   C
+         1.0   C
+     --------------
+         1.1   C
+         1.5   C    
+
+   So an n+1 binning approach is used...
+
+In [2]: np.linspace(0.,1.,5+1 )
+Out[2]: array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ])
+                RRRRRRRRGGGGGGMMMMMM
+ 
+ So to pick via an integer would need 
+
+In [10]: (np.arange(0,5) + 0.5)/5.              (float(i) + 0.5)/5.0  lands mid-bin
+Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
+
+
+   */
+
+
+}
+
+
 
 void* Rdr::mapbuffer( int buffer_id, GLenum target )
 {
@@ -200,6 +286,7 @@ void Rdr::check_uniforms()
     m_pick_location = m_shader->uniform("Pick", required );     
     m_param_location = m_shader->uniform("Param", required );     
     m_timedomain_location = m_shader->uniform("TimeDomain", required );     
+    m_colors_location = m_shader->uniform("Colors", required );     
 
     // the "tag" argument of the Rdr identifies the GLSL code being used
     // determining which uniforms are required 

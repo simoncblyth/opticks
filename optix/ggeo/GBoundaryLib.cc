@@ -7,6 +7,7 @@
 #include "GOpticalSurface.hh"
 #include "md5digest.hh"
 #include "limits.h"
+#include "stringutil.hpp"
 
 #include <string>
 #include <map>
@@ -879,6 +880,36 @@ void  GBoundaryLib::dumpIndex(const char* msg)
     for(Index_t::iterator it=m_index.begin() ; it != m_index.end() ; it++)
          printf("  %3u :  %s \n", it->first, it->second.c_str() );
 }
+
+void GBoundaryLib::saveIndex(const char* dir, const char* filename)
+{
+    // TODO: avoid duplication of this code with GBoundaryLibMetadata
+
+    fs::path cachedir(dir);
+    if(!fs::exists(cachedir))
+    {
+        if (fs::create_directory(cachedir))
+        {
+            printf("GBoundaryLib::save created directory %s \n", dir );
+        }
+    }
+    if(fs::exists(cachedir) && fs::is_directory(cachedir))
+    {
+        fs::path tpath(dir);
+        tpath /= filename ; 
+
+        const char* path = tpath.string().c_str() ;
+        LOG(info) << "GBoundaryLib::saveIndex to " << path ;  
+        saveIndexJSON( m_index, path ); 
+    }
+    else
+    {
+        printf("GBoundaryLib::saveIndex directory %s DOES NOT EXIST \n", dir);
+    }
+}
+
+
+
 
 std::string GBoundaryLib::digestString(std::vector<GProperty<float>*>& props)
 {

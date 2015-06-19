@@ -1,3 +1,4 @@
+#include "GCache.hh"
 #include "GLoader.hh"
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
@@ -10,11 +11,12 @@ int main(int argc, char** argv)
 {
     bool nogeocache = true ; 
 
+    GCache cache("GGEOVIEW_");
+
     GLoader loader ; 
-
+    loader.setCache(&cache);
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-
-    loader.load("GGEOVIEW_", nogeocache);
+    loader.load(nogeocache);
 
     GMergedMesh* mm = loader.getMergedMesh();
 

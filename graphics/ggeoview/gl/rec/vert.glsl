@@ -7,8 +7,10 @@ uniform vec4 Param ;
 
 layout(location = 0) in vec4  rpos;
 layout(location = 1) in ivec4 rflg;  
+layout(location = 2) in ivec4 rflq;  
 
 out vec4 colour;
+out ivec4 flq ;
 
 void main () 
 {
@@ -21,6 +23,7 @@ void main ()
     // gl_Position = ISNormModelViewProjection * vec4( vec3(rpos), rpos.w*TimeDomain.y );
 
     // pass thru to geom.glsl
+    flq = rflq ; 
     gl_Position = rpos ; 
     gl_PointSize = 1.0;
 
