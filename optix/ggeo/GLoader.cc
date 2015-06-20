@@ -7,6 +7,7 @@
 #include "GSensorList.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GMaterialIndex.hh"
+#include "GSurfaceIndex.hh"
 #include "GGeo.hh"
 #include "GCache.hh"
 
@@ -40,6 +41,7 @@ void GLoader::load(bool nogeocache)
         m_mergedmesh = GMergedMesh::load(idpath);
         m_metadata   = GBoundaryLibMetadata::load(idpath);
         m_materials  = GMaterialIndex::load(idpath);
+        m_surfaces   = GSurfaceIndex::load(idpath);
     } 
     else
     {
@@ -61,6 +63,10 @@ void GLoader::load(bool nogeocache)
         m_materials = lib->getMaterials();
         m_materials->save(idpath);
         
+        m_surfaces = lib->getSurfaces();
+        m_surfaces->save(idpath);
+
+
         lib->saveIndex(idpath); 
     } 
   

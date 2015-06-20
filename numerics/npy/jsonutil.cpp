@@ -109,7 +109,7 @@ void dumpMap( typename std::map<A,B> & mp, const char* msg)
     LOG(info) << msg ; 
     for(typename std::map<A,B>::iterator it=mp.begin() ; it != mp.end() ; it++)
     {
-         std::cout << std::setw(10) << boost::lexical_cast<std::string>(it->first)
+         std::cout << std::setw(25) << boost::lexical_cast<std::string>(it->first)
                    << std::setw(50) << boost::lexical_cast<std::string>(it->second)
                    << std::endl ; 
                    ;
@@ -133,5 +133,10 @@ template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned 
 template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path) ;
 template void dumpMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* msg) ;
 
+template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
+template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;
+template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
+template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;
+template void dumpMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* msg) ;
 
 

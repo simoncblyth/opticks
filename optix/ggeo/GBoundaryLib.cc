@@ -1,6 +1,7 @@
 #include "GBoundaryLib.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GMaterialIndex.hh"
+#include "GSurfaceIndex.hh"
 #include "GBoundary.hh"
 #include "GPropertyMap.hh"
 #include "GBuffer.hh"
@@ -170,6 +171,11 @@ void GBoundaryLib::init()
     setDefaults(defaults);
 
     m_ramp = GProperty<float>::ramp( domain->getLow(), domain->getStep(), domain->getValues(), domain->getLength() );
+
+
+    m_meta = new GBoundaryLibMetadata ; 
+    m_materials = new GMaterialIndex ; 
+    m_surfaces  = new GSurfaceIndex ; 
 }
 
 
@@ -719,9 +725,6 @@ array([[[ 76,   0,   0,   0],
 
     assert(m_wavelength_buffer == NULL && m_optical_buffer == NULL && "not expecting preexisting wavelength/optical buffers");
 
-    if(!m_meta) m_meta = new GBoundaryLibMetadata ; 
-    if(!m_materials) m_materials = new GMaterialIndex ; 
-
     GDomain<float>* domain = getStandardDomain();
     const unsigned int domainLength = domain->getLength();
     unsigned int numBoundary = getNumBoundary() ;
@@ -758,15 +761,15 @@ array([[[ 76,   0,   0,   0],
         m_meta->addDigest(kfmt, isub, "boundary", (char*)dig ); 
 
         std::string ishortname = boundary->getInnerMaterial()->getShortName() ; 
-        unsigned int iindex = boundary->getInnerMaterial()->getIndex();
 
         std::string oshortname = boundary->getOuterMaterial()->getShortName() ; 
-        unsigned int oindex = boundary->getOuterMaterial()->getIndex();
-     
-        // collect material names and source indices into GMaterialIndex
-        m_materials->add(ishortname.c_str(), iindex );
-        m_materials->add(oshortname.c_str(), oindex );
 
+
+        //unsigned int iindex = boundary->getInnerMaterial()->getIndex();
+        //unsigned int oindex = boundary->getOuterMaterial()->getIndex();
+        // collect material names and source indices into GMaterialIndex
+        //m_materials->add(ishortname.c_str(), iindex );
+        //m_materials->add(oshortname.c_str(), oindex );
 
         {
             m_meta->add(kfmt, isub, "imat", boundary->getInnerMaterial() );
@@ -782,22 +785,27 @@ array([[[ 76,   0,   0,   0],
         { 
             GPropertyMap<float>* psrc = boundary->getConstituentByIndex(p) ; 
             addToIndex(psrc);  // this index includes only materials or surfaces used in boundaries, unlike the GGeo index
-
-
+            std::string shortname = psrc->getShortName();
 
             if(psrc->isSkinSurface() || psrc->isBorderSurface())
             {
                 GOpticalSurface* os = psrc->getOpticalSurface();
                 assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
 
-                optical_data[opticalOffset + p*4 + optical_index]  =  psrc->getIndex() ;  // these indices are currently original aiScene material indices 
+                m_surfaces->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GSurfaceIndex
+                unsigned int index_local = m_surfaces->getIndexLocal(shortname.c_str());  
+
+                optical_data[opticalOffset + p*4 + optical_index]  =  index_local ; 
                 optical_data[opticalOffset + p*4 + optical_type]   =  boost::lexical_cast<unsigned int>(os->getType()); 
                 optical_data[opticalOffset + p*4 + optical_finish] =  boost::lexical_cast<unsigned int>(os->getFinish()); 
                 optical_data[opticalOffset + p*4 + optical_value]  =  boost::lexical_cast<float>(os->getValue())*100.f ;   // express as integer percentage 
             } 
             else if(psrc->isMaterial())
             {
-                optical_data[opticalOffset + p*4 + optical_index]  = psrc->getIndex() ;  // these indices are currently original aiScene material indices 
+                m_materials->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GMaterialIndex
+                unsigned int index_local = m_materials->getIndexLocal(shortname.c_str());  
+
+                optical_data[opticalOffset + p*4 + optical_index]  = index_local ;  
                 optical_data[opticalOffset + p*4 + optical_type]   =  0 ;
                 optical_data[opticalOffset + p*4 + optical_finish] =  0 ;
                 optical_data[opticalOffset + p*4 + optical_value]  =  0 ;
@@ -872,6 +880,7 @@ array([[[ 76,   0,   0,   0],
     m_meta->createMaterialMap();
 
     m_materials->dump();
+    m_surfaces->dump();
 
     //m_optical_buffer->save<unsigned int>("/tmp/optical_buffer_debug.npy");
 

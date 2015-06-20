@@ -8,6 +8,7 @@ class GMergedMesh ;
 class GDrawable ; 
 class GBoundaryLibMetadata ; 
 class GMaterialIndex ; 
+class GSurfaceIndex ; 
 
 class Lookup ; 
 
@@ -31,6 +32,7 @@ class GLoader {
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
          GMaterialIndex*        getMaterials();
+         GSurfaceIndex*         getSurfaces();
 
          Lookup*                getMaterialLookup();
 
@@ -41,15 +43,10 @@ class GLoader {
          GMergedMesh*              m_mergedmesh ;
          GBoundaryLibMetadata*     m_metadata ;
          GMaterialIndex*           m_materials ;
-
+         GSurfaceIndex*            m_surfaces ;
          Lookup*                   m_lookup ; 
      
-
 };
-
-
-
-
 
 inline GLoader::GLoader() 
    :
@@ -58,6 +55,7 @@ inline GLoader::GLoader()
    m_mergedmesh(NULL),
    m_metadata(NULL),
    m_materials(NULL),
+   m_surfaces(NULL),
    m_lookup(NULL)
 {
 }

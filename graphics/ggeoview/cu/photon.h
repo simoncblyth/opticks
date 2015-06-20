@@ -166,89 +166,84 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
 
 /*
 
-   (m1/bd check)
+   (m1/bd check)  after move to local material and surface indices
 
 ::
 
-    In [3]: a = rxc_(1)
+    In [1]: a = rxc_(1)
+
+    In [2]: m1 = np.array( a[:,1,2] >> 8, dtype=np.int8 )  ## all records, 2nd quad, z, high char
+
+    In [3]: m1
+    Out[3]: array([  10,   10,   11, ..., -128, -128, -128], dtype=int8)
+
+    In [4]: m1[:1000].reshape(-1,10)
+    Out[4]: 
+    array([[  10,   10,   11,   11, -128, -128, -128, -128, -128, -128],
+           [  10,   10,   10,   10, -128, -128, -128, -128, -128, -128],
+           [  10,   10, -128, -128, -128, -128, -128, -128, -128, -128],
+           [  10,   10,   10,   10, -128, -128, -128, -128, -128, -128],
+           [  10,   10,   10,   10, -128, -128, -128, -128, -128, -128],
+           [  10,   10,   10, -128, -128, -128, -128, -128, -128, -128],
+           [  10,   10,   10, -128, -128, -128, -128, -128, -128, -128],
 
 
-    In [55]: m1 = np.array( a[:,1,2] >> 8, dtype=np.int8 )    ## all records, 2nd quad, z, high char
+In [5]: m1[m1>0]
+Out[5]: array([10, 10, 11, ..., 10, 10, 10], dtype=int8)
 
-    In [56]: m1
-    Out[56]: array([  57,   57,   72, ..., -128, -128, -128], dtype=int8)
+In [6]: count_unique(m1[m1>0])
+Out[6]: 
+array([[     1,  23905],
+       [     2,   6745],
+       [     3,   7588],
+       [    10,  66096],
+       [    11, 127872],
+       [    12, 483114],
+       [    13, 690070],
+       [    14, 383238],
+       [    15, 687130],
+       [    16,  27962],
+       [    17,    584],
+       [    18,   8804],
+       [    19,  25401],
+       [    20,   1623],
+       [    21,      6],
+       [    24,      7]])
 
-    In [57]: m1[:1000].reshape(-1,10)
-    Out[57]: 
-    array([[  57,   57,   72,   72, -128, -128, -128, -128, -128, -128],
-           [  57,   57,   57,   57, -128, -128, -128, -128, -128, -128],
-           [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
-           [  57,   57,   57,   57, -128, -128, -128, -128, -128, -128],
-           [  57,   57,   57,   57, -128, -128, -128, -128, -128, -128],
-           [  57,   57,   57, -128, -128, -128, -128, -128, -128, -128],
-           [  57,   57,   57, -128, -128, -128, -128, -128, -128, -128],
-           [  57,   57,   57, -128, -128, -128, -128, -128, -128, -128],
-           [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
-           [  57,   57, -128, -128, -128, -128, -128, -128, -128, -128],
 
-
-
-GMergedMesh::create GBoundaryLib::dumpIndex)
-    0 :  AdCableTraySurface 
-    2 :  ESRAirSurfaceTop 
-    3 :  RSOilSurface 
-    4 :  SSTOilSurface 
-    5 :  SSTWaterSurfaceNear1 
-    7 :  NearDeadLinerSurface 
-    9 :  NearInnInPiperSurface 
-   11 :  NearOWSLinerSurface 
-   14 :  NearPoolCoverSurface 
-   42 :  ADTableStainlessSteel 
-   43 :  Acrylic 
-   44 :  Air 
-   45 :  Aluminium 
-   48 :  Bialkali 
-   51 :  DeadWater 
-   52 :  ESR 
-   53 :  Foam 
-   54 :  GdDopedLS 
-   57 :  IwsWater 
-   58 :  LiquidScintillator 
-   59 :  MineralOil 
-   61 :  Nitrogen 
-   62 :  NitrogenGas 
-   63 :  Nylon 
-   65 :  OwsWater 
-   66 :  PPE 
-   67 :  PVC 
-   68 :  Pyrex 
-   70 :  Rock 
-   72 :  StainlessSteel 
-   74 :  Tyvek 
-   75 :  UnstStainlessSteel 
-   76 :  Vacuum 
-   77 :  Water 
+ name                      Vacuum source         76 local           1
+ name                        Rock source         70 local           2
+ name                         Air source         44 local           3
+ name                         PPE source         66 local           4
+ name                   Aluminium source         45 local           5
+ name                        Foam source         53 local           6
+ name                   DeadWater source         51 local           7
+ name                       Tyvek source         74 local           8
+ name                    OwsWater source         65 local           9
+ name                    IwsWater source         57 local          10
+ name              StainlessSteel source         72 local          11
+ name                  MineralOil source         59 local          12
+ name                     Acrylic source         43 local          13
+ name          LiquidScintillator source         58 local          14
+ name                   GdDopedLS source         54 local          15
+ name                       Pyrex source         68 local          16
+ name                    Bialkali source         48 local          17
+ name          UnstStainlessSteel source         75 local          18
+ name                         ESR source         52 local          19
+ name                       Water source         77 local          20
+ name                    Nitrogen source         61 local          21
+ name                       Nylon source         63 local          22
+ name                 NitrogenGas source         62 local          23
+ name                         PVC source         67 local          24
+ name       ADTableStainlessSteel source         42 local          25
 
 
 
-In [27]: count_unique(m1[m1>0])
-Out[27]: 
-array([[    43, 690070],
-       [    44,   7588],
-       [    48,    584],
-       [    52,  25401],
-       [    54, 687130],
-       [    57,  66096],
-       [    58, 383238],
-       [    59, 483114],
-       [    61,      6],
-       [    67,      7],
-       [    68,  27962],
-       [    70,   6745],
-       [    72, 127872],
-       [    75,   8804],
-       [    76,  23905],
-       [    77,   1623]])
+
+
+
+
+
 
 
 

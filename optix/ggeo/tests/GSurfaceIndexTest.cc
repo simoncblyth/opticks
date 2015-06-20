@@ -1,4 +1,4 @@
-#include "GMaterialIndex.hh"
+#include "GSurfaceIndex.hh"
 #include "stdio.h"
 
 int main(int argc, char** argv)
@@ -9,10 +9,9 @@ int main(int argc, char** argv)
        return 1 ; 
     }
 
-    GMaterialIndex* idx = GMaterialIndex::load(argv[1]);
+    GSurfaceIndex* idx = GSurfaceIndex::load(argv[1]);
     //idx->dump();
     idx->test();
-
 
     return 0 ;
 }
