@@ -1,5 +1,6 @@
 #include "GBoundaryLib.hh"
 #include "GBoundaryLibMetadata.hh"
+#include "GMaterialIndex.hh"
 #include "GBoundary.hh"
 #include "GPropertyMap.hh"
 #include "GBuffer.hh"
@@ -7,6 +8,8 @@
 #include "GOpticalSurface.hh"
 #include "md5digest.hh"
 #include "limits.h"
+
+#include "jsonutil.hpp"
 #include "stringutil.hpp"
 
 #include <string>
@@ -14,14 +17,13 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+
+//#include <boost/filesystem.hpp>
+//namespace fs = boost::filesystem;
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
-
-
 
 
 #include <sstream>
@@ -718,6 +720,7 @@ array([[[ 76,   0,   0,   0],
     assert(m_wavelength_buffer == NULL && m_optical_buffer == NULL && "not expecting preexisting wavelength/optical buffers");
 
     if(!m_meta) m_meta = new GBoundaryLibMetadata ; 
+    if(!m_materials) m_materials = new GMaterialIndex ; 
 
     GDomain<float>* domain = getStandardDomain();
     const unsigned int domainLength = domain->getLength();
@@ -755,7 +758,16 @@ array([[[ 76,   0,   0,   0],
         m_meta->addDigest(kfmt, isub, "boundary", (char*)dig ); 
 
         std::string ishortname = boundary->getInnerMaterial()->getShortName() ; 
+        unsigned int iindex = boundary->getInnerMaterial()->getIndex();
+
         std::string oshortname = boundary->getOuterMaterial()->getShortName() ; 
+        unsigned int oindex = boundary->getOuterMaterial()->getIndex();
+     
+        // collect material names and source indices into GMaterialIndex
+        m_materials->add(ishortname.c_str(), iindex );
+        m_materials->add(oshortname.c_str(), oindex );
+
+
         {
             m_meta->add(kfmt, isub, "imat", boundary->getInnerMaterial() );
             m_meta->add(kfmt, isub, "omat", boundary->getOuterMaterial() );
@@ -770,6 +782,8 @@ array([[[ 76,   0,   0,   0],
         { 
             GPropertyMap<float>* psrc = boundary->getConstituentByIndex(p) ; 
             addToIndex(psrc);  // this index includes only materials or surfaces used in boundaries, unlike the GGeo index
+
+
 
             if(psrc->isSkinSurface() || psrc->isBorderSurface())
             {
@@ -857,7 +871,9 @@ array([[[ 76,   0,   0,   0],
 
     m_meta->createMaterialMap();
 
-    m_optical_buffer->save<unsigned int>("/tmp/optical_buffer_debug.npy");
+    m_materials->dump();
+
+    //m_optical_buffer->save<unsigned int>("/tmp/optical_buffer_debug.npy");
 
 }
 
@@ -883,29 +899,8 @@ void  GBoundaryLib::dumpIndex(const char* msg)
 
 void GBoundaryLib::saveIndex(const char* dir, const char* filename)
 {
-    // TODO: avoid duplication of this code with GBoundaryLibMetadata
-
-    fs::path cachedir(dir);
-    if(!fs::exists(cachedir))
-    {
-        if (fs::create_directory(cachedir))
-        {
-            printf("GBoundaryLib::save created directory %s \n", dir );
-        }
-    }
-    if(fs::exists(cachedir) && fs::is_directory(cachedir))
-    {
-        fs::path tpath(dir);
-        tpath /= filename ; 
-
-        const char* path = tpath.string().c_str() ;
-        LOG(info) << "GBoundaryLib::saveIndex to " << path ;  
-        saveIndexJSON( m_index, path ); 
-    }
-    else
-    {
-        printf("GBoundaryLib::saveIndex directory %s DOES NOT EXIST \n", dir);
-    }
+   // HAVE SHIFTED TO GMaterialIndex for this 
+   // saveMap<unsigned int, std::string>(m_index, dir, filename );
 }
 
 

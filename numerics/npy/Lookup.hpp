@@ -15,7 +15,10 @@ class Lookup {
    public:  
        // setup
        Lookup();
-       void create(const char* dir);
+       void create(const char* dir);  
+       // loads maps and creates lookups from A->B and B->A 
+       // loada from parent of dir : ANAME ChromaMaterialMap.json               (/dd/Materials/shortname : code) 
+       // loadb from dir           ; BNAME GBoundaryLibMetadataMaterialMap.json              ( shortname : code )
 
    private:
        void loada(const char* adir, const char* aname=ANAME, const char* aprefix="/dd/Materials/");

@@ -2,7 +2,7 @@
 
 
 
-
+/*
 void test_saveIndexJSON()
 {
    std::map<unsigned int, std::string> index ;
@@ -11,7 +11,7 @@ void test_saveIndexJSON()
    index[10] = "hello10" ; 
    saveIndexJSON(index, "/tmp/test_saveIndexJSON.json");
 }
-
+*/
 
 void test_patternPickField()
 {
@@ -30,8 +30,8 @@ void test_patternPickField()
 
 int main()
 {
-    //test_patternPickField();
-    test_saveIndexJSON();
+    test_patternPickField();
+    //test_saveIndexJSON();
     return 0 ; 
 }
 

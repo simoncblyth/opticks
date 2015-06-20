@@ -62,6 +62,7 @@ add_library(${name} SHARED
                 GSensor.cc
                 GSensorList.cc
                 GCache.cc
+                GMaterialIndex.cc
 )
 
 SET(hdrs 
@@ -91,6 +92,7 @@ GLoader.hh
 GSensor.hh
 GSensorList.hh
 GCache.hh
+GMaterialIndex.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

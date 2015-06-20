@@ -1,10 +1,10 @@
 #include "Lookup.hpp"
+#include "jsonutil.hpp"
 
 #include "string.h"
 
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include <boost/property_tree/json_parser.hpp>
+//#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <boost/log/trivial.hpp>
@@ -13,26 +13,6 @@
 
 
 namespace fs = boost::filesystem;
-namespace pt = boost::property_tree;
-
-std::map<std::string, unsigned int> parseTree(boost::property_tree::ptree& tree, const char* prefix)
-{
-    if(!prefix) prefix="";
-    Lookup::Map_t name2code ; 
-
-    BOOST_FOREACH( boost::property_tree::ptree::value_type const& ak, tree.get_child("") )
-    {
-        const char* name = ak.first.c_str() ; 
-        if(strncmp(name, prefix, strlen(prefix)) == 0)
-        {
-            unsigned int code = boost::lexical_cast<unsigned int>(ak.second.data().c_str());
-            std::string shortname = name + strlen(prefix) ;
-            name2code[shortname] = code ;  
-            //std::cout << shortname << " : " << code << std::endl ;
-        }
-    }
-    return name2code ; 
-}
 
 
 Lookup::Lookup()
@@ -41,29 +21,6 @@ Lookup::Lookup()
 const char* Lookup::ANAME = "ChromaMaterialMap.json";
 const char* Lookup::BNAME = "GBoundaryLibMetadataMaterialMap.json";
 
-void Lookup::loada(const char* adir, const char* aname, const char* aprefix)
-{
-    char apath[256];
-    snprintf(apath, 256, "%s/%s", adir, aname);
-
-    boost::property_tree::ptree atree ; 
-    pt::read_json(apath, atree );
-
-    m_a = parseTree(atree,aprefix);
-    m_apath = apath;
-}
-
-void Lookup::loadb(const char* bdir, const char* bname, const char* bprefix)
-{
-    char bpath[256];
-    snprintf(bpath, 256, "%s/%s", bdir, bname);
-
-    boost::property_tree::ptree btree ; 
-    pt::read_json(bpath, btree );
-
-    m_b = parseTree(btree,bprefix);
-    m_bpath = bpath;
-}
 
 void Lookup::create(const char* dir)
 {
@@ -81,6 +38,40 @@ void Lookup::create(const char* dir)
     m_b2a = _create(m_b, m_a);
 }
 
+
+void Lookup::loada(const char* adir, const char* aname, const char* aprefix)
+{
+    char apath[256];
+    snprintf(apath, 256, "%s/%s", adir, aname);
+
+
+    typedef std::map<std::string, unsigned int> SU_t ; 
+
+    SU_t mp ; 
+    loadMap<std::string, unsigned int>(mp, apath );
+   
+    for(SU_t::iterator it=mp.begin() ; it != mp.end() ; it++)
+    {
+        const char* name = it->first.c_str() ; 
+        if(strncmp(name, aprefix, strlen(aprefix)) == 0)
+        {
+            std::string shortname = name + strlen(aprefix) ;
+            m_a[shortname] = it->second ;  
+        }
+    }
+
+    m_apath = apath;
+}
+
+void Lookup::loadb(const char* bdir, const char* bname, const char* bprefix)
+{
+    char bpath[256];
+    snprintf(bpath, 256, "%s/%s", bdir, bname);
+
+    loadMap<std::string, unsigned int>(m_b, bpath);
+
+    m_bpath = bpath;
+}
 
 std::string Lookup::acode2name(unsigned int acode)
 {

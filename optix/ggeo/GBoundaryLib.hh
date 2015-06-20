@@ -1,5 +1,4 @@
-#ifndef GSUBSTANCELIB_H
-#define GSUBSTANCELIB_H
+#pragma once
 
 #include <map>
 #include <vector>
@@ -14,6 +13,7 @@ class GBoundary ;
 class GBuffer ; 
 class GBoundaryLibMetadata ; 
 class GBuffer ; 
+class GMaterialIndex ; 
 
 class GBoundaryLib {
   public:
@@ -102,10 +102,11 @@ class GBoundaryLib {
       const char* getLocalKey(const char* dkey); // map standard -> local keys 
       unsigned int getNumBoundary();
       GBoundary* getBoundary(unsigned int index); 
-      GBoundaryLibMetadata* getMetadata(); // populated by createWavelengthBuffer
       void Summary(const char* msg="GBoundaryLib::Summary");
       const char* getDigest(unsigned int index);
-      
+  public:
+      GBoundaryLibMetadata* getMetadata(); // populated by createWavelengthBuffer
+      GMaterialIndex*       getMaterials(); 
 
   public:
       // convenience methods
@@ -200,6 +201,7 @@ class GBoundaryLib {
       GPropertyMap<float>*   m_defaults ;  
       GProperty<float>*      m_ramp ;  
       GBoundaryLibMetadata*  m_meta ;
+      GMaterialIndex*        m_materials ;
       GBuffer*               m_wavelength_buffer ;
       GBuffer*               m_reemission_buffer ;
       GBuffer*               m_optical_buffer ;
@@ -215,6 +217,7 @@ inline GBoundaryLib::GBoundaryLib()
           m_defaults(NULL), 
           m_ramp(NULL), 
           m_meta(NULL), 
+          m_materials(NULL), 
           m_wavelength_buffer(NULL),
           m_reemission_buffer(NULL),
           m_optical_buffer(NULL)
@@ -231,10 +234,18 @@ inline GBoundaryLibMetadata* GBoundaryLib::getMetadata()
 {
     return m_meta ; 
 }
+
 inline void GBoundaryLib::setMetadata(GBoundaryLibMetadata* meta)
 {
     m_meta = meta ; 
 }
+
+inline GMaterialIndex* GBoundaryLib::getMaterials()
+{
+    return m_materials ; 
+}
+
+
 
 
 inline GBuffer* GBoundaryLib::getWavelengthBuffer()
@@ -290,4 +301,3 @@ inline GDomain<float>* GBoundaryLib::getStandardDomain()
 
 
 
-#endif

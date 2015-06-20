@@ -219,20 +219,6 @@ Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
 
 
 
-void saveIndexJSON( std::map<unsigned int, std::string>& index, const char* path)
-{
-    typedef std::map<unsigned int, std::string> Index_t ; 
-
-    pt::ptree t;
-    for(Index_t::iterator it=index.begin() ; it != index.end() ; it++)
-    {
-        printf("  %3u :  %s \n", it->first, it->second.c_str() );
-        t.put( boost::lexical_cast<std::string>(it->first), it->second );
-    }
-    pt::write_json(path, t );
-}
-
-
 
 
 

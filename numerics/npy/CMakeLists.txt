@@ -43,6 +43,7 @@ add_library( ${name}  SHARED
     GLMPrint.cpp
     GLMFormat.cpp
     stringutil.cpp
+    jsonutil.cpp
     Lookup.cpp
     G4StepNPY.cpp
     PhotonsNPY.cpp
@@ -69,6 +70,7 @@ G4StepNPY.hpp
 PhotonsNPY.hpp
 numpy.hpp
 stringutil.hpp
+jsonutil.hpp
 Lookup.hpp
 )
 
