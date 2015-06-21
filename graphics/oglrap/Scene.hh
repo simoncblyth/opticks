@@ -14,6 +14,7 @@ class GMergedMesh ;
 class GGeo ;
 class GBoundaryLibMetadata ;
 class Photons ; 
+class GBuffer ; 
 
 #include "Configurable.hh"
 
@@ -53,6 +54,7 @@ class Scene : public Configurable {
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
         void setGeometry(GDrawable* geometry);
+        void setColorBuffer(GBuffer* colorbuffer);
 
    public:
         // target cannot live in Composition, as needs geometry 
@@ -76,6 +78,7 @@ class Scene : public Configurable {
         Rdr*          getGenstepRenderer();
         Rdr*          getPhotonRenderer();
         Rdr*          getRecordRenderer();
+        Rdr*          getRecordRenderer(RecordStyle_t style);
         GDrawable*    getGeometry();
         Composition*  getComposition();
         NumpyEvt*     getNumpyEvt();
@@ -101,6 +104,7 @@ class Scene : public Configurable {
         Photons*     m_photons ; 
         GDrawable*   m_geometry ;
         Composition* m_composition ;
+        GBuffer*     m_colorbuffer ;
         unsigned int m_target ;
         unsigned int m_touch ;
    private:
@@ -131,6 +135,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_photons(NULL),
             m_geometry(NULL),
             m_composition(NULL),
+            m_colorbuffer(NULL),
             m_target(0),
             m_touch(0),
             m_geometry_mode(true),
@@ -163,6 +168,7 @@ inline void Scene::setTouch(unsigned int touch)
 {
     m_touch = touch ; 
 }
+
 
 
 inline Renderer* Scene::getGeometryRenderer()

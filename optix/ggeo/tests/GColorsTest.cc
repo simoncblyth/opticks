@@ -1,10 +1,11 @@
 #include "GColors.hh"
+#include "stdlib.h"
 
 int main(int argc, char** argv)
 {
-    const char* path = argv[1] ;
-    GColors* gc = GColors::load(path);
-    //gc->dump();
+    const char* idpath = getenv("IDPATH") ;
+    GColors* gc = GColors::load(idpath);
+    gc->dump();
     gc->test(); 
 
 

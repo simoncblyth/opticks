@@ -1,5 +1,7 @@
 #include "jsonutil.hpp"
 
+#include "regexsearch.hh"
+
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -63,9 +65,18 @@ void saveMap( typename std::map<A,B> & mp, const char* path)
 
 
 
-
-
-
+bool existsMap(const char* dir, const char* name )
+{
+    fs::path fdir(dir);
+    if(fs::exists(fdir) && fs::is_directory(fdir))
+    {
+        fs::path fpath(dir);
+        fpath /= name ;
+        return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
+    }
+  
+    return false ; 
+}
 
 
 template<typename A, typename B> 
@@ -78,7 +89,12 @@ void loadMap( typename std::map<A,B> & mp, const char* dir, const char* name)
         fpath /= name ;
 
         const char* path = fpath.string().c_str() ;
-        LOG(info) << "loadMap from " << path ;
+        std::string prefix = os_path_expandvars("$LOCAL_BASE/env/geant4/geometry/export/");  // cosmetic shortening only
+
+        if(strncmp(path, prefix.c_str(), strlen(prefix.c_str()))==0)
+              LOG(info) << "loadMap " << path + strlen(prefix.c_str()) ;
+        else
+              LOG(info) << "loadMap " << path  ;
 
         loadMap( mp, path );
     }

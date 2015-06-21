@@ -56,6 +56,7 @@
 #include "GBoundaryLibMetadata.hh"
 #include "GLoader.hh"
 #include "GCache.hh"
+#include "GMaterialIndex.hh"
 
 
 // assimpwrap
@@ -191,6 +192,8 @@ int main(int argc, char** argv)
     gloader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     gloader.load(nogeocache);
 
+    GBuffer* colorbuffer = gloader.getMaterials()->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
+    scene.setColorBuffer(colorbuffer);
     scene.setGeometry(gloader.getDrawable());
     scene.setTarget(0);
 

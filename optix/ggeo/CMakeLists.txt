@@ -66,6 +66,7 @@ add_library(${name} SHARED
                 GMaterialIndex.cc
                 GSurfaceIndex.cc
                 GColors.cc
+                GColorMap.cc
 )
 
 SET(hdrs 
@@ -99,6 +100,7 @@ GItemIndex.hh
 GMaterialIndex.hh
 GSurfaceIndex.hh
 GColors.hh
+GColorMap.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

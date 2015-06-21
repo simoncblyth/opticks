@@ -10,6 +10,8 @@
 #include "GSurfaceIndex.hh"
 #include "GGeo.hh"
 #include "GCache.hh"
+#include "GColors.hh"
+#include "GColorMap.hh"
 
 // npy-
 #include "stringutil.hpp"
@@ -60,10 +62,10 @@ void GLoader::load(bool nogeocache)
         m_metadata = lib->getMetadata();
         m_metadata->save(idpath);
 
-        m_materials = lib->getMaterials();
+        m_materials = lib->getMaterials();  // GMaterialIndex
         m_materials->save(idpath);
         
-        m_surfaces = lib->getSurfaces();
+        m_surfaces = lib->getSurfaces();    // GSurfaceIndex
         m_surfaces->save(idpath);
 
 
@@ -73,6 +75,20 @@ void GLoader::load(bool nogeocache)
     // hmm not routing via cache 
     m_lookup = new Lookup() ; 
     m_lookup->create(idpath);
+
+
+
+    m_materials->setColorMap(GColorMap::load(idpath, "GMaterialIndexColors.json"));  // itemname => colorname 
+    m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));    // itemname => colorname 
+
+    m_colors = GColors::load(idpath,"GColors.json");                         // colorname => hexcode 
+    m_materials->setColorSource(m_colors);
+    m_surfaces->setColorSource(m_colors);
+
+
+    GBuffer* buffer = m_materials->makeColorBuffer();
+    m_colors->dump_uchar4_buffer(buffer);
+
 
     LOG(info) << "GLoader::load done " << idpath ;
     assert(m_mergedmesh);

@@ -2,16 +2,16 @@
 
 #include <vector>
 
-class NPYBase ; 
+//class NPYBase ; 
 
 class Device {
     public:
         Device();
-        void add(NPYBase* npy);
-        bool isUploaded(NPYBase* npy);
+        void add(void* smth);
+        bool isUploaded(void* smth);
 
     private:
-        std::vector<NPYBase*> m_uploads ; 
+        std::vector<void*> m_uploads ; 
 
 };
 
@@ -20,14 +20,15 @@ inline Device::Device()
 {
 }
 
-inline void Device::add(NPYBase* npy)
+inline void Device::add(void* smth)
 {
-    m_uploads.push_back(npy);
+    m_uploads.push_back(smth);
 }
 
-inline bool Device::isUploaded(NPYBase* npy)
+
+inline bool Device::isUploaded(void* smth)
 {
-    for(unsigned int i=0 ; i < m_uploads.size() ; i++) if(m_uploads[i] == npy) return true ;   
+    for(unsigned int i=0 ; i < m_uploads.size() ; i++) if(m_uploads[i] == smth) return true ;   
     return false ; 
 }
 

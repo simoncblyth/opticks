@@ -127,7 +127,15 @@ void Rdr::upload(void* data, unsigned int nbytes)
 
 void Rdr::upload_colors()
 {
-    unsigned int ncol = 5 ; 
+    if(!m_colorbuffer)
+    {
+         LOG(info) <<"Rdr::upload_colors (" << getShaderTag() << ") no colorbuffer skipping " ;  
+         return ; 
+    }
+
+    unsigned int ncol = m_colorbuffer->getNumItems() ;
+    unsigned char* colors = (unsigned char*)m_colorbuffer->getPointer();
+    LOG(info) <<"Rdr::upload_colors (" << getShaderTag() << ") ncol " << ncol ;  
 
     // https://open.gl/textures
     GLenum  target = GL_TEXTURE_1D ;   // Must be GL_TEXTURE_1D or GL_PROXY_TEXTURE_1D
@@ -142,7 +150,6 @@ void Rdr::upload_colors()
     GLenum  format = GL_RGBA ;         // format of the pixel data
     GLenum  type = GL_UNSIGNED_BYTE ;  // type of the pixel data
 
-    unsigned char* colors = make_uchar4_colors(ncol) ;      // pointer to the image data in memory
     glTexImage1D(target, level, internalFormat, width, border, format, type, colors );
     delete colors ; 
 

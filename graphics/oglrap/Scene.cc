@@ -146,6 +146,7 @@ void Scene::init()
     m_record_renderer->setPrimitive(Rdr::LINES);
     //m_record_renderer->setPrimitive(Rdr::LINE_STRIP);
 
+
     m_altrecord_renderer = new Rdr(m_device, "altrec", m_shader_dir, m_shader_incl_path);
     m_altrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
 
@@ -173,11 +174,21 @@ void Scene::setGeometry(GDrawable* geometry)
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
 }
 
+void Scene::setColorBuffer(GBuffer* colorbuffer)
+{
+    m_colorbuffer = colorbuffer ; 
+    m_record_renderer->setColorBuffer(colorbuffer);
+}
 
 Rdr* Scene::getRecordRenderer()
 {
+    return getRecordRenderer(m_record_style);
+}
+
+Rdr* Scene::getRecordRenderer(RecordStyle_t style)
+{
     Rdr* rdr = NULL ; 
-    switch(m_record_style)
+    switch(style)
     {
         case      REC:rdr = m_record_renderer     ; break ;
         case   ALTREC:rdr = m_altrecord_renderer  ; break ;

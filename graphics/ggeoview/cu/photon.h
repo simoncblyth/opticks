@@ -146,13 +146,13 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
 
 
     qquad qaux ;  // boundary int and m1 index uint are known to be within char/uchar ranges 
-    qaux.char_.x  =  p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
-    qaux.uchar_.y =  p.flags.u.z ;  //  m1 index                 uchar: 0 to 255
+    qaux.uchar_.x =  p.flags.u.z ;  //   m1 index                 uchar: 0 to 255
+    qaux.char_.y  =  p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
 
-
+    //             lowbyte (flq[0].x)    highbyte (flq[0].y)
+    //            
     polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;  
     polw.ushort_.w = p.flags.u.w & 0xFFFF  ;      // 16 bits of history 
-
 
 
     rbuffer[record_offset+1] = polw.short_ ; 
@@ -163,6 +163,26 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     // that would fail to see repeated flags  
 
 }
+
+//  Correspondence to gl/rec/geom.glsl 
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//  * NumpyEvt::setRecordData sets rflq buffer input as ViewNPY::BYTE starting from offset 2 (ie .z) 
+// 
+//      flq[0].x   <->  lowbyte  polw.ushort_.z    <->  polw.ushort_.z & 0x00FF   
+//
+//      flq[0].y   <->  highbyte polw.ushort_.z    <->  polw.ushort_.z & 0xFF00 >> 8 
+//
+//  This follows from little endianness (lesser numerical significance at lower address) 
+//  of CUDA GPUs : so when interpreting a ushort as two uchar (as OpenGL is doing) 
+//  the low byte comes first, opposite to the "writing" order 
+//
+//                             // flq[0].x m1 colors 
+// polw.ushort_.z = 0x0e0c ;   // green(0c) 
+// polw.ushort_.z = 0x0c0e ;   //  cyan(0e)
+// polw.ushort_.z = 0x0c0f ;   //   red(0f) 
+//
+//
 
 /*
 

@@ -1,6 +1,7 @@
 #include <map>
 #include <string>
 
+bool existsMap(const char* dir, const char* name );
 
 template<typename A, typename B> 
 void saveMap( typename std::map<A,B> & mp, const char* dir, const char* name) ;

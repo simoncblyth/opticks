@@ -1,4 +1,7 @@
 #include "GItemIndex.hh"
+#include "GColorMap.hh"
+#include "GColors.hh"
+#include "GBuffer.hh"
 
 #include "assert.h"
 #include <iostream>
@@ -55,18 +58,63 @@ void GItemIndex::dump(const char* msg)
    VS keys ; 
    for(MSU::iterator it=m_local.begin() ; it != m_local.end() ; it++ ) keys.push_back(it->first) ;
 
-   std::sort(keys.begin(), keys.end(), *this );
+   std::sort(keys.begin(), keys.end(), *this ); // ascending local index
 
    for(VS::iterator it=keys.begin() ; it != keys.end() ; it++ )
    {
-       std::string k = *it ; 
+       std::string iname = *it ; 
+       const char*  cname = m_colormap ? m_colormap->getItemColor(iname.c_str(), NULL) : NULL ; 
+       unsigned int ccode = m_colors   ? m_colors->getCode(cname, 0xFFFFFF) : 0xFFFFFF ; 
+
        std::cout 
-            << " name   " << std::setw(25) <<  k
-            << " source " << std::setw(10) <<  m_source[k]
-            << " local  " << std::setw(10) <<  m_local[k]
+            << " iname  " << std::setw(25) <<  iname
+            << " source " << std::setw(4) <<  std::dec << m_source[iname]
+            << " local  " << std::setw(4) <<  std::dec << m_local[iname]
+            << " 0x " << std::setw(4)     <<  std::hex << m_local[iname]
+            << " cname  " << std::setw(20) <<  ( cname ? cname : "no-colormap-or-missing" )
+            << " ccode  " << std::setw(20) << std::hex <<  ccode
             << std::endl ; 
+
    }
 }
+
+
+GBuffer* GItemIndex::makeColorBuffer()
+{
+   if(m_colors==NULL)
+       LOG(warning) << "GItemIndex::makeColorBuffer no colors defined will provide defaults"  ; 
+
+   std::vector<unsigned int> codes ;
+   typedef std::map<std::string, unsigned int> MSU ; 
+   typedef std::vector<std::string> VS ; 
+
+   VS keys ; 
+   for(MSU::iterator it=m_local.begin() ; it != m_local.end() ; it++ ) keys.push_back(it->first) ;
+
+   std::sort(keys.begin(), keys.end(), *this ); // ascending local index
+
+   for(VS::iterator it=keys.begin() ; it != keys.end() ; it++ )
+   {
+       std::string iname = *it ; 
+       const char*  cname = m_colormap ? m_colormap->getItemColor(iname.c_str(), NULL) : NULL ; 
+       unsigned int ccode = m_colors   ? m_colors->getCode(cname, 0xFFFFFF) : 0xFFFFFF ; 
+       codes.push_back(ccode);
+   }
+
+   LOG(info) << "GItemIndex::makeColorBuffer codes " << codes.size() ;  
+
+   return m_colors->make_uchar4_buffer( codes) ; 
+}
+
+GBuffer* GItemIndex::getColorBuffer()
+{
+   if(!m_colorbuffer)
+   {
+       m_colorbuffer = makeColorBuffer();
+   }  
+   return m_colorbuffer ; 
+}
+
 
 void GItemIndex::test(const char* msg)
 {
@@ -93,11 +141,13 @@ void GItemIndex::test(const char* msg)
        assert(convertSourceToLocal(source)==local); 
        assert(convertLocalToSource(local)==source); 
 
+/*
        std::cout 
             << " name   " << std::setw(25) <<  k
-            << " source " << std::setw(10) <<  source
-            << " local  " << std::setw(10) <<  local
+            << " source " << std::setw(10) <<  std::dec << source
+            << " local  " << std::setw(10) <<  std::dec << local
             << std::endl ; 
+*/
    }
 }
 
