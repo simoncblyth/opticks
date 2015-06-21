@@ -5,6 +5,7 @@
 
 uniform mat4 ISNormModelViewProjection ;
 uniform vec4 TimeDomain ;
+uniform vec4 ColorDomain ;
 uniform vec4 Param ; 
 uniform sampler1D Colors ;
 
@@ -26,17 +27,18 @@ void main ()
 
     float tc = Param.w / TimeDomain.y ;
 
-    uint m1 = flq[0].x ;
+    uint m1 = flq[0].x ;  // 1-based material1 code
 
     // confirmed that the color texture is providing expected colors when artificially set m1 here
+    //  
     //uint m1 = 12 ;    // palegreen
     //uint m1 = 13 ;    // yellow
     //uint m1 = 14 ;    // pink (but murky)
     //uint m1 = 15 ;    // hotpink
     //uint m1 = 1 ;     // azure looks indistuishable from white
-    //uint m1 = 2 ;       // 
+    //uint m1 = 2 ;     // 
 
-    float idxcol = (float(m1) - 1.0 + 0.5)/25. ;
+    float idxcol = (float(m1) - 1.0 + 0.5)/ColorDomain.y ;
 
     if( tc > p0.w && tc < p1.w  )     // tc between point times 
     {

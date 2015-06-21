@@ -116,7 +116,7 @@ RT_PROGRAM void generate()
         if(prd.boundary == 0)
         {
             p.flags.i.w |= NO_HIT;
-            break ;
+            break ;  // hmm baybe better to break after RSAVE ? for more regular rec structure 
         }     
         p.flags.i.x = prd.boundary ;  
 

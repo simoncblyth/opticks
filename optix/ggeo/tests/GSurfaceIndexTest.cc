@@ -1,15 +1,11 @@
 #include "GSurfaceIndex.hh"
 #include "stdio.h"
+#include "stdlib.h"
 
 int main(int argc, char** argv)
 {
-    if(argc < 2)
-    {
-       printf("%s : expecting path of directory which contains a json files \n", argv[0]);
-       return 1 ; 
-    }
-
-    GSurfaceIndex* idx = GSurfaceIndex::load(argv[1]);
+    const char* idpath = getenv("IDPATH");
+    GSurfaceIndex* idx = GSurfaceIndex::load(idpath);
     //idx->dump();
     idx->test();
 

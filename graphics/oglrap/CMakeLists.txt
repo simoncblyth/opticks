@@ -96,6 +96,7 @@ add_library( ${name}  SHARED
                 GUI.cc
                 Photons.cc
                 Animator.cc
+                Colors.cc
 )
 
 SET(hdrs 
@@ -131,6 +132,7 @@ SET(hdrs
         GUI.hh
         Photons.hh
         Animator.hh
+        Colors.hh
 )
 
 

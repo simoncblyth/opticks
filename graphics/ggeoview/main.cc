@@ -193,7 +193,7 @@ int main(int argc, char** argv)
     gloader.load(nogeocache);
 
     GBuffer* colorbuffer = gloader.getMaterials()->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
-    scene.setColorBuffer(colorbuffer);
+    scene.uploadColorBuffer(colorbuffer);
     scene.setGeometry(gloader.getDrawable());
     scene.setTarget(0);
 
@@ -203,6 +203,7 @@ int main(int argc, char** argv)
     GMergedMesh* mm = gloader.getMergedMesh(); 
     composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
+    composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
     GBoundaryLibMetadata* meta = gloader.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();

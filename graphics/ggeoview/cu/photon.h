@@ -22,7 +22,7 @@ struct Photon
    float3 polarization ;
    float  wavelength ; 
 
-   quad flags ;     // x:boundary  y:photon_id   z:spare   w:history 
+   quad flags ;     // x:boundary  y:photon_id   z:m1   w:history 
                     //             [debug-only]
 };
 

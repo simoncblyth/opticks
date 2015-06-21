@@ -14,6 +14,7 @@ class GMergedMesh ;
 class GGeo ;
 class GBoundaryLibMetadata ;
 class Photons ; 
+class Colors ; 
 class GBuffer ; 
 
 #include "Configurable.hh"
@@ -54,7 +55,7 @@ class Scene : public Configurable {
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
         void setGeometry(GDrawable* geometry);
-        void setColorBuffer(GBuffer* colorbuffer);
+        void uploadColorBuffer(GBuffer* colorbuffer);
 
    public:
         // target cannot live in Composition, as needs geometry 
@@ -93,8 +94,9 @@ class Scene : public Configurable {
    private:
         char*        m_shader_dir ; 
         char*        m_shader_incl_path ; 
-        Renderer*    m_geometry_renderer ; 
         Device*      m_device ; 
+        Colors*      m_colors ; 
+        Renderer*    m_geometry_renderer ; 
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
         Rdr*         m_record_renderer ; 
@@ -124,8 +126,9 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             :
             m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
-            m_geometry_renderer(NULL),
             m_device(NULL),
+            m_colors(NULL),
+            m_geometry_renderer(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
             m_record_renderer(NULL),

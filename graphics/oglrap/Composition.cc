@@ -290,6 +290,14 @@ void Composition::setTimeDomain(gfloat4 td)
 {
     m_domain_time = glm::vec4(td.x, td.y, td.z, td.w); 
 }
+void Composition::setColorDomain(gfloat4 cd)
+{
+    m_domain_color = glm::vec4(cd.x, cd.y, cd.z, cd.w); 
+}
+
+
+
+
 
 void Composition::setDomainCenterExtent(gfloat4 ce)
 {

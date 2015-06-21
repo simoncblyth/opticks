@@ -12,6 +12,7 @@
 #include "Renderer.hh"
 #include "Device.hh"
 #include "Rdr.hh"
+#include "Colors.hh"
 
 // npy-
 #include "NumpyEvt.hpp"
@@ -132,14 +133,15 @@ void Scene::configure(const char* name, int value)
 
 void Scene::init()
 {
-    m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
-
     m_device = new Device();
+
+    m_colors = new Colors(m_device);
+
+    m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
 
     m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
 
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
-
 
 
     m_record_renderer = new Rdr(m_device, "rec", m_shader_dir, m_shader_incl_path );
@@ -174,10 +176,11 @@ void Scene::setGeometry(GDrawable* geometry)
     m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
 }
 
-void Scene::setColorBuffer(GBuffer* colorbuffer)
+void Scene::uploadColorBuffer(GBuffer* colorbuffer)
 {
     m_colorbuffer = colorbuffer ; 
-    m_record_renderer->setColorBuffer(colorbuffer);
+    m_colors->setColorBuffer(colorbuffer);
+    m_colors->upload();
 }
 
 Rdr* Scene::getRecordRenderer()

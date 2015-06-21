@@ -1,6 +1,6 @@
 #include "GColorMap.hh"
 #include "jsonutil.hpp"
-
+#include "assert.h"
 #include <iostream>
 #include <iomanip>
 
