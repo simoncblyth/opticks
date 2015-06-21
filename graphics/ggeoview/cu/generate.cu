@@ -116,7 +116,8 @@ RT_PROGRAM void generate()
         if(prd.boundary == 0)
         {
             p.flags.i.w |= NO_HIT;
-            break ;  // hmm baybe better to break after RSAVE ? for more regular rec structure 
+            break ;  
+           // hmm baybe better to break after RSAVE ? for more regular rec structure, control flow
         }     
         p.flags.i.x = prd.boundary ;  
 
@@ -131,7 +132,6 @@ RT_PROGRAM void generate()
         //if(photon_id == 0) dump_state(s);
 
         RSAVE(p, slot) ;
-
 
         // Where best to record the propagation ? 
         // =======================================
@@ -175,9 +175,13 @@ RT_PROGRAM void generate()
         //
         // TODO:
         //
-        // * arrange for every record to have a single flag
-        //   control the or-ing of that flag into photon history at this level
+        // * arrange for each record to only set a single history bit  
+        // * use bit position rather than the full mask in the photon record 
         //
+        //   0:31 fits in 5 bits 
+        //   0:15 fits in 4 bits
+        //
+        // * control the or-ing of that flag into photon history at this level
         // * integrate surface optical props: finish=polished/ground
         //
 

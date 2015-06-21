@@ -161,6 +161,7 @@ void Renderer::check_uniforms()
         m_mv_location =  m_shader->uniform("ModelView",           true);      
         m_clip_location = m_shader->uniform("ClipPlane",          true); 
         m_param_location = m_shader->uniform("Param",          true); 
+        m_lightposition_location = m_shader->uniform("LightPosition",true); 
     } 
     else if(strcmp(tag,"tex")==0)
     {
@@ -191,6 +192,8 @@ void Renderer::update_uniforms()
         glm::vec4 par = m_composition->getParam();
         glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
 
+        glm::vec4 lp = m_composition->getLightPosition();
+        glUniform4f(m_lightposition_location, lp.x, lp.y, lp.z, lp.w  );    
 
 
         glUniform4fv(m_clip_location, 1, m_composition->getClipPlanePtr() );

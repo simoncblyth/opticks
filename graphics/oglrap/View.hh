@@ -63,6 +63,7 @@ public:
    void getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze );
 
 public:
+   float getDistanceToAxis();
    float getEyePhase();
    void updateEyePhase();
    void setEyePhase( float t);
@@ -130,13 +131,21 @@ inline float View::getEyePhase()
    // somewhat dodgy derived qyt 
     return m_eye_phase ; 
 }
+
+
+inline float View::getDistanceToAxis()
+{
+    return sqrt( m_eye.x*m_eye.x + m_eye.y*m_eye.y );
+}
+
 inline void View::setEyePhase(float t)
 {
+    float d = getDistanceToAxis() ;
     m_eye_phase = t  ;
     float s, c ;  
     __sincosf( m_eye_phase*M_PI , &s, &c);
-    m_eye.x = c ; 
-    m_eye.y = s ;
+    m_eye.x = d*c ; 
+    m_eye.y = d*s ;
 }
 
 

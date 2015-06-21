@@ -85,6 +85,7 @@ add_library( ${name}  SHARED
                 Camera.cc
                 CameraCfg.cc
                 View.cc
+                Light.cc
                 ViewCfg.cc
                 Clipper.cc
                 ClipperCfg.cc
@@ -119,6 +120,7 @@ SET(hdrs
         Camera.hh
         CameraCfg.hh
         View.hh
+        Light.hh
         ViewCfg.hh
         Clipper.hh
         ClipperCfg.hh

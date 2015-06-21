@@ -60,6 +60,7 @@ class Renderer : public RendererBase  {
       GLint  m_mvp_location ;
       GLint  m_clip_location ;
       GLint  m_param_location ;
+      GLint  m_lightposition_location ;
 
       long   m_draw_count ;
       GLsizei m_indices_count ;
@@ -79,6 +80,7 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_mvp_location(-1),
     m_clip_location(-1),
     m_param_location(-1),
+    m_lightposition_location(-1),
     m_draw_count(0),
     m_indices_count(0),
     m_drawable(NULL),

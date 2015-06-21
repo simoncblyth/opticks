@@ -3,6 +3,7 @@
 uniform mat4 ModelViewProjection ;
 uniform mat4 ModelView ;
 uniform vec4 ClipPlane ;
+uniform vec4 LightPosition ; 
 uniform vec4 Param ;
 
 layout(location = 0) in vec3 vertex_position;
@@ -17,11 +18,23 @@ out vec4 colour;
 
 void main () 
 {
-    vec4 normal = ModelView * vec4 (vertex_normal, 0.0);
+    vec3 normal = normalize(vec3( ModelView * vec4 (vertex_normal, 0.0)));
+
+    vec3 lpos_e = vec3( ModelView * LightPosition );   
+
+    vec3 vpos_e = vec3( ModelView * vec4 (vertex_position, 1.0));  // vertex position in eye space 
+
+    vec3 ldir_e = normalize(lpos_e - vpos_e);
+
+    float diffuse = dot(normal, ldir_e) ;
 
     gl_ClipDistance[0] = dot(vec4(vertex_position, 1.0), ClipPlane);
 
-    colour = vec4( normalize(vec3(normal))*0.5 + 0.5, 1.0 - Param.z ) ;    // 1 - alpha 
+    //colour = vec4( normal*0.5 + 0.5, 1.0 - Param.z ) ;    // 1 - alpha 
+    //colour = vec4( vertex_colour, 1.0 - Param.z ); 
+
+    colour = vec4( vec3(diffuse), 1.0 - Param.z );
+
 
     gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);
 

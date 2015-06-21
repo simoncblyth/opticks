@@ -9,6 +9,7 @@
 
 class Camera ;
 class View ;
+class Light ;
 class Trackball ; 
 class Clipper ; 
 class Cfg ;
@@ -55,6 +56,7 @@ class Composition : public Configurable {
       void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain
       void setTimeDomain(gfloat4 td);
       void setColorDomain(gfloat4 cd);
+      //void setLightPositionEye(gfloat4 lp);
 
   public:
       // avaiable as uniform inside shaders allowing GPU-side selections 
@@ -95,11 +97,12 @@ class Composition : public Configurable {
   //private: 
   public: 
       // private getters of residents : usable by friend class
-      Camera* getCamera(); 
+      Camera*    getCamera(); 
       Trackball* getTrackball(); 
-      View* getView(); 
-      Clipper* getClipper(); 
-      Scene* getScene(); 
+      View*      getView(); 
+      Light*     getLight(); 
+      Clipper*   getClipper(); 
+      Scene*     getScene(); 
 
       
       void setCamera(Camera* camera);
@@ -132,6 +135,7 @@ class Composition : public Configurable {
       glm::vec4& getDomainCenterExtent();
       glm::vec4& getTimeDomain();
       glm::vec4& getColorDomain();
+      glm::vec4& getLightPosition();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
       float*     getWorld2EyePtr();  // ModelView  including trackballing
@@ -171,6 +175,7 @@ class Composition : public Configurable {
       glm::mat4 m_domain_isnorm ;     
       glm::vec4 m_domain_time ; 
       glm::vec4 m_domain_color ; 
+      glm::vec4 m_light_position  ; 
   private:
       glm::ivec4 m_selection ;
       glm::ivec4 m_flags ;
@@ -185,6 +190,7 @@ class Composition : public Configurable {
       Camera*    m_camera ;
       Trackball* m_trackball ;
       View*      m_view ;
+      Light*     m_light ;
       Clipper*   m_clipper ;
 
       // visitors
@@ -236,6 +242,7 @@ inline Composition::Composition()
   m_camera(NULL),
   m_trackball(NULL),
   m_view(NULL),
+  m_light(NULL),
   m_clipper(NULL),
   m_scene(NULL)
 {
@@ -251,6 +258,10 @@ inline Camera* Composition::getCamera()
 inline View* Composition::getView()
 {
     return m_view ;
+}
+inline Light* Composition::getLight()
+{
+    return m_light ;
 }
 inline Trackball* Composition::getTrackball()
 {
@@ -293,6 +304,11 @@ inline glm::vec4& Composition::getColorDomain()
 {
     return m_domain_color ; 
 }
+inline glm::vec4& Composition::getLightPosition()
+{
+    return m_light_position ; 
+}
+
 
 
 

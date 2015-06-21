@@ -4,6 +4,7 @@
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "View.hh"
+#include "Light.hh"
 #include "Clipper.hh"
 #include "Scene.hh"
 #include "Animator.hh"
@@ -48,6 +49,7 @@ void Composition::init()
 {
     m_camera = new Camera() ;
     m_view   = new View() ;
+    m_light = new Light() ;
     m_trackball = new Trackball() ;
     m_clipper = new Clipper() ;
 }
@@ -167,6 +169,8 @@ void Composition::gui()
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
 
+    float* lpe = m_light->getPositionPtr() ;
+    ImGui::SliderFloat4( "lightposition", lpe,  -2.0f, 2.0f, "%0.3f");
 
     if(m_animator)
     {
@@ -295,6 +299,10 @@ void Composition::setColorDomain(gfloat4 cd)
     m_domain_color = glm::vec4(cd.x, cd.y, cd.z, cd.w); 
 }
 
+//void Composition::setLightPositionEye(gfloat4 lp)
+//{
+//    m_light_position_eye = glm::vec4(lp.x, lp.y, lp.z, lp.w); 
+//}
 
 
 
@@ -360,6 +368,11 @@ float* Composition::getWorld2ClipISNormPtr()
 {
     return glm::value_ptr(m_world2clip_isnorm);
 }
+
+
+
+
+
 
 
 float* Composition::getIdentityPtr()
@@ -456,6 +469,8 @@ void Composition::update()
     //       look (0,0,-m_gazelength) 
     //
 
+
+
     m_viewport = glm::vec4( 0.f, 0.f, getPixelWidth(), getPixelHeight() );
 
     m_view->getTransforms(m_model_to_world, m_world2camera, m_camera2world, m_gaze );   // model_to_world is input, the others are updated
@@ -483,6 +498,7 @@ void Composition::update()
 
     m_clipplane = m_clipper->getClipPlane(m_model_to_world) ;
 
+    m_light_position = m_light->getPosition(m_model_to_world);
 
 /*
   //  env/geant4/geometry/collada/g4daeview/daetransform.py
