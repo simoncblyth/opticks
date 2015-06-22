@@ -7,6 +7,7 @@ class GBuffer ;
 #include "string.h"
 #include <string>
 #include <map>
+#include <vector>
 
 class GItemIndex {
         friend class GSurfaceIndex ; 
@@ -17,6 +18,8 @@ class GItemIndex {
         void setColorMap(GColorMap* colormap);
         void save(const char* idpath);
    public:
+        void formTable();
+        void gui();
         GBuffer* makeColorBuffer();
         GBuffer* getColorBuffer();
    public:
@@ -53,6 +56,12 @@ class GItemIndex {
         GColors*                             m_colors ; 
         GColorMap*                           m_colormap ; 
         GBuffer*                             m_colorbuffer ; 
+   private:
+        // populated by formTable
+        std::vector<std::string>             m_labels ; 
+        std::vector<std::string>             m_inames ; 
+        std::vector<int>                     m_icodes ; 
+        std::vector<unsigned int>            m_ccodes ; 
 };
 
 inline GItemIndex::GItemIndex(const char* itemtype)

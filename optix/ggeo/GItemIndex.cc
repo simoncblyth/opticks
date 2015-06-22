@@ -8,9 +8,14 @@
 #include <iomanip>
 #include <vector>
 #include <algorithm>
+#include <sstream>
 
 #include "jsonutil.hpp"
 
+
+#ifdef GUI_
+#include <imgui.h>
+#endif
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -79,31 +84,48 @@ void GItemIndex::dump(const char* msg)
 }
 
 
+void GItemIndex::formTable()
+{
+   m_inames.clear(); 
+   m_icodes.clear(); 
+   m_ccodes.clear(); 
+
+   // collect keys (item names) into vector and sort into ascending local index order 
+ 
+   typedef std::map<std::string, unsigned int> MSU ; 
+   for(MSU::iterator it=m_local.begin() ; it != m_local.end() ; it++ ) m_inames.push_back(it->first) ;
+   std::sort(m_inames.begin(), m_inames.end(), *this ); 
+
+   typedef std::vector<std::string> VS ; 
+   for(VS::iterator it=m_inames.begin() ; it != m_inames.end() ; it++ )
+   {
+       std::string iname = *it ; 
+       m_icodes.push_back(m_local[iname]);
+       const char*  cname = m_colormap ? m_colormap->getItemColor(iname.c_str(), NULL) : NULL ; 
+       unsigned int ccode = m_colors   ? m_colors->getCode(cname, 0xFFFFFF) : 0xFFFFFF ; 
+
+       std::stringstream ss ; 
+       ss  << std::setw(5)  << std::dec << m_local[iname] 
+           << std::setw(25) << iname
+           << std::setw(25) << cname 
+           << std::setw(10) << std::hex << ccode 
+           ;
+
+       m_ccodes.push_back(ccode);
+       m_labels.push_back(ss.str());
+   }
+
+}
+
+
 GBuffer* GItemIndex::makeColorBuffer()
 {
    if(m_colors==NULL)
        LOG(warning) << "GItemIndex::makeColorBuffer no colors defined will provide defaults"  ; 
 
-   std::vector<unsigned int> codes ;
-   typedef std::map<std::string, unsigned int> MSU ; 
-   typedef std::vector<std::string> VS ; 
-
-   VS keys ; 
-   for(MSU::iterator it=m_local.begin() ; it != m_local.end() ; it++ ) keys.push_back(it->first) ;
-
-   std::sort(keys.begin(), keys.end(), *this ); // ascending local index
-
-   for(VS::iterator it=keys.begin() ; it != keys.end() ; it++ )
-   {
-       std::string iname = *it ; 
-       const char*  cname = m_colormap ? m_colormap->getItemColor(iname.c_str(), NULL) : NULL ; 
-       unsigned int ccode = m_colors   ? m_colors->getCode(cname, 0xFFFFFF) : 0xFFFFFF ; 
-       codes.push_back(ccode);
-   }
-
-   LOG(info) << "GItemIndex::makeColorBuffer codes " << codes.size() ;  
-
-   return m_colors->make_uchar4_buffer( codes) ; 
+   formTable(); 
+   LOG(info) << "GItemIndex::makeColorBuffer codes " << m_ccodes.size() ;  
+   return m_colors->make_uchar4_buffer(m_ccodes) ; 
 }
 
 GBuffer* GItemIndex::getColorBuffer()
@@ -113,6 +135,24 @@ GBuffer* GItemIndex::getColorBuffer()
        m_colorbuffer = makeColorBuffer();
    }  
    return m_colorbuffer ; 
+}
+
+
+void GItemIndex::gui()
+{
+#ifdef GUI_    
+    if (ImGui::CollapsingHeader(m_itemtype))
+    {
+       for(unsigned int i=0 ; i < m_labels.size() ; i++)
+       {
+           unsigned int code = m_ccodes[i] ;
+           unsigned int red   = (code & 0xFF0000) >> 16 ;
+           unsigned int green = (code & 0x00FF00) >>  8 ;
+           unsigned int blue  = (code & 0x0000FF)  ;
+           ImGui::TextColored(ImVec4(red/256.,green/256.,blue/256.,1.0f), m_labels[i].c_str() );
+       }
+    }  
+#endif
 }
 
 

@@ -187,25 +187,25 @@ int main(int argc, char** argv)
     bool nooptix = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
 
-    GLoader gloader ;
-    gloader.setCache(&cache);
-    gloader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    gloader.load(nogeocache);
+    GLoader loader ;
+    loader.setCache(&cache);
+    loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+    loader.load(nogeocache);
 
-    GBuffer* colorbuffer = gloader.getMaterials()->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
+    GBuffer* colorbuffer = loader.getMaterials()->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
     scene.uploadColorBuffer(colorbuffer);
-    scene.setGeometry(gloader.getDrawable());
+    scene.setGeometry(loader.getDrawable());
     scene.setTarget(0);
 
     bookmarks.load(idpath); 
 
 
-    GMergedMesh* mm = gloader.getMergedMesh(); 
+    GMergedMesh* mm = loader.getMergedMesh(); 
     composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
-    GBoundaryLibMetadata* meta = gloader.getMetadata(); 
+    GBoundaryLibMetadata* meta = loader.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
 
     // hmm would be better placed into a NumpyEvtCfg 
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
     NPY<float>* npy = NPY<float>::load(typ, tag) ;
 
     G4StepNPY genstep(npy);    
-    genstep.setLookup(gloader.getMaterialLookup()); 
+    genstep.setLookup(loader.getMaterialLookup()); 
     genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
 
     evt.setMaxRec(MAXREC);          // must set this before setGenStepData to have effect
@@ -288,6 +288,7 @@ int main(int argc, char** argv)
     gui.setComposition(&composition);
     gui.setBookmarks(&bookmarks);
     gui.setInteractor(&interactor);   // status line
+    gui.setLoader(&loader);   // access to Material / Surface indices
 
     gui.init(window);
     gui.setupHelpText( cfg.getDescString() );

@@ -4,6 +4,11 @@
 #include <GLFW/glfw3.h>
 #include "gleq.h"
 
+// ggeo-
+#include "GLoader.hh"
+#include "GItemIndex.hh"
+
+// oglrap-
 #include "Interactor.hh"
 #include "Scene.hh"
 #include "Composition.hh"
@@ -150,6 +155,14 @@ void GUI::show(bool* opened)
     m_photons->gui(); 
 
 
+    GItemIndex* materials = m_loader ? (GItemIndex*)m_loader->getMaterials() : NULL ; 
+    if(materials)
+    {
+        ImGui::Spacing();
+        materials->gui();
+    } 
+
+
     ImGui::Spacing();
 
     if (ImGui::CollapsingHeader("Dev"))
@@ -159,6 +172,9 @@ void GUI::show(bool* opened)
 
     ImGui::End();
 }
+
+
+
 
 
 
