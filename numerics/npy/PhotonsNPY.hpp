@@ -28,6 +28,9 @@ class PhotonsNPY {
        const char* getItemName(Item_t item);
 
 
+       
+
+
        // boundary names corresponding to absolute integer codes 
        // TODO: offset codes by one to avoid confusion regarding sign of Vacuum/Vacuum 0 
 
@@ -39,9 +42,17 @@ class PhotonsNPY {
    public:
        void examineHistories(Item_t item);
        std::string getHistoryString(unsigned int flags);
-       void readFlags(const char* path); // parse enum flags from photon.h
-       void dumpFlags(const char* msg="PhotonsNPY::dumpFlags");
+       std::string getStepFlagString(unsigned char flag);
        glm::ivec4 getFlags();
+
+   public:
+       void readFlags(const char* path); // parse enum flags from photon.h
+       void readMaterials(const char* idpath, const char* name="GMaterialIndexLocal.json");    
+
+       void dumpFlags(const char* msg="PhotonsNPY::dumpFlags");
+       void dumpMaterials(const char* msg="PhotonsNPY::dumpMaterials");
+
+       std::string findMaterialName(unsigned int index);
 
    public:  
        // ivec4 containing 1st four boundary codes provided by the selection
@@ -73,6 +84,8 @@ class PhotonsNPY {
 
        UChoices_t                   m_flags ; 
        bool*                        m_flags_selection ; 
+
+       std::map<std::string, unsigned int>  m_materials ;
  
 };
 

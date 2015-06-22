@@ -75,12 +75,14 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
                 p.direction = uniform_sphere(&rng);
                 p.polarization = normalize(cross(uniform_sphere(&rng), p.direction));
                 p.flags.i.x = 0 ;   // no-boundary-yet for new direction
-                p.flags.i.w |= BULK_REEMIT;
+                //p.flags.i.w |= BULK_REEMIT;
+                s.flag = BULK_REEMIT ;
                 return CONTINUE;
             }                           
             else 
             {
-                p.flags.i.w |= BULK_ABSORB;
+                //p.flags.i.w |= BULK_ABSORB;
+                s.flag = BULK_ABSORB ;
                 return BREAK;
             }                         
         }
@@ -95,7 +97,8 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 
             rayleigh_scatter(p, rng);
 
-            p.flags.i.w |= RAYLEIGH_SCATTER;
+            //p.flags.i.w |= RAYLEIGH_SCATTER;
+            s.flag = BULK_SCATTER;
             p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 
             return CONTINUE;
@@ -281,9 +284,11 @@ __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
                        ;
     
 
-    p.flags.i.w |= reflect     ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
-    p.flags.i.w |= s_polarized ? BOUNDARY_SPOL    : BOUNDARY_PPOL ;
-    p.flags.i.w |= tir         ? BOUNDARY_TIR     : BOUNDARY_TIR_NOT ; 
+    //p.flags.i.w |= reflect     ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
+    //p.flags.i.w |= s_polarized ? BOUNDARY_SPOL    : BOUNDARY_PPOL ;
+    //p.flags.i.w |= tir         ? BOUNDARY_TIR     : BOUNDARY_TIR_NOT ; 
+
+    s.flag = reflect     ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 }
@@ -316,7 +321,7 @@ CONTINUE
 
 */
 
-__device__ int propagate_at_specular_reflector(Photon &p, State &s, curandState &rng)
+__device__ void propagate_at_specular_reflector(Photon &p, State &s, curandState &rng)
 {
     const float c1 = -dot(p.direction, s.surface_normal );     // c1 arranged to be +ve   
 
@@ -337,14 +342,12 @@ __device__ int propagate_at_specular_reflector(Photon &p, State &s, curandState 
                           normalize(cross(incident_plane_normal, p.direction))
                        ;
 
-    p.flags.i.w |= REFLECT_SPECULAR;
+    //p.flags.i.w |= REFLECT_SPECULAR;
+ 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
-
-    return CONTINUE;
 } 
 
-
-__device__ int propagate_at_diffuse_reflector(Photon &p, State &s, curandState &rng)
+__device__ void propagate_at_diffuse_reflector(Photon &p, State &s, curandState &rng)
 {
     float ndotv;
     do {
@@ -358,10 +361,8 @@ __device__ int propagate_at_diffuse_reflector(Photon &p, State &s, curandState &
     } while (! (curand_uniform(&rng) < ndotv) );
 
     p.polarization = normalize( cross(uniform_sphere(&rng), p.direction));
-    p.flags.i.w |= REFLECT_DIFFUSE;
+    //p.flags.i.w |= REFLECT_DIFFUSE;
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
-
-    return CONTINUE;
 }                       
 
 
@@ -380,8 +381,8 @@ Returns:
 
 * BREAK(SURFACE_ABSORB) 
 * BREAK(SURFACE_DETECT) 
-* CONTINUE(REFLECT_DIFFUSE) 
-* CONTINUE(REFLECT_SPECULAR) 
+* CONTINUE(SURFACE_DREFLECT) 
+* CONTINUE(SURFACE_SREFLECT) 
 
 
 TODO
@@ -406,21 +407,25 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
 
     if( u < s.surface.y )   // absorb   
     {
-        p.flags.i.w |= SURFACE_ABSORB ;
+        s.flag = SURFACE_ABSORB ;
         return BREAK ;
     }
     else if ( u < s.surface.y + s.surface.x )  // absorb + detect
     {
-        p.flags.i.w |= SURFACE_DETECT ;
+        s.flag = SURFACE_DETECT ;
         return BREAK ;
     } 
     else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
     {
-        return propagate_at_diffuse_reflector(p, s, rng);
+        s.flag = SURFACE_DREFLECT ;
+        propagate_at_diffuse_reflector(p, s, rng);
+        return CONTINUE;
     }
     else
     {
-        return propagate_at_specular_reflector(p, s, rng );
+        s.flag = SURFACE_SREFLECT ;
+        propagate_at_specular_reflector(p, s, rng );
+        return CONTINUE;
     }
 }
 

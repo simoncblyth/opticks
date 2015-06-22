@@ -50,25 +50,19 @@ array([[   -14,      0,      0, 526857],
 
 enum
 {
-    GENERATE_CERENKOV      = 0x1 << 0, 
-    GENERATE_SCINTILLATION = 0x1 << 1, 
-    NO_HIT                 = 0x1 << 2,
-    BULK_ABSORB            = 0x1 << 3,
-    SURFACE_DETECT         = 0x1 << 4,
-    SURFACE_ABSORB         = 0x1 << 5,
-    RAYLEIGH_SCATTER       = 0x1 << 6,
-    BULK_REEMIT            = 0x1 << 7,
-    BOUNDARY_SPOL          = 0x1 << 8,
-    BOUNDARY_PPOL          = 0x1 << 9,
-    BOUNDARY_REFLECT       = 0x1 << 10,
-    BOUNDARY_TRANSMIT      = 0x1 << 11,
-    BOUNDARY_TIR           = 0x1 << 12,
-    NAN_ABORT              = 0x1 << 13,
-    REFLECT_DIFFUSE        = 0x1 << 14, 
-    REFLECT_SPECULAR       = 0x1 << 15,
-    SURFACE_REEMIT         = 0x1 << 17,
-    SURFACE_TRANSMIT       = 0x1 << 18,
-    BOUNDARY_TIR_NOT       = 0x1 << 19
+    CERENKOV          = 0x1 <<  0,   
+    SCINTILLATION     = 0x1 <<  1, 
+    MISS              = 0x1 <<  2,
+    BULK_ABSORB       = 0x1 <<  3,
+    BULK_REEMIT       = 0x1 <<  4,
+    BULK_SCATTER      = 0x1 <<  5,
+    SURFACE_DETECT    = 0x1 <<  6,
+    SURFACE_ABSORB    = 0x1 <<  7,
+    SURFACE_DREFLECT  = 0x1 <<  8,
+    SURFACE_SREFLECT  = 0x1 <<  9,
+    BOUNDARY_REFLECT  = 0x1 << 10,
+    BOUNDARY_TRANSMIT = 0x1 << 11,
+    NAN_ABORT         = 0x1 << 12
 }; // processes
 
 //  only 0-15 make it into the record so debug flags only beyond 15 
@@ -97,7 +91,7 @@ __device__ short shortnorm( float v, float center, float extent )
 } 
 
 
-__device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
+__device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
 {
     //  pack position and time into normalized shorts (4*16 = 64 bits)
     //
@@ -109,13 +103,15 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     //  * adopt p.position_time  maybe p.polarization_wavelength
     //  * simularly with domains of those ?
     // 
-    rbuffer[record_offset+0] = make_short4( 
+    rbuffer[record_offset+0] = make_short4(    // 4*int16 = 64 bits 
                     shortnorm(p.position.x, center_extent.x, center_extent.w), 
                     shortnorm(p.position.y, center_extent.y, center_extent.w), 
                     shortnorm(p.position.z, center_extent.z, center_extent.w),   
                     shortnorm(p.time      , time_domain.x  , time_domain.y  )
                     ); 
 
+    //    plt.hist(a[::10,0,3]/100., bins=100)    first record times in range 0:45 ns with 100ns domain
+    //
     //  pack polarization and wavelength into 4*8 = 32 bits   
     //  range of char -128:127  normalization of polarization and wavelength expected bulletproof, so no handling of out-of-range 
     //  range of uchar 0:255   -1.f:1.f  + 1 => 0.f:2.f  so scale by 127.f 
@@ -131,10 +127,39 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     qpolw.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
     qpolw.uchar_.w = __float2uint_rn(nwavelength)  ;
 
-    hquad polw ; // tightly packed, polarization and wavelength  
+    // tightly packed, polarization and wavelength into 4*int8 = 32 bits (1st 2 npy columns) 
+    hquad polw ;     // lsb_              msb_
     polw.ushort_.x = qpolw.uchar_.x | qpolw.uchar_.y << 8 ;
     polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
     
+/*
+
+In [86]: a.view(np.uint16)[::10,1]
+Out[86]: 
+array([[15031, 11482,  2804,     1],
+       [ 2921, 30382,  2804,     1],
+       [ 1897,   346,  2804,     1],
+       ..., 
+       [ 1122,  1677,     0,     5],
+       [25591,  2716,     0,     5],
+       [ 7046,  3021,     0,     5]], dtype=uint16)
+
+
+   In [63]: lsb_ = lambda _:(_ & 0xFF) 
+   In [64]: msb_ = lambda _:(_ & 0xFF00) >> 8 
+
+    In [91]: wl = msb_(a.view(np.uint16)[::10,1,1])
+   
+    In [93]: plt.hist(wl, bins=256)   # choose binning matching the compression to avoid artifacts 
+
+   In [95]: pz = lsb_(a.view(np.uint16)[::10,1,1])
+
+
+*/
+
+
+
+
 
 #ifdef IDENTITY_CHECK
     // spread uint32 photon_id across two uint16
@@ -146,13 +171,23 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
 
 
     qquad qaux ;  // boundary int and m1 index uint are known to be within char/uchar ranges 
-    qaux.uchar_.x =  p.flags.u.z ;  //   m1 index                 uchar: 0 to 255
-    qaux.char_.y  =  p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
+    qaux.uchar_.x =  s.index.x ; //m1   // p.flags.u.z ;  //   m1 index                 uchar: 0 to 255
+    qaux.uchar_.y =  s.index.y ; //m2   // p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
 
-    //             lowbyte (flq[0].x)    highbyte (flq[0].y)
+    qaux.uchar_.z  =  0 ; 
+
+    //s.flag = 8 ; // machinery check
+    qaux.uchar_.w = __ffs(s.flag) ;  // first set bit __ffs(0) = 0, otherwise 1->32 
+
+
+    //             lsb_ (flq[0].x)    msb_ (flq[0].y)
     //            
-    polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;  
-    polw.ushort_.w = p.flags.u.w & 0xFFFF  ;      // 16 bits of history 
+    polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;   
+ 
+    //              lsb_ (flq[0].z)    msb_ (flq[0].w)
+    polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
+
+
 
 
     rbuffer[record_offset+1] = polw.short_ ; 
@@ -161,15 +196,42 @@ __device__ void rsave( Photon& p, optix::buffer<short4>& rbuffer, unsigned int r
     // of a photon, each corresponding to bits set since the prior rsave (not the same as a step)
     // although exclusive or on a "|=" incrementing mask almost does this 
     // that would fail to see repeated flags  
-
 }
+
+
+/*
+
+
+In [68]: a.shape
+Out[68]: (6128410, 2, 4)      // 8 * int16  item
+
+In [69]: a.dtype
+Out[69]: dtype('int16')
+
+    //  f = msb2_(a.view(np.uint16)[:,1,3])
+
+In [9]: count_unique(f)
+Out[9]: 
+array([[      1,  559369],
+       [      3,   59502],
+       [      4,  469483],
+       [      5,  224054],
+       [      6,   13711],
+       [     11,   62549],
+       [     12, 1204949],
+       [    128, 3534793]])
+
+
+*/
+
+
 
 //  Correspondence to gl/rec/geom.glsl 
 //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 //  * NumpyEvt::setRecordData sets rflq buffer input as ViewNPY::BYTE starting from offset 2 (ie .z) 
-// 
-//      flq[0].x   <->  lowbyte  polw.ushort_.z    <->  polw.ushort_.z & 0x00FF   
+//                                                                                                     
+//      flq[0].x   <->  lowbyte  polw.ushort_.z    <->  polw.ushort_.z & 0x00FF            m1 = np.array( a[:,1,2] >> 8, dtype=np.int8 )
 //
 //      flq[0].y   <->  highbyte polw.ushort_.z    <->  polw.ushort_.z & 0xFF00 >> 8 
 //

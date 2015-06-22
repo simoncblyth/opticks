@@ -12,26 +12,24 @@ using namespace optix;
 
 #include "quad.h"
 #include "wavelength_lookup.h"
+#include "state.h"
 #include "photon.h"
 
 #define GNUMQUAD 6
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
 
-
-#include "state.h"
-
-
 #include "rayleigh.h"
 #include "propagate.h"
 
 
-
 // beyond MAXREC overwrite save into top slot
-#define RSAVE(p, slot)  \
+//    if(photon_id == 0) dump_state((s));
+ 
+#define RSAVE(p, s, slot)  \
 {    \
     unsigned int slot_offset =  (slot) < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
-    rsave((p), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
+    rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
     (slot)++ ; \
 }   \
 
@@ -72,6 +70,7 @@ RT_PROGRAM void generate()
     // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
 
     State s ;   // perhaps rename to Step (as in propagation, not generation) 
+
     Photon p ;  
 
     if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
@@ -81,7 +80,7 @@ RT_PROGRAM void generate()
 #ifdef DEBUG
         if(photon_id == 0) csdebug(cs);
 #endif
-        generate_cerenkov_photon(p, cs, rng );         
+        generate_cerenkov_photon(p, s, cs, rng );         
     }
     else
     {
@@ -90,7 +89,7 @@ RT_PROGRAM void generate()
 #ifdef DEBUG
         if(photon_id == 0) ssdebug(ss);
 #endif
-        generate_scintillation_photon(p, ss, rng );         
+        generate_scintillation_photon(p, s, ss, rng );         
     }
 
     p.flags.u.y = photon_id ;   // no problem fitting uint  (1 << 32) - 1 = 4,294,967,295
@@ -115,10 +114,11 @@ RT_PROGRAM void generate()
 
         if(prd.boundary == 0)
         {
-            p.flags.i.w |= NO_HIT;
-            break ;  
-           // hmm baybe better to break after RSAVE ? for more regular rec structure, control flow
-        }     
+            //p.flags.i.w |= NO_HIT;
+            s.flag = MISS ;  // overwrite CERENKOV/SCINTILLATION for the no hitters
+            break ;
+        }   
+
         p.flags.i.x = prd.boundary ;  
 
         // use boundary index at intersection point to do optical constant + material/surface property lookups 
@@ -129,9 +129,11 @@ RT_PROGRAM void generate()
 
         p.flags.u.z = s.index.x ;   // material1 index 
 
-        //if(photon_id == 0) dump_state(s);
+        // initial and CONTINUE-ing records
+        p.flags.u.w |= s.flag ; 
 
-        RSAVE(p, slot) ;
+
+        RSAVE(p, s, slot) ;
 
         // Where best to record the propagation ? 
         // =======================================
@@ -164,7 +166,7 @@ RT_PROGRAM void generate()
         //   or BREAKs
         //
         //
-        //         RAYLEIGH_SCATTER/BULK_REEMIT
+        //            BULK_SCATTER/BULK_REEMIT
         //                 ^
         //                 |           /\
         //      *--> . # . *. . . m1  /* \ - m2 - - - -
@@ -187,7 +189,7 @@ RT_PROGRAM void generate()
 
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
-        if(command == CONTINUE) continue ;        // BULK_REEMIT/RAYLEIGH_SCATTER
+        if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
         //
         // PASS : survivors will go on to pick up one of the below flags, 
         //        so no need for "BULK_SURVIVE"
@@ -196,7 +198,7 @@ RT_PROGRAM void generate()
         {
             command = propagate_at_surface(p, s, rng);
             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
-            if(command == CONTINUE) continue ;    // REFLECT_DIFFUSE/REFLECT_SPECULAR
+            if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
         }
         else
         {
@@ -208,8 +210,9 @@ RT_PROGRAM void generate()
 
 
     // breakers and maxers saved here
+    p.flags.u.w |= s.flag ; 
     psave(p, photon_buffer, photon_offset ); 
-    RSAVE(p, slot) ;
+    RSAVE(p, s, slot) ;
 
     rng_states[photon_id] = rng ;
 }

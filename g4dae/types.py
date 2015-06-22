@@ -2,6 +2,14 @@
 import os, datetime, logging
 log = logging.getLogger(__name__)
 import numpy as np
+import ctypes
+libcpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
+
+ffs_ = lambda _:libcpp.ffs(_)
+
+lsb2_ = lambda _:(_ & 0xFF) 
+msb2_ = lambda _:(_ & 0xFF00) >> 8 
+hex_ = lambda _:"0x%x" % _
 
 pro_ = lambda _:load_("prop",_)
 ppp_ = lambda _:load_("photon",_)
@@ -22,7 +30,14 @@ g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)
 
 path_ = lambda typ,tag:os.environ["DAE_%s_PATH_TEMPLATE" % typ.upper()] % str(tag)
-load_ = lambda typ,tag:np.load(path_(typ,tag))     
+#load_ = lambda typ,tag:np.load(path_(typ,tag))     
+
+def load_(typ, tag):
+    path = path_(typ,tag)
+    log.info("loading %s " % path )
+    os.system("ls -l %s " % path)
+    return np.load(path)
+
 
 global typs
 typs = "photon hit test cerenkov scintillation opcerenkov opscintillation gopcerenkov gopscintillation".split()

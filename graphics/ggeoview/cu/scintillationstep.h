@@ -156,7 +156,7 @@ __device__ void ssdebug( ScintillationStep& ss )
 
 
 __device__ void
-generate_scintillation_photon(Photon& p, ScintillationStep& ss, curandState& rng)
+generate_scintillation_photon(Photon& p, State& s, ScintillationStep& ss, curandState& rng)
 {
     float ScintillationTime = ss.ScintillationTime ; 
     if(ss.scnt == 2)
@@ -192,7 +192,7 @@ generate_scintillation_photon(Photon& p, ScintillationStep& ss, curandState& rng
     p.flags.u.z = 0 ;
     p.flags.u.w = 0 ;
 
-    p.flags.u.w |= GENERATE_SCINTILLATION ;
+    s.flag = SCINTILLATION ;  // initial flag setting
 
 }
 

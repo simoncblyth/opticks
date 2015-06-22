@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include "limits.h"
 
+#include "jsonutil.hpp" 
 #include "regexsearch.hh"
 
 
@@ -131,6 +132,18 @@ std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries(bool sign)
 }
 
 
+
+unsigned char msb_( unsigned short x )
+{
+    return ( x & 0xFF00 ) >> 8 ;
+}
+
+unsigned char lsb_( unsigned short x )
+{
+    return ( x & 0xFF)  ;
+}
+
+
 void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int maxrec)
 {
     if(!m_records) return ;
@@ -147,24 +160,17 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int m
 
     hui_t hui ;
  
-    unsigned short prior_flags(0); 
     unsigned int check = 0 ;
-    for(unsigned int i=0 ; i<ni ; i++ ){
-
-
-    if(i % maxrec == 0)
+    for(unsigned int i=0 ; i<ni ; i++ )
     {
-         prior_flags = 0 ;
-    }
-    std::string history ;
 
+    std::string history ;
+    std::string material1 ;
+    std::string material2 ;
 
     for(unsigned int j=0 ; j<nj ; j++ )
     {
        bool out = i < ndump || i > ni-ndump ; 
-
-      
-       
 
        if(out) printf(" (%7u,%1u) ", i,j );
 
@@ -177,6 +183,8 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int m
            hui.short_ = value ; 
 
            unsigned short uvalue = hui.ushort_ ;
+           unsigned char  msb = msb_(uvalue); 
+           unsigned char  lsb = lsb_(uvalue); 
 
            bool unset = value == SHRT_MIN ; 
 
@@ -186,11 +194,16 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int m
                {
                     printf(" %15s ",  "..." );
                }
+               else if( j == 1 && k == 2 )
+               {
+                    material1 = findMaterialName(lsb) ;
+                    material2 = findMaterialName(msb) ;
+                    printf(" %7d %7d ",   msb, lsb );
+               }
                else if( j == 1 && k == 3 )
                {
-                    printf(" %15d ",   uvalue );
-                    history = getHistoryString( uvalue ^ prior_flags ) ; // hmm does it make sense to do this bitfield delta-ing  on GPU 
-                    prior_flags = uvalue ; 
+                    printf(" %7d %7d ",   msb, lsb );
+                    history = getStepFlagString( msb );
                }
                else 
                {                       
@@ -199,9 +212,9 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int m
 
                if( k == nk - 1)
                {
-                   if( j == 0 && !unset ) printf(" position/time (packed) ");
+                   if( j == 0 && !unset ) printf("");
                    //if( j == 1 && !unset ) printf(" polarization/wavelength/boundary/flags (packed) ");
-                   if( j == 1 && !unset ) printf("%s ", history.c_str());
+                   if( j == 1 && !unset ) printf("%20s %20s %20s ", material1.c_str(), material2.c_str(), history.c_str());
                    printf("\n");
                }
            }
@@ -293,6 +306,34 @@ void PhotonsNPY::dumpFlags(const char* msg)
     }
 }
 
+
+void PhotonsNPY::readMaterials(const char* idpath, const char* name)
+{
+    loadMap<std::string, unsigned int>(m_materials, idpath, name);
+}
+void PhotonsNPY::dumpMaterials(const char* msg)
+{
+    dumpMap<std::string, unsigned int>(m_materials, msg);
+}
+
+std::string PhotonsNPY::findMaterialName(unsigned int index)
+{
+    std::stringstream ss ; 
+    ss << "findMaterialName-failed-" << index  ;
+    std::string name = ss.str() ;
+    typedef std::map<std::string, unsigned int> MSU ; 
+    for(MSU::iterator it=m_materials.begin() ; it != m_materials.end() ; it++)
+    {
+        if( it->second == index )
+        {
+            name = it->first ;
+            break ; 
+        }
+    }
+    return name ; 
+}
+
+
 std::string PhotonsNPY::getHistoryString(unsigned int flags)
 {
     std::stringstream ss ; 
@@ -304,6 +345,12 @@ std::string PhotonsNPY::getHistoryString(unsigned int flags)
         if(flags & mask) ss << p.second << " " ; 
     }
     return ss.str() ; 
+}
+
+std::string PhotonsNPY::getStepFlagString(unsigned char flag)
+{
+   // flag is the result of ffs on the bit field returning a 1-based bit position
+   return getHistoryString( 1 << (flag-1) ); 
 }
 
 
@@ -358,7 +405,7 @@ void PhotonsNPY::examineHistories(Item_t item)
                << getHistoryString(flags) 
                << std::endl ; 
     }
-
 }
+
 
 

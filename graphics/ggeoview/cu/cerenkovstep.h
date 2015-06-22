@@ -187,7 +187,7 @@ __device__ void csdebug( CerenkovStep& cs )
 
 
 __device__ void
-generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
+generate_cerenkov_photon(Photon& p, State& s, CerenkovStep& cs, curandState &rng)
 {
      float cosTheta ;
      float sin2Theta ;
@@ -276,7 +276,9 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       p.flags.u.z = 0 ;
       p.flags.u.w = 0 ;
 
-      p.flags.u.w |= GENERATE_CERENKOV ;
+      //p.flags.u.w |= GENERATE_CERENKOV ;
+
+      s.flag = CERENKOV ;  // initial state flag setting
 
 
 }
