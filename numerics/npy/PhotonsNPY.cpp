@@ -11,6 +11,7 @@
 
 #include <glm/glm.hpp>
 #include "limits.h"
+#include "GLMFormat.hpp"
 
 #include "jsonutil.hpp" 
 #include "regexsearch.hh"
@@ -144,6 +145,77 @@ unsigned char lsb_( unsigned short x )
 }
 
 
+float PhotonsNPY::uncharnorm(unsigned char value, float center, float extent, float bitmax )
+{
+/*
+cu/photon.h::
+
+    122     float nwavelength = 255.f*(p.wavelength - wavelength_domain.x)/wavelength_domain.w ; // 255.f*0.f->1.f 
+    123
+    124     qquad qpolw ;
+    125     qpolw.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;
+    126     qpolw.uchar_.y = __float2uint_rn((p.polarization.y+1.f)*127.f) ;
+    127     qpolw.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
+    128     qpolw.uchar_.w = __float2uint_rn(nwavelength)  ;
+    129 
+    130     // tightly packed, polarization and wavelength into 4*int8 = 32 bits (1st 2 npy columns) 
+    131     hquad polw ;     // lsb_              msb_
+    132     polw.ushort_.x = qpolw.uchar_.x | qpolw.uchar_.y << 8 ;
+    133     polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
+
+                             center   extent
+     pol      range -1 : 1     0        2
+     pol + 1  range  0 : 2     1        2
+ 
+*/
+   
+    return float(value)*extent/bitmax - center ; 
+}
+
+
+float PhotonsNPY::uncharnorm_polarization(unsigned char value)
+{
+    return uncharnorm(value, 1.f, 2.f, 254.f );
+}
+float PhotonsNPY::uncharnorm_wavelength(unsigned char value)
+{
+    return uncharnorm(value, -m_wavelength_domain.x , m_wavelength_domain.w, 255.f );
+}
+
+
+float PhotonsNPY::unshortnorm(short value, float center, float extent )
+{
+/*
+cu/photon.h::
+ 
+     83 __device__ short shortnorm( float v, float center, float extent )
+     84 {
+     85     // range of short is -32768 to 32767
+     86     // Expect no positions out of range, as constrained by the geometry are bouncing on,
+     87     // but getting times beyond the range eg 0.:100 ns is expected
+     88     //
+     89     int inorm = __float2int_rn(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
+     90     return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
+     91 }
+
+*/
+    return float(value)*extent/32767.0f + center ; 
+}
+
+float PhotonsNPY::unshortnorm_position(short v, unsigned int k )
+{
+    assert(k < 3 );
+    return unshortnorm( v, m_center_extent[k], m_center_extent.w );
+}
+
+float PhotonsNPY::unshortnorm_time(short v, unsigned int k )
+{
+    assert(k == 3 );
+    return unshortnorm( v, m_time_domain.x,    m_time_domain.y );
+}
+
+
+
 void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int maxrec)
 {
     if(!m_records) return ;
@@ -167,6 +239,8 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int m
     std::string history ;
     std::string material1 ;
     std::string material2 ;
+    glm::vec4 position_time ; 
+    glm::vec4 polarization_wavelength ; 
 
     for(unsigned int j=0 ; j<nj ; j++ )
     {
@@ -194,6 +268,23 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int m
                {
                     printf(" %15s ",  "..." );
                }
+               else if( j == 0 )
+               {
+                    position_time[k] = k < 3 ? unshortnorm_position( uvalue , k)
+                                             :
+                                               unshortnorm_time( uvalue , k)
+                                             ;
+               }
+               else if( j == 1 && k == 0 )
+               {
+                    polarization_wavelength.x =  uncharnorm_polarization(lsb);  
+                    polarization_wavelength.y =  uncharnorm_polarization(msb);
+               }
+               else if( j == 1 && k == 1 )
+               {
+                    polarization_wavelength.z =  uncharnorm_polarization(lsb);  
+                    polarization_wavelength.w =  uncharnorm_wavelength(msb);
+               }
                else if( j == 1 && k == 2 )
                {
                     material1 = findMaterialName(lsb) ;
@@ -212,9 +303,9 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int m
 
                if( k == nk - 1)
                {
-                   if( j == 0 && !unset ) printf("");
+                   if( j == 0 && !unset ) printf("%s", gformat(position_time).c_str());
                    //if( j == 1 && !unset ) printf(" polarization/wavelength/boundary/flags (packed) ");
-                   if( j == 1 && !unset ) printf("%20s %20s %20s ", material1.c_str(), material2.c_str(), history.c_str());
+                   if( j == 1 && !unset ) printf("%30s %20s %20s %20s ", gformat(polarization_wavelength).c_str(), material1.c_str(), material2.c_str(), history.c_str());
                    printf("\n");
                }
            }
@@ -370,42 +461,154 @@ glm::ivec4 PhotonsNPY::getFlags()
 
 
 
-void PhotonsNPY::examineHistories(Item_t item)
+void PhotonsNPY::examinePhotonHistories()
 {
     // find counts of all histories 
 
     typedef std::map<unsigned int,unsigned int>  muu_t ; 
     typedef std::pair<unsigned int,unsigned int> puu_t ;
 
-    NPYBase* npy = getItem(item);
-    muu_t uu ;
-    switch(item)
-    {
-       case PHOTONS: uu = ((NPY<float>*)npy)->count_unique_u(3,3) ; break ;
-       case RECORDS: uu = ((NPY<short>*)npy)->count_unique_u(1,3) ; break ;
-    }
+    NPYBase* npy = getItem(PHOTONS);
+    muu_t uu = ((NPY<float>*)npy)->count_unique_u(3,3) ; 
 
     std::vector<puu_t> pairs ; 
     for(muu_t::iterator it=uu.begin() ; it != uu.end() ; it++) pairs.push_back(*it);
     std::sort(pairs.begin(), pairs.end(), value_order );
 
-    std::cout << "PhotonsNPY::examineHistories : " << getItemName(item) << std::endl ; 
+    std::cout << "PhotonsNPY::examinePhotonHistories : " << std::endl ; 
 
+    unsigned int total(0);
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {
         puu_t p = pairs[i];
         unsigned int flags = p.first ;
+        unsigned int count = p.second ; 
+        total += count ;  
+
         std::cout 
                << std::setw(5) << i 
                << " : "
                << std::setw(10) << std::hex << flags 
                << " : " 
-               << std::setw(10) << std::dec << p.second
+               << std::setw(10) << std::dec << count 
                << " : "
                << getHistoryString(flags) 
                << std::endl ; 
     }
+    std::cout << " total " << total << std::endl ; 
 }
+
+
+void PhotonsNPY::examineRecordHistories(unsigned int maxrec)
+{
+    unsigned int ni = m_records->m_len0 ;
+    unsigned int j = 1 ; 
+    unsigned int k = 3 ;  
+
+    std::vector<short>& rdata = m_records->m_data ; 
+
+    hui_t hui ;
+
+    unsigned int irec(0);
+    unsigned int history(0) ; 
+    unsigned int p_history(0) ; 
+    unsigned int bounce(0) ; 
+
+    typedef std::pair<unsigned int, unsigned int> PUU ;
+    typedef std::map<unsigned int, unsigned int> MUU ;
+    typedef std::vector<unsigned int> VU ; 
+    MUU uu ;  
+
+
+    VU mismatch ; 
+
+    for(unsigned int i=0 ; i<ni ; i++ )
+    {
+        if(i % maxrec == 0)  // record start 
+        {
+            history = 0 ; 
+            bounce  = 0 ; 
+        }
+
+        unsigned int index = m_records->getValueIndex(i, j, k);
+        short value = rdata[index] ;
+        hui.short_ = value ; 
+        bool unset = value == SHRT_MIN ; 
+
+        if(!unset) 
+        {   
+            bounce += 1 ; 
+            unsigned short uvalue = hui.ushort_ ;
+            unsigned char  msb = msb_(uvalue); 
+            //unsigned char  lsb = lsb_(uvalue); 
+
+            unsigned char s_flag = msb ; 
+            unsigned int  s_history = 1 << (s_flag - 1) ; 
+
+            history |= s_history ;
+        }
+
+
+        if(i % maxrec == maxrec - 1) // record end
+        {
+            assert(bounce > 0 );
+            p_history = m_photons->getUInt(irec, 3, 3);
+            if(p_history != history)
+            {
+                mismatch.push_back(irec);  // all mismatches are bounce 10 
+                std::cout << std::setw(10) << irec
+                          << "[" << std::setw(3)  << bounce << "]" 
+                          << std::setw(80) << getHistoryString( p_history ) 
+                          << " =/= " 
+                          << std::setw(80) << getHistoryString( history ) 
+                          << std::endl ;
+
+            }   
+
+            if(uu.count(history)==0) uu[history] = 1 ; 
+            else                     uu[history] += 1 ; 
+
+            irec++ ; 
+        }
+    }
+
+
+    std::cout << "mismatch count " << mismatch.size() << std::endl ; 
+    
+     
+
+
+    std::vector<PUU> pairs ; 
+    for(MUU::iterator it=uu.begin() ; it != uu.end() ; it++) pairs.push_back(*it);
+    std::sort(pairs.begin(), pairs.end(), value_order );
+
+    std::cout << "PhotonsNPY::examineRecordHistories : " << std::endl ; 
+
+    unsigned int total(0);
+
+    for(unsigned int i=0 ; i < pairs.size() ; i++)
+    {
+        PUU p = pairs[i];
+        unsigned int history = p.first ;
+        unsigned int count = p.second ; 
+        total += count ;  
+
+        std::cout 
+               << std::setw(5) << i 
+               << " : "
+               << std::setw(10) << std::hex << history 
+               << " : " 
+               << std::setw(10) << std::dec << count 
+               << " : "
+               << getHistoryString(history) 
+               << std::endl ; 
+    }
+
+    std::cout << " total " << total << std::endl ; 
+
+
+}
+
 
 
 

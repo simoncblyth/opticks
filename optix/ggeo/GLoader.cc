@@ -8,6 +8,7 @@
 #include "GBoundaryLibMetadata.hh"
 #include "GMaterialIndex.hh"
 #include "GSurfaceIndex.hh"
+#include "GFlagIndex.hh"
 #include "GGeo.hh"
 #include "GCache.hh"
 #include "GColors.hh"
@@ -76,19 +77,22 @@ void GLoader::load(bool nogeocache)
     m_lookup = new Lookup() ; 
     m_lookup->create(idpath);
 
+    m_flags = GFlagIndex::load(idpath); 
 
-
-    m_materials->setColorMap(GColorMap::load(idpath, "GMaterialIndexColors.json"));  // itemname => colorname 
-    m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));    // itemname => colorname 
+    // itemname => colorname 
+    m_materials->setColorMap(GColorMap::load(idpath, "GMaterialIndexColors.json")); 
+    m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));   
+    m_flags->setColorMap(GColorMap::load(idpath, "GFlagIndexColors.json"));    
 
     m_colors = GColors::load(idpath,"GColors.json");                         // colorname => hexcode 
     m_materials->setColorSource(m_colors);
     m_surfaces->setColorSource(m_colors);
+    m_flags->setColorSource(m_colors);
 
+    m_flags->formTable(); // as not yet pulling a buffer
 
     GBuffer* buffer = m_materials->makeColorBuffer();
     m_colors->dump_uchar4_buffer(buffer);
-
 
     LOG(info) << "GLoader::load done " << idpath ;
     assert(m_mergedmesh);

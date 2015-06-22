@@ -211,8 +211,25 @@ std::string os_path_expandvars(const char* s)
 }
 
 
+void enum_read(std::map<std::string, unsigned int>& emap, const char* path)
+{
+    const char* ptn = "^\\s*(\\w+)\\s*=\\s*(.*?),*\\s*?$" ;  
+    boost::regex e(ptn);
 
+    std::string epath = os_path_expandvars(path);
+    std::ifstream is(epath, std::ifstream::binary); 
 
+    pairs_t   pairs ; 
+    regexsearch( pairs, is , e );
+    for(unsigned int i=0 ; i < pairs.size() ; i++)
+    {
+        unsigned int uv ; 
+        if(parse<unsigned int>(uv, pairs[i].second))
+        {
+            emap[pairs[i].first] = uv ; 
+        }
+    } 
+}
 
 
 void enum_regexsearch( upairs_t& upairs, const char* path )

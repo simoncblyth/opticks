@@ -9,6 +9,7 @@ class GDrawable ;
 class GBoundaryLibMetadata ; 
 class GMaterialIndex ; 
 class GSurfaceIndex ; 
+class GFlagIndex ; 
 class GColors ; 
 
 class Lookup ; 
@@ -34,6 +35,7 @@ class GLoader {
          GDrawable*             getDrawable();
          GMaterialIndex*        getMaterials();
          GSurfaceIndex*         getSurfaces();
+         GFlagIndex*            getFlags();
          GColors*               getColors();
 
          Lookup*                getMaterialLookup();
@@ -46,6 +48,7 @@ class GLoader {
          GBoundaryLibMetadata*     m_metadata ;
          GMaterialIndex*           m_materials ;
          GSurfaceIndex*            m_surfaces ;
+         GFlagIndex*               m_flags ;
          GColors*                  m_colors ;  
          Lookup*                   m_lookup ; 
      
@@ -59,6 +62,7 @@ inline GLoader::GLoader()
    m_metadata(NULL),
    m_materials(NULL),
    m_surfaces(NULL),
+   m_flags(NULL),
    m_colors(NULL),
    m_lookup(NULL)
 {
@@ -117,6 +121,11 @@ inline GSurfaceIndex* GLoader::getSurfaces()
 {
     return m_surfaces ; 
 }
+inline GFlagIndex* GLoader::getFlags()
+{
+    return m_flags ; 
+}
+
 
 
 

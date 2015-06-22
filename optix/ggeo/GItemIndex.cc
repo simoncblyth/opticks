@@ -89,6 +89,7 @@ void GItemIndex::formTable()
    m_inames.clear(); 
    m_icodes.clear(); 
    m_ccodes.clear(); 
+   m_labels.clear(); 
 
    // collect keys (item names) into vector and sort into ascending local index order 
  

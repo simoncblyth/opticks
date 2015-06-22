@@ -163,6 +163,15 @@ void GUI::show(bool* opened)
     } 
 
 
+    GItemIndex* flags = m_loader ? (GItemIndex*)m_loader->getFlags() : NULL ; 
+    if(flags)
+    {
+        ImGui::Spacing();
+        flags->gui();
+    } 
+
+
+
     ImGui::Spacing();
 
     if (ImGui::CollapsingHeader("Dev"))

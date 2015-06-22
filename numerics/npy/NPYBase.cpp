@@ -28,6 +28,16 @@ void NPYBase::Summary(const char* msg)
     std::cout << desc << std::endl ; 
 }   
 
+void NPYBase::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+    std::string desc = description(msg);
+    std::cout << desc << std::endl ; 
+}   
+
+
+
+
 std::string NPYBase::description(const char* msg)
 {
     std::stringstream ss ; 

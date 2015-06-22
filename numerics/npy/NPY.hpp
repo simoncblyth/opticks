@@ -72,6 +72,8 @@ class NPY : public NPYBase {
        void read(void* ptr);
 
     public:
+
+    public:
        // methods assuming 3D shape
        std::set<int> uniquei(unsigned int j, unsigned int k);
 
@@ -99,6 +101,8 @@ class NPY : public NPYBase {
        void         setQuad(unsigned int i, unsigned int j, glm::vec4&  vec );
        void         setQuad(unsigned int i, unsigned int j, glm::ivec4& vec );
        void         setQuad(unsigned int i, unsigned int j, float x, float y=0.f, float z=0.f, float w=0.f );
+       glm::vec4    getQuad(unsigned int i, unsigned int j );
+       glm::ivec4   getQuadI(unsigned int i, unsigned int j );
 
    private:
        std::vector<T>     m_data ; 
@@ -147,7 +151,6 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::vec4& vec )
     for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
 }
 
-
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )
 {
@@ -155,14 +158,36 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, fl
     setQuad(i, j, vec);
 }
 
-
-
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::ivec4& vec )
 {
     assert( m_len2 == 4 );  
     for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
 }
+
+
+
+
+template <typename T> 
+inline glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j)
+{
+    assert( m_len2 == 4 );  
+    glm::vec4 vec ; 
+    for(unsigned int k=0 ; k < 4 ; k++) vec[k] = getValue(i,j,k); 
+    return vec ; 
+}
+
+template <typename T> 
+inline glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j)
+{
+    assert( m_len2 == 4 );  
+    glm::ivec4 vec ; 
+    for(unsigned int k=0 ; k < 4 ; k++) vec[k] = getValue(i,j,k); 
+    return vec ; 
+}
+
+
+
 
 
 // type shifting get/set using union trick

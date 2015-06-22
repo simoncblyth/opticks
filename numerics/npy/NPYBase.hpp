@@ -27,6 +27,7 @@ class NPYBase {
        unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getNumValues(unsigned int from_dim=1);
 
+
    public:
        // depending on sizeoftype
        Type_t        getType();
@@ -48,12 +49,16 @@ class NPYBase {
        virtual void* getBytes() = 0 ;
        virtual void setQuad(unsigned int i, unsigned int j, glm::vec4&  vec ) = 0 ;
        virtual void setQuad(unsigned int i, unsigned int j, glm::ivec4& vec ) = 0 ;
+       virtual glm::vec4  getQuad(unsigned int i, unsigned int j ) = 0 ; 
+       virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j ) = 0 ; 
+
        virtual void save(const char* path) = 0;
        virtual void save(const char* typ, const char* tag) = 0;
        virtual void save(const char* tfmt, const char* targ, const char* tag ) = 0;
  
     public:
        void Summary(const char* msg="NPY::Summary");
+       void dump(const char* msg="NPY::dump");
        std::string description(const char* msg);
 
    protected:

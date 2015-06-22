@@ -28,9 +28,6 @@ class PhotonsNPY {
        const char* getItemName(Item_t item);
 
 
-       
-
-
        // boundary names corresponding to absolute integer codes 
        // TODO: offset codes by one to avoid confusion regarding sign of Vacuum/Vacuum 0 
 
@@ -40,7 +37,15 @@ class PhotonsNPY {
        void classify(bool sign=false);
 
    public:
-       void examineHistories(Item_t item);
+       // precise agreement between Photon and Record histories
+       // demands setting a bounce max less that maxrec
+       // in order to avoid any truncated and top record slot overwrites 
+       //
+       // eg for maxrec 10 bounce max of 9 (option -b9) 
+       //    succeeds to give perfect agreement  
+       //                 
+       void examinePhotonHistories();
+       void examineRecordHistories(unsigned int maxrec=10);
        std::string getHistoryString(unsigned int flags);
        std::string getStepFlagString(unsigned char flag);
        glm::ivec4 getFlags();
@@ -70,7 +75,21 @@ class PhotonsNPY {
        void dumpBoundaries(const char* msg);
 
    public:  
+       // decoding records
        void dump(const char* msg);
+
+       void setCenterExtent(glm::vec4& ce);
+       void setTimeDomain(glm::vec4& td);
+       void setWavelengthDomain(glm::vec4& wd);
+
+       float unshortnorm(short value, float center, float extent );
+       float unshortnorm_position(short uv, unsigned int k );
+       float unshortnorm_time(    short uv, unsigned int k );
+
+       float uncharnorm_polarization(unsigned char value);
+       float uncharnorm_wavelength(unsigned char value);
+       float uncharnorm(unsigned char value, float center, float extent, float bitmax );
+
 
    private:
        NPY<float>*                  m_photons ; 
@@ -86,6 +105,10 @@ class PhotonsNPY {
        bool*                        m_flags_selection ; 
 
        std::map<std::string, unsigned int>  m_materials ;
+
+       glm::vec4                   m_center_extent ; 
+       glm::vec4                   m_time_domain ; 
+       glm::vec4                   m_wavelength_domain ; 
  
 };
 
@@ -149,5 +172,18 @@ inline PhotonsNPY::Choices_t* PhotonsNPY::getBoundariesPointer()
     return &m_boundaries ; 
 }
 
+
+inline void PhotonsNPY::setCenterExtent(glm::vec4& ce)
+{
+    m_center_extent = ce ; 
+}
+inline void PhotonsNPY::setTimeDomain(glm::vec4& td)
+{
+    m_time_domain = td ; 
+}
+inline void PhotonsNPY::setWavelengthDomain(glm::vec4& wd)
+{
+    m_wavelength_domain = wd ; 
+}
 
 

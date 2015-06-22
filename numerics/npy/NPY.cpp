@@ -128,7 +128,6 @@ void NPY<T>::save(const char* path_)
 
 
 
-
 template <typename T>
 NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 {

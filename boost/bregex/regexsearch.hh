@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <map>
 #include <boost/regex.hpp>
 #include <vector>
 
@@ -18,6 +19,7 @@ typedef std::vector<upair_t>                  upairs_t ;
 
 void regexsearch( pairs_t& pairs, std::istream& is, boost::regex& e );
 
+void enum_read(std::map<std::string, unsigned int>& emap, const char* path);
 void enum_regexsearch( upairs_t& upairs, const char* path );
 
 

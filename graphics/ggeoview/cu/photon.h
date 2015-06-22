@@ -173,11 +173,8 @@ array([[15031, 11482,  2804,     1],
     qquad qaux ;  // boundary int and m1 index uint are known to be within char/uchar ranges 
     qaux.uchar_.x =  s.index.x ; //m1   // p.flags.u.z ;  //   m1 index                 uchar: 0 to 255
     qaux.uchar_.y =  s.index.y ; //m2   // p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
-
     qaux.uchar_.z  =  0 ; 
-
-    //s.flag = 8 ; // machinery check
-    qaux.uchar_.w = __ffs(s.flag) ;  // first set bit __ffs(0) = 0, otherwise 1->32 
+    qaux.uchar_.w = __ffs(s.flag) ;    // first set bit __ffs(0) = 0, otherwise 1->32 
 
 
     //             lsb_ (flq[0].x)    msb_ (flq[0].y)

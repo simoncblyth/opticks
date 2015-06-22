@@ -133,6 +133,14 @@ RT_PROGRAM void generate()
         p.flags.u.w |= s.flag ; 
 
 
+        if(photon_id == 0)
+        {
+           rtPrintf("bounce %d \n", bounce);
+           rtPrintf("post  %10.3f %10.3f %10.3f %10.3f  % \n", p.position.x, p.position.y, p.position.z, p.time );
+           rtPrintf("polw  %10.3f %10.3f %10.3f %10.3f  % \n", p.polarization.x, p.polarization.y, p.polarization.z, p.wavelength );
+        } 
+
+
         RSAVE(p, s, slot) ;
 
         // Where best to record the propagation ? 
