@@ -50,6 +50,10 @@ std::string GLMFormat::format(const glm::vec4& v)
     vals.push_back(format(v.w));
     return boost::algorithm::join(vals, ",");
 }
+
+
+
+
 std::string GLMFormat::format(const glm::ivec4& v)
 {
     std::vector<std::string> vals ; 
@@ -175,6 +179,28 @@ std::string gformat(const glm::quat& q )
     GLMFormat fmt; 
     return fmt.format(q);
 }
+
+
+std::string gpresent(const glm::vec4& v, unsigned int prec, unsigned int wid)
+{
+    std::stringstream ss ; 
+
+    ss << "( "
+       << std::setprecision(prec) << std::fixed 
+       << std::setw(wid) << v.x 
+       << std::setw(wid) << v.y 
+       << std::setw(wid) << v.z
+       << "  " 
+       << std::setw(wid) << v.w 
+       << ")" ;
+
+    return ss.str();
+}
+
+
+
+
+
 
 
 float gfloat_(std::string&s )

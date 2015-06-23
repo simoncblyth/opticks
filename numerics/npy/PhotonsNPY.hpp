@@ -18,12 +18,13 @@ class PhotonsNPY {
        typedef std::vector< std::pair<unsigned int, std::string> >  UChoices_t ; 
 
 
-       PhotonsNPY(NPY<float>* photons, NPY<short>* record=NULL); // weak references only
+       PhotonsNPY(NPY<float>* photons, NPY<short>* record=NULL, unsigned int maxrec=10); // weak references only
 
        void setRecords(NPY<short>* records);
        NPY<float>* getPhotons();
        NPY<short>* getRecords();
-       void dumpRecords(const char* msg="PhotonsNPY::dumpRecords", unsigned int ndump=5, unsigned int maxrec=10);
+       void dumpRecord(unsigned int i, const char* msg="rec");
+       void dumpRecords(const char* msg="PhotonsNPY::dumpRecords", unsigned int ndump=5);
        NPYBase*    getItem(Item_t item);
        const char* getItemName(Item_t item);
 
@@ -45,7 +46,7 @@ class PhotonsNPY {
        //    succeeds to give perfect agreement  
        //                 
        void examinePhotonHistories();
-       void examineRecordHistories(unsigned int maxrec=10);
+       void examineRecordHistories();
        std::string getHistoryString(unsigned int flags);
        std::string getStepFlagString(unsigned char flag);
        glm::ivec4 getFlags();
@@ -91,9 +92,15 @@ class PhotonsNPY {
        float uncharnorm(unsigned char value, float center, float extent, float bitmax );
 
 
+       void unpack_position_time(glm::vec4& post, unsigned int i, unsigned int j);
+       void unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1);
+       void unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1);
+
+
    private:
        NPY<float>*                  m_photons ; 
        NPY<short>*                  m_records ; 
+       unsigned int                 m_maxrec ; 
 
    protected:
        std::map<int, std::string>   m_names ; 
@@ -114,10 +121,11 @@ class PhotonsNPY {
 
 
 
-inline PhotonsNPY::PhotonsNPY(NPY<float>* photons, NPY<short>* records) 
+inline PhotonsNPY::PhotonsNPY(NPY<float>* photons, NPY<short>* records, unsigned int maxrec) 
        :  
        m_photons(photons),
        m_records(records),
+       m_maxrec(maxrec),
        m_boundaries_selection(NULL)
 {
 }

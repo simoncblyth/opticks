@@ -15,7 +15,8 @@ template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata),
-         m_data(data)
+         m_data(data),
+         m_unset_item(NULL)
 {
 } 
 
@@ -23,7 +24,8 @@ template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata),
-         m_data()
+         m_data(),
+         m_unset_item(NULL)
 {
     m_data.reserve(getNumValues(0));
     read(data);
@@ -37,6 +39,26 @@ void NPY<T>::read(void* ptr)
 }
 
 
+template <typename T>
+T* NPY<T>::getUnsetItem()
+{
+    if(!m_unset_item)
+    {
+        unsigned int nv = getNumValues(1); // item values  
+        m_unset_item = new T[nv];
+        while(nv--) m_unset_item[nv] = UNSET  ;         
+    }
+    return m_unset_item ; 
+}
+
+template <typename T>
+bool NPY<T>::isUnsetItem(unsigned int i)
+{
+    T* unset = getUnsetItem();
+    T* item  = getValues(i);
+    unsigned int nbytes = getNumBytes(1); // bytes in an item  
+    return memcmp(unset, item, nbytes ) == 0 ;  // memcmp 0 for match
+}
 
 
 template <typename T>
@@ -323,6 +345,15 @@ template<>
 NPYBase::Type_t NPY<short>::type = SHORT ;
 template<>
 NPYBase::Type_t NPY<double>::type = DOUBLE ;
+
+
+template<>
+short  NPY<short>::UNSET = SHRT_MIN ;
+template<>
+float  NPY<float>::UNSET = FLT_MAX ;
+template<>
+double NPY<double>::UNSET = DBL_MAX ;
+
 
 /*
 * :google:`move templated class implementation out of header`

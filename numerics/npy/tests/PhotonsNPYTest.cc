@@ -19,8 +19,9 @@ int main(int argc, char** argv)
     print(td, "td");
     print(wd, "wd");
 
+    unsigned int maxrec = 10 ;  // hmm find a slot in domain for such ints ?
 
-    PhotonsNPY pn(photons, records);
+    PhotonsNPY pn(photons, records, maxrec);
 
     pn.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     pn.dumpFlags();

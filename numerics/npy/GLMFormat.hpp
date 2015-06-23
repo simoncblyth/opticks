@@ -47,6 +47,7 @@ glm::vec4   gvec4(std::string& s );
 glm::ivec4  givec4(std::string& s );
 glm::quat   gquat(std::string& s );
 
+std::string gpresent(const glm::vec4& v, unsigned int prec=3, unsigned int wid=10);
 
 
 

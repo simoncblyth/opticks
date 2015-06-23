@@ -3,6 +3,8 @@
 class G4StepNPY ; 
 
 #include "uif.h"
+#include "ucharfour.h"
+
 #include "numpy.hpp"
 #include <vector>
 #include <string>
@@ -47,6 +49,7 @@ class NPY : public NPYBase {
 
    public:
        static Type_t type ;  // for type branching 
+       static T UNSET ; 
 
    public:
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
@@ -68,10 +71,13 @@ class NPY : public NPYBase {
 
    public:
        T* getValues();
+       T* getValues(unsigned int i);
        void* getBytes();
        void read(void* ptr);
 
     public:
+       T* getUnsetItem();
+       bool isUnsetItem(unsigned int i);
 
     public:
        // methods assuming 3D shape
@@ -92,6 +98,9 @@ class NPY : public NPYBase {
        float        getFloat(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k);
        int          getInt(  unsigned int i, unsigned int j, unsigned int k);
+       void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k);
+       ucharfour    getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 );
+
 
        void         setValue(unsigned int i, unsigned int j, unsigned int k, T value);
        void         setFloat(unsigned int i, unsigned int j, unsigned int k, float value);
@@ -103,9 +112,12 @@ class NPY : public NPYBase {
        void         setQuad(unsigned int i, unsigned int j, float x, float y=0.f, float z=0.f, float w=0.f );
        glm::vec4    getQuad(unsigned int i, unsigned int j );
        glm::ivec4   getQuadI(unsigned int i, unsigned int j );
+       glm::uvec4   getQuadU(unsigned int i, unsigned int j );
 
-   private:
+   //private:
+   public:
        std::vector<T>     m_data ; 
+       T*                 m_unset_item ; 
  
 };
 
@@ -121,6 +133,14 @@ inline T* NPY<T>::getValues()
 }
 
 template <typename T> 
+inline T* NPY<T>::getValues(unsigned int i)
+{
+    unsigned int idx = getValueIndex(i,0,0);
+    return m_data.data() + idx ;
+}
+
+
+template <typename T> 
 inline void* NPY<T>::getBytes()
 {
     return (void*)getValues();
@@ -134,6 +154,49 @@ inline T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k)
     return  *(data + idx);
 }
 
+template <typename T> 
+inline void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k)
+{
+    // used for unpacking photon records
+
+    assert(type == SHORT); // pragmatic template specialization, by death if you try to use the wrong one...
+
+    unsigned int index = getValueIndex(i,j,k);
+
+    value = m_data[index] ;
+
+    hui_t hui ;
+    hui.short_ = value ; 
+
+    uvalue = hui.ushort_ ;
+
+    msb = ( uvalue & 0xFF00 ) >> 8  ;  
+
+    lsb = ( uvalue & 0xFF ) ;  
+}
+
+template <typename T> 
+ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 )
+{
+    assert(type == SHORT); // pragmatic template specialization, by death if you try to use the wrong one...
+
+    unsigned int index_0 = getValueIndex(i,j,k0);
+    unsigned int index_1 = getValueIndex(i,j,k1);
+
+    hui_t hui_0, hui_1 ;
+
+    hui_0.short_ = m_data[index_0];
+    hui_1.short_ = m_data[index_1];
+
+    ucharfour v ; 
+
+    v.x = (hui_0.ushort_ & 0xFF ) ; 
+    v.y = (hui_0.ushort_ & 0xFF00 ) >> 8 ; 
+    v.z = (hui_1.ushort_ & 0xFF ) ; 
+    v.w = (hui_1.ushort_ & 0xFF00 ) >> 8 ; 
+
+    return v ;
+}
 
 template <typename T> 
 inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T value)
@@ -183,6 +246,15 @@ inline glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j)
     assert( m_len2 == 4 );  
     glm::ivec4 vec ; 
     for(unsigned int k=0 ; k < 4 ; k++) vec[k] = getValue(i,j,k); 
+    return vec ; 
+}
+
+template <typename T> 
+inline glm::uvec4 NPY<T>::getQuadU(unsigned int i, unsigned int j)
+{
+    assert( m_len2 == 4 );  
+    glm::uvec4 vec ; 
+    for(unsigned int k=0 ; k < 4 ; k++) vec[k] = getUInt(i,j,k); 
     return vec ; 
 }
 

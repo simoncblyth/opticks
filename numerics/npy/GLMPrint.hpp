@@ -19,4 +19,5 @@ void print(float* f, const char* msg, unsigned int n=16);
 float absmax(glm::mat4& m);
 void minmax(glm::mat4& m, float& mn, float& mx);
 
+void assert_same(const char* msg, const glm::vec4& a, const glm::vec4& b);
 

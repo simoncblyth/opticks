@@ -15,6 +15,20 @@
 #include <iomanip>
 
 
+void assert_same(const char* msg, const glm::vec4& a, const glm::vec4& b)
+{
+    for(unsigned int k=0 ; k < 4 ; k++)
+    {
+        if(a[k] == b[k]) continue ; 
+
+        char rep[128];
+        snprintf(rep, 128, "GLMPrint.assert_same %s  [%u] %.3f %.3f \n", msg, k, a[k], b[k] );
+        //assert(0 && rep ); 
+
+        printf("%s", rep );
+    }
+
+}
 
 
 

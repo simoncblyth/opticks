@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include "limits.h"
 #include "GLMFormat.hpp"
+#include "GLMPrint.hpp"
 
 #include "jsonutil.hpp" 
 #include "regexsearch.hh"
@@ -216,108 +217,88 @@ float PhotonsNPY::unshortnorm_time(short v, unsigned int k )
 
 
 
-void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump, unsigned int maxrec)
+
+
+void PhotonsNPY::unpack_position_time(glm::vec4& post, unsigned int i, unsigned int j)
+{
+    glm::uvec4 v = m_records->getQuadU( i, j );
+    post.x = unshortnorm_position(v.x, 0);
+    post.y = unshortnorm_position(v.y, 1);
+    post.z = unshortnorm_position(v.z, 2);
+    post.w = unshortnorm_time(v.w, 3);
+}
+
+void PhotonsNPY::unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
+{
+    ucharfour v = m_records->getUChar4( i, j, k0, k1 ); 
+    polw.x =  uncharnorm_polarization(v.x);  
+    polw.y =  uncharnorm_polarization(v.y);  
+    polw.z =  uncharnorm_polarization(v.z);  
+    polw.w =  uncharnorm_wavelength(v.w);  
+}
+
+void PhotonsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
+{
+    ucharfour v = m_records->getUChar4( i, j, k0, k1 ); 
+    flag.x =  v.x ;  
+    flag.y =  v.y ;  
+    flag.z =  v.z ;  
+    flag.w =  v.w ;  
+}
+
+void PhotonsNPY::dumpRecord(unsigned int i, const char* msg)
+{
+    bool unset = m_records->isUnsetItem(i);
+    if(unset) return ;
+
+    glm::vec4  post ; 
+    glm::vec4  polw ; 
+    glm::uvec4 flag ; 
+
+    unpack_position_time(           post, i, 0 );       // i,j 
+    unpack_polarization_wavelength( polw, i, 1, 0, 1 ); // i,j,k0,k1
+    unpack_material_flags(          flag, i, 1, 2, 3);  // i,j,k0,k1
+
+    std::string m1 = findMaterialName(flag.x) ;
+    std::string m2 = findMaterialName(flag.y) ;
+    std::string history = getStepFlagString( flag.w );
+
+    assert(flag.z == 0);
+
+    printf("%s %8u %s %s %25s %25s %s \n", 
+                msg,
+                i, 
+                gpresent(post,2,11).c_str(),
+                gpresent(polw,2,7).c_str(),
+                m1.c_str(),
+                m2.c_str(),
+                history.c_str());
+
+}
+
+
+void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump)
 {
     if(!m_records) return ;
 
     unsigned int ni = m_records->m_len0 ;
     unsigned int nj = m_records->m_len1 ;
     unsigned int nk = m_records->m_len2 ;
-
     assert( nj == 2 && nk == 4 );
 
     printf("%s numrec %d \n", msg, ni );
-
-    std::vector<short>& data = m_records->m_data ; 
-
-    hui_t hui ;
- 
-    unsigned int check = 0 ;
+    unsigned int unrec = 0 ; 
     for(unsigned int i=0 ; i<ni ; i++ )
     {
+        bool unset = m_records->isUnsetItem(i);
+        if(unset) unrec++ ;
+        if(unset) continue ; 
+        bool out = i < ndump || i > ni-ndump ; 
+        if(out) dumpRecord(i);
+    }    
 
-    std::string history ;
-    std::string material1 ;
-    std::string material2 ;
-    glm::vec4 position_time ; 
-    glm::vec4 polarization_wavelength ; 
-
-    for(unsigned int j=0 ; j<nj ; j++ )
-    {
-       bool out = i < ndump || i > ni-ndump ; 
-
-       if(out) printf(" (%7u,%1u) ", i,j );
-
-       for(unsigned int k=0 ; k<nk ; k++ )
-       {
-           unsigned int index = i*nj*nk + j*nk + k ;
-           assert(index == m_records->getValueIndex(i,j,k));
-
-           short value = data[index] ;
-           hui.short_ = value ; 
-
-           unsigned short uvalue = hui.ushort_ ;
-           unsigned char  msb = msb_(uvalue); 
-           unsigned char  lsb = lsb_(uvalue); 
-
-           bool unset = value == SHRT_MIN ; 
-
-           if(out)
-           {
-               if( unset )  
-               {
-                    printf(" %15s ",  "..." );
-               }
-               else if( j == 0 )
-               {
-                    position_time[k] = k < 3 ? unshortnorm_position( uvalue , k)
-                                             :
-                                               unshortnorm_time( uvalue , k)
-                                             ;
-               }
-               else if( j == 1 && k == 0 )
-               {
-                    polarization_wavelength.x =  uncharnorm_polarization(lsb);  
-                    polarization_wavelength.y =  uncharnorm_polarization(msb);
-               }
-               else if( j == 1 && k == 1 )
-               {
-                    polarization_wavelength.z =  uncharnorm_polarization(lsb);  
-                    polarization_wavelength.w =  uncharnorm_wavelength(msb);
-               }
-               else if( j == 1 && k == 2 )
-               {
-                    material1 = findMaterialName(lsb) ;
-                    material2 = findMaterialName(msb) ;
-                    printf(" %7d %7d ",   msb, lsb );
-               }
-               else if( j == 1 && k == 3 )
-               {
-                    printf(" %7d %7d ",   msb, lsb );
-                    history = getStepFlagString( msb );
-               }
-               else 
-               {                       
-                    printf(" %15d ",   value  );
-               }
-
-               if( k == nk - 1)
-               {
-                   if( j == 0 && !unset ) printf("%s", gformat(position_time).c_str());
-                   //if( j == 1 && !unset ) printf(" polarization/wavelength/boundary/flags (packed) ");
-                   if( j == 1 && !unset ) printf("%30s %20s %20s %20s ", gformat(polarization_wavelength).c_str(), material1.c_str(), material2.c_str(), history.c_str());
-                   printf("\n");
-               }
-           }
-           assert(index == check);
-           check += 1 ; 
-
-       }
-    }
-    }
+    printf("unrec %d/%d \n", unrec, ni );
 }
-
-
 
 
 
@@ -499,7 +480,7 @@ void PhotonsNPY::examinePhotonHistories()
 }
 
 
-void PhotonsNPY::examineRecordHistories(unsigned int maxrec)
+void PhotonsNPY::examineRecordHistories()
 {
     unsigned int ni = m_records->m_len0 ;
     unsigned int j = 1 ; 
@@ -524,7 +505,7 @@ void PhotonsNPY::examineRecordHistories(unsigned int maxrec)
 
     for(unsigned int i=0 ; i<ni ; i++ )
     {
-        if(i % maxrec == 0)  // record start 
+        if(i % m_maxrec == 0)  // record start 
         {
             history = 0 ; 
             bounce  = 0 ; 
@@ -549,7 +530,7 @@ void PhotonsNPY::examineRecordHistories(unsigned int maxrec)
         }
 
 
-        if(i % maxrec == maxrec - 1) // record end
+        if(i % m_maxrec == m_maxrec - 1) // record end
         {
             assert(bounce > 0 );
             p_history = m_photons->getUInt(irec, 3, 3);
