@@ -12,7 +12,7 @@
 
 class NPYBase {
    public:
-       typedef enum { FLOAT, SHORT, DOUBLE } Type_t ;
+       typedef enum { FLOAT, SHORT, DOUBLE, INT, CHAR, UCHAR} Type_t ;
 
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata );
@@ -43,6 +43,7 @@ class NPYBase {
    public:
        // NumPy persistency
        static std::string path(const char* typ, const char* tag);
+       void setVerbose(bool verbose=true);
 
    public:
        // provided by subclass
@@ -69,6 +70,7 @@ class NPYBase {
        unsigned char      m_sizeoftype ; 
        Type_t             m_type ; 
        int                m_buffer_id ; 
+       bool               m_verbose ; 
  
    private:
        std::vector<int>   m_shape ; 
@@ -82,6 +84,7 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_sizeoftype(sizeoftype),
          m_type(type),
          m_buffer_id(-1),
+         m_verbose(false),
          m_shape(shape),
          m_metadata(metadata)
 {
@@ -126,7 +129,10 @@ inline int NPYBase::getBufferId()
 }
 
 
-
+inline void NPYBase::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
 
 
 

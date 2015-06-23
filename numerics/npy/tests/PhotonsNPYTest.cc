@@ -6,9 +6,10 @@
 int main(int argc, char** argv)
 {
     const char* idpath = getenv("IDPATH");
+    const char* tag = "1" ;
 
-    NPY<float>* photons = NPY<float>::load("oxcerenkov", "1");
-    NPY<short>* records = NPY<short>::load("rxcerenkov", "1");
+    NPY<float>* photons = NPY<float>::load("oxcerenkov", tag);
+    NPY<short>* records = NPY<short>::load("rxcerenkov", tag);
     NPY<float>* domain = NPY<float>::load("domain","1");
     domain->dump();
 
@@ -39,9 +40,13 @@ int main(int argc, char** argv)
     pn.classify(true);
 
     pn.examinePhotonHistories();
-    pn.examineRecordHistories(); 
-    pn.dumpRecords("records", 30);
+    //pn.dumpRecords("records", 30);
+    pn.dumpPhotons("photons", 30);
 
+    pn.prepSequenceIndex();
+
+    NPY<unsigned char>* seqidx = pn.getSeqIdx();
+    seqidx->save("seqidx", tag);
 
     return 0 ;
 }

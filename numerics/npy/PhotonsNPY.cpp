@@ -18,14 +18,25 @@
 #include "regexsearch.hh"
 
 
-bool value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
+bool second_value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
+{
+    return a.second > b.second ;
+}
+
+bool su_second_value_order(const std::pair<std::string,unsigned int>&a, const std::pair<std::string,unsigned int>&b)
 {
     return a.second > b.second ;
 }
 
 
+
+
+
 const char* PhotonsNPY::PHOTONS_ = "photons" ;
 const char* PhotonsNPY::RECORDS_ = "records" ;
+const char* PhotonsNPY::HISTORY_ = "history" ;
+const char* PhotonsNPY::MATERIAL_ = "material" ;
+
 
 
 const char* PhotonsNPY::getItemName(Item_t item)
@@ -35,6 +46,8 @@ const char* PhotonsNPY::getItemName(Item_t item)
     {
        case PHOTONS:name = PHOTONS_ ; break ; 
        case RECORDS:name = RECORDS_ ; break ; 
+       case HISTORY:name = HISTORY_ ; break ; 
+       case MATERIAL:name = MATERIAL_ ; break ; 
     }
     return name ; 
 }
@@ -115,7 +128,7 @@ std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries(bool sign)
 
     std::vector<std::pair<int,int> > pairs ; 
     for(std::map<int,int>::iterator it=uniqn.begin() ; it != uniqn.end() ; it++) pairs.push_back(*it);
-    std::sort(pairs.begin(), pairs.end(), value_order );
+    std::sort(pairs.begin(), pairs.end(), second_value_order );
 
 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
@@ -246,6 +259,8 @@ void PhotonsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigne
     flag.w =  v.w ;  
 }
 
+
+
 void PhotonsNPY::dumpRecord(unsigned int i, const char* msg)
 {
     bool unset = m_records->isUnsetItem(i);
@@ -255,13 +270,16 @@ void PhotonsNPY::dumpRecord(unsigned int i, const char* msg)
     glm::vec4  polw ; 
     glm::uvec4 flag ; 
 
+
     unpack_position_time(           post, i, 0 );       // i,j 
     unpack_polarization_wavelength( polw, i, 1, 0, 1 ); // i,j,k0,k1
     unpack_material_flags(          flag, i, 1, 2, 3);  // i,j,k0,k1
 
     std::string m1 = findMaterialName(flag.x) ;
     std::string m2 = findMaterialName(flag.y) ;
-    std::string history = getStepFlagString( flag.w );
+
+    // flag.w is the result of ffs on a single set bit field, returning a 1-based bit position
+    std::string history = getHistoryString( 1 << (flag.w-1) ); 
 
     assert(flag.z == 0);
 
@@ -286,8 +304,9 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump)
     unsigned int nk = m_records->m_len2 ;
     assert( nj == 2 && nk == 4 );
 
-    printf("%s numrec %d \n", msg, ni );
+    printf("%s numrec %d maxrec %d \n", msg, ni, m_maxrec );
     unsigned int unrec = 0 ; 
+
     for(unsigned int i=0 ; i<ni ; i++ )
     {
         bool unset = m_records->isUnsetItem(i);
@@ -296,8 +315,73 @@ void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump)
         bool out = i < ndump || i > ni-ndump ; 
         if(out) dumpRecord(i);
     }    
-
     printf("unrec %d/%d \n", unrec, ni );
+}
+
+
+
+void PhotonsNPY::dumpPhotons(const char* msg, unsigned int ndump)
+{
+    if(!m_photons) return ;
+    printf("%s\n", msg);
+
+    unsigned int ni = m_photons->m_len0 ;
+    unsigned int nj = m_photons->m_len1 ;
+    unsigned int nk = m_photons->m_len2 ;
+    assert( nj == 4 && nk == 4 );
+
+    for(unsigned int i=0 ; i<ni ; i++ )
+    {
+        bool out = i < ndump || i > ni-ndump ; 
+        if(out) dumpPhotonRecord(i);
+    }
+}
+
+
+void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
+{
+    printf("%s\n", msg);
+    for(unsigned int r=0 ; r<m_maxrec ; r++)
+    {
+        unsigned int record_id = photon_id*m_maxrec + r ;
+        dumpRecord(record_id);
+    }  
+    dumpPhoton(photon_id);
+    printf("\n");
+}
+
+
+void PhotonsNPY::dumpPhoton(unsigned int i, const char* msg)
+{
+    unsigned int history = m_photons->getUInt(i, 3, 3);
+    std::string phistory = getHistoryString( history );
+
+    glm::vec4 post = m_photons->getQuad(i,0);
+    glm::vec4 dirw = m_photons->getQuad(i,1);
+    glm::vec4 polw = m_photons->getQuad(i,2);
+
+
+    std::string seqmat = getSequenceString(i, MATERIAL) ;
+    std::string seqhis = getSequenceString(i, HISTORY) ;
+
+    std::string dseqmat = decodeSequenceString(seqmat, MATERIAL);
+    std::string dseqhis = decodeSequenceString(seqhis, HISTORY);
+
+
+    printf("%s %8u %s %s %25s %25s %s \n", 
+                msg,
+                i, 
+                gpresent(post,2,11).c_str(),
+                gpresent(polw,2,7).c_str(),
+                seqmat.c_str(),
+                seqhis.c_str(),
+                phistory.c_str());
+
+    printf("%s\n", dseqmat.c_str());
+    printf("%s\n", dseqhis.c_str());
+
+    
+
 }
 
 
@@ -359,8 +443,6 @@ void PhotonsNPY::dump(const char* msg)
 
 
 
-
-
 void PhotonsNPY::readFlags(const char* path)
 {
     // read photon header to get flag names and enum values
@@ -405,11 +487,21 @@ std::string PhotonsNPY::findMaterialName(unsigned int index)
     return name ; 
 }
 
+std::string PhotonsNPY::getMaterialString(unsigned int mask)
+{
+    std::stringstream ss ; 
+    typedef std::map<std::string, unsigned int> MSU ; 
+    for(MSU::iterator it=m_materials.begin() ; it != m_materials.end() ; it++)
+    {
+        unsigned int mat = it->second ;
+        if(mask & (1 << (mat-1))) ss << it->first << " " ; 
+    }
+    return ss.str() ; 
+}
 
 std::string PhotonsNPY::getHistoryString(unsigned int flags)
 {
     std::stringstream ss ; 
-    std::vector<std::string> names ; 
     for(unsigned int i=0 ; i < m_flags.size() ; i++)
     {
         std::pair<unsigned int, std::string> p = m_flags[i];
@@ -421,7 +513,6 @@ std::string PhotonsNPY::getHistoryString(unsigned int flags)
 
 std::string PhotonsNPY::getStepFlagString(unsigned char flag)
 {
-   // flag is the result of ffs on the bit field returning a 1-based bit position
    return getHistoryString( 1 << (flag-1) ); 
 }
 
@@ -439,157 +530,270 @@ glm::ivec4 PhotonsNPY::getFlags()
 
 
 
-
-
-
 void PhotonsNPY::examinePhotonHistories()
 {
     // find counts of all histories 
+    typedef std::map<unsigned int,unsigned int>  MUU ; 
 
-    typedef std::map<unsigned int,unsigned int>  muu_t ; 
-    typedef std::pair<unsigned int,unsigned int> puu_t ;
+    MUU uu = m_photons->count_unique_u(3,3) ; 
 
-    NPYBase* npy = getItem(PHOTONS);
-    muu_t uu = ((NPY<float>*)npy)->count_unique_u(3,3) ; 
+    dumpMaskCounts("PhotonsNPY::examinePhotonHistories : ", HISTORY, uu, 1);
+}
 
-    std::vector<puu_t> pairs ; 
-    for(muu_t::iterator it=uu.begin() ; it != uu.end() ; it++) pairs.push_back(*it);
-    std::sort(pairs.begin(), pairs.end(), value_order );
+void PhotonsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material)
+{
+    bounce = 0 ; 
+    history = 0 ; 
+    material = 0 ; 
 
-    std::cout << "PhotonsNPY::examinePhotonHistories : " << std::endl ; 
-
-    unsigned int total(0);
-    for(unsigned int i=0 ; i < pairs.size() ; i++)
+    for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        puu_t p = pairs[i];
-        unsigned int flags = p.first ;
-        unsigned int count = p.second ; 
-        total += count ;  
+        unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(record_id);
+        if(unset) continue ; 
 
-        std::cout 
-               << std::setw(5) << i 
-               << " : "
-               << std::setw(10) << std::hex << flags 
-               << " : " 
-               << std::setw(10) << std::dec << count 
-               << " : "
-               << getHistoryString(flags) 
-               << std::endl ; 
-    }
-    std::cout << " total " << total << std::endl ; 
+        glm::uvec4 flag ; 
+        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+
+        bounce += 1 ; 
+        unsigned int  s_history = 1 << (flag.w - 1) ; 
+        history |= s_history ;
+
+        unsigned int s_material1 = 1 << (flag.x - 1) ; 
+        unsigned int s_material2 = 1 << (flag.y - 1) ; 
+
+        material |= s_material1 ; 
+        material |= s_material2 ; 
+    } 
 }
 
 
-void PhotonsNPY::examineRecordHistories()
+std::string PhotonsNPY::getSequenceString(unsigned int photon_id, Item_t etype)
 {
-    unsigned int ni = m_records->m_len0 ;
-    unsigned int j = 1 ; 
-    unsigned int k = 3 ;  
-
-    std::vector<short>& rdata = m_records->m_data ; 
-
-    hui_t hui ;
-
-    unsigned int irec(0);
-    unsigned int history(0) ; 
-    unsigned int p_history(0) ; 
-    unsigned int bounce(0) ; 
-
-    typedef std::pair<unsigned int, unsigned int> PUU ;
-    typedef std::map<unsigned int, unsigned int> MUU ;
-    typedef std::vector<unsigned int> VU ; 
-    MUU uu ;  
-
-
-    VU mismatch ; 
-
-    for(unsigned int i=0 ; i<ni ; i++ )
+    // express variable length sequence of bit positions as string of 
+    std::stringstream ss ; 
+    for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        if(i % m_maxrec == 0)  // record start 
+        unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(record_id);
+        if(unset) continue ; 
+
+        glm::uvec4 flag ; 
+        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+
+        unsigned int bit(0) ; 
+        switch(etype)
         {
-            history = 0 ; 
-            bounce  = 0 ; 
-        }
-
-        unsigned int index = m_records->getValueIndex(i, j, k);
-        short value = rdata[index] ;
-        hui.short_ = value ; 
-        bool unset = value == SHRT_MIN ; 
-
-        if(!unset) 
-        {   
-            bounce += 1 ; 
-            unsigned short uvalue = hui.ushort_ ;
-            unsigned char  msb = msb_(uvalue); 
-            //unsigned char  lsb = lsb_(uvalue); 
-
-            unsigned char s_flag = msb ; 
-            unsigned int  s_history = 1 << (s_flag - 1) ; 
-
-            history |= s_history ;
-        }
-
-
-        if(i % m_maxrec == m_maxrec - 1) // record end
-        {
-            assert(bounce > 0 );
-            p_history = m_photons->getUInt(irec, 3, 3);
-            if(p_history != history)
-            {
-                mismatch.push_back(irec);  // all mismatches are bounce 10 
-                std::cout << std::setw(10) << irec
-                          << "[" << std::setw(3)  << bounce << "]" 
-                          << std::setw(80) << getHistoryString( p_history ) 
-                          << " =/= " 
-                          << std::setw(80) << getHistoryString( history ) 
-                          << std::endl ;
-
-            }   
-
-            if(uu.count(history)==0) uu[history] = 1 ; 
-            else                     uu[history] += 1 ; 
-
-            irec++ ; 
-        }
+            case PHOTONS:               ;break; 
+            case RECORDS:               ;break; 
+            case MATERIAL:bit = flag.x  ;break; 
+            case HISTORY: bit = flag.w  ;break; 
+        }  
+        assert(bit < 32);
+        ss << std::hex << std::setw(2) << std::setfill('0') << bit ; 
     }
+    return ss.str();
+}
+
+std::string PhotonsNPY::decodeSequenceString(std::string& seq, Item_t etype)
+{
+    assert(seq.size() % 2 == 0);
+    std::stringstream ss ;
+    unsigned int nelem = seq.size()/2 ; 
+    for(unsigned int i=0 ; i < nelem ; i++)
+    {
+        std::string sub = seq.substr(i*2, 2) ;
+        unsigned int bit = hex_lexical_cast<unsigned int>(sub.c_str());
+        //ss << sub << ":" << bit << ":" << getMaskString( 1 << (bit-1) , etype) << " "  ; 
+        ss << getMaskString( 1 << (bit-1) , etype) << " "  ; 
+    }  
+    return ss.str();
+}
+
+void PhotonsNPY::makeSequenceIndex(
+       std::map<std::string, std::vector<unsigned int> >  mat, 
+       std::map<std::string, std::vector<unsigned int> >  his 
+)
+{
+    unsigned int ni = m_photons->m_len0 ;
+    m_seqidx = NPY<unsigned char>::make_vec4(ni,1,0) ;
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    { 
+         unsigned int photon_id = i ; 
+         glm::uvec4 seqidx ;
+
+         // loop over important indices checking if photon_id is there
+
+         // hmm need to sort the counts to find the important sequences
+         // and then can construct indices (<255) and index structure like GItemIndex 
+         // for common seqs
+
+         m_seqidx->setQuad(photon_id, 0, seqidx );
+    }
+}
+
+void PhotonsNPY::prepSequenceIndex()
+{
+    unsigned int nr = m_records->m_len0 ;
+    unsigned int ni = m_photons->m_len0 ;
+
+    unsigned int history(0) ;
+    unsigned int bounce(0) ;
+    unsigned int material(0) ;
+
+    typedef std::map<std::string, unsigned int>  MSU ;
+    typedef std::map<std::string, std::vector<unsigned int> >  MSV ;
+    typedef std::map<unsigned int, unsigned int> MUU ;
+
+    std::vector<unsigned int> mismatch ;
+    MUU uuh ;  
+    MUU uum ;  
+    MSU sum ;  
+    MSU suh ;  
+    MSV svh ;  
+    MSV svm ;  
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    { 
+         unsigned int photon_id = i ; 
+
+         constructFromRecord(photon_id, bounce, history, material);
+
+         unsigned int phistory = m_photons->getUInt(photon_id, 3, 3);
+
+         if(history != phistory) mismatch.push_back(photon_id);
+
+         std::string seqmat = getSequenceString(photon_id, MATERIAL);
+
+         std::string seqhis = getSequenceString(photon_id, HISTORY);
+
+         assert(history == phistory);
+
+         uuh[history] += 1 ; 
+
+         uum[material] += 1 ; 
+
+         suh[seqhis] += 1; 
+
+         svh[seqhis].push_back(photon_id); 
+
+         sum[seqmat] += 1 ; 
+
+         svm[seqmat].push_back(photon_id); 
+
+    }
+    assert( mismatch.size() == 0);
+
+    printf("PhotonsNPY::consistencyCheck photons %u records %u mismatch %lu \n", ni, nr, mismatch.size());
+    dumpMaskCounts("PhotonsNPY::consistencyCheck histories", HISTORY, uuh, 1 );
+    dumpMaskCounts("PhotonsNPY::consistencyCheck materials", MATERIAL, uum, 1000 );
+    dumpSequenceCounts("PhotonsNPY::consistencyCheck seqhis", HISTORY, suh , svh, 1000);
+    dumpSequenceCounts("PhotonsNPY::consistencyCheck seqmat", MATERIAL, sum , svm, 1000);
+
+    makeSequenceIndex( svm, svh );
+}
 
 
-    std::cout << "mismatch count " << mismatch.size() << std::endl ; 
-    
-     
 
+std::string PhotonsNPY::getMaskString(unsigned int mask, Item_t etype)
+{
+    std::string mstr ;
+    switch(etype)
+    {
+       case HISTORY:mstr = getHistoryString(mask) ; break ; 
+       case MATERIAL:mstr = getMaterialString(mask) ; break ; 
+       case PHOTONS:mstr = "??" ; break ; 
+       case RECORDS:mstr = "??" ; break ; 
+    }
+    return mstr ; 
+}
+
+
+void PhotonsNPY::dumpMaskCounts(const char* msg, Item_t etype, 
+        std::map<unsigned int, unsigned int>& uu, 
+        unsigned int cutoff)
+{
+    typedef std::map<unsigned int, unsigned int> MUU ;
+    typedef std::pair<unsigned int, unsigned int> PUU ;
 
     std::vector<PUU> pairs ; 
     for(MUU::iterator it=uu.begin() ; it != uu.end() ; it++) pairs.push_back(*it);
-    std::sort(pairs.begin(), pairs.end(), value_order );
+    std::sort(pairs.begin(), pairs.end(), second_value_order );
 
-    std::cout << "PhotonsNPY::examineRecordHistories : " << std::endl ; 
+    std::cout << msg << std::endl ; 
 
     unsigned int total(0);
 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {
         PUU p = pairs[i];
-        unsigned int history = p.first ;
-        unsigned int count = p.second ; 
-        total += count ;  
+        total += p.second ;  
 
-        std::cout 
+        if(p.second > cutoff) 
+            std::cout 
                << std::setw(5) << i 
                << " : "
-               << std::setw(10) << std::hex << history 
+               << std::setw(10) << std::hex << p.first
                << " : " 
-               << std::setw(10) << std::dec << count 
+               << std::setw(10) << std::dec << p.second
                << " : "
-               << getHistoryString(history) 
+               << getMaskString(p.first, etype) 
                << std::endl ; 
     }
 
-    std::cout << " total " << total << std::endl ; 
-
-
+    std::cout 
+              << " total " << total 
+              << " cutoff " << cutoff 
+              << std::endl ; 
 }
 
+
+
+
+void PhotonsNPY::dumpSequenceCounts(const char* msg, Item_t etype, 
+       std::map<std::string, unsigned int>& su,
+       std::map<std::string, std::vector<unsigned int> >& sv,
+       unsigned int cutoff
+    )
+{
+    typedef std::map<std::string, unsigned int> MSU ;
+    typedef std::pair<std::string, unsigned int> PSU ;
+
+    std::vector<PSU> pairs ; 
+    for(MSU::iterator it=su.begin() ; it != su.end() ; it++) pairs.push_back(*it);
+    std::sort(pairs.begin(), pairs.end(), su_second_value_order );
+
+    std::cout << msg << std::endl ; 
+
+    unsigned int total(0);
+
+    for(unsigned int i=0 ; i < pairs.size() ; i++)
+    {
+        PSU p = pairs[i];
+        total += p.second ;  
+
+        assert( sv[p.first].size() == p.second );
+
+        if(p.second > cutoff)
+            std::cout 
+               << std::setw(5) << i          
+               << " : "
+               << std::setw(30) << p.first
+               << " : " 
+               << std::setw(10) << std::dec << p.second
+               << std::setw(10) << std::dec << sv[p.first].size()
+               << " : "
+               << decodeSequenceString(p.first, etype) 
+               << std::endl ; 
+    }
+
+    std::cout 
+              << " total " << total 
+              << " cutoff " << cutoff 
+              << std::endl ; 
+
+}
 
 
 

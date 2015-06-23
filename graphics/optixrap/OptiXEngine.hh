@@ -42,6 +42,14 @@ class OptiXEngine : public Touchable {
                 e_number_domain
              } ;
 
+        enum { 
+                e_config_idomain,
+                e_number_idomain
+             } ;
+
+
+
+
     public:
         OptiXEngine(const char* cmake_target);
 
@@ -59,6 +67,7 @@ class OptiXEngine : public Touchable {
         GMergedMesh* getMergedMesh();
         optix::Context& getContext();
         NPYBase* getDomain();
+        NPYBase* getIDomain();
         unsigned int getRngMax();
         unsigned int getBounceMax();
         unsigned int getTraceCount();
@@ -135,6 +144,7 @@ class OptiXEngine : public Touchable {
         int              m_texture_id ; 
         NumpyEvt*        m_evt ; 
         NPYBase*         m_domain ;
+        NPYBase*         m_idomain ;
 
 
    // from sutil/MeshScene.h
@@ -179,6 +189,7 @@ inline OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_texture_id(-1),
     m_evt(NULL),
     m_domain(NULL),
+    m_idomain(NULL),
     m_filename(),
     m_accel_cache_loaded(false),
     m_accel_caching_on(true)
@@ -256,6 +267,11 @@ inline NPYBase* OptiXEngine::getDomain()
 {
     return m_domain ;
 }
+inline NPYBase* OptiXEngine::getIDomain()
+{
+    return m_idomain ;
+}
+
 
 
 

@@ -57,6 +57,7 @@ void OptiXEngine::init()
     m_geometry_group = m_context->createGeometryGroup();
     m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
     m_domain = NPY<float>::make_vec4(e_number_domain,1,0.f) ;
+    m_idomain = NPY<int>::make_vec4(e_number_idomain,1,0) ;
 
     initRenderer();
     initContext();
@@ -231,6 +232,16 @@ void OptiXEngine::initGeometry()
     glm::vec4 wd ;
     m_context["wavelength_domain"]->getFloat(wd.x,wd.y,wd.z,wd.w);
     m_domain->setQuad(e_wavelength_domain  , 0, wd );
+
+
+    glm::ivec4 ci ;
+    ci.x = m_bounce_max ;  
+    ci.y = m_rng_max ;  
+    ci.z = 0 ;  
+    ci.w = m_evt->getMaxRec() ;  
+
+    m_idomain->setQuad(e_config_idomain, 0, ci );
+
 
     // cf with MeshViewer::initGeometry
     LOG(info) << "OptiXEngine::initGeometry DONE "

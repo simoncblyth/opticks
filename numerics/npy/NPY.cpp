@@ -113,7 +113,7 @@ NPY<T>* NPY<T>::load(const char* typ, const char* tag)
 
 
 template <typename T>
-void NPY<T>::save(const char* tfmt, const char* targ, const char* tag )
+void NPY<T>::save(const char* tfmt, const char* targ, const char* tag)
 {
     char typ[64];
     snprintf(typ, 64, tfmt, targ ); 
@@ -124,6 +124,7 @@ template <typename T>
 void NPY<T>::save(const char* typ, const char* tag)
 {
     std::string path = NPYBase::path(typ, tag);
+    if(m_verbose) LOG(info) << "NPY::save " << path ; 
     save(path.c_str());
 }
 
@@ -342,17 +343,33 @@ std::map<unsigned int,unsigned int> NPY<T>::count_unique_u(unsigned int j, unsig
 template<>
 NPYBase::Type_t NPY<float>::type = FLOAT ;
 template<>
-NPYBase::Type_t NPY<short>::type = SHORT ;
-template<>
 NPYBase::Type_t NPY<double>::type = DOUBLE ;
+template<>
+NPYBase::Type_t NPY<int>::type = INT ;
+template<>
+NPYBase::Type_t NPY<short>::type = SHORT ;
+//template<>
+//NPYBase::Type_t NPY<char>::type = CHAR ;
+template<>
+NPYBase::Type_t NPY<unsigned char>::type = UCHAR ;
+
+
 
 
 template<>
-short  NPY<short>::UNSET = SHRT_MIN ;
+short NPY<short>::UNSET = SHRT_MIN ;
+template<>
+int NPY<int>::UNSET = INT_MIN ;
 template<>
 float  NPY<float>::UNSET = FLT_MAX ;
 template<>
 double NPY<double>::UNSET = DBL_MAX ;
+//template<>
+//char NPY<char>::UNSET = 0 ;
+template<>
+unsigned char NPY<unsigned char>::UNSET = 0 ;
+
+
 
 
 /*
@@ -367,5 +384,8 @@ head of the implementation.
 template class NPY<float>;
 template class NPY<double>;
 template class NPY<short>;
+template class NPY<int>;
+//template class NPY<char>;
+template class NPY<unsigned char>;
 
 

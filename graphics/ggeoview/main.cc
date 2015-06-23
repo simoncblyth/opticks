@@ -261,17 +261,22 @@ int main(int argc, char** argv)
     NPYBase* domain = engine.getDomain(); 
     if(domain) domain->save("domain", "1");
 
+    NPYBase* idomain = engine.getIDomain(); 
+    if(idomain) idomain->save("idomain", "1");
+
+
     engine.generate();
     LOG(info) << "main: engine.generate DONE "; 
 
     NPY<float>* photonData = evt.getPhotonData();
     Rdr::download(photonData);
+    photonData->setVerbose();
     photonData->save("ox%s", typ,  tag);
-
 
     NPY<short>* rec = evt.getRecordData();
     Rdr::download(rec);
-    rec->save("rx%s", typ,  tag);
+    rec->setVerbose();
+    rec->save("rx%s", typ,  tag );
 
 
     Photons photons(photonData) ;

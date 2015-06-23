@@ -12,7 +12,10 @@ class PhotonsNPY {
    public:  
        static const char* PHOTONS_ ; 
        static const char* RECORDS_ ; 
-       typedef enum { PHOTONS, RECORDS } Item_t ;
+       static const char* HISTORY_ ; 
+       static const char* MATERIAL_ ; 
+
+       typedef enum { PHOTONS, RECORDS, HISTORY, MATERIAL } Item_t ;
 
        typedef std::vector< std::pair<int, std::string> >  Choices_t ; 
        typedef std::vector< std::pair<unsigned int, std::string> >  UChoices_t ; 
@@ -23,8 +26,32 @@ class PhotonsNPY {
        void setRecords(NPY<short>* records);
        NPY<float>* getPhotons();
        NPY<short>* getRecords();
+       NPY<unsigned char>*   getSeqIdx();
+
+
+       void prepSequenceIndex();
+       void makeSequenceIndex(
+           std::map<std::string, std::vector<unsigned int> >  mat, 
+           std::map<std::string, std::vector<unsigned int> >  his 
+       );
+
+       void constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material);
+
+       void dumpMaskCounts(const char* msg, Item_t etype, std::map<unsigned int, unsigned int>& uu, unsigned int cutoff);
+
+       void dumpSequenceCounts(const char* msg, Item_t etype, 
+                                 std::map<std::string, unsigned int>& su,
+                                 std::map<std::string, std::vector<unsigned int> >& sv,
+                                 unsigned int cutoff
+                              );
+
+       void dumpPhotonRecord(unsigned int photon_id, const char* msg="phr");
+       void dumpPhoton(unsigned int i, const char* msg="pho");
        void dumpRecord(unsigned int i, const char* msg="rec");
+       void dumpPhotons(const char* msg="PhotonsNPY::dumpPhotons", unsigned int ndump=5);
        void dumpRecords(const char* msg="PhotonsNPY::dumpRecords", unsigned int ndump=5);
+
+
        NPYBase*    getItem(Item_t item);
        const char* getItemName(Item_t item);
 
@@ -46,7 +73,10 @@ class PhotonsNPY {
        //    succeeds to give perfect agreement  
        //                 
        void examinePhotonHistories();
-       void examineRecordHistories();
+       std::string decodeSequenceString(std::string& seq, Item_t etype);
+       std::string getSequenceString(unsigned int photon_id, Item_t etype);
+       std::string getMaskString(unsigned int mask, Item_t etype);
+       std::string getMaterialString(unsigned int flags);
        std::string getHistoryString(unsigned int flags);
        std::string getStepFlagString(unsigned char flag);
        glm::ivec4 getFlags();
@@ -100,6 +130,7 @@ class PhotonsNPY {
    private:
        NPY<float>*                  m_photons ; 
        NPY<short>*                  m_records ; 
+       NPY<unsigned char>*          m_seqidx  ; 
        unsigned int                 m_maxrec ; 
 
    protected:
@@ -125,6 +156,7 @@ inline PhotonsNPY::PhotonsNPY(NPY<float>* photons, NPY<short>* records, unsigned
        :  
        m_photons(photons),
        m_records(records),
+       m_seqidx(NULL),
        m_maxrec(maxrec),
        m_boundaries_selection(NULL)
 {
@@ -138,6 +170,14 @@ inline NPY<short>* PhotonsNPY::getRecords()
 {
     return m_records ; 
 }
+inline NPY<unsigned char>* PhotonsNPY::getSeqIdx()
+{
+    return m_seqidx ; 
+}
+
+
+
+
 inline NPYBase* PhotonsNPY::getItem(Item_t item)
 {
     NPYBase* npy = NULL ; 
@@ -145,6 +185,8 @@ inline NPYBase* PhotonsNPY::getItem(Item_t item)
     {
         case PHOTONS: npy = m_photons ; break ; 
         case RECORDS: npy = m_records  ; break ; 
+        case MATERIAL:                 ; break ; 
+        case HISTORY:                  ; break ; 
     } 
     return npy ;
 }

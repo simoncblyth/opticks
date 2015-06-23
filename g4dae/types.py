@@ -24,6 +24,8 @@ oxs_ = lambda _:load_("oxscintillation",_)
 rxc_ = lambda _:load_("rxcerenkov",_)
 rxs_ = lambda _:load_("rxscintillation",_)
 dom_ = lambda _:load_("domain",_)
+idom_ = lambda _:load_("idomain",_)
+seqidx_ = lambda _:load_("seqidx",_)
 
 g4c_ = lambda _:load_("gopcerenkov",_)
 g4s_ = lambda _:load_("gopscintillation",_)
