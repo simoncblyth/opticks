@@ -1,6 +1,7 @@
 #include "PhotonsNPY.hpp"
 #include "uif.h"
 #include "NPY.hpp"
+#include "RecordsNPY.hpp"
 #include "Index.hpp"
 
 #include <set>
@@ -14,12 +15,11 @@
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 
-#include "jsonutil.hpp" 
-#include "regexsearch.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
 
 
 bool second_value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
@@ -33,31 +33,12 @@ bool su_second_value_order(const std::pair<std::string,unsigned int>&a, const st
 }
 
 
-
-
-
-const char* PhotonsNPY::PHOTONS_ = "photons" ;
-const char* PhotonsNPY::RECORDS_ = "records" ;
-const char* PhotonsNPY::HISTORY_ = "history" ;
-const char* PhotonsNPY::MATERIAL_ = "material" ;
-const char* PhotonsNPY::HISTORYSEQ_ = "historyseq" ;
-const char* PhotonsNPY::MATERIALSEQ_ = "materialseq" ;
-
-
-const char* PhotonsNPY::getItemName(Item_t item)
+void PhotonsNPY::setRecs(RecordsNPY* recs)
 {
-    const char* name(NULL);
-    switch(item)
-    {
-       case PHOTONS:name = PHOTONS_ ; break ; 
-       case RECORDS:name = RECORDS_ ; break ; 
-       case HISTORY:name = HISTORY_ ; break ; 
-       case MATERIAL:name = MATERIAL_ ; break ; 
-       case HISTORYSEQ:name = HISTORYSEQ_ ; break ; 
-       case MATERIALSEQ:name = MATERIALSEQ_ ; break ; 
-    }
-    return name ; 
+    m_recs = recs ; 
+    m_maxrec = recs->getMaxRec();
 }
+
 
 
 void PhotonsNPY::classify(bool sign)
@@ -65,17 +46,9 @@ void PhotonsNPY::classify(bool sign)
     m_boundaries.clear();
     m_boundaries = findBoundaries(sign);
     delete m_boundaries_selection ; 
-    m_boundaries_selection = initBooleanSelection(m_boundaries.size());
+    m_boundaries_selection = m_types->initBooleanSelection(m_boundaries.size());
     //dumpBoundaries("PhotonsNPY::classify");
 }
-
-bool* PhotonsNPY::initBooleanSelection(unsigned int n)
-{
-    bool* selection = new bool[n];
-    while(n--) selection[n] = false ; 
-    return selection ;
-}
-
 glm::ivec4 PhotonsNPY::getSelection()
 {
     // ivec4 containing 1st four boundary codes provided by the selection
@@ -166,167 +139,6 @@ unsigned char lsb_( unsigned short x )
 }
 
 
-float PhotonsNPY::uncharnorm(unsigned char value, float center, float extent, float bitmax )
-{
-/*
-cu/photon.h::
-
-    122     float nwavelength = 255.f*(p.wavelength - wavelength_domain.x)/wavelength_domain.w ; // 255.f*0.f->1.f 
-    123
-    124     qquad qpolw ;
-    125     qpolw.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;
-    126     qpolw.uchar_.y = __float2uint_rn((p.polarization.y+1.f)*127.f) ;
-    127     qpolw.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
-    128     qpolw.uchar_.w = __float2uint_rn(nwavelength)  ;
-    129 
-    130     // tightly packed, polarization and wavelength into 4*int8 = 32 bits (1st 2 npy columns) 
-    131     hquad polw ;     // lsb_              msb_
-    132     polw.ushort_.x = qpolw.uchar_.x | qpolw.uchar_.y << 8 ;
-    133     polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
-
-                             center   extent
-     pol      range -1 : 1     0        2
-     pol + 1  range  0 : 2     1        2
- 
-*/
-   
-    return float(value)*extent/bitmax - center ; 
-}
-
-
-float PhotonsNPY::uncharnorm_polarization(unsigned char value)
-{
-    return uncharnorm(value, 1.f, 2.f, 254.f );
-}
-float PhotonsNPY::uncharnorm_wavelength(unsigned char value)
-{
-    return uncharnorm(value, -m_wavelength_domain.x , m_wavelength_domain.w, 255.f );
-}
-
-
-float PhotonsNPY::unshortnorm(short value, float center, float extent )
-{
-/*
-cu/photon.h::
- 
-     83 __device__ short shortnorm( float v, float center, float extent )
-     84 {
-     85     // range of short is -32768 to 32767
-     86     // Expect no positions out of range, as constrained by the geometry are bouncing on,
-     87     // but getting times beyond the range eg 0.:100 ns is expected
-     88     //
-     89     int inorm = __float2int_rn(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
-     90     return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
-     91 }
-
-*/
-    return float(value)*extent/32767.0f + center ; 
-}
-
-float PhotonsNPY::unshortnorm_position(short v, unsigned int k )
-{
-    assert(k < 3 );
-    return unshortnorm( v, m_center_extent[k], m_center_extent.w );
-}
-
-float PhotonsNPY::unshortnorm_time(short v, unsigned int k )
-{
-    assert(k == 3 );
-    return unshortnorm( v, m_time_domain.x,    m_time_domain.y );
-}
-
-
-
-
-
-void PhotonsNPY::unpack_position_time(glm::vec4& post, unsigned int i, unsigned int j)
-{
-    glm::uvec4 v = m_records->getQuadU( i, j );
-    post.x = unshortnorm_position(v.x, 0);
-    post.y = unshortnorm_position(v.y, 1);
-    post.z = unshortnorm_position(v.z, 2);
-    post.w = unshortnorm_time(v.w, 3);
-}
-
-void PhotonsNPY::unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
-{
-    ucharfour v = m_records->getUChar4( i, j, k0, k1 ); 
-    polw.x =  uncharnorm_polarization(v.x);  
-    polw.y =  uncharnorm_polarization(v.y);  
-    polw.z =  uncharnorm_polarization(v.z);  
-    polw.w =  uncharnorm_wavelength(v.w);  
-}
-
-void PhotonsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
-{
-    ucharfour v = m_records->getUChar4( i, j, k0, k1 ); 
-    flag.x =  v.x ;  
-    flag.y =  v.y ;  
-    flag.z =  v.z ;  
-    flag.w =  v.w ;  
-}
-
-
-
-void PhotonsNPY::dumpRecord(unsigned int i, const char* msg)
-{
-    bool unset = m_records->isUnsetItem(i);
-    if(unset) return ;
-
-    glm::vec4  post ; 
-    glm::vec4  polw ; 
-    glm::uvec4 flag ; 
-
-
-    unpack_position_time(           post, i, 0 );       // i,j 
-    unpack_polarization_wavelength( polw, i, 1, 0, 1 ); // i,j,k0,k1
-    unpack_material_flags(          flag, i, 1, 2, 3);  // i,j,k0,k1
-
-    std::string m1 = findMaterialName(flag.x) ;
-    std::string m2 = findMaterialName(flag.y) ;
-
-    // flag.w is the result of ffs on a single set bit field, returning a 1-based bit position
-    std::string history = getHistoryString( 1 << (flag.w-1) ); 
-
-    assert(flag.z == 0);
-
-    printf("%s %8u %s %s %25s %25s %s \n", 
-                msg,
-                i, 
-                gpresent(post,2,11).c_str(),
-                gpresent(polw,2,7).c_str(),
-                m1.c_str(),
-                m2.c_str(),
-                history.c_str());
-
-}
-
-
-void PhotonsNPY::dumpRecords(const char* msg, unsigned int ndump)
-{
-    if(!m_records) return ;
-
-    unsigned int ni = m_records->m_len0 ;
-    unsigned int nj = m_records->m_len1 ;
-    unsigned int nk = m_records->m_len2 ;
-    assert( nj == 2 && nk == 4 );
-
-    printf("%s numrec %d maxrec %d \n", msg, ni, m_maxrec );
-    unsigned int unrec = 0 ; 
-
-    for(unsigned int i=0 ; i<ni ; i++ )
-    {
-        bool unset = m_records->isUnsetItem(i);
-        if(unset) unrec++ ;
-        if(unset) continue ; 
-        bool out = i < ndump || i > ni-ndump ; 
-        if(out) dumpRecord(i);
-    }    
-    printf("unrec %d/%d \n", unrec, ni );
-}
-
-
-
 void PhotonsNPY::dumpPhotons(const char* msg, unsigned int ndump)
 {
     if(!m_photons) return ;
@@ -351,7 +163,7 @@ void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
         unsigned int record_id = photon_id*m_maxrec + r ;
-        dumpRecord(record_id);
+        m_recs->dumpRecord(record_id);
     }  
     dumpPhoton(photon_id);
     printf("\n");
@@ -361,18 +173,17 @@ void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
 void PhotonsNPY::dumpPhoton(unsigned int i, const char* msg)
 {
     unsigned int history = m_photons->getUInt(i, 3, 3);
-    std::string phistory = getHistoryString( history );
+    std::string phistory = m_types->getHistoryString( history );
 
     glm::vec4 post = m_photons->getQuad(i,0);
     glm::vec4 dirw = m_photons->getQuad(i,1);
     glm::vec4 polw = m_photons->getQuad(i,2);
 
+    std::string seqmat = m_recs->getSequenceString(i, Types::MATERIAL) ;
+    std::string seqhis = m_recs->getSequenceString(i, Types::HISTORY) ;
 
-    std::string seqmat = getSequenceString(i, MATERIAL) ;
-    std::string seqhis = getSequenceString(i, HISTORY) ;
-
-    std::string dseqmat = decodeSequenceString(seqmat, MATERIAL);
-    std::string dseqhis = decodeSequenceString(seqhis, HISTORY);
+    std::string dseqmat = m_recs->decodeSequenceString(seqmat, Types::MATERIAL);
+    std::string dseqhis = m_recs->decodeSequenceString(seqhis, Types::HISTORY);
 
 
     printf("%s %8u %s %s %25s %25s %s \n", 
@@ -386,13 +197,7 @@ void PhotonsNPY::dumpPhoton(unsigned int i, const char* msg)
 
     printf("%s\n", dseqmat.c_str());
     printf("%s\n", dseqhis.c_str());
-
-    
-
 }
-
-
-
 
 
 void PhotonsNPY::dump(const char* msg)
@@ -450,91 +255,11 @@ void PhotonsNPY::dump(const char* msg)
 
 
 
-void PhotonsNPY::readFlags(const char* path)
-{
-    // read photon header to get flag names and enum values
-    enum_regexsearch( m_flags, path);
-    m_flags_selection = initBooleanSelection(m_flags.size());
-}
-
-void PhotonsNPY::dumpFlags(const char* msg)
-{
-    printf("%s\n", msg);
-    for(unsigned int i=0 ; i < m_flags.size() ; i++)
-    {
-         std::pair<unsigned int, std::string> p = m_flags[i];
-         printf(" %10d : %10x :  %s  : %d \n", p.first, p.first,  p.second.c_str(), m_flags_selection[i] );
-    }
-}
-
-
-void PhotonsNPY::readMaterials(const char* idpath, const char* name)
-{
-    loadMap<std::string, unsigned int>(m_materials, idpath, name);
-}
-void PhotonsNPY::dumpMaterials(const char* msg)
-{
-    dumpMap<std::string, unsigned int>(m_materials, msg);
-}
-
-std::string PhotonsNPY::findMaterialName(unsigned int index)
-{
-    std::stringstream ss ; 
-    ss << "findMaterialName-failed-" << index  ;
-    std::string name = ss.str() ;
-    typedef std::map<std::string, unsigned int> MSU ; 
-    for(MSU::iterator it=m_materials.begin() ; it != m_materials.end() ; it++)
-    {
-        if( it->second == index )
-        {
-            name = it->first ;
-            break ; 
-        }
-    }
-    return name ; 
-}
-
-std::string PhotonsNPY::getMaterialString(unsigned int mask)
-{
-    std::stringstream ss ; 
-    typedef std::map<std::string, unsigned int> MSU ; 
-    for(MSU::iterator it=m_materials.begin() ; it != m_materials.end() ; it++)
-    {
-        unsigned int mat = it->second ;
-        if(mask & (1 << (mat-1))) ss << it->first << " " ; 
-    }
-    return ss.str() ; 
-}
-
-std::string PhotonsNPY::getHistoryString(unsigned int flags)
-{
-    std::stringstream ss ; 
-    for(unsigned int i=0 ; i < m_flags.size() ; i++)
-    {
-        std::pair<unsigned int, std::string> p = m_flags[i];
-        unsigned int mask = p.first ;
-        if(flags & mask) ss << p.second << " " ; 
-    }
-    return ss.str() ; 
-}
-
-std::string PhotonsNPY::getStepFlagString(unsigned char flag)
-{
-   return getHistoryString( 1 << (flag-1) ); 
-}
-
-
 
 glm::ivec4 PhotonsNPY::getFlags()
 {
-    int flags(0) ;
-    for(unsigned int i=0 ; i < m_flags.size() ; i++)
-    {
-        if(m_flags_selection[i]) flags |= m_flags[i].first ; 
-    } 
-    return glm::ivec4(flags,0,0,0) ;     
+    return m_types->getFlags();
 }
-
 
 
 void PhotonsNPY::examinePhotonHistories()
@@ -544,86 +269,11 @@ void PhotonsNPY::examinePhotonHistories()
 
     MUU uu = m_photons->count_unique_u(3,3) ; 
 
-    dumpMaskCounts("PhotonsNPY::examinePhotonHistories : ", HISTORY, uu, 1);
+    dumpMaskCounts("PhotonsNPY::examinePhotonHistories : ", Types::HISTORY, uu, 1);
 }
-
-void PhotonsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material)
-{
-    bounce = 0 ; 
-    history = 0 ; 
-    material = 0 ; 
-
-    for(unsigned int r=0 ; r<m_maxrec ; r++)
-    {
-        unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(record_id);
-        if(unset) continue ; 
-
-        glm::uvec4 flag ; 
-        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
-
-        bounce += 1 ; 
-        unsigned int  s_history = 1 << (flag.w - 1) ; 
-        history |= s_history ;
-
-        unsigned int s_material1 = 1 << (flag.x - 1) ; 
-        unsigned int s_material2 = 1 << (flag.y - 1) ; 
-
-        material |= s_material1 ; 
-        material |= s_material2 ; 
-    } 
-}
-
-
-std::string PhotonsNPY::getSequenceString(unsigned int photon_id, Item_t etype)
-{
-    // express variable length sequence of bit positions as string of 
-    std::stringstream ss ; 
-    for(unsigned int r=0 ; r<m_maxrec ; r++)
-    {
-        unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(record_id);
-        if(unset) continue ; 
-
-        glm::uvec4 flag ; 
-        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
-
-        unsigned int bit(0) ; 
-        switch(etype)
-        {
-            case PHOTONS:               ;break; 
-            case RECORDS:               ;break; 
-            case MATERIAL:bit = flag.x  ;break; 
-            case HISTORY: bit = flag.w  ;break; 
-            case MATERIALSEQ: assert(0) ;break; 
-            case HISTORYSEQ:  assert(0) ;break; 
-        }  
-        assert(bit < 32);
-        ss << std::hex << std::setw(2) << std::setfill('0') << bit ; 
-    }
-    return ss.str();
-}
-
-std::string PhotonsNPY::decodeSequenceString(std::string& seq, Item_t etype)
-{
-    assert(seq.size() % 2 == 0);
-    std::stringstream ss ;
-    unsigned int nelem = seq.size()/2 ; 
-    for(unsigned int i=0 ; i < nelem ; i++)
-    {
-        std::string sub = seq.substr(i*2, 2) ;
-        unsigned int bit = hex_lexical_cast<unsigned int>(sub.c_str());
-        //ss << sub << ":" << bit << ":" << getMaskString( 1 << (bit-1) , etype) << " "  ; 
-        ss << getMaskString( 1 << (bit-1) , etype) << " "  ; 
-    }  
-    return ss.str();
-}
-
-
 
 void PhotonsNPY::prepSequenceIndex()
 {
-    unsigned int nr = m_records->m_len0 ;
     unsigned int ni = m_photons->m_len0 ;
 
     typedef std::vector<unsigned int> VU ;
@@ -651,7 +301,7 @@ void PhotonsNPY::prepSequenceIndex()
          unsigned int history(0) ;
          unsigned int bounce(0) ;
          unsigned int material(0) ;
-         constructFromRecord(photon_id, bounce, history, material); 
+         m_recs->constructFromRecord(photon_id, bounce, history, material); 
 
          // compare with the photon mask, formed GPU side 
          // should match perfectly so long as bounce_max < maxrec 
@@ -665,8 +315,8 @@ void PhotonsNPY::prepSequenceIndex()
          uum[material] += 1 ; 
 
          // construct sequences of materials or history flags for each step of the photon
-         std::string seqmat = getSequenceString(photon_id, MATERIAL);
-         std::string seqhis = getSequenceString(photon_id, HISTORY);
+         std::string seqmat = m_recs->getSequenceString(photon_id, Types::MATERIAL);
+         std::string seqhis = m_recs->getSequenceString(photon_id, Types::HISTORY);
 
          // map counting difference history/material sequences
          suh[seqhis] += 1; 
@@ -678,18 +328,18 @@ void PhotonsNPY::prepSequenceIndex()
     }
     assert( mismatch.size() == 0);
 
-    printf("PhotonsNPY::consistencyCheck photons %u records %u mismatch %lu \n", ni, nr, mismatch.size());
-    dumpMaskCounts("PhotonsNPY::consistencyCheck histories", HISTORY, uuh, 1 );
-    dumpMaskCounts("PhotonsNPY::consistencyCheck materials", MATERIAL, uum, 1000 );
-    dumpSequenceCounts("PhotonsNPY::consistencyCheck seqhis", HISTORY, suh , svh, 1000);
-    dumpSequenceCounts("PhotonsNPY::consistencyCheck seqmat", MATERIAL, sum , svm, 1000);
+    printf("PhotonsNPY::consistencyCheck photons %u mismatch %lu \n", ni, mismatch.size());
+    dumpMaskCounts("PhotonsNPY::consistencyCheck histories", Types::HISTORY, uuh, 1 );
+    dumpMaskCounts("PhotonsNPY::consistencyCheck materials", Types::MATERIAL, uum, 1000 );
+    dumpSequenceCounts("PhotonsNPY::consistencyCheck seqhis", Types::HISTORY, suh , svh, 1000);
+    dumpSequenceCounts("PhotonsNPY::consistencyCheck seqmat", Types::MATERIAL, sum , svm, 1000);
 
 
-    Index* idxh = makeSequenceCountsIndex( HISTORYSEQ,  suh , svh, 1000 );
+    Index* idxh = makeSequenceCountsIndex( Types::HISTORYSEQ,  suh , svh, 1000 );
     idxh->dump();
     fillSequenceIndex( e_seqhis , idxh, svh );
 
-    Index* idxm = makeSequenceCountsIndex( MATERIALSEQ,  sum , svm, 1000 );
+    Index* idxm = makeSequenceCountsIndex( Types::MATERIALSEQ,  sum , svm, 1000 );
     idxm->dump();
     fillSequenceIndex( e_seqmat, idxm, svm );
 
@@ -746,23 +396,7 @@ void PhotonsNPY::fillSequenceIndex(
 
 
 
-std::string PhotonsNPY::getMaskString(unsigned int mask, Item_t etype)
-{
-    std::string mstr ;
-    switch(etype)
-    {
-       case HISTORY:mstr = getHistoryString(mask) ; break ; 
-       case MATERIAL:mstr = getMaterialString(mask) ; break ; 
-       case PHOTONS:mstr = "??" ; break ; 
-       case RECORDS:mstr = "??" ; break ; 
-       case MATERIALSEQ:mstr = "??" ; break ; 
-       case HISTORYSEQ:mstr = "??" ; break ; 
-    }
-    return mstr ; 
-}
-
-
-void PhotonsNPY::dumpMaskCounts(const char* msg, Item_t etype, 
+void PhotonsNPY::dumpMaskCounts(const char* msg, Types::Item_t etype, 
         std::map<unsigned int, unsigned int>& uu, 
         unsigned int cutoff)
 {
@@ -790,7 +424,7 @@ void PhotonsNPY::dumpMaskCounts(const char* msg, Item_t etype,
                << " : " 
                << std::setw(10) << std::dec << p.second
                << " : "
-               << getMaskString(p.first, etype) 
+               << m_types->getMaskString(p.first, etype) 
                << std::endl ; 
     }
 
@@ -803,13 +437,13 @@ void PhotonsNPY::dumpMaskCounts(const char* msg, Item_t etype,
 
 
 Index* PhotonsNPY::makeSequenceCountsIndex(
-       Item_t etype, 
+       Types::Item_t etype, 
        std::map<std::string, unsigned int>& su,
        std::map<std::string, std::vector<unsigned int> >&  sv,
        unsigned int cutoff
        )
 {
-    Index* idx = new Index(getItemName(etype));
+    Index* idx = new Index(m_types->getItemName(etype));
 
     typedef std::map<std::string, std::vector<unsigned int> >  MSV ;
     typedef std::map<std::string, unsigned int> MSU ;
@@ -852,7 +486,7 @@ Index* PhotonsNPY::makeSequenceCountsIndex(
 
 
 
-void PhotonsNPY::dumpSequenceCounts(const char* msg, Item_t etype, 
+void PhotonsNPY::dumpSequenceCounts(const char* msg, Types::Item_t etype, 
        std::map<std::string, unsigned int>& su,
        std::map<std::string, std::vector<unsigned int> >& sv,
        unsigned int cutoff
@@ -885,7 +519,7 @@ void PhotonsNPY::dumpSequenceCounts(const char* msg, Item_t etype,
                << std::setw(10) << std::dec << p.second
                << std::setw(10) << std::dec << sv[p.first].size()
                << " : "
-               << decodeSequenceString(p.first, etype) 
+               << m_recs->decodeSequenceString(p.first, etype) 
                << std::endl ; 
     }
 
@@ -895,5 +529,7 @@ void PhotonsNPY::dumpSequenceCounts(const char* msg, Item_t etype,
               << std::endl ; 
 
 }
+
+
 
 

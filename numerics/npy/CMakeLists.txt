@@ -47,6 +47,8 @@ add_library( ${name}  SHARED
     Lookup.cpp
     G4StepNPY.cpp
     PhotonsNPY.cpp
+    RecordsNPY.cpp
+    Types.cpp
     Index.cpp
 )
 
@@ -70,10 +72,12 @@ ViewNPY.hpp
 MultiViewNPY.hpp
 G4StepNPY.hpp
 PhotonsNPY.hpp
+RecordsNPY.hpp
 numpy.hpp
 stringutil.hpp
 jsonutil.hpp
 Lookup.hpp
+Types.hpp
 Index.hpp
 )
 

@@ -44,6 +44,7 @@ recognises the type on loading, thanks to the numpy.hpp metadata header.
 
 template <class T>
 class NPY : public NPYBase {
+   friend class RecordsNPY ; 
    friend class PhotonsNPY ; 
    friend class G4StepNPY ; 
 
