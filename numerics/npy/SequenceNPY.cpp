@@ -82,6 +82,13 @@ void SequenceNPY::prepSequenceIndex()
          std::string seqmat = m_recs->getSequenceString(photon_id, Types::MATERIAL);
          std::string seqhis = m_recs->getSequenceString(photon_id, Types::HISTORY);
 
+
+         if(i< 10)
+         {
+            printf("seqmat %s \n", seqmat.c_str());
+            printf("seqhis %s \n", seqhis.c_str());
+         } 
+
          // map counting difference history/material sequences
          suh[seqhis] += 1; 
          sum[seqmat] += 1 ; 

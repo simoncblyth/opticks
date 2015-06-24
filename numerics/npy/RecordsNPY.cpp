@@ -202,15 +202,18 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         unsigned int bit(0) ; 
         switch(etype)
         {
-            case Types::PHOTONS:               ;break; 
-            case Types::RECORDS:               ;break; 
             case Types::MATERIAL:bit = flag.x  ;break; 
             case Types::HISTORY: bit = flag.w  ;break; 
             case Types::MATERIALSEQ: assert(0) ;break; 
             case Types::HISTORYSEQ:  assert(0) ;break; 
         }  
         assert(bit < 32);
-        ss << std::hex << std::setw(2) << std::setfill('0') << bit ; 
+
+        //ss << std::hex << std::setw(2) << std::setfill('0') << bit ; 
+
+        std::string label = m_types->getMaskString(bit, etype) ;
+        ss << m_types->getAbbrev(label, etype) ; 
+
     }
     return ss.str();
 }
@@ -224,9 +227,16 @@ std::string RecordsNPY::decodeSequenceString(std::string& seq, Types::Item_t ety
     for(unsigned int i=0 ; i < nelem ; i++)
     {
         std::string sub = seq.substr(i*2, 2) ;
-        unsigned int bit = hex_lexical_cast<unsigned int>(sub.c_str());
+
+        std::string label = m_types->getAbbrevInvert(sub, etype);
+
+        //unsigned int bit = hex_lexical_cast<unsigned int>(sub.c_str());
         //ss << sub << ":" << bit << ":" << getMaskString( 1 << (bit-1) , etype) << " "  ; 
-        ss << m_types->getMaskString( 1 << (bit-1) , etype) << " "  ; 
+        //ss << m_types->getMaskString( 1 << (bit-1) , etype) << " "  ; 
+
+        ss  << label << " " ; 
+
+
     }  
     return ss.str();
 }

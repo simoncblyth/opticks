@@ -284,7 +284,6 @@ int main(int argc, char** argv)
     Types types ;  
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
 
-
     BoundariesNPY bnd(dpho); 
     bnd.setTypes(&types);
     bnd.setBoundaryNames(boundaries);
@@ -292,7 +291,6 @@ int main(int argc, char** argv)
 
     PhotonsNPY pho(dpho);
     pho.setTypes(&types);
-
 
     Photons photons(&pho, &bnd) ; // GUI jacket 
     scene.setPhotons(&photons);
@@ -345,7 +343,7 @@ int main(int argc, char** argv)
             glm::ivec4 sel = bnd.getSelection() ;
             composition.setSelection(sel); 
             composition.getPick().y = sel.x ;   //  1st boundary 
-            composition.setFlags(pho.getFlags()); 
+            composition.setFlags(types.getFlags()); 
             // maybe imgui edit selection within the composition imgui, rather than shovelling ?
             // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
         }

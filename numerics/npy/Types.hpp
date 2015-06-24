@@ -8,43 +8,61 @@
 
 class Types {
    public:
-       static const char* PHOTONS_ ; 
-       static const char* RECORDS_ ; 
        static const char* HISTORY_ ; 
        static const char* MATERIAL_ ; 
        static const char* HISTORYSEQ_ ; 
        static const char* MATERIALSEQ_ ; 
 
-       typedef enum { PHOTONS, RECORDS, HISTORY, MATERIAL, HISTORYSEQ, MATERIALSEQ } Item_t ;
+       typedef enum { HISTORY, MATERIAL, HISTORYSEQ, MATERIALSEQ } Item_t ;
 
        Types(); 
-       std::vector<std::string>& getFlagLabels();
-       bool*                     getFlagSelection();
-
 
        const char* getItemName(Item_t item);
-       glm::ivec4 getFlags();
+   public:
+       std::string getMaskString(unsigned int mask, Item_t etype, bool abbrev=false);
 
-       std::string getMaskString(unsigned int mask, Item_t etype);
-       std::string getMaterialString(unsigned int flags);
-       std::string getHistoryString(unsigned int flags);
-       std::string getStepFlagString(unsigned char flag);
-
-       bool* initBooleanSelection(unsigned int n);
-       void readFlags(const char* path); // parse enum flags from photon.h
+   public:
+       std::string getMaterialString(unsigned int flags, bool abbrev=false);
        void readMaterials(const char* idpath, const char* name="GMaterialIndexLocal.json");    
-
-       void dumpFlags(const char* msg="PhotonsNPY::dumpFlags");
        void dumpMaterials(const char* msg="PhotonsNPY::dumpMaterials");
-
        std::string findMaterialName(unsigned int index);
+   private:
+       void makeMaterialAbbrev();
+
+   public:
+       std::string getStepFlagString(unsigned char flag);
+       std::string getHistoryString(unsigned int flags, bool abbrev=false, const char* tail=" ");
+       void readFlags(const char* path); // parse enum flags from photon.h
+       void dumpFlags(const char* msg="PhotonsNPY::dumpFlags");
+   private:
+       void makeFlagAbbrev();
+   public:
+       glm::ivec4                getFlags();
+       std::vector<std::string>& getFlagLabels();
+       bool*                     initBooleanSelection(unsigned int n);
+       bool*                     getFlagSelection();
+   public:
+       std::string getHistoryAbbrev(std::string label);
+       std::string getMaterialAbbrev(std::string label);
+       std::string getAbbrev(std::string label, Item_t etype);
+   public:
+       std::string getHistoryAbbrevInvert(std::string label);
+       std::string getMaterialAbbrevInvert(std::string label);
+       std::string getAbbrevInvert(std::string label, Item_t etype);
+
 
    private:
        std::map<std::string, unsigned int>                  m_materials ;
-       //std::vector< std::pair<unsigned int, std::string> >  m_flags ; 
+       std::map<std::string, std::string>                   m_material2abbrev ; 
+       std::map<std::string, std::string>                   m_abbrev2material ; 
+
+   private:
        std::vector<std::string>                             m_flag_labels ; 
        std::vector<unsigned int>                            m_flag_codes ; 
        bool*                                                m_flag_selection ; 
+   private:
+       std::map<std::string, std::string>                   m_flag2abbrev ; 
+       std::map<std::string, std::string>                   m_abbrev2flag ; 
 
 
 };
