@@ -48,6 +48,8 @@ add_library( ${name}  SHARED
     G4StepNPY.cpp
     PhotonsNPY.cpp
     RecordsNPY.cpp
+    BoundariesNPY.cpp
+    SequenceNPY.cpp
     Types.cpp
     Index.cpp
 )
@@ -73,6 +75,8 @@ MultiViewNPY.hpp
 G4StepNPY.hpp
 PhotonsNPY.hpp
 RecordsNPY.hpp
+BoundariesNPY.hpp
+SequenceNPY.hpp
 numpy.hpp
 stringutil.hpp
 jsonutil.hpp

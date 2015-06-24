@@ -7,7 +7,7 @@ public:
    FrameCfg(const char* name, Listener* listener, bool live) 
        : 
        Cfg(name, live),
-       m_bouncemax(10)
+       m_bouncemax(9)   // one less than canonical maxrec of 10
    {   
 
        m_desc.add_options()

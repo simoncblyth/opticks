@@ -1,14 +1,16 @@
 #include "Photons.hh"
 #include "PhotonsNPY.hpp"
+#include "BoundariesNPY.hpp"
 
 #ifdef GUI_
 #include <imgui.h>
 #endif
 
 
-Photons::Photons(PhotonsNPY* photons)
+Photons::Photons(PhotonsNPY* photons, BoundariesNPY* boundaries)
     :
     m_photons(photons),
+    m_boundaries(boundaries),
     m_types(photons->getTypes())
 {
 }
@@ -36,8 +38,9 @@ void Photons::gui()
 void Photons::gui_boundary_selection()
 {
 #ifdef GUI_
-    PhotonsNPY::Choices_t boundaries = m_photons->getBoundaries();
-    bool* boundaries_selection = m_photons->getBoundariesSelection();
+
+    std::vector< std::pair<int, std::string> >&  boundaries = m_boundaries->getBoundaries();
+    bool* boundaries_selection = m_boundaries->getBoundariesSelection();
 
     for(unsigned int i=0 ; i < boundaries.size() ; i++)
     {

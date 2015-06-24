@@ -40,6 +40,7 @@
 #include "G4StepNPY.hpp"
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
+#include "BoundariesNPY.hpp"
 #include "Types.hpp"
 #include "stringutil.hpp"
 
@@ -283,12 +284,17 @@ int main(int argc, char** argv)
     Types types ;  
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
 
+
+    BoundariesNPY bnd(dpho); 
+    bnd.setTypes(&types);
+    bnd.setBoundaryNames(boundaries);
+    bnd.indexBoundaries();
+
     PhotonsNPY pho(dpho);
     pho.setTypes(&types);
-    pho.setBoundaryNames(boundaries);
-    pho.indexBoundaries();
 
-    Photons photons(&pho) ; // GUI jacket 
+
+    Photons photons(&pho, &bnd) ; // GUI jacket 
     scene.setPhotons(&photons);
 
 #ifdef GUI_
@@ -336,7 +342,7 @@ int main(int argc, char** argv)
         {
             gui.show(show_gui_window);
 
-            glm::ivec4 sel = pho.getSelection() ;
+            glm::ivec4 sel = bnd.getSelection() ;
             composition.setSelection(sel); 
             composition.getPick().y = sel.x ;   //  1st boundary 
             composition.setFlags(pho.getFlags()); 
