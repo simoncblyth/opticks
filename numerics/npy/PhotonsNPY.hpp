@@ -8,14 +8,24 @@
 
 #include "NPY.hpp"
 
+class Index ; 
+
+
 class PhotonsNPY {
    public:  
        static const char* PHOTONS_ ; 
        static const char* RECORDS_ ; 
        static const char* HISTORY_ ; 
        static const char* MATERIAL_ ; 
+       static const char* HISTORYSEQ_ ; 
+       static const char* MATERIALSEQ_ ; 
 
-       typedef enum { PHOTONS, RECORDS, HISTORY, MATERIAL } Item_t ;
+       enum {
+              e_seqhis , 
+              e_seqmat 
+            };
+
+       typedef enum { PHOTONS, RECORDS, HISTORY, MATERIAL, HISTORYSEQ, MATERIALSEQ } Item_t ;
 
        typedef std::vector< std::pair<int, std::string> >  Choices_t ; 
        typedef std::vector< std::pair<unsigned int, std::string> >  UChoices_t ; 
@@ -26,14 +36,24 @@ class PhotonsNPY {
        void setRecords(NPY<short>* records);
        NPY<float>* getPhotons();
        NPY<short>* getRecords();
-       NPY<unsigned char>*   getSeqIdx();
 
+       NPY<unsigned char>*   getSeqIdx();
+       Index* getSeqHis(); 
+       Index* getSeqMat(); 
 
        void prepSequenceIndex();
-       void makeSequenceIndex(
-           std::map<std::string, std::vector<unsigned int> >  mat, 
-           std::map<std::string, std::vector<unsigned int> >  his 
+
+       Index* makeSequenceCountsIndex( Item_t etype, 
+            std::map<std::string, unsigned int>& su,
+            std::map<std::string, std::vector<unsigned int> >&  sv,
+            unsigned int cutoff
        );
+
+       void fillSequenceIndex(
+                unsigned int k,
+                Index* idx, 
+                std::map<std::string, std::vector<unsigned int> >&  sv );
+
 
        void constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material);
 
@@ -52,7 +72,7 @@ class PhotonsNPY {
        void dumpRecords(const char* msg="PhotonsNPY::dumpRecords", unsigned int ndump=5);
 
 
-       NPYBase*    getItem(Item_t item);
+       //NPYBase*    getItem(Item_t item);
        const char* getItemName(Item_t item);
 
 
@@ -127,11 +147,14 @@ class PhotonsNPY {
        void unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1);
 
 
+
    private:
        NPY<float>*                  m_photons ; 
        NPY<short>*                  m_records ; 
        NPY<unsigned char>*          m_seqidx  ; 
        unsigned int                 m_maxrec ; 
+       Index*                       m_seqhis ; 
+       Index*                       m_seqmat ; 
 
    protected:
        std::map<int, std::string>   m_names ; 
@@ -158,6 +181,8 @@ inline PhotonsNPY::PhotonsNPY(NPY<float>* photons, NPY<short>* records, unsigned
        m_records(records),
        m_seqidx(NULL),
        m_maxrec(maxrec),
+       m_seqhis(NULL),
+       m_seqmat(NULL),
        m_boundaries_selection(NULL)
 {
 }
@@ -170,14 +195,35 @@ inline NPY<short>* PhotonsNPY::getRecords()
 {
     return m_records ; 
 }
+
+
 inline NPY<unsigned char>* PhotonsNPY::getSeqIdx()
 {
+    if(!m_seqidx)
+    { 
+        unsigned int ni = m_photons->m_len0 ;
+        m_seqidx = NPY<unsigned char>::make_vec4(ni,1,0) ;
+    }
     return m_seqidx ; 
+}
+
+
+inline Index* PhotonsNPY::getSeqHis()
+{
+    return m_seqhis ; 
+}
+inline Index* PhotonsNPY::getSeqMat()
+{
+    return m_seqmat ; 
 }
 
 
 
 
+
+
+
+/*
 inline NPYBase* PhotonsNPY::getItem(Item_t item)
 {
     NPYBase* npy = NULL ; 
@@ -187,9 +233,14 @@ inline NPYBase* PhotonsNPY::getItem(Item_t item)
         case RECORDS: npy = m_records  ; break ; 
         case MATERIAL:                 ; break ; 
         case HISTORY:                  ; break ; 
+        case MATERIALSEQ:              ; break ; 
+        case HISTORYSEQ:               ; break ; 
+
     } 
     return npy ;
 }
+*/
+
 inline void PhotonsNPY::setRecords(NPY<short>* records)
 {
     m_records = records ; 

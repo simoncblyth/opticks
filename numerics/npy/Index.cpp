@@ -116,6 +116,11 @@ void Index::test(const char* msg, bool verbose)
    }
 }
 
+void Index::dump(const char* msg)
+{
+    test(msg, true);
+}
+
 
 
 void Index::crossreference()

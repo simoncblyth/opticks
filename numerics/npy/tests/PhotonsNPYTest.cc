@@ -46,6 +46,7 @@ int main(int argc, char** argv)
     pn.prepSequenceIndex();
 
     NPY<unsigned char>* seqidx = pn.getSeqIdx();
+    seqidx->setVerbose();
     seqidx->save("seqidx", tag);
 
     return 0 ;

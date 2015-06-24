@@ -32,6 +32,7 @@ class Index {
    public:
         unsigned int getNumItems();
         void test(const char* msg="GItemIndex::test", bool verbose=true);
+        void dump(const char* msg="GItemIndex::dump");
 
    private:
         const char*                          m_itemtype ; 
