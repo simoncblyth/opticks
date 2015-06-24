@@ -41,14 +41,8 @@ void PhotonsNPY::setRecs(RecordsNPY* recs)
 
 
 
-void PhotonsNPY::classify(bool sign)
-{
-    m_boundaries.clear();
-    m_boundaries = findBoundaries(sign);
-    delete m_boundaries_selection ; 
-    m_boundaries_selection = m_types->initBooleanSelection(m_boundaries.size());
-    //dumpBoundaries("PhotonsNPY::classify");
-}
+
+
 glm::ivec4 PhotonsNPY::getSelection()
 {
     // ivec4 containing 1st four boundary codes provided by the selection
@@ -92,14 +86,12 @@ void PhotonsNPY::dumpBoundaries(const char* msg)
 }
 
 
-std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries(bool sign)
+void PhotonsNPY::indexBoundaries(bool sign)
 {
     assert(m_photons);
-
-    std::vector<std::pair<int, std::string> > boundaries ;  
+    m_boundaries.clear();
 
     printf("PhotonsNPY::findBoundaries \n");
-
 
     std::map<int,int> uniqn = sign ? m_photons->count_uniquei(3,0,2,0) : m_photons->count_uniquei(3,0) ;
 
@@ -110,7 +102,6 @@ std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries(bool sign)
     for(std::map<int,int>::iterator it=uniqn.begin() ; it != uniqn.end() ; it++) pairs.push_back(*it);
     std::sort(pairs.begin(), pairs.end(), second_value_order );
 
-
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {
         std::pair<int,int> p = pairs[i]; 
@@ -120,10 +111,11 @@ std::vector<std::pair<int, std::string> > PhotonsNPY::findBoundaries(bool sign)
 
         char line[128] ;
         snprintf(line, 128, " %3d : %7d %s ", p.first, p.second, name.c_str() );
-        boundaries.push_back( std::pair<int, std::string>( code, line ));
+        m_boundaries.push_back( std::pair<int, std::string>( code, line ));
     }   
 
-    return boundaries ;
+    delete m_boundaries_selection ; 
+    m_boundaries_selection = m_types->initBooleanSelection(m_boundaries.size());
 }
 
 

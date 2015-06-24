@@ -1,15 +1,25 @@
 #pragma once
 
-#include "PhotonsNPY.hpp"
-
 // adds an optional gui to PhotonsNPY 
 
-class Photons : public PhotonsNPY {
+class PhotonsNPY ; 
+class Types ; 
+
+class Photons {
    public:
-       Photons(NPY<float>* photons);
+       Photons(PhotonsNPY* photons);
 
        void gui();
        void gui_boundary_selection();
        void gui_flag_selection();
 
+   private:
+        PhotonsNPY*    m_photons ;  
+        Types*         m_types ; 
+
 };
+
+
+
+
+

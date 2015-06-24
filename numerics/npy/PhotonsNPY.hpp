@@ -29,6 +29,7 @@ class PhotonsNPY {
        NPY<float>*           getPhotons();
        NPY<short>*           getRecords();
        RecordsNPY*           getRecs();
+       Types*                getTypes();
 
        NPY<unsigned char>*   getSeqIdx();
        Index*                getSeqHis(); 
@@ -67,13 +68,8 @@ class PhotonsNPY {
        const char* getItemName(Types::Item_t item);
 
 
-       // boundary names corresponding to absolute integer codes 
-       // TODO: offset codes by one to avoid confusion regarding sign of Vacuum/Vacuum 0 
 
-       void setBoundaryNames(std::map<int, std::string> names);    
 
-       // signed mode : signs the boundary code according to the sign of (2,0) vpol.x (currently cos_theta)
-       void classify(bool sign=false);
 
    public:
        // precise agreement between Photon and Record histories
@@ -103,8 +99,10 @@ class PhotonsNPY {
        Choices_t*   getBoundariesPointer(); 
        Choices_t&   getBoundaries(); 
 
+       // signed mode : signs the boundary code according to the sign of (2,0) vpol.x (currently cos_theta)
+       void setBoundaryNames(std::map<int, std::string> names);    
+       void indexBoundaries(bool sign=true);
    private:
-       Choices_t findBoundaries(bool sign);
        void dumpBoundaries(const char* msg);
 
    public:  
@@ -158,13 +156,6 @@ inline void PhotonsNPY::setRecords(NPY<short>* records)
     m_records = records ; 
 }
 
-
-
-
-
-
-
-
 inline NPY<float>* PhotonsNPY::getPhotons()
 {
     return m_photons ; 
@@ -177,6 +168,11 @@ inline RecordsNPY* PhotonsNPY::getRecs()
 {
     return m_recs ; 
 }
+inline Types* PhotonsNPY::getTypes()
+{
+    return m_types ; 
+}
+
 
 
 

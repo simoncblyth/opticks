@@ -30,16 +30,10 @@ int main(int argc, char** argv)
     PhotonsNPY p(photons);
     p.setTypes(&types);
     p.setRecs(&r);
-
-
-
-    p.dump("oxc.dump");
-
-    p.classify();
-    p.classify(true);
+    p.dump("dump");
+    p.indexBoundaries();
 
     p.examinePhotonHistories();
-    //pn.dumpRecords("records", 30);
     p.dumpPhotons("photons", 30);
 
     p.prepSequenceIndex();

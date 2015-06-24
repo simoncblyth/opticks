@@ -39,6 +39,8 @@
 #include "Sensor.hpp"
 #include "G4StepNPY.hpp"
 #include "PhotonsNPY.hpp"
+#include "RecordsNPY.hpp"
+#include "Types.hpp"
 #include "stringutil.hpp"
 
 // bregex-
@@ -268,23 +270,25 @@ int main(int argc, char** argv)
     engine.generate();
     LOG(info) << "main: engine.generate DONE "; 
 
-    NPY<float>* photonData = evt.getPhotonData();
-    Rdr::download(photonData);
-    photonData->setVerbose();
-    photonData->save("ox%s", typ,  tag);
+    NPY<float>* dpho = evt.getPhotonData();
+    Rdr::download(dpho);
+    dpho->setVerbose();
+    dpho->save("ox%s", typ,  tag);
 
-    NPY<short>* rec = evt.getRecordData();
-    Rdr::download(rec);
-    rec->setVerbose();
-    rec->save("rx%s", typ,  tag );
+    NPY<short>* drec = evt.getRecordData();
+    Rdr::download(drec);
+    drec->setVerbose();
+    drec->save("rx%s", typ,  tag );
 
+    Types types ;  
+    types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
 
-    Photons photons(photonData) ;
-    photons.setBoundaryNames(boundaries);
-    photons.classify();
-    photons.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
-    //photons.dumpFlags();
+    PhotonsNPY pho(dpho);
+    pho.setTypes(&types);
+    pho.setBoundaryNames(boundaries);
+    pho.indexBoundaries();
 
+    Photons photons(&pho) ; // GUI jacket 
     scene.setPhotons(&photons);
 
 #ifdef GUI_
@@ -332,10 +336,10 @@ int main(int argc, char** argv)
         {
             gui.show(show_gui_window);
 
-            glm::ivec4 sel = photons.getSelection() ;
+            glm::ivec4 sel = pho.getSelection() ;
             composition.setSelection(sel); 
             composition.getPick().y = sel.x ;   //  1st boundary 
-            composition.setFlags(photons.getFlags()); 
+            composition.setFlags(pho.getFlags()); 
             // maybe imgui edit selection within the composition imgui, rather than shovelling ?
             // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
         }

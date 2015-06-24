@@ -70,11 +70,10 @@ std::string Types::getMaterialString(unsigned int mask)
 std::string Types::getHistoryString(unsigned int flags)
 {
     std::stringstream ss ; 
-    for(unsigned int i=0 ; i < m_flags.size() ; i++)
+    for(unsigned int i=0 ; i < m_flag_labels.size() ; i++)
     {
-        std::pair<unsigned int, std::string> p = m_flags[i];
-        unsigned int mask = p.first ;
-        if(flags & mask) ss << p.second << " " ; 
+        unsigned int mask = m_flag_codes[i] ;
+        if(flags & mask) ss << m_flag_labels[i] << " " ; 
     }
     return ss.str() ; 
 }
@@ -109,8 +108,21 @@ std::string Types::getMaskString(unsigned int mask, Item_t etype)
 void Types::readFlags(const char* path)
 {
     // read photon header to get flag names and enum values
-    enum_regexsearch( m_flags, path);
-    m_flags_selection = initBooleanSelection(m_flags.size());
+
+    typedef std::pair<unsigned int, std::string>  upair_t ;
+    typedef std::vector<upair_t>                  upairs_t ;
+    upairs_t ups ; 
+    enum_regexsearch( ups, path ); // "$ENV_HOME/graphics/ggeoview/cu/photon.h");    
+
+    m_flag_labels.clear();
+    m_flag_codes.clear();
+    for(unsigned int i=0 ; i < ups.size() ; i++)
+    {   
+        upair_t p = ups[i];
+        m_flag_codes.push_back(p.first);         
+        m_flag_labels.push_back(p.second);         
+    }   
+    m_flag_selection = initBooleanSelection(m_flag_labels.size());
 }
 
 
@@ -129,10 +141,11 @@ bool* Types::initBooleanSelection(unsigned int n)
 void Types::dumpFlags(const char* msg)
 {
     printf("%s\n", msg);
-    for(unsigned int i=0 ; i < m_flags.size() ; i++)
+    for(unsigned int i=0 ; i < m_flag_labels.size() ; i++)
     {
-         std::pair<unsigned int, std::string> p = m_flags[i];
-         printf(" %10d : %10x :  %s  : %d \n", p.first, p.first,  p.second.c_str(), m_flags_selection[i] );
+         unsigned int code = m_flag_codes[i] ;
+         std::string label = m_flag_labels[i] ;
+         printf(" %10d : %10x :  %s  : %d \n", code, code,  label.c_str(), m_flag_selection[i] );
     }
 }
 
@@ -140,15 +153,12 @@ void Types::dumpFlags(const char* msg)
 glm::ivec4 Types::getFlags()
 {
     int flags(0) ;
-    for(unsigned int i=0 ; i < m_flags.size() ; i++)
+    for(unsigned int i=0 ; i < m_flag_labels.size() ; i++)
     {
-        if(m_flags_selection[i]) flags |= m_flags[i].first ; 
+        if(m_flag_selection[i]) flags |= m_flag_codes[i] ; 
     } 
     return glm::ivec4(flags,0,0,0) ;     
 }
-
-
-
 
 
 
