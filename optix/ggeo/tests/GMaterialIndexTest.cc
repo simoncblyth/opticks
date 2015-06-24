@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     //colors->dump_uchar4_buffer(buffer);
 
     idx->formTable();
-    idx->gui();
+    //idx->gui();
 
     return 0 ;
 }

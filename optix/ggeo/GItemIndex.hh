@@ -4,6 +4,8 @@ class GColors ;
 class GColorMap ; 
 class GBuffer ; 
 
+class Index ; 
+
 #include "string.h"
 #include <string>
 #include <map>
@@ -14,64 +16,49 @@ class GItemIndex {
         friend class GMaterialIndex ; 
    public:
         GItemIndex(const char* itemtype);
-        void setColorSource(GColors* colors);
-        void setColorMap(GColorMap* colormap);
-        void save(const char* idpath);
-   public:
-        void formTable();
-        void gui();
-        GBuffer* makeColorBuffer();
-        GBuffer* getColorBuffer();
-   public:
-        // invoked from GBoundaryLib::createWavelengthAndOpticalBuffers
-        void add(const char* name, unsigned int index);
+        void loadIndex(const char* idpath);
+        void add(const char* name, unsigned int source);
         unsigned int getIndexLocal(const char* name, unsigned int missing=0);
-
+        //const char* getItemType();
+   private:
+        void init(const char* itemtype);
    public:
-        std::string getPrefixedString(const char* tail);
-        unsigned int getIndexSource(const char* name, unsigned int missing=0);
-        const char* getNameLocal(unsigned int local, const char* missing=NULL);
-        const char* getNameSource(unsigned int source, const char* missing=NULL);
-
-        unsigned int convertLocalToSource(unsigned int local, unsigned int missing=0);
-        unsigned int convertSourceToLocal(unsigned int source, unsigned int missing=0);
-
-   public:
+        void save(const char* idpath);
         unsigned int getNumItems();
         void dump(const char* msg="GItemIndex::dump");
-        void test(const char* msg="GItemIndex::test");
-        bool operator() (const std::string& a, const std::string& b);
+        void test(const char* msg="GItemIndex::test", bool verbose=true);
+
+   public:
+       // color/GUI related
+        void setColorSource(GColors* colors);
+        void setColorMap(GColorMap* colormap);
+        GBuffer* makeColorBuffer();
+        GBuffer* getColorBuffer();
+        void gui();
+        void formTable();
 
    private:
-        const char* getItemType();
-        void loadMaps(const char* idpath);
-        void crossreference();
-
+        Index*                               m_index ; 
    private:
-        const char*                          m_itemtype ; 
-        std::map<std::string, unsigned int>  m_source ; 
-        std::map<std::string, unsigned int>  m_local ; 
-        std::map<unsigned int, unsigned int> m_source2local ; 
-        std::map<unsigned int, unsigned int> m_local2source ; 
         GColors*                             m_colors ; 
         GColorMap*                           m_colormap ; 
         GBuffer*                             m_colorbuffer ; 
    private:
         // populated by formTable
         std::vector<std::string>             m_labels ; 
-        std::vector<std::string>             m_inames ; 
-        std::vector<int>                     m_icodes ; 
-        std::vector<unsigned int>            m_ccodes ; 
+        std::vector<unsigned int>            m_codes ; 
 };
 
 inline GItemIndex::GItemIndex(const char* itemtype)
    : 
-   m_itemtype(strdup(itemtype)),
+   m_index(NULL),
    m_colors(NULL),
    m_colormap(NULL),
    m_colorbuffer(NULL)
 {
+   init(itemtype);
 }
+
 
 
 inline void GItemIndex::setColorSource(GColors* colors)
@@ -83,8 +70,4 @@ inline void GItemIndex::setColorMap(GColorMap* colormap)
    m_colormap = colormap ; 
 }
 
-inline const char* GItemIndex::getItemType()
-{
-    return m_itemtype ; 
-}
 

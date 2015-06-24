@@ -4,7 +4,7 @@
 GMaterialIndex* GMaterialIndex::load(const char* idpath)
 {
     GMaterialIndex* gmi = new GMaterialIndex ;    // itemname->index
-    gmi->loadMaps(idpath);
+    gmi->loadIndex(idpath);
     return gmi ; 
 }
 

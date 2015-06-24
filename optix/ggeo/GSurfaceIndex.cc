@@ -3,7 +3,7 @@
 GSurfaceIndex* GSurfaceIndex::load(const char* idpath)
 {
     GSurfaceIndex* gsi = new GSurfaceIndex ;  
-    gsi->loadMaps(idpath);
+    gsi->loadIndex(idpath);
     return gsi ; 
 }
 

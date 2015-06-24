@@ -47,6 +47,7 @@ add_library( ${name}  SHARED
     Lookup.cpp
     G4StepNPY.cpp
     PhotonsNPY.cpp
+    Index.cpp
 )
 
 set(LIBRARIES
@@ -73,6 +74,7 @@ numpy.hpp
 stringutil.hpp
 jsonutil.hpp
 Lookup.hpp
+Index.hpp
 )
 
 install(TARGETS ${name}  DESTINATION lib)

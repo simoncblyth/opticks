@@ -19,7 +19,6 @@ int main(int argc, char** argv)
     GColors* colors = GColors::load(idpath,"GColors.json");           // colorname => hexcode 
     idx->setColorSource(colors);
 
-    idx->test();
     idx->dump();
 
     //GBuffer* buffer = idx->getColorBuffer();
