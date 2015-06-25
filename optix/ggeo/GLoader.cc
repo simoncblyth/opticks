@@ -96,7 +96,7 @@ void GLoader::load(bool nogeocache)
     m_flags->formTable(); // as not yet pulling a buffer
 
     GBuffer* buffer = m_materials->makeColorBuffer();
-    m_colors->dump_uchar4_buffer(buffer);
+    //m_colors->dump_uchar4_buffer(buffer);
 
     LOG(info) << "GLoader::load done " << idpath ;
     assert(m_mergedmesh);

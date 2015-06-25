@@ -4,18 +4,25 @@
 #include "string.h"
 #include <vector>
 
-class Renderer ; 
-class Rdr ;
-class Device ; 
-class Composition ; 
+// npy-
+class MultiViewNPY ;
 class NumpyEvt ; 
+
+// ggeo-
 class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
 class GBoundaryLibMetadata ;
+class GBuffer ; 
+
+// oglrap-
+class Renderer ; 
+class Rdr ;
+class Device ; 
+class Composition ; 
 class Photons ; 
 class Colors ; 
-class GBuffer ; 
+
 
 #include "Configurable.hh"
 
@@ -69,8 +76,11 @@ class Scene : public Configurable {
 
    public:
         void uploadEvt();
+        void uploadSelection();
+   private:
+        void uploadRecordAttr(MultiViewNPY* attr);
+   public:
         void render();
-
    public:
         unsigned int  getTarget(); 
 

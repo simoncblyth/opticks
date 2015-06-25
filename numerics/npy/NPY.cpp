@@ -111,7 +111,13 @@ NPY<T>* NPY<T>::load(const char* typ, const char* tag)
 
 
 
-
+template <typename T>
+bool NPY<T>::exists(const char* tfmt, const char* targ, const char* tag)
+{
+    char typ[64];
+    snprintf(typ, 64, tfmt, targ ); 
+    return exists(typ, tag);
+}
 template <typename T>
 void NPY<T>::save(const char* tfmt, const char* targ, const char* tag)
 {
@@ -120,6 +126,14 @@ void NPY<T>::save(const char* tfmt, const char* targ, const char* tag)
     save(typ, tag);
 }
 
+
+
+template <typename T>
+bool NPY<T>::exists(const char* typ, const char* tag)
+{
+    std::string path = NPYBase::path(typ, tag);
+    return exists(path.c_str());
+}
 template <typename T>
 void NPY<T>::save(const char* typ, const char* tag)
 {
@@ -127,6 +141,16 @@ void NPY<T>::save(const char* typ, const char* tag)
     if(m_verbose) LOG(info) << "NPY::save " << path ; 
     save(path.c_str());
 }
+
+
+
+template <typename T>
+bool NPY<T>::exists(const char* path_)
+{
+    fs::path path(path_);
+    return fs::exists(path) && fs::is_regular_file(path); 
+}
+
 
 template <typename T>
 void NPY<T>::save(const char* path_)

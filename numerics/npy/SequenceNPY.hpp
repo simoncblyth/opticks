@@ -107,15 +107,6 @@ inline void SequenceNPY::setTypes(Types* types)
     m_types = types ; 
 }
 
-inline NPY<unsigned char>* SequenceNPY::getSeqIdx()
-{
-    if(!m_seqidx)
-    { 
-        unsigned int ni = m_photons->m_len0 ;
-        m_seqidx = NPY<unsigned char>::make_vec4(ni,1,0) ;
-    }
-    return m_seqidx ; 
-}
 
 inline Index* SequenceNPY::getSeqHis()
 {

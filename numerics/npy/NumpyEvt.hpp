@@ -16,6 +16,8 @@ class NumpyEvt {
    public:
        void setGenstepData(NPY<float>* genstep_data);
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
+   public:
+       void setSelectionData(NPY<unsigned char>* selection_data);
    private:
        // only set internally 
        void setPhotonData(NPY<float>* photon_data);
@@ -25,10 +27,12 @@ class NumpyEvt {
        NPY<float>*  getGenstepData();
        NPY<float>*  getPhotonData();
        NPY<short>*  getRecordData();
+       NPY<unsigned char>*  getSelectionData();
 
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
        MultiViewNPY* getRecordAttr();
+       MultiViewNPY* getSelectionAttr();
 
        ViewNPY* operator [](const char* spec);
 
@@ -46,10 +50,12 @@ class NumpyEvt {
        NPY<float>*   m_genstep_data ;
        NPY<float>*   m_photon_data ;
        NPY<short>*   m_record_data ;
+       NPY<unsigned char>*   m_selection_data ;
 
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
        MultiViewNPY*   m_record_attr  ;
+       MultiViewNPY*   m_selection_attr  ;
 
        unsigned int   m_num_photons ; 
        unsigned int   m_maxrec ; 
@@ -62,9 +68,11 @@ inline NumpyEvt::NumpyEvt()
           m_genstep_data(NULL),
           m_photon_data(NULL),
           m_record_data(NULL),
+          m_selection_data(NULL),
           m_genstep_attr(NULL),
           m_photon_attr(NULL),
           m_record_attr(NULL),
+          m_selection_attr(NULL),
           m_num_photons(0),
           m_maxrec(1)
 {
@@ -122,6 +130,13 @@ inline MultiViewNPY* NumpyEvt::getRecordAttr()
 
 
 
-
+inline NPY<unsigned char>* NumpyEvt::getSelectionData()
+{
+    return m_selection_data ;
+}
+inline MultiViewNPY* NumpyEvt::getSelectionAttr()
+{
+    return m_selection_attr ;
+}
 
 

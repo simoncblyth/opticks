@@ -115,6 +115,18 @@ void SequenceNPY::indexSequences()
 }
 
 
+
+NPY<unsigned char>* SequenceNPY::getSeqIdx()
+{
+    if(!m_seqidx)
+    { 
+        unsigned int nr = m_recs->getRecords()->getShape(0) ;
+        m_seqidx = NPY<unsigned char>::make_vec4(nr,1,0) ;
+    }
+    return m_seqidx ; 
+}
+
+
 void SequenceNPY::fillSequenceIndex(
        unsigned int k,
        Index* idx, 
@@ -122,11 +134,10 @@ void SequenceNPY::fillSequenceIndex(
 )
 {
     assert( k < 4 );
-    unsigned int ni = m_photons->m_len0 ;
+
     NPY<unsigned char>* seqidx = getSeqIdx(); // creates if not exists
 
     unsigned int nseq(0) ; 
-
     for(unsigned int iseq=0 ; iseq < idx->getNumItems() ; iseq++)
     {
         unsigned int pseq = iseq + 1 ; // 1-based local seq index
@@ -143,18 +154,21 @@ void SequenceNPY::fillSequenceIndex(
         for(VU::iterator it=pids.begin() ; it != pids.end() ; it++)
         {
             unsigned int photon_id = *it ;  
-            seqidx->setValue(photon_id, 0, k, pseq );
-            nseq++;
+            // duplicates seq indices for all records of the photon
+            for(unsigned int r=0 ; r < m_maxrec ; r++)
+            {
+                unsigned int record_id = photon_id*m_maxrec + r  ;  
+                seqidx->setValue(record_id, 0, k, pseq );
+                nseq++;
+            }
         }
     }
 
     std::cout << "SequenceNPY::fillSequenceIndex " 
               << std::setw(3) << k
               << std::setw(15) << idx->getItemType()
-              << " sequenced/total " 
+              << " sequenced " 
               << std::setw(7) << nseq 
-              << "/"
-              << std::setw(7) << ni
               << std::endl ; 
 
 }

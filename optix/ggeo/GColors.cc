@@ -213,6 +213,7 @@ GBuffer* GColors::make_uchar4_buffer(std::vector<unsigned int>& codes)
 
 void GColors::dump_uchar4_buffer( GBuffer* buffer )
 {
+    LOG(info)<<"GColors::dump_uchar4_buffer";
     unsigned char* data = (unsigned char*)buffer->getPointer();
     unsigned int numCols = buffer->getNumItems();
     for(unsigned int i=0 ; i < numCols ; i++)

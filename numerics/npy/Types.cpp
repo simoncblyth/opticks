@@ -41,9 +41,26 @@ void Types::readMaterials(const char* idpath, const char* name)
     {
         m_materials[it->first + m_tail] = it->second ; 
     } 
-
     makeMaterialAbbrev();
 }
+
+
+void Types::setMaterialsIndex(Index* index)
+{
+    m_materials_index = index ; 
+
+    typedef std::vector<std::string> VS ; 
+    VS& names = index->getNames();
+
+    for(VS::iterator it=names.begin() ; it != names.end() ; it++)
+    {
+        std::string name = *it ; 
+        unsigned int local = index->getIndexLocal(name.c_str()) ;
+        m_materials[name + m_tail] = local; 
+    }
+    makeMaterialAbbrev();
+}
+
 
 void Types::makeMaterialAbbrev()
 {

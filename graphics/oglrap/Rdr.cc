@@ -1,5 +1,7 @@
 #include <GL/glew.h>
 
+#include <iomanip>
+
 #include "Device.hh"
 #include "Rdr.hh"
 #include "Prog.hh"
@@ -10,6 +12,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "stringutil.hpp"
+#include "GLMPrint.hpp"
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -41,12 +44,16 @@ void Rdr::upload(MultiViewNPY* mvn)
 
     assert(mvn);
 
-    make_shader();  // need to compile and link shader for access to attribute locations
+    // need to compile and link shader for access to attribute locations
+    if(m_first_upload)
+    {
+        make_shader();  
+        glUseProgram(m_program);
+        check_uniforms();
+        log("Rdr::upload FIRST m_program:",m_program); 
 
-    glUseProgram(m_program);
+    }    
 
-    check_uniforms();
-    
     unsigned int count(0);
     NPYBase* npy(NULL);
 
@@ -56,10 +63,18 @@ void Rdr::upload(MultiViewNPY* mvn)
         if(npy == NULL)
         {
             count = vnpy->getCount();
-            setCountDefault(count);
-            npy = vnpy->getNPY(); 
 
-            upload(npy);
+            if(m_first_upload)
+            {
+                setCountDefault(count);
+            }
+            else
+            {
+                assert(count == getCountDefault() && "subsequent Rdr::uploads must have same count as first");
+            }
+
+            npy = vnpy->getNPY(); 
+            upload(npy);      // duplicates are not re-uploaded
         }
         else
         {
@@ -69,6 +84,40 @@ void Rdr::upload(MultiViewNPY* mvn)
         } 
         address(vnpy); 
     }
+
+
+    if(m_first_upload)
+    {
+        m_first_upload = false ; 
+    }
+}
+
+
+
+void Rdr::log(const char* msg, int value)
+{
+    LOG(info)
+                 << "Rdr::log " 
+                 << std::setw(10) << getShaderTag() 
+                 << " "
+                 << msg  
+                 << value ;
+ 
+}
+
+
+void Rdr::prepare_vao()
+{
+    if(!m_vao_generated)
+    {
+        glGenVertexArrays (1, &m_vao); 
+        m_vao_generated = true ; 
+        log("prepare_vao : generate m_vao:", m_vao);
+   }
+
+    log("prepare_vao : bind m_vao:", m_vao);
+    glBindVertexArray (m_vao);     
+
 }
 
 
@@ -77,46 +126,55 @@ void Rdr::upload(NPYBase* npy)
     // handles case of multiple mvn referring to the same buffer without data duplication,
     // by maintaining a list of NPYBase which have been uploaded to the Device
 
+    prepare_vao();
+
     if(m_device->isUploaded(npy))
     {
         GLuint buffer_id = npy->getBufferId();
-        LOG(debug) << "Rdr::upload skip, already uploaded to device : attach to preexisting buffer  " << buffer_id  ;
-        attach(buffer_id);
+        log("Rdr::upload BindBuffer to preexisting buffer_id:",buffer_id)  ;
+        assert(buffer_id > 0);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
     }
     else
     {
-        LOG(debug) << "Rdr::upload " ;
+        void* data = npy->getBytes();
+        unsigned int nbytes = npy->getNumBytes(0) ;
 
-        upload(npy->getBytes(), npy->getNumBytes(0));
+        GLuint buffer_id ;  
+        glGenBuffers(1, &buffer_id);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+        glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_STATIC_DRAW );
 
-        npy->setBufferId(m_buffer); 
+        log("Rdr::upload BufferData gen buffer_id:", buffer_id ); 
+
+        npy->setBufferId(buffer_id); 
         m_device->add(npy);
     }
 }
 
 
-void Rdr::attach(GLuint buffer_id)
-{
-    // attach to preexisting buffer 
-    glGenVertexArrays (1, &m_vao); 
-    glBindVertexArray (m_vao);     
-
-    m_buffer = buffer_id ; 
-    glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
-}
 
 
+/*
+   multiple buffers
 
-void Rdr::upload(void* data, unsigned int nbytes)
-{
-    glGenVertexArrays (1, &m_vao); 
-    glBindVertexArray (m_vao);     
+   http://stackoverflow.com/questions/14249634/opengl-vaos-and-multiple-buffers
 
-    glGenBuffers(1, &m_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
-    glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_STATIC_DRAW );
-}
+   appropriate ordering is
 
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, buffer1);
+        glVertexAttribPointer(0, ...);
+        glVertexAttribPointer(1, ...);
+
+        glBindBuffer(GL_ARRAY_BUFFER, buffer2);
+        glVertexAttribPointer(2, ...);
+
+
+
+*/
 
 
 void* Rdr::mapbuffer( int buffer_id, GLenum target )
@@ -167,7 +225,7 @@ void Rdr::address(ViewNPY* vnpy)
     }
 
 
-    LOG(debug) << "Rdr::address name " << name << " type " << vnpy->getType() ;
+    LOG(info) << "Rdr::address " << std::setw(10) << getShaderTag() <<  " name " << name << " type " << vnpy->getType() ;
 
     GLuint       index = location  ;       //  generic vertex attribute to be modified
     GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4
@@ -208,6 +266,7 @@ void Rdr::check_uniforms()
     m_timedomain_location = m_shader->uniform("TimeDomain", required );     
     m_colordomain_location = m_shader->uniform("ColorDomain", required );     
     m_colors_location = m_shader->uniform("Colors", required );     
+    m_recselect_location = m_shader->uniform("RecSelect", required );     
 
     // the "tag" argument of the Rdr identifies the GLSL code being used
     // determining which uniforms are required 
@@ -245,6 +304,14 @@ void Rdr::update_uniforms()
 
         glm::vec4 cd = m_composition->getColorDomain();
         glUniform4f(m_colordomain_location, cd.x, cd.y, cd.z, cd.w  );    
+
+        if(m_recselect_location > -1)
+        {
+            glm::ivec4 recsel = m_composition->getRecSelect();
+            //print(recsel, "Rdr::update_uniforms");
+            //printf("Rdr::update_uniforms %s  m_recselect_location %d \n", getShaderTag(), m_recselect_location);
+            glUniform4i(m_recselect_location, recsel.x, recsel.y, recsel.z, recsel.w  );    
+        }
 
     } 
     else

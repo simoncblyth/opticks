@@ -170,8 +170,14 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
 }
 
 
-
-
+void NumpyEvt::setSelectionData(NPY<unsigned char>* selection_data)
+{
+    m_selection_data = selection_data ;
+    //                                                  j k sz   type                norm   iatt
+    ViewNPY* rsel = new ViewNPY("rsel",m_selection_data,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
+    m_selection_attr = new MultiViewNPY();
+    m_selection_attr->add(rsel);
+}
 
 
 void NumpyEvt::dumpPhotonData()

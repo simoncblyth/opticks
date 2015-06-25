@@ -22,6 +22,7 @@ class Composition : public Configurable {
   public:
       static const char* PRINT ;  
       static const char* SELECT ;  
+      static const char* RECSELECT ;  
 
       friend class Interactor ;   
       friend class Bookmarks ;   
@@ -31,7 +32,8 @@ class Composition : public Configurable {
 
       virtual ~Composition();
       void nextMode(unsigned int modifiers);
-      void tick();
+      unsigned int tick();
+      unsigned int getCount();
 
   private:
       void init();
@@ -63,6 +65,11 @@ class Composition : public Configurable {
       void setSelection(glm::ivec4 sel);
       void setSelection(std::string sel);
       glm::ivec4& getSelection();
+
+  public:
+      void setRecSelect(glm::ivec4 sel);
+      void setRecSelect(std::string sel);
+      glm::ivec4& getRecSelect();
 
   public:
       void setParam(glm::vec4 par);
@@ -177,6 +184,7 @@ class Composition : public Configurable {
       glm::vec4 m_domain_color ; 
       glm::vec4 m_light_position  ; 
   private:
+      glm::ivec4 m_recselect ;
       glm::ivec4 m_selection ;
       glm::ivec4 m_flags ;
       glm::ivec4 m_pick ;
@@ -192,9 +200,10 @@ class Composition : public Configurable {
       View*      m_view ;
       Light*     m_light ;
       Clipper*   m_clipper ;
+      unsigned int m_count ; 
 
       // visitors
-      Scene*     m_scene ; 
+      Scene*       m_scene ; 
 
   private:
       // updated by *update* based on inputs and residents
@@ -235,6 +244,7 @@ inline Composition::Composition()
   m_model_to_world(),
   m_extent(1.0f),
   m_center_extent(),
+  m_recselect(), 
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
   m_param(25.f,0.f,0.f,0.f),   // x: arbitrary scaling of genstep length 
@@ -244,6 +254,7 @@ inline Composition::Composition()
   m_view(NULL),
   m_light(NULL),
   m_clipper(NULL),
+  m_count(0),
   m_scene(NULL)
 {
     init();
@@ -318,10 +329,15 @@ inline glm::mat4& Composition::getDomainISNorm()
 }
 
 
+inline glm::ivec4& Composition::getRecSelect()
+{
+    return m_recselect ; 
+}
 inline glm::ivec4& Composition::getSelection()
 {
     return m_selection ; 
 }
+
 inline glm::ivec4& Composition::getFlags()
 {
     return m_flags ; 
@@ -345,4 +361,7 @@ inline float Composition::getExtent()
 
 
 
-
+inline unsigned int Composition::getCount()
+{
+    return m_count ; 
+}

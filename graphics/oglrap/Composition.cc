@@ -44,6 +44,7 @@
 
 const char* Composition::PRINT = "print" ; 
 const char* Composition::SELECT = "select" ; 
+const char* Composition::RECSELECT = "recselect" ; 
 
 void Composition::init()
 {
@@ -62,18 +63,21 @@ std::vector<std::string> Composition::getTags()
 {
     std::vector<std::string> tags ;
     tags.push_back(SELECT);
+    tags.push_back(RECSELECT);
     return tags ; 
 }
 
 bool Composition::accepts(const char* name)
 {
     return 
-         strcmp(name,SELECT)==0 ;
+         strcmp(name,SELECT)==0 || 
+         strcmp(name,RECSELECT)==0 ;
 }
 
 void Composition::set(const char* name, std::string& s)
 {
     if(     strcmp(name,SELECT)==0) setSelection(s);
+    else if(strcmp(name,RECSELECT)==0) setRecSelect(s);
     else
          printf("Composition::set bad name %s\n", name);
 }
@@ -82,7 +86,8 @@ std::string Composition::get(const char* name)
 {
    std::string s ; 
 
-   if(     strcmp(name,SELECT)==0) s = gformat(getSelection()) ;
+   if(     strcmp(name,SELECT)==0)    s = gformat(getSelection()) ;
+   else if(strcmp(name,RECSELECT)==0) s = gformat(getRecSelect()) ;
    else
          printf("Composition::get bad name %s\n", name);
 
@@ -145,13 +150,17 @@ void Composition::nextMode(unsigned int modifiers)
     m_animator->nextMode(modifiers);
 }
 
-void Composition::tick()
+unsigned int Composition::tick()
 {
+    m_count++ ; 
+
     if(!m_animator) initAnimator();
     bool bump(false);
     m_animator->step(bump);
 
     m_view->tick();
+
+    return m_count ; 
 }
 
 
@@ -254,6 +263,18 @@ void Composition::setSelection(glm::ivec4 selection)
 {
     m_selection = selection ;  
 }
+
+
+void Composition::setRecSelect(std::string recselect)
+{
+    setRecSelect(givec4(recselect));
+}
+void Composition::setRecSelect(glm::ivec4 recselect) 
+{
+    m_recselect = recselect ;  
+}
+
+
 
 
 void Composition::setFlags(std::string flags) 

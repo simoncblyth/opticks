@@ -69,6 +69,11 @@ class NPY : public NPYBase {
        void save(const char* path);
        void save(const char* typ, const char* tag);
        void save(const char* tfmt, const char* targ, const char* tag );
+
+       bool exists(const char* path);
+       bool exists(const char* typ, const char* tag);
+       bool exists(const char* tfmt, const char* targ, const char* tag );
+
        // manipulations change types, not tags:  tfmt % targ -> typ
 
    public:

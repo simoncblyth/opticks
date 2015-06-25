@@ -20,6 +20,10 @@ class Rdr : public RendererBase  {
       void update_uniforms();
       void dump_uniforms();
 
+      void log(const char* msg, int value);
+      void prepare_vao();
+
+
       typedef enum { LINES, LINE_STRIP, POINTS } Primitive_t ; 
       void setPrimitive( Primitive_t prim );
 
@@ -29,7 +33,7 @@ class Rdr : public RendererBase  {
   private:
       void upload(NPYBase* npy);
       void attach(GLuint buffer_id);
-      void upload(void* data, unsigned int nbytes);
+      //void upload(void* data, unsigned int nbytes);
 
   public:
       // *download* : when an OpenGL buffer object is associated, glMapBuffer and read data from GPU into NPY instance 
@@ -38,7 +42,9 @@ class Rdr : public RendererBase  {
 
       static void* mapbuffer( int buffer_id, GLenum target );
       static void unmapbuffer(GLenum target);
-      unsigned int getBufferId();
+
+  private:
+      //unsigned int getBufferId();
 
   private:
       void address(ViewNPY* vnpy);
@@ -55,9 +61,11 @@ class Rdr : public RendererBase  {
       unsigned int getCountDefault();
       
   private:
+      bool    m_first_upload ; 
       Device* m_device ; 
       GLuint m_vao ; 
-      GLuint m_buffer ;
+      bool   m_vao_generated ;
+      //GLuint m_buffer ;
       unsigned int m_countdefault ; 
       Composition* m_composition ;
 
@@ -71,6 +79,7 @@ class Rdr : public RendererBase  {
       GLint  m_timedomain_location ;
       GLint  m_colordomain_location ;
       GLint  m_colors_location ;
+      GLint  m_recselect_location ;
 
       GLenum m_primitive ; 
 
@@ -80,9 +89,11 @@ class Rdr : public RendererBase  {
 inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* incl_path)
     :
     RendererBase(tag, dir, incl_path),  
+    m_first_upload(true),
     m_device(device),
     m_vao(0),
-    m_buffer(0),
+    m_vao_generated(false),
+    //m_buffer(0),
     m_countdefault(0),
     m_composition(NULL),
     m_mv_location(-1),
@@ -95,6 +106,7 @@ inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* in
     m_timedomain_location(-1),
     m_colordomain_location(-1),
     m_colors_location(-1),
+    m_recselect_location(-1),
     m_primitive(GL_POINTS)
 {
 }
@@ -112,10 +124,10 @@ inline void Rdr::download( NPY<T>* npy )
     }
 }
 
-inline unsigned int Rdr::getBufferId()
-{
-   return m_buffer ; 
-}
+//inline unsigned int Rdr::getBufferId()
+//{
+//   return m_buffer ; 
+//}
 
 inline void Rdr::configureI(const char* name, std::vector<int> values )
 {

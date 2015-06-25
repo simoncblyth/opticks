@@ -30,6 +30,8 @@ class Types {
 
    public:
        Index*                    getFlagsIndex();
+       Index*                    getMaterialsIndex();
+       void                      setMaterialsIndex(Index* index);
    public:
        std::string getMaskString(unsigned int mask, Item_t etype);
        std::string getMaterialString(unsigned int flags);
@@ -126,4 +128,9 @@ inline const char* Types::getTail()
 }
 
 
+
+inline Index* Types::getMaterialsIndex()
+{
+    return m_materials_index ; 
+}
 

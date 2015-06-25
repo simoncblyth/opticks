@@ -16,6 +16,7 @@
 
 // npy-
 #include "NumpyEvt.hpp"
+#include "MultiViewNPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
@@ -144,10 +145,20 @@ void Scene::init()
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
 
 
+    //
+    // RECORD RENDERING USES AN UNPARTIONED BUFFER OF ALL RECORDS
+    // SO THE GEOMETRY SHADERS HAVE TO THROW INVALID STEPS AS DETERMINED BY
+    // COMPARING THE TIMES OF THE STEP PAIRS  
+    // THIS MEANS SINGLE VALID STEPS WOULD BE IGNORED..
+    // THUS MUST SUPPLY LINE_STRIP SO GEOMETRY SHADER CAN GET TO SEE EACH VALID
+    // VERTEX IN A PAIR
+    //
+    // OTHERWISE WILL MISS STEPS
+    //
+    //  see explanations in gl/altrec/geom.glsl
+    //
     m_record_renderer = new Rdr(m_device, "rec", m_shader_dir, m_shader_incl_path );
-    m_record_renderer->setPrimitive(Rdr::LINES);
-    //m_record_renderer->setPrimitive(Rdr::LINE_STRIP);
-
+    m_record_renderer->setPrimitive(Rdr::LINE_STRIP);
 
     m_altrecord_renderer = new Rdr(m_device, "altrec", m_shader_dir, m_shader_incl_path);
     m_altrecord_renderer->setPrimitive(Rdr::LINE_STRIP);
@@ -216,12 +227,25 @@ void Scene::uploadEvt()
     // all renderers ready to roll so can live switch between them, 
     // data is not duplicated thanks to Device
 
-    m_record_renderer->upload(m_evt->getRecordAttr());
-    m_altrecord_renderer->upload(m_evt->getRecordAttr());
-    m_devrecord_renderer->upload(m_evt->getRecordAttr());
-
+    uploadRecordAttr(m_evt->getRecordAttr());
 }
 
+void Scene::uploadSelection()
+{
+    assert(m_evt);
+    LOG(info)<<"Scene::uploadSelection";
+    uploadRecordAttr(m_evt->getSelectionAttr()); 
+}
+
+
+void Scene::uploadRecordAttr(MultiViewNPY* attr)
+{
+    assert(attr);
+    if(!attr) return ;  
+    m_record_renderer->upload(attr);
+    m_altrecord_renderer->upload(attr);
+    m_devrecord_renderer->upload(attr);
+}
 
 
 void Scene::render()

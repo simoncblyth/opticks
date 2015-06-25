@@ -43,6 +43,7 @@
 #include "BoundariesNPY.hpp"
 #include "SequenceNPY.hpp"
 #include "Types.hpp"
+#include "Index.hpp"
 #include "stringutil.hpp"
 
 // bregex-
@@ -201,7 +202,11 @@ int main(int argc, char** argv)
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     loader.load(nogeocache);
 
-    GBuffer* colorbuffer = loader.getMaterials()->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
+    GItemIndex* materials = loader.getMaterials();
+    types.setMaterialsIndex(materials->getIndex());
+
+
+    GBuffer* colorbuffer = materials->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
     scene.uploadColorBuffer(colorbuffer);
     scene.setGeometry(loader.getDrawable());
     scene.setTarget(0);
@@ -240,7 +245,10 @@ int main(int argc, char** argv)
 
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
+
     scene.uploadEvt();
+
+
     LOG(info) << "main: scene.uploadEvt DONE "; 
     //
     // TODO:  
@@ -299,12 +307,27 @@ int main(int argc, char** argv)
     rec.setTypes(&types);
     rec.setDomains((NPY<float>*)domain);
 
+
+
+    // hmm loading precooked seq not so easy 
+    //if(NPY<unsigned char>::exists("seq%s", typ, tag))
+    
     SequenceNPY seq(dpho);
     seq.setTypes(&types);
     seq.setRecs(&rec);
+    seq.indexSequences(); // <-- takes a while, should make optional OR arrange to load
+    Index* seqhis = seq.getSeqHis();
+    Index* seqmat = seq.getSeqMat();
+    glm::ivec4& recsel = composition.getRecSelect();
 
-    seq.dumpUniqueHistories();
-    seq.indexSequences(); // <-- takes a while, should make optional
+    NPY<unsigned char>* seqidx = seq.getSeqIdx();
+    seqidx->save("seq%s", typ, tag);  // hmm should split by typ, if not treating as transient
+
+
+
+    evt.setSelectionData(seqidx);
+
+    scene.uploadSelection();
 
 
     Photons photons(&pho, &bnd, &seq) ; // GUI jacket 
@@ -316,13 +339,8 @@ int main(int argc, char** argv)
     gui.setComposition(&composition);
     gui.setBookmarks(&bookmarks);
     gui.setInteractor(&interactor);   // status line
-    gui.setLoader(&loader);   // access to Material / Surface indices
+    gui.setLoader(&loader);           // access to Material / Surface indices
     
- 
-
-    // TODO: suspect two material indices in use... unify 
-
-
     gui.init(window);
     gui.setupHelpText( cfg.getDescString() );
 
@@ -335,6 +353,8 @@ int main(int argc, char** argv)
     //frame.toggleFullscreen(true); causing blankscreen then segv
     frame.hintVisible(true);
     frame.show();
+
+    unsigned int count ; 
 
     while (!glfwWindowShouldClose(window))
     {
@@ -352,7 +372,7 @@ int main(int argc, char** argv)
             scene.render();
         }
 
-        composition.tick();
+        count = composition.tick();
 
 #ifdef GUI_
         gui.newframe();
@@ -363,6 +383,13 @@ int main(int argc, char** argv)
             glm::ivec4 sel = bnd.getSelection() ;
             composition.setSelection(sel); 
             composition.getPick().y = sel.x ;   //  1st boundary 
+
+
+            recsel.x = seqhis->getSelected(); 
+            recsel.y = seqmat->getSelected(); 
+
+            //if(count % 100 == 0) print(recsel, "main::recsel");
+
             composition.setFlags(types.getFlags()); 
             // maybe imgui edit selection within the composition imgui, rather than shovelling ?
             // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
