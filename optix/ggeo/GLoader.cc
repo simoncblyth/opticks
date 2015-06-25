@@ -6,9 +6,12 @@
 #include "GBoundaryLib.hh"
 #include "GSensorList.hh"
 #include "GBoundaryLibMetadata.hh"
-#include "GMaterialIndex.hh"
-#include "GSurfaceIndex.hh"
-#include "GFlagIndex.hh"
+
+//#include "GMaterialIndex.hh"
+//#include "GSurfaceIndex.hh"
+//#include "GFlagIndex.hh"
+#include "GItemIndex.hh"
+
 #include "GGeo.hh"
 #include "GCache.hh"
 #include "GColors.hh"
@@ -16,8 +19,8 @@
 
 // npy-
 #include "stringutil.hpp"
-
 #include "Lookup.hpp"
+#include "Types.hpp"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -43,8 +46,8 @@ void GLoader::load(bool nogeocache)
         m_ggeo = NULL ; 
         m_mergedmesh = GMergedMesh::load(idpath);
         m_metadata   = GBoundaryLibMetadata::load(idpath);
-        m_materials  = GMaterialIndex::load(idpath);
-        m_surfaces   = GSurfaceIndex::load(idpath);
+        m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); // TODO: find common place for such strings, maybe Types.hpp
+        m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
     } 
     else
     {
@@ -77,7 +80,8 @@ void GLoader::load(bool nogeocache)
     m_lookup = new Lookup() ; 
     m_lookup->create(idpath);
 
-    m_flags = GFlagIndex::load(idpath); 
+    Index* idx = m_types->getFlagsIndex() ;    
+    m_flags = new GItemIndex( idx );     //GFlagIndex::load(idpath); 
 
     // itemname => colorname 
     m_materials->setColorMap(GColorMap::load(idpath, "GMaterialIndexColors.json")); 

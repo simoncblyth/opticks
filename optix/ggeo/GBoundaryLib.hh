@@ -13,8 +13,9 @@ class GBoundary ;
 class GBuffer ; 
 class GBoundaryLibMetadata ; 
 class GBuffer ; 
-class GMaterialIndex ; 
-class GSurfaceIndex ; 
+class GItemIndex ; 
+//class GMaterialIndex ; 
+//class GSurfaceIndex ; 
 
 class GBoundaryLib {
   public:
@@ -107,8 +108,8 @@ class GBoundaryLib {
       const char* getDigest(unsigned int index);
   public:
       GBoundaryLibMetadata* getMetadata(); // populated by createWavelengthBuffer
-      GMaterialIndex*       getMaterials(); 
-      GSurfaceIndex*        getSurfaces(); 
+      GItemIndex*           getMaterials(); 
+      GItemIndex*           getSurfaces(); 
 
   public:
       // convenience methods
@@ -203,8 +204,8 @@ class GBoundaryLib {
       GPropertyMap<float>*   m_defaults ;  
       GProperty<float>*      m_ramp ;  
       GBoundaryLibMetadata*  m_meta ;
-      GMaterialIndex*        m_materials ;
-      GSurfaceIndex*         m_surfaces ;
+      GItemIndex*            m_materials ;
+      GItemIndex*            m_surfaces ;
       GBuffer*               m_wavelength_buffer ;
       GBuffer*               m_reemission_buffer ;
       GBuffer*               m_optical_buffer ;
@@ -244,11 +245,11 @@ inline void GBoundaryLib::setMetadata(GBoundaryLibMetadata* meta)
     m_meta = meta ; 
 }
 
-inline GMaterialIndex* GBoundaryLib::getMaterials()
+inline GItemIndex* GBoundaryLib::getMaterials()
 {
     return m_materials ; 
 }
-inline GSurfaceIndex* GBoundaryLib::getSurfaces()
+inline GItemIndex* GBoundaryLib::getSurfaces()
 {
     return m_surfaces ; 
 }

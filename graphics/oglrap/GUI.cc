@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "gleq.h"
 
+
 // ggeo-
 #include "GLoader.hh"
 #include "GItemIndex.hh"
@@ -155,7 +156,7 @@ void GUI::show(bool* opened)
     m_photons->gui(); 
 
 
-    GItemIndex* materials = m_loader ? (GItemIndex*)m_loader->getMaterials() : NULL ; 
+    GItemIndex* materials = m_loader ? m_loader->getMaterials() : NULL ; 
     if(materials)
     {
         ImGui::Spacing();
@@ -163,7 +164,7 @@ void GUI::show(bool* opened)
     } 
 
 
-    GItemIndex* flags = m_loader ? (GItemIndex*)m_loader->getFlags() : NULL ; 
+    GItemIndex* flags = m_loader ? m_loader->getFlags() : NULL ; 
     if(flags)
     {
         ImGui::Spacing();

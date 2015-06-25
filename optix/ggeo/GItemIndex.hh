@@ -11,31 +11,40 @@ class Index ;
 #include <map>
 #include <vector>
 
+// adds colors and gui to basis Index constituent 
 class GItemIndex {
-        friend class GSurfaceIndex ; 
-        friend class GMaterialIndex ; 
+       // friend class GSurfaceIndex ; 
+       // friend class GMaterialIndex ; 
    public:
+        static GItemIndex* load(const char* idpath, const char* itemtype);
+   public:
+        GItemIndex(Index* index);
         GItemIndex(const char* itemtype);
-        void loadIndex(const char* idpath);
+   public:
         void add(const char* name, unsigned int source);
         unsigned int getIndexLocal(const char* name, unsigned int missing=0);
+        unsigned int getNumItems();
+        Index*       getIndex();
         //const char* getItemType();
+   public:
+        void loadIndex(const char* idpath);
    private:
         void init(const char* itemtype);
    public:
         void save(const char* idpath);
-        unsigned int getNumItems();
         void dump(const char* msg="GItemIndex::dump");
         void test(const char* msg="GItemIndex::test", bool verbose=true);
 
    public:
-       // color/GUI related
-        void setColorSource(GColors* colors);
-        void setColorMap(GColorMap* colormap);
+        // color
+        void     setColorSource(GColors* colors);
+        void     setColorMap(GColorMap* colormap);
         GBuffer* makeColorBuffer();
         GBuffer* getColorBuffer();
-        void gui();
-        void formTable();
+   public:
+        // GUI 
+        void     gui();
+        void     formTable();
 
    private:
         Index*                               m_index ; 
@@ -59,7 +68,14 @@ inline GItemIndex::GItemIndex(const char* itemtype)
    init(itemtype);
 }
 
-
+inline GItemIndex::GItemIndex(Index* index)
+   : 
+   m_index(index),
+   m_colors(NULL),
+   m_colormap(NULL),
+   m_colorbuffer(NULL)
+{
+}
 
 inline void GItemIndex::setColorSource(GColors* colors)
 {
@@ -70,4 +86,7 @@ inline void GItemIndex::setColorMap(GColorMap* colormap)
    m_colormap = colormap ; 
 }
 
-
+inline Index* GItemIndex::getIndex()
+{
+   return m_index ; 
+}

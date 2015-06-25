@@ -32,8 +32,9 @@ int main(int argc, char** argv)
     SequenceNPY s(photons);
     s.setTypes(&types);
     s.setRecs(&r);
-    s.examinePhotonHistories();
-    s.prepSequenceIndex();
+
+    s.dumpUniqueHistories();
+    s.indexSequences();
 
     NPY<unsigned char>* seqidx = s.getSeqIdx();
     seqidx->setVerbose();

@@ -11,6 +11,11 @@ class Index {
         Index(const char* itemtype);
         void save(const char* idpath);
         const char* getItemType();
+
+   public:
+        int* getSelectedPtr();
+        int  getSelected();
+
    private:
         void loadMaps(const char* idpath);
         void crossreference();
@@ -36,6 +41,7 @@ class Index {
 
    private:
         const char*                          m_itemtype ; 
+        int                                  m_selected ; 
         std::map<std::string, unsigned int>  m_source ; 
         std::map<std::string, unsigned int>  m_local ; 
         std::map<unsigned int, unsigned int> m_source2local ; 
@@ -49,7 +55,8 @@ class Index {
 
 inline Index::Index(const char* itemtype)
    : 
-   m_itemtype(strdup(itemtype))
+   m_itemtype(strdup(itemtype)),
+   m_selected(0)
 {
 }
 inline const char* Index::getItemType()
@@ -60,5 +67,19 @@ inline std::vector<std::string>& Index::getNames()
 {
     return m_names ;  
 }
+
+
+inline int Index::getSelected()
+{
+    return m_selected ; 
+}
+inline int* Index::getSelectedPtr()
+{
+    return &m_selected ; 
+}
+
+
+
+
 
 

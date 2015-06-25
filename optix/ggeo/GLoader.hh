@@ -2,15 +2,21 @@
 
 #include "stdlib.h"
 
+
+// npy-
+class Types ; 
+
 class GCache ; 
 class GGeo ; 
 class GMergedMesh ; 
 class GDrawable ; 
 class GBoundaryLibMetadata ; 
-class GMaterialIndex ; 
-class GSurfaceIndex ; 
-class GFlagIndex ; 
+//class GMaterialIndex ; 
+//class GSurfaceIndex ; 
+//class GFlagIndex ; 
+class GItemIndex ; 
 class GColors ; 
+
 
 class Lookup ; 
 
@@ -20,6 +26,7 @@ class GLoader {
 
     public:
          GLoader();
+         void setTypes(Types* types);
          void setCache(GCache* cache);
          void setImp(GLoaderImpFunctionPtr imp);
          void load(bool nogeocache=false);
@@ -33,22 +40,33 @@ class GLoader {
          GMergedMesh*           getMergedMesh();
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
-         GMaterialIndex*        getMaterials();
-         GSurfaceIndex*         getSurfaces();
-         GFlagIndex*            getFlags();
+         //GMaterialIndex*        getMaterials();
+         //GSurfaceIndex*         getSurfaces();
+         //GFlagIndex*            getFlags();
+         GItemIndex*        getMaterials();
+         GItemIndex*         getSurfaces();
+         GItemIndex*            getFlags();
+
+
          GColors*               getColors();
 
          Lookup*                getMaterialLookup();
 
     private:
+         Types*                    m_types ; 
          GCache*                   m_cache ; 
          GLoaderImpFunctionPtr     m_imp ;  
          GGeo*                     m_ggeo ;    
          GMergedMesh*              m_mergedmesh ;
          GBoundaryLibMetadata*     m_metadata ;
-         GMaterialIndex*           m_materials ;
-         GSurfaceIndex*            m_surfaces ;
-         GFlagIndex*               m_flags ;
+
+         //GMaterialIndex*           m_materials ;
+         //GSurfaceIndex*            m_surfaces ;
+         //GFlagIndex*               m_flags ;
+         GItemIndex*               m_materials ;
+         GItemIndex*               m_surfaces ;
+         GItemIndex*               m_flags ;
+
          GColors*                  m_colors ;  
          Lookup*                   m_lookup ; 
      
@@ -56,6 +74,7 @@ class GLoader {
 
 inline GLoader::GLoader() 
    :
+   m_types(NULL),
    m_cache(NULL),
    m_ggeo(NULL),
    m_mergedmesh(NULL),
@@ -79,11 +98,15 @@ inline void GLoader::setImp(GLoaderImpFunctionPtr imp)
 {
     m_imp = imp ; 
 }
-
+inline void GLoader::setTypes(Types* types)
+{
+    m_types = types ; 
+}
 inline void GLoader::setCache(GCache* cache)
 {
     m_cache = cache ; 
 }
+
 
 inline GGeo* GLoader::getGGeo()
 {
@@ -113,15 +136,15 @@ inline GColors* GLoader::getColors()
     return m_colors ; 
 }
 
-inline GMaterialIndex* GLoader::getMaterials()
+inline GItemIndex* GLoader::getMaterials()
 {
     return m_materials ; 
 }
-inline GSurfaceIndex* GLoader::getSurfaces()
+inline GItemIndex* GLoader::getSurfaces()
 {
     return m_surfaces ; 
 }
-inline GFlagIndex* GLoader::getFlags()
+inline GItemIndex* GLoader::getFlags()
 {
     return m_flags ; 
 }

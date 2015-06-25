@@ -2,6 +2,7 @@
 
 #include "stdlib.h"
 #include "assert.h"
+#include "stdio.h"
 
 int main(int argc, char** argv)
 {
@@ -12,6 +13,10 @@ int main(int argc, char** argv)
     types.dumpFlags();
     types.readMaterials(idpath, "GMaterialIndexLocal.json");
     types.dumpMaterials();
+
+    types.getHistoryStringTest();
+    types.getMaterialStringTest();
+  
 
     return 0 ;
 }

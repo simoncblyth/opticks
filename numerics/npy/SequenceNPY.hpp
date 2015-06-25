@@ -21,7 +21,6 @@ class Index ;
 //    succeeds to give perfect agreement  
 //                 
 
-
 class SequenceNPY {
    public:  
        enum {
@@ -38,8 +37,9 @@ class SequenceNPY {
        RecordsNPY*           getRecs();
        Types*                getTypes();
    public:  
-       void examinePhotonHistories();
-       void prepSequenceIndex();
+       void                  indexSequences();
+   public:  
+       void                  dumpUniqueHistories();
    public:  
        NPY<unsigned char>*   getSeqIdx();
        Index*                getSeqHis(); 
@@ -49,25 +49,34 @@ class SequenceNPY {
        static bool second_value_order(const std::pair<int,int>&a, const std::pair<int,int>&b);
        static bool su_second_value_order(const std::pair<std::string,unsigned int>&a, const std::pair<std::string,unsigned int>&b);
 
-   public:
-       Index* makeSequenceCountsIndex( Types::Item_t etype, 
-            std::map<std::string, unsigned int>& su,
-            std::map<std::string, std::vector<unsigned int> >&  sv,
-            unsigned int cutoff
-       );
+   private:
+       Index* makeSequenceCountsIndex( 
+               Types::Item_t etype, 
+               std::map<std::string, unsigned int>& su,
+               std::map<std::string, std::vector<unsigned int> >&  sv,
+               unsigned int cutoff
+               );
 
        void fillSequenceIndex(
                 unsigned int k,
                 Index* idx, 
-                std::map<std::string, std::vector<unsigned int> >&  sv );
+                std::map<std::string, std::vector<unsigned int> >&  sv 
+                );
 
-       void dumpMaskCounts(const char* msg, Types::Item_t etype, std::map<unsigned int, unsigned int>& uu, unsigned int cutoff);
+       void dumpMaskCounts(
+                const char* msg, 
+                Types::Item_t etype, 
+                std::map<unsigned int, unsigned int>& uu, 
+                unsigned int cutoff
+                );
 
-       void dumpSequenceCounts(const char* msg, Types::Item_t etype, 
-                                 std::map<std::string, unsigned int>& su,
-                                 std::map<std::string, std::vector<unsigned int> >& sv,
-                                 unsigned int cutoff
-                              );
+       void dumpSequenceCounts(
+                const char* msg, 
+                Types::Item_t etype, 
+                std::map<std::string, unsigned int>& su,
+                std::map<std::string, std::vector<unsigned int> >& sv,
+                unsigned int cutoff
+                );
 
    private:
        NPY<float>*                  m_photons ; 

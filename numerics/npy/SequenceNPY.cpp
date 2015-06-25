@@ -21,23 +21,24 @@
 // trace/debug/info/warning/error/fatal
 
 
-
 void SequenceNPY::setRecs(RecordsNPY* recs)
 {
     m_recs = recs ; 
     m_maxrec = recs->getMaxRec();
 }
 
-void SequenceNPY::examinePhotonHistories()
+void SequenceNPY::dumpUniqueHistories()
 {
     // find counts of all histories 
     typedef std::map<unsigned int,unsigned int>  MUU ; 
     MUU uu = m_photons->count_unique_u(3,3) ; 
-    dumpMaskCounts("SequenceNPY::examinePhotonHistories : ", Types::HISTORY, uu, 1);
+    dumpMaskCounts("SequenceNPY::dumpUniqueHistories : ", Types::HISTORY, uu, 1);
 }
 
-void SequenceNPY::prepSequenceIndex()
+void SequenceNPY::indexSequences()
 {
+    LOG(info)<<"SequenceNPY::indexSequences START ... this takes a while " ; 
+
     unsigned int ni = m_photons->m_len0 ;
 
     typedef std::vector<unsigned int> VU ;
@@ -82,13 +83,6 @@ void SequenceNPY::prepSequenceIndex()
          std::string seqmat = m_recs->getSequenceString(photon_id, Types::MATERIAL);
          std::string seqhis = m_recs->getSequenceString(photon_id, Types::HISTORY);
 
-
-         if(i< 10)
-         {
-            printf("seqmat %s \n", seqmat.c_str());
-            printf("seqhis %s \n", seqhis.c_str());
-         } 
-
          // map counting difference history/material sequences
          suh[seqhis] += 1; 
          sum[seqmat] += 1 ; 
@@ -99,23 +93,25 @@ void SequenceNPY::prepSequenceIndex()
     }
     assert( mismatch.size() == 0);
 
-    printf("SequenceNPY::consistencyCheck photons %u mismatch %lu \n", ni, mismatch.size());
-    dumpMaskCounts("SequenceNPY::consistencyCheck histories", Types::HISTORY, uuh, 1 );
-    dumpMaskCounts("SequenceNPY::consistencyCheck materials", Types::MATERIAL, uum, 1000 );
-    dumpSequenceCounts("SequenceNPY::consistencyCheck seqhis", Types::HISTORY, suh , svh, 1000);
-    dumpSequenceCounts("SequenceNPY::consistencyCheck seqmat", Types::MATERIAL, sum , svm, 1000);
+    printf("SequenceNPY::indexSequences photons %u mismatch %lu \n", ni, mismatch.size());
+    dumpMaskCounts("SequenceNPY::indexSequences histories", Types::HISTORY, uuh, 1 );
+    dumpMaskCounts("SequenceNPY::indexSequences materials", Types::MATERIAL, uum, 1000 );
+    dumpSequenceCounts("SequenceNPY::indexSequences seqhis", Types::HISTORY, suh , svh, 1000);
+    dumpSequenceCounts("SequenceNPY::indexSequences seqmat", Types::MATERIAL, sum , svm, 1000);
 
 
     Index* idxh = makeSequenceCountsIndex( Types::HISTORYSEQ,  suh , svh, 1000 );
-    idxh->dump();
+    idxh->dump("SequenceNPY::indexSequences");
     fillSequenceIndex( e_seqhis , idxh, svh );
 
     Index* idxm = makeSequenceCountsIndex( Types::MATERIALSEQ,  sum , svm, 1000 );
-    idxm->dump();
+    idxm->dump("SequenceNPY::indexSequences");
     fillSequenceIndex( e_seqmat, idxm, svm );
 
     m_seqhis = idxh ; 
     m_seqmat = idxm ; 
+
+    LOG(info)<<"SequenceNPY::indexSequences DONE " ; 
 }
 
 
@@ -222,7 +218,8 @@ Index* SequenceNPY::makeSequenceCountsIndex(
        unsigned int cutoff
        )
 {
-    Index* idx = new Index(m_types->getItemName(etype));
+    const char* itemname = m_types->getItemName(etype);
+    Index* idx = new Index(itemname);
 
     typedef std::map<std::string, std::vector<unsigned int> >  MSV ;
     typedef std::map<std::string, unsigned int> MSU ;
@@ -249,13 +246,19 @@ Index* SequenceNPY::makeSequenceCountsIndex(
               << "SequenceNPY::makeSequenceCountsIndex" 
               << " total " << total 
               << " cutoff " << cutoff 
+              << " itemname " << itemname
               << std::endl ; 
 
 
     for(unsigned int i=0 ; i < idx->getNumItems() ; i++)
     {
+         std::string label = idx->getNameLocal(i+1) ;
+         std::string dlabel = m_recs->decodeSequenceString(label, etype);
+
          std::cout << std::setw(3) << i + 1 
-                   << std::setw(20) << idx->getNameLocal(i+1)
+                   << std::setw(35) << label
+                   << " : "  
+                   << dlabel
                    << std::endl ; 
     }  
 

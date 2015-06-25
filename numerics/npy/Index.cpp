@@ -108,7 +108,7 @@ void Index::test(const char* msg, bool verbose)
        assert(convertLocalToSource(local)==source); 
 
        if(verbose) std::cout 
-            << " name   " << std::setw(25) <<  iname
+            << " name   " << std::setw(35) <<  iname
             << " source " << std::setw(10) <<  std::dec << source
             << " local  " << std::setw(10) <<  std::dec << local
             << std::endl ; 

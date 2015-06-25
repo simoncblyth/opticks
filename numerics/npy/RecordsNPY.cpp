@@ -199,20 +199,25 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         glm::uvec4 flag ; 
         unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
 
-        unsigned int bit(0) ; 
+        unsigned int bitpos(0) ; 
         switch(etype)
         {
-            case Types::MATERIAL:bit = flag.x  ;break; 
-            case Types::HISTORY: bit = flag.w  ;break; 
-            case Types::MATERIALSEQ: assert(0) ;break; 
-            case Types::HISTORYSEQ:  assert(0) ;break; 
+            case     Types::MATERIAL: bitpos = flag.x  ;break; 
+            case      Types::HISTORY: bitpos = flag.w  ;break; 
+            case  Types::MATERIALSEQ: assert(0)        ;break; 
+            case   Types::HISTORYSEQ: assert(0)        ;break; 
         }  
-        assert(bit < 32);
+        assert(bitpos < 32);
 
-        //ss << std::hex << std::setw(2) << std::setfill('0') << bit ; 
+        unsigned int bitmask = 1 << (bitpos - 1);
+        assert(ffs(bitmask) == bitpos);
 
-        std::string label = m_types->getMaskString(bit, etype) ;
-        ss << m_types->getAbbrev(label, etype) ; 
+        std::string label = m_types->getMaskString( bitmask, etype) ;
+        std::string abbrev = m_types->getAbbrev(label, etype) ; 
+
+        //if(photon_id == 0) printf("bitpos %u bitmask %x label %s abbrev %s \n", bitpos, bitmask, label.c_str(), abbrev.c_str());
+
+        ss << abbrev ;
 
     }
     return ss.str();
@@ -221,26 +226,23 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
 
 std::string RecordsNPY::decodeSequenceString(std::string& seq, Types::Item_t etype)
 {
-    assert(seq.size() % 2 == 0);
+    const char* tail = m_types->getTail(); 
+    unsigned int elen = 2 + strlen(tail);
+
+
+    assert(seq.size() % elen == 0);
     std::stringstream ss ;
-    unsigned int nelem = seq.size()/2 ; 
+    unsigned int nelem = seq.size()/elen ;
+   // printf("RecordsNPY::decodeSequenceString %s elen %u \n", seq.c_str(), elen ); 
     for(unsigned int i=0 ; i < nelem ; i++)
     {
-        std::string sub = seq.substr(i*2, 2) ;
-
+        std::string sub = seq.substr(i*elen, elen) ;
         std::string label = m_types->getAbbrevInvert(sub, etype);
-
-        //unsigned int bit = hex_lexical_cast<unsigned int>(sub.c_str());
-        //ss << sub << ":" << bit << ":" << getMaskString( 1 << (bit-1) , etype) << " "  ; 
-        //ss << m_types->getMaskString( 1 << (bit-1) , etype) << " "  ; 
-
-        ss  << label << " " ; 
-
-
+        //printf("RecordsNPY::decodeSequenceString sub [%s] label [%s] \n", sub.c_str(), label.c_str() ); 
+        ss  << label ; // no spacing needed, the tail spacer is internal
     }  
     return ss.str();
 }
-
 
 
 void RecordsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material)

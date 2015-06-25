@@ -23,6 +23,13 @@
 // trace/debug/info/warning/error/fatal
 
 
+GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype)
+{
+    GItemIndex* idx = new GItemIndex(itemtype) ;    // itemname->index
+    idx->loadIndex(idpath);
+    return idx ; 
+}
+
 void GItemIndex::init(const char* itemtype)
 {
     m_index = new Index(itemtype);
@@ -73,7 +80,6 @@ void GItemIndex::dump(const char* msg)
    LOG(info) << msg << " itemtype: " << m_index->getItemType()  ; 
 
    typedef std::vector<std::string> VS ; 
-
    VS names = m_index->getNames();
    for(VS::iterator it=names.begin() ; it != names.end() ; it++ )
    {
@@ -84,7 +90,7 @@ void GItemIndex::dump(const char* msg)
        unsigned int source = m_index->getIndexSource(iname.c_str()) ;
        unsigned int local  = m_index->getIndexLocal(iname.c_str()) ;
        std::cout 
-            << " iname  " << std::setw(25) <<  iname
+            << " iname  " << std::setw(35) <<  iname
             << " source " << std::setw(4) <<  std::dec << source
             << " local  " << std::setw(4) <<  std::dec << local
             << " 0x " << std::setw(4)     <<  std::hex << local

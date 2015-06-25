@@ -41,6 +41,7 @@
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
+#include "SequenceNPY.hpp"
 #include "Types.hpp"
 #include "stringutil.hpp"
 
@@ -190,7 +191,12 @@ int main(int argc, char** argv)
     bool nooptix = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
 
+
+    Types types ;  
+    types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
+
     GLoader loader ;
+    loader.setTypes(&types);
     loader.setCache(&cache);
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     loader.load(nogeocache);
@@ -281,9 +287,6 @@ int main(int argc, char** argv)
     drec->setVerbose();
     drec->save("rx%s", typ,  tag );
 
-    Types types ;  
-    types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
-
     BoundariesNPY bnd(dpho); 
     bnd.setTypes(&types);
     bnd.setBoundaryNames(boundaries);
@@ -292,7 +295,19 @@ int main(int argc, char** argv)
     PhotonsNPY pho(dpho);
     pho.setTypes(&types);
 
-    Photons photons(&pho, &bnd) ; // GUI jacket 
+    RecordsNPY rec(drec, evt.getMaxRec());
+    rec.setTypes(&types);
+    rec.setDomains((NPY<float>*)domain);
+
+    SequenceNPY seq(dpho);
+    seq.setTypes(&types);
+    seq.setRecs(&rec);
+
+    seq.dumpUniqueHistories();
+    seq.indexSequences(); // <-- takes a while, should make optional
+
+
+    Photons photons(&pho, &bnd, &seq) ; // GUI jacket 
     scene.setPhotons(&photons);
 
 #ifdef GUI_
@@ -302,6 +317,11 @@ int main(int argc, char** argv)
     gui.setBookmarks(&bookmarks);
     gui.setInteractor(&interactor);   // status line
     gui.setLoader(&loader);   // access to Material / Surface indices
+    
+ 
+
+    // TODO: suspect two material indices in use... unify 
+
 
     gui.init(window);
     gui.setupHelpText( cfg.getDescString() );

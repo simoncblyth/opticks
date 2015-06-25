@@ -1,7 +1,8 @@
 #include "GBoundaryLib.hh"
 #include "GBoundaryLibMetadata.hh"
-#include "GMaterialIndex.hh"
-#include "GSurfaceIndex.hh"
+#include "GItemIndex.hh"
+//#include "GItemIndex.hh"
+
 #include "GBoundary.hh"
 #include "GPropertyMap.hh"
 #include "GBuffer.hh"
@@ -174,8 +175,8 @@ void GBoundaryLib::init()
 
 
     m_meta = new GBoundaryLibMetadata ; 
-    m_materials = new GMaterialIndex ; 
-    m_surfaces  = new GSurfaceIndex ; 
+    m_materials = new GItemIndex("GMaterialIndex") ; // names for compatibility with prior classes 
+    m_surfaces  = new GItemIndex("GSurfaceIndex") ; 
 }
 
 
@@ -767,7 +768,7 @@ array([[[ 76,   0,   0,   0],
 
         //unsigned int iindex = boundary->getInnerMaterial()->getIndex();
         //unsigned int oindex = boundary->getOuterMaterial()->getIndex();
-        // collect material names and source indices into GMaterialIndex
+        // collect material names and source indices into GItemIndex
         //m_materials->add(ishortname.c_str(), iindex );
         //m_materials->add(oshortname.c_str(), oindex );
 
@@ -792,7 +793,7 @@ array([[[ 76,   0,   0,   0],
                 GOpticalSurface* os = psrc->getOpticalSurface();
                 assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
 
-                m_surfaces->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GSurfaceIndex
+                m_surfaces->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GItemIndex
                 unsigned int index_local = m_surfaces->getIndexLocal(shortname.c_str());  
 
                 optical_data[opticalOffset + p*4 + optical_index]  =  index_local ; 
@@ -802,7 +803,7 @@ array([[[ 76,   0,   0,   0],
             } 
             else if(psrc->isMaterial())
             {
-                m_materials->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GMaterialIndex
+                m_materials->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GItemIndex
                 unsigned int index_local = m_materials->getIndexLocal(shortname.c_str());  
 
                 optical_data[opticalOffset + p*4 + optical_index]  = index_local ;  
@@ -908,7 +909,7 @@ void  GBoundaryLib::dumpIndex(const char* msg)
 
 void GBoundaryLib::saveIndex(const char* dir, const char* filename)
 {
-   // HAVE SHIFTED TO GMaterialIndex for this 
+   // HAVE SHIFTED TO GItemIndex for this 
    // saveMap<unsigned int, std::string>(m_index, dir, filename );
 }
 
