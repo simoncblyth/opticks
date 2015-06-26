@@ -354,6 +354,11 @@ void OptiXEngine::initGenerate()
 }
 
 
+
+
+
+
+
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
     NPY<float>* gensteps = evt->getGenstepData();
@@ -438,7 +443,29 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     }
 
  
+    NPY<unsigned long long>* history = evt->getHistoryData();
+    //printf(" ul %lu ull %lu \n", sizeof(unsigned long), sizeof(unsigned long long) );
+    assert(sizeof(unsigned char) == 1);
+    assert(sizeof(unsigned short) == 2);
+    assert(sizeof(unsigned int) == 4);
+    assert(sizeof(unsigned long) == 8);
+    assert(sizeof(unsigned long long) == 8);
 
+    int history_buffer_id = history ? history->getBufferId() : -1 ;
+    if(history_buffer_id > -1)
+    {
+        unsigned int history_count = history->getShape(0);
+        LOG(info)<<"OptiXEngine::initGenerate  history buffer count: " << history_count ;
+        m_history_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, history_buffer_id);
+        m_history_buffer->setFormat(RT_FORMAT_USER);
+        m_history_buffer->setElementSize(sizeof(unsigned long long));
+        m_history_buffer->setSize( history_count );
+        m_context["history_buffer"]->set( m_history_buffer );
+    } 
+    else
+    {
+        LOG(warning) << "OptiXEngine::initGenerate no history buffer " ;
+    }
 
 }
 

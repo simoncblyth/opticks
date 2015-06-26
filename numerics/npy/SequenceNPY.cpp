@@ -35,6 +35,28 @@ void SequenceNPY::dumpUniqueHistories()
     dumpMaskCounts("SequenceNPY::dumpUniqueHistories : ", Types::HISTORY, uu, 1);
 }
 
+/*
+   This is slow... better to do it GPU side with thrust ...
+
+   * could collect per photon flag sequences into a big integer
+     optix types  
+
+     * 128 bit ints are not yet supported by thrust/CUDA 
+     * CUDA long long is 64 bit (8 bytes)
+     * squeezing to 4 bits per entry (1-15 with 0 for overflow "other")
+       even a 64 bit could usefully fit 16 steps
+
+     * the big int would play role of the sequence string in the below
+
+     * see thrustexamples-
+
+
+
+
+*/
+
+
+
 void SequenceNPY::indexSequences()
 {
     LOG(info)<<"SequenceNPY::indexSequences START ... this takes a while " ; 
@@ -83,13 +105,21 @@ void SequenceNPY::indexSequences()
          std::string seqmat = m_recs->getSequenceString(photon_id, Types::MATERIAL);
          std::string seqhis = m_recs->getSequenceString(photon_id, Types::HISTORY);
 
-         // map counting difference history/material sequences
+         // map counting difference history/material sequences : noddy approach to sparse histogramming 
          suh[seqhis] += 1; 
          sum[seqmat] += 1 ; 
 
          // collect vectors of photon_id for each distinct sequence
          svh[seqhis].push_back(photon_id); 
          svm[seqmat].push_back(photon_id); 
+
+         //
+         // no need to collect lists of photon_id in thrust approach 
+         // as the sequence bigint is created in place within a per-photon history_buffer 
+         //
+         // but will need to pass over all those doing a lookup from the sorted 
+         // frequency histogram to the "bin" index
+         // 
     }
     assert( mismatch.size() == 0);
 

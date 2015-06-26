@@ -58,8 +58,8 @@ EOU
 thrusthello-name(){ echo hello ; }
 
 thrusthello-sdir(){ echo $(env-home)/numerics/thrust/$(thrusthello-name)  ; }
-thrusthello-bdir(){ echo $(local-base)/env/numerics/thrust/$(thrusthello-name).build  ; }
-thrusthello-idir(){ echo $(local-base)/env/numerics/thrust/$(thrusthello-name)  ; }
+thrusthello-bdir(){ echo $(local-base)/env/numerics/thrusthello/$(thrusthello-name).build  ; }
+thrusthello-idir(){ echo $(local-base)/env/numerics/thrusthello/$(thrusthello-name)  ; }
 
 thrusthello-scd(){  cd $(thrusthello-sdir)/$1; }
 thrusthello-bcd(){  cd $(thrusthello-bdir)/$1; }

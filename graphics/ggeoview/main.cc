@@ -322,8 +322,7 @@ int main(int argc, char** argv)
 
     NPY<unsigned char>* seqidx = seq.getSeqIdx();
     seqidx->save("seq%s", typ, tag);  // hmm should split by typ, if not treating as transient
-
-
+    // hmm currently seqidx not seen by OptiX only OpenGL 
 
     evt.setSelectionData(seqidx);
 

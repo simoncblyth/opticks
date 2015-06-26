@@ -28,6 +28,7 @@ class NumpyEvt {
        NPY<float>*  getPhotonData();
        NPY<short>*  getRecordData();
        NPY<unsigned char>*  getSelectionData();
+       NPY<unsigned long long>*  getHistoryData();
 
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
@@ -51,6 +52,7 @@ class NumpyEvt {
        NPY<float>*   m_photon_data ;
        NPY<short>*   m_record_data ;
        NPY<unsigned char>*   m_selection_data ;
+       NPY<unsigned long long>*   m_history_data ;
 
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
@@ -69,6 +71,7 @@ inline NumpyEvt::NumpyEvt()
           m_photon_data(NULL),
           m_record_data(NULL),
           m_selection_data(NULL),
+          m_history_data(NULL),
           m_genstep_attr(NULL),
           m_photon_attr(NULL),
           m_record_attr(NULL),
@@ -139,4 +142,9 @@ inline MultiViewNPY* NumpyEvt::getSelectionAttr()
     return m_selection_attr ;
 }
 
+
+inline NPY<unsigned long long>* NumpyEvt::getHistoryData()
+{
+    return m_history_data ;
+}
 

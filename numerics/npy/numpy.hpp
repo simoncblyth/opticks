@@ -115,16 +115,26 @@ template<>
 struct DescriptorDataType<float> { static const char value = 'f'; };
 
 template<>
+struct DescriptorDataType<short> { static const char value = 'i'; };
+template<>
 struct DescriptorDataType<int> { static const char value = 'i'; };
 template<>
-struct DescriptorDataType<short> { static const char value = 'i'; };
+struct DescriptorDataType<long> { static const char value = 'i'; };
+template<>
+struct DescriptorDataType<long long> { static const char value = 'i'; };
+
 
 template<>
-struct DescriptorDataType<unsigned int> { static const char value = 'u'; };
+struct DescriptorDataType<unsigned char> { static const char value = 'u'; };
 template<>
 struct DescriptorDataType<unsigned short> { static const char value = 'u'; };
 template<>
-struct DescriptorDataType<unsigned char> { static const char value = 'u'; };
+struct DescriptorDataType<unsigned int> { static const char value = 'u'; };
+template<>
+struct DescriptorDataType<unsigned long> { static const char value = 'u'; };
+template<>
+struct DescriptorDataType<unsigned long long> { static const char value = 'u'; };
+
 
 
 template<>

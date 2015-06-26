@@ -52,6 +52,13 @@ Partial override warning
 * http://stackoverflow.com/questions/21462908/warning-overloaded-virtual-function-baseprocess-is-only-partially-overridde
 
 
+OptiX glass
+------------
+
+* https://devtalk.nvidia.com/default/topic/458979/?comment=3263252
+
+Overlapping geometry problem
+
 
 Determine Driver Version on Linux (on Mac use SysPref panel)
 ----------------------------------------------------------------

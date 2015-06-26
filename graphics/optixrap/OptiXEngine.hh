@@ -118,6 +118,7 @@ class OptiXEngine : public Touchable {
         optix::Buffer         m_genstep_buffer ; 
         optix::Buffer         m_photon_buffer ; 
         optix::Buffer         m_record_buffer ; 
+        optix::Buffer         m_history_buffer ; 
         optix::Buffer         m_touch_buffer ; 
         optix::GeometryGroup  m_geometry_group ;
         //optix::Aabb           m_aabb;

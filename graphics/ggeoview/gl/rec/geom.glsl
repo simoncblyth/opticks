@@ -57,11 +57,17 @@ void main ()
     }
     else if( valid == 0x7 && select == 0x5 ) // both valid and prior to tc 
     {
-        gl_Position = ISNormModelViewProjection * vec4( vec3(p1), 1.0 ) ; 
 
+       // gl_Position = ISNormModelViewProjection * vec4( vec3(p0), 1.0 ) ; 
+       // fcolour = texture(Colors, idxcol ) ; 
+       // EmitVertex();
+       // EndPrimitive();
+
+        gl_Position = ISNormModelViewProjection * vec4( vec3(p1), 1.0 ) ; 
         fcolour = texture(Colors, idxcol ) ; 
         EmitVertex();
         EndPrimitive();
+
     }
 
 } 

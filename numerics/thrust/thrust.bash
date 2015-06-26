@@ -8,9 +8,16 @@ Thrust
 =======
 
 
+Examples
+---------
+
+* https://github.com/thrust/thrust/tree/master/examples
+
 
 Refs
 -----
+
+* http://thrust.github.io
 
 * https://developer.nvidia.com/Thrust
 
@@ -50,7 +57,11 @@ Frequency Indexing, Histogramming
 * http://stackoverflow.com/questions/8792926/finding-the-number-of-occurrences-of-keys-and-the-positions-of-first-occurrences
 * https://code.google.com/p/thrust/source/browse/examples/histogram.cu
 
- 
+Thrust Long Long
+------------------
+
+* 
+* https://github.com/thrust/thrust/issues/658 
 
 
 
@@ -58,9 +69,25 @@ EOU
 }
 
 
+thrust-edir(){ echo $(env-home)/numerics/thrust ; }
+thrust-sdir(){ echo $(local-base)/env/numerics/thrust ; }
 thrust-idir(){ echo $(cuda-idir)/thrust ; }
+
+thrust-ecd(){  cd $(thrust-edir) ; }
+thrust-scd(){  cd $(thrust-sdir) ; }
 thrust-icd(){  cd $(thrust-idir) ; }
+
 thrust-cd(){   cd $(thrust-idir) ; }
+
+
+thrust-get()
+{
+    # not for building, just for the examples
+    local dir=$(dirname $(thrust-sdir)) &&  mkdir -p $dir && cd $dir
+    git clone https://github.com/thrust/thrust.git
+}
+
+
 
 thrust-env(){      
    elocal- ; 

@@ -8,11 +8,14 @@ uniform vec4 TimeDomain ;
 uniform vec4 Param ; 
 uniform ivec4 Selection ;
 uniform ivec4 Pick ;
+uniform ivec4 RecSelect ; 
 
+in ivec4 sel[];
 in vec4 polarization[];
 in uvec4 flags[];
 layout (lines) in;
 layout (line_strip, max_vertices = 2) out;
+
 out vec4 fcolour ; 
 
 // PICK_MODULO_PHOTON uint(photon_id % Pick.x == 0)
@@ -40,17 +43,56 @@ out vec4 fcolour ;
 
 void main () 
 {
+    uint seqhis = sel[0].x ; 
+    uint seqmat = sel[0].y ; 
+    if( RecSelect.x > 0 && RecSelect.x != seqhis )  return ;
+    if( RecSelect.y > 0 && RecSelect.y != seqmat )  return ;
+
     vec4 p0 = gl_in[0].gl_Position  ;
     vec4 p1 = gl_in[1].gl_Position  ;
     float tc = Param.w / TimeDomain.y ;  // as time comparisons done before un-snorming 
-
+    float ns = 1.0/TimeDomain.y ; 
 
     uint photon_id = gl_PrimitiveIDIn/MAXREC ;                 // https://www.opengl.org/sdk/docs/man/html/gl_PrimitiveIDIn.xhtml
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
-    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(flags[0].x == Pick.y) << 2 ) ;
+    //uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(flags[0].x == Pick.y) << 2 ) ;
+    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  
     uint vselect = valid & select ; 
 
+
+
+    if(vselect == 0x7) // both valid and straddling tc 
+    {
+        vec3 pt0 = mix( vec3(p0), vec3(p1), (tc - p0.w)/(p1.w - p0.w) ); 
+        gl_Position = ISNormModelViewProjection * vec4( pt0, 1.0 ) ; 
+        fcolour = vec4(vec3(polarization[1]), 1.0) ;
+        EmitVertex();
+
+        vec3 pt1 = mix( vec3(p0), vec3(p1), (tc + ns - p0.w)/(p1.w - p0.w) ); 
+        gl_Position = ISNormModelViewProjection * vec4( pt1, 1.0 ) ; 
+        fcolour = vec4(vec3(polarization[1]), 1.0) ;
+        EmitVertex();
+
+        EndPrimitive();
+
+    }
+    else if( valid == 0x7 && select == 0x5 ) // both valid and prior to tc 
+    {
+        gl_Position = ISNormModelViewProjection * vec4( vec3(p1), 1.0 ) ; 
+        fcolour = vec4(vec3(polarization[1]), 1.0) ;
+        EmitVertex();
+
+        gl_Position = ISNormModelViewProjection * vec4( vec3(p1 + 0.1*(p1-p0)) , 1.0 ) ; 
+        fcolour = vec4(vec3(polarization[1]), 1.0) ;
+        EmitVertex();
+
+        EndPrimitive();
+
+    }
+
+
+/*
     if(vselect == 0x7) // both valid and straddling tc 
     {
         gl_Position = ISNormModelViewProjection * vec4(vec3(p0), 1.0) ; 
@@ -64,6 +106,7 @@ void main ()
 
         EndPrimitive();
     }
+
     else if( valid == 0x7 && select == 0x5 ) // both valid and prior to tc 
     {
         gl_Position = ISNormModelViewProjection * vec4(vec3(p0), 1.0) ; 
@@ -76,5 +119,8 @@ void main ()
 
         EndPrimitive();
     }
+*/
+
 
 } 
+

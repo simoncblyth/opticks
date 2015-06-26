@@ -5,6 +5,43 @@ oppr-vi(){       vi $(oppr-source) ; }
 oppr-env(){      elocal- ; }
 oppr-usage(){ cat << EOU
 
+* http://apartridge.github.io/OppositeRenderer/
+
+Example of a photon mapping project using OptiX, Thrust, ...
+
+::
+
+    simon:~ blyth$ oppr-
+    simon:~ blyth$ oppr-cd
+    simon:OppositeRenderer blyth$ find . -type f -exec grep -H thrust {} \;
+    ./OppositeRenderer/RenderEngine/RenderEngine.vcxproj.filters:    <Filter Include="sutil\thrust">
+    ./OppositeRenderer/RenderEngine/renderer/helpers/optix.h:static thrust::device_ptr<T> getThrustDevicePtr(optix::Buffer & buffer, int deviceNumber)
+    ./OppositeRenderer/RenderEngine/renderer/helpers/optix.h:    return thrust::device_pointer_cast(getDevicePtr<T>(buffer, deviceNumber));
+    ./OppositeRenderer/RenderEngine/renderer/OptixRenderer_SpatialHash.cu:#include <thrust/reduce.h>
+    ./OppositeRenderer/RenderEngine/renderer/OptixRenderer_SpatialHash.cu:#include <thrust/pair.h>
+    ./OppositeRenderer/RenderEngine/renderer/OptixRenderer_SpatialHash.cu:#include <thrust/device_vector.h>
+    ./OppositeRenderer/RenderEngine/renderer/OptixRenderer_SpatialHash.cu:#include <thrust/host_vector.h>
+    ...  
+
+
+
+RenderEngine/renderer/helpers/optix.h::
+
+    #pragma  once
+
+    template<typename T>
+    static T* getDevicePtr(optix::Buffer & buffer, int deviceNumber)
+    {
+        CUdeviceptr d;
+        buffer->getDevicePointer(deviceNumber, &d);
+        return (T*)d;
+    }
+
+    template<typename T>
+    static thrust::device_ptr<T> getThrustDevicePtr(optix::Buffer & buffer, int deviceNumber)
+    {
+        return thrust::device_pointer_cast(getDevicePtr<T>(buffer, deviceNumber));
+    }
 
 
 
