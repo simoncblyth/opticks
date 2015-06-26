@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_policy(SET CMP0054 OLD)
+# unfortunately this doesnt suppress the warnings, despite being advertised to do so
+# http://www.cmake.org/Wiki/CMake/Policies
 set(name GGeoView)
 project(${name})
 
@@ -8,7 +11,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 
-cmake_policy(SET CMP0054 NEW)
 
 include(EnvBuildOptions)
 
@@ -80,6 +82,9 @@ include_directories(
    ${ImGui_INCLUDE_DIRS}
    ${Bregex_INCLUDE_DIRS}
 )
+
+
+message(CUDA_INCLUDE_DIRS: ${CUDA_INCLUDE_DIRS} )
 
 add_definitions(
    ${GLEW_DEFINITIONS}
@@ -154,6 +159,7 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
 add_optix_executable( ${name} 
       main.cc 
+      index.cu
 
       cu/pinhole_camera.cu
       cu/constantbg.cu
