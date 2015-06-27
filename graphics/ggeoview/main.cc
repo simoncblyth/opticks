@@ -242,10 +242,13 @@ int main(int argc, char** argv)
     evt.setGenstepData(npy); 
 
     composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent());
-
+    // is this domain used for photon record compression ?
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
+
+    // Scene, Rdr do uploads orchestrated by NumpyEvt/MultiViewNPY 
+    // creating the OpenGL buffers from NPY managed data
     scene.uploadEvt();
 
 
@@ -257,6 +260,9 @@ int main(int argc, char** argv)
     //   * hmm generation should not depend on renderers OpenGL buffers
     //     but for OpenGL interop its expedient for now
     //
+
+
+    //  creates OptiX buffers from the OpenGL buffer_id's 
     OptiXEngine engine("GGeoView") ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
@@ -282,6 +288,7 @@ int main(int argc, char** argv)
     if(idomain) idomain->save("idomain", "1");
 
 
+    
     engine.generate();
     LOG(info) << "main: engine.generate DONE "; 
 
@@ -312,7 +319,6 @@ int main(int argc, char** argv)
     RecordsNPY rec(drec, evt.getMaxRec());
     rec.setTypes(&types);
     rec.setDomains((NPY<float>*)domain);
-
 
 
     // hmm loading precooked seq not so easy 

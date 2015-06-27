@@ -34,9 +34,163 @@ CUDA 7 to the rescue ?
 
 
 
-
 Can a C interface provide a firewall to allow interop between compilers ?
 ===========================================================================
+
+
+CUDA OpenGL thrust interop
+----------------------------
+
+* https://gist.github.com/dangets/2926425
+
+::
+
+    #include <cuda_gl_interop.h>
+    #include <thrust/device_vector.h>
+
+
+    // initialization
+
+    GLuint vbo;
+    struct cudaGraphicsResource *vbo_cuda;
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // register buffer object with CUDA
+    cudaGraphicsGLRegisterBuffer(&vbo_cuda, vbo, cudaGraphicsMapFlagsWriteDiscard);
+
+
+    // display time : handover OpenGL -> CUDA/thrust 
+
+    cudaGraphicsMapResources(/*count*/1, &vbo_cuda,/*stream*/ 0);
+
+    float4 *raw_ptr;
+    size_t buf_size;
+    cudaGraphicsResourceGetMappedPointer((void **)&raw_ptr, &buf_size, vbo_cuda);
+
+    thrust::device_ptr<float4> dev_ptr = thrust::device_pointer_cast(raw_ptr);
+    thrust::counting_iterator<int> first(0);
+    thrust::counting_iterator<int> last(g_mesh_width * g_mesh_height);
+    thrust::transform(first, last, dev_ptr, sine_wave(g_mesh_width, g_mesh_height, g_anim));
+ 
+    cudaGraphicsUnmapResources(1, &vbo_cuda, 0);  // CUDA/thrust back -> OpenGL
+ 
+
+
+OptiX / OpenGL interop
+------------------------
+
+
+::
+
+    OptiXEngine::init creates OptiX buffers using OpenGL buffer_id 
+
+    m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, genstep_buffer_id);
+
+
+    GMergedMeshOptiXGeometry uses OptiX buffer map/unmap when copying data into buffers
+
+
+/Developer/OptiX/include/optixu/optixpp_namespace.h::
+
+    1485     /// Get the pointer to buffer memory on a specific device. See @ref rtBufferGetDevicePointer
+    1486     void getDevicePointer( unsigned int optix_device_number, CUdeviceptr *device_pointer );
+    1487     CUdeviceptr getDevicePointer( unsigned int optix_device_number );
+
+
+
+* https://devtalk.nvidia.com/default/topic/551556/?comment=3858139
+
+
+Histogramming Check
+----------------------
+
+::
+
+    In [1]: h = phc_(1)
+    INFO:env.g4dae.types:loading /usr/local/env/phcerenkov/1.npy 
+    -rw-r--r--  1 blyth  staff  4902808 Jun 27 18:30 /usr/local/env/phcerenkov/1.npy
+
+    In [2]: h[:,0,0]
+    Out[2]: array([ 3265, 15297,     5, ...,     3,     3,     3], dtype=uint64)
+
+    In [3]: hh = h[:,0,0]
+
+    In [4]: hh.min()
+    Out[4]: 3
+
+    In [5]: hh.max()
+    Out[5]: 18446744073655864513
+
+    In [6]: hex_(hh.max())
+    Out[6]: '0xfffffffffcccccc1'
+
+    In [16]: np.unique(hh)
+    Out[16]: 
+    array([                   3,                    5,                   49,
+           ..., 18446744073655862865, 18446744073655864401,
+           18446744073655864513], dtype=uint64)
+
+    In [17]: len(np.unique(hh))
+    Out[17]: 1171
+
+    In [18]: uhh = np.unique(hh)
+
+    In [19]: map(hex_, uhh)  # huh ? where the fffff from 
+    Out[19]: 
+    ['0x3',
+     '0x5',
+     '0x31',
+     '0x51',
+     '0x61',
+     '0xc1',
+     '0xf1',
+     '0x361',
+     '0x3b1',
+     '0x3c1',
+     '0x551',
+     '0x561',
+    ...
+     '0x6cccc551',
+     '0x6cccc561',
+     '0x6cccc5c1',
+     '0x6cccc651',
+     '0x6ccccc51',
+     '0x6cccccc1',
+     '0xffffffffb55cc551',
+     '0xffffffffb56ccc51',
+     '0xffffffffb5b5c551',
+     '0xffffffffb5bb5c51',
+     '0xffffffffb5cc5c51',
+     '0xffffffffb5cccc51',
+
+
+
+      TODO:Compare with thrust...
+
+      /usr/local/env/numerics/thrustrap/bin/PhotonIndexTest
+    
+
+
+Looks like no mapping/unmapping needed so long as dont change the size of the buffer
+
+
+OpenGL buffer objects like PBOs and VBOs can be encapsulated for use in OptiX
+with rtBufferCreateFromGLBO. The resulting buffer is a reference only to the
+OpenGL data; the size of the OptiX buffer as well as the format have to be set
+via rtBufferSetSize and rtBufferSetFormat. When the OptiX buffer is destroyed,
+the state of the OpenGL buffer object is unaltered. Once an OptiX buffer is
+created, the original GL buffer object is immutable, meaning the properties of
+the GL object like its size cannot be changed while registered with OptiX.
+However, it is still possible to read and write to the GL buffer object using
+the appropriate GL functions. If it is necessary to change properties of an
+object, first call rtBufferGLUnregister before making changes. After the
+changes are made the object has to be registered again with rtBufferGLRegister.
+This is necessary to allow OptiX to access the objects data again. Registration
+and unregistration calls are expensive and should be avoided if possible.
 
 
 

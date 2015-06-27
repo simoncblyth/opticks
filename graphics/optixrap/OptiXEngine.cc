@@ -354,11 +354,6 @@ void OptiXEngine::initGenerate()
 }
 
 
-
-
-
-
-
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
     NPY<float>* gensteps = evt->getGenstepData();

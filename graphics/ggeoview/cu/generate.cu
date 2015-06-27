@@ -141,8 +141,7 @@ RT_PROGRAM void generate()
            rtPrintf("polw  %10.3f %10.3f %10.3f %10.3f  % \n", p.polarization.x, p.polarization.y, p.polarization.z, p.wavelength );
         } 
 
-
-        seqhis |= s.flag << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
+        seqhis |= __ffs(s.flag) << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
         RSAVE(p, s, slot) ;
 
         // Where best to record the propagation ? 
@@ -221,7 +220,7 @@ RT_PROGRAM void generate()
 
     // breakers and maxers saved here
     p.flags.u.w |= s.flag ; 
-    seqhis |= s.flag << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
+    seqhis |= __ffs(s.flag) << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
     psave(p, photon_buffer, photon_offset ); 
     RSAVE(p, s, slot) ;
 
