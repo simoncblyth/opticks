@@ -80,6 +80,8 @@ thrust-icd(){  cd $(thrust-idir) ; }
 thrust-cd(){   cd $(thrust-idir) ; }
 
 
+
+
 thrust-get()
 {
     # not for building, just for the examples
@@ -93,6 +95,16 @@ thrust-env(){
    elocal- ; 
    cuda- ; 
 }
+
+thrust-cuda-nvcc-flags(){
+   echo -ccbin /usr/bin/clang --use_fast_math
+}
+
+thrust-export()
+{
+   echo -n
+}
+
 
 thrust-samples-dir(){ echo $(cuda-dir)/samples ; }
 thrust-pdf(){  open $(thrust-samples-dir)/doc/Thrust_Quick_Start_Guide.pdf ; }

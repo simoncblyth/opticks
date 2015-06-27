@@ -27,12 +27,22 @@ dom_ = lambda _:load_("domain",_)
 idom_ = lambda _:load_("idomain",_)
 seqc_ = lambda _:load_("seqcerenkov",_)
 seqs_ = lambda _:load_("seqscintillation",_)
+phc_ =  lambda _:load_("phcerenkov",_)
+phs_ =  lambda _:load_("phscintillation",_)
 
 g4c_ = lambda _:load_("gopcerenkov",_)
 g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)
 
-path_ = lambda typ,tag:os.environ["DAE_%s_PATH_TEMPLATE" % typ.upper()] % str(tag)
+
+DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/%s.npy"  ## cf C++ NPYBase::
+
+
+def path_(typ, tag):
+    envvar = "DAE_%s_PATH_TEMPLATE" % typ.upper()
+    tmpl = os.environ.get(envvar, os.path.expandvars(DEFAULT_PATH_TEMPLATE.replace("$1", typ)) )
+    return tmpl % str(tag)
+
 #load_ = lambda typ,tag:np.load(path_(typ,tag))     
 
 def load_(typ, tag):

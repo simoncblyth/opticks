@@ -120,6 +120,22 @@ void SequenceNPY::indexSequences()
          // but will need to pass over all those doing a lookup from the sorted 
          // frequency histogram to the "bin" index
          // 
+         // actually maybe not...  
+         //
+         //   * frequency histogram is a small structure with 2/3 equal length lists
+         //     (could be fixed length, with an "Other")
+         //
+         //     * keys   : sequence big ints 
+         //     * counts : how many occurences of that sequence
+         //     * values : indices in asc/desc count order
+         //
+         // can do this lookup as needed by furnishing the 
+         // frequency histogram as uniform buffer or texture to the shader ?
+         // ... hmm not so easy as its a sparse histogram, more of a map  
+         //
+         // maybe have to resort to plain CUDA (or OptiX launch without rtTrace) 
+         // to do the lookup ? 
+         //
     }
     assert( mismatch.size() == 0);
 

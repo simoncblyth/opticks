@@ -13,7 +13,7 @@
 class NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, CHAR, UCHAR, ULONGLONG} Type_t ;
-
+       static const char* DEFAULT_PATH_TEMPLATE  ; 
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata );
 

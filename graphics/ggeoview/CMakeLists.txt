@@ -57,6 +57,7 @@ find_package(CUDAWrap REQUIRED)
 
 find_package(ImGui REQUIRED)
 find_package(Bregex REQUIRED)
+find_package(ThrustRap REQUIRED)
 
 
 
@@ -81,6 +82,7 @@ include_directories(
    ${CUDAWrap_INCLUDE_DIRS}  
    ${ImGui_INCLUDE_DIRS}
    ${Bregex_INCLUDE_DIRS}
+   ${ThrustRap_INCLUDE_DIRS}
 )
 
 
@@ -97,6 +99,7 @@ add_definitions(
    ${CUDAWrap_DEFINITIONS}
    ${ImGui_DEFINITIONS}
    ${Bregex_DEFINITIONS}
+   ${ThrustRap_DEFINITIONS}
 )
 
 
@@ -121,6 +124,7 @@ set(LIBRARIES
       ${CUDAWrap_LIBRARIES}
       ${ImGui_LIBRARIES}
       ${Bregex_LIBRARIES}
+      ${ThrustRap_LIBRARIES}
 
       ssl
       crypto 

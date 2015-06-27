@@ -38,7 +38,7 @@ using namespace optix;
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
 rtBuffer<short4>    record_buffer;   // 2 short4 take same space as 1 float4 quad
-
+rtBuffer<unsigned long long>   history_buffer;   // unsigned long and unsigned long long are both 8 bytes, 64 bits 
 
 rtBuffer<curandState, 1> rng_states ;
 
@@ -56,6 +56,7 @@ RT_PROGRAM void generate()
 {
     union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
+    unsigned long long seqhis = 0 ;
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
  
     phead.f = photon_buffer[photon_offset+0] ;
@@ -141,6 +142,7 @@ RT_PROGRAM void generate()
         } 
 
 
+        seqhis |= s.flag << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
         RSAVE(p, s, slot) ;
 
         // Where best to record the propagation ? 
@@ -219,9 +221,11 @@ RT_PROGRAM void generate()
 
     // breakers and maxers saved here
     p.flags.u.w |= s.flag ; 
+    seqhis |= s.flag << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
     psave(p, photon_buffer, photon_offset ); 
     RSAVE(p, s, slot) ;
 
+    history_buffer[photon_id] = seqhis ; 
     rng_states[photon_id] = rng ;
 }
 

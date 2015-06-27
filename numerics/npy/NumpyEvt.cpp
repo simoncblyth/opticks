@@ -56,6 +56,9 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     setPhotonData(pho);   
 
 
+    History_t initial_his(0) ; 
+    NPY<History_t>* his = NPY<History_t>::make_scalar(m_num_photons, initial_his); 
+    setHistoryData(his);   
 
 
     assert(SHRT_MIN == -(1 << 15));      // -32768
@@ -102,6 +105,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     assert(count == numPhoton ); 
     // not m_num_photons-1 as last incremented count value is not used by setUInt
 }
+
 
 void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 {
@@ -177,6 +181,21 @@ void NumpyEvt::setSelectionData(NPY<unsigned char>* selection_data)
     ViewNPY* rsel = new ViewNPY("rsel",m_selection_data,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
     m_selection_attr = new MultiViewNPY();
     m_selection_attr->add(rsel);
+}
+
+void NumpyEvt::setHistoryData(NPY<History_t>* history_data)
+{
+    m_history_data = history_data  ;
+    assert(sizeof(History_t) == 4*sizeof(unsigned short));  
+    //
+    // 64 bit uint used to hold the history flag sequence 
+    // is presented to OpenGL shaders as 4 *16bit ushort 
+    // as intend to reuse the sequence bit space for the indices and count 
+    // via some diddling 
+    //                                                  j k sz   type                norm   iatt
+    ViewNPY* phis = new ViewNPY("phis",m_history_data,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
+    m_history_attr = new MultiViewNPY();
+    m_history_attr->add(phis);
 }
 
 

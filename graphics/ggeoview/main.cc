@@ -295,6 +295,12 @@ int main(int argc, char** argv)
     drec->setVerbose();
     drec->save("rx%s", typ,  tag );
 
+    NPY<NumpyEvt::History_t>* dhis = evt.getHistoryData();
+    Rdr::download(dhis);
+    dhis->setVerbose();
+    dhis->save("ph%s", typ,  tag );
+
+
     BoundariesNPY bnd(dpho); 
     bnd.setTypes(&types);
     bnd.setBoundaryNames(boundaries);

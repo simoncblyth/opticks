@@ -450,6 +450,7 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     assert(sizeof(unsigned int) == 4);
     assert(sizeof(unsigned long) == 8);
     assert(sizeof(unsigned long long) == 8);
+    assert(sizeof(NumpyEvt::History_t) == 8);
 
     int history_buffer_id = history ? history->getBufferId() : -1 ;
     if(history_buffer_id > -1)
@@ -458,13 +459,13 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
         LOG(info)<<"OptiXEngine::initGenerate  history buffer count: " << history_count ;
         m_history_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, history_buffer_id);
         m_history_buffer->setFormat(RT_FORMAT_USER);
-        m_history_buffer->setElementSize(sizeof(unsigned long long));
+        m_history_buffer->setElementSize(sizeof(NumpyEvt::History_t));
         m_history_buffer->setSize( history_count );
         m_context["history_buffer"]->set( m_history_buffer );
     } 
     else
     {
-        LOG(warning) << "OptiXEngine::initGenerate no history buffer " ;
+        LOG(warning) << "OptiXEngine::initGenerate no history buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
     }
 
 }

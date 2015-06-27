@@ -222,16 +222,17 @@ void Scene::uploadEvt()
     }
 
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
-    m_photon_renderer->upload(m_evt->getPhotonAttr());
 
-    // all renderers ready to roll so can live switch between them, 
-    // data is not duplicated thanks to Device
+    m_photon_renderer->upload(m_evt->getPhotonAttr());
+    m_photon_renderer->upload(m_evt->getHistoryAttr());
 
     uploadRecordAttr(m_evt->getRecordAttr());
 }
 
+
 void Scene::uploadSelection()
 {
+    // this was used after the slow SequenceNPY (CPU side std::map based photon history/material indexing)
     assert(m_evt);
     LOG(info)<<"Scene::uploadSelection";
     uploadRecordAttr(m_evt->getSelectionAttr()); 
@@ -242,11 +243,14 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr)
 {
     assert(attr);
     if(!attr) return ;  
+
+    // all renderers ready to roll so can live switch between them, 
+    // data is not duplicated thanks to Device register of uploads
+
     m_record_renderer->upload(attr);
     m_altrecord_renderer->upload(attr);
     m_devrecord_renderer->upload(attr);
 }
-
 
 void Scene::render()
 {

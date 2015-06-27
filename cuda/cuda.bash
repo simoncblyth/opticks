@@ -241,6 +241,55 @@ nvvp and nsight
 
 
 
+FindCUDA.cmake
+---------------
+
+* http://www.cmake.org/cmake/help/v3.0/module/FindCUDA.html
+
+* http://stackoverflow.com/questions/13683575/cuda-5-0-separate-compilation-of-library-with-cmake
+
+
+CUDA CMAKE Mavericks
+-----------------------
+
+Informative explanation of Mavericks CUDA challenges wrt compiler flags...
+ 
+https://github.com/cudpp/cudpp/wiki/BuildingCUDPPWithMavericks
+
+See::
+
+   cudawrap-
+   thrustrap-
+   thrusthello-
+   thrust-
+
+
+
+CUDA Release Notes
+-------------------
+
+* http://docs.nvidia.com/cuda/cuda-toolkit-release-notes/
+
+On Mac OS X, libc++ is supported with XCode 5.x. Command-line option -Xcompiler
+-stdlib=libstdc++ is no longer needed when invoking NVCC. Instead, NVCC uses
+the default library that Clang chooses on Mac OS X. Users are still able to
+choose between libc++ and libstdc++ by passing -Xcompiler -stdlib=libc++ or
+-Xcompiler -stdlib=libstdc++ to NVCC.
+
+The Runtime Compilation library (nvrtc) provides an API to compile CUDA-C++
+device source code at runtime. The resulting compiled PTX can be launched on a
+GPU using the CUDA Driver API. More details can be found in the libNVRTC User
+Guide.
+
+Added C++11 support. The new nvcc flag -std=c++11 turns on C++11 features in
+the CUDA compiler as well as the host compiler and linker. The flag is
+supported by host compilers Clang and GCC versions 4.7 and newer. In addition,
+any C++11 features that are enabled by default by a supported host compiler are
+also allowed to be used in device code. Please see the CUDA Programming Guide
+for further details.
+
+
+
 FUNCTIONS
 ---------
 
@@ -265,6 +314,12 @@ cuda-nvcc-flags(){
        *) echo --use_fast_math ;; 
     esac 
 }
+
+cuda-export()
+{
+   echo -n
+}
+
 
 cuda-idir(){ echo $(cuda-dir)/include ; }
 cuda-icd(){  cd $(cuda-idir); }

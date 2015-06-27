@@ -1,13 +1,21 @@
 #include "NPYBase.hpp"
-#include <sstream>
-#include <boost/log/trivial.hpp>
+
 #include "string.h"
-#include "stringutil.hpp"
+#include <sstream>
 #include <iostream>
 
+// npy-
+#include "stringutil.hpp"
+
+//bregex- 
+#include "regexsearch.hh"
+
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/%s.npy" ; 
 
 
 std::string NPYBase::getItemShape(unsigned int ifr)
@@ -88,20 +96,29 @@ Envvars are defined in env/export-
     snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
     free((void*)TYP); 
 
+
+    char path_[256];
+
+    std::string deftmpl(DEFAULT_PATH_TEMPLATE) ; 
+
     char* tmpl = getenv(envvar) ;
     if(!tmpl)
     {
-         LOG(fatal)<< "NPY<T>::path missing envvar for "
-                   << " typ " << typ 
-                   << " envvar " << envvar  
-                   << " define new typs with env-;export-;export-vi " ; 
-         assert(0);
-         return "missing-template-envvar" ; 
+        boost::replace_first(deftmpl, "$1", typ );
+        deftmpl = os_path_expandvars( deftmpl.c_str() ); 
+        tmpl = (char*)deftmpl.c_str();
+
+        LOG(warning)<<"NPY<T>::path using default path template " << tmpl  
+                    << " as envvar " << envvar << " is  not defined "  
+                    << " define new typs with env-;export-;export-vi " ; 
+
+        // LOG(fatal)<< "NPY<T>::path missing envvar for "
+        //           << " typ " << typ 
+        //           << " envvar " << envvar  
+        // assert(0);
+        // return "missing-template-envvar" ; 
     }
-
-    char path_[256];
     snprintf(path_, 256, tmpl, tag );
-
     return path_ ;   
 }
 

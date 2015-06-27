@@ -54,8 +54,10 @@ class NPY : public NPYBase {
        static T UNSET ; 
 
    public:
+       // NB favor vec4 over vec3 for better GPU performance (due to memory coalescing/alignment)
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
-       static NPY<T>* make_vec4(unsigned int ni, unsigned int nj=1, T value=0);
+       static NPY<T>* make_vec4(unsigned int ni, unsigned int nj=1, T init=0);
+       static NPY<T>* make_scalar(unsigned int ni, T init=0);
 
        // ctor takes ownership of a copy of the inputs 
        NPY(std::vector<int>& shape, T*  data            , std::string& metadata) ;

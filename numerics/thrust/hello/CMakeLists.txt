@@ -73,8 +73,12 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
 
 
+
+
+
 set(srcs
      helloThrust.cc
+     helloa.cc
      hello.cu
 )
 
@@ -92,4 +96,4 @@ install(TARGETS ${name} DESTINATION bin)
 
 
 
-
+add_subdirectory(tests)

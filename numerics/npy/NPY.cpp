@@ -176,6 +176,25 @@ void NPY<T>::save(const char* path_)
 
 
 template <typename T>
+NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
+{
+    std::vector<int> shape ; 
+    shape.push_back(ni);
+    shape.push_back(1);
+    shape.push_back(1);
+
+    std::string metadata = "{}";
+
+    T* data = new T[ni] ;
+    while(ni--) data[ni] = init ; 
+
+    NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
+    return npy ; 
+}
+
+
+
+template <typename T>
 NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 {
 /*
