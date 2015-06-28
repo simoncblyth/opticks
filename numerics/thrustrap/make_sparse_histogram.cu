@@ -1,4 +1,5 @@
 #include "make_sparse_histogram.h"
+#include "Flags.hh"
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -11,7 +12,6 @@
 #include <thrust/iterator/counting_iterator.h>
 
 #include "strided_range.h"
-
 
 #include <iostream>
 #include <iomanip>
@@ -129,7 +129,7 @@ void sparse_histogram(const Vector1& input,
 }
 
 
-void make_sparse_histogram(History_t* data, unsigned int numElements )
+void make_sparse_histogram(History_t* data, unsigned int numElements, Flags* flags )
 {
 
     thrust::host_vector<History_t> input(data, data+numElements);
@@ -152,9 +152,12 @@ void make_sparse_histogram(History_t* data, unsigned int numElements )
 
     for(unsigned int i=0 ; i < values.size() ; i++)
     {
+        History_t seq = values[i];
+        std::string sseq = flags ? flags->getSequenceString(seq) : "" ; 
         std::cout << std::setw(5) << i 
-                  << std::setw(20) << std::hex << values[i]
+                  << std::setw(20) << std::hex << seq
                   << std::setw(20) << std::dec << counts[i]
+                  << "  " << sseq
                   << std::endl ; 
     }
 

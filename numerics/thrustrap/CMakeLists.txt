@@ -52,6 +52,7 @@ add_definitions(
 
 CUDA_ADD_LIBRARY( ${name}  
        ThrustEngine.cc
+       Flags.cc
        histogram_sorted.cu
        make_sparse_histogram.cu
 )
@@ -73,6 +74,7 @@ target_link_libraries( ${name}
 
 SET(hdrs 
   ThrustEngine.hh
+  Flags.hh
   numpy.hpp
   histogram_sorted.h
   make_sparse_histogram.h
