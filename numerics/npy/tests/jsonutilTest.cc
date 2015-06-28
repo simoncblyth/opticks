@@ -1,6 +1,7 @@
 #include "jsonutil.hpp"
 
 const char* path = "/tmp/jsonutilTest.json" ; 
+const char* pathi = "/tmp/jsonutilTest.ini" ; 
 
 
 void test_saveMap2()
@@ -11,6 +12,7 @@ void test_saveMap2()
    index["/prefix/blue"] = 3 ; 
 
    saveMap<std::string, unsigned int>(index, path );
+   saveMap<std::string, unsigned int>(index, pathi );
 }
 
 void test_loadMap2()

@@ -1,28 +1,65 @@
+#include "make_sparse_histogram.h"
+
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/sort.h>
 #include <thrust/copy.h>
-#include <thrust/random.h>
 #include <thrust/inner_product.h>
-#include <thrust/binary_search.h>
-#include <thrust/adjacent_difference.h>
+//#include <thrust/binary_search.h>
+//#include <thrust/adjacent_difference.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/iterator/counting_iterator.h>
+
+#include "strided_range.h"
+
 
 #include <iostream>
 #include <iomanip>
 #include <iterator>
 
-typedef unsigned long History_t ;
 
 template <typename Vector>
-void print_vector(const std::string& name, const Vector& v)
+void print_vector_strided(const std::string& name, const Vector& v, bool hex=false, unsigned int stride=1)
 {
   typedef typename Vector::value_type T;
-  std::cout << "  " << std::setw(20) << name << "  ";
-  thrust::copy(v.begin(), v.end(), std::ostream_iterator<T>(std::cout, " "));
+
+  std::cout << "print_vector_strided (" << stride << ") " << std::setw(20) << name << std::endl  ;
+  if(hex) std::cout << std::hex ; 
+   
+  //typedef thrust::device_vector<T>::iterator Iterator;
+  typedef typename Vector::const_iterator Iterator;
+  strided_range<Iterator> sv(v.begin(), v.end(), stride);
+
+  thrust::copy(sv.begin(), sv.end(), std::ostream_iterator<T>(std::cout, " "));
+
   std::cout << std::endl;
+  if(hex) std::cout << std::dec ; 
 }
+
+
+
+template <typename Vector>
+void print_vector(const std::string& name, const Vector& v, bool hex=false, bool total=false)
+{
+  typedef typename Vector::value_type T;
+
+  std::cout << "print_vector " << " : " << std::setw(40) << name << " " ;
+  if(hex) std::cout << std::hex ; 
+   
+  thrust::copy(v.begin(), v.end(), std::ostream_iterator<T>(std::cout, " "));
+
+  if(total)
+  {
+      T tot = thrust::reduce(v.begin(), v.end());
+      std::cout << " total: " << tot ;
+  }
+   
+  std::cout << std::endl;
+
+
+  if(hex) std::cout << std::dec ; 
+}
+
 
 
 // sparse histogram using reduce_by_key
@@ -40,15 +77,15 @@ void sparse_histogram(const Vector1& input,
 
   // copy input data (could be skipped if input is allowed to be modified)
   thrust::device_vector<ValueType> data(input);
-    
-  // print the initial data
-  print_vector("initial data", data);
 
-  // sort data to bring equal elements together
+  unsigned int stride = 1000 ; 
+
+  print_vector_strided("initial data", data, true, stride );
+
   thrust::sort(data.begin(), data.end());
   
-  // print the sorted data
-  print_vector("sorted data", data);
+  print_vector_strided("sorted data", data, true, stride );
+
 
   // number of histogram bins is equal to number of unique values (assumes data.size() > 0)
   IndexType num_bins = thrust::inner_product(data.begin(), data.end() - 1,
@@ -70,19 +107,19 @@ void sparse_histogram(const Vector1& input,
   
   // print the sparse histogram
 
-  print_vector("histogram values", histogram_values);
-  print_vector("histogram counts", histogram_counts);
+  print_vector("histogram values", histogram_values, true);
+  print_vector("histogram counts", histogram_counts, false, true );
 
   
   thrust::sort_by_key( histogram_counts.begin(), histogram_counts.end(), 
                        histogram_values.begin());
                 
 
-  thrust::sequence( histogram_index.begin(), histogram_index.end() );
+  //thrust::sequence( histogram_index.begin(), histogram_index.end() );
      
-  print_vector("histogram values (sorted by counts)", histogram_values);
-  print_vector("histogram counts (sorted bt counts)", histogram_counts);
-  print_vector("histogram index                    ", histogram_index );
+  print_vector("histogram values (sorted by counts)", histogram_values, true);
+  print_vector("histogram counts (sorted by counts)", histogram_counts, false, true);
+  //print_vector("histogram index                    ", histogram_index , false);
 
 
   //  http://docs.thrust.googlecode.com/hg/group__replacing.html
@@ -92,22 +129,38 @@ void sparse_histogram(const Vector1& input,
 }
 
 
-void make_sparse_histogram(unsigned long* data, unsigned int numElements )
+void make_sparse_histogram(History_t* data, unsigned int numElements )
 {
 
     thrust::host_vector<History_t> input(data, data+numElements);
  
     std::cout << "Sparse Histogram" << std::endl;
 
-    thrust::device_vector<int> histogram_values;
-    thrust::device_vector<int> histogram_counts;
-    thrust::device_vector<int> histogram_index;
+    thrust::device_vector<History_t> histogram_values;
+    thrust::device_vector<int>       histogram_counts;
+    thrust::device_vector<int>       histogram_index;
 
     sparse_histogram(input, 
                      histogram_values, 
                      histogram_counts,
                      histogram_index
                     );
+
+
+    thrust::host_vector<History_t> values = histogram_values ; 
+    thrust::host_vector<int>       counts = histogram_counts ; 
+
+    for(unsigned int i=0 ; i < values.size() ; i++)
+    {
+        std::cout << std::setw(5) << i 
+                  << std::setw(20) << std::hex << values[i]
+                  << std::setw(20) << std::dec << counts[i]
+                  << std::endl ; 
+    }
+
+
+
+
 
 
 

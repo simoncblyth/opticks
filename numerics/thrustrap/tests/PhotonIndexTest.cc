@@ -1,5 +1,6 @@
 
 /*
+// cannot use npy- as it is being compiled against libc++ whereas CUDA/thrust needs older libstdc++ 
 #include "NumpyEvt.hpp"
 #include "NPY.hpp"
 #include "Types.hpp"
@@ -15,7 +16,7 @@
 
 #include <vector>
 #include <iostream>
-
+#include <fstream>
 
 
 int main(int argc, char** argv)
@@ -29,7 +30,17 @@ int main(int argc, char** argv)
     phis->Summary();
     */
 
-    typedef unsigned long History_t ; 
+
+    const char* flags = "/tmp/GFlagIndexLocal.ini";
+    std::ifstream fs(flags, std::ios::in);
+    std::string line = ""; 
+    while(!fs.eof()) 
+    {   
+        std::getline(fs, line);
+        std::cout << line << std::endl ; 
+    }
+
+
     const char* path = "/usr/local/env/phcerenkov/1.npy" ;
 
     std::vector<int> shape ;

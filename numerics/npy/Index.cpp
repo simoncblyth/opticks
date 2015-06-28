@@ -143,20 +143,20 @@ void Index::crossreference()
 
 void Index::save(const char* idpath)
 {
-    saveMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source.json").c_str() );  
-    saveMap<std::string, unsigned int>( m_local , idpath, getPrefixedString("Local.json").c_str() );  
+    saveMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source").c_str() );  
+    saveMap<std::string, unsigned int>( m_local , idpath, getPrefixedString("Local").c_str() );  
 }
 
 std::string Index::getPrefixedString(const char* tail)
 {
     std::string prefix(m_itemtype); 
-    return prefix + tail ; 
+    return prefix + tail + m_ext ; 
 }
 
 void Index::loadMaps(const char* idpath)
 {
-    loadMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source.json").c_str() );  
-    loadMap<std::string, unsigned int>( m_local , idpath, getPrefixedString("Local.json").c_str() );  
+    loadMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source").c_str() );  
+    loadMap<std::string, unsigned int>( m_local , idpath, getPrefixedString("Local").c_str() );  
 
     sortNames();
     crossreference();

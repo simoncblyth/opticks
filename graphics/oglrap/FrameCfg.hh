@@ -29,6 +29,9 @@ public:
            ("nooptix,O",  "inhibit use of OptiX") ;
 
        m_desc.add_options()
+           ("noviz,V",  "just generate, propagate and save : no visualization") ;
+
+       m_desc.add_options()
            ("scintillation,s",  "load scintillation gensteps") ;
 
        m_desc.add_options()

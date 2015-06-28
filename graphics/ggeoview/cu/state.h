@@ -4,6 +4,7 @@ rtBuffer<uint4>     optical_buffer;
 
 struct State 
 {
+   unsigned int flag ; 
    float4 material1 ;    // refractive_index/absorption_length/scattering_length/reemission_prob
    float4 material2 ;  
    float4 surface    ;   //  detect/absorb/reflect_specular/reflect_diffuse
@@ -12,7 +13,6 @@ struct State
    float distance_to_boundary ;
    uint4 optical ;   // x/y/z/w index/type/finish/value  
    uint4 index ;     // indices of m1/m2/surf/sensor
-   unsigned int flag ; 
 
 };
 

@@ -176,11 +176,14 @@ add_optix_executable( ${name}
 ) 
 
 
+set(cuhdrs
+    cu/photon.h
+)
+
 
 install(TARGETS ${name} DESTINATION bin)
+install(FILES ${cuhdrs} DESTINATION include/cu)
 
-#message("ImGui_LIBRARIES:" ${ImGui_LIBRARIES})  
-#message("ImGui_INCLUDE_DIRS:" ${ImGui_INCLUDE_DIRS})  
 
 
 add_subdirectory(tests)

@@ -191,10 +191,15 @@ int main(int argc, char** argv)
 
     bool nooptix = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
+    bool noviz = fcfg->hasOpt("noviz");
 
 
     Types types ;  
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
+    Index* flags = types.getFlagsIndex(); 
+    flags->setExt(".ini");
+    flags->save("/tmp");
+
 
     GLoader loader ;
     loader.setTypes(&types);
@@ -306,6 +311,12 @@ int main(int argc, char** argv)
     Rdr::download(dhis);
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag );
+
+    if(noviz)
+    {
+        LOG(info) << "main early exit due to --noviz/-V option " ; 
+        exit(EXIT_SUCCESS); 
+    }
 
 
     BoundariesNPY bnd(dpho); 

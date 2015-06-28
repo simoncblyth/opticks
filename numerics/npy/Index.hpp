@@ -26,6 +26,7 @@ class Index {
         bool operator() (const std::string& a, const std::string& b);
    public:
         std::string getPrefixedString(const char* tail);
+        void setExt(const char* ext);
         unsigned int getIndexLocal(const char* name, unsigned int missing=0);
         unsigned int getIndexSource(const char* name, unsigned int missing=0);
         const char* getNameLocal(unsigned int local, const char* missing=NULL);
@@ -41,6 +42,7 @@ class Index {
 
    private:
         const char*                          m_itemtype ; 
+        const char*                          m_ext ; 
         int                                  m_selected ; 
         std::map<std::string, unsigned int>  m_source ; 
         std::map<std::string, unsigned int>  m_local ; 
@@ -56,6 +58,7 @@ class Index {
 inline Index::Index(const char* itemtype)
    : 
    m_itemtype(strdup(itemtype)),
+   m_ext(".json"),
    m_selected(0)
 {
 }
@@ -66,6 +69,11 @@ inline const char* Index::getItemType()
 inline std::vector<std::string>& Index::getNames()
 {
     return m_names ;  
+}
+
+inline void Index::setExt(const char* ext)
+{   
+    m_ext = strdup(ext);
 }
 
 

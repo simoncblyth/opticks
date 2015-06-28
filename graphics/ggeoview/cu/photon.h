@@ -10,44 +10,6 @@
 
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
 
-
-struct Photon
-{
-   float3 position ;  
-   float  time ;  
-
-   float3 direction ;
-   float  weight ; 
-
-   float3 polarization ;
-   float  wavelength ; 
-
-   quad flags ;     // x:boundary  y:photon_id   z:m1   w:history 
-                    //             [debug-only]
-};
-
-
-/*
-
-In [5]: p.view(np.int32)[:,3]
-Out[5]: 
-array([[   -14,      0,      0, 526857],
-       [     0,      1,      0, 531973],
-       [   -12,      2,      0,      9],
-       ..., 
-       [     0, 612838,      0,      5],
-       [     0, 612839,      0,      5],
-       [     0, 612840,      0,      5]], dtype=int32)
-
-*/
-
-
-
-//
-// flipped wavelength/weight as that puts together the quad that will be dropped for records
-//  TODO: move to float4 eg position_time 
-//
-
 enum
 {
     CERENKOV          = 0x1 <<  0,   
@@ -69,6 +31,27 @@ enum
 
 
 enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
+
+
+
+#ifdef __CUDACC__
+
+
+struct Photon
+{
+   float3 position ;  
+   float  time ;  
+
+   float3 direction ;
+   float  weight ; 
+
+   float3 polarization ;
+   float  wavelength ; 
+
+   quad flags ;     // x:boundary  y:photon_id   z:m1   w:history 
+                    //             [debug-only]
+};
+
 
 
 __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_offset )
@@ -132,32 +115,6 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     polw.ushort_.x = qpolw.uchar_.x | qpolw.uchar_.y << 8 ;
     polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
     
-/*
-
-In [86]: a.view(np.uint16)[::10,1]
-Out[86]: 
-array([[15031, 11482,  2804,     1],
-       [ 2921, 30382,  2804,     1],
-       [ 1897,   346,  2804,     1],
-       ..., 
-       [ 1122,  1677,     0,     5],
-       [25591,  2716,     0,     5],
-       [ 7046,  3021,     0,     5]], dtype=uint16)
-
-
-   In [63]: lsb_ = lambda _:(_ & 0xFF) 
-   In [64]: msb_ = lambda _:(_ & 0xFF00) >> 8 
-
-    In [91]: wl = msb_(a.view(np.uint16)[::10,1,1])
-   
-    In [93]: plt.hist(wl, bins=256)   # choose binning matching the compression to avoid artifacts 
-
-   In [95]: pz = lsb_(a.view(np.uint16)[::10,1,1])
-
-
-*/
-
-
 
 
 
@@ -185,15 +142,12 @@ array([[15031, 11482,  2804,     1],
     polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
 
 
-
-
     rbuffer[record_offset+1] = polw.short_ ; 
 
-    // flags intended to allow tracing photon propagation history via bitfields for each record 
-    // of a photon, each corresponding to bits set since the prior rsave (not the same as a step)
-    // although exclusive or on a "|=" incrementing mask almost does this 
-    // that would fail to see repeated flags  
 }
+
+
+#endif
 
 
 /*

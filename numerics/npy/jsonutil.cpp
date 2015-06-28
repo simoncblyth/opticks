@@ -6,9 +6,11 @@
 #include <iostream>
 #include <iomanip>
 
+#include <boost/algorithm/string.hpp> 
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
@@ -39,7 +41,6 @@ void saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
         LOG(info) << "saveMap to " << path ;
 
         saveMap( mp, path );
-
     }
     else
     {
@@ -60,7 +61,17 @@ void saveMap( typename std::map<A,B> & mp, const char* path)
            boost::lexical_cast<std::string>(it->second)
              ) ;
     }
-    pt::write_json(path, t );
+    fs::path fpath(path);
+
+    std::string ext = fpath.extension().string();
+
+    if(ext.compare(".json")==0)
+        pt::write_json(path, t );
+    else if(ext.compare(".ini")==0)
+        pt::write_ini(path, t );
+    else
+        LOG(warning) << "saveMap cannot write map to path with extension " << ext ; 
+
 }
 
 

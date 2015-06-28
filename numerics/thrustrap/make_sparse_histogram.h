@@ -1,5 +1,7 @@
 #pragma once
 
-void make_sparse_histogram(unsigned long* data, unsigned int numElements );
+typedef unsigned long long History_t ;
+
+void make_sparse_histogram(History_t* data, unsigned int numElements );
 
 

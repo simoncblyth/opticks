@@ -11,6 +11,9 @@ int main(int argc, char** argv)
     idx->test();
     //idx->formTable();
 
+    idx->setExt(".ini");
+    idx->save("/tmp");
+
     return 0 ; 
 }
 

@@ -119,25 +119,7 @@ Histogramming Check
 
     In [3]: hh = h[:,0,0]
 
-    In [4]: hh.min()
-    Out[4]: 3
-
-    In [5]: hh.max()
-    Out[5]: 18446744073655864513
-
-    In [6]: hex_(hh.max())
-    Out[6]: '0xfffffffffcccccc1'
-
-    In [16]: np.unique(hh)
-    Out[16]: 
-    array([                   3,                    5,                   49,
-           ..., 18446744073655862865, 18446744073655864401,
-           18446744073655864513], dtype=uint64)
-
-    In [17]: len(np.unique(hh))
-    Out[17]: 1171
-
-    In [18]: uhh = np.unique(hh)
+   In [18]: uhh = np.unique(hh)
 
     In [19]: map(hex_, uhh)  # huh ? where the fffff from 
     Out[19]: 

@@ -1,6 +1,8 @@
 # === func-gen- : graphics/ggeoview/ggeoview fgp graphics/ggeoview/ggeoview.bash fgn ggeoview fgh graphics/ggeoview
 
+ggv-(){   ggeoview- ; }
 ggv-cd(){ ggeoview-cd ; }
+ggv-i(){  ggeoview-install ; }
 ggv--(){  ggeoview-depinstall ; }
 ggv-lldb(){ ggeoview-lldb $* ; }
 
@@ -437,6 +439,8 @@ ggeoview-depinstall()
 {
     bcfg-
     bcfg-install
+    bregex-
+    bregex-install
     npy-
     npy-install
     ggeo-

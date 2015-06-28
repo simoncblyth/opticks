@@ -26,12 +26,48 @@ using namespace optix;
 // beyond MAXREC overwrite save into top slot
 //    if(photon_id == 0) dump_state((s));
  
-#define RSAVE(p, s, slot)  \
+#define RSAVE(seqhis, p, s, slot)  \
 {    \
+    unsigned int shift = slot*4 ; \
+    unsigned long long sflag = (s).flag ; \
+    unsigned long long x = __ffs(sflag) & 0xF ; \
+    unsigned long long tmp = x << shift ; \
+    seqhis = seqhis | tmp ; \
     unsigned int slot_offset =  (slot) < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
     rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
     (slot)++ ; \
 }   \
+
+
+
+
+/*
+
+testing sequence formation with 
+    /usr/local/env/numerics/thrustrap/bin/PhotonIndexTest
+
+
+with seqhis = sflag   get expected values
+
+print_vector  :                         histogram values 3 4 5 6 b c 
+print_vector  :                         histogram counts 59493 453837 420 357 12861 85873  total: 612841
+
+
+with seqhis = tmp  get expected values
+
+print_vector  :                         histogram values 3 4 30 40 300 400 3000 4000 30000 40000 300000 400000 3000000 
+                           4000000 30000000 40000000 300000000 400000000 500000000 600000000 b00000000 c00000000 
+
+
+with seqhis = seqhis | tmp   get unexpected "f"  always appearing in most signficant 4 bits, 
+                             skipping the 2nd seqset avoids the issue
+
+
+   print_vector  :                         histogram values 3 5 31 51 61 c1 f1 361 3b1 3c1 551 561 5c1 651 661 6b1 6c1 c51 c61 cb1 cc1 f51 f61 fb1 fc1 3bb1 3bc1 3cb1 3cc1 5551 
+
+
+
+*/
 
 
 
@@ -56,7 +92,6 @@ RT_PROGRAM void generate()
 {
     union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
-    unsigned long long seqhis = 0 ;
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
  
     phead.f = photon_buffer[photon_offset+0] ;
@@ -70,8 +105,8 @@ RT_PROGRAM void generate()
 
     // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
 
-    State s ;   // perhaps rename to Step (as in propagation, not generation) 
-
+    unsigned long long seqhis(0) ;
+    State s ;   
     Photon p ;  
 
     if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
@@ -81,7 +116,8 @@ RT_PROGRAM void generate()
 #ifdef DEBUG
         if(photon_id == 0) csdebug(cs);
 #endif
-        generate_cerenkov_photon(p, s, cs, rng );         
+        generate_cerenkov_photon(p, cs, rng );         
+        s.flag = CERENKOV ;  
     }
     else
     {
@@ -90,10 +126,11 @@ RT_PROGRAM void generate()
 #ifdef DEBUG
         if(photon_id == 0) ssdebug(ss);
 #endif
-        generate_scintillation_photon(p, s, ss, rng );         
+        generate_scintillation_photon(p, ss, rng );         
+        s.flag = SCINTILLATION ;  
     }
 
-    p.flags.u.y = photon_id ;   // no problem fitting uint  (1 << 32) - 1 = 4,294,967,295
+    p.flags.u.y = photon_id ; 
 
 
     int slot = 0 ;
@@ -115,10 +152,10 @@ RT_PROGRAM void generate()
 
         if(prd.boundary == 0)
         {
-            //p.flags.i.w |= NO_HIT;
             s.flag = MISS ;  // overwrite CERENKOV/SCINTILLATION for the no hitters
             break ;
         }   
+        // initial and CONTINUE-ing records
 
         p.flags.i.x = prd.boundary ;  
 
@@ -130,7 +167,6 @@ RT_PROGRAM void generate()
 
         p.flags.u.z = s.index.x ;   // material1 index 
 
-        // initial and CONTINUE-ing records
         p.flags.u.w |= s.flag ; 
 
 
@@ -141,8 +177,8 @@ RT_PROGRAM void generate()
            rtPrintf("polw  %10.3f %10.3f %10.3f %10.3f  % \n", p.polarization.x, p.polarization.y, p.polarization.z, p.wavelength );
         } 
 
-        seqhis |= __ffs(s.flag) << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
-        RSAVE(p, s, slot) ;
+
+        RSAVE(seqhis, p, s, slot) ;
 
         // Where best to record the propagation ? 
         // =======================================
@@ -220,9 +256,17 @@ RT_PROGRAM void generate()
 
     // breakers and maxers saved here
     p.flags.u.w |= s.flag ; 
-    seqhis |= __ffs(s.flag) << (bounce - 1)*4 ;  // building history sequence, bounce by bounce
     psave(p, photon_buffer, photon_offset ); 
-    RSAVE(p, s, slot) ;
+
+    // building history sequence, bounce by bounce
+    // s.flag is unexpected coming out 0xf 20% of time ? always here on the last placement ?
+    // skipping the 2nd seqset :
+    //    0) avoids the problem of trailing f 
+    //    1) causes all the MISS to get zero, the initial seqhis value
+    //
+
+    RSAVE(seqhis, p, s, slot) ;
+
 
     history_buffer[photon_id] = seqhis ; 
     rng_states[photon_id] = rng ;
