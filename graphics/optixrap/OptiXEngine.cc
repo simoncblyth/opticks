@@ -467,8 +467,36 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
 
 
 
+#if 0
+CUdeviceptr OptiXEngine::getHistoryBufferDevicePointer(unsigned int optix_device_number)
+{
+
+/*
+// CUdeviceptr is typedef to unsigned long long 
+ /Developer/OptiX/include/optix_cuda_interop.h 
+
+122   * @ref rtBufferGetDevicePointer returns the pointer to the data of \a buffer on device \a optix_device_number in **\a device_pointer.
+123   *
+124   * If @ref rtBufferGetDevicePointer has been called for a single device for a given buffer,
+125   * the user can change the buffer's content on that device. OptiX must then synchronize the new buffer contents to all devices.
+126   * These synchronization copies occur at every @ref rtContextLaunch "rtContextLaunch", unless the buffer is declared with @ref RT_BUFFER_COPY_ON_DIRTY.
+127   * In this case, use @ref rtBufferMarkDirty to notify OptiX that the buffer has been dirtied and must be synchronized.
+128   *
 
 
+   Sequence of actions...
+
+        * create OpenGL buffers in Scene::uploadEvt, with OpenGL buffer_id tucked away in the NPY
+        * OptiXEngine::initGenerate takes hold of the buffers via their buffer_id and 
+          places references to them in the OptiX context
+        * OptiXEngine::generate populates buffers during OptiX context launches  
+
+        * post generate 
+ 
+*/
+    return m_history_buffer->getDevicePointer(optix_device_number);
+}
+#endif
 
 
 optix::Buffer OptiXEngine::createOutputBuffer(RTformat format, unsigned int width, unsigned int height)

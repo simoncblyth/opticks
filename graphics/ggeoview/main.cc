@@ -1,6 +1,7 @@
 #include <stdlib.h>  //exit()
 #include <stdio.h>
 
+#include "OptiXUtil.hh"
 #include "define.h"
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
@@ -78,7 +79,6 @@
 #include "OptiXEngine.hh"
 #include "RayTraceConfig.hh"
 
-
 // thrustrap-
 #include "ThrustEngine.hh"
 
@@ -124,7 +124,6 @@ int main(int argc, char** argv)
     const char* idpath = cache.getIdPath();
     LOG(debug) << argv[0] ; 
 
-    ThrustEngine::version() ; 
 
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
@@ -296,10 +295,12 @@ int main(int argc, char** argv)
     NPYBase* idomain = engine.getIDomain(); 
     if(idomain) idomain->save("idomain", "1");
 
-
-    
+   
+    // generate and propagate photons through the geometry  
     engine.generate();
     LOG(info) << "main: engine.generate DONE "; 
+
+
 
     NPY<float>* dpho = evt.getPhotonData();
     Rdr::download(dpho);
@@ -315,6 +316,14 @@ int main(int argc, char** argv)
     Rdr::download(dhis);
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag );
+
+
+    ThrustEngine te ; 
+    te.version(); 
+
+    unsigned long long* devhis = OptiXUtil::getDevicePtr<unsigned long long>( engine.getHistoryBuffer(), 0 );
+    te.setHistoryDevicePtr(devhis);
+    
 
     if(noviz)
     {

@@ -361,6 +361,7 @@ ggeoview-make(){
 }
 
 ggeoview-install(){
+   printf "********************** $FUNCNAME "
    ggeoview-make install
 }
 

@@ -24,6 +24,7 @@ OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot 
 if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
+
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
 

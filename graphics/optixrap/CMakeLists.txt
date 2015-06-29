@@ -19,6 +19,7 @@ OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot 
 if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
+
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
 
@@ -80,6 +81,7 @@ add_definitions(
 
 add_library( ${name}  SHARED
        G4DAELoader.cc
+       OptiXUtil.cc
        OptiXEngine.cc
        OptiXGeometry.cc
        GGeoOptiXGeometry.cc
@@ -105,6 +107,7 @@ target_link_libraries( ${name}
 
 SET(hdrs 
   G4DAELoader.hh
+  OptixUtil.hh
   OptixEngine.hh
   OptixGeometry.hh
   GGeoOptixGeometry.hh

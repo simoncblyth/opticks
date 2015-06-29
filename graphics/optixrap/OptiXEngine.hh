@@ -10,7 +10,6 @@ class NumpyEvt ;
 class cuRANDWrapper ; 
 class NPYBase ; 
 
-
 #include "string.h"
 #include "Touchable.hh"
 #include <optixu/optixpp_namespace.h>
@@ -80,6 +79,10 @@ class OptiXEngine : public Touchable {
         void cleanUp();
 
     public:
+        //CUdeviceptr getHistoryBufferDevicePointer(unsigned int optix_device_number=0);
+        optix::Buffer& getHistoryBuffer();
+
+    public:
        // fulfil Touchable interface
        unsigned int touch(int ix, int iy);
 
@@ -107,10 +110,12 @@ class OptiXEngine : public Touchable {
         optix::Buffer createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
         optix::Buffer createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
 
+
     protected:
         optix::Buffer         m_rng_states ;
         unsigned int          m_rng_max ; 
         cuRANDWrapper*        m_rng_wrapper ;
+
 
     protected:
         optix::Context        m_context; 
@@ -275,6 +280,10 @@ inline NPYBase* OptiXEngine::getIDomain()
 
 
 
+inline optix::Buffer& OptiXEngine::getHistoryBuffer()
+{
+    return m_history_buffer ; 
+}
 
 
 

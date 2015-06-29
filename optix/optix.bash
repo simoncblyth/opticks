@@ -18,8 +18,6 @@ Resources
 
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
-
-
 OptiX Versions
 -----------------
 
@@ -33,6 +31,91 @@ OptiX Versions
     3.7.0         02/24/2015 22:53:11
     3.8.0-beta    03/14/2015 17:04:51
     3.8.0         06/01/2015 07:18:19    CUDA R346 driver or later, for Mac the driver extension module supplied with CUDA 7.0 will need to be installed. 
+
+
+OptiX Download and Unpack 
+-----------------------------
+
+Download and mount dmg::
+
+    optix-ftp    # web interface, click on .dmg 
+
+    mv ~/Downloads/NVIDIA-OptiX-SDK-3.8.0-mac64.dmg $(optix-download-dir)/
+
+    open NVIDIA-OptiX-SDK-3.8.0-mac64.dmg   # mounts volume containing NVIDIA-OptiX-SDK-3.8.0-mac64.pkg 
+
+Examine pkg contents using lsbom, verify that target is all beneath /Developer/OptiX::
+
+    simon:~ blyth$ lsbom /Volumes/NVIDIA-OptiX-SDK-3.8.0-mac64/NVIDIA-OptiX-SDK-3.8.0-mac64.pkg/Contents/Archive.bom
+    .   40755   501/0
+    ./Developer 40755   501/0
+    ./Developer/OptiX   40755   0/80
+    ./Developer/OptiX/SDK   40755   0/80
+    ./Developer/OptiX/SDK/CMake 40755   0/80
+    ./Developer/OptiX/SDK/CMake/CompilerInfo.cmake  100644  0/80    3392    2636181668
+    ./Developer/OptiX/SDK/CMake/ConfigCompilerFlags.cmake   100644  0/80    15064   2806959999
+    ./Developer/OptiX/SDK/CMake/CopyDLL.cmake   100644  0/80    2850    1542474852
+    ./Developer/OptiX/SDK/CMake/FindCUDA    40755   0/80
+    ./Developer/OptiX/SDK/CMake/FindCUDA/make2cmake.cmake   100644  0/80    3532    494331911
+    ./Developer/OptiX/SDK/CMake/FindCUDA/parse_cubin.cmake  100644  0/80    3666    547407452
+    ./Developer/OptiX/SDK/CMake/FindCUDA/run_nvcc.cmake 100644  0/80    13360   3696680251
+    ./Developer/OptiX/SDK/CMake/FindCUDA.cmake  100644  0/80    74607   1732037123
+    ./Developer/OptiX/SDK/CMake/FindDX.cmake    100644  0/80    1414    2129523030
+    ./Developer/OptiX/SDK/CMake/FindOptiX.cmake 100644  0/80    6408    1762934238
+    ./Developer/OptiX/SDK/CMake/FindSUtilGLUT.cmake 100644  0/80    2747    312119594 
+    ...
+
+Prior to unpacking delete my symbolic link::
+
+    simon:~ blyth$ l /Developer/
+    total 8
+    drwxr-xr-x  4 root  wheel  136 Jun 29 17:05 NVIDIA
+    lrwxr-xr-x  1 root  wheel   11 Feb  2 12:53 OptiX -> OptiX_370b2
+    drwxr-xr-x  7 root  admin  238 Jan 22 16:17 OptiX_301
+    drwxr-xr-x  7 root  admin  238 Dec 18  2014 OptiX_370b2
+
+    simon:~ blyth$ sudo rm /Developer/OptiX
+
+Open .pkg from mounted .dmg, run the GUI installer, 
+then rename and symbolicate::
+
+    simon:Developer blyth$ sudo mv OptiX OptiX_380
+    simon:Developer blyth$ sudo ln -s OptiX_380 OptiX 
+    simon:Developer blyth$ l
+    total 8
+    lrwxr-xr-x  1 root  wheel    9 Jun 29 20:48 OptiX -> OptiX_380
+    drwxr-xr-x  4 root  wheel  136 Jun 29 17:05 NVIDIA
+    drwxr-xr-x  7 root  admin  238 May 29 00:23 OptiX_380
+    drwxr-xr-x  7 root  admin  238 Jan 22 16:17 OptiX_301
+    drwxr-xr-x  7 root  admin  238 Dec 18  2014 OptiX_370b2
+
+
+Try Precompiled Samples
+--------------------------
+
+::
+
+    cd /Developer/OptiX/SDK-precompiled-samples
+
+    simon:SDK-precompiled-samples blyth$ open sample1.app
+    simon:SDK-precompiled-samples blyth$ open sample2.app
+    simon:SDK-precompiled-samples blyth$ open cook.app
+    simon:SDK-precompiled-samples blyth$ open path_tracer.app
+    simon:SDK-precompiled-samples blyth$ open instancing.app
+    simon:SDK-precompiled-samples blyth$ open tutorial.app
+    simon:SDK-precompiled-samples blyth$ open sphereTessellate.app
+    simon:SDK-precompiled-samples blyth$ open whitted.app
+
+
+Test can compile samples
+--------------------------
+
+::
+
+    simon:SDK-precompiled-samples blyth$ optix-samples-get-all
+    optix-samples-get-all copy all samples to somewhere writable
+    simon:SDK-precompiled-samples blyth$ 
+
 
 
 OptiX 3.8,  05/30/2015
@@ -1400,7 +1483,6 @@ EOU
 
 
 
-
 optix-export(){
    export OPTIX_SDK_DIR=$(optix-sdk-dir)
    export OPTIX_INSTALL_DIR=$(optix-install-dir)
@@ -1416,15 +1498,17 @@ optix-fold(){
 optix-dir(){         echo $(optix-fold)/OptiX/SDK ; }
 optix-sdk-dir-old(){ echo $(optix-fold)/OptiX_301/SDK ; }
 optix-sdk-dir(){     echo $(optix-fold)/OptiX/SDK ; }
+optix-download-dir(){ echo $(local-base)/env/cuda ; }
+optix-bdir(){         echo $(local-base)/env/cuda/$(optix-name) ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
 optix-idir(){        echo $(dirname $(optix-sdk-dir))/include ; }
-optix-bdir(){        echo $(local-base)/env/cuda/$(optix-name) ; }
 optix-sdir(){        echo $(env-home)/optix ; }
 optix-samples-src-dir(){     echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
 optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }
 
 optix-samples-scd(){   cd $(optix-samples-src-dir) ; }
 optix-samples-cd(){    cd $(optix-samples-install-dir) ; }
+optix-download-cd(){   cd $(optix-download-dir) ; }
 
 optix-ftp(){ open https://ftpservices.nvidia.com ; }
 
@@ -1558,12 +1642,12 @@ optix-cuda-nvcc-flags(){
 
 
 
-optix-samples-cmake-kludge(){
-    optix-samples-scd
-    grep cmake_minimum_required CMakeLists.txt 
-    perl -pi -e 's,2.8.8,2.6.4,' CMakeLists.txt 
-    grep cmake_minimum_required CMakeLists.txt 
-}
+#optix-samples-cmake-kludge(){
+#    optix-samples-scd
+#    grep cmake_minimum_required CMakeLists.txt 
+#    perl -pi -e 's,2.8.8,2.6.4,' CMakeLists.txt 
+#    grep cmake_minimum_required CMakeLists.txt 
+#}
 
 
 optix-samples-cmake(){

@@ -322,6 +322,27 @@ FindCUDA.cmake
 
 * http://stackoverflow.com/questions/13683575/cuda-5-0-separate-compilation-of-library-with-cmake
 
+::
+
+    simon:ggeoview blyth$ ggeoview-cmake
+    Requested CUDA version 7.0, but found unacceptable version 5.5
+    CMake Error at /opt/local/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake:138 (message):
+      Could NOT find CUDA (missing: _cuda_version_acceptable) (Required is at
+      least version "7.0")
+    Call Stack (most recent call first):
+      /opt/local/share/cmake-3.2/Modules/FindPackageHandleStandardArgs.cmake:374 (_FPHSA_FAILURE_MESSAGE)
+      /Developer/OptiX/SDK/CMake/FindCUDA.cmake:889 (find_package_handle_standard_args)
+      CMakeLists.txt:28 (find_package)
+
+
+    -- Configuring incomplete, errors occurred!
+    See also "/usr/local/env/graphics/ggeoview.build/CMakeFiles/CMakeOutput.log".
+    simon:ggeoview blyth$ 
+
+
+
+
+
 
 CUDA CMAKE Mavericks
 -----------------------
