@@ -1,5 +1,4 @@
 #include "make_sparse_histogram.h"
-#include "Flags.hh"
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -129,7 +128,11 @@ void sparse_histogram(const Vector1& input,
 }
 
 
+#ifdef SPARTAN
 void make_sparse_histogram(History_t* data, unsigned int numElements, Flags* flags )
+#else
+void make_sparse_histogram(History_t* data, unsigned int numElements, Types* flags )
+#endif
 {
 
     thrust::host_vector<History_t> input(data, data+numElements);

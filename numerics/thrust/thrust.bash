@@ -13,7 +13,6 @@ Examples
 
 * https://github.com/thrust/thrust/tree/master/examples
 
-
 Refs
 -----
 

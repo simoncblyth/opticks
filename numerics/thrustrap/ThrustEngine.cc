@@ -2,10 +2,10 @@
 
 #include "stdio.h"
 #include <thrust/version.h>
-//#include <iostream>
+#include <iostream>
 
-//#include <boost/log/trivial.hpp>
-//#define LOG BOOST_LOG_TRIVIAL
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
 
@@ -15,7 +15,7 @@ void vers()
     int minor = THRUST_MINOR_VERSION;
     printf(" major %d minor %d \n", major, minor);
 
-    //LOG(info) << "Thrust v" << major << "." << minor << std::endl;
+    LOG(info) << "Thrust v" << major << "." << minor << std::endl;
 }
 
 

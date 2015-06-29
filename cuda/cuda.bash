@@ -11,8 +11,142 @@ CUDA
 See Also
 ---------
 
-* cudainstall-
 * cudatoolkit-
+
+
+Installation : cuda-pkg-install  (June 29, 2015)
+-------------------------------------------------
+
+* See cudainstall- for version verifications
+
+::
+
+    cuda-
+    cuda-vi            # set the version
+    cuda-get           # download the pkg 
+    cuda-pkg-install   # run GUI installer
+
+PKG installer gives the below options, selected them all::
+
+                  action       size
+   CUDA Driver       Upgrade      83.5 MB
+   CUDA Toolkit      Upgrade       1.3 GB
+   CUDA Samples      Upgrade     199.3 MB
+
+Installing them all took less than a minute.
+
+
+Installing/building samples
+----------------------------
+
+::
+
+    simon:cuda blyth$ cuda-
+    simon:cuda blyth$ cuda-samples-install
+    Copying samples to /usr/local/env/cuda/NVIDIA_CUDA-7.0_Samples now...
+    Finished copying samples.
+
+    simon:NVIDIA_CUDA-7.0_Samples blyth$ cuda-samples-make
+    /Developer/NVIDIA/CUDA-7.0/bin/nvcc 
+              -ccbin clang++ 
+              -I../../common/inc  
+              -m64 
+              -Xcompiler -arch -Xcompiler x86_64  
+              -gencode arch=compute_20,code=sm_20 
+              -gencode arch=compute_30,code=sm_30  
+              -gencode arch=compute_35,code=sm_35 
+              -gencode arch=compute_37,code=sm_37 
+              -gencode arch=compute_50,code=sm_50 
+              -gencode arch=compute_52,code=sm_52 
+              -gencode arch=compute_52,code=compute_52
+              -o asyncAPI.o 
+              -c asyncAPI.cu
+     ...
+
+     /Developer/NVIDIA/CUDA-7.0/bin/nvcc 
+                -ccbin clang++   
+                -m64  
+                -Xcompiler -arch -Xcompiler x86_64  
+                -Xlinker -rpath -Xlinker /Developer/NVIDIA/CUDA-7.0/lib 
+                -gencode arch=compute_35,code=sm_35 
+                -gencode arch=compute_37,code=sm_37 
+                -gencode arch=compute_50,code=sm_50 
+                -gencode arch=compute_52,code=sm_52 
+                -gencode arch=compute_52,code=compute_52 
+                -o cdpLUDecomposition 
+                 cdp_lu.o cdp_lu_main.o dgetf2.o dgetrf.o dlaswp.o  
+                -lcublas -lcublas_device -lcudadevrt
+
+
+Hmm the build takes as long time, building for many arch/code 
+
+
+
+
+nvcc help
+------------
+
+:: 
+
+     nvcc -h
+
+        --compile                                  (-c)                              
+                Compile each .c/.cc/.cpp/.cxx/.cu input file into an object file.
+
+        --device-c                                 (-dc)                             
+                Compile each .c/.cc/.cpp/.cxx/.cu input file into an object file that contains
+                relocatable device code.  It is equivalent to '--relocatable-device-code=true
+                --compile'.
+
+        --device-w                                 (-dw)                             
+                Compile each .c/.cc/.cpp/.cxx/.cu input file into an object file that contains
+                executable device code.  It is equivalent to '--relocatable-device-code=false
+                --compile'.
+
+        --device-link                              (-dlink)                          
+                Link object files with relocatable device code and .ptx/.cubin/.fatbin files
+                into an object file with executable device code, which can be passed to the
+                host linker.
+
+        --link  (-link)                           
+                This option specifies the default behavior: compile and link all inputs.
+
+        --lib   (-lib)                            
+                Compile all inputs into object files (if necessary) and add the results to
+                the specified output library file.
+
+
+       --compiler-bindir <path>                   (-ccbin)                          
+            Specify the directory in which the host compiler executable resides.  The
+            host compiler executable name can be also specified to ensure that the correct
+            host compiler is selected.  In addition, driver prefix options ('--input-drive-prefix',
+            '--dependency-drive-prefix', or '--drive-prefix') may need to be specified,
+            if nvcc is executed in a Cygwin shell or a MinGW shell on Windows.
+
+
+       --std {c++11}                              (-std)                            
+            Select a particular C++ dialect.  The only value currently supported is "c++11".
+            Enabling C++11 mode also turns on C++11 mode for the host compiler.
+            Allowed values for this option:  'c++11'.
+
+      --compiler-options <options>,...           (-Xcompiler)                      
+            Specify options directly to the compiler/preprocessor.
+
+      --linker-options <options>,...             (-Xlinker)                        
+            Specify options directly to the host linker.
+
+      --generate-code <specification>,...        (-gencode)                        
+            This option provides a generalization of the '--gpu-architecture=<arch> --gpu-code=<code>,
+            ...' option combination for specifying nvcc behavior with respect to code
+            generation.  Where use of the previous options generates code for different
+            'real' architectures with the PTX for the same 'virtual' architecture, option
+            '--generate-code' allows multiple PTX generations for different 'virtual'
+            architectures.  In fact, '--gpu-architecture=<arch> --gpu-code=<code>,
+            ...' is equivalent to '--generate-code arch=<arch>,code=<code>,...'.
+            '--generate-code' options may be repeated for different virtual architectures.
+            Allowed keywords for this option:  'arch','code'.
+
+
 
 
 
@@ -259,8 +393,8 @@ cuda-nvcc-flags(){
 }
 
 
-cuda-version(){      echo ${CUDA_VERSION:-5.5} ; }
-#cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
+#cuda-version(){      echo ${CUDA_VERSION:-5.5} ; }
+cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
 cuda-download-dir(){ echo $(local-base)/env/cuda ; }
 cuda-dir(){          echo $(cuda-dir-$(uname)) ; }
 cuda-dir-Linux(){    echo /usr/local/cuda-$(cuda-version) ; }
@@ -307,6 +441,7 @@ cuda-url-Darwin(){
    esac
 }
 cuda-pkg(){  echo $(basename $(cuda-url)) ; }
+cuda-pkgpath(){ echo $(cuda-download-dir)/$(cuda-pkg) ; }
 cuda-get(){
    local dir=$(cuda-download-dir) &&  mkdir -p $dir && cd $dir
    local url=$(cuda-url-$(uname))
@@ -315,11 +450,15 @@ cuda-get(){
    [ ! -f "$pkg" ] && curl -L -O $url 
 }
 
-cuda-gui-install(){
-   local pkg=$(cuda-pkg)
+cuda-pkg-install(){
+   local pkg=$(cuda-pkgpath)
    open $pkg   
 }
 
+cuda-pkgpath-lsbom()
+{
+   lsbom $(pkgutil --bom $(cuda-pkgpath))
+}
 
 cuda-osx-pkginfo(){         installer -pkginfo -pkg $(dirname $(cuda-download-dir))/$(cuda-pkg) ; }
 cuda-osx-getting-started(){ open $(cuda-dir)/doc/html/cuda-getting-started-guide-for-mac-os-x/index.html ; }
@@ -328,11 +467,15 @@ cuda-doc(){                 open $(cuda-dir)/doc/html/index.html ; }
 cuda-osx-kextstat(){        kextstat | grep -i cuda ; }
 
 
-cuda-samples-make(){
-   cuda-samples-cd
-   make $*
-}
 cuda-samples-install(){
+   local iwd=$PWD
+   local dir=$(cuda-writable-dir)
+   [ ! -d "$dir" ] && mkdir -p $dir
+
+   cuda-install-samples-$(cuda-version).sh $dir
+}
+
+cuda-samples-install-skipping-doc(){
    local iwd=$PWD
    local dir=$(cuda-writable-dir)
    [ ! -d "$dir" ] && mkdir -p $dir
@@ -355,8 +498,14 @@ cuda-samples-install(){
       fi
    done
    cd $iwd
-
 }
+
+cuda-samples-make(){
+   cuda-samples-cd
+   make $*
+}
+
+
 cuda-samples-bin-dir(){ echo $(cuda-samples-dir)/bin/$(uname -m)/$(uname | tr '[:upper:]' '[:lower:]')/release ; }
 cuda-samples-bin-cd(){  cd $(cuda-samples-bin-dir) ; }
 

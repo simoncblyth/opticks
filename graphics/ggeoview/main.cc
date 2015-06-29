@@ -49,7 +49,7 @@
 // bregex-
 #include "regexsearch.hh"
 
-
+// glm-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -63,23 +63,25 @@
 #include "GCache.hh"
 #include "GMaterialIndex.hh"
 
-
 // assimpwrap
 #include "AssimpGGeo.hh"
 
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
-
 #include <boost/log/trivial.hpp>
 #include "boost/log/utility/setup.hpp"
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
 // optixrap-
 #include "OptiXEngine.hh"
 #include "RayTraceConfig.hh"
+
+
+// thrustrap-
+#include "ThrustEngine.hh"
+
 
 void dump(float* f, const char* msg)
 {
@@ -121,6 +123,8 @@ int main(int argc, char** argv)
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
     LOG(debug) << argv[0] ; 
+
+    ThrustEngine::version() ; 
 
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 

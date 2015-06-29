@@ -14,11 +14,128 @@ See Also
 * cuda-
 * cudatoolkit-
 
-
 Refs
 -----
 
 * https://developer.nvidia.com/cuda-downloads
+
+Many Versions to Get Straight (status June 29, 2015)
+-------------------------------------------------------
+
+SysPrefs CUDA panel
+~~~~~~~~~~~~~~~~~~~~
+
+Before 7.0 install::
+
+    CUDA Driver Version: 6.5.45
+    GPU Driver Version: 8.26.26 310.40.45f01
+
+    CUDA 7.0.36 Driver is available
+
+
+After 7.0 install::
+
+    CUDA Driver Version: 7.0.29
+    GPU Driver Version: 8.26.26 310.40.45f01
+
+    CUDA 7.0.36 Driver is available
+
+
+deviceQuery : Driver Version / Runtime Version   6.5/5.5 -> 7.0/7.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before 7.0 install::
+
+    simon:cuda blyth$ cuda-deviceQuery 
+    running /usr/local/env/cuda/NVIDIA_CUDA-5.5_Samples/bin/x86_64/darwin/release/deviceQuery
+    /usr/local/env/cuda/NVIDIA_CUDA-5.5_Samples/bin/x86_64/darwin/release/deviceQuery Starting...
+
+     CUDA Device Query (Runtime API) version (CUDART static linking)
+
+    Detected 1 CUDA Capable device(s)
+
+    Device 0: "GeForce GT 750M"
+      CUDA Driver Version / Runtime Version          6.5 / 5.5
+      CUDA Capability Major/Minor version number:    3.0
+      Total amount of global memory:                 2048 MBytes (2147024896 bytes)
+      ( 2) Multiprocessors, (192) CUDA Cores/MP:     384 CUDA Cores
+      GPU Clock rate:                                926 MHz (0.93 GHz)
+
+
+After 7.0 install and building samples::
+
+    simon:~ blyth$ cuda-deviceQuery 
+    running /usr/local/env/cuda/NVIDIA_CUDA-7.0_Samples/bin/x86_64/darwin/release/deviceQuery
+    /usr/local/env/cuda/NVIDIA_CUDA-7.0_Samples/bin/x86_64/darwin/release/deviceQuery Starting...
+
+     CUDA Device Query (Runtime API) version (CUDART static linking)
+
+    Detected 1 CUDA Capable device(s)
+
+    Device 0: "GeForce GT 750M"
+      CUDA Driver Version / Runtime Version          7.0 / 7.0
+      CUDA Capability Major/Minor version number:    3.0
+      Total amount of global memory:                 2048 MBytes (2147024896 bytes)
+      ( 2) Multiprocessors, (192) CUDA Cores/MP:     384 CUDA Cores
+      GPU Max Clock rate:                            926 MHz (0.93 GHz)
+      Memory Clock rate:                             2508 Mhz
+
+
+
+nvcc version : Matches the Runtime Version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before 7.0 install::
+
+    simon:cuda blyth$ nvcc -V
+    nvcc: NVIDIA (R) Cuda compiler driver
+    Copyright (c) 2005-2013 NVIDIA Corporation
+    Built on Thu_Sep__5_10:17:14_PDT_2013
+    Cuda compilation tools, release 5.5, V5.5.0
+    simon:cuda blyth$ 
+
+After 7.0::
+
+    simon:cuda blyth$ which nvcc
+    /Developer/NVIDIA/CUDA-7.0/bin/nvcc
+    simon:cuda blyth$ nvcc -V
+    nvcc: NVIDIA (R) Cuda compiler driver
+    Copyright (c) 2005-2015 NVIDIA Corporation
+    Built on Mon_Feb_16_23:23:36_CST_2015
+    Cuda compilation tools, release 7.0, V7.0.27
+
+
+What does the CUDA SysPref panel actually update ?
+-----------------------------------------------------
+
+Suspect a small subset of what the CUDA installer updates::
+
+   /usr/local/cuda/lib/libcuda.dylib
+   Frameworks/CUDA.framework 
+
+Strings on prefPane binary support this::
+
+    simon:~ blyth$ strings "/Library/PreferencePanes/CUDA Preferences.prefPane/Contents/MacOS/CUDA Preferences"  | more
+
+    libcuda.dylib
+    Frameworks/CUDA.framework
+    /usr/local/cuda/lib
+    /System/Library/Extensions/%@.kext
+    ...
+    /Library/LaunchAgents/com.nvidia.CUDASoftwareUpdate.plist
+
+
+After CUDA 7.0 install::
+
+    simon:release blyth$ otool -L /Library/Frameworks/CUDA.framework/Versions/Current/CUDA 
+    /Library/Frameworks/CUDA.framework/Versions/Current/CUDA:
+        @rpath/CUDA.framework/Versions/A/CUDA (compatibility version 1.1.0, current version 7.0.29)
+        /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 855.17.0)
+        /System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
+        /System/Library/Frameworks/IOKit.framework/Versions/A/IOKit (compatibility version 1.0.0, current version 275.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+
 
 Getting Started Guide
 -----------------------
@@ -44,36 +161,14 @@ CUDA Samples (read-only)
       to better support side-by-side installations.
 
 
-
-nvcc version
--------------
-
-::
-
-    simon:cuda blyth$ nvcc -V
-    nvcc: NVIDIA (R) Cuda compiler driver
-    Copyright (c) 2005-2013 NVIDIA Corporation
-    Built on Thu_Sep__5_10:17:14_PDT_2013
-    Cuda compilation tools, release 5.5, V5.5.0
-    simon:cuda blyth$ 
-
-
-
 CUDA Mac Driver Check 06/29/2015
 --------------------------------
-
-SysPrefs panel::
-
-    CUDA Driver Version: 6.5.45
-    GPU Driver Version: 8.26.26 310.40.45f01
-    CUDA 7.0.36 Driver is available
-
 
 * http://www.nvidia.com/object/mac-driver-archive.html
 
 CUDA 7.0.36 driver for MAC   Release Date: 04/09/2015 << LATEST
 CUDA 7.0.35 driver for MAC   Release Date: 04/02/2015
-CUDA 7.0.29 driver for MAC   Release Date: 03/18/2015
+CUDA 7.0.29 driver for MAC   Release Date: 03/18/2015 << version installed with CUDA 7.0
 CUDA 6.5.51 driver for MAC   Release Date: 04/21/2015
 CUDA 6.5.46 driver for MAC   Release Date: 01/28/2015
 CUDA 6.5.45 driver for MAC   Release Date: 01/28/2015 << CURRENT 
@@ -94,13 +189,7 @@ Annoying multiple versioning schemes for CUDA Drivers
 -------------------------------------------------------
 
 How does the CUDA R346 referred to from OptiX release notes
-map to the above Mac versions ?
-
-
-
-
-
-
+map to the Mac driver versions ? 
 
 Note that /usr/local/cuda/lib/libcuda.dylib is not a symbolic link into the toolkit::
 
@@ -114,7 +203,7 @@ Note that /usr/local/cuda/lib/libcuda.dylib is not a symbolic link into the tool
     lrwxr-xr-x  1 root  wheel     50 Jan 15  2014 libcudart.5.5.dylib -> /Developer/NVIDIA/CUDA-5.5/lib/libcudart.5.5.dylib
     lrwxr-xr-x  1 root  wheel     46 Jan 15  2014 libcudart.dylib -> /Developer/NVIDIA/CUDA-5.5/lib/libcudart.dylib
 
-Version reported by otool matches mac diver archive::
+Version reported by otool matches mac driver archive. Before 7.0 install::
 
     simon:cuda blyth$ otool -L /usr/local/cuda/lib/libcuda.dylib
     /usr/local/cuda/lib/libcuda.dylib:
@@ -122,7 +211,16 @@ Version reported by otool matches mac diver archive::
         @rpath/CUDA.framework/Versions/A/CUDA (compatibility version 1.1.0, current version 6.5.45)
         /usr/lib/libstdc++.6.dylib (compatibility version 7.0.0, current version 56.0.0)
         /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 169.3.0)
-    simon:cuda blyth$ 
+
+
+After 7.0 install, *NB the change to libc++ rather than the old libstdc++*::
+
+    simon:~ blyth$ otool -L /usr/local/cuda/lib/libcuda.dylib
+    /usr/local/cuda/lib/libcuda.dylib:
+        /usr/local/cuda/lib/libcuda.dylib (compatibility version 1.1.0, current version 7.0.29)
+        @rpath/CUDA.framework/Versions/A/CUDA (compatibility version 1.1.0, current version 7.0.29)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
 
 
 CUDA RNNN drivers
@@ -172,7 +270,6 @@ by passing one of the below to NVCC.
 
      -Xcompiler -stdlib=libc++ 
      -Xcompiler -stdlib=libstdc++ 
-
 
 
 OSX Layout

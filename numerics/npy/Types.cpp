@@ -365,3 +365,36 @@ glm::ivec4 Types::getFlags()
 
 
 
+std::string Types::getSequenceString(unsigned long long seq)
+{
+     // cf env/numerics/thrustrap/Flags.cc
+
+    unsigned int bits = sizeof(seq)*8 ; 
+    unsigned int slots = bits/4 ; 
+
+    std::stringstream ss ; 
+    for(unsigned int i=0 ; i < slots ; i++)
+    {
+        unsigned int i4 = i*4 ; 
+        unsigned long long mask = (0xFull << i4) ;   // tis essential to use 0xFull rather than 0xF for going beyond 32 bit
+        unsigned long long portion = (seq & mask) >> i4 ;  
+        unsigned int code = portion ;
+        std::string name = getHistoryString( 0x1 << (code-1) );
+     /*
+        std::cout << std::setw(3) << std::dec << i 
+                  << std::setw(30) << std::hex << portion 
+                  << std::setw(30) << std::hex << code
+                  << std::setw(30) << name   
+                  << std::endl ; 
+      */
+
+        ss << name  ; 
+    }
+    return ss.str() ; 
+}
+
+
+
+
+
+

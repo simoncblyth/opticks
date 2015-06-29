@@ -36,6 +36,7 @@ class Types {
        std::string getMaskString(unsigned int mask, Item_t etype);
        std::string getMaterialString(unsigned int flags);
        std::string getHistoryString(unsigned int flags);
+       std::string getSequenceString(unsigned long long seq);
        const char* getItemName(Item_t item);
 
    public:
