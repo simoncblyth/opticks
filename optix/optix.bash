@@ -19,61 +19,73 @@ Resources
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
 
-Update OptiX version and build samples
----------------------------------------
+
+OptiX Versions
+-----------------
 
 ::
 
-    -bash-4.1$ optix-linux-jump 370         # modify the symbolic link
-    OptiX -> NVIDIA-OptiX-SDK-3.7.0-linux64
-
-    -bash-4.1$ optix-name
-    NVIDIA-OptiX-SDK-3.7.0-linux64     
-
-    -bash-4.1$ optix-samples-get-all   ## copy samples, to avoid touching originals
-
-    -bash-4.1$ optix-samples-cmake     ## fails due to cmake version 
-
-    -bash-4.1$ optix-samples-cmake-kludge   ## kludge the requirement, seems to work with 2.6.4
-    cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
-    cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
-
-    -bash-4.1$ optix-samples-cmake     ## now completes
-    -bash-4.1$ optix-samples-make      ## 
+    3.5.1         02/21/2014 05:12:40    
+    3.6.0         06/11/2014 13:32:05
+    3.6.3         09/27/2014 18:52:56    CUDA R331 driver or later 
+    3.7.0-beta2                                                   
+    3.7.0-beta3   01/30/2015 17:35:59    CUDA R343 driver
+    3.7.0         02/24/2015 22:53:11
+    3.8.0-beta    03/14/2015 17:04:51
+    3.8.0         06/01/2015 07:18:19    CUDA R346 driver or later, for Mac the driver extension module supplied with CUDA 7.0 will need to be installed. 
 
 
-Partial override warning
----------------------------
+OptiX 3.8,  05/30/2015
+------------------------
+
+https://devtalk.nvidia.com/default/topic/836902/optix/optix-3-8-final-release-is-out-/
+
+What is this Mac Driver Extension Module ? 
+--------------------------------------------
+
+Presumably CUDA.kext::
+
+    simon:cuda blyth$ file  /System/Library/Extensions/CUDA.kext/Contents/MacOS/CUDA 
+    /System/Library/Extensions/CUDA.kext/Contents/MacOS/CUDA: Mach-O universal binary with 1 architecture
+    /System/Library/Extensions/CUDA.kext/Contents/MacOS/CUDA (for architecture x86_64): Mach-O 64-bit kext bundle x86_64
+
+The CUDA uninstalll does::
+
+    kextunload /System/Library/Extensions/CUDA.kext
 
 ::
 
-    /Developer/OptiX/include/optixu/optixpp_namespace.h(588): warning: overloaded virtual function "optix::APIObj::checkError" is only partially overridden in class "optix::ContextObj"
-
-* http://stackoverflow.com/questions/21462908/warning-overloaded-virtual-function-baseprocess-is-only-partially-overridde
-
-
-OptiX glass
-------------
-
-* https://devtalk.nvidia.com/default/topic/458979/?comment=3263252
-
-Overlapping geometry problem
+    simon:cuda blyth$ kextstat | head -1 && kextstat | grep nvidia
+    Index Refs Address            Size       Wired      Name (Version) <Linked Against>
+      107    2 0xffffff7f80c52000 0x274000   0x274000   com.apple.nvidia.driver.NVDAResman (8.2.6) <83 74 71 11 5 4 3 1>
+      108    0 0xffffff7f80ed1000 0x1ad000   0x1ad000   com.apple.nvidia.driver.NVDAGK100Hal (8.2.6) <107 11 4 3>
+      127    0 0xffffff7f81dbe000 0x2000     0x2000     com.nvidia.CUDA (1.1.0) <4 1>
 
 
-Determine Driver Version on Linux (on Mac use SysPref panel)
-----------------------------------------------------------------
+Seems no Mac equivalent of the R346 R355 R343 ...
+---------------------------------------------------
 
-With nvidia-smi or::
+Kexts have version numbers (above 1.1.0), 
+but they are not referred to, instead just get the text::
 
-    -bash-4.1$ cat /proc/driver/nvidia/version   # original old driver
-    NVRM version: NVIDIA UNIX x86_64 Kernel Module  319.37  Wed Jul  3 17:08:50 PDT 2013
-    GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+    For the Mac, the driver extension module supplied with CUDA 7.0 
+    will need to be installed.
 
-    -bash-4.1$ cat /proc/driver/nvidia/version   # updated Feb ~7 2015 
-    NVRM version: NVIDIA UNIX x86_64 Kernel Module  340.65  Tue Dec  2 09:50:34 PST 2014
-    GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
-    -bash-4.1$ 
 
+Release Notes OptiX 3.8.0 (May 2015)
+------------------------------------------
+
+The CUDA R346 or later driver is required. For the Mac, 
+the driver extension module supplied with CUDA 7.0 will need to be installed.
+
+Driver R355 or newer is required for optimal performance on Maxwell GPUs. 
+OptiX 3.8 supports Maxwell GPUs on earlier drivers, but at up to 20% lower performance.
+
+A CUDA compiler bug that causes timeouts or crashes on Maxwell cards has been
+worked around. Unfortunately, this bug fix causes a slowdown of up to 20% on
+Maxwell cards unless driver R355 or newer is used.
+
+CMake 2.8.12 http://www.cmake.org/cmake/resources/software.html
 
 
 Release Notes OptiX Version 3.7 beta 3 (January 2015)
@@ -111,6 +123,43 @@ supplied with CUDA 5.0 or later will need to be installed. Note that the Linux
 and Mac drivers can only be obtained from the CUDA 5.5 download page at the
 moment.
 
+
+Update OptiX version and build samples
+---------------------------------------
+
+::
+
+    -bash-4.1$ optix-linux-jump 370         # modify the symbolic link
+    OptiX -> NVIDIA-OptiX-SDK-3.7.0-linux64
+
+    -bash-4.1$ optix-name
+    NVIDIA-OptiX-SDK-3.7.0-linux64     
+
+    -bash-4.1$ optix-samples-get-all   ## copy samples, to avoid touching originals
+
+    -bash-4.1$ optix-samples-cmake     ## fails due to cmake version 
+
+    -bash-4.1$ optix-samples-cmake-kludge   ## kludge the requirement, seems to work with 2.6.4
+    cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+    cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+
+    -bash-4.1$ optix-samples-cmake     ## now completes
+    -bash-4.1$ optix-samples-make      ## 
+
+
+Determine Driver Version on Linux (on Mac use SysPref panel)
+----------------------------------------------------------------
+
+With nvidia-smi or::
+
+    -bash-4.1$ cat /proc/driver/nvidia/version   # original old driver
+    NVRM version: NVIDIA UNIX x86_64 Kernel Module  319.37  Wed Jul  3 17:08:50 PDT 2013
+    GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+
+    -bash-4.1$ cat /proc/driver/nvidia/version   # updated Feb ~7 2015 
+    NVRM version: NVIDIA UNIX x86_64 Kernel Module  340.65  Tue Dec  2 09:50:34 PST 2014
+    GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+    -bash-4.1$ 
 
 hgpu01 install
 --------------
@@ -182,6 +231,24 @@ I was getting this on laptop until I updated the driver.
     -bash-4.1$ LD_LIBRARY_PATH=. ./sample7 -f sample7.ppm
     OptiX Error: Invalid context (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Unable to set the CUDA device., [3735714])
     -bash-4.1$ 
+
+
+Partial override warning
+---------------------------
+
+::
+
+    /Developer/OptiX/include/optixu/optixpp_namespace.h(588): warning: overloaded virtual function "optix::APIObj::checkError" is only partially overridden in class "optix::ContextObj"
+
+* http://stackoverflow.com/questions/21462908/warning-overloaded-virtual-function-baseprocess-is-only-partially-overridde
+
+
+OptiX glass
+------------
+
+* https://devtalk.nvidia.com/default/topic/458979/?comment=3263252
+
+Overlapping geometry problem
 
 
 OptiX 3.6.3 problems
@@ -1346,32 +1413,33 @@ optix-fold(){
       G1) echo $(local-base) ;;
    esac
 }
-optix-dir(){     echo $(optix-fold)/OptiX/SDK ; }
+optix-dir(){         echo $(optix-fold)/OptiX/SDK ; }
 optix-sdk-dir-old(){ echo $(optix-fold)/OptiX_301/SDK ; }
-optix-sdk-dir(){ echo $(optix-fold)/OptiX/SDK ; }
+optix-sdk-dir(){     echo $(optix-fold)/OptiX/SDK ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
-optix-idir(){ echo $(dirname $(optix-sdk-dir))/include ; }
-optix-bdir(){ echo $(local-base)/env/cuda/$(optix-name) ; }
-optix-sdir(){ echo $(env-home)/optix ; }
-
-optix-samples-src-dir(){    echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
+optix-idir(){        echo $(dirname $(optix-sdk-dir))/include ; }
+optix-bdir(){        echo $(local-base)/env/cuda/$(optix-name) ; }
+optix-sdir(){        echo $(env-home)/optix ; }
+optix-samples-src-dir(){     echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
 optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }
-optix-samples-scd(){ cd $(optix-samples-src-dir) ; }
-optix-samples-cd(){ cd $(optix-samples-install-dir) ; }
-optix-samples-find(){ find $(optix-samples-src-dir) -name '*.cu' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
-optix-samples-hfind(){ find $(optix-samples-src-dir) -name '*.h' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
+
+optix-samples-scd(){   cd $(optix-samples-src-dir) ; }
+optix-samples-cd(){    cd $(optix-samples-install-dir) ; }
+
+optix-ftp(){ open https://ftpservices.nvidia.com ; }
+
 
 optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-samples-install-dir); }
 optix-scd(){ cd $(optix-sdir); }
 optix-icd(){ cd $(optix-idir); }
-
-
-
-optix-find(){ find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
-optix-ifind(){ find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
-
 optix-doc(){ cd $(optix-fold)/OptiX/doc ; }
+
+optix-samples-find(){  find $(optix-samples-src-dir) -name '*.cu' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
+optix-samples-hfind(){ find $(optix-samples-src-dir) -name '*.h' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
+optix-find(){          find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
+optix-ifind(){         find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
+
 optix-pdf(){ open $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_3.7.0.pdf ; }
 
 

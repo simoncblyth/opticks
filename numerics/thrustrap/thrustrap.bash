@@ -5,6 +5,11 @@ thrustrap-vi(){       vi $(thrustrap-source) ; }
 thrustrap-env(){      elocal- ; }
 thrustrap-usage(){ cat << EOU
 
+ThrustRap
+============
+
+CUDA 5.5, Thrust and C++11 on Mavericks
+------------------------------------------
 
 Observations from the below match my experience
 
@@ -26,16 +31,23 @@ delta:tests blyth$ otool -L /usr/local/env/numerics/thrustrap/bin/ThrustEngineTe
     /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
 
 
-
 CUDA 7 to the rescue ?
 ------------------------
 
 * http://devblogs.nvidia.com/parallelforall/cuda-7-release-candidate-feature-overview/
 
 
-
 Can a C interface provide a firewall to allow interop between compilers ?
-===========================================================================
+----------------------------------------------------------------------------
+
+Nope.  
+
+The solution to get CUDA 5.5 to work with libc++ is to 
+not use any C++ STL features like std::string.
+
+*cudawrap-* does this, it uses C style string handling.
+
+This is not an option with Thrust with is based on the STL.
 
 
 CUDA OpenGL thrust interop

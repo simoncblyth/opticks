@@ -179,6 +179,24 @@ Package Dependencies Tree of GGeoView
 
 
 
+C++ library versions
+----------------------
+
+::
+
+    delta:~ blyth$ otool -L $(ggeoview-;ggeoview-deps) | grep c++
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libstdc++.6.dylib (compatibility version 7.0.0, current version 60.0.0)
+
+
+
 Pre-cook RNG Cache
 -------------------
 
@@ -455,4 +473,29 @@ ggeoview-depinstall()
     ggeoview-install  
 }
 
+
+ggeoview-deps-(){ cat << EOD
+bcfg
+bregex
+npy
+ggeo
+assimpwrap
+oglrap
+optixrap
+cudawrap
+thrustrap
+EOD
+}
+
+ggeoview-deps(){
+   local dep
+   $FUNCNAME- | while read dep ; do
+       $dep-
+       #printf "%30s %30s \n" $dep $($dep-idir) 
+       echo $($dep-idir)/lib/*.dylib 
+   done
+}
+
+ggeoview-ls(){   ls -1 $(ggeoview-;ggeoview-deps) ; }
+ggeoview-libs(){ otool -L $(ggeoview-;ggeoview-deps) ; }
 

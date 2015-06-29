@@ -8,12 +8,22 @@ cuda-usage(){ cat << EOU
 CUDA
 ======
 
+See Also
+---------
+
+* cudainstall-
+* cudatoolkit-
+
+
+
 tips to free up GPU memory
 ---------------------------
 
 #. minimise the number of apps and windows running
 #. put the machine to sleep and go and have a coffee
 
+#. dont use dedicated GPU mode, this avoids most GPU memory concerns
+   presumably as it reduces prsssure on the GPU
 
 
 CUDA Driver and Runtime API interop
@@ -28,32 +38,6 @@ Bit packing with CUDA vector types
 -------------------------------------
 
 * http://nvlabs.github.io/cub/index.html
-
-
-
-
-Updating to CUDA 6.5 (Feb 2, 2015)
-----------------------------------
-
-Using sysprefs panel to initiate the install, 
-going from:
-
-* CUDA Driver Version: 5.5.47
-* GPU Driver Version: 8.26.26 310.40.45f01
-
-To:
-
-* (No newer CUDA driver available)
-* CUDA Driver Version: 6.5.45   
-* GPU Driver Version: 8.26.26 310.40.45f01
-
-
-version available
-------------------
-
-From system prefs::
-
-    Available: CUDA 6.5.18 Driver update is available
 
 
 nvcc compilation for newer architectures
@@ -80,50 +64,6 @@ to binary code of greater or equal compute capability.
 
     1 error detected in the compilation of "/tmp/tmpxft_00017bac_00000000-6_cuda_texture_object.cpp1.ii".
     delta:~ blyth$ 
-
-
-
-
-samples install
-------------------
-
-::
-
-    cuda-samples-install
-    cuda-samples-cd
-
-    make
-
-
-
-
-versions
----------
-
-::
-
-   Current: CUDA Driver Version: 5.5.47
-             GPU Driver Version: 8.26.26 310.40.45f01
-
-    delta:~ blyth$ cuda-
-    delta:~ blyth$ nvcc -V
-    nvcc: NVIDIA (R) Cuda compiler driver
-    Copyright (c) 2005-2013 NVIDIA Corporation
-    Built on Thu_Sep__5_10:17:14_PDT_2013
-    Cuda compilation tools, release 5.5, V5.5.0
-    delta:~ blyth$ 
-
-
-installer pkginfo
-~~~~~~~~~~~~~~~~~~
-
-::
-
-    installer -pkginfo -pkg cuda-mac-5.5.28_10.9_64.pkg 
-    CUDA 5.5
-    CUDA Driver
-    CUDA Toolkit
-    CUDA Samples
 
 
 syslog : Understanding XID Errors
@@ -265,6 +205,14 @@ See::
 
 
 
+CUDA OSX libc++
+-----------------
+
+
+
+
+
+
 CUDA Release Notes
 -------------------
 
@@ -295,18 +243,13 @@ FUNCTIONS
 
 
 cuda-get
-       
-
-
-
 
 EOU
 }
-cuda-tmp(){ echo $(local-tmp)/env/cuda ; }
-cuda-cd(){  cd $(cuda-dir); }
-cuda-mate(){ mate $(cuda-dir) ; }
-cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
 
+cuda-export(){
+   echo -n
+}
 
 cuda-nvcc-flags(){
     case $NODE_TAG in 
@@ -315,22 +258,24 @@ cuda-nvcc-flags(){
     esac 
 }
 
-cuda-export()
-{
-   echo -n
-}
 
+cuda-version(){      echo ${CUDA_VERSION:-5.5} ; }
+#cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
+cuda-download-dir(){ echo $(local-base)/env/cuda ; }
+cuda-dir(){          echo $(cuda-dir-$(uname)) ; }
+cuda-dir-Linux(){    echo /usr/local/cuda-$(cuda-version) ; }
+cuda-dir-Darwin(){   echo /Developer/NVIDIA/CUDA-$(cuda-version) ; }
+cuda-idir(){         echo $(cuda-dir)/include ; }
+cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
+cuda-samples-dir(){  echo $(cuda-writable-dir)/NVIDIA_CUDA-$(cuda-version)_Samples ; }
 
-cuda-idir(){ echo $(cuda-dir)/include ; }
-cuda-icd(){  cd $(cuda-idir); }
+cuda-cd(){           cd $(cuda-dir); }
+cuda-icd(){          cd $(cuda-idir); }
+cuda-dcd(){          cd $(cuda-download-dir); }
+cuda-wcd(){          cd $(cuda-writable-dir); }
+cuda-samples-cd(){   cd $(cuda-samples-dir) ; }
+
 cuda-find(){ find $(cuda-idir) -name '*.h' -exec grep -H ${1:-cudaGraphics} {} \; ; }
-
-cuda-dir(){ 
-   case $NODE_TAG in 
-     D) echo /Developer/NVIDIA/CUDA-5.5 ;;
-     G1) echo /usr/local/cuda-5.5  ;;
-   esac
-}
 
 cuda-libdir(){
    case $NODE_TAG in 
@@ -339,63 +284,50 @@ cuda-libdir(){
    esac
 }
 
-
 cuda-path(){
     local dir=$(cuda-dir)
     [ ! -d $dir ] && return 1
     export PATH=$dir/bin:$PATH
-
     local libdir=$(cuda-libdir)
 
-    if [ "$NODE_TAG" == "D" ]; then 
+    if [ "$(uname)" == "Darwin" ]; then 
        export DYLD_LIBRARY_PATH=$libdir:$DYLD_LIBRARY_PATH      # not documented ??? links from this to $dir/lib
     else
        export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
     fi
-
     # these are not seen by the pycuda build
 }
 
-cuda-url(){
-   case $(uname) in 
-     Darwin) echo http://developer.download.nvidia.com/compute/cuda/5_5/rel/installers/cuda-mac-5.5.28_10.9_64.pkg ;;
+
+cuda-url(){ echo $(cuda-url-$(uname)) ; }
+cuda-url-Darwin(){
+   case $(cuda-version) in 
+       5.5) echo http://developer.download.nvidia.com/compute/cuda/5_5/rel/installers/cuda-mac-5.5.28_10.9_64.pkg ;;
+       7.0) echo http://developer.download.nvidia.com/compute/cuda/7_0/Prod/local_installers/cuda_7.0.29_mac.pkg ;;
    esac
 }
-cuda-pkg(){
-   echo $(basename $(cuda-url))
-}
-
+cuda-pkg(){  echo $(basename $(cuda-url)) ; }
 cuda-get(){
-   local dir=$(dirname $(cuda-tmp)) &&  mkdir -p $dir && cd $dir
-   local url=$(cuda-url)
+   local dir=$(cuda-download-dir) &&  mkdir -p $dir && cd $dir
+   local url=$(cuda-url-$(uname))
    local pkg=$(cuda-pkg)
    [ -d $(cuda-dir) ] && echo $msg CUDA is already installed at $(cuda-dir) && return 0 
    [ ! -f "$pkg" ] && curl -L -O $url 
-   open $pkg   # GUI installer
 }
 
-cuda-osx-pkginfo(){
-   installer -pkginfo -pkg $(dirname $(cuda-tmp))/$(cuda-pkg)
+cuda-gui-install(){
+   local pkg=$(cuda-pkg)
+   open $pkg   
 }
 
-cuda-osx-getting-started(){
-   open $(cuda-dir)/doc/html/cuda-getting-started-guide-for-mac-os-x/index.html
-}
 
-cuda-guide(){
-   open $(cuda-dir)/doc/html/cuda-c-programming-guide/index.html
-}
+cuda-osx-pkginfo(){         installer -pkginfo -pkg $(dirname $(cuda-download-dir))/$(cuda-pkg) ; }
+cuda-osx-getting-started(){ open $(cuda-dir)/doc/html/cuda-getting-started-guide-for-mac-os-x/index.html ; }
+cuda-guide(){               open $(cuda-dir)/doc/html/cuda-c-programming-guide/index.html ; }
+cuda-doc(){                 open $(cuda-dir)/doc/html/index.html ; }
+cuda-osx-kextstat(){        kextstat | grep -i cuda ; }
 
-cuda-doc(){
-   open $(cuda-dir)/doc/html/index.html
-}
 
-cuda-osx-kextstat(){
-   kextstat | grep -i cuda
-}
-
-cuda-samples-dir(){ echo $(cuda-writable-dir)/NVIDIA_CUDA-5.5_Samples ; }
-cuda-samples-cd(){ cd $(cuda-samples-dir) ; }
 cuda-samples-make(){
    cuda-samples-cd
    make $*
@@ -408,7 +340,7 @@ cuda-samples-install(){
    # cuda-install-samples-5.5.sh $dir
    # have to do it manually to skip the doc folder which goes over afs quota
 
-   local src=$(dirname $(dirname $(which cuda-install-samples-5.5.sh)))/samples
+   local src=$(dirname $(dirname $(which cuda-install-samples-$(cuda-version).sh)))/samples
    local dst=$(cuda-samples-dir)
    local path
 
@@ -441,6 +373,5 @@ cuda-samples-bin-deviceQuery(){    cuda-samples-bin-run deviceQuery $* ; }
 cuda-samples-bin-bandwidthTest(){  cuda-samples-bin-run bandwidthTest $* ; }
 cuda-samples-bin-smokeParticles(){ cuda-samples-bin-run smokeParticles $* ; }
 cuda-samples-bin-fluidsGL(){       cuda-samples-bin-run fluidsGL $* ; }
-
 
 cuda-deviceQuery(){ cuda-samples-bin-run deviceQuery $* ; } 

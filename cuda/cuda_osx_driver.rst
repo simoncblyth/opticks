@@ -1,9 +1,7 @@
 CUDA OSX Driver
 ===============
 
-
 * https://devtalk.nvidia.com/default/topic/528725/forcing-retina-macbook-pro-to-use-intel-graphics-for-desktop-freeing-memory-on-cuda-device-/
-
 
 
 January 2015
@@ -19,7 +17,6 @@ OSX Syspref says::
    CUDA Driver Version : 5.5.47
 
    GPU Driver Version : 8.26.26 310.40.45f01
-
 
 
 Release notes:
@@ -47,10 +44,6 @@ Some chatter regards problems, but suspect issue with addon hardware on Mac Pro
 * https://forums.geforce.com/default/topic/787648/geforce-drivers/osx-10-10-yosemite-and-cuda-when-will-it-work-/
 
 * http://www.xlr8yourmac.com/index.html#NvidiaF02DriversOSX10.10.0
-
-
-
-
 
 
 

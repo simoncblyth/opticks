@@ -8,7 +8,25 @@ cudawrap-env(){
 }
 cudawrap-usage(){ cat << EOU
 
+CUDAWrap
+==========
 
+CUDA prior to 7.0 needs libstdc++ how is CUDAWrap working with libc++ ?
+--------------------------------------------------------------------------------
+
+Presumbaly because it does not use the STL, just a few simples classes and C string.h 
+
+::
+
+    /usr/local/env/cuda/cudawrap/lib/libCUDAWrap.dylib:
+        @rpath/libCUDAWrap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libcudart.5.5.dylib (compatibility version 0.0.0, current version 5.5.28)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+
+
+Include arrangment OptiX and CUDA
+---------------------------------------
 
 When place include without "using namespace optix" get::
 
@@ -35,6 +53,9 @@ Correct way to include::
 * TODO: look into avoiding this requirement
 
 
+
+Build Warnings
+-----------------
 
 Warning::
 
@@ -121,17 +142,22 @@ see that copying boxmuller_extra_double is causing the warning::
 
 
 
-delta:cudawrap blyth$ DYLD_LIBRARY_PATH=. WORK=$(( 1024*128 )) ./cuRANDWrapperTest 
-seq workitems  131072  threads_per_block   256  max_blocks    128 nlaunch   4 
- seq sequence_index   0  thread_offset      0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
- seq sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
- seq sequence_index   2  thread_offset  65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
- seq sequence_index   3  thread_offset  98304  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
- init_rng_wrapper sequence_index   0  thread_offset      0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
- init_rng_wrapper sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
- init_rng_wrapper sequence_index   2  thread_offset  65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
- init_rng_wrapper sequence_index   3  thread_offset  98304  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
-delta:cudawrap blyth$ 
+Usage examples
+-----------------
+
+::
+
+    delta:cudawrap blyth$ DYLD_LIBRARY_PATH=. WORK=$(( 1024*128 )) ./cuRANDWrapperTest 
+    seq workitems  131072  threads_per_block   256  max_blocks    128 nlaunch   4 
+     seq sequence_index   0  thread_offset      0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+     seq sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+     seq sequence_index   2  thread_offset  65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+     seq sequence_index   3  thread_offset  98304  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+     init_rng_wrapper sequence_index   0  thread_offset      0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+     init_rng_wrapper sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+     init_rng_wrapper sequence_index   2  thread_offset  65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+     init_rng_wrapper sequence_index   3  thread_offset  98304  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
+    delta:cudawrap blyth$ 
 
 
 

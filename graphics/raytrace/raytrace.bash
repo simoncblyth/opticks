@@ -25,6 +25,18 @@ Blogs on Ray Tracing
 * http://raytracey.blogspot.tw
 
 
+Visual Effects : bloom
+------------------------
+
+* http://prideout.net/archive/bloom/
+
+
+CUDA kdtree
+------------
+
+* https://github.com/unvirtual/cukd
+
+
 
 Specular Ray Trace
 ---------------------

@@ -28,6 +28,12 @@ Refs
 * http://astronomy.swin.edu.au/supercomputing/thrust.pdf
 
 
+Parallel Processing Algorthms Intro, eg explaining Scatter/Gather
+-------------------------------------------------------------------
+
+* http://heather.cs.ucdavis.edu/~matloff/158/PLN/ParProcBook.pdf#page161
+
+
 Thrust cmake
 -------------
 
@@ -45,7 +51,6 @@ Thrust OptiX interop
 
 * https://devtalk.nvidia.com/default/topic/574078/optix/compiler-errors-when-including-both-optix-and-thrust/
 
-
 Thrust CUDA interop
 --------------------
 
@@ -62,6 +67,18 @@ Thrust Long Long
 
 * 
 * https://github.com/thrust/thrust/issues/658 
+
+Thrust Memory Access Patterns, functor state
+-----------------------------------------------
+
+
+Memory access pattern is what matters
+
+* http://stackoverflow.com/questions/17260207/cuda-how-does-thrust-manage-memory-when-using-a-comparator-in-a-sorting-functio
+
+Accessing constant memory from thrust functor
+
+* http://stackoverflow.com/questions/17064096/thrustdevice-vector-in-constant-memory
 
 
 

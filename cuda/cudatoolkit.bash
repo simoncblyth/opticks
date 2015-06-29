@@ -10,7 +10,6 @@ CUDA TOOLKIT
 
 * https://developer.nvidia.com/cuda-toolkit
 * https://developer.nvidia.com/cuda-downloads
-
 * http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html
 
 GPU Hardware Check
