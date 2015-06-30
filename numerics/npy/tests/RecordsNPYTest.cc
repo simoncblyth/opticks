@@ -26,17 +26,27 @@ int main(int argc, char** argv)
     r.setTypes(&types);
     r.setDomains(domains);
 
- 
-    unsigned int photon_id = 0 ; 
 
-    std::string seqhis = r.getSequenceString(photon_id, Types::HISTORY );
-    std::string dseqhis = r.decodeSequenceString(seqhis, Types::HISTORY);
-    printf(" photon_id %8d seqhis [%s] dseqhis [%s] \n", photon_id, seqhis.c_str(), dseqhis.c_str() );
+    NPY<unsigned long long>* seqn = r.makeSequenceArray(Types::HISTORY);
+    seqn->save("/tmp/seqn.npy");
 
-    std::string seqmat = r.getSequenceString(photon_id, Types::MATERIAL );
-    std::string dseqmat = r.decodeSequenceString(seqmat, Types::MATERIAL);
-    printf(" photon_id %8d seqmat [%s] dseqmat [%s] \n", photon_id, seqmat.c_str(), dseqmat.c_str() );
+    
+    for(unsigned int i=0 ; i < 100 ; i++)
+    { 
+        unsigned int photon_id = i ;  
+        std::string seqhis = r.getSequenceString(photon_id, Types::HISTORY );
+        std::string dseqhis = r.decodeSequenceString(seqhis, Types::HISTORY);
+        unsigned long long cseq = r.convertSequenceString(seqhis, Types::HISTORY);
+        unsigned long long hseq = r.getSequence(photon_id, Types::HISTORY );
+        assert(cseq == hseq);
 
+        //printf(" photon_id %8d seqhis [%s] dseqhis [%s] hseq [%16llx] \n", photon_id, seqhis.c_str(), dseqhis.c_str(), hseq );
+         printf(" photon_id %8d hseq [%16llx] cseq[%16llx] seqhis [%20s] dseqhis [%s]  \n", photon_id, hseq, cseq, seqhis.c_str(), dseqhis.c_str() );
+
+        //std::string seqmat = r.getSequenceString(photon_id, Types::MATERIAL );
+        //std::string dseqmat = r.decodeSequenceString(seqmat, Types::MATERIAL);
+        //printf(" photon_id %8d seqmat [%s] dseqmat [%s] \n", photon_id, seqmat.c_str(), dseqmat.c_str() );
+    }
 
 
     return 0 ;

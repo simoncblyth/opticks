@@ -14,6 +14,7 @@
 #include "limits.h"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
+#include "stringutil.hpp"
 
 
 #include <boost/log/trivial.hpp>
@@ -55,6 +56,54 @@ void SequenceNPY::dumpUniqueHistories()
 
 */
 
+
+void SequenceNPY::countMaterials()
+{
+    typedef std::vector<unsigned int> VU ;
+    typedef std::map<unsigned int, unsigned int> MUU ; 
+    typedef std::pair<unsigned int, unsigned int> PUU ;
+
+    unsigned int ni = m_photons->m_len0 ;
+    VU materials ; 
+
+    // collect m1, m2 material codes from all records of all photons
+    for(unsigned int id=0 ; id < ni ; id++) m_recs->appendMaterials(materials, id);
+
+    // count occurence of each material code
+    MUU mmat ; 
+    for(VU::iterator it=materials.begin() ; it != materials.end() ; it++) mmat[*it] += 1 ;  
+
+     // arrange into pairs for sorting 
+    std::vector<PUU> matocc ; 
+    for(MUU::iterator it=mmat.begin() ; it != mmat.end() ; it++) matocc.push_back(*it);
+    std::sort(matocc.begin(), matocc.end(), second_value_order );
+
+    // check that set sees the same count of uniques
+    std::set<unsigned int> smat(materials.begin(), materials.end()) ; 
+    assert(smat.size() == mmat.size() );
+
+    LOG(info) << "SequenceNPY::countMaterials " 
+              << " m1/m2 codes in all records " << materials.size() 
+              << " unique material codes " << smat.size() ; 
+
+
+    unsigned int idx(0);
+    for(std::vector<PUU>::iterator it=matocc.begin() ; it != matocc.end() ; it++)
+    {
+        unsigned int mat = it->first ; 
+        unsigned int occ = it->second ; 
+        assert(mmat[mat] == occ);
+        std::string matn = m_types->getMaterialString(1 << (mat - 1));
+        std::cout 
+                  << std::setw(5)  << idx 
+                  << std::setw(5)  << mat 
+                  << std::setw(10) << occ 
+                  << std::setw(20) << matn << "."
+                  << std::endl ; 
+
+        idx++ ; 
+    }
+}
 
 
 void SequenceNPY::indexSequences()
@@ -140,25 +189,32 @@ void SequenceNPY::indexSequences()
     assert( mismatch.size() == 0);
 
     printf("SequenceNPY::indexSequences photons %u mismatch %lu \n", ni, mismatch.size());
-    dumpMaskCounts("SequenceNPY::indexSequences histories", Types::HISTORY, uuh, 1 );
-    dumpMaskCounts("SequenceNPY::indexSequences materials", Types::MATERIAL, uum, 1000 );
-    dumpSequenceCounts("SequenceNPY::indexSequences seqhis", Types::HISTORY, suh , svh, 1000);
-    dumpSequenceCounts("SequenceNPY::indexSequences seqmat", Types::MATERIAL, sum , svm, 1000);
+    dumpMaskCounts("SequenceNPY::indexSequences histories dumpMaskCounts", Types::HISTORY, uuh, 1 );
+    dumpMaskCounts("SequenceNPY::indexSequences materials dumpMaskCounts", Types::MATERIAL, uum, 1000 );
+    dumpSequenceCounts("SequenceNPY::indexSequences seqhis dumpSequenceCounts", Types::HISTORY, suh , svh, 1000);
+    dumpSequenceCounts("SequenceNPY::indexSequences seqmat dumpSequenceCounts", Types::MATERIAL, sum , svm, 1000);
 
 
     Index* idxh = makeSequenceCountsIndex( Types::HISTORYSEQ,  suh , svh, 1000 );
     idxh->dump("SequenceNPY::indexSequences");
+
+    Index* hdxh = makeSequenceCountsIndex( Types::HISTORYSEQ,  suh , svh, 0 , true  ); // hex keys with no cutoff for debug comparisons  
+
     fillSequenceIndex( e_seqhis , idxh, svh );
 
     Index* idxm = makeSequenceCountsIndex( Types::MATERIALSEQ,  sum , svm, 1000 );
     idxm->dump("SequenceNPY::indexSequences");
     fillSequenceIndex( e_seqmat, idxm, svm );
 
+    m_seqhis_hex = hdxh ;
     m_seqhis = idxh ; 
     m_seqmat = idxm ; 
 
     LOG(info)<<"SequenceNPY::indexSequences DONE " ; 
 }
+
+
+
 
 
 
@@ -275,11 +331,13 @@ Index* SequenceNPY::makeSequenceCountsIndex(
        Types::Item_t etype, 
        std::map<std::string, unsigned int>& su,
        std::map<std::string, std::vector<unsigned int> >&  sv,
-       unsigned int cutoff
+       unsigned int cutoff, 
+       bool hex
        )
 {
     const char* itemname = m_types->getItemName(etype);
-    Index* idx = new Index(itemname);
+    std::string idxname = hex ? std::string("Hex") + itemname : itemname ;  
+    Index* idx = new Index(idxname.c_str());
 
     typedef std::map<std::string, std::vector<unsigned int> >  MSV ;
     typedef std::map<std::string, unsigned int> MSU ;
@@ -298,8 +356,19 @@ Index* SequenceNPY::makeSequenceCountsIndex(
         PSU p = pairs[i];
         total += p.second ;  
         assert( sv[p.first].size() == p.second );
+
+        std::string xkey = p.first ; 
+        if(hex)
+        {
+            // use sequence hex string as key to enable comparison with ThrustHistogram saves
+            unsigned long long xseq = m_recs->convertSequenceString( p.first, etype) ;
+            xkey = as_hex(xseq);
+        }
+
         if(p.second > cutoff)
-            idx->add( p.first.c_str(), i );
+        {
+             idx->add( xkey.c_str(), i );
+        }
     }
 
     std::cout 
@@ -314,8 +383,10 @@ Index* SequenceNPY::makeSequenceCountsIndex(
     {
          std::string label = idx->getNameLocal(i+1) ;
          std::string dlabel = m_recs->decodeSequenceString(label, etype);
+         unsigned long long xseq = m_recs->convertSequenceString(label, etype);
 
-         std::cout << std::setw(3) << i + 1 
+         std::cout << std::setw(3) << std::dec << i + 1 
+                   << std::setw(18) << std::hex << xseq 
                    << std::setw(35) << label
                    << " : "  
                    << dlabel

@@ -81,6 +81,7 @@
 
 // thrustrap-
 #include "ThrustEngine.hh"
+#include "ThrustHistogram.hh"
 
 
 void dump(float* f, const char* msg)
@@ -326,6 +327,16 @@ int main(int argc, char** argv)
         unsigned int devsize = OptiXUtil::getBufferSize1D( history_buffer );
         te.setHistory(devhis, devsize);   
         te.createIndices();
+
+        LOG(info) << "main saving ThrustHistory for debug " ; 
+        ThrustHistogram<unsigned long long>* th = te.getHistory();
+        //LOG(info) << "main th:makeInputArray " ; 
+        //NPY<unsigned long long>* thv = th->makeInputArray();
+        //thv->save("/tmp/thv.npy");
+        LOG(info) << "main thv:makeIndex " ; 
+        Index* thi = th->makeIndex("ThrustHistory");
+        thi->save("/tmp");
+        LOG(info) << "main: saving ThrustHistory DONE " ; 
     }
  
 
@@ -356,6 +367,9 @@ int main(int argc, char** argv)
     seq.setRecs(&rec);
     seq.indexSequences(); // <-- takes a while, should make optional OR arrange to load
     Index* seqhis = seq.getSeqHis();
+    Index* seqhishex = seq.getSeqHisHex();
+    seqhishex->save("/tmp");
+
     Index* seqmat = seq.getSeqMat();
     glm::ivec4& recsel = composition.getRecSelect();
 

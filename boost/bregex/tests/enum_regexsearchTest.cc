@@ -3,11 +3,12 @@
 
 int main(int argc, char** argv)
 {
-    assert(argc>1);
-    std::cout << "extract enum pairs from file " << argv[1] << std::endl ;
+    const char* path = argc > 1 ? argv[1] : "$ENV_HOME/graphics/ggeoview/cu/photon.h" ;
+
+    std::cout << "extract enum pairs from file " << path << std::endl ;
 
     upairs_t upairs ; 
-    enum_regexsearch( upairs, argv[1] );
+    enum_regexsearch( upairs, path );
 
     udump(upairs);
 

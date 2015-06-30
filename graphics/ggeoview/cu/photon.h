@@ -12,8 +12,8 @@
 
 enum
 {
-    CERENKOV          = 0x1 <<  0,   
-    SCINTILLATION     = 0x1 <<  1, 
+    CERENKOV          = 0x1 <<  0,    
+    SCINTILLATION     = 0x1 <<  1,    
     MISS              = 0x1 <<  2,
     BULK_ABSORB       = 0x1 <<  3,
     BULK_REEMIT       = 0x1 <<  4,

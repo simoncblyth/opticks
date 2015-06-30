@@ -58,6 +58,8 @@ class NPY : public NPYBase {
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
        static NPY<T>* make_vec4(unsigned int ni, unsigned int nj=1, T init=0);
        static NPY<T>* make_scalar(unsigned int ni, T init=0);
+       static NPY<T>* make_scalar(unsigned int ni, T* values);
+
 
        // ctor takes ownership of a copy of the inputs 
        NPY(std::vector<int>& shape, T*  data            , std::string& metadata) ;

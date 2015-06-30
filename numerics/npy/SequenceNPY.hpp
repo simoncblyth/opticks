@@ -37,12 +37,16 @@ class SequenceNPY {
        RecordsNPY*           getRecs();
        Types*                getTypes();
    public:  
+       Index*                makeHexIndex(const char* itemtype);
+   public:  
        void                  indexSequences();
    public:  
        void                  dumpUniqueHistories();
+       void                  countMaterials();
    public:  
        NPY<unsigned char>*   getSeqIdx();
        Index*                getSeqHis(); 
+       Index*                getSeqHisHex(); 
        Index*                getSeqMat(); 
 
    private:
@@ -54,7 +58,8 @@ class SequenceNPY {
                Types::Item_t etype, 
                std::map<std::string, unsigned int>& su,
                std::map<std::string, std::vector<unsigned int> >&  sv,
-               unsigned int cutoff
+               unsigned int cutoff,
+               bool hex=false
                );
 
        void fillSequenceIndex(
@@ -85,6 +90,7 @@ class SequenceNPY {
        NPY<unsigned char>*          m_seqidx  ; 
        unsigned int                 m_maxrec ; 
        Index*                       m_seqhis ; 
+       Index*                       m_seqhis_hex ; 
        Index*                       m_seqmat ; 
 
 };
@@ -111,6 +117,10 @@ inline void SequenceNPY::setTypes(Types* types)
 inline Index* SequenceNPY::getSeqHis()
 {
     return m_seqhis ; 
+}
+inline Index* SequenceNPY::getSeqHisHex()
+{
+    return m_seqhis_hex ; 
 }
 inline Index* SequenceNPY::getSeqMat()
 {

@@ -31,7 +31,7 @@ const char* Types::getItemName(Item_t item)
 }
 
 
-void Types::readMaterials(const char* idpath, const char* name)
+void Types::readMaterialsOld(const char* idpath, const char* name)
 {
     typedef std::map<std::string, unsigned int> MSU ; 
 
@@ -42,6 +42,12 @@ void Types::readMaterials(const char* idpath, const char* name)
         m_materials[it->first + m_tail] = it->second ; 
     } 
     makeMaterialAbbrev();
+}
+
+void Types::readMaterials(const char* idpath, const char* name)
+{
+    Index* index = Index::load( idpath, name );
+    setMaterialsIndex(index);
 }
 
 
@@ -96,6 +102,15 @@ std::string Types::getMaterialAbbrev(std::string label)
 std::string Types::getMaterialAbbrevInvert(std::string label)
 {
      return m_abbrev2material.count(label) == 1 ? m_abbrev2material[label] : label  ;
+}
+
+unsigned int Types::getMaterialAbbrevInvertAsCode(std::string label)
+{
+     unsigned int n = m_abbrev2material.count(label) ;
+     assert(n == 1);
+
+     std::string matn = m_abbrev2material[label];
+     return getMaterialCode(matn);
 }
 
 
@@ -155,6 +170,15 @@ std::string Types::getMaterialString(unsigned int mask)
     return ss.str() ; 
 }
 
+
+unsigned int Types::getMaterialCode(std::string label)
+{
+    std::string labeltt = label.substr(0,label.size()-1);  // trim tail spacer
+    assert(m_materials_index);
+    return m_materials_index->getIndexSource(labeltt.c_str(), 0xFF);    
+}
+
+
 void Types::getMaterialStringTest()
 {
     for(unsigned int i=0 ; i < 32 ; i++)
@@ -162,7 +186,9 @@ void Types::getMaterialStringTest()
         unsigned int mask = 1 << i ; 
         std::string label = getMaterialString( mask );
         std::string abbrev = getMaterialAbbrev( label );
-        printf("%3d : %8x : [%s] [%s] \n", i, mask, label.c_str(), abbrev.c_str() ); 
+        unsigned int code = getMaterialCode(label);
+
+        printf("%3d : %8x : [%s] [%s] code[%u] \n", i, mask, label.c_str(), abbrev.c_str(), code ); 
     }
 }
 
@@ -177,6 +203,20 @@ std::string Types::getHistoryAbbrevInvert(std::string label)
     // printf("Types::getHistoryAbbrevInvert [%s] %u \n", label.c_str(), n );  
      return n == 1 ? m_abbrev2flag[label] : label  ;
 }
+
+unsigned int Types::getHistoryAbbrevInvertAsCode(std::string label)
+{
+     unsigned int n = m_abbrev2flag.count(label) ;
+    // printf("Types::getHistoryAbbrevInvert [%s] %u \n", label.c_str(), n );  
+     assert(n == 1);
+
+     std::string flag = m_abbrev2flag[label];
+     return getHistoryFlag(flag);
+}
+
+
+
+
 
 
 std::string Types::getAbbrev(std::string label, Item_t etype)
@@ -206,6 +246,29 @@ std::string Types::getAbbrevInvert(std::string label, Item_t etype)
 }
 
 
+unsigned int Types::getAbbrevInvertAsCode(std::string label, Item_t etype)
+{
+    unsigned int bpos ; 
+    switch(etype)
+    {
+        case HISTORY     : bpos = getHistoryAbbrevInvertAsCode(label)  ; break ; 
+        case HISTORYSEQ  : bpos = getHistoryAbbrevInvertAsCode(label)  ; break ; 
+        case MATERIAL    : bpos = getMaterialAbbrevInvertAsCode(label) ; break ; 
+        case MATERIALSEQ : bpos = getMaterialAbbrevInvertAsCode(label) ; break ; 
+    }
+    return bpos ; 
+}
+
+
+unsigned int Types::getHistoryFlag(std::string label)
+{
+    std::string labeltt = label.substr(0,label.size()-1);  // trim tail spacer
+
+    return m_flags->getIndexSource(labeltt.c_str(), 0xFF);    
+}
+
+
+
 std::string Types::getHistoryString(unsigned int flags)
 {
     std::stringstream ss ; 
@@ -228,7 +291,8 @@ void Types::getHistoryStringTest()
     {
         std::string label = getHistoryString( 1 << i);
         std::string abbrev = getHistoryAbbrev( label );
-        printf("%3d : [%s] [%s] \n", i, label.c_str(), abbrev.c_str() ); 
+        unsigned int flag = getHistoryFlag(label);
+        printf("%3d : label [%s] abbrev [%s] flag [%u] \n", i, label.c_str(), abbrev.c_str(), flag ); 
     }
 }
 
@@ -274,6 +338,8 @@ void Types::readFlags(const char* path)
         assert( mask == (1 << (bitpos-1)));
         m_flags->add( p.second.c_str(), bitpos ); 
     }
+
+
 
     // TODO: eliminate below by adopting the Index
 

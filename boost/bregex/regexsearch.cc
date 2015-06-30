@@ -1,6 +1,7 @@
 // started from http://www.boost.org/doc/libs/1_58_0/libs/regex/doc/html/boost_regex/partial_matches.html
 
 #include "regexsearch.hh"
+
 #include <sstream>
 #include <fstream>
 #include <iomanip>
@@ -42,11 +43,26 @@ void udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const cha
         std::cout 
                  << std::setw(30) << k  
                  << " : " 
+                 << std::setw(1) << std::hex << ffs(v) 
+                 << " : " 
                  << std::setw(10) << std::dec << v
                  << " : " 
                  << std::setw(10) << std::hex << v 
                  << std::endl ; 
     } 
+}
+
+
+
+
+// duplicating whats in npy-/stringutil.hpp but dont want to depend on npy- here 
+template<typename T>
+inline T hex_lexical_cast(const char* in) {
+    T out;
+    std::stringstream ss; 
+    ss <<  std::hex << in; 
+    ss >> out;
+    return out;
 }
 
 
@@ -244,6 +260,9 @@ enum
     SURFACE_DETECT         = 0x1 << 2,
     SURFACE_ABSORB         = 0x1 << 3,
 ...
+
+
+   TODO: get thus to handle comments 
 
 */
 

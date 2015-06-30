@@ -21,9 +21,10 @@ int main(int argc, char** argv)
 
     Types types ; 
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
-    //types.dumpFlags();
-    types.readMaterials(idpath, "GMaterialIndexLocal.json");
-    //types.dumpMaterials();
+    types.dumpFlags();
+    //types.readMaterialsOld(idpath, "GMaterialIndexLocal.json");
+    types.readMaterials(idpath, "GMaterialIndex");
+    types.dumpMaterials();
 
     RecordsNPY r(records, maxrec);
     r.setTypes(&types);
@@ -33,8 +34,10 @@ int main(int argc, char** argv)
     s.setTypes(&types);
     s.setRecs(&r);
 
+    s.countMaterials();
     s.dumpUniqueHistories();
-    s.indexSequences();
+    //s.indexSequences();
+
 
     NPY<unsigned char>* seqidx = s.getSeqIdx();
     seqidx->setVerbose();

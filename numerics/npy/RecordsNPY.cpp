@@ -1,12 +1,22 @@
 #include "RecordsNPY.hpp"
 
 #include <glm/glm.hpp>
+
+//npy-
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
+#include "Index.hpp"
+
 #include "regexsearch.hh"
 
 #include <sstream>
 #include <iomanip>
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 
 
 void RecordsNPY::setDomains(NPY<float>* domains)
@@ -186,6 +196,49 @@ void RecordsNPY::dumpRecords(const char* msg, unsigned int ndump)
 }
 
 
+
+
+NPY<unsigned long long>* RecordsNPY::makeSequenceArray(Types::Item_t etype)
+{
+    unsigned int size = m_records->getShape(0)/m_maxrec ; 
+    unsigned long long* seqdata = new unsigned long long[size] ; 
+    for(unsigned int i=0 ; i < size ; i++)
+    {
+        seqdata[i] = getSequence(i, etype) ;
+    }
+    return NPY<unsigned long long>::make_scalar(size, seqdata);
+}
+
+
+
+
+unsigned long long RecordsNPY::getSequence(unsigned int photon_id, Types::Item_t etype)
+{
+    unsigned long long seq = 0ull ; 
+    for(unsigned int r=0 ; r<m_maxrec ; r++)
+    {
+        unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(record_id);
+        if(unset) break ; 
+
+        glm::uvec4 flag ; 
+        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+
+        unsigned long long bitpos(0ull) ; 
+        switch(etype)
+        {
+            case     Types::MATERIAL: bitpos = flag.x ; assert(0) ;break; 
+            case      Types::HISTORY: bitpos = flag.w  ;break; 
+            case  Types::MATERIALSEQ: assert(0)        ;break; 
+            case   Types::HISTORYSEQ: assert(0)        ;break; 
+        }  
+        assert(bitpos < 16);
+        seq |= bitpos << (r*4) ; 
+    }
+    return seq ; 
+}
+
+
 std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t etype)
 {
     // express variable length sequence of bit positions as string of 
@@ -223,14 +276,43 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
     return ss.str();
 }
 
+unsigned long long RecordsNPY::convertSequenceString(std::string& seq, Types::Item_t etype)
+{
+    const char* tail = m_types->getTail(); 
+    unsigned int elen = 2 + strlen(tail);
+    assert(seq.size() % elen == 0);
+    unsigned int nelem = seq.size()/elen ;
+
+    unsigned long long bseq = 0ull ; 
+
+    for(unsigned int i=0 ; i < nelem ; i++)
+    {
+        std::string sub = seq.substr(i*elen, elen) ;
+        unsigned int bitpos = m_types->getAbbrevInvertAsCode(sub, etype);
+        //assert(bitpos < 16);
+        if(bitpos > 15) LOG(warning) << "RecordsNPY::convertSequenceString bitpos too big " << bitpos ;  
+
+        unsigned long long ull = bitpos ; 
+        unsigned long long msk = ull << (i*4) ; 
+        assert(i*4 < sizeof(unsigned long long)*8 );
+        bseq |= msk ; 
+    }  
+    return bseq ; 
+}
 
 std::string RecordsNPY::decodeSequenceString(std::string& seq, Types::Item_t etype)
 {
     const char* tail = m_types->getTail(); 
     unsigned int elen = 2 + strlen(tail);
-
-
+    if(seq.size() % elen != 0)
+    {
+        LOG(fatal)<<"RecordsNPY::decodeSequenceString "
+                  << " seq " << seq 
+                  << " elen " << elen
+                  << " tail [" << tail << "]" ;  
+    }
     assert(seq.size() % elen == 0);
+
     std::stringstream ss ;
     unsigned int nelem = seq.size()/elen ;
    // printf("RecordsNPY::decodeSequenceString %s elen %u \n", seq.c_str(), elen ); 
@@ -244,6 +326,21 @@ std::string RecordsNPY::decodeSequenceString(std::string& seq, Types::Item_t ety
     return ss.str();
 }
 
+
+void RecordsNPY::appendMaterials(std::vector<unsigned int>& materials, unsigned int photon_id)
+{
+    for(unsigned int r=0 ; r<m_maxrec ; r++)
+    {
+        unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(record_id);
+        if(unset) break ; 
+        glm::uvec4 flag ; 
+        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+
+        materials.push_back(flag.x); ; 
+        materials.push_back(flag.y); ; 
+    }
+}
 
 void RecordsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material)
 {

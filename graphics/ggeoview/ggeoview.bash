@@ -470,6 +470,8 @@ ggeoview-depinstall()
     oglrap-install
     optixrap-
     optixrap-install 
+    thrustrap-
+    thrustrap-install 
     ggeoview-
     ggeoview-install  
 }

@@ -41,16 +41,6 @@ void udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const cha
 
 
 
-template<typename T>
-inline T hex_lexical_cast(const char* in) {
-    T out;
-    std::stringstream ss;
-    ss <<  std::hex << in;
-    ss >> out;
-    return out;
-}
-
-
 
 
 

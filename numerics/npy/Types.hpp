@@ -9,6 +9,31 @@
 
 class Index ; 
 
+/*
+
+TODO: rejig material codes just plucking most common as index 1-15, and using code 0 for "Other" 
+      this is needed to fit into 4 bits per material in sequence machinery  
+
+[2015-06-30 20:36:21.012404] [0x000007fff79cb931] [info]    SequenceNPY::countMaterials  m1/m2 codes in all records 5187214 unique material codes 16
+    0   13   2084363            Acrylic .
+    1   12    839627         MineralOil .
+    2   15    714965          GdDopedLS .
+    3   14    683857 LiquidScintillator .
+    4   11    273739     StainlessSteel .
+    5   10    265339           IwsWater .
+    6   18     89379 UnstStainlessSteel .
+    7    3     63342                Air .
+    8   16     56527              Pyrex .
+    9    1     52492             Vacuum .
+   10   19     28483                ESR .
+   11    2     16029               Rock .
+   12   17     13187           Bialkali .
+   13   20      4466              Water .
+   14   21      1288           Nitrogen .
+   15   24       131                PVC .
+
+*/
+
 
 class Types {
    public:
@@ -24,9 +49,9 @@ class Types {
    public:
        Types(); 
 
-       void setTail(const char* tail);
-       const char* getTail();
-       void setAbbrev(bool abbrev);
+       void         setTail(const char* tail);
+       const char*  getTail();
+       void         setAbbrev(bool abbrev);
 
    public:
        Index*                    getFlagsIndex();
@@ -36,12 +61,15 @@ class Types {
        std::string getMaskString(unsigned int mask, Item_t etype);
        std::string getMaterialString(unsigned int flags);
        std::string getHistoryString(unsigned int flags);
+       unsigned int getHistoryFlag(std::string label);
+       unsigned int getMaterialCode(std::string label);
        std::string getSequenceString(unsigned long long seq);
        const char* getItemName(Item_t item);
 
    public:
        void getMaterialStringTest();
-       void readMaterials(const char* idpath, const char* name="GMaterialIndexLocal.json");    
+       void readMaterialsOld(const char* idpath, const char* name="GMaterialIndexLocal.json");    
+       void readMaterials(const char* idpath, const char* name="GMaterialIndex");    
        void dumpMaterials(const char* msg="Types::dumpMaterials");
        std::string findMaterialName(unsigned int index);
    private:
@@ -68,6 +96,9 @@ class Types {
        std::string getHistoryAbbrevInvert(std::string label);
        std::string getMaterialAbbrevInvert(std::string label);
        std::string getAbbrevInvert(std::string label, Item_t etype);
+       unsigned int getHistoryAbbrevInvertAsCode(std::string label);
+       unsigned int getMaterialAbbrevInvertAsCode(std::string label);
+       unsigned int getAbbrevInvertAsCode(std::string label, Item_t etype);
 
 
    private:

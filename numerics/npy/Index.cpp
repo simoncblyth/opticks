@@ -53,7 +53,7 @@ unsigned int Index::getIndexLocal(const char* name, unsigned int missing)
 
 unsigned int Index::getNumItems()
 {
-    assert(m_source.size() == m_local.size());
+    //assert(m_source.size() == m_local.size());
     return m_local.size();
 }
 

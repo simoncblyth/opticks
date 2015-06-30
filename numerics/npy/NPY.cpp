@@ -193,6 +193,25 @@ NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
 }
 
 
+template <typename T>
+NPY<T>* NPY<T>::make_scalar(unsigned int ni, T* values)
+{
+    std::vector<int> shape ; 
+    shape.push_back(ni);
+    shape.push_back(1);
+    shape.push_back(1);
+
+    std::string metadata = "{}";
+
+    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
+    return npy ; 
+}
+
+
+
+
+
+
 
 template <typename T>
 NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)

@@ -33,6 +33,28 @@ bregex-usage(){ cat << EOU
         bregex-enum "^\s*(\\w+)\s*=\s*(.*?),*\s*?$"
 
 
+::
+
+    simon:thrust blyth$ bregex-flags
+    extract enum pairs from file $ENV_HOME/graphics/ggeoview/cu/photon.h
+    udump : 13
+                          CERENKOV : 1 :          1 :          1
+                     SCINTILLATION : 2 :          2 :          2
+                              MISS : 3 :          4 :          4
+                       BULK_ABSORB : 4 :          8 :          8
+                       BULK_REEMIT : 5 :         16 :         10
+                      BULK_SCATTER : 6 :         32 :         20
+                    SURFACE_DETECT : 7 :         64 :         40
+                    SURFACE_ABSORB : 8 :        128 :         80
+                  SURFACE_DREFLECT : 9 :        256 :        100
+                  SURFACE_SREFLECT : a :        512 :        200
+                  BOUNDARY_REFLECT : b :       1024 :        400
+                 BOUNDARY_TRANSMIT : c :       2048 :        800
+                         NAN_ABORT : d :       4096 :       1000
+    simon:thrust blyth$ 
+
+
+
 EOU
 }
 
@@ -51,6 +73,8 @@ bregex-cd(){  cd $(bregex-sdir); }
 
 bregex-icd(){  cd $(bregex-idir); }
 bregex-bcd(){  cd $(bregex-bdir); }
+
+bregex-flags(){ $(bregex-idir)/bin/enum_regexsearchTest $* ; }
 
 
 bregex-wipe(){

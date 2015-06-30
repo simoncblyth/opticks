@@ -20,6 +20,9 @@
 //
 
 
+#include "NPY.hpp"
+class Index ; 
+
 template <typename T>
 class ThrustHistogram {
     public:
@@ -27,10 +30,19 @@ class ThrustHistogram {
     public:
          void create();
          void dump();
+         void dumpInput(const char* msg="ThrustHistogram::dumpInput", unsigned int n=100);
+         NPY<T>* makeInputArray();
+         Index* makeIndex(const char* itemtype);
     private:
+         void init();
+    private:
+         thrust::device_vector<T>   m_input ;
          thrust::device_vector<T>   m_values;
          thrust::device_vector<int> m_counts;
          thrust::device_vector<int> m_index;
+    private:
+         thrust::host_vector<T>     m_values_h ;  // copying from device to host 
+         thrust::host_vector<int>   m_counts_h ; 
     private:
          T*                         m_devptr ; 
          unsigned int               m_num ;
@@ -43,6 +55,7 @@ inline ThrustHistogram<T>::ThrustHistogram(T* devptr, unsigned int num_elements 
     m_devptr(devptr),
     m_num(num_elements)
 {
+    init();
 }
 
 

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <sstream>
 #include <map>
 
 //
@@ -25,6 +26,23 @@ void removeField(char* dest, const char* line, char delim, int index );
 
 unsigned char* make_uchar4_colors(unsigned int n);
 void saveIndexJSON( std::map<unsigned int, std::string>& index, const char* path);
+
+
+template<typename T>
+inline T hex_lexical_cast(const char* in) {
+    T out;
+    std::stringstream ss; 
+    ss <<  std::hex << in; 
+    ss >> out;
+    return out;
+}
+
+template<typename T>
+inline std::string as_hex(T in) {
+    std::stringstream ss; 
+    ss <<  std::hex << in; 
+    return ss.str();
+}
 
 
 

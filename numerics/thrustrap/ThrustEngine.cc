@@ -18,6 +18,7 @@ void ThrustEngine::version()
 void ThrustEngine::setHistory(unsigned long long* devptr, unsigned int size)
 {
     m_history = new ThrustHistogram<unsigned long long>(devptr, size) ;
+    m_history->dumpInput("ThrustEngine::setHistory", 100);
 }
 
 void ThrustEngine::createIndices()
@@ -31,6 +32,8 @@ void ThrustEngine::createIndices()
     LOG(info) << "ThrustEngine::createIndices DONE " ; 
 
     m_history->dump();
+
+    LOG(info) << "ThrustEngine::createIndices dump DONE " ; 
 }
 
 

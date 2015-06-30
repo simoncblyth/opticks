@@ -1,4 +1,7 @@
 #include "ThrustHistogram.hh"
+#include "NPY.hpp"
+#include "Index.hpp"
+#include "stringutil.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -15,36 +18,79 @@
 // trace/debug/info/warning/error/fatal
 
 
+
 template<typename T>
-void ThrustHistogram<T>::create()
+void ThrustHistogram<T>::init()
 {
-    std::cout << "ThrustHistogram<T>::create num " << m_num  << std::endl;
+    std::cout << "ThrustHistogram<T>::init num " << m_num  << std::endl;
 
     thrust::device_ptr<T>  ptr = thrust::device_pointer_cast(m_devptr) ;
 
-    thrust::device_vector<T> input(ptr, ptr+m_num);
+    m_input = thrust::device_vector<T>(ptr, ptr+m_num);
+}
 
-    sparse_histogram_imp(input, m_values, m_counts, m_index );
+
+template<typename T>
+void ThrustHistogram<T>::create()
+{
+    sparse_histogram_imp(m_input, m_values, m_counts, m_index );
+
+    m_values_h = m_values ;  // copying back from device to host 
+    m_counts_h = m_counts ; 
+    // only pullback the large m_input array as needed
+}
+
+template<typename T>
+void ThrustHistogram<T>::dumpInput(const char* msg, unsigned int n)
+{
+    thrust::host_vector<T>  input = m_input ;   // copying from device to host
+    std::cout << msg << " size " << input.size() ;
+
+    unsigned int nn = n < input.size() ? n : input.size() ; 
+
+    for(unsigned int i=0 ; i < nn ; i++)
+    {
+          std::cout 
+                      << std::setw(5) << i 
+                      << std::setw(20) << std::hex << input[i]
+                      << std::endl ; 
+    }
+}
+
+
+template<typename T>
+NPY<T>* ThrustHistogram<T>::makeInputArray()
+{
+    thrust::host_vector<T>  input = m_input ;   // copying from device to host
+    return NPY<T>::make_scalar(input.size(), input.data()); 
+}
+
+template<typename T>
+Index* ThrustHistogram<T>::makeIndex(const char* itemtype)
+{
+    Index* index = new Index(itemtype);
+    for(unsigned int i=0 ; i < m_values_h.size() ; i++)
+    { 
+        std::string name = as_hex(m_values_h[i]);
+        index->add(name.c_str(), m_counts_h[i] ); 
+    }
+    return index ; 
 }
 
 
 template<typename T>
 void ThrustHistogram<T>::dump()
 {
-    thrust::host_vector<T>    values = m_values ; 
-    thrust::host_vector<int>  counts = m_counts ; 
-
+   // dumping hostside histo
     unsigned int total(0) ; 
-    for(unsigned int i=0 ; i < values.size() ; i++)
+    for(unsigned int i=0 ; i < m_values_h.size() ; i++)
     {
-        total += counts[i] ;
-        //T seq = values[i];
-        //std::string sseq = flags ? flags->getSequenceString(seq) : "" ; 
-        if(counts[i] > 1000) std::cout 
+        total += m_counts_h[i] ;
+        if(m_counts_h[i] > 1000) 
+                   std::cout 
                       << std::setw(5) << i 
-                      << std::setw(20) << std::hex << values[i]
-                      << std::setw(20) << std::dec << counts[i]
-                 //   << "  " << sseq
+                      << std::setw(20) << std::hex << m_values_h[i]
+                      << std::setw(20) << std::dec << m_counts_h[i]
                       << std::endl ; 
     }
     std::cout << "total " << total << std::endl ; 

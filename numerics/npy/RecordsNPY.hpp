@@ -5,6 +5,7 @@
 #include "Types.hpp"
 #include "NPY.hpp"
 
+class Index ; 
 
 class RecordsNPY {
    public:  
@@ -13,9 +14,11 @@ class RecordsNPY {
        NPY<short>*           getRecords();
        void                  setTypes(Types* types);
        unsigned int          getMaxRec();
-
+   public:  
+       NPY<unsigned long long>* makeSequenceArray(Types::Item_t etype);
 
        void constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material);
+       void appendMaterials(std::vector<unsigned int>& materials, unsigned int photon_id);
    public:
        // unpacking records related 
        void setDomains(NPY<float>* domains);
@@ -40,8 +43,10 @@ class RecordsNPY {
        void setWavelengthDomain(glm::vec4& wd);
 
    public:
+       unsigned long long convertSequenceString(std::string& seq, Types::Item_t etype);
        std::string decodeSequenceString(std::string& seq, Types::Item_t etype);
        std::string getSequenceString(unsigned int photon_id, Types::Item_t etype);
+       unsigned long long getSequence(unsigned int photon_id, Types::Item_t etype);
 
 
    private:

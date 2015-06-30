@@ -11,7 +11,8 @@ int main(int argc, char** argv)
     Types types ; 
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     types.dumpFlags();
-    types.readMaterials(idpath, "GMaterialIndexLocal.json");
+    //types.readMaterialsOld(idpath, "GMaterialIndexLocal.json");
+    types.readMaterials(idpath, "GMaterialIndex");
     types.dumpMaterials();
 
     types.getHistoryStringTest();
