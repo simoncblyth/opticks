@@ -2,8 +2,7 @@
 
 int main()
 {
-    //ThrustEngine::version();
-    vers();
+    ThrustEngine::version();
     return 0 ;
 }
 

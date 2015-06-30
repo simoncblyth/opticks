@@ -10,30 +10,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 set(BUILD_SHARED_LIBS ON)
 
 # http://www.cmake.org/cmake/help/v3.0/module/FindCUDA.html
-
 find_package(CUDA 2.3 REQUIRED)
 
 include(EnvBuildOptions)
 
-# following cudawrap-
-# see cuda- for commentary on this morass 
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
-# with below ... it builds but segfaults on running
-# will need to update CUDA version for c++11 presumably 
+# TODO: see if can improve compilation speed by changing nvcc options to 
+# target just needed device ?
+# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
 
 message("CMAKE_CXX_COMPILER_ID:" ${CMAKE_CXX_COMPILER_ID})
-
-#if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -stdlib=libstdc++")
-#else ()
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -stdlib=libstdc++")
-#endif ()
-
 
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
-
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -49,9 +38,8 @@ add_definitions(
 
 CUDA_ADD_LIBRARY( ${name}  
        ThrustEngine.cc
-       Flags.cc
-       histogram_sorted.cu
-       make_sparse_histogram.cu
+       ThrustHistogram.cc
+       ThrustHistogramImp.cu
 )
 
 set(LIBRARIES
@@ -63,14 +51,11 @@ target_link_libraries( ${name}
      ${LIBRARIES}
 )
 
-#set_target_properties(${name} PROPERTIES LINKER_LANGUAGE CXX)
 
 SET(hdrs 
   ThrustEngine.hh
-  Flags.hh
-  numpy.hpp
-  histogram_sorted.h
-  make_sparse_histogram.h
+  ThrustHistogram.hh
+  ThrustHistogramImp.h
 )
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)

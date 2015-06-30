@@ -1,40 +1,26 @@
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void vers();
-
-#ifdef __cplusplus
-}
-#endif
-
-
 #include "stdlib.h"
+#include "ThrustHistogram.hh"
 
 class ThrustEngine {
    public:
        static void version();
    public:
        ThrustEngine();
-       void setHistoryDevicePtr(unsigned long long* devptr);
-
+       void setHistory(unsigned long long* devptr, unsigned int size);
+   public:
+       void createIndices();
    private:
-       unsigned long long* m_history_devptr ; 
-
+       ThrustHistogram<unsigned long long>* m_history ; 
 
 };
 
 inline ThrustEngine::ThrustEngine() 
     :
-    m_history_devptr(NULL)
+    m_history(NULL)
 {
-}
-
-inline void ThrustEngine::setHistoryDevicePtr(unsigned long long* devptr)
-{
-    m_history_devptr = devptr ; 
+    version();
 }
 
 

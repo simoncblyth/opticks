@@ -6,6 +6,13 @@
 class OptiXUtil {
     public:
 
+    static unsigned int getBufferSize1D(optix::Buffer& buffer)
+    {
+        RTsize size ; 
+        buffer->getSize(size);
+        return size ; 
+    }        
+
     template<typename T>
     static T* getDevicePtr(optix::Buffer & buffer, int deviceNumber)
     {
@@ -19,6 +26,11 @@ class OptiXUtil {
     {
         return thrust::device_pointer_cast(getDevicePtr<T>(buffer, deviceNumber));
     }
+
+
+
+
+
 
 };
 

@@ -123,7 +123,9 @@ thrust-export()
 
 
 thrust-samples-dir(){ echo $(cuda-dir)/samples ; }
-thrust-pdf(){  open $(thrust-samples-dir)/doc/Thrust_Quick_Start_Guide.pdf ; }
+thrust-samples-cd(){  cd $(thrust-samples-dir) ; }
+
+thrust-pdf(){  open $(cuda-dir)/doc/pdf/Thrust_Quick_Start_Guide.pdf ; }
 thrust-html(){ open $(cuda-dir)/doc/html/thrust/index.html ; }
 
 

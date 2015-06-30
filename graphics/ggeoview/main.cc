@@ -317,20 +317,23 @@ int main(int argc, char** argv)
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag );
 
-
-    ThrustEngine te ; 
-    te.version(); 
-
-    unsigned long long* devhis = OptiXUtil::getDevicePtr<unsigned long long>( engine.getHistoryBuffer(), 0 );
-    te.setHistoryDevicePtr(devhis);
     
+    ThrustEngine te ; 
+    {
+        // pass buffer vital stats from OptiX to Thrust 
+        optix::Buffer& history_buffer = engine.getHistoryBuffer() ;
+        unsigned long long* devhis = OptiXUtil::getDevicePtr<unsigned long long>( history_buffer, 0 ); // device number
+        unsigned int devsize = OptiXUtil::getBufferSize1D( history_buffer );
+        te.setHistory(devhis, devsize);   
+        te.createIndices();
+    }
+ 
 
     if(noviz)
     {
-        LOG(info) << "main early exit due to --noviz/-V option " ; 
+        LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
         exit(EXIT_SUCCESS); 
     }
-
 
     BoundariesNPY bnd(dpho); 
     bnd.setTypes(&types);
