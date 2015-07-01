@@ -10,12 +10,13 @@ class ThrustEngine {
        static void version();
    public:
        ThrustEngine();
-       void setHistory(unsigned long long* devptr, unsigned int size);
-       ThrustHistogram<unsigned long long>* getHistory();
+       void setHistoryTarget(unsigned long long* history_devptr, unsigned int* target_devptr,  unsigned int size);
+
+       ThrustHistogram<unsigned long long, unsigned int>* getHistory();
    public:
        void createIndices();
    private:
-       ThrustHistogram<unsigned long long>* m_history ; 
+       ThrustHistogram<unsigned long long, unsigned int>* m_history ; 
 
 };
 
@@ -26,7 +27,7 @@ inline ThrustEngine::ThrustEngine()
     version();
 }
 
-inline ThrustHistogram<unsigned long long>* ThrustEngine::getHistory() 
+inline ThrustHistogram<unsigned long long, unsigned int>* ThrustEngine::getHistory() 
 {
     return m_history ;
 }

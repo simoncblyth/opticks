@@ -10,6 +10,9 @@
 #include <thrust/inner_product.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/transform.h>
+#include <thrust/functional.h>
+
 
 #include <iostream>
 #include <iomanip>
@@ -20,13 +23,13 @@
 #endif
 
 
-void sparse_histogram_imp(const thrust::device_vector<unsigned long long>& input,
+void sparse_histogram_imp(const thrust::device_vector<unsigned long long>& history,
                                 thrust::device_vector<unsigned long long>& histogram_values,
                                 thrust::device_vector<int>& histogram_counts,
                                 thrust::device_vector<int>& histogram_index)
 {
 
-  thrust::device_vector<unsigned long long> data(input);  // copying input to avoid sorting it 
+  thrust::device_vector<unsigned long long> data(history);  // copying history to avoid sorting it 
 
 #ifdef DEBUG
   unsigned int stride = 1000 ; 
@@ -70,7 +73,45 @@ void sparse_histogram_imp(const thrust::device_vector<unsigned long long>& input
   print_vector("histogram counts (sorted by counts)", histogram_counts, false, true);
 #endif
 
+}
 
+
+__constant__ unsigned long long dev_lookup[dev_lookup_n]; 
+
+struct apply_lookup_functor : public thrust::unary_function<unsigned long long,unsigned int>
+{
+
+    // host function cannot access __constant__ memory hence this is device only
+    __device__
+    unsigned int operator()(unsigned long long seq)
+    {
+        unsigned int idx = 1000 ; 
+        for(unsigned int i=0 ; i < dev_lookup_n ; i++)
+        {
+            if(seq == dev_lookup[i]) idx = i ;
+            // NB not breaking as hope this will keep memory access lined up between threads 
+        }
+        return idx ; 
+    } 
+};
+
+
+void update_dev_lookup(unsigned long long* data) // data needs to have at least dev_lookup_n elements  
+{
+    cudaMemcpyToSymbol(dev_lookup,data,dev_lookup_n*sizeof(unsigned long long));
+}
+
+void apply_histogram_imp(const thrust::device_vector<unsigned long long>& history,
+                               thrust::device_vector<unsigned long long>& histogram_values,
+                               thrust::device_vector<int>& histogram_counts,
+                               thrust::device_vector<int>& histogram_index,
+                               thrust::device_vector<unsigned int>& target)
+{
+
+    
+
+
+    thrust::transform( history.begin(), history.end(), target.begin(), apply_lookup_functor() ); 
 }
 
 

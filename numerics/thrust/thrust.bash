@@ -27,6 +27,31 @@ Refs
 * http://astronomy.swin.edu.au/supercomputing/thrust.pdf
 
 
+Experts
+--------
+
+* http://stackoverflow.com/users/1695960/robert-crovella
+
+
+
+Thrust CUDA Interop
+----------------------
+
+See env/numerics/thrust/thrust_cuda_interop
+
+Thrust Functor Access to device arrays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://stackoverflow.com/questions/27733652/how-can-i-dereference-a-thrustdevice-vector-from-within-a-thrust-functor
+
+Involved Thrust
+----------------
+
+
+* http://stackoverflow.com/questions/26666621/thrust-fill-isolate-space
+
+
+
 Parallel Processing Algorthms Intro, eg explaining Scatter/Gather
 -------------------------------------------------------------------
 

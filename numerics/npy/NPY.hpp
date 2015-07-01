@@ -85,6 +85,7 @@ class NPY : public NPYBase {
        T* getValues(unsigned int i);
        void* getBytes();
        void read(void* ptr);
+       std::vector<T>& data();
 
     public:
        T* getUnsetItem();
@@ -136,6 +137,11 @@ class NPY : public NPYBase {
 
 
 
+template <typename T> 
+inline std::vector<T>& NPY<T>::data()
+{
+    return m_data ;
+}
 
 
 template <typename T> 

@@ -160,6 +160,28 @@ tips to free up GPU memory
    presumably as it reduces prsssure on the GPU
 
 
+
+CUDA Constant Memory : small size 64K
+----------------------------------------
+
+::
+
+    simon:~ blyth$ cuda-;cuda-deviceQuery | grep constant
+      Total amount of constant memory:               65536 bytes
+
+
+* http://cuda-programming.blogspot.tw/2013/01/what-is-constant-memory-in-cuda.html?m=1
+
+Whether it is advantageous depends on access pattern, if every thread in warp (half warp?)
+is accessing the same address of constant memory simulataneously it is very performant 
+if not the accesses are serialized. 
+
+* Think OpenGL uniforms
+
+* So: do not early exit from loop over contant memory array when doing a lookup check ?   
+
+
+
 CUDA Driver and Runtime API interop
 ------------------------------------
 

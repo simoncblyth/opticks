@@ -23,20 +23,28 @@
 #include "NPY.hpp"
 class Index ; 
 
-template <typename T>
+template <typename T, typename S>
 class ThrustHistogram {
     public:
-         ThrustHistogram(T* devptr, unsigned int num_elements);
+         ThrustHistogram(T* history_devptr, S* target_devptr, unsigned int num_elements);
     public:
-         void create();
-         void dump();
-         void dumpInput(const char* msg="ThrustHistogram::dumpInput", unsigned int n=100);
-         NPY<T>* makeInputArray();
+         void createHistogram();
+         void apply();
+         void pullback(unsigned int n=32);
+    public:
+         void dumpHistogram(const char* msg="ThrustHistogram::dumpHistogram", unsigned int cutoff=1000);
+         void dumpHistory(  const char* msg="ThrustHistogram::dumpHistory", unsigned int n=100);
+         void dumpTarget(   const char* msg="ThrustHistogram::dumpTarget", unsigned int n=100);
+         void dumpHistoryTarget(const char* msg="ThrustHistogram::dumpHistoryTarget", unsigned int n=100);
+    public:
+         NPY<T>* makeHistoryArray();
          Index* makeIndex(const char* itemtype);
     private:
          void init();
     private:
-         thrust::device_vector<T>   m_input ;
+         thrust::device_vector<T>   m_history ;
+         thrust::device_vector<S>   m_target;
+    private:
          thrust::device_vector<T>   m_values;
          thrust::device_vector<int> m_counts;
          thrust::device_vector<int> m_index;
@@ -44,16 +52,19 @@ class ThrustHistogram {
          thrust::host_vector<T>     m_values_h ;  // copying from device to host 
          thrust::host_vector<int>   m_counts_h ; 
     private:
-         T*                         m_devptr ; 
-         unsigned int               m_num ;
+         T*                         m_history_devptr ; 
+         S*                         m_target_devptr ;
+         unsigned int               m_num_elements ;
+    private:
 
 };
 
-template<typename T>
-inline ThrustHistogram<T>::ThrustHistogram(T* devptr, unsigned int num_elements ) 
+template<typename T, typename S>
+inline ThrustHistogram<T,S>::ThrustHistogram(T* history_devptr, S* target_devptr, unsigned int num_elements ) 
     :
-    m_devptr(devptr),
-    m_num(num_elements)
+    m_history_devptr(history_devptr),
+    m_target_devptr(target_devptr),
+    m_num_elements(num_elements)
 {
     init();
 }
