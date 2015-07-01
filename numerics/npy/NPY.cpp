@@ -138,7 +138,6 @@ template <typename T>
 void NPY<T>::save(const char* typ, const char* tag)
 {
     std::string path = NPYBase::path(typ, tag);
-    if(m_verbose) LOG(info) << "NPY::save " << path ; 
     save(path.c_str());
 }
 
@@ -155,6 +154,7 @@ bool NPY<T>::exists(const char* path_)
 template <typename T>
 void NPY<T>::save(const char* path_)
 {
+    if(m_verbose) LOG(info) << "NPY::save " << path_ ; 
     fs::path path(path_);
     fs::path dir = path.parent_path();
 
@@ -406,15 +406,22 @@ template<>
 NPYBase::Type_t NPY<float>::type = FLOAT ;
 template<>
 NPYBase::Type_t NPY<double>::type = DOUBLE ;
+
+
 template<>
 NPYBase::Type_t NPY<int>::type = INT ;
+
 template<>
 NPYBase::Type_t NPY<short>::type = SHORT ;
 //template<>
 //NPYBase::Type_t NPY<char>::type = CHAR ;
+
+
+
 template<>
 NPYBase::Type_t NPY<unsigned char>::type = UCHAR ;
-
+template<>
+NPYBase::Type_t NPY<unsigned int>::type = UINT ;
 template<>
 NPYBase::Type_t NPY<unsigned long long>::type = ULONGLONG ;
 
@@ -425,14 +432,18 @@ template<>
 short NPY<short>::UNSET = SHRT_MIN ;
 template<>
 int NPY<int>::UNSET = INT_MIN ;
+
 template<>
 float  NPY<float>::UNSET = FLT_MAX ;
 template<>
 double NPY<double>::UNSET = DBL_MAX ;
 //template<>
 //char NPY<char>::UNSET = 0 ;
+
 template<>
 unsigned char NPY<unsigned char>::UNSET = 0 ;
+template<>
+unsigned int NPY<unsigned int>::UNSET = 0 ;
 template<>
 unsigned long long NPY<unsigned long long>::UNSET = 0 ;
 
@@ -455,6 +466,7 @@ template class NPY<short>;
 template class NPY<int>;
 //template class NPY<char>;
 template class NPY<unsigned char>;
+template class NPY<unsigned int>;
 template class NPY<unsigned long long>;
 
 

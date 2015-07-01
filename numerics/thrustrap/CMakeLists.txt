@@ -37,7 +37,7 @@ add_definitions(
 )
 
 CUDA_ADD_LIBRARY( ${name}  
-       ThrustEngine.cc
+       ThrustIndex.cc
        ThrustHistogram.cc
        ThrustHistogramImp.cu
 )
@@ -53,7 +53,7 @@ target_link_libraries( ${name}
 
 
 SET(hdrs 
-  ThrustEngine.hh
+  ThrustIndex.hh
   ThrustHistogram.hh
   ThrustHistogramImp.h
 )

@@ -1,21 +1,20 @@
-#include <thrust/iterator/counting_iterator.h>
-#include <thrust/iterator/transform_iterator.h>
-#include <thrust/iterator/permutation_iterator.h>
-#include <thrust/functional.h>
+#pragma once
 
-#include <thrust/fill.h>
-#include <thrust/device_vector.h>
-
-// for printing
-#include <thrust/copy.h>
-#include <ostream>
-
+// /usr/local/env/numerics/thrust/examples/strided_range.cu
+//
 // this example illustrates how to make strided access to a range of values
 // examples:
 //   strided_range([0, 1, 2, 3, 4, 5, 6], 1) -> [0, 1, 2, 3, 4, 5, 6] 
 //   strided_range([0, 1, 2, 3, 4, 5, 6], 2) -> [0, 2, 4, 6]
 //   strided_range([0, 1, 2, 3, 4, 5, 6], 3) -> [0, 3, 6]
 //   ...
+
+
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/iterator/permutation_iterator.h>
+#include <thrust/functional.h>
+#include <thrust/device_vector.h>
 
 template <typename Iterator>
 class strided_range
@@ -47,7 +46,12 @@ class strided_range
 
     // construct strided_range for the range [first,last)
     strided_range(Iterator first, Iterator last, difference_type stride)
-        : first(first), last(last), stride(stride) {}
+        : 
+        first(first), 
+        last(last), 
+        stride(stride) 
+    {
+    }
    
     iterator begin(void) const
     {

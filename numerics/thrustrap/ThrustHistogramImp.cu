@@ -13,6 +13,7 @@
 #include <thrust/transform.h>
 #include <thrust/functional.h>
 
+#include "strided_range.h"
 
 #include <iostream>
 #include <iomanip>
@@ -23,69 +24,55 @@
 #endif
 
 
-void sparse_histogram_imp(const thrust::device_vector<unsigned long long>& history,
-                                thrust::device_vector<unsigned long long>& histogram_values,
-                                thrust::device_vector<int>& histogram_counts,
-                                thrust::device_vector<int>& histogram_index)
+template <typename T>
+void sparse_histogram_imp(const thrust::device_vector<T>& history,
+                                thrust::device_vector<T>& histogram_values,
+                                thrust::device_vector<int>& histogram_counts)
 {
 
-  thrust::device_vector<unsigned long long> data(history);  // copying history to avoid sorting it 
-
-#ifdef DEBUG
-  unsigned int stride = 1000 ; 
-  print_vector_strided("initial data", data, true, stride );
-#endif
+  thrust::device_vector<T> data(history);  // copy history to avoid sorting it 
 
   thrust::sort(data.begin(), data.end());
-  
-#ifdef DEBUG
-  print_vector_strided("sorted data", data, true, stride );
-#endif
 
+  // product of sorted data with itself shifted by one finds "edges" between values 
   int num_bins = thrust::inner_product(data.begin(), data.end() - 1,
                                              data.begin() + 1,
                                              int(1),
                                              thrust::plus<int>(),
-                                             thrust::not_equal_to<unsigned long long>());
+                                             thrust::not_equal_to<T>());
 
-  // resize histogram storage
   histogram_values.resize(num_bins);
   histogram_counts.resize(num_bins);
-  histogram_index.resize(num_bins);
   
-  // compact find the end of each bin of values
+  // find the end of each bin of values
   thrust::reduce_by_key(data.begin(), data.end(),
                         thrust::constant_iterator<int>(1),
                         histogram_values.begin(),
                         histogram_counts.begin());
   
-
-#ifdef DEBUG
-  print_vector("histogram values", histogram_values, true);
-  print_vector("histogram counts", histogram_counts, false, true );
-#endif
-
-  
   thrust::sort_by_key( histogram_counts.begin(), histogram_counts.end(), histogram_values.begin());
                 
-#ifdef DEBUG
-  print_vector("histogram values (sorted by counts)", histogram_values, true);
-  print_vector("histogram counts (sorted by counts)", histogram_counts, false, true);
-#endif
-
 }
 
 
+// hmm seems cannot template this ...
 __constant__ unsigned long long dev_lookup[dev_lookup_n]; 
 
-struct apply_lookup_functor : public thrust::unary_function<unsigned long long,unsigned int>
-{
 
-    // host function cannot access __constant__ memory hence this is device only
-    __device__
-    unsigned int operator()(unsigned long long seq)
+template <typename T>
+void update_dev_lookup(T* data) // data needs to have at least dev_lookup_n elements  
+{
+    cudaMemcpyToSymbol(dev_lookup,data,dev_lookup_n*sizeof(T));
+}
+
+
+template <typename T, typename S>
+struct apply_lookup_functor : public thrust::unary_function<T,S>
+{
+    __device__          // host function cannot access __constant__ memory hence this is device only
+    S operator()(T seq)
     {
-        unsigned int idx = 1000 ; 
+        S idx = 255 ; 
         for(unsigned int i=0 ; i < dev_lookup_n ; i++)
         {
             if(seq == dev_lookup[i]) idx = i ;
@@ -96,23 +83,28 @@ struct apply_lookup_functor : public thrust::unary_function<unsigned long long,u
 };
 
 
-void update_dev_lookup(unsigned long long* data) // data needs to have at least dev_lookup_n elements  
-{
-    cudaMemcpyToSymbol(dev_lookup,data,dev_lookup_n*sizeof(unsigned long long));
-}
-
-void apply_histogram_imp(const thrust::device_vector<unsigned long long>& history,
-                               thrust::device_vector<unsigned long long>& histogram_values,
-                               thrust::device_vector<int>& histogram_counts,
-                               thrust::device_vector<int>& histogram_index,
-                               thrust::device_vector<unsigned int>& target)
+template <typename T, typename S>
+void apply_histogram_imp(const thrust::device_vector<T>& history,
+                               thrust::device_vector<S>& target,
+                               unsigned int target_offset,
+                               unsigned int target_itemsize)
 {
 
-    
+    typedef typename thrust::device_vector<S>::iterator Iterator;
+    strided_range<Iterator> column(target.begin() + target_offset, target.end(), target_itemsize);
 
-
-    thrust::transform( history.begin(), history.end(), target.begin(), apply_lookup_functor() ); 
+    thrust::transform( history.begin(), history.end(), column.begin(), apply_lookup_functor<T,S>() ); 
 }
+
+
+template <typename S>
+void strided_copyback( unsigned int n, thrust::host_vector<S>& dest, thrust::device_vector<S>& src, unsigned int src_offset, unsigned int src_itemsize )
+{ 
+    typedef typename thrust::device_vector<S>::iterator Iterator;
+    strided_range<Iterator> column(src.begin() + src_offset, src.end(), src_itemsize);
+    thrust::copy( column.begin(),  column.begin() + n,   dest.begin() ) ; 
+}
+
 
 
 template <typename T>
@@ -139,5 +131,36 @@ void direct_dump(T* devptr, unsigned int numElements)
 
 
 
+
+// plant symbols via explicit instanciation 
+
+template void strided_copyback<unsigned int>( unsigned int n, 
+        thrust::host_vector<unsigned int>& dest, 
+        thrust::device_vector<unsigned int>& src, unsigned int src_offset, unsigned int src_itemsize );
+
+template void strided_copyback<unsigned char>( unsigned int n, 
+        thrust::host_vector<unsigned char>& dest, 
+        thrust::device_vector<unsigned char>& src, unsigned int src_offset, unsigned int src_itemsize );
+
+
+template void apply_histogram_imp<unsigned long long, unsigned int>(
+       const thrust::device_vector<unsigned long long>& history,
+             thrust::device_vector<unsigned int>&        target,
+                                     unsigned int target_offset,
+                                   unsigned int target_itemsize);
+
+template void apply_histogram_imp<unsigned long long, unsigned char>(
+       const thrust::device_vector<unsigned long long>& history,
+             thrust::device_vector<unsigned char>&        target,
+                                     unsigned int target_offset,
+                                   unsigned int target_itemsize);
+
+template void sparse_histogram_imp<unsigned long long>(
+         const thrust::device_vector<unsigned long long>& history,
+               thrust::device_vector<unsigned long long>& histogram_values,
+               thrust::device_vector<int>&                histogram_counts);
+
+
+template void update_dev_lookup<unsigned long long>(unsigned long long* data);
 
 

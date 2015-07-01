@@ -3,42 +3,62 @@
 #include "NPY.hpp"
 #include "assert.h"
 
+/*
+   target is typically   uchar4 so can access 
+   as quad from OpenGL with entries 
+   for  history/material/spare/spare idx 
+   
+   to populate such a structure need to specify 
+
+       itemsize : 4  <-- the stride :w
+       offset   : 0 (history) 1 (material)
+       
+*/
+
 int main()
 {
     // sling histories onto device and create histogram 
 
     typedef unsigned long long T ;
-    typedef unsigned int S ;
+    typedef unsigned char S ;
 
     NPY<T>* history = NPY<T>::load("/tmp/thv.npy");
 
     std::vector<T>& his = history->data();
-    unsigned int size = his.size();
+    unsigned int num_elements = his.size();
 
     thrust::device_vector<T> dhis(his.begin(), his.end());
     T* dhis_ptr = dhis.data().get();       
     T* dhis_ptr_alt = thrust::raw_pointer_cast(&dhis[0]);
     assert( dhis_ptr == dhis_ptr_alt );    // two eqivalent ways to access raw device pointers
 
+
     //thrust::device_vector<S> dtgt(size); // <--- cannot do in .cpp, needs to be in .cu https://github.com/thrust/thrust/issues/526
-    std::vector<S> tgt(size);  
+
+    unsigned int target_offset = 0 ; 
+    unsigned int target_itemsize = 1 ; 
+
+    std::vector<S> tgt(num_elements*target_itemsize);  
     thrust::device_vector<S> dtgt(tgt.begin(), tgt.end()); 
     S* dtgt_ptr = dtgt.data().get();       
 
-    // above create device vectors to mimic the actual situation 
+    // above creates device vectors to mimic the actual situation 
     // of addressing OpenGL/OptiX buffers 
 
-    ThrustHistogram<T,S> th(dhis_ptr, dtgt_ptr, size); // NB target must be same size as history 
+    ThrustHistogram<T,S> th(dhis_ptr, num_elements, target_itemsize, target_offset );
+     // NB target must be itemsize*size of history 
 
     th.createHistogram();
 
     th.dumpHistogram();
 
-    th.apply(); 
+    th.apply(dtgt); 
 
-    //th.dumpTarget();
+    thrust::host_vector<S> htgt = dtgt ;                // full pullback, expensive 
 
-    th.dumpHistoryTarget();
+    NPY<S>* target = NPY<S>::make_scalar(htgt.size(), htgt.data()); 
+    target->setVerbose();
+    target->save("/tmp/ThrustHistogramTest.npy");
 
     cudaDeviceSynchronize();
 
