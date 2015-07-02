@@ -25,34 +25,40 @@
 
 
 template <typename T>
-void sparse_histogram_imp(const thrust::device_vector<T>& history,
+void sparse_histogram_imp(const thrust::device_vector<T>& sequence,
+                                unsigned int sequence_offset,   
+                                unsigned int sequence_itemsize,   
                                 thrust::device_vector<T>& histogram_values,
                                 thrust::device_vector<int>& histogram_counts)
 {
+    typedef typename thrust::device_vector<T>::const_iterator T_Iterator;
+    strided_range<T_Iterator> src(sequence.begin() + sequence_offset, sequence.end(), sequence_itemsize);
 
-  thrust::device_vector<T> data(history);  // copy history to avoid sorting it 
+    thrust::device_vector<T> data(src.begin(), src.end());  // copy to avoid sorting original
 
-  thrust::sort(data.begin(), data.end());
+    thrust::sort(data.begin(), data.end());
 
-  // product of sorted data with itself shifted by one finds "edges" between values 
-  int num_bins = thrust::inner_product(data.begin(), data.end() - 1,
+   // product of sorted data with itself shifted by one finds "edges" between values 
+    int num_bins = thrust::inner_product(data.begin(), data.end() - 1,
                                              data.begin() + 1,
                                              int(1),
                                              thrust::plus<int>(),
                                              thrust::not_equal_to<T>());
 
-  histogram_values.resize(num_bins);
-  histogram_counts.resize(num_bins);
+    histogram_values.resize(num_bins);
+    histogram_counts.resize(num_bins);
   
-  // find the end of each bin of values
-  thrust::reduce_by_key(data.begin(), data.end(),
+    // find the end of each bin of values
+    thrust::reduce_by_key(data.begin(), data.end(),
                         thrust::constant_iterator<int>(1),
                         histogram_values.begin(),
                         histogram_counts.begin());
   
-  thrust::sort_by_key( histogram_counts.begin(), histogram_counts.end(), histogram_values.begin());
+    thrust::sort_by_key( histogram_counts.begin(), histogram_counts.end(), histogram_values.begin());
                 
 }
+
+
 
 
 // hmm seems cannot template this ...
@@ -84,16 +90,23 @@ struct apply_lookup_functor : public thrust::unary_function<T,S>
 
 
 template <typename T, typename S>
-void apply_histogram_imp(const thrust::device_vector<T>& history,
+void apply_histogram_imp(const thrust::device_vector<T>& sequence,
+                               unsigned int sequence_offset,
+                               unsigned int sequence_itemsize,
                                thrust::device_vector<S>& target,
                                unsigned int target_offset,
                                unsigned int target_itemsize)
 {
 
-    typedef typename thrust::device_vector<S>::iterator Iterator;
-    strided_range<Iterator> column(target.begin() + target_offset, target.end(), target_itemsize);
+    typedef typename thrust::device_vector<T>::const_iterator T_Iterator;
+    strided_range<T_Iterator> src(sequence.begin() + sequence_offset, sequence.end(), sequence_itemsize);
 
-    thrust::transform( history.begin(), history.end(), column.begin(), apply_lookup_functor<T,S>() ); 
+    typedef typename thrust::device_vector<S>::iterator S_Iterator;
+    strided_range<S_Iterator> dest(target.begin() + target_offset, target.end(), target_itemsize);
+
+    // if strided range compiles in .cc could pass in the iterators ...
+
+    thrust::transform( src.begin(), src.end(), dest.begin(), apply_lookup_functor<T,S>() ); 
 }
 
 
@@ -143,22 +156,20 @@ template void strided_copyback<unsigned char>( unsigned int n,
         thrust::device_vector<unsigned char>& src, unsigned int src_offset, unsigned int src_itemsize );
 
 
-template void apply_histogram_imp<unsigned long long, unsigned int>(
-       const thrust::device_vector<unsigned long long>& history,
-             thrust::device_vector<unsigned int>&        target,
-                                     unsigned int target_offset,
-                                   unsigned int target_itemsize);
-
 template void apply_histogram_imp<unsigned long long, unsigned char>(
-       const thrust::device_vector<unsigned long long>& history,
+       const thrust::device_vector<unsigned long long>& sequence,
+                                    unsigned int sequence_offset,
+                                  unsigned int sequence_itemsize,
              thrust::device_vector<unsigned char>&        target,
                                      unsigned int target_offset,
                                    unsigned int target_itemsize);
 
 template void sparse_histogram_imp<unsigned long long>(
-         const thrust::device_vector<unsigned long long>& history,
-               thrust::device_vector<unsigned long long>& histogram_values,
-               thrust::device_vector<int>&                histogram_counts);
+                  const thrust::device_vector<unsigned long long>& history,
+                                                     unsigned int history_offset,
+                                                     unsigned int history_itemsize,
+                        thrust::device_vector<unsigned long long>& histogram_values,
+                        thrust::device_vector<int>&                histogram_counts);
 
 
 template void update_dev_lookup<unsigned long long>(unsigned long long* data);

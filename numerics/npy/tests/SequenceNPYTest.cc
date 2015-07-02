@@ -37,14 +37,14 @@ int main(int argc, char** argv)
 
     s.countMaterials();
     s.dumpUniqueHistories();
-    s.indexSequences();
+    s.indexSequences(32);
 
     NPY<unsigned long long>* seqhisnpy = s.getSeqHisNpy();
-    seqhisnpy->save("/tmp/SequenceNPYTest.npy");
+    seqhisnpy->save("/tmp/SequenceNPYTest_SeqHis.npy");
 
     NPY<unsigned char>* seqidx = s.getSeqIdx();
     seqidx->setVerbose();
-    seqidx->save("seqidx", tag);
+    seqidx->save("/tmp/SequenceNPYTest_SeqIdx.npy");
 
     return 0 ;
 }

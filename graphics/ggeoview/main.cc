@@ -259,6 +259,7 @@ int main(int argc, char** argv)
     // Scene, Rdr do uploads orchestrated by NumpyEvt/MultiViewNPY 
     // creating the OpenGL buffers from NPY managed data
     scene.uploadEvt();
+    scene.uploadSelection();  
 
 
     LOG(info) << "main: scene.uploadEvt DONE "; 
@@ -313,32 +314,10 @@ int main(int argc, char** argv)
     drec->setVerbose();
     drec->save("rx%s", typ,  tag );
 
-    NPY<NumpyEvt::History_t>* dhis = evt.getHistoryData();
+    NPY<NumpyEvt::Sequence_t>* dhis = evt.getSequenceData();
     Rdr::download(dhis);
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag );
-
-
-/*
-    optix::Buffer& history_buffer = engine.getHistoryBuffer() ;
-    unsigned int num_elements = OptiXUtil::getBufferSize1D( history_buffer );
-
-    ThrustIndex<unsigned long long, unsigned char> idx(target_devptr, num_elements, 4 )   ; 
-    // pass buffer vital stats from OptiX to Thrust 
-    unsigned long long* devhis = OptiXUtil::getDevicePtr<unsigned long long>( history_buffer, 0 ); // device number
-    idx.indexHistory(devhis, 0);   
-
-    LOG(info) << "main saving ThrustHistory for debug " ; 
-    ThrustHistogram<unsigned long long>* th = te.getHistory();
-    //LOG(info) << "main th:makeInputArray " ; 
-    //NPY<unsigned long long>* thv = th->makeInputArray();
-    //thv->save("/tmp/thv.npy");
-    LOG(info) << "main thv:makeIndex " ; 
-    Index* thi = th->makeIndex("ThrustHistory");
-    thi->save("/tmp");
-   LOG(info) << "main: saving ThrustHistory DONE " ; 
-*/ 
-
 
 
     if(noviz)
@@ -360,30 +339,57 @@ int main(int argc, char** argv)
     rec.setDomains((NPY<float>*)domain);
 
 
-    // hmm loading precooked seq not so easy 
-    //if(NPY<unsigned char>::exists("seq%s", typ, tag))
-    
+#ifdef SLOW_CPU_INDEXING
     SequenceNPY seq(dpho);
     seq.setTypes(&types);
     seq.setRecs(&rec);
-    seq.indexSequences(); // <-- takes a while, should make optional OR arrange to load
-    Index* seqhis = seq.getSeqHis();
-    Index* seqhishex = seq.getSeqHisHex();
-    seqhishex->save("/tmp");
+    seq.setSeqIdx(evt.getRecselData());
+    seq.indexSequences(32);   // creates and populates the seqidx CPU side 
 
+    Index* seqhis = seq.getSeqHis();
     Index* seqmat = seq.getSeqMat();
+    //seqidx->save("seq%s", typ, tag);  
+
+#else
+
+
+    // seqidx not yet populated, but need record Rdr to create OpenGL buffer 
+    // so the NPY will get a buffer id 
+    // so Thrust can have a target to populate
+
+    optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
+    optix::Buffer& recsel_buffer   = engine.getRecselBuffer() ;
+
+    // hmm history buffers (seqhis + seqmat) are photon level qtys but 
+    // need to repeat the indices *maxrec for the record level recsel buffer
+
+    unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );
+
+    unsigned int        device_number = 0 ;  // maybe problem with multi-GPU
+    unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
+    unsigned char*      d_rsel = OptiXUtil::getDevicePtr<unsigned char>(      recsel_buffer, device_number  );  
+
+    LOG(info) << "main: ThrustIndex ctor " ; 
+
+    unsigned int sequence_itemsize = 2 ;  
+    unsigned int recsel_itemsize = 4 ;  
+    ThrustIndex<unsigned long long, unsigned char> idx(d_seqn, d_rsel, num_elements, sequence_itemsize, recsel_itemsize )   ; 
+
+    idx.indexHistory(0);   
+    idx.indexMaterial(1);   
+
+    Index* seqhis = idx.getHistoryIndex() ;  
+    Index* seqmat = idx.getMaterialIndex() ;  
+
+#endif
     glm::ivec4& recsel = composition.getRecSelect();
 
-    NPY<unsigned char>* seqidx = seq.getSeqIdx();
-    seqidx->save("seq%s", typ, tag);  // hmm should split by typ, if not treating as transient
-    // hmm currently seqidx not seen by OptiX only OpenGL 
-
-    evt.setSelectionData(seqidx);
-
-    scene.uploadSelection();
 
 
-    Photons photons(&pho, &bnd, &seq) ; // GUI jacket 
+    Photons photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
+
+
+
     scene.setPhotons(&photons);
 
 #ifdef GUI_

@@ -29,19 +29,45 @@ void ThrustHistogram<T,S>::init()
               << " num_elements " << m_num_elements  
               << std::endl ;
 
-    thrust::device_ptr<T>  ptr = thrust::device_pointer_cast(m_sequence_devptr) ;
-    m_sequence = thrust::device_vector<T>(ptr, ptr+m_num_elements);
+
 }
 
 template<typename T,typename S>
-void ThrustHistogram<T,S>::createHistogram()
+void ThrustHistogram<T,S>::createHistogram( thrust::device_vector<T>& sequence)
 {
-    sparse_histogram_imp<T>(m_sequence, m_values, m_counts );
+    sparse_histogram_imp<T>(sequence, 
+                            m_sequence_offset, 
+                            m_sequence_itemsize, 
+                            m_values, 
+                            m_counts );
 
     pullback(dev_lookup_n);
 
     update_dev_lookup<T>( m_values_h.data() );
 }
+
+
+template <typename T,typename S>
+void ThrustHistogram<T,S>::apply(
+          thrust::device_vector<T>& sequence, 
+          thrust::device_vector<S>& target
+   )
+{
+   // apply this histogram lookup to the target at offset/stride specified in ctor
+    apply_histogram_imp<T>(sequence, 
+                           m_sequence_offset,
+                           m_sequence_itemsize,
+                           target, 
+                           m_target_offset, 
+                           m_target_itemsize );
+
+    Index* index = makeIndex(m_itemtype);
+    setIndex(index);
+}
+
+
+
+
 
 template<typename T,typename S>
 void ThrustHistogram<T,S>::pullback(unsigned int n)
@@ -58,13 +84,12 @@ void ThrustHistogram<T,S>::pullback(unsigned int n)
     thrust::reverse(m_counts_h.begin(), m_counts_h.end());
 }
 
-
-
 template<typename T,typename S>
 NPY<T>* ThrustHistogram<T,S>::makeSequenceIndexArray()
 {
     unsigned int size = m_values.size() ;
-    pullback(size);  // full pullback 
+    pullback(size);  
+    // full pullback   : THIS IS ONLY NEEDED FOR DEBUGGING
 
     unsigned int ni = size ;
     unsigned int nj = 1 ; 
@@ -78,50 +103,6 @@ NPY<T>* ThrustHistogram<T,S>::makeSequenceIndexArray()
     }
     return NPY<T>::make(ni, nj, nk, values.data() ); 
 }
-
-
-
-
-template <typename T,typename S>
-void ThrustHistogram<T,S>::apply(thrust::device_vector<S>& target)
-{
-   // apply this histogram lookup to the target at offset/stride specified in ctor
-    apply_histogram_imp<T>(m_sequence, target, m_target_offset, m_target_itemsize );
-}
-
-
-template<typename T,typename S>
-void ThrustHistogram<T,S>::dumpSequence(const char* msg, unsigned int n)
-{
-    LOG(info) << msg << " " << n ; 
-
-    thrust::host_vector<T> sequence(n) ;
-    thrust::copy( m_sequence.begin(), m_sequence.begin() + n , sequence.begin());
-
-    unsigned int idx(0) ; 
-    for(typename thrust::host_vector<T>::iterator it=sequence.begin() ; it != sequence.end() ; it++)
-    {
-          std::cout 
-                      << std::setw(5) << idx 
-                      << std::setw(20) << std::hex << *it
-                      << std::endl ; 
-    }
-}
-
-
-
-template<typename T,typename S>
-NPY<T>* ThrustHistogram<T,S>::makeSequenceArray()
-{
-    thrust::host_vector<T> history = m_sequence ;   // full pullback, expensive 
-    return NPY<T>::make_scalar(history.size(), history.data()); 
-}
-
-
-
-
-
-
 
 
 

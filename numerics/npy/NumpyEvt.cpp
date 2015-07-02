@@ -55,16 +55,18 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     NPY<float>* pho = NPY<float>::make_vec4(m_num_photons, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-
-    History_t initial_his(0) ; 
-    NPY<History_t>* his = NPY<History_t>::make_scalar(m_num_photons, initial_his); 
-    setHistoryData(his);   
+    NPY<Sequence_t>* seq = NPY<Sequence_t>::make_vec2(m_num_photons, 1, 0);  // shape (np,1,2) initialized to 0
+    setSequenceData(seq);   
 
 
     assert(SHRT_MIN == -(1 << 15));      // -32768
     assert(SHRT_MAX ==  (1 << 15) - 1);  // +32767
     NPY<short>* rec = NPY<short>::make_vec4(getNumRecords(), 2, SHRT_MIN); 
     setRecordData(rec);   
+
+    // aka seqidx (SequenceNPY) or target ThrustIndex
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make_vec4(getNumRecords(),1,0); // shape (nr,1,4) initialized to 0 
+    setRecselData(recsel);   
 
 
     // stuff genstep index into the photon allocation 
@@ -171,31 +173,39 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
     m_record_attr->add(rpol);
     m_record_attr->add(rflg);
     m_record_attr->add(rflq);
+
 }
 
 
-void NumpyEvt::setSelectionData(NPY<unsigned char>* selection_data)
+void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
 {
-    m_selection_data = selection_data ;
+    m_recsel_data = recsel_data ;
     //                                                  j k sz   type                norm   iatt
-    ViewNPY* rsel = new ViewNPY("rsel",m_selection_data,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
-    m_selection_attr = new MultiViewNPY();
-    m_selection_attr->add(rsel);
+    ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
+    m_recsel_attr = new MultiViewNPY();
+    m_recsel_attr->add(rsel);
 }
 
-void NumpyEvt::setHistoryData(NPY<History_t>* history_data)
+void NumpyEvt::setSequenceData(NPY<Sequence_t>* sequence_data)
 {
-    m_history_data = history_data  ;
-    assert(sizeof(History_t) == 4*sizeof(unsigned short));  
+    m_sequence_data = sequence_data  ;
+    assert(sizeof(Sequence_t) == 4*sizeof(unsigned short));  
     //
-    // 64 bit uint used to hold the history flag sequence 
+    // 64 bit uint used to hold the sequence flag sequence 
     // is presented to OpenGL shaders as 4 *16bit ushort 
     // as intend to reuse the sequence bit space for the indices and count 
     // via some diddling 
-    //                                                  j k sz   type                norm   iatt
-    ViewNPY* phis = new ViewNPY("phis",m_history_data,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
-    m_history_attr = new MultiViewNPY();
-    m_history_attr->add(phis);
+    //
+    //      Have not taken the diddling route, 
+    //      instead using separate Recsel buffer for the indices
+    // 
+    //                                                j k sz   type                norm   iatt
+    ViewNPY* phis = new ViewNPY("phis",m_sequence_data,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
+    ViewNPY* pmat = new ViewNPY("pmat",m_sequence_data,0,1,4,ViewNPY::UNSIGNED_SHORT,false,  true);
+    m_sequence_attr = new MultiViewNPY();
+    m_sequence_attr->add(phis);
+    m_sequence_attr->add(pmat);
+
 }
 
 

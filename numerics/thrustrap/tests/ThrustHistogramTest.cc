@@ -1,6 +1,7 @@
 #include <thrust/device_vector.h>
 #include "ThrustHistogram.hh"
 #include "NPY.hpp"
+#include "Index.hpp"
 #include "assert.h"
 
 /*
@@ -37,6 +38,8 @@ int main()
 
     unsigned int target_offset = 0 ; 
     unsigned int target_itemsize = 1 ; 
+    unsigned int sequence_offset = 0 ; 
+    unsigned int sequence_itemsize = 1 ; 
 
     std::vector<S> tgt(num_elements*target_itemsize);  
     thrust::device_vector<S> dtgt(tgt.begin(), tgt.end()); 
@@ -45,20 +48,26 @@ int main()
     // above creates device vectors to mimic the actual situation 
     // of addressing OpenGL/OptiX buffers 
 
-    ThrustHistogram<T,S> th(dhis_ptr, num_elements, target_itemsize, target_offset );
+    ThrustHistogram<T,S> th("ThrustHistogramHistory", num_elements, sequence_itemsize, sequence_offset, target_itemsize, target_offset );
      // NB target must be itemsize*size of history 
 
-    th.createHistogram();
+    th.createHistogram( dhis );
 
     th.dumpHistogram();
 
-    th.apply(dtgt); 
+    th.apply(dhis, dtgt); 
+
 
     thrust::host_vector<S> htgt = dtgt ;                // full pullback, expensive 
 
     NPY<S>* target = NPY<S>::make_scalar(htgt.size(), htgt.data()); 
     target->setVerbose();
     target->save("/tmp/ThrustHistogramTest.npy");
+
+
+    Index* index = th.getIndex();
+    index->dump(); 
+
 
     cudaDeviceSynchronize();
 

@@ -26,13 +26,13 @@ using namespace optix;
 // beyond MAXREC overwrite save into top slot
 //    if(photon_id == 0) dump_state((s));
  
-#define RSAVE(seqhis, p, s, slot)  \
+#define RSAVE(seqhis, seqmat, p, s, slot)  \
 {    \
     unsigned int shift = slot*4 ; \
-    unsigned long long sflag = (s).flag ; \
-    unsigned long long x = __ffs(sflag) & 0xF ; \
-    unsigned long long tmp = x << shift ; \
-    seqhis = seqhis | tmp ; \
+    unsigned long long his = __ffs((s).flag) & 0xF ; \
+    unsigned long long mat = __ffs((s).index.x) & 0xF ; \
+    seqhis |= his << shift ; \
+    seqmat |= mat << shift ; \
     unsigned int slot_offset =  (slot) < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
     rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
     (slot)++ ; \
@@ -74,7 +74,7 @@ with seqhis = seqhis | tmp   get unexpected "f"  always appearing in most signfi
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
 rtBuffer<short4>    record_buffer;   // 2 short4 take same space as 1 float4 quad
-rtBuffer<unsigned long long>   history_buffer;   // unsigned long and unsigned long long are both 8 bytes, 64 bits 
+rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long and unsigned long long are both 8 bytes, 64 bits 
 
 rtBuffer<curandState, 1> rng_states ;
 
@@ -106,6 +106,7 @@ RT_PROGRAM void generate()
     // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
 
     unsigned long long seqhis(0) ;
+    unsigned long long seqmat(0) ;
     State s ;   
     Photon p ;  
 
@@ -153,6 +154,7 @@ RT_PROGRAM void generate()
         if(prd.boundary == 0)
         {
             s.flag = MISS ;  // overwrite CERENKOV/SCINTILLATION for the no hitters
+            s.index.x = 0 ;  // avoid unset m1 for no-hitters
             break ;
         }   
         // initial and CONTINUE-ing records
@@ -178,7 +180,7 @@ RT_PROGRAM void generate()
         } 
 
 
-        RSAVE(seqhis, p, s, slot) ;
+        RSAVE(seqhis, seqmat, p, s, slot) ;
 
         // Where best to record the propagation ? 
         // =======================================
@@ -265,10 +267,11 @@ RT_PROGRAM void generate()
     //    1) causes all the MISS to get zero, the initial seqhis value
     //
 
-    RSAVE(seqhis, p, s, slot) ;
+    RSAVE(seqhis, seqmat, p, s, slot) ;
 
+    sequence_buffer[photon_id*2 + 0] = seqhis ; 
+    sequence_buffer[photon_id*2 + 1] = seqmat ;  
 
-    history_buffer[photon_id] = seqhis ; 
     rng_states[photon_id] = rng ;
 }
 

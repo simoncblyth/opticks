@@ -26,30 +26,44 @@ void ThrustIndex<T,S>::init()
     version();
     std::cout << "ThrustIndex::init "
               << " num_elements " <<  m_num_elements  
-              << " target_itemsize " << m_target_itemsize  
               << std::endl ;
 
+
+
     unsigned int targetSize = getTargetSize();    
+    std::cout << "ThrustIndex::init "
+              << " target_itemsize " << m_target_itemsize  
+              << " targetSize " << targetSize  
+              << std::endl ;
+
     thrust::device_ptr<S>  tptr = thrust::device_pointer_cast(m_target_devptr) ;
     m_target = thrust::device_vector<S>(tptr, tptr+targetSize);
+
+    unsigned int sequenceSize = getSequenceSize();    
+    std::cout << "ThrustIndex::init "
+              << " sequence_itemsize " << m_sequence_itemsize  
+              << " sequenceSize " << sequenceSize  
+              << std::endl ;
+
+    thrust::device_ptr<T>  sptr = thrust::device_pointer_cast(m_sequence_devptr) ;
+    m_sequence = thrust::device_vector<T>(sptr, sptr+sequenceSize);
+
 }
 
 template<typename T,typename S>
-void ThrustIndex<T,S>::indexHistory(T* history_devptr, unsigned int target_offset)
+void ThrustIndex<T,S>::indexHistory(unsigned int offset)
 {
-    m_history = new ThrustHistogram<T,S>(history_devptr, m_num_elements, m_target_itemsize, target_offset) ;
-    //m_history->dumpSequence("ThrustIndex::indexHistory", 100);
-    m_history->createHistogram();
-    m_history->apply( m_target ); 
+    m_history = new ThrustHistogram<T,S>("ThrustHistogramHistory", m_num_elements, m_sequence_itemsize, offset, m_target_itemsize, offset) ;
+    m_history->createHistogram( m_sequence );
+    m_history->apply( m_sequence, m_target ); 
 }
 
 template<typename T,typename S>
-void ThrustIndex<T,S>::indexMaterial(T* material_devptr, unsigned int target_offset)
+void ThrustIndex<T,S>::indexMaterial(unsigned int offset)
 {
-    m_material = new ThrustHistogram<T,S>(material_devptr, m_num_elements, m_target_itemsize, target_offset) ;
-    //m_material->dumpSequence("ThrustIndex::indexMaterial", 100);
-    m_material->createHistogram();
-    m_material->apply( m_target ); 
+    m_material = new ThrustHistogram<T,S>("ThrustHistogramMaterial", m_num_elements, m_sequence_itemsize, offset, m_target_itemsize, offset) ;
+    m_material->createHistogram( m_sequence );
+    m_material->apply( m_sequence, m_target ); 
 }
 
 template<typename T,typename S>
@@ -58,6 +72,16 @@ NPY<S>* ThrustIndex<T,S>::makeTargetArray()
     thrust::host_vector<S> target = m_target ;                // full pullback, expensive 
     return NPY<S>::make_scalar(target.size(), target.data()); 
 }
+
+
+template<typename T,typename S>
+NPY<T>* ThrustIndex<T,S>::makeSequenceArray()
+{
+    thrust::host_vector<T> history = m_sequence ;   // full pullback, expensive 
+    // ONLY FOR DEBUGGING
+    return NPY<T>::make_scalar(history.size(), history.data()); 
+}
+
 
 
 template<typename T,typename S>
@@ -79,6 +103,26 @@ void ThrustIndex<T,S>::dumpTarget(const char* msg, unsigned int n)
           idx++ ;
     }
 }
+
+
+template<typename T,typename S>
+void ThrustIndex<T,S>::dumpSequence(const char* msg, unsigned int n)
+{
+    LOG(info) << msg << " " << n ; 
+
+    thrust::host_vector<T> sequence(n) ;
+    thrust::copy( m_sequence.begin(), m_sequence.begin() + n , sequence.begin());
+
+    unsigned int idx(0) ; 
+    for(typename thrust::host_vector<T>::iterator it=sequence.begin() ; it != sequence.end() ; it++)
+    {
+          std::cout 
+                      << std::setw(5) << idx 
+                      << std::setw(20) << std::hex << *it
+                      << std::endl ; 
+    }
+}
+
 
 
 

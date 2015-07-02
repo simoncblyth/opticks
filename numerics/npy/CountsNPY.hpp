@@ -37,7 +37,7 @@ inline CountsNPY<T>::CountsNPY(const char* name)
 } 
 
 template<typename T>
-inline std::vector<std::pair<std::string,T>>& CountsNPY<T>::counts()
+inline std::vector<std::pair<std::string,T> >& CountsNPY<T>::counts()
 {
      return m_counts ; 
 } 

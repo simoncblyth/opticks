@@ -40,11 +40,12 @@ class SequenceNPY {
    public:  
        Index*                makeHexIndex(const char* itemtype);
    public:  
-       void                  indexSequences();
+       void                  indexSequences(unsigned int maxidx=32);
    public:  
        void                  dumpUniqueHistories();
        void                  countMaterials();
    public:  
+       void                  setSeqIdx(NPY<unsigned char>* seqidx);
        NPY<unsigned char>*   getSeqIdx();
        Index*                getSeqHis(); 
        Index*                getSeqHisHex(); 
@@ -65,7 +66,7 @@ class SequenceNPY {
         Index* makeSequenceCountsIndex(
                Types::Item_t etype, 
                std::vector< std::pair<std::string, unsigned int> >& vp,
-               unsigned int cutoff, 
+               unsigned long maxidx=32, 
                bool hex=false
                );
 
@@ -147,6 +148,13 @@ inline NPY<unsigned long long>* SequenceNPY::getSeqHisNpy()
 }
 
 
-
+inline void SequenceNPY::setSeqIdx(NPY<unsigned char>* seqidx)
+{
+    m_seqidx = seqidx ;
+}
+inline NPY<unsigned char>* SequenceNPY::getSeqIdx()
+{
+    return m_seqidx ; 
+}
 
 

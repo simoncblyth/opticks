@@ -79,8 +79,8 @@ class OptiXEngine : public Touchable {
         void cleanUp();
 
     public:
-        //CUdeviceptr getHistoryBufferDevicePointer(unsigned int optix_device_number=0);
-        optix::Buffer& getHistoryBuffer();
+        optix::Buffer& getSequenceBuffer();
+        optix::Buffer& getRecselBuffer();
 
     public:
        // fulfil Touchable interface
@@ -123,10 +123,10 @@ class OptiXEngine : public Touchable {
         optix::Buffer         m_genstep_buffer ; 
         optix::Buffer         m_photon_buffer ; 
         optix::Buffer         m_record_buffer ; 
-        optix::Buffer         m_history_buffer ; 
+        optix::Buffer         m_sequence_buffer ; 
         optix::Buffer         m_touch_buffer ; 
+        optix::Buffer         m_recsel_buffer ; 
         optix::GeometryGroup  m_geometry_group ;
-        //optix::Aabb           m_aabb;
 
         unsigned int          m_width ;
         unsigned int          m_height ;
@@ -280,10 +280,15 @@ inline NPYBase* OptiXEngine::getIDomain()
 
 
 
-inline optix::Buffer& OptiXEngine::getHistoryBuffer()
+inline optix::Buffer& OptiXEngine::getSequenceBuffer()
 {
-    return m_history_buffer ; 
+    return m_sequence_buffer ; 
 }
+inline optix::Buffer& OptiXEngine::getRecselBuffer()
+{
+    return m_recsel_buffer ; 
+}
+
 
 
 

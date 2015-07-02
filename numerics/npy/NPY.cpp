@@ -297,6 +297,36 @@ NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
 
 
 
+template <typename T>
+NPY<T>* NPY<T>::make_vec2(unsigned int ni, unsigned int nj, T value)
+{
+    std::string metadata = "{}";
+    std::vector<T> data;
+    std::vector<int> shape ; 
+
+    unsigned int nk = 2 ;
+ 
+    shape.push_back(ni);
+    shape.push_back(nj);
+    shape.push_back(nk);
+
+    for(int i=0 ; i < ni ; i++ ){
+    for(int j=0 ; j < nj ; j++ ){
+    for(int k=0 ; k < nk ; k++ )
+    { 
+        data.push_back(value);
+    }
+    } 
+    }
+
+    NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
+    return npy ;
+}
+
+
+
+
+
 
 
 template <typename T>

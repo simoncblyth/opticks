@@ -224,7 +224,7 @@ void Scene::uploadEvt()
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
 
     m_photon_renderer->upload(m_evt->getPhotonAttr());
-    m_photon_renderer->upload(m_evt->getHistoryAttr());
+    m_photon_renderer->upload(m_evt->getSequenceAttr());
 
     uploadRecordAttr(m_evt->getRecordAttr());
 }
@@ -235,7 +235,7 @@ void Scene::uploadSelection()
     // this was used after the slow SequenceNPY (CPU side std::map based photon history/material indexing)
     assert(m_evt);
     LOG(info)<<"Scene::uploadSelection";
-    uploadRecordAttr(m_evt->getSelectionAttr()); 
+    uploadRecordAttr(m_evt->getRecselAttr()); 
 }
 
 

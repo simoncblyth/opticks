@@ -13,31 +13,31 @@ class NumpyEvt {
        static const char* photon ;
        static const char* record  ;
       
-       typedef unsigned long long History_t ;
+       typedef unsigned long long Sequence_t ;
 
    public:
        void setGenstepData(NPY<float>* genstep_data);
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
    public:
-       void setSelectionData(NPY<unsigned char>* selection_data);
+       void setRecselData(NPY<unsigned char>* recsel_data);
    private:
        // only set internally 
        void setPhotonData(NPY<float>* photon_data);
-       void setHistoryData(NPY<History_t>* history_data);
+       void setSequenceData(NPY<Sequence_t>* history_data);
        void setRecordData(NPY<short>* record_data);
 
    public:
        NPY<float>*  getGenstepData();
        NPY<float>*  getPhotonData();
        NPY<short>*  getRecordData();
-       NPY<unsigned char>*  getSelectionData();
-       NPY<History_t>*  getHistoryData();
+       NPY<unsigned char>*  getRecselData();
+       NPY<Sequence_t>*  getSequenceData();
 
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
        MultiViewNPY* getRecordAttr();
-       MultiViewNPY* getSelectionAttr();
-       MultiViewNPY* getHistoryAttr();
+       MultiViewNPY* getRecselAttr();
+       MultiViewNPY* getSequenceAttr();
 
        ViewNPY* operator [](const char* spec);
 
@@ -55,14 +55,14 @@ class NumpyEvt {
        NPY<float>*   m_genstep_data ;
        NPY<float>*   m_photon_data ;
        NPY<short>*   m_record_data ;
-       NPY<unsigned char>*   m_selection_data ;
-       NPY<History_t>*   m_history_data ;
+       NPY<unsigned char>*   m_recsel_data ;
+       NPY<Sequence_t>*   m_sequence_data ;
 
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
        MultiViewNPY*   m_record_attr  ;
-       MultiViewNPY*   m_selection_attr  ;
-       MultiViewNPY*   m_history_attr  ;
+       MultiViewNPY*   m_recsel_attr  ;
+       MultiViewNPY*   m_sequence_attr  ;
 
        unsigned int   m_num_photons ; 
        unsigned int   m_maxrec ; 
@@ -75,13 +75,13 @@ inline NumpyEvt::NumpyEvt()
           m_genstep_data(NULL),
           m_photon_data(NULL),
           m_record_data(NULL),
-          m_selection_data(NULL),
-          m_history_data(NULL),
+          m_recsel_data(NULL),
+          m_sequence_data(NULL),
           m_genstep_attr(NULL),
           m_photon_attr(NULL),
           m_record_attr(NULL),
-          m_selection_attr(NULL),
-          m_history_attr(NULL),
+          m_recsel_attr(NULL),
+          m_sequence_attr(NULL),
           m_num_photons(0),
           m_maxrec(1)
 {
@@ -139,23 +139,23 @@ inline MultiViewNPY* NumpyEvt::getRecordAttr()
 
 
 
-inline NPY<unsigned char>* NumpyEvt::getSelectionData()
+inline NPY<unsigned char>* NumpyEvt::getRecselData()
 {
-    return m_selection_data ;
+    return m_recsel_data ;
 }
-inline MultiViewNPY* NumpyEvt::getSelectionAttr()
+inline MultiViewNPY* NumpyEvt::getRecselAttr()
 {
-    return m_selection_attr ;
+    return m_recsel_attr ;
 }
 
 
-inline NPY<NumpyEvt::History_t>* NumpyEvt::getHistoryData()
+inline NPY<NumpyEvt::Sequence_t>* NumpyEvt::getSequenceData()
 {
-    return m_history_data ;
+    return m_sequence_data ;
 }
-inline MultiViewNPY* NumpyEvt::getHistoryAttr()
+inline MultiViewNPY* NumpyEvt::getSequenceAttr()
 {
-    return m_history_attr ;
+    return m_sequence_attr ;
 }
 
 

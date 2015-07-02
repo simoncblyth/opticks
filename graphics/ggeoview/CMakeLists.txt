@@ -122,6 +122,7 @@ set(LIBRARIES
       ${GGeo_LIBRARIES} 
       ${OptiXRap_LIBRARIES}
       ${GGeo_LIBRARIES}
+      ${CUDA_LIBRARIES}
       ${CUDAWrap_LIBRARIES}
       ${ImGui_LIBRARIES}
       ${Bregex_LIBRARIES}
@@ -129,6 +130,7 @@ set(LIBRARIES
 
       ssl
       crypto 
+
 )
 
 

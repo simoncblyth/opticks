@@ -2,44 +2,59 @@
 
 #include "stdlib.h"
 #include "ThrustHistogram.hh"
+class Index ; 
 
 
 template <typename T, typename S>
 class ThrustIndex {
    public:
-       static void version();
+         static void version();
    public:
-       ThrustIndex(S* target_devptr, unsigned int num_elements, unsigned int target_itemsize=4);
-       unsigned int getTargetSize();
+         ThrustIndex(T* sequence_devptr, S* target_devptr, unsigned int num_elements, unsigned int sequence_itemsize=2, unsigned int target_itemsize=4);
    public:
-       void indexHistory( T* history_devptr,  unsigned int target_offset=0 );
-       void indexMaterial(T* material_devptr, unsigned int target_offset=1 );
-       void dumpTarget(   const char* msg="ThrustIndex::dumpTarget", unsigned int n=20);
+         unsigned int getSequenceSize();
+         unsigned int getTargetSize();
    public:
-       ThrustHistogram<T,S>* getHistory();
-       ThrustHistogram<T,S>* getMaterial();
+         void indexHistory( unsigned int offset=0 );
+         void indexMaterial(unsigned int offset=1 );
+         void dumpTarget(   const char* msg="ThrustIndex::dumpTarget", unsigned int n=20);
+         void dumpSequence( const char* msg="ThrustIndex::dumpSequence", unsigned int n=100);
    public:
-       NPY<S>* makeTargetArray();
-
-   private:
-       ThrustHistogram<T,S>* m_history ; 
-       ThrustHistogram<T,S>* m_material ; 
+         ThrustHistogram<T,S>* getHistory();
+         ThrustHistogram<T,S>* getMaterial();
+         Index*                getHistoryIndex();
+         Index*                getMaterialIndex();
+   public:
+         NPY<T>*               makeSequenceArray();
+         NPY<S>*               makeTargetArray();
    private:
          void init();
    private:
-         thrust::device_vector<S> m_target;
+         thrust::device_vector<T>  m_sequence ;
+         thrust::device_vector<S>  m_target;
    private:
-         S*                       m_target_devptr ;
-         unsigned int             m_num_elements ;
-         unsigned int             m_target_itemsize ;
+         T*                        m_sequence_devptr ;
+         S*                        m_target_devptr ;
+   private:
+         unsigned int              m_sequence_itemsize ;
+         unsigned int              m_target_itemsize ;
+   private:
+         unsigned int              m_num_elements ;
+   private:
+         ThrustHistogram<T,S>*     m_history ; 
+         ThrustHistogram<T,S>*     m_material ; 
+
+
 };
 
 template <typename T, typename S>
-inline ThrustIndex<T,S>::ThrustIndex(S* target_devptr, unsigned int num_elements, unsigned int target_itemsize) 
+inline ThrustIndex<T,S>::ThrustIndex(T* sequence_devptr, S* target_devptr, unsigned int num_elements, unsigned int sequence_itemsize, unsigned int target_itemsize) 
     :
+    m_sequence_devptr(sequence_devptr),
     m_target_devptr(target_devptr),
-    m_num_elements(num_elements),
+    m_sequence_itemsize(sequence_itemsize),
     m_target_itemsize(target_itemsize),
+    m_num_elements(num_elements),
     m_history(NULL),
     m_material(NULL)
 {
@@ -52,6 +67,16 @@ inline unsigned int ThrustIndex<T,S>::getTargetSize()
 {
     return m_num_elements*m_target_itemsize ; 
 }
+
+template <typename T, typename S>
+inline unsigned int ThrustIndex<T,S>::getSequenceSize()
+{
+    return m_num_elements*m_sequence_itemsize ; 
+}
+
+
+
+
 template <typename T, typename S>
 inline ThrustHistogram<T,S>* ThrustIndex<T,S>::getHistory() 
 {
@@ -61,5 +86,18 @@ template <typename T, typename S>
 inline ThrustHistogram<T,S>* ThrustIndex<T,S>::getMaterial() 
 {
     return m_material ;
+}
+
+
+
+template <typename T, typename S>
+inline Index* ThrustIndex<T,S>::getMaterialIndex() 
+{
+    return m_material->getIndex() ;
+}
+template <typename T, typename S>
+inline Index* ThrustIndex<T,S>::getHistoryIndex() 
+{
+    return m_history->getIndex() ;
 }
 

@@ -1,3 +1,4 @@
+#include "SequenceNPY.hpp"
 #include "uif.h"
 #include "NPY.hpp"
 #include "RecordsNPY.hpp"
@@ -105,7 +106,7 @@ void SequenceNPY::countMaterials()
 }
 
 
-void SequenceNPY::indexSequences()
+void SequenceNPY::indexSequences(unsigned int maxidx)
 {
     LOG(info)<<"SequenceNPY::indexSequences START ... this takes a while " ; 
 
@@ -169,22 +170,22 @@ void SequenceNPY::indexSequences()
 
     m_history_counts.add(suh) ;
     m_history_counts.sort(false) ;
-    m_history_counts.dump("m_history_counts", 32) ;
+    m_history_counts.dump("m_history_counts", maxidx) ;
 
-    m_seqhis = makeSequenceCountsIndex( Types::HISTORYSEQ,  m_history_counts.counts(), 1000 );
+    m_seqhis = makeSequenceCountsIndex( Types::HISTORYSEQ,  m_history_counts.counts(), maxidx );
     m_seqhis_npy = makeSequenceCountsArray(Types::HISTORYSEQ,  m_history_counts.counts()  );
-
-    fillSequenceIndex( e_seqhis, m_seqhis, svh );
-
 
 
     m_material_counts.add(sum) ;
     m_material_counts.sort(false) ;
-    m_material_counts.dump("m_material_counts", 32) ;
+    m_material_counts.dump("m_material_counts", maxidx) ;
 
-    m_seqmat = makeSequenceCountsIndex( Types::MATERIALSEQ,  m_material_counts.counts() , 1000 );
+    m_seqmat = makeSequenceCountsIndex( Types::MATERIALSEQ,  m_material_counts.counts(), maxidx );
     m_seqmat->dump("SequenceNPY::indexSequences (seqmat)");
 
+
+    assert(m_seqidx);
+    fillSequenceIndex( e_seqhis, m_seqhis, svh );
     fillSequenceIndex( e_seqmat, m_seqmat, svm );
 
 
@@ -193,28 +194,19 @@ void SequenceNPY::indexSequences()
 
 
 
-
-
-NPY<unsigned char>* SequenceNPY::getSeqIdx()
-{
-    if(!m_seqidx)
-    { 
-        unsigned int nr = m_recs->getRecords()->getShape(0) ;
-        m_seqidx = NPY<unsigned char>::make_vec4(nr,1,0) ;
-    }
-    return m_seqidx ; 
-}
-
-
 void SequenceNPY::fillSequenceIndex(
        unsigned int k,
        Index* idx, 
        std::map<std::string, std::vector<unsigned int> >&  sv 
 )
 {
+    // uses the vectors of photon_id to fill in the sequence 
+    // index repeating the index for maxrec items 
+
     assert( k < 4 );
 
-    NPY<unsigned char>* seqidx = getSeqIdx(); // creates if not exists
+    NPY<unsigned char>* seqidx = getSeqIdx(); 
+    assert(seqidx && "must setSeqIdx before can populate the index");
 
     unsigned int nseq(0) ; 
     for(unsigned int iseq=0 ; iseq < idx->getNumItems() ; iseq++)
@@ -332,7 +324,7 @@ NPY<unsigned long long>* SequenceNPY::makeSequenceCountsArray(
 Index* SequenceNPY::makeSequenceCountsIndex(
        Types::Item_t etype, 
        std::vector< std::pair<std::string, unsigned int> >& vp,
-       unsigned int cutoff, 
+       unsigned long maxidx, 
        bool hex
        )
 {
@@ -342,6 +334,7 @@ Index* SequenceNPY::makeSequenceCountsIndex(
     LOG(info) << "SequenceNPY::makeSequenceCountsIndex " 
               << " itemname " << itemname 
               << " idxname " << idxname 
+              << " maxidx " << maxidx 
               ;
     Index* idx = new Index(idxname.c_str());
 
@@ -349,7 +342,9 @@ Index* SequenceNPY::makeSequenceCountsIndex(
     // populate idx with the sequences having greater than cutoff ocurrences
     unsigned int total(0);
     typedef std::pair<std::string, unsigned int> PSU ;
-    for(unsigned int i=0 ; i < vp.size() ; i++)
+
+    // index truncation is a feature, not a limitation
+    for(unsigned int i=0 ; i < std::min(maxidx, vp.size()) ; i++)
     {
         PSU p = vp[i];
         total += p.second ;  
@@ -362,16 +357,13 @@ Index* SequenceNPY::makeSequenceCountsIndex(
             xkey = as_hex(xseq);
         }
 
-        if(p.second > cutoff)
-        {
-             idx->add( xkey.c_str(), i, false ); // dont sort names while adding
-        }
+        idx->add( xkey.c_str(), i, false ); // dont sort names while adding
     }
 
     idx->sortNames();
 
 
-    for(unsigned int i=0 ; i < std::min(30u, idx->getNumItems()) ; i++)
+    for(unsigned int i=0 ; i < idx->getNumItems() ; i++)
     {
          std::string label = idx->getNameLocal(i+1) ;
          std::string dlabel = m_recs->decodeSequenceString(label, etype, hex);
@@ -388,7 +380,7 @@ Index* SequenceNPY::makeSequenceCountsIndex(
     std::cout 
               << "SequenceNPY::makeSequenceCountsIndex  DONE " 
               << " total " << total 
-              << " cutoff " << cutoff 
+              << " maxidx " << maxidx 
               << " itemname " << itemname
               << std::endl ; 
 

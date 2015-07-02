@@ -438,30 +438,57 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     }
 
  
-    NPY<unsigned long long>* history = evt->getHistoryData();
+    NPY<unsigned long long>* sequence = evt->getSequenceData();
     //printf(" ul %lu ull %lu \n", sizeof(unsigned long), sizeof(unsigned long long) );
     assert(sizeof(unsigned char) == 1);
     assert(sizeof(unsigned short) == 2);
     assert(sizeof(unsigned int) == 4);
     assert(sizeof(unsigned long) == 8);
     assert(sizeof(unsigned long long) == 8);
-    assert(sizeof(NumpyEvt::History_t) == 8);
+    assert(sizeof(NumpyEvt::Sequence_t) == 8);
 
-    int history_buffer_id = history ? history->getBufferId() : -1 ;
-    if(history_buffer_id > -1)
+    int sequence_buffer_id = sequence ? sequence->getBufferId() : -1 ;
+    if(sequence_buffer_id > -1)
     {
-        unsigned int history_count = history->getShape(0);
-        LOG(info)<<"OptiXEngine::initGenerate  history buffer count: " << history_count ;
-        m_history_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, history_buffer_id);
-        m_history_buffer->setFormat(RT_FORMAT_USER);
-        m_history_buffer->setElementSize(sizeof(NumpyEvt::History_t));
-        m_history_buffer->setSize( history_count );
-        m_context["history_buffer"]->set( m_history_buffer );
+        unsigned int sequence_count   = sequence->getShape(0);
+        unsigned int sequence_numitem = sequence->getShape(1);  
+        unsigned int sequence_totitem = sequence_count * sequence_numitem ;  
+        LOG(info)<<"OptiXEngine::initGenerate  sequence buffer count: " << sequence_count ;
+        m_sequence_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, sequence_buffer_id);
+        m_sequence_buffer->setFormat(RT_FORMAT_USER);
+        m_sequence_buffer->setElementSize(sizeof(NumpyEvt::Sequence_t));
+        m_sequence_buffer->setSize( sequence_totitem );
+        m_context["sequence_buffer"]->set( m_sequence_buffer );
     } 
     else
     {
-        LOG(warning) << "OptiXEngine::initGenerate no history buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
+        LOG(warning) << "OptiXEngine::initGenerate no sequence buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
     }
+
+
+    NPY<unsigned char>* recsel = evt->getRecselData();
+    int recsel_buffer_id = recsel ? recsel->getBufferId() : -1 ;
+    if(recsel_buffer_id > -1)
+    {
+        unsigned int recsel_count = recsel->getShape(0);
+        unsigned int recsel_numquad = recsel->getShape(1);  
+        unsigned int recsel_totquad = recsel_count * recsel_numquad ;  
+
+        LOG(info)<<"OptiXEngine::initGenerate  recsel buffer count: " << recsel_count ;
+        m_recsel_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, recsel_buffer_id);
+        m_recsel_buffer->setFormat(RT_FORMAT_UNSIGNED_BYTE4);
+        m_recsel_buffer->setSize( recsel_totquad );
+        m_context["recsel_buffer"]->set( m_recsel_buffer );
+    } 
+    else
+    {
+        LOG(warning) << "OptiXEngine::initGenerate no recsel buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
+    }
+
+
+
+
+
 
 }
 
@@ -494,7 +521,6 @@ CUdeviceptr OptiXEngine::getHistoryBufferDevicePointer(unsigned int optix_device
         * post generate 
  
 */
-    return m_history_buffer->getDevicePointer(optix_device_number);
 }
 #endif
 

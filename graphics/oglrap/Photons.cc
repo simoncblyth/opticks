@@ -4,7 +4,6 @@
 // npy-
 #include "PhotonsNPY.hpp"
 #include "BoundariesNPY.hpp"
-#include "SequenceNPY.hpp"
 #include "Index.hpp"
 
 
@@ -13,14 +12,11 @@
 #endif
 
 
-Photons::Photons(PhotonsNPY* photons, BoundariesNPY* boundaries, SequenceNPY* sequence)
-    :
-    m_photons(photons),
-    m_boundaries(boundaries),
-    m_sequence(sequence),
-    m_types(photons->getTypes())
+void Photons::init()
 {
+    m_types = m_photons->getTypes() ;
 }
+
 
 void Photons::gui()
 {
@@ -37,27 +33,22 @@ void Photons::gui()
         gui_flag_selection();
     }
 
-    if(m_sequence)
+    if(m_seqhis)
     {
-        Index* seqhis = m_sequence->getSeqHis();
-        if(seqhis)
+        ImGui::Spacing();
+        if (ImGui::CollapsingHeader("Photon Flag Sequence Selection"))
         {
-            ImGui::Spacing();
-            if (ImGui::CollapsingHeader("Photon Flag Sequence Selection"))
-            {
-                gui_radio(seqhis);
-            }
-        } 
+            gui_radio(m_seqhis);
+        }
+    }
 
-        Index* seqmat = m_sequence->getSeqMat();
-        if(seqmat)
+    if(m_seqmat)
+    {
+        ImGui::Spacing();
+        if (ImGui::CollapsingHeader("Photon Material Sequence Selection"))
         {
-            ImGui::Spacing();
-            if (ImGui::CollapsingHeader("Photon Material Sequence Selection"))
-            {
-                gui_radio(seqmat);
-            }
-        } 
+            gui_radio(m_seqmat);
+        }
     }
 #endif
 }
