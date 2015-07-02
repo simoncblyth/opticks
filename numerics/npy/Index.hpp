@@ -20,7 +20,7 @@ class Index {
         void loadMaps(const char* idpath);
         void crossreference();
    public:
-        void add(const char* name, unsigned int source);
+        void add(const char* name, unsigned int source, bool sort=true);
         void sortNames(); // currently by ascending local index : ie addition order
         std::vector<std::string>& getNames();
         bool operator() (const std::string& a, const std::string& b);

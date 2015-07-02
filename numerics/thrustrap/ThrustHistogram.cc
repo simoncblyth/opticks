@@ -59,6 +59,29 @@ void ThrustHistogram<T,S>::pullback(unsigned int n)
 }
 
 
+
+template<typename T,typename S>
+NPY<T>* ThrustHistogram<T,S>::makeSequenceIndexArray()
+{
+    unsigned int size = m_values.size() ;
+    pullback(size);  // full pullback 
+
+    unsigned int ni = size ;
+    unsigned int nj = 1 ; 
+    unsigned int nk = 2 ; 
+
+    std::vector<T> values ;  
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+         values.push_back(m_values_h[i]);
+         values.push_back(m_counts_h[i]);
+    }
+    return NPY<T>::make(ni, nj, nk, values.data() ); 
+}
+
+
+
+
 template <typename T,typename S>
 void ThrustHistogram<T,S>::apply(thrust::device_vector<S>& target)
 {
@@ -93,6 +116,13 @@ NPY<T>* ThrustHistogram<T,S>::makeSequenceArray()
     thrust::host_vector<T> history = m_sequence ;   // full pullback, expensive 
     return NPY<T>::make_scalar(history.size(), history.data()); 
 }
+
+
+
+
+
+
+
 
 
 template<typename T,typename S>

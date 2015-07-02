@@ -209,6 +209,21 @@ NPY<T>* NPY<T>::make_scalar(unsigned int ni, T* values)
 
 
 
+template <typename T>
+NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, T* values)
+{
+    std::vector<int> shape ; 
+    shape.push_back(ni);
+    shape.push_back(nj);
+    shape.push_back(nk);
+
+    std::string metadata = "{}";
+
+    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
+    return npy ; 
+}
+
+
 
 
 

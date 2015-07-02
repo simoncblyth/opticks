@@ -40,6 +40,9 @@ int main()
     NPY<S>* target = idx.makeTargetArray();
     target->setVerbose(); 
     target->save("/tmp/ThrustIndexTest.npy");
+ 
+    NPY<T>* hsia = idx.getHistory()->makeSequenceIndexArray();
+    hsia->save("/tmp/ThrustSequenceIndexArray.npy");
 
     cudaDeviceSynchronize();
 
@@ -67,6 +70,51 @@ array([[ 15,  15,   0,   0],
        [  1,   1,   0,   0],
        [  1,   1,   0,   0],
        [  1,   1,   0,   0]], dtype=uint8)
+
+
+
+Hmm comparing indices with SequenceNPY, get correspondence
+until the counts are matching where run into unstable
+sort order differences::
+
+
+   s = np.load("/tmp/seqhis.npy")
+   t = np.load("/tmp/ThrustSequenceIndexArray.npy")
+   t[:40,0] == s[:40,0]
+
+
+   In [21]: np.all( t[:40,0] == s[:40,0] )
+   Out[21]: True
+
+    In [23]: s[40:50,0]
+    Out[23]: 
+    array([[  1288490177,          837],
+           [879608812881,          786],
+           [879609298113,          762],
+           [      283985,          711],
+           [810621389905,          607],
+           [879324089425,          600],
+           [879592524993,          599],
+           [     5031249,          597],
+           [329853486417,          591],
+           [879609273425,          591]], dtype=uint64)
+
+    In [24]: t[40:50,0]
+    Out[24]: 
+    array([[  1288490177,          837],
+           [879608812881,          786],
+           [879609298113,          762],
+           [      283985,          711],
+           [810621389905,          607],
+           [879324089425,          600],
+           [879592524993,          599],
+           [     5031249,          597],
+           [879609273425,          591],
+           [329853486417,          591]], dtype=uint64)
+
+
+So compare at seqidx level..
+
 
 */
 

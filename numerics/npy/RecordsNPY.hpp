@@ -43,11 +43,11 @@ class RecordsNPY {
        void setWavelengthDomain(glm::vec4& wd);
 
    public:
-       unsigned long long convertSequenceString(std::string& seq, Types::Item_t etype);
-       std::string decodeSequenceString(std::string& seq, Types::Item_t etype);
+       unsigned long long convertSequenceString(std::string& seq, Types::Item_t etype, bool hex=false);
+       std::string decodeSequenceString(std::string& seq, Types::Item_t etype, bool hex=false);
        std::string getSequenceString(unsigned int photon_id, Types::Item_t etype);
        unsigned long long getSequence(unsigned int photon_id, Types::Item_t etype);
-
+       void prepSequenceString(std::string& lseq, unsigned int& elen, unsigned int& nelem, bool hex);
 
    private:
        NPY<short>*      m_records ; 

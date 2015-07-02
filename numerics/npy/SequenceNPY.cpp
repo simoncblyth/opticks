@@ -1,4 +1,3 @@
-#include "SequenceNPY.hpp"
 #include "uif.h"
 #include "NPY.hpp"
 #include "RecordsNPY.hpp"
@@ -161,58 +160,36 @@ void SequenceNPY::indexSequences()
          // collect vectors of photon_id for each distinct sequence
          svh[seqhis].push_back(photon_id); 
          svm[seqmat].push_back(photon_id); 
-
-         //
-         // no need to collect lists of photon_id in thrust approach 
-         // as the sequence bigint is created in place within a per-photon history_buffer 
-         //
-         // but will need to pass over all those doing a lookup from the sorted 
-         // frequency histogram to the "bin" index
-         // 
-         // actually maybe not...  
-         //
-         //   * frequency histogram is a small structure with 2/3 equal length lists
-         //     (could be fixed length, with an "Other")
-         //
-         //     * keys   : sequence big ints 
-         //     * counts : how many occurences of that sequence
-         //     * values : indices in asc/desc count order
-         //
-         // can do this lookup as needed by furnishing the 
-         // frequency histogram as uniform buffer or texture to the shader ?
-         // ... hmm not so easy as its a sparse histogram, more of a map  
-         //
-         // maybe have to resort to plain CUDA (or OptiX launch without rtTrace) 
-         // to do the lookup ? 
-         //
     }
     assert( mismatch.size() == 0);
-
-    printf("SequenceNPY::indexSequences photons %u mismatch %lu \n", ni, mismatch.size());
-    dumpMaskCounts("SequenceNPY::indexSequences histories dumpMaskCounts", Types::HISTORY, uuh, 1 );
-    dumpMaskCounts("SequenceNPY::indexSequences materials dumpMaskCounts", Types::MATERIAL, uum, 1000 );
-    dumpSequenceCounts("SequenceNPY::indexSequences seqhis dumpSequenceCounts", Types::HISTORY, suh , svh, 1000);
-    dumpSequenceCounts("SequenceNPY::indexSequences seqmat dumpSequenceCounts", Types::MATERIAL, sum , svm, 1000);
+    LOG(info) << "SequenceNPY::indexSequences photon loop DONE photons " <<  ni ;
 
 
-    Index* idxh = makeSequenceCountsIndex( Types::HISTORYSEQ,  suh , svh, 1000 );
-    idxh->dump("SequenceNPY::indexSequences");
+    // order by counts of that sequence
 
-    Index* hdxh = makeSequenceCountsIndex( Types::HISTORYSEQ,  suh , svh, 0 , true  ); // hex keys with no cutoff for debug comparisons  
+    m_history_counts.add(suh) ;
+    m_history_counts.sort(false) ;
+    m_history_counts.dump("m_history_counts", 32) ;
 
-    fillSequenceIndex( e_seqhis , idxh, svh );
+    m_seqhis = makeSequenceCountsIndex( Types::HISTORYSEQ,  m_history_counts.counts(), 1000 );
+    m_seqhis_npy = makeSequenceCountsArray(Types::HISTORYSEQ,  m_history_counts.counts()  );
 
-    Index* idxm = makeSequenceCountsIndex( Types::MATERIALSEQ,  sum , svm, 1000 );
-    idxm->dump("SequenceNPY::indexSequences");
-    fillSequenceIndex( e_seqmat, idxm, svm );
+    fillSequenceIndex( e_seqhis, m_seqhis, svh );
 
-    m_seqhis_hex = hdxh ;
-    m_seqhis = idxh ; 
-    m_seqmat = idxm ; 
+
+
+    m_material_counts.add(sum) ;
+    m_material_counts.sort(false) ;
+    m_material_counts.dump("m_material_counts", 32) ;
+
+    m_seqmat = makeSequenceCountsIndex( Types::MATERIALSEQ,  m_material_counts.counts() , 1000 );
+    m_seqmat->dump("SequenceNPY::indexSequences (seqmat)");
+
+    fillSequenceIndex( e_seqmat, m_seqmat, svm );
+
 
     LOG(info)<<"SequenceNPY::indexSequences DONE " ; 
 }
-
 
 
 
@@ -327,63 +304,78 @@ bool SequenceNPY::su_second_value_order(const std::pair<std::string,unsigned int
 }
 
 
+
+NPY<unsigned long long>* SequenceNPY::makeSequenceCountsArray( 
+       Types::Item_t etype, 
+       std::vector< std::pair<std::string, unsigned int> >& vp
+     ) 
+{
+    typedef std::pair<std::string, unsigned int> PSU ;
+    unsigned int ni = vp.size() ;
+    unsigned int nj = 1 ; 
+    unsigned int nk = 2 ; 
+
+    std::vector<unsigned long long> values ; 
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        PSU p = vp[i];
+        unsigned long long xseq = m_recs->convertSequenceString( p.first, etype, false ) ;
+        values.push_back(xseq);
+        values.push_back(p.second);
+    } 
+    return NPY<unsigned long long>::make(ni, nj, nk, values.data() ); 
+}
+
+
+
+
 Index* SequenceNPY::makeSequenceCountsIndex(
        Types::Item_t etype, 
-       std::map<std::string, unsigned int>& su,
-       std::map<std::string, std::vector<unsigned int> >&  sv,
+       std::vector< std::pair<std::string, unsigned int> >& vp,
        unsigned int cutoff, 
        bool hex
        )
 {
     const char* itemname = m_types->getItemName(etype);
     std::string idxname = hex ? std::string("Hex") + itemname : itemname ;  
+
+    LOG(info) << "SequenceNPY::makeSequenceCountsIndex " 
+              << " itemname " << itemname 
+              << " idxname " << idxname 
+              ;
     Index* idx = new Index(idxname.c_str());
-
-    typedef std::map<std::string, std::vector<unsigned int> >  MSV ;
-    typedef std::map<std::string, unsigned int> MSU ;
-    typedef std::pair<std::string, unsigned int> PSU ;
-
-    // order by counts of that sequence
-    std::vector<PSU> pairs ; 
-    for(MSU::iterator it=su.begin() ; it != su.end() ; it++) pairs.push_back(*it);
-    std::sort(pairs.begin(), pairs.end(), su_second_value_order );
 
 
     // populate idx with the sequences having greater than cutoff ocurrences
     unsigned int total(0);
-    for(unsigned int i=0 ; i < pairs.size() ; i++)
+    typedef std::pair<std::string, unsigned int> PSU ;
+    for(unsigned int i=0 ; i < vp.size() ; i++)
     {
-        PSU p = pairs[i];
+        PSU p = vp[i];
         total += p.second ;  
-        assert( sv[p.first].size() == p.second );
 
         std::string xkey = p.first ; 
         if(hex)
         {
             // use sequence hex string as key to enable comparison with ThrustHistogram saves
-            unsigned long long xseq = m_recs->convertSequenceString( p.first, etype) ;
+            unsigned long long xseq = m_recs->convertSequenceString( p.first, etype, false ) ;
             xkey = as_hex(xseq);
         }
 
         if(p.second > cutoff)
         {
-             idx->add( xkey.c_str(), i );
+             idx->add( xkey.c_str(), i, false ); // dont sort names while adding
         }
     }
 
-    std::cout 
-              << "SequenceNPY::makeSequenceCountsIndex" 
-              << " total " << total 
-              << " cutoff " << cutoff 
-              << " itemname " << itemname
-              << std::endl ; 
+    idx->sortNames();
 
 
-    for(unsigned int i=0 ; i < idx->getNumItems() ; i++)
+    for(unsigned int i=0 ; i < std::min(30u, idx->getNumItems()) ; i++)
     {
          std::string label = idx->getNameLocal(i+1) ;
-         std::string dlabel = m_recs->decodeSequenceString(label, etype);
-         unsigned long long xseq = m_recs->convertSequenceString(label, etype);
+         std::string dlabel = m_recs->decodeSequenceString(label, etype, hex);
+         unsigned long long xseq = m_recs->convertSequenceString(label, etype, hex);
 
          std::cout << std::setw(3) << std::dec << i + 1 
                    << std::setw(18) << std::hex << xseq 
@@ -392,6 +384,13 @@ Index* SequenceNPY::makeSequenceCountsIndex(
                    << dlabel
                    << std::endl ; 
     }  
+
+    std::cout 
+              << "SequenceNPY::makeSequenceCountsIndex  DONE " 
+              << " total " << total 
+              << " cutoff " << cutoff 
+              << " itemname " << itemname
+              << std::endl ; 
 
 
     return idx ; 
@@ -442,7 +441,5 @@ void SequenceNPY::dumpSequenceCounts(const char* msg, Types::Item_t etype,
               << std::endl ; 
 
 }
-
-
 
 

@@ -3,6 +3,7 @@
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "SequenceNPY.hpp"
+#include "Index.hpp"
 
 #include "assert.h"
 #include "stdlib.h"
@@ -36,8 +37,10 @@ int main(int argc, char** argv)
 
     s.countMaterials();
     s.dumpUniqueHistories();
-    //s.indexSequences();
+    s.indexSequences();
 
+    NPY<unsigned long long>* seqhisnpy = s.getSeqHisNpy();
+    seqhisnpy->save("/tmp/SequenceNPYTest.npy");
 
     NPY<unsigned char>* seqidx = s.getSeqIdx();
     seqidx->setVerbose();

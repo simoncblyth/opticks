@@ -18,6 +18,7 @@ class ThrustHistogram {
          void dumpHistogram(const char* msg="ThrustHistogram::dumpHistogram", unsigned int n=100);
     public:
          NPY<T>* makeSequenceArray();
+         NPY<T>* makeSequenceIndexArray();
          Index* makeIndex(const char* itemtype);
     private:
          void init();

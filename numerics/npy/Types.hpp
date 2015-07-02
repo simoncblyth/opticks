@@ -93,12 +93,12 @@ class Types {
        std::string getMaterialAbbrev(std::string label);
        std::string getAbbrev(std::string label, Item_t etype);
    public:
-       std::string getHistoryAbbrevInvert(std::string label);
-       std::string getMaterialAbbrevInvert(std::string label);
-       std::string getAbbrevInvert(std::string label, Item_t etype);
-       unsigned int getHistoryAbbrevInvertAsCode(std::string label);
-       unsigned int getMaterialAbbrevInvertAsCode(std::string label);
-       unsigned int getAbbrevInvertAsCode(std::string label, Item_t etype);
+       std::string getHistoryAbbrevInvert(std::string label, bool hex=false);
+       std::string getMaterialAbbrevInvert(std::string label, bool hex=false);
+       std::string getAbbrevInvert(std::string label, Item_t etype, bool hex=false);
+       unsigned int getHistoryAbbrevInvertAsCode(std::string label, bool hex=false);
+       unsigned int getMaterialAbbrevInvertAsCode(std::string label, bool hex=false);
+       unsigned int getAbbrevInvertAsCode(std::string label, Item_t etype, bool hex=false);
 
 
    private:

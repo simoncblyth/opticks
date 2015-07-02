@@ -11,6 +11,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -276,50 +277,88 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
     return ss.str();
 }
 
-unsigned long long RecordsNPY::convertSequenceString(std::string& seq, Types::Item_t etype)
+unsigned long long RecordsNPY::convertSequenceString(std::string& seq, Types::Item_t etype, bool hex)
 {
-    const char* tail = m_types->getTail(); 
-    unsigned int elen = 2 + strlen(tail);
-    assert(seq.size() % elen == 0);
-    unsigned int nelem = seq.size()/elen ;
+    std::string lseq(seq);
+    unsigned int elen(0);
+    unsigned int nelem(0);
+    prepSequenceString(lseq, elen, nelem, hex);
 
     unsigned long long bseq = 0ull ; 
 
     for(unsigned int i=0 ; i < nelem ; i++)
     {
         std::string sub = seq.substr(i*elen, elen) ;
-        unsigned int bitpos = m_types->getAbbrevInvertAsCode(sub, etype);
+        unsigned int bitpos = m_types->getAbbrevInvertAsCode(sub, etype, hex);
         //assert(bitpos < 16);
         if(bitpos > 15) LOG(warning) << "RecordsNPY::convertSequenceString bitpos too big " << bitpos ;  
 
         unsigned long long ull = bitpos ; 
         unsigned long long msk = ull << (i*4) ; 
-        assert(i*4 < sizeof(unsigned long long)*8 );
+        //assert(i*4 < sizeof(unsigned long long)*8 );
+        if(!(i*4 < sizeof(unsigned long long)*8 ))
+        {
+            LOG(warning) << "RecordsNPY::convertSequenceString too many bits "
+                         << " i4 " << i*4 
+                         << " seq " << seq 
+                         ;
+        }
         bseq |= msk ; 
     }  
     return bseq ; 
 }
 
-std::string RecordsNPY::decodeSequenceString(std::string& seq, Types::Item_t etype)
+
+void RecordsNPY::prepSequenceString(std::string& lseq, unsigned int& elen, unsigned int& nelem, bool hex)
 {
-    const char* tail = m_types->getTail(); 
-    unsigned int elen = 2 + strlen(tail);
-    if(seq.size() % elen != 0)
+   /*
+      Non-hex sequence strings look like this with 2+1 chars per element
+
+            [CE BT KR BT BT BT BT BT BT BT ]
+
+      hex ones have one char per element  and are reversed
+            [cccccc3c1]
+
+   */
+
+    if(hex)
     {
-        LOG(fatal)<<"RecordsNPY::decodeSequenceString "
-                  << " seq " << seq 
-                  << " elen " << elen
-                  << " tail [" << tail << "]" ;  
+        elen = 1 ; 
+        nelem = lseq.size();
+        std::reverse(lseq.begin(), lseq.end());
     }
-    assert(seq.size() % elen == 0);
+    else
+    {
+        const char* tail = m_types->getTail(); 
+        elen = 2 + strlen(tail);
+        if(lseq.size() % elen != 0)
+        {
+            LOG(fatal)<<"RecordsNPY::prepSequenceString "
+                      << " lseq " << lseq 
+                      << " elen " << elen
+                      << " tail [" << tail << "]" ;  
+        }
+        assert(lseq.size() % elen == 0);
+        nelem = lseq.size()/elen ;
+    }
+}
+ 
+
+
+std::string RecordsNPY::decodeSequenceString(std::string& seq, Types::Item_t etype, bool hex)
+{
+    std::string lseq(seq);
+    unsigned int elen(0);
+    unsigned int nelem(0);
+    prepSequenceString(lseq, elen, nelem, hex);
+
 
     std::stringstream ss ;
-    unsigned int nelem = seq.size()/elen ;
-   // printf("RecordsNPY::decodeSequenceString %s elen %u \n", seq.c_str(), elen ); 
+   // printf("RecordsNPY::decodeSequenceString %s elen %u \n", lseq.c_str(), elen ); 
     for(unsigned int i=0 ; i < nelem ; i++)
     {
-        std::string sub = seq.substr(i*elen, elen) ;
-        std::string label = m_types->getAbbrevInvert(sub, etype);
+        std::string sub = lseq.substr(i*elen, elen) ;
+        std::string label = m_types->getAbbrevInvert(sub, etype, hex );
         //printf("RecordsNPY::decodeSequenceString sub [%s] label [%s] \n", sub.c_str(), label.c_str() ); 
         ss  << label ; // no spacing needed, the tail spacer is internal
     }  

@@ -80,7 +80,7 @@
 #include "RayTraceConfig.hh"
 
 // thrustrap-
-#include "ThrustEngine.hh"
+#include "ThrustIndex.hh"
 #include "ThrustHistogram.hh"
 
 
@@ -318,27 +318,28 @@ int main(int argc, char** argv)
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag );
 
-    
-    ThrustEngine te ; 
-    {
-        // pass buffer vital stats from OptiX to Thrust 
-        optix::Buffer& history_buffer = engine.getHistoryBuffer() ;
-        unsigned long long* devhis = OptiXUtil::getDevicePtr<unsigned long long>( history_buffer, 0 ); // device number
-        unsigned int devsize = OptiXUtil::getBufferSize1D( history_buffer );
-        te.setHistory(devhis, devsize);   
-        te.createIndices();
 
-        LOG(info) << "main saving ThrustHistory for debug " ; 
-        ThrustHistogram<unsigned long long>* th = te.getHistory();
-        //LOG(info) << "main th:makeInputArray " ; 
-        //NPY<unsigned long long>* thv = th->makeInputArray();
-        //thv->save("/tmp/thv.npy");
-        LOG(info) << "main thv:makeIndex " ; 
-        Index* thi = th->makeIndex("ThrustHistory");
-        thi->save("/tmp");
-        LOG(info) << "main: saving ThrustHistory DONE " ; 
-    }
- 
+/*
+    optix::Buffer& history_buffer = engine.getHistoryBuffer() ;
+    unsigned int num_elements = OptiXUtil::getBufferSize1D( history_buffer );
+
+    ThrustIndex<unsigned long long, unsigned char> idx(target_devptr, num_elements, 4 )   ; 
+    // pass buffer vital stats from OptiX to Thrust 
+    unsigned long long* devhis = OptiXUtil::getDevicePtr<unsigned long long>( history_buffer, 0 ); // device number
+    idx.indexHistory(devhis, 0);   
+
+    LOG(info) << "main saving ThrustHistory for debug " ; 
+    ThrustHistogram<unsigned long long>* th = te.getHistory();
+    //LOG(info) << "main th:makeInputArray " ; 
+    //NPY<unsigned long long>* thv = th->makeInputArray();
+    //thv->save("/tmp/thv.npy");
+    LOG(info) << "main thv:makeIndex " ; 
+    Index* thi = th->makeIndex("ThrustHistory");
+    thi->save("/tmp");
+   LOG(info) << "main: saving ThrustHistory DONE " ; 
+*/ 
+
+
 
     if(noviz)
     {

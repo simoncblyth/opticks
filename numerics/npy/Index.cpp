@@ -15,7 +15,7 @@
 // trace/debug/info/warning/error/fatal
 
 
-void Index::add(const char* name, unsigned int source)
+void Index::add(const char* name, unsigned int source, bool sort )
 {
     // only the first ocurrence of a repeated name is added
     if(m_source.count(name)==0)
@@ -27,7 +27,7 @@ void Index::add(const char* name, unsigned int source)
         m_source2local[source] = local ; 
         m_local2source[local]  = source ; 
    
-        sortNames(); // when dealing with very big indices could just do this after all adds are made 
+        if(sort) sortNames(); // when dealing with very big indices could just do this after all adds are made 
     }
 }
 

@@ -2,6 +2,7 @@
 #include "Types.hpp"
 #include "Index.hpp"
 #include "jsonutil.hpp" 
+#include "stringutil.hpp" 
 #include "regexsearch.hh"
 
 #include <sstream>
@@ -99,13 +100,20 @@ std::string Types::getMaterialAbbrev(std::string label)
 {
      return m_material2abbrev.count(label) == 1 ? m_material2abbrev[label] : label  ;
 }
-std::string Types::getMaterialAbbrevInvert(std::string label)
+std::string Types::getMaterialAbbrevInvert(std::string label, bool hex)
 {
+     if(hex)
+     {
+         std::string name = m_materials_index->getNameLocal(hex_lexical_cast<unsigned int>(label.c_str()), "?" );
+         return name + m_tail ; 
+     }
      return m_abbrev2material.count(label) == 1 ? m_abbrev2material[label] : label  ;
 }
 
-unsigned int Types::getMaterialAbbrevInvertAsCode(std::string label)
+unsigned int Types::getMaterialAbbrevInvertAsCode(std::string label, bool hex)
 {
+     if(hex) return hex_lexical_cast<unsigned int>(label.c_str()) ;
+
      unsigned int n = m_abbrev2material.count(label) ;
      assert(n == 1);
 
@@ -197,15 +205,23 @@ std::string Types::getHistoryAbbrev(std::string label)
 {
      return m_flag2abbrev.count(label) == 1 ? m_flag2abbrev[label] : label  ;
 }
-std::string Types::getHistoryAbbrevInvert(std::string label)
+std::string Types::getHistoryAbbrevInvert(std::string label, bool hex)
 {
+     if(hex)
+     {
+         std::string name = m_flags->getNameLocal(hex_lexical_cast<unsigned int>(label.c_str()), "?" );
+         return name + m_tail ; 
+     } 
+
      unsigned int n = m_abbrev2flag.count(label) ;
     // printf("Types::getHistoryAbbrevInvert [%s] %u \n", label.c_str(), n );  
      return n == 1 ? m_abbrev2flag[label] : label  ;
 }
 
-unsigned int Types::getHistoryAbbrevInvertAsCode(std::string label)
+unsigned int Types::getHistoryAbbrevInvertAsCode(std::string label, bool hex)
 {
+     if(hex) return hex_lexical_cast<unsigned int>(label.c_str()) ;
+
      unsigned int n = m_abbrev2flag.count(label) ;
     // printf("Types::getHistoryAbbrevInvert [%s] %u \n", label.c_str(), n );  
      assert(n == 1);
@@ -232,29 +248,29 @@ std::string Types::getAbbrev(std::string label, Item_t etype)
     return abb ; 
 }
 
-std::string Types::getAbbrevInvert(std::string label, Item_t etype)
+std::string Types::getAbbrevInvert(std::string label, Item_t etype, bool hex)
 {
     std::string abb ;
     switch(etype)
     {
-        case HISTORY     : abb = getHistoryAbbrevInvert(label)  ; break ; 
-        case HISTORYSEQ  : abb = getHistoryAbbrevInvert(label)  ; break ; 
-        case MATERIAL    : abb = getMaterialAbbrevInvert(label) ; break ; 
-        case MATERIALSEQ : abb = getMaterialAbbrevInvert(label) ; break ; 
+        case HISTORY     : abb = getHistoryAbbrevInvert(label, hex)  ; break ; 
+        case HISTORYSEQ  : abb = getHistoryAbbrevInvert(label, hex)  ; break ; 
+        case MATERIAL    : abb = getMaterialAbbrevInvert(label, hex) ; break ; 
+        case MATERIALSEQ : abb = getMaterialAbbrevInvert(label, hex) ; break ; 
     }
     return abb ; 
 }
 
 
-unsigned int Types::getAbbrevInvertAsCode(std::string label, Item_t etype)
+unsigned int Types::getAbbrevInvertAsCode(std::string label, Item_t etype, bool hex)
 {
     unsigned int bpos ; 
     switch(etype)
     {
-        case HISTORY     : bpos = getHistoryAbbrevInvertAsCode(label)  ; break ; 
-        case HISTORYSEQ  : bpos = getHistoryAbbrevInvertAsCode(label)  ; break ; 
-        case MATERIAL    : bpos = getMaterialAbbrevInvertAsCode(label) ; break ; 
-        case MATERIALSEQ : bpos = getMaterialAbbrevInvertAsCode(label) ; break ; 
+        case HISTORY     : bpos = getHistoryAbbrevInvertAsCode(label, hex)  ; break ; 
+        case HISTORYSEQ  : bpos = getHistoryAbbrevInvertAsCode(label, hex)  ; break ; 
+        case MATERIAL    : bpos = getMaterialAbbrevInvertAsCode(label, hex) ; break ; 
+        case MATERIALSEQ : bpos = getMaterialAbbrevInvertAsCode(label, hex) ; break ; 
     }
     return bpos ; 
 }

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Types.hpp"
+#include "CountsNPY.hpp"
 #include "NPY.hpp"
 
 class RecordsNPY ; 
@@ -48,17 +49,23 @@ class SequenceNPY {
        Index*                getSeqHis(); 
        Index*                getSeqHisHex(); 
        Index*                getSeqMat(); 
+   public:  
+       NPY<unsigned long long>*  getSeqHisNpy(); 
 
    private:
        static bool second_value_order(const std::pair<int,int>&a, const std::pair<int,int>&b);
        static bool su_second_value_order(const std::pair<std::string,unsigned int>&a, const std::pair<std::string,unsigned int>&b);
 
    private:
-       Index* makeSequenceCountsIndex( 
+        NPY<unsigned long long>* makeSequenceCountsArray( 
+             Types::Item_t etype, 
+             std::vector< std::pair<std::string, unsigned int> >& vp
+              ); 
+
+        Index* makeSequenceCountsIndex(
                Types::Item_t etype, 
-               std::map<std::string, unsigned int>& su,
-               std::map<std::string, std::vector<unsigned int> >&  sv,
-               unsigned int cutoff,
+               std::vector< std::pair<std::string, unsigned int> >& vp,
+               unsigned int cutoff, 
                bool hex=false
                );
 
@@ -89,9 +96,15 @@ class SequenceNPY {
        Types*                       m_types ; 
        NPY<unsigned char>*          m_seqidx  ; 
        unsigned int                 m_maxrec ; 
+   private:
        Index*                       m_seqhis ; 
        Index*                       m_seqhis_hex ; 
+       NPY<unsigned long long>*     m_seqhis_npy ; 
+   private:
        Index*                       m_seqmat ; 
+   private:
+       CountsNPY<unsigned int>      m_material_counts ; 
+       CountsNPY<unsigned int>      m_history_counts ; 
 
 };
 
@@ -104,6 +117,8 @@ inline SequenceNPY::SequenceNPY(NPY<float>* photons)
        m_seqidx(NULL),
        m_maxrec(0),
        m_seqhis(NULL),
+       m_seqhis_hex(NULL),
+       m_seqhis_npy(NULL),
        m_seqmat(NULL)
 {
 }
@@ -126,6 +141,11 @@ inline Index* SequenceNPY::getSeqMat()
 {
     return m_seqmat ; 
 }
+inline NPY<unsigned long long>* SequenceNPY::getSeqHisNpy()
+{
+    return m_seqhis_npy ; 
+}
+
 
 
 
