@@ -37,9 +37,11 @@ add_definitions(
 )
 
 CUDA_ADD_LIBRARY( ${name}  
+       ThrustArray.cc
        ThrustIndex.cc
        ThrustHistogram.cc
        ThrustHistogramImp.cu
+       ThrustArrayImp.cu
 )
 
 set(LIBRARIES
@@ -53,9 +55,11 @@ target_link_libraries( ${name}
 
 
 SET(hdrs 
+  ThrustArray.hh
   ThrustIndex.hh
   ThrustHistogram.hh
   ThrustHistogramImp.h
+  ThrustArrayImp.h
 )
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)

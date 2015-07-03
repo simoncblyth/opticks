@@ -359,6 +359,7 @@ int main(int argc, char** argv)
 
     optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
     optix::Buffer& recsel_buffer   = engine.getRecselBuffer() ;
+    optix::Buffer& phosel_buffer   = engine.getPhoselBuffer() ;
 
     // hmm history buffers (seqhis + seqmat) are photon level qtys but 
     // need to repeat the indices *maxrec for the record level recsel buffer
@@ -368,18 +369,31 @@ int main(int argc, char** argv)
     unsigned int        device_number = 0 ;  // maybe problem with multi-GPU
     unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
     unsigned char*      d_rsel = OptiXUtil::getDevicePtr<unsigned char>(      recsel_buffer, device_number  );  
+    unsigned char*      d_psel = OptiXUtil::getDevicePtr<unsigned char>(      phosel_buffer, device_number  );  
 
     LOG(info) << "main: ThrustIndex ctor " ; 
 
     unsigned int sequence_itemsize = 2 ;  
-    unsigned int recsel_itemsize = 4 ;  
-    ThrustIndex<unsigned long long, unsigned char> idx(d_seqn, d_rsel, num_elements, sequence_itemsize, recsel_itemsize )   ; 
+    unsigned int phosel_itemsize = 4 ;  
+    ThrustIndex<unsigned long long, unsigned char> idx(d_seqn, d_psel, num_elements, sequence_itemsize, phosel_itemsize )   ; 
+
 
     idx.indexHistory(0);   
     idx.indexMaterial(1);   
 
+    {
+        NPY<unsigned char>* target = idx.makeTargetArray();
+        target->setVerbose(); 
+        target->save("/tmp/main_SeqIdx.npy");
+    }
+
     Index* seqhis = idx.getHistoryIndex() ;  
     Index* seqmat = idx.getMaterialIndex() ;  
+
+
+    ThrustRepeater<unsigned char> rpt(d_psel);
+    rpt.repeat(d_rsel, evt.getMaxRec()); 
+
 
 #endif
     glm::ivec4& recsel = composition.getRecSelect();

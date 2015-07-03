@@ -13,7 +13,7 @@ class ThrustHistogram {
                          unsigned int sequence_itemsize, 
                          unsigned int sequence_offset, 
                          unsigned int target_itemsize, 
-                         unsigned int targer_offset);
+                         unsigned int target_offset);
     public:
          void createHistogram(
                     thrust::device_vector<T>& sequence

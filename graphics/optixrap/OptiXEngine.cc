@@ -466,6 +466,29 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     }
 
 
+
+    NPY<unsigned char>* phosel = evt->getPhoselData();
+    int phosel_buffer_id = phosel ? phosel->getBufferId() : -1 ;
+    if(phosel_buffer_id > -1)
+    {
+        unsigned int phosel_count = phosel->getShape(0);
+        unsigned int phosel_numquad = phosel->getShape(1);  
+        unsigned int phosel_totquad = phosel_count * phosel_numquad ;  
+
+        LOG(info)<<"OptiXEngine::initGenerate  phosel buffer count: " << phosel_count ;
+        m_phosel_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, phosel_buffer_id);
+        m_phosel_buffer->setFormat(RT_FORMAT_UNSIGNED_BYTE4);
+        m_phosel_buffer->setSize( phosel_totquad );
+        m_context["phosel_buffer"]->set( m_phosel_buffer );
+    } 
+    else
+    {
+        LOG(warning) << "OptiXEngine::initGenerate no phosel buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
+    }
+
+
+
+
     NPY<unsigned char>* recsel = evt->getRecselData();
     int recsel_buffer_id = recsel ? recsel->getBufferId() : -1 ;
     if(recsel_buffer_id > -1)

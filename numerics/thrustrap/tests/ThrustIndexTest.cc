@@ -215,6 +215,41 @@ After aligning truncation::
     Out[7]: True
 
 
+Compare with insitu::
+
+    In [1]: s = np.load("/tmp/SequenceNPYTest_SeqIdx.npy")
+
+    In [2]: t = np.load("/tmp/main_SeqIdx.npy")
+
+    In [3]: tt = t.reshape(-1,1,4)[:,0,0]
+
+    In [4]: tt
+    Out[4]: array([ 15, 255,   0, ...,   1,   1,   1], dtype=uint8)
+
+    In [5]: ss = s[::10,0,0] 
+
+    In [6]: tt.shape
+    Out[6]: (612841,)
+
+    In [7]: ss.shape
+    Out[7]: (612841,)
+
+    In [8]: b = tt == ss
+
+    In [9]: b
+    Out[9]: array([False, False, False, ..., False, False, False], dtype=bool)
+
+    In [10]: tt1 = tt + 1
+
+    In [11]: b = tt1 == ss
+
+    In [12]: b
+    Out[12]: array([ True,  True,  True, ...,  True,  True,  True], dtype=bool)
+
+    In [13]: np.all(b)
+    Out[13]: True
+
+
 
 
 */

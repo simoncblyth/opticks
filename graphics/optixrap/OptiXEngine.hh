@@ -125,6 +125,7 @@ class OptiXEngine : public Touchable {
         optix::Buffer         m_record_buffer ; 
         optix::Buffer         m_sequence_buffer ; 
         optix::Buffer         m_touch_buffer ; 
+        optix::Buffer         m_phosel_buffer ; 
         optix::Buffer         m_recsel_buffer ; 
         optix::GeometryGroup  m_geometry_group ;
 
@@ -288,6 +289,11 @@ inline optix::Buffer& OptiXEngine::getRecselBuffer()
 {
     return m_recsel_buffer ; 
 }
+inline optix::Buffer& OptiXEngine::getPhoselBuffer()
+{
+    return m_phosel_buffer ; 
+}
+
 
 
 

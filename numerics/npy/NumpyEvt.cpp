@@ -19,6 +19,9 @@
 const char* NumpyEvt::genstep = "genstep" ; 
 const char* NumpyEvt::photon  = "photon" ; 
 const char* NumpyEvt::record  = "record" ; 
+const char* NumpyEvt::phosel = "phosel" ; 
+const char* NumpyEvt::recsel  = "recsel" ; 
+const char* NumpyEvt::sequence  = "sequence" ; 
 
 ViewNPY* NumpyEvt::operator [](const char* spec)
 {
@@ -31,6 +34,9 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
     if(     elem[0] == genstep) mvn = m_genstep_attr ;  
     else if(elem[0] == photon)  mvn = m_photon_attr ;
     else if(elem[0] == record)  mvn = m_record_attr ;
+    else if(elem[0] == phosel)  mvn = m_phosel_attr ;
+    else if(elem[0] == recsel)  mvn = m_recsel_attr ;
+    else if(elem[0] == sequence)  mvn = m_sequence_attr ;
 
     assert(mvn);
     return (*mvn)[elem[1].c_str()] ;
@@ -58,6 +64,11 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     NPY<Sequence_t>* seq = NPY<Sequence_t>::make_vec2(m_num_photons, 1, 0);  // shape (np,1,2) initialized to 0
     setSequenceData(seq);   
 
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make_vec4(m_num_photons,1,0); // shape (np,1,4) initialized to 0 
+    setPhoselData(phosel);   
+
+
+    
 
     assert(SHRT_MIN == -(1 << 15));      // -32768
     assert(SHRT_MAX ==  (1 << 15) - 1);  // +32767
@@ -67,6 +78,14 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     // aka seqidx (SequenceNPY) or target ThrustIndex
     NPY<unsigned char>* recsel = NPY<unsigned char>::make_vec4(getNumRecords(),1,0); // shape (nr,1,4) initialized to 0 
     setRecselData(recsel);   
+ 
+    //
+    // NB cf with 
+    //           Scene::uploadEvt
+    //           Scene::uploadSelection
+    //           OptiXEngine::init
+    //
+
 
 
     // stuff genstep index into the photon allocation 
@@ -74,6 +93,8 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
     unsigned int numStep   = m_genstep_data->getShape(0);
     unsigned int numPhoton = m_photon_data->getShape(0);
+    assert(numPhoton == m_num_photon);
+
 
     unsigned int count(0) ;
     for(unsigned int index=0 ; index < numStep ; index++)
@@ -177,6 +198,17 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
 }
 
 
+
+void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
+{
+    m_phosel_data = phosel_data ;
+    //                                               j k sz   type                norm   iatt
+    ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
+    m_phosel_attr = new MultiViewNPY();
+    m_phosel_attr->add(psel);
+}
+
+
 void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
 {
     m_recsel_data = recsel_data ;
@@ -185,6 +217,7 @@ void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
     m_recsel_attr = new MultiViewNPY();
     m_recsel_attr->add(rsel);
 }
+
 
 void NumpyEvt::setSequenceData(NPY<Sequence_t>* sequence_data)
 {
@@ -197,7 +230,7 @@ void NumpyEvt::setSequenceData(NPY<Sequence_t>* sequence_data)
     // via some diddling 
     //
     //      Have not taken the diddling route, 
-    //      instead using separate Recsel buffer for the indices
+    //      instead using separate Recsel/Phosel buffers for the indices
     // 
     //                                                j k sz   type                norm   iatt
     ViewNPY* phis = new ViewNPY("phis",m_sequence_data,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);

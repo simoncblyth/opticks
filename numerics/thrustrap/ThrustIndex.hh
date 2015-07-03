@@ -35,11 +35,10 @@ class ThrustIndex {
    private:
          T*                        m_sequence_devptr ;
          S*                        m_target_devptr ;
+         unsigned int              m_num_elements ;
    private:
          unsigned int              m_sequence_itemsize ;
          unsigned int              m_target_itemsize ;
-   private:
-         unsigned int              m_num_elements ;
    private:
          ThrustHistogram<T,S>*     m_history ; 
          ThrustHistogram<T,S>*     m_material ; 
@@ -52,9 +51,9 @@ inline ThrustIndex<T,S>::ThrustIndex(T* sequence_devptr, S* target_devptr, unsig
     :
     m_sequence_devptr(sequence_devptr),
     m_target_devptr(target_devptr),
+    m_num_elements(num_elements),
     m_sequence_itemsize(sequence_itemsize),
     m_target_itemsize(target_itemsize),
-    m_num_elements(num_elements),
     m_history(NULL),
     m_material(NULL)
 {
