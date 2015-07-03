@@ -154,7 +154,7 @@ bool NPY<T>::exists(const char* path_)
 template <typename T>
 void NPY<T>::save(const char* path_)
 {
-    if(m_verbose) LOG(info) << "NPY::save " << path_ ; 
+    if(m_verbose) LOG(info) << "NPY::save np.load(\"" << path_ << "\") " ; 
     fs::path path(path_);
     fs::path dir = path.parent_path();
 

@@ -128,6 +128,16 @@ void Rdr::upload(NPYBase* npy)
 
     prepare_vao();
 
+    
+    void* aux_ = npy->getAux();
+    if(aux_)
+    {
+        assert(npy->getType() == NPYBase::UCHAR );
+       // hmm how to avoid CUDA dependency for oglrap-
+    }
+
+
+
     if(m_device->isUploaded(npy))
     {
         GLuint buffer_id = npy->getBufferId();

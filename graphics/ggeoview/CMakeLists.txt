@@ -166,6 +166,7 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
 add_optix_executable( ${name} 
       main.cc 
+      CUDAInterop.cc
       index.cu
 
       cu/pinhole_camera.cu

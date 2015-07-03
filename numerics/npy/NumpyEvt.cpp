@@ -93,7 +93,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
     unsigned int numStep   = m_genstep_data->getShape(0);
     unsigned int numPhoton = m_photon_data->getShape(0);
-    assert(numPhoton == m_num_photon);
+    assert(numPhoton == m_num_photons);
 
 
     unsigned int count(0) ;

@@ -394,4 +394,3 @@ inline void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, int v
 
 
 
-

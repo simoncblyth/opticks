@@ -28,8 +28,6 @@ void ThrustIndex<T,S>::init()
               << " num_elements " <<  m_num_elements  
               << std::endl ;
 
-
-
     unsigned int targetSize = getTargetSize();    
     std::cout << "ThrustIndex::init "
               << " target_itemsize " << m_target_itemsize  

@@ -124,10 +124,6 @@ inline void Rdr::download( NPY<T>* npy )
     }
 }
 
-//inline unsigned int Rdr::getBufferId()
-//{
-//   return m_buffer ; 
-//}
 
 inline void Rdr::configureI(const char* name, std::vector<int> values )
 {

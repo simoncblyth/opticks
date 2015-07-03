@@ -51,6 +51,11 @@ int main()
 
 
 
+    NPY<S>* ntc = tc.makeNPY();
+    ntc->setVerbose();
+    ntc->save("/tmp/ThrustArrayTest_ntc.npy");
+
+
 
 
     cudaDeviceSynchronize();

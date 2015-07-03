@@ -39,7 +39,9 @@ class NPYBase {
        // OpenGL related
        void         setBufferId(int buffer_id);
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
-
+       void         setAux(void* aux);
+       void*        getAux();
+  
    public:
        // NumPy persistency
        static std::string path(const char* typ, const char* tag);
@@ -58,9 +60,9 @@ class NPYBase {
        virtual void save(const char* tfmt, const char* targ, const char* tag ) = 0;
  
     public:
-       void Summary(const char* msg="NPY::Summary");
-       void dump(const char* msg="NPY::dump");
-       std::string description(const char* msg);
+       void Summary(const char* msg="NPYBase::Summary");
+       void dump(const char* msg="NPYBase::dump");
+       std::string description(const char* msg="NPYBase::description");
 
    protected:
        unsigned int       m_dim ; 
@@ -70,6 +72,7 @@ class NPYBase {
        unsigned char      m_sizeoftype ; 
        Type_t             m_type ; 
        int                m_buffer_id ; 
+       void*              m_aux ; 
        bool               m_verbose ; 
  
    private:
@@ -84,6 +87,7 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_sizeoftype(sizeoftype),
          m_type(type),
          m_buffer_id(-1),
+         m_aux(NULL),
          m_verbose(false),
          m_shape(shape),
          m_metadata(metadata)
@@ -127,6 +131,21 @@ inline int NPYBase::getBufferId()
 {
     return m_buffer_id ;
 }
+
+// used for CUDA OpenGL interop
+inline void NPYBase::setAux(void* aux)
+{
+    m_aux = aux ; 
+}
+inline void* NPYBase::getAux()
+{
+    return m_aux ; 
+}
+
+
+
+
+
 
 
 inline void NPYBase::setVerbose(bool verbose)

@@ -80,6 +80,7 @@ class OptiXEngine : public Touchable {
 
     public:
         optix::Buffer& getSequenceBuffer();
+        optix::Buffer& getPhoselBuffer();
         optix::Buffer& getRecselBuffer();
 
     public:

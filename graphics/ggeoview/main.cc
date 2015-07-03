@@ -6,6 +6,11 @@
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
+
+// ggeoview-
+#include "CUDAInterop.hh"
+
+// oglrap-
 #define GUI_ 1
 #ifdef GUI_
 #include "GUI.hh"
@@ -24,6 +29,7 @@
 #include "Rdr.hh"
 #include "Texture.hh"
 #include "Photons.hh"
+
 
 // numpyserver-
 #include "numpydelegate.hpp"
@@ -80,8 +86,9 @@
 #include "RayTraceConfig.hh"
 
 // thrustrap-
-#include "ThrustIndex.hh"
+#include "ThrustIdx.hh"
 #include "ThrustHistogram.hh"
+#include "ThrustArray.hh"
 
 
 void dump(float* f, const char* msg)
@@ -255,6 +262,7 @@ int main(int argc, char** argv)
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
+    CUDAInterop<unsigned char>::enable(evt.getRecselData());
 
     // Scene, Rdr do uploads orchestrated by NumpyEvt/MultiViewNPY 
     // creating the OpenGL buffers from NPY managed data
@@ -269,7 +277,6 @@ int main(int argc, char** argv)
     //   * extract core OptiX processing into separate class
     //   * hmm generation should not depend on renderers OpenGL buffers
     //     but for OpenGL interop its expedient for now
-    //
 
 
     //  creates OptiX buffers from the OpenGL buffer_id's 
@@ -298,10 +305,7 @@ int main(int argc, char** argv)
     if(idomain) idomain->save("idomain", "1");
 
    
-    // generate and propagate photons through the geometry  
-    engine.generate();
-    LOG(info) << "main: engine.generate DONE "; 
-
+    engine.generate();     LOG(info) << "main: engine.generate + propagate DONE "; 
 
 
     NPY<float>* dpho = evt.getPhotonData();
@@ -320,12 +324,6 @@ int main(int argc, char** argv)
     dhis->save("ph%s", typ,  tag );
 
 
-    if(noviz)
-    {
-        LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
-        exit(EXIT_SUCCESS); 
-    }
-
     BoundariesNPY bnd(dpho); 
     bnd.setTypes(&types);
     bnd.setBoundaryNames(boundaries);
@@ -337,6 +335,9 @@ int main(int argc, char** argv)
     RecordsNPY rec(drec, evt.getMaxRec());
     rec.setTypes(&types);
     rec.setDomains((NPY<float>*)domain);
+
+
+   
 
 
 #ifdef SLOW_CPU_INDEXING
@@ -351,12 +352,6 @@ int main(int argc, char** argv)
     //seqidx->save("seq%s", typ, tag);  
 
 #else
-
-
-    // seqidx not yet populated, but need record Rdr to create OpenGL buffer 
-    // so the NPY will get a buffer id 
-    // so Thrust can have a target to populate
-
     optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
     optix::Buffer& recsel_buffer   = engine.getRecselBuffer() ;
     optix::Buffer& phosel_buffer   = engine.getPhoselBuffer() ;
@@ -365,44 +360,55 @@ int main(int argc, char** argv)
     // need to repeat the indices *maxrec for the record level recsel buffer
 
     unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );
+    assert(num_elements == evt.getNumPhotons());
 
     unsigned int        device_number = 0 ;  // maybe problem with multi-GPU
     unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
     unsigned char*      d_rsel = OptiXUtil::getDevicePtr<unsigned char>(      recsel_buffer, device_number  );  
     unsigned char*      d_psel = OptiXUtil::getDevicePtr<unsigned char>(      phosel_buffer, device_number  );  
 
+    
+
+
     LOG(info) << "main: ThrustIndex ctor " ; 
 
-    unsigned int sequence_itemsize = 2 ;  
-    unsigned int phosel_itemsize = 4 ;  
-    ThrustIndex<unsigned long long, unsigned char> idx(d_seqn, d_psel, num_elements, sequence_itemsize, phosel_itemsize )   ; 
+    unsigned int sequence_itemsize = evt.getSequenceData()->getShape(2) ; assert( 2 == sequence_itemsize );
+    unsigned int phosel_itemsize   = evt.getPhoselData()->getShape(2)   ; assert( 4 == phosel_itemsize );
+    unsigned int recsel_itemsize   = evt.getRecselData()->getShape(2)   ; assert( 4 == recsel_itemsize );
+    unsigned int maxrec = evt.getMaxRec();
+ 
+    ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );
+    ThrustArray<unsigned char>      psel(d_psel, num_elements       , phosel_itemsize );
+    ThrustArray<unsigned char>      rsel(d_rsel, num_elements*maxrec, recsel_itemsize );
 
+    ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
+    idx.makeHistogram(0);   
+    idx.makeHistogram(1);   
 
-    idx.indexHistory(0);   
-    idx.indexMaterial(1);   
+    psel.repeat_to( maxrec, rsel );
 
-    {
-        NPY<unsigned char>* target = idx.makeTargetArray();
-        target->setVerbose(); 
-        target->save("/tmp/main_SeqIdx.npy");
-    }
+    cudaDeviceSynchronize();
 
-    Index* seqhis = idx.getHistoryIndex() ;  
-    Index* seqmat = idx.getMaterialIndex() ;  
+    pseq.save("/tmp/main_pseq.npy");
+    psel.save("/tmp/main_psel.npy");
+    rsel.save("/tmp/main_rsel.npy");
 
-
-    ThrustRepeater<unsigned char> rpt(d_psel);
-    rpt.repeat(d_rsel, evt.getMaxRec()); 
+    Index* seqhis = idx.getHistogramIndex(0) ;  
+    Index* seqmat = idx.getHistogramIndex(1) ;  
 
 
 #endif
+
+    if(noviz)
+    {
+        LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
+        exit(EXIT_SUCCESS); 
+    }
+
+
     glm::ivec4& recsel = composition.getRecSelect();
 
-
-
     Photons photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
-
-
 
     scene.setPhotons(&photons);
 

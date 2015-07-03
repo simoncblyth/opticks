@@ -32,11 +32,21 @@ void ThrustArray<S>::init()
     m_dvec = thrust::device_vector<S>(ptr, ptr+size);
 }
 
+
+template<typename S>
+void ThrustArray<S>::save(const char* path)
+{
+    NPY<S>* npy = makeNPY();
+    npy->setVerbose();
+    npy->save(path);
+}
+
+
 template<typename S>
 NPY<S>* ThrustArray<S>::makeNPY()
 {
     thrust::host_vector<S> hvec = m_dvec ;   // full pullback, expensive 
-    return NPY<S>::make_scalar(hvec.size(), hvec.data()); 
+    return NPY<S>::make(hvec.size()/m_itemsize, 1, m_itemsize, hvec.data()); 
 }
 
 template<typename S>
@@ -82,5 +92,6 @@ void ThrustArray<S>::repeat_to(unsigned int repeat, ThrustArray<S>& other)
 
 // explicit instanciation
 template class ThrustArray<unsigned char>;
+template class ThrustArray<unsigned long long>;
 
 

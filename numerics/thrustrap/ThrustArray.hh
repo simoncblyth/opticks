@@ -8,7 +8,11 @@ template <typename S>
 class ThrustArray {
    public:
          ThrustArray(S* devptr, unsigned int num_elements, unsigned int itemsize);
+   public:
          unsigned int getSize();
+         unsigned int getNumElements();
+         unsigned int getItemSize();
+   public:
          thrust::device_vector<S>&  getDeviceVector();
    public:
          void dump( const char* msg="ThrustArray::dump", unsigned int nline=100);
@@ -16,6 +20,7 @@ class ThrustArray {
          void copy_to(ThrustArray<S>& other);
          void repeat_to(unsigned int nrepeat, ThrustArray<S>& other);
    public:
+         void save(const char* path);
          NPY<S>* makeNPY(); 
    private:
          void init();
@@ -43,6 +48,21 @@ inline unsigned int ThrustArray<S>::getSize()
 {
     return m_num_elements*m_itemsize ; 
 }
+template <typename S>
+inline unsigned int ThrustArray<S>::getNumElements()
+{
+    return m_num_elements ; 
+}
+template <typename S>
+inline unsigned int ThrustArray<S>::getItemSize()
+{
+    return m_itemsize ; 
+}
+
+
+
+
+
 
 template <typename S>
 inline thrust::device_vector<S>& ThrustArray<S>::getDeviceVector()

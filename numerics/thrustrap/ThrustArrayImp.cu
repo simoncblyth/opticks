@@ -27,3 +27,10 @@ template void repeat_to_imp<unsigned char>(
                           thrust::device_vector<unsigned char>&  target
                                           );
 
+template void repeat_to_imp<unsigned long long>( 
+                                                   unsigned int stride, 
+                                                   unsigned int repeat, 
+                    const thrust::device_vector<unsigned long long>&  source,
+                          thrust::device_vector<unsigned long long>&  target
+                                          );
+

@@ -1,4 +1,4 @@
-
+#include <limits>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
 
@@ -31,7 +31,11 @@ void sparse_histogram_imp(const thrust::device_vector<T>& sequence,
                                 thrust::device_vector<T>& histogram_values,
                                 thrust::device_vector<int>& histogram_counts)
 {
+    // equivalent of my NumPy function count_unique
+    // by filling a sparse histogram and sorting it by counts 
+
     typedef typename thrust::device_vector<T>::const_iterator T_Iterator;
+
     strided_range<T_Iterator> src(sequence.begin() + sequence_offset, sequence.end(), sequence_itemsize);
 
     thrust::device_vector<T> data(src.begin(), src.end());  // copy to avoid sorting original
@@ -75,13 +79,25 @@ void update_dev_lookup(T* data) // data needs to have at least dev_lookup_n elem
 template <typename T, typename S>
 struct apply_lookup_functor : public thrust::unary_function<T,S>
 {
-    __device__          // host function cannot access __constant__ memory hence this is device only
+    S m_offset ;
+    S m_missing ;
+
+    apply_lookup_functor(S offset, S missing)
+        :
+        m_offset(offset),    
+        m_missing(missing)
+        {
+        }    
+
+
+    // host function cannot access __constant__ memory hence device only
+    __device__   
     S operator()(T seq)
     {
-        S idx = 255 ; 
+        S idx(m_missing) ; 
         for(unsigned int i=0 ; i < dev_lookup_n ; i++)
         {
-            if(seq == dev_lookup[i]) idx = i ;
+            if(seq == dev_lookup[i]) idx = i + m_offset ;
             // NB not breaking as hope this will keep memory access lined up between threads 
         }
         return idx ; 
@@ -106,7 +122,16 @@ void apply_histogram_imp(const thrust::device_vector<T>& sequence,
 
     // if strided range compiles in .cc could pass in the iterators ...
 
-    thrust::transform( src.begin(), src.end(), dest.begin(), apply_lookup_functor<T,S>() ); 
+    S missing = std::numeric_limits<S>::max() ;
+    S offset  =  1 ; 
+
+    std::cout << "apply_histogram_imp " 
+              << " missing " << missing 
+              << " offset " << offset 
+              << std::endl ; 
+ 
+
+    thrust::transform( src.begin(), src.end(), dest.begin(), apply_lookup_functor<T,S>(offset, missing) ); 
 }
 
 
