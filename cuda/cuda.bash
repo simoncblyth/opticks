@@ -445,6 +445,10 @@ cuda-dir-Darwin(){   echo /Developer/NVIDIA/CUDA-$(cuda-version) ; }
 cuda-idir(){         echo $(cuda-dir)/include ; }
 cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
 cuda-samples-dir(){  echo $(cuda-writable-dir)/NVIDIA_CUDA-$(cuda-version)_Samples ; }
+cuda-samples-find(){ 
+   find $(cuda-samples-dir) -type f -exec grep -${2:-l} ${1:-cuda_gl_interop.h} {} \;  
+}
+
 
 cuda-cd(){           cd $(cuda-dir); }
 cuda-icd(){          cd $(cuda-idir); }

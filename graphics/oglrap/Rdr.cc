@@ -96,7 +96,7 @@ void Rdr::upload(MultiViewNPY* mvn)
 
 void Rdr::log(const char* msg, int value)
 {
-    LOG(debug)
+    LOG(info)
                  << "Rdr::log " 
                  << std::setw(10) << getShaderTag() 
                  << " "
@@ -128,15 +128,12 @@ void Rdr::upload(NPYBase* npy)
 
     prepare_vao();
 
-    
-    void* aux_ = npy->getAux();
-    if(aux_)
+    void* aux = npy->getAux();
+    if(aux)
     {
         assert(npy->getType() == NPYBase::UCHAR );
        // hmm how to avoid CUDA dependency for oglrap-
     }
-
-
 
     if(m_device->isUploaded(npy))
     {
@@ -153,7 +150,16 @@ void Rdr::upload(NPYBase* npy)
         GLuint buffer_id ;  
         glGenBuffers(1, &buffer_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-        glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_STATIC_DRAW );
+
+        if(aux)
+        {
+            log("Rdr::upload using GL_DYNAMIC_DRAW for aux enabled buffer ", buffer_id);
+            glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_DYNAMIC_DRAW );
+        }
+        else
+        {
+            glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_STATIC_DRAW );
+        }
 
         log("Rdr::upload BufferData gen buffer_id:", buffer_id ); 
 

@@ -126,8 +126,8 @@ void apply_histogram_imp(const thrust::device_vector<T>& sequence,
     S offset  =  1 ; 
 
     std::cout << "apply_histogram_imp " 
-              << " missing " << missing 
-              << " offset " << offset 
+              << " missing " << static_cast<int>(missing) 
+              << " offset " << static_cast<int>(offset) 
               << std::endl ; 
  
 
