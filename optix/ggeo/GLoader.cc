@@ -66,10 +66,10 @@ void GLoader::load(bool nogeocache)
         m_metadata = lib->getMetadata();
         m_metadata->save(idpath);
 
-        m_materials = lib->getMaterials();  // GMaterialIndex
+        m_materials = lib->getMaterials();  
         m_materials->save(idpath);
         
-        m_surfaces = lib->getSurfaces();    // GSurfaceIndex
+        m_surfaces = lib->getSurfaces();   
         m_surfaces->save(idpath);
 
 

@@ -154,6 +154,7 @@ void Rdr::upload(NPYBase* npy)
         if(aux)
         {
             log("Rdr::upload using GL_DYNAMIC_DRAW for aux enabled buffer ", buffer_id);
+            LOG(info)<<"Rdr::upload using GL_DYNAMIC_DRAW for aux enabled buffer " << buffer_id ; 
             glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_DYNAMIC_DRAW );
         }
         else

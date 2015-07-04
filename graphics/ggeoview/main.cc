@@ -198,6 +198,11 @@ int main(int argc, char** argv)
 
     frame.init();  // creates OpenGL context
     LOG(info) << "main: frame.init DONE "; 
+
+#ifdef INTEROP
+    cudaGLSetGLDevice(0);
+#endif
+
     GLFWwindow* window = frame.getWindow();
 
     bool nooptix = fcfg->hasOpt("nooptix");
@@ -262,11 +267,23 @@ int main(int argc, char** argv)
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
-    CUDAInterop<unsigned char>::enable(evt.getRecselData());
+
+#ifdef INTEROP
+    // signal Rdr to use GL_DYNAMIC_DRAW
+    CUDAInterop<unsigned char>* c_psel = new CUDAInterop<unsigned char>(evt.getPhoselData());
+    CUDAInterop<unsigned char>* c_rsel = new CUDAInterop<unsigned char>(evt.getRecselData());
+#endif
 
     // Scene, Rdr do uploads orchestrated by NumpyEvt/MultiViewNPY 
     // creating the OpenGL buffers from NPY managed data
     scene.uploadEvt();
+
+#ifdef INTEROP
+    scene.uploadSelection();
+
+    c_psel->registerBuffer();
+    c_rsel->registerBuffer();
+#endif
 
 
     LOG(info) << "main: scene.uploadEvt DONE "; 
@@ -358,6 +375,15 @@ int main(int argc, char** argv)
     unsigned int device_number = 0 ;  // maybe problem with multi-GPU
     unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
 
+
+#ifdef INTEROP
+    unsigned char*      d_psel = c_psel->GL_to_CUDA();
+    unsigned char*      d_rsel = c_rsel->GL_to_CUDA();
+#else
+    unsigned char*      d_psel = NULL ;    
+    unsigned char*      d_rsel = NULL ;    
+#endif
+
     unsigned int sequence_itemsize = evt.getSequenceData()->getShape(2) ; assert( 2 == sequence_itemsize );
     unsigned int phosel_itemsize   = evt.getPhoselData()->getShape(2)   ; assert( 4 == phosel_itemsize );
     unsigned int recsel_itemsize   = evt.getRecselData()->getShape(2)   ; assert( 4 == recsel_itemsize );
@@ -365,25 +391,30 @@ int main(int argc, char** argv)
  
     LOG(info) << "main: ThrustIndex ctor " ; 
     ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );   // input flag/material sequences
-    ThrustArray<unsigned char>      psel(NULL  , num_elements       , phosel_itemsize   );   // output photon selection
-    ThrustArray<unsigned char>      rsel(NULL  , num_elements*maxrec, recsel_itemsize   );   // output record selection
+    ThrustArray<unsigned char>      psel(d_psel, num_elements       , phosel_itemsize   );   // output photon selection
+    ThrustArray<unsigned char>      rsel(d_rsel, num_elements*maxrec, recsel_itemsize   );   // output record selection
 
     ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
+
     idx.makeHistogram(0);   
     idx.makeHistogram(1);   
 
     psel.repeat_to( maxrec, rsel );
-
     cudaDeviceSynchronize();
 
-    // download Thrust buffers into NPY
-    psel.download( evt.getPhoselData() ); 
+#ifdef INTEROP
+    c_rsel->CUDA_to_GL();
+    c_psel->CUDA_to_GL();
+#else
+    psel.download( evt.getPhoselData() );   // download Thrust buffers into NPY
     rsel.download( evt.getRecselData() ); 
 
-    evt.getPhoselData()->save("/tmp/phosel.npy");
-    evt.getRecselData()->save("/tmp/recsel.npy");
+    evt.getPhoselData()->save("phosel_%s", typ, tag);
+    evt.getRecselData()->save("recsel_%s", typ, tag);
 
-    scene.uploadSelection();   // upload NPY into OpenGL buffer, duplicating recsel on GPU
+    scene.uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
+#endif
+
 
     Index* seqhis = idx.getHistogramIndex(0) ;  
     Index* seqmat = idx.getHistogramIndex(1) ;  

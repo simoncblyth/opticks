@@ -40,16 +40,12 @@ class GLoader {
          GMergedMesh*           getMergedMesh();
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
-         //GMaterialIndex*        getMaterials();
-         //GSurfaceIndex*         getSurfaces();
-         //GFlagIndex*            getFlags();
-         GItemIndex*        getMaterials();
-         GItemIndex*         getSurfaces();
+
+         GItemIndex*            getMaterials();
+         GItemIndex*            getSurfaces();
          GItemIndex*            getFlags();
 
-
          GColors*               getColors();
-
          Lookup*                getMaterialLookup();
 
     private:
@@ -60,9 +56,6 @@ class GLoader {
          GMergedMesh*              m_mergedmesh ;
          GBoundaryLibMetadata*     m_metadata ;
 
-         //GMaterialIndex*           m_materials ;
-         //GSurfaceIndex*            m_surfaces ;
-         //GFlagIndex*               m_flags ;
          GItemIndex*               m_materials ;
          GItemIndex*               m_surfaces ;
          GItemIndex*               m_flags ;
