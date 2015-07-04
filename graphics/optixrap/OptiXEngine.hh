@@ -18,6 +18,16 @@ class NPYBase ;
 // TODO: split off non-OpenGL OptiXCore for headless usage and easier testing
 // TODO: this needs to be drawn and quartered, doing far too much for one class
 
+/*
+
+  TODO:
+
+  Refactor code for populating the constitutent OptiX context  
+  into OpticksContext class 
+
+
+*/
+
 class OptiXEngine : public Touchable {
 
     public:

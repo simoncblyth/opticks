@@ -178,6 +178,94 @@ Package Dependencies Tree of GGeoView
    
 
 
+Data Flow thru the app
+-------------------------
+
+* Gensteps NPY loaded from file (or network)
+
+* main.NumpyEvt::setGenstepData 
+
+  * determines num_photons
+  * allocates NPY arrays for photons, records, sequence, recsel, phosel
+    and characterizes content with MultiViewNPY 
+
+* main.Scene::uploadEvt
+
+  * gets genstep, photon and record renderers to upload their respective buffers 
+    and translate MultiViewNPY into OpenGL vertex attributes
+
+* main.Scene::uploadSelection
+
+  * recsel upload
+  * hmm currently doing this while recsel still all zeroes 
+
+* main.OptiXEngine::initGenerate(NumpyEvt* evt)
+
+  * populates OptiX context, using OpenGL buffer ids lodged in the NPY  
+    to create OptiX buffers for each eg::
+
+        m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, genstep_buffer_id);
+
+* main.OptiXEngine::generate, cu/generate.cu
+
+  * fills OptiX buffers: photon_buffer, record_buffer, sequence_buffer
+
+* main.Rdr::download(NPY*)
+
+  * pullback to host NPY the VBO/OptiX buffers using Rdr::mapbuffer 
+    Rdr::unmapbuffer to get void* pointers from OpenGL
+
+    * photon, record and sequence buffers are downloaded
+
+* main.ThrustArray::ThrustArray created for: sequence, recsel and phosel 
+
+  * OptiXUtil::getDevicePtr devptr used to allow Thrust to access these OpenGL buffers 
+    
+* main.ThrustIdx indexes the sequence outputing into phosel and recsel
+
+  * recsel is created from phosel using ThrustArray::repeat_to
+
+* main.Scene::render Rdr::render for genstep, photon, record 
+
+  * glBindVertexArray(m_vao) and glDrawArrays 
+  * each renderer has a single m_vao which contains buffer_id and vertex attributes
+
+
+Issue: recsel changes not seen by OpenGL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The zeroed recsel buffer was uploaded early, it was modified
+with Thrust using the below long pipeline but the 
+changes to the device buffer where not seen by OpenGL
+
+* NumpyEvt create NPY
+* Scene::uploadEvt, Scene::uploadSelection - Rdr::upload (setting buffer_id in the NPY)
+* OptiXEngine::init (convert to OptiX buffers)
+* OptiXUtil provides raw devptr for use by ThrustArray
+* Rdr::render draw shaders do not see the changes to the recsel buffer 
+
+Workaround by simplifying pipeline for non-conforming buffers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+recsel, phosel do not conform to the pattern of other buffers 
+
+* not needed by OptiX
+* only needed in host NPY for debugging 
+* phosel is populated on device by ThrustIdx::makeHistogram from the OptiX filled sequence buffer
+* recsel is populated on device by ThrustArray::repeat_to on phosel 
+
+Formerly had no way to get buffers into Thrust other than 
+going through the full pipeline. Added capability to ThrustArray 
+to allocate/resize buffers allowing simpler flow:
+
+* NumpyEvt create NPY (recsel, phosel still created early on host, but they just serve as dimension placeholders)
+* allocate recsel and phosel on device with ThrustArray(NULL, NPY dimensions), populate with ThrustIdx
+* ThrustArray::download into the recsel and phosel NPY 
+* Scene::uploadSelection to upload with OpenGL for use from shaders 
+
+TODO: skip redundant Thrust download, OpenGL upload using CUDA/OpenGL interop ?
+
+
 
 C++ library versions
 ----------------------

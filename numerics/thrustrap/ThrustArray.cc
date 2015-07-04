@@ -18,8 +18,6 @@
 template<typename S>
 void ThrustArray<S>::init()
 {
-    
-
     unsigned int size = getSize();    
     std::cout << "ThrustArray::init "
               << " num_elements " <<  m_num_elements  
@@ -27,9 +25,20 @@ void ThrustArray<S>::init()
               << " size " << size  
               << std::endl ;
 
-    assert(m_devptr && "devptr is NULL");
-    thrust::device_ptr<S>  ptr = thrust::device_pointer_cast(m_devptr) ;
-    m_dvec = thrust::device_vector<S>(ptr, ptr+size);
+    if(m_devptr)
+    {
+        LOG(info) << "ThrustArray<S>::init using preexisting device buffer " ; 
+        thrust::device_ptr<S>  ptr = thrust::device_pointer_cast(m_devptr) ;
+        m_dvec = thrust::device_vector<S>(ptr, ptr+size);
+    }
+    else
+    {
+        LOG(info) << "ThrustArray<S>::init allocating as NULL devptr " ; 
+        m_dvec = thrust::device_vector<S>() ;
+        resize_imp(m_dvec, size);
+        m_devptr = thrust::raw_pointer_cast(&m_dvec[0]);
+    }
+
 }
 
 
@@ -48,6 +57,18 @@ NPY<S>* ThrustArray<S>::makeNPY()
     thrust::host_vector<S> hvec = m_dvec ;   // full pullback, expensive 
     return NPY<S>::make(hvec.size()/m_itemsize, 1, m_itemsize, hvec.data()); 
 }
+
+template<typename S>
+void ThrustArray<S>::download(NPY<S>* npy)
+{
+    thrust::host_vector<S> hvec = m_dvec ;   // full pullback, expensive 
+    assert(hvec.size() == npy->getNumValues(0) && "ThrustArray<S>::readInto size mismatch between array and npy "); 
+    npy->read(hvec.data());
+}
+
+
+
+
 
 template<typename S>
 void ThrustArray<S>::dump(const char* msg, unsigned int nitems)

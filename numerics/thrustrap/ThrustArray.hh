@@ -7,7 +7,7 @@
 template <typename S>
 class ThrustArray {
    public:
-         ThrustArray(S* devptr, unsigned int num_elements, unsigned int itemsize);
+         ThrustArray(S* devptr, unsigned int num_elements, unsigned int itemsize); // preexisting buffer on device
    public:
          unsigned int getSize();
          unsigned int getNumElements();
@@ -22,12 +22,14 @@ class ThrustArray {
    public:
          void save(const char* path);
          NPY<S>* makeNPY(); 
+         void download(NPY<S>* npy);
    private:
          void init();
    private:
          thrust::device_vector<S>  m_dvec ;
    private:
          S*                        m_devptr ;
+         NPY<S>*                   m_npy ;
          unsigned int              m_num_elements ;
          unsigned int              m_itemsize ;
 };

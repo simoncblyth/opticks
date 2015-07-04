@@ -209,7 +209,7 @@ int main(int argc, char** argv)
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     Index* flags = types.getFlagsIndex(); 
     flags->setExt(".ini");
-    flags->save("/tmp");
+    //flags->save("/tmp");
 
 
     GLoader loader ;
@@ -267,7 +267,6 @@ int main(int argc, char** argv)
     // Scene, Rdr do uploads orchestrated by NumpyEvt/MultiViewNPY 
     // creating the OpenGL buffers from NPY managed data
     scene.uploadEvt();
-    scene.uploadSelection();  
 
 
     LOG(info) << "main: scene.uploadEvt DONE "; 
@@ -293,8 +292,10 @@ int main(int argc, char** argv)
     int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
     assert(rng_max >= 1e6); 
     engine.setRngMax(rng_max);
-    engine.init();  // creates OptiX context, when enabled
-    LOG(info) << "main: engine.init DONE "; 
+
+    LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
+    engine.init();  
+    LOG(info) << "main.OptiXEngine::init DONE "; 
 
     // persisting domain allows interpretation of packed photon record NPY arrays 
     // from standalone NumPy
@@ -305,7 +306,9 @@ int main(int argc, char** argv)
     if(idomain) idomain->save("idomain", "1");
 
    
-    engine.generate();     LOG(info) << "main: engine.generate + propagate DONE "; 
+    LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
+    engine.generate();     
+    LOG(info) << "main.OptiXEngine::generate DONE "; 
 
 
     NPY<float>* dpho = evt.getPhotonData();
@@ -337,8 +340,6 @@ int main(int argc, char** argv)
     rec.setDomains((NPY<float>*)domain);
 
 
-   
-
 
 #ifdef SLOW_CPU_INDEXING
     SequenceNPY seq(dpho);
@@ -353,33 +354,19 @@ int main(int argc, char** argv)
 
 #else
     optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
-    optix::Buffer& recsel_buffer   = engine.getRecselBuffer() ;
-    optix::Buffer& phosel_buffer   = engine.getPhoselBuffer() ;
-
-    // hmm history buffers (seqhis + seqmat) are photon level qtys but 
-    // need to repeat the indices *maxrec for the record level recsel buffer
-
-    unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );
-    assert(num_elements == evt.getNumPhotons());
-
-    unsigned int        device_number = 0 ;  // maybe problem with multi-GPU
+    unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == evt.getNumPhotons());
+    unsigned int device_number = 0 ;  // maybe problem with multi-GPU
     unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
-    unsigned char*      d_rsel = OptiXUtil::getDevicePtr<unsigned char>(      recsel_buffer, device_number  );  
-    unsigned char*      d_psel = OptiXUtil::getDevicePtr<unsigned char>(      phosel_buffer, device_number  );  
-
-    
-
-
-    LOG(info) << "main: ThrustIndex ctor " ; 
 
     unsigned int sequence_itemsize = evt.getSequenceData()->getShape(2) ; assert( 2 == sequence_itemsize );
     unsigned int phosel_itemsize   = evt.getPhoselData()->getShape(2)   ; assert( 4 == phosel_itemsize );
     unsigned int recsel_itemsize   = evt.getRecselData()->getShape(2)   ; assert( 4 == recsel_itemsize );
     unsigned int maxrec = evt.getMaxRec();
  
-    ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );
-    ThrustArray<unsigned char>      psel(d_psel, num_elements       , phosel_itemsize );
-    ThrustArray<unsigned char>      rsel(d_rsel, num_elements*maxrec, recsel_itemsize );
+    LOG(info) << "main: ThrustIndex ctor " ; 
+    ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );   // input flag/material sequences
+    ThrustArray<unsigned char>      psel(NULL  , num_elements       , phosel_itemsize   );   // output photon selection
+    ThrustArray<unsigned char>      rsel(NULL  , num_elements*maxrec, recsel_itemsize   );   // output record selection
 
     ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
     idx.makeHistogram(0);   
@@ -389,15 +376,19 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize();
 
-    pseq.save("/tmp/main_pseq.npy");
-    psel.save("/tmp/main_psel.npy");
-    rsel.save("/tmp/main_rsel.npy");
+    // download Thrust buffers into NPY
+    psel.download( evt.getPhoselData() ); 
+    rsel.download( evt.getRecselData() ); 
+
+    evt.getPhoselData()->save("/tmp/phosel.npy");
+    evt.getRecselData()->save("/tmp/recsel.npy");
+
+    scene.uploadSelection();   // upload NPY into OpenGL buffer, duplicating recsel on GPU
 
     Index* seqhis = idx.getHistogramIndex(0) ;  
     Index* seqmat = idx.getHistogramIndex(1) ;  
-
-
 #endif
+
 
     if(noviz)
     {
@@ -410,7 +401,7 @@ int main(int argc, char** argv)
 
     Photons photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
 
-    scene.setPhotons(&photons);
+    scene.setPhotons(&photons);  // seems to do little, maybe just for GUI
 
 #ifdef GUI_
     GUI gui ;

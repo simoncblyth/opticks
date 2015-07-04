@@ -4,6 +4,20 @@
 
 
 template<typename S>
+void resize_imp(
+                thrust::device_vector<S>&  dvec,
+                unsigned int size
+                )
+{
+    dvec.resize(size);
+}
+
+
+
+
+
+
+template<typename S>
 void repeat_to_imp( 
                     unsigned int stride, 
                     unsigned int repeat, 
@@ -17,6 +31,18 @@ void repeat_to_imp(
 
     thrust::copy( sr.begin(), sr.end(),  target.begin() );    
 }
+
+
+
+template void resize_imp<unsigned char>(
+                                 thrust::device_vector<unsigned char>&  dvec,
+                                 unsigned int size
+                                      );
+
+template void resize_imp<unsigned long long>(
+                                 thrust::device_vector<unsigned long long>&  dvec,
+                                 unsigned int size
+                                       );
 
 
 
