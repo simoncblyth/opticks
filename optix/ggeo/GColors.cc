@@ -22,7 +22,7 @@ const char* GColors::NAME = "GColors.json" ;
 
 GColors* GColors::load(const char* dir, const char* name)
 {
-    if(!existsMap(dir, name))
+    if(!existsPath(dir, name))
     {
         LOG(warning) << "GColors::load FAILED no file at  " << dir << "/" << name ; 
         return NULL ;

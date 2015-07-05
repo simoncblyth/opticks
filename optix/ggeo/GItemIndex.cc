@@ -35,9 +35,14 @@ void GItemIndex::init(const char* itemtype)
     m_index = new Index(itemtype);
 }
 
-void GItemIndex::loadIndex(const char* idpath)
+void GItemIndex::loadIndex(const char* idpath, const char* override)
 {
-    m_index = Index::load(idpath, m_index->getItemType());
+    const char* itemtype = override ? override : m_index->getItemType() ;
+    if(override)
+    {
+        LOG(warning)<<"GItemIndex::loadIndex using override itemtype " << itemtype << " instead of default " << m_index->getItemType() ;
+    }
+    m_index = Index::load(idpath, itemtype);
 }
 
 void GItemIndex::add(const char* name, unsigned int source)

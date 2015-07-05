@@ -7,6 +7,7 @@
 
 class Index {
    public:
+        typedef std::vector<std::string> VS ;
         static Index* load(const char* idpath, const char* itemtype);
         Index(const char* itemtype);
         void save(const char* idpath);
@@ -20,6 +21,7 @@ class Index {
         void loadMaps(const char* idpath);
         void crossreference();
    public:
+        void add(const VS& vs);
         void add(const char* name, unsigned int source, bool sort=true);
         void sortNames(); // currently by ascending local index : ie addition order
         std::vector<std::string>& getNames();

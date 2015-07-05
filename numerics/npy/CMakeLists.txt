@@ -50,7 +50,7 @@ add_library( ${name}  SHARED
     RecordsNPY.cpp
     BoundariesNPY.cpp
     SequenceNPY.cpp
-    CountsNPY.cpp
+    Counts.cpp
     Types.cpp
     Index.cpp
 )
@@ -78,7 +78,7 @@ PhotonsNPY.hpp
 RecordsNPY.hpp
 BoundariesNPY.hpp
 SequenceNPY.hpp
-CountsNPY.hpp
+Counts.hpp
 numpy.hpp
 stringutil.hpp
 jsonutil.hpp

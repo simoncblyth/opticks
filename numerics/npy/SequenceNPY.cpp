@@ -168,7 +168,7 @@ void SequenceNPY::indexSequences(unsigned int maxidx)
 
     // order by counts of that sequence
 
-    m_history_counts.add(suh) ;
+    m_history_counts.addMap(suh) ;
     m_history_counts.sort(false) ;
     m_history_counts.dump("m_history_counts", maxidx) ;
 
@@ -176,7 +176,7 @@ void SequenceNPY::indexSequences(unsigned int maxidx)
     m_seqhis_npy = makeSequenceCountsArray(Types::HISTORYSEQ,  m_history_counts.counts()  );
 
 
-    m_material_counts.add(sum) ;
+    m_material_counts.addMap(sum) ;
     m_material_counts.sort(false) ;
     m_material_counts.dump("m_material_counts", maxidx) ;
 

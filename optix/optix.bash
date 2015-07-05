@@ -1524,7 +1524,7 @@ optix-samples-hfind(){ find $(optix-samples-src-dir) -name '*.h' -exec grep -H $
 optix-find(){          find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
 optix-ifind(){         find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
 
-optix-pdf(){ open $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_3.7.0.pdf ; }
+optix-pdf(){ open $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
 
 
 
@@ -1547,6 +1547,15 @@ optix-linux-name(){
       370) echo NVIDIA-OptiX-SDK-3.7.0-linux64 ;;
    esac
 }
+
+optix-version(){
+   case $(optix-name) in 
+     OptiX_380)   echo 3.8.0 ;;
+     OptiX_301)   echo 3.0.2 ;;
+     OptiX_370b2) echo 3.7.0 ;;
+  esac
+}
+
 
 optix-linux-jump(){
     local vers=${1:-351}

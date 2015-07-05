@@ -16,6 +16,7 @@
 template<typename T>
 class CUDAInterop {
    public:
+       static void init();
        CUDAInterop(NPY<T>* npy);
    public:
        int  getBufferId();
@@ -33,6 +34,14 @@ class CUDAInterop {
 
 
 
+
+template <typename T>
+inline void CUDAInterop<T>::init()
+{
+    cudaGLSetGLDevice(0);
+}
+
+
 template <typename T>
 inline CUDAInterop<T>::CUDAInterop(NPY<T>* npy)
        :
@@ -42,7 +51,6 @@ inline CUDAInterop<T>::CUDAInterop(NPY<T>* npy)
        m_buf_size(0),
        m_registered(false)
 {
-   registerBuffer();
    npy->setAux(this);
 } 
 
@@ -83,14 +91,7 @@ inline void CUDAInterop<T>::registerBuffer()
 template <typename T>
 inline T* CUDAInterop<T>::GL_to_CUDA()
 {
-    if(!m_registered) registerBuffer();
-
-    if(!m_registered)
-    {
-         LOG(info) << "CUDAInterop<T>::GL_to_CUDA FAILED to register " ; 
-         return NULL ; 
-    } 
-
+    assert(m_registered);
     LOG(info) << "CUDAInterop<T>::GL_to_CUDA " << getBufferId() ; 
     cudaGraphicsMapResources(1, &m_vbo_cuda, 0);
     cudaGraphicsResourceGetMappedPointer((void **)&m_raw_ptr, &m_buf_size, m_vbo_cuda);

@@ -74,7 +74,14 @@ with seqhis = seqhis | tmp   get unexpected "f"  always appearing in most signfi
 rtBuffer<float4>    genstep_buffer;
 rtBuffer<float4>    photon_buffer;
 rtBuffer<short4>    record_buffer;   // 2 short4 take same space as 1 float4 quad
+
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long and unsigned long long are both 8 bytes, 64 bits 
+
+rtBuffer<unsigned char> phosel_buffer; 
+rtBuffer<unsigned char> recsel_buffer; 
+
+
+
 
 rtBuffer<curandState, 1> rng_states ;
 

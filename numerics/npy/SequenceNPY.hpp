@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Types.hpp"
-#include "CountsNPY.hpp"
+#include "Counts.hpp"
 #include "NPY.hpp"
 
 class RecordsNPY ; 
@@ -104,8 +104,8 @@ class SequenceNPY {
    private:
        Index*                       m_seqmat ; 
    private:
-       CountsNPY<unsigned int>      m_material_counts ; 
-       CountsNPY<unsigned int>      m_history_counts ; 
+       Counts<unsigned int>         m_material_counts ; 
+       Counts<unsigned int>         m_history_counts ; 
 
 };
 

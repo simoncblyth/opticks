@@ -11,9 +11,15 @@
 #include "md5digest.hh"
 #include "limits.h"
 
+
+
+// npy-
+#include "Counts.hpp"
 #include "jsonutil.hpp"
 #include "stringutil.hpp"
 
+#include <iostream>
+#include <iomanip>
 #include <string>
 #include <map>
 
@@ -650,6 +656,39 @@ GBuffer* GBoundaryLib::createReemissionBuffer(GPropertyMap<float>* scint)
 }
 
 
+
+static bool second_order( const std::pair<std::string, unsigned int>& a, const std::pair<std::string, unsigned int>& b ){
+    return a.second < b.second ;
+}
+
+void GBoundaryLib::countMaterials()
+{
+    LOG(info) << "GBoundaryLib::countMaterials " ;
+    Counts<unsigned int> cmat("countMaterials");
+
+    unsigned int numBoundary = getNumBoundary() ;
+    for(unsigned int isub=0 ; isub < numBoundary ; isub++)
+    {
+        GBoundary* boundary = getBoundary(isub);
+        for( unsigned int p = 0; p < NUM_QUAD ; ++p )  // over NUM_QUAD different sets (imat,omat,isur,osur,iext,oext)  
+        { 
+            GPropertyMap<float>* psrc = boundary->getConstituentByIndex(p) ; 
+            if(psrc->isMaterial())
+            {
+                std::string shortname = psrc->getShortName();
+                cmat.add(shortname.c_str());
+            }
+        }
+    }
+
+   cmat.sort();
+   cmat.dump();
+   cmat.sort(false);
+   cmat.dump();
+}
+
+
+
 void GBoundaryLib::createWavelengthAndOpticalBuffers()
 {
     //
@@ -693,36 +732,6 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
     //        name   : skipped as not needed on GPU, can be looked up via index for GUI selections 
     //
 
-/*
-
-In [1]: a = np.load("/tmp/optical_buffer_debug.npy")
-
-In [10]: a.reshape((-1,6,4))
-Out[10]: 
-array([[[ 76,   0,   0,   0],
-        [ 76,   0,   0,   0],
-        [  0,   0,   0,   0],
-        [  0,   0,   0,   0],
-        [  0,   0,   0,   0],
-        [  0,   0,   0,   0]],
-       ...
-       [[ 67,   0,   0,   0],
-        [ 57,   0,   0,   0],
-        [  0,   0,   0,   0],
-        [  9,   0,   3, 100],
-        [  0,   0,   0,   0],
-        [  0,   0,   0,   0]],
-
-       [[ 42,   0,   0,   0],
-        [ 74,   0,   0,   0],
-        [  0,   0,   0,   0],
-        [  0,   0,   0,   0],
-        [  0,   0,   0,   0],
-        [  0,   0,   0,   0]]], dtype=uint32)
-
-*/
-
-
 
     assert(m_wavelength_buffer == NULL && m_optical_buffer == NULL && "not expecting preexisting wavelength/optical buffers");
 
@@ -764,13 +773,6 @@ array([[[ 76,   0,   0,   0],
         std::string ishortname = boundary->getInnerMaterial()->getShortName() ; 
 
         std::string oshortname = boundary->getOuterMaterial()->getShortName() ; 
-
-
-        //unsigned int iindex = boundary->getInnerMaterial()->getIndex();
-        //unsigned int oindex = boundary->getOuterMaterial()->getIndex();
-        // collect material names and source indices into GItemIndex
-        //m_materials->add(ishortname.c_str(), iindex );
-        //m_materials->add(oshortname.c_str(), oindex );
 
         {
             m_meta->add(kfmt, isub, "imat", boundary->getInnerMaterial() );

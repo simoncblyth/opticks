@@ -90,6 +90,10 @@ class GBoundaryLib {
                       GPropertyMap<float>* oextra
                  );
       static unsigned int getLine(unsigned int isub, unsigned int ioff);
+  
+      void          countMaterials();
+
+      // canonically invoked during the flattening by GMergedMesh::create
       void          createWavelengthAndOpticalBuffers();  
       GBuffer*      createReemissionBuffer(GPropertyMap<float>* scint);  
 

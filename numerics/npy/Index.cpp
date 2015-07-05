@@ -14,6 +14,15 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+void Index::add(const VS& vs)
+{
+    unsigned int n(0);
+    for(VS::const_iterator it=vs.begin(); it!=vs.end() ; it++) 
+    {
+        add(it->c_str(),n+1);
+        n++ ;
+    }
+}
 
 void Index::add(const char* name, unsigned int source, bool sort )
 {

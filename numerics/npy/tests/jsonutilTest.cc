@@ -41,15 +41,40 @@ void test_loadMap()
    dumpMap<unsigned int, std::string>(index);
 }
 
+
+void test_saveList()
+{
+
+   typedef std::pair<std::string, unsigned int> SU ; 
+   std::vector<SU> vp ; 
+   vp.push_back(SU("hello",1));  
+   vp.push_back(SU("hello",2));  // this replaces the first hello
+   vp.push_back(SU("world",3));
+
+   saveList(vp, "/tmp/list.ini");
+   saveList(vp, "/tmp/list.json");
+}
+
+void test_loadList()
+{
+   typedef std::pair<std::string, unsigned int> SU ; 
+   std::vector<SU> vp ; 
+   loadList(vp, "/tmp/list.ini");
+   dumpList(vp, "dumpList /tmp/list.ini");
+}
+
+
+
 int main()
 {
     //test_saveMap();
     //test_loadMap();
 
-    test_saveMap2();
-    test_loadMap2();
+    //test_saveMap2();
+    //test_loadMap2();
 
-
+    test_saveList();
+    test_loadList();
 
     return 0 ; 
 }

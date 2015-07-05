@@ -6,6 +6,7 @@
 #include "GBoundaryLib.hh"
 #include "GSensorList.hh"
 #include "GBoundaryLibMetadata.hh"
+#include "GTraverse.hh"
 
 //#include "GMaterialIndex.hh"
 //#include "GSurfaceIndex.hh"
@@ -52,8 +53,11 @@ void GLoader::load(bool nogeocache)
     else
     {
         LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
-        m_ggeo = (*m_imp)(envprefix);        // formerly AssimpGGeo::load(envprefix);
-        //m_ggeo->Details("GLoader::load"); 
+        m_ggeo = (*m_imp)(envprefix);      
+
+        GBoundaryLib* lib = m_ggeo->getBoundaryLib();
+
+        lib->getMaterials()->loadIndex("$HOME/.opticks"); // customize GMaterialIndex
 
         m_ggeo->sensitize(idpath, "idmap");  // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
 
@@ -62,7 +66,6 @@ void GLoader::load(bool nogeocache)
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
         m_mergedmesh->save(idpath); 
 
-        GBoundaryLib* lib = m_ggeo->getBoundaryLib();
         m_metadata = lib->getMetadata();
         m_metadata->save(idpath);
 

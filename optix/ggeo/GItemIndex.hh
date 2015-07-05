@@ -27,7 +27,7 @@ class GItemIndex {
         Index*       getIndex();
         //const char* getItemType();
    public:
-        void loadIndex(const char* idpath);
+        void loadIndex(const char* idpath, const char* override=NULL);
    private:
         void init(const char* itemtype);
    public:

@@ -48,6 +48,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     // material/surface properties as function of wavelength collected into wavelengthBuffer
 
     GBoundaryLib* lib = ggeo->getBoundaryLib();
+    //lib->countMaterials(); // debug
     lib->createWavelengthAndOpticalBuffers();
     lib->dumpIndex("GMergedMesh::create GBoundaryLib::dumpIndex)");
     ggeo->dumpIndex("GMergedMesh::create GGeo::dumpIndex"); 
@@ -72,6 +73,10 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
     gfloat3* vertices = pass == pass_merge ? mesh->getTransformedVertices(*transform) : NULL ;
+
+    //std::vector<unsigned int> bids = node->getDistinctBoundaryIndices();
+    //assert(bids.size() == 1);
+    //std::cout << "GMergedMesh::traverse " << bids[0];
 
 
     bool selected = solid->isSelected();

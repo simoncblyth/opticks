@@ -8,7 +8,10 @@
 #include "Frame.hh"
 
 // ggeoview-
+//#define INTEROP 1
+#ifdef INTEROP
 #include "CUDAInterop.hh"
+#endif
 
 // oglrap-
 #define GUI_ 1
@@ -137,8 +140,6 @@ int main(int argc, char** argv)
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
     Scene scene(shader_dir, shader_incl_path) ;
 
-
-
     Composition composition ;   
     Frame frame ;
     Bookmarks bookmarks ; 
@@ -200,7 +201,7 @@ int main(int argc, char** argv)
     LOG(info) << "main: frame.init DONE "; 
 
 #ifdef INTEROP
-    cudaGLSetGLDevice(0);
+    CUDAInterop<unsigned char>::init(); 
 #endif
 
     GLFWwindow* window = frame.getWindow();
@@ -243,6 +244,14 @@ int main(int argc, char** argv)
     GBoundaryLibMetadata* meta = loader.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
 
+
+    if(nogeocache)
+    {
+        LOG(info) << "ggeoview/main.cc early exit due to --nogeocache/-G option " ; 
+        exit(EXIT_SUCCESS); 
+    }
+
+
     // hmm would be better placed into a NumpyEvtCfg 
     const char* typ ; 
     if(     fcfg->hasOpt("cerenkov"))      typ = "cerenkov" ;
@@ -268,21 +277,22 @@ int main(int argc, char** argv)
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
 
+
 #ifdef INTEROP
     // signal Rdr to use GL_DYNAMIC_DRAW
     CUDAInterop<unsigned char>* c_psel = new CUDAInterop<unsigned char>(evt.getPhoselData());
     CUDAInterop<unsigned char>* c_rsel = new CUDAInterop<unsigned char>(evt.getRecselData());
 #endif
 
-    // Scene, Rdr do uploads orchestrated by NumpyEvt/MultiViewNPY 
-    // creating the OpenGL buffers from NPY managed data
-    scene.uploadEvt();
+    scene.uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
+
 
 #ifdef INTEROP
     scene.uploadSelection();
-
-    c_psel->registerBuffer();
-    c_rsel->registerBuffer();
+    //c_psel->registerBuffer();
+    //c_rsel->registerBuffer();
+#else
+    // non-interop defer uploadSelection until after indexing 
 #endif
 
 
@@ -377,9 +387,14 @@ int main(int argc, char** argv)
 
 
 #ifdef INTEROP
-    unsigned char*      d_psel = c_psel->GL_to_CUDA();
-    unsigned char*      d_rsel = c_rsel->GL_to_CUDA();
+    // attempt to give CUDA access to mapped OpenGL buffer
+    //unsigned char*      d_psel = c_psel->GL_to_CUDA();
+    //unsigned char*      d_rsel = c_rsel->GL_to_CUDA();
+    // attempt to give CUDA access to OptiX buffers which in turn are connected to OpenGL buffers
+    unsigned char* d_psel = OptiXUtil::getDevicePtr<unsigned char>( engine.getPhoselBuffer(), device_number ); 
+    unsigned char* d_rsel = OptiXUtil::getDevicePtr<unsigned char>( engine.getRecselBuffer(), device_number ); 
 #else
+    LOG(info)<< "main: non interop allocating new device buffers with ThrustArray " ;
     unsigned char*      d_psel = NULL ;    
     unsigned char*      d_rsel = NULL ;    
 #endif
@@ -403,10 +418,12 @@ int main(int argc, char** argv)
     cudaDeviceSynchronize();
 
 #ifdef INTEROP
+    // declare that CUDA finished with buffers 
     c_rsel->CUDA_to_GL();
     c_psel->CUDA_to_GL();
 #else
-    psel.download( evt.getPhoselData() );   // download Thrust buffers into NPY
+    // non-interop workaround download the Thrust created buffers into NPY, then copy them back to GPU with uploadSelection
+    psel.download( evt.getPhoselData() );  
     rsel.download( evt.getRecselData() ); 
 
     evt.getPhoselData()->save("phosel_%s", typ, tag);
