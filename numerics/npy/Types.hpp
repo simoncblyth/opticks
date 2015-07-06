@@ -34,7 +34,9 @@ TODO: rejig material codes just plucking most common as index 1-15, and using co
 
 */
 
-
+// TODO: split mechanics into a base class 
+//       with specializations for History and Material
+//
 class Types {
    public:
        static const char* TAIL ; 
@@ -100,6 +102,13 @@ class Types {
        unsigned int getMaterialAbbrevInvertAsCode(std::string label, bool hex=false);
        unsigned int getAbbrevInvertAsCode(std::string label, Item_t etype, bool hex=false);
 
+   public:
+       // formerly in RecordsNPY
+       unsigned long long convertSequenceString(std::string& seq, Item_t etype, bool hex=false);
+       void prepSequenceString(std::string& lseq, unsigned int& elen, unsigned int& nelem, bool hex);
+       std::string decodeSequenceString(std::string& seq, Item_t etype, bool hex=false);
+
+       std::string abbreviateHexSequenceString(std::string& seq, Item_t etype);
 
    private:
        Index*                                               m_materials_index ; 

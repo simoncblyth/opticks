@@ -292,7 +292,7 @@ int main(int argc, char** argv)
     //c_psel->registerBuffer();
     //c_rsel->registerBuffer();
 #else
-    // non-interop defer uploadSelection until after indexing 
+    // non-interop workaround: defer uploadSelection until after indexing 
 #endif
 
 
@@ -368,18 +368,6 @@ int main(int argc, char** argv)
 
 
 
-#ifdef SLOW_CPU_INDEXING
-    SequenceNPY seq(dpho);
-    seq.setTypes(&types);
-    seq.setRecs(&rec);
-    seq.setSeqIdx(evt.getRecselData());
-    seq.indexSequences(32);   // creates and populates the seqidx CPU side 
-
-    Index* seqhis = seq.getSeqHis();
-    Index* seqmat = seq.getSeqMat();
-    //seqidx->save("seq%s", typ, tag);  
-
-#else
     optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
     unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == evt.getNumPhotons());
     unsigned int device_number = 0 ;  // maybe problem with multi-GPU
@@ -411,8 +399,8 @@ int main(int argc, char** argv)
 
     ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
 
-    idx.makeHistogram(0);   
-    idx.makeHistogram(1);   
+    idx.makeHistogram(0, "FlagSequence");   
+    idx.makeHistogram(1, "MaterialSequence");   
 
     psel.repeat_to( maxrec, rsel );
     cudaDeviceSynchronize();
@@ -426,17 +414,26 @@ int main(int argc, char** argv)
     psel.download( evt.getPhoselData() );  
     rsel.download( evt.getRecselData() ); 
 
-    evt.getPhoselData()->save("phosel_%s", typ, tag);
-    evt.getRecselData()->save("recsel_%s", typ, tag);
+    //evt.getPhoselData()->save("phosel_%s", typ, tag);
+    //evt.getRecselData()->save("recsel_%s", typ, tag);
 
     scene.uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
 #endif
 
+    GItemIndex* seqhis = new GItemIndex(idx.getHistogramIndex(0)) ;  
+    GItemIndex* seqmat = new GItemIndex(idx.getHistogramIndex(1)) ;  
+    //seqhis->save(idpath);
+    //seqmat->save(idpath);
 
-    Index* seqhis = idx.getHistogramIndex(0) ;  
-    Index* seqmat = idx.getHistogramIndex(1) ;  
-#endif
+    seqhis->setTitle("Photon Flag Sequence Selection");
+    seqhis->setTypes(&types);
+    seqhis->setLabeller(GItemIndex::HISTORYSEQ);
+    seqhis->formTable();
 
+    seqmat->setTitle("Photon Material Sequence Selection");
+    seqmat->setTypes(&types);
+    seqmat->setLabeller(GItemIndex::MATERIALSEQ);
+    seqmat->formTable();
 
     if(noviz)
     {

@@ -6,6 +6,9 @@
 #include "BoundariesNPY.hpp"
 #include "Index.hpp"
 
+// ggeo-
+#include "GItemIndex.hh"
+
 
 #ifdef GUI_
 #include <imgui.h>
@@ -36,41 +39,17 @@ void Photons::gui()
     if(m_seqhis)
     {
         ImGui::Spacing();
-        if (ImGui::CollapsingHeader("Photon Flag Sequence Selection"))
-        {
-            gui_radio(m_seqhis);
-        }
+        m_seqhis->gui_radio_select();
     }
 
     if(m_seqmat)
     {
         ImGui::Spacing();
-        if (ImGui::CollapsingHeader("Photon Material Sequence Selection"))
-        {
-            gui_radio(m_seqmat);
-        }
+        m_seqmat->gui_radio_select();
     }
 #endif
 }
 
-
-
-void Photons::gui_radio(Index* index)
-{
-#ifdef GUI_
-   typedef std::vector<std::string> VS ; 
-   VS names = index->getNames();
-   int* ptr = index->getSelectedPtr();
-   ImGui::RadioButton( "All", ptr, 0 );
-   for(VS::iterator it=names.begin() ; it != names.end() ; it++ )
-   {   
-       std::string iname = *it ; 
-       unsigned int local  = index->getIndexLocal(iname.c_str()) ;
-       ImGui::RadioButton( iname.c_str(), ptr, local);
-   }
-   ImGui::Text("%s %d ", index->getItemType(), *ptr);
-#endif
-}
 
 
 void Photons::gui_boundary_selection()

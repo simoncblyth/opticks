@@ -30,6 +30,13 @@ seqs_ = lambda _:load_("seqscintillation",_)
 phc_ =  lambda _:load_("phcerenkov",_)
 phs_ =  lambda _:load_("phscintillation",_)
 
+recsel_cerenkov_ = lambda _:load_("recsel_cerenkov", _)
+phosel_cerenkov_ = lambda _:load_("phosel_cerenkov", _)
+recsel_scintillation_ = lambda _:load_("recsel_scintillation", _)
+phosel_scintillation_ = lambda _:load_("phosel_scintillation", _)
+
+
+
 g4c_ = lambda _:load_("gopcerenkov",_)
 g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)

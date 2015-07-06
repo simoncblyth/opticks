@@ -35,8 +35,8 @@ int main(int argc, char** argv)
     { 
         unsigned int photon_id = i ;  
         std::string seqhis = r.getSequenceString(photon_id, Types::HISTORY );
-        std::string dseqhis = r.decodeSequenceString(seqhis, Types::HISTORY);
-        unsigned long long cseq = r.convertSequenceString(seqhis, Types::HISTORY);
+        std::string dseqhis = types.decodeSequenceString(seqhis, Types::HISTORY);
+        unsigned long long cseq = types.convertSequenceString(seqhis, Types::HISTORY);
         unsigned long long hseq = r.getSequence(photon_id, Types::HISTORY );
         assert(cseq == hseq);
 

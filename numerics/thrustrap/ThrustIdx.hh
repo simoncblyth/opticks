@@ -17,7 +17,7 @@ class ThrustIdx {
    public:
          ThrustIdx(ThrustArray<S>* target, ThrustArray<T>* source);
    public:
-         void                  makeHistogram(unsigned int offset);
+         void                  makeHistogram(unsigned int offset, const char* indextype);
          ThrustHistogram<T,S>* getHistogram(unsigned int offset);
          Index*                getHistogramIndex(unsigned int offset);
    private:

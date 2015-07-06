@@ -92,6 +92,8 @@ void GLoader::load(bool nogeocache)
     m_flags->setColorMap(GColorMap::load(idpath, "GFlagIndexColors.json"));    
 
     m_colors = GColors::load(idpath,"GColors.json");                         // colorname => hexcode 
+
+    m_materials->setLabeller(GItemIndex::COLORKEY);
     m_materials->setColorSource(m_colors);
     m_surfaces->setColorSource(m_colors);
     m_flags->setColorSource(m_colors);

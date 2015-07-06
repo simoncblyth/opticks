@@ -6,29 +6,28 @@
 class PhotonsNPY ; 
 class BoundariesNPY ; 
 class Types ; 
-class Index ; 
+class GItemIndex ; 
 
 class Photons {
    public:
-       Photons(PhotonsNPY* photons, BoundariesNPY* boundaries, Index* seqhis, Index* seqmat);
+       Photons(PhotonsNPY* photons, BoundariesNPY* boundaries, GItemIndex* seqhis, GItemIndex* seqmat);
 
        void gui();
        void gui_boundary_selection();
        void gui_flag_selection();
-       void gui_radio(Index* index);
    private:  
        void init();
    private:
         PhotonsNPY*       m_photons ;  
         BoundariesNPY*    m_boundaries ;  
-        Index*            m_seqhis ;  
-        Index*            m_seqmat ;  
+        GItemIndex*       m_seqhis ;  
+        GItemIndex*       m_seqmat ;  
         Types*            m_types ; 
 
 };
 
 
-inline Photons::Photons(PhotonsNPY* photons, BoundariesNPY* boundaries, Index* seqhis, Index* seqmat)
+inline Photons::Photons(PhotonsNPY* photons, BoundariesNPY* boundaries, GItemIndex* seqhis, GItemIndex* seqmat)
     :
     m_photons(photons),
     m_boundaries(boundaries),

@@ -29,8 +29,7 @@ class ThrustHistogram {
     public:
          void dumpHistogram(const char* msg="ThrustHistogram::dumpHistogram", unsigned int n=100);
     public:
-         // DEBUG 
-         NPY<T>* makeSequenceIndexArray();
+         NPY<T>* makeSequenceIndexArray(); // DEBUG 
     private:
          void init();
          Index* makeIndex(const char* itemtype);
@@ -40,7 +39,7 @@ class ThrustHistogram {
          thrust::device_vector<T>   m_values;
          thrust::device_vector<int> m_counts;
     private:
-         thrust::host_vector<T>     m_values_h ;  // copying from device to host 
+         thrust::host_vector<T>     m_values_h ;  
          thrust::host_vector<int>   m_counts_h ; 
     private:
          const char*                m_itemtype ;   

@@ -9,6 +9,10 @@
 #include <iostream>
 #include <iomanip>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 const char* Types::TAIL = " " ;
 
@@ -380,12 +384,12 @@ void Types::makeFlagAbbrev()
 {
     typedef std::map<std::string,std::string> MSS ; 
     MSS s ; 
-    s["CERENKOV"]          = "CE" ;
+    s["CERENKOV"]          = "CK" ;
     s["SCINTILLATION"]     = "SC" ;
     s["MISS"]              = "MI" ;
-    s["BULK_ABSORB"]       = "KA" ;
-    s["BULK_REEMIT"]       = "KR" ;
-    s["BULK_SCATTER"]      = "KS" ;
+    s["BULK_ABSORB"]       = "AB" ;
+    s["BULK_REEMIT"]       = "RE" ;
+    s["BULK_SCATTER"]      = "BS" ;
     s["SURFACE_DETECT"]    = "SD" ;
     s["SURFACE_ABSORB"]    = "SA" ;
     s["SURFACE_DREFLECT"]  = "DR" ;
@@ -478,5 +482,116 @@ std::string Types::getSequenceString(unsigned long long seq)
 
 
 
+
+
+unsigned long long Types::convertSequenceString(std::string& seq, Item_t etype, bool hex)
+{
+    std::string lseq(seq);
+    unsigned int elen(0);
+    unsigned int nelem(0);
+    prepSequenceString(lseq, elen, nelem, hex);
+
+    unsigned long long bseq = 0ull ; 
+
+    for(unsigned int i=0 ; i < nelem ; i++)
+    {
+        std::string sub = seq.substr(i*elen, elen) ;
+        unsigned int bitpos = getAbbrevInvertAsCode(sub, etype, hex);
+        //assert(bitpos < 16);
+        if(bitpos > 15) LOG(warning) << "Types::convertSequenceString bitpos too big " << bitpos ;  
+
+        unsigned long long ull = bitpos ; 
+        unsigned long long msk = ull << (i*4) ; 
+        //assert(i*4 < sizeof(unsigned long long)*8 );
+        if(!(i*4 < sizeof(unsigned long long)*8 ))
+        {
+            LOG(warning) << "Types::convertSequenceString too many bits "
+                         << " i4 " << i*4 
+                         << " seq " << seq 
+                         ;
+        }
+        bseq |= msk ; 
+    }  
+    return bseq ; 
+}
+
+
+
+std::string Types::decodeSequenceString(std::string& seq, Item_t etype, bool hex)
+{
+    std::string lseq(seq);
+    unsigned int elen(0);
+    unsigned int nelem(0);
+    prepSequenceString(lseq, elen, nelem, hex);
+
+    std::stringstream ss ;
+    for(unsigned int i=0 ; i < nelem ; i++)
+    {
+        std::string sub = lseq.substr(i*elen, elen) ;
+        std::string label = getAbbrevInvert(sub, etype, hex );
+        ss  << label ; // no spacing needed, the tail spacer is internal
+    }  
+    return ss.str();
+}
+
+
+std::string Types::abbreviateHexSequenceString(std::string& seq, Item_t etype)
+{
+    bool hex = true ; 
+
+    std::string lseq(seq);
+    unsigned int elen(0);
+    unsigned int nelem(0);
+    prepSequenceString(lseq, elen, nelem, hex);
+
+    std::stringstream ss ;
+    for(unsigned int i=0 ; i < nelem ; i++)
+    {
+        std::string sub = lseq.substr(i*elen, elen) ;
+        std::string label = getAbbrevInvert(sub, etype, hex );
+        std::string abbr  = getAbbrev(label, etype);
+        // not a noop when hex
+
+        ss  << abbr ; // no spacing needed, the tail spacer is internal
+    }  
+    return ss.str();
+}
+
+
+
+void Types::prepSequenceString(std::string& lseq, unsigned int& elen, unsigned int& nelem, bool hex)
+{
+   /*
+      Non-hex sequence strings look like this with 2+1 chars per element
+
+            [CE BT KR BT BT BT BT BT BT BT ]
+
+      hex ones have one char per element  and are reversed
+            [cccccc3c1]
+
+   */
+
+    if(hex)
+    {
+        elen = 1 ; 
+        nelem = lseq.size();
+        std::reverse(lseq.begin(), lseq.end());
+    }
+    else
+    {
+        const char* tail = getTail(); 
+        elen = 2 + strlen(tail);
+        if(lseq.size() % elen != 0)
+        {
+            LOG(fatal)<<"Types::prepSequenceString "
+                      << " lseq " << lseq 
+                      << " elen " << elen
+                      << " tail [" << tail << "]" ;  
+        }
+        assert(lseq.size() % elen == 0);
+        nelem = lseq.size()/elen ;
+    }
+}
+ 
 
 

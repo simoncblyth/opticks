@@ -76,8 +76,8 @@ void PhotonsNPY::dumpPhoton(unsigned int i, const char* msg)
     std::string seqmat = m_recs->getSequenceString(i, Types::MATERIAL) ;
     std::string seqhis = m_recs->getSequenceString(i, Types::HISTORY) ;
 
-    std::string dseqmat = m_recs->decodeSequenceString(seqmat, Types::MATERIAL);
-    std::string dseqhis = m_recs->decodeSequenceString(seqhis, Types::HISTORY);
+    std::string dseqmat = m_types->decodeSequenceString(seqmat, Types::MATERIAL);
+    std::string dseqhis = m_types->decodeSequenceString(seqhis, Types::HISTORY);
 
 
     printf("%s %8u %s %s %25s %25s %s \n", 

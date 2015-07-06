@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stdlib.h"
 #include "string.h"
 #include <string>
 #include <map>
@@ -8,11 +9,15 @@
 class Index {
    public:
         typedef std::vector<std::string> VS ;
+   public:
+        Index(const char* itemtype, const char* title=NULL);
+   public:
         static Index* load(const char* idpath, const char* itemtype);
-        Index(const char* itemtype);
         void save(const char* idpath);
         const char* getItemType();
-
+   public:
+        const char* getTitle();
+        void setTitle(const char* title);
    public:
         int* getSelectedPtr();
         int  getSelected();
@@ -44,6 +49,7 @@ class Index {
 
    private:
         const char*                          m_itemtype ; 
+        const char*                          m_title ; 
         const char*                          m_ext ; 
         int                                  m_selected ; 
         std::map<std::string, unsigned int>  m_source ; 
@@ -57,9 +63,10 @@ class Index {
         std::vector<unsigned int>            m_codes ; 
 };
 
-inline Index::Index(const char* itemtype)
+inline Index::Index(const char* itemtype, const char* title)
    : 
    m_itemtype(strdup(itemtype)),
+   m_title(title ? strdup(title) : strdup(itemtype)),
    m_ext(".json"),
    m_selected(0)
 {
@@ -68,6 +75,20 @@ inline const char* Index::getItemType()
 {
     return m_itemtype ; 
 }
+
+inline const char* Index::getTitle()
+{
+    return m_title ; 
+}
+
+inline void Index::setTitle(const char* title)
+{
+    if(!title) return ;
+    free((void*)m_title);
+    m_title = strdup(title); 
+}
+
+
 inline std::vector<std::string>& Index::getNames()
 {
     return m_names ;  

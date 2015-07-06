@@ -27,7 +27,7 @@ void ThrustIdx<T,S>::init()
 }
 
 template<typename T,typename S>
-void ThrustIdx<T,S>::makeHistogram(unsigned int offset)
+void ThrustIdx<T,S>::makeHistogram(unsigned int offset, const char* indextype)
 {
     assert(offset < NUM_HIST);
 
@@ -40,7 +40,7 @@ void ThrustIdx<T,S>::makeHistogram(unsigned int offset)
     thrust::device_vector<T>& source = m_source->getDeviceVector(); 
     thrust::device_vector<S>& target = m_target->getDeviceVector(); 
 
-    m_histogram[offset] = new ThrustHistogram<T,S>("ThrustHistoHistory", num_elements, source_itemsize, offset, target_itemsize, offset) ;
+    m_histogram[offset] = new ThrustHistogram<T,S>(indextype, num_elements, source_itemsize, offset, target_itemsize, offset) ;
     m_histogram[offset]->createHistogram( source  );
     m_histogram[offset]->apply( source, target ); 
 }

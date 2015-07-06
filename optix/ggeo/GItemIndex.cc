@@ -10,7 +10,9 @@
 #include <algorithm>
 #include <sstream>
 
+// npy-
 #include "Index.hpp"
+#include "Types.hpp"
 #include "jsonutil.hpp"
 
 
@@ -35,6 +37,16 @@ void GItemIndex::init(const char* itemtype)
     m_index = new Index(itemtype);
 }
 
+void GItemIndex::setTitle(const char* title)
+{
+   m_index->setTitle(title);
+}
+
+int GItemIndex::getSelected()
+{
+   return m_index->getSelected();
+}
+
 void GItemIndex::loadIndex(const char* idpath, const char* override)
 {
     const char* itemtype = override ? override : m_index->getItemType() ;
@@ -54,16 +66,6 @@ unsigned int GItemIndex::getIndexLocal(const char* name, unsigned int missing)
 {
     return m_index->getIndexLocal(name, missing);
 }
-
-//const char* GItemIndex::getItemType()
-//{
-//    return m_index->getItemType() ; 
-//}
-
-//std::vector<std::string>& GItemIndex::getNames()
-//{
-//    return m_index->getNames() ;  
-//}
 
 void GItemIndex::save(const char* idpath)
 {
@@ -107,6 +109,79 @@ void GItemIndex::dump(const char* msg)
 
 
 
+
+
+std::string GItemIndex::getLabel(const char* key, unsigned int& colorcode)
+{
+    return (*m_labeller)(this, key, colorcode);
+}
+
+
+
+void GItemIndex::setLabeller(Labeller_t labeller )
+{
+    switch(labeller)
+    {
+        case    DEFAULT  : setLabeller(&GItemIndex::defaultLabeller)     ; break ; 
+        case   COLORKEY  : setLabeller(&GItemIndex::colorKeyLabeller)    ; break ; 
+        case MATERIALSEQ : setLabeller(&GItemIndex::materialSeqLabeller) ; break ; 
+        case  HISTORYSEQ : setLabeller(&GItemIndex::historySeqLabeller)  ; break ; 
+    }
+}
+
+std::string GItemIndex::defaultLabeller(GItemIndex* self, const char* key, unsigned int& colorcode)
+{
+   colorcode = 0xFFFFFF ; 
+   return key ;  
+}
+
+std::string GItemIndex::colorKeyLabeller(GItemIndex* self, const char* key, unsigned int& colorcode )
+{
+    // function pointers have to be static, so access members python style
+    GColorMap* colormap = self->getColorMap(); 
+    GColors*  colors = self->getColorSource(); 
+    Index* index = self->getIndex();
+
+    const char*  colorname = colormap ? colormap->getItemColor(key, NULL) : NULL ; 
+    colorcode  = colors ? colors->getCode(colorname, 0xFFFFFF) : 0xFFFFFF ; 
+
+    unsigned int local  = index->getIndexLocal(key) ;
+
+    std::stringstream ss ; 
+    ss  << std::setw(5)  << std::dec << local 
+        << std::setw(25) << key
+        << std::setw(25) << colorname 
+        << std::setw(10) << std::hex << colorcode 
+        ;
+
+    return ss.str();
+}
+
+std::string GItemIndex::materialSeqLabeller(GItemIndex* self, const char* key_, unsigned int& colorcode)
+{
+   colorcode = 0xFFFFFF ; 
+   std::string key(key_);
+   Types* types = self->getTypes();
+   assert(types); 
+
+   std::string seqmat = types->abbreviateHexSequenceString(key, Types::MATERIALSEQ);  
+
+   return seqmat ;  
+}
+
+std::string GItemIndex::historySeqLabeller(GItemIndex* self, const char* key_, unsigned int& colorcode)
+{
+   colorcode = 0xFFFFFF ; 
+   std::string key(key_);
+
+   Types* types = self->getTypes();
+   assert(types); 
+   std::string seqhis = types->abbreviateHexSequenceString(key, Types::HISTORYSEQ);  
+   return seqhis ;  
+}
+
+
+
 void GItemIndex::formTable()
 {
    m_codes.clear(); 
@@ -116,25 +191,29 @@ void GItemIndex::formTable()
 
    typedef std::vector<std::string> VS ; 
 
+   LOG(info)<<"GItemIndex::formTable " ;
+
    VS& names = m_index->getNames(); 
    for(VS::iterator it=names.begin() ; it != names.end() ; it++ )
    {
-       std::string iname = *it ; 
-       const char*  cname = m_colormap ? m_colormap->getItemColor(iname.c_str(), NULL) : NULL ; 
-       unsigned int code  = m_colors   ? m_colors->getCode(cname, 0xFFFFFF) : 0xFFFFFF ; 
-       unsigned int local  = m_index->getIndexLocal(iname.c_str()) ;
+       std::string key = *it ; 
+       unsigned int colorcode(0x0) ; 
+       std::string label = getLabel(key.c_str(), colorcode );
 
-       std::stringstream ss ; 
-       ss  << std::setw(5)  << std::dec << local 
-           << std::setw(25) << iname
-           << std::setw(25) << cname 
-           << std::setw(10) << std::hex << code 
-           ;
+       std::cout
+            << std::setw(30) << key 
+            << " : " 
+            << label 
+            << std::endl; 
 
-       m_codes.push_back(code);
-       m_labels.push_back(ss.str());
+       m_codes.push_back(colorcode);
+       m_labels.push_back(label);
    }
 }
+
+
+
+
 
 
 GBuffer* GItemIndex::makeColorBuffer()
@@ -174,5 +253,30 @@ void GItemIndex::gui()
 #endif
 }
 
+void GItemIndex::gui_radio_select()
+{
+#ifdef GUI_
+    if (ImGui::CollapsingHeader(m_index->getTitle()))
+    {
+       typedef std::vector<std::string> VS ; 
+       VS names = m_index->getNames();
+       assert(names.size() == m_labels.size());
 
+       int* ptr = m_index->getSelectedPtr();
 
+       std::string all("All ");
+       all += m_index->getItemType() ;  
+
+       ImGui::RadioButton( all.c_str(), ptr, 0 );
+
+       for(unsigned int i=0 ; i < m_labels.size() ; i++)
+       {
+           std::string iname = names[i] ;
+           std::string label = m_labels[i] ;
+           unsigned int local  = m_index->getIndexLocal(iname.c_str()) ;
+           ImGui::RadioButton( label.c_str(), ptr, local);
+       }   
+       ImGui::Text("%s %d ", m_index->getItemType(), *ptr);
+   }
+#endif
+}

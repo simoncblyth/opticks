@@ -8,6 +8,25 @@
 #include "assert.h"
 #include "stdlib.h"
 
+
+
+/*
+#ifdef SLOW_CPU_INDEXING
+    SequenceNPY seq(dpho);
+    seq.setTypes(&types);
+    seq.setRecs(&rec);
+    seq.setSeqIdx(evt.getRecselData());
+    seq.indexSequences(32);   // creates and populates the seqidx CPU side 
+
+    Index* seqhis = seq.getSeqHis();
+    Index* seqmat = seq.getSeqMat();
+    //seqidx->save("seq%s", typ, tag);  
+
+*/
+
+
+
+
 int main(int argc, char** argv)
 {
     const char* idpath = getenv("IDPATH");

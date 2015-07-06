@@ -311,7 +311,7 @@ NPY<unsigned long long>* SequenceNPY::makeSequenceCountsArray(
     for(unsigned int i=0 ; i < ni ; i++)
     {
         PSU p = vp[i];
-        unsigned long long xseq = m_recs->convertSequenceString( p.first, etype, false ) ;
+        unsigned long long xseq = m_types->convertSequenceString( p.first, etype, false ) ;
         values.push_back(xseq);
         values.push_back(p.second);
     } 
@@ -353,7 +353,7 @@ Index* SequenceNPY::makeSequenceCountsIndex(
         if(hex)
         {
             // use sequence hex string as key to enable comparison with ThrustHistogram saves
-            unsigned long long xseq = m_recs->convertSequenceString( p.first, etype, false ) ;
+            unsigned long long xseq = m_types->convertSequenceString( p.first, etype, false ) ;
             xkey = as_hex(xseq);
         }
 
@@ -366,8 +366,8 @@ Index* SequenceNPY::makeSequenceCountsIndex(
     for(unsigned int i=0 ; i < idx->getNumItems() ; i++)
     {
          std::string label = idx->getNameLocal(i+1) ;
-         std::string dlabel = m_recs->decodeSequenceString(label, etype, hex);
-         unsigned long long xseq = m_recs->convertSequenceString(label, etype, hex);
+         std::string dlabel = m_types->decodeSequenceString(label, etype, hex);
+         unsigned long long xseq = m_types->convertSequenceString(label, etype, hex);
 
          std::cout << std::setw(3) << std::dec << i + 1 
                    << std::setw(18) << std::hex << xseq 
@@ -423,7 +423,7 @@ void SequenceNPY::dumpSequenceCounts(const char* msg, Types::Item_t etype,
                << std::setw(10) << std::dec << p.second
                << std::setw(10) << std::dec << sv[p.first].size()
                << " : "
-               << m_recs->decodeSequenceString(p.first, etype) 
+               << m_types->decodeSequenceString(p.first, etype) 
                << std::endl ; 
     }
 
