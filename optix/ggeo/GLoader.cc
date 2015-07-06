@@ -62,7 +62,8 @@ void GLoader::load(bool nogeocache)
         m_ggeo->sensitize(idpath, "idmap");  // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
 
         m_mergedmesh = m_ggeo->getMergedMesh();  // creates merged mesh, doing the flattening  
-        m_mergedmesh->setColor(0.5,0.5,1.0);
+        //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
+
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
         m_mergedmesh->save(idpath); 
 

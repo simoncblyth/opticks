@@ -17,7 +17,7 @@
 template<typename T,typename S>
 void ThrustIdx<T,S>::version()
 {
-    LOG(info) << "ThrustIdx::version with Thrust v" << THRUST_MAJOR_VERSION << "." << THRUST_MINOR_VERSION ;
+    LOG(debug) << "ThrustIdx::version with Thrust v" << THRUST_MAJOR_VERSION << "." << THRUST_MINOR_VERSION ;
 }
 
 template<typename T,typename S>

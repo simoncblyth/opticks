@@ -24,6 +24,7 @@
 #endif
 
 
+
 template <typename T>
 void sparse_histogram_imp(const thrust::device_vector<T>& sequence,
                                 unsigned int sequence_offset,   
@@ -120,16 +121,8 @@ void apply_histogram_imp(const thrust::device_vector<T>& sequence,
     typedef typename thrust::device_vector<S>::iterator S_Iterator;
     strided_range<S_Iterator> dest(target.begin() + target_offset, target.end(), target_itemsize);
 
-    // if strided range compiles in .cc could pass in the iterators ...
-
     S missing = std::numeric_limits<S>::max() ;
     S offset  =  1 ; 
-
-    std::cout << "apply_histogram_imp " 
-              << " missing " << static_cast<int>(missing) 
-              << " offset " << static_cast<int>(offset) 
-              << std::endl ; 
- 
 
     thrust::transform( src.begin(), src.end(), dest.begin(), apply_lookup_functor<T,S>(offset, missing) ); 
 }

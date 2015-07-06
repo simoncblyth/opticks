@@ -182,7 +182,7 @@ std::string GItemIndex::historySeqLabeller(GItemIndex* self, const char* key_, u
 
 
 
-void GItemIndex::formTable()
+void GItemIndex::formTable(bool verbose)
 {
    m_codes.clear(); 
    m_labels.clear(); 
@@ -191,7 +191,7 @@ void GItemIndex::formTable()
 
    typedef std::vector<std::string> VS ; 
 
-   LOG(info)<<"GItemIndex::formTable " ;
+   if(verbose) LOG(info)<<"GItemIndex::formTable " ;
 
    VS& names = m_index->getNames(); 
    for(VS::iterator it=names.begin() ; it != names.end() ; it++ )
@@ -200,7 +200,8 @@ void GItemIndex::formTable()
        unsigned int colorcode(0x0) ; 
        std::string label = getLabel(key.c_str(), colorcode );
 
-       std::cout
+       if(verbose) 
+           std::cout
             << std::setw(30) << key 
             << " : " 
             << label 

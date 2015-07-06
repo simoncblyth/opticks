@@ -7,6 +7,12 @@
 #include "GVector.hh"
 
 
+template<typename T>
+class NPY ; 
+
+
+class MultiViewNPY ; 
+
 class Camera ;
 class View ;
 class Light ;
@@ -143,6 +149,7 @@ class Composition : public Configurable {
       glm::vec4& getTimeDomain();
       glm::vec4& getColorDomain();
       glm::vec4& getLightPosition();
+      glm::vec4& getLightDirection();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
       float*     getWorld2EyePtr();  // ModelView  including trackballing
@@ -172,6 +179,12 @@ class Composition : public Configurable {
       int        getClipMode();
       glm::vec4& getClipPlane();
       float*     getClipPlanePtr();
+  public:
+      // analog to NumpyEvt for the axis
+      void setAxisData(NPY<float>* axis_data);
+      NPY<float>* getAxisData();
+      MultiViewNPY* getAxisAttr();
+      void dumpAxisData(const char* msg="Composition::dumpAxisData");
 
   private:
       // inputs 
@@ -183,6 +196,8 @@ class Composition : public Configurable {
       glm::vec4 m_domain_time ; 
       glm::vec4 m_domain_color ; 
       glm::vec4 m_light_position  ; 
+      glm::vec4 m_light_direction ; 
+
   private:
       glm::ivec4 m_recselect ;
       glm::ivec4 m_selection ;
@@ -201,6 +216,8 @@ class Composition : public Configurable {
       Light*     m_light ;
       Clipper*   m_clipper ;
       unsigned int m_count ; 
+      NPY<float>*  m_axis_data ; 
+      MultiViewNPY* m_axis_attr ;
 
       // visitors
       Scene*       m_scene ; 
@@ -231,6 +248,7 @@ class Composition : public Configurable {
 
       glm::mat4 m_identity ;     
 
+
   public: 
       void Summary(const char* msg);
       void Details(const char* msg);
@@ -255,6 +273,8 @@ inline Composition::Composition()
   m_light(NULL),
   m_clipper(NULL),
   m_count(0),
+  m_axis_data(NULL),
+  m_axis_attr(NULL),
   m_scene(NULL)
 {
     init();
@@ -319,6 +339,11 @@ inline glm::vec4& Composition::getLightPosition()
 {
     return m_light_position ; 
 }
+inline glm::vec4& Composition::getLightDirection()
+{
+    return m_light_direction ; 
+}
+
 
 
 
@@ -365,3 +390,15 @@ inline unsigned int Composition::getCount()
 {
     return m_count ; 
 }
+
+inline NPY<float>* Composition::getAxisData()
+{
+    return m_axis_data ; 
+}
+
+inline MultiViewNPY* Composition::getAxisAttr()
+{
+    return m_axis_attr ; 
+}
+
+

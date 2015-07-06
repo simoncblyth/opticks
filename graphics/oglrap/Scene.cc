@@ -16,7 +16,9 @@
 
 // npy-
 #include "NumpyEvt.hpp"
+#include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
+
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
@@ -32,6 +34,7 @@
 
 
 
+const char* Scene::AXIS   = "axis" ; 
 const char* Scene::PHOTON = "photon" ; 
 const char* Scene::GENSTEP = "genstep" ; 
 const char* Scene::GEOMETRY = "geometry" ; 
@@ -45,6 +48,7 @@ void Scene::gui()
 #ifdef GUI_
      ImGui::Checkbox(GEOMETRY, &m_geometry_mode);
 
+     ImGui::Checkbox(AXIS,     &m_axis_mode);
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
      ImGui::Checkbox(PHOTON,   &m_photon_mode);
      ImGui::Checkbox(RECORD,   &m_record_mode);
@@ -140,6 +144,8 @@ void Scene::init()
 
     m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
 
+    m_axis_renderer = new Rdr(m_device, "axis", m_shader_dir, m_shader_incl_path );
+
     m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
 
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
@@ -173,6 +179,7 @@ void Scene::setComposition(Composition* composition)
 {
     m_composition = composition ; 
     m_geometry_renderer->setComposition(composition);
+    m_axis_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
     m_photon_renderer->setComposition(composition);
     m_record_renderer->setComposition(composition);
@@ -210,6 +217,14 @@ Rdr* Scene::getRecordRenderer(RecordStyle_t style)
         case NUMSTYLE:                            ; break ;
     }
     return rdr ; 
+}
+
+
+
+void Scene::uploadAxis()
+{
+    LOG(info) << "Scene::uploadAxis  " ;
+    m_axis_renderer->upload(m_composition->getAxisAttr());
 }
 
 
@@ -258,6 +273,7 @@ void Scene::render()
 {
 
     if(m_geometry_mode) m_geometry_renderer->render();
+    if(m_axis_mode)     m_axis_renderer->render();
     if(m_genstep_mode)  m_genstep_renderer->render();  
     if(m_photon_mode)   m_photon_renderer->render();
     if(m_record_mode)

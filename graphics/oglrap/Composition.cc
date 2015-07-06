@@ -1,5 +1,12 @@
 #include "Composition.hh"
 
+// npy-
+#include "NPY.hpp"
+#include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
+
+
+
 // oglrap-
 #include "Camera.hh"
 #include "Trackball.hh"
@@ -53,7 +60,31 @@ void Composition::init()
     m_light = new Light() ;
     m_trackball = new Trackball() ;
     m_clipper = new Clipper() ;
+
+    NPY<float>* axis_data = NPY<float>::make_vec4(1, 2, 0.f ); // ni 1 nj 2  single itemwith 2 float4 vpos, vdir 
+    setAxisData(axis_data);
 }
+
+
+
+void Composition::dumpAxisData(const char* msg)
+{
+    LOG(info) << msg ; 
+    m_axis_data->dump();
+}
+
+
+void Composition::setAxisData(NPY<float>* axis_data)
+{
+    m_axis_data = axis_data ;  
+    m_axis_attr = new MultiViewNPY();
+    //                                              j k sz   type          norm   iatt
+    m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,4,ViewNPY::FLOAT, false, false));     
+    m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,4,ViewNPY::FLOAT, false, false));     
+}
+
+
+
 
 Composition::~Composition()
 {
@@ -178,8 +209,12 @@ void Composition::gui()
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
 
-    float* lpe = m_light->getPositionPtr() ;
-    ImGui::SliderFloat4( "lightposition", lpe,  -2.0f, 2.0f, "%0.3f");
+    float* lpos = m_light->getPositionPtr() ;
+    ImGui::SliderFloat4( "lightposition", lpos,  -2.0f, 2.0f, "%0.3f");
+
+    float* ldir = m_light->getDirectionPtr() ;
+    ImGui::SliderFloat4( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
+
 
     if(m_animator)
     {
@@ -521,6 +556,17 @@ void Composition::update()
 
     m_light_position = m_light->getPosition(m_model_to_world);
 
+    m_light_direction = m_light->getDirection(m_model_to_world);
+
+
+
+
+    m_axis_data->setQuad(0,0,  m_light_position  );
+
+    m_axis_data->setQuad(0,1,  m_light_direction );
+
+
+
 /*
   //  env/geant4/geometry/collada/g4daeview/daetransform.py
 
@@ -556,7 +602,13 @@ void Composition::update()
 */
 
 
- }
+}
+
+
+
+
+
+
 
 
 void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W)
@@ -662,5 +714,6 @@ void Composition::Details(const char* msg)
     print(m_trackballing, "m_trackballing");
     print(m_itrackballing, "m_itrackballing");
 }
+
 
 

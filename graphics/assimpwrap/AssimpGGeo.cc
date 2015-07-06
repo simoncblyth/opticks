@@ -318,7 +318,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             gss->setSkinSurface(sslv);
             addProperties(gss, mat, reverse);
 
-            LOG(info) << gss->description(); 
+            LOG(debug) << gss->description(); 
             gg->add(gss);
 
             {
@@ -339,7 +339,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             gbs->setBorderSurface(bspv1, bspv2);
             addProperties(gbs, mat, reverse);
 
-            LOG(info) << gbs->description(); 
+            LOG(debug) << gbs->description(); 
 
             gg->add(gbs);
 
@@ -571,7 +571,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     {
         osurf = sks ; 
         if(m_skin_surface < 10)
-            LOG(info) << "AssimpGGeo::convertStructureVisit OSKIN " 
+            LOG(debug) << "AssimpGGeo::convertStructureVisit OSKIN " 
                       << std::setw(3) << m_skin_surface << " "
                       << osurf->description() ;  
         // TODO: surface census, see if inner skin makes any sense
@@ -580,7 +580,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     else if(obs)
     {
         osurf = obs ; 
-        LOG(info) << "AssimpGGeo::convertStructureVisit OSURF " 
+        LOG(debug) << "AssimpGGeo::convertStructureVisit OSURF " 
                   << std::setw(3) << m_outborder_surface << " "
                   << osurf->description() ;  
 
@@ -589,8 +589,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     else if(ibs)
     {
         isurf = ibs ; 
-        LOG(info) << "AssimpGGeo::convertStructureVisit ISURF " 
-                  << std::setw(3) << m_inborder_surface << " "
+        LOG(debug) << "AssimpGGeo::convertStructureVisit ISURF " 
+                   << std::setw(3) << m_inborder_surface << " "
                   << isurf->description() ;  
 
         m_inborder_surface++ ; 

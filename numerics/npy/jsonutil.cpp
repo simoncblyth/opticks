@@ -72,7 +72,7 @@ template<typename A, typename B>
 void saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
 {
      std::string path = preparePath(dir, name, true);
-     LOG(info) << "saveMap to " << path ;
+     LOG(debug) << "saveMap to " << path ;
 
      if(!path.empty()) saveMap( mp, path.c_str() );
 }
@@ -83,7 +83,7 @@ template<typename A, typename B>
 void saveList( typename std::vector<std::pair<A,B> > & vp, const char* dir, const char* name)
 {
      std::string path = preparePath(dir, name, true);
-     LOG(info) << "saveList to " << path ;
+     LOG(debug) << "saveList to " << path ;
 
      if(!path.empty()) saveList( vp, path.c_str() );
 }
@@ -171,7 +171,7 @@ void loadMap( typename std::map<A,B> & mp, const char* dir, const char* name)
     if(!path.empty())
     {
         std::string shortpath = prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
-        LOG(info) << "loadMap " << shortpath  ;
+        LOG(debug) << "loadMap " << shortpath  ;
         loadMap( mp, path.c_str() );
     }
     else
@@ -189,7 +189,7 @@ void loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const
     if(!path.empty())
     {
         std::string shortpath = prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
-        LOG(info) << "loadMap " << shortpath  ;
+        LOG(debug) << "loadMap " << shortpath  ;
         loadList( vp, path.c_str() );
     }
     else

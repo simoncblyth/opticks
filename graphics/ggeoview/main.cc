@@ -243,6 +243,9 @@ int main(int argc, char** argv)
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
+    composition.dumpAxisData();
+
+
     GBoundaryLibMetadata* meta = loader.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
 
@@ -291,6 +294,9 @@ int main(int argc, char** argv)
     CUDAInterop<unsigned char>* c_psel = new CUDAInterop<unsigned char>(evt.getPhoselData());
     CUDAInterop<unsigned char>* c_rsel = new CUDAInterop<unsigned char>(evt.getRecselData());
 #endif
+
+
+    scene.uploadAxis();
 
     scene.uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
 
@@ -489,6 +495,7 @@ int main(int argc, char** argv)
 
     t.stop();
     t.dump();
+    // TODO: use GItemIndex ? for stats to make it persistable
     gui.setupStats(t.getStats());
 
     //frame.toggleFullscreen(true); causing blankscreen then segv

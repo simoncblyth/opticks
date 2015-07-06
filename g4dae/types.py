@@ -30,6 +30,8 @@ seqs_ = lambda _:load_("seqscintillation",_)
 phc_ =  lambda _:load_("phcerenkov",_)
 phs_ =  lambda _:load_("phscintillation",_)
 
+
+
 recsel_cerenkov_ = lambda _:load_("recsel_cerenkov", _)
 phosel_cerenkov_ = lambda _:load_("phosel_cerenkov", _)
 recsel_scintillation_ = lambda _:load_("recsel_scintillation", _)
@@ -57,6 +59,12 @@ def load_(typ, tag):
     log.info("loading %s " % path )
     os.system("ls -l %s " % path)
     return np.load(path)
+
+
+geopath_ = lambda _:os.path.expandvars("$IDPATH/%s.npy" % _)
+geoload_ = lambda _:np.load(geopath_(_)) 
+
+
 
 
 global typs

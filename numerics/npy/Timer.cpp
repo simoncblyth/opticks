@@ -56,8 +56,9 @@ void Timer::prepTable()
         if(!start && !stop)
         {
            ss 
-             << std::setw(15) << d0  
-             << std::setw(15) << dp   
+             << std::fixed
+             << std::setw(15) << std::setprecision(3) << d0  
+             << std::setw(15) << std::setprecision(3) << dp   
              << " : " 
              << it->first   ;
         

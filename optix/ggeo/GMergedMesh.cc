@@ -2,6 +2,7 @@
 #include "GGeo.hh"
 #include "GSolid.hh"
 #include "GBoundaryLib.hh"
+#include "GBoundary.hh"
 #include <iostream>
 
 #include <boost/filesystem.hpp>
@@ -26,7 +27,8 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->setColors(  new gfloat3[numVertices]);
     mm->setTexcoords( NULL );  
     mm->setNumColors(numVertices);
-    mm->setColor(0.5,0.5,0.5);
+
+    mm->setColor(0.5,0.5,0.5);  // starting point mid-grey, change in traverse 2nd pass
 
     // consolidate into guint4 
     unsigned int numFaces = mm->getNumFaces();
@@ -65,6 +67,54 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
 
 
+gfloat3* GMergedMesh::getNodeColor(GNode* node)
+{
+    gfloat3* nodecolor(NULL) ; 
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    bool selected = solid->isSelected();
+    if(selected)
+    {
+        GBoundary* boundary = solid->getBoundary();
+        GPropertyMap<float>* imat = boundary->getInnerMaterial() ;
+        GPropertyMap<float>* omat = boundary->getOuterMaterial() ;
+
+        std::string im = imat->getShortName();
+        std::string om = omat->getShortName();
+
+        //  observations as change gl/nrm/vert.glsl and vertex colors
+        //
+        //  imat:Acrylic without dot(normal, light) clamping colors inside of Acrylic vessel
+        //  not clamping is a dirty hack, that means it doesnt matter where the light is
+        //
+        //  with clamping in place 
+        //       imat:GdDopedLS omat:Acrylic   (targetting inner surface of Acrylic vessel)
+        //
+        //          see red in expected position inside, 
+        //          BUT only when place light carefully 
+        //     
+        //
+        if(imat->hasShortName("GdDopedLS") && omat->hasShortName("Acrylic")) 
+        {
+            printf("GMergedMesh::getNodeColor im %25s om %25s \n", im.c_str(), om.c_str());
+            nodecolor = new gfloat3(1.0,0.0,0.0) ;
+        }
+    }
+    return nodecolor ; 
+}
+
+/*
+Colors were being overridden from GMergedMesh::create::
+
+    In [1]: c = geoload_("colors")
+    In [2]: c
+    Out[2]: 
+    array([[ 0.5,  0.5,  1. ],
+           [ 0.5,  0.5,  1. ],
+            ...
+
+*/
+
+
 void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
     GMatrixF* transform = node->getTransform();    
@@ -80,6 +130,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
 
     bool selected = solid->isSelected();
+
 
     if(selected)
     {
@@ -103,10 +154,17 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
             // Ordinary rotation, translation, and uniform scaling are OK.
             //
             gfloat3* normals = mesh->getTransformedNormals(*transform);  
+            gfloat3* nodecolor =  getNodeColor( node );
             for(unsigned int i=0 ; i<nvert ; ++i )
             {
                 m_normals[m_cur_vertices+i] = normals[i] ; 
+                if(nodecolor) 
+                {
+                    m_colors[m_cur_vertices+i] = *nodecolor ; 
+                }
             }
+
+
 
             // offset the vertex indices as are combining all meshes into single vertex list 
             guint3* faces = mesh->getFaces();

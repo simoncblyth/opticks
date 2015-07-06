@@ -96,7 +96,7 @@ void Rdr::upload(MultiViewNPY* mvn)
 
 void Rdr::log(const char* msg, int value)
 {
-    LOG(info)
+    LOG(debug)
                  << "Rdr::log " 
                  << std::setw(10) << getShaderTag() 
                  << " "
@@ -242,7 +242,7 @@ void Rdr::address(ViewNPY* vnpy)
     }
 
 
-    LOG(info) << "Rdr::address " << std::setw(10) << getShaderTag() <<  " name " << name << " type " << vnpy->getType() ;
+    LOG(debug) << "Rdr::address " << std::setw(10) << getShaderTag() <<  " name " << name << " type " << vnpy->getType() ;
 
     GLuint       index = location  ;       //  generic vertex attribute to be modified
     GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4

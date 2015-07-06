@@ -19,21 +19,20 @@ template<typename S>
 void ThrustArray<S>::init()
 {
     unsigned int size = getSize();    
-    std::cout << "ThrustArray::init "
+    LOG(debug) << "ThrustArray::init "
               << " num_elements " <<  m_num_elements  
               << " itemsize " <<  m_itemsize  
-              << " size " << size  
-              << std::endl ;
+              << " size " << size   ;
 
     if(m_devptr)
     {
-        LOG(info) << "ThrustArray<S>::init using preexisting device buffer " ; 
+        LOG(debug) << "ThrustArray<S>::init using preexisting device buffer " ; 
         thrust::device_ptr<S>  ptr = thrust::device_pointer_cast(m_devptr) ;
         m_dvec = thrust::device_vector<S>(ptr, ptr+size);
     }
     else
     {
-        LOG(info) << "ThrustArray<S>::init allocating as NULL devptr " ; 
+        LOG(debug) << "ThrustArray<S>::init allocating as NULL devptr " ; 
         m_dvec = thrust::device_vector<S>() ;
         resize_imp(m_dvec, size);
         m_devptr = thrust::raw_pointer_cast(&m_dvec[0]);

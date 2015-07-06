@@ -28,14 +28,17 @@ void main ()
 
     vec3 ldir_e = normalize(lpos_e - vpos_e);
 
-    float diffuse = dot(normal, ldir_e) ;
+    float diffuse = clamp( dot(normal, ldir_e), 0, 1) ;
+    //float diffuse =  abs(dot(normal, ldir_e)) ;   // absolution rather than clamping makes a big difference  
 
     gl_ClipDistance[0] = dot(vec4(vertex_position, 1.0), ClipPlane);
 
     //colour = vec4( normal*0.5 + 0.5, 1.0 - Param.z ) ;    // 1 - alpha 
     //colour = vec4( vertex_colour, 1.0 - Param.z ); 
 
-    colour = vec4( vec3(diffuse), 1.0 - Param.z );
+    vec3 ambient = vec3(0.1, 0.1, 0.1) ;
+
+    colour = vec4( ambient + vec3(diffuse) * vertex_colour , 1.0 - Param.z );
 
 
     gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);

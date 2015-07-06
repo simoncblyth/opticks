@@ -4,9 +4,16 @@
 #include "string.h"
 #include <vector>
 
+
+
+
 // npy-
-class MultiViewNPY ;
+//template<typename T>
+//class NPY ; 
+
+
 class NumpyEvt ; 
+class MultiViewNPY ;
 
 // ggeo-
 class GDrawable ;
@@ -31,6 +38,7 @@ class Scene : public Configurable {
 
    public:
        static const char* PHOTON ;
+       static const char* AXIS ;
        static const char* GENSTEP ;
        static const char* GEOMETRY ;
        static const char* RECORD ;
@@ -76,7 +84,9 @@ class Scene : public Configurable {
 
    public:
         void uploadEvt();
+        void uploadAxis();
         void uploadSelection();
+
    private:
         void uploadRecordAttr(MultiViewNPY* attr);
    public:
@@ -84,8 +94,10 @@ class Scene : public Configurable {
    public:
         unsigned int  getTarget(); 
 
+
    public:
         Renderer*     getGeometryRenderer();
+        Rdr*          getAxisRenderer();
         Rdr*          getGenstepRenderer();
         Rdr*          getPhotonRenderer();
         Rdr*          getRecordRenderer();
@@ -107,6 +119,7 @@ class Scene : public Configurable {
         Device*      m_device ; 
         Colors*      m_colors ; 
         Renderer*    m_geometry_renderer ; 
+        Rdr*         m_axis_renderer ; 
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
         Rdr*         m_record_renderer ; 
@@ -119,8 +132,10 @@ class Scene : public Configurable {
         GBuffer*     m_colorbuffer ;
         unsigned int m_target ;
         unsigned int m_touch ;
+
    private:
         bool         m_geometry_mode ; 
+        bool         m_axis_mode ; 
         bool         m_genstep_mode ; 
         bool         m_photon_mode ; 
         bool         m_record_mode ; 
@@ -128,6 +143,7 @@ class Scene : public Configurable {
         RecordStyle_t m_record_style ; 
         bool          m_initialized ;  
         float         m_time_fraction ;  
+
 
 };
 
@@ -139,6 +155,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_device(NULL),
             m_colors(NULL),
             m_geometry_renderer(NULL),
+            m_axis_renderer(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
             m_record_renderer(NULL),
@@ -152,6 +169,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_target(0),
             m_touch(0),
             m_geometry_mode(true),
+            m_axis_mode(true),
             m_genstep_mode(true),
             m_photon_mode(true),
             m_record_mode(true),
@@ -188,6 +206,12 @@ inline Renderer* Scene::getGeometryRenderer()
 {
     return m_geometry_renderer ; 
 }
+
+
+inline Rdr* Scene::getAxisRenderer()
+{
+    return m_axis_renderer ; 
+}
 inline Rdr* Scene::getGenstepRenderer()
 {
     return m_genstep_renderer ; 
@@ -196,7 +220,6 @@ inline Rdr* Scene::getPhotonRenderer()
 {
     return m_photon_renderer ; 
 }
-
 
 
 

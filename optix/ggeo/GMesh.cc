@@ -6,9 +6,14 @@
 #include "string.h"
 #include "assert.h"
 
+#include <iomanip>
 #include <algorithm>
 
 #include "numpy.hpp"
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -700,8 +705,10 @@ bool GMesh::isUIntBuffer(const char* name)
 
 void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
 {
-    printf("GMesh::saveBuffer name %25s path %s \n", name, path );
-    //buffer->Summary("GMesh::saveBuffer");
+    LOG(debug) << "GMesh::saveBuffer "
+               << " name " << std::setw(25) << name 
+               << " path " << path  
+               ;
 
     if(isFloatBuffer(name))     buffer->save<float>(path);
     else if(isIntBuffer(name))  buffer->save<int>(path);

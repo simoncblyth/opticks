@@ -75,7 +75,7 @@ class GItemIndex {
         // GUI 
         void     gui();
         void     gui_radio_select();
-        void     formTable();
+        void     formTable(bool verbose=false);
 
    private:
         Index*                               m_index ; 
