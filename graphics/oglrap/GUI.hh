@@ -47,8 +47,8 @@ class GUI {
        void render();
        void shutdown();
 
-       void setupHelpText(std::string txt);
-
+       void setupHelpText(const std::string& txt);
+       void setupStats(const std::vector<std::string>& stats);
 
   private:
        void choose( unsigned int n, const char** choices, bool** selection );
@@ -61,6 +61,7 @@ class GUI {
        bool  m_show_test_window ;
        float       m_bg_alpha ; 
        std::string m_help ; 
+       std::vector<std::string> m_stats ; 
 
        Interactor*   m_interactor ; 
        Scene*        m_scene ; 
@@ -127,5 +128,12 @@ inline void GUI::setLoader(GLoader* loader)
 }
 
 
+inline void GUI::setupHelpText(const std::string& txt)
+{
+    m_help = txt ; 
+} 
 
-
+inline void GUI::setupStats(const std::vector<std::string>& stats)
+{
+    m_stats = stats ; 
+}

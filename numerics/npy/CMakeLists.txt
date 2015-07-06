@@ -44,6 +44,7 @@ add_library( ${name}  SHARED
     GLMFormat.cpp
     stringutil.cpp
     jsonutil.cpp
+    timeutil.cpp
     Lookup.cpp
     G4StepNPY.cpp
     PhotonsNPY.cpp
@@ -53,6 +54,7 @@ add_library( ${name}  SHARED
     Counts.cpp
     Types.cpp
     Index.cpp
+    Timer.cpp
 )
 
 set(LIBRARIES
@@ -82,9 +84,11 @@ Counts.hpp
 numpy.hpp
 stringutil.hpp
 jsonutil.hpp
+timeutil.hpp
 Lookup.hpp
 Types.hpp
 Index.hpp
+Timer.hpp
 )
 
 install(TARGETS ${name}  DESTINATION lib)

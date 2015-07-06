@@ -54,11 +54,6 @@ void GUI::newframe()
     ImGui_ImplGlfwGL3_NewFrame();
 }
 
-void GUI::setupHelpText(std::string txt)
-{
-    m_help = txt ; 
-} 
-
 void GUI::choose( std::vector<std::pair<int, std::string> >* choices, bool* selection )
 {
     for(unsigned int i=0 ; i < choices->size() ; i++)
@@ -103,6 +98,12 @@ void GUI::show(bool* opened)
     if (ImGui::CollapsingHeader("Help"))
     {
         ImGui::Text(m_help.c_str());
+    }
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Stats"))
+    {
+        for(unsigned int i=0 ; i < m_stats.size() ; i++) ImGui::Text(m_stats[i].c_str());
     }
 
     ImGui::Spacing();

@@ -55,6 +55,7 @@
 #include "Types.hpp"
 #include "Index.hpp"
 #include "stringutil.hpp"
+#include "Timer.hpp"
 
 // bregex-
 #include "regexsearch.hh"
@@ -130,23 +131,24 @@ void logging_init()
 
 int main(int argc, char** argv)
 {
+    Timer t ; 
+    t.start();
+
     logging_init();
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
     LOG(debug) << argv[0] ; 
 
-
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
-    Scene scene(shader_dir, shader_incl_path) ;
 
+    Scene scene(shader_dir, shader_incl_path) ;
     Composition composition ;   
     Frame frame ;
     Bookmarks bookmarks ; 
     Interactor interactor ; 
     numpydelegate delegate ; 
     NumpyEvt evt ;
-
 
     interactor.setFrame(&frame);
     interactor.setScene(&scene);
@@ -160,6 +162,7 @@ int main(int argc, char** argv)
     interactor.setBookmarks(&bookmarks);
     scene.setNumpyEvt(&evt);
 
+    t("wiring"); 
 
     Cfg cfg("umbrella", false) ; // collect other Cfg objects
     FrameCfg<Frame>* fcfg = new FrameCfg<Frame>("frame", &frame,false);
@@ -180,6 +183,10 @@ int main(int argc, char** argv)
     if(fcfg->isAbort()) exit(EXIT_SUCCESS); 
 
     bool fullscreen = fcfg->hasOpt("fullscreen");
+    bool nooptix = fcfg->hasOpt("nooptix");
+    bool nogeocache = fcfg->hasOpt("nogeocache");
+    bool noviz = fcfg->hasOpt("noviz");
+
 
     // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
     // pixelfactor 2 makes OptiX render at retina resolution
@@ -194,10 +201,12 @@ int main(int argc, char** argv)
     frame.setTitle("GGeoView");
     frame.setFullscreen(fullscreen);
 
+    t("configuration"); 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
-
+    t("numpyserver startup"); 
 
     frame.init();  // creates OpenGL context
+    t("OpenGL context creation"); 
     LOG(info) << "main: frame.init DONE "; 
 
 #ifdef INTEROP
@@ -206,27 +215,21 @@ int main(int argc, char** argv)
 
     GLFWwindow* window = frame.getWindow();
 
-    bool nooptix = fcfg->hasOpt("nooptix");
-    bool nogeocache = fcfg->hasOpt("nogeocache");
-    bool noviz = fcfg->hasOpt("noviz");
-
-
     Types types ;  
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     Index* flags = types.getFlagsIndex(); 
     flags->setExt(".ini");
     //flags->save("/tmp");
 
-
     GLoader loader ;
     loader.setTypes(&types);
     loader.setCache(&cache);
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     loader.load(nogeocache);
+    t("Geometry Loading"); 
 
     GItemIndex* materials = loader.getMaterials();
     types.setMaterialsIndex(materials->getIndex());
-
 
     GBuffer* colorbuffer = materials->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
     scene.uploadColorBuffer(colorbuffer);
@@ -234,7 +237,6 @@ int main(int argc, char** argv)
     scene.setTarget(0);
 
     bookmarks.load(idpath); 
-
 
     GMergedMesh* mm = loader.getMergedMesh(); 
     composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
@@ -261,8 +263,12 @@ int main(int argc, char** argv)
     std::string tag_ = fcfg->getEventTag();
     const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
 
+    t("Geometry Interp"); 
+
 
     NPY<float>* npy = NPY<float>::load(typ, tag) ;
+
+    t("Genstep Loading"); 
 
     G4StepNPY genstep(npy);    
     genstep.setLookup(loader.getMaterialLookup()); 
@@ -270,6 +276,8 @@ int main(int argc, char** argv)
 
     evt.setMaxRec(MAXREC);          // must set this before setGenStepData to have effect
     evt.setGenstepData(npy); 
+
+    t("Host Evt allocation"); 
 
     composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent());
     // is this domain used for photon record compression ?
@@ -286,6 +294,8 @@ int main(int argc, char** argv)
 
     scene.uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
 
+    t("uploadEvt"); 
+    LOG(info) << "main: scene.uploadEvt DONE "; 
 
 #ifdef INTEROP
     scene.uploadSelection();
@@ -296,7 +306,6 @@ int main(int argc, char** argv)
 #endif
 
 
-    LOG(info) << "main: scene.uploadEvt DONE "; 
     //
     // TODO:  
     //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
@@ -322,36 +331,44 @@ int main(int argc, char** argv)
 
     LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
     engine.init();  
+    t("OptiXEngine init"); 
     LOG(info) << "main.OptiXEngine::init DONE "; 
 
     // persisting domain allows interpretation of packed photon record NPY arrays 
     // from standalone NumPy
     NPYBase* domain = engine.getDomain(); 
-    if(domain) domain->save("domain", "1");
+    //if(domain) domain->save("domain", "1");
 
-    NPYBase* idomain = engine.getIDomain(); 
-    if(idomain) idomain->save("idomain", "1");
+    //NPYBase* idomain = engine.getIDomain(); 
+    //if(idomain) idomain->save("idomain", "1");
 
    
     LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
     engine.generate();     
+    t("OptiXEngine generate, propagate"); 
+
     LOG(info) << "main.OptiXEngine::generate DONE "; 
 
 
     NPY<float>* dpho = evt.getPhotonData();
     Rdr::download(dpho);
-    dpho->setVerbose();
-    dpho->save("ox%s", typ,  tag);
 
     NPY<short>* drec = evt.getRecordData();
     Rdr::download(drec);
-    drec->setVerbose();
-    drec->save("rx%s", typ,  tag );
 
     NPY<NumpyEvt::Sequence_t>* dhis = evt.getSequenceData();
     Rdr::download(dhis);
+
+    t("photon, record, sequence downloads"); 
+
+    dpho->setVerbose();
+    dpho->save("ox%s", typ,  tag);
+    drec->setVerbose();
+    drec->save("rx%s", typ,  tag );
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag );
+
+    t("photon, record, sequence save"); 
 
 
     BoundariesNPY bnd(dpho); 
@@ -366,6 +383,7 @@ int main(int argc, char** argv)
     rec.setTypes(&types);
     rec.setDomains((NPY<float>*)domain);
 
+    t("boundary indexing"); 
 
 
     optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
@@ -405,6 +423,8 @@ int main(int argc, char** argv)
     psel.repeat_to( maxrec, rsel );
     cudaDeviceSynchronize();
 
+    t("sequence indexing"); 
+
 #ifdef INTEROP
     // declare that CUDA finished with buffers 
     c_rsel->CUDA_to_GL();
@@ -418,6 +438,8 @@ int main(int argc, char** argv)
     //evt.getRecselData()->save("recsel_%s", typ, tag);
 
     scene.uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
+
+    t("selection download/upload"); 
 #endif
 
     GItemIndex* seqhis = new GItemIndex(idx.getHistogramIndex(0)) ;  
@@ -462,8 +484,12 @@ int main(int argc, char** argv)
     bool* show_gui_window = interactor.getGuiModeAddress();
 #endif
  
+    t("GUI prep"); 
     LOG(info) << "enter runloop "; 
 
+    t.stop();
+    t.dump();
+    gui.setupStats(t.getStats());
 
     //frame.toggleFullscreen(true); causing blankscreen then segv
     frame.hintVisible(true);

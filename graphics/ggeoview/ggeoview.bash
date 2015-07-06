@@ -19,35 +19,6 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
-TODO: arrange material code into 1-15 
-----------------------------------------
-
-Material indices are assigned in ggeo-/GBoundaryLib::createWavelengthAndOpticalBuffers
-using m_materials GItemIndex::
-
-     804             else if(psrc->isMaterial())
-     805             {
-     806                 m_materials->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GItemIndex
-     807                 unsigned int index_local = m_materials->getIndexLocal(shortname.c_str());
-     808 
-     809                 optical_data[opticalOffset + p*4 + optical_index]  = index_local ;
-
-Need to prepopulate the index so the desired materials occupy the lower slots. 
-What about indices over 0xF ? cannot just mask as will then get incorrect values
-so need to limit the GItemIndex setting to 0x10 or effectively 0x0.
-
-
-
-
-TODO: Timings
----------------
-
-Pull from 
-
-* env/chroma/G4DAEChroma/src/G4DAEManager.cc
-* env/chroma/G4DAEChroma/src/G4DAEMetadata.cc
-* env/chroma/G4DAEChroma/src/G4DAETime.cc
-
 Usage tips
 -----------
 
