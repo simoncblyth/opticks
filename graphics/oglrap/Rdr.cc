@@ -275,6 +275,7 @@ void Rdr::check_uniforms()
     bool required = false ; 
     m_mvp_location = m_shader->uniform("ModelViewProjection", required) ; 
     m_mv_location = m_shader->uniform("ModelView", required );     
+    m_p_location = m_shader->uniform("Projection", required );     
     m_isnorm_mvp_location = m_shader->uniform("ISNormModelViewProjection", required );     
     m_selection_location = m_shader->uniform("Selection", required );     
     m_flags_location = m_shader->uniform("Flags", required );     
@@ -301,7 +302,11 @@ void Rdr::update_uniforms()
         m_composition->update() ;
 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
+
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+
+        glUniformMatrix4fv(m_p_location, 1, GL_FALSE, m_composition->getProjectionPtr());
+
         glUniformMatrix4fv(m_isnorm_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipISNormPtr());
 
         glm::ivec4 sel = m_composition->getSelection();
@@ -336,6 +341,7 @@ void Rdr::update_uniforms()
         glm::mat4 identity ; 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
+        glUniformMatrix4fv(m_p_location, 1, GL_FALSE, glm::value_ptr(identity));
     }
 }
 
@@ -373,6 +379,7 @@ void Rdr::dump_uniforms()
     LOG(info) << "Rdr::dump_uniforms "
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 
+              << " p " << m_p_location 
               << " sel " << m_selection_location 
               << " flg " << m_flags_location 
               << " param " << m_param_location 

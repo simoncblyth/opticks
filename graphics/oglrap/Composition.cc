@@ -61,26 +61,7 @@ void Composition::init()
     m_trackball = new Trackball() ;
     m_clipper = new Clipper() ;
 
-    NPY<float>* axis_data = NPY<float>::make_vec4(1, 2, 0.f ); // ni 1 nj 2  single itemwith 2 float4 vpos, vdir 
-    setAxisData(axis_data);
-}
-
-
-
-void Composition::dumpAxisData(const char* msg)
-{
-    AxisNPY ax(m_axis_data);
-    ax.dump(msg);
-}
-
-
-void Composition::setAxisData(NPY<float>* axis_data)
-{
-    m_axis_data = axis_data ;  
-    m_axis_attr = new MultiViewNPY();
-    //                                              j k sz   type          norm   iatt
-    m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,4,ViewNPY::FLOAT, false, false));     
-    m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,4,ViewNPY::FLOAT, false, false));     
+    initAxis();
 }
 
 
@@ -210,10 +191,10 @@ void Composition::gui()
     ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
 
     float* lpos = m_light->getPositionPtr() ;
-    ImGui::SliderFloat4( "lightposition", lpos,  -2.0f, 2.0f, "%0.3f");
+    ImGui::SliderFloat3( "lightposition", lpos,  -2.0f, 2.0f, "%0.3f");
 
     float* ldir = m_light->getDirectionPtr() ;
-    ImGui::SliderFloat4( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
+    ImGui::SliderFloat3( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
 
 
     if(m_animator)
@@ -412,6 +393,9 @@ float Composition::getFar()
     return m_camera->getFar();
 }
 
+
+
+
 float* Composition::getWorld2EyePtr()
 {
     return glm::value_ptr(m_world2eye);
@@ -424,10 +408,15 @@ float* Composition::getWorld2ClipISNormPtr()
 {
     return glm::value_ptr(m_world2clip_isnorm);
 }
+float* Composition::getProjectionPtr()  
+{
+    return glm::value_ptr(m_projection) ;
+}
 
-
-
-
+glm::mat4& Composition::getProjection()  
+{
+     return m_projection ;
+}
 
 
 
@@ -486,10 +475,7 @@ glm::mat4& Composition::getWorld2ClipISNorm()
 
 
 
-glm::mat4& Composition::getProjection()  
-{
-     return m_projection ;
-}
+
 glm::mat4& Composition::getTrackballing()  
 {
      assert(0);
@@ -537,7 +523,6 @@ void Composition::update()
 
     m_look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-m_gazelength));
 
-
     m_trackball->getOrientationMatrices(m_trackballrot, m_itrackballrot);
     m_trackball->getTranslationMatrices(m_trackballtra, m_itrackballtra);
     //m_trackball->getCombinedMatrices(m_trackballing, m_itrackballing);
@@ -548,7 +533,7 @@ void Composition::update()
 
     m_projection = m_camera->getProjection();
 
-    m_world2clip = m_projection * m_world2eye ;
+    m_world2clip = m_projection * m_world2eye ;    //  ModelViewProjection
 
     m_world2clip_isnorm = m_world2clip * m_domain_isnorm  ;   // inverse snorm (signed normalization)
 
@@ -560,10 +545,14 @@ void Composition::update()
 
 
 
-
     m_axis_data->setQuad(0,0,  m_light_position  );
+    m_axis_data->setQuad(0,1,  m_axis_x );
 
-    m_axis_data->setQuad(0,1,  m_light_direction );
+    m_axis_data->setQuad(1,0,  m_light_position  );
+    m_axis_data->setQuad(1,1,  m_axis_y );
+
+    m_axis_data->setQuad(2,0,  m_light_position  );
+    m_axis_data->setQuad(2,1,  m_axis_z );
 
 
 
@@ -604,6 +593,33 @@ void Composition::update()
 
 }
 
+
+
+void Composition::initAxis()
+{
+    unsigned int num_axis = 3 ;  
+    //unsigned int num_axis = 1 ;  
+    NPY<float>* axis_data = NPY<float>::make_vec4(num_axis, 2, 0.f ); // ni 3 nj 2  three axes x,y,z each with 2 float4 vpos, vdir 
+    setAxisData(axis_data);
+}
+
+
+
+void Composition::dumpAxisData(const char* msg)
+{
+    AxisNPY ax(m_axis_data);
+    ax.dump(msg);
+}
+
+
+void Composition::setAxisData(NPY<float>* axis_data)
+{
+    m_axis_data = axis_data ;  
+    m_axis_attr = new MultiViewNPY();
+    //                                              j k sz   type          norm   iatt
+    m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,4,ViewNPY::FLOAT, false, false));     
+    m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,4,ViewNPY::FLOAT, false, false));     
+}
 
 
 

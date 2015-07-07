@@ -239,6 +239,7 @@ int main(int argc, char** argv)
     loader.setCache(&cache);
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     loader.load(nogeocache);
+
     t("Geometry Loading"); 
 
     GItemIndex* materials = loader.getMaterials();
@@ -256,7 +257,6 @@ int main(int argc, char** argv)
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
-    composition.dumpAxisData("main:dumpAxisData");
 
 
     GBoundaryLibMetadata* meta = loader.getMetadata(); 
@@ -296,8 +296,7 @@ int main(int argc, char** argv)
 
     t("Host Evt allocation"); 
 
-    composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent());
-    // is this domain used for photon record compression ?
+    composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent()); // is this domain used for photon record compression ?
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
@@ -309,7 +308,8 @@ int main(int argc, char** argv)
     CUDAInterop<unsigned char>* c_rsel = new CUDAInterop<unsigned char>(evt.getRecselData());
 #endif
 
-
+    composition.update();
+    composition.dumpAxisData("main:dumpAxisData");
     scene.uploadAxis();
 
     scene.uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY

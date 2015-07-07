@@ -43,6 +43,7 @@ class Composition : public Configurable {
 
   private:
       void init();
+      void initAxis();
       void initAnimator();
 
   public:
@@ -166,10 +167,10 @@ class Composition : public Configurable {
       glm::mat4& getDomainISNorm();
       glm::mat4& getWorld2ClipISNorm();      // with initial domain_isnorm
       float*     getWorld2ClipISNormPtr();   
-
+      glm::mat4& getProjection(); 
+      float*     getProjectionPtr();  
    public:
       float*     getIdentityPtr(); 
-      glm::mat4& getProjection(); 
 
   private:
       glm::mat4& getTrackballing(); 
@@ -247,6 +248,9 @@ class Composition : public Configurable {
       glm::mat4 m_itrackballtra ;     
 
       glm::mat4 m_identity ;     
+      glm::vec4 m_axis_x ; 
+      glm::vec4 m_axis_y ; 
+      glm::vec4 m_axis_z ; 
 
 
   public: 
@@ -275,7 +279,10 @@ inline Composition::Composition()
   m_count(0),
   m_axis_data(NULL),
   m_axis_attr(NULL),
-  m_scene(NULL)
+  m_scene(NULL),
+  m_axis_x(1000.f,    0.f,    0.f, 0.f),
+  m_axis_y(0.f   , 1000.f,    0.f, 0.f),
+  m_axis_z(0.f   ,    0.f, 1000.f, 0.f)
 {
     init();
 }

@@ -71,6 +71,7 @@ class Rdr : public RendererBase  {
 
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
+      GLint  m_p_location ;
       GLint  m_isnorm_mvp_location ;
       GLint  m_selection_location ;
       GLint  m_flags_location ;
@@ -98,6 +99,7 @@ inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* in
     m_composition(NULL),
     m_mv_location(-1),
     m_mvp_location(-1),
+    m_p_location(-1),
     m_isnorm_mvp_location(-1),
     m_selection_location(-1),
     m_flags_location(-1),

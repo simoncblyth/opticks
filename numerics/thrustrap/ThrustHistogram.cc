@@ -25,7 +25,7 @@
 template<typename T,typename S>
 void ThrustHistogram<T,S>::init()
 {
-    LOG(info) << "ThrustHistogram<<T,S>>::init "
+    LOG(debug) << "ThrustHistogram<<T,S>>::init "
               << " num_elements " << m_num_elements  
               ;
 

@@ -20,6 +20,9 @@ class Light {
 
 
 inline Light::Light()
+   :
+   m_position(0.f,0.f,0.f),
+   m_direction(1.f,0.f,0.f)
 {
 }
 
