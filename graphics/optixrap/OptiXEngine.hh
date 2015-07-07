@@ -70,6 +70,8 @@ class OptiXEngine : public Touchable {
         void setEnabled(bool enabled);
         void setNumpyEvt(NumpyEvt* evt);
     public:
+        bool isEnabled();
+    public:
         void setRngMax(unsigned int rng_max);
         void setBounceMax(unsigned int bounce_max);
         void setRecordMax(unsigned int record_max);
@@ -243,6 +245,11 @@ inline void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
 inline void OptiXEngine::setEnabled(bool enabled)
 {
     m_enabled = enabled ; 
+}
+
+inline bool OptiXEngine::isEnabled()
+{
+    return m_enabled ; 
 }
 
 

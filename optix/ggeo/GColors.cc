@@ -184,10 +184,8 @@ GBuffer* GColors::make_uchar4_buffer()
 GBuffer* GColors::make_uchar4_buffer(std::vector<unsigned int>& codes)
 {
     unsigned int n = codes.size();
-
     unsigned char* colors = new unsigned char[n*4] ; 
     GBuffer* buffer = new GBuffer( sizeof(unsigned char)*n*4, colors, 4*sizeof(unsigned char), 1 );
-
 
     unsigned char alpha = 0xFF ; 
     typedef std::vector<unsigned int> VU ; 
@@ -209,6 +207,43 @@ GBuffer* GColors::make_uchar4_buffer(std::vector<unsigned int>& codes)
     }   
     return buffer ; 
 }
+
+
+
+void GColors::initCompositeColorBuffer(unsigned int max_colors)
+{
+    unsigned char* colors = new unsigned char[max_colors*4] ; 
+    unsigned int itemsize = sizeof(unsigned char)*4 ;
+    m_composite = new GBuffer( itemsize*max_colors, colors, itemsize, 1 );
+}
+
+void GColors::addColors(std::vector<unsigned int>& codes, unsigned int start )
+{
+    unsigned int size = m_composite->getNumItems();
+    unsigned char* colors = (unsigned char*)m_composite->getPointer() ;
+    unsigned char alpha = 0xFF ; 
+    typedef std::vector<unsigned int> VU ; 
+    unsigned int count(0);
+    for(VU::iterator it=codes.begin() ; it != codes.end() ; it++ ) 
+    {
+        unsigned int color = *it ;
+        unsigned int red   = (color & 0xFF0000) >> 16;
+        unsigned int green = (color & 0x00FF00) >> 8 ;
+        unsigned int blue  = (color & 0x0000FF)      ;
+
+        unsigned int offset = start + count*4 ;  
+
+        assert( offset < size && " going over size of buffer" );
+
+        colors[offset + 0] = red ; 
+        colors[offset + 1] = green ; 
+        colors[offset + 2] = blue ;  
+        colors[offset + 3] = alpha  ; 
+
+        count++ ; 
+    } 
+}
+
 
 
 void GColors::dump_uchar4_buffer( GBuffer* buffer )

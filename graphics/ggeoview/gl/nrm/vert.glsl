@@ -5,7 +5,7 @@ uniform mat4 ModelView ;
 uniform vec4 ClipPlane ;
 uniform vec4 LightPosition ; 
 uniform vec4 Param ;
-
+uniform ivec4 NrmParam ;
 
 
 layout(location = 0) in vec3 vertex_position;
@@ -20,7 +20,17 @@ out vec4 colour;
 
 void main () 
 {
-    vec3 normal = normalize(vec3( ModelView * vec4 (vertex_normal, 0.0)));
+    //
+    // NB using flipped normal, for lighting from inside geometry 
+    //
+    //    normals are expected to be outwards so the natural 
+    //    sign of costheta is negative when the light is inside geometry 
+    //    thus in order to see something flip the normals 
+    //
+
+    float flip = NrmParam.x == 1 ? -1. : 1. ;
+
+    vec3 normal = flip * normalize(vec3( ModelView * vec4 (vertex_normal, 0.0)));
 
     vec3 lpos_e = vec3( ModelView * LightPosition );   
 
@@ -29,6 +39,7 @@ void main ()
     vec3 ldir_e = normalize(lpos_e - vpos_e);
 
     float diffuse = clamp( dot(normal, ldir_e), 0, 1) ;
+
     //float diffuse =  abs(dot(normal, ldir_e)) ;   // absolution rather than clamping makes a big difference  
 
     gl_ClipDistance[0] = dot(vec4(vertex_position, 1.0), ClipPlane);

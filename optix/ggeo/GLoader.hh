@@ -11,11 +11,9 @@ class GGeo ;
 class GMergedMesh ; 
 class GDrawable ; 
 class GBoundaryLibMetadata ; 
-//class GMaterialIndex ; 
-//class GSurfaceIndex ; 
-//class GFlagIndex ; 
 class GItemIndex ; 
 class GColors ; 
+class GBuffer ; 
 
 
 class Lookup ; 
@@ -47,6 +45,7 @@ class GLoader {
 
          GColors*               getColors();
          Lookup*                getMaterialLookup();
+         GBuffer*               getColorBuffer();
 
     private:
          Types*                    m_types ; 
@@ -62,6 +61,7 @@ class GLoader {
 
          GColors*                  m_colors ;  
          Lookup*                   m_lookup ; 
+         GBuffer*                  m_color_buffer ; 
      
 };
 
@@ -76,7 +76,8 @@ inline GLoader::GLoader()
    m_surfaces(NULL),
    m_flags(NULL),
    m_colors(NULL),
-   m_lookup(NULL)
+   m_lookup(NULL),
+   m_color_buffer(NULL)
 {
 }
 
@@ -142,7 +143,10 @@ inline GItemIndex* GLoader::getFlags()
     return m_flags ; 
 }
 
-
+inline GBuffer* GLoader::getColorBuffer()
+{
+    return m_color_buffer  ; 
+}
 
 
 

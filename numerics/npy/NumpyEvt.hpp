@@ -18,7 +18,7 @@ class NumpyEvt {
       
        typedef unsigned long long Sequence_t ;
    public:
-       void setGenstepData(NPY<float>* genstep_data);
+       void setGenstepData(NPY<float>* genstep_data, bool nooptix=false);
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
    private:
        // only set internally, as knock on from setGenstepData

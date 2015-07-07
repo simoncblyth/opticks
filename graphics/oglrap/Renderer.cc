@@ -145,9 +145,13 @@ void Renderer::gl_upload_buffers(bool debug)
  
     make_shader();
 
-    check_uniforms();
+    glUseProgram(m_program);  // moved prior to check uniforms following Rdr::upload
 
-    glUseProgram(m_program);
+
+    LOG(info) <<  "Renderer::gl_upload_buffers after make_shader " ; 
+    check_uniforms();
+    LOG(info) <<  "Renderer::gl_upload_buffers after check_uniforms " ; 
+
 }
 
 
@@ -161,7 +165,10 @@ void Renderer::check_uniforms()
         m_mv_location =  m_shader->uniform("ModelView",           true);      
         m_clip_location = m_shader->uniform("ClipPlane",          true); 
         m_param_location = m_shader->uniform("Param",          true); 
+        m_nrmparam_location = m_shader->uniform("NrmParam",         true); 
         m_lightposition_location = m_shader->uniform("LightPosition",true); 
+
+
     } 
     else if(strcmp(tag,"tex")==0)
     {
@@ -173,11 +180,13 @@ void Renderer::check_uniforms()
         assert(0); 
     }
 
-    LOG(debug) << "Renderer::check_uniforms "
+    LOG(info) << "Renderer::check_uniforms "
               << " tag " << tag 
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 
-              << " clip " << m_clip_location ;
+              << " nrmparam " << m_nrmparam_location 
+              << " clip " << m_clip_location 
+              ;
 
 }
 
@@ -189,12 +198,13 @@ void Renderer::update_uniforms()
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
 
-        glm::vec4 par = m_composition->getParam();
-        glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
 
-        glm::vec4 lp = m_composition->getLightPosition();
-        glUniform4f(m_lightposition_location, lp.x, lp.y, lp.z, lp.w  );    
+        glUniform4fv(m_param_location, 1, m_composition->getParamPtr());
 
+        glm::ivec4 np = m_composition->getNrmParam(); 
+        glUniform4i(m_nrmparam_location, np.x, np.y, np.z, np.w);
+
+        glUniform4fv(m_lightposition_location, 1, m_composition->getLightPositionPtr());
 
         glUniform4fv(m_clip_location, 1, m_composition->getClipPlanePtr() );
 

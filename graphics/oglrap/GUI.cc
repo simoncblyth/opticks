@@ -36,7 +36,6 @@ void GUI::setComposition(Composition* composition)
 void GUI::setScene(Scene* scene)
 {
     m_scene = scene ;
-    setPhotons(scene->getPhotons());
 }
 
 
@@ -154,8 +153,11 @@ void GUI::show(bool* opened)
 
     ImGui::Spacing();
 
-    m_photons->gui(); 
-
+    if( m_photons )
+    {
+        m_photons->gui(); 
+    }
+   
 
     GItemIndex* materials = m_loader ? m_loader->getMaterials() : NULL ; 
     if(materials)
@@ -163,6 +165,16 @@ void GUI::show(bool* opened)
         ImGui::Spacing();
         materials->gui();
     } 
+
+
+    GItemIndex* surfaces = m_loader ? m_loader->getSurfaces() : NULL ; 
+    if(surfaces)
+    {
+        ImGui::Spacing();
+        surfaces->gui();
+    } 
+
+
 
 
     GItemIndex* flags = m_loader ? m_loader->getFlags() : NULL ; 

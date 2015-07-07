@@ -161,6 +161,12 @@ bool GPropertyMap<T>::hasShortName(const char* name)
     return strcmp(m_shortname, name) == 0 ;
 }
 
+template <typename T>
+bool GPropertyMap<T>::hasDefinedName()
+{
+    return strcmp(m_shortname, NOT_DEFINED) != 0 ;
+}
+
 
 template <typename T>
 void GPropertyMap<T>::findShortName(const char* prefix)

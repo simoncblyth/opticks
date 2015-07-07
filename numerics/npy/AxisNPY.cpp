@@ -23,7 +23,7 @@ void AxisNPY::dump(const char* msg)
     unsigned int ni = m_axis->m_len0 ;
     unsigned int nj = m_axis->m_len1 ;
     unsigned int nk = m_axis->m_len2 ;
-    assert( nj == 2 && nk == 4 );
+    assert( nj == 3 && nk == 4 );
 
 
     for(unsigned int i=0 ; i < ni ; i++)
@@ -31,12 +31,14 @@ void AxisNPY::dump(const char* msg)
 
         glm::vec4 vpos = m_axis->getQuad(i,0);
         glm::vec4 vdir = m_axis->getQuad(i,1);
+        glm::vec4 vcol = m_axis->getQuad(i,2);
 
-        printf("%2u %s %s  \n", 
+        printf("%2u %s %s %s  \n", 
                 i, 
                 gpresent(vpos,2,11).c_str(),
-                gpresent(vdir,2,7).c_str());
-
+                gpresent(vdir,2,7).c_str(),
+                gpresent(vcol,2,7).c_str()
+             );
     }
 
 }

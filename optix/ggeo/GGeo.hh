@@ -17,6 +17,7 @@ class GBoundary ;
 class GBoundaryLib ;
 class GMergedMesh ;
 class GSensorList ; 
+class GColors ; 
 
 //
 // NB GGeo is a dumb substrate from which the geometry model is created,
@@ -36,12 +37,14 @@ class GGeo {
         void setQuery(const char* query);
         void setCtrl(const char* ctrl);
         void setIdentityPath(const char* idpath);
+        void setColors(GColors* colors);
 
     public:
         char* getPath(); 
         char* getQuery(); 
         char* getCtrl(); 
         char* getIdentityPath(); 
+        GColors* getColors();
 
     public:
         void add(GMesh*    mesh);
@@ -141,6 +144,7 @@ class GGeo {
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
         GMergedMesh*                  m_merged_mesh ; 
+        GColors*                      m_colors ; 
 
         char*                         m_path ;
         char*                         m_query ;
@@ -162,6 +166,7 @@ inline GGeo::GGeo() :
    m_low(NULL),
    m_high(NULL),
    m_merged_mesh(NULL),
+   m_colors(NULL),
    m_path(NULL),
    m_query(NULL),
    m_ctrl(NULL),
@@ -295,6 +300,13 @@ inline gfloat3* GGeo::getHigh()
    return m_high ; 
 }
 
-
+inline void GGeo::setColors(GColors* colors)
+{
+   m_colors = colors ; 
+}
+inline GColors* GGeo::getColors()
+{
+   return m_colors ; 
+}
 
 

@@ -69,6 +69,9 @@ class Rdr : public RendererBase  {
       unsigned int m_countdefault ; 
       Composition* m_composition ;
 
+      // hmm consider splitting of uniform handling into 
+      // separate class to avoid dupe between Renderer and Rdr ?
+
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
       GLint  m_p_location ;
@@ -81,6 +84,7 @@ class Rdr : public RendererBase  {
       GLint  m_colordomain_location ;
       GLint  m_colors_location ;
       GLint  m_recselect_location ;
+      GLint  m_lightposition_location ;
 
       GLenum m_primitive ; 
 
@@ -109,6 +113,7 @@ inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* in
     m_colordomain_location(-1),
     m_colors_location(-1),
     m_recselect_location(-1),
+    m_lightposition_location(-1),
     m_primitive(GL_POINTS)
 {
 }

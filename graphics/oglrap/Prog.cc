@@ -155,17 +155,21 @@ GLint Prog::attribute(const char* name_, bool required)
 
 GLint Prog::uniform(const char* name_, bool required)
 {
+    const char* note = "\n NB remember you must use the uniform in the shader otherwise it gets optimized away and WILL NOT BE FOUND " ; 
     std::string name(name_);
     if(m_uniforms.find(name) == m_uniforms.end())
     {
          if(required)
          {
-             LOG(fatal) << "Prog::uniform " << m_tagdir << " failed to find required uniform [" << name << "]" ;
+             LOG(fatal) << "Prog::uniform " << m_tagdir << " failed to find required uniform [" << name << "]" 
+                        << note ;
+             dumpUniforms(); 
              exit(1);
          }
          else
          {
-             LOG(debug) << "Prog::uniform " << m_tagdir << " did not find optional uniform [" << name << "]" ;
+             LOG(debug) << "Prog::uniform " << m_tagdir << " did not find optional uniform [" << name << "]" 
+                        << note ; 
          }
          return -1 ; 
     }

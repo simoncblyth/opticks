@@ -7,11 +7,9 @@
 #include "GSensorList.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GTraverse.hh"
-
-//#include "GMaterialIndex.hh"
-//#include "GSurfaceIndex.hh"
-//#include "GFlagIndex.hh"
+#include "GColorizer.hh"
 #include "GItemIndex.hh"
+#include "GBuffer.hh"
 
 #include "GGeo.hh"
 #include "GCache.hh"
@@ -56,26 +54,35 @@ void GLoader::load(bool nogeocache)
         m_ggeo = (*m_imp)(envprefix);      
 
         GBoundaryLib* lib = m_ggeo->getBoundaryLib();
-
-        lib->getMaterials()->loadIndex("$HOME/.opticks"); // customize GMaterialIndex
-
-        m_ggeo->sensitize(idpath, "idmap");  // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
-
-        m_mergedmesh = m_ggeo->getMergedMesh();  // creates merged mesh, doing the flattening  
-        //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
-
-        LOG(info) << "GLoader::load saving to cache directory " << idpath ;
-        m_mergedmesh->save(idpath); 
+        GColors* source = GColors::load(idpath,"GColors.json");  // colorname => hexcode 
 
         m_metadata = lib->getMetadata();
-        m_metadata->save(idpath);
-
         m_materials = lib->getMaterials();  
-        m_materials->save(idpath);
-        
-        m_surfaces = lib->getSurfaces();   
-        m_surfaces->save(idpath);
 
+        m_surfaces = lib->getSurfaces();   
+        m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));   
+        m_surfaces->setColorSource(source);
+
+        m_materials->loadIndex("$HOME/.opticks"); // customize GMaterialIndex
+
+        m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
+
+        m_mergedmesh = m_ggeo->getMergedMesh();   // creates merged mesh, doing the flattening  
+
+        //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
+
+        gfloat3* target = m_mergedmesh->getColors();
+        GColorizer czr( target, m_ggeo ); 
+        czr.setSurfaces(m_surfaces);
+        czr.traverse();
+
+
+        LOG(info) << "GLoader::load saving to cache directory " << idpath ;
+
+        m_mergedmesh->save(idpath); 
+        m_metadata->save(idpath);
+        m_materials->save(idpath);
+        m_surfaces->save(idpath);
 
         lib->saveIndex(idpath); 
     } 
@@ -87,21 +94,46 @@ void GLoader::load(bool nogeocache)
     Index* idx = m_types->getFlagsIndex() ;    
     m_flags = new GItemIndex( idx );     //GFlagIndex::load(idpath); 
 
+    m_flags->setColorMap(GColorMap::load(idpath, "GFlagIndexColors.json"));    
+
     // itemname => colorname 
     m_materials->setColorMap(GColorMap::load(idpath, "GMaterialIndexColors.json")); 
     m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));   
-    m_flags->setColorMap(GColorMap::load(idpath, "GFlagIndexColors.json"));    
 
-    m_colors = GColors::load(idpath,"GColors.json");                         // colorname => hexcode 
 
     m_materials->setLabeller(GItemIndex::COLORKEY);
+    m_surfaces->setLabeller(GItemIndex::COLORKEY);
+    m_flags->setLabeller(GItemIndex::COLORKEY);
+
+    m_colors = GColors::load(idpath,"GColors.json");                         // colorname => hexcode 
     m_materials->setColorSource(m_colors);
     m_surfaces->setColorSource(m_colors);
     m_flags->setColorSource(m_colors);
 
-    m_flags->formTable(); // as not yet pulling a buffer
 
-    GBuffer* buffer = m_materials->makeColorBuffer();
+    // formTable is needed to construct labels and codes when not pulling a buffer
+    m_surfaces->formTable();
+    m_flags->formTable(); 
+    m_materials->formTable();
+
+
+    m_colors->initCompositeColorBuffer(64);
+
+    std::vector<unsigned int>& material_codes = m_materials->getCodes() ; 
+    std::vector<unsigned int>& flag_codes     = m_flags->getCodes() ; 
+
+    assert(material_codes.size() < 32 );
+    assert(flag_codes.size() < 32 );
+
+    unsigned int material_color_offset = 0 ; 
+    unsigned int flag_color_offset = 32 ; 
+
+    m_colors->addColors(material_codes, material_color_offset ) ;
+    m_colors->addColors(flag_codes    , flag_color_offset ) ;  
+
+    m_color_buffer = m_colors->getCompositeBuffer();
+
+    //GBuffer* buffer = m_materials->makeColorBuffer();
     //m_colors->dump_uchar4_buffer(buffer);
 
     LOG(info) << "GLoader::load done " << idpath ;

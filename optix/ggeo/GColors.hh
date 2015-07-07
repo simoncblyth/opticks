@@ -35,16 +35,28 @@ class GColors {
        GBuffer* make_uchar4_buffer(std::vector<unsigned int>& codes);
        void dump_uchar4_buffer( GBuffer* buffer );
 
+   public: 
+       void initCompositeColorBuffer(unsigned int max_colors);
+       void addColors(std::vector<unsigned int>& codes, unsigned int offset=0 );
+       GBuffer* getCompositeBuffer();
+
    private:
        void loadMaps(const char* dir);
 
    private:
        std::map<std::string, std::string>  m_name2hex ; 
+       GBuffer*                            m_composite ; 
 
 };
 
-inline GColors::GColors() 
+inline GColors::GColors()  
+    :
+    m_composite(NULL)
 {
 }
 
 
+inline GBuffer* GColors::getCompositeBuffer()
+{
+   return m_composite ;  
+}

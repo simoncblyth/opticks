@@ -29,11 +29,12 @@ public:
     gfloat3* getNodeColor(GNode* node);
 
 private:
-     // transients that do not need persisting
-     // keeping things needing persisting down in GMesh
-     unsigned int m_cur_vertices ;
-     unsigned int m_cur_faces ;
-     unsigned int m_cur_solid ;
+    // transients that do not need persisting
+    // keeping things needing persisting down in GMesh
+    unsigned int m_cur_vertices ;
+    unsigned int m_cur_faces ;
+    unsigned int m_cur_solid ;
+     
 };
 
 

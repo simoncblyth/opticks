@@ -196,7 +196,6 @@ void Composition::gui()
     float* ldir = m_light->getDirectionPtr() ;
     ImGui::SliderFloat3( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
 
-
     if(m_animator)
     {
          m_animator->gui("time (ns)", "%0.3f", 2.0f);
@@ -208,6 +207,10 @@ void Composition::gui()
     int* pick = glm::value_ptr(m_pick) ;
     ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
     ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
+
+    int* np = glm::value_ptr(m_nrmparam) ;
+    ImGui::SliderInt( "nrmparam.x", np + 0,  0, 1  );  
+    ImGui::Text(" (nrm) normals : %s ",  *(np + 1) == 0 ? "NOT flipped" : "FLIPPED" );   
 
     ImGui::Text("pick %d %d %d %d ",
        m_pick.x, 
@@ -413,6 +416,33 @@ float* Composition::getProjectionPtr()
     return glm::value_ptr(m_projection) ;
 }
 
+float* Composition::getLightPositionPtr()  
+{
+    return glm::value_ptr(m_light_position) ;
+}
+float* Composition::getLightDirectionPtr()  
+{
+    return glm::value_ptr(m_light_direction) ;
+}
+
+float* Composition::getParamPtr()  
+{
+    return glm::value_ptr(m_param) ;
+}
+
+int* Composition::getNrmParamPtr()  
+{
+    return glm::value_ptr(m_nrmparam) ;
+}
+
+glm::ivec4& Composition::getNrmParam()  
+{
+    return m_nrmparam  ;
+}
+
+
+
+
 glm::mat4& Composition::getProjection()  
 {
      return m_projection ;
@@ -544,15 +574,20 @@ void Composition::update()
     m_light_direction = m_light->getDirection(m_model_to_world);
 
 
+    //print(m_light_position, "Composition::update m_light_position");
+
 
     m_axis_data->setQuad(0,0,  m_light_position  );
     m_axis_data->setQuad(0,1,  m_axis_x );
+    m_axis_data->setQuad(0,2,  m_axis_x_color );
 
     m_axis_data->setQuad(1,0,  m_light_position  );
     m_axis_data->setQuad(1,1,  m_axis_y );
+    m_axis_data->setQuad(1,2,  m_axis_y_color );
 
     m_axis_data->setQuad(2,0,  m_light_position  );
     m_axis_data->setQuad(2,1,  m_axis_z );
+    m_axis_data->setQuad(2,2,  m_axis_z_color );
 
 
 
@@ -597,20 +632,9 @@ void Composition::update()
 
 void Composition::initAxis()
 {
-    unsigned int num_axis = 3 ;  
-    //unsigned int num_axis = 1 ;  
-    NPY<float>* axis_data = NPY<float>::make_vec4(num_axis, 2, 0.f ); // ni 3 nj 2  three axes x,y,z each with 2 float4 vpos, vdir 
+    NPY<float>* axis_data = NPY<float>::make_vec4(3, 3, 0.f ); // three axes x,y,z each with 3 float4 vpos,vdir,vcol 
     setAxisData(axis_data);
 }
-
-
-
-void Composition::dumpAxisData(const char* msg)
-{
-    AxisNPY ax(m_axis_data);
-    ax.dump(msg);
-}
-
 
 void Composition::setAxisData(NPY<float>* axis_data)
 {
@@ -619,8 +643,15 @@ void Composition::setAxisData(NPY<float>* axis_data)
     //                                              j k sz   type          norm   iatt
     m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,4,ViewNPY::FLOAT, false, false));     
     m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,4,ViewNPY::FLOAT, false, false));     
+    m_axis_attr->add(new ViewNPY("vcol",m_axis_data,2,0,4,ViewNPY::FLOAT, false, false));     
 }
 
+
+void Composition::dumpAxisData(const char* msg)
+{
+    AxisNPY ax(m_axis_data);
+    ax.dump(msg);
+}
 
 
 

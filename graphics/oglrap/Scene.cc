@@ -144,7 +144,9 @@ void Scene::init()
 
     m_colors = new Colors(m_device);
 
+    //LOG(info) << "Scene::init geometry_renderer ctor";
     m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
+    //LOG(info) << "Scene::init geometry_renderer ctor DONE";
 
     m_axis_renderer = new Rdr(m_device, "axis", m_shader_dir, m_shader_incl_path );
 
@@ -260,8 +262,8 @@ void Scene::uploadSelection()
 
 void Scene::uploadRecordAttr(MultiViewNPY* attr)
 {
-    assert(attr);
     if(!attr) return ;  
+    //assert(attr);
 
     // all renderers ready to roll so can live switch between them, 
     // data is not duplicated thanks to Device register of uploads

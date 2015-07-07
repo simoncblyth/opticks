@@ -17,6 +17,7 @@ class Timer {
     public:
         void start();
         void setVerbose(bool verbose);
+        void setCommandLine(const std::string& cmdline);
         void operator()(const char* mark);
         void stop();
     private:
@@ -28,6 +29,7 @@ class Timer {
         VSD  m_marks ;  
         VS   m_lines ; 
         bool m_verbose ; 
+        std::string m_commandline ; 
 };
 
 
@@ -44,5 +46,9 @@ inline std::vector<std::string>& Timer::getStats()
 inline void Timer::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
+}
+inline void Timer::setCommandLine(const std::string& cmdline)
+{
+    m_commandline = cmdline ; 
 }
 

@@ -43,7 +43,7 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
 }
 
 
-void NumpyEvt::setGenstepData(NPY<float>* genstep)
+void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
 {
     G4StepNPY gs(genstep);  
 
@@ -58,6 +58,13 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
     m_num_photons = m_genstep_data->getUSum(0,3);
 
+    if(nooptix)
+    {
+        LOG(info) << "NumpyEvt::setGenstepData early exit due to --nooptix/-O " ;
+        return ;  
+    } 
+
+
     NPY<float>* pho = NPY<float>::make_vec4(m_num_photons, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
@@ -67,8 +74,6 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     NPY<unsigned char>* phosel = NPY<unsigned char>::make_vec4(m_num_photons,1,0); // shape (np,1,4) initialized to 0 
     setPhoselData(phosel);   
 
-
-    
 
     assert(SHRT_MIN == -(1 << 15));      // -32768
     assert(SHRT_MAX ==  (1 << 15) - 1);  // +32767

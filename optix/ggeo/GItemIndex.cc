@@ -2,6 +2,7 @@
 #include "GColorMap.hh"
 #include "GColors.hh"
 #include "GBuffer.hh"
+#include "GVector.hh"
 
 #include "assert.h"
 #include <iostream>
@@ -66,6 +67,12 @@ unsigned int GItemIndex::getIndexLocal(const char* name, unsigned int missing)
 {
     return m_index->getIndexLocal(name, missing);
 }
+
+bool GItemIndex::hasItem(const char* key)
+{
+    return m_index->hasItem(key);
+}
+
 
 void GItemIndex::save(const char* idpath)
 {
@@ -138,24 +145,49 @@ std::string GItemIndex::defaultLabeller(GItemIndex* self, const char* key, unsig
 std::string GItemIndex::colorKeyLabeller(GItemIndex* self, const char* key, unsigned int& colorcode )
 {
     // function pointers have to be static, so access members python style
-    GColorMap* colormap = self->getColorMap(); 
-    GColors*  colors = self->getColorSource(); 
+    colorcode = self->getColorCode(key);
+
     Index* index = self->getIndex();
-
-    const char*  colorname = colormap ? colormap->getItemColor(key, NULL) : NULL ; 
-    colorcode  = colors ? colors->getCode(colorname, 0xFFFFFF) : 0xFFFFFF ; 
-
     unsigned int local  = index->getIndexLocal(key) ;
 
     std::stringstream ss ; 
     ss  << std::setw(5)  << std::dec << local 
         << std::setw(25) << key
-        << std::setw(25) << colorname 
         << std::setw(10) << std::hex << colorcode 
         ;
 
     return ss.str();
 }
+
+
+const char* GItemIndex::getColorName(const char* key)
+{
+    return m_colormap ? m_colormap->getItemColor(key, NULL) : NULL ; 
+}
+
+unsigned int GItemIndex::getColorCode(const char* key )
+{
+    const char*  colorname =  getColorName(key) ;
+    unsigned int colorcode  = m_colors ? m_colors->getCode(colorname, 0xFFFFFF) : 0xFFFFFF ; 
+    return colorcode ; 
+}
+
+
+gfloat3* GItemIndex::makeColor( unsigned int rgb )
+{
+    unsigned int red   =  ( rgb & 0xFF0000 ) >> 16 ;  
+    unsigned int green =  ( rgb & 0x00FF00 ) >>  8 ;  
+    unsigned int blue  =  ( rgb & 0x0000FF ) ;  
+
+    float d(0xFF);
+    float r = float(red)/d ;
+    float g = float(green)/d ;
+    float b = float(blue)/d ;
+
+    return new gfloat3( r, g, b) ;
+}
+
+
 
 std::string GItemIndex::materialSeqLabeller(GItemIndex* self, const char* key_, unsigned int& colorcode)
 {
@@ -199,6 +231,13 @@ void GItemIndex::formTable(bool verbose)
        std::string key = *it ; 
        unsigned int colorcode(0x0) ; 
        std::string label = getLabel(key.c_str(), colorcode );
+
+       const char* colorname = getColorName(key.c_str());
+       if(colorname)
+       {
+          label += "   " ; 
+          label += colorname ; 
+       }
 
        if(verbose) 
            std::cout

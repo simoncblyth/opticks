@@ -177,6 +177,8 @@ int main(int argc, char** argv)
     composition.addConfig(&cfg); 
 
     cfg.commandline(argc, argv);
+    t.setCommandLine(cfg.getCommandLine()); 
+
     delegate.liveConnect(&cfg); // hookup live config via UDP messages
     delegate.setNumpyEvt(&evt); // allows delegate to update evt when NPY messages arrive
 
@@ -245,7 +247,10 @@ int main(int argc, char** argv)
     GItemIndex* materials = loader.getMaterials();
     types.setMaterialsIndex(materials->getIndex());
 
-    GBuffer* colorbuffer = materials->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
+    //GBuffer* colorbuffer = materials->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
+
+    GBuffer* colorbuffer = loader.getColorBuffer(); 
+
     scene.uploadColorBuffer(colorbuffer);
     scene.setGeometry(loader.getDrawable());
     scene.setTarget(0);
@@ -257,11 +262,8 @@ int main(int argc, char** argv)
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
-
-
     GBoundaryLibMetadata* meta = loader.getMetadata(); 
     std::map<int, std::string> boundaries = meta->getBoundaryNames();
-
 
     if(nogeocache)
     {
@@ -281,7 +283,6 @@ int main(int argc, char** argv)
 
     t("Geometry Interp"); 
 
-
     NPY<float>* npy = NPY<float>::load(typ, tag) ;
 
     t("Genstep Loading"); 
@@ -290,15 +291,18 @@ int main(int argc, char** argv)
     genstep.setLookup(loader.getMaterialLookup()); 
     genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
 
-
     evt.setMaxRec(fcfg->getRecordMax());          // must set this before setGenStepData to have effect
-    evt.setGenstepData(npy); 
+
+    evt.setGenstepData(npy, nooptix); 
 
     t("Host Evt allocation"); 
 
     composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent()); // is this domain used for photon record compression ?
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
+
+
+
 
 
 
@@ -309,7 +313,7 @@ int main(int argc, char** argv)
 #endif
 
     composition.update();
-    composition.dumpAxisData("main:dumpAxisData");
+    //composition.dumpAxisData("main:dumpAxisData");
     scene.uploadAxis();
 
     scene.uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
@@ -326,7 +330,6 @@ int main(int argc, char** argv)
 #endif
 
 
-    //
     // TODO:  
     //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
     //   * extract core OptiX processing into separate class
@@ -370,130 +373,132 @@ int main(int argc, char** argv)
 
     LOG(info) << "main.OptiXEngine::generate DONE "; 
 
+    Photons* photons(NULL);
 
-    NPY<float>* dpho = evt.getPhotonData();
-    Rdr::download(dpho);
-
-    NPY<short>* drec = evt.getRecordData();
-    Rdr::download(drec);
-
-    NPY<NumpyEvt::Sequence_t>* dhis = evt.getSequenceData();
-    Rdr::download(dhis);
-
-    t("photon, record, sequence downloads"); 
-
-    dpho->setVerbose();
-    dpho->save("ox%s", typ,  tag);
-    drec->setVerbose();
-    drec->save("rx%s", typ,  tag );
-    dhis->setVerbose();
-    dhis->save("ph%s", typ,  tag );
-
-    t("photon, record, sequence save"); 
-
-
-    BoundariesNPY bnd(dpho); 
-    bnd.setTypes(&types);
-    bnd.setBoundaryNames(boundaries);
-    bnd.indexBoundaries();
-
-    PhotonsNPY pho(dpho);
-    pho.setTypes(&types);
-
-    RecordsNPY rec(drec, evt.getMaxRec());
-    rec.setTypes(&types);
-    rec.setDomains((NPY<float>*)domain);
-
-    t("boundary indexing"); 
-
-
-    optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
-    unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == evt.getNumPhotons());
-    unsigned int device_number = 0 ;  // maybe problem with multi-GPU
-    unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
-
-
-#ifdef INTEROP
-    // attempt to give CUDA access to mapped OpenGL buffer
-    //unsigned char*      d_psel = c_psel->GL_to_CUDA();
-    //unsigned char*      d_rsel = c_rsel->GL_to_CUDA();
-    // attempt to give CUDA access to OptiX buffers which in turn are connected to OpenGL buffers
-    unsigned char* d_psel = OptiXUtil::getDevicePtr<unsigned char>( engine.getPhoselBuffer(), device_number ); 
-    unsigned char* d_rsel = OptiXUtil::getDevicePtr<unsigned char>( engine.getRecselBuffer(), device_number ); 
-#else
-    LOG(info)<< "main: non interop allocating new device buffers with ThrustArray " ;
-    unsigned char*      d_psel = NULL ;    
-    unsigned char*      d_rsel = NULL ;    
-#endif
-
-    unsigned int sequence_itemsize = evt.getSequenceData()->getShape(2) ; assert( 2 == sequence_itemsize );
-    unsigned int phosel_itemsize   = evt.getPhoselData()->getShape(2)   ; assert( 4 == phosel_itemsize );
-    unsigned int recsel_itemsize   = evt.getRecselData()->getShape(2)   ; assert( 4 == recsel_itemsize );
-    unsigned int maxrec = evt.getMaxRec();
- 
-    LOG(info) << "main: ThrustIndex ctor " ; 
-    ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );   // input flag/material sequences
-    ThrustArray<unsigned char>      psel(d_psel, num_elements       , phosel_itemsize   );   // output photon selection
-    ThrustArray<unsigned char>      rsel(d_rsel, num_elements*maxrec, recsel_itemsize   );   // output record selection
-
-    ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
-
-    idx.makeHistogram(0, "FlagSequence");   
-    idx.makeHistogram(1, "MaterialSequence");   
-
-    psel.repeat_to( maxrec, rsel );
-    cudaDeviceSynchronize();
-
-    t("sequence indexing"); 
-
-#ifdef INTEROP
-    // declare that CUDA finished with buffers 
-    c_rsel->CUDA_to_GL();
-    c_psel->CUDA_to_GL();
-#else
-    // non-interop workaround download the Thrust created buffers into NPY, then copy them back to GPU with uploadSelection
-    psel.download( evt.getPhoselData() );  
-    rsel.download( evt.getRecselData() ); 
-
-    //evt.getPhoselData()->save("phosel_%s", typ, tag);
-    //evt.getRecselData()->save("recsel_%s", typ, tag);
-
-    scene.uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
-
-    t("selection download/upload"); 
-#endif
-
-    GItemIndex* seqhis = new GItemIndex(idx.getHistogramIndex(0)) ;  
-    GItemIndex* seqmat = new GItemIndex(idx.getHistogramIndex(1)) ;  
-    //seqhis->save(idpath);
-    //seqmat->save(idpath);
-
-    seqhis->setTitle("Photon Flag Sequence Selection");
-    seqhis->setTypes(&types);
-    seqhis->setLabeller(GItemIndex::HISTORYSEQ);
-    seqhis->formTable();
-
-    seqmat->setTitle("Photon Material Sequence Selection");
-    seqmat->setTypes(&types);
-    seqmat->setLabeller(GItemIndex::MATERIALSEQ);
-    seqmat->formTable();
-
-    if(noviz)
+    if(engine.isEnabled())
     {
-        LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
-        exit(EXIT_SUCCESS); 
-    }
+        NPY<float>* dpho = evt.getPhotonData();
+        Rdr::download(dpho);
 
+        NPY<short>* drec = evt.getRecordData();
+        Rdr::download(drec);
+
+        NPY<NumpyEvt::Sequence_t>* dhis = evt.getSequenceData();
+        Rdr::download(dhis);
+
+        t("photon, record, sequence downloads"); 
+
+        dpho->setVerbose();
+        dpho->save("ox%s", typ,  tag);
+        drec->setVerbose();
+        drec->save("rx%s", typ,  tag );
+        dhis->setVerbose();
+        dhis->save("ph%s", typ,  tag );
+
+        t("photon, record, sequence save"); 
+
+        BoundariesNPY bnd(dpho); 
+        bnd.setTypes(&types);
+        bnd.setBoundaryNames(boundaries);
+        bnd.indexBoundaries();
+
+        PhotonsNPY pho(dpho);
+        pho.setTypes(&types);
+
+        RecordsNPY rec(drec, evt.getMaxRec());
+        rec.setTypes(&types);
+        rec.setDomains((NPY<float>*)domain);
+
+        t("boundary indexing"); 
+
+
+        optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
+        unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == evt.getNumPhotons());
+        unsigned int device_number = 0 ;  // maybe problem with multi-GPU
+        unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
+
+
+#ifdef INTEROP
+        // attempt to give CUDA access to mapped OpenGL buffer
+        //unsigned char*      d_psel = c_psel->GL_to_CUDA();
+        //unsigned char*      d_rsel = c_rsel->GL_to_CUDA();
+        // attempt to give CUDA access to OptiX buffers which in turn are connected to OpenGL buffers
+        unsigned char* d_psel = OptiXUtil::getDevicePtr<unsigned char>( engine.getPhoselBuffer(), device_number ); 
+        unsigned char* d_rsel = OptiXUtil::getDevicePtr<unsigned char>( engine.getRecselBuffer(), device_number ); 
+#else
+        LOG(info)<< "main: non interop allocating new device buffers with ThrustArray " ;
+        unsigned char*      d_psel = NULL ;    
+        unsigned char*      d_rsel = NULL ;    
+#endif
+
+        unsigned int sequence_itemsize = evt.getSequenceData()->getShape(2) ; assert( 2 == sequence_itemsize );
+        unsigned int phosel_itemsize   = evt.getPhoselData()->getShape(2)   ; assert( 4 == phosel_itemsize );
+        unsigned int recsel_itemsize   = evt.getRecselData()->getShape(2)   ; assert( 4 == recsel_itemsize );
+        unsigned int maxrec = evt.getMaxRec();
+     
+        LOG(info) << "main: ThrustIndex ctor " ; 
+        ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );   // input flag/material sequences
+        ThrustArray<unsigned char>      psel(d_psel, num_elements       , phosel_itemsize   );   // output photon selection
+        ThrustArray<unsigned char>      rsel(d_rsel, num_elements*maxrec, recsel_itemsize   );   // output record selection
+
+        ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
+
+        idx.makeHistogram(0, "FlagSequence");   
+        idx.makeHistogram(1, "MaterialSequence");   
+
+        psel.repeat_to( maxrec, rsel );
+        cudaDeviceSynchronize();
+
+        t("sequence indexing"); 
+
+#ifdef INTEROP
+        // declare that CUDA finished with buffers 
+        c_rsel->CUDA_to_GL();
+        c_psel->CUDA_to_GL();
+#else
+        // non-interop workaround download the Thrust created buffers into NPY, then copy them back to GPU with uploadSelection
+        psel.download( evt.getPhoselData() );  
+        rsel.download( evt.getRecselData() ); 
+
+        //evt.getPhoselData()->save("phosel_%s", typ, tag);
+        //evt.getRecselData()->save("recsel_%s", typ, tag);
+
+        scene.uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
+
+        t("selection download/upload"); 
+#endif
+
+        GItemIndex* seqhis = new GItemIndex(idx.getHistogramIndex(0)) ;  
+        GItemIndex* seqmat = new GItemIndex(idx.getHistogramIndex(1)) ;  
+        //seqhis->save(idpath);
+        //seqmat->save(idpath);
+
+        seqhis->setTitle("Photon Flag Sequence Selection");
+        seqhis->setTypes(&types);
+        seqhis->setLabeller(GItemIndex::HISTORYSEQ);
+        seqhis->formTable();
+
+        seqmat->setTitle("Photon Material Sequence Selection");
+        seqmat->setTypes(&types);
+        seqmat->setLabeller(GItemIndex::MATERIALSEQ);
+        seqmat->formTable();
+
+        if(noviz)
+        {
+            LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
+            exit(EXIT_SUCCESS); 
+        }
+
+        photons = new Photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
+        scene.setPhotons(photons);
+    }    // OptiX engine is enabled, ie not --nooptix/-O
 
     glm::ivec4& recsel = composition.getRecSelect();
-
-    Photons photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
-
-    scene.setPhotons(&photons);  // seems to do little, maybe just for GUI
 
 #ifdef GUI_
     GUI gui ;
     gui.setScene(&scene);
+    gui.setPhotons(photons);
     gui.setComposition(&composition);
     gui.setBookmarks(&bookmarks);
     gui.setInteractor(&interactor);   // status line
@@ -543,17 +548,17 @@ int main(int argc, char** argv)
         {
             gui.show(show_gui_window);
 
-            glm::ivec4 sel = bnd.getSelection() ;
-            composition.setSelection(sel); 
-            composition.getPick().y = sel.x ;   //  1st boundary 
+            if(photons)
+            {
+                glm::ivec4 sel = photons->getBoundaries()->getSelection() ;
+                composition.setSelection(sel); 
+                composition.getPick().y = sel.x ;   //  1st boundary 
 
+                recsel.x = photons->getSeqHis()->getSelected(); 
+                recsel.y = photons->getSeqMat()->getSelected(); 
 
-            recsel.x = seqhis->getSelected(); 
-            recsel.y = seqmat->getSelected(); 
-
-            //if(count % 100 == 0) print(recsel, "main::recsel");
-
-            composition.setFlags(types.getFlags()); 
+                composition.setFlags(types.getFlags()); 
+            }
             // maybe imgui edit selection within the composition imgui, rather than shovelling ?
             // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
         }

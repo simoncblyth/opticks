@@ -44,6 +44,7 @@ void Timer::prepTable()
     double tp(0.);
 
     m_lines.clear();
+    if(!m_commandline.empty()) m_lines.push_back(m_commandline);
 
     for(VSDI it=m_marks.begin() ; it != m_marks.end() ; it++)
     {

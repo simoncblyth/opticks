@@ -9,6 +9,7 @@
 #include "GSensorList.hh"
 #include "GSensor.hh"
 #include "GMergedMesh.hh"
+#include "GColors.hh"
 
 #include "assert.h"
 #include "stdio.h"

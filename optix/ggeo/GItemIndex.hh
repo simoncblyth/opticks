@@ -4,6 +4,7 @@ class GColors ;
 class GColorMap ; 
 class GBuffer ; 
 
+struct gfloat3 ; 
 class Index ; 
 class Types ; 
 
@@ -45,8 +46,13 @@ class GItemIndex {
         Types*   getTypes();
    public:
         void add(const char* name, unsigned int source);
+   public:
+        bool         hasItem(const char* name);
         unsigned int getIndexLocal(const char* name, unsigned int missing=0);
         unsigned int getNumItems();
+        unsigned int getColorCode(const char* key);
+        const char*  getColorName(const char* key);
+        static gfloat3* makeColor( unsigned int rgb );
 
    public:
         Index*       getIndex();
@@ -71,6 +77,9 @@ class GItemIndex {
 
         GBuffer* makeColorBuffer();
         GBuffer* getColorBuffer();
+
+        std::vector<unsigned int>&    getCodes();
+
    public:
         // GUI 
         void     gui();
@@ -153,4 +162,8 @@ inline Index* GItemIndex::getIndex()
    return m_index ; 
 }
 
+inline std::vector<unsigned int>& GItemIndex::getCodes()
+{
+   return m_codes ; 
+}
 

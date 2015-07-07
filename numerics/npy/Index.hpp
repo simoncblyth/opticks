@@ -36,6 +36,7 @@ class Index {
         void setExt(const char* ext);
         unsigned int getIndexLocal(const char* name, unsigned int missing=0);
         unsigned int getIndexSource(const char* name, unsigned int missing=0);
+        bool         hasItem(const char* key);
         const char* getNameLocal(unsigned int local, const char* missing=NULL);
         const char* getNameSource(unsigned int source, const char* missing=NULL);
 

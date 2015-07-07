@@ -10,13 +10,14 @@ uniform vec4 Param ;
 
 layout(location = 0) in vec4 vpos ;
 layout(location = 1) in vec4 vdir ;
+layout(location = 2) in vec4 vcol ;
 
 out vec3 direction ; 
 out vec3 colour ; 
 
 void main () 
 {
-    colour = vec3(1.0) ;
+    colour = vec3(vcol) ;
 
     direction = vdir.xyz ;
 
@@ -24,7 +25,7 @@ void main ()
 
     //gl_Position = vec4( vec3( ModelView * LightPosition ) , 1.0);
 
-    gl_Position = vec4( vec3( LightPosition ) , 1.0);
+      gl_Position = vec4( vec3( LightPosition ) , 1.0);
 }
 
 

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 
 #include "string.h"
 #include <boost/tokenizer.hpp>
@@ -83,6 +84,10 @@ std::string Cfg::getDescString()
 
 void Cfg::commandline(int argc, char** argv)
 {
+    std::stringstream ss ; 
+    for(unsigned int i=1 ; i < argc ; ++i ) ss << argv[i] ;
+    m_commandline = ss.str();
+
     if(m_others.empty())
     {
         std::vector<std::string> unrecognized = parse_commandline(argc, argv);

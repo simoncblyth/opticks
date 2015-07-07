@@ -59,6 +59,7 @@ public:
     boost::program_options::options_description& getDesc();
     std::string getDescString();
 
+    const std::string& getCommandLine(); 
     void commandline(int argc, char** argv);
     void liveline(const char* line);
     void configfile(const char* path);
@@ -78,9 +79,15 @@ public:
 private:
     const char* m_name ;    
     std::vector<Cfg*> m_others ; 
+    std::string m_commandline ; 
     bool m_live ; 
 
 };
+
+inline const std::string& Cfg::getCommandLine()
+{
+    return m_commandline ; 
+}
 
 inline bool Cfg::hasOpt(const char* opt)
 { 

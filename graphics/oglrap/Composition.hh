@@ -82,6 +82,12 @@ class Composition : public Configurable {
       void setParam(glm::vec4 par);
       void setParam(std::string par);
       glm::vec4&  getParam();
+      float*      getParamPtr();
+  public:
+      //void setNrmParam(glm::ivec4 par);
+      //void setNrmParam(std::string par);
+      glm::ivec4&  getNrmParam();
+      int*         getNrmParamPtr();
 
   public:
       void setFlags(glm::ivec4 flags);
@@ -150,7 +156,9 @@ class Composition : public Configurable {
       glm::vec4& getTimeDomain();
       glm::vec4& getColorDomain();
       glm::vec4& getLightPosition();
+      float*     getLightPositionPtr();
       glm::vec4& getLightDirection();
+      float*     getLightDirectionPtr();
       float&     getGazeLength();
       glm::mat4& getWorld2Eye();  // ModelView  including trackballing
       float*     getWorld2EyePtr();  // ModelView  including trackballing
@@ -206,6 +214,7 @@ class Composition : public Configurable {
       glm::ivec4 m_pick ;
       glm::vec4  m_pick_f ; // for inputing pick using float slider 
       glm::vec4  m_param ;
+      glm::ivec4  m_nrmparam ;
       bool       m_animated ; 
 
   private:
@@ -251,6 +260,9 @@ class Composition : public Configurable {
       glm::vec4 m_axis_x ; 
       glm::vec4 m_axis_y ; 
       glm::vec4 m_axis_z ; 
+      glm::vec4 m_axis_x_color ; 
+      glm::vec4 m_axis_y_color ; 
+      glm::vec4 m_axis_z_color ; 
 
 
   public: 
@@ -282,7 +294,10 @@ inline Composition::Composition()
   m_scene(NULL),
   m_axis_x(1000.f,    0.f,    0.f, 0.f),
   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
-  m_axis_z(0.f   ,    0.f, 1000.f, 0.f)
+  m_axis_z(0.f   ,    0.f, 1000.f, 0.f),
+  m_axis_x_color(1.f,0.f,0.f,1.f),
+  m_axis_y_color(0.f,1.f,0.f,1.f),
+  m_axis_z_color(0.f,0.f,1.f,1.f)
 {
     init();
 }

@@ -27,6 +27,7 @@ class GPropertyMap {
       char* pdigest(int ifr, int ito); 
       const char* getShortName(); 
       bool hasShortName(const char* name);
+      bool hasDefinedName();
       std::string getShortNameString();
       std::string getPDigestString(int ifr, int ito);
       std::string getKeysString(); 

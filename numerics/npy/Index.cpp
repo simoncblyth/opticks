@@ -60,6 +60,12 @@ unsigned int Index::getIndexLocal(const char* name, unsigned int missing)
     return m_local.count(name) == 1 ? m_local[name] : missing ; 
 }
 
+bool Index::hasItem(const char* name)
+{
+    return m_local.count(name) == 1 ; 
+}
+
+
 unsigned int Index::getNumItems()
 {
     //assert(m_source.size() == m_local.size());
