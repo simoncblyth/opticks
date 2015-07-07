@@ -39,7 +39,7 @@ bool existsPath(const char* dir_, const char* name )
 }
 
 
-std::string preparePath(const char* dir_, const char* name, bool create=false )
+std::string preparePath(const char* dir_, const char* name, bool create )
 {
     std::string dir = os_path_expandvars(dir_) ; 
     fs::path fdir(dir.c_str());

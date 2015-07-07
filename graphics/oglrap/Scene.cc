@@ -138,6 +138,8 @@ void Scene::configure(const char* name, int value)
 
 void Scene::init()
 {
+    LOG(info) << "Scene::init ";
+
     m_device = new Device();
 
     m_colors = new Colors(m_device);

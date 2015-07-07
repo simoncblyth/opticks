@@ -5,12 +5,19 @@
 #include <iomanip>
 #include <sstream>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 const char* Timer::START = "START" ;
 const char* Timer::STOP  = "STOP" ;
 
 void Timer::operator()(const char* mark)
 {
     m_marks.push_back(SD(mark, getRealTime()));
+
+    if(m_verbose) LOG(info) << mark ; 
 }
 
 void Timer::start()

@@ -4,7 +4,7 @@
 #include "NPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
-
+#include "AxisNPY.hpp"
 
 
 // oglrap-
@@ -69,8 +69,8 @@ void Composition::init()
 
 void Composition::dumpAxisData(const char* msg)
 {
-    LOG(info) << msg ; 
-    m_axis_data->dump();
+    AxisNPY ax(m_axis_data);
+    ax.dump(msg);
 }
 
 

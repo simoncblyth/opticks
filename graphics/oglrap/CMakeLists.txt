@@ -98,6 +98,7 @@ add_library( ${name}  SHARED
                 Photons.cc
                 Animator.cc
                 Colors.cc
+                DynamicDefine.cc
 )
 
 SET(hdrs 
@@ -135,6 +136,7 @@ SET(hdrs
         Photons.hh
         Animator.hh
         Colors.hh
+        DynamicDefine.hh
 )
 
 

@@ -69,18 +69,20 @@ class OptiXEngine : public Touchable {
         void setMergedMesh(GMergedMesh* mergedmesh);
         void setEnabled(bool enabled);
         void setNumpyEvt(NumpyEvt* evt);
+    public:
         void setRngMax(unsigned int rng_max);
         void setBounceMax(unsigned int bounce_max);
-
+        void setRecordMax(unsigned int record_max);
     public:
         GMergedMesh* getMergedMesh();
         optix::Context& getContext();
         NPYBase* getDomain();
         NPYBase* getIDomain();
+    public:
         unsigned int getRngMax();
         unsigned int getBounceMax();
+        unsigned int getRecordMax();
         unsigned int getTraceCount();
-
     public:
         void init();
         void trace(); 
@@ -157,6 +159,7 @@ class OptiXEngine : public Touchable {
         unsigned int     m_trace_count ; 
         unsigned int     m_generate_count ; 
         unsigned int     m_bounce_max ; 
+        unsigned int     m_record_max ; 
         char*            m_cmake_target ;
         bool             m_enabled ; 
         int              m_texture_id ; 
@@ -202,6 +205,7 @@ inline OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_trace_count(0),
     m_generate_count(0),
     m_bounce_max(1),
+    m_record_max(10),
     m_cmake_target(strdup(cmake_target)),
     m_enabled(true),
     m_texture_id(-1),
@@ -269,6 +273,15 @@ inline void OptiXEngine::setBounceMax(unsigned int bounce_max)
 inline unsigned int OptiXEngine::getBounceMax()
 {
     return m_bounce_max ; 
+}
+
+inline void OptiXEngine::setRecordMax(unsigned int record_max)
+{
+    m_record_max = record_max ;
+}
+inline unsigned int OptiXEngine::getRecordMax()
+{
+    return m_record_max ; 
 }
 
 

@@ -124,6 +124,7 @@ void OptiXEngine::initContext()
     m_context[ "touch_ray_type"      ]->setUint( e_touch_ray );
     m_context[ "propagate_ray_type"  ]->setUint( e_propagate_ray );
     m_context[ "bounce_max"          ]->setUint( m_bounce_max );
+    m_context[ "record_max"          ]->setUint( m_record_max );
 
     m_context->setRayTypeCount( e_rayTypeCount );
 

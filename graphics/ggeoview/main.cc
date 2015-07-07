@@ -32,6 +32,7 @@
 #include "Rdr.hh"
 #include "Texture.hh"
 #include "Photons.hh"
+#include "DynamicDefine.hh"
 
 
 // numpyserver-
@@ -131,10 +132,12 @@ void logging_init()
 
 int main(int argc, char** argv)
 {
+    logging_init();
+
     Timer t ; 
+    t.setVerbose(true);
     t.start();
 
-    logging_init();
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
     LOG(debug) << argv[0] ; 
@@ -154,7 +157,6 @@ int main(int argc, char** argv)
     interactor.setScene(&scene);
 
     interactor.setComposition(&composition);
-    scene.setComposition(&composition);    
     composition.setScene(&scene);
     bookmarks.setComposition(&composition);
     bookmarks.setScene(&scene);
@@ -186,6 +188,7 @@ int main(int argc, char** argv)
     bool nooptix = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
     bool noviz = fcfg->hasOpt("noviz");
+    //bool norecord = fcfg->hasOpt("norecord");
 
 
     // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
@@ -201,9 +204,19 @@ int main(int argc, char** argv)
     frame.setTitle("GGeoView");
     frame.setFullscreen(fullscreen);
 
-    t("configuration"); 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
-    t("numpyserver startup"); 
+
+    t("configuration"); 
+
+
+    // dynamic define for use by GLSL shaders
+    const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
+    DynamicDefine dd(shader_dynamic_dir, "dynamic.h");
+    dd.add("MAXREC",fcfg->getRecordMax());    
+    dd.write();
+
+    scene.init();  // reading shader source and creating renderers
+    scene.setComposition(&composition);    
 
     frame.init();  // creates OpenGL context
     t("OpenGL context creation"); 
@@ -243,7 +256,7 @@ int main(int argc, char** argv)
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
-    composition.dumpAxisData();
+    composition.dumpAxisData("main:dumpAxisData");
 
 
     GBoundaryLibMetadata* meta = loader.getMetadata(); 
@@ -277,7 +290,8 @@ int main(int argc, char** argv)
     genstep.setLookup(loader.getMaterialLookup()); 
     genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
 
-    evt.setMaxRec(MAXREC);          // must set this before setGenStepData to have effect
+
+    evt.setMaxRec(fcfg->getRecordMax());          // must set this before setGenStepData to have effect
     evt.setGenstepData(npy); 
 
     t("Host Evt allocation"); 
@@ -328,6 +342,7 @@ int main(int argc, char** argv)
     engine.setComposition(&composition);                 
     engine.setEnabled(!nooptix);
     engine.setBounceMax(fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
+    engine.setRecordMax(evt.getMaxRec());       // 1:to minimize without breaking machinery 
 
     interactor.setTouchable(&engine);
 

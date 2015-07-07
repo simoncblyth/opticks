@@ -7,7 +7,13 @@ public:
    FrameCfg(const char* name, Listener* listener, bool live) 
        : 
        Cfg(name, live),
-       m_bouncemax(9)   // one less than canonical maxrec of 10
+       m_bouncemax(9),     
+       m_recordmax(10)
+      //
+      // keeping bouncemax one less than recordmax is advantageous 
+      // as bookeeping is then consistent between the photons and the records 
+      // as this avoiding truncation of the records
+      //
    {   
 
        m_desc.add_options()
@@ -31,6 +37,10 @@ public:
        m_desc.add_options()
            ("noviz,V",  "just generate, propagate and save : no visualization") ;
 
+       //m_desc.add_options()
+       //    ("norecord,R",  "do not record the steps of the photons") ;
+       //  using recordmax instead
+
        m_desc.add_options()
            ("scintillation,s",  "load scintillation gensteps") ;
 
@@ -50,6 +60,14 @@ public:
        snprintf(bouncemax,128, "Maximum number of boundary bounces, 0:to just generate. Default %d ", m_bouncemax);
        m_desc.add_options()
            ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
+
+       char recordmax[128];
+       snprintf(recordmax,128, "Maximum number of photon records, 1:to minimize. Default %d ", m_recordmax);
+       m_desc.add_options()
+           ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
+
+
+
 
        ///////////////
 
@@ -82,6 +100,11 @@ public:
    {
         return m_bouncemax ; 
    }
+   int getRecordMax()
+   {
+        return m_recordmax ; 
+   }
+
 
 
 private:
@@ -89,6 +112,7 @@ private:
     std::string m_event_tag ;
     std::string m_liveline ;
     int         m_bouncemax ; 
+    int         m_recordmax ; 
 
 };
 

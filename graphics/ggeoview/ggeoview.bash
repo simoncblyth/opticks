@@ -383,6 +383,7 @@ EOU
 ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
 ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
+ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
 
 #ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }  gets deleted too often for keeping RNG 
 ggeoview-rng-dir(){ echo $(ggeoview-idir)/cache/rng ; }
@@ -498,8 +499,11 @@ ggeoview-export()
 
    export GGEOVIEW_QUERY=$q
    export GGEOVIEW_CTRL=""
+
    export SHADER_DIR=$(ggeoview-sdir)/gl
-   export SHADER_INCL_PATH=$(ggeoview-sdir)/gl:$(ggeoview-sdir)
+   export SHADER_DYNAMIC_DIR=$(ggeoview-gdir)
+   export SHADER_INCL_PATH=$(ggeoview-sdir)/gl:$(ggeoview-sdir):$SHADER_DYNAMIC_DIR
+   mkdir -p $SHADER_DYNAMIC_DIR
 
    export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
    export RAYTRACE_RNG_DIR=$(ggeoview-rng-dir) 

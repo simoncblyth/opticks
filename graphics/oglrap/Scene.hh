@@ -110,7 +110,7 @@ class Scene : public Configurable {
         const char*   getRecordTag();
         float         getTimeFraction();
 
-   private:
+   public:
         void init();
 
    private:
@@ -177,7 +177,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_initialized(false),
             m_time_fraction(0.f)
 {
-    init();  
+    //init();  
 }
 
 

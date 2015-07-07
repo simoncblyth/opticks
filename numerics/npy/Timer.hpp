@@ -16,6 +16,7 @@ class Timer {
         Timer();
     public:
         void start();
+        void setVerbose(bool verbose);
         void operator()(const char* mark);
         void stop();
     private:
@@ -24,13 +25,14 @@ class Timer {
         void dump(const char* msg="Timer::dump");
         std::vector<std::string>& getStats();
     private:
-        VSD m_marks ;  
-        VS  m_lines ; 
+        VSD  m_marks ;  
+        VS   m_lines ; 
+        bool m_verbose ; 
 };
 
 
 
-inline Timer::Timer()
+inline Timer::Timer() : m_verbose(false)
 {
 }
 
@@ -39,4 +41,8 @@ inline std::vector<std::string>& Timer::getStats()
     return m_lines ; 
 }
 
+inline void Timer::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
 

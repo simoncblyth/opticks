@@ -1,6 +1,5 @@
 // porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
 
-
 #include <curand_kernel.h>
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
@@ -23,8 +22,26 @@ using namespace optix;
 #include "propagate.h"
 
 
+rtBuffer<float4>               genstep_buffer;
+rtBuffer<float4>               photon_buffer;
+rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
+rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long and unsigned long long are both 8 bytes, 64 bits 
+rtBuffer<unsigned char>        phosel_buffer; 
+rtBuffer<unsigned char>        recsel_buffer; 
+rtBuffer<curandState, 1>       rng_states ;
+
+rtDeclareVariable(float4,        center_extent, , );
+rtDeclareVariable(float4,        time_domain  , , );
+rtDeclareVariable(float,         propagate_epsilon, , );
+rtDeclareVariable(unsigned int,  propagate_ray_type, , );
+rtDeclareVariable(unsigned int,  bounce_max, , );
+rtDeclareVariable(unsigned int,  record_max, , );
+rtDeclareVariable(rtObject,      top_object, , );
+
+rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
+rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+
 // beyond MAXREC overwrite save into top slot
-//    if(photon_id == 0) dump_state((s));
  
 #define RSAVE(seqhis, seqmat, p, s, slot)  \
 {    \
@@ -39,67 +56,12 @@ using namespace optix;
 }   \
 
 
-
-
-/*
-
-testing sequence formation with 
-    /usr/local/env/numerics/thrustrap/bin/PhotonIndexTest
-
-
-with seqhis = sflag   get expected values
-
-print_vector  :                         histogram values 3 4 5 6 b c 
-print_vector  :                         histogram counts 59493 453837 420 357 12861 85873  total: 612841
-
-
-with seqhis = tmp  get expected values
-
-print_vector  :                         histogram values 3 4 30 40 300 400 3000 4000 30000 40000 300000 400000 3000000 
-                           4000000 30000000 40000000 300000000 400000000 500000000 600000000 b00000000 c00000000 
-
-
-with seqhis = seqhis | tmp   get unexpected "f"  always appearing in most signficant 4 bits, 
-                             skipping the 2nd seqset avoids the issue
-
-
-   print_vector  :                         histogram values 3 5 31 51 61 c1 f1 361 3b1 3c1 551 561 5c1 651 661 6b1 6c1 c51 c61 cb1 cc1 f51 f61 fb1 fc1 3bb1 3bc1 3cb1 3cc1 5551 
-
-
-
-*/
-
-
-
-rtBuffer<float4>    genstep_buffer;
-rtBuffer<float4>    photon_buffer;
-rtBuffer<short4>    record_buffer;   // 2 short4 take same space as 1 float4 quad
-
-rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long and unsigned long long are both 8 bytes, 64 bits 
-
-rtBuffer<unsigned char> phosel_buffer; 
-rtBuffer<unsigned char> recsel_buffer; 
-
-
-
-
-rtBuffer<curandState, 1> rng_states ;
-
-rtDeclareVariable(float4,        center_extent, , );
-rtDeclareVariable(float4,        time_domain  , , );
-rtDeclareVariable(float,         propagate_epsilon, , );
-rtDeclareVariable(unsigned int,  propagate_ray_type, , );
-rtDeclareVariable(unsigned int,  bounce_max, , );
-rtDeclareVariable(rtObject,      top_object, , );
-
-rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
-rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
-
 RT_PROGRAM void generate()
 {
     union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
+    unsigned int MAXREC = record_max ; 
  
     phead.f = photon_buffer[photon_offset+0] ;
 

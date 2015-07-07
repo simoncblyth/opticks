@@ -1,6 +1,7 @@
 #version 400
 // devrec , see altrec for explanation of record structure
 
+#incl dynamic.h
 #incl define.h
 
 uniform mat4 ISNormModelViewProjection ;
@@ -57,7 +58,7 @@ void main ()
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
     //uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(flags[0].x == Pick.y) << 2 ) ;
-    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  
+    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || photon_id == Pick.w) << 2) ;  
     uint vselect = valid & select ; 
 
 

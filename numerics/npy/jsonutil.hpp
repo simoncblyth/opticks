@@ -3,6 +3,7 @@
 #include <string>
 
 bool existsPath(const char* dir, const char* name );
+std::string preparePath(const char* dir_, const char* name, bool create=false );
 
 
 
