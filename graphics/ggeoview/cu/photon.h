@@ -131,7 +131,7 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     qaux.uchar_.x =  s.index.x ; //m1   // p.flags.u.z ;  //   m1 index                 uchar: 0 to 255
     qaux.uchar_.y =  s.index.y ; //m2   // p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
     qaux.uchar_.z  =  0 ; 
-    qaux.uchar_.w = __ffs(s.flag) ;    // first set bit __ffs(0) = 0, otherwise 1->32 
+    qaux.uchar_.w = __ffs(s.flag) ; // first set bit __ffs(0) = 0, otherwise 1->32 
 
 
     //             lsb_ (flq[0].x)    msb_ (flq[0].y)
@@ -173,7 +173,97 @@ array([[      1,  559369],
        [    128, 3534793]])
 
 
+
+
+
+::
+
+    In [1]: r = rxc_(1)
+    INFO:env.g4dae.types:loading /usr/local/env/rxcerenkov/1.npy 
+    -rw-r--r--  1 blyth  staff  98054640 Jul  8 11:51 /usr/local/env/rxcerenkov/1.npy
+
+
+    In [12]: m1 = np.array( r[:,1,2].view(np.uint16) & 0xFF , dtype=np.uint8 )  # little endian lsb first
+
+    In [13]: m1
+    Out[13]: array([ 6,  6, 12, ...,  0,  0,  0], dtype=uint8)
+
+    In [14]: count_unique(m1)    # hmm iregularity with 0 vs 128  between m1 and m2 
+    Out[14]: 
+    array([[      0, 3594296],
+           [      1,  687092],
+           [      2,  385457],
+           [      3,  686761],
+           [      4,  501392],
+           [      5,     631],
+           [      6,   60230],
+           [      7,    1590],
+           [     10,   23636],
+           [     11,    8330],
+           [     12,  115360],
+           [     13,   25966],
+           [     14,   28008],
+           [     15,    4931],
+           [     16,    4718],
+           [     21,       7],
+           [     24,       5]])
+
+
+    In [9]: m2 = np.array( r[:,1,2].view(np.uint16) >> 8 , dtype=np.uint8 )
+
+    In [10]: m2
+    Out[10]: array([  6,  12,   4, ..., 128, 128, 128], dtype=uint8)
+
+    In [11]: count_unique(m2)
+    Out[11]: 
+    array([[      1,   27873],
+           [      2,  298400],
+           [      3, 1397602],
+           [      4,  338262],
+           [      5,   12556],
+           [      6,  157076],
+           [      7,     735],
+           [     10,    4847],
+           [     11,   74522],
+           [     12,  156963],
+           [     13,   26474],
+           [     14,   27211],
+           [     15,   58411],
+           [     16,   11312],
+           [     21,    1171],
+           [     24,     192],
+           [    128, 3534803]])
+
+
+    In [21]: q3 = np.array( r[:,1,3].view(np.uint16) & 0xFF , dtype=np.uint8 )  # little endian lsb first 
+
+    In [22]: count_unique(q3)
+    Out[22]: array([[      0, 6128410]])
+
+
+    In [18]: q4 = np.array( r[:,1,3].view(np.uint16) >> 8 , dtype=np.uint8 )
+
+    In [19]: q4
+    Out[19]: array([  1,  12,  12, ..., 128, 128, 128], dtype=uint8)
+
+    In [20]: count_unique(q4)
+    Out[20]: 
+    array([[      1,  559369],
+           [      3,   59493],
+           [      4,  453843],
+           [      5,  224211],
+           [      6,   13762],
+           [     11,   65044],
+           [     12, 1217885],
+           [    128, 3534803]])
+
+
+
+
+
+
 */
+
 
 
 
@@ -392,8 +482,6 @@ array([[58, 58, 43, 59, 43, 59, 59, 43, 59, 43],
        wavelength is occupyung the MSB, so runs into the sign bit 
        hence its necessary to view(np.uint16)
        its more correct to do that for all when using unorm but only matters for MSB
-
- 
 
 
 

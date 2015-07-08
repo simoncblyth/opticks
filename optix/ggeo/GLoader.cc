@@ -126,15 +126,14 @@ void GLoader::load(bool nogeocache)
     assert(flag_codes.size() < 32 );
 
     unsigned int material_color_offset = 0 ; 
-    unsigned int flag_color_offset = 32 ; 
+    unsigned int flag_color_offset     = 32 ; 
 
     m_colors->addColors(material_codes, material_color_offset ) ;
     m_colors->addColors(flag_codes    , flag_color_offset ) ;  
 
     m_color_buffer = m_colors->getCompositeBuffer();
+    m_colors->dumpCompositeBuffer("GLoader::load");
 
-    //GBuffer* buffer = m_materials->makeColorBuffer();
-    //m_colors->dump_uchar4_buffer(buffer);
 
     LOG(info) << "GLoader::load done " << idpath ;
     assert(m_mergedmesh);

@@ -39,6 +39,7 @@ class GColors {
        void initCompositeColorBuffer(unsigned int max_colors);
        void addColors(std::vector<unsigned int>& codes, unsigned int offset=0 );
        GBuffer* getCompositeBuffer();
+       void dumpCompositeBuffer(const char* msg="GColors::dumpCompositeBuffer");
 
    private:
        void loadMaps(const char* dir);

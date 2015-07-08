@@ -247,19 +247,17 @@ int main(int argc, char** argv)
     GItemIndex* materials = loader.getMaterials();
     types.setMaterialsIndex(materials->getIndex());
 
-    //GBuffer* colorbuffer = materials->getColorBuffer();  // TODO: combine colorbuffers for materials/surfaces/flags/... into one 
+    GBuffer* colorbuffer = loader.getColorBuffer();  // composite buffer 0+:materials,  32+:flags
+    scene.uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    GBuffer* colorbuffer = loader.getColorBuffer(); 
-
-    scene.uploadColorBuffer(colorbuffer);
     scene.setGeometry(loader.getDrawable());
     scene.setTarget(0);
 
     bookmarks.load(idpath); 
 
     GMergedMesh* mm = loader.getMergedMesh(); 
-    composition.setDomainCenterExtent(mm->getCenterExtent(0));  // index 0 corresponds to entire geometry
-    composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );
+    composition.setDomainCenterExtent(mm->getCenterExtent(0));     // index 0 corresponds to entire geometry
+    composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );  // TODO: avoid static define.h MAXTIME 
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
     GBoundaryLibMetadata* meta = loader.getMetadata(); 
@@ -270,7 +268,6 @@ int main(int argc, char** argv)
         LOG(info) << "ggeoview/main.cc early exit due to --nogeocache/-G option " ; 
         exit(EXIT_SUCCESS); 
     }
-
 
     // hmm would be better placed into a NumpyEvtCfg 
     const char* typ ; 

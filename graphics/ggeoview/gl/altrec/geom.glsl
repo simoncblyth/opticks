@@ -48,6 +48,8 @@
 // https://www.opengl.org/wiki/Geometry_Shader
 // http://www.informit.com/articles/article.aspx?p=2120983&seqNum=2
 
+#incl dynamic.h
+
 uniform mat4 ISNormModelViewProjection ;
 uniform vec4 TimeDomain ;
 uniform vec4 Param ; 
@@ -69,12 +71,17 @@ void main ()
     if( RecSelect.x > 0 && RecSelect.x != seqhis )  return ;
     if( RecSelect.y > 0 && RecSelect.y != seqmat )  return ;
 
+    uint photon_id = gl_PrimitiveIDIn/MAXREC ;                 // https://www.opengl.org/sdk/docs/man/html/gl_PrimitiveIDIn.xhtml
+
     vec4 p0 = gl_in[0].gl_Position  ;
     vec4 p1 = gl_in[1].gl_Position  ;
     float tc = Param.w / TimeDomain.y ;  // as time comparisons done before un-snorming 
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
-    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  
+
+  //uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || photon_id == Pick.w) << 2) ;  
+    uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.x == 0 || photon_id % Pick.x == 0) << 2) ;  
+
     uint vselect = valid & select ; 
 
     if(vselect == 0x7) // both valid and straddling tc 

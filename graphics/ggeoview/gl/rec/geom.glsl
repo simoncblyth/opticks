@@ -13,7 +13,7 @@ uniform ivec4 RecSelect ;
 uniform sampler1D Colors ;
 
 in vec4 colour[];
-in ivec4 flq[];
+in uvec4 flq[];
 in ivec4 sel[];
 
 layout (lines) in;
@@ -42,32 +42,54 @@ void main ()
     uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.w == 0 || gl_PrimitiveIDIn/10 == Pick.w) << 2) ;  
     uint vselect = valid & select ; 
 
-    uint m1 = flq[0].x ;  // 1-based material1 code
-    float idxcol = (float(m1) - 1.0 + 0.5)/ColorDomain.y ;
-
+    //
+    // material coloring  
+    //
+    //  float idxcol = (float(flq[1].x) - 1.0 + 0.5)/ColorDomain.y ;            
+    //
+    //     flq[0].x  sorta working m1? colors 
+    //     flq[0].y  sorta working m2?
+    //     flq[0].z  all red, expected to be zero (yielding -1 off edge of texture, so picks up value of 1 based "1")
+    //     flq[0].w  variable colors, looks consistent with flags
+    //
+    //     flq[1].x  a bit more distinct m1  
+    //     flq[1].y
+    //     flq[1].z  
+    //     flq[1].w  not much variation  
+    //
+    //
+    //  history coloring
+    //
+       float idxcol  = (32.0 + float(flq[1].w) - 1.0 + 0.5)/ColorDomain.y ;    
+    //
+    //     flq[0].x   color variation
+    //     flq[0].y   color variation
+    //     flq[0].z   all dull grey, consistent with expected zero yielding "-1" and landing on buffer prefill 0x444444 
+    //     flq[0].w   very subtle coloring mostly along muon path,  
+    //
+    //     flq[1].x   more distinct color variation
+    //     flq[1].y   more distinct color variation
+    //     flq[1].z   all dull grey (buffer prefill) 
+    //     flq[1].w   more obvious, but still too much white : off by one maybe?
+    // 
+    //  problem is that the most common step flag is BT:boundary transmit (now cyan)
+    //  which makes flying point view not so obvious  
+    //
 
     if(vselect == 0x7) // both valid and straddling tc 
     {
         vec3 pt = mix( vec3(p0), vec3(p1), (tc - p0.w)/(p1.w - p0.w) );
         gl_Position = ISNormModelViewProjection * vec4( pt, 1.0 ) ; 
-
         fcolour = texture(Colors, idxcol   ) ;
         EmitVertex();
         EndPrimitive();
     }
     else if( valid == 0x7 && select == 0x5 ) // both valid and prior to tc 
     {
-
-       // gl_Position = ISNormModelViewProjection * vec4( vec3(p0), 1.0 ) ; 
-       // fcolour = texture(Colors, idxcol ) ; 
-       // EmitVertex();
-       // EndPrimitive();
-
         gl_Position = ISNormModelViewProjection * vec4( vec3(p1), 1.0 ) ; 
         fcolour = texture(Colors, idxcol ) ; 
         EmitVertex();
         EndPrimitive();
-
     }
 
 } 

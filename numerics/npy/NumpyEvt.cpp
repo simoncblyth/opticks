@@ -179,11 +179,13 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
     //                                               j k sz   type                  norm   iatt
     ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,4,ViewNPY::SHORT          ,true,  false);
     ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,4,ViewNPY::UNSIGNED_BYTE  ,true,  false);   
+
     ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,2,ViewNPY::UNSIGNED_SHORT ,false, true);   
     // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
 
-    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,1,ViewNPY::BYTE           ,false, true);   
-    // NB k=2 again : try a BYTE view of the same data for access to boundary,m1,history-hi,history-lo
+    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,4,ViewNPY::UNSIGNED_BYTE  ,false, true);   
+    // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
+    
 
     // ViewNPY::TYPE need not match the NPY<T>,
     // OpenGL shaders will view the data as of the ViewNPY::TYPE, 

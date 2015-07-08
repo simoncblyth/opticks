@@ -212,18 +212,34 @@ GBuffer* GColors::make_uchar4_buffer(std::vector<unsigned int>& codes)
 
 void GColors::initCompositeColorBuffer(unsigned int max_colors)
 {
-    unsigned char* colors = new unsigned char[max_colors*4] ; 
     unsigned int itemsize = sizeof(unsigned char)*4 ;
+
+    LOG(info) << "GColors::initCompositeColorBuffer "
+              << " max_colors " << max_colors 
+              << " itemsize " << itemsize 
+              ; 
+
+    unsigned int n = max_colors*4 ;
+    unsigned char* colors = new unsigned char[n] ; 
+    while(n--) colors[n] = 0x44 ;  //  default to dull grey  
+
     m_composite = new GBuffer( itemsize*max_colors, colors, itemsize, 1 );
 }
 
 void GColors::addColors(std::vector<unsigned int>& codes, unsigned int start )
 {
-    unsigned int size = m_composite->getNumItems();
+    unsigned int max_colors = m_composite->getNumItems();
     unsigned char* colors = (unsigned char*)m_composite->getPointer() ;
     unsigned char alpha = 0xFF ; 
     typedef std::vector<unsigned int> VU ; 
-    unsigned int count(0);
+
+    LOG(info) << "GColors::addColors " 
+              << " codes.size " << codes.size()
+              << " start " << start 
+              << " max_colors " << max_colors 
+              ;
+
+    unsigned int count = start ;  // color counting 
     for(VU::iterator it=codes.begin() ; it != codes.end() ; it++ ) 
     {
         unsigned int color = *it ;
@@ -231,9 +247,9 @@ void GColors::addColors(std::vector<unsigned int>& codes, unsigned int start )
         unsigned int green = (color & 0x00FF00) >> 8 ;
         unsigned int blue  = (color & 0x0000FF)      ;
 
-        unsigned int offset = start + count*4 ;  
+        unsigned int offset = count*4 ;  
 
-        assert( offset < size && " going over size of buffer" );
+        assert( offset < 4*max_colors && " going over size of buffer" );
 
         colors[offset + 0] = red ; 
         colors[offset + 1] = green ; 
@@ -244,7 +260,11 @@ void GColors::addColors(std::vector<unsigned int>& codes, unsigned int start )
     } 
 }
 
-
+void GColors::dumpCompositeBuffer(const char* msg)
+{
+    LOG(info) << msg ; 
+    dump_uchar4_buffer(m_composite);
+}
 
 void GColors::dump_uchar4_buffer( GBuffer* buffer )
 {

@@ -7,22 +7,16 @@ uniform vec4 Param ;
 
 layout(location = 0) in vec4  rpos;
 layout(location = 1) in ivec4 rflg;  
-layout(location = 2) in ivec4 rflq;  
+layout(location = 2) in uvec4 rflq;  
 layout(location = 3) in ivec4 rsel;  
 
 out vec4 colour;
-out ivec4 flq ;
+out uvec4 flq ;
 out ivec4 sel  ;
 
 void main () 
 {
     colour = vec4(1.0,1.0,1.0,1.0) ;
-
-    // show records with time less than cut, so can scan the cut upwards to see history 
-    // float t = rpos.w * TimeDomain.y ; 
-    // float w = Param.w > t ? 1. : 0. ;   
-    // gl_Position = ISNormModelViewProjection * vec4 (vec3(rpos), w );
-    // gl_Position = ISNormModelViewProjection * vec4( vec3(rpos), rpos.w*TimeDomain.y );
 
     // pass thru to geom.glsl
     flq = rflq ; 
