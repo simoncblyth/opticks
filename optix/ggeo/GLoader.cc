@@ -132,7 +132,7 @@ void GLoader::load(bool nogeocache)
     m_colors->addColors(flag_codes    , flag_color_offset ) ;  
 
     m_color_buffer = m_colors->getCompositeBuffer();
-    m_colors->dumpCompositeBuffer("GLoader::load");
+    //m_colors->dumpCompositeBuffer("GLoader::load");
 
 
     LOG(info) << "GLoader::load done " << idpath ;

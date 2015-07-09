@@ -56,7 +56,11 @@
 #include "Types.hpp"
 #include "Index.hpp"
 #include "stringutil.hpp"
+
 #include "Timer.hpp"
+#include "Times.hpp"
+#include "Parameters.hpp"
+#include "Report.hpp"
 
 // bregex-
 #include "regexsearch.hh"
@@ -134,6 +138,7 @@ int main(int argc, char** argv)
 {
     logging_init();
 
+    Parameters p ; 
     Timer t ; 
     t.setVerbose(true);
     t.start();
@@ -164,7 +169,7 @@ int main(int argc, char** argv)
     interactor.setBookmarks(&bookmarks);
     scene.setNumpyEvt(&evt);
 
-    t("wiring"); 
+    //t("wiring");  // minimal 0.001
 
     Cfg cfg("umbrella", false) ; // collect other Cfg objects
     FrameCfg<Frame>* fcfg = new FrameCfg<Frame>("frame", &frame,false);
@@ -208,7 +213,7 @@ int main(int argc, char** argv)
 
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
 
-    t("configuration"); 
+    //t("configuration");  // minimal 0.001 
 
 
     // dynamic define for use by GLSL shaders
@@ -217,11 +222,12 @@ int main(int argc, char** argv)
     dd.add("MAXREC",fcfg->getRecordMax());    
     dd.write();
 
+
     scene.init();  // reading shader source and creating renderers
     scene.setComposition(&composition);    
 
     frame.init();  // creates OpenGL context
-    t("OpenGL context creation"); 
+    t("createOpenGLContext"); 
     LOG(info) << "main: frame.init DONE "; 
 
 #ifdef INTEROP
@@ -242,7 +248,7 @@ int main(int argc, char** argv)
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     loader.load(nogeocache);
 
-    t("Geometry Loading"); 
+    t("loadGeometry"); 
 
     GItemIndex* materials = loader.getMaterials();
     types.setMaterialsIndex(materials->getIndex());
@@ -278,11 +284,11 @@ int main(int argc, char** argv)
     std::string tag_ = fcfg->getEventTag();
     const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
 
-    t("Geometry Interp"); 
+    t("interpGeometry"); 
 
     NPY<float>* npy = NPY<float>::load(typ, tag) ;
 
-    t("Genstep Loading"); 
+    t("loadGenstep"); 
 
     G4StepNPY genstep(npy);    
     genstep.setLookup(loader.getMaterialLookup()); 
@@ -292,7 +298,7 @@ int main(int argc, char** argv)
 
     evt.setGenstepData(npy, nooptix); 
 
-    t("Host Evt allocation"); 
+    t("hostEvtAllocation"); 
 
     composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent()); // is this domain used for photon record compression ?
 
@@ -350,9 +356,19 @@ int main(int argc, char** argv)
     assert(rng_max >= 1e6); 
     engine.setRngMax(rng_max);
 
+    p.add<std::string>("Type", typ );
+    p.add<std::string>("Tag", tag );
+    p.add<unsigned int>("NumGensteps", evt.getNumGensteps());
+    p.add<unsigned int>("RngMax",     engine.getRngMax() );
+    p.add<unsigned int>("NumPhotons", evt.getNumPhotons());
+    p.add<unsigned int>("NumRecords", evt.getNumRecords());
+    p.add<unsigned int>("BounceMax", engine.getBounceMax() );
+    p.add<unsigned int>("RecordMax", engine.getRecordMax() );
+
+
     LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
     engine.init();  
-    t("OptiXEngine init"); 
+    t("initOptiX"); 
     LOG(info) << "main.OptiXEngine::init DONE "; 
 
     // persisting domain allows interpretation of packed photon record NPY arrays 
@@ -366,7 +382,7 @@ int main(int argc, char** argv)
    
     LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
     engine.generate();     
-    t("OptiXEngine generate, propagate"); 
+    t("generatePropagate"); 
 
     LOG(info) << "main.OptiXEngine::generate DONE "; 
 
@@ -383,7 +399,7 @@ int main(int argc, char** argv)
         NPY<NumpyEvt::Sequence_t>* dhis = evt.getSequenceData();
         Rdr::download(dhis);
 
-        t("photon, record, sequence downloads"); 
+        t("evtDownload"); 
 
         dpho->setVerbose();
         dpho->save("ox%s", typ,  tag);
@@ -392,7 +408,7 @@ int main(int argc, char** argv)
         dhis->setVerbose();
         dhis->save("ph%s", typ,  tag );
 
-        t("photon, record, sequence save"); 
+        t("evtSave"); 
 
         BoundariesNPY bnd(dpho); 
         bnd.setTypes(&types);
@@ -406,7 +422,7 @@ int main(int argc, char** argv)
         rec.setTypes(&types);
         rec.setDomains((NPY<float>*)domain);
 
-        t("boundary indexing"); 
+        t("boundaryIndex"); 
 
 
         optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
@@ -446,7 +462,7 @@ int main(int argc, char** argv)
         psel.repeat_to( maxrec, rsel );
         cudaDeviceSynchronize();
 
-        t("sequence indexing"); 
+        t("sequenceIndex"); 
 
 #ifdef INTEROP
         // declare that CUDA finished with buffers 
@@ -462,7 +478,7 @@ int main(int argc, char** argv)
 
         scene.uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
 
-        t("selection download/upload"); 
+        t("selectionDownloadUpload"); 
 #endif
 
         GItemIndex* seqhis = new GItemIndex(idx.getHistogramIndex(0)) ;  
@@ -479,12 +495,6 @@ int main(int argc, char** argv)
         seqmat->setTypes(&types);
         seqmat->setLabeller(GItemIndex::MATERIALSEQ);
         seqmat->formTable();
-
-        if(noviz)
-        {
-            LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
-            exit(EXIT_SUCCESS); 
-        }
 
         photons = new Photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
         scene.setPhotons(photons);
@@ -507,13 +517,36 @@ int main(int argc, char** argv)
     bool* show_gui_window = interactor.getGuiModeAddress();
 #endif
  
-    t("GUI prep"); 
-    LOG(info) << "enter runloop "; 
+    //t("GUI prep");  // minimal 0.001
 
     t.stop();
+
+    p.dump();
     t.dump();
+
+    Report r ; 
+    r.add(p.getLines()); 
+    r.add(t.getLines()); 
+
+    Times* ts = t.getTimes();
+    ts->save("$IDPATH/times", Times::name(typ, tag).c_str());
+
+    char rdir[128];
+    snprintf(rdir, 128, "$IDPATH/report/%s/%s", tag, typ ); 
+    r.save(rdir, Report::name(typ, tag).c_str());  // with timestamp prefix
+
+
+    if(noviz)
+    {
+        LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
+        exit(EXIT_SUCCESS); 
+    }
+    LOG(info) << "enter runloop "; 
+
+
     // TODO: use GItemIndex ? for stats to make it persistable
     gui.setupStats(t.getStats());
+    gui.setupParams(p.getLines());
 
     //frame.toggleFullscreen(true); causing blankscreen then segv
     frame.hintVisible(true);

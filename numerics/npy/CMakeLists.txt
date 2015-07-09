@@ -56,6 +56,9 @@ add_library( ${name}  SHARED
     Types.cpp
     Index.cpp
     Timer.cpp
+    Times.cpp
+    Parameters.cpp
+    Report.cpp
 )
 
 set(LIBRARIES
@@ -91,6 +94,9 @@ Lookup.hpp
 Types.hpp
 Index.hpp
 Timer.hpp
+Times.hpp
+Parameters.hpp
+Report.hpp
 )
 
 install(TARGETS ${name}  DESTINATION lib)

@@ -100,6 +100,12 @@ void GUI::show(bool* opened)
     }
 
     ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Params"))
+    {
+        for(unsigned int i=0 ; i < m_params.size() ; i++) ImGui::Text(m_params[i].c_str());
+    }
+
+    ImGui::Spacing();
     if (ImGui::CollapsingHeader("Stats"))
     {
         for(unsigned int i=0 ; i < m_stats.size() ; i++) ImGui::Text(m_stats[i].c_str());

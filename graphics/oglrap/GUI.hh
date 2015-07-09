@@ -49,6 +49,7 @@ class GUI {
 
        void setupHelpText(const std::string& txt);
        void setupStats(const std::vector<std::string>& stats);
+       void setupParams(const std::vector<std::string>& params);
 
   private:
        void choose( unsigned int n, const char** choices, bool** selection );
@@ -62,6 +63,7 @@ class GUI {
        float       m_bg_alpha ; 
        std::string m_help ; 
        std::vector<std::string> m_stats ; 
+       std::vector<std::string> m_params ; 
 
        Interactor*   m_interactor ; 
        Scene*        m_scene ; 
@@ -137,3 +139,9 @@ inline void GUI::setupStats(const std::vector<std::string>& stats)
 {
     m_stats = stats ; 
 }
+inline void GUI::setupParams(const std::vector<std::string>& params)
+{
+    m_params = params ; 
+}
+
+

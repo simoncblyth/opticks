@@ -1,5 +1,6 @@
 #include "Timer.hpp"
 
+#include "Times.hpp"
 #include "timeutil.hpp"
 #include <iostream>
 #include <iomanip>
@@ -37,11 +38,12 @@ void Timer::dump(const char* msg)
    for(VSI it=m_lines.begin() ; it != m_lines.end() ; it++) std::cout << *it << std::endl ;  
 }
 
-
 void Timer::prepTable()
 {
     double t0(0.);
     double tp(0.);
+
+    m_times = new Times ; 
 
     m_lines.clear();
     if(!m_commandline.empty()) m_lines.push_back(m_commandline);
@@ -70,11 +72,14 @@ void Timer::prepTable()
              << " : " 
              << it->first   ;
         
+           m_times->add(it->first.c_str(), dp);
            m_lines.push_back(ss.str());
         }
 
         tp = t ; 
     }
 }
+
+
 
 

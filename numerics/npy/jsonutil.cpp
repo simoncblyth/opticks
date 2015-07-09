@@ -45,7 +45,7 @@ std::string preparePath(const char* dir_, const char* name, bool create )
     fs::path fdir(dir.c_str());
     if(!fs::exists(fdir) && create)
     {
-        if (fs::create_directory(fdir))
+        if (fs::create_directories(fdir))
         {
             LOG(info)<< "preparePath : created directory " << dir ;
         }
@@ -301,6 +301,14 @@ template void loadList<std::string, unsigned int>(std::vector<std::pair<std::str
 template void loadList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* path) ;
 
 template void dumpList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* msg) ;
+
+///////////////  SD /////////////////
+
+template void saveList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* dir, const char* name) ;
+template void saveList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* path) ;
+
+template void loadList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* dir, const char* name) ;
+template void loadList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* path) ;
 
 
 

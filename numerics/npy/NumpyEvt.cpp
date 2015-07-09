@@ -56,6 +56,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
     // attribute offset calulated by  npy->getByteIndex(0,j,k) 
     // assuming the size of the attribute type matches that of the NPY<T>
 
+    m_num_gensteps = m_genstep_data->getShape(0) ;
     m_num_photons = m_genstep_data->getUSum(0,3);
 
     if(nooptix)

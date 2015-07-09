@@ -36,6 +36,7 @@ class NumpyEvt {
        NPY<unsigned char>*  getRecselData();
        NPY<Sequence_t>*     getSequenceData();
 
+   public:
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
        MultiViewNPY* getRecordAttr();
@@ -46,12 +47,13 @@ class NumpyEvt {
        ViewNPY* operator [](const char* spec);
 
    public:
+       unsigned int getNumGensteps();
        unsigned int getNumPhotons();
        unsigned int getNumRecords();
        unsigned int getMaxRec();  // per-photon
-       std::string description(const char* msg);
 
    public:
+       std::string  description(const char* msg);
        void         dumpPhotonData();
        static void  dumpPhotonData(NPY<float>* photon_data);
 
@@ -70,6 +72,7 @@ class NumpyEvt {
        MultiViewNPY*   m_recsel_attr  ;
        MultiViewNPY*   m_sequence_attr  ;
 
+       unsigned int    m_num_gensteps ; 
        unsigned int    m_num_photons ; 
        unsigned int    m_maxrec ; 
 
@@ -90,13 +93,17 @@ inline NumpyEvt::NumpyEvt()
           m_phosel_attr(NULL),
           m_recsel_attr(NULL),
           m_sequence_attr(NULL),
+          m_num_gensteps(0),
           m_num_photons(0),
           m_maxrec(1)
 {
 }
 
 
-
+inline unsigned int NumpyEvt::getNumGensteps()
+{
+    return m_num_gensteps ; 
+}
 inline unsigned int NumpyEvt::getNumPhotons()
 {
     return m_num_photons ; 
