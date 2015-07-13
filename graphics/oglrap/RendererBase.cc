@@ -23,7 +23,7 @@ RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_pa
 
 void RendererBase::make_shader()
 {
-    LOG(info) << "RendererBase::make_shader " 
+    LOG(debug) << "RendererBase::make_shader " 
               << " shaderdir " << getShaderDir()
               << " shadertag " << getShaderTag()
               ;

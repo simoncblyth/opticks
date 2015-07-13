@@ -79,8 +79,15 @@ public:
            ("liveline",  boost::program_options::value<std::string>(&m_liveline),
                "string with spaces to be live parsed, as test of composed overrides");
 
-       addOptionS<Listener>(listener, "size", "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
-       addOptionI<Listener>(listener, "dumpevent", "Control GLFW event dumping ");
+       addOptionS<Listener>(listener, 
+                "size", 
+                "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
+       // this size is being overriden: 
+       // the screen size is set by Frame::init using size from composition 
+
+       addOptionI<Listener>(listener, 
+                "dumpevent", 
+                "Control GLFW event dumping ");
    }   
 
 

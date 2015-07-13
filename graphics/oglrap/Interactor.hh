@@ -95,7 +95,8 @@ class Interactor {
        float m_dragfactor ;
        unsigned int m_container ;
 
-       char m_status[64] ; 
+       enum { STATUS_SIZE = 128 };
+       char m_status[STATUS_SIZE] ; 
 
 };
 

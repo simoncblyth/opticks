@@ -84,23 +84,7 @@ void Frame::configureS(const char* name, std::vector<std::string> values)
    if(strcmp(name, "size") == 0)
    {
        std::string _whf = values.back();
-
-       std::vector<std::string> whf;
-       boost::split(whf, _whf, boost::is_any_of(","));
-   
-       if(whf.size() == 3 )
-       {
-           unsigned int width  = boost::lexical_cast<unsigned int>(whf[0]);  
-           unsigned int height = boost::lexical_cast<unsigned int>(whf[1]);  
-           unsigned int coord2pixel  = boost::lexical_cast<unsigned int>(whf[2]);  
-
-           printf("Frame::configureS param %s : %s  \n", name, _whf.c_str());
-           setSize(width, height, coord2pixel);
-       }
-       else
-       {
-           printf("Frame::configureS param %s malformed %s needs to be triplet eg 1024,768,2  \n", name, _whf.c_str());
-       }
+       setSize(_whf);
    }
    else
    {
@@ -108,15 +92,52 @@ void Frame::configureS(const char* name, std::vector<std::string> values)
    }
 }
 
+void Frame::setSize(std::string str)
+{
+    std::vector<std::string> whf;
+    boost::split(whf, str, boost::is_any_of(","));
+   
+    if(whf.size() == 3 )
+    {
+        unsigned int width  = boost::lexical_cast<unsigned int>(whf[0]);  
+        unsigned int height = boost::lexical_cast<unsigned int>(whf[1]);  
+        unsigned int coord2pixel  = boost::lexical_cast<unsigned int>(whf[2]);  
 
+        LOG(info)<< "Frame::setSize" 
+                 << " str " << str 
+                 ;
+        setSize(width, height, coord2pixel);
+    }
+    else
+    {
+        LOG(warning)<< "Frame::setSize" 
+                    << " str " << str 
+                    << " str malformed : not a comma delimited triplet "
+                    ;
+          
+    }
+}
 
 
 void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
+    LOG(info) << "Frame::setSize "
+              << " width " << width 
+              << " height " << height 
+              << " coord2pixel " << coord2pixel 
+              ; 
     m_width = width ;
     m_height = height ;
     m_coord2pixel = coord2pixel ;
 }
+
+glm::uvec4 Frame::getSize()
+{
+   return glm::uvec4(m_width, m_height, m_coord2pixel, 0);
+}
+
+
+
 void Frame::setTitle(const char* title)
 {
     m_title = strdup(title);

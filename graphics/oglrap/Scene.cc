@@ -40,8 +40,28 @@ const char* Scene::GENSTEP = "genstep" ;
 const char* Scene::GEOMETRY = "geometry" ; 
 const char* Scene::RECORD   = "record" ; 
 
+const char* Scene::REC_ = "point" ;   
+const char* Scene::ALTREC_ = "line" ; 
+const char* Scene::DEVREC_ = "vector" ; 
 
+const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
+{
+   switch(style)
+   {
+      case    REC:return REC_ ; break; 
+      case ALTREC:return ALTREC_ ; break; 
+      case DEVREC:return DEVREC_ ; break; 
+      case NUMSTYLE:assert(0) ; break ; 
+      default: assert(0); break ; 
+   } 
+   return NULL ; 
+}
 
+const char* Scene::getRecordStyleName()
+{
+   return getRecordStyleName(getRecordStyle());
+}
+ 
 
 void Scene::gui()
 {
@@ -342,5 +362,8 @@ void Scene::setTarget(unsigned int index)
 
     m_composition->setCenterExtent(ce, autocam); 
 }
+
+
+
 
 

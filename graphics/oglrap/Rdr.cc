@@ -284,6 +284,7 @@ void Rdr::check_uniforms()
     m_colordomain_location = m_shader->uniform("ColorDomain", required );     
     m_colors_location = m_shader->uniform("Colors", required );     
     m_recselect_location = m_shader->uniform("RecSelect", required );     
+    m_colorparam_location = m_shader->uniform("ColorParam", required );     
     m_lightposition_location = m_shader->uniform("LightPosition", required); 
 
     // the "tag" argument of the Rdr identifies the GLSL code being used
@@ -334,6 +335,15 @@ void Rdr::update_uniforms()
             //printf("Rdr::update_uniforms %s  m_recselect_location %d \n", getShaderTag(), m_recselect_location);
             glUniform4i(m_recselect_location, recsel.x, recsel.y, recsel.z, recsel.w  );    
         }
+
+        if(m_colorparam_location > -1)
+        {
+            glm::ivec4 colpar = m_composition->getColorParam();
+            glUniform4i(m_colorparam_location, colpar.x, colpar.y, colpar.z, colpar.w  );    
+        }
+
+
+
 
         glUniform4fv(m_lightposition_location, 1, m_composition->getLightPositionPtr());
 

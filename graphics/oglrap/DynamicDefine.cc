@@ -30,8 +30,8 @@ void DynamicDefine::write()
 
      std::string txt = ss.str() ;
 
-     LOG(info) << "DynamicDefine::write " << path ;
-     LOG(info) << txt ; 
+     LOG(debug) << "DynamicDefine::write " << path ;
+     LOG(debug) << txt ; 
 
      std::ofstream out(path,std::ofstream::binary);
      out << txt ;

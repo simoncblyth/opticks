@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "gleq.h"
+#include <glm/glm.hpp>  
 
 #include "Touchable.hh"
 #include <string>
@@ -56,7 +57,10 @@ class Frame : public Touchable {
        void configureI(const char* name, std::vector<int> values);
        void configureS(const char* name, std::vector<std::string> values);
 
+       void setSize(std::string str);
        void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
+       glm::uvec4 getSize();
+
        void setTitle(const char* title);
        void setFullscreen(bool fullscreen);
 

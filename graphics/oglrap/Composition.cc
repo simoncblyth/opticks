@@ -53,6 +53,36 @@ const char* Composition::PRINT = "print" ;
 const char* Composition::SELECT = "select" ; 
 const char* Composition::RECSELECT = "recselect" ; 
 
+
+
+const char* Composition::WHITE_ = "white" ; 
+const char* Composition::MAT1_  = "mat1"; 
+const char* Composition::MAT2_  = "mat2"; 
+const char* Composition::FLAG1_ = "flag1"; 
+const char* Composition::FLAG2_ = "flag2"; 
+const char* Composition::POL1_  = "pol1"; 
+const char* Composition::POL2_  = "pol2" ; 
+ 
+
+const char* Composition::getColorStyleName(Composition::ColorStyle_t style)
+{
+    switch(style)
+    {
+       case WHITE:return WHITE_ ; break ; 
+       case MAT1 :return MAT1_ ; break ; 
+       case MAT2 :return MAT2_ ; break ; 
+       case FLAG1:return FLAG1_ ; break ; 
+       case FLAG2:return FLAG2_ ; break ; 
+       case POL1 :return POL1_ ; break ; 
+       case POL2 :return POL2_ ; break ; 
+       case NUM_COLORSTYLE :assert(0) ; break ; 
+    }
+    assert(0);
+    return NULL ; 
+}
+
+
+
 void Composition::init()
 {
     m_camera = new Camera() ;
@@ -153,6 +183,7 @@ void Composition::initAnimator()
     // must defer creation (to render time) as domain_time not set at initialization
     float* target = glm::value_ptr(m_param) + 3 ;
     m_animator = new Animator(target, 200, m_domain_time.x, m_domain_time.y/4.f ); // all fun in first 50ns
+    m_animator->setModeRestrict(Animator::FAST);
     m_animator->Summary("Composition::gui setup Animation");
 }
 
@@ -187,7 +218,7 @@ void Composition::gui()
 
     float* param = glm::value_ptr(m_param) ;
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
-    ImGui::SliderFloat( "param.y", param + 1,  0.f, 1000.0f, "%0.3f", 2.0f);
+    ImGui::SliderFloat( "param.y", param + 1,  0.f, 1.0f, "%0.3f", 2.0f );
     ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
 
     float* lpos = m_light->getPositionPtr() ;
@@ -207,6 +238,11 @@ void Composition::gui()
     int* pick = glm::value_ptr(m_pick) ;
     ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
     ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
+
+    int* colpar = glm::value_ptr(m_colorparam) ;
+    ImGui::SliderInt( "colorparam.x", colpar + 0,  0, NUM_COLORSTYLE  );  // record color mode
+    ImGui::Text(" colorstyle : %s ", getColorStyleName()); 
+
 
     int* np = glm::value_ptr(m_nrmparam) ;
     ImGui::SliderInt( "nrmparam.x", np + 0,  0, 1  );  
@@ -255,6 +291,11 @@ unsigned int Composition::getPixelFactor()
 
 void Composition::setSize(glm::uvec4 size)
 {
+    LOG(info) << "Composition::setSize "
+              << " x " << size.x 
+              << " y " << size.y 
+              << " z " << size.z
+              ; 
     setSize(size.x, size.y, size.z);
 }
 void Composition::setSize(unsigned int width, unsigned int height, unsigned int factor)
@@ -292,6 +333,21 @@ void Composition::setRecSelect(glm::ivec4 recselect)
 {
     m_recselect = recselect ;  
 }
+
+
+void Composition::setColorParam(std::string colorparam)
+{
+    setColorParam(givec4(colorparam));
+}
+void Composition::setColorParam(glm::ivec4 colorparam) 
+{
+    m_colorparam = colorparam ;  
+}
+
+
+
+
+
 
 
 

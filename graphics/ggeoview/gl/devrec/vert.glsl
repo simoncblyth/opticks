@@ -1,6 +1,6 @@
 #version 400
 
-// pass thru to geom.glsl
+// devrec/vert.glsl
 
 layout(location = 0) in vec4  rpos;
 layout(location = 1) in vec4  rpol;  
@@ -23,5 +23,4 @@ void main ()
     gl_Position = rpos ; 
     gl_PointSize = 1.0;
 }
-
 

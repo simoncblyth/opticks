@@ -192,20 +192,31 @@ int main(int argc, char** argv)
     if(fcfg->isAbort()) exit(EXIT_SUCCESS); 
 
     bool fullscreen = fcfg->hasOpt("fullscreen");
-    bool nooptix = fcfg->hasOpt("nooptix");
+    bool nooptix    = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
-    bool noviz = fcfg->hasOpt("noviz");
+    bool noviz      = fcfg->hasOpt("noviz");
     //bool norecord = fcfg->hasOpt("norecord");
-
 
     // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
     // pixelfactor 2 makes OptiX render at retina resolution
     // TODO: use GLFW to pluck the video mode screen size
-    composition.setSize( fullscreen ? glm::uvec4(2880,1800,2,0) : glm::uvec4(2880,1704,2,0) );  // 1800-44-44px native height of menubar  
-                                          //     1440  900
+    //
+    // TODO: rationalize size setting, 
+    //       currently gets set in frame, then overriden by value 
+    //       from composition
+    //       the below is a bandage workaround so that
+    //       sizes from commandline are honoured 
+    //
+    //    ggv --size 640,480,2 
+    //
+    glm::uvec4 size ;
+    if(fcfg->hasOpt("size")) size = frame.getSize() ;
+    else if(fullscreen)      size = glm::uvec4(2880,1800,2,0) ;
+    else                     size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
 
-    // perhaps use an app class that just holds on to a instance of all objs ?
-    frame.setInteractor(&interactor);             // GLFW key/mouse events from frame to interactor and on to composition constituents
+    composition.setSize( size );
+
+    frame.setInteractor(&interactor);      
     frame.setComposition(&composition);
     frame.setScene(&scene);
     frame.setTitle("GGeoView");

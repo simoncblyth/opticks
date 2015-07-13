@@ -158,6 +158,9 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_P:
             m_scene->nextPhotonStyle(); 
             break;
+        case GLFW_KEY_M:
+            m_composition->nextColorStyle(); 
+            break;
         case GLFW_KEY_Q:
             m_scene->toggleGeometry(); 
             break;
@@ -274,7 +277,7 @@ void Interactor::number_key_released(unsigned int number)
 
 void Interactor::updateStatus()
 {
-    snprintf(m_status, 64, "%s%s%s%s%s%s%s%s %10.3f %u ",
+    snprintf(m_status, STATUS_SIZE , "%s%s%s%s%s%s%s%s %10.3f %u %s %s ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
@@ -284,7 +287,9 @@ void Interactor::updateStatus()
            m_optix_mode ? "o" : "-",
            m_gui_mode ? "g" : "-",
            m_dragfactor,
-           m_container 
+           m_container,
+           m_composition->getColorStyleName(),          
+           m_scene->getRecordStyleName()          
            );
 }
 

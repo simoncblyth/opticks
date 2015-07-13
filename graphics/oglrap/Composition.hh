@@ -33,6 +33,14 @@ class Composition : public Configurable {
       friend class Interactor ;   
       friend class Bookmarks ;   
   public:
+      static const char* WHITE_ ; 
+      static const char* MAT1_ ; 
+      static const char* MAT2_ ; 
+      static const char* FLAG1_ ; 
+      static const char* FLAG2_ ; 
+      static const char* POL1_ ; 
+      static const char* POL2_ ; 
+  public:
  
       Composition();
 
@@ -40,6 +48,14 @@ class Composition : public Configurable {
       void nextMode(unsigned int modifiers);
       unsigned int tick();
       unsigned int getCount();
+
+   public:
+       typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLORSTYLE } ColorStyle_t ;
+       static const char* getColorStyleName(Composition::ColorStyle_t style);
+       const char* getColorStyleName();
+       void setColorStyle(Composition::ColorStyle_t style);
+       void nextColorStyle();
+       Composition::ColorStyle_t getColorStyle();
 
   private:
       void init();
@@ -77,6 +93,12 @@ class Composition : public Configurable {
       void setRecSelect(glm::ivec4 sel);
       void setRecSelect(std::string sel);
       glm::ivec4& getRecSelect();
+
+  public:
+      void setColorParam(glm::ivec4 cp);
+      void setColorParam(std::string cp);
+      glm::ivec4& getColorParam();
+
 
   public:
       void setParam(glm::vec4 par);
@@ -209,6 +231,7 @@ class Composition : public Configurable {
 
   private:
       glm::ivec4 m_recselect ;
+      glm::ivec4 m_colorparam ;
       glm::ivec4 m_selection ;
       glm::ivec4 m_flags ;
       glm::ivec4 m_pick ;
@@ -279,9 +302,10 @@ inline Composition::Composition()
   m_extent(1.0f),
   m_center_extent(),
   m_recselect(), 
+  m_colorparam(), 
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
-  m_param(25.f,0.f,0.f,0.f),   // x: arbitrary scaling of genstep length 
+  m_param(25.f,0.030f,0.f,0.f),   // x: arbitrary scaling of genstep length, y: vector length dfrac
   m_animator(NULL),
   m_camera(NULL),
   m_trackball(NULL),
@@ -380,6 +404,11 @@ inline glm::ivec4& Composition::getRecSelect()
 {
     return m_recselect ; 
 }
+inline glm::ivec4& Composition::getColorParam()
+{
+    return m_colorparam ; 
+}
+
 inline glm::ivec4& Composition::getSelection()
 {
     return m_selection ; 
@@ -421,6 +450,26 @@ inline NPY<float>* Composition::getAxisData()
 inline MultiViewNPY* Composition::getAxisAttr()
 {
     return m_axis_attr ; 
+}
+
+inline void Composition::nextColorStyle()
+{
+    int next = (getColorStyle() + 1) % NUM_COLORSTYLE ; 
+    setColorStyle( (ColorStyle_t)next ) ; 
+}
+
+inline void Composition::setColorStyle(ColorStyle_t style)
+{
+    m_colorparam.x = int(style);
+}
+inline Composition::ColorStyle_t Composition::getColorStyle()
+{
+    return (ColorStyle_t)m_colorparam.x ; 
+}
+
+inline const char* Composition::getColorStyleName()
+{
+    return Composition::getColorStyleName(getColorStyle());
 }
 
 

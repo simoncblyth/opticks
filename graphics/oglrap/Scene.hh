@@ -44,12 +44,19 @@ class Scene : public Configurable {
        static const char* RECORD ;
    public:
        static const char* TARGET ;
-
+   public:
+       static const char* REC_ ; 
+       static const char* ALTREC_ ; 
+       static const char* DEVREC_ ; 
+   public:
        typedef enum { REC, ALTREC, DEVREC, NUMSTYLE } RecordStyle_t ;
        void setRecordStyle(Scene::RecordStyle_t style);
-       void toggleGeometry();
+       Scene::RecordStyle_t getRecordStyle();
+       static const char* getRecordStyleName(Scene::RecordStyle_t style);
+       const char* getRecordStyleName();
        void nextPhotonStyle();
-
+   public:
+       void toggleGeometry();
    public:
        Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL);
        void gui();
@@ -248,17 +255,32 @@ inline void Scene::setPhotons(Photons* photons)
     m_photons = photons ; 
 }
 
+
+
+
 inline void Scene::setRecordStyle(RecordStyle_t style)
 {
     m_record_style = style ; 
-
 }
+
+inline Scene::RecordStyle_t Scene::getRecordStyle()
+{
+    return m_record_style ; 
+}
+
+
+
+
+
+
 
 inline void Scene::nextPhotonStyle()
 {
     int next = (m_record_style + 1) % NUMSTYLE ; 
     m_record_style = (RecordStyle_t)next ; 
 }
+
+
 
 inline void Scene::toggleGeometry()
 {
