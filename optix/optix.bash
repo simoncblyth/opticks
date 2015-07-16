@@ -326,6 +326,62 @@ Partial override warning
 * http://stackoverflow.com/questions/21462908/warning-overloaded-virtual-function-baseprocess-is-only-partially-overridde
 
 
+OptiX Transform (Programming Guide)
+----------------------------------------
+
+A transform node is used to represent a projective transformation of its
+underlying scene geometry. The transform must be assigned exactly one child of
+type rtGroup, rtGeometryGroup, rtTransform, or rtSelector, using
+rtTransformSetChild. That is, the nodes below a transform may simply be
+geometry in the form of a geometry group, or a whole new subgraph of the scene.
+
+The transformation itself is specified by passing a 4×4 floating point matrix
+(specified as a 16-element one-dimensional array) to rtTransformSetMatrix.
+Conceptually, it can be seen as if the matrix were applied to all the
+underlying geometry. However, the effect is instead achieved by transforming
+the rays themselves during traversal. This means that **OptiX does not rebuild
+any acceleration structures when the transform changes**.
+
+Note that the transform child node may be shared with other graph nodes. That
+is, a child node of a transform may be a child of another node at the same
+time. This is often useful for instancing geometry.
+
+
+::
+
+    delta:bin blyth$ optix-;optix-samples-cppfind Transform -l
+    /usr/local/env/cuda/OptiX_380_sdk/glass/glass.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/hybridShadows/hybridShadows.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/instancing/instancing.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/isgReflections/isgReflections.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/isgShadows/isgShadows.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/primeInstancing/primeInstancing.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/sample7/sample7.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/sutil/OptiXMesh.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/sutil/OptiXMeshImpl.cpp
+    /usr/local/env/cuda/OptiX_380_sdk/swimmingShark/fishMonger.cpp
+
+
+
+Usage
+~~~~~~~~
+
+* wrapping moving pieces of geometry into Transforms allows position
+  to be changed without rebuilding acceleration structures 
+
+
+OptiX Instancing : 20k teapots
+---------------------------------
+
+::
+
+    optix-;optix-samples-cd bin
+    ./instancing -i 20000 -n 
+    ./instancing -i 20000 --grid=100x100x100
+
+
+
+
 OptiX glass
 ------------
 
@@ -1506,8 +1562,8 @@ optix-sdir(){        echo $(env-home)/optix ; }
 optix-samples-src-dir(){     echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
 optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }
 
-optix-samples-scd(){   cd $(optix-samples-src-dir) ; }
-optix-samples-cd(){    cd $(optix-samples-install-dir) ; }
+optix-samples-scd(){   cd $(optix-samples-src-dir)/$1 ; }
+optix-samples-cd(){    cd $(optix-samples-install-dir)/$1 ; }
 optix-download-cd(){   cd $(optix-download-dir) ; }
 
 optix-ftp(){ open https://ftpservices.nvidia.com ; }
@@ -1519,10 +1575,12 @@ optix-scd(){ cd $(optix-sdir); }
 optix-icd(){ cd $(optix-idir); }
 optix-doc(){ cd $(optix-fold)/OptiX/doc ; }
 
-optix-samples-find(){  find $(optix-samples-src-dir) -name '*.cu' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
-optix-samples-hfind(){ find $(optix-samples-src-dir) -name '*.h' -exec grep -H ${1:-rtReportIntersection} {} \; ;}
-optix-find(){          find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
-optix-ifind(){         find $(optix-idir) -name '*.h' -exec grep -H ${1:-setMiss} {} \; ; }
+optix-samples-find(){    optix-samples-cppfind $* ; }
+optix-samples-cufind(){  find $(optix-samples-src-dir) -name '*.cu'  -exec grep ${2:--H} ${1:-rtReportIntersection} {} \; ;}
+optix-samples-hfind(){   find $(optix-samples-src-dir) -name '*.h'   -exec grep ${2:--H} ${1:-rtReportIntersection} {} \; ;}
+optix-samples-cppfind(){ find $(optix-samples-src-dir) -name '*.cpp' -exec grep ${2:--H} ${1:-rtReportIntersection} {} \; ;}
+optix-find(){            find $(optix-idir)            -name '*.h'   -exec grep ${2:--H} ${1:-setMiss} {} \; ; }
+optix-ifind(){           find $(optix-idir)            -name '*.h'   -exec grep ${2:--H} ${1:-setMiss} {} \; ; }
 
 optix-pdf(){ open $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
 

@@ -10,6 +10,7 @@
 #include "GSensor.hh"
 #include "GMergedMesh.hh"
 #include "GColors.hh"
+#include "GItemIndex.hh"
 
 #include "assert.h"
 #include "stdio.h"
@@ -36,6 +37,8 @@ void GGeo::init()
    //
    GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
    m_boundary_lib->setStandardDomain( standard_wavelengths );
+
+   m_meshindex = new GItemIndex("MeshIndex") ; 
 }
 
 
@@ -136,6 +139,16 @@ void GGeo::Details(const char* msg)
 void GGeo::add(GMesh* mesh)
 {
     m_meshes.push_back(mesh);
+
+    const char* name = mesh->getName();
+    unsigned int index = mesh->getIndex();
+
+    LOG(debug) << "GGeo::add (GMesh)"
+              << " index " << std::setw(4) << index 
+              << " name " << name 
+              ;
+
+    m_meshindex->add(name, index); 
 }
 
 void GGeo::add(GSolid* solid)

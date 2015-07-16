@@ -44,6 +44,8 @@ class GMesh : public GDrawable {
       static const char* reemission ; 
       static const char* center_extent ; 
       static const char* optical ; 
+      static const char* transforms ; 
+      static const char* meshes ; 
 
 
       GMesh(GMesh* other); // stealing copy ctor
@@ -56,12 +58,16 @@ class GMesh : public GDrawable {
   public:
       void Summary(const char* msg="GMesh::Summary");
       void Dump(const char* msg="GMesh::Dump", unsigned int nmax=10);
-
+  public:
+      void setName(const char* name);
+      const char* getName();
+  public:
       gfloat3* getLow();
       gfloat3* getHigh();
   public:
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
       gfloat4  getCenterExtent(unsigned int index);
+      float* getTransform(unsigned int index);
       gfloat3* getDimensions();
       GMatrix<float>* getModelToWorld();
 
@@ -112,6 +118,9 @@ class GMesh : public GDrawable {
       void setCenterExtentBuffer(GBuffer* buffer);
       void setOpticalBuffer(GBuffer* buffer);
 
+      void setTransformsBuffer(GBuffer* buffer);
+      void setMeshesBuffer(GBuffer* buffer);
+
   public:
       // Buffer access for GDrawable protocol
       GBuffer* getVerticesBuffer();
@@ -124,6 +133,8 @@ class GMesh : public GDrawable {
       GBuffer* getReemissionBuffer();
       GBuffer* getCenterExtentBuffer();
       GBuffer* getOpticalBuffer();
+      GBuffer* getTransformsBuffer();
+      GBuffer* getMeshesBuffer();
 
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
@@ -167,6 +178,8 @@ class GMesh : public GDrawable {
       void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
       void setCenterExtent(gfloat4* center_extent);
+      void setTransforms(float* transforms);
+      void setMeshes(unsigned int* meshes);
 
   public:
       void setNumColors(unsigned int num_colors);
@@ -181,6 +194,9 @@ class GMesh : public GDrawable {
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
+  public:
+      // used from GMergedMesh
+      void setNumSolids(unsigned int numSolids);
   protected:
       unsigned int    m_index ;
 
@@ -204,9 +220,12 @@ class GMesh : public GDrawable {
       float           m_extent ; 
 
       gfloat4*        m_center_extent ;
+      float*          m_transforms ; 
+      unsigned int*   m_meshes ; 
 
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
       std::vector<std::string> m_names ; 
+      const char*   m_name ; 
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -222,9 +241,21 @@ class GMesh : public GDrawable {
       GBuffer* m_reemission_buffer ;
       GBuffer* m_optical_buffer ;
 
+      GBuffer* m_transforms_buffer ;
+      GBuffer* m_meshes_buffer ;
+
 
 };
 
+
+inline void GMesh::setName(const char* name)
+{
+     m_name = strdup(name);
+}  
+inline const char* GMesh::getName()
+{
+     return m_name ; 
+}
 
 inline unsigned int GMesh::getIndex()
 {
@@ -331,6 +362,12 @@ inline gfloat4 GMesh::getCenterExtent(unsigned int index)
 {
     return m_center_extent[index] ;
 }
+inline float* GMesh::getTransform(unsigned int index)
+{
+    return m_transforms + index*16  ;
+}
+
+
 
 
 
@@ -410,6 +447,17 @@ inline GBuffer*  GMesh::getCenterExtentBuffer()
 {
     return m_center_extent_buffer ;
 }
+inline GBuffer*  GMesh::getTransformsBuffer()
+{
+    return m_transforms_buffer ;
+}
+inline GBuffer*  GMesh::getMeshesBuffer()
+{
+    return m_meshes_buffer ;
+}
+
+
+
 
 
 

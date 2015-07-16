@@ -102,10 +102,60 @@ void test_getUSum()
 {
     NPY<float>* c1 = NPY<float>::load("cerenkov","1");
     NPY<float>* s1 = NPY<float>::load("scintillation","1");
-    
     unsigned int n_c1 = c1->getUSum(0, 3);
     unsigned int n_s1 = s1->getUSum(0, 3);
     printf("test_getUSum n_c1:%u n_c1:%u tot:%u \n", n_c1, n_s1, n_c1+n_s1);
+}
+
+void test_string()
+{
+    typedef unsigned long long ULL ; 
+
+    printf("sizeof(ULL) : %lu \n", sizeof(ULL) );
+
+    assert(sizeof(ULL) == 8 );
+
+    ULL* vals = new ULL[1] ;  
+    const char* msg = "hello123" ;
+
+    vals[0] = 0 ;
+    char* c = (char*)msg ; 
+    unsigned int i(0) ; 
+    while(*c)
+    {
+        printf(" i %u c %c \n", i, *c );
+        ULL ull = *c ; 
+
+
+        vals[0] |= (ull & 0xFF) << (i*8) ; 
+
+        i++ ;     
+        c++ ; 
+    }     
+
+    NPY<ULL>* s = NPY<ULL>::make(1, 1, 1, vals);
+    s->save("/tmp/test_string.npy");
+
+/*
+
+   messes up curiously when go beyond 8 chars, expected just truncation 
+   getting garbage
+
+In [55]: np.load("/tmp/test_string.npy").view(np.dtype("S8"))
+Out[55]: 
+array([[['hello123']]], 
+      dtype='|S8')
+
+In [54]: np.load("/tmp/test_string.npy").view(np.dtype("S8"))
+Out[54]: 
+array([[['|u~lo123']]], 
+      dtype='|S8')
+
+
+
+
+*/
+
 
 }
 
@@ -123,7 +173,8 @@ int main()
     //test_load_path();
     //test_save_path();
 
-    test_setQuad();
+    //test_setQuad();
+    test_string();
 
     return 0 ;
 }

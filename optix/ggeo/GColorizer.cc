@@ -62,19 +62,19 @@ gfloat3* GColorizer::getSurfaceColor(GNode* node)
     {
          colorcode = m_surfaces->getColorCode(isur->getShortName());
 
-         std::cout << "GColorizer::getSurfaceColor " 
-                   << " inner " << std::setw(25) << isur->getShortName() 
-                   << " color " << std::hex << colorcode 
-                   << std::endl ;   
+         LOG(debug) << "GColorizer::getSurfaceColor " 
+                    << " inner " << std::setw(25) << isur->getShortName() 
+                    << " color " << std::hex << colorcode 
+                     ;   
     }
     else if(osur->hasDefinedName() && m_surfaces->hasItem(osur->getShortName()))
     {
          colorcode = m_surfaces->getColorCode(osur->getShortName());
 
-         std::cout << "GColorizer::getSurfaceColor " 
-                   << " outer " << std::setw(25) << osur->getShortName() 
-                   << " color " << std::hex << colorcode 
-                   << std::endl ;   
+         LOG(debug) << "GColorizer::getSurfaceColor " 
+                    << " outer " << std::setw(25) << osur->getShortName() 
+                    << " color " << std::hex << colorcode 
+                    ;
     }
 
     return colorcode == UINT_MAX ? NULL : GItemIndex::makeColor(colorcode) ; 

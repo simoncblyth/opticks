@@ -31,6 +31,8 @@ const char* GMesh::wavelength   = "wavelength" ;
 const char* GMesh::reemission   = "reemission" ;
 const char* GMesh::center_extent = "center_extent" ;
 const char* GMesh::optical       = "optical" ;
+const char* GMesh::transforms     = "transforms" ;
+const char* GMesh::meshes         = "meshes" ;
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
 {
@@ -46,6 +48,8 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(reemission); 
     names.push_back(center_extent); 
     names.push_back(optical); 
+    names.push_back(transforms); 
+    names.push_back(meshes); 
 }
 
 GMesh::GMesh(GMesh* other) 
@@ -74,6 +78,8 @@ GMesh::GMesh(GMesh* other)
      m_num_solids(other->getNumSolids()),
      m_num_solids_selected(other->getNumSolidsSelected()),
      m_optical_buffer(other->getOpticalBuffer()),
+     m_transforms_buffer(other->getTransformsBuffer()),
+     m_meshes_buffer(other->getMeshesBuffer()),
      GDrawable()
 {
    updateBounds();
@@ -127,6 +133,10 @@ GMesh::GMesh(unsigned int index,
       m_num_solids(0),
       m_num_solids_selected(0),
       m_optical_buffer(NULL),
+      m_transforms(NULL),
+      m_transforms_buffer(NULL),
+      m_meshes(NULL),
+      m_meshes_buffer(NULL),
       GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 
@@ -160,6 +170,8 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
     if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
     if(strcmp(name, optical) == 0)         return m_optical_buffer ; 
+    if(strcmp(name, transforms) == 0)      return m_transforms_buffer ; 
+    if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
 
     return NULL ;
 }
@@ -181,6 +193,8 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
     if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
     if(strcmp(name, optical) == 0)         setOpticalBuffer(buffer) ; 
+    if(strcmp(name, transforms) == 0)      setTransformsBuffer(buffer) ; 
+    if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
 }
 
 
@@ -260,6 +274,71 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
 
 
 
+
+void GMesh::setTransforms(float* transforms)  
+{
+    m_transforms = transforms ;  
+    assert(m_num_solids > 0);
+
+    unsigned int numElements = 16 ; 
+    unsigned int size = sizeof(float)*numElements;
+
+    LOG(info) << "GMesh::setTransforms " 
+              << " num_solids " << m_num_solids 
+              << " size " << size 
+              << " fsize " << sizeof(float)
+              ;
+
+    m_transforms_buffer = new GBuffer( size*m_num_solids, (void*)m_transforms, size, numElements ); 
+}
+void GMesh::setTransformsBuffer(GBuffer* buffer) 
+{
+    m_transforms_buffer = buffer ;  
+    if(!buffer) return ; 
+
+    m_transforms = (float*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int numElements = 16 ; 
+    unsigned int size = sizeof(float)*numElements;
+    unsigned int numSolids = numBytes/size ;
+    setNumSolids(numSolids);
+}
+
+
+void GMesh::setMeshes(unsigned int* meshes)  
+{
+    m_meshes = meshes ;  
+    assert(m_num_solids > 0);
+    unsigned int size = sizeof(unsigned int);
+    m_meshes_buffer = new GBuffer( size*m_num_solids, (void*)m_meshes, size, 1 ); 
+}
+
+void GMesh::setMeshesBuffer(GBuffer* buffer) 
+{
+    m_meshes_buffer = buffer ;  
+    if(!buffer) return ; 
+
+    m_meshes = (unsigned int*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int numElements = 1  ; 
+    unsigned int size = sizeof(float)*numElements;
+    unsigned int numSolids = numBytes/size ;
+    setNumSolids(numSolids);
+}
+
+
+
+void GMesh::setNumSolids(unsigned int numSolids)
+{
+    if(m_num_solids == 0) 
+    {
+        m_num_solids = numSolids ; 
+    }
+    else
+    {
+        assert(numSolids == m_num_solids);
+    }
+}
 
 
 unsigned int GMesh::findContainer(gfloat3 p)
@@ -684,6 +763,7 @@ bool GMesh::isFloatBuffer(const char* name)
              strcmp( name, center_extent ) == 0  || 
              strcmp( name, wavelength ) == 0  || 
              strcmp( name, reemission ) == 0  || 
+             strcmp( name, transforms ) == 0  || 
              strcmp( name, colors) == 0 );
 }
 
@@ -698,10 +778,13 @@ bool GMesh::isIntBuffer(const char* name)
 }
 bool GMesh::isUIntBuffer(const char* name)
 {
-    return strcmp( name, optical) == 0 ;  
+    return 
+           ( 
+              strcmp( name, optical) == 0  ||
+              strcmp( name, meshes) == 0  ||
+              true 
+           );
 }
-
-
 
 void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
 {

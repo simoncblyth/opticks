@@ -26,6 +26,7 @@ class GMatrix : public GBuffer
        GMatrix& operator *= (const GMatrix& m); 
        GMatrix  operator *  (const GMatrix& m) const;
 
+       void copyTo(T* buf);
        void* getPointer();  // override GBuffer
 
    public:
@@ -95,11 +96,29 @@ GMatrix<T>::GMatrix(
 }
 
 
+template <typename T>
+void GMatrix<T>::copyTo(T* buf)
+{
+    buf[0] = a1 ;
+    buf[1] = b1 ;
+    buf[2] = c1 ;
+    buf[3] = d1 ;
 
+    buf[4] = a2 ;
+    buf[5] = b2 ;
+    buf[6] = c2 ;
+    buf[7] = d2 ;
 
+    buf[8] = a3 ;
+    buf[9] = b3 ;
+    buf[10] = c3 ;
+    buf[11] = d3 ;  
 
-
-
+    buf[12] = a4 ;  // 13th t_x
+    buf[13] = b4 ;  // 14th t_y
+    buf[14] = c4 ;  // 15th t_z 
+    buf[15] = d4 ;  // 16th 1.0
+}
 
 template <typename T>
 void* GMatrix<T>::getPointer()
@@ -130,27 +149,7 @@ suggests that matrices are not laid out in memory as a programmer would expect.
     if( !m_pointer )
     {
         T* buf = new T[16];
-
-        buf[0] = a1 ;
-        buf[1] = b1 ;
-        buf[2] = c1 ;
-        buf[3] = d1 ;
-
-        buf[4] = a2 ;
-        buf[5] = b2 ;
-        buf[6] = c2 ;
-        buf[7] = d2 ;
-
-        buf[8] = a3 ;
-        buf[9] = b3 ;
-        buf[10] = c3 ;
-        buf[11] = d3 ;  
-
-        buf[12] = a4 ;  // 13th t_x
-        buf[13] = b4 ;  // 14th t_y
-        buf[14] = c4 ;  // 15th t_z 
-        buf[15] = d4 ;  // 16th 1.0
-
+        copyTo(buf);
         m_pointer = buf ;
     }
     return m_pointer ; 

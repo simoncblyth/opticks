@@ -14,9 +14,11 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 {
     GSolid* root = ggeo->getSolid(0);
 
-    GMergedMesh* mm = new GMergedMesh( index );
+    unsigned int numMeshes = ggeo->getNumMeshes();
+    assert(numMeshes < 500 );
 
-    
+
+    GMergedMesh* mm = new GMergedMesh( index );
 
     // 1st pass traversal : counts vertices and faces
 
@@ -44,6 +46,8 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     unsigned int numSolids = mm->getNumSolids();
     mm->setCenterExtent(new gfloat4[numSolids]);
+    mm->setTransforms(new float[numSolids*16]);
+    mm->setMeshes(new unsigned int[numSolids]);
 
     // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
@@ -65,7 +69,6 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     GPropertyMap<float>* scint = ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
     mm->setReemissionBuffer(lib->createReemissionBuffer(scint));
 
-
     return mm ;
 }
 
@@ -74,23 +77,17 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
     GMatrixF* transform = node->getTransform();    
+
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
     GMesh* mesh = solid->getMesh();
+    unsigned int meshIndex = mesh->getIndex();
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
     gfloat3* vertices = pass == pass_merge ? mesh->getTransformedVertices(*transform) : NULL ;
 
-    //std::vector<unsigned int> bids = node->getDistinctBoundaryIndices();
-    //assert(bids.size() == 1);
-    //std::cout << "GMergedMesh::traverse " << bids[0];
-
-
     bool selected = solid->isSelected();
     if(selected)
     {
-
-        //printf("GMergedMesh::traverse nvert %u nface %u \n", nvert, nface );
-
         if(pass == pass_count )
         {
             m_num_vertices += nvert ;
@@ -157,6 +154,19 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     else if( pass == pass_merge ) 
     {
         m_center_extent[m_cur_solid] = GMesh::findCenterExtent(vertices, nvert); // keep track of center_extent of all solids
+        m_meshes[m_cur_solid] = meshIndex ; 
+
+/*
+        LOG(info) << "GMergedMesh::create " 
+                  << " cur_solid " << m_cur_solid 
+                  ;
+        transform->Summary("GMergedMesh::create transform");
+*/
+
+        transform->copyTo( m_transforms + m_cur_solid*16 );  
+
+        
+
         m_cur_solid += 1 ; 
     }
 

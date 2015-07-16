@@ -261,8 +261,6 @@ const char* AssimpGGeo::g4dae_opticalsurface_value      = "g4dae_opticalsurface_
 
 
 
-
-
 void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* query, bool reverse)
 {
     LOG(info)<<"AssimpGGeo::convertMaterials " 
@@ -389,12 +387,19 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 
     for(unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
-
         aiMesh* mesh = scene->mMeshes[i] ;
-
+        const char* meshname = mesh->mName.C_Str() ; 
         unsigned int numVertices = mesh->mNumVertices;
-        //printf("AssimpGGeo::convertMeshes mesh %3u vert %5d normals? %d \n", i, mesh->mNumVertices, mesh->HasNormals() );
+        unsigned int numFaces = mesh->mNumFaces;
+
         assert(mesh->HasNormals()); 
+
+        LOG(info) << "AssimpGGeo::convertMeshes " 
+                  << " i " << std::setw(4) << i
+                  << " v " << std::setw(4) << numVertices
+                  << " f " << std::setw(4) << numFaces
+                  << " n " << meshname 
+                  ; 
 
         aiVector3D* vertices = mesh->mVertices ; 
         gfloat3* gvertices = new gfloat3[numVertices];
@@ -422,7 +427,6 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 
         }
 
-        unsigned int numFaces = mesh->mNumFaces;
         aiFace* faces = mesh->mFaces ; 
         guint3*  gfaces = new guint3[numFaces];
 
@@ -438,6 +442,8 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
         gfloat2* gtexcoords = NULL ;
 
         GMesh* gmesh = new GMesh( i, gvertices, numVertices, gfaces, numFaces, gnormals, gtexcoords); 
+        gmesh->setName(meshname);
+
         gg->add(gmesh);
     }
 }

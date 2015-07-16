@@ -47,11 +47,14 @@ void GLoader::load(bool nogeocache)
         m_metadata   = GBoundaryLibMetadata::load(idpath);
         m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); // TODO: find common place for such strings, maybe Types.hpp
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
+        m_meshes     = GItemIndex::load(idpath, "MeshIndex");
     } 
     else
     {
         LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
         m_ggeo = (*m_imp)(envprefix);      
+
+        m_meshes = m_ggeo->getMeshIndex();  
 
         GBoundaryLib* lib = m_ggeo->getBoundaryLib();
         GColors* source = GColors::load(idpath,"GColors.json");  // colorname => hexcode 
@@ -83,6 +86,7 @@ void GLoader::load(bool nogeocache)
         m_metadata->save(idpath);
         m_materials->save(idpath);
         m_surfaces->save(idpath);
+        m_meshes->save(idpath);
 
         lib->saveIndex(idpath); 
     } 

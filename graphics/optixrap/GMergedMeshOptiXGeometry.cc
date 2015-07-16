@@ -226,6 +226,10 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* mergedmes
     geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu", "mesh_intersect"));
     geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu", "mesh_bounds"));
 
+    // TriangleMesh.cu uses nodeBuffer boundaryBuffer sensorBuffer
+    // to set attributes nodeIndex boundaryIndex and sensorIndex corresponding to the 
+    // primIdx intersected      
+
     // contrast with oglrap-/Renderer::gl_upload_buffers
     GBuffer* vbuf = mergedmesh->getVerticesBuffer();
     GBuffer* ibuf = mergedmesh->getIndicesBuffer();

@@ -42,6 +42,7 @@ class GLoader {
          GItemIndex*            getMaterials();
          GItemIndex*            getSurfaces();
          GItemIndex*            getFlags();
+         GItemIndex*            getMeshes();
 
          GColors*               getColors();
          Lookup*                getMaterialLookup();
@@ -58,6 +59,7 @@ class GLoader {
          GItemIndex*               m_materials ;
          GItemIndex*               m_surfaces ;
          GItemIndex*               m_flags ;
+         GItemIndex*               m_meshes ;
 
          GColors*                  m_colors ;  
          Lookup*                   m_lookup ; 
@@ -75,6 +77,7 @@ inline GLoader::GLoader()
    m_materials(NULL),
    m_surfaces(NULL),
    m_flags(NULL),
+   m_meshes(NULL),
    m_colors(NULL),
    m_lookup(NULL),
    m_color_buffer(NULL)
@@ -141,6 +144,10 @@ inline GItemIndex* GLoader::getSurfaces()
 inline GItemIndex* GLoader::getFlags()
 {
     return m_flags ; 
+}
+inline GItemIndex* GLoader::getMeshes()
+{
+    return m_meshes ; 
 }
 
 inline GBuffer* GLoader::getColorBuffer()

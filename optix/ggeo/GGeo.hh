@@ -18,6 +18,7 @@ class GBoundaryLib ;
 class GMergedMesh ;
 class GSensorList ; 
 class GColors ; 
+class GItemIndex ; 
 
 //
 // NB GGeo is a dumb substrate from which the geometry model is created,
@@ -61,6 +62,9 @@ class GGeo {
         void addRaw(GMaterial* material);
         void addRaw(GSkinSurface* surface);
         void addRaw(GBorderSurface*  surface);
+      
+    public:
+        GItemIndex*  getMeshIndex(); 
 
     public:
         void dumpRaw(const char* msg="GGeo::dumpRaw");
@@ -145,12 +149,12 @@ class GGeo {
         gfloat3*                      m_high ; 
         GMergedMesh*                  m_merged_mesh ; 
         GColors*                      m_colors ; 
+        GItemIndex*                   m_meshindex ; 
 
         char*                         m_path ;
         char*                         m_query ;
         char*                         m_ctrl ;
         char*                         m_idpath ;
-      
 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
@@ -167,6 +171,7 @@ inline GGeo::GGeo() :
    m_high(NULL),
    m_merged_mesh(NULL),
    m_colors(NULL),
+   m_meshindex(NULL),
    m_path(NULL),
    m_query(NULL),
    m_ctrl(NULL),
@@ -309,4 +314,8 @@ inline GColors* GGeo::getColors()
    return m_colors ; 
 }
 
+inline GItemIndex* GGeo::getMeshIndex()
+{
+    return m_meshindex ; 
+}
 

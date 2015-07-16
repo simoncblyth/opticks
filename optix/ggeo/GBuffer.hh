@@ -5,6 +5,11 @@
 #include "assert.h"
 #include "numpy.hpp"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 
 class GBuffer {
     public:
@@ -129,7 +134,17 @@ inline void GBuffer::save(const char* path)
     unsigned int numItems    = getNumItems();        
     unsigned int numElements = getNumElements();
 
-    assert(numElements < 5); // elements within an item, eg 3/4 for float3/float4  
+    assert(numElements < 17); // elements within an item, eg 3/4 for float3/float4  
+    if(numElements*numItems*sizeof(T) != numBytes )
+    {
+        LOG(info) << "GBuffer::save " 
+                  << " path " << path 
+                  << " numBytes " << numBytes 
+                  << " numItems " << numItems 
+                  << " numElements " << numElements
+                  << " numElements*numItems*sizeof(T) " << numElements*numItems*sizeof(T)  
+                  ;
+    }
     assert(numElements*numItems*sizeof(T) == numBytes ); 
 
     aoba::SaveArrayAsNumpy<T>( path, numItems, numElements, (T*)data );  
@@ -155,7 +170,7 @@ inline GBuffer* GBuffer::load(const char* path)
     int numElements ; 
 
     aoba::LoadArrayFromNumpy<T>( path, numItems, numElements, vdata );  // 2d load
-    assert(numElements < 5);
+    assert(numElements < 17);
 
     unsigned int numBytes = numItems*numElements*sizeof(T);
     unsigned int numValues = numBytes/sizeof(T);
