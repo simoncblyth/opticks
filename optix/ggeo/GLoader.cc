@@ -8,6 +8,7 @@
 #include "GBoundaryLibMetadata.hh"
 #include "GTraverse.hh"
 #include "GColorizer.hh"
+#include "GTreeCheck.hh"
 #include "GItemIndex.hh"
 #include "GBuffer.hh"
 
@@ -52,6 +53,7 @@ void GLoader::load(bool nogeocache)
     else
     {
         LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
+
         m_ggeo = (*m_imp)(envprefix);      
 
         m_meshes = m_ggeo->getMeshIndex();  
@@ -78,6 +80,9 @@ void GLoader::load(bool nogeocache)
         GColorizer czr( target, m_ggeo ); 
         czr.setSurfaces(m_surfaces);
         czr.traverse();
+
+        GTreeCheck tck(m_ggeo);
+        tck.traverse(); 
 
 
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;

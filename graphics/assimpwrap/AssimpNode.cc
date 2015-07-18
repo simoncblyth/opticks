@@ -33,6 +33,15 @@ AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree)
    setDepth(leafdepth);
 }
 
+std::size_t AssimpNode::getDigest()
+{
+   return m_digest ;
+}
+std::size_t AssimpNode::getParentDigest()
+{
+   return m_pdigest ;
+}
+
 
 
 aiMatrix4x4 AssimpNode::getGlobalTransform()
@@ -47,19 +56,24 @@ aiMatrix4x4 AssimpNode::getGlobalTransform()
     return transform ; 
 }
 
-
-
-std::size_t AssimpNode::getDigest()
+aiMatrix4x4 AssimpNode::getTransform()
 {
-   return m_digest ;
-}
-std::size_t AssimpNode::getParentDigest()
-{
-   return m_pdigest ;
+   return m_transform ;   // globalTransform set by copyMeshes
 }
 
+aiMatrix4x4 AssimpNode::getLevelTransform(int level)
+{
+   if(level < 0) level += m_nodepath.size();
+   assert(level < m_nodepath.size());
+   aiNode* node = m_nodepath[level] ;
+   return node->mTransformation ;
+}
 
-aiNode* AssimpNode::getRawNode(){
+
+
+
+aiNode* AssimpNode::getRawNode()
+{
    return m_raw ; 
 }
 aiNode* AssimpNode::getRawNode(unsigned int iback)
@@ -69,8 +83,8 @@ aiNode* AssimpNode::getRawNode(unsigned int iback)
     return index < size ?  m_nodepath[index] : NULL  ; 
 }
 
-
-const char* AssimpNode::getName() {
+const char* AssimpNode::getName() 
+{
     return m_raw->mName.C_Str();
 }
 const char* AssimpNode::getName(unsigned int iback) 
@@ -128,9 +142,7 @@ unsigned int AssimpNode::getIndex(){
 unsigned int AssimpNode::getDepth(){
     return m_depth ; 
 }
-aiMatrix4x4 AssimpNode::getTransform(){
-   return m_transform ; 
-}
+
 unsigned int AssimpNode::getNumChildren(){
     return m_children.size(); 
 }

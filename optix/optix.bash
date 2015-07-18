@@ -370,6 +370,38 @@ Usage
   to be changed without rebuilding acceleration structures 
 
 
+Thoughts on applying *Transform* instancing to complex/large geometries
+-----------------------------------------------------------------------------
+
+* Current geocache machinery is flat using final transforms applied to every volume.
+  This works fine when treating everything as triangles and yields a very simple
+  *convertDrawable*  
+
+  * optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* mergedmesh)
+
+* Attempting to operate as if every solid making up the PMT is independant 
+  each with a global transform (as the flat geocache encourages) 
+  would yield an unnecessarily complicated OptiX geometry of overlapping transforms 
+
+  * this would likely not work and even if it did would be fragile and difficult to 
+    move, consider for example a analogous treatment of movable calibration sources 
+
+* PMTs (and calibration sources) are not simple single volumes, 
+  they are a collection of volumes arranged via transforms wrt to each other 
+  with the assembly placed in the wider detector via a "placement" transform
+
+* can sub-assemblies be auto-identified by finding repeated transform/meshIndex sub-trees ?
+ 
+  * construct transform/meshIndex digests for the tree beneath every node
+  * look for repeated such digests and locate the parent placement transforms 
+
+* need to create local assembly frame vertices 
+
+
+How to persist tree of transforms in the geocache ?
+-----------------------------------------------------
+
+
 OptiX Instancing : 20k teapots
 ---------------------------------
 
@@ -380,6 +412,49 @@ OptiX Instancing : 20k teapots
     ./instancing -i 20000 --grid=100x100x100
 
 
+
+OptiX Selector (Programming Guide)
+-------------------------------------
+
+A selector is similar to a group in that it is a collection of higher level
+graph nodes. The number of nodes in the collection is set by
+rtSelectorSetChildCount, and the individual children are assigned with
+rtSelectorSetChild. Valid child types are rtGroup, rtGeometryGroup,
+rtTransform, and rtSelector.
+
+The main difference between selectors and groups is that selectors do not have
+an acceleration structure associated with them. Instead, a visit program is
+specified with rtSelectorSetVisitProgram. This program is executed every time a
+ray encounters the selector node during graph traversal. The program specifies
+which children the ray should continue traversal through by calling
+*rtIntersectChild*.
+
+A typical use case for a selector is dynamic (i.e. per-ray) level of detail: an
+object in the scene may be represented by a number of geometry nodes, each
+containing a different level of detail version of the object. The geometry
+groups containing these different representations can be assigned as children
+of a selector. The visit program can select which child to intersect using any
+criterion (e.g. based on the footprint or length of the current ray), and
+ignore the others.
+
+As for groups and other graph nodes, child nodes of a selector can be shared
+with other graph nodes to allow flexible instancing.
+
+
+Selector Examples
+~~~~~~~~~~~~~~~~~~
+
+::
+
+    delta:ggeo blyth$ optix-;optix-samples-cufind IntersectChild
+    /usr/local/env/cuda/OptiX_380_sdk/device_exceptions/device_exceptions.cu:    rtIntersectChild( 1 );
+    /usr/local/env/cuda/OptiX_380_sdk/device_exceptions/device_exceptions.cu:    rtIntersectChild( 0 );
+    /usr/local/env/cuda/OptiX_380_sdk/sample8/selector_example.cu:  rtIntersectChild( index );
+    delta:ggeo blyth$ 
+
+    optix-;optix-samples-cd bin
+
+    delta:bin blyth$ ./sample8 -h
 
 
 OptiX glass

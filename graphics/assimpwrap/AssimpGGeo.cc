@@ -38,6 +38,14 @@
 */
 
 
+// ctor macro facilitates GGeo staying ignorant of AssimpWrap and Assimp
+#define GMATRIXF(m) \
+           GMatrixF( \
+                     (m).a1,(m).a2,(m).a3,(m).a4, \
+                     (m).b1,(m).b2,(m).b3,(m).b4, \
+                     (m).c1,(m).c2,(m).c3,(m).c4, \
+                     (m).d1,(m).d2,(m).d3,(m).d4) \
+
 
 GGeo* AssimpGGeo::load(const char* envprefix)
 {
@@ -533,12 +541,14 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     unsigned int nodeIndex = node->getIndex();
 
-    aiMatrix4x4 m = node->getGlobalTransform();
-    GMatrixF* transform = new GMatrixF(
-                     m.a1,m.a2,m.a3,m.a4,  
-                     m.b1,m.b2,m.b3,m.b4,  
-                     m.c1,m.c2,m.c3,m.c4,  
-                     m.d1,m.d2,m.d3,m.d4);
+    aiMatrix4x4 g = node->getGlobalTransform();
+    GMatrixF* gtransform = new GMATRIXF(g) ;
+
+    aiMatrix4x4 l = node->getLevelTransform(-2); // -1 is always identity 
+    GMatrixF* ltransform = new GMATRIXF(l) ; 
+
+    //ltransform->Summary("ltransform");
+
 
     unsigned int msi = node->getMeshIndex();
     GMesh* mesh = gg->getMesh(msi);
@@ -551,7 +561,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     //printf("AssimpGGeo::convertStructureVisit nodeIndex %d mti %u mti_p %u msi %u \n", nodeIndex, mti, mti_p, msi );
 
-    GSolid* solid = new GSolid(nodeIndex, transform, mesh, NULL, NULL ); // boundary and sensor start NULL
+    GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, NULL, NULL ); // boundary and sensor start NULL
+    solid->setLevelTransform(ltransform);
 
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
@@ -626,6 +637,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);
+    solid->setName(node->getName());
+
     free(desc);
 
     return solid ; 

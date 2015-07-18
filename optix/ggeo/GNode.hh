@@ -22,6 +22,8 @@ class GNode {
       void setParent(GNode* parent);
       void addChild(GNode* child);
       void setDescription(char* desc);
+      void setName(const char* name);
+      const char* getName();
 
   public:
       //
@@ -61,7 +63,6 @@ class GNode {
       gfloat3*      getLow();
       gfloat3*      getHigh();
       GMesh*        getMesh();
-      GMatrixF*     getTransform();
 
   public:
       unsigned int* getNodeIndices();
@@ -72,6 +73,18 @@ class GNode {
      void updateBounds();
      void updateBounds(gfloat3& low, gfloat3& high );
 
+  public:
+      GMatrixF*     getTransform();  // global transform
+      GMatrixF* getLevelTransform();  // immediate "local" node transform
+
+  public:
+      void setLevelTransform(GMatrixF* ltransform);
+
+
+  public:
+      GMatrixF*           calculateTransform();  // attempt to calculate global transform from the "local" transforms obtained from ancestors
+      std::vector<GNode*> getAncestors(bool reverse);
+
   private:
       unsigned int        m_index ; 
       GNode*              m_parent ; 
@@ -80,6 +93,7 @@ class GNode {
 
   private: 
       GMatrixF*           m_transform ; 
+      GMatrixF*           m_ltransform ; 
       GMesh*              m_mesh ; 
       gfloat3*            m_low ; 
       gfloat3*            m_high ; 
@@ -88,6 +102,7 @@ class GNode {
       unsigned int*       m_boundary_indices ;
       unsigned int*       m_sensor_indices ;
       unsigned int*       m_node_indices ;
+      const char*         m_name ; 
 
   private: 
       std::vector<unsigned int> m_distinct_boundary_indices ;
@@ -101,12 +116,14 @@ inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh)
     m_parent(NULL),
     m_description(NULL),
     m_transform(transform),
+    m_ltransform(NULL),
     m_mesh(mesh),
     m_low(NULL),
     m_high(NULL),
     m_boundary_indices(NULL),
     m_sensor_indices(NULL),
-    m_node_indices(NULL)
+    m_node_indices(NULL),
+    m_name(NULL)
 {
     init();
 }
@@ -181,4 +198,21 @@ inline unsigned int GNode::getNumChildren()
     return m_children.size();
 }
 
+inline void GNode::setLevelTransform(GMatrixF* ltransform)
+{
+   m_ltransform = ltransform ; 
+}
+inline GMatrixF* GNode::getLevelTransform()
+{
+   return m_ltransform ; 
+}
+
+inline void GNode::setName(const char* name)
+{
+    m_name = strdup(name); 
+}
+inline const char* GNode::getName()
+{
+    return m_name ; 
+}
 

@@ -94,7 +94,6 @@ void AssimpTree::visitWrap(std::vector<aiNode*> nodepath)
    aiMatrix4x4 transform = wrap->getGlobalTransform() ; 
    wrap->copyMeshes(transform);
 
-
    //if(m_wrap_index == 5000) wrap->ancestors();
 
 

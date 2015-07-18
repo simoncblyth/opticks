@@ -5,6 +5,12 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include <algorithm>
+#include <iostream>
+#include <iomanip>
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
 
 
 void GNode::init()
@@ -82,3 +88,38 @@ std::vector<unsigned int>& GNode::getDistinctBoundaryIndices()
     return m_distinct_boundary_indices ;
 }
 
+
+
+
+std::vector<GNode*> GNode::getAncestors(bool reverse)
+{
+    std::vector<GNode*> ancestors ;  
+    GNode* node = getParent();
+    while(node)
+    {
+        ancestors.push_back(node);
+        node = node->getParent();
+    }
+    if(reverse) std::reverse( ancestors.begin(), ancestors.end() );
+    return ancestors ; 
+}
+
+GMatrixF* GNode::calculateTransform()
+{
+    bool reverse = true ; 
+    std::vector<GNode*> nodes = getAncestors(reverse);
+    nodes.push_back(this);
+
+    typedef std::vector<GNode*>::const_iterator NIT ; 
+    //LOG(info) << "GNode::calculateTransform " ; 
+
+    GMatrix<float>* m = new GMatrix<float> ;
+    //unsigned int idx(0);
+    for(NIT it=nodes.begin() ; it != nodes.end() ; it++)
+    {
+        GNode* node = *it ; 
+        //std::cout << std::setw(3) << idx << node->getName() << std::endl ; 
+        (*m) *= (*node->getLevelTransform()); 
+    }
+    return m ; 
+}

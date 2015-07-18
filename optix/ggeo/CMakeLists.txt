@@ -80,6 +80,7 @@ add_library(${name} SHARED
                 GColorMap.cc
                 GTraverse.cc
                 GColorizer.cc
+                GTreeCheck.cc
 )
 
 SET(hdrs 
@@ -117,6 +118,7 @@ GColors.hh
 GColorMap.hh
 GTraverse.hh
 GColorizer.hh
+GTreeCheck.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

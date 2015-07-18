@@ -26,6 +26,8 @@ class GMatrix : public GBuffer
        GMatrix& operator *= (const GMatrix& m); 
        GMatrix  operator *  (const GMatrix& m) const;
 
+       T largestDiff(const GMatrix& m);
+
        void copyTo(T* buf);
        void* getPointer();  // override GBuffer
 
@@ -78,6 +80,35 @@ GMatrix<T>::GMatrix(const GMatrix& m) :
       c1(m.c1), c2(m.c2), c3(m.c3), c4(m.c4), 
       d1(m.d1), d2(m.d2), d3(m.d3), d4(m.d4) 
 { 
+}
+
+template<typename T>
+T GMatrix<T>::largestDiff(const GMatrix& m)
+{
+    T d(0);
+    T delta ; 
+
+    delta = fabs(m.a1 - a1) ; if(delta > d) d = delta ; 
+    delta = fabs(m.a2 - a2) ; if(delta > d) d = delta ; 
+    delta = fabs(m.a3 - a3) ; if(delta > d) d = delta ; 
+    delta = fabs(m.a4 - a4) ; if(delta > d) d = delta ; 
+
+    delta = fabs(m.b1 - b1) ; if(delta > d) d = delta ; 
+    delta = fabs(m.b2 - b2) ; if(delta > d) d = delta ; 
+    delta = fabs(m.b3 - b3) ; if(delta > d) d = delta ; 
+    delta = fabs(m.b4 - b4) ; if(delta > d) d = delta ; 
+
+    delta = fabs(m.c1 - c1) ; if(delta > d) d = delta ; 
+    delta = fabs(m.c2 - c2) ; if(delta > d) d = delta ; 
+    delta = fabs(m.c3 - c3) ; if(delta > d) d = delta ; 
+    delta = fabs(m.c4 - c4) ; if(delta > d) d = delta ; 
+
+    delta = fabs(m.d1 - d1) ; if(delta > d) d = delta ; 
+    delta = fabs(m.d2 - d2) ; if(delta > d) d = delta ; 
+    delta = fabs(m.d3 - d3) ; if(delta > d) d = delta ; 
+    delta = fabs(m.d4 - d4) ; if(delta > d) d = delta ; 
+
+    return d ; 
 }
 
 template<typename T>
