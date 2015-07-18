@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include "string.h"
 #include "GVector.hh"
@@ -80,10 +81,15 @@ class GNode {
   public:
       void setLevelTransform(GMatrixF* ltransform);
 
-
   public:
       GMatrixF*           calculateTransform();  // attempt to calculate global transform from the "local" transforms obtained from ancestors
       std::vector<GNode*> getAncestors(bool reverse);
+      std::vector<GNode*> getProgeny();
+      std::string         localDigest();
+      static std::string  localDigest(std::vector<GNode*>& nodes);
+
+  private:
+      void collectProgeny(std::vector<GNode*>& progeny);
 
   private:
       unsigned int        m_index ; 

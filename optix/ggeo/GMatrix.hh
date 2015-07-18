@@ -1,8 +1,10 @@
-#ifndef GMATRIX_H
-#define GMATRIX_H
+#pragma once
 
+#include <string>
 #include <stdio.h>
 #include "GBuffer.hh"
+#include "md5digest.hh"
+
 
 template<typename T>
 class GMatrix : public GBuffer 
@@ -30,6 +32,8 @@ class GMatrix : public GBuffer
 
        void copyTo(T* buf);
        void* getPointer();  // override GBuffer
+
+       std::string digest();
 
    public:
        T a1, a2, a3, a4 ; 
@@ -239,10 +243,18 @@ void GMatrix<T>::Summary(const char* msg)
 
 
 }
- 
+
+
+template<typename T>
+std::string GMatrix<T>::digest()
+{
+    MD5Digest dig ;
+    dig.update( (char*)getPointer(), sizeof(T)*16 );  
+    return dig.finalize();
+}
+
 
 
 typedef GMatrix<float>  GMatrixF ;
 
-#endif
 

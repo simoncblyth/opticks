@@ -4,6 +4,7 @@
 
 class GGeo ; 
 class GNode ; 
+template<class T> class Counts ;
 
 class GTreeCheck {
    public:
@@ -16,6 +17,7 @@ class GTreeCheck {
    private:
        GGeo*                  m_ggeo ; 
        unsigned int           m_count ;  
+       Counts<unsigned int>*  m_digest_count ; 
  
 };
 

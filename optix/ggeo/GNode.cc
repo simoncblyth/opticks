@@ -1,6 +1,7 @@
 #include "GNode.hh"
 #include "GMesh.hh"
 
+#include "md5digest.hh"
 #include "assert.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -104,6 +105,21 @@ std::vector<GNode*> GNode::getAncestors(bool reverse)
     return ancestors ; 
 }
 
+std::vector<GNode*> GNode::getProgeny()
+{
+    std::vector<GNode*> progeny ;  
+    // call on children, as wish to avoid collecting self  
+    for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(progeny);
+    return progeny ; 
+}
+
+void GNode::collectProgeny(std::vector<GNode*>& progeny)
+{
+    progeny.push_back(this);
+    for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(progeny);
+}
+
+
 GMatrixF* GNode::calculateTransform()
 {
     bool reverse = true ; 
@@ -123,3 +139,34 @@ GMatrixF* GNode::calculateTransform()
     }
     return m ; 
 }
+
+std::string GNode::localDigest()  
+{
+    GMatrix<float>* t = getLevelTransform();
+    std::string tdig = t->digest();
+
+    char meshidx[8];
+    snprintf(meshidx, 8, "%u", m_mesh->getIndex());
+
+    MD5Digest dig ;
+    dig.update( (char*)tdig.c_str(), strlen(tdig.c_str()) ); 
+    dig.update( meshidx , strlen(meshidx) ); 
+    return dig.finalize();
+}
+
+std::string GNode::localDigest(std::vector<GNode*>& nodes)
+{
+    MD5Digest dig ;
+    for(unsigned int i=0 ; i < nodes.size() ; i++)
+    {
+        GNode* node = nodes[i];
+        std::string nd = node->localDigest();
+        dig.update( (char*)nd.c_str(), strlen(nd.c_str()) ); 
+    } 
+    return dig.finalize();
+}
+
+
+
+
+

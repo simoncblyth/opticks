@@ -95,9 +95,9 @@ void Counts<T>::dump(const char* msg, unsigned long nline)
     for(unsigned int i=0 ; i < std::min(nline,m_counts.size()) ; i++)
     {
         ST& p = m_counts[i];
-        std::cout << std::setw(5) << i 
+        std::cout << std::setw(5) << std::dec << i 
                   << std::setw(35) << p.first 
-                  << std::setw(20) << p.second
+                  << std::setw(20) << std::dec << p.second
                   << std::endl ; 
     }
 }

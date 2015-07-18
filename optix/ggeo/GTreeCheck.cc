@@ -2,6 +2,7 @@
 #include "GGeo.hh"
 #include "GSolid.hh"
 #include "GMatrix.hh"
+#include "Counts.hpp"
 
 #include <iomanip>
 
@@ -12,12 +13,17 @@
 
 void GTreeCheck::init()
 {
+    m_digest_count = new Counts<unsigned int>("progenyDigest");
 }
 
 void GTreeCheck::traverse()
 {
     GSolid* root = m_ggeo->getSolid(0);
     traverse(root, 0);
+
+    m_digest_count->sort(false);
+    m_digest_count->dump();
+
 }
 
 void GTreeCheck::traverse( GNode* node, unsigned int depth)
@@ -35,8 +41,18 @@ void GTreeCheck::traverse( GNode* node, unsigned int depth)
 
     float delta = gtransform->largestDiff(*ctransform);
 
+    std::vector<GNode*> progeny = node->getProgeny();
+
+    unsigned int nprog = progeny.size();
+    std::string pdig = nprog > 0 && nprog < 100 ? GNode::localDigest(progeny) : "" ; 
+        
+    m_digest_count->add(pdig.c_str());
+
+    if(progeny.size() > 0 ) 
     LOG(info) << "GTreeCheck::traverse " 
-              << " count " << std::setw(6) << m_count  
+              << " count "     << std::setw(6) << m_count
+              << " #progeny "  << std::setw(6) << progeny.size()   
+              << " pdig "      << std::setw(32) << pdig 
               << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
               << " name " << node->getName() 
               ;
