@@ -356,11 +356,11 @@ GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2)
 
 GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 {
-    if(!m_merged_mesh)
+    if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
-        m_merged_mesh = GMergedMesh::create(index, this);
+        m_merged_mesh[index] = GMergedMesh::create(index, this);
     }
-    return m_merged_mesh ;
+    return m_merged_mesh[index] ;
 }
 
 

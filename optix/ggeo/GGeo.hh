@@ -147,7 +147,7 @@ class GGeo {
         GSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
-        GMergedMesh*                  m_merged_mesh ; 
+        std::map<unsigned int,GMergedMesh*>     m_merged_mesh ; 
         GColors*                      m_colors ; 
         GItemIndex*                   m_meshindex ; 
 
@@ -169,7 +169,6 @@ inline GGeo::GGeo() :
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
-   m_merged_mesh(NULL),
    m_colors(NULL),
    m_meshindex(NULL),
    m_path(NULL),

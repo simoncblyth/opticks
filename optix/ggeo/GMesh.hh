@@ -41,14 +41,9 @@ class GMesh : public GDrawable {
       static const char* boundaries ; 
       static const char* sensors ; 
 
-   //   static const char* wavelength ; 
-   //   static const char* reemission ; 
-   //   static const char* optical ; 
-
       static const char* center_extent ; 
       static const char* transforms ; 
       static const char* meshes ; 
-
 
       GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index, 
@@ -115,11 +110,7 @@ class GMesh : public GDrawable {
       void setBoundariesBuffer(GBuffer* buffer);
       void setSensorsBuffer(GBuffer* buffer);
 
-  //    void setWavelengthBuffer(GBuffer* buffer);
-  //    void setReemissionBuffer(GBuffer* buffer);
       void setCenterExtentBuffer(GBuffer* buffer);
- //     void setOpticalBuffer(GBuffer* buffer);
-
       void setTransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
 
@@ -131,10 +122,7 @@ class GMesh : public GDrawable {
       GBuffer* getTexcoordsBuffer();
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
-  //    GBuffer* getWavelengthBuffer();
-  //    GBuffer* getReemissionBuffer();
       GBuffer* getCenterExtentBuffer();
-  //    GBuffer* getOpticalBuffer();
       GBuffer* getTransformsBuffer();
       GBuffer* getMeshesBuffer();
 
@@ -236,19 +224,21 @@ class GMesh : public GDrawable {
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
       GBuffer* m_center_extent_buffer ;  
-//      GBuffer* m_wavelength_buffer ;
       GBuffer* m_nodes_buffer ;
       GBuffer* m_boundaries_buffer ;
       GBuffer* m_sensors_buffer ;
-//      GBuffer* m_reemission_buffer ;
-//      GBuffer* m_optical_buffer ;
-
       GBuffer* m_transforms_buffer ;
       GBuffer* m_meshes_buffer ;
 
 
 };
 
+
+
+
+inline GMesh::~GMesh()
+{
+}
 
 inline void GMesh::setName(const char* name)
 {
@@ -331,9 +321,6 @@ inline GMatrix<float>* GMesh::getModelToWorld()
 }
 
 
-
-
-
 inline gfloat3* GMesh::getVertices()
 {
     return m_vertices ;
@@ -370,9 +357,6 @@ inline float* GMesh::getTransform(unsigned int index)
 }
 
 
-
-
-
 inline float GMesh::getExtent()
 {
      return m_extent ;  
@@ -391,7 +375,6 @@ inline float* GMesh::getModelToWorldPtr(unsigned int index)
 }
 
 
-
 inline unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
 {
     return m_nodes ;
@@ -406,23 +389,6 @@ inline unsigned int* GMesh::getSensors()
 }
 
 
-/*
-inline GBuffer*  GMesh::getWavelengthBuffer()
-{
-    return m_wavelength_buffer ;
-}
-inline GBuffer*  GMesh::getReemissionBuffer()
-{
-    return m_reemission_buffer ;
-}
-inline GBuffer*  GMesh::getOpticalBuffer()
-{
-    return m_optical_buffer ;
-}
-*/
-
-
-
 
 
 
@@ -434,9 +400,6 @@ inline GBuffer* GMesh::getNormalsBuffer()
 {
     return m_normals_buffer ;
 }
-
-
-
 inline GBuffer* GMesh::getColorsBuffer()
 {
     return m_colors_buffer ;
@@ -457,13 +420,6 @@ inline GBuffer*  GMesh::getMeshesBuffer()
 {
     return m_meshes_buffer ;
 }
-
-
-
-
-
-
-
 inline GBuffer*  GMesh::getIndicesBuffer()
 {
     return m_indices_buffer ;
@@ -480,30 +436,6 @@ inline GBuffer*  GMesh::getSensorsBuffer()
 {
     return m_sensors_buffer ;
 }
-
-
-
-
-
-
-/*
-inline void GMesh::setWavelengthBuffer(GBuffer* buffer)
-{
-    m_wavelength_buffer = buffer ; 
-}
-inline void GMesh::setReemissionBuffer(GBuffer* buffer)
-{
-    m_reemission_buffer = buffer ; 
-}
-inline void GMesh::setOpticalBuffer(GBuffer* buffer)
-{
-    m_optical_buffer = buffer ; 
-}
-
-*/
-
-
-
 
 
 

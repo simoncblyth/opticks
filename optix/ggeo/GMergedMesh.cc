@@ -71,7 +71,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     unsigned int nvert = mesh->getNumVertices();
     gfloat3* vertices = pass == pass_merge ? mesh->getTransformedVertices(*transform) : NULL ;
 
-    bool selected = solid->isSelected();
+    bool selected = solid->isSelected() && solid->getRepeatIndex() == getIndex() ;
     if(selected)
     {
         if(pass == pass_count )

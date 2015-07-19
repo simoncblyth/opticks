@@ -30,6 +30,39 @@ void GTreeCheck::traverse()
     dumpRepeatCandidates();
 }
 
+void GTreeCheck::traverse( GNode* node, unsigned int depth)
+{
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+
+    //bool selected = solid->isSelected();
+
+    GMatrixF* gtransform = solid->getTransform();
+    GMatrixF* ltransform = solid->getLevelTransform();
+    GMatrixF* ctransform = solid->calculateTransform();
+
+    float delta = gtransform->largestDiff(*ctransform);
+
+    std::string& pdig = node->getProgenyDigest();
+    unsigned int nprogeny = node->getProgenyCount() ;
+        
+    m_digest_count->add(pdig.c_str());
+
+    if(nprogeny > 0 ) 
+         LOG(debug) 
+              << "GTreeCheck::traverse " 
+              << " count "     << std::setw(6) << m_count
+              << " #progeny "  << std::setw(6) << nprogeny 
+              << " pdig "      << std::setw(32) << pdig 
+              << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
+              << " name " << node->getName() 
+              ;
+
+    assert(delta < 1e-6) ;
+
+    m_count++ ; 
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
+}
 
 void GTreeCheck::dumpRepeatCandidates()
 {
@@ -37,7 +70,7 @@ void GTreeCheck::dumpRepeatCandidates()
     for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++) dumpRepeatCandidate(i) ;
 }
 
-void GTreeCheck::dumpRepeatCandidate(unsigned int index)
+void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
 {
     std::string pdig = m_repeat_candidates[index];
     unsigned int ndig = m_digest_count->getCount(pdig.c_str());
@@ -54,15 +87,17 @@ void GTreeCheck::dumpRepeatCandidate(unsigned int index)
                   ;  
 
     assert(placements.size() == ndig );
-
-    for(unsigned int i=0 ; i < placements.size() ; i++)
+    if(verbose)
     {
-        GNode* place = placements[i] ;
-        GMatrix<float>* t = place->getTransform();
-        std::cout 
-               << " t " << t->brief() 
-               << std::endl 
-               ;  
+        for(unsigned int i=0 ; i < placements.size() ; i++)
+        {
+            GNode* place = placements[i] ;
+            GMatrix<float>* t = place->getTransform();
+            std::cout 
+                   << " t " << t->brief() 
+                   << std::endl 
+                   ;  
+        }
     }
 }
 
@@ -138,42 +173,49 @@ bool GTreeCheck::isContainedRepeat( const std::string& pdig, unsigned int levels
 } 
 
 
-void GTreeCheck::traverse( GNode* node, unsigned int depth)
+
+unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )
 {
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-
-    //bool selected = solid->isSelected();
-
-    GMatrixF* gtransform = solid->getTransform();
-    GMatrixF* ltransform = solid->getLevelTransform();
-    GMatrixF* ctransform = solid->calculateTransform();
-
-    //gtransform->Summary("GTreeCheck::traverse gtransform");
-    //ctransform->Summary("GTreeCheck::traverse ctransform");
-
-    float delta = gtransform->largestDiff(*ctransform);
-
-    std::string& pdig = node->getProgenyDigest();
-    unsigned int nprogeny = node->getProgenyCount() ;
-        
-    m_digest_count->add(pdig.c_str());
-
-    if(nprogeny > 0 ) 
-         LOG(info) 
-              << "GTreeCheck::traverse " 
-              << " count "     << std::setw(6) << m_count
-              << " #progeny "  << std::setw(6) << nprogeny 
-              << " pdig "      << std::setw(32) << pdig 
-              << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
-              << " name " << node->getName() 
-              ;
-
-    assert(delta < 1e-6) ;
-
-    m_count++ ; 
-
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
+     unsigned int index(0);
+     std::vector<std::string>::iterator it = std::find(m_repeat_candidates.begin(), m_repeat_candidates.end(), pdig );
+     if(it != m_repeat_candidates.end())
+     {
+         index = std::distance(m_repeat_candidates.begin(), it ) + 1;  // 1-based index
+         LOG(debug)<<"GTreeCheck::getRepeatIndex " 
+                  << std::setw(32) << pdig 
+                  << " index " << index 
+                  ;
+     }
+     return index ; 
 }
+
+
+
+void GTreeCheck::labelTree()
+{
+    m_labels = 0 ; 
+    labelTree(m_root, 0);
+    LOG(info)<<"GTreeCheck::labelTree count of non-zero setRepeatIndex " << m_labels ; 
+}
+
+void GTreeCheck::labelTree( GNode* node, unsigned int depth)
+{
+    std::string& pdig = node->getProgenyDigest();
+    unsigned int ridx = getRepeatIndex(pdig);
+    node->setRepeatIndex(ridx);
+
+    if(ridx > 0)
+    {
+         LOG(debug)<<"GTreeCheck::labelTree "
+                  << " ridx " << std::setw(5) << ridx
+                  << " n " << node->getName()
+                  ;
+         m_labels++ ; 
+    }
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelTree(node->getChild(i), depth + 1 );
+}
+
+
 
 
 
