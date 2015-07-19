@@ -40,10 +40,12 @@ class GMesh : public GDrawable {
       static const char* nodes ; 
       static const char* boundaries ; 
       static const char* sensors ; 
-      static const char* wavelength ; 
-      static const char* reemission ; 
+
+   //   static const char* wavelength ; 
+   //   static const char* reemission ; 
+   //   static const char* optical ; 
+
       static const char* center_extent ; 
-      static const char* optical ; 
       static const char* transforms ; 
       static const char* meshes ; 
 
@@ -113,10 +115,10 @@ class GMesh : public GDrawable {
       void setBoundariesBuffer(GBuffer* buffer);
       void setSensorsBuffer(GBuffer* buffer);
 
-      void setWavelengthBuffer(GBuffer* buffer);
-      void setReemissionBuffer(GBuffer* buffer);
+  //    void setWavelengthBuffer(GBuffer* buffer);
+  //    void setReemissionBuffer(GBuffer* buffer);
       void setCenterExtentBuffer(GBuffer* buffer);
-      void setOpticalBuffer(GBuffer* buffer);
+ //     void setOpticalBuffer(GBuffer* buffer);
 
       void setTransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
@@ -129,10 +131,10 @@ class GMesh : public GDrawable {
       GBuffer* getTexcoordsBuffer();
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
-      GBuffer* getWavelengthBuffer();
-      GBuffer* getReemissionBuffer();
+  //    GBuffer* getWavelengthBuffer();
+  //    GBuffer* getReemissionBuffer();
       GBuffer* getCenterExtentBuffer();
-      GBuffer* getOpticalBuffer();
+  //    GBuffer* getOpticalBuffer();
       GBuffer* getTransformsBuffer();
       GBuffer* getMeshesBuffer();
 
@@ -224,7 +226,7 @@ class GMesh : public GDrawable {
       unsigned int*   m_meshes ; 
 
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
-      std::vector<std::string> m_names ; 
+      std::vector<std::string> m_names ;  // constituents with persistable buffers 
       const char*   m_name ; 
 
   private:
@@ -234,12 +236,12 @@ class GMesh : public GDrawable {
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
       GBuffer* m_center_extent_buffer ;  
-      GBuffer* m_wavelength_buffer ;
+//      GBuffer* m_wavelength_buffer ;
       GBuffer* m_nodes_buffer ;
       GBuffer* m_boundaries_buffer ;
       GBuffer* m_sensors_buffer ;
-      GBuffer* m_reemission_buffer ;
-      GBuffer* m_optical_buffer ;
+//      GBuffer* m_reemission_buffer ;
+//      GBuffer* m_optical_buffer ;
 
       GBuffer* m_transforms_buffer ;
       GBuffer* m_meshes_buffer ;
@@ -404,7 +406,7 @@ inline unsigned int* GMesh::getSensors()
 }
 
 
-
+/*
 inline GBuffer*  GMesh::getWavelengthBuffer()
 {
     return m_wavelength_buffer ;
@@ -417,7 +419,7 @@ inline GBuffer*  GMesh::getOpticalBuffer()
 {
     return m_optical_buffer ;
 }
-
+*/
 
 
 
@@ -484,7 +486,7 @@ inline GBuffer*  GMesh::getSensorsBuffer()
 
 
 
-
+/*
 inline void GMesh::setWavelengthBuffer(GBuffer* buffer)
 {
     m_wavelength_buffer = buffer ; 
@@ -498,7 +500,7 @@ inline void GMesh::setOpticalBuffer(GBuffer* buffer)
     m_optical_buffer = buffer ; 
 }
 
-
+*/
 
 
 

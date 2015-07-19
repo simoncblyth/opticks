@@ -16,21 +16,11 @@
 
 
 
-GMergedMeshOptiXGeometry::GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh)
-           : 
-           OptiXGeometry(),
-           m_mergedmesh(mergedmesh)
-{
-}
-
-
 void GMergedMeshOptiXGeometry::convert()
 {
     optix::GeometryInstance gi = convertDrawableInstance(m_mergedmesh);
     m_gis.push_back(gi);
 }
-
-
 
 
 optix::TextureSampler GMergedMeshOptiXGeometry::makeColorSampler(unsigned int nx)
@@ -184,7 +174,7 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     optix::Geometry geometry = convertDrawable(mergedmesh) ;  
     LOG(info) << "GMergedMeshOptiXGeometry::convertDrawableInstance using single material  " ; 
 
-    GBuffer* wavelengthBuffer = mergedmesh->getWavelengthBuffer();
+    GBuffer* wavelengthBuffer = m_boundarylib->getWavelengthBuffer();
     optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
 
     optix::float4 wavelengthDomain = getDomain();
@@ -194,7 +184,7 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
     m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
 
-    GBuffer* obuf = mergedmesh->getOpticalBuffer();
+    GBuffer* obuf = m_boundarylib->getOpticalBuffer();
     unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
     assert(numBoundaries == 56);
     optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
@@ -202,7 +192,7 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     optical_buffer->unmap();
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 
-    GBuffer* reemissionBuffer = mergedmesh->getReemissionBuffer();
+    GBuffer* reemissionBuffer = m_boundarylib->getReemissionBuffer();
     float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
     optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
     optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);

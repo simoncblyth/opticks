@@ -26,8 +26,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-//#include <boost/filesystem.hpp>
-//namespace fs = boost::filesystem;
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -167,6 +169,8 @@ void GBoundaryLib::setKeyMap(const char* spec)
 
 void GBoundaryLib::init()
 {
+    nameConstituents(m_names);
+
     setKeyMap(NULL);
     GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
     setStandardDomain( domain );
@@ -652,6 +656,7 @@ GBuffer* GBoundaryLib::createReemissionBuffer(GPropertyMap<float>* scint)
     float* data = (float*)buffer->getPointer();
     for( unsigned int d = 0; d < numFloat ; ++d ) data[d] = icdf->getValue(d);
 
+    setReemissionBuffer(buffer);
     return buffer ; 
 }
 
@@ -987,53 +992,6 @@ std::string GBoundaryLib::propertyNameString(unsigned int p, unsigned int i)
     return propertyName(p,i);
 }
 
-GBoundary* GBoundaryLib::loadBoundary(float* subData, unsigned int isub)
-{
-    GBoundary* boundary = new GBoundary ; 
-    GDomain<float>* domain = GBoundaryLib::getDefaultDomain();
-    unsigned int domainLength = domain->getLength(); 
-
-    std::string mdig = m_meta->getBoundaryQty(isub, "boundary", "digest");
-
-    for(unsigned int p=0 ; p < NUM_QUAD ; ++p ) 
-    {
-         std::string mapName = m_meta->getBoundaryQtyByIndex(isub, p, "name");
-         GPropertyMap<float>* pmap = new GPropertyMap<float>(mapName.c_str(), isub, "recon"); 
-
-         float* pdata = subData + p*domainLength*4 ; 
-
-         for(unsigned int l=0 ; l < 4 ; ++l ) // un-interleaving the 4 properties
-         {
-             float* v = new float[domainLength];
-             for(unsigned int d=0 ; d < domainLength ; ++d ) v[d] = pdata[d*4+l];  
-
-             std::string pname = propertyNameString(p, l);
-             pmap->addProperty(pname.c_str(), v, domain->getValues(), domainLength );
-             delete v;
-         }
-
-         switch(p)
-         {
-            case 0:boundary->setInnerMaterial(pmap);break;
-            case 1:boundary->setOuterMaterial(pmap);break;
-            case 2:boundary->setInnerSurface(pmap);break;
-            case 3:boundary->setOuterSurface(pmap);break;
-            case 4:boundary->setInnerExtra(pmap);break;
-            case 5:boundary->setOuterExtra(pmap);break;
-         }
-     }
-
-     std::string sdig = boundary->getPDigestString(0,4);
-
-     if(strcmp(sdig.c_str(), mdig.c_str()) != 0)
-     {
-         printf("GBoundaryLib::loadBoundary digest mismatch %u : %s %s \n", isub, sdig.c_str(), mdig.c_str());
-         digestDebug(boundary, isub);
-     }
-     //assert(strcmp(sdig.c_str(), mdig.c_str()) == 0); 
-     return boundary ; 
-}
-
 void GBoundaryLib::digestDebug(GBoundary* boundary, unsigned int isub)
 {
     for(unsigned int i=0 ; i<4 ; i++)
@@ -1068,57 +1026,6 @@ void GBoundaryLib::digestDebug(GBoundary* boundary, unsigned int isub)
 
 
 
-
-GBoundaryLib* GBoundaryLib::load(const char* dir)
-{
-    GBoundaryLib* lib = new GBoundaryLib();
-
-    GBoundaryLibMetadata* meta = GBoundaryLibMetadata::load(dir);
-    lib->setMetadata(meta); 
-
-    GBuffer* buffer = GBuffer::load<float>(dir, "wavelength.npy");
-    buffer->Summary("wavelength buffer");
-
-    lib->loadWavelengthBuffer(buffer);
-    lib->setWavelengthBuffer(buffer);
-
-    return lib ; 
-}
-
-
-void GBoundaryLib::loadWavelengthBuffer(GBuffer* buffer)
-{
-    if(!buffer) return ;
-
-    float* data = (float*)buffer->getPointer();
-
-    unsigned int numElementsTotal = buffer->getNumElementsTotal();
-
-    GDomain<float>* domain = GBoundaryLib::getDefaultDomain();
-    unsigned int domainLength = domain->getLength(); 
-    unsigned int numProp = getNumProp();
-    unsigned int numBoundary = numElementsTotal/(numProp*domainLength);
-    //assert(numBoundary == 54);
-    if(numBoundary != 54)
-    {
-        LOG(warning) << "GBoundaryLib::loadWavelengthBuffer didnt see 54, numBoundary: " << numBoundary ; 
-    }
-
-    for(unsigned int isub=0 ; isub < numBoundary ; ++isub )
-    {
-        unsigned int subOffset = domainLength*numProp*isub ;
-        GBoundary* boundary = loadBoundary(data + subOffset, isub); 
-        //boundary->Summary("GBoundaryLib::loadWavelengthBuffer",1);
-
-        std::string key = boundary->pdigest(0,4);  
-        assert(m_registry.count(key) == 0); // there should be no digest duplicates in wavelengthBuffer
-
-        boundary->setIndex(m_keys.size());
-        m_keys.push_back(key);  // for simple ordering  
-        m_registry[key] = boundary ; 
-        
-    }
-}
 
 void GBoundaryLib::dumpWavelengthBuffer(int wline)
 {
@@ -1201,5 +1108,247 @@ void GBoundaryLib::dumpWavelengthBuffer(int wline, GBuffer* buffer, GBoundaryLib
 }
 
 
+
+
+
+
+
+
+
+
+
+
+const char* GBoundaryLib::wavelength   = "wavelength" ;
+const char* GBoundaryLib::reemission   = "reemission" ;
+const char* GBoundaryLib::optical       = "optical" ;
+
+
+void GBoundaryLib::nameConstituents(std::vector<std::string>& names)
+{
+    names.push_back(wavelength); 
+    names.push_back(reemission); 
+    names.push_back(optical); 
+}
+
+GBuffer* GBoundaryLib::getBuffer(const char* name)
+{
+    if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
+    if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
+    if(strcmp(name, optical) == 0)      return m_optical_buffer ; 
+    return NULL ;
+}
+
+void GBoundaryLib::setBuffer(const char* name, GBuffer* buffer)
+{
+    if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
+    if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
+    if(strcmp(name, optical) == 0)      setOpticalBuffer(buffer) ; 
+}
+
+bool GBoundaryLib::isFloatBuffer(const char* name)
+{
+    return ( 
+             strcmp( name, wavelength ) == 0  || 
+             strcmp( name, reemission ) == 0  || 
+             true
+           );
+}
+
+bool GBoundaryLib::isIntBuffer(const char* name)
+{
+    return false ;
+}
+
+bool GBoundaryLib::isUIntBuffer(const char* name)
+{
+    return 
+           ( 
+              strcmp( name, optical) == 0  ||
+              true 
+           );
+}
+
+void GBoundaryLib::saveBuffer(const char* path, const char* name, GBuffer* buffer)
+{
+    LOG(info) << "GBoundaryLib::saveBuffer "
+               << " name " << std::setw(25) << name 
+               << " path " << path  
+               ;
+
+    if(isFloatBuffer(name))     buffer->save<float>(path);
+    else if(isIntBuffer(name))  buffer->save<int>(path);
+    else if(isUIntBuffer(name)) buffer->save<unsigned int>(path);
+    else 
+       printf("GBoundaryLib::saveBuffer WARNING NOT saving uncharacterized buffer %s into %s \n", name, path );
+}
+
+
+void GBoundaryLib::loadBuffer(const char* path, const char* name)
+{
+    GBuffer* buffer(NULL); 
+    if(isFloatBuffer(name))                    buffer = GBuffer::load<float>(path);
+    else if(isIntBuffer(name))                 buffer = GBuffer::load<int>(path);
+    else if(isUIntBuffer(name))                buffer = GBuffer::load<unsigned int>(path);
+    else
+        printf("GBoundaryLib::loadBuffer WARNING not loading %s from %s \n", name, path ); 
+
+    if(buffer) setBuffer(name, buffer);
+}
+
+
+
+void GBoundaryLib::save(const char* dir)
+{
+    fs::path cachedir(dir);
+    if(!fs::exists(cachedir))
+    {
+        if (fs::create_directory(cachedir))
+        {
+            printf("GBoundaryLib::save created directory %s \n", dir );
+        }
+    }
+
+    if(fs::exists(cachedir) && fs::is_directory(cachedir))
+    {
+        for(unsigned int i=0 ; i<m_names.size() ; i++)
+        {
+            std::string name = m_names[i];
+            fs::path bufpath(dir);
+            bufpath /= name + ".npy" ; 
+            GBuffer* buffer = getBuffer(name.c_str());
+            if(!buffer)
+            {
+                LOG(warning) << "GBoundaryLib::save skipping NULL buffer " << name ; 
+                continue ; 
+            }
+            saveBuffer(bufpath.string().c_str(), name.c_str(), buffer);  
+        } 
+    }
+    else
+    {
+        printf("GBoundaryLib::save directory %s DOES NOT EXIST \n", dir);
+    }
+}
+
+
+void GBoundaryLib::loadBuffers(const char* dir)
+{
+    for(unsigned int i=0 ; i<m_names.size() ; i++)
+    {
+        std::string name = m_names[i];
+        fs::path bufpath(dir);
+        bufpath /= name + ".npy" ; 
+
+        if(fs::exists(bufpath) && fs::is_regular_file(bufpath))
+        { 
+            loadBuffer(bufpath.string().c_str(), name.c_str());
+        }
+    } 
+
+
+}
+
+
+GBoundaryLib* GBoundaryLib::load(const char* dir)
+{
+    GBoundaryLib* lib(NULL);
+    fs::path cachedir(dir);
+    if(!fs::exists(cachedir))
+    {
+        printf("GBoundaryLib::load directory %s DOES NOT EXIST \n", dir);
+    }
+    else
+    {
+        lib = new GBoundaryLib() ;
+        GBoundaryLibMetadata* meta = GBoundaryLibMetadata::load(dir);
+        lib->setMetadata(meta);  // buffer loading needs meta, so this has to come first
+        lib->loadBuffers(dir);
+
+    }
+    return lib ; 
+}
+
+
+
+void GBoundaryLib::setWavelengthBuffer(GBuffer* buffer)
+{
+    if(!buffer) return ;
+    m_wavelength_buffer = buffer ; 
+
+    float* data = (float*)buffer->getPointer();
+
+    unsigned int numElementsTotal = buffer->getNumElementsTotal();
+
+    GDomain<float>* domain = GBoundaryLib::getDefaultDomain();
+    unsigned int domainLength = domain->getLength(); 
+    unsigned int numProp = getNumProp();
+    unsigned int numBoundary = numElementsTotal/(numProp*domainLength);
+    //assert(numBoundary == 54);
+    if(numBoundary != 56)
+    {
+        LOG(warning) << "GBoundaryLib::setWavelengthBuffer didnt see 54, numBoundary: " << numBoundary ; 
+    }
+
+    for(unsigned int isub=0 ; isub < numBoundary ; ++isub )
+    {
+        unsigned int subOffset = domainLength*numProp*isub ;
+        GBoundary* boundary = loadBoundary(data + subOffset, isub); 
+        //boundary->Summary("GBoundaryLib::loadWavelengthBuffer",1);
+
+        std::string key = boundary->pdigest(0,4);  
+        assert(m_registry.count(key) == 0); // there should be no digest duplicates in wavelengthBuffer
+
+        boundary->setIndex(m_keys.size());
+        m_keys.push_back(key);  // for simple ordering  
+        m_registry[key] = boundary ; 
+    }
+}
+
+GBoundary* GBoundaryLib::loadBoundary(float* subData, unsigned int isub)
+{
+    GBoundary* boundary = new GBoundary ; 
+    GDomain<float>* domain = GBoundaryLib::getDefaultDomain();
+    unsigned int domainLength = domain->getLength(); 
+
+    std::string mdig = m_meta->getBoundaryQty(isub, "boundary", "digest");
+
+    for(unsigned int p=0 ; p < NUM_QUAD ; ++p ) 
+    {
+         std::string mapName = m_meta->getBoundaryQtyByIndex(isub, p, "name");
+         GPropertyMap<float>* pmap = new GPropertyMap<float>(mapName.c_str(), isub, "recon"); 
+
+         float* pdata = subData + p*domainLength*4 ; 
+
+         for(unsigned int l=0 ; l < 4 ; ++l ) // un-interleaving the 4 properties
+         {
+             float* v = new float[domainLength];
+             for(unsigned int d=0 ; d < domainLength ; ++d ) v[d] = pdata[d*4+l];  
+
+             std::string pname = propertyNameString(p, l);
+             pmap->addProperty(pname.c_str(), v, domain->getValues(), domainLength );
+             delete v;
+         }
+
+         switch(p)
+         {
+            case 0:boundary->setInnerMaterial(pmap);break;
+            case 1:boundary->setOuterMaterial(pmap);break;
+            case 2:boundary->setInnerSurface(pmap);break;
+            case 3:boundary->setOuterSurface(pmap);break;
+            case 4:boundary->setInnerExtra(pmap);break;
+            case 5:boundary->setOuterExtra(pmap);break;
+         }
+     }
+
+     std::string sdig = boundary->getPDigestString(0,4);
+
+     if(strcmp(sdig.c_str(), mdig.c_str()) != 0)
+     {
+         printf("GBoundaryLib::loadBoundary digest mismatch %u : %s %s \n", isub, sdig.c_str(), mdig.c_str());
+         digestDebug(boundary, isub);
+     }
+     //assert(strcmp(sdig.c_str(), mdig.c_str()) == 0); 
+     return boundary ; 
+}
 
 

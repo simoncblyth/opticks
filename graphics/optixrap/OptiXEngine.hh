@@ -6,6 +6,7 @@ class Texture ;
 class RayTraceConfig ; 
 class GGeo ; 
 class GMergedMesh ;
+class GBoundaryLib ;
 class NumpyEvt ; 
 class cuRANDWrapper ; 
 class NPYBase ; 
@@ -67,6 +68,7 @@ class OptiXEngine : public Touchable {
         void setComposition(Composition* composition);
         void setGGeo(GGeo* ggeo);
         void setMergedMesh(GMergedMesh* mergedmesh);
+        void setBoundaryLib(GBoundaryLib* boundarylib);
         void setEnabled(bool enabled);
         void setNumpyEvt(NumpyEvt* evt);
     public:
@@ -76,7 +78,8 @@ class OptiXEngine : public Touchable {
         void setBounceMax(unsigned int bounce_max);
         void setRecordMax(unsigned int record_max);
     public:
-        GMergedMesh* getMergedMesh();
+        GMergedMesh*  getMergedMesh();
+        GBoundaryLib* getBoundaryLib();
         optix::Context& getContext();
         NPYBase* getDomain();
         NPYBase* getIDomain();
@@ -158,6 +161,7 @@ class OptiXEngine : public Touchable {
         RayTraceConfig*  m_config ; 
         GGeo*            m_ggeo ; 
         GMergedMesh*     m_mergedmesh ; 
+        GBoundaryLib*    m_boundarylib ; 
         unsigned int     m_trace_count ; 
         unsigned int     m_generate_count ; 
         unsigned int     m_bounce_max ; 
@@ -204,6 +208,7 @@ inline OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_config(NULL),
     m_ggeo(NULL),
     m_mergedmesh(NULL),
+    m_boundarylib(NULL),
     m_trace_count(0),
     m_generate_count(0),
     m_bounce_max(1),
@@ -242,6 +247,12 @@ inline void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
 {
     m_mergedmesh = mergedmesh ;
 }
+inline void OptiXEngine::setBoundaryLib(GBoundaryLib* boundarylib)
+{
+    m_boundarylib = boundarylib ;
+}
+
+
 inline void OptiXEngine::setEnabled(bool enabled)
 {
     m_enabled = enabled ; 
@@ -257,6 +268,11 @@ inline GMergedMesh* OptiXEngine::getMergedMesh()
 {
     return m_mergedmesh ; 
 }
+inline GBoundaryLib* OptiXEngine::getBoundaryLib()
+{
+    return m_boundarylib  ; 
+}
+
 
 
 

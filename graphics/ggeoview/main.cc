@@ -273,6 +273,8 @@ int main(int argc, char** argv)
     bookmarks.load(idpath); 
 
     GMergedMesh* mm = loader.getMergedMesh(); 
+    GBoundaryLib* blib = loader.getBoundaryLib();
+ 
     composition.setDomainCenterExtent(mm->getCenterExtent(0));     // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );  // TODO: avoid static define.h MAXTIME 
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
@@ -355,6 +357,7 @@ int main(int argc, char** argv)
     OptiXEngine engine("GGeoView") ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
+    engine.setBoundaryLib(blib);   
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(!nooptix);

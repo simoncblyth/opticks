@@ -33,6 +33,7 @@
 // ggeo-
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
+#include "GBoundaryLib.hh"
 
 // optixrap-
 #include "RayTraceConfig.hh"
@@ -209,7 +210,8 @@ void OptiXEngine::initGeometry()
     LOG(info) << "OptiXEngine::initGeometry" ;
 
     GMergedMesh* mm = getMergedMesh();
-    GMergedMeshOptiXGeometry geom(mm);
+    GBoundaryLib* blib = getBoundaryLib();
+    GMergedMeshOptiXGeometry geom(mm, blib);
 
     geom.setGeometryGroup(m_geometry_group);
     geom.setContext(m_context);   

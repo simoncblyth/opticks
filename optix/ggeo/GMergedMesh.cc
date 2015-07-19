@@ -54,20 +54,6 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->traverse( root, 0, pass_merge );  
     mm->updateBounds();
 
-    // material/surface properties as function of wavelength collected into wavelengthBuffer
-
-    GBoundaryLib* lib = ggeo->getBoundaryLib();
-    //lib->countMaterials(); // debug
-    lib->createWavelengthAndOpticalBuffers();
-
-    //lib->dumpIndex("GMergedMesh::create GBoundaryLib::dumpIndex");  // only ones that partake of boundaries in the selection
-    //ggeo->dumpIndex("GMergedMesh::create GGeo::dumpIndex");       // all 
-
-    mm->setWavelengthBuffer(lib->getWavelengthBuffer());
-    mm->setOpticalBuffer(lib->getOpticalBuffer());
-
-    GPropertyMap<float>* scint = ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
-    mm->setReemissionBuffer(lib->createReemissionBuffer(scint));
 
     return mm ;
 }
@@ -156,16 +142,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
         m_center_extent[m_cur_solid] = GMesh::findCenterExtent(vertices, nvert); // keep track of center_extent of all solids
         m_meshes[m_cur_solid] = meshIndex ; 
 
-/*
-        LOG(info) << "GMergedMesh::create " 
-                  << " cur_solid " << m_cur_solid 
-                  ;
-        transform->Summary("GMergedMesh::create transform");
-*/
-
         transform->copyTo( m_transforms + m_cur_solid*16 );  
-
-        
 
         m_cur_solid += 1 ; 
     }

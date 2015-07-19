@@ -27,6 +27,10 @@ class GNode {
       const char* getName();
 
   public:
+     void setRepeatIndex(unsigned int index);
+     unsigned int getRepeatIndex();  
+
+  public:
       //
       // **boundary indices live on the node rather than the mesh**
       //
@@ -123,6 +127,7 @@ class GNode {
       std::vector<GNode*> m_progeny ; 
       std::vector<GNode*> m_ancestors ; 
       unsigned int        m_progeny_count ; 
+      unsigned int        m_repeat_index ; 
 
   private: 
       std::vector<unsigned int> m_distinct_boundary_indices ;
@@ -144,7 +149,8 @@ inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh)
     m_sensor_indices(NULL),
     m_node_indices(NULL),
     m_name(NULL),
-    m_progeny_count(0)
+    m_progeny_count(0),
+    m_repeat_index(0)
 {
     init();
 }
@@ -235,5 +241,13 @@ inline void GNode::setName(const char* name)
 inline const char* GNode::getName()
 {
     return m_name ; 
+}
+inline void GNode::setRepeatIndex(unsigned int index)
+{
+    m_repeat_index = index ; 
+}
+inline unsigned int GNode::getRepeatIndex()
+{
+    return m_repeat_index ; 
 }
 

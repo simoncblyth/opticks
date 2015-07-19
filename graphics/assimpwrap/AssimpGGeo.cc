@@ -402,7 +402,7 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 
         assert(mesh->HasNormals()); 
 
-        LOG(info) << "AssimpGGeo::convertMeshes " 
+        LOG(debug) << "AssimpGGeo::convertMeshes " 
                   << " i " << std::setw(4) << i
                   << " v " << std::setw(4) << numVertices
                   << " f " << std::setw(4) << numFaces

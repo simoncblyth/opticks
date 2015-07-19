@@ -10,6 +10,7 @@ class GCache ;
 class GGeo ; 
 class GMergedMesh ; 
 class GDrawable ; 
+class GBoundaryLib ; 
 class GBoundaryLibMetadata ; 
 class GItemIndex ; 
 class GColors ; 
@@ -36,6 +37,7 @@ class GLoader {
     public:
          GGeo*                  getGGeo();
          GMergedMesh*           getMergedMesh();
+         GBoundaryLib*          getBoundaryLib();
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
 
@@ -54,6 +56,7 @@ class GLoader {
          GLoaderImpFunctionPtr     m_imp ;  
          GGeo*                     m_ggeo ;    
          GMergedMesh*              m_mergedmesh ;
+         GBoundaryLib*             m_boundarylib ;
          GBoundaryLibMetadata*     m_metadata ;
 
          GItemIndex*               m_materials ;
@@ -73,6 +76,7 @@ inline GLoader::GLoader()
    m_cache(NULL),
    m_ggeo(NULL),
    m_mergedmesh(NULL),
+   m_boundarylib(NULL),
    m_metadata(NULL),
    m_materials(NULL),
    m_surfaces(NULL),
@@ -115,6 +119,11 @@ inline GMergedMesh* GLoader::getMergedMesh()
 {
     return m_mergedmesh ; 
 }
+inline GBoundaryLib* GLoader::getBoundaryLib()
+{
+    return m_boundarylib ; 
+}
+
 inline GDrawable* GLoader::getDrawable()
 {
     return (GDrawable*)m_mergedmesh ; 

@@ -45,7 +45,10 @@ void GLoader::load(bool nogeocache)
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
         m_ggeo = NULL ; 
         m_mergedmesh = GMergedMesh::load(idpath);
-        m_metadata   = GBoundaryLibMetadata::load(idpath);
+        m_boundarylib = GBoundaryLib::load(idpath);
+        m_metadata = m_boundarylib->getMetadata() ; 
+        //m_metadata   = GBoundaryLibMetadata::load(idpath);
+
         m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); // TODO: find common place for such strings, maybe Types.hpp
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
         m_meshes     = GItemIndex::load(idpath, "MeshIndex");
@@ -58,13 +61,20 @@ void GLoader::load(bool nogeocache)
 
         m_meshes = m_ggeo->getMeshIndex();  
 
-        GBoundaryLib* lib = m_ggeo->getBoundaryLib();
+        m_boundarylib = m_ggeo->getBoundaryLib();
+        m_boundarylib->createWavelengthAndOpticalBuffers();
+
+        // moved Wavelength and Optical buffers to GBoundaryLib (from GMergedMesh)
+
+        GPropertyMap<float>* scint = m_ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
+        m_boundarylib->createReemissionBuffer(scint);
+
         GColors* source = GColors::load(idpath,"GColors.json");  // colorname => hexcode 
 
-        m_metadata = lib->getMetadata();
-        m_materials = lib->getMaterials();  
+        m_metadata = m_boundarylib->getMetadata();
+        m_materials = m_boundarylib->getMaterials();  
 
-        m_surfaces = lib->getSurfaces();   
+        m_surfaces = m_boundarylib->getSurfaces();   
         m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));   
         m_surfaces->setColorSource(source);
 
@@ -81,8 +91,8 @@ void GLoader::load(bool nogeocache)
         czr.setSurfaces(m_surfaces);
         czr.traverse();
 
-        GTreeCheck tck(m_ggeo);
-        tck.traverse(); 
+        //GTreeCheck tck(m_ggeo);
+        //tck.traverse(); 
 
 
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
@@ -93,7 +103,10 @@ void GLoader::load(bool nogeocache)
         m_surfaces->save(idpath);
         m_meshes->save(idpath);
 
-        lib->saveIndex(idpath); 
+        m_boundarylib->saveIndex(idpath); 
+
+        m_boundarylib->save(idpath);
+
     } 
   
     // hmm not routing via cache 

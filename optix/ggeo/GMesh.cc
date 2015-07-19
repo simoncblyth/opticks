@@ -27,12 +27,17 @@ const char* GMesh::indices      = "indices" ;
 const char* GMesh::nodes        = "nodes" ;
 const char* GMesh::boundaries   = "boundaries" ;
 const char* GMesh::sensors      = "sensors" ;
-const char* GMesh::wavelength   = "wavelength" ;
-const char* GMesh::reemission   = "reemission" ;
+
+
+//const char* GMesh::wavelength   = "wavelength" ;
+//const char* GMesh::reemission   = "reemission" ;
+//const char* GMesh::optical       = "optical" ;
+
+
 const char* GMesh::center_extent = "center_extent" ;
-const char* GMesh::optical       = "optical" ;
 const char* GMesh::transforms     = "transforms" ;
 const char* GMesh::meshes         = "meshes" ;
+
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
 {
@@ -44,10 +49,10 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(nodes); 
     names.push_back(boundaries); 
     names.push_back(sensors); 
-    names.push_back(wavelength); 
-    names.push_back(reemission); 
+  //  names.push_back(wavelength); 
+  //  names.push_back(reemission); 
     names.push_back(center_extent); 
-    names.push_back(optical); 
+ //   names.push_back(optical); 
     names.push_back(transforms); 
     names.push_back(meshes); 
 }
@@ -69,15 +74,15 @@ GMesh::GMesh(GMesh* other)
      m_normals(other->getNormals()),
      m_normals_buffer(other->getNormalsBuffer()),
      m_nodes(other->getNodes()),
-     m_wavelength_buffer(other->getWavelengthBuffer()),
-     m_reemission_buffer(other->getReemissionBuffer()),
+  //   m_wavelength_buffer(other->getWavelengthBuffer()),
+  //   m_reemission_buffer(other->getReemissionBuffer()),
      m_nodes_buffer(other->getNodesBuffer()),
      m_boundaries(other->getBoundaries()),
      m_boundaries_buffer(other->getBoundariesBuffer()),
      m_center_extent_buffer(other->getCenterExtentBuffer()),
      m_num_solids(other->getNumSolids()),
      m_num_solids_selected(other->getNumSolidsSelected()),
-     m_optical_buffer(other->getOpticalBuffer()),
+   //  m_optical_buffer(other->getOpticalBuffer()),
      m_transforms_buffer(other->getTransformsBuffer()),
      m_meshes_buffer(other->getMeshesBuffer()),
      GDrawable()
@@ -107,8 +112,8 @@ GMesh::GMesh(unsigned int index,
       m_faces(NULL),
       m_indices_buffer(NULL),
       m_nodes(NULL),           // nodes and boundaries are somwhat confusing : use only with subclasses like GMergedMesh
-      m_wavelength_buffer(NULL),
-      m_reemission_buffer(NULL),
+  //    m_wavelength_buffer(NULL),
+  //    m_reemission_buffer(NULL),
       m_nodes_buffer(NULL),
       m_boundaries(NULL),
       m_boundaries_buffer(NULL),
@@ -132,7 +137,7 @@ GMesh::GMesh(unsigned int index,
       m_normals_buffer(NULL),
       m_num_solids(0),
       m_num_solids_selected(0),
-      m_optical_buffer(NULL),
+   //   m_optical_buffer(NULL),
       m_transforms(NULL),
       m_transforms_buffer(NULL),
       m_meshes(NULL),
@@ -166,10 +171,10 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, boundaries) == 0)   return m_boundaries_buffer ; 
     if(strcmp(name, sensors) == 0)      return m_sensors_buffer ; 
 
-    if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
-    if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
+    //if(strcmp(name, wavelength) == 0)   return m_wavelength_buffer ; 
+    //if(strcmp(name, reemission) == 0)   return m_reemission_buffer ; 
     if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
-    if(strcmp(name, optical) == 0)         return m_optical_buffer ; 
+    //if(strcmp(name, optical) == 0)         return m_optical_buffer ; 
     if(strcmp(name, transforms) == 0)      return m_transforms_buffer ; 
     if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
 
@@ -189,10 +194,10 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, boundaries) == 0)   setBoundariesBuffer(buffer) ; 
     if(strcmp(name, sensors) == 0)      setSensorsBuffer(buffer) ; 
 
-    if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
-    if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
+//    if(strcmp(name, wavelength) == 0)   setWavelengthBuffer(buffer) ; 
+//    if(strcmp(name, reemission) == 0)   setReemissionBuffer(buffer) ; 
     if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
-    if(strcmp(name, optical) == 0)         setOpticalBuffer(buffer) ; 
+//    if(strcmp(name, optical) == 0)         setOpticalBuffer(buffer) ; 
     if(strcmp(name, transforms) == 0)      setTransformsBuffer(buffer) ; 
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
 }
@@ -758,11 +763,12 @@ std::vector<unsigned int>& GMesh::getDistinctBoundaries()
 
 bool GMesh::isFloatBuffer(const char* name)
 {
+
     return ( strcmp( name, vertices) == 0 || 
              strcmp( name, normals) == 0  || 
              strcmp( name, center_extent ) == 0  || 
-             strcmp( name, wavelength ) == 0  || 
-             strcmp( name, reemission ) == 0  || 
+          //   strcmp( name, wavelength ) == 0  || 
+          //   strcmp( name, reemission ) == 0  || 
              strcmp( name, transforms ) == 0  || 
              strcmp( name, colors) == 0 );
 }
@@ -780,7 +786,7 @@ bool GMesh::isUIntBuffer(const char* name)
 {
     return 
            ( 
-              strcmp( name, optical) == 0  ||
+          //    strcmp( name, optical) == 0  ||
               strcmp( name, meshes) == 0  ||
               true 
            );
@@ -800,17 +806,12 @@ void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
        printf("GMesh::saveBuffer WARNING NOT saving uncharacterized buffer %s into %s \n", name, path );
 }
 
-// numpy.hpp uses character codes, no char code for "unsigned int" implemented : is there one ?   
-// or maybe use more verbose code in NPY description in the header  ?
 
 /*
-   Does the detailed shape of wavelengthBuffer need to be persisted ?
-
 In [14]: 58*4*39*4
 Out[14]: 36192
 
 In [15]: w.reshape((58,4,39,4))
-
 */
 
 

@@ -27,6 +27,10 @@ class GBoundaryLib {
          optical_value }; 
 
   public:
+    static const char* wavelength ; 
+    static const char* reemission ; 
+    static const char* optical ; 
+  public:
     // standard property prefixes
     static const char* inner; 
     static const char* outer; 
@@ -97,6 +101,30 @@ class GBoundaryLib {
       void          createWavelengthAndOpticalBuffers();  
       GBuffer*      createReemissionBuffer(GPropertyMap<float>* scint);  
 
+
+
+  public:
+      // methods supporting save/load from file
+      static GBoundaryLib* load(const char* dir);  
+      void save(const char* dir);
+
+  private:
+      static void nameConstituents(std::vector<std::string>& names);
+      void loadBuffers(const char* dir);
+      void saveBuffer(const char* path, const char* name, GBuffer* buffer);
+      void loadBuffer(const char* path, const char* name);
+      bool isIntBuffer(const char* name);
+      bool isUIntBuffer(const char* name);
+      bool isFloatBuffer(const char* name);
+      void setBuffer(const char* name, GBuffer* buffer);
+      GBuffer* getBuffer(const char* name);
+  public:
+      void         setWavelengthBuffer(GBuffer* buffer);
+      void         setReemissionBuffer(GBuffer* buffer);
+      void         setOpticalBuffer(GBuffer* buffer);
+      GBuffer*     getWavelengthBuffer();
+      GBuffer*     getReemissionBuffer();
+      GBuffer*     getOpticalBuffer();
   public:
       // reemission handling 
       bool isScintillator(std::string& matShortName);
@@ -116,18 +144,6 @@ class GBoundaryLib {
       GItemIndex*           getSurfaces(); 
 
   public:
-      // convenience methods
-      void setWavelengthBuffer(GBuffer* buffer);
-      GBuffer* getWavelengthBuffer();
-
-      void setReemissionBuffer(GBuffer* buffer);
-      GBuffer* getReemissionBuffer();
-
-      void setOpticalBuffer(GBuffer* buffer);
-      GBuffer* getOpticalBuffer();
-
-
-
       std::vector<std::string> splitString(std::string keys);
 
   private:
@@ -191,8 +207,6 @@ class GBoundaryLib {
       std::string propertyNameString(unsigned int p, unsigned int i);
 
   public:
-      static GBoundaryLib* load(const char* dir);
-      void loadWavelengthBuffer(GBuffer* buffer);
       GBoundary* loadBoundary(float* subData, unsigned int isub);
 
 
@@ -210,6 +224,8 @@ class GBoundaryLib {
       GBoundaryLibMetadata*  m_meta ;
       GItemIndex*            m_materials ;
       GItemIndex*            m_surfaces ;
+  private:
+      std::vector<std::string> m_names ;          // names of constituent persistable buffers 
       GBuffer*               m_wavelength_buffer ;
       GBuffer*               m_reemission_buffer ;
       GBuffer*               m_optical_buffer ;
@@ -266,11 +282,6 @@ inline GBuffer* GBoundaryLib::getWavelengthBuffer()
 {
     return m_wavelength_buffer ; 
 }
-inline void GBoundaryLib::setWavelengthBuffer(GBuffer* wavelength_buffer)
-{
-    m_wavelength_buffer = wavelength_buffer ; 
-}
-
 
 inline GBuffer* GBoundaryLib::getOpticalBuffer()
 {
@@ -280,6 +291,16 @@ inline void GBoundaryLib::setOpticalBuffer(GBuffer* optical_buffer)
 {
     m_optical_buffer = optical_buffer ; 
 }
+
+inline GBuffer* GBoundaryLib::getReemissionBuffer()
+{
+    return m_reemission_buffer ; 
+}
+inline void GBoundaryLib::setReemissionBuffer(GBuffer* reemission_buffer)
+{
+    m_reemission_buffer = reemission_buffer ; 
+}
+
 
 
 
