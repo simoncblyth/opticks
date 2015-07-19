@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <stdio.h>
 #include "GBuffer.hh"
 #include "md5digest.hh"
@@ -34,6 +36,7 @@ class GMatrix : public GBuffer
        void* getPointer();  // override GBuffer
 
        std::string digest();
+       std::string brief(unsigned int w=11);
 
    public:
        T a1, a2, a3, a4 ; 
@@ -244,6 +247,36 @@ void GMatrix<T>::Summary(const char* msg)
 
 }
 
+template<typename T>
+std::string GMatrix<T>::brief(unsigned int w)
+{
+    std::stringstream ss ;
+
+    ss << std::dec << std::fixed << std::setprecision(3) ; 
+
+    ss << std::setw(w) << a1 << " " ;  
+    ss << std::setw(w) << a2 << " " ;  
+    ss << std::setw(w) << a3 << " " ;  
+    ss << std::setw(w) << a4 << "," ;  
+
+    ss << std::setw(w) << b1 << " " ;  
+    ss << std::setw(w) << b2 << " " ;  
+    ss << std::setw(w) << b3 << " " ;  
+    ss << std::setw(w) << b4 << "," ;  
+
+    ss << std::setw(w) << c1 << " " ;  
+    ss << std::setw(w) << c2 << " " ;  
+    ss << std::setw(w) << c3 << " " ;  
+    ss << std::setw(w) << c4 << "," ;  
+
+    ss << std::setw(w) << d1 << " " ;  
+    ss << std::setw(w) << d2 << " " ;  
+    ss << std::setw(w) << d3 << " " ;  
+    ss << std::setw(w) << d4 << "," ;  
+
+
+    return ss.str();
+}
 
 template<typename T>
 std::string GMatrix<T>::digest()

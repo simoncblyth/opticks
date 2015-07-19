@@ -30,6 +30,10 @@ class Counts {
           void checkfind(const char* key);
           typename std::vector<std::pair<std::string, T> >::iterator find(const char* key);
     public:
+          unsigned int size();
+          std::pair<std::string, T>& get(unsigned int index); 
+          T                          getCount(const char* key); 
+    public:
           void sort(bool ascending=true);
           void dump(const char* msg="Counts::dump", unsigned long nline=32);
     public:
@@ -55,6 +59,18 @@ template<typename T>
 inline std::vector<std::pair<std::string,T> >& Counts<T>::counts()
 {
      return m_counts ; 
+} 
+
+template<typename T>
+inline unsigned int  Counts<T>::size()
+{
+     return m_counts.size() ; 
+} 
+
+template<typename T>
+inline typename std::pair<std::string, T>&  Counts<T>::get(unsigned int index)
+{
+    return m_counts[index] ;
 } 
 
 

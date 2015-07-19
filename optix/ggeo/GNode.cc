@@ -89,28 +89,29 @@ std::vector<unsigned int>& GNode::getDistinctBoundaryIndices()
     return m_distinct_boundary_indices ;
 }
 
-
-
-
-std::vector<GNode*> GNode::getAncestors(bool reverse)
+std::vector<GNode*>& GNode::getAncestors()
 {
-    std::vector<GNode*> ancestors ;  
-    GNode* node = getParent();
-    while(node)
-    {
-        ancestors.push_back(node);
-        node = node->getParent();
+    if(m_ancestors.size() == 0 )
+    { 
+        GNode* node = getParent();
+        while(node)
+        {
+            m_ancestors.push_back(node);
+            node = node->getParent();
+        }
+        std::reverse( m_ancestors.begin(), m_ancestors.end() );
     }
-    if(reverse) std::reverse( ancestors.begin(), ancestors.end() );
-    return ancestors ; 
+    return m_ancestors ; 
 }
 
-std::vector<GNode*> GNode::getProgeny()
+std::vector<GNode*>& GNode::getProgeny()
 {
-    std::vector<GNode*> progeny ;  
-    // call on children, as wish to avoid collecting self  
-    for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(progeny);
-    return progeny ; 
+    if(m_progeny.size() == 0)
+    {
+        // call on children, as wish to avoid collecting self  
+        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(m_progeny); 
+    }
+    return m_progeny ; 
 }
 
 void GNode::collectProgeny(std::vector<GNode*>& progeny)
@@ -122,8 +123,7 @@ void GNode::collectProgeny(std::vector<GNode*>& progeny)
 
 GMatrixF* GNode::calculateTransform()
 {
-    bool reverse = true ; 
-    std::vector<GNode*> nodes = getAncestors(reverse);
+    std::vector<GNode*> nodes = getAncestors();
     nodes.push_back(this);
 
     typedef std::vector<GNode*>::const_iterator NIT ; 
@@ -154,6 +154,7 @@ std::string GNode::localDigest()
     return dig.finalize();
 }
 
+
 std::string GNode::localDigest(std::vector<GNode*>& nodes)
 {
     MD5Digest dig ;
@@ -165,6 +166,75 @@ std::string GNode::localDigest(std::vector<GNode*>& nodes)
     } 
     return dig.finalize();
 }
+
+
+std::string& GNode::getLocalDigest()
+{
+    if(m_local_digest.empty())
+    {
+         m_local_digest = localDigest();
+    }
+    return m_local_digest ; 
+}
+
+
+std::string& GNode::getProgenyDigest()
+{
+    if(m_progeny_digest.empty())
+    {
+        std::vector<GNode*>& progeny = getProgeny();
+        m_progeny_count = progeny.size();
+        m_progeny_digest = GNode::localDigest(progeny) ; 
+    }
+    return m_progeny_digest ;
+}
+
+unsigned int GNode::getProgenyCount()
+{
+    return m_progeny_count ; 
+}
+
+GNode* GNode::findProgenyDigest(const std::string& dig)  
+{
+   std::string& pdig = getProgenyDigest();
+   GNode* node = NULL ; 
+   if(strcmp(pdig.c_str(), dig.c_str())==0)
+   {
+       node = this ;
+   }
+   else
+   {
+       for(unsigned int i = 0; i < getNumChildren(); i++) 
+       {
+           GNode* child = getChild(i);
+           node = child->findProgenyDigest(dig);
+           if(node) break ;
+       }
+   }
+   return node ; 
+}
+
+
+std::vector<GNode*> GNode::findAllProgenyDigest(std::string& dig)
+{
+    std::vector<GNode*> match ;
+    collectAllProgenyDigest(match, dig );
+    return match ;
+}
+
+void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig)
+{
+    std::string& pdig = getProgenyDigest();
+    if(strcmp(pdig.c_str(), dig.c_str())==0) 
+    {
+        match.push_back(this);
+    }
+    else
+    {
+        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllProgenyDigest(match, dig );
+    }
+}
+
 
 
 

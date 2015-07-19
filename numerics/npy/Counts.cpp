@@ -34,6 +34,18 @@ typename std::vector<std::pair<std::string, T> >::iterator Counts<T>::find(const
     return it ;
 } 
 
+
+
+template<typename T>
+T  Counts<T>::getCount(const char* key)
+{
+    T ret(0) ;
+    VSTI it = find(key) ;
+    if(it != m_counts.end()) ret = it->second ;  
+    return ret ; 
+}
+
+
 template<typename T>
 void Counts<T>::checkfind(const char* key)
 {

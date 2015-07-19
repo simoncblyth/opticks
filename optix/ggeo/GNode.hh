@@ -82,14 +82,22 @@ class GNode {
       void setLevelTransform(GMatrixF* ltransform);
 
   public:
-      GMatrixF*           calculateTransform();  // attempt to calculate global transform from the "local" transforms obtained from ancestors
-      std::vector<GNode*> getAncestors(bool reverse);
-      std::vector<GNode*> getProgeny();
-      std::string         localDigest();
-      static std::string  localDigest(std::vector<GNode*>& nodes);
+      GMatrixF*            calculateTransform();  // attempt to calculate global transform from the "local" transforms obtained from ancestors
+
+  public:
+      std::vector<GNode*>& getAncestors();
+      std::vector<GNode*>& getProgeny();
+      std::string&         getProgenyDigest();
+      std::string&         getLocalDigest();
+      unsigned int         getProgenyCount();
+      GNode*               findProgenyDigest(const std::string& pdig) ;
+      std::vector<GNode*>  findAllProgenyDigest(std::string& dig);
 
   private:
+      std::string          localDigest();
+      static std::string   localDigest(std::vector<GNode*>& nodes);
       void collectProgeny(std::vector<GNode*>& progeny);
+      void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
 
   private:
       unsigned int        m_index ; 
@@ -109,6 +117,12 @@ class GNode {
       unsigned int*       m_sensor_indices ;
       unsigned int*       m_node_indices ;
       const char*         m_name ; 
+  private: 
+      std::string         m_local_digest ; 
+      std::string         m_progeny_digest ; 
+      std::vector<GNode*> m_progeny ; 
+      std::vector<GNode*> m_ancestors ; 
+      unsigned int        m_progeny_count ; 
 
   private: 
       std::vector<unsigned int> m_distinct_boundary_indices ;
@@ -129,7 +143,8 @@ inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh)
     m_boundary_indices(NULL),
     m_sensor_indices(NULL),
     m_node_indices(NULL),
-    m_name(NULL)
+    m_name(NULL),
+    m_progeny_count(0)
 {
     init();
 }
