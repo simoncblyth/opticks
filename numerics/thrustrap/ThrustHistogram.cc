@@ -77,8 +77,17 @@ void ThrustHistogram<T,S>::pullback(unsigned int n)
     m_counts_h.resize(n);
 
     // what happens when not long enough ?
-    thrust::copy( m_values.end() - n, m_values.end(), m_values_h.begin() );
-    thrust::copy( m_counts.end() - n, m_counts.end(), m_counts_h.begin() );
+
+    if(m_values.size() > n)
+    {
+        thrust::copy( m_values.end() - n, m_values.end(), m_values_h.begin() );
+        thrust::copy( m_counts.end() - n, m_counts.end(), m_counts_h.begin() );
+    }
+    else
+    {
+        thrust::copy( m_values.begin(), m_values.end(), m_values_h.begin() );
+        thrust::copy( m_counts.begin(), m_counts.end(), m_counts_h.begin() );
+    }  
 
     thrust::reverse(m_values_h.begin(), m_values_h.end());
     thrust::reverse(m_counts_h.begin(), m_counts_h.end());

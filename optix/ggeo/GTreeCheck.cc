@@ -194,16 +194,27 @@ unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )
 void GTreeCheck::labelTree()
 {
     m_labels = 0 ; 
-    labelTree(m_root, 0);
+
+    for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++)
+    {
+         std::string pdig = m_repeat_candidates[i];
+         unsigned int ridx = getRepeatIndex(pdig);
+         assert(ridx == i + 1 );
+         std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+
+         // recursive labelling starting from the placements
+         for(unsigned int p=0 ; p < placements.size() ; p++)
+         {
+             labelTree(placements[p], ridx);
+         }
+    }
+
     LOG(info)<<"GTreeCheck::labelTree count of non-zero setRepeatIndex " << m_labels ; 
 }
 
-void GTreeCheck::labelTree( GNode* node, unsigned int depth)
+void GTreeCheck::labelTree( GNode* node, unsigned int ridx)
 {
-    std::string& pdig = node->getProgenyDigest();
-    unsigned int ridx = getRepeatIndex(pdig);
     node->setRepeatIndex(ridx);
-
     if(ridx > 0)
     {
          LOG(debug)<<"GTreeCheck::labelTree "
@@ -212,7 +223,7 @@ void GTreeCheck::labelTree( GNode* node, unsigned int depth)
                   ;
          m_labels++ ; 
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelTree(node->getChild(i), depth + 1 );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelTree(node->getChild(i), ridx );
 }
 
 

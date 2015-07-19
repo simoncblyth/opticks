@@ -62,7 +62,7 @@ void GLoader::load(bool nogeocache)
 
         GTreeCheck tck(m_ggeo);  // TODO: rename to GTreeAnalyse
         tck.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
-        //tck.labelTree();  // setRepeatIndex on the GNode tree
+        tck.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
 
 
         m_meshes = m_ggeo->getMeshIndex();  
@@ -88,7 +88,7 @@ void GLoader::load(bool nogeocache)
 
         m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
 
-        unsigned int ridx = 0 ; 
+        unsigned int ridx = 1 ; 
         m_mergedmesh = m_ggeo->getMergedMesh(ridx);   // if not existing creates merged mesh, doing the flattening  
 
         //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
@@ -96,6 +96,7 @@ void GLoader::load(bool nogeocache)
         gfloat3* target = m_mergedmesh->getColors();
         GColorizer czr( target, m_ggeo ); 
         czr.setSurfaces(m_surfaces);
+        czr.setRepeatIndex(m_mergedmesh->getIndex()); 
         czr.traverse();
 
 
