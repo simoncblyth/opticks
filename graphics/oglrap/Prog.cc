@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "Prog.hh"
 #include "Shdr.hh"
 

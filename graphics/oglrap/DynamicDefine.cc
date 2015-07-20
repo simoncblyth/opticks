@@ -33,7 +33,7 @@ void DynamicDefine::write()
      LOG(debug) << "DynamicDefine::write " << path ;
      LOG(debug) << txt ; 
 
-     std::ofstream out(path,std::ofstream::binary);
+     std::ofstream out(path.c_str(), std::ofstream::binary);
      out << txt ;
 }
 

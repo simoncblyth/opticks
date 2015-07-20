@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <string>
+#include <cstring>
+#include <cstdio>
 
 class Composition ;
 class Bookmarks ; 

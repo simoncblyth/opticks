@@ -158,21 +158,23 @@ void Renderer::gl_upload_buffers(bool debug)
 void Renderer::check_uniforms()
 {
     char* tag = getShaderTag();
+
+    bool required = false;
  
     if(strcmp(tag,"nrm")==0)
     {
-        m_mvp_location = m_shader->uniform("ModelViewProjection", true); 
-        m_mv_location =  m_shader->uniform("ModelView",           true);      
-        m_clip_location = m_shader->uniform("ClipPlane",          true); 
-        m_param_location = m_shader->uniform("Param",          true); 
-        m_nrmparam_location = m_shader->uniform("NrmParam",         true); 
-        m_lightposition_location = m_shader->uniform("LightPosition",true); 
+        m_mvp_location = m_shader->uniform("ModelViewProjection", required); 
+        m_mv_location =  m_shader->uniform("ModelView",           required);      
+        m_clip_location = m_shader->uniform("ClipPlane",          required); 
+        m_param_location = m_shader->uniform("Param",          required); 
+        m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
+        m_lightposition_location = m_shader->uniform("LightPosition",required); 
 
 
     } 
     else if(strcmp(tag,"tex")==0)
     {
-        m_mv_location =  m_shader->uniform("ModelView",           true);    
+        m_mv_location =  m_shader->uniform("ModelView",           required);    
     } 
     else
     {

@@ -1,4 +1,5 @@
 #include "Scene.hh"
+#include <cstdio>
 
 void test_charstarstar()
 {

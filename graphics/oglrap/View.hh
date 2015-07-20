@@ -142,8 +142,12 @@ inline void View::setEyePhase(float t)
 {
     float d = getDistanceToAxis() ;
     m_eye_phase = t  ;
-    float s, c ;  
+    double s, c ;  
+#ifdef __APPLE__
     __sincosf( m_eye_phase*M_PI , &s, &c);
+#else
+    sincos(m_eye_phase*M_PI , &s, &c);
+#endif
     m_eye.x = d*c ; 
     m_eye.y = d*s ;
 }

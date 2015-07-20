@@ -1,3 +1,4 @@
+#include <cstring>
 #include <GL/glew.h>
 
 #include "RendererBase.hh"

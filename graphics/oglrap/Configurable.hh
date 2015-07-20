@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 class Configurable {
     public: 
        virtual ~Configurable(){};
