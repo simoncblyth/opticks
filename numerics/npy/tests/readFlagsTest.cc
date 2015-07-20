@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <cstring>
 
 
 int main(int argc, char** argv)
@@ -21,7 +22,7 @@ int main(int argc, char** argv)
     {   
         std::getline(fs, line);
         
-        char* eq = strchr( line.c_str(), '=');
+        const char* eq = strchr( line.c_str(), '=');
         if(eq)
         {
             std::string name = line.substr(0, eq - line.c_str());        

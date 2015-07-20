@@ -65,6 +65,7 @@ set(LIBRARIES
       ${Boost_LIBRARIES}
       ${Bregex_LIBRARIES}
       ${GLM_LIBRARIES}
+      -lssl -lcrypto
 )
 
 target_link_libraries( ${name} ${LIBRARIES} )
