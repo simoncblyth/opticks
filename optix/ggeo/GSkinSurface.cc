@@ -1,7 +1,7 @@
 #include "GSkinSurface.hh"
 #include "GOpticalSurface.hh"
 #include "GPropertyMap.hh"
-
+#include <cstdio>
 #include "assert.h"
 #include "stdlib.h"
 #include "string.h"

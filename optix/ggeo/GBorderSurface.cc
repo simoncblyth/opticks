@@ -2,6 +2,7 @@
 #include "GOpticalSurface.hh"
 #include "GPropertyMap.hh"
 
+#include <cstdio>
 #include "stdlib.h"
 #include "string.h"
 #include <sstream>

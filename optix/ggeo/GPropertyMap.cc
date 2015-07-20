@@ -194,7 +194,7 @@ void GPropertyMap<T>::findShortName(const char* prefix)
         //     __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib1Surface
         // just provide chars after the last _
 
-        char* p = strrchr(m_name.c_str(), '_') ;
+        const char* p = strrchr(m_name.c_str(), '_') ;
         m_shortname = p ? p + 1 :  NOT_DEFINED ; 
     }
 }
