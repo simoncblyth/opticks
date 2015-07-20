@@ -233,7 +233,7 @@ void enum_read(std::map<std::string, unsigned int>& emap, const char* path)
     boost::regex e(ptn);
 
     std::string epath = os_path_expandvars(path);
-    std::ifstream is(epath, std::ifstream::binary); 
+    std::ifstream is(epath.c_str(), std::ifstream::binary); 
 
     pairs_t   pairs ; 
     regexsearch( pairs, is , e );
@@ -270,7 +270,7 @@ enum
     boost::regex e(ptn);
 
     std::string epath = os_path_expandvars(path);
-    std::ifstream is(epath, std::ifstream::binary); 
+    std::ifstream is(epath.c_str(), std::ifstream::binary); 
 
     pairs_t   pairs ; 
     regexsearch( pairs, is , e );
