@@ -3,7 +3,7 @@
 set(GLEW_PREFIX "$ENV{LOCAL_BASE}/env/graphics/glew/1.12.0")
 
 find_library( GLEW_LIBRARY 
-              NAMES glew
+              NAMES glew GLEW
               PATHS ${GLEW_PREFIX}/lib )
 
 set( GLEW_LIBRARIES ${GLEW_LIBRARY} )
