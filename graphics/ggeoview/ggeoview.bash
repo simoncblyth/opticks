@@ -516,6 +516,12 @@ ggeoview-run(){
    $bin $*
 }
 
+ggeoview-gdb(){ 
+   local bin=$(ggeoview-bin)
+   ggeoview-export
+   gdb --args $bin $*
+}
+
 ggeoview-lldb()
 {
    local bin=$(ggeoview-bin)

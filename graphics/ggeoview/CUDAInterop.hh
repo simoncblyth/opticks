@@ -7,6 +7,8 @@
 #include "NPY.hpp"
 
 #include <GL/glew.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-cmake_policy(SET CMP0054 OLD)
+#cmake_policy(SET CMP0054 OLD)
 # unfortunately this doesnt suppress the warnings, despite being advertised to do so
 # http://www.cmake.org/Wiki/CMake/Policies
 set(name GGeoView)
@@ -25,6 +25,12 @@ if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
 
+OPTION(NPYSERVER "using the numpyserver." OFF)
+
+if (NPYSERVER)
+    add_definitions(-DNPYSERVER)
+endif()
+
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
 
@@ -44,9 +50,12 @@ find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
 find_package(Boost REQUIRED)
 
+if (NPYSERVER)
 find_package(ZMQ REQUIRED)  
 find_package(AsioZMQ REQUIRED)
 find_package(NumpyServer REQUIRED)
+endif()
+
 find_package(NPY   REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(Cfg REQUIRED)

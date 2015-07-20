@@ -1,7 +1,7 @@
 #include "cu/photon.h"
 #include <iostream>
 #include <iomanip>
-
+#include <strings.h>
 
 //#define PLACE(name, bounce)  ((unsigned long long)ffs((name))) << (((bounce) - 1)*4) 
 

@@ -1,4 +1,5 @@
-#version 400
+#version 400 core
+#pragma debug(on)
 
 in vec3 colour;
 in vec2 texcoord;

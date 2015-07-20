@@ -35,10 +35,12 @@
 #include "DynamicDefine.hh"
 
 
-// numpyserver-
+// TODO numpyserver-
+#ifdef NPYSERVER
 #include "numpydelegate.hpp"
 #include "numpydelegateCfg.hpp"
 #include "numpyserver.hpp"
+#endif
 
 // npy-
 #include "NPY.hpp"
@@ -47,7 +49,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "Lookup.hpp"
-#include "Sensor.hpp"
+// #include "Sensor.hpp"
 #include "G4StepNPY.hpp"
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
@@ -155,7 +157,9 @@ int main(int argc, char** argv)
     Frame frame ;
     Bookmarks bookmarks ; 
     Interactor interactor ; 
+#ifdef NPYSERVER
     numpydelegate delegate ; 
+#endif
     NumpyEvt evt ;
 
     interactor.setFrame(&frame);
@@ -174,7 +178,9 @@ int main(int argc, char** argv)
     Cfg cfg("umbrella", false) ; // collect other Cfg objects
     FrameCfg<Frame>* fcfg = new FrameCfg<Frame>("frame", &frame,false);
     cfg.add(fcfg);
+#ifdef NPYSERVER
     cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
+#endif
 
     cfg.add(new SceneCfg<Scene>(           "scene",       &scene,                      true));
     cfg.add(new RendererCfg<Renderer>(     "renderer",    scene.getGeometryRenderer(), true));
@@ -184,8 +190,10 @@ int main(int argc, char** argv)
     cfg.commandline(argc, argv);
     t.setCommandLine(cfg.getCommandLine()); 
 
+#ifdef NPYSERVER
     delegate.liveConnect(&cfg); // hookup live config via UDP messages
     delegate.setNumpyEvt(&evt); // allows delegate to update evt when NPY messages arrive
+#endif
 
     if(fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
     if(fcfg->hasOpt("help"))   std::cout << cfg.getDesc() << std::endl ;
@@ -222,7 +230,9 @@ int main(int argc, char** argv)
     frame.setTitle("GGeoView");
     frame.setFullscreen(fullscreen);
 
+#ifdef NPYSERVER
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
+#endif
 
     //t("configuration");  // minimal 0.001 
 
@@ -571,7 +581,9 @@ int main(int argc, char** argv)
     while (!glfwWindowShouldClose(window))
     {
         frame.listen(); 
+#ifdef NPYSERVER
         server.poll_one();  
+#endif
         frame.render();
 
         if(interactor.getOptiXMode()>0)
@@ -612,7 +624,9 @@ int main(int argc, char** argv)
         glfwSwapBuffers(window);
     }
     engine.cleanUp();
+#ifdef NPYSERVER
     server.stop();
+#endif
 #ifdef GUI_
     gui.shutdown();
 #endif
