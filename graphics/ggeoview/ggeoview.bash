@@ -560,6 +560,14 @@ ggeoview-depinstall()
     ggeoview-install  
 }
 
+ggeoview-depcmake()
+{
+   local dep
+   ggeoview-deps- | while read dep ; do
+       $dep-
+       $dep-cmake
+   done
+}
 
 ggeoview-deps-(){ cat << EOD
 bcfg
