@@ -3,7 +3,7 @@
 #include <assimp/scene.h>
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
-
+#include <cstdio>
 //#include <sstream>
 
 
