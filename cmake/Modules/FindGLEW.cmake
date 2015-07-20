@@ -2,6 +2,8 @@
 
 set(GLEW_PREFIX "$ENV{LOCAL_BASE}/env/graphics/glew/1.12.0")
 
+LINK_DIRECTORIES(${GLEW_PREFIX}/lib)
+
 find_library( GLEW_LIBRARY 
               NAMES glew GLEW
               PATHS ${GLEW_PREFIX}/lib )

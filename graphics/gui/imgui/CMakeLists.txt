@@ -37,11 +37,21 @@ if(APPLE)
                ${CoreVideo_LIBRARY} )
 endif(APPLE)
 
+if(UNIX)
+    find_library( OpenGL_LIBRARY NAMES GL )
+
+    set( LIBRARIES 
+               ${LIBRARIES} 
+               ${GLFW_LIBRARIES} 
+               ${OpenGL_LIBRARY}
+               )
+   message("LINUX")
+endif(UNIX)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${ImGui_SOURCE_DIR}/examples/opengl3_example
-   ${ImGui_SOURCE_DIR}/examples/libs/gl3w
+   #${ImGui_SOURCE_DIR}/examples/libs/gl3w
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
 
@@ -56,7 +66,7 @@ add_definitions(
 add_library(${name} SHARED 
 imgui.cpp
 examples/opengl3_example/imgui_impl_glfw_gl3.cpp
-examples/libs/gl3w/GL/gl3w.c
+#examples/libs/gl3w/GL/gl3w.c
 )
 
 SET(hdrs 
@@ -69,10 +79,10 @@ target_link_libraries(${name} ${LIBRARIES})
 install(TARGETS ${name}        DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
 
-install(FILES 
-examples/libs/gl3w/GL/gl3w.h
-examples/libs/gl3w/GL/glcorearb.h
-DESTINATION include/GL) 
+#install(FILES 
+#examples/libs/gl3w/GL/gl3w.h
+#examples/libs/gl3w/GL/glcorearb.h
+#DESTINATION include/GL) 
 
 
 add_executable(${name}Example  examples/opengl3_example/main.cpp)

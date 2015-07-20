@@ -25,6 +25,17 @@ if(APPLE)
                ${CoreVideo_LIBRARY} )
 endif(APPLE)
 
+if(UNIX)
+    find_library( OpenGL_LIBRARY NAMES GL )
+
+    set( ImGui_LIBRARIES 
+               ${ImGui_LIBRARIES} 
+               ${GLFW_LIBRARIES} 
+               ${OpenGL_LIBRARY}
+               )
+   message("LINUX")
+endif(UNIX)
+
 set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")
 set(ImGui_DEFINITIONS "")
 

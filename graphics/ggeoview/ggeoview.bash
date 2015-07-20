@@ -583,11 +583,12 @@ EOD
 }
 
 ggeoview-deps(){
+   local suffix=${1:-dylib}
    local dep
    $FUNCNAME- | while read dep ; do
        $dep-
        #printf "%30s %30s \n" $dep $($dep-idir) 
-       echo $($dep-idir)/lib/*.dylib 
+       echo $($dep-idir)/lib/*.${suffix}
    done
 }
 

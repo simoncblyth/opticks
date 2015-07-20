@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name GLFWMinimal)
+set(name GLEWMinimal)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -26,7 +26,7 @@ add_definitions(
    ${GLFW_DEFINITIONS}
 )
 
-add_executable( ${name} glfwminimal.cc ) 
+add_executable( ${name} glewminimal.cc ) 
 
 target_link_libraries( ${name} 
       ${GLEW_LIBRARIES}
