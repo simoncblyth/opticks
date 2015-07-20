@@ -27,7 +27,7 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
     GMesh* mesh = solid->getMesh();
     unsigned int nvert = mesh->getNumVertices();
 
-    bool selected = solid->isSelected();
+    bool selected = solid->isSelected() && solid->getRepeatIndex() == m_repeat_index ;
     if(selected)
     {
         gfloat3* surfcolor = getSurfaceColor( node );

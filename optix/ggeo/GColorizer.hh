@@ -11,6 +11,7 @@ class GColorizer {
    public:
         GColorizer(gfloat3* target, GGeo* ggeo );
    public:
+        void setRepeatIndex(unsigned int ridx);
         void setSurfaces(GItemIndex* surfaces);
         void setMaterials(GItemIndex* materials);
    public:
@@ -27,6 +28,7 @@ class GColorizer {
         unsigned int           m_num_colorized ;
         GItemIndex*            m_surfaces ;  
         GItemIndex*            m_materials ;  
+        unsigned int           m_repeat_index ; 
 };
 
 
@@ -37,7 +39,8 @@ inline GColorizer::GColorizer(gfloat3* target, GGeo* ggeo )
        m_cur_vertices(0),
        m_num_colorized(0),
        m_surfaces(NULL), 
-       m_materials(NULL)
+       m_materials(NULL),
+       m_repeat_index(0)
 {
 }
 
@@ -49,7 +52,10 @@ inline void GColorizer::setMaterials(GItemIndex* materials)
 {
     m_materials = materials ; 
 }
-
+inline void GColorizer::setRepeatIndex(unsigned int ridx)
+{
+    m_repeat_index = ridx ; 
+}
 
 
 
