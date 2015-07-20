@@ -25,11 +25,17 @@ CUDA_ADD_LIBRARY( ${name}
                   LaunchCommon.cc
 )
 
+set (LIBRARIES
+    ${name}
+    ssl
+    crypt
+)
+
 add_executable( LaunchSequenceTest LaunchSequenceTest.cc )
-target_link_libraries( LaunchSequenceTest ${name})
+target_link_libraries( LaunchSequenceTest ${LIBRARIES} )
 
 add_executable( cuRANDWrapperTest cuRANDWrapperTest.cc )
-target_link_libraries( cuRANDWrapperTest ${name})
+target_link_libraries( cuRANDWrapperTest ${LIBRARIES})
 
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
