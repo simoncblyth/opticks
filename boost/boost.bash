@@ -224,5 +224,15 @@ boost-build(){
   ./b2 --build-dir=$(boost-bdir) install
 }
 
+boost-install-dir() {
+    case $NODE_TAG in
+        D) echo /opt/local ;;
+        LT) echo /home/ihep/data/doc/home/ihep/juno-dev-new/ExternalLibs/Boost/1.55.0/ ;;
+        *) $(local-base);;
+    esac
+}
 
+boost-export() {
+    export BOOST_INSTALL_DIR=$(boost-install-dir)
+}
 
