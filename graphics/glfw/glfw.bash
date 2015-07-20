@@ -185,3 +185,13 @@ glfw-make(){
 }
 
 
+glfw-install(){
+   glfw-make install
+}
+
+glfw--(){
+   glfw-cmake
+   glfw-make
+   glfw-install
+
+}

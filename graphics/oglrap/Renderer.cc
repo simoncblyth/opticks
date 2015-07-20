@@ -170,7 +170,6 @@ void Renderer::check_uniforms()
         m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
         m_lightposition_location = m_shader->uniform("LightPosition",required); 
 
-
     } 
     else if(strcmp(tag,"tex")==0)
     {

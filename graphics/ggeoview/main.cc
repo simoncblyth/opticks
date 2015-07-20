@@ -222,6 +222,8 @@ int main(int argc, char** argv)
     else if(fullscreen)      size = glm::uvec4(2880,1800,2,0) ;
     else                     size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
 
+    print(size, "main size");
+
     composition.setSize( size );
 
     frame.setInteractor(&interactor);      
@@ -567,7 +569,6 @@ int main(int argc, char** argv)
     }
     LOG(info) << "enter runloop "; 
 
-
     // TODO: use GItemIndex ? for stats to make it persistable
     gui.setupStats(t.getStats());
     gui.setupParams(p.getLines());
@@ -575,6 +576,7 @@ int main(int argc, char** argv)
     //frame.toggleFullscreen(true); causing blankscreen then segv
     frame.hintVisible(true);
     frame.show();
+    LOG(info) << "after frame.show() "; 
 
     unsigned int count ; 
 

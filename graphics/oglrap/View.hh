@@ -144,7 +144,7 @@ inline void View::setEyePhase(float t)
     m_eye_phase = t  ;
     double s, c ;  
 #ifdef __APPLE__
-    __sincosf( m_eye_phase*M_PI , &s, &c);
+    __sincos( m_eye_phase*M_PI , &s, &c);
 #else
     sincos(m_eye_phase*M_PI , &s, &c);
 #endif

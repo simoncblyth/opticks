@@ -58,7 +58,7 @@ class Frame : public Touchable {
        void configureS(const char* name, std::vector<std::string> values);
 
        void setSize(std::string str);
-       void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel=2);
+       void setSize(unsigned int width, unsigned int height, unsigned int coord2pixel);
        glm::uvec4 getSize();
 
        void setTitle(const char* title);
@@ -108,7 +108,7 @@ class Frame : public Touchable {
        void getCursorPos();
        void handle_event(GLEQevent& event);
        void dump_event(GLEQevent& event);
-       void resize(unsigned int width, unsigned int height);
+       void resize(unsigned int width, unsigned int height, unsigned int coord2pixel);
 
    private:
        void key_pressed(unsigned int key);
@@ -149,6 +149,7 @@ class Frame : public Touchable {
 inline Frame::Frame() : 
      m_fullscreen(false),
      m_is_fullscreen(false),
+     m_coord2pixel(1),
      m_title(NULL),
      m_window(NULL),
      m_interactor(NULL),

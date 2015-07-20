@@ -341,16 +341,17 @@ void Frame::render()
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
      // glViewport needs pixels (on retina)  window needs screen coordinates
-     glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 
+
+     glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 }
 
 
-void Frame::resize(unsigned int width, unsigned int height)
+void Frame::resize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
      if(width == 0 || height == 0) return ;  // ignore dud resizes
 
-     setSize(width, height);
+     setSize(width, height, coord2pixel);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 }
@@ -407,13 +408,13 @@ void Frame::handle_event(GLEQevent& event)
     switch (event.type)
     {
         case GLEQ_FRAMEBUFFER_RESIZED:
-            printf("Framebuffer resized to (%i %i)\n", event.size.width, event.size.height);
-            resize(event.size.width, event.size.height);
+            printf("Frame::handle_event framebuffer resized to (%i %i)\n", event.size.width, event.size.height);
+            resize(event.size.width, event.size.height, m_coord2pixel);
             break;
         case GLEQ_WINDOW_MOVED:
         case GLEQ_WINDOW_RESIZED:
-            printf("Window resized to (%i %i)\n", event.size.width, event.size.height);
-            resize(event.size.width, event.size.height);
+            printf("Frame::handle_event window resized to (%i %i)\n", event.size.width, event.size.height);
+            resize(event.size.width, event.size.height, m_coord2pixel);
             break;
         case GLEQ_WINDOW_CLOSED:
         case GLEQ_WINDOW_REFRESH:
