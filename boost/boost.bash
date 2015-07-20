@@ -232,7 +232,15 @@ boost-install-dir() {
     esac
 }
 
+boost-suffix() {
+    case $NODE_TAG in
+        D) echo '-mt' ;;
+        *) echo ;;
+    esac
+}
+
 boost-export() {
     export BOOST_INSTALL_DIR=$(boost-install-dir)
+    export BOOST_SUFFIX=$(boost-suffix)
 }
 

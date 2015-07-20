@@ -1,31 +1,34 @@
 set(Boost_PREFIX "$ENV{BOOST_INSTALL_DIR}")
+set(Boost_SUFFIX "$ENV{BOOST_SUFFIX}")
+
+LINK_DIRECTORIES(${Boost_PREFIX}/lib)
 
 find_library( Boost_system_LIBRARY 
-              NAMES boost_system-mt boost_system
+              NAMES boost_system${Boost_SUFFIX}
               PATHS ${Boost_PREFIX}/lib )
 
 find_library( Boost_thread_LIBRARY 
-              NAMES boost_thread-mt boost_thread
+              NAMES boost_thread${Boost_SUFFIX}
               PATHS ${Boost_PREFIX}/lib )
 
 find_library( Boost_program_options_LIBRARY 
-              NAMES boost_program_options-mt boost_program_options
+              NAMES boost_program_options${Boost_SUFFIX}
               PATHS ${Boost_PREFIX}/lib )
 
 find_library( Boost_log_LIBRARY 
-              NAMES boost_log-mt boost_log
+              NAMES boost_log${Boost_SUFFIX}
               PATHS ${Boost_PREFIX}/lib )
 
 find_library( Boost_log_setup_LIBRARY 
-              NAMES boost_log_setup-mt boost_log_setup
+              NAMES boost_log_setup${Boost_SUFFIX}
               PATHS ${Boost_PREFIX}/lib )
 
 find_library( Boost_filesystem_LIBRARY 
-              NAMES boost_filesystem-mt boost_filesystem
+              NAMES boost_filesystem${Boost_SUFFIX}
               PATHS ${Boost_PREFIX}/lib )
 
 find_library( Boost_regex_LIBRARY 
-              NAMES boost_regex-mt boost_regex
+              NAMES boost_regex${Boost_SUFFIX}
               PATHS ${Boost_PREFIX}/lib )
 
 
