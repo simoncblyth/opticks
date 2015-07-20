@@ -107,11 +107,11 @@ target_link_libraries( ${name}
 
 SET(hdrs 
   G4DAELoader.hh
-  OptixUtil.hh
-  OptixEngine.hh
-  OptixGeometry.hh
-  GGeoOptixGeometry.hh
-  GMergedMeshOptixGeometry.hh
+  OptiXUtil.hh
+  OptiXEngine.hh
+  OptiXGeometry.hh
+  GGeoOptiXGeometry.hh
+  GMergedMeshOptiXGeometry.hh
   RayTraceConfig.hh
 )
 SET(cuhdrs 
