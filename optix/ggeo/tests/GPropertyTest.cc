@@ -1,7 +1,7 @@
 #include "GAry.hh"
 #include "GProperty.hh"
 #include "assert.h"
-
+#include <cstdio>
 /*
 // Why does lookup "sampling" require so many more bins to get good results than standard sampling ?
 //
