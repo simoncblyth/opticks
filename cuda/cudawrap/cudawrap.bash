@@ -353,6 +353,7 @@ cudawrap-run(){
 
 
 cudawrap--(){
+  cudawrap-cmake
   cudawrap-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
   cudawrap-install $*

@@ -595,3 +595,39 @@ ggeoview-deps(){
 ggeoview-ls(){   ls -1 $(ggeoview-;ggeoview-deps) ; }
 ggeoview-libs(){ otool -L $(ggeoview-;ggeoview-deps) ; }
 
+ggeoview-linux-setup() {
+    local dep
+    local edeps="boost glew glfw imgui glm assimp"
+    local deps="$edeps bcfg bregex npy ggeo assimpwrap ppm oglrap cudawrap optixrap thrustrap"
+    for dep in $deps
+    do
+        $dep-
+        [ -d "$($dep-idir)/lib" ] &&  export LD_LIBRARY_PATH=$($dep-idir)/lib:$LD_LIBRARY_PATH
+        [ -d "$($dep-idir)/lib64" ] &&  export LD_LIBRARY_PATH=$($dep-idir)/lib64:$LD_LIBRARY_PATH
+    done
+
+    assimp-
+    export LD_LIBRARY_PATH=$(assimp-prefix)/lib:$LD_LIBRARY_PATH
+}
+
+ggeoview-linux-install-external() {
+    local edeps="glew glfw imgui glm assimp"
+    local edep
+    for edep in $edeps
+    do
+        ${edep}-
+        ${edep}-get
+        ${edep}--
+    done
+}
+ggeoview-linux-install() {
+
+    local deps="bcfg bregex npy ggeo assimpwrap ppm oglrap cudawrap optixrap thrustrap"
+    local dep
+
+    for dep in $deps
+    do
+        $dep-
+        $dep--
+    done
+}

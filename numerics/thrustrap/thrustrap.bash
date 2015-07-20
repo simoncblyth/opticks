@@ -268,7 +268,6 @@ thrustrap-run(){
 
 thrustrap--()
 {
-    thrustrap-wipe
     thrustrap-cmake
     thrustrap-make
     thrustrap-install

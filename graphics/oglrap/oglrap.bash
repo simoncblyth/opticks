@@ -305,7 +305,6 @@ oglrap-install(){
 
 oglrap--()
 {
-    oglrap-wipe
     oglrap-cmake
     oglrap-make
     oglrap-install

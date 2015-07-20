@@ -898,6 +898,7 @@ ggeo-run(){
 }
 
 ggeo--(){
+    ggeo-cmake
     ggeo-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
     ggeo-install $*

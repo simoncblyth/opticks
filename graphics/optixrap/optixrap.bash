@@ -193,7 +193,6 @@ optixrap-run(){
 
 optixrap--()
 {
-    optixrap-wipe
     optixrap-cmake
     optixrap-make
     optixrap-install

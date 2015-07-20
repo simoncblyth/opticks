@@ -60,7 +60,7 @@ glew-get(){
    local nam=${zip/.zip}
 
    [ ! -f "$zip" ] && curl -L -O $url
-   [ ! -d "$nam" ] && unzip $zip
+   [ ! -d "$nam" ] && unzip $zip 
 
 }
 
@@ -77,7 +77,11 @@ glew-install(){
    cd $iwd
 }
 
-
+glew--() {
+    glew-get
+    glew-make
+    glew-install
+}
 
 glew-cmake-not-working(){
    local iwd=$PWD

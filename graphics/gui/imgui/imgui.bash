@@ -151,7 +151,7 @@ imgui-cd(){  cd $(imgui-dir)/$1; }
 
 imgui-get(){
    local dir=$(dirname $(imgui-dir)) &&  mkdir -p $dir && cd $dir
-   git clone https://github.com/ocornut/imgui.git 
+   [ ! -d "imgui" ] && git clone https://github.com/ocornut/imgui.git 
 }
 
 

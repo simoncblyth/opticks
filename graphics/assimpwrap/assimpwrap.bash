@@ -266,6 +266,7 @@ assimpwrap-run(){
 
 assimpwrap--(){
 
+    assimpwrap-cmake
     assimpwrap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
 

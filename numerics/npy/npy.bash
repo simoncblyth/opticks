@@ -155,7 +155,6 @@ npy-install(){
 
 npy--()
 {
-    npy-wipe
     npy-cmake
     npy-make
     npy-install

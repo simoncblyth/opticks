@@ -295,7 +295,7 @@ assimp-icd(){ cd $(assimp-idir); }
 assimp-fold-cd(){ cd $(assimp-fold); }
 
 assimp-mate(){ mate $(assimp-dir) ; }
-assimp-get(){
+assimp-normal-get(){
    local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir
 
    local url=$(assimp-url)
@@ -316,6 +316,10 @@ assimp-fork-get(){
    local cmd="git clone $(assimp-fork-url) $(assimp-fork-name)"
    echo $cmd
    eval $cmd
+}
+
+assimp-get() {
+    assimp-fork-get
 }
 
 assimp-rdiff(){
@@ -384,6 +388,11 @@ assimp-install(){
    # huh : install says -- Removed runtime path from "/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/env/graphics/bin/assimp"
 }
 
+assimp--() {
+    assimp-cmake
+    assimp-make
+    assimp-install
+}
 
 assimp-build(){
    assimp-make

@@ -60,6 +60,7 @@ find_package(NPY   REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(Cfg REQUIRED)
 
+find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(OptiXRap REQUIRED)
 find_package(GGeo REQUIRED)
@@ -84,6 +85,7 @@ include_directories(
    ${Cfg_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
 
+   ${Assimp_INCLUDE_DIRS}  
    ${AssimpWrap_INCLUDE_DIRS}  
    ${CUDA_INCLUDE_DIRS}
    ${OptiX_INCLUDE}  
@@ -102,6 +104,7 @@ add_definitions(
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
    ${OGLRap_DEFINITIONS}
+   ${Assimp_DEFINITIONS}  
    ${AssimpWrap_DEFINITIONS}  
    ${OptiX_DEFINITIONS} 
    ${OptiXRap_DEFINITIONS} 
@@ -127,6 +130,7 @@ set(LIBRARIES
       ${NumpyServer_LIBRARIES}
       ${NPY_LIBRARIES}
 
+      ${Assimp_LIBRARIES} 
       ${AssimpWrap_LIBRARIES} 
       ${GGeo_LIBRARIES} 
       ${OptiXRap_LIBRARIES}

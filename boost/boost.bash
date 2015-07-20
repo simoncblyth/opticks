@@ -232,6 +232,10 @@ boost-install-dir() {
     esac
 }
 
+boost-idir() {
+    boost-install-dir
+}
+
 boost-suffix() {
     case $NODE_TAG in
         D) echo '-mt' ;;
