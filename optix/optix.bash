@@ -1624,6 +1624,8 @@ optix-fold(){
    case $NODE_TAG in 
       D)  echo /Developer ;;
       G1) echo $(local-base) ;;
+      LT) echo /home/ihep/data/repo/opticks ;;
+      *) echo $(local-base) ;;
    esac
 }
 optix-dir(){         echo $(optix-fold)/OptiX/SDK ; }
