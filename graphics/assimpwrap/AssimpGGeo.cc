@@ -471,10 +471,15 @@ void AssimpGGeo::convertStructure(GGeo* gg)
               << " inborder " << m_inborder_surface 
               << " no " << m_no_surface  ;
 
+
+
     if(m_selection)
     {
 
-        LOG(info) << __func__ << " m_selection: " << m_selection;
+        LOG(info) << __func__ 
+                  << " m_selection: " << m_selection
+                  << " NumSelected " << m_selection->getNumSelected() 
+                  ;
         aiVector3D* alow  = m_selection->getLow() ;
         gfloat3 low(alow->x, alow->y, alow->z);
 
@@ -575,7 +580,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
     GSkinSurface*   sks = gg->findSkinSurface(lv);          
 
-    LOG(info) << __func__ 
+    LOG(debug) << __func__ 
               << " lv: " << lv
               << " pv: " << pv
               << " pv_p: " << pv_p

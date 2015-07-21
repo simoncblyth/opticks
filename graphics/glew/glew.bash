@@ -43,10 +43,12 @@ glew-dir(){  echo $(local-base)/env/graphics/glew/$(glew-name) ; }
 glew-idir(){ echo $(local-base)/env/graphics/glew/$(glew-version) ; }
 glew-sdir(){ echo $(glew-dir) ; }
 glew-bdir(){ echo $(glew-dir).build ; }
+glew-edir(){ echo $(env-home)/graphics/glew ; }
 
 glew-scd(){  cd $(glew-sdir); }
 glew-bcd(){  cd $(glew-bdir); }
 glew-icd(){  cd $(glew-idir); }
+glew-ecd(){  cd $(glew-edir); }
 
 glew-version(){ echo 1.12.0 ; }
 glew-name(){ echo glew-$(glew-version) ;}
@@ -62,6 +64,14 @@ glew-get(){
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $zip 
 
+}
+
+glew-export (){ 
+    export GLEW_PREFIX=$(glew-prefix)
+}
+
+glew-prefix(){ 
+    echo $(glew-idir)
 }
 
 glew-make(){

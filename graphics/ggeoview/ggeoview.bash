@@ -505,13 +505,13 @@ ggeoview-query-dyb() {
 }
 
 ggeoview-query-juno() {
-    echo index:0
+    echo index:1
 }
 
 ggeoview-query() {
-    if [ "$GGEOVIEW_DETECTOR" == "DAE_NAME_DYB" ]; then
+    if [ "$(ggeoview-detector)" == "DAE_NAME_DYB" ]; then
         ggeoview-query-dyb
-    elif [ "$GGEOVIEW_DETECTOR" == "DAE_NAME_JUNO" ]; then
+    elif [ "$(ggeoview-detector)" == "DAE_NAME_JUNO" ]; then
         ggeoview-query-juno
     fi
 }

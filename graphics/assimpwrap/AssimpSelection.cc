@@ -34,7 +34,21 @@ AssimpSelection::AssimpSelection(AssimpNode* root, const char* query)
 
     m_selection.clear();
 
+    LOG(info) << "AssimpSelection::AssimpSelection"
+              << " before SelectNodes " 
+              << " m_query " << m_query 
+              << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
+              << " m_query_index " <<  m_query_index 
+              ;
+
     selectNodes(root, 0, false);
+
+    LOG(info) << "AssimpSelection::AssimpSelection"
+              << " after SelectNodes " 
+              << " m_selection size " << m_selection.size()
+              ;
+
+    assert(m_selection.size() > 0 );
 
     findBounds();
 }
@@ -195,11 +209,17 @@ void AssimpSelection::findBounds()
     aiVector3D high( -1e10f, -1e10f, -1e10f);
 
    unsigned int n = getNumSelected();
+
+   LOG(info) << "AssimpSelection::findBounds " 
+             << " NumSelected " << n ;
+
    for(unsigned int i = 0 ; i < n ; i++)
    {
        AssimpNode* node = getSelectedNode(i);
        findBounds( node, low, high );
    } 
+
+   //assert(n>0);
 
    if( n > 0)
    { 

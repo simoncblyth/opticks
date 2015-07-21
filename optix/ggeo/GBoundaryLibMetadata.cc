@@ -195,7 +195,7 @@ void GBoundaryLibMetadata::createMaterialMap()
     {
         std::string matname = ak.first ;
         snprintf(key, 128, "lib.material.%s.mat", matname.c_str());
-        //printf("GBoundaryLibMetadata::createMaterialMap %s \n", key);
+        printf("GBoundaryLibMetadata::createMaterialMap %s \n", key);
 
         std::string digest ;     
         BOOST_FOREACH( boost::property_tree::ptree::value_type const& bk, m_tree.get_child(key) ) // absolute key

@@ -12,6 +12,11 @@ ImGUI (MIT) : Immediate Mode GUI
 
 * includes an embedded console : developer-centric
 
+These *imgui-* functions add cmake building to ImGui
+that allows usage of env/cmake/Modules/FindImGui.cmake 
+This is tested by imguitest-
+
+
 
 Issues
 -------
