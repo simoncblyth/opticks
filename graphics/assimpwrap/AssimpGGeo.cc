@@ -93,6 +93,7 @@ AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection)
    m_no_surface(0),
    m_ggeo(NULL)
 {
+    LOG(info) << __func__ << " m_selection: " << m_selection;
     // see g4daenode.py as_optical_property_vector
 
     float hc_over_GeV = 1.2398424468024265e-06 ;  // h_Planck * c_light / GeV / nanometer #  (approx, hc = 1240 eV.nm )  
@@ -290,7 +291,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if(strncmp(query, name, strlen(query))!=0) continue ;  
 
-        //LOG(debug) << "AssimpGGeo::convertMaterials " << i << " " << name ;
+        LOG(info) << "AssimpGGeo::convertMaterials " << i << " " << name ;
 
         const char* bspv1 = getStringProperty(mat, g4dae_bordersurface_physvolume1 );
         const char* bspv2 = getStringProperty(mat, g4dae_bordersurface_physvolume2 );
@@ -307,7 +308,8 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if(os)
         {
-            assert(strcmp(osnam, name) == 0); 
+            LOG(info) << "AssimpGGeo::convertMaterials OS Name " << i << " " << osnam ;
+            // assert(strcmp(osnam, name) == 0); 
             // same-name convention between OpticalSurface and the skin or border surface that references it 
         }
 
@@ -472,6 +474,7 @@ void AssimpGGeo::convertStructure(GGeo* gg)
     if(m_selection)
     {
 
+        LOG(info) << __func__ << " m_selection: " << m_selection;
         aiVector3D* alow  = m_selection->getLow() ;
         gfloat3 low(alow->x, alow->y, alow->z);
 
@@ -571,12 +574,21 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
     GSkinSurface*   sks = gg->findSkinSurface(lv);          
+
+    LOG(info) << __func__ 
+              << " lv: " << lv
+              << " pv: " << pv
+              << " pv_p: " << pv_p
+              << " obs: " << (obs?obs->getName():"")
+              << " ibs: " << (ibs?ibs->getName():"")
+              << " sks: " << (sks?sks->getName():"")
+              ;
   
     unsigned int nsurf = 0 ;
     if(sks) nsurf++ ;
     if(ibs) nsurf++ ;
     if(obs) nsurf++ ;
-    assert(nsurf == 0 || nsurf == 1 ); 
+    assert(nsurf == 0 || nsurf == 1 || nsurf == 2); 
 
 
     GPropertyMap<float>* isurf  = NULL ; 
