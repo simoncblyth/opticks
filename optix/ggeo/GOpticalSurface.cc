@@ -7,6 +7,12 @@
 #include <sstream>
 #include <iomanip>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
+
 GOpticalSurface::GOpticalSurface(const char* name, const char* type, const char* model, const char* finish, const char* value) 
     : 
     m_name(strdup(name)), 
@@ -35,7 +41,23 @@ GOpticalSurface::GOpticalSurface(GOpticalSurface* other)
 void GOpticalSurface::findShortName(char marker)
 {
     if(m_shortname) return ;
-    m_shortname = strrchr(m_name, marker) + 1 ; 
+
+    // dyb names start /dd/... which is translated to __dd__
+    // so detect this and apply the shortening
+    // 
+    // juno names do not have the prefix so make shortname
+    // the same as the full one
+    //
+    // have to have different treatment as juno has multiple names ending _opsurf
+    // which otherwise get shortened to "opsurf" and tripup the digest checking
+    //
+    m_shortname = m_name[0] == marker ? strrchr(m_name, marker) + 1 : m_name ; 
+
+    LOG(info) << __func__
+              << " name [" << m_name << "]" 
+              << " shortname [" << m_shortname << "]" 
+              ;
+
 }
 
 

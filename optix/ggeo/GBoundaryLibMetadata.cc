@@ -21,6 +21,10 @@
 
 #include "stringutil.hpp"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 
 namespace fs = boost::filesystem;
@@ -37,6 +41,11 @@ void GBoundaryLibMetadata::add(const char* kfmt, unsigned int isub, const char* 
 {
     char key[128];
     snprintf(key, 128, kfmt, isub, cat, tag );
+
+    LOG(info) << "GBoundaryLibMetadata::add"
+              << " key " << key 
+              << " val " << val 
+              ; 
     m_tree.add(key, val);
 }
 
@@ -208,8 +217,19 @@ void GBoundaryLibMetadata::createMaterialMap()
             unsigned int line   = GBoundaryLib::getLine(isub, offset) ;   // into the wavelengthBuffer 
 
             bool first = digest.empty();
-            if(first)          digest = dig ;
-            else               assert(strcmp(digest.c_str(), dig) == 0);
+            if(first)
+            {
+                digest = dig ;
+            }
+            else
+            {
+                LOG(info)<< __func__
+                         << " digest " << digest                
+                         << " dig " << dig 
+                         ;                
+
+                assert(strcmp(digest.c_str(), dig) == 0);
+            }
 
             // only record line for 1st occurence of the name
             if(name2line.find(matname) == name2line.end()) name2line[matname] = line ; 

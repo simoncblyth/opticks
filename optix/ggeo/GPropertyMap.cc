@@ -167,6 +167,17 @@ bool GPropertyMap<T>::hasDefinedName()
     return strcmp(m_shortname, NOT_DEFINED) != 0 ;
 }
 
+template <typename T>
+char* GPropertyMap<T>::trimSuffixPrefix(const char* origname, const char* prefix)
+{
+    //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
+    const char* ox = "0x" ;
+    char* name = strdup(origname);
+    char* c = name + strlen(name) - 9 ;              
+    if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
+    if(prefix) name += strlen(prefix) ;
+    return name ;  
+}
 
 template <typename T>
 void GPropertyMap<T>::findShortName(const char* prefix)
@@ -178,15 +189,8 @@ void GPropertyMap<T>::findShortName(const char* prefix)
         m_shortname = NOT_DEFINED ;
     }  
     else if(strncmp( m_name.c_str(), prefix, strlen(prefix)) == 0)
-    {
-        //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
-        const char* ox = "0x" ;
-        char* name = strdup(m_name.c_str());
-        char* c = name + strlen(name) - 9 ;              
-        if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
-        name += strlen(prefix) ;
-
-        m_shortname = name ; 
+    { 
+        m_shortname = trimSuffixPrefix(m_name.c_str(), prefix); 
     }
     else
     {
@@ -194,8 +198,18 @@ void GPropertyMap<T>::findShortName(const char* prefix)
         //     __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib1Surface
         // just provide chars after the last _
 
-        const char* p = strrchr(m_name.c_str(), '_') ;
-        m_shortname = p ? p + 1 :  NOT_DEFINED ; 
+        if( m_name[0] == '_') //  detect dyb names by first char 
+        { 
+            const char* p = strrchr(m_name.c_str(), '_') ;
+            m_shortname = p ? p + 1 :  NOT_DEFINED ; 
+        }
+        else
+        {
+            //  JUNO names have no prefix and are short, so just trim the 0x tail
+            m_shortname = trimSuffixPrefix(m_name.c_str(), NULL) ; 
+        }
+
+
     }
 }
 
