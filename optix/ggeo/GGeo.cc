@@ -18,6 +18,7 @@
 
 #include <iomanip>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -166,13 +167,11 @@ void GGeo::add(GSolid* solid)
 void GGeo::dumpRaw(const char* msg)
 {
     printf("%s\n", msg);     
-
     for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
     {
         GMaterial* mat = m_materials_raw[i];
         mat->Summary();
     }
-
 }
 
 
@@ -423,4 +422,75 @@ void GGeo::sensitize_traverse( GNode* node, unsigned int depth)
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) sensitize_traverse(node->getChild(i), depth + 1);
 }
+
+
+
+
+
+
+
+void GGeo::dumpRawMaterialProperties(const char* msg)
+{
+    printf("%s\n", msg);     
+    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
+    {
+        GMaterial* mat = m_materials_raw[i];
+        //mat->Summary();
+        std::cout << std::setw(30) << mat->getShortName()
+                  << " keys: " << mat->getKeysString()
+                  << std::endl ; 
+    }
+}
+
+
+void GGeo::findScintillators(const char* props)
+{
+    m_scintillators_raw = getRawMaterialsWithProperties(props, ",");
+    assert(m_scintillators_raw.size() > 0 );
+}
+void GGeo::dumpScintillators(const char* msg)
+{
+    LOG(info)<< msg ;
+    for(unsigned int i=0; i<m_scintillators_raw.size() ; i++)
+    {
+        GMaterial* mat = m_scintillators_raw[i];
+        //mat->Summary();
+        std::cout << std::setw(30) << mat->getShortName()
+                  << " keys: " << mat->getKeysString()
+                  << std::endl ; 
+    }              
+}
+
+unsigned int GGeo::getNumScintillators()
+{
+    return m_scintillators_raw.size();
+}
+
+GMaterial* GGeo::getScintillator(unsigned int index)
+{
+    return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
+}
+
+
+std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, const char* delim)
+{
+    std::vector<std::string> elem ;
+    boost::split(elem, props, boost::is_any_of(delim));
+
+    std::vector<GMaterial*>  selected ; 
+    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
+    {
+        GMaterial* mat = m_materials_raw[i];
+        unsigned int found(0);
+        for(unsigned int p=0 ; p < elem.size() ; p++)
+        { 
+           if(mat->hasProperty(elem[p].c_str())) found+=1 ;        
+        }
+        if(found == elem.size()) selected.push_back(mat);
+    }
+    return selected ;  
+}
+
+
+
 

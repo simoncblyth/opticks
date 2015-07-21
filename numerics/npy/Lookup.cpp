@@ -45,6 +45,10 @@ void Lookup::loada(const char* adir, const char* aname, const char* aprefix)
     snprintf(apath, 256, "%s/%s", adir, aname);
 
 
+    LOG(info) << "Lookup::loada"
+              << " apath " << apath 
+              ;
+
     typedef std::map<std::string, unsigned int> SU_t ; 
 
     SU_t mp ; 
@@ -67,6 +71,10 @@ void Lookup::loadb(const char* bdir, const char* bname, const char* bprefix)
 {
     char bpath[256];
     snprintf(bpath, 256, "%s/%s", bdir, bname);
+
+    LOG(info) << "Lookup::loadb"
+              << " bpath " << bpath 
+              ;
 
     loadMap<std::string, unsigned int>(m_b, bpath);
 

@@ -535,6 +535,16 @@ ggeoview-export()
 
    export CUDAWRAP_RNG_MAX=$(ggeoview-rng-max)
 } 
+
+ggeoview-export-dump()
+{
+   env | grep GGEOVIEW
+   env | grep SHADER
+   env | grep RAYTRACE
+   env | grep CUDAWRAP
+
+}
+
 ggeoview-run(){ 
    local bin=$(ggeoview-bin)
    ggeoview-export

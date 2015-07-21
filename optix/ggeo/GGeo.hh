@@ -68,6 +68,7 @@ class GGeo {
 
     public:
         void dumpRaw(const char* msg="GGeo::dumpRaw");
+        void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties");
         void dumpRawSkinSurface(const char* name=NULL);
         void dumpRawBorderSurface(const char* name=NULL);
 
@@ -97,6 +98,13 @@ class GGeo {
         GMaterial* getMaterial(unsigned int index);  
         GSkinSurface* getSkinSurface(unsigned int index);  
         GBorderSurface* getBorderSurface(unsigned int index);  
+
+    public:
+        std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, const char* delim);
+        void findScintillators(const char* props);
+        void dumpScintillators(const char* msg="GGeo::dumpScintillators");
+        unsigned int getNumScintillators();
+        GMaterial* getScintillator(unsigned int index);
 
     public:
         GPropertyMap<float>* findRawMaterial(const char* shortname);
@@ -142,6 +150,7 @@ class GGeo {
         std::vector<GMaterial*>       m_materials_raw ; 
         std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
         std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
+        std::vector<GMaterial*>       m_scintillators_raw ; 
 
         GBoundaryLib*                 m_boundary_lib ; 
         GSensorList*                  m_sensor_list ; 

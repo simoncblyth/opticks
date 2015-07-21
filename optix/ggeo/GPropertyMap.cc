@@ -331,6 +331,12 @@ GProperty<T>* GPropertyMap<T>::getProperty(const char* pname)
 }
 
 template <typename T>
+bool GPropertyMap<T>::hasProperty(const char* pname)
+{
+   return m_prop.find(pname) != m_prop.end() ;
+}
+
+template <typename T>
 GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index)
 {
    if(index < 0) index += m_keys.size() ;

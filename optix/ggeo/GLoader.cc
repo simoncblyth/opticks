@@ -11,6 +11,7 @@
 #include "GTreeCheck.hh"
 #include "GItemIndex.hh"
 #include "GBuffer.hh"
+#include "GMaterial.hh"
 
 #include "GGeo.hh"
 #include "GCache.hh"
@@ -72,10 +73,20 @@ void GLoader::load(bool nogeocache)
 
         // moved Wavelength and Optical buffers to GBoundaryLib (from GMergedMesh)
 
-        GPropertyMap<float>* scint = m_ggeo->findRawMaterial("LiquidScintillator"); // TODO: avoid name specifics at this level
+        m_ggeo->dumpRawMaterialProperties("GLoader::load");
+        //m_ggeo->dumpRaw();
+
+        m_ggeo->findScintillators("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
+        m_ggeo->dumpScintillators();
+
+        // avoid requiring specific scintillator name by picking the first material 
+        // with the requisite properties
+        GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillator(0));  
+        //GPropertyMap<float>* scint = m_ggeo->findRawMaterial("LiquidScintillator"); 
+
         m_boundarylib->createReemissionBuffer(scint);
 
-        GColors* source = GColors::load(idpath,"GColors.json");  // colorname => hexcode 
+        GColors* source = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
 
         m_metadata = m_boundarylib->getMetadata();
         m_materials = m_boundarylib->getMaterials();  
@@ -117,6 +128,7 @@ void GLoader::load(bool nogeocache)
     // hmm not routing via cache 
     m_lookup = new Lookup() ; 
     m_lookup->create(idpath);
+    m_lookup->dump("GLoader::load");  
 
     Index* idx = m_types->getFlagsIndex() ;    
     m_flags = new GItemIndex( idx );     //GFlagIndex::load(idpath); 
@@ -132,7 +144,7 @@ void GLoader::load(bool nogeocache)
     m_surfaces->setLabeller(GItemIndex::COLORKEY);
     m_flags->setLabeller(GItemIndex::COLORKEY);
 
-    m_colors = GColors::load(idpath,"GColors.json");                         // colorname => hexcode 
+    m_colors = GColors::load("$HOME/.opticks","GColors.json"); // colorname => hexcode   TODO: remove this, it duplicates above source
     m_materials->setColorSource(m_colors);
     m_surfaces->setColorSource(m_colors);
     m_flags->setColorSource(m_colors);

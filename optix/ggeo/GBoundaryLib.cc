@@ -101,7 +101,7 @@ const char* GBoundaryLib::keymap =
 //
 
 
-const char* GBoundaryLib::scintillators = "LiquidScintillator,GdDopedLS" ;
+const char* GBoundaryLib::scintillators = "LiquidScintillator,GdDopedLS,LS" ;
 const char* GBoundaryLib::reemissionkey = "SLOWCOMPONENT,FASTCOMPONENT" ;
 
 std::vector<std::string>* GBoundaryLib::vscintillators = NULL ;
@@ -412,7 +412,15 @@ GProperty<float>* GBoundaryLib::constructInvertedReemissionCDF(GPropertyMap<floa
 {
     std::string name = pmap->getShortNameString();
 
-    if(!isScintillator(name)) return NULL ;
+    if(!isScintillator(name)) 
+    {
+        LOG(warning) << "GBoundaryLib::constructInvertedReemissionCDF " 
+                     << " name " << name
+                     << " ( NOT LISTED AS A SCINTILLATOR ) " 
+                     ; 
+                      
+        return NULL ;
+    }
 
     typedef GProperty<float> P ; 
 
