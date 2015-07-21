@@ -522,6 +522,12 @@ ggeoview-gdb(){
    gdb --args $bin $*
 }
 
+ggeoview-valgrind(){ 
+   local bin=$(ggeoview-bin)
+   ggeoview-export
+   valgrind $bin $*
+}
+
 ggeoview-lldb()
 {
    local bin=$(ggeoview-bin)

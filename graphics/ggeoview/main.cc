@@ -414,8 +414,8 @@ int main(int argc, char** argv)
 
     Photons* photons(NULL);
 
-    if(engine.isEnabled())
-    {
+    // if(engine.isEnabled())
+    // {
         NPY<float>* dpho = evt.getPhotonData();
         Rdr::download(dpho);
 
@@ -524,7 +524,7 @@ int main(int argc, char** argv)
 
         photons = new Photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
         scene.setPhotons(photons);
-    }    // OptiX engine is enabled, ie not --nooptix/-O
+    // }    // OptiX engine is enabled, ie not --nooptix/-O
 
     glm::ivec4& recsel = composition.getRecSelect();
 

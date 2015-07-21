@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     Types types ; 
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     types.dumpFlags();
-    types.readMaterials(idpath, "GMaterialIndexLocal.json");
+    types.readMaterials(idpath, "GMaterialIndex");
     types.dumpMaterials();
 
     BoundariesNPY b(dpho);
@@ -25,6 +25,8 @@ int main(int argc, char** argv)
     b.indexBoundaries();
     b.dump();
 
+    glm::ivec4 sel = b.getSelection() ;
+    print(sel, "boundaries selection");
 
     return 0 ;
 }
