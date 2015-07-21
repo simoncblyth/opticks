@@ -186,7 +186,7 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
 
     GBuffer* obuf = m_boundarylib->getOpticalBuffer();
     unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
-    assert(numBoundaries == 56);
+    //assert(numBoundaries == 56);
     optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
     memcpy( optical_buffer->map(), obuf->getPointer(), obuf->getNumBytes() );
     optical_buffer->unmap();

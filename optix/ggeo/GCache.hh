@@ -1,11 +1,13 @@
 #pragma once
 #include "stdlib.h"
+#include <string>
 
 class GCache {
     public:
          GCache(const char* envprefix);
          const char* getIdPath();
          const char* getEnvPrefix();
+         bool idPathContains(const char* s); 
          void Summary(const char* msg="GCache::Summary");
 
     private:
@@ -46,5 +48,10 @@ inline const char* GCache::getEnvPrefix()
 }
 
 
-
+inline bool GCache::idPathContains(const char* s)
+{
+    std::string idp(m_idpath);
+    std::string ss(s);
+    return idp.find(ss) != std::string::npos ;
+}
 

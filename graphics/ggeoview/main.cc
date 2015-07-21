@@ -317,7 +317,16 @@ int main(int argc, char** argv)
 
     G4StepNPY genstep(npy);    
     genstep.setLookup(loader.getMaterialLookup()); 
-    genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
+   
+    if(cache.idPathContains("juno"))
+    {
+        LOG(warning) << "main: kludge skip genstep.applyLookup for JUNO " ;
+    }
+    else
+    {   
+        genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
+    }
+ 
 
     evt.setMaxRec(fcfg->getRecordMax());          // must set this before setGenStepData to have effect
 
@@ -414,6 +423,8 @@ int main(int argc, char** argv)
 
     Photons* photons(NULL);
 
+
+#ifdef _OPTIX
     // if(engine.isEnabled())
     // {
         NPY<float>* dpho = evt.getPhotonData();
@@ -525,6 +536,8 @@ int main(int argc, char** argv)
         photons = new Photons(&pho, &bnd, seqhis, seqmat ) ; // GUI jacket 
         scene.setPhotons(photons);
     // }    // OptiX engine is enabled, ie not --nooptix/-O
+
+#endif // WITH_OPTIX
 
     glm::ivec4& recsel = composition.getRecSelect();
 
