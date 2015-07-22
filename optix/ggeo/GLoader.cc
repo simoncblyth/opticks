@@ -22,6 +22,7 @@
 #include "stringutil.hpp"
 #include "Lookup.hpp"
 #include "Types.hpp"
+#include "Timer.hpp"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -33,6 +34,10 @@ namespace fs = boost::filesystem;
 
 void GLoader::load(bool nogeocache)
 {
+    Timer t ; 
+    t.setVerbose(true);
+    t.start();
+
     assert(m_cache);
     const char* idpath = m_cache->getIdPath() ;
     const char* envprefix = m_cache->getEnvPrefix() ;
@@ -46,13 +51,17 @@ void GLoader::load(bool nogeocache)
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
         m_ggeo = NULL ; 
         m_mergedmesh = GMergedMesh::load(idpath);
+        t("load mergedmesh"); 
+
         m_boundarylib = GBoundaryLib::load(idpath);
+        t("load boundarylib"); 
         m_metadata = m_boundarylib->getMetadata() ; 
         //m_metadata   = GBoundaryLibMetadata::load(idpath);
 
         m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); // TODO: find common place for such strings, maybe Types.hpp
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
         m_meshes     = GItemIndex::load(idpath, "MeshIndex");
+        t("load indices"); 
     } 
     else
     {
@@ -61,30 +70,35 @@ void GLoader::load(bool nogeocache)
         m_ggeo = (*m_imp)(envprefix);      
 
 
+        t("create m_ggeo from G4DAE"); 
+
+/*
         GTreeCheck tck(m_ggeo);  // TODO: rename to GTreeAnalyse
         tck.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
         tck.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
-
-
+        t("TreeCheck"); 
+*/
         m_meshes = m_ggeo->getMeshIndex();  
 
         m_boundarylib = m_ggeo->getBoundaryLib();
         m_boundarylib->createWavelengthAndOpticalBuffers();
 
+        t("createWavelengthAndOpticalBuffers"); 
+
         // moved Wavelength and Optical buffers to GBoundaryLib (from GMergedMesh)
 
-        m_ggeo->dumpRawMaterialProperties("GLoader::load");
+        //m_ggeo->dumpRawMaterialProperties("GLoader::load");
         //m_ggeo->dumpRaw();
 
         m_ggeo->findScintillators("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
-        m_ggeo->dumpScintillators();
+        //m_ggeo->dumpScintillators();
 
         // avoid requiring specific scintillator name by picking the first material 
         // with the requisite properties
         GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillator(0));  
-        //GPropertyMap<float>* scint = m_ggeo->findRawMaterial("LiquidScintillator"); 
 
         m_boundarylib->createReemissionBuffer(scint);
+        t("createReemissionBuffer"); 
 
         GColors* source = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
 
@@ -98,9 +112,12 @@ void GLoader::load(bool nogeocache)
         m_materials->loadIndex("$HOME/.opticks"); // customize GMaterialIndex
 
         m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
+        t("sensitize"); 
 
-        unsigned int ridx = 1 ; 
+        unsigned int ridx = 0 ; 
         m_mergedmesh = m_ggeo->getMergedMesh(ridx);   // if not existing creates merged mesh, doing the flattening  
+        m_mergedmesh->dumpSolids("GLoader::load dumpSolids");
+        t("create MergedMesh"); 
 
         //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
 
@@ -110,6 +127,7 @@ void GLoader::load(bool nogeocache)
         czr.setRepeatIndex(m_mergedmesh->getIndex()); 
         czr.traverse();
 
+        t("GColorizer"); 
 
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
 
@@ -123,6 +141,7 @@ void GLoader::load(bool nogeocache)
 
         m_boundarylib->save(idpath);
 
+        t("save geocache"); 
     } 
   
     // hmm not routing via cache 
@@ -176,6 +195,8 @@ void GLoader::load(bool nogeocache)
 
     LOG(info) << "GLoader::load done " << idpath ;
     assert(m_mergedmesh);
+    t.stop();
+    t.dump();
 }
 
 void GLoader::Summary(const char* msg)

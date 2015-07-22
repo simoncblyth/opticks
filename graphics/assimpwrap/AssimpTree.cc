@@ -41,7 +41,7 @@ const aiScene* AssimpTree::getScene()
 
 void AssimpTree::traverseWrap(const char* msg)
 {
-   LOG(info) << "AssimpTree::traverseWrap " << msg ; 
+   LOG(debug) << msg ; 
 
    m_wrap_index = 0 ;
    m_dump = 0 ;
@@ -50,7 +50,7 @@ void AssimpTree::traverseWrap(const char* msg)
 
    traverseWrap(m_scene->mRootNode, ancestors);
 
-   LOG(info) << "AssimpTree::traverseWrap m_wrap_index " << m_wrap_index << " m_dump " << m_dump ;  
+   LOG(debug) << "AssimpTree::traverseWrap m_wrap_index " << m_wrap_index << " m_dump " << m_dump ;  
 }
 
 void AssimpTree::traverseWrap(aiNode* node, std::vector<aiNode*> ancestors)

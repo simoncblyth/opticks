@@ -53,7 +53,7 @@ void GOpticalSurface::findShortName(char marker)
     //
     m_shortname = m_name[0] == marker ? strrchr(m_name, marker) + 1 : m_name ; 
 
-    LOG(info) << __func__
+    LOG(debug) << __func__
               << " name [" << m_name << "]" 
               << " shortname [" << m_shortname << "]" 
               ;

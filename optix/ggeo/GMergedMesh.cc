@@ -3,8 +3,16 @@
 #include "GSolid.hh"
 #include "GBoundaryLib.hh"
 #include "GBoundary.hh"
+
+#include "Timer.hpp"
+
 #include <iostream>
 #include <iomanip>
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -12,11 +20,15 @@ namespace fs = boost::filesystem;
 
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 {
+
+    Timer t ; 
+    t.setVerbose(true);
+    t.start();
+
     GSolid* root = ggeo->getSolid(0);
 
     unsigned int numMeshes = ggeo->getNumMeshes();
     assert(numMeshes < 500 );
-
 
     GMergedMesh* mm = new GMergedMesh( index );
 
@@ -24,7 +36,16 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     mm->traverse( root, 0, pass_count );  
 
+    t("1st pass traverse");
+
     // allocate space for flattened arrays
+
+    LOG(info) << "GMergedMesh::create " 
+              << " index " << index 
+              << " numMeshes " << numMeshes 
+              << " numVertices " << mm->getNumVertices()
+              << " numFaces " << mm->getNumFaces()
+              ;
 
     unsigned int numVertices = mm->getNumVertices();
     mm->setVertices(new gfloat3[numVertices]); 
@@ -34,6 +55,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->setNumColors(numVertices);
 
     mm->setColor(0.5,0.5,0.5);  // starting point mid-grey, change in traverse 2nd pass
+    t("allocate vertices");
 
     // consolidate into guint4 
     unsigned int numFaces = mm->getNumFaces();
@@ -43,17 +65,25 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
     mm->setNodes(        new unsigned int[numFaces]);
     mm->setBoundaries(   new unsigned int[numFaces]);
     mm->setSensors(      new unsigned int[numFaces]);
+    t("allocate faces");
 
     unsigned int numSolids = mm->getNumSolids();
     mm->setCenterExtent(new gfloat4[numSolids]);
     mm->setTransforms(new float[numSolids*16]);
     mm->setMeshes(new unsigned int[numSolids]);
+    t("allocate solids");
 
     // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
     mm->traverse( root, 0, pass_merge );  
+    t("2nd pass traverse");
+
     mm->updateBounds();
 
+    t("updateBounds");
+
+    t.stop();
+    t.dump();
 
     return mm ;
 }

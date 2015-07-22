@@ -42,7 +42,7 @@ void GBoundaryLibMetadata::add(const char* kfmt, unsigned int isub, const char* 
     char key[128];
     snprintf(key, 128, kfmt, isub, cat, tag );
 
-    LOG(info) << "GBoundaryLibMetadata::add"
+    LOG(debug) << "GBoundaryLibMetadata::add"
               << " key " << key 
               << " val " << val 
               ; 
@@ -204,7 +204,10 @@ void GBoundaryLibMetadata::createMaterialMap()
     {
         std::string matname = ak.first ;
         snprintf(key, 128, "lib.material.%s.mat", matname.c_str());
-        printf("GBoundaryLibMetadata::createMaterialMap %s \n", key);
+
+        LOG(debug)<< "GBoundaryLibMetadata::createMaterialMap " 
+                  << " key " << key
+                  ;
 
         std::string digest ;     
         BOOST_FOREACH( boost::property_tree::ptree::value_type const& bk, m_tree.get_child(key) ) // absolute key
@@ -223,9 +226,9 @@ void GBoundaryLibMetadata::createMaterialMap()
             }
             else
             {
-                LOG(info)<< __func__
-                         << " digest " << digest                
-                         << " dig " << dig 
+                LOG(debug)<< __func__
+                          << " digest " << digest                
+                          << " dig " << dig 
                          ;                
 
                 assert(strcmp(digest.c_str(), dig) == 0);
@@ -238,10 +241,13 @@ void GBoundaryLibMetadata::createMaterialMap()
         }
     }
 
-    printf("GBoundaryLibMetadata::createMaterialMap\n");
     for(Map_t::iterator it=name2line.begin() ; name2line.end() != it ; it++)
     {
-        printf(" %25s : %u \n", it->first.c_str(), it->second ); 
+        LOG(debug) << "GBoundaryLibMetadata::createMaterialMap" 
+                  << std::setw(25) << it->first
+                  << std::setw(10) << it->second 
+                  ; 
+
         m_material_map.add( it->first, it->second );
     }
 

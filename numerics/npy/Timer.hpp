@@ -9,10 +9,10 @@ class Times ;
 
 class Timer {
     public:
-        typedef typename std::pair<std::string, double>  SD ; 
-        typedef typename std::vector<SD>                VSD ; 
-        typedef typename std::vector<std::string>       VS ; 
-        typedef typename VSD::const_iterator            VSDI ; 
+        typedef std::pair<std::string, double>  SD ; 
+        typedef std::vector<SD>                VSD ; 
+        typedef std::vector<std::string>       VS ; 
+        typedef VSD::const_iterator            VSDI ; 
     public:
         static const char* START ; 
         static const char* STOP  ; 

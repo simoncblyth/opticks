@@ -13,6 +13,8 @@
 #include "CUDAInterop.hh"
 #endif
 
+//#define OPTIX 1
+
 // oglrap-
 #define GUI_ 1
 #ifdef GUI_
@@ -101,6 +103,8 @@
 #include "ThrustHistogram.hh"
 #include "ThrustArray.hh"
 
+#define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
+
 
 void dump(float* f, const char* msg)
 {
@@ -147,6 +151,7 @@ int main(int argc, char** argv)
 
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
+    bool juno = cache.idPathContains("juno") ;
     LOG(debug) << argv[0] ; 
 
     const char* shader_dir = getenv("SHADER_DIR"); 
@@ -318,7 +323,7 @@ int main(int argc, char** argv)
     G4StepNPY genstep(npy);    
     genstep.setLookup(loader.getMaterialLookup()); 
    
-    if(cache.idPathContains("juno"))
+    if(juno)
     {
         LOG(warning) << "main: kludge skip genstep.applyLookup for JUNO " ;
     }
@@ -334,7 +339,16 @@ int main(int argc, char** argv)
 
     t("hostEvtAllocation"); 
 
-    composition.setCenterExtent(evt["genstep.vpos"]->getCenterExtent()); // is this domain used for photon record compression ?
+    // for juno setup view to point at geometry rather than genstep
+    
+       
+
+    glm::vec4 mmce = GLMVEC4(mm->getCenterExtent(0)) ;
+    glm::vec4 gsce = evt["genstep.vpos"]->getCenterExtent();
+
+    print(mmce, "mmce");
+    print(gsce, "gsce");
+    composition.setCenterExtent( juno ? mmce : gsce );
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
@@ -374,6 +388,8 @@ int main(int argc, char** argv)
     //     but for OpenGL interop its expedient for now
 
 
+    Photons* photons(NULL);
+#ifdef OPTIX
     //  creates OptiX buffers from the OpenGL buffer_id's 
     OptiXEngine engine("GGeoView") ;       
     engine.setFilename(idpath);
@@ -421,10 +437,8 @@ int main(int argc, char** argv)
 
     LOG(info) << "main.OptiXEngine::generate DONE "; 
 
-    Photons* photons(NULL);
 
 
-#ifdef _OPTIX
     // if(engine.isEnabled())
     // {
         NPY<float>* dpho = evt.getPhotonData();
@@ -601,12 +615,14 @@ int main(int argc, char** argv)
 #endif
         frame.render();
 
+#ifdef OPTIX
         if(interactor.getOptiXMode()>0)
         { 
              engine.trace();
              engine.render();
         }
         else
+#endif
         {
             scene.render();
         }
@@ -638,7 +654,9 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(window);
     }
+#ifdef OPTIX
     engine.cleanUp();
+#endif
 #ifdef NPYSERVER
     server.stop();
 #endif

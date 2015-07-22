@@ -35,20 +35,21 @@ void GTreeCheck::traverse( GNode* node, unsigned int depth)
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
     //bool selected = solid->isSelected();
+    //if(selected)
+    {
+        GMatrixF* gtransform = solid->getTransform();
+        GMatrixF* ltransform = solid->getLevelTransform();
+        GMatrixF* ctransform = solid->calculateTransform();
 
-    GMatrixF* gtransform = solid->getTransform();
-    GMatrixF* ltransform = solid->getLevelTransform();
-    GMatrixF* ctransform = solid->calculateTransform();
+        float delta = gtransform->largestDiff(*ctransform);
 
-    float delta = gtransform->largestDiff(*ctransform);
-
-    std::string& pdig = node->getProgenyDigest();
-    unsigned int nprogeny = node->getProgenyCount() ;
+        std::string& pdig = node->getProgenyDigest();
+        unsigned int nprogeny = node->getProgenyCount() ;
         
-    m_digest_count->add(pdig.c_str());
+        m_digest_count->add(pdig.c_str());
 
-    if(nprogeny > 0 ) 
-         LOG(debug) 
+        if(nprogeny > 0 ) 
+            LOG(debug) 
               << "GTreeCheck::traverse " 
               << " count "     << std::setw(6) << m_count
               << " #progeny "  << std::setw(6) << nprogeny 
@@ -57,9 +58,9 @@ void GTreeCheck::traverse( GNode* node, unsigned int depth)
               << " name " << node->getName() 
               ;
 
-    assert(delta < 1e-6) ;
-
-    m_count++ ; 
+        assert(delta < 1e-6) ;
+        m_count++ ; 
+    }
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
 }
@@ -86,7 +87,7 @@ void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
                   << std::endl 
                   ;  
 
-    assert(placements.size() == ndig );
+    assert(placements.size() == ndig ); // restricting traverse to just selected causes this to fail
     if(verbose)
     {
         for(unsigned int i=0 ; i < placements.size() ; i++)

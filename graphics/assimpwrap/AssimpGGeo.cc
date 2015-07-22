@@ -93,7 +93,6 @@ AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection)
    m_no_surface(0),
    m_ggeo(NULL)
 {
-    LOG(info) << __func__ << " m_selection: " << m_selection;
     // see g4daenode.py as_optical_property_vector
 
     float hc_over_GeV = 1.2398424468024265e-06 ;  // h_Planck * c_light / GeV / nanometer #  (approx, hc = 1240 eV.nm )  
@@ -291,7 +290,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if(strncmp(query, name, strlen(query))!=0) continue ;  
 
-        LOG(info) << "AssimpGGeo::convertMaterials " << i << " " << name ;
+        LOG(debug) << "AssimpGGeo::convertMaterials " << i << " " << name ;
 
         const char* bspv1 = getStringProperty(mat, g4dae_bordersurface_physvolume1 );
         const char* bspv2 = getStringProperty(mat, g4dae_bordersurface_physvolume2 );
@@ -308,7 +307,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if(os)
         {
-            LOG(info) << "AssimpGGeo::convertMaterials OS Name " << i << " " << osnam ;
+            LOG(debug) << "AssimpGGeo::convertMaterials OS Name " << i << " " << osnam ;
             // assert(strcmp(osnam, name) == 0); 
             // same-name convention between OpticalSurface and the skin or border surface that references it 
         }

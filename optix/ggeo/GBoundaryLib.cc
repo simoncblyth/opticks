@@ -787,7 +787,7 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
 
         std::string oshortname = boundary->getOuterMaterial()->getShortName() ; 
 
-        LOG(info)<<  __func__
+        LOG(debug)<<  __func__
                  << " isn " << ishortname 
                  << " osn " << oshortname 
                  ;

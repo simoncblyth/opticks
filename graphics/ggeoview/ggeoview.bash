@@ -505,7 +505,9 @@ ggeoview-query-dyb() {
 }
 
 ggeoview-query-juno() {
-    echo index:1
+    #echo range:1:289733
+    #echo range:1:100000   # OpenGL vis works but slowly
+    echo range:1:50000    # 
 }
 
 ggeoview-query() {
