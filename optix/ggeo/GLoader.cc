@@ -71,14 +71,12 @@ void GLoader::load(bool nogeocache)
 
 
         t("create m_ggeo from G4DAE"); 
-
 /*
         GTreeCheck tck(m_ggeo);  // TODO: rename to GTreeAnalyse
         tck.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
         tck.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
         t("TreeCheck"); 
 */
-
         m_meshes = m_ggeo->getMeshIndex();  
 
         m_boundarylib = m_ggeo->getBoundaryLib();

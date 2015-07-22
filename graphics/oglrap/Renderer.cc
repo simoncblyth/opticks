@@ -116,7 +116,7 @@ void Renderer::gl_upload_buffers(bool debug)
     }
     else
     {
-        LOG(info) << "Renderer::gl_upload_buffers no transforms " ;
+        LOG(warning) << "Renderer::gl_upload_buffers NO TRANSFORMS " ;
     }
 
 

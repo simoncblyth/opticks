@@ -23,8 +23,6 @@ bregex-usage(){ cat << EOU
                       other_path.h :         
 
 
-
-
 *bregex-enum*
     plucking names and values from an enum string
 
@@ -156,6 +154,11 @@ bregex-test-(){ cat << EOT
    <hello>world4</hello>
 
     \$ENV_HOME/graphics/ggeoview/cu/photon.h
+
+    \$HOME/.opticks/GColors.json
+    \$HOME/.opticks
+    \$HOME/opticks/GColors.json
+
 
 #incl "path.h"
 #incl "other_path.h"
