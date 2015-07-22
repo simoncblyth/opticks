@@ -7,6 +7,7 @@
 class GGeo ; 
 class GNode ; 
 class GSolid ; 
+class GBuffer ;
 template<class T> class Counts ;
 
 class GTreeCheck {
@@ -19,6 +20,8 @@ class GTreeCheck {
         void traverse();
         unsigned int getRepeatIndex(const std::string& pdig );
         void labelTree();
+        unsigned int getNumRepeats(); 
+        GBuffer* makeTransformsBuffer(unsigned int ridx);
    public:
         bool operator()(const std::string& dig) ;
    private:
@@ -50,5 +53,7 @@ inline GTreeCheck::GTreeCheck(GGeo* ggeo)
        }
 
 
-
-
+inline unsigned int GTreeCheck::getNumRepeats()
+{
+    return m_repeat_candidates.size();
+}

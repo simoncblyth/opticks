@@ -82,6 +82,20 @@ void GLoader::load(bool nogeocache, int repeatidx)
             m_treeanalyse->traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
             m_treeanalyse->labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
             t("TreeCheck"); 
+
+            GBuffer* rtransforms = m_treeanalyse->makeTransformsBuffer(repeatidx);
+            if(rtransforms)
+            { 
+                rtransforms->save<float>("/tmp/rtransforms.npy");
+            }
+            else
+            {
+                 LOG(warning)<<"GLoader::load makeTransformsBuffer FAILED "
+                             << " repeatidx " << repeatidx 
+                             ; 
+            }
+
+            t("makeRepeatTransforms"); 
         }
 
         m_meshes = m_ggeo->getMeshIndex();  

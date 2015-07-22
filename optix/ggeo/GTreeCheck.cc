@@ -2,6 +2,7 @@
 #include "GGeo.hh"
 #include "GSolid.hh"
 #include "GMatrix.hh"
+#include "GBuffer.hh"
 #include "Counts.hpp"
 
 #include <iomanip>
@@ -102,6 +103,39 @@ void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
     }
 }
 
+
+GBuffer* GTreeCheck::makeTransformsBuffer(unsigned int ridx) 
+{
+    assert(ridx >= 1); // ridx is a 1-based index
+    if(ridx > m_repeat_candidates.size()) return NULL ; 
+
+    std::string pdig = m_repeat_candidates[ridx-1];
+    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+
+    unsigned int num = placements.size() ; 
+    unsigned int numElements = 16 ; 
+    unsigned int size = sizeof(float)*numElements;
+    float* transforms = new float[num*numElements];
+
+    for(unsigned int i=0 ; i < placements.size() ; i++)
+    {
+        GNode* place = placements[i] ;
+        GMatrix<float>* t = place->getTransform();
+        t->copyTo(transforms + numElements*i); 
+    } 
+
+    LOG(info) << "GTreeCheck::makeTransformsBuffer " 
+              << " ridx " << ridx 
+              << " pdig " << pdig 
+              << " num " << num 
+              << " size " << size 
+              ;
+
+    GBuffer* buffer = new GBuffer( size*num, (void*)transforms, size, numElements ); 
+    return buffer ;
+}
+
+
 void GTreeCheck::findRepeatCandidates(unsigned int minrep)
 {
     for(unsigned int i=0 ; i < m_digest_count->size() ; i++)
@@ -136,6 +170,10 @@ void GTreeCheck::findRepeatCandidates(unsigned int minrep)
     
 
 }
+
+
+
+
 
 bool GTreeCheck::operator()(const std::string& dig)  
 {
