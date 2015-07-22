@@ -112,10 +112,9 @@ Envvars are defined in env/export-
         deftmpl = os_path_expandvars( deftmpl.c_str() ); 
         char* tmpl = (char*)deftmpl.c_str();
 
-        LOG(debug)<<"NPY<T>::path using default path template " << tmpl  
-                    << " as envvar " << envvar << " is  not defined "  
-                    << " define new typs with env-;export-;export-vi " ; 
-
+       //   LOG(debug)<<"NPY<T>::path using default path template " << tmpl  
+       //               << " as envvar " << envvar << " is  not defined "  
+       //               << " define new typs with env-;export-;export-vi " ; 
         // LOG(fatal)<< "NPY<T>::path missing envvar for "
         //           << " typ " << typ 
         //           << " envvar " << envvar  

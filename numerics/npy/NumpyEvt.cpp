@@ -108,7 +108,8 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
         unsigned int npho = m_genstep_data->getUInt(index, 0, 3);
         if(gs.isCerenkovStep(index))
         {
-            assert(npho > 0 && npho < 150);      // by observation of Cerenkov steps
+            //assert(npho > 0 && npho < 150); // by observation of Cerenkov steps
+            assert(npho > 0 && npho < 3000);  
         }
         else if(gs.isScintillationStep(index))
         {
