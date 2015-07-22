@@ -194,36 +194,40 @@ std::string regex_extract_quoted(const char* line)
 
 std::string os_path_expandvars(const char* s)
 {
-    const char* ptn = "\\$(\\w*)/(\\S*)" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
+    // const char* ptn = "\\$(\\w+)(/.+)?" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
+    const char* ptn = "\\$(\\w+)" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
 
     std::string str = s ;
 
     boost::regex e(ptn);
 
-    std::stringstream ss ; 
-
-    if(boost::regex_match(s,e))
+    while(boost::regex_search(str,e,boost::match_default))
     {
         boost::sregex_iterator mt(str.begin(), str.end(), e);
         boost::sregex_iterator me;
 
         if(mt != me)
         {
-             const char* evar  = (*mt)[1].str().c_str() ;
-             const char* etail = (*mt)[2].str().c_str() ;
-             char* eval = getenv(evar);
-
-             //printf("os_path_expandvars  evar %s etail %s eval %s  \n", evar, etail, eval );
+             std::string evar  = (*mt)[1].str();
+             char* eval = getenv(evar.c_str());
 
              if( eval )
              {
-                 ss << eval << "/" << etail ;
+                 std::string seval = eval;
+                 // printf("---> os_path_expandvars  evar %s eval %s  \n", evar.c_str(), seval.c_str() );
+
+                 std::string skey = "\\$";
+                 skey= skey+evar;
+
+                 // printf("----> %s replace in %s \n", skey.c_str(), str.c_str());
+                 boost::regex rep(skey);
+                 str = boost::regex_replace(str, rep, seval);
+                 // printf("-----> %s \n", str.c_str());
              } 
         }
     }  
 
-    std::string expanded = ss.str();
-    return expanded.empty() ? s : expanded ; 
+    return str; 
 }
 
 

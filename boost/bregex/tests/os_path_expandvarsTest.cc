@@ -13,5 +13,8 @@ int main(int argc, char** argv)
     printf("%s\n", home2.c_str());
     std::string home3 = os_path_expandvars("$HOME");
     printf("%s\n", home3.c_str());
+
+    std::string home4 = os_path_expandvars("$HOME/$ENV_HOME");
+    printf("%s\n", home4.c_str());
     return 0 ; 
 }
