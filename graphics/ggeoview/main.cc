@@ -13,7 +13,7 @@
 #include "CUDAInterop.hh"
 #endif
 
-//#define OPTIX 1
+#define OPTIX 1
 
 // oglrap-
 #define GUI_ 1
@@ -152,6 +152,13 @@ int main(int argc, char** argv)
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
     bool juno = cache.idPathContains("juno") ;
+    bool dayabay  = cache.idPathContains("DayaBay") ;
+    assert( juno ^ dayabay ); // exclusive-or
+    const char* det(NULL) ;
+    if(juno)    det = "juno" ;
+    if(dayabay) det = "dayabay" ;
+
+
     LOG(debug) << argv[0] ; 
 
     const char* shader_dir = getenv("SHADER_DIR"); 
@@ -324,9 +331,10 @@ int main(int argc, char** argv)
     std::string tag_ = fcfg->getEventTag();
     const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
 
+
     t("interpGeometry"); 
 
-    NPY<float>* npy = NPY<float>::load(typ, tag) ;
+    NPY<float>* npy = NPY<float>::load(typ, tag, det ) ;
 
     t("loadGenstep"); 
 
@@ -436,10 +444,10 @@ int main(int argc, char** argv)
     // persisting domain allows interpretation of packed photon record NPY arrays 
     // from standalone NumPy
     NPYBase* domain = engine.getDomain(); 
-    //if(domain) domain->save("domain", "1");
+    //if(domain) domain->save("domain", "1", det);
 
     //NPYBase* idomain = engine.getIDomain(); 
-    //if(idomain) idomain->save("idomain", "1");
+    //if(idomain) idomain->save("idomain", "1", det );
 
    
     LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
@@ -464,11 +472,11 @@ int main(int argc, char** argv)
         t("evtDownload"); 
 
         dpho->setVerbose();
-        dpho->save("ox%s", typ,  tag);
+        dpho->save("ox%s", typ,  tag, det);
         drec->setVerbose();
-        drec->save("rx%s", typ,  tag );
+        drec->save("rx%s", typ,  tag, det);
         dhis->setVerbose();
-        dhis->save("ph%s", typ,  tag );
+        dhis->save("ph%s", typ,  tag, det);
 
         t("evtSave"); 
 
@@ -535,8 +543,8 @@ int main(int argc, char** argv)
         psel.download( evt.getPhoselData() );  
         rsel.download( evt.getRecselData() ); 
 
-        //evt.getPhoselData()->save("phosel_%s", typ, tag);
-        //evt.getRecselData()->save("recsel_%s", typ, tag);
+        //evt.getPhoselData()->save("phosel_%s", typ, tag, det);
+        //evt.getRecselData()->save("recsel_%s", typ, tag, det);
 
         scene.uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
 

@@ -6,7 +6,7 @@
 
 int main()
 {
-   NPY<float>* dom = NPY<float>::load("domain", "1");
+   NPY<float>* dom = NPY<float>::load("domain", "1", "dayabay");
    dom->dump();
    glm::vec4 ce = dom->getQuad(0,0);
    print(ce, "ce");

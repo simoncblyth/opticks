@@ -92,23 +92,25 @@ must be present in the environment.
 Envvars are defined in env/export-
 
 */
-    const char* TYP = uppercase(typ);
-    char envvar[64];
-    snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
-    free((void*)TYP); 
+
+
+   // const char* TYP = uppercase(typ);
+   // char envvar[64];
+   // snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
+   // free((void*)TYP); 
 
 
     char path_[256];
 
     std::string deftmpl(DEFAULT_PATH_TEMPLATE) ; 
+    //char* tmpl = getenv(envvar) ;
+    //if(!tmpl)
+    //{
 
-    char* tmpl = getenv(envvar) ;
-    if(!tmpl)
-    {
         boost::replace_first(deftmpl, "$1", det );
         boost::replace_first(deftmpl, "$2", typ );
         deftmpl = os_path_expandvars( deftmpl.c_str() ); 
-        tmpl = (char*)deftmpl.c_str();
+        char* tmpl = (char*)deftmpl.c_str();
 
         LOG(debug)<<"NPY<T>::path using default path template " << tmpl  
                     << " as envvar " << envvar << " is  not defined "  
@@ -119,7 +121,7 @@ Envvars are defined in env/export-
         //           << " envvar " << envvar  
         // assert(0);
         // return "missing-template-envvar" ; 
-    }
+    //}
     snprintf(path_, 256, tmpl, tag );
     return path_ ;   
 }
