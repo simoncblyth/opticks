@@ -215,7 +215,6 @@ int main(int argc, char** argv)
     bool nooptix    = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
     bool noviz      = fcfg->hasOpt("noviz");
-    //bool norecord = fcfg->hasOpt("norecord");
 
     // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
     // pixelfactor 2 makes OptiX render at retina resolution
@@ -246,15 +245,13 @@ int main(int argc, char** argv)
     numpyserver<numpydelegate> server(&delegate); // connect to external messages 
 #endif
 
-    //t("configuration");  // minimal 0.001 
-
 
     // dynamic define for use by GLSL shaders
     const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
     DynamicDefine dd(shader_dynamic_dir, "dynamic.h");
     dd.add("MAXREC",fcfg->getRecordMax());    
+    dd.add("MAXTIME",fcfg->getTimeMax());    
     dd.write();
-
 
     scene.init();  // reading shader source and creating renderers
     scene.setComposition(&composition);    
@@ -279,7 +276,7 @@ int main(int argc, char** argv)
     loader.setTypes(&types);
     loader.setCache(&cache);
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    loader.load(nogeocache);
+    loader.load(nogeocache, fcfg->getRepeatIndex());
 
     t("loadGeometry"); 
 
@@ -310,7 +307,7 @@ int main(int argc, char** argv)
     GBoundaryLib* blib = loader.getBoundaryLib();
  
     composition.setDomainCenterExtent(ce);     // index 0 corresponds to entire geometry
-    composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );  // TODO: avoid static define.h MAXTIME 
+    composition.setTimeDomain( gfloat4(0.f, fcfg->getTimeMax(), 0.f, 0.f) );  
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
     GBoundaryLibMetadata* meta = loader.getMetadata(); 

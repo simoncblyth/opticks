@@ -32,7 +32,7 @@ namespace fs = boost::filesystem;
 // trace/debug/info/warning/error/fatal
 
 
-void GLoader::load(bool nogeocache)
+void GLoader::load(bool nogeocache, int repeatidx)
 {
     Timer t ; 
     t.setVerbose(true);
@@ -42,7 +42,11 @@ void GLoader::load(bool nogeocache)
     const char* idpath = m_cache->getIdPath() ;
     const char* envprefix = m_cache->getEnvPrefix() ;
 
-    LOG(info) << "GLoader::load start idpath " << idpath << " nogeocache " << nogeocache  ;
+    LOG(info) << "GLoader::load start " 
+              << " idpath " << idpath 
+              << " nogeocache " << nogeocache  
+              << " repeatidx " << repeatidx 
+              ;
 
     fs::path geocache(idpath);
 
@@ -71,12 +75,15 @@ void GLoader::load(bool nogeocache)
 
 
         t("create m_ggeo from G4DAE"); 
-/*
-        GTreeCheck tck(m_ggeo);  // TODO: rename to GTreeAnalyse
-        tck.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
-        tck.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
-        t("TreeCheck"); 
-*/
+
+        if(repeatidx > -1)
+        { 
+            m_treeanalyse = new GTreeCheck(m_ggeo);  // TODO: rename to GTreeAnalyse
+            m_treeanalyse->traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
+            m_treeanalyse->labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
+            t("TreeCheck"); 
+        }
+
         m_meshes = m_ggeo->getMeshIndex();  
 
         m_boundarylib = m_ggeo->getBoundaryLib();
@@ -113,7 +120,7 @@ void GLoader::load(bool nogeocache)
         m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
         t("sensitize"); 
 
-        unsigned int ridx = 0 ; 
+        unsigned int ridx = repeatidx > -1 ? repeatidx : 0  ; 
         m_mergedmesh = m_ggeo->getMergedMesh(ridx);   // if not existing creates merged mesh, doing the flattening  
         m_mergedmesh->dumpSolids("GLoader::load dumpSolids");
         t("create MergedMesh"); 

@@ -6,7 +6,8 @@
 
 // mm/ns
 #define SPEED_OF_LIGHT 299.792458f
-#define MAXTIME 200.f 
+
+//#define MAXTIME 200.f  moved to dynamic header
 
 
 

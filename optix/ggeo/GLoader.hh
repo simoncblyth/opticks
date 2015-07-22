@@ -15,6 +15,7 @@ class GBoundaryLibMetadata ;
 class GItemIndex ; 
 class GColors ; 
 class GBuffer ; 
+class GTreeCheck ; 
 
 
 class Lookup ; 
@@ -28,7 +29,7 @@ class GLoader {
          void setTypes(Types* types);
          void setCache(GCache* cache);
          void setImp(GLoaderImpFunctionPtr imp);
-         void load(bool nogeocache=false);
+         void load(bool nogeocache=false, int ridx=-1);
 
     public:
          //static const char* identityPath( const char* envprefix);
@@ -40,6 +41,7 @@ class GLoader {
          GBoundaryLib*          getBoundaryLib();
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
+         GTreeCheck*            getTreeAnalyse();
 
          GItemIndex*            getMaterials();
          GItemIndex*            getSurfaces();
@@ -67,7 +69,7 @@ class GLoader {
          GColors*                  m_colors ;  
          Lookup*                   m_lookup ; 
          GBuffer*                  m_color_buffer ; 
-     
+         GTreeCheck*               m_treeanalyse ;  
 };
 
 inline GLoader::GLoader() 
@@ -84,7 +86,8 @@ inline GLoader::GLoader()
    m_meshes(NULL),
    m_colors(NULL),
    m_lookup(NULL),
-   m_color_buffer(NULL)
+   m_color_buffer(NULL),
+   m_treeanalyse(NULL)
 {
 }
 
