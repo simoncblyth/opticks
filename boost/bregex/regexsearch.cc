@@ -213,7 +213,7 @@ std::string os_path_expandvars(const char* s)
              const char* etail = (*mt)[2].str().c_str() ;
              char* eval = getenv(evar);
 
-             //printf("evar %s etail %s eval %s  \n", evar, etail, eval );
+             //printf("os_path_expandvars  evar %s etail %s eval %s  \n", evar, etail, eval );
 
              if( eval )
              {

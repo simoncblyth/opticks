@@ -68,7 +68,7 @@ bool G4StepNPY::applyLookup(unsigned int index)
     {
         std::string aname = m_lookup->acode2name(acode) ;
         std::string bname = m_lookup->bcode2name(bcode) ;
-        printf("  %3u -> %3d  a[%s] b[%s] \n", acode, bcode, aname.c_str(), bname.c_str() );
+        //printf(" G4StepNPY::applyLookup  %3u -> %3d  a[%s] b[%s] \n", acode, bcode, aname.c_str(), bname.c_str() );
         assert(aname == bname);
     }
 

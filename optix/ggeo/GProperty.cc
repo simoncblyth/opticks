@@ -325,7 +325,7 @@ GProperty<T>* GProperty<T>::createZeroTrimmed()
     GAry<T>* y = getValues();
     unsigned int ifr = y->getLeftZero();
     unsigned int ito = y->getRightZero();
-    printf("createZeroTrimmed ifr %u ito %u \n", ifr, ito);
+   // printf("GProperty<T>::createZeroTrimmed ifr %u ito %u \n", ifr, ito);
     return createSliced(ifr, ito);
 }
 

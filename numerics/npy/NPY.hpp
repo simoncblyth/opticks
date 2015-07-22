@@ -71,15 +71,15 @@ class NPY : public NPYBase {
    public:
        static NPY<T>* debugload(const char* path);
        static NPY<T>* load(const char* path);
-       static NPY<T>* load(const char* typ, const char* tag);
+       static NPY<T>* load(const char* typ, const char* tag, const char* det);
  
        void save(const char* path);
-       void save(const char* typ, const char* tag);
-       void save(const char* tfmt, const char* targ, const char* tag );
+       void save(const char* typ, const char* tag, const char* det );
+       void save(const char* tfmt, const char* targ, const char* tag, const char* det);
 
        bool exists(const char* path);
-       bool exists(const char* typ, const char* tag);
-       bool exists(const char* tfmt, const char* targ, const char* tag );
+       bool exists(const char* typ, const char* tag, const char* det);
+       bool exists(const char* tfmt, const char* targ, const char* tag, const char* det );
 
        // manipulations change types, not tags:  tfmt % targ -> typ
 

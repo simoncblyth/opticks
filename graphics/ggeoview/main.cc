@@ -227,8 +227,6 @@ int main(int argc, char** argv)
     else if(fullscreen)      size = glm::uvec4(2880,1800,2,0) ;
     else                     size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
 
-    print(size, "main size");
-
     composition.setSize( size );
 
     frame.setInteractor(&interactor);      
@@ -284,15 +282,27 @@ int main(int argc, char** argv)
     GBuffer* colorbuffer = loader.getColorBuffer();  // composite buffer 0+:materials,  32+:flags
     scene.uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    scene.setGeometry(loader.getDrawable());
-    scene.setTarget(0);
 
+    
+    unsigned int target = 0 ; 
+    GDrawable* drawable =  loader.getDrawable();
+    gfloat4 ce = drawable->getCenterExtent(target);
+
+    LOG(info) << "main drawable ce: " 
+              << " x " << ce.x
+              << " y " << ce.y
+              << " z " << ce.z
+              << " w " << ce.w
+              ;
+
+    scene.setGeometry(drawable);
+    scene.setTarget(target);
     bookmarks.load(idpath); 
 
     GMergedMesh* mm = loader.getMergedMesh(); 
     GBoundaryLib* blib = loader.getBoundaryLib();
  
-    composition.setDomainCenterExtent(mm->getCenterExtent(0));     // index 0 corresponds to entire geometry
+    composition.setDomainCenterExtent(ce);     // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, MAXTIME, 0.f, 0.f) );  // TODO: avoid static define.h MAXTIME 
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
@@ -348,7 +358,8 @@ int main(int argc, char** argv)
 
     print(mmce, "mmce");
     print(gsce, "gsce");
-    composition.setCenterExtent( juno ? mmce : gsce );
+    bool autocam = true ; 
+    composition.setCenterExtent( gsce, autocam );
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 

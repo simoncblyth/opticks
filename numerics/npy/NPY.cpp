@@ -103,41 +103,41 @@ NPY<T>* NPY<T>::load(const char* path)
 
 
 template <typename T>
-NPY<T>* NPY<T>::load(const char* typ, const char* tag)
+NPY<T>* NPY<T>::load(const char* typ, const char* tag, const char* det)
 {
-    std::string path = NPYBase::path(typ, tag);
+    std::string path = NPYBase::path(typ, tag, det);
     return load(path.c_str());
 }
 
 
 
 template <typename T>
-bool NPY<T>::exists(const char* tfmt, const char* targ, const char* tag)
+bool NPY<T>::exists(const char* tfmt, const char* targ, const char* tag, const char* det)
 {
     char typ[64];
     snprintf(typ, 64, tfmt, targ ); 
-    return exists(typ, tag);
+    return exists(typ, tag, det);
 }
 template <typename T>
-void NPY<T>::save(const char* tfmt, const char* targ, const char* tag)
+void NPY<T>::save(const char* tfmt, const char* targ, const char* tag, const char* det)
 {
     char typ[64];
     snprintf(typ, 64, tfmt, targ ); 
-    save(typ, tag);
+    save(typ, tag, det);
 }
 
 
 
 template <typename T>
-bool NPY<T>::exists(const char* typ, const char* tag)
+bool NPY<T>::exists(const char* typ, const char* tag, const char* det)
 {
-    std::string path = NPYBase::path(typ, tag);
+    std::string path = NPYBase::path(typ, tag, det);
     return exists(path.c_str());
 }
 template <typename T>
-void NPY<T>::save(const char* typ, const char* tag)
+void NPY<T>::save(const char* typ, const char* tag, const char* det)
 {
-    std::string path = NPYBase::path(typ, tag);
+    std::string path = NPYBase::path(typ, tag, det);
     save(path.c_str());
 }
 

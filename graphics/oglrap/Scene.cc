@@ -339,7 +339,7 @@ void Scene::jump()
 }
 
 
-void Scene::setTarget(unsigned int index)
+void Scene::setTarget(unsigned int index, bool autocam)
 {
     m_target = index ; 
 
@@ -351,7 +351,6 @@ void Scene::setTarget(unsigned int index)
 
     gfloat4 ce = m_geometry->getCenterExtent(index);
 
-    bool autocam = true ; 
     LOG(info)<<"Scene::setTarget " << index << " ce " 
              << " " << ce.x 
              << " " << ce.y 

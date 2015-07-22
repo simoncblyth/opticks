@@ -26,6 +26,17 @@ Issues
 * need to find way to share input events between GLEQ and ImGui
 
 
+Blurry Text
+-----------
+
+* https://github.com/ocornut/imgui
+
+::
+
+    I integrated ImGui in my engine and the text or lines are blurry..
+    In your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f).
+
+
 Discussion
 -----------
 

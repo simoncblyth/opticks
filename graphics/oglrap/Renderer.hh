@@ -40,6 +40,8 @@ class Renderer : public RendererBase  {
 
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
+      bool hasTransforms(){ return m_has_transforms ; }
+      void setHasTransforms(bool hastr){ m_has_transforms = hastr ; }
 
       void check_uniforms();
       void update_uniforms();   
@@ -55,6 +57,7 @@ class Renderer : public RendererBase  {
       GLuint m_colors ;
       GLuint m_texcoords ;
       GLuint m_indices ;
+      GLuint m_transforms ;
 
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
@@ -70,6 +73,7 @@ class Renderer : public RendererBase  {
       GDrawable* m_drawable ;
       Composition* m_composition ;
       bool m_has_tex ; 
+      bool m_has_transforms ; 
 };      
 
 
@@ -87,7 +91,8 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_indices_count(0),
     m_drawable(NULL),
     m_composition(NULL),
-    m_has_tex(false)
+    m_has_tex(false),
+    m_has_transforms(false)
 {
 }
 

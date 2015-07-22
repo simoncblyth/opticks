@@ -44,7 +44,7 @@ class NPYBase {
   
    public:
        // NumPy persistency
-       static std::string path(const char* typ, const char* tag);
+       static std::string path(const char* typ, const char* tag, const char* det);
        void setVerbose(bool verbose=true);
 
    public:
@@ -56,8 +56,8 @@ class NPYBase {
        virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j ) = 0 ; 
 
        virtual void save(const char* path) = 0;
-       virtual void save(const char* typ, const char* tag) = 0;
-       virtual void save(const char* tfmt, const char* targ, const char* tag ) = 0;
+       virtual void save(const char* typ, const char* tag, const char* det) = 0;
+       virtual void save(const char* tfmt, const char* targ, const char* tag, const char* det ) = 0;
  
     public:
        void Summary(const char* msg="NPYBase::Summary");

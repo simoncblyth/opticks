@@ -36,19 +36,19 @@ void test_ctor()
 
 void test_path()
 {
-    std::string path = NPY<float>::path("cerenkov", "1");
+    std::string path = NPY<float>::path("cerenkov", "1", "dayabay");
     std::cout << path << std::endl ; 
 }
 
 void test_load()
 {
-    NPY<float>* npy = NPY<float>::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
     std::cout << npy->description("npy") << std::endl ; 
 }
 
 void test_save_path()
 {
-    NPY<float>* npy = NPY<float>::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
     std::cout << npy->description("npy") << std::endl ; 
     npy->save("/tmp/test_save_path.npy");
 }
@@ -66,20 +66,20 @@ void test_load_path()
 
 void test_load_missing()
 {
-    NPY<float>* npy = NPY<float>::load("cerenkov","missing");
+    NPY<float>* npy = NPY<float>::load("cerenkov","missing", "dayabay");
     if(npy) std::cout << npy->description("npy") << std::endl ; 
 }
 
 void test_g4stepnpy()
 {
-    NPY<float>* npy = NPY<float>::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
     G4StepNPY* step = new G4StepNPY(npy);   
     step->dump("G4StepNPY");
 }
 
 void test_getData()
 {
-    NPY<float>* npy = NPY<float>::load("cerenkov","1");
+    NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
     float* data = npy->getValues();
 
     for(unsigned int i=0 ; i < 16 ; i++ )
@@ -100,8 +100,8 @@ void test_getData()
 
 void test_getUSum()
 {
-    NPY<float>* c1 = NPY<float>::load("cerenkov","1");
-    NPY<float>* s1 = NPY<float>::load("scintillation","1");
+    NPY<float>* c1 = NPY<float>::load("cerenkov","1", "dayabay");
+    NPY<float>* s1 = NPY<float>::load("scintillation","1", "dayabay");
     unsigned int n_c1 = c1->getUSum(0, 3);
     unsigned int n_s1 = s1->getUSum(0, 3);
     printf("test_getUSum n_c1:%u n_c1:%u tot:%u \n", n_c1, n_s1, n_c1+n_s1);

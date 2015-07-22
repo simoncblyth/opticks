@@ -78,6 +78,7 @@ void GLoader::load(bool nogeocache)
         tck.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
         t("TreeCheck"); 
 */
+
         m_meshes = m_ggeo->getMeshIndex();  
 
         m_boundarylib = m_ggeo->getBoundaryLib();

@@ -73,6 +73,9 @@ void Renderer::gl_upload_buffers(bool debug)
     // As there is only one GL_ELEMENT_ARRAY_BUFFER there is 
     // no need to repeat the bind, but doing so for clarity
     //
+    // TODO: adopt the more flexible ViewNPY approach used for event data
+    //
+
     assert(m_drawable);
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
@@ -84,6 +87,9 @@ void Renderer::gl_upload_buffers(bool debug)
     GBuffer* ibuf = m_drawable->getIndicesBuffer();
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
+
+    GBuffer* rbuf = m_drawable->getTransformsBuffer();
+    setHasTransforms(rbuf != NULL);
 
     if(debug)
     {
@@ -103,6 +109,19 @@ void Renderer::gl_upload_buffers(bool debug)
     {
         m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf );
     }
+    if(hasTransforms())
+    {
+        LOG(info) << "Renderer::gl_upload_buffers uploading transforms " ;
+        m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  rbuf );
+    }
+    else
+    {
+        LOG(info) << "Renderer::gl_upload_buffers no transforms " ;
+    }
+
+
+
+
 
     m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf );
     m_indices_count = ibuf->getNumItems(); // number of indices

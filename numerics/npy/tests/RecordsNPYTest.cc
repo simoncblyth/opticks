@@ -10,9 +10,9 @@ int main(int argc, char** argv)
     const char* idpath = getenv("IDPATH");
     const char* tag = "1" ;
 
-    NPY<short>* records = NPY<short>::load("rxcerenkov", tag);
-    NPY<float>* domains = NPY<float>::load("domain","1");
-    NPY<int>*   idom = NPY<int>::load("idomain","1");
+    NPY<short>* records = NPY<short>::load("rxcerenkov", tag, "dayabay");
+    NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
+    NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
     unsigned int maxrec = idom->getValue(0,0,3) ; // TODO: enumerate the k indices 
     assert(maxrec == 10);
 

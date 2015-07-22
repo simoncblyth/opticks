@@ -10,8 +10,9 @@ int main(int argc, char** argv)
 {
     const char* idpath = getenv("IDPATH");
     const char* tag = "1" ;
+    const char* det = "dayabay" ; 
 
-    NPY<float>* dpho = NPY<float>::load("oxcerenkov", tag);
+    NPY<float>* dpho = NPY<float>::load("oxcerenkov", tag, det);
 
 
     Types types ; 

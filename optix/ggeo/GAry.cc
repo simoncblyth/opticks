@@ -36,7 +36,38 @@ T GAry<T>::np_interp(const T z, GAry<T>* xp, GAry<T>* fp )
     T right = fp->getRight();
 
     unsigned int len = xp->getLength();
+  
+    if(dy[len-1] != right )
+    {
+        LOG(warning) << "GAry<T>::np_interp "
+                     << " len " << len
+                     << " dy[len-1] " << dy[len-1]
+                     << " right " << right
+                     << " left " << left
+                     ;
+    }
+
     assert(dy[len-1] == right );
+
+
+/*
+   This assert is firing occasionally... but unreproducibly 
+
+[2015-Jul-22 15:28:16.828602]: GProperty::save 2d array of length 275 to : /tmp/reemissionCDF.npy
+createZeroTrimmed ifr 0 ito 273 
+np_sliced ifr 0 ito 273  alen 275 blen 273 
+np_sliced ifr 0 ito 273  alen 275 blen 273 
+GBoundaryLib::createReemissionBuffer icdf  : 570b234e132f398d4213400cc88f427b : 4096 
+d       0.000      0.063      0.125      0.188      0.250      0.313      0.375      0.438      0.500      0.563      0.625      0.688      0.750      0.813      0.875      0.938
+v     799.898    463.793    450.234    441.314    434.113    428.762    424.561    420.824    417.127    413.177    408.946    404.907    401.409    398.164    394.649    389.214
+[2015-Jul-22 15:28:16.834756]: GProperty::save 2d array of length 4096 to : /tmp/invertedReemissionCDF.npy
+Assertion failed: (dy[len-1] == right), function np_interp, file /Users/blyth/env/optix/ggeo/GAry.cc, line 39.
+Abort trap: 6
+
+
+*/
+
+
 
     T ival ;
     int j = xp->binary_search(z);  // find low side domain index corresponding to domain value z
@@ -168,7 +199,7 @@ Out[17]: array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. 
 
     unsigned int blen = ito - ifr ;   // py style 0-based one-beyond "ito"
 
-    printf("np_sliced ifr %d ito %d  alen %u blen %u \n", ifr, ito, alen, blen );  
+    //printf("Gary.cc:np_sliced ifr %d ito %d  alen %u blen %u \n", ifr, ito, alen, blen );  
 
     GAry<T>* b = new GAry<T>(blen); 
 

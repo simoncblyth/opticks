@@ -8,7 +8,7 @@
 void test_NumpyEvt()
 {   
     NumpyEvt evt ;
-    evt.setGenstepData(NPY<float>::load("cerenkov", "1"));
+    evt.setGenstepData(NPY<float>::load("cerenkov", "1", "dayabay"));
     evt.dumpPhotonData();
 }
 

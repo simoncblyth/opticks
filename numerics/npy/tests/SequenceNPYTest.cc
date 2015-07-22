@@ -32,10 +32,10 @@ int main(int argc, char** argv)
     const char* idpath = getenv("IDPATH");
     const char* tag = "1" ;
 
-    NPY<float>* photons = NPY<float>::load("oxcerenkov", tag);
-    NPY<short>* records = NPY<short>::load("rxcerenkov", tag);
-    NPY<float>* dom = NPY<float>::load("domain","1");
-    NPY<int>*   idom = NPY<int>::load("idomain","1");
+    NPY<float>* photons = NPY<float>::load("oxcerenkov", tag, "dayabay");
+    NPY<short>* records = NPY<short>::load("rxcerenkov", tag, "dayabay");
+    NPY<float>* dom = NPY<float>::load("domain","1", "dayabay");
+    NPY<int>*   idom = NPY<int>::load("idomain","1", "dayabay");
     unsigned int maxrec = idom->getValue(0,0,3) ; 
     assert(maxrec == 10);
 

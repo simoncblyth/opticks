@@ -17,8 +17,9 @@ int main(int argc, char** argv)
     Lookup lookup;
     lookup.create(argv[1]);
     lookup.dump("LookupTest");
-
-    G4StepNPY cs(NPY<float>::load("cerenkov", "1"));
+ 
+    const char* det = "dayabay" ; 
+    G4StepNPY cs(NPY<float>::load("cerenkov", "1", det));
     cs.setLookup(&lookup);
     cs.applyLookup(0, 2); // materialIndex  (1st quad, 3rd number)
 

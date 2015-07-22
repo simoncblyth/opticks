@@ -15,7 +15,7 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/%s.npy" ; 
+const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/$2/%s.npy" ; 
 
 
 std::string NPYBase::getItemShape(unsigned int ifr)
@@ -73,11 +73,12 @@ std::string NPYBase::description(const char* msg)
 }
 
 
-std::string NPYBase::path(const char* typ, const char* tag)
+std::string NPYBase::path(const char* typ, const char* tag, const char* det)
 {
 /*
 :param typ: object type name, eg oxcerenkov rxcerenkov 
 :param tag: event tag, usually numerical 
+:param det: detector tag, eg dyb, juno
 
 The typ is used to identify the name of an envvar 
 in which the template path at which to save/load such 
@@ -104,7 +105,8 @@ Envvars are defined in env/export-
     char* tmpl = getenv(envvar) ;
     if(!tmpl)
     {
-        boost::replace_first(deftmpl, "$1", typ );
+        boost::replace_first(deftmpl, "$1", det );
+        boost::replace_first(deftmpl, "$2", typ );
         deftmpl = os_path_expandvars( deftmpl.c_str() ); 
         tmpl = (char*)deftmpl.c_str();
 
