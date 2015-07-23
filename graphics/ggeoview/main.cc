@@ -151,8 +151,8 @@ int main(int argc, char** argv)
 
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
-    bool juno = cache.idPathContains("juno") ;
-    bool dayabay  = cache.idPathContains("DayaBay") ;
+    bool juno = cache.idPathContains("env/geant4/geometry/export/juno") ;
+    bool dayabay  = cache.idPathContains("env/geant4/geometry/export/DayaBay") ;
     assert( juno ^ dayabay ); // exclusive-or
     const char* det(NULL) ;
     if(juno)    det = "juno" ;
