@@ -68,7 +68,7 @@ void test_loadList()
 int main()
 {
     //test_saveMap();
-    //test_loadMap();
+    test_loadMap();
 
     //test_saveMap2();
     //test_loadMap2();
