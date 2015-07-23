@@ -9,8 +9,12 @@ class GMergedMesh ;
 class GBoundaryLib ;
 class NumpyEvt ; 
 class cuRANDWrapper ; 
-class NPYBase ; 
 
+
+template <typename T>
+class NPY ;
+
+#include "NPYBase.hpp"
 #include "string.h"
 #include "Touchable.hh"
 #include <optixu/optixpp_namespace.h>
@@ -57,12 +61,17 @@ class OptiXEngine : public Touchable {
                 e_number_idomain
              } ;
 
-
-
+        typedef enum { COMPUTE, INTEROP } Mode_t ;   
+        static const char* COMPUTE_ ; 
+        static const char* INTEROP_ ; 
+    public:
+        OptiXEngine(const char* cmake_target, Mode_t mode=INTEROP );
 
     public:
-        OptiXEngine(const char* cmake_target);
-
+        const char* getModeName();
+        OptiXEngine::Mode_t getMode();
+        bool isCompute();
+        bool isInterop();
     public:
         void setSize(unsigned int width, unsigned int height);
         void setComposition(Composition* composition);
@@ -129,6 +138,12 @@ class OptiXEngine : public Touchable {
         optix::Buffer createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
 
 
+    public:
+        RTformat getFormat(NPYBase::Type_t type);
+        template<typename T>
+        optix::Buffer   createIOBuffer(NPY<T>* npy);
+
+
     protected:
         optix::Buffer         m_rng_states ;
         unsigned int          m_rng_max ; 
@@ -167,6 +182,7 @@ class OptiXEngine : public Touchable {
         unsigned int     m_bounce_max ; 
         unsigned int     m_record_max ; 
         char*            m_cmake_target ;
+        Mode_t           m_mode ; 
         bool             m_enabled ; 
         int              m_texture_id ; 
         NumpyEvt*        m_evt ; 
@@ -193,7 +209,7 @@ class OptiXEngine : public Touchable {
 
 
 
-inline OptiXEngine::OptiXEngine(const char* cmake_target) :
+inline OptiXEngine::OptiXEngine(const char* cmake_target, Mode_t mode) :
     m_rng_max(0),
     m_rng_wrapper(NULL),
     m_context(NULL),
@@ -214,6 +230,7 @@ inline OptiXEngine::OptiXEngine(const char* cmake_target) :
     m_bounce_max(1),
     m_record_max(10),
     m_cmake_target(strdup(cmake_target)),
+    m_mode(mode),  
     m_enabled(true),
     m_texture_id(-1),
     m_evt(NULL),
@@ -340,9 +357,16 @@ inline optix::Buffer& OptiXEngine::getPhoselBuffer()
 {
     return m_phosel_buffer ; 
 }
-
-
-
-
-
+inline OptiXEngine::Mode_t OptiXEngine::getMode()
+{
+    return m_mode ; 
+}
+inline bool OptiXEngine::isCompute()
+{
+    return m_mode == COMPUTE ; 
+}
+inline bool OptiXEngine::isInterop()
+{
+    return m_mode == INTEROP ; 
+}
 

@@ -48,12 +48,27 @@ using namespace optix ;
 
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
+const char* OptiXEngine::COMPUTE_ = "COMPUTE" ; 
+const char* OptiXEngine::INTEROP_ = "INTEROP" ; 
+
+const char* OptiXEngine::getModeName()
+{
+    switch(m_mode)
+    {
+       case COMPUTE:return COMPUTE_ ; break ; 
+       case INTEROP:return INTEROP_ ; break ; 
+    }
+    assert(0);
+}
+
 
 void OptiXEngine::init()
 {
     if(!m_enabled) return ;
 
-    LOG(info) << "OptiXEngine::init " ;
+    LOG(info) << "OptiXEngine::init " 
+              << " mode " << getModeName()
+              ; 
     m_context = Context::create();
     m_geometry_group = m_context->createGeometryGroup();
     m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
@@ -358,167 +373,101 @@ void OptiXEngine::initGenerate()
     initGenerate(m_evt);
 }
 
-
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
-    NPY<float>* gensteps = evt->getGenstepData();
+    m_genstep_buffer = createIOBuffer<float>( evt->getGenstepData() );
+    m_context["genstep_buffer"]->set( m_genstep_buffer );
 
-    assert(gensteps->getDimensions() == 3);
-    assert(gensteps->getShape(1) == 6);
-    assert(gensteps->getShape(2) == 4);
+    m_photon_buffer = createIOBuffer<float>( evt->getPhotonData() );
+    m_context["photon_buffer"]->set( m_photon_buffer );
 
-    int genstep_buffer_id = gensteps->getBufferId();
-    if(genstep_buffer_id > -1)  // gensteps already uploaded to GPU
-    {
-        unsigned int genstep_count = gensteps->getShape(0);
-        unsigned int genstep_numquad  = gensteps->getShape(1);  
-        unsigned int genstep_totquad = genstep_count * genstep_numquad ;  
-        assert(genstep_numquad == 6);
+    m_record_buffer = createIOBuffer<short>( evt->getRecordData() );
+    m_context["record_buffer"]->set( m_record_buffer );
 
-        m_genstep_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, genstep_buffer_id);
-        m_genstep_buffer->setFormat(RT_FORMAT_FLOAT4);
-        m_genstep_buffer->setSize( genstep_totquad );
-        m_context["genstep_buffer"]->set( m_genstep_buffer );
+    m_sequence_buffer = createIOBuffer<unsigned long long>( evt->getSequenceData() );
+    m_context["sequence_buffer"]->set( m_sequence_buffer );
 
-        LOG(info) << "OptiXEngine::initGenerate "
-                  << " genstep_buffer_id " << genstep_buffer_id 
-                  << " genstep_count " << genstep_count 
-                  << " genstep_numquad " << genstep_numquad 
-                  << " genstep_totquad " << genstep_totquad  ;
-    } 
+    m_phosel_buffer = createIOBuffer<unsigned char>( evt->getPhoselData() );
+    m_context["phosel_buffer"]->set( m_phosel_buffer );
 
-
-    NPY<float>* photons = evt->getPhotonData();
-
-    int photon_buffer_id = photons ? photons->getBufferId() : -1 ;
-    if(photon_buffer_id > -1)
-    {
-        unsigned int photon_count = photons->getShape(0);
-        unsigned int photon_numquad = photons->getShape(1);  
-        unsigned int photon_totquad = photon_count * photon_numquad ;  
-        assert(photon_numquad == 4);  // must match GPU-side photon.h:PNUMQUAD
-
-        // inside generate.cu::generate saw what looked like recycled memory 
-        // with nan sprinkles when this was incorrectly RT_BUFFER_OUTPUT
-        m_photon_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, photon_buffer_id);
-        m_photon_buffer->setFormat(RT_FORMAT_FLOAT4);
-        m_photon_buffer->setSize( photon_totquad );
-        m_context["photon_buffer"]->set( m_photon_buffer );
-
-        LOG(info) << "OptiXEngine::initGenerate "
-                  << " photon_buffer_id " << photon_buffer_id 
-                  << " photon_count " << photon_count 
-                  << " photon_numquad " << photon_numquad 
-                  << " photon_totquad " << photon_totquad  ;
-    }
-
-
-    NPY<short>* records = evt->getRecordData();
-    assert(records);
-
-    int record_buffer_id = records ? records->getBufferId() : -1 ;
-    if(record_buffer_id > -1)
-    {
-        unsigned int record_count = records->getShape(0);
-        unsigned int record_numquad = records->getShape(1);  
-        unsigned int record_totquad = record_count * record_numquad ;  
-
-        // inside generate.cu::generate saw what looked like recycled memory 
-        // with nan sprinkles when this was incorrectly RT_BUFFER_OUTPUT
-        m_record_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, record_buffer_id);
-        m_record_buffer->setFormat(RT_FORMAT_SHORT4);
-        m_record_buffer->setSize( record_totquad );
-        m_context["record_buffer"]->set( m_record_buffer );
-
-        LOG(info) << "OptiXEngine::initGenerate "
-                  << " record_buffer_id " << record_buffer_id 
-                  << " record_count " << record_count 
-                  << " record_numquad " << record_numquad 
-                  << " record_totquad " << record_totquad  ;
-    }
-    else
-    {
-        LOG(fatal) << "OptiXEngine::initGenerate record buffer not uploaded to GPU " ;
-        assert(0); 
-    }
-
- 
-    NPY<unsigned long long>* sequence = evt->getSequenceData();
-    //printf(" ul %lu ull %lu \n", sizeof(unsigned long), sizeof(unsigned long long) );
-    assert(sizeof(unsigned char) == 1);
-    assert(sizeof(unsigned short) == 2);
-    assert(sizeof(unsigned int) == 4);
-    assert(sizeof(unsigned long) == 8);
-    assert(sizeof(unsigned long long) == 8);
-    assert(sizeof(NumpyEvt::Sequence_t) == 8);
-
-    int sequence_buffer_id = sequence ? sequence->getBufferId() : -1 ;
-    if(sequence_buffer_id > -1)
-    {
-        unsigned int sequence_count   = sequence->getShape(0);
-        unsigned int sequence_numitem = sequence->getShape(1);  
-        unsigned int sequence_totitem = sequence_count * sequence_numitem ;  
-        LOG(info)<<"OptiXEngine::initGenerate  sequence buffer count: " << sequence_count ;
-        m_sequence_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, sequence_buffer_id);
-        m_sequence_buffer->setFormat(RT_FORMAT_USER);
-        m_sequence_buffer->setElementSize(sizeof(NumpyEvt::Sequence_t));
-        m_sequence_buffer->setSize( sequence_totitem );
-        m_context["sequence_buffer"]->set( m_sequence_buffer );
-    } 
-    else
-    {
-        LOG(warning) << "OptiXEngine::initGenerate no sequence buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
-    }
-
-
-
-    NPY<unsigned char>* phosel = evt->getPhoselData();
-    int phosel_buffer_id = phosel ? phosel->getBufferId() : -1 ;
-    if(phosel_buffer_id > -1)
-    {
-        unsigned int phosel_count = phosel->getShape(0);
-        unsigned int phosel_numquad = phosel->getShape(1);  
-        unsigned int phosel_totquad = phosel_count * phosel_numquad ;  
-
-        LOG(info)<<"OptiXEngine::initGenerate  phosel buffer count: " << phosel_count ;
-        m_phosel_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, phosel_buffer_id);
-        m_phosel_buffer->setFormat(RT_FORMAT_UNSIGNED_BYTE4);
-        m_phosel_buffer->setSize( phosel_totquad );
-        m_context["phosel_buffer"]->set( m_phosel_buffer );
-    } 
-    else
-    {
-        LOG(warning) << "OptiXEngine::initGenerate no phosel buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
-    }
-
-
-
-
-    NPY<unsigned char>* recsel = evt->getRecselData();
-    int recsel_buffer_id = recsel ? recsel->getBufferId() : -1 ;
-    if(recsel_buffer_id > -1)
-    {
-        unsigned int recsel_count = recsel->getShape(0);
-        unsigned int recsel_numquad = recsel->getShape(1);  
-        unsigned int recsel_totquad = recsel_count * recsel_numquad ;  
-
-        LOG(info)<<"OptiXEngine::initGenerate  recsel buffer count: " << recsel_count ;
-        m_recsel_buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, recsel_buffer_id);
-        m_recsel_buffer->setFormat(RT_FORMAT_UNSIGNED_BYTE4);
-        m_recsel_buffer->setSize( recsel_totquad );
+    m_recsel_buffer = createIOBuffer<unsigned char>( evt->getRecselData() );
+    if(m_recsel_buffer.get())   
         m_context["recsel_buffer"]->set( m_recsel_buffer );
-    } 
-    else
+
+    // need to have done scene.uploadSelection for the recsel to have a buffer_id
+}
+
+template <typename T>
+optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
+{
+    assert(npy);
+
+    unsigned int count = npy->getShape(0);
+    unsigned int numquad = npy->getShape(1);  
+    unsigned int totquad = count * numquad ;  
+
+    LOG(info)<<"OptiXEngine::createIOBuffer "
+             << " count " << count 
+             ;
+
+    Buffer buffer;
+    if(isInterop())
     {
-        LOG(warning) << "OptiXEngine::initGenerate no recsel buffer, see oglrap- Rdr::upload Scene::uploadEvt/uploadSelection " ;
+        int buffer_id = npy ? npy->getBufferId() : -1 ;
+        if(buffer_id > -1 )
+        {
+            buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
+        } 
+        else
+        {
+            LOG(warning) << "OptiXEngine::createIOBuffer CANNOT createBufferFromGLBO as not uploaded  "
+                         << " buffer_id " << buffer_id 
+                         ; 
+            return buffer ; 
+        }
+    } 
+    else if (isCompute())
+    {
+        LOG(info) << "OptiXEngine::createIOBuffer (COMPUTE)" ;
+        buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     }
 
 
+    buffer->setSize( totquad );
 
-
-
-
+    RTformat format = getFormat(npy->getType());
+    buffer->setFormat(format);
+    if(format == RT_FORMAT_USER)
+    {
+        LOG(info) << "OptiXEngine::createIOBuffer FORMAT_USER " ;
+        buffer->setElementSize(sizeof(T));
+    }
+    return buffer ; 
 }
+
+
+
+
+RTformat OptiXEngine::getFormat(NPYBase::Type_t type)
+{
+    RTformat format ; 
+    switch(type)
+    {
+        case NPYBase::FLOAT:     format = RT_FORMAT_FLOAT4         ; break ; 
+        case NPYBase::SHORT:     format = RT_FORMAT_SHORT4         ; break ; 
+        case NPYBase::INT:       format = RT_FORMAT_INT4           ; break ; 
+        case NPYBase::UINT:      format = RT_FORMAT_UNSIGNED_INT4  ; break ; 
+        case NPYBase::CHAR:      format = RT_FORMAT_BYTE4          ; break ; 
+        case NPYBase::UCHAR:     format = RT_FORMAT_UNSIGNED_BYTE4 ; break ; 
+        case NPYBase::ULONGLONG: format = RT_FORMAT_USER           ; break ; 
+        case NPYBase::DOUBLE:    format = RT_FORMAT_USER           ; break ; 
+    }
+    return format ; 
+}
+
+
+
+
 
 
 

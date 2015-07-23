@@ -354,9 +354,6 @@ int main(int argc, char** argv)
 
     t("hostEvtAllocation"); 
 
-    // for juno setup view to point at geometry rather than genstep
-    
-       
 
     glm::vec4 mmce = GLMVEC4(mm->getCenterExtent(0)) ;
     glm::vec4 gsce = evt["genstep.vpos"]->getCenterExtent();
@@ -367,10 +364,6 @@ int main(int argc, char** argv)
     composition.setCenterExtent( gsce, autocam );
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
-
-
-
-
 
 
 #ifdef INTEROP
@@ -407,7 +400,11 @@ int main(int argc, char** argv)
     Photons* photons(NULL);
 #ifdef OPTIX
     //  creates OptiX buffers from the OpenGL buffer_id's 
-    OptiXEngine engine("GGeoView") ;       
+
+    //OptiXEngine::Mode_t mode = OptiXEngine::INTEROP ; 
+    OptiXEngine::Mode_t mode = OptiXEngine::COMPUTE ; 
+
+    OptiXEngine engine("GGeoView", mode) ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
     engine.setBoundaryLib(blib);   

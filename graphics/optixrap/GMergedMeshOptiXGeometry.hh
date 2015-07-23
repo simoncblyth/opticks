@@ -43,11 +43,12 @@ Progress:
 class GMergedMesh ; 
 class GBoundaryLib ; 
 class GBuffer ; 
+//class OptiXEngine ;  
 
 class GMergedMeshOptiXGeometry  : public OptiXGeometry 
 {
 public:
-    GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh, GBoundaryLib* lib); 
+    GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh, GBoundaryLib* lib); //, OptiXEngine* engine); 
 
 public:
     void convert();
@@ -69,15 +70,17 @@ public:
 private:
     GMergedMesh* m_mergedmesh ; 
     GBoundaryLib* m_boundarylib ; 
+  //  OptiXEngine*  m_engine ; 
 
 };
 
 
-inline GMergedMeshOptiXGeometry::GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh, GBoundaryLib* lib)
+inline GMergedMeshOptiXGeometry::GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh, GBoundaryLib* lib) //, OptiXEngine* engine)
            : 
            OptiXGeometry(),
            m_mergedmesh(mergedmesh),
            m_boundarylib(lib)
+           //m_engine(engine)
 {
 }
 
