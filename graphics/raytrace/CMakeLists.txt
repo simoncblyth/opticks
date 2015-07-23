@@ -20,8 +20,10 @@ find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
 
 
+find_package(Boost REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
+find_package(NPY REQUIRED)
 find_package(CUDAWrap REQUIRED)
 find_package(OptiXRap REQUIRED)
 
@@ -37,6 +39,8 @@ include_directories(
     ${CUDA_INCLUDE_DIRS}
     ${AssimpWrap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
+    ${Boost_INCLUDE_DIRS}  
+    ${NPY_INCLUDE_DIRS}  
     ${CUDAWrap_INCLUDE_DIRS}  
     ${OptiXRap_INCLUDE_DIRS}  
 )

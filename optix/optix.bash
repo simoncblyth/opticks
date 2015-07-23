@@ -1609,6 +1609,9 @@ Quick look at scaling with GPU cores, close to linear
 
 
 
+
+
+
 EOU
 }
 
@@ -1891,6 +1894,27 @@ optix-rdiff(){
    eval $cmd
 }
 
+
+
+optix-pkgname(){ echo NVIDIA-OptiX-SDK-$(optix-version)-mac64 ; }
+
+optix-dmgpath()
+{
+    echo $(local-base)/env/cuda/$(optix-pkgname).dmg
+}
+optix-dmgpath-open()
+{
+    open $(optix-dmgpath)
+}
+optix-pkgpath()
+{
+    echo /Volumes/$(optix-pkgname)/$(optix-pkgname).pkg
+}
+optix-pkgpath-lsbom()
+{
+    #lsbom "$(pkgutil --bom "$(optix-pkgpath)")" 
+    lsbom $(optix-pkgpath)/Contents/Archive.bom 
+}
 
 
 
