@@ -69,7 +69,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     unsigned int numSolids = mm->getNumSolids();
     mm->setCenterExtent(new gfloat4[numSolids]);
-    mm->setTransforms(new float[numSolids*16]);
+    //mm->setTransforms(new float[numSolids*16]);  // repurposing the transforms for holding repeated placement transforms from GTreeCheck 
     mm->setMeshes(new unsigned int[numSolids]);
     t("allocate solids");
 
@@ -101,7 +101,8 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     unsigned int nvert = mesh->getNumVertices();
     gfloat3* vertices = pass == pass_merge ? mesh->getTransformedVertices(*transform) : NULL ;
 
-    bool selected = solid->isSelected() && solid->getRepeatIndex() == getIndex() ;
+    bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
+    bool selected = solid->isSelected() && repsel ;
     if(selected)
     {
         if(pass == pass_count )
@@ -172,7 +173,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
         m_center_extent[m_cur_solid] = GMesh::findCenterExtent(vertices, nvert); // keep track of center_extent of all solids
         m_meshes[m_cur_solid] = meshIndex ; 
 
-        transform->copyTo( m_transforms + m_cur_solid*16 );  
+        //transform->copyTo( m_transforms + m_cur_solid*16 );  // using transforms from GTreeCheck not here
 
         m_cur_solid += 1 ; 
     }

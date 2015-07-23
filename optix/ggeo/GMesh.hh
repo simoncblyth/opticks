@@ -168,7 +168,7 @@ class GMesh : public GDrawable {
       void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
       void setCenterExtent(gfloat4* center_extent);
-      void setTransforms(float* transforms);
+      //void setTransforms(float* transforms);
       void setMeshes(unsigned int* meshes);
 
   public:

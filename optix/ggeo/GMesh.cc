@@ -260,6 +260,7 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
 
 
 
+/*
 
 void GMesh::setTransforms(float* transforms)  
 {
@@ -277,6 +278,9 @@ void GMesh::setTransforms(float* transforms)
 
     m_transforms_buffer = new GBuffer( size*m_num_solids, (void*)m_transforms, size, numElements ); 
 }
+*/
+
+
 void GMesh::setTransformsBuffer(GBuffer* buffer) 
 {
     m_transforms_buffer = buffer ;  
@@ -287,7 +291,7 @@ void GMesh::setTransformsBuffer(GBuffer* buffer)
     unsigned int numElements = 16 ; 
     unsigned int size = sizeof(float)*numElements;
     unsigned int numSolids = numBytes/size ;
-    setNumSolids(numSolids);
+    //setNumSolids(numSolids);
 }
 
 
