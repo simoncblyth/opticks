@@ -18,6 +18,14 @@ Resources
 
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
+
+OptiX Multi-GPU debug
+----------------------
+
+* https://devtalk.nvidia.com/default/topic/853345/?comment=4597946
+
+
+
 OptiX Versions
 -----------------
 

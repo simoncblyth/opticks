@@ -63,8 +63,17 @@ optix::Material OptiXGeometry::getMaterial(unsigned int index)
 
 void OptiXGeometry::setupAcceleration()
 {
-    LOG(info) << "OptiXGeometry::setupAcceleration for " << m_gis.size() << " gi " ; 
-    optix::Acceleration acceleration = m_context->createAcceleration("Sbvh", "Bvh");
+    //const char* builder = "Sbvh" ;
+    const char* builder = "Bvh" ;
+    const char* traverser = "Bvh" ;
+
+    LOG(info) << "OptiXGeometry::setupAcceleration for " 
+              << " gis " <<  m_gis.size() 
+              << " builder " << builder 
+              << " traverser " << traverser
+              ; 
+    
+    optix::Acceleration acceleration = m_context->createAcceleration(builder, traverser);
     acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
     acceleration->setProperty( "index_buffer_name", "indexBuffer" );
 

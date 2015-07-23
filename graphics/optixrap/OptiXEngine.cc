@@ -216,6 +216,8 @@ void OptiXEngine::initGeometry()
     geom.setGeometryGroup(m_geometry_group);
     geom.setContext(m_context);   
     geom.convert(); 
+
+    LOG(info) << "OptiXEngine::initGeometry calling setupAcceleration" ; 
     geom.setupAcceleration();
 
     loadAccelCache();
