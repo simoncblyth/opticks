@@ -184,7 +184,8 @@ unsigned int MeshViewer::TOUCH_BAD = 666666u ;
 
 
 MeshViewer::MeshViewer():
-  MeshScene          ( false, false, false ),
+  //MeshScene          ( false, false, false ),
+  MeshScene          (),
   m_camera_mode       ( CM_PINHOLE ),
   m_shade_mode        ( SM_PHONG ),
   m_rng_mode          ( RM_OPTIX_OWNED ),
