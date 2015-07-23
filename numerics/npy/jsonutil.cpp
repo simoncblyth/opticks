@@ -139,6 +139,13 @@ void saveTree(const pt::ptree& t , const char* path)
 void loadTree(pt::ptree& t , const char* path)
 {
     fs::path fpath(path);
+    LOG(debug) << "jsonutil.loadTree: "
+              << " load path: " << path;
+    if ( not (fs::exists(fpath ) && fs::is_regular_file(fpath)) ) {
+        LOG(warning) << "jsonutil.loadTree: "
+                     << "can't find file " << path;
+        return;
+    }
     std::string ext = fpath.extension().string();
     if(ext.compare(".json")==0)
         pt::read_json(path, t );
