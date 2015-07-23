@@ -7,8 +7,8 @@
 
 class Times {
   public:
-     typedef typename std::pair<std::string, double>  SD ; 
-     typedef typename std::vector<SD>                VSD ; 
+     typedef std::pair<std::string, double>  SD ; 
+     typedef std::vector<SD>                VSD ; 
   public:
      static void compare(const std::vector<Times*>&, unsigned int nwid=25, unsigned int twid=10, unsigned int tprec=3);
      static std::string name(const char* type, const char* tag);

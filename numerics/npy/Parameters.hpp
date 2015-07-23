@@ -7,9 +7,9 @@
 
 class Parameters {
    public:
-       typedef typename std::pair<std::string, std::string>   SS ; 
-       typedef typename std::vector<SS>                      VSS ; 
-       typedef typename std::vector<std::string>              VS ; 
+       typedef std::pair<std::string, std::string>   SS ; 
+       typedef std::vector<SS>                      VSS ; 
+       typedef std::vector<std::string>              VS ; 
    public:
        Parameters();
 

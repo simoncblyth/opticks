@@ -68,7 +68,8 @@ glm-test-cmake(){
    local tdir=$(glm-tdir)
    mkdir -p $tdir
    glm-tcd
-   cmake -DGLM_TEST_ENABLE=ON $(glm-dir) 
+   #cmake -DGLM_TEST_ENABLE=ON $(glm-dir) 
+   cmake $(glm-dir) 
    cd $iwd
 }
 
@@ -83,7 +84,7 @@ glm--()
 {
    glm-test-cmake
    glm-test-make
-   glm-test-make test
+   #glm-test-make test
 }
 
 

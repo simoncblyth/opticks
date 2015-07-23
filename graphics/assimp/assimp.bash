@@ -369,7 +369,7 @@ assimp-cmake(){
    local bdir=$(assimp-bdir)
    mkdir -p $bdir
    assimp-bcd
-   cmake $(assimp-dir) -DCMAKE_INSTALL_PREFIX=$(assimp-prefix)
+   cmake $(assimp-dir) -DCMAKE_INSTALL_PREFIX=$(assimp-prefix) -DASSIMP_BUILD_TESTS=OFF
    cd $iwd
 }
 

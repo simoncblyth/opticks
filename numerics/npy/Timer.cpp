@@ -34,7 +34,7 @@ void Timer::stop()
 void Timer::dump(const char* msg)
 {
    std::cout << msg << std::endl ; 
-   typedef typename std::vector<std::string>::const_iterator VSI ;  
+   typedef std::vector<std::string>::const_iterator VSI ;  
    for(VSI it=m_lines.begin() ; it != m_lines.end() ; it++) std::cout << *it << std::endl ;  
 }
 

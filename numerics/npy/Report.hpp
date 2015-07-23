@@ -5,7 +5,7 @@
 
 class Report {
    public:
-      typedef typename std::vector<std::string> VS ; 
+      typedef std::vector<std::string> VS ; 
    public:
       static const char* TIMEFORMAT ;  
       static std::string timestamp();

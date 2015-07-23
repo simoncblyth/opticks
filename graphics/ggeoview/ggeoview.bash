@@ -553,6 +553,12 @@ ggeoview-run(){
    $bin $*
 }
 
+ggeoview-vrun(){ 
+   local bin=$(ggeoview-bin)
+   ggeoview-export
+   vglrun $bin $*
+}
+
 ggeoview-gdb(){ 
    local bin=$(ggeoview-bin)
    ggeoview-export

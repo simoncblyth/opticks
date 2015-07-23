@@ -1,7 +1,7 @@
 # === func-gen- : boost/boost fgp boost/boost.bash fgn boost fgh boost
 boost-src(){      echo boost/boost.bash ; }
 boost-source(){   echo ${BASH_SOURCE:-$(env-home)/$(boost-src)} ; }
-boost-vi(){       vi $(boost-source) ; }
+boost-vi(){       vim $(boost-source) ; }
 boost-env(){      elocal- ; }
 boost-usage(){ cat << EOU
 
@@ -228,7 +228,8 @@ boost-install-dir() {
     case $NODE_TAG in
         D) echo /opt/local ;;
         LT) echo /home/ihep/data/doc/home/ihep/juno-dev-new/ExternalLibs/Boost/1.55.0/ ;;
-        *) $(local-base);;
+        GTL) echo /afs/ihep.ac.cn/soft/juno/JUNO-ALL-SLC6/Release/J15v1r1/ExternalLibs/Boost/1.55.0/ ;;
+        *) echo $(local-base);;
     esac
 }
 

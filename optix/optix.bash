@@ -1625,6 +1625,7 @@ optix-fold(){
       D)  echo /Developer ;;
       G1) echo $(local-base) ;;
       LT) echo /home/ihep/data/repo/opticks ;;
+     GTL) echo /afs/ihep.ac.cn/soft/juno/JUNO-ALL-SLC6/GPU/20150723 ;;
       *) echo $(local-base) ;;
    esac
 }

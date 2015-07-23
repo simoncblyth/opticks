@@ -291,13 +291,13 @@ void Cfg::dump(boost::program_options::parsed_options& opts, const char* msg )
 void Cfg::dump(boost::program_options::options_description& desc, const char* msg)
 {
     std::cout << "\nCfg::dumpdesc " << msg << std::endl ;
-    for (auto opt: desc.options())
-    {
-        std::cout 
-                << " format_name" << std::setw(30)     << opt->format_name() 
-                << " format_paramter" << std::setw(30) << opt->format_parameter() 
-                << std::endl;
-    }    
+    // for (auto opt: desc.options())
+    // {
+    //     std::cout 
+    //             << " format_name" << std::setw(30)     << opt->format_name() 
+    //             << " format_paramter" << std::setw(30) << opt->format_parameter() 
+    //             << std::endl;
+    // }    
 }
 
 void Cfg::dump(boost::program_options::variables_map& vm, const char* msg)
