@@ -126,7 +126,7 @@ EOU
 
 
 optixrap-sdir(){ echo $(env-home)/graphics/optixrap ; }
-optixrap-idir(){ echo $(local-base)/env/graphics/optixrap ; }
+optixrap-idir(){ echo $(local-base)/env/graphics/OptiXRap ; }
 optixrap-bdir(){ echo $(optixrap-idir).build ; }
 
 optixrap-scd(){  cd $(optixrap-sdir); }

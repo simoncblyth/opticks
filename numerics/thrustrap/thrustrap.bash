@@ -195,7 +195,7 @@ EOU
 }
 
 thrustrap-sdir(){ echo $(env-home)/numerics/thrustrap ; }
-thrustrap-idir(){ echo $(local-base)/env/numerics/thrustrap ; }
+thrustrap-idir(){ echo $(local-base)/env/numerics/ThrustRap ; }
 thrustrap-bdir(){ echo $(thrustrap-idir).build ; }
 
 thrustrap-scd(){  cd $(thrustrap-sdir); }

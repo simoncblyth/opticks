@@ -16,7 +16,7 @@ OptiXTest : mimimal example of OptiX
 EOU
 }
 
-optixtest-name(){ echo OptixTest ; }
+optixtest-name(){ echo OptiXTest ; }
 optixtest-bdir(){ echo $(local-base)/env/cuda/optix/$(optixtest-name) ; }
 optixtest-sdir(){ echo $(env-home)/optix/$(optixtest-name) ; }
 optixtest-scd(){  cd $(optixtest-sdir); }

@@ -275,12 +275,12 @@ EOU
 }
 
 cudawrap-name(){ echo CUDAEnv ; }
-cudawrap-bdir(){ echo $(local-base)/env/cuda/cudawrap.build ; }
-cudawrap-idir(){ echo $(local-base)/env/cuda/cudawrap ; }
+cudawrap-bdir(){ echo $(local-base)/env/cuda/CUDAWrap.build ; }
+cudawrap-idir(){ echo $(local-base)/env/cuda/CUDAWrap ; }
 cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
 cudawrap-ibin(){ echo $(cudawrap-idir)/bin/cuRANDWrapperTest ; }
 
-cudawrap-rng-dir(){ echo $(local-base)/env/cuda/cudawrap/rngcache ; }
+cudawrap-rng-dir(){ echo $(local-base)/env/cuda/CUDAWrap/rngcache ; }
 cudawrap-rng(){  ls -l $(cudawrap-rng-dir) ; }
 
 cudawrap-cd(){   cd $(cudawrap-sdir); }
