@@ -93,10 +93,8 @@ int main(int argc, char** argv)
 
 
     unsigned int numcol = 64 ; 
-    bool nogeocache = fcfg->hasOpt("nogeocache");
     bool nooptix    = fcfg->hasOpt("nooptix");
-    bool compute    = true ; 
-    assert(nogeocache == false) ;
+    bool nogeocache = false ;
     assert(nooptix == false);
 
     GLoader loader ;

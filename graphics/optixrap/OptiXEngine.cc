@@ -475,13 +475,14 @@ template <typename T>
 optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
 {
     assert(npy);
-
-    unsigned int count = npy->getShape(0);
-    unsigned int numquad = npy->getShape(1);  
-    unsigned int totquad = count * numquad ;  
+    unsigned int ni = npy->getShape(0);
+    unsigned int nj = npy->getShape(1);  
+    unsigned int nk = npy->getShape(2);  
 
     LOG(info)<<"OptiXEngine::createIOBuffer "
-             << " count " << count 
+             << " ni " << ni 
+             << " nj " << nj 
+             << " nk " << nk  
              ;
 
     Buffer buffer;
@@ -507,22 +508,32 @@ optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
     }
 
 
-    buffer->setSize( totquad );
 
     RTformat format = getFormat(npy->getType());
-    buffer->setFormat(format);
+    buffer->setFormat(format);  // must set format, before can set ElementSize
+
+    unsigned int size ; 
     if(format == RT_FORMAT_USER)
     {
+        buffer->setElementSize(sizeof(T));
+        size = ni*nj*nk ; 
         LOG(info) << "OptiXEngine::createIOBuffer "
                   << " RT_FORMAT_USER " 
-                  << " count " << count 
-                  << " numquad " << numquad 
-                  << " size " << totquad 
                   << " elementsize " << sizeof(T)
+                  << " size " << size 
+                  ;
+    }
+    else
+    {
+        size = ni*nj ; 
+        LOG(info) << "OptiXEngine::createIOBuffer "
+                  << " (quad) " 
+                  << " size " << size 
                   ;
 
-        buffer->setElementSize(sizeof(T));
     }
+
+    buffer->setSize(size);
     return buffer ; 
 }
 
