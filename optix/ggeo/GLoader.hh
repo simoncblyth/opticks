@@ -52,6 +52,7 @@ class GLoader {
          GColors*               getColors();
          Lookup*                getMaterialLookup();
          GBuffer*               getColorBuffer();
+         GBuffer*               getTransformsBuffer();
          int                    getRepeatIndex();
 
     private:
@@ -73,6 +74,7 @@ class GLoader {
          GBuffer*                  m_color_buffer ; 
          GTreeCheck*               m_treeanalyse ;  
          int                       m_repeatidx ; 
+         GBuffer*                  m_transforms_buffer ; 
 };
 
 inline GLoader::GLoader() 
@@ -91,7 +93,8 @@ inline GLoader::GLoader()
    m_lookup(NULL),
    m_color_buffer(NULL),
    m_treeanalyse(NULL),
-   m_repeatidx(-1)
+   m_repeatidx(-1),
+   m_transforms_buffer(NULL)
 {
 }
 

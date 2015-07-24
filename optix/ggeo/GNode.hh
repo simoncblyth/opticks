@@ -81,6 +81,7 @@ class GNode {
   public:
       GMatrixF*     getTransform();  // global transform
       GMatrixF* getLevelTransform();  // immediate "local" node transform
+      GMatrixF* getRelativeTransform(GNode* base);  // product of transforms from beneath base node
 
   public:
       void setLevelTransform(GMatrixF* ltransform);

@@ -72,6 +72,10 @@ void GTreeCheck::dumpRepeatCandidates()
     for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++) dumpRepeatCandidate(i) ;
 }
 
+
+
+
+
 void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
 {
     std::string pdig = m_repeat_candidates[index];
@@ -103,6 +107,16 @@ void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
     }
 }
 
+GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
+{
+    assert(ridx >= 1); // ridx is a 1-based index
+    if(ridx > m_repeat_candidates.size()) return NULL ; 
+    std::string pdig = m_repeat_candidates[ridx-1];
+    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    assert(placements[0] == node);
+    return node ; 
+}
 
 GBuffer* GTreeCheck::makeTransformsBuffer(unsigned int ridx) 
 {

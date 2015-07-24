@@ -18,23 +18,39 @@
 namespace fs = boost::filesystem;
 
 
-GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
+GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 {
 
     Timer t ; 
     t.setVerbose(true);
     t.start();
 
-    GSolid* root = ggeo->getSolid(0);
+    GMergedMesh* mm = new GMergedMesh( index ); 
+    if(base == NULL)
+    {
+        mm->setCurrentBase(NULL);
+        base = static_cast<GNode*>(ggeo->getSolid(0)); 
+        LOG(info)<<"GMergedMesh::create"
+                 << " index " << index 
+                 << " from default root base " << base->getName() ;
+                 ; 
 
-    unsigned int numMeshes = ggeo->getNumMeshes();
-    assert(numMeshes < 500 );
+        unsigned int numMeshes = ggeo->getNumMeshes();
+        assert(numMeshes < 500 );
+    }
+    else
+    {
+        mm->setCurrentBase(base);
+        LOG(info)<<"GMergedMesh::create"
+                 << " index " << index 
+                 << " from base " << base->getName() ;
+                 ; 
+    }
 
-    GMergedMesh* mm = new GMergedMesh( index );
 
     // 1st pass traversal : counts vertices and faces
 
-    mm->traverse( root, 0, pass_count );  
+    mm->traverse( base, 0, PASS_COUNT );  
 
     t("1st pass traverse");
 
@@ -42,9 +58,9 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     LOG(info) << "GMergedMesh::create " 
               << " index " << index 
-              << " numMeshes " << numMeshes 
               << " numVertices " << mm->getNumVertices()
               << " numFaces " << mm->getNumFaces()
+              << " numSolids " << mm->getNumSolids()
               ;
 
     unsigned int numVertices = mm->getNumVertices();
@@ -69,13 +85,15 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
     unsigned int numSolids = mm->getNumSolids();
     mm->setCenterExtent(new gfloat4[numSolids]);
-    //mm->setTransforms(new float[numSolids*16]);  // repurposing the transforms for holding repeated placement transforms from GTreeCheck 
     mm->setMeshes(new unsigned int[numSolids]);
+    //mm->setTransforms(new float[numSolids*16]);  
+    // repurposing the transforms for holding repeated placement transforms from GTreeCheck 
+
     t("allocate solids");
 
     // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
-    mm->traverse( root, 0, pass_merge );  
+    mm->traverse( base, 0, PASS_MERGE );  
     t("2nd pass traverse");
 
     mm->updateBounds();
@@ -92,25 +110,29 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo)
 
 void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
-    GMatrixF* transform = node->getTransform();    
+    GNode* base = getCurrentBase();
+    GMatrixF* transform = base ? node->getRelativeTransform(base) : node->getTransform() ;    
 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
     GMesh* mesh = solid->getMesh();
     unsigned int meshIndex = mesh->getIndex();
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
-    gfloat3* vertices = pass == pass_merge ? mesh->getTransformedVertices(*transform) : NULL ;
 
+    gfloat3* vertices = pass == PASS_MERGE ? mesh->getTransformedVertices(*transform) : NULL ;
+
+
+    // using repeat index labelling in the tree
     bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
     bool selected = solid->isSelected() && repsel ;
     if(selected)
     {
-        if(pass == pass_count )
+        if(pass == PASS_COUNT )
         {
             m_num_vertices += nvert ;
             m_num_faces    += nface ; 
         }
-        else if(pass == pass_merge )
+        else if(pass == PASS_MERGE )
         {
             for(unsigned int i=0 ; i<nvert ; ++i )
             {
@@ -163,12 +185,12 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
 
     // for all (not just selected) as prefer absolute solid indexing 
-    if(pass == pass_count )
+    if(pass == PASS_COUNT )
     {
         m_num_solids += 1 ; 
         if(selected) m_num_solids_selected += 1;
     }
-    else if( pass == pass_merge ) 
+    else if( pass == PASS_MERGE ) 
     {
         m_center_extent[m_cur_solid] = GMesh::findCenterExtent(vertices, nvert); // keep track of center_extent of all solids
         m_meshes[m_cur_solid] = meshIndex ; 

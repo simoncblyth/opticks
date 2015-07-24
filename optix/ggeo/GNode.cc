@@ -121,6 +121,48 @@ void GNode::collectProgeny(std::vector<GNode*>& progeny)
 }
 
 
+GMatrixF* GNode::getRelativeTransform(GNode* base)
+{
+    std::vector<GNode*> nodes = getAncestors();
+    nodes.push_back(this);
+
+    typedef std::vector<GNode*>::const_iterator NIT ; 
+    //LOG(info) << "GNode::calculateTransform " ; 
+
+    GMatrix<float>* m = new GMatrix<float> ;
+
+    unsigned int nbase(0);
+    unsigned int nprod(0);
+    bool collect = false ; 
+    for(NIT it=nodes.begin() ; it != nodes.end() ; it++)
+    {
+        GNode* node = *it ; 
+        if(node == base)
+        {
+           nbase++ ; 
+           collect = true ; 
+        }        
+
+        if(collect)
+        {
+            //std::cout << std::setw(3) << idx << node->getName() << std::endl ; 
+            (*m) *= (*node->getLevelTransform()); 
+            nprod++ ; 
+        }
+    }
+
+    if(nbase == 0)
+    {
+        LOG(warning)<<"GNode::getRelativeTransform " 
+                    << " base node  " << base->getName()
+                    << " is not an ancestor of this node  " << this->getName()
+                    ;
+    }
+    return m ; 
+}
+
+
+
 GMatrixF* GNode::calculateTransform()
 {
     std::vector<GNode*> nodes = getAncestors();
@@ -130,7 +172,6 @@ GMatrixF* GNode::calculateTransform()
     //LOG(info) << "GNode::calculateTransform " ; 
 
     GMatrix<float>* m = new GMatrix<float> ;
-    //unsigned int idx(0);
     for(NIT it=nodes.begin() ; it != nodes.end() ; it++)
     {
         GNode* node = *it ; 

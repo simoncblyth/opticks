@@ -83,17 +83,9 @@ void GLoader::load(bool nogeocache)
             m_treeanalyse->labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
             t("TreeCheck"); 
 
-            GBuffer* rtransforms = m_treeanalyse->makeTransformsBuffer(m_repeatidx);
-            if(rtransforms)
-            { 
-                rtransforms->save<float>("/tmp/rtransforms.npy");
-            }
-            else
-            {
-                 LOG(warning)<<"GLoader::load makeTransformsBuffer FAILED "
-                             << " repeatidx " << m_repeatidx 
-                             ; 
-            }
+            m_transforms_buffer = m_treeanalyse->makeTransformsBuffer(m_repeatidx);
+            assert(m_transforms_buffer);
+            //m_transforms_buffer->save<float>("/tmp/rtransforms.npy");
 
             t("makeRepeatTransforms"); 
         }
@@ -118,6 +110,7 @@ void GLoader::load(bool nogeocache)
         GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillator(0));  
 
         m_boundarylib->createReemissionBuffer(scint);
+
         t("createReemissionBuffer"); 
 
         GColors* source = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
@@ -132,12 +125,28 @@ void GLoader::load(bool nogeocache)
         m_materials->loadIndex("$HOME/.opticks"); // customize GMaterialIndex
 
         m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
+
         t("sensitize"); 
 
         unsigned int ridx = m_repeatidx > -1 ? m_repeatidx : 0  ; 
-        m_mergedmesh = m_ggeo->getMergedMesh(ridx);   // if not existing creates merged mesh, doing the flattening  
+        GNode* rbase = m_repeatidx > -1 ? m_treeanalyse->getRepeatExample(m_repeatidx) : NULL ; 
+
+        // if requested index of merged mesh exists already return it 
+        // otherwise create using GMergedMesh::create(index, GGeo*) and return, 
+        //
+        //   ridx:0 is catchall global geometry
+        //   ridx:1 is the first repeated geometry index, eg the PMTs
+        //
+        m_mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase);   
+        if(m_transforms_buffer)
+        {
+            m_mergedmesh->setTransformsBuffer(m_transforms_buffer);
+        }
+
         m_mergedmesh->dumpSolids("GLoader::load dumpSolids");
+
         t("create MergedMesh"); 
+
 
         //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
 

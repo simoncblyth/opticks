@@ -127,7 +127,7 @@ class GGeo {
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
 
     public:
-        GMergedMesh* getMergedMesh(unsigned int index=0);
+        GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
 
 #if 0
     public:

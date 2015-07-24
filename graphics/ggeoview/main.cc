@@ -365,7 +365,7 @@ int main(int argc, char** argv)
     print(mmce, "mmce");
     print(gsce, "gsce");
     bool autocam = true ; 
-    composition.setCenterExtent( gsce, autocam );
+    composition.setCenterExtent( mmce, autocam );
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 

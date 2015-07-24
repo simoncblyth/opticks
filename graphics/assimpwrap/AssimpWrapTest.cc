@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     //GBoundaryLib* lib = ggeo->getBoundaryLib();
     //lib->Summary("GBoundaryLib");
 
-    GMergedMesh* mm = ggeo->getMergedMesh();
+    GMergedMesh* mm = ggeo->makeMergedMesh();
     mm->Summary("GMergedMesh");
   
 
