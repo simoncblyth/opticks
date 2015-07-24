@@ -124,15 +124,11 @@ int main(int argc, char** argv)
     composition.setTimeDomain( gfloat4(0.f, fcfg->getTimeMax(), 0.f, 0.f) );  
     composition.setColorDomain( gfloat4(0.f, numcol, 0.f, 0.f));
 
- 
-    NumpyEvt evt ;
 
     const char* typ = "cerenkov" ; 
     const char* tag = "1" ;  
     NPY<float>* npy = NPY<float>::load(typ, tag, det ) ;
-
     npy->Summary();
-
 
     G4StepNPY genstep(npy);    
     genstep.setLookup(lookup); 
@@ -145,15 +141,14 @@ int main(int argc, char** argv)
     {   
         genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
     }
- 
 
-    evt.setMaxRec(fcfg->getRecordMax());          // must set this before setGenStepData to have effect
+
+    NumpyEvt evt ;
+    evt.setMaxRec(fcfg->getRecordMax());  // must set this before setGenStepData to have effect
     evt.setGenstepData(npy, nooptix); 
 
 
-    OptiXEngine::Mode_t mode = compute ? OptiXEngine::COMPUTE : OptiXEngine::INTEROP ; 
-
-    OptiXEngine engine("GGeoView", mode) ;       
+    OptiXEngine engine("GGeoView", OptiXEngine::COMPUTE ) ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
     engine.setBoundaryLib(blib);   
@@ -166,6 +161,7 @@ int main(int argc, char** argv)
 
     int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
     assert(rng_max >= 1e6); 
+
     engine.setRngMax(rng_max);
 
 

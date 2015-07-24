@@ -513,7 +513,14 @@ optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
     buffer->setFormat(format);
     if(format == RT_FORMAT_USER)
     {
-        LOG(info) << "OptiXEngine::createIOBuffer FORMAT_USER " ;
+        LOG(info) << "OptiXEngine::createIOBuffer "
+                  << " RT_FORMAT_USER " 
+                  << " count " << count 
+                  << " numquad " << numquad 
+                  << " size " << totquad 
+                  << " elementsize " << sizeof(T)
+                  ;
+
         buffer->setElementSize(sizeof(T));
     }
     return buffer ; 

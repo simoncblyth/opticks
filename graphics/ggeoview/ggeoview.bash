@@ -19,6 +19,21 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+
+GGeoview Compute 
+------------------
+
+Compute only mode::
+
+   ggeoview-compute -b0
+   ggeoview-compute -b1
+   ggeoview-compute -b2
+   ggeoview-compute -b4   # up to 4 bounces working 
+
+   ggeoview-compute -b5   # crash for beyond 4  
+
+
+
 Usage tips
 -----------
 
