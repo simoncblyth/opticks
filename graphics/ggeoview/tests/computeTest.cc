@@ -1,4 +1,12 @@
 
+// oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
+#include "Frame.hh"
+#include "Composition.hh"
+#include "FrameCfg.hh"
+// these are here just for commandline handling
+//  TODO: move commandline handling out of oglrap- into npy-/ggeoview- ? 
+
+
 // npy-
 #include "NPY.hpp"
 #include "G4StepNPY.hpp"
@@ -17,9 +25,6 @@
 #include "GMergedMesh.hh" 
 class GBoundaryLib ; 
 
-
-// oglrap-
-#include "Composition.hh"
 
 
 // assimpwrap-
@@ -74,21 +79,31 @@ int main(int argc, char** argv)
     Types types ;  
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
 
-    bool nogeocache = false ; 
-    bool nooptix = false ;
-    bool compute = true ; 
-    unsigned int recordmax = 1 ; 
-    unsigned int bouncemax = 10 ; 
-    unsigned int timemax = 200 ; 
-    unsigned int numcol = 64 ; 
-    int ridx = -1 ; 
+    Frame frame ;
+    Cfg cfg("umbrella", false) ; // collect other Cfg objects
+    FrameCfg<Frame>* fcfg = new FrameCfg<Frame>("frame", &frame,false);
+    cfg.add(fcfg);
 
+    cfg.commandline(argc, argv);
+    t.setCommandLine(cfg.getCommandLine()); 
+
+    if(fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
+    if(fcfg->hasOpt("help"))   std::cout << cfg.getDesc() << std::endl ;
+    if(fcfg->isAbort()) exit(EXIT_SUCCESS); 
+
+
+    unsigned int numcol = 64 ; 
+    bool nogeocache = fcfg->hasOpt("nogeocache");
+    bool nooptix    = fcfg->hasOpt("nooptix");
+    bool compute    = true ; 
+    assert(nogeocache == false) ;
+    assert(nooptix == false);
 
     GLoader loader ;
     loader.setTypes(&types);
     loader.setCache(&cache);
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    loader.load(nogeocache, ridx);
+    loader.load(nogeocache, fcfg->getRepeatIndex());
 
     GMergedMesh* mm = loader.getMergedMesh(); 
     GBoundaryLib* blib = loader.getBoundaryLib();
@@ -106,7 +121,7 @@ int main(int argc, char** argv)
 
     Composition composition ;   
     composition.setDomainCenterExtent(ce);     // index 0 corresponds to entire geometry
-    composition.setTimeDomain( gfloat4(0.f, timemax, 0.f, 0.f) );  
+    composition.setTimeDomain( gfloat4(0.f, fcfg->getTimeMax(), 0.f, 0.f) );  
     composition.setColorDomain( gfloat4(0.f, numcol, 0.f, 0.f));
 
  
@@ -132,7 +147,7 @@ int main(int argc, char** argv)
     }
  
 
-    evt.setMaxRec(recordmax);          // must set this before setGenStepData to have effect
+    evt.setMaxRec(fcfg->getRecordMax());          // must set this before setGenStepData to have effect
     evt.setGenstepData(npy, nooptix); 
 
 
@@ -145,8 +160,9 @@ int main(int argc, char** argv)
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 
     engine.setEnabled(!nooptix);
-    engine.setBounceMax(bouncemax);  // 0:prevents any propagation leaving generated photons
-    engine.setRecordMax(recordmax);  // 1:to minimize without breaking machinery 
+    engine.setBounceMax(fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
+    engine.setRecordMax(evt.getMaxRec());       // 1:to minimize without breaking machinery 
+
 
     int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
     assert(rng_max >= 1e6); 

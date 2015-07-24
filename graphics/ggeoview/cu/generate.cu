@@ -11,6 +11,9 @@ using namespace optix;
 
 #include "quad.h"
 #include "wavelength_lookup.h"
+
+rtBuffer<uint4>                optical_buffer; 
+
 #include "state.h"
 #include "photon.h"
 
@@ -26,8 +29,10 @@ rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               photon_buffer;
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long and unsigned long long are both 8 bytes, 64 bits 
+
 rtBuffer<unsigned char>        phosel_buffer; 
 rtBuffer<unsigned char>        recsel_buffer; 
+
 rtBuffer<curandState, 1>       rng_states ;
 
 rtDeclareVariable(float4,        center_extent, , );
@@ -70,6 +75,10 @@ RT_PROGRAM void generate()
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
     unsigned int MAXREC = record_max ; 
+    if(photon_id == 0)
+    {
+       rtPrintf("generate\n");
+    } 
  
     phead.f = photon_buffer[photon_offset+0] ;
 
@@ -199,13 +208,9 @@ RT_PROGRAM void generate()
         //
         //
         //
-        // TODO:
-        //
-        // * arrange for each record to only set a single history bit  
-        // * use bit position rather than the full mask in the photon record 
-        //
-        //   0:31 fits in 5 bits 
-        //   0:15 fits in 4 bits
+        // * each turn of the loop only sets a single history bit  
+        // * bit position is used rather than the full mask in the photon record
+        //   to save bits  
         //
         // * control the or-ing of that flag into photon history at this level
         // * integrate surface optical props: finish=polished/ground

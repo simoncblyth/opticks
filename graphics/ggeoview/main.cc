@@ -151,24 +151,15 @@ int main(int argc, char** argv)
 
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
-    bool juno = cache.isJuno();
-    const char* det = cache.getDetector();
+    bool juno          = cache.isJuno();
+    const char* det    = cache.getDetector();
 
-/*
-    bool juno = cache.idPathContains("env/geant4/geometry/export/juno") ;
-    bool dayabay  = cache.idPathContains("env/geant4/geometry/export/DayaBay") ;
-    assert( juno ^ dayabay ); // exclusive-or
-    const char* det(NULL) ;
-    if(juno)    det = "juno" ;
-    if(dayabay) det = "dayabay" ;
-*/
-
-    LOG(debug) << argv[0] ; 
 
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
 
     Scene scene(shader_dir, shader_incl_path) ;
+
     Composition composition ;   
     Frame frame ;
     Bookmarks bookmarks ; 

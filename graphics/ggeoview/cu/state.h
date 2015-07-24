@@ -1,6 +1,5 @@
 #pragma once
 
-rtBuffer<uint4>     optical_buffer; 
 
 struct State 
 {

@@ -155,8 +155,8 @@ void OptiXEngine::initContext()
 
     cfg->setMissProgram( e_radiance_ray , "constantbg.cu", "miss" );
 
-    //const char* raygenprg = "generate" ; 
-    const char* raygenprg = "trivial" ; 
+    const char* raygenprg = "generate" ; 
+    //const char* raygenprg = "trivial" ; 
     cfg->setRayGenerationProgram(e_generate, "generate.cu", raygenprg );
     cfg->setExceptionProgram(    e_generate, "generate.cu", "exception");
 
@@ -264,6 +264,8 @@ void OptiXEngine::initGeometry()
     m_context["wavelength_domain"]->getFloat(wd.x,wd.y,wd.z,wd.w);
     m_domain->setQuad(e_wavelength_domain  , 0, wd );
 
+    print(wd, "OptiXEngine::initGeometry wavelength_domain");
+
 
     glm::ivec4 ci ;
     ci.x = m_bounce_max ;  
@@ -299,7 +301,8 @@ void OptiXEngine::preprocess()
     LOG(info)<< "OptiXEngine::preprocess start compile ";
     m_context->compile();
     LOG(info)<< "OptiXEngine::preprocess start building Accel structure ";
-    m_context->launch(e_pinhole_camera,0); 
+    //m_context->launch(e_pinhole_camera,0); 
+    m_context->launch(e_generate,0); 
 
     LOG(info)<< "OptiXEngine::preprocess DONE ";
 }
@@ -420,6 +423,8 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
 
 void OptiXEngine::downloadEvt()
 {
+    LOG(info)<<"OptiXEngine::downloadEvt" ;
+ 
     NPY<float>* dpho = m_evt->getPhotonData();
     download<float>( m_photon_buffer, dpho );
 
@@ -428,8 +433,9 @@ void OptiXEngine::downloadEvt()
 
     NPY<unsigned long long>* dhis = m_evt->getSequenceData();
     download<unsigned long long>( m_sequence_buffer, dhis );
-}
 
+    LOG(info)<<"OptiXEngine::downloadEvt DONE" ;
+}
 
 
 template <typename T>
