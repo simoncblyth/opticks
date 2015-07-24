@@ -187,26 +187,28 @@ int main(int argc, char** argv)
     LOG(info) << "main.OptiXEngine::generate DONE "; 
 
     engine.downloadEvt();
+    NPY<float>* dpho = evt.getPhotonData();
+    NPY<short>* drec = evt.getRecordData();
+    NPY<unsigned long long>* dhis = evt.getSequenceData();
 
     t("downloadEvt"); 
 
+    LOG(info) << "photonData   " << dpho->getDigestString() ;
+    LOG(info) << "recordData   " << drec->getDigestString() ;
+    LOG(info) << "sequenceData " << dhis->getDigestString() ;
 
-    NPY<float>* dpho = evt.getPhotonData();
+    t("checkDigests"); 
+
     dpho->setVerbose();
     dpho->save("ox%s", typ,  tag, det);
 
-    NPY<short>* drec = evt.getRecordData();
     drec->setVerbose();
     drec->save("rx%s", typ,  tag, det);
 
-    NPY<unsigned long long>* dhis = evt.getSequenceData();
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag, det);
 
-
-
     t("evtSave"); 
-
 
     t.stop();
 
@@ -223,7 +225,6 @@ int main(int argc, char** argv)
     char rdir[128];
     snprintf(rdir, 128, "$IDPATH/report/%s/%s", tag, typ ); 
     r.save(rdir, Report::name(typ, tag).c_str());  // with timestamp prefix
-
 
 }
 

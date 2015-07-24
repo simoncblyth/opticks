@@ -5,7 +5,7 @@
 
 #include <math.h> 
 #include "assert.h"
-#include "md5digest.hh"
+#include "md5digest.hpp"
 
 #include "GDomain.hh"
 #include "GAry.hh"

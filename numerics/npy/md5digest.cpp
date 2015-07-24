@@ -1,4 +1,4 @@
-#include "md5digest.hh"
+#include "md5digest.hpp"
 
 
 char* md5digest_str2md5(char* buffer, int length) 

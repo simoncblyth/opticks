@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include "GBuffer.hh"
-#include "md5digest.hh"
+#include "md5digest.hpp"
 
 
 template<typename T>

@@ -1,7 +1,7 @@
 #include "GNode.hh"
 #include "GMesh.hh"
 
-#include "md5digest.hh"
+#include "md5digest.hpp"
 #include "assert.h"
 #include "stdio.h"
 #include "stdlib.h"

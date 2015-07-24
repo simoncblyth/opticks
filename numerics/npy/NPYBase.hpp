@@ -21,6 +21,7 @@ class NPYBase {
        // shape related
        std::vector<int>& getShapeVector();
        std::string  getItemShape(unsigned int ifr=1);
+       std::string  getDigestString();
        unsigned int getLength();
        unsigned int getDimensions();
        unsigned int getShape(unsigned int dim);

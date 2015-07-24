@@ -8,7 +8,7 @@
 #include "GBuffer.hh"
 #include "GEnums.hh"
 #include "GOpticalSurface.hh"
-#include "md5digest.hh"
+#include "md5digest.hpp"
 #include "limits.h"
 
 

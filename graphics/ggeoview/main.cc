@@ -460,6 +460,12 @@ int main(int argc, char** argv)
 
         t("evtDownload"); 
 
+        LOG(info) << "photonData   " << dpho->getDigestString() ;
+        LOG(info) << "recordData   " << drec->getDigestString() ;
+        LOG(info) << "sequenceData " << dhis->getDigestString() ;
+
+        t("checkDigests"); 
+
         dpho->setVerbose();
         dpho->save("ox%s", typ,  tag, det);
         drec->setVerbose();
@@ -485,7 +491,7 @@ int main(int argc, char** argv)
 
 
         optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;
-        unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == evt.getNumPhotons());
+        unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == 2*evt.getNumPhotons());
         unsigned int device_number = 0 ;  // maybe problem with multi-GPU
         unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
 
@@ -508,7 +514,12 @@ int main(int argc, char** argv)
         unsigned int recsel_itemsize   = evt.getRecselData()->getShape(2)   ; assert( 4 == recsel_itemsize );
         unsigned int maxrec = evt.getMaxRec();
      
-        LOG(info) << "main: ThrustIndex ctor " ; 
+        LOG(info) << "main: ThrustIndex ctor " 
+                  << " num_elements " << num_elements 
+                  << " sequence_itemsize " << sequence_itemsize 
+                  << " phosel_itemsize " << phosel_itemsize 
+                  << " recsel_itemsize " << recsel_itemsize 
+                  ; 
         ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );   // input flag/material sequences
         ThrustArray<unsigned char>      psel(d_psel, num_elements       , phosel_itemsize   );   // output photon selection
         ThrustArray<unsigned char>      rsel(d_rsel, num_elements*maxrec, recsel_itemsize   );   // output record selection
@@ -522,6 +533,9 @@ int main(int argc, char** argv)
         cudaDeviceSynchronize();
 
         t("sequenceIndex"); 
+
+
+
 
 #ifdef INTEROP
         // declare that CUDA finished with buffers 

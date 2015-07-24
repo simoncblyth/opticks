@@ -1,6 +1,6 @@
 #include "GOpticalSurface.hh"
 
-#include "md5digest.hh"
+#include "md5digest.hpp"
 #include "stdlib.h"
 #include "string.h"
 #include "stdio.h"

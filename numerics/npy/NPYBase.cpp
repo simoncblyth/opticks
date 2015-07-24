@@ -6,6 +6,7 @@
 
 // npy-
 #include "stringutil.hpp"
+#include "md5digest.hpp"
 
 //bregex- 
 #include "regexsearch.hh"
@@ -17,6 +18,13 @@
 
 const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/$2/%s.npy" ; 
 
+
+std::string NPYBase::getDigestString()
+{
+    MD5Digest dig ;
+    dig.update( (char*)getBytes(), getNumBytes(0));
+    return dig.finalize();
+}
 
 std::string NPYBase::getItemShape(unsigned int ifr)
 {

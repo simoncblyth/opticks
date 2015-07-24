@@ -46,7 +46,6 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 add_library(${name} SHARED 
-                md5digest.cc
                 GProperty.cc
                 GDomain.cc
                 GAry.cc
@@ -84,7 +83,6 @@ add_library(${name} SHARED
 )
 
 SET(hdrs 
-md5digest.hh
 GGeo.hh
 GMaterial.hh
 GMesh.hh

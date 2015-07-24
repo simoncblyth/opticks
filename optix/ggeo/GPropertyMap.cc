@@ -1,6 +1,6 @@
 #include "GPropertyMap.hh"
 #include "GOpticalSurface.hh"
-#include "md5digest.hh"
+#include "md5digest.hpp"
 #include "string.h"
 #include "limits.h"
 #include "assert.h"

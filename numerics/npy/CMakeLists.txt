@@ -59,6 +59,7 @@ add_library( ${name}  SHARED
     Times.cpp
     Parameters.cpp
     Report.cpp
+    md5digest.cpp
 )
 
 set(LIBRARIES
@@ -97,7 +98,7 @@ Index.hpp
 Timer.hpp
 Times.hpp
 Parameters.hpp
-Report.hpp
+md5digest.hpp
 )
 
 install(TARGETS ${name}  DESTINATION lib)

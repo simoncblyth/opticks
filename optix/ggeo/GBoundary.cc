@@ -1,6 +1,6 @@
 #include "GBoundary.hh"
 #include "GPropertyMap.hh"
-#include "md5digest.hh"
+#include "md5digest.hpp"
 
 #include "stdio.h"
 #include "limits.h"
