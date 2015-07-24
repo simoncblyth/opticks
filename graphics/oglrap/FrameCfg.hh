@@ -65,6 +65,9 @@ inline void FrameCfg<Listener>::init()
        ("noviz,V",  "just generate, propagate and save : no visualization") ;
 
    m_desc.add_options()
+       ("noindex,I",  "no photon/record indexing") ;
+
+   m_desc.add_options()
        ("compute",  "COMPUTE mode, ie not INTEROP") ; 
 
    m_desc.add_options()

@@ -42,5 +42,6 @@ void Parameters::prepLines()
 template void Parameters::add(const char* name, int value);
 template void Parameters::add(const char* name, unsigned int value);
 template void Parameters::add(const char* name, std::string value);
+template void Parameters::add(const char* name, float value);
 
 

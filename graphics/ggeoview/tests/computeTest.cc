@@ -98,10 +98,12 @@ int main(int argc, char** argv)
     assert(nooptix == false);
 
     GLoader loader ;
+    loader.setRepeatIndex(fcfg->getRepeatIndex());
     loader.setTypes(&types);
     loader.setCache(&cache);
     loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    loader.load(nogeocache, fcfg->getRepeatIndex());
+    loader.load(nogeocache);
+    p.add<int>("repeatIdx", loader.getRepeatIndex() );
 
     GMergedMesh* mm = loader.getMergedMesh(); 
     GBoundaryLib* blib = loader.getBoundaryLib();
@@ -122,11 +124,16 @@ int main(int argc, char** argv)
     composition.setTimeDomain( gfloat4(0.f, fcfg->getTimeMax(), 0.f, 0.f) );  
     composition.setColorDomain( gfloat4(0.f, numcol, 0.f, 0.f));
 
+    p.add<float>("timeMax",composition.getTimeDomain().y  ); 
+
+
 
     const char* typ = "cerenkov" ; 
     const char* tag = "1" ;  
     NPY<float>* npy = NPY<float>::load(typ, tag, det ) ;
     npy->Summary();
+
+    p.add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
 
     G4StepNPY genstep(npy);    
     genstep.setLookup(lookup); 
@@ -140,6 +147,7 @@ int main(int argc, char** argv)
         genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
     }
 
+    p.add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
 
     NumpyEvt evt ;
     evt.setMaxRec(fcfg->getRecordMax());  // must set this before setGenStepData to have effect
@@ -166,12 +174,14 @@ int main(int argc, char** argv)
     p.add<std::string>("Type", typ );
     p.add<std::string>("Tag", tag );
     p.add<std::string>("Detector", det );
+
     p.add<unsigned int>("NumGensteps", evt.getNumGensteps());
     p.add<unsigned int>("RngMax",     engine.getRngMax() );
     p.add<unsigned int>("NumPhotons", evt.getNumPhotons());
     p.add<unsigned int>("NumRecords", evt.getNumRecords());
     p.add<unsigned int>("BounceMax", engine.getBounceMax() );
     p.add<unsigned int>("RecordMax", engine.getRecordMax() );
+    p.add<unsigned int>("RepeatIndex", engine.getRecordMax() );
 
 
     LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
@@ -187,15 +197,16 @@ int main(int argc, char** argv)
     LOG(info) << "main.OptiXEngine::generate DONE "; 
 
     engine.downloadEvt();
+
     NPY<float>* dpho = evt.getPhotonData();
     NPY<short>* drec = evt.getRecordData();
     NPY<unsigned long long>* dhis = evt.getSequenceData();
 
     t("downloadEvt"); 
 
-    LOG(info) << "photonData   " << dpho->getDigestString() ;
-    LOG(info) << "recordData   " << drec->getDigestString() ;
-    LOG(info) << "sequenceData " << dhis->getDigestString() ;
+    p.add<std::string>("photonData",   dpho->getDigestString()  );
+    p.add<std::string>("recordData",   drec->getDigestString()  );
+    p.add<std::string>("sequenceData", dhis->getDigestString()  );
 
     t("checkDigests"); 
 

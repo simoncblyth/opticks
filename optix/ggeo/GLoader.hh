@@ -28,8 +28,9 @@ class GLoader {
          GLoader();
          void setTypes(Types* types);
          void setCache(GCache* cache);
+         void setRepeatIndex(int repeatidx);
          void setImp(GLoaderImpFunctionPtr imp);
-         void load(bool nogeocache=false, int ridx=-1);
+         void load(bool nogeocache=false);
 
     public:
          //static const char* identityPath( const char* envprefix);
@@ -51,6 +52,7 @@ class GLoader {
          GColors*               getColors();
          Lookup*                getMaterialLookup();
          GBuffer*               getColorBuffer();
+         int                    getRepeatIndex();
 
     private:
          Types*                    m_types ; 
@@ -70,6 +72,7 @@ class GLoader {
          Lookup*                   m_lookup ; 
          GBuffer*                  m_color_buffer ; 
          GTreeCheck*               m_treeanalyse ;  
+         int                       m_repeatidx ; 
 };
 
 inline GLoader::GLoader() 
@@ -87,7 +90,8 @@ inline GLoader::GLoader()
    m_colors(NULL),
    m_lookup(NULL),
    m_color_buffer(NULL),
-   m_treeanalyse(NULL)
+   m_treeanalyse(NULL),
+   m_repeatidx(-1)
 {
 }
 
@@ -167,7 +171,14 @@ inline GBuffer* GLoader::getColorBuffer()
     return m_color_buffer  ; 
 }
 
-
+inline int GLoader::getRepeatIndex()
+{
+    return m_repeatidx ; 
+}
+inline void GLoader::setRepeatIndex(int repeatidx)
+{
+    m_repeatidx = repeatidx  ; 
+}
 
 
 

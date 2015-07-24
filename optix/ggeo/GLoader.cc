@@ -32,7 +32,7 @@ namespace fs = boost::filesystem;
 // trace/debug/info/warning/error/fatal
 
 
-void GLoader::load(bool nogeocache, int repeatidx)
+void GLoader::load(bool nogeocache)
 {
     Timer t ; 
     t.setVerbose(true);
@@ -45,7 +45,7 @@ void GLoader::load(bool nogeocache, int repeatidx)
     LOG(info) << "GLoader::load start " 
               << " idpath " << idpath 
               << " nogeocache " << nogeocache  
-              << " repeatidx " << repeatidx 
+              << " repeatidx " << m_repeatidx 
               ;
 
     fs::path geocache(idpath);
@@ -76,14 +76,14 @@ void GLoader::load(bool nogeocache, int repeatidx)
 
         t("create m_ggeo from G4DAE"); 
 
-        if(repeatidx > -1)
+        if(m_repeatidx > -1)
         { 
             m_treeanalyse = new GTreeCheck(m_ggeo);  // TODO: rename to GTreeAnalyse
             m_treeanalyse->traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
             m_treeanalyse->labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
             t("TreeCheck"); 
 
-            GBuffer* rtransforms = m_treeanalyse->makeTransformsBuffer(repeatidx);
+            GBuffer* rtransforms = m_treeanalyse->makeTransformsBuffer(m_repeatidx);
             if(rtransforms)
             { 
                 rtransforms->save<float>("/tmp/rtransforms.npy");
@@ -91,7 +91,7 @@ void GLoader::load(bool nogeocache, int repeatidx)
             else
             {
                  LOG(warning)<<"GLoader::load makeTransformsBuffer FAILED "
-                             << " repeatidx " << repeatidx 
+                             << " repeatidx " << m_repeatidx 
                              ; 
             }
 
@@ -134,7 +134,7 @@ void GLoader::load(bool nogeocache, int repeatidx)
         m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
         t("sensitize"); 
 
-        unsigned int ridx = repeatidx > -1 ? repeatidx : 0  ; 
+        unsigned int ridx = m_repeatidx > -1 ? m_repeatidx : 0  ; 
         m_mergedmesh = m_ggeo->getMergedMesh(ridx);   // if not existing creates merged mesh, doing the flattening  
         m_mergedmesh->dumpSolids("GLoader::load dumpSolids");
         t("create MergedMesh"); 
