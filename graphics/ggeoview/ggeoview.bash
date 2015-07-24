@@ -19,6 +19,49 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+Compute on gputest trying different CUDA_VISIBLE_DEVICES
+----------------------------------------------------------
+
+::
+
+    0.126,0.126   0         Tesla K40m  2880 CUDA cores  
+    0.127         1
+    0.127         2
+    0.126         3
+  
+    0.088,0.087   0,1             5760 
+    0.076         0,2
+    0.099         2,3
+    0.080         1,3
+
+    0.076         0,1,2           8640
+    0.058         1,2,3
+    0.057         1,2,3
+
+    0.062         0,1,2,3         11520
+    0.062,0.062,0.062,0.063   NO ENVVAR
+    
+
+    1.130          GT750M    ggv.sh --juno --cmp      384 CUDA cores
+    1.143 
+    1.146 
+    1.137 
+    1.139 
+
+
+    0.195,0.197    GTX 750 Ti    640 CUDA Cores                             
+
+
+    a = np.array( [[384, 1.130],[640,0.195],[2880,0.126],[5760,0.080],[8640,0.070],[11520,0.062]] )
+
+    plt.plot( a[:,0], a[0,-1]/a[:,1], "*-")
+
+
+
+
+
+
+
 
 GGeoview Compute 
 ------------------
