@@ -398,6 +398,7 @@ ggeoview-cd(){  cd $(ggeoview-sdir); }
 ggeoview-icd(){  cd $(ggeoview-idir); }
 ggeoview-bcd(){  cd $(ggeoview-bdir); }
 ggeoview-name(){ echo GGeoView ; }
+ggeoview-compute-name(){ echo computeTest ; }
 
 ggeoview-wipe(){
    local bdir=$(ggeoview-bdir)
@@ -442,6 +443,7 @@ ggeoview-install(){
 
 ggeoview-bin(){ echo $(ggeoview-idir)/bin/$(ggeoview-name) ; }
 
+ggeoview-compute-bin(){ echo $(ggeoview-idir)/bin/$(ggeoview-compute-name) ; }
 
 ggeoview-accelcache()
 {
@@ -552,6 +554,22 @@ ggeoview-run(){
    ggeoview-export
    $bin $*
 }
+
+ggeoview-compute(){ 
+   local bin=$(ggeoview-compute-bin)
+   ggeoview-export
+   $bin $*
+}
+
+ggeoview-compute-lldb(){ 
+   local bin=$(ggeoview-compute-bin)
+   ggeoview-export
+   lldb $bin $*
+}
+
+
+
+
 
 ggeoview-vrun(){ 
    local bin=$(ggeoview-bin)

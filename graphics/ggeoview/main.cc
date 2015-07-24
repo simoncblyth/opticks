@@ -151,13 +151,17 @@ int main(int argc, char** argv)
 
     GCache cache("GGEOVIEW_") ; 
     const char* idpath = cache.getIdPath();
+    bool juno = cache.isJuno();
+    const char* det = cache.getDetector();
+
+/*
     bool juno = cache.idPathContains("env/geant4/geometry/export/juno") ;
     bool dayabay  = cache.idPathContains("env/geant4/geometry/export/DayaBay") ;
     assert( juno ^ dayabay ); // exclusive-or
     const char* det(NULL) ;
     if(juno)    det = "juno" ;
     if(dayabay) det = "dayabay" ;
-
+*/
 
     LOG(debug) << argv[0] ; 
 
@@ -420,6 +424,8 @@ int main(int argc, char** argv)
 
     p.add<std::string>("Type", typ );
     p.add<std::string>("Tag", tag );
+    p.add<std::string>("Detector", det );
+
     p.add<unsigned int>("NumGensteps", evt.getNumGensteps());
     p.add<unsigned int>("RngMax",     engine.getRngMax() );
     p.add<unsigned int>("NumPhotons", evt.getNumPhotons());

@@ -75,14 +75,17 @@ void OptiXEngine::init()
     m_domain = NPY<float>::make_vec4(e_number_domain,1,0.f) ;
     m_idomain = NPY<int>::make_vec4(e_number_idomain,1,0) ;
 
-    initRenderer();
+    if(!isCompute())
+    {
+        initRenderer();
+    } 
+
     initContext();
     initGeometry();
     initGenerate();  // hmm maybe should not be here, in normal usage only needed on NPY arrival
     initRng();
 
     preprocess();  // context is validated and accel structure built in here
-
 
     LOG(info) << "OptiXEngine::init DONE " ;
 }
@@ -106,23 +109,29 @@ void OptiXEngine::initContext()
 {
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
 
-    unsigned int width  = m_composition->getPixelWidth();
-    unsigned int height = m_composition->getPixelHeight();
-
-    LOG(debug) << "OptiXEngine::initContext size (" << width << "," << height << ")" ;
-
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
     //m_context->setPrintLaunchIndex(0,0,0);
 
     m_context->setStackSize( 2180 );
- 
-    m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
-    m_context["output_buffer"]->set( m_output_buffer );
 
-    m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
+    if(isInterop())
+    {
+        unsigned int width  = m_composition->getPixelWidth();
+        unsigned int height = m_composition->getPixelHeight();
+        LOG(debug) << "OptiXEngine::initContext size (" << width << "," << height << ")" ;
+        m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
+        m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
+    } 
+    else
+    {
+        m_output_buffer = m_context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, 0);
+        m_touch_buffer  = m_context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
+    } 
+    m_context["output_buffer"]->set( m_output_buffer );
     m_context["touch_buffer"]->set( m_touch_buffer );
     m_context["touch_mode" ]->setUint( 0u );
+
 
     // "touch" mode is tied to the active rendering (currently only e_pinhole_camera)
     // as the meaning of x,y mouse/trackpad touches depends on that rendering.  
@@ -146,7 +155,9 @@ void OptiXEngine::initContext()
 
     cfg->setMissProgram( e_radiance_ray , "constantbg.cu", "miss" );
 
-    cfg->setRayGenerationProgram(e_generate, "generate.cu", "generate" );
+    //const char* raygenprg = "generate" ; 
+    const char* raygenprg = "trivial" ; 
+    cfg->setRayGenerationProgram(e_generate, "generate.cu", raygenprg );
     cfg->setExceptionProgram(    e_generate, "generate.cu", "exception");
 
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
@@ -406,6 +417,19 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
 
     // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
+
+void OptiXEngine::downloadEvt()
+{
+    NPY<float>* dpho = m_evt->getPhotonData();
+    download<float>( m_photon_buffer, dpho );
+
+    NPY<short>* drec = m_evt->getRecordData();
+    download<short>( m_record_buffer, drec );
+
+    NPY<unsigned long long>* dhis = m_evt->getSequenceData();
+    download<unsigned long long>( m_sequence_buffer, dhis );
+}
+
 
 
 template <typename T>

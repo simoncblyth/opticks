@@ -81,6 +81,8 @@ class OptiXEngine : public Touchable {
         void setEnabled(bool enabled);
         void setNumpyEvt(NumpyEvt* evt);
     public:
+        void downloadEvt();
+    public:
         bool isEnabled();
     public:
         void setRngMax(unsigned int rng_max);

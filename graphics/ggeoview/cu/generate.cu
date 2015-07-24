@@ -55,6 +55,14 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
     (slot)++ ; \
 }   \
 
+RT_PROGRAM void trivial()
+{
+    unsigned long long photon_id = launch_index.x ;  
+    if(photon_id == 0)
+    {
+       rtPrintf("trivial\n");
+    } 
+}
 
 RT_PROGRAM void generate()
 {

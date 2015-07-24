@@ -13,9 +13,10 @@ namespace fs = boost::filesystem;
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+const char* GCache::JUNO    = "juno" ; 
+const char* GCache::DAYABAY = "dayabay" ; 
 
-
-void GCache::readEnvironment( const char* envprefix)
+void GCache::readEnvironment()
 {
 /*
 
@@ -72,16 +73,15 @@ GGeoview application reports the idpath via::
 
 */
 
-    m_envprefix = strdup(envprefix);
-    m_geokey = getenvvar(envprefix, "GEOKEY" );
+    m_geokey = getenvvar(m_envprefix, "GEOKEY" );
     m_path = getenv(m_geokey);
-    m_query = getenvvar(envprefix, "QUERY");
-    m_ctrl = getenvvar(envprefix, "CTRL");
+    m_query = getenvvar(m_envprefix, "QUERY");
+    m_ctrl = getenvvar(m_envprefix, "CTRL");
 
     if(m_query == NULL || m_path == NULL || m_geokey == NULL )
     {
         printf("GCache::readEnvironment geokey %s path %s query %s ctrl %s \n", m_geokey, m_path, m_query, m_ctrl );
-        LOG(fatal) << "GCache::readEnvironment  envprefix[" << envprefix << "] missing required envvars " ; 
+        LOG(fatal) << "GCache::readEnvironment  m_envprefix[" << m_envprefix << "] missing required envvars " ; 
         assert(0);
     }
  
@@ -120,6 +120,18 @@ void GCache::Summary(const char* msg)
 }
 
 
+
+void GCache::init()
+{
+    readEnvironment();
+    m_juno     = idPathContains("env/geant4/geometry/export/juno") ;
+    m_dayabay  = idPathContains("env/geant4/geometry/export/DayaBay") ;
+    assert( m_juno ^ m_dayabay ); // exclusive-or
+
+    if(m_juno)    m_detector = JUNO ; 
+    if(m_dayabay) m_detector = DAYABAY ; 
+}
+  
 
 
 

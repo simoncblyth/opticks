@@ -65,6 +65,14 @@ Assertion failed: (dy[len-1] == right), function np_interp, file /Users/blyth/en
 Abort trap: 6
 
 
+
+[2015-Jul-24 10:30:36.403821]: GProperty::save 2d array of length 4096 to : /tmp/invertedReemissionCDF.npy
+[2015-Jul-24 10:30:36.443812]: GAry<T>::np_interp  len 4096 dy[len-1] nan right nan left 799.898
+Assertion failed: (dy[len-1] == right), function np_interp, file /Users/blyth/env/optix/ggeo/GAry.cc, line 50.
+/Users/blyth/env/graphics/ggeoview/ggeoview.bash: line 550:  2369 Abort trap: 6           $bin $*
+
+
+
 */
 
 
