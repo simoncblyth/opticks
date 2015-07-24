@@ -140,8 +140,15 @@ class OptiXEngine : public Touchable {
 
     public:
         RTformat getFormat(NPYBase::Type_t type);
+
         template<typename T>
         optix::Buffer   createIOBuffer(NPY<T>* npy);
+
+        template <typename T>
+        void upload(optix::Buffer& buffer, NPY<T>* npy);
+
+        template <typename T>
+        void download(optix::Buffer& buffer, NPY<T>* npy);
 
 
     protected:

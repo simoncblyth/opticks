@@ -215,6 +215,7 @@ int main(int argc, char** argv)
     bool nooptix    = fcfg->hasOpt("nooptix");
     bool nogeocache = fcfg->hasOpt("nogeocache");
     bool noviz      = fcfg->hasOpt("noviz");
+    bool compute    = fcfg->hasOpt("compute");
 
     // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
     // pixelfactor 2 makes OptiX render at retina resolution
@@ -285,7 +286,6 @@ int main(int argc, char** argv)
 
     GBuffer* colorbuffer = loader.getColorBuffer();  // composite buffer 0+:materials,  32+:flags
     scene.uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
-
 
     
     unsigned int target = 0 ; 
@@ -399,10 +399,8 @@ int main(int argc, char** argv)
 
     Photons* photons(NULL);
 #ifdef OPTIX
-    //  creates OptiX buffers from the OpenGL buffer_id's 
-
-    //OptiXEngine::Mode_t mode = OptiXEngine::INTEROP ; 
-    OptiXEngine::Mode_t mode = OptiXEngine::COMPUTE ; 
+    
+    OptiXEngine::Mode_t mode = compute ? OptiXEngine::COMPUTE : OptiXEngine::INTEROP ; 
 
     OptiXEngine engine("GGeoView", mode) ;       
     engine.setFilename(idpath);

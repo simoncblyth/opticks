@@ -167,6 +167,10 @@ inline void* NPY<T>::getBytes()
     return (void*)getValues();
 }
 
+
+
+
+
 template <typename T> 
 inline T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k)
 {

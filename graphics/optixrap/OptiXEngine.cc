@@ -375,8 +375,18 @@ void OptiXEngine::initGenerate()
 
 void OptiXEngine::initGenerate(NumpyEvt* evt)
 {
-    m_genstep_buffer = createIOBuffer<float>( evt->getGenstepData() );
+    NPY<float>* gensteps =  evt->getGenstepData() ;
+
+    m_genstep_buffer = createIOBuffer<float>( gensteps );
     m_context["genstep_buffer"]->set( m_genstep_buffer );
+
+    if(isCompute())
+    {
+        LOG(info) << "OptiXEngine::initGenerate (COMPUTE)" 
+                  << " uploading gensteps "
+                  ;
+        upload(m_genstep_buffer, gensteps);
+    }
 
     m_photon_buffer = createIOBuffer<float>( evt->getPhotonData() );
     m_context["photon_buffer"]->set( m_photon_buffer );
@@ -396,6 +406,40 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
 
     // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
+
+
+template <typename T>
+void OptiXEngine::upload(optix::Buffer& buffer, NPY<T>* npy)
+{
+    unsigned int numBytes = npy->getNumBytes(0) ;
+
+    LOG(info)<<"OptiXEngine::upload" 
+             << " numBytes " << numBytes 
+             ;
+
+    memcpy( buffer->map(), npy->getBytes(), numBytes );
+    buffer->unmap(); 
+}
+
+
+template <typename T>
+void OptiXEngine::download(optix::Buffer& buffer, NPY<T>* npy)
+{
+    unsigned int numBytes = npy->getNumBytes(0) ;
+    LOG(info)<<"OptiXEngine::download" 
+             << " numBytes " << numBytes 
+             ;
+
+    void* ptr = buffer->map() ; 
+    npy->read( ptr );
+    buffer->unmap(); 
+}
+
+
+
+
+
+
 
 template <typename T>
 optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
