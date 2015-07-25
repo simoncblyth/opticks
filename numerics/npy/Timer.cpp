@@ -17,8 +17,7 @@ const char* Timer::STOP  = "STOP" ;
 void Timer::operator()(const char* mark)
 {
     m_marks.push_back(SD(mark, getRealTime()));
-
-    if(m_verbose) LOG(info) << mark ; 
+    if(m_verbose) LOG(info) << m_name << " " << mark ; 
 }
 
 void Timer::start()
@@ -33,7 +32,7 @@ void Timer::stop()
 
 void Timer::dump(const char* msg)
 {
-   std::cout << msg << std::endl ; 
+   std::cout << m_name << " " << msg << std::endl ; 
    typedef std::vector<std::string>::const_iterator VSI ;  
    for(VSI it=m_lines.begin() ; it != m_lines.end() ; it++) std::cout << *it << std::endl ;  
 }

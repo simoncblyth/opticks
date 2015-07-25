@@ -3,6 +3,7 @@
 #include "Renderer.hh"
 #include "Prog.hh"
 #include "Composition.hh"
+#include "Texture.hh"
 
 // npy-
 #include "GLMPrint.hpp"
@@ -16,7 +17,7 @@
 // ggeo
 #include "GArray.hh"
 #include "GBuffer.hh"
-#include "GDrawable.hh"
+#include "GMergedMesh.hh"
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -38,11 +39,20 @@ void Renderer::configureI(const char* name, std::vector<int> values )
     if(strcmp(name, PRINT)==0) Print("Renderer::configureI");
 }
 
-void Renderer::setDrawable(GDrawable* drawable, bool debug)
+void Renderer::upload(GMergedMesh* geometry, bool debug)
 {
-    m_drawable = drawable ;
+    m_geometry = geometry ;
     gl_upload_buffers(debug);
 }
+
+void Renderer::upload(Texture* texture, bool debug)
+{
+    m_texture = texture ;
+    gl_upload_buffers(debug);
+}
+
+
+
 
 
 GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
@@ -76,19 +86,19 @@ void Renderer::gl_upload_buffers(bool debug)
     // TODO: adopt the more flexible ViewNPY approach used for event data
     //
 
-    assert(m_drawable);
+    assert(m_geometry);
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
 
-    GBuffer* vbuf = m_drawable->getVerticesBuffer();
-    GBuffer* nbuf = m_drawable->getNormalsBuffer();
-    GBuffer* cbuf = m_drawable->getColorsBuffer();
-    GBuffer* ibuf = m_drawable->getIndicesBuffer();
-    GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
+    GBuffer* vbuf = m_geometry->getVerticesBuffer();
+    GBuffer* nbuf = m_geometry->getNormalsBuffer();
+    GBuffer* cbuf = m_geometry->getColorsBuffer();
+    GBuffer* ibuf = m_geometry->getIndicesBuffer();
+    GBuffer* tbuf = m_geometry->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 
-    GBuffer* rbuf = m_drawable->getTransformsBuffer();
+    GBuffer* rbuf = m_geometry->getTransformsBuffer();
     setHasTransforms(rbuf != NULL);
 
     if(debug)
@@ -109,18 +119,23 @@ void Renderer::gl_upload_buffers(bool debug)
     {
         m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf );
     }
+
+    if(m_instanced) assert(hasTransforms()) ;
+
     if(hasTransforms())
     {
-        LOG(info) << "Renderer::gl_upload_buffers uploading transforms " ;
         m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  rbuf );
+        m_itransform_count = rbuf->getNumItems();
+
+        LOG(info) << "Renderer::gl_upload_buffers uploading transforms " 
+                  << " itransform_count " << m_itransform_count
+                  ;
+
     }
     else
     {
         LOG(warning) << "Renderer::gl_upload_buffers NO TRANSFORMS " ;
     }
-
-
-
 
 
     m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf );
@@ -180,7 +195,20 @@ void Renderer::check_uniforms()
 
     bool required = false;
  
-    if(strcmp(tag,"nrm")==0)
+    bool nrm  = strcmp(tag,"nrm")==0  ;  
+    bool inrm = strcmp(tag,"inrm")==0  ;  
+    bool tex  = strcmp(tag,"tex")==0  ;  
+
+    LOG(info) << "Renderer::check_uniforms " 
+              << " tag " << tag  
+              << " nrm " << nrm  
+              << " inrm " << inrm
+              << " tex " << tex
+              ;  
+
+    assert( nrm ^ inrm ^ tex );
+
+    if(nrm || inrm)
     {
         m_mvp_location = m_shader->uniform("ModelViewProjection", required); 
         m_mv_location =  m_shader->uniform("ModelView",           required);      
@@ -189,9 +217,14 @@ void Renderer::check_uniforms()
         m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
         m_lightposition_location = m_shader->uniform("LightPosition",required); 
 
+        if(inrm)
+        {
+            m_itransform_location = m_shader->uniform("InstanceTransform",required); 
+        } 
     } 
     else if(strcmp(tag,"tex")==0)
     {
+        // still being instanciated at least, TODO: check regards this cf the OptiXEngine internal renderer
         m_mv_location =  m_shader->uniform("ModelView",           required);    
     } 
     else
@@ -206,6 +239,7 @@ void Renderer::check_uniforms()
               << " mv " << m_mv_location 
               << " nrmparam " << m_nrmparam_location 
               << " clip " << m_clip_location 
+              << " itransform " << m_itransform_location 
               ;
 
 }
@@ -266,8 +300,20 @@ void Renderer::render()
     glEnable (GL_BLEND);
 
 
+    if(m_instanced)
+    {
+        // primcount : Specifies the number of instances of the specified range of indices to be rendered.
+        //             ie repeat sending the same set of vertices down the pipeline
+        //
+        GLsizei primcount = m_itransform_count ;  
+        glDrawElementsInstanced( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL, primcount  ) ;
+    }
+    else
+    {
+        glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
+    }
+    // indices_count would be 3 for a single triangle 
 
-    glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; // indices_count would be 3 for a single triangle 
 
     m_draw_count += 1 ; 
 

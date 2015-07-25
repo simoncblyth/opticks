@@ -2,7 +2,8 @@
 
 #include <vector>
 
-class GDrawable ; 
+class GMergedMesh ; 
+class Texture ; 
 class GBuffer ;
 class Composition ;
 
@@ -21,10 +22,12 @@ class Renderer : public RendererBase  {
 
   public:
       Renderer(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
+      void setInstanced(bool instanced=true);
       virtual ~Renderer();
 
   public: 
-      void setDrawable(GDrawable* drawable, bool debug=false);
+      void upload(GMergedMesh* geometry, bool debug=false);
+      void upload(Texture* texture, bool debug=false);
       void render();
       void setComposition(Composition* composition);
       Composition* getComposition(); 
@@ -65,15 +68,18 @@ class Renderer : public RendererBase  {
       GLint  m_param_location ;
       GLint  m_nrmparam_location ;
       GLint  m_lightposition_location ;
-
-      long   m_draw_count ;
+      GLint  m_itransform_location ;
+      unsigned int m_itransform_count ;
+      long         m_draw_count ;
       GLsizei m_indices_count ;
 
   private:
-      GDrawable* m_drawable ;
+      GMergedMesh* m_geometry ;
+      Texture*     m_texture ;
       Composition* m_composition ;
       bool m_has_tex ; 
       bool m_has_transforms ; 
+      bool m_instanced ; 
 };      
 
 
@@ -87,17 +93,24 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_param_location(-1),
     m_nrmparam_location(-1),
     m_lightposition_location(-1),
+    m_itransform_location(-1),
+    m_itransform_count(0),
     m_draw_count(0),
     m_indices_count(0),
-    m_drawable(NULL),
+    m_geometry(NULL),
+    m_texture(NULL),
     m_composition(NULL),
     m_has_tex(false),
-    m_has_transforms(false)
+    m_has_transforms(false),
+    m_instanced(false)
 {
 }
 
 
-
+inline void Renderer::setInstanced(bool instanced)
+{
+    m_instanced = instanced ; 
+}
 
 
 inline void Renderer::setComposition(Composition* composition)

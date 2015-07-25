@@ -45,7 +45,7 @@ void Lookup::loada(const char* adir, const char* aname, const char* aprefix)
     snprintf(apath, 256, "%s/%s", adir, aname);
 
 
-    LOG(info) << "Lookup::loada"
+    LOG(debug) << "Lookup::loada"
               << " apath " << apath 
               ;
 
@@ -72,7 +72,7 @@ void Lookup::loadb(const char* bdir, const char* bname, const char* bprefix)
     char bpath[256];
     snprintf(bpath, 256, "%s/%s", bdir, bname);
 
-    LOG(info) << "Lookup::loadb"
+    LOG(debug) << "Lookup::loadb"
               << " bpath " << bpath 
               ;
 

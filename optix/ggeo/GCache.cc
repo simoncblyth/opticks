@@ -16,6 +16,9 @@ namespace fs = boost::filesystem;
 const char* GCache::JUNO    = "juno" ; 
 const char* GCache::DAYABAY = "dayabay" ; 
 
+GCache* GCache::g_instance = NULL ; 
+
+
 void GCache::readEnvironment()
 {
 /*

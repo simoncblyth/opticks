@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     composition.Details("Composition::details");
 
     texture.create();   // after OpenGL context creation, done in frame.gl_init_window
-    renderer.setDrawable(&texture);
+    renderer.upload(&texture);
 
     GLFWwindow* window = frame.getWindow();
 

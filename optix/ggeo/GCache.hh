@@ -2,14 +2,22 @@
 #include "stdlib.h"
 #include <string>
 #include <cstring>
+#include <cassert>
 
 class GCache {
     public:
+         static GCache* getInstance();
+    private:
+         // singleton instance
+         static GCache* g_instance ; 
+    public:
+         
          static const char* JUNO ; 
          static const char* DAYABAY ; 
     public:
          GCache(const char* envprefix);
          const char* getIdPath();
+         std::string getRelativePath(const char* path); 
          const char* getEnvPrefix();
          bool idPathContains(const char* s); 
          void Summary(const char* msg="GCache::Summary");
@@ -36,6 +44,11 @@ class GCache {
 };
 
 
+inline GCache* GCache::getInstance()
+{
+   return g_instance ;  
+}
+
 inline GCache::GCache(const char* envprefix)
        :
        m_envprefix(strdup(envprefix)),
@@ -50,6 +63,8 @@ inline GCache::GCache(const char* envprefix)
        m_detector(NULL)
 {
        init();
+       assert(g_instance == NULL && "GCache::GCache only one instance is allowed");
+       g_instance = this ; 
 }
 
 inline const char* GCache::getIdPath()
@@ -88,4 +103,14 @@ inline bool GCache::idPathContains(const char* s)
 
 
 
-
+inline std::string GCache::getRelativePath(const char* path)
+{
+    if(strncmp(m_idpath, path, strlen(m_idpath)) == 0)
+    {
+        return path + strlen(m_idpath) + 1 ; 
+    }
+    else
+    {
+        return path ;  
+    }
+}

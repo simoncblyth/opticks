@@ -3,6 +3,7 @@
 #include "GItemIndex.hh"
 //#include "GItemIndex.hh"
 
+#include "GCache.hh"
 #include "GBoundary.hh"
 #include "GPropertyMap.hh"
 #include "GBuffer.hh"
@@ -635,27 +636,27 @@ GBuffer* GBoundaryLib::createReemissionBuffer(GPropertyMap<float>* scint)
     // TODO: reposition the .npy inside idpath
     // for comparison only
     GProperty<float>* cdf = constructReemissionCDF(scint);
-    if(cdf)
-    {
-        cdf->save("/tmp/reemissionCDF.npy");
-    }
-
+    assert(cdf);
+    //cdf->save("/tmp/reemissionCDF.npy");
 
     GProperty<float>* icdf = constructInvertedReemissionCDF(scint);
-    if(icdf == NULL)
-    {
-        LOG(warning)<<"GBoundaryLib::createReemissionBuffer FAILED as no icdf from constructInvertedReemissionCDF for scint " << scint->description() ;
-        return NULL ; 
-    }
-
-     
-    icdf->Summary("GBoundaryLib::createReemissionBuffer icdf ", 256);
+    assert(icdf);
+    //icdf->Summary("GBoundaryLib::createReemissionBuffer icdf ", 256);
+ 
+    //if(icdf == NULL)
+    //{
+    //    LOG(warning)<<"GBoundaryLib::createReemissionBuffer FAILED as no icdf from constructInvertedReemissionCDF for scint " << scint->description() ;
+    //    return NULL ; 
+    //}
+ 
+    /*
     {
         icdf->save("/tmp/invertedReemissionCDF.npy");
         GAry<float>* insitu = icdf->lookupCDF(1e6);
         insitu->Summary("icdf->lookupCDF(1e6)");
         insitu->save("/tmp/insitu.npy");
-    }    
+    } 
+    */   
 
     unsigned int numFloat = icdf->getLength();
     LOG(info) << "GBoundaryLib::createReemissionBuffer numFloat " << numFloat ;  
@@ -900,8 +901,9 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
 
     m_meta->createMaterialMap();
 
-    m_materials->dump();
-    m_surfaces->dump();
+    //m_materials->dump("GBoundaryLib::createWavelengthAndOpticalBuffers");
+    //m_surfaces->dump("GBoundaryLib::createWavelengthAndOpticalBuffers");
+
 
     //m_optical_buffer->save<unsigned int>("/tmp/optical_buffer_debug.npy");
 
@@ -1183,10 +1185,10 @@ bool GBoundaryLib::isUIntBuffer(const char* name)
 
 void GBoundaryLib::saveBuffer(const char* path, const char* name, GBuffer* buffer)
 {
+    GCache* cache = GCache::getInstance();
     LOG(info) << "GBoundaryLib::saveBuffer "
-               << " name " << std::setw(25) << name 
-               << " path " << path  
-               ;
+              << cache->getRelativePath(path)  
+              ;
 
     if(isFloatBuffer(name))     buffer->save<float>(path);
     else if(isIntBuffer(name))  buffer->save<int>(path);

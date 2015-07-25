@@ -76,9 +76,9 @@ class Scene : public Configurable {
         void setComposition(Composition* composition);
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
-        void setGeometry(GDrawable* geometry);
+   public:
+        void uploadGeometry(GMergedMesh* geometry);
         void uploadColorBuffer(GBuffer* colorbuffer);
-
    public:
         // target cannot live in Composition, as needs geometry 
         // to convert solid index into CenterExtent to give to Composition
@@ -104,12 +104,13 @@ class Scene : public Configurable {
 
    public:
         Renderer*     getGeometryRenderer();
+        Renderer*     getInstanceRenderer();
         Rdr*          getAxisRenderer();
         Rdr*          getGenstepRenderer();
         Rdr*          getPhotonRenderer();
         Rdr*          getRecordRenderer();
         Rdr*          getRecordRenderer(RecordStyle_t style);
-        GDrawable*    getGeometry();
+        GMergedMesh*  getGeometry();
         Composition*  getComposition();
         NumpyEvt*     getNumpyEvt();
         Photons*      getPhotons();
@@ -126,6 +127,7 @@ class Scene : public Configurable {
         Device*      m_device ; 
         Colors*      m_colors ; 
         Renderer*    m_geometry_renderer ; 
+        Renderer*    m_instance_renderer ; 
         Rdr*         m_axis_renderer ; 
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
@@ -134,7 +136,7 @@ class Scene : public Configurable {
         Rdr*         m_devrecord_renderer ; 
         NumpyEvt*    m_evt ;
         Photons*     m_photons ; 
-        GDrawable*   m_geometry ;
+        GMergedMesh* m_geometry ;
         Composition* m_composition ;
         GBuffer*     m_colorbuffer ;
         unsigned int m_target ;
@@ -162,6 +164,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_device(NULL),
             m_colors(NULL),
             m_geometry_renderer(NULL),
+            m_instance_renderer(NULL),
             m_axis_renderer(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
@@ -213,6 +216,11 @@ inline Renderer* Scene::getGeometryRenderer()
 {
     return m_geometry_renderer ; 
 }
+inline Renderer* Scene::getInstanceRenderer()
+{
+    return m_instance_renderer ; 
+}
+
 
 
 inline Rdr* Scene::getAxisRenderer()
@@ -242,7 +250,7 @@ inline Photons* Scene::getPhotons()
 
 
 
-inline GDrawable* Scene::getGeometry()
+inline GMergedMesh* Scene::getGeometry()
 {
     return m_geometry ; 
 }

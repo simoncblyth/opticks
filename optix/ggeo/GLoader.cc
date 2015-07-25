@@ -34,7 +34,7 @@ namespace fs = boost::filesystem;
 
 void GLoader::load(bool nogeocache)
 {
-    Timer t ; 
+    Timer t("GLoader::load") ; 
     t.setVerbose(true);
     t.start();
 
@@ -65,7 +65,12 @@ void GLoader::load(bool nogeocache)
         m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); // TODO: find common place for such strings, maybe Types.hpp
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
         m_meshes     = GItemIndex::load(idpath, "MeshIndex");
+
         t("load indices"); 
+
+        m_transforms_buffer = m_mergedmesh->getTransformsBuffer();
+        m_transforms_buffer->Summary("GLoader::load transforms buffer");
+
     } 
     else
     {
@@ -99,14 +104,10 @@ void GLoader::load(bool nogeocache)
 
         // moved Wavelength and Optical buffers to GBoundaryLib (from GMergedMesh)
 
-        //m_ggeo->dumpRawMaterialProperties("GLoader::load");
-        //m_ggeo->dumpRaw();
-
-        m_ggeo->findScintillators("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
-        //m_ggeo->dumpScintillators();
-
         // avoid requiring specific scintillator name by picking the first material 
         // with the requisite properties
+        m_ggeo->findScintillators("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
+        //m_ggeo->dumpScintillators();
         GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillator(0));  
 
         m_boundarylib->createReemissionBuffer(scint);
@@ -137,13 +138,23 @@ void GLoader::load(bool nogeocache)
         //   ridx:0 is catchall global geometry
         //   ridx:1 is the first repeated geometry index, eg the PMTs
         //
-        m_mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase);   
+        //
+        //  ggv.sh  -G --repeatidx 1                        // create ridx 1 geocache, with single PMT subtree 
+        //  ggv.sh  --noindex --repeatidx 1 --geocenter     // view the single PMT, need --geocenter as unplaced, nowhere near the genstep 
+        //
+
+        m_mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
+        m_mergedmesh->dumpSolids("GLoader::load dumpSolids");
+  
         if(m_transforms_buffer)
         {
+            LOG(info) << "GLoader::load setting transforms buffer" ; 
             m_mergedmesh->setTransformsBuffer(m_transforms_buffer);
         }
-
-        m_mergedmesh->dumpSolids("GLoader::load dumpSolids");
+        else
+        {
+            LOG(warning) << "GLoader::load NO transforms buffer" ; 
+        }
 
         t("create MergedMesh"); 
 
@@ -176,7 +187,7 @@ void GLoader::load(bool nogeocache)
     // hmm not routing via cache 
     m_lookup = new Lookup() ; 
     m_lookup->create(idpath);
-    m_lookup->dump("GLoader::load");  
+    //m_lookup->dump("GLoader::load");  
 
     Index* idx = m_types->getFlagsIndex() ;    
     m_flags = new GItemIndex( idx );     //GFlagIndex::load(idpath); 

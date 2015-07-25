@@ -102,7 +102,7 @@ void OptiXEngine::initRenderer()
     m_texture_id = m_texture->getTextureId() ;
 
     LOG(debug) << "OptiXEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
-    m_renderer->setDrawable(m_texture);
+    m_renderer->upload(m_texture);
 }
 
 void OptiXEngine::initContext()

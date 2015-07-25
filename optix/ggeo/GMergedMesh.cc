@@ -21,7 +21,7 @@ namespace fs = boost::filesystem;
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 {
 
-    Timer t ; 
+    Timer t("GMergedMesh::create") ; 
     t.setVerbose(true);
     t.start();
 

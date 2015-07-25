@@ -145,7 +145,7 @@ int main(int argc, char** argv)
     logging_init();
 
     Parameters p ; 
-    Timer t ; 
+    Timer t("main") ; 
     t.setVerbose(true);
     t.start();
 
@@ -288,22 +288,21 @@ int main(int argc, char** argv)
     scene.uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
     
+    GMergedMesh* mm = loader.getMergedMesh(); 
     unsigned int target = 0 ; 
-    GDrawable* drawable =  loader.getDrawable();
-    gfloat4 ce = drawable->getCenterExtent(target);
+    gfloat4 ce = mm->getCenterExtent(target);
 
-    LOG(info) << "main drawable ce: " 
+    LOG(info) << "main mm ce: " 
               << " x " << ce.x
               << " y " << ce.y
               << " z " << ce.z
               << " w " << ce.w
               ;
 
-    scene.setGeometry(drawable);
+    scene.uploadGeometry(mm);
     scene.setTarget(target);
     bookmarks.load(idpath); 
 
-    GMergedMesh* mm = loader.getMergedMesh(); 
     GBoundaryLib* blib = loader.getBoundaryLib();
  
     composition.setDomainCenterExtent(ce);     // index 0 corresponds to entire geometry
@@ -502,6 +501,9 @@ int main(int argc, char** argv)
 
         GItemIndex* seqhis = NULL ; 
         GItemIndex* seqmat = NULL ; 
+
+        LOG(warning) << "main: hardcode noindex as not working" ;
+        noindex = true ; 
         if(!noindex)
         {
             optix::Buffer& sequence_buffer = engine.getSequenceBuffer() ;

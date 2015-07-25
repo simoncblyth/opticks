@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <cstring>
 #include <map>
 
 
@@ -17,14 +18,15 @@ class Timer {
         static const char* START ; 
         static const char* STOP  ; 
     public:
-        Timer();
+        Timer(const char* name="");
     public:
         void start();
         void setVerbose(bool verbose);
         void setCommandLine(const std::string& cmdline);
     public:
         std::vector<std::string>& getLines();
-        Times* getTimes();
+        Times*                    getTimes();
+        const char*               getName();
     public:
         void operator()(const char* mark);
         void stop();
@@ -34,17 +36,22 @@ class Timer {
         void dump(const char* msg="Timer::dump");
         std::vector<std::string>& getStats();
     private:
-        VSD  m_marks ;  
-        VS   m_lines ; 
-        bool m_verbose ; 
+        VSD         m_marks ;  
+        VS          m_lines ; 
+        const char* m_name ; 
+        bool        m_verbose ; 
         std::string m_commandline ; 
-        Times* m_times ; 
+        Times*      m_times ; 
 
 };
 
 
 
-inline Timer::Timer() : m_verbose(false), m_times(NULL)
+inline Timer::Timer(const char* name) 
+       : 
+       m_name(strdup(name)),
+       m_verbose(false), 
+       m_times(NULL)
 {
 }
 
@@ -71,4 +78,7 @@ inline std::vector<std::string>& Timer::getLines()
     if(m_lines.size() == 0) prepTable();
     return m_lines ; 
 }
-
+inline const char* Timer::getName()
+{
+    return m_name ; 
+}

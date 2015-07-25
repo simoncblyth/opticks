@@ -4,7 +4,8 @@
 #include "string.h"
 
 // ggeo-
-#include "GDrawable.hh"
+#include "GMergedMesh.hh"
+//#include "GDrawable.hh"
 
 
 // oglrap-
@@ -166,6 +167,10 @@ void Scene::init()
 
     //LOG(info) << "Scene::init geometry_renderer ctor";
     m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
+
+    m_instance_renderer = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
+    m_instance_renderer->setInstanced();
+
     //LOG(info) << "Scene::init geometry_renderer ctor DONE";
 
     m_axis_renderer = new Rdr(m_device, "axis", m_shader_dir, m_shader_incl_path );
@@ -203,6 +208,7 @@ void Scene::setComposition(Composition* composition)
 {
     m_composition = composition ; 
     m_geometry_renderer->setComposition(composition);
+    m_instance_renderer->setComposition(composition);
     m_axis_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
     m_photon_renderer->setComposition(composition);
@@ -212,10 +218,13 @@ void Scene::setComposition(Composition* composition)
 }
 
 
-void Scene::setGeometry(GDrawable* geometry)
+void Scene::uploadGeometry(GMergedMesh* geometry)
 {
     m_geometry = geometry ;
-    m_geometry_renderer->setDrawable(m_geometry);  // upload would be better name than setDrawable
+
+    m_geometry_renderer->upload(m_geometry);  
+    m_instance_renderer->upload(m_geometry); 
+
 }
 
 void Scene::uploadColorBuffer(GBuffer* colorbuffer)

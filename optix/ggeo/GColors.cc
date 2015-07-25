@@ -214,7 +214,7 @@ void GColors::initCompositeColorBuffer(unsigned int max_colors)
 {
     unsigned int itemsize = sizeof(unsigned char)*4 ;
 
-    LOG(info) << "GColors::initCompositeColorBuffer "
+    LOG(debug) << "GColors::initCompositeColorBuffer "
               << " max_colors " << max_colors 
               << " itemsize " << itemsize 
               ; 
@@ -233,7 +233,7 @@ void GColors::addColors(std::vector<unsigned int>& codes, unsigned int start )
     unsigned char alpha = 0xFF ; 
     typedef std::vector<unsigned int> VU ; 
 
-    LOG(info) << "GColors::addColors " 
+    LOG(debug) << "GColors::addColors " 
               << " codes.size " << codes.size()
               << " start " << start 
               << " max_colors " << max_colors 
