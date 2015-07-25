@@ -625,7 +625,11 @@ ggeoview-compute-lldb(){
    lldb $bin $*
 }
 
-
+ggeoview-compute-gdb(){ 
+   local bin=$(ggeoview-compute-bin)
+   ggeoview-export
+   gdb --args $bin $*
+}
 
 
 

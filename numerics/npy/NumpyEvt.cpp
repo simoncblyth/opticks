@@ -113,7 +113,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
         }
         else if(gs.isScintillationStep(index))
         {
-            assert(npho >= 0 && npho < 1000);     // by observation of Scintillation steps                  
+            assert(npho >= 0 && npho < 5000);     // by observation of Scintillation steps                  
         } 
 
         for(unsigned int n=0 ; n < npho ; ++n)
