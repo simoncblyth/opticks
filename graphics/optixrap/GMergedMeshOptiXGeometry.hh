@@ -52,7 +52,7 @@ public:
 
 public:
     void convert();
-    optix::TextureSampler makeColorSampler(unsigned int nx);
+    //optix::TextureSampler makeColorSampler(unsigned int nx);
     optix::TextureSampler makeWavelengthSampler(GBuffer* wavelengthBuffer);
     optix::TextureSampler makeReemissionSampler(GBuffer* reemissionBuffer);
     optix::float4 getDomain();

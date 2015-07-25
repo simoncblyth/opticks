@@ -82,8 +82,9 @@ void OptiXEngine::init()
 
     initContext();
     initGeometry();
-    initGenerate();  // hmm maybe should not be here, in normal usage only needed on NPY arrival
-    initRng();
+
+    initGenerate();  // TODO: move elsewhere, only needed on NPY arrival
+    initRng();       // TODO: ditto
 
     preprocess();  // context is validated and accel structure built in here
 
@@ -113,7 +114,7 @@ void OptiXEngine::initContext()
     m_context->setPrintBufferSize(8192);
     //m_context->setPrintLaunchIndex(0,0,0);
 
-    m_context->setStackSize( 2180 );
+    m_context->setStackSize( 2180 ); // TODO: make externally configurable, and explore performance implications
 
     if(isInterop())
     {
@@ -464,11 +465,6 @@ void OptiXEngine::download(optix::Buffer& buffer, NPY<T>* npy)
     npy->read( ptr );
     buffer->unmap(); 
 }
-
-
-
-
-
 
 
 template <typename T>

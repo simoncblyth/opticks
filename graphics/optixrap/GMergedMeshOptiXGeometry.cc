@@ -23,40 +23,6 @@ void GMergedMeshOptiXGeometry::convert()
 }
 
 
-optix::TextureSampler GMergedMeshOptiXGeometry::makeColorSampler(unsigned int nx)
-{
-    unsigned char* colors = make_uchar4_colors(nx);
-    unsigned int numBytes = nx*sizeof(unsigned char)*4 ; 
-
-    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_BYTE4, nx );
-    memcpy( optixBuffer->map(), colors, numBytes );
-    optixBuffer->unmap(); 
-
-    delete colors ; 
-
-    optix::TextureSampler sampler = m_context->createTextureSampler();
-    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
-
-    RTfiltermode minification = RT_FILTER_LINEAR ;
-    RTfiltermode magnification = RT_FILTER_LINEAR ;
-    RTfiltermode mipmapping = RT_FILTER_NONE ;
-    sampler->setFilteringModes(minification, magnification, mipmapping);
-
-    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
-    sampler->setMaxAnisotropy(1.0f);  
-    sampler->setMipLevelCount(1u);     
-    sampler->setArraySize(1u);          //  num_textures_in_array
-
-    unsigned int texture_array_idx = 0u ;
-    unsigned int mip_level = 0u ; 
-    sampler->setBuffer(texture_array_idx, mip_level, optixBuffer);
-
-    return sampler ; 
-}
-
-
-
 
 optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* buffer)
 {
@@ -74,34 +40,9 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* b
               << " ny (props*subs)  " << ny 
               << " ny/16 " << ny/16 ; 
 
-    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
-    memcpy( optixBuffer->map(), buffer->getPointer(), buffer->getNumBytes() );
-    optixBuffer->unmap(); 
-
-    optix::TextureSampler sampler = m_context->createTextureSampler();
-    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
-    sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
-
-    RTfiltermode minification = RT_FILTER_LINEAR ;
-    RTfiltermode magnification = RT_FILTER_LINEAR ;
-    RTfiltermode mipmapping = RT_FILTER_NONE ;
-    sampler->setFilteringModes(minification, magnification, mipmapping);
-
-    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
-    sampler->setMaxAnisotropy(1.0f);  
-    sampler->setMipLevelCount(1u);     
-    sampler->setArraySize(1u);        
-
-    unsigned int texture_array_idx = 0u ;
-    unsigned int mip_level = 0u ; 
-    sampler->setBuffer(texture_array_idx, mip_level, optixBuffer);
-
+    optix::TextureSampler sampler = makeSampler(buffer, RT_FORMAT_FLOAT4, nx, ny);
     return sampler ; 
 }
-
-
-
 
 optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* buffer)
 {
@@ -113,26 +54,7 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* b
               << " (nx)domainLength " << domainLength 
               << " ny " << ny  ;
 
-    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
-    memcpy( optixBuffer->map(), buffer->getPointer(), buffer->getNumBytes() );
-    optixBuffer->unmap(); 
-
-    optix::TextureSampler sampler = m_context->createTextureSampler();
-    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
-    sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
-
-    RTfiltermode minification = RT_FILTER_LINEAR ;
-    RTfiltermode magnification = RT_FILTER_LINEAR ;
-    RTfiltermode mipmapping = RT_FILTER_NONE ;
-    sampler->setFilteringModes(minification, magnification, mipmapping);
-
-    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
-    sampler->setMaxAnisotropy(1.0f);  
-    sampler->setMipLevelCount(1u);     
-    sampler->setArraySize(1u);        
-    sampler->setBuffer(0u, 0u, optixBuffer);
-
+    optix::TextureSampler sampler = makeSampler(buffer, RT_FORMAT_FLOAT, nx, ny);
     return sampler ; 
 }
 
@@ -141,19 +63,6 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* b
 
 
 
-
-optix::Material GMergedMeshOptiXGeometry::makeMaterial()  
-{
-    optix::Material material = m_context->createMaterial();
-
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-
-    material->setClosestHitProgram(OptiXEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
-
-    material->setClosestHitProgram(OptiXEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
-
-    return material ; 
-}
 
 optix::float4 GMergedMeshOptiXGeometry::getDomain()
 {
@@ -174,6 +83,9 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     optix::Geometry geometry = convertDrawable(mergedmesh) ;  
     LOG(info) << "GMergedMeshOptiXGeometry::convertDrawableInstance using single material  " ; 
 
+
+
+
     GBuffer* wavelengthBuffer = m_boundarylib->getWavelengthBuffer();
     optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
 
@@ -184,6 +96,8 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
     m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
 
+
+
     GBuffer* obuf = m_boundarylib->getOpticalBuffer();
     unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
     //assert(numBoundaries == 56);
@@ -192,12 +106,17 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     optical_buffer->unmap();
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 
+
+
     GBuffer* reemissionBuffer = m_boundarylib->getReemissionBuffer();
     float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
     optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
     optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
     m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
     m_context["reemission_domain"]->setFloat(reemissionDomain);
+
+
+
 
     optix::Material material = makeMaterial();
     std::vector<optix::Material> materials ;
@@ -206,6 +125,29 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
 
     return gi ;
 }
+
+
+
+
+
+optix::Material GMergedMeshOptiXGeometry::makeMaterial()  
+{
+    optix::Material material = m_context->createMaterial();
+
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+
+    material->setClosestHitProgram(OptiXEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+
+    material->setClosestHitProgram(OptiXEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
+
+    return material ; 
+}
+
+
+
+
+
+
 
 
 optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* mergedmesh)
@@ -303,6 +245,43 @@ optix::float3 GMergedMeshOptiXGeometry::getMax()
 {
     return optix::make_float3(0.f, 0.f, 0.f); 
 }
+
+
+
+/*
+optix::TextureSampler GMergedMeshOptiXGeometry::makeColorSampler(unsigned int nx)
+{
+    unsigned char* colors = make_uchar4_colors(nx);
+    unsigned int numBytes = nx*sizeof(unsigned char)*4 ; 
+
+    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_BYTE4, nx );
+    memcpy( optixBuffer->map(), colors, numBytes );
+    optixBuffer->unmap(); 
+
+    delete colors ; 
+
+    optix::TextureSampler sampler = m_context->createTextureSampler();
+    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
+
+    RTfiltermode minification = RT_FILTER_LINEAR ;
+    RTfiltermode magnification = RT_FILTER_LINEAR ;
+    RTfiltermode mipmapping = RT_FILTER_NONE ;
+    sampler->setFilteringModes(minification, magnification, mipmapping);
+
+    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
+    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+    sampler->setMaxAnisotropy(1.0f);  
+    sampler->setMipLevelCount(1u);     
+    sampler->setArraySize(1u);          //  num_textures_in_array
+
+    unsigned int texture_array_idx = 0u ;
+    unsigned int mip_level = 0u ; 
+    sampler->setBuffer(texture_array_idx, mip_level, optixBuffer);
+
+    return sampler ; 
+}
+*/
+
 
 
 

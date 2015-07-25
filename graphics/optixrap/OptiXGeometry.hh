@@ -1,5 +1,6 @@
-#ifndef OPTIXGEOMETRY_H
-#define OPTIXGEOMETRY_H
+#pragma once
+
+class GBuffer ; 
 
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
@@ -22,6 +23,7 @@ public:
     optix::Material getOverrideMaterial();
     optix::Material getMaterial(unsigned int index);
     optix::GeometryGroup getGeometryGroup();
+    optix::TextureSampler makeSampler(GBuffer* buffer, RTformat format, unsigned int nx, unsigned int ny);
 
 public:
     void addInstance(optix::Geometry geometry, optix::Material material);
@@ -35,16 +37,15 @@ public:
     optix::Aabb getAabb();
 
 protected:
-    optix::Context m_context ;
-    optix::Material m_override_material ;
+    optix::Context       m_context ;
+    optix::Material      m_override_material ;
     optix::GeometryGroup m_geometry_group ; 
 
 protected:
-    std::vector<optix::Material> m_materials;
-    std::vector<optix::Geometry> m_geometries;
+    std::vector<optix::Material>         m_materials;
+    std::vector<optix::Geometry>         m_geometries;
     std::vector<optix::GeometryInstance> m_gis ;
 
 };
 
 
-#endif
