@@ -2,8 +2,10 @@
 
 #include <vector>
 
+class GDrawable ; 
 class GMergedMesh ; 
 class Texture ; 
+
 class GBuffer ;
 class Composition ;
 
@@ -17,7 +19,8 @@ class Renderer : public RendererBase  {
         vPosition=0, 
            vColor=1, 
           vNormal=2,
-          vTexcoord=3
+          vTexcoord=3,
+          vTransform=4
     };
 
   public:
@@ -74,8 +77,10 @@ class Renderer : public RendererBase  {
       GLsizei m_indices_count ;
 
   private:
+      GDrawable*   m_drawable ;
       GMergedMesh* m_geometry ;
       Texture*     m_texture ;
+  private:
       Composition* m_composition ;
       bool m_has_tex ; 
       bool m_has_transforms ; 
@@ -97,6 +102,7 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_itransform_count(0),
     m_draw_count(0),
     m_indices_count(0),
+    m_drawable(NULL),
     m_geometry(NULL),
     m_texture(NULL),
     m_composition(NULL),

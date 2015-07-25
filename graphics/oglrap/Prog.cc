@@ -179,6 +179,9 @@ GLint Prog::uniform(const char* name_, bool required)
 
 
 
+
+
+
 void Prog::_print_program_info_log()
 {
     int max_length = 2048;

@@ -115,6 +115,9 @@ class GMesh : public GDrawable {
       void setMeshesBuffer(GBuffer* buffer);
 
   public:
+      bool hasTransformsBuffer(); 
+
+  public:
       // Buffer access for GDrawable protocol
       GBuffer* getVerticesBuffer();
       GBuffer* getNormalsBuffer();
@@ -437,5 +440,8 @@ inline GBuffer*  GMesh::getSensorsBuffer()
     return m_sensors_buffer ;
 }
 
-
+inline bool GMesh::hasTransformsBuffer()
+{
+    return m_transforms_buffer != NULL ; 
+}
 

@@ -166,7 +166,7 @@ void Scene::init()
     m_colors = new Colors(m_device);
 
     //LOG(info) << "Scene::init geometry_renderer ctor";
-    m_geometry_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
+    m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
 
     m_instance_renderer = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
     m_instance_renderer->setInstanced();
@@ -207,8 +207,10 @@ void Scene::init()
 void Scene::setComposition(Composition* composition)
 {
     m_composition = composition ; 
-    m_geometry_renderer->setComposition(composition);
+
+    m_global_renderer->setComposition(composition);
     m_instance_renderer->setComposition(composition);
+
     m_axis_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
     m_photon_renderer->setComposition(composition);
@@ -218,13 +220,26 @@ void Scene::setComposition(Composition* composition)
 }
 
 
-void Scene::uploadGeometry(GMergedMesh* geometry)
+void Scene::uploadGeometry(GMergedMesh* mergedmesh)
 {
-    m_geometry = geometry ;
+    m_geometry = mergedmesh ;
 
-    m_geometry_renderer->upload(m_geometry);  
-    m_instance_renderer->upload(m_geometry); 
-
+    if(mergedmesh->hasTransformsBuffer())
+    {
+        LOG(info)<<"Scene::uploadGeometry" 
+                 << " instance_renderer "
+                 ; 
+        m_instance_renderer->upload(m_geometry); 
+        m_geometry_renderer = m_instance_renderer ; 
+    }
+    else
+    {
+        LOG(info)<<"Scene::uploadGeometry" 
+                 << " global_renderer "
+                 ; 
+        m_global_renderer->upload(m_geometry);  
+        m_geometry_renderer = m_global_renderer ; 
+    }
 }
 
 void Scene::uploadColorBuffer(GBuffer* colorbuffer)

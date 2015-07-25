@@ -18,6 +18,7 @@
 #include "GArray.hh"
 #include "GBuffer.hh"
 #include "GMergedMesh.hh"
+#include "GDrawable.hh"
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -39,18 +40,6 @@ void Renderer::configureI(const char* name, std::vector<int> values )
     if(strcmp(name, PRINT)==0) Print("Renderer::configureI");
 }
 
-void Renderer::upload(GMergedMesh* geometry, bool debug)
-{
-    m_geometry = geometry ;
-    gl_upload_buffers(debug);
-}
-
-void Renderer::upload(Texture* texture, bool debug)
-{
-    m_texture = texture ;
-    gl_upload_buffers(debug);
-}
-
 
 
 
@@ -65,6 +54,22 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer)
     return id ; 
 }
 
+
+void Renderer::upload(GMergedMesh* geometry, bool debug)
+{
+    m_geometry = geometry ;
+    assert( m_texture == NULL );
+    m_drawable = static_cast<GDrawable*>(m_geometry);
+    gl_upload_buffers(debug);
+}
+
+void Renderer::upload(Texture* texture, bool debug)
+{
+    m_texture = texture ;
+    assert( m_geometry == NULL );
+    m_drawable = static_cast<GDrawable*>(m_texture);
+    gl_upload_buffers(debug);
+}
 
 void Renderer::gl_upload_buffers(bool debug)
 {
@@ -85,20 +90,19 @@ void Renderer::gl_upload_buffers(bool debug)
     //
     // TODO: adopt the more flexible ViewNPY approach used for event data
     //
-
-    assert(m_geometry);
+    assert(m_drawable);
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
 
-    GBuffer* vbuf = m_geometry->getVerticesBuffer();
-    GBuffer* nbuf = m_geometry->getNormalsBuffer();
-    GBuffer* cbuf = m_geometry->getColorsBuffer();
-    GBuffer* ibuf = m_geometry->getIndicesBuffer();
-    GBuffer* tbuf = m_geometry->getTexcoordsBuffer();
+    GBuffer* vbuf = m_drawable->getVerticesBuffer();
+    GBuffer* nbuf = m_drawable->getNormalsBuffer();
+    GBuffer* cbuf = m_drawable->getColorsBuffer();
+    GBuffer* ibuf = m_drawable->getIndicesBuffer();
+    GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 
-    GBuffer* rbuf = m_geometry->getTransformsBuffer();
+    GBuffer* rbuf = m_drawable->getTransformsBuffer();
     setHasTransforms(rbuf != NULL);
 
     if(debug)
@@ -131,6 +135,10 @@ void Renderer::gl_upload_buffers(bool debug)
                   << " itransform_count " << m_itransform_count
                   ;
 
+
+
+
+
     }
     else
     {
@@ -143,7 +151,11 @@ void Renderer::gl_upload_buffers(bool debug)
 
     GLboolean normalized = GL_FALSE ; 
     GLsizei stride = 0 ;
+
     const GLvoid* offset = NULL ;
+
+
+
  
     // the vbuf and cbuf NumElements refer to the number of elements 
     // within the vertex and color items ie 3 in both cases
@@ -152,6 +164,9 @@ void Renderer::gl_upload_buffers(bool debug)
     //         are duplicating layout numbers in the nrm/vert.glsl  
     // THIS IS FRAGILE
     //
+
+    
+
 
     glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
     glVertexAttribPointer(vPosition, vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
@@ -174,6 +189,35 @@ void Renderer::gl_upload_buffers(bool debug)
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
 
+    if(hasTransforms())
+    {
+
+        LOG(info) << "Renderer::gl_upload_buffers"
+                  << " setup transform attributes "
+                   ;
+
+        glBindBuffer (GL_ARRAY_BUFFER, m_transforms);
+
+        long qsize = sizeof(GLfloat) * 4 ;
+        GLsizei matrix_stride = qsize * 4 ;
+
+        glVertexAttribPointer(vTransform + 0 , 4, GL_FLOAT, normalized, matrix_stride, (void*)0 );
+        glVertexAttribPointer(vTransform + 1 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize));
+        glVertexAttribPointer(vTransform + 2 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize*2));
+        glVertexAttribPointer(vTransform + 3 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize*3));
+
+        glEnableVertexAttribArray (vTransform + 0);   
+        glEnableVertexAttribArray (vTransform + 1);   
+        glEnableVertexAttribArray (vTransform + 2);   
+        glEnableVertexAttribArray (vTransform + 3);   
+
+        glVertexAttribDivisor(vTransform + 0, 1);  // dictates instanced geometry shifts between instances
+        glVertexAttribDivisor(vTransform + 1, 1);
+        glVertexAttribDivisor(vTransform + 2, 1);
+        glVertexAttribDivisor(vTransform + 3, 1);
+
+    } 
+
 
     glEnable(GL_CLIP_DISTANCE0); 
  
@@ -194,7 +238,7 @@ void Renderer::check_uniforms()
     char* tag = getShaderTag();
 
     bool required = false;
- 
+
     bool nrm  = strcmp(tag,"nrm")==0  ;  
     bool inrm = strcmp(tag,"inrm")==0  ;  
     bool tex  = strcmp(tag,"tex")==0  ;  

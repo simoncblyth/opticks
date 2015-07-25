@@ -77,7 +77,9 @@ class Scene : public Configurable {
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
    public:
-        void uploadGeometry(GMergedMesh* geometry);
+        // uploadGeometry assigns geometry_renderer to instance_renderer or global_renderer
+        // based on whether the GMergedMesh geometry has a transforms buffer      
+        void uploadGeometry(GMergedMesh* geometry); 
         void uploadColorBuffer(GBuffer* colorbuffer);
    public:
         // target cannot live in Composition, as needs geometry 
@@ -104,7 +106,7 @@ class Scene : public Configurable {
 
    public:
         Renderer*     getGeometryRenderer();
-        Renderer*     getInstanceRenderer();
+   public:
         Rdr*          getAxisRenderer();
         Rdr*          getGenstepRenderer();
         Rdr*          getPhotonRenderer();
@@ -126,14 +128,18 @@ class Scene : public Configurable {
         char*        m_shader_incl_path ; 
         Device*      m_device ; 
         Colors*      m_colors ; 
+   private:
         Renderer*    m_geometry_renderer ; 
         Renderer*    m_instance_renderer ; 
+        Renderer*    m_global_renderer ; 
+   private:
         Rdr*         m_axis_renderer ; 
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_photon_renderer ; 
         Rdr*         m_record_renderer ; 
         Rdr*         m_altrecord_renderer ; 
         Rdr*         m_devrecord_renderer ; 
+   private:
         NumpyEvt*    m_evt ;
         Photons*     m_photons ; 
         GMergedMesh* m_geometry ;
@@ -165,6 +171,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_colors(NULL),
             m_geometry_renderer(NULL),
             m_instance_renderer(NULL),
+            m_global_renderer(NULL),
             m_axis_renderer(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
@@ -216,11 +223,6 @@ inline Renderer* Scene::getGeometryRenderer()
 {
     return m_geometry_renderer ; 
 }
-inline Renderer* Scene::getInstanceRenderer()
-{
-    return m_instance_renderer ; 
-}
-
 
 
 inline Rdr* Scene::getAxisRenderer()
