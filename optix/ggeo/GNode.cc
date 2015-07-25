@@ -137,18 +137,17 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
     for(NIT it=nodes.begin() ; it != nodes.end() ; it++)
     {
         GNode* node = *it ; 
-        if(node == base)
-        {
-           nbase++ ; 
-           collect = true ; 
-        }        
-
         if(collect)
         {
             //std::cout << std::setw(3) << idx << node->getName() << std::endl ; 
             (*m) *= (*node->getLevelTransform()); 
             nprod++ ; 
         }
+        if(node == base)
+        {
+           nbase++ ; 
+           collect = true ; 
+        }        
     }
 
     if(nbase == 0)
