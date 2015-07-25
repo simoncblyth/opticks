@@ -212,6 +212,7 @@ int main(int argc, char** argv)
     bool noindex    = fcfg->hasOpt("noindex");
     bool noviz      = fcfg->hasOpt("noviz");
     bool compute    = fcfg->hasOpt("compute");
+    bool geocenter  = fcfg->hasOpt("geocenter");
 
     // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
     // pixelfactor 2 makes OptiX render at retina resolution
@@ -361,11 +362,12 @@ int main(int argc, char** argv)
 
     glm::vec4 mmce = GLMVEC4(mm->getCenterExtent(0)) ;
     glm::vec4 gsce = evt["genstep.vpos"]->getCenterExtent();
-
-    print(mmce, "mmce");
-    print(gsce, "gsce");
+    glm::vec4 uuce = geocenter ? mmce : gsce ;
+    print(mmce, "main mmce");
+    print(gsce, "main gsce");
+    print(uuce, "main uuce");
     bool autocam = true ; 
-    composition.setCenterExtent( mmce, autocam );
+    composition.setCenterExtent( uuce , autocam );
 
     scene.setRecordStyle( fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 

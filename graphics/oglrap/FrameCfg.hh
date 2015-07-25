@@ -68,6 +68,9 @@ inline void FrameCfg<Listener>::init()
        ("noindex,I",  "no photon/record indexing") ;
 
    m_desc.add_options()
+       ("geocenter",  "center view on geometry rather than the default genstep centering") ;
+
+   m_desc.add_options()
        ("compute",  "COMPUTE mode, ie not INTEROP") ; 
 
    m_desc.add_options()
