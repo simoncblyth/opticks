@@ -26,14 +26,22 @@ class GItemIndex ;
 //
 class GGeo {
     public:
-     typedef std::map<unsigned int, std::string> Index_t ;
+        typedef std::map<unsigned int, std::string> Index_t ;
+        static GGeo* load(const char* idpath);
+        enum { MAX_MERGED_MESH = 10 } ;
     public:
-        GGeo();
+        GGeo(bool loaded=false); // loaded instances are only partial revivals
         virtual ~GGeo();
     private:
         void init(); 
-
+        void loadMergedMeshes(const char* idpath);
     public:
+        void saveMergedMeshes(const char* idpath);
+    public:
+        unsigned int getNumMergedMesh();
+        GMergedMesh* getMergedMesh(unsigned int index);
+    public:
+        bool isLoaded();
         void setPath(const char* path);
         void setQuery(const char* query);
         void setCtrl(const char* ctrl);
@@ -140,6 +148,7 @@ class GGeo {
         void Details(const char* msg="GGeo::Details");
 
     private:
+        bool                          m_loaded ;  
         std::vector<GMesh*>           m_meshes ; 
         std::vector<GSolid*>          m_solids ; 
         std::vector<GMaterial*>       m_materials ; 
@@ -173,7 +182,8 @@ class GGeo {
 };
 
 
-inline GGeo::GGeo() :
+inline GGeo::GGeo(bool loaded) :
+   m_loaded(loaded), 
    m_boundary_lib(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
@@ -187,6 +197,12 @@ inline GGeo::GGeo() :
    m_sensitize_count(0)
 {
    init(); 
+}
+
+
+inline bool GGeo::isLoaded()
+{
+   return m_loaded ; 
 }
 
 
@@ -326,4 +342,6 @@ inline GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshindex ; 
 }
+
+
 

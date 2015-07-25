@@ -206,7 +206,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
 
 
-GMergedMesh* GMergedMesh::load(const char* dir)
+GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index)
 {
     GMergedMesh* mm(NULL);
     fs::path cachedir(dir);
@@ -216,7 +216,6 @@ GMergedMesh* GMergedMesh::load(const char* dir)
     }
     else
     {
-        unsigned int index = 0 ; 
         mm = new GMergedMesh(index);
         mm->loadBuffers(dir);
     }

@@ -812,12 +812,15 @@ void GMesh::loadBuffer(const char* path, const char* name)
 
 
 
-void GMesh::save(const char* dir)
+void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
 {
     fs::path cachedir(dir);
+    if(typedir)     cachedir /= typedir ;
+    if(instancedir) cachedir /= instancedir ;
+
     if(!fs::exists(cachedir))
     {
-        if (fs::create_directory(cachedir))
+        if (fs::create_directories(cachedir))
         {
             printf("GMesh::save created directory %s \n", dir );
         }
@@ -828,7 +831,7 @@ void GMesh::save(const char* dir)
         for(unsigned int i=0 ; i<m_names.size() ; i++)
         {
             std::string name = m_names[i];
-            fs::path bufpath(dir);
+            fs::path bufpath(cachedir);
             bufpath /= name + ".npy" ; 
             GBuffer* buffer = getBuffer(name.c_str());
             if(!buffer) continue ; 

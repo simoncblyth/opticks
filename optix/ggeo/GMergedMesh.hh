@@ -12,7 +12,7 @@ public:
 
 public:
     static GMergedMesh* create(unsigned int index, GGeo* ggeo, GNode* base=NULL);
-    static GMergedMesh* load(const char* dir);
+    static GMergedMesh* load(const char* dir, unsigned int index=0);
 
 public:
     GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor

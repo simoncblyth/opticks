@@ -40,7 +40,8 @@ class Scene : public Configurable {
        static const char* PHOTON ;
        static const char* AXIS ;
        static const char* GENSTEP ;
-       static const char* GEOMETRY ;
+       static const char* GLOBAL ;
+       static const char* INSTANCE  ;
        static const char* RECORD ;
    public:
        static const char* TARGET ;
@@ -149,7 +150,8 @@ class Scene : public Configurable {
         unsigned int m_touch ;
 
    private:
-        bool         m_geometry_mode ; 
+        bool         m_global_mode ; 
+        bool         m_instance_mode ; 
         bool         m_axis_mode ; 
         bool         m_genstep_mode ; 
         bool         m_photon_mode ; 
@@ -185,7 +187,8 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_colorbuffer(NULL),
             m_target(0),
             m_touch(0),
-            m_geometry_mode(true),
+            m_global_mode(false),
+            m_instance_mode(false),
             m_axis_mode(true),
             m_genstep_mode(true),
             m_photon_mode(true),
@@ -294,7 +297,7 @@ inline void Scene::nextPhotonStyle()
 
 inline void Scene::toggleGeometry()
 {
-    m_geometry_mode = !m_geometry_mode ; 
+    m_global_mode = !m_global_mode ; 
 }
 
 

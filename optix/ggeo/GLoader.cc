@@ -53,9 +53,9 @@ void GLoader::load(bool nogeocache)
     if(fs::exists(geocache) && fs::is_directory(geocache) && !nogeocache ) 
     {
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
-        m_ggeo = NULL ; 
-        m_mergedmesh = GMergedMesh::load(idpath);
-        t("load mergedmesh"); 
+        m_ggeo = GGeo::load(idpath) ; 
+        //m_mergedmesh = GMergedMesh::load(idpath);
+        t("load ggeo/mergedmesh"); 
 
         m_boundarylib = GBoundaryLib::load(idpath);
         t("load boundarylib"); 
@@ -68,8 +68,8 @@ void GLoader::load(bool nogeocache)
 
         t("load indices"); 
 
-        m_transforms_buffer = m_mergedmesh->getTransformsBuffer();
-        m_transforms_buffer->Summary("GLoader::load transforms buffer");
+        //m_transforms_buffer = m_mergedmesh->getTransformsBuffer();
+        //m_transforms_buffer->Summary("GLoader::load transforms buffer");
 
     } 
     else
@@ -80,21 +80,6 @@ void GLoader::load(bool nogeocache)
 
 
         t("create m_ggeo from G4DAE"); 
-
-        if(m_repeatidx > -1)
-        { 
-            m_treeanalyse = new GTreeCheck(m_ggeo);  // TODO: rename to GTreeAnalyse
-            m_treeanalyse->traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
-            m_treeanalyse->labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
-            t("TreeCheck"); 
-
-            m_transforms_buffer = m_treeanalyse->makeTransformsBuffer(m_repeatidx);
-            assert(m_transforms_buffer);
-            //m_transforms_buffer->save<float>("/tmp/rtransforms.npy");
-
-            t("makeRepeatTransforms"); 
-        }
-
         m_meshes = m_ggeo->getMeshIndex();  
 
         m_boundarylib = m_ggeo->getBoundaryLib();
@@ -129,8 +114,32 @@ void GLoader::load(bool nogeocache)
 
         t("sensitize"); 
 
-        unsigned int ridx = m_repeatidx > -1 ? m_repeatidx : 0  ; 
-        GNode* rbase = m_repeatidx > -1 ? m_treeanalyse->getRepeatExample(m_repeatidx) : NULL ; 
+        if(m_instanced)
+        { 
+            m_treeanalyse = new GTreeCheck(m_ggeo);  // TODO: rename to GTreeAnalyse
+            m_treeanalyse->traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
+            m_treeanalyse->labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
+            t("TreeCheck"); 
+
+            GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+            unsigned int numRepeats = m_treeanalyse->getNumRepeats();
+            for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
+            {
+                GBuffer* rtransforms    = m_treeanalyse->makeTransformsBuffer(ridx);
+                GNode*   rbase          = m_treeanalyse->getRepeatExample(ridx) ; 
+                GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
+                mergedmesh->dumpSolids("GLoader::load dumpSolids");
+                mergedmesh->setTransformsBuffer(rtransforms);
+            }
+            t("makeRepeatTransforms"); 
+        }
+        else
+        {
+            m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+        }
+
+        m_ggeo->saveMergedMeshes(idpath );
+
 
         // if requested index of merged mesh exists already return it 
         // otherwise create using GMergedMesh::create(index, GGeo*) and return, 
@@ -142,22 +151,12 @@ void GLoader::load(bool nogeocache)
         //  ggv.sh  -G --repeatidx 1                        // create ridx 1 geocache, with single PMT subtree 
         //  ggv.sh  --noindex --repeatidx 1 --geocenter     // view the single PMT, need --geocenter as unplaced, nowhere near the genstep 
         //
-
-        m_mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
-        m_mergedmesh->dumpSolids("GLoader::load dumpSolids");
   
-        if(m_transforms_buffer)
-        {
-            LOG(info) << "GLoader::load setting transforms buffer" ; 
-            m_mergedmesh->setTransformsBuffer(m_transforms_buffer);
-        }
-        else
-        {
-            LOG(warning) << "GLoader::load NO transforms buffer" ; 
-        }
 
         t("create MergedMesh"); 
 
+        /*
+        TODO: adapt GColorizer to new multi-mergedmesh regime 
 
         //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
 
@@ -169,9 +168,12 @@ void GLoader::load(bool nogeocache)
 
         t("GColorizer"); 
 
+        */
+
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
 
-        m_mergedmesh->save(idpath); 
+        //m_mergedmesh->save(idpath); 
+
         m_metadata->save(idpath);
         m_materials->save(idpath);
         m_surfaces->save(idpath);
@@ -234,7 +236,7 @@ void GLoader::load(bool nogeocache)
 
 
     LOG(info) << "GLoader::load done " << idpath ;
-    assert(m_mergedmesh);
+    //assert(m_mergedmesh);
     t.stop();
     t.dump();
 }
@@ -242,8 +244,8 @@ void GLoader::load(bool nogeocache)
 void GLoader::Summary(const char* msg)
 {
     printf("%s\n", msg);
-    m_mergedmesh->Summary("GLoader::Summary");
-    m_mergedmesh->Dump("GLoader::Summary Dump",10);
+    //m_mergedmesh->Summary("GLoader::Summary");
+    //m_mergedmesh->Dump("GLoader::Summary Dump",10);
 }
 
 

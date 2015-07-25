@@ -271,6 +271,7 @@ int main(int argc, char** argv)
     //flags->save("/tmp");
 
     GLoader loader ;
+    loader.setInstanced(true); // find repeated geometry 
     loader.setRepeatIndex(fcfg->getRepeatIndex());
     loader.setTypes(&types);
     loader.setCache(&cache);
@@ -287,25 +288,40 @@ int main(int argc, char** argv)
     GBuffer* colorbuffer = loader.getColorBuffer();  // composite buffer 0+:materials,  32+:flags
     scene.uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
+   
+    GGeo* gg = loader.getGGeo();
+
+    GMergedMesh* mm0 = NULL ; 
+    unsigned int nmm = gg->getNumMergedMesh();
+    for(unsigned int i=0 ; i < nmm ; i++)
+    { 
+        GMergedMesh* mm = gg->getMergedMesh(i); 
+        if(i == 0)
+        {
+            mm0 = mm ; 
+            unsigned int target = 0 ; 
+            gfloat4 ce = mm->getCenterExtent(target);
+            composition.setDomainCenterExtent(ce);     // index 0 corresponds to entire geometry
+
+            LOG(info) << "main mm ce: " 
+                      << " x " << ce.x
+                      << " y " << ce.y
+                      << " z " << ce.z
+                      << " w " << ce.w
+                      ;
+        }
+        scene.uploadGeometry(mm);  // TODO: support more than 1 instance geometry 
     
-    GMergedMesh* mm = loader.getMergedMesh(); 
-    unsigned int target = 0 ; 
-    gfloat4 ce = mm->getCenterExtent(target);
+        if(i == 0)
+        {
+            scene.setTarget(0); // have to do in loop as currently uploadGeometry stomps on scene.m_geometry 
+        }
+    }
 
-    LOG(info) << "main mm ce: " 
-              << " x " << ce.x
-              << " y " << ce.y
-              << " z " << ce.z
-              << " w " << ce.w
-              ;
-
-    scene.uploadGeometry(mm);
-    scene.setTarget(target);
     bookmarks.load(idpath); 
 
     GBoundaryLib* blib = loader.getBoundaryLib();
  
-    composition.setDomainCenterExtent(ce);     // index 0 corresponds to entire geometry
     composition.setTimeDomain( gfloat4(0.f, fcfg->getTimeMax(), 0.f, 0.f) );  
     composition.setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
@@ -320,7 +336,6 @@ int main(int argc, char** argv)
         exit(EXIT_SUCCESS); 
     }
 
-    // hmm would be better placed into a NumpyEvtCfg 
     const char* typ ; 
     if(     fcfg->hasOpt("cerenkov"))      typ = "cerenkov" ;
     else if(fcfg->hasOpt("scintillation")) typ = "scintillation" ;
@@ -359,7 +374,7 @@ int main(int argc, char** argv)
     t("hostEvtAllocation"); 
 
 
-    glm::vec4 mmce = GLMVEC4(mm->getCenterExtent(0)) ;
+    glm::vec4 mmce = GLMVEC4(mm0->getCenterExtent(0)) ;
     glm::vec4 gsce = evt["genstep.vpos"]->getCenterExtent();
     glm::vec4 uuce = geocenter ? mmce : gsce ;
     print(mmce, "main mmce");
@@ -398,7 +413,7 @@ int main(int argc, char** argv)
     // TODO:  
     //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
     //   * extract core OptiX processing into separate class
-    //   * hmm generation should not depend on renderers OpenGL buffers
+    //   * generation should not depend on renderers OpenGL buffers
     //     but for OpenGL interop its expedient for now
 
 
@@ -409,7 +424,7 @@ int main(int argc, char** argv)
 
     OptiXEngine engine("GGeoView", mode) ;       
     engine.setFilename(idpath);
-    engine.setMergedMesh(mm);   
+    engine.setMergedMesh(mm0);    // TODO: handle multiple
     engine.setBoundaryLib(blib);   
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 

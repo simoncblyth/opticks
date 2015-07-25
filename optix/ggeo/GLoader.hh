@@ -33,6 +33,9 @@ class GLoader {
          void load(bool nogeocache=false);
 
     public:
+         void setInstanced(bool instanced=true);
+         bool isInstanced();
+    public:
          //static const char* identityPath( const char* envprefix);
          void Summary(const char* msg);
 
@@ -75,6 +78,7 @@ class GLoader {
          GTreeCheck*               m_treeanalyse ;  
          int                       m_repeatidx ; 
          GBuffer*                  m_transforms_buffer ; 
+         bool                      m_instanced ; 
 };
 
 inline GLoader::GLoader() 
@@ -94,11 +98,20 @@ inline GLoader::GLoader()
    m_color_buffer(NULL),
    m_treeanalyse(NULL),
    m_repeatidx(-1),
-   m_transforms_buffer(NULL)
+   m_transforms_buffer(NULL),
+   m_instanced(false)
 {
 }
 
+inline void GLoader::setInstanced(bool instanced)
+{
+   m_instanced = instanced ;
+}
 
+inline bool GLoader::isInstanced()
+{
+   return m_instanced ; 
+}
 
 
 // setImp : sets implementation that does the actual loading

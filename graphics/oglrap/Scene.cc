@@ -38,7 +38,8 @@
 const char* Scene::AXIS   = "axis" ; 
 const char* Scene::PHOTON = "photon" ; 
 const char* Scene::GENSTEP = "genstep" ; 
-const char* Scene::GEOMETRY = "geometry" ; 
+const char* Scene::GLOBAL  = "global" ; 
+const char* Scene::INSTANCE = "instance" ; 
 const char* Scene::RECORD   = "record" ; 
 
 const char* Scene::REC_ = "point" ;   
@@ -67,7 +68,8 @@ const char* Scene::getRecordStyleName()
 void Scene::gui()
 {
 #ifdef GUI_
-     ImGui::Checkbox(GEOMETRY, &m_geometry_mode);
+     ImGui::Checkbox(GLOBAL,   &m_global_mode);
+     ImGui::Checkbox(INSTANCE, &m_instance_mode);
 
      ImGui::Checkbox(AXIS,     &m_axis_mode);
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
@@ -222,7 +224,7 @@ void Scene::setComposition(Composition* composition)
 
 void Scene::uploadGeometry(GMergedMesh* mergedmesh)
 {
-    m_geometry = mergedmesh ;
+    m_geometry = mergedmesh ;  // TODO: handle multiple merged mesh
 
     if(mergedmesh->hasTransformsBuffer())
     {
@@ -230,7 +232,8 @@ void Scene::uploadGeometry(GMergedMesh* mergedmesh)
                  << " instance_renderer "
                  ; 
         m_instance_renderer->upload(m_geometry); 
-        m_geometry_renderer = m_instance_renderer ; 
+        //m_geometry_renderer = m_instance_renderer ;   // KLUDGE
+        m_instance_mode = true ; 
     }
     else
     {
@@ -238,7 +241,8 @@ void Scene::uploadGeometry(GMergedMesh* mergedmesh)
                  << " global_renderer "
                  ; 
         m_global_renderer->upload(m_geometry);  
-        m_geometry_renderer = m_global_renderer ; 
+        //m_geometry_renderer = m_global_renderer ;   // KLUDGE
+        m_global_mode = true ; 
     }
 }
 
@@ -319,8 +323,8 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr)
 
 void Scene::render()
 {
-
-    if(m_geometry_mode) m_geometry_renderer->render();
+    if(m_global_mode)   m_global_renderer->render();
+    if(m_instance_mode) m_instance_renderer->render();
     if(m_axis_mode)     m_axis_renderer->render();
     if(m_genstep_mode)  m_genstep_renderer->render();  
     if(m_photon_mode)   m_photon_renderer->render();

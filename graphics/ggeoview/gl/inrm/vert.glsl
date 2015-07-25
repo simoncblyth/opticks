@@ -35,7 +35,7 @@ void main ()
 
     vec3 lpos_e = vec3( ModelView * LightPosition );   
 
-    vec3 vpos_e = vec3( ModelView * vec4 (vertex_position, 1.0));  // vertex position in eye space 
+    vec3 vpos_e = vec3( ModelView * InstanceTransform * vec4 (vertex_position, 1.0));  // vertex position in eye space 
 
     vec3 ldir_e = normalize(lpos_e - vpos_e);
 

@@ -1,21 +1,6 @@
 #include "Scene.hh"
 #include <cstdio>
 
-void test_charstarstar()
-{
-    unsigned int nmode = 3 ; 
-    const char** c = new const char*[nmode] ; 
-
-    c[0] = Scene::PHOTON ; 
-    c[1] = Scene::GENSTEP ; 
-    c[2] = Scene::GEOMETRY ; 
-
-    for(unsigned int i=0 ; i < nmode ; i++)
-    {
-        printf("%2d : %s \n", i, c[i] );
-    }
-}
-
 
 void test_mode_gymnastics()
 {

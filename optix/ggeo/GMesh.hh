@@ -89,7 +89,7 @@ class GMesh : public GDrawable {
       // methods supporting save/load from file
       static GMesh* load(const char* dir);  
       void loadBuffers(const char* dir);
-      void save(const char* dir);
+      void save(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
       GBuffer* getBuffer(const char* name);
       void setBuffer(const char* name, GBuffer* buffer);
       bool isIntBuffer(const char* name);

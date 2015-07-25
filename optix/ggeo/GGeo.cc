@@ -1,5 +1,6 @@
 #include "GGeo.hh"
 
+#include "GCache.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GMaterial.hh"
@@ -18,17 +19,95 @@
 
 #include <iomanip>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
 #define BSIZ 50
+
+
+GGeo* GGeo::load(const char* idpath)
+{
+    bool loaded = true ; 
+    GGeo* ggeo = new GGeo(loaded);
+    ggeo->loadMergedMeshes(idpath);
+    return ggeo ; 
+}
+
+void GGeo::loadMergedMeshes(const char* idpath )
+{
+   GCache* gc = GCache::getInstance();
+
+   fs::path cachedir(idpath);
+
+   for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
+   {   
+        fs::path mmdir(cachedir / "GMergedMesh" / boost::lexical_cast<std::string>(ridx) );
+        if(fs::exists(mmdir) && fs::is_directory(mmdir))
+        {   
+            const char* path = mmdir.string().c_str() ;
+            LOG(info) << "GGeo::loadMergedMeshes " << gc->getRelativePath(path) ;
+            m_merged_mesh[ridx] = GMergedMesh::load( path, ridx);
+        }
+        else
+        {
+            LOG(debug) << "GGeo::loadMergedMeshes " 
+                       << " no mmdir for ridx " << ridx 
+                       ;
+        }
+   }
+   LOG(info) << "GGeo::loadMergedMeshes" 
+             << " loaded "  << m_merged_mesh.size()
+             ;
+}
+
+void GGeo::saveMergedMeshes(const char* idpath)
+{
+    typedef std::map<unsigned int,GMergedMesh*>::const_iterator MUMI ; 
+    for(MUMI it=m_merged_mesh.begin() ; it != m_merged_mesh.end() ; it++)
+    {
+        unsigned int ridx = it->first ; 
+        GMergedMesh* mergedmesh = it->second ; 
+        assert(mergedmesh->getIndex() == ridx);
+        mergedmesh->save(idpath, "GMergedMesh", boost::lexical_cast<std::string>(ridx).c_str()); 
+    }
+}
+
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
+{
+    if(m_merged_mesh.find(index) == m_merged_mesh.end())
+    {
+        m_merged_mesh[index] = GMergedMesh::create(index, this, base);
+    }
+    return m_merged_mesh[index] ;
+}
+
+unsigned int GGeo::getNumMergedMesh()
+{
+    return m_merged_mesh.size();
+}
+
+GMergedMesh* GGeo::getMergedMesh(unsigned int index)
+{
+    if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
+    return m_merged_mesh[index] ;
+}
+
+
+
 
 
 void GGeo::init()
 {
+   if(m_loaded) return ; 
+
    m_boundary_lib = new GBoundaryLib();
 
    m_sensor_list = new GSensorList();
@@ -351,16 +430,6 @@ GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2)
     return bs ;
 }
 
-
-
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
-{
-    if(m_merged_mesh.find(index) == m_merged_mesh.end())
-    {
-        m_merged_mesh[index] = GMergedMesh::create(index, this, base);
-    }
-    return m_merged_mesh[index] ;
-}
 
 
 void GGeo::dumpRawSkinSurface(const char* name)
