@@ -19,8 +19,72 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
-Compute on gputest trying different CUDA_VISIBLE_DEVICES
-----------------------------------------------------------
+
+computeTest with different core counts controlled via CUDA_VISIBLE_DEVICES
+----------------------------------------------------------------------------
+
+Juno Scintillation 2, genstep scaledown 25
+--------------------------------------------
+
+::
+
+    genstepAsLoaded : 4e16b039dc40737a4c0c51d7b213a118
+    genstepAfterLookup : 4e16b039dc40737a4c0c51d7b213a118
+               Type :   scintillation
+                Tag :               1
+           Detector :            juno
+        NumGensteps :            1774
+             RngMax :         3000000
+         NumPhotons :         1493444
+         NumRecords :        14934440
+          BounceMax :               9
+          RecordMax :              10
+        RepeatIndex :              10
+         photonData : 33b5c1f991b46e09036e38c110e36102
+         recordData : 55a15aacf09d4e8dcf269d6e882b481e
+       sequenceData : 035310267fc2a678f2c8cad2031d7101
+
+
+
+
+::
+
+    2.516              GT 750M          ggv.sh --cmp --juno -s 
+ 
+    0.487              GTX 750 Ti 
+
+
+    0.153      -         Tesla K40m  ( 11520 )
+
+    0.157      0,1,2,3 
+
+                      
+              Tesla K40m   (5760)
+
+    0.201      0,1                      
+    0.200      2,3                      
+
+    0.179      1,2                     
+    0.179      0,2                      
+    0.178      1,3                      
+     
+    0.202      0,1,2
+    0.201      0,1,3
+
+    0.134      1,2,3
+ 
+
+
+::
+
+    In [1]: 2.516/0.134
+    Out[1]: 18.776119402985074
+
+
+
+
+Juno Cerenkov 1, scaledown ?10
+---------------------------------
 
 ::
 
