@@ -20,6 +20,7 @@
 #include "stringutil.hpp"
 
 // ggeo-
+#include "GGeo.hh"
 #include "GLoader.hh"
 #include "GCache.hh"
 #include "GMergedMesh.hh" 
@@ -98,6 +99,7 @@ int main(int argc, char** argv)
     assert(nooptix == false);
 
     GLoader loader ;
+    loader.setInstanced(false); // find repeated geometry 
     loader.setRepeatIndex(fcfg->getRepeatIndex());
     loader.setTypes(&types);
     loader.setCache(&cache);
@@ -105,7 +107,12 @@ int main(int argc, char** argv)
     loader.load(nogeocache);
     p.add<int>("repeatIdx", loader.getRepeatIndex() );
 
-    GMergedMesh* mm = loader.getMergedMesh(); 
+
+    GGeo* gg = loader.getGGeo();
+    unsigned int nmm = gg->getNumMergedMesh();
+    assert(nmm == 1);
+    GMergedMesh* mm = gg->getMergedMesh(0); 
+
     GBoundaryLib* blib = loader.getBoundaryLib();
     Lookup* lookup = loader.getMaterialLookup();
 
@@ -127,9 +134,14 @@ int main(int argc, char** argv)
     p.add<float>("timeMax",composition.getTimeDomain().y  ); 
 
 
+    const char* typ ; 
+    if(     fcfg->hasOpt("cerenkov"))      typ = "cerenkov" ;
+    else if(fcfg->hasOpt("scintillation")) typ = "scintillation" ;
+    else                                   typ = "cerenkov" ;
 
-    const char* typ = "cerenkov" ; 
-    const char* tag = "1" ;  
+    std::string tag_ = fcfg->getEventTag();
+    const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
+
     NPY<float>* npy = NPY<float>::load(typ, tag, det ) ;
     npy->Summary();
 
