@@ -43,7 +43,12 @@ Progress:
 class GMergedMesh ; 
 class GBoundaryLib ; 
 class GBuffer ; 
-//class OptiXEngine ;  
+
+// canonical usage from OptiXEngine::initGeometry
+//
+// TODO: rename to ?MeshGeometry? as handle multiple GMergedMesh 
+//       with instancing support 
+//
 
 class GMergedMeshOptiXGeometry  : public OptiXGeometry 
 {
@@ -55,16 +60,16 @@ public:
     //optix::TextureSampler makeColorSampler(unsigned int nx);
     optix::TextureSampler makeWavelengthSampler(GBuffer* wavelengthBuffer);
     optix::TextureSampler makeReemissionSampler(GBuffer* reemissionBuffer);
-    optix::float4 getDomain();
-    optix::float4 getDomainReciprocal();
+    optix::float4         getDomain();
+    optix::float4         getDomainReciprocal();
 
     template <typename T>
     optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold=1);
 
 private:
     optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
-    optix::Geometry makeGeometry(GMergedMesh* drawable);
-    optix::Material makeMaterial();
+    optix::Geometry         makeGeometry(GMergedMesh* drawable);
+    optix::Material         makeMaterial();
 
 public:
     optix::float3  getMin();

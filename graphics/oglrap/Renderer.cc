@@ -134,11 +134,6 @@ void Renderer::gl_upload_buffers(bool debug)
         LOG(info) << "Renderer::gl_upload_buffers uploading transforms " 
                   << " itransform_count " << m_itransform_count
                   ;
-
-
-
-
-
     }
     else
     {
@@ -153,9 +148,6 @@ void Renderer::gl_upload_buffers(bool debug)
     GLsizei stride = 0 ;
 
     const GLvoid* offset = NULL ;
-
-
-
  
     // the vbuf and cbuf NumElements refer to the number of elements 
     // within the vertex and color items ie 3 in both cases
@@ -164,9 +156,6 @@ void Renderer::gl_upload_buffers(bool debug)
     //         are duplicating layout numbers in the nrm/vert.glsl  
     // THIS IS FRAGILE
     //
-
-    
-
 
     glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
     glVertexAttribPointer(vPosition, vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);

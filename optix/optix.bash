@@ -362,6 +362,13 @@ time. This is often useful for instancing geometry.
 
 ::
 
+     transform
+         geometry_group
+               
+
+
+::
+
     delta:bin blyth$ optix-;optix-samples-cppfind Transform -l
     /usr/local/env/cuda/OptiX_380_sdk/glass/glass.cpp
     /usr/local/env/cuda/OptiX_380_sdk/hybridShadows/hybridShadows.cpp
@@ -373,8 +380,6 @@ time. This is often useful for instancing geometry.
     /usr/local/env/cuda/OptiX_380_sdk/sutil/OptiXMesh.cpp
     /usr/local/env/cuda/OptiX_380_sdk/sutil/OptiXMeshImpl.cpp
     /usr/local/env/cuda/OptiX_380_sdk/swimmingShark/fishMonger.cpp
-
-
 
 Usage
 ~~~~~~~~
@@ -409,6 +414,70 @@ Thoughts on applying *Transform* instancing to complex/large geometries
   * look for repeated such digests and locate the parent placement transforms 
 
 * need to create local assembly frame vertices 
+
+
+Instancing Example
+-------------------
+
+::
+
+    214   // Set up instances
+    215   Group group = m_context->createGroup();
+    216   group->setChildCount(m_num_instances);
+    217   optix::Aabb aabb = loader.getSceneBBox();
+    218 
+    219   unsigned int dimension = static_cast <unsigned int> ( ceilf( powf( static_cast <float> (m_num_instances), .3333333f )));
+    220   unsigned int dimension2 = dimension*dimension;
+    221   optix::Matrix4x4 m;
+    222   for(unsigned int i = 0; i < m_num_instances; ++i) {
+    223     Transform xform = m_context->createTransform();
+    224     xform->setChild(m_geometry_group);
+    225     group->setChild(i, xform);
+    226 
+    227     if (m_grid_mode) {
+    228       float tx = static_cast <float>( (i%dimension));
+    229       float ty = static_cast <float>( ((i%dimension2)/dimension));
+    230       float tz = static_cast <float>( (i/dimension2) );
+    231 
+    232       m = optix::Matrix4x4::translate(make_float3( tx, ty, tz ) * (- m_grid_distance));
+    233     } else {
+    234       float tx = 4 * aabb.extent(0) * (randFloat()*2.f-1.f);
+    235       float ty = 4 * aabb.extent(1) * (randFloat()*2.f-1.f);
+    236       float tz = 4 * aabb.extent(2) * (randFloat()*2.f-1.f);
+    237       float3 randomish_dir = normalize( make_float3( randFloat()*2.f-1.f, randFloat()*2.f-1.f, randFloat()*2.f-1.f ) );
+    238 
+    239       optix::Matrix4x4 trans = optix::Matrix4x4::translate(make_float3( tx, ty, tz ) );
+    240       optix::Matrix4x4 rot   = optix::Matrix4x4::rotate(randFloat()*2.f*M_PIf, randomish_dir);
+    241 
+    242       m = rot * trans;
+    243     }
+    244 
+    245     xform->setMatrix(false, m.getData(), 0);
+    246   }
+    ///
+    ///  
+    ///    instances "assembly" comprised of a 
+    ///    group of N xform, each holding a single repeated m_geometry_group
+    ///         
+    ///          group
+    ///             xform_0 < m_geometry_group
+    ///             xform_1 < m_geometry_group
+    ///             xform_2 < m_geometry_group  
+    ///             ...
+    ///             xform_N < m_geometry_group
+    ///
+    ///
+    ///    hmm how about geometry instances and adding material ?
+    ///
+    247 
+    248   Acceleration top_level_bvh = m_context->createAcceleration("Bvh", "Bvh");
+    249   group->setAcceleration(top_level_bvh);
+    250 
+    251   m_context[ "top_object" ]->set( group );
+    252   m_context[ "top_shadower" ]->set( group );
+
+
+
 
 
 How to persist tree of transforms in the geocache ?

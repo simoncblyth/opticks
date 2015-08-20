@@ -59,10 +59,6 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* b
 
 
 
-
-
-
-
 optix::float4 GMergedMeshOptiXGeometry::getDomain()
 {
     float domain_range = (GBoundaryLib::DOMAIN_HIGH - GBoundaryLib::DOMAIN_LOW); 
@@ -79,9 +75,7 @@ optix::float4 GMergedMeshOptiXGeometry::getDomainReciprocal()
 
 optix::GeometryInstance GMergedMeshOptiXGeometry::makeGeometryInstance(GMergedMesh* mergedmesh)
 {
-    optix::Geometry geometry = makeGeometry(mergedmesh) ;  
     LOG(info) << "GMergedMeshOptiXGeometry::makeGeometryInstance using single material  " ; 
-
 
     GBuffer* wavelengthBuffer = m_boundarylib->getWavelengthBuffer();
     optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
@@ -93,13 +87,13 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::makeGeometryInstance(GMergedMe
     m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
     m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
 
-
     GBuffer* obuf = m_boundarylib->getOpticalBuffer();
+
     unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
-    //assert(numBoundaries == 56);
     optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
     memcpy( optical_buffer->map(), obuf->getPointer(), obuf->getNumBytes() );
     optical_buffer->unmap();
+    //optix::Buffer optical_buffer = createInputBuffer<unsigned int>( obuf, RT_FORMAT_UNSIGNED_INT4, 4);
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 
 
@@ -107,13 +101,16 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::makeGeometryInstance(GMergedMe
     float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
     optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
     optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
+
     m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
     m_context["reemission_domain"]->setFloat(reemissionDomain);
-
 
     optix::Material material = makeMaterial();
     std::vector<optix::Material> materials ;
     materials.push_back(material);
+
+    optix::Geometry geometry = makeGeometry(mergedmesh) ;  
+
     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
 
     return gi ;
@@ -192,11 +189,13 @@ optix::Geometry GMergedMeshOptiXGeometry::makeGeometry(GMergedMesh* mergedmesh)
 template <typename T>
 optix::Buffer GMergedMeshOptiXGeometry::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold)
 {
+   unsigned int bytes = buf->getNumBytes() ;
    unsigned int nit = buf->getNumItems()/fold ;
    unsigned int nel = buf->getNumElements();
    unsigned int mul = RayTraceConfig::getMultiplicity(format) ;
 
    LOG(info)<<"GMergedMeshOptiXGeometry::createInputBuffer"
+            << " bytes " << bytes
             << " nit " << nit 
             << " nel " << nel 
             << " mul " << mul 
