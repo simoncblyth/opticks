@@ -172,6 +172,9 @@ void Scene::init()
 
     m_instance_renderer = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
     m_instance_renderer->setInstanced();
+   // use small array of these to handle multiple assemblies of repeats ? 
+   // not very heavy 
+
 
     //LOG(info) << "Scene::init geometry_renderer ctor DONE";
 
@@ -224,6 +227,8 @@ void Scene::setComposition(Composition* composition)
 
 void Scene::uploadGeometry(GMergedMesh* mergedmesh)
 {
+    // currently invoked from ggeoview main
+
     m_geometry = mergedmesh ;  // TODO: handle multiple merged mesh
 
     if(mergedmesh->hasTransformsBuffer())
@@ -232,8 +237,7 @@ void Scene::uploadGeometry(GMergedMesh* mergedmesh)
                  << " instance_renderer "
                  ; 
         m_instance_renderer->upload(m_geometry); 
-        //m_geometry_renderer = m_instance_renderer ;   // KLUDGE
-        m_instance_mode = true ; 
+        m_instance_mode = true ;  // used for GUI selection
     }
     else
     {
@@ -241,7 +245,6 @@ void Scene::uploadGeometry(GMergedMesh* mergedmesh)
                  << " global_renderer "
                  ; 
         m_global_renderer->upload(m_geometry);  
-        //m_geometry_renderer = m_global_renderer ;   // KLUDGE
         m_global_mode = true ; 
     }
 }

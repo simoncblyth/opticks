@@ -156,6 +156,56 @@ optix::float3 RayTraceConfig::make_contrast_color( int tag )
 
 
 
+unsigned int RayTraceConfig::getMultiplicity(RTformat format)
+{
+   unsigned int mul(0) ;
+   switch(format)
+   {
+      case RT_FORMAT_UNKNOWN: mul=0 ; break ; 
+
+      case RT_FORMAT_FLOAT:   mul=1 ; break ;
+      case RT_FORMAT_FLOAT2:  mul=2 ; break ;
+      case RT_FORMAT_FLOAT3:  mul=3 ; break ;
+      case RT_FORMAT_FLOAT4:  mul=4 ; break ;
+
+      case RT_FORMAT_BYTE:    mul=1 ; break ;
+      case RT_FORMAT_BYTE2:   mul=2 ; break ;
+      case RT_FORMAT_BYTE3:   mul=3 ; break ;
+      case RT_FORMAT_BYTE4:   mul=4 ; break ;
+
+      case RT_FORMAT_UNSIGNED_BYTE:  mul=1 ; break ;
+      case RT_FORMAT_UNSIGNED_BYTE2: mul=2 ; break ;
+      case RT_FORMAT_UNSIGNED_BYTE3: mul=3 ; break ;
+      case RT_FORMAT_UNSIGNED_BYTE4: mul=4 ; break ;
+
+      case RT_FORMAT_SHORT:  mul=1 ; break ;
+      case RT_FORMAT_SHORT2: mul=2 ; break ;
+      case RT_FORMAT_SHORT3: mul=3 ; break ;
+      case RT_FORMAT_SHORT4: mul=4 ; break ;
+
+      case RT_FORMAT_UNSIGNED_SHORT:  mul=1 ; break ;
+      case RT_FORMAT_UNSIGNED_SHORT2: mul=2 ; break ;
+      case RT_FORMAT_UNSIGNED_SHORT3: mul=3 ; break ;
+      case RT_FORMAT_UNSIGNED_SHORT4: mul=4 ; break ;
+
+      case RT_FORMAT_INT:  mul=1 ; break ;
+      case RT_FORMAT_INT2: mul=2 ; break ;
+      case RT_FORMAT_INT3: mul=3 ; break ;
+      case RT_FORMAT_INT4: mul=4 ; break ;
+
+      case RT_FORMAT_UNSIGNED_INT:  mul=1 ; break ;
+      case RT_FORMAT_UNSIGNED_INT2: mul=2 ; break ;
+      case RT_FORMAT_UNSIGNED_INT3: mul=3 ; break ;
+      case RT_FORMAT_UNSIGNED_INT4: mul=4 ; break ;
+
+      case RT_FORMAT_USER:       mul=0 ; break ;
+      case RT_FORMAT_BUFFER_ID:  mul=0 ; break ;
+      case RT_FORMAT_PROGRAM_ID: mul=0 ; break ; 
+   }
+   return mul ; 
+}
+
+
 
 
 

@@ -89,6 +89,7 @@ class OptiXEngine : public Touchable {
         void setBounceMax(unsigned int bounce_max);
         void setRecordMax(unsigned int record_max);
     public:
+        GGeo*         getGGeo();
         GMergedMesh*  getMergedMesh();
         GBoundaryLib* getBoundaryLib();
         optix::Context& getContext();
@@ -293,6 +294,10 @@ inline bool OptiXEngine::isEnabled()
 inline GMergedMesh* OptiXEngine::getMergedMesh()
 {
     return m_mergedmesh ; 
+}
+inline GGeo* OptiXEngine::getGGeo()
+{
+    return m_ggeo ; 
 }
 inline GBoundaryLib* OptiXEngine::getBoundaryLib()
 {

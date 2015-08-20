@@ -424,7 +424,12 @@ int main(int argc, char** argv)
 
     OptiXEngine engine("GGeoView", mode) ;       
     engine.setFilename(idpath);
-    engine.setMergedMesh(mm0);    // TODO: handle multiple
+
+    // transitioning back to gg, for multiple sets of instanced 
+    //engine.setGGeo(gg);   
+    engine.setMergedMesh(mm0);  
+
+
     engine.setBoundaryLib(blib);   
     engine.setNumpyEvt(&evt);
     engine.setComposition(&composition);                 

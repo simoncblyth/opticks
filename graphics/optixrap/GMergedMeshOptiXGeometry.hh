@@ -58,9 +58,12 @@ public:
     optix::float4 getDomain();
     optix::float4 getDomainReciprocal();
 
+    template <typename T>
+    optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold=1);
+
 private:
-    optix::GeometryInstance convertDrawableInstance(GMergedMesh* mergedmesh);
-    optix::Geometry convertDrawable(GMergedMesh* drawable);
+    optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
+    optix::Geometry makeGeometry(GMergedMesh* drawable);
     optix::Material makeMaterial();
 
 public:

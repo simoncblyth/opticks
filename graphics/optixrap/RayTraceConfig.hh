@@ -28,6 +28,7 @@ public:
    static const char* const ptxpath( const std::string& target, const std::string& base );
 
    static optix::float3 make_contrast_color(int tag);
+   static unsigned int getMultiplicity(RTformat format);
 
 public:
     RayTraceConfig(optix::Context context, const char* target);

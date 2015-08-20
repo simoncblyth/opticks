@@ -22,7 +22,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 {
 
     Timer t("GMergedMesh::create") ; 
-    t.setVerbose(true);
+    t.setVerbose(false);
     t.start();
 
     GMergedMesh* mm = new GMergedMesh( index ); 
@@ -56,7 +56,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 
     // allocate space for flattened arrays
 
-    LOG(info) << "GMergedMesh::create " 
+    LOG(info) << "GMergedMesh::create" 
               << " index " << index 
               << " numVertices " << mm->getNumVertices()
               << " numFaces " << mm->getNumFaces()
@@ -101,7 +101,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
     t("updateBounds");
 
     t.stop();
-    t.dump();
+    //t.dump();
 
     return mm ;
 }

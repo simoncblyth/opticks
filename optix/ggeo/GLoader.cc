@@ -54,23 +54,19 @@ void GLoader::load(bool nogeocache)
     {
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
         m_ggeo = GGeo::load(idpath) ; 
-        //m_mergedmesh = GMergedMesh::load(idpath);
         t("load ggeo/mergedmesh"); 
+
+        // TODO: move below into GGeo::load 
 
         m_boundarylib = GBoundaryLib::load(idpath);
         t("load boundarylib"); 
         m_metadata = m_boundarylib->getMetadata() ; 
-        //m_metadata   = GBoundaryLibMetadata::load(idpath);
 
         m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); // TODO: find common place for such strings, maybe Types.hpp
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
         m_meshes     = GItemIndex::load(idpath, "MeshIndex");
 
         t("load indices"); 
-
-        //m_transforms_buffer = m_mergedmesh->getTransformsBuffer();
-        //m_transforms_buffer->Summary("GLoader::load transforms buffer");
-
     } 
     else
     {

@@ -18,10 +18,9 @@
 
 void GMergedMeshOptiXGeometry::convert()
 {
-    optix::GeometryInstance gi = convertDrawableInstance(m_mergedmesh);
+    optix::GeometryInstance gi = makeGeometryInstance(m_mergedmesh);
     m_gis.push_back(gi);
 }
-
 
 
 optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* buffer)
@@ -78,12 +77,10 @@ optix::float4 GMergedMeshOptiXGeometry::getDomainReciprocal()
 
 
 
-optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMergedMesh* mergedmesh)
+optix::GeometryInstance GMergedMeshOptiXGeometry::makeGeometryInstance(GMergedMesh* mergedmesh)
 {
-    optix::Geometry geometry = convertDrawable(mergedmesh) ;  
-    LOG(info) << "GMergedMeshOptiXGeometry::convertDrawableInstance using single material  " ; 
-
-
+    optix::Geometry geometry = makeGeometry(mergedmesh) ;  
+    LOG(info) << "GMergedMeshOptiXGeometry::makeGeometryInstance using single material  " ; 
 
 
     GBuffer* wavelengthBuffer = m_boundarylib->getWavelengthBuffer();
@@ -97,7 +94,6 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
 
 
-
     GBuffer* obuf = m_boundarylib->getOpticalBuffer();
     unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
     //assert(numBoundaries == 56);
@@ -107,15 +103,12 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::convertDrawableInstance(GMerge
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 
 
-
     GBuffer* reemissionBuffer = m_boundarylib->getReemissionBuffer();
     float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
     optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
     optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
     m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
     m_context["reemission_domain"]->setFloat(reemissionDomain);
-
-
 
 
     optix::Material material = makeMaterial();
@@ -144,13 +137,7 @@ optix::Material GMergedMeshOptiXGeometry::makeMaterial()
 }
 
 
-
-
-
-
-
-
-optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* mergedmesh)
+optix::Geometry GMergedMeshOptiXGeometry::makeGeometry(GMergedMesh* mergedmesh)
 {
     optix::Geometry geometry = m_context->createGeometry();
 
@@ -161,66 +148,35 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* mergedmes
     // TriangleMesh.cu uses nodeBuffer boundaryBuffer sensorBuffer
     // to set attributes nodeIndex boundaryIndex and sensorIndex corresponding to the 
     // primIdx intersected      
-
     // contrast with oglrap-/Renderer::gl_upload_buffers
+
     GBuffer* vbuf = mergedmesh->getVerticesBuffer();
     GBuffer* ibuf = mergedmesh->getIndicesBuffer();
-    GBuffer* dbuf = mergedmesh->getNodesBuffer();
 
     unsigned int numVertices = vbuf->getNumItems() ;
     unsigned int numFaces = ibuf->getNumItems()/3;    
 
-    // items are the indices so divide by 3 to get faces
+    // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
+    // and use folding by 3 in createInputBuffer
 
     LOG(info) << "GMergedMeshOptiXGeometry::convertDrawable numVertices " << numVertices << " numFaces " << numFaces ;
 
     geometry->setPrimitiveCount(numFaces);
-    {
-        assert(sizeof(optix::float3)*numVertices == vbuf->getNumBytes() && vbuf->getNumElements() == 3);
-        optix::Buffer vertexBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_FLOAT3, numVertices);
-        memcpy( vertexBuffer->map(), vbuf->getPointer(), vbuf->getNumBytes() );
-        vertexBuffer->unmap();
-        geometry["vertexBuffer"]->setBuffer(vertexBuffer);
-    }
-    {
-        assert(sizeof(optix::int3) == 4*3); 
-        assert(sizeof(optix::int3)*numFaces == ibuf->getNumBytes()); 
-        assert(ibuf->getNumElements() == 1);    // ibuf elements are individual integers
+
+    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3 );
+    geometry["vertexBuffer"]->setBuffer(vertexBuffer);
+
+    optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mergedmesh->getIndicesBuffer(), RT_FORMAT_INT3, 3 ); 
+    geometry["indexBuffer"]->setBuffer(indexBuffer);
+
+    optix::Buffer nodeBuffer = createInputBuffer<unsigned int>( mergedmesh->getNodesBuffer(), RT_FORMAT_UNSIGNED_INT );
+    geometry["nodeBuffer"]->setBuffer(nodeBuffer);
+
+    optix::Buffer boundaryBuffer = createInputBuffer<unsigned int>( mergedmesh->getBoundariesBuffer(), RT_FORMAT_UNSIGNED_INT );
+    geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
  
-        optix::Buffer indexBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_INT3, numFaces );
-        memcpy( indexBuffer->map(), ibuf->getPointer(), ibuf->getNumBytes() );
-        indexBuffer->unmap();
-        geometry["indexBuffer"]->setBuffer(indexBuffer);
-    }
-
-
-    {
-        assert(sizeof(unsigned int)*numFaces == dbuf->getNumBytes() && dbuf->getNumElements() == 1);
-        optix::Buffer nodeBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
-        memcpy( nodeBuffer->map(), dbuf->getPointer(), dbuf->getNumBytes() );
-        nodeBuffer->unmap();
-        geometry["nodeBuffer"]->setBuffer(nodeBuffer);
-    }
-
-    {
-        GBuffer* buf = mergedmesh->getBoundariesBuffer();
-        assert(sizeof(unsigned int)*numFaces == buf->getNumBytes() && buf->getNumElements() == 1);
-        optix::Buffer boundaryBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
-        memcpy( boundaryBuffer->map(), buf->getPointer(), buf->getNumBytes() );
-        boundaryBuffer->unmap();
-        geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
-    }
-
-    {
-        GBuffer* buf = mergedmesh->getSensorsBuffer();
-        assert(sizeof(unsigned int)*numFaces == buf->getNumBytes() && buf->getNumElements() == 1);
-        optix::Buffer sensorBuffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT, numFaces );
-        memcpy( sensorBuffer->map(), buf->getPointer(), buf->getNumBytes() );
-        sensorBuffer->unmap();
-        geometry["sensorBuffer"]->setBuffer(sensorBuffer);
-    }
-
-
+    optix::Buffer sensorBuffer = createInputBuffer<unsigned int>( mergedmesh->getSensorsBuffer(), RT_FORMAT_UNSIGNED_INT );
+    geometry["sensorBuffer"]->setBuffer(sensorBuffer);
 
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
     geometry["tangentBuffer"]->setBuffer(emptyBuffer);
@@ -233,7 +189,30 @@ optix::Geometry GMergedMeshOptiXGeometry::convertDrawable(GMergedMesh* mergedmes
 
 
 
+template <typename T>
+optix::Buffer GMergedMeshOptiXGeometry::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold)
+{
+   unsigned int nit = buf->getNumItems()/fold ;
+   unsigned int nel = buf->getNumElements();
+   unsigned int mul = RayTraceConfig::getMultiplicity(format) ;
 
+   LOG(info)<<"GMergedMeshOptiXGeometry::createInputBuffer"
+            << " nit " << nit 
+            << " nel " << nel 
+            << " mul " << mul 
+            << " fold " << fold 
+            << " sizeof(T) " << sizeof(T)
+            ;
+
+   assert(sizeof(T)*nit == buf->getNumBytes() );
+   assert(nel == mul/fold );
+
+   optix::Buffer buffer = m_context->createBuffer( RT_BUFFER_INPUT, format, nit );
+   memcpy( buffer->map(), buf->getPointer(), buf->getNumBytes() );
+   buffer->unmap();
+
+   return buffer ; 
+}
 
 
 optix::float3 GMergedMeshOptiXGeometry::getMin()

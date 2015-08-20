@@ -11,12 +11,17 @@ Resources
 ----------
 
 * https://devtalk.nvidia.com/default/board/90/optix/
+* http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
+
+
+Conference Talks
+-------------------
+
+* http://www.nvidia.com/object/siggraph2015-best-gtc.html
 
 * http://on-demand-gtc.gputechconf.com/gtcnew/on-demand-gtc.php?searchByKeyword=Optix&searchItems=&sessionTopic=&sessionEvent=&sessionYear=&sessionFormat=&submit=&select=+
 
   Many presentations (videos and pdfs) on OptiX
-
-* http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
 
 OptiX Multi-GPU debug
