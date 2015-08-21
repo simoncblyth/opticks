@@ -31,7 +31,7 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
 endif ()
 
-# OptiXEngine rendering forces to depend on these
+# OEngine rendering forces to depend on these
 find_package(Boost REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
@@ -80,12 +80,10 @@ add_definitions(
 
 
 add_library( ${name}  SHARED
-       G4DAELoader.cc
        OptiXUtil.cc
-       OptiXEngine.cc
-       OptiXGeometry.cc
-       GGeoOptiXGeometry.cc
+       OEngine.cc
        OGeo.cc
+       OBoundaryLib.cc
        RayTraceConfig.cc
 )
  
@@ -106,12 +104,10 @@ target_link_libraries( ${name}
 
 
 SET(hdrs 
-  G4DAELoader.hh
   OptiXUtil.hh
-  OptiXEngine.hh
-  OptiXGeometry.hh
-  GGeoOptiXGeometry.hh
+  OEngine.hh
   OGeo.hh
+  OBoundaryLib.hh
   RayTraceConfig.hh
 )
 SET(cuhdrs 

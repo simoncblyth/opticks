@@ -95,7 +95,7 @@
 // trace/debug/info/warning/error/fatal
 
 // optixrap-
-#include "OptiXEngine.hh"
+#include "OEngine.hh"
 #include "RayTraceConfig.hh"
 
 // thrustrap-
@@ -420,9 +420,9 @@ int main(int argc, char** argv)
     Photons* photons(NULL);
 #ifdef OPTIX
     
-    OptiXEngine::Mode_t mode = compute ? OptiXEngine::COMPUTE : OptiXEngine::INTEROP ; 
+    OEngine::Mode_t mode = compute ? OEngine::COMPUTE : OEngine::INTEROP ; 
 
-    OptiXEngine engine("GGeoView", mode) ;       
+    OEngine engine("GGeoView", mode) ;       
     engine.setFilename(idpath);
 
     // transitioning back to gg, for multiple sets of instanced 

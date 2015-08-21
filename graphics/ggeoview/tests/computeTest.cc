@@ -32,7 +32,7 @@ class GBoundaryLib ;
 #include "AssimpGGeo.hh"
 
 // optixrap-
-#include "OptiXEngine.hh"
+#include "OEngine.hh"
 #include "RayTraceConfig.hh"
 
 
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
     evt.setGenstepData(npy, nooptix); 
 
 
-    OptiXEngine engine("GGeoView", OptiXEngine::COMPUTE ) ;       
+    OEngine engine("GGeoView", OEngine::COMPUTE ) ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
     engine.setBoundaryLib(blib);   

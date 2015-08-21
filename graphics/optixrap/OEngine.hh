@@ -33,7 +33,7 @@ class NPY ;
 
 */
 
-class OptiXEngine : public Touchable {
+class OEngine : public Touchable {
 
     public:
         enum { 
@@ -65,11 +65,11 @@ class OptiXEngine : public Touchable {
         static const char* COMPUTE_ ; 
         static const char* INTEROP_ ; 
     public:
-        OptiXEngine(const char* cmake_target, Mode_t mode=INTEROP );
+        OEngine(const char* cmake_target, Mode_t mode=INTEROP );
 
     public:
         const char* getModeName();
-        OptiXEngine::Mode_t getMode();
+        OEngine::Mode_t getMode();
         bool isCompute();
         bool isInterop();
     public:
@@ -219,7 +219,7 @@ class OptiXEngine : public Touchable {
 
 
 
-inline OptiXEngine::OptiXEngine(const char* cmake_target, Mode_t mode) :
+inline OEngine::OEngine(const char* cmake_target, Mode_t mode) :
     m_rng_max(0),
     m_rng_wrapper(NULL),
     m_context(NULL),
@@ -253,53 +253,53 @@ inline OptiXEngine::OptiXEngine(const char* cmake_target, Mode_t mode) :
 }
 
 
-inline void OptiXEngine::setNumpyEvt(NumpyEvt* evt)
+inline void OEngine::setNumpyEvt(NumpyEvt* evt)
 {
     m_evt = evt ;
 }
 
-inline void OptiXEngine::setComposition(Composition* composition)
+inline void OEngine::setComposition(Composition* composition)
 {
     m_composition = composition ; 
 }
-inline void OptiXEngine::setGGeo(GGeo* ggeo)
+inline void OEngine::setGGeo(GGeo* ggeo)
 {
     m_ggeo = ggeo ;
 }
-inline void OptiXEngine::setFilename(const char* filename)
+inline void OEngine::setFilename(const char* filename)
 {
     m_filename = filename ;
 }
-inline void OptiXEngine::setMergedMesh(GMergedMesh* mergedmesh)
+inline void OEngine::setMergedMesh(GMergedMesh* mergedmesh)
 {
     m_mergedmesh = mergedmesh ;
 }
-inline void OptiXEngine::setBoundaryLib(GBoundaryLib* boundarylib)
+inline void OEngine::setBoundaryLib(GBoundaryLib* boundarylib)
 {
     m_boundarylib = boundarylib ;
 }
 
 
-inline void OptiXEngine::setEnabled(bool enabled)
+inline void OEngine::setEnabled(bool enabled)
 {
     m_enabled = enabled ; 
 }
 
-inline bool OptiXEngine::isEnabled()
+inline bool OEngine::isEnabled()
 {
     return m_enabled ; 
 }
 
 
-inline GMergedMesh* OptiXEngine::getMergedMesh()
+inline GMergedMesh* OEngine::getMergedMesh()
 {
     return m_mergedmesh ; 
 }
-inline GGeo* OptiXEngine::getGGeo()
+inline GGeo* OEngine::getGGeo()
 {
     return m_ggeo ; 
 }
-inline GBoundaryLib* OptiXEngine::getBoundaryLib()
+inline GBoundaryLib* OEngine::getBoundaryLib()
 {
     return m_boundarylib  ; 
 }
@@ -308,32 +308,32 @@ inline GBoundaryLib* OptiXEngine::getBoundaryLib()
 
 
 
-inline void OptiXEngine::setRngMax(unsigned int rng_max)
+inline void OEngine::setRngMax(unsigned int rng_max)
 {
 // default of 0 disables Rng 
 // otherwise maximum number of RNG streams, 
 // should be a little more than the max number of photons to generate/propagate eg 3e6
     m_rng_max = rng_max ;
 }
-inline unsigned int OptiXEngine::getRngMax()
+inline unsigned int OEngine::getRngMax()
 {
     return m_rng_max ; 
 }
 
-inline void OptiXEngine::setBounceMax(unsigned int bounce_max)
+inline void OEngine::setBounceMax(unsigned int bounce_max)
 {
     m_bounce_max = bounce_max ;
 }
-inline unsigned int OptiXEngine::getBounceMax()
+inline unsigned int OEngine::getBounceMax()
 {
     return m_bounce_max ; 
 }
 
-inline void OptiXEngine::setRecordMax(unsigned int record_max)
+inline void OEngine::setRecordMax(unsigned int record_max)
 {
     m_record_max = record_max ;
 }
-inline unsigned int OptiXEngine::getRecordMax()
+inline unsigned int OEngine::getRecordMax()
 {
     return m_record_max ; 
 }
@@ -342,44 +342,44 @@ inline unsigned int OptiXEngine::getRecordMax()
 
 
 
-inline unsigned int OptiXEngine::getTraceCount()
+inline unsigned int OEngine::getTraceCount()
 {
     return m_trace_count ; 
 }
 
 
-inline NPYBase* OptiXEngine::getDomain()
+inline NPYBase* OEngine::getDomain()
 {
     return m_domain ;
 }
-inline NPYBase* OptiXEngine::getIDomain()
+inline NPYBase* OEngine::getIDomain()
 {
     return m_idomain ;
 }
 
 
 
-inline optix::Buffer& OptiXEngine::getSequenceBuffer()
+inline optix::Buffer& OEngine::getSequenceBuffer()
 {
     return m_sequence_buffer ; 
 }
-inline optix::Buffer& OptiXEngine::getRecselBuffer()
+inline optix::Buffer& OEngine::getRecselBuffer()
 {
     return m_recsel_buffer ; 
 }
-inline optix::Buffer& OptiXEngine::getPhoselBuffer()
+inline optix::Buffer& OEngine::getPhoselBuffer()
 {
     return m_phosel_buffer ; 
 }
-inline OptiXEngine::Mode_t OptiXEngine::getMode()
+inline OEngine::Mode_t OEngine::getMode()
 {
     return m_mode ; 
 }
-inline bool OptiXEngine::isCompute()
+inline bool OEngine::isCompute()
 {
     return m_mode == COMPUTE ; 
 }
-inline bool OptiXEngine::isInterop()
+inline bool OEngine::isInterop()
 {
     return m_mode == INTEROP ; 
 }

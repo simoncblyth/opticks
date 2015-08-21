@@ -1,4 +1,4 @@
-#include "OptiXEngine.hh"
+#include "OEngine.hh"
 
 #include "assert.h"
 #include "stdio.h"
@@ -37,8 +37,9 @@
 
 // optixrap-
 #include "RayTraceConfig.hh"
-#include "GGeoOptiXGeometry.hh"
+//#include "GGeoOptiXGeometry.hh"
 #include "OGeo.hh"
+#include "OBoundaryLib.hh"
 
 // cudawrap-
 using namespace optix ; 
@@ -48,10 +49,10 @@ using namespace optix ;
 
 // extracts from /usr/local/env/cuda/OptiX_370b2_sdk/sutil/SampleScene.cpp
 
-const char* OptiXEngine::COMPUTE_ = "COMPUTE" ; 
-const char* OptiXEngine::INTEROP_ = "INTEROP" ; 
+const char* OEngine::COMPUTE_ = "COMPUTE" ; 
+const char* OEngine::INTEROP_ = "INTEROP" ; 
 
-const char* OptiXEngine::getModeName()
+const char* OEngine::getModeName()
 {
     switch(m_mode)
     {
@@ -62,11 +63,11 @@ const char* OptiXEngine::getModeName()
 }
 
 
-void OptiXEngine::init()
+void OEngine::init()
 {
     if(!m_enabled) return ;
 
-    LOG(info) << "OptiXEngine::init " 
+    LOG(info) << "OEngine::init " 
               << " mode " << getModeName()
               ; 
     m_context = Context::create();
@@ -88,10 +89,10 @@ void OptiXEngine::init()
 
     preprocess();  // context is validated and accel structure built in here
 
-    LOG(info) << "OptiXEngine::init DONE " ;
+    LOG(info) << "OEngine::init DONE " ;
 }
 
-void OptiXEngine::initRenderer()
+void OEngine::initRenderer()
 {
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
@@ -102,11 +103,11 @@ void OptiXEngine::initRenderer()
     m_texture->create();
     m_texture_id = m_texture->getTextureId() ;
 
-    LOG(debug) << "OptiXEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
+    LOG(debug) << "OEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
     m_renderer->upload(m_texture);
 }
 
-void OptiXEngine::initContext()
+void OEngine::initContext()
 {
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
 
@@ -120,7 +121,7 @@ void OptiXEngine::initContext()
     {
         unsigned int width  = m_composition->getPixelWidth();
         unsigned int height = m_composition->getPixelHeight();
-        LOG(debug) << "OptiXEngine::initContext size (" << width << "," << height << ")" ;
+        LOG(debug) << "OEngine::initContext size (" << width << "," << height << ")" ;
         m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
         m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
     } 
@@ -167,12 +168,12 @@ void OptiXEngine::initContext()
 
 
 // fulfil Touchable interface
-unsigned int OptiXEngine::touch(int ix_, int iy_)
+unsigned int OEngine::touch(int ix_, int iy_)
 {
 
     if(m_trace_count == 0)
     {
-        LOG(warning) << "OptiXEngine::touch \"OptiX touch mode\" only works after performing an OptiX trace, press O to toggle OptiX tracing then try again " ; 
+        LOG(warning) << "OEngine::touch \"OptiX touch mode\" only works after performing an OptiX trace, press O to toggle OptiX tracing then try again " ; 
         return 0 ; 
     }
 
@@ -209,7 +210,7 @@ unsigned int OptiXEngine::touch(int ix_, int iy_)
     uint4 touch = touchBuffer_Host[0] ;
     touchBuffer->unmap();
 
-    LOG(info) << "OptiXEngine::touch "
+    LOG(info) << "OEngine::touch "
               << " ix_ " << ix_ 
               << " iy_ " << iy_   
               << " ix " << ix 
@@ -232,25 +233,24 @@ unsigned int OptiXEngine::touch(int ix_, int iy_)
 
 
 
-void OptiXEngine::initGeometry()
+void OEngine::initGeometry()
 {
-    LOG(info) << "OptiXEngine::initGeometry" ;
+    LOG(info) << "OEngine::initGeometry" ;
 
-    //GMergedMesh* mm = getMergedMesh();
     GGeo* gg = getGGeo();
     assert(gg) ; 
 
-    GBoundaryLib* blib = getBoundaryLib();
-    assert(blib);
+    GBoundaryLib* glib = getBoundaryLib();
+    assert(glib);
 
-    OGeo geom(gg, blib);
+    OBoundaryLib olib(m_context, glib);
+    olib.convert(); 
 
-    geom.setGeometryGroup(m_geometry_group);
-    geom.setContext(m_context);   
-    geom.convert(); 
-
-    LOG(info) << "OptiXEngine::initGeometry calling setupAcceleration" ; 
-    geom.setupAcceleration();
+    OGeo         og(m_context, gg);
+    og.setGeometryGroup(m_geometry_group);
+    og.convert(); 
+    LOG(info) << "OEngine::initGeometry calling setupAcceleration" ; 
+    og.setupAcceleration();
 
     loadAccelCache();
 
@@ -270,7 +270,7 @@ void OptiXEngine::initGeometry()
     m_context["wavelength_domain"]->getFloat(wd.x,wd.y,wd.z,wd.w);
     m_domain->setQuad(e_wavelength_domain  , 0, wd );
 
-    print(wd, "OptiXEngine::initGeometry wavelength_domain");
+    print(wd, "OEngine::initGeometry wavelength_domain");
 
 
     glm::ivec4 ci ;
@@ -283,7 +283,7 @@ void OptiXEngine::initGeometry()
 
 
     // cf with MeshViewer::initGeometry
-    LOG(info) << "OptiXEngine::initGeometry DONE "
+    LOG(info) << "OEngine::initGeometry DONE "
               << " x: " << ce.x  
               << " y: " << ce.y  
               << " z: " << ce.z  
@@ -293,27 +293,27 @@ void OptiXEngine::initGeometry()
 }
 
 
-void OptiXEngine::preprocess()
+void OEngine::preprocess()
 {
-    LOG(info)<< "OptiXEngine::preprocess";
+    LOG(info)<< "OEngine::preprocess";
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
 
     float pe = 0.1f ; 
     m_context[ "propagate_epsilon"]->setFloat(pe); 
  
-    LOG(info)<< "OptiXEngine::preprocess start validate ";
+    LOG(info)<< "OEngine::preprocess start validate ";
     m_context->validate();
-    LOG(info)<< "OptiXEngine::preprocess start compile ";
+    LOG(info)<< "OEngine::preprocess start compile ";
     m_context->compile();
-    LOG(info)<< "OptiXEngine::preprocess start building Accel structure ";
+    LOG(info)<< "OEngine::preprocess start building Accel structure ";
     //m_context->launch(e_pinhole_camera,0); 
     m_context->launch(e_generate,0); 
 
-    LOG(info)<< "OptiXEngine::preprocess DONE ";
+    LOG(info)<< "OEngine::preprocess DONE ";
 }
 
-void OptiXEngine::trace()
+void OEngine::trace()
 {
     if(!m_enabled) return ;
 
@@ -324,7 +324,7 @@ void OptiXEngine::trace()
     glm::vec3 W ;
 
     m_composition->getEyeUVW(eye, U, V, W); // must setModelToWorld in composition first
-    //if(m_trace_count == 0) print(eye,U,V,W, "OptiXEngine::trace eye/U/V/W ");
+    //if(m_trace_count == 0) print(eye,U,V,W, "OEngine::trace eye/U/V/W ");
 
     float scene_epsilon = m_composition->getNear();
     m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
@@ -341,14 +341,14 @@ void OptiXEngine::trace()
     unsigned int width  = static_cast<unsigned int>(buffer_width) ;
     unsigned int height = static_cast<unsigned int>(buffer_height) ;
 
-    if(m_trace_count % 100 == 0) LOG(info) << "OptiXEngine::trace " << m_trace_count << " size(" <<  width << "," <<  height << ")";
+    if(m_trace_count % 100 == 0) LOG(info) << "OEngine::trace " << m_trace_count << " size(" <<  width << "," <<  height << ")";
 
     m_context->launch( e_pinhole_camera,  width, height );
 
     m_trace_count += 1 ; 
 }
 
-void OptiXEngine::initRng()
+void OEngine::initRng()
 {
     if(m_rng_max == 0 ) return ;
 
@@ -368,7 +368,7 @@ void OptiXEngine::initRng()
 }
 
 
-void OptiXEngine::generate()
+void OEngine::generate()
 {
     if(!m_enabled) return ;
     if(!m_evt) return ;
@@ -379,7 +379,7 @@ void OptiXEngine::generate()
     unsigned int width  = numPhotons ;
     unsigned int height = 1 ;
 
-    LOG(info) << "OptiXEngine::generate count " << m_generate_count << " size(" <<  width << "," <<  height << ")";
+    LOG(info) << "OEngine::generate count " << m_generate_count << " size(" <<  width << "," <<  height << ")";
 
     m_context->launch( e_generate,  width, height );
 
@@ -387,13 +387,13 @@ void OptiXEngine::generate()
 }
 
 
-void OptiXEngine::initGenerate()
+void OEngine::initGenerate()
 {
     if(!m_evt) return ;
     initGenerate(m_evt);
 }
 
-void OptiXEngine::initGenerate(NumpyEvt* evt)
+void OEngine::initGenerate(NumpyEvt* evt)
 {
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
@@ -402,7 +402,7 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
 
     if(isCompute())
     {
-        LOG(info) << "OptiXEngine::initGenerate (COMPUTE)" 
+        LOG(info) << "OEngine::initGenerate (COMPUTE)" 
                   << " uploading gensteps "
                   ;
         upload(m_genstep_buffer, gensteps);
@@ -427,9 +427,9 @@ void OptiXEngine::initGenerate(NumpyEvt* evt)
     // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
 
-void OptiXEngine::downloadEvt()
+void OEngine::downloadEvt()
 {
-    LOG(info)<<"OptiXEngine::downloadEvt" ;
+    LOG(info)<<"OEngine::downloadEvt" ;
  
     NPY<float>* dpho = m_evt->getPhotonData();
     download<float>( m_photon_buffer, dpho );
@@ -440,16 +440,16 @@ void OptiXEngine::downloadEvt()
     NPY<unsigned long long>* dhis = m_evt->getSequenceData();
     download<unsigned long long>( m_sequence_buffer, dhis );
 
-    LOG(info)<<"OptiXEngine::downloadEvt DONE" ;
+    LOG(info)<<"OEngine::downloadEvt DONE" ;
 }
 
 
 template <typename T>
-void OptiXEngine::upload(optix::Buffer& buffer, NPY<T>* npy)
+void OEngine::upload(optix::Buffer& buffer, NPY<T>* npy)
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
 
-    LOG(info)<<"OptiXEngine::upload" 
+    LOG(info)<<"OEngine::upload" 
              << " numBytes " << numBytes 
              ;
 
@@ -459,10 +459,10 @@ void OptiXEngine::upload(optix::Buffer& buffer, NPY<T>* npy)
 
 
 template <typename T>
-void OptiXEngine::download(optix::Buffer& buffer, NPY<T>* npy)
+void OEngine::download(optix::Buffer& buffer, NPY<T>* npy)
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
-    LOG(info)<<"OptiXEngine::download" 
+    LOG(info)<<"OEngine::download" 
              << " numBytes " << numBytes 
              ;
 
@@ -473,14 +473,14 @@ void OptiXEngine::download(optix::Buffer& buffer, NPY<T>* npy)
 
 
 template <typename T>
-optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
+optix::Buffer OEngine::createIOBuffer(NPY<T>* npy)
 {
     assert(npy);
     unsigned int ni = npy->getShape(0);
     unsigned int nj = npy->getShape(1);  
     unsigned int nk = npy->getShape(2);  
 
-    LOG(info)<<"OptiXEngine::createIOBuffer "
+    LOG(info)<<"OEngine::createIOBuffer "
              << " ni " << ni 
              << " nj " << nj 
              << " nk " << nk  
@@ -496,7 +496,7 @@ optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
         } 
         else
         {
-            LOG(warning) << "OptiXEngine::createIOBuffer CANNOT createBufferFromGLBO as not uploaded  "
+            LOG(warning) << "OEngine::createIOBuffer CANNOT createBufferFromGLBO as not uploaded  "
                          << " buffer_id " << buffer_id 
                          ; 
             return buffer ; 
@@ -504,7 +504,7 @@ optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
     } 
     else if (isCompute())
     {
-        LOG(info) << "OptiXEngine::createIOBuffer (COMPUTE)" ;
+        LOG(info) << "OEngine::createIOBuffer (COMPUTE)" ;
         buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     }
 
@@ -518,7 +518,7 @@ optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
     {
         buffer->setElementSize(sizeof(T));
         size = ni*nj*nk ; 
-        LOG(info) << "OptiXEngine::createIOBuffer "
+        LOG(info) << "OEngine::createIOBuffer "
                   << " RT_FORMAT_USER " 
                   << " elementsize " << sizeof(T)
                   << " size " << size 
@@ -527,7 +527,7 @@ optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
     else
     {
         size = ni*nj ; 
-        LOG(info) << "OptiXEngine::createIOBuffer "
+        LOG(info) << "OEngine::createIOBuffer "
                   << " (quad) " 
                   << " size " << size 
                   ;
@@ -541,7 +541,7 @@ optix::Buffer OptiXEngine::createIOBuffer(NPY<T>* npy)
 
 
 
-RTformat OptiXEngine::getFormat(NPYBase::Type_t type)
+RTformat OEngine::getFormat(NPYBase::Type_t type)
 {
     RTformat format ; 
     switch(type)
@@ -565,7 +565,7 @@ RTformat OptiXEngine::getFormat(NPYBase::Type_t type)
 
 
 #if 0
-CUdeviceptr OptiXEngine::getHistoryBufferDevicePointer(unsigned int optix_device_number)
+CUdeviceptr OEngine::getHistoryBufferDevicePointer(unsigned int optix_device_number)
 {
 
 /*
@@ -584,9 +584,9 @@ CUdeviceptr OptiXEngine::getHistoryBufferDevicePointer(unsigned int optix_device
    Sequence of actions...
 
         * create OpenGL buffers in Scene::uploadEvt, with OpenGL buffer_id tucked away in the NPY
-        * OptiXEngine::initGenerate takes hold of the buffers via their buffer_id and 
+        * OEngine::initGenerate takes hold of the buffers via their buffer_id and 
           places references to them in the OptiX context
-        * OptiXEngine::generate populates buffers during OptiX context launches  
+        * OEngine::generate populates buffers during OptiX context launches  
 
         * post generate 
  
@@ -595,14 +595,14 @@ CUdeviceptr OptiXEngine::getHistoryBufferDevicePointer(unsigned int optix_device
 #endif
 
 
-optix::Buffer OptiXEngine::createOutputBuffer(RTformat format, unsigned int width, unsigned int height)
+optix::Buffer OEngine::createOutputBuffer(RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
     buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, format, width, height);
     return buffer ; 
 }
 
-optix::Buffer OptiXEngine::createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
+optix::Buffer OEngine::createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
 
@@ -624,7 +624,7 @@ optix::Buffer OptiXEngine::createOutputBuffer_VBO(unsigned int& id, RTformat for
     return buffer;
 }
 
-optix::Buffer OptiXEngine::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
+optix::Buffer OEngine::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
 {
     Buffer buffer;
 
@@ -647,14 +647,14 @@ optix::Buffer OptiXEngine::createOutputBuffer_PBO(unsigned int& id, RTformat for
     buffer->setFormat(format);
     buffer->setSize( width, height );
 
-    LOG(info) << "OptiXEngine::createOutputBuffer_PBO  element_size " << element_size << " size (" << width << "," << height << ") pbo id " << id ;
+    LOG(info) << "OEngine::createOutputBuffer_PBO  element_size " << element_size << " size (" << width << "," << height << ") pbo id " << id ;
   
     return buffer;
 }
 
-void OptiXEngine::associate_PBO_to_Texture(unsigned int texId)
+void OEngine::associate_PBO_to_Texture(unsigned int texId)
 {
-    printf("OptiXEngine::associate_PBO_to_Texture texId %u \n", texId);
+    printf("OEngine::associate_PBO_to_Texture texId %u \n", texId);
 
     assert(m_pbo > 0);
     glBindBuffer( GL_PIXEL_UNPACK_BUFFER, m_pbo);
@@ -665,9 +665,9 @@ void OptiXEngine::associate_PBO_to_Texture(unsigned int texId)
 }
 
 
-void OptiXEngine::push_PBO_to_Texture(unsigned int texId)
+void OEngine::push_PBO_to_Texture(unsigned int texId)
 {
-    //printf("OptiXEngine::push_PBO_to_Texture texId %u \n", texId);
+    //printf("OEngine::push_PBO_to_Texture texId %u \n", texId);
    // see  GLUTDisplay::displayFrame() 
 
     RTsize buffer_width_rts, buffer_height_rts;
@@ -710,19 +710,19 @@ void OptiXEngine::push_PBO_to_Texture(unsigned int texId)
     switch(buffer_format) 
     {   //               target   miplevl  internalFormat                     border  format   type           data  
         case RT_FORMAT_UNSIGNED_BYTE4:
-            //printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_UNSIGNED_BYTE4 tex:%d \n", texId);
+            //printf("OEngine::push_PBO_to_Texture RT_FORMAT_UNSIGNED_BYTE4 tex:%d \n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, buffer_width, buffer_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
             break ; 
         case RT_FORMAT_FLOAT4:
-            printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_FLOAT4 tex:%d\n", texId);
+            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT4 tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, buffer_width, buffer_height, 0, GL_RGBA, GL_FLOAT, 0);
             break;
         case RT_FORMAT_FLOAT3:
-            printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_FLOAT3 tex:%d\n", texId);
+            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT3 tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F_ARB, buffer_width, buffer_height, 0, GL_RGB, GL_FLOAT, 0);
             break;
         case RT_FORMAT_FLOAT:
-            printf("OptiXEngine::push_PBO_to_Texture RT_FORMAT_FLOAT tex:%d\n", texId);
+            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE32F_ARB, buffer_width, buffer_height, 0, GL_LUMINANCE, GL_FLOAT, 0);
             break;
         default:
@@ -736,7 +736,7 @@ void OptiXEngine::push_PBO_to_Texture(unsigned int texId)
 }
 
 
-void OptiXEngine::render()
+void OEngine::render()
 {
     if(!m_enabled) return ;
 
@@ -751,7 +751,7 @@ void OptiXEngine::render()
 
 
 
-void OptiXEngine::fill_PBO()
+void OEngine::fill_PBO()
 {
     // not working
     //
@@ -778,7 +778,7 @@ void OptiXEngine::fill_PBO()
 
 
 
-void OptiXEngine::cleanUp()
+void OEngine::cleanUp()
 {
     if(!m_enabled) return ;
     saveAccelCache();
@@ -786,12 +786,12 @@ void OptiXEngine::cleanUp()
     m_context = 0;
 }
 
-optix::Context& OptiXEngine::getContext()
+optix::Context& OEngine::getContext()
 {
     return m_context ; 
 }
 
-void OptiXEngine::setSize(unsigned int width, unsigned int height)
+void OEngine::setSize(unsigned int width, unsigned int height)
 {
     m_width = width ;
     m_height = height ;
@@ -823,7 +823,7 @@ void OptiXEngine::setSize(unsigned int width, unsigned int height)
 
 
 
-void OptiXEngine::loadAccelCache()
+void OEngine::loadAccelCache()
 {
   // If acceleration caching is turned on and a cache file exists, load it.
   if( m_accel_caching_on ) {
@@ -831,7 +831,7 @@ void OptiXEngine::loadAccelCache()
     if(m_filename.empty()) return ;  
 
     const std::string cachefile = getCacheFileName();
-    LOG(info)<<"OptiXEngine::loadAccelCache cachefile " << cachefile ; 
+    LOG(info)<<"OEngine::loadAccelCache cachefile " << cachefile ; 
 
     std::ifstream in( cachefile.c_str(), std::ifstream::in | std::ifstream::binary );
     if ( in ) {
@@ -886,7 +886,7 @@ void OptiXEngine::loadAccelCache()
   }
 }
 
-void OptiXEngine::saveAccelCache()
+void OEngine::saveAccelCache()
 {
   // If accel caching on, marshallize the accel 
 
@@ -903,7 +903,7 @@ void OptiXEngine::saveAccelCache()
     accel->getData( data );
 
     // Write to file
-    LOG(info)<<"OptiXEngine::saveAccelCache cachefile " << cachefile << " size " << size ;  
+    LOG(info)<<"OEngine::saveAccelCache cachefile " << cachefile << " size " << size ;  
 
     std::ofstream out( cachefile.c_str(), std::ofstream::out | std::ofstream::binary );
     if( !out ) {
@@ -917,7 +917,7 @@ void OptiXEngine::saveAccelCache()
   }
 }
 
-std::string OptiXEngine::getCacheFileName()
+std::string OEngine::getCacheFileName()
 {
     std::string cachefile = m_filename;
     size_t idx = cachefile.find_last_of( '.' );

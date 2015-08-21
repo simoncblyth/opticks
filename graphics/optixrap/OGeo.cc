@@ -1,5 +1,6 @@
 #include "OGeo.hh"
-#include "OptiXEngine.hh"
+#include "OEngine.hh"
+
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
@@ -17,10 +18,13 @@
 
 
 
+void OGeo::setGeometryGroup(optix::GeometryGroup ggrp)
+{
+    m_geometry_group = ggrp ; 
+}
+
 void OGeo::convert()
 {
-    convertBoundaryProperties(m_boundarylib);
-
     unsigned int nmm = m_ggeo->getNumMergedMesh();
     LOG(info) << "OGeo::convert"
               << " nmm " << nmm
@@ -36,90 +40,38 @@ void OGeo::convert()
     }
 }
 
-
-
-
-
-optix::TextureSampler OGeo::makeWavelengthSampler(GBuffer* buffer)
+void OGeo::setupAcceleration()
 {
-   // handles different numbers of substances, but uses static domain length
-    unsigned int domainLength = GBoundaryLib::DOMAIN_LENGTH ;
-    unsigned int numElementsTotal = buffer->getNumElementsTotal();
-    assert( numElementsTotal % domainLength == 0 );
+    const char* builder = "Sbvh" ;
+    const char* traverser = "Bvh" ;
 
-    unsigned int nx = domainLength ;
-    unsigned int ny = numElementsTotal / domainLength ;
+    LOG(info) << "OGeo::setupAcceleration for " 
+              << " gis " <<  m_gis.size() 
+              << " builder " << builder 
+              << " traverser " << traverser
+              ; 
+    
+    optix::Acceleration acceleration = m_context->createAcceleration(builder, traverser);
+    acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
+    acceleration->setProperty( "index_buffer_name", "indexBuffer" );
 
-    LOG(info) << "OGeo::makeWavelengthSampler "
-              << " numElementsTotal " << numElementsTotal  
-              << " (nx)domainLength " << domainLength 
-              << " ny (props*subs)  " << ny 
-              << " ny/16 " << ny/16 ; 
+    m_geometry_group->setAcceleration( acceleration );
 
-    optix::TextureSampler sampler = makeSampler(buffer, RT_FORMAT_FLOAT4, nx, ny);
-    return sampler ; 
+    acceleration->markDirty();
+
+    m_geometry_group->setChildCount(m_gis.size());
+    for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
+
+    // FOR UNKNOWN REASONS SETTING top_object CAUSES SEGFAULT WHEN USED FROM SEPARATE SO 
+    // AND NOT WHEN ALL COMPILED INTO SAME EXECUTABLE
+    // ... IT DUPLICATES A SETTING IN MeshViewer ANYHOW SO NO PROBLEM SKIPPING IT 
+    //
+    //  assuming a not-updated lib is the cause
+    //
+    //m_context["top_object"]->set(m_geometry_group);
+
+    LOG(info) << "OGeo::setupAcceleration DONE ";
 }
-
-optix::TextureSampler OGeo::makeReemissionSampler(GBuffer* buffer)
-{
-    unsigned int domainLength = buffer->getNumElementsTotal();
-    unsigned int nx = domainLength ;
-    unsigned int ny = 1 ;
-
-    LOG(info) << "OGeo::makeReemissionSampler "
-              << " (nx)domainLength " << domainLength 
-              << " ny " << ny  ;
-
-    optix::TextureSampler sampler = makeSampler(buffer, RT_FORMAT_FLOAT, nx, ny);
-    return sampler ; 
-}
-
-optix::float4 OGeo::getDomain()
-{
-    float domain_range = (GBoundaryLib::DOMAIN_HIGH - GBoundaryLib::DOMAIN_LOW); 
-    return optix::make_float4(GBoundaryLib::DOMAIN_LOW, GBoundaryLib::DOMAIN_HIGH, GBoundaryLib::DOMAIN_STEP, domain_range); 
-}
-
-optix::float4 OGeo::getDomainReciprocal()
-{
-    // only endpoints used for sampling, not the step 
-    return optix::make_float4(1./GBoundaryLib::DOMAIN_LOW, 1./GBoundaryLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
-}
-
-void OGeo::convertBoundaryProperties(GBoundaryLib* blib)
-{
-    GBuffer* wavelengthBuffer = blib->getWavelengthBuffer();
-    optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
-
-    optix::float4 wavelengthDomain = getDomain();
-    optix::float4 wavelengthDomainReciprocal = getDomainReciprocal();
-
-    m_context["wavelength_texture"]->setTextureSampler(wavelengthSampler);
-    m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
-    m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
-
-    GBuffer* obuf = blib->getOpticalBuffer();
-
-    unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
-    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
-    memcpy( optical_buffer->map(), obuf->getPointer(), obuf->getNumBytes() );
-    optical_buffer->unmap();
-    //optix::Buffer optical_buffer = createInputBuffer<unsigned int>( obuf, RT_FORMAT_UNSIGNED_INT4, 4);
-    m_context["optical_buffer"]->setBuffer(optical_buffer);
-
-
-    GBuffer* reemissionBuffer = blib->getReemissionBuffer();
-    float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
-    optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
-    optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
-
-    m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
-    m_context["reemission_domain"]->setFloat(reemissionDomain);
-}
-
-
-
-
 
 
 
@@ -131,8 +83,8 @@ optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
 
     optix::Material material = m_context->createMaterial();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    material->setClosestHitProgram(OptiXEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
-    material->setClosestHitProgram(OptiXEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
+    material->setClosestHitProgram(OEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+    material->setClosestHitProgram(OEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
 
     std::vector<optix::Material> materials ;
     materials.push_back(material);
@@ -225,6 +177,7 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
 }
 
 
+/*
 optix::float3 OGeo::getMin()
 {
     return optix::make_float3(0.f, 0.f, 0.f); 
@@ -233,41 +186,6 @@ optix::float3 OGeo::getMin()
 optix::float3 OGeo::getMax()
 {
     return optix::make_float3(0.f, 0.f, 0.f); 
-}
-
-
-
-/*
-optix::TextureSampler OGeo::makeColorSampler(unsigned int nx)
-{
-    unsigned char* colors = make_uchar4_colors(nx);
-    unsigned int numBytes = nx*sizeof(unsigned char)*4 ; 
-
-    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_BYTE4, nx );
-    memcpy( optixBuffer->map(), colors, numBytes );
-    optixBuffer->unmap(); 
-
-    delete colors ; 
-
-    optix::TextureSampler sampler = m_context->createTextureSampler();
-    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
-
-    RTfiltermode minification = RT_FILTER_LINEAR ;
-    RTfiltermode magnification = RT_FILTER_LINEAR ;
-    RTfiltermode mipmapping = RT_FILTER_NONE ;
-    sampler->setFilteringModes(minification, magnification, mipmapping);
-
-    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
-    sampler->setMaxAnisotropy(1.0f);  
-    sampler->setMipLevelCount(1u);     
-    sampler->setArraySize(1u);          //  num_textures_in_array
-
-    unsigned int texture_array_idx = 0u ;
-    unsigned int mip_level = 0u ; 
-    sampler->setBuffer(texture_array_idx, mip_level, optixBuffer);
-
-    return sampler ; 
 }
 */
 

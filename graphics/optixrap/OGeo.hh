@@ -1,48 +1,16 @@
 #pragma once
 
+#include <vector>
+
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
-#include "OptiXGeometry.hh"
-
-/*
-
-Migration to the flattened GMergedMesh 
-=======================================
-
-Motivation:
------------
-
-* single geometry instance in recommended as fastest OptiX geometry handling technique
-* potentially can persist the buffers rather easily and use them as a geocache
-  to avoid parsing at initialization, enabling a fast start 
-
-Progress:
-----------
-
-* geometry creation DONE : using convertDrawableInstance and convertDrawable to 
-  pump the flattened GMergedMesh to OptiX using a single geometry instance
-  with multiple materials
-
-* IN PROGRESS : flattening the substance library into the WavelengthBuffer
- 
-  Formerly each GSubstance has 1-1 relationship with optix::Material
-  which has one texture sampler. Although clean, its kinda pointless
-  having order 58 materials which only differ by the textures they contain.
-
-  Trying to move to single material operation with properties using 
-  the substanceBuffer to get the substanceIndex which is used
-  for wavelength lookups into the waveLengthBuffer.
-
-     material["wavelength_texture"]->setTextureSampler(sampler);
-
-*/
+//#include "OptiXGeometry.hh"
 
 
 class GGeo ; 
 class GMergedMesh ; 
-class GBoundaryLib ; 
 class GBuffer ; 
 
 // canonical usage from OptiXEngine::initGeometry
@@ -51,21 +19,14 @@ class GBuffer ;
 //       with instancing support 
 //
 
-class OGeo  : public OptiXGeometry 
+class OGeo 
 {
 public:
-    OGeo(GGeo* gg, GBoundaryLib* lib);
-
+    OGeo(optix::Context& ctx, GGeo* gg);
+    void setGeometryGroup(optix::GeometryGroup ggrp);
 public:
     void convert();
-
-public:
-    // hmm maybe split blib handling into separate class ?
-    void                  convertBoundaryProperties(GBoundaryLib* blib);
-    optix::TextureSampler makeWavelengthSampler(GBuffer* wavelengthBuffer);
-    optix::TextureSampler makeReemissionSampler(GBuffer* reemissionBuffer);
-    optix::float4         getDomain();
-    optix::float4         getDomainReciprocal();
+    void setupAcceleration();
 
 public:
     template <typename T>
@@ -75,22 +36,23 @@ private:
     optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
     optix::Geometry         makeGeometry(GMergedMesh* mergedmesh);
 
-public:
-    optix::float3  getMin();
-    optix::float3  getMax();
+//public:
+//    optix::float3  getMin();
+//    optix::float3  getMax();
 
 private:
-    GGeo*         m_ggeo ; 
-    GBoundaryLib* m_boundarylib ; 
+    optix::Context       m_context ; 
+    optix::GeometryGroup m_geometry_group ; 
+    GGeo*                m_ggeo ; 
+    std::vector<optix::GeometryInstance> m_gis ;
 
 };
 
 
-inline OGeo::OGeo(GGeo* gg, GBoundaryLib* lib)
+inline OGeo::OGeo(optix::Context& ctx, GGeo* gg)
            : 
-           OptiXGeometry(),
-           m_ggeo(gg),
-           m_boundarylib(lib)
+           m_context(ctx),
+           m_ggeo(gg)
 {
 }
 
