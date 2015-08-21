@@ -426,9 +426,8 @@ int main(int argc, char** argv)
     engine.setFilename(idpath);
 
     // transitioning back to gg, for multiple sets of instanced 
-    //engine.setGGeo(gg);   
-    engine.setMergedMesh(mm0);  
-
+    engine.setGGeo(gg);   
+    //engine.setMergedMesh(mm0);  
 
     engine.setBoundaryLib(blib);   
     engine.setNumpyEvt(&evt);

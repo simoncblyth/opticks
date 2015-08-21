@@ -40,6 +40,7 @@ Progress:
 */
 
 
+class GGeo ; 
 class GMergedMesh ; 
 class GBoundaryLib ; 
 class GBuffer ; 
@@ -50,45 +51,46 @@ class GBuffer ;
 //       with instancing support 
 //
 
-class GMergedMeshOptiXGeometry  : public OptiXGeometry 
+class OGeo  : public OptiXGeometry 
 {
 public:
-    GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh, GBoundaryLib* lib); //, OptiXEngine* engine); 
+    OGeo(GGeo* gg, GBoundaryLib* lib);
 
 public:
     void convert();
-    //optix::TextureSampler makeColorSampler(unsigned int nx);
+
+public:
+    // hmm maybe split blib handling into separate class ?
+    void                  convertBoundaryProperties(GBoundaryLib* blib);
     optix::TextureSampler makeWavelengthSampler(GBuffer* wavelengthBuffer);
     optix::TextureSampler makeReemissionSampler(GBuffer* reemissionBuffer);
     optix::float4         getDomain();
     optix::float4         getDomainReciprocal();
 
+public:
     template <typename T>
     optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold=1);
 
 private:
     optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
-    optix::Geometry         makeGeometry(GMergedMesh* drawable);
-    optix::Material         makeMaterial();
+    optix::Geometry         makeGeometry(GMergedMesh* mergedmesh);
 
 public:
     optix::float3  getMin();
     optix::float3  getMax();
 
 private:
-    GMergedMesh* m_mergedmesh ; 
+    GGeo*         m_ggeo ; 
     GBoundaryLib* m_boundarylib ; 
-  //  OptiXEngine*  m_engine ; 
 
 };
 
 
-inline GMergedMeshOptiXGeometry::GMergedMeshOptiXGeometry(GMergedMesh* mergedmesh, GBoundaryLib* lib) //, OptiXEngine* engine)
+inline OGeo::OGeo(GGeo* gg, GBoundaryLib* lib)
            : 
            OptiXGeometry(),
-           m_mergedmesh(mergedmesh),
+           m_ggeo(gg),
            m_boundarylib(lib)
-           //m_engine(engine)
 {
 }
 

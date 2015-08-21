@@ -38,7 +38,7 @@
 // optixrap-
 #include "RayTraceConfig.hh"
 #include "GGeoOptiXGeometry.hh"
-#include "GMergedMeshOptiXGeometry.hh"
+#include "OGeo.hh"
 
 // cudawrap-
 using namespace optix ; 
@@ -236,9 +236,14 @@ void OptiXEngine::initGeometry()
 {
     LOG(info) << "OptiXEngine::initGeometry" ;
 
-    GMergedMesh* mm = getMergedMesh();
+    //GMergedMesh* mm = getMergedMesh();
+    GGeo* gg = getGGeo();
+    assert(gg) ; 
+
     GBoundaryLib* blib = getBoundaryLib();
-    GMergedMeshOptiXGeometry geom(mm, blib);
+    assert(blib);
+
+    OGeo geom(gg, blib);
 
     geom.setGeometryGroup(m_geometry_group);
     geom.setContext(m_context);   
@@ -294,8 +299,8 @@ void OptiXEngine::preprocess()
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
 
-    float mm = 0.1f ; 
-    m_context[ "propagate_epsilon"]->setFloat(mm); 
+    float pe = 0.1f ; 
+    m_context[ "propagate_epsilon"]->setFloat(pe); 
  
     LOG(info)<< "OptiXEngine::preprocess start validate ";
     m_context->validate();

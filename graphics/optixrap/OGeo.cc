@@ -1,5 +1,6 @@
-#include "GMergedMeshOptiXGeometry.hh"
+#include "OGeo.hh"
 #include "OptiXEngine.hh"
+#include "GGeo.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
 
@@ -16,14 +17,30 @@
 
 
 
-void GMergedMeshOptiXGeometry::convert()
+void OGeo::convert()
 {
-    optix::GeometryInstance gi = makeGeometryInstance(m_mergedmesh);
-    m_gis.push_back(gi);
+    convertBoundaryProperties(m_boundarylib);
+
+    unsigned int nmm = m_ggeo->getNumMergedMesh();
+    LOG(info) << "OGeo::convert"
+              << " nmm " << nmm
+              ;
+
+    for(unsigned int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        assert(mm);
+
+        optix::GeometryInstance gi = makeGeometryInstance(mm);
+        m_gis.push_back(gi);
+    }
 }
 
 
-optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* buffer)
+
+
+
+optix::TextureSampler OGeo::makeWavelengthSampler(GBuffer* buffer)
 {
    // handles different numbers of substances, but uses static domain length
     unsigned int domainLength = GBoundaryLib::DOMAIN_LENGTH ;
@@ -33,7 +50,7 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* b
     unsigned int nx = domainLength ;
     unsigned int ny = numElementsTotal / domainLength ;
 
-    LOG(info) << "GMergedMeshOptiXGeometry::makeWavelengthSampler "
+    LOG(info) << "OGeo::makeWavelengthSampler "
               << " numElementsTotal " << numElementsTotal  
               << " (nx)domainLength " << domainLength 
               << " ny (props*subs)  " << ny 
@@ -43,13 +60,13 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeWavelengthSampler(GBuffer* b
     return sampler ; 
 }
 
-optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* buffer)
+optix::TextureSampler OGeo::makeReemissionSampler(GBuffer* buffer)
 {
     unsigned int domainLength = buffer->getNumElementsTotal();
     unsigned int nx = domainLength ;
     unsigned int ny = 1 ;
 
-    LOG(info) << "GMergedMeshOptiXGeometry::makeReemissionSampler "
+    LOG(info) << "OGeo::makeReemissionSampler "
               << " (nx)domainLength " << domainLength 
               << " ny " << ny  ;
 
@@ -57,27 +74,21 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeReemissionSampler(GBuffer* b
     return sampler ; 
 }
 
-
-
-optix::float4 GMergedMeshOptiXGeometry::getDomain()
+optix::float4 OGeo::getDomain()
 {
     float domain_range = (GBoundaryLib::DOMAIN_HIGH - GBoundaryLib::DOMAIN_LOW); 
     return optix::make_float4(GBoundaryLib::DOMAIN_LOW, GBoundaryLib::DOMAIN_HIGH, GBoundaryLib::DOMAIN_STEP, domain_range); 
 }
 
-optix::float4 GMergedMeshOptiXGeometry::getDomainReciprocal()
+optix::float4 OGeo::getDomainReciprocal()
 {
     // only endpoints used for sampling, not the step 
     return optix::make_float4(1./GBoundaryLib::DOMAIN_LOW, 1./GBoundaryLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
 }
 
-
-
-optix::GeometryInstance GMergedMeshOptiXGeometry::makeGeometryInstance(GMergedMesh* mergedmesh)
+void OGeo::convertBoundaryProperties(GBoundaryLib* blib)
 {
-    LOG(info) << "GMergedMeshOptiXGeometry::makeGeometryInstance using single material  " ; 
-
-    GBuffer* wavelengthBuffer = m_boundarylib->getWavelengthBuffer();
+    GBuffer* wavelengthBuffer = blib->getWavelengthBuffer();
     optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
 
     optix::float4 wavelengthDomain = getDomain();
@@ -87,7 +98,7 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::makeGeometryInstance(GMergedMe
     m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
     m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
 
-    GBuffer* obuf = m_boundarylib->getOpticalBuffer();
+    GBuffer* obuf = blib->getOpticalBuffer();
 
     unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
     optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
@@ -97,68 +108,68 @@ optix::GeometryInstance GMergedMeshOptiXGeometry::makeGeometryInstance(GMergedMe
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 
 
-    GBuffer* reemissionBuffer = m_boundarylib->getReemissionBuffer();
+    GBuffer* reemissionBuffer = blib->getReemissionBuffer();
     float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
     optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
     optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
 
     m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
     m_context["reemission_domain"]->setFloat(reemissionDomain);
+}
 
-    optix::Material material = makeMaterial();
+
+
+
+
+
+
+
+
+optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
+{
+    LOG(info) << "OGeo::makeGeometryInstance material1  " ; 
+
+    optix::Material material = m_context->createMaterial();
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+    material->setClosestHitProgram(OptiXEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
+    material->setClosestHitProgram(OptiXEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
+
     std::vector<optix::Material> materials ;
     materials.push_back(material);
 
     optix::Geometry geometry = makeGeometry(mergedmesh) ;  
-
     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
 
     return gi ;
 }
 
 
-
-
-
-optix::Material GMergedMeshOptiXGeometry::makeMaterial()  
+optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 {
-    optix::Material material = m_context->createMaterial();
+    // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
+    // and use folding by 3 in createInputBuffer
 
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-
-    material->setClosestHitProgram(OptiXEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
-
-    material->setClosestHitProgram(OptiXEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
-
-    return material ; 
-}
-
-
-optix::Geometry GMergedMeshOptiXGeometry::makeGeometry(GMergedMesh* mergedmesh)
-{
     optix::Geometry geometry = m_context->createGeometry();
-
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
     geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu", "mesh_intersect"));
     geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu", "mesh_bounds"));
 
-    // TriangleMesh.cu uses nodeBuffer boundaryBuffer sensorBuffer
-    // to set attributes nodeIndex boundaryIndex and sensorIndex corresponding to the 
-    // primIdx intersected      
-    // contrast with oglrap-/Renderer::gl_upload_buffers
-
     GBuffer* vbuf = mergedmesh->getVerticesBuffer();
     GBuffer* ibuf = mergedmesh->getIndicesBuffer();
+    GBuffer* tbuf = mergedmesh->getTransformsBuffer();
 
     unsigned int numVertices = vbuf->getNumItems() ;
     unsigned int numFaces = ibuf->getNumItems()/3;    
-
-    // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
-    // and use folding by 3 in createInputBuffer
-
-    LOG(info) << "GMergedMeshOptiXGeometry::convertDrawable numVertices " << numVertices << " numFaces " << numFaces ;
+    unsigned int numTransforms = tbuf ? tbuf->getNumItems() : 0  ;    
 
     geometry->setPrimitiveCount(numFaces);
+
+    LOG(info) << "OGeo::makeGeometry"
+              << " numVertices " << numVertices 
+              << " numFaces " << numFaces
+              << " numTransforms " << numTransforms 
+              ;
+
 
     optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3 );
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
@@ -187,14 +198,14 @@ optix::Geometry GMergedMeshOptiXGeometry::makeGeometry(GMergedMesh* mergedmesh)
 
 
 template <typename T>
-optix::Buffer GMergedMeshOptiXGeometry::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold)
+optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold)
 {
    unsigned int bytes = buf->getNumBytes() ;
    unsigned int nit = buf->getNumItems()/fold ;
    unsigned int nel = buf->getNumElements();
    unsigned int mul = RayTraceConfig::getMultiplicity(format) ;
 
-   LOG(info)<<"GMergedMeshOptiXGeometry::createInputBuffer"
+   LOG(info)<<"OGeo::createInputBuffer"
             << " bytes " << bytes
             << " nit " << nit 
             << " nel " << nel 
@@ -214,12 +225,12 @@ optix::Buffer GMergedMeshOptiXGeometry::createInputBuffer(GBuffer* buf, RTformat
 }
 
 
-optix::float3 GMergedMeshOptiXGeometry::getMin()
+optix::float3 OGeo::getMin()
 {
     return optix::make_float3(0.f, 0.f, 0.f); 
 }
 
-optix::float3 GMergedMeshOptiXGeometry::getMax()
+optix::float3 OGeo::getMax()
 {
     return optix::make_float3(0.f, 0.f, 0.f); 
 }
@@ -227,7 +238,7 @@ optix::float3 GMergedMeshOptiXGeometry::getMax()
 
 
 /*
-optix::TextureSampler GMergedMeshOptiXGeometry::makeColorSampler(unsigned int nx)
+optix::TextureSampler OGeo::makeColorSampler(unsigned int nx)
 {
     unsigned char* colors = make_uchar4_colors(nx);
     unsigned int numBytes = nx*sizeof(unsigned char)*4 ; 
@@ -259,7 +270,5 @@ optix::TextureSampler GMergedMeshOptiXGeometry::makeColorSampler(unsigned int nx
     return sampler ; 
 }
 */
-
-
 
 

@@ -85,7 +85,7 @@ add_library( ${name}  SHARED
        OptiXEngine.cc
        OptiXGeometry.cc
        GGeoOptiXGeometry.cc
-       GMergedMeshOptiXGeometry.cc
+       OGeo.cc
        RayTraceConfig.cc
 )
  
@@ -111,7 +111,7 @@ SET(hdrs
   OptiXEngine.hh
   OptiXGeometry.hh
   GGeoOptiXGeometry.hh
-  GMergedMeshOptiXGeometry.hh
+  OGeo.hh
   RayTraceConfig.hh
 )
 SET(cuhdrs 
