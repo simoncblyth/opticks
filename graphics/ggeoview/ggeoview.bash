@@ -609,6 +609,9 @@ ggeoview-detector()
     echo ${GGEOVIEW_DETECTOR:-DAE_NAME_DYB}
 }
 
+
+
+
 ggeoview-detector-juno()
 {
     export GGEOVIEW_DETECTOR=DAE_NAME_JUNO
@@ -617,6 +620,7 @@ ggeoview-detector-dyb()
 {
     export GGEOVIEW_DETECTOR=DAE_NAME_DYB
 }
+
 
 ggeoview-query-dyb() {
     echo range:3153:12221
@@ -633,14 +637,33 @@ ggeoview-query-juno() {
     #echo range:1:100000   # OpenGL vis works but slowly
     echo range:1:50000    # 
 }
+ggeoview-query-jpmt() {
+    echo range:1:50000    # 
+}
+ggeoview-query-jtst() {
+    echo range:1:50000    
+}
+
 
 ggeoview-query() {
     if [ "$(ggeoview-detector)" == "DAE_NAME_DYB" ]; then
         ggeoview-query-dyb
     elif [ "$(ggeoview-detector)" == "DAE_NAME_JUNO" ]; then
         ggeoview-query-juno
+    elif [ "$(ggeoview-detector)" == "DAE_NAME_JPMT" ]; then
+        ggeoview-query-jpmt
+    elif [ "$(ggeoview-detector)" == "DAE_NAME_JTST" ]; then
+        ggeoview-query-jtst
     fi
 }
+
+# TODO: find cleaner way, detector specifics dont belong here...
+
+
+
+
+
+
 
 ggeoview-export()
 {

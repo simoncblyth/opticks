@@ -59,6 +59,9 @@ inline void FrameCfg<Listener>::init()
        ("nogeocache,G",  "inhibit use of the geocache") ;
 
    m_desc.add_options()
+       ("nopropagate,P",  "inhibit generation/propagation") ;
+
+   m_desc.add_options()
        ("nooptix,O",  "inhibit use of OptiX") ;
 
    m_desc.add_options()

@@ -211,6 +211,7 @@ int main(int argc, char** argv)
     bool nogeocache = fcfg->hasOpt("nogeocache");
     bool noindex    = fcfg->hasOpt("noindex");
     bool noviz      = fcfg->hasOpt("noviz");
+    bool nopropagate = fcfg->hasOpt("nopropagate");
     bool compute    = fcfg->hasOpt("compute");
     bool geocenter  = fcfg->hasOpt("geocenter");
 
@@ -467,10 +468,17 @@ int main(int argc, char** argv)
     //NPYBase* idomain = engine.getIDomain(); 
     //if(idomain) idomain->save("idomain", "1", det );
 
-   
-    LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
-    engine.generate();     
-    t("generatePropagate"); 
+
+    if(nopropagate)
+    {
+        LOG(info)<< " ******************* (main) OptiXEngine::generate INHIBITED by -P/--nopropagate  *********************** " ;
+    }
+    else
+    {
+        LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
+        engine.generate();     
+        t("generatePropagate"); 
+    }
 
     LOG(info) << "main.OptiXEngine::generate DONE "; 
 
