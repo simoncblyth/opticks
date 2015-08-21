@@ -71,7 +71,7 @@ void OEngine::init()
               << " mode " << getModeName()
               ; 
     m_context = Context::create();
-    m_geometry_group = m_context->createGeometryGroup();
+    m_top = m_context->createGroup();
     m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
     m_domain = NPY<float>::make_vec4(e_number_domain,1,0.f) ;
     m_idomain = NPY<int>::make_vec4(e_number_idomain,1,0) ;
@@ -247,15 +247,14 @@ void OEngine::initGeometry()
     olib.convert(); 
 
     OGeo         og(m_context, gg);
-    og.setGeometryGroup(m_geometry_group);
+    og.setTop(m_top);
     og.convert(); 
     LOG(info) << "OEngine::initGeometry calling setupAcceleration" ; 
-    og.setupAcceleration();
 
     loadAccelCache();
 
 
-    m_context[ "top_object" ]->set( m_geometry_group );
+    m_context[ "top_object" ]->set( m_top );
 
     glm::vec4 ce = m_composition->getDomainCenterExtent();
     glm::vec4 td = m_composition->getTimeDomain();
@@ -864,7 +863,7 @@ void OEngine::loadAccelCache()
       in.read( data, static_cast<std::streamsize>(size) );
       
       // Load data into accel
-      Acceleration accel = m_geometry_group->getAcceleration();
+      Acceleration accel = m_top->getAcceleration();
       try {
         accel->setData( data, static_cast<RTsize>(size) );
         m_accel_cache_loaded = true;
@@ -897,7 +896,7 @@ void OEngine::saveAccelCache()
     const std::string cachefile = getCacheFileName();
 
     // Get data from accel
-    Acceleration accel = m_geometry_group->getAcceleration();
+    Acceleration accel = m_top->getAcceleration();
     RTsize size = accel->getDataSize();
     char* data  = new char[size];
     accel->getData( data );

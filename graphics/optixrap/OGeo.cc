@@ -1,4 +1,7 @@
 #include "OGeo.hh"
+
+#include <optix_world.h>
+
 #include "OEngine.hh"
 
 #include "GGeo.hh"
@@ -17,64 +20,192 @@
 // trace/debug/info/warning/error/fatal
 
 
+//  Prior to instancing 
+//  ~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//  Simplest possible node tree
+//
+//         geometry_group 
+//             acceleration  
+//             geometry_instance 0
+//             geometry_instance 1
+//             ...            
+//
+//         1 to 1 mapping of GMergedMesh to "geometry_instance" 
+//         each of which comprises one "geometry" with a single "material"
+//         which refers to boundary lib properties lodged in the context by OBoundaryLib
+//
+//  Preparing for instancing
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//   Transforms can only be contained in "group" so 
+//   add top level group with another acceleration structure
+//
+//        group (top)
+//           acceleration
+//           geometry_group
+//                acceleration
+//                geometry_instance 0
+//                geometry_instance 1
+//                 
+//
+// With instancing
+// ~~~~~~~~~~~~~~~~~
+//
+//         m_top (Group)
+//             acceleration
+//
+//             m_geometry_group (GeometryGroup)
+//                 acceleration
+//                 geometry_instance 0
+//                 geometry_instance 1
+//
+//             m_repeated_group (Group)
+//                 acceleration 
+//
+//                 group 0
+//                     acceleration
+//                     xform_0
+//                           repeated
+//                     xform_1
+//                           repeated
+//                     ...
+// 
+//                 group 1
+//                      acceleration
+//                      xform_0
+//                           repeated
+//                      ...
+//
+//
+//                  where repeated contains single gi (GeometryInstance) 
+//
+//             
+//
 
-void OGeo::setGeometryGroup(optix::GeometryGroup ggrp)
+const char* OGeo::BUILDER = "Sbvh" ; 
+const char* OGeo::TRAVERSER = "Bvh" ; 
+
+
+void OGeo::init()
 {
-    m_geometry_group = ggrp ; 
+    m_geometry_group = m_context->createGeometryGroup();
+    m_repeated_group = m_context->createGroup();
+}
+
+void OGeo::setTop(optix::Group top)
+{
+    m_top = top ; 
 }
 
 void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
+
     LOG(info) << "OGeo::convert"
               << " nmm " << nmm
               ;
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
         assert(mm);
-
-        optix::GeometryInstance gi = makeGeometryInstance(mm);
-        m_gis.push_back(gi);
+        GBuffer* tbuf = mm->getTransformsBuffer();
+        if( tbuf == NULL )
+        {
+            optix::GeometryInstance gi = makeGeometryInstance(mm);
+            m_geometry_group->addChild(gi);
+        }
+        else
+        {
+            optix::Group group = makeRepeatedGroup(mm);
+            group->setAcceleration( makeAcceleration() );
+            m_repeated_group->addChild(group); 
+        }
     }
+
+    // all group and geometry_group need to have distinct acceleration structures
+
+    unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
+    unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
+   
+    LOG(info) << "OGeo::convert"
+              << " geometryGroupCount " << geometryGroupCount
+              << " repeatedGroupCount " << repeatedGroupCount
+              ;
+
+
+    if(geometryGroupCount > 0)
+    {
+         m_top->addChild(m_geometry_group);
+         m_geometry_group->setAcceleration( makeAcceleration() );
+    } 
+
+    if(repeatedGroupCount > 0)
+    {
+         m_top->addChild(m_repeated_group);
+         m_repeated_group->setAcceleration( makeAcceleration() );
+    } 
+
+    m_top->setAcceleration( makeAcceleration() );
 }
 
-void OGeo::setupAcceleration()
-{
-    const char* builder = "Sbvh" ;
-    const char* traverser = "Bvh" ;
 
-    LOG(info) << "OGeo::setupAcceleration for " 
-              << " gis " <<  m_gis.size() 
-              << " builder " << builder 
-              << " traverser " << traverser
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
+{
+    GBuffer* tbuf = mm->getTransformsBuffer();
+    unsigned int numTransforms = tbuf->getNumItems();
+    assert(tbuf && numTransforms > 0);
+
+    float* tptr = (float*)tbuf->getPointer(); 
+
+    optix::Group group = m_context->createGroup();
+    group->setChildCount(numTransforms);
+
+    optix::GeometryInstance gi = makeGeometryInstance(mm); 
+    optix::GeometryGroup repeated = m_context->createGeometryGroup();
+    repeated->addChild(gi);
+    repeated->setAcceleration( makeAcceleration() );
+
+    bool transpose = true ; 
+    for(unsigned int i=0 ; i<numTransforms ; i++)
+    {
+        optix::Transform xform = m_context->createTransform();
+        group->setChild(i, xform);
+        xform->setChild(repeated);
+        const float* tdata = tptr + 16*i ; 
+        optix::Matrix4x4 m(tdata) ;
+        xform->setMatrix(transpose, m.getData(), 0);
+        dump("OGeo::makeRepeatedGroup", m.getData());
+    }
+    return group ;
+}
+
+
+void OGeo::dump(const char* msg, const float* f)
+{
+    printf("%s\n", msg);
+    for(unsigned int i=0 ; i < 16 ; i++) printf(" %10.3f ", *(f+i) ) ;
+    printf("\n");
+}
+
+
+optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* traverser)
+{
+    const char* ubuilder = builder ? builder : BUILDER ;
+    const char* utraverser = traverser ? traverser : TRAVERSER ;
+
+    LOG(info) << "OGeo::makeAcceleration " 
+              << " ubuilder " << ubuilder 
+              << " utraverser " << utraverser
               ; 
-    
-    optix::Acceleration acceleration = m_context->createAcceleration(builder, traverser);
+ 
+    optix::Acceleration acceleration = m_context->createAcceleration(ubuilder, utraverser );
     acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
     acceleration->setProperty( "index_buffer_name", "indexBuffer" );
-
-    m_geometry_group->setAcceleration( acceleration );
-
     acceleration->markDirty();
-
-    m_geometry_group->setChildCount(m_gis.size());
-    for(unsigned int i=0 ; i <m_gis.size() ; i++) m_geometry_group->setChild(i, m_gis[i]);
-
-    // FOR UNKNOWN REASONS SETTING top_object CAUSES SEGFAULT WHEN USED FROM SEPARATE SO 
-    // AND NOT WHEN ALL COMPILED INTO SAME EXECUTABLE
-    // ... IT DUPLICATES A SETTING IN MeshViewer ANYHOW SO NO PROBLEM SKIPPING IT 
-    //
-    //  assuming a not-updated lib is the cause
-    //
-    //m_context["top_object"]->set(m_geometry_group);
-
-    LOG(info) << "OGeo::setupAcceleration DONE ";
+    return acceleration ; 
 }
-
-
-
 
 
 optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)

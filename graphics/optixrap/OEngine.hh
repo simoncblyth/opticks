@@ -170,7 +170,7 @@ class OEngine : public Touchable {
         optix::Buffer         m_touch_buffer ; 
         optix::Buffer         m_phosel_buffer ; 
         optix::Buffer         m_recsel_buffer ; 
-        optix::GeometryGroup  m_geometry_group ;
+        optix::Group          m_top ;
 
         unsigned int          m_width ;
         unsigned int          m_height ;
@@ -223,7 +223,7 @@ inline OEngine::OEngine(const char* cmake_target, Mode_t mode) :
     m_rng_max(0),
     m_rng_wrapper(NULL),
     m_context(NULL),
-    m_geometry_group(NULL),
+    m_top(NULL),
     m_photon_buffer_id(0),
     m_genstep_buffer_id(0),
     m_pbo(0),

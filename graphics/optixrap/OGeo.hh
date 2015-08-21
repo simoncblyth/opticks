@@ -6,54 +6,54 @@
 #include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
-//#include "OptiXGeometry.hh"
-
 
 class GGeo ; 
 class GMergedMesh ; 
 class GBuffer ; 
 
-// canonical usage from OptiXEngine::initGeometry
-//
-// TODO: rename to ?MeshGeometry? as handle multiple GMergedMesh 
-//       with instancing support 
-//
+// used by OEngine::initGeometry
 
 class OGeo 
 {
 public:
+    static const char* BUILDER ; 
+    static const char* TRAVERSER ; 
+
     OGeo(optix::Context& ctx, GGeo* gg);
-    void setGeometryGroup(optix::GeometryGroup ggrp);
+    void setTop(optix::Group top);
 public:
     void convert();
-    void setupAcceleration();
+private:
+    void init();
 
 public:
-    template <typename T>
-    optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold=1);
+    template <typename T> optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold=1);
+    optix::Group   makeRepeatedGroup(GMergedMesh* mm);
 
 private:
+    optix::Acceleration     makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
     optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
     optix::Geometry         makeGeometry(GMergedMesh* mergedmesh);
-
-//public:
-//    optix::float3  getMin();
-//    optix::float3  getMax();
+    void dump(const char* msg, const float* m);
 
 private:
+    // input references
     optix::Context       m_context ; 
-    optix::GeometryGroup m_geometry_group ; 
+    optix::Group         m_top ; 
     GGeo*                m_ggeo ; 
-    std::vector<optix::GeometryInstance> m_gis ;
+private:
+    // locals 
+    optix::GeometryGroup m_geometry_group ; 
+    optix::Group         m_repeated_group ; 
 
 };
-
 
 inline OGeo::OGeo(optix::Context& ctx, GGeo* gg)
            : 
            m_context(ctx),
            m_ggeo(gg)
 {
+    init();
 }
 
 
