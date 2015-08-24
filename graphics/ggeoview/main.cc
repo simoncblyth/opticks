@@ -431,6 +431,8 @@ int App::loadGeometry()
 
 void App::uploadGeometry()
 {
+    m_scene->uploadGeometry(m_ggeo);
+
     unsigned int nmm = m_ggeo->getNumMergedMesh();
     for(unsigned int i=0 ; i < nmm ; i++)
     { 
@@ -449,7 +451,6 @@ void App::uploadGeometry()
                       << " w " << ce.w
                       ;
         }
-        m_scene->uploadGeometry(mm);  // TODO: support more than 1 instance geometry 
     
         if(i == 0)
         {
@@ -886,16 +887,31 @@ void App::cleanup()
 {
 
 #ifdef OPTIX
-    m_engine->cleanUp();
+    if(m_engine)
+    {
+        m_engine->cleanUp();
+    }
 #endif
 #ifdef NPYSERVER
-    m_server->stop();
+    if(m_server)
+    {
+        m_server->stop();
+    }
 #endif
 #ifdef GUI_
-    m_gui->shutdown();
+    if(m_gui)
+    {
+        m_gui->shutdown();
+    }
 #endif
-    m_frame->exit();
+    if(m_frame)
+    {
+        m_frame->exit();
+    }
 }
+
+
+
 
 
 int main(int argc, char** argv)
@@ -916,6 +932,8 @@ int main(int argc, char** argv)
 
     app.uploadGeometry();
 
+    /*
+
     app.loadEvt();
 
     app.uploadEvt();
@@ -930,6 +948,8 @@ int main(int argc, char** argv)
 
     app.makeReport();
 
+    */
+
     app.prepareGUI();
 
     app.renderLoop();
@@ -941,167 +961,5 @@ int main(int argc, char** argv)
 
 }
 
-
-/*
-    Parameters p ; 
-    Timer t("main") ; 
-    t.setVerbose(true);
-    t.start();
-
-    GCache cache("GGEOVIEW_") ; 
-    const char* idpath = cache.getIdPath();
-    bool juno          = cache.isJuno();
-    const char* det    = cache.getDetector();
-
-
-    const char* shader_dir = getenv("SHADER_DIR"); 
-    const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
-
-    Scene scene(shader_dir, shader_incl_path) ;
-
-    Composition   composition ;   
-    Frame         frame ;
-    Bookmarks     bookmarks ; 
-    Interactor    interactor ; 
-#ifdef NPYSERVER
-    numpydelegate delegate ; 
-#endif
-    NumpyEvt      evt ;
-
-    interactor.setFrame(&frame);
-    interactor.setScene(&scene);
-
-    interactor.setComposition(&composition);
-    composition.setScene(&scene);
-    bookmarks.setComposition(&composition);
-    bookmarks.setScene(&scene);
-
-    interactor.setBookmarks(&bookmarks);
-    scene.setNumpyEvt(&evt);
-
-    //t("wiring");  // minimal 0.001
-
-    Cfg cfg("umbrella", false) ; // collect other Cfg objects
-    FrameCfg<Frame>* fcfg = new FrameCfg<Frame>("frame", &frame,false);
-    cfg.add(fcfg);
-#ifdef NPYSERVER
-    cfg.add(new numpydelegateCfg<numpydelegate>("numpydelegate", &delegate, false));
-#endif
-
-    cfg.add(new SceneCfg<Scene>(           "scene",       &scene,                      true));
-    cfg.add(new RendererCfg<Renderer>(     "renderer",    scene.getGeometryRenderer(), true));
-    cfg.add(new InteractorCfg<Interactor>( "interactor",  &interactor,                 true));
-    composition.addConfig(&cfg); 
-
-    cfg.commandline(argc, argv);
-    t.setCommandLine(cfg.getCommandLine()); 
-
-#ifdef NPYSERVER
-    delegate.liveConnect(&cfg); // hookup live config via UDP messages
-    delegate.setNumpyEvt(&evt); // allows delegate to update evt when NPY messages arrive
-#endif
-
-    if(fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
-    if(fcfg->hasOpt("help"))   std::cout << cfg.getDesc() << std::endl ;
-    if(fcfg->isAbort()) exit(EXIT_SUCCESS); 
-
-    glm::uvec4 size ;
-    if(fcfg->hasOpt("size")) size = frame.getSize() ;
-    else if(fullscreen)      size = glm::uvec4(2880,1800,2,0) ;
-    else                     size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-
-    composition.setSize( size );
-
-    frame.setInteractor(&interactor);      
-    frame.setComposition(&composition);
-    frame.setScene(&scene);
-    frame.setTitle("GGeoView");
-    frame.setFullscreen(fullscreen);
-
-#ifdef NPYSERVER
-    numpyserver<numpydelegate> server(&delegate); // connect to external messages 
-#endif
-
-
-    // dynamic define for use by GLSL shaders
-    const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
-    DynamicDefine dd(shader_dynamic_dir, "dynamic.h");
-    dd.add("MAXREC",fcfg->getRecordMax());    
-    dd.add("MAXTIME",fcfg->getTimeMax());    
-    dd.write();
-
-    scene.init();  // reading shader source and creating renderers
-    scene.setComposition(&composition);    
-
-    frame.init();  // creates OpenGL context
-    t("createOpenGLContext"); 
-    LOG(info) << "main: frame.init DONE "; 
-
-    Types types ;  
-    types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
-    Index* flags = types.getFlagsIndex(); 
-    flags->setExt(".ini");
-    //flags->save("/tmp");
-
-
-
-#ifdef INTEROP
-    CUDAInterop<unsigned char>::init(); 
-#endif
-
-    GLFWwindow* window = frame.getWindow();
-
-    GLoader loader ;
-    loader.setInstanced(true); // find repeated geometry 
-    loader.setRepeatIndex(fcfg->getRepeatIndex()); // --repeatidx
-    loader.setTypes(&types);
-    loader.setCache(&cache);
-    loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    loader.load(nogeocache);
-
-    p.add<int>("repeatIdx", loader.getRepeatIndex() );
-
-    t("loadGeometry"); 
-
-
-    GItemIndex* materials = loader.getMaterials();
-    types.setMaterialsIndex(materials->getIndex());
-
-    GBuffer* colorbuffer = loader.getColorBuffer();  // composite buffer 0+:materials,  32+:flags
-    scene.uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
-
-
-
-    FrameCfg<Frame>* fcfg = app.getFrameCfg();
-
-    bool fullscreen = fcfg->hasOpt("fullscreen");
-    bool nooptix    = fcfg->hasOpt("nooptix");
-    bool nogeocache = fcfg->hasOpt("nogeocache");
-    bool noindex    = fcfg->hasOpt("noindex");
-    bool noviz      = fcfg->hasOpt("noviz");
-    bool nopropagate = fcfg->hasOpt("nopropagate");
-    bool compute    = fcfg->hasOpt("compute");
-    bool geocenter  = fcfg->hasOpt("geocenter");
-
-    // x,y native 15inch retina resolution z: pixel factor (2: for retina)   x,y will be scaled down by the factor
-    // pixelfactor 2 makes OptiX render at retina resolution
-    // TODO: use GLFW to pluck the video mode screen size
-    //
-    // TODO: rationalize size setting, 
-    //       currently gets set in frame, then overriden by value 
-    //       from composition
-    //       the below is a bandage workaround so that
-    //       sizes from commandline are honoured 
-    //
-    //    ggv --size 640,480,2 
-    //
-
-
-    // TODO:  
-    //   * pull out the OptiX engine renderer to be external, and fit in with the scene ?
-    //   * extract core OptiX processing into separate class
-    //   * generation should not depend on renderers OpenGL buffers
-    //     but for OpenGL interop its expedient for now
-    */
 
 

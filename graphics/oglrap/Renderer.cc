@@ -41,9 +41,6 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 }
 
 
-
-
-
 GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name)
 {
     buffer->Summary(name);

@@ -41,7 +41,6 @@ class Scene : public Configurable {
        static const char* AXIS ;
        static const char* GENSTEP ;
        static const char* GLOBAL ;
-       static const char* INSTANCE  ;
        static const char* RECORD ;
    public:
        static const char* TARGET ;
@@ -49,6 +48,13 @@ class Scene : public Configurable {
        static const char* REC_ ; 
        static const char* ALTREC_ ; 
        static const char* DEVREC_ ; 
+   public:
+       enum { MAX_INSTANCE_RENDERER = 5 };  
+       static const char* INSTANCE0  ;
+       static const char* INSTANCE1  ;
+       static const char* INSTANCE2  ;
+       static const char* INSTANCE3  ;
+       static const char* INSTANCE4  ;
    public:
        typedef enum { REC, ALTREC, DEVREC, NUMSTYLE } RecordStyle_t ;
        void setRecordStyle(Scene::RecordStyle_t style);
@@ -80,7 +86,7 @@ class Scene : public Configurable {
    public:
         // uploadGeometry assigns geometry_renderer to instance_renderer or global_renderer
         // based on whether the GMergedMesh geometry has a transforms buffer      
-        void uploadGeometry(GMergedMesh* geometry); 
+        void uploadGeometry(GGeo* ggeo); 
         void uploadColorBuffer(GBuffer* colorbuffer);
    public:
         // target cannot live in Composition, as needs geometry 
@@ -107,6 +113,8 @@ class Scene : public Configurable {
 
    public:
         Renderer*     getGeometryRenderer();
+        Renderer*     getInstanceRenderer(unsigned int i);
+        unsigned int  getNumInstanceRenderer();
    public:
         Rdr*          getAxisRenderer();
         Rdr*          getGenstepRenderer();
@@ -130,8 +138,9 @@ class Scene : public Configurable {
         Device*      m_device ; 
         Colors*      m_colors ; 
    private:
+        unsigned int m_num_instance_renderer ; 
         Renderer*    m_geometry_renderer ; 
-        Renderer*    m_instance_renderer ; 
+        Renderer*    m_instance_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_global_renderer ; 
    private:
         Rdr*         m_axis_renderer ; 
@@ -151,7 +160,7 @@ class Scene : public Configurable {
 
    private:
         bool         m_global_mode ; 
-        bool         m_instance_mode ; 
+        bool         m_instance_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_axis_mode ; 
         bool         m_genstep_mode ; 
         bool         m_photon_mode ; 
@@ -171,8 +180,8 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
             m_device(NULL),
             m_colors(NULL),
+            m_num_instance_renderer(0),
             m_geometry_renderer(NULL),
-            m_instance_renderer(NULL),
             m_global_renderer(NULL),
             m_axis_renderer(NULL),
             m_genstep_renderer(NULL),
@@ -188,7 +197,6 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_target(0),
             m_touch(0),
             m_global_mode(false),
-            m_instance_mode(false),
             m_axis_mode(true),
             m_genstep_mode(true),
             m_photon_mode(true),
@@ -197,10 +205,19 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_initialized(false),
             m_time_fraction(0.f)
 {
-    //init();  
+    for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
+    {
+        m_instance_renderer[i] = NULL ; 
+        m_instance_mode[i] = false ; 
+    }
 }
 
 
+
+inline unsigned int Scene::getNumInstanceRenderer()
+{
+    return m_num_instance_renderer ; 
+}
 
 inline float Scene::getTimeFraction()
 {

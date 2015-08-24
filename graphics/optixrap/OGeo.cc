@@ -102,7 +102,7 @@ void OGeo::setTop(optix::Group top)
 void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
-    unsigned int repeatLimit = 100 ;  
+    unsigned int repeatLimit = 100 ;    // for debugging only
 
     LOG(info) << "OGeo::convert"
               << " nmm " << nmm

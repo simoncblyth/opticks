@@ -5,7 +5,7 @@
 
 // ggeo-
 #include "GMergedMesh.hh"
-//#include "GDrawable.hh"
+#include "GGeo.hh"
 
 
 // oglrap-
@@ -39,7 +39,11 @@ const char* Scene::AXIS   = "axis" ;
 const char* Scene::PHOTON = "photon" ; 
 const char* Scene::GENSTEP = "genstep" ; 
 const char* Scene::GLOBAL  = "global" ; 
-const char* Scene::INSTANCE = "instance" ; 
+const char* Scene::INSTANCE0 = "instance0" ; 
+const char* Scene::INSTANCE1 = "instance1" ; 
+const char* Scene::INSTANCE2 = "instance2" ; 
+const char* Scene::INSTANCE3 = "instance3" ; 
+const char* Scene::INSTANCE4 = "instance4" ; 
 const char* Scene::RECORD   = "record" ; 
 
 const char* Scene::REC_ = "point" ;   
@@ -69,7 +73,12 @@ void Scene::gui()
 {
 #ifdef GUI_
      ImGui::Checkbox(GLOBAL,   &m_global_mode);
-     ImGui::Checkbox(INSTANCE, &m_instance_mode);
+
+     ImGui::Checkbox(INSTANCE0, m_instance_mode+0);
+     ImGui::Checkbox(INSTANCE1, m_instance_mode+1);
+     ImGui::Checkbox(INSTANCE2, m_instance_mode+2);
+     ImGui::Checkbox(INSTANCE3, m_instance_mode+3);
+     ImGui::Checkbox(INSTANCE4, m_instance_mode+4);
 
      ImGui::Checkbox(AXIS,     &m_axis_mode);
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
@@ -170,12 +179,13 @@ void Scene::init()
     //LOG(info) << "Scene::init geometry_renderer ctor";
     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
 
-    m_instance_renderer = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
-    m_instance_renderer->setInstanced();
-
-   // use small array of these to handle multiple assemblies of repeats ? 
-   // not very heavy 
-
+   // small array of instance renderers to handle multiple assemblies of repeats ? 
+    for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
+    {
+        m_instance_mode[i] = false ; 
+        m_instance_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
+        m_instance_renderer[i]->setInstanced();
+    }
 
     //LOG(info) << "Scene::init geometry_renderer ctor DONE";
 
@@ -215,7 +225,9 @@ void Scene::setComposition(Composition* composition)
     m_composition = composition ; 
 
     m_global_renderer->setComposition(composition);
-    m_instance_renderer->setComposition(composition);
+
+    for( unsigned int i=0 ; i < m_num_instance_renderer ; i++)
+        m_instance_renderer[i]->setComposition(composition);
 
     m_axis_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
@@ -226,28 +238,45 @@ void Scene::setComposition(Composition* composition)
 }
 
 
-void Scene::uploadGeometry(GMergedMesh* mergedmesh)
+void Scene::uploadGeometry(GGeo* ggeo)
 {
     // currently invoked from ggeoview main
 
-    m_geometry = mergedmesh ;  // TODO: handle multiple merged mesh
+    unsigned int nmm = ggeo->getNumMergedMesh();
 
-    if(mergedmesh->hasTransformsBuffer())
+    LOG(info) << "Scene::uploadGeometry"
+              << " nmm " << nmm
+              ;
+
+    unsigned int n_global(0);
+
+    for(unsigned int i=0 ; i < nmm ; i++)
     {
-        LOG(info)<<"Scene::uploadGeometry" 
-                 << " instance_renderer "
-                 ; 
-        m_instance_renderer->upload(m_geometry); 
-        m_instance_mode = true ;  // used for GUI selection
+        GMergedMesh* mm = ggeo->getMergedMesh(i);
+        GBuffer* tbuf = mm->getTransformsBuffer();
+
+        if( tbuf == NULL )
+        {
+            m_geometry = mm ;  // ??? how used ? handle multiple merged mesh
+            m_global_renderer->upload(mm);  
+            n_global++ ; 
+            assert(n_global == 1);
+            m_global_mode = true ; 
+        }
+        else
+        {
+            assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
+            m_instance_renderer[m_num_instance_renderer]->upload(mm);
+            m_instance_mode[m_num_instance_renderer] = true ; 
+            m_num_instance_renderer++ ; 
+        }
     }
-    else
-    {
-        LOG(info)<<"Scene::uploadGeometry" 
-                 << " global_renderer "
-                 ; 
-        m_global_renderer->upload(m_geometry);  
-        m_global_mode = true ; 
-    }
+
+
+    LOG(info)<<"Scene::uploadGeometry" 
+             << " n_global "   << n_global
+             << " m_num_instance_renderer " << m_num_instance_renderer
+             ; 
 }
 
 void Scene::uploadColorBuffer(GBuffer* colorbuffer)
@@ -328,7 +357,12 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr)
 void Scene::render()
 {
     if(m_global_mode)   m_global_renderer->render();
-    if(m_instance_mode) m_instance_renderer->render();
+
+    for(unsigned int i=0; i<m_num_instance_renderer; i++)
+    {
+        if(m_instance_mode[i] && m_instance_renderer[i]) m_instance_renderer[i]->render();
+    }
+
     if(m_axis_mode)     m_axis_renderer->render();
     if(m_genstep_mode)  m_genstep_renderer->render();  
     if(m_photon_mode)   m_photon_renderer->render();
