@@ -1,5 +1,6 @@
 #include "OGeo.hh"
 
+#include <algorithm>
 #include <optix_world.h>
 
 #include "OEngine.hh"
@@ -101,9 +102,11 @@ void OGeo::setTop(optix::Group top)
 void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
+    unsigned int repeatLimit = 100 ;  
 
     LOG(info) << "OGeo::convert"
               << " nmm " << nmm
+              << " repeatLimit " << repeatLimit 
               ;
 
     for(unsigned int i=0 ; i < nmm ; i++)
@@ -118,7 +121,7 @@ void OGeo::convert()
         }
         else
         {
-            optix::Group group = makeRepeatedGroup(mm);
+            optix::Group group = makeRepeatedGroup(mm, repeatLimit);
             group->setAcceleration( makeAcceleration() );
             m_repeated_group->addChild(group); 
         }
@@ -151,10 +154,10 @@ void OGeo::convert()
 }
 
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 {
     GBuffer* tbuf = mm->getTransformsBuffer();
-    unsigned int numTransforms = tbuf->getNumItems();
+    unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
     assert(tbuf && numTransforms > 0);
 
     float* tptr = (float*)tbuf->getPointer(); 
@@ -176,7 +179,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
         const float* tdata = tptr + 16*i ; 
         optix::Matrix4x4 m(tdata) ;
         xform->setMatrix(transpose, m.getData(), 0);
-        dump("OGeo::makeRepeatedGroup", m.getData());
+        //dump("OGeo::makeRepeatedGroup", m.getData());
     }
     return group ;
 }

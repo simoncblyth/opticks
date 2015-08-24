@@ -47,6 +47,56 @@ to no avail.
     -I/usr/local/env/graphics/glfw/3.1.1/include 
 
 
+retina control ?  NSHighResolutionCapable
+-------------------------------------------
+
+::
+
+    simon:glfw-3.1.1 blyth$ find . -name '*.plist'
+    ./CMake/AppleInfo.plist
+
+::
+
+     35         <key>NSHighResolutionCapable</key>
+     36         <true/>
+
+
+* http://stackoverflow.com/questions/20426140/how-to-enable-use-low-resolution-on-retina-display-for-an-application-when-shi
+
+
+
+
+OS X specific CMake options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://www.glfw.org/docs/latest/compile.html#compile_options_osx
+
+GLFW_USE_CHDIR determines whether glfwInit changes the current directory of bundled applications to the Contents/Resources directory.
+
+GLFW_USE_MENUBAR determines whether the first call to glfwCreateWindow sets up a minimal menu bar.
+
+GLFW_USE_RETINA determines whether windows will use the full resolution of Retina displays.
+
+GLFW_BUILD_UNIVERSAL determines whether to build Universal Binaries.
+
+
+runtime control ?
+~~~~~~~~~~~~~~~~~~~
+
+An app bundle (rather than a unix executable) supports the setting of 
+resolution handling via the info box. How to make app bundle ?
+
+* https://github.com/glfw/glfw-legacy/blob/master/tests/bundle.sh
+
+
+cmake app bundles
+~~~~~~~~~~~~~~~~~~
+
+* http://www.cmake.org/Wiki/BundleUtilitiesExample
+* http://www.cmake.org/cmake/help/v3.0/module/BundleUtilities.html
+
+
+
 input events
 -------------
 

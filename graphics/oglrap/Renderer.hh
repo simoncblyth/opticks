@@ -42,7 +42,7 @@ class Renderer : public RendererBase  {
 
   private:
       void gl_upload_buffers(bool debug);
-      GLuint upload(GLenum target, GLenum usage, GBuffer* buffer);
+      GLuint upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
 
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }

@@ -10,6 +10,21 @@ void Parameters::add(const char* name, T value)
     m_parameters.push_back(SS(name, boost::lexical_cast<std::string>(value) ));
 }
 
+
+std::string Parameters::getStringValue(const char* name)
+{
+    std::string value ; 
+    for(VSS::const_iterator it=m_parameters.begin() ; it != m_parameters.end() ; it++)
+    {
+        std::string npar  = it->first ; 
+        if( strncmp(npar.c_str(), name, strlen(name))==0) value = it->second ; 
+    }
+    return value ;  
+}
+
+
+
+
 void Parameters::dump(const char* msg)
 {
    prepLines();

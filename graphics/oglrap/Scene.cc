@@ -172,6 +172,7 @@ void Scene::init()
 
     m_instance_renderer = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
     m_instance_renderer->setInstanced();
+
    // use small array of these to handle multiple assemblies of repeats ? 
    // not very heavy 
 

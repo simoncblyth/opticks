@@ -16,6 +16,8 @@ class Parameters {
        template <typename T>
        void add(const char* name, T value);
 
+       std::string getStringValue(const char* name);
+
        void dump(const char* msg="Parameters::dump");
        void prepLines();
 
