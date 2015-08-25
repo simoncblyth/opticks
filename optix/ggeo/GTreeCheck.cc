@@ -11,6 +11,18 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+void GTreeCheck::dumpTree(const char* msg)
+{
+    LOG(info) << msg ; 
+    dumpTraverse(m_root, 0);
+}
+void GTreeCheck::dumpTraverse( GNode* node, unsigned int depth )
+{
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    unsigned int ridx = node->getRepeatIndex();   
+    printf(" %3d : %3d : %s \n", depth, ridx, node->getName());
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) dumpTraverse(node->getChild(i), depth + 1 );
+}
 
 
 void GTreeCheck::init()
@@ -160,6 +172,8 @@ void GTreeCheck::findRepeatCandidates(unsigned int minrep)
         unsigned int ndig = kv.second ;                 // number of occurences of the progeny digest 
         GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
 
+
+        //if( ndig > minrep )
         if( ndig > minrep && node->getProgenyCount() > 0 )
         {
             LOG(info) 

@@ -26,7 +26,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
     t.start();
 
     GMergedMesh* mm = new GMergedMesh( index ); 
-    if(base == NULL)
+    if(base == NULL)  // non-instanced global transforms
     {
         mm->setCurrentBase(NULL);
         base = static_cast<GNode*>(ggeo->getSolid(0)); 
@@ -38,7 +38,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
         unsigned int numMeshes = ggeo->getNumMeshes();
         assert(numMeshes < 500 );
     }
-    else
+    else     // instances transforms, with transform heirarchy split at the base 
     {
         mm->setCurrentBase(base);
         LOG(info)<<"GMergedMesh::create"
@@ -61,6 +61,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
               << " numVertices " << mm->getNumVertices()
               << " numFaces " << mm->getNumFaces()
               << " numSolids " << mm->getNumSolids()
+              << " numSolidsSelected " << mm->getNumSolidsSelected()
               ;
 
     unsigned int numVertices = mm->getNumVertices();
@@ -111,26 +112,33 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
     GNode* base = getCurrentBase();
-    GMatrixF* transform = base ? node->getRelativeTransform(base) : node->getTransform() ;    
 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
+
     GMesh* mesh = solid->getMesh();
+
     unsigned int meshIndex = mesh->getIndex();
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
 
-    gfloat3* vertices = pass == PASS_MERGE ? mesh->getTransformedVertices(*transform) : NULL ;
 
 
     // using repeat index labelling in the tree
     bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
     bool selected = solid->isSelected() && repsel ;
+
+    // needs to be out here for the all solid center extent
+    GMatrixF* transform = base ? node->getRelativeTransform(base) : node->getTransform() ;    
+    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
+
+
     if(selected)
     {
         if(pass == PASS_COUNT )
         {
             m_num_vertices += nvert ;
             m_num_faces    += nface ; 
+            m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
         }
         else if(pass == PASS_MERGE )
         {
@@ -195,8 +203,6 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
         m_center_extent[m_cur_solid] = GMesh::findCenterExtent(vertices, nvert); // keep track of center_extent of all solids
         m_meshes[m_cur_solid] = meshIndex ; 
 
-        //transform->copyTo( m_transforms + m_cur_solid*16 );  // using transforms from GTreeCheck not here
-
         m_cur_solid += 1 ; 
     }
 
@@ -204,6 +210,21 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 }
 
 
+void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
+{
+     printf("%s\n", msg);
+     typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
+     for(MUUI it=m_mesh_usage.begin() ; it != m_mesh_usage.end() ; it++)
+     {
+         unsigned int meshIndex = it->first ; 
+         unsigned int nodeCount = it->second ; 
+ 
+         GMesh* mesh = ggeo->getMesh(meshIndex);
+         const char* meshName = mesh->getName() ; 
+
+         printf("  %4d : %6d : %s \n", meshIndex, nodeCount, meshName);
+     }
+}
 
 
 GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index)

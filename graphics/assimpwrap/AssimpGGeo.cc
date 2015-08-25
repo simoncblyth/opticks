@@ -392,7 +392,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
 void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query)
 {
-    LOG(debug)<< "AssimpGGeo::convertMeshes NumMeshes " << scene->mNumMeshes ;
+    LOG(info)<< "AssimpGGeo::convertMeshes NumMeshes " << scene->mNumMeshes ;
 
     for(unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
@@ -403,7 +403,7 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 
         assert(mesh->HasNormals()); 
 
-        LOG(debug) << "AssimpGGeo::convertMeshes " 
+        LOG(info) << "AssimpGGeo::convertMeshes " 
                   << " i " << std::setw(4) << i
                   << " v " << std::setw(4) << numVertices
                   << " f " << std::setw(4) << numFaces
@@ -470,7 +470,7 @@ void AssimpGGeo::convertStructure(GGeo* gg)
               << " inborder " << m_inborder_surface 
               << " no " << m_no_surface  ;
 
-
+    gg->reportMeshUsage("AssimpGGeo::convertStructure reportMeshUsage");
 
     if(m_selection)
     {
@@ -495,6 +495,7 @@ void AssimpGGeo::convertStructure(GGeo* gg)
 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 {
     // recursive traversal of the AssimpNode tree
+    // note that full tree is traversed even when a partial selection is applied 
 
     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
 
@@ -574,6 +575,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
     const char* pv_p   = pnode->getName(1); 
+
+    gg->countMeshUsage(msi, nodeIndex, lv, pv);
 
     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 

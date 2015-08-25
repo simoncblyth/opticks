@@ -1,5 +1,4 @@
-#ifndef ASSIMPSELECTION_H
-#define ASSIMPSELECTION_H
+#pragma once
 
 #include <assimp/types.h>
 #include <vector>
@@ -11,6 +10,9 @@ class AssimpSelection {
 public:
     AssimpSelection(AssimpNode* root, const char* query);
     virtual ~AssimpSelection();
+
+private:
+    void init();
 
 public:
     unsigned int select(const char* query);
@@ -61,7 +63,12 @@ private:
 
 private:
 
+   unsigned int m_count ; 
+
    unsigned int m_index ; 
+
+   AssimpNode*  m_root ; 
+
 
 private:
 
@@ -79,4 +86,29 @@ private:
 
 };
 
-#endif
+
+
+
+inline AssimpSelection::AssimpSelection(AssimpNode* root, const char* query) 
+    : 
+    m_count(0),
+    m_index(0),
+    m_root(root),    
+    m_query(strdup(query)),
+    m_query_name(NULL),
+    m_query_index(0), 
+    m_query_merge(0), 
+    m_query_depth(0), 
+    m_is_flat_selection(false),
+    m_low(NULL),
+    m_high(NULL),
+    m_center(NULL),
+    m_extent(NULL),
+    m_up(NULL)
+{
+    init();
+}
+
+
+
+

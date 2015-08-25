@@ -563,3 +563,29 @@ std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, c
 
 
 
+
+void GGeo::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* lv, const char* pv)
+{
+     // called during GGeo creation from: void AssimpGGeo::convertStructure(GGeo* gg)
+     //printf("GGeo::countMeshUsage %d %d %s %s \n", meshIndex, nodeIndex, lv, pv);
+     m_mesh_usage[meshIndex] += 1 ; 
+}
+
+void GGeo::reportMeshUsage(const char* msg)
+{
+     printf("%s\n", msg);
+     typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
+     for(MUUI it=m_mesh_usage.begin() ; it != m_mesh_usage.end() ; it++)
+     {
+         unsigned int meshIndex = it->first ; 
+         unsigned int nodeCount = it->second ; 
+ 
+         GMesh* mesh = getMesh(meshIndex);
+         const char* meshName = mesh->getName() ; 
+
+         printf("  %4d : %6d : %s \n", meshIndex, nodeCount, meshName);
+     }
+}
+
+
+

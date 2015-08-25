@@ -14,21 +14,7 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
-AssimpSelection::AssimpSelection(AssimpNode* root, const char* query) 
-    : 
-    m_index(0),
-    m_query(strdup(query)),
-    m_query_name(NULL),
-    m_query_index(0), 
-    m_query_merge(0), 
-    m_query_depth(0), 
-    m_is_flat_selection(false),
-    m_low(NULL),
-    m_high(NULL),
-    m_center(NULL),
-    m_extent(NULL),
-    m_up(NULL)
+void AssimpSelection::init()
 {
     parseQuery(m_query);    
 
@@ -41,11 +27,12 @@ AssimpSelection::AssimpSelection(AssimpNode* root, const char* query)
               << " m_query_index " <<  m_query_index 
               ;
 
-    selectNodes(root, 0, false);
+    selectNodes(m_root, 0, false);
 
     LOG(info) << "AssimpSelection::AssimpSelection"
               << " after SelectNodes " 
               << " m_selection size " << m_selection.size()
+              << " out of m_count " << m_count 
               ;
 
     assert(m_selection.size() > 0 );
@@ -163,9 +150,21 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
    // recursive traverse, adding nodes fulfiling the selection
    // criteria into m_selection 
 
+   m_count++ ; 
    m_index++ ; 
    const char* name = node->getName(); 
    unsigned int index = node->getIndex();
+
+   if(m_count < 10)
+   {
+      LOG(info) << "AssimpSelection::selectNodes "
+                << " m_count " << m_count 
+                << " m_index " << m_index
+                << " index " << index 
+                << " name " << name 
+                ;
+   } 
+
 
    if(m_query_name)
    {
@@ -181,7 +180,7 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
            m_selection.push_back(node); 
            rselect = true ;   
            // kick-off recursive select, note it then never 
-           // gets turned off, bit it only causes selection for depth within range 
+           // gets turned off, but it only causes selection for depth within range 
        }
        else if ( rselect ) 
        {

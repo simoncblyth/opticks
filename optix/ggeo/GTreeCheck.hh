@@ -32,6 +32,10 @@ class GTreeCheck {
         void dumpRepeatCandidate(unsigned int index, bool verbose=false);
         bool isContainedRepeat( const std::string& pdig, unsigned int levels ) const ;
         void labelTree( GNode* node, unsigned int ridx );
+
+    public:
+        void dumpTree(const char* msg="GTreeCheck::dumpTree");
+        void dumpTraverse( GNode* node, unsigned int depth );
    private:
        GGeo*                     m_ggeo ; 
        GSolid*                   m_root ; 

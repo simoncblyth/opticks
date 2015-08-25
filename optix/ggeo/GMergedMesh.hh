@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 class GGeo ; 
 class GNode ;
 
@@ -18,6 +19,7 @@ public:
     GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;
     virtual ~GMergedMesh(); 
+    void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
 
 private:
     void traverse( GNode* node, unsigned int depth, unsigned int pass);
@@ -41,6 +43,8 @@ private:
     unsigned int m_cur_faces ;
     unsigned int m_cur_solid ;
     GNode*       m_cur_base ;  
+
+    std::map<unsigned int, unsigned int> m_mesh_usage ; 
      
 };
 

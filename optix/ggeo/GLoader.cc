@@ -53,7 +53,9 @@ void GLoader::load(bool nogeocache)
     if(fs::exists(geocache) && fs::is_directory(geocache) && !nogeocache ) 
     {
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
+
         m_ggeo = GGeo::load(idpath) ; 
+
         t("load ggeo/mergedmesh"); 
 
         // TODO: move below into GGeo::load 
@@ -118,6 +120,8 @@ void GLoader::load(bool nogeocache)
             t("TreeCheck"); 
 
             GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+            mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (global)");
+
             unsigned int numRepeats = m_treeanalyse->getNumRepeats();
             for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
             {
@@ -126,11 +130,15 @@ void GLoader::load(bool nogeocache)
                 GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
                 mergedmesh->dumpSolids("GLoader::load dumpSolids");
                 mergedmesh->setTransformsBuffer(rtransforms);
+                mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (instanced)");
             }
+
+            m_treeanalyse->dumpTree("GLoader::load dumpTree");
             t("makeRepeatTransforms"); 
         }
         else
         {
+            assert(0);
             m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
         }
 

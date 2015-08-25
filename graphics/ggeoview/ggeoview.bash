@@ -19,6 +19,94 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+issue: ~/jpmt_mm0_too_many_vertices.txt
+------------------------------------------
+
+1.79M vertices for jpmt mm0 (global) seems excessive, either missing a repeater or some bug.::
+
+    ggv -G --jpmt
+
+    120 [2015-Aug-25 18:52:37.665158]: GMergedMesh::create index 0 from default root base lWorld0x22ccd90
+    121 [2015-Aug-25 18:52:37.730168]: GMergedMesh::create index 0 numVertices 1796042 numFaces 986316 numSolids 289733 numSolidsSelected 1032
+
+
+From m_mesh_usage in GGeo and GMergedMesh sStrut and sFasteners are the culprits::
+
+    [2015-Aug-25 19:50:40.251333]: AssimpGGeo::convertMeshes  i   19 v  312 f  192 n sStrut0x304f210
+    [2015-Aug-25 19:50:40.251575]: AssimpGGeo::convertMeshes  i   20 v 3416 f 1856 n sFasteners0x3074ea0
+
+    [2015-Aug-25 19:54:01.663594]: GMergedMesh::create index 0 from default root base lWorld0x22ccd90
+    [2015-Aug-25 19:54:07.339150]: GMergedMesh::create index 0 numVertices 1796042 numFaces 986316 numSolids 289733 numSolidsSelected 1032
+    GLoader::load reportMeshUsage (global)
+         5 :     62 : sWall0x309ce60 
+         6 :      1 : sAirTT0x309cbb0 
+         7 :      1 : sExpHall0x22cdb00 
+         8 :      1 : sTopRock0x22cd500 
+         9 :      1 : sTarget0x22cfbd0 
+        10 :      1 : sAcrylic0x22cf9a0 
+        19 :    480 : sStrut0x304f210 
+        20 :    480 : sFasteners0x3074ea0 
+        21 :      1 : sInnerWater0x22cf770 
+        22 :      1 : sReflectorInCD0x22cf540 
+        23 :      1 : sOuterWaterPool0x22cef90 
+        24 :      1 : sSteelTub0x22ce610 
+        25 :      1 : sBottomRock0x22cde40 
+            ---------
+
+    In [7]: 480+480+62+10
+    Out[7]: 1032          ## matches numSolidsSelected
+
+    In [5]: 3416*480+312*480
+    Out[5]: 1789440
+
+
+::
+
+    simon:juno blyth$ grep sFasteners t3.dae
+        <geometry id="sFasteners0x3074ea0" name="sFasteners0x3074ea0">
+            <source id="sFasteners0x3074ea0-Pos">
+              <float_array count="2742" id="sFasteners0x3074ea0-Pos-array">
+                <accessor count="914" source="#sFasteners0x3074ea0-Pos-array" stride="3">
+            <source id="sFasteners0x3074ea0-Norm">
+              <float_array count="5184" id="sFasteners0x3074ea0-Norm-array">
+                <accessor count="1728" source="#sFasteners0x3074ea0-Norm-array" stride="3">
+            <source id="sFasteners0x3074ea0-Tex">
+              <float_array count="2" id="sFasteners0x3074ea0-Tex-array">
+                <accessor count="1" source="#sFasteners0x3074ea0-Tex-array" stride="2">
+            <vertices id="sFasteners0x3074ea0-Vtx">
+              <input semantic="POSITION" source="#sFasteners0x3074ea0-Pos"/>
+              <input offset="0" semantic="VERTEX" source="#sFasteners0x3074ea0-Vtx"/>
+              <input offset="1" semantic="NORMAL" source="#sFasteners0x3074ea0-Norm"/>
+              <input offset="2" semantic="TEXCOORD" source="#sFasteners0x3074ea0-Tex"/>
+              <meta id="sFasteners0x3074ea0">
+          <instance_geometry url="#sFasteners0x3074ea0">
+    simon:juno blyth$ 
+
+
+TODO: 
+
+
+* on dyb GTreeCheck::findRepeatCandidates 
+
+  * not restricting repeats to non-leaf looses some geometry
+  * but putting it back gives PMTs in both instance0 and instance1  
+  * GTreeCheck.dumpTree ridx not making sense when allow leaf repeats 
+
+* dump the text node tree for juno, to see where sFasteners is 
+* add --repeatidx 0,1,2,3 controlled loading in GGeo::loadMergedMeshes etc..
+  so can skip the problematic extremely large 0
+
+
+
+
+squeeze approaches for jpmt
+----------------------------
+
+* remove vertex color, do at solid/boundary level
+* compress vertex normals 
+* reuse vertex structures for OptiX ?
+
+
 
 computeTest with different core counts controlled via CUDA_VISIBLE_DEVICES
 ----------------------------------------------------------------------------
@@ -638,7 +726,8 @@ ggeoview-query-juno() {
     echo range:1:50000    # 
 }
 ggeoview-query-jpmt() {
-    echo range:1:50000    # 
+    echo range:1:289734    #   289733+1 all test3.dae volumes 
+    #echo range:1:50000    # 
 }
 ggeoview-query-jtst() {
     echo range:1:50000    
@@ -744,6 +833,15 @@ ggeoview-lldb()
    ggeoview-export
    lldb $bin -- $*
 }
+
+ggeoview-dbg()
+{
+   case $(uname) in
+     Darwin) ggeoview-lldb $* ;;
+          *) ggeoview-gdb  $* ;;
+   esac
+}
+
 
 ggeoview--()
 {

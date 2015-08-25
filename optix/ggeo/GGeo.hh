@@ -137,6 +137,10 @@ class GGeo {
     public:
         GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
 
+    public:
+        void countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* lv, const char* pv);
+        void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
+
 #if 0
     public:
         void materialConsistencyCheck();
@@ -166,6 +170,7 @@ class GGeo {
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
         std::map<unsigned int,GMergedMesh*>     m_merged_mesh ; 
+        std::map<unsigned int, unsigned int>    m_mesh_usage ; 
         GColors*                      m_colors ; 
         GItemIndex*                   m_meshindex ; 
 
