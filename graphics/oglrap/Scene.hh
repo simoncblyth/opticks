@@ -84,9 +84,9 @@ class Scene : public Configurable {
         void setNumpyEvt(NumpyEvt* evt);
         void setPhotons(Photons* photons);
    public:
-        // uploadGeometry assigns geometry_renderer to instance_renderer or global_renderer
-        // based on whether the GMergedMesh geometry has a transforms buffer      
-        void uploadGeometry(GGeo* ggeo); 
+        void setGeometry(GGeo* gg);
+        void uploadGeometry(); 
+   public:
         void uploadColorBuffer(GBuffer* colorbuffer);
    public:
         // target cannot live in Composition, as needs geometry 
@@ -121,7 +121,7 @@ class Scene : public Configurable {
         Rdr*          getPhotonRenderer();
         Rdr*          getRecordRenderer();
         Rdr*          getRecordRenderer(RecordStyle_t style);
-        GMergedMesh*  getGeometry();
+        //GMergedMesh*  getGeometry();
         Composition*  getComposition();
         NumpyEvt*     getNumpyEvt();
         Photons*      getPhotons();
@@ -152,7 +152,8 @@ class Scene : public Configurable {
    private:
         NumpyEvt*    m_evt ;
         Photons*     m_photons ; 
-        GMergedMesh* m_geometry ;
+        GGeo*        m_ggeo ;
+        GMergedMesh* m_mesh0 ; 
         Composition* m_composition ;
         GBuffer*     m_colorbuffer ;
         unsigned int m_target ;
@@ -191,7 +192,8 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_devrecord_renderer(NULL),
             m_evt(NULL),
             m_photons(NULL),
-            m_geometry(NULL),
+            m_ggeo(NULL),
+            m_mesh0(NULL),
             m_composition(NULL),
             m_colorbuffer(NULL),
             m_target(0),
@@ -212,8 +214,10 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
     }
 }
 
-
-
+inline void Scene::setGeometry(GGeo* gg)
+{
+    m_ggeo = gg ;
+}
 inline unsigned int Scene::getNumInstanceRenderer()
 {
     return m_num_instance_renderer ; 
@@ -272,10 +276,12 @@ inline Photons* Scene::getPhotons()
 
 
 
-inline GMergedMesh* Scene::getGeometry()
-{
-    return m_geometry ; 
-}
+//inline GMergedMesh* Scene::getGeometry()
+//{
+//    return m_geometry ; 
+//}
+
+
 inline void Scene::setNumpyEvt(NumpyEvt* evt)
 {
     m_evt = evt ; 

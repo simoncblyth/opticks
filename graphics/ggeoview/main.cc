@@ -418,7 +418,19 @@ int App::loadGeometry()
 
     m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
 
+    m_mesh0 = m_ggeo->getMergedMesh(0); 
+    assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
 
+    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+    m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
+
+    LOG(info) << "loadGeometry ce0: " 
+                      << " x " << ce0.x
+                      << " y " << ce0.y
+                      << " z " << ce0.z
+                      << " w " << ce0.w
+                      ;
+ 
     (*m_timer)("loadGeometry"); 
 
     if(nogeocache){
@@ -431,35 +443,13 @@ int App::loadGeometry()
 
 void App::uploadGeometry()
 {
-    m_scene->uploadGeometry(m_ggeo);
-
-    unsigned int nmm = m_ggeo->getNumMergedMesh();
-    for(unsigned int i=0 ; i < nmm ; i++)
-    { 
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
-        if(i == 0)
-        {
-            m_mesh0 = mm ; 
-            unsigned int target = 0 ; 
-            gfloat4 ce = mm->getCenterExtent(target);
-            m_composition->setDomainCenterExtent(ce);     // index 0 corresponds to entire geometry
-
-            LOG(info) << "main mm ce: " 
-                      << " x " << ce.x
-                      << " y " << ce.y
-                      << " z " << ce.z
-                      << " w " << ce.w
-                      ;
-        }
-    
-        if(i == 0)
-        {
-            m_scene->setTarget(0); // have to do in loop as currently uploadGeometry stomps on scene.m_geometry 
-        }
-    }
+    m_scene->setGeometry(m_ggeo);
+    m_scene->uploadGeometry();
+    bool autocam = true ; 
+    m_scene->setTarget(0, autocam);
+ 
     (*m_timer)("uploadGeometry"); 
 }
-
 
 
 void App::loadEvt()
@@ -516,8 +506,9 @@ void App::loadEvt()
     bool autocam = true ; 
 
     m_composition->setCenterExtent( uuce , autocam );
-    m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
+
+    m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
 
     m_parameters->add<unsigned int>("NumGensteps", m_evt->getNumGensteps());

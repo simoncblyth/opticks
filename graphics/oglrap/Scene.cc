@@ -226,7 +226,9 @@ void Scene::setComposition(Composition* composition)
 
     m_global_renderer->setComposition(composition);
 
-    for( unsigned int i=0 ; i < m_num_instance_renderer ; i++)
+    // set for all instance slots, otherwise requires setComposition after uploadGeometry
+    // as only then is m_num_instance_renderer set
+    for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)    
         m_instance_renderer[i]->setComposition(composition);
 
     m_axis_renderer->setComposition(composition);
@@ -238,11 +240,11 @@ void Scene::setComposition(Composition* composition)
 }
 
 
-void Scene::uploadGeometry(GGeo* ggeo)
+void Scene::uploadGeometry()
 {
     // currently invoked from ggeoview main
-
-    unsigned int nmm = ggeo->getNumMergedMesh();
+    assert(m_ggeo && "must setGeometry first");
+    unsigned int nmm = m_ggeo->getNumMergedMesh();
 
     LOG(info) << "Scene::uploadGeometry"
               << " nmm " << nmm
@@ -252,12 +254,18 @@ void Scene::uploadGeometry(GGeo* ggeo)
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {
-        GMergedMesh* mm = ggeo->getMergedMesh(i);
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         GBuffer* tbuf = mm->getTransformsBuffer();
 
         if( tbuf == NULL )
         {
-            m_geometry = mm ;  // ??? how used ? handle multiple merged mesh
+            if(m_mesh0 == NULL) m_mesh0 = mm ; // first non-instanced mesh
+
+            LOG(info)<< "Scene::uploadGeometry"
+                     << " i " << i 
+                     << " n_global " << n_global  
+                     ;
+
             m_global_renderer->upload(mm);  
             n_global++ ; 
             assert(n_global == 1);
@@ -266,6 +274,12 @@ void Scene::uploadGeometry(GGeo* ggeo)
         else
         {
             assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
+
+            LOG(info)<< "Scene::uploadGeometry"
+                     << " i " << i 
+                     << " m_num_instance_renderer " << m_num_instance_renderer 
+                     ;
+
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
             m_num_instance_renderer++ ; 
@@ -360,7 +374,12 @@ void Scene::render()
 
     for(unsigned int i=0; i<m_num_instance_renderer; i++)
     {
-        if(m_instance_mode[i] && m_instance_renderer[i]) m_instance_renderer[i]->render();
+        if(!m_instance_mode[i]) continue ; 
+
+        assert(m_instance_renderer[i]); 
+        m_instance_renderer[i]->render();
+
+        //LOG(info)<<"Scene::render" << " i " << i ;
     }
 
     if(m_axis_mode)     m_axis_renderer->render();
@@ -381,7 +400,7 @@ unsigned int Scene::touch(int ix, int iy, float depth)
     glm::vec3 t = m_composition->unProject(ix,iy, depth);
     gfloat3 gt(t.x, t.y, t.z );
 
-    unsigned int container = m_geometry->findContainer(gt);
+    unsigned int container = m_mesh0->findContainer(gt);
     LOG(debug)<<"Scene::touch " 
              << " x " << t.x 
              << " y " << t.y 
@@ -397,6 +416,7 @@ unsigned int Scene::touch(int ix, int iy, float depth)
 
 void Scene::jump()
 {
+   // hmm what about instanced ?
     if( m_touch > 0 && m_touch != m_target )
     {
         LOG(info)<<"Scene::jump-ing from  m_target -> m_touch  " << m_target << " -> " << m_touch  ;  
@@ -405,24 +425,20 @@ void Scene::jump()
 }
 
 
-void Scene::setTarget(unsigned int index, bool autocam)
+void Scene::setTarget(unsigned int target, bool autocam)
 {
-    m_target = index ; 
+    m_target = target ; 
 
-    if( m_geometry == NULL )
-    {
-        LOG(fatal)<<"Scene::setTarget " << index << " finds no geometry : cannot set target  " ; 
-        return ;  
-    }
+    gfloat4 ce = m_mesh0->getCenterExtent(target);
 
-    gfloat4 ce = m_geometry->getCenterExtent(index);
-
-    LOG(info)<<"Scene::setTarget " << index << " ce " 
+    LOG(info)<<"Scene::setTarget " 
+             << " target " << target 
+             << " autocam " << autocam 
+             << " ce " 
              << " " << ce.x 
              << " " << ce.y 
              << " " << ce.z 
              << " " << ce.w 
-             << " autocam " << autocam 
              ;
 
     m_composition->setCenterExtent(ce, autocam); 
