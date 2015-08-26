@@ -87,7 +87,15 @@ class GNode {
       void setLevelTransform(GMatrixF* ltransform);
 
   public:
-      GMatrixF*            calculateTransform();  // attempt to calculate global transform from the "local" transforms obtained from ancestors
+      // *calculateTransform* 
+      //       successfully duplicates the global transform of a node by calculating 
+      //       the product of levelTransforms (ie single PV-LV transform)
+      //       from ancestors + self
+      // 
+      //       This can be verified for all nodes within GTreeCheck 
+      //
+      //
+      GMatrixF*            calculateTransform();  
 
   public:
       std::vector<GNode*>& getAncestors();
@@ -95,16 +103,19 @@ class GNode {
       std::string&         getProgenyDigest();
       std::string&         getLocalDigest();
       unsigned int         getProgenyCount();
+      unsigned int         getProgenyNumVertices();  // includes self when m_selfdigest is true
       GNode*               findProgenyDigest(const std::string& pdig) ;
       std::vector<GNode*>  findAllProgenyDigest(std::string& dig);
 
   private:
+      std::string          meshDigest();
       std::string          localDigest();
-      static std::string   localDigest(std::vector<GNode*>& nodes);
+      static std::string   localDigest(std::vector<GNode*>& nodes, GNode* extra=NULL);
       void collectProgeny(std::vector<GNode*>& progeny);
       void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
 
   private:
+      bool                m_selfdigest ; // when true getProgenyDigest includes self node 
       unsigned int        m_index ; 
       GNode*              m_parent ; 
       std::vector<GNode*> m_children ;
@@ -129,15 +140,20 @@ class GNode {
       std::vector<GNode*> m_ancestors ; 
       unsigned int        m_progeny_count ; 
       unsigned int        m_repeat_index ; 
-
+      unsigned int        m_progeny_num_vertices ;
   private: 
       std::vector<unsigned int> m_distinct_boundary_indices ;
 
 };
 
 
+
+ 
+
+
 inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) 
     :
+    m_selfdigest(true),
     m_index(index), 
     m_parent(NULL),
     m_description(NULL),
@@ -151,7 +167,8 @@ inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh)
     m_node_indices(NULL),
     m_name(NULL),
     m_progeny_count(0),
-    m_repeat_index(0)
+    m_repeat_index(0),
+    m_progeny_num_vertices(0)
 {
     init();
 }

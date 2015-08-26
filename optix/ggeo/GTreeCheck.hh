@@ -27,20 +27,19 @@ class GTreeCheck {
         bool operator()(const std::string& dig) ;
    private:
         void traverse( GNode* node, unsigned int depth );
-        void findRepeatCandidates(unsigned int minrep);
+        void findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min);
         void dumpRepeatCandidates();
         void dumpRepeatCandidate(unsigned int index, bool verbose=false);
         bool isContainedRepeat( const std::string& pdig, unsigned int levels ) const ;
         void labelTree( GNode* node, unsigned int ridx );
 
-    public:
-        void dumpTree(const char* msg="GTreeCheck::dumpTree");
-        void dumpTraverse( GNode* node, unsigned int depth );
    private:
        GGeo*                     m_ggeo ; 
+       unsigned int              m_repeat_min ; 
+       unsigned int              m_vertex_min ; 
        GSolid*                   m_root ; 
        unsigned int              m_count ;  
-       unsigned int              m_dump_count ;  
+       bool                      m_delta_check ; 
        unsigned int              m_labels ;  
        Counts<unsigned int>*     m_digest_count ; 
        std::vector<std::string>  m_repeat_candidates ; 
@@ -51,9 +50,11 @@ class GTreeCheck {
 inline GTreeCheck::GTreeCheck(GGeo* ggeo) 
        :
        m_ggeo(ggeo),
+       m_repeat_min(120),
+       m_vertex_min(300),   // aiming to include leaf? sStrut and sFasteners
        m_root(NULL),
        m_count(0),
-       m_dump_count(0),
+       m_delta_check(false),
        m_labels(0)
        {
           init();

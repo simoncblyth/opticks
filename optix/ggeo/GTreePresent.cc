@@ -1,5 +1,6 @@
 #include  "GTreePresent.hh"
 #include "GGeo.hh"
+#include "GMesh.hh"
 #include "GSolid.hh"
 
 #include <iostream>
@@ -19,34 +20,37 @@ namespace fs = boost::filesystem;
 void GTreePresent::traverse()
 {
     GSolid* top = m_ggeo->getSolid(m_top);
-    traverse(top, 0, 0, 0);
+    traverse(top, 0, 0, 0, false);
 }
 
-void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex)
+void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide )
 {
-    if( node == NULL )
-    {
-         m_flat.push_back("...") ;
-         return  ;
-    }
 
     std::string indent(depth, ' ');
-    unsigned int numChildren = node->getNumChildren() ;
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    bool selected = solid->isSelected();
+    int numChildren = node->getNumChildren() ;
+    int nodeIndex   = node->getIndex() ; 
+    unsigned int ridx = node->getRepeatIndex();   
+    const char* name = node->getName() ; 
+
+    //GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    //bool selected = solid->isSelected();
 
     std::stringstream ss ; 
     ss 
-       << "  " << std::setw(7) << node->getIndex() 
+       << "  " << std::setw(7) << nodeIndex 
        << " [" << std::setw(3) << depth 
        << ":"  << std::setw(4) << siblingIndex 
        << "/"  << std::setw(4) << numSibling
        << "] " << std::setw(4) << numChildren   
-       << "  " << indent 
+       << " (" << std::setw(2) << ridx 
+       << ") " << indent 
        << "  " << node->getName()
+       << "  " << node->getMesh()->getName()
+       << "  " << ( elide ? "..." : " " ) 
        ;
 
     m_flat.push_back(ss.str()); 
+    if(elide) return ; 
 
     unsigned int hmax = m_sibling_max/2 ;
 
@@ -55,17 +59,17 @@ void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSi
        if( numChildren < 2*hmax )
        { 
            for(unsigned int i = 0; i < numChildren ; i++) 
-               traverse(node->getChild(i), depth + 1, numChildren, i );
+               traverse(node->getChild(i), depth + 1, numChildren, i, false );
        }
        else
        {
-            for(unsigned int i = 0; i < hmax ; i++) 
-               traverse(node->getChild(i), depth + 1, numChildren, i );
+           for(unsigned int i = 0; i < hmax ; i++) 
+               traverse(node->getChild(i), depth + 1, numChildren, i, false);
 
-            traverse(NULL, depth + 1, numChildren, hmax );
+           traverse(node->getChild(hmax), depth + 1, numChildren, hmax, true );
 
-            for(unsigned int i = numChildren - hmax ; i < numChildren ; i++) 
-               traverse(node->getChild(i), depth + 1, numChildren, i );
+           for(unsigned int i = numChildren - hmax ; i < numChildren ; i++) 
+               traverse(node->getChild(i), depth + 1, numChildren, i, false );
        }
     }
 }

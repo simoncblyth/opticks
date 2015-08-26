@@ -656,7 +656,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);
-    solid->setName(node->getName());
+    solid->setName(node->getName());  // this is LV name, maybe set PV name too 
 
     free(desc);
 

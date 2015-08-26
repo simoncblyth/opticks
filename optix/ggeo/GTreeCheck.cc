@@ -11,20 +11,6 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-void GTreeCheck::dumpTree(const char* msg)
-{
-    LOG(info) << msg ; 
-    dumpTraverse(m_root, 0);
-}
-void GTreeCheck::dumpTraverse( GNode* node, unsigned int depth )
-{
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    unsigned int ridx = node->getRepeatIndex();   
-    printf(" %7d : %3d : %3d : %s \n", m_dump_count, depth, ridx, node->getName());
-    m_dump_count++ ; 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) dumpTraverse(node->getChild(i), depth + 1 );
-}
-
 
 void GTreeCheck::init()
 {
@@ -40,27 +26,28 @@ void GTreeCheck::traverse()
     //m_digest_count->dump();
 
     // minrep 120 removes repeats from headonPMT, calibration sources and RPC leaving just PMTs 
-    findRepeatCandidates(120); 
+    
+    findRepeatCandidates(m_repeat_min, m_vertex_min); 
     dumpRepeatCandidates();
 }
 
 void GTreeCheck::traverse( GNode* node, unsigned int depth)
 {
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    std::string& pdig = node->getProgenyDigest();
 
-    //bool selected = solid->isSelected();
-    //if(selected)
+    if(m_delta_check)
     {
+        GSolid* solid = dynamic_cast<GSolid*>(node) ;
         GMatrixF* gtransform = solid->getTransform();
-        GMatrixF* ltransform = solid->getLevelTransform();
+
+        // solids levelTransform is set in AssimpGGeo and hails from the below with level -2
+        //      aiMatrix4x4 AssimpNode::getLevelTransform(int level)
+        //  looks to correspond to the placement of the LV within its PV  
+
+        GMatrixF* ltransform = solid->getLevelTransform();  
         GMatrixF* ctransform = solid->calculateTransform();
-
         float delta = gtransform->largestDiff(*ctransform);
-
-        std::string& pdig = node->getProgenyDigest();
         unsigned int nprogeny = node->getProgenyCount() ;
-        
-        m_digest_count->add(pdig.c_str());
 
         if(nprogeny > 0 ) 
             LOG(debug) 
@@ -73,8 +60,10 @@ void GTreeCheck::traverse( GNode* node, unsigned int depth)
               ;
 
         assert(delta < 1e-6) ;
-        m_count++ ; 
     }
+
+    m_digest_count->add(pdig.c_str());
+    m_count++ ; 
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
 }
@@ -163,30 +152,50 @@ GBuffer* GTreeCheck::makeTransformsBuffer(unsigned int ridx)
 }
 
 
-void GTreeCheck::findRepeatCandidates(unsigned int minrep)
+void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
 {
-    for(unsigned int i=0 ; i < m_digest_count->size() ; i++)
+    unsigned int nall = m_digest_count->size() ; 
+
+    LOG(info) << "GTreeCheck::findRepeatCandidates"
+              << " nall " << nall 
+              << " repeat_min " << repeat_min 
+              << " vertex_min " << vertex_min 
+              ;
+
+    for(unsigned int i=0 ; i < nall ; i++)
     {
         std::pair<std::string,unsigned int>&  kv = m_digest_count->get(i) ;
 
         std::string& pdig = kv.first ; 
         unsigned int ndig = kv.second ;                 // number of occurences of the progeny digest 
+
         GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
 
+        // suspect problem with allowing leaf repeaters is that digesta are not-specific enough, 
+        // so get bad matching 
+        //
+        //  allowing leaf repeaters results in too many, so place vertex count reqirement too 
 
-        //if( ndig > minrep )
-        if( ndig > minrep && node->getProgenyCount() > 0 )
-        {
-            LOG(info) 
+
+        unsigned int nprog = node->getProgenyCount() ;  // includes self when GNode.m_selfdigest is true
+        unsigned int nvert = node->getProgenyNumVertices() ;  // includes self when GNode.m_selfdigest is true
+
+       // hmm: maybe selecting based on  ndig*nvert 
+       // but need to also require ndig > smth as dont want to repeat things like the world 
+
+        bool select = ndig > repeat_min && nvert > vertex_min ;
+        LOG(info) 
                   << "GTreeCheck::findRepeatCandidates "
+                  << ( select ? "**" : "  " ) 
+                  << " i "     << std::setw(3) << i 
                   << " pdig "  << std::setw(32) << pdig  
                   << " ndig "  << std::setw(6) << ndig
-                  << " nprog " <<  std::setw(6) << node->getProgenyCount() 
+                  << " nprog " <<  std::setw(6) << nprog 
+                  << " nvert " <<  std::setw(6) << nvert
                   << " n "     <<  node->getName() 
                   ;  
 
-            m_repeat_candidates.push_back(pdig);
-        }   
+        if(select) m_repeat_candidates.push_back(pdig);
     }
 
     // erase repeats that are enclosed within other repeats 

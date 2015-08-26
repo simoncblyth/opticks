@@ -134,13 +134,12 @@ void GLoader::load(bool nogeocache)
                 mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (instanced)");
             }
 
-            m_treeanalyse->dumpTree("GLoader::load dumpTree");
 
             t("makeRepeatTransforms"); 
 
-            GTreePresent tpr(m_ggeo, 0, 100, 10);   // top,depth_max,sibling_max
+            GTreePresent tpr(m_ggeo, 0, 100, 1000);   // top,depth_max,sibling_max
             tpr.traverse();
-            tpr.dump("GLoader::load GTreePresent");
+            //tpr.dump("GLoader::load GTreePresent");
             tpr.write(idpath);
             
             t("treePresent"); 

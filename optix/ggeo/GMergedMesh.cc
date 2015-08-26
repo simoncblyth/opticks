@@ -214,6 +214,8 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 {
      printf("%s\n", msg);
      typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
+
+     unsigned int tv(0) ; 
      for(MUUI it=m_mesh_usage.begin() ; it != m_mesh_usage.end() ; it++)
      {
          unsigned int meshIndex = it->first ; 
@@ -221,9 +223,14 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
  
          GMesh* mesh = ggeo->getMesh(meshIndex);
          const char* meshName = mesh->getName() ; 
+         unsigned int nv = mesh->getNumVertices() ; 
+         unsigned int nf = mesh->getNumFaces() ; 
 
-         printf("  %4d : %6d : %s \n", meshIndex, nodeCount, meshName);
+         printf("  %4d (v%5d f%5d) : %6d : %7d : %s \n", meshIndex, nv, nf, nodeCount, nodeCount*nv, meshName);
+
+         tv += nodeCount*nv ; 
      }
+     printf(" tv : %7d \n", tv);
 }
 
 

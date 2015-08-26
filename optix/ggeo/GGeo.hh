@@ -27,6 +27,7 @@ class GItemIndex ;
 class GGeo {
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
+        static const char* GMERGEDMESH ; 
         static GGeo* load(const char* idpath);
         enum { MAX_MERGED_MESH = 10 } ;
     public:
@@ -35,6 +36,7 @@ class GGeo {
     private:
         void init(); 
         void loadMergedMeshes(const char* idpath);
+        void removeMergedMeshes(const char* idpath);
     public:
         void saveMergedMeshes(const char* idpath);
     public:

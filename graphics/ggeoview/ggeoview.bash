@@ -83,6 +83,20 @@ From m_mesh_usage in GGeo and GMergedMesh sStrut and sFasteners are the culprits
     simon:juno blyth$ 
 
 
+
+Contiguous block of Fasteners all leaves at depth 6::
+
+    simon:env blyth$ grep Fasteners /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae/GTreePresent.txt | wc -l
+         480
+    simon:env blyth$ grep Fasteners /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae/GTreePresent.txt | head -1
+       282429 [  6:54799/55279]    0          lFasteners0x3075090   
+    simon:env blyth$ grep Fasteners /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae/GTreePresent.txt | tail -1
+       282908 [  6:55278/55279]    0          lFasteners0x3075090   
+
+    In [9]: 282429+480-1
+    Out[9]: 282908
+
+
 TODO: 
 
 

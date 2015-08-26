@@ -17,7 +17,7 @@ class GTreePresent {
         void dump(const char* msg="GTreePresent::dump");
         void write(const char* path);
    private:
-        void traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex);
+        void traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide);
    private:
        GGeo*                    m_ggeo ; 
        unsigned int             m_top ; 

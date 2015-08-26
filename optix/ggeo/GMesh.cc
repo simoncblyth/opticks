@@ -822,7 +822,7 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
     {
         if (fs::create_directories(cachedir))
         {
-            printf("GMesh::save created directory %s \n", dir );
+            printf("GMesh::save created directory %s \n", cachedir.string().c_str() );
         }
     }
 

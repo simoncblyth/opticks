@@ -87,9 +87,15 @@
 #include "AssimpGGeo.hh"
 
 
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+//#include <boost/log/utility/setup/file.hpp>
 #include "boost/log/utility/setup.hpp"
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -120,9 +126,25 @@ void dump(float* f, const char* msg)
 }
 
 
-void logging_init()
+void logging_init(const char* ldir, const char* lname)
 {
    // see blogg-
+
+    fs::path logdir(ldir);
+    if(!fs::exists(logdir))
+    {
+        if (fs::create_directories(logdir))
+        {
+            printf("logging_init: created directory %s \n", ldir) ;
+        }
+    }
+
+    fs::path logpath(logdir / lname );
+
+    const char* path = logpath.string().c_str(); 
+
+    boost::log::add_file_log(path);
+
     boost::log::core::get()->set_filter
     (
         boost::log::trivial::severity >= boost::log::trivial::info
@@ -136,15 +158,14 @@ void logging_init()
 
     boost::log::add_common_attributes();
 
+    LOG(info) << "logging_init " << path ; 
 }
-
-
 
 
 
 class App {
   public:
-       App(const char* prefix="GGEOVIEW_");
+       App(const char* prefix="GGEOVIEW_", const char* logname="ggeoview.log");
   private:
        void init();
        void wiring();
@@ -214,7 +235,7 @@ class App {
 
 
 
-App::App(const char* prefix)
+App::App(const char* prefix, const char* logname)
    : 
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
@@ -250,6 +271,11 @@ App::App(const char* prefix)
       m_photons(NULL),
       m_gui(NULL)
 {
+    m_cache     = new GCache(m_prefix);
+
+    const char* idpath = m_cache->getIdPath();
+    logging_init(idpath, logname);
+
     init();
     wiring();
 }
@@ -272,7 +298,6 @@ void App::init()
     m_timer      = new Timer("main");
     m_timer->setVerbose(true);
     m_timer->start();
-    m_cache     = new GCache(m_prefix);
 
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
@@ -325,8 +350,10 @@ int App::config(int argc, char** argv)
     m_composition->addConfig(m_cfg); 
 
     m_cfg->commandline(argc, argv);
-    m_timer->setCommandLine(m_cfg->getCommandLine()); 
 
+    const std::string cmdline = m_cfg->getCommandLine(); 
+    m_timer->setCommandLine(cmdline);
+    LOG(info) << argv[0] << " " << cmdline ; 
 
     const char* idpath = m_cache->getIdPath();
 
@@ -907,11 +934,15 @@ void App::cleanup()
 
 int main(int argc, char** argv)
 {
-    logging_init();
+    const char* logname = "ggeoview.log" ; 
+    for(unsigned int i=1; i < argc ; i++)
+    {
+       if( strcmp(argv[i],"-G")==0  || strcmp(argv[i],"--nogeocache")==0) logname = "ggeoview.nogeocache.log" ; 
+    } 
 
     int rc ; 
 
-    App app("GGEOVIEW_"); 
+    App app("GGEOVIEW_", logname); 
 
     rc = app.config(argc, argv) ;
     if(rc) exit(EXIT_SUCCESS);

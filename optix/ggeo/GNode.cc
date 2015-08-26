@@ -165,10 +165,9 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
 GMatrixF* GNode::calculateTransform()
 {
     std::vector<GNode*> nodes = getAncestors();
-    nodes.push_back(this);
+    nodes.push_back(this);    // ancestors + self
 
     typedef std::vector<GNode*>::const_iterator NIT ; 
-    //LOG(info) << "GNode::calculateTransform " ; 
 
     GMatrix<float>* m = new GMatrix<float> ;
     for(NIT it=nodes.begin() ; it != nodes.end() ; it++)
@@ -195,7 +194,15 @@ std::string GNode::localDigest()
 }
 
 
-std::string GNode::localDigest(std::vector<GNode*>& nodes)
+std::string GNode::meshDigest()  
+{
+    char meshidx[8];
+    snprintf(meshidx, 8, "%u", m_mesh->getIndex());
+    return meshidx ; 
+}
+
+
+std::string GNode::localDigest(std::vector<GNode*>& nodes, GNode* extra)
 {
     MD5Digest dig ;
     for(unsigned int i=0 ; i < nodes.size() ; i++)
@@ -204,6 +211,14 @@ std::string GNode::localDigest(std::vector<GNode*>& nodes)
         std::string nd = node->localDigest();
         dig.update( (char*)nd.c_str(), strlen(nd.c_str()) ); 
     } 
+
+    if(extra)
+    {
+        //std::string xd = extra->localDigest();   incorporates levelTransform and meshIndex
+        std::string xd = extra->meshDigest();
+        dig.update( (char*)xd.c_str(), strlen(xd.c_str()) ); 
+    }
+
     return dig.finalize();
 }
 
@@ -218,13 +233,38 @@ std::string& GNode::getLocalDigest()
 }
 
 
+unsigned int GNode::getProgenyNumVertices()
+{
+    if(m_progeny_num_vertices == 0)
+    {
+        std::vector<GNode*>& progeny = getProgeny();
+        typedef std::vector<GNode*>::const_iterator NIT ; 
+        unsigned int num_vertices(0);
+        for(NIT it=progeny.begin() ; it != progeny.end() ; it++)
+        {
+            GNode* node = *it ; 
+            GMesh* mesh = node->getMesh();
+            num_vertices += mesh->getNumVertices();
+        }
+        GNode* extra = m_selfdigest ? this : NULL ; 
+        if(extra)
+        {
+            num_vertices += m_mesh->getNumVertices(); 
+        }
+        m_progeny_num_vertices = num_vertices ; 
+    }
+    return m_progeny_num_vertices ; 
+}
+
+
 std::string& GNode::getProgenyDigest()
 {
     if(m_progeny_digest.empty())
     {
         std::vector<GNode*>& progeny = getProgeny();
         m_progeny_count = progeny.size();
-        m_progeny_digest = GNode::localDigest(progeny) ; 
+        GNode* extra = m_selfdigest ? this : NULL ; 
+        m_progeny_digest = GNode::localDigest(progeny, extra) ; 
     }
     return m_progeny_digest ;
 }
@@ -274,9 +314,5 @@ void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig
         for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllProgenyDigest(match, dig );
     }
 }
-
-
-
-
 
 

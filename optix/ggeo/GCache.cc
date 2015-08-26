@@ -9,9 +9,6 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 const char* GCache::JUNO    = "juno" ; 
 const char* GCache::DAYABAY = "dayabay" ; 
@@ -84,7 +81,7 @@ GGeoview application reports the idpath via::
     if(m_query == NULL || m_path == NULL || m_geokey == NULL )
     {
         printf("GCache::readEnvironment geokey %s path %s query %s ctrl %s \n", m_geokey, m_path, m_query, m_ctrl );
-        LOG(fatal) << "GCache::readEnvironment  m_envprefix[" << m_envprefix << "] missing required envvars " ; 
+        printf("GCache::readEnvironment  m_envprefix[%s] missing required envvars ", m_envprefix );
         assert(0);
     }
  
@@ -106,22 +103,21 @@ GGeoview application reports the idpath via::
     int overwrite = 1; 
     assert(setenv("IDPATH", m_idpath, overwrite)==0);
 
-    LOG(warning) << "GCache::readEnvironment setting IDPATH internally to " << getenv("IDPATH") ; 
+    printf("GCache::readEnvironment setting IDPATH internally to %s \n", getenv("IDPATH")) ; 
 }
 
 
 void GCache::Summary(const char* msg)
 {
-    LOG(info)<< msg 
-             << "\n envprefix " << m_envprefix 
-             << "\n geokey    " << m_geokey 
-             << "\n path      " << m_path 
-             << "\n query     " << m_query 
-             << "\n ctrl      " << m_ctrl 
-             << "\n digest    " << m_digest 
-             << "\n idpath    " << m_idpath ; 
+    printf("%s \n", msg );
+    printf("envprefix: %s \n", m_envprefix ); 
+    printf("geokey   : %s \n", m_geokey ); 
+    printf("path     : %s \n", m_path ); 
+    printf("query    : %s \n", m_query ); 
+    printf("ctrl     : %s \n", m_ctrl ); 
+    printf("digest   : %s \n", m_digest ); 
+    printf("idpath   : %s \n", m_idpath ); 
 }
-
 
 
 void GCache::init()
@@ -134,7 +130,5 @@ void GCache::init()
     if(m_juno)    m_detector = JUNO ; 
     if(m_dayabay) m_detector = DAYABAY ; 
 }
-  
-
 
 

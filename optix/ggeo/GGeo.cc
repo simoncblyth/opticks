@@ -41,6 +41,29 @@ GGeo* GGeo::load(const char* idpath)
     return ggeo ; 
 }
 
+
+
+const char* GGeo::GMERGEDMESH = "GMergedMesh" ; 
+
+void GGeo::removeMergedMeshes(const char* idpath )
+{
+   fs::path cachedir(idpath);
+
+   for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
+   {   
+        fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
+        if(fs::exists(mmdir) && fs::is_directory(mmdir))
+        {   
+            unsigned long nrm = fs::remove_all(mmdir);
+            LOG(info) << "GGeo::removeMergedMeshes " << mmdir.string() 
+                      << " removed " << nrm 
+                      ; 
+        }
+   } 
+}
+
+
+
 void GGeo::loadMergedMeshes(const char* idpath )
 {
    GCache* gc = GCache::getInstance();
@@ -49,7 +72,7 @@ void GGeo::loadMergedMeshes(const char* idpath )
 
    for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
    {   
-        fs::path mmdir(cachedir / "GMergedMesh" / boost::lexical_cast<std::string>(ridx) );
+        fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
         if(fs::exists(mmdir) && fs::is_directory(mmdir))
         {   
             const char* path = mmdir.string().c_str() ;
@@ -70,13 +93,15 @@ void GGeo::loadMergedMeshes(const char* idpath )
 
 void GGeo::saveMergedMeshes(const char* idpath)
 {
+    removeMergedMeshes(idpath); // clean old meshes to avoid duplication when repeat counts go down 
+
     typedef std::map<unsigned int,GMergedMesh*>::const_iterator MUMI ; 
     for(MUMI it=m_merged_mesh.begin() ; it != m_merged_mesh.end() ; it++)
     {
         unsigned int ridx = it->first ; 
         GMergedMesh* mergedmesh = it->second ; 
         assert(mergedmesh->getIndex() == ridx);
-        mergedmesh->save(idpath, "GMergedMesh", boost::lexical_cast<std::string>(ridx).c_str()); 
+        mergedmesh->save(idpath, GMERGEDMESH, boost::lexical_cast<std::string>(ridx).c_str()); 
     }
 }
 
@@ -574,6 +599,7 @@ void GGeo::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const 
 void GGeo::reportMeshUsage(const char* msg)
 {
      printf("%s\n", msg);
+     unsigned int tv(0) ; 
      typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
      for(MUUI it=m_mesh_usage.begin() ; it != m_mesh_usage.end() ; it++)
      {
@@ -582,9 +608,13 @@ void GGeo::reportMeshUsage(const char* msg)
  
          GMesh* mesh = getMesh(meshIndex);
          const char* meshName = mesh->getName() ; 
+         unsigned int nv = mesh->getNumVertices() ; 
+         unsigned int nf = mesh->getNumFaces() ; 
 
-         printf("  %4d : %6d : %s \n", meshIndex, nodeCount, meshName);
+         printf("  %4d (v%5d f%5d) : %6d : %7d : %s \n", meshIndex, nv, nf, nodeCount, nodeCount*nv, meshName);
+         tv += nodeCount*nv ; 
      }
+     printf(" tv : %7d \n", tv);
 }
 
 
