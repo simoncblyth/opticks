@@ -9,6 +9,7 @@
 #include "GTraverse.hh"
 #include "GColorizer.hh"
 #include "GTreeCheck.hh"
+#include "GTreePresent.hh"
 #include "GItemIndex.hh"
 #include "GBuffer.hh"
 #include "GMaterial.hh"
@@ -134,7 +135,16 @@ void GLoader::load(bool nogeocache)
             }
 
             m_treeanalyse->dumpTree("GLoader::load dumpTree");
+
             t("makeRepeatTransforms"); 
+
+            GTreePresent tpr(m_ggeo, 0, 100, 10);   // top,depth_max,sibling_max
+            tpr.traverse();
+            tpr.dump("GLoader::load GTreePresent");
+            tpr.write(idpath);
+            
+            t("treePresent"); 
+
         }
         else
         {

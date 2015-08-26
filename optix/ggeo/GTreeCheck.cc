@@ -20,7 +20,8 @@ void GTreeCheck::dumpTraverse( GNode* node, unsigned int depth )
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
     unsigned int ridx = node->getRepeatIndex();   
-    printf(" %3d : %3d : %s \n", depth, ridx, node->getName());
+    printf(" %7d : %3d : %3d : %s \n", m_dump_count, depth, ridx, node->getName());
+    m_dump_count++ ; 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) dumpTraverse(node->getChild(i), depth + 1 );
 }
 

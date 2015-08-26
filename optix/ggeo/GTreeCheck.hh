@@ -40,6 +40,7 @@ class GTreeCheck {
        GGeo*                     m_ggeo ; 
        GSolid*                   m_root ; 
        unsigned int              m_count ;  
+       unsigned int              m_dump_count ;  
        unsigned int              m_labels ;  
        Counts<unsigned int>*     m_digest_count ; 
        std::vector<std::string>  m_repeat_candidates ; 
@@ -52,6 +53,7 @@ inline GTreeCheck::GTreeCheck(GGeo* ggeo)
        m_ggeo(ggeo),
        m_root(NULL),
        m_count(0),
+       m_dump_count(0),
        m_labels(0)
        {
           init();
