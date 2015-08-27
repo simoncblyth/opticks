@@ -110,12 +110,11 @@ void Renderer::gl_upload_buffers(bool debug)
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());
 
-    // hmm maybe give GBuffers names ? and collect these identifiers into map
-    // for more flexibility when NULL buf  
  
     m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "Renderer::upload vertices");
     m_normals   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "Renderer::upload normals" );
     m_colors    = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "Renderer::upload colors" );
+
     if(hasTex())
     {
         m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "Renderer::upload texcoords" );

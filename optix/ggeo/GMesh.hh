@@ -32,18 +32,23 @@ class GMesh : public GDrawable {
   public:
       static int g_instance_count ; 
 
+      // per-vertex
       static const char* vertices ; 
       static const char* normals ; 
       static const char* colors ; 
       static const char* texcoords ; 
+
+      // per-face
       static const char* indices ; 
       static const char* nodes ; 
       static const char* boundaries ; 
       static const char* sensors ; 
 
+      // per-solid (used from the composite GMergedMesh)
       static const char* center_extent ; 
-      static const char* transforms ; 
-      static const char* meshes ; 
+      static const char* bbox ; 
+      static const char* transforms ;    // not-used? 
+      static const char* meshes ;        // mesh indices
 
       GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index, 
@@ -64,6 +69,7 @@ class GMesh : public GDrawable {
   public:
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
       gfloat4  getCenterExtent(unsigned int index);
+      gbbox    getBBox(unsigned int index);
       float* getTransform(unsigned int index);
       gfloat3* getDimensions();
       GMatrix<float>* getModelToWorld();
@@ -111,6 +117,7 @@ class GMesh : public GDrawable {
       void setSensorsBuffer(GBuffer* buffer);
 
       void setCenterExtentBuffer(GBuffer* buffer);
+      void setBBoxBuffer(GBuffer* buffer);
       void setTransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
 
@@ -126,6 +133,7 @@ class GMesh : public GDrawable {
       GBuffer* getIndicesBuffer();
       GBuffer* getModelToWorldBuffer();
       GBuffer* getCenterExtentBuffer();
+      GBuffer* getBBoxBuffer();
       GBuffer* getTransformsBuffer();
       GBuffer* getMeshesBuffer();
 
@@ -171,6 +179,7 @@ class GMesh : public GDrawable {
       void setTexcoords(gfloat2* texcoords);
       void setFaces(guint3* faces);
       void setCenterExtent(gfloat4* center_extent);
+      void setBBox(gbbox* bb);
       //void setTransforms(float* transforms);
       void setMeshes(unsigned int* meshes);
 
@@ -183,7 +192,8 @@ class GMesh : public GDrawable {
        gfloat3* getTransformedNormals(GMatrixF& transform );
 
   public:
-      static gfloat4 findCenterExtent(gfloat3* vertices, unsigned int num_vertices);
+      static gbbox   findBBox(gfloat3* vertices, unsigned int num_vertices);
+      static gfloat4 findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_vertices);
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
 
@@ -212,7 +222,9 @@ class GMesh : public GDrawable {
       gfloat3*        m_center ;
       float           m_extent ; 
 
+      // per-solid 
       gfloat4*        m_center_extent ;
+      gbbox*          m_bbox ;
       float*          m_transforms ; 
       unsigned int*   m_meshes ; 
 
@@ -227,6 +239,7 @@ class GMesh : public GDrawable {
       GBuffer* m_texcoords_buffer ;
       GBuffer* m_indices_buffer ;  // aka faces
       GBuffer* m_center_extent_buffer ;  
+      GBuffer* m_bbox_buffer ;  
       GBuffer* m_nodes_buffer ;
       GBuffer* m_boundaries_buffer ;
       GBuffer* m_sensors_buffer ;
@@ -354,6 +367,11 @@ inline gfloat4 GMesh::getCenterExtent(unsigned int index)
 {
     return m_center_extent[index] ;
 }
+inline gbbox GMesh::getBBox(unsigned int index)
+{
+    return m_bbox[index] ;
+}
+
 inline float* GMesh::getTransform(unsigned int index)
 {
     return m_transforms + index*16  ;
@@ -414,6 +432,10 @@ inline GBuffer* GMesh::getTexcoordsBuffer()
 inline GBuffer*  GMesh::getCenterExtentBuffer()
 {
     return m_center_extent_buffer ;
+}
+inline GBuffer*  GMesh::getBBoxBuffer()
+{
+    return m_bbox_buffer ;
 }
 inline GBuffer*  GMesh::getTransformsBuffer()
 {

@@ -65,6 +65,9 @@ class Renderer : public RendererBase  {
       GLuint m_indices ;
       GLuint m_transforms ;
 
+  private:
+      // locations determined by *check_uniforms* and used by *update_uniforms* 
+      // to update the "constants" available to shaders
       GLint  m_mv_location ;
       GLint  m_mvp_location ;
       GLint  m_clip_location ;
@@ -72,16 +75,16 @@ class Renderer : public RendererBase  {
       GLint  m_nrmparam_location ;
       GLint  m_lightposition_location ;
       GLint  m_itransform_location ;
+   private:
       unsigned int m_itransform_count ;
       long         m_draw_count ;
-      GLsizei m_indices_count ;
-
+      GLsizei      m_indices_count ;
   private:
       GDrawable*   m_drawable ;
       GMergedMesh* m_geometry ;
       Texture*     m_texture ;
-  private:
       Composition* m_composition ;
+  private:
       bool m_has_tex ; 
       bool m_has_transforms ; 
       bool m_instanced ; 

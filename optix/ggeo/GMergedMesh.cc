@@ -86,6 +86,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 
     unsigned int numSolids = mm->getNumSolids();
     mm->setCenterExtent(new gfloat4[numSolids]);
+    mm->setBBox(new gbbox[numSolids]);
     mm->setMeshes(new unsigned int[numSolids]);
     //mm->setTransforms(new float[numSolids*16]);  
     // repurposing the transforms for holding repeated placement transforms from GTreeCheck 
@@ -200,7 +201,10 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     }
     else if( pass == PASS_MERGE ) 
     {
-        m_center_extent[m_cur_solid] = GMesh::findCenterExtent(vertices, nvert); // keep track of center_extent of all solids
+        gbbox bb = GMesh::findBBox(vertices, nvert) ;
+
+        m_bbox[m_cur_solid] = bb ;  
+        m_center_extent[m_cur_solid] = bb.center_extent() ;
         m_meshes[m_cur_solid] = meshIndex ; 
 
         m_cur_solid += 1 ; 

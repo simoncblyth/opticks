@@ -28,6 +28,7 @@ const char* GMesh::nodes        = "nodes" ;
 const char* GMesh::boundaries   = "boundaries" ;
 const char* GMesh::sensors      = "sensors" ;
 const char* GMesh::center_extent = "center_extent" ;
+const char* GMesh::bbox           = "bbox" ;
 const char* GMesh::transforms     = "transforms" ;
 const char* GMesh::meshes         = "meshes" ;
 
@@ -43,6 +44,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(boundaries); 
     names.push_back(sensors); 
     names.push_back(center_extent); 
+    names.push_back(bbox); 
     names.push_back(transforms); 
     names.push_back(meshes); 
 }
@@ -68,6 +70,7 @@ GMesh::GMesh(GMesh* other)
      m_boundaries(other->getBoundaries()),
      m_boundaries_buffer(other->getBoundariesBuffer()),
      m_center_extent_buffer(other->getCenterExtentBuffer()),
+     m_bbox_buffer(other->getBBoxBuffer()),
      m_num_solids(other->getNumSolids()),
      m_num_solids_selected(other->getNumSolidsSelected()),
      m_transforms_buffer(other->getTransformsBuffer()),
@@ -117,6 +120,8 @@ GMesh::GMesh(unsigned int index,
       m_extent(0.f),
       m_center_extent(NULL),
       m_center_extent_buffer(NULL),
+      m_bbox(NULL),
+      m_bbox_buffer(NULL),
       m_num_colors(num_vertices),  // tie num_colors to num_vertices
       m_normals(NULL),
       m_normals_buffer(NULL),
@@ -156,6 +161,7 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, sensors) == 0)      return m_sensors_buffer ; 
 
     if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
+    if(strcmp(name, bbox) == 0)            return m_bbox_buffer ; 
     if(strcmp(name, transforms) == 0)      return m_transforms_buffer ; 
     if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
 
@@ -176,6 +182,7 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, sensors) == 0)      setSensorsBuffer(buffer) ; 
 
     if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
+    if(strcmp(name, bbox) == 0)            setBBoxBuffer(buffer) ; 
     if(strcmp(name, transforms) == 0)      setTransformsBuffer(buffer) ; 
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
 }
@@ -257,6 +264,30 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
     unsigned int numBytes = buffer->getNumBytes();
     m_num_solids = numBytes/sizeof(gfloat4) ;
 }
+
+
+
+void GMesh::setBBox(gbbox* bb)  
+{
+    m_bbox = bb ;  
+    assert(m_num_solids > 0);
+    m_bbox_buffer = new GBuffer( sizeof(gbbox)*m_num_solids, (void*)m_bbox, sizeof(gbbox), 6 ); 
+    assert(sizeof(gbbox) == sizeof(float)*6);
+}
+
+void GMesh::setBBoxBuffer(GBuffer* buffer) 
+{
+    m_bbox_buffer = buffer ;  
+    if(!buffer) return ; 
+
+    m_bbox = (gbbox*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int numSolids = numBytes/sizeof(gbbox) ;
+
+    setNumSolids(numSolids);
+}
+
+
 
 
 
@@ -594,7 +625,27 @@ void GMesh::Summary(const char* msg)
 
 
 
-gfloat4 GMesh::findCenterExtent(gfloat3* vertices, unsigned int num_vertices)
+gbbox GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
+{
+    gbbox bb(gfloat3(FLT_MAX), gfloat3(-FLT_MAX)) ; 
+
+    for( unsigned int i = 0; i < num_vertices ;++i )
+    {
+        gfloat3& v = vertices[i];
+
+        bb.min.x = std::min( bb.min.x, v.x);
+        bb.min.y = std::min( bb.min.y, v.y);
+        bb.min.z = std::min( bb.min.z, v.z);
+
+        bb.max.x = std::max( bb.max.x, v.x);
+        bb.max.y = std::max( bb.max.y, v.y);
+        bb.max.z = std::max( bb.max.z, v.z);
+    }
+    return bb ; 
+} 
+
+
+gfloat4 GMesh::findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_vertices)
 {
     gfloat3  low( 1e10f, 1e10f, 1e10f);
     gfloat3 high( -1e10f, -1e10f, -1e10f);
@@ -628,8 +679,10 @@ gfloat4 GMesh::findCenterExtent(gfloat3* vertices, unsigned int num_vertices)
 
 void GMesh::updateBounds()
 {
+    gbbox   bb = findBBox(m_vertices, m_num_vertices);
+    gfloat4 ce = bb.center_extent() ;
 
-     gfloat4 ce = findCenterExtent(m_vertices, m_num_vertices);
+    m_model_to_world = new GMatrix<float>( ce.x, ce.y, ce.z, ce.w );
 
     //
     // extent is half the maximal dimension 
@@ -647,6 +700,18 @@ void GMesh::updateBounds()
     //        * translate by m_center
     //
 
+
+    if(m_bbox == NULL)
+    {
+        m_bbox = new gbbox(bb) ;
+    }
+    else
+    {
+        m_bbox[0].min = bb.min ;
+        m_bbox[0].max = bb.max ;
+    }
+
+
     if(m_center_extent == NULL)
     {
         m_center_extent = new gfloat4( ce.x, ce.y, ce.z, ce.w );
@@ -655,14 +720,13 @@ void GMesh::updateBounds()
     {
         // avoid stomping on position of array of center_extent in case of MergedMesh, 
         // instead just overwrite solid 0 
-        //
+
         m_center_extent[0].x = ce.x ;
         m_center_extent[0].y = ce.y ;
         m_center_extent[0].z = ce.z ;
         m_center_extent[0].w = ce.w ;
     }
 
-    m_model_to_world = new GMatrix<float>( ce.x, ce.y, ce.z, ce.w );
 
 
 }
@@ -749,6 +813,7 @@ bool GMesh::isFloatBuffer(const char* name)
     return ( strcmp( name, vertices) == 0 || 
              strcmp( name, normals) == 0  || 
              strcmp( name, center_extent ) == 0  || 
+             strcmp( name, bbox ) == 0  || 
           //   strcmp( name, wavelength ) == 0  || 
           //   strcmp( name, reemission ) == 0  || 
              strcmp( name, transforms ) == 0  || 
