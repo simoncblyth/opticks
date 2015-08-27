@@ -58,7 +58,7 @@ void GBBoxMesh::twentyfour()
             */
 
 
-     enum { kPX, kMX, kPY, kMY, kPZ, kMZ, kFace } ;
+     enum { kPX, kPY, kPZ, kMX, kMY, kMZ, kFace } ;
 
      unsigned int nv(0) ;
      unsigned int nf(0) ;

@@ -59,6 +59,12 @@ const char* Scene::REC_ = "point" ;
 const char* Scene::ALTREC_ = "line" ; 
 const char* Scene::DEVREC_ = "vector" ; 
 
+const char* Scene::NORM_ = "norm" ;   
+const char* Scene::BBOX_ = "bbox" ; 
+const char* Scene::NORM_BBOX_ = "norm_bbox" ; 
+
+
+
 const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
 {
    switch(style)
@@ -66,10 +72,28 @@ const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
       case    REC:return REC_ ; break; 
       case ALTREC:return ALTREC_ ; break; 
       case DEVREC:return DEVREC_ ; break; 
-      case NUMSTYLE:assert(0) ; break ; 
+      case NUM_RECORD_STYLE:assert(0) ; break ; 
       default: assert(0); break ; 
    } 
    return NULL ; 
+}
+
+const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
+{
+   switch(style)
+   {
+      case NORM:return NORM_ ; break; 
+      case BBOX:return BBOX_ ; break; 
+      case NORM_BBOX:return NORM_BBOX_ ; break; 
+      case NUM_GEOMETRY_STYLE:assert(0) ; break ; 
+      default: assert(0); break ; 
+   } 
+   return NULL ; 
+}
+
+const char* Scene::getGeometryStyleName()
+{
+   return getGeometryStyleName(m_geometry_style);
 }
 
 const char* Scene::getRecordStyleName()
@@ -204,6 +228,7 @@ void Scene::init()
         m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_bbox_renderer[i]->setInstanced();
+        m_bbox_renderer[i]->setWireframe(false);  // wireframe is much slower than filled
     }
 
     //LOG(info) << "Scene::init geometry_renderer ctor DONE";
@@ -319,6 +344,8 @@ void Scene::uploadGeometry()
              << " n_global "   << n_global
              << " m_num_instance_renderer " << m_num_instance_renderer
              ; 
+
+    applyGeometryStyle(); // sets m_instance_mode m_bbox_mode switches, change with "B"  nextGeometryStyle()
 }
 
 void Scene::uploadColorBuffer(GBuffer* colorbuffer)
@@ -341,7 +368,7 @@ Rdr* Scene::getRecordRenderer(RecordStyle_t style)
         case      REC:rdr = m_record_renderer     ; break ;
         case   ALTREC:rdr = m_altrecord_renderer  ; break ;
         case   DEVREC:rdr = m_devrecord_renderer  ; break ;
-        case NUMSTYLE:                            ; break ;
+        case   NUM_RECORD_STYLE:                  ; break ;
     }
     return rdr ; 
 }

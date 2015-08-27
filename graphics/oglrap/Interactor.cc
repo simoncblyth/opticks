@@ -164,6 +164,9 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_Q:
             m_scene->toggleGeometry(); 
             break;
+        case GLFW_KEY_B:
+            m_scene->nextGeometryStyle(); 
+            break;
         case GLFW_KEY_Y:
             m_yfov_mode = !m_yfov_mode ; 
             break;

@@ -1,15 +1,11 @@
 #pragma once
 
 #include "stdlib.h"
+#include "stdio.h"
+#include "assert.h"
 #include "string.h"
 #include <vector>
 
-
-
-
-// npy-
-//template<typename T>
-//class NPY ; 
 
 
 class NumpyEvt ; 
@@ -49,6 +45,10 @@ class Scene : public Configurable {
         static const char* ALTREC_ ; 
         static const char* DEVREC_ ; 
    public:
+        static const char* NORM_ ; 
+        static const char* BBOX_ ; 
+        static const char* NORM_BBOX_ ; 
+   public:
         enum { MAX_INSTANCE_RENDERER = 5 };  
         static const char* INSTANCE0  ;
         static const char* INSTANCE1  ;
@@ -61,13 +61,20 @@ class Scene : public Configurable {
         static const char* BBOX3  ;
         static const char* BBOX4  ;
    public:
-        typedef enum { REC, ALTREC, DEVREC, NUMSTYLE } RecordStyle_t ;
+        typedef enum { REC, ALTREC, DEVREC, NUM_RECORD_STYLE } RecordStyle_t ;
         void setRecordStyle(Scene::RecordStyle_t style);
         Scene::RecordStyle_t getRecordStyle();
         static const char* getRecordStyleName(Scene::RecordStyle_t style);
         const char* getRecordStyleName();
         void nextPhotonStyle();
    public:
+        // disabled styles after NUM_GEOMETRY_STYLE
+        typedef enum { BBOX, NORM, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
+        void setGeometryStyle(Scene::GeometryStyle_t style);
+        void applyGeometryStyle();
+        static const char* getGeometryStyleName(Scene::GeometryStyle_t style);
+        const char* getGeometryStyleName();
+        void nextGeometryStyle();
         void toggleGeometry();
    public:
         Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL);
@@ -174,9 +181,10 @@ class Scene : public Configurable {
         bool         m_photon_mode ; 
         bool         m_record_mode ; 
    private:
-        RecordStyle_t m_record_style ; 
-        bool          m_initialized ;  
-        float         m_time_fraction ;  
+        RecordStyle_t   m_record_style ; 
+        GeometryStyle_t m_geometry_style ; 
+        bool            m_initialized ;  
+        float           m_time_fraction ;  
 
 
 };
@@ -211,14 +219,15 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_photon_mode(true),
             m_record_mode(true),
             m_record_style(REC),
+            m_geometry_style(BBOX),
             m_initialized(false),
             m_time_fraction(0.f)
 {
     for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
     {
         m_instance_renderer[i] = NULL ; 
-        m_instance_mode[i] = false ; 
         m_bbox_renderer[i] = NULL ; 
+        m_instance_mode[i] = false ; 
         m_bbox_mode[i] = false ; 
     }
 }
@@ -321,7 +330,7 @@ inline Scene::RecordStyle_t Scene::getRecordStyle()
 
 inline void Scene::nextPhotonStyle()
 {
-    int next = (m_record_style + 1) % NUMSTYLE ; 
+    int next = (m_record_style + 1) % NUM_RECORD_STYLE ; 
     m_record_style = (RecordStyle_t)next ; 
 }
 
@@ -331,6 +340,54 @@ inline void Scene::toggleGeometry()
 {
     m_global_mode = !m_global_mode ; 
 }
+
+inline void Scene::nextGeometryStyle()
+{
+    int next = (m_geometry_style + 1) % NUM_GEOMETRY_STYLE ; 
+    setGeometryStyle( (GeometryStyle_t)next );
+
+    const char* stylename = getGeometryStyleName();
+    printf("Scene::nextGeometryStyle : %s \n", stylename);
+}
+
+inline void Scene::setGeometryStyle(GeometryStyle_t style)
+{
+    m_geometry_style = style ; 
+    applyGeometryStyle();
+}
+
+inline void Scene::applyGeometryStyle()
+{
+    bool imode ; 
+    bool bmode ; 
+
+    switch(m_geometry_style)
+    {
+      case BBOX:
+             imode = false ; 
+             bmode = true ; 
+             break;
+      case NORM:
+             imode = true ;
+             bmode = false ; 
+             break;
+      case NORM_BBOX:
+             imode = true ; 
+             bmode = true ; 
+             break;
+      case NUM_GEOMETRY_STYLE:
+             assert(0);
+             break;
+   }
+
+   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
+   {
+       m_instance_mode[i] = imode ; 
+       m_bbox_mode[i] = bmode ; 
+   }
+}
+
+
 
 
 

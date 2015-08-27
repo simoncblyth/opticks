@@ -27,6 +27,7 @@ class Renderer : public RendererBase  {
   public:
       Renderer(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
       void setInstanced(bool instanced=true);
+      void setWireframe(bool wireframe=true);
       virtual ~Renderer();
 
   public: 
@@ -91,6 +92,7 @@ class Renderer : public RendererBase  {
       bool m_has_tex ; 
       bool m_has_transforms ; 
       bool m_instanced ; 
+      bool m_wireframe ; 
 };      
 
 
@@ -115,7 +117,8 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_composition(NULL),
     m_has_tex(false),
     m_has_transforms(false),
-    m_instanced(false)
+    m_instanced(false),
+    m_wireframe(false)
 {
 }
 
@@ -123,6 +126,10 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
 inline void Renderer::setInstanced(bool instanced)
 {
     m_instanced = instanced ; 
+}
+inline void Renderer::setWireframe(bool wireframe)
+{
+    m_wireframe = wireframe ; 
 }
 inline void Renderer::setComposition(Composition* composition)
 {

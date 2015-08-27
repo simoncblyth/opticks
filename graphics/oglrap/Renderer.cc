@@ -338,6 +338,11 @@ void Renderer::render()
     glEnable (GL_BLEND);
 
 
+    if(m_wireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
     if(m_instanced)
     {
         // primcount : Specifies the number of instances of the specified range of indices to be rendered.
@@ -351,6 +356,12 @@ void Renderer::render()
         glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
     }
     // indices_count would be 3 for a single triangle 
+
+
+    if(m_wireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
 
     m_draw_count += 1 ; 
