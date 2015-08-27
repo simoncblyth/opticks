@@ -192,6 +192,7 @@ class App {
   public:
        GCache* getCache(); 
        FrameCfg<Frame>* getFrameCfg();
+       bool hasOpt(const char* name);
 
   private:
        const char*  m_prefix ; 
@@ -290,6 +291,12 @@ FrameCfg<Frame>* App::getFrameCfg()
 {
     return m_fcfg ; 
 }
+
+bool App::hasOpt(const char* name)
+{
+    return m_fcfg->hasOpt(name);
+}
+
 
 
 void App::init()
@@ -954,23 +961,23 @@ int main(int argc, char** argv)
 
     app.uploadGeometry();
 
-    /*
+    bool nooptix = app.hasOpt("nooptix");
+    if(!nooptix)
+    {
+        app.loadEvt();
 
-    app.loadEvt();
+        app.uploadEvt();
 
-    app.uploadEvt();
+        app.prepareEngine();
 
-    app.prepareEngine();
+        app.propagate();
 
-    app.propagate();
+        app.downloadEvt();
 
-    app.downloadEvt();
+        app.indexEvt();
 
-    app.indexEvt();
-
-    app.makeReport();
-
-    */
+        app.makeReport();
+    }
 
     app.prepareGUI();
 

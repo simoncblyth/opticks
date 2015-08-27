@@ -304,9 +304,29 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    assert(sizeof(T)*nit == buf->getNumBytes() );
    assert(nel == mul/fold );
 
-   optix::Buffer buffer = m_context->createBuffer( RT_BUFFER_INPUT, format, nit );
-   memcpy( buffer->map(), buf->getPointer(), buf->getNumBytes() );
-   buffer->unmap();
+
+   optix::Buffer buffer ;
+   int buffer_id = buf->getBufferId() ;
+
+   if(buffer_id > -1 )
+   {
+        LOG(info) << "OGeo::createInputBuffer reusing buffer_id " << buffer_id ; 
+
+        buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, buffer_id);
+        buffer->setFormat(format);  // must set format, before can set ElementSize
+        if(format == RT_FORMAT_USER)
+        {
+            buffer->setElementSize(sizeof(T));
+        }
+        buffer->setSize(nit);
+   } 
+   else
+   {
+        LOG(warning) << "OGeo::createInputBuffer CREATING NEW BUFFER " ; 
+        buffer = m_context->createBuffer( RT_BUFFER_INPUT, format, nit );
+        memcpy( buffer->map(), buf->getPointer(), buf->getNumBytes() );
+        buffer->unmap();
+   } 
 
    return buffer ; 
 }
