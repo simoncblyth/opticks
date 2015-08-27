@@ -44,12 +44,23 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 
 GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name)
 {
-    buffer->Summary(name);
-    GLuint id ; 
-    glGenBuffers(1, &id);
-    glBindBuffer(target, id);
-    glBufferData(target, buffer->getNumBytes(), buffer->getPointer(), usage);
-    return id ; 
+    GLuint buffer_id ; 
+    int prior_id = buffer->getBufferId();
+    if(prior_id == -1)
+    {
+        glGenBuffers(1, &buffer_id);
+        glBindBuffer(target, buffer_id);
+        glBufferData(target, buffer->getNumBytes(), buffer->getPointer(), usage);
+        buffer->setBufferId(buffer_id); 
+        buffer->Summary(name);
+    }
+    else
+    {
+        buffer_id = prior_id ; 
+        LOG(info) << "Renderer::upload binding to prior buffer : " << buffer_id ; 
+        glBindBuffer(target, buffer_id);
+    }
+    return buffer_id ; 
 }
 
 void Renderer::upload(GBBoxMesh* bboxmesh, bool debug)
@@ -135,14 +146,11 @@ void Renderer::upload_buffers(bool debug)
     {
         m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  rbuf, "Renderer::upload transforms");
         m_itransform_count = rbuf->getNumItems();
-
-        LOG(info) << "Renderer::upload_buffers uploading transforms " 
-                  << " itransform_count " << m_itransform_count
-                  ;
+        LOG(info) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
     }
     else
     {
-        LOG(warning) << "Renderer::upload_buffers NO TRANSFORMS " ;
+        LOG(debug) << "Renderer::upload_buffers NO TRANSFORMS " ;
     }
 
 
@@ -185,11 +193,7 @@ void Renderer::upload_buffers(bool debug)
 
     if(hasTransforms())
     {
-
-        LOG(info) << "Renderer::upload_buffers"
-                  << " setup transform attributes "
-                   ;
-
+        LOG(debug) << "Renderer::upload_buffers setup transform attributes " ;
         glBindBuffer (GL_ARRAY_BUFFER, m_transforms);
 
         long qsize = sizeof(GLfloat) * 4 ;
@@ -209,9 +213,7 @@ void Renderer::upload_buffers(bool debug)
         glVertexAttribDivisor(vTransform + 1, 1);
         glVertexAttribDivisor(vTransform + 2, 1);
         glVertexAttribDivisor(vTransform + 3, 1);
-
     } 
-
 
     glEnable(GL_CLIP_DISTANCE0); 
  
@@ -219,10 +221,9 @@ void Renderer::upload_buffers(bool debug)
 
     glUseProgram(m_program);  // moved prior to check uniforms following Rdr::upload
 
-
-    LOG(info) <<  "Renderer::gl_upload_buffers after make_shader " ; 
+    LOG(debug) <<  "Renderer::upload_buffers after make_shader " ; 
     check_uniforms();
-    LOG(info) <<  "Renderer::gl_upload_buffers after check_uniforms " ; 
+    LOG(debug) <<  "Renderer::upload_buffers after check_uniforms " ; 
 
 }
 

@@ -256,6 +256,7 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
               << " numTransforms " << numTransforms 
               ;
 
+    // TODO: purloin the OpenGL buffers to avoid duplicating the geometry info on GPU 
 
     optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3 );
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);

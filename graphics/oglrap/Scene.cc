@@ -293,6 +293,8 @@ void Scene::uploadGeometry()
     assert(m_ggeo && "must setGeometry first");
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
+
+
     LOG(info) << "Scene::uploadGeometry"
               << " nmm " << nmm
               ;
@@ -304,14 +306,12 @@ void Scene::uploadGeometry()
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         GBuffer* tbuf = mm->getTransformsBuffer();
 
+        LOG(info) ;
+        LOG(info) << "Scene::uploadGeometry i " << i ; 
+
         if( tbuf == NULL )
         {
             if(m_mesh0 == NULL) m_mesh0 = mm ; // first non-instanced mesh
-
-            LOG(info)<< "Scene::uploadGeometry"
-                     << " i " << i 
-                     << " n_global " << n_global  
-                     ;
 
             m_global_renderer->upload(mm);  
             n_global++ ; 
@@ -322,16 +322,12 @@ void Scene::uploadGeometry()
         {
             assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
 
-            LOG(info)<< "Scene::uploadGeometry"
-                     << " i " << i 
-                     << " m_num_instance_renderer " << m_num_instance_renderer 
-                     ;
-
+            LOG(info)<< "Scene::uploadGeometry instance renderer " << m_num_instance_renderer  ;
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
 
-            GBBoxMesh* bb = GBBoxMesh::create(mm);
-            assert(bb);
+            LOG(info)<< "Scene::uploadGeometry bbox renderer " << m_num_instance_renderer  ;
+            GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
             m_bbox_mode[m_num_instance_renderer] = true ; 
             m_bbox_renderer[m_num_instance_renderer]->upload(bb);
 

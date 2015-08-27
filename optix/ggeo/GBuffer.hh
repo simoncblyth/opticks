@@ -18,7 +18,8 @@ class GBuffer {
          m_nbytes(nbytes),     // total number of bytes 
          m_pointer(pointer),   // pointer to the bytes
          m_itemsize(itemsize), // sizeof each item, eg sizeof(gfloat3) = 3*4 = 12
-         m_nelem(nelem)        // number of elements for each item, eg 2 or 3 for floats per vertex
+         m_nelem(nelem),       // number of elements for each item, eg 2 or 3 for floats per vertex
+         m_buffer_id(-1)       // OpenGL buffer Id, set by Renderer on uploading to GPU 
       {
       }
       virtual ~GBuffer()
@@ -111,17 +112,31 @@ class GBuffer {
       template<typename T>
       static GBuffer* load(const char* dir, const char* name);
 
-
+  public:
+       // OpenGL related
+       void         setBufferId(int buffer_id);
+       int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
 
   protected:
       unsigned int m_nbytes ;
       void*        m_pointer ; 
       unsigned int m_itemsize ;
       unsigned int m_nelem ;
+  private:
+      int          m_buffer_id ; 
 
 }; 
 
 
+// OpenGL related
+inline void GBuffer::setBufferId(int buffer_id)
+{
+    m_buffer_id = buffer_id  ;
+}
+inline int GBuffer::getBufferId()
+{
+    return m_buffer_id ;
+}
 
 template<typename T>
 inline void GBuffer::save(const char* path)
