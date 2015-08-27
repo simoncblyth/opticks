@@ -6,6 +6,7 @@
 // npy-
 #include "stringutil.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -105,6 +106,15 @@ GGeoview application reports the idpath via::
 
     printf("GCache::readEnvironment setting IDPATH internally to %s \n", getenv("IDPATH")) ; 
 }
+
+
+std::string GCache::getMergedMeshPath(unsigned int ridx)
+{
+    fs::path cachedir(m_idpath);
+    fs::path mmdir(cachedir/"GMergedMesh"/boost::lexical_cast<std::string>(ridx) );
+    return mmdir.string() ;
+}
+
 
 
 void GCache::Summary(const char* msg)

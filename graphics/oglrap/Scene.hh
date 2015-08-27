@@ -37,36 +37,41 @@ class Colors ;
 class Scene : public Configurable {
 
    public:
-       static const char* PHOTON ;
-       static const char* AXIS ;
-       static const char* GENSTEP ;
-       static const char* GLOBAL ;
-       static const char* RECORD ;
+        static const char* PHOTON ;
+        static const char* AXIS ;
+        static const char* GENSTEP ;
+        static const char* GLOBAL ;
+        static const char* RECORD ;
    public:
-       static const char* TARGET ;
+        static const char* TARGET ;
    public:
-       static const char* REC_ ; 
-       static const char* ALTREC_ ; 
-       static const char* DEVREC_ ; 
+        static const char* REC_ ; 
+        static const char* ALTREC_ ; 
+        static const char* DEVREC_ ; 
    public:
-       enum { MAX_INSTANCE_RENDERER = 5 };  
-       static const char* INSTANCE0  ;
-       static const char* INSTANCE1  ;
-       static const char* INSTANCE2  ;
-       static const char* INSTANCE3  ;
-       static const char* INSTANCE4  ;
+        enum { MAX_INSTANCE_RENDERER = 5 };  
+        static const char* INSTANCE0  ;
+        static const char* INSTANCE1  ;
+        static const char* INSTANCE2  ;
+        static const char* INSTANCE3  ;
+        static const char* INSTANCE4  ;
+        static const char* BBOX0  ;
+        static const char* BBOX1  ;
+        static const char* BBOX2  ;
+        static const char* BBOX3  ;
+        static const char* BBOX4  ;
    public:
-       typedef enum { REC, ALTREC, DEVREC, NUMSTYLE } RecordStyle_t ;
-       void setRecordStyle(Scene::RecordStyle_t style);
-       Scene::RecordStyle_t getRecordStyle();
-       static const char* getRecordStyleName(Scene::RecordStyle_t style);
-       const char* getRecordStyleName();
-       void nextPhotonStyle();
+        typedef enum { REC, ALTREC, DEVREC, NUMSTYLE } RecordStyle_t ;
+        void setRecordStyle(Scene::RecordStyle_t style);
+        Scene::RecordStyle_t getRecordStyle();
+        static const char* getRecordStyleName(Scene::RecordStyle_t style);
+        const char* getRecordStyleName();
+        void nextPhotonStyle();
    public:
-       void toggleGeometry();
+        void toggleGeometry();
    public:
-       Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL);
-       void gui();
+        Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL);
+        void gui();
    public:
         // Configurable
         std::vector<std::string> getTags();
@@ -141,6 +146,7 @@ class Scene : public Configurable {
         unsigned int m_num_instance_renderer ; 
         Renderer*    m_geometry_renderer ; 
         Renderer*    m_instance_renderer[MAX_INSTANCE_RENDERER] ; 
+        Renderer*    m_bbox_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_global_renderer ; 
    private:
         Rdr*         m_axis_renderer ; 
@@ -162,6 +168,7 @@ class Scene : public Configurable {
    private:
         bool         m_global_mode ; 
         bool         m_instance_mode[MAX_INSTANCE_RENDERER] ; 
+        bool         m_bbox_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_axis_mode ; 
         bool         m_genstep_mode ; 
         bool         m_photon_mode ; 
@@ -211,6 +218,8 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
     {
         m_instance_renderer[i] = NULL ; 
         m_instance_mode[i] = false ; 
+        m_bbox_renderer[i] = NULL ; 
+        m_bbox_mode[i] = false ; 
     }
 }
 

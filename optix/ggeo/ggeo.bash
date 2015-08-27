@@ -957,3 +957,38 @@ ggeo-gpropertytest(){
    eval $bin
 }
 
+
+ggeo-ggeotest(){
+   local bin=$(ggeo-bin GGeoTest)
+
+   ggeoview-
+   ggeoview-export
+
+   echo $bin
+   eval $bin $*
+}
+
+ggeo-mmt(){
+   local bin=$(ggeo-bin GMergedMeshTest)
+
+   ggeoview-
+   ggeoview-export
+
+   echo $bin
+   eval $bin $*
+}
+
+ggeo-bbt(){
+   local bin=$(ggeo-bin GBBoxMeshTest)
+
+   ggeoview-
+   ggeoview-export
+
+   echo $bin
+   eval $bin $*
+}
+
+
+
+
+

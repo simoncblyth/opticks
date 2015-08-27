@@ -1,5 +1,7 @@
 #include "GCache.hh"
 #include "GMergedMesh.hh"
+#include "GBBoxMesh.hh"
+
 
 int main(int argc, char** argv)
 {
@@ -13,12 +15,10 @@ int main(int argc, char** argv)
     mm->dumpSolids("dumpSolids");
 
     unsigned int numSolids = mm->getNumSolids();
-    unsigned int numSolidsSelected = mm->getNumSolidsSelected();
 
-    LOG(info) 
-                  << " numSolids " << numSolids       
-                  << " numSolidsSelected " << numSolidsSelected ;      
+    LOG(info) << "mm numSolids " << numSolids  ;
 
+    GBBoxMesh* bb = GBBoxMesh::create(mm);
 
 
     return 0 ;

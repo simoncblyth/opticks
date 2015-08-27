@@ -18,6 +18,7 @@
 #include "GArray.hh"
 #include "GBuffer.hh"
 #include "GMergedMesh.hh"
+#include "GBBoxMesh.hh"
 #include "GDrawable.hh"
 
 #include "stdio.h"
@@ -51,24 +52,31 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer, const char
     return id ; 
 }
 
-
+void Renderer::upload(GBBoxMesh* bboxmesh, bool debug)
+{
+    m_bboxmesh = bboxmesh ;
+    assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
+    m_drawable = static_cast<GDrawable*>(m_bboxmesh);
+    upload_buffers(debug);
+}
 void Renderer::upload(GMergedMesh* geometry, bool debug)
 {
     m_geometry = geometry ;
-    assert( m_texture == NULL );
+    assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_geometry);
-    gl_upload_buffers(debug);
+    upload_buffers(debug);
 }
-
 void Renderer::upload(Texture* texture, bool debug)
 {
     m_texture = texture ;
-    assert( m_geometry == NULL );
+    assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
     m_drawable = static_cast<GDrawable*>(m_texture);
-    gl_upload_buffers(debug);
+    upload_buffers(debug);
 }
 
-void Renderer::gl_upload_buffers(bool debug)
+
+
+void Renderer::upload_buffers(bool debug)
 {
     // as there are two GL_ARRAY_BUFFER for vertices and colors need
     // to bind them again (despite bound in upload) in order to 
@@ -96,6 +104,7 @@ void Renderer::gl_upload_buffers(bool debug)
     GBuffer* nbuf = m_drawable->getNormalsBuffer();
     GBuffer* cbuf = m_drawable->getColorsBuffer();
     GBuffer* ibuf = m_drawable->getIndicesBuffer();
+
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 
@@ -127,13 +136,13 @@ void Renderer::gl_upload_buffers(bool debug)
         m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  rbuf, "Renderer::upload transforms");
         m_itransform_count = rbuf->getNumItems();
 
-        LOG(info) << "Renderer::gl_upload_buffers uploading transforms " 
+        LOG(info) << "Renderer::upload_buffers uploading transforms " 
                   << " itransform_count " << m_itransform_count
                   ;
     }
     else
     {
-        LOG(warning) << "Renderer::gl_upload_buffers NO TRANSFORMS " ;
+        LOG(warning) << "Renderer::upload_buffers NO TRANSFORMS " ;
     }
 
 
@@ -177,7 +186,7 @@ void Renderer::gl_upload_buffers(bool debug)
     if(hasTransforms())
     {
 
-        LOG(info) << "Renderer::gl_upload_buffers"
+        LOG(info) << "Renderer::upload_buffers"
                   << " setup transform attributes "
                    ;
 

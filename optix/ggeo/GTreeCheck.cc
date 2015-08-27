@@ -253,6 +253,7 @@ bool GTreeCheck::isContainedRepeat( const std::string& pdig, unsigned int levels
 
 unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )
 {
+    // repeat index corresponding to a digest
      unsigned int index(0);
      std::vector<std::string>::iterator it = std::find(m_repeat_candidates.begin(), m_repeat_candidates.end(), pdig );
      if(it != m_repeat_candidates.end())

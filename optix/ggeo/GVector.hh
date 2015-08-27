@@ -152,6 +152,9 @@ struct gbbox
 
 struct guint3 
 {
+    guint3() : x(0), y(0), z(0) {} ;
+    guint3(unsigned int _x, unsigned int _y, unsigned int _z) : x(_x), y(_y), z(_z) {} ;
+
     unsigned int x,y,z ;
 };
 

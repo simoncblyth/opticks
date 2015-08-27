@@ -54,7 +54,8 @@ class GMesh : public GDrawable {
       GMesh(unsigned int index, 
             gfloat3* vertices, unsigned int num_vertices, 
             guint3*  faces,     unsigned int num_faces,  
-            gfloat3* normals, gfloat2* texcoords );
+            gfloat3* normals, 
+            gfloat2* texcoords );
       virtual ~GMesh();
 
   public:

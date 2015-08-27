@@ -18,6 +18,7 @@ class GCache {
          GCache(const char* envprefix);
          const char* getIdPath();
          std::string getRelativePath(const char* path); 
+         std::string getMergedMeshPath(unsigned int ridx);
          const char* getEnvPrefix();
          bool idPathContains(const char* s); 
          void Summary(const char* msg="GCache::Summary");

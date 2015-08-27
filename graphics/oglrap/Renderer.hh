@@ -4,6 +4,7 @@
 
 class GDrawable ; 
 class GMergedMesh ; 
+class GBBoxMesh ; 
 class Texture ; 
 
 class GBuffer ;
@@ -30,18 +31,19 @@ class Renderer : public RendererBase  {
 
   public: 
       void upload(GMergedMesh* geometry, bool debug=false);
+      void upload(GBBoxMesh* bboxmesh, bool debug=false);
       void upload(Texture* texture, bool debug=false);
+  public: 
       void render();
       void setComposition(Composition* composition);
       Composition* getComposition(); 
-
   public: 
       void configureI(const char* name, std::vector<int> values);
       void dump(const char* msg="Renderer::dump");
       void Print(const char* msg="Renderer::Print");
 
   private:
-      void gl_upload_buffers(bool debug);
+      void upload_buffers(bool debug);
       GLuint upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
 
       bool hasTex(){ return m_has_tex ; }
@@ -82,6 +84,7 @@ class Renderer : public RendererBase  {
   private:
       GDrawable*   m_drawable ;
       GMergedMesh* m_geometry ;
+      GBBoxMesh*   m_bboxmesh ;
       Texture*     m_texture ;
       Composition* m_composition ;
   private:
@@ -107,6 +110,7 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_indices_count(0),
     m_drawable(NULL),
     m_geometry(NULL),
+    m_bboxmesh(NULL),
     m_texture(NULL),
     m_composition(NULL),
     m_has_tex(false),
@@ -120,8 +124,6 @@ inline void Renderer::setInstanced(bool instanced)
 {
     m_instanced = instanced ; 
 }
-
-
 inline void Renderer::setComposition(Composition* composition)
 {
     m_composition = composition ;

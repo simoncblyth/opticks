@@ -5,6 +5,7 @@
 
 // ggeo-
 #include "GMergedMesh.hh"
+#include "GBBoxMesh.hh"
 #include "GGeo.hh"
 
 
@@ -39,11 +40,19 @@ const char* Scene::AXIS   = "axis" ;
 const char* Scene::PHOTON = "photon" ; 
 const char* Scene::GENSTEP = "genstep" ; 
 const char* Scene::GLOBAL  = "global" ; 
+
 const char* Scene::INSTANCE0 = "instance0" ; 
 const char* Scene::INSTANCE1 = "instance1" ; 
 const char* Scene::INSTANCE2 = "instance2" ; 
 const char* Scene::INSTANCE3 = "instance3" ; 
 const char* Scene::INSTANCE4 = "instance4" ; 
+
+const char* Scene::BBOX0     = "bbox0" ; 
+const char* Scene::BBOX1     = "bbox1" ; 
+const char* Scene::BBOX2     = "bbox2" ; 
+const char* Scene::BBOX3     = "bbox3" ; 
+const char* Scene::BBOX4     = "bbox4" ; 
+
 const char* Scene::RECORD   = "record" ; 
 
 const char* Scene::REC_ = "point" ;   
@@ -73,6 +82,12 @@ void Scene::gui()
 {
 #ifdef GUI_
      ImGui::Checkbox(GLOBAL,   &m_global_mode);
+
+     ImGui::Checkbox(BBOX0,     m_bbox_mode+0);
+     ImGui::Checkbox(BBOX1,     m_bbox_mode+1);
+     ImGui::Checkbox(BBOX2,     m_bbox_mode+2);
+     ImGui::Checkbox(BBOX3,     m_bbox_mode+3);
+     ImGui::Checkbox(BBOX4,     m_bbox_mode+4);
 
      ImGui::Checkbox(INSTANCE0, m_instance_mode+0);
      ImGui::Checkbox(INSTANCE1, m_instance_mode+1);
@@ -185,6 +200,10 @@ void Scene::init()
         m_instance_mode[i] = false ; 
         m_instance_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_instance_renderer[i]->setInstanced();
+
+        m_bbox_mode[i] = false ; 
+        m_bbox_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
+        m_bbox_renderer[i]->setInstanced();
     }
 
     //LOG(info) << "Scene::init geometry_renderer ctor DONE";
@@ -229,7 +248,10 @@ void Scene::setComposition(Composition* composition)
     // set for all instance slots, otherwise requires setComposition after uploadGeometry
     // as only then is m_num_instance_renderer set
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)    
+    {
         m_instance_renderer[i]->setComposition(composition);
+        m_bbox_renderer[i]->setComposition(composition);
+    }
 
     m_axis_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
@@ -282,6 +304,12 @@ void Scene::uploadGeometry()
 
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
+
+            GBBoxMesh* bb = GBBoxMesh::create(mm);
+            assert(bb);
+            m_bbox_mode[m_num_instance_renderer] = true ; 
+            m_bbox_renderer[m_num_instance_renderer]->upload(bb);
+
             m_num_instance_renderer++ ; 
         }
     }
@@ -374,12 +402,8 @@ void Scene::render()
 
     for(unsigned int i=0; i<m_num_instance_renderer; i++)
     {
-        if(!m_instance_mode[i]) continue ; 
-
-        assert(m_instance_renderer[i]); 
-        m_instance_renderer[i]->render();
-
-        //LOG(info)<<"Scene::render" << " i " << i ;
+        if(m_instance_mode[i]) m_instance_renderer[i]->render();
+        if(m_bbox_mode[i])     m_bbox_renderer[i]->render();
     }
 
     if(m_axis_mode)     m_axis_renderer->render();
