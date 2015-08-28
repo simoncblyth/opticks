@@ -35,6 +35,7 @@ class Renderer : public RendererBase  {
       void upload(GBBoxMesh* bboxmesh, bool debug=false);
       void upload(Texture* texture, bool debug=false);
   public: 
+      void bind();
       void render();
       void setComposition(Composition* composition);
       Composition* getComposition(); 
@@ -57,17 +58,16 @@ class Renderer : public RendererBase  {
 
       void dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count );
 
-
   private:
       GLuint m_vao ; 
-
+  private:
+      // buffer id
       GLuint m_vertices ;
       GLuint m_normals ;
       GLuint m_colors ;
       GLuint m_texcoords ;
       GLuint m_indices ;
       GLuint m_transforms ;
-
   private:
       // locations determined by *check_uniforms* and used by *update_uniforms* 
       // to update the "constants" available to shaders

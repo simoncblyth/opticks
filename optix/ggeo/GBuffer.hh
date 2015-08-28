@@ -113,9 +113,13 @@ class GBuffer {
       static GBuffer* load(const char* dir, const char* name);
 
   public:
-       // OpenGL related
+       // OpenGL related : but not requiring any headers
        void         setBufferId(int buffer_id);
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
+       void         setBufferTarget(int buffer_target);
+       int          getBufferTarget();
+       //const char*        getBufferTargetName();
+       //static const char* getBufferTargetName(int buffer_target);
 
   protected:
       unsigned int m_nbytes ;
@@ -124,6 +128,7 @@ class GBuffer {
       unsigned int m_nelem ;
   private:
       int          m_buffer_id ; 
+      int          m_buffer_target ; 
 
 }; 
 
@@ -137,6 +142,17 @@ inline int GBuffer::getBufferId()
 {
     return m_buffer_id ;
 }
+inline void GBuffer::setBufferTarget(int buffer_target)
+{
+    m_buffer_target = buffer_target  ;
+}
+inline int GBuffer::getBufferTarget()
+{
+    return m_buffer_target ;
+}
+
+
+
 
 template<typename T>
 inline void GBuffer::save(const char* path)

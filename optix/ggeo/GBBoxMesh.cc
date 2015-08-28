@@ -41,8 +41,20 @@ GBBoxMesh::GBBoxMesh(GMergedMesh* mergedmesh)
 
 void GBBoxMesh::twentyfour()
 {
+   /*
+      Bounding boxes look OK with filled rendering, 
+      wireframe rendering has cosmetic problems: need to 
+      rearrange the ordering of the triangles to get a 
+      proper wireframe...
+ 
+      However wireframe is generally slow compared to filled
+      and the whole point of using bbox is speed so 
+      currently just using the easier to get right filled triangle rendering.
+   */
+
+
      gbbox bb = m_mergedmesh->getBBox(0);
-     bb.Summary("GBBoxMesh::init");
+     //bb.Summary("GBBoxMesh::twentyfour");
 
 
             /*

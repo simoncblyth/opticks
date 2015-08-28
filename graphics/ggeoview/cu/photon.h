@@ -62,10 +62,10 @@ __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int p
     pbuffer[photon_offset+3] = make_float4( p.flags.f.x,     p.flags.f.y,     p.flags.f.z,      p.flags.f.w); 
 
    /*
-    pbuffer[photon_offset+0] = make_float4( 1.,    1.,    1.,     1. ); 
-    pbuffer[photon_offset+1] = make_float4( 1.,    1.,    1.,     1. ); 
-    pbuffer[photon_offset+2] = make_float4( 1.,    1.,    1.,     1. ); 
-    pbuffer[photon_offset+3] = make_float4( 1.,    1.,    1.,     1. ); 
+    pbuffer[photon_offset+0] = make_float4( 1.f,    1.f,    1.f,     1.f ); 
+    pbuffer[photon_offset+1] = make_float4( 1.f,    1.f,    1.f,     1.f ); 
+    pbuffer[photon_offset+2] = make_float4( 1.f,    1.f,    1.f,     1.f ); 
+    pbuffer[photon_offset+3] = make_float4( 1.f,    1.f,    1.f,     1.f ); 
    */
 }
 

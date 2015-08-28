@@ -19,6 +19,44 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+issue: jpmt timeouts binary search to pin down 
+------------------------------------------------
+
+::
+
+    ggv --juno 
+       # no pmt, evt propagation vis not working 
+
+    ggv --jpmt --modulo 1000 
+       # causes a timeout+freeze requiring a reboot
+
+    ggv --jpmt --modulo 1000 --nopropagate
+       # can visualize jpmt OptiX geometry: and it looks OK
+
+    ggv --jpmt --modulo 1000 --trivial
+       # swap generate program with a trivial standin  : works 
+
+    ggv --jpmt --modulo 1000 --bouncemax 0
+       # just generate, no propagation : timeout+freeze, reboot
+       
+    ggv --jpmt --modulo 1000 --trivial
+       # progressively adding lines from generate into trivial
+       # suggests first issue inside generate_cerenkov_photon/wavelength_lookup
+
+    ggv --jpmt --modulo 1000 --bouncemax 0
+       # just generate, no propagation : works after kludging wavelength_lookup 
+       # to always give a constant valid float4
+
+    ggv --jpmt --modulo 100
+       #  still with kludged wavelength_lookup : works, with photon animation operational
+
+    ggv --jpmt --modulo 50
+       #  still with kludged wavelength_lookup : timeout...  maybe stepping off reservation somewhere else reemission texture ?
+
+
+
+
+
 issue: ~/jpmt_mm0_too_many_vertices.txt
 ------------------------------------------
 

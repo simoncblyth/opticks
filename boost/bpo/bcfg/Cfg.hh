@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/bind.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string.hpp>
 
 
 /*
@@ -91,13 +92,21 @@ inline const std::string& Cfg::getCommandLine()
 
 inline bool Cfg::hasOpt(const char* opt)
 { 
-   return m_vm.count(opt) ; 
+   std::vector<std::string> elem;
+   boost::split(elem,opt,boost::is_any_of("|")); 
+   unsigned int count(0);
+   for(unsigned int i=0 ; i < elem.size() ; i++)
+   { 
+      count += m_vm.count(elem[i]);
+   }
+   return count > 0 ; 
 }   
 
 inline bool Cfg::isAbort()
 {
     // TODO: eliminate this by supporting comma delimited hasOpt checking 
-    return hasOpt("help") || hasOpt("version") || hasOpt("idpath") ; 
+    //return hasOpt("help") || hasOpt("version") || hasOpt("idpath") ; 
+    return hasOpt("help|version|idpath") ; 
 }
 
 

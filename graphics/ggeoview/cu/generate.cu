@@ -4,6 +4,7 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
+
 #include "define.h"
 #include "PerRayData_propagate.h"
 
@@ -23,7 +24,6 @@ rtBuffer<uint4>                optical_buffer;
 
 #include "rayleigh.h"
 #include "propagate.h"
-
 
 rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               photon_buffer;
@@ -62,11 +62,44 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 RT_PROGRAM void trivial()
 {
+    union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
+    unsigned int photon_offset = photon_id*PNUMQUAD ; 
+    unsigned int MAXREC = record_max ; 
     if(photon_id == 0)
     {
-       rtPrintf("trivial\n");
+       rtPrintf("trivial++\n");
     } 
+ 
+    phead.f = photon_buffer[photon_offset+0] ;
+
+    union quad ghead ; 
+    unsigned int genstep_id = phead.u.x ; // first 4 bytes seeded with genstep_id
+    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
+    ghead.f = genstep_buffer[genstep_offset+0]; 
+
+    curandState rng = rng_states[photon_id];
+
+    // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
+
+    unsigned long long seqhis(0) ;
+    unsigned long long seqmat(0) ;
+    State s ;   
+    Photon p ;  
+
+
+    if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
+    {
+        CerenkovStep cs ;
+        csload(cs, genstep_buffer, genstep_offset);
+        if(photon_id == 0) csdebug(cs);
+        
+        generate_cerenkov_photon(p, cs, rng );         
+
+        s.flag = CERENKOV ;  
+    }
+
+
 }
 
 RT_PROGRAM void generate()

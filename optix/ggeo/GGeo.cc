@@ -76,7 +76,7 @@ void GGeo::loadMergedMeshes(const char* idpath )
         if(fs::exists(mmdir) && fs::is_directory(mmdir))
         {   
             const char* path = mmdir.string().c_str() ;
-            LOG(info) << "GGeo::loadMergedMeshes " << gc->getRelativePath(path) ;
+            LOG(debug) << "GGeo::loadMergedMeshes " << gc->getRelativePath(path) ;
             m_merged_mesh[ridx] = GMergedMesh::load( path, ridx);
         }
         else

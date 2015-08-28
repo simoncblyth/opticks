@@ -50,8 +50,11 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer, const char
     {
         glGenBuffers(1, &buffer_id);
         glBindBuffer(target, buffer_id);
+
         glBufferData(target, buffer->getNumBytes(), buffer->getPointer(), usage);
+
         buffer->setBufferId(buffer_id); 
+        buffer->setBufferTarget(target); 
         buffer->Summary(name);
     }
     else
@@ -131,22 +134,22 @@ void Renderer::upload_buffers(bool debug)
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());
 
  
-    m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "Renderer::upload vertices");
-    m_normals   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "Renderer::upload normals" );
-    m_colors    = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "Renderer::upload colors" );
+    m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
+    m_normals   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
+    m_colors    = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
 
     if(hasTex())
     {
-        m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "Renderer::upload texcoords" );
+        m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
     }
 
     if(m_instanced) assert(hasTransforms()) ;
 
     if(hasTransforms())
     {
-        m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  rbuf, "Renderer::upload transforms");
+        m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  rbuf, "transforms");
         m_itransform_count = rbuf->getNumItems();
-        LOG(info) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
+        LOG(debug) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
     }
     else
     {
@@ -154,7 +157,7 @@ void Renderer::upload_buffers(bool debug)
     }
 
 
-    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf, "Renderer::upload indices");
+    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf, "indices");
     m_indices_count = ibuf->getNumItems(); // number of indices
 
     GLboolean normalized = GL_FALSE ; 
@@ -238,7 +241,7 @@ void Renderer::check_uniforms()
     bool inrm = strcmp(tag,"inrm")==0  ;  
     bool tex  = strcmp(tag,"tex")==0  ;  
 
-    LOG(info) << "Renderer::check_uniforms " 
+    LOG(debug) << "Renderer::check_uniforms " 
               << " tag " << tag  
               << " nrm " << nrm  
               << " inrm " << inrm
@@ -272,7 +275,7 @@ void Renderer::check_uniforms()
         assert(0); 
     }
 
-    LOG(info) << "Renderer::check_uniforms "
+    LOG(debug) << "Renderer::check_uniforms "
               << " tag " << tag 
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 
@@ -324,7 +327,10 @@ void Renderer::update_uniforms()
 }
 
 
-
+void Renderer::bind()
+{
+    glBindVertexArray (m_vao);
+}
 
 void Renderer::render()
 { 
@@ -332,7 +338,7 @@ void Renderer::render()
 
     update_uniforms();
 
-    glBindVertexArray (m_vao);
+    bind();
 
     // https://www.opengl.org/archives/resources/faq/technical/transparency.htm
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 

@@ -176,7 +176,7 @@ class App {
        int  loadGeometry();
        void uploadGeometry();
   public:
-       void loadEvt();
+       void loadGenstep();
        void uploadEvt();
   public:
        void prepareEngine();
@@ -317,7 +317,6 @@ void App::init()
 #ifdef NPYSERVER
     m_delegate    = new numpydelegate ; 
 #endif
-    m_evt         = new NumpyEvt ; 
 }
 
 
@@ -333,7 +332,6 @@ void App::wiring()
     m_bookmarks->setComposition(m_composition);
     m_bookmarks->setScene(m_scene);
 
-    m_scene->setNumpyEvt(m_evt);
 
     m_frame->setInteractor(m_interactor);      
     m_frame->setComposition(m_composition);
@@ -381,6 +379,8 @@ int App::config(int argc, char** argv)
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(fullscreen);
 
+    m_evt  = hasOpt("noevent") ? NULL : new NumpyEvt ; 
+    m_scene->setNumpyEvt(m_evt);
 
 #ifdef NPYSERVER
     m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
@@ -486,8 +486,14 @@ void App::uploadGeometry()
 }
 
 
-void App::loadEvt()
+void App::loadGenstep()
 {
+    if(hasOpt("nooptix|noevent")) 
+    {
+        LOG(warning) << "App::loadGenstep skip due to --nooptix/--noevent " ;
+        return ;
+    }
+
     const char* typ ; 
     if(     m_fcfg->hasOpt("cerenkov"))      typ = "cerenkov" ;
     else if(m_fcfg->hasOpt("scintillation")) typ = "scintillation" ;
@@ -498,13 +504,23 @@ void App::loadEvt()
 
     const char* det = m_cache->getDetector();
     bool juno       = m_cache->isJuno();
+    
+    int modulo = m_fcfg->getModulo();
 
     m_parameters->add<std::string>("Type", typ );
     m_parameters->add<std::string>("Tag", tag );
     m_parameters->add<std::string>("Detector", det );
+    m_parameters->add<int>("Modulo", modulo );
 
     NPY<float>* npy = NPY<float>::load(typ, tag, det ) ;
     m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
+   
+    if(modulo > 0)
+    {
+        LOG(warning) << "App::loadGenstep applying modulo scaledown " << modulo ; 
+        npy = NPY<float>::make_modulo(npy, modulo); 
+        m_parameters->add<std::string>("genstepModulo",   npy->getDigestString()  );
+    }
 
     (*m_timer)("loadGenstep"); 
 
@@ -513,7 +529,7 @@ void App::loadEvt()
    
     if(juno)
     {
-        LOG(warning) << "App::loadEvt skip genstep.applyLookup for JUNO " ;
+        LOG(warning) << "App::loadGenstep skip genstep.applyLookup for JUNO " ;
     }
     else
     {   
@@ -527,7 +543,8 @@ void App::loadEvt()
     bool nooptix    = m_fcfg->hasOpt("nooptix");
     bool geocenter  = m_fcfg->hasOpt("geocenter");
 
-    m_evt->setGenstepData(npy, nooptix); 
+    // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
+    m_evt->setGenstepData(npy, nooptix);  
 
     (*m_timer)("hostEvtAllocation"); 
 
@@ -537,13 +554,11 @@ void App::loadEvt()
     print(mmce, "main mmce");
     print(gsce, "main gsce");
     print(uuce, "main uuce");
-    bool autocam = true ; 
 
+    bool autocam = true ; 
     m_composition->setCenterExtent( uuce , autocam );
 
-
     m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
-
 
     m_parameters->add<unsigned int>("NumGensteps", m_evt->getNumGensteps());
     m_parameters->add<unsigned int>("NumPhotons", m_evt->getNumPhotons());
@@ -554,7 +569,13 @@ void App::loadEvt()
 
 void App::uploadEvt()
 {
-   
+    if(hasOpt("nooptix|noevent")) 
+    {
+        LOG(warning) << "App::uploadEvt skip due to --nooptix/--noevent " ;
+        return ;
+    }
+
+ 
 #ifdef INTEROP
     // signal Rdr to use GL_DYNAMIC_DRAW
     CUDAInterop<unsigned char>* c_psel = new CUDAInterop<unsigned char>(m_evt->getPhoselData());
@@ -584,62 +605,63 @@ void App::prepareEngine()
 {
     bool compute    = m_fcfg->hasOpt("compute"); // not working ?
     bool nooptix    = m_fcfg->hasOpt("nooptix");
+    bool noevent    = m_fcfg->hasOpt("noevent");
+    bool trivial    = m_fcfg->hasOpt("trivial");
 
     OEngine::Mode_t mode = compute ? OEngine::COMPUTE : OEngine::INTEROP ; 
 
     const char* idpath = m_cache->getIdPath();
 
     m_engine = new OEngine("GGeoView", mode) ;       
-    m_engine->setFilename(idpath);
-
-    // transitioning back to gg, for multiple sets of instanced 
-    m_engine->setGGeo(m_ggeo);   
-
-    m_engine->setBoundaryLib(m_blib);   
-    m_engine->setNumpyEvt(m_evt);
-    m_engine->setComposition(m_composition);                 
-    m_engine->setEnabled(!nooptix);
-    m_engine->setBounceMax(m_fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
-    m_engine->setRecordMax(m_evt->getMaxRec());       // 1:to minimize without breaking machinery 
-
     m_interactor->setTouchable(m_engine);
 
-    int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
-    assert(rng_max >= 1e6); 
-    m_engine->setRngMax(rng_max);
+    m_engine->setFilename(idpath);
 
+    m_engine->setGGeo(m_ggeo);   
+    m_engine->setBoundaryLib(m_blib);   
+    m_engine->setNumpyEvt(noevent ? NULL : m_evt);
+    m_engine->setComposition(m_composition);                 
+    m_engine->setEnabled(!nooptix);
+    m_engine->setTrivial(trivial);
 
-    m_parameters->add<unsigned int>("RngMax",    m_engine->getRngMax() );
-    m_parameters->add<unsigned int>("BounceMax", m_engine->getBounceMax() );
-    m_parameters->add<unsigned int>("RecordMax", m_engine->getRecordMax() );
+    if(!noevent)
+    {
+        m_engine->setBounceMax(m_fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
+        m_engine->setRecordMax(m_evt->getMaxRec());       // 1:to minimize without breaking machinery 
+        int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
+        assert(rng_max >= 1e6); 
+        m_engine->setRngMax(rng_max);
 
+        m_parameters->add<unsigned int>("RngMax",    m_engine->getRngMax() );
+        m_parameters->add<unsigned int>("BounceMax", m_engine->getBounceMax() );
+        m_parameters->add<unsigned int>("RecordMax", m_engine->getRecordMax() );
+    }
 
     LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
     m_engine->init();  
     (*m_timer)("initOptiX"); 
-    LOG(info) << "main.OptiXEngine::init DONE "; 
+    LOG(info) << "App::prepareEngine DONE "; 
 }
 
 
 void App::propagate()
 {
-    bool nopropagate = m_fcfg->hasOpt("nopropagate");
-    if(nopropagate)
+    if(hasOpt("nooptix|noevent|nopropagate")) 
     {
-        LOG(info)<< " ******************* (main) OptiXEngine::generate INHIBITED by -P/--nopropagate  *********************** " ;
+        LOG(warning) << "App::propagate skip due to --nooptix/--noevent/--nopropagate " ;
+        return ;
     }
-    else
-    {
-        LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
-        m_engine->generate();     
-        (*m_timer)("propagate"); 
-    }
+
+    LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
+    m_engine->generate();     
+    (*m_timer)("propagate"); 
 }
 
 
 
 void App::downloadEvt()
 {
+    if(!m_evt) return ; 
 
     NPY<float>* dpho = m_evt->getPhotonData();
     Rdr::download(dpho);
@@ -677,6 +699,7 @@ void App::downloadEvt()
 
 void App::indexEvt()
 {
+    if(!m_evt) return ; 
     NPY<float>* dpho = m_evt->getPhotonData();
     m_bnd = new BoundariesNPY(dpho); 
 
@@ -964,7 +987,8 @@ int main(int argc, char** argv)
     bool nooptix = app.hasOpt("nooptix");
     if(!nooptix)
     {
-        app.loadEvt();
+
+        app.loadGenstep();
 
         app.uploadEvt();
 

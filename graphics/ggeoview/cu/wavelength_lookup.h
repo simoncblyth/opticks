@@ -23,7 +23,9 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
     // x:low y:high z:step w:mid   tex coords are offset by 0.5 
     // texture lookups benefit from hardware interpolation 
     float nmi = (nm - wavelength_domain.x)/wavelength_domain.z + 0.5f ;   
-    return tex2D(wavelength_texture, nmi, line + 0.5f );
+    //return tex2D(wavelength_texture, nmi, line + 0.5f );
+    return make_float4(1.33f, 1000.f, 2000.f, 0.0f );   // refractive_index, absorption_length, scattering_length, reemission_prob
+    // DEBUG KLUDGE
 }
 
 static __device__ __inline__ float sample_reciprocal_domain(const float& u)

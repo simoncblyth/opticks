@@ -208,8 +208,97 @@ unsigned int RayTraceConfig::getMultiplicity(RTformat format)
 
 
 
+const char* RayTraceConfig::getFormatName(RTformat format)
+{
+   const char* name = NULL ; 
+   switch(format)
+   {
+      case RT_FORMAT_UNKNOWN: name=_RT_FORMAT_UNKNOWN ; break ; 
+
+      case RT_FORMAT_FLOAT:   name=_RT_FORMAT_FLOAT ; break ;
+      case RT_FORMAT_FLOAT2:  name=_RT_FORMAT_FLOAT2 ; break ;
+      case RT_FORMAT_FLOAT3:  name=_RT_FORMAT_FLOAT3 ; break ;
+      case RT_FORMAT_FLOAT4:  name=_RT_FORMAT_FLOAT4 ; break ;
+
+      case RT_FORMAT_BYTE:    name=_RT_FORMAT_BYTE ; break ;
+      case RT_FORMAT_BYTE2:   name=_RT_FORMAT_BYTE2 ; break ;
+      case RT_FORMAT_BYTE3:   name=_RT_FORMAT_BYTE3 ; break ;
+      case RT_FORMAT_BYTE4:   name=_RT_FORMAT_BYTE4 ; break ;
+
+      case RT_FORMAT_UNSIGNED_BYTE:  name=_RT_FORMAT_UNSIGNED_BYTE ; break ;
+      case RT_FORMAT_UNSIGNED_BYTE2: name=_RT_FORMAT_UNSIGNED_BYTE2 ; break ;
+      case RT_FORMAT_UNSIGNED_BYTE3: name=_RT_FORMAT_UNSIGNED_BYTE3 ; break ;
+      case RT_FORMAT_UNSIGNED_BYTE4: name=_RT_FORMAT_UNSIGNED_BYTE4 ; break ;
+
+      case RT_FORMAT_SHORT:  name=_RT_FORMAT_SHORT ; break ;
+      case RT_FORMAT_SHORT2: name=_RT_FORMAT_SHORT2 ; break ;
+      case RT_FORMAT_SHORT3: name=_RT_FORMAT_SHORT3 ; break ;
+      case RT_FORMAT_SHORT4: name=_RT_FORMAT_SHORT4 ; break ;
+
+      case RT_FORMAT_UNSIGNED_SHORT:  name=_RT_FORMAT_UNSIGNED_SHORT ; break ;
+      case RT_FORMAT_UNSIGNED_SHORT2: name=_RT_FORMAT_UNSIGNED_SHORT2 ; break ;
+      case RT_FORMAT_UNSIGNED_SHORT3: name=_RT_FORMAT_UNSIGNED_SHORT3 ; break ;
+      case RT_FORMAT_UNSIGNED_SHORT4: name=_RT_FORMAT_UNSIGNED_SHORT4 ; break ;
+
+      case RT_FORMAT_INT:  name=_RT_FORMAT_INT ; break ;
+      case RT_FORMAT_INT2: name=_RT_FORMAT_INT2 ; break ;
+      case RT_FORMAT_INT3: name=_RT_FORMAT_INT3 ; break ;
+      case RT_FORMAT_INT4: name=_RT_FORMAT_INT4 ; break ;
+
+      case RT_FORMAT_UNSIGNED_INT:  name=_RT_FORMAT_UNSIGNED_INT ; break ;
+      case RT_FORMAT_UNSIGNED_INT2: name=_RT_FORMAT_UNSIGNED_INT2 ; break ;
+      case RT_FORMAT_UNSIGNED_INT3: name=_RT_FORMAT_UNSIGNED_INT3 ; break ;
+      case RT_FORMAT_UNSIGNED_INT4: name=_RT_FORMAT_UNSIGNED_INT4 ; break ;
+
+      case RT_FORMAT_USER:       name=_RT_FORMAT_USER ; break ;
+      case RT_FORMAT_BUFFER_ID:  name=_RT_FORMAT_BUFFER_ID ; break ;
+      case RT_FORMAT_PROGRAM_ID: name=_RT_FORMAT_PROGRAM_ID ; break ; 
+   }
+   return name ; 
+}
 
 
 
+
+   const char* RayTraceConfig::_RT_FORMAT_UNKNOWN = "UNKNOWN" ;
+
+   const char* RayTraceConfig::_RT_FORMAT_FLOAT = "FLOAT" ;
+   const char* RayTraceConfig::_RT_FORMAT_FLOAT2 = "FLOAT2" ;
+   const char* RayTraceConfig::_RT_FORMAT_FLOAT3 = "FLOAT3" ;
+   const char* RayTraceConfig::_RT_FORMAT_FLOAT4 = "FLOAT4" ;
+
+   const char* RayTraceConfig::_RT_FORMAT_BYTE = "BYTE" ;
+   const char* RayTraceConfig::_RT_FORMAT_BYTE2 = "BYTE2" ;
+   const char* RayTraceConfig::_RT_FORMAT_BYTE3 = "BYTE3" ;
+   const char* RayTraceConfig::_RT_FORMAT_BYTE4 = "BYTE4" ;
+
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE = "UNSIGNED_BYTE" ;
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE2 = "UNSIGNED_BYTE2" ;
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE3 = "UNSIGNED_BYTE3" ;
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE4 = "UNSIGNED_BYTE4" ;
+
+   const char* RayTraceConfig::_RT_FORMAT_SHORT = "SHORT" ;
+   const char* RayTraceConfig::_RT_FORMAT_SHORT2 = "SHORT2" ;
+   const char* RayTraceConfig::_RT_FORMAT_SHORT3 = "SHORT3" ;
+   const char* RayTraceConfig::_RT_FORMAT_SHORT4 = "SHORT4" ;
+
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT = "UNSIGNED_SHORT" ;
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT2 = "UNSIGNED_SHORT2" ;
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT3 = "UNSIGNED_SHORT3";
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT4 = "UNSIGNED_SHORT4";
+
+   const char* RayTraceConfig::_RT_FORMAT_INT = "INT" ;
+   const char* RayTraceConfig::_RT_FORMAT_INT2 = "INT2";
+   const char* RayTraceConfig::_RT_FORMAT_INT3 = "INT3";
+   const char* RayTraceConfig::_RT_FORMAT_INT4 = "INT4";
+
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT = "UNSIGNED_INT" ;
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT2 = "UNSIGNED_INT2";
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT3 = "UNSIGNED_INT3";
+   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT4 = "UNSIGNED_INT4";
+
+   const char* RayTraceConfig::_RT_FORMAT_USER = "USER" ;
+   const char* RayTraceConfig::_RT_FORMAT_BUFFER_ID = "BUFFER_ID" ;
+   const char* RayTraceConfig::_RT_FORMAT_PROGRAM_ID = "PROGRAM_ID" ;
 
 

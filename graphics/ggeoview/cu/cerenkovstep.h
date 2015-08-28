@@ -206,6 +206,7 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
         wavelength = sample_reciprocal_domain(curand_uniform(&rng));   
 
         float4 props = wavelength_lookup(wavelength, cs.MaterialIndex);
+        //float4 props = make_float4( 1.33f , 1000.f , 2000.f, 0.f );  // ri/ab/sc/re  DEBUG
 
         sampledRI = props.x ; 
 
@@ -275,7 +276,6 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       p.flags.u.y = 0 ;
       p.flags.u.z = 0 ;
       p.flags.u.w = 0 ;
-
 
 
 

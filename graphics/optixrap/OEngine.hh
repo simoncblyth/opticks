@@ -65,6 +65,7 @@ class OEngine : public Touchable {
         static const char* COMPUTE_ ; 
         static const char* INTEROP_ ; 
     public:
+        unsigned int getNumEntryPoint();
         OEngine(const char* cmake_target, Mode_t mode=INTEROP );
 
     public:
@@ -79,6 +80,7 @@ class OEngine : public Touchable {
         void setMergedMesh(GMergedMesh* mergedmesh);
         void setBoundaryLib(GBoundaryLib* boundarylib);
         void setEnabled(bool enabled);
+        void setTrivial(bool trivial);
         void setNumpyEvt(NumpyEvt* evt);
     public:
         void downloadEvt();
@@ -118,7 +120,7 @@ class OEngine : public Touchable {
 
     private:
         void initRenderer();
-        void initContext();
+        void initRayTrace();
         void initGeometry();
         void initGenerate();
         void initGenerate(NumpyEvt* evt);
@@ -194,6 +196,7 @@ class OEngine : public Touchable {
         char*            m_cmake_target ;
         Mode_t           m_mode ; 
         bool             m_enabled ; 
+        bool             m_trivial ; 
         int              m_texture_id ; 
         NumpyEvt*        m_evt ; 
         NPYBase*         m_domain ;
@@ -242,6 +245,7 @@ inline OEngine::OEngine(const char* cmake_target, Mode_t mode) :
     m_cmake_target(strdup(cmake_target)),
     m_mode(mode),  
     m_enabled(true),
+    m_trivial(false),
     m_texture_id(-1),
     m_evt(NULL),
     m_domain(NULL),
@@ -284,6 +288,12 @@ inline void OEngine::setEnabled(bool enabled)
 {
     m_enabled = enabled ; 
 }
+inline void OEngine::setTrivial(bool trivial)
+{
+    m_trivial = trivial ; 
+}
+
+
 
 inline bool OEngine::isEnabled()
 {

@@ -27,7 +27,7 @@ private:
     void init();
 
 public:
-    template <typename T> optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold=1);
+    template <typename T> optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name);
     optix::Group   makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
 
 private:

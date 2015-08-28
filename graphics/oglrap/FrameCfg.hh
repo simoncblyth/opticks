@@ -13,6 +13,7 @@ class FrameCfg : public Cfg {
      int          getRecordMax(); 
      int          getTimeMax(); 
      int          getRepeatIndex(); 
+     int          getModulo(); 
 private:
      void init();
 private:
@@ -24,6 +25,7 @@ private:
      int         m_recordmax ; 
      int         m_timemax ; 
      int         m_repeatidx ; 
+     int         m_modulo ; 
 };
 
 template <class Listener>
@@ -34,7 +36,8 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),
-       m_repeatidx(-1)
+       m_repeatidx(-1),
+       m_modulo(-1)
 {   
    init();  
 }
@@ -62,6 +65,9 @@ inline void FrameCfg<Listener>::init()
        ("nopropagate,P",  "inhibit generation/propagation") ;
 
    m_desc.add_options()
+       ("noevent,E",  "inhibit event handling") ;
+
+   m_desc.add_options()
        ("nooptix,O",  "inhibit use of OptiX") ;
 
    m_desc.add_options()
@@ -69,6 +75,9 @@ inline void FrameCfg<Listener>::init()
 
    m_desc.add_options()
        ("noindex,I",  "no photon/record indexing") ;
+
+   m_desc.add_options()
+       ("trivial",  "swap OptiX generate program with trivial standin for debugging") ;
 
    m_desc.add_options()
        ("geocenter",  "center view on geometry rather than the default genstep centering") ;
@@ -81,6 +90,11 @@ inline void FrameCfg<Listener>::init()
 
    m_desc.add_options()
        ("cerenkov,c",  "load cerenkov gensteps") ;
+
+   char modulo[128];
+   snprintf(modulo,128, "Modulo scaledown input gensteps for speed/debugging, eg 10 to decimate. Values less than 1 disable scaledown. Default %d", m_modulo);
+   m_desc.add_options()
+       ("modulo",  boost::program_options::value<int>(&m_modulo), modulo );
 
    m_desc.add_options()
        ("alt,a",  "use alternative record renderer") ;
@@ -95,6 +109,8 @@ inline void FrameCfg<Listener>::init()
    snprintf(bouncemax,128, "Maximum number of boundary bounces, 0:to just generate. Default %d ", m_bouncemax);
    m_desc.add_options()
        ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
+
+
 
    // keeping bouncemax one less than recordmax is advantageous 
    // as bookeeping is then consistent between the photons and the records 
@@ -173,7 +189,11 @@ inline int FrameCfg<Listener>::getRepeatIndex()
 {
     return m_repeatidx ; 
 }
-
+template <class Listener>
+inline int FrameCfg<Listener>::getModulo()
+{
+    return m_modulo ; 
+}
 
 
 

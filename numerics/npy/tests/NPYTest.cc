@@ -77,6 +77,25 @@ void test_g4stepnpy()
     step->dump("G4StepNPY");
 }
 
+void test_make_modulo()
+{
+    NPY<float>* npy0 = NPY<float>::load("cerenkov","1", "dayabay");
+    G4StepNPY* step0 = new G4StepNPY(npy0);   
+    step0->dump("G4StepNPY0");
+
+
+    NPY<float>* npy1 = NPY<float>::make_modulo(npy0, 10) ;
+    G4StepNPY* step1 = new G4StepNPY(npy1);   
+    step1->dump("G4StepNPY1");
+
+}
+
+
+
+
+
+
+
 void test_getData()
 {
     NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
@@ -174,7 +193,10 @@ int main()
     //test_save_path();
 
     //test_setQuad();
-    test_string();
+    //test_string();
+
+    //test_g4stepnpy();   
+    test_make_modulo();   
 
     return 0 ;
 }

@@ -1,6 +1,13 @@
 #include "OGeo.hh"
 
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+
 #include <algorithm>
+#include <iomanip>
+
 #include <optix_world.h>
 
 #include "OEngine.hh"
@@ -102,7 +109,7 @@ void OGeo::setTop(optix::Group top)
 void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
-    unsigned int repeatLimit = 100 ;    // for debugging only
+    unsigned int repeatLimit = 0 ;    // for debugging only, 0:no limit 
 
     LOG(info) << "OGeo::convert"
               << " nmm " << nmm
@@ -258,19 +265,19 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
     // TODO: purloin the OpenGL buffers to avoid duplicating the geometry info on GPU 
 
-    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3 );
+    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer");
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
 
-    optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mergedmesh->getIndicesBuffer(), RT_FORMAT_INT3, 3 ); 
+    optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mergedmesh->getIndicesBuffer(), RT_FORMAT_INT3, 3 , "indexBuffer"); 
     geometry["indexBuffer"]->setBuffer(indexBuffer);
 
-    optix::Buffer nodeBuffer = createInputBuffer<unsigned int>( mergedmesh->getNodesBuffer(), RT_FORMAT_UNSIGNED_INT );
+    optix::Buffer nodeBuffer = createInputBuffer<unsigned int>( mergedmesh->getNodesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "nodeBuffer");
     geometry["nodeBuffer"]->setBuffer(nodeBuffer);
 
-    optix::Buffer boundaryBuffer = createInputBuffer<unsigned int>( mergedmesh->getBoundariesBuffer(), RT_FORMAT_UNSIGNED_INT );
+    optix::Buffer boundaryBuffer = createInputBuffer<unsigned int>( mergedmesh->getBoundariesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "boundaryBuffer");
     geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
  
-    optix::Buffer sensorBuffer = createInputBuffer<unsigned int>( mergedmesh->getSensorsBuffer(), RT_FORMAT_UNSIGNED_INT );
+    optix::Buffer sensorBuffer = createInputBuffer<unsigned int>( mergedmesh->getSensorsBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "sensorBuffer");
     geometry["sensorBuffer"]->setBuffer(sensorBuffer);
 
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
@@ -285,44 +292,52 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 
 template <typename T>
-optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold)
+optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name)
 {
    unsigned int bytes = buf->getNumBytes() ;
    unsigned int nit = buf->getNumItems()/fold ;
    unsigned int nel = buf->getNumElements();
    unsigned int mul = RayTraceConfig::getMultiplicity(format) ;
 
+   int buffer_target = buf->getBufferTarget();
+   int buffer_id = buf->getBufferId() ;
+
    LOG(info)<<"OGeo::createInputBuffer"
-            << " bytes " << bytes
-            << " nit " << nit 
-            << " nel " << nel 
-            << " mul " << mul 
-            << " fold " << fold 
-            << " sizeof(T) " << sizeof(T)
+            << " fmt " << std::setw(20) << RayTraceConfig::getFormatName(format)
+            << " name " << std::setw(20) << name
+            << " bytes " << std::setw(8) << bytes
+            << " nit " << std::setw(7) << nit 
+            << " nel " << std::setw(3) << nel 
+            << " mul " << std::setw(3) << mul 
+            << " fold " << std::setw(3) << fold 
+            << " sizeof(T) " << std::setw(3) << sizeof(T)
+            << " id " << std::setw(3) << buffer_id 
             ;
 
    assert(sizeof(T)*nit == buf->getNumBytes() );
    assert(nel == mul/fold );
 
-
    optix::Buffer buffer ;
-   int buffer_id = buf->getBufferId() ;
+
+   buffer_id = -1 ; // kill attempt to reuse OpenGL buffers
 
    if(buffer_id > -1 )
    {
-        LOG(info) << "OGeo::createInputBuffer reusing buffer_id " << buffer_id ; 
+       /*
+       Reuse attempt fails, getting 
+       Caught exception: GL error: Invalid enum
+       */
+
+        glBindBuffer(buffer_target, buffer_id) ;
 
         buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, buffer_id);
-        buffer->setFormat(format);  // must set format, before can set ElementSize
-        if(format == RT_FORMAT_USER)
-        {
-            buffer->setElementSize(sizeof(T));
-        }
+        buffer->setFormat(format); 
         buffer->setSize(nit);
+
+        glBindBuffer(buffer_target, 0) ;
    } 
    else
    {
-        LOG(warning) << "OGeo::createInputBuffer CREATING NEW BUFFER " ; 
         buffer = m_context->createBuffer( RT_BUFFER_INPUT, format, nit );
         memcpy( buffer->map(), buf->getPointer(), buf->getNumBytes() );
         buffer->unmap();

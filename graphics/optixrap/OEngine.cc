@@ -62,6 +62,9 @@ const char* OEngine::getModeName()
     assert(0);
 }
 
+// interop and compute are sufficiently different to warrant a separate class ?
+// maybe with common base class
+
 
 void OEngine::init()
 {
@@ -71,8 +74,15 @@ void OEngine::init()
               << " mode " << getModeName()
               ; 
     m_context = Context::create();
-    m_top = m_context->createGroup();
+    m_context->setPrintEnabled(true);
+    m_context->setPrintBufferSize(8192);
+    //m_context->setPrintLaunchIndex(0,0,0);
+    m_context->setStackSize( 2180 ); // TODO: make externally configurable, and explore performance implications
     m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
+
+
+    m_top = m_context->createGroup();
+
     m_domain = NPY<float>::make_vec4(e_number_domain,1,0.f) ;
     m_idomain = NPY<int>::make_vec4(e_number_idomain,1,0) ;
 
@@ -81,16 +91,22 @@ void OEngine::init()
         initRenderer();
     } 
 
-    initContext();
+    initRayTrace();
     initGeometry();
 
-    initGenerate();  // TODO: move elsewhere, only needed on NPY arrival
-    initRng();       // TODO: ditto
+    if(m_evt)
+    {
+        // TODO: move these elsewhere, only needed on NPY arrival
+        initGenerate();  
+        initRng();    
+    }
 
     preprocess();  // context is validated and accel structure built in here
 
     LOG(info) << "OEngine::init DONE " ;
 }
+
+
 
 void OEngine::initRenderer()
 {
@@ -107,16 +123,14 @@ void OEngine::initRenderer()
     m_renderer->upload(m_texture);
 }
 
-void OEngine::initContext()
+
+unsigned int OEngine::getNumEntryPoint()
 {
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+    return m_evt ? e_entryPointCount : e_entryPointCount - 1 ; 
+}
 
-    m_context->setPrintEnabled(true);
-    m_context->setPrintBufferSize(8192);
-    //m_context->setPrintLaunchIndex(0,0,0);
-
-    m_context->setStackSize( 2180 ); // TODO: make externally configurable, and explore performance implications
-
+void OEngine::initRayTrace()
+{
     if(isInterop())
     {
         unsigned int width  = m_composition->getPixelWidth();
@@ -143,9 +157,11 @@ void OEngine::initContext()
     // But the output requirements are very different ? Which would argue for a separate entry point.
     //
 
-    m_context->setEntryPointCount( e_entryPointCount );  
-    cfg->setRayGenerationProgram(  e_pinhole_camera, "pinhole_camera.cu", "pinhole_camera" );
-    cfg->setExceptionProgram(      e_pinhole_camera, "pinhole_camera.cu", "exception");
+    unsigned int numEntryPoint = getNumEntryPoint();
+    m_context->setEntryPointCount( numEntryPoint );  
+
+    m_config->setRayGenerationProgram(  e_pinhole_camera, "pinhole_camera.cu", "pinhole_camera" );
+    m_config->setExceptionProgram(      e_pinhole_camera, "pinhole_camera.cu", "exception");
 
     m_context[ "radiance_ray_type"   ]->setUint( e_radiance_ray );
     m_context[ "touch_ray_type"      ]->setUint( e_touch_ray );
@@ -155,16 +171,15 @@ void OEngine::initContext()
 
     m_context->setRayTypeCount( e_rayTypeCount );
 
-    cfg->setMissProgram( e_radiance_ray , "constantbg.cu", "miss" );
-
-    const char* raygenprg = "generate" ; 
-    //const char* raygenprg = "trivial" ; 
-    cfg->setRayGenerationProgram(e_generate, "generate.cu", raygenprg );
-    cfg->setExceptionProgram(    e_generate, "generate.cu", "exception");
+    m_config->setMissProgram( e_radiance_ray , "constantbg.cu", "miss" );
 
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
     m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
 }
+
+
+
+
 
 
 // fulfil Touchable interface
@@ -253,7 +268,6 @@ void OEngine::initGeometry()
 
     loadAccelCache();
 
-
     m_context[ "top_object" ]->set( m_top );
 
     glm::vec4 ce = m_composition->getDomainCenterExtent();
@@ -271,15 +285,13 @@ void OEngine::initGeometry()
 
     print(wd, "OEngine::initGeometry wavelength_domain");
 
-
     glm::ivec4 ci ;
     ci.x = m_bounce_max ;  
     ci.y = m_rng_max ;  
     ci.z = 0 ;  
-    ci.w = m_evt->getMaxRec() ;  
+    ci.w = m_evt ? m_evt->getMaxRec() : 0 ;  
 
     m_idomain->setQuad(e_config_idomain, 0, ci );
-
 
     // cf with MeshViewer::initGeometry
     LOG(info) << "OEngine::initGeometry DONE "
@@ -287,8 +299,6 @@ void OEngine::initGeometry()
               << " y: " << ce.y  
               << " z: " << ce.z  
               << " w: " << ce.w  ;
-             
-
 }
 
 
@@ -306,8 +316,8 @@ void OEngine::preprocess()
     LOG(info)<< "OEngine::preprocess start compile ";
     m_context->compile();
     LOG(info)<< "OEngine::preprocess start building Accel structure ";
-    //m_context->launch(e_pinhole_camera,0); 
-    m_context->launch(e_generate,0); 
+    m_context->launch(e_pinhole_camera,0); 
+    //m_context->launch(e_generate,0); 
 
     LOG(info)<< "OEngine::preprocess DONE ";
 }
@@ -394,6 +404,12 @@ void OEngine::initGenerate()
 
 void OEngine::initGenerate(NumpyEvt* evt)
 {
+    const char* raygenprg = m_trivial ? "trivial" : "generate" ; 
+
+    LOG(info) << "OEngine::initGenerate " << raygenprg ; 
+    m_config->setRayGenerationProgram(e_generate, "generate.cu", raygenprg );
+    m_config->setExceptionProgram(    e_generate, "generate.cu", "exception");
+
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
     m_genstep_buffer = createIOBuffer<float>( gensteps );
@@ -428,6 +444,7 @@ void OEngine::initGenerate(NumpyEvt* evt)
 
 void OEngine::downloadEvt()
 {
+    if(!m_evt) return ;
     LOG(info)<<"OEngine::downloadEvt" ;
  
     NPY<float>* dpho = m_evt->getPhotonData();
@@ -744,10 +761,6 @@ void OEngine::render()
 
     glBindTexture(GL_TEXTURE_2D, 0 );  
 }
-
-
-
-
 
 
 void OEngine::fill_PBO()

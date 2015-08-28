@@ -224,6 +224,46 @@ NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, T* value
 }
 
 
+template <typename T>
+NPY<T>* NPY<T>::make_modulo(NPY<T>* src, unsigned int scaledown)
+{
+    std::vector<T>& sdata = src->data();
+    std::vector<T>  ddata ; 
+
+    unsigned int ni = src->getShape(0) ;
+    unsigned int nj = src->getShape(1) ;
+    unsigned int nk = src->getShape(2) ;
+
+    printf("make_modulo ni %d nj %d nk %d \n", ni, nj, nk );
+
+    unsigned int dni(0);
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        if(i % scaledown == 0)
+        {
+            dni += 1 ; 
+            for(unsigned int j=0 ; j < nj ; j++){
+            for(unsigned int k=0 ; k < nk ; k++){
+  
+                unsigned int index = i*nj*nk + j*nk + k ;
+                ddata.push_back(sdata[index]);
+
+            }
+            }
+        }
+    }
+
+    std::vector<int> dshape ; 
+    dshape.push_back(dni);
+    dshape.push_back(nj);
+    dshape.push_back(nk);
+
+    assert(ddata.size() == dni*nj*nk );
+    std::string dmetadata = "{}";
+
+    NPY<T>* dst = new NPY<T>(dshape,ddata,dmetadata) ;
+    return dst ; 
+}
 
 
 
