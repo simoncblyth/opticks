@@ -15,14 +15,11 @@ int main(int argc, char** argv)
     GBoundaryLib* lib = GBoundaryLib::load(dir);
     //lib->Summary("GBoundaryLib::Summary");
 
-
     for(unsigned int ib=0 ; ib < lib->getNumBoundary() ; ib++)
     {
-         GBoundary* boundary = lib->getBoundary(ib);
-         boundary->Summary("boundary");
+        GBoundary* boundary = lib->getBoundary(ib);
+        boundary->Summary("boundary");
     }
-
-
 
     /*
     if(argc == 2) lib->dumpWavelengthBuffer();        

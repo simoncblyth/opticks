@@ -91,6 +91,37 @@ void test_make_modulo()
 }
 
 
+void test_g4stepnpy_materials()
+{
+
+    //const char* det = "dayabay" ; 
+    const char* det = "juno" ; 
+
+    NPY<float>* npy = NPY<float>::load("cerenkov","1", det);
+    G4StepNPY* step = new G4StepNPY(npy);   
+    step->dump("G4StepNPY");
+
+    std::set<int> s = npy->uniquei(0,2);
+    typedef std::set<int>::const_iterator SII ; 
+
+    for(SII it=s.begin() ; it != s.end() ; it++)
+    {
+        printf(" %d \n", *it ); 
+    }
+
+
+    std::map<int,int> m = npy->count_uniquei(0,2);
+    typedef std::map<int, int>::const_iterator MII ; 
+
+    for(MII it=m.begin() ; it != m.end() ; it++)
+    {
+        printf(" %d : %d \n", it->first, it->second ); 
+    }
+
+
+
+}
+
 
 
 
@@ -196,7 +227,8 @@ int main()
     //test_string();
 
     //test_g4stepnpy();   
-    test_make_modulo();   
+    //test_make_modulo();   
+    test_g4stepnpy_materials();
 
     return 0 ;
 }

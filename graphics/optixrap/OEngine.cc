@@ -252,13 +252,10 @@ void OEngine::initGeometry()
 {
     LOG(info) << "OEngine::initGeometry" ;
 
-    GGeo* gg = getGGeo();
-    assert(gg) ; 
+    GGeo* gg = getGGeo(); assert(gg) ; 
+    GBoundaryLib* blib = getBoundaryLib(); assert(blib);
 
-    GBoundaryLib* glib = getBoundaryLib();
-    assert(glib);
-
-    OBoundaryLib olib(m_context, glib);
+    OBoundaryLib olib(m_context, blib); 
     olib.convert(); 
 
     OGeo         og(m_context, gg);

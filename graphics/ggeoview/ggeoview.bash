@@ -54,6 +54,66 @@ issue: jpmt timeouts binary search to pin down
        #  still with kludged wavelength_lookup : timeout...  maybe stepping off reservation somewhere else reemission texture ?
 
 
+issue: jpmt wavelengthBuffer/boundarylib ? maybe bad material indices ?
+-------------------------------------------------------------------------
+
+* is the cs.MaterialIndex expected to be the wavelength texture line number ?
+
+  * if so then the jpmt/juno numbers do need a "translation" applied ?
+  * GBoundaryLibMetadata.json has 18 boundaries 0..17
+
+::
+
+    In [5]: cd /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae
+    /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae
+
+    In [6]: a = np.load("wavelength.npy")
+
+    In [40]: a.reshape(-1,6,39,4).shape
+    Out[40]: (18, 6, 39, 4)
+
+    In [47]: a.reshape(-1,6,39,4)[6]
+    Out[47]: 
+    array([[[       1.33 ,      273.208,  1000000.   ,        0.   ],
+            [       1.33 ,      273.208,  1000000.   ,        0.   ],
+            [       1.33 ,      273.208,  1000000.   ,        0.   ],
+            [       1.33 ,      273.208,  1000000.   ,        0.   ],
+            [       1.345,      273.208,  1000000.   ,        0.   ],
+            [       1.36 ,      273.208,  1000000.   ,        0.   ],
+            [       1.375,      273.208,  1000000.   ,        0.   ],
+            [       1.39 ,      691.558,  1000000.   ,        0.   ],
+            [       1.384,     1507.119,  1000000.   ,        0.   ],
+
+    In [54]: 18*6
+    Out[54]: 108
+
+::
+
+    delta:npy blyth$ /usr/local/env/numerics/npy/bin/NPYTest
+    [2015-08-28 21:14:53.244421] [0x000007fff7650e31] [debug]   NPY<T>::load /usr/local/env/juno/cerenkov/1.npy
+    G4StepNPY
+     ni 3840 nj 6 nk 4 nj*nk 24 
+     (    0,    0)               -1                1               48              322  sid/parentId/materialIndex/numPhotons 
+     (    0,    1)            0.000            0.000            0.000            0.000  position/time 
+     (    0,    2)           -0.861           -0.156           -0.530            1.023  deltaPosition/stepLength 
+     (    0,    3)               13           -1.000            1.000          299.792  code 
+     (    0,    4)            1.000            0.000            0.000            0.688 
+     (    0,    5)            0.527          293.245          293.245            0.000 
+     ( 3839,    0)           -38391                4               48               47  sid/parentId/materialIndex/numPhotons 
+     ( 3839,    1)          -16.246           -2.947          -10.006            0.064  position/time 
+     ( 3839,    2)           -0.191           -0.194            0.236            0.378  deltaPosition/stepLength 
+     ( 3839,    3)               11           -1.000            1.000          230.542  code 
+     ( 3839,    4)            1.300            0.000            0.000            0.895 
+     ( 3839,    5)            0.200          165.673          110.064            0.000 
+     24 
+     42 
+     48 
+     24 : 750 
+     42 : 52 
+     48 : 3038 
+
+
+* TODO : trace the prop values
 
 
 
