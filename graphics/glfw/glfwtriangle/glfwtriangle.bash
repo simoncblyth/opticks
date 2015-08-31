@@ -8,6 +8,12 @@ glfwtriangle-usage(){ cat << EOU
 
 * http://antongerdelan.net/opengl/hellotriangle.html
 
+* http://www.drdobbs.com/architecture-and-design/cuda-supercomputing-for-the-masses-part/222600097?pgno=2
+
+* https://gist.github.com/dangets/2926425
+
+* throgl-
+
 
 EOU
 }
