@@ -4,8 +4,8 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
-
 #include "define.h"
+#define DEBUG 1 
 #include "PerRayData_propagate.h"
 
 using namespace optix;
@@ -33,10 +33,12 @@ rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes
 rtBuffer<unsigned char>        phosel_buffer; 
 rtBuffer<unsigned char>        recsel_buffer; 
 
+
 rtBuffer<curandState, 1>       rng_states ;
 
 rtDeclareVariable(float4,        center_extent, , );
 rtDeclareVariable(float4,        time_domain  , , );
+rtDeclareVariable(uint4,         debug_control , , );
 rtDeclareVariable(float,         propagate_epsilon, , );
 rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
@@ -62,45 +64,14 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 RT_PROGRAM void trivial()
 {
-    union quad phead ;
-    unsigned long long photon_id = launch_index.x ;  
-    unsigned int photon_offset = photon_id*PNUMQUAD ; 
-    unsigned int MAXREC = record_max ; 
-    if(photon_id == 0)
-    {
-       rtPrintf("trivial++\n");
-    } 
- 
-    phead.f = photon_buffer[photon_offset+0] ;
-
-    union quad ghead ; 
-    unsigned int genstep_id = phead.u.x ; // first 4 bytes seeded with genstep_id
-    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
-    ghead.f = genstep_buffer[genstep_offset+0]; 
-
-    curandState rng = rng_states[photon_id];
-
-    // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
-
-    unsigned long long seqhis(0) ;
-    unsigned long long seqmat(0) ;
-    State s ;   
-    Photon p ;  
-
-
-    if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
-    {
-        CerenkovStep cs ;
-        csload(cs, genstep_buffer, genstep_offset);
-        if(photon_id == 0) csdebug(cs);
-        
-        generate_cerenkov_photon(p, cs, rng );         
-
-        s.flag = CERENKOV ;  
-    }
-
+   wavelength_dump(24, 10);    
+   wavelength_dump(42, 10);    
+   wavelength_dump(48, 10);    
+   wavelength_dump(1048, 10);    
 
 }
+
+
 
 RT_PROGRAM void generate()
 {
@@ -108,17 +79,23 @@ RT_PROGRAM void generate()
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
     unsigned int MAXREC = record_max ; 
-    if(photon_id == 0)
-    {
-       rtPrintf("generate\n");
-    } 
- 
+
     phead.f = photon_buffer[photon_offset+0] ;
 
     union quad ghead ; 
     unsigned int genstep_id = phead.u.x ; // first 4 bytes seeded with genstep_id
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
+
+
+#ifdef DEBUG
+    bool dbg = photon_id == debug_control.x ;  
+    if(dbg)
+    {
+       rtPrintf("generate debug photon_id %d genstep_id %d ghead.i.x %d \n", photon_id, genstep_id, ghead.i.x );
+    } 
+#endif 
+
 
     curandState rng = rng_states[photon_id];
 
@@ -133,10 +110,17 @@ RT_PROGRAM void generate()
     {
         CerenkovStep cs ;
         csload(cs, genstep_buffer, genstep_offset);
+
 #ifdef DEBUG
-        if(photon_id == 0) csdebug(cs);
+        if(dbg) csdebug(cs);
 #endif
         generate_cerenkov_photon(p, cs, rng );         
+
+/*
+#ifdef DEBUG
+        if(cs.MaterialIndex == 24) return ;  // KLUDGE SKIP Aluminium : leaving undefines in buffer
+#endif
+*/
         s.flag = CERENKOV ;  
     }
     else
@@ -144,7 +128,7 @@ RT_PROGRAM void generate()
         ScintillationStep ss ;
         ssload(ss, genstep_buffer, genstep_offset);
 #ifdef DEBUG
-        if(photon_id == 0) ssdebug(ss);
+        if(dbg) ssdebug(ss);
 #endif
         generate_scintillation_photon(p, ss, rng );         
         s.flag = SCINTILLATION ;  
@@ -158,6 +142,9 @@ RT_PROGRAM void generate()
     int command = START ; 
 
     PerRayData_propagate prd ;
+
+    
+
 
     while( bounce < bounce_max )
     {
@@ -191,7 +178,7 @@ RT_PROGRAM void generate()
         p.flags.u.w |= s.flag ; 
 
 
-        if(photon_id == 0)
+        if(dbg)
         {
            rtPrintf("bounce %d \n", bounce);
            rtPrintf("post  %10.3f %10.3f %10.3f %10.3f  % \n", p.position.x, p.position.y, p.position.z, p.time );

@@ -78,6 +78,18 @@ void OEngine::init()
     m_context->setPrintBufferSize(8192);
     //m_context->setPrintLaunchIndex(0,0,0);
     m_context->setStackSize( 2180 ); // TODO: make externally configurable, and explore performance implications
+
+    optix::uint4 debugControl = optix::make_uint4(m_debug_photon,0,0,0);
+    LOG(info) << "OEngine::init debugControl " 
+              << " x " << debugControl.x 
+              << " y " << debugControl.y
+              << " z " << debugControl.z 
+              << " w " << debugControl.w 
+              ;
+
+    m_context["debug_control"]->setUint(debugControl); 
+
+
     m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
 
 
@@ -386,6 +398,12 @@ void OEngine::generate()
     unsigned int height = 1 ;
 
     LOG(info) << "OEngine::generate count " << m_generate_count << " size(" <<  width << "," <<  height << ")";
+
+    if(m_override > 0)
+    {
+        width = m_override ; 
+        LOG(warning) << "OEngine::generate OVERRIDE photon count for debugging to " << width ; 
+    }
 
     m_context->launch( e_generate,  width, height );
 

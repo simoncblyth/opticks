@@ -94,6 +94,8 @@ class GBoundaryLib {
                       GPropertyMap<float>* oextra
                  );
       static unsigned int getLine(unsigned int isub, unsigned int ioff);
+      unsigned int getLineMin();
+      unsigned int getLineMax();
   
       void          countMaterials();
 

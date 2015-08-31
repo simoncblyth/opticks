@@ -929,24 +929,6 @@ ggeo-otool(){
    otool -L $(ggeo-bin)
 }
 
-ggeo-meta-dir(){
-   echo /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
-}
-
-ggeo-libtest(){
-   local bin=$(ggeo-bin GBoundaryLibTest)
-   local cmd="$LLDB $bin $(ggeo-meta-dir) $*"
-   echo $cmd
-   eval $cmd
-}
-
-
-ggeo-metatest(){
-   local bin=$(ggeo-bin GBoundaryLibMetadataTest)
-   local cmd="$LLDB $bin $(ggeo-meta-dir) $*"
-   echo $cmd
-   eval $cmd
-}
 
    
 
@@ -989,6 +971,29 @@ ggeo-bbt(){
 }
 
 
+ggeo-blt(){
+   # formerly libtest 
+   local bin=$(ggeo-bin GBoundaryLibTest)
+   local cmd="$LLDB $bin $*"
 
+   ggeoview-
+   ggeoview-export
+
+   echo $cmd
+   eval $cmd
+}
+
+
+ggeo-blmt(){
+   # formerly metatest 
+   local bin=$(ggeo-bin GBoundaryLibMetadataTest)
+   local cmd="$LLDB $bin $*"
+
+   ggeoview-
+   ggeoview-export
+
+   echo $cmd
+   eval $cmd
+}
 
 

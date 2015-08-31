@@ -170,7 +170,7 @@ void GBoundary::Summary(const char* msg, unsigned int nline)
    char bmat[512];
    snprintf(bmat, 512,"%s/%s/%s/%s", imat, omat, isur, osur );  
 
-   printf("%s : index %2u %s %s \n", msg, m_index, dig, bmat);  
+   printf("%s : index %2u x6 %3u %s %s \n", msg, m_index,m_index*6, dig, bmat);  
 
    free(dig);
 

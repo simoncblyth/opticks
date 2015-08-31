@@ -14,6 +14,8 @@ class FrameCfg : public Cfg {
      int          getTimeMax(); 
      int          getRepeatIndex(); 
      int          getModulo(); 
+     int          getOverride(); 
+     int          getDebugIdx(); 
 private:
      void init();
 private:
@@ -26,6 +28,8 @@ private:
      int         m_timemax ; 
      int         m_repeatidx ; 
      int         m_modulo ; 
+     int         m_override ; 
+     int         m_debugidx ; 
 };
 
 template <class Listener>
@@ -37,7 +41,9 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_recordmax(10),
        m_timemax(200),
        m_repeatidx(-1),
-       m_modulo(-1)
+       m_modulo(-1),
+       m_override(-1),
+       m_debugidx(0)
 {   
    init();  
 }
@@ -95,6 +101,17 @@ inline void FrameCfg<Listener>::init()
    snprintf(modulo,128, "Modulo scaledown input gensteps for speed/debugging, eg 10 to decimate. Values less than 1 disable scaledown. Default %d", m_modulo);
    m_desc.add_options()
        ("modulo",  boost::program_options::value<int>(&m_modulo), modulo );
+
+   char override[128];
+   snprintf(override,128, "Override photons to generate/propagate for debugging, eg 1 for a single photon. Values less than 1 disable any override. Default %d", m_override);
+   m_desc.add_options()
+       ("override",  boost::program_options::value<int>(&m_override), override );
+
+   char debugidx[128];
+   snprintf(debugidx,128, "Index of item eg Photon for debugging. Default %d", m_debugidx);
+   m_desc.add_options()
+       ("debugidx",  boost::program_options::value<int>(&m_debugidx), debugidx );
+
 
    m_desc.add_options()
        ("alt,a",  "use alternative record renderer") ;
@@ -194,6 +211,19 @@ inline int FrameCfg<Listener>::getModulo()
 {
     return m_modulo ; 
 }
+template <class Listener>
+inline int FrameCfg<Listener>::getOverride()
+{
+    return m_override ; 
+}
+template <class Listener>
+inline int FrameCfg<Listener>::getDebugIdx()
+{
+    return m_debugidx ; 
+}
+
+
+
 
 
 

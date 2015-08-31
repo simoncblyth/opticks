@@ -1,3 +1,4 @@
+#include "GCache.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GBoundaryLib.hh"
 #include "GBuffer.hh"
@@ -7,24 +8,22 @@
 
 int main(int argc, char** argv)
 {
-    if(argc < 2)
-    {
-       printf("%s : expecting path of directory which contains a file named: GBoundaryLibMetadata.json\n", argv[0]);
-       return 1 ; 
-    }
+    GCache gc("GGEOVIEW_"); 
+    const char* idpath = gc.getIdPath(); 
 
-    const char* path = argv[1];
-    int wline = argc > 2 ? atoi(argv[2]) : -2 ;
+    int wline = argc > 1 ? atoi(argv[1]) : -2 ;
  
-    GBoundaryLibMetadata* meta = GBoundaryLibMetadata::load(path);
-    meta->Summary(path);
+    GBoundaryLibMetadata* meta = GBoundaryLibMetadata::load(idpath);
+    meta->Summary(idpath);
     meta->dumpNames();
 
 
-    GBuffer* wbuf = GBuffer::load<float>(path, "wavelength.npy");
+    GBuffer* wbuf = GBuffer::load<float>(idpath, "wavelength.npy");
     wbuf->Summary("wavelength buffer");
 
-    GBuffer* obuf = GBuffer::load<unsigned int>(path, "optical.npy");
+    //GBuffer* obuf = GBuffer::load<unsigned int>(idpath, "optical.npy");
+      GBuffer* obuf = GBuffer::load<int>(idpath, "optical.npy");
+    //GBuffer* obuf = GBuffer::load<float>(idpath, "optical.npy");
     obuf->Summary("optical buffer");
 
 

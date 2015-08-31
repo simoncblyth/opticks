@@ -189,10 +189,19 @@ __device__ void csdebug( CerenkovStep& cs )
 __device__ void
 generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 {
+#ifdef DEBUG
+      //if(cs.MaterialIndex == 24) 
+      //{
+      //    rtPrintf("KLUDGE SKIP Aluminium : leaving undefines \n");
+      //}
+#endif
+
      float cosTheta ;
      float sin2Theta ;
      float wavelength ;
      float sampledRI ;
+     float u ; 
+     float u_maxSin2 ;
 
      // 
      //  sampling to get wavelength and cone angle 
@@ -201,24 +210,55 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
      // lookup refractive index
      // calculate cosTheta and sinTheta for the refractive index
      // 
+     // issue: for some jpmt gensteps 
+     //        cs.MaterialIndex 24 (Aluminium) with sampledRI 1.0 cs.BetaInverse 1.000001
+     //        sin2Theta always dipping negative resulting in infinite loop
+     //
+     //        suspect bad gensteps, but meanwhile just constrain sin2Theta 
+     //        with fmaxf( 0.0001f,
+     //
+
      do {
 
         wavelength = sample_reciprocal_domain(curand_uniform(&rng));   
 
         float4 props = wavelength_lookup(wavelength, cs.MaterialIndex);
-        //float4 props = make_float4( 1.33f , 1000.f , 2000.f, 0.f );  // ri/ab/sc/re  DEBUG
 
         sampledRI = props.x ; 
 
         cosTheta = cs.BetaInverse / sampledRI;  
 
-        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);
-    
-      } while ( curand_uniform(&rng)*cs.maxSin2 > sin2Theta);
+        sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
 
+        u = curand_uniform(&rng) ;
+
+        u_maxSin2 = u*cs.maxSin2 ;
+
+/*
+#ifdef DEBUG
+        if(cs.MaterialIndex == 24)
+        {
+             rtPrintf("cs.MaterialIndex %d props %10.4f %10.4f %10.4f %10.4f : wl %10.4f cosTheta %10.4f sin2Theta %10.4f u %10.4f u_maxSin2 %10.4f \n", 
+                     cs.MaterialIndex, props.x, props.y, props.z, props.w, wavelength, cosTheta, sin2Theta, u, u_maxSin2 ) ;
+             return ;  
+        }
+#endif
+*/  
+  
+      } while ( u_maxSin2 > sin2Theta);
 
       p.wavelength = wavelength ; 
 
+      
+/*
+#ifdef DEBUG
+      if(cs.MaterialIndex == 24) 
+      {
+          rtPrintf("KLUDGE SKIP Aluminium : leaving undefineds : wavelength %10.4f \n", wavelength);
+          return ;  
+      }
+#endif
+*/
 
       // Generate random position of photon on cone surface defined by Theta 
 

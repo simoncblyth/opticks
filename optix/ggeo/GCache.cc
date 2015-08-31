@@ -104,7 +104,7 @@ GGeoview application reports the idpath via::
     int overwrite = 1; 
     assert(setenv("IDPATH", m_idpath, overwrite)==0);
 
-    printf("GCache::readEnvironment setting IDPATH internally to %s \n", getenv("IDPATH")) ; 
+    // DO NOT PRINT ANYTHING FROM HERE TO AVOID IDP CAPTURE PROBLEMS
 }
 
 

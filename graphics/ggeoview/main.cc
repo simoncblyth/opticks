@@ -607,6 +607,8 @@ void App::prepareEngine()
     bool nooptix    = m_fcfg->hasOpt("nooptix");
     bool noevent    = m_fcfg->hasOpt("noevent");
     bool trivial    = m_fcfg->hasOpt("trivial");
+    int  override   = m_fcfg->getOverride();
+    int  debugidx   = m_fcfg->getDebugIdx();
 
     OEngine::Mode_t mode = compute ? OEngine::COMPUTE : OEngine::INTEROP ; 
 
@@ -616,7 +618,8 @@ void App::prepareEngine()
     m_interactor->setTouchable(m_engine);
 
     m_engine->setFilename(idpath);
-
+    m_engine->setOverride(override);
+    m_engine->setDebugPhoton(debugidx);
     m_engine->setGGeo(m_ggeo);   
     m_engine->setBoundaryLib(m_blib);   
     m_engine->setNumpyEvt(noevent ? NULL : m_evt);

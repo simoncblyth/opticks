@@ -238,10 +238,27 @@ GBoundary* GBoundaryLib::getBoundary(unsigned int index)
 }
 
 
+unsigned int GBoundaryLib::getLineMin()
+{
+    unsigned int lineMin = getLine(0, 0);
+    return lineMin ; 
+}
+unsigned int GBoundaryLib::getLineMax()
+{
+
+    unsigned int numBoundary = getNumBoundary() ; 
+    unsigned int lineMax = getLine(numBoundary - 1, NUM_QUAD-1);
+    return lineMax ; 
+}
+
+
 void GBoundaryLib::Summary(const char* msg)
 {
-    printf("%s\n", msg );
+    unsigned lmin = getLineMin();
+    unsigned lmax = getLineMax();
+    printf("%s lineMin %d lineMax %d \n", msg, lmin, lmax );
     char buf[128];
+
     for(unsigned int isub=0 ; isub < getNumBoundary() ; isub++)
     {
          GBoundary* boundary = getBoundary(isub);
@@ -718,6 +735,9 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
     //         extra:    (reemission_cdf, extra_y, extra_z, extra_w )
     //
     //
+    //   
+    //
+    //
     //  optical_buffer unsigned ints (6 sets of 4 values)
     //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //
@@ -929,6 +949,34 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
     Out[54]: 102
 
  */ 
+
+/*
+
+    In [1]: o = np.load("optical.npy")
+
+    In [9]: o.view(np.uint32).reshape(-1,6,4).shape
+    Out[9]: (56, 6, 4)    # 56 boundaries
+
+    In [15]: o.view(np.uint32).reshape(-1,6,4)[3:10]
+    Out[15]: 
+    array([[[  4,   0,   0,   0],
+            [  3,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  1,   0,   3, 100],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0]],
+
+           [[  5,   0,   0,   0],
+            [  3,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0]],
+
+*/
+
+
+
 
 
 }

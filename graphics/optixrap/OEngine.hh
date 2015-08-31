@@ -80,6 +80,8 @@ class OEngine : public Touchable {
         void setMergedMesh(GMergedMesh* mergedmesh);
         void setBoundaryLib(GBoundaryLib* boundarylib);
         void setEnabled(bool enabled);
+        void setOverride(unsigned int override);
+        void setDebugPhoton(unsigned int debug_photon);
         void setTrivial(bool trivial);
         void setNumpyEvt(NumpyEvt* evt);
     public:
@@ -102,6 +104,7 @@ class OEngine : public Touchable {
         unsigned int getBounceMax();
         unsigned int getRecordMax();
         unsigned int getTraceCount();
+        unsigned int getDebugPhoton();
     public:
         void init();
         void trace(); 
@@ -198,6 +201,8 @@ class OEngine : public Touchable {
         bool             m_enabled ; 
         bool             m_trivial ; 
         int              m_texture_id ; 
+        int              m_override ; 
+        int              m_debug_photon ; 
         NumpyEvt*        m_evt ; 
         NPYBase*         m_domain ;
         NPYBase*         m_idomain ;
@@ -247,6 +252,8 @@ inline OEngine::OEngine(const char* cmake_target, Mode_t mode) :
     m_enabled(true),
     m_trivial(false),
     m_texture_id(-1),
+    m_override(0),
+    m_debug_photon(0),
     m_evt(NULL),
     m_domain(NULL),
     m_idomain(NULL),
@@ -393,4 +400,16 @@ inline bool OEngine::isInterop()
 {
     return m_mode == INTEROP ; 
 }
+
+
+inline void OEngine::setOverride(unsigned int override)
+{
+    m_override = override ; 
+}
+inline void OEngine::setDebugPhoton(unsigned int debug_photon)
+{
+    m_debug_photon = debug_photon ; 
+}
+
+
 

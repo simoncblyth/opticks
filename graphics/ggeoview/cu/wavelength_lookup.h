@@ -10,6 +10,7 @@ rtDeclareVariable(float4, reemission_domain, , );
 rtTextureSampler<float4, 2>  wavelength_texture ;
 rtDeclareVariable(float4, wavelength_domain, , );
 rtDeclareVariable(float4, wavelength_domain_reciprocal, , );
+rtDeclareVariable(uint4, wavelength_bounds, , );
 
 
 static __device__ __inline__ float reemission_lookup(float u)
@@ -23,8 +24,17 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
     // x:low y:high z:step w:mid   tex coords are offset by 0.5 
     // texture lookups benefit from hardware interpolation 
     float nmi = (nm - wavelength_domain.x)/wavelength_domain.z + 0.5f ;   
-    //return tex2D(wavelength_texture, nmi, line + 0.5f );
-    return make_float4(1.33f, 1000.f, 2000.f, 0.0f );   // refractive_index, absorption_length, scattering_length, reemission_prob
+
+    if( line > wavelength_bounds.w )
+    {
+        rtPrintf("wavelength_lookup OUT OF BOUNDS line %4d nmi %10.4f \n", line, nmi );
+    }
+
+    return line <= wavelength_bounds.w ? 
+                  tex2D(wavelength_texture, nmi, line + 0.5f ) : 
+                  make_float4(1.123456789f, 123456789.f, 123456789.f, 1.0f )    ;    // some obnoxious values for debug 
+
+    // refractive_index, absorption_length, scattering_length, reemission_prob
     // DEBUG KLUDGE
 }
 
@@ -42,9 +52,10 @@ static __device__ __inline__ float sample_domain(const float& u)
 }
 
 
-static __device__ __inline__ void wavelength_dump(unsigned int line )
+
+static __device__ __inline__ void wavelength_dump(unsigned int line, unsigned int step)
 {
-  for(int i=-5 ; i < 45 ; i++ )
+  for(int i=-5 ; i < 45 ; i+=step )
   { 
      float nm = wavelength_domain.x + wavelength_domain.z*i ; 
      float4 lookup = wavelength_lookup( nm, line ); 

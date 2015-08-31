@@ -1,10 +1,9 @@
-# === func-gen- : graphics/ggeoview/ggeoview fgp graphics/ggeoview/ggeoview.bash fgn ggeoview fgh graphics/ggeoview
-
 ggv-(){   ggeoview- ; }
 ggv-cd(){ ggeoview-cd ; }
 ggv-i(){  ggeoview-install ; }
 ggv--(){  ggeoview-depinstall ; }
 ggv-lldb(){ ggeoview-lldb $* ; }
+
 
 ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
 ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }
@@ -49,9 +48,147 @@ issue: jpmt timeouts binary search to pin down
 
     ggv --jpmt --modulo 100
        #  still with kludged wavelength_lookup : works, with photon animation operational
+       #
+       # interestingly performance of OptiX and OpenGL geometry visualizations
+       # are about the same with the full JUNO geometry 2-3 fps, 
+       # with DYB OpenGL vis is much faster than OptiX appoaching: 60 fps  
 
     ggv --jpmt --modulo 50
        #  still with kludged wavelength_lookup : timeout...  maybe stepping off reservation somewhere else reemission texture ?
+
+    ggv --jpmt --modulo 100 --override 1 
+       # putting back the wavelength_look get timeout even when override to a single photon
+
+    ggv --jpmt --modulo 100 --override 1 --trivial
+       # with trivial prog doing wavelength dumping
+
+    ggv --make --jpmt --modulo 100 --override 1
+       # with bounds checking on wavelength lookup succeed with single photon, but not without the override
+
+    ggv --make --jpmt --modulo 100 --override 5181
+       # with bounds checking on wavelength lookup succeed with override 5181, failing at override 5182
+       #    photon_id = 5181  is doing something naughty
+
+    ggv --make --jpmt --modulo 100 --override 5181 --debugidx 5180
+       # check on the photon before, which works
+       #
+       #
+       # [2015-Aug-31 16:23:50.594320]: OEngine::generate OVERRIDE photon count for debugging to 5181
+       #  generate debug photon_id 5180 genstep_id 18 ghead.i.x -18001 
+       #  cs.Id -18001 ParentId 1 MaterialIndex 48 NumPhotons 39 
+       #
+
+    ggv --make --jpmt --modulo 100 --override 5182 --debugidx 5181 --bouncemax 0 
+       # now the one that fails, with propagation inhibited  : still failing 
+
+    ggv --make --jpmt --modulo 100 --override 5182 --debugidx 5181 
+       # try with kludge skipping of Aluminium : works, so can dump nemesis 
+       #
+       # ... hmm refractive index of 1.000 for a metal 
+       #
+       # [2015-Aug-31 16:45:04.481506]: OEngine::generate count 0 size(10406,1)
+       # [2015-Aug-31 16:45:04.481600]: OEngine::generate OVERRIDE photon count for debugging to 5182
+       # generate debug photon_id 5181 genstep_id 19 ghead.i.x -19001 
+       # cs.Id -19001 ParentId 1 MaterialIndex 24 NumPhotons 282 
+       # x0 -15718.109375 -2846.020996 -9665.920898  t0 62.278240 
+       # DeltaPosition -1.087246 -0.197473 -0.667886  step_length 1.291190  
+       # code 13  charge -1.000000 weight 1.000000 MeanVelocity 299.792267 
+       # BetaInverse 1.000001  Pmin 0.000002 Pmax 0.000015 maxCos 0.751880 
+       # maxSin2 0.434676  MeanNumberOfPhotons1 232.343796 MeanNumberOfPhotons2 232.343796 MeanNumberOfPhotonsMax 232.343796 
+       # p0 -0.842050 -0.152938 -0.517264  
+       # cscheck sample wavelength lo/mi/hi   59.999996 111.724136 810.000122 
+       # cscheck sample rindex lo/mi/hi   1.000000 1.000000 1.000000 
+       # cscheck sample abslen lo/mi/hi   1000000.000000 1000000.000000 1000000.000000 
+       # cscheck sample scalen lo/mi/hi   1000000.000000 1000000.000000 1000000.000000 
+       # cscheck sample reempr lo/mi/hi   0.000000 0.000000 0.000000 
+       #
+
+    ggv --make --jpmt --modulo 100 
+       #
+       # fix by modifying cerernkovstep.h wavelength sampling loop 
+       # to avoid sin2Theta from going -ve 
+       #
+       #      sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  
+       #
+       # TODO: check for artifacts in wavelength distribution
+ 
+   ggv --make --jpmt
+       #
+       # at modulo 10,    propagate time is 1.009s  
+       # at modulo  5,    propagate time is 1.740s
+       # at full genstep, propagate time is 7.053s 
+
+
+
+Do things go bad on a genstep boundary ?
+
+::
+
+    In [1]: c = np.load("/usr/local/env/juno/cerenkov/1.npy")
+
+    In [7]: c.view(np.int32)[:,0,3][::100].sum()    # number of photons, modulo scaled down and summed matches log 
+    Out[7]: 10406
+
+::
+    In [8]: cc = c.view(np.int32)[:,0,3][::100].cumsum()    # genstep index 18 has cumsum 5181
+    Out[8]: 
+    array([  322,   607,   883,  1164,  1476,  1513,  1831,  2160,  2462,
+            2776,  3078,  3375,  3699,  4002,  4310,  4603,  4881,  5142,
+            5181,  5463,  5776,  6052,  6346,  6628,  6636,  6646,  6942,
+            7235,  7521,  7817,  8123,  8399,  8695,  9012,  9295,  9584,
+            9777, 10068, 10406])
+
+
+    In [34]: c[::100][:,0].view(np.int32)
+    Out[34]: 
+    array([[    -1,      1,     48,    322],    Id/ParentId/MaterialIndex/NumPhotons
+           [ -1001,      1,     48,    285],
+           [ -2001,      1,     48,    276],
+           [ -3001,      1,     48,    281],
+           ...
+
+
+    In [50]: for i,_ in enumerate(c[::100][:,0].view(np.int32)):print i,_,cc[i]
+    0  [ -1         1     48    322] 322
+    1  [-1001       1     48    285] 607
+    2  [-2001       1     48    276] 883
+    3  [-3001       1     48    281] 1164
+    4  [-4001       1     48    312] 1476     #  48:Water, 24:Aluminium, 42:Tyvek 
+    5  [-5001       1     48     37] 1513
+    6  [-6001       1     48    318] 1831
+    7  [-7001       1     48    329] 2160
+    8  [-8001       1     48    302] 2462
+    9  [-9001       1     48    314] 2776
+    10 [-10001      1     48    302] 3078
+    11 [-11001      1     48    297] 3375
+    12 [-12001      1     48    324] 3699
+    13 [-13001      1     48    303] 4002
+    14 [-14001      1     48    308] 4310
+    15 [-15001      1     48    293] 4603
+    16 [-16001      1     48    278] 4881
+    17 [-17001      1     48    261] 5142
+    18 [-18001      1     48     39] 5181    ### genstep index 18 ends with photon_id 5180
+    19 [-19001      1     24    282] 5463
+    20 [-20001      1     24    313] 5776
+    21 [-21001      1     24    276] 6052
+    22 [-22001      1     24    294] 6346
+    23 [-23001      1     24    282] 6628
+    24 [-24001      1     24      8] 6636
+    25 [-25001   4720     24     10] 6646
+    26 [-26001   1553     48    296] 6942
+    27 [-27001   4964     48    293] 7235
+    28 [-28001   5540     42    286] 7521
+    29 [-29001   1552     48    296] 7817
+    30 [-30001   6048     48    306] 8123
+    31 [-31001   6464     48    276] 8399
+    32 [-32001   1156     48    296] 8695
+    33 [-33001   1050     48    317] 9012
+    34 [-34001   6977     48    283] 9295
+    35 [-35001    692     48    289] 9584
+    36 [-36001    456     48    193] 9777
+    37 [-37001    222     48    291] 10068
+    38 [-38001    106     48    338] 10406
+
 
 
 issue: jpmt wavelengthBuffer/boundarylib ? maybe bad material indices ?
@@ -114,6 +251,69 @@ issue: jpmt wavelengthBuffer/boundarylib ? maybe bad material indices ?
 
 
 * TODO : trace the prop values
+
+
+Initial values of material indices are not unreasonable, maybe problem on subsequent steps::
+
+    simon:ggeoview blyth$ ggeoview-detector-jpmt
+    simon:ggeo blyth$ ggeo-blt 24 42 48
+    /usr/local/env/optix/ggeo/bin/GBoundaryLibTest 24 42 48
+    GCache::readEnvironment setting IDPATH internally to /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae 
+    [2015-08-31 12:54:10.546692] [0x000007fff77ea531] [warning] GBoundaryLib::setWavelengthBuffer didnt see 54, numBoundary: 18
+    GBoundaryLib::loadBoundary digest mismatch 7 : d1a3424507d661c74ab51c4b5c82dff0 202bc56442e88df7f4be6f3af62acf70 
+    GBoundaryLib::loadBoundary digest mismatch 13 : 8dc0d036da7ed8b5d4606cfe506a82f7 82a76e8ae56ac49dc00174734af2d8b8 
+    GBoundaryLib::loadBoundary digest mismatch 14 : ac621cac48edd9555db9b8f9f5f56015 1bb254d022a246eb98cef4846123154e 
+    GBoundaryLib::loadBoundary digest mismatch 15 : c3baf1e9325fac7e81b218e23804557d 39b93748d45456bc1aa6cb0e326f0fd3 
+    boundary : index  0 dede45b90304e0f9dd9c7c5edce7c8b1 Galactic/Galactic/-/- 
+    boundary : index  1 124d278374f95ec3742e1268e6e8f478 Rock/Galactic/-/- 
+    boundary : index  2 4befaffca91e8cb0fd5662ae2d81bd65 Air/Rock/-/- 
+    boundary : index  3 231c44f02f80c88638cb09dff25df5f6 Air/Air/-/- 
+    boundary : index  4 576a076a3f1f332dad075d3c2d8181d7 Aluminium/Air/-/- 
+    boundary : index  5 eb855bbd039a6401bfacc6202ea5034c Steel/Rock/-/- 
+    boundary : index  6 d18726a8d2660e6be4b8ae326bd38ee6 Water/Steel/-/- 
+    boundary : index  7 d1a3424507d661c74ab51c4b5c82dff0 Tyvek/Water/-/CDTyvekSurface 
+    boundary : index  8 608795d154c5752988d6882d87de18e6 Water/Tyvek/-/- 
+    boundary : index  9 1118e140d2fe2dc9f07c350302e5ee1e Acrylic/Water/-/- 
+    boundary : index 10 9ad9179c5dc8584ab0a68f460dbfddde LS/Acrylic/-/- 
+    boundary : index 11 da505cbe2bdfaa95b091f31761d81a93 Pyrex/Water/-/- 
+    boundary : index 12 11467e52d1bc229355bf173f871790d2 Pyrex/Pyrex/-/- 
+    boundary : index 13 8dc0d036da7ed8b5d4606cfe506a82f7 Vacuum/Pyrex/-/PMT_20inch_photocathode_logsurf2 
+    boundary : index 14 ac621cac48edd9555db9b8f9f5f56015 Vacuum/Pyrex/PMT_20inch_mirror_logsurf1/- 
+    boundary : index 15 c3baf1e9325fac7e81b218e23804557d Vacuum/Pyrex/-/PMT_3inch_photocathode_logsurf2 
+    boundary : index 16 00fbb4643f7986d8c5f1499d5b3b3e22 Steel/Water/-/- 
+    boundary : index 17 47a41d6b6a602cc04be06523254ec39c Copper/Water/-/- 
+
+    GBoundaryLib.dumpWavelengthBuffer 24 
+    GBoundaryLib::dumpWavelengthBuffer wline 24 numSub 18 domainLength 39 numQuad 6 
+
+      24 |   4/  0 Aluminium0x22ca560 
+               1.000           1.000           1.000           1.000           1.000           1.000           1.000           1.000
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+
+    GBoundaryLib.dumpWavelengthBuffer 42 
+    GBoundaryLib::dumpWavelengthBuffer wline 42 numSub 18 domainLength 39 numQuad 6 
+
+      42 |   7/  0 Tyvek0x229f920 
+               1.000           1.000           1.000           1.000           1.000           1.000           1.000           1.000
+           10000.000       10000.000       10000.000       10000.000       10000.000       10000.000       10000.000       10000.000
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+
+    GBoundaryLib.dumpWavelengthBuffer 48 
+    GBoundaryLib::dumpWavelengthBuffer wline 48 numSub 18 domainLength 39 numQuad 6 
+
+      48 |   8/  0 Water0x22c0a30 
+               1.330           1.360           1.372           1.357           1.352           1.346           1.341           1.335
+             273.208         273.208        3164.640       12811.072       28732.207       13644.791        2404.398         371.974
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+    simon:ggeo blyth$ 
+
+
+
+
 
 
 
@@ -808,13 +1008,13 @@ ggeoview-detector()
 {
     echo ${GGEOVIEW_DETECTOR:-DAE_NAME_DYB}
 }
-
-
-
-
 ggeoview-detector-juno()
 {
     export GGEOVIEW_DETECTOR=DAE_NAME_JUNO
+}
+ggeoview-detector-jpmt()
+{
+    export GGEOVIEW_DETECTOR=DAE_NAME_JPMT
 }
 ggeoview-detector-dyb()
 {
