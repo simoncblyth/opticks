@@ -117,6 +117,23 @@ OptiX / OpenGL interop
 * https://devtalk.nvidia.com/default/topic/551556/?comment=3858139
 
 
+thrust::stable_partition or thrust::copy_if
+----------------------------------------------
+
+* what size to allocate for the target ? do a reduce query to find out first, 
+  or use stable_partition to shuffle 
+
+* http://stackoverflow.com/questions/22371897/thrust-selectively-move-elements-to-another-vector
+
+::
+
+    thrust::device_vector<float>::iterator iter = thrust::stable_partition(A.begin(), A.end(), pred)
+    thrust::device_vector<float> B(iter, A.end())
+    A.erase(iter, A.end());
+
+
+
+
 Histogramming Check
 ----------------------
 

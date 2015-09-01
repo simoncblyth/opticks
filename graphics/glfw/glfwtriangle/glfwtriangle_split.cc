@@ -6,12 +6,15 @@
 #define INTEROP 1
 
 #ifdef INTEROP
+
 #include <cuda_gl_interop.h>
 struct cudaGraphicsResource *vbo_cuda;
 
 #include <thrust/device_vector.h>
 #include <thrust/transform.h>
 #include <thrust/iterator/counting_iterator.h>
+
+struct grow_split ; 
 
 #endif
 
@@ -128,25 +131,6 @@ GLuint init_shader()
 
 
 #ifdef INTEROP
-struct grow
-{
-    unsigned int count ; 
-    grow(unsigned int count) : count(count) {}
-
-    __host__ __device__ float3 operator()(unsigned int i)
-    {
-         float s = 0.01f * (count % 100)  ; 
-         float3 vec ; 
-         switch(i)
-         {
-            case 0: vec = make_float3( 0.0f,     s,  0.0f) ; break ;
-            case 1: vec = make_float3(    s,    -s,  0.0f) ; break ;
-            case 2: vec = make_float3(   -s,    -s,  0.0f) ; break ;
-         }  
-
-         return vec ; 
-    }
-};
 
 void init_interop(GLuint vbo)
 {
@@ -168,7 +152,7 @@ void interop_move(unsigned int n)
 
     thrust::counting_iterator<int> first(0);
     thrust::counting_iterator<int> last(3);
-    thrust::transform(first, last, dev_ptr,  grow(n) );
+    thrust::transform(first, last, dev_ptr,  grow_split(n) );
 
     cudaGraphicsUnmapResources(1, &vbo_cuda, 0);
 }

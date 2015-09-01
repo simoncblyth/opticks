@@ -88,7 +88,11 @@
 //
 //                  where repeated contains single gi (GeometryInstance) 
 //
-//             
+//  TODO:
+//     Currently all the accelerations are using Sbvh/Bvh.
+//     Investigate if container groups might be better as "pass through" 
+//     NoAccel as the geometryGroup and groups they contain have all the 
+//     geometry.
 //
 
 const char* OGeo::BUILDER = "Sbvh" ; 

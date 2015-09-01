@@ -1714,6 +1714,7 @@ optix-fold(){
       *) echo $(local-base) ;;
    esac
 }
+optix-prefix(){      echo $(optix-fold)/OptiX ; }
 optix-dir(){         echo $(optix-fold)/OptiX/SDK ; }
 optix-sdk-dir-old(){ echo $(optix-fold)/OptiX_301/SDK ; }
 optix-sdk-dir(){     echo $(optix-fold)/OptiX/SDK ; }
