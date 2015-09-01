@@ -131,20 +131,17 @@ void Interactor::key_pressed(unsigned int key)
 
     switch (key)
     {
+        //  ABCDEFGHIJKLMNOPQRSTUVWXYZ
+        //  ***  *** * *******   * ***
+
         case GLFW_KEY_A:
             m_composition->nextMode(getModifiers()) ; 
             break;
-        case GLFW_KEY_V:
-            m_view->nextMode(getModifiers()) ; 
+        case GLFW_KEY_B:
+            m_scene->nextGeometryStyle(); 
             break;
-        case GLFW_KEY_Z:
-            m_zoom_mode = !m_zoom_mode ; 
-            break;
-        case GLFW_KEY_X:
-            m_pan_mode = !m_pan_mode ; 
-            break;
-        case GLFW_KEY_N:
-            m_near_mode = !m_near_mode ; 
+        case GLFW_KEY_C:
+            m_clipper->next(); 
             break;
         case GLFW_KEY_F:
             m_far_mode = !m_far_mode ; 
@@ -152,41 +149,50 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_G:
             m_gui_mode = !m_gui_mode ; 
             break;
+        case GLFW_KEY_H:
+            m_trackball->home(); 
+            break;
         case GLFW_KEY_J:
             m_scene->jump(); 
             break;
-        case GLFW_KEY_P:
-            m_scene->nextPhotonStyle(); 
+        case GLFW_KEY_L:
+            m_composition->nextNormalStyle(); 
             break;
         case GLFW_KEY_M:
             m_composition->nextColorStyle(); 
             break;
+        case GLFW_KEY_N:
+            m_near_mode = !m_near_mode ; 
+            break;
+        case GLFW_KEY_O:
+            m_optix_mode = !m_optix_mode ; 
+            break;
+        case GLFW_KEY_P:
+            m_scene->nextPhotonStyle(); 
+            break;
         case GLFW_KEY_Q:
             m_scene->toggleGeometry(); 
-            break;
-        case GLFW_KEY_B:
-            m_scene->nextGeometryStyle(); 
-            break;
-        case GLFW_KEY_Y:
-            m_yfov_mode = !m_yfov_mode ; 
             break;
         case GLFW_KEY_R:
             m_rotate_mode = !m_rotate_mode ; 
             break;
-        case GLFW_KEY_O:
-            m_optix_mode = !m_optix_mode ; 
+        case GLFW_KEY_V:
+            m_view->nextMode(getModifiers()) ; 
+            break;
+        case GLFW_KEY_X:
+            m_pan_mode = !m_pan_mode ; 
+            break;
+        case GLFW_KEY_Y:
+            m_yfov_mode = !m_yfov_mode ; 
+            break;
+        case GLFW_KEY_Z:
+            m_zoom_mode = !m_zoom_mode ; 
             break;
         case GLFW_KEY_UP:
             m_dragfactor *= 2. ; 
             break;
         case GLFW_KEY_DOWN:
             m_dragfactor *= 0.5 ; 
-            break;
-        case GLFW_KEY_H:
-            m_trackball->home(); 
-            break;
-        case GLFW_KEY_C:
-            m_clipper->next(); 
             break;
         case GLFW_KEY_0:
         case GLFW_KEY_1:

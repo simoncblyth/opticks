@@ -53,10 +53,14 @@ class Composition : public Configurable {
        typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLORSTYLE } ColorStyle_t ;
        static const char* getColorStyleName(Composition::ColorStyle_t style);
        const char* getColorStyleName();
-       void setColorStyle(Composition::ColorStyle_t style);
        void nextColorStyle();
+       void setColorStyle(Composition::ColorStyle_t style);
        Composition::ColorStyle_t getColorStyle();
-
+   public:
+       typedef enum { DEF_NORMAL, FLIP_NORMAL, NUM_NORMAL_STYLE } NormalStyle_t ;
+       void nextNormalStyle();
+       void setNormalStyle(Composition::NormalStyle_t style);
+       Composition::NormalStyle_t getNormalStyle();
   private:
       void init();
       void initAxis();
@@ -457,6 +461,24 @@ inline void Composition::nextColorStyle()
     int next = (getColorStyle() + 1) % NUM_COLORSTYLE ; 
     setColorStyle( (ColorStyle_t)next ) ; 
 }
+
+inline void Composition::nextNormalStyle()
+{
+    int next = (getNormalStyle() + 1) % NUM_NORMAL_STYLE ; 
+    setNormalStyle( (NormalStyle_t)next ) ; 
+}
+inline void Composition::setNormalStyle(NormalStyle_t style)
+{
+    m_nrmparam.x = int(style) ;
+}
+inline Composition::NormalStyle_t Composition::getNormalStyle()
+{
+    return (NormalStyle_t)m_nrmparam.x ;
+}
+
+
+
+
 
 inline void Composition::setColorStyle(ColorStyle_t style)
 {
