@@ -14,6 +14,10 @@ glfwtriangle-usage(){ cat << EOU
 
 * throgl-
 
+* https://groups.google.com/forum/#!searchin/thrust-users/gl/thrust-users/nI34k3laV_E/X6HUm7nRhisJ
+
+* https://groups.google.com/forum/#!topicsearchin/thrust-users/subject$3AOpenGL
+
 
 EOU
 }
@@ -44,3 +48,35 @@ glfwtriangle-make()
         -framework OpenGL
 
 }
+
+
+glfwtriangle-cu-make()
+{
+   local msg="$FUNCNAME : "
+
+   glfwtriangle-cd
+
+   glew-
+   glfw-
+   cuda- 
+
+   local name=glfwtriangle
+   local bin=/tmp/$name
+
+   echo $msg making bin $bin
+
+   nvcc -ccbin /usr/bin/clang $name.cu -o $bin \
+        -I$(glew-prefix)/include \
+        -I$(glfw-prefix)/include \
+        -I$(cuda-prefix)/include \
+        -L$(glew-prefix)/lib -lglew  \
+        -L$(glfw-prefix)/lib -lglfw.3  \
+        -L$(cuda-prefix)/lib -lcudart.7.0  \
+        -L/System/Library/Frameworks/OpenGL.framework/Libraries -lGL
+
+   # nvcc cannot handle -framework option
+
+}
+
+
+

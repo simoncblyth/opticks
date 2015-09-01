@@ -440,6 +440,7 @@ cuda-nvcc-flags(){
 cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
 cuda-download-dir(){ echo $(local-base)/env/cuda ; }
 cuda-dir(){          echo $(cuda-dir-$(uname)) ; }
+cuda-prefix(){       echo $(cuda-dir-$(uname)) ; }
 cuda-dir-Linux(){    echo /usr/local/cuda-$(cuda-version) ; }
 cuda-dir-Darwin(){   echo /Developer/NVIDIA/CUDA-$(cuda-version) ; }
 cuda-idir(){         echo $(cuda-dir)/include ; }
