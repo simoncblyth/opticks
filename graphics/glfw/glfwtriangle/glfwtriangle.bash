@@ -44,6 +44,28 @@ Evolution
      *glfwtriangle-split2-make*
 
 
+*glfwtriangle_gto.cc,GTOBuffer.hh,GTOBufferImp.hh,GTOBufferImp.cu*
+     Bringing OptiX into the interop mix in GTOBuffer.hh causes complications 
+     for compilation of thrust functors... so keep dependencies 
+     separate.  
+
+     ABORTED DOING ALL THREE GTO TOGETHER 
+
+     Build/test with:
+
+     *glfwtriangle-gto-make*       nvcc compiles optix program to ptx
+     *glfwtriangle-gtoimp-make*    nvcc compiles CUDA/thrust imp specifics to obj
+     *glfwtriangle-gtobin-make*    clang compile and link with the obj 
+     *glfwtriangle-gtobin-run*
+
+
+*glfwtriangle_cgb.cc,CudaGLBuffer.hh,callgrow.hh,callgrow.cu*
+
+     Instead move the optix handling into the main
+ 
+     Build/test with: *glfwtriangle-cgb*
+
+
 Refs
 -----
 
@@ -231,8 +253,10 @@ glfwtriangle-gtobuffer-make()
         -I$(optix-prefix)/include 
 }
 
+
+
 glfwtriangle-ptxdir(){ echo /tmp/glfwtriangleptx ; }
-glfwtriangle-gto-make()
+glfwtriangle-cgb-make()
 {
    glfwtriangle-cd
    cuda- 
@@ -241,12 +265,20 @@ glfwtriangle-gto-make()
    local ptxdir=$(glfwtriangle-ptxdir)
    mkdir -p $ptxdir
 
-   local name=gto
+   local name=cgb
    nvcc -ptx $name.cu -o $ptxdir/$name.ptx \
         -I$(optix-prefix)/include 
 }
 
-glfwtriangle-gtobin-make()
+glfwtriangle-callgrow-make()
+{
+   glfwtriangle-cd
+   cuda- 
+   local name=callgrow
+   nvcc $name.cu -c -o /tmp/$name.o 
+}
+
+glfwtriangle-cgbbin-make()
 {
    local msg="$FUNCNAME : "
 
@@ -254,12 +286,13 @@ glfwtriangle-gtobin-make()
    cuda- 
    optix-
 
-   local name=glfwtriangle_gto
+   local name=glfwtriangle_cgb
    local bin=/tmp/$name
+   local obj=/tmp/callgrow.o
 
    echo $msg making bin $bin
 
-   clang $name.cc -o $bin \
+   clang $name.cc $obj -o $bin \
         -I$(glew-prefix)/include \
         -I$(glfw-prefix)/include \
         -I$(cuda-prefix)/include \
@@ -274,16 +307,19 @@ glfwtriangle-gtobin-make()
         -Xlinker -rpath -Xlinker $(optix-prefix)/lib64
 }
 
-glfwtriangle-gtobin-run()
+glfwtriangle-cgbbin-run()
 {
-    local name=glfwtriangle_gto
+    local name=glfwtriangle_cgb
     local bin=/tmp/$name
     PTXDIR=$(glfwtriangle-ptxdir) $bin
 }
 
 
-
-
-
-
+glfwtriangle-cgb()
+{
+    glfwtriangle-cgb-make 
+    glfwtriangle-callgrow-make 
+    glfwtriangle-cgbbin-make 
+    glfwtriangle-cgbbin-run
+}
 

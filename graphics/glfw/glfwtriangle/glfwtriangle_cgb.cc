@@ -5,8 +5,18 @@
 
 #define INTEROP 1 
 #ifdef INTEROP
-#include "GTOBuffer.hh"
+#include "CudaGLBuffer.hh"
+#include "callgrow.hh"
+#include <optixu/optixpp_namespace.h>
+
+enum { raygen_entry, num_entry } ;
+std::string ptxpath(const char* name, const char* ptxdir){
+    char path[128] ; 
+    snprintf(path, 128, "%s/%s", getenv(ptxdir), name );
+    return path ;   
+}
 #endif
+
 
 #include <stdio.h>
 #include "assert.h"
@@ -100,30 +110,6 @@ GLuint init_shader()
     return shader_program ;
 }
 
-#ifdef INTEROP
-enum { raygen_entry, num_entry } ;
-
-void init_optix(optix::Context& context)
-{
-    context->setPrintEnabled(true);
-    context->setPrintBufferSize(8192);
-    context->setStackSize( 2180 );
-    context->setEntryPointCount(num_entry);
-
-    optix::Program raygen = context->createProgramFromPTXFile( ptxpath("gto.ptx", "PTXDIR"), "gto" );
-    context->setRayGenerationProgram( raygen_entry, raygen );
-
-    std::cout << "init_optix : validate " << std::endl ; 
-    context->validate();
-
-    // hmm seems cannot compile without the gto_buffer already in context 
-
-    //std::cout << "init_optix : compile " << std::endl ; 
-    //context->compile();
-    //std::cout << "init_optix : launch " << std::endl ; 
-    //context->launch(raygen_entry,0);
-}
-#endif
 
 int main () 
 {
@@ -139,18 +125,51 @@ int main ()
     cudaGLSetGLDevice(0);
 
     optix::Context context = optix::Context::create();
-    init_optix(context);
-    GTOBuffer<float3>* gto = new GTOBuffer<float3>(context, "gto_buffer", RT_BUFFER_OUTPUT, vbo, cudaGraphicsMapFlagsWriteDiscard, 0);
+    context->setPrintEnabled(true);
+    context->setPrintBufferSize(8192);
+    context->setStackSize( 2180 );
+
+    context->setEntryPointCount(num_entry);
+
+    optix::Program raygen = context->createProgramFromPTXFile( ptxpath("cgb.ptx", "PTXDIR"), "cgb" );
+
+    context->setRayGenerationProgram( raygen_entry, raygen );
+
+    std::cout << "validate " << std::endl ; 
+
+    context->validate();
+
+    CudaGLBuffer<float3>* cgb = new CudaGLBuffer<float3>(vbo, cudaGraphicsMapFlagsWriteDiscard, 0);
+
+    cgb->mapResources();
+    {
+        float3*  d_ptr = cgb->getRawPtr() ;
+
+        unsigned int count = cgb->getCount() ; 
+
+        optix::Buffer buffer = context->createBufferForCUDA(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT3, count);
+
+        CUdeviceptr cu_ptr = reinterpret_cast<CUdeviceptr>(d_ptr) ; 
+
+        unsigned int device_number = 0u ; 
+
+        buffer->setDevicePointer(device_number, cu_ptr );
+
+        context["cgb_buffer"]->set( buffer );   // cannot compile context without this
+
+        context->compile();
+
+        context->launch(raygen_entry, 0);
+
+        context->launch(raygen_entry, count);
+
+        cgb->Summary();
+
+    }
+    cgb->unmapResources();
+
+
     unsigned int n(0);
-
-    gto->optixMap();
-    context->compile();
-
-    gto->optixLaunch(raygen_entry);
-    gto->optixUnmap();
-
-    gto->Summary();
-
 #endif
 
 
@@ -162,8 +181,7 @@ int main ()
           glBindVertexArray (vao);
 
 #ifdef INTEROP
-          //gto->thrust_transform(raygen_entry);
-          //if(n == 0) gto->Summary();
+          callgrow( cgb, n );
           n++ ; 
 #endif
 
