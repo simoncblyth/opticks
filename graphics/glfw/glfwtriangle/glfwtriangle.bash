@@ -217,3 +217,73 @@ glfwtriangle-split2-make()
 
 
 
+glfwtriangle-gtobuffer-make()
+{
+   glfwtriangle-cd
+   cuda- 
+   optix- 
+
+   local name=GTOBuffer
+   clang $name.cc -c -o /tmp/$name.obj \
+        -I$(glew-prefix)/include \
+        -I$(glfw-prefix)/include \
+        -I$(cuda-prefix)/include \
+        -I$(optix-prefix)/include 
+}
+
+glfwtriangle-ptxdir(){ echo /tmp/glfwtriangleptx ; }
+glfwtriangle-gto-make()
+{
+   glfwtriangle-cd
+   cuda- 
+   optix- 
+
+   local ptxdir=$(glfwtriangle-ptxdir)
+   mkdir -p $ptxdir
+
+   local name=gto
+   nvcc -ptx $name.cu -o $ptxdir/$name.ptx \
+        -I$(optix-prefix)/include 
+}
+
+glfwtriangle-gtobin-make()
+{
+   local msg="$FUNCNAME : "
+
+   glfwtriangle-cd
+   cuda- 
+   optix-
+
+   local name=glfwtriangle_gto
+   local bin=/tmp/$name
+
+   echo $msg making bin $bin
+
+   clang $name.cc -o $bin \
+        -I$(glew-prefix)/include \
+        -I$(glfw-prefix)/include \
+        -I$(cuda-prefix)/include \
+        -I$(optix-prefix)/include \
+        -L$(glew-prefix)/lib -lglew  \
+        -L$(glfw-prefix)/lib -lglfw.3  \
+        -L$(cuda-prefix)/lib -lcudart.7.0  \
+        -L$(optix-prefix)/lib64 -loptix.3.8.0 -loptixu.3.8.0  \
+        -L/System/Library/Frameworks/OpenGL.framework/Libraries -lGL \
+        -lc++ \
+        -Xlinker -rpath -Xlinker $(cuda-prefix)/lib \
+        -Xlinker -rpath -Xlinker $(optix-prefix)/lib64
+}
+
+glfwtriangle-gtobin-run()
+{
+    local name=glfwtriangle_gto
+    local bin=/tmp/$name
+    PTXDIR=$(glfwtriangle-ptxdir) $bin
+}
+
+
+
+
+
+
+

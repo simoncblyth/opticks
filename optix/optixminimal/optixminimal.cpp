@@ -16,6 +16,7 @@ unsigned int height = 512 ;
 
 int main( int argc, char** argv )
 {
+  
     optix::Context m_context = optix::Context::create();
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
@@ -33,6 +34,7 @@ int main( int argc, char** argv )
     m_context->compile();
     m_context->launch(0,0);
     m_context->launch(raygen_entry, width, height);
+
 
     unsigned char* ptr = (unsigned char*)m_output_buffer->map();
     for(unsigned int i=0 ; i < width*height*4 ; i++){

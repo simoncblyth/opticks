@@ -3,6 +3,7 @@
 #include <thrust/transform.h>
 #include <thrust/iterator/counting_iterator.h>
 
+
 class InteropBuffer {
    public:
        InteropBuffer(unsigned int buffer_id, unsigned int flags, cudaStream_t stream=0);
