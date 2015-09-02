@@ -10,22 +10,38 @@ GLFWTRIANGLE : minimalist environment for interop testing
 Evolution
 
 *glfwtriangle.cc* 
-     pure OpenGL/GLFW3 drawing a triangle 
+     Pure OpenGL/GLFW3 drawing a triangle 
 
      Build with *glfwtriangle-make*
 
 *glfwtriangle.cu* 
-     first attempt at interop with Thrust, by resorting to 
+     First attempt at interop with Thrust, by resorting to 
      compiling everything with nvcc : not a scalable approach.
      Thrust modifies VBO within the render loop, 
      changing the size of the triangle by changing actual vertex data.
 
      Build with *glfwtriangle-cu-make*
 
-*glfwtriangle_split.cc,grow_split.cu*
-     try splitting with only the functor getting compiled by nvcc
+*glfwtriangle_split.cu,InteropBuffer.hh*
+     First try at splitting into nvcc and clang compilation units not successful, 
+     but did succeed to tidy up the interop using InteropBuffer header 
+     and a transform method that takes a functor argument.  
+
+     Problem is that the functor cannot be exposed to clang
+     as it uses CUDA specific __device__ __host__ 
 
      Build with *glfwtriangle-split-make*
+
+
+*glfwtriangle_split2.cc,InteropBuffer.hh,GrowBuffer.hh,GrowBuffer.cu*
+     Succeed to partition into nvcc and clang units by hiding nvcc specifics
+     in the *GrowBuffer.cu* implementation, so the header remains
+     clean and acceptable to both compilers.
+
+     Build with: 
+
+     *glfwtriangle-split2-growbuffer-make*
+     *glfwtriangle-split2-make*
 
 
 Refs
@@ -122,6 +138,20 @@ glfwtriangle-cu-make()
 }
 
 
+glfwtriangle-interop-make()
+{
+   glfwtriangle-cd
+   cuda- 
+
+   local name=InteropBuffer
+   clang $name.cc -c -o /tmp/$name.obj \
+        -I$(glew-prefix)/include \
+        -I$(glfw-prefix)/include \
+        -I$(cuda-prefix)/include 
+}
+
+
+
 glfwtriangle-split-make()
 {
    local msg="$FUNCNAME : "
@@ -131,27 +161,58 @@ glfwtriangle-split-make()
 
    local name=glfwtriangle_split
    local bin=/tmp/$name
-   local cu_name=grow_split
-   local cu_obj=/tmp/$cu_name.obj
 
-   echo $msg making obj $obj
+   echo $msg making bin $bin
 
-   nvcc -ccbin /usr/bin/clang $cu_name.cu -o $cu_obj \
-        -I$(cuda-prefix)/include \
-        -L$(cuda-prefix)/lib -lcudart.7.0 
-
-   clang $name.cc -o $bin \
+   nvcc -ccbin /usr/bin/clang $name.cu -o $bin \
         -I$(glew-prefix)/include \
         -I$(glfw-prefix)/include \
         -I$(cuda-prefix)/include \
         -L$(glew-prefix)/lib -lglew  \
         -L$(glfw-prefix)/lib -lglfw.3  \
         -L$(cuda-prefix)/lib -lcudart.7.0  \
-        -framework OpenGL
-
+        -L/System/Library/Frameworks/OpenGL.framework/Libraries -lGL
 
 }
 
+
+
+
+
+glfwtriangle-split2-growbuffer-make()
+{
+   glfwtriangle-cd
+   cuda- 
+
+   local name=GrowBuffer
+   nvcc $name.cu -c -o /tmp/$name.obj \
+        -I$(glew-prefix)/include \
+        -I$(glfw-prefix)/include \
+        -I$(cuda-prefix)/include 
+}
+
+glfwtriangle-split2-make()
+{
+   local msg="$FUNCNAME : "
+
+   glfwtriangle-cd
+   cuda- 
+
+   local name=glfwtriangle_split2
+   local bin=/tmp/$name
+
+   echo $msg making bin $bin
+
+   clang $name.cc /tmp/GrowBuffer.obj -o $bin \
+        -I$(glew-prefix)/include \
+        -I$(glfw-prefix)/include \
+        -I$(cuda-prefix)/include \
+        -L$(glew-prefix)/lib -lglew  \
+        -L$(glfw-prefix)/lib -lglfw.3  \
+        -L$(cuda-prefix)/lib -lcudart.7.0  \
+        -L/System/Library/Frameworks/OpenGL.framework/Libraries -lGL \
+        -lc++
+}
 
 
 

@@ -1,6 +1,6 @@
+#include "GrowBuffer.hh"
 
-
-
+// nvcc specifics hiding from clang in here
 struct grow
 {
     unsigned int count ; 
@@ -20,4 +20,14 @@ struct grow
          return vec ; 
     }
 };
+
+
+void GrowBuffer::trans(unsigned int n)
+{
+    grow f(n);
+    transform<float3, grow>( f );
+}
+
+
+
 

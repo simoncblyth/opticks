@@ -4,18 +4,30 @@
 #include <GLFW/glfw3.h>
 
 #define INTEROP 1
-
 #ifdef INTEROP
+#include "InteropBuffer.hh"
 
-#include <cuda_gl_interop.h>
-struct cudaGraphicsResource *vbo_cuda;
+struct grow
+{
+    unsigned int count ; 
+    grow(unsigned int count) : count(count) {}
 
-#include <thrust/device_vector.h>
-#include <thrust/transform.h>
-#include <thrust/iterator/counting_iterator.h>
+    __host__ __device__ float3 operator()(unsigned int i)
+    {
+         float s = 0.01f * (count % 100)  ; 
+         float3 vec ; 
+         switch(i)
+         {
+            case 0: vec = make_float3( 0.0f,     s,  0.0f) ; break ;
+            case 1: vec = make_float3(    s,    -s,  0.0f) ; break ;
+            case 2: vec = make_float3(   -s,    -s,  0.0f) ; break ;
+         }  
 
-struct grow_split ; 
+         return vec ; 
+    }
+};
 
+InteropBuffer* interop_buffer = NULL ; 
 #endif
 
 
@@ -129,37 +141,6 @@ GLuint init_shader()
 }
 
 
-
-#ifdef INTEROP
-
-void init_interop(GLuint vbo)
-{
-    cudaGLSetGLDevice(0);
-    cudaGraphicsGLRegisterBuffer(&vbo_cuda, vbo, cudaGraphicsMapFlagsWriteDiscard);
-}
-
-void interop_move(unsigned int n)
-{
-    float3* raw_ptr;
-    size_t buf_size;
-
-    cudaGraphicsMapResources(1, &vbo_cuda, 0);
-    cudaGraphicsResourceGetMappedPointer((void **)&raw_ptr, &buf_size, vbo_cuda);
-
-    //printf("interop_move buf_size:%lu \n", buf_size);
-
-    thrust::device_ptr<float3> dev_ptr = thrust::device_pointer_cast(raw_ptr);
-
-    thrust::counting_iterator<int> first(0);
-    thrust::counting_iterator<int> last(3);
-    thrust::transform(first, last, dev_ptr,  grow_split(n) );
-
-    cudaGraphicsUnmapResources(1, &vbo_cuda, 0);
-}
-#endif
-
-
-
 int main () 
 {
     init_glfw();
@@ -170,7 +151,8 @@ int main ()
     GLuint shader_program = init_shader();
 
 #ifdef INTEROP
-    init_interop(vbo);
+    cudaGLSetGLDevice(0);
+    interop_buffer = new InteropBuffer(vbo, cudaGraphicsMapFlagsWriteDiscard, 0);
     unsigned int n(0);
 #endif
 
@@ -182,7 +164,10 @@ int main ()
           glBindVertexArray (vao);
 
 #ifdef INTEROP
-          interop_move(n++);
+          grow f(n);
+          interop_buffer->transform<float3, grow>( f );
+          if(n == 0) interop_buffer->Summary();
+          n++ ; 
 #endif
 
           glDrawArrays (GL_LINE_LOOP, 0, 3);
