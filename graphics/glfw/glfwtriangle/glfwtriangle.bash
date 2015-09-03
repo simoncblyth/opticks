@@ -65,6 +65,14 @@ Evolution
  
      Build/test with: *glfwtriangle-cgb*
 
+     ALTHOUGH BOTH OptiX AND Thrust CAN WRITE INTO THE OpenGL BUFFER : 
+     RUNNING INTO FAILURE FOR Thrust TO BE ABLE TO SEE WHAT OptiX 
+     HAS WRITTEN
+
+     As headbanging on this too long, passed baton to 
+     optixminimal- optixthrust- 
+
+
 
 Intended Buffer Flows
 ----------------------
