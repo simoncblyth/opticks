@@ -44,6 +44,21 @@ RenderEngine/renderer/helpers/optix.h::
     }
 
 
+/usr/local/env/cuda/optix/OppositeRenderer/OppositeRenderer/RenderEngine/renderer/
+
+
+* OptixRenderer.h 
+* OptixRenderer.cpp
+* OptixRenderer_SpatialHash.cu
+
+Interesting structure... methods of OptixRenderer are mixed up OptixRenderer_SpatialHash.cu with 
+thrust structs, CUDA kernels  etc..  but there is no header
+
+Global functions like createUniformGridPhotonMap(PPMRadius);without any header, 
+
+Methods from are invoked from       
+
+
 
 
 EOU

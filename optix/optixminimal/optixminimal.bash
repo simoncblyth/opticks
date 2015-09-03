@@ -4,26 +4,20 @@ optixminimal-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixminimal-src)} ; 
 optixminimal-vi(){       vi $(optixminimal-source) ; }
 optixminimal-usage(){ cat << EOU
 
+optixminimal-thrust **FAILING**
 
+   Thrust fails to see what OptiX writes into the buffer for unknown reasons
 
-RPATH hookup
+   Over in *optixthrust-* succeed to get Thrust too see what OptiX wrote.
+   The code is similar but project layout is very different, or
+   it could be that float4 works but unsigned char doesnt ?
 
-::
-
-    simon:lib64 blyth$ otool -L liboptix.3.8.0.dylib
-    liboptix.3.8.0.dylib:
-        @rpath/liboptix.1.dylib (compatibility version 1.0.0, current version 3.8.0)
-        /System/Library/Frameworks/AGL.framework/Versions/A/AGL (compatibility version 1.0.0, current version 1.0.0)
-        /System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
-        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 65.1.0)
-        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 169.3.0)
 
 
 EOU
 }
 optixminimal-dir(){ echo $(env-home)/optix/optixminimal ; }
 optixminimal-cd(){  cd $(optixminimal-dir); }
-optixminimal-mate(){ mate $(optixminimal-dir) ; }
 
 optixminimal-env(){      
    elocal- 
@@ -31,7 +25,10 @@ optixminimal-env(){
    optix-
 }
 
-optixminimal-bin(){ echo /tmp/optixminimal ; }
+optixminimal-name(){ echo ${OPTIXMINIMAL_NAME:-optixminimal} ; }
+optixminimal-compiler(){ echo ${OPTIXMINIMAL_COMPILER:-clang} ; }
+optixminimal-objs(){ echo ${OPTIXMINIMAL_OBJS:-""} ; }
+optixminimal-bin(){ echo /tmp/$(optixminimal-name) ; }
 optixminimal-ptxdir(){ echo /tmp/ptxdir ; }
 optixminimal-make(){
 
@@ -39,11 +36,13 @@ optixminimal-make(){
    optixminimal-cd
 
    local bin=$(optixminimal-bin)
-   local name=$(basename $bin)
+   local name=$(optixminimal-name)
+   local compiler="$(optixminimal-compiler)"
+   local objs="$(optixminimal-objs)" 
 
-   echo $msg bin $bin
+   echo $msg compiler $compiler name $name bin $bin
 
-   clang $name.cpp -o $bin \
+   clang $name.cpp $objs -o $bin \
          -I$(cuda-prefix)/include   \
          -I$(optix-prefix)/include  \
          -L$(cuda-prefix)/lib -lcudart.7.0  \
@@ -59,9 +58,10 @@ optixminimal-make(){
 
 optixminimal-ptx-make(){
 
+   local name=${1:-minimal}
+
    optixminimal-cd
    local ptxdir=$(optixminimal-ptxdir)
-   local name=minimal
    mkdir -p $ptxdir
    nvcc -ptx $name.cu -o $ptxdir/$name.ptx \
          -I$(optix-prefix)/include
@@ -77,5 +77,32 @@ optixminimal-run(){
    local bin=$(optixminimal-bin)
    PTXDIR=$(optixminimal-ptxdir) $bin
 }
+
+
+
+
+
+optixminimal-bdir(){ echo /tmp/optixminimal.bdir ; }
+
+optixminimal-nvcc(){
+   local name=${1:-thrust_simple}
+   optixminimal-cd
+   local bdir=$(optixminimal-bdir)
+   mkdir -p $bdir 
+   nvcc $name.cu -c -o $bdir/$name.o
+}
+
+optixminimal-thrust(){
+   local name=thrust_simple
+   optixminimal-nvcc $name
+   optixminimal-ptx-make minimal
+
+   local bdir=$(optixminimal-bdir)
+   OPTIXMINIMAL_NAME=optixminimal_thrust OPTIXMINIMAL_OBJS="$bdir/$name.o" optixminimal-make
+}
+optixminimal-thrust-run(){
+   OPTIXMINIMAL_NAME=optixminimal_thrust optixminimal-run
+}
+
 
 

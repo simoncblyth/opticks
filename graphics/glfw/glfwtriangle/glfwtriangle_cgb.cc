@@ -7,7 +7,6 @@
 #ifdef INTEROP
 #include "CudaGLBuffer.hh"
 #include "callgrow.hh"
-//#include "grow.hh"
 #include <optixu/optixpp_namespace.h>
 
 enum { raygen_entry, num_entry } ;

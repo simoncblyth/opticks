@@ -97,6 +97,34 @@ just reference the primaries.
 * photon buffers are populated via an OptiX program launch  
 
 
+Left Field
+----------
+
+* https://github.com/nvpro-samples/gl_optix_composite/blob/master/src/render_optix.cpp
+
+::
+
+    int vboid = buffer->getGLBOId ();
+    glBindBuffer ( GL_PIXEL_UNPACK_BUFFER, vboid );     // Bind to the optix buffer
+
+    rtBufferGetGLBOId stores the OpenGL buffer object id in *gl_id if buffer was created with rtBufferCreateFromGLBO. 
+    If buffer was not created from an OpenGL Buffer Object *gl_id will be 0 after the call and RT_ERROR_INVALID_VALUE is returned.
+
+
+Where are the OptiX buffers stored ?
+---------------------------------------
+
+* https://devtalk.nvidia.com/default/topic/539422/?comment=3782061
+
+From the Programming Guide chapter 9: In multi-GPU environments 
+
+* INPUT_OUTPUT and OUTPUT buffers are stored on the host.
+* But with the RT_BUFFER_GPU_LOCAL flag this is not the case, 
+  which is why you saw a significant speedup using it.
+
+
+
+
 Interop including OpenGL : debug mode
 ----------------------------------------
 

@@ -9,7 +9,7 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 RT_PROGRAM void minimal()
 {
-    rtPrintf( "minimal launch dim (%d,%d) index (%d,%d)\n", launch_dim.x, launch_dim.y, launch_index.x, launch_index.y );
+    //rtPrintf( "minimal launch dim (%d,%d) index (%d,%d)\n", launch_dim.x, launch_dim.y, launch_index.x, launch_index.y );
     output_buffer[launch_index] = optix::make_uchar4(128u, 128u, 128u, 128u );    
 }
 
