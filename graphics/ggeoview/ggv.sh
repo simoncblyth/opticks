@@ -40,6 +40,9 @@ else
    export GGEOVIEW_DETECTOR=DAE_NAME_DYB
 fi
 
+if [ "${cmdline/--oac}" != "${cmdline}" ]; then
+   export OPTIX_API_CAPTURE=1
+fi
 
 if [ "$make" == "1" ]; then
     ggeoview-install 

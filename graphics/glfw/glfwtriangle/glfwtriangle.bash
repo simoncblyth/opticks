@@ -66,6 +66,102 @@ Evolution
      Build/test with: *glfwtriangle-cgb*
 
 
+Intended Buffer Flows
+----------------------
+
+Debug
+~~~~~~
+
+In debug mode primary buffers are OpenGL ones, secondary OptiX "buffers" and
+tertiary CUDA/Thrust "buffers" just reference the primaries.
+
+* input geometry buffers loaded from file into primary buffers
+* input genstep loaded from file/network into primary buffers 
+* primary photon/record/sequence/recsel/phosel buffers created with size based on gensteps 
+* photon/record/sequence buffers are populated via an OptiX program launch  
+* sequence buffers are indexed using Thrust populating recsel and phosel buffers
+  providing photon and record selection based on material or history sequences
+* recsel/phosel buffers used by OpenGL/GLSL shaders to select photons/records
+* geometry/genstep/photons/record buffers used by OpenGL to visualize 
+  the simulation within a render loop
+
+Production
+~~~~~~~~~~~
+
+In production mode primary buffers are OptiX ones, secondary CUDA/Thrust "buffers"
+just reference the primaries.
+
+* input geometry buffers loaded from file into primary buffers
+* input genstep loaded from file/network into primary buffers 
+* primary photon buffers created with size based on gensteps 
+* photon buffers are populated via an OptiX program launch  
+
+
+Interop including OpenGL : debug mode
+----------------------------------------
+
+Interop including OpenGL is intended for visualization to allow
+efficient debugging, thus the simplifying assumption of a single
+GPU is OK. 
+
+OpenGL must come first, as interop from it is 
+in one direction only, so there are two possible approaches.
+
+CudaGLBuffer.hh::
+
+
+    OpenGL --- CUDA --- Thrust 
+                 \
+                  \
+                   OptiX 
+
+OptiXGLBuffer.hh::
+
+    OpenGL ---  OptiX
+                   \
+                    \
+                     CUDA --- Thrust 
+
+
+Initially tried to put all three layers into a single class
+but found problems with nvcc compilation of thrust functors
+which including optix headers, so avoiding the complication by 
+attempting to keep thrust and optix as separate as possible. 
+
+
+Which is best ? 
+
+* Need to try, measure and see
+* OptiXGLBuffer may have some advantage of being closer to the without OpenGL situation
+
+
+
+Interop without OpenGL : production mode
+-----------------------------------------
+
+Such an arrangement aims for efficient multi-GPU usage that is 
+workable on compute only nodes. As OptiX provides transparent 
+multi-GPU support its best for it to:
+
+* setup CUDA context 
+* manage buffer creation 
+
+::
+
+     OptiX
+         \
+          \
+           CUDA --- Thrust 
+
+
+The converse arrangement of setting up buffers with CUDA first 
+is disfavored when multi-GPU operation is intended. 
+
+TODO: find way to check that the CUDAWrap curand loading is being done after OptiX 
+has setup its CUDA contexts
+
+
+
 Refs
 -----
 
@@ -278,6 +374,15 @@ glfwtriangle-callgrow-make()
    nvcc $name.cu -c -o /tmp/$name.o 
 }
 
+glfwtriangle-grow-make()
+{
+   glfwtriangle-cd
+   cuda- 
+   local name=grow
+   nvcc $name.cu -c -o /tmp/$name.o 
+}
+
+
 glfwtriangle-cgbbin-make()
 {
    local msg="$FUNCNAME : "
@@ -289,6 +394,7 @@ glfwtriangle-cgbbin-make()
    local name=glfwtriangle_cgb
    local bin=/tmp/$name
    local obj=/tmp/callgrow.o
+   #local obj=/tmp/grow.o
 
    echo $msg making bin $bin
 

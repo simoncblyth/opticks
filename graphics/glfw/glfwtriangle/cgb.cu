@@ -9,18 +9,11 @@ rtDeclareVariable(uint, launch_dim,   rtLaunchDim, );
 
 RT_PROGRAM void cgb()
 {
-    rtPrintf( "cgb.cu launch dim %d index %d \n", launch_dim, launch_index  );
-    
-    float s = 0.5f ; 
-    float3 vec ; 
-    switch(launch_index)
-    {
-        case 0: vec = make_float3( 0.0f,     s,  0.0f) ; break ;
-        case 1: vec = make_float3(    s,    -s,  0.0f) ; break ;
-        case 2: vec = make_float3(   -s,    -s,  0.0f) ; break ;
-    }  
-
-    cgb_buffer[launch_index] = vec ;    
+    float frac = float(launch_index)/float(launch_dim) ; 
+    float sinPhi, cosPhi;
+    sincosf(2.f*M_PIf*frac,&sinPhi,&cosPhi);
+    rtPrintf( "cgb.cu launch dim %d index %d frac %10.4f s %10.4f c %10.4f \n", launch_dim, launch_index, frac, sinPhi, cosPhi);
+    cgb_buffer[launch_index] = make_float3( sinPhi,  cosPhi,  0.0f) ;
 }
 
 

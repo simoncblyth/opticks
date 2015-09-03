@@ -30,6 +30,32 @@ OptiX Multi-GPU debug
 * https://devtalk.nvidia.com/default/topic/853345/?comment=4597946
 
 
+Issue : reboot required to recover from timeout exceptions 
+-----------------------------------------------------------
+
+When things go wrong in an OptiX program (eg an unintended infinite loop)
+the usual result is a Timeout exception. 
+Unfortunately on Macbook Pro 2013 with Geforce 750M,
+with CUDA 7.0, OptiX 3.8 and driver ??? following the report of the exception
+the machine freezes requiring a hardware reboot to recover.
+
+Perhaps some cleanup code that runs when Timeout exceptions occur  
+could prevent the need for rebooting ?
+
+Maybe try to capture what is going on the next time this happens using 
+OPTIX_API_CAPTURE=1 and send trace to optix-help@nvidia.com.
+For instructions regarding traces see:
+
+* https://devtalk.nvidia.com/default/topic/803116/optix/error-with-rtpmodelupdate/
+
+TODO
+~~~~
+
+Try catching the exception and exiting immediately ?
+
+* https://devtalk.nvidia.com/default/topic/734914/optix/optix-bug-crash-with-cuda-error-kernel-ret-700-when-not-rtprinting-anything-small-demo-code-/
+
+
 
 OptiX Versions
 -----------------

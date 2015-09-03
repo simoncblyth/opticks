@@ -282,7 +282,8 @@ RT_PROGRAM void generate()
 
 RT_PROGRAM void exception()
 {
-    const unsigned int code = rtGetExceptionCode();
+    //const unsigned int code = rtGetExceptionCode();
+    rtPrintExceptionDetails();
     photon_buffer[launch_index.x] = make_float4(-1.f, -1.f, -1.f, -1.f);
 }
 

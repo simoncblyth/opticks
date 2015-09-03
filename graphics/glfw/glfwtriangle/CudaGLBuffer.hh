@@ -16,8 +16,10 @@ class CudaGLBuffer {
            unsigned int flags, 
            cudaStream_t stream=0);
    public:
+       const char* getFlagDescription();
        void Summary(const char* msg="InteropBuffer::Summary");
-       template <typename F> void thrust_transform(const F& f);
+       template <typename F> void thrust_transform_index(const F& f, bool mapunmap);
+       template <typename F> void thrust_transform_value(const F& f, bool mapunmap);
    public:
        // pertain to buffer from last get*Ptr call, so get the Ptr 1st  
        unsigned int          getBufferSize();
@@ -59,6 +61,24 @@ inline CudaGLBuffer<T>::CudaGLBuffer(
     cudaGraphicsGLRegisterBuffer(&m_graphics_resource, m_buffer_id, m_flags);
 }
 
+
+
+
+template <typename T>
+inline const char* CudaGLBuffer<T>::getFlagDescription()
+{
+    const char* ret(NULL);
+    switch(m_flags)
+    {
+        case cudaGraphicsMapFlagsNone:         ret="cudaGraphicsMapFlagsNone: Default; Assume resource can be read/written " ; break ;
+        case cudaGraphicsMapFlagsReadOnly:     ret="cudaGraphicsMapFlagsReadOnly: CUDA will not write to this resource " ; break ; 
+        case cudaGraphicsMapFlagsWriteDiscard: ret="cudaGraphicsMapFlagsWriteDiscard: CUDA will only write to and will not read from this resource " ; break ;  
+    }
+    return ret ;
+}
+
+
+
 template <typename T>
 inline unsigned int CudaGLBuffer<T>::getCount()
 {
@@ -91,7 +111,7 @@ inline void CudaGLBuffer<T>::unmapResources()
 template <typename T>
 inline void CudaGLBuffer<T>::Summary(const char* msg)
 {
-    printf("%s buffer_id %d bufsize %lu count %d \n", msg, m_buffer_id, m_bufsize, m_count );
+    printf("%s buffer_id %d bufsize %lu count %d \n%s\n", msg, m_buffer_id, m_bufsize, m_count, getFlagDescription() );
 }
 
 template <typename T>
@@ -130,17 +150,41 @@ inline CUdeviceptr CudaGLBuffer<T>::getCuPtr()
 
 template <typename T>
 template <typename F>
-inline void CudaGLBuffer<T>::thrust_transform(const F& f)
+inline void CudaGLBuffer<T>::thrust_transform_index(const F& f, bool mapunmap)
 {
-    mapResources();
+    if(mapunmap) mapResources();
 
     thrust::device_ptr<T> th_ptr = getThrustPtr();
     thrust::counting_iterator<int> first(0);
     thrust::counting_iterator<int> last(m_count);
     thrust::transform(first, last, th_ptr,  f );
 
-    unmapResources();
+    if(mapunmap) unmapResources();
 }
+
+
+template <typename T>
+template <typename F>
+inline void CudaGLBuffer<T>::thrust_transform_value(const F& f, bool mapunmap)
+{
+    if(mapunmap) mapResources();
+
+    thrust::device_ptr<T> ptr = getThrustPtr();
+    thrust::device_vector<T> vec(ptr, ptr+m_count);
+
+    thrust::transform(vec.begin(), vec.end(), vec.begin(),  f );
+    printf("thrust_transform_value %d \n", m_count);
+
+    if(mapunmap) unmapResources();
+}
+
+
+
+
+
+
+
+
 
 
 

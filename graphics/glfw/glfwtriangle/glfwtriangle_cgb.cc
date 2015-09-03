@@ -7,6 +7,7 @@
 #ifdef INTEROP
 #include "CudaGLBuffer.hh"
 #include "callgrow.hh"
+//#include "grow.hh"
 #include <optixu/optixpp_namespace.h>
 
 enum { raygen_entry, num_entry } ;
@@ -54,7 +55,7 @@ void init_gl()
 }
 
 
-GLuint init_geometry()
+GLuint init_geometry(unsigned int nvert)
 {
     GLuint vbo ; 
     glGenBuffers (1, &vbo);
@@ -62,7 +63,7 @@ GLuint init_geometry()
 
     GLenum usage = GL_DYNAMIC_DRAW ; 
     printf("DYNAMIC_DRAW\n");
-    glBufferData (GL_ARRAY_BUFFER, 3 * 3 * sizeof (float), NULL, usage );
+    glBufferData (GL_ARRAY_BUFFER, nvert * 3 * sizeof (float), NULL, usage );
     return vbo ; 
 }
 
@@ -116,7 +117,9 @@ int main ()
     init_glfw();
     init_gl();                                 
 
-    GLuint vbo = init_geometry();
+    //unsigned int nvert = 1000 ; 
+    unsigned int nvert = 4 ; 
+    GLuint vbo = init_geometry(nvert);
     GLuint vao = init_buffer_description(vbo);
     GLuint shader_program = init_shader();
 
@@ -124,49 +127,78 @@ int main ()
 #ifdef INTEROP
     cudaGLSetGLDevice(0);
 
-    optix::Context context = optix::Context::create();
-    context->setPrintEnabled(true);
-    context->setPrintBufferSize(8192);
-    context->setStackSize( 2180 );
+    //cudaGraphicsMapFlagsNone         //Default; Assume resource can be read/written
+    //cudaGraphicsMapFlagsReadOnly     //CUDA will not write to this resource
+    //cudaGraphicsMapFlagsWriteDiscard //CUDA will only write to and will not read from this resource
 
-    context->setEntryPointCount(num_entry);
+    unsigned int flags = cudaGraphicsMapFlagsNone ; // Default; Assume resource can be read/written 
 
-    optix::Program raygen = context->createProgramFromPTXFile( ptxpath("cgb.ptx", "PTXDIR"), "cgb" );
+    // grabbing the OpenGL buffer for use by CUDA
+    CudaGLBuffer<float3>* cgb = new CudaGLBuffer<float3>(vbo, flags, 0);
+    cgb->mapResources();    
+    float3*  d_ptr = cgb->getRawPtr() ;
+    unsigned int count = cgb->getCount() ; 
+    cgb->Summary();
 
-    context->setRayGenerationProgram( raygen_entry, raygen );
 
-    std::cout << "validate " << std::endl ; 
+    bool optix = true ; 
+    bool thrust = true ; 
 
-    context->validate();
+    // both can write to the buffer, 
+    // but it seems that thrust does not see what optix wrote
 
-    CudaGLBuffer<float3>* cgb = new CudaGLBuffer<float3>(vbo, cudaGraphicsMapFlagsWriteDiscard, 0);
-
-    cgb->mapResources();
+    if(optix)
     {
-        float3*  d_ptr = cgb->getRawPtr() ;
+        optix::Context context = optix::Context::create();
+        context->setPrintEnabled(true);
+        context->setPrintBufferSize(8192);
+        context->setStackSize( 2180 );
 
-        unsigned int count = cgb->getCount() ; 
+        context->setEntryPointCount(num_entry);
+        optix::Program raygen = context->createProgramFromPTXFile( ptxpath("cgb.ptx", "PTXDIR"), "cgb" );
+        context->setRayGenerationProgram( raygen_entry, raygen );
+        std::cout << "validate " << std::endl ; 
+        context->validate();
+
+        // "createBufferForCUDA" seems misleading name as this creates a buffer **from** a CUdeviceptr
+        // also remember that INPUT/OUTPUT for OptiX if from the GPU perspective
 
         optix::Buffer buffer = context->createBufferForCUDA(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT3, count);
-
         CUdeviceptr cu_ptr = reinterpret_cast<CUdeviceptr>(d_ptr) ; 
-
         unsigned int device_number = 0u ; 
-
         buffer->setDevicePointer(device_number, cu_ptr );
-
         context["cgb_buffer"]->set( buffer );   // cannot compile context without this
-
         context->compile();
-
         context->launch(raygen_entry, 0);
-
         context->launch(raygen_entry, count);
 
-        cgb->Summary();
+        //buffer->markDirty();  // seems non-sensical but give it a go 
 
     }
-    cgb->unmapResources();
+    //cgb->unmapResources();
+
+
+    if(thrust)
+    {
+        callgrow_value( cgb, 0 , false );  // this attempts to transform the preexisting content of buffer : not working 
+        //callgrow_index( cgb, 0 , false );  // this just writes based in the index : works 
+    }
+
+    // https://devtalk.nvidia.com/default/topic/570952/optix/rtbuffersetdevicepointer-problem-to-update/
+
+
+    // https://devtalk.nvidia.com/default/topic/558491
+    //
+    //      RT_BUFFER_INPUT - Only the host may write to the buffer. 
+    //                        Data is transferred from host to device and device access is restricted to be read-only.
+    //
+    //                        if you have input only buffers, the data from the device is never copied back to the host. 
+    //                        You can map the host buffer, but you will only get what you put in it last. 
+    //
+    //
+    //      Marking something dirty simply tells OptiX that you changed the data on the device outside of OptiX,
+    //
+
 
 
     unsigned int n(0);
@@ -181,11 +213,16 @@ int main ()
           glBindVertexArray (vao);
 
 #ifdef INTEROP
-          callgrow( cgb, n );
-          n++ ; 
+
+          if(thrust)
+          { 
+              callgrow_value( cgb, n , false );
+              //callgrow_index( cgb, n , true );
+              n++ ;
+          } 
 #endif
 
-          glDrawArrays (GL_LINE_LOOP, 0, 3);
+          glDrawArrays (GL_LINE_LOOP, 0, nvert);
 
           glfwPollEvents ();
           glfwSwapBuffers (window);

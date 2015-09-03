@@ -543,17 +543,16 @@ void App::loadGenstep()
     bool nooptix    = m_fcfg->hasOpt("nooptix");
     bool geocenter  = m_fcfg->hasOpt("geocenter");
 
-    // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
-    m_evt->setGenstepData(npy, nooptix);  
+    m_evt->setGenstepData(npy, nooptix);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
 
     (*m_timer)("hostEvtAllocation"); 
 
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     glm::vec4 uuce = geocenter ? mmce : gsce ;
-    print(mmce, "main mmce");
-    print(gsce, "main gsce");
-    print(uuce, "main uuce");
+    print(mmce, "loadGenstep mmce");
+    print(gsce, "loadGenstep gsce");
+    print(uuce, "loadGenstep uuce");
 
     bool autocam = true ; 
     m_composition->setCenterExtent( uuce , autocam );

@@ -44,12 +44,43 @@ Thrust Functor Access to device arrays
 
 * http://stackoverflow.com/questions/27733652/how-can-i-dereference-a-thrustdevice-vector-from-within-a-thrust-functor
 
+
+Linking Thrust with non-Thrust code
+------------------------------------
+
+Need to do gymnastics to avoid nvcc specifics from being in headers
+eg cannot include a thrust functor in a header that needs to 
+be compiled by clang/gcc.
+
+
+Define them away
+
+* https://groups.google.com/forum/#!topic/thrust-users/abVI3htMrkw
+  
+::
+
+    // CudaPortability.h
+    // Allow host/device functions to be directly included in pure cpp
+    #ifdef __CUDACC__
+    #  define CUDA_PROTOTYPE   __device__ __host__
+    #  define CUDA_INLINE      __device__ __host__ inline
+    #else
+    #  define CUDA_PROTOTYPE
+    #  define CUDA_INLINE      inline
+    #endif
+
+
+Thrust defines them away for non nvcc in /Developer/NVIDIA/CUDA-7.0/include/thrust/detail/config/host_device.h 
+::
+
+   #include <thrust/detail/config/host_device.h>
+
+
+
 Involved Thrust
 ----------------
 
-
 * http://stackoverflow.com/questions/26666621/thrust-fill-isolate-space
-
 
 
 Parallel Processing Algorthms Intro, eg explaining Scatter/Gather
