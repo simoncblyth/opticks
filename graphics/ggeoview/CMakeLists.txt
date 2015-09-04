@@ -189,7 +189,6 @@ add_optix_executable( ${name}
       cu/TriangleMesh.cu 
 
       cu/generate.cu
-      
 ) 
 
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name OptiXThrustMinimal)
+set(name GLOptiXThrustMinimal)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -25,6 +25,11 @@ find_package(OptiX REQUIRED)    # FindOptiX.cmake : finding and adding libraries
 find_package(CUDA 2.3 REQUIRED) # 
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 
+
+find_package(GLEW REQUIRED)
+find_package(GLFW REQUIRED)
+
+
 find_package(Boost REQUIRED)
 
 ## c++11 forced by AsioZMQ   needs to come after OptiX
@@ -38,18 +43,24 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-p
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
+   ${GLEW_INCLUDE_DIRS} 
+   ${GLFW_INCLUDE_DIRS} 
    ${CUDA_INCLUDE_DIRS}
    ${OptiX_INCLUDE}  
 )
 
 add_definitions(
+   ${GLEW_DEFINITIONS}
+   ${GLFW_DEFINITIONS}
    ${OptiX_DEFINITIONS} 
 )
 
 set(LIBRARIES 
+      ${GLEW_LIBRARIES}
+      ${GLFW_LIBRARIES}
+      ${CUDA_LIBRARIES}
       optix
       optixu
-      ${CUDA_LIBRARIES}
 )
 
 # CUDA_GENERATED_OUTPUT_DIR seems to an input to OptiX cmake macros
@@ -60,10 +71,13 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
 optixthrust_add_executable( ${name} 
       main.cpp
-      optixthrust.cpp
-      optixthrust_postprocess.cu     
-      cu/minimal_float4.cu
-      OPTIONS -arch sm_30 
+      gloptixthrust.cpp
+      gloptixthrust_postprocess.cu     
+
+      cu/circle.cu
+
+      OPTIONS 
+        -arch sm_30 
 ) 
 
 install(TARGETS ${name} DESTINATION bin)

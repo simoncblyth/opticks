@@ -34,6 +34,30 @@ Experts
 
 
 
+Heterogenous Class Definition 
+-----------------------------
+
+By heterogenous classes, I mean ones that combine methods 
+compiled with nvcc and the underlying system compiler eg clang, gcc.
+The alternative to doing this is split up the CPU and GPU code into 
+separate 
+and do the work of providing 
+
+ 
+Was initially surprised to find that this works, but on reflection of 
+what *nvcc* actually does it makes sense.  
+*nvcc* is a compiler driver that splits code up into portions 
+to run on CPU which are compiled with the underlying compiler 
+and portions to be compiled for the GPU.
+
+Because *nvcc* is using the undelying  
+
+hemi
+~~~~~
+
+* http://devblogs.nvidia.com/parallelforall/developing-portable-cuda-cc-code-hemi/
+
+
 Thrust CUDA Interop
 ----------------------
 

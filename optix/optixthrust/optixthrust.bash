@@ -10,11 +10,18 @@ OptiX/CUDA/Thrust Interop
 
 TODO
 
-* get rid of the warnings
-* make more realistic test of approach using Thrust transform with functors
 * try with OpenGL backing, perhaps in glopth- 
 
 * apply the approches/classes that come out of these investigation to ggeoview-
+
+
+cmake testing
+-------------
+
+::
+
+   optixthrust-;optixthrust-wipe;VERBOSE=1 optixthrust--
+
 
 
 many warnings from cmake make
