@@ -1,5 +1,5 @@
 // WITH_GL the thrust scaling does happen but it is not seen by OpenGL
-#define WITH_GL 1
+//#define WITH_GL 1
 
 #include <stdio.h>
 #include "assert.h"
@@ -7,7 +7,9 @@
 #ifdef WITH_GL
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 #include <cuda_gl_interop.h>
+
 #endif
 #include "gloptixthrust.hh"
 
@@ -108,46 +110,49 @@ GLuint init_shader()
 
 int main () 
 {
-    unsigned int nvert = 10 ; 
+    unsigned int nvert = 10000 ; 
+    unsigned int vbo = 0 ; 
 
 #ifdef WITH_GL
-
-    cudaGLSetGLDevice(0);
-
     init_glfw();
     init_gl();                                 
 
-    GLuint vbo = init_vbo(nvert);
+    vbo = init_vbo(nvert);
     GLuint vao = init_vao(vbo);
     GLuint shader = init_shader();
+    cudaGLSetGLDevice(0);
+    glBindBuffer (GL_ARRAY_BUFFER, vbo);
 
-    GLOptiXThrust glot(vbo, nvert);
+    //GLOptiXThrust::Interop_t interop =  GLOptiXThrust::GCOT ;
+    GLOptiXThrust::Interop_t interop =  GLOptiXThrust::GOCT ;
 #else
-    GLOptiXThrust glot(0, nvert);
+    GLOptiXThrust::Interop_t interop =  GLOptiXThrust::OCT ;
 #endif
-    glot.compile();
-    glot.launch(GLOptiXThrust::raygen_minimal_entry); // generate vertices
 
-    float factor = 0.1f ; 
-    glot.postprocess(factor);  // scale vertices : not reflected in drawing by OpenGL
-    glot.sync();
-
-    glot.launch(GLOptiXThrust::raygen_dump_entry);   
-
+    GLOptiXThrust glot(vbo, "output_buffer", nvert, interop ); 
+    glot.generate();
 
 #ifdef WITH_GL
     while (!glfwWindowShouldClose (window)) 
     {
           glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
           glUseProgram (shader);
+          glBindBuffer (GL_ARRAY_BUFFER, vbo);
           glBindVertexArray (vao);
           glDrawArrays (GL_LINE_LOOP, 0, nvert);
+
+          glot.update();
 
           glfwPollEvents ();
           glfwSwapBuffers (window);
     }
     glfwTerminate();
+
+#else
+    for(unsigned int i=0 ; i < 10 ; i++)
+    {
+        glot.update();
+    }
 #endif
 
     return 0;
