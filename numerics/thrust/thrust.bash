@@ -32,6 +32,17 @@ Experts
 
 * http://stackoverflow.com/users/1695960/robert-crovella
 
+Thrust sync
+-----------
+
+* :google:`thrust cudaStream`
+
+* https://github.com/thrust/thrust/issues/664
+
+* http://devblogs.nvidia.com/parallelforall/gpu-pro-tip-cuda-7-streams-simplify-concurrency/
+
+* http://www.techenablement.com/the-cuda-thrust-api-now-supports-streams-and-concurrent-tasks/
+
 
 
 Heterogenous Class Definition 

@@ -12,6 +12,9 @@ OpenGL/OptiX/CUDA/Thrust Interop
 * http://stackoverflow.com/questions/6481123/cuda-and-opengl-interop
 * https://github.com/nvpro-samples/gl_cuda_interop_pingpong_st
 
+* https://www.opengl.org/discussion_boards/showthread.php/173336-CUDA-CANNOT-perceive-changing-VBO-with-glMapBuffer
+
+
 
 ::
 
@@ -95,9 +98,16 @@ gloptixthrust-run(){
    local idir=$(gloptixthrust-idir)
    local ibin=$idir/bin/GLOptiXThrustMinimal
 
-   PTXDIR=$ptxdir $ibin $*
+   PTXDIR=$ptxdir $LLDB $ibin $*
 }
 
+gloptixthrust-lldb(){
+   LLDB=lldb gloptixthrust-run $*
+}
+
+gloptixthrust-oac(){
+   OPTIX_API_CAPTURE=1 gloptixthrust-run $*
+}
 
 gloptixthrust-wipe(){
    local cdir=$(gloptixthrust-cdir)
@@ -113,4 +123,7 @@ gloptixthrust--()
    gloptixthrust-make install
    gloptixthrust-run
 }
+
+
+
 

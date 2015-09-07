@@ -174,13 +174,13 @@ int main ()
         //buffer->markDirty();  // seems non-sensical but give it a go 
 
     }
-    //cgb->unmapResources();
+    cgb->unmapResources();
 
 
     if(thrust)
     {
-        callgrow_value( cgb, 0 , false );  // this attempts to transform the preexisting content of buffer : not working 
-        //callgrow_index( cgb, 0 , false );  // this just writes based in the index : works 
+        //callgrow_value( cgb, 0 , false );  // this attempts to transform the preexisting content of buffer : not working 
+        callgrow_index( cgb, 0 , false );  // this just writes based in the index : works 
     }
 
     // https://devtalk.nvidia.com/default/topic/570952/optix/rtbuffersetdevicepointer-problem-to-update/

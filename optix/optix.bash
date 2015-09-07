@@ -24,6 +24,16 @@ Conference Talks
   Many presentations (videos and pdfs) on OptiX
 
 
+Peek at OptiX internals via stack trace
+----------------------------------------
+
+::
+
+    OBuffer::mapGLToOptiX (createBufferFromGLBO) 1  size 30
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Memory allocation failed (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: driver().cuGraphicsGLRegisterBuffer(&cudaResource, id, flags) returned (2): Out of memory, [3735964])
+    Abort trap: 6
+
+
 OptiX Multi-GPU debug
 ----------------------
 

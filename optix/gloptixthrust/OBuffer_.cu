@@ -83,6 +83,11 @@ struct Resource {
 
 void OBuffer::init()
 {
+    if(m_inited) return ;
+    m_inited = true ; 
+
+    printf("OBuffer::init %u\n", m_buffer_id);
+
     unsigned int flags ;
     switch(m_access)
     {
@@ -91,26 +96,35 @@ void OBuffer::init()
        case  W: flags = cudaGraphicsMapFlagsWriteDiscard ;break;
     }
 
-    cudaStream_t stream1 ; 
-    cudaStreamCreate ( &stream1) ;
-    m_resource = new Resource(m_buffer_id, flags, stream1  );
+    //cudaStream_t stream1 ; 
+    //cudaStreamCreate ( &stream1) ;
+    m_resource = new Resource(m_buffer_id, flags, (cudaStream_t)0  );
 }
+
+unsigned int OBuffer::getNumBytes()
+{
+    assert(m_resource);
+    return m_resource->bufsize ; 
+}
+
 
 void OBuffer::streamSync()
 {
+    assert(m_resource);
     m_resource->streamSync();
 }
 
 void OBuffer::mapGLToCUDA()
 {
+    assert(m_resource);
     m_mapped = true ; 
     printf("OBuffer::mapGLToCUDA %d\n", m_buffer_id);
     m_resource->registerBuffer();
     m_dptr = m_resource->mapGLToCUDA();
 }
-
 void OBuffer::unmapGLToCUDA()
 {
+    assert(m_resource);
     m_mapped = false ; 
     printf("OBuffer::unmapGLToCUDA\n");
     m_resource->unmapGLToCUDA();
@@ -135,13 +149,16 @@ void OBuffer::unmapGLToCUDAToOptiX()
 
 void OBuffer::mapGLToOptiX()
 {
-    printf("OBuffer::mapGLToOptiX (createBufferFromGLBO) %d\n", m_buffer_id);
+    assert(m_resource);
+    printf("OBuffer::mapGLToOptiX %s (createBufferFromGLBO) %d  size %d\n", m_buffer_name, m_buffer_id, m_size);
+
     m_buffer = m_context->createBufferFromGLBO(m_type, m_buffer_id);
 
     //m_buffer->registerGLBuffer();
 
     m_buffer->setFormat( m_format );
     m_buffer->setSize( m_size );
+
     m_context[m_buffer_name]->setBuffer(m_buffer);
 }
 
@@ -160,7 +177,6 @@ want it, and no copying will happen. It is a caught runtime error to request
 pointers for more than one but fewer than all devices.
 
    */
-
 
     CUdeviceptr d;
     m_buffer->getDevicePointer(m_device, &d);

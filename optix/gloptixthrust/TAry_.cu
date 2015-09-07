@@ -12,10 +12,29 @@ struct indexer
 
     __host__ __device__ uint4 operator()(unsigned int i)
     {   
-        unsigned int sel = i % 4 ; 
-        return make_uint4( sel, 0u, 0u, 0u);
+        //unsigned int sel = i % 4 ; 
+        return make_uint4( 1u, 2u, 3u, 4u);
     }   
 };
+
+
+struct test 
+{
+    test() {}
+
+    __host__ __device__ uint4 operator()(const uint4& v )
+    {   
+        return make_uint4( v.x+1, v.y+1, v.z+1, v.w+1);
+    }   
+};
+
+
+
+void TAry::copyToHost( void* host )
+{
+    printf("TAry::copyToHost num bytes %d \n", m_num_bytes);
+    cudaMemcpy(host, m_dptr, m_num_bytes, cudaMemcpyDeviceToHost);
+}
 
 
 void TAry::transform()
@@ -24,17 +43,45 @@ void TAry::transform()
 
     thrust::device_ptr<uint4> p = thrust::device_pointer_cast((uint4*)m_dptr);
 
-    thrust::device_vector<uint4> v(p, p+m_size);
+    thrust::host_vector<uint4> h(m_size) ;
 
+    thrust::device_vector<uint4> d(p, p+m_size);
+
+    thrust::copy( d.begin(), d.end(), h.begin());
+
+    for(unsigned int i=0 ; i < m_size ; i++)
+    {
+        uint4 u = h[i] ; 
+        printf("TAry(bef)  %2u : %2u %2u %2u %2u \n", i, u.x, u.y, u.z, u.w ); 
+    }
+
+    /*
     thrust::counting_iterator<unsigned int> first(0);
-
     thrust::counting_iterator<unsigned int> last(m_size);
-
     indexer idx ;
-
     thrust::transform(first, last, v.begin(),  idx );
+    */
 
-    cudaDeviceSynchronize();
+    test tst ; 
+    thrust::transform(d.begin(),d.end(), d.begin(),  tst );
+
+    //cudaDeviceSynchronize();
+    cudaStreamSynchronize(0);
+
+
+    thrust::copy( d.begin(), d.end(), h.begin());
+    for(unsigned int i=0 ; i < m_size ; i++)
+    {
+        uint4 u = h[i] ; 
+        printf("TAry(aft)  %2u : %2u %2u %2u %2u \n", i, u.x, u.y, u.z, u.w ); 
+    }
+
+    if(m_hostcopy)
+    {
+        //copyToHost(m_hostcopy);
+        memcpy(m_hostcopy, h.data(), m_num_bytes );
+    }
+
 
 }
 

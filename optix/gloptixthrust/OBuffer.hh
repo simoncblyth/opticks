@@ -26,9 +26,10 @@ struct Resource ;
 
 class OBuffer {
   public:
-       typedef enum { RW, R, W } Access_t ; 
-       OBuffer(optix::Context& context, unsigned int buffer_id, const char* buffer_name, unsigned int count, Access_t access=OBuffer::RW );
+       typedef enum { RW, R, W } cudaAccess_t ; 
+       OBuffer(optix::Context& context, unsigned int buffer_id, const char* buffer_name, unsigned int count, RTformat format, unsigned int type, cudaAccess_t access=OBuffer::RW );
   private:
+  public:
        void init();
   public:
        void mapGLToCUDA();
@@ -46,6 +47,7 @@ class OBuffer {
        void streamSync();
        void* getRawPointer();
        unsigned int getSize();
+       unsigned int getNumBytes();
        bool  isMapped(); 
   private:
        optix::Context        m_context ; 
@@ -54,7 +56,7 @@ class OBuffer {
        unsigned int          m_device ; 
        unsigned int          m_buffer_id ;
        const char*           m_buffer_name ;
-       Access_t              m_access ; 
+       cudaAccess_t          m_access ; 
        unsigned int          m_width  ; 
        unsigned int          m_height ; 
        unsigned int          m_depth ; 
@@ -63,11 +65,12 @@ class OBuffer {
        unsigned int          m_type ; 
        void*                 m_dptr ;
        bool                  m_mapped ; 
+       bool                  m_inited ; 
 
 };
 
 
-inline OBuffer::OBuffer(optix::Context& context, unsigned int buffer_id, const char* buffer_name, unsigned int count, Access_t access ) :
+inline OBuffer::OBuffer(optix::Context& context, unsigned int buffer_id, const char* buffer_name, unsigned int count, RTformat format, unsigned int type, cudaAccess_t access ) :
    m_context(context),
    m_resource(NULL),
    m_device(0),
@@ -78,10 +81,11 @@ inline OBuffer::OBuffer(optix::Context& context, unsigned int buffer_id, const c
    m_height(1),
    m_depth(1),
    m_size(m_width*m_height*m_depth),
-   m_format(RT_FORMAT_FLOAT4),
-   m_type(RT_BUFFER_INPUT_OUTPUT),
+   m_format(format),
+   m_type(type),
    m_dptr(NULL),
-   m_mapped(false)
+   m_mapped(false),
+   m_inited(false)
 {
    init();
 }
