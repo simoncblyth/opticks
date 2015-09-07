@@ -71,8 +71,10 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
 optixthrust_add_executable( ${name} 
       main.cpp
-      gloptixthrust.cpp
-      gloptixthrust_postprocess.cu     
+      OBuffer.cc
+      OBuffer_.cu
+      TAry.cc
+      TAry_.cu
 
       cu/circle.cu
 
