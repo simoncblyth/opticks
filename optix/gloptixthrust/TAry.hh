@@ -8,12 +8,12 @@ class TAry {
    public:
        void check(); 
        void tcopy(); 
+       void tfill(); 
        void transform(); 
        void memcpy();
        void memset();
        void kcall();
        void transform_old(); 
-     //  void copyToHost( void* host );
    private:
        void init();
    private:

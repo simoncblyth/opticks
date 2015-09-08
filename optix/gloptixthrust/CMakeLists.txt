@@ -77,6 +77,8 @@ optixthrust_add_executable( ${name}
       CResource_.cu
       TAry.cc
       TAry_.cu
+      TProc.cc
+      TProc_.cu
 
       cu/circle.cu
 

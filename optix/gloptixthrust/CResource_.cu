@@ -36,13 +36,13 @@ struct CResourceImp {
 
    void registerBuffer()
    {
-       printf("Resource::registerBuffer %d : %s \n", buffer_id, getFlagDescription() );
+       //printf("Resource::registerBuffer %d : %s \n", buffer_id, getFlagDescription() );
        checkCudaErrors( cudaGraphicsGLRegisterBuffer(&resource, buffer_id, flags) );
    }
 
    void unregisterBuffer()
    {
-       printf("Resource::unregisterBuffer %d \n", buffer_id );
+       //printf("Resource::unregisterBuffer %d \n", buffer_id );
        checkCudaErrors( cudaGraphicsUnregisterResource(resource) );
    }
 
@@ -51,19 +51,19 @@ struct CResourceImp {
    {
        checkCudaErrors( cudaGraphicsMapResources(1, &resource, stream) );
        checkCudaErrors( cudaGraphicsResourceGetMappedPointer((void **)&dev_ptr, &bufsize, resource) );
-       printf("Resource::mapGLToCUDA bufsize %lu dev_ptr %p \n", bufsize, dev_ptr );
+       //printf("Resource::mapGLToCUDA bufsize %lu dev_ptr %p \n", bufsize, dev_ptr );
        return dev_ptr ; 
    }
 
    void unmapGLToCUDA()
    {
-       printf("Resource::unmapGLToCUDA\n");
+       //printf("Resource::unmapGLToCUDA\n");
        checkCudaErrors( cudaGraphicsUnmapResources(1, &resource, stream));
    } 
 
    void streamSync()
    {
-       printf("Resource::streamSync\n");
+       //printf("Resource::streamSync\n");
        checkCudaErrors( cudaStreamSynchronize(stream));
    }
 
@@ -105,14 +105,14 @@ void CResource::streamSync()
 void CResource::mapGLToCUDA()
 {
     m_mapped = true ; 
-    printf("CResource::mapGLToCUDA %d\n", m_buffer_id);
+    //printf("CResource::mapGLToCUDA %d\n", m_buffer_id);
     m_imp->registerBuffer();
     m_imp->mapGLToCUDA();
 }
 void CResource::unmapGLToCUDA()
 {
     m_mapped = false ; 
-    printf("CResource::unmapGLToCUDA\n");
+    //printf("CResource::unmapGLToCUDA\n");
     m_imp->unmapGLToCUDA();
     m_imp->unregisterBuffer();
 }

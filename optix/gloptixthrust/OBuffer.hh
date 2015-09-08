@@ -6,6 +6,16 @@
 
 class OBuffer {
   public:
+      typedef enum { UNMAPPED, GLToCUDA, GLToCUDAToOptiX, GLToOptiX, OptiXToCUDA, OptiX } Mapping_t ;   
+
+      static const char* UNMAPPED_ ;
+      static const char* GLToCUDA_;
+      static const char* GLToCUDAToOptiX_;
+      static const char* GLToOptiX_;
+      static const char* OptiXToCUDA_;
+      static const char* OptiX_;
+
+  public:
        OBuffer(optix::Context& context, 
                unsigned int buffer_id,              /* OpenGL id, 0:indicates no OpenGL backing */
                const char* buffer_name,             /* OptiX context variable name */
@@ -14,30 +24,30 @@ class OBuffer {
                unsigned int type,                   /* OptiX buffer access pattern */
                CResource::Access_t access = CResource::RW );
   private:
-  public:
        void init();
   public:
-       void create();
-  public:
+        BufSpec map(OBuffer::Mapping_t mapping); 
+        void unmap();
+  private:
        void mapGLToCUDA();
        void unmapGLToCUDA();
-  public:
        void mapGLToCUDAToOptiX();
        void unmapGLToCUDAToOptiX();
-  public:
        void mapGLToOptiX();
        void unmapGLToOptiX();
-  public:
        void mapOptiXToCUDA();
        void unmapOptiXToCUDA();
-  public:
+       void mapOptiX();
+       void unmapOptiX();
+  private:
+       const char* getMappingDescription();
        void streamSync();
-       void* getRawPointer();
-       unsigned int getSize();
-       unsigned int getNumBytes();
-       BufSpec getBufSpec();
+       //void* getRawPointer();
+       //unsigned int getSize();
+       //unsigned int getNumBytes();
+       //BufSpec getBufSpec();
        bool  isMapped(); 
-  public:
+  private:
        unsigned int getBufferSize();
        unsigned int getElementSize();
        void fillBufSpec(void* dev_ptr);
@@ -57,8 +67,7 @@ class OBuffer {
        unsigned int          m_type ; 
        void*                 m_dptr ;
        BufSpec               m_bufspec ; 
-       bool                  m_mapped ; 
-       bool                  m_inited ; 
+       Mapping_t             m_mapping ; 
 
 };
 
@@ -77,21 +86,17 @@ inline OBuffer::OBuffer(optix::Context& context, unsigned int buffer_id, const c
    m_format(format),
    m_type(type),
    m_bufspec(NULL,0,0),
-   m_mapped(false),
-   m_inited(false)
+   m_mapping(OBuffer::UNMAPPED)
 {
    init();
 }
 
 
 
+/*
 inline void* OBuffer::getRawPointer()
 {
    return m_bufspec.dev_ptr ;
-}
-inline bool OBuffer::isMapped()
-{
-   return m_mapped ; 
 }
 inline unsigned int OBuffer::getSize()
 {
@@ -100,6 +105,13 @@ inline unsigned int OBuffer::getSize()
 inline BufSpec OBuffer::getBufSpec()
 {
    return m_bufspec ; 
+}
+*/
+
+
+inline bool OBuffer::isMapped()
+{
+   return m_mapping != UNMAPPED  ; 
 }
 
 

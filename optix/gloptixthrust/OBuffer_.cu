@@ -14,21 +14,27 @@
 #include <cuda_runtime.h>
 
 
+const char* OBuffer::UNMAPPED_ = "UNMAPPED" ;
+const char* OBuffer::GLToCUDA_ = "GLToCUDA" ;
+const char* OBuffer::GLToCUDAToOptiX_ = "GLToCUDAToOptiX" ;
+const char* OBuffer::GLToOptiX_ = "GLToOptiX  (createBufferFromGLBO)";
+const char* OBuffer::OptiXToCUDA_ = "OptiXToCUDA" ;
+const char* OBuffer::OptiX_ = "OptiX (createBuffer) " ;
+
+
+
 void OBuffer::init()
 {
-    if(m_inited) return ;
-    m_inited = true ; 
-
     printf("OBuffer::init %u %s \n", m_buffer_id, m_buffer_name );
-    if(m_buffer_id == 0) return ; 
-
-    m_resource = new CResource(m_buffer_id, m_access  );
+    m_resource = m_buffer_id == 0 ? NULL : new CResource(m_buffer_id, m_access  );
 }
 
+/*
 unsigned int OBuffer::getNumBytes()
 {
     return m_resource ? m_resource->getNumBytes() : 0 ; 
 }
+*/
 
 void OBuffer::streamSync()
 {
@@ -36,23 +42,65 @@ void OBuffer::streamSync()
     m_resource->streamSync();
 }
 
+BufSpec OBuffer::map(OBuffer::Mapping_t mapping)
+{
+    m_mapping = mapping ; 
+    //printf("OBuffer::map %s %d\n", getMappingDescription(), m_buffer_id);
+    switch(m_mapping)
+    {
+        case        UNMAPPED: assert(0)           ;break;
+        case        GLToCUDA: mapGLToCUDA()       ;break;
+        case GLToCUDAToOptiX: mapGLToCUDAToOptiX();break;
+        case       GLToOptiX: mapGLToOptiX()      ;break;
+        case     OptiXToCUDA: mapOptiXToCUDA()    ;break;
+        case           OptiX: mapOptiX()          ;break;
+    }
+    return m_bufspec ; 
+}
+
+void OBuffer::unmap()
+{
+    //printf("OBuffer::unmap %s %d\n", getMappingDescription(), m_buffer_id);
+    switch(m_mapping)
+    {
+        case        UNMAPPED: assert(0)              ;break;
+        case        GLToCUDA: unmapGLToCUDA()        ;break;
+        case GLToCUDAToOptiX: unmapGLToCUDAToOptiX() ;break;
+        case       GLToOptiX: unmapGLToOptiX()       ;break;
+        case     OptiXToCUDA: unmapOptiXToCUDA()     ;break;
+        case           OptiX: unmapOptiX()           ;break;
+    }
+    m_mapping = UNMAPPED ; 
+}
+
+const char* OBuffer::getMappingDescription()
+{
+    const char* desc = NULL ; 
+    switch(m_mapping)
+    {
+        case        UNMAPPED: desc = UNMAPPED_        ;break;
+        case        GLToCUDA: desc = GLToCUDA_        ;break;
+        case GLToCUDAToOptiX: desc = GLToCUDAToOptiX_ ;break;
+        case       GLToOptiX: desc = GLToOptiX_       ;break;
+        case     OptiXToCUDA: desc = OptiXToCUDA_     ;break;
+        case           OptiX: desc = OptiX_           ;break;
+    }
+    return desc ; 
+}
+
+
 void OBuffer::mapGLToCUDA()
 {
     assert(m_resource);
-    m_mapped = true ; 
-    printf("OBuffer::mapGLToCUDA %d\n", m_buffer_id);
     m_resource->mapGLToCUDA();
 
     m_bufspec.dev_ptr = m_resource->getRawPointer() ;
     m_bufspec.size    = m_size ; 
     m_bufspec.num_bytes = m_resource->getNumBytes() ; 
 }
-
 void OBuffer::unmapGLToCUDA()
 {
     assert(m_resource);
-    m_mapped = false ; 
-    printf("OBuffer::unmapGLToCUDA\n");
     m_resource->unmapGLToCUDA();
 }
 
@@ -74,12 +122,11 @@ void OBuffer::mapGLToCUDAToOptiX()
 
 void OBuffer::unmapGLToCUDAToOptiX()
 {
-    printf("OBuffer::unmapGLToCUDAToOptiX\n");
     m_buffer->markDirty();  // before the unmap : think of the unmap as potentially copying back to GL
     unmapGLToCUDA();
 }
 
-void OBuffer::create()
+void OBuffer::mapOptiX()
 {
     assert(m_buffer_id == 0 );
     printf("OBuffer::create %s (createBuffer) %d  size %d\n", m_buffer_name, m_buffer_id, m_size);
@@ -87,11 +134,15 @@ void OBuffer::create()
     fillBufSpec( NULL );
     m_context[m_buffer_name]->setBuffer(m_buffer);
 }
+void OBuffer::unmapOptiX()
+{
+}
+
+
 
 void OBuffer::mapGLToOptiX()
 {
     assert(m_resource);
-    printf("OBuffer::mapGLToOptiX %s (createBufferFromGLBO) %d  size %d\n", m_buffer_name, m_buffer_id, m_size);
     m_buffer = m_context->createBufferFromGLBO(m_type, m_buffer_id);
     m_buffer->setFormat( m_format );
     m_buffer->setSize( m_size );
@@ -107,6 +158,12 @@ void OBuffer::unmapGLToOptiX()
 
 void OBuffer::mapOptiXToCUDA()
 {
+    if(!m_buffer->get())
+    {
+         printf("OBuffer::mapOptiXToCUDA FAILED : no OptiX buffer\n");
+         return ; 
+    }
+
     CUdeviceptr dev_ptr;
     m_buffer->getDevicePointer(m_device, &dev_ptr);
 
@@ -120,6 +177,9 @@ void OBuffer::unmapOptiXToCUDA()
     printf("OBuffer::unmapOptiXToCUDA (markDirty) \n");  // when is this acted upon ? next launch perhaps ? need dummy launch maybe
     m_buffer->markDirty(); 
 }
+
+
+
 
 
 unsigned int OBuffer::getBufferSize()
@@ -136,8 +196,6 @@ unsigned int OBuffer::getElementSize()
     rtuGetSizeForRTformat( m_buffer->getFormat(), &element_size);
     return element_size ; 
 }
-
-
 void OBuffer::fillBufSpec(void* dev_ptr)
 {
     unsigned int element_size = getElementSize();

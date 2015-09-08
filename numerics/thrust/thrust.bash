@@ -196,6 +196,11 @@ thrust-get()
     git clone https://github.com/thrust/thrust.git
 }
 
+thrust-update()
+{
+    thrust-scd
+    git pull
+}
 
 
 thrust-env(){      
@@ -219,7 +224,7 @@ thrust-samples-cd(){  cd $(thrust-samples-dir) ; }
 thrust-pdf(){  open $(cuda-dir)/doc/pdf/Thrust_Quick_Start_Guide.pdf ; }
 thrust-html(){ open $(cuda-dir)/doc/html/thrust/index.html ; }
 
-
+thrust-doc(){  open https://github.com/thrust/thrust/wiki/Documentation ; }
 
 
 

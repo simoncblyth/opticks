@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "assert.h"
 #include <unistd.h>
+#include <algorithm>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -8,6 +9,7 @@
 #include "OBuffer.hh"
 #include "CResource.hh"
 #include "TAry.hh"
+#include "TProc.hh"
 
 
 GLFWwindow* window = NULL ; 
@@ -105,6 +107,8 @@ class App {
        void addRayGenerationProgram( const char* ptxname, const char* progname, unsigned int entry );
     public:
        void generate(float radius);
+       void tgenerate(float radius);
+       void tscale(float factor);
        void index();
        void render();
        void sleep(unsigned int microseconds);
@@ -313,10 +317,8 @@ void App::init_optix()
 }
 
 /*
-3-way R/W interop doesnt work : 
-(3-way reading works, but typically writes to the 3rd (Thrust) do not get honoured by the others)
-
-workaround is to devise interop R-W pairings and buffer interactions for multiple buffers 
+Although 3-way OpenGL/OptiX/Thrust RW might be made to work it is preferable to keep things simple
+devise pairwise interop RW pairings and buffer interactions for multiple buffers 
 to achieve the desired manipulations 
 
              OpenGL  OptiX  Thrust     notes  
@@ -324,7 +326,6 @@ to achieve the desired manipulations
    seqbuf       -      W      R        created by OptiX, populated by OptiX, read by Thrust to create selbuf
    selbuf      CR      -      W        created by OpenGL, populated by Thrust, read by OpenGL for visualization of selections      
 
-if this workaround is not operable, fallback is to defer OpenGL buffer creation and go via the host 
 */
 
 void App::init_gl_buffers()
@@ -359,8 +360,8 @@ void App::generate(float radius)
 
     printf("App::generate %10.4f \n", radius);
 
-    m_vtxbuf->mapGLToOptiX();  // createBufferFromGLBO
-    m_seqbuf->create();        // createBuffer
+    m_vtxbuf->map(OBuffer::GLToOptiX);  // createBufferFromGLBO
+    m_seqbuf->map(OBuffer::OptiX);      // createBuffer
 
     m_context->validate();
     m_context->compile();
@@ -375,9 +376,37 @@ void App::generate(float radius)
     printf("App::generate dump launch : nvert %d \n", m_nvert );
     m_context->launch(raygen_dump_entry, m_nvert ); // dump vertices
 
-    m_vtxbuf->unmapGLToOptiX();
+    m_seqbuf->unmap();
+    m_vtxbuf->unmap();
 }
 
+void App::tgenerate(float radius)
+{
+    if(m_nvert == 3) return ;
+    printf("App::tgenerate \n");
+
+    m_seqbuf->map(OBuffer::OptiX);      // createBuffer
+    BufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);   // createBufferFromGLBO
+
+    TProc tp(vtx);
+    tp.tgenerate(radius);
+
+    m_seqbuf->unmap(); 
+    m_vtxbuf->unmap(); 
+}
+
+void App::tscale(float factor)
+{
+    if(m_nvert == 3) return ;
+    //printf("App::tscale \n");
+
+    BufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);  
+
+    TProc tp(vtx);
+    tp.tscale(factor);
+
+    m_vtxbuf->unmap(); 
+}
 
 
 void App::index()
@@ -385,11 +414,8 @@ void App::index()
     if(m_nvert == 3) return ;
     printf("App::index \n");
 
-    m_seqbuf->mapOptiXToCUDA();
-    m_selbuf->mapGLToCUDA();  
-
-    BufSpec seq = m_seqbuf->getBufSpec();
-    BufSpec sel = m_selbuf->getBufSpec();
+    BufSpec seq = m_seqbuf->map(OBuffer::OptiXToCUDA);
+    BufSpec sel = m_selbuf->map(OBuffer::GLToCUDA);  
 
     seq.Summary("seq OptiX created input");
     sel.Summary("sel GL created output ");
@@ -399,23 +425,21 @@ void App::index()
     //  CUDA funcs and kernel calls succeed to interop as expected  
     //ta.memcpy();
     //ta.memset();
-    ta.kcall();
+    //ta.kcall();
 
-    //  All? Thrust functions fail to interop, they run OK but results do not get back into OpenGL buffer
-    //ta.transform();  
+    //  when avoid misunderstanding regards creating thrust::device_vector
+    //  are now getting interop to work 
+      ta.transform();  
     //ta.tcopy();
- 
+    //ta.tfill();
 
-    m_seqbuf->unmapOptiXToCUDA(); 
+    m_seqbuf->unmap(); 
 
-    m_selbuf->streamSync();
-    m_selbuf->unmapGLToCUDA(); // <--- this fails to get the Thrust results into the OpenGL buffer
+    //m_selbuf->streamSync();
+    m_selbuf->unmap(); // 
 
     printf("App::index DONE \n");
 }
-
-
-
 
 void App::sleep(unsigned int microseconds)
 {
@@ -428,8 +452,6 @@ void App::render()
 {
     //printf("App::render\n");
     glUseProgram (m_shader);
-    //m_vtx->bind();
-
     glBindVertexArray (m_vao);
     glDrawArrays (GL_LINE_LOOP, 0, m_nvert);
 }
@@ -443,7 +465,7 @@ void App::mapped_dump(unsigned int id)
     if(data)
     {
         printf("App::mapped_dump %d \n", id );
-        for(unsigned int i=0 ; i < m_nvert ; i++)
+        for(unsigned int i=0 ; i < std::min(10u,m_nvert) ; i++)
         {
             unsigned int* d = data + i*4 ; 
             printf(" %3u : %2u %2u %2u %2u \n", i, d[0], d[1], d[2], d[3] ); 
@@ -480,20 +502,23 @@ int main ()
     init_glfw();
     init_gl();                                 
 
-    App app(4) ; 
+    App app(4000) ; 
 
     app.generate(0.5f);
+    //app.tgenerate(1.0f);
     app.dump_sel("after generate");
 
     app.index();
-    app.sleep(1000000);
+    //app.sleep(1000000);
     app.dump_sel("after index");
+
 
     while (!glfwWindowShouldClose (window)) 
     {
           glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
           app.render();
+          app.tscale(1.001f);
 
           glfwPollEvents ();
           glfwSwapBuffers (window);
