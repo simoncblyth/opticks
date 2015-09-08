@@ -1,27 +1,31 @@
 #pragma once
 
+#include "BufSpec.hh"
+
 class TAry {
    public:
-       TAry( void* dptr, unsigned int size, unsigned int num_bytes, void* hostcopy); 
+       TAry( BufSpec src, BufSpec dst ); 
    public:
+       void check(); 
+       void tcopy(); 
        void transform(); 
-       void copyToHost( void* host );
+       void memcpy();
+       void memset();
+       void kcall();
+       void transform_old(); 
+     //  void copyToHost( void* host );
    private:
        void init();
    private:
-       void*        m_dptr ; 
-       unsigned int m_size ; 
-       unsigned int m_num_bytes ; 
-       void*        m_hostcopy ; 
+       BufSpec      m_src ; 
+       BufSpec      m_dst ; 
 
 };
 
 
-inline TAry::TAry(void* dptr, unsigned int size, unsigned int num_bytes, void* hostcopy) :
-    m_dptr(dptr),
-    m_size(size),
-    m_num_bytes(num_bytes),
-    m_hostcopy(hostcopy)
+inline TAry::TAry(BufSpec src, BufSpec dst) :
+    m_src(src),
+    m_dst(dst)
 {
 }
 

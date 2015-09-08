@@ -22,6 +22,75 @@ OpenGL/OptiX/CUDA/Thrust Interop
 
 
 
+OpenGL/Thrust Interop Issue
+-----------------------------
+
+* cudaMemcpy, cudaMemset and kernel calls work with interop as expected
+* thrust::transform/copy etc calls do not 
+
+This suggests the problem is with Thrust or my use of Thrust rather
+than the Interop mapping/unmapping.
+
+Only one mention of OpenGL in Thrust issues
+
+* https://github.com/thrust/thrust/issues/683
+
+::
+
+     thrust::sort_by_key(thrust::cuda::par.on(stream), dev_keys, dev_keys + N, dev_values);
+
+
+* :google:`thrust::cuda::par.on`
+
+  * https://github.com/thrust/thrust/wiki/Direct-System-Access  
+
+
+Thrust Stream Issue
+--------------------
+
+* http://devblogs.nvidia.com/parallelforall/gpu-pro-tip-cuda-7-streams-simplify-concurrency/
+* https://github.com/thrust/thrust/issues/664
+
+
+CUDA Samples : Graphics
+-------------------------
+
+* http://docs.nvidia.com/cuda/cuda-samples/index.html#graphics
+
+Searching for Thrust on the above pages, finds a few with interop
+
+* http://docs.nvidia.com/cuda/cuda-samples/index.html#marching-cubes-isosurfaces
+* http://docs.nvidia.com/cuda/cuda-samples/index.html#smoke-particles
+
+
+Thrust OpenGL interop
+----------------------
+
+* http://stackoverflow.com/questions/24966586/sorting-pixels-from-opengl-using-cuda-and-thrust
+* needs modification wrt opengl headers : uses both kernel call and thrust funcs
+
+
+Runtime vs Driver Interop ?
+----------------------------
+
+Runtime, *cuda*  API::
+
+   #include <cuda_gl_interop.h>
+
+Driver, *cu* API (more direct control)::
+
+   #include <cudagl.h>
+
+
+CUDA kernel call with interop
+-------------------------------
+
+* http://research.ncl.ac.uk/game/mastersdegree/gametechnologies/cudatutorial3cuda-openglinteroperability/CUDA%203.pdf
+* http://www.ecse.rpi.edu/~wrf/wiki/ParallelComputingSpring2014/cuda-by-example/chapter08/basic_interop.cu 
+
+
+
+
 Thrust async 
 -------------
 

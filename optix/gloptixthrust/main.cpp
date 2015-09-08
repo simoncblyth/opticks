@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "OBuffer.hh"
+#include "CResource.hh"
 #include "TAry.hh"
 
 
@@ -52,6 +53,7 @@ struct VBO {
       }
       void upload(void* _data, unsigned int _num_bytes)
       {
+          printf("VBO::upload %p %u \n", _data, _num_bytes );  
           glBindBuffer(target, id) ;
           glBufferData(target, _num_bytes, _data, usage );
           glBindBuffer(target, 0) ;
@@ -81,44 +83,29 @@ struct VBO {
       } 
 };
 
-/*
-template <typename T>
-GLuint init_vbo(unsigned int nvert, unsigned int nelem, void* data )
-{
-
-    glBindBuffer (GL_ARRAY_BUFFER, vbo);
-
-    //GLenum usage = GL_STATIC_DRAW ; 
-    //GLenum usage = GL_STREAM_DRAW ; 
-   
-    glBufferData (GL_ARRAY_BUFFER, nvert * nelem * sizeof (T), data, usage );
-    return vbo ; 
-}
-*/
-
-
 class App {
     public:
        static const char* CMAKE_TARGET ; 
        static const char* vertex_shader ; 
        static const char* fragment_shader ; 
     public:
-       enum { e_vtx, e_seq, e_sel } ;
-       enum { raygen_minimal_entry, raygen_dump_entry, num_entry } ;
+       enum { e_vtx, e_sel, e_seq } ;
+       enum { raygen_circle_entry, raygen_dump_entry, num_entry } ;
     public:
        App(unsigned int nvert);
     private:
        void init();
        void init_vao();
        void init_shader();
-       void init_glbo();
+       void init_gl_buffers();
        void init_optix();
+       void init_buffers();
        static float* make_triangle_data(float s);
-       static unsigned int* make_uvec4_data(unsigned int nvert);
+       static unsigned int* make_uvec4_data(unsigned int nvert, unsigned int value);
        void addRayGenerationProgram( const char* ptxname, const char* progname, unsigned int entry );
     public:
        void generate(float radius);
-       void index(bool kludge_hostcopy);
+       void index();
        void render();
        void sleep(unsigned int microseconds);
        void dump_seq(const char* msg);
@@ -164,10 +151,11 @@ inline App::App(unsigned int nvert) :
 
 void App::init()
 {
-    init_glbo();
+    init_gl_buffers();
     init_vao();
     init_shader();
     init_optix();  
+    init_buffers();
 }
 
 
@@ -201,40 +189,17 @@ float* App::make_triangle_data(float s)
     return data ; 
 }
 
-unsigned int* App::make_uvec4_data(unsigned int nvert)
+unsigned int* App::make_uvec4_data(unsigned int nvert, unsigned int value)
 {
     unsigned int* data = new unsigned int[nvert*4] ;
     for(unsigned int i=0 ; i < nvert ; i++)
     {
-        data[i*4+0] = 1u ; 
-        data[i*4+1] = 1u ; 
-        data[i*4+2] = 1u ; 
-        data[i*4+3] = 1u ; 
+        data[i*4+0] = value ; 
+        data[i*4+1] = value ; 
+        data[i*4+2] = value ; 
+        data[i*4+3] = value ; 
     }
     return data ; 
-}
-
-
-void App::init_glbo()
-{
-    m_vtx = new VBO(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-    if(m_nvert == 3)
-    {
-        m_vtx->upload( make_triangle_data(0.9f), 3*4*sizeof(float) );
-    }
-
-    //init_vbo<float>(m_nvert, 4, m_vtx_data );
-    // OpenGL seems very reluctant to see any changes 
-    // done to its buffers, so rearrange OpenGL buffer creation 
-    // until after deriving the data using Thrust 
-    // **this forces going via the host** 
-
-    m_seq = new VBO(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-    m_seq->upload( make_uvec4_data(m_nvert),  m_nvert*4*sizeof(unsigned int));
-
-    m_sel = new VBO(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-
-    printf("App::init_glbo vtx %d seq %d sel %d \n", m_vtx->id, m_seq->id, m_sel->id );
 }
 
 
@@ -242,26 +207,34 @@ void App::init_vao()
 {
     glGenVertexArrays (1, &m_vao);
     glBindVertexArray (m_vao);
-    printf("App::init_vao m_vao %d vtx %d sel %d seq %d \n", m_vao, m_vtx->id, m_sel->id, m_seq->id);
+    if(m_vtx)
+    {
+        printf("App::init_vao vtx %d \n", m_vtx->id);
+        m_vtx->bind();
+        glVertexAttribPointer (e_vtx, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray (e_vtx);
+        m_vtx->unbind();
+    }
+    if(m_sel)
+    {
+        printf("App::init_vao sel %d \n", m_sel->id);
+        m_sel->bind();
+        glVertexAttribIPointer (e_sel, 4, GL_UNSIGNED_INT, 0, NULL);  // glVertexAttrib*I*Pointer 
+        glEnableVertexAttribArray (e_sel);
+        m_sel->unbind();
+    }
+    if(m_seq)
+    {
+        printf("App::init_vao seq %d \n", m_seq->id);
+        m_seq->bind();
+        glVertexAttribIPointer (e_seq, 4, GL_UNSIGNED_INT, 0, NULL);  // glVertexAttrib*I*Pointer 
+        glEnableVertexAttribArray (e_seq);
+        m_seq->unbind();
+    }
 
-    m_vtx->bind();
-    glVertexAttribPointer (e_vtx, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray (e_vtx);
-    m_vtx->unbind();
 
-    m_seq->bind();
-    glVertexAttribIPointer (e_seq, 4, GL_UNSIGNED_INT, 0, NULL);  // glVertexAttrib*I*Pointer 
-    glEnableVertexAttribArray (e_seq);
-    m_seq->unbind();
-
-    m_sel->bind();
-    glVertexAttribIPointer (e_sel, 4, GL_UNSIGNED_INT, 0, NULL);  // glVertexAttrib*I*Pointer 
-    glEnableVertexAttribArray (e_sel);
-    m_sel->unbind();
 
 }
-
-
 
 
 const char* App::vertex_shader =
@@ -335,11 +308,49 @@ void App::init_optix()
 
     m_context->setEntryPointCount(num_entry);
 
-    addRayGenerationProgram("circle.cu.ptx", "circle_make_vertices", raygen_minimal_entry );
+    addRayGenerationProgram("circle.cu.ptx", "circle_make_vertices", raygen_circle_entry );
     addRayGenerationProgram("circle.cu.ptx", "circle_dump",          raygen_dump_entry );
+}
 
-    m_vtxbuf = new OBuffer(m_context, m_vtx->id, "vtx_buffer", m_nvert, RT_FORMAT_FLOAT4,         RT_BUFFER_OUTPUT,       OBuffer::RW ); 
-    m_seqbuf = new OBuffer(m_context, m_seq->id, "seq_buffer", m_nvert, RT_FORMAT_UNSIGNED_INT4,  RT_BUFFER_INPUT_OUTPUT, OBuffer::RW ); 
+/*
+3-way R/W interop doesnt work : 
+(3-way reading works, but typically writes to the 3rd (Thrust) do not get honoured by the others)
+
+workaround is to devise interop R-W pairings and buffer interactions for multiple buffers 
+to achieve the desired manipulations 
+
+             OpenGL  OptiX  Thrust     notes  
+   vtxbuf      CR      W      -        created by OpenGL, populated by OptiX, read by OpenGL for visualization
+   seqbuf       -      W      R        created by OptiX, populated by OptiX, read by Thrust to create selbuf
+   selbuf      CR      -      W        created by OpenGL, populated by Thrust, read by OpenGL for visualization of selections      
+
+if this workaround is not operable, fallback is to defer OpenGL buffer creation and go via the host 
+*/
+
+void App::init_gl_buffers()
+{
+    m_vtx = new VBO(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    float* vtxdata = m_nvert == 3 ? make_triangle_data(0.9f) : NULL ; 
+    m_vtx->upload( vtxdata,  m_nvert*4*sizeof(float) );
+
+    m_seq = NULL ; 
+
+    m_sel = new VBO(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    unsigned int* seldata = m_nvert == 3 ? make_uvec4_data(m_nvert, 2u) : NULL ; 
+    m_sel->upload( seldata, m_nvert*4*sizeof(unsigned int) );  // still need to glBufferData even when nothing in it
+}
+
+void App::init_buffers()
+{
+    // bad API "too wide" : causing many args to be ignored
+    m_vtxbuf = new OBuffer(m_context, m_vtx->id, "vtx_buffer", m_nvert, RT_FORMAT_FLOAT4,         RT_BUFFER_OUTPUT,       CResource::RW ); 
+    m_seqbuf = new OBuffer(m_context, 0        , "seq_buffer", m_nvert, RT_FORMAT_UNSIGNED_INT4,  RT_BUFFER_OUTPUT,       CResource::RW ); 
+    //     most of the seqbuf args are ignored as just need plain vanilla optix buffer
+    m_selbuf = new OBuffer(m_context, m_sel->id, "sel_buffer", m_nvert, RT_FORMAT_UNSIGNED_INT4,  RT_BUFFER_INPUT_OUTPUT, CResource::W ); 
+    //     most of the selbuf args are ignored as no OptiX buffer
+    // unclear how to split though, common base ?
+    //    all buffers have common features like size, num_bytes, basis type
+    //
 }
 
 void App::generate(float radius)
@@ -349,55 +360,62 @@ void App::generate(float radius)
     printf("App::generate %10.4f \n", radius);
 
     m_vtxbuf->mapGLToOptiX();  // createBufferFromGLBO
-    //m_seqbuf->mapGLToOptiX();  // createBufferFromGLBO
+    m_seqbuf->create();        // createBuffer
 
     m_context->validate();
     m_context->compile();
     m_context["radius"]->setFloat(radius) ; 
 
-    printf("App::generate launch 0 check \n");
-    m_context->launch(raygen_minimal_entry, 0 );      
+    printf("App::generate circle launch : 0 check \n");
+    m_context->launch(raygen_circle_entry, 0 );      
 
-    printf("App::generate launch nvert %d \n", m_nvert );
-    m_context->launch(raygen_minimal_entry, m_nvert ); // generate vertices
+    printf("App::generate circle launch : nvert %d \n", m_nvert );
+    m_context->launch(raygen_circle_entry, m_nvert ); // generate vertices
+
+    printf("App::generate dump launch : nvert %d \n", m_nvert );
+    m_context->launch(raygen_dump_entry, m_nvert ); // dump vertices
 
     m_vtxbuf->unmapGLToOptiX();
 }
 
 
 
-void App::index(bool kludge_hostcopy)
+void App::index()
 {
     if(m_nvert == 3) return ;
-
     printf("App::index \n");
-    GLenum target = GL_ARRAY_BUFFER ;
 
-    m_sel->bind();
-
-    m_selbuf->init();
+    m_seqbuf->mapOptiXToCUDA();
     m_selbuf->mapGLToCUDA();  
 
-    unsigned int num_bytes = m_selbuf->getNumBytes();
-    void* hostcopy = kludge_hostcopy ? (void*)new char[num_bytes] : NULL ;
+    BufSpec seq = m_seqbuf->getBufSpec();
+    BufSpec sel = m_selbuf->getBufSpec();
 
-    TAry ta(m_selbuf->getRawPointer(), m_selbuf->getSize(), num_bytes, hostcopy);
-    ta.transform();
+    seq.Summary("seq OptiX created input");
+    sel.Summary("sel GL created output ");
+
+    TAry ta(seq, sel);
+ 
+    //  CUDA funcs and kernel calls succeed to interop as expected  
+    //ta.memcpy();
+    //ta.memset();
+    ta.kcall();
+
+    //  All? Thrust functions fail to interop, they run OK but results do not get back into OpenGL buffer
+    //ta.transform();  
+    //ta.tcopy();
+ 
+
+    m_seqbuf->unmapOptiXToCUDA(); 
 
     m_selbuf->streamSync();
-    m_selbuf->unmapGLToCUDA();  // <--- this fails to get the Thrust results into the OpenGL buffer
-    m_selbuf->streamSync();
+    m_selbuf->unmapGLToCUDA(); // <--- this fails to get the Thrust results into the OpenGL buffer
 
-    m_sel->unbind();
-
-    if(kludge_hostcopy)
-    {
-        printf("kludge_hostcopy\n");
-        glBufferSubData(target, 0, num_bytes, hostcopy );
-        glFinish();
-    }
     printf("App::index DONE \n");
 }
+
+
+
 
 void App::sleep(unsigned int microseconds)
 {
@@ -410,7 +428,7 @@ void App::render()
 {
     //printf("App::render\n");
     glUseProgram (m_shader);
-    m_vtx->bind();
+    //m_vtx->bind();
 
     glBindVertexArray (m_vao);
     glDrawArrays (GL_LINE_LOOP, 0, m_nvert);
@@ -422,26 +440,39 @@ void App::mapped_dump(unsigned int id)
     GLenum target = GL_ARRAY_BUFFER ;
     glBindBuffer( target, id );
     T* data = static_cast<T*>( glMapBuffer(target, GL_READ_ONLY ));
-    for(unsigned int i=0 ; i < m_nvert ; i++)
+    if(data)
     {
-       unsigned int* d = data + i*4 ; 
-       printf(" %3u : %2u %2u %2u %2u \n", i, d[0], d[1], d[2], d[3] ); 
-    } 
+        printf("App::mapped_dump %d \n", id );
+        for(unsigned int i=0 ; i < m_nvert ; i++)
+        {
+            unsigned int* d = data + i*4 ; 
+            printf(" %3u : %2u %2u %2u %2u \n", i, d[0], d[1], d[2], d[3] ); 
+         } 
+    }
+    else
+    {
+        printf("App::mapped_dump %d : NULL map \n", id );
+    }
     assert( GL_TRUE == glUnmapBuffer( target ));
     glBindBuffer( target, 0 );
 }
 
 void App::dump_seq(const char* msg)
 {
-    printf("App::dump_seq %s \n", msg );
-    mapped_dump<unsigned int>(m_seq->id);
+    if(m_seq)
+    {
+        printf("App::dump_seq %s \n", msg );
+        mapped_dump<unsigned int>(m_seq->id);
+    }
 }
 void App::dump_sel(const char* msg)
 {
-    printf("App::dump_sel %s \n", msg );
-    mapped_dump<unsigned int>(m_sel->id);
+    if(m_sel)
+    {
+        printf("App::dump_sel %s \n", msg );
+        mapped_dump<unsigned int>(m_sel->id);
+    }
 }
-
 
 
 int main () 
@@ -452,15 +483,11 @@ int main ()
     App app(4) ; 
 
     app.generate(0.5f);
-    app.dump_seq("after generate");
+    app.dump_sel("after generate");
 
-
-/*
-    bool kludge_hostcopy = true ;  
-    app.index(kludge_hostcopy);
-    //app.sleep(1000000);
-    app.dump_seq("after index");
-*/
+    app.index();
+    app.sleep(1000000);
+    app.dump_sel("after index");
 
     while (!glfwWindowShouldClose (window)) 
     {

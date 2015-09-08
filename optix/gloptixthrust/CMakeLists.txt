@@ -73,6 +73,8 @@ optixthrust_add_executable( ${name}
       main.cpp
       OBuffer.cc
       OBuffer_.cu
+      CResource.cc
+      CResource_.cu
       TAry.cc
       TAry_.cu
 

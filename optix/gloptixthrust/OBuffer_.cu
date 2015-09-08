@@ -9,76 +9,9 @@
 #include <thrust/host_vector.h>
 
 #include "OBuffer.hh"
+#include "CResource.hh"
 
 #include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
-#include "helper_cuda.h"
-
-
-struct Resource {
-   unsigned int buffer_id ; 
-   size_t       bufsize  ; 
-   unsigned int flags ; 
-   cudaStream_t stream ; 
-   struct cudaGraphicsResource*  resource ;
-   void*         dev_ptr ;   
-
-   Resource(unsigned int buffer_id, unsigned int flags, cudaStream_t stream) : 
-       buffer_id(buffer_id),
-       bufsize(0),
-       flags(flags),  
-       stream(stream),
-       resource(NULL),
-       dev_ptr(NULL)
-   {
-   }
-
-   const char* getFlagDescription()
-   {
-       const char* ret(NULL);
-       switch(flags)
-       {
-           case cudaGraphicsMapFlagsNone:         ret="cudaGraphicsMapFlagsNone: Default; Assume resource can be read/written " ; break ;
-           case cudaGraphicsMapFlagsReadOnly:     ret="cudaGraphicsMapFlagsReadOnly: CUDA will not write to this resource " ; break ; 
-           case cudaGraphicsMapFlagsWriteDiscard: ret="cudaGraphicsMapFlagsWriteDiscard: CUDA will only write to and will not read from this resource " ; break ;  
-       }
-       return ret ;
-   }
-
-   void registerBuffer()
-   {
-       printf("Resource::registerBuffer %d : %s \n", buffer_id, getFlagDescription() );
-       checkCudaErrors( cudaGraphicsGLRegisterBuffer(&resource, buffer_id, flags) );
-   }
-
-   void unregisterBuffer()
-   {
-       printf("Resource::unregisterBuffer %d \n", buffer_id );
-       checkCudaErrors( cudaGraphicsUnregisterResource(resource) );
-   }
-
-
-   void* mapGLToCUDA() 
-   {
-       checkCudaErrors( cudaGraphicsMapResources(1, &resource, stream) );
-       checkCudaErrors( cudaGraphicsResourceGetMappedPointer((void **)&dev_ptr, &bufsize, resource) );
-       printf("Resource::mapGLToCUDA bufsize %lu dev_ptr %p \n", bufsize, dev_ptr );
-       return dev_ptr ; 
-   }
-
-   void unmapGLToCUDA()
-   {
-       printf("Resource::unmapGLToCUDA\n");
-       checkCudaErrors( cudaGraphicsUnmapResources(1, &resource, stream));
-   } 
-
-   void streamSync()
-   {
-       printf("Resource::streamSync\n");
-       checkCudaErrors( cudaStreamSynchronize(stream));
-   }
-
-};
 
 
 void OBuffer::init()
@@ -86,27 +19,16 @@ void OBuffer::init()
     if(m_inited) return ;
     m_inited = true ; 
 
-    printf("OBuffer::init %u\n", m_buffer_id);
+    printf("OBuffer::init %u %s \n", m_buffer_id, m_buffer_name );
+    if(m_buffer_id == 0) return ; 
 
-    unsigned int flags ;
-    switch(m_access)
-    {
-       case RW: flags = cudaGraphicsMapFlagsNone         ;break;
-       case  R: flags = cudaGraphicsMapFlagsReadOnly     ;break;
-       case  W: flags = cudaGraphicsMapFlagsWriteDiscard ;break;
-    }
-
-    //cudaStream_t stream1 ; 
-    //cudaStreamCreate ( &stream1) ;
-    m_resource = new Resource(m_buffer_id, flags, (cudaStream_t)0  );
+    m_resource = new CResource(m_buffer_id, m_access  );
 }
 
 unsigned int OBuffer::getNumBytes()
 {
-    assert(m_resource);
-    return m_resource->bufsize ; 
+    return m_resource ? m_resource->getNumBytes() : 0 ; 
 }
-
 
 void OBuffer::streamSync()
 {
@@ -119,27 +41,37 @@ void OBuffer::mapGLToCUDA()
     assert(m_resource);
     m_mapped = true ; 
     printf("OBuffer::mapGLToCUDA %d\n", m_buffer_id);
-    m_resource->registerBuffer();
-    m_dptr = m_resource->mapGLToCUDA();
+    m_resource->mapGLToCUDA();
+
+    m_bufspec.dev_ptr = m_resource->getRawPointer() ;
+    m_bufspec.size    = m_size ; 
+    m_bufspec.num_bytes = m_resource->getNumBytes() ; 
 }
+
 void OBuffer::unmapGLToCUDA()
 {
     assert(m_resource);
     m_mapped = false ; 
     printf("OBuffer::unmapGLToCUDA\n");
     m_resource->unmapGLToCUDA();
-    m_resource->unregisterBuffer();
 }
 
 void OBuffer::mapGLToCUDAToOptiX()
 {
     printf("OBuffer::mapGLToCUDAToOptiX  getMappedPointer,createBufferForCUDA,setDevicePointer \n");
-    mapGLToCUDA();
-    CUdeviceptr cu_ptr = reinterpret_cast<CUdeviceptr>(m_dptr) ; 
+    m_resource->mapGLToCUDA();
+    void* dptr = m_resource->getRawPointer();
+
+    CUdeviceptr cu_ptr = reinterpret_cast<CUdeviceptr>(dptr) ; 
     m_buffer = m_context->createBufferForCUDA(m_type, m_format, m_size);
     m_buffer->setDevicePointer(m_device, cu_ptr );
+
+    fillBufSpec( dptr );
+    assert( m_bufspec.num_bytes == m_resource->getNumBytes()); 
+
     m_context[m_buffer_name]->setBuffer(m_buffer);
 }
+
 void OBuffer::unmapGLToCUDAToOptiX()
 {
     printf("OBuffer::unmapGLToCUDAToOptiX\n");
@@ -147,53 +79,73 @@ void OBuffer::unmapGLToCUDAToOptiX()
     unmapGLToCUDA();
 }
 
+void OBuffer::create()
+{
+    assert(m_buffer_id == 0 );
+    printf("OBuffer::create %s (createBuffer) %d  size %d\n", m_buffer_name, m_buffer_id, m_size);
+    m_buffer = m_context->createBuffer(m_type, m_format, m_size);
+    fillBufSpec( NULL );
+    m_context[m_buffer_name]->setBuffer(m_buffer);
+}
+
 void OBuffer::mapGLToOptiX()
 {
     assert(m_resource);
     printf("OBuffer::mapGLToOptiX %s (createBufferFromGLBO) %d  size %d\n", m_buffer_name, m_buffer_id, m_size);
-
     m_buffer = m_context->createBufferFromGLBO(m_type, m_buffer_id);
-
-    //m_buffer->registerGLBuffer();
-
     m_buffer->setFormat( m_format );
     m_buffer->setSize( m_size );
 
+    fillBufSpec( NULL );
+
     m_context[m_buffer_name]->setBuffer(m_buffer);
+}
+void OBuffer::unmapGLToOptiX()
+{
+    printf("OBuffer::unmapGLToOptiX (noop)\n");
 }
 
 void OBuffer::mapOptiXToCUDA()
 {
-   /*
+    CUdeviceptr dev_ptr;
+    m_buffer->getDevicePointer(m_device, &dev_ptr);
 
-When the application requests a pointer from OptiX (to an RT_BUFFER_INPUT or
-RT_BUFFER_INPUT_OUTPUT buffer), we assume that the application is modifying the
-data contained in that buffer. Therefore we keep track of which OptiX devices
-the application has requested pointers for, and if the application has
-requested only one pointer but there are additional OptiX devices, we will copy
-the data from that device to all others on the next launch. If the application
-requests pointers on all devices, we assume they have set up the data how they
-want it, and no copying will happen. It is a caught runtime error to request
-pointers for more than one but fewer than all devices.
+    fillBufSpec( (void*)dev_ptr );
 
-   */
-
-    CUdeviceptr d;
-    m_buffer->getDevicePointer(m_device, &d);
-    m_dptr = (void*)(d) ;
-    printf("OBuffer::mapOptiXToCUDA (getDevicePointer) dptr %p \n", m_dptr);
+    m_bufspec.Summary("OBuffer::mapOptiXToCUDA (getDevicePointer) bufspec");
 }
+
 void OBuffer::unmapOptiXToCUDA()
 {
-    printf("OBuffer::unmapOptiXToCUDA (markDirty) \n");
+    printf("OBuffer::unmapOptiXToCUDA (markDirty) \n");  // when is this acted upon ? next launch perhaps ? need dummy launch maybe
     m_buffer->markDirty(); 
 }
 
 
-void OBuffer::unmapGLToOptiX()
+unsigned int OBuffer::getBufferSize()
 {
-    //m_buffer->unregisterGLBuffer();
-    printf("OBuffer::unmapGLToOptiX (noop)\n");
+    RTsize width, height, depth ; 
+    m_buffer->getSize(width, height, depth);
+    unsigned int size = width*height*depth ; 
+    assert(size == m_size );
+    return size ; 
+}
+unsigned int OBuffer::getElementSize()
+{
+    size_t element_size ; 
+    rtuGetSizeForRTformat( m_buffer->getFormat(), &element_size);
+    return element_size ; 
+}
+
+
+void OBuffer::fillBufSpec(void* dev_ptr)
+{
+    unsigned int element_size = getElementSize();
+    unsigned int size = getBufferSize();
+
+    m_bufspec.dev_ptr = dev_ptr ; 
+    m_bufspec.size = size ; 
+    m_bufspec.num_bytes = element_size*size  ;
 }
 
 
