@@ -26,7 +26,7 @@ void ThrustArray<S>::init()
 
     if(m_devptr)
     {
-        LOG(debug) << "ThrustArray<S>::init using preexisting device buffer " ; 
+        LOG(debug) << "ThrustArray<S>::init using preexisting device buffer (BUT MAKING A COPY)" ; 
         thrust::device_ptr<S>  ptr = thrust::device_pointer_cast(m_devptr) ;
         m_dvec = thrust::device_vector<S>(ptr, ptr+size);
     }

@@ -13,7 +13,7 @@ class ThrustArray {
          unsigned int getNumElements();
          unsigned int getItemSize();
    public:
-         thrust::device_vector<S>&  getDeviceVector();
+         thrust::device_vector<S>&  getDeviceVector(); 
    public:
          void dump( const char* msg="ThrustArray::dump", unsigned int nline=100);
    public:
@@ -26,7 +26,7 @@ class ThrustArray {
    private:
          void init();
    private:
-         thrust::device_vector<S>  m_dvec ;
+         thrust::device_vector<S>  m_dvec ;   // **COPY : DOES NOT SHARE DEVICE STORAGE WITH ORIGINAL DEVPTR**
    private:
          S*                        m_devptr ;
          NPY<S>*                   m_npy ;

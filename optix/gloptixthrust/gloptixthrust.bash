@@ -8,13 +8,66 @@ gloptixthrust-usage(){ cat << EOU
 OpenGL/OptiX/CUDA/Thrust Interop
 ===================================
 
+Interop Objectives
+-------------------
+
+* minimize host allocations
+* minimize duplication on the device
+ 
+Production : non-OpenGL OptiX/Thrust interop
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* create OptiX buffers, populate with OptiX launch
+* stream compaction pullback buffer subsets based on criteria
+  from another buffer ?  
+ 
+Debug : OpenGL/OptiX/Thrust interop (possibly pairwise)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* createFromGLBO OptiX buffers, populate with OptiX launch 
+
+
+
+Huh
+----
+
+* http://stackoverflow.com/questions/11692326/can-i-use-thrusthost-vector-or-i-must-use-cudahostalloc-for-zero-copy-with-thr
+
+
+
+
+What Next
+----------
+
+* multiple argument transform functors
+
+  * thrust::make_transform_iterator
+
+* stream compaction testing 
+
+  * https://github.com/thrust/thrust/blob/master/examples/stream_compaction.cu
+
+* tidyup/rename classes for reusability and move into optixrap- thrustrap-
+
+* review thrustrap- optixrap- ggeoview- for working out how to bring in 
+  new interop/thrust understanding and remove old attempts 
+
+  * thrustrap- makes heavy use of device_vector where perhaps device_pointer is needed 
+    to avoid copies
+
+    * https://github.com/thrust/thrust/blob/master/examples/uninitialized_vector.cu
+
+  * ggeoview- defer large NPY allocations until actually needed
+
+
+
+Refs
+----
 
 * http://stackoverflow.com/questions/6481123/cuda-and-opengl-interop
 * https://github.com/nvpro-samples/gl_cuda_interop_pingpong_st
 
 * https://www.opengl.org/discussion_boards/showthread.php/173336-CUDA-CANNOT-perceive-changing-VBO-with-glMapBuffer
-
-
 
 ::
 
@@ -27,6 +80,9 @@ OpenGL/Thrust Interop Issue
 
 * cudaMemcpy, cudaMemset and kernel calls work with interop as expected
 * thrust::transform/copy etc calls do not 
+
+  * **CORRECTION : YES THEY DO**
+  * CURRENTLY THIS LOOKS TO HAVE BEEN A MISUNDERSTANDING REGARDS DEVICE_VECTOR CTOR
 
 This suggests the problem is with Thrust or my use of Thrust rather
 than the Interop mapping/unmapping.

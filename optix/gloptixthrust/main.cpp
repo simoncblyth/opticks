@@ -72,7 +72,6 @@ struct VBO {
           glBindBuffer (target, 0); 
       }
 
-
       void Summary(const char* msg)
       {
           printf("%s\n", msg);
@@ -343,15 +342,30 @@ void App::init_gl_buffers()
 
 void App::init_buffers()
 {
-    // bad API "too wide" : causing many args to be ignored
+    // Although useful to have a common way of handling buffers of different flavors
+    // the resulting API is "too wide" : causing many args to be ignored
+    // Unclear how to split though, common base ?  Specification struct parameter ?
+    // also the allowable mappings will depend on the details of the arguments
+    //
+    // Cannot rely on VBO either, as need to handle non OpenGL 
+    // Every buffer has DNA : type, size, nelem, 
+    //
+    //  most of the seqbuf args are ignored as just need plain vanilla optix buffer
+    //  most of the selbuf args are ignored as no OptiX buffer
+    //
+    //    GLToCUDA
+    //    OptiXToCUDA
+    //
+    //  only OptiX buffer creating mappings require : RTformat, type
+    //
+    //    GLToCUDAToOptiX
+    //    GLToOptiX
+    //    OptiX
+    //
+ 
     m_vtxbuf = new OBuffer(m_context, m_vtx->id, "vtx_buffer", m_nvert, RT_FORMAT_FLOAT4,         RT_BUFFER_OUTPUT,       CResource::RW ); 
     m_seqbuf = new OBuffer(m_context, 0        , "seq_buffer", m_nvert, RT_FORMAT_UNSIGNED_INT4,  RT_BUFFER_OUTPUT,       CResource::RW ); 
-    //     most of the seqbuf args are ignored as just need plain vanilla optix buffer
-    m_selbuf = new OBuffer(m_context, m_sel->id, "sel_buffer", m_nvert, RT_FORMAT_UNSIGNED_INT4,  RT_BUFFER_INPUT_OUTPUT, CResource::W ); 
-    //     most of the selbuf args are ignored as no OptiX buffer
-    // unclear how to split though, common base ?
-    //    all buffers have common features like size, num_bytes, basis type
-    //
+    m_selbuf = new OBuffer(m_context, m_sel->id, "sel_buffer", m_nvert, RT_FORMAT_UNKNOWN,        RT_BUFFER_INPUT_OUTPUT, CResource::W ); 
 }
 
 void App::generate(float radius)

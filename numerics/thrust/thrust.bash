@@ -171,6 +171,24 @@ Accessing constant memory from thrust functor
 * http://stackoverflow.com/questions/17064096/thrustdevice-vector-in-constant-memory
 
 
+Thrust FAQ
+------------
+
+* https://github.com/thrust/thrust/wiki/Frequently-Asked-Questions
+
+Can I create a thrust::device_vector from memory I've allocated myself?
+No. Instead, wrap your externally allocated raw pointer with thrust::device_ptr 
+and pass it to Thrust algorithms.
+
+* https://github.com/thrust/thrust/blob/master/examples/cuda/wrap_pointer.cu
+
+Limitations ?
+~~~~~~~~~~~~~~
+
+Any limitations of using thrust::device_ptr<T> compared to thrust::device_vector<T>
+
+
+
 
 EOU
 }
