@@ -61,7 +61,7 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 optixthrust_add_executable( ${name} 
       main.cpp
       optixthrust.cpp
-      optixthrust_postprocess.cu     
+      optixthrust_.cu     
       cu/minimal_float4.cu
       OPTIONS -arch sm_30 
 ) 

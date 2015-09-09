@@ -8,11 +8,10 @@ optixthrust-usage(){ cat << EOU
 OptiX/CUDA/Thrust Interop
 ==========================
 
-TODO
+see also
+---------
 
-* try with OpenGL backing, perhaps in glopth- 
-
-* apply the approches/classes that come out of these investigation to ggeoview-
+* gloptixthrust- optixminimal- glfwtriangle-
 
 
 cmake testing
@@ -22,6 +21,82 @@ cmake testing
 
    optixthrust-;optixthrust-wipe;VERBOSE=1 optixthrust--
 
+
+
+interesting snippet on stream compaction
+------------------------------------------
+
+* https://github.com/thrust/thrust/blob/master/examples/stream_compaction.cu
+* https://github.com/thrust/thrust/issues/204
+
+::
+
+    // thrust-optix interop cmake build testing
+    //  https://github.com/thrust/thrust/issues/204
+
+    #include <thrust/device_vector.h> 
+    #include <thrust/remove.h> 
+
+    namespace optix { 
+       class __align__(16) Aabb { 
+          float3 m_min; 
+          float3 m_max; 
+       };  
+    }// end namespace optix 
+
+
+    template<typename T > 
+    struct isZero { 
+        __host__ __device__ T operator()(const T &x) const {return x==0;} 
+    }; 
+
+    void aabbValidCompaction(optix::Aabb *boxes, unsigned int *stencil, size_t num) 
+    { 
+        thrust::device_ptr<optix::Aabb > dev_begin_ptr(boxes); 
+        thrust::device_ptr<optix::Aabb > dev_end_ptr(boxes + num); 
+        thrust::device_ptr<unsigned int > dev_stencil_ptr(stencil); 
+        thrust::remove_if(dev_begin_ptr, dev_end_ptr, dev_stencil_ptr, isZero<unsigned int >()); 
+    } 
+
+
+CUDA struct align for passing photons to thrust functors
+------------------------------------------------------------
+
+* http://stackoverflow.com/questions/12778949/cuda-memory-alignment
+
+::
+
+    #if defined(__CUDACC__) // NVCC
+       #define MY_ALIGN(n) __align__(n)
+    #elif defined(__GNUC__) // GCC
+      #define MY_ALIGN(n) __attribute__((aligned(n)))
+    #elif defined(_MSC_VER) // MSVC
+      #define MY_ALIGN(n) __declspec(align(n))
+    #elif defined(__clang__) // 
+      #define MY_ALIGN(n) __attribute__((aligned(n)))
+    #else
+      #error "Please provide a definition for MY_ALIGN macro for your host compiler!"
+    #endif
+
+::
+
+    struct MY_ALIGN(16) pt { int i, j, k; }
+    # enforces that the memory for the struct begins at an address in memory that is a multiple of n bytes
+
+
+* float4 is 4 * 4 = 16 bytes 
+
+::
+
+    typedef struct MY_ALIGN(16) photon_t ;
+    photon_t photon { float4 a,b,c,d ; }
+
+
+passing multiple float4 to thrust functors using thrust tuple
+---------------------------------------------------------------
+
+/usr/local/env/cuda/NVIDIA_CUDA-7.0_Samples/5_Simulations/smokeParticles/ParticleSystem_cuda.cu
+/usr/local/env/cuda/NVIDIA_CUDA-7.0_Samples/5_Simulations/smokeParticles/particles_kernel_device.cuh
 
 
 many warnings from cmake make

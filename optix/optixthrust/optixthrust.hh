@@ -7,22 +7,53 @@
 class OptiXThrust {
   public:
        static const char* CMAKE_TARGET ; 
-       enum { raygen_minimal_entry, raygen_dump_entry, num_entry } ;
+       enum { raygen_minimal_entry, raygen_circle_entry, raygen_dump_entry, num_entry } ;
   public:
-       OptiXThrust(unsigned int buffer_id=0);
+       OptiXThrust(unsigned int size);
+  private:
+       void init();
+  public:
        void addRayGenerationProgram( const char* ptxname, const char* progname, unsigned int entry );
        void compile();
   public:
+       void minimal();
+       void circle();
+       void dump();
+  private:
        void launch(unsigned int entry);
-       void postprocess();  // implemented in _postprocess.cu as needs nvcc
+  public:
+       // implemented in _.cu for nvcc compilaiton
+       void photon_test();
+       void postprocess(); 
+       void compaction(); 
   private:
        unsigned int m_device ; 
        optix::Context m_context ; 
        optix::Buffer  m_buffer ; 
-       unsigned int m_width  ; 
-       unsigned int m_height ; 
-       unsigned int m_depth ; 
        unsigned int m_size ; 
-
-
 };
+
+
+inline OptiXThrust::OptiXThrust(unsigned int size) :
+   m_device(0),
+   m_size(size)
+{
+    init();
+}
+
+inline void OptiXThrust::minimal()
+{
+    launch(raygen_minimal_entry);
+}
+inline void OptiXThrust::circle()
+{
+    launch(raygen_circle_entry);
+}
+inline void OptiXThrust::dump()
+{
+    launch(raygen_dump_entry);
+}
+
+
+
+

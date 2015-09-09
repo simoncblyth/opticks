@@ -14,6 +14,32 @@ See Also
 * cudatoolkit-
 
 
+CUDA 7.5 Release Notes
+------------------------
+
+Thrust
+~~~~~~
+
+* http://developer.download.nvidia.com/compute/cuda/7.5/Prod/docs/sidebar/CUDA_Toolkit_Release_Notes.pdf
+
+The version of Thrust included with CUDA 7.5 has been upgraded to Thrust v1.8.2. 
+Note that CUDA 7.0 shipped with Thrust v1.8.1. 
+A changelog of the bugs fixed in v1.8.2 can be found at
+
+* https://github.com/thrust/thrust/blob/1.8.2/CHANGELOG.
+
+cuda-gdb 
+~~~~~~~~~~
+
+Debugging GPGPU code using cuda-gdb is no longer supported on the Mac platform.
+
+
+CUDA Debugging
+----------------
+
+* http://on-demand.gputechconf.com/gtc/2013/presentations/S3037-S3038-Debugging-CUDA-Apps-Linux-Mac.pdf
+
+
 Installation : cuda-pkg-install  (June 29, 2015)
 -------------------------------------------------
 
