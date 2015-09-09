@@ -170,9 +170,7 @@ inline void CudaGLBuffer<T>::thrust_transform_value(const F& f, bool mapunmap)
     if(mapunmap) mapResources();
 
     thrust::device_ptr<T> ptr = getThrustPtr();
-    thrust::device_vector<T> vec(ptr, ptr+m_count);
-
-    thrust::transform(vec.begin(), vec.end(), vec.begin(),  f );
+    thrust::transform(ptr, ptr+m_count, ptr,  f );
     printf("thrust_transform_value %d \n", m_count);
 
     if(mapunmap) unmapResources();
