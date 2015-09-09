@@ -18,6 +18,11 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+enhancement : interop with stream compaction, deferred host allocation 
+-----------------------------------------------------------------------
+
+
+
 issue: jpmt timeouts binary search to pin down 
 ------------------------------------------------
 
@@ -250,7 +255,6 @@ issue: jpmt wavelengthBuffer/boundarylib ? maybe bad material indices ?
      48 : 3038 
 
 
-* TODO : trace the prop values
 
 
 Initial values of material indices are not unreasonable, maybe problem on subsequent steps::
@@ -310,9 +314,6 @@ Initial values of material indices are not unreasonable, maybe problem on subseq
          1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
                0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
     simon:ggeo blyth$ 
-
-
-
 
 
 
@@ -522,11 +523,6 @@ Juno Cerenkov 1, scaledown ?10
 
 
 
-
-
-
-
-
 GGeoview Compute 
 ------------------
 
@@ -538,7 +534,6 @@ Compute only mode::
    ggeoview-compute -b4   # up to 4 bounces working 
 
    ggeoview-compute -b5   # crash for beyond 4  
-
 
 
 Usage tips

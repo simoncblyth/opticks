@@ -66,6 +66,8 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
     } 
 
 
+    // TODO: defer these allocations
+
     NPY<float>* pho = NPY<float>::make_vec4(m_num_photons, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 

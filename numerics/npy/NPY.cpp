@@ -1,5 +1,6 @@
 #include "NPY.hpp"
 
+#include <algorithm>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -27,17 +28,30 @@ NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata)
          m_data(),
          m_unset_item(NULL)
 {
+    if(data) 
+       setData(data);
+    else
+       LOG(info) << "NPY<T>::NPY deferred setting data " ; 
+}
+
+template <typename T>
+bool NPY<T>::hasData()
+{
+    return m_data.size() > 0 ; 
+}
+
+template <typename T>
+void NPY<T>::setData(T* data)
+{
     m_data.reserve(getNumValues(0));
     read(data);
 }
-
 
 template <typename T>
 void NPY<T>::read(void* ptr)
 {
     memcpy(m_data.data(), ptr, getNumBytes(0) );
 }
-
 
 template <typename T>
 T* NPY<T>::getUnsetItem()
@@ -178,6 +192,7 @@ void NPY<T>::save(const char* path_)
 template <typename T>
 NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
 {
+   /*
     std::vector<int> shape ; 
     shape.push_back(ni);
     shape.push_back(1);
@@ -189,6 +204,10 @@ NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
     while(ni--) data[ni] = init ; 
 
     NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
+   */
+
+    NPY<T>* npy = NPY<T>::make( ni, 1, 1);
+    npy->fill(init);
     return npy ; 
 }
 
@@ -196,6 +215,8 @@ NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
 template <typename T>
 NPY<T>* NPY<T>::make_scalar(unsigned int ni, T* values)
 {
+    assert(0);
+/*
     std::vector<int> shape ; 
     shape.push_back(ni);
     shape.push_back(1);
@@ -204,7 +225,9 @@ NPY<T>* NPY<T>::make_scalar(unsigned int ni, T* values)
     std::string metadata = "{}";
 
     NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
-    return npy ; 
+*/
+
+    return NPY<T>::make( ni, 1, 1, values ) ; 
 }
 
 
@@ -312,6 +335,7 @@ NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 template <typename T>
 NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
 {
+   /*
     std::string metadata = "{}";
     std::vector<T> data;
     std::vector<int> shape ; 
@@ -330,9 +354,19 @@ NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
     }
     } 
     }
-
     NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
+    */
+
+    NPY<T>* npy =  NPY<T>::make(ni, nj, 4 );
+    npy->fill(value);
     return npy ;
+}
+
+
+template <typename T>
+void NPY<T>::fill( T value)
+{
+    std::fill(m_data.begin(), m_data.end(), value);
 }
 
 
@@ -340,6 +374,8 @@ NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
 template <typename T>
 NPY<T>* NPY<T>::make_vec2(unsigned int ni, unsigned int nj, T value)
 {
+
+   /*
     std::string metadata = "{}";
     std::vector<T> data;
     std::vector<int> shape ; 
@@ -360,6 +396,10 @@ NPY<T>* NPY<T>::make_vec2(unsigned int ni, unsigned int nj, T value)
     }
 
     NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
+  */
+
+    NPY<T>* npy =  NPY<T>::make(ni, nj, 2 );
+    npy->fill(value);
     return npy ;
 }
 
