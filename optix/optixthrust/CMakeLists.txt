@@ -63,8 +63,11 @@ optixthrust_add_executable( ${name}
       optixthrust.cpp
       optixthrust_.cu     
       cu/minimal_float4.cu
-      OPTIONS -arch sm_30 
+      OPTIONS 
+       -arch sm_30
 ) 
+
+
 
 install(TARGETS ${name} DESTINATION bin)
 

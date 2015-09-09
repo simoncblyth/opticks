@@ -12,9 +12,14 @@ int main( int argc, char** argv )
     ot.circle();
     ot.dump();
 
-    ot.compaction();
+    //ot.compaction();
+    //ot.strided();
+    //ot.strided4();
+    ot.compaction4();
 
     //ot.postprocess();
+
+    ot.sync();
 
 
     return 0 ; 

@@ -9,6 +9,13 @@ NVCC Experience
 =================
 
 
+arch argument explanation
+--------------------------
+
+* http://stackoverflow.com/questions/17599189/what-is-the-purpose-of-using-multiple-arch-flags-in-nvidias-nvcc-compiler
+* http://codeyarns.com/2014/03/03/how-to-specify-architecture-to-compile-cuda-code/
+
+
 thrust
 -------
 

@@ -1,12 +1,17 @@
 
-//#include <cuda.h>
+#include <cuda_runtime_api.h>
 #include <optix_world.h>
 
 #include <thrust/reduce.h>
+#include <thrust/for_each.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/count.h>
 #include <thrust/copy.h>
+#include <thrust/functional.h>
+
+#include "strided_range.h"
+#include "repeated_range.h"
 
 #include "optixthrust.hh"
 #include "helpers.hh"
@@ -70,12 +75,210 @@ struct is_tagged : public thrust::unary_function<float4,bool>
 };
 
 
+
+struct photon_mask4 
+{
+    unsigned int lo, hi ;
+
+    photon_mask4(unsigned int lo, unsigned int hi) : lo(lo), hi(hi) {} 
+
+    template <typename Tuple> __device__ int operator()(Tuple t)
+    {
+        quad d ; 
+        d.f = thrust::get<3>(t);
+        unsigned int code = d.u.w ; 
+        return code >= lo && code < hi ? 1 : 0 ; 
+    }
+};
+
+
 union fui {
    float        f ; 
    unsigned int u ; 
    int          i ; 
 };
 
+struct dumper 
+{
+    __host__ __device__
+    void operator()(float4 v)
+    {
+        quad q ; 
+        q.f = v ; 
+        printf("dumper xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n", v.x, v.y, v.z, v.w, q.u.z, q.u.w  );
+    }
+};
+
+struct dumper4 
+{
+    template <typename Tuple>
+    __host__ __device__
+    void operator()(Tuple t)
+    {
+        quad a, b, c, d ; 
+        a.f = thrust::get<0>(t);
+        b.f = thrust::get<1>(t);
+        c.f = thrust::get<2>(t);
+        d.f = thrust::get<3>(t);
+
+        printf(
+      "dumper4 [a] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n"
+      "        [b] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n"
+      "        [c] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n"
+      "        [d] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n",
+             a.f.x, a.f.y, a.f.z, a.f.w, a.u.z, a.u.w,   
+             b.f.x, b.f.y, b.f.z, b.f.w, b.u.z, b.u.w,   
+             c.f.x, c.f.y, c.f.z, c.f.w, c.u.z, c.u.w,   
+             d.f.x, d.f.y, d.f.z, d.f.w, d.u.z, d.u.w
+        );
+    }
+};
+
+
+
+
+
+
+
+
+void OptiXThrust::sync()
+{
+    printf("OptiXThrust::sync\n");
+
+    cudaDeviceSynchronize();  
+
+    // Without the sync the process terminates before 
+    // any printf from functor output streams get pumped out to the terminal, 
+    // in some cases.
+    // Curiously that doesnt seem to happen with device_vector, but does with device_ptr 
+    // Maybe their dtors are delayed by the dumping
+}
+
+
+void OptiXThrust::for_each_dump()
+{
+    printf("OptiXThrust::for_each_dump size %u : dumping device_ptr  \n", m_size );
+
+    thrust::device_ptr<float4> d = getThrustDevicePtr<float4>(m_buffer, m_device);    
+
+    thrust::for_each( d, d+m_size, dumper() ); 
+}
+
+void OptiXThrust::strided()
+{
+    printf("OptiXThrust::strided size %u : dumping device_ptr  \n", m_size );
+
+    thrust::device_ptr<float4> d = getThrustDevicePtr<float4>(m_buffer, m_device);    
+
+    typedef thrust::device_vector<float4>::iterator Iterator;
+
+    strided_range<Iterator> tenth(d + 1, d + m_size, 10);
+
+    thrust::for_each( tenth.begin(), tenth.end(), dumper() ); 
+}
+
+
+void OptiXThrust::strided4()
+{
+    printf("OptiXThrust::strided4 size %u : dumping device_ptr  \n", m_size );
+
+    assert(m_size % 4 == 0);
+
+    thrust::device_ptr<float4> d = getThrustDevicePtr<float4>(m_buffer, m_device);    
+
+    typedef thrust::device_vector<float4>::iterator Iterator;
+
+    // stride by 4 with offsets 0:3 covers all entries 
+    strided_range<Iterator> four0(d + 0, d + m_size, 4);
+    strided_range<Iterator> four1(d + 1, d + m_size, 4);
+    strided_range<Iterator> four2(d + 2, d + m_size, 4);
+    strided_range<Iterator> four3(d + 3, d + m_size, 4);
+
+    // 4-by-float4 feeding the functor
+    thrust::for_each( 
+          thrust::make_zip_iterator(thrust::make_tuple( four0.begin(), four1.begin(), four2.begin(), four3.begin() )),
+          thrust::make_zip_iterator(thrust::make_tuple( four0.end(),   four1.end()  , four2.end()  , four3.end()   )),
+          dumper4()
+         );
+}
+
+
+void OptiXThrust::compaction4() 
+{
+    printf("OptiXThrust::compaction4 size %u \n", m_size );
+
+    assert(m_size % 4 == 0);
+
+    thrust::device_ptr<float4> d = getThrustDevicePtr<float4>(m_buffer, m_device);    
+
+    typedef thrust::device_vector<float4>::iterator Iterator;
+
+    // arrange to step thru float4 buffer in groups of 4*float4  (just like photons)
+    strided_range<Iterator> four0(d + 0, d + m_size, 4);
+    strided_range<Iterator> four1(d + 1, d + m_size, 4);
+    strided_range<Iterator> four2(d + 2, d + m_size, 4);
+    strided_range<Iterator> four3(d + 3, d + m_size, 4);
+
+    unsigned int lo(5), hi(15) ;
+    photon_mask4 mskr(lo, hi);   // functor is passed the four float4 of each photon 
+
+    thrust::device_vector<int> mask(m_size/4) ; 
+
+    thrust::transform(
+          thrust::make_zip_iterator(thrust::make_tuple( four0.begin(), four1.begin(), four2.begin(), four3.begin() )),
+          thrust::make_zip_iterator(thrust::make_tuple( four0.end(),   four1.end()  , four2.end()  , four3.end()   )),
+          mask.begin(),
+          mskr );
+
+    unsigned int num = thrust::count(mask.begin(), mask.end(), 1);
+
+    printf("OptiXThrust::compaction4 num selected with lo/hi %u %u : %lu \n", lo, hi, num );
+
+    unsigned int t_size = num*4 ; 
+    thrust::device_vector<float4> tmp(t_size) ; 
+    thrust::device_ptr<float4> t = tmp.data();
+
+    //printf("mask\n"); thrust::copy(mask.begin(), mask.end(), std::ostream_iterator<int>(std::cout, "\n")); 
+
+    typedef thrust::device_vector<int>::iterator MaskIterator;
+    repeated_range<MaskIterator> mask4( mask.begin(), mask.end(), 4);
+
+    //printf("mask4\n"); thrust::copy(mask4.begin(), mask4.end(), std::ostream_iterator<int>(std::cout, "\n")); 
+
+    thrust::copy_if( d, 
+                     d+m_size,
+                     mask4.begin(), 
+                     t,
+                     thrust::identity<int>() ); 
+
+    float4* dev = thrust::raw_pointer_cast(t);
+
+    float4* host = new float4[t_size] ; 
+
+    cudaMemcpy( host, dev, t_size*sizeof(float4),  cudaMemcpyDeviceToHost );
+
+    for(unsigned int i=0 ; i < num ; i++)
+    {
+        quad a,b,c,d ;
+        a.f = host[i*4+0] ;
+        b.f = host[i*4+1] ;
+        c.f = host[i*4+2] ;
+        d.f = host[i*4+3] ;
+
+        printf(
+      " compaction4 %u \n"
+      "        [a] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n"
+      "        [b] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n"
+      "        [c] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n"
+      "        [d] xyzw:f %10.4f %10.4f %10.4f %10.4f  zw:u %5u %5u \n",
+             i,
+             a.f.x, a.f.y, a.f.z, a.f.w, a.u.z, a.u.w,   
+             b.f.x, b.f.y, b.f.z, b.f.w, b.u.z, b.u.w,   
+             c.f.x, c.f.y, c.f.z, c.f.w, c.u.z, c.u.w,   
+             d.f.x, d.f.y, d.f.z, d.f.w, d.u.z, d.u.w
+        );
+    }
+}
 
 
 void OptiXThrust::compaction()

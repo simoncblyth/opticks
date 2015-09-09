@@ -26,6 +26,11 @@ class OptiXThrust {
        void photon_test();
        void postprocess(); 
        void compaction(); 
+       void compaction4(); 
+       void strided(); 
+       void strided4(); 
+       void for_each_dump(); 
+       void sync(); 
   private:
        unsigned int m_device ; 
        optix::Context m_context ; 
