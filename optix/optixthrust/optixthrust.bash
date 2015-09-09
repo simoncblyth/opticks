@@ -8,11 +8,16 @@ optixthrust-usage(){ cat << EOU
 OptiX/CUDA/Thrust Interop
 ==========================
 
+investigations
+---------------
+
+* stream compaction
+* multiple argument transform functors, using tuples
+
 see also
 ---------
 
 * gloptixthrust- optixminimal- glfwtriangle-
-
 
 cmake testing
 -------------
@@ -20,8 +25,6 @@ cmake testing
 ::
 
    optixthrust-;optixthrust-wipe;VERBOSE=1 optixthrust--
-
-
 
 interesting snippet on stream compaction
 ------------------------------------------

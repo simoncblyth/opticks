@@ -31,6 +31,10 @@ class OptiXThrust {
        void strided4(); 
        void for_each_dump(); 
        void sync(); 
+
+       optix::float4* make_masked_buffer( int* d_mask, unsigned int mask_size, unsigned int num );
+       void dump_photons( optix::float4* host , unsigned int num );
+
   private:
        unsigned int m_device ; 
        optix::Context m_context ; 

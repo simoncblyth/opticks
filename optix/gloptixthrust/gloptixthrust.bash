@@ -26,27 +26,18 @@ Debug : OpenGL/OptiX/Thrust interop (possibly pairwise)
 
 * createFromGLBO OptiX buffers, populate with OptiX launch 
 
-
 Huh
 ----
 
 * http://stackoverflow.com/questions/11692326/can-i-use-thrusthost-vector-or-i-must-use-cudahostalloc-for-zero-copy-with-thr
 
-
 Related
 --------
 
-* optixthrust- for stream compaction testing,  
-
+* optixthrust- 
 
 What Next
 ----------
-
-* use aligned struct to pass photons (4*float4) to functors 
-
-* multiple argument transform functors
-
-  * thrust::make_transform_iterator
 
 * tidyup/rename classes for reusability and move into optixrap- thrustrap-
 
@@ -59,7 +50,6 @@ What Next
     * https://github.com/thrust/thrust/blob/master/examples/uninitialized_vector.cu
 
   * ggeoview- defer large NPY allocations until actually needed
-
 
 
 Refs
