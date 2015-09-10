@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name OptiXThrustMinimal)
+set(name OptiXThrustNPY)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -65,10 +65,9 @@ message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})
 
 
 optixthrust_add_executable( ${name} 
-      main.cpp
-      optixthrust.cpp
-      optixthrust_.cu     
-      cu/minimal_float4.cu
+      main.cc
+      App.cc
+      OBuf_.cu     
       OPTIONS 
        -arch sm_30
 ) 

@@ -590,7 +590,9 @@ void App::uploadEvt()
     LOG(info) << "main: scene.uploadEvt DONE "; 
 
 #ifdef INTEROP
-    m_scene->uploadSelection();
+    // recsel handled separately to the rest due to interop complications
+    // as it needs Thrust indexing 
+    m_scene->uploadSelection();  
     //c_psel->registerBuffer();
     //c_rsel->registerBuffer();
 #else
@@ -992,7 +994,7 @@ int main(int argc, char** argv)
 
         app.loadGenstep();
 
-        app.uploadEvt();
+        app.uploadEvt();    // allocates GPU buffers with OpenGL glBufferData
 
         app.prepareEngine();
 

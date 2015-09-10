@@ -8,16 +8,21 @@ optixthrust-usage(){ cat << EOU
 OptiX/CUDA/Thrust Interop
 ==========================
 
+The *optixthrust-* package is a testing ground for OptiX/CUDA/Thrust interop,
+without any *OpenGL* complications.
+
+see also
+---------
+
+* gloptixthrust- 
+* optixminimal- 
+* glfwtriangle-
+
 investigations
 ---------------
 
 * stream compaction
 * multiple argument transform functors, using tuples
-
-see also
----------
-
-* gloptixthrust- optixminimal- glfwtriangle-
 
 cmake testing
 -------------
@@ -25,6 +30,7 @@ cmake testing
 ::
 
    optixthrust-;optixthrust-wipe;VERBOSE=1 optixthrust--
+
 
 interesting snippet on stream compaction
 ------------------------------------------
@@ -311,6 +317,6 @@ optixthrust--()
 
    optixthrust-make 
    optixthrust-make install
-   optixthrust-run
+   #optixthrust-run
 }
 

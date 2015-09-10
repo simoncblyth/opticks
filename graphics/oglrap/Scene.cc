@@ -386,6 +386,10 @@ void Scene::uploadEvt()
        assert(m_evt);
     }
 
+    // The Rdr call glBufferData using bytes and size from the associated NPY 
+    // the bytes used is NULL when npy->hasData() == false
+    // corresponding to device side only OpenGL allocation
+
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
 
     m_photon_renderer->upload(m_evt->getPhotonAttr());

@@ -35,21 +35,21 @@ void print(const std::string& s, const Vector& v)
 #endif
 
 
-template <typename InputIterator1,
+template <typename InputIterator,
           typename OutputIterator>
-void iexpand(InputIterator1 first1,
-                      InputIterator1 last1,
-                      OutputIterator output_first,
-                      OutputIterator output_last)
+void iexpand(InputIterator  counts_first,
+             InputIterator  counts_last,
+             OutputIterator output_first,
+             OutputIterator output_last)
 {
-  typedef typename thrust::iterator_difference<InputIterator1>::type difference_type;
+  typedef typename thrust::iterator_difference<InputIterator>::type difference_type;
   
-  difference_type input_size  = thrust::distance(first1, last1);
-  difference_type output_size = thrust::reduce(first1, last1);    // sum of input counts 
+  difference_type counts_size = thrust::distance(counts_first, counts_last);
+  difference_type output_size = thrust::distance(output_first, output_last);
 
-  thrust::device_vector<difference_type> output_offsets(input_size, 0);
-  thrust::exclusive_scan(first1, last1, output_offsets.begin());  
+  thrust::device_vector<difference_type> output_offsets(counts_size, 0);
 
+  thrust::exclusive_scan(counts_first, counts_last, output_offsets.begin());  
 #ifdef DEBUG
   print(
      " scan the counts to obtain output offsets for each input element \n"
@@ -58,22 +58,44 @@ void iexpand(InputIterator1 first1,
      " 1st result element always 0, last input value ignored  \n"
      " (output_offsets) \n"
    , output_offsets );
+
+  difference_type output_size2 = thrust::reduce(counts_first, counts_last);    // sum of input counts 
+  assert( output_size == output_size2 ); 
 #endif
 
   // scatter indices into transition points of output 
   thrust::scatter_if
     (thrust::counting_iterator<difference_type>(0),
-     thrust::counting_iterator<difference_type>(input_size),
+     thrust::counting_iterator<difference_type>(counts_size),
      output_offsets.begin(),
-     first1,
+     counts_first,
      output_first); 
 
-  // inclusive cum"sum" with max rather than sum, fills to the right 
+#ifdef DEBUG
+  printf(
+     " scatter the nonzero counts into their corresponding output positions \n"
+     " scatter_if( first, last, map, stencil, output ) \n"
+     "    conditionally copies elements from a source range (indices 0:N-1) into an output array according to a map \n"
+     "    condition dictated by a stencil (input counts) which must be non-zero to be true \n"
+     "    map provides indices of where to put the indice values in the output  \n"
+   );
+#endif
+
   thrust::inclusive_scan
     (output_first,
      output_last,
      output_first,
      thrust::maximum<difference_type>());
+
+#ifdef DEBUG
+  printf(
+     " compute max-scan over the output indices, filling in the holes \n"
+     " inclusive_scan is a cumsum that includes current value \n"
+     " providing an binary operator (maximum) replaces the default of plus \n" 
+     "   because the empties are init to 0 this will fill in the empties to the right \n"
+   );
+#endif
+
 
 }
 

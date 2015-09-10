@@ -75,18 +75,21 @@ RT_PROGRAM void trivial()
 
 RT_PROGRAM void generate()
 {
-    union quad phead ;
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
     unsigned int MAXREC = record_max ; 
 
+    //
+    // first 4 bytes of photon_buffer photon records contain genstep_id 
+    // this seeding is done in NumpyEvt::setGenstepData
+    //
+    union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;
+    unsigned int genstep_id = phead.u.x ; 
+    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
     union quad ghead ; 
-    unsigned int genstep_id = phead.u.x ; // first 4 bytes seeded with genstep_id
-    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
-
 
 #ifdef DEBUG
     bool dbg = photon_id == debug_control.x ;  

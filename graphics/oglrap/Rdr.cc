@@ -146,6 +146,11 @@ void Rdr::upload(NPYBase* npy)
         void* data = npy->getBytes();
         unsigned int nbytes = npy->getNumBytes(0) ;
 
+        if(data == NULL)
+        {
+             LOG(info) << "Rdr::upload glBufferData with data NULL nbytes " << nbytes ;
+        }
+
         GLuint buffer_id ;  
         glGenBuffers(1, &buffer_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);

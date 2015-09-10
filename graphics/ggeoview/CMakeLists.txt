@@ -56,8 +56,8 @@ find_package(AsioZMQ REQUIRED)
 find_package(NumpyServer REQUIRED)
 endif()
 
-find_package(NPY   REQUIRED)
 find_package(GLM  REQUIRED)
+find_package(NPY   REQUIRED)
 find_package(Cfg REQUIRED)
 
 find_package(Assimp REQUIRED)

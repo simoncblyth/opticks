@@ -1,4 +1,4 @@
-#include "OEngine.hh"
+#include "OEngine.hh" // last ditch debug technique
 
 #include "assert.h"
 #include "stdio.h"
@@ -318,7 +318,7 @@ void OEngine::preprocess()
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
 
     float pe = 0.1f ; 
-    m_context[ "propagate_epsilon"]->setFloat(pe); 
+    m_context[ "propagate_epsilon"]->setFloat(pe);  // TODO: check impact of changing propagate_epsilon
  
     LOG(info)<< "OEngine::preprocess start validate ";
     m_context->validate();
@@ -383,6 +383,12 @@ void OEngine::initRng()
     m_rng_wrapper->setItems(m_rng_max);
     m_rng_wrapper->fillHostBuffer(host_rng_states, m_rng_max);
     m_rng_states->unmap();
+
+    //
+    // TODO: investigate Thrust based alternatives to curand initialization 
+    //       potential for eliminating cudawrap- 
+    //
+
 }
 
 
@@ -419,7 +425,12 @@ void OEngine::initGenerate()
 
 void OEngine::initGenerate(NumpyEvt* evt)
 {
-    const char* raygenprg = m_trivial ? "trivial" : "generate" ; 
+    // when isInterop() == true 
+    // the OptiX buffers for the evt data are actually references 
+    // to the OpenGL buffers created with createBufferFromGLBO
+    // by Scene::uploadEvt Scene::uploadSelection
+
+    const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
 
     LOG(info) << "OEngine::initGenerate " << raygenprg ; 
     m_config->setRayGenerationProgram(e_generate, "generate.cu", raygenprg );
@@ -437,6 +448,7 @@ void OEngine::initGenerate(NumpyEvt* evt)
                   ;
         upload(m_genstep_buffer, gensteps);
     }
+
 
     m_photon_buffer = createIOBuffer<float>( evt->getPhotonData() );
     m_context["photon_buffer"]->set( m_photon_buffer );

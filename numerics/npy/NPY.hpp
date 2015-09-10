@@ -167,11 +167,8 @@ inline T* NPY<T>::getValues(unsigned int i)
 template <typename T> 
 inline void* NPY<T>::getBytes()
 {
-    return (void*)getValues();
+    return hasData() ? (void*)getValues() : NULL ;
 }
-
-
-
 
 
 template <typename T> 
