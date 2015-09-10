@@ -92,7 +92,6 @@ class NPY : public NPYBase {
        void read(void* ptr);
        std::vector<T>& data();
        void setData(T* data);
-       bool hasData();
        void fill(T value);
     public:
        T* getUnsetItem();

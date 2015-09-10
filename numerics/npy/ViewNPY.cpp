@@ -22,20 +22,34 @@ ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k,
             m_type(type),
             m_norm(norm),
             m_iatt(iatt),
-            m_numbytes(npy->getNumBytes(0)),
-            m_stride(npy->getNumBytes(1)),
-            m_offset(npy->getByteIndex(0,j,k)),
-            m_count(npy->getShape(0)),
+            m_numbytes(0),
+            m_stride(0),
+            m_offset(0),
+            m_count(0),
             m_low(NULL),
             m_high(NULL),
             m_dimensions(NULL),
             m_center(NULL),
             m_model_to_world(),
-            m_extent(0.f)
+            m_extent(0.f),
+            m_addressed(false)
 {
-    findBounds();
+    if( m_npy->hasData() )
+    { 
+        addressNPY();
+    } 
 }
 
+
+void ViewNPY::addressNPY()
+{
+    m_addressed = true ; 
+    m_numbytes = m_npy->getNumBytes(0) ;
+    m_stride   = m_npy->getNumBytes(1) ;
+    m_offset   = m_npy->getByteIndex(0,m_j,m_k) ;
+    m_count    = m_npy->getShape(0) ;
+    findBounds();
+}
 
 unsigned int ViewNPY::getValueOffset()
 {
@@ -116,6 +130,8 @@ void ViewNPY::findBounds()
 {
     glm::vec3 lo( FLT_MAX,  FLT_MAX,  FLT_MAX);
     glm::vec3 hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+    printf("ViewNPY::findBounds bytes %p offset %lu stride %u count %u \n", m_bytes, m_offset, m_stride, m_count );
 
     for(unsigned int i=0 ; i < m_count ; ++i )
     {   

@@ -34,7 +34,7 @@ class ViewNPY {
          
     public:
         ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
-
+        void addressNPY();
         void setCustomOffset(unsigned long offset);
         unsigned int getValueOffset(); // ?? multiply by sizeof(att-type) to get byte offset
 
@@ -88,6 +88,7 @@ class ViewNPY {
         glm::mat4   m_model_to_world ; 
         float       m_extent ; 
         glm::vec4   m_center_extent ; 
+        bool        m_addressed ; 
 
 };
 

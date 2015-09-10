@@ -15,7 +15,7 @@ namespace fs = boost::filesystem;
 template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) 
          :
-         NPYBase(shape, sizeof(T), type, metadata),
+         NPYBase(shape, sizeof(T), type, metadata, data.size() > 0),
          m_data(data),
          m_unset_item(NULL)
 {
@@ -24,7 +24,7 @@ NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata
 template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata) 
          :
-         NPYBase(shape, sizeof(T), type, metadata),
+         NPYBase(shape, sizeof(T), type, metadata, data != NULL),
          m_data(),
          m_unset_item(NULL)
 {
@@ -34,16 +34,22 @@ NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata)
        LOG(info) << "NPY<T>::NPY deferred setting data " ; 
 }
 
+
 template <typename T>
-bool NPY<T>::hasData()
+void NPY<T>::fill( T value)
 {
-    return m_data.size() > 0 ; 
+    setHasData(true);
+    m_data.resize(getNumValues(0));
+    std::fill(m_data.begin(), m_data.end(), value);
 }
 
 template <typename T>
 void NPY<T>::setData(T* data)
 {
-    m_data.reserve(getNumValues(0));
+    setHasData(data != NULL );
+    m_data.reserve(getNumValues(0)); 
+    // just allocates, doesnt change size, does that matter ? 
+    // seems not as just using the vector as a buffer 
     read(data);
 }
 
@@ -360,13 +366,6 @@ NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
     NPY<T>* npy =  NPY<T>::make(ni, nj, 4 );
     npy->fill(value);
     return npy ;
-}
-
-
-template <typename T>
-void NPY<T>::fill( T value)
-{
-    std::fill(m_data.begin(), m_data.end(), value);
 }
 
 

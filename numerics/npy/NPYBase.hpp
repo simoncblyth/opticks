@@ -15,8 +15,9 @@ class NPYBase {
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
        static const char* DEFAULT_PATH_TEMPLATE  ; 
    public:
-        NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata );
-
+        NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
+        void setHasData(bool has_data=true);
+        bool hasData();
    public:
        // shape related
        std::vector<int>& getShapeVector();
@@ -79,11 +80,12 @@ class NPYBase {
    private:
        std::vector<int>   m_shape ; 
        std::string        m_metadata ; 
+       bool               m_has_data ;
 
 };
 
 
-inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata ) 
+inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 
          :
          m_sizeoftype(sizeoftype),
          m_type(type),
@@ -91,13 +93,27 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_aux(NULL),
          m_verbose(false),
          m_shape(shape),
-         m_metadata(metadata)
+         m_metadata(metadata),
+         m_has_data(has_data)
 {
     m_len0 = getShape(0);
     m_len1 = getShape(1);
     m_len2 = getShape(2);
     m_dim  = m_shape.size();
 } 
+
+
+
+
+inline void NPYBase::setHasData(bool has_data)
+{
+    m_has_data = has_data ; 
+}
+
+inline bool NPYBase::hasData()
+{
+    return m_has_data ; 
+}
 
 
 // shape related

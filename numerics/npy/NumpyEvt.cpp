@@ -93,16 +93,17 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
     //           Scene::uploadSelection
     //           OptiXEngine::init
     //
-
-
-
     // stuff genstep index into the photon allocation 
     // to allow generation to access appropriate genstep 
+    //
+    // see thrustrap-/iexpand.h and iexpandTest.cc for an 
+    // initial try at moving genstep identification per photon
+    // to GPU side  
+    //
 
     unsigned int numStep   = m_genstep_data->getShape(0);
     unsigned int numPhoton = m_photon_data->getShape(0);
     assert(numPhoton == m_num_photons);
-
 
     unsigned int count(0) ;
     for(unsigned int index=0 ; index < numStep ; index++)
