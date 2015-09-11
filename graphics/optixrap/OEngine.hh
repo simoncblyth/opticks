@@ -97,8 +97,8 @@ class OEngine : public Touchable {
         GMergedMesh*  getMergedMesh();
         GBoundaryLib* getBoundaryLib();
         optix::Context& getContext();
-        NPYBase* getDomain();
-        NPYBase* getIDomain();
+        NPY<float>* getDomain();
+        NPY<int>*   getIDomain();
     public:
         unsigned int getRngMax();
         unsigned int getBounceMax();
@@ -204,8 +204,8 @@ class OEngine : public Touchable {
         int              m_override ; 
         int              m_debug_photon ; 
         NumpyEvt*        m_evt ; 
-        NPYBase*         m_domain ;
-        NPYBase*         m_idomain ;
+        NPY<float>*      m_domain ;
+        NPY<int>*        m_idomain ;
 
 
    // from sutil/MeshScene.h
@@ -365,11 +365,11 @@ inline unsigned int OEngine::getTraceCount()
 }
 
 
-inline NPYBase* OEngine::getDomain()
+inline NPY<float>* OEngine::getDomain()
 {
     return m_domain ;
 }
-inline NPYBase* OEngine::getIDomain()
+inline NPY<int>* OEngine::getIDomain()
 {
     return m_idomain ;
 }

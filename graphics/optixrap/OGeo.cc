@@ -268,8 +268,11 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
               ;
 
     // TODO: purloin the OpenGL buffers to avoid duplicating the geometry info on GPU 
+    
+    bool reuse = false ;  // setting to true causes OptiX launch failure : bad enum 
+    // TODO : attempt to isolate this bad behavior 
 
-    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer");
+    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer", reuse ); 
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
 
     optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mergedmesh->getIndicesBuffer(), RT_FORMAT_INT3, 3 , "indexBuffer"); 
@@ -296,7 +299,7 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 
 template <typename T>
-optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name)
+optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
 {
    unsigned int bytes = buf->getNumBytes() ;
    unsigned int nit = buf->getNumItems()/fold ;
@@ -323,9 +326,9 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
 
    optix::Buffer buffer ;
 
-   buffer_id = -1 ; // kill attempt to reuse OpenGL buffers
+   //buffer_id = -1 ; // kill attempt to reuse OpenGL buffers
 
-   if(buffer_id > -1 )
+   if(buffer_id > -1 && reuse)
    {
        /*
        Reuse attempt fails, getting 

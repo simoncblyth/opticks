@@ -162,8 +162,11 @@ int main(int argc, char** argv)
     p.add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
 
     NumpyEvt evt ;
-    evt.setMaxRec(fcfg->getRecordMax());  // must set this before setGenStepData to have effect
-    evt.setGenstepData(npy, nooptix); 
+    evt.setOptix(!nooptix);
+    evt.setMaxRec(fcfg->getRecordMax());  
+    // must set above before setGenStepData to have effect
+
+    evt.setGenstepData(npy); 
 
 
     OEngine engine("GGeoView", OEngine::COMPUTE ) ;       

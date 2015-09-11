@@ -95,8 +95,10 @@ void OEngine::init()
 
     m_top = m_context->createGroup();
 
-    m_domain = NPY<float>::make_vec4(e_number_domain,1,0.f) ;
-    m_idomain = NPY<int>::make_vec4(e_number_idomain,1,0) ;
+    m_domain = NPY<float>::make(e_number_domain,1,4) ;
+    m_domain->fill(0.f);
+    m_idomain = NPY<int>::make(e_number_idomain,1,4) ;
+    m_idomain->fill(0);
 
     if(!isCompute())
     {

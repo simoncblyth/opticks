@@ -231,6 +231,7 @@ class App {
    private:
        std::map<int, std::string> m_boundaries ;
        glm::uvec4       m_size ;
+       bool             m_gpu_resident_evt ; 
 
 };
 
@@ -270,7 +271,8 @@ App::App(const char* prefix, const char* logname)
       m_seqhis(NULL),
       m_seqmat(NULL),
       m_photons(NULL),
-      m_gui(NULL)
+      m_gui(NULL),
+      m_gpu_resident_evt(true)
 {
     m_cache     = new GCache(m_prefix);
 
@@ -535,6 +537,7 @@ void App::loadGenstep()
     {   
         genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
     }
+    (*m_timer)("applyLookup"); 
  
     m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
 
@@ -543,7 +546,10 @@ void App::loadGenstep()
     bool nooptix    = m_fcfg->hasOpt("nooptix");
     bool geocenter  = m_fcfg->hasOpt("geocenter");
 
-    m_evt->setGenstepData(npy, nooptix);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
+    m_evt->setOptix(!nooptix);
+    m_evt->setAllocate(!m_gpu_resident_evt); // switch off host allocation when "GPU residency" is enabled
+
+    m_evt->setGenstepData(npy);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
 
     (*m_timer)("hostEvtAllocation"); 
 
@@ -574,6 +580,13 @@ void App::uploadEvt()
         return ;
     }
 
+
+
+
+
+
+
+
  
 #ifdef INTEROP
     // signal Rdr to use GL_DYNAMIC_DRAW
@@ -584,6 +597,7 @@ void App::uploadEvt()
     m_composition->update();
     //m_composition.dumpAxisData("main:dumpAxisData");
     m_scene->uploadAxis();
+
     m_scene->uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
 
     (*m_timer)("uploadEvt"); 
@@ -604,7 +618,7 @@ void App::uploadEvt()
 
 void App::prepareEngine()
 {
-    bool compute    = m_fcfg->hasOpt("compute"); // not working ?
+    bool compute    = m_fcfg->hasOpt("compute"); 
     bool nooptix    = m_fcfg->hasOpt("nooptix");
     bool noevent    = m_fcfg->hasOpt("noevent");
     bool trivial    = m_fcfg->hasOpt("trivial");
@@ -615,6 +629,7 @@ void App::prepareEngine()
 
     const char* idpath = m_cache->getIdPath();
 
+    assert( mode == OEngine::INTEROP && "OEngine::COMPUTE mode not operational"); 
     m_engine = new OEngine("GGeoView", mode) ;       
     m_interactor->setTouchable(m_engine);
 
