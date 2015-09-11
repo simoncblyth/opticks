@@ -10,7 +10,8 @@
 
 void test_setQuad()
 {
-   NPYBase* dom = NPY<float>::make_vec4(10,1,0.f) ;
+   NPY<float>* dom = NPY<float>::make(10,1,4) ;
+   dom->fill(0.f);
 
    glm::vec4 q0(0.f,1.f,2.f,3.f);
    glm::vec4 q1(1.f,1.f,2.f,3.f);

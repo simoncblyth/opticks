@@ -2,13 +2,17 @@
 #include <string>
 
 #include "NPY.hpp"
+
+class Timer ; 
 class ViewNPY ;
 class MultiViewNPY ;
 
 class NumpyEvt {
    public:
        NumpyEvt();
-
+   private:
+       void init();
+   public:
        static const char* genstep ;
        static const char* photon ;
        static const char* record  ;
@@ -18,10 +22,17 @@ class NumpyEvt {
       
        typedef unsigned long long Sequence_t ;
    public:
-       void setGenstepData(NPY<float>* genstep_data, bool nooptix=false);
+       void setGenstepData(NPY<float>* genstep_data);
+   public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
+       void setOptix(bool optix=true);
+       void setAllocate(bool allocate=true);
    private:
-       // only set internally, as knock on from setGenstepData
+       // invoked internally, as knock on from setGenstepData
+       void createHostBuffers(); 
+       void allocateHostBuffers(); 
+       void seedPhotonData();
+       
        void setPhotonData(NPY<float>* photon_data);
        void setSequenceData(NPY<Sequence_t>* history_data);
        void setRecordData(NPY<short>* record_data);
@@ -46,6 +57,7 @@ class NumpyEvt {
 
        ViewNPY* operator [](const char* spec);
 
+   private:
    public:
        unsigned int getNumGensteps();
        unsigned int getNumPhotons();
@@ -58,6 +70,8 @@ class NumpyEvt {
        static void  dumpPhotonData(NPY<float>* photon_data);
 
    private:
+       Timer*                m_timer ;
+
        NPY<float>*           m_genstep_data ;
        NPY<float>*           m_photon_data ;
        NPY<short>*           m_record_data ;
@@ -76,11 +90,16 @@ class NumpyEvt {
        unsigned int    m_num_photons ; 
        unsigned int    m_maxrec ; 
 
+       // temporary dev switches
+       bool            m_optix ; 
+       bool            m_allocate ; 
+
 };
 
 
 inline NumpyEvt::NumpyEvt() 
           :
+          m_timer(NULL),
           m_genstep_data(NULL),
           m_photon_data(NULL),
           m_record_data(NULL),
@@ -95,9 +114,26 @@ inline NumpyEvt::NumpyEvt()
           m_sequence_attr(NULL),
           m_num_gensteps(0),
           m_num_photons(0),
-          m_maxrec(1)
+          m_maxrec(1),
+          m_optix(true),
+          m_allocate(true)
 {
+    init();
 }
+
+
+inline void NumpyEvt::setOptix(bool optix)
+{
+    m_optix = optix ; 
+}
+inline void NumpyEvt::setAllocate(bool allocate)
+{
+    m_allocate = allocate ; 
+}
+
+
+
+
 
 
 inline unsigned int NumpyEvt::getNumGensteps()

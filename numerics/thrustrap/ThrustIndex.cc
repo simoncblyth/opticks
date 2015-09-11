@@ -68,7 +68,7 @@ template<typename T,typename S>
 NPY<S>* ThrustIndex<T,S>::makeTargetArray()
 {
     thrust::host_vector<S> target = m_target ;                // full pullback, expensive 
-    return NPY<S>::make_scalar(target.size(), target.data()); 
+    return NPY<S>::make(target.size(),1,1, target.data()); 
 }
 
 
@@ -77,7 +77,7 @@ NPY<T>* ThrustIndex<T,S>::makeSequenceArray()
 {
     thrust::host_vector<T> history = m_sequence ;   // full pullback, expensive 
     // ONLY FOR DEBUGGING
-    return NPY<T>::make_scalar(history.size(), history.data()); 
+    return NPY<T>::make(history.size(),1,1, history.data()); 
 }
 
 

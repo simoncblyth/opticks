@@ -306,8 +306,8 @@ void Scene::uploadGeometry()
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         GBuffer* tbuf = mm->getTransformsBuffer();
 
-        LOG(info) ;
-        LOG(info) << "Scene::uploadGeometry i " << i ; 
+        LOG(debug) ;
+        LOG(debug) << "Scene::uploadGeometry i " << i ; 
 
         if( tbuf == NULL )
         {
@@ -322,11 +322,11 @@ void Scene::uploadGeometry()
         {
             assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
 
-            LOG(info)<< "Scene::uploadGeometry instance renderer " << m_num_instance_renderer  ;
+            LOG(debug)<< "Scene::uploadGeometry instance renderer " << m_num_instance_renderer  ;
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
 
-            LOG(info)<< "Scene::uploadGeometry bbox renderer " << m_num_instance_renderer  ;
+            LOG(debug)<< "Scene::uploadGeometry bbox renderer " << m_num_instance_renderer  ;
             GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
             m_bbox_mode[m_num_instance_renderer] = true ; 
             m_bbox_renderer[m_num_instance_renderer]->upload(bb);

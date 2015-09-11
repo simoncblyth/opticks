@@ -28,8 +28,6 @@ class NPYBase {
        unsigned int getShape(unsigned int dim);
        unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getNumValues(unsigned int from_dim=1);
-
-
    public:
        // depending on sizeoftype
        Type_t        getType();
@@ -48,9 +46,11 @@ class NPYBase {
        // NumPy persistency
        static std::string path(const char* typ, const char* tag, const char* det);
        void setVerbose(bool verbose=true);
+       void setAllowPrealloc(bool allow=true); 
 
    public:
        // provided by subclass
+       virtual void read(void* ptr) = 0;
        virtual void* getBytes() = 0 ;
        virtual void setQuad(unsigned int i, unsigned int j, glm::vec4&  vec ) = 0 ;
        virtual void setQuad(unsigned int i, unsigned int j, glm::ivec4& vec ) = 0 ;
@@ -76,6 +76,7 @@ class NPYBase {
        int                m_buffer_id ; 
        void*              m_aux ; 
        bool               m_verbose ; 
+       bool               m_allow_prealloc ; 
  
    private:
        std::vector<int>   m_shape ; 
@@ -92,6 +93,7 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_buffer_id(-1),
          m_aux(NULL),
          m_verbose(false),
+         m_allow_prealloc(false),
          m_shape(shape),
          m_metadata(metadata),
          m_has_data(has_data)
@@ -169,7 +171,10 @@ inline void NPYBase::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
 }
-
+inline void NPYBase::setAllowPrealloc(bool allow)
+{
+    m_allow_prealloc = allow ; 
+}
 
 
 inline unsigned int NPYBase::getValueIndex(unsigned int i, unsigned int j, unsigned int k)

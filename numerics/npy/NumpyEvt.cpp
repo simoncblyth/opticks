@@ -5,6 +5,7 @@
 #include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
+#include "Timer.hpp"
 #include "stringutil.hpp"
 
 #include "limits.h"
@@ -22,6 +23,14 @@ const char* NumpyEvt::record  = "record" ;
 const char* NumpyEvt::phosel = "phosel" ; 
 const char* NumpyEvt::recsel  = "recsel" ; 
 const char* NumpyEvt::sequence  = "sequence" ; 
+
+
+void NumpyEvt::init()
+{
+    m_timer = new Timer("NumpyEvt"); 
+    m_timer->setVerbose(true);
+}
+
 
 ViewNPY* NumpyEvt::operator [](const char* spec)
 {
@@ -42,10 +51,9 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
     return (*mvn)[elem[1].c_str()] ;
 }
 
-
-void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
+void NumpyEvt::setGenstepData(NPY<float>* genstep)
 {
-    G4StepNPY gs(genstep);  
+    m_timer->start();
 
     m_genstep_data = genstep  ;
     m_genstep_attr = new MultiViewNPY();
@@ -59,34 +67,84 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
     m_num_gensteps = m_genstep_data->getShape(0) ;
     m_num_photons = m_genstep_data->getUSum(0,3);
 
-    if(nooptix)
+    if(!m_optix)
     {
         LOG(info) << "NumpyEvt::setGenstepData early exit due to --nooptix/-O " ;
         return ;  
     } 
 
+    createHostBuffers();
 
-    // TODO: defer these allocations
+    if(m_allocate)
+    {
+        allocateHostBuffers();
+        seedPhotonData();
+    }
+    else
+    {
+        LOG(warning) << "NumpyEvt::setGenstepData skipping allocateHostBuffer/seedPhotonData : GPU alternatives need to be done " ;
+    }
 
-    NPY<float>* pho = NPY<float>::make_vec4(m_num_photons, 4); // must match GPU side photon.h:PNUMQUAD
+    m_timer->stop();
+    m_timer->dump();
+}
+
+void NumpyEvt::createHostBuffers()
+{
+    NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<Sequence_t>* seq = NPY<Sequence_t>::make_vec2(m_num_photons, 1, 0);  // shape (np,1,2) initialized to 0
+    NPY<Sequence_t>* seq = NPY<Sequence_t>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
     setSequenceData(seq);   
 
-    NPY<unsigned char>* phosel = NPY<unsigned char>::make_vec4(m_num_photons,1,0); // shape (np,1,4) initialized to 0 
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
     setPhoselData(phosel);   
 
-
-    assert(SHRT_MIN == -(1 << 15));      // -32768
-    assert(SHRT_MAX ==  (1 << 15) - 1);  // +32767
-    NPY<short>* rec = NPY<short>::make_vec4(getNumRecords(), 2, SHRT_MIN); 
+    NPY<short>* rec = NPY<short>::make(getNumRecords(), 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
     setRecordData(rec);   
 
     // aka seqidx (SequenceNPY) or target ThrustIndex
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make_vec4(getNumRecords(),1,0); // shape (nr,1,4) initialized to 0 
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make(getNumRecords(),1,4); // shape (nr,1,4) (formerly initialized to 0) 
     setRecselData(recsel);   
- 
+
+    (*m_timer)("createHostBuffers");
+}
+
+void NumpyEvt::allocateHostBuffers()
+{
+    // NPY::make(ni,nj,nk) now defaults to not allocating, 
+    // so allocate here 
+    //
+    // TODO: eliminate this preallocation by moving to GPU resident
+    //
+
+    m_photon_data->zero();
+    m_photon_data->setAllowPrealloc(true);
+
+   
+    m_sequence_data->zero();
+    m_sequence_data->setAllowPrealloc(true);
+
+    m_phosel_data->zero();
+    m_phosel_data->setAllowPrealloc(true);
+
+    assert(SHRT_MIN == -(1 << 15));      // -32768
+    assert(SHRT_MAX ==  (1 << 15) - 1);  // +32767
+
+    m_record_data->fill(SHRT_MIN);
+    m_record_data->setAllowPrealloc(true);
+
+    m_recsel_data->zero();
+    m_recsel_data->setAllowPrealloc(true);
+
+    (*m_timer)("allocateHostBuffers");
+}
+
+
+
+
+void NumpyEvt::seedPhotonData()
+{
     //
     // NB cf with 
     //           Scene::uploadEvt
@@ -100,6 +158,8 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
     // initial try at moving genstep identification per photon
     // to GPU side  
     //
+
+    G4StepNPY gs(m_genstep_data);  
 
     unsigned int numStep   = m_genstep_data->getShape(0);
     unsigned int numPhoton = m_photon_data->getShape(0);
@@ -137,6 +197,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep, bool nooptix)
     assert(count == m_num_photons ); 
     assert(count == numPhoton ); 
     // not m_num_photons-1 as last incremented count value is not used by setUInt
+    (*m_timer)("seedPhotonData");
 }
 
 

@@ -60,7 +60,7 @@ int main()
 
     thrust::host_vector<S> htgt = dtgt ;                // full pullback, expensive 
 
-    NPY<S>* target = NPY<S>::make_scalar(htgt.size(), htgt.data()); 
+    NPY<S>* target = NPY<S>::make(htgt.size(), 1, 1, htgt.data()); 
     target->setVerbose();
     target->save("/tmp/ThrustHistogramTest.npy");
 

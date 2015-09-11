@@ -63,6 +63,11 @@ void Rdr::upload(MultiViewNPY* mvn)
         {
             count = vnpy->getCount();
 
+            LOG(info) << "Rdr::upload " 
+                      << " vnpy " << vnpy->getName() 
+                      << " count " << count 
+                      ; 
+
             if(m_first_upload)
             {
                 setCountDefault(count);

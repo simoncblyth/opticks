@@ -5,8 +5,8 @@
 int main()
 {
      unsigned int N = 1000 ; 
-     NPY<float>* npy = NPY<float>::make_vec4(N, 1, 0.f); 
-
+     NPY<float>* npy = NPY<float>::make(N, 1, 4);
+     npy->fill(0.f); 
 
      float target(-1.f) ;
      Animator anim(&target, 200);

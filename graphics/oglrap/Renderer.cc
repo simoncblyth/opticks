@@ -55,12 +55,14 @@ GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer, const char
 
         buffer->setBufferId(buffer_id); 
         buffer->setBufferTarget(target); 
-        buffer->Summary(name);
+
+        LOG(debug) << "Renderer::upload " << name  ; 
+        //buffer->Summary(name);
     }
     else
     {
         buffer_id = prior_id ; 
-        LOG(info) << "Renderer::upload binding to prior buffer : " << buffer_id ; 
+        LOG(debug) << "Renderer::upload binding to prior buffer : " << buffer_id ; 
         glBindBuffer(target, buffer_id);
     }
     return buffer_id ; 

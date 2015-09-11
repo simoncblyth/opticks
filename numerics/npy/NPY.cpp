@@ -16,7 +16,7 @@ template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata, data.size() > 0),
-         m_data(data),
+         m_data(data),      // copies the vector
          m_unset_item(NULL)
 {
 } 
@@ -25,7 +25,7 @@ template <typename T>
 NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata, data != NULL),
-         m_data(),
+         m_data(),      
          m_unset_item(NULL)
 {
     if(data) 
@@ -36,26 +36,62 @@ NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata)
 
 
 template <typename T>
-void NPY<T>::fill( T value)
-{
-    setHasData(true);
-    m_data.resize(getNumValues(0));
-    std::fill(m_data.begin(), m_data.end(), value);
-}
-
-template <typename T>
 void NPY<T>::setData(T* data)
 {
-    setHasData(data != NULL );
-    m_data.reserve(getNumValues(0)); 
-    // just allocates, doesnt change size, does that matter ? 
-    // seems not as just using the vector as a buffer 
+    assert(data);
+    allocate();
     read(data);
 }
 
 template <typename T>
+void NPY<T>::fill( T value)
+{
+    allocate();
+    std::fill(m_data.begin(), m_data.end(), value);
+}
+
+template <typename T>
+void NPY<T>::zero()
+{
+    allocate();
+    memset( m_data.data(), 0, getNumBytes(0) );
+}
+
+template <typename T>
+void NPY<T>::allocate()
+{
+    setHasData(true);
+    m_data.resize(getNumValues(0));
+    //
+    // *reserve* vs *resize*
+    //     *reserve* just allocates without changing size, does that matter ? 
+    //     most NPY usage just treats m_data as a buffer so not greatly however
+    //     there is some use of m_data.size() so using resize
+}
+
+
+template <typename T>
 void NPY<T>::read(void* ptr)
 {
+
+    if(m_allow_prealloc)
+    {
+        LOG(warning) << "NPY<T>::read allowing preallocation " ; 
+    }
+    else
+    {
+        if(m_data.size() == 0)
+        {
+            unsigned int nv0 = getNumValues(0) ; 
+            LOG(info) << "NPY<T>::read allocating space now (deferred from earlier) for NumValues(0) " << nv0 ; 
+            allocate();
+        }
+        else
+        {
+            LOG(fatal) << "NPY<T>::read DEFERRED ALLOCATION IS MANDATORY " ;
+            assert(0); 
+        }
+    }
     memcpy(m_data.data(), ptr, getNumBytes(0) );
 }
 
@@ -195,47 +231,6 @@ void NPY<T>::save(const char* path_)
 
 
 
-template <typename T>
-NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
-{
-   /*
-    std::vector<int> shape ; 
-    shape.push_back(ni);
-    shape.push_back(1);
-    shape.push_back(1);
-
-    std::string metadata = "{}";
-
-    T* data = new T[ni] ;
-    while(ni--) data[ni] = init ; 
-
-    NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
-   */
-
-    NPY<T>* npy = NPY<T>::make( ni, 1, 1);
-    npy->fill(init);
-    return npy ; 
-}
-
-
-template <typename T>
-NPY<T>* NPY<T>::make_scalar(unsigned int ni, T* values)
-{
-    assert(0);
-/*
-    std::vector<int> shape ; 
-    shape.push_back(ni);
-    shape.push_back(1);
-    shape.push_back(1);
-
-    std::string metadata = "{}";
-
-    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
-*/
-
-    return NPY<T>::make( ni, 1, 1, values ) ; 
-}
-
 
 
 template <typename T>
@@ -338,71 +333,41 @@ NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 
 
 
+
+/*
+
+template <typename T>
+NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
+{
+    NPY<T>* npy = NPY<T>::make( ni, 1, 1);
+    npy->fill(init);
+    return npy ; 
+}
+
+
+template <typename T>
+NPY<T>* NPY<T>::make_scalar(unsigned int ni, T* values)
+{
+    return NPY<T>::make( ni, 1, 1, values ) ; 
+}
+
 template <typename T>
 NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
 {
-   /*
-    std::string metadata = "{}";
-    std::vector<T> data;
-    std::vector<int> shape ; 
-
-    unsigned int nk = 4 ;
- 
-    shape.push_back(ni);
-    shape.push_back(nj);
-    shape.push_back(nk);
-
-    for(int i=0 ; i < ni ; i++ ){
-    for(int j=0 ; j < nj ; j++ ){
-    for(int k=0 ; k < nk ; k++ )
-    { 
-        data.push_back(value);
-    }
-    } 
-    }
-    NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
-    */
-
     NPY<T>* npy =  NPY<T>::make(ni, nj, 4 );
     npy->fill(value);
     return npy ;
 }
 
-
-
 template <typename T>
 NPY<T>* NPY<T>::make_vec2(unsigned int ni, unsigned int nj, T value)
 {
-
-   /*
-    std::string metadata = "{}";
-    std::vector<T> data;
-    std::vector<int> shape ; 
-
-    unsigned int nk = 2 ;
- 
-    shape.push_back(ni);
-    shape.push_back(nj);
-    shape.push_back(nk);
-
-    for(int i=0 ; i < ni ; i++ ){
-    for(int j=0 ; j < nj ; j++ ){
-    for(int k=0 ; k < nk ; k++ )
-    { 
-        data.push_back(value);
-    }
-    } 
-    }
-
-    NPY<T>* npy = new NPY<T>(shape,data,metadata) ;
-  */
-
     NPY<T>* npy =  NPY<T>::make(ni, nj, 2 );
     npy->fill(value);
     return npy ;
 }
 
-
+*/
 
 
 

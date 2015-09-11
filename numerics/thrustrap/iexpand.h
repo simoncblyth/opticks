@@ -19,10 +19,10 @@
 #include <thrust/scan.h>
 #include <thrust/fill.h>
 #include <thrust/copy.h>
+#include <iostream>
 
 #ifdef DEBUG
 #include <iterator>
-#include <iostream>
 template <typename Vector>
 void print(const std::string& s, const Vector& v)
 {
@@ -46,6 +46,12 @@ void iexpand(InputIterator  counts_first,
   
   difference_type counts_size = thrust::distance(counts_first, counts_last);
   difference_type output_size = thrust::distance(output_first, output_last);
+
+  std::cout << "iexpand " 
+            << " counts_size " << counts_size  
+            << " output_size " << output_size  
+            << std::endl ; 
+
 
   thrust::device_vector<difference_type> output_offsets(counts_size, 0);
 

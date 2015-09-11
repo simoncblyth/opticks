@@ -688,7 +688,8 @@ void Composition::update()
 
 void Composition::initAxis()
 {
-    NPY<float>* axis_data = NPY<float>::make_vec4(3, 3, 0.f ); // three axes x,y,z each with 3 float4 vpos,vdir,vcol 
+    NPY<float>* axis_data = NPY<float>::make(3, 3, 4); // three axes x,y,z each with 3 float4 vpos,vdir,vcol 
+    axis_data->fill(0.f);
     setAxisData(axis_data);
 }
 

@@ -12,6 +12,11 @@
 #include <glm/gtx/string_cast.hpp>
 
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int size, Type_t type, bool norm, bool iatt) :
             m_name(strdup(name)),
             m_npy(npy),
@@ -34,20 +39,29 @@ ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k,
             m_extent(0.f),
             m_addressed(false)
 {
+
+    // these dont require the data, just the shape
+    m_numbytes = m_npy->getNumBytes(0) ;
+    m_stride   = m_npy->getNumBytes(1) ;
+    m_offset   = m_npy->getByteIndex(0,m_j,m_k) ;
+    m_count    = m_npy->getShape(0) ;
+
     if( m_npy->hasData() )
     { 
         addressNPY();
     } 
+    else
+    {
+        LOG(warning) << "ViewNPY::ViewNPY "
+                     << " without data " 
+                     ;
+    }
 }
 
 
 void ViewNPY::addressNPY()
 {
     m_addressed = true ; 
-    m_numbytes = m_npy->getNumBytes(0) ;
-    m_stride   = m_npy->getNumBytes(1) ;
-    m_offset   = m_npy->getByteIndex(0,m_j,m_k) ;
-    m_count    = m_npy->getShape(0) ;
     findBounds();
 }
 

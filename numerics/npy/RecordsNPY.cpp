@@ -207,7 +207,7 @@ NPY<unsigned long long>* RecordsNPY::makeSequenceArray(Types::Item_t etype)
     {
         seqdata[i] = getSequence(i, etype) ;
     }
-    return NPY<unsigned long long>::make_scalar(size, seqdata);
+    return NPY<unsigned long long>::make(size, 1, 1, seqdata);
 }
 
 

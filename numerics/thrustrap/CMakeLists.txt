@@ -64,6 +64,7 @@ SET(hdrs
   ThrustHistogramImp.h
   ThrustArrayImp.h
   strided_range.h 
+  iexpand.h 
 )
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
