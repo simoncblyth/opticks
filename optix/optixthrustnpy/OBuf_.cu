@@ -5,6 +5,7 @@
 
 #include "OBuf.hh"
 
+#include "strided_range.h"
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
 #include <iterator>
@@ -36,20 +37,6 @@ __host__ std::ostream& operator<< (std::ostream& os, const optix::uint4& p)
 
 
 template <typename T>
-OBuf<T>::OBuf(optix::Buffer& buffer ) : m_buffer(buffer), m_device(0u) {}
-
-
-template <typename T>
-unsigned int OBuf<T>::getSize()
-{
-    RTsize width, height, depth ; 
-    m_buffer->getSize(width, height, depth);
-    RTsize size = width*height*depth ; 
-    return size ; 
-}
-
-
-template <typename T>
 T* OBuf<T>::getDevicePtr()
 {
     CUdeviceptr cu_ptr = m_buffer->getDevicePointer(m_device) ;
@@ -61,13 +48,24 @@ template <typename T>
 void OBuf<T>::dump(const char* msg, unsigned int begin, unsigned int end )
 {
     thrust::device_ptr<T> p = thrust::device_pointer_cast(getDevicePtr()) ; 
-
     thrust::copy( p + begin, p + end, std::ostream_iterator<T>(std::cout, " \n") ); 
 }
 
+template <typename T>
+void OBuf<T>::dump_strided(const char* msg, unsigned int begin, unsigned int end, unsigned int stride)
+{
+    thrust::device_ptr<T> p = thrust::device_pointer_cast(getDevicePtr()) ; 
 
-//template void OBuf<optix::float4>::dump(const char*, unsigned int, unsigned int) ; 
+    typedef typename thrust::device_vector<T>::iterator Iterator;
+
+    strided_range<Iterator> sri( p + begin, p + end, stride );
+
+    thrust::copy( sri.begin(), sri.end(), std::ostream_iterator<T>(std::cout, " \n") ); 
+}
+
+
 
 template class OBuf<optix::float4> ;
 template class OBuf<optix::uint4> ;
+template class OBuf<unsigned int> ;
  

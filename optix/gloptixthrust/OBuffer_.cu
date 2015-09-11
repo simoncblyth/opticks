@@ -197,7 +197,7 @@ unsigned int OBuffer::getBufferSize()
 unsigned int OBuffer::getElementSize()
 {
     size_t element_size ; 
-    rtuGetSizeForRTformat( m_buffer->getFormat(), &element_size);
+    rtuGetSizeForRTformat( m_buffer->getFormat(), &element_size); // hmm this is in bytes
     return element_size ; 
 }
 void OBuffer::fillBufSpec(void* dev_ptr)

@@ -1,19 +1,28 @@
 #pragma once
 
-#include <optix_world.h>
-#include <optixu/optixpp_namespace.h>
+#include "OBufBase.hh"
+
+
+// anything not using or related to template type should go in OBufBase
 
 template <typename T>
-class OBuf {
+class OBuf : public OBufBase {
    public:
-      OBuf( optix::Buffer& buffer );
+      OBuf( const char* name, optix::Buffer& buffer );
+   public:
       T* getDevicePtr();
-      unsigned int getSize();
       void dump(const char* msg, unsigned int begin, unsigned int end );
-   private:
-      optix::Buffer  m_buffer  ;
-      unsigned int   m_device ; 
+      void dump_strided(const char* msg, unsigned int begin, unsigned int end, unsigned int stride);
 };
+
+
+
+template <typename T>
+inline OBuf<T>::OBuf(const char* name, optix::Buffer& buffer ) 
+   :
+   OBufBase(name, buffer)
+{
+}
 
 
 

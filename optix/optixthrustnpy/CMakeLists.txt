@@ -28,6 +28,7 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY   REQUIRED)
+find_package(ThrustRap REQUIRED)
 
 ## c++11 forced by AsioZMQ   needs to come after OptiX
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -44,10 +45,12 @@ include_directories(
    ${OptiX_INCLUDE}  
    ${NPY_INCLUDE_DIRS}
    ${GLM_INCLUDE_DIRS} 
+   ${ThrustRap_INCLUDE_DIRS}
 )
 
 add_definitions(
    ${OptiX_DEFINITIONS} 
+   ${ThrustRap_DEFINITIONS}
 )
 
 set(LIBRARIES 
@@ -55,6 +58,7 @@ set(LIBRARIES
       optixu
       ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
+      ${ThrustRap_LIBRARIES}
 )
 
 # CUDA_GENERATED_OUTPUT_DIR seems to an input to OptiX cmake macros
@@ -68,6 +72,7 @@ optixthrust_add_executable( ${name}
       main.cc
       App.cc
       OBuf_.cu     
+      OBufBase_.cu     
       OPTIONS 
        -arch sm_30
 ) 

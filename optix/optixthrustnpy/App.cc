@@ -60,11 +60,17 @@ void App::checkGenstep()
 {
     //dumpBuffer<float4>("genstep_buffer", m_genstep_buffer, 0, 23 );
 
-    OBuf<float4> gsf4(m_genstep_buffer) ;
+  /*
+    OBuf<float4> gsf4("gsf4",m_genstep_buffer) ;
     gsf4.dump("genstep_buffer (f4)", 0, 23 );
 
-    OBuf<uint4> gsu4(m_genstep_buffer) ;
+    OBuf<uint4> gsu4("gsu4",m_genstep_buffer) ;
     gsu4.dump("genstep_buffer (u4)", 0, 23 );
+  */
+
+    OBuf<unsigned int> gsu("gsu", m_genstep_buffer) ;
+    gsu.Summary();
+    gsu.dump_strided("strided", 3, gsu.getAtomicSize() , 6*4 );
 
     printf("App::checkGenstep\n");
 }
