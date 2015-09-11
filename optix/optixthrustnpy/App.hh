@@ -9,22 +9,23 @@ class App {
      App();
      void loadGenstep();
      void initOptiX();
-     void uploadGenstep();
-     void checkGenstep();
-  public:
-     // _.cu
-     //template <typename T>
-     //void dumpBuffer(const char* msg, optix::Buffer& buffer, unsigned int begin, unsigned int end ); 
+     void uploadEvt();
+     void seedPhotonBuffer();
+     void dumpGensteps();
+     void dumpPhotons();
   private:
       NPY<float>*    m_gs ; 
-      unsigned int   m_gs_size ; 
+      unsigned int   m_num_gensteps ; 
+      unsigned int   m_num_photons ; 
       optix::Context m_context ; 
       optix::Buffer  m_genstep_buffer ; 
+      optix::Buffer  m_photon_buffer ; 
 };
 
 inline App::App() : 
      m_gs(NULL), 
-     m_gs_size(0) 
+     m_num_gensteps(0),
+     m_num_photons(0) 
 {
 }
 

@@ -29,8 +29,8 @@ void App::loadGenstep()
     unsigned int nk = gs->getShape(2) ;
     assert(nk == 4 && nj == 6); 
     m_gs = gs ; 
-    m_gs_size = ni*nj  ; 
-    printf("App::loadGenstep\n");
+    m_num_gensteps = ni ; 
+    printf("App::loadGenstep num_gensteps %d\n", m_num_gensteps);
 }
 void App::initOptiX()
 {
@@ -39,40 +39,54 @@ void App::initOptiX()
     m_context->setPrintBufferSize(8192);
     m_context->setStackSize( 2180 );
 
-    m_genstep_buffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, m_gs_size );
+    m_genstep_buffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, m_num_gensteps*6 ); // 6*float4 per genstep 
     m_context["genstep_buffer"]->set( m_genstep_buffer );
     printf("App::initOptiX\n");
 }
-void App::uploadGenstep()
+void App::uploadEvt()
 {
-    // TODO: tuck away this uploading into reusable place, maybe in optixrap-
+    OBuf gs("gs", m_genstep_buffer);
 
-    void* data = m_gs->getBytes() ;
-    assert(data);
-    unsigned int numBytes = m_gs->getNumBytes(0);
-    printf("App::uploadGenstep nbytes %u \n", numBytes);
-    memcpy( m_genstep_buffer->map(), data, numBytes );
-    m_genstep_buffer->unmap();
+    gs.upload( m_gs );
 
-    printf("App::uploadGenstep\n");
-}
-void App::checkGenstep()
-{
-    //dumpBuffer<float4>("genstep_buffer", m_genstep_buffer, 0, 23 );
+    // pluck photon counts with atomic view of genstep buffer
+    m_num_photons = gs.reduce<unsigned int>(6*4, 3) ;  // stride, offset
 
-  /*
-    OBuf<float4> gsf4("gsf4",m_genstep_buffer) ;
-    gsf4.dump("genstep_buffer (f4)", 0, 23 );
+    assert(m_num_photons < 3e6 );
 
-    OBuf<uint4> gsu4("gsu4",m_genstep_buffer) ;
-    gsu4.dump("genstep_buffer (u4)", 0, 23 );
-  */
+    m_photon_buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT4, m_num_photons*4 ); // 4*float4 per photon
 
-    OBuf<unsigned int> gsu("gsu", m_genstep_buffer) ;
-    gsu.Summary();
-    gsu.dump_strided("strided", 3, gsu.getAtomicSize() , 6*4 );
+    seedPhotonBuffer(); 
 
-    printf("App::checkGenstep\n");
+    printf("App::uploadEvt num_photons %u\n", m_num_photons);
 }
 
+void App::seedPhotonBuffer()
+{
+
+
+
+    printf("App::seedPhotonBuffer\n");
+}
+
+void App::dumpGensteps()
+{
+    OBuf gs("gs", m_genstep_buffer) ; 
+
+    gs.dump<float4>("genstep_buffer (f4)", 0, 0, 23 );  // msg, stride, begin, end
+    gs.dump<uint4>("genstep_buffer (u4)", 0, 0, 23 );
+
+    gs.dump<unsigned int>("strided 6*4 offset 3 ", 6*4, 3, 23 );  
+
+    printf("App::dumpGensteps\n");
+}
+
+void App::dumpPhotons()
+{
+    OBuf ph("ph", m_photon_buffer) ; 
+
+    ph.dump<float4>("(f4, stride 0)", 0, 0, 10*4 );  // msg, stride, begin, end
+
+    printf("App::dumpPhotons\n");
+}
 

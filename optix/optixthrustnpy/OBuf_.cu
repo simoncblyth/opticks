@@ -37,7 +37,7 @@ __host__ std::ostream& operator<< (std::ostream& os, const optix::uint4& p)
 
 
 template <typename T>
-T* OBuf<T>::getDevicePtr()
+T* OBuf::getDevicePtr()
 {
     CUdeviceptr cu_ptr = m_buffer->getDevicePointer(m_device) ;
 
@@ -45,27 +45,77 @@ T* OBuf<T>::getDevicePtr()
 }
 
 template <typename T>
-void OBuf<T>::dump(const char* msg, unsigned int begin, unsigned int end )
+void OBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end )
 {
-    thrust::device_ptr<T> p = thrust::device_pointer_cast(getDevicePtr()) ; 
-    thrust::copy( p + begin, p + end, std::ostream_iterator<T>(std::cout, " \n") ); 
+    Summary(msg);
+
+    thrust::device_ptr<T> p = thrust::device_pointer_cast(getDevicePtr<T>()) ; 
+
+    if( stride == 0 )
+    {
+        thrust::copy( p + begin, p + end, std::ostream_iterator<T>(std::cout, " \n") ); 
+    }
+    else
+    {
+        typedef typename thrust::device_vector<T>::iterator Iterator;
+        strided_range<Iterator> sri( p + begin, p + end, stride );
+        thrust::copy( sri.begin(), sri.end(), std::ostream_iterator<T>(std::cout, " \n") ); 
+    }
 }
+
+
 
 template <typename T>
-void OBuf<T>::dump_strided(const char* msg, unsigned int begin, unsigned int end, unsigned int stride)
+T OBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end )
 {
-    thrust::device_ptr<T> p = thrust::device_pointer_cast(getDevicePtr()) ; 
+    // hmm this assumes do not do reductions at float4 level ?
+    if(end == 0u) end = getNumAtoms(); 
 
-    typedef typename thrust::device_vector<T>::iterator Iterator;
+    thrust::device_ptr<T> p = thrust::device_pointer_cast(getDevicePtr<T>()) ; 
 
-    strided_range<Iterator> sri( p + begin, p + end, stride );
-
-    thrust::copy( sri.begin(), sri.end(), std::ostream_iterator<T>(std::cout, " \n") ); 
+    T result ; 
+    if( stride == 0 )
+    {
+        result = thrust::reduce( p + begin, p + end ); 
+    }
+    else
+    {
+        typedef typename thrust::device_vector<T>::iterator Iterator;
+        strided_range<Iterator> sri( p + begin, p + end, stride );
+        result = thrust::reduce( sri.begin(), sri.end() ); 
+    }
+    return result ; 
 }
 
 
 
-template class OBuf<optix::float4> ;
-template class OBuf<optix::uint4> ;
-template class OBuf<unsigned int> ;
- 
+
+
+
+//
+// Using a templated class rather than templated member functions 
+// has the advantage of only having to explicitly instanciate the class::
+//
+//    template class OBuf<optix::float4> ;
+//    template class OBuf<optix::uint4> ;
+//    template class OBuf<unsigned int> ;
+//
+// as opposed to having to explicly instanciate all the member functions.
+//
+// But when want differently typed "views" of the 
+// same data it seems more logical to used templated member functions.
+//
+
+template optix::float4* OBuf::getDevicePtr<optix::float4>();
+template optix::uint4* OBuf::getDevicePtr<optix::uint4>();
+template unsigned int* OBuf::getDevicePtr<unsigned int>();
+
+template void OBuf::dump<optix::float4>(const char*, unsigned int, unsigned int, unsigned int);
+template void OBuf::dump<optix::uint4>(const char*, unsigned int, unsigned int, unsigned int);
+template void OBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int);
+
+
+template unsigned int OBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int);
+
+
+
