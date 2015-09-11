@@ -22,6 +22,7 @@ endif()
 
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
+include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 
 
 ## c++11 forced by AsioZMQ : AsioZMQ not used here, but expect best to use same compiler options as far as possible

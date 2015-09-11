@@ -11,6 +11,22 @@ OptiX/CUDA/Thrust + NPY Interop
 The *optixthrustnpy-* package is a testing ground for OptiX/CUDA/Thrust interop,
 together with NPY but without any *OpenGL* complications.
 
+Next
+------
+
+* migrate the classes OBuf OBufPair into optixrap- 
+
+* get optixrap- CMakeLists.txt to do the OptiXThust .cu partitioning
+
+* test can use the functionality from optixrap- from just the main back here 
+
+* look into a better way to handle ptx loading from a library 
+  (currently effectively embed paths to ptx)
+
+* use the OBuf from OEngine to do the photon buffer seeding 
+
+
+
 see also
 ---------
 

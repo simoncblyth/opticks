@@ -72,8 +72,7 @@ set(CUDA_GENERATED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/lib/ptx")
 message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})  
 
 
-optixthrust_add_executable( ${name} 
-      main.cc
+optixthrust_add_library( ${name}Lib 
       App.cc
       OBuf_.cu     
       OBufBase_.cu     
@@ -81,6 +80,18 @@ optixthrust_add_executable( ${name}
       OPTIONS 
        -arch sm_30
 ) 
-install(TARGETS ${name} DESTINATION bin)
+
+list(APPEND LIBRARIES ${name}Lib )
+
+optixthrust_add_executable( ${name}
+      main.cc
+)
+
+# TODO: test with OptiX programs, find a way of referencing ptx resources
+#       needed at runtime from a library 
+
+
+install(TARGETS ${name}    DESTINATION bin)
+install(TARGETS ${name}Lib DESTINATION lib)
 
 

@@ -96,4 +96,38 @@ endfunction()
 
 
 
+function(optixthrust_add_library target_name)
+
+    # split arguments into four lists 
+    #  hmm have two different flavors of .cu
+    #  optix programs to be made into .ptx  
+    #  and thrust or CUDA non optix sources need to be compiled into .o for linkage
+
+    OPTIXTHRUST_GET_SOURCES_AND_OPTIONS(optix_source_files non_optix_source_files cmake_options options ${ARGN})
+
+    message( "optix_source_files= " "${optix_source_files}" )  
+    message( "non_optix_source_files= "  "${non_optix_source_files}" )  
+
+    # Create the rules to build the OBJ from the CUDA files.
+    message( "OBJ options = " "${options}" )  
+    CUDA_WRAP_SRCS( ${target_name} OBJ non_optix_generated_files ${non_optix_source_files} ${cmake_options} OPTIONS ${options} )
+
+    # Create the rules to build the PTX from the CUDA files.
+    message( "PTX options = " "${options}" )  
+    CUDA_WRAP_SRCS( ${target_name} PTX optix_generated_files ${optix_source_files} ${cmake_options} OPTIONS ${options} )
+
+    add_library(${target_name}
+        ${optix_source_files}
+        ${non_optix_source_files}
+        ${optix_generated_files}
+        ${non_optix_generated_files}
+        ${cmake_options}
+    )
+
+    target_link_libraries( ${target_name} 
+        ${LIBRARIES} 
+      )
+
+endfunction()
+
 
