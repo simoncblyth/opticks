@@ -28,6 +28,7 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY   REQUIRED)
+find_package(OptiXRap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
 ## c++11 forced by AsioZMQ   needs to come after OptiX
@@ -45,11 +46,13 @@ include_directories(
    ${OptiX_INCLUDE}  
    ${NPY_INCLUDE_DIRS}
    ${GLM_INCLUDE_DIRS} 
+   ${OptiXRap_INCLUDE_DIRS}
    ${ThrustRap_INCLUDE_DIRS}
 )
 
 add_definitions(
    ${OptiX_DEFINITIONS} 
+   ${OptiXRap_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
 )
 
@@ -58,6 +61,7 @@ set(LIBRARIES
       optixu
       ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
+      ${OptiXRap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
 )
 
@@ -73,6 +77,7 @@ optixthrust_add_executable( ${name}
       App.cc
       OBuf_.cu     
       OBufBase_.cu     
+      OBufPair_.cu     
       OPTIONS 
        -arch sm_30
 ) 

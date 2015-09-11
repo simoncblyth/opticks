@@ -10,11 +10,11 @@ class App {
      void loadGenstep();
      void initOptiX();
      void uploadEvt();
-     void seedPhotonBuffer();
+     void downloadEvt();
      void dumpGensteps();
      void dumpPhotons();
   private:
-      NPY<float>*    m_gs ; 
+      NPY<float>*    m_gs_npy ; 
       unsigned int   m_num_gensteps ; 
       unsigned int   m_num_photons ; 
       optix::Context m_context ; 
@@ -23,7 +23,7 @@ class App {
 };
 
 inline App::App() : 
-     m_gs(NULL), 
+     m_gs_npy(NULL), 
      m_num_gensteps(0),
      m_num_photons(0) 
 {

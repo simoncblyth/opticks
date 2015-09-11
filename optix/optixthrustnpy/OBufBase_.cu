@@ -5,6 +5,7 @@ void OBufBase::init()
 {
     examineBufferFormat(m_buffer->getFormat());
     m_size = getSize(m_buffer);
+    m_numbytes = getNumBytes(m_buffer);
 }
 
 void OBufBase::examineBufferFormat(RTformat format)
@@ -78,6 +79,12 @@ unsigned int OBufBase::getSize(const optix::Buffer& buffer)
     return size ; 
 }
 
+unsigned int OBufBase::getNumBytes(const optix::Buffer& buffer)
+{
+    unsigned int size = getSize(buffer);
+    unsigned int element_size = getElementSizeInBytes(buffer->getFormat());
+    return size*element_size ; 
+}
 
 void OBufBase::upload(NPYBase* npy)
 {
@@ -94,4 +101,17 @@ void OBufBase::upload(NPYBase* npy)
     m_buffer->unmap();
 }
 
+
+void OBufBase::download(NPYBase* npy)
+{
+    unsigned int numBytes = npy->getNumBytes(0) ;
+
+    assert(numBytes == m_numbytes);
+
+    void* ptr = m_buffer->map() ; 
+
+    npy->read( ptr );
+
+    m_buffer->unmap(); 
+}
 

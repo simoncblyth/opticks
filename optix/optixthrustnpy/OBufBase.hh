@@ -11,15 +11,18 @@ class OBufBase {
       OBufBase( const char* name, optix::Buffer& buffer );
    public:
       void upload(NPYBase* npy);
+      void download(NPYBase* npy);
    private:
       void init();
       void examineBufferFormat(RTformat format);
       static unsigned int getElementSizeInBytes(RTformat format); // eg sizeof(RT_FORMAT_FLOAT4) = 4*4 = 16 
+      static unsigned int getNumBytes(const optix::Buffer& buffer);
    public:
       unsigned int getMultiplicity(); // typically 4, for RT_FORMAT_FLOAT4/RT_FORMAT_UINT4
       unsigned int getSize();         // width*depth*height of OptiX buffer, ie the number of typed elements (often float4) 
       unsigned int getNumAtoms();     // Multiplicity * Size, giving number of atoms, eg number of floats or ints
       unsigned int getSizeOfAtom();   // in bytes, eg 4 for any of the RT_FORMAT_FLOAT4 RT_FORMAT_FLOAT3 ... formats 
+      unsigned int getNumBytes();     // total buffer size in bytes
    public:
       void Summary(const char* msg="OBufBase::Summary");
    public:
@@ -30,12 +33,16 @@ class OBufBase {
       unsigned int   m_size ; 
       unsigned int   m_multiplicity ; 
       unsigned int   m_sizeofatom ; 
+      unsigned int   m_numbytes ; 
       unsigned int   m_device ; 
 };
 
+
+
+
 inline void OBufBase::Summary(const char* msg)
 {
-    printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u \n", msg, m_name, m_size, m_multiplicity, m_sizeofatom, getNumAtoms() );
+    printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u NumBytes %u \n", msg, m_name, m_size, m_multiplicity, m_sizeofatom, getNumAtoms(), m_numbytes );
 }
 
 
@@ -47,6 +54,7 @@ inline OBufBase::OBufBase(const char* name, optix::Buffer& buffer)
    m_size(0u),
    m_multiplicity(0u), 
    m_sizeofatom(0u), 
+   m_numbytes(0u), 
    m_device(0u)
 {
     init();
@@ -76,6 +84,11 @@ inline unsigned int OBufBase::getSizeOfAtom()
 {
     return m_sizeofatom ; 
 }
+inline unsigned int OBufBase::getNumBytes()
+{
+    return m_numbytes ; 
+}
+
 
 
 

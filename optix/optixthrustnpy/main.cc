@@ -8,6 +8,7 @@ int main()
     app.uploadEvt();
     app.dumpGensteps();
     app.dumpPhotons();
+    app.downloadEvt();
 
     return 0 ;
 }
