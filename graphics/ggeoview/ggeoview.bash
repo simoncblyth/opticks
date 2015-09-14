@@ -975,7 +975,7 @@ ggeoview-accelcache-rm()
 
 ggeoview-rng-max()
 {
-   # maximal number of photons that can be handled
+   # maximal number of photons that can be handled : move to cudawrap- ?
     echo $(( 1000*1000*3 ))
 }
 
@@ -1075,14 +1075,15 @@ ggeoview-export()
    #export SHADER_DYNAMIC_DIR=$(ggeoview-gdir)
    #export SHADER_INCL_PATH=$(ggeoview-sdir)/gl:$(ggeoview-sdir):$SHADER_DYNAMIC_DIR
    #mkdir -p $SHADER_DYNAMIC_DIR
-
    unset SHADER_DIR 
    unset SHADER_DYNAMIC_DIR 
    unset SHADER_INCL_PATH
 
+   #export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
+   #export RAYTRACE_RNG_DIR=$(ggeoview-rng-dir) 
+   unset RAYTRACE_PTX_DIR
+   unset RAYTRACE_RNG_DIR
 
-   export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
-   export RAYTRACE_RNG_DIR=$(ggeoview-rng-dir) 
 
    export CUDAWRAP_RNG_MAX=$(ggeoview-rng-max)
 } 

@@ -309,6 +309,8 @@ void App::init()
     m_timer->start();
 
 
+    // the envvars are normally not defined, using 
+    // cmake configfile values instead
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
     const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
@@ -637,7 +639,7 @@ void App::prepareEngine()
     const char* idpath = m_cache->getIdPath();
 
     assert( mode == OEngine::INTEROP && "OEngine::COMPUTE mode not operational"); 
-    m_engine = new OEngine("GGeoView", mode) ;       
+    m_engine = new OEngine(mode) ;       
     m_interactor->setTouchable(m_engine);
 
     m_engine->setFilename(idpath);
@@ -654,7 +656,9 @@ void App::prepareEngine()
     {
         m_engine->setBounceMax(m_fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
         m_engine->setRecordMax(m_evt->getMaxRec());       // 1:to minimize without breaking machinery 
-        int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
+
+        int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);   // TODO: avoid envvar 
+
         assert(rng_max >= 1e6); 
         m_engine->setRngMax(rng_max);
 

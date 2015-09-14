@@ -66,7 +66,7 @@ class OEngine : public Touchable {
         static const char* INTEROP_ ; 
     public:
         unsigned int getNumEntryPoint();
-        OEngine(const char* cmake_target, Mode_t mode=INTEROP );
+        OEngine(Mode_t mode=INTEROP );
 
     public:
         const char* getModeName();
@@ -196,7 +196,6 @@ class OEngine : public Touchable {
         unsigned int     m_generate_count ; 
         unsigned int     m_bounce_max ; 
         unsigned int     m_record_max ; 
-        char*            m_cmake_target ;
         Mode_t           m_mode ; 
         bool             m_enabled ; 
         bool             m_trivial ; 
@@ -227,7 +226,7 @@ class OEngine : public Touchable {
 
 
 
-inline OEngine::OEngine(const char* cmake_target, Mode_t mode) :
+inline OEngine::OEngine(Mode_t mode) :
     m_rng_max(0),
     m_rng_wrapper(NULL),
     m_context(NULL),
@@ -247,7 +246,6 @@ inline OEngine::OEngine(const char* cmake_target, Mode_t mode) :
     m_generate_count(0),
     m_bounce_max(1),
     m_record_max(10),
-    m_cmake_target(strdup(cmake_target)),
     m_mode(mode),  
     m_enabled(true),
     m_trivial(false),

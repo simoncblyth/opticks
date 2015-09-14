@@ -131,3 +131,12 @@ function(optixthrust_add_library target_name)
 endfunction()
 
 
+# if cmake variable CUDA_GENERATED_OUTPUT_DIR is
+# defined then both OBJ and PTX output is lumped 
+# together in that directory, prefer to not defining
+# it in order for different directories to be used
+#
+# needs to match that assumed/configured within RayTraceConfig.cc
+#set(CUDA_GENERATED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/lib/ptx") 
+#message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR}) 
+#

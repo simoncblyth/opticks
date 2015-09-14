@@ -228,8 +228,8 @@ optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
 
     optix::Material material = m_context->createMaterial();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    material->setClosestHitProgram(OEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu", "closest_hit_radiance"));
-    material->setClosestHitProgram(OEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu", "closest_hit_propagate"));
+    material->setClosestHitProgram(OEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
+    material->setClosestHitProgram(OEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
 
     std::vector<optix::Material> materials ;
     materials.push_back(material);
@@ -248,8 +248,8 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
     optix::Geometry geometry = m_context->createGeometry();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu", "mesh_intersect"));
-    geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu", "mesh_bounds"));
+    geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
+    geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
 
     GBuffer* vbuf = mergedmesh->getVerticesBuffer();
     GBuffer* ibuf = mergedmesh->getIndicesBuffer();

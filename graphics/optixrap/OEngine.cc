@@ -90,7 +90,7 @@ void OEngine::init()
     m_context["debug_control"]->setUint(debugControl); 
 
 
-    m_config = RayTraceConfig::makeInstance(m_context, m_cmake_target);
+    m_config = RayTraceConfig::makeInstance(m_context);
 
 
     m_top = m_context->createGroup();
@@ -175,8 +175,8 @@ void OEngine::initRayTrace()
     unsigned int numEntryPoint = getNumEntryPoint();
     m_context->setEntryPointCount( numEntryPoint );  
 
-    m_config->setRayGenerationProgram(  e_pinhole_camera, "pinhole_camera.cu", "pinhole_camera" );
-    m_config->setExceptionProgram(      e_pinhole_camera, "pinhole_camera.cu", "exception");
+    m_config->setRayGenerationProgram(  e_pinhole_camera, "pinhole_camera.cu.ptx", "pinhole_camera" );
+    m_config->setExceptionProgram(      e_pinhole_camera, "pinhole_camera.cu.ptx", "exception");
 
     m_context[ "radiance_ray_type"   ]->setUint( e_radiance_ray );
     m_context[ "touch_ray_type"      ]->setUint( e_touch_ray );
@@ -186,7 +186,7 @@ void OEngine::initRayTrace()
 
     m_context->setRayTypeCount( e_rayTypeCount );
 
-    m_config->setMissProgram( e_radiance_ray , "constantbg.cu", "miss" );
+    m_config->setMissProgram( e_radiance_ray , "constantbg.cu.ptx", "miss" );
 
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
     m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
@@ -436,8 +436,8 @@ void OEngine::initGenerate(NumpyEvt* evt)
     const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
 
     LOG(info) << "OEngine::initGenerate " << raygenprg ; 
-    m_config->setRayGenerationProgram(e_generate, "generate.cu", raygenprg );
-    m_config->setExceptionProgram(    e_generate, "generate.cu", "exception");
+    m_config->setRayGenerationProgram(e_generate, "generate.cu.ptx", raygenprg );
+    m_config->setExceptionProgram(    e_generate, "generate.cu.ptx", "exception");
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
 

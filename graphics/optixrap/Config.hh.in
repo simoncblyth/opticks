@@ -1,0 +1,15 @@
+#pragma once
+
+// below defines are filled on by cmake configure_file whilst copying Config.hh.in to inc/Config.hh
+
+#cmakedefine TARGET   "@TARGET@"
+#cmakedefine PTXDIR   "@PTXDIR@"
+#cmakedefine RNGDIR   "@RNGDIR@"
+
+std::string ptxpath(const char* name)
+{
+    char path[128] ;
+    snprintf(path, 128, "%s/%s_generated_%s", PTXDIR, TARGET, name );
+    return path ;
+}
+

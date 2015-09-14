@@ -71,7 +71,6 @@ find_package(Bregex REQUIRED)
 find_package(ThrustRap REQUIRED)
 
 
-
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${GLEW_INCLUDE_DIRS} 
@@ -98,7 +97,6 @@ include_directories(
 )
 
 
-message(CUDA_INCLUDE_DIRS: ${CUDA_INCLUDE_DIRS} )
 
 add_definitions(
    ${GLEW_DEFINITIONS}
@@ -114,7 +112,6 @@ add_definitions(
    ${Bregex_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
 )
-
 
 set(LIBRARIES 
 
@@ -143,62 +140,12 @@ set(LIBRARIES
 
       ssl
       crypto 
-
 )
 
+add_executable( ${name} main.cc CUDAInterop.cc) 
 
-
-
-function(add_optix_executable target_name)
-
-    # split arguments into three lists 
-    CUDA_GET_SOURCES_AND_OPTIONS(source_files cmake_options options ${ARGN})
-
-    # Create the rules to build the PTX from the CUDA files.
-    CUDA_WRAP_SRCS( ${target_name} PTX generated_files ${source_files} ${cmake_options} OPTIONS ${options} )
-
-    add_executable(${target_name}
-        ${source_files}
-        ${generated_files}
-        ${cmake_options}
-    )
-
-    target_link_libraries( ${target_name} 
-        ${LIBRARIES} 
-      )
-
-endfunction()
-
-
-# CUDA_GENERATED_OUTPUT_DIR seems to an input to OptiX cmake macros
-# controlling where to put the compiled ptx, the location
-# needs to match that assumed/configured within RayTraceConfig.cc
-set(CUDA_GENERATED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/lib/ptx") 
-message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})  
-
-
-add_optix_executable( ${name} 
-      main.cc 
-      CUDAInterop.cc
-
-      cu/pinhole_camera.cu
-      cu/constantbg.cu
-      cu/material1_radiance.cu 
-      cu/material1_propagate.cu 
-      cu/TriangleMesh.cu 
-
-      cu/generate.cu
-) 
-
-
-set(cuhdrs
-    cu/photon.h
-)
-
+target_link_libraries( ${name} ${LIBRARIES} )
 
 install(TARGETS ${name} DESTINATION bin)
-install(FILES ${cuhdrs} DESTINATION include/cu)
-
-
 
 add_subdirectory(tests)

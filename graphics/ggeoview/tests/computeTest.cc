@@ -169,7 +169,7 @@ int main(int argc, char** argv)
     evt.setGenstepData(npy); 
 
 
-    OEngine engine("GGeoView", OEngine::COMPUTE ) ;       
+    OEngine engine(OEngine::COMPUTE ) ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
     engine.setBoundaryLib(blib);   
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
     engine.setRecordMax(evt.getMaxRec());       // 1:to minimize without breaking machinery 
 
 
-    int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);
+    int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);  // TODO: get rid of envvar
     assert(rng_max >= 1e6); 
 
     engine.setRngMax(rng_max);

@@ -50,6 +50,7 @@ include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/inc 
     ${CMAKE_CURRENT_BINARY_DIR}   # for RayTraceConfigInc.h
 
     ${Boost_INCLUDE_DIRS} 
@@ -68,27 +69,7 @@ include_directories(
 )
 
 
-add_definitions(
-    ${Boost_DEFINITIONS}
-    ${GLEW_DEFINITIONS}
-    ${GLFW_DEFINITIONS}
-    ${OGLRap_DEFINITIONS}
-
-    ${Assimp_DEFINITIONS} 
-    ${OptiX_DEFINITIONS} 
-    ${CUDAWrap_DEFINITIONS} 
-)
-
-
-add_library( ${name}  SHARED
-       OptiXUtil.cc
-       OEngine.cc
-       OGeo.cc
-       OBoundaryLib.cc
-       RayTraceConfig.cc
-)
- 
-target_link_libraries( ${name} 
+set(LIBRARIES
       ${Boost_LIBRARIES}
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
@@ -102,7 +83,56 @@ target_link_libraries( ${name}
       ${CUDAWrap_LIBRARIES}
 )
 
+add_definitions(
+    ${Boost_DEFINITIONS}
+    ${GLEW_DEFINITIONS}
+    ${GLFW_DEFINITIONS}
+    ${OGLRap_DEFINITIONS}
 
+    ${Assimp_DEFINITIONS} 
+    ${OptiX_DEFINITIONS} 
+    ${CUDAWrap_DEFINITIONS} 
+)
+
+
+#add_library( ${name}  SHARED
+#)
+
+optixthrust_add_library( ${name} 
+       OptiXUtil.cc
+       OEngine.cc
+       OGeo.cc
+       OBoundaryLib.cc
+       RayTraceConfig.cc
+
+       cu/pinhole_camera.cu
+       cu/constantbg.cu
+       cu/material1_radiance.cu 
+       cu/material1_propagate.cu 
+       cu/TriangleMesh.cu 
+
+       cu/generate.cu
+
+      OPTIONS 
+       -arch sm_30
+) 
+
+#list(APPEND LIBRARIES ${name} )
+
+
+set(cuhdrs
+    cu/enums.h
+    cu/photon.h
+)
+
+set(cuptxs
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_pinhole_camera.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_constantbg.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_radiance.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_propagate.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_TriangleMesh.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
+)
 
 SET(hdrs 
   OptiXUtil.hh
@@ -110,12 +140,20 @@ SET(hdrs
   OGeo.hh
   OBoundaryLib.hh
   RayTraceConfig.hh
+  define.h
 )
-SET(cuhdrs 
-  cu/enums.h
-)
+ 
+target_link_libraries( ${name} ${LIBRARIES} )
+
+set(TARGET    "${name}")
+set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/ptx")
+set(RNGDIR    "$ENV{LOCAL_BASE}/env/graphics/ggeoview/cache/rng")  # TODO: move into optixrap- OR cudawrap- fiefdom
+configure_file(Config.hh.in inc/Config.hh)
+
+
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include)
+install(FILES ${cuptxs} DESTINATION ptx)
+install(FILES ${hdrs}   DESTINATION include)
 install(FILES ${cuhdrs} DESTINATION include/cu)
 
 
