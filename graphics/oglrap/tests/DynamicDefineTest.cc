@@ -2,10 +2,10 @@
 
 int main()
 {
-    DynamicDefine dd("/tmp", "DynamicDefineTest.h");
+    DynamicDefine dd ;
     dd.add<unsigned int>("MAXREC", 10);
     dd.add<float>("OTHER", 20.0);
-    dd.write();
+    dd.write("/tmp", "DynamicDefineTest.h");
 
     return 0 ; 
 }

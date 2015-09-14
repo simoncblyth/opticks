@@ -9,14 +9,14 @@
 // trace/debug/info/warning/error/fatal
 
 
-void DynamicDefine::write()
+void DynamicDefine::write(const char* dir, const char* name)
 {
      bool create = true ; 
-     std::string path = preparePath(m_dir,  m_name, create );   
+     std::string path = preparePath(dir,  name, create );   
 
      if(path.empty())
      {
-         LOG(warning) << "DynamicDefine::write failed to preparePath " << m_dir << " " << m_name ; 
+         LOG(warning) << "DynamicDefine::write failed to preparePath " << dir << " " << name ; 
          return ; 
      }
 

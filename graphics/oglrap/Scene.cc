@@ -10,6 +10,9 @@
 
 
 // oglrap-
+#include "Config.hh"      // cmake generated header
+#include "DynamicDefine.hh"
+
 #include "Composition.hh"
 #include "Renderer.hh"
 #include "Device.hh"
@@ -101,6 +104,31 @@ const char* Scene::getRecordStyleName()
    return getRecordStyleName(getRecordStyle());
 }
  
+void Scene::init()
+{
+    if(m_shader_dir == NULL)
+    {
+        m_shader_dir = strdup(OGLRAP_SHADER_DIR);
+        LOG(info) << "Scene::init no SHADER_DIR envvar : defaulting to " << m_shader_dir ; 
+    }
+    if(m_shader_incl_path == NULL)
+    {
+        m_shader_incl_path = strdup(OGLRAP_SHADER_INCL_PATH);
+        LOG(info) << "Scene::init no SHADER_INCL_PATH envvar : defaulting to " << m_shader_incl_path ; 
+    }
+    if(m_shader_dynamic_dir == NULL)
+    {
+        m_shader_dynamic_dir = strdup(OGLRAP_SHADER_DYNAMIC_DIR);
+        LOG(info) << "Scene::init no SHADER_DYNAMIC_DIR envvar : defaulting to " << m_shader_dynamic_dir ; 
+    }
+}
+
+void Scene::write(DynamicDefine* dd)
+{
+    dd->write( m_shader_dynamic_dir, "dynamic.h" );
+}
+
+
 
 void Scene::gui()
 {
@@ -207,9 +235,9 @@ void Scene::configure(const char* name, int value)
 
 
 
-void Scene::init()
+void Scene::initRenderers()
 {
-    LOG(info) << "Scene::init ";
+    LOG(info) << "Scene::initRenderers ";
 
     m_device = new Device();
 

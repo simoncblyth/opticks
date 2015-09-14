@@ -19,6 +19,7 @@ class GBoundaryLibMetadata ;
 class GBuffer ; 
 
 // oglrap-
+class DynamicDefine ; 
 class Renderer ; 
 class Rdr ;
 class Device ; 
@@ -77,8 +78,13 @@ class Scene : public Configurable {
         void nextGeometryStyle();
         void toggleGeometry();
    public:
-        Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL);
+        Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL, const char* shader_dynamic_dir=NULL );
+   private:
+        void init();
+   public:
+        void write(DynamicDefine* dd);
         void gui();
+        void initRenderers();
    public:
         // Configurable
         std::vector<std::string> getTags();
@@ -141,11 +147,9 @@ class Scene : public Configurable {
         const char*   getRecordTag();
         float         getTimeFraction();
 
-   public:
-        void init();
-
    private:
         char*        m_shader_dir ; 
+        char*        m_shader_dynamic_dir ; 
         char*        m_shader_incl_path ; 
         Device*      m_device ; 
         Colors*      m_colors ; 
@@ -190,9 +194,10 @@ class Scene : public Configurable {
 };
 
 
-inline Scene::Scene(const char* shader_dir, const char* shader_incl_path) 
+inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
             :
             m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
+            m_shader_dynamic_dir(shader_dynamic_dir ? strdup(shader_dynamic_dir): NULL),
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
             m_device(NULL),
             m_colors(NULL),
@@ -223,6 +228,9 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
             m_initialized(false),
             m_time_fraction(0.f)
 {
+
+    init();
+
     for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
     {
         m_instance_renderer[i] = NULL ; 
@@ -231,6 +239,9 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path)
         m_bbox_mode[i] = false ; 
     }
 }
+
+
+
 
 inline void Scene::setGeometry(GGeo* gg)
 {

@@ -31,6 +31,7 @@ find_package(ImGui REQUIRED)
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_CURRENT_BINARY_DIR}/inc
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
@@ -41,6 +42,17 @@ set(INCLUDE_DIRS
    ${NPY_INCLUDE_DIRS}
    ${ImGui_INCLUDE_DIRS}
 ) 
+
+
+# generate define header for hardcoding in the library 
+set(OGLRAP_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
+set(OGLRAP_SHADER_DIR         "${CMAKE_INSTALL_PREFIX}/gl")
+set(OGLRAP_SHADER_DYNAMIC_DIR "${CMAKE_INSTALL_PREFIX}/gl")
+set(OGLRAP_SHADER_INCL_PATH   "${CMAKE_INSTALL_PREFIX}/gl")
+configure_file( Config.hh.in inc/Config.hh )
+
+
+message( "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ")
 
 set(DEFINITIONS
    ${GLEW_DEFINITIONS}
@@ -144,6 +156,8 @@ target_link_libraries( ${name} ${LIBRARIES})
 
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
+install(DIRECTORY gl/ DESTINATION gl)
+
 
 add_subdirectory(tests)
 

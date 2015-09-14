@@ -1071,6 +1071,8 @@ ggeoview-export()
    export GGEOVIEW_CTRL=""
 
    export SHADER_DIR=$(ggeoview-sdir)/gl
+
+   # dynamic.h is written by ggeoview/main.cc and is incl into shaders   
    export SHADER_DYNAMIC_DIR=$(ggeoview-gdir)
    export SHADER_INCL_PATH=$(ggeoview-sdir)/gl:$(ggeoview-sdir):$SHADER_DYNAMIC_DIR
    mkdir -p $SHADER_DYNAMIC_DIR

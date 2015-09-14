@@ -23,6 +23,9 @@ Next
 * look into a better way to handle ptx loading from a library 
   (currently effectively embed paths to ptx)
 
+  * http://stackoverflow.com/questions/12912309/how-to-properly-load-a-configuration-file-from-a-c-library
+  * https://sidvind.com/wiki/CMake/Configuration_files
+
 * use the OBuf from OEngine to do the photon buffer seeding 
 
 

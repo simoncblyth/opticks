@@ -308,10 +308,15 @@ void App::init()
     m_timer->setVerbose(true);
     m_timer->start();
 
+
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
-    m_scene      = new Scene(shader_dir, shader_incl_path) ;
-   
+    const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
+    // dynamic define for use by GLSL shaders
+
+    m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
+
+ 
     m_composition = new Composition ; 
     m_frame       = new Frame ; 
     m_bookmarks   = new Bookmarks ; 
@@ -403,14 +408,12 @@ int App::config(int argc, char** argv)
 
 void App::prepareContext()
 {
-    // dynamic define for use by GLSL shaders
-    const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
-    DynamicDefine dd(shader_dynamic_dir, "dynamic.h");
+    DynamicDefine dd ;
     dd.add("MAXREC",m_fcfg->getRecordMax());    
     dd.add("MAXTIME",m_fcfg->getTimeMax());    
-    dd.write();
+    m_scene->write(&dd);
 
-    m_scene->init();  // reading shader source and creating renderers
+    m_scene->initRenderers();  // reading shader source and creating renderers
 
     m_frame->init();  // creates OpenGL context
     m_window = m_frame->getWindow();
