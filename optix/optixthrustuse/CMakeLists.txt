@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name OptiXThrustMinimal)
+set(name OptiXThrustUse)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -28,6 +28,7 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY   REQUIRED)
+find_package(OptiXThrust REQUIRED)
 
 ## c++11 forced by AsioZMQ   needs to come after OptiX
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -45,6 +46,7 @@ include_directories(
    ${OptiX_INCLUDE}  
    ${NPY_INCLUDE_DIRS}
    ${GLM_INCLUDE_DIRS} 
+   ${OptiXThrust_INCLUDE_DIRS} 
 )
 
 add_definitions(
@@ -56,55 +58,14 @@ set(LIBRARIES
       optixu
       ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
-)
-
-# CUDA_GENERATED_OUTPUT_DIR seems to an input to OptiX cmake macros
-# controlling where to put the compiled ptx, the location
-# needs to match that assumed/configured within RayTraceConfig.cc
-#
-# set(CUDA_GENERATED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/lib/ptx") 
-#
-# hmm 
-#   for OptiX programs the cuda ptx outputs are needed by OptiX at runtime
-#   but for vanilla cuda/thrust the outputs are needed for linking into libs/executables
-#
-
-message("CMAKE_CURRENT_BINARY_DIR:" ${CMAKE_CURRENT_BINARY_DIR})  
-message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})  
-
-
-
-optixthrust_add_library( ${name}Lib 
-      optixthrust.cpp
-      optixthrust_.cu     
-      cu/minimal_float4.cu
-      OPTIONS 
-       -arch sm_30
-) 
-
-list(APPEND LIBRARIES ${name}Lib )
-
-optixthrust_add_executable( ${name} 
-      main.cpp
-)
-
-# list all ptx for OptiX here
-set(cuptxs
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_minimal_float4.cu.ptx
-)
-
-set(hdrs 
-     optixthrust.hh
+      ${OptiXThrust_LIBRARIES}
 )
 
 
-set(TARGET    "${name}")
-set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/ptx")
-configure_file(Config.hh.in inc/Config.hh) 
+add_executable( ${name}  main.cpp )
 
-install(FILES ${cuptxs}    DESTINATION ptx)
-install(FILES ${hdrs}      DESTINATION include)
-install(TARGETS ${name}Lib DESTINATION lib)
+target_link_libraries( ${name} ${LIBRARIES} )
+
 install(TARGETS ${name}    DESTINATION bin)
 
 

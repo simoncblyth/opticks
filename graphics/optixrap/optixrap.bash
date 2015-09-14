@@ -181,7 +181,7 @@ optixrap-install(){
 optixrap-bin(){ echo $(optixrap-idir)/bin/$(optixrap-name)Test ; }
 optixrap-export()
 {
-   export SHADER_DIR=$(optixrap-sdir)/glsl
+   #export SHADER_DIR=$(optixrap-sdir)/glsl
 }
 optixrap-run(){
    local bin=$(optixrap-bin)

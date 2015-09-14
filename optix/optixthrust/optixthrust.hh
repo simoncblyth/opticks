@@ -6,7 +6,6 @@
 
 class OptiXThrust {
   public:
-       static const char* CMAKE_TARGET ; 
        enum { raygen_minimal_entry, raygen_circle_entry, raygen_dump_entry, num_entry } ;
   public:
        OptiXThrust(unsigned int size);

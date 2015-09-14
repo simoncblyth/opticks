@@ -5,13 +5,7 @@
 #include <cuda.h>
 #include "optixthrust.hh"
 
-std::string ptxpath(const char* name, const char* cmake_target ){
-    char path[128] ; 
-    snprintf(path, 128, "%s/%s_generated_%s", getenv("PTXDIR"), cmake_target, name );
-    return path ;  
-}
-
-const char* OptiXThrust::CMAKE_TARGET = "OptiXThrustMinimal" ;
+#include "Config.hh"   // ptxpath
 
 
 void OptiXThrust::init()
@@ -34,7 +28,7 @@ void OptiXThrust::init()
 
 void OptiXThrust::addRayGenerationProgram( const char* ptxname, const char* progname, unsigned int entry )
 {
-    std::string path = ptxpath(ptxname, CMAKE_TARGET) ;
+    std::string path = ptxpath(ptxname) ;
     printf("OptiXThrust::addRayGenerationProgram (%d) %s %s : %s \n", entry, ptxname, progname, path.c_str());
 
     optix::Program prog = m_context->createProgramFromPTXFile( path, progname );

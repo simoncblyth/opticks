@@ -18,6 +18,33 @@ see also
 * optixminimal- 
 * glfwtriangle-
 
+
+
+CMAKE CUDA/OptiX Libraries
+----------------------------
+
+OptiX ptx and vanilla OBJ all go to CUDA_GENERATED_OUTPUT_DIR when that is defined, 
+which is messy.
+
+OptiX FindCUDA::
+
+    1268       # Determine output directory
+    1269       cuda_compute_build_path("${file}" cuda_build_path)
+    1270       set(cuda_compile_intermediate_directory "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${cuda_target}.dir/${cuda_build_path}")
+    1271       if(CUDA_GENERATED_OUTPUT_DIR)
+    1272         set(cuda_compile_output_dir "${CUDA_GENERATED_OUTPUT_DIR}")
+    1273       else()
+    1274         if ( compile_to_ptx )
+    1275           set(cuda_compile_output_dir "${CMAKE_CURRENT_BINARY_DIR}")
+    1276         else()
+    1277           set(cuda_compile_output_dir "${cuda_compile_intermediate_directory}")
+    1278         endif()
+    1279       endif()
+     
+
+
+
+
 investigations
 ---------------
 
@@ -178,7 +205,7 @@ optixthrust-ptxdir(){ echo /tmp/optixthrust.ptxdir ; }
 optixthrust-sdir(){   echo $(optixthrust-dir) ; }
 optixthrust-bdir(){   echo /tmp/optixthrust.bdir ; }
 optixthrust-cdir(){   echo /tmp/optixthrust.cdir ; }
-optixthrust-idir(){   echo /tmp/optixthrust.idir ; }
+optixthrust-idir(){   echo $(local-base)/env/graphics/optixthrust ; }
 optixthrust-ccd(){    cd $(optixthrust-cdir) ; }
 optixthrust-bin(){    echo /tmp/optixthrust ; }
 
@@ -259,7 +286,7 @@ optixthrust-make-manual()
 
 optixthrust-run-manual(){
    local bin=$(optixthrust-bin)
-   PTXDIR=$(optixthrust-ptxdir) $bin
+   $bin
 }
 
 
@@ -296,12 +323,13 @@ optixthrust-make(){
 
 optixthrust-run(){
 
-   local cdir=$(optixthrust-cdir)
-   local ptxdir=$cdir/lib/ptx
+   #local cdir=$(optixthrust-cdir)
+   #local ptxdir=$cdir/lib/ptx
    local idir=$(optixthrust-idir)
    local ibin=$idir/bin/OptiXThrustMinimal
 
-   PTXDIR=$ptxdir $ibin $*
+   #PTXDIR=$ptxdir $ibin $*
+   $ibin $*
 }
 
 
