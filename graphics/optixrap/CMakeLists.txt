@@ -32,6 +32,9 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
 endif ()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-private-field")
+
+
 # OEngine rendering forces to depend on these
 find_package(Boost REQUIRED)
 find_package(GLEW REQUIRED)
@@ -44,14 +47,14 @@ find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
+find_package(ThrustRap REQUIRED)
 
 
 include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/inc 
-    ${CMAKE_CURRENT_BINARY_DIR}   # for RayTraceConfigInc.h
+    ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
     ${Boost_INCLUDE_DIRS} 
     ${GLEW_INCLUDE_DIRS} 
@@ -66,6 +69,7 @@ include_directories(
     ${AssimpWrap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
     ${CUDAWrap_INCLUDE_DIRS}  
+    ${ThrustRap_INCLUDE_DIRS}  
 )
 
 
@@ -77,10 +81,12 @@ set(LIBRARIES
       ${Assimp_LIBRARIES}
       ${AssimpWrap_LIBRARIES}
       ${GGeo_LIBRARIES}
+      ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
       optix
       optixu
       ${CUDAWrap_LIBRARIES}
+      ${ThrustRap_LIBRARIES}
 )
 
 add_definitions(
@@ -94,10 +100,7 @@ add_definitions(
     ${CUDAWrap_DEFINITIONS} 
 )
 
-
-#add_library( ${name}  SHARED
-#)
-
+# OptiX prog within subdir "cu/" Thrust/CUDA not in subdir 
 optixthrust_add_library( ${name} 
        OptiXUtil.cc
        OEngine.cc
@@ -110,20 +113,15 @@ optixthrust_add_library( ${name}
        cu/material1_radiance.cu 
        cu/material1_propagate.cu 
        cu/TriangleMesh.cu 
-
        cu/generate.cu
+
+       OBuf_.cu     
+       OBufBase_.cu     
+       OBufPair_.cu     
 
       OPTIONS 
        -arch sm_30
 ) 
-
-#list(APPEND LIBRARIES ${name} )
-
-
-set(cuhdrs
-    cu/enums.h
-    cu/photon.h
-)
 
 set(cuptxs
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_pinhole_camera.cu.ptx
@@ -134,13 +132,23 @@ set(cuptxs
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
 )
 
-SET(hdrs 
+set(cuhdrs
+    cu/enums.h
+    cu/photon.h
+)
+
+set(hdrs 
   OptiXUtil.hh
   OEngine.hh
   OGeo.hh
   OBoundaryLib.hh
   RayTraceConfig.hh
   define.h
+
+  OBuf.hh
+  OBufBase.hh
+  OBufSlice.hh 
+  OBufPair.hh 
 )
  
 target_link_libraries( ${name} ${LIBRARIES} )

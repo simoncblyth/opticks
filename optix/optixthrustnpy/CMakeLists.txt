@@ -23,8 +23,6 @@ endif()
 
 find_package(OptiX REQUIRED)    # FindOptiX.cmake : finding and adding libraries
 find_package(CUDA 2.3 REQUIRED) # 
-include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
-
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY   REQUIRED)
@@ -65,33 +63,10 @@ set(LIBRARIES
       ${ThrustRap_LIBRARIES}
 )
 
-# CUDA_GENERATED_OUTPUT_DIR seems to an input to OptiX cmake macros
-# controlling where to put the compiled ptx, the location
-# needs to match that assumed/configured within RayTraceConfig.cc
-set(CUDA_GENERATED_OUTPUT_DIR "${CMAKE_BINARY_DIR}/lib/ptx") 
-message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})  
+add_executable( ${name} main.cc App.cc)
 
-
-optixthrust_add_library( ${name}Lib 
-      App.cc
-      OBuf_.cu     
-      OBufBase_.cu     
-      OBufPair_.cu     
-      OPTIONS 
-       -arch sm_30
-) 
-
-list(APPEND LIBRARIES ${name}Lib )
-
-optixthrust_add_executable( ${name}
-      main.cc
-)
-
-# TODO: test with OptiX programs, find a way of referencing ptx resources
-#       needed at runtime from a library 
-
+target_link_libraries( ${name} ${LIBRARIES} )
 
 install(TARGETS ${name}    DESTINATION bin)
-install(TARGETS ${name}Lib DESTINATION lib)
 
 
