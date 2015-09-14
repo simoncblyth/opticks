@@ -130,6 +130,8 @@ class Scene : public Configurable {
 
 
    public:
+        const char*   getShaderDir();
+        const char*   getShaderInclPath();
         Renderer*     getGeometryRenderer();
         Renderer*     getInstanceRenderer(unsigned int i);
         unsigned int  getNumInstanceRenderer();
@@ -241,6 +243,15 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
 }
 
 
+
+inline const char* Scene::getShaderDir()
+{
+    return m_shader_dir ;
+}
+inline const char* Scene::getShaderInclPath()
+{
+    return m_shader_incl_path ;
+}
 
 
 inline void Scene::setGeometry(GGeo* gg)

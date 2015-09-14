@@ -107,6 +107,7 @@ class OEngine : public Touchable {
         unsigned int getDebugPhoton();
     public:
         void init();
+        void initRenderer(const char* dir, const char* incl_path);
         void trace(); 
         void generate();
         void render();
@@ -122,7 +123,6 @@ class OEngine : public Touchable {
        unsigned int touch(int ix, int iy);
 
     private:
-        void initRenderer();
         void initRayTrace();
         void initGeometry();
         void initGenerate();

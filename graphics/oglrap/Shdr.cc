@@ -118,7 +118,9 @@ void Shdr::readFile(const char* path)
 
             if(incl_path.empty())
             {
-                LOG(warning) << "Shdr::readFile failed to resolve #incl [" << incl_name << "]"  ;
+                LOG(fatal) << "Shdr::readFile FATAL for "
+                             << m_path 
+                             << " failed to resolve #incl [" << incl_name << "]"  ;
                 for(unsigned int i=0 ; i < m_incl_dirs.size() ; i++) LOG(warning) << "Shdr::readFile [" << i << "][" << m_incl_dirs[i] << "]" ; 
                 assert(0);    
             }

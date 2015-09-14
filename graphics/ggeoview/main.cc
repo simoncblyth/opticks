@@ -411,6 +411,10 @@ void App::prepareContext()
     DynamicDefine dd ;
     dd.add("MAXREC",m_fcfg->getRecordMax());    
     dd.add("MAXTIME",m_fcfg->getTimeMax());    
+    dd.add("PNUMQUAD", 4);  // quads per photon
+    dd.add("RNUMQUAD", 2);  // quads per record 
+
+
     m_scene->write(&dd);
 
     m_scene->initRenderers();  // reading shader source and creating renderers
@@ -661,6 +665,8 @@ void App::prepareEngine()
 
     LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
     m_engine->init();  
+    m_engine->initRenderer(m_scene->getShaderDir(), m_scene->getShaderInclPath());
+
     (*m_timer)("initOptiX"); 
     LOG(info) << "App::prepareEngine DONE "; 
 }

@@ -237,7 +237,12 @@ void Scene::configure(const char* name, int value)
 
 void Scene::initRenderers()
 {
-    LOG(info) << "Scene::initRenderers ";
+    LOG(info) << "Scene::initRenderers " 
+              << " shader_dir " << m_shader_dir 
+              << " shader_incl_path " << m_shader_incl_path 
+               ;
+   
+    assert(m_shader_dir);
 
     m_device = new Device();
 

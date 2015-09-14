@@ -2,7 +2,6 @@
 // devrec/geom.glsl 
 
 #incl dynamic.h
-#incl define.h
 
 uniform mat4 ISNormModelViewProjection ;
 uniform vec4 TimeDomain ;

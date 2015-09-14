@@ -100,10 +100,10 @@ void OEngine::init()
     m_idomain = NPY<int>::make(e_number_idomain,1,4) ;
     m_idomain->fill(0);
 
-    if(!isCompute())
-    {
-        initRenderer();
-    } 
+    //if(!isCompute())
+    //{
+    //    initRenderer();
+    //} 
 
     initRayTrace();
     initGeometry();
@@ -122,12 +122,13 @@ void OEngine::init()
 
 
 
-void OEngine::initRenderer()
+void OEngine::initRenderer(const char* dir, const char* incl_path)
 {
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
 
-    m_renderer = new Renderer("tex");
+    // TODO: reposition Renderer externally ...
+    m_renderer = new Renderer("tex", dir, incl_path );
     m_texture = new Texture();   // QuadTexture would be better name
     m_texture->setSize(width, height);
     m_texture->create();
