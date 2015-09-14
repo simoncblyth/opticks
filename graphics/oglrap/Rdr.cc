@@ -63,11 +63,6 @@ void Rdr::upload(MultiViewNPY* mvn)
         {
             count = vnpy->getCount();
 
-            LOG(info) << "Rdr::upload " 
-                      << " vnpy " << vnpy->getName() 
-                      << " count " << count 
-                      ; 
-
             if(m_first_upload)
             {
                 setCountDefault(count);
@@ -78,7 +73,7 @@ void Rdr::upload(MultiViewNPY* mvn)
             }
 
             npy = vnpy->getNPY(); 
-            upload(npy);      // duplicates are not re-uploaded
+            upload(npy, vnpy);      // duplicates are not re-uploaded
         }
         else
         {
@@ -125,19 +120,15 @@ void Rdr::prepare_vao()
 }
 
 
-void Rdr::upload(NPYBase* npy)
+void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
 {
     // handles case of multiple mvn referring to the same buffer without data duplication,
     // by maintaining a list of NPYBase which have been uploaded to the Device
 
     prepare_vao();
 
-    void* aux = npy->getAux();
-    if(aux)
-    {
-        assert(npy->getType() == NPYBase::UCHAR );
-       // hmm how to avoid CUDA dependency for oglrap-
-    }
+
+    bool dynamic = npy->isDynamic();
 
     if(m_device->isUploaded(npy))
     {
@@ -151,34 +142,29 @@ void Rdr::upload(NPYBase* npy)
         void* data = npy->getBytes();
         unsigned int nbytes = npy->getNumBytes(0) ;
 
-        if(data == NULL)
-        {
-             LOG(info) << "Rdr::upload glBufferData with data NULL nbytes " << nbytes ;
-        }
+        char repdata[32] ;
+        snprintf( repdata, 32, "%p", data );
 
         GLuint buffer_id ;  
         glGenBuffers(1, &buffer_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-        if(aux)
-        {
-            log("Rdr::upload using GL_DYNAMIC_DRAW for aux enabled buffer ", buffer_id);
-            LOG(info)<<"Rdr::upload using GL_DYNAMIC_DRAW for aux enabled buffer " << buffer_id ; 
-            glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_DYNAMIC_DRAW );
-        }
-        else
-        {
-            glBufferData(GL_ARRAY_BUFFER, nbytes, data, GL_STATIC_DRAW );
-        }
+        LOG(info) << "Rdr::upload glBufferData " 
+                  << " vnpy name " << std::setw(8) << vnpy->getName()
+                  << " count " << std::setw(8) << vnpy->getCount()
+                  << " buffer_id " << std::setw(5) << buffer_id
+                  << " data " << std::setw(32) << repdata 
+                  << " hasData " << std::setw(5) << ( npy->hasData() ? "Y" : "N" )
+                  << " nbytes " << std::setw(10) << nbytes 
+                  << " " << (dynamic ? "GL_DYNAMIC_DRAW" : "GL_STATIC_DRAW" )
+                  ;   
 
-        log("Rdr::upload BufferData gen buffer_id:", buffer_id ); 
+        glBufferData(GL_ARRAY_BUFFER, nbytes, data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW  );
 
         npy->setBufferId(buffer_id); 
         m_device->add(npy);
     }
 }
-
-
 
 
 /*

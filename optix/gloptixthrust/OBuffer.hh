@@ -25,6 +25,7 @@ class OBuffer {
                CResource::Access_t access = CResource::RW );
   private:
        void init();
+       void preqs();
   public:
         BufSpec map(OBuffer::Mapping_t mapping); 
         void unmap();

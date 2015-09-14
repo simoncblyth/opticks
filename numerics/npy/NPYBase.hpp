@@ -41,7 +41,8 @@ class NPYBase {
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
        void         setAux(void* aux);
        void*        getAux();
-  
+       void         setDynamic(bool dynamic=true);
+       bool         isDynamic(); 
    public:
        // NumPy persistency
        static std::string path(const char* typ, const char* tag, const char* det);
@@ -82,6 +83,7 @@ class NPYBase {
        std::vector<int>   m_shape ; 
        std::string        m_metadata ; 
        bool               m_has_data ;
+       bool               m_dynamic ;
 
 };
 
@@ -96,7 +98,8 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_allow_prealloc(false),
          m_shape(shape),
          m_metadata(metadata),
-         m_has_data(has_data)
+         m_has_data(has_data),
+         m_dynamic(false)
 {
     m_len0 = getShape(0);
     m_len1 = getShape(1);
@@ -215,4 +218,12 @@ inline unsigned int NPYBase::getByteIndex(unsigned int i, unsigned int j, unsign
     return m_sizeoftype*getValueIndex(i,j,k);
 }
 
+inline void NPYBase::setDynamic(bool dynamic)
+{
+    m_dynamic = dynamic ; 
+}
+inline bool NPYBase::isDynamic()
+{
+    return m_dynamic ; 
+}
 

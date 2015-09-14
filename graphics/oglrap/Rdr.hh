@@ -31,7 +31,7 @@ class Rdr : public RendererBase  {
       void upload(MultiViewNPY* mvn);
       void upload_colors();
   private:
-      void upload(NPYBase* npy);
+      void upload(NPYBase* npy, ViewNPY* vnpy);
       void attach(GLuint buffer_id);
       //void upload(void* data, unsigned int nbytes);
 

@@ -56,6 +56,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     m_timer->start();
 
     m_genstep_data = genstep  ;
+
     m_genstep_attr = new MultiViewNPY();
     //                                                    j k sz   type        norm   iatt
     m_genstep_attr->add(new ViewNPY("vpos",m_genstep_data,1,0,4,ViewNPY::FLOAT,false,false));    // (x0, t0)                     2nd GenStep quad 
@@ -75,15 +76,15 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
     createHostBuffers();
 
-    if(m_allocate)
-    {
-        allocateHostBuffers();
-        seedPhotonData();
-    }
-    else
-    {
-        LOG(warning) << "NumpyEvt::setGenstepData skipping allocateHostBuffer/seedPhotonData : GPU alternatives need to be done " ;
-    }
+    //if(m_allocate)
+    //{
+    //    allocateHostBuffers();
+    //    seedPhotonData();
+    //}
+    //else
+    //{
+    //    LOG(warning) << "NumpyEvt::setGenstepData skipping allocateHostBuffer/seedPhotonData : GPU alternatives need to be done " ;
+    //}
 
     m_timer->stop();
     m_timer->dump();
@@ -91,20 +92,24 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
 void NumpyEvt::createHostBuffers()
 {
-    NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
+    LOG(info) << "NumpyEvt::createHostBuffers "
+              << " num_photons " << m_num_photons  
+               ;
+
+    NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4, NULL); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<Sequence_t>* seq = NPY<Sequence_t>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
+    NPY<Sequence_t>* seq = NPY<Sequence_t>::make(m_num_photons, 1, 2, NULL);  // shape (np,1,2) (formerly initialized to 0)
     setSequenceData(seq);   
 
-    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4, NULL); // shape (np,1,4) (formerly initialized to 0)
     setPhoselData(phosel);   
 
-    NPY<short>* rec = NPY<short>::make(getNumRecords(), 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+    NPY<short>* rec = NPY<short>::make(getNumRecords(), 2, 4, NULL);  // shape (nr,2,4) formerly initialized to SHRT_MIN
     setRecordData(rec);   
 
     // aka seqidx (SequenceNPY) or target ThrustIndex
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make(getNumRecords(),1,4); // shape (nr,1,4) (formerly initialized to 0) 
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make(getNumRecords(),1,4, NULL); // shape (nr,1,4) (formerly initialized to 0) 
     setRecselData(recsel);   
 
     (*m_timer)("createHostBuffers");
@@ -116,12 +121,17 @@ void NumpyEvt::allocateHostBuffers()
     // so allocate here 
     //
     // TODO: eliminate this preallocation by moving to GPU resident
-    //
+
+
+    LOG(info) << "NumpyEvt::allocateHostBuffers "
+              << " num_photons " << m_num_photons  
+               ;
 
     m_photon_data->zero();
     m_photon_data->setAllowPrealloc(true);
 
-   
+
+  /*
     m_sequence_data->zero();
     m_sequence_data->setAllowPrealloc(true);
 
@@ -136,6 +146,7 @@ void NumpyEvt::allocateHostBuffers()
 
     m_recsel_data->zero();
     m_recsel_data->setAllowPrealloc(true);
+  */
 
     (*m_timer)("allocateHostBuffers");
 }
@@ -204,6 +215,7 @@ void NumpyEvt::seedPhotonData()
 void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 {
     m_photon_data = photon_data  ;
+    m_photon_data->setDynamic();  // need to update with seeding so GL_DYNAMIC_DRAW needed 
     m_photon_attr = new MultiViewNPY();
     //                                                  j k sz   type          norm   iatt
     m_photon_attr->add(new ViewNPY("vpos",m_photon_data,0,0,4,ViewNPY::FLOAT, false, false));      // 1st quad

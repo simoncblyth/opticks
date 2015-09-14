@@ -310,7 +310,7 @@ void App::init()
 
 
     // the envvars are normally not defined, using 
-    // cmake configfile values instead
+    // cmake configure_file values instead
     const char* shader_dir = getenv("SHADER_DIR"); 
     const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
     const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
@@ -398,7 +398,7 @@ int App::config(int argc, char** argv)
 #endif
 
     m_types = new Types ;  
-    m_types->readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
+    m_types->readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");  // TODO: avoid hardcoding paths, grab via configure_file ?
     m_flags = m_types->getFlagsIndex(); 
     m_flags->setExt(".ini");
     //m_flags->save("/tmp");
@@ -588,14 +588,6 @@ void App::uploadEvt()
         LOG(warning) << "App::uploadEvt skip due to --nooptix/--noevent " ;
         return ;
     }
-
-
-
-
-
-
-
-
  
 #ifdef INTEROP
     // signal Rdr to use GL_DYNAMIC_DRAW

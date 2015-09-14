@@ -1180,10 +1180,10 @@ ggeoview-depinstall()
     assimpwrap-install
     oglrap-
     oglrap-install
-    optixrap-
-    optixrap-install 
     thrustrap-
     thrustrap-install 
+    optixrap-
+    optixrap-install 
     ggeoview-
     ggeoview-install  
 }

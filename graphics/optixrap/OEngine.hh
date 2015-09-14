@@ -125,9 +125,11 @@ class OEngine : public Touchable {
     private:
         void initRayTrace();
         void initGeometry();
+        void initRng();
+        void initGenerateOnce();
         void initGenerate();
         void initGenerate(NumpyEvt* evt);
-        void initRng();
+        void seedPhotonsFromGensteps();
         void preprocess();
 
         void fill_PBO();

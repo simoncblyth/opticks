@@ -400,7 +400,7 @@ void App::tgenerate(float radius)
     printf("App::tgenerate \n");
 
     m_seqbuf->map(OBuffer::OptiX);      // createBuffer
-    BufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);   // createBufferFromGLBO
+    BufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);   // cudaGraphicsResourceGetMappedPointer
 
     TProc tp(vtx);
     tp.tgenerate(radius);
@@ -518,8 +518,8 @@ int main ()
 
     App app(4000) ; 
 
-    app.generate(0.5f);
-    //app.tgenerate(1.0f);
+    //app.generate(0.5f);
+    app.tgenerate(1.0f);
     app.dump_sel("after generate");
 
     app.index();
