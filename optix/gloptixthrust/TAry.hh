@@ -1,10 +1,14 @@
 #pragma once
 
-#include "BufSpec.hh"
+#include "CBufSpec.hh"
+
+// *TAry* is an exploration of convenient ways to work with Thrust and CUDA 
+// the CBufSpec is central to this, holding the raw dev_ptr together 
+// with size and num bytes
 
 class TAry {
    public:
-       TAry( BufSpec src, BufSpec dst ); 
+       TAry( CBufSpec src, CBufSpec dst ); 
    public:
        void check(); 
        void tcopy(); 
@@ -17,13 +21,13 @@ class TAry {
    private:
        void init();
    private:
-       BufSpec      m_src ; 
-       BufSpec      m_dst ; 
+       CBufSpec      m_src ; 
+       CBufSpec      m_dst ; 
 
 };
 
 
-inline TAry::TAry(BufSpec src, BufSpec dst) :
+inline TAry::TAry(CBufSpec src, CBufSpec dst) :
     m_src(src),
     m_dst(dst)
 {

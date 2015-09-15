@@ -17,6 +17,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 // npy-
@@ -425,14 +426,10 @@ void OEngine::initGenerate(NumpyEvt* evt)
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
-    
-
     seedPhotonsFromGensteps();
 
 
-
-
-    m_genstep_buffer = createIOBuffer<float>( gensteps );
+    m_genstep_buffer = createIOBuffer<float>( gensteps, "gensteps");
     m_context["genstep_buffer"]->set( m_genstep_buffer );
 
     if(isCompute()) 
@@ -451,19 +448,19 @@ void OEngine::initGenerate(NumpyEvt* evt)
     }
 
 
-    m_photon_buffer = createIOBuffer<float>( evt->getPhotonData() );
+    m_photon_buffer = createIOBuffer<float>( evt->getPhotonData(), "photon" );
     m_context["photon_buffer"]->set( m_photon_buffer );
 
-    m_record_buffer = createIOBuffer<short>( evt->getRecordData() );
+    m_record_buffer = createIOBuffer<short>( evt->getRecordData(), "record");
     m_context["record_buffer"]->set( m_record_buffer );
 
-    m_sequence_buffer = createIOBuffer<unsigned long long>( evt->getSequenceData() );
+    m_sequence_buffer = createIOBuffer<unsigned long long>( evt->getSequenceData(), "sequence" );
     m_context["sequence_buffer"]->set( m_sequence_buffer );
 
-    m_phosel_buffer = createIOBuffer<unsigned char>( evt->getPhoselData() );
+    m_phosel_buffer = createIOBuffer<unsigned char>( evt->getPhoselData(), "phosel" );
     m_context["phosel_buffer"]->set( m_phosel_buffer );
 
-    m_recsel_buffer = createIOBuffer<unsigned char>( evt->getRecselData() );
+    m_recsel_buffer = createIOBuffer<unsigned char>( evt->getRecselData(), "recsel" );
     if(m_recsel_buffer.get())   
         m_context["recsel_buffer"]->set( m_recsel_buffer );
 
@@ -597,7 +594,7 @@ void OEngine::download(optix::Buffer& buffer, NPY<T>* npy)
 
 
 template <typename T>
-optix::Buffer OEngine::createIOBuffer(NPY<T>* npy)
+optix::Buffer OEngine::createIOBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
     unsigned int ni = npy->getShape(0);
@@ -612,6 +609,7 @@ optix::Buffer OEngine::createIOBuffer(NPY<T>* npy)
         {
             buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
             LOG(info) << "OEngine::createIOBuffer (INTEROP) createBufferFromGLBO " 
+                      << " name " << std::setw(20) << name
                       << " buffer_id " << buffer_id 
                       << " ( " << ni << "," << nj << "," << nk << ")"
                       ;
@@ -619,8 +617,11 @@ optix::Buffer OEngine::createIOBuffer(NPY<T>* npy)
         else
         {
             LOG(warning) << "OEngine::createIOBuffer CANNOT createBufferFromGLBO as not uploaded  "
+                         << " name " << std::setw(20) << name
                          << " buffer_id " << buffer_id 
                          ; 
+
+            //assert(0);   only recsel buffer is not uploaded, as kludge interop workaround 
             return buffer ; 
         }
     } 
@@ -629,7 +630,6 @@ optix::Buffer OEngine::createIOBuffer(NPY<T>* npy)
         LOG(info) << "OEngine::createIOBuffer (COMPUTE)" ;
         buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     }
-
 
 
     RTformat format = getFormat(npy->getType());
@@ -656,7 +656,7 @@ optix::Buffer OEngine::createIOBuffer(NPY<T>* npy)
 
     }
 
-    buffer->setSize(size);
+    buffer->setSize(size); // TODO: check without thus, maybe unwise when already referencing OpenGL buffer of defined size
     return buffer ; 
 }
 

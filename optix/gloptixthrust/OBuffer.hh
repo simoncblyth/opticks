@@ -2,8 +2,9 @@
 
 #include <optixu/optixpp_namespace.h>
 #include "CResource.hh" 
-#include "BufSpec.hh"
+#include "CBufSpec.hh"
 
+// exploration of what works in interop
 class OBuffer {
   public:
       typedef enum { UNMAPPED, GLToCUDA, GLToCUDAToOptiX, GLToOptiX, OptiXToCUDA, OptiX } Mapping_t ;   
@@ -27,7 +28,7 @@ class OBuffer {
        void init();
        void preqs();
   public:
-        BufSpec map(OBuffer::Mapping_t mapping); 
+        CBufSpec map(OBuffer::Mapping_t mapping); 
         void unmap();
   private:
        void mapGLToCUDA();
@@ -43,10 +44,6 @@ class OBuffer {
   private:
        const char* getMappingDescription();
        void streamSync();
-       //void* getRawPointer();
-       //unsigned int getSize();
-       //unsigned int getNumBytes();
-       //BufSpec getBufSpec();
        bool  isMapped(); 
   private:
        unsigned int getBufferSize();
@@ -67,7 +64,7 @@ class OBuffer {
        RTformat              m_format ; 
        unsigned int          m_type ; 
        void*                 m_dptr ;
-       BufSpec               m_bufspec ; 
+       CBufSpec              m_bufspec ; 
        Mapping_t             m_mapping ; 
 
 };
@@ -92,22 +89,6 @@ inline OBuffer::OBuffer(optix::Context& context, unsigned int buffer_id, const c
    init();
 }
 
-
-
-/*
-inline void* OBuffer::getRawPointer()
-{
-   return m_bufspec.dev_ptr ;
-}
-inline unsigned int OBuffer::getSize()
-{
-   return m_size ; 
-}
-inline BufSpec OBuffer::getBufSpec()
-{
-   return m_bufspec ; 
-}
-*/
 
 
 inline bool OBuffer::isMapped()

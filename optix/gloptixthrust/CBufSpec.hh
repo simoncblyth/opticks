@@ -1,13 +1,13 @@
 #pragma once
 #include "stdio.h"
 
-struct BufSpec 
+struct CBufSpec 
 {
    void*        dev_ptr ; 
    unsigned int size ; 
    unsigned int num_bytes ; 
 
-   BufSpec(void* dev_ptr, unsigned int size, unsigned int num_bytes) 
+   CBufSpec(void* dev_ptr, unsigned int size, unsigned int num_bytes) 
      :
        dev_ptr(dev_ptr),
        size(size),

@@ -152,7 +152,7 @@ class OEngine : public Touchable {
         RTformat getFormat(NPYBase::Type_t type);
 
         template<typename T>
-        optix::Buffer   createIOBuffer(NPY<T>* npy);
+        optix::Buffer   createIOBuffer(NPY<T>* npy, const char* name);
 
         template <typename T>
         void upload(optix::Buffer& buffer, NPY<T>* npy);

@@ -400,7 +400,7 @@ void App::tgenerate(float radius)
     printf("App::tgenerate \n");
 
     m_seqbuf->map(OBuffer::OptiX);      // createBuffer
-    BufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);   // cudaGraphicsResourceGetMappedPointer
+    CBufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);   // cudaGraphicsResourceGetMappedPointer
 
     TProc tp(vtx);
     tp.tgenerate(radius);
@@ -414,7 +414,7 @@ void App::tscale(float factor)
     if(m_nvert == 3) return ;
     //printf("App::tscale \n");
 
-    BufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);  
+    CBufSpec vtx = m_vtxbuf->map(OBuffer::GLToCUDA);  
 
     TProc tp(vtx);
     tp.tscale(factor);
@@ -428,8 +428,8 @@ void App::index()
     if(m_nvert == 3) return ;
     printf("App::index \n");
 
-    BufSpec seq = m_seqbuf->map(OBuffer::OptiXToCUDA);
-    BufSpec sel = m_selbuf->map(OBuffer::GLToCUDA);  
+    CBufSpec seq = m_seqbuf->map(OBuffer::OptiXToCUDA);
+    CBufSpec sel = m_selbuf->map(OBuffer::GLToCUDA);  
 
     seq.Summary("seq OptiX created input");
     sel.Summary("sel GL created output ");

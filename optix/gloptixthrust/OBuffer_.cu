@@ -21,8 +21,6 @@ const char* OBuffer::GLToOptiX_       = "GLToOptiX       (createBufferFromGLBO)"
 const char* OBuffer::OptiXToCUDA_     = "OptiXToCUDA     (getDevicePointer) " ;
 const char* OBuffer::OptiX_           = "OptiX           (createBuffer) " ;
 
-
-
 void OBuffer::init()
 {
     printf("OBuffer::init %u %s \n", m_buffer_id, m_buffer_name );
@@ -35,7 +33,7 @@ void OBuffer::streamSync()
     m_resource->streamSync();
 }
 
-BufSpec OBuffer::map(OBuffer::Mapping_t mapping)
+CBufSpec OBuffer::map(OBuffer::Mapping_t mapping)
 {
     m_mapping = mapping ; 
     //printf("OBuffer::map %s %d\n", getMappingDescription(), m_buffer_id);
@@ -103,10 +101,8 @@ void OBuffer::preqs()
 
 void OBuffer::mapGLToCUDA()
 {
-    m_resource->mapGLToCUDA();
-    m_bufspec.dev_ptr = m_resource->getRawPointer() ;
+    m_bufspec = m_resource->mapGLToCUDA();
     m_bufspec.size    = m_size ; 
-    m_bufspec.num_bytes = m_resource->getNumBytes() ; 
 }
 void OBuffer::unmapGLToCUDA()
 {
@@ -115,15 +111,15 @@ void OBuffer::unmapGLToCUDA()
 
 void OBuffer::mapGLToCUDAToOptiX()
 {
-    m_resource->mapGLToCUDA();
-    void* dptr = m_resource->getRawPointer();
+    m_bufspec = m_resource->mapGLToCUDA();
 
-    CUdeviceptr cu_ptr = reinterpret_cast<CUdeviceptr>(dptr) ; 
+    CUdeviceptr cu_ptr = reinterpret_cast<CUdeviceptr>(m_bufspec.dev_ptr) ; 
     m_buffer = m_context->createBufferForCUDA(m_type, m_format, m_size);
     m_buffer->setDevicePointer(m_device, cu_ptr );
 
-    fillBufSpec( dptr );
-    assert( m_bufspec.num_bytes == m_resource->getNumBytes()); 
+    //fillBufSpec( dptr );
+    //assert( m_bufspec.num_bytes == m_resource->getNumBytes()); 
+    m_bufspec.size = m_size ; 
 
     m_context[m_buffer_name]->setBuffer(m_buffer);
 }

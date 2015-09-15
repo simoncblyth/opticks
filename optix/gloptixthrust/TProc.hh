@@ -1,18 +1,18 @@
 #pragma once
-#include "BufSpec.hh"
+#include "CBufSpec.hh"
 
 class TProc {
    public:
-       TProc( BufSpec vtx ); 
+       TProc( CBufSpec vtx ); 
    public:
        void check(); 
        void tscale(float factor); 
        void tgenerate(float radius); 
    private:
-       BufSpec      m_vtx ; 
+       CBufSpec      m_vtx ; 
 };
 
-inline TProc::TProc(BufSpec vtx ) :
+inline TProc::TProc(CBufSpec vtx ) :
     m_vtx(vtx)
 {
 }

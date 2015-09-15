@@ -79,35 +79,24 @@ void CResource::init()
        case  R: flags = cudaGraphicsMapFlagsReadOnly     ;break;
        case  W: flags = cudaGraphicsMapFlagsWriteDiscard ;break;
     }
-
     //cudaStream_t stream1 ; 
     //cudaStreamCreate ( &stream1) ;
     m_imp = new CResourceImp(m_buffer_id, flags, (cudaStream_t)0  );
-}
-
-
-unsigned int CResource::getNumBytes()
-{
-    assert(m_mapped);
-    return m_imp->bufsize ; 
-}
-
-void* CResource::getRawPointer()
-{
-    assert(m_mapped);
-    return m_imp->dev_ptr ;
 }
 
 void CResource::streamSync()
 {
     m_imp->streamSync();
 }
-void CResource::mapGLToCUDA()
+
+CBufSpec CResource::mapGLToCUDA()
 {
     m_mapped = true ; 
     //printf("CResource::mapGLToCUDA %d\n", m_buffer_id);
     m_imp->registerBuffer();
     m_imp->mapGLToCUDA();
+
+    return CBufSpec( m_imp->dev_ptr, 0, m_imp->bufsize );  // number of items only defined when decide on item size
 }
 void CResource::unmapGLToCUDA()
 {

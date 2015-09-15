@@ -1,5 +1,6 @@
 #pragma once
 #include "stdlib.h"
+#include "CBufSpec.hh"
 
 struct CResourceImp ; 
 
@@ -12,12 +13,12 @@ class CResource {
     private:
        void init(); 
     public:
-       void mapGLToCUDA();
+       CBufSpec mapGLToCUDA();
        void unmapGLToCUDA();
     public:
        // need to be mapped first 
-       void* getRawPointer();
-       unsigned int getNumBytes();
+       //void* getRawPointer();
+       //unsigned int getNumBytes();
        void streamSync();
     private:
        CResourceImp*  m_imp ; 
