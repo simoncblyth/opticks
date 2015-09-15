@@ -10,6 +10,8 @@
 #include "NPY.hpp"
 
 
+// host based indexing of photon data 
+
 class BoundariesNPY {
    public:  
        BoundariesNPY(NPY<float>* photons); 

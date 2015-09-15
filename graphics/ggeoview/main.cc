@@ -190,6 +190,7 @@ class App {
        void propagate();
        void downloadEvt();
        void indexEvt();
+       void indexEvtOld();
   public:
        void prepareGUI();
        void makeReport();
@@ -595,7 +596,6 @@ void App::uploadEvt()
         LOG(warning) << "App::uploadEvt skip due to --nooptix/--noevent " ;
         return ;
     }
-
  
 #ifdef INTEROP
     // signal Rdr to use GL_DYNAMIC_DRAW
@@ -604,12 +604,13 @@ void App::uploadEvt()
 #endif
 
     m_composition->update();
-    //m_composition.dumpAxisData("main:dumpAxisData");
+
     m_scene->uploadAxis();
 
     m_scene->uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
 
     (*m_timer)("uploadEvt"); 
+
     LOG(info) << "main: scene.uploadEvt DONE "; 
 
 #ifdef INTEROP
@@ -627,6 +628,18 @@ void App::uploadEvt()
 
 void App::seedPhotonsFromGensteps()
 {
+    //  Distributes unsigned int genstep indices 0:m_num_gensteps-1 into the first 
+    //  4 bytes of the 4*float4 photon record in the photon buffer 
+    //  using the number of photons per genstep obtained from the genstep buffer 
+    //  
+    //  Note that this is done almost entirely on the GPU, only the num_photons reduction
+    //  needs to come back to CPU in order to allocate an appropriately sized OptiX photon 
+    //  buffer on GPU.
+    //  
+    //  This per-photon genstep index is used by OptiX photon propagation 
+    //  program cu/generate.cu to access the appropriate values from the genstep buffer
+    //
+
     LOG(info)<<"App::seedPhotonsFromGensteps" ;
 
     NPY<float>* gensteps =  m_evt->getGenstepData() ;
@@ -641,11 +654,11 @@ void App::seedPhotonsFromGensteps()
     TBuf tgs("tgs", rgs.mapGLToCUDA() );
     TBuf tph("tph", rph.mapGLToCUDA() );
     
-    tgs.dump<unsigned int>("App::seedPhotonsFromGensteps tgs", 6*4, 3, nv0 ); // stride, begin, end 
+    //tgs.dump<unsigned int>("App::seedPhotonsFromGensteps tgs", 6*4, 3, nv0 ); // stride, begin, end 
 
     unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, nv0 );
 
-    assert(num_photons == m_evt->getNumPhotons()) ;  
+    assert(num_photons == m_evt->getNumPhotons() && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
 
     TBufPair<unsigned int> tgp(tgs.slice(6*4,3,nv0), tph.slice(4*4,0,num_photons*4*4));
     tgp.seedDestination();
@@ -654,20 +667,7 @@ void App::seedPhotonsFromGensteps()
     rgs.unmapGLToCUDA(); 
     rph.unmapGLToCUDA(); 
 
-
-    // **OBufPair::seedDestination** 
-    //  
-    //      Distributes unsigned int genstep indices 0:m_num_gensteps-1 into the first 
-    //      4 bytes of the 4*float4 photon record in the photon buffer 
-    //      using the number of photons per genstep obtained from the genstep buffer 
-    //  
-    //      Note that this is done almost entirely on the GPU, only the num_photons reduction
-    //      needs to come back to CPU in order to allocate an appropriately sized OptiX photon 
-    //      buffer on GPU.
-    //  
-    //      This per-photon genstep index is used by OptiX photon propagation 
-    //      program cu/generate.cu to access the appropriate values from the genstep buffer
-
+    (*m_timer)("seedPhotonsFromGensteps"); 
 
     // below approach in OEngine failed due to getting bad pointer from OptiX::  
     //
@@ -680,12 +680,7 @@ void App::seedPhotonsFromGensteps()
     //     OBufPair<unsigned int> bp(gs.slice(6*4,3,0), ph.slice(4*4,0,0));
     //     bp.seedDestination();
     //
-
-
-
 }
-
-
 
 
 void App::prepareEngine()
@@ -790,26 +785,33 @@ void App::downloadEvt()
     (*m_timer)("evtSave"); 
 }
 
-
-
 void App::indexEvt()
 {
     if(!m_evt) return ; 
+
+
+    (*m_timer)("indexEvt"); 
+}
+
+void App::indexEvtOld()
+{
+    if(!m_evt) return ; 
+
     NPY<float>* dpho = m_evt->getPhotonData();
     m_bnd = new BoundariesNPY(dpho); 
 
     m_bnd->setTypes(m_types);
     m_bnd->setBoundaryNames(m_boundaries);
-    m_bnd->indexBoundaries();
+    m_bnd->indexBoundaries();     // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
 
     m_pho = new PhotonsNPY(dpho);
     m_pho->setTypes(m_types);
-
 
     NPY<short>* drec = m_evt->getRecordData();
 
     m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
     m_rec->setTypes(m_types);
+
     NPYBase* domain = m_engine->getDomain(); 
     m_rec->setDomains((NPY<float>*)domain);
 
@@ -820,6 +822,9 @@ void App::indexEvt()
     bool noindex = true ; 
     if(!noindex)
     {
+
+           // grab device pointers from OptiX buffers
+
             optix::Buffer& sequence_buffer = m_engine->getSequenceBuffer() ;
             unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == 2*m_evt->getNumPhotons());
             unsigned int device_number = 0 ;  // maybe problem with multi-GPU
@@ -858,6 +863,7 @@ void App::indexEvt()
             idx.makeHistogram(1, "MaterialSequence");   
 
             psel.repeat_to( maxrec, rsel );
+
             cudaDeviceSynchronize();
 
             (*m_timer)("sequenceIndex"); 

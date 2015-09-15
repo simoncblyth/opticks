@@ -16,7 +16,7 @@ void TBufPair<T>::seedDestination()
 
     iexpand( si.begin(), si.end(), di.begin(), di.end() );
 
-#define DEBUG 1   
+//#define DEBUG 1   
 #ifdef DEBUG
     std::cout << "TBufPair<T>::seedDestination " << std::endl ;
     thrust::copy( di.begin(), di.end(), std::ostream_iterator<T>(std::cout, " ") );
