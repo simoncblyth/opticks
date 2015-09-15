@@ -93,6 +93,8 @@ void ThrustHistogram<T,S>::pullback(unsigned int n)
     thrust::reverse(m_counts_h.begin(), m_counts_h.end());
 }
 
+
+
 template<typename T,typename S>
 NPY<T>* ThrustHistogram<T,S>::makeSequenceIndexArray()
 {

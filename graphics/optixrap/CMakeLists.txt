@@ -147,7 +147,6 @@ set(hdrs
 
   OBuf.hh
   OBufBase.hh
-  OBufSlice.hh 
   OBufPair.hh 
 )
  

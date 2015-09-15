@@ -1,5 +1,6 @@
 #include <stdlib.h>  //exit()
 #include <stdio.h>
+#include <algorithm>
 
 #include "OptiXUtil.hh"
 #include "define.h"
@@ -102,6 +103,7 @@ namespace fs = boost::filesystem;
 
 // optixrap-
 #include "OEngine.hh"
+#include "OBuf.hh"
 #include "RayTraceConfig.hh"
 
 // cudawrap-
@@ -114,6 +116,7 @@ namespace fs = boost::filesystem;
 #include "ThrustArray.hh"
 #include "TBuf.hh"
 #include "TBufPair.hh"
+#include "TSparse.hh"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -597,32 +600,15 @@ void App::uploadEvt()
         return ;
     }
  
-#ifdef INTEROP
-    // signal Rdr to use GL_DYNAMIC_DRAW
-    CUDAInterop<unsigned char>* c_psel = new CUDAInterop<unsigned char>(m_evt->getPhoselData());
-    CUDAInterop<unsigned char>* c_rsel = new CUDAInterop<unsigned char>(m_evt->getRecselData());
-#endif
-
     m_composition->update();
 
     m_scene->uploadAxis();
 
     m_scene->uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
 
+    m_scene->uploadSelection();   // recsel upload
+
     (*m_timer)("uploadEvt"); 
-
-    LOG(info) << "main: scene.uploadEvt DONE "; 
-
-#ifdef INTEROP
-    // recsel handled separately to the rest due to interop complications
-    // as it needs Thrust indexing 
-    m_scene->uploadSelection();  
-    //c_psel->registerBuffer();
-    //c_rsel->registerBuffer();
-#else
-    // non-interop workaround: defer uploadSelection until after indexing 
-#endif
-
 }
 
 
@@ -660,7 +646,10 @@ void App::seedPhotonsFromGensteps()
 
     assert(num_photons == m_evt->getNumPhotons() && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
 
-    TBufPair<unsigned int> tgp(tgs.slice(6*4,3,nv0), tph.slice(4*4,0,num_photons*4*4));
+    CBufSlice src = tgs.slice(6*4,3,nv0) ;
+    CBufSlice dst = tph.slice(4*4,0,num_photons*4*4) ;
+
+    TBufPair<unsigned int> tgp(src, dst);
     tgp.seedDestination();
 
 
@@ -789,8 +778,58 @@ void App::indexEvt()
 {
     if(!m_evt) return ; 
 
+    optix::Buffer& seq_buf = m_engine->getSequenceBuffer();
+    optix::Buffer& phosel_buf = m_engine->getPhoselBuffer();
+    optix::Buffer& recsel_buf = m_engine->getRecselBuffer();
 
-    (*m_timer)("indexEvt"); 
+    OBuf seq("seq", seq_buf );
+    seq.setMultiplicity(1u);    // unsigned long long buffer not native, so using RT_FORMAT_USER
+    seq.setHexDump(true);
+
+    OBuf phosel("phosel", phosel_buf ); 
+    phosel.setHexDump(true);
+
+    OBuf recsel("recsel", recsel_buf ); 
+    recsel.setHexDump(true);
+
+    unsigned int nseq = seq.getNumAtoms(); 
+    unsigned int nphosel = phosel.getNumAtoms(); 
+    unsigned int nrecsel = recsel.getNumAtoms(); 
+
+    LOG(info) << "App::indexEvt "
+              << " nseq (2*num_photons)" << nseq 
+              << " nphosel (4*num_photons)" << nphosel
+              << " nrecsel (10*4*num_photons)" << nrecsel
+              ; 
+
+    (*m_timer)("indexEvt.setup"); 
+
+    //seq.dump<unsigned long long>("App::indexEvt seqhis", 2, 0, std::min(nseq,100u));
+    TSparse<unsigned long long> seqhis(seq.slice(2,0,nseq)); // history sequence
+    seqhis.count_unique();
+    seqhis.pullback();
+    seqhis.dump("App::indexEvt seqhis");
+    seqhis.apply_lookup<unsigned char>( phosel.slice(4,0,nphosel));
+
+    (*m_timer)("indexEvt.seqhis"); 
+
+    seq.dump<unsigned long long>("App::indexEvt seqmat", 2, 1, std::min(nseq,100u));
+    TSparse<unsigned long long> seqmat(seq.slice(2,1,nseq)); // material sequence
+    seqmat.count_unique();
+    seqmat.pullback();
+    seqmat.dump("App::indexEvt seqmat");
+    seqmat.apply_lookup<unsigned char>( phosel.slice(4,1,nphosel));
+
+    (*m_timer)("indexEvt.seqmat"); 
+
+    phosel.dumpint<unsigned char>("App::indexEvt phosel (4,0)", 4, 0, std::min(nphosel,100u));
+    phosel.dumpint<unsigned char>("App::indexEvt phosel (4,1)", 4, 1, std::min(nphosel,100u));
+
+    (*m_timer)("indexEvt.tail"); 
+
+
+    //TRepeat<unsigned char> rep(recsel.slice(4,
+
 }
 
 void App::indexEvtOld()
@@ -859,7 +898,7 @@ void App::indexEvtOld()
 
             ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
 
-            idx.makeHistogram(0, "FlagSequence");   
+            idx.makeHistogram(0, "FlagSequence");    // creates sparse histo and applies popular indices to target 
             idx.makeHistogram(1, "MaterialSequence");   
 
             psel.repeat_to( maxrec, rsel );

@@ -6,10 +6,13 @@
 template <typename T>
 void TBufPair<T>::seedDestination()
 {  
+    m_src.Summary("seedDestination src");
+    m_dst.Summary("seedDestination dst");
+
     typedef typename thrust::device_vector<T>::iterator Iterator;
       
-    thrust::device_ptr<T> psrc = thrust::device_pointer_cast((T*)m_src.buf->getDevicePtr()) ;
-    thrust::device_ptr<T> pdst = thrust::device_pointer_cast((T*)m_dst.buf->getDevicePtr()) ;
+    thrust::device_ptr<T> psrc = thrust::device_pointer_cast((T*)m_src.dev_ptr) ;
+    thrust::device_ptr<T> pdst = thrust::device_pointer_cast((T*)m_dst.dev_ptr) ;
     
     strided_range<Iterator> si( psrc + m_src.begin, psrc + m_src.end, m_src.stride );
     strided_range<Iterator> di( pdst + m_dst.begin, pdst + m_dst.end, m_dst.stride );

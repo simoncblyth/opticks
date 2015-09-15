@@ -56,6 +56,7 @@ CUDA_ADD_LIBRARY( ${name}
        ThrustArrayImp.cu
        TBuf_.cu
        TBufPair_.cu
+       TSparse_.cu
 )
  
 target_link_libraries( ${name} ${LIBRARIES})
@@ -69,8 +70,8 @@ SET(hdrs
   ThrustHistogramImp.h
   ThrustArrayImp.h
   TBuf.hh
-  TBufSlice.hh
   TBufPair.hh
+  TSparse.hh
   strided_range.h 
   iexpand.h 
 )

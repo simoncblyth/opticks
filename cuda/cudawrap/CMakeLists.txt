@@ -52,6 +52,7 @@ cuRANDWrapper.hh
 cuRANDWrapper_kernel.hh
 CResource.hh
 CBufSpec.hh
+CBufSlice.hh
 )
 
 install(FILES ${hdrs} DESTINATION include)

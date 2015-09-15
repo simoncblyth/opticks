@@ -59,9 +59,19 @@ void OBufBase::examineBufferFormat(RTformat format)
     unsigned int element_size_bytes = getElementSizeInBytes(format);
     assert(element_size_bytes == soa*mul );
 
-    m_multiplicity = mul  ;
-    m_sizeofatom = soa ;
+    setMultiplicity(mul)  ;
+    setSizeOfAtom(soa) ;
 }
+
+
+void OBufBase::setSizeOfAtom(unsigned int soa)
+{
+    m_sizeofatom = soa ; 
+} 
+void OBufBase::setMultiplicity(unsigned int mul)
+{
+    m_multiplicity = mul ; 
+} 
 
 
 unsigned int OBufBase::getElementSizeInBytes(RTformat format)
@@ -69,6 +79,12 @@ unsigned int OBufBase::getElementSizeInBytes(RTformat format)
     size_t element_size ; 
     rtuGetSizeForRTformat( format, &element_size);
     return element_size ; 
+}
+
+void* OBufBase::getDevicePtr()
+{
+    CUdeviceptr cu_ptr = m_buffer->getDevicePointer(m_device) ;
+    return (void*)cu_ptr ; 
 }
 
 unsigned int OBufBase::getSize(const optix::Buffer& buffer)
@@ -82,7 +98,14 @@ unsigned int OBufBase::getSize(const optix::Buffer& buffer)
 unsigned int OBufBase::getNumBytes(const optix::Buffer& buffer)
 {
     unsigned int size = getSize(buffer);
-    unsigned int element_size = getElementSizeInBytes(buffer->getFormat());
+
+    RTformat format = buffer->getFormat() ;
+    unsigned int element_size = getElementSizeInBytes(format);
+    if(element_size == 0u && format == RT_FORMAT_USER)
+    {
+        element_size = buffer->getElementSize();
+        printf("OBufBase::getNumBytes RT_FORMAT_USER element_size %u size %u \n", element_size, size );
+    }
     return size*element_size ; 
 }
 

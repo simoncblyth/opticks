@@ -1,21 +1,21 @@
 #pragma once
 
-#include "OBufSlice.hh"
+#include "CBufSlice.hh"
 
 template <typename T>
 class OBufPair {
    public:
-      OBufPair( OBufSlice src, OBufSlice dst );
+      OBufPair( CBufSlice src, CBufSlice dst );
       void seedDestination();
    public:
    private:
-      OBufSlice m_src ;   
-      OBufSlice m_dst ;   
+      CBufSlice m_src ;   
+      CBufSlice m_dst ;   
 };
 
 
 template <typename T>
-inline OBufPair<T>::OBufPair(OBufSlice src, OBufSlice dst ) 
+inline OBufPair<T>::OBufPair(CBufSlice src, CBufSlice dst ) 
    :
    m_src(src),
    m_dst(dst)

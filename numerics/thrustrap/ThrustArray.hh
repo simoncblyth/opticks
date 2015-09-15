@@ -9,9 +9,10 @@ class ThrustArray {
    public:
          ThrustArray(S* devptr, unsigned int num_elements, unsigned int itemsize); // preexisting buffer on device
    public:
-         unsigned int getSize();
-         unsigned int getNumElements();
-         unsigned int getItemSize();
+         unsigned int getSize();        //  product of NumElements and ItemSize
+         unsigned int getItemSize();    //  typically a small number eg 2 for sequence buffer of unsigned long long (like NPY shape1*shape2) 
+         unsigned int getNumElements(); //  typically a large number (like NPY shape0) 
+         unsigned int getNumBytes();    //  sizeof(S)*getSize()
    public:
          thrust::device_vector<S>&  getDeviceVector(); 
    public:
@@ -50,6 +51,13 @@ inline unsigned int ThrustArray<S>::getSize()
 {
     return m_num_elements*m_itemsize ; 
 }
+
+template <typename S>
+inline unsigned int ThrustArray<S>::getNumBytes()
+{
+    return m_num_elements*m_itemsize*sizeof(S) ; 
+}
+
 template <typename S>
 inline unsigned int ThrustArray<S>::getNumElements()
 {
@@ -60,11 +68,6 @@ inline unsigned int ThrustArray<S>::getItemSize()
 {
     return m_itemsize ; 
 }
-
-
-
-
-
 
 template <typename S>
 inline thrust::device_vector<S>& ThrustArray<S>::getDeviceVector()
