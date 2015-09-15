@@ -104,10 +104,16 @@ namespace fs = boost::filesystem;
 #include "OEngine.hh"
 #include "RayTraceConfig.hh"
 
+// cudawrap-
+#include "CResource.hh"
+#include "CBufSpec.hh"
+
 // thrustrap-
 #include "ThrustIdx.hh"
 #include "ThrustHistogram.hh"
 #include "ThrustArray.hh"
+#include "TBuf.hh"
+#include "TBufPair.hh"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -178,6 +184,7 @@ class App {
   public:
        void loadGenstep();
        void uploadEvt();
+       void seedPhotonsFromGensteps();
   public:
        void prepareEngine();
        void propagate();
@@ -588,6 +595,7 @@ void App::uploadEvt()
         LOG(warning) << "App::uploadEvt skip due to --nooptix/--noevent " ;
         return ;
     }
+
  
 #ifdef INTEROP
     // signal Rdr to use GL_DYNAMIC_DRAW
@@ -615,6 +623,69 @@ void App::uploadEvt()
 #endif
 
 }
+
+
+void App::seedPhotonsFromGensteps()
+{
+    LOG(info)<<"App::seedPhotonsFromGensteps" ;
+
+    NPY<float>* gensteps =  m_evt->getGenstepData() ;
+
+    NPY<float>* photons  =  m_evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
+
+    unsigned int nv0 = gensteps->getNumValues(0) ; 
+
+    CResource rgs( gensteps->getBufferId(), CResource::R );
+    CResource rph( photons->getBufferId(), CResource::RW );
+
+    TBuf tgs("tgs", rgs.mapGLToCUDA() );
+    TBuf tph("tph", rph.mapGLToCUDA() );
+    
+    tgs.dump<unsigned int>("App::seedPhotonsFromGensteps tgs", 6*4, 3, nv0 ); // stride, begin, end 
+
+    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, nv0 );
+
+    assert(num_photons == m_evt->getNumPhotons()) ;  
+
+    TBufPair<unsigned int> tgp(tgs.slice(6*4,3,nv0), tph.slice(4*4,0,num_photons*4*4));
+    tgp.seedDestination();
+
+
+    rgs.unmapGLToCUDA(); 
+    rph.unmapGLToCUDA(); 
+
+
+    // **OBufPair::seedDestination** 
+    //  
+    //      Distributes unsigned int genstep indices 0:m_num_gensteps-1 into the first 
+    //      4 bytes of the 4*float4 photon record in the photon buffer 
+    //      using the number of photons per genstep obtained from the genstep buffer 
+    //  
+    //      Note that this is done almost entirely on the GPU, only the num_photons reduction
+    //      needs to come back to CPU in order to allocate an appropriately sized OptiX photon 
+    //      buffer on GPU.
+    //  
+    //      This per-photon genstep index is used by OptiX photon propagation 
+    //      program cu/generate.cu to access the appropriate values from the genstep buffer
+
+
+    // below approach in OEngine failed due to getting bad pointer from OptiX::  
+    //
+    //     OBuf gs("gs", m_genstep_buffer);
+    //     unsigned int num_photons = gs.reduce<unsigned int>(6*4, 3) ;  // stride, offset
+    //     assert(num_photons == m_evt->getNumPhotons());
+    //     LOG(info)<<"OEngine::seedPhotonsFromGensteps num_photons " << num_photons ;
+    //
+    //     OBuf ph("ph", m_photon_buffer) ;
+    //     OBufPair<unsigned int> bp(gs.slice(6*4,3,0), ph.slice(4*4,0,0));
+    //     bp.seedDestination();
+    //
+
+
+
+}
+
+
 
 
 void App::prepareEngine()
@@ -1015,6 +1086,8 @@ int main(int argc, char** argv)
         app.loadGenstep();
 
         app.uploadEvt();    // allocates GPU buffers with OpenGL glBufferData
+
+        app.seedPhotonsFromGensteps();
 
         app.prepareEngine();
 

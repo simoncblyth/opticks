@@ -24,6 +24,7 @@ message("CMAKE_CXX_COMPILER_ID:" ${CMAKE_CXX_COMPILER_ID})
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
+find_package(CUDAWrap  REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -31,11 +32,20 @@ include_directories(
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS}
+    ${CUDAWrap_INCLUDE_DIRS}
 )
 
 add_definitions(
     ${Boost_DEFINITIONS}
+    ${CUDAWrap_DEFINITIONS}
 )
+
+set(LIBRARIES
+      ${Boost_LIBRARIES}
+      ${NPY_LIBRARIES}
+      ${CUDAWrap_LIBRARIES}
+)
+
 
 CUDA_ADD_LIBRARY( ${name}  
        ThrustArray.cc
@@ -44,16 +54,11 @@ CUDA_ADD_LIBRARY( ${name}
        ThrustHistogram.cc
        ThrustHistogramImp.cu
        ThrustArrayImp.cu
-)
-
-set(LIBRARIES
-      ${Boost_LIBRARIES}
-      ${NPY_LIBRARIES}
+       TBuf_.cu
+       TBufPair_.cu
 )
  
-target_link_libraries( ${name} 
-     ${LIBRARIES}
-)
+target_link_libraries( ${name} ${LIBRARIES})
 
 
 SET(hdrs 
@@ -63,6 +68,9 @@ SET(hdrs
   ThrustHistogram.hh
   ThrustHistogramImp.h
   ThrustArrayImp.h
+  TBuf.hh
+  TBufSlice.hh
+  TBufPair.hh
   strided_range.h 
   iexpand.h 
 )

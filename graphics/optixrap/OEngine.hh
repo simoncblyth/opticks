@@ -129,7 +129,6 @@ class OEngine : public Touchable {
         void initGenerateOnce();
         void initGenerate();
         void initGenerate(NumpyEvt* evt);
-        void seedPhotonsFromGensteps();
         void preprocess();
 
         void fill_PBO();

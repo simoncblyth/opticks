@@ -16,9 +16,6 @@ class CResource {
        CBufSpec mapGLToCUDA();
        void unmapGLToCUDA();
     public:
-       // need to be mapped first 
-       //void* getRawPointer();
-       //unsigned int getNumBytes();
        void streamSync();
     private:
        CResourceImp*  m_imp ; 

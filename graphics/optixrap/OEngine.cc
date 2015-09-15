@@ -38,13 +38,13 @@
 
 // optixrap-
 #include "RayTraceConfig.hh"
-//#include "GGeoOptiXGeometry.hh"
 #include "OGeo.hh"
 #include "OBoundaryLib.hh"
 #include "OBuf.hh"
 #include "OBufPair.hh"
 
 // cudawrap-
+
 using namespace optix ; 
 #include "cuRANDWrapper.hh"
 #include "curand.h"
@@ -426,9 +426,6 @@ void OEngine::initGenerate(NumpyEvt* evt)
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
-    seedPhotonsFromGensteps();
-
-
     m_genstep_buffer = createIOBuffer<float>( gensteps, "gensteps");
     m_context["genstep_buffer"]->set( m_genstep_buffer );
 
@@ -466,60 +463,6 @@ void OEngine::initGenerate(NumpyEvt* evt)
 
     // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
-
-
-void OEngine::seedPhotonsFromGensteps()
-{
-    if(!m_evt) return ;
-    LOG(info)<<"OEngine::seedPhotonsFromGensteps" ;
-
-    // TODO: 
-    //      * compare with gloptixthrust-
-    //      * arrange to do this with no OptiX involvement 
-    //        perhaps with TBuf/TBufPair Thrust analogs to the OptiX 
-    //        OBuf/OBufPair that take an OpenGL id in ctor
-    // 
-    //        use GLToCUDA mapping rather than GLToOptiX
-    //
-    //
-    // (as that seems to work with glBufferData NULL buffers 
-    // in gloptixthrust-)
-    //
-    // do this first prior to creation of the OptiX buffers
-    // for pairwise simplicity. The photon seeding has no need 
-    // of OptiX  
-    //
-    // but it is genstep thats failing which isnt a NULL buffer ?
-    // 
-    //
-    // below is failing due to getting bad pointer from OptiX::  
-    //
-    //     OBuf gs("gs", m_genstep_buffer);
-    //     unsigned int num_photons = gs.reduce<unsigned int>(6*4, 3) ;  // stride, offset
-    //     assert(num_photons == m_evt->getNumPhotons());
-    //     LOG(info)<<"OEngine::seedPhotonsFromGensteps num_photons " << num_photons ;
-    //
-    //     OBuf ph("ph", m_photon_buffer) ;
-    //     OBufPair<unsigned int> bp(gs.slice(6*4,3,0), ph.slice(4*4,0,0));
-    //     bp.seedDestination();
-    //
-    //
-    // **OBufPair::seedDestination** 
-    //  
-    //      Distributes unsigned int genstep indices 0:m_num_gensteps-1 into the first 
-    //      4 bytes of the 4*float4 photon record in the photon buffer 
-    //      using the number of photons per genstep obtained from the genstep buffer 
-    //  
-    //      Note that this is done almost entirely on the GPU, only the num_photons reduction
-    //      needs to come back to CPU in order to allocate an appropriately sized OptiX photon 
-    //      buffer on GPU.
-    //  
-    //      This per-photon genstep index is used by OptiX photon propagation 
-    //      program cu/generate.cu to access the appropriate values from the genstep buffer
-}
-
-
-
 
 
 void OEngine::generate()

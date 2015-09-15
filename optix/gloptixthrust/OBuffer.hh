@@ -4,7 +4,8 @@
 #include "CResource.hh" 
 #include "CBufSpec.hh"
 
-// exploration of what works in interop
+// exploration of interop : code too broad for reusability
+// 
 class OBuffer {
   public:
       typedef enum { UNMAPPED, GLToCUDA, GLToCUDAToOptiX, GLToOptiX, OptiXToCUDA, OptiX } Mapping_t ;   

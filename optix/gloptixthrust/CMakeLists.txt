@@ -21,16 +21,19 @@ if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
 
+find_package(GLEW REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(Boost REQUIRED)
 find_package(OptiX REQUIRED)    # FindOptiX.cmake : finding and adding libraries
-find_package(CUDA 2.3 REQUIRED) # 
+find_package(CUDA 2.3 REQUIRED)  
+find_package(CUDAWrap REQUIRED)  
+find_package(ThrustRap REQUIRED) 
+
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 
 
-find_package(GLEW REQUIRED)
-find_package(GLFW REQUIRED)
 
 
-find_package(Boost REQUIRED)
 
 ## c++11 forced by AsioZMQ   needs to come after OptiX
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -46,12 +49,16 @@ include_directories(
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
    ${CUDA_INCLUDE_DIRS}
+   ${ThrustRap_INCLUDE_DIRS}  
+   ${CUDAWrap_INCLUDE_DIRS}  
    ${OptiX_INCLUDE}  
 )
 
 add_definitions(
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
+   ${ThrustRap_DEFINITIONS}  
+   ${CUDAWrap_DEFINITIONS}  
    ${OptiX_DEFINITIONS} 
 )
 
@@ -59,6 +66,8 @@ set(LIBRARIES
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${CUDA_LIBRARIES}
+      ${ThrustRap_LIBRARIES}
+      ${CUDAWrap_LIBRARIES}
       optix
       optixu
 )
@@ -73,8 +82,6 @@ optixthrust_add_executable( ${name}
       main.cpp
       OBuffer.cc
       OBuffer_.cu
-      CResource.cc
-      CResource_.cu
       TAry.cc
       TAry_.cu
       TProc.cc

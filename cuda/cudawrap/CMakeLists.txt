@@ -23,12 +23,15 @@ CUDA_ADD_LIBRARY( ${name}
                   cuRANDWrapper_kernel.cu
                   LaunchSequence.cc
                   LaunchCommon.cc
+                  CResource.cc
+                  CResource_.cu
+                  
 )
 
 set (LIBRARIES
     ${name}
     ssl
-    crypt
+ #   crypt
 )
 
 add_executable( LaunchSequenceTest LaunchSequenceTest.cc )
@@ -47,6 +50,8 @@ LaunchCommon.hh
 LaunchSequence.hh
 cuRANDWrapper.hh
 cuRANDWrapper_kernel.hh
+CResource.hh
+CBufSpec.hh
 )
 
 install(FILES ${hdrs} DESTINATION include)

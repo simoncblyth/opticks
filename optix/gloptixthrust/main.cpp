@@ -331,13 +331,13 @@ void App::init_gl_buffers()
 {
     m_vtx = new VBO(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
     float* vtxdata = m_nvert == 3 ? make_triangle_data(0.9f) : NULL ; 
-    m_vtx->upload( vtxdata,  m_nvert*4*sizeof(float) );
+    m_vtx->upload( vtxdata,  m_nvert*4*sizeof(float) );  // glBufferData
 
     m_seq = NULL ; 
 
     m_sel = new VBO(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
     unsigned int* seldata = m_nvert == 3 ? make_uvec4_data(m_nvert, 2u) : NULL ; 
-    m_sel->upload( seldata, m_nvert*4*sizeof(unsigned int) );  // still need to glBufferData even when nothing in it
+    m_sel->upload( seldata, m_nvert*4*sizeof(unsigned int) );  // still need to glBufferData even when NULL 
 }
 
 void App::init_buffers()
@@ -366,9 +366,11 @@ void App::init_buffers()
     m_vtxbuf = new OBuffer(m_context, m_vtx->id, "vtx_buffer", m_nvert, RT_FORMAT_FLOAT4,         RT_BUFFER_OUTPUT,       CResource::RW ); 
     m_seqbuf = new OBuffer(m_context, 0        , "seq_buffer", m_nvert, RT_FORMAT_UNSIGNED_INT4,  RT_BUFFER_OUTPUT,       CResource::RW ); 
     m_selbuf = new OBuffer(m_context, m_sel->id, "sel_buffer", m_nvert, RT_FORMAT_UNKNOWN,        RT_BUFFER_INPUT_OUTPUT, CResource::W ); 
+
+    // OBuffer::init instanciates a CResource(buffer_id, access) when buffer_id non zero
 }
 
-void App::generate(float radius)
+void App::generate(float radius)   // OptiX generation
 {
     if(m_nvert == 3) return ;
 
@@ -394,7 +396,7 @@ void App::generate(float radius)
     m_vtxbuf->unmap();
 }
 
-void App::tgenerate(float radius)
+void App::tgenerate(float radius)   // Thrust generation
 {
     if(m_nvert == 3) return ;
     printf("App::tgenerate \n");
@@ -518,8 +520,8 @@ int main ()
 
     App app(4000) ; 
 
-    //app.generate(0.5f);
-    app.tgenerate(1.0f);
+    app.generate(0.5f);
+    //app.tgenerate(1.0f);
     app.dump_sel("after generate");
 
     app.index();
