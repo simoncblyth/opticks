@@ -15,25 +15,25 @@
 #endif
 
 
-void Photons::init()
-{
-    m_types = m_photons->getTypes() ;
-}
-
-
 void Photons::gui()
 {
 #ifdef GUI_
-    if (ImGui::CollapsingHeader("Photon Boundary Selection"))
+
+    if(m_boundaries)
     {
-        gui_boundary_selection();
+        if (ImGui::CollapsingHeader("Photon Boundary Selection"))
+        {
+            gui_boundary_selection();
+        }
     }
 
-    ImGui::Spacing();
-
-    if (ImGui::CollapsingHeader("Photon Flag Selection"))
+    if(m_types)
     {
-        gui_flag_selection();
+        ImGui::Spacing();
+        if (ImGui::CollapsingHeader("Photon Flag Selection"))
+        {
+            gui_flag_selection();
+        }
     }
 
     if(m_seqhis)

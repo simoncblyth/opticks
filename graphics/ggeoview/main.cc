@@ -795,10 +795,11 @@ void App::indexEvt()
 
 
        OptiX has no business with phosel and recsel 
-
    */
 
     if(!m_evt) return ; 
+
+    unsigned int maxrec = m_evt->getMaxRec(); // 10 
 
     optix::Buffer& seq_buf = m_engine->getSequenceBuffer();
     OBuf seq("seq", seq_buf );
@@ -813,21 +814,16 @@ void App::indexEvt()
     CResource rphosel( phosel_data->getBufferId(), CResource::W );
     CResource rrecsel( recsel_data->getBufferId(), CResource::W );
     {
-        CBufSpec phosel_spec = rphosel.mapGLToCUDA<unsigned char>();
-        CBufSpec recsel_spec = rrecsel.mapGLToCUDA<unsigned char>();
+        TBuf tphosel("tphosel", rphosel.mapGLToCUDA<unsigned char>() );
+        tphosel.zero();
 
-        // hmm could auto set the size by templating the mapping 
-        //phosel_spec.size = phosel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
-        unsigned int nphosel = phosel_spec.size ; 
+        TBuf trecsel("trecsel", rrecsel.mapGLToCUDA<unsigned char>() );
+
+        unsigned int nphosel = tphosel.getSize() ; 
         assert(nphosel == 2*nseq);
 
-        //recsel_spec.size = recsel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
-        unsigned int nrecsel = recsel_spec.size ; 
-        assert(nrecsel == 10*2*nseq);
-
-
-        TBuf tphosel("tphosel", phosel_spec );
-        TBuf trecsel("trecsel", recsel_spec );
+        unsigned int nrecsel = trecsel.getSize() ; 
+        assert(nrecsel == maxrec*2*nseq);
 
         LOG(info) << "App::indexEvt "
                   << " nseq (2*num_photons)" << nseq 
@@ -835,55 +831,61 @@ void App::indexEvt()
                   << " nrecsel " << nrecsel
                   ; 
 
-        seq.dump<unsigned long long>("App::indexEvt OBuf seq.dump", 2, 0, std::min(nseq,100u));
-
-        TSparse<unsigned long long> seqhis(seq.slice(2,0,nseq)); // history sequence
+        TSparse<unsigned long long> seqhis("History Sequence", seq.slice(2,0)); // stride,begin 
         seqhis.make_lookup();
+        seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0));  // stride, begin
+        m_seqhis = new GItemIndex(seqhis.getIndex()) ;  
+
+#ifdef DEBUG
+        seq.dump<unsigned long long>("App::indexEvt OBuf seq.dump", 2, 0, std::min(nseq,100u));
+        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,0)", 4,0,std::min(tphosel.getSize(),100u)) ;
         seqhis.dump("App::indexEvt seqhis");
-        seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0,nphosel));
-        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,0,nphosel)", 4,0,std::min(nphosel,100u)) ;
+#endif
 
-        TSparse<unsigned long long> seqmat(seq.slice(2,1,nseq)); // material sequence
+        TSparse<unsigned long long> seqmat("Material Sequence", seq.slice(2,1)); // stride,begin 
         seqmat.make_lookup();
+        seqmat.apply_lookup<unsigned char>( tphosel.slice(4,1));
+        m_seqmat = new GItemIndex(seqmat.getIndex()) ;  
+
+#ifdef DEBUG
+        seq.dump<unsigned long long>("App::indexEvt OBuf seq.dump", 2, 1, std::min(nseq,100u));
         seqmat.dump("App::indexEvt seqmat");
-        seqmat.apply_lookup<unsigned char>( tphosel.slice(4,1,nphosel));
-        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,1,nphosel)", 4,1,std::min(nphosel,100u)) ;
+        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,1)", 4,1,std::min(tphosel.getSize(),100u)) ;
+#endif
 
-        tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, nphosel, 10 );  // other, stride, begin, end, repeats
+        tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), maxrec );  // other, stride, begin, end, repeats
 
+#ifdef DEBUG
         tphosel.download<unsigned char>( phosel_data );  // cudaMemcpyDeviceToHost
         phosel_data->save("/tmp/phosel.npy");  
-
         trecsel.download<unsigned char>( recsel_data );
         recsel_data->save("/tmp/recsel.npy");  
+#endif
 
     }
     rphosel.unmapGLToCUDA(); 
     rrecsel.unmapGLToCUDA(); 
 
-/*
-    In [18]: p = np.load("/tmp/phosel.npy")
-    In [35]: r = np.load("/tmp/recsel.npy")
-
-    In [22]: np.unique(p[:,0,0])
-    Out[22]: 
-    array([  1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,
-            14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,
-            27,  28,  29,  30,  31,  32, 255], dtype=uint8)
-
-    In [23]: np.unique(p[:,0,1])
-    Out[23]: 
-    array([  1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,
-            14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,
-            27,  28,  29,  30,  31,  32, 255], dtype=uint8)
-
-    getting randoms in phosel slots 2,3 which get repeated into recsel
-
-*/
 
 
 
-    (*m_timer)("indexEvt.seqhis"); 
+
+
+    m_seqhis->setTitle("Photon Flag Sequence Selection");
+    m_seqhis->setTypes(m_types);
+    m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
+    m_seqhis->formTable();
+
+    m_seqmat->setTitle("Photon Material Sequence Selection");
+    m_seqmat->setTypes(m_types);
+    m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
+    m_seqmat->formTable();
+    
+    m_photons = new Photons(m_types, m_pho, m_bnd, m_seqhis, m_seqmat ) ; // GUI jacket 
+    m_scene->setPhotons(m_photons);
+
+
+    (*m_timer)("indexEvt"); 
 }
 
 void App::indexEvtOld()
@@ -891,113 +893,28 @@ void App::indexEvtOld()
     if(!m_evt) return ; 
 
     NPY<float>* dpho = m_evt->getPhotonData();
-    m_bnd = new BoundariesNPY(dpho); 
 
+    m_bnd = new BoundariesNPY(dpho); 
     m_bnd->setTypes(m_types);
     m_bnd->setBoundaryNames(m_boundaries);
-    m_bnd->indexBoundaries();     // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
+    m_bnd->indexBoundaries();     
+
+    // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
+
 
     m_pho = new PhotonsNPY(dpho);
     m_pho->setTypes(m_types);
 
-    NPY<short>* drec = m_evt->getRecordData();
 
+    NPY<short>* drec = m_evt->getRecordData();
     m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
     m_rec->setTypes(m_types);
+
 
     NPYBase* domain = m_engine->getDomain(); 
     m_rec->setDomains((NPY<float>*)domain);
 
     (*m_timer)("boundaryIndex"); 
-
-
-    LOG(warning) << "main: hardcode noindex as not working" ;
-    bool noindex = true ; 
-    if(!noindex)
-    {
-
-           // grab device pointers from OptiX buffers
-
-            optix::Buffer& sequence_buffer = m_engine->getSequenceBuffer() ;
-            unsigned int num_elements = OptiXUtil::getBufferSize1D( sequence_buffer );  assert(num_elements == 2*m_evt->getNumPhotons());
-            unsigned int device_number = 0 ;  // maybe problem with multi-GPU
-            unsigned long long* d_seqn = OptiXUtil::getDevicePtr<unsigned long long>( sequence_buffer, device_number ); 
-#ifdef INTEROP
-            // attempt to give CUDA access to mapped OpenGL buffer
-            //unsigned char*      d_psel = c_psel->GL_to_CUDA();
-            //unsigned char*      d_rsel = c_rsel->GL_to_CUDA();
-            // attempt to give CUDA access to OptiX buffers which in turn are connected to OpenGL buffers
-            unsigned char* d_psel = OptiXUtil::getDevicePtr<unsigned char>( m_engine->getPhoselBuffer(), device_number ); 
-            unsigned char* d_rsel = OptiXUtil::getDevicePtr<unsigned char>( m_engine->getRecselBuffer(), device_number ); 
-#else
-            LOG(info)<< "main: non interop allocating new device buffers with ThrustArray " ;
-            unsigned char*      d_psel = NULL ;    
-            unsigned char*      d_rsel = NULL ;    
-#endif
-
-            unsigned int sequence_itemsize = m_evt->getSequenceData()->getShape(2) ; assert( 2 == sequence_itemsize );
-            unsigned int phosel_itemsize   = m_evt->getPhoselData()->getShape(2)   ; assert( 4 == phosel_itemsize );
-            unsigned int recsel_itemsize   = m_evt->getRecselData()->getShape(2)   ; assert( 4 == recsel_itemsize );
-            unsigned int maxrec = m_evt->getMaxRec();
-         
-            LOG(info) << "main: ThrustIndex ctor " 
-                      << " num_elements " << num_elements 
-                      << " sequence_itemsize " << sequence_itemsize 
-                      << " phosel_itemsize " << phosel_itemsize 
-                      << " recsel_itemsize " << recsel_itemsize 
-                      ; 
-            ThrustArray<unsigned long long> pseq(d_seqn, num_elements       , sequence_itemsize );   // input flag/material sequences
-            ThrustArray<unsigned char>      psel(d_psel, num_elements       , phosel_itemsize   );   // output photon selection
-            ThrustArray<unsigned char>      rsel(d_rsel, num_elements*maxrec, recsel_itemsize   );   // output record selection
-
-            ThrustIdx<unsigned long long, unsigned char> idx(&psel, &pseq);
-
-            idx.makeHistogram(0, "FlagSequence");    // creates sparse histo and applies popular indices to target 
-            idx.makeHistogram(1, "MaterialSequence");   
-
-            psel.repeat_to( maxrec, rsel );
-
-            cudaDeviceSynchronize();
-
-            (*m_timer)("sequenceIndex"); 
-
-#ifdef INTEROP
-            // declare that CUDA finished with buffers 
-            c_rsel->CUDA_to_GL();
-            c_psel->CUDA_to_GL();
-#else
-            // non-interop workaround download the Thrust created buffers into NPY, then copy them back to GPU with uploadSelection
-            psel.download( m_evt->getPhoselData() );  
-            rsel.download( m_evt->getRecselData() ); 
-
-            //m_evt->getPhoselData()->save("phosel_%s", typ, tag, det);
-            //m_evt->getRecselData()->save("recsel_%s", typ, tag, det);
-
-            m_scene->uploadSelection();                 // upload NPY into OpenGL buffer, duplicating recsel on GPU
-
-            (*m_timer)("selectionDownloadUpload"); 
-#endif
-
-            m_seqhis = new GItemIndex(idx.getHistogramIndex(0)) ;  
-            m_seqmat = new GItemIndex(idx.getHistogramIndex(1)) ;  
-            //seqhis->save(idpath);
-            //seqmat->save(idpath);
-
-            m_seqhis->setTitle("Photon Flag Sequence Selection");
-            m_seqhis->setTypes(m_types);
-            m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
-            m_seqhis->formTable();
-
-            m_seqmat->setTitle("Photon Material Sequence Selection");
-            m_seqmat->setTypes(m_types);
-            m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
-            m_seqmat->formTable();
-    
-            m_photons = new Photons(m_pho, m_bnd, m_seqhis, m_seqmat ) ; // GUI jacket 
-        }
-
-
-    m_scene->setPhotons(m_photons);
 }
 
 
@@ -1074,6 +991,7 @@ void App::renderLoop()
 
     unsigned int count ; 
 
+
     while (!glfwWindowShouldClose(m_window))
     {
         m_frame->listen(); 
@@ -1104,9 +1022,12 @@ void App::renderLoop()
 
             if(m_photons)
             {
-                glm::ivec4 sel = m_photons->getBoundaries()->getSelection() ;
-                m_composition->setSelection(sel); 
-                m_composition->getPick().y = sel.x ;   //  1st boundary 
+                if(m_bnd)
+                {
+                    glm::ivec4 sel = m_bnd->getSelection() ;
+                    m_composition->setSelection(sel); 
+                    m_composition->getPick().y = sel.x ;   //  1st boundary 
+                }
 
                 recsel.x = m_seqhis ? m_seqhis->getSelected() : 0 ; 
                 recsel.y = m_seqmat ? m_seqmat->getSelected() : 0 ; 

@@ -20,7 +20,7 @@ class OBufBase {
       static unsigned int getElementSizeInBytes(RTformat format); // eg sizeof(RT_FORMAT_FLOAT4) = 4*4 = 16 
       static unsigned int getNumBytes(const optix::Buffer& buffer);
    public:
-      CBufSlice slice( unsigned int stride, unsigned int begin, unsigned int end=0u );
+      CBufSlice slice( unsigned int stride, unsigned int begin=0u , unsigned int end=0u );
       void*        getDevicePtr();
       unsigned int getMultiplicity(); // typically 4, for RT_FORMAT_FLOAT4/RT_FORMAT_UINT4
       unsigned int getSize();         // width*depth*height of OptiX buffer, ie the number of typed elements (often float4) 

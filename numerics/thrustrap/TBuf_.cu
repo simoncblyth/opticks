@@ -21,6 +21,10 @@ void TBuf::download(NPY<T>* npy)
     cudaMemcpy( dst, src, numBytes, cudaMemcpyDeviceToHost );
 }
 
+void TBuf::zero()
+{
+    cudaMemset( getDevicePtr(), 0, getNumBytes());
+}
 
 template <typename T>
 void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end )

@@ -1,6 +1,9 @@
 #include "TSparse.hh"
 #include "TBuf.hh"
 
+#include "stringutil.hpp"
+#include "Index.hpp"
+
 #include <iostream>
 #include <iomanip>
 
@@ -52,7 +55,10 @@ void TSparse<T>::count_unique()
                                     thrust::not_equal_to<T>()    // pair-by-pair operator, returning 1 at edges 
                                       ); 
 
+
+#ifdef DEBUG
     printf("TSparse<T>::count_unique m_num_unique %d \n", m_num_unique) ; 
+#endif
 
     m_values.resize(m_num_unique);
     m_counts.resize(m_num_unique);
@@ -92,10 +98,8 @@ void TSparse<T>::update_lookup()
     // partial pullback, only need small number (~32) of most popular ones on host 
 
     unsigned int n = TSPARSE_LOOKUP_N ; 
-    printf("TSparse<T>::update_lookup  %u \n", n ) ; 
 
-    // hmm using 0 as "empty" ? will that be mis-construed ?
-    m_values_h.resize(n, 0);
+    m_values_h.resize(n, 0);   // TODO verify that using 0 as "empty" will not be mis-construed as a valid index 
     m_counts_h.resize(n, 0);
 
     if(m_num_unique > n)
@@ -114,14 +118,20 @@ void TSparse<T>::update_lookup()
 
     T* data = m_values_h.data();
 
+    m_index_h = make_index();
+
+#ifdef DEBUG
     printf("TSparse<T>::update_lookup<T>\n");
     for(unsigned int i=0 ; i < TSPARSE_LOOKUP_N ; i++) 
           std::cout << std::dec << std::setw(4) << i 
                     << " " << std::hex << std::setw(16) << *(data + i) << std::dec 
                     << std::endl ;
+#endif
  
     cudaMemcpyToSymbol(dev_tsparse_lookup,data,TSPARSE_LOOKUP_N*sizeof(T));
 }
+
+
 
 
 template <typename T>
@@ -185,6 +195,19 @@ void TSparse<T>::apply_lookup(CBufSlice target)
     thrust::transform( src.begin(), src.end(), tgt.begin(), apply_lookup_functor<T,S>(offset, missing) ); 
 }
 
+
+
+template <typename T>
+Index* TSparse<T>::make_index()
+{
+    Index* index = new Index(m_label);
+    for(unsigned int i=0 ; i < m_values_h.size() ; i++)
+    { 
+        std::string name = as_hex(m_values_h[i]);
+        index->add(name.c_str(), m_counts_h[i] ); 
+    }
+    return index ; 
+}
 
 
 
