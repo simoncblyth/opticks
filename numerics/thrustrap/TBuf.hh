@@ -10,6 +10,7 @@ class TBuf {
       void* getDevicePtr();
 
       template <typename T> void dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end );
+      template <typename T> void dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end );
       template <typename T> T  reduce(unsigned int stride, unsigned int begin, unsigned int end=0u );
 
       CBufSlice slice( unsigned int stride, unsigned int begin, unsigned int end=0u ); 

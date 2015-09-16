@@ -776,60 +776,69 @@ void App::downloadEvt()
 
 void App::indexEvt()
 {
+
+   /*
+
+       INTEROP mode GPU buffer access C:create R:read W:write
+       ----------------------------------------------------------
+
+                     OpenGL     OptiX              Thrust 
+
+       gensteps       CR       R (gen/prop)       R 
+
+       photons        CR       W (gen/prop)       W (seeding)
+       sequence                W (gen/prop)
+       phosel         CR                          W (indexing) 
+
+       records        CR       W  
+       recsel         CR                          W (indexing)
+
+
+       OptiX has no business with phosel and recsel 
+
+   */
+
     if(!m_evt) return ; 
 
     optix::Buffer& seq_buf = m_engine->getSequenceBuffer();
-    optix::Buffer& phosel_buf = m_engine->getPhoselBuffer();
-    optix::Buffer& recsel_buf = m_engine->getRecselBuffer();
-
     OBuf seq("seq", seq_buf );
     seq.setMultiplicity(1u);    // unsigned long long buffer not native, so using RT_FORMAT_USER
     seq.setHexDump(true);
-
-    OBuf phosel("phosel", phosel_buf ); 
-    phosel.setHexDump(true);
-
-    OBuf recsel("recsel", recsel_buf ); 
-    recsel.setHexDump(true);
-
     unsigned int nseq = seq.getNumAtoms(); 
-    unsigned int nphosel = phosel.getNumAtoms(); 
-    unsigned int nrecsel = recsel.getNumAtoms(); 
 
-    LOG(info) << "App::indexEvt "
-              << " nseq (2*num_photons)" << nseq 
-              << " nphosel (4*num_photons)" << nphosel
-              << " nrecsel (10*4*num_photons)" << nrecsel
-              ; 
+    NPY<unsigned char>* phosel_data = m_evt->getPhoselData(); // NB hostside allocation deferred 
 
-    (*m_timer)("indexEvt.setup"); 
+    CResource rphosel( phosel_data->getBufferId(), CResource::W );
+    {
+        CBufSpec spec = rphosel.mapGLToCUDA();
+        spec.size = spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
+        unsigned int nphosel = spec.size ; 
+        assert(nphosel == 2*nseq);
 
-    //seq.dump<unsigned long long>("App::indexEvt seqhis", 2, 0, std::min(nseq,100u));
-    TSparse<unsigned long long> seqhis(seq.slice(2,0,nseq)); // history sequence
-    seqhis.count_unique();
-    seqhis.pullback();
-    seqhis.dump("App::indexEvt seqhis");
-    seqhis.apply_lookup<unsigned char>( phosel.slice(4,0,nphosel));
+        TBuf tphosel("tphosel", spec );
+
+        LOG(info) << "App::indexEvt "
+                  << " nseq (2*num_photons)" << nseq 
+                  << " nphosel " << nphosel
+                  ; 
+
+        seq.dump<unsigned long long>("App::indexEvt OBuf seq.dump", 2, 0, std::min(nseq,100u));
+        TSparse<unsigned long long> seqhis(seq.slice(2,0,nseq)); // history sequence
+        seqhis.make_lookup();
+        seqhis.dump("App::indexEvt seqhis");
+        seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0,nphosel));
+
+        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,0,nphosel)", 4,0,std::min(nphosel,100u)) ;
+
+        rphosel.unmapGLToCUDA(); 
+    }
+
+    /*
+    phosel.download(phosel_data);   // works by mappinf the OptiX buffer 
+    phosel_data->save("/tmp/phosel.npy");  // hmm getting all zeros
+    */
 
     (*m_timer)("indexEvt.seqhis"); 
-
-    seq.dump<unsigned long long>("App::indexEvt seqmat", 2, 1, std::min(nseq,100u));
-    TSparse<unsigned long long> seqmat(seq.slice(2,1,nseq)); // material sequence
-    seqmat.count_unique();
-    seqmat.pullback();
-    seqmat.dump("App::indexEvt seqmat");
-    seqmat.apply_lookup<unsigned char>( phosel.slice(4,1,nphosel));
-
-    (*m_timer)("indexEvt.seqmat"); 
-
-    phosel.dumpint<unsigned char>("App::indexEvt phosel (4,0)", 4, 0, std::min(nphosel,100u));
-    phosel.dumpint<unsigned char>("App::indexEvt phosel (4,1)", 4, 1, std::min(nphosel,100u));
-
-    (*m_timer)("indexEvt.tail"); 
-
-
-    //TRepeat<unsigned char> rep(recsel.slice(4,
-
 }
 
 void App::indexEvtOld()

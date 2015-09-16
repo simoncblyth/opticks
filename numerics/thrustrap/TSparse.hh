@@ -3,6 +3,7 @@
 #include "CBufSlice.hh"
 #include <thrust/device_vector.h>
 
+#define TSPARSE_LOOKUP_N 32 
 
 // (hopefully) a simplification of ThrustIdx, ThrustHistogram
 
@@ -10,11 +11,12 @@ template <typename T>
 class TSparse {
    public:
       TSparse(CBufSlice source);
-
-      void count_unique();  // creates on device sparse histogram 
-      void pullback();      // partial copy back to host to prepare for apply_lookup
+   public:
+      void make_lookup(); 
       template <typename S> void apply_lookup(CBufSlice target);
-
+   private:
+      void count_unique();  // creates on device sparse histogram 
+      void update_lookup();
    public:
       void dump(const char* msg="TSparse<T>::dump");
    private:

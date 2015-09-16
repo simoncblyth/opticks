@@ -10,15 +10,25 @@
 #include <thrust/inner_product.h>
 #include <thrust/iterator/constant_iterator.h>
 
-
-// nvcc compilation of boost logging throws up lots of warnings... 
-// TODO: arrange logging into .cc rather than .cu
-//#include <boost/log/trivial.hpp>
-//#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
 #include "strided_range.h"
+
+//
+// *dev_tsparse_lookup* 
+//        is a global symbol pointing at device constant memory 
+//        **CAUTION : UNAVOIDABLE NAME COLLISION DANGER**
+//    
+//        http://stackoverflow.com/questions/7961792/device-constant-const/7963395#7963395
+//
+
+__constant__ unsigned long long dev_tsparse_lookup[TSPARSE_LOOKUP_N]; 
+
+template <typename T>
+void TSparse<T>::make_lookup()
+{
+    count_unique();
+    update_lookup();
+}
+
 
 template <typename T>
 void TSparse<T>::count_unique()
@@ -76,29 +86,17 @@ void TSparse<T>::count_unique()
 }
 
 
-
-const int dev_lookup_n = 32; 
-
-// hmm seems cannot template this ...
-__constant__ unsigned long long dev_lookup[dev_lookup_n]; 
-
 template <typename T>
-void update_dev_lookup(T* data) // data needs to have at least dev_lookup_n elements  
-{
-    cudaMemcpyToSymbol(dev_lookup,data,dev_lookup_n*sizeof(T));
-}
-
-template <typename T>
-void TSparse<T>::pullback()
+void TSparse<T>::update_lookup()
 {
     // partial pullback, only need small number (~32) of most popular ones on host 
 
-    unsigned int n = dev_lookup_n ; 
+    unsigned int n = TSPARSE_LOOKUP_N ; 
+    printf("TSparse<T>::update_lookup  %u \n", n ) ; 
 
-    m_values_h.resize(n);
-    m_counts_h.resize(n);
-
-    // what happens when not long enough ?
+    // hmm using 0 as "empty" ? will that be mis-construed ?
+    m_values_h.resize(n, 0);
+    m_counts_h.resize(n, 0);
 
     if(m_num_unique > n)
     {
@@ -114,7 +112,15 @@ void TSparse<T>::pullback()
     thrust::reverse(m_values_h.begin(), m_values_h.end());
     thrust::reverse(m_counts_h.begin(), m_counts_h.end());
 
-    update_dev_lookup<T>( m_values_h.data() );
+    T* data = m_values_h.data();
+
+    printf("TSparse<T>::update_lookup<T>\n");
+    for(unsigned int i=0 ; i < TSPARSE_LOOKUP_N ; i++) 
+          std::cout << std::dec << std::setw(4) << i 
+                    << " " << std::hex << std::setw(16) << *(data + i) << std::dec 
+                    << std::endl ;
+ 
+    cudaMemcpyToSymbol(dev_tsparse_lookup,data,TSPARSE_LOOKUP_N*sizeof(T));
 }
 
 
@@ -129,8 +135,6 @@ void TSparse<T>::dump(const char* msg)
                   << std::endl ;  
     } 
 }
-
-
 
 
 template <typename T, typename S>
@@ -152,9 +156,9 @@ struct apply_lookup_functor : public thrust::unary_function<T,S>
     S operator()(T seq)
     {
         S idx(m_missing) ; 
-        for(unsigned int i=0 ; i < dev_lookup_n ; i++)
+        for(unsigned int i=0 ; i < TSPARSE_LOOKUP_N ; i++)
         {
-            if(seq == dev_lookup[i]) idx = i + m_offset ;
+            if(seq == dev_tsparse_lookup[i]) idx = i + m_offset ;
             // NB not breaking as hope this will keep memory access lined up between threads 
         }
         return idx ; 
@@ -180,8 +184,6 @@ void TSparse<T>::apply_lookup(CBufSlice target)
 
     thrust::transform( src.begin(), src.end(), tgt.begin(), apply_lookup_functor<T,S>(offset, missing) ); 
 }
-
-
 
 
 

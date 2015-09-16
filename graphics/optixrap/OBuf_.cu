@@ -68,6 +68,9 @@ void OBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsign
 template <typename T>
 void OBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end)
 {
+
+    // dumpint necessitated in addition to dump as streaming unsigned char gives characters not integers
+
     Summary(msg);
 
     thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ; 
