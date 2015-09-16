@@ -8,12 +8,6 @@
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
 
-// ggeoview-
-//#define INTEROP 1
-#ifdef INTEROP
-#include "CUDAInterop.hh"
-#endif
-
 #define OPTIX 1
 
 // oglrap-

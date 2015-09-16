@@ -142,7 +142,7 @@ set(LIBRARIES
       crypto 
 )
 
-add_executable( ${name} main.cc CUDAInterop.cc) 
+add_executable( ${name} main.cc ) 
 
 target_link_libraries( ${name} ${LIBRARIES} )
 
