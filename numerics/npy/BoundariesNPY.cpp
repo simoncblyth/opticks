@@ -17,14 +17,13 @@ bool BoundariesNPY::second_value_order(const std::pair<int,int>&a, const std::pa
 }
 
 
-void BoundariesNPY::indexBoundaries(bool sign)
+void BoundariesNPY::indexBoundaries()
 {
     assert(m_photons);
     m_boundaries.clear();
 
     printf("BoundariesNPY::indexBoundaries \n");
-
-    std::map<int,int> uniqn = sign ? m_photons->count_uniquei(3,0,2,0) : m_photons->count_uniquei(3,0) ;
+    std::map<int,int> uniqn = m_photons->count_uniquei(3,0) ;  // boundary signing now done by OptiX
 
     // To allow sorting by count
     //      map<boundary_code, count> --> vector <pair<boundary_code,count>>

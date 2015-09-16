@@ -30,6 +30,7 @@ void TSparse<T>::make_lookup()
 {
     count_unique();
     update_lookup();
+    m_index_h = make_index();
 }
 
 
@@ -118,7 +119,6 @@ void TSparse<T>::update_lookup()
 
     T* data = m_values_h.data();
 
-    m_index_h = make_index();
 
 #ifdef DEBUG
     printf("TSparse<T>::update_lookup<T>\n");
@@ -140,9 +140,12 @@ void TSparse<T>::dump(const char* msg)
     printf("%s : num_unique %u \n", msg, m_num_unique );
     for(unsigned int  i=0 ; i < m_values_h.size() ; i++)
     {
-        std::cout << std::hex << std::setw(16) << m_values_h[i] 
-                  << std::dec << std::setw(10) << m_counts_h[i]
-                  << std::endl ;  
+        std::cout << "[" << std::setw(2) << i << "] "  ;
+        if(m_hexdump) std::cout << std::hex ; 
+        std::cout << std::setw(16) << m_values_h[i] ;
+        if(m_hexdump) std::cout << std::dec ; 
+        std::cout << std::setw(10) << m_counts_h[i] ;
+        std::cout << std::endl ;  
     } 
 }
 
@@ -213,6 +216,9 @@ Index* TSparse<T>::make_index()
 
 
 template class TSparse<unsigned long long> ;
+template class TSparse<int> ;
+
 template void TSparse<unsigned long long>::apply_lookup<unsigned char>(CBufSlice target);
+template void TSparse<int>::apply_lookup<char>(CBufSlice target);
 
 

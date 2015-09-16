@@ -454,15 +454,30 @@ void OEngine::initGenerate(NumpyEvt* evt)
     m_sequence_buffer = createIOBuffer<unsigned long long>( evt->getSequenceData(), "sequence" );
     m_context["sequence_buffer"]->set( m_sequence_buffer );
 
+
+
+    m_sequence_buf = new OBuf("sequence", m_sequence_buffer );
+    m_sequence_buf->setMultiplicity(1u);
+    m_sequence_buf->setHexDump(true);
+
+    m_photon_buf = new OBuf("photon", m_photon_buffer );
+
+
+
+   /*
     m_phosel_buffer = createIOBuffer<unsigned char>( evt->getPhoselData(), "phosel" );
     m_context["phosel_buffer"]->set( m_phosel_buffer );
 
     m_recsel_buffer = createIOBuffer<unsigned char>( evt->getRecselData(), "recsel" );
     if(m_recsel_buffer.get())   
         m_context["recsel_buffer"]->set( m_recsel_buffer );
+   */
+
 
     // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
+
+
 
 
 void OEngine::generate()

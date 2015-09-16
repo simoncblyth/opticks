@@ -20,8 +20,8 @@ class BoundariesNPY {
        void setBoundaryNames(std::map<int, std::string> names);    
 
    public:
-       // signed mode : signs the boundary code according to the sign of (2,0) vpol.x (currently cos_theta)
-       void indexBoundaries(bool sign=true);
+       // boundary code integer is cos_theta signed by OptiX in cu/material1_propagate.cu
+       void indexBoundaries();
        void dump(const char* msg="BoundariesNPY::dump");
 
    private:  

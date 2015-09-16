@@ -11,6 +11,9 @@
 class RecordsNPY ; 
 class Index ; 
 
+//
+// detailed host based photon and record dumper 
+//
 class PhotonsNPY {
    public:  
        PhotonsNPY(NPY<float>* photons); 

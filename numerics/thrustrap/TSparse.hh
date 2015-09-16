@@ -17,6 +17,7 @@ class TSparse {
       void make_lookup(); 
       template <typename S> void apply_lookup(CBufSlice target);
       Index* getIndex();
+      void setHexDump(bool hexdump=true);
    private:
       void count_unique();  // creates on device sparse histogram 
       void update_lookup(); // writes small number (eg 32) of most popular uniques to global device constant memory   
@@ -35,6 +36,7 @@ class TSparse {
       thrust::host_vector<T>       m_values_h ;  
       thrust::host_vector<int>     m_counts_h ; 
       Index*                       m_index_h ; 
+      bool                         m_hexdump ; 
 
 };
 
@@ -43,7 +45,8 @@ inline TSparse<T>::TSparse(const char* label, CBufSlice source ) :
         m_label(strdup(label)),
         m_source(source),
         m_num_unique(0u),
-        m_index_h(NULL)
+        m_index_h(NULL),
+        m_hexdump(true)
 {
 }
 
@@ -52,6 +55,13 @@ inline Index* TSparse<T>::getIndex()
 {
     return m_index_h ;
 }
+
+template <typename T>
+inline void TSparse<T>::setHexDump(bool hexdump)
+{
+    m_hexdump = hexdump  ;
+}
+
 
 
 

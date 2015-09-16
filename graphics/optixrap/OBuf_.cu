@@ -159,8 +159,9 @@ template void OBuf::dump<optix::uint4>(const char*, unsigned int, unsigned int, 
 template void OBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int);
 template void OBuf::dump<unsigned long long>(const char*, unsigned int, unsigned int, unsigned int);
 template void OBuf::dump<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
-template void OBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
+template void OBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int);
 
+template void OBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
 
 
 template unsigned int OBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int);

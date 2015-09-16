@@ -18,8 +18,45 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+surface property debug, PMT id 
+-------------------------------
+
+
+enhancement : COMPUTE mode
+----------------------------
+
+Next:
+
+* pull out ggeoview- App into separate file and make reusable 
+  from tests/computeTest.cc with minimal duplication with main.cc
+  
+  * ie need to partition up compute from interop 
+
+  * try to arrange use of same code no matter whether
+    OpenGL or OptiX backed buffers are in use, need 
+    some kind of facade to make these look the same 
+    from the point of view of Thrust interop, CBufSpec 
+    will help here
+
+  * splitting the monolithic OEngine  
+
+
 enhancement : interop with stream compaction, deferred host allocation 
 -----------------------------------------------------------------------
+
+Next:
+
+* examine App::indexEvtOld replace boundary indexing with GPU indexing, adjust GUI usage 
+
+* revive host based detailed debug dumping with PhotonsNPY RecordNPY 
+
+* look into photon picking ? maybe provide a GUI to invoke the pullbacks (perhaps partial)
+  and run the detailed debug
+
+* test operation without any host allocations
+
+* implement stream compaction "partial" pullbacks based on internal criteria or external mask  
+  following testcode of optixthrust-
 
 
 

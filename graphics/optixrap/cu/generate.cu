@@ -113,17 +113,10 @@ RT_PROGRAM void generate()
     {
         CerenkovStep cs ;
         csload(cs, genstep_buffer, genstep_offset);
-
 #ifdef DEBUG
         if(dbg) csdebug(cs);
 #endif
         generate_cerenkov_photon(p, cs, rng );         
-
-/*
-#ifdef DEBUG
-        if(cs.MaterialIndex == 24) return ;  // KLUDGE SKIP Aluminium : leaving undefines in buffer
-#endif
-*/
         s.flag = CERENKOV ;  
     }
     else

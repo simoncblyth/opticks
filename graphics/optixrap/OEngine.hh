@@ -9,10 +9,9 @@ class GMergedMesh ;
 class GBoundaryLib ;
 class NumpyEvt ; 
 class cuRANDWrapper ; 
+class OBuf ; 
 
-
-template <typename T>
-class NPY ;
+template <typename T> class NPY ;
 
 #include "NPYBase.hpp"
 #include "string.h"
@@ -21,17 +20,8 @@ class NPY ;
 #include <optixu/optixu_aabb_namespace.h>
 
 // TODO: split off non-OpenGL OptiXCore for headless usage and easier testing
-// TODO: this needs to be drawn and quartered, doing far too much for one class
+// TODO: this monolith needs to be drawn and quartered, doing far too much for one class
 
-/*
-
-  TODO:
-
-  Refactor code for populating the constitutent OptiX context  
-  into OpticksContext class 
-
-
-*/
 
 class OEngine : public Touchable {
 
@@ -114,10 +104,13 @@ class OEngine : public Touchable {
         void cleanUp();
 
     public:
-        optix::Buffer& getSequenceBuffer();
-        optix::Buffer& getPhoselBuffer();
-        optix::Buffer& getRecselBuffer();
-
+        //optix::Buffer& getSequenceBuffer();
+        //optix::Buffer& getPhotonBuffer();
+        //optix::Buffer& getPhoselBuffer();  OptiX doesnt touch these
+        //optix::Buffer& getRecselBuffer();
+    public:
+        OBuf* getSequenceBuf();
+        OBuf* getPhotonBuf();
     public:
        // fulfil Touchable interface
        unsigned int touch(int ix, int iy);
@@ -174,9 +167,12 @@ class OEngine : public Touchable {
         optix::Buffer         m_record_buffer ; 
         optix::Buffer         m_sequence_buffer ; 
         optix::Buffer         m_touch_buffer ; 
-        optix::Buffer         m_phosel_buffer ; 
-        optix::Buffer         m_recsel_buffer ; 
+        //optix::Buffer         m_phosel_buffer ; 
+        //optix::Buffer         m_recsel_buffer ; 
         optix::Group          m_top ;
+
+        OBuf*                 m_photon_buf ;
+        OBuf*                 m_sequence_buf ;
 
         unsigned int          m_width ;
         unsigned int          m_height ;
@@ -232,6 +228,10 @@ inline OEngine::OEngine(Mode_t mode) :
     m_rng_wrapper(NULL),
     m_context(NULL),
     m_top(NULL),
+
+    m_photon_buf(NULL),
+    m_sequence_buf(NULL),
+
     m_photon_buffer_id(0),
     m_genstep_buffer_id(0),
     m_pbo(0),
@@ -374,11 +374,18 @@ inline NPY<int>* OEngine::getIDomain()
 }
 
 
-
-inline optix::Buffer& OEngine::getSequenceBuffer()
+inline OBuf* OEngine::getSequenceBuf()
 {
-    return m_sequence_buffer ; 
+    return m_sequence_buf ; 
 }
+inline OBuf* OEngine::getPhotonBuf()
+{
+    return m_photon_buf ; 
+}
+
+
+
+/*
 inline optix::Buffer& OEngine::getRecselBuffer()
 {
     return m_recsel_buffer ; 
@@ -387,6 +394,9 @@ inline optix::Buffer& OEngine::getPhoselBuffer()
 {
     return m_phosel_buffer ; 
 }
+*/
+
+
 inline OEngine::Mode_t OEngine::getMode()
 {
     return m_mode ; 
