@@ -3,12 +3,18 @@
 #include "CBufSpec.hh"
 #include "CBufSlice.hh"
 
+template <typename T> class NPY ; 
+
 class TBuf {
    public:
       TBuf(const char* name, CBufSpec spec );
 
       void* getDevicePtr();
+      unsigned int getNumBytes();
+      unsigned int getSize();
 
+      template <typename T> void download(NPY<T>* npy);
+      template <typename T> void repeat_to(TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats);
       template <typename T> void dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end );
       template <typename T> void dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end );
       template <typename T> T  reduce(unsigned int stride, unsigned int begin, unsigned int end=0u );
@@ -42,5 +48,15 @@ inline void* TBuf::getDevicePtr()
 {
     return m_spec.dev_ptr ; 
 }
+inline unsigned int TBuf::getNumBytes()
+{
+    return m_spec.num_bytes ; 
+}
+inline unsigned int TBuf::getSize()
+{
+    return m_spec.size ; 
+}
+
+
 
 

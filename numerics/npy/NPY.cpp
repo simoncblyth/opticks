@@ -51,17 +51,21 @@ void NPY<T>::fill( T value)
 }
 
 template <typename T>
-void NPY<T>::zero()
+T* NPY<T>::zero()
 {
-    allocate();
-    memset( m_data.data(), 0, getNumBytes(0) );
+    T* data = allocate();
+    memset( data, 0, getNumBytes(0) );
+    return data ; 
 }
 
 template <typename T>
-void NPY<T>::allocate()
+T* NPY<T>::allocate()
 {
+    assert(m_data.size() == 0);
+
     setHasData(true);
     m_data.resize(getNumValues(0));
+    return m_data.data();
     //
     // *reserve* vs *resize*
     //     *reserve* just allocates without changing size, does that matter ? 
@@ -94,6 +98,10 @@ void NPY<T>::read(void* ptr)
     }
     memcpy(m_data.data(), ptr, getNumBytes(0) );
 }
+
+
+
+
 
 template <typename T>
 T* NPY<T>::getUnsetItem()

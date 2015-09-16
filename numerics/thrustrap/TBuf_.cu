@@ -1,18 +1,25 @@
 #include "TBuf.hh"
 
 #include "strided_range.h"
+#include "strided_repeated_range.h"
+
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
 #include <iterator>
 #include <iomanip>
 #include <iostream>
 
+#include "NPY.hpp"
 
-
-
-
-
-
+template <typename T>
+void TBuf::download(NPY<T>* npy)
+{
+    unsigned int numBytes = npy->getNumBytes(0) ;
+    assert(numBytes == getNumBytes());
+    void* src = getDevicePtr();
+    void* dst = npy->zero();
+    cudaMemcpy( dst, src, numBytes, cudaMemcpyDeviceToHost );
+}
 
 
 template <typename T>
@@ -20,7 +27,7 @@ void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsign
 {
     Summary(msg);
 
-    thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)m_spec.dev_ptr) ;
+    thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
     if( stride == 0 )
     {
@@ -43,7 +50,7 @@ void TBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, uns
 
     Summary(msg);
 
-    thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)m_spec.dev_ptr) ;
+    thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
     thrust::host_vector<T> h ;
 
@@ -78,7 +85,7 @@ void TBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, uns
 template <typename T>
 T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end )
 {
-    thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)m_spec.dev_ptr) ;
+    thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
     T result ;
     if( stride == 0 )
@@ -96,14 +103,26 @@ T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end )
 
 
 
+template <typename T>
+void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats )
+{
+    thrust::device_ptr<T> src = thrust::device_pointer_cast((T*)getDevicePtr()) ;
+    thrust::device_ptr<T> tgt = thrust::device_pointer_cast((T*)other->getDevicePtr()) ;
 
+    typedef typename thrust::device_vector<T>::iterator Iterator;
 
+    strided_repeated_range<Iterator> si( src + begin, src + end, stride, repeats);
+
+    thrust::copy( si.begin(), si.end(),  tgt );    
+}
 
 
 
 template void TBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int);
 template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
+template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int);
 template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int);
+template void TBuf::download<unsigned char>(NPY<unsigned char>* npy);
 
 
 

@@ -96,9 +96,8 @@ class NPY : public NPYBase {
     public:
        void setData(T* data);
        void fill(T value);
-       void zero();
-    private:
-       void allocate();
+       T* zero();
+       T* allocate();
     public:
        T* getUnsetItem();
        bool isUnsetItem(unsigned int i);

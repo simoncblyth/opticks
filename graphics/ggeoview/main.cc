@@ -784,7 +784,7 @@ void App::indexEvt()
 
                      OpenGL     OptiX              Thrust 
 
-       gensteps       CR       R (gen/prop)       R 
+       gensteps       CR       R (gen/prop)       R (seeding)
 
        photons        CR       W (gen/prop)       W (seeding)
        sequence                W (gen/prop)
@@ -806,37 +806,82 @@ void App::indexEvt()
     seq.setHexDump(true);
     unsigned int nseq = seq.getNumAtoms(); 
 
-    NPY<unsigned char>* phosel_data = m_evt->getPhoselData(); // NB hostside allocation deferred 
+    // NB hostside allocation deferred for these
+    NPY<unsigned char>* phosel_data = m_evt->getPhoselData(); 
+    NPY<unsigned char>* recsel_data = m_evt->getRecselData();
 
     CResource rphosel( phosel_data->getBufferId(), CResource::W );
+    CResource rrecsel( recsel_data->getBufferId(), CResource::W );
     {
-        CBufSpec spec = rphosel.mapGLToCUDA();
-        spec.size = spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
-        unsigned int nphosel = spec.size ; 
+        CBufSpec phosel_spec = rphosel.mapGLToCUDA();
+        CBufSpec recsel_spec = rrecsel.mapGLToCUDA();
+
+        // hmm could auto set the size by templating the mapping 
+        phosel_spec.size = phosel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
+        unsigned int nphosel = phosel_spec.size ; 
         assert(nphosel == 2*nseq);
 
-        TBuf tphosel("tphosel", spec );
+        recsel_spec.size = recsel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
+        unsigned int nrecsel = recsel_spec.size ; 
+        assert(nrecsel == 10*2*nseq);
+
+
+        TBuf tphosel("tphosel", phosel_spec );
+        TBuf trecsel("trecsel", recsel_spec );
 
         LOG(info) << "App::indexEvt "
                   << " nseq (2*num_photons)" << nseq 
                   << " nphosel " << nphosel
+                  << " nrecsel " << nrecsel
                   ; 
 
         seq.dump<unsigned long long>("App::indexEvt OBuf seq.dump", 2, 0, std::min(nseq,100u));
+
         TSparse<unsigned long long> seqhis(seq.slice(2,0,nseq)); // history sequence
         seqhis.make_lookup();
         seqhis.dump("App::indexEvt seqhis");
         seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0,nphosel));
-
         tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,0,nphosel)", 4,0,std::min(nphosel,100u)) ;
 
-        rphosel.unmapGLToCUDA(); 
-    }
+        TSparse<unsigned long long> seqmat(seq.slice(2,1,nseq)); // material sequence
+        seqmat.make_lookup();
+        seqmat.dump("App::indexEvt seqmat");
+        seqmat.apply_lookup<unsigned char>( tphosel.slice(4,1,nphosel));
+        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,1,nphosel)", 4,1,std::min(nphosel,100u)) ;
 
-    /*
-    phosel.download(phosel_data);   // works by mappinf the OptiX buffer 
-    phosel_data->save("/tmp/phosel.npy");  // hmm getting all zeros
-    */
+        tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, nphosel, 10 );  // other, stride, begin, end, repeats
+
+        tphosel.download<unsigned char>( phosel_data );  // cudaMemcpyDeviceToHost
+        phosel_data->save("/tmp/phosel.npy");  
+
+        trecsel.download<unsigned char>( recsel_data );
+        recsel_data->save("/tmp/recsel.npy");  
+
+    }
+    rphosel.unmapGLToCUDA(); 
+    rrecsel.unmapGLToCUDA(); 
+
+/*
+    In [18]: p = np.load("/tmp/phosel.npy")
+    In [35]: r = np.load("/tmp/recsel.npy")
+
+    In [22]: np.unique(p[:,0,0])
+    Out[22]: 
+    array([  1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,
+            14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,
+            27,  28,  29,  30,  31,  32, 255], dtype=uint8)
+
+    In [23]: np.unique(p[:,0,1])
+    Out[23]: 
+    array([  1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,
+            14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,
+            27,  28,  29,  30,  31,  32, 255], dtype=uint8)
+
+    getting randoms in phosel slots 2,3 which get repeated into recsel
+
+*/
+
+
 
     (*m_timer)("indexEvt.seqhis"); 
 }
