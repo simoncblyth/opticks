@@ -13,7 +13,7 @@ class CResource {
     private:
        void init(); 
     public:
-       CBufSpec mapGLToCUDA();
+       template <typename T> CBufSpec mapGLToCUDA();
        void unmapGLToCUDA();
     public:
        void streamSync();

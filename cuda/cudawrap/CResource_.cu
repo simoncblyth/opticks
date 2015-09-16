@@ -89,14 +89,15 @@ void CResource::streamSync()
     m_imp->streamSync();
 }
 
+template <typename T>
 CBufSpec CResource::mapGLToCUDA()
 {
     m_mapped = true ; 
     //printf("CResource::mapGLToCUDA %d\n", m_buffer_id);
     m_imp->registerBuffer();
     m_imp->mapGLToCUDA();
-
-    return CBufSpec( m_imp->dev_ptr, 0, m_imp->bufsize );  // number of items only defined when decide on item size
+    unsigned int size = m_imp->bufsize/sizeof(T) ;
+    return CBufSpec( m_imp->dev_ptr, size, m_imp->bufsize );  // number of items only defined when decide on item size
 }
 void CResource::unmapGLToCUDA()
 {
@@ -105,5 +106,11 @@ void CResource::unmapGLToCUDA()
     m_imp->unmapGLToCUDA();
     m_imp->unregisterBuffer();
 }
+
+
+
+template CBufSpec CResource::mapGLToCUDA<unsigned char>();
+template CBufSpec CResource::mapGLToCUDA<unsigned int>();
+
 
 

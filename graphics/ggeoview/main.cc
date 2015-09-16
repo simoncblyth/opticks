@@ -637,8 +637,8 @@ void App::seedPhotonsFromGensteps()
     CResource rgs( gensteps->getBufferId(), CResource::R );
     CResource rph( photons->getBufferId(), CResource::RW );
 
-    TBuf tgs("tgs", rgs.mapGLToCUDA() );
-    TBuf tph("tph", rph.mapGLToCUDA() );
+    TBuf tgs("tgs", rgs.mapGLToCUDA<unsigned int>() );
+    TBuf tph("tph", rph.mapGLToCUDA<unsigned int>() );
     
     //tgs.dump<unsigned int>("App::seedPhotonsFromGensteps tgs", 6*4, 3, nv0 ); // stride, begin, end 
 
@@ -813,15 +813,15 @@ void App::indexEvt()
     CResource rphosel( phosel_data->getBufferId(), CResource::W );
     CResource rrecsel( recsel_data->getBufferId(), CResource::W );
     {
-        CBufSpec phosel_spec = rphosel.mapGLToCUDA();
-        CBufSpec recsel_spec = rrecsel.mapGLToCUDA();
+        CBufSpec phosel_spec = rphosel.mapGLToCUDA<unsigned char>();
+        CBufSpec recsel_spec = rrecsel.mapGLToCUDA<unsigned char>();
 
         // hmm could auto set the size by templating the mapping 
-        phosel_spec.size = phosel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
+        //phosel_spec.size = phosel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
         unsigned int nphosel = phosel_spec.size ; 
         assert(nphosel == 2*nseq);
 
-        recsel_spec.size = recsel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
+        //recsel_spec.size = recsel_spec.num_bytes/sizeof(unsigned char) ;  // number of atoms in buffer
         unsigned int nrecsel = recsel_spec.size ; 
         assert(nrecsel == 10*2*nseq);
 
