@@ -17,7 +17,7 @@ include(EnvBuildOptions)
 
 # TODO: see if can improve compilation speed by changing nvcc options to 
 # target just needed device ?
-# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
 
 message("CMAKE_CXX_COMPILER_ID:" ${CMAKE_CXX_COMPILER_ID})
 
@@ -51,6 +51,7 @@ CUDA_ADD_LIBRARY( ${name}
        TBuf_.cu
        TBufPair_.cu
        TSparse_.cu
+       OPTIONS -gencode=arch=compute_30,code=sm_30
 )
  
 target_link_libraries( ${name} ${LIBRARIES})

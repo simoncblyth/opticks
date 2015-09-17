@@ -25,7 +25,8 @@ CUDA_ADD_LIBRARY( ${name}
                   LaunchCommon.cc
                   CResource.cc
                   CResource_.cu
-                  
+                 OPTIONS
+                     -gencode=arch=compute_30,code=sm_30                  
 )
 
 set (LIBRARIES

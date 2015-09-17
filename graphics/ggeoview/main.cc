@@ -619,6 +619,10 @@ void App::seedPhotonsFromGensteps()
     //  This per-photon genstep index is used by OptiX photon propagation 
     //  program cu/generate.cu to access the appropriate values from the genstep buffer
     //
+    //
+    //  TODO: make this operational in COMPUTE as well as INTEROP modes without code duplication ?
+    //
+
 
     LOG(info)<<"App::seedPhotonsFromGensteps" ;
 
@@ -627,6 +631,14 @@ void App::seedPhotonsFromGensteps()
     NPY<float>* photons  =  m_evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
 
     unsigned int nv0 = gensteps->getNumValues(0) ; 
+
+    // interop specific, but the result of the mapping 
+    // hmm... does OptiX expose buffer id ? 
+    // 
+    // this is done prior to OptiX involvement in INTEROP mode
+    // hmm could keep that in COMPUTE mode by 
+    // creating buffers in Thrust and then doing gloptixthrust- CUDAToOptiX setDevicePointer 
+    //
 
     CResource rgs( gensteps->getBufferId(), CResource::R );
     CResource rph( photons->getBufferId(), CResource::RW );
@@ -645,7 +657,6 @@ void App::seedPhotonsFromGensteps()
 
     TBufPair<unsigned int> tgp(src, dst);
     tgp.seedDestination();
-
 
     rgs.unmapGLToCUDA(); 
     rph.unmapGLToCUDA(); 

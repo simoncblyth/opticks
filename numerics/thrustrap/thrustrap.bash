@@ -8,6 +8,69 @@ thrustrap-usage(){ cat << EOU
 ThrustRap
 ============
 
+First Use of CUDA App::seedPhotonsFromGensteps is slow ? A repeating without recompilation is faster
+------------------------------------------------------------------------------------------------------
+
+* presumably some compilation caching is being done 
+
+* perhaps some nvcc compiler options are not correct,
+  forcing compilation to the actual architecture at startup ?  YEP THIS LOOKS CORRECT
+
+* http://stackoverflow.com/questions/23264229/nvidia-cuda-thrust-device-vector-allocation-is-too-slow
+
+Initially tried changing CMakeLists.txt::
+
+    +set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
+    VERBOSE=1 thrustrap--
+
+But that gives::
+
+    [2015-Sep-17 10:59:52.039536]: App::seedPhotonsFromGensteps
+    libc++abi.dylib: terminating with uncaught exception of type thrust::system::system_error: function_attributes(): after cudaFuncGetAttributes: invalid device function
+    /Users/blyth/env/graphics/ggeoview/ggeoview.bash: line 1144: 29977 Abort trap: 6           $bin $*
+
+Realising that "_20" is for Fermi not Kepler "_30" correcting options seems to fix invalid device function and slow first run problems::
+
+     50 CUDA_ADD_LIBRARY( ${name}  
+     51        TBuf_.cu
+     52        TBufPair_.cu
+     53        TSparse_.cu
+     54        OPTIONS -gencode=arch=compute_30,code=sm_30
+     55 )
+
+
+Other packages using CUDA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:env blyth$ find . -name CMakeLists.txt -exec grep -l CUDA {} \;
+    ./cuda/cudawrap/CMakeLists.txt
+    ./graphics/ggeoview/CMakeLists.txt
+    ./graphics/optixrap/CMakeLists.txt
+    ./graphics/raytrace/CMakeLists.txt
+    ./graphics/thrust_opengl_interop/CMakeLists.txt
+    ./numerics/thrust/hello/CMakeLists.txt
+    ./numerics/thrustrap/CMakeLists.txt
+    ./optix/gloptixthrust/CMakeLists.txt
+    ./optix/OptiXTest/CMakeLists.txt
+    ./optix/optixthrust/CMakeLists.txt
+    ./optix/optixthrustnpy/CMakeLists.txt
+    ./optix/optixthrustuse/CMakeLists.txt
+    simon:env blyth$ 
+
+Adjusted OPTIONS in 
+
+* thrustrap-
+* cudawrap-
+* optixrap-
+
+The others are testing only.   
+
+TODO: centralize such settings
+
+
+
 CUDA 5.5, Thrust and C++11 on Mavericks
 ------------------------------------------
 

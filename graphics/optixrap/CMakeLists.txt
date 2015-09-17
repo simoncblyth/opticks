@@ -120,7 +120,7 @@ optixthrust_add_library( ${name}
        OBufPair_.cu     
 
       OPTIONS 
-       -arch sm_30
+          -gencode=arch=compute_30,code=sm_30
 ) 
 
 set(cuptxs

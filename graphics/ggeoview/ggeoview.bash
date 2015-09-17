@@ -60,8 +60,15 @@ Next:
 
 
 
-issue: jpmt timeouts binary search to pin down 
-------------------------------------------------
+RESOLVED issue: jpmt timeouts binary search to pin down 
+---------------------------------------------------------
+
+* problem was a genstep with parameters causing an infinite loop
+  in cerenkov generation wavelength sampling 
+
+  * solution was protections to prevent sin2Theta going negative
+
+
 
 ::
 
