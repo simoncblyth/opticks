@@ -17,9 +17,9 @@ int main(int argc, char** argv)
     assert(maxrec == 10);
 
     Types types ; 
-    types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
+    types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
     types.dumpFlags();
-    types.readMaterials(idpath, "GMaterialIndexLocal.json");
+    types.readMaterials(idpath, "GMaterialIndex");
     types.dumpMaterials();
 
     RecordsNPY r(records, maxrec);
@@ -40,8 +40,7 @@ int main(int argc, char** argv)
         unsigned long long hseq = r.getSequence(photon_id, Types::HISTORY );
         assert(cseq == hseq);
 
-        //printf(" photon_id %8d seqhis [%s] dseqhis [%s] hseq [%16llx] \n", photon_id, seqhis.c_str(), dseqhis.c_str(), hseq );
-         printf(" photon_id %8d hseq [%16llx] cseq[%16llx] seqhis [%20s] dseqhis [%s]  \n", photon_id, hseq, cseq, seqhis.c_str(), dseqhis.c_str() );
+        printf(" photon_id %8d hseq [%16llx] cseq[%16llx] seqhis [%20s] dseqhis [%s]  \n", photon_id, hseq, cseq, seqhis.c_str(), dseqhis.c_str() );
 
         //std::string seqmat = r.getSequenceString(photon_id, Types::MATERIAL );
         //std::string dseqmat = r.decodeSequenceString(seqmat, Types::MATERIAL);

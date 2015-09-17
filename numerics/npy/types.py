@@ -44,7 +44,7 @@ g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)
 
 
-DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/%s.npy"  ## cf C++ NPYBase::
+DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/dayabay/$1/%s.npy"  ## cf C++ NPYBase::
 
 
 def path_(typ, tag):
@@ -61,6 +61,7 @@ def load_(typ, tag):
     return np.load(path)
 
 
+gjspath_ = lambda _:os.path.expandvars("$IDPATH/%s" % _)
 geopath_ = lambda _:os.path.expandvars("$IDPATH/%s.npy" % _)
 geoload_ = lambda _:np.load(geopath_(_)) 
 

@@ -46,8 +46,6 @@ enhancement : interop with stream compaction, deferred host allocation
 
 Next:
 
-* examine App::indexEvtOld replace boundary indexing with GPU indexing, adjust GUI usage 
-
 * revive host based detailed debug dumping with PhotonsNPY RecordNPY 
 
 * look into photon picking ? maybe provide a GUI to invoke the pullbacks (perhaps partial)

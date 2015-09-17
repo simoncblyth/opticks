@@ -250,8 +250,15 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         bool unset = m_records->isUnsetItem(record_id);
         if(unset) continue ; 
 
+        // NB over all slots even if no records are written there, so 
+        //    must handle unset if the above unset check fails...
+        //
+        //    hmm looks like a change in the unset values in the buffer 
+        //    not reflected by update of NPY template specialization UNSET
+        //
+
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+        unpack_material_flags(flag, record_id, 1, 2, 3); // flag from m_records->getUChar4( i, j, k0, k1 );
 
         unsigned int bitpos(0) ; 
         switch(etype)
@@ -263,8 +270,30 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         }  
         assert(bitpos < 32);
 
-        unsigned int bitmask = 1 << (bitpos - 1);
+        unsigned int bitmask = bitpos == 0 ? 0 : 1 << (bitpos - 1); // added handling of 0 
         assert(ffs(bitmask) == bitpos);
+
+        if(ffs(bitmask) != bitpos)
+        {
+             LOG(warning) << "RecordsNPY::getSequenceString"
+                          << " UNEXPECTED ffs(bitmask) != bitpos "
+                          << " bitmask " << std::hex << bitmask << std::dec
+                          << " ffs(bitmask) " <<  ffs(bitmask)
+                          << " bitpos " << bitpos 
+                          ; 
+
+/*
+In [16]: "%x" % (1 << 31)
+Out[16]: '80000000'
+
+In [18]: ffs_(1<<31)
+Out[18]: 32
+
+In [20]: ffs_(0)
+Out[20]: 0
+
+*/
+        }
 
         std::string label = m_types->getMaskString( bitmask, etype) ;
         std::string abbrev = m_types->getAbbrev(label, etype) ; 

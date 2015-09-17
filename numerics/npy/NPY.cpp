@@ -77,29 +77,14 @@ T* NPY<T>::allocate()
 template <typename T>
 void NPY<T>::read(void* ptr)
 {
-
-    if(m_allow_prealloc)
+    if(m_data.size() == 0)
     {
-        LOG(warning) << "NPY<T>::read allowing preallocation " ; 
-    }
-    else
-    {
-        if(m_data.size() == 0)
-        {
-            unsigned int nv0 = getNumValues(0) ; 
-            LOG(info) << "NPY<T>::read allocating space now (deferred from earlier) for NumValues(0) " << nv0 ; 
-            allocate();
-        }
-        else
-        {
-            LOG(fatal) << "NPY<T>::read DEFERRED ALLOCATION IS MANDATORY " ;
-            assert(0); 
-        }
+        unsigned int nv0 = getNumValues(0) ; 
+        LOG(info) << "NPY<T>::read allocating space now (deferred from earlier) for NumValues(0) " << nv0 ; 
+        allocate();
     }
     memcpy(m_data.data(), ptr, getNumBytes(0) );
 }
-
-
 
 
 
@@ -526,21 +511,30 @@ NPYBase::Type_t NPY<unsigned long long>::type = ULONGLONG ;
 
 
 template<>
-short NPY<short>::UNSET = SHRT_MIN ;
-template<>
-int NPY<int>::UNSET = INT_MIN ;
+//short NPY<short>::UNSET = SHRT_MIN ;
+short NPY<short>::UNSET = 0 ;
 
 template<>
-float  NPY<float>::UNSET = FLT_MAX ;
+//int NPY<int>::UNSET = INT_MIN ;
+int NPY<int>::UNSET = 0 ;
+
 template<>
-double NPY<double>::UNSET = DBL_MAX ;
+//float  NPY<float>::UNSET = FLT_MAX ;
+float  NPY<float>::UNSET = 0 ;
+
+template<>
+//double NPY<double>::UNSET = DBL_MAX ;
+double NPY<double>::UNSET = 0 ;
+
 //template<>
 //char NPY<char>::UNSET = 0 ;
 
 template<>
 unsigned char NPY<unsigned char>::UNSET = 0 ;
+
 template<>
 unsigned int NPY<unsigned int>::UNSET = 0 ;
+
 template<>
 unsigned long long NPY<unsigned long long>::UNSET = 0 ;
 

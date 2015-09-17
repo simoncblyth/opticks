@@ -182,6 +182,7 @@ class App {
        void loadGenstep();
        void uploadEvt();
        void seedPhotonsFromGensteps();
+       void initRecords();
   public:
        void prepareEngine();
        void propagate();
@@ -676,6 +677,21 @@ void App::seedPhotonsFromGensteps()
     //
 }
 
+void App::initRecords()
+{
+    // TODO: find an OpenGL way to zero a VBO, here resort to CUDA
+    LOG(info)<<"App::initRecords" ;
+
+    NPY<short>* records =  m_evt->getRecordData() ;
+    CResource rec( records->getBufferId(), CResource::W );
+
+    TBuf trec("trec", rec.mapGLToCUDA<short>() );
+    trec.zero();
+
+    rec.unmapGLToCUDA(); 
+
+    (*m_timer)("initRecords"); 
+}
 
 void App::prepareEngine()
 {
@@ -886,6 +902,22 @@ void App::indexBoundaries()
 
     (*m_timer)("indexBoundaries"); 
 
+
+    NPY<float>* dpho = m_evt->getPhotonData();
+
+    if(dpho->hasData())
+    {
+        // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
+        LOG(info) << "App::indexBoundaries host based " ;
+        m_bnd = new BoundariesNPY(dpho); 
+        m_bnd->setTypes(m_types);
+        m_bnd->setBoundaryNames(m_boundaries); // map<int,string>
+        m_bnd->indexBoundaries();     
+    } 
+
+    (*m_timer)("indexBoundariesOld"); 
+
+
 /*
 
 App::indexBoundaries : num_unique 31 
@@ -950,13 +982,10 @@ void App::indexEvt()
 
     indexBoundaries();
 
- 
-    m_photons = new Photons(m_types, m_pho, m_bnd, m_seqhis, m_seqmat ) ; // GUI jacket 
-    m_scene->setPhotons(m_photons);
-
 
     (*m_timer)("indexEvt"); 
 }
+
 
 void App::indexEvtOld()
 {
@@ -964,28 +993,29 @@ void App::indexEvtOld()
 
     NPY<float>* dpho = m_evt->getPhotonData();
 
-    m_bnd = new BoundariesNPY(dpho); 
-    m_bnd->setTypes(m_types);
-    m_bnd->setBoundaryNames(m_boundaries);
-    m_bnd->indexBoundaries();     
-    // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
+    if(dpho->hasData())
+    {
+        m_pho = new PhotonsNPY(dpho);   // a detailed photon/record dumper : looks good for photon level debug 
+        m_pho->setTypes(m_types);
 
-
-    m_pho = new PhotonsNPY(dpho);   // a detailed photon/record dumper : looks good for photon level debug 
-    m_pho->setTypes(m_types);
+    }
 
     NPY<short>* drec = m_evt->getRecordData();
 
-    m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
-    m_rec->setTypes(m_types);
+    if(drec->hasData())
+    {
+        m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
+        m_rec->setTypes(m_types);
+        m_rec->setDomains((NPY<float>*)m_engine->getDomain());
 
-    m_pho->setRecs(m_rec);
+        if(m_pho)
+        {
+            m_pho->setRecs(m_rec);
+            m_pho->dump(0);
+        }
+    }
 
-
-    NPYBase* domain = m_engine->getDomain(); 
-    m_rec->setDomains((NPY<float>*)domain);
-
-    (*m_timer)("boundaryIndex"); 
+    (*m_timer)("indexEvtOld"); 
 }
 
 
@@ -1022,6 +1052,11 @@ void App::prepareGUI()
 {
 
 #ifdef GUI_
+ 
+    m_photons = new Photons(m_types, m_pho, m_bnd, m_seqhis, m_seqmat ) ; // GUI jacket : m_pho seems unused 
+    m_scene->setPhotons(m_photons);
+
+
     m_gui = new GUI ;
     m_gui->setScene(m_scene);
     m_gui->setPhotons(m_photons);
@@ -1180,6 +1215,8 @@ int main(int argc, char** argv)
 
         app.seedPhotonsFromGensteps();
 
+        app.initRecords();
+
         app.prepareEngine();
 
         app.propagate();
@@ -1187,6 +1224,8 @@ int main(int argc, char** argv)
         app.downloadEvt();
 
         app.indexEvt();
+
+        app.indexEvtOld();
 
         app.makeReport();
     }

@@ -20,9 +20,9 @@ int main(int argc, char** argv)
     assert(maxrec == 10);
 
     Types types ; 
-    types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
+    types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
     //types.dumpFlags();
-    types.readMaterials(idpath, "GMaterialIndexLocal.json");
+    types.readMaterials(idpath, "GMaterialIndex");
     //types.dumpMaterials();
 
     RecordsNPY r(records, maxrec);
