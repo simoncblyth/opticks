@@ -6,6 +6,9 @@
 #include "assert.h"
 #include "Interactor.hh"
 
+
+// TODO: try to support live changing of the range 
+
 class Animator {
     public:
         static const int period_low ; 

@@ -99,6 +99,15 @@ void RecordsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigne
     flag.w =  v.w ;  
 }
 
+void RecordsNPY::unpack_material_flags_i(glm::ivec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
+{
+    charfour v = m_records->getChar4( i, j, k0, k1 ); 
+    flag.x =  v.x ;  
+    flag.y =  v.y ;  
+    flag.z =  v.z ;  
+    flag.w =  v.w ;  
+}
+
 
 
 float RecordsNPY::uncharnorm(unsigned char value, float center, float extent, float bitmax )
@@ -225,11 +234,12 @@ void RecordsNPY::dumpRecord(unsigned int i, const char* msg)
     glm::vec4  post ; 
     glm::vec4  polw ; 
     glm::uvec4 flag ; 
-
+    glm::ivec4 iflag ; 
 
     unpack_position_time(           post, i, 0 );       // i,j 
     unpack_polarization_wavelength( polw, i, 1, 0, 1 ); // i,j,k0,k1
     unpack_material_flags(          flag, i, 1, 2, 3);  // i,j,k0,k1
+    unpack_material_flags_i(       iflag, i, 1, 2, 3);  // i,j,k0,k1
 
     std::string m1 = m_types->findMaterialName(flag.x) ;
     std::string m2 = m_types->findMaterialName(flag.y) ;
@@ -237,15 +247,16 @@ void RecordsNPY::dumpRecord(unsigned int i, const char* msg)
     // flag.w is the result of ffs on a single set bit field, returning a 1-based bit position
     std::string history = m_types->getHistoryString( 1 << (flag.w-1) ); 
 
-    assert(flag.z == 0);
+    //assert(flag.z == 0);  now set to bounday integer for debug 
 
-    printf("%s %8u %s %s %25s %25s %s \n", 
+    printf("%s %8u %s %s %2d:%25s %2d:%25s [%3d] %s \n", 
                 msg,
                 i, 
                 gpresent(post,2,11).c_str(),
                 gpresent(polw,2,7).c_str(),
-                m1.c_str(),
-                m2.c_str(),
+                flag.x,m1.c_str(),
+                flag.y,m2.c_str(),
+                iflag.z,
                 history.c_str());
 
 }

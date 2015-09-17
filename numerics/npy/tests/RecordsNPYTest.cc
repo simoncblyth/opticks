@@ -1,6 +1,7 @@
 #include "NPY.hpp"
 #include "Types.hpp"
 #include "RecordsNPY.hpp"
+#include "RecordsNPY.hpp"
 
 #include "stdlib.h"
 #include "assert.h"

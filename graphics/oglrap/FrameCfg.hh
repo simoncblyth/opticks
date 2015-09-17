@@ -12,6 +12,7 @@ class FrameCfg : public Cfg {
      int          getBounceMax(); 
      int          getRecordMax(); 
      int          getTimeMax(); 
+     int          getAnimTimeMax(); 
      int          getRepeatIndex(); 
      int          getModulo(); 
      int          getOverride(); 
@@ -26,6 +27,7 @@ private:
      int         m_bouncemax ; 
      int         m_recordmax ; 
      int         m_timemax ; 
+     int         m_animtimemax ; 
      int         m_repeatidx ; 
      int         m_modulo ; 
      int         m_override ; 
@@ -40,6 +42,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),
+       m_animtimemax(50),
        m_repeatidx(-1),
        m_modulo(-1),
        m_override(-1),
@@ -143,6 +146,13 @@ inline void FrameCfg<Listener>::init()
    m_desc.add_options()
        ("timemax",  boost::program_options::value<int>(&m_timemax), timemax );
 
+
+   char animtimemax[128];
+   snprintf(animtimemax,128, "Maximum animation time in nanoseconds. Default %d ", m_animtimemax);
+   m_desc.add_options()
+       ("animtimemax",  boost::program_options::value<int>(&m_animtimemax), animtimemax );
+
+
    char repeatidx[128];
    snprintf(repeatidx,128, "Repeat index used in development of instanced geometry, -1:flat full geometry. Default %d ", m_repeatidx);
    m_desc.add_options()
@@ -201,6 +211,15 @@ inline int FrameCfg<Listener>::getTimeMax()
 {
     return m_timemax ; 
 }
+
+template <class Listener>
+inline int FrameCfg<Listener>::getAnimTimeMax()
+{
+    return m_animtimemax ; 
+}
+
+
+
 template <class Listener>
 inline int FrameCfg<Listener>::getRepeatIndex()
 {

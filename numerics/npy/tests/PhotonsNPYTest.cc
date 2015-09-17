@@ -1,5 +1,6 @@
 #include "NPY.hpp"
 #include "Types.hpp"
+#include "Index.hpp"
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
@@ -21,9 +22,17 @@ int main(int argc, char** argv)
 
     Types types ; 
     types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
-    //types.dumpFlags();
-    types.readMaterials(idpath, "GMaterialIndex");
-    //types.dumpMaterials();
+    types.dumpFlags();
+
+
+    Index* materials = Index::load(idpath, "GMaterialIndex");
+    types.setMaterialsIndex(materials);
+
+    
+
+    types.dumpMaterials();
+
+
 
     RecordsNPY r(records, maxrec);
     r.setTypes(&types);

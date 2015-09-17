@@ -15,7 +15,7 @@ def dump(idpath, sub=None):
         print isubs
         for isub in isubs:
             sub = js['lib']['boundary'][str(isub)]
-            print " %2s :  %25s %25s %25s %25s " % ( isub, sub['imat']['shortname'], sub['omat']['shortname'], sub['isur']['name'], sub['osur']['name'] )
+            print " %2s : %2s :   %25s %25s %25s %25s " % ( isub, isub+1, sub['imat']['shortname'], sub['omat']['shortname'], sub['isur']['name'], sub['osur']['name'] )
         pass
     else:
         sub = js['lib']['boundary'][str(sub)]
@@ -27,9 +27,8 @@ def main():
     logging.basicConfig(level=logging.INFO)
     log.info(sys.argv)
 
-    assert(len(sys.argv)>1);
-    idpath = sys.argv[1]
-    sub = sys.argv[2] if len(sys.argv)>2 else None
+    idpath = os.environ['IDPATH']
+    sub = sys.argv[1] if len(sys.argv)>1 else None
 
     dump(idpath, sub)
 

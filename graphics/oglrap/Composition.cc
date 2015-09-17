@@ -187,7 +187,12 @@ void Composition::initAnimator()
 {
     // must defer creation (to render time) as domain_time not set at initialization
     float* target = glm::value_ptr(m_param) + 3 ;
-    m_animator = new Animator(target, 200, m_domain_time.x, m_domain_time.y/4.f ); // all fun in first 50ns
+    m_animator = new Animator(target, 200, m_domain_time.x, m_domain_time.z ); 
+    //
+    //  m_domain_time.x  start                       (0ns)
+    //  m_domain_time.y  end      getTimeMax()       (200ns ) 
+    //  m_domain_time.z           getAnimTimeMax()   (previously 0.25*TimeMax as all fun in first 50ns)
+    //
     m_animator->setModeRestrict(Animator::FAST);
     m_animator->Summary("Composition::gui setup Animation");
 }

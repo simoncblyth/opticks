@@ -467,7 +467,7 @@ int App::loadGeometry()
     m_meta = m_loader->getMetadata(); 
     m_boundaries =  m_meta->getBoundaryNames();
  
-    m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), 0.f, 0.f) );  
+    m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
     m_composition->setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
     m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 

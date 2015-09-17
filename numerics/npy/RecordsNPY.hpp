@@ -33,6 +33,7 @@ class RecordsNPY {
        void unpack_position_time(glm::vec4& post, unsigned int i, unsigned int j);
        void unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1);
        void unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1);
+       void unpack_material_flags_i(glm::ivec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1);
 
        void dumpRecord(unsigned int i, const char* msg="rec");
        void dumpRecords(const char* msg="RecordsNPY::dumpRecords", unsigned int ndump=5);

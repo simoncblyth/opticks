@@ -4,6 +4,7 @@ class G4StepNPY ;
 
 #include "uif.h"
 #include "ucharfour.h"
+#include "charfour.h"
 
 #include "numpy.hpp"
 #include <vector>
@@ -123,6 +124,7 @@ class NPY : public NPYBase {
        int          getInt(  unsigned int i, unsigned int j, unsigned int k);
        void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k);
        ucharfour    getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 );
+       charfour     getChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 );
 
 
        void         setValue(unsigned int i, unsigned int j, unsigned int k, T value);
@@ -208,7 +210,7 @@ inline void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& m
 template <typename T> 
 ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 )
 {
-    assert(type == SHORT); // pragmatic template specialization, by death if you try to use the wrong one...
+    assert(type == SHORT && "OOPS: pragmatic template specialization, by death if you try to use the wrong one... " );
 
     unsigned int index_0 = getValueIndex(i,j,k0);
     unsigned int index_1 = getValueIndex(i,j,k1);
@@ -227,6 +229,34 @@ ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k0, u
 
     return v ;
 }
+
+template <typename T> 
+charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 )
+{
+    assert(type == SHORT && "OOPS: pragmatic template specialization, by death if you try to use the wrong one... " );
+
+    unsigned int index_0 = getValueIndex(i,j,k0);
+    unsigned int index_1 = getValueIndex(i,j,k1);
+
+    hui_t hui_0, hui_1 ;
+
+    hui_0.short_ = m_data[index_0];
+    hui_1.short_ = m_data[index_1];
+
+    charfour v ; 
+
+    v.x = (hui_0.short_ & 0xFF ) ; 
+    v.y = (hui_0.short_ & 0xFF00 ) >> 8 ; 
+    v.z = (hui_1.short_ & 0xFF ) ; 
+    v.w = (hui_1.short_ & 0xFF00 ) >> 8 ; 
+
+    // hmm signbit complications ?
+    return v ;
+}
+
+
+
+
 
 template <typename T> 
 inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T value)

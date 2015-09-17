@@ -22,6 +22,33 @@ surface property debug, PMT id
 -------------------------------
 
 
+photon level material code debug
+---------------------------------
+
+Seeing some crazy materials, seems some parts of npy- not 
+updated for the optical buffer approach::
+
+   npy-dump 0 
+
+TODO:
+
+* trace the material codes into OptiX from GBoundaryLib::createWavelengthAndOpticalBuffers
+* simplify access to avoid such divergences
+
+m_materials is GItemIndex which wraps Index::
+
+     845             else if(psrc->isMaterial())
+     846             {
+     847                 m_materials->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GItemIndex
+     848                 unsigned int index_local = m_materials->getIndexLocal(shortname.c_str());
+     849 
+     850                 optical_data[opticalOffset + p*4 + optical_index]  = index_local ;
+     851                 optical_data[opticalOffset + p*4 + optical_type]   =  0 ;
+     852                 optical_data[opticalOffset + p*4 + optical_finish] =  0 ;
+     853                 optical_data[opticalOffset + p*4 + optical_value]  =  0 ;
+
+
+
 enhancement : COMPUTE mode
 ----------------------------
 

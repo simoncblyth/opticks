@@ -138,9 +138,14 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
 #endif
 
 
-    qquad qaux ;  // boundary int and m1 index uint are known to be within char/uchar ranges 
-    qaux.uchar_.x =  s.index.x ; //m1   // p.flags.u.z ;  //   m1 index                 uchar: 0 to 255
-    qaux.uchar_.y =  s.index.y ; //m2   // p.flags.i.x ;  //  boundary(range -55:55)    char: -128 to 127  
+     // boundary int and m1 index uint are known to be within char/uchar ranges 
+    //  uchar: 0 to 255,   char: -128 to 127 
+
+    qquad qaux ;  
+    qaux.uchar_.x =  s.index.x ;    // m1  
+    qaux.uchar_.y =  s.index.y ;    // m2   
+    qaux.char_.z  =  p.flags.i.x ;  // boundary(range -55:55)   debugging some funny material codes
+    qaux.uchar_.w = __ffs(s.flag) ; // first set bit __ffs(0) = 0, otherwise 1->32 
 
     // DEBUG: non-reproducibility, 
     //        setting these to zero avoids the 1 in 2000 level non-reproducibility in "ggv --noindex" 
@@ -149,10 +154,7 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     //qaux.uchar_.x = 0 ;
     //qaux.uchar_.y = 0 ;
    
-    qaux.uchar_.z  =  0 ; 
-    qaux.uchar_.w = __ffs(s.flag) ; // first set bit __ffs(0) = 0, otherwise 1->32 
-
-
+  
     //             lsb_ (flq[0].x)    msb_ (flq[0].y)
     //            
     polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;   
