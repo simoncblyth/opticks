@@ -23,6 +23,7 @@ class NumpyEvt {
        typedef unsigned long long Sequence_t ;
    public:
        void setGenstepData(NPY<float>* genstep_data);
+       void setIncomingData(NPY<float>* incoming_data);
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
        void setOptix(bool optix=true);
@@ -40,6 +41,7 @@ class NumpyEvt {
        void setPhoselData(NPY<unsigned char>* phosel_data);
 
    public:
+       NPY<float>*          getIncomingData();
        NPY<float>*          getGenstepData();
        NPY<float>*          getPhotonData();
        NPY<short>*          getRecordData();
@@ -72,6 +74,7 @@ class NumpyEvt {
    private:
        Timer*                m_timer ;
 
+       NPY<float>*           m_incoming_data ; 
        NPY<float>*           m_genstep_data ;
        NPY<float>*           m_photon_data ;
        NPY<short>*           m_record_data ;
@@ -100,6 +103,7 @@ class NumpyEvt {
 inline NumpyEvt::NumpyEvt() 
           :
           m_timer(NULL),
+          m_incoming_data(NULL),
           m_genstep_data(NULL),
           m_photon_data(NULL),
           m_record_data(NULL),
@@ -170,10 +174,12 @@ inline MultiViewNPY* NumpyEvt::getGenstepAttr()
     return m_genstep_attr ;
 }
 
+
 inline NPY<float>* NumpyEvt::getPhotonData()
 {
     return m_photon_data ;
 }
+
 inline MultiViewNPY* NumpyEvt::getPhotonAttr()
 {
     return m_photon_attr ;
@@ -219,6 +225,19 @@ inline NPY<NumpyEvt::Sequence_t>* NumpyEvt::getSequenceData()
 inline MultiViewNPY* NumpyEvt::getSequenceAttr()
 {
     return m_sequence_attr ;
+}
+
+
+
+
+inline NPY<float>* NumpyEvt::getIncomingData()
+{
+    return m_incoming_data ;
+}
+
+inline void NumpyEvt::setIncomingData(NPY<float>* incoming_data)
+{
+    m_incoming_data = incoming_data ;
 }
 
 

@@ -52,6 +52,7 @@
 const char* Composition::PRINT = "print" ; 
 const char* Composition::SELECT = "select" ; 
 const char* Composition::RECSELECT = "recselect" ; 
+const char* Composition::PICKPHOTON = "pickphoton" ; 
 
 
 
@@ -120,6 +121,7 @@ void Composition::set(const char* name, std::string& s)
 {
     if(     strcmp(name,SELECT)==0) setSelection(s);
     else if(strcmp(name,RECSELECT)==0) setRecSelect(s);
+    else if(strcmp(name,PICKPHOTON)==0) setPickPhoton(s);
     else
          printf("Composition::set bad name %s\n", name);
 }
@@ -130,6 +132,7 @@ std::string Composition::get(const char* name)
 
    if(     strcmp(name,SELECT)==0)    s = gformat(getSelection()) ;
    else if(strcmp(name,RECSELECT)==0) s = gformat(getRecSelect()) ;
+   else if(strcmp(name,PICKPHOTON)==0) s = gformat(getPickPhoton()) ;
    else
          printf("Composition::get bad name %s\n", name);
 
@@ -333,6 +336,20 @@ void Composition::setRecSelect(glm::ivec4 recselect)
 {
     m_recselect = recselect ;  
 }
+
+void Composition::setPickPhoton(std::string pickphoton)
+{
+    setPickPhoton(givec4(pickphoton));
+}
+void Composition::setPickPhoton(glm::ivec4 pickphoton) 
+{
+    m_pickphoton = pickphoton ;  
+    print(m_pickphoton, "Composition::setPickPhoton");
+}
+
+
+
+
 
 
 void Composition::setColorParam(std::string colorparam)

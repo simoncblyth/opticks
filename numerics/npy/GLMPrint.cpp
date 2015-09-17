@@ -74,6 +74,10 @@ void print(const glm::vec4& v, const char* msg)
 {
     printf("%15s vec4  %10.3f %10.3f %10.3f %10.3f \n", msg, v.x, v.y, v.z, v.w);
 }
+void print(const glm::ivec4& v, const char* msg)
+{
+    printf("%15s ivec4  %7d %7d %7d %7d \n", msg, v.x, v.y, v.z, v.w);
+}
 
 
 void print(const glm::vec3& v, const char* msg)

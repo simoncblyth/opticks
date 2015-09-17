@@ -9,7 +9,6 @@ public:
        addOptionI<Listener>(listener, Listener::TARGET, "Absolute index of target solid, 0 is treated differently corresponding to entire geometry");
 
 
-
    }   
 };
 

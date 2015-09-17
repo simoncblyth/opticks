@@ -139,6 +139,52 @@ float RecordsNPY::uncharnorm_wavelength(unsigned char value)
 }
 
 
+
+         
+
+
+glm::vec4 RecordsNPY::getCenterExtent(unsigned int photon_id)
+{
+    glm::vec4 min(FLT_MAX) ;
+    glm::vec4 max(-FLT_MAX) ;
+
+    for(unsigned int r=0 ; r < m_maxrec ; r++ )
+    {
+        unsigned int record_id = photon_id*m_maxrec + r ; 
+        bool unset = m_records->isUnsetItem(record_id);
+        if(unset) continue ; 
+
+        glm::vec4 post ; 
+        unpack_position_time( post, record_id, 0 ); // i,j 
+
+        min.x = std::min( min.x, post.x);
+        min.y = std::min( min.y, post.y);
+        min.z = std::min( min.z, post.z);
+        min.w = std::min( min.w, post.w);
+
+        max.x = std::max( max.x, post.x);
+        max.y = std::max( max.y, post.y);
+        max.z = std::max( max.z, post.z);
+        max.w = std::max( max.w, post.w);
+    }
+
+    glm::vec4 rng = max - min ; 
+   
+    //print(max, "RecordsNPY::getCenterExtent max");
+    //print(min, "RecordsNPY::getCenterExtent min");
+    //print(rng, "RecordsNPY::getCenterExtent rng");
+
+    float extent = 0.f ; 
+    extent = std::max( rng.x , extent );
+    extent = std::max( rng.y , extent );
+    extent = std::max( rng.z , extent );
+    extent = extent / 2.0f ;    
+ 
+    glm::vec4 center_extent((min.x + max.x)/2.0f, (min.y + max.y)/2.0f , (min.z + max.z)/2.0f, extent ); 
+    return center_extent ; 
+}
+
+
 void RecordsNPY::dumpRecord(unsigned int i, const char* msg)
 {
     bool unset = m_records->isUnsetItem(i);

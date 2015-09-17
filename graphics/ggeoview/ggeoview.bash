@@ -969,6 +969,13 @@ ggeoview-env(){
     optix-export
 }
 
+ggeoview-options()
+{
+    case $NODE_TAG in 
+      D) echo -DNPYSERVER=ON ;;
+    esac
+}
+
 ggeoview-cmake(){
    local iwd=$PWD
 
@@ -981,6 +988,7 @@ ggeoview-cmake(){
        -DCMAKE_INSTALL_PREFIX=$(ggeoview-idir) \
        -DOptiX_INSTALL_DIR=$(optix-install-dir) \
        -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
+       $(ggeoview-options) \
        $(ggeoview-sdir)
 
    cd $iwd

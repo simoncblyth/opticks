@@ -61,6 +61,11 @@ void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
     }  
     dumpPhoton(photon_id);
     printf("\n");
+
+    glm::vec4 ce = m_recs->getCenterExtent(photon_id);
+    print(ce, "ce" );
+
+
 }
 
 

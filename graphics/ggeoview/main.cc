@@ -32,7 +32,7 @@
 #include "DynamicDefine.hh"
 
 
-// TODO numpyserver-
+// numpyserver-
 #ifdef NPYSERVER
 #include "numpydelegate.hpp"
 #include "numpydelegateCfg.hpp"
@@ -404,7 +404,10 @@ int App::config(int argc, char** argv)
 #endif
 
     m_types = new Types ;  
-    m_types->readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");  // TODO: avoid hardcoding paths, grab via configure_file ?
+    m_types->readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");  
+    // TODO: avoid hardcoding (or at least duplication of) paths, grab via cmake configure_file ?
+    //       here optixrap lib should have a compiled in constant for this
+    //
     m_flags = m_types->getFlagsIndex(); 
     m_flags->setExt(".ini");
     //m_flags->save("/tmp");

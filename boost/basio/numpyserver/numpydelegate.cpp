@@ -146,8 +146,8 @@ void numpydelegate::on_npy(std::vector<int> _shape, std::vector<float> _data, st
 
    if(m_evt)
    {
-       m_evt->setNPY(new NPY(*shape, *data, *metadata)); // TODO: avoid excessive copying 
-       LOG(info) << m_evt->description("NPY lodged into NumpyEvt"); 
+       m_evt->setIncomingData(new NPY<float>(*shape, *data, *metadata)); // TODO: avoid excessive copying 
+       LOG(info) << m_evt->description("NPY lodged incoming data into NumpyEvt"); 
    }   
 
    // demo that can modify the npy 

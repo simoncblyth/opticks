@@ -37,17 +37,13 @@ class RecordsNPY {
        void dumpRecord(unsigned int i, const char* msg="rec");
        void dumpRecords(const char* msg="RecordsNPY::dumpRecords", unsigned int ndump=5);
 
+       glm::vec4 getCenterExtent(unsigned int photon_id);
    private:
        void setCenterExtent(glm::vec4& ce);
        void setTimeDomain(glm::vec4& td);
        void setWavelengthDomain(glm::vec4& wd);
 
    public:
-       // moved to Types
-       //unsigned long long convertSequenceString(std::string& seq, Types::Item_t etype, bool hex=false);
-       //void prepSequenceString(std::string& lseq, unsigned int& elen, unsigned int& nelem, bool hex);
-       //std::string decodeSequenceString(std::string& seq, Types::Item_t etype, bool hex=false);
-
        std::string getSequenceString(unsigned int photon_id, Types::Item_t etype);
        unsigned long long getSequence(unsigned int photon_id, Types::Item_t etype);
 

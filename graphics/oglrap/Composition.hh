@@ -29,6 +29,7 @@ class Composition : public Configurable {
       static const char* PRINT ;  
       static const char* SELECT ;  
       static const char* RECSELECT ;  
+      static const char* PICKPHOTON ;  
 
       friend class Interactor ;   
       friend class Bookmarks ;   
@@ -97,6 +98,11 @@ class Composition : public Configurable {
       void setRecSelect(glm::ivec4 sel);
       void setRecSelect(std::string sel);
       glm::ivec4& getRecSelect();
+
+  public:
+      void setPickPhoton(glm::ivec4 pp);
+      void setPickPhoton(std::string pp);
+      glm::ivec4& getPickPhoton();
 
   public:
       void setColorParam(glm::ivec4 cp);
@@ -234,6 +240,7 @@ class Composition : public Configurable {
       glm::vec4 m_light_direction ; 
 
   private:
+      glm::ivec4 m_pickphoton ;
       glm::ivec4 m_recselect ;
       glm::ivec4 m_colorparam ;
       glm::ivec4 m_selection ;
@@ -305,6 +312,7 @@ inline Composition::Composition()
   m_model_to_world(),
   m_extent(1.0f),
   m_center_extent(),
+  m_pickphoton(0,0,0,0), 
   m_recselect(), 
   m_colorparam(), 
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
@@ -404,10 +412,16 @@ inline glm::mat4& Composition::getDomainISNorm()
 }
 
 
+inline glm::ivec4& Composition::getPickPhoton()
+{
+    return m_pickphoton ; 
+}
+
 inline glm::ivec4& Composition::getRecSelect()
 {
     return m_recselect ; 
 }
+
 inline glm::ivec4& Composition::getColorParam()
 {
     return m_colorparam ; 

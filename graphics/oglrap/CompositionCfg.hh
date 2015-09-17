@@ -8,6 +8,7 @@ public:
    {
        addOptionI<Listener>(listener, Listener::PRINT,    "Print");
        addOptionS<Listener>(listener, Listener::SELECT,   "Selection, four comma delimited integers");
+       addOptionS<Listener>(listener, Listener::PICKPHOTON, "Pick photon, single integer string or comma delimited multiple integers");
    }
 };
 
