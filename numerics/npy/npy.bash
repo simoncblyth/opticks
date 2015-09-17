@@ -172,7 +172,9 @@ npy-g4stepnpy-test()
     $(npy-bindir)/G4StepNPYTest $(ggeo-meta-dir)
 }
 
-
-
+npy-dump()
+{
+   $(npy-bindir)/PhotonsNPYTest $*
+}
 
 

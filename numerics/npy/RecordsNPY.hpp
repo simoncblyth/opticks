@@ -37,7 +37,12 @@ class RecordsNPY {
        void dumpRecord(unsigned int i, const char* msg="rec");
        void dumpRecords(const char* msg="RecordsNPY::dumpRecords", unsigned int ndump=5);
 
+   public:
+       // geometric properties of photon path
        glm::vec4 getCenterExtent(unsigned int photon_id);
+       glm::vec4 getLengthDistanceDuration(unsigned int photon_id);
+   private:
+       void tracePath(unsigned int photon_id, float& length, float& distance, float& duration );
    private:
        void setCenterExtent(glm::vec4& ce);
        void setTimeDomain(glm::vec4& td);

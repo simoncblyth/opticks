@@ -10,6 +10,7 @@ uniform vec4 Param ;
 uniform ivec4 Pick ;
 uniform ivec4 RecSelect ; 
 uniform ivec4 ColorParam ;
+uniform ivec4 PickPhoton ;
 
 uniform sampler1D Colors ;
 
@@ -30,6 +31,8 @@ void main ()
     if( RecSelect.y > 0 && RecSelect.y != seqmat )  return ;
 
     uint photon_id = gl_PrimitiveIDIn/MAXREC ;   
+    if( PickPhoton.x > 0 && PickPhoton.y > 0 && PickPhoton.x != photon_id )  return ;
+
 
     vec4 p0 = gl_in[0].gl_Position  ;
     vec4 p1 = gl_in[1].gl_Position  ;

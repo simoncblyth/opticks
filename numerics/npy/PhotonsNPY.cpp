@@ -32,7 +32,6 @@ void PhotonsNPY::dump(unsigned int photon_id)
     dumpPhotonRecord(photon_id);
 }
 
-
 void PhotonsNPY::dumpPhotons(const char* msg, unsigned int ndump)
 {
     if(!m_photons) return ;
@@ -64,8 +63,38 @@ void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
 
     glm::vec4 ce = m_recs->getCenterExtent(photon_id);
     print(ce, "ce" );
+    glm::vec4 ldd = m_recs->getLengthDistanceDuration(photon_id);
+    print(ldd, "ldd" );
+}
 
 
+NPY<float>* PhotonsNPY::make_pathinfo()
+{
+    unsigned int num_photons = m_photons->m_len0 ;
+    NPY<float>* pathinfo = NPY<float>::make(num_photons,6,4) ;
+    pathinfo->zero();
+    for(unsigned int i=0 ; i < num_photons ; i++)
+    {
+        unsigned int photon_id = i ;
+        glm::vec4 ce = m_recs->getCenterExtent(photon_id);
+        //print(ce, "ce" );
+        glm::vec4 ldd = m_recs->getLengthDistanceDuration(photon_id);
+        //print(ldd, "ldd" );
+
+        glm::vec4 post = m_photons->getQuad(i,0);
+        glm::vec4 dirw = m_photons->getQuad(i,1);
+        glm::vec4 polw = m_photons->getQuad(i,2);
+        glm::vec4 flag = m_photons->getQuad(i,3);
+
+        pathinfo->setQuad( i, 0, post );
+        pathinfo->setQuad( i, 1, dirw );
+        pathinfo->setQuad( i, 2, polw );
+        pathinfo->setQuad( i, 3, flag );
+
+        pathinfo->setQuad( i, 4, ce  );
+        pathinfo->setQuad( i, 5, ldd );
+    }  
+    return pathinfo ; 
 }
 
 

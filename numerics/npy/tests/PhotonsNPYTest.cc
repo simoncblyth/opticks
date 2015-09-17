@@ -41,6 +41,9 @@ int main(int argc, char** argv)
     else
     {
        p.dumpPhotons("photons", 30);
+    
+       NPY<float>* pathinfo = p.make_pathinfo();
+       pathinfo->save("/tmp/pathinfo.npy");
     }
 
 

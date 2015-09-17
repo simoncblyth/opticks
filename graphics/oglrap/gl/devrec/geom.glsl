@@ -11,6 +11,7 @@ uniform ivec4 Selection ;
 uniform ivec4 Pick ;
 uniform ivec4 RecSelect ; 
 uniform ivec4 ColorParam ;
+uniform ivec4 PickPhoton ;
 
 uniform sampler1D Colors ;
 
@@ -31,6 +32,9 @@ void main ()
     if( RecSelect.x > 0 && RecSelect.x != seqhis )  return ;
     if( RecSelect.y > 0 && RecSelect.y != seqmat )  return ;
 
+    uint photon_id = gl_PrimitiveIDIn/MAXREC ;   
+    if( PickPhoton.x > 0 && PickPhoton.y > 0 && PickPhoton.x != photon_id )  return ;
+
 
     vec4 p0 = gl_in[0].gl_Position  ;
     vec4 p1 = gl_in[1].gl_Position  ;
@@ -38,7 +42,6 @@ void main ()
     //float ns = Param.y/TimeDomain.y ; 
     float dfrac = Param.y ; 
 
-    uint photon_id = gl_PrimitiveIDIn/MAXREC ;     
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
     uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (uint(Pick.x == 0 || photon_id % Pick.x == 0) << 2) ;  

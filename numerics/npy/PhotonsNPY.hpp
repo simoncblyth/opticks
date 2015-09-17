@@ -21,6 +21,7 @@ class PhotonsNPY {
        void                  setTypes(Types* types);
        void                  setRecs(RecordsNPY* recs);
    public:  
+       NPY<float>*           make_pathinfo();
        NPY<float>*           getPhotons();
        RecordsNPY*           getRecs();
        Types*                getTypes();

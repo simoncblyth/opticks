@@ -2,6 +2,8 @@
 
 // npy-
 #include "NPY.hpp"
+#include "NumpyEvt.hpp"
+#include "RecordsNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "AxisNPY.hpp"
@@ -344,11 +346,20 @@ void Composition::setPickPhoton(std::string pickphoton)
 void Composition::setPickPhoton(glm::ivec4 pickphoton) 
 {
     m_pickphoton = pickphoton ;  
-    print(m_pickphoton, "Composition::setPickPhoton");
+    if(m_pickphoton.x > 0)
+    {
+        print(m_pickphoton, "Composition::setPickPhoton single photon targetting");
+        unsigned int photon_id = m_pickphoton.x ;
+        NumpyEvt* evt = m_scene ? m_scene->getNumpyEvt() : NULL ; 
+        RecordsNPY* recs = evt ? evt->getRecordsNPY() : NULL ; 
+        if(recs)
+        {
+            glm::vec4 ce = recs->getCenterExtent(photon_id);
+            print(ce, "Composition::setPickPhoton single photon center extent");
+            setCenterExtent(ce);
+        }
+    }
 }
-
-
-
 
 
 

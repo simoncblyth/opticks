@@ -1003,6 +1003,7 @@ void App::indexEvtOld()
 
     }
 
+    // hmm thus belongs in NumpyEvt rather than here
     NPY<short>* drec = m_evt->getRecordData();
 
     if(drec->hasData())
@@ -1016,6 +1017,7 @@ void App::indexEvtOld()
             m_pho->setRecs(m_rec);
             m_pho->dump(0);
         }
+        m_evt->setRecordsNPY(m_rec);
     }
 
     (*m_timer)("indexEvtOld"); 

@@ -86,6 +86,7 @@ class Rdr : public RendererBase  {
       GLint  m_recselect_location ;
       GLint  m_colorparam_location ;
       GLint  m_lightposition_location ;
+      GLint  m_pickphoton_location ;
 
       GLenum m_primitive ; 
 
@@ -116,6 +117,7 @@ inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* in
     m_recselect_location(-1),
     m_colorparam_location(-1),
     m_lightposition_location(-1),
+    m_pickphoton_location(-1),
     m_primitive(GL_POINTS)
 {
 }
