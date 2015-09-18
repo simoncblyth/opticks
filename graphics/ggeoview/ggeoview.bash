@@ -22,15 +22,17 @@ surface property debug, PMT id
 -------------------------------
 
 
-photon level material code debug
----------------------------------
+
+
+
+
+RESOLVED photon level material code debug
+------------------------------------------
 
 Seeing some crazy materials, seems some parts of npy- not 
 updated for the optical buffer approach::
 
    npy-dump 0 
-
-TODO:
 
 * trace the material codes into OptiX from GBoundaryLib::createWavelengthAndOpticalBuffers
 * simplify access to avoid such divergences

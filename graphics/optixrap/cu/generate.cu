@@ -54,7 +54,7 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 {    \
     unsigned int shift = slot*4 ; \
     unsigned long long his = __ffs((s).flag) & 0xF ; \
-    unsigned long long mat = __ffs((s).index.x) & 0xF ; \
+    unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
     seqhis |= his << shift ; \
     seqmat |= mat << shift ; \
     unsigned int slot_offset =  (slot) < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
