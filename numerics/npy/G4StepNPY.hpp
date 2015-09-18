@@ -42,6 +42,7 @@ class G4StepNPY {
        bool isScintillationStep(unsigned int i=0);
 
   private:
+       // the heart of the lookup:  int bcode = m_lookup->a2b(acode) ;
        bool applyLookup(unsigned int index);
 
   private:

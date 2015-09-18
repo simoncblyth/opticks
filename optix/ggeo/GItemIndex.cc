@@ -198,8 +198,13 @@ std::string GItemIndex::materialSeqLabeller(GItemIndex* self, const char* key_, 
    assert(types); 
 
    std::string seqmat = types->abbreviateHexSequenceString(key, Types::MATERIALSEQ);  
+   std::stringstream ss ; 
+   ss << std::setw(16) << key_ 
+      << " "
+      << seqmat 
+      ;
 
-   return seqmat ;  
+   return ss.str() ;  
 }
 
 std::string GItemIndex::historySeqLabeller(GItemIndex* self, const char* key_, unsigned int& colorcode)
@@ -210,7 +215,14 @@ std::string GItemIndex::historySeqLabeller(GItemIndex* self, const char* key_, u
    Types* types = self->getTypes();
    assert(types); 
    std::string seqhis = types->abbreviateHexSequenceString(key, Types::HISTORYSEQ);  
-   return seqhis ;  
+
+   std::stringstream ss ; 
+   ss << std::setw(16) << key_ 
+      << " "
+      << seqhis
+      ;
+
+   return ss.str() ;  
 }
 
 

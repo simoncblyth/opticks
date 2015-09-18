@@ -22,6 +22,77 @@ surface property debug, PMT id
 -------------------------------
 
 
+ISSUE : many upwards going photons think their m1 is Ac when actually Gd
+---------------------------------------------------------------------------
+
+TODO:
+
+* select photons with zeroth m1 that doesnt match the genstep material
+
+
+ISSUE : seqmat first material mismatch to genstep material
+-------------------------------------------------------------
+
+Do not observe any seq trucation to 0xF mismatch, although that is possible.
+
+npy- genstep_sequence_material_mismatch.py::
+
+    In [156]: off = np.arange(len(s_first))[ s_first != p_gsgmat ]
+
+    In [157]: off
+    Out[157]: array([  3006,   8521,   8524, ..., 612838, 612839, 612840])
+
+    In [158]: off.shape
+    Out[158]: (104400,)
+
+    In [159]: s_first.shape
+    Out[159]: (612841,)
+
+
+Many due to MI, but large chunk of gs:Gs sq:Ac 
+
+TODO: make specialized indices categorizing these discrepancies to allow visualization  
+
+
+
+ISSUE : genstep material index in wrong lingo 
+----------------------------------------------
+
+Genstep material index read into cs.MaterialIndex and used in wavelength lookups
+as a standard line number cu/cerenkovstep.h::
+
+    225         float4 props = wavelength_lookup(wavelength, cs.MaterialIndex);
+
+
+G4StepNPY::applyLookup does a to b mapping between lingo which is invoked 
+immediately after loading the genstep from file in App::loadGenstep::
+
+     549     G4StepNPY genstep(npy);
+     550     genstep.setLookup(m_loader->getMaterialLookup());
+     551     if(!juno)
+     552     {
+     553         genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
+     554     }   
+
+
+But dumping it, clear that not a line number::
+
+    gs = stc_(1)
+
+    In [33]: gsmat = gs.view(np.int32)[:,0,2]
+
+    In [34]: gsmat
+    Out[34]: array([12, 12, 12, ...,  8,  8,  8], dtype=int32)
+
+    In [35]: np.unique(gsmat)
+    Out[35]: array([ 1,  8, 10, 12, 13, 14, 19], dtype=int32)
+           
+
+Ahha the in file numbers need the lookup applied. 
+
+Is the lookup accomodating the material code customization anyhow ?
+
+
 
 
 

@@ -410,7 +410,7 @@ int App::config(int argc, char** argv)
     //
     m_flags = m_types->getFlagsIndex(); 
     m_flags->setExt(".ini");
-    //m_flags->save("/tmp");
+    m_flags->save(idpath);
 
 
     return 0 ; 
