@@ -64,6 +64,174 @@ qt
 * http://pyqtgraph.org
 
 
+Material Indices mismatch
+--------------------------
+
+::
+
+    In [1]: o = np.load("optical.npy")
+
+    In [14]: oo = o.reshape(-1,6,4).view(np.uint32)
+
+    In [21]: oo[3:10]
+    Out[21]: 
+    array([[[  4,   0,   0,   0],
+            [  3,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  1,   0,   3, 100],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0]],
+
+           [[  5,   0,   0,   0],
+            [  3,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0]],
+ 
+            ...
+
+    In [19]: np.unique(oo[:, 0, 0])
+    Out[19]: 
+    array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25], dtype=uint32)
+
+    In [20]: np.unique(oo[:, 1, 0])
+    Out[20]: array([ 1,  2,  3,  5,  7,  8,  9, 10, 11, 12, 13, 14, 16, 20, 21, 23], dtype=uint32)
+
+
+
+The materials order in .opticks is shuffled to put important materials first, all the material .json in .opticks
+are the same::
+
+    simon:.opticks blyth$ l
+    total 40
+    -rw-r--r--  1 blyth  staff   548 Jul  8 13:00 GMaterialIndexLocal.json
+    -rw-r--r--  1 blyth  staff   548 Jul  8 13:00 GMaterialIndexSource.json
+    -rw-r--r--  1 blyth  staff   548 Jul  5 16:33 MaterialsLocal.json
+    -rw-r--r--  1 blyth  staff   548 Jul  5 16:33 MaterialsSource.json
+    -rw-r--r--  1 blyth  staff  3514 Jun 21 10:39 GColors.json
+    simon:.opticks blyth$ diff GMaterialIndexLocal.json GMaterialIndexSource.json
+    simon:.opticks blyth$ vi MaterialsLocal.json
+    simon:.opticks blyth$ diff MaterialsLocal.json GMaterialIndexSource.json
+    simon:.opticks blyth$ diff MaterialsLocal.json MaterialsSource.json
+
+
+::
+
+    In [6]: m = json.load(file(os.path.expanduser("~/.opticks/GMaterialIndexLocal.json")))
+
+    In [12]: im = dict(zip(map(int,m.values()),map(str,m.keys())))
+
+    In [13]: im
+    Out[13]: 
+    {1: 'GdDopedLS',
+     2: 'LiquidScintillator',
+     3: 'Acrylic',
+     4: 'MineralOil',
+     5: 'Bialkali',
+     6: 'IwsWater',
+     7: 'Water',
+     8: 'DeadWater',
+     9: 'OwsWater',
+     10: 'ESR',
+     11: 'UnstStainlessSteel',
+     12: 'StainlessSteel',
+
+
+    # material pairs for each boundary from optical.npy translated to names with .opticks json
+
+    In [12]: for i,b in enumerate(oo):print "%2d %2d : %25s (%2d) %25s (%2d) " % ( i,i+1,im[b[0,0]],b[0,0], im[b[1,0]],b[1,0] )
+     0  1 :                 GdDopedLS ( 1)                 GdDopedLS ( 1) 
+     1  2 :        LiquidScintillator ( 2)                 GdDopedLS ( 1) 
+     2  3 :                   Acrylic ( 3)        LiquidScintillator ( 2) 
+     3  4 :                MineralOil ( 4)                   Acrylic ( 3) 
+     4  5 :                  Bialkali ( 5)                   Acrylic ( 3) 
+     5  6 :                  IwsWater ( 6)                  Bialkali ( 5) 
+     6  7 :                   Acrylic ( 3)                   Acrylic ( 3) 
+     7  8 :                     Water ( 7)        LiquidScintillator ( 2) 
+     8  9 :                 DeadWater ( 8)                     Water ( 7) 
+     9 10 :                  OwsWater ( 9)                 DeadWater ( 8) 
+    10 11 :                 DeadWater ( 8)                  OwsWater ( 9) 
+    11 12 :                       ESR (10)                       ESR (10) 
+    12 13 :        UnstStainlessSteel (11)                       ESR (10) 
+    13 14 :            StainlessSteel (12)        UnstStainlessSteel (11) 
+    14 15 :                    Vacuum (13)            StainlessSteel (12) 
+    15 16 :                     Pyrex (14)                    Vacuum (13) 
+    16 17 :                    Vacuum (13)                     Pyrex (14) 
+    17 18 :                       Air (15)                    Vacuum (13) 
+    18 19 :                       Air (15)                     Pyrex (14) 
+    19 20 :                      Rock (16)            StainlessSteel (12) 
+    20 21 :                 GdDopedLS ( 1)                      Rock (16) 
+    21 22 :                       PPE (17)                 GdDopedLS ( 1) 
+    22 23 :                 Aluminium (18)            StainlessSteel (12) 
+    23 24 :                 GdDopedLS ( 1)            StainlessSteel (12) 
+    24 25 :                    Vacuum (13)            StainlessSteel (12) 
+    25 26 :                   Acrylic ( 3)                    Vacuum (13) 
+    26 27 :     ADTableStainlessSteel (19)                   Acrylic ( 3) 
+    27 28 :                     Pyrex (14)            StainlessSteel (12) 
+    28 29 :                    Vacuum (13)                 GdDopedLS ( 1) 
+    29 30 :                       Air (15)        UnstStainlessSteel (11) 
+
+After moving material index customization prior to buffer creation in GLoader
+and recreating the geocache the indices in the optical buffer have been shuffled differently::
+
+    simon:ggeo blyth$ ./optical_buffer.py 
+     0  1 :                    Vacuum (13)                    Vacuum (13) 
+     1  2 :                      Rock (16)                    Vacuum (13) 
+     2  3 :                       Air (15)                      Rock (16) 
+     3  4 :                       PPE (17)                       Air (15) 
+     4  5 :                 Aluminium (18)                       Air (15) 
+     5  6 :                      Foam (20)                 Aluminium (18) 
+     6  7 :                       Air (15)                       Air (15) 
+     7  8 :                 DeadWater ( 8)                      Rock (16) 
+     8  9 :                     Tyvek (25)                 DeadWater ( 8) 
+     9 10 :                  OwsWater ( 9)                     Tyvek (25) 
+    10 11 :                     Tyvek (25)                  OwsWater ( 9) 
+    11 12 :                  IwsWater ( 6)                  IwsWater ( 6) 
+    12 13 :            StainlessSteel (12)                  IwsWater ( 6) 
+    13 14 :                MineralOil ( 4)            StainlessSteel (12) 
+    14 15 :                   Acrylic ( 3)                MineralOil ( 4) 
+    15 16 :        LiquidScintillator ( 2)                   Acrylic ( 3) 
+    16 17 :                   Acrylic ( 3)        LiquidScintillator ( 2) 
+    17 18 :                 GdDopedLS ( 1)                   Acrylic ( 3) 
+    18 19 :                 GdDopedLS ( 1)        LiquidScintillator ( 2) 
+    19 20 :                     Pyrex (14)                MineralOil ( 4) 
+    20 21 :                    Vacuum (13)                     Pyrex (14) 
+    21 22 :                  Bialkali ( 5)                    Vacuum (13) 
+    22 23 :        UnstStainlessSteel (11)                MineralOil ( 4) 
+    23 24 :                    Vacuum (13)                MineralOil ( 4) 
+
+
+
+Suspect that shuffling was not done early enough to be reflected in the boundarylib/optical buffer::
+
+    simon:ggeo blyth$ ./GBoundaryLibMetadata.py 
+    INFO:__main__:['./GBoundaryLibMetadata.py']
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55]
+      0 :  1 :                      Vacuum                    Vacuum                         -                         - 
+      1 :  2 :                        Rock                    Vacuum                         -                         - 
+      2 :  3 :                         Air                      Rock                         -                         - 
+      3 :  4 :                         PPE                       Air                         - __dd__Geometry__PoolDetails__NearPoolSurfaces__NearPoolCoverSurface 
+      4 :  5 :                   Aluminium                       Air                         -                         - 
+      5 :  6 :                        Foam                 Aluminium                         -                         - 
+      6 :  7 :                         Air                       Air                         -                         - 
+      7 :  8 :                   DeadWater                      Rock                         -                         - 
+      8 :  9 :                       Tyvek                 DeadWater                         - __dd__Geometry__PoolDetails__NearPoolSurfaces__NearDeadLinerSurface 
+      9 : 10 :                    OwsWater                     Tyvek __dd__Geometry__PoolDetails__NearPoolSurfaces__NearOWSLinerSurface                         - 
+     10 : 11 :                       Tyvek                  OwsWater                         -                         - 
+     11 : 12 :                    IwsWater                  IwsWater                         -                         - 
+     12 : 13 :              StainlessSteel                  IwsWater                         - __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear1 
+     13 : 14 :                  MineralOil            StainlessSteel __dd__Geometry__AdDetails__AdSurfacesAll__SSTOilSurface                         - 
+     14 : 15 :                     Acrylic                MineralOil                         -                         - 
+     15 : 16 :          LiquidScintillator                   Acrylic                         -                         - 
+     16 : 17 :                     Acrylic        LiquidScintillator                         -                         - 
+     17 : 18 :                   GdDopedLS                   Acrylic                         -                         - 
+     18 : 19 :                   GdDopedLS        LiquidScintillator                         -                         - 
+     19 : 20 :                       Pyrex                MineralOil                         -                         - 
+
+
+
+
 
 Material index mapping 
 ------------------------
@@ -862,10 +1030,12 @@ ggeo-wipe(){
 
 
 ggeo-cmake(){
+   local iwd=$PWD
    local bdir=$(ggeo-bdir)
    mkdir -p $bdir
    ggeo-bcd
    cmake $(ggeo-sdir) -DCMAKE_INSTALL_PREFIX=$(ggeo-idir) -DCMAKE_BUILD_TYPE=Debug 
+   cd $iwd
 }
 
 ggeo-make(){

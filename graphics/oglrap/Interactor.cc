@@ -132,7 +132,7 @@ void Interactor::key_pressed(unsigned int key)
     switch (key)
     {
         //  ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        //  ***  *** * *******   * ***
+        //  ***  *** *********   * ***
 
         case GLFW_KEY_A:
             m_composition->nextMode(getModifiers()) ; 
@@ -154,6 +154,9 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_J:
             m_scene->jump(); 
+            break;
+        case GLFW_KEY_K:
+            m_composition->nextPickPhotonStyle(); 
             break;
         case GLFW_KEY_L:
             m_composition->nextNormalStyle(); 

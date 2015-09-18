@@ -1236,8 +1236,7 @@ bool GBoundaryLib::isFloatBuffer(const char* name)
 {
     return ( 
              strcmp( name, wavelength ) == 0  || 
-             strcmp( name, reemission ) == 0  || 
-             true
+             strcmp( name, reemission ) == 0  
            );
 }
 
@@ -1250,8 +1249,7 @@ bool GBoundaryLib::isUIntBuffer(const char* name)
 {
     return 
            ( 
-              strcmp( name, optical) == 0  ||
-              true 
+              strcmp( name, optical) == 0  
            );
 }
 

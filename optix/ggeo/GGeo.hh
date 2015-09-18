@@ -40,6 +40,7 @@ class GGeo {
     public:
         void saveMergedMeshes(const char* idpath);
     public:
+        void dumpStats(const char* msg="GGeo::dumpStats");
         unsigned int getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
     public:

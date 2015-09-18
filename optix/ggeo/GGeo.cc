@@ -618,4 +618,43 @@ void GGeo::reportMeshUsage(const char* msg)
 }
 
 
+void GGeo::dumpStats(const char* msg)
+{
+    printf("%s\n", msg);
+
+    unsigned int nmm = getNumMergedMesh();
+
+    unsigned int totVertices(0);
+    unsigned int totFaces(0);
+    unsigned int vtotVertices(0);
+    unsigned int vtotFaces(0);
+
+    for(unsigned int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = getMergedMesh(i);
+        GBuffer* tbuf = mm->getTransformsBuffer();
+        GBuffer* vbuf = mm->getVerticesBuffer();
+        GBuffer* ibuf = mm->getIndicesBuffer();
+
+        unsigned int numVertices = vbuf->getNumItems() ;
+        unsigned int numFaces = ibuf->getNumItems()/3;
+        unsigned int numTransforms = tbuf ? tbuf->getNumItems() : 1  ;
+
+        printf(" mm %2d : vertices %7d faces %7d transforms %7d \n", i, numVertices, numFaces, numTransforms);
+
+        totVertices += numVertices ; 
+        totFaces    += numFaces ; 
+
+        vtotVertices += numVertices*numTransforms ; 
+        vtotFaces    += numFaces*numTransforms ; 
+    } 
+
+    printf("   totVertices %9d  totFaces %9d \n", totVertices, totFaces );
+    printf("  vtotVertices %9d vtotFaces %9d (virtual: scaling by transforms)\n", vtotVertices, vtotFaces );
+    printf("  vfacVertices %9.3f vfacFaces %9.3f (virtual to total ratio)\n", float(vtotVertices)/float(totVertices), float(vtotFaces)/float(totFaces) );
+
+
+
+}
+
 

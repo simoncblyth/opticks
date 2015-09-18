@@ -29,9 +29,9 @@ NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata)
          m_unset_item(NULL)
 {
     if(data) 
-       setData(data);
-    else
-       LOG(info) << "NPY<T>::NPY deferred setting data " ; 
+    {
+        setData(data);
+    }
 }
 
 

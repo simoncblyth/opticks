@@ -425,7 +425,6 @@ void App::prepareContext()
     dd.add("PNUMQUAD", 4);  // quads per photon
     dd.add("RNUMQUAD", 2);  // quads per record 
 
-
     m_scene->write(&dd);
 
     m_scene->initRenderers();  // reading shader source and creating renderers
@@ -454,14 +453,17 @@ int App::loadGeometry()
 
     m_parameters->add<int>("repeatIdx", m_loader->getRepeatIndex() );
 
-
     GItemIndex* materials = m_loader->getMaterials();
+    materials->dump("App::loadGeometry materials from m_loader");
+
     m_types->setMaterialsIndex(materials->getIndex());
 
     GBuffer* colorbuffer = m_loader->getColorBuffer();  // composite buffer 0+:materials,  32+:flags
     m_scene->uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
    
     m_ggeo = m_loader->getGGeo();
+    m_ggeo->dumpStats("App::loadGeometry");
+
     m_blib = m_loader->getBoundaryLib();
     m_lookup = m_loader->getMaterialLookup();
     m_meta = m_loader->getMetadata(); 
@@ -895,6 +897,7 @@ void App::indexBoundaries()
     unsigned int npha = pho->getNumAtoms(); 
     unsigned int nphd  = std::min(npha,4*4*100u); 
 
+    pho->setHexDump(false);
     pho->dump<int>("App::indexBoundaries pho->dump<int>", 4*4, 4*3+0, nphd);
 
     TSparse<int> boundaries("Boundaries", pho->slice(4*4,4*3+0)); // stride,begin 
@@ -1018,6 +1021,7 @@ void App::indexEvtOld()
             m_pho->dump(0);
         }
         m_evt->setRecordsNPY(m_rec);
+        m_evt->setPhotonsNPY(m_pho);
     }
 
     (*m_timer)("indexEvtOld"); 

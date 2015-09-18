@@ -26,19 +26,19 @@ __device__ void fill_state( State& s, int boundary, int sensor, float wavelength
 
     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
     // 
-    int m1 = boundary > 0 ? line + 0 : line + 1 ;   // inner-material / outer-material
-    int m2 = boundary > 0 ? line + 1 : line + 0 ;   // outer-material / inner-material
-    int su = boundary > 0 ? line + 2 : line + 3 ;   // inner-surface  / outer-surface
+    int m1_line = boundary > 0 ? line + 0 : line + 1 ;   // inner-material / outer-material
+    int m2_line = boundary > 0 ? line + 1 : line + 0 ;   // outer-material / inner-material
+    int su_line = boundary > 0 ? line + 2 : line + 3 ;   // inner-surface  / outer-surface
 
-    s.material1 = wavelength_lookup( wavelength, m1 );  
-    s.material2 = wavelength_lookup( wavelength, m2 ) ;
-    s.surface   = wavelength_lookup( wavelength, su );                 
+    s.material1 = wavelength_lookup( wavelength, m1_line );  
+    s.material2 = wavelength_lookup( wavelength, m2_line ) ;
+    s.surface   = wavelength_lookup( wavelength, su_line );                 
 
-    s.optical = optical_buffer[su] ;   // index/type/finish/value
+    s.optical = optical_buffer[su_line] ;   // index/type/finish/value
 
-    s.index.x = optical_buffer[m1].x ;
-    s.index.y = optical_buffer[m2].x ;
-    s.index.z = optical_buffer[su].x ;
+    s.index.x = optical_buffer[m1_line].x ;
+    s.index.y = optical_buffer[m2_line].x ;
+    s.index.z = optical_buffer[su_line].x ;
     s.index.w = sensor  ;
 
 }

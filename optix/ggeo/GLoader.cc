@@ -70,6 +70,7 @@ void GLoader::load(bool nogeocache)
         m_meshes     = GItemIndex::load(idpath, "MeshIndex");
 
         t("load indices"); 
+        m_materials->dump("GLoader::load original materials from GItemIndex::load(idpath, \"GMaterialIndex\") ");
     } 
     else
     {
@@ -82,6 +83,11 @@ void GLoader::load(bool nogeocache)
         m_meshes = m_ggeo->getMeshIndex();  
 
         m_boundarylib = m_ggeo->getBoundaryLib();
+
+        // material customization must be done prior to creating buffers, as they contain the customized indices ?
+        m_materials = m_boundarylib->getMaterials();  
+        m_materials->loadIndex("$HOME/.opticks"); 
+
         m_boundarylib->createWavelengthAndOpticalBuffers();
 
         t("createWavelengthAndOpticalBuffers"); 
@@ -101,13 +107,11 @@ void GLoader::load(bool nogeocache)
         GColors* source = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
 
         m_metadata = m_boundarylib->getMetadata();
-        m_materials = m_boundarylib->getMaterials();  
 
         m_surfaces = m_boundarylib->getSurfaces();   
         m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));   
         m_surfaces->setColorSource(source);
 
-        m_materials->loadIndex("$HOME/.opticks"); // customize GMaterialIndex
 
         m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
 

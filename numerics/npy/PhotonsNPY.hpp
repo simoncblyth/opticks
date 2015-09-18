@@ -27,7 +27,7 @@ class PhotonsNPY {
        Types*                getTypes();
 
    public:  
-       void dump(unsigned int photon_id);
+       void dump(unsigned int photon_id, const char* msg="PhotonsNPY::dump");
    public:  
        void dumpPhotonRecord(unsigned int photon_id, const char* msg="phr");
        void dumpPhoton(unsigned int i, const char* msg="pho");

@@ -23,6 +23,7 @@ if(APPLE)
                ${IOKit_LIBRARY}
                ${CoreFoundation_LIBRARY} 
                ${CoreVideo_LIBRARY} )
+   message("FindImGUI APPLE")
 endif(APPLE)
 
 if(UNIX)
@@ -33,7 +34,7 @@ if(UNIX)
                ${GLFW_LIBRARIES} 
                ${OpenGL_LIBRARY}
                )
-   message("LINUX")
+   message("FindImGUI UNIX")
 endif(UNIX)
 
 set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")

@@ -210,7 +210,7 @@ inline void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& m
 template <typename T> 
 ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 )
 {
-    assert(type == SHORT && "OOPS: pragmatic template specialization, by death if you try to use the wrong one... " );
+    assert(type == SHORT); // OOPS: pragmatic template specialization, by death if you try to use the wrong one... 
 
     unsigned int index_0 = getValueIndex(i,j,k0);
     unsigned int index_1 = getValueIndex(i,j,k1);
@@ -233,7 +233,7 @@ ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k0, u
 template <typename T> 
 charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 )
 {
-    assert(type == SHORT && "OOPS: pragmatic template specialization, by death if you try to use the wrong one... " );
+    assert(type == SHORT); // OOPS: pragmatic template specialization, by death if you try to use the wrong one... 
 
     unsigned int index_0 = getValueIndex(i,j,k0);
     unsigned int index_1 = getValueIndex(i,j,k1);

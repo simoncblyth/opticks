@@ -62,6 +62,12 @@ class Composition : public Configurable {
        void nextNormalStyle();
        void setNormalStyle(Composition::NormalStyle_t style);
        Composition::NormalStyle_t getNormalStyle();
+
+   public:
+       typedef enum { SHOW, HIDE, NUM_PICKPHOTON_STYLE } PickPhotonStyle_t ;
+       void nextPickPhotonStyle();
+       void setPickPhotonStyle(Composition::PickPhotonStyle_t style);
+       Composition::PickPhotonStyle_t getPickPhotonStyle();
   private:
       void init();
       void initAxis();
@@ -476,6 +482,8 @@ inline void Composition::nextColorStyle()
     setColorStyle( (ColorStyle_t)next ) ; 
 }
 
+
+
 inline void Composition::nextNormalStyle()
 {
     int next = (getNormalStyle() + 1) % NUM_NORMAL_STYLE ; 
@@ -489,6 +497,24 @@ inline Composition::NormalStyle_t Composition::getNormalStyle()
 {
     return (NormalStyle_t)m_nrmparam.x ;
 }
+
+
+
+
+inline void Composition::nextPickPhotonStyle()
+{
+    int next = (getPickPhotonStyle() + 1) % NUM_PICKPHOTON_STYLE ; 
+    setPickPhotonStyle( (PickPhotonStyle_t)next ) ; 
+}
+inline void Composition::setPickPhotonStyle(PickPhotonStyle_t style)
+{
+    m_pickphoton.y = int(style) ;
+}
+inline Composition::PickPhotonStyle_t Composition::getPickPhotonStyle()
+{
+    return (PickPhotonStyle_t)m_pickphoton.y ;
+}
+
 
 
 

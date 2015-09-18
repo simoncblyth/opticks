@@ -1,6 +1,5 @@
 #include "OGeo.hh"
 
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -224,7 +223,7 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
 
 optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
 {
-    LOG(info) << "OGeo::makeGeometryInstance material1  " ; 
+    LOG(debug) << "OGeo::makeGeometryInstance material1  " ; 
 
     optix::Material material = m_context->createMaterial();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
@@ -261,16 +260,19 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
     geometry->setPrimitiveCount(numFaces);
 
-    LOG(info) << "OGeo::makeGeometry"
+    LOG(debug) << "OGeo::makeGeometry"
               << " numVertices " << numVertices 
               << " numFaces " << numFaces
               << " numTransforms " << numTransforms 
               ;
 
     // TODO: purloin the OpenGL buffers to avoid duplicating the geometry info on GPU 
-    
-    bool reuse = false ;  // setting to true causes OptiX launch failure : bad enum 
     // TODO : attempt to isolate this bad behavior 
+    // TODO : float3 is a known to be problematic, maybe try with float4
+    // TODO : consolidate the three RT_FORMAT_UNSIGNED_INT into one UINT4
+    //    
+    // setting reuse to true causes OptiX launch failure : bad enum 
+    bool reuse = false ;  
 
     optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer", reuse ); 
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
@@ -309,7 +311,7 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
-   LOG(info)<<"OGeo::createInputBuffer"
+   LOG(debug)<<"OGeo::createInputBuffer"
             << " fmt " << std::setw(20) << RayTraceConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes

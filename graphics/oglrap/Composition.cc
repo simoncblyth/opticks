@@ -4,6 +4,7 @@
 #include "NPY.hpp"
 #include "NumpyEvt.hpp"
 #include "RecordsNPY.hpp"
+#include "PhotonsNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "AxisNPY.hpp"
@@ -362,6 +363,11 @@ void Composition::setPickPhoton(glm::ivec4 pickphoton)
             glm::vec4 ce = recs->getCenterExtent(photon_id);
             print(ce, "Composition::setPickPhoton single photon center extent");
             setCenterExtent(ce);
+        }
+        PhotonsNPY* pho  = evt ? evt->getPhotonsNPY() : NULL ; 
+        if(pho)
+        {
+            pho->dump(photon_id, "Composition::setPickPhoton");
         }
     }
 }

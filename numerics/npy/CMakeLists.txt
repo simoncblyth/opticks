@@ -74,6 +74,7 @@ target_link_libraries( ${name} ${LIBRARIES} )
 SET(hdrs 
 uif.h
 ucharfour.h
+charfour.h
 GLMPrint.hpp
 GLMFormat.hpp
 NumpyEvt.hpp

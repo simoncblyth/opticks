@@ -7,6 +7,7 @@ class Timer ;
 class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
+class PhotonsNPY ; 
 
 class NumpyEvt {
    public:
@@ -26,7 +27,6 @@ class NumpyEvt {
        void setGenstepData(NPY<float>* genstep_data);
    public:
        void setIncomingData(NPY<float>* incoming_data);
-       void setRecordsNPY(RecordsNPY* recs);
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
        void setOptix(bool optix=true);
@@ -53,7 +53,11 @@ class NumpyEvt {
        NPY<Sequence_t>*     getSequenceData();
 
    public:
+       // optionals lodged here for debug dumping single photons/records  
+       void setRecordsNPY(RecordsNPY* recs);
+       void setPhotonsNPY(PhotonsNPY* pho);
        RecordsNPY*          getRecordsNPY();
+       PhotonsNPY*          getPhotonsNPY();
    public:
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
@@ -95,6 +99,7 @@ class NumpyEvt {
        MultiViewNPY*   m_sequence_attr  ;
 
        RecordsNPY*     m_records ; 
+       PhotonsNPY*     m_photons ; 
 
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_photons ; 
@@ -124,6 +129,7 @@ inline NumpyEvt::NumpyEvt()
           m_recsel_attr(NULL),
           m_sequence_attr(NULL),
           m_records(NULL),
+          m_photons(NULL),
           m_num_gensteps(0),
           m_num_photons(0),
           m_maxrec(1),
@@ -256,6 +262,16 @@ inline RecordsNPY* NumpyEvt::getRecordsNPY()
 {
     return m_records ;
 }
+
+inline void NumpyEvt::setPhotonsNPY(PhotonsNPY* photons)
+{
+    m_photons = photons ; 
+}
+inline PhotonsNPY* NumpyEvt::getPhotonsNPY()
+{
+    return m_photons ;
+}
+
 
 
 

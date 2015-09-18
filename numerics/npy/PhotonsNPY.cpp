@@ -27,9 +27,9 @@ void PhotonsNPY::setRecs(RecordsNPY* recs)
 }
 
 
-void PhotonsNPY::dump(unsigned int photon_id)
+void PhotonsNPY::dump(unsigned int photon_id, const char* msg)
 {
-    dumpPhotonRecord(photon_id);
+    dumpPhotonRecord(photon_id, msg);
 }
 
 void PhotonsNPY::dumpPhotons(const char* msg, unsigned int ndump)

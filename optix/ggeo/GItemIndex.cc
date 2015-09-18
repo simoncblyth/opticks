@@ -109,7 +109,8 @@ void GItemIndex::dump(const char* msg)
             << " local  " << std::setw(4) <<  std::dec << local
             << " 0x " << std::setw(4)     <<  std::hex << local
             << " cname  " << std::setw(20) <<  ( cname ? cname : "no-colormap-or-missing" )
-            << " ccode  " << std::setw(20) << std::hex <<  ccode
+            << " ccode  " << std::setw(20) << std::hex <<  ccode 
+            << std::dec
             << std::endl ; 
    }
 }

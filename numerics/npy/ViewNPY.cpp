@@ -50,12 +50,6 @@ ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k,
     { 
         addressNPY();
     } 
-    else
-    {
-        LOG(warning) << "ViewNPY::ViewNPY "
-                     << " without data " 
-                     ;
-    }
 }
 
 
