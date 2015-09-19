@@ -67,9 +67,14 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 }   \
 
 
-#define ASAVE(p, s, slot, slot_offset) \
+// stomps on su (surface index) for 1st slot : inserting the genstep m1 
+#define ASAVE(p, s, slot, slot_offset, MaterialIndex) \
 {   \
-   aux_buffer[slot_offset] = make_short4( s.index.x , s.index.y,  s.index.z, p.flags.i.x );  \
+   aux_buffer[slot_offset] = make_short4( \
+             s.index.x, \
+             s.index.y, \
+             slot == 0 ? optical_buffer[MaterialIndex].x : s.index.z, \
+             p.flags.i.x );  \
 }  \
         
 
@@ -119,6 +124,8 @@ RT_PROGRAM void generate()
 
     unsigned long long seqhis(0) ;
     unsigned long long seqmat(0) ;
+    int MaterialIndex(0) ; 
+
     State s ;   
     Photon p ;  
 
@@ -130,6 +137,7 @@ RT_PROGRAM void generate()
         if(dbg) csdebug(cs);
 #endif
         generate_cerenkov_photon(p, cs, rng );         
+        MaterialIndex = cs.MaterialIndex ;  
         s.flag = CERENKOV ;  
     }
     else
@@ -140,6 +148,7 @@ RT_PROGRAM void generate()
         if(dbg) ssdebug(ss);
 #endif
         generate_scintillation_photon(p, ss, rng );         
+        MaterialIndex = ss.MaterialIndex ;  
         s.flag = SCINTILLATION ;  
     }
 
@@ -170,7 +179,11 @@ RT_PROGRAM void generate()
         if(prd.boundary == 0)
         {
             s.flag = MISS ;  // overwrite CERENKOV/SCINTILLATION for the no hitters
-            s.index.x = 0 ;  // avoid unset m1 for no-hitters
+            // zero out no-hitters to avoid leftovers 
+            s.index.x = 0 ;  
+            s.index.y = 0 ;  
+            s.index.z = 0 ; 
+            s.index.w = 0 ; 
             break ;
         }   
         // initial and CONTINUE-ing records
@@ -200,7 +213,7 @@ RT_PROGRAM void generate()
         slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
         RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
 #ifdef AUX
-        ASAVE(p, s, slot, slot_offset );
+        ASAVE(p, s, slot, slot_offset, MaterialIndex );
 #endif
         slot++ ; 
 
@@ -259,8 +272,13 @@ RT_PROGRAM void generate()
         //
         // PASS : survivors will go on to pick up one of the below flags, 
         //        so no need for "BULK_SURVIVE"
-       
-        if(s.surface.x > -1.f )  // x/y/z/w:detect/absorb/reflect_specular/reflect_diffuse
+      
+        // TODO: this is only doing surface propagate_at_surface for a detecting surface
+        //       (of which there are none yet it seems)
+        //       need to identify boundaries with a surface based in integer : s.index.z > -1 
+
+        //if(s.surface.x > -1.f )  // x/y/z/w:detect/absorb/reflect_specular/reflect_diffuse
+        if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
         {
             command = propagate_at_surface(p, s, rng);
             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
@@ -290,7 +308,7 @@ RT_PROGRAM void generate()
     RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
 
 #ifdef AUX
-    ASAVE(p, s, slot, slot_offset );
+    ASAVE(p, s, slot, slot_offset, MaterialIndex);
 #endif
 
     sequence_buffer[photon_id*2 + 0] = seqhis ; 

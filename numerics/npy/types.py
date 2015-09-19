@@ -92,12 +92,17 @@ def mat_(path="~/.opticks/GMaterialIndexLocal.json"):
     js = json_(path)
     return dict(zip(map(str,js.keys()),map(int,js.values())))
 
+
+
 def imat_():
     """
     Inverse mat providing names for the custom integer codes::
 
         In [90]: im[0xF]
         Out[90]: 'Air'
+
+        im = imat_()
+        im_ = lambda _:im.get(_,'?')
 
     """
     mat = mat_()  
@@ -137,7 +142,33 @@ def lmm_(path="$IDPATH/GBoundaryLibMetadataMaterialMap.json"):
     js = json_(path)
     return dict(zip(map(str,js.keys()),map(int,js.values())))
 
-   
+  
+
+def bnd_(path="$IDPATH/GBoundaryLibMetadata.json"):
+    js = json_(path) 
+
+    boundary = js['lib']['boundary']
+
+    bnd = {}
+    bnd[0] = "MISS" 
+
+    def shorten_sur_(sur):
+        return sur if len(sur) < 2 else sur.split("__")[-1]
+
+    for i in sorted(map(int,boundary.keys())):
+        b = boundary[str(i)] 
+        j = i + 1
+        imat = b['imat']['shortname']
+        omat = b['omat']['shortname']
+        isur = shorten_sur_(b['isur']['name'])
+        osur = shorten_sur_(b['osur']['name'])
+        d = "%s/%s/%s/%s" % ( imat, omat, isur, osur )
+
+        bnd[j]   = "(+%0.2d) %s " % (j,d) 
+        bnd[-j] =  "(-%0.2d) %s " % (j,d) 
+    pass
+    return bnd
+ 
 
 def c2g_():
     """
