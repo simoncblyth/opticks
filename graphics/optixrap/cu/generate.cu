@@ -30,8 +30,14 @@ rtBuffer<float4>               photon_buffer;
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
 
-rtBuffer<unsigned char>        phosel_buffer; 
-rtBuffer<unsigned char>        recsel_buffer; 
+#define AUX 1
+#ifdef AUX
+rtBuffer<short4>                aux_buffer ; 
+#endif
+
+
+//rtBuffer<unsigned char>        phosel_buffer; 
+//rtBuffer<unsigned char>        recsel_buffer; 
 
 
 rtBuffer<curandState, 1>       rng_states ;
@@ -50,17 +56,24 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 // beyond MAXREC overwrite save into top slot
  
-#define RSAVE(seqhis, seqmat, p, s, slot)  \
+#define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
 {    \
     unsigned int shift = slot*4 ; \
     unsigned long long his = __ffs((s).flag) & 0xF ; \
     unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
     seqhis |= his << shift ; \
     seqmat |= mat << shift ; \
-    unsigned int slot_offset =  (slot) < MAXREC  ? photon_id*MAXREC + (slot) : photon_id*MAXREC + MAXREC - 1 ;  \
     rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
-    (slot)++ ; \
 }   \
+
+
+#define ASAVE(p, s, slot, slot_offset) \
+{   \
+   aux_buffer[slot_offset] = make_short4( s.index.x , s.index.y,  s.index.z, p.flags.i.x );  \
+}  \
+        
+
+
 
 RT_PROGRAM void trivial()
 {
@@ -133,14 +146,15 @@ RT_PROGRAM void generate()
     p.flags.u.y = photon_id ; 
 
 
-    int slot = 0 ;
     int bounce = 0 ; 
     int command = START ; 
 
+    int slot = 0 ;
+    int slot_min = photon_id*MAXREC ; 
+    int slot_max = slot_min + MAXREC - 1 ; 
+    int slot_offset = 0 ; 
+
     PerRayData_propagate prd ;
-
-    
-
 
     while( bounce < bounce_max )
     {
@@ -165,6 +179,7 @@ RT_PROGRAM void generate()
 
         // use boundary index at intersection point to do optical constant + material/surface property lookups 
         fill_state(s, prd.boundary, prd.sensor, p.wavelength );
+
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
@@ -182,7 +197,13 @@ RT_PROGRAM void generate()
         } 
 
 
-        RSAVE(seqhis, seqmat, p, s, slot) ;
+        slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
+        RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
+#ifdef AUX
+        ASAVE(p, s, slot, slot_offset );
+#endif
+        slot++ ; 
+
 
         // Where best to record the propagation ? 
         // =======================================
@@ -265,7 +286,12 @@ RT_PROGRAM void generate()
     //    1) causes all the MISS to get zero, the initial seqhis value
     //
 
-    RSAVE(seqhis, seqmat, p, s, slot) ;
+    slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
+    RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
+
+#ifdef AUX
+    ASAVE(p, s, slot, slot_offset );
+#endif
 
     sequence_buffer[photon_id*2 + 0] = seqhis ; 
     sequence_buffer[photon_id*2 + 1] = seqmat ;  

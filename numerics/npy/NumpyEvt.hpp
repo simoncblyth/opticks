@@ -21,6 +21,8 @@ class NumpyEvt {
        static const char* phosel ;
        static const char* recsel  ;
        static const char* sequence  ;
+       static const char* aux ;
+
       
        typedef unsigned long long Sequence_t ;
    public:
@@ -40,6 +42,7 @@ class NumpyEvt {
        void setPhotonData(NPY<float>* photon_data);
        void setSequenceData(NPY<Sequence_t>* history_data);
        void setRecordData(NPY<short>* record_data);
+       void setAuxData(NPY<short>* aux_data);
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
 
@@ -48,6 +51,7 @@ class NumpyEvt {
        NPY<float>*          getGenstepData();
        NPY<float>*          getPhotonData();
        NPY<short>*          getRecordData();
+       NPY<short>*          getAuxData();
        NPY<unsigned char>*  getPhoselData();
        NPY<unsigned char>*  getRecselData();
        NPY<Sequence_t>*     getSequenceData();
@@ -62,6 +66,7 @@ class NumpyEvt {
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
        MultiViewNPY* getRecordAttr();
+       MultiViewNPY* getAuxAttr();
        MultiViewNPY* getPhoselAttr();
        MultiViewNPY* getRecselAttr();
        MultiViewNPY* getSequenceAttr();
@@ -87,6 +92,7 @@ class NumpyEvt {
        NPY<float>*           m_genstep_data ;
        NPY<float>*           m_photon_data ;
        NPY<short>*           m_record_data ;
+       NPY<short>*           m_aux_data ;
        NPY<unsigned char>*   m_phosel_data ;
        NPY<unsigned char>*   m_recsel_data ;
        NPY<Sequence_t>*      m_sequence_data ;
@@ -94,6 +100,7 @@ class NumpyEvt {
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
        MultiViewNPY*   m_record_attr  ;
+       MultiViewNPY*   m_aux_attr  ;
        MultiViewNPY*   m_phosel_attr  ;
        MultiViewNPY*   m_recsel_attr  ;
        MultiViewNPY*   m_sequence_attr  ;
@@ -119,12 +126,14 @@ inline NumpyEvt::NumpyEvt()
           m_genstep_data(NULL),
           m_photon_data(NULL),
           m_record_data(NULL),
+          m_aux_data(NULL),
           m_phosel_data(NULL),
           m_recsel_data(NULL),
           m_sequence_data(NULL),
           m_genstep_attr(NULL),
           m_photon_attr(NULL),
           m_record_attr(NULL),
+          m_aux_attr(NULL),
           m_phosel_attr(NULL),
           m_recsel_attr(NULL),
           m_sequence_attr(NULL),
@@ -207,6 +216,17 @@ inline MultiViewNPY* NumpyEvt::getRecordAttr()
 {
     return m_record_attr ;
 }
+
+inline NPY<short>* NumpyEvt::getAuxData()
+{
+    return m_aux_data ;
+}
+inline MultiViewNPY* NumpyEvt::getAuxAttr()
+{
+    return m_aux_attr ;
+}
+
+
 
 
 

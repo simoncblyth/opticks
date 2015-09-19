@@ -777,11 +777,16 @@ void App::downloadEvt()
     NPY<unsigned long long>* dhis = m_evt->getSequenceData();
     Rdr::download(dhis);
 
+    NPY<short>* daux = m_evt->getAuxData();
+    Rdr::download(daux);
+
+
     (*m_timer)("evtDownload"); 
 
     m_parameters->add<std::string>("photonData",   dpho->getDigestString()  );
     m_parameters->add<std::string>("recordData",   drec->getDigestString()  );
     m_parameters->add<std::string>("sequenceData", dhis->getDigestString()  );
+    m_parameters->add<std::string>("auxData",      daux->getDigestString()  );
 
     (*m_timer)("checkDigests"); 
 
@@ -796,6 +801,9 @@ void App::downloadEvt()
     drec->save("rx%s", typ,  tag, det);
     dhis->setVerbose();
     dhis->save("ph%s", typ,  tag, det);
+    daux->setVerbose();
+    daux->save("au%s", typ,  tag, det);
+
 
     (*m_timer)("evtSave"); 
 }

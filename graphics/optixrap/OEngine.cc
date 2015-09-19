@@ -454,7 +454,9 @@ void OEngine::initGenerate(NumpyEvt* evt)
     m_sequence_buffer = createIOBuffer<unsigned long long>( evt->getSequenceData(), "sequence" );
     m_context["sequence_buffer"]->set( m_sequence_buffer );
 
-
+    m_aux_buffer = createIOBuffer<short>( evt->getAuxData(), "aux" );
+    if(m_aux_buffer.get())
+        m_context["aux_buffer"]->set( m_aux_buffer );
 
     m_sequence_buf = new OBuf("sequence", m_sequence_buffer );
     m_sequence_buf->setMultiplicity(1u);

@@ -430,6 +430,8 @@ void Scene::uploadEvt()
     m_photon_renderer->upload(m_evt->getPhoselAttr());
 
     uploadRecordAttr(m_evt->getRecordAttr());
+
+    uploadRecordAttr(m_evt->getAuxAttr());
 }
 
 
@@ -455,6 +457,9 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr)
     m_altrecord_renderer->upload(attr);
     m_devrecord_renderer->upload(attr);
 }
+
+
+
 
 void Scene::render()
 {

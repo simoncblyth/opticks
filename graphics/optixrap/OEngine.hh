@@ -167,6 +167,7 @@ class OEngine : public Touchable {
         optix::Buffer         m_record_buffer ; 
         optix::Buffer         m_sequence_buffer ; 
         optix::Buffer         m_touch_buffer ; 
+        optix::Buffer         m_aux_buffer ; 
         //optix::Buffer         m_phosel_buffer ; 
         //optix::Buffer         m_recsel_buffer ; 
         optix::Group          m_top ;

@@ -23,6 +23,7 @@ const char* NumpyEvt::record  = "record" ;
 const char* NumpyEvt::phosel = "phosel" ; 
 const char* NumpyEvt::recsel  = "recsel" ; 
 const char* NumpyEvt::sequence  = "sequence" ; 
+const char* NumpyEvt::aux = "aux" ; 
 
 
 void NumpyEvt::init()
@@ -46,6 +47,7 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
     else if(elem[0] == phosel)  mvn = m_phosel_attr ;
     else if(elem[0] == recsel)  mvn = m_recsel_attr ;
     else if(elem[0] == sequence)  mvn = m_sequence_attr ;
+    else if(elem[0] == aux)      mvn = m_aux_attr ;
 
     assert(mvn);
     return (*mvn)[elem[1].c_str()] ;
@@ -105,12 +107,18 @@ void NumpyEvt::createHostBuffers()
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4, NULL); // shape (np,1,4) (formerly initialized to 0)
     setPhoselData(phosel);   
 
-    NPY<short>* rec = NPY<short>::make(getNumRecords(), 2, 4, NULL);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+    unsigned int num_records = getNumRecords();
+
+    NPY<short>* rec = NPY<short>::make(num_records, 2, 4, NULL);  // shape (nr,2,4) formerly initialized to SHRT_MIN
     setRecordData(rec);   
 
     // aka seqidx (SequenceNPY) or target ThrustIndex
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make(getNumRecords(),1,4, NULL); // shape (nr,1,4) (formerly initialized to 0) 
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4, NULL); // shape (nr,1,4) (formerly initialized to 0) 
     setRecselData(recsel);   
+
+    NPY<short>* aux = NPY<short>::make(num_records, 1, 4, NULL);  // shape (nr,1,4)
+    setAuxData(aux);   
+
 
     (*m_timer)("createHostBuffers");
 }
@@ -126,6 +134,8 @@ void NumpyEvt::allocateHostBuffers()
     LOG(info) << "NumpyEvt::allocateHostBuffers "
               << " num_photons " << m_num_photons  
                ;
+
+    assert(0);
 
     m_photon_data->zero();
     m_photon_data->setAllowPrealloc(true);
@@ -248,6 +258,15 @@ void NumpyEvt::setPhotonData(NPY<float>* photon_data)
     //
     // corresponds to GPU side cu/photon.h:psave and rsave 
     //
+}
+
+void NumpyEvt::setAuxData(NPY<short>* aux_data)
+{
+    m_aux_data = aux_data  ;
+    m_aux_attr = new MultiViewNPY();
+    //                                            j k sz   type                  norm   iatt
+    ViewNPY* ibnd = new ViewNPY("ibnd",m_aux_data,0,0,4,ViewNPY::SHORT          ,false,  true);
+    m_aux_attr->add(ibnd);
 }
 
 void NumpyEvt::setRecordData(NPY<short>* record_data)
