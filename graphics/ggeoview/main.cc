@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <algorithm>
 
+#include <boost/algorithm/string.hpp>  
+#include <boost/lexical_cast.hpp>
+
 #include "OptiXUtil.hh"
 #include "define.h"
 
@@ -9,6 +12,10 @@
 #include "Frame.hh"
 
 #define OPTIX 1
+
+
+
+
 
 // oglrap-
 #define GUI_ 1
@@ -48,6 +55,7 @@
 #include "Lookup.hpp"
 // #include "Sensor.hpp"
 #include "G4StepNPY.hpp"
+#include "TorchStepNPY.hpp"
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
@@ -99,6 +107,8 @@ namespace fs = boost::filesystem;
 #include "OEngine.hh"
 #include "OBuf.hh"
 #include "RayTraceConfig.hh"
+#include "cu/photon.h"
+
 
 // cudawrap-
 #include "CResource.hh"
@@ -180,6 +190,7 @@ class App {
        void uploadGeometry();
   public:
        void loadGenstep();
+       NPY<float>* loadGenstepFromFile(unsigned int code, unsigned int tag);
        void uploadEvt();
        void seedPhotonsFromGensteps();
        void initRecords();
@@ -477,7 +488,11 @@ int App::loadGeometry()
     m_mesh0 = m_ggeo->getMergedMesh(0); 
     assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
 
+    /*
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+    */
+    
+    gfloat4 ce0 = m_ggeo->getCenterExtent(0,0);  
     m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
 
     LOG(info) << "loadGeometry ce0: " 
@@ -508,6 +523,8 @@ void App::uploadGeometry()
 }
 
 
+
+
 void App::loadGenstep()
 {
     if(hasOpt("nooptix|noevent")) 
@@ -516,50 +533,67 @@ void App::loadGenstep()
         return ;
     }
 
-    const char* typ ; 
-    if(     m_fcfg->hasOpt("cerenkov"))      typ = "cerenkov" ;
-    else if(m_fcfg->hasOpt("scintillation")) typ = "scintillation" ;
-    else                                     typ = "cerenkov" ;
+    unsigned int code ; 
+    if(     m_fcfg->hasOpt("cerenkov"))      code = CERENKOV ;
+    else if(m_fcfg->hasOpt("scintillation")) code = SCINTILLATION ;
+    else if(m_fcfg->hasOpt("torch"))         code = TORCH ;
+    else                                     code = CERENKOV ;
 
     std::string tag_ = m_fcfg->getEventTag();
-    const char* tag = tag_.empty() ? "1" : tag_.c_str()  ; 
+    unsigned int tag = boost::lexical_cast<unsigned int>( tag_.empty() ? "1" : tag_.c_str() );
 
-    const char* det = m_cache->getDetector();
-    bool juno       = m_cache->isJuno();
-    
-    int modulo = m_fcfg->getModulo();
-
-    m_parameters->add<std::string>("Type", typ );
-    m_parameters->add<std::string>("Tag", tag );
-    m_parameters->add<std::string>("Detector", det );
-    m_parameters->add<int>("Modulo", modulo );
-
-    NPY<float>* npy = NPY<float>::load(typ, tag, det ) ;
-    m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
-   
-    if(modulo > 0)
+    NPY<float>* npy = NULL ; 
+    if( code == CERENKOV || code == SCINTILLATION )
     {
-        LOG(warning) << "App::loadGenstep applying modulo scaledown " << modulo ; 
-        npy = NPY<float>::make_modulo(npy, modulo); 
-        m_parameters->add<std::string>("genstepModulo",   npy->getDigestString()  );
+        npy = loadGenstepFromFile(code, tag); 
+
+        G4StepNPY genstep(npy);    
+        genstep.relabel(code); // becomes the ghead.i.x used in cu/generate.cu
+
+        bool dayabay = m_cache->isDayabay();
+        if(dayabay)
+        {   
+            genstep.setLookup(m_loader->getMaterialLookup()); 
+            genstep.applyLookup(0, 2);      
+            // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
+            m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
+        }
     }
+    else if(code == TORCH)
+    {
+        TorchStepNPY torch(m_fcfg->getTorchConfig().c_str());
+
+        unsigned int target = torch.getTarget() ;
+        gfloat4 ce = m_ggeo->getCenterExtent(target,0);  
+        
+        // TODO:name based access needs rejig of GBoundaryLibMetadata splitting of the map ? 
+        //      
+        int MaterialIndex = 102 ; 
+        int NumPhotons   = 10000 ; 
+
+        torch.setCtrl( TORCH, 0, MaterialIndex, NumPhotons );
+
+        glm::vec3 pos(ce.x, ce.y, ce.z);
+        glm::vec3 dir( 0.f, 0.f, 1.f);
+        glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
+
+        torch.setPositionTime(pos, 0.f);
+        torch.setDirectionWeight(dir, 1.f);
+        torch.setPolarizationWavelength(pol, 500.f);
+
+        npy = torch.makeNPY(); 
+        npy->save("/tmp/torch.npy");
+
+        m_parameters->add<std::string>("Type", "torch" );
+        m_parameters->add<std::string>("Tag", "0" );
+        m_parameters->add<std::string>("Detector", m_cache->getDetector() );
+
+    }
+    
 
     (*m_timer)("loadGenstep"); 
 
-    G4StepNPY genstep(npy);    
-    genstep.setLookup(m_loader->getMaterialLookup()); 
-   
-    if(juno)
-    {
-        LOG(warning) << "App::loadGenstep skip genstep.applyLookup for JUNO " ;
-    }
-    else
-    {   
-        genstep.applyLookup(0, 2);   // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
-    }
-    (*m_timer)("applyLookup"); 
  
-    m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
 
     m_evt->setMaxRec(m_fcfg->getRecordMax());          // must set this before setGenStepData to have effect
 
@@ -592,6 +626,46 @@ void App::loadGenstep()
 }
 
 
+NPY<float>* App::loadGenstepFromFile(unsigned int code, unsigned int tag_)
+{
+    std::string typ = photon_enum_label(code) ; 
+    boost::algorithm::to_lower(typ);
+
+    std::string tag = boost::lexical_cast<std::string>(tag_);
+
+    LOG(info) << "App::loadGenstepFromFile  " 
+              << " code " << code
+              << " tag " << tag 
+              << " typ " << typ
+              ; 
+
+    const char* det = m_cache->getDetector();
+
+    m_parameters->add<std::string>("Type", typ );
+    m_parameters->add<std::string>("Tag", tag );
+    m_parameters->add<std::string>("Detector", det );
+
+
+    NPY<float>* npy = NPY<float>::load(typ.c_str(), tag.c_str(), det ) ;
+    m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
+
+    int modulo = m_fcfg->getModulo();
+    m_parameters->add<int>("Modulo", modulo );
+
+    if(modulo > 0)
+    {
+        LOG(warning) << "App::loadGenstepFromFile applying modulo scaledown " << modulo ; 
+        npy = NPY<float>::make_modulo(npy, modulo); 
+        m_parameters->add<std::string>("genstepModulo",   npy->getDigestString()  );
+    }
+    return npy ; 
+}
+
+
+
+
+
+
 void App::uploadEvt()
 {
     if(hasOpt("nooptix|noevent")) 
@@ -610,6 +684,7 @@ void App::uploadEvt()
 
     (*m_timer)("uploadEvt"); 
 }
+
 
 
 void App::seedPhotonsFromGensteps()

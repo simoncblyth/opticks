@@ -24,13 +24,38 @@ enum
     SURFACE_SREFLECT  = 0x1 <<  9,
     BOUNDARY_REFLECT  = 0x1 << 10,
     BOUNDARY_TRANSMIT = 0x1 << 11,
-    NAN_ABORT         = 0x1 << 12
+    TORCH             = 0x1 << 12,
+    NAN_ABORT         = 0x1 << 13
 }; // processes
 
 //  only 0-15 make it into the record so debug flags only beyond 15 
 
 
 enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
+
+
+#ifndef __CUDACC__
+
+static const char* CERENKOV_      = "CERENKOV" ;
+static const char* SCINTILLATION_ = "SCINTILLATION" ;
+static const char* TORCH_         = "TORCH" ;
+static const char* OTHER_         = "OTHER" ;
+
+const char* photon_enum_label( int code )
+{
+    const char* name = 0 ; 
+    switch(code)
+    {
+       case CERENKOV     :name = CERENKOV_      ;break;
+       case SCINTILLATION:name = SCINTILLATION_ ;break;
+       case TORCH        :name = TORCH_         ;break;
+       default           :name = OTHER_         ;break; 
+    }
+    return name ; 
+}
+
+
+#endif
 
 
 

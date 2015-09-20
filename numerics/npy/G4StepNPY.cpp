@@ -2,6 +2,13 @@
 #include "NPY.hpp"
 #include "Lookup.hpp"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
+
+
 void G4StepNPY::dump(const char* msg)
 {
     if(!m_npy) return ;
@@ -45,6 +52,38 @@ void G4StepNPY::dump(const char* msg)
            printf("\n");
        }
     }
+    }
+}
+
+
+
+
+void G4StepNPY::relabel(int label)
+{
+
+/*
+Scintillation and Cerenkov genstep files contain a pre-label of
+a signed integer.::   
+
+    In [7]: sts_(1).view(np.int32)[:,0,0]
+    Out[7]: array([    1,     2,     3, ..., 13896, 13897, 13898], dtype=int32)
+
+    In [8]: stc_(1).view(np.int32)[:,0,0]
+    Out[8]: array([   -1,    -2,    -3, ..., -7834, -7835, -7836], dtype=int32)
+
+Having only 2 types of gensteps is too limiting for example 
+when generating test photons corresponding to a light source. 
+So *G4StepNPY::relabel* rejigs the markers to a enumerated code.  
+The genstep index is still available from the photon buffer, and this is 
+written into the *Id* of GPU structs.
+
+*/
+    LOG(info)<<"G4StepNPY::relabel" ;
+    for(unsigned int i=0 ; i<m_npy->m_len0 ; i++ )
+    {
+        int code = m_npy->getInt(i,0u,0u);
+        if(i % 1000 == 0) printf("G4StepNPY::relabel (%u) %d -> %d \n", i, code, label );
+        m_npy->setInt(i,0u,0u, label);
     }
 }
 

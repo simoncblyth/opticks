@@ -657,4 +657,10 @@ void GGeo::dumpStats(const char* msg)
 
 }
 
+gfloat4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )
+{
+    GMergedMesh* mm = getMergedMesh(merged_mesh_index);
+    assert(mm);
+    return mm->getCenterExtent(target); 
+}
 

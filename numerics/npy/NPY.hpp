@@ -133,8 +133,12 @@ class NPY : public NPYBase {
        void         setInt(  unsigned int i, unsigned int j, unsigned int k, int value);
 
        void         setQuad(unsigned int i, unsigned int j, glm::vec4&  vec );
+       void         setQuadI(unsigned int i, unsigned int j, glm::ivec4& vec );
+       void         setQuadU(unsigned int i, unsigned int j, glm::uvec4& vec );
+
        void         setQuad(unsigned int i, unsigned int j, glm::ivec4& vec );
        void         setQuad(unsigned int i, unsigned int j, glm::uvec4& vec );
+
        void         setQuad(unsigned int i, unsigned int j, float x, float y=0.f, float z=0.f, float w=0.f );
        glm::vec4    getQuad(unsigned int i, unsigned int j );
        glm::ivec4   getQuadI(unsigned int i, unsigned int j );
@@ -281,12 +285,28 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, fl
     setQuad(i, j, vec);
 }
 
+
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::ivec4& vec )
 {
     assert( m_len2 == 4 );  
     for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
 }
+
+template <typename T> 
+inline void NPY<T>::setQuadI(unsigned int i, unsigned int j, glm::ivec4& vec )
+{
+    assert( m_len2 == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setInt(i,j,k,vec[k]); 
+}
+template <typename T> 
+inline void NPY<T>::setQuadU(unsigned int i, unsigned int j, glm::uvec4& vec )
+{
+    assert( m_len2 == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setUInt(i,j,k,vec[k]); 
+}
+
+
 
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::uvec4& vec )

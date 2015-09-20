@@ -30,6 +30,8 @@ class G4StepNPY {
        NPY<float>* getNPY();
 
    public:  
+       void relabel(int label);
+   public:  
        void setLookup(Lookup* lookup);
        Lookup* getLookup();
        void applyLookup(unsigned int jj, unsigned int kk);

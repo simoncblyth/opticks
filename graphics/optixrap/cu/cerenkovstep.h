@@ -42,12 +42,13 @@ struct CerenkovStep
 };
 
 
-__device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsigned int offset )
+__device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsigned int offset, unsigned int genstep_id)
 {
     union quad ipmn, ccwv, mmmm  ;
  
     ipmn.f = cerenkov[offset+0];     
-    cs.Id = ipmn.i.x ; 
+    //cs.Id = ipmn.i.x ; 
+    cs.Id = genstep_id ; 
     cs.ParentId = ipmn.i.y ; 
     cs.MaterialIndex = ipmn.i.z ; 
     cs.NumPhotons = ipmn.i.w ; 

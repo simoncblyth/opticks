@@ -47,6 +47,7 @@ add_library( ${name}  SHARED
     timeutil.cpp
     Lookup.cpp
     G4StepNPY.cpp
+    TorchStepNPY.cpp
     PhotonsNPY.cpp
     RecordsNPY.cpp
     BoundariesNPY.cpp
@@ -83,6 +84,7 @@ NPY.hpp
 ViewNPY.hpp
 MultiViewNPY.hpp
 G4StepNPY.hpp
+TorchStepNPY.hpp
 PhotonsNPY.hpp
 RecordsNPY.hpp
 BoundariesNPY.hpp

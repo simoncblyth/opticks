@@ -169,6 +169,13 @@ void ViewNPY::findBounds()
     m_extent = std::max( m_dimensions->z , m_extent );
     m_extent = m_extent / 2.0f ;    
 
+    if(m_count == 1)
+    {
+        m_extent = 1000.f ; 
+        LOG(warning) << "ViewNPY::findBounds setting nominal extent as count is 1, extent " << m_extent ; 
+    }
+
+
     glm::vec3 s(m_extent);
     glm::vec3 t(*m_center);
 

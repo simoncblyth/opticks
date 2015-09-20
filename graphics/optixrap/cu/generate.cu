@@ -21,6 +21,7 @@ rtBuffer<uint4>                optical_buffer;
 #define GNUMQUAD 6
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
+#include "torchstep.h"
 
 #include "rayleigh.h"
 #include "propagate.h"
@@ -97,10 +98,9 @@ RT_PROGRAM void generate()
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
     unsigned int MAXREC = record_max ; 
 
-    //
-    // first 4 bytes of photon_buffer photon records contain genstep_id 
-    // this seeding is done in NumpyEvt::setGenstepData
-    //
+    // first 4 bytes of photon_buffer photon records is seeded with genstep_id 
+    // this seeding is done by App::seedPhotonsFromGensteps
+
     union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;
     unsigned int genstep_id = phead.u.x ; 
@@ -129,10 +129,10 @@ RT_PROGRAM void generate()
     State s ;   
     Photon p ;  
 
-    if(ghead.i.x < 0)   // 1st 4 bytes, is 1-based int index distinguishing cerenkov/scintillation
+    if(ghead.i.x == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
     {
         CerenkovStep cs ;
-        csload(cs, genstep_buffer, genstep_offset);
+        csload(cs, genstep_buffer, genstep_offset, genstep_id);
 #ifdef DEBUG
         if(dbg) csdebug(cs);
 #endif
@@ -140,10 +140,10 @@ RT_PROGRAM void generate()
         MaterialIndex = cs.MaterialIndex ;  
         s.flag = CERENKOV ;  
     }
-    else
+    else if(ghead.i.x == SCINTILLATION)
     {
         ScintillationStep ss ;
-        ssload(ss, genstep_buffer, genstep_offset);
+        ssload(ss, genstep_buffer, genstep_offset, genstep_id);
 #ifdef DEBUG
         if(dbg) ssdebug(ss);
 #endif
@@ -151,6 +151,18 @@ RT_PROGRAM void generate()
         MaterialIndex = ss.MaterialIndex ;  
         s.flag = SCINTILLATION ;  
     }
+    else if(ghead.i.x == TORCH)
+    {
+        TorchStep ts ;
+        tsload(ts, genstep_buffer, genstep_offset, genstep_id);
+#ifdef DEBUG
+        if(dbg) tsdebug(ts);
+#endif
+        generate_torch_photon(p, ts, rng );         
+        MaterialIndex = ts.MaterialIndex ;  
+        s.flag = TORCH ;  
+    }
+
 
     p.flags.u.y = photon_id ; 
 

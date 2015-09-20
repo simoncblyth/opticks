@@ -9,6 +9,7 @@ class FrameCfg : public Cfg {
      std::string& getConfigPath();
      std::string& getEventTag();
      std::string& getLiveLine();
+     std::string& getTorchConfig();
      int          getBounceMax(); 
      int          getRecordMax(); 
      int          getTimeMax(); 
@@ -24,6 +25,7 @@ private:
      std::string m_configpath ;
      std::string m_event_tag ;
      std::string m_liveline ;
+     std::string m_torchconfig ;
      int         m_bouncemax ; 
      int         m_recordmax ; 
      int         m_timemax ; 
@@ -39,6 +41,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        : 
        Cfg(name, live),
        m_listener(listener),
+       m_torchconfig("target:3153"),
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),
@@ -99,6 +102,13 @@ inline void FrameCfg<Listener>::init()
 
    m_desc.add_options()
        ("cerenkov,c",  "load cerenkov gensteps") ;
+
+   m_desc.add_options()
+       ("torch",  "fabricate torch genstep using torch config settings") ;
+
+   m_desc.add_options()
+       ("torchconfig",   boost::program_options::value<std::string>(&m_torchconfig), "torch configuration" );
+
 
    char modulo[128];
    snprintf(modulo,128, "Modulo scaledown input gensteps for speed/debugging, eg 10 to decimate. Values less than 1 disable scaledown. Default %d", m_modulo);
@@ -195,6 +205,11 @@ template <class Listener>
 inline std::string& FrameCfg<Listener>::getLiveLine()
 {
     return m_liveline ;
+}
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getTorchConfig()
+{
+    return m_torchconfig ;
 }
 template <class Listener>
 inline int FrameCfg<Listener>::getBounceMax()

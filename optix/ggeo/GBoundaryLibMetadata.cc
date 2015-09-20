@@ -33,6 +33,43 @@ namespace pt = boost::property_tree;
 const char* GBoundaryLibMetadata::filename = "GBoundaryLibMetadata.json" ; 
 const char* GBoundaryLibMetadata::mapname  = "GBoundaryLibMetadataMaterialMap.json" ; 
 
+/*
+
+In [14]: lmm = lmm_()
+INFO:env.numerics.npy.types:parsing json for key $IDPATH/GBoundaryLibMetadataMaterialMap.json
+
+In [15]: lmm
+Out[15]: 
+{'ADTableStainlessSteel': 330,
+ 'Acrylic': 84,
+ 'Air': 12,
+ 'Aluminium': 24,
+ 'Bialkali': 126,
+ 'DeadWater': 42,
+ 'ESR': 156,
+ 'Foam': 30,
+ 'GdDopedLS': 102,
+ 'IwsWater': 66,
+ 'LiquidScintillator': 90,
+ 'MineralOil': 78,
+ 'Nitrogen': 192,
+ 'NitrogenGas': 264,
+ 'Nylon': 210,
+ 'OwsWater': 54,
+ 'PPE': 18,
+ 'PVC': 324,
+ 'Pyrex': 114,
+ 'Rock': 6,
+ 'StainlessSteel': 72,
+ 'Tyvek': 48,
+ 'UnstStainlessSteel': 132,
+ 'Vacuum': 0,
+ 'Water': 187}
+
+*/
+
+
+
 GBoundaryLibMetadata::GBoundaryLibMetadata() 
 {
 }
@@ -196,6 +233,8 @@ void GBoundaryLibMetadata::dumpNames()
 
 void GBoundaryLibMetadata::createMaterialMap()
 {
+    // TODO: bud off into separate class 
+
     typedef std::map<std::string, unsigned int> Map_t ;
     Map_t name2line ; 
 
