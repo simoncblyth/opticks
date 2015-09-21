@@ -247,6 +247,8 @@ class App {
        GItemIndex*      m_seqmat ; 
        Photons*         m_photons ; 
        GUI*             m_gui ; 
+       G4StepNPY*       m_g4step ; 
+       TorchStepNPY*    m_torchstep ; 
    private:
        std::map<int, std::string> m_boundaries ;
        glm::uvec4       m_size ;
@@ -289,7 +291,9 @@ App::App(const char* prefix, const char* logname)
       m_seqhis(NULL),
       m_seqmat(NULL),
       m_photons(NULL),
-      m_gui(NULL)
+      m_gui(NULL),
+      m_g4step(NULL),
+      m_torchstep(NULL)
 {
     m_cache     = new GCache(m_prefix);
 
@@ -537,7 +541,7 @@ void App::loadGenstep()
     if(     m_fcfg->hasOpt("cerenkov"))      code = CERENKOV ;
     else if(m_fcfg->hasOpt("scintillation")) code = SCINTILLATION ;
     else if(m_fcfg->hasOpt("torch"))         code = TORCH ;
-    else                                     code = CERENKOV ;
+    else                                     code = TORCH ;
 
     std::string tag_ = m_fcfg->getEventTag();
     unsigned int tag = boost::lexical_cast<unsigned int>( tag_.empty() ? "1" : tag_.c_str() );
@@ -547,42 +551,38 @@ void App::loadGenstep()
     {
         npy = loadGenstepFromFile(code, tag); 
 
-        G4StepNPY genstep(npy);    
-        genstep.relabel(code); // becomes the ghead.i.x used in cu/generate.cu
+        m_g4step = new G4StepNPY(npy);    
+        m_g4step->relabel(code); // becomes the ghead.i.x used in cu/generate.cu
 
         bool dayabay = m_cache->isDayabay();
         if(dayabay)
         {   
-            genstep.setLookup(m_loader->getMaterialLookup()); 
-            genstep.applyLookup(0, 2);      
+            m_g4step->setLookup(m_loader->getMaterialLookup()); 
+            m_g4step->applyLookup(0, 2);      
             // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
             m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
         }
     }
     else if(code == TORCH)
     {
-        TorchStepNPY torch(m_fcfg->getTorchConfig().c_str());
+        m_torchstep = new TorchStepNPY(TORCH);
+        m_torchstep->configure(m_fcfg->getTorchConfig().c_str());
 
-        unsigned int target = torch.getTarget() ;
-        gfloat4 ce = m_ggeo->getCenterExtent(target,0);  
-        
-        // TODO:name based access needs rejig of GBoundaryLibMetadata splitting of the map ? 
-        //      
-        int MaterialIndex = 102 ; 
-        int NumPhotons   = 10000 ; 
+        // setting the position of the torch requires geometry info, 
+        // but torch config still holds integer codes specifying (volume index, merged mesh index) 
+        glm::ivec4& ipos_target = m_torchstep->getPosTarget() ;   
+        gfloat4 pos_target = m_ggeo->getCenterExtent(ipos_target.x,ipos_target.y);   
+        glm::vec3 pos(pos_target.x, pos_target.y, pos_target.z);
 
-        torch.setCtrl( TORCH, 0, MaterialIndex, NumPhotons );
+        m_torchstep->setPosition(pos);  
 
-        glm::vec3 pos(ce.x, ce.y, ce.z);
-        glm::vec3 dir( 0.f, 0.f, 1.f);
+        //glm::vec3 dir( 0.f, 0.f, -1.f);
+        //m_torchstep->setDirection(dir);
+
         glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
+        m_torchstep->setPolarization(pol);
 
-        torch.setPositionTime(pos, 0.f);
-        torch.setDirectionWeight(dir, 1.f);
-        torch.setPolarizationWavelength(pol, 500.f);
-
-        npy = torch.makeNPY(); 
-        npy->save("/tmp/torch.npy");
+        npy = m_torchstep->makeNPY(); 
 
         m_parameters->add<std::string>("Type", "torch" );
         m_parameters->add<std::string>("Tag", "0" );
@@ -977,16 +977,19 @@ void App::indexBoundaries()
 
     OBuf* pho = m_engine->getPhotonBuf();
 
-    unsigned int npha = pho->getNumAtoms(); 
-    unsigned int nphd  = std::min(npha,4*4*100u); 
 
     pho->setHexDump(false);
+
+/*
+    unsigned int npha = pho->getNumAtoms(); 
+    unsigned int nphd  = std::min(npha,4*4*100u); 
     pho->dump<int>("App::indexBoundaries pho->dump<int>", 4*4, 4*3+0, nphd);
+*/
 
     TSparse<int> boundaries("Boundaries", pho->slice(4*4,4*3+0)); // stride,begin 
     boundaries.setHexDump(false);
     boundaries.make_lookup();
-    boundaries.dump("App::indexBoundaries");
+    //boundaries.dump("App::indexBoundaries");
 
 
     (*m_timer)("indexBoundaries"); 
@@ -1101,6 +1104,7 @@ void App::indexEvtOld()
         if(m_pho)
         {
             m_pho->setRecs(m_rec);
+            if(m_torchstep) m_torchstep->dump("App::indexEvtOld TorchStepNPY");
             m_pho->dump(0);
         }
         m_evt->setRecordsNPY(m_rec);

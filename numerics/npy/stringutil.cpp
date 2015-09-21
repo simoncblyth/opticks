@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
@@ -66,6 +67,37 @@ void split( std::vector<std::string>& elem, const char* line, char delim )
     std::string s;
     while (getline(f, s, delim)) elem.push_back(s);
 }
+
+
+
+
+std::vector<std::pair<std::string, std::string>> ekv_split( const char* line, char edelim, const char* kvdelim )
+{
+    typedef std::pair<std::string,std::string> KV ;  
+    std::vector<KV> ekv ; 
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, edelim))
+    {
+        std::vector<std::string> kv ;
+        boost::split(kv, s, boost::is_any_of(kvdelim));
+        if(kv.size() == 2)
+        {
+            ekv.push_back(KV(kv[0],kv[1]));
+        }
+        else
+        {
+            printf("stringutil.ekv_split ignoring malformed kv %s \n", s.c_str() );
+        }
+    }
+    return ekv ;
+}
+    
+
+
+
+
+
 
 
 std::string join(std::vector<std::string>& elem, char delim )

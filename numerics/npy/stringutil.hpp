@@ -16,6 +16,9 @@ const char* uppercase( const char* str );
 
 void split( std::vector<std::string>& elem, const char* line, char delim );
 
+std::vector<std::pair<std::string, std::string> > ekv_split( const char* line, char edelim=' ', const char* kvdelim=":" );
+
+
 std::string patternPickField(std::string str, std::string ptn, int num );
 
 std::string join(std::vector<std::string>& elem, char delim );

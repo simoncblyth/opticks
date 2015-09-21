@@ -41,7 +41,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        : 
        Cfg(name, live),
        m_listener(listener),
-       m_torchconfig("target:3153"),
+       m_torchconfig(""),
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),

@@ -27,11 +27,39 @@ with Ac/LS when expected to intersect with Gd/Ac
 Questions
 -----------
 
-* geometric preponderances ? particular angles or closeness ? particular pieces of geometry : lids ?
 * geometric epsilon 
 * thin acrylic problem ?
 
   * make simplified geometry: concentric spheres (or boxes) with varying Ac thickness 
+
+Analytic Geometry
+-----------------
+
+* including GDML elements within in G4DAE exported COLLADA extra elements
+  would provide the analytic geometry description needed to swap out 
+  triangulated for analytic geometry in some cases
+
+  * OpenGL needs triangulated, the analytic can be applied to OptiX geometry
+
+
+
+Confirmed Geometric Problem : inner AV top lid is not intersecting 
+--------------------------------------------------------------------
+
+Using a "torch" at AD center all photons with less than 0.31pi (AV top lid)
+to the zenith are not intersecting with Gd/Ac but rather Ac/LS.
+The problem area coincides with OpenGL renderering z-fighting flickering.  
+
+To chop out or focus on the problem area::
+
+    ggv --torchconfig "zenith_azimuth:0.31,1.0,0,1"
+    ggv --torchconfig "zenith_azimuth:0,0.31,0,1"
+
+Focus on just the problematic 1st step::
+
+    ggv --torchconfig "zenith_azimuth:0,0.31,0,1" --bouncemax 1
+
+TODO: orthographic projection would be useful for eyeballing geometry in cross section 
 
 
 Material Codes
