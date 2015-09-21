@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 
+#include <glm/glm.hpp>
 #include "GVector.hh"
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
@@ -45,7 +46,7 @@ class GGeo {
         GMergedMesh* getMergedMesh(unsigned int index);
     public:
         // target 0 : all geometry of the mesh, >0 : specific volumes
-        gfloat4 getCenterExtent(unsigned int target, unsigned int merged_mesh_index=0u );
+        glm::vec4 getCenterExtent(unsigned int target, unsigned int merged_mesh_index=0u );
     public:
         bool isLoaded();
         void setPath(const char* path);

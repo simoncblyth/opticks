@@ -6,29 +6,29 @@
 struct TorchStep
 {
 
-    // m_ctrl
+    // (0) m_ctrl
     int Id    ;
     int ParentId ;
     int MaterialIndex  ;
     int NumPhotons ;
 
-    // m_post : position time 
+    // (1) m_post : position time 
     float3 x0 ;
     float  t0 ;
 
-    // m_dirw : direction weight 
+    // (2) m_dirw : direction weight 
     float3 p0 ;
     float  weight ;
  
-    // m_polw
+    // (3) m_polw
     float3 pol ;
     float  wavelength ;
 
-    // m_zeaz : zenith, azimuth 
+    // (4) m_zeaz : zenith, azimuth 
     float4 zeaz ; 
- 
-    float4 spare4 ; 
-    float4 spare5 ; 
+
+    // (5) m_beam : radius, ...  
+    float4 beam ; 
 
 };
 
@@ -57,6 +57,11 @@ __device__ void tsload( TorchStep& ts, optix::buffer<float4>& genstep, unsigned 
  
     float4 zeaz = genstep[offset+4];
     ts.zeaz = make_float4(zeaz.x, zeaz.y, zeaz.z, zeaz.w );
+
+    float4 beam = genstep[offset+5];
+    ts.beam = make_float4(beam.x, beam.y, beam.z, beam.w );
+ 
+
     
 }
 
@@ -76,6 +81,8 @@ __device__ void tsdump( TorchStep& ts )
        ts.x0.z, 
        ts.t0 
        );
+
+
 }
 
 
@@ -90,39 +97,59 @@ __device__ void
 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 {
       p.wavelength = ts.wavelength ; 
+      p.time = ts.t0 ;
+      p.weight = ts.weight ;
+      p.flags.u.x = 0 ;
+      p.flags.u.y = 0 ;
+      p.flags.u.z = 0 ;
+      p.flags.u.w = 0 ;
 
-      float theta = 1.f*M_PIf*uniform(&rng, ts.zeaz.x, ts.zeaz.y);
-      float sinTheta, cosTheta;
-      sincosf(theta,&sinTheta,&cosTheta);
 
-      float phi = 2.f*M_PIf*uniform(&rng, ts.zeaz.z, ts.zeaz.w );
+      float u1 = uniform(&rng, ts.zeaz.x, ts.zeaz.y);
+      float u2 = uniform(&rng, ts.zeaz.z, ts.zeaz.w );
+
       float sinPhi, cosPhi;
-      sincosf(phi,&sinPhi,&cosPhi);
+      sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);
 	
       // calculate x,y, and z components of photon energy
       // (in coord system with primary particle direction 
       //  aligned with the z axis)
       // then rotate momentum direction back to global reference system  
 
-      float3 photonMomentum = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
-      rotateUz(photonMomentum, ts.p0 );
-      p.direction = photonMomentum ;
+      if(ts.beam.x > 0.f)
+      { 
+          // disc single direction emitter 
 
-      // Determine polarization of new photon 
-      // and rotate back to original coord system 
+          p.direction = ts.p0 ;
 
-      float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta); // adhoc
-      rotateUz(photonPolarization, ts.p0);
-      p.polarization = photonPolarization ;
+          float r = ts.beam.x*u1 ; 
+          float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
+          rotateUz(discPosition, ts.p0);
 
-      p.time = ts.t0 ;
-      p.position = ts.x0 ;
-      p.weight = ts.weight ;
+          p.position = ts.x0 + discPosition ;
 
-      p.flags.u.x = 0 ;
-      p.flags.u.y = 0 ;
-      p.flags.u.z = 0 ;
-      p.flags.u.w = 0 ;
+          float3 photonPolarization = make_float3( sinPhi, -cosPhi, 0.f); // adhoc
+          rotateUz(photonPolarization, ts.p0);
+
+          p.polarization = photonPolarization ;
+      }
+      else
+      {
+          // fixed point uniform spherical emitter with configurable zenith, azimuth ranges
+
+          float sinTheta, cosTheta;
+          sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
+
+          float3 photonMomentum = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
+          rotateUz(photonMomentum, ts.p0 );
+
+          float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta); // adhoc
+          rotateUz(photonPolarization, ts.p0);
+
+          p.direction = photonMomentum ;
+          p.polarization = photonPolarization ;
+          p.position = ts.x0 ;
+      }
 
 }
 

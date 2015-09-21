@@ -11,7 +11,7 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-const char* TorchStepNPY::DEFAULT_CONFIG = "pos_target:3153 num_photons:500000 material_line:102 direction:0,0,1 wavelength:500 weight:1.0 time:0.1 zenith_azimuth:0,0.25,0,1";
+const char* TorchStepNPY::DEFAULT_CONFIG = "pos_target=3153;num_photons=500000;material_line=102;direction=0,0,1;wavelength=500;weight=1.0;time=0.1;zenith_azimuth=0,0.25,0,1;radius=0";
 // NB time 0.f causes 1st step record rendering to be omitted, as zero is special
 // TODO: material_line:102 corresponds to GdLS, arrange to detect the material from the pos_target 
  
@@ -24,6 +24,7 @@ const char* TorchStepNPY::ZENITH_AZIMUTH_ = "zenith_azimuth" ;
 const char* TorchStepNPY::WAVELENGTH_     = "wavelength" ; 
 const char* TorchStepNPY::WEIGHT_     = "weight" ; 
 const char* TorchStepNPY::TIME_     = "time" ; 
+const char* TorchStepNPY::RADIUS_   = "radius" ; 
 
 
 TorchStepNPY::Param_t TorchStepNPY::getParam(const char* k)
@@ -38,13 +39,14 @@ TorchStepNPY::Param_t TorchStepNPY::getParam(const char* k)
     else if(strcmp(k,WAVELENGTH_)==0)     param = WAVELENGTH ; 
     else if(strcmp(k,WEIGHT_)==0)         param = WEIGHT ; 
     else if(strcmp(k,TIME_)==0)           param = TIME ; 
+    else if(strcmp(k,RADIUS_)==0)         param = RADIUS ; 
     return param ;  
 }
 
 void TorchStepNPY::configure(const char* config)
 {
     typedef std::pair<std::string,std::string> KV ; 
-    std::vector<KV> ekv = ekv_split(config);
+    std::vector<KV> ekv = ekv_split(config,';',"=");
 
     printf("TorchStepNPY::configure %s \n", config );
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
@@ -67,6 +69,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
         case WAVELENGTH     : setWavelength(s)     ;break;
         case WEIGHT         : setWeight(s)         ;break;
         case TIME           : setTime(s)           ;break;
+        case RADIUS         : setRadius(s)         ;break;
         case UNRECOGNIZED   : 
                     LOG(warning) << "TorchStepNPY::set WARNING ignoring unrecognized parameter " ; 
     }
@@ -114,6 +117,14 @@ void TorchStepNPY::setTime(const char* s)
 {
     m_post.w = boost::lexical_cast<float>(s) ;
 }
+void TorchStepNPY::setRadius(const char* s)
+{
+    m_beam.x = boost::lexical_cast<float>(s) ;
+}
+
+
+
+
 
 
 void TorchStepNPY::setZenithAzimuth(const char* s)
@@ -133,7 +144,7 @@ NPY<float>* TorchStepNPY::makeNPY()
     m_npy->setQuad( 0, 2, m_dirw );
     m_npy->setQuad( 0, 3, m_polw );
     m_npy->setQuad( 0, 4, m_zenith_azimuth );
-    m_npy->setQuad( 0, 5, m_spare );
+    m_npy->setQuad( 0, 5, m_beam );
 
     return m_npy ; 
 }
@@ -150,6 +161,7 @@ void TorchStepNPY::dump(const char* msg)
     print(m_dirw, "m_dirw : direction, weight" ); 
     print(m_polw, "m_polw : polarization, wavelength" ); 
     print(m_zenith_azimuth, "m_zenith_azimuth : zenith, azimuth " ); 
+    print(m_beam, "m_beam: radius,... " ); 
 }
 
 

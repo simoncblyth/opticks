@@ -4,9 +4,19 @@
 
 template<typename T> class NPY ; 
 
+/*
+Photon Torpedo along X axis: 
+
+     ggv --torchconfig "radius=1000;direction=1,0,0"    
+
+     ggv --torchconfig "radius=100;dir_target=600,1"    # direct at instance index 600 of merged mesh 1 
+
+*/
+
+
 class TorchStepNPY {
    public:
-       typedef enum { POS_TARGET, DIR_TARGET, NUM_PHOTONS, MATERIAL_LINE, DIRECTION, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, UNRECOGNIZED } Param_t ;
+       typedef enum { POS_TARGET, DIR_TARGET, NUM_PHOTONS, MATERIAL_LINE, DIRECTION, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
@@ -19,6 +29,7 @@ class TorchStepNPY {
        static const char* WAVELENGTH_ ; 
        static const char* WEIGHT_ ; 
        static const char* TIME_ ; 
+       static const char* RADIUS_ ; 
    public:  
        TorchStepNPY(unsigned int genstep_id, const char* config=NULL); 
        void configure(const char* config);
@@ -33,7 +44,9 @@ class TorchStepNPY {
        glm::ivec4&  getPosTarget();
        glm::ivec4&  getDirTarget();
        void setPosition(glm::vec3& pos);
+       glm::vec3 getPosition();
        void setDirection(glm::vec3& dir);
+       glm::vec3 getDirection();
    public:  
        // currently ignored on the GPU
        void setPolarization(glm::vec3& pol);
@@ -45,6 +58,7 @@ class TorchStepNPY {
        void setWavelength(const char* s );
        void setWeight(const char* s );
        void setTime(const char* s );
+       void setRadius(const char* s );
 
        unsigned int getNumPhotons();
        unsigned int getMaterialLine();
@@ -82,7 +96,7 @@ class TorchStepNPY {
        glm::vec4    m_dirw ;
        glm::vec4    m_polw ;
        glm::vec4    m_zenith_azimuth ;
-       glm::vec4    m_spare ; 
+       glm::vec4    m_beam ; 
   private:
        NPY<float>*  m_npy ; 
  
@@ -135,5 +149,12 @@ inline void TorchStepNPY::setPolarization(glm::vec3& pol)
     m_polw.z = pol.z ; 
 }
 
-
+inline glm::vec3 TorchStepNPY::getPosition()
+{
+    return glm::vec3(m_post) ;
+}
+inline glm::vec3 TorchStepNPY::getDirection()
+{
+    return glm::vec3(m_dirw) ;
+}
 

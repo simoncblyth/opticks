@@ -492,11 +492,7 @@ int App::loadGeometry()
     m_mesh0 = m_ggeo->getMergedMesh(0); 
     assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
 
-    /*
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
-    */
-    
-    gfloat4 ce0 = m_ggeo->getCenterExtent(0,0);  
     m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
 
     LOG(info) << "loadGeometry ce0: " 
@@ -568,16 +564,30 @@ void App::loadGenstep()
         m_torchstep = new TorchStepNPY(TORCH);
         m_torchstep->configure(m_fcfg->getTorchConfig().c_str());
 
-        // setting the position of the torch requires geometry info, 
-        // but torch config still holds integer codes specifying (volume index, merged mesh index) 
+        // targetted positioning and directioning of the torch requires geometry info, 
+        // which is not available within npy- so need to externally setPosition and setDirection
+        // based on integer addresses specifying:
+        // 
+        //          (volume   index, merged mesh index=0)
+        //          (instance index, merged mesh index>0)
+
         glm::ivec4& ipos_target = m_torchstep->getPosTarget() ;   
-        gfloat4 pos_target = m_ggeo->getCenterExtent(ipos_target.x,ipos_target.y);   
-        glm::vec3 pos(pos_target.x, pos_target.y, pos_target.z);
+        glm::ivec4& idir_target = m_torchstep->getDirTarget() ;   
 
-        m_torchstep->setPosition(pos);  
+        if(ipos_target.x > 0 || ipos_target.y > 0)
+        {
+            glm::vec3 pos_target = glm::vec3(m_ggeo->getCenterExtent(ipos_target.x,ipos_target.y));   
+            m_torchstep->setPosition(pos_target);  
+        }
 
-        //glm::vec3 dir( 0.f, 0.f, -1.f);
-        //m_torchstep->setDirection(dir);
+        if(idir_target.x > 0 || idir_target.y > 0)
+        {
+            glm::vec3 tgt = glm::vec3(m_ggeo->getCenterExtent(idir_target.x,idir_target.y));   
+            glm::vec3 pos = m_torchstep->getPosition();
+            glm::vec3 dir = glm::normalize( tgt - pos );
+            m_torchstep->setDirection(dir);
+        }
+
 
         glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
         m_torchstep->setPolarization(pol);

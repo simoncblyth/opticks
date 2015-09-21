@@ -657,10 +657,89 @@ void GGeo::dumpStats(const char* msg)
 
 }
 
-gfloat4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )
+glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )
 {
     GMergedMesh* mm = getMergedMesh(merged_mesh_index);
     assert(mm);
-    return mm->getCenterExtent(target); 
+
+    glm::vec4 ce ; 
+    if(merged_mesh_index == 0)
+    {
+        gfloat4 vce = mm->getCenterExtent(target); 
+        ce.x = vce.x ; 
+        ce.y = vce.y ; 
+        ce.z = vce.z ; 
+        ce.w = vce.w ; 
+    }
+    else
+    {
+        float* transform = mm->getTransform(target);
+        ce.x = *(transform + 4*3 + 0) ; 
+        ce.y = *(transform + 4*3 + 1) ; 
+        ce.z = *(transform + 4*3 + 2) ; 
+
+        gfloat4 vce = mm->getCenterExtent(0); 
+        ce.w = vce.w ;  
+        // somewhat dodgy, should probably find the largest extent 
+        // of all the local coordinate extents
+    }
+    return ce ; 
 }
+
+/*
+
+Merged mesh 0 provides center_extent for all volumes in
+global coordinates, the other merged mesh has only local to 
+them center extent.::
+
+    In [1]: ce0 = np.load("0/center_extent.npy")
+
+    In [2]: ce0
+    Out[2]: 
+    array([[ -16520.   , -802110.   ,   -7125.   ,    7710.562],
+           [ -16520.   , -802110.   ,    3892.9  ,   34569.875],
+           [ -12840.846, -806876.25 ,    5389.855,   22545.562],
+           ..., 
+           [ -12195.957, -799312.625,   -7260.   ,    5000.   ],
+           [ -17081.184, -794607.812,   -7260.   ,    5000.   ],
+           [ -16519.908, -802110.   ,  -12410.   ,    7800.875]], dtype=float32)
+
+    In [3]: ce0.shape
+    Out[3]: (12230, 4)
+
+    In [4]: ce1 = np.load("1/center_extent.npy")
+
+    In [5]: ce1.shape
+    Out[5]: (5, 4)
+
+    In [6]: ce1
+    Out[6]: 
+    array([[   0.   ,    0.   ,  -18.997,  149.997],
+           [   0.005,   -0.003,  -18.252,  146.252],
+           [   0.005,   -0.004,   91.998,   98.143],
+           [   0.   ,    0.   ,   13.066,   98.143],
+           [   0.   ,    0.   ,  -81.5  ,   83.   ]], dtype=float32)
+
+
+
+For targetting the instances of merged meshes > 0 can use
+the transform matrices::
+
+    In [15]: tr1 = np.load("1/transforms.npy")
+
+    In [16]: tr1.shape
+    Out[16]: (672, 16)
+
+    In [17]: tr1.reshape(672,4,4)
+    Out[17]: 
+    array([[[      0.   ,      -0.   ,       1.   ,       0.   ],
+            [      0.762,       0.648,       0.   ,       0.   ],
+            [     -0.648,       0.762,       0.   ,       0.   ],
+            [ -16572.902, -801469.625,   -8842.5  ,       1.   ]],
+
+
+
+*/
+
+
 
