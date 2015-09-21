@@ -31,9 +31,10 @@ class TorchStepNPY {
        static const char* TIME_ ; 
        static const char* RADIUS_ ; 
    public:  
-       TorchStepNPY(unsigned int genstep_id, const char* config=NULL); 
+       TorchStepNPY(unsigned int genstep_id, unsigned int num_step=1, const char* config=NULL); 
        void configure(const char* config);
-       NPY<float>* makeNPY();
+       void addStep(); // increments m_step_index
+       NPY<float>* getNPY();
    private:
        Param_t getParam(const char* k);
        void set(TorchStepNPY::Param_t param, const char* s );
@@ -41,6 +42,8 @@ class TorchStepNPY {
        // target setting needs external info regarding geometry 
        void setPosTarget(const char* s );
        void setDirTarget(const char* s );
+       void setPosTarget(unsigned int index, unsigned int mesh=0 );
+       void setDirTarget(unsigned int index, unsigned int mesh=0 );
        glm::ivec4&  getPosTarget();
        glm::ivec4&  getDirTarget();
        void setPosition(glm::vec3& pos);
@@ -59,6 +62,9 @@ class TorchStepNPY {
        void setWeight(const char* s );
        void setTime(const char* s );
        void setRadius(const char* s );
+
+       void setNumPhotons(unsigned int num_photons );
+       void setRadius(float radius );
 
        unsigned int getNumPhotons();
        unsigned int getMaterialLine();
@@ -80,11 +86,11 @@ class TorchStepNPY {
               mapped to 0:pi of zenith angle
 */
 
-
        void dump(const char* msg="TorchStepNPY::dump");
   private:
-       void setGenstepId(int id);  /* MANDATORY TO SET THIS TO TORCH */
+       void setGenstepId(); 
   private:
+       unsigned int m_genstep_id ; 
        const char*  m_config ;
   private:
        glm::ivec4   m_pos_target ;
@@ -98,20 +104,26 @@ class TorchStepNPY {
        glm::vec4    m_zenith_azimuth ;
        glm::vec4    m_beam ; 
   private:
+       unsigned int m_num_step ; 
+       unsigned int m_step_index ; 
        NPY<float>*  m_npy ; 
  
 };
 
 
 
-inline TorchStepNPY::TorchStepNPY(unsigned int id, const char* config) 
+inline TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step, const char* config) 
        :  
+       m_genstep_id(genstep_id), 
        m_config(config ? strdup(config) : DEFAULT_CONFIG),
+       m_num_step(num_step),
+       m_step_index(0),
        m_npy(NULL)
+      
 {
-   setGenstepId(id);
    configure(m_config);
 }
+
 
 
 inline glm::ivec4& TorchStepNPY::getPosTarget()
@@ -126,9 +138,11 @@ inline glm::ivec4& TorchStepNPY::getDirTarget()
 
 
 
-inline void TorchStepNPY::setGenstepId(int id)
+
+
+inline void TorchStepNPY::setGenstepId()
 {
-   m_ctrl.x = id ; 
+   m_ctrl.x = m_genstep_id ; 
 }
 inline void TorchStepNPY::setPosition(glm::vec3& pos)
 {
@@ -148,7 +162,6 @@ inline void TorchStepNPY::setPolarization(glm::vec3& pol)
     m_polw.y = pol.y ; 
     m_polw.z = pol.z ; 
 }
-
 inline glm::vec3 TorchStepNPY::getPosition()
 {
     return glm::vec3(m_post) ;

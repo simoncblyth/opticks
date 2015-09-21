@@ -190,7 +190,11 @@ class App {
        void uploadGeometry();
   public:
        void loadGenstep();
-       NPY<float>* loadGenstepFromFile(unsigned int code, unsigned int tag);
+       NPY<float>* loadGenstepFromFile(const std::string& typ, const std::string& tag, const std::string& det);
+
+       TorchStepNPY* makeSimpleTorchStep();
+       TorchStepNPY* makeCalibrationTorchStep(unsigned int imesh);
+
        void uploadEvt();
        void seedPhotonsFromGensteps();
        void initRecords();
@@ -523,6 +527,52 @@ void App::uploadGeometry()
 }
 
 
+TorchStepNPY* App::makeSimpleTorchStep()
+{
+    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1);
+
+    std::string config = m_fcfg->getTorchConfig() ;
+    if(!config.empty()) torchstep->configure(config.c_str());
+
+    m_ggeo->targetTorchStep(torchstep);
+
+    torchstep->addStep();  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
+
+    return torchstep ; 
+}
+
+
+TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
+{
+    assert(imesh > 0);
+    GMergedMesh* mmi = m_ggeo->getMergedMesh(imesh);
+    unsigned int nti = mmi->getNumTransforms();
+
+    LOG(info) << "App::makeCalibrationTorchStep " 
+              <<  " imesh " << imesh 
+              <<  " nti " << nti 
+              ; 
+
+    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, nti);
+    std::string config = m_fcfg->getTorchConfig() ;
+    if(!config.empty()) torchstep->configure(config.c_str());
+
+    torchstep->setNumPhotons(100);
+    torchstep->setRadius(100);
+
+    for(unsigned int i=0 ; i < nti ; i++)
+    {
+        torchstep->setDirTarget(i, imesh ); 
+       
+        m_ggeo->targetTorchStep(torchstep);
+
+        torchstep->addStep(); 
+
+        // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
+    }
+ 
+    return torchstep ; 
+}
 
 
 void App::loadGenstep()
@@ -532,26 +582,31 @@ void App::loadGenstep()
         LOG(warning) << "App::loadGenstep skip due to --nooptix/--noevent " ;
         return ;
     }
-
     unsigned int code ; 
     if(     m_fcfg->hasOpt("cerenkov"))      code = CERENKOV ;
     else if(m_fcfg->hasOpt("scintillation")) code = SCINTILLATION ;
     else if(m_fcfg->hasOpt("torch"))         code = TORCH ;
     else                                     code = TORCH ;
 
-    std::string tag_ = m_fcfg->getEventTag();
-    unsigned int tag = boost::lexical_cast<unsigned int>( tag_.empty() ? "1" : tag_.c_str() );
+    std::string typ = photon_enum_label(code) ; 
+    boost::algorithm::to_lower(typ);
+    std::string tag = m_fcfg->getEventTag();
+    std::string det = m_cache->getDetector();
+
+    m_parameters->add<std::string>("Type", typ );
+    m_parameters->add<std::string>("Tag", tag );
+    m_parameters->add<std::string>("Detector", det );
+
 
     NPY<float>* npy = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION )
     {
-        npy = loadGenstepFromFile(code, tag); 
+        npy = loadGenstepFromFile(typ, tag, det ); 
 
         m_g4step = new G4StepNPY(npy);    
         m_g4step->relabel(code); // becomes the ghead.i.x used in cu/generate.cu
 
-        bool dayabay = m_cache->isDayabay();
-        if(dayabay)
+        if(m_cache->isDayabay())
         {   
             m_g4step->setLookup(m_loader->getMaterialLookup()); 
             m_g4step->applyLookup(0, 2);      
@@ -561,43 +616,9 @@ void App::loadGenstep()
     }
     else if(code == TORCH)
     {
-        m_torchstep = new TorchStepNPY(TORCH);
-        m_torchstep->configure(m_fcfg->getTorchConfig().c_str());
-
-        // targetted positioning and directioning of the torch requires geometry info, 
-        // which is not available within npy- so need to externally setPosition and setDirection
-        // based on integer addresses specifying:
-        // 
-        //          (volume   index, merged mesh index=0)
-        //          (instance index, merged mesh index>0)
-
-        glm::ivec4& ipos_target = m_torchstep->getPosTarget() ;   
-        glm::ivec4& idir_target = m_torchstep->getDirTarget() ;   
-
-        if(ipos_target.x > 0 || ipos_target.y > 0)
-        {
-            glm::vec3 pos_target = glm::vec3(m_ggeo->getCenterExtent(ipos_target.x,ipos_target.y));   
-            m_torchstep->setPosition(pos_target);  
-        }
-
-        if(idir_target.x > 0 || idir_target.y > 0)
-        {
-            glm::vec3 tgt = glm::vec3(m_ggeo->getCenterExtent(idir_target.x,idir_target.y));   
-            glm::vec3 pos = m_torchstep->getPosition();
-            glm::vec3 dir = glm::normalize( tgt - pos );
-            m_torchstep->setDirection(dir);
-        }
-
-
-        glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
-        m_torchstep->setPolarization(pol);
-
-        npy = m_torchstep->makeNPY(); 
-
-        m_parameters->add<std::string>("Type", "torch" );
-        m_parameters->add<std::string>("Tag", "0" );
-        m_parameters->add<std::string>("Detector", m_cache->getDetector() );
-
+        m_torchstep = makeSimpleTorchStep();
+        //m_torchstep = makeCalibrationTorchStep(1);
+        npy = m_torchstep->getNPY(); 
     }
     
 
@@ -636,27 +657,16 @@ void App::loadGenstep()
 }
 
 
-NPY<float>* App::loadGenstepFromFile(unsigned int code, unsigned int tag_)
+NPY<float>* App::loadGenstepFromFile(const std::string& typ, const std::string& tag, const std::string& det)
 {
-    std::string typ = photon_enum_label(code) ; 
-    boost::algorithm::to_lower(typ);
-
-    std::string tag = boost::lexical_cast<std::string>(tag_);
-
     LOG(info) << "App::loadGenstepFromFile  " 
-              << " code " << code
-              << " tag " << tag 
               << " typ " << typ
+              << " tag " << tag 
+              << " det " << det
               ; 
 
-    const char* det = m_cache->getDetector();
+    NPY<float>* npy = NPY<float>::load(typ.c_str(), tag.c_str(), det.c_str() ) ;
 
-    m_parameters->add<std::string>("Type", typ );
-    m_parameters->add<std::string>("Tag", tag );
-    m_parameters->add<std::string>("Detector", det );
-
-
-    NPY<float>* npy = NPY<float>::load(typ.c_str(), tag.c_str(), det ) ;
     m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
 
     int modulo = m_fcfg->getModulo();

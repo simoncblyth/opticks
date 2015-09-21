@@ -124,6 +124,7 @@ class GMesh : public GDrawable {
 
   public:
       bool hasTransformsBuffer(); 
+      unsigned int getNumTransforms();
 
   public:
       // Buffer access for GDrawable protocol

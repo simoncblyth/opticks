@@ -21,6 +21,8 @@ class GSensorList ;
 class GColors ; 
 class GItemIndex ; 
 
+
+class TorchStepNPY ; 
 //
 // NB GGeo is a dumb substrate from which the geometry model is created,
 //    eg by AssimpGGeo::convert 
@@ -113,6 +115,9 @@ class GGeo {
         GMaterial* getMaterial(unsigned int index);  
         GSkinSurface* getSkinSurface(unsigned int index);  
         GBorderSurface* getBorderSurface(unsigned int index);  
+
+    public:
+        void targetTorchStep(TorchStepNPY* torchstep);
 
     public:
         std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, const char* delim);

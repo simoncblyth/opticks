@@ -326,6 +326,13 @@ void GMesh::setTransformsBuffer(GBuffer* buffer)
 }
 
 
+unsigned int GMesh::getNumTransforms()
+{
+    return m_transforms_buffer ? m_transforms_buffer->getNumItems() : 0 ; 
+}
+
+
+
 void GMesh::setMeshes(unsigned int* meshes)  
 {
     m_meshes = meshes ;  

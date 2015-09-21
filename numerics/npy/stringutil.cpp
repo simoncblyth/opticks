@@ -71,8 +71,9 @@ void split( std::vector<std::string>& elem, const char* line, char delim )
 
 
 
-std::vector<std::pair<std::string, std::string>> ekv_split( const char* line, char edelim, const char* kvdelim )
+std::vector<std::pair<std::string, std::string>> ekv_split( const char* line_, char edelim, const char* kvdelim )
 {
+    const char* line = strdup(line_);
     typedef std::pair<std::string,std::string> KV ;  
     std::vector<KV> ekv ; 
     std::istringstream f(line);

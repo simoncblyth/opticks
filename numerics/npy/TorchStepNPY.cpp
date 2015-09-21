@@ -43,17 +43,19 @@ TorchStepNPY::Param_t TorchStepNPY::getParam(const char* k)
     return param ;  
 }
 
-void TorchStepNPY::configure(const char* config)
+void TorchStepNPY::configure(const char* config_)
 {
+    std::string config(config_);
     typedef std::pair<std::string,std::string> KV ; 
-    std::vector<KV> ekv = ekv_split(config,';',"=");
+    std::vector<KV> ekv = ekv_split(config.c_str(),';',"=");
 
-    printf("TorchStepNPY::configure %s \n", config );
+    printf("TorchStepNPY::configure %s \n", config.c_str() );
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
     {
         printf(" %20s : %s \n", it->first.c_str(), it->second.c_str() );
         set(getParam(it->first.c_str()), it->second.c_str());
     }
+    setGenstepId();
 }
 
 void TorchStepNPY::set(Param_t p, const char* s)
@@ -81,18 +83,39 @@ void TorchStepNPY::setPosTarget(const char* s)
     std::string ss(s);
     m_pos_target = givec4(ss);
 }
+void TorchStepNPY::setPosTarget(unsigned int index, unsigned int mesh)
+{
+    m_pos_target.x = index ; 
+    m_pos_target.y = mesh ; 
+}
+
+
 void TorchStepNPY::setDirTarget(const char* s)
 {
     std::string ss(s);
     m_dir_target = givec4(ss) ;
 }
+void TorchStepNPY::setDirTarget(unsigned int index, unsigned int mesh)
+{
+    m_dir_target.x = index ; 
+    m_dir_target.y = mesh ; 
+}
+
 
 
 
 void TorchStepNPY::setNumPhotons(const char* s)
 {
-    m_ctrl.w = boost::lexical_cast<int>(s) ; 
+    setNumPhotons(boost::lexical_cast<unsigned int>(s)) ; 
 }
+void TorchStepNPY::setNumPhotons(unsigned int num_photons)
+{
+    m_ctrl.w = num_photons ; 
+}
+
+
+
+
 void TorchStepNPY::setMaterialLine(const char* s)
 {
     m_ctrl.z = boost::lexical_cast<int>(s) ; 
@@ -109,6 +132,8 @@ void TorchStepNPY::setWavelength(const char* s)
 {
     m_polw.w = boost::lexical_cast<float>(s) ;
 }
+
+
 void TorchStepNPY::setWeight(const char* s)
 {
     m_dirw.w = boost::lexical_cast<float>(s) ;
@@ -117,9 +142,15 @@ void TorchStepNPY::setTime(const char* s)
 {
     m_post.w = boost::lexical_cast<float>(s) ;
 }
+
+
 void TorchStepNPY::setRadius(const char* s)
 {
-    m_beam.x = boost::lexical_cast<float>(s) ;
+    setRadius(boost::lexical_cast<float>(s)) ;
+}
+void TorchStepNPY::setRadius(float radius)
+{
+    m_beam.x = radius ;
 }
 
 
@@ -133,20 +164,30 @@ void TorchStepNPY::setZenithAzimuth(const char* s)
     m_zenith_azimuth = gvec4(ss) ;
 }
 
-
-NPY<float>* TorchStepNPY::makeNPY()
+NPY<float>* TorchStepNPY::getNPY()
 {
-    m_npy = NPY<float>::make(1, 6, 4);
-    m_npy->zero();
-
-    m_npy->setQuadI(0, 0, m_ctrl );
-    m_npy->setQuad( 0, 1, m_post );
-    m_npy->setQuad( 0, 2, m_dirw );
-    m_npy->setQuad( 0, 3, m_polw );
-    m_npy->setQuad( 0, 4, m_zenith_azimuth );
-    m_npy->setQuad( 0, 5, m_beam );
-
+    assert( m_step_index == m_num_step ); // TorchStepNPY is incomplete
     return m_npy ; 
+}
+
+void TorchStepNPY::addStep()
+{
+    if(m_npy == NULL)
+    {
+        m_npy = NPY<float>::make(m_num_step, 6, 4);
+        m_npy->zero();
+    }
+   
+    unsigned int i = m_step_index ; 
+
+    m_npy->setQuadI(i, 0, m_ctrl );
+    m_npy->setQuad( i, 1, m_post );
+    m_npy->setQuad( i, 2, m_dirw );
+    m_npy->setQuad( i, 3, m_polw );
+    m_npy->setQuad( i, 4, m_zenith_azimuth );
+    m_npy->setQuad( i, 5, m_beam );
+
+    m_step_index++ ; 
 }
 
 void TorchStepNPY::dump(const char* msg)

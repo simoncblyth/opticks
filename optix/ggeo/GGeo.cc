@@ -13,6 +13,9 @@
 #include "GColors.hh"
 #include "GItemIndex.hh"
 
+// npy-
+#include "TorchStepNPY.hpp"
+
 #include "assert.h"
 #include "stdio.h"
 #include "string.h"
@@ -685,6 +688,40 @@ glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_in
     }
     return ce ; 
 }
+
+
+
+void GGeo::targetTorchStep( TorchStepNPY* torchstep )
+{
+    // targetted positioning and directioning of the torch requires geometry info, 
+    // which is not available within npy- so need to externally setPosition and setDirection
+    // based on integer addresses specifying:
+    //   
+    //          (volume   index, merged mesh index=0)
+    //          (instance index, merged mesh index>0)
+
+
+    glm::ivec4& ipos_target = torchstep->getPosTarget() ;    
+    glm::ivec4& idir_target = torchstep->getDirTarget() ;    
+
+    if(ipos_target.x > 0 || ipos_target.y > 0) 
+    {    
+            glm::vec3 pos_target = glm::vec3(getCenterExtent(ipos_target.x,ipos_target.y));   
+            torchstep->setPosition(pos_target);  
+    }    
+
+    if(idir_target.x > 0 || idir_target.y > 0) 
+    {    
+            glm::vec3 tgt = glm::vec3(getCenterExtent(idir_target.x,idir_target.y));   
+            glm::vec3 pos = torchstep->getPosition();
+            glm::vec3 dir = glm::normalize( tgt - pos );
+            torchstep->setDirection(dir);
+    }    
+
+    glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
+    torchstep->setPolarization(pol);
+}
+
 
 /*
 
