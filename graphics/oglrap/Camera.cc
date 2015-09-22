@@ -6,6 +6,7 @@
 
 #include "stdio.h"
 #include <glm/gtc/matrix_transform.hpp>  
+#include <glm/gtx/transform.hpp>
 #include <boost/lexical_cast.hpp>
 
 #ifdef GUI_
@@ -161,7 +162,11 @@ void Camera::Summary(const char* msg)
 
 glm::mat4 Camera::getProjection()
 {
-    return m_parallel ? getOrtho() : getFrustum() ; 
+    // TODO: find some way of scaling to make switching less jarring 
+    //       Ortho tends to be in extreme closeup 
+    //       
+    //return m_parallel ? getOrtho() : getFrustum() ; 
+    return m_parallel ? getOrthoScaled() : getFrustum() ; 
 }
 glm::mat4 Camera::getPerspective()
 {
@@ -169,12 +174,54 @@ glm::mat4 Camera::getPerspective()
 }
 glm::mat4 Camera::getOrtho()
 {
-    return glm::ortho( getLeft(), getRight(), getBottom(), getTop() );
+    //return glm::ortho( getLeft(), getRight(), getBottom(), getTop() );
+    // the form with near/far parameters is easier to adjust to get something visible
+    //return glm::ortho( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
+    return glm::ortho( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
 }
+
+glm::mat4 Camera::getOrthoScaled()
+{
+    //
+    // real camera state : near, yfov, aspect, (far) 
+    //
+    //         top, bottom <- near * tanYfov
+    //         left, right <- aspect * near * tanYfov
+    //
+    //  https://en.wikipedia.org/wiki/Orthographic_projection
+
+    float sc = ((m_near + m_far)/2.f)/m_near ;     // this is closer, but need to fiddle near and far to keep visibility
+
+    return glm::ortho( sc*getLeft(), sc*getRight(), sc*getBottom(), sc*getTop(), sc*getNear(), sc*getFar() );
+}
+
+glm::mat4 Camera::getOrthoScaled2()
+{
+    float sc = ((m_near + m_far)/2.f)/m_near ;     
+
+    glm::mat4 orth = glm::ortho( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
+
+    glm::vec3 factors(sc,sc,sc);
+
+    // weak perspective projection ?
+
+    return glm::scale( orth, factors );
+}
+
+
+
 glm::mat4 Camera::getFrustum()
 {
     return glm::frustum( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
 }
+
+
+
+
+
+
+
+
 
 
 

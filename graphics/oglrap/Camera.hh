@@ -34,6 +34,8 @@ class Camera : public Configurable  {
      glm::mat4 getProjection();
      glm::mat4 getPerspective();
      glm::mat4 getOrtho();
+     glm::mat4 getOrthoScaled();
+     glm::mat4 getOrthoScaled2();
      glm::mat4 getFrustum();
 
    public:

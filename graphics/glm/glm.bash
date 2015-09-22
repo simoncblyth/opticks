@@ -22,6 +22,75 @@ GLSL extension conventions, provides extended capabilities: matrix
 transformations, quaternions, data packing, random numbers, noise, etc...
 
 
+Compare glm::frustum and glm::ortho sources
+--------------------------------------------
+
+Scaling left, right, bottom, top by 1/near looks like it 
+might bring things closer.
+
+::
+
+    150     template <typename T>
+    151     GLM_FUNC_QUALIFIER tmat4x4<T, defaultp> ortho
+    152     (
+    153         T left,
+    154         T right,
+    155         T bottom,
+    156         T top,
+    157         T zNear,
+    158         T zFar
+    159     )
+    160     {
+    161         tmat4x4<T, defaultp> Result(1);
+    162         Result[0][0] = static_cast<T>(2) / (right - left);
+    163         Result[1][1] = static_cast<T>(2) / (top - bottom);
+    164         Result[2][2] = - static_cast<T>(2) / (zFar - zNear);
+    165         Result[3][0] = - (right + left) / (right - left);
+    166         Result[3][1] = - (top + bottom) / (top - bottom);
+    167         Result[3][2] = - (zFar + zNear) / (zFar - zNear);
+    168         return Result;
+    169     }
+
+    ///     essentially this is mapping onto a canonical box
+    ///     in the normal symmetric case
+    ///
+    ///          right = -left
+    ///          top   = -bottom
+    ///
+    ///    | 2/w  0   0        0             |
+    ///    |  0  2/h  0        0             |
+    ///    |  0   0  -2/(f-n)  -(f+n)/(f-n)  |
+    ///    |  0   0   0        1             |
+    ///
+    ///
+
+
+    189     template <typename T>
+    190     GLM_FUNC_QUALIFIER tmat4x4<T, defaultp> frustum
+    191     (
+    192         T left,
+    193         T right,
+    194         T bottom,
+    195         T top,
+    196         T nearVal,
+    197         T farVal
+    198     )
+    199     {
+    200         tmat4x4<T, defaultp> Result(0);
+    201         Result[0][0] = (static_cast<T>(2) * nearVal) / (right - left);
+    202         Result[1][1] = (static_cast<T>(2) * nearVal) / (top - bottom);
+    203         Result[2][0] = (right + left) / (right - left);
+    204         Result[2][1] = (top + bottom) / (top - bottom);
+    205         Result[2][2] = -(farVal + nearVal) / (farVal - nearVal);
+    206         Result[2][3] = static_cast<T>(-1);
+    207         Result[3][2] = -(static_cast<T>(2) * farVal * nearVal) / (farVal - nearVal);
+    208         return Result;
+    209     }
+
+
+
+
+
 See also
 ---------
 
