@@ -2,7 +2,10 @@ ggv-(){   ggeoview- ; }
 ggv-cd(){ ggeoview-cd ; }
 ggv-i(){  ggeoview-install ; }
 ggv--(){  ggeoview-depinstall ; }
-ggv-lldb(){ ggeoview-lldb $* ; }
+ggv-lldb(){ 
+   echo use ggv --dbg  in order to setup environment
+   #ggeoview-lldb $* ; 
+}
 
 
 ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
@@ -1149,66 +1152,6 @@ ggeoview-steal-bookmarks()
    cp ~/.g4daeview/dyb/bookmarks20141128-2053.cfg $idpath/bookmarks.ini
 }
 
-ggeoview-detector()
-{
-    echo ${GGEOVIEW_DETECTOR:-DAE_NAME_DYB}
-}
-ggeoview-detector-juno()
-{
-    export GGEOVIEW_DETECTOR=DAE_NAME_JUNO
-}
-ggeoview-detector-jpmt()
-{
-    export GGEOVIEW_DETECTOR=DAE_NAME_JPMT
-}
-ggeoview-detector-dyb()
-{
-    export GGEOVIEW_DETECTOR=DAE_NAME_DYB
-}
-
-
-ggeoview-query-dyb() {
-    echo range:3153:12221
-   #q="range:3153:4814"     #  transition to 2 AD happens at 4814 
-   #q="range:3153:4813"     #  this range constitutes full single AD
-   #q="range:3161:4813"      #  push up the start to get rid of plain outer volumes, cutaway view: udp.py --eye 1.5,0,1.5 --look 0,0,0 --near 5000
-   #q="index:5000"
-   #q="index:3153,depth:25"
-   #q="range:5000:8000"
-}
-
-ggeoview-query-juno() {
-    #echo range:1:289733
-    #echo range:1:100000   # OpenGL vis works but slowly
-    echo range:1:50000    # 
-}
-ggeoview-query-jpmt() {
-    echo range:1:289734    #   289733+1 all test3.dae volumes 
-    #echo range:1:50000    # 
-}
-ggeoview-query-jtst() {
-    echo range:1:50000    
-}
-
-
-ggeoview-query() {
-    if [ "$(ggeoview-detector)" == "DAE_NAME_DYB" ]; then
-        ggeoview-query-dyb
-    elif [ "$(ggeoview-detector)" == "DAE_NAME_JUNO" ]; then
-        ggeoview-query-juno
-    elif [ "$(ggeoview-detector)" == "DAE_NAME_JPMT" ]; then
-        ggeoview-query-jpmt
-    elif [ "$(ggeoview-detector)" == "DAE_NAME_JTST" ]; then
-        ggeoview-query-jtst
-    fi
-}
-
-# TODO: find cleaner way, detector specifics dont belong here...
-
-
-
-
-
 
 
 ggeoview-export()
@@ -1216,24 +1159,16 @@ ggeoview-export()
    export-
    export-export
 
-   export GGEOVIEW_GEOKEY="$(ggeoview-detector)"
-   export GGEOVIEW_QUERY="$(ggeoview-query)"
-   export GGEOVIEW_CTRL=""
+   [ "$GGEOVIEW_GEOKEY" == "" ] && echo $msg MISSING ENVVAR GGEOVIEW_GEOKEY && sleep 10000000
+   [ "$GGEOVIEW_QUERY"  == "" ] && echo $msg MISSING ENVVAR GGEOVIEW_QUERY && sleep 10000000
+   #[ "$GGEOVIEW_CTRL" == "" ]   && echo $msg MISSING ENVVAR GGEOVIEW_CTRL && sleep 10000000
 
-   # dynamic.h is written by ggeoview/main.cc and is incl into shaders   
-   #export SHADER_DIR=$(ggeoview-sdir)/gl
-   #export SHADER_DYNAMIC_DIR=$(ggeoview-gdir)
-   #export SHADER_INCL_PATH=$(ggeoview-sdir)/gl:$(ggeoview-sdir):$SHADER_DYNAMIC_DIR
-   #mkdir -p $SHADER_DYNAMIC_DIR
    unset SHADER_DIR 
    unset SHADER_DYNAMIC_DIR 
    unset SHADER_INCL_PATH
 
-   #export RAYTRACE_PTX_DIR=$(ggeoview-ptx-dir) 
-   #export RAYTRACE_RNG_DIR=$(ggeoview-rng-dir) 
    unset RAYTRACE_PTX_DIR
    unset RAYTRACE_RNG_DIR
-
 
    export CUDAWRAP_RNG_MAX=$(ggeoview-rng-max)
 } 
