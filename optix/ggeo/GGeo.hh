@@ -20,6 +20,7 @@ class GMergedMesh ;
 class GSensorList ; 
 class GColors ; 
 class GItemIndex ; 
+class GItemList ; 
 
 
 class TorchStepNPY ; 
@@ -33,14 +34,20 @@ class GGeo {
         static const char* GMERGEDMESH ; 
         static GGeo* load(const char* idpath);
         enum { MAX_MERGED_MESH = 10 } ;
+    private:
+        void loadFromCache(const char* idpath);
     public:
-        GGeo(bool loaded=false); // loaded instances are only partial revivals
+        GGeo(bool loaded=false, bool volnames=false);  // loaded instances are only partial revivals
+
+      
         virtual ~GGeo();
     private:
         void init(); 
         void loadMergedMeshes(const char* idpath);
         void removeMergedMeshes(const char* idpath);
     public:
+        void save(const char* idpath);
+    private:
         void saveMergedMeshes(const char* idpath);
     public:
         void dumpStats(const char* msg="GGeo::dumpStats");
@@ -54,9 +61,9 @@ class GGeo {
         void setPath(const char* path);
         void setQuery(const char* query);
         void setCtrl(const char* ctrl);
+        //void setVolNames(bool volnames);
         void setIdentityPath(const char* idpath);
         void setColors(GColors* colors);
-
     public:
         char* getPath(); 
         char* getQuery(); 
@@ -82,6 +89,8 @@ class GGeo {
       
     public:
         GItemIndex*  getMeshIndex(); 
+        GItemList*   getPVList(); 
+        GItemList*   getLVList(); 
 
     public:
         void dumpRaw(const char* msg="GGeo::dumpRaw");
@@ -185,6 +194,8 @@ class GGeo {
         std::map<unsigned int, unsigned int>    m_mesh_usage ; 
         GColors*                      m_colors ; 
         GItemIndex*                   m_meshindex ; 
+        GItemList*                    m_pvlist ; 
+        GItemList*                    m_lvlist ; 
 
         char*                         m_path ;
         char*                         m_query ;
@@ -195,11 +206,12 @@ class GGeo {
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         Index_t                            m_index ; 
         unsigned int                       m_sensitize_count ;  
+        bool                               m_volnames ;    
 
 };
 
 
-inline GGeo::GGeo(bool loaded) :
+inline GGeo::GGeo(bool loaded, bool volnames) :
    m_loaded(loaded), 
    m_boundary_lib(NULL),
    m_sensor_list(NULL),
@@ -207,11 +219,14 @@ inline GGeo::GGeo(bool loaded) :
    m_high(NULL),
    m_colors(NULL),
    m_meshindex(NULL),
+   m_pvlist(NULL),
+   m_lvlist(NULL),
    m_path(NULL),
    m_query(NULL),
    m_ctrl(NULL),
    m_idpath(NULL),
-   m_sensitize_count(0)
+   m_sensitize_count(0),
+   m_volnames(volnames)
 {
    init(); 
 }
@@ -219,9 +234,14 @@ inline GGeo::GGeo(bool loaded) :
 
 inline bool GGeo::isLoaded()
 {
-   return m_loaded ; 
+    return m_loaded ; 
 }
 
+
+//inline void GGeo::setVolNames(bool volnames)
+//{
+//    m_volnames = volnames ; 
+//}
 
 inline void GGeo::add(GMaterial* material)
 {
@@ -359,6 +379,16 @@ inline GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshindex ; 
 }
+inline GItemList* GGeo::getPVList()
+{
+    return m_pvlist ; 
+}
+inline GItemList* GGeo::getLVList()
+{
+    return m_lvlist ; 
+}
+
+
 
 
 

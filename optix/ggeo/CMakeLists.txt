@@ -82,6 +82,7 @@ add_library(${name} SHARED
                 GTreeCheck.cc
                 GTreePresent.cc
                 GBBoxMesh.cc
+                GItemList.cc
 )
 
 SET(hdrs 
@@ -121,6 +122,7 @@ GColorizer.hh
 GTreeCheck.hh
 GTreePresent.hh
 GBBoxMesh.hh
+GItemList.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

@@ -12,6 +12,7 @@
 #include "GMergedMesh.hh"
 #include "GColors.hh"
 #include "GItemIndex.hh"
+#include "GItemList.hh"
 
 // npy-
 #include "TorchStepNPY.hpp"
@@ -35,14 +36,6 @@ namespace fs = boost::filesystem;
 
 #define BSIZ 50
 
-
-GGeo* GGeo::load(const char* idpath)
-{
-    bool loaded = true ; 
-    GGeo* ggeo = new GGeo(loaded);
-    ggeo->loadMergedMeshes(idpath);
-    return ggeo ; 
-}
 
 
 
@@ -147,7 +140,55 @@ void GGeo::init()
    m_boundary_lib->setStandardDomain( standard_wavelengths );
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
+
+   if(m_volnames)
+   {
+       m_pvlist = new GItemList("PVNames") ; 
+       m_lvlist = new GItemList("LVNames") ; 
+   }
+   else
+   {
+       assert(0);
+   }
 }
+
+
+void GGeo::save(const char* idpath)
+{
+    saveMergedMeshes(idpath );
+
+    m_meshindex->save(idpath);
+
+    if(m_volnames)
+    {
+        m_pvlist->save(idpath);
+        m_lvlist->save(idpath);
+    }
+}
+
+
+void GGeo::loadFromCache(const char* idpath)
+{   
+    loadMergedMeshes(idpath);
+        
+    m_meshindex = GItemIndex::load(idpath, "MeshIndex");
+
+    if(m_volnames)
+    {
+        m_pvlist = GItemList::load(idpath, "PVNames");
+        m_lvlist = GItemList::load(idpath, "LVNames");
+    }
+}
+
+
+GGeo* GGeo::load(const char* idpath)
+{
+    bool loaded = true ; 
+    GGeo* ggeo = new GGeo(loaded);
+    ggeo->loadFromCache(idpath);
+    return ggeo ; 
+}
+
 
 
 GGeo::~GGeo()
@@ -265,6 +306,12 @@ void GGeo::add(GSolid* solid)
     unsigned int index = solid->getIndex(); // absolute node index, independent of the selection
     //printf("GGeo::add solid %u \n", index);
     m_solidmap[index] = solid ; 
+
+    if(m_volnames)
+    { 
+        m_lvlist->add(solid->getLVName()); 
+        m_pvlist->add(solid->getPVName()); 
+    }
 
     GSolid* check = getSolid(index);
     assert(check == solid);

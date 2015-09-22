@@ -81,17 +81,35 @@ void Types::makeMaterialAbbrev()
     // special cases where 1st 2-chars not unique or misleading
     MSS s ; 
     s["NitrogenGas "] = "NG" ;   
-    s["ADTableStainlessSteel "] = "SS" ;
-    s["LiquidScintillator "] = "LS" ; 
+    s["ADTableStainlessSteel "] = "TS" ;
+    s["LiquidScintillator "] = "Ls" ; 
     s["MineralOil "] = "MO" ; 
+    s["StainlessSteel "] = "SS" ;  
+    // NB must have a single white space after the material name to match names from m_materials
+
+    // Hmm not very sustainable with multiple detctors, 
+    // have to play around to avoid non-unique names 
+    // TODO: make the abbrevs an input 
+    //
     // NB the tail spacer, to match what is done in readMaterials
 
     for(MSU::iterator it=m_materials.begin() ; it != m_materials.end() ; it++)
     {
         std::string mat = it->first ;
         std::string abb = s.count(mat) == 1 ? s[mat] : mat.substr(0,2) ;
-        //mat += m_tail ;  tail appended in readMaterials
         abb += m_tail ;  
+
+        if(m_material2abbrev.count(mat) > 0)
+        {
+            printf("Types::makeMaterialAbbrev ambiguous material name %s \n", mat.c_str());
+        } 
+
+        if(m_abbrev2material.count(abb) > 0)
+        {
+            printf("Types::makeMaterialAbbrev ambiguous material abbrev %s \n", abb.c_str());
+        } 
+
+        printf("Types::makeMaterialAbbrev [%s] [%s] \n", mat.c_str(), abb.c_str() );
 
         m_material2abbrev[mat] = abb ;
         m_abbrev2material[abb] = mat ;

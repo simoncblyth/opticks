@@ -366,6 +366,9 @@ void GBoundaryLibMetadata::save(const char* dir)
 
 void GBoundaryLibMetadata::read(const char* path)
 {
+    fs::path metapath(path);
+    assert(fs::exists(metapath) && fs::is_regular_file(metapath) && "probably the geocache does not exist run with -G to create" );
+
     pt::read_json(path, m_tree);
 }
 

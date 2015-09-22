@@ -19,6 +19,19 @@ OpenGL headers, but wanted to avoid directly using
 GLFW3 inside oglrap-
 
 
+
+Switch Ortho to Frustum without "loosing" view
+-----------------------------------------------
+
+* :google:`opengl switch frustum to ortho` 
+
+  * http://www.songho.ca/opengl/gl_transform.html
+  * http://compgroups.net/comp.graphics.api.opengl/perspective-orthographic-switch/171949
+
+Perhaps arranging the perspective frustum dimensions at  (near+far)/2 
+to line up with othographic box will avoid the sudden change of viewpoint.
+
+
 Better Shader Handling ?
 --------------------------
 

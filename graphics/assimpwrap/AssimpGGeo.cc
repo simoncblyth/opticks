@@ -27,6 +27,7 @@
 // npy-
 #include "stringutil.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -80,31 +81,6 @@ GGeo* AssimpGGeo::load(const char* envprefix)
 
 
 
-AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection) 
-   : 
-   m_tree(tree),
-   m_selection(selection),
-   m_domain_scale(1.f),
-   m_values_scale(1.f),
-   m_domain_reciprocal(true),
-   m_inborder_surface(0),
-   m_outborder_surface(0),
-   m_skin_surface(0),
-   m_no_surface(0),
-   m_ggeo(NULL)
-{
-    // see g4daenode.py as_optical_property_vector
-
-    float hc_over_GeV = 1.2398424468024265e-06 ;  // h_Planck * c_light / GeV / nanometer #  (approx, hc = 1240 eV.nm )  
-    float hc_over_MeV = hc_over_GeV*1000. ;
-    //float hc_over_eV  = hc_over_GeV*1.e9 ;
-
-    m_domain_scale = hc_over_MeV ; 
-    m_values_scale = 1.0f ; 
-
-
-}
-
 AssimpGGeo::~AssimpGGeo()
 {
 }
@@ -113,7 +89,24 @@ AssimpGGeo::~AssimpGGeo()
 
 GGeo* AssimpGGeo::convert(const char* ctrl)
 {
-    m_ggeo = new GGeo();
+    LOG(info) << "AssimpGGeo::convert ctrl " << ctrl ; 
+    std::vector<std::string> elems ; 
+    boost::split(elems, ctrl, boost::is_any_of(","));
+
+    bool loaded = false ; 
+    bool volnames = false ;
+ 
+    for(unsigned int i=0 ; i < elems.size() ; i++)
+    {
+       if(strcmp(elems[i].c_str(),"volnames")==0) 
+       {
+           LOG(info) << "AssimpGGeo::convert setVolNames "  ; 
+           setVolNames(true);
+           volnames = true ;
+       }
+    } 
+
+    m_ggeo = new GGeo(loaded, volnames);
     const aiScene* scene = m_tree->getScene();
 
     bool reverse = true ; // for ascending wavelength ordering
@@ -288,7 +281,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         const char* name = name_.C_Str();
 
-        if(strncmp(query, name, strlen(query))!=0) continue ;  
+        //if(strncmp(query, name, strlen(query))!=0) continue ;  
 
         LOG(debug) << "AssimpGGeo::convertMaterials " << i << " " << name ;
 
@@ -557,7 +550,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     //ltransform->Summary("ltransform");
 
-
     unsigned int msi = node->getMeshIndex();
     GMesh* mesh = gg->getMesh(msi);
 
@@ -567,7 +559,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     unsigned int mti_p = pnode->getMaterialIndex();
     GMaterial* mt_p = gg->getMaterial(mti_p);
 
-    //printf("AssimpGGeo::convertStructureVisit nodeIndex %d mti %u mti_p %u msi %u \n", nodeIndex, mti, mti_p, msi );
+    printf("AssimpGGeo::convertStructureVisit nodeIndex %d (mti %u mt %p) (mti_p %u mt_p %p) (msi %u mesh %p) \n", nodeIndex, mti, mt, mti_p, mt_p,  msi, mesh  );
 
     GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, NULL, NULL ); // boundary and sensor start NULL
     solid->setLevelTransform(ltransform);
@@ -657,6 +649,16 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);
     solid->setName(node->getName());  // this is LV name, maybe set PV name too 
+
+    if(m_volnames)
+    {
+        solid->setPVName(pv);
+        solid->setLVName(lv);
+    }
+
+
+
+
 
     free(desc);
 

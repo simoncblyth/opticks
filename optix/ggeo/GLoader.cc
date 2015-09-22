@@ -65,7 +65,7 @@ void GLoader::load(bool nogeocache)
         t("load boundarylib"); 
         m_metadata = m_boundarylib->getMetadata() ; 
 
-        m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); // TODO: find common place for such strings, maybe Types.hpp
+        m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); 
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
         m_meshes     = GItemIndex::load(idpath, "MeshIndex");
 
@@ -78,9 +78,8 @@ void GLoader::load(bool nogeocache)
 
         m_ggeo = (*m_imp)(envprefix);      
 
-
         t("create m_ggeo from G4DAE"); 
-        m_meshes = m_ggeo->getMeshIndex();  
+       // m_meshes = m_ggeo->getMeshIndex();  
 
         m_boundarylib = m_ggeo->getBoundaryLib();
 
@@ -109,7 +108,9 @@ void GLoader::load(bool nogeocache)
         m_metadata = m_boundarylib->getMetadata();
 
         m_surfaces = m_boundarylib->getSurfaces();   
-        m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));   
+
+        GColorMap* sixc = GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json");
+        m_surfaces->setColorMap(sixc);   
         m_surfaces->setColorSource(source);
 
 
@@ -155,22 +156,14 @@ void GLoader::load(bool nogeocache)
             m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
         }
 
-        m_ggeo->saveMergedMeshes(idpath );
-
-
-        // if requested index of merged mesh exists already return it 
-        // otherwise create using GMergedMesh::create(index, GGeo*) and return, 
-        //
-        //   ridx:0 is catchall global geometry
-        //   ridx:1 is the first repeated geometry index, eg the PMTs
-        //
-        //
-        //  ggv.sh  -G --repeatidx 1                        // create ridx 1 geocache, with single PMT subtree 
-        //  ggv.sh  --noindex --repeatidx 1 --geocenter     // view the single PMT, need --geocenter as unplaced, nowhere near the genstep 
-        //
-  
 
         t("create MergedMesh"); 
+
+
+        m_ggeo->save(idpath );
+
+
+
 
         /*
         TODO: adapt GColorizer to new multi-mergedmesh regime 
@@ -189,15 +182,13 @@ void GLoader::load(bool nogeocache)
 
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
 
-        //m_mergedmesh->save(idpath); 
 
         m_metadata->save(idpath);
         m_materials->save(idpath);
         m_surfaces->save(idpath);
-        m_meshes->save(idpath);
+        //m_meshes->save(idpath);
 
         m_boundarylib->saveIndex(idpath); 
-
         m_boundarylib->save(idpath);
 
         t("save geocache"); 
@@ -211,11 +202,11 @@ void GLoader::load(bool nogeocache)
     Index* idx = m_types->getFlagsIndex() ;    
     m_flags = new GItemIndex( idx );     //GFlagIndex::load(idpath); 
 
-    m_flags->setColorMap(GColorMap::load(idpath, "GFlagIndexColors.json"));    
+    m_flags->setColorMap(GColorMap::load("$HOME/.opticks", "GFlagIndexColors.json"));    
 
     // itemname => colorname 
-    m_materials->setColorMap(GColorMap::load(idpath, "GMaterialIndexColors.json")); 
-    m_surfaces->setColorMap(GColorMap::load(idpath, "GSurfaceIndexColors.json"));   
+    m_materials->setColorMap(GColorMap::load("$HOME/.opticks", "GMaterialIndexColors.json")); 
+    m_surfaces->setColorMap(GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json"));   
 
 
     m_materials->setLabeller(GItemIndex::COLORKEY);
