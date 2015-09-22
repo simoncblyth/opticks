@@ -109,17 +109,14 @@ void Scene::init()
     if(m_shader_dir == NULL)
     {
         m_shader_dir = strdup(OGLRAP_SHADER_DIR);
-        LOG(info) << "Scene::init no SHADER_DIR envvar : defaulting to " << m_shader_dir ; 
     }
     if(m_shader_incl_path == NULL)
     {
         m_shader_incl_path = strdup(OGLRAP_SHADER_INCL_PATH);
-        LOG(info) << "Scene::init no SHADER_INCL_PATH envvar : defaulting to " << m_shader_incl_path ; 
     }
     if(m_shader_dynamic_dir == NULL)
     {
         m_shader_dynamic_dir = strdup(OGLRAP_SHADER_DYNAMIC_DIR);
-        LOG(info) << "Scene::init no SHADER_DYNAMIC_DIR envvar : defaulting to " << m_shader_dynamic_dir ; 
     }
 }
 
@@ -248,10 +245,9 @@ void Scene::initRenderers()
 
     m_colors = new Colors(m_device);
 
-    //LOG(info) << "Scene::init geometry_renderer ctor";
     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
 
-   // small array of instance renderers to handle multiple assemblies of repeats ? 
+   // small array of instance renderers to handle multiple assemblies of repeats 
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
     {
         m_instance_mode[i] = false ; 

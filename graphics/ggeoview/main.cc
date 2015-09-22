@@ -1,4 +1,3 @@
-#include <stdlib.h>  //exit()
 #include <stdio.h>
 #include <algorithm>
 
@@ -548,6 +547,9 @@ TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
     GMergedMesh* mmi = m_ggeo->getMergedMesh(imesh);
     unsigned int nti = mmi->getNumTransforms();
 
+    // need to restrict to same AD instances, simply dividing by 2 doesnt work
+    // TODO: make targetted instance ranges or lists configurable 
+
     LOG(info) << "App::makeCalibrationTorchStep " 
               <<  " imesh " << imesh 
               <<  " nti " << nti 
@@ -559,6 +561,7 @@ TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
 
     torchstep->setNumPhotons(100);
     torchstep->setRadius(100);
+
 
     for(unsigned int i=0 ; i < nti ; i++)
     {
@@ -1322,6 +1325,8 @@ int main(int argc, char** argv)
     app.uploadGeometry();
 
     bool nooptix = app.hasOpt("nooptix");
+    bool save    = app.hasOpt("save");
+
     if(!nooptix)
     {
 
@@ -1337,11 +1342,15 @@ int main(int argc, char** argv)
 
         app.propagate();
 
-        app.downloadEvt();
-
         app.indexEvt();
 
-        app.indexEvtOld();
+        if(save)
+        {
+            app.downloadEvt();
+
+            app.indexEvtOld();  // indexing that depends on downloading to host 
+        }
+
 
         app.makeReport();
     }

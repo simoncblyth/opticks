@@ -11,13 +11,11 @@ uniform ivec4 NrmParam ;
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_colour;
 layout(location = 2) in vec3 vertex_normal;
-//layout(location = 3) in vec2 vertex_texcoord;
 layout(location = 4) in mat4 InstanceTransform ;
 
 float gl_ClipDistance[1]; 
 
 out vec4 colour;
-//out vec2 texcoord;
 
 void main () 
 {
@@ -33,29 +31,15 @@ void main ()
 
     vec3 normal = flip * normalize(vec3( ModelView * vec4 (vertex_normal, 0.0)));
 
-    vec3 lpos_e = vec3( ModelView * LightPosition );   
-
     vec3 vpos_e = vec3( ModelView * InstanceTransform * vec4 (vertex_position, 1.0));  // vertex position in eye space 
-
-    vec3 ldir_e = normalize(lpos_e - vpos_e);
-
-    float diffuse = clamp( dot(normal, ldir_e), 0, 1) ;
-
-    //float diffuse =  abs(dot(normal, ldir_e)) ;   // absolution rather than clamping makes a big difference  
 
     gl_ClipDistance[0] = dot(vec4(vertex_position, 1.0), ClipPlane);
 
-    //colour = vec4( normal*0.5 + 0.5, 1.0 - Param.z ) ;    // 1 - alpha 
-    //colour = vec4( vertex_colour, 1.0 - Param.z ); 
-
     vec3 ambient = vec3(0.1, 0.1, 0.1) ;
 
-    colour = vec4( ambient + vec3(diffuse) * vertex_colour , 1.0 - Param.z );
-
+#incl colour.h
 
     gl_Position = ModelViewProjection * InstanceTransform * vec4 (vertex_position, 1.0);
-
-    //texcoord = vertex_texcoord;
 
 }
 

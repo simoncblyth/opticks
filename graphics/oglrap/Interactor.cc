@@ -27,12 +27,11 @@
 #include <imgui.h>
 #endif
 
-
+const unsigned int Interactor::_pan_mode_key = GLFW_KEY_X ; 
 
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
 const char* Interactor::GUIMODE    = "gui" ; 
-
 
 
 void Interactor::gui()
@@ -98,6 +97,7 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     {
         m_camera->far_to(df*x,df*y,df*dx,df*dy);
     }
+    //else if( m_keys_down[_pan_mode_key] )
     else if( m_pan_mode )
     { 
         m_trackball->pan_to(df*x,df*y,df*dx,df*dy);
@@ -132,7 +132,7 @@ void Interactor::key_pressed(unsigned int key)
     switch (key)
     {
         //  ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        //  ***  *** *********   * ***
+        //  ******** *********   * ***
 
         case GLFW_KEY_A:
             m_composition->nextMode(getModifiers()) ; 
@@ -142,6 +142,12 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_C:
             m_clipper->next(); 
+            break;
+        case GLFW_KEY_D:
+            m_camera->nextStyle(); 
+            break;
+        case GLFW_KEY_E:
+            m_composition->nextGeometryStyle(); 
             break;
         case GLFW_KEY_F:
             m_far_mode = !m_far_mode ; 
@@ -182,7 +188,7 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_V:
             m_view->nextMode(getModifiers()) ; 
             break;
-        case GLFW_KEY_X:
+        case _pan_mode_key:
             m_pan_mode = !m_pan_mode ; 
             break;
         case GLFW_KEY_Y:

@@ -36,7 +36,11 @@ class Camera : public Configurable  {
      glm::mat4 getOrtho();
      glm::mat4 getFrustum();
 
-
+   public:
+       typedef enum { PERSPECTIVE_CAMERA, OTHOGRAPHIC_CAMERA, NUM_CAMERA_STYLE } Style_t ;
+       void nextStyle();
+       void setStyle(Camera::Style_t style);
+       Camera::Style_t getStyle();
 
  public:
      // Configurable
@@ -215,5 +219,21 @@ class Camera : public Configurable  {
      bool m_parallel ; 
 
 };
+
+
+inline void Camera::nextStyle()
+{
+    int next = (getStyle() + 1) % NUM_CAMERA_STYLE ; 
+    setStyle( (Style_t)next ) ; 
+}
+inline void Camera::setStyle(Style_t style)
+{
+    m_parallel = int(style) == 1  ;
+}
+inline Camera::Style_t Camera::getStyle()
+{
+    return (Style_t)(m_parallel ? 1 : 0 ) ;
+}
+
 
 

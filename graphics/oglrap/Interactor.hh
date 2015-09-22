@@ -84,6 +84,7 @@ class Interactor {
 
        bool m_zoom_mode ;
        bool m_pan_mode ;
+       static const unsigned int _pan_mode_key ;
        bool m_near_mode ;
        bool m_far_mode ;
        bool m_yfov_mode ;

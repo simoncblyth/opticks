@@ -139,7 +139,7 @@ void ViewNPY::findBounds()
     glm::vec3 lo( FLT_MAX,  FLT_MAX,  FLT_MAX);
     glm::vec3 hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-    printf("ViewNPY::findBounds bytes %p offset %lu stride %u count %u \n", m_bytes, m_offset, m_stride, m_count );
+    printf("ViewNPY::findBounds name %s bytes %p offset %lu stride %u count %u \n", m_name, m_bytes, m_offset, m_stride, m_count );
 
     for(unsigned int i=0 ; i < m_count ; ++i )
     {   
@@ -155,6 +155,7 @@ void ViewNPY::findBounds()
         hi.x = std::max( hi.x, v.x);
         hi.y = std::max( hi.y, v.y);
         hi.z = std::max( hi.z, v.z);
+
     }
 
     m_low = new glm::vec3(lo.x, lo.y, lo.z);
@@ -169,10 +170,19 @@ void ViewNPY::findBounds()
     m_extent = std::max( m_dimensions->z , m_extent );
     m_extent = m_extent / 2.0f ;    
 
-    if(m_count == 1)
+    if(m_extent < 1.f )
     {
+        LOG(warning) << "ViewNPY::findBounds setting nominal extent as auto-extent too small : " << m_extent ; 
+
+        // for Torch gensteps with all steps at same position, the extent comes out as zero 
+        // resulting in a blank render
+        //
+        //print( *m_low, "m_low");
+        //print( *m_high, "m_high");
+        //print( *m_dimensions, "m_dimensions");
+        //print( *m_center, "m_center");
+
         m_extent = 1000.f ; 
-        LOG(warning) << "ViewNPY::findBounds setting nominal extent as count is 1, extent " << m_extent ; 
     }
 
 

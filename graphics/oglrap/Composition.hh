@@ -62,7 +62,11 @@ class Composition : public Configurable {
        void nextNormalStyle();
        void setNormalStyle(Composition::NormalStyle_t style);
        Composition::NormalStyle_t getNormalStyle();
-
+   public:
+       typedef enum { DEF_GEOMETRY, NRMCOL_GEOMETRY, VTXCOL_GEOMETRY, NUM_GEOMETRY_STYLE } GeometryStyle_t ;
+       void nextGeometryStyle();
+       void setGeometryStyle(Composition::GeometryStyle_t style);
+       Composition::GeometryStyle_t getGeometryStyle();
    public:
        typedef enum { SHOW, HIDE, NUM_PICKPHOTON_STYLE } PickPhotonStyle_t ;
        void nextPickPhotonStyle();
@@ -497,6 +501,27 @@ inline Composition::NormalStyle_t Composition::getNormalStyle()
 {
     return (NormalStyle_t)m_nrmparam.x ;
 }
+
+
+
+
+inline void Composition::nextGeometryStyle()
+{
+    int next = (getGeometryStyle() + 1) % NUM_GEOMETRY_STYLE ; 
+    setGeometryStyle( (GeometryStyle_t)next ) ; 
+}
+inline void Composition::setGeometryStyle(GeometryStyle_t style)
+{
+    m_nrmparam.y = int(style) ;
+}
+inline Composition::GeometryStyle_t Composition::getGeometryStyle()
+{
+    return (GeometryStyle_t)m_nrmparam.y ;
+}
+
+
+
+
 
 
 

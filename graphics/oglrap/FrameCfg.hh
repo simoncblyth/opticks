@@ -104,6 +104,9 @@ inline void FrameCfg<Listener>::init()
        ("cerenkov,c",  "load cerenkov gensteps") ;
 
    m_desc.add_options()
+       ("save",  "download generated event data from GPU and save to file") ;
+
+   m_desc.add_options()
        ("torch",  "fabricate torch genstep using torch config settings") ;
 
    m_desc.add_options()

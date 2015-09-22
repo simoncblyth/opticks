@@ -123,6 +123,7 @@ void Camera::gui()
     ImGui::SliderFloat("far",   &m_far,  m_farclip[0],  m_farclip[1], "%.3f", power );
     ImGui::SliderFloat("yfov",  &m_yfov, m_yfovclip[0], m_yfovclip[1]);
     ImGui::Checkbox("parallel", &m_parallel);
+    if (ImGui::Button("Camera Summary")) Summary();
 #endif  
  }
 
