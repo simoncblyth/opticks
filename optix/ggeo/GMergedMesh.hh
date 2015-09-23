@@ -34,7 +34,8 @@ public:
     // used when obtaining relative transforms for flattening sub-trees of repeated geometry
     void   setCurrentBase(GNode* base);
     GNode* getCurrentBase(); 
-
+    bool   isGlobal(); 
+    bool   isInstanced(); 
 
 private:
     // transients that do not need persisting
@@ -81,7 +82,14 @@ inline GNode* GMergedMesh::getCurrentBase()
 {
     return m_cur_base ; 
 }
-
+inline bool GMergedMesh::isGlobal()
+{
+    return m_cur_base == NULL ; 
+}
+inline bool GMergedMesh::isInstanced()
+{
+    return m_cur_base != NULL ; 
+}
 
 
 

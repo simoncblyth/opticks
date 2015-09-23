@@ -56,6 +56,7 @@ class GGeo {
     public:
         // target 0 : all geometry of the mesh, >0 : specific volumes
         glm::vec4 getCenterExtent(unsigned int target, unsigned int merged_mesh_index=0u );
+        void dumpTree(const char* msg="GGeo::dumpTree");
     public:
         bool isLoaded();
         void setPath(const char* path);

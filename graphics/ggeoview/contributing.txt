@@ -1,0 +1,48 @@
+
+Thank you for your interest, my last status report is at 
+     
+* http://simoncblyth.bitbucket.org/env/presentation/optical_photon_simulation_with_nvidia_optix.html
+
+As you can see the status is very must still one of development/debugging. 
+If you are interested in contributing to development the next major items are :
+
+* fixing a geometry problem with DayaBay IAV top lid
+* investigating use of analytic geometry, for more efficient handling 
+  of very large numbers of PMTs
+* completing surface physics OptiX programs
+* validating against Geant4 
+
+Validation against Geant4 would be the best topic to 
+start with as you could contribute without initially having to know the
+full details of the code.   
+Tao Lin has expressed some interest on working on this, but he
+is always very busy with other things.
+
+Realistically you need to gain familiarity with quite a few packages before 
+you will be comfortable to work with the code. Namely:
+
+ * ipython/NumPy : despite being C++ the code uses the NumPy serialisation format 
+   throughout so debugging requires familiarity with NumPy and ipython 
+
+ * Modern OpenGL : visualisation is invaluable for debugging, GLSL geometry
+   shaders are the principal technique used for visualising the photons 
+
+ * Geant4 : source level familiarity with geometry and optical physics code
+
+ * OptiX ray tracing framework : following the tutorial and creating a simple ray tracer 
+   are recommended to get familiar with OptiX 
+
+ * Thrust high level CUDA : initially seems easy but you may need to improve 
+   your C++ skills to make proper use of Thrust 
+  
+ * CUDA : other tools (OptiX and Thrust) are based on CUDA so even if not 
+   using it directly you need to be familiar with writing CUDA kernels
+
+
+For development you will need an OpenGL 4.1 capable machine 
+with an NVIDIA GPU of at least compute capability 3.0, you will 
+need to be able to install the latest NVIDIA drivers and CUDA, OptiX, etc..    
+
+I have not yet put much effort in making the code easy to install, but feel free to try.
+I am more than willing to help, also Tao Lin has experience at installing the packages.
+

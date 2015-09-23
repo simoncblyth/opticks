@@ -49,6 +49,7 @@ class GMesh : public GDrawable {
       static const char* bbox ; 
       static const char* transforms ;    // not-used? 
       static const char* meshes ;        // mesh indices
+      static const char* nodeinfo ;      // nface,nvert,?,? per solid : allowing solid selection beyond the geocache
 
       GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index, 
@@ -121,6 +122,7 @@ class GMesh : public GDrawable {
       void setBBoxBuffer(GBuffer* buffer);
       void setTransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
+      void setNodeInfoBuffer(GBuffer* buffer);
 
   public:
       bool hasTransformsBuffer(); 
@@ -138,6 +140,7 @@ class GMesh : public GDrawable {
       GBuffer* getBBoxBuffer();
       GBuffer* getTransformsBuffer();
       GBuffer* getMeshesBuffer();
+      GBuffer* getNodeInfoBuffer();
 
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
@@ -152,6 +155,7 @@ class GMesh : public GDrawable {
       virtual unsigned int*  getNodes();
       virtual unsigned int*  getBoundaries();
       virtual unsigned int*  getSensors();
+      virtual guint4*  getNodeInfo();
 
       virtual GBuffer* getNodesBuffer();
       virtual GBuffer* getBoundariesBuffer();
@@ -184,6 +188,7 @@ class GMesh : public GDrawable {
       void setBBox(gbbox* bb);
       //void setTransforms(float* transforms);
       void setMeshes(unsigned int* meshes);
+      void setNodeInfo(guint4* nodeinfo);
 
   public:
       void setNumColors(unsigned int num_colors);
@@ -224,11 +229,14 @@ class GMesh : public GDrawable {
       gfloat3*        m_center ;
       float           m_extent ; 
 
-      // per-solid 
+      // per-solid/node 
       gfloat4*        m_center_extent ;
       gbbox*          m_bbox ;
       float*          m_transforms ; 
       unsigned int*   m_meshes ; 
+      guint4*         m_nodeinfo ; 
+
+
 
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
       std::vector<std::string> m_names ;  // constituents with persistable buffers 
@@ -247,6 +255,7 @@ class GMesh : public GDrawable {
       GBuffer* m_sensors_buffer ;
       GBuffer* m_transforms_buffer ;
       GBuffer* m_meshes_buffer ;
+      GBuffer* m_nodeinfo_buffer ;
 
 
 };
@@ -402,6 +411,12 @@ inline unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMerge
 {
     return m_nodes ;
 }
+inline guint4* GMesh::getNodeInfo()
+{
+    return m_nodeinfo ; 
+}
+
+
 inline unsigned int* GMesh::getBoundaries()
 {
     return m_boundaries ;
@@ -410,7 +425,6 @@ inline unsigned int* GMesh::getSensors()
 {
     return m_sensors ;
 }
-
 
 
 
@@ -447,6 +461,10 @@ inline GBuffer*  GMesh::getMeshesBuffer()
 {
     return m_meshes_buffer ;
 }
+inline GBuffer*  GMesh::getNodeInfoBuffer()
+{
+    return m_nodeinfo_buffer ;
+}
 inline GBuffer*  GMesh::getIndicesBuffer()
 {
     return m_indices_buffer ;
@@ -468,4 +486,7 @@ inline bool GMesh::hasTransformsBuffer()
 {
     return m_transforms_buffer != NULL ; 
 }
+
+
+
 

@@ -28,9 +28,46 @@ surface property debug, PMT id
 ISSUE : many upwards going photons think their m1 is Ac when actually Gd
 ---------------------------------------------------------------------------
 
-TODO:
+* investigating using a torch emitter from middle of IAV
 
-* select photons with zeroth m1 that doesnt match the genstep material
+::
+
+   3150 : nf    0 nv    0 id   3150 pid   3149 : __dd__Geometry__Pool__lvNearPoolLiner--pvNearPoolOWS0xbf55b10       __dd__Geometry__Pool__lvNearPoolOWS0xbf93840 
+   3151 : nf    0 nv    0 id   3151 pid   3150 : __dd__Geometry__Pool__lvNearPoolOWS--pvNearPoolCurtain0xc5c5f20   __dd__Geometry__Pool__lvNearPoolCurtain0xc2ceef0 
+   3152 : nf    0 nv    0 id   3152 pid   3151 : __dd__Geometry__Pool__lvNearPoolCurtain--pvNearPoolIWS0xc15a498       __dd__Geometry__Pool__lvNearPoolIWS0xc28bc60 
+   3153 : nf   96 nv  157 id   3153 pid   3152 : __dd__Geometry__Pool__lvNearPoolIWS--pvNearADE10xc2cf528                 __dd__Geometry__AD__lvADE0xc2a78c0 
+   3154 : nf   96 nv  157 id   3154 pid   3153 : __dd__Geometry__AD__lvADE--pvSST0xc128d90                 __dd__Geometry__AD__lvSST0xc234cd0 
+   3155 : nf   96 nv  157 id   3155 pid   3154 : __dd__Geometry__AD__lvSST--pvOIL0xc241510                 __dd__Geometry__AD__lvOIL0xbf5e0b8 
+   3156 : nf  288 nv  481 id   3156 pid   3155 : __dd__Geometry__AD__lvOIL--pvOAV0xbf8f638                 __dd__Geometry__AD__lvOAV0xbf1c760 
+   3157 : nf  332 nv  678 id   3157 pid   3156 : __dd__Geometry__AD__lvOAV--pvLSO0xbf8e120                 __dd__Geometry__AD__lvLSO0xc403e40 
+
+   3158 : nf  288 nv  483 id   3158 pid   3157 :    __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348                 __dd__Geometry__AD__lvIAV0xc404ee8 
+   3159 : nf  288 nv  617 id   3159 pid   3158 :       __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00                 __dd__Geometry__AD__lvGDS0xbf6cbb8 
+   3160 : nf   92 nv  211 id   3160 pid   3158 :       __dd__Geometry__AD__lvIAV--pvOcrGdsInIAV0xbf6b0e0         __dd__Geometry__AdDetails__lvOcrGdsInIav0xbf6dd58 
+
+   3161 : nf  384 nv  632 id   3161 pid   3157 :    __dd__Geometry__AD__lvLSO--pvIavTopHub0xc34e6e8    __dd__Geometry__AdDetails__lvIavTopHub0xc129d88 
+   3162 : nf  384 nv  636 id   3162 pid   3157 :    __dd__Geometry__AD__lvLSO--pvCtrGdsOflBotClp0xc2ce2a8 __dd__Geometry__AdDetails__lvCtrGdsOflBotClp0xc407eb0 
+   3163 : nf  192 nv  336 id   3163 pid   3157 : __dd__Geometry__AD__lvLSO--pvCtrGdsOflTfbInLso0xc2ca538 __dd__Geometry__AdDetails__lvCtrGdsOflTfbInLso0xbfa0728 
+   3164 : nf   96 nv  157 id   3164 pid   3157 : __dd__Geometry__AD__lvLSO--pvCtrGdsOflInLso0xbf74250 __dd__Geometry__AdDetails__lvCtrGdsOflInLso0xc28cc88 
+   3165 : nf  576 nv 1189 id   3165 pid   3157 : __dd__Geometry__AD__lvLSO--pvOcrGdsPrt0xbf6d0d0    __dd__Geometry__AdDetails__lvOcrGdsPrt0xc352630 
+   3166 : nf  384 nv  636 id   3166 pid   3157 : __dd__Geometry__AD__lvLSO--pvOcrGdsBotClp0xbfa1610 __dd__Geometry__AdDetails__lvCtrGdsOflBotClp0xc407eb0 
+   3167 : nf  192 nv  488 id   3167 pid   3157 : __dd__Geometry__AD__lvLSO--pvOcrGdsTfbInLso0xbfa1818 __dd__Geometry__AdDetails__lvOcrGdsTfbInLso0xc3529c0 
+   3168 : nf   92 nv  210 id   3168 pid   3157 : __dd__Geometry__AD__lvLSO--pvOcrGdsInLso0xbf6d280  __dd__Geometry__AdDetails__lvOcrGdsInLso0xc353990 
+   3169 : nf   12 nv   24 id   3169 pid   3157 : __dd__Geometry__AD__lvLSO--pvOavBotRibs--OavBotRibs--OavBotRibRot0xbf5af90    __dd__Geometry__AdDetails__lvOavBotRib0xc353d30 
+   3170 : nf   12 nv   24 id   3170 pid   3157 : __dd__Geometry__AD__lvLSO--pvOavBotRibs--OavBotRibs..1--OavBotRibRot0xc3531c0    __dd__Geometry__AdDetails__lvOavBotRib0xc353d30 
+   3171 : nf   12 nv   24 id   3171 pid   3157 : __dd__Geometry__AD__lvLSO--pvOavBotRibs--OavBotRibs..2--OavBotRibRot0xc353e30    __dd__Geometry__AdDetails__lvOavBotRib0xc353d30 
+   3172 : nf   12 nv   24 id   3172 pid   3157 : __dd__Geometry__AD__lvLSO--pvOavBotRibs--OavBotRibs..3--OavBotRibRot0xc541230    __dd__Geometry__AdDetails__lvOavBotRib0xc353d30 
+
+
+Problem remains with only 2 volumes, 3158 and 3159::
+
+    see ~/env/bin/ggv.sh
+    export GGEOVIEW_QUERY="range:3158:3160" 
+       # just 2 volumes (python style range) __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348, __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00  
+
+    ggv --idyb --torchconfig="radius=0;zenith_azimuth=0,1,0,1"
+
+
 
 
 ISSUE : seqmat first material mismatch to genstep material

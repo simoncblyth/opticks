@@ -11,7 +11,10 @@ class GSensor ;
 //   chroma.geometry.Solid is all about splaying things across all the triangles
 //  relationship between how many materials for each mesh is up for grabs
 //
-
+//
+// Instances are created by:
+//       GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
+//
 class GSolid : public GNode {
   public:
       GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* boundary, GSensor* sensor);

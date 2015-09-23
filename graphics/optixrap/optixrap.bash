@@ -18,7 +18,13 @@ Porting on GPU photon generation to OptiX
 Python prototype: 
 
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
+
+
+ISSUE: restricting bouncemax prevents recsel selection operation
+----------------------------------------------------------------------
    
+The index is constructed, but selection do
+
 
 OptiX Model
 ------------

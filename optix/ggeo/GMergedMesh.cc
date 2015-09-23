@@ -6,6 +6,7 @@
 
 #include "Timer.hpp"
 
+#include <climits>
 #include <iostream>
 #include <iomanip>
 
@@ -88,8 +89,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
     mm->setCenterExtent(new gfloat4[numSolids]);
     mm->setBBox(new gbbox[numSolids]);
     mm->setMeshes(new unsigned int[numSolids]);
-    //mm->setTransforms(new float[numSolids*16]);  
-    // repurposing the transforms for holding repeated placement transforms from GTreeCheck 
+    mm->setNodeInfo(new guint4[numSolids]);
 
     t("allocate solids");
 
@@ -122,6 +122,10 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
 
+    unsigned int nodeIndex = node->getIndex();
+
+    GNode* parent = node->getParent();
+    unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
 
 
     // using repeat index labelling in the tree
@@ -205,7 +209,21 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
         m_bbox[m_cur_solid] = bb ;  
         m_center_extent[m_cur_solid] = bb.center_extent() ;
+
         m_meshes[m_cur_solid] = meshIndex ; 
+
+        // face and vertex counts must use same selection as above to be usable 
+        // with the above filled vertices and indices 
+
+        m_nodeinfo[m_cur_solid].x = selected ? nface : 0 ; 
+        m_nodeinfo[m_cur_solid].y = selected ? nvert : 0 ; 
+        m_nodeinfo[m_cur_solid].z = nodeIndex ;  // redundant?
+        m_nodeinfo[m_cur_solid].w = parentIndex ; 
+
+        if(isGlobal())
+        {
+            assert(nodeIndex == m_cur_solid);
+        }
 
         m_cur_solid += 1 ; 
     }

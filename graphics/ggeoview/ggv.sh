@@ -65,8 +65,9 @@ elif [ "${cmdline/--dyb}" != "${cmdline}" ]; then
 elif [ "${cmdline/--idyb}" != "${cmdline}" ]; then
 
    export GGEOVIEW_GEOKEY=DAE_NAME_DYB
-   export GGEOVIEW_QUERY="range:3161:4813"      # this misses out the IAV 
-   export GGEOVIEW_CTRL=""
+   #export GGEOVIEW_QUERY="range:3161:4813"      # this misses out the IAV 
+   export GGEOVIEW_QUERY="range:3158:3160"       # just 2 volumes (python style range) __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348, __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00 
+   export GGEOVIEW_CTRL="volnames"
 
 else
 

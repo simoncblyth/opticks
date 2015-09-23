@@ -364,8 +364,17 @@ void Renderer::render()
     {
         glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
     }
-    // indices_count would be 3 for a single triangle 
+    // indices_count would be 3 for a single triangle, 30 for ten triangles
 
+
+    //
+    // TODO: try offsetting into the indices buffer using : (void*)(offset * sizeof(GLuint))
+    //       eg to allow wireframing for selected volumes
+    //
+    //       need number of faces for every volume, so can cumsum*3 to get the indice offsets and counts 
+    //
+    //       http://stackoverflow.com/questions/9431923/using-an-offset-with-vbos-in-opengl
+    //
 
     if(m_wireframe)
     {

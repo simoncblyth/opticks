@@ -31,6 +31,11 @@ Switch Ortho to Frustum without "loosing" view
 Perhaps arranging the perspective frustum dimensions at  (near+far)/2 
 to line up with othographic box will avoid the sudden change of viewpoint.
 
+How do other 3D open source projects do the switch  ? 
+Blender source hard to follow. TODO: take a look at MeshLab
+
+* https://github.com/dfelinto/blender/search?utf8=✓&q=ortho_scale
+
 
 Better Shader Handling ?
 --------------------------

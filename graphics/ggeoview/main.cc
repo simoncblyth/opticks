@@ -481,6 +481,7 @@ int App::loadGeometry()
    
     m_ggeo = m_loader->getGGeo();
     m_ggeo->dumpStats("App::loadGeometry");
+    m_ggeo->dumpTree("App::loadGeometry");
 
     m_blib = m_loader->getBoundaryLib();
     m_lookup = m_loader->getMaterialLookup();

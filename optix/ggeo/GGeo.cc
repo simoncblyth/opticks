@@ -122,9 +122,6 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 }
 
 
-
-
-
 void GGeo::init()
 {
    if(m_loaded) return ; 
@@ -146,10 +143,19 @@ void GGeo::init()
        m_pvlist = new GItemList("PVNames") ; 
        m_lvlist = new GItemList("LVNames") ; 
    }
-   else
-   {
-       assert(0);
-   }
+}
+
+void GGeo::loadFromCache(const char* idpath)
+{   
+    loadMergedMeshes(idpath);
+        
+    m_meshindex = GItemIndex::load(idpath, "MeshIndex");
+
+    if(m_volnames)
+    {
+        m_pvlist = GItemList::load(idpath, "PVNames");
+        m_lvlist = GItemList::load(idpath, "LVNames");
+    }
 }
 
 
@@ -167,24 +173,12 @@ void GGeo::save(const char* idpath)
 }
 
 
-void GGeo::loadFromCache(const char* idpath)
-{   
-    loadMergedMeshes(idpath);
-        
-    m_meshindex = GItemIndex::load(idpath, "MeshIndex");
-
-    if(m_volnames)
-    {
-        m_pvlist = GItemList::load(idpath, "PVNames");
-        m_lvlist = GItemList::load(idpath, "LVNames");
-    }
-}
-
 
 GGeo* GGeo::load(const char* idpath)
 {
     bool loaded = true ; 
-    GGeo* ggeo = new GGeo(loaded);
+    bool volnames = true ; 
+    GGeo* ggeo = new GGeo(loaded, volnames);
     ggeo->loadFromCache(idpath);
     return ggeo ; 
 }
@@ -791,28 +785,10 @@ them center extent.::
     In [3]: ce0.shape
     Out[3]: (12230, 4)
 
-    In [4]: ce1 = np.load("1/center_extent.npy")
-
-    In [5]: ce1.shape
-    Out[5]: (5, 4)
-
-    In [6]: ce1
-    Out[6]: 
-    array([[   0.   ,    0.   ,  -18.997,  149.997],
-           [   0.005,   -0.003,  -18.252,  146.252],
-           [   0.005,   -0.004,   91.998,   98.143],
-           [   0.   ,    0.   ,   13.066,   98.143],
-           [   0.   ,    0.   ,  -81.5  ,   83.   ]], dtype=float32)
-
-
-
 For targetting the instances of merged meshes > 0 can use
 the transform matrices::
 
     In [15]: tr1 = np.load("1/transforms.npy")
-
-    In [16]: tr1.shape
-    Out[16]: (672, 16)
 
     In [17]: tr1.reshape(672,4,4)
     Out[17]: 
@@ -824,6 +800,30 @@ the transform matrices::
 
 
 */
+
+
+void GGeo::dumpTree(const char* msg)
+{
+    GMergedMesh* mm0 = getMergedMesh(0);
+
+    unsigned int nso = mm0->getNumSolids();
+    unsigned int npv = m_pvlist->getNumItems(); 
+    unsigned int nlv = m_lvlist->getNumItems(); 
+    assert(npv == nlv && nso == npv);
+
+    guint4* nodeinfo = mm0->getNodeInfo(); 
+
+    LOG(info) << msg << " num_solids " << nso ; 
+
+    for(unsigned int i=0 ; i < nso ; i++)
+    {
+         guint4* info = nodeinfo + i ;  
+         std::string& pv = m_pvlist->getItem(i);
+         std::string& lv = m_lvlist->getItem(i);
+         printf(" %6u : nf %4d nv %4d id %6u pid %6d : %50s %50s \n", i, info->x, info->y, info->z, info->w,  pv.c_str(), lv.c_str() ); 
+    }
+
+}
 
 
 
