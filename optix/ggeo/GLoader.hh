@@ -99,7 +99,7 @@ inline GLoader::GLoader()
    m_treeanalyse(NULL),
    m_repeatidx(-1),
    m_transforms_buffer(NULL),
-   m_instanced(false)
+   m_instanced(true)
 {
 }
 

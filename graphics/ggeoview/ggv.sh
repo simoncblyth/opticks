@@ -1,14 +1,17 @@
 #!/bin/bash -l
 
+usage(){ cat << EOU
+
+    cd $(ggv --cd --idyb)
+
+EOU 
+}
+
+
 cmdline="$*"
 ggeoview-
 
 
-
-cmp=0
-if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
-   cmp=1
-fi
 
 dbg=0
 if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
@@ -20,7 +23,6 @@ if [ "${cmdline/--cd}" != "${cmdline}" ]; then
    cd=1
 fi
 
-
 make=0
 if [ "${cmdline/--make}" != "${cmdline}" ]; then
    make=1
@@ -30,6 +32,18 @@ if [ "${cmdline/--make}" != "${cmdline}" ]; then
    ls -l $cu
 fi
 
+if [ "${cmdline/--oac}" != "${cmdline}" ]; then
+   export OPTIX_API_CAPTURE=1
+fi
+
+
+if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeoview-compute-bin)
+elif [ "${cmdline/--loader}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeoview-loader-bin)
+else
+   unset GGEOVIEW_BINARY 
+fi
 
 
 if [ "${cmdline/--juno}" != "${cmdline}" ]; then
@@ -77,10 +91,6 @@ else
 
 fi
 
-if [ "${cmdline/--oac}" != "${cmdline}" ]; then
-   export OPTIX_API_CAPTURE=1
-fi
-
 if [ "$make" == "1" ]; then
     ggeoview-install 
 fi
@@ -88,15 +98,11 @@ fi
 
 if [ "$cd" == "1" ]; then 
     idp=$(ggeoview-run $* --idp)
-    ls -l $idp 
-    cd $idp 
-elif [ "$cmp" == "0" ]; then 
+    echo $idp
+else
     case $dbg in
        0)  ggeoview-run $*  ;;
        1)  ggeoview-dbg $*  ;;
     esac
-else
-    ggeoview-compute $*
-
 fi
 
