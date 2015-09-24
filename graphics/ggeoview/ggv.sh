@@ -59,6 +59,18 @@ elif [ "${cmdline/--idyb}" != "${cmdline}" ]; then
    export GGEOVIEW_QUERY="range:3158:3160"       # just 2 volumes (python style range) __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348, __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00 
    export GGEOVIEW_CTRL="volnames"
 
+elif [ "${cmdline/--jdyb}" != "${cmdline}" ]; then
+
+   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
+   export GGEOVIEW_QUERY="range:3158:3159"       # just 1 volume __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348
+   export GGEOVIEW_CTRL="volnames"
+   
+elif [ "${cmdline/--kdyb}" != "${cmdline}" ]; then
+
+   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
+   export GGEOVIEW_QUERY="range:3159:3160"       # just 1 volume __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00 
+   export GGEOVIEW_CTRL="volnames"
+
 else
 
    export GGEOVIEW_GEOKEY=DAE_NAME_DYB
@@ -78,11 +90,8 @@ if [ "${cmdline/--make}" != "${cmdline}" ]; then
 fi
 
 
-
-
-if [ "${cmdline/--cd}" != "${cmdline}" ]; then
-    idp=$(ggeoview-run $* --idp)
-    echo $idp
+if [ "${cmdline/--idp}" != "${cmdline}" ]; then
+    echo $(ggeoview-run $*)
 else
     case $dbg in
        0)  ggeoview-run $*  ;;

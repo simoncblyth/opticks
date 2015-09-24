@@ -42,17 +42,18 @@ int main(int argc, char* argv[])
 
 Jump into geocache for 2 volume geometry::
 
-    cd $(ggv --cd --idyb)
+    delta:ggeoview blyth$ cd $(ggv --idyb --idp)
 
 Check mergedmesh 0::
 
-    In [1]: n = np.load("nodeinfo.npy")
+    In [1]: n = np.load("GMergedMesh/0/nodeinfo.npy")
 
-    In [5]: n[n[:,0] > 0]
-    Out[5]: 
-    array([[ 288,  483, 3158, 3157],                 # nface, nvert, id, pid
+    In [2]: n[n[:,0]>0]
+    Out[2]: 
+    array([[ 288,  483, 3158, 3157],
            [ 288,  617, 3159, 3158]], dtype=uint32)
 
+    
     In [11]: i[i[:,0]>0][:,0].sum()      # sum nface
     Out[11]: 576
 
@@ -61,7 +62,7 @@ Check mergedmesh 0::
 
 Looks like a face transition in the indices::
 
-    In [13]: f = np.load("indices.npy")
+    In [13]: f = np.load("GMergedMesh/0/indices.npy")
 
     In [28]:  f.reshape(-1,3)[278:288]
     Out[28]: 
