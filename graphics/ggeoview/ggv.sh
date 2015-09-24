@@ -1,35 +1,11 @@
 #!/bin/bash -l
 
-usage(){ cat << EOU
-
-    cd $(ggv --cd --idyb)
-
-EOU 
-}
-
-
 cmdline="$*"
 ggeoview-
-
-
 
 dbg=0
 if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
    dbg=1
-fi
-
-cd=0
-if [ "${cmdline/--cd}" != "${cmdline}" ]; then
-   cd=1
-fi
-
-make=0
-if [ "${cmdline/--make}" != "${cmdline}" ]; then
-   make=1
-   optixrap-
-   cu=$(optixrap-sdir)/cu/generate.cu 
-   touch $cu
-   ls -l $cu
 fi
 
 if [ "${cmdline/--oac}" != "${cmdline}" ]; then
@@ -91,12 +67,20 @@ else
 
 fi
 
-if [ "$make" == "1" ]; then
-    ggeoview-install 
+
+
+if [ "${cmdline/--make}" != "${cmdline}" ]; then
+   optixrap-
+   cu=$(optixrap-sdir)/cu/generate.cu 
+   touch $cu
+   ls -l $cu
+   ggeoview-install 
 fi
 
 
-if [ "$cd" == "1" ]; then 
+
+
+if [ "${cmdline/--cd}" != "${cmdline}" ]; then
     idp=$(ggeoview-run $* --idp)
     echo $idp
 else

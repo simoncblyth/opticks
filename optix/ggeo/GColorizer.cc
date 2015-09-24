@@ -5,6 +5,7 @@
 #include "GSolid.hh"
 #include "GItemIndex.hh"
 #include "GBoundary.hh"
+#include "GColors.hh"
 
 #include <iomanip>
 
@@ -30,13 +31,32 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
     bool selected = solid->isSelected() && solid->getRepeatIndex() == m_repeat_index ;
     if(selected)
     {
-        gfloat3* surfcolor = getSurfaceColor( node );
-        if(surfcolor) 
+        if( m_style == SURFACE_INDEX )
+        { 
+            gfloat3* surfcolor = getSurfaceColor( node );
+            if(surfcolor) 
+            {
+                ++m_num_colorized ; 
+                for(unsigned int i=0 ; i<nvert ; ++i ) m_target[m_cur_vertices+i] = *surfcolor ; 
+            }
+            delete surfcolor ; 
+        } 
+        else if( m_style == PSYCHEDELIC_VERTEX || m_style == PSYCHEDELIC_NODE || m_style == PSYCHEDELIC_MESH )  // every VERTEX/SOLID/MESH a different color 
         {
-            ++m_num_colorized ; 
-            for(unsigned int i=0 ; i<nvert ; ++i ) m_target[m_cur_vertices+i] = *surfcolor ; 
+            assert(m_colors);
+            for(unsigned int i=0 ; i<nvert ; ++i ) 
+            {
+                unsigned int index ; 
+                switch(m_style)
+                {
+                    case PSYCHEDELIC_VERTEX : index = i                ;break; 
+                    case PSYCHEDELIC_NODE   : index = node->getIndex() ;break; 
+                    case PSYCHEDELIC_MESH   : index = mesh->getIndex() ;break; 
+                    default                 : index = 0                ;break; 
+                }
+                m_target[m_cur_vertices+i] = m_colors->getPsychedelic(index) ; 
+            } 
         }
-        delete surfcolor ; 
 
         m_cur_vertices += nvert ;      // offset within the flat arrays
     }
@@ -92,8 +112,4 @@ gfloat3* GColorizer::getSurfaceColor(GNode* node)
 //  is from inside geometry, which togther with outwards normals
 //  means that have to flip the normals to see something 
 //     
-//
-//bool condition = imat->hasShortName("GdDopedLS") && omat->hasShortName("Acrylic") ;
-//bool condition = isur->hasDefinedName() || osur->hasDefinedName() ; 
-//
 

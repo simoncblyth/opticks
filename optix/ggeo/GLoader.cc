@@ -49,6 +49,10 @@ void GLoader::load(bool nogeocache)
               << " repeatidx " << m_repeatidx 
               ;
 
+
+    m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
+
+
     fs::path geocache(idpath);
 
     if(fs::exists(geocache) && fs::is_directory(geocache) && !nogeocache ) 
@@ -103,7 +107,6 @@ void GLoader::load(bool nogeocache)
 
         t("createReemissionBuffer"); 
 
-        GColors* source = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
 
         m_metadata = m_boundarylib->getMetadata();
 
@@ -111,7 +114,7 @@ void GLoader::load(bool nogeocache)
 
         GColorMap* sixc = GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json");
         m_surfaces->setColorMap(sixc);   
-        m_surfaces->setColorSource(source);
+        m_surfaces->setColorSource(m_colors);
 
 
         m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
@@ -160,25 +163,24 @@ void GLoader::load(bool nogeocache)
         t("create MergedMesh"); 
 
 
-        m_ggeo->save(idpath );
+        // GColorizer needs full tree,  so have to use pre-cache
 
+        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
 
+        gfloat3* vertex_colors = mesh0->getColors();
 
+        GColorizer czr( vertex_colors, m_ggeo, GColorizer::PSYCHEDELIC_NODE ); 
 
-        /*
-        TODO: adapt GColorizer to new multi-mergedmesh regime 
-
-        //m_mergedmesh->setColor(0.5,0.5,1.0); // this would scrub node colors
-
-        gfloat3* target = m_mergedmesh->getColors();
-        GColorizer czr( target, m_ggeo ); 
+        czr.setColors(m_colors);
         czr.setSurfaces(m_surfaces);
-        czr.setRepeatIndex(m_mergedmesh->getIndex()); 
+        czr.setRepeatIndex(mesh0->getIndex()); 
         czr.traverse();
 
         t("GColorizer"); 
 
-        */
+
+
+        m_ggeo->save(idpath );
 
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
 
@@ -213,7 +215,6 @@ void GLoader::load(bool nogeocache)
     m_surfaces->setLabeller(GItemIndex::COLORKEY);
     m_flags->setLabeller(GItemIndex::COLORKEY);
 
-    m_colors = GColors::load("$HOME/.opticks","GColors.json"); // colorname => hexcode   TODO: remove this, it duplicates above source
     m_materials->setColorSource(m_colors);
     m_surfaces->setColorSource(m_colors);
     m_flags->setColorSource(m_colors);
