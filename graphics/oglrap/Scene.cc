@@ -64,6 +64,7 @@ const char* Scene::DEVREC_ = "vector" ;
 
 const char* Scene::NORM_ = "norm" ;   
 const char* Scene::BBOX_ = "bbox" ; 
+const char* Scene::WIRE_ = "wire" ; 
 const char* Scene::NORM_BBOX_ = "norm_bbox" ; 
 
 
@@ -87,6 +88,7 @@ const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
    {
       case NORM:return NORM_ ; break; 
       case BBOX:return BBOX_ ; break; 
+      case WIRE:return WIRE_ ; break; 
       case NORM_BBOX:return NORM_BBOX_ ; break; 
       case NUM_GEOMETRY_STYLE:assert(0) ; break ; 
       default: assert(0); break ; 
@@ -98,6 +100,61 @@ const char* Scene::getGeometryStyleName()
 {
    return getGeometryStyleName(m_geometry_style);
 }
+
+
+
+void Scene::applyGeometryStyle()
+{
+    bool inst ; 
+    bool bbox ; 
+    bool wire ; 
+
+    switch(m_geometry_style)
+    {
+      case BBOX:
+             inst = false ; 
+             bbox = true ; 
+             wire = false ; 
+             break;
+      case NORM:
+             inst = true ;
+             bbox = false ; 
+             wire = false ; 
+             break;
+      case WIRE:
+             inst = true ;
+             bbox = false ; 
+             wire = true ; 
+             break;
+      case NORM_BBOX:
+             inst = true ; 
+             bbox = true ; 
+             wire = false ; 
+             break;
+      case NUM_GEOMETRY_STYLE:
+             assert(0);
+             break;
+   }
+
+   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
+   {
+       m_instance_mode[i] = inst ; 
+       m_bbox_mode[i] = bbox ; 
+   }
+
+   m_global_renderer->setWireframe(wire);
+
+}
+
+
+
+
+
+
+
+
+
+
 
 const char* Scene::getRecordStyleName()
 {

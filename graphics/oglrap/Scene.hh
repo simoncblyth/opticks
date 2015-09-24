@@ -48,6 +48,7 @@ class Scene : public Configurable {
    public:
         static const char* NORM_ ; 
         static const char* BBOX_ ; 
+        static const char* WIRE_ ; 
         static const char* NORM_BBOX_ ; 
    public:
         enum { MAX_INSTANCE_RENDERER = 5 };  
@@ -70,7 +71,7 @@ class Scene : public Configurable {
         void nextPhotonStyle();
    public:
         // disabled styles after NUM_GEOMETRY_STYLE
-        typedef enum { BBOX, NORM, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
+        typedef enum { BBOX, NORM, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
         void setGeometryStyle(Scene::GeometryStyle_t style);
         void applyGeometryStyle();
         static const char* getGeometryStyleName(Scene::GeometryStyle_t style);
@@ -376,37 +377,6 @@ inline void Scene::setGeometryStyle(GeometryStyle_t style)
 {
     m_geometry_style = style ; 
     applyGeometryStyle();
-}
-
-inline void Scene::applyGeometryStyle()
-{
-    bool imode ; 
-    bool bmode ; 
-
-    switch(m_geometry_style)
-    {
-      case BBOX:
-             imode = false ; 
-             bmode = true ; 
-             break;
-      case NORM:
-             imode = true ;
-             bmode = false ; 
-             break;
-      case NORM_BBOX:
-             imode = true ; 
-             bmode = true ; 
-             break;
-      case NUM_GEOMETRY_STYLE:
-             assert(0);
-             break;
-   }
-
-   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
-   {
-       m_instance_mode[i] = imode ; 
-       m_bbox_mode[i] = bmode ; 
-   }
 }
 
 
