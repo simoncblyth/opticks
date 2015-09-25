@@ -303,6 +303,7 @@ void Scene::initRenderers()
     m_colors = new Colors(m_device);
 
     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
+    m_globalvec_renderer = new Renderer("nrmvec", m_shader_dir, m_shader_incl_path );
 
    // small array of instance renderers to handle multiple assemblies of repeats 
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
@@ -355,6 +356,7 @@ void Scene::setComposition(Composition* composition)
     m_composition = composition ; 
 
     m_global_renderer->setComposition(composition);
+    m_globalvec_renderer->setComposition(composition);
 
     // set for all instance slots, otherwise requires setComposition after uploadGeometry
     // as only then is m_num_instance_renderer set
@@ -400,6 +402,7 @@ void Scene::uploadGeometry()
             if(m_mesh0 == NULL) m_mesh0 = mm ; // first non-instanced mesh
 
             m_global_renderer->upload(mm);  
+            m_globalvec_renderer->upload(mm);   // buffers are not re-uploaded, but binding must be done for each renderer 
             n_global++ ; 
             assert(n_global == 1);
             m_global_mode = true ; 
@@ -516,7 +519,8 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr)
 
 void Scene::render()
 {
-    if(m_global_mode)   m_global_renderer->render();
+    if(m_global_mode)    m_global_renderer->render();
+    if(m_globalvec_mode) m_globalvec_renderer->render();
 
     for(unsigned int i=0; i<m_num_instance_renderer; i++)
     {

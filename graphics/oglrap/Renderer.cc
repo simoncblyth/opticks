@@ -235,22 +235,24 @@ void Renderer::upload_buffers(bool debug)
 
 void Renderer::check_uniforms()
 {
-    char* tag = getShaderTag();
+    std::string tag = getShaderTag();
 
     bool required = false;
 
-    bool nrm  = strcmp(tag,"nrm")==0  ;  
-    bool inrm = strcmp(tag,"inrm")==0  ;  
-    bool tex  = strcmp(tag,"tex")==0  ;  
+    bool nrm  = tag.compare("nrm") == 0 ; 
+    bool nrmvec = tag.compare("nrmvec") == 0 ; 
+    bool inrm = tag.compare("inrm") == 0 ; 
+    bool tex = tag.compare("tex") == 0 ; 
 
     LOG(debug) << "Renderer::check_uniforms " 
               << " tag " << tag  
               << " nrm " << nrm  
+              << " nrmvec " << nrmvec  
               << " inrm " << inrm
               << " tex " << tex
               ;  
 
-    assert( nrm ^ inrm ^ tex );
+    assert( nrm ^ inrm ^ tex ^ nrmvec );
 
     if(nrm || inrm)
     {
@@ -269,7 +271,11 @@ void Renderer::check_uniforms()
             m_itransform_location = m_shader->uniform("InstanceTransform",required); 
         } 
     } 
-    else if(strcmp(tag,"tex")==0)
+    else if(nrmvec)
+    {
+        m_mvp_location = m_shader->uniform("ModelViewProjection", required); 
+    }
+    else if(tex)
     {
         // still being instanciated at least, TODO: check regards this cf the OptiXEngine internal renderer
         m_mv_location =  m_shader->uniform("ModelView",           required);    

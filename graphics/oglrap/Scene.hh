@@ -77,7 +77,11 @@ class Scene : public Configurable {
         static const char* getGeometryStyleName(Scene::GeometryStyle_t style);
         const char* getGeometryStyleName();
         void nextGeometryStyle();
-        void toggleGeometry();
+
+   public:
+        typedef enum { GVIS, GVISVEC, GINVIS, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
+        void nextGlobalStyle();
+        void applyGlobalStyle();
    public:
         Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL, const char* shader_dynamic_dir=NULL );
    private:
@@ -162,6 +166,7 @@ class Scene : public Configurable {
         Renderer*    m_instance_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_bbox_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_global_renderer ; 
+        Renderer*    m_globalvec_renderer ; 
    private:
         Rdr*         m_axis_renderer ; 
         Rdr*         m_genstep_renderer ; 
@@ -181,6 +186,7 @@ class Scene : public Configurable {
 
    private:
         bool         m_global_mode ; 
+        bool         m_globalvec_mode ; 
         bool         m_instance_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_bbox_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_axis_mode ; 
@@ -190,6 +196,7 @@ class Scene : public Configurable {
    private:
         RecordStyle_t   m_record_style ; 
         GeometryStyle_t m_geometry_style ; 
+        GlobalStyle_t   m_global_style ; 
         bool            m_initialized ;  
         float           m_time_fraction ;  
 
@@ -207,6 +214,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_num_instance_renderer(0),
             m_geometry_renderer(NULL),
             m_global_renderer(NULL),
+            m_globalvec_renderer(NULL),
             m_axis_renderer(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
@@ -222,12 +230,14 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_target(0),
             m_touch(0),
             m_global_mode(false),
+            m_globalvec_mode(false),
             m_axis_mode(true),
             m_genstep_mode(true),
             m_photon_mode(true),
             m_record_mode(true),
             m_record_style(REC),
             m_geometry_style(BBOX),
+            m_global_style(GVIS),
             m_initialized(false),
             m_time_fraction(0.f)
 {
@@ -359,10 +369,8 @@ inline void Scene::nextPhotonStyle()
 
 
 
-inline void Scene::toggleGeometry()
-{
-    m_global_mode = !m_global_mode ; 
-}
+
+
 
 inline void Scene::nextGeometryStyle()
 {
@@ -379,6 +387,37 @@ inline void Scene::setGeometryStyle(GeometryStyle_t style)
     applyGeometryStyle();
 }
 
+
+
+
+inline void Scene::nextGlobalStyle()
+{
+    int next = (m_global_style + 1) % NUM_GLOBAL_STYLE ; 
+    m_global_style = (GlobalStyle_t)next ; 
+    applyGlobalStyle();
+}
+
+inline void Scene::applyGlobalStyle()
+{
+    switch(m_global_style)
+    {
+        case GVIS:
+                  m_global_mode = true ;    
+                  m_globalvec_mode = false ;    
+                  break ; 
+        case GVISVEC:
+                  m_global_mode = true ;    
+                  m_globalvec_mode = true ;
+                  break ; 
+        case GINVIS:
+                  m_global_mode = false ;    
+                  m_globalvec_mode = false ;
+                  break ; 
+         default:
+                  assert(0);
+        
+    }
+}
 
 
 
