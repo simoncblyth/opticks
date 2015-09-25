@@ -477,6 +477,7 @@ int App::loadGeometry()
     m_types->setMaterialsIndex(materials->getIndex());
 
     GBuffer* colorbuffer = m_loader->getColorBuffer();  // composite buffer 0+:materials,  32+:flags
+    m_composition->setColorDomain( m_loader->getColorDomain() );
     m_scene->uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
    
     m_ggeo = m_loader->getGGeo();
@@ -489,7 +490,6 @@ int App::loadGeometry()
     m_boundaries =  m_meta->getBoundaryNames();
  
     m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
-    m_composition->setColorDomain( gfloat4(0.f, colorbuffer->getNumItems(), 0.f, 0.f));
 
     m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
 

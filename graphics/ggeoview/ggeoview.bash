@@ -21,16 +21,19 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+IMMEDIATES
+------------
+
+Add features to allow detailed mesh face examination, 
+(to understand split union volumes issue)
+
+* per-face colour
+* face normals rendering via geometry shader 
+* face picking 
+
+
 surface property debug, PMT id 
 -------------------------------
-
-
-
-
-
-     
-
-
 
 
 ISSUE : seqmat first material mismatch to genstep material

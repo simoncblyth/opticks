@@ -63,7 +63,7 @@ class Composition : public Configurable {
        void setNormalStyle(Composition::NormalStyle_t style);
        Composition::NormalStyle_t getNormalStyle();
    public:
-       typedef enum { DEF_GEOMETRY, NRMCOL_GEOMETRY, VTXCOL_GEOMETRY, NUM_GEOMETRY_STYLE } GeometryStyle_t ;
+       typedef enum { DEF_GEOMETRY, NRMCOL_GEOMETRY, VTXCOL_GEOMETRY, FACECOL_GEOMETRY, NUM_GEOMETRY_STYLE } GeometryStyle_t ;
        void nextGeometryStyle();
        void setGeometryStyle(Composition::GeometryStyle_t style);
        Composition::GeometryStyle_t getGeometryStyle();

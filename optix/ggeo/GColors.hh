@@ -33,6 +33,11 @@ The codes are obtained from matplotlib::
     import json, matplotlib.colors  
     json.dump(matplotlib.colors.cnames, open("/tmp/colors.json", "w"))
 
+
+The composite color buffer is avaiable as a texture sampler on the GPU
+this is put togther in GLoader::load
+
+
 */
 
 class GColors {  
@@ -49,7 +54,7 @@ class GColors {
 
        static gfloat3 makeColor( unsigned int rgb );
 
-       const char* getNameOrdered(unsigned int index);
+       const char* getNamePsychedelic(unsigned int index);
        unsigned int getCode(const char* name, unsigned int missing=0xFFFFFF);
        const char* getHex( const char* name, const char* missing=NULL);
        const char* getName(const char* hex_, const char* missing=NULL);
@@ -57,6 +62,7 @@ class GColors {
 
        gfloat3 getColor(const char* name, unsigned int missing=0xFFFFFF);
        gfloat3 getPsychedelic(unsigned int num);
+       std::vector<unsigned int>& getPsychedelicCodes() ;
 
        unsigned int getNumColors();
        unsigned int getNumBytes();
@@ -75,7 +81,8 @@ class GColors {
        void loadMaps(const char* dir);
 
    private:
-       std::vector<std::string>            m_ordered_names ; 
+       std::vector<std::string>            m_psychedelic_names ; 
+       std::vector<unsigned int>           m_psychedelic_codes ;
        std::map<std::string, std::string>  m_name2hex ; 
        GBuffer*                            m_composite ; 
 

@@ -78,6 +78,8 @@ class Renderer : public RendererBase  {
       GLint  m_nrmparam_location ;
       GLint  m_lightposition_location ;
       GLint  m_itransform_location ;
+      GLint  m_colordomain_location ;
+      GLint  m_colors_location ;
    private:
       unsigned int m_itransform_count ;
       long         m_draw_count ;
@@ -107,6 +109,8 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_nrmparam_location(-1),
     m_lightposition_location(-1),
     m_itransform_location(-1),
+    m_colordomain_location(-1),
+    m_colors_location(-1),
     m_itransform_count(0),
     m_draw_count(0),
     m_indices_count(0),

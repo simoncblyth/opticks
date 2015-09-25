@@ -44,8 +44,15 @@ void GColors::sort()
     LOG(info) << "GColors::sort" ; 
 
     typedef std::map<std::string, std::string> MSS ; 
-    for(MSS::iterator it=m_name2hex.begin() ; it != m_name2hex.end() ; it++ ) m_ordered_names.push_back(it->first) ;
-    std::sort(m_ordered_names.begin(), m_ordered_names.end(), *this );
+    for(MSS::iterator it=m_name2hex.begin() ; it != m_name2hex.end() ; it++ ) m_psychedelic_names.push_back(it->first) ;
+    std::sort(m_psychedelic_names.begin(), m_psychedelic_names.end(), *this );
+
+    for(unsigned int i=0 ; i < m_psychedelic_names.size() ; i++)
+    {
+        string name = m_psychedelic_names[i] ;
+        unsigned int code = getCode(name.c_str()); 
+        m_psychedelic_codes.push_back(code); 
+    } 
 }
 
 
@@ -54,19 +61,24 @@ void GColors::dump(const char* msg)
     typedef std::map<std::string, std::string> MSS ; 
 
     unsigned int num_colors = getNumColors();
+
+    LOG(info) << msg 
+              << " num_colors " << num_colors ; 
+
     for(unsigned int i=0 ; i < num_colors ; i++)
     {
-        std::string name = getNameOrdered(i) ; 
+        std::string name = getNamePsychedelic(i) ; 
         const char* hex_ = getHex(name.c_str());
         unsigned int code = getCode(name.c_str());
 
         gfloat3 rgb = getColor(name.c_str());
 
         std::cout 
+            << " " << std::setw(3) <<  i
             << " name   " << std::setw(25) <<  name
             << " hex_   " << std::setw(10) <<  hex_
-            << " code  "  << std::setw(10) << std::dec <<  code
-            << " code  "  << std::setw(10) << std::hex <<  code
+            << " code  "  << std::setw(10) << dec <<  code
+            << " code  "  << std::setw(10) << hex <<  code << dec
             << " r " << std::setw(10) << rgb.x 
             << " g " << std::setw(10) << rgb.y 
             << " b " << std::setw(10) << rgb.z 
@@ -103,19 +115,27 @@ gfloat3 GColors::getColor(const char* name, unsigned int missing)
 }
 
 
-const char* GColors::getNameOrdered(unsigned int index)
+const char* GColors::getNamePsychedelic(unsigned int index)
 {
-    if(m_ordered_names.size() == 0) sort();
-    return m_ordered_names[index].c_str() ;
+    if(m_psychedelic_names.size() == 0) sort();
+    return m_psychedelic_names[index].c_str() ;
 }
 
 
 gfloat3 GColors::getPsychedelic(unsigned int num)
 {
     unsigned int index = num % getNumColors() ;
-    const char* cname = getNameOrdered(index);    
+    const char* cname = getNamePsychedelic(index);    
     return getColor( cname );
 }
+
+std::vector<unsigned int>& GColors::getPsychedelicCodes()
+{
+    if(m_psychedelic_codes.size() == 0) sort();
+    return m_psychedelic_codes ;
+}
+
+
 
 
 const char* GColors::getName( const char* hex_, const char* missing)
@@ -150,7 +170,7 @@ void GColors::test(const char* msg)
         unsigned int rgb   = getBufferEntry(data+count*4) ; 
 
         cout 
-             << setw(3)  << count 
+             << setw(3)  << dec << count 
              << setw(20) << name  
              << setw(20) << hex_ 
              << setw(20) << dec << color 
@@ -158,7 +178,7 @@ void GColors::test(const char* msg)
              << setw(4)  << hex << red 
              << setw(4)  << hex << green
              << setw(4)  << hex << blue 
-             << setw(20) << hex << rgb
+             << setw(20) << hex << rgb << dec
              << endl ; 
 
         assert(rgb == color);

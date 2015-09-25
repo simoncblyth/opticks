@@ -2,6 +2,7 @@
 
 // look no hands : no dependency on AssimpWrap 
 
+#include "GVector.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
 #include "GSensorList.hh"
@@ -226,23 +227,31 @@ void GLoader::load(bool nogeocache)
     m_materials->formTable();
 
 
-    m_colors->initCompositeColorBuffer(64);
+    unsigned int colormax = 256 ; 
+    m_colors->initCompositeColorBuffer(colormax);
 
     std::vector<unsigned int>& material_codes = m_materials->getCodes() ; 
     std::vector<unsigned int>& flag_codes     = m_flags->getCodes() ; 
+    std::vector<unsigned int>& psychedelic_codes = m_colors->getPsychedelicCodes();
 
     assert(material_codes.size() < 32 );
     assert(flag_codes.size() < 32 );
+    assert(psychedelic_codes.size() < colormax-32 );
 
     unsigned int material_color_offset = 0 ; 
     unsigned int flag_color_offset     = 32 ; 
+    unsigned int psychedelic_color_offset = 64 ; 
 
     m_colors->addColors(material_codes, material_color_offset ) ;
     m_colors->addColors(flag_codes    , flag_color_offset ) ;  
+    m_colors->addColors(psychedelic_codes , psychedelic_color_offset ) ;  
 
     m_color_buffer = m_colors->getCompositeBuffer();
-    //m_colors->dumpCompositeBuffer("GLoader::load");
 
+    m_color_domain.y = m_color_buffer->getNumItems() ;
+    m_color_domain.z = float(psychedelic_codes.size()) ; 
+
+    //m_colors->dumpCompositeBuffer("GLoader::load");
 
     LOG(info) << "GLoader::load done " << idpath ;
     //assert(m_mergedmesh);

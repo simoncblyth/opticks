@@ -261,6 +261,9 @@ void Renderer::check_uniforms()
         m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
         m_lightposition_location = m_shader->uniform("LightPosition",required); 
 
+        m_colordomain_location = m_shader->uniform("ColorDomain", required );     
+        m_colors_location = m_shader->uniform("Colors", required );     
+
         if(inrm)
         {
             m_itransform_location = m_shader->uniform("InstanceTransform",required); 
@@ -305,6 +308,11 @@ void Renderer::update_uniforms()
         glUniform4fv(m_lightposition_location, 1, m_composition->getLightPositionPtr());
 
         glUniform4fv(m_clip_location, 1, m_composition->getClipPlanePtr() );
+
+
+        glm::vec4 cd = m_composition->getColorDomain();
+        glUniform4f(m_colordomain_location, cd.x, cd.y, cd.z, cd.w  );    
+
 
 
         if(m_composition->getClipMode() == -1)

@@ -7,6 +7,10 @@ uniform vec4 LightPosition ;
 uniform vec4 Param ;
 uniform ivec4 NrmParam ;
 
+uniform vec4 ColorDomain ;
+uniform sampler1D Colors ;
+
+
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_colour;
 layout(location = 2) in vec3 vertex_normal;

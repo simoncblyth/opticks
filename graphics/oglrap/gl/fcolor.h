@@ -1,3 +1,23 @@
+//
+//  ColorDomain
+//         x : 0.
+//         y : total number of colors in color buffer (*)
+//         z : number of psychedelic colors 
+//         w : 0.
+// 
+// (*) total number of colors is required to convert a buffer index 
+//     into float 0->1 for texture access
+//
+// in the below the offsets into the color buffer are:
+//
+//      materials   : 0
+//      flags       : 32
+//      psychedelic : 64    
+//
+//  ColorBuffer and ColorDomain are setup in ggeo-/GLoader
+//
+//
+
     switch(ColorParam.x)
     {
        case 0:

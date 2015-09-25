@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdlib.h"
-
+#include "GVector.hh"
 
 // npy-
 class Types ; 
@@ -16,6 +16,7 @@ class GItemIndex ;
 class GColors ; 
 class GBuffer ; 
 class GTreeCheck ; 
+
 
 
 class Lookup ; 
@@ -55,6 +56,7 @@ class GLoader {
          GColors*               getColors();
          Lookup*                getMaterialLookup();
          GBuffer*               getColorBuffer();
+         gfloat4                getColorDomain();
          GBuffer*               getTransformsBuffer();
          int                    getRepeatIndex();
 
@@ -73,8 +75,12 @@ class GLoader {
          GItemIndex*               m_meshes ;
 
          GColors*                  m_colors ;  
+
          Lookup*                   m_lookup ; 
+
          GBuffer*                  m_color_buffer ; 
+         gfloat4                   m_color_domain ; 
+
          GTreeCheck*               m_treeanalyse ;  
          int                       m_repeatidx ; 
          GBuffer*                  m_transforms_buffer ; 
@@ -96,6 +102,7 @@ inline GLoader::GLoader()
    m_colors(NULL),
    m_lookup(NULL),
    m_color_buffer(NULL),
+   m_color_domain(0,0,0,0),
    m_treeanalyse(NULL),
    m_repeatidx(-1),
    m_transforms_buffer(NULL),
@@ -186,6 +193,13 @@ inline GBuffer* GLoader::getColorBuffer()
 {
     return m_color_buffer  ; 
 }
+inline gfloat4 GLoader::getColorDomain()
+{
+    return m_color_domain  ; 
+}
+
+
+
 
 inline int GLoader::getRepeatIndex()
 {
