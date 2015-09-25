@@ -274,6 +274,7 @@ void Renderer::check_uniforms()
     else if(nrmvec)
     {
         m_mvp_location = m_shader->uniform("ModelViewProjection", required); 
+        m_pickface_location = m_shader->uniform("PickFace", required); 
     }
     else if(tex)
     {
@@ -318,6 +319,13 @@ void Renderer::update_uniforms()
 
         glm::vec4 cd = m_composition->getColorDomain();
         glUniform4f(m_colordomain_location, cd.x, cd.y, cd.z, cd.w  );    
+
+
+        if(m_pickface_location > -1)
+        {
+            glm::ivec4 pf = m_composition->getPickFace();
+            glUniform4i(m_pickface_location, pf.x, pf.y, pf.z, pf.w  );    
+        }
 
 
 

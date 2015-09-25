@@ -6,7 +6,6 @@
 // ggeo-
 #include "GVector.hh"
 
-
 template<typename T>
 class NPY ; 
 
@@ -24,12 +23,15 @@ class Animator ;
 
 #include "Configurable.hh"
 
+
+
 class Composition : public Configurable {
   public:
       static const char* PRINT ;  
       static const char* SELECT ;  
       static const char* RECSELECT ;  
       static const char* PICKPHOTON ;  
+      static const char* PICKFACE ;  
 
       friend class Interactor ;   
       friend class Bookmarks ;   
@@ -113,6 +115,11 @@ class Composition : public Configurable {
       void setPickPhoton(glm::ivec4 pp);
       void setPickPhoton(std::string pp);
       glm::ivec4& getPickPhoton();
+
+  public:
+      void setPickFace(glm::ivec4 pf);
+      void setPickFace(std::string pf);
+      glm::ivec4& getPickFace();
 
   public:
       void setColorParam(glm::ivec4 cp);
@@ -250,7 +257,8 @@ class Composition : public Configurable {
       glm::vec4 m_light_direction ; 
 
   private:
-      glm::ivec4 m_pickphoton ;
+      glm::ivec4 m_pickphoton ;  // see CompositionCfg.hh 
+      glm::ivec4 m_pickface ;
       glm::ivec4 m_recselect ;
       glm::ivec4 m_colorparam ;
       glm::ivec4 m_selection ;
@@ -323,6 +331,7 @@ inline Composition::Composition()
   m_extent(1.0f),
   m_center_extent(),
   m_pickphoton(0,0,0,0), 
+  m_pickface(0,0,0,0), 
   m_recselect(), 
   m_colorparam(), 
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
@@ -426,6 +435,13 @@ inline glm::ivec4& Composition::getPickPhoton()
 {
     return m_pickphoton ; 
 }
+
+inline glm::ivec4& Composition::getPickFace()
+{
+    return m_pickface ; 
+}
+
+
 
 inline glm::ivec4& Composition::getRecSelect()
 {

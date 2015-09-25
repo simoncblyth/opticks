@@ -5,7 +5,7 @@
 #include "assert.h"
 #include "string.h"
 #include <vector>
-
+#include <glm/glm.hpp>
 
 
 class NumpyEvt ; 
@@ -79,7 +79,7 @@ class Scene : public Configurable {
         void nextGeometryStyle();
 
    public:
-        typedef enum { GVIS, GVISVEC, GINVIS, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
+        typedef enum { GVIS, GVISVEC, GVEC, GINVIS, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
         void nextGlobalStyle();
         void applyGlobalStyle();
    public:
@@ -108,6 +108,9 @@ class Scene : public Configurable {
         void setPhotons(Photons* photons);
    public:
         void setGeometry(GGeo* gg);
+        GGeo* getGeometry();
+        void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
+        void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
         void uploadGeometry(); 
    public:
         void uploadColorBuffer(GBuffer* colorbuffer);
@@ -269,6 +272,11 @@ inline void Scene::setGeometry(GGeo* gg)
 {
     m_ggeo = gg ;
 }
+inline GGeo* Scene::getGeometry()
+{
+    return m_ggeo ; 
+}
+
 inline unsigned int Scene::getNumInstanceRenderer()
 {
     return m_num_instance_renderer ; 
@@ -409,10 +417,15 @@ inline void Scene::applyGlobalStyle()
                   m_global_mode = true ;    
                   m_globalvec_mode = true ;
                   break ; 
+        case GVEC:
+                  m_global_mode = false ;    
+                  m_globalvec_mode = true ;
+                  break ; 
         case GINVIS:
                   m_global_mode = false ;    
                   m_globalvec_mode = false ;
                   break ; 
+
          default:
                   assert(0);
         

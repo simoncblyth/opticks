@@ -806,7 +806,8 @@ void GGeo::dumpTree(const char* msg)
 {
     GMergedMesh* mm0 = getMergedMesh(0);
 
-    unsigned int nso = mm0->getNumSolids();
+    // all these are full traverse counts, not reduced by selections or instancing
+    unsigned int nso = mm0->getNumSolids();  
     unsigned int npv = m_pvlist->getNumItems(); 
     unsigned int nlv = m_lvlist->getNumItems(); 
     assert(npv == nlv && nso == npv);
@@ -818,12 +819,187 @@ void GGeo::dumpTree(const char* msg)
     for(unsigned int i=0 ; i < nso ; i++)
     {
          guint4* info = nodeinfo + i ;  
-         std::string& pv = m_pvlist->getItem(i);
-         std::string& lv = m_lvlist->getItem(i);
-         printf(" %6u : nf %4d nv %4d id %6u pid %6d : %50s %50s \n", i, info->x, info->y, info->z, info->w,  pv.c_str(), lv.c_str() ); 
-    }
+         glm::ivec4 offnum = getNodeOffsetCount(i);
 
+         //if(info->x > 0)
+         //{
+             std::string& pv = m_pvlist->getItem(i);
+             std::string& lv = m_lvlist->getItem(i);
+             printf(" %6u : nf %4d nv %4d id %6u pid %6d : %4d %4d %4d %4d  :%50s %50s \n", i, 
+                    info->x, info->y, info->z, info->w,  offnum.x, offnum.y, offnum.z, offnum.w,
+                    pv.c_str(), lv.c_str() ); 
+         //}
+    }
 }
 
 
+glm::ivec4 GGeo::getNodeOffsetCount(unsigned int index)
+{
+    GMergedMesh* mm0 = getMergedMesh(0);
+    guint4* nodeinfo = mm0->getNodeInfo(); 
+    unsigned int nso = mm0->getNumSolids();  
+    assert(index < nso );
 
+    glm::ivec4 offset ; 
+    unsigned int cur_vert(0);
+    unsigned int cur_face(0);
+
+    for(unsigned int i=0 ; i < nso ; i++)
+    {
+        guint4* info = nodeinfo + i ;  
+        if( i == index )
+        {
+           offset.x = cur_face ;   // cumulative sums of prior faces/verts in the buffer
+           offset.y = cur_vert ;   //                  
+           offset.z = info->x ;    // number faces/verts for this node
+           offset.w = info->y ; 
+           break ; 
+        }
+        cur_face += info->x ; 
+        cur_vert += info->y ; 
+    }
+    return offset ; 
+}
+
+
+void GGeo::dumpVolume(unsigned int index, const char* msg)
+{
+    GMergedMesh* mm0 = getMergedMesh(0);
+    unsigned int nsolid = mm0->getNumSolids();  
+    unsigned int nvert = mm0->getNumVertices();  
+    unsigned int nface = mm0->getNumFaces();  
+    LOG(info) << msg 
+              << " nsolid " << nsolid
+              << " nvert" << nvert
+              << " nface " << nface
+               ; 
+
+    glm::ivec4 offnum = getNodeOffsetCount(index);
+    LOG(info) << " nodeoffsetcount " 
+              << " index " << index
+              << " x " << offnum.x
+              << " y " << offnum.y
+              << " z " << offnum.z
+              << " w " << offnum.w
+              ;
+
+    gfloat3* verts = mm0->getVertices();
+    guint3* faces = mm0->getFaces(); 
+
+    for(unsigned int i=0 ; i < offnum.z ; i++)
+    {
+        guint3* f = faces + offnum.x + i ;    // offnum.x is cumulative sum of prior solid face counts
+
+        //  GMergedMesh::traverse  already does vertex index offsetting corresponding to the other solid meshes incorporated in the merge
+        gfloat3* v0 = verts + f->x ; 
+        gfloat3* v1 = verts + f->y ; 
+        gfloat3* v2 = verts + f->z ; 
+
+        glm::vec3 p0(v0->x, v0->y, v0->z);
+        glm::vec3 p1(v1->x, v1->y, v1->z);
+        glm::vec3 p2(v2->x, v2->y, v2->z);
+        glm::vec3 pc = (p0 + p1 + p2)/3.f ;
+        glm::vec3 e0 = p1 - p0;
+        glm::vec3 e1 = p0 - p2;
+        glm::vec3 no = glm::normalize(glm::cross( e1, e0 ));
+
+        printf(" i %3u f %4u %4u %4u : %10.3f %10.3f %10.3f    %10.3f %10.3f %10.3f     %10.3f %10.3f %10.3f   :  %10.3f %10.3f %10.3f \n", i, 
+            f->x, f->y, f->z, 
+            p0.x, p0.y, p0.z,
+            p1.x, p1.y, p1.z,
+            p2.x, p2.y, p2.z,
+            no.x, no.y, no.z 
+         ); 
+
+    }
+}
+
+
+glm::vec4 GGeo::getFaceCenterExtent(unsigned int face_index, unsigned int solid_index, unsigned int mergedmesh_index )
+{
+   return getFaceRangeCenterExtent( face_index, face_index + 1 , solid_index, mergedmesh_index );
+}
+
+glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mergedmesh_index )
+{
+    assert(mergedmesh_index == 0 && "instanced meshes not yet supported");
+    GMergedMesh* mm = getMergedMesh(mergedmesh_index);
+    assert(mm);
+    unsigned int nsolid = mm->getNumSolids();  
+    assert(solid_index < nsolid);
+
+    glm::ivec4 offnum = getNodeOffsetCount(solid_index);
+    gfloat3* verts = mm->getVertices();
+    guint3* faces = mm->getFaces(); 
+
+    assert(face_index0 <  offnum.z );  
+    assert(face_index1 <= offnum.z );   // face_index1 needs to go 1 beyond
+
+    glm::vec3 lo( FLT_MAX,  FLT_MAX,  FLT_MAX);
+    glm::vec3 hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+    glm::vec3 centroid ; 
+
+    unsigned int nface = face_index1 - face_index0 ; 
+    for(unsigned int face_index=face_index0 ; face_index < face_index1 ; face_index++)
+    {
+
+        guint3* f = faces + offnum.x + face_index ; // offnum.x is cumulative sum of prior solid face counts within the merged mesh
+        gfloat3* v = NULL ; 
+
+        gfloat3* v0 = verts + f->x ;
+        gfloat3* v1 = verts + f->y ;
+        gfloat3* v2 = verts + f->z ;
+
+        glm::vec3 p0(v0->x, v0->y, v0->z);
+        glm::vec3 p1(v1->x, v1->y, v1->z);
+        glm::vec3 p2(v2->x, v2->y, v2->z);
+
+        centroid = centroid + p0 + p1 + p2  ; 
+
+        for(unsigned int i=0 ; i < 3 ; i++)
+        {
+            switch(i)
+            {
+                case 0: v = v0 ; break ; 
+                case 1: v = v1 ; break ; 
+                case 2: v = v2 ; break ; 
+            }
+
+            lo.x = std::min( lo.x, v->x);
+            lo.y = std::min( lo.y, v->y);
+            lo.z = std::min( lo.z, v->z);
+
+            hi.x = std::max( hi.x, v->x);
+            hi.y = std::max( hi.y, v->y);
+            hi.z = std::max( hi.z, v->z);
+        }
+    }
+
+    glm::vec3 dim = hi - lo ; 
+
+    float extent = 0.f ;
+    extent = std::max( dim.x , extent ); 
+    extent = std::max( dim.y , extent ); 
+    extent = std::max( dim.z , extent ); 
+    extent = extent / 2.0f  ;
+
+    glm::vec4 ce ; 
+    if( nface == 1 )
+    {
+       // for single face using avg matches OpenGL geom shader, and OptiX
+        ce.x = centroid.x/3.f ; 
+        ce.y = centroid.y/3.f ; 
+        ce.z = centroid.z/3.f ; 
+    }
+    else
+    {
+       // for multiple faces use bbox center, as there are repeated vertices
+       ce.x = (hi.x + lo.x)/2.f ; 
+       ce.y = (hi.y + lo.y)/2.f ; 
+       ce.z = (hi.z + lo.z)/2.f ; 
+    }
+    ce.w = extent ; 
+ 
+    return ce ; 
+}

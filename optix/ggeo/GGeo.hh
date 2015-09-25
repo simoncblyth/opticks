@@ -54,9 +54,23 @@ class GGeo {
         unsigned int getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
     public:
+        // these are operational from cache
         // target 0 : all geometry of the mesh, >0 : specific volumes
         glm::vec4 getCenterExtent(unsigned int target, unsigned int merged_mesh_index=0u );
-        void dumpTree(const char* msg="GGeo::dumpTree");
+        void dumpTree(const char* msg="GGeo::dumpTree");  
+        void dumpVolume(unsigned int index, const char* msg="GGeo::dumpVolume");  
+
+        // merged mesh buffer offsets and counts
+        //
+        //     .x  prior faces offset    
+        //     .y  prior verts offset  
+        //     .z  index faces count
+        //     .w  index verts count
+        //
+        glm::ivec4 getNodeOffsetCount(unsigned int index);
+        glm::vec4 getFaceCenterExtent(unsigned int face_index, unsigned int solid_index, unsigned int mergedmesh_index=0 );
+        glm::vec4 getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mergedmesh_index=0 );
+
     public:
         bool isLoaded();
         void setPath(const char* path);

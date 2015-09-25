@@ -32,6 +32,9 @@ int main(int argc, char* argv[])
     GGeo* m_ggeo = m_loader->getGGeo();
     m_ggeo->dumpTree();
 
+    m_ggeo->dumpVolume(3158);    
+    m_ggeo->dumpVolume(3159);    
+
 
     return 0 ;
 }

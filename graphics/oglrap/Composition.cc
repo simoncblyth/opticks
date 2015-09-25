@@ -56,6 +56,7 @@ const char* Composition::PRINT = "print" ;
 const char* Composition::SELECT = "select" ; 
 const char* Composition::RECSELECT = "recselect" ; 
 const char* Composition::PICKPHOTON = "pickphoton" ; 
+const char* Composition::PICKFACE = "pickface" ; 
 
 
 
@@ -125,6 +126,7 @@ void Composition::set(const char* name, std::string& s)
     if(     strcmp(name,SELECT)==0) setSelection(s);
     else if(strcmp(name,RECSELECT)==0) setRecSelect(s);
     else if(strcmp(name,PICKPHOTON)==0) setPickPhoton(s);
+    else if(strcmp(name,PICKFACE)==0) setPickFace(s);
     else
          printf("Composition::set bad name %s\n", name);
 }
@@ -136,6 +138,7 @@ std::string Composition::get(const char* name)
    if(     strcmp(name,SELECT)==0)    s = gformat(getSelection()) ;
    else if(strcmp(name,RECSELECT)==0) s = gformat(getRecSelect()) ;
    else if(strcmp(name,PICKPHOTON)==0) s = gformat(getPickPhoton()) ;
+   else if(strcmp(name,PICKFACE)==0) s = gformat(getPickFace()) ;
    else
          printf("Composition::get bad name %s\n", name);
 
@@ -349,8 +352,13 @@ void Composition::setPickPhoton(std::string pickphoton)
 {
     setPickPhoton(givec4(pickphoton));
 }
+
+
+
 void Composition::setPickPhoton(glm::ivec4 pickphoton) 
 {
+   // currently this relies on photon/record data being downloaded to host
+
     m_pickphoton = pickphoton ;  
     if(m_pickphoton.x > 0)
     {
@@ -368,6 +376,39 @@ void Composition::setPickPhoton(glm::ivec4 pickphoton)
         if(pho)
         {
             pho->dump(photon_id, "Composition::setPickPhoton");
+        }
+    }
+}
+
+
+
+
+void Composition::setPickFace(std::string pickface)
+{
+    setPickFace(givec4(pickface));
+}
+
+
+void Composition::setPickFace(glm::ivec4 pickface) 
+{
+    // gets called on recieving udp messages via boost bind done in CompositionCfg 
+    m_pickface = pickface ;  
+    if(m_pickface.x > 0)
+    {
+        print(m_pickface, "Composition::setPickFace face targetting");
+        if(m_scene)
+        {
+            unsigned int face_index0= m_pickface.x ;
+            unsigned int face_index1= m_pickface.y ;
+            unsigned int solid_index= m_pickface.z ;
+            unsigned int mesh_index = m_pickface.w ;
+
+            //m_scene->setFaceTarget(face_index, solid_index, mesh_index);
+            m_scene->setFaceRangeTarget(face_index0, face_index1, solid_index, mesh_index);
+        }
+        else
+        {
+            LOG(warning) << "Composition::setPickFace requires Scene lodged in Composition " ;
         }
     }
 }

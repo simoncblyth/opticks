@@ -591,6 +591,22 @@ void Scene::setTarget(unsigned int target, bool autocam)
 }
 
 
+void Scene::setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index)
+{
+    assert(m_ggeo && "must setGeometry first");
+    glm::vec4 ce = m_ggeo->getFaceCenterExtent(face_index, solid_index, mesh_index);
 
+    bool autocam = false ; 
+    m_composition->setCenterExtent(ce, autocam );
+}
+
+void Scene::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index)
+{
+    assert(m_ggeo && "must setGeometry first");
+    glm::vec4 ce = m_ggeo->getFaceRangeCenterExtent(face_index0, face_index1, solid_index, mesh_index);
+
+    bool autocam = false ; 
+    m_composition->setCenterExtent(ce, autocam );
+}
 
 
