@@ -496,6 +496,11 @@ int App::loadGeometry()
     m_mesh0 = m_ggeo->getMergedMesh(0); 
     assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
 
+
+    // for --jdyb --idyb --kdyb testing : making the cleave obvious
+    m_mesh0->explodeZVertices(1000.f, -(5564.950f + 5565.000f)/2.f ); 
+
+
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
     m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
 

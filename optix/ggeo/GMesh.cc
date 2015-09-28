@@ -215,6 +215,28 @@ void GMesh::setVerticesBuffer(GBuffer* buffer)
     m_num_vertices = numBytes/sizeof(gfloat3);
 }
 
+void GMesh::explodeZVertices(float zoffset, float zcut)
+{
+    unsigned int noffset(0);
+    for(unsigned int i=0 ; i < m_num_vertices ; i++)
+    {
+        gfloat3* v = m_vertices + i  ;
+        if( v->z > zcut )
+        {
+            noffset += 1 ; 
+            v->z += zoffset ; 
+            printf("GMesh::explodeZVertices %6d : %10.4f %10.4f %10.4f \n", i, v->x, v->y, v->z );
+        }
+    }
+    LOG(info) << "GMesh::explodeZVertices" 
+              << " noffset " << noffset 
+              << " zoffset " << zoffset 
+              << " zcut " << zcut 
+              ;
+}
+
+
+
 
 void GMesh::setNormals(gfloat3* normals)
 {

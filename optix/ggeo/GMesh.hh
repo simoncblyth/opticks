@@ -85,6 +85,10 @@ class GMesh : public GDrawable {
       unsigned int   getNumSolidsSelected();
 
   public:
+      // debug
+       void explodeZVertices(float zoffset, float zcut);
+
+  public:
       gfloat3*       getVertices();
       gfloat3*       getNormals();
       gfloat3*       getColors();

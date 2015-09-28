@@ -11,6 +11,7 @@
 #include "GCache.hh"
 #include "GLoader.hh"
 #include "GGeo.hh"
+#include "GMergedMesh.hh"
 #include "AssimpGGeo.hh"
 
 int main(int argc, char* argv[])
@@ -34,6 +35,10 @@ int main(int argc, char* argv[])
 
     m_ggeo->dumpVolume(3158);    
     m_ggeo->dumpVolume(3159);    
+
+
+    GMergedMesh* m_mesh0 = m_ggeo->getMergedMesh(0);
+    m_mesh0->explodeZVertices(1000.f, -(5564.950f + 5565.000f)/2.f );
 
 
     return 0 ;
