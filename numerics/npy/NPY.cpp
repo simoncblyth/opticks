@@ -144,7 +144,7 @@ NPY<T>* NPY<T>::load(const char* path)
     } 
     catch(const std::runtime_error& error)
     {
-        std::cout << "NPY<T>::load failed for path [" << path << "]" <<  std::endl ; 
+        std::cout << "NPY<T>::load failed for path [" << path << "] use debugload to see why" <<  std::endl ; 
     }
 
     return npy ;

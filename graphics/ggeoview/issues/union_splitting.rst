@@ -27,6 +27,18 @@ Idea mesh scanning to identify internal faces
   but for production use probably better to be a pre-step ?
 
 
+ExplodeZVertices makes it obvious that have two closed meshes, not interior faces of one 
+-------------------------------------------------------------------------------------------
+
+App::loadGeometry::
+
+   // for --jdyb --idyb --kdyb testing : making the cleave obvious
+    m_mesh0->explodeZVertices(1000.f, -(5564.950f + 5565.000f)/2.f ); 
+
+    simon:issues blyth$ ggv --jdyb -O
+
+
+
 Single face eyeballing
 ------------------------
 
