@@ -3,14 +3,19 @@
 #include <cstdlib>
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <string>
 
+#include <glm/glm.hpp>
+#include "GLMPrint.hpp"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
 
 
 #include "md5digest.hpp"
@@ -60,7 +65,7 @@ struct Ary
 
 
 template <typename MeshT>
-inline MeshT* convertToOpenMesh(char* dir)
+inline void populateMesh(MeshT* mesh, char* dir)
 {
    // developed with single/few mesh caches in mind like --jdyb --kdyb 
 
@@ -94,8 +99,10 @@ inline MeshT* convertToOpenMesh(char* dir)
       
        o2n[i] = vtxmap[dig]  ;
 
+#ifdef DEBUG
        printf(" %4d : %4d : %10.3f %10.3f %10.3f : %s \n", i, o2n[i], 
                  *(vertices.data+3*i+0), *(vertices.data+3*i+1), *(vertices.data+3*i+2), dig.c_str() );
+#endif
    }
 
    Ary<float> dd_vertices( new float[vidx*3], vidx , 3 );
@@ -106,7 +113,7 @@ inline MeshT* convertToOpenMesh(char* dir)
    for(int n=0 ; n < vidx ; ++n )
    {
        int o = n2o[n] ;
-       printf(" n %4d n2o %4d \n", n, o );
+       //printf(" n %4d n2o %4d \n", n, o );
 
        *(dd_vertices.data + n*3 + 0 ) = *(vertices.data + 3*o + 0) ;   
        *(dd_vertices.data + n*3 + 1 ) = *(vertices.data + 3*o + 1) ;   
@@ -125,10 +132,7 @@ inline MeshT* convertToOpenMesh(char* dir)
        *(dd_faces.data + f*3 + 1 ) = o2n[o1] ;
        *(dd_faces.data + f*3 + 2 ) = o2n[o2] ;
    }
-   
 
-
-   MeshT* mesh = new MeshT ;
    typedef typename MeshT::VertexHandle VH ; 
    typedef typename MeshT::Point P ; 
 
@@ -160,20 +164,16 @@ inline MeshT* convertToOpenMesh(char* dir)
        face_vhandles.push_back(vh[v2]);
        mesh->add_face(face_vhandles);
    }
-   return mesh ; 
 }
 
 
 
 template <typename MeshT>
-inline void labelConnectedComponents(MeshT* mesh)
+inline int labelConnectedComponents(MeshT* mesh, OpenMesh::VPropHandleT<int>& component)
 {
     typedef typename MeshT::VertexHandle VH ;
     typedef typename MeshT::VertexIter VI ; 
     typedef typename MeshT::VertexVertexIter VVI ;
-
-    OpenMesh::VPropHandleT<int> component;
-    mesh->add_property(component); 
 
     for( VI vi=mesh->vertices_begin() ; vi != mesh->vertices_end(); ++vi ) 
          mesh->property(component, *vi) = -1 ;
@@ -219,60 +219,245 @@ inline void labelConnectedComponents(MeshT* mesh)
             }
         }
     }
+    return componentIndex + 1 ; 
+}
 
+
+struct BBox {
+   glm::vec3 min ; 
+   glm::vec3 max ; 
+};
+
+
+template <typename MeshT>
+inline void findBounds(MeshT* mesh, BBox& bb )
+{
+    bb.min = glm::vec3(FLT_MAX);
+    bb.max = glm::vec3(-FLT_MAX);
+
+    typedef typename MeshT::Point P ; 
+    typedef typename MeshT::ConstVertexIter VI ; 
+    for( VI vi=mesh->vertices_begin() ; vi != mesh->vertices_end(); ++vi )
+    {
+        P p = mesh->point(*vi) ; 
+
+        bb.min.x = std::min( bb.min.x, p[0]);  
+        bb.min.y = std::min( bb.min.y, p[1]);  
+        bb.min.z = std::min( bb.min.z, p[2]);
+
+        bb.max.x = std::max( bb.max.x, p[0]);  
+        bb.max.y = std::max( bb.max.y, p[1]);  
+        bb.max.z = std::max( bb.max.z, p[2]);
+    }
+}
+
+
+
+template <typename MeshT>
+inline void dump(MeshT* mesh, const char* msg, unsigned int detail)
+{
+    unsigned int nface = std::distance( mesh->faces_begin(), mesh->faces_end() );
+    unsigned int nvert = std::distance( mesh->vertices_begin(), mesh->vertices_end() );
+    unsigned int nedge = std::distance( mesh->edges_begin(), mesh->edges_end() );
+
+    LOG(info) << msg  
+              << " nface " << nface 
+              << " nvert " << nvert 
+              << " nedge " << nedge 
+              << " V - E + F = " << nvert - nedge + nface 
+              << " (should be 2 for Euler Polyhedra) "   
+              ; 
+
+    typedef typename MeshT::VertexIter VI ; 
+    typedef typename MeshT::FaceIter FI ; 
+    typedef typename MeshT::VertexFaceIter VFI ; 
+    typedef typename MeshT::ConstFaceVertexIter FVI ; 
+
+    if(detail > 0)
+    {
+        for( FI fi=mesh->faces_begin() ; fi != mesh->faces_end(); ++fi ) 
+        {
+            std::cout << " fi " << std::setw(4) << *fi << " : " << std::setw(3) << mesh->valence(*fi) 
+                      << " : " 
+                      ; 
+
+            // over points of the face 
+            for(FVI fvi=mesh->cfv_iter(*fi) ; fvi ; fvi++) 
+                 std::cout << std::setw(3) << *fvi << " " ;
+
+            for(FVI fvi=mesh->cfv_iter(*fi) ; fvi ; fvi++) 
+                 std::cout 
+                           << std::setprecision(3) << std::fixed << std::setw(20) 
+                           << mesh->point(*fvi) << " "
+                           ;
+
+             std::cout 
+                  << " n " 
+                  << std::setprecision(3) << std::fixed << std::setw(20) 
+                  << mesh->normal(*fi)
+                  << std::endl ;  
+
+        }
+    }
+
+    if(detail > 0)
+    {
+        for( VI vi=mesh->vertices_begin() ; vi != mesh->vertices_end(); ++vi )
+        {
+             std::cout << " vi " << std::setw(3) << *vi << " # " << std::setw(3) << mesh->valence(*vi) << " : "  ;  
+             // all faces around a vertex, fans are apparent
+             for(VFI vfi=mesh->vf_iter(*vi)  ; vfi ; vfi++) 
+                 std::cout << " " << std::setw(3) << *vfi ;   
+             std::cout << std::endl ;  
+
+             if(detail > 1)
+             {
+                 for(VFI vfi=mesh->vf_iter(*vi)  ; vfi ; vfi++) 
+                 {
+                     // over points of the face 
+                    std::cout << "     "  ;  
+                    for(FVI fvi=mesh->cfv_iter(*vfi) ; fvi ; fvi++) 
+                         std::cout << std::setw(3) << *fvi << " " ;
+
+                   for(FVI fvi=mesh->cfv_iter(*vfi) ; fvi ; fvi++) 
+                          std::cout 
+                           << std::setprecision(3) << std::fixed << std::setw(20) 
+                           << mesh->point(*fvi) << " "
+                           ;
+
+                    std::cout 
+                        << " n " 
+                        << std::setprecision(3) << std::fixed << std::setw(20) 
+                        << mesh->normal(*vfi)
+                        << std::endl ;  
+
+
+                     
+
+                 } 
+
+             } 
+
+        }
+    }
+
+
+    BBox bb ; 
+    findBounds<MeshT>(mesh, bb);
+
+    print( bb.max , "bb.max"); 
+    print( bb.min , "bb.min"); 
+    print( bb.max - bb.min , "bb.max - bb.min"); 
+}
+
+
+template <typename MeshT>
+inline MeshT* makeComponent(MeshT* mesh, int wanted, OpenMesh::VPropHandleT<int>& component)
+{
+    typedef typename MeshT::VertexIter VI ; 
+    typedef typename MeshT::FaceIter FI ; 
+    typedef typename MeshT::VertexFaceIter VFI ; 
+    typedef typename MeshT::VertexHandle VH ; 
+    typedef typename MeshT::FaceHandle FH ; 
+    typedef typename MeshT::Point P ; 
+    typedef typename MeshT::ConstFaceVertexIter FVI ; 
+
+    OpenMesh::FPropHandleT<bool> copied;
+    mesh->add_property(copied); 
+
+    for( FI fi=mesh->faces_begin() ; fi != mesh->faces_end(); ++fi ) 
+         mesh->property(copied, *fi) = false ;
+
+    MeshT* comp = new MeshT ;
+
+    std::map<VH, VH> o2n ; 
 
     for( VI vi=mesh->vertices_begin() ; vi != mesh->vertices_end(); ++vi )
-         std::cout << " vit " <<  *vi
-                   << " point " << mesh->point(*vi) 
-                   << " comp " << mesh->property(component, *vi) 
-                   << std::endl ;
+    { 
+        if(mesh->property(component, *vi) != wanted ) continue ; 
+        o2n[*vi] = comp->add_vertex(mesh->point(*vi)) ;
+    }
+
+    for( VI vi=mesh->vertices_begin() ; vi != mesh->vertices_end(); ++vi )
+    {
+        if(mesh->property(component, *vi) != wanted ) continue ; 
+
+        for(VFI vfi=mesh->vf_iter(*vi) ; vfi ; vfi++) // all faces around a vertex, fans are apparent
+        {
+            if(mesh->property(copied, *vfi) == true) continue ;                 
+
+            mesh->property(copied, *vfi) = true ; 
+
+            // collect handles of the vertices of this fresh face 
+            std::vector<VH>  fvh ;
+            for(FVI fvi=mesh->cfv_iter(*vfi) ; fvi ; fvi++) fvh.push_back( o2n[*fvi] );
+
+            comp->add_face(fvh);
+        }       
+    }
+
+    comp->request_face_normals();
+    comp->update_normals();
+
+    // the request has to be called before a vertex/face/edge can be deleted. it grants access to the status attribute
+    //  http://www.openmesh.org/Daily-Builds/Doc/a00058.html
+    comp->request_face_status();
+    comp->request_edge_status();
+    comp->request_vertex_status();
+
+
+    return comp ; 
+}
+
+
+template <typename MeshT>
+inline void write(MeshT* mesh, char* path)
+{
+  LOG(info) << "write " << path ; 
+  try
+  {
+    if ( !OpenMesh::IO::write_mesh(*mesh, path) )
+    {
+      std::cerr << "Cannot write mesh to file" << std::endl;
+    }
+  }
+  catch( std::exception& x )
+  {
+    std::cerr << x.what() << std::endl;
+  }
 }
 
 
 
 int main()
 {
+    MyMesh* mesh = new MyMesh ;
 
-    MyMesh* mesh = convertToOpenMesh<MyMesh>(getenv("JDPATH"));
+    populateMesh<MyMesh>(mesh, getenv("JDPATH"));
 
     mesh->request_face_normals();
     mesh->update_normals();
 
-    labelConnectedComponents<MyMesh>(mesh); 
+    OpenMesh::VPropHandleT<int> component;
+    mesh->add_property(component); 
 
+    int ncomp = labelConnectedComponents<MyMesh>(mesh, component); 
+    printf("ncomp: %d \n", ncomp);
 
-  //  cf http://www.openflipper.org/media/Documentation/OpenFlipper-1.0.2/MeshInfoT_8cc_source.html
+    dump(mesh, "mesh", 0);
 
-
-
-
-  MyMesh::FaceIter fit ; 
-  for (fit=mesh->faces_begin(); fit!=mesh->faces_end(); ++fit)
-  {
-      std::cout << " fit " << *fit 
-                << std::endl;
-  } 
-  
-
-
-
-
-
-  // write mesh to output.obj
-  try
-  {
-    if ( !OpenMesh::IO::write_mesh(*mesh, "/tmp/output.off") )
+    for(unsigned int i=0 ; i < ncomp ; i++)
     {
-      std::cerr << "Cannot write mesh to file '/tmp/output.off'" << std::endl;
-      return 1;
+        MyMesh* comp = makeComponent<MyMesh>(mesh, i, component );
+        dump(comp, "comp", i == 0 ? 2 : 0 );
+
+        //char path[128] ;
+        //snprintf( path, 128, "/tmp/comp%d.off", i );
+        //write(comp, path); 
+
     }
-  }
-  catch( std::exception& x )
-  {
-    std::cerr << x.what() << std::endl;
-    return 1;
-  }
-  return 0;
+
+    return 0;
 }
 
 

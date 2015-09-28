@@ -5,7 +5,48 @@ openmeshtest-vi(){       vi $(openmeshtest-source) ; }
 openmeshtest-env(){      elocal- ; }
 openmeshtest-usage(){ cat << EOU
 
+OpenMeshTest 
+=============
 
+Developing mesh surgery code.
+
+Done
+-----
+
+#. convert NPY meshes into OpenMesh 
+#. partition G4 created triangle soup (did Assimp do any diddling?) 
+   into real connected V - E + F = 2  Euler Polyhedra 
+
+TODO
+-----
+
+#. geometrical comparison of two component meshes to identify close faces, 
+   
+   * for each face of mesh A find parallel faces using 
+     absolute normal dot products in mesh B
+   * compare distances in normal direction between candidate aligned faces 
+   * also check standard distance between barycenters of candidates
+   * devise criteria to pick the cleaved faces of mesh A and B
+
+#. delete the cleaved faces from A and B, make sure mesh boundary is 
+   navigable
+
+#. find way to weld together A and B by joining up the boundary
+   need distance criterior to decide whether to fuse or put in 
+   edges to do the welding  
+
+   * de-nudge in z ?
+
+   * suspect the volume in question will need new edges going
+     outwards in (x,y) almost fixed in z : as 
+     the cleave happened along a z flange plane 
+     (polycone with 2 identical z planes)
+
+#. convert surgeried back into NPY format 
+
+#. rearrange code into lib for actual usage
+
+#. test in ggv-
 
 
 

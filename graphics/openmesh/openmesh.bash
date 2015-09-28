@@ -34,9 +34,7 @@ Splitting Mesh into Connected Components
 ------------------------------------------
 
 * http://stackoverflow.com/questions/21502416/splitting-mesh-into-connected-components-in-openmesh
-
-
-
+* http://www.openflipper.org/media/Documentation/OpenFlipper-1.0.2/MeshInfoT_8cc_source.html
 
 Usage
 -------
