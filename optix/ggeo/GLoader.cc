@@ -60,7 +60,7 @@ void GLoader::load(bool nogeocache)
     {
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
 
-        m_ggeo = GGeo::load(idpath) ; 
+        m_ggeo = GGeo::load(idpath, m_mesh_version) ; 
 
         t("load ggeo/mergedmesh"); 
 

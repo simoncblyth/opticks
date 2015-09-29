@@ -73,7 +73,7 @@ void GGeo::loadMergedMeshes(const char* idpath )
         {   
             const char* path = mmdir.string().c_str() ;
             LOG(debug) << "GGeo::loadMergedMeshes " << gc->getRelativePath(path) ;
-            m_merged_mesh[ridx] = GMergedMesh::load( path, ridx);
+            m_merged_mesh[ridx] = GMergedMesh::load( path, ridx, m_mesh_version );
         }
         else
         {
@@ -174,11 +174,12 @@ void GGeo::save(const char* idpath)
 
 
 
-GGeo* GGeo::load(const char* idpath)
+GGeo* GGeo::load(const char* idpath, const char* mesh_version)
 {
     bool loaded = true ; 
     bool volnames = true ; 
     GGeo* ggeo = new GGeo(loaded, volnames);
+    ggeo->setMeshVersion(mesh_version);
     ggeo->loadFromCache(idpath);
     return ggeo ; 
 }

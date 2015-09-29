@@ -121,6 +121,8 @@ void Renderer::upload_buffers(bool debug)
     GBuffer* cbuf = m_drawable->getColorsBuffer();
     GBuffer* ibuf = m_drawable->getIndicesBuffer();
 
+    printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p ibuf %p \n", vbuf, nbuf, cbuf, ibuf );
+
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 

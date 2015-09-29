@@ -256,7 +256,7 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 }
 
 
-GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index)
+GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* version)
 {
     GMergedMesh* mm(NULL);
     fs::path cachedir(dir);
@@ -267,6 +267,7 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index)
     else
     {
         mm = new GMergedMesh(index);
+        if(index == 0) mm->setVersion(version);  // mesh versioning applies to  global buffer 
         mm->loadBuffers(dir);
     }
     return mm ; 

@@ -34,6 +34,7 @@ class GLoader {
          void load(bool nogeocache=false);
 
     public:
+         void setMeshVersion(const char* mesh_version);
          void setInstanced(bool instanced=true);
          bool isInstanced();
     public:
@@ -85,6 +86,7 @@ class GLoader {
          int                       m_repeatidx ; 
          GBuffer*                  m_transforms_buffer ; 
          bool                      m_instanced ; 
+         char*                     m_mesh_version ; 
 };
 
 inline GLoader::GLoader() 
@@ -106,9 +108,18 @@ inline GLoader::GLoader()
    m_treeanalyse(NULL),
    m_repeatidx(-1),
    m_transforms_buffer(NULL),
-   m_instanced(true)
+   m_instanced(true),
+   m_mesh_version(NULL)
 {
 }
+
+inline void GLoader::setMeshVersion(const char* mesh_version)
+{
+   m_mesh_version = strdup(mesh_version) ;
+}
+
+
+
 
 inline void GLoader::setInstanced(bool instanced)
 {

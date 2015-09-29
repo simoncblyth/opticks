@@ -461,6 +461,9 @@ int App::loadGeometry()
 {
     m_loader = new GLoader ;
     m_loader->setInstanced(true); // find repeated geometry 
+
+    m_loader->setMeshVersion("_v0"); // debug
+
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
@@ -497,7 +500,7 @@ int App::loadGeometry()
     assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
 
 
-    // for --jdyb --idyb --kdyb testing : making the cleave obvious
+    // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
     m_mesh0->explodeZVertices(1000.f, -(5564.950f + 5565.000f)/2.f ); 
 
 

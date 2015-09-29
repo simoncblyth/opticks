@@ -32,7 +32,7 @@ class GGeo {
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
         static const char* GMERGEDMESH ; 
-        static GGeo* load(const char* idpath);
+        static GGeo* load(const char* idpath, const char* mesh_version=NULL);
         enum { MAX_MERGED_MESH = 10 } ;
     private:
         void loadFromCache(const char* idpath);
@@ -79,6 +79,8 @@ class GGeo {
         //void setVolNames(bool volnames);
         void setIdentityPath(const char* idpath);
         void setColors(GColors* colors);
+        void setMeshVersion(const char* mesh_version);
+        const char* getMeshVersion();
     public:
         char* getPath(); 
         char* getQuery(); 
@@ -216,6 +218,7 @@ class GGeo {
         char*                         m_query ;
         char*                         m_ctrl ;
         char*                         m_idpath ;
+        char*                         m_mesh_version ;
 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
@@ -240,6 +243,7 @@ inline GGeo::GGeo(bool loaded, bool volnames) :
    m_query(NULL),
    m_ctrl(NULL),
    m_idpath(NULL),
+   m_mesh_version(NULL),
    m_sensitize_count(0),
    m_volnames(volnames)
 {
@@ -401,6 +405,16 @@ inline GItemList* GGeo::getPVList()
 inline GItemList* GGeo::getLVList()
 {
     return m_lvlist ; 
+}
+
+inline void GGeo::setMeshVersion(const char* mesh_version)
+{
+    m_mesh_version = strdup(mesh_version);
+}
+
+inline const char* GGeo::getMeshVersion()
+{
+    return m_mesh_version ;
 }
 
 

@@ -420,13 +420,6 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
             gnormals[v].x = normals[v].x;
             gnormals[v].y = normals[v].y;
             gnormals[v].z = normals[v].z;
-/*
-            printf("AssimpGGeo::convertMeshes  %u gnormals   %15.3f %15.3f %15.3f  \n", v, 
-                  gnormals[v].x ,  
-                  gnormals[v].y ,  
-                  gnormals[v].z );  
-*/
-
         }
 
         aiFace* faces = mesh->mFaces ; 

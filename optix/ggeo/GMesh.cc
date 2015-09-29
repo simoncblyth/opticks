@@ -120,6 +120,7 @@ GMesh::GMesh(unsigned int index,
       m_dimensions(NULL),
       m_center(NULL),
       m_model_to_world(NULL),
+      m_version(NULL),
       m_extent(0.f),
       m_center_extent(NULL),
       m_center_extent_buffer(NULL),
@@ -532,7 +533,10 @@ void GMesh::setNodesBuffer(GBuffer* buffer)
     m_nodes = (unsigned int*)buffer->getPointer();
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int num_nodes = numBytes/sizeof(unsigned int);
-    assert(m_num_faces == num_nodes);   // must load indices before nodes
+
+    // assert(m_num_faces == num_nodes);   // must load indices before nodes
+    if(m_num_faces != num_nodes)
+        LOG(warning) << "GMesh::setNodesBuffer allowing inconsistency " ; 
 }
 
 
@@ -551,8 +555,12 @@ void GMesh::setBoundariesBuffer(GBuffer* buffer)
 
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int num_boundaries = numBytes/sizeof(unsigned int);
-    assert(m_num_faces == num_boundaries);   // must load indices before boundaries, for m_num_faces
+
+    // assert(m_num_faces == num_boundaries);   // must load indices before boundaries, for m_num_faces
+    if(m_num_faces != num_boundaries)
+        LOG(warning) << "GMesh::setBoundariesBuffer allowing inconsistency " ; 
 }
+
 
 
 void GMesh::setSensors(unsigned int* sensors)
@@ -570,12 +578,13 @@ void GMesh::setSensorsBuffer(GBuffer* buffer)
 
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int num_sensors = numBytes/sizeof(unsigned int);
-    assert(m_num_faces == num_sensors);   // must load indices before sensors, for m_num_faces
+
+
+    //assert(m_num_faces == num_sensors);   // must load indices before sensors, for m_num_faces
+    if(m_num_faces != num_sensors)
+        LOG(warning) << "GMesh::setSensorsBuffer allowing inconsistency " ; 
+
 }
-
-
-
-
 
 
 
@@ -917,14 +926,6 @@ void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
 }
 
 
-/*
-In [14]: 58*4*39*4
-Out[14]: 36192
-
-In [15]: w.reshape((58,4,39,4))
-*/
-
-
 void GMesh::loadBuffer(const char* path, const char* name)
 {
     GBuffer* buffer(NULL); 
@@ -986,8 +987,22 @@ void GMesh::loadBuffers(const char* dir)
     for(unsigned int i=0 ; i<m_names.size() ; i++)
     {
         std::string name = m_names[i];
+        std::string vname = name ;
+        
+        if(m_version)
+        {
+            if(vname.compare("vertices") == 0 || 
+               vname.compare("indices") == 0  || 
+               vname.compare("colors") == 0  || 
+               vname.compare("normals") == 0)
+            { 
+                vname += m_version ;
+                LOG(warning) << "GMesh::loadBuffers version setting changed buffer name to " << vname ; 
+            }
+        }
+
         fs::path bufpath(dir);
-        bufpath /= name + ".npy" ; 
+        bufpath /= vname + ".npy" ; 
 
         if(fs::exists(bufpath) && fs::is_regular_file(bufpath))
         { 
