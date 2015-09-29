@@ -9,6 +9,29 @@ Mesh mending
 
   looking for any mesh face that is connected to more other faces than it has edges
 
+
+Mesh Surgery implemented in openmeshtest-
+--------------------------------------------
+
+* converted NPY mesh into OpenMesh by 1st removing duplicate vertices
+
+* divide the split union mesh into two Euler polyhedrons corresponding 
+  to the connected mesh components of the original
+
+* identify back to back faces between the two components and delete them  
+
+* combine the two now open component meshes by finding vertices around the open 
+  boundary and aligning those with the other, then adding new faces to 
+  weld together the pieces
+
+* save the mesh into NPY format in the "--jdyb" cache under postfix "_v0" 
+
+By setting GLoader mesh version to "_v0" can visualize the mesh 
+with surgery applied::
+
+    ggv --jdyb -O 
+
+
 Idea mesh scanning to identify internal faces
 -----------------------------------------------
 

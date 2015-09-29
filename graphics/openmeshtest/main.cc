@@ -877,9 +877,12 @@ inline void weldBoundaries(MeshT* c, MeshT* a, MeshT* b)
 
     bool flip = false ; 
 
-    for(unsigned int i=1 ; i < abnd.size() ; i++)
+
+    unsigned int N = abnd.size() ;
+
+    for(unsigned int i=0 ; i < N ; i++)
     {
-         VH a0 = abnd[i-1] ; 
+         VH a0 = i == 0 ? abnd[N-1] : abnd[i-1] ;  // round the boundary loop 
          VH a1 = abnd[i] ; 
 
          VH b0 = a2b[a0] ; 

@@ -462,6 +462,7 @@ int App::loadGeometry()
     m_loader = new GLoader ;
     m_loader->setInstanced(true); // find repeated geometry 
 
+    // TODO: make this controlled from commandline 
     m_loader->setMeshVersion("_v0"); // debug
 
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
@@ -501,7 +502,7 @@ int App::loadGeometry()
 
 
     // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
-    m_mesh0->explodeZVertices(1000.f, -(5564.950f + 5565.000f)/2.f ); 
+    // m_mesh0->explodeZVertices(1000.f, -(5564.950f + 5565.000f)/2.f ); 
 
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
