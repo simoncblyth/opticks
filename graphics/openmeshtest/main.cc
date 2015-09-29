@@ -1,4 +1,3 @@
-//  file:///usr/local/env/graphics/openmesh/OpenMesh-4.1/Documentation/a00044.html
 
 #include <cstdlib>
 #include <cassert>
@@ -23,8 +22,6 @@ namespace fs = boost::filesystem;
 
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
-//#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
-//typedef OpenMesh::PolyMesh_ArrayKernelT<>  MyMesh;
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
@@ -55,7 +52,14 @@ std::string float3digest( float* data )
 template <typename T>
 struct Ary 
 {
+    // Ary owns the data ptr memory  
     Ary(T* data, unsigned int num , unsigned int elem) : data(data), num(num), elem(elem) {} ;
+
+    ~Ary()
+    { 
+       //printf("Ary dtor\n");
+       delete[] data ; 
+    }
 
     T* data ; 
     unsigned int num  ; 
@@ -67,7 +71,11 @@ struct Ary
 template <typename MeshT>
 inline void populateMesh(MeshT* mesh, char* dir)
 {
-   // developed with single/few mesh caches in mind like --jdyb --kdyb 
+   // Loads and de-duplicates vertices from *dir*
+   // and populates *mesh* with the vertices and faces.
+   //
+   // Developed with single/few mesh caches in mind like --jdyb --kdyb 
+   //
 
    Cache cache(dir); 
 
@@ -77,7 +85,7 @@ inline void populateMesh(MeshT* mesh, char* dir)
    Ary<float> vertices( vertices_->getValues(), vertices_->getShape(0), 3 );
    Ary<int>   faces(       faces_->getValues(), faces_->getShape(0)/3, 3 ); // at NPY level indices have shape (3n, 1) rather than (n,3)
 
-   // de-duping vertices is mandatory otherwise mesh topology cannot be accessed
+   // de-duping vertices is mandatory  
 
    std::map<std::string, unsigned int> vtxmap ; 
 
@@ -105,8 +113,8 @@ inline void populateMesh(MeshT* mesh, char* dir)
 #endif
    }
 
-   Ary<float> dd_vertices( new float[vidx*3], vidx , 3 );
-   Ary<int>   dd_faces( new int[faces.num*3], faces.num , 3 );
+   Ary<float> dd_vertices( new float[vidx*3],    vidx , 3 );
+   Ary<int>   dd_faces(    new int[faces.num*3], faces.num , 3 );
 
    // copy old vertices to new leaving out the dupes ... 
 
@@ -133,6 +141,9 @@ inline void populateMesh(MeshT* mesh, char* dir)
        *(dd_faces.data + f*3 + 2 ) = o2n[o2] ;
    }
 
+   delete[] o2n ; 
+   delete[] n2o ; 
+
    typedef typename MeshT::VertexHandle VH ; 
    typedef typename MeshT::Point P ; 
 
@@ -147,8 +158,9 @@ inline void populateMesh(MeshT* mesh, char* dir)
    } 
 
    std::vector<VH>  face_vhandles;
-   int* fdata = dd_faces.data ;
+
    assert(dd_faces.elem == 3); 
+   int* fdata = dd_faces.data ;
    for(unsigned int i=0 ; i < dd_faces.num ; i++)
    {
        face_vhandles.clear();
@@ -164,13 +176,18 @@ inline void populateMesh(MeshT* mesh, char* dir)
        face_vhandles.push_back(vh[v2]);
        mesh->add_face(face_vhandles);
    }
+
+   delete[] vh ; 
 }
 
 
 
 template <typename MeshT>
-inline int labelConnectedComponents(MeshT* mesh, OpenMesh::VPropHandleT<int>& component)
+inline int labelConnectedComponents(MeshT* mesh)
 {
+    OpenMesh::VPropHandleT<int> component ; 
+    assert(true == mesh->get_property_handle(component, "component"));
+
     typedef typename MeshT::VertexHandle VH ;
     typedef typename MeshT::VertexIter VI ; 
     typedef typename MeshT::VertexVertexIter VVI ;
@@ -254,11 +271,136 @@ inline void findBounds(MeshT* mesh, BBox& bb )
 
 
 template <typename MeshT>
+inline void calcFCentroid(MeshT* mesh)
+{
+    typedef typename MeshT::FaceIter FI ; 
+    typedef typename MeshT::ConstFaceVertexIter FVI ; 
+    typedef typename MeshT::Point P ; 
+
+    OpenMesh::FPropHandleT<bool> copied;
+    mesh->add_property(copied); 
+
+    OpenMesh::FPropHandleT<P> centroid;
+    mesh->add_property(centroid, "centroid");
+
+    for( FI fi=mesh->faces_begin() ; fi != mesh->faces_end(); ++fi ) 
+    {
+        P cog ;
+        mesh->calc_face_centroid( *fi, cog);
+        mesh->property(centroid,*fi) = cog ; 
+    }
+}
+
+
+
+template <typename MeshT>
+inline void matchFCentroids(MeshT* a, MeshT* b, glm::vec4 delta)  
+{
+    calcFCentroid<MeshT>(a); 
+    calcFCentroid<MeshT>(b); 
+
+    typedef typename MeshT::Point P ; 
+    typedef typename MeshT::FaceIter FI ; 
+
+    OpenMesh::FPropHandleT<bool> a_cleaved ;
+    a->add_property(a_cleaved, "cleaved"); 
+
+    OpenMesh::FPropHandleT<bool> b_cleaved ;
+    b->add_property(b_cleaved, "cleaved"); 
+
+    for( FI af=a->faces_begin() ; af != a->faces_end(); ++af ) a->property(a_cleaved, *af) = false ; 
+    for( FI bf=b->faces_begin() ; bf != b->faces_end(); ++bf ) b->property(b_cleaved, *bf) = false ; 
+
+
+    OpenMesh::FPropHandleT<P> a_centroid ;
+    assert(a->get_property_handle(a_centroid, "centroid"));
+
+    OpenMesh::FPropHandleT<P> b_centroid ;
+    assert(b->get_property_handle(b_centroid, "centroid"));
+
+    // very inefficent approach, calculating all pairings 
+    // but geometry surgery is a once only endeavor
+
+    unsigned int npair(0);
+
+    for( FI af=a->faces_begin() ; af != a->faces_end(); ++af ) 
+    {
+        int fa = af->idx(); 
+        P ap = a->property(a_centroid, *af) ;
+        P an = a->normal(*af);
+
+        for( FI bf=b->faces_begin() ; bf != b->faces_end(); ++bf ) 
+        { 
+            int fb = bf->idx(); 
+            P bp = b->property(b_centroid, *bf) ;
+            P dp = bp - ap ; 
+            P bn = b->normal(*bf);
+
+            float adotb = OpenMesh::dot(an,bn); 
+
+            bool close = fabs(dp[0]) < delta.x && fabs(dp[1]) < delta.y && fabs(dp[2]) < delta.z ;
+            bool backtoback = adotb < delta.w ;  
+
+            if(close && backtoback) 
+            {
+                 std::cout 
+                       << std::setw(3) << npair 
+                       << " (" << std::setw(3) << fa
+                       << "," << std::setw(3) << fb 
+                       << ")" 
+                       << " an " << std::setprecision(3) << std::fixed << std::setw(20)  << an 
+                       << " bn " << std::setprecision(3) << std::fixed << std::setw(20)  << bn 
+                       << " a.b " << std::setprecision(3) << std::fixed << std::setw(10) << adotb
+                       << " dp " << std::setprecision(3) << std::fixed << std::setw(20)  << dp
+                       << std::endl ;  
+                 npair++ ; 
+
+                 // mark the cleaved faces
+                 a->property(a_cleaved, *af ) = true ; 
+                 b->property(b_cleaved, *bf ) = true ; 
+
+            }
+        }
+    }
+}
+
+template <typename MeshT>
+inline void deleteCleavedFaces(MeshT* mesh)  
+{
+    typedef typename MeshT::FaceIter FI ; 
+
+    OpenMesh::FPropHandleT<bool> cleaved ;
+    assert(mesh->get_property_handle(cleaved, "cleaved")); 
+
+    LOG(info) << "deleteCleavedFaces " ; 
+    for( FI f=mesh->faces_begin() ; f != mesh->faces_end(); ++f )
+    {
+        if(mesh->property(cleaved, *f)) 
+        {
+            std::cout << f->idx() << " " ; 
+            bool delete_isolated_vertices = true ; 
+            mesh->delete_face( *f, delete_isolated_vertices );
+        }
+    }
+    std::cout << std::endl ; 
+}
+ 
+
+template <typename MeshT>
 inline void dump(MeshT* mesh, const char* msg, unsigned int detail)
 {
     unsigned int nface = std::distance( mesh->faces_begin(), mesh->faces_end() );
     unsigned int nvert = std::distance( mesh->vertices_begin(), mesh->vertices_end() );
     unsigned int nedge = std::distance( mesh->edges_begin(), mesh->edges_end() );
+
+    unsigned int n_face = mesh->n_faces(); 
+    unsigned int n_vert = mesh->n_vertices(); 
+    unsigned int n_edge = mesh->n_edges();
+
+    assert( nface == n_face );
+    assert( nvert == n_vert );
+    assert( nedge == n_edge );
+
 
     LOG(info) << msg  
               << " nface " << nface 
@@ -272,14 +414,32 @@ inline void dump(MeshT* mesh, const char* msg, unsigned int detail)
     typedef typename MeshT::FaceIter FI ; 
     typedef typename MeshT::VertexFaceIter VFI ; 
     typedef typename MeshT::ConstFaceVertexIter FVI ; 
+    typedef typename MeshT::Point P ; 
+
+    OpenMesh::FPropHandleT<P> centroid ;
+    bool fcentroid = mesh->get_property_handle(centroid, "centroid");
+
 
     if(detail > 0)
     {
         for( FI fi=mesh->faces_begin() ; fi != mesh->faces_end(); ++fi ) 
         {
-            std::cout << " fi " << std::setw(4) << *fi << " : " << std::setw(3) << mesh->valence(*fi) 
+            int f_idx = fi->idx() ;  
+            std::cout << " f " << std::setw(4) << *fi 
+                      << " i " << std::setw(3) << f_idx 
+                      << " v " << std::setw(3) << mesh->valence(*fi) 
                       << " : " 
+                      
                       ; 
+
+            if(fcentroid)
+            {
+                std::cout << " c "
+                          << std::setprecision(3) << std::fixed << std::setw(20) 
+                          << mesh->property(centroid,*fi)
+                          << "  " 
+                          ;
+            } 
 
             // over points of the face 
             for(FVI fvi=mesh->cfv_iter(*fi) ; fvi ; fvi++) 
@@ -330,17 +490,10 @@ inline void dump(MeshT* mesh, const char* msg, unsigned int detail)
                         << std::setprecision(3) << std::fixed << std::setw(20) 
                         << mesh->normal(*vfi)
                         << std::endl ;  
-
-
-                     
-
                  } 
-
              } 
-
         }
     }
-
 
     BBox bb ; 
     findBounds<MeshT>(mesh, bb);
@@ -352,7 +505,7 @@ inline void dump(MeshT* mesh, const char* msg, unsigned int detail)
 
 
 template <typename MeshT>
-inline MeshT* makeComponent(MeshT* mesh, int wanted, OpenMesh::VPropHandleT<int>& component)
+inline void populateComponentMesh(MeshT* comp, MeshT* mesh, int wanted )
 {
     typedef typename MeshT::VertexIter VI ; 
     typedef typename MeshT::FaceIter FI ; 
@@ -362,13 +515,14 @@ inline MeshT* makeComponent(MeshT* mesh, int wanted, OpenMesh::VPropHandleT<int>
     typedef typename MeshT::Point P ; 
     typedef typename MeshT::ConstFaceVertexIter FVI ; 
 
+    OpenMesh::VPropHandleT<int> component ;
+    assert(true == mesh->get_property_handle(component, "component"));
+
     OpenMesh::FPropHandleT<bool> copied;
     mesh->add_property(copied); 
 
     for( FI fi=mesh->faces_begin() ; fi != mesh->faces_end(); ++fi ) 
          mesh->property(copied, *fi) = false ;
-
-    MeshT* comp = new MeshT ;
 
     std::map<VH, VH> o2n ; 
 
@@ -405,14 +559,15 @@ inline MeshT* makeComponent(MeshT* mesh, int wanted, OpenMesh::VPropHandleT<int>
     comp->request_edge_status();
     comp->request_vertex_status();
 
-
-    return comp ; 
 }
 
 
 template <typename MeshT>
-inline void write(MeshT* mesh, char* path)
+inline void write(MeshT* mesh, const char* tmpl, unsigned int index)
 {
+  char path[128] ;
+  snprintf( path, 128, tmpl, index );
+
   LOG(info) << "write " << path ; 
   try
   {
@@ -439,23 +594,32 @@ int main()
     mesh->update_normals();
 
     OpenMesh::VPropHandleT<int> component;
-    mesh->add_property(component); 
+    mesh->add_property(component, "component"); 
 
-    int ncomp = labelConnectedComponents<MyMesh>(mesh, component); 
+    int ncomp = labelConnectedComponents<MyMesh>(mesh); 
     printf("ncomp: %d \n", ncomp);
 
     dump(mesh, "mesh", 0);
 
+    MyMesh* comps = new MyMesh[ncomp] ;
     for(unsigned int i=0 ; i < ncomp ; i++)
     {
-        MyMesh* comp = makeComponent<MyMesh>(mesh, i, component );
-        dump(comp, "comp", i == 0 ? 2 : 0 );
+        populateComponentMesh<MyMesh>(comps + i, mesh, i);
 
-        //char path[128] ;
-        //snprintf( path, 128, "/tmp/comp%d.off", i );
-        //write(comp, path); 
-
+        dump(comps + i, "comp", i == 0 ? 1 : 0 );
+        write(comps + i, "/tmp/comp%d.off", i );
     }
+ 
+
+    glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); // xyz delta maximum and w: minimal dot product of normals, -0.999 means very nearly back-to-back
+    if(ncomp == 2)
+    {
+        matchFCentroids<MyMesh>( comps+0, comps+1, delta);
+
+        deleteCleavedFaces<MyMesh>( comps+0 );
+        deleteCleavedFaces<MyMesh>( comps+1 );
+    }
+
 
     return 0;
 }

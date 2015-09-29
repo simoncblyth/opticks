@@ -20,6 +20,19 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
+
+ENHANCEMENT : Analytic PMT Intersection 
+---------------------------------------
+
+* http://uk.mathworks.com/matlabcentral/answers/73606-intersection-of-3d-ray-and-surface-of-revolution
+
+Intersection with a surface of revolution turns into finding the roots of a possibly high-ish 
+order eqn, depending on the eqn of the profile.
+
+Prereqisite for analytic geometry exploration is including GDML (CSG geometry)  
+in G4DAE exports.
+
+
 ISSUE: restricting bouncemax prevents recsel selection operation
 ----------------------------------------------------------------------
    

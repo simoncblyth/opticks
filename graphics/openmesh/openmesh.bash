@@ -30,6 +30,28 @@ Whenever you modify the topology using low-level topology changing functions,
 be sure to guarantee this behaviour (see OpenMesh::PolyMeshT::adjust_outgoing_halfedge())
 
 
+Related
+--------
+
+* https://github.com/memononen/libtess2
+
+Books
+------
+
+Geometric Tools for Computer Graphics
+
+* https://books.google.com.tw/books?id=3Q7HGBx1uLIC
+
+  * p340: connected meshes, an algo to split mesh into connected components 
+
+
+M. Botsch et al. / Geometric Modeling Based on Triangle Meshes
+
+* http://lgg.epfl.ch/publications/2006/botsch_2006_GMT_eg.pdf
+* fig10 is most useful 
+
+
+
 Splitting Mesh into Connected Components
 ------------------------------------------
 
