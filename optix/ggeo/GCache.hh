@@ -23,6 +23,10 @@ class GCache {
          bool idPathContains(const char* s); 
          void Summary(const char* msg="GCache::Summary");
     public:
+         const char* getPath();
+         const char* getQuery();
+         const char* getCtrl();
+    public:
          const char* getDetector();
          bool        isJuno();
          bool        isDayabay();
@@ -76,6 +80,25 @@ inline const char* GCache::getEnvPrefix()
 {
     return m_envprefix ;
 }
+inline const char* GCache::getPath()
+{
+    return m_path ;
+}
+inline const char* GCache::getQuery()
+{
+    return m_query ;
+}
+inline const char* GCache::getCtrl()
+{
+    return m_ctrl ;
+}
+
+
+
+
+
+
+
 
 
 inline const char* GCache::getDetector()

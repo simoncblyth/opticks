@@ -49,12 +49,6 @@ md5digest
     hashing 
 
 
-
-Issues : rotation on import
-----------------------------
-
-::
-
 Coordinate Mismatch
 --------------------
 
@@ -192,19 +186,20 @@ assimpwrap-scd(){  cd $(assimpwrap-sdir); }
 
 assimpwrap-cd(){  cd $(assimpwrap-sdir); }
 
-assimpwrap-mate(){ mate $(assimpwrap-dir) ; }
-
 assimpwrap-wipe(){
     local bdir=$(assimpwrap-bdir)
     rm -rf $bdir
 }
 
-
 assimpwrap-cmake(){
+   local iwd=$PWD
    local bdir=$(assimpwrap-bdir)
    mkdir -p $bdir
    assimpwrap-bcd
+
    cmake $(assimpwrap-sdir) -DCMAKE_INSTALL_PREFIX=$(assimpwrap-idir) -DCMAKE_BUILD_TYPE=Debug 
+
+   cd $iwd
 }
 
 assimpwrap-make(){
@@ -242,47 +237,34 @@ assimpwrap-ggctrl(){
     #echo __dd__
 }
 
-
 assimpwrap-export(){
     export ASSIMPWRAP_GEOKEY="$(assimpwrap-geokey $1)"
     #export ASSIMPWRAP_QUERY="index:1,depth:2" 
     export ASSIMPWRAP_QUERY="range:5000:8000"
-
-    export ASSIMPWRAP_MATERIAL="$(assimpwrap-material)" 
+    export ASSIMPWRAP_MATERIAL="$(assimpwrap-material)"   # used for debugging single material/surface/..
     export ASSIMPWRAP_GGCTRL="$(assimpwrap-ggctrl)" 
     export-
     export-export
     env | grep ASSIMPWRAP
 }
 
-
 assimpwrap-run(){
     assimpwrap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-
     assimpwrap-export 
     $DEBUG $(assimpwrap-bin) $*  
 }
 
 assimpwrap--(){
-
     assimpwrap-cmake
     assimpwrap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-
     assimpwrap-install $*
 }
 
 assimpwrap-lldb(){
     DEBUG=lldb assimpwrap-run
 }
-
-assimpwrap-brun(){
-   echo running from bdir not idir : no install needed, but must set library path
-   local bdir=$(assimpwrap-bdir)
-   DYLD_LIBRARY_PATH=$bdir $LLDB $bdir/AssimpWrapTest 
-}
-
 
 assimpwrap-test(){
    local msg="$FUNCNAME : "
@@ -299,7 +281,7 @@ assimpwrap-test-(){
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
 
     assimpwrap-export $arg
-    assimpwrap-brun
+    assimpwrap-run
 }
 
 assimpwrap-otool(){

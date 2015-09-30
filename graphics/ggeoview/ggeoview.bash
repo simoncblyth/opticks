@@ -11,6 +11,8 @@ ggv-lldb(){
 ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
 ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }
 ggeoview-vi(){       vi $(ggeoview-source) ; }
+
+
 ggeoview-usage(){ cat << EOU
 
 GGeoView
@@ -1065,6 +1067,7 @@ ggeoview-bcd(){  cd $(ggeoview-bdir); }
 ggeoview-name(){ echo GGeoView ; }
 ggeoview-compute-name(){ echo computeTest ; }
 ggeoview-loader-name(){ echo GLoaderTest ; }
+ggeoview-edit(){     vi $(ggeoview-sdir)/ggv.sh ; }
 
 ggeoview-wipe(){
    local bdir=$(ggeoview-bdir)

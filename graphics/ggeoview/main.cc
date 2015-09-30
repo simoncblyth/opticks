@@ -463,7 +463,7 @@ int App::loadGeometry()
     m_loader->setInstanced(true); // find repeated geometry 
 
     // TODO: make this controlled from commandline 
-    m_loader->setMeshVersion("_v0"); // debug
+    //m_loader->setMeshVersion("_v0"); // debug
 
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);

@@ -48,26 +48,29 @@
                      (m).d1,(m).d2,(m).d3,(m).d4) \
 
 
-GGeo* AssimpGGeo::load(const char* envprefix)
+GGeo* AssimpGGeo::load(const char* path, const char* query, const char* ctrl )
 {
-    const char* geokey = getenvvar(envprefix, "GEOKEY" );
-    const char* path = getenv(geokey);
-    const char* query = getenvvar(envprefix, "QUERY");
-    const char* ctrl = getenvvar(envprefix, "CTRL");
  
-    LOG(info)<< "AssimpGGeo::load geokey " << geokey 
-                   << " path " << path 
-                   << " query " << query 
-                   << " ctrl " << ctrl ; 
+    //const char* geokey = getenvvar(envprefix, "GEOKEY" );
+    //const char* path = getenv(geokey);
+    //const char* query = getenvvar(envprefix, "QUERY");
+    //const char* ctrl = getenvvar(envprefix, "CTRL");
+ 
+    LOG(info)<< "AssimpGGeo::load "  
+             << " path " << path 
+             << " query " << query 
+             << " ctrl " << ctrl ; 
 
     AssimpGeometry ageo(path);
+
     const char* idpath = ageo.identityFilename(path, query);
 
-
     ageo.import();
+
     AssimpSelection* selection = ageo.select(query);
 
     AssimpGGeo agg(ageo.getTree(), selection); 
+
     GGeo* ggeo = agg.convert(ctrl);
 
     ggeo->setPath(path);
@@ -552,7 +555,13 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     unsigned int mti_p = pnode->getMaterialIndex();
     GMaterial* mt_p = gg->getMaterial(mti_p);
 
-    printf("AssimpGGeo::convertStructureVisit nodeIndex %d (mti %u mt %p) (mti_p %u mt_p %p) (msi %u mesh %p) \n", nodeIndex, mti, mt, mti_p, mt_p,  msi, mesh  );
+    //printf("AssimpGGeo::convertStructureVisit nodeIndex %d (mti %u mt %p) (mti_p %u mt_p %p) (msi %u mesh %p) \n", nodeIndex, mti, mt, mti_p, mt_p,  msi, mesh  );
+    LOG(debug) << "AssimpGGeo::convertStructureVisit" 
+               << " nodeIndex " << std::setw(6) << nodeIndex
+               << " ( mti " << std::setw(4) << mti << " mt " << (void*)mt << " ) " 
+               << " ( mti_p " << std::setw(4) << mti_p << " mt_p " << (void*)mt_p << " ) " 
+               << " ( msi " << std::setw(4) << msi << " mesh " << (void*)mesh << " ) " 
+               ;  
 
     GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, NULL, NULL ); // boundary and sensor start NULL
     solid->setLevelTransform(ltransform);

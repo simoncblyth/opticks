@@ -91,7 +91,14 @@ fi
 
 
 if [ "${cmdline/--idp}" != "${cmdline}" ]; then
+
     echo $(ggeoview-run $*)
+
+elif [ "${cmdline/--assimp}" != "${cmdline}" ]; then
+
+    assimpwrap-
+    $(assimpwrap-bin) GGEOVIEW_
+
 else
     case $dbg in
        0)  ggeoview-run $*  ;;

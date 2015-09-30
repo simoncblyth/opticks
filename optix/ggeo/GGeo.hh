@@ -409,7 +409,7 @@ inline GItemList* GGeo::getLVList()
 
 inline void GGeo::setMeshVersion(const char* mesh_version)
 {
-    m_mesh_version = strdup(mesh_version);
+    m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
 }
 
 inline const char* GGeo::getMeshVersion()

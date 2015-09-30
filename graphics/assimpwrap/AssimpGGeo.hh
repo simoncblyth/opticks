@@ -27,7 +27,7 @@ public:
     bool getVolNames();
 
 public:
-    static GGeo* load(const char* envprefix="GGEOVIEW_");
+    static GGeo* load(const char* path, const char* query, const char* ctrl);
 
 public:
     static const char* g4dae_bordersurface_physvolume1 ; 

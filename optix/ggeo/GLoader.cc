@@ -41,18 +41,23 @@ void GLoader::load(bool nogeocache)
     t.start();
 
     assert(m_cache);
+
     const char* idpath = m_cache->getIdPath() ;
+    const char* path = m_cache->getPath() ;
+    const char* query = m_cache->getQuery() ;
+    const char* ctrl = m_cache->getCtrl() ;
     const char* envprefix = m_cache->getEnvPrefix() ;
 
     LOG(info) << "GLoader::load start " 
               << " idpath " << idpath 
+              << " path " << path 
+              << " query " << query 
+              << " ctrl " << ctrl 
               << " nogeocache " << nogeocache  
               << " repeatidx " << m_repeatidx 
               ;
 
-
     m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
-
 
     fs::path geocache(idpath);
 
@@ -81,7 +86,7 @@ void GLoader::load(bool nogeocache)
     {
         LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
 
-        m_ggeo = (*m_imp)(envprefix);      
+        m_ggeo = (*m_imp)(path, query, ctrl);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
 
         t("create m_ggeo from G4DAE"); 
        // m_meshes = m_ggeo->getMeshIndex();  
