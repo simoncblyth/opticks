@@ -53,11 +53,13 @@ add_library( ${name}  SHARED
     BoundariesNPY.cpp
     SequenceNPY.cpp
     AxisNPY.cpp
+    DedupeNPY.cpp
     Counts.cpp
     Types.cpp
     Index.cpp
     Timer.cpp
     Times.cpp
+    NCache.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -90,6 +92,7 @@ RecordsNPY.hpp
 BoundariesNPY.hpp
 SequenceNPY.hpp
 AxisNPY.hpp
+DedupeNPY.hpp
 Counts.hpp
 numpy.hpp
 stringutil.hpp
@@ -100,6 +103,7 @@ Types.hpp
 Index.hpp
 Timer.hpp
 Times.hpp
+NCache.hpp
 Parameters.hpp
 md5digest.hpp
 )
