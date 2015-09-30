@@ -30,7 +30,10 @@ add_definitions(
    ${Boost_DEFINITIONS}
 )
 
-add_executable( ${name} main.cc ) 
+add_executable( ${name} 
+     main.cc 
+     MWrap.cc
+) 
 
 target_link_libraries( ${name} 
     ${OpenMesh_LIBRARIES}

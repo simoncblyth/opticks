@@ -89,7 +89,10 @@ void GSensorList::read(const char* path)
         count++;
     }
     in.close();
-    LOG(info) << "GSensorList::read " << path << description() ; 
+    LOG(info) << "GSensorList::read " 
+              << " path " << path 
+              << " desc " << description() 
+              ; 
 }
 
 

@@ -43,47 +43,31 @@ void inilog()
 }
 
 
+// cf with GLoader::load where the below is canonically done  
+
 int main(int argc, char* argv[])
 {
     inilog();
 
-    const char* prefix = argc > 1 ? argv[1] : "ASSIMPWRAP_" ;
-    GCache cache(prefix);
+    GCache cache(argc > 1 ? argv[1] : "ASSIMPWRAP_" );
+
     cache.Summary();
     
-    const char* path  = cache.getPath();
-    const char* query = cache.getQuery();
-    const char* ctrl  = cache.getCtrl();
-
-    LOG(info) << argv[0]
-              << " prefix " << prefix 
-              << " query " << query 
-              << " ctrl " << ctrl 
-              ; 
-
-    LOG(info) << "AssimpWrapTest"
-              << " path " << path 
-              ;
-
-    assert(path);
-    assert(query);
-    assert(ctrl);
-
-    AssimpGeometry ageo(path);
-    ageo.import();
-    AssimpSelection* selection = ageo.select(query);
-
-    AssimpGGeo agg(ageo.getTree(), selection); 
-    GGeo* ggeo = agg.convert(ctrl);
+    GGeo* ggeo = AssimpGGeo::load( cache.getPath(), cache.getQuery(), cache.getCtrl() );
 
     ggeo->Summary("main");    
+
     GBoundaryLib* lib = ggeo->getBoundaryLib();
+
     lib->Summary("GBoundaryLib");
 
+    // loads .idmap sibling of G4DAE file and traverses nodes doing GSolid::setSensor for sensitve nodes
+    ggeo->sensitize(cache.getIdPath(), "idmap");  
 
-    // needs to be sensitized first, otherwise get sensor assert
-    //GMergedMesh* mm = ggeo->makeMergedMesh();
-    //mm->Summary("GMergedMesh");
+    GMergedMesh* mm = ggeo->makeMergedMesh();
+    
+    mm->Summary("GMergedMesh");
+
 
     return 0 ; 
 }

@@ -50,16 +50,14 @@
 
 GGeo* AssimpGGeo::load(const char* path, const char* query, const char* ctrl )
 {
- 
-    //const char* geokey = getenvvar(envprefix, "GEOKEY" );
-    //const char* path = getenv(geokey);
-    //const char* query = getenvvar(envprefix, "QUERY");
-    //const char* ctrl = getenvvar(envprefix, "CTRL");
- 
     LOG(info)<< "AssimpGGeo::load "  
              << " path " << path 
              << " query " << query 
              << " ctrl " << ctrl ; 
+
+    assert(path);
+    assert(query);
+    assert(ctrl);
 
     AssimpGeometry ageo(path);
 
