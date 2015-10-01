@@ -87,6 +87,8 @@
 #include "AssimpGGeo.hh"
 
 
+// openmeshrap-
+#include "MTool.hh"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -184,6 +186,7 @@ class App {
        void prepareContext();
   public:
        int  loadGeometry();
+       void checkGeometry();
        void uploadGeometry();
   public:
        void loadGenstep();
@@ -473,6 +476,7 @@ int App::loadGeometry()
     m_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     bool nogeocache = m_fcfg->hasOpt("nogeocache");
+
     m_loader->load(nogeocache);
 
     m_parameters->add<int>("repeatIdx", m_loader->getRepeatIndex() );
@@ -487,8 +491,12 @@ int App::loadGeometry()
     m_scene->uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
    
     m_ggeo = m_loader->getGGeo();
+
     m_ggeo->dumpStats("App::loadGeometry");
-    m_ggeo->dumpTree("App::loadGeometry");
+    //m_ggeo->dumpTree("App::loadGeometry");
+
+    checkGeometry();
+
 
     m_blib = m_loader->getBoundaryLib();
     m_lookup = m_loader->getMaterialLookup();
@@ -525,12 +533,58 @@ int App::loadGeometry()
  
     (*m_timer)("loadGeometry"); 
 
-    if(nogeocache){
+    if(nogeocache)
+    {
+        
         LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 
         return 1 ; 
     }
     return 0 ; 
 }
+
+void App::checkGeometry()
+{
+    if(m_ggeo->isLoaded())
+    {
+        LOG(info) << "App::checkGeometry needs to be done precache " ;
+        return ; 
+    }
+
+
+    MTool mtool ; 
+
+    unsigned int nso = m_ggeo->getNumSolids();
+    unsigned int nme = m_ggeo->getNumMeshes();
+
+    LOG(info) << "App::checkGeometry " 
+              << " nso " << nso  
+              << " nme " << nme 
+              ; 
+
+    typedef std::map<unsigned int, unsigned int> MUU ; 
+    typedef MUU::const_iterator MUUI ; 
+
+    MUU& mesh_usage = m_ggeo->getMeshUsage();
+
+    for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
+    {    
+        unsigned int meshIndex = it->first ; 
+        unsigned int nodeCount = it->second ; 
+ 
+        GMesh* mesh = m_ggeo->getMesh(meshIndex);
+
+        const char* meshName = mesh->getName() ; 
+        unsigned int nv = mesh->getNumVertices() ; 
+        unsigned int nf = mesh->getNumFaces() ; 
+
+        unsigned int ncomp = mtool.countMeshComponents(mesh);
+
+        printf("  %4d (v%5d f%5d c%2d) : %6d : %7d : %s \n", meshIndex, nv, nf, ncomp, nodeCount, nodeCount*nv, meshName);
+   }    
+
+
+}
+
 
 
 void App::uploadGeometry()

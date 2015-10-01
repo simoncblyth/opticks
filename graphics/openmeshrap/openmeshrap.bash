@@ -1,11 +1,11 @@
-# === func-gen- : graphics/openmeshtest/openmeshtest fgp graphics/openmeshtest/openmeshtest.bash fgn openmeshtest fgh graphics/openmeshtest
-openmeshtest-src(){      echo graphics/openmeshtest/openmeshtest.bash ; }
-openmeshtest-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmeshtest-src)} ; }
-openmeshtest-vi(){       vi $(openmeshtest-source) ; }
-openmeshtest-env(){      elocal- ; }
-openmeshtest-usage(){ cat << EOU
+# === func-gen- : graphics/openmeshrap/openmeshrap fgp graphics/openmeshrap/openmeshrap.bash fgn openmeshrap fgh graphics/openmeshrap
+openmeshrap-src(){      echo graphics/openmeshrap/openmeshrap.bash ; }
+openmeshrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmeshrap-src)} ; }
+openmeshrap-vi(){       vi $(openmeshrap-source) ; }
+openmeshrap-env(){      elocal- ; }
+openmeshrap-usage(){ cat << EOU
 
-OpenMeshTest 
+OpenMeshRap
 =============
 
 Developing mesh surgery code.
@@ -139,48 +139,48 @@ mesh.
 
 EOU
 }
-openmeshtest-dir(){  echo $(env-home)/graphics/openmeshtest ; }
-openmeshtest-idir(){ echo $(local-base)/env/graphics/openmeshtest ; }
-openmeshtest-bdir(){ echo $(openmeshtest-idir).build ; }
+openmeshrap-dir(){  echo $(env-home)/graphics/openmeshrap ; }
+openmeshrap-idir(){ echo $(local-base)/env/graphics/openmeshrap ; }
+openmeshrap-bdir(){ echo $(openmeshrap-idir).build ; }
 
-openmeshtest-cd(){   cd $(openmeshtest-dir); }
-openmeshtest-icd(){  cd $(openmeshtest-idir); }
-openmeshtest-bcd(){  cd $(openmeshtest-bdir); }
+openmeshrap-cd(){   cd $(openmeshrap-dir); }
+openmeshrap-icd(){  cd $(openmeshrap-idir); }
+openmeshrap-bcd(){  cd $(openmeshrap-bdir); }
 
 
-openmeshtest-wipe(){
-  local bdir=$(openmeshtest-bdir)
+openmeshrap-wipe(){
+  local bdir=$(openmeshrap-bdir)
   rm -rf $bdir 
 
 }
 
-openmeshtest-cmake(){
+openmeshrap-cmake(){
   local iwd=$PWD
-  local bdir=$(openmeshtest-bdir)
+  local bdir=$(openmeshrap-bdir)
   mkdir -p $bdir
-  openmeshtest-bcd
+  openmeshrap-bcd
 
-  cmake $(openmeshtest-dir) \
+  cmake $(openmeshrap-dir) \
       -DCMAKE_BUILD_TYPE=Debug \
-      -DCMAKE_INSTALL_PREFIX=$(openmeshtest-idir) 
+      -DCMAKE_INSTALL_PREFIX=$(openmeshrap-idir) 
 
   cd $iwd
 }
 
-openmeshtest-make(){
+openmeshrap-make(){
   local iwd=$PWD
-  openmeshtest-bcd
+  openmeshrap-bcd
   make $*
   cd $iwd
 }
 
-openmeshtest-install(){
-  openmeshtest-make install
+openmeshrap-install(){
+  openmeshrap-make install
 }
 
-openmeshtest--(){
-  openmeshtest-cmake
-  openmeshtest-make
-  openmeshtest-install
+openmeshrap--(){
+  openmeshrap-cmake
+  openmeshrap-make
+  openmeshrap-install
 }
 

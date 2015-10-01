@@ -1270,6 +1270,8 @@ ggeoview-depinstall()
     ggeo-install
     assimpwrap- 
     assimpwrap-install
+    openmeshrap- 
+    openmeshrap-install
     oglrap-
     oglrap-install
     cudawrap-

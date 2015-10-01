@@ -62,6 +62,8 @@ find_package(Cfg REQUIRED)
 
 find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
+find_package(OpenMesh REQUIRED)
+find_package(OpenMeshRap REQUIRED)
 find_package(OptiXRap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
@@ -83,9 +85,10 @@ include_directories(
    ${NPY_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
-
    ${Assimp_INCLUDE_DIRS}  
    ${AssimpWrap_INCLUDE_DIRS}  
+   ${OpenMesh_INCLUDE_DIRS}  
+   ${OpenMeshRap_INCLUDE_DIRS}  
    ${CUDA_INCLUDE_DIRS}
    ${OptiX_INCLUDE}  
    ${OptiXRap_INCLUDE_DIRS}  
@@ -104,6 +107,8 @@ add_definitions(
    ${OGLRap_DEFINITIONS}
    ${Assimp_DEFINITIONS}  
    ${AssimpWrap_DEFINITIONS}  
+   ${OpenMesh_DEFINITIONS}  
+   ${OpenMeshRap_DEFINITIONS}  
    ${OptiX_DEFINITIONS} 
    ${OptiXRap_DEFINITIONS} 
    ${Boost_DEFINITIONS} 
@@ -129,6 +134,9 @@ set(LIBRARIES
 
       ${Assimp_LIBRARIES} 
       ${AssimpWrap_LIBRARIES} 
+      ${OpenMesh_LIBRARIES} 
+      ${OpenMeshRap_LIBRARIES} 
+
       ${GGeo_LIBRARIES} 
       ${OptiXRap_LIBRARIES}
       ${GGeo_LIBRARIES}

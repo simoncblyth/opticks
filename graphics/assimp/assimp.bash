@@ -22,6 +22,21 @@ Written in C++, it is available under a liberal BSD license. There is a C API
 as well as bindings to various other languages, including C#/.net, Python and D. 
 
 
+Mesh Processing Flags
+-----------------------
+
+* http://assimp.sourceforge.net/lib_html/postprocess_8h.html
+
+::
+
+    aiProcess_JoinIdenticalVertices  : TODO: check if this is per mesh 
+    aiProcess_Triangulate            : triangulate any quads
+
+
+
+
+
+
 Development Cycle Adding Extra Material/Surface Handling
 ---------------------------------------------------------
 

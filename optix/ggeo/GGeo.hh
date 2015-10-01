@@ -176,6 +176,7 @@ class GGeo {
         GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
 
     public:
+        std::map<unsigned int, unsigned int>& getMeshUsage();
         void countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* lv, const char* pv);
         void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
 

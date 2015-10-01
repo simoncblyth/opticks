@@ -642,6 +642,13 @@ void GGeo::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const 
      m_mesh_usage[meshIndex] += 1 ; 
 }
 
+
+std::map<unsigned int, unsigned int>& GGeo::getMeshUsage()
+{
+    return m_mesh_usage ; 
+}
+
+
 void GGeo::reportMeshUsage(const char* msg)
 {
      printf("%s\n", msg);

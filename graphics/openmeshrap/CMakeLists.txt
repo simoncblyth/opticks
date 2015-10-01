@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name OpenMeshTest)
+set(name OpenMeshRap)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -33,12 +33,18 @@ add_definitions(
    ${Boost_DEFINITIONS}
 )
 
-add_executable( ${name} 
-     main.cc 
+add_library( ${name}  SHARED
      MWrap.cc
+     MTool.cc
 ) 
 
-target_link_libraries( ${name} 
+set(hdrs
+     MWrap.hh
+     MTool.hh
+)
+
+
+set(LIBRARIES
     ${OpenMesh_LIBRARIES}
     ${GLM_LIBRARIES}
     ${NPY_LIBRARIES}
@@ -46,6 +52,11 @@ target_link_libraries( ${name}
     ${Boost_LIBRARIES}
 )
 
-install(TARGETS ${name} DESTINATION bin)
+target_link_libraries( ${name}  ${LIBRARIES})
 
+install(FILES  ${hdrs} DESTINATION include)
+
+install(TARGETS ${name} LIBRARY DESTINATION lib)
+
+add_subdirectory(tests)
 
