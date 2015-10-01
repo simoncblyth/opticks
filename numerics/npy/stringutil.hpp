@@ -48,4 +48,7 @@ inline std::string as_hex(T in) {
 }
 
 
+template<typename T>
+std::string arraydigest( T* data, unsigned int n );
+
 

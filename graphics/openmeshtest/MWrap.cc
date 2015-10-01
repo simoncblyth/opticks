@@ -3,7 +3,13 @@
 #include <iostream>
 #include <iomanip>
 
+// npy-
+#include "NCache.hpp"
 #include "GLMPrint.hpp"
+
+// ggeo-
+#include "GMergedMesh.hh"
+#include "GMeshFixer.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -14,8 +20,38 @@
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
 
+
+
 template <typename MeshT>
-void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, int* fdata, unsigned int num_faces )  
+void MWrap<MeshT>::loadFromMergedMesh(const char* idpath, unsigned int index, bool dedupe)
+{
+    // Developed with single/few mesh caches in mind like --jdyb --kdyb 
+
+    NCache cache(idpath); 
+    GMergedMesh* mm = GMergedMesh::load( cache.path("GMergedMesh/%d", index).c_str(), index );
+    mm->Summary();
+
+    GMesh* dd = NULL ; 
+    if(dedupe)
+    {
+        GMeshFixer fixer(mm);
+        fixer.copyWithoutVertexDuplicates();
+        dd = fixer.getDst();
+        dd->Summary();
+    }
+    else
+    {
+        dd = (GMesh*)mm ; 
+    }
+
+    copyIn( (float*)dd->getVertices(), dd->getNumVertices(), (unsigned int*)dd->getFaces(), dd->getNumFaces() );
+}
+
+
+
+
+template <typename MeshT>
+void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces )  
 {
     MeshT* mesh = m_mesh ; 
 
@@ -36,12 +72,12 @@ void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, int* fdata, u
     {
         fvh.clear();
 
-        int v0 = *(fdata + 0) ; 
-        int v1 = *(fdata + 1) ; 
-        int v2 = *(fdata + 2) ; 
+        unsigned int v0 = *(fdata + 0) ; 
+        unsigned int v1 = *(fdata + 1) ; 
+        unsigned int v2 = *(fdata + 2) ; 
         fdata += 3 ; 
 
-        //printf( "f %4d : v %3d %3d %3d \n", i, v0, v1, v2 ); 
+        //printf( "f %4d : v %3u %3u %3u \n", i, v0, v1, v2 ); 
         fvh.push_back(vh[v0]);
         fvh.push_back(vh[v1]);
         fvh.push_back(vh[v2]);
@@ -55,12 +91,13 @@ void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, int* fdata, u
 
 
 template <typename MeshT>
-int MWrap<MeshT>::labelConnectedComponents()
+int MWrap<MeshT>::labelConnectedComponentVertices(const char* vpropname)
 {
     MeshT* mesh = m_mesh ; 
+    LOG(info) << "MWrap<MeshT>::labelConnectedComponentVertices " << vpropname ; 
 
-    OpenMesh::VPropHandleT<int> component ; 
-    assert(true == mesh->get_property_handle(component, "component"));
+    OpenMesh::VPropHandleT<int> component;
+    mesh->add_property(component, vpropname); 
 
     typedef typename MeshT::VertexHandle VH ;
     typedef typename MeshT::VertexIter VI ; 

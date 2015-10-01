@@ -13,14 +13,12 @@
 
 namespace pt = boost::property_tree;
 
-
 int getenvint( const char* envkey, int fallback )
 {
     char* val = getenv(envkey);
     int ival = val ? boost::lexical_cast<int>(val) : fallback ;
     return ival ; 
 }
-
 
 const char* uppercase( const char* str )
 {
@@ -33,7 +31,6 @@ const char* uppercase( const char* str )
     } 
     return STR ;
 }
-
 
 const char* getenvvar( const char* envprefix, const char* envkey )
 {
@@ -58,8 +55,6 @@ std::string patternPickField(std::string str, std::string ptn, int num )
 }
 
 
-
-
 void split( std::vector<std::string>& elem, const char* line, char delim )
 {
     if(line == NULL) return ; 
@@ -67,8 +62,6 @@ void split( std::vector<std::string>& elem, const char* line, char delim )
     std::string s;
     while (getline(f, s, delim)) elem.push_back(s);
 }
-
-
 
 
 std::vector<std::pair<std::string, std::string>> ekv_split( const char* line_, char edelim, const char* kvdelim )
@@ -94,12 +87,6 @@ std::vector<std::pair<std::string, std::string>> ekv_split( const char* line_, c
     return ekv ;
 }
     
-
-
-
-
-
-
 
 std::string join(std::vector<std::string>& elem, char delim )
 {
@@ -179,6 +166,15 @@ std::string md5digest( const char* buffer, int len )
     return digest;
 }
 
+
+template<typename T>
+std::string arraydigest( T* data, unsigned int n )
+{
+    return md5digest( (char*)data, sizeof(T)*n );
+}
+
+
+
 #define RGBA(r,g,b,a) \
 { \
     colors[offset + 0] = (r) ; \
@@ -252,6 +248,7 @@ Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
 
 
 
-
-
+template std::string arraydigest( float*, unsigned int);
+template std::string arraydigest( int*, unsigned int);
+template std::string arraydigest( unsigned int*, unsigned int);
 

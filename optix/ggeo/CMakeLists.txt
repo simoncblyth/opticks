@@ -78,6 +78,7 @@ add_library(${name} SHARED
                 GTreePresent.cc
                 GBBoxMesh.cc
                 GItemList.cc
+                GMeshFixer.cc
 )
 
 SET(hdrs 
@@ -118,6 +119,7 @@ GTreeCheck.hh
 GTreePresent.hh
 GBBoxMesh.hh
 GItemList.hh
+GMeshFixer.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

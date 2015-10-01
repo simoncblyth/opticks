@@ -9,6 +9,7 @@ class NCache {
    public:
       std::string path(const char* relative);
       std::string path(const char* tmpl, const char* incl);
+      std::string path(const char* tmpl, unsigned int incl);
    private:
       boost::filesystem::path m_cache ; 
 

@@ -23,10 +23,12 @@ const char* GMesh::vertices     = "vertices" ;
 const char* GMesh::normals      = "normals" ;
 const char* GMesh::colors       = "colors" ;
 const char* GMesh::texcoords    = "texcoords" ;
+
 const char* GMesh::indices      = "indices" ;
 const char* GMesh::nodes        = "nodes" ;
 const char* GMesh::boundaries   = "boundaries" ;
 const char* GMesh::sensors      = "sensors" ;
+
 const char* GMesh::center_extent = "center_extent" ;
 const char* GMesh::bbox           = "bbox" ;
 const char* GMesh::transforms     = "transforms" ;
@@ -40,10 +42,12 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(normals); 
     names.push_back(colors); 
     names.push_back(texcoords); 
+
     names.push_back(indices); 
     names.push_back(nodes); 
     names.push_back(boundaries); 
     names.push_back(sensors); 
+
     names.push_back(center_extent); 
     names.push_back(bbox); 
     names.push_back(transforms); 
@@ -194,11 +198,6 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
     if(strcmp(name, nodeinfo) == 0)        setNodeInfoBuffer(buffer) ; 
 }
-
-
-
-
-
 
 void GMesh::setVertices(gfloat3* vertices)
 {

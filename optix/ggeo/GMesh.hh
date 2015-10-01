@@ -10,23 +10,79 @@
 
 class GBuffer ; 
 
-//
-// A comment claims are relatively few GMesh 
-// which get reused with different transforms
-// meaning that should put keep node specifics
-// in the GNode and not in GMesh 
-//
-// Is this true ?
-//
-//     YES, the use of boundaries and nodes lists 
-//     within the abstract unplaced shape GMesh 
-//     does not make sense...
-//
-//     These should really be moved to the 
-//     GMergedMesh subclass, but as a GDrawable 
-//     related expedient are keeping them in here 
-//     for now.
-// 
+/*
+
+GMesh
+======
+
+GMesh are distinct geometrical shapes, **NOT** placed nodes/solids
+--------------------------------------------------------------------
+
+There are relatively few GMesh which get reused with different transforms
+meaning that node specifics reside in the GNode, not in GMesh. 
+
+For example the use of boundaries and nodes lists 
+within the abstract unplaced shape GMesh 
+does not make sense...
+
+
+GMergedMesh isa GMesh that combines the data from many GMesh into one
+-----------------------------------------------------------------------
+
+Boundaries and nodes lists make sense at GMergedMesh level as there 
+are only a few GMergedMesh instances for the entire geometry.
+
+
+Vertex buffers in a GMesh
+----------------------------------
+
+*vertices*
+      3*float*nvert
+
+*normals*
+      3*float*nvert
+
+*colors*
+      3*float*nvert
+
+*texcoords*
+      2*float*nvert
+
+
+Face buffers in a GMesh (used from GMergedMesh)
+-----------------------------------------------
+
+*indices*
+     3*uint*nface
+
+*nodes*
+     1*uint*nface
+
+*boundaries*
+     1*uint*nface
+
+*sensors*
+     1*uint*nface
+
+
+Solid buffers in a GMesh (used from GMergedMesh)
+-------------------------------------------------
+
+*center_extent*
+
+*bbox*
+
+*transforms*
+
+*meshes*
+
+*nodeinfo*
+      contains per-solid nface, nvert allowing solid selection even from 
+      merged meshes by accessing the correct ranges  
+
+
+
+*/
 
 class GMesh : public GDrawable {
   public:
@@ -95,9 +151,10 @@ class GMesh : public GDrawable {
       gfloat3*       getNormals();
       gfloat3*       getColors();
       gfloat2*       getTexcoords();
+      bool hasTexcoords();
+  public:
       guint3*        getFaces();
 
-      bool hasTexcoords();
 
   public:
       // methods supporting save/load from file
@@ -119,8 +176,8 @@ class GMesh : public GDrawable {
       void setColorsBuffer(GBuffer* buffer);
       void setTexcoordsBuffer(GBuffer* buffer);
 
-      void setIndicesBuffer(GBuffer* buffer);
-      void setNodesBuffer(GBuffer* buffer);
+      void setIndicesBuffer(GBuffer* buffer);   // TODO: rename FacesBuffer
+      void setNodesBuffer(GBuffer* buffer);     // TODO: consolidate the 3 into FaceInfoBuffer
       void setBoundariesBuffer(GBuffer* buffer);
       void setSensorsBuffer(GBuffer* buffer);
 
@@ -140,7 +197,9 @@ class GMesh : public GDrawable {
       GBuffer* getNormalsBuffer();
       GBuffer* getColorsBuffer();
       GBuffer* getTexcoordsBuffer();
+
       GBuffer* getIndicesBuffer();
+
       GBuffer* getModelToWorldBuffer();
       GBuffer* getCenterExtentBuffer();
       GBuffer* getBBoxBuffer();
@@ -185,11 +244,15 @@ class GMesh : public GDrawable {
   public:
       void setLow(gfloat3* low);
       void setHigh(gfloat3* high);
+
+  public:
       void setVertices(gfloat3* vertices);
       void setNormals(gfloat3* normals);
       void setColors(gfloat3* colors);
       void setTexcoords(gfloat2* texcoords);
+  public:
       void setFaces(guint3* faces);
+  public:
       void setCenterExtent(gfloat4* center_extent);
       void setBBox(gbbox* bb);
       //void setTransforms(float* transforms);
@@ -254,7 +317,9 @@ class GMesh : public GDrawable {
       GBuffer* m_normals_buffer ;
       GBuffer* m_colors_buffer ;
       GBuffer* m_texcoords_buffer ;
+
       GBuffer* m_indices_buffer ;  // aka faces
+
       GBuffer* m_center_extent_buffer ;  
       GBuffer* m_bbox_buffer ;  
       GBuffer* m_nodes_buffer ;
@@ -282,7 +347,6 @@ inline const char* GMesh::getName()
 {
      return m_name ; 
 }
-
 inline void GMesh::setVersion(const char* version)
 {
      m_version = version ? strdup(version) : NULL ;

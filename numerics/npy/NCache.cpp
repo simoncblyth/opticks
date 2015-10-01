@@ -16,4 +16,14 @@ std::string NCache::path(const char* tmpl, const char* incl)
     fs::path cpath(m_cache/p); 
     return cpath.string();
 }   
+
+std::string NCache::path(const char* tmpl, unsigned int incl)
+{   
+    char p[128];
+    snprintf(p, 128, tmpl, incl);
+    fs::path cpath(m_cache/p); 
+    return cpath.string();
+} 
+
+
  

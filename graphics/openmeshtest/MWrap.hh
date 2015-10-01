@@ -16,11 +16,12 @@ class MWrap {
        MWrap(MeshT* mesh);
        MeshT* getMesh();
    public:
-       void copyIn(float* vdata, unsigned int num_vertices, int* fdata, unsigned int num_faces );
+       void loadFromMergedMesh(const char* idpath, unsigned int index, bool dedupe);
+       void copyIn(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces );
        void createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle>& a2b);
    public:
-      // recursive traverse over vertices labelling separately connected components with an index
-      int labelConnectedComponents();
+      // recursive traverse over vertices labelling separately connected component vertices with an index
+      int labelConnectedComponentVertices(const char* vpropname);
       void calcFaceCentroids(const char* fpropname);
    public:
        std::vector<typename MeshT::VertexHandle>& getBoundaryLoop();
