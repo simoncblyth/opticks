@@ -32,6 +32,220 @@ with surgery applied::
     ggv --jdyb -O 
 
 
+G4DAE/G4 triangulation code quickly goes down rabbit hole
+-----------------------------------------------------------
+
+g4dae/src/G4DAEWriteSolids.cc::
+
+    164 G4String G4DAEWriteSolids::
+    165 GeometryWrite(xercesc::DOMElement* solidsElement, const G4VSolid* const solid, const G4String& matSymbol )
+    166 {
+    167    const G4String& geoId = GenerateName(solid->GetName(),solid);
+    168 
+    169    xercesc::DOMElement* geometryElement = NewElementTwoAtt("geometry", "name", geoId, "id", geoId);
+    170    xercesc::DOMElement* meshElement = NewElement("mesh");
+    171 
+    172    G4bool recPoly = GetRecreatePoly();
+    173    G4DAEPolyhedron poly(solid, matSymbol, recPoly );  // recPoly=true  always creates a new poly, even when one exists already   
+    174 
+    175    G4int nvert = poly.GetNoVertices() ;
+    176    G4int nface = poly.GetNoFacets() ;
+    177    G4int ntexl = poly.GetNoTexels() ;
+
+g4dae/src/G4DAEPolyhedron.cc::
+
+     08 G4DAEPolyhedron::G4DAEPolyhedron( const G4VSolid* const solid, const G4String& matSymbol, G4bool create )
+      9 {
+     10     fStart = "\n" ;
+     11     fBefItem  = "\t\t\t\t" ;
+     12     fAftItem  = "\n" ;
+     13     fEnd   = "" ;
+     14 
+     15 
+     16     G4Polyhedron* pPolyhedron ;
+     17 
+     18     //  visualization/management/src/G4VSceneHandler.cc
+     19 
+     20     G4int noofsides = 24 ;
+     21     G4Polyhedron::SetNumberOfRotationSteps (noofsides);
+     22     std::stringstream coutbuf;
+     23     std::stringstream cerrbuf;
+     24     {
+     25        cout_redirect out(coutbuf.rdbuf());
+     26        cerr_redirect err(cerrbuf.rdbuf());
+     27        if( create ){
+     28            AddMeta( "create", "1" );
+     29            pPolyhedron = solid->CreatePolyhedron ();  // always create a new poly   
+     30        } else {
+     31            AddMeta( "create", "0" );
+     32            pPolyhedron = solid->GetPolyhedron ();     // if poly created already and no parameter change just provide that one 
+     33        }
+     34     }
+
+
+CreatePolyhedron::
+
+    simon:geant4.10.00.p01 blyth$ find . -name '*.hh' -exec grep -H CreatePolyhedron {} \;
+    ./source/geometry/management/include/G4ReflectedSolid.hh:    G4Polyhedron* CreatePolyhedron () const ;
+    ./source/geometry/management/include/G4VSolid.hh:    virtual G4Polyhedron* CreatePolyhedron () const;
+    ./source/geometry/solids/Boolean/include/G4DisplacedSolid.hh:    G4Polyhedron* CreatePolyhedron () const ;
+    ./source/geometry/solids/Boolean/include/G4IntersectionSolid.hh:    G4Polyhedron* CreatePolyhedron () const ;
+    ./source/geometry/solids/Boolean/include/G4SubtractionSolid.hh:    G4Polyhedron* CreatePolyhedron () const ;
+    ./source/geometry/solids/Boolean/include/G4UnionSolid.hh:    G4Polyhedron* CreatePolyhedron () const ;
+    ./source/geometry/solids/CSG/include/G4Box.hh://                     and SendPolyhedronTo() to CreatePolyhedron()
+    ./source/geometry/solids/CSG/include/G4Box.hh:    G4Polyhedron* CreatePolyhedron   () const;
+    ./source/geometry/solids/CSG/include/G4Cons.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/CSG/include/G4CutTubs.hh:    G4Polyhedron*       CreatePolyhedron   () const;
+    ./source/geometry/solids/CSG/include/G4Orb.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/CSG/include/G4OTubs.hh:    G4Polyhedron*       CreatePolyhedron   () const;
+    ./source/geometry/solids/CSG/include/G4Para.hh:    G4Polyhedron* CreatePolyhedron   () const;
+    ./source/geometry/solids/CSG/include/G4Sphere.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/CSG/include/G4Torus.hh:    G4Polyhedron*       CreatePolyhedron   () const;
+    ./source/geometry/solids/CSG/include/G4Trap.hh:    G4Polyhedron* CreatePolyhedron   () const;
+    ./source/geometry/solids/CSG/include/G4Trd.hh:    G4Polyhedron* CreatePolyhedron   () const;
+    ./source/geometry/solids/CSG/include/G4Tubs.hh:// 22.07.96 J.Allison: Changed SendPolyhedronTo to CreatePolyhedron
+    ./source/geometry/solids/CSG/include/G4Tubs.hh:    G4Polyhedron*       CreatePolyhedron   () const;
+    ./source/geometry/solids/specific/include/G4Ellipsoid.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4EllipticalCone.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4EllipticalTube.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4GenericPolycone.hh:  G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4GenericTrap.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4Hype.hh:  G4Polyhedron* CreatePolyhedron   () const;
+    ./source/geometry/solids/specific/include/G4Paraboloid.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4Polycone.hh:  G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4Polyhedra.hh:  G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4TessellatedSolid.hh:    virtual G4Polyhedron* CreatePolyhedron () const;
+    ./source/geometry/solids/specific/include/G4Tet.hh:    G4Polyhedron* CreatePolyhedron   () const;
+    ./source/geometry/solids/specific/include/G4TwistedTubs.hh:  G4Polyhedron   *CreatePolyhedron   () const;
+    ./source/geometry/solids/specific/include/G4UGenericPolycone.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4UPolycone.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4UPolyhedra.hh:    G4Polyhedron* CreatePolyhedron() const;
+    ./source/geometry/solids/specific/include/G4VCSGfaceted.hh:    virtual G4Polyhedron* CreatePolyhedron() const = 0;
+    ./source/geometry/solids/specific/include/G4VTwistedFaceted.hh:  virtual G4Polyhedron   *CreatePolyhedron   () const ;
+    ./source/geometry/solids/usolids/include/G4USolid.hh:    G4Polyhedron* CreatePolyhedron() const;
+
+
+source/geometry/solids/Boolean/src/G4UnionSolid.cc::
+
+    487 G4Polyhedron*
+    488 G4UnionSolid::CreatePolyhedron () const
+    489 {
+    490   HepPolyhedronProcessor processor;
+    491   // Stack components and components of components recursively
+    492   // See G4BooleanSolid::StackPolyhedron
+    493   G4Polyhedron* top = StackPolyhedron(processor, this);
+    494   G4Polyhedron* result = new G4Polyhedron(*top);
+    495   if (processor.execute(*result)) { return result; }
+    496   else { return 0; }
+    497 }
+
+
+source/graphics_reps/src/HepPolyhedronProcessor.src::
+
+    139 bool HepPolyhedronProcessor::execute(HepPolyhedron& a_poly) {
+    140   //{for(unsigned int index=0;index<5;index++) {
+    141   //  printf("debug : bijection : %d\n",index);
+    142   //  HEPVis::bijection_dump bd(index);
+    143   //  bd.visitx();
+    144   //}}
+    145 
+    146   HepPolyhedron_exec e(m_ops.size(),*this,a_poly);
+    147   if(!e.visitx()) return true;
+    148   //std::cerr << "HepPolyhedronProcessor::execute :"
+    149   //          << " all shifts and combinatory tried."
+    150   //          << " Boolean operations failed."
+    151   //          << std::endl;
+    152   return false;
+    153 }
+    ...
+    121 class HepPolyhedron_exec : public HEPVis::bijection_visitor {
+    122 public:
+    123   HepPolyhedron_exec(unsigned int a_number,
+    124        HepPolyhedronProcessor& a_proc,
+    125        HepPolyhedron& a_poly)
+    126   : HEPVis::bijection_visitor(a_number)
+    127   ,m_proc(a_proc)
+    128   ,m_poly(a_poly)
+    129   {}
+    130   virtual bool visit(const is_t& a_is) {
+    131     if(m_proc.execute1(m_poly,a_is)==true) return false; //stop
+    132     return true;//continue
+    133   }
+    134 private:
+    135   HepPolyhedronProcessor& m_proc;
+    136   HepPolyhedron& m_poly;
+    137 };
+    ...
+    155 bool HepPolyhedronProcessor::execute1(
+    156  HepPolyhedron& a_poly
+    157 ,const std::vector<unsigned int>& a_is
+    158 ) {
+    159   HepPolyhedron result(a_poly);
+    160   unsigned int number = m_ops.size();
+    161   int num_shift = BooleanProcessor::get_num_shift();
+    162   for(int ishift=0;ishift<num_shift;ishift++) {
+    163     BooleanProcessor::set_shift(ishift);
+    164 
+    165     result = a_poly;
+    166     bool done = true;
+    167     for(unsigned int index=0;index<number;index++) {
+    168       BooleanProcessor processor; //take a fresh one.
+    169       const op_t& elem = m_ops[a_is[index]];
+    170       int err;
+    171       result = processor.execute(elem.first,result,elem.second,err);
+    172       if(err) {
+    173         done = false;
+    174         break;
+    175       }
+    176     }
+    177     if(done) {
+    178       a_poly = result;
+    179       return true;
+    180     }
+    181   }
+    182 
+    183   //std::cerr << "HepPolyhedronProcessor::execute :"
+    184   //          << " all shifts tried. Boolean operations failed."
+    185   //          << std::endl;
+    186 
+    187   //a_poly = result;
+    188   return false;
+    189 }
+      
+
+
+::
+
+    simon:geant4.10.00.p01 blyth$ find . -name '*.cc' -exec grep -H BooleanProcessor {} \;
+    ./source/graphics_reps/src/HepPolyhedron.cc:#include "BooleanProcessor.src"
+    ./source/graphics_reps/src/HepPolyhedron.cc:  BooleanProcessor processor;
+    ./source/graphics_reps/src/HepPolyhedron.cc:  BooleanProcessor processor;
+    ./source/graphics_reps/src/HepPolyhedron.cc:  BooleanProcessor processor;
+    ./source/graphics_reps/src/HepPolyhedron.cc://       since there is no BooleanProcessor.h
+    ./source/visualization/OpenGL/src/G4OpenGLImmediateWtViewer.cc:  // BooleanProcessor is up to it, abandon this and use generic
+    ./source/visualization/OpenGL/src/G4OpenGLSceneHandler.cc:  // when the BooleanProcessor is up to it, abandon this and use
+    ./source/visualization/OpenGL/src/G4OpenGLSceneHandler.cc:  // But...if not, when the BooleanProcessor is up to it...
+    ./source/visualization/OpenGL/src/G4OpenGLViewer.cc:  // BooleanProcessor is up to it, abandon this and use generic
+    simon:geant4.10.00.p01 blyth$ 
+
+
+source/graphics_reps/src/BooleanProcessor.src::
+
+    ... scary code ...
+ 
+
+
+::
+
+   source/graphics_reps/include/G4Polyhedron.hh
+   source/graphics_reps/src/G4Polyhedron.cc
+   source/graphics_reps/include/HepPolyhedron.h
+   source/graphics_reps/src/HepPolyhedron.cc
+   source/graphics_reps/include/HepPolyhedronProcessor.h
+   source/graphics_reps/src/HepPolyhedronProcessor.src
+
+
+
 Idea mesh scanning to identify internal faces
 -----------------------------------------------
 
