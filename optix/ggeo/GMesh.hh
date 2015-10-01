@@ -85,6 +85,7 @@ Solid buffers in a GMesh (used from GMergedMesh)
 */
 
 class GMesh : public GDrawable {
+      friend class GMergedMesh  ;
   public:
       static int g_instance_count ; 
 
@@ -108,17 +109,23 @@ class GMesh : public GDrawable {
       static const char* nodeinfo ;      // nface,nvert,?,? per solid : allowing solid selection beyond the geocache
 
       GMesh(GMesh* other); // stealing copy ctor
-      GMesh(unsigned int index, 
-            gfloat3* vertices, unsigned int num_vertices, 
-            guint3*  faces,     unsigned int num_faces,  
-            gfloat3* normals, 
-            gfloat2* texcoords );
+      GMesh(unsigned int index=0, 
+            gfloat3* vertices=NULL, unsigned int num_vertices=0, 
+            guint3*  faces=NULL,    unsigned int num_faces=0,  
+            gfloat3* normals=NULL, 
+            gfloat2* texcoords=NULL );
+
+      void allocate();  // must first have set numVertices, numFaces, numSolids
+      void deallocate(); 
       virtual ~GMesh();
 
   public:
+      GMesh* makeDedupedCopy();
+
       void Summary(const char* msg="GMesh::Summary");
       void Dump(const char* msg="GMesh::Dump", unsigned int nmax=10);
   public:
+      void setIndex(unsigned int index);
       void setName(const char* name);
       void setVersion(const char* version);
       const char* getName();
@@ -155,21 +162,25 @@ class GMesh : public GDrawable {
   public:
       guint3*        getFaces();
 
-
   public:
-      // methods supporting save/load from file
-      static GMesh* load(const char* dir);  
-      void loadBuffers(const char* dir);
+      static GMesh* load(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
+      static GMesh* load_deduped(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
       void save(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
+
+  private:
+      // methods supporting save/load from file
+      std::string getVersionedBufferName(std::string& name);
+      void loadBuffers(const char* dir);
+      void saveBuffers(const char* dir);
+      void saveBuffer(const char* path, const char* name, GBuffer* buffer);
+      void loadBuffer(const char* path, const char* name);
+      static void nameConstituents(std::vector<std::string>& names);
+  private: 
       GBuffer* getBuffer(const char* name);
       void setBuffer(const char* name, GBuffer* buffer);
       bool isIntBuffer(const char* name);
       bool isUIntBuffer(const char* name);
       bool isFloatBuffer(const char* name);
-      static void nameConstituents(std::vector<std::string>& names);
-      void saveBuffer(const char* path, const char* name, GBuffer* buffer);
-      void loadBuffer(const char* path, const char* name);
-
   public:
       void setVerticesBuffer(GBuffer* buffer);
       void setNormalsBuffer(GBuffer* buffer);
@@ -260,7 +271,6 @@ class GMesh : public GDrawable {
       void setNodeInfo(guint4* nodeinfo);
 
   public:
-      void setNumColors(unsigned int num_colors);
       void setColor(float r, float g, float b);
  
   public:
@@ -275,12 +285,16 @@ class GMesh : public GDrawable {
 
   public:
       // used from GMergedMesh
-      void setNumSolids(unsigned int numSolids);
+      void setNumVertices(unsigned int num_vertices);
+      void setNumFaces(   unsigned int num_faces);
+      void setNumSolids(unsigned int num_solids);
+
+
   protected:
       unsigned int    m_index ;
 
       unsigned int    m_num_vertices ;
-      unsigned int    m_num_colors ;
+      //unsigned int    m_num_colors ;
       unsigned int    m_num_faces ;
       unsigned int    m_num_solids  ;         // used from GMergedMesh subclass
       unsigned int    m_num_solids_selected  ;
@@ -334,9 +348,27 @@ class GMesh : public GDrawable {
 
 
 
+inline void GMesh::deallocate()
+{
+    delete[] m_vertices ;  
+    delete[] m_normals ;  
+    delete[] m_colors ;  
+    delete[] m_texcoords ;  
+    delete[] m_faces ;  
+
+    delete[] m_center_extent ;  
+    delete[] m_bbox ;  
+    delete[] m_transforms ;  
+    delete[] m_meshes ;  
+    delete[] m_nodeinfo ;  
+
+    // NB buffers and the rest are very lightweight 
+}
+
 
 inline GMesh::~GMesh()
 {
+    deallocate();
 }
 
 inline void GMesh::setName(const char* name)
@@ -367,10 +399,6 @@ inline unsigned int GMesh::getNumVertices()
 {
     return m_num_vertices ; 
 }
-inline unsigned int GMesh::getNumColors()
-{
-    return m_num_colors ;   
-}
 inline unsigned int GMesh::getNumFaces()
 {
     return m_num_faces ; 
@@ -387,12 +415,22 @@ inline unsigned int GMesh::getNumSolidsSelected()
 
 
 
-
-
-inline void GMesh::setNumColors(unsigned int num_colors)
+inline void GMesh::setIndex(unsigned int index)
 {
-   m_num_colors = num_colors ;
+   m_index = index ;
 }
+inline void GMesh::setNumVertices(unsigned int num_vertices)
+{
+    m_num_vertices = num_vertices ; 
+}
+inline void GMesh::setNumFaces(unsigned int num_faces)
+{
+    m_num_faces = num_faces ; 
+}
+
+
+
+
 inline void GMesh::setLow(gfloat3* low)
 {
     m_low = low ;

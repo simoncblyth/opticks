@@ -4,6 +4,8 @@
 #include <map>
 #include <glm/glm.hpp>
 
+class GMesh ; 
+
 struct BBox {
    glm::vec3 min ; 
    glm::vec3 max ; 
@@ -12,12 +14,17 @@ struct BBox {
 
 template <typename MeshT>
 class MWrap { 
+    // Developed with single/few mesh caches in mind like --jdyb --kdyb 
    public:
        MWrap(MeshT* mesh);
        MeshT* getMesh();
+       unsigned int getNumVertices();
+       unsigned int getNumFaces();
    public:
-       void loadFromMergedMesh(const char* idpath, unsigned int index, bool dedupe);
-       void copyIn(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces );
+       GMesh* createGMesh();
+       void load(GMesh* mm);  // GMergedMesh isa GMesh
+       void copyIn( float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces );
+       void copyOut(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces, float* ndata );
        void createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle>& a2b);
    public:
       // recursive traverse over vertices labelling separately connected component vertices with an index

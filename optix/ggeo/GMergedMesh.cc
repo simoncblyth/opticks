@@ -65,33 +65,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
               << " numSolidsSelected " << mm->getNumSolidsSelected()
               ;
 
-    unsigned int numVertices = mm->getNumVertices();
-    mm->setVertices(new gfloat3[numVertices]); 
-    mm->setNormals( new gfloat3[numVertices]);
-    mm->setColors(  new gfloat3[numVertices]);
-    mm->setTexcoords( NULL );  
-    mm->setNumColors(numVertices);
-
-    mm->setColor(0.5,0.5,0.5);  // starting point mid-grey, change in traverse 2nd pass
-    t("allocate vertices");
-
-    // consolidate into guint4 
-    unsigned int numFaces = mm->getNumFaces();
-    mm->setFaces(        new guint3[numFaces]);
-
-    // TODO: consolidate into uint4 with one spare
-    mm->setNodes(        new unsigned int[numFaces]);
-    mm->setBoundaries(   new unsigned int[numFaces]);
-    mm->setSensors(      new unsigned int[numFaces]);
-    t("allocate faces");
-
-    unsigned int numSolids = mm->getNumSolids();
-    mm->setCenterExtent(new gfloat4[numSolids]);
-    mm->setBBox(new gbbox[numSolids]);
-    mm->setMeshes(new unsigned int[numSolids]);
-    mm->setNodeInfo(new guint4[numSolids]);
-
-    t("allocate solids");
+    mm->allocate(); 
 
     // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 

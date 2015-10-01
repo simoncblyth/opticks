@@ -1,4 +1,5 @@
 #include "GMesh.hh"
+#include "GMeshFixer.hh"
 #include "GBuffer.hh"
 
 #include "float.h"
@@ -68,7 +69,7 @@ GMesh::GMesh(GMesh* other)
      m_colors_buffer(other->getColorsBuffer()),
      m_texcoords(other->getTexcoords()),
      m_texcoords_buffer(other->getTexcoordsBuffer()),
-     m_num_colors(other->getNumColors()),
+     //m_num_colors(other->getNumColors()),
      m_normals(other->getNormals()),
      m_normals_buffer(other->getNormalsBuffer()),
      m_nodes(other->getNodes()),
@@ -130,7 +131,7 @@ GMesh::GMesh(unsigned int index,
       m_center_extent_buffer(NULL),
       m_bbox(NULL),
       m_bbox_buffer(NULL),
-      m_num_colors(num_vertices),  // tie num_colors to num_vertices
+      //m_num_colors(num_vertices),  // tie num_colors to num_vertices
       m_normals(NULL),
       m_normals_buffer(NULL),
       m_num_solids(0),
@@ -156,6 +157,45 @@ GMesh::GMesh(unsigned int index,
    updateBounds();
    nameConstituents(m_names);
 }
+
+
+
+
+
+void GMesh::allocate()
+{
+    unsigned int numVertices = getNumVertices();
+    unsigned int numFaces = getNumFaces();
+    unsigned int numSolids = getNumSolids();
+
+    assert(numVertices > 0 && numFaces > 0 && numSolids > 0);
+
+    setVertices(new gfloat3[numVertices]); 
+    setNormals( new gfloat3[numVertices]);
+    setColors(  new gfloat3[numVertices]);
+    setTexcoords( NULL );  
+
+    setColor(0.5,0.5,0.5);  // starting point mid-grey, change in traverse 2nd pass
+
+    // consolidate into guint4 
+
+    setFaces(        new guint3[numFaces]);
+
+    // TODO: consolidate into uint4 with one spare
+    setNodes(        new unsigned int[numFaces]);
+    setBoundaries(   new unsigned int[numFaces]);
+    setSensors(      new unsigned int[numFaces]);
+
+
+    setCenterExtent(new gfloat4[numSolids]);
+    setBBox(new gbbox[numSolids]);
+    setMeshes(new unsigned int[numSolids]);
+    setNodeInfo(new guint4[numSolids]);
+}
+
+
+
+
 
 
 GBuffer* GMesh::getBuffer(const char* name)
@@ -270,7 +310,7 @@ void GMesh::setColorsBuffer(GBuffer* buffer)
     unsigned int num_colors = numBytes/sizeof(gfloat3);
 
     assert( m_num_vertices == num_colors );  // must load vertices before colors
-    m_num_colors = m_num_vertices ; // TODO: get rid of m_num_colors: duplication is evil
+    //m_num_colors = m_num_vertices ; // TODO: get rid of m_num_colors: duplication is evil
 }
 
 
@@ -590,12 +630,12 @@ void GMesh::setSensorsBuffer(GBuffer* buffer)
 
 void GMesh::setColor(float r, float g, float b)
 {
-    assert(m_num_colors == m_num_vertices);
+    //assert(m_num_colors == m_num_vertices);
     if(!m_colors)
     {
-        setColors(new gfloat3[m_num_colors]);
+        setColors(new gfloat3[m_num_vertices]);
     }
-    for(unsigned int i=0 ; i<m_num_colors ; ++i )
+    for(unsigned int i=0 ; i<m_num_vertices ; ++i )
     {
         m_colors[i].x  = r ;
         m_colors[i].y  = g ;
@@ -630,7 +670,7 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
         } 
     }
 
-    for(unsigned int i=0 ; i < std::min(nmax,m_num_colors) ; i++)
+    for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
     {
         gfloat3& col = m_colors[i] ;
         printf(" col %5u  %10.3f %10.3f %10.3f \n", i, col.x, col.y, col.z );
@@ -937,7 +977,48 @@ void GMesh::loadBuffer(const char* path, const char* name)
     if(buffer) setBuffer(name, buffer);
 }
 
+std::vector<std::string>& GMesh::getNames()
+{
+    return m_names ; 
+}
 
+std::string GMesh::getVersionedBufferName(std::string& name)
+{
+    std::string vname = name ;
+    if(m_version)
+    {
+        if(vname.compare("vertices") == 0 || 
+           vname.compare("indices") == 0  || 
+           vname.compare("colors") == 0  || 
+           vname.compare("normals") == 0)
+           { 
+               vname += m_version ;
+               LOG(warning) << "GMesh::loadBuffers version setting changed buffer name to " << vname ; 
+           }
+    }
+    return vname ; 
+}
+
+
+
+GMesh* GMesh::load(const char* dir, const char* typedir, const char* instancedir)
+{
+    fs::path cachedir(dir);
+    if(typedir)     cachedir /= typedir ;
+    if(instancedir) cachedir /= instancedir ;
+
+    GMesh* mesh(NULL);
+    if(!fs::exists(cachedir))
+    {
+        printf("GMesh::load directory %s DOES NOT EXIST \n", dir);
+    }
+    else
+    {
+        mesh = new GMesh(0, NULL, 0, NULL, 0, NULL, NULL );
+        mesh->loadBuffers(cachedir.string().c_str());
+    }
+    return mesh ; 
+}
 
 
 void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
@@ -956,16 +1037,7 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
 
     if(fs::exists(cachedir) && fs::is_directory(cachedir))
     {
-        for(unsigned int i=0 ; i<m_names.size() ; i++)
-        {
-            std::string name = m_names[i];
-            fs::path bufpath(cachedir);
-            bufpath /= name + ".npy" ; 
-            GBuffer* buffer = getBuffer(name.c_str());
-            if(!buffer) continue ; 
-
-            saveBuffer(bufpath.string().c_str(), name.c_str(), buffer);  
-        } 
+        saveBuffers(cachedir.string().c_str());
     }
     else
     {
@@ -974,32 +1046,12 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
 }
 
 
-std::vector<std::string>& GMesh::getNames()
-{
-    return m_names ; 
-}
-
-
-
 void GMesh::loadBuffers(const char* dir)
 {
     for(unsigned int i=0 ; i<m_names.size() ; i++)
     {
         std::string name = m_names[i];
-        std::string vname = name ;
-        
-        if(m_version)
-        {
-            if(vname.compare("vertices") == 0 || 
-               vname.compare("indices") == 0  || 
-               vname.compare("colors") == 0  || 
-               vname.compare("normals") == 0)
-            { 
-                vname += m_version ;
-                LOG(warning) << "GMesh::loadBuffers version setting changed buffer name to " << vname ; 
-            }
-        }
-
+        std::string vname = getVersionedBufferName(name);  
         fs::path bufpath(dir);
         bufpath /= vname + ".npy" ; 
 
@@ -1012,21 +1064,36 @@ void GMesh::loadBuffers(const char* dir)
 }
 
 
-GMesh* GMesh::load(const char* dir)
+void GMesh::saveBuffers(const char* dir)
 {
-    GMesh* mesh(NULL);
-    fs::path cachedir(dir);
-    if(!fs::exists(cachedir))
+    for(unsigned int i=0 ; i<m_names.size() ; i++)
     {
-        printf("GMesh::load directory %s DOES NOT EXIST \n", dir);
-    }
-    else
-    {
-        mesh = new GMesh(0, NULL, 0, NULL, 0, NULL, NULL );
-        mesh->loadBuffers(dir);
-    }
-    return mesh ; 
+        std::string name = m_names[i];
+        std::string vname = getVersionedBufferName(name);  
+        fs::path bufpath(dir);
+        bufpath /= vname + ".npy" ; 
+
+        GBuffer* buffer = getBuffer(name.c_str());
+        if(!buffer) continue ; 
+
+        saveBuffer(bufpath.string().c_str(), name.c_str(), buffer);  
+    } 
 }
 
 
+GMesh* GMesh::makeDedupedCopy()
+{
+    GMeshFixer fixer(this);
+    fixer.copyWithoutVertexDuplicates();   
+    return fixer.getDst(); 
+}
+
+
+GMesh* GMesh::load_deduped(const char* dir, const char* typedir, const char* instancedir)
+{
+    GMesh* gm = GMesh::load(dir, typedir, instancedir) ;
+    GMesh* dm = gm->makeDedupedCopy();
+    delete gm ; 
+    return dm ; 
+}
 

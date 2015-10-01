@@ -6,6 +6,13 @@ class GNode ;
 
 #include "GMesh.hh"
 
+//
+// NB : GMergedMesh is just relevant for GMesh creation from multiple GMesh 
+//      general usage should target GMesh  
+//
+// NB : DO NOT ADD METHODS HERE THAT CAN LIVE IN GMesh
+//
+
 class GMergedMesh : public GMesh {
    
 public:
@@ -18,6 +25,7 @@ public:
 public:
     GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;
+
     virtual ~GMergedMesh(); 
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
 

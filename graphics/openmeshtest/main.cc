@@ -7,19 +7,13 @@
 #include <string>
 
 #include <glm/glm.hpp>
-//#include "GLMPrint.hpp"
-
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-// npy-
-#include "stringutil.hpp"
-#include "NPY.hpp"
-#include "NCache.hpp"
+// ggeo-
+#include "GMesh.hh"
 
 //
 #include "MWrap.hh"
@@ -28,96 +22,15 @@ namespace fs = boost::filesystem;
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
-
-template <typename MeshT>
-inline void saveMesh(MeshT* mesh, char* dir, const char* postfix)
-{
-    typedef typename MeshT::VertexHandle VH ; 
-    typedef typename MeshT::FaceHandle FH ; 
-    typedef typename MeshT::VertexIter VI ; 
-    typedef typename MeshT::Point P ; 
-    typedef typename MeshT::ConstFaceVertexIter FVI ; 
-
-    NCache cache(dir); 
-
-    unsigned int nface = mesh->n_faces(); 
-    unsigned int nvert = mesh->n_vertices(); 
-
-    NPY<float>* vnpy = NPY<float>::make( nvert, 0, 3 ); 
-    vnpy->zero(); 
-    float* vertices = vnpy->getValues();
-
-    NPY<float>* nnpy = NPY<float>::make( nvert, 0, 3 ); 
-    nnpy->zero(); 
-    float* normals = nnpy->getValues();
-
-    NPY<float>* cnpy = NPY<float>::make( nvert, 0, 3 ); 
-    cnpy->zero(); 
-    float* colors = cnpy->getValues();
-
-
-    NPY<int>*   inpy = NPY<int>::make( nface*3, 0, 1 ); 
-    inpy->zero(); 
-    int* indices = inpy->getValues();
-
-
-    for(unsigned int i=0 ; i < nvert ; i++)
-    {
-        VH v = mesh->vertex_handle(i) ;   
-        P p = mesh->point(v);
-        P n = mesh->normal(v);
-
-        vertices[i*3+0] = p[0] ;
-        vertices[i*3+1] = p[1] ;
-        vertices[i*3+2] = p[2] ;
-
-        normals[i*3+0] = n[0] ;
-        normals[i*3+1] = n[1] ;
-        normals[i*3+2] = n[2] ;
-
-        colors[i*3+0] = 0.5f ;
-        colors[i*3+1] = 0.5f ;
-        colors[i*3+2] = 0.5f ;
-
-    }
-
-    for(unsigned int i=0 ; i < nface ; i++)
-    {
-        FH fh = mesh->face_handle(i) ;   
-        unsigned int j(0) ;   
-        for(FVI fv=mesh->cfv_iter(fh) ; fv ; fv++ )
-        {
-            indices[i*3+j] = fv->idx(); 
-            j++ ;
-        } 
-        assert(j == 3);
-    }
-
-    vnpy->setVerbose(true);
-    nnpy->setVerbose(true);
-    cnpy->setVerbose(true);
-    inpy->setVerbose(true);
-
-    vnpy->save( cache.path("GMergedMesh/0/vertices%s.npy", postfix).c_str() ); 
-    nnpy->save( cache.path("GMergedMesh/0/normals%s.npy", postfix).c_str() ); 
-    cnpy->save( cache.path("GMergedMesh/0/colors%s.npy", postfix).c_str() ); 
-    inpy->save( cache.path("GMergedMesh/0/indices%s.npy", postfix).c_str() ); 
-
-} 
-
-
 int main()
 {
-    char* dir = getenv("JDPATH") ;
+    char* idpath = getenv("JDPATH") ;
 
-    MyMesh* src = new MyMesh ;
-    MWrap<MyMesh> wsrc(src);
+    GMesh* gm = GMesh::load_deduped( idpath, "GMergedMesh/0" );
+    gm->Summary();
 
-    bool dedupe = true ; 
-    wsrc.loadFromMergedMesh(dir, 0, dedupe);
-
-    src->request_face_normals();
-    src->update_normals();
+    MWrap<MyMesh> wsrc(new MyMesh);
+    wsrc.load(gm);
 
     int ncomp = wsrc.labelConnectedComponentVertices("component"); 
     printf("ncomp: %d \n", ncomp);
@@ -164,7 +77,9 @@ int main()
 
     wdst.createWithWeldedBoundary( &wa, &wb, a2b );
 
-    saveMesh<MyMesh>( wdst.getMesh(), dir, "_v0");
+    GMesh* result = wdst.createGMesh(); 
+    result->setVersion("_v0");
+    result->save( idpath, "GMergedMesh/0" );
 
     return 0;
 }

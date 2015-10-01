@@ -30,7 +30,6 @@ GBBoxMesh::GBBoxMesh(GMergedMesh* mergedmesh)
 {
       twentyfour();
 
-      setNumColors(NUM_VERTICES);
       setColors(  new gfloat3[NUM_VERTICES]);
       setColor(0.5,0.5,0.5);  
 

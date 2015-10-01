@@ -8,8 +8,7 @@
 #include "GLMPrint.hpp"
 
 // ggeo-
-#include "GMergedMesh.hh"
-#include "GMeshFixer.hh"
+#include "GMesh.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -23,31 +22,10 @@ typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
 
 template <typename MeshT>
-void MWrap<MeshT>::loadFromMergedMesh(const char* idpath, unsigned int index, bool dedupe)
+void MWrap<MeshT>::load(GMesh* mm)
 {
-    // Developed with single/few mesh caches in mind like --jdyb --kdyb 
-
-    NCache cache(idpath); 
-    GMergedMesh* mm = GMergedMesh::load( cache.path("GMergedMesh/%d", index).c_str(), index );
-    mm->Summary();
-
-    GMesh* dd = NULL ; 
-    if(dedupe)
-    {
-        GMeshFixer fixer(mm);
-        fixer.copyWithoutVertexDuplicates();
-        dd = fixer.getDst();
-        dd->Summary();
-    }
-    else
-    {
-        dd = (GMesh*)mm ; 
-    }
-
-    copyIn( (float*)dd->getVertices(), dd->getNumVertices(), (unsigned int*)dd->getFaces(), dd->getNumFaces() );
+    copyIn( (float*)mm->getVertices(), mm->getNumVertices(), (unsigned int*)mm->getFaces(), mm->getNumFaces() );
 }
-
-
 
 
 template <typename MeshT>
@@ -87,6 +65,87 @@ void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, unsigned int*
     delete[] vh ; 
 }
 
+
+
+template <typename MeshT>
+unsigned int MWrap<MeshT>::getNumVertices()
+{
+    return m_mesh->n_vertices(); 
+}
+
+template <typename MeshT>
+unsigned int MWrap<MeshT>::getNumFaces()
+{
+    return m_mesh->n_faces(); 
+}
+
+
+
+template <typename MeshT>
+GMesh* MWrap<MeshT>::createGMesh()
+{
+    MeshT* mesh = m_mesh ; 
+    unsigned int nface = mesh->n_faces(); 
+    unsigned int nvert = mesh->n_vertices(); 
+
+    GMesh* gm = new GMesh ;
+
+    gm->setNumVertices( nvert );
+    gm->setNumFaces(    nface );
+    gm->setNumSolids(   1 );
+
+    gm->allocate();
+
+    float* vdata = (float*)gm->getVertices()  ;
+    float* ndata = (float*)gm->getNormals()  ;
+    unsigned int* fdata = (unsigned int*)gm->getFaces()  ;
+
+    copyOut( vdata, nvert, fdata, nface, ndata );
+
+    return gm ; 
+}
+
+
+
+template <typename MeshT>
+void MWrap<MeshT>::copyOut(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces, float* ndata  )  
+{
+    typedef typename MeshT::Point P ; 
+    typedef typename MeshT::VertexHandle VH ; 
+    typedef typename MeshT::FaceHandle FH ; 
+    typedef typename MeshT::ConstFaceVertexIter FVI ; 
+ 
+    MeshT* mesh = m_mesh ; 
+    unsigned int nface = mesh->n_faces(); 
+    unsigned int nvert = mesh->n_vertices(); 
+
+    for(unsigned int i=0 ; i < nvert ; i++)
+    {
+        VH v = mesh->vertex_handle(i) ;   
+        P p = mesh->point(v);
+        P n = mesh->normal(v);
+
+        vdata[i*3+0] = p[0] ;
+        vdata[i*3+1] = p[1] ;
+        vdata[i*3+2] = p[2] ;
+
+        ndata[i*3+0] = n[0] ;
+        ndata[i*3+1] = n[1] ;
+        ndata[i*3+2] = n[2] ;
+    }
+
+    for(unsigned int i=0 ; i < nface ; i++)
+    {
+        FH fh = mesh->face_handle(i) ;   
+        unsigned int j(0) ;   
+        for(FVI fv=mesh->cfv_iter(fh) ; fv ; fv++ )
+        {
+            fdata[i*3+j] = fv->idx(); 
+            j++ ;
+        } 
+        assert(j == 3);
+    }
+}
 
 
 
@@ -260,12 +319,6 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, glm::vec4 delta, const c
 
 
 
-
-
-
-
-
-
 template <typename MeshT>
 unsigned int MWrap<MeshT>::deleteFaces(const char* fpredicate_name )
 {
@@ -403,8 +456,6 @@ void MWrap<MeshT>::dumpBounds(const char* msg)
     print( bb.min , "bb.min"); 
     print( bb.max - bb.min , "bb.max - bb.min"); 
 }
-
-
 
 
 
@@ -794,7 +845,6 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
 
 
 
-
 template <typename MeshT>
 void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
 {
@@ -816,7 +866,6 @@ void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
         std::cerr << x.what() << std::endl;
     }
 }
-
 
 
 
