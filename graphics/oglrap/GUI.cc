@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include "gleq.h"
 
+// npy-
+#include "Index.hpp"
 
 // ggeo-
 #include "GLoader.hh"
@@ -158,18 +160,16 @@ void GUI::show(bool* opened)
 
 
     ImGui::Spacing();
-
     if( m_photons )
     {
         m_photons->gui(); 
     }
-   
 
     GItemIndex* materials = m_loader ? m_loader->getMaterials() : NULL ; 
     if(materials)
     {
         ImGui::Spacing();
-        materials->gui();
+        gui_item_index(materials);
     } 
 
 
@@ -177,19 +177,15 @@ void GUI::show(bool* opened)
     if(surfaces)
     {
         ImGui::Spacing();
-        surfaces->gui();
+        gui_item_index(surfaces);
     } 
-
-
-
 
     GItemIndex* flags = m_loader ? m_loader->getFlags() : NULL ; 
     if(flags)
     {
         ImGui::Spacing();
-        flags->gui();
+        gui_item_index(flags);
     } 
-
 
 
     ImGui::Spacing();
@@ -228,4 +224,72 @@ void GUI::shutdown()
 GUI::~GUI()
 {
 }
+
+
+
+
+
+
+void GUI::gui_item_index(GItemIndex* ii)
+{
+#ifdef GUI_
+    Index* index = ii->getIndex(); 
+
+    if (ImGui::CollapsingHeader(index->getItemType()))
+    {   
+       typedef std::vector<std::string> VS ; 
+       typedef std::vector<unsigned int> VI ; 
+
+       VS& labels = ii->getLabels();
+       VI& codes = ii->getCodes();
+
+       for(unsigned int i=0 ; i < labels.size() ; i++)
+       {   
+           unsigned int code = codes[i] ;
+           unsigned int red   = (code & 0xFF0000) >> 16 ;
+           unsigned int green = (code & 0x00FF00) >>  8 ; 
+           unsigned int blue  = (code & 0x0000FF)  ;
+
+           ImGui::TextColored(ImVec4(red/256.,green/256.,blue/256.,1.0f), labels[i].c_str() );
+       }   
+    }   
+#endif
+}
+
+void GUI::gui_radio_select(GItemIndex* ii)
+{
+#ifdef GUI_
+    typedef std::vector<std::string> VS ; 
+    Index* index = ii->getIndex(); 
+
+    if (ImGui::CollapsingHeader(index->getTitle()))
+    {   
+       VS& labels = ii->getLabels();
+       VS  names = index->getNames();
+       assert(names.size() == labels.size());
+
+       int* ptr = index->getSelectedPtr();
+
+       std::string all("All ");
+       all += index->getItemType() ;   
+
+       ImGui::RadioButton( all.c_str(), ptr, 0 );
+
+       for(unsigned int i=0 ; i < labels.size() ; i++)
+       {   
+           std::string iname = names[i] ;
+           std::string label = labels[i] ;
+           unsigned int local  = index->getIndexLocal(iname.c_str()) ;
+           ImGui::RadioButton( label.c_str(), ptr, local);
+       }   
+       ImGui::Text("%s %d ", index->getItemType(), *ptr);
+   }   
+#endif
+}
+
+
+
+
+
+
 

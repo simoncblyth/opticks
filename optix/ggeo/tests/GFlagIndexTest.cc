@@ -1,4 +1,3 @@
-#define GUI_ 1
 #include "GFlagIndex.hh"
 #include "GColors.hh"
 #include "GColorMap.hh"
@@ -26,7 +25,6 @@ int main(int argc, char** argv)
     //colors->dump_uchar4_buffer(buffer);
 
     idx->formTable();
-    idx->gui();
 
     return 0 ;
 }

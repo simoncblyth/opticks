@@ -16,11 +16,6 @@
 #include "Types.hpp"
 #include "jsonutil.hpp"
 
-
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -289,47 +284,3 @@ GBuffer* GItemIndex::getColorBuffer()
 }
 
 
-void GItemIndex::gui()
-{
-#ifdef GUI_    
-    if (ImGui::CollapsingHeader(m_index->getItemType()))
-    {
-       for(unsigned int i=0 ; i < m_labels.size() ; i++)
-       {
-           unsigned int code = m_codes[i] ;
-           unsigned int red   = (code & 0xFF0000) >> 16 ;
-           unsigned int green = (code & 0x00FF00) >>  8 ;
-           unsigned int blue  = (code & 0x0000FF)  ;
-           ImGui::TextColored(ImVec4(red/256.,green/256.,blue/256.,1.0f), m_labels[i].c_str() );
-       }
-    }  
-#endif
-}
-
-void GItemIndex::gui_radio_select()
-{
-#ifdef GUI_
-    if (ImGui::CollapsingHeader(m_index->getTitle()))
-    {
-       typedef std::vector<std::string> VS ; 
-       VS names = m_index->getNames();
-       assert(names.size() == m_labels.size());
-
-       int* ptr = m_index->getSelectedPtr();
-
-       std::string all("All ");
-       all += m_index->getItemType() ;  
-
-       ImGui::RadioButton( all.c_str(), ptr, 0 );
-
-       for(unsigned int i=0 ; i < m_labels.size() ; i++)
-       {
-           std::string iname = names[i] ;
-           std::string label = m_labels[i] ;
-           unsigned int local  = m_index->getIndexLocal(iname.c_str()) ;
-           ImGui::RadioButton( label.c_str(), ptr, local);
-       }   
-       ImGui::Text("%s %d ", m_index->getItemType(), *ptr);
-   }
-#endif
-}

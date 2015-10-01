@@ -51,6 +51,10 @@ class GUI {
        void setupStats(const std::vector<std::string>& stats);
        void setupParams(const std::vector<std::string>& params);
 
+   public:
+       static void gui_item_index(GItemIndex* ii);
+       static void gui_radio_select(GItemIndex* ii);
+
   private:
        void choose( unsigned int n, const char** choices, bool** selection );
   private:

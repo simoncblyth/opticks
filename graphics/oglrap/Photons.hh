@@ -16,6 +16,8 @@ class Photons {
        void gui();
        void gui_boundary_selection();
        void gui_flag_selection();
+       void gui_radio_select(GItemIndex* ii);
+       void gui_item_index(GItemIndex* ii);
    public:
         Types*         getTypes();
         PhotonsNPY*    getPhotons();

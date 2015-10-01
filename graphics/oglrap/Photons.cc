@@ -14,6 +14,8 @@
 #include <imgui.h>
 #endif
 
+#include "GUI.hh"
+
 
 void Photons::gui()
 {
@@ -39,16 +41,17 @@ void Photons::gui()
     if(m_seqhis)
     {
         ImGui::Spacing();
-        m_seqhis->gui_radio_select();
+        GUI::gui_radio_select(m_seqhis);
     }
 
     if(m_seqmat)
     {
         ImGui::Spacing();
-        m_seqmat->gui_radio_select();
+        GUI::gui_radio_select(m_seqmat);
     }
 #endif
 }
+
 
 
 

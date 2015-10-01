@@ -79,11 +79,9 @@ class GItemIndex {
         GBuffer* getColorBuffer();
 
         std::vector<unsigned int>&    getCodes();
+        std::vector<std::string>&     getLabels();
 
    public:
-        // GUI 
-        void     gui();
-        void     gui_radio_select();
         void     formTable(bool verbose=false);
 
    private:
@@ -166,4 +164,11 @@ inline std::vector<unsigned int>& GItemIndex::getCodes()
 {
    return m_codes ; 
 }
+
+inline std::vector<std::string>& GItemIndex::getLabels()
+{
+   return m_labels ; 
+}
+
+
 
