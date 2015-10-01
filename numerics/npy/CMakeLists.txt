@@ -53,7 +53,6 @@ add_library( ${name}  SHARED
     BoundariesNPY.cpp
     SequenceNPY.cpp
     AxisNPY.cpp
-    DedupeNPY.cpp
     Counts.cpp
     Types.cpp
     Index.cpp
@@ -92,7 +91,6 @@ RecordsNPY.hpp
 BoundariesNPY.hpp
 SequenceNPY.hpp
 AxisNPY.hpp
-DedupeNPY.hpp
 Counts.hpp
 numpy.hpp
 stringutil.hpp
