@@ -809,27 +809,36 @@ void GGeo::dumpTree(const char* msg)
 
     // all these are full traverse counts, not reduced by selections or instancing
     unsigned int nso = mm0->getNumSolids();  
+    guint4* nodeinfo = mm0->getNodeInfo(); 
     unsigned int npv = m_pvlist->getNumItems(); 
     unsigned int nlv = m_lvlist->getNumItems(); 
-    assert(npv == nlv && nso == npv);
 
-    guint4* nodeinfo = mm0->getNodeInfo(); 
+    LOG(info) << msg 
+              << " nso " << nso 
+              << " npv " << npv 
+              << " nlv " << nlv 
+              << " nodeinfo " << (void*)nodeinfo
+              ; 
 
-    LOG(info) << msg << " num_solids " << nso ; 
+    if( npv == 0 || nlv == 0 || nodeinfo == NULL )
+    {
+        LOG(warning) << "GGeo::dumpTree MISSING pvlist lvlist or nodeinfo " ; 
+        return ;
+    }
+    else
+    {
+        assert(npv == nlv && nso == npv);
+    }
 
     for(unsigned int i=0 ; i < nso ; i++)
     {
          guint4* info = nodeinfo + i ;  
          glm::ivec4 offnum = getNodeOffsetCount(i);
-
-         //if(info->x > 0)
-         //{
-             std::string& pv = m_pvlist->getItem(i);
-             std::string& lv = m_lvlist->getItem(i);
-             printf(" %6u : nf %4d nv %4d id %6u pid %6d : %4d %4d %4d %4d  :%50s %50s \n", i, 
+         std::string& pv = m_pvlist->getItem(i);
+         std::string& lv = m_lvlist->getItem(i);
+         printf(" %6u : nf %4d nv %4d id %6u pid %6d : %4d %4d %4d %4d  :%50s %50s \n", i, 
                     info->x, info->y, info->z, info->w,  offnum.x, offnum.y, offnum.z, offnum.w,
                     pv.c_str(), lv.c_str() ); 
-         //}
     }
 }
 
