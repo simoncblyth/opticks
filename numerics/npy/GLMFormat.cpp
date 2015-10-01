@@ -91,6 +91,7 @@ glm::quat GLMFormat::quat(std::string& s )
 {
     std::vector<std::string> tp; 
     boost::split(tp, s, boost::is_any_of(","));
+    assert(tp.size() == 4);
 
     float w = boost::lexical_cast<float>(tp[0]); 
     float x = boost::lexical_cast<float>(tp[1]); 
@@ -105,13 +106,13 @@ glm::vec3 GLMFormat::vec3(std::string& s )
 {
     std::vector<std::string> tp; 
     boost::split(tp, s, boost::is_any_of(","));
-    assert(tp.size() == 3);
+    unsigned int size = tp.size();
 
-    float x = boost::lexical_cast<float>(tp[0]); 
-    float y = boost::lexical_cast<float>(tp[1]); 
-    float z = boost::lexical_cast<float>(tp[2]); 
+    glm::vec3 v(0.f,0.f,0.f);
+    if(size > 0) v.x = boost::lexical_cast<float>(tp[0]); 
+    if(size > 1) v.y = boost::lexical_cast<float>(tp[1]); 
+    if(size > 2) v.z = boost::lexical_cast<float>(tp[2]); 
 
-    glm::vec3 v(x,y,z);
     return v ; 
 }
 
@@ -119,14 +120,14 @@ glm::vec4 GLMFormat::vec4(std::string& s )
 {
     std::vector<std::string> tp; 
     boost::split(tp, s, boost::is_any_of(","));
-    assert(tp.size() == 4);
+    unsigned int size = tp.size();
 
-    float x = boost::lexical_cast<float>(tp[0]); 
-    float y = boost::lexical_cast<float>(tp[1]); 
-    float z = boost::lexical_cast<float>(tp[2]); 
-    float w = boost::lexical_cast<float>(tp[3]); 
+    glm::vec4 v(0.f,0.f,0.f,0.f);
+    if(size > 0) v.x = boost::lexical_cast<float>(tp[0]); 
+    if(size > 1) v.y = boost::lexical_cast<float>(tp[1]); 
+    if(size > 2) v.z = boost::lexical_cast<float>(tp[2]); 
+    if(size > 3) v.w = boost::lexical_cast<float>(tp[3]); 
 
-    glm::vec4 v(x,y,z,w);
     return v ; 
 }
 

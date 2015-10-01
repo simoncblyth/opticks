@@ -10,6 +10,8 @@ class FrameCfg : public Cfg {
      std::string& getEventTag();
      std::string& getLiveLine();
      std::string& getTorchConfig();
+     std::string& getZExplodeConfig();
+     std::string& getMeshVersion();
      int          getBounceMax(); 
      int          getRecordMax(); 
      int          getTimeMax(); 
@@ -26,6 +28,8 @@ private:
      std::string m_event_tag ;
      std::string m_liveline ;
      std::string m_torchconfig ;
+     std::string m_zexplodeconfig ;
+     std::string m_meshversion ;
      int         m_bouncemax ; 
      int         m_recordmax ; 
      int         m_timemax ; 
@@ -42,6 +46,8 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        Cfg(name, live),
        m_listener(listener),
        m_torchconfig(""),
+       m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
+       m_meshversion(""),
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),
@@ -109,8 +115,16 @@ inline void FrameCfg<Listener>::init()
    m_desc.add_options()
        ("torch",  "fabricate torch genstep using torch config settings") ;
 
+
    m_desc.add_options()
        ("torchconfig",   boost::program_options::value<std::string>(&m_torchconfig), "torch configuration" );
+
+   m_desc.add_options()
+       ("zexplode",  "explode mesh in z for debugging split unions") ;
+
+   m_desc.add_options()
+       ("zexplodeconfig",   boost::program_options::value<std::string>(&m_zexplodeconfig), "zexplode configuration" );
+
 
 
    char modulo[128];
@@ -137,6 +151,10 @@ inline void FrameCfg<Listener>::init()
 
    m_desc.add_options()
        ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load" );
+
+   m_desc.add_options()
+       ("meshversion",   boost::program_options::value<std::string>(&m_meshversion), "debug only option for testing alternate mesh versions" );
+
 
    char bouncemax[128];
    snprintf(bouncemax,128, "Maximum number of boundary bounces, 0:to just generate. Default %d ", m_bouncemax);
@@ -214,6 +232,18 @@ inline std::string& FrameCfg<Listener>::getTorchConfig()
 {
     return m_torchconfig ;
 }
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getZExplodeConfig()
+{
+    return m_zexplodeconfig ;
+}
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getMeshVersion()
+{
+    return m_meshversion ;
+}
+
+
 template <class Listener>
 inline int FrameCfg<Listener>::getBounceMax()
 {

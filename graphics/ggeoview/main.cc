@@ -13,9 +13,6 @@
 #define OPTIX 1
 
 
-
-
-
 // oglrap-
 #define GUI_ 1
 #ifdef GUI_
@@ -48,6 +45,7 @@
 // npy-
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 #include "NumpyEvt.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
@@ -462,8 +460,12 @@ int App::loadGeometry()
     m_loader = new GLoader ;
     m_loader->setInstanced(true); // find repeated geometry 
 
-    // TODO: make this controlled from commandline 
-    //m_loader->setMeshVersion("_v0"); // debug
+    std::string meshversion = m_fcfg->getMeshVersion() ;
+    if(!meshversion.empty())
+    {
+        LOG(warning) << "App::loadGeometry using debug meshversion " << meshversion ;  
+        m_loader->setMeshVersion(meshversion.c_str());
+    }
 
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);
@@ -500,9 +502,15 @@ int App::loadGeometry()
     m_mesh0 = m_ggeo->getMergedMesh(0); 
     assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
 
-
-    // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
-    // m_mesh0->explodeZVertices(1000.f, -(5564.950f + 5565.000f)/2.f ); 
+   
+    bool zexplode = m_fcfg->hasOpt("zexplode");
+    if(zexplode)
+    {
+       // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
+        glm::vec4 zexplodeconfig = gvec4(m_fcfg->getZExplodeConfig());
+        print(zexplodeconfig, "zexplodeconfig");
+        m_mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
+    }
 
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes

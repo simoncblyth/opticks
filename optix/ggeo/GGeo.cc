@@ -15,6 +15,7 @@
 #include "GItemList.hh"
 
 // npy-
+#include "GLMPrint.hpp"
 #include "TorchStepNPY.hpp"
 
 #include "assert.h"
@@ -715,6 +716,7 @@ glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_in
         ce.y = vce.y ; 
         ce.z = vce.z ; 
         ce.w = vce.w ; 
+        print(ce, "GGeo::getCenterExtent target:%u", target);
     }
     else
     {
@@ -746,18 +748,25 @@ void GGeo::targetTorchStep( TorchStepNPY* torchstep )
     glm::ivec4& ipos_target = torchstep->getPosTarget() ;    
     glm::ivec4& idir_target = torchstep->getDirTarget() ;    
 
+    print(ipos_target, "GGeo::targetTorchStep ipos_target");
+    print(idir_target, "GGeo::targetTorchStep idir_target");
+
     if(ipos_target.x > 0 || ipos_target.y > 0) 
     {    
-            glm::vec3 pos_target = glm::vec3(getCenterExtent(ipos_target.x,ipos_target.y));   
-            torchstep->setPosition(pos_target);  
+        glm::vec3 pos_target = glm::vec3(getCenterExtent(ipos_target.x,ipos_target.y));   
+        print(pos_target, "GGeo::targetTorchStep pos_target");
+        torchstep->setPosition(pos_target);  
     }    
 
     if(idir_target.x > 0 || idir_target.y > 0) 
     {    
-            glm::vec3 tgt = glm::vec3(getCenterExtent(idir_target.x,idir_target.y));   
-            glm::vec3 pos = torchstep->getPosition();
-            glm::vec3 dir = glm::normalize( tgt - pos );
-            torchstep->setDirection(dir);
+        glm::vec3 tgt = glm::vec3(getCenterExtent(idir_target.x,idir_target.y));   
+        print(tgt, "GGeo::targetTorchStep tgt");
+        glm::vec3 pos = torchstep->getPosition();
+        print(pos, "GGeo::targetTorchStep pos");
+        glm::vec3 dir = glm::normalize( tgt - pos );
+        print(dir, "GGeo::targetTorchStep dir");
+        torchstep->setDirection(dir);
     }    
 
     glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
@@ -820,9 +829,9 @@ void GGeo::dumpTree(const char* msg)
               << " nodeinfo " << (void*)nodeinfo
               ; 
 
-    if( npv == 0 || nlv == 0 || nodeinfo == NULL )
+    if( nso <= 10 || npv == 0 || nlv == 0 || nodeinfo == NULL )
     {
-        LOG(warning) << "GGeo::dumpTree MISSING pvlist lvlist or nodeinfo " ; 
+        LOG(warning) << "GGeo::dumpTree MISSING pvlist lvlist or nodeinfo OR few solid testing  " ; 
         return ;
     }
     else

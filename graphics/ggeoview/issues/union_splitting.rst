@@ -10,6 +10,26 @@ Mesh mending
   looking for any mesh face that is connected to more other faces than it has edges
 
 
+Visualisations
+---------------
+
+::
+
+    ggv --jdyb --zexplode --zexplodeconfig -5564.975,100. -O   
+
+            # offset the split by 10cm to make obvious
+
+    ggv --jdyb --zexplode --zexplodeconfig -5564.975,100. --meshversion _v0 -O 
+
+            # meshversion _v0 is the openmeshtest- fixed mesh  
+
+    ggv --jdyb --zexplode --zexplodeconfig -5564.975,100. --meshversion _v0  --geocenter
+
+            # attempt to propagate in surgery applied geometry, 
+            # failing to viz, torch targetting problem ?   
+
+
+
 Mesh Surgery implemented in openmeshtest-
 --------------------------------------------
 
@@ -26,10 +46,6 @@ Mesh Surgery implemented in openmeshtest-
 
 * save the mesh into NPY format in the "--jdyb" cache under postfix "_v0" 
 
-By setting GLoader mesh version to "_v0" can visualize the mesh 
-with surgery applied::
-
-    ggv --jdyb -O 
 
 
 G4DAE/G4 triangulation code quickly goes down rabbit hole
