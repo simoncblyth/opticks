@@ -8,13 +8,16 @@
 
 int main(int argc, char* argv[])
 {
-    GCache gc("GGEOVIEW_");
-    GGeo* gg = GGeo::load(gc.getIdPath());
+    GCache* m_cache = new GCache("GGEOVIEW_");
 
-    unsigned int nmm = gg->getNumMergedMesh();
+    GGeo* m_ggeo = new GGeo(m_cache);
+
+    m_ggeo->loadFromCache();
+
+    unsigned int nmm = m_ggeo->getNumMergedMesh();
     for(unsigned int i=1 ; i < nmm ; i++)
     { 
-        GMergedMesh* mm = gg->getMergedMesh(i) ;
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i) ;
         unsigned int numSolids = mm->getNumSolids();
         unsigned int numSolidsSelected = mm->getNumSolidsSelected();
 

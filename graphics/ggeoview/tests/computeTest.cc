@@ -95,20 +95,23 @@ int main(int argc, char** argv)
 
     unsigned int numcol = 64 ; 
     bool nooptix    = fcfg->hasOpt("nooptix");
-    bool nogeocache = false ;
     assert(nooptix == false);
 
-    GLoader loader ;
+
+    GGeo ggeo(&cache);
+
+
+    GLoader loader(&ggeo) ;
     loader.setInstanced(false); // find repeated geometry 
     loader.setRepeatIndex(fcfg->getRepeatIndex());
     loader.setTypes(&types);
     loader.setCache(&cache);
-    loader.setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    loader.load(nogeocache);
+    loader.setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+    loader.load();
     p.add<int>("repeatIdx", loader.getRepeatIndex() );
 
 
-    GGeo* gg = loader.getGGeo();
+    GGeo* gg = &ggeo ; 
     unsigned int nmm = gg->getNumMergedMesh();
     assert(nmm == 1);
     GMergedMesh* mm = gg->getMergedMesh(0); 

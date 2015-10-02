@@ -34,7 +34,7 @@ namespace fs = boost::filesystem;
 // trace/debug/info/warning/error/fatal
 
 
-void GLoader::load(bool nogeocache)
+void GLoader::load()
 {
     Timer t("GLoader::load") ; 
     t.setVerbose(true);
@@ -53,19 +53,22 @@ void GLoader::load(bool nogeocache)
               << " path " << path 
               << " query " << query 
               << " ctrl " << ctrl 
-              << " nogeocache " << nogeocache  
               << " repeatidx " << m_repeatidx 
               ;
 
     m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
 
-    fs::path geocache(idpath);
 
-    if(fs::exists(geocache) && fs::is_directory(geocache) && !nogeocache ) 
+    // more flexible to pass in nascent ggeo rather than have it created
+    // in multiple other places 
+    // eg this allows setting up mesh joiner imp to be done at creation within 
+    // AssimpGGeo by GGeo
+
+    if(m_ggeo->isLoaded()) 
     {
         LOG(info) << "GLoader::load loading from cache directory " << idpath ;
 
-        m_ggeo = GGeo::load(idpath, m_mesh_version) ; 
+        m_ggeo->loadFromCache() ; 
 
         t("load ggeo/mergedmesh"); 
 
@@ -84,18 +87,10 @@ void GLoader::load(bool nogeocache)
     } 
     else
     {
-        LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
+        LOG(info) << "GLoader::load slow loading using m_loader_imp (disguised AssimpGGeo) " << envprefix ;
 
-        bool loaded = false ; 
-        bool volnames = GGeo::ctrlHasKey(ctrl, "volnames");
 
-        // more flexible to pass in ggeo, 
-        // eg for setting up mesh fixing to be done at creation within 
-        // AssimpGGeo by GGeo
- 
-        m_ggeo = new GGeo(loaded, volnames);   
-
-        int rc = (*m_imp)(m_ggeo, path, query, ctrl);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
+        int rc = (*m_loader_imp)(m_ggeo, path, query, ctrl);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
 
         assert(rc == 0);
 

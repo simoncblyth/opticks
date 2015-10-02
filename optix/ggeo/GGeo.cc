@@ -125,7 +125,19 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 
 void GGeo::init()
 {
+   const char* idpath = m_cache->getIdPath() ;
+
+   fs::path geocache(idpath); 
+
+   m_loaded = fs::exists(geocache) && fs::is_directory(geocache) && m_cache->isGeocache() ;
+
+   const char* ctrl = m_cache->getCtrl() ;
+
+   m_volnames = GGeo::ctrlHasKey(ctrl, "volnames");
+ 
+
    if(m_loaded) return ; 
+
 
    m_boundary_lib = new GBoundaryLib();
 
@@ -166,8 +178,10 @@ bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
 
 
 
-void GGeo::loadFromCache(const char* idpath)
+void GGeo::loadFromCache()
 {   
+    const char* idpath = m_cache->getIdPath() ;
+
     loadMergedMeshes(idpath);
         
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");
@@ -193,17 +207,6 @@ void GGeo::save(const char* idpath)
     }
 }
 
-
-
-GGeo* GGeo::load(const char* idpath, const char* mesh_version)
-{
-    bool loaded = true ; 
-    bool volnames = true ; 
-    GGeo* ggeo = new GGeo(loaded, volnames);
-    ggeo->setMeshVersion(mesh_version);
-    ggeo->loadFromCache(idpath);
-    return ggeo ; 
-}
 
 
 

@@ -16,6 +16,10 @@ class GCache {
          static const char* DAYABAY ; 
     public:
          GCache(const char* envprefix);
+    public:
+         void setGeocache(bool geocache=true);
+         bool isGeocache();
+    public:
          const char* getIdPath();
          std::string getRelativePath(const char* path); 
          std::string getMergedMeshPath(unsigned int ridx);
@@ -43,6 +47,7 @@ class GCache {
           const char* m_idpath ;
           const char* m_digest ;
     private:
+          bool        m_geocache ; 
           bool        m_dayabay ; 
           bool        m_juno ; 
           const char* m_detector ;
@@ -63,6 +68,7 @@ inline GCache::GCache(const char* envprefix)
        m_ctrl(NULL),
        m_idpath(NULL),
        m_digest(NULL),
+       m_geocache(false),
        m_dayabay(false),
        m_juno(false),
        m_detector(NULL)
@@ -92,6 +98,16 @@ inline const char* GCache::getCtrl()
 {
     return m_ctrl ;
 }
+
+inline void GCache::setGeocache(bool geocache)
+{
+    m_geocache = geocache ; 
+}
+inline bool GCache::isGeocache()
+{
+    return m_geocache ;
+}
+
 
 
 

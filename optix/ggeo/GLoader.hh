@@ -8,6 +8,7 @@ class Types ;
 
 class GCache ; 
 class GGeo ; 
+class GMesh ; 
 class GMergedMesh ; 
 class GDrawable ; 
 class GBoundaryLib ; 
@@ -24,17 +25,15 @@ class Lookup ;
 class GLoader {
      public:
          typedef int (*GLoaderImpFunctionPtr)(GGeo*, const char*, const char*, const char* );
-
     public:
-         GLoader();
+         GLoader(GGeo* ggeo);
          void setTypes(Types* types);
          void setCache(GCache* cache);
          void setRepeatIndex(int repeatidx);
-         void setImp(GLoaderImpFunctionPtr imp);
-         void load(bool nogeocache=false);
+         void setLoaderImp(GLoaderImpFunctionPtr imp);
+         void load();
 
     public:
-         void setMeshVersion(const char* mesh_version);
          void setInstanced(bool instanced=true);
          bool isInstanced();
     public:
@@ -62,10 +61,10 @@ class GLoader {
          int                    getRepeatIndex();
 
     private:
+         GGeo*                     m_ggeo ;    
          Types*                    m_types ; 
          GCache*                   m_cache ; 
-         GLoaderImpFunctionPtr     m_imp ;  
-         GGeo*                     m_ggeo ;    
+         GLoaderImpFunctionPtr     m_loader_imp ;  
          GMergedMesh*              m_mergedmesh ;
          GBoundaryLib*             m_boundarylib ;
          GBoundaryLibMetadata*     m_metadata ;
@@ -89,11 +88,11 @@ class GLoader {
          char*                     m_mesh_version ; 
 };
 
-inline GLoader::GLoader() 
+inline GLoader::GLoader(GGeo* ggeo) 
    :
+   m_ggeo(ggeo),
    m_types(NULL),
    m_cache(NULL),
-   m_ggeo(NULL),
    m_mergedmesh(NULL),
    m_boundarylib(NULL),
    m_metadata(NULL),
@@ -113,12 +112,6 @@ inline GLoader::GLoader()
 {
 }
 
-inline void GLoader::setMeshVersion(const char* mesh_version)
-{
-   m_mesh_version = strdup(mesh_version) ;
-}
-
-
 
 
 inline void GLoader::setInstanced(bool instanced)
@@ -132,14 +125,16 @@ inline bool GLoader::isInstanced()
 }
 
 
-// setImp : sets implementation that does the actual loading
+// setLoaderImp : sets implementation that does the actual loading
 // using a function pointer to the implementation 
 // avoids ggeo-/GLoader depending on all the implementations
 
-inline void GLoader::setImp(GLoaderImpFunctionPtr imp)
+inline void GLoader::setLoaderImp(GLoaderImpFunctionPtr imp)
 {
-    m_imp = imp ; 
+    m_loader_imp = imp ; 
 }
+
+
 inline void GLoader::setTypes(Types* types)
 {
     m_types = types ; 

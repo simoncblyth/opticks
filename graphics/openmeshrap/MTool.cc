@@ -31,3 +31,13 @@ unsigned int MTool::countMeshComponents(GMesh* gm)
     return ncomp ; 
 }
 
+
+GMesh* MTool::joinSplitUnion(GMesh* mesh, const char* config)
+{
+    LOG(info) << "MTool::joinSplitUnion " << mesh->getIndex() ; 
+    return mesh ; 
+}
+
+
+
+

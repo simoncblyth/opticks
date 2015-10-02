@@ -422,6 +422,8 @@ int App::config(int argc, char** argv)
     else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
     else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
 
+
+
     m_composition->setSize( m_size );
 
     m_bookmarks->load(idpath); 
@@ -483,24 +485,40 @@ void App::prepareContext()
 
 int App::loadGeometry()
 {
-    m_loader = new GLoader ;
-    m_loader->setInstanced(true); // find repeated geometry 
 
-    std::string meshversion = m_fcfg->getMeshVersion() ;
+   /*
+    const char* idpath = m_cache->getIdPath() ;
+    const char* path = m_cache->getPath() ;
+    const char* query = m_cache->getQuery() ;
+    const char* ctrl = m_cache->getCtrl() ;
+    const char* envprefix = m_cache->getEnvPrefix() ;
+   */
+
+    m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
+
+    m_ggeo = new GGeo(m_cache);
+
+    m_ggeo->setMeshJoinerImp(&MTool::joinSplitUnion);
+
+    std::string meshversion = m_fcfg->getMeshVersion() ;;
     if(!meshversion.empty())
     {
         LOG(warning) << "App::loadGeometry using debug meshversion " << meshversion ;  
-        m_loader->setMeshVersion(meshversion.c_str());
+        m_ggeo->setMeshVersion(meshversion.c_str());
     }
+    
+    m_loader = new GLoader(m_ggeo) ;
 
+    m_loader->setInstanced(true); // find repeated geometry 
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
-    m_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+    m_loader->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+ //   m_loader->setJoinerImp(&MTool::joinSplitUnion);
 
-    bool nogeocache = m_fcfg->hasOpt("nogeocache");
 
-    m_loader->load(nogeocache);
+    m_loader->load();
+
 
     m_parameters->add<int>("repeatIdx", m_loader->getRepeatIndex() );
 
@@ -513,7 +531,6 @@ int App::loadGeometry()
     m_composition->setColorDomain( m_loader->getColorDomain() );
     m_scene->uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
    
-    m_ggeo = m_loader->getGGeo();
 
     m_ggeo->dumpStats("App::loadGeometry");
     //m_ggeo->dumpTree("App::loadGeometry");
@@ -556,7 +573,7 @@ int App::loadGeometry()
  
     (*m_timer)("loadGeometry"); 
 
-    if(nogeocache)
+    if(!m_cache->isGeocache())
     {
         
         LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 

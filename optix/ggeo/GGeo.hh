@@ -8,6 +8,7 @@
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
 
+class GCache; 
 class GMesh ; 
 class GSolid ; 
 class GNode ; 
@@ -30,17 +31,17 @@ class TorchStepNPY ;
 //
 class GGeo {
     public:
+        typedef GMesh* (*GJoinerImpFunctionPtr)(GMesh*, const char*);
+        void setMeshJoinerImp(GJoinerImpFunctionPtr imp);
+    public:
         typedef std::map<unsigned int, std::string> Index_t ;
         static const char* GMERGEDMESH ; 
         static GGeo* load(const char* idpath, const char* mesh_version=NULL);
         static bool ctrlHasKey(const char* ctrl, const char* key);
         enum { MAX_MERGED_MESH = 10 } ;
-    private:
-        void loadFromCache(const char* idpath);
     public:
-        GGeo(bool loaded=false, bool volnames=false);  // loaded instances are only partial revivals
-
-      
+        GGeo(GCache* cache); 
+        void loadFromCache();
         virtual ~GGeo();
     private:
         void init(); 
@@ -195,6 +196,7 @@ class GGeo {
         void Details(const char* msg="GGeo::Details");
 
     private:
+        GCache*                       m_cache ; 
         bool                          m_loaded ;  
         std::vector<GMesh*>           m_meshes ; 
         std::vector<GSolid*>          m_solids ; 
@@ -231,12 +233,14 @@ class GGeo {
         Index_t                            m_index ; 
         unsigned int                       m_sensitize_count ;  
         bool                               m_volnames ;    
+        GJoinerImpFunctionPtr              m_joiner_imp ;  
 
 };
 
 
-inline GGeo::GGeo(bool loaded, bool volnames) :
-   m_loaded(loaded), 
+inline GGeo::GGeo(GCache* cache) :
+   m_cache(cache), 
+   m_loaded(false), 
    m_boundary_lib(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
@@ -251,9 +255,15 @@ inline GGeo::GGeo(bool loaded, bool volnames) :
    m_idpath(NULL),
    m_mesh_version(NULL),
    m_sensitize_count(0),
-   m_volnames(volnames)
+   m_volnames(false)
 {
    init(); 
+}
+
+
+inline void GGeo::setMeshJoinerImp(GJoinerImpFunctionPtr imp)
+{
+    m_joiner_imp = imp ; 
 }
 
 
@@ -416,6 +426,9 @@ inline void GGeo::setMeshVersion(const char* mesh_version)
 {
     m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
 }
+
+
+
 
 inline const char* GGeo::getMeshVersion()
 {

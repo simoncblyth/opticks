@@ -21,16 +21,16 @@ int main(int argc, char* argv[])
 
     GCache* m_cache = new GCache("GGEOVIEW_");
 
-    GLoader* m_loader = new GLoader ;
+    GGeo* m_ggeo = new GGeo(m_cache);
+
+    GLoader* m_loader = new GLoader(m_ggeo) ;
 
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
-    m_loader->setImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+    m_loader->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
-    bool nogeocache = false ; 
-    m_loader->load(nogeocache);
+    m_loader->load();
 
-    GGeo* m_ggeo = m_loader->getGGeo();
     m_ggeo->dumpTree();
 
     m_ggeo->dumpVolume(3158);    

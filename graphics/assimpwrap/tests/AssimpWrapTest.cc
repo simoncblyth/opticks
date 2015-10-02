@@ -43,7 +43,7 @@ void inilog()
 }
 
 
-// cf with GLoader::load where the below is canonically done  
+// cf with App::loadGeometry and GLoader::load where the below is canonically done  
 
 int main(int argc, char* argv[])
 {
@@ -53,15 +53,9 @@ int main(int argc, char* argv[])
 
     cache.Summary();
     
-    bool loaded = false ; 
+    GGeo* ggeo = new GGeo(&cache);
 
-    const char* ctrl = cache.getCtrl() ;
-
-    bool volnames = GGeo::ctrlHasKey( ctrl, "volnames" );
-
-    GGeo* ggeo = new GGeo( loaded, volnames );
-
-    int rc = AssimpGGeo::load( ggeo, cache.getPath(), cache.getQuery(), ctrl );
+    int rc = AssimpGGeo::load( ggeo, cache.getPath(), cache.getQuery(), cache.getCtrl() );
 
     assert(rc == 0);
 
