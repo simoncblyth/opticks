@@ -485,15 +485,6 @@ void App::prepareContext()
 
 int App::loadGeometry()
 {
-
-   /*
-    const char* idpath = m_cache->getIdPath() ;
-    const char* path = m_cache->getPath() ;
-    const char* query = m_cache->getQuery() ;
-    const char* ctrl = m_cache->getCtrl() ;
-    const char* envprefix = m_cache->getEnvPrefix() ;
-   */
-
     m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
 
     m_ggeo = new GGeo(m_cache);
@@ -507,6 +498,8 @@ int App::loadGeometry()
         m_ggeo->setMeshVersion(meshversion.c_str());
     }
     
+
+
     m_loader = new GLoader(m_ggeo) ;
 
     m_loader->setInstanced(true); // find repeated geometry 
@@ -514,10 +507,11 @@ int App::loadGeometry()
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
     m_loader->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
- //   m_loader->setJoinerImp(&MTool::joinSplitUnion);
-
 
     m_loader->load();
+
+
+
 
 
     m_parameters->add<int>("repeatIdx", m_loader->getRepeatIndex() );

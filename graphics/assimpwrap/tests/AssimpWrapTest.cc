@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     
     GGeo* ggeo = new GGeo(&cache);
 
-    int rc = AssimpGGeo::load( ggeo, cache.getPath(), cache.getQuery(), cache.getCtrl() );
+    int rc = AssimpGGeo::load(ggeo);
 
     assert(rc == 0);
 

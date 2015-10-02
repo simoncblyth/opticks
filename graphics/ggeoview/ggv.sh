@@ -97,6 +97,7 @@ if [ "${cmdline/--idp}" != "${cmdline}" ]; then
 elif [ "${cmdline/--assimp}" != "${cmdline}" ]; then
 
     assimpwrap-
+    ggeoview-export
     $(assimpwrap-bin) GGEOVIEW_
 
 else

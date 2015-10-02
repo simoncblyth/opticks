@@ -26,7 +26,7 @@ private:
 public:
     bool getVolNames();
 public:
-    static int load(GGeo* ggeo, const char* path, const char* query, const char* ctrl);
+    static int load(GGeo* ggeo);
 
 public:
     static const char* g4dae_bordersurface_physvolume1 ; 

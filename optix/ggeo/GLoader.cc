@@ -43,16 +43,15 @@ void GLoader::load()
     assert(m_cache);
 
     const char* idpath = m_cache->getIdPath() ;
+
     const char* path = m_cache->getPath() ;
     const char* query = m_cache->getQuery() ;
     const char* ctrl = m_cache->getCtrl() ;
+
     const char* envprefix = m_cache->getEnvPrefix() ;
 
     LOG(info) << "GLoader::load start " 
               << " idpath " << idpath 
-              << " path " << path 
-              << " query " << query 
-              << " ctrl " << ctrl 
               << " repeatidx " << m_repeatidx 
               ;
 
@@ -90,7 +89,7 @@ void GLoader::load()
         LOG(info) << "GLoader::load slow loading using m_loader_imp (disguised AssimpGGeo) " << envprefix ;
 
 
-        int rc = (*m_loader_imp)(m_ggeo, path, query, ctrl);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
+        int rc = (*m_loader_imp)(m_ggeo);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
 
         assert(rc == 0);
 
@@ -270,12 +269,6 @@ void GLoader::load()
     t.dump();
 }
 
-void GLoader::Summary(const char* msg)
-{
-    printf("%s\n", msg);
-    //m_mergedmesh->Summary("GLoader::Summary");
-    //m_mergedmesh->Dump("GLoader::Summary Dump",10);
-}
 
 
 

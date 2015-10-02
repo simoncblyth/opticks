@@ -18,13 +18,11 @@ class GColors ;
 class GBuffer ; 
 class GTreeCheck ; 
 
-
-
 class Lookup ; 
 
 class GLoader {
      public:
-         typedef int (*GLoaderImpFunctionPtr)(GGeo*, const char*, const char*, const char* );
+         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
     public:
          GLoader(GGeo* ggeo);
          void setTypes(Types* types);
@@ -32,13 +30,9 @@ class GLoader {
          void setRepeatIndex(int repeatidx);
          void setLoaderImp(GLoaderImpFunctionPtr imp);
          void load();
-
     public:
          void setInstanced(bool instanced=true);
          bool isInstanced();
-    public:
-         //static const char* identityPath( const char* envprefix);
-         void Summary(const char* msg);
 
     public:
          GGeo*                  getGGeo();

@@ -10,6 +10,7 @@
 #include <iomanip>
 
 
+#include "GCache.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
 #include "GGeo.hh"
@@ -67,8 +68,15 @@ void AssimpGGeo::init()
 
 
 
-int AssimpGGeo::load(GGeo* ggeo, const char* path, const char* query, const char* ctrl )
+int AssimpGGeo::load(GGeo* ggeo)
 {
+    GCache* cache = ggeo->getCache();
+
+    const char* idpath_ = cache->getIdPath() ;
+    const char* path = cache->getPath() ;
+    const char* query = cache->getQuery() ;
+    const char* ctrl = cache->getCtrl() ;
+ 
     LOG(info)<< "AssimpGGeo::load "  
              << " path " << path 
              << " query " << query 
@@ -79,7 +87,11 @@ int AssimpGGeo::load(GGeo* ggeo, const char* path, const char* query, const char
     assert(ctrl);
 
     AssimpGeometry ageo(path);
+
     const char* idpath = ageo.identityFilename(path, query);
+
+    assert(strcmp(idpath, idpath_) == 0);
+
     ageo.import();
 
     AssimpSelection* selection = ageo.select(query);

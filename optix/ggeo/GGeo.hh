@@ -41,6 +41,7 @@ class GGeo {
         enum { MAX_MERGED_MESH = 10 } ;
     public:
         GGeo(GCache* cache); 
+        GCache* getCache();
         void loadFromCache();
         virtual ~GGeo();
     private:
@@ -435,7 +436,10 @@ inline const char* GGeo::getMeshVersion()
     return m_mesh_version ;
 }
 
-
+inline GCache* GGeo::getCache()
+{
+    return m_cache ; 
+}
 
 
 
