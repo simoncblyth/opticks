@@ -6,6 +6,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "assert.h"
+#include "stringutil.hpp"
 
 #include <iomanip>
 #include <algorithm>
@@ -1095,5 +1096,11 @@ GMesh* GMesh::load_deduped(const char* dir, const char* typedir, const char* ins
     GMesh* dm = gm->makeDedupedCopy();
     delete gm ; 
     return dm ; 
+}
+
+void GMesh::findShortName()
+{
+   if(!m_name) return ; 
+   m_shortname = trimPointerSuffixPrefix(m_name, NULL );   
 }
 

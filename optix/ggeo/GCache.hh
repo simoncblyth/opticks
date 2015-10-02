@@ -30,6 +30,7 @@ class GCache {
          const char* getPath();
          const char* getQuery();
          const char* getCtrl();
+         const char* getMeshfix();
     public:
          const char* getDetector();
          bool        isJuno();
@@ -40,10 +41,13 @@ class GCache {
           void readEnvironment();  
     private:
           const char* m_envprefix ; 
+    private:
           const char* m_geokey ;
           const char* m_path ;
           const char* m_query ;
           const char* m_ctrl ;
+          const char* m_meshfix ;
+    private:
           const char* m_idpath ;
           const char* m_digest ;
     private:
@@ -66,6 +70,7 @@ inline GCache::GCache(const char* envprefix)
        m_path(NULL),
        m_query(NULL),
        m_ctrl(NULL),
+       m_meshfix(NULL),
        m_idpath(NULL),
        m_digest(NULL),
        m_geocache(false),
@@ -98,6 +103,10 @@ inline const char* GCache::getCtrl()
 {
     return m_ctrl ;
 }
+inline const char* GCache::getMeshfix()
+{
+    return m_meshfix ;
+}
 
 inline void GCache::setGeocache(bool geocache)
 {
@@ -107,15 +116,6 @@ inline bool GCache::isGeocache()
 {
     return m_geocache ;
 }
-
-
-
-
-
-
-
-
-
 
 inline const char* GCache::getDetector()
 {

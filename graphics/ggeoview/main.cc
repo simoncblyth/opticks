@@ -489,7 +489,9 @@ int App::loadGeometry()
 
     m_ggeo = new GGeo(m_cache);
 
-    m_ggeo->setMeshJoinerImp(&MTool::joinSplitUnion);
+    m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
+
+    m_ggeo->setMeshJoinCfg( m_cache->getMeshfix() );
 
     std::string meshversion = m_fcfg->getMeshVersion() ;;
     if(!meshversion.empty())
@@ -506,11 +508,17 @@ int App::loadGeometry()
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
+
+    // func pointer shenanigans allows GGeo to use AssimpWrap functionality 
+    // without depending on assimpwrap- 
+    //
+    // BUT that also means that CMake dependency tracking 
+    // will not do appropriate rebuilds, if get perplexing fails
+    // try wiping and rebuilding assimpwrap- and ggeo-
+
     m_loader->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     m_loader->load();
-
-
 
 
 
@@ -618,28 +626,24 @@ void App::checkGeometry()
         GMesh* mesh = m_ggeo->getMesh(meshIndex);
         gfloat4 ce = mesh->getCenterExtent(0);
 
-        const char* meshName = mesh->getName() ; 
+        const char* shortName = mesh->getShortName();
+
+        bool join = m_ggeo->shouldMeshJoin(mesh);
+
         unsigned int nv = mesh->getNumVertices() ; 
         unsigned int nf = mesh->getNumFaces() ; 
-        unsigned int tc = 0 ; 
-
-        // topological components
-        std::stringstream coutbuf;
-        std::stringstream cerrbuf;
-        {
-            cout_redirect out_(coutbuf.rdbuf());
-            cerr_redirect err_(cerrbuf.rdbuf()); 
-
-            tc = mtool.countMeshComponents(mesh); 
-        } 
-        std::string out = coutbuf.str();
-        std::string err = cerrbuf.str();
-        unsigned int noise = out.size() + err.size() ;
+        unsigned int tc = mtool.countMeshComponents(mesh); // topological components
 
         assert( tc >= 1 );  // should be 1, some meshes have topological issues however
 
-        if(noise > 0 || tc > 1 )
-            printf("  %4d (v%5d f%5d )(t%5d oe%5u) : x%10.3f : n%6d : n*v%7d : %40s : %s \n", meshIndex, nv, nf, tc, noise, ce.w, nodeCount, nodeCount*nv, meshName, nss.str().c_str() );
+        std::string& out = mtool.getOut();
+        std::string& err =  mtool.getErr();
+        unsigned int noise = mtool.getNoise();
+
+        const char* highlight = join ? "**" : "  " ; 
+
+        if(noise > 0 || tc > 1 || join )
+            printf("  %4d (v%5d f%5d )%s(t%5d oe%5u) : x%10.3f : n%6d : n*v%7d : %40s : %s \n", meshIndex, nv, nf, highlight, tc, noise, ce.w, nodeCount, nodeCount*nv, shortName, nss.str().c_str() );
 
         if(noise > 0)
         {
@@ -1449,6 +1453,13 @@ int main(int argc, char** argv)
     const char* logname = "ggeoview.log" ; 
     const char* loglevel = "info" ; 
 
+    for(unsigned int i=1 ; i < argc ; ++i )
+    {
+        if(strcmp(argv[i], "-G")==0) logname = "ggeoview.nogeocache.log" ;
+    }
+
+
+   /*
     int opt ; 
     while ((opt = getopt (argc, argv, "Gl:")) != -1)     
     {
@@ -1464,6 +1475,7 @@ int main(int argc, char** argv)
     }
 
     printf(" logname: %s loglevel: %s\n", logname, loglevel );
+    */
 
 
     int rc ; 

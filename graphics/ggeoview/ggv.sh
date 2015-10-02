@@ -22,6 +22,26 @@ else
 fi
 
 
+
+ggeoview_defaults(){
+
+   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
+   export GGEOVIEW_QUERY="range:3153:12221"
+   export GGEOVIEW_CTRL="volnames"
+   #export GGEOVIEW_MESHFIX="iav,oav"
+   export GGEOVIEW_MESHFIX="iav"
+
+   #export GGEOVIEW_QUERY="range:3153:4814"     #  transition to 2 AD happens at 4814 
+   #export GGEOVIEW_QUERY="range:3153:4813"     #  this range constitutes full single AD
+   #export GGEOVIEW_QUERY="range:3161:4813"      #  push up the start to get rid of plain outer volumes, cutaway view: udp.py --eye 1.5,0,1.5 --look 0,0,0 --near 5000
+   #export GGEOVIEW_QUERY="index:5000"
+   #export GGEOVIEW_QUERY="index:3153,depth:25"
+   #export GGEOVIEW_QUERY="range:5000:8000"
+
+}
+
+
+
 if [ "${cmdline/--juno}" != "${cmdline}" ]; then
 
    export GGEOVIEW_GEOKEY=DAE_NAME_JUNO
@@ -42,15 +62,7 @@ elif [ "${cmdline/--jtst}" != "${cmdline}" ]; then
 
 elif [ "${cmdline/--dyb}" != "${cmdline}" ]; then
 
-   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
-   export GGEOVIEW_QUERY="range:3153:12221"
-   export GGEOVIEW_CTRL="volnames"
-   #export GGEOVIEW_QUERY="range:3153:4814"     #  transition to 2 AD happens at 4814 
-   #export GGEOVIEW_QUERY="range:3153:4813"     #  this range constitutes full single AD
-   #export GGEOVIEW_QUERY="range:3161:4813"      #  push up the start to get rid of plain outer volumes, cutaway view: udp.py --eye 1.5,0,1.5 --look 0,0,0 --near 5000
-   #export GGEOVIEW_QUERY="index:5000"
-   #export GGEOVIEW_QUERY="index:3153,depth:25"
-   #export GGEOVIEW_QUERY="range:5000:8000"
+   ggeoview_defaults
 
 elif [ "${cmdline/--idyb}" != "${cmdline}" ]; then
 
@@ -73,11 +85,15 @@ elif [ "${cmdline/--kdyb}" != "${cmdline}" ]; then
 
 else
 
-   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
-   export GGEOVIEW_QUERY="range:3153:12221"
-   export GGEOVIEW_CTRL="volnames"
+   ggeoview_defaults
 
 fi
+
+
+
+
+
+
 
 
 

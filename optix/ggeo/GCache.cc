@@ -23,37 +23,6 @@ void GCache::readEnvironment()
 
 :param envprefix: of the required envvars, eg with "GGEOVIEW_" need:
 
-   GGEOVIEW_GEOKEY
-   GGEOVIEW_QUERY
-   GGEOVIEW_CTRL
-
-Example values::
-
-    simon:~ blyth$ ggeoview-
-    simon:~ blyth$ ggeoview-export
-    simon:~ blyth$ env | grep GGEOVIEW_
-    GGEOVIEW_CTRL=
-    GGEOVIEW_QUERY=range:3153:12221
-    GGEOVIEW_GEOKEY=DAE_NAME_DYB
-    simon:~ blyth$ echo $DAE_NAME_DYB
-    /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.dae
-
-
-GGeoview application reports the idpath via::
-
-    simon:~ blyth$ idpath=$(ggv --idpath)
-    [2015-Jun-18 11:35:52.881375]: GLoader::identityPath 
-     envprefix GGEOVIEW_
-     geokey    DAE_NAME_DYB
-     path      /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.dae
-     query     range:3153:12221
-     ctrl      
-     idpath    /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
-
-    simon:~ blyth$ echo $idpath
-    /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
-
-
 *path* 
      identifies the source geometry G4DAE exported file
 
@@ -79,12 +48,17 @@ GGeoview application reports the idpath via::
     m_query = getenvvar(m_envprefix, "QUERY");
     m_ctrl = getenvvar(m_envprefix, "CTRL");
 
+
+
+
     if(m_query == NULL || m_path == NULL || m_geokey == NULL )
     {
         printf("GCache::readEnvironment geokey %s path %s query %s ctrl %s \n", m_geokey, m_path, m_query, m_ctrl );
         printf("GCache::readEnvironment  m_envprefix[%s] missing required envvars ", m_envprefix );
         assert(0);
     }
+
+    m_meshfix = getenvvar(m_envprefix, "MESHFIX");
  
     //  
     // #. real path is converted into "fake" path 
@@ -99,7 +73,12 @@ GGeoview application reports the idpath via::
     m_digest = strdup(digest.c_str());
     std::string kfn = insertField( m_path, '.', -1 , m_digest );
 
+
+    
+
     m_idpath = strdup(kfn.c_str());
+
+    Summary("GCache::readEnvironment");
 
     int overwrite = 1; 
     assert(setenv("IDPATH", m_idpath, overwrite)==0);
@@ -127,6 +106,7 @@ void GCache::Summary(const char* msg)
     printf("ctrl     : %s \n", m_ctrl ); 
     printf("digest   : %s \n", m_digest ); 
     printf("idpath   : %s \n", m_idpath ); 
+    printf("meshfix  : %s \n", m_meshfix ); 
 }
 
 

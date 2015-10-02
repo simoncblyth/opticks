@@ -13,6 +13,37 @@
 
 namespace pt = boost::property_tree;
 
+
+bool listHasKey(const char* dlist, const char* key, const char* delim)
+{  
+    std::vector<std::string> elems ; 
+    boost::split(elems, dlist, boost::is_any_of(delim));
+    bool haskey = false ;
+    for(unsigned int i=0 ; i < elems.size() ; i++) 
+    {    
+       if(strcmp(elems[i].c_str(),key)==0) 
+       {    
+           haskey = true ;
+           break ; 
+       }    
+    }    
+    return haskey ; 
+}
+
+
+
+char* trimPointerSuffixPrefix(const char* origname, const char* prefix)
+{
+    //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
+    const char* ox = "0x" ;
+    char* name = strdup(origname);
+    char* c = name + strlen(name) - 9 ;    
+    if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
+    if(prefix) name += strlen(prefix) ;
+    return name ;   
+}
+
+
 int getenvint( const char* envkey, int fallback )
 {
     char* val = getenv(envkey);

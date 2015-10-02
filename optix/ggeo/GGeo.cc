@@ -21,6 +21,7 @@
 #include "assert.h"
 #include "stdio.h"
 #include "string.h"
+#include "stringutil.hpp"
 
 #include <iomanip>
 
@@ -162,18 +163,7 @@ void GGeo::init()
 
 bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
 {
-    std::vector<std::string> elems ; 
-    boost::split(elems, ctrl, boost::is_any_of(","));
-    bool haskey = false ;
-    for(unsigned int i=0 ; i < elems.size() ; i++)
-    {   
-       if(strcmp(elems[i].c_str(),key)==0) 
-       {
-           haskey = true ;
-           break ; 
-       }
-    }   
-    return haskey ; 
+    return listHasKey(ctrl, key, ",");
 }
 
 
@@ -302,6 +292,24 @@ void GGeo::Details(const char* msg)
     }
     */
 }
+
+
+
+
+
+GMesh* GGeo::getMesh(unsigned int aindex)
+{
+    GMesh* mesh = NULL ; 
+    for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
+    { 
+        if(m_meshes[i]->getIndex() == aindex )
+        {
+            mesh = m_meshes[i] ; 
+            break ; 
+        }
+    }
+    return mesh ;
+}  
 
 
 void GGeo::add(GMesh* mesh)
@@ -471,22 +479,6 @@ GProperty<float>* GGeo::findRawMaterialProperty(const char* shortname, const cha
     return prop ;   
 }
 
-
-
-
-GMesh* GGeo::getMesh(unsigned int aindex)
-{
-    GMesh* mesh = NULL ; 
-    for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
-    { 
-        if(m_meshes[i]->getIndex() == aindex )
-        {
-            mesh = m_meshes[i] ; 
-            break ; 
-        }
-    }
-    return mesh ;
-}  
 
 
 
@@ -1057,3 +1049,36 @@ glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int 
  
     return ce ; 
 }
+
+
+bool GGeo::shouldMeshJoin(GMesh* mesh)
+{
+    const char* shortname = mesh->getShortName();
+    bool join = m_join_cfg && listHasKey(m_join_cfg, shortname, ",") ; 
+
+    LOG(debug)<< "GGeo::shouldMeshJoin"
+             << " shortname " << shortname
+             << " join_cfg " << ( m_join_cfg ? m_join_cfg : "" )
+             << " join " << join 
+             ;
+
+    return join ; 
+}
+
+
+GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
+{
+    GMesh* result = mesh ; 
+    bool join = shouldMeshJoin(mesh);
+    if(join)
+    {
+        result = (*m_join_imp)(mesh, m_join_cfg ); 
+
+        result->setName(mesh->getName()); 
+
+        result->setIndex(mesh->getIndex()); 
+    }
+    return result ; 
+}
+
+

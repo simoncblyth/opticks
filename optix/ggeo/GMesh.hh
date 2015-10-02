@@ -129,7 +129,10 @@ class GMesh : public GDrawable {
       void setName(const char* name);
       void setVersion(const char* version);
       const char* getName();
+      const char* getShortName();
       const char* getVersion();
+  private:
+      void findShortName(); 
   public:
       gfloat3* getLow();
       gfloat3* getHigh();
@@ -324,6 +327,7 @@ class GMesh : public GDrawable {
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
       std::vector<std::string> m_names ;  // constituents with persistable buffers 
       const char*   m_name ; 
+      const char*   m_shortname ; 
       const char*   m_version ; 
 
   private:
@@ -374,11 +378,18 @@ inline GMesh::~GMesh()
 inline void GMesh::setName(const char* name)
 {
      m_name = name ? strdup(name) : NULL ;
+     if(m_name) findShortName();
 }  
 inline const char* GMesh::getName()
 {
      return m_name ; 
 }
+inline const char* GMesh::getShortName()
+{
+     return m_shortname ; 
+}
+
+
 inline void GMesh::setVersion(const char* version)
 {
      m_version = version ? strdup(version) : NULL ;

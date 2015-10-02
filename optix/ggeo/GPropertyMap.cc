@@ -2,6 +2,8 @@
 #include "GOpticalSurface.hh"
 #include "md5digest.hpp"
 #include "string.h"
+
+#include "stringutil.hpp"
 #include "limits.h"
 #include "assert.h"
 #include <sstream>
@@ -167,17 +169,15 @@ bool GPropertyMap<T>::hasDefinedName()
     return strcmp(m_shortname, NOT_DEFINED) != 0 ;
 }
 
+/*
 template <typename T>
 char* GPropertyMap<T>::trimSuffixPrefix(const char* origname, const char* prefix)
 {
     //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
-    const char* ox = "0x" ;
-    char* name = strdup(origname);
-    char* c = name + strlen(name) - 9 ;              
-    if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
-    if(prefix) name += strlen(prefix) ;
-    return name ;  
+    return trimPointerSuffixPrefix(origname, prefix);
 }
+*/
+
 
 template <typename T>
 void GPropertyMap<T>::findShortName(const char* prefix)
@@ -190,7 +190,7 @@ void GPropertyMap<T>::findShortName(const char* prefix)
     }  
     else if(strncmp( m_name.c_str(), prefix, strlen(prefix)) == 0)
     { 
-        m_shortname = trimSuffixPrefix(m_name.c_str(), prefix); 
+        m_shortname = trimPointerSuffixPrefix(m_name.c_str(), prefix); 
     }
     else
     {
@@ -206,7 +206,7 @@ void GPropertyMap<T>::findShortName(const char* prefix)
         else
         {
             //  JUNO names have no prefix and are short, so just trim the 0x tail
-            m_shortname = trimSuffixPrefix(m_name.c_str(), NULL) ; 
+            m_shortname = trimPointerSuffixPrefix(m_name.c_str(), NULL) ; 
         }
 
 

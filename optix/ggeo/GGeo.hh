@@ -31,8 +31,11 @@ class TorchStepNPY ;
 //
 class GGeo {
     public:
-        typedef GMesh* (*GJoinerImpFunctionPtr)(GMesh*, const char*);
-        void setMeshJoinerImp(GJoinerImpFunctionPtr imp);
+        typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, const char*);
+        void setMeshJoinImp(GJoinImpFunctionPtr imp);
+        void setMeshJoinCfg(const char* config);
+        bool shouldMeshJoin(GMesh* mesh);
+        GMesh* invokeMeshJoin(GMesh* mesh);    // used from AssimpGGeo::convertMeshes immediately after GMesh birth and deduping
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
         static const char* GMERGEDMESH ; 
@@ -234,7 +237,8 @@ class GGeo {
         Index_t                            m_index ; 
         unsigned int                       m_sensitize_count ;  
         bool                               m_volnames ;    
-        GJoinerImpFunctionPtr              m_joiner_imp ;  
+        const char*                        m_join_cfg ; 
+        GJoinImpFunctionPtr                m_join_imp ;  
 
 };
 
@@ -256,17 +260,21 @@ inline GGeo::GGeo(GCache* cache) :
    m_idpath(NULL),
    m_mesh_version(NULL),
    m_sensitize_count(0),
-   m_volnames(false)
+   m_volnames(false),
+   m_join_cfg(NULL)
 {
    init(); 
 }
 
 
-inline void GGeo::setMeshJoinerImp(GJoinerImpFunctionPtr imp)
+inline void GGeo::setMeshJoinImp(GJoinImpFunctionPtr imp)
 {
-    m_joiner_imp = imp ; 
+    m_join_imp = imp ; 
 }
-
+inline void GGeo::setMeshJoinCfg(const char* cfg)
+{
+    m_join_cfg = cfg ? strdup(cfg) : NULL  ; 
+}
 
 inline bool GGeo::isLoaded()
 {

@@ -21,8 +21,8 @@ class MWrap {
        unsigned int getNumVertices();
        unsigned int getNumFaces();
    public:
-       GMesh* createGMesh();
-       void load(GMesh* mm);  // GMergedMesh isa GMesh
+       GMesh* createGMesh();   // must externally setName and setIndex for usage with GGeo
+       void load(GMesh* mm);   // GMergedMesh isa GMesh
        void copyIn( float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces );
        void copyOut(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces, float* ndata );
        void createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle>& a2b);
