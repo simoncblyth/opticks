@@ -695,11 +695,14 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
 
 void GMesh::Summary(const char* msg)
 {
-   printf("%s idx %u vx %u fc %u \n",
+   printf("%s idx %u vx %u fc %u n %s sn %s \n",
       msg, 
       m_index, 
       m_num_vertices, 
-      m_num_faces);
+      m_num_faces,
+      m_name,
+      m_shortname
+   );
 
    if(m_low) printf("%10s %10.3f %10.3f %10.3f\n",
          "low",

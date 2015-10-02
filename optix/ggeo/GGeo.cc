@@ -1075,8 +1075,8 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
         result = (*m_join_imp)(mesh, m_join_cfg ); 
 
         result->setName(mesh->getName()); 
-
         result->setIndex(mesh->getIndex()); 
+        result->updateBounds();
     }
     return result ; 
 }

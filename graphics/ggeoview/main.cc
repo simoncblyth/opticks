@@ -654,6 +654,18 @@ void App::checkGeometry()
    }    
 
 
+    for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
+    {
+        unsigned int meshIndex = it->first ; 
+        GMesh* mesh = m_ggeo->getMesh(meshIndex);
+        bool join = m_ggeo->shouldMeshJoin(mesh);
+        if(join)
+        {
+             mesh->Summary("App::checkGeometry joined mesh");
+        }
+    }
+
+
 }
 
 
