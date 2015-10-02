@@ -146,7 +146,7 @@ openmeshrap-bdir(){ echo $(openmeshrap-idir).build ; }
 openmeshrap-cd(){   cd $(openmeshrap-dir); }
 openmeshrap-icd(){  cd $(openmeshrap-idir); }
 openmeshrap-bcd(){  cd $(openmeshrap-bdir); }
-
+openmeshrap-bin(){  echo $(openmeshrap-idir)/bin/OpenMeshRapTest ; }
 
 openmeshrap-wipe(){
   local bdir=$(openmeshrap-bdir)

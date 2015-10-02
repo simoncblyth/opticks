@@ -95,10 +95,24 @@ inline void FrameCfg<Listener>::init()
        ("noindex,I",  "no photon/record indexing") ;
 
    m_desc.add_options()
+       ("noinstanced",  "inhibit instancing, use when debugging few volumes") ;
+
+   m_desc.add_options()
        ("trivial",  "swap OptiX generate program with trivial standin for debugging") ;
 
    m_desc.add_options()
        ("geocenter",  "center view on geometry rather than the default genstep centering") ;
+
+
+   m_desc.add_options()("trace",  "loglevel");
+   m_desc.add_options()("debug",  "loglevel");
+   m_desc.add_options()("info",  "loglevel");
+   m_desc.add_options()("warning",  "loglevel");
+   m_desc.add_options()("error",  "loglevel");
+   m_desc.add_options()("fatal",  "loglevel");
+
+
+
 
    m_desc.add_options()
        ("compute",  "COMPUTE mode, ie not INTEROP") ; 

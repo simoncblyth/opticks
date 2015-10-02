@@ -83,6 +83,13 @@ elif [ "${cmdline/--kdyb}" != "${cmdline}" ]; then
    export GGEOVIEW_QUERY="range:3159:3160"       # just 1 volume __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00 
    export GGEOVIEW_CTRL="volnames"
 
+elif [ "${cmdline/--ldyb}" != "${cmdline}" ]; then
+
+   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
+   export GGEOVIEW_QUERY="range:3156:3157"       # just 1 volume oav
+   export GGEOVIEW_CTRL="volnames"
+
+
 else
 
    ggeoview_defaults
@@ -115,6 +122,12 @@ elif [ "${cmdline/--assimp}" != "${cmdline}" ]; then
     assimpwrap-
     ggeoview-export
     $(assimpwrap-bin) GGEOVIEW_
+
+elif [ "${cmdline/--openmesh}" != "${cmdline}" ]; then
+
+    openmeshrap-
+    ggeoview-export
+    $(openmeshrap-bin) 
 
 else
     case $dbg in

@@ -144,6 +144,7 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
    // see blogg-
 
     unsigned int ll = boost::log::trivial::info ;
+
  
     std::string level(level_);
     if(level.compare("trace") == 0) ll = boost::log::trivial::trace ; 
@@ -501,10 +502,9 @@ int App::loadGeometry()
     }
     
 
-
     m_loader = new GLoader(m_ggeo) ;
 
-    m_loader->setInstanced(true); // find repeated geometry 
+    m_loader->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
@@ -1467,28 +1467,16 @@ int main(int argc, char** argv)
 
     for(unsigned int i=1 ; i < argc ; ++i )
     {
-        if(strcmp(argv[i], "-G")==0) logname = "ggeoview.nogeocache.log" ;
-    }
-
-
-   /*
-    int opt ; 
-    while ((opt = getopt (argc, argv, "Gl:")) != -1)     
-    {
-        switch (opt)
-        {
-            case 'G':
-                      logname = "ggeoview.nogeocache.log" ;
-                      break ;
-            case 'l':
-                      loglevel = optarg ;  
-                      break ;
-        }
+        if(strcmp(argv[i], "-G")==0)        logname = "ggeoview.nogeocache.log" ;
+        if(strcmp(argv[i], "--trace")==0)   loglevel = "trace" ;
+        if(strcmp(argv[i], "--debug")==0)   loglevel = "debug" ;
+        if(strcmp(argv[i], "--info")==0)    loglevel = "info" ;
+        if(strcmp(argv[i], "--warning")==0) loglevel = "warning" ;
+        if(strcmp(argv[i], "--error")==0)   loglevel = "error" ;
+        if(strcmp(argv[i], "--fatal")==0)   loglevel = "fatal" ;
     }
 
     printf(" logname: %s loglevel: %s\n", logname, loglevel );
-    */
-
 
     int rc ; 
 

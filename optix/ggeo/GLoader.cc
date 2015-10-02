@@ -166,7 +166,7 @@ void GLoader::load()
         }
         else
         {
-            assert(0);
+            LOG(warning) << "GLoader::load instancing is inhibited " ;
             m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
         }
 

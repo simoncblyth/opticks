@@ -13,6 +13,7 @@
 // trace/debug/info/warning/error/fatal
 
 // ggeo-
+#include "GCache.hh"
 #include "GMesh.hh"
 
 //
@@ -24,18 +25,20 @@ typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
 int main()
 {
-    char* idpath = getenv("JDPATH") ;
+    GCache cache("GGEOVIEW_");
+
+    const char* idpath = cache.getIdPath();
+    LOG(info) << "idpath " << idpath ; 
 
     GMesh* gm = GMesh::load_deduped( idpath, "GMergedMesh/0" );
     gm->Summary();
 
-    MWrap<MyMesh> wsrc(new MyMesh);
-    wsrc.load(gm);
+    MWrap<MyMesh> ws(new MyMesh);
+    ws.load(gm);
 
-    int ncomp = wsrc.labelConnectedComponentVertices("component"); 
+    int ncomp = ws.labelConnectedComponentVertices("component"); 
     printf("ncomp: %d \n", ncomp);
 
-    wsrc.dump("wsrc", 0);
 
     if(ncomp != 2) return 1 ; 
 
@@ -46,13 +49,19 @@ int main()
     MWrap<MyMesh> wb(new MyMesh);
 
     VHM s2c_0 ;  
-    wsrc.partialCopyTo(wa.getMesh(), "component", 0, s2c_0);
+    ws.partialCopyTo(wa.getMesh(), "component", 0, s2c_0);
 
     VHM s2c_1 ;  
-    wsrc.partialCopyTo(wb.getMesh(), "component", 1, s2c_1);
+    ws.partialCopyTo(wb.getMesh(), "component", 1, s2c_1);
 
+    ws.dump("ws",0);
     wa.dump("wa",0);
     wb.dump("wb",0);
+
+    ws.dumpBounds("ws.dumpBounds");
+    wb.dumpBounds("wb.dumpBounds");
+    wa.dumpBounds("wa.dumpBounds");
+
 
     wa.write("/tmp/comp%d.off", 0 );
     wb.write("/tmp/comp%d.off", 1 );
@@ -61,7 +70,8 @@ int main()
     wb.calcFaceCentroids("centroid"); 
 
     // xyz delta maximum and w: minimal dot product of normals, -0.999 means very nearly back-to-back
-    glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
+    //glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
+    glm::vec4 delta(100.f, 100.f, 10.f, -0.999 ); 
 
     MWrap<MyMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
 

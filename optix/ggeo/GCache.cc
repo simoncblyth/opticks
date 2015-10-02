@@ -78,7 +78,7 @@ void GCache::readEnvironment()
 
     m_idpath = strdup(kfn.c_str());
 
-    Summary("GCache::readEnvironment");
+    //Summary("GCache::readEnvironment");
 
     int overwrite = 1; 
     assert(setenv("IDPATH", m_idpath, overwrite)==0);
