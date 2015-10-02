@@ -33,6 +33,7 @@ class GGeo {
         typedef std::map<unsigned int, std::string> Index_t ;
         static const char* GMERGEDMESH ; 
         static GGeo* load(const char* idpath, const char* mesh_version=NULL);
+        static bool ctrlHasKey(const char* ctrl, const char* key);
         enum { MAX_MERGED_MESH = 10 } ;
     private:
         void loadFromCache(const char* idpath);
@@ -73,6 +74,8 @@ class GGeo {
 
     public:
         bool isLoaded();
+        bool isVolnames();
+
         void setPath(const char* path);
         void setQuery(const char* query);
         void setCtrl(const char* ctrl);
@@ -259,11 +262,10 @@ inline bool GGeo::isLoaded()
     return m_loaded ; 
 }
 
-
-//inline void GGeo::setVolNames(bool volnames)
-//{
-//    m_volnames = volnames ; 
-//}
+inline bool GGeo::isVolnames()
+{
+    return m_volnames ; 
+}
 
 inline void GGeo::add(GMaterial* material)
 {

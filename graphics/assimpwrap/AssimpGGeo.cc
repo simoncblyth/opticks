@@ -48,7 +48,26 @@
                      (m).d1,(m).d2,(m).d3,(m).d4) \
 
 
-GGeo* AssimpGGeo::load(const char* path, const char* query, const char* ctrl )
+
+
+
+void AssimpGGeo::init()
+{
+    // see g4daenode.py as_optical_property_vector
+
+    float hc_over_GeV = 1.2398424468024265e-06 ;  // h_Planck * c_light / GeV / nanometer #  (approx, hc = 1240 eV.nm )  
+    float hc_over_MeV = hc_over_GeV*1000. ;
+    //float hc_over_eV  = hc_over_GeV*1.e9 ;
+
+    m_domain_scale = hc_over_MeV ; 
+    m_values_scale = 1.0f ; 
+
+    m_volnames = m_ggeo->isVolnames();
+}
+
+
+
+int AssimpGGeo::load(GGeo* ggeo, const char* path, const char* query, const char* ctrl )
 {
     LOG(info)<< "AssimpGGeo::load "  
              << " path " << path 
@@ -60,23 +79,21 @@ GGeo* AssimpGGeo::load(const char* path, const char* query, const char* ctrl )
     assert(ctrl);
 
     AssimpGeometry ageo(path);
-
     const char* idpath = ageo.identityFilename(path, query);
-
     ageo.import();
 
     AssimpSelection* selection = ageo.select(query);
 
-    AssimpGGeo agg(ageo.getTree(), selection); 
+    AssimpGGeo agg(ggeo, ageo.getTree(), selection); 
 
-    GGeo* ggeo = agg.convert(ctrl);
+    int rc = agg.convert(ctrl);
 
     ggeo->setPath(path);
     ggeo->setQuery(query);
     ggeo->setCtrl(ctrl);
     ggeo->setIdentityPath(idpath);
 
-    return ggeo ;
+    return rc ;
 }
 
 
@@ -88,26 +105,10 @@ AssimpGGeo::~AssimpGGeo()
 
 
 
-GGeo* AssimpGGeo::convert(const char* ctrl)
+int AssimpGGeo::convert(const char* ctrl)
 {
     LOG(info) << "AssimpGGeo::convert ctrl " << ctrl ; 
-    std::vector<std::string> elems ; 
-    boost::split(elems, ctrl, boost::is_any_of(","));
 
-    bool loaded = false ; 
-    bool volnames = false ;
- 
-    for(unsigned int i=0 ; i < elems.size() ; i++)
-    {
-       if(strcmp(elems[i].c_str(),"volnames")==0) 
-       {
-           LOG(info) << "AssimpGGeo::convert setVolNames "  ; 
-           setVolNames(true);
-           volnames = true ;
-       }
-    } 
-
-    m_ggeo = new GGeo(loaded, volnames);
     const aiScene* scene = m_tree->getScene();
 
     bool reverse = true ; // for ascending wavelength ordering
@@ -115,7 +116,7 @@ GGeo* AssimpGGeo::convert(const char* ctrl)
     convertMeshes(scene, m_ggeo, ctrl);
     convertStructure(m_ggeo);
 
-    return m_ggeo ;
+    return 0 ;
 }
 
 void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property, bool reverse)

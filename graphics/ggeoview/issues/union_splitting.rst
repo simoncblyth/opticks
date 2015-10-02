@@ -77,6 +77,14 @@ these must be fixed.::
 
 
 
+Where to do mesh fixing ?
+---------------------------
+
+* easiest to do just after creation in AssimpGGeo to avoid
+  having to chase down and swap pointers with replacement GMesh 
+
+
+
 Mesh Surgery implemented in openmeshtest-
 --------------------------------------------
 

@@ -146,6 +146,26 @@ void GGeo::init()
    }
 }
 
+
+
+bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
+{
+    std::vector<std::string> elems ; 
+    boost::split(elems, ctrl, boost::is_any_of(","));
+    bool haskey = false ;
+    for(unsigned int i=0 ; i < elems.size() ; i++)
+    {   
+       if(strcmp(elems[i].c_str(),key)==0) 
+       {
+           haskey = true ;
+           break ; 
+       }
+    }   
+    return haskey ; 
+}
+
+
+
 void GGeo::loadFromCache(const char* idpath)
 {   
     loadMergedMeshes(idpath);

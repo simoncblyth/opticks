@@ -23,7 +23,7 @@ class Lookup ;
 
 class GLoader {
      public:
-         typedef GGeo* (*GLoaderImpFunctionPtr)(const char*, const char*, const char* );
+         typedef int (*GLoaderImpFunctionPtr)(GGeo*, const char*, const char*, const char* );
 
     public:
          GLoader();

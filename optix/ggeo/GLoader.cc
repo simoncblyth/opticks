@@ -86,7 +86,18 @@ void GLoader::load(bool nogeocache)
     {
         LOG(info) << "GLoader::load slow loading using m_imp (disguised AssimpGGeo) " << envprefix ;
 
-        m_ggeo = (*m_imp)(path, query, ctrl);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
+        bool loaded = false ; 
+        bool volnames = GGeo::ctrlHasKey(ctrl, "volnames");
+
+        // more flexible to pass in ggeo, 
+        // eg for setting up mesh fixing to be done at creation within 
+        // AssimpGGeo by GGeo
+ 
+        m_ggeo = new GGeo(loaded, volnames);   
+
+        int rc = (*m_imp)(m_ggeo, path, query, ctrl);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
+
+        assert(rc == 0);
 
         t("create m_ggeo from G4DAE"); 
        // m_meshes = m_ggeo->getMeshIndex();  

@@ -53,7 +53,17 @@ int main(int argc, char* argv[])
 
     cache.Summary();
     
-    GGeo* ggeo = AssimpGGeo::load( cache.getPath(), cache.getQuery(), cache.getCtrl() );
+    bool loaded = false ; 
+
+    const char* ctrl = cache.getCtrl() ;
+
+    bool volnames = GGeo::ctrlHasKey( ctrl, "volnames" );
+
+    GGeo* ggeo = new GGeo( loaded, volnames );
+
+    int rc = AssimpGGeo::load( ggeo, cache.getPath(), cache.getQuery(), ctrl );
+
+    assert(rc == 0);
 
     ggeo->Summary("main");    
 

@@ -18,16 +18,15 @@ struct aiScene ;
 
 class AssimpGGeo {
 public:
-    AssimpGGeo(AssimpTree* tree, AssimpSelection* selection);
+    AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection);
     virtual ~AssimpGGeo();
-
-    GGeo* convert(const char* ctrl);
+    int convert(const char* ctrl);
+private:
+    void init();
 public:
-    void setVolNames(bool volnames=true);
     bool getVolNames();
-
 public:
-    static GGeo* load(const char* path, const char* query, const char* ctrl);
+    static int load(GGeo* ggeo, const char* path, const char* query, const char* ctrl);
 
 public:
     static const char* g4dae_bordersurface_physvolume1 ; 
@@ -58,14 +57,13 @@ protected:
     void setValuesScale(float vscale);
 
 private:
+    GGeo*            m_ggeo ;
     AssimpTree*      m_tree ; 
     AssimpSelection* m_selection ;
  
     float            m_domain_scale ; 
     float            m_values_scale ; 
     bool             m_domain_reciprocal ; 
-
-    GGeo*            m_ggeo ;
 
     unsigned int     m_skin_surface ; 
     unsigned int     m_inborder_surface ; 
@@ -78,42 +76,27 @@ private:
 
 
 
-inline AssimpGGeo::AssimpGGeo(AssimpTree* tree, AssimpSelection* selection) 
+inline AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection) 
    : 
+   m_ggeo(ggeo),
    m_tree(tree),
    m_selection(selection),
    m_domain_scale(1.f),
    m_values_scale(1.f),
    m_domain_reciprocal(true),
-   m_ggeo(NULL),
    m_skin_surface(0),
    m_inborder_surface(0),
    m_outborder_surface(0),
    m_no_surface(0),
    m_volnames(false)
 {
-    // see g4daenode.py as_optical_property_vector
-
-    float hc_over_GeV = 1.2398424468024265e-06 ;  // h_Planck * c_light / GeV / nanometer #  (approx, hc = 1240 eV.nm )  
-    float hc_over_MeV = hc_over_GeV*1000. ;
-    //float hc_over_eV  = hc_over_GeV*1.e9 ;
-
-    m_domain_scale = hc_over_MeV ; 
-    m_values_scale = 1.0f ; 
-
-
+    init();
 }
+
+
+
 
 inline bool AssimpGGeo::getVolNames()
 {
     return m_volnames ; 
 }
-inline void AssimpGGeo::setVolNames(bool volnames)
-{
-    m_volnames = volnames ; 
-}
-
-
-
-
-
