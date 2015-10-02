@@ -437,10 +437,18 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
 
         gfloat2* gtexcoords = NULL ;
 
-        GMesh* gmesh = new GMesh( i, gvertices, numVertices, gfaces, numFaces, gnormals, gtexcoords); 
+
+        GMesh* gmesh_raw = new GMesh( i, gvertices, numVertices, gfaces, numFaces, gnormals, gtexcoords); 
+
+        GMesh* gmesh = gmesh_raw->makeDedupedCopy(); // removes duplicate vertices, re-indexing faces accordingly
+
+        delete gmesh_raw ; 
+
         gmesh->setName(meshname);
 
         gg->add(gmesh);
+
+
     }
 }
 
