@@ -177,6 +177,7 @@ class GGeo {
 
     public:
         std::map<unsigned int, unsigned int>& getMeshUsage();
+        std::map<unsigned int, std::vector<unsigned int> >& getMeshNodes();
         void countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* lv, const char* pv);
         void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
 
@@ -210,6 +211,7 @@ class GGeo {
         gfloat3*                      m_high ; 
         std::map<unsigned int,GMergedMesh*>     m_merged_mesh ; 
         std::map<unsigned int, unsigned int>    m_mesh_usage ; 
+        std::map<unsigned int, std::vector<unsigned int> >    m_mesh_nodes ; 
         GColors*                      m_colors ; 
         GItemIndex*                   m_meshindex ; 
         GItemList*                    m_pvlist ; 

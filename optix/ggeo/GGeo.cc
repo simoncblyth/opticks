@@ -640,12 +640,17 @@ void GGeo::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const 
      // called during GGeo creation from: void AssimpGGeo::convertStructure(GGeo* gg)
      //printf("GGeo::countMeshUsage %d %d %s %s \n", meshIndex, nodeIndex, lv, pv);
      m_mesh_usage[meshIndex] += 1 ; 
+     m_mesh_nodes[meshIndex].push_back(nodeIndex); 
 }
 
 
 std::map<unsigned int, unsigned int>& GGeo::getMeshUsage()
 {
     return m_mesh_usage ; 
+}
+std::map<unsigned int, std::vector<unsigned int> >& GGeo::getMeshNodes()
+{
+    return m_mesh_nodes ; 
 }
 
 

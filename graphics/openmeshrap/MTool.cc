@@ -28,8 +28,6 @@ unsigned int MTool::countMeshComponents(GMesh* gm)
 
     unsigned int ncomp = wsrc.labelConnectedComponentVertices("component"); 
 
-    LOG(info) << "MTool::countMeshComponents " << ncomp ; 
-     
     return ncomp ; 
 }
 

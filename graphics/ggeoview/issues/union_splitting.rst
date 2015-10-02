@@ -30,6 +30,53 @@ Visualisations
 
 
 
+Check Topology of Meshes
+------------------------
+
+The below approx 10 percent of the ~250 Dyb meshes have issues, either:
+
+* are topologically multiple meshes, see t value below
+* cause OpenMesh error output, eg "complex edge/vertex" (possibly a winding order problem) 
+
+Mostly are small bits of geometry with small extent x (mm), not in optically active parts of 
+geometry. Issues with large important meshes used by optically active nodes are highlighted, 
+these must be fixed.::
+
+    [2015-Oct-02 13:06:32.202216]:info: App::checkGeometry  nso 12230 nme 249
+         9 (v   24 f   36 )(t    3 oe    0) : x  5871.000 : n    18 : n*v    432 :                 near_span_hbeam0xc2a27d8 : 2359,2360,2432,2433,2434, 
+        10 (v   24 f   36 )(t    3 oe    0) : x  1000.060 : n     2 : n*v     48 :           near_side_short_hbeam0xc2b1ea8 : 2361,2362, 
+        11 (v   16 f   24 )(t    2 oe    0) : x   596.000 : n   162 : n*v   2592 :     near_thwart_long_angle_iron0xc21e058 : 2363,2364,2365,2366,2367, 
+        21 (v   16 f   24 )(t    2 oe    0) : x 22000.250 : n     1 : n*v     16 :             near_hall_top_dwarf0xc0316c8 : 2, 
+
+     ** 24 (v  148 f  288 )(t    2 oe    0) : x  1587.245 : n     2 : n*v    296 :                             iav0xc346f90 : 3158,4818, 
+
+        25 (v  168 f  384 )(t    1 oe 1632) : x   150.000 : n     2 : n*v    336 :                       IavTopHub0xc405968 : 3161,4821, 
+        26 (v  168 f  384 )(t    1 oe 1632) : x   150.000 : n     4 : n*v    672 :                 CtrGdsOflBotClp0xbf5dec0 : 3162,3166,4822,4826, 
+        29 (v  264 f  576 )(t    2 oe 1632) : x   150.000 : n     2 : n*v    528 :                       OcrGdsPrt0xc352518 : 3165,4825, 
+
+     ** 42 (v  148 f  288 )(t    2 oe    0) : x  2047.355 : n     2 : n*v    296 :                             oav0xc2ed7c8 : 3156,4816, 
+
+        54 (v  100 f  192 )(t    2 oe    0) : x    82.501 : n    12 : n*v   1200 :                 headon-pmt-assy0xbf55198 : 4351,4358,4365,4372,4379, 
+        63 (v   33 f   62 )(t    2 oe  136) : x  1125.000 : n    16 : n*v    528 :                       SstBotRib0xc26c4c0 : 4431,4432,4433,4434,4435, 
+        75 (v  240 f  576 )(t    1 oe 3264) : x   125.000 : n     2 : n*v    480 :                       OavTopHub0xc2c9030 : 4505,6165, 
+        77 (v  240 f  576 )(t    1 oe 3264) : x   112.500 : n     6 : n*v   1440 :                 CtrLsoOflTopClp0xc178498 : 4507,4513,4519,6167,6173, 
+        81 (v  168 f  384 )(t    1 oe 1632) : x    98.000 : n     2 : n*v    336 :                    OcrGdsLsoPrt0xc104978 : 4511,6171, 
+        82 (v   98 f  188 )(t    2 oe    0) : x   247.488 : n     2 : n*v    196 :                  OcrGdsInLsoOfl0xc26f450 : 4516,6176, 
+        84 (v   98 f  188 )(t    2 oe    0) : x   247.488 : n     2 : n*v    196 :                  OcrGdsLsoInOil0xc540738 : 4514,6174, 
+        85 (v  168 f  384 )(t    1 oe 1632) : x   105.357 : n     2 : n*v    336 :                    OcrCalLsoPrt0xc1076b0 : 4517,6177, 
+        86 (v   98 f  188 )(t    2 oe    0) : x   247.488 : n     2 : n*v    196 :                       OcrCalLso0xc103c18 : 4520,6180, 
+       105 (v  629 f 1242 )(t    4 oe    0) : x   102.303 : n     6 : n*v   3774 :                 led-source-assy0xc3061d0 : 4540,4628,4710,6200,6288, 
+       112 (v  357 f  698 )(t    4 oe    0) : x   102.303 : n     6 : n*v   2142 :                     source-assy0xc2d5d78 : 4551,4639,4721,6211,6299, 
+       132 (v  296 f  576 )(t    4 oe    0) : x   102.303 : n     6 : n*v   1776 :             amcco60-source-assy0xc0b1df8 : 4566,4654,4736,6226,6314, 
+       140 (v  192 f  384 )(t    2 oe    0) : x   920.021 : n     2 : n*v    384 :                       LsoOflTnk0xc17d928 : 4606,6266, 
+       141 (v  288 f  576 )(t    3 oe    0) : x   910.028 : n     2 : n*v    576 :                          LsoOfl0xc348ac0 : 4607,6267, 
+       142 (v  776 f 1552 )(t    5 oe    0) : x   660.041 : n     2 : n*v   1552 :                       GdsOflTnk0xc3d5160 : 4608,6268, 
+       143 (v  100 f  192 )(t    2 oe    0) : x   650.000 : n     2 : n*v    200 :                          GdsOfl0xbf73918 : 4609,6269, 
+       144 (v  172 f  336 )(t    2 oe    0) : x   924.000 : n     2 : n*v    344 :                  OflTnkCnrSpace0xc3d3d30 : 4605,6265, 
+       145 (v  366 f  720 )(t    3 oe    0) : x  1015.000 : n     2 : n*v    732 :                 OflTnkContainer0xc17cf50 : 4604,6264, 
+
+
+
 Mesh Surgery implemented in openmeshtest-
 --------------------------------------------
 

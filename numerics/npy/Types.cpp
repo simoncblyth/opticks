@@ -109,7 +109,7 @@ void Types::makeMaterialAbbrev()
             printf("Types::makeMaterialAbbrev ambiguous material abbrev %s \n", abb.c_str());
         } 
 
-        printf("Types::makeMaterialAbbrev [%s] [%s] \n", mat.c_str(), abb.c_str() );
+        //printf("Types::makeMaterialAbbrev [%s] [%s] \n", mat.c_str(), abb.c_str() );
 
         m_material2abbrev[mat] = abb ;
         m_abbrev2material[abb] = mat ;

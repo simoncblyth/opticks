@@ -153,7 +153,6 @@ template <typename MeshT>
 int MWrap<MeshT>::labelConnectedComponentVertices(const char* vpropname)
 {
     MeshT* mesh = m_mesh ; 
-    LOG(info) << "MWrap<MeshT>::labelConnectedComponentVertices " << vpropname ; 
 
     OpenMesh::VPropHandleT<int> component;
     mesh->add_property(component, vpropname); 

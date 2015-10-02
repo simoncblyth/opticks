@@ -5,6 +5,9 @@
 #include <sstream>
 #include <map>
 
+#include <iostream>
+#include <streambuf>
+
 //
 // returning std::string is fussy wrt compiler details, making inconvenient 
 // ... so prefer to rely on external allocation of output 
@@ -50,5 +53,40 @@ inline std::string as_hex(T in) {
 
 template<typename T>
 std::string arraydigest( T* data, unsigned int n );
+
+
+// http://stackoverflow.com/questions/5419356/redirect-stdout-stderr-to-a-string
+
+struct cout_redirect {
+    cout_redirect( std::streambuf * new_buffer ) 
+        : old( std::cout.rdbuf( new_buffer ) ) 
+    { } 
+
+    ~cout_redirect( ) { 
+        std::cout.rdbuf( old );
+    }   
+
+private:
+    std::streambuf * old;
+};
+
+
+struct cerr_redirect {
+    cerr_redirect( std::streambuf * new_buffer ) 
+        : old( std::cerr.rdbuf( new_buffer ) ) 
+    { } 
+
+    ~cerr_redirect( ) { 
+        std::cerr.rdbuf( old );
+    }   
+
+private:
+    std::streambuf * old;
+};
+
+
+
+
+
 
 

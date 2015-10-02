@@ -15,10 +15,11 @@ void GMeshFixer::mapVertices()
     unsigned int num_vertices = m_src->getNumVertices();
     float* vertices = (float*)m_src->getVertices();
 
-    // hmm should this be done separately for each solid in merged meshes ?
+    // this should be done separately for each solid, 
+    // to retain independance between solids
 
     m_old2new = new int[num_vertices]; 
-    m_new2old = new int[num_vertices];  // cannot be more new vertices
+    m_new2old = new int[num_vertices];  // cannot be more new vertices than old
 
     unsigned int vidx = 0 ;         // new de-duped vertex index, into array to be created
     for(unsigned int i=0 ; i < num_vertices ; i++)

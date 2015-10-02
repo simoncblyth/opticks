@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <algorithm>
 
@@ -138,9 +139,20 @@ void dump(float* f, const char* msg)
 }
 
 
-void logging_init(const char* ldir, const char* lname)
+void logging_init(const char* ldir, const char* lname, const char* level_)
 {
    // see blogg-
+
+    unsigned int ll = boost::log::trivial::info ;
+ 
+    std::string level(level_);
+    if(level.compare("trace") == 0) ll = boost::log::trivial::trace ; 
+    if(level.compare("debug") == 0) ll = boost::log::trivial::debug ; 
+    if(level.compare("info") == 0)  ll = boost::log::trivial::info ; 
+    if(level.compare("warning") == 0)  ll = boost::log::trivial::warning ; 
+    if(level.compare("error") == 0)  ll = boost::log::trivial::error ; 
+    if(level.compare("fatal") == 0)  ll = boost::log::trivial::fatal ; 
+
 
     fs::path logdir(ldir);
     if(!fs::exists(logdir))
@@ -159,16 +171,19 @@ void logging_init(const char* ldir, const char* lname)
 
     boost::log::core::get()->set_filter
     (
-        boost::log::trivial::severity >= boost::log::trivial::info
+        boost::log::trivial::severity >= ll
     );
+
+    boost::log::add_common_attributes();
+
+    boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");  
 
     boost::log::add_console_log(
         std::cerr, 
-        boost::log::keywords::format = "[%TimeStamp%]: %Message%",
+        boost::log::keywords::format = "[%TimeStamp%]:%Severity%: %Message%",
         boost::log::keywords::auto_flush = true
     );  
 
-    boost::log::add_common_attributes();
 
     LOG(info) << "logging_init " << path ; 
 }
@@ -177,7 +192,7 @@ void logging_init(const char* ldir, const char* lname)
 
 class App {
   public:
-       App(const char* prefix="GGEOVIEW_", const char* logname="ggeoview.log");
+       App(const char* prefix="GGEOVIEW_", const char* logname="ggeoview.log", const char* loglevel="info");
   private:
        void init();
        void wiring();
@@ -261,7 +276,7 @@ class App {
 
 
 
-App::App(const char* prefix, const char* logname)
+App::App(const char* prefix, const char* logname, const char* loglevel)
    : 
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
@@ -302,7 +317,7 @@ App::App(const char* prefix, const char* logname)
     m_cache     = new GCache(m_prefix);
 
     const char* idpath = m_cache->getIdPath();
-    logging_init(idpath, logname);
+    logging_init(idpath, logname, loglevel);
 
     init();
     wiring();
@@ -419,7 +434,15 @@ int App::config(int argc, char** argv)
 #ifdef NPYSERVER
     m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
     m_delegate->setNumpyEvt(m_evt); // allows delegate to update evt when NPY messages arrive
-    m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
+
+    try { 
+        m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
+    } 
+    catch( const std::exception& e)
+    {
+        LOG(fatal) << "App::config EXCEPTION " << e.what() ; 
+        LOG(fatal) << "App::config FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
+    }
 #endif
 
     m_types = new Types ;  
@@ -550,7 +573,6 @@ void App::checkGeometry()
         return ; 
     }
 
-
     MTool mtool ; 
 
     unsigned int nso = m_ggeo->getNumSolids();
@@ -564,22 +586,56 @@ void App::checkGeometry()
     typedef std::map<unsigned int, unsigned int> MUU ; 
     typedef MUU::const_iterator MUUI ; 
 
+    typedef std::vector<unsigned int> VU ; 
+    typedef std::map<unsigned int, VU > MUVU ; 
+
     MUU& mesh_usage = m_ggeo->getMeshUsage();
+    MUVU& mesh_nodes = m_ggeo->getMeshNodes();
 
     for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
     {    
         unsigned int meshIndex = it->first ; 
         unsigned int nodeCount = it->second ; 
- 
+
+        VU& nodes = mesh_nodes[meshIndex] ;
+        assert(nodes.size() == nodeCount );
+
+        std::stringstream nss ; 
+        for(unsigned int i=0 ; i < std::min( nodes.size(), 5ul ) ; i++) nss << nodes[i] << "," ;
+
+
         GMesh* mesh = m_ggeo->getMesh(meshIndex);
+        gfloat4 ce = mesh->getCenterExtent(0);
 
         const char* meshName = mesh->getName() ; 
         unsigned int nv = mesh->getNumVertices() ; 
         unsigned int nf = mesh->getNumFaces() ; 
+        unsigned int tc = 0 ; 
 
-        unsigned int ncomp = mtool.countMeshComponents(mesh);
+        // topological components
+        std::stringstream coutbuf;
+        std::stringstream cerrbuf;
+        {
+            cout_redirect out_(coutbuf.rdbuf());
+            cerr_redirect err_(cerrbuf.rdbuf()); 
 
-        printf("  %4d (v%5d f%5d c%2d) : %6d : %7d : %s \n", meshIndex, nv, nf, ncomp, nodeCount, nodeCount*nv, meshName);
+            tc = mtool.countMeshComponents(mesh); 
+        } 
+        std::string out = coutbuf.str();
+        std::string err = cerrbuf.str();
+        unsigned int noise = out.size() + err.size() ;
+
+        assert( tc >= 1 );  // should be 1, some meshes have topological issues however
+
+        if(noise > 0 || tc > 1 )
+            printf("  %4d (v%5d f%5d )(t%5d oe%5u) : x%10.3f : n%6d : n*v%7d : %40s : %s \n", meshIndex, nv, nf, tc, noise, ce.w, nodeCount, nodeCount*nv, meshName, nss.str().c_str() );
+
+        if(noise > 0)
+        {
+            if(out.size() > 0 ) LOG(debug) << "out " << out ;  
+            if(err.size() > 0 ) LOG(debug) << "err " << err ;  
+        }
+
    }    
 
 
@@ -1298,7 +1354,7 @@ void App::renderLoop()
         m_frame->render();
 
 #ifdef OPTIX
-        if(m_interactor->getOptiXMode()>0)
+        if(m_interactor->getOptiXMode()>0 && m_engine)
         { 
              m_engine->trace();
              m_engine->render();
@@ -1376,15 +1432,32 @@ void App::cleanup()
 
 int main(int argc, char** argv)
 {
+    // full argument parsing is done in App::config, 
+    // but logging setup needs to happen before that 
+
     const char* logname = "ggeoview.log" ; 
-    for(unsigned int i=1; i < argc ; i++)
+    const char* loglevel = "info" ; 
+
+    int opt ; 
+    while ((opt = getopt (argc, argv, "Gl:")) != -1)     
     {
-       if( strcmp(argv[i],"-G")==0  || strcmp(argv[i],"--nogeocache")==0) logname = "ggeoview.nogeocache.log" ; 
-    } 
+        switch (opt)
+        {
+            case 'G':
+                      logname = "ggeoview.nogeocache.log" ;
+                      break ;
+            case 'l':
+                      loglevel = optarg ;  
+                      break ;
+        }
+    }
+
+    printf(" logname: %s loglevel: %s\n", logname, loglevel );
+
 
     int rc ; 
 
-    App app("GGEOVIEW_", logname); 
+    App app("GGEOVIEW_", logname, loglevel); 
 
     rc = app.config(argc, argv) ;
     if(rc) exit(EXIT_SUCCESS);
