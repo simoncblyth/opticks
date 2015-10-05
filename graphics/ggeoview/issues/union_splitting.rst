@@ -10,6 +10,11 @@ Mesh mending
   looking for any mesh face that is connected to more other faces than it has edges
 
 
+
+
+
+
+
 Visualisations
 ---------------
 
@@ -32,7 +37,7 @@ Visualisations
 oav fix 
 ---------
 
-iav mesh fix did not work on oav, despite the geometry looking very similar::
+iav mesh fix works after opening up the pairing criteria::
 
     ggv --ldyb -G --noinstanced
     ggv --ldyb 

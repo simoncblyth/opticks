@@ -31,7 +31,10 @@ class TorchStepNPY ;
 //
 class GGeo {
     public:
-        typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, const char*);
+        typedef int (*GLoaderImpFunctionPtr)(GGeo*);
+        void setLoaderImp(GLoaderImpFunctionPtr imp);
+    public:
+        typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, GCache*);
         void setMeshJoinImp(GJoinImpFunctionPtr imp);
         void setMeshJoinCfg(const char* config);
         bool shouldMeshJoin(GMesh* mesh);
@@ -46,6 +49,8 @@ class GGeo {
         GGeo(GCache* cache); 
         GCache* getCache();
         void loadFromCache();
+        void loadFromXML();  // AssimpGGeo::load
+
         virtual ~GGeo();
     private:
         void init(); 
@@ -239,6 +244,7 @@ class GGeo {
         bool                               m_volnames ;    
         const char*                        m_join_cfg ; 
         GJoinImpFunctionPtr                m_join_imp ;  
+        GLoaderImpFunctionPtr              m_loader_imp ;  
 
 };
 
@@ -267,6 +273,15 @@ inline GGeo::GGeo(GCache* cache) :
 }
 
 
+
+// setLoaderImp : sets implementation that does the actual loading
+// using a function pointer to the implementation 
+// avoids ggeo-/GLoader depending on all the implementations
+
+inline void GGeo::setLoaderImp(GLoaderImpFunctionPtr imp)
+{
+    m_loader_imp = imp ; 
+}
 inline void GGeo::setMeshJoinImp(GJoinImpFunctionPtr imp)
 {
     m_join_imp = imp ; 

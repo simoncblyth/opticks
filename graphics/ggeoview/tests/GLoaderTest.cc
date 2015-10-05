@@ -22,12 +22,12 @@ int main(int argc, char* argv[])
     GCache* m_cache = new GCache("GGEOVIEW_");
 
     GGeo* m_ggeo = new GGeo(m_cache);
+    m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     GLoader* m_loader = new GLoader(m_ggeo) ;
 
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
-    m_loader->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     m_loader->load();
 

@@ -8,7 +8,7 @@
 
 // ggeo-
 #include "GMesh.hh"
-
+#include "GCache.hh"
 #include "MWrap.hh"
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
@@ -51,8 +51,11 @@ unsigned int MTool::countMeshComponents_(GMesh* gmesh)
 }
 
 
-GMesh* MTool::joinSplitUnion(GMesh* gmesh, const char* config)
+GMesh* MTool::joinSplitUnion(GMesh* gmesh, GCache* config)
 {
+    // hmm this is pure static, could create an MTool instance
+    // if find need to split this up a bit 
+
     LOG(info) << "MTool::joinSplitUnion " 
               << " index " << gmesh->getIndex() 
               << " shortname " << gmesh->getShortName()
@@ -95,7 +98,9 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, const char* config)
     wb.calcFaceCentroids("centroid"); 
 
     // xyz delta maximum and w: minimal dot product of normals, -0.999 means very nearly back-to-back
-    glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
+    //glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
+
+    glm::vec4 delta = config->getMeshfixFacePairingCriteria();
 
     MWrap<MyMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
 

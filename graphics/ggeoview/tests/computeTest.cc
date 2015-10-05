@@ -99,14 +99,13 @@ int main(int argc, char** argv)
 
 
     GGeo ggeo(&cache);
-
+    ggeo.setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     GLoader loader(&ggeo) ;
     loader.setInstanced(false); // find repeated geometry 
     loader.setRepeatIndex(fcfg->getRepeatIndex());
     loader.setTypes(&types);
     loader.setCache(&cache);
-    loader.setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     loader.load();
     p.add<int>("repeatIdx", loader.getRepeatIndex() );
 

@@ -486,9 +486,19 @@ void App::prepareContext()
 
 int App::loadGeometry()
 {
+    // func pointer shenanigans allows GGeo to use AssimpWrap functionality 
+    // without depending on assimpwrap- 
+    //
+    // BUT that also means that CMake dependency tracking 
+    // will not do appropriate rebuilds, if get perplexing fails
+    // try wiping and rebuilding assimpwrap- and ggeo-
+
+
     m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
 
     m_ggeo = new GGeo(m_cache);
+
+    m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
 
@@ -502,21 +512,13 @@ int App::loadGeometry()
     }
     
 
+
     m_loader = new GLoader(m_ggeo) ;
 
     m_loader->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
-
-    // func pointer shenanigans allows GGeo to use AssimpWrap functionality 
-    // without depending on assimpwrap- 
-    //
-    // BUT that also means that CMake dependency tracking 
-    // will not do appropriate rebuilds, if get perplexing fails
-    // try wiping and rebuilding assimpwrap- and ggeo-
-
-    m_loader->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     m_loader->load();
 

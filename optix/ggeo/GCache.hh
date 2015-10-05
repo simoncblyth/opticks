@@ -3,7 +3,10 @@
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <glm/glm.hpp>
 
+
+// this is turning into GGeoConfig rather than just GCache 
 class GCache {
     public:
          static GCache* getInstance();
@@ -31,6 +34,16 @@ class GCache {
          const char* getQuery();
          const char* getCtrl();
          const char* getMeshfix();
+
+         const char* getMeshfixCfg();
+         //
+         // 4 comma delimited floats specifying criteria for faces to be deleted from the mesh
+         //
+         //   xyz : face barycenter alignment 
+         //     w : dot face normal cuts 
+         //
+         glm::vec4 getMeshfixFacePairingCriteria();
+
     public:
          const char* getDetector();
          bool        isJuno();
@@ -47,6 +60,7 @@ class GCache {
           const char* m_query ;
           const char* m_ctrl ;
           const char* m_meshfix ;
+          const char* m_meshfixcfg ;
     private:
           const char* m_idpath ;
           const char* m_digest ;
@@ -71,6 +85,7 @@ inline GCache::GCache(const char* envprefix)
        m_query(NULL),
        m_ctrl(NULL),
        m_meshfix(NULL),
+       m_meshfixcfg(NULL),
        m_idpath(NULL),
        m_digest(NULL),
        m_geocache(false),
@@ -107,6 +122,13 @@ inline const char* GCache::getMeshfix()
 {
     return m_meshfix ;
 }
+inline const char* GCache::getMeshfixCfg()
+{
+    return m_meshfixcfg ;
+}
+
+
+
 
 inline void GCache::setGeocache(bool geocache)
 {

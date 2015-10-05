@@ -20,15 +20,17 @@ class GTreeCheck ;
 
 class Lookup ; 
 
+
+// THIS IS ON THE WAY OUT : TURNING IT INTO A HELPER FOR GGeo RATHER THAN A DRIVER
 class GLoader {
      public:
-         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
+        // typedef int (*GLoaderImpFunctionPtr)(GGeo*);
     public:
          GLoader(GGeo* ggeo);
          void setTypes(Types* types);
          void setCache(GCache* cache);
          void setRepeatIndex(int repeatidx);
-         void setLoaderImp(GLoaderImpFunctionPtr imp);
+        // void setLoaderImp(GLoaderImpFunctionPtr imp);
          void load();
     public:
          void setInstanced(bool instanced=true);
@@ -58,7 +60,7 @@ class GLoader {
          GGeo*                     m_ggeo ;    
          Types*                    m_types ; 
          GCache*                   m_cache ; 
-         GLoaderImpFunctionPtr     m_loader_imp ;  
+    //     GLoaderImpFunctionPtr     m_loader_imp ;  
          GMergedMesh*              m_mergedmesh ;
          GBoundaryLib*             m_boundarylib ;
          GBoundaryLibMetadata*     m_metadata ;
@@ -118,16 +120,12 @@ inline bool GLoader::isInstanced()
    return m_instanced ; 
 }
 
-
-// setLoaderImp : sets implementation that does the actual loading
-// using a function pointer to the implementation 
-// avoids ggeo-/GLoader depending on all the implementations
-
+/*
 inline void GLoader::setLoaderImp(GLoaderImpFunctionPtr imp)
 {
     m_loader_imp = imp ; 
 }
-
+*/
 
 inline void GLoader::setTypes(Types* types)
 {

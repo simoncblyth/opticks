@@ -5,6 +5,7 @@
 
 // npy-
 #include "stringutil.hpp"
+#include "GLMFormat.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -59,6 +60,7 @@ void GCache::readEnvironment()
     }
 
     m_meshfix = getenvvar(m_envprefix, "MESHFIX");
+    m_meshfixcfg = getenvvar(m_envprefix, "MESHFIX_CFG");
  
     //  
     // #. real path is converted into "fake" path 
@@ -85,6 +87,17 @@ void GCache::readEnvironment()
 
     // DO NOT PRINT ANYTHING FROM HERE TO AVOID IDP CAPTURE PROBLEMS
 }
+
+
+
+glm::vec4 GCache::getMeshfixFacePairingCriteria()
+{
+    assert(m_meshfixcfg) ; 
+    std::string meshfixcfg = m_meshfixcfg ;
+    return gvec4(meshfixcfg);
+}
+
+
 
 
 std::string GCache::getMergedMeshPath(unsigned int ridx)

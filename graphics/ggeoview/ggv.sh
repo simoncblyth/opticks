@@ -23,13 +23,13 @@ fi
 
 
 
-ggeoview_defaults(){
+ggeoview_defaults_dyb(){
 
    export GGEOVIEW_GEOKEY=DAE_NAME_DYB
    export GGEOVIEW_QUERY="range:3153:12221"
    export GGEOVIEW_CTRL="volnames"
-   #export GGEOVIEW_MESHFIX="iav,oav"
-   export GGEOVIEW_MESHFIX="iav"
+   export GGEOVIEW_MESHFIX="iav,oav"
+   export GGEOVIEW_MESHFIX_CFG="100,100,10,-0.999"   # face barycenter xyz alignment and dot face normal cuts for faces to be removed 
 
    #export GGEOVIEW_QUERY="range:3153:4814"     #  transition to 2 AD happens at 4814 
    #export GGEOVIEW_QUERY="range:3153:4813"     #  this range constitutes full single AD
@@ -37,9 +37,7 @@ ggeoview_defaults(){
    #export GGEOVIEW_QUERY="index:5000"
    #export GGEOVIEW_QUERY="index:3153,depth:25"
    #export GGEOVIEW_QUERY="range:5000:8000"
-
 }
-
 
 
 if [ "${cmdline/--juno}" != "${cmdline}" ]; then
@@ -62,37 +60,32 @@ elif [ "${cmdline/--jtst}" != "${cmdline}" ]; then
 
 elif [ "${cmdline/--dyb}" != "${cmdline}" ]; then
 
-   ggeoview_defaults
+   ggeoview_defaults_dyb
 
 elif [ "${cmdline/--idyb}" != "${cmdline}" ]; then
 
-   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
-   #export GGEOVIEW_QUERY="range:3161:4813"      # this misses out the IAV 
-   export GGEOVIEW_QUERY="range:3158:3160"       # just 2 volumes (python style range) __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348, __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00 
-   export GGEOVIEW_CTRL="volnames"
+   ggeoview_defaults_dyb
+   export GGEOVIEW_QUERY="range:3158:3160"       # 2 volumes : pvIAV and pvGDS
 
 elif [ "${cmdline/--jdyb}" != "${cmdline}" ]; then
 
-   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
-   export GGEOVIEW_QUERY="range:3158:3159"       # just 1 volume __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348
-   export GGEOVIEW_CTRL="volnames"
+   ggeoview_defaults_dyb
+   export GGEOVIEW_QUERY="range:3158:3159"       # 1 volume : pvIAV
    
 elif [ "${cmdline/--kdyb}" != "${cmdline}" ]; then
 
-   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
-   export GGEOVIEW_QUERY="range:3159:3160"       # just 1 volume __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00 
-   export GGEOVIEW_CTRL="volnames"
+   ggeoview_defaults_dyb
+   export GGEOVIEW_QUERY="range:3159:3160"       # 1 volume : pvGDS
 
 elif [ "${cmdline/--ldyb}" != "${cmdline}" ]; then
 
-   export GGEOVIEW_GEOKEY=DAE_NAME_DYB
-   export GGEOVIEW_QUERY="range:3156:3157"       # just 1 volume oav
-   export GGEOVIEW_CTRL="volnames"
+   ggeoview_defaults_dyb
+   export GGEOVIEW_QUERY="range:3156:3157"       # 1 volume : pvOAV
 
 
 else
 
-   ggeoview_defaults
+   ggeoview_defaults_dyb
 
 fi
 

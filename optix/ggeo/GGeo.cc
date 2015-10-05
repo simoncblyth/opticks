@@ -168,6 +168,12 @@ bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
 
 
 
+void GGeo::loadFromXML()
+{
+    int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
+    assert(rc == 0);
+}
+
 void GGeo::loadFromCache()
 {   
     const char* idpath = m_cache->getIdPath() ;
@@ -1072,7 +1078,7 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
     bool join = shouldMeshJoin(mesh);
     if(join)
     {
-        result = (*m_join_imp)(mesh, m_join_cfg ); 
+        result = (*m_join_imp)(mesh, m_cache ); 
 
         result->setName(mesh->getName()); 
         result->setIndex(mesh->getIndex()); 
@@ -1080,5 +1086,11 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
     }
     return result ; 
 }
+
+
+
+
+
+
 
 

@@ -71,7 +71,7 @@ int main()
 
     // xyz delta maximum and w: minimal dot product of normals, -0.999 means very nearly back-to-back
     //glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
-    glm::vec4 delta(100.f, 100.f, 10.f, -0.999 ); 
+    glm::vec4 delta = cache.getMeshfixFacePairingCriteria();
 
     MWrap<MyMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
 

@@ -88,10 +88,9 @@ void GLoader::load()
     {
         LOG(info) << "GLoader::load slow loading using m_loader_imp (disguised AssimpGGeo) " << envprefix ;
 
+        m_ggeo->loadFromXML(); 
+        //int rc = (*m_loader_imp)(m_ggeo);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
 
-        int rc = (*m_loader_imp)(m_ggeo);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
-
-        assert(rc == 0);
 
         t("create m_ggeo from G4DAE"); 
        // m_meshes = m_ggeo->getMeshIndex();  
