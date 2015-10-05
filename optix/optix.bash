@@ -24,6 +24,8 @@ Conference Talks
   Many presentations (videos and pdfs) on OptiX
 
 
+
+
 Samples
 --------
 
@@ -488,24 +490,38 @@ Using the map ppm_gather.cu::
 
 
 
+
+
+PhotonMap/kdTree examples
+-------------------------- 
+
 * :google:`Pedersen progressive photon map`
 
   * see p20 of Pedersen Thesis for explanation of progressive photon mapping 
 
-  Stian Pedersen Thesis
+OppositeRenderer : Stian Pedersen Thesis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  * http://www.diva-portal.org/smash/get/diva2:655629/FULLTEXT01.pdf  
-  * http://apartridge.github.io/OppositeRenderer/master/masteroppgave.pdf 
+* http://www.diva-portal.org/smash/get/diva2:655629/FULLTEXT01.pdf  
+* http://apartridge.github.io/OppositeRenderer/master/masteroppgave.pdf 
 
-  * http://apartridge.github.io/OppositeRenderer/
+* http://apartridge.github.io/OppositeRenderer/
 
+
+Student Project : Thrust based kdtree construction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
-  * http://xingdugpu.blogspot.tw
-  * http://xingdu.blogspot.tw/2012/05/gpu-path-tracer.html
-  * https://github.com/duxing/GPUFinal
-  * https://github.com/duxing/GPUFinal/blob/master/cuda_PhotonMapping/cuda_PhotonMapping/GPU_KDTree.h 
+* http://xingdugpu.blogspot.tw
+* http://xingdu.blogspot.tw/2012/05/gpu-path-tracer.html
+* https://github.com/duxing/GPUFinal
+* https://github.com/duxing/GPUFinal/blob/master/cuda_PhotonMapping/cuda_PhotonMapping/GPU_KDTree.h 
 
-    * Thrust based kdtree construction 
+CUDA/Thrust kdTree part of FLANN
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://github.com/mariusmuja/flann/tree/master/src/cpp/flann/algorithms
+* https://github.com/mariusmuja/flann/blob/master/src/cpp/flann/algorithms/kdtree_cuda_builder.h
+
 
 
 
