@@ -282,15 +282,9 @@ RT_PROGRAM void generate()
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
-        //
         // PASS : survivors will go on to pick up one of the below flags, 
-        //        so no need for "BULK_SURVIVE"
       
-        // TODO: this is only doing surface propagate_at_surface for a detecting surface
-        //       (of which there are none yet it seems)
-        //       need to identify boundaries with a surface based in integer : s.index.z > -1 
 
-        //if(s.surface.x > -1.f )  // x/y/z/w:detect/absorb/reflect_specular/reflect_diffuse
         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
         {
             command = propagate_at_surface(p, s, rng);

@@ -1,6 +1,7 @@
 #!/bin/bash -l
 
 cmdline="$*"
+ggeo- 
 ggeoview-
 
 dbg=0
@@ -17,6 +18,10 @@ if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeoview-compute-bin)
 elif [ "${cmdline/--loader}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeoview-loader-bin)
+elif [ "${cmdline/--blib}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibTest)
+elif [ "${cmdline/--mblib}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibMetadataTest)
 else
    unset GGEOVIEW_BINARY 
 fi

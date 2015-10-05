@@ -38,11 +38,15 @@ public:
     static const char* g4dae_opticalsurface_finish ;
     static const char* g4dae_opticalsurface_value ;
 
+    static const char* EFFICIENCY ;
+
 protected:
     void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl, bool reverse );
+    void convertMaterialsCathode(const aiScene* scene, GGeo* gg, const char* ctrl, bool reverse, aiMaterial* cathode);
     void addProperties(GPropertyMap<float>* pmap, aiMaterial* material, bool reverse);
     void addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property, bool reverse);
     const char* getStringProperty(aiMaterial* mat, const char* query);
+    bool hasVectorProperty(aiMaterial* material, const char* propname);
 
 protected:
     void convertMeshes(const aiScene* scene, GGeo* gg, const char* ctrl);
@@ -55,6 +59,11 @@ protected:
 protected:
     void setDomainScale(float dscale);
     void setValuesScale(float vscale);
+
+private:
+    void findSensors(GGeo* gg);
+    void findSensors(GGeo* gg, AssimpNode* node, unsigned int depth);
+    void findSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth);
 
 private:
     GGeo*            m_ggeo ;

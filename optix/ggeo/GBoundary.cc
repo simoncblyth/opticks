@@ -211,4 +211,8 @@ const char* GBoundary::getConstituentNameByIndex(unsigned int p)
 }
 
 
+bool GBoundary::hasInnerMaterial(const char* shortname)
+{
+   return m_imaterial->hasShortName(shortname);
+}
 

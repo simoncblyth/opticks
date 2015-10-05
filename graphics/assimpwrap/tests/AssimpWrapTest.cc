@@ -65,8 +65,7 @@ int main(int argc, char* argv[])
 
     lib->Summary("GBoundaryLib");
 
-    // loads .idmap sibling of G4DAE file and traverses nodes doing GSolid::setSensor for sensitve nodes
-    ggeo->sensitize(cache.getIdPath(), "idmap");  
+    ggeo->add_sensitive_surfaces();
 
     GMergedMesh* mm = ggeo->makeMergedMesh();
     

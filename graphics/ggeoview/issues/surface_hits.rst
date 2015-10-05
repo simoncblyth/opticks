@@ -1,0 +1,188 @@
+
+Surface Debug : lacking hits due to surface/volume model mismatch 
+====================================================================
+
+Not getting any SURFACE_DETECT despite photons obviously traversing PMTs
+because the requisite boundaries have no associated surfaces.
+
+Surface flags::
+
+   SURFACE_DETECT
+   SURFACE_ABSORB
+   SURFACE_DREFLECT
+   SURFACE_SREFLECT 
+
+
+generate.cu::
+
+    281 
+    282         command = propagate_to_boundary( p, s, rng );
+    283         if(command == BREAK)    break ;           // BULK_ABSORB
+    284         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
+    285         // PASS : survivors will go on to pick up one of the below flags, 
+    286         
+    287         
+    288         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
+    289         {
+    290             command = propagate_at_surface(p, s, rng);
+    291             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+    292             if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+    293         }   
+    294         else
+    295         {
+    296             propagate_at_boundary(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    297             // tacit CONTINUE
+    298         }   
+
+
+state.h::
+
+     19 __device__ void fill_state( State& s, int boundary, int sensor, float wavelength )
+     20 {
+     21     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
+     22     // >0 outward going photon
+     23     // <0 inward going photon
+     24         
+     25     int line = boundary > 0 ? (boundary - 1)*6 : (-boundary - 1)*6  ;
+     26             
+     27     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
+     28     //      
+     29     int m1_line = boundary > 0 ? line + 0 : line + 1 ;   // inner-material / outer-material
+     30     int m2_line = boundary > 0 ? line + 1 : line + 0 ;   // outer-material / inner-material
+     31     int su_line = boundary > 0 ? line + 2 : line + 3 ;   // inner-surface  / outer-surface
+     32             
+     33     s.material1 = wavelength_lookup( wavelength, m1_line );
+     34     s.material2 = wavelength_lookup( wavelength, m2_line ) ;
+     35     s.surface   = wavelength_lookup( wavelength, su_line );
+     36         
+     37     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
+     38         
+     39     s.index.x = optical_buffer[m1_line].x ;
+     40     s.index.y = optical_buffer[m2_line].x ;
+     41     s.index.z = optical_buffer[su_line].x ;
+     42     s.index.w = sensor  ;
+     43         
+     44 }
+
+
+
+Chroma Solution to same issue
+--------------------------------
+
+Addressed this with G4DAEChroma by adding "fake" surfaces 
+
+* env/geant4/geometry/surfaces/surfaces_roundtrip.rst
+* http://simoncblyth.bitbucket.org/env/notes/geant4/geometry/surfaces/surfaces_roundtrip/
+
+
+::
+
+    delta:env blyth$ hg shortlog | grep sensitive
+    ef4ab750f29e | 2014-10-10 20:15:22 +0800 | simoncblyth: debug the tranlation of sensitive materials into surfaces for G4 to Chroma model translation
+    4b938256ea50 | 2014-10-10 14:02:43 +0800 | simoncblyth: add extra SkinSurface and OpticalSurface objects to DAE level geometry in order to be transformed into sensitive surfaces needed for chroma SURFACE_DETECT
+    d41b1d971f68 | 2014-10-09 21:02:37 +0800 | simoncblyth: working out how to reconcile the G4 and Chroma models regards sensitive detectors, in order to get Chroma to come up with photon hit data
+    b192e176d992 | 2009-06-23 18:31:51 +0800 | simoncblyth: tg-quickstart 1st checkin of OfflineDB project ... untouched other than exclusions of sensitive {{{.ini}}} files
+    3b26e5c356f4 | 2008-08-21 13:00:42 +0800 | simoncblyth: improved access control to sensitive variables
+    101ef1dc0491 | 2007-12-24 08:16:45 +0800 | thho: sensitive skin opacity setting
+    b04e2e8719ab | 2007-07-27 12:00:47 +0800 | simoncblyth: sensitive skin testing
+    delta:env blyth$ 
+
+
+* https://bitbucket.org/simoncblyth/env/commits/4b938256ea50
+  
+  * g4daenode.py:add_sensitive_surfaces
+
+  * https://bitbucket.org/simoncblyth/env/src/tip/geant4/geometry/collada/g4daenode.py
+
+
+* env/geant4/geometry/collada/g4daenode.py 
+
+::
+
+     395     @classmethod
+     396     def add_sensitive_surfaces(cls, matid='__dd__Materials__Bialkali', qeprop='EFFICIENCY'):
+     397         """
+     398         Chroma expects sensitive detectors to have an Optical Surface 
+     399         with channel_id associated.  
+     400         Whereas Geant4 just has sensitive LV.
+     401 
+     402         This attempts to bridge from Geant4 to Chroma model 
+     403         by creation of "fake" chroma skinsurfaces.  
+     404 
+     405         Effectively sensitive materials are translated 
+     406         into sensitive surfaces 
+     407 
+     408         :: 
+     409 
+     410             In [57]: DAENode.orig.materials['__dd__Materials__Bialkali0xc2f2428'].extra
+     411             Out[57]: <MaterialProperties keys=['RINDEX', 'EFFICIENCY', 'ABSLENGTH'] >
+     412 
+     413 
+     414         #. Different efficiency for different cathodes ?
+     415 
+     416         """
+     417         log.info("add_sensitive_surfaces matid %s qeprop %s " % (matid, qeprop))
+     418         sensitive_material = cls.materialsearch(matid)
+     419         assert sensitive_material
+     420 
+     421         if sensitive_material.extra is None:
+     422             log.warn("sensitive_material.extra not available cannot sensitize ")
+     423             return
+     424 
+     425         efficiency = sensitive_material.extra.properties[qeprop]
+     426         assert not efficiency is None
+     427 
+     428         cls.sensitize(matid=matid)
+     429 
+     430         # follow convention used in G4DAE exports of using same names for 
+     431         # the SkinSurface and the OpticalSurface it refers too
+     432 
+     433         for node in cls.sensitive_nodes:
+     434             ssid = cls.sensitive_surface_id(node)
+     435             volumeref = node.lv.id
+     436 
+     437             surf = OpticalSurface.sensitive(name=ssid, properties={qeprop:efficiency})
+     438             cls.add_extra_opticalsurface(surf)
+     439 
+     440             skin = SkinSurface.sensitive(name=ssid, surfaceproperty=surf, volumeref=volumeref )
+     441             cls.add_extra_skinsurface(skin)
+     442         pass
+
+
+
+
+How to do this with GGeo ?
+---------------------------
+
+Which level to add the fake cathode surfaces at ?
+
+* AssimpGGeo::convertMaterials, creates and adds to GGeo instances of
+  GOpticalSurface, GSkinSurface, GBorderSurface, GMaterial 
+  based on the properties that the assimp "materials" have 
+
+* AssimpGGeo::convertStructureVisit pulls GBoundary into existance 
+  based on boundary identity combining imat/omat/isur/osur
+
+
+::
+
+    603     GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, NULL, NULL ); // boundary and sensor start NULL
+    604     solid->setLevelTransform(ltransform);
+    605 
+    606     const char* lv   = node->getName(0);
+    607     const char* pv   = node->getName(1);
+    608     const char* pv_p   = pnode->getName(1);
+    609 
+    610     gg->countMeshUsage(msi, nodeIndex, lv, pv);
+    611 
+    612     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
+    613     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
+    614     GSkinSurface*   sks = gg->findSkinSurface(lv);
+    615 
+
+
+Avoiding interference with this structure means would need to 
+add the surfaces prior to AssimpGGeo::convertStructure
+
+
+

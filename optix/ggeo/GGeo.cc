@@ -4,8 +4,10 @@
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GMaterial.hh"
+#include "GPropertyMap.hh"
 #include "GSolid.hh"
 #include "GMesh.hh"
+#include "GBoundary.hh"
 #include "GBoundaryLib.hh"
 #include "GSensorList.hh"
 #include "GSensor.hh"
@@ -42,6 +44,7 @@ namespace fs = boost::filesystem;
 
 
 const char* GGeo::GMERGEDMESH = "GMergedMesh" ; 
+const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 
 void GGeo::removeMergedMeshes(const char* idpath )
 {
@@ -168,11 +171,18 @@ bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
 
 
 
-void GGeo::loadFromXML()
+void GGeo::loadFromG4DAE()
 {
+    LOG(info) << "GGeo::loadFromG4DAE" ; 
+
+    loadSensorList("idmap");
+
     int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
+
     assert(rc == 0);
 }
+
+
 
 void GGeo::loadFromCache()
 {   
@@ -547,33 +557,81 @@ void GGeo::dumpRawBorderSurface(const char* name)
 }
 
 
-void GGeo::sensitize(const char* idpath, const char* ext)
+void GGeo::loadSensorList(const char* ext )
 {
-    m_sensor_list->load(idpath, ext);
-
-    LOG(info) << "GGeo::sensitize " << m_sensor_list->description() ; 
-
-    GSolid* root = getSolid(0);
-
-    sensitize_traverse(root, 0 );
-
-    LOG(info) << "GGeo::sensitize sensitize_count " << m_sensitize_count  ; 
+    m_sensor_list->load( m_cache->getIdPath(), ext);
+    LOG(info) << "GGeo::loadSensorList " << m_sensor_list->description() ; 
 }
+
+
+
+void GGeo::add_sensitive_surfaces()
+{
+    //  cf env/geant4/geometry/collada/g4daenode.py:add_sensitive_surfaces
+   /*
+     Hmm currently think need to do this earlier at assimpwrap convertion stage
+     to avoid boundarylib complications
+   */
+
+
+    assert(0);
+
+    assert(m_sensitive_solids.size() == 0);
+    assert(m_sensitive_boundaries.size() == 0);
+
+   // sensitize_traverse(  getSolid(0) , 0 );
+
+    assert( m_sensitive_solids.size()  == m_sensitive_count );
+
+    LOG(info) << "GGeo::add_sensitive_surfaces"
+              << " sensitive_solids " << m_sensitive_solids.size() 
+              << " sensitive_boundaries " << m_sensitive_boundaries.size()  
+             ; 
+
+
+    findCathodeMaterials("EFFICIENCY"); 
+    dumpCathodeMaterials(); 
+
+
+    typedef std::unordered_set<GBoundary*>::const_iterator UBI ; 
+    for(UBI it=m_sensitive_boundaries.begin() ; it != m_sensitive_boundaries.end() ; it++)
+    {
+        GBoundary* boundary = *it ;
+        boundary->Summary("GGeo::add_sensitive_surfaces"); 
+    }
+
+
+    // hmm need to fabricate the surface properties of the cathodes ?
+    //  
+
+}
+
+
 
 void GGeo::sensitize_traverse( GNode* node, unsigned int depth)
 {
+    assert(0); // attempting to do this a AssimpWrap level
+
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
     unsigned int nodeIndex = node->getIndex();
 
     GSensor* sensor = m_sensor_list->findSensorForNode(nodeIndex);
+    GBoundary* boundary = solid->getBoundary(); 
 
-    if(sensor)
+    if(sensor && boundary && boundary->hasInnerMaterial(CATHODE_MATERIAL))
     {
-        m_sensitize_count++ ; 
+        m_sensitive_count++ ; 
+
+        //boundary->Summary("GGeo::sensitize_traverse"); 
 
         solid->setSensor(sensor);  
-        //LOG(info) << "[" << std::setw(5) << m_sensitize_count << "] " << sensor->description() ; 
+
+        m_sensitive_solids.push_back(solid);
+
+        m_sensitive_boundaries.insert(boundary);
+
+        LOG(debug) << "[" << std::setw(5) << m_sensitive_count << "] " << sensor->description() ; 
     }
     else
     {
@@ -604,12 +662,12 @@ void GGeo::dumpRawMaterialProperties(const char* msg)
 }
 
 
-void GGeo::findScintillators(const char* props)
+void GGeo::findScintillatorMaterials(const char* props)
 {
     m_scintillators_raw = getRawMaterialsWithProperties(props, ",");
     assert(m_scintillators_raw.size() > 0 );
 }
-void GGeo::dumpScintillators(const char* msg)
+void GGeo::dumpScintillatorMaterials(const char* msg)
 {
     LOG(info)<< msg ;
     for(unsigned int i=0; i<m_scintillators_raw.size() ; i++)
@@ -622,15 +680,56 @@ void GGeo::dumpScintillators(const char* msg)
     }              
 }
 
-unsigned int GGeo::getNumScintillators()
+unsigned int GGeo::getNumScintillatorMaterials()
 {
     return m_scintillators_raw.size();
 }
 
-GMaterial* GGeo::getScintillator(unsigned int index)
+GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 {
     return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
 }
+
+
+
+
+void GGeo::findCathodeMaterials(const char* props)
+{
+    m_cathodes_raw = getRawMaterialsWithProperties(props, ",");
+    assert(m_cathodes_raw.size() > 0 );
+}
+void GGeo::dumpCathodeMaterials(const char* msg)
+{
+    LOG(info)<< msg ;
+    for(unsigned int i=0; i<m_cathodes_raw.size() ; i++)
+    {
+        GMaterial* mat = m_cathodes_raw[i];
+        mat->Summary();
+        std::cout << std::setw(30) << mat->getShortName()
+                  << " keys: " << mat->getKeysString()
+                  << std::endl ; 
+    }              
+}
+
+unsigned int GGeo::getNumCathodeMaterials()
+{
+    return m_cathodes_raw.size();
+}
+
+GMaterial* GGeo::getCathodeMaterial(unsigned int index)
+{
+    return index < m_cathodes_raw.size() ? m_cathodes_raw[index] : NULL ; 
+}
+
+
+
+
+
+
+
+
+
+
 
 
 std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, const char* delim)

@@ -169,15 +169,6 @@ bool GPropertyMap<T>::hasDefinedName()
     return strcmp(m_shortname, NOT_DEFINED) != 0 ;
 }
 
-/*
-template <typename T>
-char* GPropertyMap<T>::trimSuffixPrefix(const char* origname, const char* prefix)
-{
-    //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
-    return trimPointerSuffixPrefix(origname, prefix);
-}
-*/
-
 
 template <typename T>
 void GPropertyMap<T>::findShortName(const char* prefix)

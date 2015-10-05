@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <unordered_set>
 
 #include <glm/glm.hpp>
 #include "GVector.hh"
@@ -31,6 +32,8 @@ class TorchStepNPY ;
 //
 class GGeo {
     public:
+        static const char* CATHODE_MATERIAL ; 
+    public:
         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
         void setLoaderImp(GLoaderImpFunctionPtr imp);
     public:
@@ -48,8 +51,12 @@ class GGeo {
     public:
         GGeo(GCache* cache); 
         GCache* getCache();
+
         void loadFromCache();
-        void loadFromXML();  // AssimpGGeo::load
+        void loadFromG4DAE();  // AssimpGGeo::load
+
+        void setCathode(GMaterial* cathode);
+        GMaterial* getCathode();  
 
         virtual ~GGeo();
     private:
@@ -130,7 +137,9 @@ class GGeo {
 
     public:
         // load idmap, traverse GNode tree calling GSolid::setSensor nodes with associated sensor identifier
-        void sensitize(const char* idpath, const char* ext="idmap");
+        GSensorList*  getSensorList();
+        void loadSensorList(const char* ext="idmap");
+        void add_sensitive_surfaces();
     private:
         void sensitize_traverse(GNode* node, unsigned int depth);
  
@@ -147,7 +156,6 @@ class GGeo {
 
     public:
         GBoundaryLib* getBoundaryLib();
-        GSensorList*  getSensorList();
 
     public:
         GMesh* getMesh(unsigned int index);  
@@ -159,12 +167,17 @@ class GGeo {
         void targetTorchStep(TorchStepNPY* torchstep);
 
     public:
+        void findScintillatorMaterials(const char* props);
+        void dumpScintillatorMaterials(const char* msg="GGeo::dumpScintillatorMaterials");
+        unsigned int getNumScintillatorMaterials();
+        GMaterial* getScintillatorMaterial(unsigned int index);
+    public:
+        void findCathodeMaterials(const char* props);
+        void dumpCathodeMaterials(const char* msg="GGeo::dumpCathodeMaterials");
+        unsigned int getNumCathodeMaterials();
+        GMaterial* getCathodeMaterial(unsigned int index);
+    public:
         std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, const char* delim);
-        void findScintillators(const char* props);
-        void dumpScintillators(const char* msg="GGeo::dumpScintillators");
-        unsigned int getNumScintillators();
-        GMaterial* getScintillator(unsigned int index);
-
     public:
         GPropertyMap<float>* findRawMaterial(const char* shortname);
         GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname);
@@ -180,6 +193,9 @@ class GGeo {
         void setHigh(const gfloat3& high);
         void updateBounds(GNode* node); 
 
+    public:
+        void addCathodeLV(const char* lv);
+        void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV");
 
     public:
         GSkinSurface* findSkinSurface(const char* lv);  
@@ -213,11 +229,18 @@ class GGeo {
         std::vector<GSkinSurface*>    m_skin_surfaces ; 
         std::vector<GBorderSurface*>  m_border_surfaces ; 
 
+        std::vector<GSolid*>           m_sensitive_solids ; 
+        std::unordered_set<GBoundary*> m_sensitive_boundaries ; 
+
+        std::unordered_set<std::string> m_cathode_lv ; 
+
         // _raw mainly for debug
         std::vector<GMaterial*>       m_materials_raw ; 
         std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
         std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
+
         std::vector<GMaterial*>       m_scintillators_raw ; 
+        std::vector<GMaterial*>       m_cathodes_raw ; 
 
         GBoundaryLib*                 m_boundary_lib ; 
         GSensorList*                  m_sensor_list ; 
@@ -240,8 +263,9 @@ class GGeo {
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         Index_t                            m_index ; 
-        unsigned int                       m_sensitize_count ;  
+        unsigned int                       m_sensitive_count ;  
         bool                               m_volnames ;    
+        GMaterial*                         m_cathode ; 
         const char*                        m_join_cfg ; 
         GJoinImpFunctionPtr                m_join_imp ;  
         GLoaderImpFunctionPtr              m_loader_imp ;  
@@ -265,8 +289,9 @@ inline GGeo::GGeo(GCache* cache) :
    m_ctrl(NULL),
    m_idpath(NULL),
    m_mesh_version(NULL),
-   m_sensitize_count(0),
+   m_sensitive_count(0),
    m_volnames(false),
+   m_cathode(NULL),
    m_join_cfg(NULL)
 {
    init(); 
@@ -464,5 +489,27 @@ inline GCache* GGeo::getCache()
     return m_cache ; 
 }
 
+inline GMaterial* GGeo::getCathode()
+{
+    return m_cathode ; 
+}
+inline void GGeo::setCathode(GMaterial* cathode)
+{
+    m_cathode = cathode ; 
+}
 
+inline void GGeo::addCathodeLV(const char* lv)
+{
+   m_cathode_lv.insert(lv);
+}
+
+inline void GGeo::dumpCathodeLV(const char* msg)
+{
+    printf("%s\n", msg);
+    typedef std::unordered_set<std::string>::const_iterator UCI ; 
+    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++)
+    {
+        printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
+    }
+}
 

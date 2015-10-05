@@ -53,7 +53,7 @@ class GBoundary {
   public:
       unsigned int getIndex();
       void setIndex(unsigned int index);
-
+      bool hasInnerMaterial(const char* shortname);
   public:
       void setInnerMaterial(GPropertyMap<float>* imaterial);
       void setOuterMaterial(GPropertyMap<float>* omaterial);

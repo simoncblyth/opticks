@@ -88,12 +88,15 @@ void GLoader::load()
     {
         LOG(info) << "GLoader::load slow loading using m_loader_imp (disguised AssimpGGeo) " << envprefix ;
 
-        m_ggeo->loadFromXML(); 
-        //int rc = (*m_loader_imp)(m_ggeo);   //  imp set in main: m_loader->setImp(&AssimpGGeo::load); 
 
+        m_ggeo->loadFromG4DAE(); 
 
         t("create m_ggeo from G4DAE"); 
-       // m_meshes = m_ggeo->getMeshIndex();  
+
+        //m_ggeo->add_sensitive_surfaces();
+
+        t("add_sensitive_surfaces"); 
+
 
         m_boundarylib = m_ggeo->getBoundaryLib();
 
@@ -105,13 +108,12 @@ void GLoader::load()
 
         t("createWavelengthAndOpticalBuffers"); 
 
-        // moved Wavelength and Optical buffers to GBoundaryLib (from GMergedMesh)
 
         // avoid requiring specific scintillator name by picking the first material 
         // with the requisite properties
-        m_ggeo->findScintillators("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
-        //m_ggeo->dumpScintillators();
-        GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillator(0));  
+        m_ggeo->findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
+ 
+        GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillatorMaterial(0));  
 
         m_boundarylib->createReemissionBuffer(scint);
 
@@ -126,10 +128,6 @@ void GLoader::load()
         m_surfaces->setColorMap(sixc);   
         m_surfaces->setColorSource(m_colors);
 
-
-        m_ggeo->sensitize(idpath, "idmap");       // loads idmap and traverses nodes doing GSolid::setSensor for sensitve nodes
-
-        t("sensitize"); 
 
         if(m_instanced)
         { 
@@ -194,6 +192,7 @@ void GLoader::load()
 
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
 
+        // TODO: consolidate persistency management of below inside m_ggeo
 
         m_metadata->save(idpath);
         m_materials->save(idpath);
@@ -202,6 +201,8 @@ void GLoader::load()
 
         m_boundarylib->saveIndex(idpath); 
         m_boundarylib->save(idpath);
+
+
 
         t("save geocache"); 
     } 

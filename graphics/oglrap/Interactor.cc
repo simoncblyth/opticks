@@ -37,7 +37,7 @@ const char* Interactor::GUIMODE    = "gui" ;
 void Interactor::gui()
 {
 #ifdef GUI_
-    ImGui::Text(" status: %s ", m_status );
+    ImGui::Text(" status: %s\n\n%s", m_status, keys  );
 #endif    
 }
 
@@ -119,15 +119,35 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
 }
 
 
-
+const char* Interactor::keys = 
+"\n A : Composition::nextMode     record animation, enable and control speed  "
+"\n B : Scene::nextGeometryStyle  bbox/norm/wire "
+"\n C : Clipper::next             toggle geometry clipping "
+"\n D : Camera::nextStyle         perspective/orthographic "
+"\n E : Composition::nextGeometryStyle  lightshader/normalshader/flatvertex/facecolor "
+"\n F : far mode toggle : swipe up/down change frustum far "
+"\n G : gui mode    toggle GUI "
+"\n H : Trackball::home  "
+"\n J : Scene::jump  "
+"\n K : Composition::nextPickPhotonStyle "
+"\n L : Composition::nextNormalStyle     flip normal in shaders "
+"\n M : Composition::nextColorStyle      m1/m2/f1/f2/p1/p2      "
+"\n N : near mode toggle : swipe up/down to change frustum near "  
+"\n O : optix render mode  toggle "
+"\n P : Scene::nextPhotonStyle       dot/longline/shortline  "
+"\n Q : Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
+"\n R : rotate mode toggle  drag around rotate around viewpoint " 
+"\n V : View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
+"\n X : pan mode toggle "
+"\n Y : yfov mode toggle "
+"\n Z : zoom mode toggle   (actually z not zoom) " 
+"\n ";
 
 void Interactor::key_pressed(unsigned int key)
 {
     if(key < NUM_KEYS) m_keys_down[key] = true ; 
 
     if(key > 245) printf("Interactor::key_pressed %u \n", key );
-
-
 
     switch (key)
     {

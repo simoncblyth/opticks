@@ -184,7 +184,7 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
        // but need to also require ndig > smth as dont want to repeat things like the world 
 
         bool select = ndig > repeat_min && nvert > vertex_min ;
-        LOG(info) 
+        LOG(debug) 
                   << "GTreeCheck::findRepeatCandidates "
                   << ( select ? "**" : "  " ) 
                   << " i "     << std::setw(3) << i 

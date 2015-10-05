@@ -29,6 +29,8 @@ class Interactor {
        unsigned int getModifiers();
        static std::string describeModifiers(unsigned int modifiers);
 
+       static const char* keys ; 
+
        static const char* DRAGFACTOR ; 
        static const char* OPTIXMODE ; 
        static const char* GUIMODE ; 

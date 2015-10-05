@@ -92,7 +92,8 @@ const char* GBoundaryLib::keymap =
 "reemission_cdf:DUMMY," 
 ;
 
-//  ggeo-meta 102 103 104 105 106 107 
+//
+//  ggv --blib 102 103 104 105 106 107
 //
 //  need to branch REFLECTIVITY depending on *finish* property from GOpticalSurface
 //
