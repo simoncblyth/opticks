@@ -24,6 +24,491 @@ Conference Talks
   Many presentations (videos and pdfs) on OptiX
 
 
+Samples
+--------
+
+julia : example of analytic geometry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/usr/local/env/cuda/OptiX_380_sdk/julia/julia.cpp::
+
+    414 void JuliaScene::createGeometry()
+    415 {
+    416   // Julia object
+    417   Geometry julia = m_context->createGeometry();
+    418   julia->setPrimitiveCount( 1u );
+    419   julia->setBoundingBoxProgram( m_context->createProgramFromPTXFile( ptxpath( "julia", "julia.cu" ), "bounds" ) );
+    420   julia->setIntersectionProgram( m_context->createProgramFromPTXFile( ptxpath( "julia", "julia.cu" ), "intersect" ) );
+    421 
+
+::
+
+    167 RT_PROGRAM void intersect(int primIdx)
+    ///
+    ///    primIdx not used
+    ///
+    168 {
+    169   float tmin, tmax;
+    170   if( intersectBoundingSphere(ray.origin, ray.direction, tmin, tmax) )
+    171   {
+    172     JuliaSet distance( max_iterations );
+
+
+progressivePhotonMap
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Stages:
+
+* trace viewing rays from camera position thru pixels into scene
+  collecting rtBuffer<HitRecord,2> rtpass_output_buffer
+  which contain hit position, normal and a starting radius and 
+  initialize stats to zero for this "region"/pixel   
+
+  This initial stage only need to be repeated when camera position changes, 
+  it is identifying surfaces relevant to the current view.
+
+* 
+
+
+
+
+
+Note implicit "union" between PhotonRecord and PackedPhotonRecord
+
+/usr/local/env/cuda/OptiX_380_sdk/progressivePhotonMap/ppm.h::
+
+    089 struct PhotonRecord
+     90 {
+     91   optix::float3 position;
+     92   optix::float3 normal;      // Pack this into 4 bytes
+     93   optix::float3 ray_dir;
+     94   optix::float3 energy;
+     95   optix::uint   axis;
+     96   optix::float3 pad;
+     97 };
+     98 
+     99 
+    100 struct PackedPhotonRecord
+    101 {
+    102   optix::float4 a;   // position.x, position.y, position.z, normal.x
+    103   optix::float4 b;   // normal.y,   normal.z,   ray_dir.x,  ray_dir.y
+    104   optix::float4 c;   // ray_dir.z,  energy.x,   energy.y,   energy.z
+    105   optix::float4 d;   // axis,       padding,    padding,    padding
+    106 };
+
+
+/usr/local/env/cuda/OptiX_380_sdk/progressivePhotonMap/ppm.cpp::
+
+    140   enum ProgramEnum {
+    141     rtpass,
+    142     ppass,
+    143     gather,
+    144     numPrograms
+    145   };
+    ///
+    /// 3 stage    
+    /// 
+    572 void ProgressivePhotonScene::trace( const RayGenCameraData& camera_data )
+    580   if ( m_camera_changed ) {
+    587      // Trace viewing rays
+    592      m_context->launch( rtpass,
+    593                       static_cast<unsigned int>(buffer_width),
+    594                       static_cast<unsigned int>(buffer_height) );
+    597     m_context["total_emitted"]->setFloat(  0.0f );
+    598     m_iteration_count=1;
+    599   }
+
+    601   // Trace photons
+    ///      trace photons from lights, and collect non-specular non-direct records
+    610   m_context->launch( ppass,
+    611                     static_cast<unsigned int>(m_photon_launch_width),
+    612                     static_cast<unsigned int>(m_photon_launch_height) );
+    ...
+    621   // Build KD tree 
+    624   createPhotonMap();
+    ...
+    628   // Shade view rays by gathering photons
+    631   m_context->launch( gather,
+    632                     static_cast<unsigned int>(buffer_width),
+    633                     static_cast<unsigned int>(buffer_height) );
+
+
+ppm_rtpass.cu::
+
+    /// camera ray launch, collecting HitRecords for diffuse surface intersections
+
+    039 rtBuffer<HitRecord, 2>           rtpass_output_buffer;
+    ...
+     89 RT_PROGRAM void rtpass_closest_hit()
+     90 {
+    ...
+    104   float3 hit_point    = origin + t_hit*direction;
+    105 
+    106   if( fmaxf( Kd ) > 0.0f ) {
+    107     // We hit a diffuse surface; record hit and return
+    108     HitRecord rec;
+    109     rec.position = hit_point;
+    110     rec.normal = ffnormal;
+    ...
+    125     rec.flags = PPM_HIT;
+    127     rec.radius2 = rtpass_default_radius2;
+    128     rec.photon_count = 0;
+    129     rec.accum_atten = 0.0f;
+    130     rec.flux = make_float3(0.0f, 0.0f, 0.0f);
+    131    
+    132     rtpass_output_buffer[launch_index] = rec;
+    133   } else {
+    134     // Make reflection ray
+    135     hit_prd.attenuation = hit_prd.attenuation * Ks;
+    136     hit_prd.ray_depth++;
+    137     float3 R = reflect( direction, ffnormal );
+    138     optix::Ray refl_ray( hit_point, R, rtpass_ray_type, scene_epsilon );
+    139     rtTrace( top_object, refl_ray, hit_prd );
+    140   }
+
+
+
+ppm_ppass.cu::
+
+    040 rtBuffer<PhotonRecord, 1>        ppass_output_buffer;    
+    ...
+     94 RT_PROGRAM void ppass_camera()        
+     95 {                                     
+     96   size_t2 size     = photon_rnd_seeds.size();
+     97   uint    pm_index = (launch_index.y * size.x + launch_index.x) * max_photon_count;
+     98   uint2   seed     = photon_rnd_seeds[launch_index]; // No need to reset since we dont reuse this seed
+     99 
+    100   float2 direction_sample = make_float2(
+    101       ( static_cast<float>( launch_index.x ) + rnd( seed.x ) ) / static_cast<float>( size.x ),
+    102       ( static_cast<float>( launch_index.y ) + rnd( seed.y ) ) / static_cast<float>( size.y ) );
+    ///
+    ///     divvy up 0. -> 1. corresponding to the launch index with random offset within the divvied region
+    ///     and use that for sampling portions of the light 
+    ///
+    103   float3 ray_origin, ray_direction;
+    104   if( light.is_area_light ) {
+    105     generateAreaLightPhoton( light, direction_sample, ray_origin, ray_direction );
+    106   } else {
+    107     generateSpotLightPhoton( light, direction_sample, ray_origin, ray_direction );
+    108   }
+        ...
+    110   optix::Ray ray(ray_origin, ray_direction, ppass_and_gather_ray_type, scene_epsilon );
+    111 
+    112   // Initialize our photons
+    113   for(unsigned int i = 0; i < max_photon_count; ++i) {
+    114     ppass_output_buffer[i+pm_index].energy = make_float3(0.0f);
+    115   }
+    116 
+    117   PhotonPRD prd;
+    118   //  rec.ray_dir = ray_direction; // set in ppass_closest_hit
+    119   prd.energy = light.power;
+    120   prd.sample = seed;
+    121   prd.pm_index = pm_index;
+    122   prd.num_deposits = 0;
+    123   prd.ray_depth = 0;
+    124   rtTrace( top_object, ray, prd );
+    125 }
+
+
+
+
+    139 RT_PROGRAM void ppass_closest_hit()
+    ///
+    ///    keep bouncing and recording diffuse intersection PhotonRec 
+    ///    after 1st : max_photon_count is only 2 
+    ///
+    ///
+    140 {
+    ...
+    146   float3 hit_point = ray.origin + t_hit*ray.direction;
+    147   float3 new_ray_dir;
+    148 
+    149   if( fmaxf( Kd ) > 0.0f ) {
+    150     // We hit a diffuse surface; record hit if it has bounced at least once
+    151     if( hit_record.ray_depth > 0 ) {
+    152       PhotonRecord& rec = ppass_output_buffer[hit_record.pm_index + hit_record.num_deposits];
+    153       rec.position = hit_point;
+    ...   
+    157       hit_record.num_deposits++;
+    158     }
+    159 
+    160     hit_record.energy = Kd * hit_record.energy;
+    ...
+    163     sampleUnitHemisphere(rnd_from_uint2(hit_record.sample), U, V, W, new_ray_dir);
+    164 
+    165   } else {
+    166     hit_record.energy = Ks * hit_record.energy;
+    168     new_ray_dir = reflect( ray.direction, ffnormal );
+    169   }
+    ///
+    ///    attenuate the energy (which starts as characteristic float3 light.power)
+    ///    at each bounce by the Kd or Ks characteristic of the surface
+    ///
+    170 
+    171   hit_record.ray_depth++;
+    172   if ( hit_record.num_deposits >= max_photon_count || hit_record.ray_depth >= max_depth)
+    173     return;
+    174 
+    175   optix::Ray new_ray( hit_point, new_ray_dir, ppass_and_gather_ray_type, scene_epsilon );
+    176   rtTrace(top_object, new_ray, hit_record);
+    177 }
+
+
+ppm.cpp::
+
+    219 void ProgressivePhotonScene::initScene( InitialCameraData& camera_data )
+    ...
+    302   // Photon pass
+    303   m_photons = m_context->createBuffer( RT_BUFFER_OUTPUT );
+    304   m_photons->setFormat( RT_FORMAT_USER );
+    305   m_photons->setElementSize( sizeof( PhotonRecord ) );
+    306   m_photons->setSize( m_num_photons );
+    307   m_context["ppass_output_buffer"]->set( m_photons );
+    ...
+    ... 
+    525 void ProgressivePhotonScene::createPhotonMap()
+    526 {
+    527   PhotonRecord* photons_data    = reinterpret_cast<PhotonRecord*>( m_photons->map() );
+    528   PhotonRecord* photon_map_data = reinterpret_cast<PhotonRecord*>( m_photon_map->map() );
+    ...
+    534   // Push all valid photons to front of list
+    535   unsigned int valid_photons = 0;
+    536   PhotonRecord** temp_photons = new PhotonRecord*[m_num_photons];
+    537   for( unsigned int i = 0; i < m_num_photons; ++i ) {
+    538     if( fmaxf( photons_data[i].energy ) > 0.0f ) {
+    539       temp_photons[valid_photons++] = &photons_data[i];
+    540     }
+    541   }
+    ...
+    548   // Make sure we aren't at most 1 less than power of 2
+    549   valid_photons = valid_photons >= m_photon_map_size ? m_photon_map_size : valid_photons;
+    ...
+    564   // Now build KD tree
+    ///
+    ///        starts with all valid photons
+    ///        these are recursively spatially partitioned 
+    ///
+    565   buildKDTree( temp_photons, 0, valid_photons, 0, photon_map_data, 0, m_split_choice, bbmin, bbmax );
+    566 
+    567   delete[] temp_photons;
+    568   m_photon_map->unmap();
+    569   m_photons->unmap();
+    570 }
+    ...
+    ...
+    412 void buildKDTree( PhotonRecord** photons, int start, int end, int depth, PhotonRecord* kd_tree, int current_root,
+    413                   SplitChoice split_choice, float3 bbmin, float3 bbmax)
+    414 {
+    415   // If we have zero photons, this is a NULL node
+    416   if( end - start == 0 ) {   
+    417     kd_tree[current_root].axis = PPM_NULL;
+    418     kd_tree[current_root].energy = make_float3( 0.0f );
+    419     return;
+    420   }
+    421 
+    422   // If we have a single photon
+    423   if( end - start == 1 ) {
+    424     photons[start]->axis = PPM_LEAF;
+    425     kd_tree[current_root] = *(photons[start]);
+    426     return;
+    427   }
+    428   
+    429   // Choose axis to split on
+    430   int axis;
+    ...
+    466   int median = (start+end) / 2;
+    467   PhotonRecord** start_addr = &(photons[start]);
+    ...
+    484   switch( axis ) {
+    485   case 0:
+    486     select<PhotonRecord*, 0>( start_addr, 0, end-start-1, median-start );
+    /// 
+    ///                                  list     left   right       k
+    ///                                                           
+    ///                        list[left]..list[k-1] < list[k] < list[k+1]..list[right]
+    ///
+    ///            picks axis and spatial split value for median photon
+    ///            partially orders photons PhotonRecord pointers 
+    ///            such that they are above and below median value
+    /// 
+    ///            does a recursive tree split about the median, 
+    ///
+    ///
+    ///    select.h, 
+    ///        similar to Select1 algorithm from: Computer Algorithms C++ by Horowitz,...  p164 p154
+    ///         
+    ///
+    487     photons[median]->axis = PPM_X;
+    488     break;
+    ...
+    519   kd_tree[current_root] = *(photons[median]);
+    ///
+    ///       write median PhotonRecord into kd_tree   
+    ///
+    520   buildKDTree( photons, start, median, depth+1, kd_tree, 2*current_root+1, split_choice, bbmin,  leftMax );
+    521   buildKDTree( photons, median+1, end, depth+1, kd_tree, 2*current_root+2, split_choice, rightMin, bbmax );
+    ///
+    ///           recurse on down doing left/right splits covering fewer and fewer photons until down to 0 or 1 
+    ///           as the tree is perfectly balanced do not need pointers for its structure just regular indices
+    ///
+    ///                   current_root                        0   1   2   3   4   ...
+    ///                            left: 2*current_root+1      1   3   5   7   9
+    ///                           right: 2*current_root+2      2   4   6   8  10   
+    ///
+    ///                             
+
+    522 }
+
+
+
+select.h::
+
+    127 /*
+    128   returns the kth largest value in the list.  A side effect is that
+    129   list[left]..list[k-1] < list[k] < list[k+1]..list[right].
+    130 */
+    131 
+    132 template<class Elem, int axis> Elem select(Elem* list, int left, int right, int k)
+    133 {
+
+
+Using the map ppm_gather.cu::
+
+    083 #define MAX_DEPTH 20 // one MILLION photons
+     84 RT_PROGRAM void gather()
+     85 {
+     .. 
+     87   PackedHitRecord rec = rtpass_output_buffer[launch_index];
+     88   float3 rec_position = make_float3( rec.a.x, rec.a.y, rec.a.z );
+     89   float3 rec_normal   = make_float3( rec.a.w, rec.b.x, rec.b.y );
+     90   float3 rec_atten_Kd = make_float3( rec.b.z, rec.b.w, rec.c.x );
+     91   uint   rec_flags    = __float_as_int( rec.c.y );
+     92   float  rec_radius2  = rec.c.z;
+     93   float  rec_photon_count = rec.c.w;
+    ///
+    ///
+    ///    using photon map to find photons near to the rec  
+    ///    without having to loop over all photons
+    ///
+    ///    starting at node 0, corresponding to median photon
+    ///
+    ...
+    103   unsigned int stack[MAX_DEPTH];
+    104   unsigned int stack_current = 0;
+    105   unsigned int node = 0; // 0 is the start
+    106 
+    107 #define push_node(N) stack[stack_current++] = (N)
+    108 #define pop_node()   stack[--stack_current]
+    109 
+    ///   explicit stack recursion
+    ///
+    110   push_node( 0 );
+    ...
+    114   uint num_new_photons = 0u;
+    115   float3 flux_M = make_float3( 0.0f, 0.0f, 0.0f );
+    116   uint loop_iter = 0;
+    117   do {
+    118 
+    120     PackedPhotonRecord& photon = photon_map[ node ];
+    121 
+    122     uint axis = __float_as_int( photon.d.x );
+    123     if( !( axis & PPM_NULL ) ) {
+    124 
+    125       float3 photon_position = make_float3( photon.a );
+    126       float3 diff = rec_position - photon_position;
+    127       float distance2 = dot(diff, diff);
+    128 
+    129       if (distance2 <= rec_radius2) {
+    130         accumulatePhoton(photon, rec_normal, rec_atten_Kd, num_new_photons, flux_M);
+    ///
+    ///         only photons with dot(photon_normal, rec_normal) > 0.01 are accumulated
+    ///         ie only photons incident on same side of surface are counted 
+    ///         hmm do not need high precision photon_normal for this usage 
+    ///
+    ///         photon map stores incoming flux 
+    ///
+    131       }
+    132 
+    133       // Recurse
+    134       if( !( axis & PPM_LEAF ) ) {
+    135         float d;
+    136         if      ( axis & PPM_X ) d = diff.x;
+    137         else if ( axis & PPM_Y ) d = diff.y;
+    138         else                      d = diff.z;
+    139 
+    140         // Calculate the next child selector. 0 is left, 1 is right.
+    141         int selector = d < 0.0f ? 0 : 1;
+    ///
+    ///                    selector   (1 + selector)   (2 - selector)
+    ///                        0         1                2
+    ///                        1         2                1 
+    ///            
+    142         if( d*d < rec_radius2 ) {
+    144                push_node( (node<<1) + 2 - selector );
+    ///
+    ///               when in viscinity check both left and right sides 
+    ///
+    145         }
+    146 
+    148         node = (node<<1) + 1 + selector;
+    ///
+    ///               continue left/right descent 
+    ///            
+    149       } else {
+    150         node = pop_node();
+    151       }
+    152     } else {
+    153       node = pop_node();
+    154     }
+    155     loop_iter++;
+    156   } while ( node );
+
+    158   // Compute new N,R
+    159   float R2 = rec_radius2;
+    160   float N = rec_photon_count;
+    161   float M = static_cast<float>( num_new_photons ) ;
+    162   float new_N = N + alpha*M;
+    163   rec.c.w = new_N;  // set rec.photon_count
+    164 
+    165   float reduction_factor2 = 1.0f;
+    166   float new_R2 = R2;
+    167   if( M != 0 ) {
+    168     reduction_factor2 = ( N + alpha*M ) / ( N + M );
+    169     new_R2 = R2*( reduction_factor2 );
+    170     rec.c.z = new_R2; // set rec.radius2
+    171   }
+    ...
+    220   rtpass_output_buffer[launch_index] = rec;
+    ///
+    ///   for progressive accumulation to converge on something 
+    ///   sensible need to write out adjusted radius for the next accumulation  
+    ///
+    221   float3 final_color = direct_flux + indirect_flux + ambient_light*rec_atten_Kd;
+    222   output_buffer[launch_index] = make_float4(final_color);
+
+
+
+* :google:`Pedersen progressive photon map`
+
+  * see p20 of Pedersen Thesis for explanation of progressive photon mapping 
+
+  Stian Pedersen Thesis
+
+  * http://www.diva-portal.org/smash/get/diva2:655629/FULLTEXT01.pdf  
+  * http://apartridge.github.io/OppositeRenderer/master/masteroppgave.pdf 
+
+  * http://apartridge.github.io/OppositeRenderer/
+
+   
+  * http://xingdugpu.blogspot.tw
+  * http://xingdu.blogspot.tw/2012/05/gpu-path-tracer.html
+  * https://github.com/duxing/GPUFinal
+  * https://github.com/duxing/GPUFinal/blob/master/cuda_PhotonMapping/cuda_PhotonMapping/GPU_KDTree.h 
+
+    * Thrust based kdtree construction 
+
+
+
 Peek at OptiX internals via stack trace
 ----------------------------------------
 
