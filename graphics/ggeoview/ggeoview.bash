@@ -23,15 +23,12 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
-IMMEDIATES
-------------
 
-Add features to allow detailed mesh face examination, 
-(to understand split union volumes issue)
+Alternate Approaches
+-----------------------
 
-* per-face colour
-* face normals rendering via geometry shader 
-* face picking 
+* https://github.com/nvpro-pipeline/pipeline
+* http://on-demand.gputechconf.com/gtc/2015/presentation/S5148-Markus-Tavenrath.pdf
 
 
 surface property debug, PMT id 
