@@ -23,6 +23,24 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+IMMEDIATES
+-----------
+
+* revisit npy- genstep_sequence_material_mismatch.py to confirm the iav,oav geofix 
+
+* check materials of other known solids which are using split union meshes, 
+  see how many are transparent : looking for opengl flickering shows lots up 
+  center column, but not around PMT 
+
+* apply geometry checking to jpmt geometry 
+
+
+
+Wireframe view
+----------------
+
+* Interactor B key does m_scene->nextGeometryStyle();  BBOX/NORM/WIRE
+
 
 Alternate Approaches
 -----------------------
@@ -57,7 +75,6 @@ npy- genstep_sequence_material_mismatch.py::
 Many due to MI, but large chunk of gs:Gs sq:Ac 
 
 TODO: make specialized indices categorizing these discrepancies to allow visualization  
-
 
 
 ISSUE : genstep material index in wrong lingo 

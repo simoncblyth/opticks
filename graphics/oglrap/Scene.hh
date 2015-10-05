@@ -77,6 +77,8 @@ class Scene : public Configurable {
         static const char* getGeometryStyleName(Scene::GeometryStyle_t style);
         const char* getGeometryStyleName();
         void nextGeometryStyle();
+   public:
+        void setWireframe(bool wire=true);
 
    public:
         typedef enum { GVIS, GVISVEC, GVEC, GINVIS, NUM_GLOBAL_STYLE } GlobalStyle_t ;  

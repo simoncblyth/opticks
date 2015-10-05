@@ -751,6 +751,8 @@ void App::loadGenstep()
     std::string typ = photon_enum_label(code) ; 
     boost::algorithm::to_lower(typ);
     std::string tag = m_fcfg->getEventTag();
+    if(tag.empty()) tag = "1" ; 
+
     std::string det = m_cache->getDetector();
 
     m_parameters->add<std::string>("Type", typ );
@@ -761,6 +763,8 @@ void App::loadGenstep()
     NPY<float>* npy = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION )
     {
+      
+
         npy = loadGenstepFromFile(typ, tag, det ); 
 
         m_g4step = new G4StepNPY(npy);    

@@ -11,7 +11,17 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-const char* TorchStepNPY::DEFAULT_CONFIG = "pos_target=3153;num_photons=500000;material_line=102;direction=0,0,1;wavelength=500;weight=1.0;time=0.1;zenith_azimuth=0,0.25,0,1;radius=0";
+const char* TorchStepNPY::DEFAULT_CONFIG = 
+    "pos_target=3153;"
+    "num_photons=500000;"
+    "material_line=102;"
+    "direction=0,0,1;"
+    "wavelength=500;"
+    "weight=1.0;"
+    "time=0.1;"
+    "zenith_azimuth=0,1,0,1;"
+    "radius=0" ;
+
 // NB time 0.f causes 1st step record rendering to be omitted, as zero is special
 // TODO: material_line:102 corresponds to GdLS, arrange to detect the material from the pos_target 
  

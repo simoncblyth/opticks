@@ -34,6 +34,14 @@ Visualisations
             # failing to viz, torch targetting problem ?   
 
 
+applying fix to fuller geometry
+--------------------------------
+
+::
+
+    simon:ggeoview blyth$ ggv --dyb -G 
+
+
 oav fix 
 ---------
 

@@ -142,7 +142,9 @@ void Scene::applyGeometryStyle()
        m_bbox_mode[i] = bbox ; 
    }
 
-   m_global_renderer->setWireframe(wire);
+   setWireframe(wire);
+
+
 
 }
 
@@ -288,6 +290,21 @@ void Scene::configure(const char* name, int value)
 
 
 
+void Scene::setWireframe(bool wire)
+{
+    m_global_renderer->setWireframe(wire);
+
+    for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
+    {
+        m_instance_renderer[i]->setWireframe(wire);
+
+        m_bbox_renderer[i]->setWireframe(false);  
+
+        // wireframe is much slower than filled, 
+        // also bbox winding order is not correct
+        // so keeping the bbox as filled
+    }
+}
 
 void Scene::initRenderers()
 {
