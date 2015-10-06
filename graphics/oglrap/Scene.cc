@@ -414,9 +414,10 @@ void Scene::uploadGeometry()
         LOG(debug) ;
         LOG(debug) << "Scene::uploadGeometry i " << i ; 
 
-        if( tbuf == NULL )
+        if( i == 0 )  // first mesh assumed to be **the one and only** non-instanced global mesh
         {
-            if(m_mesh0 == NULL) m_mesh0 = mm ; // first non-instanced mesh
+            assert(m_mesh0 == NULL); // not expected to Scene::uploadGeomety more than once 
+            m_mesh0 = mm ; 
 
             m_global_renderer->upload(mm);  
             m_globalvec_renderer->upload(mm);   // buffers are not re-uploaded, but binding must be done for each renderer 
