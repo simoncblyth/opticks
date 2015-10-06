@@ -84,6 +84,7 @@ GMesh::GMesh(GMesh* other)
      m_transforms_buffer(other->getTransformsBuffer()),
      m_meshes_buffer(other->getMeshesBuffer()),
      m_nodeinfo_buffer(other->getNodeInfoBuffer()),
+     m_geocode(other->getGeoCode()),
      GDrawable()
 {
    updateBounds();
@@ -142,6 +143,7 @@ GMesh::GMesh(unsigned int index,
       m_meshes_buffer(NULL),
       m_nodeinfo(NULL),
       m_nodeinfo_buffer(NULL),
+      m_geocode('T'),
       GDrawable()
 {
    // not yet taking ownership, depends on continued existance of data source 

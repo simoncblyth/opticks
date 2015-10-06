@@ -34,6 +34,8 @@ private:
     optix::Acceleration     makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
     optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
     optix::Geometry         makeGeometry(GMergedMesh* mergedmesh);
+    optix::Geometry         makeSimplifiedGeometry(GMergedMesh* mergedmesh);
+    optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
     void dump(const char* msg, const float* m);
 
 private:

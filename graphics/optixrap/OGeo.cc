@@ -123,8 +123,7 @@ void OGeo::convert()
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
         assert(mm);
-        GBuffer* tbuf = mm->getTransformsBuffer();
-        if( tbuf == NULL )
+        if( i == 0 )
         {
             optix::GeometryInstance gi = makeGeometryInstance(mm);
             m_geometry_group->addChild(gi);
@@ -239,9 +238,37 @@ optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
     return gi ;
 }
 
-
 optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 {
+    optix::Geometry geometry ; 
+    switch(mergedmesh->getGeoCode())
+    { 
+        case 'T':
+                   geometry = makeTriangulatedGeometry(mergedmesh);
+                   break ; 
+        case 'S':
+                   geometry = makeSimplifiedGeometry(mergedmesh);
+                   break ; 
+        default:
+                   assert(0);
+                   break ; 
+    }
+    return geometry ; 
+
+}
+
+optix::Geometry OGeo::makeSimplifiedGeometry(GMergedMesh* mergedmesh)
+{
+    LOG(warning) << "OGeo::makeSimplifiedGeometry " ; 
+    return makeTriangulatedGeometry(mergedmesh);
+
+    // replacing instance1 with a sphere positioned to match the cathode front face
+    // no triangles...  need a sphere buffer  
+}
+
+optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mergedmesh)
+{
+    LOG(info) << "OGeo::makeTriangulatedGeometry " ; 
     // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
     // and use folding by 3 in createInputBuffer
 

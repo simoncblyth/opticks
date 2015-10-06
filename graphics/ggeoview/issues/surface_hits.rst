@@ -367,7 +367,14 @@ Add *mdyb* for checking pmt-hemi-cathode geometry, its a flikering mess and a ca
 Hmm would be easiest to target the PMT using its own frame, hmm view targetting did something similar ?
 
 
-::
+
+Detdesc dive
+--------------
+
+Looks like need to replace the cathode with something simpler ?
+
+
+G5:/home/blyth/local/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/hemi-pmt.xml::
 
     118   <!-- The Photo Cathode -->
     119   <!-- use if limit photocathode to a face on diameter gt 167mm. -->
@@ -377,14 +384,133 @@ Hmm would be easiest to target the PMT using its own frame, hmm view targetting 
     123           outerRadius="PmtHemiFaceROCvac"
     124           innerRadius="PmtHemiFaceROCvac-PmtHemiCathodeThickness"
     125           deltaThetaAngle="PmtHemiFaceCathodeAngle"/>
+    ///          
+    ///                  PmtHemiFaceROC-PmtHemiGlassThickness : 131. - 3. = 128.         
+    ///                                                       128. - 0.05 = 127.95 
+    ///
     126       <sphere name="pmt-hemi-cathode-belly"
     127           outerRadius="PmtHemiBellyROCvac"
     128           innerRadius="PmtHemiBellyROCvac-PmtHemiCathodeThickness"
     129           startThetaAngle="PmtHemiBellyCathodeAngleStart"
     130           deltaThetaAngle="PmtHemiBellyCathodeAngleDelta"/>
+    ///
+    ///         
+    ///
+    ///
     131       <posXYZ z="PmtHemiFaceOff-PmtHemiBellyOff"/>
+    ///
+    ///             56. - 17. = 39.
+    ///    
     132     </union>
     133   </logvol>
+
+
+G5:/home/blyth/local/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/hemi-parameters.xml::
+
+    010 <!-- Radius of curvature of face of PMT, HM catalog -->
+     11 <parameter name="PmtHemiFaceROC" value="131*mm"/>
+     12 
+     13 <!-- Radius of curvature of top and bottom belly parts, average of Tak Pui's numbers -->
+     14 <parameter name="PmtHemiBellyROC" value="102*mm"/>
+     15 
+     16 <!-- Offset of face hemisphere -->
+     17 <!-- <parameter name="PmtHemiFaceOff" value="60*mm"/> -->
+     18 <!-- Shrink offset from Tak Pui's numbers to better fit G4dyb hitz vs. hity -->
+     19 <parameter name="PmtHemiFaceOff" value="56*mm"/>
+     20 
+     21 <!-- Offset of top/bottom belly hemispheres, average of Tak Pui's numbers -->
+     22 <!-- <parameter name="PmtHemiBellyOff" value="17*mm"/> -->
+     23 <!-- Shrink offset from Tak Pui's numbers to better fit G4dyb hitz vs. hity -->
+     24 <parameter name="PmtHemiBellyOff" value="13*mm"/>
+     25 
+     26 <!-- Radius of cylindrical glass base, HM catalog -->
+     27 <parameter name="PmtHemiGlassBaseRadius" value="42.25*mm"/>
+     28 
+     29 <!-- Radius of opaque "dynode" -->
+     30 <parameter name="PmtHemiDynodeRadius" value="27.5*mm"/>
+
+     44 <!-- Thickness of the glass, from GLG4sim numbers -->
+     45 <parameter name="PmtHemiGlassThickness" value="3*mm"/>
+     46 
+     47 <!-- Thickness of the photo cathode, this is a made up number -->
+     48 <parameter name="PmtHemiCathodeThickness" value="0.05*mm"/>
+     ..
+     68 
+     69 <!-- Radius of curvature of vacuum side of face of PMT, HM catalog -->
+     70 <parameter name="PmtHemiFaceROCvac" value="PmtHemiFaceROC-PmtHemiGlassThickness"/>
+     //                                                 131. - 3. = 128. 
+     //
+     72 <!-- Radius of curvature of vacuum side of top and bottom belly parts, average of Tak Pui's numbers -->
+     73 <parameter name="PmtHemiBellyROCvac" value="PmtHemiBellyROC-PmtHemiGlassThickness"/>
+     //                                                   102.-3. = 99.
+     74 
+     75 
+     76 <!-- 
+     77      a = PmtHemiFaceROCvac
+     78      b = PmtHemiBellyROCvac
+     79      d = (PmtHemiFaceOff-PmtHemiBellyOff)
+     80 
+     81      y = PmtHemiFaceTopOff = distance from center of top belly hemi to
+     82      z location of interface between top and face hemis.
+     83 
+     84  -->
+     85 
+     86 <parameter name="PmtHemiFaceTopOff" value="(PmtHemiFaceROCvac^2-PmtHemiBellyROCvac^2-(PmtHemiFaceOff-PmtHemiBellyOff)^2)/(2*(PmtHemiFaceOff-PmtHemiBellyOff))"/>
+     //                                                (128.*128.- 99.*99. - (56.-13.)*(56.-13.))/(2.*(56.-13.))
+     //
+     //       In [1]: (128.*128.- 99.*99. - (56.-13.)*(56.-13.))/(2.*(56.-13.))
+     //       Out[1]: 55.04651162790697
+     //   
+     //     
+     //
+     87 
+     88 <!-- Angular extent of photocathode on face 
+     89      acos((y+b)/a)
+     90 -->
+     91 <parameter name="PmtHemiFaceCathodeAngle" value="0.5*degree+radian*acos((PmtHemiFaceTopOff+(PmtHemiFaceOff-PmtHemiBellyOff))/PmtHemiFaceROCvac)"/>
+     //
+     //          math.acos((55.0465+(56.-13.))/128.)
+     //
+     // In [8]: 0.5+math.acos((55.0465+(56.-13.))/128.)*180./math.pi
+     // Out[8]: 40.50500580674586
+     //
+     92 
+     93 <!-- Start angle for photocathode on belly 
+     94      acos(y/b)
+     95 -->
+     96 <parameter name="PmtHemiBellyCathodeAngleStart" value="-0.5*degree+radian*acos(PmtHemiFaceTopOff/PmtHemiBellyROCvac)"/>
+     97 
+     98 <!-- Stop angle for photocathode on belly 
+     99      asin(PC diameter / 2 / a)
+    100 -->
+    101 <!-- 
+    102 <parameter name="PmtHemiBellyCathodeAngleDelta" value="radian*asin(0.5*PmtHemiCathodeDiameter/PmtHemiBellyROCvac)-PmtHemiBellyCathodeAngleStart"/>
+    103  -->
+    104 <parameter name="PmtHemiBellyCathodeAngleDelta" value="PmtHemiBellyIntAngle-PmtHemiBellyCathodeAngleStart"/>
+    105 
+    106 <!-- Angle where belly spheres intersect -->
+    107 <parameter name="PmtHemiBellyIntAngle" value="acos(PmtHemiBellyOff/PmtHemiBellyROCvac)*radian"/>
+    108 
+
+
+
+
+Sphere Sphere Intersection
+----------------------------
+
+* http://mathworld.wolfram.com/Sphere-SphereIntersection.html
+
+
+How to try some simple replacement cathode ?
+-----------------------------------------------
+
+* adding analytic spheres to OptiX at the positions corresponding 
+  to front face of cathode : would allow a simple geometry check  
+
+::
+
+    OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
+
 
 
 

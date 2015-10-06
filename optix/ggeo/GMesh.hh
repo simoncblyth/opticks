@@ -127,10 +127,12 @@ class GMesh : public GDrawable {
   public:
       void setIndex(unsigned int index);
       void setName(const char* name);
+      void setGeoCode(char geocode);
       void setVersion(const char* version);
       const char* getName();
       const char* getShortName();
       const char* getVersion();
+      char getGeoCode();
   private:
       void findShortName(); 
   public:
@@ -329,6 +331,7 @@ class GMesh : public GDrawable {
       const char*   m_name ; 
       const char*   m_shortname ; 
       const char*   m_version ; 
+      char          m_geocode ; 
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -618,6 +621,17 @@ inline bool GMesh::hasTransformsBuffer()
 {
     return m_transforms_buffer != NULL ; 
 }
+
+
+inline char GMesh::getGeoCode()
+{
+    return m_geocode ; 
+}
+inline void GMesh::setGeoCode(char geocode)
+{
+    m_geocode = geocode ; 
+}
+
 
 
 
