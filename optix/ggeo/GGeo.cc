@@ -878,16 +878,21 @@ void GGeo::targetTorchStep( TorchStepNPY* torchstep )
 
 
     glm::ivec4& ipos_target = torchstep->getPosTarget() ;    
+    glm::vec3&   pos_offset = torchstep->getPosOffset() ;    
     glm::ivec4& idir_target = torchstep->getDirTarget() ;    
 
     print(ipos_target, "GGeo::targetTorchStep ipos_target");
     print(idir_target, "GGeo::targetTorchStep idir_target");
+    print(pos_offset,  "GGeo::targetTorchStep idir_target");
 
     if(ipos_target.x > 0 || ipos_target.y > 0) 
     {    
         glm::vec3 pos_target = glm::vec3(getCenterExtent(ipos_target.x,ipos_target.y));   
         print(pos_target, "GGeo::targetTorchStep pos_target");
-        torchstep->setPosition(pos_target);  
+        print(pos_offset, "GGeo::targetTorchStep pos_offset");
+        glm::vec3 position = pos_target + pos_offset ;
+        print(position, "GGeo::targetTorchStep position");
+        torchstep->setPosition(position);  
     }    
 
     if(idir_target.x > 0 || idir_target.y > 0) 

@@ -16,11 +16,12 @@ Photon Torpedo along X axis:
 
 class TorchStepNPY {
    public:
-       typedef enum { POS_TARGET, DIR_TARGET, NUM_PHOTONS, MATERIAL_LINE, DIRECTION, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
+       typedef enum { POS_TARGET, POS_OFFSET, DIR_TARGET, NUM_PHOTONS, MATERIAL_LINE, DIRECTION, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
        static const char* POS_TARGET_ ; 
+       static const char* POS_OFFSET_ ; 
        static const char* DIR_TARGET_ ; 
        static const char* NUM_PHOTONS_ ; 
        static const char* MATERIAL_LINE_ ; 
@@ -41,13 +42,18 @@ class TorchStepNPY {
    public:  
        // target setting needs external info regarding geometry 
        void setPosTarget(const char* s );
+       void setPosOffset(const char* s );
+       glm::vec3& getPosOffset(); 
        void setDirTarget(const char* s );
        void setPosTarget(unsigned int index, unsigned int mesh=0 );
        void setDirTarget(unsigned int index, unsigned int mesh=0 );
        glm::ivec4&  getPosTarget();
        glm::ivec4&  getDirTarget();
+
+   public:
+       // targetting needs geometry info which is done by GGeo::targetTorchStep(torchstep)
        void setPosition(glm::vec3& pos);
-       glm::vec3 getPosition();
+       glm::vec3 getPosition();   
        void setDirection(glm::vec3& dir);
        glm::vec3 getDirection();
    public:  
@@ -99,6 +105,7 @@ class TorchStepNPY {
        // 6 quads that are copied into the genstep 
        glm::ivec4   m_ctrl ;
        glm::vec4    m_post ;
+       glm::vec3    m_pos_offset ;
        glm::vec4    m_dirw ;
        glm::vec4    m_polw ;
        glm::vec4    m_zenith_azimuth ;
@@ -136,6 +143,10 @@ inline glm::ivec4& TorchStepNPY::getDirTarget()
     return m_dir_target ; 
 }
 
+inline glm::vec3& TorchStepNPY::getPosOffset()
+{
+    return m_pos_offset ; 
+}
 
 
 

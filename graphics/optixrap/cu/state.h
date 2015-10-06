@@ -28,7 +28,13 @@ __device__ void fill_state( State& s, int boundary, int sensor, float wavelength
     // 
     int m1_line = boundary > 0 ? line + 0 : line + 1 ;   // inner-material / outer-material
     int m2_line = boundary > 0 ? line + 1 : line + 0 ;   // outer-material / inner-material
+
     int su_line = boundary > 0 ? line + 2 : line + 3 ;   // inner-surface  / outer-surface
+
+    //  consider photons arriving at PMT cathode surface
+    //  geometry normals are expected to be out of the PMT 
+    //
+    //  boundary sign will be -ve : so line+3 outer-surface is the relevant one
 
     s.material1 = wavelength_lookup( wavelength, m1_line );  
     s.material2 = wavelength_lookup( wavelength, m2_line ) ;

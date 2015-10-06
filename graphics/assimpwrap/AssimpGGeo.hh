@@ -27,6 +27,7 @@ public:
     bool getVolNames();
 public:
     static int load(GGeo* ggeo);
+    void setFakeEfficiency(float fake_efficiency=1.0f);
 
 public:
     static const char* g4dae_bordersurface_physvolume1 ; 
@@ -42,7 +43,6 @@ public:
 
 protected:
     void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl );
-    void convertMaterialsCathode(const aiScene* scene, GGeo* gg, const char* ctrl, aiMaterial* cathode);
     void addProperties(GPropertyMap<float>* pmap, aiMaterial* material);
     void addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property);
     const char* getStringProperty(aiMaterial* mat, const char* query);
@@ -82,6 +82,7 @@ private:
     bool             m_volnames ; 
     bool             m_reverse ; 
     aiMaterial*      m_cathode ; 
+    float            m_fake_efficiency ; 
 
 };
 
@@ -101,7 +102,8 @@ inline AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* sel
    m_no_surface(0),
    m_volnames(false),
    m_reverse(true),        // true: ascending wavelength ordering of properties
-   m_cathode(NULL)
+   m_cathode(NULL),
+   m_fake_efficiency(-1.f)
 {
     init();
 }
@@ -113,3 +115,9 @@ inline bool AssimpGGeo::getVolNames()
 {
     return m_volnames ; 
 }
+
+inline void AssimpGGeo::setFakeEfficiency(float fake_efficiency)
+{
+    m_fake_efficiency = fake_efficiency ; 
+}
+

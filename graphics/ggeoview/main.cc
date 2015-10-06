@@ -644,7 +644,10 @@ void App::checkGeometry()
 
         const char* highlight = join ? "**" : "  " ; 
 
-        if(noise > 0 || tc > 1 || join )
+        //bool dump = noise > 0 || tc > 1 || join ;
+        bool dump = true ; 
+
+        if(dump)
             printf("  %4d (v%5d f%5d )%s(t%5d oe%5u) : x%10.3f : n%6d : n*v%7d : %40s : %s \n", meshIndex, nv, nf, highlight, tc, noise, ce.w, nodeCount, nodeCount*nv, shortName, nss.str().c_str() );
 
         if(noise > 0)

@@ -87,6 +87,12 @@ elif [ "${cmdline/--ldyb}" != "${cmdline}" ]; then
    ggeoview_defaults_dyb
    export GGEOVIEW_QUERY="range:3156:3157"       # 1 volume : pvOAV
 
+elif [ "${cmdline/--mdyb}" != "${cmdline}" ]; then
+
+   ggeoview_defaults_dyb
+   export GGEOVIEW_QUERY="range:3201:3202"       # 1 volume : pmt-hemi-cathode
+
+
 
 else
 

@@ -93,11 +93,6 @@ void GLoader::load()
 
         t("create m_ggeo from G4DAE"); 
 
-        //m_ggeo->add_sensitive_surfaces();
-
-        t("add_sensitive_surfaces"); 
-
-
         m_boundarylib = m_ggeo->getBoundaryLib();
 
         // material customization must be done prior to creating buffers, as they contain the customized indices ?

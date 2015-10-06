@@ -26,6 +26,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
 // TODO: material_line:102 corresponds to GdLS, arrange to detect the material from the pos_target 
  
 const char* TorchStepNPY::POS_TARGET_ = "pos_target"; 
+const char* TorchStepNPY::POS_OFFSET_ = "pos_offset"; 
 const char* TorchStepNPY::DIR_TARGET_ = "dir_target" ; 
 const char* TorchStepNPY::NUM_PHOTONS_ = "num_photons" ; 
 const char* TorchStepNPY::MATERIAL_LINE_ = "material_line" ; 
@@ -41,6 +42,7 @@ TorchStepNPY::Param_t TorchStepNPY::getParam(const char* k)
 {
     Param_t param = UNRECOGNIZED ; 
     if(     strcmp(k,POS_TARGET_)==0)     param = POS_TARGET ; 
+    else if(strcmp(k,POS_OFFSET_)==0)     param = POS_OFFSET ; 
     else if(strcmp(k,DIR_TARGET_)==0)     param = DIR_TARGET ; 
     else if(strcmp(k,NUM_PHOTONS_)==0)    param = NUM_PHOTONS ; 
     else if(strcmp(k,MATERIAL_LINE_)==0)  param = MATERIAL_LINE ; 
@@ -73,6 +75,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
     switch(p)
     {
         case POS_TARGET     : setPosTarget(s)      ;break;
+        case POS_OFFSET     : setPosOffset(s)      ;break;
         case DIR_TARGET     : setDirTarget(s)      ;break;
         case NUM_PHOTONS    : setNumPhotons(s)     ;break;
         case MATERIAL_LINE  : setMaterialLine(s)   ;break;
@@ -98,6 +101,15 @@ void TorchStepNPY::setPosTarget(unsigned int index, unsigned int mesh)
     m_pos_target.x = index ; 
     m_pos_target.y = mesh ; 
 }
+
+
+void TorchStepNPY::setPosOffset(const char* s)
+{
+    std::string ss(s);
+    m_pos_offset = gvec3(ss) ;
+}
+
+
 
 
 void TorchStepNPY::setDirTarget(const char* s)

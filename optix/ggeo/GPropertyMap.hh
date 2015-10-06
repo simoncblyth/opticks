@@ -28,6 +28,8 @@ class GPropertyMap {
       const char* getShortName(); 
       bool hasShortName(const char* name);
       bool hasDefinedName();
+      bool hasNameEnding(const char* end);
+
       std::string getShortNameString();
       std::string getPDigestString(int ifr, int ito);
       std::string getKeysString(); 
@@ -97,6 +99,15 @@ inline GOpticalSurface* GPropertyMap<T>::getOpticalSurface()
 {
     return m_optical_surface ; 
 }
-
-
-
+template <class T>
+inline bool GPropertyMap<T>::hasNameEnding(const char* end)
+{
+    if(m_name.length() < strlen(end))
+    {
+        return false ; 
+    }
+    else
+    {
+        return 0 == m_name.compare( m_name.length() - strlen(end), strlen(end), end ) ;
+    }
+}

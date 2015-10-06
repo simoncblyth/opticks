@@ -99,7 +99,11 @@ int AssimpGGeo::load(GGeo* ggeo)
 
     AssimpSelection* selection = ageo.select(query);
 
+
+
     AssimpGGeo agg(ggeo, ageo.getTree(), selection); 
+
+    agg.setFakeEfficiency(1.0f); 
 
     int rc = agg.convert(ctrl);
 
@@ -165,6 +169,9 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
                        ) ;   
 
 
+
+    bool efficiency = strcmp(k, "EFFICIENCY") == 0 ; 
+
     //if(noscale) 
     //    printf("AssimpGGeo::addPropertyVector k %-35s nbyte %4u nfloat %4u npair %4u \n", k, nbyte, nfloat, npair);
 
@@ -177,7 +184,16 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
         float d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ; 
         float v = data[2*i+1]*vscale  ;
 
-        domain.push_back( noscale ? d0 : d );
+        float dd = noscale ? d0 : d ; 
+
+
+        if(efficiency && m_fake_efficiency > -1.f )
+        {
+           v = m_fake_efficiency ; 
+           printf("%3d d0%10.4f dd%10.4f v%10.4f %s \n", i, d0, dd, v, k );
+        }
+
+        domain.push_back( dd );
         vals.push_back( v );  
 
         //if( noscale && ( i < 5 || i > npair - 5) )
@@ -492,7 +508,7 @@ void AssimpGGeo::convertSensors(GGeo* gg)
 
         addProperties(gss, m_cathode );
 
-        LOG(info) << gss->description(); 
+        LOG(info) << "AssimpGGeo::convertSensors gss " << gss->description(); 
  
         gg->add(gss);
 
@@ -781,6 +797,13 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 
     GSkinSurface*   sks = gg->findSkinSurface(lv);          
+
+    if(sks && sks->hasNameEnding("SensorSurface"))
+    {
+       LOG(debug) << "AssimpGGeo::convertStructureVisit"
+                 << " sks " << sks->description()
+                 ;  
+    }
 
     LOG(debug) << __func__ 
               << " lv: " << lv

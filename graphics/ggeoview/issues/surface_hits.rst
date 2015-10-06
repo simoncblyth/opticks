@@ -184,5 +184,186 @@ Which level to add the fake cathode surfaces at ?
 Avoiding interference with this structure means would need to 
 add the surfaces prior to AssimpGGeo::convertStructure
 
+Approach using AssimpGGeo::convertSensors
+--------------------------------------------
+
+2 sensor skin surfaces are added::
+
+   lvPmtHemiCathodeSensorSurface
+   lvHeadonPmtCathodeSensorSurface
+
+But only one shows up in boundarylib (may be due to identity digest not including the name)::
+
+    ggv --blib
+
+    boundary : index 21 x6 126 e554f1b518cd18fae063073e9147b70d Bialkali/Vacuum/-/lvPmtHemiCathodeSensorSurface 
+
+
+Running does not yet yield any SURFACE_DETECT, but getting lots of SURFACE_SREFLECT::
+
+    288         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
+    289         {
+    290             command = propagate_at_surface(p, s, rng);
+    291             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+    292             if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+    293         }
+
+
+    402 __device__ int
+    403 propagate_at_surface(Photon &p, State &s, curandState &rng)
+    404 {
+    405 
+    406     float u = curand_uniform(&rng);
+    407 
+    408     if( u < s.surface.y )   // absorb   
+    409     {
+    410         s.flag = SURFACE_ABSORB ;
+    411         return BREAK ;
+    412     }
+    413     else if ( u < s.surface.y + s.surface.x )  // absorb + detect
+    414     {
+    415         s.flag = SURFACE_DETECT ;
+    416         return BREAK ;
+    417     }
+    418     else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
+    419     {
+    420         s.flag = SURFACE_DREFLECT ;
+    421         propagate_at_diffuse_reflector(p, s, rng);
+    422         return CONTINUE;
+    423     }
+    424     else
+    425     {
+    426         s.flag = SURFACE_SREFLECT ;
+    427         propagate_at_specular_reflector(p, s, rng );
+    428         return CONTINUE;
+    429     }
+    430 }
+
+
+Hmm setting efficiency to 1.0 still getting nothing other than SURFACE_SREFLECT
+
+::
+
+    delta:env blyth$ ggv --blib 126 127 128 129 130 131
+    [2015-10-06 13:22:01.832171] [0x000007fff7448031] [warning] GBoundaryLib::setWavelengthBuffer didnt see 54, numBoundary: 57
+
+    boundary : index  0 x6   0 019d50af046b6733287e43af2e8f7fa2 Vacuum/Vacuum/-/- 
+    ...
+    boundary : index 21 x6 126 31ec4ad900fe9b40be261fa11af380b7 Bialkali/Vacuum/-/lvPmtHemiCathodeSensorSurface 
+    GBoundaryLib.dumpWavelengthBuffer 126 
+    GBoundaryLib::dumpWavelengthBuffer wline 126 numSub 57 domainLength 39 numQuad 6 
+
+     126 |  21/  0 __dd__Materials__Bialkali0xc2f2428 
+               1.458           1.458           1.458           1.458           1.458           1.458           1.458           1.458
+            1000.000        1000.000        1000.000        1077.339        1736.682        1393.428         821.650         529.476
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+
+    GBoundaryLib.dumpWavelengthBuffer 127 
+    GBoundaryLib::dumpWavelengthBuffer wline 127 numSub 57 domainLength 39 numQuad 6 
+
+     127 |  21/  1 __dd__Materials__Vacuum0xbf9fcc0 
+               1.000           1.000           1.000           1.000           1.000           1.000           1.000           1.000
+        10000000.000    10000000.000    10000000.000    10000000.000    10000000.000    10000000.000    10000000.000    10000000.000
+         1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000     1000000.000
+               0.000           0.000           0.000           0.000           0.000           0.000           0.000           0.000
+
+    GBoundaryLib.dumpWavelengthBuffer 128 
+    GBoundaryLib::dumpWavelengthBuffer wline 128 numSub 57 domainLength 39 numQuad 6 
+
+     128 |  21/  2 - 
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+
+    GBoundaryLib.dumpWavelengthBuffer 129 
+    GBoundaryLib::dumpWavelengthBuffer wline 129 numSub 57 domainLength 39 numQuad 6 
+
+     129 |  21/  3 __dd__Geometry__PMT__lvPmtHemiCathodeSensorSurface 
+               1.000           1.000           1.000           1.000           1.000           1.000           1.000           1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+
+    GBoundaryLib.dumpWavelengthBuffer 130 
+    GBoundaryLib::dumpWavelengthBuffer wline 130 numSub 57 domainLength 39 numQuad 6 
+
+     130 |  21/  4 - 
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+
+    GBoundaryLib.dumpWavelengthBuffer 131 
+    GBoundaryLib::dumpWavelengthBuffer wline 131 numSub 57 domainLength 39 numQuad 6 
+
+     131 |  21/  5 - 
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+              -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000          -1.000
+    delta:env blyth$ 
+
+
+Hmm is inner/outer surface swapped somewhere ? Dont think so.  
+
+
+Possibly a problem with PMT normals ?
+---------------------------------------
+
+Suspect issue with PMT front face normals. The Q normal view shows no normals coming out the front of PMTs 
+
+::
+
+    43 (v  482 f  960 )  (t    1 oe    0) : x    98.143 : n   672 : n*v 323904 :                         pmt-hemi-cathode : 3201,3207,3213,3219,3225, 
+    44 (v  242 f  480 )  (t    1 oe    0) : x    98.143 : n   672 : n*v 162624 :                             pmt-hemi-bot : 3202,3208,3214,3220,3226, 
+    45 (v   50 f   96 )  (t    1 oe    0) : x    83.000 : n   672 : n*v  33600 :                          pmt-hemi-dynode : 3203,3209,3215,3221,3227, 
+    46 (v  338 f  672 )  (t    1 oe    0) : x   146.252 : n   672 : n*v 227136 :                             pmt-hemi-vac : 3200,3206,3212,3218,3224, 
+    47 (v  362 f  720 )  (t    1 oe    0) : x   149.997 : n   672 : n*v 243264 :                                 pmt-hemi : 3199,3205,3211,3217,3223, 
+
+
+Wow 960 faces for the cathode ? 
+
+Add *mdyb* for checking pmt-hemi-cathode geometry, its a flikering mess and a cats cradle of normals::
+
+    ggv --mdyb -G --noinstanced
+
+    ggv --mdyb -O 
+    udp.py --target 3201
+
+    ggv --mdyb --torchconfig="pos_target=3201;pos_offset=500,0,0"
+
+    ggv --mdyb --torchconfig "pos_target=3201;pos_offset=800,0,0;radius=100"
+
+       # hmm dont see photons that miss
+
+    ggv --mdyb --torchconfig "pos_target=3201;pos_offset=0,1000,0;radius=100;direction=0,-1,0" --geocenter
+
+       # targetting the beam  
+
+
+
+::
+
+    118   <!-- The Photo Cathode -->
+    119   <!-- use if limit photocathode to a face on diameter gt 167mm. -->
+    120   <logvol name="lvPmtHemiCathode" material="Bialkali" sensdet="DsPmtSensDet">
+    121     <union name="pmt-hemi-cathode">
+    122       <sphere name="pmt-hemi-cathode-face"
+    123           outerRadius="PmtHemiFaceROCvac"
+    124           innerRadius="PmtHemiFaceROCvac-PmtHemiCathodeThickness"
+    125           deltaThetaAngle="PmtHemiFaceCathodeAngle"/>
+    126       <sphere name="pmt-hemi-cathode-belly"
+    127           outerRadius="PmtHemiBellyROCvac"
+    128           innerRadius="PmtHemiBellyROCvac-PmtHemiCathodeThickness"
+    129           startThetaAngle="PmtHemiBellyCathodeAngleStart"
+    130           deltaThetaAngle="PmtHemiBellyCathodeAngleDelta"/>
+    131       <posXYZ z="PmtHemiFaceOff-PmtHemiBellyOff"/>
+    132     </union>
+    133   </logvol>
+
+
+
 
 
