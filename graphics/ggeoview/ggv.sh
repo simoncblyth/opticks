@@ -90,8 +90,9 @@ elif [ "${cmdline/--ldyb}" != "${cmdline}" ]; then
 elif [ "${cmdline/--mdyb}" != "${cmdline}" ]; then
 
    ggeoview_defaults_dyb
-   export GGEOVIEW_QUERY="range:3201:3202,range:3154:3155"   # 2 volumes : first pmt-hemi-cathode + SST
+   export GGEOVIEW_QUERY="range:3201:3202,range:3153:3154"   # 2 volumes : first pmt-hemi-cathode and ADE  
 
+   #  range:3154:3155  SST  Stainless Steel/IWSWater not a good choice for an envelope, just get BULK_ABSORB without going anywhere
 
 else
 

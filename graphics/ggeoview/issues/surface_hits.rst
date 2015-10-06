@@ -340,8 +340,19 @@ Add *mdyb* for checking pmt-hemi-cathode geometry, its a flikering mess and a ca
 
     ggv --mdyb --torchconfig "pos_target=3201;pos_offset=0,1000,0;radius=100;direction=0,-1,0" --geocenter
 
-       # targetting the beam  
+       # targetting the beam is not easier as can only see the photons when they hit 
 
+    ggv --mdyb --torchconfig "pos_target=3154;radius=3000;direction=0,0,-1" 
+
+       # added SST but do not see records that just get absorbed either
+       # that means are propagating in a lump of Steel
+
+    ggv --mdyb --torchconfig "pos_target=3154;radius=3000;direction=0,0,-1" --save
+
+       # export GGEOVIEW_QUERY="range:3201:3202,range:3153:3154"   # 2 volumes : first pmt-hemi-cathode and ADE  
+       # change envelope volume to ADE much better, as photons get somewhere in IwsWater/IwsWater  
+
+Hmm would be easiest to target the PMT using its own frame, hmm view targetting did something similar ?
 
 
 ::

@@ -132,7 +132,6 @@ GMesh::GMesh(unsigned int index,
       m_center_extent_buffer(NULL),
       m_bbox(NULL),
       m_bbox_buffer(NULL),
-      //m_num_colors(num_vertices),  // tie num_colors to num_vertices
       m_normals(NULL),
       m_normals_buffer(NULL),
       m_num_solids(0),
@@ -192,6 +191,8 @@ void GMesh::allocate()
     setBBox(new gbbox[numSolids]);
     setMeshes(new unsigned int[numSolids]);
     setNodeInfo(new guint4[numSolids]);
+    setTransforms(new float[numSolids*16]);
+
 }
 
 
@@ -361,7 +362,6 @@ void GMesh::setBBoxBuffer(GBuffer* buffer)
 
 
 
-/*
 
 void GMesh::setTransforms(float* transforms)  
 {
@@ -379,7 +379,6 @@ void GMesh::setTransforms(float* transforms)
 
     m_transforms_buffer = new GBuffer( size*m_num_solids, (void*)m_transforms, size, numElements ); 
 }
-*/
 
 
 void GMesh::setTransformsBuffer(GBuffer* buffer) 

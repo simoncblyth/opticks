@@ -876,6 +876,7 @@ void GGeo::targetTorchStep( TorchStepNPY* torchstep )
     //          (volume   index, merged mesh index=0)
     //          (instance index, merged mesh index>0)
 
+    LOG(info) << "GGeo::targetTorchStep" ; 
 
     glm::ivec4& ipos_target = torchstep->getPosTarget() ;    
     glm::vec3&   pos_offset = torchstep->getPosOffset() ;    

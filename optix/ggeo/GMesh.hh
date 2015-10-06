@@ -269,7 +269,7 @@ class GMesh : public GDrawable {
   public:
       void setCenterExtent(gfloat4* center_extent);
       void setBBox(gbbox* bb);
-      //void setTransforms(float* transforms);
+      void setTransforms(float* transforms);
       void setMeshes(unsigned int* meshes);
       void setNodeInfo(guint4* nodeinfo);
 

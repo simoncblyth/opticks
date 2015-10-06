@@ -552,7 +552,8 @@ int App::loadGeometry()
     m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
 
     m_mesh0 = m_ggeo->getMergedMesh(0); 
-    assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
+    //assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
+    // global buffers now have transforms too, so cannot use this way to distinguish globals from instanced
 
    
     bool zexplode = m_fcfg->hasOpt("zexplode");
@@ -1292,7 +1293,11 @@ void App::indexEvtOld()
         {
             m_pho->setRecs(m_rec);
             if(m_torchstep) m_torchstep->dump("App::indexEvtOld TorchStepNPY");
-            m_pho->dump(0);
+
+            m_pho->dump(0  ,  "App::indexEvtOld dpho 0");
+            m_pho->dump(100,  "App::indexEvtOld dpho 100" );
+            m_pho->dump(1000, "App::indexEvtOld dpho 1000" );
+
         }
         m_evt->setRecordsNPY(m_rec);
         m_evt->setPhotonsNPY(m_pho);
@@ -1485,7 +1490,8 @@ int main(int argc, char** argv)
         if(strcmp(argv[i], "--fatal")==0)   loglevel = "fatal" ;
     }
 
-    printf(" logname: %s loglevel: %s\n", logname, loglevel );
+    // dont print anything here, it messes with --idp
+    //printf(" logname: %s loglevel: %s\n", logname, loglevel );
 
     int rc ; 
 

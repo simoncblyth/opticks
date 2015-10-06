@@ -249,7 +249,7 @@ void RecordsNPY::dumpRecord(unsigned int i, const char* msg)
 
     //assert(flag.z == 0);  now set to bounday integer for debug 
 
-    printf("%s %8u %s %s %2d:%25s %2d:%25s [%3d] %s \n", 
+    printf("%s %8u %s %s flag.x/m1 %2d:%25s flag.y/m2 %2d:%25s iflag.z [%3d] %s \n", 
                 msg,
                 i, 
                 gpresent(post,2,11).c_str(),

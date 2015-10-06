@@ -184,6 +184,8 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
         m_bbox[m_cur_solid] = bb ;  
         m_center_extent[m_cur_solid] = bb.center_extent() ;
 
+        transform->copyTo( getTransform(m_cur_solid) );
+
         m_meshes[m_cur_solid] = meshIndex ; 
 
         // face and vertex counts must use same selection as above to be usable 

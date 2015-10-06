@@ -102,7 +102,6 @@ void TorchStepNPY::setPosTarget(unsigned int index, unsigned int mesh)
     m_pos_target.y = mesh ; 
 }
 
-
 void TorchStepNPY::setPosOffset(const char* s)
 {
     std::string ss(s);
@@ -218,6 +217,7 @@ void TorchStepNPY::dump(const char* msg)
 
     print(m_pos_target, "m_pos_target ");
     print(m_dir_target, "m_dir_target ");
+    print(m_pos_offset, "m_pos_offset");
 
     print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
     print(m_post, "m_post : position, time " ); 
