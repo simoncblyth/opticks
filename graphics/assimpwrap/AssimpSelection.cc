@@ -119,7 +119,7 @@ void AssimpSelection::parseQueryElement(const char* query)
        std::vector<std::string> elem ; 
        split(elem, query+strlen(range_token), ':'); 
        assert(elem.size() == 2);
-       m_query_range.clear();
+       //m_query_range.clear();
        for(int i=0 ; i<elem.size() ; ++i)
        {
            m_query_range.push_back( atoi(elem[i].c_str()) ) ;
@@ -187,14 +187,14 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
            if( m_query_depth > 0 && depth < m_query_depth ) m_selection.push_back(node); 
        }
    }
-   else if(m_query_range.size() == 2)
+   else if(m_query_range.size() > 0)
    {
-       if( index >= m_query_range[0] && index < m_query_range[1] )
+       assert(m_query_range.size() % 2 == 0); 
+       for(unsigned i=0 ; i < m_query_range.size()/2 ; i++ )
        {
-           m_selection.push_back(node); 
+           if( index >= m_query_range[i*2+0] && index < m_query_range[i*2+1] ) m_selection.push_back(node); 
        }
    }
-   
 
    for(unsigned int i = 0; i < node->getNumChildren(); i++) selectNodes(node->getChild(i), depth + 1, rselect );
 }
