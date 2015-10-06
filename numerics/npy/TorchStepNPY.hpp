@@ -16,16 +16,15 @@ Photon Torpedo along X axis:
 
 class TorchStepNPY {
    public:
-       typedef enum { POS_TARGET, POS_OFFSET, DIR_TARGET, NUM_PHOTONS, MATERIAL_LINE, DIRECTION, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
+       typedef enum { FRAME, SOURCE, TARGET, NUM_PHOTONS, MATERIAL_LINE, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
-       static const char* POS_TARGET_ ; 
-       static const char* POS_OFFSET_ ; 
-       static const char* DIR_TARGET_ ; 
+       static const char* FRAME_ ; 
+       static const char* SOURCE_ ; 
+       static const char* TARGET_ ; 
        static const char* NUM_PHOTONS_ ; 
        static const char* MATERIAL_LINE_ ; 
-       static const char* DIRECTION_ ; 
        static const char* ZENITH_AZIMUTH_ ; 
        static const char* WAVELENGTH_ ; 
        static const char* WEIGHT_ ; 
@@ -37,25 +36,28 @@ class TorchStepNPY {
        void addStep(); // increments m_step_index
        NPY<float>* getNPY();
    private:
+       void update();
        Param_t getParam(const char* k);
        void set(TorchStepNPY::Param_t param, const char* s );
    public:  
        // target setting needs external info regarding geometry 
-       void setPosTarget(const char* s );
-       void setPosOffset(const char* s );
-       glm::vec3& getPosOffset(); 
-       void setDirTarget(const char* s );
-       void setPosTarget(unsigned int index, unsigned int mesh=0 );
-       void setDirTarget(unsigned int index, unsigned int mesh=0 );
-       glm::ivec4&  getPosTarget();
-       glm::ivec4&  getDirTarget();
+       void setFrame(const char* s );
+       void setFrame(unsigned int vindex );
+       glm::ivec4&  getFrame();
+       void setFrameTransform(glm::mat4& frame_transform);
+       // targetting needs frame transform info which is done by GGeo::targetTorchStep(torchstep)
 
    public:
-       // targetting needs geometry info which is done by GGeo::targetTorchStep(torchstep)
-       void setPosition(glm::vec3& pos);
-       glm::vec3 getPosition();   
-       void setDirection(glm::vec3& dir);
-       glm::vec3 getDirection();
+       // local positions
+       void setSourceLocal(const char* s );
+       void setTargetLocal(const char* s );
+       glm::vec4& getSourceLocal();
+       glm::vec4& getTargetLocal();
+   public:
+       // global positions 
+       glm::vec4  getSource();
+       glm::vec4  getTarget();
+   public:
    public:  
        // currently ignored on the GPU
        void setPolarization(glm::vec3& pol);
@@ -99,13 +101,14 @@ class TorchStepNPY {
        unsigned int m_genstep_id ; 
        const char*  m_config ;
   private:
-       glm::ivec4   m_pos_target ;
-       glm::ivec4   m_dir_target ;
+       glm::ivec4   m_frame ;
+       glm::mat4    m_frame_transform ; 
+       glm::vec4    m_source_local ; 
+       glm::vec4    m_target_local ; 
   private:
        // 6 quads that are copied into the genstep 
        glm::ivec4   m_ctrl ;
        glm::vec4    m_post ;
-       glm::vec3    m_pos_offset ;
        glm::vec4    m_dirw ;
        glm::vec4    m_polw ;
        glm::vec4    m_zenith_azimuth ;
@@ -133,21 +136,50 @@ inline TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step
 
 
 
-inline glm::ivec4& TorchStepNPY::getPosTarget()
+inline glm::ivec4& TorchStepNPY::getFrame()
 {
-    return m_pos_target ; 
+    return m_frame ; 
 }
 
-inline glm::ivec4& TorchStepNPY::getDirTarget()
+inline void TorchStepNPY::setFrameTransform(glm::mat4& frame_transform)
 {
-    return m_dir_target ; 
+    m_frame_transform = frame_transform ;
 }
 
-inline glm::vec3& TorchStepNPY::getPosOffset()
+inline glm::vec4& TorchStepNPY::getSourceLocal()
 {
-    return m_pos_offset ; 
+    return m_source_local ; 
+}
+inline glm::vec4& TorchStepNPY::getTargetLocal()
+{
+    return m_target_local ; 
 }
 
+inline glm::vec4 TorchStepNPY::getSource()
+{
+    return m_frame_transform * m_source_local  ; 
+}
+inline glm::vec4 TorchStepNPY::getTarget()
+{
+    return m_frame_transform * m_target_local  ; 
+}
+
+
+inline void TorchStepNPY::update()
+{
+    glm::vec4 src = getSource() ;
+    glm::vec4 tgt = getTarget() ;
+
+    m_post.x = src.x ; 
+    m_post.y = src.y ; 
+    m_post.z = src.z ; 
+
+    glm::vec3 dir = glm::normalize( glm::vec3(tgt) - glm::vec3(src) );
+
+    m_dirw.x = dir.x ; 
+    m_dirw.y = dir.y ; 
+    m_dirw.z = dir.z ; 
+}
 
 
 
@@ -155,30 +187,13 @@ inline void TorchStepNPY::setGenstepId()
 {
    m_ctrl.x = m_genstep_id ; 
 }
-inline void TorchStepNPY::setPosition(glm::vec3& pos)
-{
-    m_post.x = pos.x ; 
-    m_post.y = pos.y ; 
-    m_post.z = pos.z ; 
-}
-inline void TorchStepNPY::setDirection(glm::vec3& dir)
-{
-    m_dirw.x = dir.x ; 
-    m_dirw.y = dir.y ; 
-    m_dirw.z = dir.z ; 
-}
+
+
+
 inline void TorchStepNPY::setPolarization(glm::vec3& pol)
 {
     m_polw.x = pol.x ; 
     m_polw.y = pol.y ; 
     m_polw.z = pol.z ; 
-}
-inline glm::vec3 TorchStepNPY::getPosition()
-{
-    return glm::vec3(m_post) ;
-}
-inline glm::vec3 TorchStepNPY::getDirection()
-{
-    return glm::vec3(m_dirw) ;
 }
 

@@ -352,6 +352,18 @@ Add *mdyb* for checking pmt-hemi-cathode geometry, its a flikering mess and a ca
        # export GGEOVIEW_QUERY="range:3201:3202,range:3153:3154"   # 2 volumes : first pmt-hemi-cathode and ADE  
        # change envelope volume to ADE much better, as photons get somewhere in IwsWater/IwsWater  
 
+
+    ggv --mdyb --torchconfig "frame=3201;source=0,0,1000;target=0,0,0;radius=300;" --save
+
+       # head on beam strarting 1m out in front of PMT cathode
+       #
+       # using reworked the Torch configuration to be frame based with source and target positions
+       # specified in the identified frame 
+       #
+       # note effect of material inconsistency, photons destined to hit the cathode
+       # think they are in a vacuum, hence they lead ahead of those destined to hit ADE envelope
+
+
 Hmm would be easiest to target the PMT using its own frame, hmm view targetting did something similar ?
 
 

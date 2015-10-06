@@ -12,10 +12,11 @@
 // trace/debug/info/warning/error/fatal
 
 const char* TorchStepNPY::DEFAULT_CONFIG = 
-    "pos_target=3153;"
+    "frame=3153;"
+    "source=0,0,0;"
+    "target=0,0,1;"
     "num_photons=500000;"
     "material_line=102;"
-    "direction=0,0,1;"
     "wavelength=500;"
     "weight=1.0;"
     "time=0.1;"
@@ -25,12 +26,11 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
 // NB time 0.f causes 1st step record rendering to be omitted, as zero is special
 // TODO: material_line:102 corresponds to GdLS, arrange to detect the material from the pos_target 
  
-const char* TorchStepNPY::POS_TARGET_ = "pos_target"; 
-const char* TorchStepNPY::POS_OFFSET_ = "pos_offset"; 
-const char* TorchStepNPY::DIR_TARGET_ = "dir_target" ; 
+const char* TorchStepNPY::FRAME_ = "frame"; 
+const char* TorchStepNPY::SOURCE_ = "source"; 
+const char* TorchStepNPY::TARGET_ = "target" ; 
 const char* TorchStepNPY::NUM_PHOTONS_ = "num_photons" ; 
 const char* TorchStepNPY::MATERIAL_LINE_ = "material_line" ; 
-const char* TorchStepNPY::DIRECTION_ = "direction" ; 
 const char* TorchStepNPY::ZENITH_AZIMUTH_ = "zenith_azimuth" ; 
 const char* TorchStepNPY::WAVELENGTH_     = "wavelength" ; 
 const char* TorchStepNPY::WEIGHT_     = "weight" ; 
@@ -41,12 +41,11 @@ const char* TorchStepNPY::RADIUS_   = "radius" ;
 TorchStepNPY::Param_t TorchStepNPY::getParam(const char* k)
 {
     Param_t param = UNRECOGNIZED ; 
-    if(     strcmp(k,POS_TARGET_)==0)     param = POS_TARGET ; 
-    else if(strcmp(k,POS_OFFSET_)==0)     param = POS_OFFSET ; 
-    else if(strcmp(k,DIR_TARGET_)==0)     param = DIR_TARGET ; 
+    if(     strcmp(k,FRAME_)==0)          param = FRAME ; 
+    else if(strcmp(k,SOURCE_)==0)         param = SOURCE ; 
+    else if(strcmp(k,TARGET_)==0)         param = TARGET ; 
     else if(strcmp(k,NUM_PHOTONS_)==0)    param = NUM_PHOTONS ; 
     else if(strcmp(k,MATERIAL_LINE_)==0)  param = MATERIAL_LINE ; 
-    else if(strcmp(k,DIRECTION_)==0)      param = DIRECTION ; 
     else if(strcmp(k,ZENITH_AZIMUTH_)==0) param = ZENITH_AZIMUTH ; 
     else if(strcmp(k,WAVELENGTH_)==0)     param = WAVELENGTH ; 
     else if(strcmp(k,WEIGHT_)==0)         param = WEIGHT ; 
@@ -74,12 +73,11 @@ void TorchStepNPY::set(Param_t p, const char* s)
 {
     switch(p)
     {
-        case POS_TARGET     : setPosTarget(s)      ;break;
-        case POS_OFFSET     : setPosOffset(s)      ;break;
-        case DIR_TARGET     : setDirTarget(s)      ;break;
+        case FRAME          : setFrame(s)          ;break;
+        case SOURCE         : setSourceLocal(s)    ;break;
+        case TARGET         : setTargetLocal(s)    ;break;
         case NUM_PHOTONS    : setNumPhotons(s)     ;break;
         case MATERIAL_LINE  : setMaterialLine(s)   ;break;
-        case DIRECTION      : setDirection(s)      ;break;
         case ZENITH_AZIMUTH : setZenithAzimuth(s)  ;break;
         case WAVELENGTH     : setWavelength(s)     ;break;
         case WEIGHT         : setWeight(s)         ;break;
@@ -91,37 +89,38 @@ void TorchStepNPY::set(Param_t p, const char* s)
 }
 
 
-void TorchStepNPY::setPosTarget(const char* s)
+void TorchStepNPY::setFrame(const char* s)
 {
     std::string ss(s);
-    m_pos_target = givec4(ss);
+    m_frame = givec4(ss);
 }
-void TorchStepNPY::setPosTarget(unsigned int index, unsigned int mesh)
+void TorchStepNPY::setFrame(unsigned int vindex)
 {
-    m_pos_target.x = index ; 
-    m_pos_target.y = mesh ; 
-}
-
-void TorchStepNPY::setPosOffset(const char* s)
-{
-    std::string ss(s);
-    m_pos_offset = gvec3(ss) ;
+    m_frame.x = vindex ; 
+    m_frame.y = 0 ; 
+    m_frame.z = 0 ; 
+    m_frame.w = 0 ; 
 }
 
 
-
-
-void TorchStepNPY::setDirTarget(const char* s)
+void TorchStepNPY::setSourceLocal(const char* s)
 {
     std::string ss(s);
-    m_dir_target = givec4(ss) ;
+    glm::vec3 v = gvec3(ss) ; 
+    m_source_local.x = v.x;
+    m_source_local.y = v.y;
+    m_source_local.z = v.z;
+    m_source_local.w = 1.0;
 }
-void TorchStepNPY::setDirTarget(unsigned int index, unsigned int mesh)
+void TorchStepNPY::setTargetLocal(const char* s)
 {
-    m_dir_target.x = index ; 
-    m_dir_target.y = mesh ; 
+    std::string ss(s);
+    glm::vec3 v = gvec3(ss) ; 
+    m_target_local.x = v.x;
+    m_target_local.y = v.y;
+    m_target_local.z = v.z;
+    m_target_local.w = 1.0;
 }
-
 
 
 
@@ -191,6 +190,8 @@ NPY<float>* TorchStepNPY::getNPY()
     return m_npy ; 
 }
 
+
+
 void TorchStepNPY::addStep()
 {
     if(m_npy == NULL)
@@ -200,6 +201,8 @@ void TorchStepNPY::addStep()
     }
    
     unsigned int i = m_step_index ; 
+
+    update(); 
 
     m_npy->setQuadI(i, 0, m_ctrl );
     m_npy->setQuad( i, 1, m_post );
@@ -215,9 +218,9 @@ void TorchStepNPY::dump(const char* msg)
 {
     printf("%s config %s  \n", msg, m_config );
 
-    print(m_pos_target, "m_pos_target ");
-    print(m_dir_target, "m_dir_target ");
-    print(m_pos_offset, "m_pos_offset");
+    print(m_frame,        "m_frame ");
+    print(m_source_local, "m_source_local ");
+    print(m_target_local, "m_target_local ");
 
     print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
     print(m_post, "m_post : position, time " ); 

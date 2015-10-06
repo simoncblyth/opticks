@@ -517,7 +517,7 @@ inline gbbox GMesh::getBBox(unsigned int index)
 
 inline float* GMesh::getTransform(unsigned int index)
 {
-    return m_transforms + index*16  ;
+    return index < m_num_solids ? m_transforms + index*16 : NULL  ;
 }
 
 

@@ -16,6 +16,11 @@
 #include "GItemIndex.hh"
 #include "GItemList.hh"
 
+
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 // npy-
 #include "GLMPrint.hpp"
 #include "TorchStepNPY.hpp"
@@ -830,13 +835,24 @@ void GGeo::dumpStats(const char* msg)
     printf("   totVertices %9d  totFaces %9d \n", totVertices, totFaces );
     printf("  vtotVertices %9d vtotFaces %9d (virtual: scaling by transforms)\n", vtotVertices, vtotFaces );
     printf("  vfacVertices %9.3f vfacFaces %9.3f (virtual to total ratio)\n", float(vtotVertices)/float(totVertices), float(vtotFaces)/float(totFaces) );
-
-
-
 }
+
+
+
+glm::mat4 GGeo::getTransform(unsigned int index)
+{
+    GMergedMesh* mesh0 = getMergedMesh(0);
+    float* transform = mesh0 ? mesh0->getTransform(index) : NULL ;
+    glm::mat4 vt ;
+    if(transform) vt = glm::make_mat4(transform) ;
+    return vt ;  
+}
+
 
 glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )
 {
+    assert(0); // moved to transform approach for torch targetting 
+
     GMergedMesh* mm = getMergedMesh(merged_mesh_index);
     assert(mm);
 
@@ -870,84 +886,19 @@ glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_in
 void GGeo::targetTorchStep( TorchStepNPY* torchstep )
 {
     // targetted positioning and directioning of the torch requires geometry info, 
-    // which is not available within npy- so need to externally setPosition and setDirection
-    // based on integer addresses specifying:
-    //   
-    //          (volume   index, merged mesh index=0)
-    //          (instance index, merged mesh index>0)
+    // which is not available within npy- so need to externally setFrameTransform
+    // based on integer frame volume index
 
-    LOG(info) << "GGeo::targetTorchStep" ; 
-
-    glm::ivec4& ipos_target = torchstep->getPosTarget() ;    
-    glm::vec3&   pos_offset = torchstep->getPosOffset() ;    
-    glm::ivec4& idir_target = torchstep->getDirTarget() ;    
-
-    print(ipos_target, "GGeo::targetTorchStep ipos_target");
-    print(idir_target, "GGeo::targetTorchStep idir_target");
-    print(pos_offset,  "GGeo::targetTorchStep idir_target");
-
-    if(ipos_target.x > 0 || ipos_target.y > 0) 
-    {    
-        glm::vec3 pos_target = glm::vec3(getCenterExtent(ipos_target.x,ipos_target.y));   
-        print(pos_target, "GGeo::targetTorchStep pos_target");
-        print(pos_offset, "GGeo::targetTorchStep pos_offset");
-        glm::vec3 position = pos_target + pos_offset ;
-        print(position, "GGeo::targetTorchStep position");
-        torchstep->setPosition(position);  
-    }    
-
-    if(idir_target.x > 0 || idir_target.y > 0) 
-    {    
-        glm::vec3 tgt = glm::vec3(getCenterExtent(idir_target.x,idir_target.y));   
-        print(tgt, "GGeo::targetTorchStep tgt");
-        glm::vec3 pos = torchstep->getPosition();
-        print(pos, "GGeo::targetTorchStep pos");
-        glm::vec3 dir = glm::normalize( tgt - pos );
-        print(dir, "GGeo::targetTorchStep dir");
-        torchstep->setDirection(dir);
-    }    
+    glm::ivec4& iframe = torchstep->getFrame();
+    LOG(info) << "GGeo::targetTorchStep setting frame " << iframe.x  ; 
+    glm::mat4 transform = getTransform( iframe.x );
+    print(transform, "GGeo::targetTorchStep transform");
+    torchstep->setFrameTransform(transform);
 
     glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
     torchstep->setPolarization(pol);
 }
 
-
-/*
-
-Merged mesh 0 provides center_extent for all volumes in
-global coordinates, the other merged mesh has only local to 
-them center extent.::
-
-    In [1]: ce0 = np.load("0/center_extent.npy")
-
-    In [2]: ce0
-    Out[2]: 
-    array([[ -16520.   , -802110.   ,   -7125.   ,    7710.562],
-           [ -16520.   , -802110.   ,    3892.9  ,   34569.875],
-           [ -12840.846, -806876.25 ,    5389.855,   22545.562],
-           ..., 
-           [ -12195.957, -799312.625,   -7260.   ,    5000.   ],
-           [ -17081.184, -794607.812,   -7260.   ,    5000.   ],
-           [ -16519.908, -802110.   ,  -12410.   ,    7800.875]], dtype=float32)
-
-    In [3]: ce0.shape
-    Out[3]: (12230, 4)
-
-For targetting the instances of merged meshes > 0 can use
-the transform matrices::
-
-    In [15]: tr1 = np.load("1/transforms.npy")
-
-    In [17]: tr1.reshape(672,4,4)
-    Out[17]: 
-    array([[[      0.   ,      -0.   ,       1.   ,       0.   ],
-            [      0.762,       0.648,       0.   ,       0.   ],
-            [     -0.648,       0.762,       0.   ,       0.   ],
-            [ -16572.902, -801469.625,   -8842.5  ,       1.   ]],
-
-
-
-*/
 
 
 void GGeo::dumpTree(const char* msg)

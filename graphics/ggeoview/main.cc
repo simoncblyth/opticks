@@ -704,6 +704,9 @@ TorchStepNPY* App::makeSimpleTorchStep()
 
 TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
 {
+    assert(0);
+    // TODO: need way to get the volume indices of the instances for this to work.. 
+
     assert(imesh > 0);
     GMergedMesh* mmi = m_ggeo->getMergedMesh(imesh);
     unsigned int nti = mmi->getNumTransforms();
@@ -726,9 +729,9 @@ TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
 
     for(unsigned int i=0 ; i < nti ; i++)
     {
-        torchstep->setDirTarget(i, imesh ); 
-       
-        m_ggeo->targetTorchStep(torchstep);
+        torchstep->setFrame(i);  // this needs the volume index 
+ 
+        m_ggeo->targetTorchStep(torchstep); // uses above set frame index to set the frame transform
 
         torchstep->addStep(); 
 
