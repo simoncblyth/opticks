@@ -126,18 +126,15 @@ int AssimpGGeo::convert(const char* ctrl)
 
     const aiScene* scene = m_tree->getScene();
 
-    bool reverse = true ; // for ascending wavelength ordering
-    convertMaterials(scene, m_ggeo, ctrl, reverse );
-
-    findSensors( m_ggeo ); 
-
+    convertMaterials(scene, m_ggeo, ctrl );
+    convertSensors( m_ggeo ); 
     convertMeshes(scene, m_ggeo, ctrl);
     convertStructure(m_ggeo);
 
     return 0 ;
 }
 
-void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property, bool reverse)
+void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property )
 {
     float* data = (float*)property->mData ;
     unsigned int nbyte  = property->mDataLength ; 
@@ -187,7 +184,7 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
         //printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );
     }
 
-    if(reverse)
+    if(m_reverse)
     {
        std::reverse(vals.begin(), vals.end());
        std::reverse(domain.begin(), domain.end());
@@ -247,7 +244,7 @@ bool AssimpGGeo::hasVectorProperty(aiMaterial* material, const char* propname)
 
 
 
-void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material, bool reverse)
+void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material )
 {
     unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
@@ -264,7 +261,7 @@ void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material, 
         aiPropertyTypeInfo type = property->mType ; 
         if(type == aiPTI_Float)
         { 
-            addPropertyVector(pmap, k, property, reverse);
+            addPropertyVector(pmap, k, property );
         }
         else if( type == aiPTI_String )
         {
@@ -306,7 +303,7 @@ const char* AssimpGGeo::g4dae_opticalsurface_value      = "g4dae_opticalsurface_
 const char* AssimpGGeo::EFFICIENCY = "EFFICIENCY" ; 
 
 
-void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* query, bool reverse)
+void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* query )
 {
     LOG(info)<<"AssimpGGeo::convertMaterials " 
              << " query " << query 
@@ -352,9 +349,11 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
         if(os)
         {
-            LOG(debug) << "AssimpGGeo::convertMaterials OS Name " << i << " " << osnam ;
+            LOG(debug) << "AssimpGGeo::convertMaterials os " << i << " " << os->description(); 
+
             // assert(strcmp(osnam, name) == 0); 
-            // same-name convention between OpticalSurface and the skin or border surface that references it 
+            //      formerly enforced same-name convention between OpticalSurface 
+            //      and the skin or border surface that references it, but JUNO doesnt follow that  
         }
 
         if( sslv )
@@ -364,14 +363,14 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             GSkinSurface* gss = new GSkinSurface(name, index, os);
 
 
-            LOG(info) << "AssimpGGeo::convertMaterials GSkinSurface " 
+            LOG(debug) << "AssimpGGeo::convertMaterials GSkinSurface " 
                       << " name " << name 
                       << " sslv " << sslv 
                       ; 
 
             gss->setStandardDomain(standard_domain);
             gss->setSkinSurface(sslv);
-            addProperties(gss, mat, reverse);
+            addProperties(gss, mat );
 
             LOG(debug) << gss->description(); 
             gg->add(gss);
@@ -380,8 +379,8 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
                 // without standard domain applied
                 GSkinSurface*  gss_raw = new GSkinSurface(name, index, os);
                 gss_raw->setSkinSurface(sslv);
-                addProperties(gss_raw, mat, reverse);
-                gg->addRaw(gss);
+                addProperties(gss_raw, mat );
+                gg->addRaw(gss_raw);  // this was erroreously gss for a long time
             }   
 
         } 
@@ -392,7 +391,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
             gbs->setStandardDomain(standard_domain);
             gbs->setBorderSurface(bspv1, bspv2);
-            addProperties(gbs, mat, reverse);
+            addProperties(gbs, mat );
 
             LOG(debug) << gbs->description(); 
 
@@ -402,7 +401,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
                 // without standard domain applied
                 GBorderSurface* gbs_raw = new GBorderSurface(name, index, os);
                 gbs_raw->setBorderSurface(bspv1, bspv2);
-                addProperties(gbs_raw, mat, reverse);
+                addProperties(gbs_raw, mat );
                 gg->addRaw(gbs_raw);
             }
         }
@@ -414,20 +413,21 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GMaterial) name %s \n", i, name);
             GMaterial* gmat = new GMaterial(name, index);
             gmat->setStandardDomain(standard_domain);
-            addProperties(gmat, mat, reverse);
+            addProperties(gmat, mat );
             gg->add(gmat);
 
             {
                 // without standard domain applied
                 GMaterial* gmat_raw = new GMaterial(name, index);
-                addProperties(gmat_raw, mat, reverse);
+                addProperties(gmat_raw, mat );
                 gg->addRaw(gmat_raw);
             }
 
             if(hasVectorProperty(mat, EFFICIENCY ))
             {
-                assert(gg->getCathode() == NULL && "only expecting one of these" );
+                assert(gg->getCathode() == NULL && "only expecting one material with an EFFICIENCY property" );
                 gg->setCathode(gmat) ;  
+                m_cathode = mat ; 
             }
 
         }
@@ -450,20 +450,77 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
 
 
-void AssimpGGeo::findSensors(GGeo* gg)
+void AssimpGGeo::convertSensors(GGeo* gg)
 {
-    findSensors( gg, m_tree->getRoot(), 0); 
-    gg->dumpCathodeLV("AssimpGGeo::findSensors");
+    convertSensors( gg, m_tree->getRoot(), 0); 
+
+    assert(m_cathode);
+    unsigned int nclv = gg->getNumCathodeLV();
+
+    GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
+
+    for(unsigned int i=0 ; i < nclv ; i++)
+    {
+        const char* sslv = gg->getCathodeLV(i);
+        LOG(info) << "AssimpGGeo::convertSensors" 
+                  << " i " << i
+                  << " sslv " << sslv 
+                  ;
+
+        std::string name = trimPointerSuffixPrefix(sslv, NULL );
+        name += "SensorSurface" ; 
+
+        const char* osnam = name.c_str() ;
+        const char* ostyp = "0" ; 
+        const char* osmod = "1" ; 
+        const char* osfin = "3" ; 
+        const char* osval = "1" ;  
+       // TODO: check effects of above adhoc choice of common type/model/finish/value 
+
+        GOpticalSurface* os = new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) ; 
+
+        // standard materials/surfaces use the originating aiMaterial index, 
+        // extend that for fake SensorSurface by toting up all 
+
+        unsigned int index = gg->getNumMaterials() + gg->getNumSkinSurfaces() + gg->getNumBorderSurfaces() ; 
+
+        GSkinSurface* gss = new GSkinSurface(name.c_str(), index, os);
+
+        gss->setStandardDomain(standard_domain);
+       
+        gss->setSkinSurface(sslv);
+
+        addProperties(gss, m_cathode );
+
+        LOG(info) << gss->description(); 
+ 
+        gg->add(gss);
+
+        {
+            // without standard domain applied
+            GSkinSurface*  gss_raw = new GSkinSurface(name.c_str(), index, os);
+            gss_raw->setSkinSurface(sslv);
+            addProperties(gss_raw, m_cathode );
+            gg->addRaw(gss_raw);
+        }   
+    }
 }
 
-void AssimpGGeo::findSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
+void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
-    findSensorsVisit(gg, node, depth);
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) findSensors(gg, node->getChild(i), depth + 1);
+    // addCathodeLV into gg
+    convertSensorsVisit(gg, node, depth);
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertSensors(gg, node->getChild(i), depth + 1);
 }
 
-void AssimpGGeo::findSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
+void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
+    // collects lv of nodes of cathode material allowing construction 
+    // of "fake" GSkinSurface
+    //
+    // NB border surface sensors at not handled, as there are non of those in DYB
+    //
+
     unsigned int nodeIndex = node->getIndex();
 
     const char* lv   = node->getName(0); 
@@ -480,7 +537,7 @@ void AssimpGGeo::findSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth
 
     if(sensor && mt == gg->getCathode())
     {
-         LOG(debug) << "AssimpGGeo::findSensorsVisit " 
+         LOG(debug) << "AssimpGGeo::convertSensorsVisit " 
                    << " lv " << lv  
                    << " pv " << pv  
                    ;

@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <unordered_set>
+#include <iterator>
 
 #include <glm/glm.hpp>
 #include "GVector.hh"
@@ -116,6 +117,8 @@ class GGeo {
         void add(GMaterial* material);
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
+
+
         void addToIndex(GPropertyMap<float>* obj);
         void dumpIndex(const char* msg="GGeo::dumpIndex");
 
@@ -196,7 +199,8 @@ class GGeo {
     public:
         void addCathodeLV(const char* lv);
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV");
-
+        const char* getCathodeLV(unsigned int index);
+        unsigned int getNumCathodeLV();
     public:
         GSkinSurface* findSkinSurface(const char* lv);  
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
@@ -501,6 +505,18 @@ inline void GGeo::setCathode(GMaterial* cathode)
 inline void GGeo::addCathodeLV(const char* lv)
 {
    m_cathode_lv.insert(lv);
+}
+
+inline unsigned int GGeo::getNumCathodeLV()
+{
+   return m_cathode_lv.size() ; 
+}
+inline const char* GGeo::getCathodeLV(unsigned int index)
+{
+    typedef std::unordered_set<std::string>::const_iterator UCI ; 
+    UCI it = m_cathode_lv.begin() ; 
+    std::advance( it, index );
+    return it != m_cathode_lv.end() ? it->c_str() : NULL  ; 
 }
 
 inline void GGeo::dumpCathodeLV(const char* msg)

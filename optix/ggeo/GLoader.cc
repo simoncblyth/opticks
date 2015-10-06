@@ -137,7 +137,7 @@ void GLoader::load()
             t("TreeCheck"); 
 
             GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
-            mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (global)");
+            //mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (global)");
 
             unsigned int numRepeats = m_treeanalyse->getNumRepeats();
             for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
@@ -147,7 +147,7 @@ void GLoader::load()
                 GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
                 mergedmesh->dumpSolids("GLoader::load dumpSolids");
                 mergedmesh->setTransformsBuffer(rtransforms);
-                mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (instanced)");
+                //mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (instanced)");
             }
 
 

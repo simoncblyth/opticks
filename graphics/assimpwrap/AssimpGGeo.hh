@@ -41,10 +41,10 @@ public:
     static const char* EFFICIENCY ;
 
 protected:
-    void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl, bool reverse );
-    void convertMaterialsCathode(const aiScene* scene, GGeo* gg, const char* ctrl, bool reverse, aiMaterial* cathode);
-    void addProperties(GPropertyMap<float>* pmap, aiMaterial* material, bool reverse);
-    void addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property, bool reverse);
+    void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl );
+    void convertMaterialsCathode(const aiScene* scene, GGeo* gg, const char* ctrl, aiMaterial* cathode);
+    void addProperties(GPropertyMap<float>* pmap, aiMaterial* material);
+    void addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property);
     const char* getStringProperty(aiMaterial* mat, const char* query);
     bool hasVectorProperty(aiMaterial* material, const char* propname);
 
@@ -61,9 +61,9 @@ protected:
     void setValuesScale(float vscale);
 
 private:
-    void findSensors(GGeo* gg);
-    void findSensors(GGeo* gg, AssimpNode* node, unsigned int depth);
-    void findSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth);
+    void convertSensors(GGeo* gg);
+    void convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth);
+    void convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth);
 
 private:
     GGeo*            m_ggeo ;
@@ -80,6 +80,8 @@ private:
     unsigned int     m_no_surface ; 
 
     bool             m_volnames ; 
+    bool             m_reverse ; 
+    aiMaterial*      m_cathode ; 
 
 };
 
@@ -97,7 +99,9 @@ inline AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* sel
    m_inborder_surface(0),
    m_outborder_surface(0),
    m_no_surface(0),
-   m_volnames(false)
+   m_volnames(false),
+   m_reverse(true),        // true: ascending wavelength ordering of properties
+   m_cathode(NULL)
 {
     init();
 }
