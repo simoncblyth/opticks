@@ -816,20 +816,36 @@ void GGeo::dumpStats(const char* msg)
     {
         GMergedMesh* mm = getMergedMesh(i);
         GBuffer* tbuf = mm->getTransformsBuffer();
+        GBuffer* ibuf = mm->getITransformsBuffer();
+        GBuffer* rbuf = mm->getRTransformsBuffer();
         GBuffer* vbuf = mm->getVerticesBuffer();
-        GBuffer* ibuf = mm->getIndicesBuffer();
+        GBuffer* fbuf = mm->getIndicesBuffer();
 
         unsigned int numVertices = vbuf->getNumItems() ;
-        unsigned int numFaces = ibuf->getNumItems()/3;
+        unsigned int numFaces = fbuf->getNumItems()/3;
+
         unsigned int numTransforms = tbuf ? tbuf->getNumItems() : 1  ;
+        unsigned int numITransforms = ibuf ? ibuf->getNumItems() : 0  ;
+        unsigned int numRTransforms = rbuf ? rbuf->getNumItems() : 0  ;
 
-        printf(" mm %2d : vertices %7d faces %7d transforms %7d \n", i, numVertices, numFaces, numTransforms);
 
-        totVertices += numVertices ; 
-        totFaces    += numFaces ; 
+        if( i == 0)
+        {
+            totVertices += numVertices ; 
+            totFaces    += numFaces ; 
+            vtotVertices += numVertices ; 
+            vtotFaces    += numFaces  ;
+        }
+        else
+        {
+            totVertices += numVertices ; 
+            totFaces    += numFaces ; 
+            vtotVertices += numVertices*numITransforms ; 
+            vtotFaces    += numFaces*numITransforms  ;
+        }
 
-        vtotVertices += numVertices*numTransforms ; 
-        vtotFaces    += numFaces*numTransforms ; 
+        printf(" mm %2d : vertices %7d faces %7d transforms %7d itransforms %7d rtransforms %7d \n", i, numVertices, numFaces, numTransforms, numITransforms, numRTransforms);
+ 
     } 
 
     printf("   totVertices %9d  totFaces %9d \n", totVertices, totFaces );

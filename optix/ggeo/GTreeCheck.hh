@@ -22,7 +22,7 @@ class GTreeCheck {
         void labelTree();
         unsigned int getNumRepeats(); 
         GNode* getRepeatExample(unsigned int ridx);
-        GBuffer* makeTransformsBuffer(unsigned int ridx);
+        GBuffer* makeInstanceTransformsBuffer(unsigned int ridx);
    public:
         bool operator()(const std::string& dig) ;
    private:

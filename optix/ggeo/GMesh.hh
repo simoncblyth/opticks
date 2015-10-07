@@ -104,9 +104,16 @@ class GMesh : public GDrawable {
       // per-solid (used from the composite GMergedMesh)
       static const char* center_extent ; 
       static const char* bbox ; 
-      static const char* transforms ;    // not-used? 
+      static const char* transforms ;    
       static const char* meshes ;        // mesh indices
       static const char* nodeinfo ;      // nface,nvert,?,? per solid : allowing solid selection beyond the geocache
+
+      // per instance global transforms of repeated geometry 
+      static const char* itransforms ;    
+
+      // relative to instance transforms for components of an instance
+      static const char* rtransforms ;    
+
 
       GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index=0, 
@@ -143,6 +150,8 @@ class GMesh : public GDrawable {
       gfloat4  getCenterExtent(unsigned int index);
       gbbox    getBBox(unsigned int index);
       float* getTransform(unsigned int index);
+      float* getITransform(unsigned int index);
+      float* getRTransform(unsigned int index);
       gfloat3* getDimensions();
       GMatrix<float>* getModelToWorld();
 
@@ -151,8 +160,12 @@ class GMesh : public GDrawable {
       unsigned int   getNumVertices();
       unsigned int   getNumColors();
       unsigned int   getNumFaces();
-      unsigned int   getNumSolids();
       unsigned int   getNumSolidsSelected();
+      unsigned int   getNumSolids();
+      unsigned int   getNumTransforms();
+
+      unsigned int   getNumITransforms();
+      unsigned int   getNumRTransforms();
 
   public:
       // debug
@@ -200,13 +213,15 @@ class GMesh : public GDrawable {
       void setCenterExtentBuffer(GBuffer* buffer);
       void setBBoxBuffer(GBuffer* buffer);
       void setTransformsBuffer(GBuffer* buffer);
+      void setITransformsBuffer(GBuffer* buffer);
+      void setRTransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
       void setNodeInfoBuffer(GBuffer* buffer);
 
   public:
       bool hasTransformsBuffer(); 
-      unsigned int getNumTransforms();
-
+      bool hasITransformsBuffer(); 
+      bool hasRTransformsBuffer(); 
   public:
       // Buffer access for GDrawable protocol
       GBuffer* getVerticesBuffer();
@@ -222,6 +237,9 @@ class GMesh : public GDrawable {
       GBuffer* getTransformsBuffer();
       GBuffer* getMeshesBuffer();
       GBuffer* getNodeInfoBuffer();
+
+      GBuffer* getITransformsBuffer();
+      GBuffer* getRTransformsBuffer();
 
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
@@ -299,7 +317,6 @@ class GMesh : public GDrawable {
       unsigned int    m_index ;
 
       unsigned int    m_num_vertices ;
-      //unsigned int    m_num_colors ;
       unsigned int    m_num_faces ;
       unsigned int    m_num_solids  ;         // used from GMergedMesh subclass
       unsigned int    m_num_solids_selected  ;
@@ -321,6 +338,8 @@ class GMesh : public GDrawable {
       gfloat4*        m_center_extent ;
       gbbox*          m_bbox ;
       float*          m_transforms ; 
+      float*          m_itransforms ; 
+      float*          m_rtransforms ; 
       unsigned int*   m_meshes ; 
       guint4*         m_nodeinfo ; 
 
@@ -347,6 +366,8 @@ class GMesh : public GDrawable {
       GBuffer* m_boundaries_buffer ;
       GBuffer* m_sensors_buffer ;
       GBuffer* m_transforms_buffer ;
+      GBuffer* m_itransforms_buffer ;
+      GBuffer* m_rtransforms_buffer ;
       GBuffer* m_meshes_buffer ;
       GBuffer* m_nodeinfo_buffer ;
 
@@ -366,6 +387,8 @@ inline void GMesh::deallocate()
     delete[] m_center_extent ;  
     delete[] m_bbox ;  
     delete[] m_transforms ;  
+    delete[] m_itransforms ;  
+    delete[] m_rtransforms ;  
     delete[] m_meshes ;  
     delete[] m_nodeinfo ;  
 
@@ -518,11 +541,6 @@ inline gbbox GMesh::getBBox(unsigned int index)
     return m_bbox[index] ;
 }
 
-inline float* GMesh::getTransform(unsigned int index)
-{
-    return index < m_num_solids ? m_transforms + index*16 : NULL  ;
-}
-
 
 inline float GMesh::getExtent()
 {
@@ -588,10 +606,22 @@ inline GBuffer*  GMesh::getBBoxBuffer()
 {
     return m_bbox_buffer ;
 }
+
 inline GBuffer*  GMesh::getTransformsBuffer()
 {
     return m_transforms_buffer ;
 }
+inline GBuffer*  GMesh::getITransformsBuffer()
+{
+    return m_itransforms_buffer ;
+}
+inline GBuffer*  GMesh::getRTransformsBuffer()
+{
+    return m_rtransforms_buffer ;
+}
+
+
+
 inline GBuffer*  GMesh::getMeshesBuffer()
 {
     return m_meshes_buffer ;
@@ -621,6 +651,19 @@ inline bool GMesh::hasTransformsBuffer()
 {
     return m_transforms_buffer != NULL ; 
 }
+inline bool GMesh::hasITransformsBuffer()
+{
+    return m_itransforms_buffer != NULL ; 
+}
+inline bool GMesh::hasRTransformsBuffer()
+{
+    return m_rtransforms_buffer != NULL ; 
+}
+
+
+
+
+
 
 
 inline char GMesh::getGeoCode()

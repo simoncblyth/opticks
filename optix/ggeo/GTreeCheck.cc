@@ -20,13 +20,16 @@ void GTreeCheck::init()
 
 void GTreeCheck::traverse()
 {
+
+    // collect distinct progeny digests (relative sub-tree identities) in m_digest_count 
     traverse(m_root, 0);
 
     m_digest_count->sort(false);
     //m_digest_count->dump();
 
     // minrep 120 removes repeats from headonPMT, calibration sources and RPC leaving just PMTs 
-    
+   
+    // collect digests of repeated pieces of geometry into  m_repeat_candidates
     findRepeatCandidates(m_repeat_min, m_vertex_min); 
     dumpRepeatCandidates();
 }
@@ -68,88 +71,6 @@ void GTreeCheck::traverse( GNode* node, unsigned int depth)
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
 }
 
-void GTreeCheck::dumpRepeatCandidates()
-{
-    LOG(info) << "GTreeCheck::dumpRepeatCandidates " ;
-    for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++) dumpRepeatCandidate(i) ;
-}
-
-
-
-
-
-void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
-{
-    std::string pdig = m_repeat_candidates[index];
-    unsigned int ndig = m_digest_count->getCount(pdig.c_str());
-
-    GNode* first = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
-    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
-    std::cout  
-                  << " pdig "  << std::setw(32) << pdig  
-                  << " ndig "  << std::setw(6) << std::dec << ndig
-                  << " nprog " <<  std::setw(6) << std::dec << first->getProgenyCount() 
-                  << " placements " << std::setw(6) << placements.size()
-                  << " n "          <<  first->getName() 
-                  << std::endl 
-                  ;  
-
-    assert(placements.size() == ndig ); // restricting traverse to just selected causes this to fail
-    if(verbose)
-    {
-        for(unsigned int i=0 ; i < placements.size() ; i++)
-        {
-            GNode* place = placements[i] ;
-            GMatrix<float>* t = place->getTransform();
-            std::cout 
-                   << " t " << t->brief() 
-                   << std::endl 
-                   ;  
-        }
-    }
-}
-
-GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
-{
-    assert(ridx >= 1); // ridx is a 1-based index
-    if(ridx > m_repeat_candidates.size()) return NULL ; 
-    std::string pdig = m_repeat_candidates[ridx-1];
-    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
-    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
-    assert(placements[0] == node);
-    return node ; 
-}
-
-GBuffer* GTreeCheck::makeTransformsBuffer(unsigned int ridx) 
-{
-    assert(ridx >= 1); // ridx is a 1-based index
-    if(ridx > m_repeat_candidates.size()) return NULL ; 
-
-    std::string pdig = m_repeat_candidates[ridx-1];
-    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
-
-    unsigned int num = placements.size() ; 
-    unsigned int numElements = 16 ; 
-    unsigned int size = sizeof(float)*numElements;
-    float* transforms = new float[num*numElements];
-
-    for(unsigned int i=0 ; i < placements.size() ; i++)
-    {
-        GNode* place = placements[i] ;
-        GMatrix<float>* t = place->getTransform();
-        t->copyTo(transforms + numElements*i); 
-    } 
-
-    LOG(info) << "GTreeCheck::makeTransformsBuffer " 
-              << " ridx " << ridx 
-              << " pdig " << pdig 
-              << " num " << num 
-              << " size " << size 
-              ;
-
-    GBuffer* buffer = new GBuffer( size*num, (void*)transforms, size, numElements ); 
-    return buffer ;
-}
 
 
 void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
@@ -162,6 +83,7 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
               << " vertex_min " << vertex_min 
               ;
 
+    // over distinct subtrees (ie progeny digests)
     for(unsigned int i=0 ; i < nall ; i++)
     {
         std::pair<std::string,unsigned int>&  kv = m_digest_count->get(i) ;
@@ -209,10 +131,6 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
 
 }
 
-
-
-
-
 bool GTreeCheck::operator()(const std::string& dig)  
 {
     bool cr = isContainedRepeat(dig, 3);
@@ -248,6 +166,87 @@ bool GTreeCheck::isContainedRepeat( const std::string& pdig, unsigned int levels
     }
     return false ; 
 } 
+
+
+void GTreeCheck::dumpRepeatCandidates()
+{
+    LOG(info) << "GTreeCheck::dumpRepeatCandidates " ;
+    for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++) dumpRepeatCandidate(i) ;
+}
+
+
+void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
+{
+    std::string pdig = m_repeat_candidates[index];
+    unsigned int ndig = m_digest_count->getCount(pdig.c_str());
+
+    GNode* first = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+    std::cout  
+                  << " pdig "  << std::setw(32) << pdig  
+                  << " ndig "  << std::setw(6) << std::dec << ndig
+                  << " nprog " <<  std::setw(6) << std::dec << first->getProgenyCount() 
+                  << " placements " << std::setw(6) << placements.size()
+                  << " n "          <<  first->getName() 
+                  << std::endl 
+                  ;  
+
+    assert(placements.size() == ndig ); // restricting traverse to just selected causes this to fail
+    if(verbose)
+    {
+        for(unsigned int i=0 ; i < placements.size() ; i++)
+        {
+            GNode* place = placements[i] ;
+            GMatrix<float>* t = place->getTransform();
+            std::cout 
+                   << " t " << t->brief() 
+                   << std::endl 
+                   ;  
+        }
+    }
+}
+
+GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
+{
+    assert(ridx >= 1); // ridx is a 1-based index
+    if(ridx > m_repeat_candidates.size()) return NULL ; 
+    std::string pdig = m_repeat_candidates[ridx-1];
+    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    assert(placements[0] == node);
+    return node ; 
+}
+
+GBuffer* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx) 
+{
+    assert(ridx >= 1); // ridx is a 1-based index
+    if(ridx > m_repeat_candidates.size()) return NULL ; 
+
+    std::string pdig = m_repeat_candidates[ridx-1];
+    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+
+    unsigned int num = placements.size() ; 
+    unsigned int numElements = 16 ; 
+    unsigned int size = sizeof(float)*numElements;
+    float* transforms = new float[num*numElements];
+
+    for(unsigned int i=0 ; i < placements.size() ; i++)
+    {
+        GNode* place = placements[i] ;
+        GMatrix<float>* t = place->getTransform();
+        t->copyTo(transforms + numElements*i); 
+    } 
+
+    LOG(info) << "GTreeCheck::makeInstanceTransformsBuffer " 
+              << " ridx " << ridx 
+              << " pdig " << pdig 
+              << " num " << num 
+              << " size " << size 
+              ;
+
+    GBuffer* buffer = new GBuffer( size*num, (void*)transforms, size, numElements ); 
+    return buffer ;
+}
 
 
 

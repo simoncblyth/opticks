@@ -409,10 +409,9 @@ void Scene::uploadGeometry()
     for(unsigned int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        GBuffer* tbuf = mm->getTransformsBuffer();
 
-        LOG(debug) ;
-        LOG(debug) << "Scene::uploadGeometry i " << i ; 
+        LOG(info) ;
+        LOG(info) << "Scene::uploadGeometry i " << i ; 
 
         if( i == 0 )  // first mesh assumed to be **the one and only** non-instanced global mesh
         {
@@ -429,7 +428,11 @@ void Scene::uploadGeometry()
         {
             assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
 
-            LOG(debug)<< "Scene::uploadGeometry instance renderer " << m_num_instance_renderer  ;
+            LOG(info)<< "Scene::uploadGeometry instance renderer " << m_num_instance_renderer  ;
+
+            GBuffer* ibuf = mm->getITransformsBuffer();
+            assert(ibuf);
+
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
 

@@ -137,11 +137,11 @@ void GLoader::load()
             unsigned int numRepeats = m_treeanalyse->getNumRepeats();
             for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
             {
-                GBuffer* rtransforms    = m_treeanalyse->makeTransformsBuffer(ridx);
+                GBuffer* itransforms    = m_treeanalyse->makeInstanceTransformsBuffer(ridx);
                 GNode*   rbase          = m_treeanalyse->getRepeatExample(ridx) ; 
                 GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
                 mergedmesh->dumpSolids("GLoader::load dumpSolids");
-                mergedmesh->setTransformsBuffer(rtransforms);
+                mergedmesh->setITransformsBuffer(itransforms);
                 //mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (instanced)");
             }
 

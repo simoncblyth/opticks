@@ -119,15 +119,15 @@ void Renderer::upload_buffers(bool debug)
     GBuffer* vbuf = m_drawable->getVerticesBuffer();
     GBuffer* nbuf = m_drawable->getNormalsBuffer();
     GBuffer* cbuf = m_drawable->getColorsBuffer();
-    GBuffer* ibuf = m_drawable->getIndicesBuffer();
+    GBuffer* fbuf = m_drawable->getIndicesBuffer();
 
-    printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p ibuf %p \n", vbuf, nbuf, cbuf, ibuf );
+    printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p fbuf %p \n", vbuf, nbuf, cbuf, fbuf );
 
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 
-    GBuffer* rbuf = m_drawable->getTransformsBuffer();
-    setHasTransforms(rbuf != NULL);
+    GBuffer* ibuf = m_drawable->getITransformsBuffer();
+    setHasTransforms(ibuf != NULL);
 
     if(debug)
     {
@@ -151,18 +151,18 @@ void Renderer::upload_buffers(bool debug)
 
     if(hasTransforms())
     {
-        m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  rbuf, "transforms");
-        m_itransform_count = rbuf->getNumItems();
-        LOG(debug) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
+        m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
+        m_itransform_count = ibuf->getNumItems() ;
+        LOG(info) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
     }
     else
     {
-        LOG(debug) << "Renderer::upload_buffers NO TRANSFORMS " ;
+        LOG(info) << "Renderer::upload_buffers NO TRANSFORMS " ;
     }
 
 
-    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, ibuf, "indices");
-    m_indices_count = ibuf->getNumItems(); // number of indices
+    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
+    m_indices_count = fbuf->getNumItems(); // number of indices = faces*3 ?
 
     GLboolean normalized = GL_FALSE ; 
     GLsizei stride = 0 ;
@@ -200,7 +200,7 @@ void Renderer::upload_buffers(bool debug)
 
     if(hasTransforms())
     {
-        LOG(debug) << "Renderer::upload_buffers setup transform attributes " ;
+        LOG(info) << "Renderer::upload_buffers setup transform attributes " ;
         glBindBuffer (GL_ARRAY_BUFFER, m_transforms);
 
         long qsize = sizeof(GLfloat) * 4 ;

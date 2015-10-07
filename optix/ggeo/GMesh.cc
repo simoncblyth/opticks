@@ -34,6 +34,8 @@ const char* GMesh::sensors      = "sensors" ;
 const char* GMesh::center_extent = "center_extent" ;
 const char* GMesh::bbox           = "bbox" ;
 const char* GMesh::transforms     = "transforms" ;
+const char* GMesh::itransforms    = "itransforms" ;
+const char* GMesh::rtransforms    = "rtransforms" ;
 const char* GMesh::meshes         = "meshes" ;
 const char* GMesh::nodeinfo       = "nodeinfo" ;
 
@@ -53,10 +55,15 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(center_extent); 
     names.push_back(bbox); 
     names.push_back(transforms); 
+    names.push_back(itransforms); 
+    names.push_back(rtransforms); 
     names.push_back(meshes); 
     names.push_back(nodeinfo); 
 }
 
+
+
+// is this used ?
 GMesh::GMesh(GMesh* other) 
      :
      m_index(other->getIndex()),
@@ -82,6 +89,8 @@ GMesh::GMesh(GMesh* other)
      m_num_solids(other->getNumSolids()),
      m_num_solids_selected(other->getNumSolidsSelected()),
      m_transforms_buffer(other->getTransformsBuffer()),
+     m_itransforms_buffer(other->getITransformsBuffer()),
+     m_rtransforms_buffer(other->getRTransformsBuffer()),
      m_meshes_buffer(other->getMeshesBuffer()),
      m_nodeinfo_buffer(other->getNodeInfoBuffer()),
      m_geocode(other->getGeoCode()),
@@ -90,6 +99,7 @@ GMesh::GMesh(GMesh* other)
    updateBounds();
    nameConstituents(m_names);
 }
+
 
 
 int GMesh::g_instance_count = 0 ;
@@ -139,6 +149,10 @@ GMesh::GMesh(unsigned int index,
       m_num_solids_selected(0),
       m_transforms(NULL),
       m_transforms_buffer(NULL),
+      m_itransforms(NULL),
+      m_itransforms_buffer(NULL),
+      m_rtransforms(NULL),
+      m_rtransforms_buffer(NULL),
       m_meshes(NULL),
       m_meshes_buffer(NULL),
       m_nodeinfo(NULL),
@@ -217,6 +231,8 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
     if(strcmp(name, bbox) == 0)            return m_bbox_buffer ; 
     if(strcmp(name, transforms) == 0)      return m_transforms_buffer ; 
+    if(strcmp(name, itransforms) == 0)     return m_itransforms_buffer ; 
+    if(strcmp(name, rtransforms) == 0)     return m_rtransforms_buffer ; 
     if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
     if(strcmp(name, nodeinfo) == 0)        return m_nodeinfo_buffer ; 
 
@@ -239,6 +255,8 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
     if(strcmp(name, bbox) == 0)            setBBoxBuffer(buffer) ; 
     if(strcmp(name, transforms) == 0)      setTransformsBuffer(buffer) ; 
+    if(strcmp(name, itransforms) == 0)     setITransformsBuffer(buffer) ; 
+    if(strcmp(name, rtransforms) == 0)     setRTransformsBuffer(buffer) ; 
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
     if(strcmp(name, nodeinfo) == 0)        setNodeInfoBuffer(buffer) ; 
 }
@@ -387,20 +405,56 @@ void GMesh::setTransformsBuffer(GBuffer* buffer)
 {
     m_transforms_buffer = buffer ;  
     if(!buffer) return ; 
-
     m_transforms = (float*)buffer->getPointer();
-    unsigned int numBytes = buffer->getNumBytes();
-    unsigned int numElements = 16 ; 
-    unsigned int size = sizeof(float)*numElements;
-    unsigned int numSolids = numBytes/size ;
-    //setNumSolids(numSolids);
 }
-
+void GMesh::setITransformsBuffer(GBuffer* buffer) 
+{
+    m_itransforms_buffer = buffer ;  
+    if(!buffer) return ; 
+    m_itransforms = (float*)buffer->getPointer();
+}
+void GMesh::setRTransformsBuffer(GBuffer* buffer) 
+{
+    m_rtransforms_buffer = buffer ;  
+    if(!buffer) return ; 
+    m_rtransforms = (float*)buffer->getPointer();
+}
 
 unsigned int GMesh::getNumTransforms()
 {
-    return m_transforms_buffer ? m_transforms_buffer->getNumItems() : 0 ; 
+    return m_transforms_buffer ? m_transforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ; 
 }
+unsigned int GMesh::getNumITransforms()
+{
+    return m_itransforms_buffer ? m_itransforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ; 
+}
+unsigned int GMesh::getNumRTransforms()
+{
+    return m_rtransforms_buffer ? m_rtransforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ; 
+}
+
+
+float* GMesh::getTransform(unsigned int index)
+{
+    return index < m_num_solids ? m_transforms + index*16 : NULL  ;
+}
+float* GMesh::getITransform(unsigned int index)
+{
+    unsigned int num_itransforms = getNumITransforms();
+    return index < num_itransforms ? m_itransforms + index*16 : NULL  ;
+}
+float* GMesh::getRTransform(unsigned int index)
+{
+    unsigned int num_rtransforms = getNumRTransforms();
+    return index < num_rtransforms ? m_rtransforms + index*16 : NULL  ;
+}
+
+
+
+
+
+
+
 
 
 
@@ -931,9 +985,9 @@ bool GMesh::isFloatBuffer(const char* name)
              strcmp( name, normals) == 0  || 
              strcmp( name, center_extent ) == 0  || 
              strcmp( name, bbox ) == 0  || 
-          //   strcmp( name, wavelength ) == 0  || 
-          //   strcmp( name, reemission ) == 0  || 
              strcmp( name, transforms ) == 0  || 
+             strcmp( name, itransforms ) == 0  || 
+             strcmp( name, rtransforms ) == 0  || 
              strcmp( name, colors) == 0 );
 }
 

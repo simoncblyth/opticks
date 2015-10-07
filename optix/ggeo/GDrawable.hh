@@ -15,6 +15,8 @@ class GDrawable {
       virtual GBuffer* getIndicesBuffer() = 0;
       virtual GBuffer* getNodesBuffer() = 0;
       virtual GBuffer* getTransformsBuffer() = 0;
+      virtual GBuffer* getITransformsBuffer() = 0;
+      virtual GBuffer* getRTransformsBuffer() = 0;
 
       virtual GBuffer* getBoundariesBuffer() = 0;
       virtual GBuffer* getModelToWorldBuffer() = 0;

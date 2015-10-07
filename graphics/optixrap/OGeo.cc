@@ -165,9 +165,11 @@ void OGeo::convert()
 
 optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 {
-    GBuffer* tbuf = mm->getTransformsBuffer();
+    GBuffer* tbuf = mm->getITransformsBuffer();
     unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
     assert(tbuf && numTransforms > 0);
+
+    LOG(info) << "OGeo::makeRepeatedGroup numTransforms " << numTransforms ; 
 
     float* tptr = (float*)tbuf->getPointer(); 
 
@@ -279,7 +281,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mergedmesh)
 
     GBuffer* vbuf = mergedmesh->getVerticesBuffer();
     GBuffer* ibuf = mergedmesh->getIndicesBuffer();
-    GBuffer* tbuf = mergedmesh->getTransformsBuffer();
+    GBuffer* tbuf = mergedmesh->getITransformsBuffer();
 
     unsigned int numVertices = vbuf->getNumItems() ;
     unsigned int numFaces = ibuf->getNumItems()/3;    

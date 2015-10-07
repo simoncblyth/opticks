@@ -27,26 +27,23 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
     t.start();
 
     GMergedMesh* mm = new GMergedMesh( index ); 
+
     if(base == NULL)  // non-instanced global transforms
     {
         mm->setCurrentBase(NULL);
         base = static_cast<GNode*>(ggeo->getSolid(0)); 
-        LOG(info)<<"GMergedMesh::create"
-                 << " index " << index 
-                 << " from default root base " << base->getName() ;
-                 ; 
-
         unsigned int numMeshes = ggeo->getNumMeshes();
         assert(numMeshes < 500 );
     }
-    else     // instances transforms, with transform heirarchy split at the base 
+    else   // instances transforms, with transform heirarchy split at the base 
     {
         mm->setCurrentBase(base);
-        LOG(info)<<"GMergedMesh::create"
-                 << " index " << index 
-                 << " from base " << base->getName() ;
-                 ; 
     }
+
+    LOG(info)<<"GMergedMesh::create"
+             << " index " << index 
+             << " from base " << base->getName() ;
+             ; 
 
 
     // 1st pass traversal : counts vertices and faces
