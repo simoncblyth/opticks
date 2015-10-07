@@ -72,10 +72,10 @@
 //
 //                 group 0
 //                     acceleration
-//                     xform_0
-//                           repeated
+//                     xform_0 
+//                           repeated (GeometryGroup)
 //                     xform_1
-//                           repeated
+//                           repeated (GeometryGroup)
 //                     ...
 // 
 //                 group 1
@@ -86,6 +86,18 @@
 //
 //
 //                  where repeated contains single gi (GeometryInstance) 
+//
+//
+//  With instancing and ability to identify the intersected instance
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//   Need to be able to assign an index to each instance ...
+//   means need a GeometryInstance beneath the xform ? 
+//
+//   The transform must be assigned exactly one child of type rtGroup, rtGeometryGroup, rtTransform, or rtSelector,
+//
+//
+//
 //
 //  TODO:
 //     Currently all the accelerations are using Sbvh/Bvh.
@@ -125,7 +137,9 @@ void OGeo::convert()
         assert(mm);
         if( i == 0 )
         {
-            optix::GeometryInstance gi = makeGeometryInstance(mm);
+            optix::Geometry gmm = makeGeometry(mm);
+            optix::Material mat = makeMaterial();
+            optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
             m_geometry_group->addChild(gi);
         }
         else
@@ -173,11 +187,16 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 
     float* tptr = (float*)tbuf->getPointer(); 
 
-    optix::Group group = m_context->createGroup();
-    group->setChildCount(numTransforms);
 
-    optix::GeometryInstance gi = makeGeometryInstance(mm); 
+    optix::Group assembly = m_context->createGroup();
+    assembly->setChildCount(numTransforms);
+
     optix::GeometryGroup repeated = m_context->createGeometryGroup();
+
+    optix::Geometry gmm = makeGeometry(mm);
+    optix::Material mat = makeMaterial();
+    optix::GeometryInstance gi = makeGeometryInstance(gmm, mat); 
+
     repeated->addChild(gi);
     repeated->setAcceleration( makeAcceleration() );
 
@@ -185,14 +204,34 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
     for(unsigned int i=0 ; i<numTransforms ; i++)
     {
         optix::Transform xform = m_context->createTransform();
-        group->setChild(i, xform);
+        assembly->setChild(i, xform);
         xform->setChild(repeated);
         const float* tdata = tptr + 16*i ; 
         optix::Matrix4x4 m(tdata) ;
         xform->setMatrix(transpose, m.getData(), 0);
         //dump("OGeo::makeRepeatedGroup", m.getData());
     }
-    return group ;
+    return assembly ;
+
+   /*
+          assembly        (Group) 
+             xform        (Transform)
+               repeated   (GeometryGroup)
+                  gi      (GeometryInstance)      the same gi is child of the numTransform xform 
+                     gmm  (Geometry)
+                     mat  (Material) 
+             xform        (Transform)
+               repeated   (GeometryGroup)
+                  gi      (GeometryInstance)      the same gi is child of the numTransform xform 
+                     gmm  (Geometry)
+                     mat  (Material) 
+             ...
+
+
+                    
+
+   */
+
 }
 
 
@@ -221,21 +260,24 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
     return acceleration ; 
 }
 
-
-optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
+optix::Material OGeo::makeMaterial()
 {
-    LOG(debug) << "OGeo::makeGeometryInstance material1  " ; 
-
     optix::Material material = m_context->createMaterial();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
     material->setClosestHitProgram(OEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
     material->setClosestHitProgram(OEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
+    return material ; 
+}
+
+
+
+
+optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, optix::Material material)
+{
+    LOG(debug) << "OGeo::makeGeometryInstance material1  " ; 
 
     std::vector<optix::Material> materials ;
     materials.push_back(material);
-
-    optix::Geometry geometry = makeGeometry(mergedmesh) ;  
-
     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
 
     return gi ;
@@ -390,18 +432,5 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
 
    return buffer ; 
 }
-
-
-/*
-optix::float3 OGeo::getMin()
-{
-    return optix::make_float3(0.f, 0.f, 0.f); 
-}
-
-optix::float3 OGeo::getMax()
-{
-    return optix::make_float3(0.f, 0.f, 0.f); 
-}
-*/
 
 

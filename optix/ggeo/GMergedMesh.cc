@@ -92,12 +92,10 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     GSensor* sensor = solid->getSensor();
     GMesh* mesh = solid->getMesh();
 
-
     unsigned int nodeIndex = node->getIndex();
     unsigned int meshIndex = mesh->getIndex();
     unsigned int boundaryIndex = boundary->getIndex();
     unsigned int sensorIndex = GSensor::RefIndex(sensor) ; 
-
     
     LOG(debug) << "GMergedMesh::traverse"
               << " nodeIndex " << nodeIndex
@@ -105,14 +103,11 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
               << " sensor " << ( sensor ? sensor->description() : "NULL" )
               ;
 
-
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
 
-
     GNode* parent = node->getParent();
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
-
 
     // using repeat index labelling in the tree
     bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;

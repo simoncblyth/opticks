@@ -729,3 +729,37 @@ instance island ?
       the other PerRayData results you generated into the output 
       buffer you select with the PerRayData objectID.
 
+
+
+::
+
+    In [1]: i = np.load("identity.npy")
+
+    In [2]: i
+    Out[2]: 
+    array([[3199,   47,   19,    1],
+           [3200,   46,   20,    2],
+           [3201,   43,   21,    3],
+           [3202,   44,    1,    4],
+           [3203,   45,    1,    5]], dtype=uint32)
+
+    #  hmm those boundary 1 look wrong ? Rock inside the PMT ?  off-by-one problem ?
+
+    boundary : index  0 x6   0 019d50af046b6733287e43af2e8f7fa2 Vacuum/Vacuum/-/- 
+    boundary : index  1 x6   6 1c71e6371ce86dec9ed4f0e2395f1933 Rock/Vacuum/-/- 
+    boundary : index 18 x6 108 77a84102a9c397d91eed17b2bc0988ce GdDopedLS/LiquidScintillator/-/- 
+    boundary : index 19 x6 114 b609b4350dfeebd16df30bc7c0132459 Pyrex/MineralOil/-/- 
+    boundary : index 20 x6 120 05fb49644888940aab8eb466d69d3693 Vacuum/Pyrex/-/- 
+    boundary : index 21 x6 126 31ec4ad900fe9b40be261fa11af380b7 Bialkali/Vacuum/-/lvPmtHemiCathodeSensorSurface 
+    boundary : index 22 x6 132 df883e53b3d96edda237a45ba82a0e94 UnstStainlessSteel/MineralOil/-/- 
+
+Does OpaqueVacuum have same properties as Rock ?::
+
+    [2015-Oct-07 16:35:33.313017]:info: AssimpGGeo::convertStructureVisit nodeIndex   3199 ( mti   68 mt 0x7fd03def9750 )                Pyrex ( mti_p   59 mt_p 0x7fd040460690 )           MineralOil ( msi   47 mesh 0x7fd03ded9840 ) pmt-hemi0xc0fed90
+    [2015-Oct-07 16:35:33.313442]:info: AssimpGGeo::convertStructureVisit nodeIndex   3200 ( mti   76 mt 0x7fd040453ff0 )               Vacuum ( mti_p   68 mt_p 0x7fd03def9750 )                Pyrex ( msi   46 mesh 0x7fd04044cbc0 ) pmt-hemi-vac0xc21e248
+    [2015-Oct-07 16:35:33.314093]:info: AssimpGGeo::convertStructureVisit nodeIndex   3201 ( mti   48 mt 0x7fd03874b5e0 )             Bialkali ( mti_p   76 mt_p 0x7fd040453ff0 )               Vacuum ( msi   43 mesh 0x7fd03dee03c0 ) pmt-hemi-cathode0xc2f1ce8
+    [2015-Oct-07 16:35:33.314487]:info: AssimpGGeo::convertStructureVisit nodeIndex   3202 ( mti   64 mt 0x7fd03dec5580 )         OpaqueVacuum ( mti_p   76 mt_p 0x7fd040453ff0 )               Vacuum ( msi   44 mesh 0x7fd0403e6940 ) pmt-hemi-bot0xc22a958
+    [2015-Oct-07 16:35:33.314863]:info: AssimpGGeo::convertStructureVisit nodeIndex   3203 ( mti   64 mt 0x7fd03dec5580 )         OpaqueVacuum ( mti_p   76 mt_p 0x7fd040453ff0 )               Vacuum ( msi   45 mesh 0x7fd03def9290 ) pmt-hemi-dynode0xc346c50
+
+
+

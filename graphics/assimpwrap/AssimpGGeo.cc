@@ -749,6 +749,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     if(!pnode) pnode=node ; 
 
     unsigned int nodeIndex = node->getIndex();
+    bool dbg = nodeIndex >= 3199 && nodeIndex <=3203 ; 
 
     aiMatrix4x4 g = node->getGlobalTransform();
     GMatrixF* gtransform = new GMATRIXF(g) ;
@@ -778,11 +779,14 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GMaterial* mt_p = gg->getMaterial(mti_p);
 
     //printf("AssimpGGeo::convertStructureVisit nodeIndex %d (mti %u mt %p) (mti_p %u mt_p %p) (msi %u mesh %p) \n", nodeIndex, mti, mt, mti_p, mt_p,  msi, mesh  );
-    LOG(debug) << "AssimpGGeo::convertStructureVisit" 
+    if(dbg)
+    LOG(info) << "AssimpGGeo::convertStructureVisit" 
                << " nodeIndex " << std::setw(6) << nodeIndex
-               << " ( mti " << std::setw(4) << mti << " mt " << (void*)mt << " ) " 
+               << " ( mti " << std::setw(4) << mti << " mt " << (void*)mt << " ) "
+               << std::setw(20) << ( mt ? mt->getShortName() : "-" ) 
                << " ( mti_p " << std::setw(4) << mti_p << " mt_p " << (void*)mt_p << " ) " 
-               << " ( msi " << std::setw(4) << msi << " mesh " << (void*)mesh << " ) " 
+               << std::setw(20) << ( mt_p ? mt_p->getShortName() : "-" )
+               << " ( msi " << std::setw(4) << msi << " mesh " << (void*)mesh << " ) " << ( mesh ? mesh->getName() : "-" )
                ;  
 
     GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, NULL, NULL ); // boundary and sensor start NULL
