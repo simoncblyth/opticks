@@ -101,6 +101,9 @@ inline void FrameCfg<Listener>::init()
        ("trivial",  "swap OptiX generate program with trivial standin for debugging") ;
 
    m_desc.add_options()
+       ("simplify",  "simplify OptiX geometry for debugging") ;
+
+   m_desc.add_options()
        ("geocenter",  "center view on geometry rather than the default genstep centering") ;
 
 

@@ -235,6 +235,7 @@ optix::GeometryInstance OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
     materials.push_back(material);
 
     optix::Geometry geometry = makeGeometry(mergedmesh) ;  
+
     optix::GeometryInstance gi = m_context->createGeometryInstance( geometry, materials.begin(), materials.end()  );  
 
     return gi ;
@@ -261,11 +262,17 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 optix::Geometry OGeo::makeSimplifiedGeometry(GMergedMesh* mergedmesh)
 {
-    LOG(warning) << "OGeo::makeSimplifiedGeometry " ; 
-    return makeTriangulatedGeometry(mergedmesh);
-
     // replacing instance1 with a sphere positioned to match the cathode front face
-    // no triangles...  need a sphere buffer  
+
+    LOG(warning) << "OGeo::makeSimplifiedGeometry " ; 
+    assert(mergedmesh->getIndex() == 1 ); 
+    optix::Geometry geometry = m_context->createGeometry();
+    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+    geometry->setPrimitiveCount( 1 );
+    geometry->setIntersectionProgram(cfg->createProgram("sphere.cu.ptx", "intersect"));
+    geometry->setBoundingBoxProgram(cfg->createProgram("sphere.cu.ptx", "bounds"));
+    geometry["sphere"]->setFloat( 0, 0, 0, 131.f );  //   PmtHemiFaceROC
+    return geometry ; 
 }
 
 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mergedmesh)

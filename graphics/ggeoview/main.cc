@@ -215,6 +215,7 @@ class App {
        void seedPhotonsFromGensteps();
        void initRecords();
   public:
+       void simplifyOptiXGeometry();
        void prepareEngine();
        void propagate();
        void downloadEvt();
@@ -968,6 +969,18 @@ void App::initRecords()
     (*m_timer)("initRecords"); 
 }
 
+
+void App::simplifyOptiXGeometry()
+{
+    bool simplify    = m_fcfg->hasOpt("simplify");
+    if(!simplify) return ;
+ 
+    GMergedMesh* mm = m_ggeo->getMergedMesh(1) ;
+    if(!mm) return ;
+
+    mm->setGeoCode('S');
+}
+
 void App::prepareEngine()
 {
     bool compute    = m_fcfg->hasOpt("compute"); 
@@ -980,6 +993,7 @@ void App::prepareEngine()
     OEngine::Mode_t mode = compute ? OEngine::COMPUTE : OEngine::INTEROP ; 
 
     const char* idpath = m_cache->getIdPath();
+
 
     assert( mode == OEngine::INTEROP && "OEngine::COMPUTE mode not operational"); 
     m_engine = new OEngine(mode) ;       
@@ -1527,6 +1541,8 @@ int main(int argc, char** argv)
         app.seedPhotonsFromGensteps();
 
         app.initRecords();
+
+        app.simplifyOptiXGeometry();
 
         app.prepareEngine();
 

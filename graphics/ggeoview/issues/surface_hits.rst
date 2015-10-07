@@ -568,3 +568,164 @@ Note identity relative transform for 1st three::
 
 
 
+Analytic OptiX geometry 
+------------------------
+
+Per triangle buffers with boundaries, nodes and sensors are used by TriangleMesh to set attributes based on primIdx::
+
+    In [1]: b = np.load("boundaries.npy")
+
+    In [2]: b
+    Out[2]: 
+    array([[11],
+           [11],
+           [11],
+           ..., 
+           [12],
+           [12],
+           [12]], dtype=int32)
+
+    In [3]: b.shape
+    Out[3]: (434816, 1)
+
+    In [4]: n = np.load("nodes.npy")
+
+    In [5]: n.shape
+    Out[5]: (434816, 1)
+
+    In [6]: n
+    Out[6]: 
+    array([[ 3153],
+           [ 3153],
+           [ 3153],
+           ..., 
+           [12220],
+           [12220],
+           [12220]], dtype=int32)
+
+    In [7]: s = np.load("sensors.npy")
+
+    In [8]: s.shape
+    Out[8]: (434816, 1)
+
+    In [9]: s
+    Out[9]: 
+    array([[3154],
+           [3154],
+           [3154],
+           ..., 
+
+
+Whats the equivalent for instanced analytic geometry ? 
+
+In the full analytic treatment might have 10-20 primitives per instance
+arranged into a CSG tree of boolean operations and transforms.
+Although there are only 5 volumes there are multiple primitives (spheres, cones, boxes)
+inside each.
+
+On top of identifying the primitive also have the instance index.
+
+So need an analytic index::
+
+    instance_index*numPrim + prim_index
+
+
+
+Triangulated Case
+-------------------
+
+OGeo.cc::
+
+    283     optix::Geometry geometry = m_context->createGeometry();
+    284     RayTraceConfig* cfg = RayTraceConfig::getInstance();
+    285     geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
+    286     geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
+    ...
+    296     geometry->setPrimitiveCount(numFaces);
+
+
+Gross structure of geometry communicated to OptiX by returning
+bounding boxes from the *BoundingBoxProgram* for each primIdx. 
+The range of primIdx is specified by *setPrimitiveCount* 
+
+When a ray intersects with a bbox the associated *primIdx* is 
+used to invoke the *IntersectionProgram* which 
+reports the parametric t with *rtPotentialIntersection(t)*
+
+cu/TriangleMesh.cu::
+
+    96 RT_PROGRAM void mesh_bounds (int primIdx, float result[6])
+    34 RT_PROGRAM void mesh_intersect(int primIdx)
+
+
+With instanced geometry::
+
+    166 optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
+    167 {
+    168     GBuffer* tbuf = mm->getITransformsBuffer();
+    169     unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
+    170     assert(tbuf && numTransforms > 0);
+    171 
+    172     LOG(info) << "OGeo::makeRepeatedGroup numTransforms " << numTransforms ;
+    173 
+    174     float* tptr = (float*)tbuf->getPointer();
+    175 
+    176     optix::Group group = m_context->createGroup();
+    177     group->setChildCount(numTransforms);
+    178 
+    179     optix::GeometryInstance gi = makeGeometryInstance(mm);
+    180     optix::GeometryGroup repeated = m_context->createGeometryGroup();
+    181     repeated->addChild(gi);
+    182     repeated->setAcceleration( makeAcceleration() );
+    ///
+    ///   can an id be planted in GeometryGroup  ?
+    ///   seems not but can with GeometryInstance according to docs, 
+    ///   so need to adjust to having a GeometryInstance for every xform
+    ///   to plant an instance index
+    ///
+    183 
+    184     bool transpose = true ;
+    185     for(unsigned int i=0 ; i<numTransforms ; i++)
+    186     {
+    187         optix::Transform xform = m_context->createTransform();
+    188         group->setChild(i, xform);
+    189         xform->setChild(repeated);
+    190         const float* tdata = tptr + 16*i ;
+    191         optix::Matrix4x4 m(tdata) ;
+    192         xform->setMatrix(transpose, m.getData(), 0);
+    193         //dump("OGeo::makeRepeatedGroup", m.getData());
+    194     }
+    195     return group ;
+    196 }
+        
+
+Hmm how with instanced geometry to know which instance was 
+landed on, because all the geometry info lives within the
+instance island ? 
+
+* https://devtalk.nvidia.com/default/topic/541450/?comment=3791463
+
+::
+
+    Is there an easy way to know withing the closest hit or any hit program which
+    object was hit? I'd prefer to use a single material for all but can encode the
+    information into the material. I do however wish to use the same hit program to
+    be flexible with the number of objects.
+
+
+    (Detlef Roettger)
+    This should be pretty easy, if there aren't any other circumstances involved.
+
+    - If you have exactly one Transform node per object, 
+      let your Material have a variable rtDeclareVariable(unsigned int, objectID, , );
+    - In your given node hierarchy you load the Geometry only once, 
+      but assign different Material parameters (=> objectID) per hierarchy path 
+      to each GeometryInstance (i.e. per Transform) to identify the Geometry as you wish.
+    - To report back to the ray generation program that you hit a specific object, 
+      add a member unsigned int objectID; to your custom PerRayData payload.
+    - Inside the closest-hit program write the objectID from the material 
+      into the objectID of the current ray payload. 
+    - Inside the ray generation program add a switch-case which writes 
+      the other PerRayData results you generated into the output 
+      buffer you select with the PerRayData objectID.
+
