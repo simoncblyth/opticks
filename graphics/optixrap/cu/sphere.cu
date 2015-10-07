@@ -5,8 +5,10 @@
 using namespace optix;
 
 rtDeclareVariable(float4,  sphere, , );
+rtDeclareVariable(unsigned int,  instanceIdx, , );
 
 
+rtBuffer<uint4> identityBuffer; 
 
 // attribute variables must be set 
 // inbetween rtPotentialIntersection and rtReportIntersection
@@ -26,8 +28,11 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 template<bool use_robust_method>
 static __device__
-void intersect_sphere(void)
+void intersect_sphere(int primIdx)
 {
+  //uint4 identity = identityBuffer[primIdx];
+  uint4 identity = identityBuffer[2];
+
   float3 center = make_float3(sphere);
   float3 O = ray.origin - center;
   float3 D = ray.direction;
@@ -64,6 +69,11 @@ void intersect_sphere(void)
     bool check_second = true;
     if( rtPotentialIntersection( root1 + root11 ) ) {
       shading_normal = geometric_normal = (O + (root1 + root11)*D)/radius;
+
+      nodeIndex = identity.x ;
+      boundaryIndex = identity.z ;
+      sensorIndex = identity.w ;
+
       if(rtReportIntersection(0))
         check_second = false;
     } 
@@ -71,6 +81,11 @@ void intersect_sphere(void)
       float root2 = (-b + sdisc) + (do_refine ? root1 : 0);
       if( rtPotentialIntersection( root2 ) ) {
         shading_normal = geometric_normal = (O + root2*D)/radius;
+
+        nodeIndex = identity.x ;
+        boundaryIndex = identity.z ;
+        sensorIndex = identity.w ;
+
         rtReportIntersection(0);
       }
     }
@@ -80,17 +95,17 @@ void intersect_sphere(void)
 
 RT_PROGRAM void intersect(int primIdx)
 {
-  intersect_sphere<false>();
+  intersect_sphere<false>(primIdx);
 }
 
 
 RT_PROGRAM void robust_intersect(int primIdx)
 {
-  intersect_sphere<true>();
+  intersect_sphere<true>(primIdx);
 }
 
 
-RT_PROGRAM void bounds (int, float result[6])
+RT_PROGRAM void bounds (int primIdx, float result[6])
 {
   const float3 cen = make_float3( sphere );
   const float3 rad = make_float3( sphere.w );

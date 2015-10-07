@@ -177,8 +177,12 @@ void OGeo::convert()
 }
 
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
+
+
+
+optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 {
+    assert(0);
     GBuffer* tbuf = mm->getITransformsBuffer();
     unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
     assert(tbuf && numTransforms > 0);
@@ -187,16 +191,13 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 
     float* tptr = (float*)tbuf->getPointer(); 
 
-
     optix::Group assembly = m_context->createGroup();
     assembly->setChildCount(numTransforms);
 
     optix::GeometryGroup repeated = m_context->createGeometryGroup();
-
     optix::Geometry gmm = makeGeometry(mm);
     optix::Material mat = makeMaterial();
     optix::GeometryInstance gi = makeGeometryInstance(gmm, mat); 
-
     repeated->addChild(gi);
     repeated->setAcceleration( makeAcceleration() );
 
@@ -214,25 +215,91 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
     return assembly ;
 
    /*
+   Before instance ID possible
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
           assembly        (Group) 
-             xform        (Transform)
-               repeated   (GeometryGroup)
-                  gi      (GeometryInstance)      the same gi is child of the numTransform xform 
+             xform_0      (Transform)
+
+               repeated   (GeometryGroup)         exact same repeated group is child of all xform
+                  gi      (GeometryInstance)     
                      gmm  (Geometry)
                      mat  (Material) 
-             xform        (Transform)
+
+             xform_1      (Transform)
+
                repeated   (GeometryGroup)
-                  gi      (GeometryInstance)      the same gi is child of the numTransform xform 
+                  gi      (GeometryInstance)    
                      gmm  (Geometry)
                      mat  (Material) 
              ...
 
-
-                    
-
    */
 
 }
+
+
+
+
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
+{
+    GBuffer* tbuf = mm->getITransformsBuffer();
+    unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
+    assert(tbuf && numTransforms > 0);
+
+    LOG(info) << "OGeo::makeRepeatedGroup numTransforms " << numTransforms ; 
+
+    float* tptr = (float*)tbuf->getPointer(); 
+
+    optix::Group assembly = m_context->createGroup();
+    assembly->setChildCount(numTransforms);
+
+    optix::Geometry gmm = makeGeometry(mm);
+    optix::Material mat = makeMaterial();
+
+    bool transpose = true ; 
+    for(unsigned int i=0 ; i<numTransforms ; i++)
+    {
+        optix::Transform xform = m_context->createTransform();
+        assembly->setChild(i, xform);
+
+        // proliferating *pergi* so can assign an instance index to it 
+        optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
+        pergi["instanceIdx"]->setUint( i );
+
+        optix::GeometryGroup perxform = m_context->createGeometryGroup();
+        perxform->addChild(pergi);
+        perxform->setAcceleration( makeAcceleration() );
+
+        xform->setChild(perxform);
+
+        const float* tdata = tptr + 16*i ; 
+        optix::Matrix4x4 m(tdata) ;
+        xform->setMatrix(transpose, m.getData(), 0);
+        //dump("OGeo::makeRepeatedGroup", m.getData());
+    }
+    return assembly ;
+
+/*
+   After instance ID possible
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+          assembly        (Group) 
+             xform        (Transform)
+               perxform   (GeometryGroup)
+                 pergi    (GeometryInstance)      
+                     gmm  (Geometry)               the same gmm and mat are child of all xform/perxform/pergi
+                     mat  (Material) 
+             xform        (Transform)
+               perxform   (GeometryGroup)
+                  pergi   (GeometryInstance)      
+                     gmm  (Geometry)
+                     mat  (Material) 
+             ...
+*/
+}
+
+
 
 
 void OGeo::dump(const char* msg, const float* f)
@@ -308,12 +375,23 @@ optix::Geometry OGeo::makeSimplifiedGeometry(GMergedMesh* mergedmesh)
 
     LOG(warning) << "OGeo::makeSimplifiedGeometry " ; 
     assert(mergedmesh->getIndex() == 1 ); 
+
+    unsigned int nsolids = mergedmesh->getNumSolids();
+    assert( nsolids < 10 ); // expecting small number
+    nsolids = 1 ; // override, as think getting 5 spheres on top of each other
+
     optix::Geometry geometry = m_context->createGeometry();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    geometry->setPrimitiveCount( 1 );
+    geometry->setPrimitiveCount( nsolids );
     geometry->setIntersectionProgram(cfg->createProgram("sphere.cu.ptx", "intersect"));
     geometry->setBoundingBoxProgram(cfg->createProgram("sphere.cu.ptx", "bounds"));
+
     geometry["sphere"]->setFloat( 0, 0, 0, 131.f );  //   PmtHemiFaceROC
+
+    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( mergedmesh->getIdentityBuffer(), RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
+    geometry["identityBuffer"]->setBuffer(identityBuffer);
+
+
     return geometry ; 
 }
 
