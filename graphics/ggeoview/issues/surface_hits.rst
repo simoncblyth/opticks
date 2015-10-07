@@ -512,6 +512,58 @@ How to try some simple replacement cathode ?
     OGeo::makeGeometryInstance(GMergedMesh* mergedmesh)
 
 
+Five volumes within repeated PMT instance::
+
+    [2015-Oct-07 12:26:54.103163]:info: GGeo::dumpNodeInfo mmindex 1 solids 5
+        720    362   3199   3155 lv            __dd__Geometry__PMT__lvPmtHemi0xc133740 pv __dd__Geometry__AD__lvOIL--pvAdPmtArray--pvAdPmtA.......--pvAdPmtUnit--pvAdPmt0xc2a6b40  
+        672    338   3200   3199 lv      __dd__Geometry__PMT__lvPmtHemiVacuum0xc2c7cc8 pv __dd__Geometry__PMT__lvPmtHemi--pvPmtHemiVacuum0xc1340e8  
+        960    482   3201   3200 lv     __dd__Geometry__PMT__lvPmtHemiCathode0xc2cdca0 pv __dd__Geometry__PMT__lvPmtHemiVacuum--pvPmtHemiCathode0xc02c380  
+        480    242   3202   3200 lv      __dd__Geometry__PMT__lvPmtHemiBottom0xc12ad60 pv __dd__Geometry__PMT__lvPmtHemiVacuum--pvPmtHemiBottom0xc21de78  
+         96     50   3203   3200 lv      __dd__Geometry__PMT__lvPmtHemiDynode0xc02b280 pv __dd__Geometry__PMT__lvPmtHemiVacuum--pvPmtHemiDynode0xc04ad28  
+
+
+Note identity relative transform for 1st three::
+
+    In [5]: n = np.load("nodeinfo.npy")
+
+    In [6]: n
+    Out[6]: 
+    array([[ 720,  362, 3199, 3155],
+           [ 672,  338, 3200, 3199],
+           [ 960,  482, 3201, 3200],
+           [ 480,  242, 3202, 3200],
+           [  96,   50, 3203, 3200]], dtype=uint32)
+
+
+
+    In [1]: t = np.load("transforms.npy")
+
+    In [4]: t.reshape(-1,4,4)
+    Out[4]: 
+    array([[[  1. ,   0. ,   0. ,   0. ],
+            [  0. ,   1. ,   0. ,   0. ],
+            [  0. ,   0. ,   1. ,   0. ],
+            [  0. ,   0. ,   0. ,   1. ]],
+
+           [[  1. ,   0. ,   0. ,   0. ],
+            [  0. ,   1. ,   0. ,   0. ],
+            [  0. ,   0. ,   1. ,   0. ],
+            [  0. ,   0. ,   0. ,   1. ]],
+
+           [[  1. ,   0. ,   0. ,   0. ],
+            [  0. ,   1. ,   0. ,   0. ],
+            [  0. ,   0. ,   1. ,   0. ],
+            [  0. ,   0. ,   0. ,   1. ]],
+
+           [[  1. ,   0. ,   0. ,   0. ],
+            [  0. ,   1. ,   0. ,   0. ],
+            [  0. ,   0. ,   1. ,   0. ],
+            [  0. ,   0. ,  69. ,   1. ]],
+
+           [[  1. ,   0. ,   0. ,   0. ],
+            [  0. ,   1. ,   0. ,   0. ],
+            [  0. ,   0. ,   1. ,   0. ],
+            [  0. ,   0. , -81.5,   1. ]]], dtype=float32)
 
 
 

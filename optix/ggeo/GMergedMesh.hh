@@ -1,6 +1,9 @@
 #pragma once
 
 #include <map>
+#include <vector>
+#include <string>
+
 class GGeo ; 
 class GNode ;
 

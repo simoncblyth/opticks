@@ -204,6 +204,16 @@ void GGeo::loadFromCache()
     }
 }
 
+const char* GGeo::getPVName(unsigned int index)
+{
+    return m_pvlist ? m_pvlist->getItem(index).c_str() : NULL ; 
+}
+const char* GGeo::getLVName(unsigned int index)
+{
+    return m_lvlist ? m_lvlist->getItem(index).c_str() : NULL ; 
+}
+
+
 
 void GGeo::save(const char* idpath)
 {
@@ -852,6 +862,30 @@ void GGeo::dumpStats(const char* msg)
     printf("  vtotVertices %9d vtotFaces %9d (virtual: scaling by transforms)\n", vtotVertices, vtotFaces );
     printf("  vfacVertices %9.3f vfacFaces %9.3f (virtual to total ratio)\n", float(vtotVertices)/float(totVertices), float(vtotFaces)/float(totFaces) );
 }
+
+
+void GGeo::dumpNodeInfo(unsigned int mmindex, const char* msg)
+{
+    GMergedMesh* mm = getMergedMesh(mmindex);
+    guint4* nodeinfo = mm->getNodeInfo(); 
+
+    unsigned int nso = mm->getNumSolids() ;
+
+    LOG(info) << msg 
+              << " mmindex " << mmindex  
+              << " solids " << nso 
+              ; 
+
+    for(unsigned int i=0 ; i < nso ; i++)
+    {
+         guint4 ni = *(nodeinfo+i)  ;   
+         const char* pv = getPVName(ni.z);
+         const char* lv = getLVName(ni.z);
+         printf( " %6d %6d %6d %6d lv %50s pv %s  \n", ni.x , ni.y, ni.z, ni.w, lv, pv );
+    }
+
+}
+
 
 
 

@@ -539,6 +539,10 @@ int App::loadGeometry()
     m_ggeo->dumpStats("App::loadGeometry");
     //m_ggeo->dumpTree("App::loadGeometry");
 
+    for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++)
+        m_ggeo->dumpNodeInfo(i);
+
+
     checkGeometry();
 
 

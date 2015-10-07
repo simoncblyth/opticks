@@ -273,6 +273,7 @@ class GMesh : public GDrawable {
 
   private: 
       std::vector<unsigned int> m_distinct_boundaries ;
+
   //////////////////////////////////////////////////////////////// 
 
   public:

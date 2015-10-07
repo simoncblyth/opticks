@@ -56,6 +56,9 @@ class GGeo {
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
 
+        const char* getPVName(unsigned int index);
+        const char* getLVName(unsigned int index);
+
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode();  
 
@@ -69,7 +72,6 @@ class GGeo {
     private:
         void saveMergedMeshes(const char* idpath);
     public:
-        void dumpStats(const char* msg="GGeo::dumpStats");
         unsigned int getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
     public:
@@ -78,6 +80,8 @@ class GGeo {
         glm::vec4 getCenterExtent(unsigned int target, unsigned int merged_mesh_index=0u );
         void dumpTree(const char* msg="GGeo::dumpTree");  
         void dumpVolume(unsigned int index, const char* msg="GGeo::dumpVolume");  
+        void dumpNodeInfo(unsigned int mmindex, const char* msg="GGeo::dumpNodeInfo" );
+        void dumpStats(const char* msg="GGeo::dumpStats");
 
         // merged mesh buffer offsets and counts
         //
