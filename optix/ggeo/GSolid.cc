@@ -23,7 +23,7 @@ void GSolid::setSensor(GSensor* sensor)
 {
     m_sensor = sensor ; 
     // every triangle needs a value... use 0 to mean unset, so sensor   
-    setSensorIndices( sensor ? sensor->getIndex1() : GSensor::UNSET_INDEX  );
+    setSensorIndices( GSensor::RefIndex(sensor) );
 }
 
 

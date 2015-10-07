@@ -869,7 +869,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     GSensorList* sens = gg->getSensorList();  
 
-    GSensor* sensor = sens->getSensor( nodeIndex ); 
+    GSensor* sensor = sens->findSensorForNode( nodeIndex ); 
 
     solid->setSensor( sensor );  
  

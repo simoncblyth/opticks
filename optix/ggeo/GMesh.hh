@@ -97,6 +97,7 @@ class GMesh : public GDrawable {
 
       // per-face
       static const char* indices ; 
+
       static const char* nodes ; 
       static const char* boundaries ; 
       static const char* sensors ; 
@@ -107,6 +108,8 @@ class GMesh : public GDrawable {
       static const char* transforms ;    
       static const char* meshes ;        // mesh indices
       static const char* nodeinfo ;      // nface,nvert,?,? per solid : allowing solid selection beyond the geocache
+
+      static const char* identity ;      // guint4: node, mesh, boundary, sensor : aiming to replace uint nodes/boundaries/sensors/meshes
 
       // per instance global transforms of repeated geometry 
       static const char* itransforms ;    
@@ -217,6 +220,7 @@ class GMesh : public GDrawable {
       void setRTransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
       void setNodeInfoBuffer(GBuffer* buffer);
+      void setIdentityBuffer(GBuffer* buffer);
 
   public:
       bool hasTransformsBuffer(); 
@@ -237,6 +241,7 @@ class GMesh : public GDrawable {
       GBuffer* getTransformsBuffer();
       GBuffer* getMeshesBuffer();
       GBuffer* getNodeInfoBuffer();
+      GBuffer* getIdentityBuffer();
 
       GBuffer* getITransformsBuffer();
       GBuffer* getRTransformsBuffer();
@@ -255,6 +260,7 @@ class GMesh : public GDrawable {
       virtual unsigned int*  getBoundaries();
       virtual unsigned int*  getSensors();
       virtual guint4*  getNodeInfo();
+      virtual guint4*  getIdentity();
 
       virtual GBuffer* getNodesBuffer();
       virtual GBuffer* getBoundariesBuffer();
@@ -293,6 +299,7 @@ class GMesh : public GDrawable {
       void setTransforms(float* transforms);
       void setMeshes(unsigned int* meshes);
       void setNodeInfo(guint4* nodeinfo);
+      void setIdentity(guint4* identity);
 
   public:
       void setColor(float r, float g, float b);
@@ -343,7 +350,7 @@ class GMesh : public GDrawable {
       float*          m_rtransforms ; 
       unsigned int*   m_meshes ; 
       guint4*         m_nodeinfo ; 
-
+      guint4*         m_identity ; 
 
 
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
@@ -371,6 +378,7 @@ class GMesh : public GDrawable {
       GBuffer* m_rtransforms_buffer ;
       GBuffer* m_meshes_buffer ;
       GBuffer* m_nodeinfo_buffer ;
+      GBuffer* m_identity_buffer ;
 
 
 };
@@ -392,6 +400,7 @@ inline void GMesh::deallocate()
     delete[] m_rtransforms ;  
     delete[] m_meshes ;  
     delete[] m_nodeinfo ;  
+    delete[] m_identity ;  
 
     // NB buffers and the rest are very lightweight 
 }
@@ -569,6 +578,11 @@ inline guint4* GMesh::getNodeInfo()
 {
     return m_nodeinfo ; 
 }
+inline guint4* GMesh::getIdentity()
+{
+    return m_identity ; 
+}
+
 
 
 inline unsigned int* GMesh::getBoundaries()
@@ -631,6 +645,14 @@ inline GBuffer*  GMesh::getNodeInfoBuffer()
 {
     return m_nodeinfo_buffer ;
 }
+inline GBuffer*  GMesh::getIdentityBuffer()
+{
+    return m_identity_buffer ;
+}
+
+
+
+
 inline GBuffer*  GMesh::getIndicesBuffer()
 {
     return m_indices_buffer ;

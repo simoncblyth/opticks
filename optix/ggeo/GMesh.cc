@@ -38,6 +38,7 @@ const char* GMesh::itransforms    = "itransforms" ;
 const char* GMesh::rtransforms    = "rtransforms" ;
 const char* GMesh::meshes         = "meshes" ;
 const char* GMesh::nodeinfo       = "nodeinfo" ;
+const char* GMesh::identity       = "identity" ;
 
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
@@ -59,6 +60,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(rtransforms); 
     names.push_back(meshes); 
     names.push_back(nodeinfo); 
+    names.push_back(identity); 
 }
 
 
@@ -93,6 +95,7 @@ GMesh::GMesh(GMesh* other)
      m_rtransforms_buffer(other->getRTransformsBuffer()),
      m_meshes_buffer(other->getMeshesBuffer()),
      m_nodeinfo_buffer(other->getNodeInfoBuffer()),
+     m_identity_buffer(other->getIdentityBuffer()),
      m_geocode(other->getGeoCode()),
      GDrawable()
 {
@@ -157,6 +160,8 @@ GMesh::GMesh(unsigned int index,
       m_meshes_buffer(NULL),
       m_nodeinfo(NULL),
       m_nodeinfo_buffer(NULL),
+      m_identity(NULL),
+      m_identity_buffer(NULL),
       m_geocode('T'),
       GDrawable()
 {
@@ -207,6 +212,7 @@ void GMesh::allocate()
     setBBox(new gbbox[numSolids]);
     setMeshes(new unsigned int[numSolids]);
     setNodeInfo(new guint4[numSolids]);
+    setIdentity(new guint4[numSolids]);
     setTransforms(new float[numSolids*16]);
 
 }
@@ -235,6 +241,7 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, rtransforms) == 0)     return m_rtransforms_buffer ; 
     if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
     if(strcmp(name, nodeinfo) == 0)        return m_nodeinfo_buffer ; 
+    if(strcmp(name, identity) == 0)        return m_identity_buffer ; 
 
     return NULL ;
 }
@@ -259,6 +266,7 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, rtransforms) == 0)     setRTransformsBuffer(buffer) ; 
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
     if(strcmp(name, nodeinfo) == 0)        setNodeInfoBuffer(buffer) ; 
+    if(strcmp(name, identity) == 0)        setIdentityBuffer(buffer) ; 
 }
 
 void GMesh::setVertices(gfloat3* vertices)
@@ -505,7 +513,26 @@ void GMesh::setNodeInfoBuffer(GBuffer* buffer)
 
 
 
+void GMesh::setIdentity(guint4* identity)  
+{
+    m_identity = identity ;  
+    assert(m_num_solids > 0);
+    unsigned int size = sizeof(guint4);
+    assert(size == sizeof(unsigned int)*4 );
+    m_identity_buffer = new GBuffer( size*m_num_solids, (void*)m_identity, size, 4 ); 
+}
+void GMesh::setIdentityBuffer(GBuffer* buffer) 
+{
+    m_identity_buffer = buffer ;  
+    if(!buffer) return ; 
 
+    m_identity = (guint4*)buffer->getPointer();
+    unsigned int numBytes = buffer->getNumBytes();
+    unsigned int size = sizeof(guint4);
+    assert(size == sizeof(unsigned int)*4 );
+    unsigned int numSolids = numBytes/size ;
+    setNumSolids(numSolids);
+}
 
 
 
@@ -1005,6 +1032,7 @@ bool GMesh::isUIntBuffer(const char* name)
     return 
            ( 
               strcmp( name, nodeinfo) == 0  ||
+              strcmp( name, identity) == 0  ||
               strcmp( name, meshes) == 0  
            );
 }

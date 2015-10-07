@@ -528,7 +528,7 @@ int App::loadGeometry()
     m_parameters->add<int>("repeatIdx", m_loader->getRepeatIndex() );
 
     GItemIndex* materials = m_loader->getMaterials();
-    materials->dump("App::loadGeometry materials from m_loader");
+    ////materials->dump("App::loadGeometry materials from m_loader");
 
     m_types->setMaterialsIndex(materials->getIndex());
 
@@ -650,8 +650,8 @@ void App::checkGeometry()
 
         const char* highlight = join ? "**" : "  " ; 
 
-        //bool dump = noise > 0 || tc > 1 || join ;
-        bool dump = true ; 
+        bool dump = noise > 0 || tc > 1 || join ;
+        //bool dump = true ; 
 
         if(dump)
             printf("  %4d (v%5d f%5d )%s(t%5d oe%5u) : x%10.3f : n%6d : n*v%7d : %40s : %s \n", meshIndex, nv, nf, highlight, tc, noise, ce.w, nodeCount, nodeCount*nv, shortName, nss.str().c_str() );

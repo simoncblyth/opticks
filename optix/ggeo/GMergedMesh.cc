@@ -3,6 +3,7 @@
 #include "GSolid.hh"
 #include "GBoundaryLib.hh"
 #include "GBoundary.hh"
+#include "GSensor.hh"
 
 #include "Timer.hpp"
 
@@ -87,13 +88,27 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
+    GBoundary* boundary = solid->getBoundary();
+    GSensor* sensor = solid->getSensor();
     GMesh* mesh = solid->getMesh();
 
+
+    unsigned int nodeIndex = node->getIndex();
     unsigned int meshIndex = mesh->getIndex();
+    unsigned int boundaryIndex = boundary->getIndex();
+    unsigned int sensorIndex = GSensor::RefIndex(sensor) ; 
+
+    
+    LOG(debug) << "GMergedMesh::traverse"
+              << " nodeIndex " << nodeIndex
+              << " sensorIndex " << sensorIndex
+              << " sensor " << ( sensor ? sensor->description() : "NULL" )
+              ;
+
+
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
 
-    unsigned int nodeIndex = node->getIndex();
 
     GNode* parent = node->getParent();
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
@@ -197,6 +212,12 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
         {
             assert(nodeIndex == m_cur_solid);
         }
+
+
+        m_identity[m_cur_solid].x = nodeIndex ; 
+        m_identity[m_cur_solid].y = meshIndex ; 
+        m_identity[m_cur_solid].z = boundaryIndex ; 
+        m_identity[m_cur_solid].w = sensorIndex ; 
 
         m_cur_solid += 1 ; 
     }

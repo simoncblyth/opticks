@@ -48,7 +48,6 @@ class GNode {
       //
       void setBoundaryIndices(unsigned int boundary_index);
       void setSensorIndices(unsigned int sensor_index);
-
   private:
       void setNodeIndices(unsigned int index); 
 

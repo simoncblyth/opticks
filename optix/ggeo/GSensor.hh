@@ -25,6 +25,7 @@ GSensor  index      9 idhex 1010102 iddec 16843010 node_index   3209 name /dd/Ge
 
 class GSensor {
    public:
+       static unsigned int RefIndex(GSensor* sensor);
        static const unsigned int UNSET_INDEX ;   
 
    public:
@@ -64,6 +65,10 @@ inline unsigned int GSensor::getIndex1()
     return m_index + 1 ; 
 }
 
+inline unsigned int GSensor::RefIndex(GSensor* sensor)
+{
+    return sensor ? sensor->getIndex1() : GSensor::UNSET_INDEX  ;
+}
 
 
 inline unsigned int GSensor::getNodeIndex()

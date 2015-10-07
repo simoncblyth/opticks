@@ -22,6 +22,8 @@ elif [ "${cmdline/--blib}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibTest)
 elif [ "${cmdline/--mblib}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibMetadataTest)
+elif [ "${cmdline/--sensor}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin GSensorListTest)
 else
    unset GGEOVIEW_BINARY 
 fi

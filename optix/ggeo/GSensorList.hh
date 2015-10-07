@@ -18,7 +18,6 @@ class GSensorList {
     public:
         GSensor* getSensor(unsigned int index);
         GSensor* findSensorForNode(unsigned int nodeIndex);
-
     private:
         void read(const char* path);
         void add(GSensor* sensor);
