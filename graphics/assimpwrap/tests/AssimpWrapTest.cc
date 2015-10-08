@@ -49,26 +49,22 @@ int main(int argc, char* argv[])
 {
     inilog();
 
-    GCache cache(argc > 1 ? argv[1] : "ASSIMPWRAP_" );
-
+    GCache cache("GGEOVIEW_");
     cache.Summary();
     
-    GGeo* ggeo = new GGeo(&cache);
+    GGeo* m_ggeo = new GGeo(&cache);
+    m_ggeo->setLoaderImp(&AssimpGGeo::load); 
+    m_ggeo->loadFromG4DAE();
+    m_ggeo->Summary("main");    
 
-    int rc = AssimpGGeo::load(ggeo);
+    m_ggeo->traverse();
 
-    assert(rc == 0);
+    GBoundaryLib* blib = m_ggeo->getBoundaryLib();
+    blib->Summary("GBoundaryLib");
+    blib->dumpSurfaces();
 
-    ggeo->Summary("main");    
 
-    GBoundaryLib* lib = ggeo->getBoundaryLib();
-
-    lib->Summary("GBoundaryLib");
-
-    ggeo->add_sensitive_surfaces();
-
-    GMergedMesh* mm = ggeo->makeMergedMesh();
-    
+    GMergedMesh* mm = m_ggeo->makeMergedMesh();
     mm->Summary("GMergedMesh");
 
 

@@ -146,9 +146,11 @@ class GGeo {
         // load idmap, traverse GNode tree calling GSolid::setSensor nodes with associated sensor identifier
         GSensorList*  getSensorList();
         void loadSensorList(const char* ext="idmap");
-        void add_sensitive_surfaces();
+
+    public:
+        void traverse(const char* msg="GGeo::traverse");
     private:
-        void sensitize_traverse(GNode* node, unsigned int depth);
+        void traverse(GNode* node, unsigned int depth);
  
     public:
         unsigned int getNumMeshes();

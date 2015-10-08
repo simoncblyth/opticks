@@ -49,6 +49,7 @@ class GBoundary {
       void Summary(const char* msg="GBoundary::Summary", unsigned int nline=0);
       char* pdigest(int ifr, int ito);
       std::string getPDigestString(int ifr, int ito);
+      std::string description();
 
   public:
       unsigned int getIndex();

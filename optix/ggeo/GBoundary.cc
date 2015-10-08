@@ -2,9 +2,17 @@
 #include "GPropertyMap.hh"
 #include "md5digest.hpp"
 
+#include <sstream>
+#include <iomanip>
+
 #include "stdio.h"
 #include "limits.h"
 #include "assert.h"
+
+
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
 
 
 
@@ -159,25 +167,33 @@ char* GBoundary::pdigest(int ifr, int ito)
 
 void GBoundary::Summary(const char* msg, unsigned int nline)
 {
-   assert(m_imaterial);
+   LOG(info) << msg 
+             << " " 
+             << description() 
+             ;
+}
 
+std::string GBoundary::description()
+{
+   assert(m_imaterial);
    char* dig = pdigest(0,4);
    const char* imat = m_imaterial->getShortName();
    const char* omat = m_omaterial->getShortName() ;
    const char* isur = m_isurface ? m_isurface->getShortName() : "" ; 
    const char* osur = m_osurface ? m_osurface->getShortName() : "" ; 
 
-   char bmat[512];
-   snprintf(bmat, 512,"%s/%s/%s/%s", imat, omat, isur, osur );  
-
-   printf("%s : index %2u x6 %3u %s %s \n", msg, m_index,m_index*6, dig, bmat);  
+   std::stringstream ss ; 
+   ss << " idx " << std::setw(2) << m_index 
+      << " x6 "  << std::setw(3) << m_index*6 
+      << std::setw(32) << dig 
+      << std::setw(20) << imat 
+      << std::setw(20) << omat 
+      << std::setw(20) << isur 
+      << std::setw(20) << osur 
+      ;
 
    free(dig);
-
-   //free(imat);
-   //free(omat);
-   //free(isur);
-   //free(osur);
+   return ss.str();
 }
 
 

@@ -365,9 +365,7 @@ class GMesh : public GDrawable {
       GBuffer* m_normals_buffer ;
       GBuffer* m_colors_buffer ;
       GBuffer* m_texcoords_buffer ;
-
       GBuffer* m_indices_buffer ;  // aka faces
-
       GBuffer* m_center_extent_buffer ;  
       GBuffer* m_bbox_buffer ;  
       GBuffer* m_nodes_buffer ;

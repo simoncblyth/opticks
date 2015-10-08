@@ -235,6 +235,7 @@ GBoundary* GBoundaryLib::getBoundary(unsigned int index)
 }
 
 
+
 unsigned int GBoundaryLib::getLineMin()
 {
     unsigned int lineMin = getLine(0, 0);
@@ -242,7 +243,6 @@ unsigned int GBoundaryLib::getLineMin()
 }
 unsigned int GBoundaryLib::getLineMax()
 {
-
     unsigned int numBoundary = getNumBoundary() ; 
     unsigned int lineMax = getLine(numBoundary - 1, NUM_QUAD-1);
     return lineMax ; 
@@ -253,17 +253,23 @@ void GBoundaryLib::Summary(const char* msg)
 {
     unsigned lmin = getLineMin();
     unsigned lmax = getLineMax();
-    printf("%s lineMin %d lineMax %d \n", msg, lmin, lmax );
-    char buf[128];
+
+    LOG(info) << msg 
+              << " lineMin " << std::setw(3) << lmin 
+              << " lineMax " << std::setw(3) << lmax 
+              ;
 
     for(unsigned int isub=0 ; isub < getNumBoundary() ; isub++)
     {
          GBoundary* boundary = getBoundary(isub);
-
          unsigned int lineMin = getLine(isub, 0);
          unsigned int lineMax = getLine(isub, NUM_QUAD-1);
-         snprintf(buf, 128, "%s lineMin/Max %3u:%3u ", msg, lineMin, lineMax );
-         boundary->Summary(buf);
+         std::cout << "lineMin:Max " 
+                   << std::setw(3) << lineMin 
+                   << ":"
+                   << std::setw(3) << lineMax
+                   << boundary->description()
+                   << std::endl ; 
     } 
 }
 
@@ -354,6 +360,32 @@ GBoundary* GBoundaryLib::createStandardBoundary(GBoundary* boundary)
 
     return s_boundary ; 
 }
+
+
+
+void GBoundaryLib::dumpSurfaces(const char* msg)
+{
+    LOG(info) << msg ; 
+    unsigned int numBoundary = getNumBoundary() ; 
+    for(unsigned int i=0 ; i < numBoundary ; i++)
+    {
+        GBoundary* boundary = getBoundary(i);
+
+        LOG(info) << boundary->description() ;
+        GPropertyMap<float>* s_isur = boundary->getInnerSurface(); 
+        GPropertyMap<float>* s_osur = boundary->getOuterSurface(); 
+        
+        if(s_isur->isValid())
+            dumpSurface(s_isur, inner, s_isur->getName() );
+
+        if(s_osur->isValid())
+            dumpSurface(s_osur, outer, s_osur->getName() );
+    }
+}
+
+
+
+
 
 const char* GBoundaryLib::getLocalKey(const char* dkey) // mapping between standard keynames and local key names, eg refractive_index -> RINDEX
 {

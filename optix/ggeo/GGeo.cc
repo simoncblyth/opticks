@@ -586,86 +586,29 @@ void GGeo::loadSensorList(const char* ext )
 
 
 
-void GGeo::add_sensitive_surfaces()
+void GGeo::traverse(const char* msg)
 {
-    //  cf env/geant4/geometry/collada/g4daenode.py:add_sensitive_surfaces
-   /*
-     Hmm currently think need to do this earlier at assimpwrap convertion stage
-     to avoid boundarylib complications
-   */
-
-
-    assert(0);
-
-    assert(m_sensitive_solids.size() == 0);
-    assert(m_sensitive_boundaries.size() == 0);
-
-   // sensitize_traverse(  getSolid(0) , 0 );
-
-    assert( m_sensitive_solids.size()  == m_sensitive_count );
-
-    LOG(info) << "GGeo::add_sensitive_surfaces"
-              << " sensitive_solids " << m_sensitive_solids.size() 
-              << " sensitive_boundaries " << m_sensitive_boundaries.size()  
-             ; 
-
-
-    findCathodeMaterials("EFFICIENCY"); 
-    dumpCathodeMaterials(); 
-
-
-    typedef std::unordered_set<GBoundary*>::const_iterator UBI ; 
-    for(UBI it=m_sensitive_boundaries.begin() ; it != m_sensitive_boundaries.end() ; it++)
-    {
-        GBoundary* boundary = *it ;
-        boundary->Summary("GGeo::add_sensitive_surfaces"); 
-    }
-
-
-    // hmm need to fabricate the surface properties of the cathodes ?
-    //  
-
+    LOG(info) << msg ; 
+    traverse( getSolid(0), 0 );
 }
 
 
-
-void GGeo::sensitize_traverse( GNode* node, unsigned int depth)
+void GGeo::traverse( GNode* node, unsigned int depth)
 {
-    assert(0); // attempting to do this a AssimpWrap level
-
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
-    unsigned int nodeIndex = node->getIndex();
-
-    GSensor* sensor = m_sensor_list->findSensorForNode(nodeIndex);
     GBoundary* boundary = solid->getBoundary(); 
 
-    if(sensor && boundary && boundary->hasInnerMaterial(CATHODE_MATERIAL))
-    {
-        m_sensitive_count++ ; 
+    GSensor* sensor = solid->getSensor(); 
 
-        //boundary->Summary("GGeo::sensitize_traverse"); 
+    if(sensor)
+         LOG(info) << "GGeo::traverse " 
+                   << " nodeIndex " << node->getIndex()
+                   << sensor->description() 
+                   ; 
 
-        solid->setSensor(sensor);  
-
-        m_sensitive_solids.push_back(solid);
-
-        m_sensitive_boundaries.insert(boundary);
-
-        LOG(debug) << "[" << std::setw(5) << m_sensitive_count << "] " << sensor->description() ; 
-    }
-    else
-    {
-        // every triangle needs an unsigned int, for non-sensitized provide a 0 (which means real indices must be 1-based)
-        solid->setSensor(NULL);  
-    }
-
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) sensitize_traverse(node->getChild(i), depth + 1);
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1);
 }
-
-
-
-
 
 
 

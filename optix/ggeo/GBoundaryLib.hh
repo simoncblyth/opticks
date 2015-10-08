@@ -143,6 +143,7 @@ class GBoundaryLib {
       const char* getLocalKey(const char* dkey); // map standard -> local keys 
       unsigned int getNumBoundary();
       GBoundary* getBoundary(unsigned int index); 
+      void dumpSurfaces(const char* msg="GBoundaryLib::dumpSurfaces");
       void Summary(const char* msg="GBoundaryLib::Summary");
       const char* getDigest(unsigned int index);
   public:
