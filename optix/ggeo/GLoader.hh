@@ -39,7 +39,6 @@ class GLoader {
     public:
          GGeo*                  getGGeo();
          GMergedMesh*           getMergedMesh();
-         GBoundaryLib*          getBoundaryLib();
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
          GTreeCheck*            getTreeAnalyse();
@@ -62,7 +61,6 @@ class GLoader {
          GCache*                   m_cache ; 
     //     GLoaderImpFunctionPtr     m_loader_imp ;  
          GMergedMesh*              m_mergedmesh ;
-         GBoundaryLib*             m_boundarylib ;
          GBoundaryLibMetadata*     m_metadata ;
 
          GItemIndex*               m_materials ;
@@ -90,7 +88,6 @@ inline GLoader::GLoader(GGeo* ggeo)
    m_types(NULL),
    m_cache(NULL),
    m_mergedmesh(NULL),
-   m_boundarylib(NULL),
    m_metadata(NULL),
    m_materials(NULL),
    m_surfaces(NULL),
@@ -119,14 +116,6 @@ inline bool GLoader::isInstanced()
 {
    return m_instanced ; 
 }
-
-/*
-inline void GLoader::setLoaderImp(GLoaderImpFunctionPtr imp)
-{
-    m_loader_imp = imp ; 
-}
-*/
-
 inline void GLoader::setTypes(Types* types)
 {
     m_types = types ; 
@@ -146,10 +135,6 @@ inline GGeo* GLoader::getGGeo()
 inline GMergedMesh* GLoader::getMergedMesh()
 {
     return m_mergedmesh ; 
-}
-inline GBoundaryLib* GLoader::getBoundaryLib()
-{
-    return m_boundarylib ; 
 }
 
 inline GDrawable* GLoader::getDrawable()

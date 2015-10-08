@@ -592,6 +592,16 @@ void GAry<T>::add(GAry<T>* other)
 }
 
 template <typename T>
+void GAry<T>::subtract(GAry<T>* other)
+{  
+    assert(other->getLength() == m_length);
+    for(unsigned int i=0 ; i < m_length ; i++ ) m_values[i] -= other->getValue(i) ; 
+}
+
+
+
+
+template <typename T>
 void GAry<T>::scale(T sc)
 {
     for(unsigned int i=0 ; i < m_length ; i++ ) m_values[i] *= sc ; 

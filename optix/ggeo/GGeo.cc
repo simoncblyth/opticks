@@ -148,7 +148,7 @@ void GGeo::init()
    if(m_loaded) return ; 
 
 
-   m_boundary_lib = new GBoundaryLib();
+   m_boundarylib = new GBoundaryLib();
 
    m_sensor_list = new GSensorList();
 
@@ -156,7 +156,7 @@ void GGeo::init()
    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
    //
    GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
-   m_boundary_lib->setStandardDomain( standard_wavelengths );
+   m_boundarylib->setStandardDomain( standard_wavelengths );
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
@@ -202,17 +202,9 @@ void GGeo::loadFromCache()
         m_pvlist = GItemList::load(idpath, "PVNames");
         m_lvlist = GItemList::load(idpath, "LVNames");
     }
-}
 
-const char* GGeo::getPVName(unsigned int index)
-{
-    return m_pvlist ? m_pvlist->getItem(index).c_str() : NULL ; 
+    m_boundarylib = GBoundaryLib::load(idpath);
 }
-const char* GGeo::getLVName(unsigned int index)
-{
-    return m_lvlist ? m_lvlist->getItem(index).c_str() : NULL ; 
-}
-
 
 
 void GGeo::save(const char* idpath)
@@ -226,8 +218,22 @@ void GGeo::save(const char* idpath)
         m_pvlist->save(idpath);
         m_lvlist->save(idpath);
     }
+
+    m_boundarylib->saveIndex(idpath); 
+    m_boundarylib->save(idpath);
+
 }
 
+
+
+const char* GGeo::getPVName(unsigned int index)
+{
+    return m_pvlist ? m_pvlist->getItem(index).c_str() : NULL ; 
+}
+const char* GGeo::getLVName(unsigned int index)
+{
+    return m_lvlist ? m_lvlist->getItem(index).c_str() : NULL ; 
+}
 
 
 
@@ -235,7 +241,7 @@ GGeo::~GGeo()
 {
    delete m_low ; 
    delete m_high ; 
-   delete m_boundary_lib ;
+   delete m_boundarylib ;
 }
 
 void GGeo::setLow(const gfloat3& low)

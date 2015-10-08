@@ -104,6 +104,9 @@ inline void FrameCfg<Listener>::init()
        ("simplify",  "simplify OptiX geometry for debugging") ;
 
    m_desc.add_options()
+       ("qe1",  "Perfect quantum efficiency of cathodes") ;
+
+   m_desc.add_options()
        ("geocenter",  "center view on geometry rather than the default genstep centering") ;
 
 

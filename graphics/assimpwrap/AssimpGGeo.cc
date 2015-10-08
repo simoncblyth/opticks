@@ -103,8 +103,6 @@ int AssimpGGeo::load(GGeo* ggeo)
 
     AssimpGGeo agg(ggeo, ageo.getTree(), selection); 
 
-    agg.setFakeEfficiency(1.0f); 
-
     int rc = agg.convert(ctrl);
 
     ggeo->setPath(path);
@@ -169,9 +167,6 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
                        ) ;   
 
 
-
-    //bool efficiency = strcmp(k, "EFFICIENCY") == 0 ; 
-
     //if(noscale) 
     //    printf("AssimpGGeo::addPropertyVector k %-35s nbyte %4u nfloat %4u npair %4u \n", k, nbyte, nfloat, npair);
 
@@ -185,15 +180,6 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
         float v = data[2*i+1]*vscale  ;
 
         float dd = noscale ? d0 : d ; 
-
-        /*
-        if(efficiency && m_fake_efficiency > -1.f )
-        {
-           v = m_fake_efficiency ; 
-           printf("%3d d0%10.4f dd%10.4f v%10.4f %s \n", i, d0, dd, v, k );
-        }
-        */
-
 
         domain.push_back( dd );
         vals.push_back( v );  

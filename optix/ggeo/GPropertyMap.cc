@@ -268,7 +268,7 @@ void GPropertyMap<T>::addConstantProperty(const char* pname, T value, const char
 {
    assert(m_standard_domain);
    GProperty<T>* prop = GProperty<T>::from_constant( value, m_standard_domain->getValues(), m_standard_domain->getLength() );
-   addProperty(pname, prop);
+   addProperty(pname, prop, prefix);
 }
 
 template <typename T>
@@ -326,6 +326,20 @@ GProperty<T>* GPropertyMap<T>::getProperty(const char* pname)
 {
    return (m_prop.find(pname) != m_prop.end()) ? m_prop[pname] : NULL ;
 }
+
+template <typename T>
+GProperty<T>* GPropertyMap<T>::getProperty(const char* pname, const char* prefix)
+{
+    std::string key(pname) ;
+    if(prefix) key = prefix + key ;
+
+    return (m_prop.find(key.c_str()) != m_prop.end()) ? m_prop[key.c_str()] : NULL ;
+}
+
+
+
+
+
 
 template <typename T>
 bool GPropertyMap<T>::hasProperty(const char* pname)

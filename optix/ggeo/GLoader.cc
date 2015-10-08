@@ -71,11 +71,12 @@ void GLoader::load()
 
         t("load ggeo/mergedmesh"); 
 
+        GBoundaryLib* blib = m_ggeo->getBoundaryLib();
+
+        t("load boundarylib"); 
         // TODO: move below into GGeo::load 
 
-        m_boundarylib = GBoundaryLib::load(idpath);
-        t("load boundarylib"); 
-        m_metadata = m_boundarylib->getMetadata() ; 
+        m_metadata = blib->getMetadata() ; 
 
         m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); 
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
@@ -93,13 +94,13 @@ void GLoader::load()
 
         t("create m_ggeo from G4DAE"); 
 
-        m_boundarylib = m_ggeo->getBoundaryLib();
+        GBoundaryLib* blib = m_ggeo->getBoundaryLib();
 
         // material customization must be done prior to creating buffers, as they contain the customized indices ?
-        m_materials = m_boundarylib->getMaterials();  
+        m_materials = blib->getMaterials();  
         m_materials->loadIndex("$HOME/.opticks"); 
 
-        m_boundarylib->createWavelengthAndOpticalBuffers();
+        blib->createWavelengthAndOpticalBuffers();
 
         t("createWavelengthAndOpticalBuffers"); 
 
@@ -110,14 +111,13 @@ void GLoader::load()
  
         GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillatorMaterial(0));  
 
-        m_boundarylib->createReemissionBuffer(scint);
+        blib->createReemissionBuffer(scint);
 
         t("createReemissionBuffer"); 
 
 
-        m_metadata = m_boundarylib->getMetadata();
-
-        m_surfaces = m_boundarylib->getSurfaces();   
+        m_metadata = blib->getMetadata();
+        m_surfaces = blib->getSurfaces();   
 
         GColorMap* sixc = GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json");
         m_surfaces->setColorMap(sixc);   
@@ -182,7 +182,6 @@ void GLoader::load()
         t("GColorizer"); 
 
 
-
         m_ggeo->save(idpath );
 
         LOG(info) << "GLoader::load saving to cache directory " << idpath ;
@@ -192,11 +191,6 @@ void GLoader::load()
         m_metadata->save(idpath);
         m_materials->save(idpath);
         m_surfaces->save(idpath);
-        //m_meshes->save(idpath);
-
-        m_boundarylib->saveIndex(idpath); 
-        m_boundarylib->save(idpath);
-
 
 
         t("save geocache"); 

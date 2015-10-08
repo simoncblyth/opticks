@@ -56,6 +56,7 @@ public:
    void Summary(const char* msg="GAry::Summary", unsigned int imod=1, T presentation_scale=1.0);
    void scale(T sc);
    void add(GAry<T>* other);
+   void subtract(GAry<T>* other);
    void reciprocate();
 
    // find the index of the value closest to the random draw u on the low side

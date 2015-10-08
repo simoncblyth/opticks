@@ -61,7 +61,10 @@ class GBoundaryLib {
     static const char* extra_y ; 
     static const char* extra_z ; 
     static const char* extra_w ; 
-
+  public:
+    // some model-mismatch translation required for surface properties
+    static const char* EFFICIENCY ; 
+    static const char* REFLECTIVITY ; 
   public:
      // workings for extra
     static const char* slow_component; 
@@ -103,7 +106,9 @@ class GBoundaryLib {
       void          createWavelengthAndOpticalBuffers();  
       GBuffer*      createReemissionBuffer(GPropertyMap<float>* scint);  
 
-
+  public:
+      // methods for debug
+      void setFakeEfficiency(float fake_efficiency);
 
   public:
       // methods supporting save/load from file
@@ -154,8 +159,8 @@ class GBoundaryLib {
       void standardizeMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
-      bool checkSurface( GPropertyMap<float>* surf );
-      void dumpSurface( GPropertyMap<float>* surf, const char* msg="GBoundaryLib::dumpSurface");
+      bool checkSurface( GPropertyMap<float>* surf, const char* prefix );
+      void dumpSurface( GPropertyMap<float>* surf, const char* prefix, const char* msg="GBoundaryLib::dumpSurface");
 
       GProperty<float>* getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
       GProperty<float>* getProperty(GPropertyMap<float>* pmap, const char* dkey);
@@ -235,6 +240,8 @@ class GBoundaryLib {
       GBuffer*               m_reemission_buffer ;
       GBuffer*               m_optical_buffer ;
 
+      float                  m_fake_efficiency ; 
+
 };
 
 
@@ -250,7 +257,8 @@ inline GBoundaryLib::GBoundaryLib()
           m_surfaces(NULL), 
           m_wavelength_buffer(NULL),
           m_reemission_buffer(NULL),
-          m_optical_buffer(NULL)
+          m_optical_buffer(NULL),
+          m_fake_efficiency(-1.f)
 {
      init();
 }
@@ -340,4 +348,8 @@ inline GDomain<float>* GBoundaryLib::getStandardDomain()
 }
 
 
+inline void GBoundaryLib::setFakeEfficiency(float fake_efficiency)
+{
+    m_fake_efficiency = fake_efficiency ; 
+}
 

@@ -79,6 +79,7 @@
 // ggeo-
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
+#include "GBoundaryLib.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GLoader.hh"
 #include "GCache.hh"
@@ -499,6 +500,13 @@ int App::loadGeometry()
 
     m_ggeo = new GGeo(m_cache);
 
+    if(m_fcfg->hasOpt("qe1"))
+    {
+        GBoundaryLib* blib = m_ggeo->getBoundaryLib();
+        blib->setFakeEfficiency(1.0);
+    }
+
+
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
@@ -547,7 +555,7 @@ int App::loadGeometry()
     checkGeometry();
 
 
-    m_blib = m_loader->getBoundaryLib();
+    m_blib = m_ggeo->getBoundaryLib();
     m_lookup = m_loader->getMaterialLookup();
     m_meta = m_loader->getMetadata(); 
     m_boundaries =  m_meta->getBoundaryNames();

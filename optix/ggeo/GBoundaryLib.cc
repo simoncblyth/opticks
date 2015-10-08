@@ -78,6 +78,9 @@ const char* GBoundaryLib::extra_w           = "extra_w" ;
 const char* GBoundaryLib::slow_component    = "slow_component" ;
 const char* GBoundaryLib::fast_component    = "fast_component" ;
 
+const char* GBoundaryLib::REFLECTIVITY = "REFLECTIVITY" ;
+const char* GBoundaryLib::EFFICIENCY   = "EFFICIENCY" ;
+
 const char* GBoundaryLib::keymap = 
 "refractive_index:RINDEX,"
 "absorption_length:ABSLENGTH,"
@@ -95,13 +98,6 @@ const char* GBoundaryLib::keymap =
 //
 //  ggv --blib 102 103 104 105 106 107
 //
-//  need to branch REFLECTIVITY depending on *finish* property from GOpticalSurface
-//
-//     reflect_specular   finish = 0 (polished)
-//     reflect_diffuse    finish = 3 (ground)
-//        
-//
-
 
 const char* GBoundaryLib::scintillators = "LiquidScintillator,GdDopedLS,LS" ;
 const char* GBoundaryLib::reemissionkey = "SLOWCOMPONENT,FASTCOMPONENT" ;
@@ -339,27 +335,20 @@ GBoundary* GBoundaryLib::createStandardBoundary(GBoundary* boundary)
     standardizeExtraProperties(    s_iext, iext, inner );
     standardizeExtraProperties(    s_oext, oext, outer );
 
-    s_isur->setValid(checkSurface( s_isur )); 
-    s_osur->setValid(checkSurface( s_osur )); 
+    s_isur->setValid(checkSurface( s_isur, inner )); 
+    s_osur->setValid(checkSurface( s_osur, outer )); 
 
 
-/*
-   // all invalid currently ...
-
-    if(isur)
+    if(isur && s_isur->hasDefinedName() && !s_isur->isValid())
     {
-        dumpSurface(s_isur, "GBoundaryLib::createStandardBoundary");
-        if(!s_isur->isValid())
-           LOG(warning) << "GBoundaryLib::createStandardBoundary INVALID inner surface " << s_isur->getName() ;  
+        LOG(warning) << "GBoundaryLib::createStandardBoundary INVALID inner surface " << s_isur->getName() ;  
+        dumpSurface(s_isur, inner, "GBoundaryLib::createStandardBoundary INVALID inner surface");
     }
-    if(osur)
+    if(osur && s_osur->hasDefinedName() && !s_osur->isValid())
     {
-        dumpSurface(s_osur, "GBoundaryLib::createStandardBoundary");
-        if(!s_osur->isValid())
-           LOG(warning) << "GBoundaryLib::createStandardBoundary INVALID outer surface " << s_osur->getName() ;  
+        LOG(warning) << "GBoundaryLib::createStandardBoundary INVALID outer surface " << s_osur->getName() ;  
+        dumpSurface(s_osur, outer, "GBoundaryLib::createStandardBoundary INVALID outer surface");
     }
-*/
-
 
     GBoundary* s_boundary = new GBoundary( s_imat , s_omat, s_isur, s_osur, s_iext, s_oext);
 
@@ -541,65 +530,95 @@ void GBoundaryLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GProper
     pstd->addProperty(extra_w          , getPropertyOrDefault( pmap, extra_w )       , prefix);
 }
 
-
-
 void GBoundaryLib::standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
 {
-    bool sensor = pmap ? pmap->isSensor() : false ; 
+    GProperty<float>* _detect           = NULL ; 
+    GProperty<float>* _absorb           = NULL ; 
+    GProperty<float>* _reflect_specular = NULL ; 
+    GProperty<float>* _reflect_diffuse  = NULL ; 
 
-    if(pmap) // surfaces often not defined
-    { 
-        assert(pmap->isSkinSurface() || pmap->isBorderSurface());
-        assert(getStandardDomain()->isEqual(pmap->getStandardDomain()));
-        pstd->setSensor(sensor); 
-    }
-
-    if(!sensor)
+    if(!pmap)
     {
-        pstd->addProperty(detect,           getPropertyOrDefault( pmap, detect           ), prefix);
-        pstd->addProperty(absorb,           getPropertyOrDefault( pmap, absorb           ), prefix);
-        pstd->addProperty(reflect_specular, getPropertyOrDefault( pmap, reflect_specular ), prefix);
-        pstd->addProperty(reflect_diffuse,  getPropertyOrDefault( pmap, reflect_diffuse  ), prefix);
+        _detect           = getDefaultProperty(detect); 
+        _absorb           = getDefaultProperty(absorb); 
+        _reflect_specular = getDefaultProperty(reflect_specular); 
+        _reflect_diffuse  = getDefaultProperty(reflect_diffuse); 
+
     }
     else
     {
-        // GProperty<float>* _detect = getProperty(pmap, detect) ;      // EFFICIENCY 
+        assert(getStandardDomain()->isEqual(pmap->getStandardDomain()));
+        assert(pmap->isSkinSurface() || pmap->isBorderSurface());
+        GOpticalSurface* os = pmap->getOpticalSurface() ;  // GSkinSurface and GBorderSurface ctor plant the OpticalSurface into the PropertyMap
 
-        // perfect sensor
-        GProperty<float>* _detect           = makeConstantProperty(1.0) ;    
-        GProperty<float>* _absorb           = makeConstantProperty(0.0);
-        GProperty<float>* _reflect_specular = makeConstantProperty(0.0);
-        GProperty<float>* _reflect_diffuse  = makeConstantProperty(0.0);
+        if(pmap->isSensor())
+        {
+            GProperty<float>* _EFFICIENCY = pmap->getProperty(EFFICIENCY); 
+            assert(_EFFICIENCY && os && "sensor surfaces must have an efficiency" );
 
-        pstd->addProperty( detect          , _detect );
-        pstd->addProperty( absorb          , _absorb );
-        pstd->addProperty( reflect_specular, _reflect_specular );
-        pstd->addProperty( reflect_diffuse , _reflect_diffuse );
+            if(m_fake_efficiency >= 0.f && m_fake_efficiency <= 1.0f)
+            {
+                _detect           = makeConstantProperty(m_fake_efficiency) ;    
+                _absorb           = makeConstantProperty(1.0-m_fake_efficiency);
+                _reflect_specular = makeConstantProperty(0.0);
+                _reflect_diffuse  = makeConstantProperty(0.0);
+            } 
+            else
+            {
+                _detect = _EFFICIENCY ;      
+                _absorb = GProperty<float>::make_one_minus( _detect );
+                _reflect_specular = makeConstantProperty(0.0);
+                _reflect_diffuse  = makeConstantProperty(0.0);
+            }
+        }
+        else
+        {
+            GProperty<float>* _REFLECTIVITY = pmap->getProperty(REFLECTIVITY); 
+            assert(_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity " );
 
-        dumpSurface(pstd, "GBoundaryLib::standardizeSurfaceProperties");
+            if(os->isSpecular())
+            {
+                _detect  = makeConstantProperty(0.0) ;    
+                _reflect_specular = _REFLECTIVITY ;
+                _reflect_diffuse  = makeConstantProperty(0.0) ;    
+                _absorb  = GProperty<float>::make_one_minus(_reflect_specular);
+            }
+            else
+            {
+                _detect  = makeConstantProperty(0.0) ;    
+                _reflect_specular = makeConstantProperty(0.0) ;    
+                _reflect_diffuse  = _REFLECTIVITY ;
+                _absorb  = GProperty<float>::make_one_minus(_reflect_diffuse);
+            } 
+        }
     }
-}
-
-
-
-void GBoundaryLib::dumpSurface( GPropertyMap<float>* surf, const char* msg)
-{
-    GProperty<float>* _detect = surf->getProperty(detect);
-    GProperty<float>* _absorb = surf->getProperty(absorb);
-    GProperty<float>* _reflect_specular = surf->getProperty(reflect_specular );
-    GProperty<float>* _reflect_diffuse  = surf->getProperty(reflect_diffuse );
 
     assert(_detect);
     assert(_absorb);
     assert(_reflect_specular);
     assert(_reflect_diffuse);
 
-    /*
-    _detect->Summary("_detect");
-    _absorb->Summary("_absorb");
-    _reflect_specular->Summary("_reflect_specular");
-    _reflect_diffuse->Summary("_reflect_diffuse");
-    */
+    pstd->setSensor( pmap ? pmap->isSensor() : false ); 
+    pstd->addProperty( detect          , _detect          , prefix );
+    pstd->addProperty( absorb          , _absorb          , prefix );
+    pstd->addProperty( reflect_specular, _reflect_specular, prefix );
+    pstd->addProperty( reflect_diffuse , _reflect_diffuse , prefix );
+}
+
+
+
+void GBoundaryLib::dumpSurface( GPropertyMap<float>* surf, const char* prefix, const char* msg)
+{
+    GProperty<float>* _detect = surf->getProperty(detect, prefix);
+    GProperty<float>* _absorb = surf->getProperty(absorb, prefix);
+    GProperty<float>* _reflect_specular = surf->getProperty(reflect_specular, prefix );
+    GProperty<float>* _reflect_diffuse  = surf->getProperty(reflect_diffuse, prefix );
+
+    assert(_detect);
+    assert(_absorb);
+    assert(_reflect_specular);
+    assert(_reflect_diffuse);
+  
 
     std::string table = GProperty<float>::make_table( 
                             _detect, "detect", 
@@ -615,16 +634,16 @@ void GBoundaryLib::dumpSurface( GPropertyMap<float>* surf, const char* msg)
 }
 
 
-bool GBoundaryLib::checkSurface( GPropertyMap<float>* surf )
+bool GBoundaryLib::checkSurface( GPropertyMap<float>* surf, const char* prefix)
 {
     // After standardization in GBoundaryLib surfaces must have four properties
     // that correspond to the probabilities of what happens at an intersection
     // with the surface.  These need to add to one across the wavelength domain.
 
-    GProperty<float>* _detect = surf->getProperty(detect );
-    GProperty<float>* _absorb = surf->getProperty(absorb);
-    GProperty<float>* _reflect_specular = surf->getProperty(reflect_specular );
-    GProperty<float>* _reflect_diffuse  = surf->getProperty(reflect_diffuse );
+    GProperty<float>* _detect = surf->getProperty(detect, prefix);
+    GProperty<float>* _absorb = surf->getProperty(absorb, prefix);
+    GProperty<float>* _reflect_specular = surf->getProperty(reflect_specular, prefix );
+    GProperty<float>* _reflect_diffuse  = surf->getProperty(reflect_diffuse, prefix );
 
     if(!_detect) return false ; 
     if(!_absorb) return false ; 
@@ -636,7 +655,8 @@ bool GBoundaryLib::checkSurface( GPropertyMap<float>* surf )
     GAry<float>* ones = GAry<float>::ones(sum->getLength());
     float diff = GAry<float>::maxdiff( vals, ones );
     bool valid = diff < 1e-6 ; 
-    if(!valid)
+
+    if(!valid && surf->hasDefinedName())
     {
         LOG(warning) << "GBoundaryLib::checkSurface " << surf->getName() << " diff " << diff ; 
     }

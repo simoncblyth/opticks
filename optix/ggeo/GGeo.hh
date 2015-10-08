@@ -250,7 +250,7 @@ class GGeo {
         std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
-        GBoundaryLib*                 m_boundary_lib ; 
+        GBoundaryLib*                 m_boundarylib ; 
         GSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
@@ -284,7 +284,7 @@ class GGeo {
 inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
    m_loaded(false), 
-   m_boundary_lib(NULL),
+   m_boundarylib(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
@@ -439,7 +439,7 @@ inline char* GGeo::getIdentityPath()
 
 inline GBoundaryLib* GGeo::getBoundaryLib()
 {
-    return m_boundary_lib ; 
+    return m_boundarylib ; 
 }
 inline GSensorList* GGeo::getSensorList()
 {

@@ -76,6 +76,7 @@ class GPropertyMap {
       GProperty<T>* getPropertyByIndex(int index);
       const char* getPropertyNameByIndex(int index);
       GProperty<T>* getProperty(const char* pname);
+      GProperty<T>* getProperty(const char* pname, const char* prefix);
       bool hasProperty(const char* pname);
       std::vector<std::string>& getKeys();
 

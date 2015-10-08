@@ -124,6 +124,16 @@ bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta)
 
 
 template <typename T>
+GProperty<T>* GProperty<T>::make_one_minus(GProperty<T>* a)
+{
+    GAry<T>* doms = a->getDomain();
+    GAry<T>* vals = GAry<T>::ones(a->getLength());
+    vals->subtract(a->getValues());
+    return new GProperty<T>( vals, doms );
+} 
+
+
+template <typename T>
 GProperty<T>* GProperty<T>::make_addition(GProperty<T>* a, GProperty<T>* b, GProperty<T>* c, GProperty<T>* d)
 {
     assert(hasSameDomain(a,b));

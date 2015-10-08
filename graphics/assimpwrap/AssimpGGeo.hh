@@ -27,7 +27,6 @@ public:
     bool getVolNames();
 public:
     static int load(GGeo* ggeo);
-    void setFakeEfficiency(float fake_efficiency=1.0f);
 
 public:
     static const char* g4dae_bordersurface_physvolume1 ; 
@@ -103,8 +102,7 @@ inline AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* sel
    m_no_surface(0),
    m_volnames(false),
    m_reverse(true),        // true: ascending wavelength ordering of properties
-   m_cathode(NULL),
-   m_fake_efficiency(-1.f)
+   m_cathode(NULL)
 {
     init();
 }
@@ -115,10 +113,5 @@ inline AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* sel
 inline bool AssimpGGeo::getVolNames()
 {
     return m_volnames ; 
-}
-
-inline void AssimpGGeo::setFakeEfficiency(float fake_efficiency)
-{
-    m_fake_efficiency = fake_efficiency ; 
 }
 

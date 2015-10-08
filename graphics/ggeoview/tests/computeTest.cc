@@ -115,7 +115,7 @@ int main(int argc, char** argv)
     assert(nmm == 1);
     GMergedMesh* mm = gg->getMergedMesh(0); 
 
-    GBoundaryLib* blib = loader.getBoundaryLib();
+    GBoundaryLib* blib = gg->getBoundaryLib();
     Lookup* lookup = loader.getMaterialLookup();
 
     unsigned int target = 0 ; 
