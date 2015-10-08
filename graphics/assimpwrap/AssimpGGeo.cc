@@ -170,7 +170,7 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
 
 
 
-    bool efficiency = strcmp(k, "EFFICIENCY") == 0 ; 
+    //bool efficiency = strcmp(k, "EFFICIENCY") == 0 ; 
 
     //if(noscale) 
     //    printf("AssimpGGeo::addPropertyVector k %-35s nbyte %4u nfloat %4u npair %4u \n", k, nbyte, nfloat, npair);
@@ -186,12 +186,14 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
 
         float dd = noscale ? d0 : d ; 
 
-
+        /*
         if(efficiency && m_fake_efficiency > -1.f )
         {
            v = m_fake_efficiency ; 
            printf("%3d d0%10.4f dd%10.4f v%10.4f %s \n", i, d0, dd, v, k );
         }
+        */
+
 
         domain.push_back( dd );
         vals.push_back( v );  
@@ -239,6 +241,13 @@ const char* AssimpGGeo::getStringProperty(aiMaterial* material, const char* quer
 
 bool AssimpGGeo::hasVectorProperty(aiMaterial* material, const char* propname)
 {
+    aiMaterialProperty* prop = getVectorProperty(material, propname);
+    return prop != NULL ; 
+}
+
+aiMaterialProperty* AssimpGGeo::getVectorProperty(aiMaterial* material, const char* propname )
+{
+    aiMaterialProperty* ret = NULL ;
     unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
     {
@@ -246,17 +255,18 @@ bool AssimpGGeo::hasVectorProperty(aiMaterial* material, const char* propname)
         aiString key = property->mKey ; 
         const char* k = key.C_Str();
 
-        // skip Assimp standard material props $clr.emissive $mat.shininess ?mat.name  etc..
         if( k[0] == '?' || k[0] == '$') continue ;   
 
         aiPropertyTypeInfo type = property->mType ; 
-        if(type == aiPTI_Float)
+        if(type == aiPTI_Float && strncmp(k, propname, strlen(k))==0)
         { 
-              if(strcmp(propname, k) == 0) return true ;
+            ret = property ; 
+            break ; 
         }
     }
-    return false ; 
+    return ret ; 
 }
+
 
 
 
@@ -468,6 +478,13 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
 
 void AssimpGGeo::convertSensors(GGeo* gg)
 {
+/*
+Opticks is a surface based simulation, as opposed to 
+Geant4 which is CSG volume based. In Geant4 hits are formed 
+on stepping into volumes with associated SensDet.
+The Opticks equivalent is intersecting with a "SensorSurface", 
+which are fabricated by AssimpGGeo::convertSensors.
+*/
     convertSensors( gg, m_tree->getRoot(), 0); 
 
     assert(m_cathode);
@@ -475,6 +492,7 @@ void AssimpGGeo::convertSensors(GGeo* gg)
 
     GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
 
+    // DYB: nclv=2 for hemi and headon PMTs 
     for(unsigned int i=0 ; i < nclv ; i++)
     {
         const char* sslv = gg->getCathodeLV(i);
@@ -491,7 +509,9 @@ void AssimpGGeo::convertSensors(GGeo* gg)
         const char* osmod = "1" ; 
         const char* osfin = "3" ; 
         const char* osval = "1" ;  
-       // TODO: check effects of above adhoc choice of common type/model/finish/value 
+
+        // TODO: check effects of above adhoc choice of common type/model/finish/value 
+        // TODO: add parse ctor that understands: "type=dielectric_dielectric;model=unified;finish=ground;value=1.0"
 
         GOpticalSurface* os = new GOpticalSurface(osnam, ostyp, osmod, osfin, osval) ; 
 
@@ -506,6 +526,9 @@ void AssimpGGeo::convertSensors(GGeo* gg)
        
         gss->setSkinSurface(sslv);
 
+        gss->setSensor();
+        // story continues in GBoundaryLib::standardizeSurfaceProperties
+
         addProperties(gss, m_cathode );
 
         LOG(info) << "AssimpGGeo::convertSensors gss " << gss->description(); 
@@ -516,11 +539,15 @@ void AssimpGGeo::convertSensors(GGeo* gg)
             // without standard domain applied
             GSkinSurface*  gss_raw = new GSkinSurface(name.c_str(), index, os);
             gss_raw->setSkinSurface(sslv);
+            // not setting sensor, only the standardized need that
             addProperties(gss_raw, m_cathode );
             gg->addRaw(gss_raw);
         }   
     }
 }
+
+
+   
 
 void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
 {

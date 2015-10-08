@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <string>
+#include <sstream>
+#include <iomanip>
+
+
 #include <math.h> 
 #include "assert.h"
 #include "md5digest.hpp"
@@ -106,6 +111,83 @@ GProperty<T>* GProperty<T>::from_constant(T value, T* domain, unsigned int lengt
     GAry<T>* doms = new GAry<T>(length, domain);
     return new GProperty<T>( vals, doms );
 }
+
+
+template <typename T>
+bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta)
+{
+    if(a->getLength() != b->getLength())  return false ; 
+    if(GAry<T>::maxdiff(a->getDomain(), b->getDomain()) > delta ) return false ;
+    return true ; 
+}
+
+
+
+template <typename T>
+GProperty<T>* GProperty<T>::make_addition(GProperty<T>* a, GProperty<T>* b, GProperty<T>* c, GProperty<T>* d)
+{
+    assert(hasSameDomain(a,b));
+    if(c) assert(hasSameDomain(a,c));
+    if(d) assert(hasSameDomain(a,d));
+
+    GAry<T>* doms = a->getDomain();
+    GAry<T>* vals = GAry<T>::zeros(a->getLength());
+    vals->add(a->getValues());
+    vals->add(b->getValues());
+    if(c) vals->add(c->getValues()) ;
+    if(d) vals->add(d->getValues()) ;
+
+    return new GProperty<T>( vals, doms );
+}
+
+template <typename T>
+std::string GProperty<T>::make_table(
+       GProperty<T>* a, const char* atitle, 
+       GProperty<T>* b, const char* btitle, 
+       GProperty<T>* c, const char* ctitle, 
+       GProperty<T>* d, const char* dtitle, 
+       int fw)
+{
+    if(a && b) assert(hasSameDomain(a,b));
+    if(a && c) assert(hasSameDomain(a,c));
+    if(a && d) assert(hasSameDomain(a,d));
+
+
+    std::stringstream ss ; 
+    ss << std::setw(fw) << "domain" ; 
+    if(a) ss << std::setw(fw) << atitle ; 
+    if(b) ss << std::setw(fw) << btitle ; 
+    if(c) ss << std::setw(fw) << ctitle ; 
+    if(d) ss << std::setw(fw) << dtitle ; 
+    ss << std::endl ; 
+
+    GAry<T>* doms = a ? a->getDomain() : NULL ;
+    if(doms)
+    { 
+        GAry<T>* aa = a ? a->getValues() : NULL ;  
+        GAry<T>* bb = b ? b->getValues() : NULL ;  
+        GAry<T>* cc = c ? c->getValues() : NULL ;  
+        GAry<T>* dd = d ? d->getValues() : NULL ;  
+
+        for(unsigned int i=0 ; i < doms->getLength() ; i++)
+        {
+            ss << std::setw(fw) << doms->getValue(i) ; 
+            ss << std::setw(fw) << ( aa ? aa->getValue(i) : -2. ) ; 
+            ss << std::setw(fw) << ( bb ? bb->getValue(i) : -2. ) ; 
+            ss << std::setw(fw) << ( cc ? cc->getValue(i) : -2. ) ; 
+            ss << std::setw(fw) << ( dd ? dd->getValue(i) : -2. ) ; 
+            ss << std::endl ; 
+        }
+    }
+    else
+    {
+        ss << "EMPTY TABLE" ; 
+    }
+
+    return ss.str();
+}
+
+
 
 template <typename T>
 GProperty<T>* GProperty<T>::ramp(T low, T step, T* domain, unsigned int length ) 

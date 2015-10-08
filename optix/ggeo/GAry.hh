@@ -8,7 +8,11 @@ public:
    static GAry<T>* create_from_floats(unsigned int length, float* values);
    static GAry<T>* product(GAry<T>* a, GAry<T>* b);
    static GAry<T>* subtract(GAry<T>* a, GAry<T>* b);
+   static GAry<T>* add(GAry<T>* a, GAry<T>* b);
+   static T        maxdiff(GAry<T>* a, GAry<T>* b);
    static GAry<T>* from_constant(unsigned int length, T value );
+   static GAry<T>* zeros(unsigned int length);
+   static GAry<T>* ones(unsigned int length);
    static GAry<T>* ramp(unsigned int length, T low, T step );
    static GAry<T>* linspace(T num, T start=0, T stop=1);
    static T            step(T num, T start=0, T stop=1);
@@ -51,6 +55,7 @@ public:
 public: 
    void Summary(const char* msg="GAry::Summary", unsigned int imod=1, T presentation_scale=1.0);
    void scale(T sc);
+   void add(GAry<T>* other);
    void reciprocate();
 
    // find the index of the value closest to the random draw u on the low side

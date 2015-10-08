@@ -46,8 +46,9 @@ protected:
     void addProperties(GPropertyMap<float>* pmap, aiMaterial* material);
     void addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property);
     const char* getStringProperty(aiMaterial* mat, const char* query);
+protected:
     bool hasVectorProperty(aiMaterial* material, const char* propname);
-
+    aiMaterialProperty* getVectorProperty(aiMaterial* material, const char* propname );
 protected:
     void convertMeshes(const aiScene* scene, GGeo* gg, const char* ctrl);
 

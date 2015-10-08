@@ -137,7 +137,7 @@ template <typename T>
 GAry<T>* np_subtract(GAry<T>* a, GAry<T>* b)
 {
     assert(a->getLength() == b->getLength()); 
-    GAry<T>* result = new GAry<T>(a->getLength()); // Ary to be filled with interpolated values
+    GAry<T>* result = new GAry<T>(a->getLength()); 
     for (unsigned int i = 0; i < result->getLength() ; i++) 
     {
        T ab = b->getValue(i) - a->getValue(i);
@@ -145,6 +145,37 @@ GAry<T>* np_subtract(GAry<T>* a, GAry<T>* b)
     }
     return result ;
 }
+
+template <typename T>
+GAry<T>* np_add(GAry<T>* a, GAry<T>* b)
+{
+    assert(a->getLength() == b->getLength()); 
+    GAry<T>* result = new GAry<T>(a->getLength()); 
+    for (unsigned int i = 0; i < result->getLength() ; i++) 
+    {
+       T ab = b->getValue(i) + a->getValue(i);
+       result->setValue(i, ab );
+    }
+    return result ;
+}
+
+
+template <typename T>
+T np_maxdiff(GAry<T>* a, GAry<T>* b)
+{
+    assert(a->getLength() == b->getLength()); 
+    T max(0);
+    for (unsigned int i = 0; i < a->getLength() ; i++) 
+    {
+       T ab = b->getValue(i) - a->getValue(i);
+       max = std::max( max, ab );
+    }
+    return max ;
+}
+
+
+
+
 
 
 template <typename T>
@@ -302,6 +333,23 @@ GAry<T>* GAry<T>::subtract(GAry<T>* a, GAry<T>* b)
 {
     return np_subtract(a, b);
 }
+template <typename T>
+GAry<T>* GAry<T>::add(GAry<T>* a, GAry<T>* b)
+{
+    return np_add(a, b);
+}
+template <typename T>
+T GAry<T>::maxdiff(GAry<T>* a, GAry<T>* b)
+{
+    return np_maxdiff(a, b);
+}
+
+
+
+
+
+
+
 
 template <typename T>
 GAry<T>* GAry<T>::from_constant(unsigned int length, T value )
@@ -311,6 +359,23 @@ GAry<T>* GAry<T>::from_constant(unsigned int length, T value )
     for(unsigned int i=0 ; i < length; i++) vals[i] = value ;
     return ary ;
 } 
+
+
+template <typename T>
+GAry<T>* GAry<T>::zeros(unsigned int length)
+{
+    return GAry<T>::from_constant(length, 0);
+} 
+
+template <typename T>
+GAry<T>* GAry<T>::ones(unsigned int length)
+{
+    return GAry<T>::from_constant(length, 1);
+} 
+
+
+
+
 
 template <typename T>
 GAry<T>* GAry<T>::ramp(unsigned int length, T low, T step )
@@ -518,6 +583,13 @@ unsigned int GAry<T>::getRightZero()
 }
 
 
+
+template <typename T>
+void GAry<T>::add(GAry<T>* other)
+{  
+    assert(other->getLength() == m_length);
+    for(unsigned int i=0 ; i < m_length ; i++ ) m_values[i] += other->getValue(i) ; 
+}
 
 template <typename T>
 void GAry<T>::scale(T sc)

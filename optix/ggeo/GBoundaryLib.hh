@@ -154,9 +154,12 @@ class GBoundaryLib {
       void standardizeMaterialProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeSurfaceProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
       void standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix);
+      bool checkSurface( GPropertyMap<float>* surf );
+      void dumpSurface( GPropertyMap<float>* surf, const char* msg="GBoundaryLib::dumpSurface");
 
       GProperty<float>* getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
       GProperty<float>* getProperty(GPropertyMap<float>* pmap, const char* dkey);
+      GProperty<float>* makeConstantProperty(float value);
 
   private:
       // support for standardization 

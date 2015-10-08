@@ -47,6 +47,13 @@ class GPropertyMap {
       bool isSkinSurface();
       bool isBorderSurface();
       bool isMaterial();
+
+      void setSensor(bool sensor=true);
+      bool isSensor();
+
+      void setValid(bool valid=true);
+      bool isValid();
+
       void setOpticalSurface(GOpticalSurface* optical_surface);
       GOpticalSurface* getOpticalSurface(); 
 
@@ -75,10 +82,11 @@ class GPropertyMap {
   private:
       std::string m_name ;
       const char* m_shortname ; 
-      //std::string m_shortname ; 
       std::string m_type ;
 
       unsigned int m_index ;
+      bool         m_sensor ;  
+      bool         m_valid ;  
 
       GPropertyMap_t m_prop ; 
       std::vector<std::string> m_keys ;  // key ordering
@@ -111,3 +119,30 @@ inline bool GPropertyMap<T>::hasNameEnding(const char* end)
         return 0 == m_name.compare( m_name.length() - strlen(end), strlen(end), end ) ;
     }
 }
+
+
+template <class T>
+inline bool GPropertyMap<T>::isSensor()
+{
+    return m_sensor ; 
+}
+template <class T>
+inline void GPropertyMap<T>::setSensor(bool sensor)
+{
+    m_sensor = sensor ; 
+}
+
+template <class T>
+inline bool GPropertyMap<T>::isValid()
+{
+    return m_valid ; 
+}
+template <class T>
+inline void GPropertyMap<T>::setValid(bool valid)
+{
+    m_valid = valid ; 
+}
+
+
+
+

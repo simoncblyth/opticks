@@ -745,6 +745,20 @@ instance island ?
 
     #  hmm those boundary 1 look wrong ? Rock inside the PMT ?  off-by-one problem ?
 
+
+    In [1]: n = np.load("nodeinfo.npy")
+
+    In [2]: n
+    Out[2]: 
+    array([[ 720,  362, 3199, 3155],
+           [ 672,  338, 3200, 3199],
+           [ 960,  482, 3201, 3200],
+           [ 480,  242, 3202, 3200],
+           [  96,   50, 3203, 3200]], dtype=uint32)
+
+
+
+
     boundary : index  0 x6   0 019d50af046b6733287e43af2e8f7fa2 Vacuum/Vacuum/-/- 
     boundary : index  1 x6   6 1c71e6371ce86dec9ed4f0e2395f1933 Rock/Vacuum/-/- 
     boundary : index 18 x6 108 77a84102a9c397d91eed17b2bc0988ce GdDopedLS/LiquidScintillator/-/- 
@@ -761,5 +775,13 @@ Does OpaqueVacuum have same properties as Rock ?::
     [2015-Oct-07 16:35:33.314487]:info: AssimpGGeo::convertStructureVisit nodeIndex   3202 ( mti   64 mt 0x7fd03dec5580 )         OpaqueVacuum ( mti_p   76 mt_p 0x7fd040453ff0 )               Vacuum ( msi   44 mesh 0x7fd0403e6940 ) pmt-hemi-bot0xc22a958
     [2015-Oct-07 16:35:33.314863]:info: AssimpGGeo::convertStructureVisit nodeIndex   3203 ( mti   64 mt 0x7fd03dec5580 )         OpaqueVacuum ( mti_p   76 mt_p 0x7fd040453ff0 )               Vacuum ( msi   45 mesh 0x7fd03def9290 ) pmt-hemi-dynode0xc346c50
 
+
+Now with simplified OptiX geometry
+-------------------------------------
+
+::
+
+    ggv --mdyb -G 
+    ggv --mdyb --torchconfig "frame=3201;source=0,0,1000;target=0,0,0;radius=300;" --save --simplify 
 
 

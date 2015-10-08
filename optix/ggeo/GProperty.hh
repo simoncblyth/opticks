@@ -12,10 +12,16 @@ public:
    static const char* VALUE_FMT ;
 public: 
    static T maxdiff(GProperty<T>* a, GProperty<T>* b);
+   static bool hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta=1e-6);
    static GProperty<T>* load(const char* path);
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length );
+   static GProperty<T>* make_addition(GProperty<T>* a, GProperty<T>* b, GProperty<T>* c=NULL, GProperty<T>* d=NULL );
+   static std::string   make_table(GProperty<T>* a, const char* atitle, 
+                                   GProperty<T>* b, const char* btitle,
+                                   GProperty<T>* c=NULL, const char* ctitle=NULL, 
+                                   GProperty<T>* d=NULL, const char* dtitle=NULL,
+                                   int fw=20 );
    static GProperty<T>* ramp(T low, T step, T* domain, unsigned int length );
-
 public:
    GProperty(GProperty<T>* other);
    GProperty(T* values, T* domain, unsigned int length );
