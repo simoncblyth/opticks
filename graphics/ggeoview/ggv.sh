@@ -3,6 +3,9 @@
 cmdline="$*"
 ggeo- 
 ggeoview-
+assimpwrap-
+openmeshrap-
+
 
 dbg=0
 if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
@@ -24,6 +27,10 @@ elif [ "${cmdline/--mblib}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibMetadataTest)
 elif [ "${cmdline/--sensor}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GSensorListTest)
+elif [ "${cmdline/--assimp}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(assimpwrap-bin)
+elif [ "${cmdline/--openmesh}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(openmeshrap-bin) 
 else
    unset GGEOVIEW_BINARY 
 fi
@@ -105,11 +112,6 @@ fi
 
 
 
-
-
-
-
-
 if [ "${cmdline/--make}" != "${cmdline}" ]; then
    optixrap-
    cu=$(optixrap-sdir)/cu/generate.cu 
@@ -119,22 +121,9 @@ if [ "${cmdline/--make}" != "${cmdline}" ]; then
 fi
 
 
+# TODO: make binary for this to avoid the exception
 if [ "${cmdline/--idp}" != "${cmdline}" ]; then
-
     echo $(ggeoview-run $*)
-
-elif [ "${cmdline/--assimp}" != "${cmdline}" ]; then
-
-    assimpwrap-
-    ggeoview-export
-    $(assimpwrap-bin) GGEOVIEW_
-
-elif [ "${cmdline/--openmesh}" != "${cmdline}" ]; then
-
-    openmeshrap-
-    ggeoview-export
-    $(openmeshrap-bin) 
-
 else
     case $dbg in
        0)  ggeoview-run $*  ;;

@@ -1,6 +1,9 @@
 ggv-(){   ggeoview- ; }
 ggv-cd(){ ggeoview-cd ; }
 ggv-i(){  ggeoview-install ; }
+ggv-d(){  ggeoview-depinstall ; }
+ggv-vi(){ ggeoview-vi ; }
+ggv-edit(){ ggeoview-edit ; }
 ggv--(){  ggeoview-depinstall ; }
 ggv-lldb(){ 
    echo use ggv --dbg  in order to setup environment
