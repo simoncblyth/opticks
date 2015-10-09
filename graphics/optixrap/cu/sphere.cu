@@ -5,10 +5,11 @@
 using namespace optix;
 
 rtDeclareVariable(float4,  sphere, , );
-rtDeclareVariable(unsigned int,  instanceIdx, , );
 
-
+rtDeclareVariable(unsigned int, instanceIdx,  attribute instance_index,);
+rtDeclareVariable(unsigned int, primitiveCount,  attribute primitive_count,);
 rtBuffer<uint4> identityBuffer; 
+
 
 // attribute variables must be set 
 // inbetween rtPotentialIntersection and rtReportIntersection
@@ -17,6 +18,7 @@ rtBuffer<uint4> identityBuffer;
 rtDeclareVariable(unsigned int, nodeIndex,     attribute node_index,);
 rtDeclareVariable(unsigned int, boundaryIndex, attribute boundary_index,);
 rtDeclareVariable(unsigned int, sensorIndex,   attribute sensor_index,);
+rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
 
 
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
@@ -70,6 +72,7 @@ void intersect_sphere(int primIdx)
     if( rtPotentialIntersection( root1 + root11 ) ) {
       shading_normal = geometric_normal = (O + (root1 + root11)*D)/radius;
 
+      instanceIdentity = identityBuffer[instanceIdx*primitiveCount+primIdx] ;  // index just primIdx for non-instanced
       nodeIndex = identity.x ;
       boundaryIndex = identity.z ;
       sensorIndex = identity.w ;
@@ -82,6 +85,7 @@ void intersect_sphere(int primIdx)
       if( rtPotentialIntersection( root2 ) ) {
         shading_normal = geometric_normal = (O + root2*D)/radius;
 
+        instanceIdentity = identityBuffer[instanceIdx*primitiveCount+primIdx] ;  // index just primIdx for non-instanced
         nodeIndex = identity.x ;
         boundaryIndex = identity.z ;
         sensorIndex = identity.w ;

@@ -8,6 +8,11 @@ using namespace optix;
 
 rtBuffer<float3> vertexBuffer;     
 
+rtDeclareVariable(unsigned int, instanceIdx,  attribute instance_index,);
+rtDeclareVariable(unsigned int, primitiveCount,  attribute primitive_count,);
+rtBuffer<uint4> identityBuffer; 
+
+
 // these buffers could be combined into an int4
 rtBuffer<int3> indexBuffer; 
 
@@ -24,6 +29,7 @@ rtBuffer<unsigned int> sensorBuffer;
 rtDeclareVariable(unsigned int, nodeIndex,     attribute node_index,);
 rtDeclareVariable(unsigned int, boundaryIndex, attribute boundary_index,);
 rtDeclareVariable(unsigned int, sensorIndex,   attribute sensor_index,);
+rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
 //rtDeclareVariable(float3, intersectionPosition, attribute intersection_position, ); 
@@ -52,6 +58,8 @@ RT_PROGRAM void mesh_intersect(int primIdx)
         {
             // attributes should be set between rtPotential and rtReport
             geometricNormal = normalize(n);
+            //instanceIdentity = identityBuffer[instanceIdx*primitiveCount+primIdx] ;  // index just primIdx for non-instanced
+            instanceIdentity = identityBuffer[primIdx] ;  // index just primIdx for non-instanced
 
             nodeIndex = nodeBuffer[primIdx];
             boundaryIndex = boundaryBuffer[primIdx];

@@ -6,7 +6,7 @@
 //  see TriangleMesh.cu:mesh_intersect for where these attributes come from
 
 rtDeclareVariable(float3,       geometricNormal, attribute geometric_normal, );
-
+rtDeclareVariable(uint4,  instanceIdentity, attribute instance_identity, );
 rtDeclareVariable(unsigned int, nodeIndex,       attribute node_index, );
 rtDeclareVariable(unsigned int, boundaryIndex,   attribute boundary_index, );
 rtDeclareVariable(unsigned int, sensorIndex,     attribute sensor_index, );
@@ -76,6 +76,8 @@ RT_PROGRAM void closest_hit_propagate()
      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   // 1-based with cos_theta signing, 0 means miss
 
      prd.sensor = sensorIndex ; 
+
+     prd.identity = instanceIdentity ; 
 
      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
      //

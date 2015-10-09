@@ -1228,7 +1228,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
      Constructing a face repeated IIdentity buffer
      to be addressed with 0:numInstances*PrimitiveCount
 
-         instanceIndex*PrimitiveCount + primIdx ;
+         instanceIdx*PrimitiveCount + primIdx ;
 
      the primIdx goes over all the solids 
 */

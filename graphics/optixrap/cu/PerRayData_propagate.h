@@ -9,6 +9,7 @@ struct PerRayData_propagate
     float distance_to_boundary ;
     int   boundary ; 
     int   sensor ; 
+    uint4 identity ; 
     float cos_theta ;
 };
 

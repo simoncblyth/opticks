@@ -4,6 +4,7 @@
 
 //geometric_normal is set by the closest hit intersection program 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, );
+rtDeclareVariable(uint4,  instanceIdentity, attribute instance_identity, );
 rtDeclareVariable(unsigned int, nodeIndex, attribute node_index, );
 rtDeclareVariable(unsigned int, boundaryIndex, attribute boundary_index, );
 rtDeclareVariable(float3, contrast_color, , );
@@ -17,6 +18,7 @@ rtDeclareVariable(unsigned int,  touch_mode, , );
 RT_PROGRAM void closest_hit_radiance()
 {
      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
+
   // const float3 n = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, geometricNormal)) ; 
   // const float3 n = normalize(geometricNormal) ; 
 
@@ -59,10 +61,13 @@ RT_PROGRAM void closest_hit_radiance()
   //prd.result = make_float3(0.5f);            
 
   prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+  // prd.result = make_float3( instanceIdentity.x/13000.f ) ;  gives launch fail
 
   //prd.result = contrast_color ;   // according to boundary index, currently only one color as only one material ?
-  //prd.result = make_float3( boundaryIndex/50.f );  // grey scale according to boundary "boundary" index
+  // prd.result = make_float3( boundaryIndex/50.f );  // grey scale according to boundary "boundary" index
   //prd.result = make_float3(0.f);
+
+
 
   prd.touch = make_uint4( nodeIndex, boundaryIndex, 0, 0) ;
 

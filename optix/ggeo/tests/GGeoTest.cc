@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
         if(friid) friid->save<unsigned int>("/tmp/friid.npy");
 
         GBuffer* frid = mm->getFaceRepeatedIdentityBuffer();
-        if(frid) friid->save<unsigned int>("/tmp/frid.npy");
+        if(frid) frid->save<unsigned int>("/tmp/frid.npy");
 
     }
 

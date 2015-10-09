@@ -140,6 +140,8 @@ void OGeo::convert()
             optix::Geometry gmm = makeGeometry(mm);
             optix::Material mat = makeMaterial();
             optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
+            gi["instanceIdx"]->setUint( 0u );  // so same code can run Instanced or not 
+            gi["primitiveCount"]->setUint( 0u ); // not needed for non-instanced
             m_geometry_group->addChild(gi);
         }
         else
@@ -397,6 +399,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
     geometry->setPrimitiveCount( numSolids );
+    geometry["primitiveCount"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
 
     LOG(warning) << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
@@ -458,6 +461,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     unsigned int numITransforms = mm->getNumITransforms();
 
     geometry->setPrimitiveCount(numFaces);
+    geometry["primitiveCount"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
 
     LOG(info) << "OGeo::makeTriangulatedGeometry " 
               << " mmIndex " << mm->getIndex() 
