@@ -56,6 +56,8 @@ TorchStepNPY::Param_t TorchStepNPY::getParam(const char* k)
 
 void TorchStepNPY::configure(const char* config_)
 {
+    m_config = strdup(config_); 
+
     std::string config(config_);
     typedef std::pair<std::string,std::string> KV ; 
     std::vector<KV> ekv = ekv_split(config.c_str(),';',"=");
@@ -192,7 +194,7 @@ NPY<float>* TorchStepNPY::getNPY()
 
 
 
-void TorchStepNPY::addStep()
+void TorchStepNPY::addStep(bool verbose)
 {
     if(m_npy == NULL)
     {
@@ -204,6 +206,8 @@ void TorchStepNPY::addStep()
 
     update(); 
 
+    if(verbose) dump("TorchStepNPY::addStep");
+
     m_npy->setQuadI(i, 0, m_ctrl );
     m_npy->setQuad( i, 1, m_post );
     m_npy->setQuad( i, 2, m_dirw );
@@ -214,20 +218,42 @@ void TorchStepNPY::addStep()
     m_step_index++ ; 
 }
 
+
+
+void TorchStepNPY::update()
+{
+    m_src = m_frame_transform * m_source_local  ; 
+    m_tgt = m_frame_transform * m_target_local  ; 
+    m_dir = glm::vec3(m_tgt) - glm::vec3(m_src) ;
+
+    m_post.x = m_src.x ; 
+    m_post.y = m_src.y ; 
+    m_post.z = m_src.z ; 
+
+    glm::vec3 dir = glm::normalize( m_dir );
+
+    m_dirw.x = dir.x ; 
+    m_dirw.y = dir.y ; 
+    m_dirw.z = dir.z ; 
+}
+
+
 void TorchStepNPY::dump(const char* msg)
 {
     printf("%s config %s  \n", msg, m_config );
 
     print(m_frame,        "m_frame ");
-    print(m_source_local, "m_source_local ");
-    print(m_target_local, "m_target_local ");
+    print(m_source_local, "m_source_local ", m_src, "m_src");
+    print(m_target_local, "m_target_local ", m_tgt, "m_tgt");
+    print(m_dir, "m_dir");
 
-    print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
+
+    //print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
     print(m_post, "m_post : position, time " ); 
     print(m_dirw, "m_dirw : direction, weight" ); 
-    print(m_polw, "m_polw : polarization, wavelength" ); 
-    print(m_zenith_azimuth, "m_zenith_azimuth : zenith, azimuth " ); 
-    print(m_beam, "m_beam: radius,... " ); 
+    //print(m_polw, "m_polw : polarization, wavelength" ); 
+    //print(m_zenith_azimuth, "m_zenith_azimuth : zenith, azimuth " ); 
+    //print(m_beam, "m_beam: radius,... " ); 
 }
 
 

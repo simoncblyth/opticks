@@ -709,7 +709,8 @@ TorchStepNPY* App::makeSimpleTorchStep()
 
     m_ggeo->targetTorchStep(torchstep);
 
-    torchstep->addStep();  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
+    bool verbose = true ; 
+    torchstep->addStep(verbose);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
     return torchstep ; 
 }

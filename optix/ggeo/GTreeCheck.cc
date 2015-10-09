@@ -54,7 +54,7 @@ void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo, bool deltacheck)
          mergedmesh->setITransformsBuffer(itransforms);
 
          GBuffer* iidentity       = ta.makeInstanceIdentityBuffer(ridx);
-         mergedmesh->setIIdentityBuffer(iidentity);
+         mergedmesh->setInstancedIdentityBuffer(iidentity);
 
 
          //mergedmesh->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");

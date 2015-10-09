@@ -217,7 +217,7 @@ class GMesh : public GDrawable {
       void setMeshesBuffer(GBuffer* buffer);
       void setNodeInfoBuffer(GBuffer* buffer);
       void setIdentityBuffer(GBuffer* buffer);
-      void setIIdentityBuffer(GBuffer* buffer);
+      void setInstancedIdentityBuffer(GBuffer* buffer);
 
   public:
       bool hasTransformsBuffer(); 
@@ -238,13 +238,22 @@ class GMesh : public GDrawable {
       GBuffer* getMeshesBuffer();
       GBuffer* getNodeInfoBuffer();
       GBuffer* getIdentityBuffer();
-      GBuffer* getIIdentityBuffer();
+      GBuffer* getInstancedIdentityBuffer();
 
       GBuffer* getITransformsBuffer();
 
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
       unsigned int findContainer(gfloat3 p);
+
+  public:
+      // transient buffers, not persisted : providing node level info in a face level buffer by repetition
+      GBuffer* getFaceRepeatedInstancedIdentityBuffer(); 
+      GBuffer* getFaceRepeatedIdentityBuffer(); 
+  private: 
+      GBuffer* makeFaceRepeatedInstancedIdentityBuffer();
+      GBuffer* makeFaceRepeatedIdentityBuffer();
+
 
   ///////// for use from subclass  /////////////////////////////////////
   public:
@@ -257,7 +266,7 @@ class GMesh : public GDrawable {
       virtual unsigned int*  getSensors();
       virtual guint4*  getNodeInfo();
       virtual guint4*  getIdentity();
-      virtual guint4*  getIIdentity();
+      virtual guint4*  getInstancedIdentity();
 
       virtual GBuffer* getNodesBuffer();
       virtual GBuffer* getBoundariesBuffer();
@@ -375,6 +384,10 @@ class GMesh : public GDrawable {
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
       GBuffer* m_iidentity_buffer ;
+
+      // transients
+      GBuffer* m_facerepeated_identity_buffer ;
+      GBuffer* m_facerepeated_iidentity_buffer ;
 
 
 };
@@ -578,7 +591,7 @@ inline guint4* GMesh::getIdentity()
 {
     return m_identity ; 
 }
-inline guint4* GMesh::getIIdentity()
+inline guint4* GMesh::getInstancedIdentity()
 {
     return m_iidentity ; 
 }
@@ -646,12 +659,10 @@ inline GBuffer*  GMesh::getIdentityBuffer()
 {
     return m_identity_buffer ;
 }
-inline GBuffer*  GMesh::getIIdentityBuffer()
+inline GBuffer*  GMesh::getInstancedIdentityBuffer()
 {
     return m_iidentity_buffer ;
 }
-
-
 
 
 

@@ -27,14 +27,17 @@ elif [ "${cmdline/--mblib}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibMetadataTest)
 elif [ "${cmdline/--sensor}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GSensorListTest)
+elif [ "${cmdline/--ggeo}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin GGeoTest)
 elif [ "${cmdline/--assimp}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(assimpwrap-bin)
 elif [ "${cmdline/--openmesh}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(openmeshrap-bin) 
+elif [ "${cmdline/--torchstep}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin TorchStepNPYTest)
 else
    unset GGEOVIEW_BINARY 
 fi
-
 
 
 ggeoview_defaults_dyb(){

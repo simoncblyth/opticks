@@ -75,6 +75,19 @@ void print(const glm::vec4& v, const char* msg)
     printf("%15s vec4  %10.3f %10.3f %10.3f %10.3f \n", msg, v.x, v.y, v.z, v.w);
 }
 
+
+void print(const glm::vec4& v0, const char* msg0, const glm::vec4& v1, const char* msg1)
+{
+    const char* fmt = 
+"%15s vec4  %10.3f %10.3f %10.3f %10.3f   "
+"%15s vec4  %10.3f %10.3f %10.3f %10.3f \n" ;
+    printf(fmt, 
+           msg0, v0.x, v0.y, v0.z, v0.w,
+           msg1, v1.x, v1.y, v1.z, v1.w
+         );
+}
+
+
 void print(const glm::vec4& v, const char* tmpl, unsigned int incl)
 {
     char msg[128];

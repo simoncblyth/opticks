@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     m_ggeo->loadFromCache();
 
     unsigned int nmm = m_ggeo->getNumMergedMesh();
-    for(unsigned int i=1 ; i < nmm ; i++)
+    for(unsigned int i=0 ; i < nmm ; i++)
     { 
         GMergedMesh* mm = m_ggeo->getMergedMesh(i) ;
         unsigned int numSolids = mm->getNumSolids();
@@ -32,7 +32,17 @@ int main(int argc, char* argv[])
             bb.Summary("bb");
         }
 
+
+        GBuffer* friid = mm->getFaceRepeatedInstancedIdentityBuffer();
+        if(friid) friid->save<unsigned int>("/tmp/friid.npy");
+
+        GBuffer* frid = mm->getFaceRepeatedIdentityBuffer();
+        if(frid) friid->save<unsigned int>("/tmp/frid.npy");
+
     }
+
+
+
 
     return 0 ;
 }

@@ -206,7 +206,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
         m_nodeinfo[m_cur_solid].x = selected ? nface : 0 ; 
         m_nodeinfo[m_cur_solid].y = selected ? nvert : 0 ; 
-        m_nodeinfo[m_cur_solid].z = nodeIndex ;  // redundant?
+        m_nodeinfo[m_cur_solid].z = nodeIndex ;  
         m_nodeinfo[m_cur_solid].w = parentIndex ; 
 
         if(isGlobal())

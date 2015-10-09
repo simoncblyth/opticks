@@ -11,6 +11,7 @@ std::string format(const glm::vec3& v );
 void print(const glm::mat4& m, const char* msg);
 void print(const glm::vec3& v, const char* msg);
 void print(const glm::vec4& v, const char* msg);
+void print(const glm::vec4& v0, const char* msg0, const glm::vec4& v1, const char* msg1);
 void print(const glm::vec4& v, const char* tmpl, unsigned int incl);
 void print(const glm::ivec4& v, const char* msg);
 void print(const glm::vec4& a, const glm::vec4& b, const glm::vec4& c, const char* msg);

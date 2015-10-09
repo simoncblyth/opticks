@@ -33,7 +33,7 @@ class TorchStepNPY {
    public:  
        TorchStepNPY(unsigned int genstep_id, unsigned int num_step=1, const char* config=NULL); 
        void configure(const char* config);
-       void addStep(); // increments m_step_index
+       void addStep(bool verbose=false); // increments m_step_index
        NPY<float>* getNPY();
    private:
        void update();
@@ -53,11 +53,6 @@ class TorchStepNPY {
        void setTargetLocal(const char* s );
        glm::vec4& getSourceLocal();
        glm::vec4& getTargetLocal();
-   public:
-       // global positions 
-       glm::vec4  getSource();
-       glm::vec4  getTarget();
-   public:
    public:  
        // currently ignored on the GPU
        void setPolarization(glm::vec3& pol);
@@ -105,6 +100,9 @@ class TorchStepNPY {
        glm::mat4    m_frame_transform ; 
        glm::vec4    m_source_local ; 
        glm::vec4    m_target_local ; 
+       glm::vec4    m_src ;
+       glm::vec4    m_tgt ;
+       glm::vec3    m_dir ;
   private:
        // 6 quads that are copied into the genstep 
        glm::ivec4   m_ctrl ;
@@ -153,32 +151,6 @@ inline glm::vec4& TorchStepNPY::getSourceLocal()
 inline glm::vec4& TorchStepNPY::getTargetLocal()
 {
     return m_target_local ; 
-}
-
-inline glm::vec4 TorchStepNPY::getSource()
-{
-    return m_frame_transform * m_source_local  ; 
-}
-inline glm::vec4 TorchStepNPY::getTarget()
-{
-    return m_frame_transform * m_target_local  ; 
-}
-
-
-inline void TorchStepNPY::update()
-{
-    glm::vec4 src = getSource() ;
-    glm::vec4 tgt = getTarget() ;
-
-    m_post.x = src.x ; 
-    m_post.y = src.y ; 
-    m_post.z = src.z ; 
-
-    glm::vec3 dir = glm::normalize( glm::vec3(tgt) - glm::vec3(src) );
-
-    m_dirw.x = dir.x ; 
-    m_dirw.y = dir.y ; 
-    m_dirw.z = dir.z ; 
 }
 
 

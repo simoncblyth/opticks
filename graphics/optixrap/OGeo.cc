@@ -243,13 +243,24 @@ optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 
 optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 {
-    GBuffer* tbuf = mm->getITransformsBuffer();
-    unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
-    assert(tbuf && numTransforms > 0);
+    GBuffer* itransforms = mm->getITransformsBuffer();
+    unsigned int numTransforms = limit > 0 ? std::min(itransforms->getNumItems(), limit) : itransforms->getNumItems() ;
+    assert(itransforms && numTransforms > 0);
 
-    LOG(info) << "OGeo::makeRepeatedGroup numTransforms " << numTransforms ; 
+    GBuffer* ibuf = mm->getInstancedIdentityBuffer();
+    unsigned int numIdentity = ibuf->getNumItems();
 
-    float* tptr = (float*)tbuf->getPointer(); 
+    assert(numIdentity % numTransforms == 0); 
+    unsigned int numSolids = numIdentity/numTransforms ;
+
+
+    LOG(info) << "OGeo::makeRepeatedGroup"
+              << " numTransforms " << numTransforms 
+              << " numIdentity " << numIdentity  
+              << " numSolids " << numSolids  
+              ; 
+
+    float* tptr = (float*)itransforms->getPointer(); 
 
     optix::Group assembly = m_context->createGroup();
     assembly->setChildCount(numTransforms);
@@ -315,7 +326,7 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
     const char* ubuilder = builder ? builder : BUILDER ;
     const char* utraverser = traverser ? traverser : TRAVERSER ;
 
-    LOG(info) << "OGeo::makeAcceleration " 
+    LOG(debug) << "OGeo::makeAcceleration " 
               << " ubuilder " << ubuilder 
               << " utraverser " << utraverser
               ; 
@@ -359,7 +370,7 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
                    geometry = makeTriangulatedGeometry(mergedmesh);
                    break ; 
         case 'S':
-                   geometry = makeSimplifiedGeometry(mergedmesh);
+                   geometry = makeAnalyticGeometry(mergedmesh);
                    break ; 
         default:
                    assert(0);
@@ -369,80 +380,140 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 }
 
-optix::Geometry OGeo::makeSimplifiedGeometry(GMergedMesh* mergedmesh)
+optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
     // replacing instance1 with a sphere positioned to match the cathode front face
-
-    LOG(warning) << "OGeo::makeSimplifiedGeometry " ; 
-    assert(mergedmesh->getIndex() == 1 ); 
-
-    unsigned int nsolids = mergedmesh->getNumSolids();
-    assert( nsolids < 10 ); // expecting small number
-    nsolids = 1 ; // override, as think getting 5 spheres on top of each other
+    assert(mm->getIndex() == 1 ); 
 
     optix::Geometry geometry = m_context->createGeometry();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    geometry->setPrimitiveCount( nsolids );
     geometry->setIntersectionProgram(cfg->createProgram("sphere.cu.ptx", "intersect"));
     geometry->setBoundingBoxProgram(cfg->createProgram("sphere.cu.ptx", "bounds"));
 
+    unsigned int numSolids = mm->getNumSolids();
+    assert( numSolids < 10 ); // expecting small number
+    numSolids = 1 ; // override, as think getting 5 spheres on top of each other
+    GBuffer* itransforms = mm->getITransformsBuffer();
+    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
+
+    geometry->setPrimitiveCount( numSolids );
+
+    LOG(warning) << "OGeo::makeAnalyticGeometry " 
+                 << " mmIndex " << mm->getIndex() 
+                 << " numSolids (PrimitiveCount) " << numSolids
+                 << " numITransforms " << numITransforms 
+                 ;
+
+
     geometry["sphere"]->setFloat( 0, 0, 0, 131.f );  //   PmtHemiFaceROC
 
-    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( mergedmesh->getIdentityBuffer(), RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
-    geometry["identityBuffer"]->setBuffer(identityBuffer);
 
+    GBuffer* id = NULL ; 
+    if(numITransforms > 0)
+    {
+        id = mm->getInstancedIdentityBuffer();
+        assert(id);
+        LOG(info) << "OGeo::makeAnalyticGeometry using InstancedIdentityBuffer"
+                  << " iid items " << id->getNumItems() 
+                  << " numITransforms*numSolids " << numITransforms*numSolids
+                  ;
+
+        assert( id->getNumItems() == numITransforms*numSolids );
+    }
+    else
+    {
+        id = mm->getIdentityBuffer();
+        assert(id);
+        LOG(info) << "OGeo::makeAnalyticGeometry using IdentityBuffer"
+                  << " id items " << id->getNumItems() 
+                  << " numSolids " << numSolids
+                  ;
+        assert( id->getNumItems() == numSolids );
+    }
+    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
+    geometry["identityBuffer"]->setBuffer(identityBuffer);
 
     return geometry ; 
 }
 
-optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mergedmesh)
+optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
 {
-    LOG(info) << "OGeo::makeTriangulatedGeometry " ; 
     // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
     // and use folding by 3 in createInputBuffer
+    //
+    // DYB: for instanced geometry this just sees the 5 solids of the repeated instance 
+    //      and numFaces is the sum of the face counts of those, and numITransforms is 672
+    // 
+    //  in order to provide identity to the instances need to repeat the iidentity to the
+    //  triangles
+    //
 
     optix::Geometry geometry = m_context->createGeometry();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
     geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
     geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
 
-    GBuffer* vbuf = mergedmesh->getVerticesBuffer();
-    GBuffer* ibuf = mergedmesh->getIndicesBuffer();
-    GBuffer* tbuf = mergedmesh->getITransformsBuffer();
-
-    unsigned int numVertices = vbuf->getNumItems() ;
-    unsigned int numFaces = ibuf->getNumItems()/3;    
-    unsigned int numTransforms = tbuf ? tbuf->getNumItems() : 0  ;    
+    unsigned int numSolids = mm->getNumSolids();
+    unsigned int numFaces = mm->getNumFaces();
+    unsigned int numITransforms = mm->getNumITransforms();
 
     geometry->setPrimitiveCount(numFaces);
 
-    LOG(debug) << "OGeo::makeGeometry"
-              << " numVertices " << numVertices 
-              << " numFaces " << numFaces
-              << " numTransforms " << numTransforms 
+    LOG(info) << "OGeo::makeTriangulatedGeometry " 
+              << " mmIndex " << mm->getIndex() 
+              << " numFaces (PrimitiveCount) " << numFaces
+              << " numSolids " << numSolids
+              << " numITransforms " << numITransforms 
               ;
+
+
+    GBuffer* id = NULL ; 
+    if(numITransforms > 0)
+    {
+        id = mm->getFaceRepeatedInstancedIdentityBuffer();
+        assert(id);
+        LOG(info) << "OGeo::makeTriangulatedGeometry using FaceRepeatedInstancedIdentityBuffer"
+                  << " friid items " << id->getNumItems() 
+                  << " numITransforms*numFaces " << numITransforms*numFaces
+                  ;
+
+        assert( id->getNumItems() == numITransforms*numFaces );
+   }
+   else
+   {
+        id = mm->getFaceRepeatedIdentityBuffer();
+        assert(id);
+        LOG(info) << "OGeo::makeTriangulatedGeometry using FaceRepeatedIdentityBuffer"
+                  << " frid items " << id->getNumItems() 
+                  << " numFaces " << numFaces
+                  ;
+        assert( id->getNumItems() == numFaces );
+   }  
+
+   optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
+   geometry["identityBuffer"]->setBuffer(identityBuffer);
+
 
     // TODO: purloin the OpenGL buffers to avoid duplicating the geometry info on GPU 
     // TODO : attempt to isolate this bad behavior 
     // TODO : float3 is a known to be problematic, maybe try with float4
     // TODO : consolidate the three RT_FORMAT_UNSIGNED_INT into one UINT4
-    //    
     // setting reuse to true causes OptiX launch failure : bad enum 
     bool reuse = false ;  
 
-    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mergedmesh->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer", reuse ); 
+    optix::Buffer vertexBuffer = createInputBuffer<optix::float3>( mm->getVerticesBuffer(), RT_FORMAT_FLOAT3, 1, "vertexBuffer", reuse ); 
     geometry["vertexBuffer"]->setBuffer(vertexBuffer);
 
-    optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mergedmesh->getIndicesBuffer(), RT_FORMAT_INT3, 3 , "indexBuffer"); 
+    optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mm->getIndicesBuffer(), RT_FORMAT_INT3, 3 , "indexBuffer");  // need the 3 to fold for faces
     geometry["indexBuffer"]->setBuffer(indexBuffer);
 
-    optix::Buffer nodeBuffer = createInputBuffer<unsigned int>( mergedmesh->getNodesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "nodeBuffer");
+    optix::Buffer nodeBuffer = createInputBuffer<unsigned int>( mm->getNodesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "nodeBuffer");
     geometry["nodeBuffer"]->setBuffer(nodeBuffer);
 
-    optix::Buffer boundaryBuffer = createInputBuffer<unsigned int>( mergedmesh->getBoundariesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "boundaryBuffer");
+    optix::Buffer boundaryBuffer = createInputBuffer<unsigned int>( mm->getBoundariesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "boundaryBuffer");
     geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
  
-    optix::Buffer sensorBuffer = createInputBuffer<unsigned int>( mergedmesh->getSensorsBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "sensorBuffer");
+    optix::Buffer sensorBuffer = createInputBuffer<unsigned int>( mm->getSensorsBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "sensorBuffer");
     geometry["sensorBuffer"]->setBuffer(sensorBuffer);
 
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
@@ -452,6 +523,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mergedmesh)
     geometry["texCoordBuffer"]->setBuffer(emptyBuffer);
  
     return geometry ; 
+
 }
 
 

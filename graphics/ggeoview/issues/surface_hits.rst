@@ -785,3 +785,8 @@ Now with simplified OptiX geometry
     ggv --mdyb --torchconfig "frame=3201;source=0,0,1000;target=0,0,0;radius=300;" --save --simplify 
 
 
+    ggv --torchconfig "frame=3201;source=0,0,1000;target=0,0,0;radius=300;" --save 
+
+
+
+

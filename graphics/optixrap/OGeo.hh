@@ -38,7 +38,7 @@ private:
     optix::GeometryInstance makeGeometryInstance(optix::Geometry geometry, optix::Material material);
     //optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
 private:
-    optix::Geometry         makeSimplifiedGeometry(GMergedMesh* mergedmesh);
+    optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
     void dump(const char* msg, const float* m);
 

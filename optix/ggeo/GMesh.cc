@@ -95,7 +95,7 @@ GMesh::GMesh(GMesh* other)
      m_meshes_buffer(other->getMeshesBuffer()),
      m_nodeinfo_buffer(other->getNodeInfoBuffer()),
      m_identity_buffer(other->getIdentityBuffer()),
-     m_iidentity_buffer(other->getIIdentityBuffer()),
+     m_iidentity_buffer(other->getInstancedIdentityBuffer()),
      m_geocode(other->getGeoCode()),
      GDrawable()
 {
@@ -173,6 +173,8 @@ GMesh::GMesh(unsigned int index,
       m_nodeinfo_buffer(NULL),
       m_identity_buffer(NULL),
       m_iidentity_buffer(NULL),
+      m_facerepeated_identity_buffer(NULL),
+      m_facerepeated_iidentity_buffer(NULL),
 
       GDrawable()
 {
@@ -277,7 +279,7 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
     if(strcmp(name, nodeinfo) == 0)        setNodeInfoBuffer(buffer) ; 
     if(strcmp(name, identity) == 0)        setIdentityBuffer(buffer) ; 
-    if(strcmp(name, iidentity) == 0)       setIIdentityBuffer(buffer) ; 
+    if(strcmp(name, iidentity) == 0)       setInstancedIdentityBuffer(buffer) ; 
 }
 
 void GMesh::setVertices(gfloat3* vertices)
@@ -440,7 +442,11 @@ unsigned int GMesh::getNumTransforms()
 }
 unsigned int GMesh::getNumITransforms()
 {
-    return m_itransforms_buffer ? m_itransforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ; 
+    if(!m_itransforms_buffer) return 0 ;    
+    unsigned int n0 = m_itransforms_buffer->getNumBytes()/(16*sizeof(float)) ; 
+    unsigned int n1 = m_itransforms_buffer->getNumItems() ;
+    assert(n0 == n1); 
+    return n1 ;  
 }
 
 
@@ -534,29 +540,13 @@ void GMesh::setIdentityBuffer(GBuffer* buffer)
 
 
 
-/*
-void GMesh::setIIdentity(guint4* iidentity)  
-{
-    m_iidentity = iidentity ;  
-    unsigned int size = sizeof(guint4);
-    assert(size == sizeof(unsigned int)*4 );
-    //assert(m_num_instances > 0);
-    //m_iidentity_buffer = new GBuffer( size*m_num_solids, (void*)m_identity, size, 4 ); 
-}
-*/
-
-void GMesh::setIIdentityBuffer(GBuffer* buffer) 
+void GMesh::setInstancedIdentityBuffer(GBuffer* buffer) 
 {
     m_iidentity_buffer = buffer ;  
     if(!buffer) return ; 
 
     m_iidentity = (guint4*)buffer->getPointer();
 
-    // size will be numSolids*numInstances 
-
-    //unsigned int numBytes = buffer->getNumBytes();
-    //unsigned int numSolids = numBytes/size ;
-    //setNumSolids(numSolids);
 }
 
 
@@ -1222,4 +1212,254 @@ void GMesh::findShortName()
    if(!m_name) return ; 
    m_shortname = trimPointerSuffixPrefix(m_name, NULL );   
 }
+
+
+
+
+
+GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
+{
+/*
+
+     For debugging::
+
+          ggv --ggeo
+
+     Constructing a face repeated IIdentity buffer
+     to be addressed with 0:numInstances*PrimitiveCount
+
+         instanceIndex*PrimitiveCount + primIdx ;
+
+     the primIdx goes over all the solids 
+*/
+
+    unsigned int numITransforms = getNumITransforms() ;
+    if(numITransforms == 0)
+    {
+        LOG(warning) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer only relevant to instanced meshes " ;
+        return NULL ; 
+    }
+    unsigned int numSolids = getNumSolids();
+    unsigned int numFaces = getNumFaces() ;
+    unsigned int numRepeatedIdentity = numITransforms*numFaces ;
+
+    LOG(info) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+              << " numSolids " << numSolids 
+              << " numFaces (sum of faces in numSolids)" << numFaces 
+              << " numITransforms " << numITransforms
+              << " numRepeatedIdentity " << numRepeatedIdentity 
+               ; 
+
+    assert(numFaces == getNumFaces());
+    assert(m_nodeinfo_buffer->getNumItems() == numSolids);
+    assert(m_iidentity_buffer->getNumItems() == numSolids*numITransforms);
+
+    guint4* nodeinfo = getNodeInfo();
+    unsigned int nftot(0);
+    unsigned int offset(0);
+
+    unsigned int i1 = numFaces ;
+    unsigned int il = (numITransforms-1)*numFaces ;
+
+    for(unsigned int s=0 ; s < numSolids ; s++)
+    {
+        unsigned int nf = (nodeinfo + s)->x ;
+        printf(" s %u nf %3d  i0 %d:%d  i1 %d:%d   il %d:%d \n", s, nf, offset, offset+nf, i1+offset, i1+offset+nf, il+offset, il+offset+nf ); 
+        nftot += nf ;
+        offset += nf ; 
+    }
+    printf(" ----- %d \n", nftot);
+    assert( numFaces == nftot );
+
+
+    guint4* riid = new guint4[numRepeatedIdentity] ;
+    
+    for(unsigned int i=0 ; i < numITransforms ; i++)
+    {
+        offset = 0 ; 
+        for(unsigned int s=0 ; s < numSolids ; s++)
+        {   
+            guint4 iid = m_iidentity[numSolids*i + s]  ;  
+            unsigned int nf = (nodeinfo + s)->x ;
+            for(unsigned int f=0 ; f < nf ; ++f) riid[i*numFaces+offset+f] = iid ; 
+            offset += nf ; 
+        }  
+    }   
+    
+    unsigned int size = sizeof(guint4) ;
+    GBuffer* buffer = new GBuffer( size*numRepeatedIdentity, (void*)riid, size, 4 ); 
+    return buffer ; 
+}
+
+
+
+GBuffer*  GMesh::getFaceRepeatedInstancedIdentityBuffer()
+{
+    if(m_facerepeated_iidentity_buffer == NULL)
+    {
+         m_facerepeated_iidentity_buffer = makeFaceRepeatedInstancedIdentityBuffer() ;  
+    }
+    return m_facerepeated_iidentity_buffer ;
+}
+
+
+
+
+
+
+/*
+
+Instance Identity buffer has nodeIndex/meshIndex/boundaryIndex/sensorIndex
+for all 5 solids of each instance::
+
+    In [3]: ii = np.load("iidentity.npy")
+
+    In [40]: ii.reshape(-1,5,4)
+    Out[40]: 
+    array([[[ 3199,    47,    19,     0],
+            [ 3200,    46,    20,     0],
+            [ 3201,    43,    21,     3],
+            [ 3202,    44,     1,     0],
+            [ 3203,    45,     1,     0]],
+
+           [[ 3205,    47,    19,     0],
+            [ 3206,    46,    20,     0],
+            [ 3207,    43,    21,     8],
+            [ 3208,    44,     1,     0],
+            [ 3209,    45,     1,     0]],
+
+           [[ 3211,    47,    19,     0],
+            [ 3212,    46,    20,     0],
+            [ 3213,    43,    21,    13],
+            [ 3214,    44,     1,     0],
+            [ 3215,    45,     1,     0]],
+
+    ...
+
+    In [41]: ii.reshape(-1,5,4).shape
+    Out[41]: (672, 5, 4)
+
+    In [9]: ii.reshape(672,-1,4).shape
+    Out[9]: (672, 5, 4)
+
+
+    In [76]: fr = np.load("/tmp/friid.npy")
+
+    In [80]: fr.reshape(-1,4)
+    Out[80]: 
+    array([[ 3199,    47,    19,     0],
+           [ 3199,    47,    19,     0],
+           [ 3199,    47,    19,     0],
+           ..., 
+           [11412,    45,     1,     0],
+           [11412,    45,     1,     0],
+           [11412,    45,     1,     0]], dtype=uint32)
+
+    In [81]: fr.reshape(-1,4).shape
+    Out[81]: (1967616, 4)
+
+    In [82]: fr.reshape(672,-1,4).shape
+    Out[82]: (672, 2928, 4)
+
+    In [83]: fr[4320:5280]   # 3rd solid of 2nd instance : using face repeated IIdentity 
+    Out[83]: 
+    array([[3207,   43,   21,    8],
+           [3207,   43,   21,    8],
+           [3207,   43,   21,    8],
+           ..., 
+           [3207,   43,   21,    8],
+           [3207,   43,   21,    8],
+           [3207,   43,   21,    8]], dtype=uint32)
+
+
+    In [11]: ii.reshape(672,-1,4)[1,2]    # again 3rd solid of 2nd instance : using solid level IIdentity 
+    Out[11]: array([3207,   43,   21,    8], dtype=uint32)
+
+
+    In [10]: ii.reshape(672,-1,4)[1]
+    Out[10]: 
+    array([[3205,   47,   19,    0],
+           [3206,   46,   20,    0],
+           [3207,   43,   21,    8],
+           [3208,   44,    1,    0],
+           [3209,   45,    1,    0]], dtype=uint32)
+
+
+
+
+
+    [2015-10-09 18:39:50.180695] [0x000007fff7448031] [info]    GMesh::makeFaceRepeatedIIdentityBuffer numSolids 5 numFaces (sum of faces in numSolids)2928 numITransforms 672 numRepeatedIdentity 1967616
+     s 0 nf 720  i0 0:720  i1 2928:3648   il 1964688:1965408 
+     s 1 nf 672  i0 720:1392  i1 3648:4320   il 1965408:1966080 
+     s 2 nf 960  i0 1392:2352  i1 4320:5280   il 1966080:1967040 
+     s 3 nf 480  i0 2352:2832  i1 5280:5760   il 1967040:1967520 
+     s 4 nf  96  i0 2832:2928  i1 5760:5856   il 1967520:1967616 
+     ----- 2928 
+
+
+*/
+
+
+GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
+{
+    unsigned int numITransforms = getNumITransforms() ;
+    if(numITransforms > 0)
+    {
+        LOG(warning) << "GMesh::makeFaceRepeatedIdentityBuffer only relevant to non-instanced meshes " ;
+        return NULL ; 
+    }
+    unsigned int numSolids = getNumSolids();
+    unsigned int numFaces = getNumFaces() ;
+
+    LOG(info) << "GMesh::makeFaceRepeatedIdentityBuffer"
+              << " numSolids " << numSolids 
+              << " numFaces (sum of faces in numSolids)" << numFaces 
+               ; 
+
+    assert(m_nodeinfo_buffer->getNumItems() == numSolids);
+
+    guint4* nodeinfo = getNodeInfo();
+    unsigned int nftot(0);
+    unsigned int offset(0);
+
+    unsigned int i1 = numFaces ;
+
+    for(unsigned int s=0 ; s < numSolids ; s++)
+    {
+        unsigned int nf = (nodeinfo + s)->x ;
+        //printf(" s %u nf %3d idx %d:%d  \n", s, nf, offset, offset+nf ); 
+        nftot += nf ;
+        offset += nf ; 
+    }
+    printf(" ----- %d \n", nftot);
+    assert( numFaces == nftot );
+
+
+    offset = 0 ; 
+    guint4* rid = new guint4[numFaces] ;
+    for(unsigned int s=0 ; s < numSolids ; s++)
+    {   
+        guint4 sid = m_identity[s]  ;  
+        unsigned int nf = (nodeinfo + s)->x ;
+        for(unsigned int f=0 ; f < nf ; ++f) rid[offset+f] = sid ; 
+        offset += nf ; 
+    }  
+    
+    unsigned int size = sizeof(guint4) ;
+    GBuffer* buffer = new GBuffer( size*numFaces, (void*)rid, size, 4 ); 
+    return buffer ; 
+}
+
+
+
+
+GBuffer*  GMesh::getFaceRepeatedIdentityBuffer()
+{
+    if(m_facerepeated_identity_buffer == NULL)
+    {
+         m_facerepeated_identity_buffer = makeFaceRepeatedIdentityBuffer() ;  
+    }
+    return m_facerepeated_identity_buffer ;
+}
+
 
