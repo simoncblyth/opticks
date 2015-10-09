@@ -452,24 +452,48 @@ GBuffer* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx)
 
 /*
 
-In [1]: ii = np.load("iidentity.npy")
+::
 
-In [3]: ii.shape
-Out[3]: (3360, 4)
+    In [1]: ii = np.load("iidentity.npy")
 
-In [4]: ii.reshape(-1,5,4)
-Out[4]: 
-array([[[ 3199,    47,    19,     1],
-        [ 3200,    46,    20,     2],
-        [ 3201,    43,    21,     3],
-        [ 3202,    44,     1,     4],
-        [ 3203,    45,     1,     5]],
+    In [3]: ii.shape
+    Out[3]: (3360, 4)
 
-       [[ 3205,    47,    19,     6],
-        [ 3206,    46,    20,     7],
-        [ 3207,    43,    21,     8],
-        [ 3208,    44,     1,     9],
-        [ 3209,    45,     1,    10]],
+    In [4]: ii.reshape(-1,5,4)
+    Out[4]: 
+    array([[[ 3199,    47,    19,     1],
+            [ 3200,    46,    20,     2],
+            [ 3201,    43,    21,     3],
+            [ 3202,    44,     1,     4],
+            [ 3203,    45,     1,     5]],
+
+           [[ 3205,    47,    19,     6],
+            [ 3206,    46,    20,     7],
+            [ 3207,    43,    21,     8],
+            [ 3208,    44,     1,     9],
+            [ 3209,    45,     1,    10]],
+
+
+After requiring an associated sensor surface to provide the sensor index, only cathodes 
+have non-zero index::
+
+    In [1]: ii = np.load("iidentity.npy")
+
+    In [2]: ii.reshape(-1,5,4)
+    Out[2]: 
+    array([[[ 3199,    47,    19,     0],
+            [ 3200,    46,    20,     0],
+            [ 3201,    43,    21,     3],
+            [ 3202,    44,     1,     0],
+            [ 3203,    45,     1,     0]],
+
+           [[ 3205,    47,    19,     0],
+            [ 3206,    46,    20,     0],
+            [ 3207,    43,    21,     8],
+            [ 3208,    44,     1,     0],
+            [ 3209,    45,     1,     0]],
+
+
 
 
 

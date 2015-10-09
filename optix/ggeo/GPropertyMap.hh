@@ -48,7 +48,7 @@ class GPropertyMap {
       bool isBorderSurface();
       bool isMaterial();
 
-      void setSensor(bool sensor=true);
+      void setSensor(bool sensor=true); // set in AssimpGGeo::convertSensors
       bool isSensor();
 
       void setValid(bool valid=true);

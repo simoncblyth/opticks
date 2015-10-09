@@ -28,13 +28,25 @@ void GSolid::setSensor(GSensor* sensor)
 }
 
 
+unsigned int GSolid::getSensorSurfaceIndex()
+{
+    // sensor indices are set even for non sensitive volumes in PMT viscinity
+    // TODO: change that 
+    // this is a workaround that requires an associated sensitive surface
+    // in order for the index to be provided
+
+    bool oss = m_boundary ? m_boundary->hasOuterSensorSurface() : false ; 
+    unsigned int ssi = oss ? GSensor::RefIndex(m_sensor) : 0 ;  
+    return ssi ; 
+}
+
 guint4 GSolid::getIdentity()
 {
     return guint4(
                    m_index, 
                    m_mesh ? m_mesh->getIndex() : 0, 
                    m_boundary ? m_boundary->getIndex() : 0,
-                   GSensor::RefIndex(m_sensor)
+                   getSensorSurfaceIndex()
                  );
 }
  

@@ -28,6 +28,7 @@ class GSolid : public GNode {
   public:
      void setBoundary(GBoundary* boundary);
      void setSensor(GSensor* sensor);
+     unsigned int getSensorSurfaceIndex();
   public:
      // need to resort to names for debugging IAV top lid issue
      void setPVName(const char* pvname);

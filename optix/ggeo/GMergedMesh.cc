@@ -101,8 +101,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     assert(_identity.x == nodeIndex);
     assert(_identity.y == meshIndex);
     assert(_identity.z == boundaryIndex);
-    assert(_identity.w == sensorIndex);
-
+    //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
     
     LOG(debug) << "GMergedMesh::traverse"
               << " nodeIndex " << nodeIndex

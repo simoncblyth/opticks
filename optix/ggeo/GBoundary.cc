@@ -197,6 +197,14 @@ std::string GBoundary::description()
 }
 
 
+bool GBoundary::hasOuterSensorSurface()
+{
+    bool iss = m_isurface && m_isurface->isSensor() ;
+    bool oss = m_osurface && m_osurface->isSensor() ;
+    assert(!iss);  // not expecting inner surfaces to be sensors
+    return oss ; 
+}
+
 
 GPropertyMap<float>* GBoundary::getConstituentByIndex(unsigned int p)
 {

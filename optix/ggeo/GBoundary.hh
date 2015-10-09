@@ -55,6 +55,7 @@ class GBoundary {
       unsigned int getIndex();
       void setIndex(unsigned int index);
       bool hasInnerMaterial(const char* shortname);
+      bool hasOuterSensorSurface();
   public:
       void setInnerMaterial(GPropertyMap<float>* imaterial);
       void setOuterMaterial(GPropertyMap<float>* omaterial);
