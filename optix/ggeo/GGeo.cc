@@ -781,7 +781,6 @@ void GGeo::dumpStats(const char* msg)
         GMergedMesh* mm = getMergedMesh(i);
         GBuffer* tbuf = mm->getTransformsBuffer();
         GBuffer* ibuf = mm->getITransformsBuffer();
-        GBuffer* rbuf = mm->getRTransformsBuffer();
         GBuffer* vbuf = mm->getVerticesBuffer();
         GBuffer* fbuf = mm->getIndicesBuffer();
 
@@ -790,7 +789,6 @@ void GGeo::dumpStats(const char* msg)
 
         unsigned int numTransforms = tbuf ? tbuf->getNumItems() : 1  ;
         unsigned int numITransforms = ibuf ? ibuf->getNumItems() : 0  ;
-        unsigned int numRTransforms = rbuf ? rbuf->getNumItems() : 0  ;
 
 
         if( i == 0)
@@ -808,7 +806,7 @@ void GGeo::dumpStats(const char* msg)
             vtotFaces    += numFaces*numITransforms  ;
         }
 
-        printf(" mm %2d : vertices %7d faces %7d transforms %7d itransforms %7d rtransforms %7d \n", i, numVertices, numFaces, numTransforms, numITransforms, numRTransforms);
+        printf(" mm %2d : vertices %7d faces %7d transforms %7d itransforms %7d \n", i, numVertices, numFaces, numTransforms, numITransforms );
  
     } 
 

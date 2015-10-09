@@ -87,7 +87,6 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     GNode* base = getCurrentBase();
 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
-
     GBoundary* boundary = solid->getBoundary();
     GSensor* sensor = solid->getSensor();
     GMesh* mesh = solid->getMesh();
@@ -96,6 +95,14 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     unsigned int meshIndex = mesh->getIndex();
     unsigned int boundaryIndex = boundary->getIndex();
     unsigned int sensorIndex = GSensor::RefIndex(sensor) ; 
+
+    guint4 _identity = solid->getIdentity();
+
+    assert(_identity.x == nodeIndex);
+    assert(_identity.y == meshIndex);
+    assert(_identity.z == boundaryIndex);
+    assert(_identity.w == sensorIndex);
+
     
     LOG(debug) << "GMergedMesh::traverse"
               << " nodeIndex " << nodeIndex
@@ -209,10 +216,14 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
         }
 
 
+         /*
         m_identity[m_cur_solid].x = nodeIndex ; 
         m_identity[m_cur_solid].y = meshIndex ; 
         m_identity[m_cur_solid].z = boundaryIndex ; 
         m_identity[m_cur_solid].w = sensorIndex ; 
+        */
+ 
+        m_identity[m_cur_solid] = _identity ; 
 
         m_cur_solid += 1 ; 
     }

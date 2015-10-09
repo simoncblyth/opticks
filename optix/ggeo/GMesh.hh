@@ -113,9 +113,8 @@ class GMesh : public GDrawable {
 
       // per instance global transforms of repeated geometry 
       static const char* itransforms ;    
+      static const char* iidentity ;     // guint4: node, mesh, boundary, sensor
 
-      // relative to instance transforms for components of an instance
-      static const char* rtransforms ;    
 
 
       GMesh(GMesh* other); // stealing copy ctor
@@ -154,7 +153,6 @@ class GMesh : public GDrawable {
       gbbox    getBBox(unsigned int index);
       float* getTransform(unsigned int index);
       float* getITransform(unsigned int index);
-      float* getRTransform(unsigned int index);
       gfloat3* getDimensions();
       GMatrix<float>* getModelToWorld();
 
@@ -168,7 +166,6 @@ class GMesh : public GDrawable {
       unsigned int   getNumTransforms();
 
       unsigned int   getNumITransforms();
-      unsigned int   getNumRTransforms();
 
   public:
       // debug
@@ -217,15 +214,14 @@ class GMesh : public GDrawable {
       void setBBoxBuffer(GBuffer* buffer);
       void setTransformsBuffer(GBuffer* buffer);
       void setITransformsBuffer(GBuffer* buffer);
-      void setRTransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
       void setNodeInfoBuffer(GBuffer* buffer);
       void setIdentityBuffer(GBuffer* buffer);
+      void setIIdentityBuffer(GBuffer* buffer);
 
   public:
       bool hasTransformsBuffer(); 
       bool hasITransformsBuffer(); 
-      bool hasRTransformsBuffer(); 
   public:
       // Buffer access for GDrawable protocol
       GBuffer* getVerticesBuffer();
@@ -242,9 +238,9 @@ class GMesh : public GDrawable {
       GBuffer* getMeshesBuffer();
       GBuffer* getNodeInfoBuffer();
       GBuffer* getIdentityBuffer();
+      GBuffer* getIIdentityBuffer();
 
       GBuffer* getITransformsBuffer();
-      GBuffer* getRTransformsBuffer();
 
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
@@ -261,6 +257,7 @@ class GMesh : public GDrawable {
       virtual unsigned int*  getSensors();
       virtual guint4*  getNodeInfo();
       virtual guint4*  getIdentity();
+      virtual guint4*  getIIdentity();
 
       virtual GBuffer* getNodesBuffer();
       virtual GBuffer* getBoundariesBuffer();
@@ -300,6 +297,7 @@ class GMesh : public GDrawable {
       void setMeshes(unsigned int* meshes);
       void setNodeInfo(guint4* nodeinfo);
       void setIdentity(guint4* identity);
+      //void setIIdentity(guint4* iidentity);   size numInstances*numSolids, try operating via the buffer setting only
 
   public:
       void setColor(float r, float g, float b);
@@ -347,10 +345,10 @@ class GMesh : public GDrawable {
       gbbox*          m_bbox ;
       float*          m_transforms ; 
       float*          m_itransforms ; 
-      float*          m_rtransforms ; 
       unsigned int*   m_meshes ; 
       guint4*         m_nodeinfo ; 
       guint4*         m_identity ; 
+      guint4*         m_iidentity ; 
 
 
       GMatrix<float>* m_model_to_world ;  // does this make sense to be here ? for "unplaced" shape GMesh
@@ -373,10 +371,10 @@ class GMesh : public GDrawable {
       GBuffer* m_sensors_buffer ;
       GBuffer* m_transforms_buffer ;
       GBuffer* m_itransforms_buffer ;
-      GBuffer* m_rtransforms_buffer ;
       GBuffer* m_meshes_buffer ;
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
+      GBuffer* m_iidentity_buffer ;
 
 
 };
@@ -395,10 +393,10 @@ inline void GMesh::deallocate()
     delete[] m_bbox ;  
     delete[] m_transforms ;  
     delete[] m_itransforms ;  
-    delete[] m_rtransforms ;  
     delete[] m_meshes ;  
     delete[] m_nodeinfo ;  
     delete[] m_identity ;  
+    delete[] m_iidentity ;  
 
     // NB buffers and the rest are very lightweight 
 }
@@ -580,6 +578,11 @@ inline guint4* GMesh::getIdentity()
 {
     return m_identity ; 
 }
+inline guint4* GMesh::getIIdentity()
+{
+    return m_iidentity ; 
+}
+
 
 
 
@@ -628,10 +631,6 @@ inline GBuffer*  GMesh::getITransformsBuffer()
 {
     return m_itransforms_buffer ;
 }
-inline GBuffer*  GMesh::getRTransformsBuffer()
-{
-    return m_rtransforms_buffer ;
-}
 
 
 
@@ -647,6 +646,11 @@ inline GBuffer*  GMesh::getIdentityBuffer()
 {
     return m_identity_buffer ;
 }
+inline GBuffer*  GMesh::getIIdentityBuffer()
+{
+    return m_iidentity_buffer ;
+}
+
 
 
 
@@ -675,10 +679,6 @@ inline bool GMesh::hasTransformsBuffer()
 inline bool GMesh::hasITransformsBuffer()
 {
     return m_itransforms_buffer != NULL ; 
-}
-inline bool GMesh::hasRTransformsBuffer()
-{
-    return m_rtransforms_buffer != NULL ; 
 }
 
 

@@ -16,11 +16,11 @@ class GDrawable {
       virtual GBuffer* getNodesBuffer() = 0;
       virtual GBuffer* getTransformsBuffer() = 0;
       virtual GBuffer* getITransformsBuffer() = 0;
-      virtual GBuffer* getRTransformsBuffer() = 0;
+      virtual GBuffer* getIdentityBuffer() = 0;
+      virtual GBuffer* getIIdentityBuffer() = 0;
 
       virtual GBuffer* getBoundariesBuffer() = 0;
       virtual GBuffer* getModelToWorldBuffer() = 0;
-  //    virtual GBuffer* getWavelengthBuffer() = 0;
       virtual std::vector<unsigned int>& getDistinctBoundaries() = 0;
 
       virtual gfloat4 getCenterExtent(unsigned int index) = 0 ;

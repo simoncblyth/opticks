@@ -113,9 +113,12 @@ class GNode {
       void collectProgeny(std::vector<GNode*>& progeny);
       void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
 
+
   private:
       bool                m_selfdigest ; // when true getProgenyDigest includes self node 
+  protected: 
       unsigned int        m_index ; 
+  private:
       GNode*              m_parent ; 
       std::vector<GNode*> m_children ;
       char*               m_description ;
@@ -123,7 +126,9 @@ class GNode {
   private: 
       GMatrixF*           m_transform ; 
       GMatrixF*           m_ltransform ; 
+  protected: 
       GMesh*              m_mesh ; 
+  private: 
       gfloat3*            m_low ; 
       gfloat3*            m_high ; 
 

@@ -19,17 +19,26 @@
 
 
 
-void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo)
+void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo, bool deltacheck)
 {
     Timer t("GTreeCheck::CreateInstancedMergedMeshes") ; 
     t.setVerbose(true);
     t.start();
 
     GTreeCheck ta(ggeo);  // TODO: rename to GTreeAnalyse
-    ta.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
-    ta.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
 
-    t("TreeCheck"); 
+    if(deltacheck) 
+    {
+        ta.deltacheck();
+        t("deltacheck"); 
+    }
+
+    ta.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
+    t("traverse"); 
+
+    ta.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
+    t("labelTree"); 
+
 
     GMergedMesh* mergedmesh = ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
@@ -37,12 +46,18 @@ void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo)
     unsigned int numRepeats = ta.getNumRepeats();
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
-         GBuffer* itransforms    = ta.makeInstanceTransformsBuffer(ridx);
          GNode*   rbase          = ta.getRepeatExample(ridx) ; 
          GMergedMesh* mergedmesh = ggeo->makeMergedMesh(ridx, rbase); 
          mergedmesh->dumpSolids("GTreeCheck::CreateInstancedMergedMeshes dumpSolids");
+
+         GBuffer* itransforms    = ta.makeInstanceTransformsBuffer(ridx);
          mergedmesh->setITransformsBuffer(itransforms);
-         //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
+
+         GBuffer* iidentity       = ta.makeInstanceIdentityBuffer(ridx);
+         mergedmesh->setIIdentityBuffer(iidentity);
+
+
+         //mergedmesh->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }
     t("makeRepeatTransforms"); 
 
@@ -84,39 +99,47 @@ void GTreeCheck::traverse()
 void GTreeCheck::traverse( GNode* node, unsigned int depth)
 {
     std::string& pdig = node->getProgenyDigest();
-
-    if(m_delta_check)
-    {
-        GSolid* solid = dynamic_cast<GSolid*>(node) ;
-        GMatrixF* gtransform = solid->getTransform();
-
-        // solids levelTransform is set in AssimpGGeo and hails from the below with level -2
-        //      aiMatrix4x4 AssimpNode::getLevelTransform(int level)
-        //  looks to correspond to the placement of the LV within its PV  
-
-        GMatrixF* ltransform = solid->getLevelTransform();  
-        GMatrixF* ctransform = solid->calculateTransform();
-        float delta = gtransform->largestDiff(*ctransform);
-        unsigned int nprogeny = node->getProgenyCount() ;
-
-        if(nprogeny > 0 ) 
-            LOG(debug) 
-              << "GTreeCheck::traverse " 
-              << " count "     << std::setw(6) << m_count
-              << " #progeny "  << std::setw(6) << nprogeny 
-              << " pdig "      << std::setw(32) << pdig 
-              << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
-              << " name " << node->getName() 
-              ;
-
-        assert(delta < 1e-6) ;
-    }
-
     m_digest_count->add(pdig.c_str());
     m_count++ ; 
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
 }
+
+
+void GTreeCheck::deltacheck()
+{
+    // check consistency of the level transforms
+    deltacheck(m_root, 0);
+}
+
+void GTreeCheck::deltacheck( GNode* node, unsigned int depth)
+{
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GMatrixF* gtransform = solid->getTransform();
+
+    // solids levelTransform is set in AssimpGGeo and hails from the below with level -2
+    //      aiMatrix4x4 AssimpNode::getLevelTransform(int level)
+    //  looks to correspond to the placement of the LV within its PV  
+
+    GMatrixF* ltransform = solid->getLevelTransform();  
+    GMatrixF* ctransform = solid->calculateTransform();
+    float delta = gtransform->largestDiff(*ctransform);
+    unsigned int nprogeny = node->getProgenyCount() ;
+
+    if(nprogeny > 0 ) 
+            LOG(debug) 
+              << "GTreeCheck::deltacheck " 
+              << " #progeny "  << std::setw(6) << nprogeny 
+              << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
+              << " name " << node->getName() 
+              ;
+
+    assert(delta < 1e-6) ;
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) deltacheck(node->getChild(i), depth + 1 );
+}
+
+
 
 
 
@@ -253,49 +276,6 @@ void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
     }
 }
 
-GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
-{
-    assert(ridx >= 1); // ridx is a 1-based index
-    if(ridx > m_repeat_candidates.size()) return NULL ; 
-    std::string pdig = m_repeat_candidates[ridx-1];
-    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
-    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
-    assert(placements[0] == node);
-    return node ; 
-}
-
-GBuffer* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx) 
-{
-    assert(ridx >= 1); // ridx is a 1-based index
-    if(ridx > m_repeat_candidates.size()) return NULL ; 
-
-    std::string pdig = m_repeat_candidates[ridx-1];
-    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
-
-    unsigned int num = placements.size() ; 
-    unsigned int numElements = 16 ; 
-    unsigned int size = sizeof(float)*numElements;
-    float* transforms = new float[num*numElements];
-
-    for(unsigned int i=0 ; i < placements.size() ; i++)
-    {
-        GNode* place = placements[i] ;
-        GMatrix<float>* t = place->getTransform();
-        t->copyTo(transforms + numElements*i); 
-    } 
-
-    LOG(info) << "GTreeCheck::makeInstanceTransformsBuffer " 
-              << " ridx " << ridx 
-              << " pdig " << pdig 
-              << " num " << num 
-              << " size " << size 
-              ;
-
-    GBuffer* buffer = new GBuffer( size*num, (void*)transforms, size, numElements ); 
-    return buffer ;
-}
-
-
 unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )
 {
     // repeat index corresponding to a digest
@@ -352,5 +332,147 @@ void GTreeCheck::labelTree( GNode* node, unsigned int ridx)
 
 
 
+
+std::vector<GNode*> GTreeCheck::getPlacements(unsigned int ridx)
+{
+    assert(ridx >= 1); // ridx is a 1-based index
+    assert(ridx-1 < m_repeat_candidates.size()); 
+    std::string pdig = m_repeat_candidates[ridx-1];
+    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+    return placements ; 
+}
+
+GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
+{
+    std::vector<GNode*> placements = getPlacements(ridx);
+    std::string pdig = m_repeat_candidates[ridx-1];
+    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    assert(placements[0] == node);
+    return node ; 
+}
+
+
+GBuffer* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx) 
+{
+    // collecting transforms from the instances into a buffer
+    std::vector<GNode*> placements = getPlacements(ridx);
+
+    unsigned int num = placements.size() ; 
+    unsigned int numElements = 16 ; 
+    unsigned int size = sizeof(float)*numElements;
+    float* transforms = new float[num*numElements];
+
+    for(unsigned int i=0 ; i < placements.size() ; i++)
+    {
+        GNode* place = placements[i] ;
+        GMatrix<float>* t = place->getTransform();
+        t->copyTo(transforms + numElements*i); 
+    } 
+
+    LOG(info) << "GTreeCheck::makeInstanceTransformsBuffer " 
+              << " ridx " << ridx 
+              << " num " << num 
+              << " itemsize " << size 
+              ;
+
+    GBuffer* buffer = new GBuffer( size*num, (void*)transforms, size, numElements ); 
+    return buffer ;
+}
+
+GBuffer* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx) 
+{
+    /*
+     Instances need to know the sensor they correspond 
+     even though their geometry is duplicated. 
+
+     For analytic geometry this is needed at the solid level 
+     ie need buffer of size:
+             #transforms * #solids-per-instance
+
+     For triangulated geometry this is needed at the triangle level
+     ie need buffer of size 
+             #transforms * #triangles-per-instance
+
+     The triangulated version can be created from the analytic one
+     by duplication according to the number of triangles.
+
+
+    */
+
+    std::vector<GNode*> placements = getPlacements(ridx);
+    unsigned int numInstances = placements.size() ;
+    unsigned int numProgeny = placements[0]->getProgenyCount();
+    unsigned int numSolids  = numProgeny + 1 ; 
+
+    unsigned int num = numSolids*numInstances ; 
+    guint4* iidentity = new guint4[num]; 
+
+    LOG(info) << "GTreeCheck::makeInstanceIdentityBuffer" 
+              << " numInstances " << numInstances 
+              << " numProgeny " << numProgeny 
+              << " numSolids " << numSolids 
+              << " num " << num 
+              ;
+
+    for(unsigned int i=0 ; i < numInstances ; i++)
+    {
+        GNode* base = placements[i] ;
+
+        // repeated geometry for the instances, so the progeny counts must match 
+        assert( numProgeny == base->getProgenyCount() );
+        std::vector<GNode*>& progeny = base->getProgeny();
+        assert( progeny.size() == numProgeny );
+
+        for(unsigned int s=0 ; s < numSolids ; s++ )
+        {
+            GNode* node = s == 0 ? base : progeny[s-1] ; 
+            GSolid* solid = dynamic_cast<GSolid*>(node) ;
+            guint4 id = solid->getIdentity();
+            iidentity[i*numSolids+s] = id ;  
+
+#ifdef DEBUG
+            std::cout  
+                  << " i " << i
+                  << " s " << s
+                  << " node/mesh/boundary/sensor " << id.x << "/" << id.y << "/" << id.z << "/" << id.w 
+                  << " nodeName " << node->getName()
+                  << std::endl 
+                  ;
+#endif
+
+        }
+    }
+
+     // cf GMesh::setIdentity
+    unsigned int size = sizeof(guint4) ;
+    assert(size == sizeof(unsigned int)*4 );
+    GBuffer* buffer = new GBuffer( size*num, (void*)iidentity, size, 4 ); 
+    return buffer  ; 
+}
+
+/*
+
+In [1]: ii = np.load("iidentity.npy")
+
+In [3]: ii.shape
+Out[3]: (3360, 4)
+
+In [4]: ii.reshape(-1,5,4)
+Out[4]: 
+array([[[ 3199,    47,    19,     1],
+        [ 3200,    46,    20,     2],
+        [ 3201,    43,    21,     3],
+        [ 3202,    44,     1,     4],
+        [ 3203,    45,     1,     5]],
+
+       [[ 3205,    47,    19,     6],
+        [ 3206,    46,    20,     7],
+        [ 3207,    43,    21,     8],
+        [ 3208,    44,     1,     9],
+        [ 3209,    45,     1,    10]],
+
+
+
+*/
 
 

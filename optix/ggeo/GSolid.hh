@@ -6,6 +6,7 @@ class GSensor ;
 
 #include "GNode.hh"
 #include "GMatrix.hh"
+#include "GVector.hh"
 
 //  hmm the difference between the models is focussed in here 
 //   chroma.geometry.Solid is all about splaying things across all the triangles
@@ -35,6 +36,7 @@ class GSolid : public GNode {
      const char* getLVName();
 
   public:
+     guint4     getIdentity();
      GBoundary* getBoundary();
      GSensor*   getSensor();
 

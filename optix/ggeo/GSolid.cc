@@ -1,5 +1,6 @@
 #include "GSolid.hh"
 #include "GPropertyMap.hh"
+#include "GMesh.hh"
 #include "GBoundary.hh"
 #include "GSensor.hh"
 
@@ -27,6 +28,13 @@ void GSolid::setSensor(GSensor* sensor)
 }
 
 
-
-
+guint4 GSolid::getIdentity()
+{
+    return guint4(
+                   m_index, 
+                   m_mesh ? m_mesh->getIndex() : 0, 
+                   m_boundary ? m_boundary->getIndex() : 0,
+                   GSensor::RefIndex(m_sensor)
+                 );
+}
  

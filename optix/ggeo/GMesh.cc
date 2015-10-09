@@ -35,10 +35,10 @@ const char* GMesh::center_extent = "center_extent" ;
 const char* GMesh::bbox           = "bbox" ;
 const char* GMesh::transforms     = "transforms" ;
 const char* GMesh::itransforms    = "itransforms" ;
-const char* GMesh::rtransforms    = "rtransforms" ;
 const char* GMesh::meshes         = "meshes" ;
 const char* GMesh::nodeinfo       = "nodeinfo" ;
 const char* GMesh::identity       = "identity" ;
+const char* GMesh::iidentity       = "iidentity" ;
 
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
@@ -57,10 +57,10 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(bbox); 
     names.push_back(transforms); 
     names.push_back(itransforms); 
-    names.push_back(rtransforms); 
     names.push_back(meshes); 
     names.push_back(nodeinfo); 
     names.push_back(identity); 
+    names.push_back(iidentity); 
 }
 
 
@@ -92,10 +92,10 @@ GMesh::GMesh(GMesh* other)
      m_num_solids_selected(other->getNumSolidsSelected()),
      m_transforms_buffer(other->getTransformsBuffer()),
      m_itransforms_buffer(other->getITransformsBuffer()),
-     m_rtransforms_buffer(other->getRTransformsBuffer()),
      m_meshes_buffer(other->getMeshesBuffer()),
      m_nodeinfo_buffer(other->getNodeInfoBuffer()),
      m_identity_buffer(other->getIdentityBuffer()),
+     m_iidentity_buffer(other->getIIdentityBuffer()),
      m_geocode(other->getGeoCode()),
      GDrawable()
 {
@@ -147,10 +147,10 @@ GMesh::GMesh(unsigned int index,
       m_bbox(NULL),
       m_transforms(NULL),
       m_itransforms(NULL),
-      m_rtransforms(NULL),
       m_meshes(NULL),
       m_nodeinfo(NULL),
       m_identity(NULL),
+      m_iidentity(NULL),
 
       m_model_to_world(NULL),
       m_name(NULL),
@@ -169,10 +169,10 @@ GMesh::GMesh(unsigned int index,
       m_sensors_buffer(NULL),
       m_transforms_buffer(NULL),
       m_itransforms_buffer(NULL),
-      m_rtransforms_buffer(NULL),
       m_meshes_buffer(NULL),
       m_nodeinfo_buffer(NULL),
       m_identity_buffer(NULL),
+      m_iidentity_buffer(NULL),
 
       GDrawable()
 {
@@ -249,10 +249,10 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, bbox) == 0)            return m_bbox_buffer ; 
     if(strcmp(name, transforms) == 0)      return m_transforms_buffer ; 
     if(strcmp(name, itransforms) == 0)     return m_itransforms_buffer ; 
-    if(strcmp(name, rtransforms) == 0)     return m_rtransforms_buffer ; 
     if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
     if(strcmp(name, nodeinfo) == 0)        return m_nodeinfo_buffer ; 
     if(strcmp(name, identity) == 0)        return m_identity_buffer ; 
+    if(strcmp(name, iidentity) == 0)       return m_iidentity_buffer ; 
 
     return NULL ;
 }
@@ -274,10 +274,10 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, bbox) == 0)            setBBoxBuffer(buffer) ; 
     if(strcmp(name, transforms) == 0)      setTransformsBuffer(buffer) ; 
     if(strcmp(name, itransforms) == 0)     setITransformsBuffer(buffer) ; 
-    if(strcmp(name, rtransforms) == 0)     setRTransformsBuffer(buffer) ; 
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
     if(strcmp(name, nodeinfo) == 0)        setNodeInfoBuffer(buffer) ; 
     if(strcmp(name, identity) == 0)        setIdentityBuffer(buffer) ; 
+    if(strcmp(name, iidentity) == 0)       setIIdentityBuffer(buffer) ; 
 }
 
 void GMesh::setVertices(gfloat3* vertices)
@@ -432,12 +432,7 @@ void GMesh::setITransformsBuffer(GBuffer* buffer)
     if(!buffer) return ; 
     m_itransforms = (float*)buffer->getPointer();
 }
-void GMesh::setRTransformsBuffer(GBuffer* buffer) 
-{
-    m_rtransforms_buffer = buffer ;  
-    if(!buffer) return ; 
-    m_rtransforms = (float*)buffer->getPointer();
-}
+
 
 unsigned int GMesh::getNumTransforms()
 {
@@ -446,10 +441,6 @@ unsigned int GMesh::getNumTransforms()
 unsigned int GMesh::getNumITransforms()
 {
     return m_itransforms_buffer ? m_itransforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ; 
-}
-unsigned int GMesh::getNumRTransforms()
-{
-    return m_rtransforms_buffer ? m_rtransforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ; 
 }
 
 
@@ -461,11 +452,6 @@ float* GMesh::getITransform(unsigned int index)
 {
     unsigned int num_itransforms = getNumITransforms();
     return index < num_itransforms ? m_itransforms + index*16 : NULL  ;
-}
-float* GMesh::getRTransform(unsigned int index)
-{
-    unsigned int num_rtransforms = getNumRTransforms();
-    return index < num_rtransforms ? m_rtransforms + index*16 : NULL  ;
 }
 
 
@@ -544,6 +530,42 @@ void GMesh::setIdentityBuffer(GBuffer* buffer)
     unsigned int numSolids = numBytes/size ;
     setNumSolids(numSolids);
 }
+
+
+
+
+/*
+void GMesh::setIIdentity(guint4* iidentity)  
+{
+    m_iidentity = iidentity ;  
+    unsigned int size = sizeof(guint4);
+    assert(size == sizeof(unsigned int)*4 );
+    //assert(m_num_instances > 0);
+    //m_iidentity_buffer = new GBuffer( size*m_num_solids, (void*)m_identity, size, 4 ); 
+}
+*/
+
+void GMesh::setIIdentityBuffer(GBuffer* buffer) 
+{
+    m_iidentity_buffer = buffer ;  
+    if(!buffer) return ; 
+
+    m_iidentity = (guint4*)buffer->getPointer();
+
+    // size will be numSolids*numInstances 
+
+    //unsigned int numBytes = buffer->getNumBytes();
+    //unsigned int numSolids = numBytes/size ;
+    //setNumSolids(numSolids);
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -1025,7 +1047,6 @@ bool GMesh::isFloatBuffer(const char* name)
              strcmp( name, bbox ) == 0  || 
              strcmp( name, transforms ) == 0  || 
              strcmp( name, itransforms ) == 0  || 
-             strcmp( name, rtransforms ) == 0  || 
              strcmp( name, colors) == 0 );
 }
 
@@ -1044,6 +1065,7 @@ bool GMesh::isUIntBuffer(const char* name)
            ( 
               strcmp( name, nodeinfo) == 0  ||
               strcmp( name, identity) == 0  ||
+              strcmp( name, iidentity) == 0  ||
               strcmp( name, meshes) == 0  
            );
 }
