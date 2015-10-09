@@ -1,15 +1,63 @@
-#include  "GTreeCheck.hh"
+#include "GTreeCheck.hh"
+#include "GTreePresent.hh"
+#include "GMergedMesh.hh"
 #include "GGeo.hh"
 #include "GSolid.hh"
 #include "GMatrix.hh"
 #include "GBuffer.hh"
+
+// npy-
 #include "Counts.hpp"
+#include "Timer.hpp"
+
 
 #include <iomanip>
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
+
+
+void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo)
+{
+    Timer t("GTreeCheck::CreateInstancedMergedMeshes") ; 
+    t.setVerbose(true);
+    t.start();
+
+    GTreeCheck ta(ggeo);  // TODO: rename to GTreeAnalyse
+    ta.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
+    ta.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
+
+    t("TreeCheck"); 
+
+    GMergedMesh* mergedmesh = ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+    //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
+
+    unsigned int numRepeats = ta.getNumRepeats();
+    for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
+    {
+         GBuffer* itransforms    = ta.makeInstanceTransformsBuffer(ridx);
+         GNode*   rbase          = ta.getRepeatExample(ridx) ; 
+         GMergedMesh* mergedmesh = ggeo->makeMergedMesh(ridx, rbase); 
+         mergedmesh->dumpSolids("GTreeCheck::CreateInstancedMergedMeshes dumpSolids");
+         mergedmesh->setITransformsBuffer(itransforms);
+         //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
+    }
+    t("makeRepeatTransforms"); 
+
+    GTreePresent tp(ggeo, 0, 100, 1000);   // top,depth_max,sibling_max
+    tp.traverse();
+    //tp.dump("GTreeCheck::CreateInstancedMergedMeshes GTreePresent");
+    tp.write(ggeo->getIdPath());
+            
+    t("treePresent"); 
+
+    t.stop();
+    t.dump();
+}
+
+
 
 
 void GTreeCheck::init()
@@ -20,11 +68,10 @@ void GTreeCheck::init()
 
 void GTreeCheck::traverse()
 {
-
-    // collect distinct progeny digests (relative sub-tree identities) in m_digest_count 
+    // count occurences of distinct progeny digests (relative sub-tree identities) in m_digest_count 
     traverse(m_root, 0);
 
-    m_digest_count->sort(false);
+    m_digest_count->sort(false);   // descending count order, ie most common subtrees first
     //m_digest_count->dump();
 
     // minrep 120 removes repeats from headonPMT, calibration sources and RPC leaving just PMTs 
@@ -247,7 +294,6 @@ GBuffer* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
     GBuffer* buffer = new GBuffer( size*num, (void*)transforms, size, numElements ); 
     return buffer ;
 }
-
 
 
 unsigned int GTreeCheck::getRepeatIndex(const std::string& pdig )

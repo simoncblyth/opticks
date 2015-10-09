@@ -132,6 +132,11 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 }
 
 
+const char* GGeo::getIdPath()
+{
+    return m_cache->getIdPath();
+}
+
 void GGeo::init()
 {
    const char* idpath = m_cache->getIdPath() ;

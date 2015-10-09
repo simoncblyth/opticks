@@ -126,35 +126,7 @@ void GLoader::load()
 
         if(m_instanced)
         { 
-            m_treeanalyse = new GTreeCheck(m_ggeo);  // TODO: rename to GTreeAnalyse
-            m_treeanalyse->traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
-            m_treeanalyse->labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
-            t("TreeCheck"); 
-
-            GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
-            //mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (global)");
-
-            unsigned int numRepeats = m_treeanalyse->getNumRepeats();
-            for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
-            {
-                GBuffer* itransforms    = m_treeanalyse->makeInstanceTransformsBuffer(ridx);
-                GNode*   rbase          = m_treeanalyse->getRepeatExample(ridx) ; 
-                GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
-                mergedmesh->dumpSolids("GLoader::load dumpSolids");
-                mergedmesh->setITransformsBuffer(itransforms);
-                //mergedmesh->reportMeshUsage( m_ggeo, "GLoader::load reportMeshUsage (instanced)");
-            }
-
-
-            t("makeRepeatTransforms"); 
-
-            GTreePresent tpr(m_ggeo, 0, 100, 1000);   // top,depth_max,sibling_max
-            tpr.traverse();
-            //tpr.dump("GLoader::load GTreePresent");
-            tpr.write(idpath);
-            
-            t("treePresent"); 
-
+            GTreeCheck::CreateInstancedMergedMeshes(m_ggeo); 
         }
         else
         {

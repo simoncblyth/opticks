@@ -52,6 +52,7 @@ class GGeo {
     public:
         GGeo(GCache* cache); 
         GCache* getCache();
+        const char* getIdPath();
 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load

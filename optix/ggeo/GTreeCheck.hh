@@ -10,8 +10,11 @@ class GSolid ;
 class GBuffer ;
 template<class T> class Counts ;
 
+
+
 class GTreeCheck {
    public:
+        static void CreateInstancedMergedMeshes(GGeo* ggeo);
         typedef std::map<std::string, std::vector<GNode*> > MSVN ; 
    public:
         GTreeCheck(GGeo* ggeo);
@@ -22,6 +25,8 @@ class GTreeCheck {
         void labelTree();
         unsigned int getNumRepeats(); 
         GNode* getRepeatExample(unsigned int ridx);
+
+        // canonically invoked by GLoader
         GBuffer* makeInstanceTransformsBuffer(unsigned int ridx);
    public:
         bool operator()(const std::string& dig) ;
@@ -47,6 +52,10 @@ class GTreeCheck {
 };
 
 
+// Following enabling of vertex de-duping (done at AssimpWrap level) 
+// the below criteria are finding fewer repeats, for DYB only the hemi pmt
+// TODO: retune
+
 inline GTreeCheck::GTreeCheck(GGeo* ggeo) 
        :
        m_ggeo(ggeo),
@@ -65,3 +74,5 @@ inline unsigned int GTreeCheck::getNumRepeats()
 {
     return m_repeat_candidates.size();
 }
+
+
