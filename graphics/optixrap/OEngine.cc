@@ -93,6 +93,11 @@ void OEngine::init()
     m_context["debug_control"]->setUint(debugControl); 
 
 
+    // fallbacks are these seem not to being set 
+    m_context["instance_index"]->setUint( 0u ); 
+    m_context["primitive_count"]->setUint( 0u );
+
+
     m_config = RayTraceConfig::makeInstance(m_context);
 
 
@@ -277,6 +282,9 @@ void OEngine::initGeometry()
     GGeo* gg = getGGeo(); assert(gg) ; 
     GBoundaryLib* blib = getBoundaryLib(); assert(blib);
 
+
+    // TODO: break this monlithic approach, do the geometry externally 
+
     OBoundaryLib olib(m_context, blib); 
     olib.convert(); 
 
@@ -288,6 +296,7 @@ void OEngine::initGeometry()
     loadAccelCache();
 
     m_context[ "top_object" ]->set( m_top );
+
 
     glm::vec4 ce = m_composition->getDomainCenterExtent();
     glm::vec4 td = m_composition->getTimeDomain();

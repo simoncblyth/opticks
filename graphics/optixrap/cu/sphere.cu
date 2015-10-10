@@ -5,25 +5,19 @@
 using namespace optix;
 
 rtDeclareVariable(float4,  sphere, , );
+rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
-rtDeclareVariable(unsigned int, instanceIdx,  attribute instance_index,);
-rtDeclareVariable(unsigned int, primitiveCount,  attribute primitive_count,);
+rtDeclareVariable(unsigned int, instance_index,  ,);
+rtDeclareVariable(unsigned int, primitive_count, ,);
 rtBuffer<uint4> identityBuffer; 
 
 
-// attribute variables must be set 
-// inbetween rtPotentialIntersection and rtReportIntersection
-// they provide communication from intersection program to closest hit program
- 
-rtDeclareVariable(unsigned int, nodeIndex,     attribute node_index,);
-rtDeclareVariable(unsigned int, boundaryIndex, attribute boundary_index,);
-rtDeclareVariable(unsigned int, sensorIndex,   attribute sensor_index,);
+// attributes communicate to closest hit program,
+// they must be set inbetween rtPotentialIntersection and rtReportIntersection
+
 rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
-
-
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
-rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 
 
@@ -33,7 +27,8 @@ static __device__
 void intersect_sphere(int primIdx)
 {
   //uint4 identity = identityBuffer[primIdx];
-  uint4 identity = identityBuffer[2];
+  //uint4 identity = identityBuffer[2];
+  uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // index just primIdx for non-instanced
 
   float3 center = make_float3(sphere);
   float3 O = ray.origin - center;
@@ -69,29 +64,24 @@ void intersect_sphere(int primIdx)
     }
 
     bool check_second = true;
-    if( rtPotentialIntersection( root1 + root11 ) ) {
-      shading_normal = geometric_normal = (O + (root1 + root11)*D)/radius;
+    if( rtPotentialIntersection( root1 + root11 ) ) 
+    {
+        shading_normal = geometric_normal = (O + (root1 + root11)*D)/radius;
+        instanceIdentity = identity ; 
 
-      instanceIdentity = identityBuffer[instanceIdx*primitiveCount+primIdx] ;  // index just primIdx for non-instanced
-      nodeIndex = identity.x ;
-      boundaryIndex = identity.z ;
-      sensorIndex = identity.w ;
-
-      if(rtReportIntersection(0))
-        check_second = false;
+        if(rtReportIntersection(0))  // material index 0
+             check_second = false;
     } 
-    if(check_second) {
-      float root2 = (-b + sdisc) + (do_refine ? root1 : 0);
-      if( rtPotentialIntersection( root2 ) ) {
-        shading_normal = geometric_normal = (O + root2*D)/radius;
+    if(check_second) 
+    {
+        float root2 = (-b + sdisc) + (do_refine ? root1 : 0);
+        if( rtPotentialIntersection( root2 ) ) 
+        {
+            shading_normal = geometric_normal = (O + root2*D)/radius;
+            instanceIdentity = identity ; 
 
-        instanceIdentity = identityBuffer[instanceIdx*primitiveCount+primIdx] ;  // index just primIdx for non-instanced
-        nodeIndex = identity.x ;
-        boundaryIndex = identity.z ;
-        sensorIndex = identity.w ;
-
-        rtReportIntersection(0);
-      }
+            rtReportIntersection(0);   // material index 0 
+        }
     }
   }
 }

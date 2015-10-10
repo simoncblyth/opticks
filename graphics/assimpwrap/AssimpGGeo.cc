@@ -25,11 +25,12 @@
 #include "GBoundary.hh"
 #include "GBoundaryLib.hh"
 #include "GDomain.hh"
-#include "GSensorList.hh"
+
 
 
 // npy-
 #include "stringutil.hpp"
+#include "NSensorList.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
@@ -560,9 +561,17 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
  
     GMaterial* mt = gg->getMaterial(mti);
     
-    GSensorList* sens = gg->getSensorList();  
+    NSensorList* sens = gg->getSensorList();  
 
-    GSensor* sensor = sens->getSensor( nodeIndex ); 
+
+    /*
+    NSensor* sensor0 = sens->getSensor( nodeIndex ); 
+    NSensor* sensor1 = sens->findSensorForNode( nodeIndex ); 
+    assert(sensor0 == sensor1);
+    // these do not match
+    */
+
+    NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
 
     if(sensor && mt == gg->getCathode())
     {
@@ -884,9 +893,9 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
 
 
-    GSensorList* sens = gg->getSensorList();  
+    NSensorList* sens = gg->getSensorList();  
 
-    GSensor* sensor = sens->findSensorForNode( nodeIndex ); 
+    NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
 
     solid->setSensor( sensor );  
  

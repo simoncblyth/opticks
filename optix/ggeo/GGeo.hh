@@ -20,7 +20,7 @@ class GBorderSurface ;
 class GBoundary ;
 class GBoundaryLib ;
 class GMergedMesh ;
-class GSensorList ; 
+class NSensorList ; 
 class GColors ; 
 class GItemIndex ; 
 class GItemList ; 
@@ -145,8 +145,7 @@ class GGeo {
 
     public:
         // load idmap, traverse GNode tree calling GSolid::setSensor nodes with associated sensor identifier
-        GSensorList*  getSensorList();
-        void loadSensorList(const char* ext="idmap");
+        NSensorList*  getSensorList();
 
     public:
         void traverse(const char* msg="GGeo::traverse");
@@ -254,7 +253,7 @@ class GGeo {
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
         GBoundaryLib*                 m_boundarylib ; 
-        GSensorList*                  m_sensor_list ; 
+        NSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
         std::map<unsigned int,GMergedMesh*>     m_merged_mesh ; 
@@ -444,7 +443,7 @@ inline GBoundaryLib* GGeo::getBoundaryLib()
 {
     return m_boundarylib ; 
 }
-inline GSensorList* GGeo::getSensorList()
+inline NSensorList* GGeo::getSensorList()
 {
     return m_sensor_list ; 
 }

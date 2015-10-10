@@ -51,16 +51,19 @@ RT_PROGRAM void pinhole_camera()
 
   PerRayData_radiance prd;
   prd.importance = 1.f;
-  prd.depth = 0;
-  prd.touch = make_uint4(0,0,0,0) ;
+  //prd.depth = 0;
+  //prd.touch = make_uint4(0,0,0,0) ;
   prd.result = bad_color ;
 
+  float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
+
+/*
   float2 d = touch_mode ?  
                      make_float2(touch_index) / make_float2(touch_dim) * 2.f - 1.f 
                    : 
                      make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f
                    ;
-
+*/
    
   float3 ray_origin = eye;
   float3 ray_direction = normalize(d.x*U + d.y*V + W);   
@@ -86,7 +89,7 @@ RT_PROGRAM void pinhole_camera()
   // accepting intersections ?
   //
   //
-  unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
+  // unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
 
   rtTrace(top_object, ray, prd);
 
@@ -100,11 +103,11 @@ RT_PROGRAM void pinhole_camera()
 #else
   output_buffer[launch_index] = make_color( prd.result );
 
-  if(touch_mode)
-  {
-      touch_buffer[launch_index] = prd.touch  ;
-      //rtPrintf("pinhole_camera.cu::pinhole_camera(touch_mode)  node %d \n", prd.node );
-  }
+  //if(touch_mode)
+  //{
+  //    touch_buffer[launch_index] = prd.touch  ;
+  //    //rtPrintf("pinhole_camera.cu::pinhole_camera(touch_mode)  node %d \n", prd.node );
+  //}
 
 #endif
 }

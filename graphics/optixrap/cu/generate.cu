@@ -165,8 +165,7 @@ RT_PROGRAM void generate()
     }
 
 
-    p.flags.u.y = photon_id ; 
-
+    //p.flags.u.y = photon_id ;  // debug
 
     int bounce = 0 ; 
     int command = START ; 
@@ -181,13 +180,17 @@ RT_PROGRAM void generate()
     while( bounce < bounce_max )
     {
         bounce++;   // increment at head, not tail, as CONTINUE skips the tail
-        prd.boundary = 0 ;
-        prd.sensor = 0 ;
-        prd.boundary = 0 ;
+
+        // trace sets these, see material1_propagate.cu:closest_hit_propagate
         prd.distance_to_boundary = -1.f ;
+        prd.identity.x = 0 ; // nodeIndex
+        prd.identity.y = 0 ; // meshIndex
+        prd.identity.z = 0 ; // boundaryIndex, 0-based 
+        prd.identity.w = 0 ; // sensorIndex
+        prd.boundary = 0 ;   // signed, 1-based
 
         rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
-        // see material1_propagate.cu:closest_hit_propagate
+
 
         if(prd.boundary == 0)
         {
@@ -204,7 +207,7 @@ RT_PROGRAM void generate()
         p.flags.i.x = prd.boundary ;  
 
         // use boundary index at intersection point to do optical constant + material/surface property lookups 
-        fill_state(s, prd.boundary, prd.sensor, p.wavelength );
+        fill_state(s, prd.boundary, prd.identity, p.wavelength );
 
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 
@@ -302,6 +305,16 @@ RT_PROGRAM void generate()
 
     // breakers and maxers saved here
     p.flags.u.w |= s.flag ; 
+
+
+    //p.flags.u.y = photon_id ;      // photon_id matches the position in photon array
+    //p.flags.u.y =  s.identity.x ;  // nodeIndex
+    //p.flags.u.y =  s.identity.y ;  // meshIndex
+    //p.flags.u.y =  s.identity.z ;  // boundaryIndex 0-based
+    p.flags.u.y =  s.identity.w ;  // sensorIndex  >0 only for cathode hits
+
+
+
     psave(p, photon_buffer, photon_offset ); 
 
     // building history sequence, bounce by bounce

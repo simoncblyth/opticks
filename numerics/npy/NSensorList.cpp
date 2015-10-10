@@ -1,5 +1,5 @@
-#include "GSensorList.hh"
-#include "GSensor.hh"
+#include "NSensorList.hpp"
+#include "NSensor.hpp"
 
 #include "assert.h"
 #include <boost/log/trivial.hpp>
@@ -23,7 +23,7 @@ namespace fs = boost::filesystem;
 
 
 
-void GSensorList::load(const char* idpath_, const char* ext)
+void NSensorList::load(const char* idpath_, const char* ext)
 {
     if(!idpath_) return ;
 
@@ -48,7 +48,7 @@ void GSensorList::load(const char* idpath_, const char* ext)
     fs::path idmpath(pdir);
     idmpath /= idmname ; 
 
-    LOG(debug) << "GSensorList::load "
+    LOG(debug) << "NSensorList::load "
               << "\n idpath:   " << idpath.string() 
               << "\n pdir:     " << pdir.string() 
               << "\n filename: " << name 
@@ -60,12 +60,12 @@ void GSensorList::load(const char* idpath_, const char* ext)
 }
 
 
-void GSensorList::read(const char* path)
+void NSensorList::read(const char* path)
 {
     std::ifstream in(path, std::ios::in);
     if(!in.is_open()) 
     {   
-        LOG(fatal) << "GSensorList::read failed to open " << path ; 
+        LOG(fatal) << "NSensorList::read failed to open " << path ; 
         return ;
     }   
 
@@ -82,32 +82,32 @@ void GSensorList::read(const char* path)
 
         Tok_t tok(line, delim) ;
         elem.assign(tok.begin(), tok.end());
-        GSensor* sensor = createSensor(elem);
+        NSensor* sensor = createSensor(elem);
         if(sensor) add(sensor);
 
         //if(count < 10) printf("[%lu] %s \n", elem.size(), line.c_str());
         count++;
     }
     in.close();
-    LOG(info) << "GSensorList::read " 
+    LOG(info) << "NSensorList::read " 
               << " path " << path 
               << " desc " << description() 
               ; 
 }
 
 
-std::string GSensorList::description()
+std::string NSensorList::description()
 {
     std::stringstream ss ; 
-    ss << "GSensorList: " 
-       << " GSensor count " << m_sensors.size()
+    ss << "NSensorList: " 
+       << " NSensor count " << m_sensors.size()
        << " distinct identier count " << m_ids.size() 
       ;
     return ss.str();
 }
 
 
-GSensor* GSensorList::createSensor(std::vector<std::string>& elem )
+NSensor* NSensorList::createSensor(std::vector<std::string>& elem )
 {
     assert(elem.size() == 6 );
 
@@ -116,17 +116,17 @@ GSensor* GSensorList::createSensor(std::vector<std::string>& elem )
     unsigned int id_hex     = parseHexString(elem[2]);
     assert(id == id_hex );
 
-    GSensor* sensor(NULL);
+    NSensor* sensor(NULL);
     if( id > 0 )
     {
         unsigned int index = m_sensors.size() ;    // 0-based in tree node order
-        sensor = new GSensor(index, id, elem[5].c_str(), nodeIndex);
+        sensor = new NSensor(index, id, elem[5].c_str(), nodeIndex);
     }
     return sensor ; 
 }
 
 
-void GSensorList::add(GSensor* sensor)
+void NSensorList::add(NSensor* sensor)
 {
     assert(sensor);
 
@@ -136,13 +136,13 @@ void GSensorList::add(GSensor* sensor)
 
     unsigned int nid = sensor->getNodeIndex(); 
 
-    assert(m_nid2sen.count(nid) == 0 && "there should only ever be one GSensor for each node index");
+    assert(m_nid2sen.count(nid) == 0 && "there should only ever be one NSensor for each node index");
 
     m_nid2sen[nid] = sensor ; 
 }
 
 
-unsigned int GSensorList::parseHexString(std::string& str)
+unsigned int NSensorList::parseHexString(std::string& str)
 {
     unsigned int x;   
     std::stringstream ss;
@@ -152,22 +152,22 @@ unsigned int GSensorList::parseHexString(std::string& str)
 }
 
 
-void GSensorList::dump(const char* msg)
+void NSensorList::dump(const char* msg)
 {
     unsigned int nsen = getNumSensors();
     printf("%s : %u sensors \n", msg, nsen);
     for(unsigned int i=0 ; i < nsen ; i++)
     {
-        GSensor* sensor = getSensor(i);
+        NSensor* sensor = getSensor(i);
         assert(sensor);
         printf("%s\n", sensor->description().c_str()) ;
 
-        GSensor* check = findSensorForNode(sensor->getNodeIndex());
+        NSensor* check = findSensorForNode(sensor->getNodeIndex());
         assert(check == sensor);
     }
 }
 
-GSensor* GSensorList::findSensorForNode(unsigned int nodeIndex)
+NSensor* NSensorList::findSensorForNode(unsigned int nodeIndex)
 {
     return m_nid2sen.count(nodeIndex) == 1 ? m_nid2sen[nodeIndex] : NULL ; 
 }

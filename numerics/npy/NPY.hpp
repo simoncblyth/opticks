@@ -50,6 +50,7 @@ class NPY : public NPYBase {
    friend class SequenceNPY ; 
    friend class RecordsNPY ; 
    friend class PhotonsNPY ; 
+   friend class HitsNPY ; 
    friend class G4StepNPY ; 
 
    public:

@@ -1,6 +1,8 @@
 #!/bin/bash -l
 
 cmdline="$*"
+
+npy-
 ggeo- 
 ggeoview-
 assimpwrap-
@@ -35,6 +37,8 @@ elif [ "${cmdline/--openmesh}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(openmeshrap-bin) 
 elif [ "${cmdline/--torchstep}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin TorchStepNPYTest)
+elif [ "${cmdline/--hits}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(npy-bin HitsNPYTest)
 else
    unset GGEOVIEW_BINARY 
 fi

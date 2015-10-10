@@ -2,7 +2,7 @@
 
 class GMesh ;
 class GBoundary ; 
-class GSensor ; 
+class NSensor ; 
 
 #include "GNode.hh"
 #include "GMatrix.hh"
@@ -18,7 +18,7 @@ class GSensor ;
 //
 class GSolid : public GNode {
   public:
-      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* boundary, GSensor* sensor);
+      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* boundary, NSensor* sensor);
       virtual ~GSolid();
 
   public:
@@ -27,7 +27,7 @@ class GSolid : public GNode {
 
   public:
      void setBoundary(GBoundary* boundary);
-     void setSensor(GSensor* sensor);
+     void setSensor(NSensor* sensor);
      unsigned int getSensorSurfaceIndex();
   public:
      // need to resort to names for debugging IAV top lid issue
@@ -39,21 +39,21 @@ class GSolid : public GNode {
   public:
      guint4     getIdentity();
      GBoundary* getBoundary();
-     GSensor*   getSensor();
+     NSensor*   getSensor();
 
   public: 
       void Summary(const char* msg="GSolid::Summary");
  
   private:
       GBoundary*        m_boundary ; 
-      GSensor*          m_sensor ; 
+      NSensor*          m_sensor ; 
       bool              m_selected ;
       const char*       m_pvname ; 
       const char*       m_lvname ; 
 
 };
 
-inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* boundary, GSensor* sensor)
+inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* boundary, NSensor* sensor)
          : 
          GNode(index, transform, mesh ),
          m_boundary(boundary),
@@ -72,7 +72,7 @@ inline GBoundary* GSolid::getBoundary()
 {
     return m_boundary ; 
 }
-inline GSensor* GSolid::getSensor()
+inline NSensor* GSolid::getSensor()
 {
     return m_sensor ; 
 }

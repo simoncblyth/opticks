@@ -6,15 +6,15 @@
 #include "commonStructs.h"
 
 //#include "RayTraceConfigInc.h"
-#include <curand_kernel.h>
+//#include <curand_kernel.h>
 
 struct PerRayData_radiance
 {
   float3 result;
   float  importance;
-  int    depth;
-  uint4  touch ; 
-  curandState rng;
+  //int    depth;
+  //uint4  touch ; 
+  //curandState rng;
 };
 
 

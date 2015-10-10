@@ -119,6 +119,7 @@ npy-icd(){  cd $(npy-idir); }
 npy-bcd(){  cd $(npy-bdir); }
 
 npy-bindir(){ echo $(npy-idir)/bin ; } 
+npy-bin(){    echo $(npy-bindir)/$1 ; } 
 
 npy-wipe(){
    local bdir=$(npy-bdir)

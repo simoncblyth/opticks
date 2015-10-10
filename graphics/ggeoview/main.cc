@@ -55,6 +55,7 @@
 #include "G4StepNPY.hpp"
 #include "TorchStepNPY.hpp"
 #include "PhotonsNPY.hpp"
+#include "HitsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 #include "SequenceNPY.hpp"
@@ -216,7 +217,7 @@ class App {
        void seedPhotonsFromGensteps();
        void initRecords();
   public:
-       void simplifyOptiXGeometry();
+       void configureOptiXGeometry(int restrict_mesh=-1); // for debugging: restrict_mesh when > -1 does so
        void prepareEngine();
        void propagate();
        void downloadEvt();
@@ -264,6 +265,7 @@ class App {
        OEngine*         m_engine ; 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
+       HitsNPY*         m_hit ; 
        RecordsNPY*      m_rec ; 
        GItemIndex*      m_seqhis ; 
        GItemIndex*      m_seqmat ; 
@@ -309,6 +311,7 @@ App::App(const char* prefix, const char* logname, const char* loglevel)
       m_engine(NULL),
       m_bnd(NULL),
       m_pho(NULL),
+      m_hit(NULL),
       m_rec(NULL),
       m_seqhis(NULL),
       m_seqmat(NULL),
@@ -979,15 +982,32 @@ void App::initRecords()
 }
 
 
-void App::simplifyOptiXGeometry()
+void App::configureOptiXGeometry(int restrict_mesh)
 {
+    unsigned int nmm = m_ggeo->getNumMergedMesh();
+    //assert( nmm == 2);
+
+    for(unsigned int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+ 
+        if(restrict_mesh > -1 && i != restrict_mesh )
+        { 
+             LOG(warning) << "App::configureOptiXGeometry"
+                          << " restrict_mesh debug option caused skip of mesh " << i 
+                          ;
+             mm->setGeoCode('K');      
+
+        }
+    }
+
+/*
     bool simplify    = m_fcfg->hasOpt("simplify");
     if(!simplify) return ;
- 
     GMergedMesh* mm = m_ggeo->getMergedMesh(1) ;
     if(!mm) return ;
-
     mm->setGeoCode('S');
+*/
 }
 
 void App::prepareEngine()
@@ -1308,6 +1328,9 @@ void App::indexEvtOld()
         m_pho = new PhotonsNPY(dpho);   // a detailed photon/record dumper : looks good for photon level debug 
         m_pho->setTypes(m_types);
 
+        m_hit = new HitsNPY(dpho, m_ggeo->getSensorList());
+        m_hit->debugdump();
+
     }
 
     // hmm thus belongs in NumpyEvt rather than here
@@ -1535,6 +1558,9 @@ int main(int argc, char** argv)
     rc = app.loadGeometry();
     if(rc) exit(EXIT_SUCCESS);
 
+
+    int restrict_mesh = app.getFrameCfg()->getRestrictMesh() ; 
+
     app.uploadGeometry();
 
     bool nooptix = app.hasOpt("nooptix");
@@ -1551,7 +1577,7 @@ int main(int argc, char** argv)
 
         app.initRecords();
 
-        app.simplifyOptiXGeometry();
+        app.configureOptiXGeometry(restrict_mesh);
 
         app.prepareEngine();
 

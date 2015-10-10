@@ -17,6 +17,7 @@ class FrameCfg : public Cfg {
      int          getTimeMax(); 
      int          getAnimTimeMax(); 
      int          getRepeatIndex(); 
+     int          getRestrictMesh(); 
      int          getModulo(); 
      int          getOverride(); 
      int          getDebugIdx(); 
@@ -35,6 +36,7 @@ private:
      int         m_timemax ; 
      int         m_animtimemax ; 
      int         m_repeatidx ; 
+     int         m_restrictmesh; 
      int         m_modulo ; 
      int         m_override ; 
      int         m_debugidx ; 
@@ -53,6 +55,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_timemax(200),
        m_animtimemax(50),
        m_repeatidx(-1),
+       m_restrictmesh(-1),
        m_modulo(-1),
        m_override(-1),
        m_debugidx(0)
@@ -209,6 +212,14 @@ inline void FrameCfg<Listener>::init()
    m_desc.add_options()
        ("repeatidx",  boost::program_options::value<int>(&m_repeatidx), repeatidx );
 
+
+   char restrictmesh[128];
+   snprintf(restrictmesh,128, "Restrict meshes converted to OptiX geometry to the one identitied by index eg 0,1,2. Or -1 for no restriction. Default %d ", m_restrictmesh);
+   m_desc.add_options()
+       ("restrictmesh",  boost::program_options::value<int>(&m_restrictmesh), restrictmesh );
+
+
+
    ///////////////
 
    m_desc.add_options()
@@ -293,6 +304,15 @@ inline int FrameCfg<Listener>::getRepeatIndex()
 {
     return m_repeatidx ; 
 }
+template <class Listener>
+inline int FrameCfg<Listener>::getRestrictMesh()
+{
+    return m_restrictmesh ; 
+}
+
+
+
+
 template <class Listener>
 inline int FrameCfg<Listener>::getModulo()
 {

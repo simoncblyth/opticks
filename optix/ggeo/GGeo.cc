@@ -9,8 +9,7 @@
 #include "GMesh.hh"
 #include "GBoundary.hh"
 #include "GBoundaryLib.hh"
-#include "GSensorList.hh"
-#include "GSensor.hh"
+
 #include "GMergedMesh.hh"
 #include "GColors.hh"
 #include "GItemIndex.hh"
@@ -24,6 +23,9 @@
 // npy-
 #include "GLMPrint.hpp"
 #include "TorchStepNPY.hpp"
+#include "NSensorList.hpp"
+#include "NSensor.hpp"
+
 
 #include "assert.h"
 #include "stdio.h"
@@ -149,13 +151,17 @@ void GGeo::init()
 
    m_volnames = GGeo::ctrlHasKey(ctrl, "volnames");
  
+   m_sensor_list = new NSensorList();
+
+   m_sensor_list->load( idpath, "idmap");
+
+   LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
+
 
    if(m_loaded) return ; 
 
-
    m_boundarylib = new GBoundaryLib();
 
-   m_sensor_list = new GSensorList();
 
    // chroma/chroma/geometry.py
    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
@@ -185,7 +191,6 @@ void GGeo::loadFromG4DAE()
 {
     LOG(info) << "GGeo::loadFromG4DAE" ; 
 
-    loadSensorList("idmap");
 
     int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
@@ -583,12 +588,6 @@ void GGeo::dumpRawBorderSurface(const char* name)
 }
 
 
-void GGeo::loadSensorList(const char* ext )
-{
-    m_sensor_list->load( m_cache->getIdPath(), ext);
-    LOG(info) << "GGeo::loadSensorList " << m_sensor_list->description() ; 
-}
-
 
 
 void GGeo::traverse(const char* msg)
@@ -604,7 +603,7 @@ void GGeo::traverse( GNode* node, unsigned int depth)
 
     GBoundary* boundary = solid->getBoundary(); 
 
-    GSensor* sensor = solid->getSensor(); 
+    NSensor* sensor = solid->getSensor(); 
 
     if(sensor)
          LOG(info) << "GGeo::traverse " 

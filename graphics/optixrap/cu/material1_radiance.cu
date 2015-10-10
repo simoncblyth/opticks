@@ -5,8 +5,7 @@
 //geometric_normal is set by the closest hit intersection program 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, );
 rtDeclareVariable(uint4,  instanceIdentity, attribute instance_identity, );
-rtDeclareVariable(unsigned int, nodeIndex, attribute node_index, );
-rtDeclareVariable(unsigned int, boundaryIndex, attribute boundary_index, );
+
 rtDeclareVariable(float3, contrast_color, , );
 
 rtDeclareVariable(PerRayData_radiance, prd, rtPayload, );
@@ -29,6 +28,7 @@ RT_PROGRAM void closest_hit_radiance()
   const float cos_theta = dot(n,ray.direction);
 
 
+ /*
   if(touch_mode)
   {
       // n.z often coming out very small, ~1e-9 
@@ -47,6 +47,8 @@ RT_PROGRAM void closest_hit_radiance()
           cos_theta  );
       //wavelength_check();
   }
+  */
+
 
   // normal shader colors dont match what getting with OpenGL normal shader ???
   //  BGRA format in the mix but swapping x and z doesnt cause a match
@@ -60,8 +62,13 @@ RT_PROGRAM void closest_hit_radiance()
   //prd.result = make_float3( 0.f, 0.f, 1.f ); //blue
   //prd.result = make_float3(0.5f);            
 
-  prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
-  // prd.result = make_float3( instanceIdentity.x/13000.f ) ;  gives launch fail
+
+    prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+
+  //prd.result = make_float3( instanceIdentity.x/13000.f ) ;  // nodeIndex 
+  //prd.result = make_float3( instanceIdentity.y/250.f ) ;    // meshIndex
+  //prd.result = make_float3( instanceIdentity.z/50.f ) ;     // boundaryIndex
+  //prd.result = make_float3( instanceIdentity.w/1000.f ) ;   // sensorIndex  : need to use near clipping to see inside the PMTs to see anything
 
   //prd.result = contrast_color ;   // according to boundary index, currently only one color as only one material ?
   // prd.result = make_float3( boundaryIndex/50.f );  // grey scale according to boundary "boundary" index
@@ -69,7 +76,7 @@ RT_PROGRAM void closest_hit_radiance()
 
 
 
-  prd.touch = make_uint4( nodeIndex, boundaryIndex, 0, 0) ;
+  //prd.touch = make_uint4( nodeIndex, boundaryIndex, 0, 0) ;
 
   // if(cos_theta > 0.0f ) prd.result.x = 0.5f ; 
   //

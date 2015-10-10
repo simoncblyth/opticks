@@ -63,8 +63,6 @@ add_library(${name} SHARED
                 GDrawable.cc
                 GArray.cc
                 GLoader.cc
-                GSensor.cc
-                GSensorList.cc
                 GCache.cc
                 GItemIndex.cc
                 GMaterialIndex.cc
@@ -104,8 +102,6 @@ GBuffer.hh
 GDrawable.hh
 GArray.hh
 GLoader.hh
-GSensor.hh
-GSensorList.hh
 GCache.hh
 GItemIndex.hh
 GMaterialIndex.hh

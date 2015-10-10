@@ -1,5 +1,6 @@
-#include "GSensorList.hh"
-#include "GSensor.hh"
+#include "NSensorList.hpp"
+#include "NSensor.hpp"
+
 #include "stdlib.h"
 #include "stdio.h"
 #include "assert.h"
@@ -9,7 +10,7 @@ int main(int argc, char** argv)
     char* idpath = getenv("IDPATH");
     if(!idpath) printf("%s : requires IDPATH envvar \n", argv[0]);
 
-    GSensorList sens;
+    NSensorList sens;
     sens.load(idpath, "idmap");
 
     if(getenv("VERBOSE")) sens.dump();
@@ -17,7 +18,7 @@ int main(int argc, char** argv)
     for(unsigned int i=1 ; i < argc ; i++)
     {
        unsigned int nodeIndex = atoi(argv[i]) ;
-       GSensor* sensor = sens.findSensorForNode(nodeIndex);
+       NSensor* sensor = sens.findSensorForNode(nodeIndex);
        printf("nodeIndex %u sensor %s \n ", nodeIndex, ( sensor ? sensor->description().c_str() : "NULL" ) );
     }
 

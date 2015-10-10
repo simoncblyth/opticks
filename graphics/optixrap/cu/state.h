@@ -12,11 +12,11 @@ struct State
    float distance_to_boundary ;
    uint4 optical ;   // x/y/z/w index/type/finish/value  
    uint4 index ;     // indices of m1/m2/surf/sensor
-
+   uint4 identity ;  //  node/mesh/boundary/sensor indices of last intersection
 };
 
 
-__device__ void fill_state( State& s, int boundary, int sensor, float wavelength )
+__device__ void fill_state( State& s, int boundary, uint4 identity, float wavelength )
 {
     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
     // >0 outward going photon
@@ -28,7 +28,6 @@ __device__ void fill_state( State& s, int boundary, int sensor, float wavelength
     // 
     int m1_line = boundary > 0 ? line + 0 : line + 1 ;   // inner-material / outer-material
     int m2_line = boundary > 0 ? line + 1 : line + 0 ;   // outer-material / inner-material
-
     int su_line = boundary > 0 ? line + 2 : line + 3 ;   // inner-surface  / outer-surface
 
     //  consider photons arriving at PMT cathode surface
@@ -42,20 +41,23 @@ __device__ void fill_state( State& s, int boundary, int sensor, float wavelength
 
     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
 
-    s.index.x = optical_buffer[m1_line].x ;
-    s.index.y = optical_buffer[m2_line].x ;
-    s.index.z = optical_buffer[su_line].x ;
-    s.index.w = sensor  ;
+    s.index.x = optical_buffer[m1_line].x ; // m1 index
+    s.index.y = optical_buffer[m2_line].x ; // m2 index 
+    s.index.z = optical_buffer[su_line].x ; // su index
+    s.index.w = identity.w   ;
+
+    s.identity = identity ; 
 
 }
 
 __device__ void  dump_state( State& s)
 {
-    rtPrintf(" dump_state:material1       %10.4f %10.4f %10.4f %10.4f \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w );
-    rtPrintf(" dump_state:material2       %10.4f %10.4f %10.4f %10.4f \n", s.material2.x, s.material2.y, s.material2.z, s.material2.w );
-    rtPrintf(" dump_state:surface         %10.4f %10.4f %10.4f %10.4f \n", s.surface.x, s.surface.y, s.surface.z, s.surface.w );
-    rtPrintf(" dump_state:optical         %10u %10u %10u %10i             \n", s.optical.x, s.optical.y, s.optical.z, s.optical.w );
-    rtPrintf(" dump_state:index           %10u %10u %10u %10i  m1/m2/su/se \n", s.index.x  , s.index.y,   s.index.z,   s.index.w );
+    rtPrintf(" dump_state:material1       %10.4f %10.4f %10.4f %10.4f ri/al/sl/rp \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w );
+    rtPrintf(" dump_state:material2       %10.4f %10.4f %10.4f %10.4f ri/al/sl/rp \n", s.material2.x, s.material2.y, s.material2.z, s.material2.w );
+    rtPrintf(" dump_state:surface         %10.4f %10.4f %10.4f %10.4f dt/ab/rs/rd \n", s.surface.x, s.surface.y, s.surface.z, s.surface.w );
+    rtPrintf(" dump_state:optical         %10u %10u %10u %10i ix/ty/fi/va \n", s.optical.x, s.optical.y, s.optical.z, s.optical.w );
+    rtPrintf(" dump_state:index           %10u %10u %10u %10i m1/m2/su/se \n", s.index.x  , s.index.y,   s.index.z,   s.index.w );
+    rtPrintf(" dump_state:identity        %10u %10u %10u %10i no/me/bd/se \n", s.identity.x  , s.identity.y,   s.identity.z,   s.identity.w );
 }
 
 

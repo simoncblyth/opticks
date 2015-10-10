@@ -49,6 +49,7 @@ add_library( ${name}  SHARED
     G4StepNPY.cpp
     TorchStepNPY.cpp
     PhotonsNPY.cpp
+    HitsNPY.cpp
     RecordsNPY.cpp
     BoundariesNPY.cpp
     SequenceNPY.cpp
@@ -59,6 +60,8 @@ add_library( ${name}  SHARED
     Timer.cpp
     Times.cpp
     NCache.cpp
+    NSensor.cpp
+    NSensorList.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -87,6 +90,7 @@ MultiViewNPY.hpp
 G4StepNPY.hpp
 TorchStepNPY.hpp
 PhotonsNPY.hpp
+HitsNPY.hpp
 RecordsNPY.hpp
 BoundariesNPY.hpp
 SequenceNPY.hpp
@@ -102,6 +106,8 @@ Index.hpp
 Timer.hpp
 Times.hpp
 NCache.hpp
+NSensor.hpp
+NSensorList.hpp
 Parameters.hpp
 md5digest.hpp
 )

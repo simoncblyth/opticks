@@ -2,7 +2,9 @@
 #include "GPropertyMap.hh"
 #include "GMesh.hh"
 #include "GBoundary.hh"
-#include "GSensor.hh"
+
+// npy-
+#include "NSensor.hpp"
 
 #include "stdio.h"
 
@@ -20,11 +22,11 @@ void GSolid::setBoundary(GBoundary* boundary)
     setBoundaryIndices( boundary->getIndex() );
 }
 
-void GSolid::setSensor(GSensor* sensor)
+void GSolid::setSensor(NSensor* sensor)
 {
     m_sensor = sensor ; 
     // every triangle needs a value... use 0 to mean unset, so sensor   
-    setSensorIndices( GSensor::RefIndex(sensor) );
+    setSensorIndices( NSensor::RefIndex(sensor) );
 }
 
 
@@ -36,7 +38,7 @@ unsigned int GSolid::getSensorSurfaceIndex()
     // in order for the index to be provided
 
     bool oss = m_boundary ? m_boundary->hasOuterSensorSurface() : false ; 
-    unsigned int ssi = oss ? GSensor::RefIndex(m_sensor) : 0 ;  
+    unsigned int ssi = oss ? NSensor::RefIndex(m_sensor) : 0 ;  
     return ssi ; 
 }
 

@@ -135,13 +135,22 @@ void OGeo::convert()
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
         assert(mm);
+
+        if( mm->getGeoCode() == 'K')
+        {
+            LOG(warning) << "OGeo::convert"
+                         << " skipping mesh " << i 
+                         ;
+            continue ; 
+        }
+
         if( i == 0 )
         {
             optix::Geometry gmm = makeGeometry(mm);
             optix::Material mat = makeMaterial();
             optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
-            gi["instanceIdx"]->setUint( 0u );  // so same code can run Instanced or not 
-            gi["primitiveCount"]->setUint( 0u ); // not needed for non-instanced
+            gi["instance_index"]->setUint( 0u );  // so same code can run Instanced or not 
+            gi["primitive_count"]->setUint( 0u ); // not needed for non-instanced
             m_geometry_group->addChild(gi);
         }
         else
@@ -176,6 +185,80 @@ void OGeo::convert()
     } 
 
     m_top->setAcceleration( makeAcceleration() );
+}
+
+
+
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
+{
+    GBuffer* itransforms = mm->getITransformsBuffer();
+    unsigned int numTransforms = limit > 0 ? std::min(itransforms->getNumItems(), limit) : itransforms->getNumItems() ;
+    assert(itransforms && numTransforms > 0);
+
+    GBuffer* ibuf = mm->getInstancedIdentityBuffer();
+    unsigned int numIdentity = ibuf->getNumItems();
+
+    assert(numIdentity % numTransforms == 0); 
+    unsigned int numSolids = numIdentity/numTransforms ;
+
+
+    LOG(info) << "OGeo::makeRepeatedGroup"
+              << " numTransforms " << numTransforms 
+              << " numIdentity " << numIdentity  
+              << " numSolids " << numSolids  
+              ; 
+
+    float* tptr = (float*)itransforms->getPointer(); 
+
+    optix::Group assembly = m_context->createGroup();
+    assembly->setChildCount(numTransforms);
+
+    optix::Geometry gmm = makeGeometry(mm);
+    optix::Material mat = makeMaterial();
+
+    optix::Acceleration accel = makeAcceleration() ;
+    // common accel for all instances 
+
+    bool transpose = true ; 
+    for(unsigned int i=0 ; i<numTransforms ; i++)
+    {
+        optix::Transform xform = m_context->createTransform();
+        assembly->setChild(i, xform);
+
+        // proliferating *pergi* so can assign an instance index to it 
+        optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
+        pergi["instance_index"]->setUint( i );
+
+        optix::GeometryGroup perxform = m_context->createGeometryGroup();
+        perxform->addChild(pergi);
+        perxform->setAcceleration( accel );
+
+        xform->setChild(perxform);
+
+        const float* tdata = tptr + 16*i ; 
+        optix::Matrix4x4 m(tdata) ;
+        xform->setMatrix(transpose, m.getData(), 0);
+        //dump("OGeo::makeRepeatedGroup", m.getData());
+    }
+    return assembly ;
+
+/*
+   After instance ID possible
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+          assembly        (Group) 
+             xform        (Transform)
+               perxform   (GeometryGroup)
+                 pergi    (GeometryInstance)      
+                     gmm  (Geometry)               the same gmm and mat are child of all xform/perxform/pergi
+                     mat  (Material) 
+             xform        (Transform)
+               perxform   (GeometryGroup)
+                  pergi   (GeometryInstance)      
+                     gmm  (Geometry)
+                     mat  (Material) 
+             ...
+*/
 }
 
 
@@ -243,77 +326,6 @@ optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 
 
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
-{
-    GBuffer* itransforms = mm->getITransformsBuffer();
-    unsigned int numTransforms = limit > 0 ? std::min(itransforms->getNumItems(), limit) : itransforms->getNumItems() ;
-    assert(itransforms && numTransforms > 0);
-
-    GBuffer* ibuf = mm->getInstancedIdentityBuffer();
-    unsigned int numIdentity = ibuf->getNumItems();
-
-    assert(numIdentity % numTransforms == 0); 
-    unsigned int numSolids = numIdentity/numTransforms ;
-
-
-    LOG(info) << "OGeo::makeRepeatedGroup"
-              << " numTransforms " << numTransforms 
-              << " numIdentity " << numIdentity  
-              << " numSolids " << numSolids  
-              ; 
-
-    float* tptr = (float*)itransforms->getPointer(); 
-
-    optix::Group assembly = m_context->createGroup();
-    assembly->setChildCount(numTransforms);
-
-    optix::Geometry gmm = makeGeometry(mm);
-    optix::Material mat = makeMaterial();
-
-    bool transpose = true ; 
-    for(unsigned int i=0 ; i<numTransforms ; i++)
-    {
-        optix::Transform xform = m_context->createTransform();
-        assembly->setChild(i, xform);
-
-        // proliferating *pergi* so can assign an instance index to it 
-        optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
-        pergi["instanceIdx"]->setUint( i );
-
-        optix::GeometryGroup perxform = m_context->createGeometryGroup();
-        perxform->addChild(pergi);
-        perxform->setAcceleration( makeAcceleration() );
-
-        xform->setChild(perxform);
-
-        const float* tdata = tptr + 16*i ; 
-        optix::Matrix4x4 m(tdata) ;
-        xform->setMatrix(transpose, m.getData(), 0);
-        //dump("OGeo::makeRepeatedGroup", m.getData());
-    }
-    return assembly ;
-
-/*
-   After instance ID possible
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-          assembly        (Group) 
-             xform        (Transform)
-               perxform   (GeometryGroup)
-                 pergi    (GeometryInstance)      
-                     gmm  (Geometry)               the same gmm and mat are child of all xform/perxform/pergi
-                     mat  (Material) 
-             xform        (Transform)
-               perxform   (GeometryGroup)
-                  pergi   (GeometryInstance)      
-                     gmm  (Geometry)
-                     mat  (Material) 
-             ...
-*/
-}
-
-
-
 
 void OGeo::dump(const char* msg, const float* f)
 {
@@ -348,9 +360,6 @@ optix::Material OGeo::makeMaterial()
     material->setClosestHitProgram(OEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
     return material ; 
 }
-
-
-
 
 optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, optix::Material material)
 {
@@ -399,7 +408,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
     geometry->setPrimitiveCount( numSolids );
-    geometry["primitiveCount"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
+    assert( geometry->getPrimitiveCount() == numSolids );
+    geometry["primitive_count"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
 
     LOG(warning) << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
@@ -461,7 +471,8 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     unsigned int numITransforms = mm->getNumITransforms();
 
     geometry->setPrimitiveCount(numFaces);
-    geometry["primitiveCount"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
+    assert(geometry->getPrimitiveCount() == numFaces);
+    geometry["primitive_count"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
 
     LOG(info) << "OGeo::makeTriangulatedGeometry " 
               << " mmIndex " << mm->getIndex() 
@@ -497,7 +508,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
    geometry["identityBuffer"]->setBuffer(identityBuffer);
 
-
+ 
     // TODO: purloin the OpenGL buffers to avoid duplicating the geometry info on GPU 
     // TODO : attempt to isolate this bad behavior 
     // TODO : float3 is a known to be problematic, maybe try with float4
@@ -511,14 +522,6 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mm->getIndicesBuffer(), RT_FORMAT_INT3, 3 , "indexBuffer");  // need the 3 to fold for faces
     geometry["indexBuffer"]->setBuffer(indexBuffer);
 
-    optix::Buffer nodeBuffer = createInputBuffer<unsigned int>( mm->getNodesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "nodeBuffer");
-    geometry["nodeBuffer"]->setBuffer(nodeBuffer);
-
-    optix::Buffer boundaryBuffer = createInputBuffer<unsigned int>( mm->getBoundariesBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "boundaryBuffer");
-    geometry["boundaryBuffer"]->setBuffer(boundaryBuffer);
- 
-    optix::Buffer sensorBuffer = createInputBuffer<unsigned int>( mm->getSensorsBuffer(), RT_FORMAT_UNSIGNED_INT, 1, "sensorBuffer");
-    geometry["sensorBuffer"]->setBuffer(sensorBuffer);
 
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
     geometry["tangentBuffer"]->setBuffer(emptyBuffer);
@@ -543,7 +546,7 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
-   LOG(debug)<<"OGeo::createInputBuffer"
+   LOG(info)<<"OGeo::createInputBuffer"
             << " fmt " << std::setw(20) << RayTraceConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes

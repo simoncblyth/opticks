@@ -5,7 +5,6 @@
 #include "GVector.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
-#include "GSensorList.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GTraverse.hh"
 #include "GColorizer.hh"
@@ -21,6 +20,7 @@
 #include "GColorMap.hh"
 
 // npy-
+#include "NSensorList.hpp"
 #include "stringutil.hpp"
 #include "Lookup.hpp"
 #include "Types.hpp"
@@ -62,6 +62,8 @@ void GLoader::load()
     // in multiple other places 
     // eg this allows setting up mesh joiner imp to be done at creation within 
     // AssimpGGeo by GGeo
+
+
 
     if(m_ggeo->isLoaded()) 
     {

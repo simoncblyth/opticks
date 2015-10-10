@@ -3,9 +3,11 @@
 #include "GSolid.hh"
 #include "GBoundaryLib.hh"
 #include "GBoundary.hh"
-#include "GSensor.hh"
 
+
+// npy-
 #include "Timer.hpp"
+#include "NSensor.hpp"
 
 #include <climits>
 #include <iostream>
@@ -88,13 +90,13 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
     GBoundary* boundary = solid->getBoundary();
-    GSensor* sensor = solid->getSensor();
+    NSensor* sensor = solid->getSensor();
     GMesh* mesh = solid->getMesh();
 
     unsigned int nodeIndex = node->getIndex();
     unsigned int meshIndex = mesh->getIndex();
     unsigned int boundaryIndex = boundary->getIndex();
-    unsigned int sensorIndex = GSensor::RefIndex(sensor) ; 
+    unsigned int sensorIndex = NSensor::RefIndex(sensor) ; 
 
     guint4 _identity = solid->getIdentity();
 

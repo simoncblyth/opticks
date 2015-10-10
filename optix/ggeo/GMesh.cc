@@ -725,9 +725,9 @@ void GMesh::setSensorsBuffer(GBuffer* buffer)
     unsigned int num_sensors = numBytes/sizeof(unsigned int);
 
 
-    //assert(m_num_faces == num_sensors);   // must load indices before sensors, for m_num_faces
-    if(m_num_faces != num_sensors)
-        LOG(warning) << "GMesh::setSensorsBuffer allowing inconsistency " ; 
+    assert(m_num_faces == num_sensors);   // must load indices before sensors, for m_num_faces
+    //if(m_num_faces != num_sensors)
+    //    LOG(warning) << "GMesh::setSensorsBuffer allowing inconsistency " ; 
 
 }
 
