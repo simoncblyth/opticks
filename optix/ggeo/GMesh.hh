@@ -250,9 +250,11 @@ class GMesh : public GDrawable {
       // transient buffers, not persisted : providing node level info in a face level buffer by repetition
       GBuffer* getFaceRepeatedInstancedIdentityBuffer(); 
       GBuffer* getFaceRepeatedIdentityBuffer(); 
+      GBuffer* getAnalyticGeometryBuffer();
   private: 
       GBuffer* makeFaceRepeatedInstancedIdentityBuffer();
       GBuffer* makeFaceRepeatedIdentityBuffer();
+      GBuffer* makeAnalyticGeometryBuffer();
 
 
   ///////// for use from subclass  /////////////////////////////////////
@@ -388,7 +390,7 @@ class GMesh : public GDrawable {
       // transients
       GBuffer* m_facerepeated_identity_buffer ;
       GBuffer* m_facerepeated_iidentity_buffer ;
-
+      GBuffer* m_analytic_geometry_buffer ; 
 
 };
 

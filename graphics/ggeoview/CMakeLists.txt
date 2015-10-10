@@ -156,4 +156,4 @@ target_link_libraries( ${name} ${LIBRARIES} )
 
 install(TARGETS ${name} DESTINATION bin)
 
-add_subdirectory(tests)
+#add_subdirectory(tests)

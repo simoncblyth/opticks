@@ -217,7 +217,7 @@ class App {
        void seedPhotonsFromGensteps();
        void initRecords();
   public:
-       void configureOptiXGeometry(int restrict_mesh=-1); // for debugging: restrict_mesh when > -1 does so
+       void configureOptiXGeometry(int restrict_mesh=-1, int analytic_mesh=-1); // for debugging: restrict_mesh when > -1 does so
        void prepareEngine();
        void propagate();
        void downloadEvt();
@@ -982,7 +982,7 @@ void App::initRecords()
 }
 
 
-void App::configureOptiXGeometry(int restrict_mesh)
+void App::configureOptiXGeometry(int restrict_mesh, int analytic_mesh)
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
     //assert( nmm == 2);
@@ -999,15 +999,16 @@ void App::configureOptiXGeometry(int restrict_mesh)
              mm->setGeoCode('K');      
 
         }
+
+        if(analytic_mesh > -1 && i == analytic_mesh && i > 0)
+        {
+             mm->setGeoCode('S');      
+        }
+
+
     }
 
-/*
-    bool simplify    = m_fcfg->hasOpt("simplify");
-    if(!simplify) return ;
-    GMergedMesh* mm = m_ggeo->getMergedMesh(1) ;
-    if(!mm) return ;
-    mm->setGeoCode('S');
-*/
+
 }
 
 void App::prepareEngine()
@@ -1560,6 +1561,7 @@ int main(int argc, char** argv)
 
 
     int restrict_mesh = app.getFrameCfg()->getRestrictMesh() ; 
+    int analytic_mesh = app.getFrameCfg()->getAnalyticMesh() ; 
 
     app.uploadGeometry();
 
@@ -1577,7 +1579,7 @@ int main(int argc, char** argv)
 
         app.initRecords();
 
-        app.configureOptiXGeometry(restrict_mesh);
+        app.configureOptiXGeometry(restrict_mesh, analytic_mesh);
 
         app.prepareEngine();
 

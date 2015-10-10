@@ -24,7 +24,10 @@ Conference Talks
   Many presentations (videos and pdfs) on OptiX
 
 
+OptiX CSG
+----------
 
+* https://mediatech.aalto.fi/~jaakko/ME-C3100/S2013/12_RayTracing.pdf
 
 Samples
 --------

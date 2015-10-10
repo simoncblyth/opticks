@@ -18,6 +18,7 @@ class FrameCfg : public Cfg {
      int          getAnimTimeMax(); 
      int          getRepeatIndex(); 
      int          getRestrictMesh(); 
+     int          getAnalyticMesh(); 
      int          getModulo(); 
      int          getOverride(); 
      int          getDebugIdx(); 
@@ -37,6 +38,7 @@ private:
      int         m_animtimemax ; 
      int         m_repeatidx ; 
      int         m_restrictmesh; 
+     int         m_analyticmesh; 
      int         m_modulo ; 
      int         m_override ; 
      int         m_debugidx ; 
@@ -56,6 +58,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_animtimemax(50),
        m_repeatidx(-1),
        m_restrictmesh(-1),
+       m_analyticmesh(-1),
        m_modulo(-1),
        m_override(-1),
        m_debugidx(0)
@@ -218,6 +221,11 @@ inline void FrameCfg<Listener>::init()
    m_desc.add_options()
        ("restrictmesh",  boost::program_options::value<int>(&m_restrictmesh), restrictmesh );
 
+   char analyticmesh[128];
+   snprintf(analyticmesh,128, "Index of instanced mesh with which to attempt analytic OptiX geometry eg 1,2. Or -1 for no analytic geometry. Default %d ", m_analyticmesh);
+   m_desc.add_options()
+       ("analyticmesh",  boost::program_options::value<int>(&m_analyticmesh), analyticmesh );
+
 
 
    ///////////////
@@ -309,6 +317,12 @@ inline int FrameCfg<Listener>::getRestrictMesh()
 {
     return m_restrictmesh ; 
 }
+template <class Listener>
+inline int FrameCfg<Listener>::getAnalyticMesh()
+{
+    return m_analyticmesh ; 
+}
+
 
 
 

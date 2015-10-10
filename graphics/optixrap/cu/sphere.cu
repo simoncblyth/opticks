@@ -9,7 +9,8 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 rtDeclareVariable(unsigned int, instance_index,  ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
-rtBuffer<uint4> identityBuffer; 
+rtBuffer<float4> analyticBuffer; 
+rtBuffer<uint4>  identityBuffer; 
 
 
 // attributes communicate to closest hit program,
@@ -20,25 +21,24 @@ rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, );
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
 
-
-
 template<bool use_robust_method>
 static __device__
 void intersect_sphere(int primIdx)
 {
-  //uint4 identity = identityBuffer[primIdx];
-  //uint4 identity = identityBuffer[2];
-  uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // index just primIdx for non-instanced
+  uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
+  float4 param = analyticBuffer[primIdx]; 
+  float3 center = make_float3(param);
+  float radius = param.w;
 
-  float3 center = make_float3(sphere);
   float3 O = ray.origin - center;
   float3 D = ray.direction;
-  float radius = sphere.w;
 
   float b = dot(O, D);
   float c = dot(O, O)-radius*radius;
   float disc = b*b-c;
-  if(disc > 0.0f){
+
+  if(disc > 0.0f)
+  {
     float sdisc = sqrtf(disc);
     float root1 = (-b - sdisc);
 
@@ -46,21 +46,24 @@ void intersect_sphere(int primIdx)
 
     float root11 = 0.0f;
 
-    if(use_robust_method && fabsf(root1) > 10.f * radius) {
-      do_refine = true;
+    if(use_robust_method && fabsf(root1) > 10.f * radius) 
+    {
+        do_refine = true;
     }
 
-    if(do_refine) {
-      // refine root1
-      float3 O1 = O + root1 * ray.direction;
-      b = dot(O1, D);
-      c = dot(O1, O1) - radius*radius;
-      disc = b*b - c;
+    if(do_refine) 
+    {
+        // refine root1
+        float3 O1 = O + root1 * ray.direction;
+        b = dot(O1, D);
+        c = dot(O1, O1) - radius*radius;
+        disc = b*b - c;
 
-      if(disc > 0.0f) {
-        sdisc = sqrtf(disc);
-        root11 = (-b - sdisc);
-      }
+        if(disc > 0.0f) 
+        {
+            sdisc = sqrtf(disc);
+            root11 = (-b - sdisc);
+        }
     }
 
     bool check_second = true;
@@ -101,8 +104,9 @@ RT_PROGRAM void robust_intersect(int primIdx)
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-  const float3 cen = make_float3( sphere );
-  const float3 rad = make_float3( sphere.w );
+  float4 param = analyticBuffer[primIdx]; 
+  const float3 cen = make_float3(param);
+  const float3 rad = make_float3(param.w);
 
   optix::Aabb* aabb = (optix::Aabb*)result;
   

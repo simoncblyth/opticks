@@ -403,7 +403,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     unsigned int numSolids = mm->getNumSolids();
     assert( numSolids < 10 ); // expecting small number
-    numSolids = 1 ; // override, as think getting 5 spheres on top of each other
+
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
@@ -411,14 +411,18 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     assert( geometry->getPrimitiveCount() == numSolids );
     geometry["primitive_count"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
 
+    GBuffer* ag = mm->getAnalyticGeometryBuffer();
+
     LOG(warning) << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
-                 << " numSolids (PrimitiveCount) " << numSolids
+                 << " numSolids (PrimitiveCount) " << numSolids 
+                 << " agItems " << ag->getNumItems() 
                  << " numITransforms " << numITransforms 
                  ;
 
-
-    geometry["sphere"]->setFloat( 0, 0, 0, 131.f );  //   PmtHemiFaceROC
+    assert(ag->getNumItems() == numSolids );
+    optix::Buffer analyticBuffer = createInputBuffer<optix::float4>( ag, RT_FORMAT_FLOAT4, 1 , "analyticBuffer"); 
+    geometry["analyticBuffer"]->setBuffer(analyticBuffer);
 
 
     GBuffer* id = NULL ; 
