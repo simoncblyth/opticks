@@ -527,6 +527,12 @@ CUDA/Thrust kdTree part of FLANN
 
 
 
+OptiX OpenGL Compositing
+-------------------------
+
+* https://github.com/nvpro-samples/gl_optix_composite
+
+
 
 Peek at OptiX internals via stack trace
 ----------------------------------------
