@@ -24,6 +24,11 @@ Blogs on Ray Tracing
 
 * http://raytracey.blogspot.tw
 
+Lectures on Ray Tracing
+-------------------------
+
+* http://www.cs.rpi.edu/~cutler/classes/advancedgraphics/F05/lectures/13_ray_tracing.pdf
+
 
 Visual Effects : bloom
 ------------------------
