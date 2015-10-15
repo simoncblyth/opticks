@@ -1,5 +1,6 @@
 #pragma once
 
+#include "NPY.hpp"
 #include "GVector.hh"
 #include "GMatrix.hh"
 #include "GDrawable.hh"
@@ -142,6 +143,7 @@ class GMesh : public GDrawable {
       const char* getShortName();
       const char* getVersion();
       char getGeoCode();
+
   private:
       void findShortName(); 
   public:
@@ -254,8 +256,7 @@ class GMesh : public GDrawable {
   private: 
       GBuffer* makeFaceRepeatedInstancedIdentityBuffer();
       GBuffer* makeFaceRepeatedIdentityBuffer();
-      GBuffer* makeAnalyticGeometryBuffer();
-
+      GBuffer* loadAnalyticGeometryBuffer(const char* path="/tmp/hemi-pmt-parts.npy"); // TODO: adopt a standard idpath location ??
 
   ///////// for use from subclass  /////////////////////////////////////
   public:
@@ -708,7 +709,6 @@ inline void GMesh::setGeoCode(char geocode)
 {
     m_geocode = geocode ; 
 }
-
 
 
 

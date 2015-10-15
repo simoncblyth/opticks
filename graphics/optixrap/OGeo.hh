@@ -39,6 +39,7 @@ private:
     //optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
+    void dumpAnalyticGeometryBuffer(GBuffer* buf, const char* msg="OGeo::dumpAnalyticGeometryBuffer");
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
     void dump(const char* msg, const float* m);
 

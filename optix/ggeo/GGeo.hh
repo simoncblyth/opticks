@@ -64,7 +64,7 @@ class GGeo {
         GMaterial* getCathode();  
 
         virtual ~GGeo();
-    private:
+   private:
         void init(); 
         void loadMergedMeshes(const char* idpath);
         void removeMergedMeshes(const char* idpath);
@@ -534,4 +534,6 @@ inline void GGeo::dumpCathodeLV(const char* msg)
         printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
     }
 }
+
+
 

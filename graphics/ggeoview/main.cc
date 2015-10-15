@@ -535,6 +535,9 @@ int App::loadGeometry()
     m_loader->load();
 
 
+    
+
+
 
     m_parameters->add<int>("repeatIdx", m_loader->getRepeatIndex() );
 

@@ -288,6 +288,7 @@ void OEngine::initGeometry()
     OBoundaryLib olib(m_context, blib); 
     olib.convert(); 
 
+
     OGeo         og(m_context, gg);
     og.setTop(m_top);
     og.convert(); 

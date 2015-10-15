@@ -1465,8 +1465,10 @@ GBuffer*  GMesh::getFaceRepeatedIdentityBuffer()
 }
 
 
-GBuffer* GMesh::makeAnalyticGeometryBuffer()
+GBuffer* GMesh::loadAnalyticGeometryBuffer(const char* path)
 {
+    GBuffer* buffer = GBuffer::load<float>(path);
+   /*
     unsigned int numSolids = getNumSolids();
     unsigned int numPrim = numSolids ;  
     assert(m_index == 1 && numPrim == 5);
@@ -1479,11 +1481,9 @@ GBuffer* GMesh::makeAnalyticGeometryBuffer()
     csg[3] = gfloat4(0.,0.,40.,10.) ; 
     csg[4] = gfloat4(0.,0.,50.,10.) ; 
 
-    //  used by OGeo
-    //  geometry["sphere"]->setFloat( 0, 0, 0, 131.f );  //   PmtHemiFaceROC
-
     unsigned int size = sizeof(gfloat4) ;
     GBuffer* buffer = new GBuffer( size*numPrim, (void*)csg, size, 4 ); 
+    */
     return buffer ; 
 }
 
@@ -1491,7 +1491,7 @@ GBuffer*  GMesh::getAnalyticGeometryBuffer()
 {
     if(m_analytic_geometry_buffer == NULL)
     {
-        m_analytic_geometry_buffer = makeAnalyticGeometryBuffer() ;
+        m_analytic_geometry_buffer = loadAnalyticGeometryBuffer() ;
     }
     return m_analytic_geometry_buffer ;
 }

@@ -391,10 +391,66 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 }
 
+
+void OGeo::dumpAnalyticGeometryBuffer(GBuffer* buf, const char* msg)
+{
+    LOG(info) << msg ; 
+
+    float* data = (float*)buf->getPointer();
+    unsigned int numBytes    = buf->getNumBytes();
+    unsigned int numItems    = buf->getNumItems();    
+    unsigned int numElements = buf->getNumElements();
+
+    
+    LOG(info) << msg
+              << " numBytes " << numBytes 
+              << " numItems " << numItems 
+              << " numElements " << numElements
+              << " numElements*numItems*sizeof(T) " << numElements*numItems*sizeof(float)  
+              ;   
+
+    assert(numElements < 17); // elements within an item, eg 3/4 for float3/float4  
+    assert(numElements*numItems*sizeof(float) == numBytes );  
+
+    unsigned int ni = numItems ;
+    unsigned int nj = 4 ; 
+    unsigned int nk = 4 ; 
+    assert( nj*nk == numElements ); 
+
+    typedef union 
+    {
+        float f ; 
+        int i ;
+    }   uif_t ; 
+
+    uif_t uif ; 
+
+    for(unsigned int i=0; i < ni; i++)
+    {
+       for(unsigned int j=0 ; j < nj ; j++)
+       {
+          for(unsigned int k=0 ; k < nk ; k++) 
+          {
+              uif.f = data[i*nj*nk+j*nj+k] ;
+              if( j == 2 && k == 3)
+                  printf(" %10d (typecode Sphere:1 Tubs:2) ", uif.i );
+              else if( j == 3 && k == 3)
+                  printf(" %10d (nodeIndex) ", uif.i );
+              else
+                  printf(" %10.4f ", uif.f );
+          }
+          printf("\n");
+       }
+       printf("\n");
+    }
+}
+
+
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
     // replacing instance1 with a sphere positioned to match the cathode front face
     assert(mm->getIndex() == 1 ); 
+
 
     optix::Geometry geometry = m_context->createGeometry();
     RayTraceConfig* cfg = RayTraceConfig::getInstance();
@@ -420,7 +476,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
                  << " numITransforms " << numITransforms 
                  ;
 
-    assert(ag->getNumItems() == numSolids );
+    dumpAnalyticGeometryBuffer(ag);
+
     optix::Buffer analyticBuffer = createInputBuffer<optix::float4>( ag, RT_FORMAT_FLOAT4, 1 , "analyticBuffer"); 
     geometry["analyticBuffer"]->setBuffer(analyticBuffer);
 
@@ -540,10 +597,15 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
 
 
 template <typename T>
-optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
+optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, int fold, const char* name, bool reuse)
 {
    unsigned int bytes = buf->getNumBytes() ;
-   unsigned int nit = buf->getNumItems()/fold ;
+
+   unsigned int bi = buf->getNumItems() ; 
+   //unsigned int nit = fold < 1. ? bi*int(1./fold) : bi   ;  
+
+   unsigned int nit = bi/fold ; 
+
    unsigned int nel = buf->getNumElements();
    unsigned int mul = RayTraceConfig::getMultiplicity(format) ;
 
@@ -557,8 +619,10 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
             << " nit " << std::setw(7) << nit 
             << " nel " << std::setw(3) << nel 
             << " mul " << std::setw(3) << mul 
+            << " ffold " << std::setw(3) << ffold 
             << " fold " << std::setw(3) << fold 
             << " sizeof(T) " << std::setw(3) << sizeof(T)
+            << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit
             << " id " << std::setw(3) << buffer_id 
             ;
 
@@ -566,8 +630,6 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    assert(nel == mul/fold );
 
    optix::Buffer buffer ;
-
-   //buffer_id = -1 ; // kill attempt to reuse OpenGL buffers
 
    if(buffer_id > -1 && reuse)
    {
