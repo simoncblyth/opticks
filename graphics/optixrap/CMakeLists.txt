@@ -114,6 +114,7 @@ optixthrust_add_library( ${name}
        cu/material1_propagate.cu 
        cu/TriangleMesh.cu 
        cu/sphere.cu 
+       cu/hemi-pmt.cu 
        cu/generate.cu
 
        OBuf_.cu     
@@ -132,6 +133,7 @@ set(cuptxs
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_TriangleMesh.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_sphere.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_hemi-pmt.cu.ptx
 )
 
 set(cuhdrs

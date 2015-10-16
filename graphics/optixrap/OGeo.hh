@@ -7,6 +7,8 @@
 #include <optixu/optixu_aabb_namespace.h>
 
 
+class RayTraceConfig ; 
+
 class GGeo ; 
 class GMergedMesh ; 
 class GBuffer ; 
@@ -39,7 +41,6 @@ private:
     //optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
-    void dumpAnalyticGeometryBuffer(GBuffer* buf, const char* msg="OGeo::dumpAnalyticGeometryBuffer");
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
     void dump(const char* msg, const float* m);
 
@@ -52,13 +53,15 @@ private:
     // locals 
     optix::GeometryGroup m_geometry_group ; 
     optix::Group         m_repeated_group ; 
+    RayTraceConfig*      m_cfg ; 
 
 };
 
 inline OGeo::OGeo(optix::Context& ctx, GGeo* gg)
            : 
            m_context(ctx),
-           m_ggeo(gg)
+           m_ggeo(gg),
+           m_cfg(NULL)
 {
     init();
 }

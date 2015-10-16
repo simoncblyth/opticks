@@ -9,11 +9,14 @@
 
 #include <optix_world.h>
 
+// optixrap-
+#include "RayTraceConfig.hh"
 #include "OEngine.hh"
 
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
+#include "GPmt.hh"
 
 
 // npy-
@@ -114,6 +117,7 @@ void OGeo::init()
 {
     m_geometry_group = m_context->createGeometryGroup();
     m_repeated_group = m_context->createGroup();
+    m_cfg = RayTraceConfig::makeInstance(m_context);
 }
 
 void OGeo::setTop(optix::Group top)
@@ -355,9 +359,8 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
 optix::Material OGeo::makeMaterial()
 {
     optix::Material material = m_context->createMaterial();
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    material->setClosestHitProgram(OEngine::e_radiance_ray, cfg->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
-    material->setClosestHitProgram(OEngine::e_propagate_ray, cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
+    material->setClosestHitProgram(OEngine::e_radiance_ray, m_cfg->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
+    material->setClosestHitProgram(OEngine::e_propagate_ray, m_cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
     return material ; 
 }
 
@@ -392,91 +395,45 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 }
 
 
-void OGeo::dumpAnalyticGeometryBuffer(GBuffer* buf, const char* msg)
-{
-    LOG(info) << msg ; 
-
-    float* data = (float*)buf->getPointer();
-    unsigned int numBytes    = buf->getNumBytes();
-    unsigned int numItems    = buf->getNumItems();    
-    unsigned int numElements = buf->getNumElements();
-
-    
-    LOG(info) << msg
-              << " numBytes " << numBytes 
-              << " numItems " << numItems 
-              << " numElements " << numElements
-              << " numElements*numItems*sizeof(T) " << numElements*numItems*sizeof(float)  
-              ;   
-
-    assert(numElements < 17); // elements within an item, eg 3/4 for float3/float4  
-    assert(numElements*numItems*sizeof(float) == numBytes );  
-
-    unsigned int ni = numItems ;
-    unsigned int nj = 4 ; 
-    unsigned int nk = 4 ; 
-    assert( nj*nk == numElements ); 
-
-    typedef union 
-    {
-        float f ; 
-        int i ;
-    }   uif_t ; 
-
-    uif_t uif ; 
-
-    for(unsigned int i=0; i < ni; i++)
-    {
-       for(unsigned int j=0 ; j < nj ; j++)
-       {
-          for(unsigned int k=0 ; k < nk ; k++) 
-          {
-              uif.f = data[i*nj*nk+j*nj+k] ;
-              if( j == 2 && k == 3)
-                  printf(" %10d (typecode Sphere:1 Tubs:2) ", uif.i );
-              else if( j == 3 && k == 3)
-                  printf(" %10d (nodeIndex) ", uif.i );
-              else
-                  printf(" %10.4f ", uif.f );
-          }
-          printf("\n");
-       }
-       printf("\n");
-    }
-}
-
-
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
     // replacing instance1 with a sphere positioned to match the cathode front face
     assert(mm->getIndex() == 1 ); 
 
 
-    optix::Geometry geometry = m_context->createGeometry();
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
-    geometry->setIntersectionProgram(cfg->createProgram("sphere.cu.ptx", "intersect"));
-    geometry->setBoundingBoxProgram(cfg->createProgram("sphere.cu.ptx", "bounds"));
-
-    unsigned int numSolids = mm->getNumSolids();
-    assert( numSolids < 10 ); // expecting small number
-
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
-    geometry->setPrimitiveCount( numSolids );
-    assert( geometry->getPrimitiveCount() == numSolids );
-    geometry["primitive_count"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
 
     GBuffer* ag = mm->getAnalyticGeometryBuffer();
+    GPmt* pmt = new GPmt(ag);
+    pmt->dump();
+    pmt->Summary();
+
+    unsigned int numSolids = mm->getNumSolids();
+    unsigned int numSolidsPmt  = pmt->getNumSolids();
+    assert(numSolids == numSolidsPmt );  // analytic and triangulated solid counts must match 
+    assert( numSolids < 10 );            // expecting small number
+
+    unsigned int numParts = pmt->getNumParts();
+
 
     LOG(warning) << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
-                 << " numSolids (PrimitiveCount) " << numSolids 
-                 << " agItems " << ag->getNumItems() 
+                 << " numSolids " << numSolids 
+                 << " numParts " << numParts
                  << " numITransforms " << numITransforms 
                  ;
 
-    dumpAnalyticGeometryBuffer(ag);
+
+    optix::Geometry geometry = m_context->createGeometry();
+    geometry->setPrimitiveCount( numParts );
+    geometry["primitive_count"]->setUint( numParts );  // needed GPU side, for instanced offsets 
+
+
+    geometry->setIntersectionProgram(m_cfg->createProgram("hemi-pmt.cu.ptx", "intersect"));
+    geometry->setBoundingBoxProgram(m_cfg->createProgram("hemi-pmt.cu.ptx", "bounds"));
+
 
     optix::Buffer analyticBuffer = createInputBuffer<optix::float4>( ag, RT_FORMAT_FLOAT4, 1 , "analyticBuffer"); 
     geometry["analyticBuffer"]->setBuffer(analyticBuffer);
@@ -504,6 +461,10 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
                   ;
         assert( id->getNumItems() == numSolids );
     }
+
+
+
+
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     geometry["identityBuffer"]->setBuffer(identityBuffer);
 
@@ -597,15 +558,12 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
 
 
 template <typename T>
-optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, int fold, const char* name, bool reuse)
+optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
 {
    unsigned int bytes = buf->getNumBytes() ;
 
-   unsigned int bi = buf->getNumItems() ; 
-   //unsigned int nit = fold < 1. ? bi*int(1./fold) : bi   ;  
-
-   unsigned int nit = bi/fold ; 
-
+   unsigned int bit = buf->getNumItems() ; 
+   unsigned int nit = bit/fold ; 
    unsigned int nel = buf->getNumElements();
    unsigned int mul = RayTraceConfig::getMultiplicity(format) ;
 
@@ -616,10 +574,10 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, int fold, c
             << " fmt " << std::setw(20) << RayTraceConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes
+            << " bit " << std::setw(7) << bit 
             << " nit " << std::setw(7) << nit 
             << " nel " << std::setw(3) << nel 
             << " mul " << std::setw(3) << mul 
-            << " ffold " << std::setw(3) << ffold 
             << " fold " << std::setw(3) << fold 
             << " sizeof(T) " << std::setw(3) << sizeof(T)
             << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit

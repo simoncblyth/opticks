@@ -1222,6 +1222,8 @@ void GMesh::findShortName()
 GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 {
 /*
+     Canonically invoked by optixrap-/OGeo::makeTriangulatedGeometry
+
 
      For debugging::
 
@@ -1252,17 +1254,16 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
               << " numRepeatedIdentity " << numRepeatedIdentity 
                ; 
 
-    assert(numFaces == getNumFaces());
     assert(m_nodeinfo_buffer->getNumItems() == numSolids);
     assert(m_iidentity_buffer->getNumItems() == numSolids*numITransforms);
 
     guint4* nodeinfo = getNodeInfo();
     unsigned int nftot(0);
     unsigned int offset(0);
+    unsigned int i1 = numFaces ;                    // instance 1 offset
+    unsigned int il = (numITransforms-1)*numFaces ; // instance N-1 offset 
 
-    unsigned int i1 = numFaces ;
-    unsigned int il = (numITransforms-1)*numFaces ;
-
+    // check nodeinfo per-solid sum of faces matches expected total 
     for(unsigned int s=0 ; s < numSolids ; s++)
     {
         unsigned int nf = (nodeinfo + s)->x ;
@@ -1421,23 +1422,21 @@ GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
     assert(m_nodeinfo_buffer->getNumItems() == numSolids);
 
     guint4* nodeinfo = getNodeInfo();
+
+
+    // check nodeinfo sum of per-solid faces matches expectation
     unsigned int nftot(0);
-    unsigned int offset(0);
-
-    unsigned int i1 = numFaces ;
-
     for(unsigned int s=0 ; s < numSolids ; s++)
     {
         unsigned int nf = (nodeinfo + s)->x ;
-        //printf(" s %u nf %3d idx %d:%d  \n", s, nf, offset, offset+nf ); 
         nftot += nf ;
-        offset += nf ; 
     }
     printf(" ----- %d \n", nftot);
     assert( numFaces == nftot );
 
 
-    offset = 0 ; 
+    // duplicate nodeinfo for each solid out to each face
+    unsigned int offset(0);
     guint4* rid = new guint4[numFaces] ;
     for(unsigned int s=0 ; s < numSolids ; s++)
     {   
@@ -1465,33 +1464,19 @@ GBuffer*  GMesh::getFaceRepeatedIdentityBuffer()
 }
 
 
+
+
+
 GBuffer* GMesh::loadAnalyticGeometryBuffer(const char* path)
 {
-    GBuffer* buffer = GBuffer::load<float>(path);
-   /*
-    unsigned int numSolids = getNumSolids();
-    unsigned int numPrim = numSolids ;  
-    assert(m_index == 1 && numPrim == 5);
-
-    gfloat4* csg = new gfloat4[numPrim] ;
-
-    csg[0] = gfloat4(0.,0.,10.,10.) ; 
-    csg[1] = gfloat4(0.,0.,20.,10.) ; 
-    csg[2] = gfloat4(0.,0.,0.,131.) ; 
-    csg[3] = gfloat4(0.,0.,40.,10.) ; 
-    csg[4] = gfloat4(0.,0.,50.,10.) ; 
-
-    unsigned int size = sizeof(gfloat4) ;
-    GBuffer* buffer = new GBuffer( size*numPrim, (void*)csg, size, 4 ); 
-    */
-    return buffer ; 
+    return GBuffer::load<float>(path);
 }
 
 GBuffer*  GMesh::getAnalyticGeometryBuffer()
 {
     if(m_analytic_geometry_buffer == NULL)
     {
-        m_analytic_geometry_buffer = loadAnalyticGeometryBuffer() ;
+        m_analytic_geometry_buffer = loadAnalyticGeometryBuffer() ; // FIX: relying on default temporary path
     }
     return m_analytic_geometry_buffer ;
 }

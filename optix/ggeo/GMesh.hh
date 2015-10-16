@@ -240,7 +240,7 @@ class GMesh : public GDrawable {
       GBuffer* getMeshesBuffer();
       GBuffer* getNodeInfoBuffer();
       GBuffer* getIdentityBuffer();
-      GBuffer* getInstancedIdentityBuffer();
+      GBuffer* getInstancedIdentityBuffer(); // created by GTreeCheck::CreateInstancedMergedMeshes 
 
       GBuffer* getITransformsBuffer();
 

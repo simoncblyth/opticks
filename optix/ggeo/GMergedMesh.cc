@@ -216,16 +216,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
             assert(nodeIndex == m_cur_solid);
         }
 
-
-         /*
-        m_identity[m_cur_solid].x = nodeIndex ; 
-        m_identity[m_cur_solid].y = meshIndex ; 
-        m_identity[m_cur_solid].z = boundaryIndex ; 
-        m_identity[m_cur_solid].w = sensorIndex ; 
-        */
- 
         m_identity[m_cur_solid] = _identity ; 
-
         m_cur_solid += 1 ; 
     }
 
