@@ -1,5 +1,6 @@
 #include "GPmt.hh"
 #include "GBuffer.hh"
+#include "GVector.hh"
 
 #include <map>
 #include <cstdio>
@@ -28,7 +29,7 @@ GPmt* GPmt::load(const char* path)
 
 unsigned int GPmt::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
-    float* data = (float*)m_buffer->getPointer();
+    float* data = (float*)m_part_buffer->getPointer();
     uif_t uif ; 
     uif.f = data[i*NJ*NK+j*NJ+k] ;
     return uif.u ; 
@@ -48,7 +49,7 @@ unsigned int GPmt::getTypeCode(unsigned int part_index)
 
 void GPmt::init()
 {
-    unsigned int numQuads = m_buffer->getNumItems(); // buffer reshaped (-1,4) in pmt-/tree.py  items are 
+    unsigned int numQuads = m_part_buffer->getNumItems(); // buffer reshaped (-1,4) in pmt-/tree.py  items are 
     setNumParts( numQuads/QUADS_PER_ITEM ) ; 
 
     unsigned int nmin(INT_MAX) ; 
@@ -66,7 +67,43 @@ void GPmt::init()
 
     assert(nmin == 0 && nmax == m_parts_per_solid.size() - 1); // expecting contiguous node index starting at zero 
     setNumSolids(m_parts_per_solid.size()) ;
+
+    guint4* solidinfo = new guint4[m_num_solids] ;
+
+    unsigned int offset = 0 ; 
+    for(unsigned int s=0 ; s < m_num_solids ; s++)
+    {
+        guint4& si = *(solidinfo+s) ;
+        unsigned int snp = getSolidNumParts(s);
+
+        si.x = offset ; 
+        si.y = snp ;
+        si.z = s ; 
+        si.w = 0 ; 
+
+        offset += snp ; 
+    }
+
+    unsigned int size = sizeof(guint4);
+    assert(size == sizeof(unsigned int)*4 );
+    GBuffer* buf = new GBuffer(size*m_num_solids, (void*)solidinfo, size, 4);
+    setSolidBuffer(buf);
 }
+
+/*
+
+In [87]: s = np.load("/tmp/hemi-pmt-solids.npy")
+
+In [88]: s
+Out[88]: 
+array([[ 0,  4,  0,  0],
+       [ 4,  4,  1,  0],
+       [ 8,  2,  2,  0],
+       [10,  1,  3,  0],
+       [11,  1,  4,  0]], dtype=uint32)
+
+*/
+
 
 
 void GPmt::Summary(const char* msg)
@@ -96,7 +133,7 @@ void GPmt::Summary(const char* msg)
 
 void GPmt::dump(const char* msg)
 {
-    GBuffer* buf = m_buffer ;  
+    GBuffer* buf = m_part_buffer ;  
     assert(buf);
 
     float* data = (float*)buf->getPointer();

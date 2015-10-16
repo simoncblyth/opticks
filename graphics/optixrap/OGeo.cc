@@ -398,6 +398,35 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
     // replacing instance1 with a sphere positioned to match the cathode front face
+
+    /*
+
+      when intersect with bbox things look as would expect, 
+      when intersect with the primitve parts of spheres within 
+      get bizarre image that varys according to direction
+
+      splitting at part level and hoping that OptiX manages
+      to pick the correct part from the bbox doesnt work in 3D
+      ... because corner bbox intersects will fail to match 
+      but should then intersert with the bbox behind    
+
+      seems need to operate at prim == solid level
+      and pass the number of parts, then loop over the small number of parts (eg 1,2 or 3-4) 
+      intersecting with each to pick the closest
+
+      so need to combine the bbox 
+
+
+      ... can rename analyticBuffer t 
+
+     need a uint4 solidBuffer providing
+ 
+          .x offset into partBuffer 
+          .y count of parts
+
+
+    */
+
     assert(mm->getIndex() == 1 ); 
 
 
@@ -405,21 +434,32 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
 
-    GBuffer* ag = mm->getAnalyticGeometryBuffer();
-    GPmt* pmt = new GPmt(ag);
+    GBuffer* partBuf = mm->getAnalyticGeometryBuffer();
+    GPmt* pmt = new GPmt(partBuf);
     pmt->dump();
     pmt->Summary();
 
-    unsigned int numSolids = mm->getNumSolids();
-    unsigned int numSolidsPmt  = pmt->getNumSolids();
-    assert(numSolids == numSolidsPmt );  // analytic and triangulated solid counts must match 
-    assert( numSolids < 10 );            // expecting small number
+    GBuffer* solidBuf = pmt->getSolidBuffer();
 
+    unsigned int numSolidsMesh = mm->getNumSolids();
+    unsigned int numSolidsPmt  = pmt->getNumSolids();
     unsigned int numParts = pmt->getNumParts();
+
+    //assert(numSolidsMesh == numSolidsPmt );  // analytic and triangulated solid counts must match 
+    if(numSolidsMesh != numSolidsPmt)
+       LOG(warning) << "OGeo::makeAnalyticGeometry MISMATCH "
+                    << " numSolidsMesh " << numSolidsMesh
+                    << " numSolidsPmt " << numSolidsPmt
+                    ;
+
+    unsigned int numSolids = numSolidsPmt ; 
+    assert( numSolids < 10 );            // expecting small number
 
 
     LOG(warning) << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
+                 << " numSolidsMesh " << numSolidsMesh 
+                 << " numSolidsPmt " << numSolidsPmt 
                  << " numSolids " << numSolids 
                  << " numParts " << numParts
                  << " numITransforms " << numITransforms 
@@ -427,16 +467,19 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
 
     optix::Geometry geometry = m_context->createGeometry();
-    geometry->setPrimitiveCount( numParts );
-    geometry["primitive_count"]->setUint( numParts );  // needed GPU side, for instanced offsets 
 
+    geometry->setPrimitiveCount( numSolids );
+    geometry["primitive_count"]->setUint( numSolids );  // needed GPU side, for instanced offsets 
 
     geometry->setIntersectionProgram(m_cfg->createProgram("hemi-pmt.cu.ptx", "intersect"));
     geometry->setBoundingBoxProgram(m_cfg->createProgram("hemi-pmt.cu.ptx", "bounds"));
 
 
-    optix::Buffer analyticBuffer = createInputBuffer<optix::float4>( ag, RT_FORMAT_FLOAT4, 1 , "analyticBuffer"); 
-    geometry["analyticBuffer"]->setBuffer(analyticBuffer);
+    optix::Buffer solidBuffer = createInputBuffer<optix::uint4>( solidBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "solidBuffer"); 
+    geometry["solidBuffer"]->setBuffer(solidBuffer);
+
+    optix::Buffer partBuffer = createInputBuffer<optix::float4>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
+    geometry["partBuffer"]->setBuffer(partBuffer);
 
 
     GBuffer* id = NULL ; 
@@ -446,10 +489,10 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
         assert(id);
         LOG(info) << "OGeo::makeAnalyticGeometry using InstancedIdentityBuffer"
                   << " iid items " << id->getNumItems() 
-                  << " numITransforms*numSolids " << numITransforms*numSolids
+                  << " numITransforms*numSolidsMesh " << numITransforms*numSolidsMesh
                   ;
 
-        assert( id->getNumItems() == numITransforms*numSolids );
+        assert( id->getNumItems() == numITransforms*numSolidsMesh );
     }
     else
     {
@@ -457,9 +500,9 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
         assert(id);
         LOG(info) << "OGeo::makeAnalyticGeometry using IdentityBuffer"
                   << " id items " << id->getNumItems() 
-                  << " numSolids " << numSolids
+                  << " numSolidsMesh " << numSolidsMesh
                   ;
-        assert( id->getNumItems() == numSolids );
+        assert( id->getNumItems() == numSolidsMesh );
     }
 
 

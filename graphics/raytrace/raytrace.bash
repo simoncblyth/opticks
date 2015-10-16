@@ -19,6 +19,8 @@ Test Combination of Assimp and OptiX
 * for fps display press "r" and then "d"
 
 
+
+
 Blogs on Ray Tracing
 ----------------------
 
@@ -43,7 +45,7 @@ CUDA kdtree
 
 
 
-Specular Ray Trace
+Spectral Ray Trace
 ---------------------
 
 * :google:`specular raytrace`
@@ -52,12 +54,24 @@ Specular Ray Trace
 
 * http://www.pjreddie.com/media/files/Redmon_Thesis.pdf
 
+* http://www.gamedev.net/blog/1455/entry-2255136-spectral-path-tracing/
+
+* https://en.m.wikipedia.org/wiki/Spectral_rendering
+
+* http://home.agh.edu.pl/~mradzisz/PUBS/spectrum.pdf
+
+* http://www.kevinbeason.com/worklog/
+
+* http://www.graphics.stanford.edu/courses/cs348b-competition/cs348b-05/gems2/index.html
+
+* http://www.cs.cornell.edu/courses/cs4620/2012fa/lectures/38raytracingColor.pdf
+
+* https://people.mpi-inf.mpg.de/~oelek/Papers/SpectralDifferentials/Elek2014b.pdf
+
 
 Rendering Dispersion with composite spectral model 
 
 * https://www.cs.sfu.ca/~mark/ftp/Cgip00/dispersion_CGIP00.pdf
-
-
 
 
 * optix helpers.h has XYZ2rgb  (from CIE XYZ to RGB)
