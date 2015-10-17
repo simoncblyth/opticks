@@ -25,18 +25,168 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 
 
 static __device__
-void intersect_tubs(const float4& zrg, const float4& q0, const float4& q1, const uint4& identity )
+void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, const uint4& identity )
 {
-  //float3 position = make_float3(q0.x, q0.y, q0.z);
-  //float radius = q0.w;
-  //float sizeZ =  q1.x ;  
-  //
-};
+    float3 position = make_float3( q0 ); 
+    float radius = q0.w;
 
+    // Ericson, Real Time Collision Detection p196
+
+    float3 m = ray.origin - position ;
+    float3 n = ray.direction ; 
+    float3 d = make_float3(0.f, 0.f, 1.f ); 
+    float rr = radius*radius ; 
+
+    float mm = dot(m, m) ; 
+    float nn = dot(n, n) ; 
+    float dd = dot(d, d) ;  
+    float nd = dot(n, d) ;
+    float md = dot(m, d) ;
+    float mn = dot(m, n) ; 
+
+    float a = dd*nn - nd*nd ;   
+    float b = dd*mn - nd*md ;
+    float c = dd*(mm - rr) - md*md ; 
+
+    float disc = b*b-a*c;
+
+    float t ; 
+    if(fabs(a) < 1e-6f)   // parallel regime
+    {
+        if(c > 0.f) return ;   // outside cyclinder
+        if(md < 0.f) 
+        {
+            t = -mn/nn ;    // 1st endcap
+            if( rtPotentialIntersection(t) )
+            {
+                shading_normal = geometric_normal = d ;  // hmm maybe negative
+                instanceIdentity = identity ; 
+                rtReportIntersection(0);
+            }
+        } 
+        else if(md > dd) 
+        {
+            t = (nd - mn)/nn ;  // 2nd endcap
+            if( rtPotentialIntersection(t) )
+            {
+                shading_normal = geometric_normal = -d ; 
+                instanceIdentity = identity ; 
+                rtReportIntersection(0);
+            }
+        }
+        // inside?
+        return ; 
+    }
+
+
+    if(disc > 0.0f)
+    {
+        float sdisc = sqrtf(disc);
+        float root1 = (-b - sdisc);
+
+        float3 P = ray.origin + root1*ray.direction ;  
+        if( P.z > zrg.x && P.z < zrg.y )
+        {
+
+            bool check_second = true;
+            if( rtPotentialIntersection(root1) ) 
+            {
+                float3 N  = (P - position)/radius  ;  
+                N.z = 0.f ; 
+
+                rtPrintf("intersect_ztubs r %10.4f disc %10.4f sdisc %10.4f root1 %10.4f P %10.4f %10.4f %10.4f N %10.4f %10.4f \n", 
+                    radius, disc, sdisc, root1, P.x, P.y, P.z, N.x, N.y );
+
+                shading_normal = geometric_normal = normalize(N) ;
+                instanceIdentity = identity ; 
+                if(rtReportIntersection(0)) check_second = false;
+            } 
+            if(check_second) 
+            {
+                float root2 = (-b + sdisc) ; 
+                P = ray.origin + root2*ray.direction ;  
+                if( P.z > zrg.x && P.z < zrg.y )
+                { 
+                    if( rtPotentialIntersection( root2 ) ) 
+                    {
+                        float3 N  = (P - position)/radius  ;  
+                        N.z = 0.f ; 
+ 
+                        shading_normal = geometric_normal = normalize(N) ;
+                        instanceIdentity = identity ; 
+                        rtReportIntersection(0);   // material index 0 
+                    }
+                }
+            }
+        }
+    }
+}
+
+/*
+
+    Ray-Sphere
+    ~~~~~~~~~~~~~
+
+    Ray(xyz) = ori + t*dir     dir.dir = 1
+
+    (t*dir + ori-cen).(t*dir + ori-cen) = rad^2
+
+     t^2 dir.dir + 2t(ori-cen).dir + (ori-cen).(ori-cen) - rad^2 = 0  
+
+     t^2 + 2t O.D + O.O - radius = 0 
+
+     a t^2 + b t + c = 0  =>   t = ( -b +- sqrt(b^2 - 4ac) )/2a 
+
+
+        t = -2 O.D +-  sqrt(4* [(b/2*b/2) - (O.O - rad*rad)])
+            ----------------------------------------- 
+                            2
+
+          =   - O.D +- sqrt(  O.D*O.D - (O.O - rad*rad) ) 
+
+
+      normal to sphere at intersection point  (O + t D)/radius
+
+            (ori + t D) - cen
+            ------------------
+                  radius
+
+
+     Ray-Cylinder
+     ~~~~~~~~~~~~~
+
+         
+          \
+           \
+     +----+-\--+
+     |    |  \ |
+     |    |   \|
+     +----A----P--> normal   
+     |    |   /|\
+     |    |  / | \
+     |    | /  |  \  ray        
+     |    |/   |   \
+     +----C----+    \
+             r 
+         
+     Cylinder position C, axis C-A, intersection with ray at P
+
+    
+     Normal at intersection point is component of P-C 
+     with the axial component subtracted
+
+        (P-C) - (P-C).(A-C)
+
+
+     float3 I = (P - position)/radius ; // cylinder intersection point in cylinder frame and radius units   
+
+
+
+*/
 
 template<bool use_robust_method>
 static __device__
-void intersect_sphere(const float4& zrg, const float4& q0, const uint4& identity)
+void intersect_zsphere(const float4& zrg, const float4& q0, const uint4& identity)
 {
   float3 center = make_float3(q0);
   float radius = q0.w;
@@ -160,7 +310,6 @@ RT_PROGRAM void intersect(int primIdx)
   const uint4& identity = identityBuffer[primIdx] ; 
   //const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
 
-  //rtPrintf("intersect primIdx %d numParts %u \n", primIdx, numParts );
 
   for(unsigned int p=0 ; p < numParts ; p++)
   {  
@@ -180,10 +329,11 @@ RT_PROGRAM void intersect(int primIdx)
                 intersect_aabb(q2, q3, identity);
                 break ; 
           case 1:
-                intersect_sphere<true>(zrange, q0, identity);
+                intersect_zsphere<true>(zrange, q0, identity);
                 break ; 
           case 2:
-                intersect_tubs(zrange,q0,q1, identity);
+                //intersect_aabb(q2, q3, identity);
+                intersect_ztubs(zrange,q0,q1, identity);
                 break ; 
       }
   }
