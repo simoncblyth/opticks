@@ -24,18 +24,171 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 
 
 
+/*
+Ericson, Real Time Collision Detection p196-198
+
+
+
+   Ray
+
+         L(t) = A + t(B - A)   
+
+
+      A ----------------------------------B
+
+
+
+   Cylinder
+
+            d = Q - P               axis
+            
+            v = X - P               surface vec
+
+                  v.d
+            w =  ----- d            component of v along axis
+                  d.d 
+
+          r*r = (v - w).(v - w)     surface locus      
+
+
+                                            B
+                                           /
+                    +--------Q--------+   /
+                    |        |        |  /
+                    |        |        | /
+                    |        |        |/ 
+                    |        |        * 
+                    |        |       /| 
+                    |        |      / |      
+                    |        |     /  |
+                    |     d  |    /   |         
+                    |        |   /    |    
+                    |        |  /     |       
+                    |        | /      |
+                    |        |/       | 
+                    |        /.  .  . | .  .  .  .  .  . 
+                    |       /|        |                
+                    |      / |        |                .
+                    |     /  |        | 
+                    |    /   |        |                .
+                    |   /    |        | 
+                    |  /     |        |                .
+                    | /      |        | 
+                    |/       |        |                .
+                    *        |        | 
+                   /|        |        |                .
+                  / |        |        | 
+                 /  |        |        |               n.d
+                /   +--------P--------+
+          n    /            .|   r                     .
+              /           .  
+             /          .    |                         .
+            /         .     
+           /        .        |                         .
+          /       . 
+         /      .  m         |   m.d                   .
+        /     .             
+       /    .                |                         . 
+      /   .  
+     /  .                    |                         .
+    / .    
+   A .  .   .  .   .   .   . | .  .  .  .  .  .   .    .    
+
+
+
+
+       v = L(t) - P 
+
+         = (A - P) +  t(B - A)
+
+
+      v  =   m + t n
+
+      m  = A - P           ray origin in cylinder frame
+
+      m.d                  axial coordinate of ray origin 
+
+      n  = B - A           ray direction
+
+
+
+                  v.d
+            w =  ----- d            component of v along axis
+                  d.d 
+
+
+                  m.d + t n.d
+            w =  -------------- d      
+                      d.d 
+
+          r*r = (v - w).(v - w)   
+
+          r*r  = v.v + w.w - 2 v.w  
+
+
+          v.v = ( m + t n ).(m + t n)
+
+              = m.m + 2t m.n + t*t n.n 
+
+
+
+   Intersection with P endcap plane 
+
+       (X - P).d = 0 
+
+       ( A + t (B - A) - P).d = 0 
+
+       (  m + t n ).d = 0        =>   t = - m.d / n.d          
+
+                when axial n in d direction          
+
+                                     t  = - m.n / n.n    
+      radial requirement 
+
+         (m + t n).(m + t n) < rr 
+
+         mm - rr + 2t m.n + t*t nn < 0 
+
+
+   Intersection with Q endcap plane 
+
+       (X - Q).d = 0      Q = d + P  
+
+       (A + t (B - A) - Q).d = 0 
+ 
+       ( A - P + t (B - A) - d ).d = 0 
+
+       (  m + t n - d ).d = 0      =>    t = ( d.d - m.d ) / n.d
+
+                when axial n in d direction          
+
+
+      radial requirement 
+
+         (m + t n - d).(m + t n - d) < rr 
+
+         mm + tt nn + dd  
+
+
+
+
+
+
+*/
+
 static __device__
 void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, const uint4& identity )
 {
     float3 position = make_float3( q0 ); 
     float radius = q0.w;
-
-    // Ericson, Real Time Collision Detection p196
+    float sizeZ = q1.x ; 
 
     float3 m = ray.origin - position ;
     float3 n = ray.direction ; 
-    float3 d = make_float3(0.f, 0.f, 1.f ); 
+    float3 d = make_float3(0.f, 0.f, sizeZ ); 
+
     float rr = radius*radius ; 
+    float3 dnorm = normalize(d);
 
     float mm = dot(m, m) ; 
     float nn = dot(n, n) ; 
@@ -43,52 +196,76 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
     float nd = dot(n, d) ;
     float md = dot(m, d) ;
     float mn = dot(m, n) ; 
+    float k = mm - rr ; 
 
+    // quadratic coefficients of t,     a tt + 2b t + c = 0 
     float a = dd*nn - nd*nd ;   
     float b = dd*mn - nd*md ;
-    float c = dd*(mm - rr) - md*md ; 
+    float c = dd*k - md*md ; 
 
     float disc = b*b-a*c;
 
-    float t ; 
-    if(fabs(a) < 1e-6f)   // parallel regime
+    // axial ray 
+    if(fabs(a) < 1e-6f)     
     {
-        if(c > 0.f) return ;   // outside cyclinder
-        if(md < 0.f) 
+        if(c > 0.f) return ; // ray starts and ends outside cylinder
+        if(md < 0.f)         // ray origin on P side
         {
-            t = -mn/nn ;    // 1st endcap
+            float t = -mn/nn ;    // P endcap 
             if( rtPotentialIntersection(t) )
             {
-                shading_normal = geometric_normal = d ;  // hmm maybe negative
+                shading_normal = geometric_normal = -dnorm  ;  
                 instanceIdentity = identity ; 
                 rtReportIntersection(0);
             }
         } 
-        else if(md > dd) 
+        else if(md > dd) // ray origin on Q side 
         {
-            t = (nd - mn)/nn ;  // 2nd endcap
+            float t = (nd - mn)/nn ;  // Q endcap
             if( rtPotentialIntersection(t) )
             {
-                shading_normal = geometric_normal = -d ; 
+                shading_normal = geometric_normal = dnorm ; 
                 instanceIdentity = identity ; 
                 rtReportIntersection(0);
             }
         }
-        // inside?
+        else    // md 0:dd, ray origin inside 
+        {
+            if( nd > 0.f ) // ray along +d 
+            {
+                float t = -mn/nn ;    // P endcap from inside
+                if( rtPotentialIntersection(t) )
+                {
+                    shading_normal = geometric_normal = dnorm  ;  
+                    instanceIdentity = identity ; 
+                    rtReportIntersection(0);
+                }
+            } 
+            else   // ray along -d
+            {
+                float t = (nd - mn)/nn ;  // Q endcap from inside
+                if( rtPotentialIntersection(t) )
+                {
+                    shading_normal = geometric_normal = -dnorm ; 
+                    instanceIdentity = identity ; 
+                    rtReportIntersection(0);
+                }
+            }
+        }
         return ; 
     }
 
-
-    if(disc > 0.0f)
+    if(disc > 0.0f)  // intersection with the infinite cylinder
     {
         float sdisc = sqrtf(disc);
-        float root1 = (-b - sdisc);
+        float root1 = (-b - sdisc)/a;     // what about other root ? 
+        float ad = md + root1*nd ;        // axial coord of intersection point 
 
         float3 P = ray.origin + root1*ray.direction ;  
-        if( P.z > zrg.x && P.z < zrg.y )
-        {
+        //if( P.z > zrg.x && P.z < zrg.y )
 
-            bool check_second = true;
+        if( ad > 0.f && ad < dd )  // intersection inside cylinder range
+        {
             if( rtPotentialIntersection(root1) ) 
             {
                 float3 N  = (P - position)/radius  ;  
@@ -99,26 +276,42 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
 
                 shading_normal = geometric_normal = normalize(N) ;
                 instanceIdentity = identity ; 
-                if(rtReportIntersection(0)) check_second = false;
+                rtReportIntersection(0);
             } 
-            if(check_second) 
+        } 
+        else if( ad < 0.f ) //  intersection outside cylinder on P side
+        {
+            if( nd <= 0.f ) return ; // ray direction away from endcap
+            float t = -md/nd ;   // P endcap 
+            float checkr = k + t*(2.f*mn + t*nn) ; // bracket typo in book 2*t*t makes no sense   
+            if ( checkr < 0.f )
             {
-                float root2 = (-b + sdisc) ; 
-                P = ray.origin + root2*ray.direction ;  
-                if( P.z > zrg.x && P.z < zrg.y )
-                { 
-                    if( rtPotentialIntersection( root2 ) ) 
-                    {
-                        float3 N  = (P - position)/radius  ;  
-                        N.z = 0.f ; 
- 
-                        shading_normal = geometric_normal = normalize(N) ;
-                        instanceIdentity = identity ; 
-                        rtReportIntersection(0);   // material index 0 
-                    }
+                if( rtPotentialIntersection(t) )
+                {
+                    shading_normal = geometric_normal = -dnorm  ;  
+                    instanceIdentity = identity ; 
+                    rtReportIntersection(0);
                 }
-            }
+            } 
+        } 
+        else if( ad > dd  ) //  intersection outside cylinder on Q side
+        {
+            if( nd >= 0.f ) return ; // ray direction away from endcap
+            float t = (dd-md)/nd ;   // Q endcap 
+            float checkr = k + dd - 2.0f*md + t*(2.f*(mn-nd)+t*nn) ;             
+            if ( checkr < 0.f )
+            {
+                if( rtPotentialIntersection(t) )
+                {
+                    shading_normal = geometric_normal = dnorm  ;  
+                    instanceIdentity = identity ; 
+                    rtReportIntersection(0);
+                }
+            } 
         }
+
+
+
     }
 }
 
