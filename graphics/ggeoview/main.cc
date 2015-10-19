@@ -1454,6 +1454,8 @@ void App::renderLoop()
 #ifdef OPTIX
         if(m_interactor->getOptiXMode()>0 && m_engine)
         { 
+             unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
+             m_engine->setResolutionScale(scale) ;
              m_engine->trace();
              m_engine->render();
         }

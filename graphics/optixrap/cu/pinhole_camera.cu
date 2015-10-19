@@ -21,6 +21,7 @@ rtBuffer<uchar4, 2>              output_buffer;
 
 rtDeclareVariable(rtObject,      top_object, , );
 rtDeclareVariable(unsigned int,  radiance_ray_type, , );
+rtDeclareVariable(unsigned int,  resolution_scale, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
@@ -96,12 +97,11 @@ RT_PROGRAM void pinhole_camera()
 
 #if RAYTRACE_TIMEVIEW
   clock_t t1 = clock(); 
- 
   float expected_fps   = 1.0f;
   float pixel_time     = ( t1 - t0 ) * time_view_scale * expected_fps;
-  output_buffer[launch_index] = make_color( make_float3(  pixel_time ) ); 
+  uchar4  color = = make_color( make_float3(  pixel_time ) ); 
 #else
-  output_buffer[launch_index] = make_color( prd.result );
+  uchar4 color = make_color( prd.result );
 
   //if(touch_mode)
   //{
@@ -110,6 +110,39 @@ RT_PROGRAM void pinhole_camera()
   //}
 
 #endif
+
+
+  if( resolution_scale == 1)  
+  { 
+      output_buffer[launch_index] = color ; 
+  }
+  else if( resolution_scale == 2)
+  {
+      unsigned int wx2 = 2*launch_index.x ; 
+      unsigned int wy2 = 2*launch_index.y ; 
+
+      uint2 idx00 = make_uint2(wx2  , wy2) ; 
+      uint2 idx10 = make_uint2(wx2+1, wy2) ; 
+      uint2 idx01 = make_uint2(wx2  , wy2+1) ; 
+      uint2 idx11 = make_uint2(wx2+1, wy2+1) ; 
+
+      output_buffer[idx00] = color ; 
+      output_buffer[idx10] = color ; 
+      output_buffer[idx01] = color ; 
+      output_buffer[idx11] = color ; 
+  }
+  else if( resolution_scale > 2)
+  {
+      unsigned int wx = resolution_scale*launch_index.x ; 
+      unsigned int wy = resolution_scale*launch_index.y ; 
+      for(unsigned int i=0 ; i < resolution_scale ; i++){
+      for(unsigned int j=0 ; j < resolution_scale ; j++){
+          uint2 idx = make_uint2(wx+i, wy+j) ; 
+          output_buffer[idx] = color ; 
+      }
+      }
+  }
+
 }
 
 RT_PROGRAM void exception()

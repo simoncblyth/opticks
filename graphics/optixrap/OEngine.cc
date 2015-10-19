@@ -376,10 +376,21 @@ void OEngine::trace()
     RTsize buffer_width, buffer_height;
     buffer->getSize( buffer_width, buffer_height );
 
-    unsigned int width  = static_cast<unsigned int>(buffer_width) ;
-    unsigned int height = static_cast<unsigned int>(buffer_height) ;
 
-    if(m_trace_count % 100 == 0) LOG(info) << "OEngine::trace " << m_trace_count << " size(" <<  width << "," <<  height << ")";
+    // resolution_scale 
+    //
+    //   1: full resolution, launch index for every pixel 
+    //   2: half resolution, each launch index result duplicated into 2*2=4 pixels
+    //            
+    unsigned int width  = static_cast<unsigned int>(buffer_width)/m_resolution_scale ;
+    unsigned int height = static_cast<unsigned int>(buffer_height)/m_resolution_scale ;
+    m_context["resolution_scale"]->setUint( m_resolution_scale ) ;  
+
+    if(m_trace_count % 100 == 0) 
+         LOG(info) << "OEngine::trace " 
+                   << " trace_count " << m_trace_count 
+                   << " resolution_scale " << m_resolution_scale 
+                   << " size(" <<  width << "," <<  height << ")";
 
     m_context->launch( e_pinhole_camera,  width, height );
 

@@ -64,8 +64,7 @@ class OEngine : public Touchable {
         bool isCompute();
         bool isInterop();
     public:
-        void setSize(unsigned int width, unsigned int height);
-        void setComposition(Composition* composition);
+       void setComposition(Composition* composition);
         void setGGeo(GGeo* ggeo);
         void setMergedMesh(GMergedMesh* mergedmesh);
         void setBoundaryLib(GBoundaryLib* boundarylib);
@@ -74,6 +73,10 @@ class OEngine : public Touchable {
         void setDebugPhoton(unsigned int debug_photon);
         void setTrivial(bool trivial);
         void setNumpyEvt(NumpyEvt* evt);
+    public:
+        void setSize(unsigned int width, unsigned int height);
+        void setResolutionScale(unsigned int resolution_scale);
+        unsigned int getResolutionScale();
     public:
         void downloadEvt();
     public:
@@ -177,6 +180,7 @@ class OEngine : public Touchable {
 
         unsigned int          m_width ;
         unsigned int          m_height ;
+        unsigned int          m_resolution_scale ;
         unsigned int          m_photon_buffer_id ;
         unsigned int          m_genstep_buffer_id ;
         unsigned int          m_pbo ;
@@ -232,7 +236,7 @@ inline OEngine::OEngine(Mode_t mode) :
 
     m_photon_buf(NULL),
     m_sequence_buf(NULL),
-
+    m_resolution_scale(1),
     m_photon_buffer_id(0),
     m_genstep_buffer_id(0),
     m_pbo(0),
@@ -419,6 +423,15 @@ inline void OEngine::setOverride(unsigned int override)
 inline void OEngine::setDebugPhoton(unsigned int debug_photon)
 {
     m_debug_photon = debug_photon ; 
+}
+
+inline void OEngine::setResolutionScale(unsigned int resolution_scale)
+{
+    m_resolution_scale = resolution_scale ; 
+}
+inline unsigned int OEngine::getResolutionScale()
+{
+    return m_resolution_scale ; 
 }
 
 

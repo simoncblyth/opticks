@@ -133,11 +133,12 @@ const char* Interactor::keys =
 "\n L : Composition::nextNormalStyle     flip normal in shaders "
 "\n M : Composition::nextColorStyle      m1/m2/f1/f2/p1/p2      "
 "\n N : near mode toggle : swipe up/down to change frustum near "  
-"\n O : optix render mode  toggle "
+"\n O : OptiX render mode  toggle "
 "\n P : Scene::nextPhotonStyle       dot/longline/shortline  "
 "\n Q : Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
 "\n R : rotate mode toggle  drag around rotate around viewpoint " 
 "\n V : View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
+"\n W : decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
 "\n X : pan mode toggle "
 "\n Y : yfov mode toggle "
 "\n Z : zoom mode toggle   (actually z not zoom) " 
@@ -152,7 +153,7 @@ void Interactor::key_pressed(unsigned int key)
     switch (key)
     {
         //  ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        //  ******** *********   * ***
+        //  ******** *********   *****
 
         case GLFW_KEY_A:
             m_composition->nextMode(getModifiers()) ; 
@@ -207,6 +208,9 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_V:
             m_view->nextMode(getModifiers()) ; 
+            break;
+        case GLFW_KEY_W:
+            nextOptiXResolutionScale(getModifiers()); 
             break;
         case _pan_mode_key:
             m_pan_mode = !m_pan_mode ; 

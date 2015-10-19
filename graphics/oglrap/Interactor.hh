@@ -48,6 +48,9 @@ class Interactor {
        bool isOptiXMode();
        void setOptiXMode(int optix_mode);
        int  getOptiXMode();
+       void setOptiXResolutionScale(unsigned int scale);
+       void nextOptiXResolutionScale(unsigned int modifiers);
+       unsigned int getOptiXResolutionScale();
 
        Touchable*   getTouchable();
        Frame*       getFrame();
@@ -96,6 +99,7 @@ class Interactor {
        bool m_keys_down[NUM_KEYS] ; 
 
        int  m_optix_mode ;
+       unsigned int m_optix_resolution_scale ;
 
        float m_dragfactor ;
        unsigned int m_container ;
@@ -136,6 +140,7 @@ inline Interactor::Interactor()
    m_bookmark_mode(false),
    m_gui_mode(false),
    m_optix_mode(0),
+   m_optix_resolution_scale(1),
    m_dragfactor(1.f),
    m_container(0)
 {
@@ -192,8 +197,19 @@ inline int Interactor::getOptiXMode()
 { 
     return m_optix_mode ; 
 }
-
- 
-
-
-
+inline unsigned int Interactor::getOptiXResolutionScale()
+{ 
+    return m_optix_resolution_scale  ; 
+}
+inline void Interactor::setOptiXResolutionScale(unsigned int scale)
+{
+    m_optix_resolution_scale = (scale > 0 && scale <= 32) ? scale : 1 ;  
+    printf("Interactor::setOptiXResolutionScale %u \n", m_optix_resolution_scale);
+}
+inline void Interactor::nextOptiXResolutionScale(unsigned int modifiers)
+{
+    if(modifiers & e_shift)
+        setOptiXResolutionScale(getOptiXResolutionScale()/2);
+    else
+        setOptiXResolutionScale(getOptiXResolutionScale()*2);
+}
