@@ -258,28 +258,27 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
     if(disc > 0.0f)  // intersection with the infinite cylinder
     {
         float sdisc = sqrtf(disc);
+
         float root1 = (-b - sdisc)/a;     // what about other root ? 
-        float ad = md + root1*nd ;        // axial coord of intersection point 
+        float ad1 = md + root1*nd ;        // axial coord of intersection point 
+        float3 P1 = ray.origin + root1*ray.direction ;  
 
-        float3 P = ray.origin + root1*ray.direction ;  
-        //if( P.z > zrg.x && P.z < zrg.y )
-
-        if( ad > 0.f && ad < dd )  // intersection inside cylinder range
+        if( ad1 > 0.f && ad1 < dd )  // intersection inside cylinder range
         {
             if( rtPotentialIntersection(root1) ) 
             {
-                float3 N  = (P - position)/radius  ;  
+                float3 N  = (P1 - position)/radius  ;  
                 N.z = 0.f ; 
 
                 rtPrintf("intersect_ztubs r %10.4f disc %10.4f sdisc %10.4f root1 %10.4f P %10.4f %10.4f %10.4f N %10.4f %10.4f \n", 
-                    radius, disc, sdisc, root1, P.x, P.y, P.z, N.x, N.y );
+                    radius, disc, sdisc, root1, P1.x, P1.y, P1.z, N.x, N.y );
 
                 shading_normal = geometric_normal = normalize(N) ;
                 instanceIdentity = identity ; 
                 rtReportIntersection(0);
             } 
         } 
-        else if( ad < 0.f ) //  intersection outside cylinder on P side
+        else if( ad1 < 0.f ) //  intersection outside cylinder on P side
         {
             if( nd <= 0.f ) return ; // ray direction away from endcap
             float t = -md/nd ;   // P endcap 
@@ -294,7 +293,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 }
             } 
         } 
-        else if( ad > dd  ) //  intersection outside cylinder on Q side
+        else if( ad1 > dd  ) //  intersection outside cylinder on Q side
         {
             if( nd >= 0.f ) return ; // ray direction away from endcap
             float t = (dd-md)/nd ;   // Q endcap 
@@ -309,6 +308,55 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 }
             } 
         }
+
+
+        float root2 = (-b + sdisc)/a;     // far root : means are inside (always?)
+        float ad2 = md + root2*nd ;        // axial coord of far intersection point 
+        float3 P2 = ray.origin + root2*ray.direction ;  
+
+
+        if( ad2 > 0.f && ad2 < dd )  // intersection from inside against wall 
+        {
+            if( rtPotentialIntersection(root2) ) 
+            {
+                float3 N  = (P2 - position)/radius  ;  
+                N.z = 0.f ; 
+
+                shading_normal = geometric_normal = -normalize(N) ;
+                instanceIdentity = identity ; 
+                rtReportIntersection(0);
+            } 
+        } 
+        else if( ad2 < 0.f ) //  intersection from inside to P endcap
+        {
+            float t = -md/nd ;   // P endcap 
+            float checkr = k + t*(2.f*mn + t*nn) ; // bracket typo in book 2*t*t makes no sense   
+            if ( checkr < 0.f )
+            {
+                if( rtPotentialIntersection(t) )
+                {
+                    shading_normal = geometric_normal = dnorm  ;  
+                    instanceIdentity = identity ; 
+                    rtReportIntersection(0);
+                }
+            } 
+        } 
+        else if( ad2 > dd  ) //  intersection from inside to Q endcap
+        {
+            float t = (dd-md)/nd ;   // Q endcap 
+            float checkr = k + dd - 2.0f*md + t*(2.f*(mn-nd)+t*nn) ;             
+            if ( checkr < 0.f )
+            {
+                if( rtPotentialIntersection(t) )
+                {
+                    shading_normal = geometric_normal = -dnorm  ;  
+                    instanceIdentity = identity ; 
+                    rtReportIntersection(0);
+                }
+            } 
+        }
+
+
 
 
 
