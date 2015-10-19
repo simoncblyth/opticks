@@ -88,7 +88,8 @@ class Frame : public Touchable {
        void exit();
     
        void listen();
-       void render();
+       void viewport();
+       void clear();
        GLFWwindow* getWindow();
 
    public:

@@ -45,7 +45,8 @@ int main(int argc, char** argv)
     while (!glfwWindowShouldClose(window))
     {
         frame.listen();
-        frame.render();
+        frame.viewport();
+        frame.clear();
         composition.update();
 
         renderer.render();

@@ -50,6 +50,10 @@ class Trackball : public Configurable {
        void setOrientation();
 
   public:
+     bool hasChanged();
+     void setChanged(bool changed); 
+
+  public:
        float getRadius();
        float getTranslateFactor(); 
        glm::quat getOrientation();
@@ -92,6 +96,8 @@ class Trackball : public Configurable {
        float m_theta_deg ; 
        float m_phi_deg   ; 
 
+       bool m_changed ; 
+
 
 };
 
@@ -102,7 +108,8 @@ inline Trackball::Trackball() :
           m_radius(1.f),
           m_translatefactor(1000.f),
           m_drag_renorm(97),
-          m_drag_count(0)
+          m_drag_count(0),
+          m_changed(true)
 {
     home();
 
@@ -143,16 +150,19 @@ inline float Trackball::getTranslateFactor()
 inline void Trackball::setRadius(float r)
 {
     m_radius = r ; 
+    m_changed = true ; 
 }
 inline void Trackball::setTranslateFactor(float tf)
 {
     m_translatefactor = tf ; 
+    m_changed = true ; 
 }
 inline void Trackball::setTranslate(float x, float y, float z)
 {
     m_translate.x = x;
     m_translate.y = y;
     m_translate.z = z;
+    m_changed = true ; 
 }
  
 inline void Trackball::home()
@@ -161,15 +171,27 @@ inline void Trackball::home()
     m_translate.y = 0.f ; 
     m_translate.z = 0.f ; 
    setOrientation(0.f, 0.f);
+    m_changed = true ; 
 }
 inline void Trackball::zoom_to(float x, float y, float dx, float dy)
 {
     m_translate.z += dy*m_translatefactor ;
+    m_changed = true ; 
 } 
 inline void Trackball::pan_to(float x, float y, float dx, float dy)
 {
     m_translate.x += dx*m_translatefactor ;
     m_translate.y += dy*m_translatefactor ;
+    m_changed = true ; 
 } 
+
+inline bool Trackball::hasChanged()
+{
+    return m_changed ; 
+}
+inline void Trackball::setChanged(bool changed)
+{
+    m_changed = changed ; 
+}
 
 

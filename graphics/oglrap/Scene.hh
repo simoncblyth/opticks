@@ -121,6 +121,9 @@ class Scene : public Configurable {
         // to convert solid index into CenterExtent to give to Composition
         //
         void setTarget(unsigned int index=0, bool autocam=false); 
+        unsigned int getTarget(); 
+        unsigned int getTargetDeferred();
+
         unsigned int touch(int ix, int iy, float depth);
         void setTouch(unsigned int index); 
         unsigned int getTouch();
@@ -135,8 +138,6 @@ class Scene : public Configurable {
         void uploadRecordAttr(MultiViewNPY* attr);
    public:
         void render();
-   public:
-        unsigned int  getTarget(); 
 
 
    public:
@@ -187,6 +188,7 @@ class Scene : public Configurable {
         Composition* m_composition ;
         GBuffer*     m_colorbuffer ;
         unsigned int m_target ;
+        unsigned int m_target_deferred ;
         unsigned int m_touch ;
 
    private:
@@ -233,6 +235,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_composition(NULL),
             m_colorbuffer(NULL),
             m_target(0),
+            m_target_deferred(0),
             m_touch(0),
             m_global_mode(false),
             m_globalvec_mode(false),
@@ -434,6 +437,9 @@ inline void Scene::applyGlobalStyle()
     }
 }
 
-
+inline unsigned int Scene::getTargetDeferred()
+{
+    return m_target_deferred ; 
+}
 
 

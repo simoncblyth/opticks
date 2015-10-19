@@ -17,6 +17,8 @@ class Camera : public Configurable  {
      static const char* PARALLEL ; 
 
      Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float yfov=60.f, bool parallel=false) 
+       :
+         m_changed(true)
      {
          setSize(width, height);
          setPixelFactor(1); 
@@ -37,6 +39,9 @@ class Camera : public Configurable  {
      glm::mat4 getOrthoScaled();
      glm::mat4 getOrthoScaled2();
      glm::mat4 getFrustum();
+
+     bool hasChanged();
+     void setChanged(bool changed); 
 
    public:
        typedef enum { PERSPECTIVE_CAMERA, OTHOGRAPHIC_CAMERA, NUM_CAMERA_STYLE } Style_t ;
@@ -89,6 +94,8 @@ class Camera : public Configurable  {
          if(      near < m_nearclip[0] )  m_near = m_nearclip[0] ;
          else if( near > m_nearclip[1] )  m_near = m_nearclip[1] ;
          else                             m_near = near ;
+
+         m_changed = true ; 
      }
      float getNear()
      {
@@ -99,6 +106,7 @@ class Camera : public Configurable  {
          if(      far < m_farclip[0] )  m_far = m_farclip[0] ;
          else if( far > m_farclip[1] )  m_far = m_farclip[1] ;
          else                           m_far = far ;
+         m_changed = true ; 
      }
      float getFar()
      {
@@ -109,6 +117,7 @@ class Camera : public Configurable  {
          if(      yfov < m_yfovclip[0] )  m_yfov = m_yfovclip[0] ;
          else if( yfov > m_yfovclip[1] )  m_yfov = m_yfovclip[1] ;
          else                             m_yfov = yfov ;
+         m_changed = true ; 
      }
      float getYfov()
      {
@@ -119,11 +128,13 @@ class Camera : public Configurable  {
      {
          m_size[0] = width ;
          m_size[1] = height ;
+         m_changed = true ; 
      }
 
      void setPixelFactor(unsigned int factor)
      {
          m_pixel_factor = factor ; 
+         m_changed = true ; 
      }
 
      void setNearClip(float _min, float _max)
@@ -150,7 +161,8 @@ class Camera : public Configurable  {
 
      void setParallel(bool parallel)
      {
-          m_parallel = parallel ;
+         m_parallel = parallel ;
+         m_changed = true ; 
      }
      bool getParallel()
      {
@@ -219,8 +231,19 @@ class Camera : public Configurable  {
      float m_yfov ;
 
      bool m_parallel ; 
+     bool m_changed ; 
 
 };
+
+
+inline bool Camera::hasChanged()
+{
+    return m_changed ; 
+}
+inline void Camera::setChanged(bool changed)
+{
+    m_changed = changed ; 
+}
 
 
 inline void Camera::nextStyle()

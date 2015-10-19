@@ -1,4 +1,5 @@
 #include "OGeo.hh"
+#include "OContext.hh"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -20,6 +21,7 @@
 
 
 // npy-
+#include "NSlice.hpp"
 #include "stringutil.hpp"
 
 
@@ -128,11 +130,10 @@ void OGeo::setTop(optix::Group top)
 void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
-    unsigned int repeatLimit = 0 ;    // for debugging only, 0:no limit 
 
     LOG(info) << "OGeo::convert"
               << " nmm " << nmm
-              << " repeatLimit " << repeatLimit 
+              << ( m_slice ? m_slice->description() : "" ) 
               ;
 
     for(unsigned int i=0 ; i < nmm ; i++)
@@ -159,7 +160,7 @@ void OGeo::convert()
         }
         else
         {
-            optix::Group group = makeRepeatedGroup(mm, repeatLimit);
+            optix::Group group = makeRepeatedGroup(mm, m_slice);
             group->setAcceleration( makeAcceleration() );
             m_repeated_group->addChild(group); 
         }
@@ -193,10 +194,12 @@ void OGeo::convert()
 
 
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, NSlice* slice )
 {
     GBuffer* itransforms = mm->getITransformsBuffer();
-    unsigned int numTransforms = limit > 0 ? std::min(itransforms->getNumItems(), limit) : itransforms->getNumItems() ;
+    if(!slice) slice = new NSlice(0, itransforms->getNumItems()) ;
+        
+    unsigned int numTransforms =slice->count();
     assert(itransforms && numTransforms > 0);
 
     GBuffer* ibuf = mm->getInstancedIdentityBuffer();
@@ -205,11 +208,11 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
     assert(numIdentity % numTransforms == 0); 
     unsigned int numSolids = numIdentity/numTransforms ;
 
-
     LOG(info) << "OGeo::makeRepeatedGroup"
               << " numTransforms " << numTransforms 
               << " numIdentity " << numIdentity  
               << " numSolids " << numSolids  
+              << " slice: " << slice->description() 
               ; 
 
     float* tptr = (float*)itransforms->getPointer(); 
@@ -224,7 +227,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
     // common accel for all instances 
 
     bool transpose = true ; 
-    for(unsigned int i=0 ; i<numTransforms ; i++)
+    for(unsigned int i=slice->low ; i<slice->high ; i+=slice->step)
     {
         optix::Transform xform = m_context->createTransform();
         assembly->setChild(i, xform);
@@ -359,8 +362,8 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
 optix::Material OGeo::makeMaterial()
 {
     optix::Material material = m_context->createMaterial();
-    material->setClosestHitProgram(OEngine::e_radiance_ray, m_cfg->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
-    material->setClosestHitProgram(OEngine::e_propagate_ray, m_cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
+    material->setClosestHitProgram(OContext::e_radiance_ray, m_cfg->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
+    material->setClosestHitProgram(OContext::e_propagate_ray, m_cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
     return material ; 
 }
 

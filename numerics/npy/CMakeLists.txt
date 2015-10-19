@@ -62,6 +62,7 @@ add_library( ${name}  SHARED
     NCache.cpp
     NSensor.cpp
     NSensorList.cpp
+    NSlice.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -108,6 +109,7 @@ Times.hpp
 NCache.hpp
 NSensor.hpp
 NSensorList.hpp
+NSlice.hpp
 Parameters.hpp
 md5digest.hpp
 )

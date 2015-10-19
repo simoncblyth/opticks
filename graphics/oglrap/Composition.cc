@@ -660,8 +660,32 @@ glm::vec3 Composition::unProject(unsigned int x, unsigned int y, float z)
      return glm::unProject(win, m_world2eye, m_projection, m_viewport);
 }
 
+
+bool Composition::hasChanged()
+{
+    return m_animator->isAnimating() || m_view->hasChanged() || m_camera->hasChanged() || m_trackball->hasChanged() ;
+}
+
+void Composition::setChanged(bool changed)
+{
+    m_view->setChanged(changed);
+    m_camera->setChanged(changed);
+    m_trackball->setChanged(changed);
+}
+
+
+
+
 void Composition::update()
 {
+    //   use like this:
+    //
+    //       if(!m_composition->hasChanged()) return   // dont bother updating renders, nothing changed
+    //       m_composition->update()
+    //
+    //       proceed to trace/render/whatever using the new transforms
+    //
+    //
     //  Update matrices based on 
     //
     //      m_view
@@ -677,9 +701,12 @@ void Composition::update()
     //       look (0,0,-m_gazelength) 
     //
 
-
+    m_view->setChanged(false);
+    m_camera->setChanged(false);
+    m_trackball->setChanged(false);
 
     m_viewport = glm::vec4( 0.f, 0.f, getPixelWidth(), getPixelHeight() );
+
 
     m_view->getTransforms(m_model_to_world, m_world2camera, m_camera2world, m_gaze );   // model_to_world is input, the others are updated
 

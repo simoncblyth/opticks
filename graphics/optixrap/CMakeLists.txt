@@ -103,6 +103,7 @@ add_definitions(
 # OptiX prog within subdir "cu/" Thrust/CUDA not in subdir 
 optixthrust_add_library( ${name} 
        OptiXUtil.cc
+       OContext.cc
        OEngine.cc
        OGeo.cc
        OBoundaryLib.cc
@@ -143,6 +144,7 @@ set(cuhdrs
 
 set(hdrs 
   OptiXUtil.hh
+  OContext.hh
   OEngine.hh
   OGeo.hh
   OBoundaryLib.hh

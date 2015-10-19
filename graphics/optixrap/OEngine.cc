@@ -1,4 +1,5 @@
-#include "OEngine.hh" // last ditch debug technique
+#include "OEngine.hh"
+#include "OContext.hh"
 
 #include "assert.h"
 #include "stdio.h"
@@ -24,6 +25,8 @@
 #include "GLMPrint.hpp"
 #include "NPY.hpp"
 #include "NumpyEvt.hpp"
+#include "Timer.hpp"
+#include "timeutil.hpp"
 
 // oglrap-
 #include "Composition.hh"
@@ -73,14 +76,14 @@ void OEngine::init()
 {
     if(!m_enabled) return ;
 
+    m_timer      = new Timer("OEngine");
+    m_timer->setVerbose(true);
+   // m_timer->start();
+
     LOG(info) << "OEngine::init " 
               << " mode " << getModeName()
               ; 
-    m_context = Context::create();
-    m_context->setPrintEnabled(true);
-    m_context->setPrintBufferSize(8192);
-    //m_context->setPrintLaunchIndex(0,0,0);
-    m_context->setStackSize( 2180 ); // TODO: make externally configurable, and explore performance implications
+
 
     optix::uint4 debugControl = optix::make_uint4(m_debug_photon,0,0,0);
     LOG(info) << "OEngine::init debugControl " 
@@ -100,18 +103,13 @@ void OEngine::init()
 
     m_config = RayTraceConfig::makeInstance(m_context);
 
-
-    m_top = m_context->createGroup();
+    //m_top = m_context->createGroup();
 
     m_domain = NPY<float>::make(e_number_domain,1,4) ;
     m_domain->fill(0.f);
     m_idomain = NPY<int>::make(e_number_idomain,1,4) ;
     m_idomain->fill(0);
 
-    //if(!isCompute())
-    //{
-    //    initRenderer();
-    //} 
 
     initRayTrace();
     initGeometry();
@@ -134,6 +132,9 @@ void OEngine::init()
 
 
 
+
+
+
 void OEngine::initRenderer(const char* dir, const char* incl_path)
 {
     unsigned int width  = m_composition->getPixelWidth();
@@ -150,11 +151,6 @@ void OEngine::initRenderer(const char* dir, const char* incl_path)
     m_renderer->upload(m_texture);
 }
 
-
-unsigned int OEngine::getNumEntryPoint()
-{
-    return m_evt ? e_entryPointCount : e_entryPointCount - 1 ; 
-}
 
 void OEngine::initRayTrace()
 {
@@ -183,22 +179,17 @@ void OEngine::initRayTrace()
     //
     // But the output requirements are very different ? Which would argue for a separate entry point.
     //
+    m_config->setRayGenerationProgram(  OContext::e_pinhole_camera_entry, "pinhole_camera.cu.ptx", "pinhole_camera" );
+    m_config->setExceptionProgram(      OContext::e_pinhole_camera_entry, "pinhole_camera.cu.ptx", "exception");
 
-    unsigned int numEntryPoint = getNumEntryPoint();
-    m_context->setEntryPointCount( numEntryPoint );  
+    m_context[ "radiance_ray_type"   ]->setUint( OContext::e_radiance_ray );
+    m_context[ "touch_ray_type"      ]->setUint( OContext::e_touch_ray );
+    m_context[ "propagate_ray_type"  ]->setUint( OContext::e_propagate_ray );
 
-    m_config->setRayGenerationProgram(  e_pinhole_camera, "pinhole_camera.cu.ptx", "pinhole_camera" );
-    m_config->setExceptionProgram(      e_pinhole_camera, "pinhole_camera.cu.ptx", "exception");
-
-    m_context[ "radiance_ray_type"   ]->setUint( e_radiance_ray );
-    m_context[ "touch_ray_type"      ]->setUint( e_touch_ray );
-    m_context[ "propagate_ray_type"  ]->setUint( e_propagate_ray );
     m_context[ "bounce_max"          ]->setUint( m_bounce_max );
     m_context[ "record_max"          ]->setUint( m_record_max );
 
-    m_context->setRayTypeCount( e_rayTypeCount );
-
-    m_config->setMissProgram( e_radiance_ray , "constantbg.cu.ptx", "miss" );
+    m_config->setMissProgram(  OContext::e_radiance_ray , "constantbg.cu.ptx", "miss" );
 
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
     m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
@@ -243,7 +234,7 @@ unsigned int OEngine::touch(int ix_, int iy_)
     RTsize touch_height = 1u ; 
 
     // TODO: generalize touch to work with the active camera (eg could be orthographic)
-    m_context->launch( e_pinhole_camera , touch_width, touch_height );
+    m_context->launch( OContext::e_pinhole_camera_entry , touch_width, touch_height );
 
     Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
     m_context["touch_mode"]->setUint(0u);
@@ -279,19 +270,16 @@ void OEngine::initGeometry()
 {
     LOG(info) << "OEngine::initGeometry" ;
 
-    GGeo* gg = getGGeo(); assert(gg) ; 
-    GBoundaryLib* blib = getBoundaryLib(); assert(blib);
 
-
-    // TODO: break this monlithic approach, do the geometry externally 
-
+/*
     OBoundaryLib olib(m_context, blib); 
     olib.convert(); 
-
-
     OGeo         og(m_context, gg);
     og.setTop(m_top);
     og.convert(); 
+
+*/
+
     LOG(info) << "OEngine::initGeometry calling setupAcceleration" ; 
 
     loadAccelCache();
@@ -338,23 +326,35 @@ void OEngine::preprocess()
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
 
     float pe = 0.1f ; 
+
     m_context[ "propagate_epsilon"]->setFloat(pe);  // TODO: check impact of changing propagate_epsilon
  
     LOG(info)<< "OEngine::preprocess start validate ";
+
     m_context->validate();
+
     LOG(info)<< "OEngine::preprocess start compile ";
+
     m_context->compile();
+
     LOG(info)<< "OEngine::preprocess start building Accel structure ";
-    m_context->launch(e_pinhole_camera,0); 
-    //m_context->launch(e_generate,0); 
+
+    m_context->launch( OContext::e_pinhole_camera_entry ,0); 
+
 
     LOG(info)<< "OEngine::preprocess DONE ";
 }
+
+
+
 
 void OEngine::trace()
 {
     if(!m_enabled) return ;
 
+    LOG(info) << "OEngine::trace " << m_trace_count ; 
+
+    double t0 = getRealTime();
 
     glm::vec3 eye ;
     glm::vec3 U ;
@@ -362,11 +362,10 @@ void OEngine::trace()
     glm::vec3 W ;
 
     m_composition->getEyeUVW(eye, U, V, W); // must setModelToWorld in composition first
-    //if(m_trace_count == 0) print(eye,U,V,W, "OEngine::trace eye/U/V/W ");
 
     float scene_epsilon = m_composition->getNear();
-    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
 
+    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
     m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
     m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
     m_context[ "V"  ]->setFloat( make_float3( V.x, V.y, V.z ) );
@@ -375,7 +374,6 @@ void OEngine::trace()
     Buffer buffer = m_context["output_buffer"]->getBuffer();
     RTsize buffer_width, buffer_height;
     buffer->getSize( buffer_width, buffer_height );
-
 
     // resolution_scale 
     //
@@ -392,9 +390,18 @@ void OEngine::trace()
                    << " resolution_scale " << m_resolution_scale 
                    << " size(" <<  width << "," <<  height << ")";
 
-    m_context->launch( e_pinhole_camera,  width, height );
+
+    double t1 = getRealTime();
+
+    m_context->launch( OContext::e_pinhole_camera_entry,  width, height );
+
+    double t2 = getRealTime();
 
     m_trace_count += 1 ; 
+    m_trace_prep += t1 - t0 ; 
+    m_trace_time += t2 - t1 ; 
+
+
 }
 
 void OEngine::initRng()
@@ -428,8 +435,10 @@ void OEngine::initGenerateOnce()
     const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
 
     LOG(info) << "OEngine::initGenerateOnce " << raygenprg ; 
-    m_config->setRayGenerationProgram(e_generate, "generate.cu.ptx", raygenprg );
-    m_config->setExceptionProgram(    e_generate, "generate.cu.ptx", "exception");
+
+    m_config->setRayGenerationProgram( OContext::e_generate_entry, "generate.cu.ptx", raygenprg );
+
+    m_config->setExceptionProgram(    OContext::e_generate_entry, "generate.cu.ptx", "exception");
 }
 
 void OEngine::initGenerate()
@@ -522,7 +531,7 @@ void OEngine::generate()
         LOG(warning) << "OEngine::generate OVERRIDE photon count for debugging to " << width ; 
     }
 
-    m_context->launch( e_generate,  width, height );
+    m_context->launch( OContext::e_generate_entry,  width, height );
 
     m_generate_count += 1 ; 
 }
@@ -842,12 +851,48 @@ void OEngine::push_PBO_to_Texture(unsigned int texId)
 void OEngine::render()
 {
     if(!m_enabled) return ;
+    LOG(info) << "OEngine::render " << m_trace_count ; 
 
+    double t0 = getRealTime();
     push_PBO_to_Texture(m_texture_id);
+    double t1 = getRealTime();
+
     m_renderer->render();
+    double t2 = getRealTime();
+
+    m_render_count += 1 ; 
+    m_render_prep += t1 - t0 ; 
+    m_render_time += t2 - t1 ; 
 
     glBindTexture(GL_TEXTURE_2D, 0 );  
+
+    if(m_render_count % 10 == 0) report("OEngine::render"); 
+
 }
+
+void OEngine::report(const char* msg)
+{
+    LOG(info)<< msg ; 
+    if(m_trace_count == 0 || m_render_count == 0) return ; 
+
+    std::cout 
+          << " trace_count     " << std::setw(10) << m_trace_count  << std::endl 
+          << " trace_prep      " << std::setw(10) << m_trace_prep  << std::endl
+          << " trace_time      " << std::setw(10) << m_trace_time  << std::endl
+          << " avg trace_prep  " << std::setw(10) << m_trace_prep/m_trace_count  << std::endl
+          << " avg trace_time  " << std::setw(10) << m_trace_time/m_trace_count  << std::endl
+
+          << " render_count    " << std::setw(10) << m_render_count  << std::endl 
+          << " render_prep     " << std::setw(10) << m_render_prep  << std::endl
+          << " render_time     " << std::setw(10) << m_render_time  << std::endl
+          << " avg render_prep " << std::setw(10) << m_render_prep/m_render_count  << std::endl
+          << " avg render_time " << std::setw(10) << m_render_time/m_render_count  << std::endl
+          << std::endl 
+           ;
+
+}
+
+
 
 
 void OEngine::fill_PBO()
@@ -889,6 +934,13 @@ optix::Context& OEngine::getContext()
 {
     return m_context ; 
 }
+
+optix::Group& OEngine::getTopGroup()
+{
+    return m_top ; 
+}
+
+
 
 void OEngine::setSize(unsigned int width, unsigned int height)
 {

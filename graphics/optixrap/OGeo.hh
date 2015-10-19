@@ -7,7 +7,9 @@
 #include <optixu/optixu_aabb_namespace.h>
 
 
+struct NSlice ; 
 class RayTraceConfig ; 
+
 
 class GGeo ; 
 class GMergedMesh ; 
@@ -23,6 +25,7 @@ public:
 
     OGeo(optix::Context& ctx, GGeo* gg);
     void setTop(optix::Group top);
+    void setSlice(NSlice* slice);
 public:
     void convert();
 private:
@@ -30,7 +33,7 @@ private:
 
 public:
     template <typename T> optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
-    optix::Group   makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
+    optix::Group   makeRepeatedGroup(GMergedMesh* mm, NSlice* partial=NULL);
     optix::Group   PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
 
 private:
@@ -44,6 +47,7 @@ private:
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
     void dump(const char* msg, const float* m);
 
+
 private:
     // input references
     optix::Context       m_context ; 
@@ -54,6 +58,7 @@ private:
     optix::GeometryGroup m_geometry_group ; 
     optix::Group         m_repeated_group ; 
     RayTraceConfig*      m_cfg ; 
+    NSlice*              m_slice ; 
 
 };
 
@@ -61,9 +66,13 @@ inline OGeo::OGeo(optix::Context& ctx, GGeo* gg)
            : 
            m_context(ctx),
            m_ggeo(gg),
-           m_cfg(NULL)
+           m_cfg(NULL),
+           m_slice(NULL)
 {
     init();
 }
 
-
+inline void OGeo::setSlice(NSlice* slice)
+{
+    m_slice = slice ; 
+}

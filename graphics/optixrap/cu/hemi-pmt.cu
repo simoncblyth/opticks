@@ -270,8 +270,8 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 float3 N  = (P1 - position)/radius  ;  
                 N.z = 0.f ; 
 
-                rtPrintf("intersect_ztubs r %10.4f disc %10.4f sdisc %10.4f root1 %10.4f P %10.4f %10.4f %10.4f N %10.4f %10.4f \n", 
-                    radius, disc, sdisc, root1, P1.x, P1.y, P1.z, N.x, N.y );
+                //rtPrintf("intersect_ztubs r %10.4f disc %10.4f sdisc %10.4f root1 %10.4f P %10.4f %10.4f %10.4f N %10.4f %10.4f \n", 
+                //    radius, disc, sdisc, root1, P1.x, P1.y, P1.z, N.x, N.y );
 
                 shading_normal = geometric_normal = normalize(N) ;
                 instanceIdentity = identity ; 

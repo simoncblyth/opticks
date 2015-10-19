@@ -32,6 +32,7 @@ class Animator {
         float* getTarget(); 
         float getLow(); 
         float getHigh(); 
+        bool isAnimating();
 
         bool gui(const char* label, const char* fmt, float power=1.0f);
 
@@ -157,6 +158,12 @@ inline void Animator::modeTransition(float fraction)
     int count = find_closest_index(fraction); 
     printf("Animator::modeTransition fraction %10.3f closest count %d \n", fraction, count ); 
     m_count = count ; 
+}
+
+
+inline bool Animator::isAnimating()
+{
+    return m_mode != OFF ; 
 }
 
 

@@ -309,6 +309,7 @@ glm::mat4 Trackball::getOrientationMatrix()
 void Trackball::setOrientation(glm::quat& q)
 {
     m_orientation = q  ; 
+    m_changed = true ; 
 }
 
 void Trackball::drag_to(float x, float y, float dx, float dy)

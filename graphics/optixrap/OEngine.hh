@@ -8,8 +8,11 @@ class GGeo ;
 class GMergedMesh ;
 class GBoundaryLib ;
 class NumpyEvt ; 
+class Timer ; 
 class cuRANDWrapper ; 
 class OBuf ; 
+class OGeo ; 
+class OBoundaryLib ; 
 
 template <typename T> class NPY ;
 
@@ -26,18 +29,6 @@ template <typename T> class NPY ;
 class OEngine : public Touchable {
 
     public:
-        enum { 
-               e_pinhole_camera,
-               e_generate,
-               e_entryPointCount 
-            };
-
-        enum {
-                e_radiance_ray,
-                e_touch_ray,
-                e_propagate_ray,
-                e_rayTypeCount 
-             };
 
         enum { 
                 e_center_extent, 
@@ -55,8 +46,7 @@ class OEngine : public Touchable {
         static const char* COMPUTE_ ; 
         static const char* INTEROP_ ; 
     public:
-        unsigned int getNumEntryPoint();
-        OEngine(Mode_t mode=INTEROP );
+        OEngine(optix::Context context, optix::Group top, Mode_t mode=INTEROP );
 
     public:
         const char* getModeName();
@@ -64,8 +54,12 @@ class OEngine : public Touchable {
         bool isCompute();
         bool isInterop();
     public:
-       void setComposition(Composition* composition);
+        void setOGeo(OGeo* ogeo);
+        void setOBoundaryLib(OBoundaryLib* olib);
+    public:
+        void setComposition(Composition* composition);
         void setGGeo(GGeo* ggeo);
+
         void setMergedMesh(GMergedMesh* mergedmesh);
         void setBoundaryLib(GBoundaryLib* boundarylib);
         void setEnabled(bool enabled);
@@ -81,6 +75,7 @@ class OEngine : public Touchable {
         void downloadEvt();
     public:
         bool isEnabled();
+        void report(const char* msg="OEngine::report");
     public:
         void setRngMax(unsigned int rng_max);
         void setBounceMax(unsigned int bounce_max);
@@ -90,6 +85,7 @@ class OEngine : public Touchable {
         GMergedMesh*  getMergedMesh();
         GBoundaryLib* getBoundaryLib();
         optix::Context& getContext();
+        optix::Group&   getTopGroup();
         NPY<float>* getDomain();
         NPY<int>*   getIDomain();
     public:
@@ -194,7 +190,18 @@ class OEngine : public Touchable {
         GGeo*            m_ggeo ; 
         GMergedMesh*     m_mergedmesh ; 
         GBoundaryLib*    m_boundarylib ; 
+
+        OGeo*            m_ogeo ; 
+        OBoundaryLib*    m_oboundarylib ; 
+
         unsigned int     m_trace_count ; 
+        double           m_trace_prep ; 
+        double           m_trace_time ; 
+
+        unsigned int     m_render_count ; 
+        double           m_render_prep ; 
+        double           m_render_time ; 
+
         unsigned int     m_generate_count ; 
         unsigned int     m_bounce_max ; 
         unsigned int     m_record_max ; 
@@ -207,6 +214,7 @@ class OEngine : public Touchable {
         NumpyEvt*        m_evt ; 
         NPY<float>*      m_domain ;
         NPY<int>*        m_idomain ;
+        Timer*           m_timer ; 
 
 
    // from sutil/MeshScene.h
@@ -228,11 +236,11 @@ class OEngine : public Touchable {
 
 
 
-inline OEngine::OEngine(Mode_t mode) :
+inline OEngine::OEngine(optix::Context context, optix::Group top, Mode_t mode) :
     m_rng_max(0),
     m_rng_wrapper(NULL),
-    m_context(NULL),
-    m_top(NULL),
+    m_context(context),
+    m_top(top),
 
     m_photon_buf(NULL),
     m_sequence_buf(NULL),
@@ -248,7 +256,15 @@ inline OEngine::OEngine(Mode_t mode) :
     m_ggeo(NULL),
     m_mergedmesh(NULL),
     m_boundarylib(NULL),
+    m_ogeo(NULL),
+    m_oboundarylib(NULL),
     m_trace_count(0),
+    m_trace_prep(0),
+    m_trace_time(0),
+    m_render_count(0),
+    m_render_prep(0),
+    m_render_time(0),
+
     m_generate_count(0),
     m_bounce_max(1),
     m_record_max(10),
@@ -261,6 +277,7 @@ inline OEngine::OEngine(Mode_t mode) :
     m_evt(NULL),
     m_domain(NULL),
     m_idomain(NULL),
+    m_timer(NULL),
     m_filename(),
     m_accel_cache_loaded(false),
     m_accel_caching_on(true)
@@ -281,6 +298,22 @@ inline void OEngine::setGGeo(GGeo* ggeo)
 {
     m_ggeo = ggeo ;
 }
+inline void OEngine::setOGeo(OGeo* ogeo)
+{
+    m_ogeo = ogeo ;
+}
+inline void OEngine::setOBoundaryLib(OBoundaryLib* oboundarylib)
+{
+    m_oboundarylib = oboundarylib ;
+}
+
+
+
+
+
+
+
+
 inline void OEngine::setFilename(const char* filename)
 {
     m_filename = filename ;
@@ -387,19 +420,6 @@ inline OBuf* OEngine::getPhotonBuf()
 {
     return m_photon_buf ; 
 }
-
-
-
-/*
-inline optix::Buffer& OEngine::getRecselBuffer()
-{
-    return m_recsel_buffer ; 
-}
-inline optix::Buffer& OEngine::getPhoselBuffer()
-{
-    return m_phosel_buffer ; 
-}
-*/
 
 
 inline OEngine::Mode_t OEngine::getMode()

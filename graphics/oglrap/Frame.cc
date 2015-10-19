@@ -332,17 +332,25 @@ void Frame::listen()
  
 
 
-void Frame::render()
+
+
+void Frame::viewport()
 {
      _update_fps_counter (m_window, m_interactor ? m_interactor->getStatus() : "" );
 
-     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
      // glViewport needs pixels (on retina)  window needs screen coordinates
-
 
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 }
+
+
+void Frame::clear()
+{
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+
+
 
 
 void Frame::resize(unsigned int width, unsigned int height, unsigned int coord2pixel)

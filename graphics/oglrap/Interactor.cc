@@ -146,6 +146,8 @@ const char* Interactor::keys =
 
 void Interactor::key_pressed(unsigned int key)
 {
+    m_changed = true ; 
+
     if(key < NUM_KEYS) m_keys_down[key] = true ; 
 
     if(key > 245) printf("Interactor::key_pressed %u \n", key );

@@ -67,12 +67,16 @@ public:
    float getEyePhase();
    void updateEyePhase();
    void setEyePhase( float t);
+public:
+   bool hasChanged();
+   void setChanged(bool changed); 
 
 private:
    glm::vec3 m_eye ; 
    float     m_eye_phase ; 
    glm::vec3 m_look ; 
    glm::vec3 m_up ; 
+   bool      m_changed ; 
 
    Animator* m_animator ; 
 
@@ -86,8 +90,20 @@ inline View::View() : m_animator(NULL)
 }
 
 
+inline bool View::hasChanged()
+{
+    return m_changed ; 
+}
+
+inline void View::setChanged(bool changed)
+{
+    m_changed = changed ; 
+}
+
+
 inline void View::home()
 {
+    m_changed = true ; 
     m_eye.x = -1.f ; 
     m_eye.y = -1.f ; 
     m_eye.z =  0.f ;
@@ -118,6 +134,7 @@ inline void View::setEye( float _x, float _y, float _z)
     m_eye.y = _y ;  
     m_eye.z = _z ;  
     updateEyePhase();
+    m_changed = true ; 
 }  
 
 inline void View::updateEyePhase()
@@ -150,6 +167,7 @@ inline void View::setEyePhase(float t)
 #endif
     m_eye.x = d*c ; 
     m_eye.y = d*s ;
+    m_changed = true ; 
 }
 
 
@@ -158,6 +176,7 @@ inline void View::setLook(float _x, float _y, float _z)
     m_look.x = _x ;  
     m_look.y = _y ;  
     m_look.z = _z ;  
+    m_changed = true ; 
 }
 
 inline void View::setUp(  float _x, float _y, float _z)
@@ -165,6 +184,7 @@ inline void View::setUp(  float _x, float _y, float _z)
     m_up.x = _x ;  
     m_up.y = _y ;  
     m_up.z = _z ;  
+    m_changed = true ; 
 } 
 
 

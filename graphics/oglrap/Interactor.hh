@@ -57,6 +57,8 @@ class Interactor {
        bool*        getGuiModeAddress();
        bool*        getModeAddress(const char* name);
        unsigned int getContainer();
+       bool         hasChanged();
+       void         setChanged(bool changed);
 
   public:
        void cursor_drag( float x, float y, float dx, float dy, int ix, int iy );
@@ -86,6 +88,7 @@ class Interactor {
        Touchable*   m_touchable ; 
        Frame*       m_frame; 
        Scene*       m_scene; 
+       
 
        bool m_zoom_mode ;
        bool m_pan_mode ;
@@ -103,6 +106,8 @@ class Interactor {
 
        float m_dragfactor ;
        unsigned int m_container ;
+
+       bool  m_changed ; 
 
        enum { STATUS_SIZE = 128 };
        char m_status[STATUS_SIZE] ; 
@@ -142,7 +147,8 @@ inline Interactor::Interactor()
    m_optix_mode(0),
    m_optix_resolution_scale(1),
    m_dragfactor(1.f),
-   m_container(0)
+   m_container(0),
+   m_changed(true)
 {
    for(unsigned int i=0 ; i < NUM_KEYS ; i++) m_keys_down[i] = false ; 
    m_status[0] = '\0' ;
@@ -192,6 +198,7 @@ inline bool Interactor::isOptiXMode()
 inline void Interactor::setOptiXMode(int optix_mode)
 {
     m_optix_mode =  optix_mode ; 
+    m_changed = true ; 
 }
 inline int Interactor::getOptiXMode()
 { 
@@ -205,6 +212,7 @@ inline void Interactor::setOptiXResolutionScale(unsigned int scale)
 {
     m_optix_resolution_scale = (scale > 0 && scale <= 32) ? scale : 1 ;  
     printf("Interactor::setOptiXResolutionScale %u \n", m_optix_resolution_scale);
+    m_changed = true ; 
 }
 inline void Interactor::nextOptiXResolutionScale(unsigned int modifiers)
 {
@@ -213,3 +221,17 @@ inline void Interactor::nextOptiXResolutionScale(unsigned int modifiers)
     else
         setOptiXResolutionScale(getOptiXResolutionScale()*2);
 }
+
+
+inline bool Interactor::hasChanged()
+{
+    return m_changed ; 
+}
+inline void Interactor::setChanged(bool changed)
+{
+    m_changed = changed ; 
+}
+
+
+
+

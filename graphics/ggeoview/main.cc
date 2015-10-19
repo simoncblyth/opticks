@@ -106,10 +106,17 @@ namespace fs = boost::filesystem;
 // trace/debug/info/warning/error/fatal
 
 // optixrap-
+#include "OContext.hh"
 #include "OEngine.hh"
+#include "OGeo.hh"
+#include "OBoundaryLib.hh"
 #include "OBuf.hh"
 #include "RayTraceConfig.hh"
 #include "cu/photon.h"
+
+// optix-
+#include <optixu/optixpp_namespace.h>
+
 
 
 // cudawrap-
@@ -229,6 +236,7 @@ class App {
        void prepareGUI();
        void makeReport();
        void renderLoop();
+       void render();
        void cleanup();
 
   public:
@@ -262,6 +270,7 @@ class App {
        GBoundaryLibMetadata*    m_meta; 
        GMergedMesh*     m_mesh0 ;  
        Lookup*          m_lookup ;
+       OContext*        m_context ; 
        OEngine*         m_engine ; 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
@@ -273,6 +282,8 @@ class App {
        GUI*             m_gui ; 
        G4StepNPY*       m_g4step ; 
        TorchStepNPY*    m_torchstep ; 
+
+
    private:
        std::map<int, std::string> m_boundaries ;
        glm::uvec4       m_size ;
@@ -308,6 +319,7 @@ App::App(const char* prefix, const char* logname, const char* loglevel)
       m_meta(NULL),
       m_mesh0(NULL),
       m_lookup(NULL),
+      m_context(NULL),
       m_engine(NULL),
       m_bnd(NULL),
       m_pho(NULL),
@@ -603,6 +615,8 @@ int App::loadGeometry()
         LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 
         return 1 ; 
     }
+
+
     return 0 ; 
 }
 
@@ -700,7 +714,12 @@ void App::uploadGeometry()
     m_scene->setGeometry(m_ggeo);
     m_scene->uploadGeometry();
     bool autocam = true ; 
-    m_scene->setTarget(0, autocam);
+
+    // handle commandline --target option that needs loaded geometry 
+    unsigned int target = m_scene->getTargetDeferred();   // default to 0 
+    LOG(info) << "App::uploadGeometry setting target " << target ; 
+
+    m_scene->setTarget(target, autocam);
  
     (*m_timer)("uploadGeometry"); 
 }
@@ -829,15 +848,24 @@ void App::loadGenstep()
 
     (*m_timer)("hostEvtAllocation"); 
 
+
+
+
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     glm::vec4 uuce = geocenter ? mmce : gsce ;
+
     print(mmce, "loadGenstep mmce");
     print(gsce, "loadGenstep gsce");
     print(uuce, "loadGenstep uuce");
 
-    bool autocam = true ; 
-    m_composition->setCenterExtent( uuce , autocam );
+    if(m_scene->getTarget() == 0)
+    {
+        // only pointing based in genstep if not already targetted
+        bool autocam = true ; 
+        m_composition->setCenterExtent( uuce , autocam );
+    }
+
 
     m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
@@ -1029,7 +1057,32 @@ void App::prepareEngine()
 
 
     assert( mode == OEngine::INTEROP && "OEngine::COMPUTE mode not operational"); 
-    m_engine = new OEngine(mode) ;       
+
+
+    // start breaking up the monolith
+
+    optix::Context context = optix::Context::create();
+
+    m_context = new OContext(context); 
+
+    OBoundaryLib* olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
+
+    olib->convert(); 
+
+    OGeo* ogeo = new OGeo(context, m_ggeo);
+
+    ogeo->setTop(m_context->getTop());
+
+    ogeo->convert(); 
+
+
+    m_engine = new OEngine(context, m_context->getTop(), mode) ;       
+
+    m_engine->setOBoundaryLib(olib); 
+    m_engine->setOGeo(ogeo); 
+
+
+
     m_interactor->setTouchable(m_engine);
 
     m_engine->setFilename(idpath);
@@ -1059,6 +1112,9 @@ void App::prepareEngine()
 
     LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
     m_engine->init();  
+
+
+
     m_engine->initRenderer(m_scene->getShaderDir(), m_scene->getShaderInclPath());
 
     (*m_timer)("initOptiX"); 
@@ -1421,6 +1477,55 @@ void App::prepareGUI()
 
 }
 
+void App::render()
+{
+    m_frame->viewport();
+    m_frame->clear();
+
+#ifdef OPTIX
+    if(m_interactor->getOptiXMode()>0 && m_engine)
+    { 
+        unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
+        m_engine->setResolutionScale(scale) ;
+        m_engine->trace();
+        m_engine->render();
+        m_engine->report();
+    }
+    else
+#endif
+    {
+        m_scene->render();
+    }
+
+#ifdef GUI_
+    m_gui->newframe();
+    bool* show_gui_window = m_interactor->getGuiModeAddress();
+    if(*show_gui_window)
+    {
+        m_gui->show(show_gui_window);
+        if(m_photons)
+        {
+            if(m_bnd)
+            {
+                glm::ivec4 sel = m_bnd->getSelection() ;
+                m_composition->setSelection(sel); 
+                m_composition->getPick().y = sel.x ;   //  1st boundary 
+            }
+            glm::ivec4& recsel = m_composition->getRecSelect();
+            recsel.x = m_seqhis ? m_seqhis->getSelected() : 0 ; 
+            recsel.y = m_seqmat ? m_seqmat->getSelected() : 0 ; 
+            m_composition->setFlags(m_types->getFlags()); 
+        }
+        // maybe imgui edit selection within the composition imgui, rather than shovelling ?
+        // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
+    }
+    m_gui->render();
+#endif
+
+}
+
+
+
 void App::renderLoop()
 {
     bool noviz      = m_fcfg->hasOpt("noviz");
@@ -1431,10 +1536,6 @@ void App::renderLoop()
     }
     LOG(info) << "enter runloop "; 
 
-
-    bool* show_gui_window = m_interactor->getGuiModeAddress();
-    glm::ivec4& recsel = m_composition->getRecSelect();
-
     //m_frame->toggleFullscreen(true); causing blankscreen then segv
     m_frame->hintVisible(true);
     m_frame->show();
@@ -1442,58 +1543,22 @@ void App::renderLoop()
 
     unsigned int count ; 
 
-
     while (!glfwWindowShouldClose(m_window))
     {
         m_frame->listen(); 
 #ifdef NPYSERVER
         m_server->poll_one();  
 #endif
-        m_frame->render();
-
-#ifdef OPTIX
-        if(m_interactor->getOptiXMode()>0 && m_engine)
-        { 
-             unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
-             m_engine->setResolutionScale(scale) ;
-             m_engine->trace();
-             m_engine->render();
-        }
-        else
-#endif
-        {
-            m_scene->render();
-        }
-
         count = m_composition->tick();
 
-#ifdef GUI_
-        m_gui->newframe();
-        if(*show_gui_window)
+        if( m_composition->hasChanged() || m_interactor->hasChanged() || count == 1)  
         {
-            m_gui->show(show_gui_window);
+            render();
+            glfwSwapBuffers(m_window);
 
-            if(m_photons)
-            {
-                if(m_bnd)
-                {
-                    glm::ivec4 sel = m_bnd->getSelection() ;
-                    m_composition->setSelection(sel); 
-                    m_composition->getPick().y = sel.x ;   //  1st boundary 
-                }
-
-                recsel.x = m_seqhis ? m_seqhis->getSelected() : 0 ; 
-                recsel.y = m_seqmat ? m_seqmat->getSelected() : 0 ; 
-
-                m_composition->setFlags(m_types->getFlags()); 
-            }
-            // maybe imgui edit selection within the composition imgui, rather than shovelling ?
-            // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
+            m_interactor->setChanged(false);  
+            m_composition->setChanged(false);   // sets camera, view, trackball dirty status 
         }
-        m_gui->render();
-#endif
-
-        glfwSwapBuffers(m_window);
     }
 }
 

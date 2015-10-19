@@ -21,6 +21,53 @@ Python prototype:
 
 
 
+ISSUE : rendering much slower than samples
+-------------------------------------------------
+
+Observations: 
+
+* optix samples are much more responsive than ggv
+
+* decreasing resolution of OptiX renders by large factors 
+  has little impact on fps speed, but the time is all going 
+  in the tracing ..
+
+::
+
+    [2015-Oct-19 16:26:34.259418]:info: OEngine::render
+     trace_count             10
+     trace_prep      0.000795775
+     trace_time         14.4034
+     avg trace_prep  7.95775e-05
+     avg trace_time     1.44034
+     render_count            10
+     render_prep     0.000499662
+     render_time     0.00064173
+     avg render_prep 4.99662e-05
+     avg render_time 6.4173e-05
+
+
+
+Actions:
+
+* note that tracing is being done even when no change in viewpoint
+
+
+How can this be ? 
+
+* maybe buffer access is rate determining 
+
+
+
+
+TODO:
+
+* try simpler geometries, like a single analytic PMT
+
+
+
+
+
 ENHANCEMENT : Analytic PMT Intersection 
 ---------------------------------------
 

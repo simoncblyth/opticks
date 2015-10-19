@@ -218,6 +218,10 @@ class Composition : public Configurable {
       glm::mat4& getLook2Eye();
 
    public:
+      bool hasChanged(); // based on View, Camera, Trackball
+      void setChanged(bool changed);
+
+   public:
       // ModelViewProjection including trackballing
       glm::mat4& getWorld2Clip();   
       float*     getWorld2ClipPtr();  
@@ -280,6 +284,7 @@ class Composition : public Configurable {
       unsigned int m_count ; 
       NPY<float>*  m_axis_data ; 
       MultiViewNPY* m_axis_attr ;
+      bool          m_changed ; 
 
       // visitors
       Scene*       m_scene ; 
@@ -346,6 +351,7 @@ inline Composition::Composition()
   m_count(0),
   m_axis_data(NULL),
   m_axis_attr(NULL),
+  m_changed(true), 
   m_scene(NULL),
   m_axis_x(1000.f,    0.f,    0.f, 0.f),
   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
@@ -538,10 +544,6 @@ inline Composition::GeometryStyle_t Composition::getGeometryStyle()
 
 
 
-
-
-
-
 inline void Composition::nextPickPhotonStyle()
 {
     int next = (getPickPhotonStyle() + 1) % NUM_PICKPHOTON_STYLE ; 
@@ -555,9 +557,6 @@ inline Composition::PickPhotonStyle_t Composition::getPickPhotonStyle()
 {
     return (PickPhotonStyle_t)m_pickphoton.y ;
 }
-
-
-
 
 
 

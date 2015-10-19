@@ -592,8 +592,15 @@ void Scene::jump()
 }
 
 
+
 void Scene::setTarget(unsigned int target, bool autocam)
 {
+    if(m_mesh0 == NULL)
+    {
+        LOG(info) << "Scene::setTarget " << target << " deferring as geometry not loaded " ; 
+        m_target_deferred = target ; 
+        return ; 
+    }
     m_target = target ; 
 
     gfloat4 ce = m_mesh0->getCenterExtent(target);
