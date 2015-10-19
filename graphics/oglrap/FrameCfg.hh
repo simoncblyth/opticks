@@ -12,6 +12,7 @@ class FrameCfg : public Cfg {
      std::string& getTorchConfig();
      std::string& getZExplodeConfig();
      std::string& getMeshVersion();
+     std::string& getISlice();
      int          getBounceMax(); 
      int          getRecordMax(); 
      int          getTimeMax(); 
@@ -32,6 +33,7 @@ private:
      std::string m_torchconfig ;
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;
+     std::string m_islice ;
      int         m_bouncemax ; 
      int         m_recordmax ; 
      int         m_timemax ; 
@@ -52,6 +54,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_torchconfig(""),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
+       m_islice(""),
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),
@@ -181,6 +184,12 @@ inline void FrameCfg<Listener>::init()
    m_desc.add_options()
        ("meshversion",   boost::program_options::value<std::string>(&m_meshversion), "debug only option for testing alternate mesh versions" );
 
+   m_desc.add_options()
+       ("islice",        boost::program_options::value<std::string>(&m_islice), "debug only option for use of partial instanced geometry, specified by python slice style colon delimited ints " );
+
+
+
+
 
    char bouncemax[128];
    snprintf(bouncemax,128, "Maximum number of boundary bounces, 0:to just generate. Default %d ", m_bouncemax);
@@ -280,6 +289,11 @@ template <class Listener>
 inline std::string& FrameCfg<Listener>::getMeshVersion()
 {
     return m_meshversion ;
+}
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getISlice()
+{
+    return m_islice ;
 }
 
 

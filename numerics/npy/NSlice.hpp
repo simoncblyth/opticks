@@ -1,5 +1,5 @@
 #pragma once
-
+#include <cstring>
 
 struct NSlice {
      unsigned int low ; 
@@ -7,6 +7,7 @@ struct NSlice {
      unsigned int step ; 
      const char*  _description ; 
 
+     NSlice(const char* slice);
      NSlice(unsigned int low, unsigned int high, unsigned int step=1);
      const char* description();
      unsigned int count();

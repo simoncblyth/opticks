@@ -67,6 +67,7 @@
 #include "Times.hpp"
 #include "Parameters.hpp"
 #include "Report.hpp"
+#include "NSlice.hpp"
 
 // bregex-
 #include "regexsearch.hh"
@@ -1070,6 +1071,12 @@ void App::prepareEngine()
     olib->convert(); 
 
     OGeo* ogeo = new OGeo(context, m_ggeo);
+
+    std::string islice = m_fcfg->getISlice() ;;
+    if(!islice.empty())
+    {
+        ogeo->setSlice(new NSlice(islice.c_str()));
+    }
 
     ogeo->setTop(m_context->getTop());
 
