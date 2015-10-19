@@ -31,6 +31,31 @@ Lectures on Ray Tracing
 
 * http://www.cs.rpi.edu/~cutler/classes/advancedgraphics/F05/lectures/13_ray_tracing.pdf
 
+* http://gamma.cs.unc.edu/graphicscourse/LECTURES/04raytracing.pdf
+
+  55 pages, good detail on intersections and view rays  
+
+Intersections
+---------------
+
+* http://woo4.me/wootracer/cylinder-intersection/
+
+
+Spectral Ray Trace
+--------------------
+
+* http://pjreddie.com/media/files/Redmon_Thesis.pdf
+
+  * https://github.com/pjreddie/RayTracer/blob/master/RayTracer.cpp
+  * Spectrum class
+  * CIE XYZ weighting functions covered briefly, but seems not used in the code, 
+    instead r,g,b gaussians
+
+
+
+
+
+
 
 Visual Effects : bloom
 ------------------------
