@@ -24,14 +24,12 @@ class Lookup ;
 // THIS IS ON THE WAY OUT : TURNING IT INTO A HELPER FOR GGeo RATHER THAN A DRIVER
 class GLoader {
      public:
-        // typedef int (*GLoaderImpFunctionPtr)(GGeo*);
     public:
          GLoader(GGeo* ggeo);
          void setTypes(Types* types);
          void setCache(GCache* cache);
          void setRepeatIndex(int repeatidx);
-        // void setLoaderImp(GLoaderImpFunctionPtr imp);
-         void load();
+         void load(bool verbose=false);
     public:
          void setInstanced(bool instanced=true);
          bool isInstanced();

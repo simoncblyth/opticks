@@ -23,9 +23,10 @@ public:
     static const char* BUILDER ; 
     static const char* TRAVERSER ; 
 
-    OGeo(optix::Context& ctx, GGeo* gg);
+    OGeo(optix::Context& ctx, GGeo* gg, const char* builder=NULL, const char* traverser=NULL);
     void setTop(optix::Group top);
     void setSlice(NSlice* slice);
+    const char* description(const char* msg="OGeo::description");
 public:
     void convert();
 private:
@@ -53,6 +54,9 @@ private:
     optix::Context       m_context ; 
     optix::Group         m_top ; 
     GGeo*                m_ggeo ; 
+    const char*          m_builder ; 
+    const char*          m_traverser ; 
+    const char*          m_description ; 
 private:
     // locals 
     optix::GeometryGroup m_geometry_group ; 
@@ -62,12 +66,16 @@ private:
 
 };
 
-inline OGeo::OGeo(optix::Context& ctx, GGeo* gg)
+inline OGeo::OGeo(optix::Context& ctx, GGeo* gg, const char* builder, const char* traverser)
            : 
            m_context(ctx),
            m_ggeo(gg),
+           m_builder(builder ? strdup(builder) : BUILDER),
+           m_traverser(traverser ? strdup(traverser) : TRAVERSER),
+           m_description(NULL),
            m_cfg(NULL),
            m_slice(NULL)
+           
 {
     init();
 }

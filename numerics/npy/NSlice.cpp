@@ -16,12 +16,17 @@ const char* NSlice::description()
 }
 
 
-NSlice::NSlice(const char* slice)
+NSlice::NSlice(const char* slice, const char* delim)
 {
-    char *str = strdup(slice);   
-    char *token;
+    // defaults
+    low = 0 ;
+    high = 1 ; 
+    step = 1 ; 
+
     unsigned int i = 0 ;
-    while ((token = strsep(&str, ":")))
+    char* str = strdup(slice);   
+    char* token;
+    while ((token = strsep(&str, delim)))
     { 
        switch(i)
        {
@@ -31,4 +36,7 @@ NSlice::NSlice(const char* slice)
        }
        i++ ;
     }
+
+    if(i == 1) high = low+1 ;  // when only single int provided
+
 }

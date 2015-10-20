@@ -13,6 +13,8 @@ class FrameCfg : public Cfg {
      std::string& getZExplodeConfig();
      std::string& getMeshVersion();
      std::string& getISlice();
+     std::string& getBuilder();
+     std::string& getTraverser();
      int          getBounceMax(); 
      int          getRecordMax(); 
      int          getTimeMax(); 
@@ -34,6 +36,8 @@ private:
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;
      std::string m_islice ;
+     std::string m_builder ;
+     std::string m_traverser  ;
      int         m_bouncemax ; 
      int         m_recordmax ; 
      int         m_timemax ; 
@@ -55,6 +59,8 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
        m_islice(""),
+       m_builder(""),
+       m_traverser(""),
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),
@@ -187,7 +193,11 @@ inline void FrameCfg<Listener>::init()
    m_desc.add_options()
        ("islice",        boost::program_options::value<std::string>(&m_islice), "debug only option for use of partial instanced geometry, specified by python slice style colon delimited ints " );
 
+   m_desc.add_options()
+       ("builder",        boost::program_options::value<std::string>(&m_builder), "OptiX Accel structure builder, CAUTION case sensitive ");
 
+   m_desc.add_options()
+       ("traverser",      boost::program_options::value<std::string>(&m_traverser), "OptiX Accel structure traverser, CAUTION case sensitive ");
 
 
 
@@ -295,6 +305,17 @@ inline std::string& FrameCfg<Listener>::getISlice()
 {
     return m_islice ;
 }
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getBuilder()
+{
+    return m_builder ;
+}
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getTraverser()
+{
+    return m_traverser ;
+}
+
 
 
 template <class Listener>

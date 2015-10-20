@@ -115,6 +115,17 @@ const char* OGeo::BUILDER = "Sbvh" ;
 const char* OGeo::TRAVERSER = "Bvh" ; 
 
 
+const char* OGeo::description(const char* msg)
+{
+    if(!m_description)
+    {
+        char desc[128];
+        snprintf(desc, 128, "%s %s %s ", msg, m_builder, m_traverser );
+        m_description = strdup(desc); 
+    }
+    return m_description ;
+}
+
 void OGeo::init()
 {
     m_geometry_group = m_context->createGeometryGroup();
@@ -218,7 +229,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, NSlice* slice )
     float* tptr = (float*)itransforms->getPointer(); 
 
     optix::Group assembly = m_context->createGroup();
-    assembly->setChildCount(numTransforms);
+    assembly->setChildCount(slice->count());
 
     optix::Geometry gmm = makeGeometry(mm);
     optix::Material mat = makeMaterial();
@@ -227,10 +238,13 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, NSlice* slice )
     // common accel for all instances 
 
     bool transpose = true ; 
+
+    unsigned int ichild = 0 ; 
+
     for(unsigned int i=slice->low ; i<slice->high ; i+=slice->step)
     {
         optix::Transform xform = m_context->createTransform();
-        assembly->setChild(i, xform);
+        assembly->setChild(ichild, xform);
 
         // proliferating *pergi* so can assign an instance index to it 
         optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
@@ -245,6 +259,8 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, NSlice* slice )
         const float* tdata = tptr + 16*i ; 
         optix::Matrix4x4 m(tdata) ;
         xform->setMatrix(transpose, m.getData(), 0);
+
+        ichild++ ;
         //dump("OGeo::makeRepeatedGroup", m.getData());
     }
     return assembly ;
@@ -344,10 +360,10 @@ void OGeo::dump(const char* msg, const float* f)
 
 optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* traverser)
 {
-    const char* ubuilder = builder ? builder : BUILDER ;
-    const char* utraverser = traverser ? traverser : TRAVERSER ;
+    const char* ubuilder = builder ? builder : m_builder ;
+    const char* utraverser = traverser ? traverser : m_traverser ;
 
-    LOG(debug) << "OGeo::makeAcceleration " 
+    LOG(info) << "OGeo::makeAcceleration " 
               << " ubuilder " << ubuilder 
               << " utraverser " << utraverser
               ; 
@@ -355,7 +371,7 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
     optix::Acceleration acceleration = m_context->createAcceleration(ubuilder, utraverser );
     acceleration->setProperty( "vertex_buffer_name", "vertexBuffer" );
     acceleration->setProperty( "index_buffer_name", "indexBuffer" );
-    acceleration->markDirty();
+    //acceleration->markDirty();
     return acceleration ; 
 }
 

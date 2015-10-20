@@ -1,8 +1,7 @@
 #pragma once
 
 class Composition ; 
-class Renderer ; 
-class Texture ; 
+
 class RayTraceConfig ; 
 class GGeo ; 
 class GMergedMesh ;
@@ -12,13 +11,16 @@ class Timer ;
 class cuRANDWrapper ; 
 class OBuf ; 
 class OGeo ; 
+class OFrame ; 
 class OBoundaryLib ; 
+
+#include "OContext.hh"
+#include "OTimes.hh"
 
 template <typename T> class NPY ;
 
 #include "NPYBase.hpp"
 #include "string.h"
-#include "Touchable.hh"
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
@@ -26,7 +28,7 @@ template <typename T> class NPY ;
 // TODO: this monolith needs to be drawn and quartered, doing far too much for one class
 
 
-class OEngine : public Touchable {
+class OEngine {
 
     public:
 
@@ -46,7 +48,7 @@ class OEngine : public Touchable {
         static const char* COMPUTE_ ; 
         static const char* INTEROP_ ; 
     public:
-        OEngine(optix::Context context, optix::Group top, Mode_t mode=INTEROP );
+        OEngine(OContext* context, optix::Group top, Mode_t mode=INTEROP );
 
     public:
         const char* getModeName();
@@ -96,23 +98,13 @@ class OEngine : public Touchable {
         unsigned int getDebugPhoton();
     public:
         void init();
-        void initRenderer(const char* dir, const char* incl_path);
         void trace(); 
         void generate();
-        void render();
         void cleanUp();
 
     public:
-        //optix::Buffer& getSequenceBuffer();
-        //optix::Buffer& getPhotonBuffer();
-        //optix::Buffer& getPhoselBuffer();  OptiX doesnt touch these
-        //optix::Buffer& getRecselBuffer();
-    public:
         OBuf* getSequenceBuf();
         OBuf* getPhotonBuf();
-    public:
-       // fulfil Touchable interface
-       unsigned int touch(int ix, int iy);
 
     private:
         void initRayTrace();
@@ -121,22 +113,10 @@ class OEngine : public Touchable {
         void initGenerateOnce();
         void initGenerate();
         void initGenerate(NumpyEvt* evt);
+
         void preprocess();
 
-        void fill_PBO();
         void displayFrame(unsigned int texID);
-
-    private: 
-        void push_PBO_to_Texture(unsigned int texId);
-        void associate_PBO_to_Texture(unsigned int texId);
-
-    protected:
-        optix::Buffer createOutputBuffer(RTformat format, unsigned int width, unsigned int height);
-
-        // create GL buffer VBO/PBO first then address it as OptiX buffer with optix::Context::createBufferFromGLBO  
-        // format can be RT_FORMAT_USER 
-        optix::Buffer createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
-        optix::Buffer createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height);
 
 
     public:
@@ -159,16 +139,14 @@ class OEngine : public Touchable {
 
 
     protected:
+        OContext*             m_ocontext; 
         optix::Context        m_context; 
-        optix::Buffer         m_output_buffer ; 
         optix::Buffer         m_genstep_buffer ; 
         optix::Buffer         m_photon_buffer ; 
         optix::Buffer         m_record_buffer ; 
         optix::Buffer         m_sequence_buffer ; 
         optix::Buffer         m_touch_buffer ; 
         optix::Buffer         m_aux_buffer ; 
-        //optix::Buffer         m_phosel_buffer ; 
-        //optix::Buffer         m_recsel_buffer ; 
         optix::Group          m_top ;
 
         OBuf*                 m_photon_buf ;
@@ -179,28 +157,24 @@ class OEngine : public Touchable {
         unsigned int          m_resolution_scale ;
         unsigned int          m_photon_buffer_id ;
         unsigned int          m_genstep_buffer_id ;
-        unsigned int          m_pbo ;
-
-        unsigned char*   m_pbo_data ; 
 
         Composition*     m_composition ; 
-        Renderer*        m_renderer ; 
-        Texture*         m_texture ; 
+
         RayTraceConfig*  m_config ; 
         GGeo*            m_ggeo ; 
         GMergedMesh*     m_mergedmesh ; 
         GBoundaryLib*    m_boundarylib ; 
 
+        OFrame*          m_frame ; 
         OGeo*            m_ogeo ; 
         OBoundaryLib*    m_oboundarylib ; 
 
+        OTimes*          m_trace_times ; 
         unsigned int     m_trace_count ; 
         double           m_trace_prep ; 
         double           m_trace_time ; 
 
-        unsigned int     m_render_count ; 
-        double           m_render_prep ; 
-        double           m_render_time ; 
+        OTimes*          m_prep_times ; 
 
         unsigned int     m_generate_count ; 
         unsigned int     m_bounce_max ; 
@@ -208,7 +182,8 @@ class OEngine : public Touchable {
         Mode_t           m_mode ; 
         bool             m_enabled ; 
         bool             m_trivial ; 
-        int              m_texture_id ; 
+
+
         int              m_override ; 
         int              m_debug_photon ; 
         NumpyEvt*        m_evt ; 
@@ -236,10 +211,11 @@ class OEngine : public Touchable {
 
 
 
-inline OEngine::OEngine(optix::Context context, optix::Group top, Mode_t mode) :
+inline OEngine::OEngine(OContext* ocontext, optix::Group top, Mode_t mode) :
     m_rng_max(0),
     m_rng_wrapper(NULL),
-    m_context(context),
+    m_ocontext(ocontext),
+    m_context(ocontext->getContext()),
     m_top(top),
 
     m_photon_buf(NULL),
@@ -247,23 +223,23 @@ inline OEngine::OEngine(optix::Context context, optix::Group top, Mode_t mode) :
     m_resolution_scale(1),
     m_photon_buffer_id(0),
     m_genstep_buffer_id(0),
-    m_pbo(0),
-    m_pbo_data(NULL),
+
     m_composition(NULL),
-    m_renderer(NULL),
-    m_texture(NULL),
+
     m_config(NULL),
     m_ggeo(NULL),
     m_mergedmesh(NULL),
     m_boundarylib(NULL),
+    m_frame(NULL),
     m_ogeo(NULL),
     m_oboundarylib(NULL),
+
+    m_trace_times(new OTimes),
     m_trace_count(0),
     m_trace_prep(0),
     m_trace_time(0),
-    m_render_count(0),
-    m_render_prep(0),
-    m_render_time(0),
+
+    m_prep_times(new OTimes),
 
     m_generate_count(0),
     m_bounce_max(1),
@@ -271,7 +247,6 @@ inline OEngine::OEngine(optix::Context context, optix::Group top, Mode_t mode) :
     m_mode(mode),  
     m_enabled(true),
     m_trivial(false),
-    m_texture_id(-1),
     m_override(0),
     m_debug_photon(0),
     m_evt(NULL),
@@ -280,8 +255,20 @@ inline OEngine::OEngine(optix::Context context, optix::Group top, Mode_t mode) :
     m_timer(NULL),
     m_filename(),
     m_accel_cache_loaded(false),
-    m_accel_caching_on(true)
+    m_accel_caching_on(false)
 {
+}
+
+
+
+inline optix::Context& OEngine::getContext()
+{
+    return m_context ; 
+}
+
+inline optix::Group& OEngine::getTopGroup()
+{
+    return m_top ; 
 }
 
 

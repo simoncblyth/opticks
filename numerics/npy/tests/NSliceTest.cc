@@ -1,11 +1,16 @@
 #include "NSlice.hpp"
 #include <cstdio>
+#include <vector>
+#include <string>
 
-int main()
+
+int main(int argc, char** argv)
 {
-    NSlice* s = new NSlice("50:100:2") ;
-    printf("%s \n", s->description()) ; 
-
-
+    for(int i=1 ; i < argc ; i++)
+    {
+        char* arg = argv[i] ;
+        NSlice* s = new NSlice(arg) ;
+        printf("arg %s slice %s \n", arg, s->description()) ; 
+    }
     return 0 ;
 }

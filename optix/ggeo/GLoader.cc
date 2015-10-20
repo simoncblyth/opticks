@@ -34,10 +34,10 @@ namespace fs = boost::filesystem;
 // trace/debug/info/warning/error/fatal
 
 
-void GLoader::load()
+void GLoader::load(bool verbose)
 {
     Timer t("GLoader::load") ; 
-    t.setVerbose(true);
+    t.setVerbose(verbose);
     t.start();
 
     assert(m_cache);
@@ -71,11 +71,11 @@ void GLoader::load()
 
         m_ggeo->loadFromCache() ; 
 
-        t("load ggeo/mergedmesh"); 
+        t("loadFromCache"); 
 
         GBoundaryLib* blib = m_ggeo->getBoundaryLib();
 
-        t("load boundarylib"); 
+        t("getBoundaryLib"); 
         // TODO: move below into GGeo::load 
 
         m_metadata = blib->getMetadata() ; 
@@ -84,8 +84,9 @@ void GLoader::load()
         m_surfaces   = GItemIndex::load(idpath, "GSurfaceIndex");
         m_meshes     = GItemIndex::load(idpath, "MeshIndex");
 
-        t("load indices"); 
-        m_materials->dump("GLoader::load original materials from GItemIndex::load(idpath, \"GMaterialIndex\") ");
+        t("indices load"); 
+        if(verbose)
+            m_materials->dump("GLoader::load original materials from GItemIndex::load(idpath, \"GMaterialIndex\") ");
     } 
     else
     {
@@ -230,7 +231,7 @@ void GLoader::load()
     LOG(info) << "GLoader::load done " << idpath ;
     //assert(m_mergedmesh);
     t.stop();
-    t.dump();
+    if(verbose) t.dump();
 }
 
 

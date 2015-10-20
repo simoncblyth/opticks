@@ -1,5 +1,6 @@
 #pragma once
 
+struct OTimes ; 
 #include <optixu/optixpp_namespace.h>
 
 class OContext {
@@ -19,6 +20,8 @@ class OContext {
 
      public:
             OContext(optix::Context context);
+     public:
+            void launch(unsigned int entry, unsigned int width, unsigned int height=1, OTimes* times=NULL);
      public:
             unsigned int      getNumEntryPoint();
             unsigned int      getNumRayType();

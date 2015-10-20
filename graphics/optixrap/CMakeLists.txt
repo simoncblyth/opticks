@@ -104,8 +104,11 @@ add_definitions(
 optixthrust_add_library( ${name} 
        OptiXUtil.cc
        OContext.cc
+       OTimes.cc
        OEngine.cc
        OGeo.cc
+       OFrame.cc
+       ORenderer.cc
        OBoundaryLib.cc
        RayTraceConfig.cc
 
@@ -145,8 +148,11 @@ set(cuhdrs
 set(hdrs 
   OptiXUtil.hh
   OContext.hh
+  OTimes.hh
   OEngine.hh
   OGeo.hh
+  OFrame.hh
+  ORenderer.hh
   OBoundaryLib.hh
   RayTraceConfig.hh
   define.h

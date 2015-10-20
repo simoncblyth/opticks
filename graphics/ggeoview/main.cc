@@ -108,6 +108,8 @@ namespace fs = boost::filesystem;
 
 // optixrap-
 #include "OContext.hh"
+#include "OFrame.hh"
+#include "ORenderer.hh"
 #include "OEngine.hh"
 #include "OGeo.hh"
 #include "OBoundaryLib.hh"
@@ -271,7 +273,11 @@ class App {
        GBoundaryLibMetadata*    m_meta; 
        GMergedMesh*     m_mesh0 ;  
        Lookup*          m_lookup ;
-       OContext*        m_context ; 
+       OContext*        m_ocontext ; 
+       OGeo*            m_ogeo ; 
+       OBoundaryLib*    m_olib ; 
+       OFrame*          m_oframe ; 
+       ORenderer*       m_orenderer ; 
        OEngine*         m_engine ; 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
@@ -320,7 +326,11 @@ App::App(const char* prefix, const char* logname, const char* loglevel)
       m_meta(NULL),
       m_mesh0(NULL),
       m_lookup(NULL),
-      m_context(NULL),
+      m_ocontext(NULL),
+      m_ogeo(NULL),
+      m_olib(NULL),
+      m_oframe(NULL),
+      m_orenderer(NULL),
       m_engine(NULL),
       m_bnd(NULL),
       m_pho(NULL),
@@ -1064,33 +1074,44 @@ void App::prepareEngine()
 
     optix::Context context = optix::Context::create();
 
-    m_context = new OContext(context); 
+    m_ocontext = new OContext(context); 
 
-    OBoundaryLib* olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
+    m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
 
-    olib->convert(); 
+    m_olib->convert(); 
 
-    OGeo* ogeo = new OGeo(context, m_ggeo);
+    
+    std::string builder_   = m_fcfg->getBuilder(); 
+    std::string traverser_ = m_fcfg->getTraverser(); 
+    const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
+    const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
+
+    m_ogeo = new OGeo(context, m_ggeo, builder, traverser);
 
     std::string islice = m_fcfg->getISlice() ;;
     if(!islice.empty())
     {
-        ogeo->setSlice(new NSlice(islice.c_str()));
+        m_ogeo->setSlice(new NSlice(islice.c_str()));
     }
 
-    ogeo->setTop(m_context->getTop());
+    m_ogeo->setTop(m_ocontext->getTop());
 
-    ogeo->convert(); 
-
-
-    m_engine = new OEngine(context, m_context->getTop(), mode) ;       
-
-    m_engine->setOBoundaryLib(olib); 
-    m_engine->setOGeo(ogeo); 
+    m_ogeo->convert(); 
 
 
+    unsigned int width  = m_composition->getPixelWidth();
+    unsigned int height = m_composition->getPixelHeight();
+    m_oframe = new OFrame(context, width, height );
+    context["output_buffer"]->set( m_oframe->getOutputBuffer() );
 
-    m_interactor->setTouchable(m_engine);
+    m_orenderer = new ORenderer(m_oframe, m_scene->getShaderDir(), m_scene->getShaderInclPath());
+
+    m_engine = new OEngine(m_ocontext, m_ocontext->getTop(), mode) ;       
+
+    m_engine->setOBoundaryLib(m_olib); 
+    m_engine->setOGeo(m_ogeo); 
+
+    m_interactor->setTouchable(m_oframe);
 
     m_engine->setFilename(idpath);
     m_engine->setOverride(override);
@@ -1119,10 +1140,9 @@ void App::prepareEngine()
 
     LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
     m_engine->init();  
+    LOG(info) << m_ogeo->description("App::prepareEngine ogeo");
 
 
-
-    m_engine->initRenderer(m_scene->getShaderDir(), m_scene->getShaderInclPath());
 
     (*m_timer)("initOptiX"); 
     LOG(info) << "App::prepareEngine DONE "; 
@@ -1495,8 +1515,10 @@ void App::render()
         unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
         m_engine->setResolutionScale(scale) ;
         m_engine->trace();
-        m_engine->render();
-        m_engine->report();
+        LOG(info) << m_ogeo->description("App::render ogeo");
+
+        m_orenderer->render();
+        //m_engine->report();  // trace time dominates 
     }
     else
 #endif

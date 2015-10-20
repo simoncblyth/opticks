@@ -21,6 +21,10 @@ Python prototype:
 
 
 
+
+
+
+
 ISSUE : rendering much slower than samples
 -------------------------------------------------
 
@@ -58,6 +62,25 @@ How can this be ?
 * maybe buffer access is rate determining 
 
 
+Timing validate/compile/prelaunch/launch with OContext 
+suggests that accel structures are being rebuilt for every launch::
+
+    [2015-Oct-20 12:45:00.070613]:info: OContext::launch 
+     count    31 
+     validate      0.0347     0.0011 
+     compile       0.4049     0.0131 
+     prelaunch    25.0761     0.8089 
+     launch       44.4527     1.4340 
+
+
+Immediately repeating pre-launches and launches are 
+taking time every time, without any context changes.  
+
+From manual:
+
+    rtContextCompile does allow the user to control the timing of the compilation,
+    but the context should normally be finalized before compilation because any
+    subsequent changes will cause a recompile within rtContextLaunch.
 
 
 TODO:

@@ -1,5 +1,6 @@
 #include "OEngine.hh"
 #include "OContext.hh"
+#include "OFrame.hh"
 
 #include "assert.h"
 #include "stdio.h"
@@ -30,8 +31,10 @@
 
 // oglrap-
 #include "Composition.hh"
+
 #include "Renderer.hh"
 #include "Texture.hh"
+
 #include "Rdr.hh"
 
 // ggeo-
@@ -103,7 +106,6 @@ void OEngine::init()
 
     m_config = RayTraceConfig::makeInstance(m_context);
 
-    //m_top = m_context->createGroup();
 
     m_domain = NPY<float>::make(e_number_domain,1,4) ;
     m_domain->fill(0.f);
@@ -135,50 +137,8 @@ void OEngine::init()
 
 
 
-void OEngine::initRenderer(const char* dir, const char* incl_path)
-{
-    unsigned int width  = m_composition->getPixelWidth();
-    unsigned int height = m_composition->getPixelHeight();
-
-    // TODO: reposition Renderer externally ...
-    m_renderer = new Renderer("tex", dir, incl_path );
-    m_texture = new Texture();   // QuadTexture would be better name
-    m_texture->setSize(width, height);
-    m_texture->create();
-    m_texture_id = m_texture->getTextureId() ;
-
-    LOG(debug) << "OEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
-    m_renderer->upload(m_texture);
-}
-
-
 void OEngine::initRayTrace()
 {
-    if(isInterop())
-    {
-        unsigned int width  = m_composition->getPixelWidth();
-        unsigned int height = m_composition->getPixelHeight();
-        LOG(debug) << "OEngine::initContext size (" << width << "," << height << ")" ;
-        m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
-        m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
-    } 
-    else
-    {
-        m_output_buffer = m_context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, 0);
-        m_touch_buffer  = m_context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
-    } 
-    m_context["output_buffer"]->set( m_output_buffer );
-    m_context["touch_buffer"]->set( m_touch_buffer );
-    m_context["touch_mode" ]->setUint( 0u );
-
-
-    // "touch" mode is tied to the active rendering (currently only e_pinhole_camera)
-    // as the meaning of x,y mouse/trackpad touches depends on that rendering.  
-    // Because of this using a separate "touch" entry point may not so useful ?
-    // Try instead splitting at ray type level.
-    //
-    // But the output requirements are very different ? Which would argue for a separate entry point.
-    //
     m_config->setRayGenerationProgram(  OContext::e_pinhole_camera_entry, "pinhole_camera.cu.ptx", "pinhole_camera" );
     m_config->setExceptionProgram(      OContext::e_pinhole_camera_entry, "pinhole_camera.cu.ptx", "exception");
 
@@ -197,88 +157,9 @@ void OEngine::initRayTrace()
 
 
 
-
-
-
-// fulfil Touchable interface
-unsigned int OEngine::touch(int ix_, int iy_)
-{
-
-    if(m_trace_count == 0)
-    {
-        LOG(warning) << "OEngine::touch \"OptiX touch mode\" only works after performing an OptiX trace, press O to toggle OptiX tracing then try again " ; 
-        return 0 ; 
-    }
-
-
-    // (ix_, iy_) 
-    //        (0,0)              at top left,  
-    //   (1024,768)*pixel_factor at bottom right
-
-
-    RTsize width, height;
-    m_output_buffer->getSize( width, height );
-
-    int ix = ix_ ; 
-    int iy = height - iy_;   
-
-    // (ix,iy) 
-    //   (0,0)                     at bottom left
-    //   (1024,768)*pixel_factor   at top right  
-
-    m_context["touch_mode"]->setUint(1u);
-    m_context["touch_index"]->setUint(ix, iy ); // by inspection
-    m_context["touch_dim"]->setUint(width, height);
-
-    RTsize touch_width = 1u ; 
-    RTsize touch_height = 1u ; 
-
-    // TODO: generalize touch to work with the active camera (eg could be orthographic)
-    m_context->launch( OContext::e_pinhole_camera_entry , touch_width, touch_height );
-
-    Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
-    m_context["touch_mode"]->setUint(0u);
-
-    uint4* touchBuffer_Host = static_cast<uint4*>( touchBuffer->map() );
-    uint4 touch = touchBuffer_Host[0] ;
-    touchBuffer->unmap();
-
-    LOG(info) << "OEngine::touch "
-              << " ix_ " << ix_ 
-              << " iy_ " << iy_   
-              << " ix " << ix 
-              << " iy " << iy   
-              << " width " << width   
-              << " height " << height 
-              << " touch.x nodeIndex " << touch.x 
-              << " touch.y " << touch.y 
-              << " touch.z " << touch.z   
-              << " touch.w " << touch.w 
-              ;  
-
-     unsigned int target = touch.x ; 
-    // seems out of place
-    // m_composition->setTarget(target); 
-
-    return target ; 
-}
-
-
-
-
 void OEngine::initGeometry()
 {
     LOG(info) << "OEngine::initGeometry" ;
-
-
-/*
-    OBoundaryLib olib(m_context, blib); 
-    olib.convert(); 
-    OGeo         og(m_context, gg);
-    og.setTop(m_top);
-    og.convert(); 
-
-*/
 
     LOG(info) << "OEngine::initGeometry calling setupAcceleration" ; 
 
@@ -324,28 +205,21 @@ void OEngine::preprocess()
     LOG(info)<< "OEngine::preprocess";
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
-
     float pe = 0.1f ; 
-
     m_context[ "propagate_epsilon"]->setFloat(pe);  // TODO: check impact of changing propagate_epsilon
  
-    LOG(info)<< "OEngine::preprocess start validate ";
 
-    m_context->validate();
+    // repeating for the hell of it,  
+    // shows that even 0-work launches are taking significant time every time
+    
+    unsigned int n = 1;  
+    for(unsigned int i=0 ; i < n ; i++)
+    { 
+        m_ocontext->launch( OContext::e_pinhole_camera_entry, 0, 0, m_prep_times ); 
+        LOG(info) << m_prep_times->description("OEngine::preprocess") ;
+    }
 
-    LOG(info)<< "OEngine::preprocess start compile ";
-
-    m_context->compile();
-
-    LOG(info)<< "OEngine::preprocess start building Accel structure ";
-
-    m_context->launch( OContext::e_pinhole_camera_entry ,0); 
-
-
-    LOG(info)<< "OEngine::preprocess DONE ";
 }
-
-
 
 
 void OEngine::trace()
@@ -393,13 +267,15 @@ void OEngine::trace()
 
     double t1 = getRealTime();
 
-    m_context->launch( OContext::e_pinhole_camera_entry,  width, height );
+    m_ocontext->launch( OContext::e_pinhole_camera_entry,  width, height, m_trace_times );
 
     double t2 = getRealTime();
 
     m_trace_count += 1 ; 
     m_trace_prep += t1 - t0 ; 
     m_trace_time += t2 - t1 ; 
+
+    LOG(info) << m_trace_times->description("OEngine::trace m_trace_times") ;
 
 
 }
@@ -496,16 +372,6 @@ void OEngine::initGenerate(NumpyEvt* evt)
 
 
 
-   /*
-    m_phosel_buffer = createIOBuffer<unsigned char>( evt->getPhoselData(), "phosel" );
-    m_context["phosel_buffer"]->set( m_phosel_buffer );
-
-    m_recsel_buffer = createIOBuffer<unsigned char>( evt->getRecselData(), "recsel" );
-    if(m_recsel_buffer.get())   
-        m_context["recsel_buffer"]->set( m_recsel_buffer );
-   */
-
-
     // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
 
@@ -598,7 +464,7 @@ optix::Buffer OEngine::createIOBuffer(NPY<T>* npy, const char* name)
         if(buffer_id > -1 )
         {
             buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
-            LOG(info) << "OEngine::createIOBuffer (INTEROP) createBufferFromGLBO " 
+            LOG(debug) << "OEngine::createIOBuffer (INTEROP) createBufferFromGLBO " 
                       << " name " << std::setw(20) << name
                       << " buffer_id " << buffer_id 
                       << " ( " << ni << "," << nj << "," << nk << ")"
@@ -630,7 +496,7 @@ optix::Buffer OEngine::createIOBuffer(NPY<T>* npy, const char* name)
     {
         buffer->setElementSize(sizeof(T));
         size = ni*nj*nk ; 
-        LOG(info) << "OEngine::createIOBuffer "
+        LOG(debug) << "OEngine::createIOBuffer "
                   << " RT_FORMAT_USER " 
                   << " elementsize " << sizeof(T)
                   << " size " << size 
@@ -639,7 +505,7 @@ optix::Buffer OEngine::createIOBuffer(NPY<T>* npy, const char* name)
     else
     {
         size = ni*nj ; 
-        LOG(info) << "OEngine::createIOBuffer "
+        LOG(debug) << "OEngine::createIOBuffer "
                   << " (quad) " 
                   << " size " << size 
                   ;
@@ -674,249 +540,17 @@ RTformat OEngine::getFormat(NPYBase::Type_t type)
 
 
 
-
-
-#if 0
-CUdeviceptr OEngine::getHistoryBufferDevicePointer(unsigned int optix_device_number)
-{
-
-/*
-// CUdeviceptr is typedef to unsigned long long 
- /Developer/OptiX/include/optix_cuda_interop.h 
-
-122   * @ref rtBufferGetDevicePointer returns the pointer to the data of \a buffer on device \a optix_device_number in **\a device_pointer.
-123   *
-124   * If @ref rtBufferGetDevicePointer has been called for a single device for a given buffer,
-125   * the user can change the buffer's content on that device. OptiX must then synchronize the new buffer contents to all devices.
-126   * These synchronization copies occur at every @ref rtContextLaunch "rtContextLaunch", unless the buffer is declared with @ref RT_BUFFER_COPY_ON_DIRTY.
-127   * In this case, use @ref rtBufferMarkDirty to notify OptiX that the buffer has been dirtied and must be synchronized.
-128   *
-
-
-   Sequence of actions...
-
-        * create OpenGL buffers in Scene::uploadEvt, with OpenGL buffer_id tucked away in the NPY
-        * OEngine::initGenerate takes hold of the buffers via their buffer_id and 
-          places references to them in the OptiX context
-        * OEngine::generate populates buffers during OptiX context launches  
-
-        * post generate 
- 
-*/
-}
-#endif
-
-
-optix::Buffer OEngine::createOutputBuffer(RTformat format, unsigned int width, unsigned int height)
-{
-    Buffer buffer;
-    buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, format, width, height);
-    return buffer ; 
-}
-
-optix::Buffer OEngine::createOutputBuffer_VBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
-{
-    Buffer buffer;
-
-    glGenBuffers(1, &id);
-    glBindBuffer(GL_ARRAY_BUFFER, id);
-
-    size_t element_size ; 
-    m_context->checkError(rtuGetSizeForRTformat(format, &element_size));
-    assert(element_size == 16);
-
-    const GLvoid *data = NULL ;
-    glBufferData(GL_ARRAY_BUFFER, element_size * width * height, data, GL_STREAM_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
-
-    buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, id);
-    buffer->setFormat(format);
-    buffer->setSize( width, height );
-
-    return buffer;
-}
-
-optix::Buffer OEngine::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
-{
-    Buffer buffer;
-
-    glGenBuffers(1, &id);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, id);
-
-    size_t element_size ; 
-    m_context->checkError(rtuGetSizeForRTformat(format, &element_size));
-    assert(element_size == 4);
-
-    unsigned int nbytes = element_size * width * height ;
-
-    m_pbo_data = (unsigned char*)malloc(nbytes);
-    memset(m_pbo_data, 0x88, nbytes);  // initialize PBO to grey 
-
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, m_pbo_data, GL_STREAM_DRAW);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); 
-
-    buffer = m_context->createBufferFromGLBO(RT_BUFFER_OUTPUT, id);
-    buffer->setFormat(format);
-    buffer->setSize( width, height );
-
-    LOG(info) << "OEngine::createOutputBuffer_PBO  element_size " << element_size << " size (" << width << "," << height << ") pbo id " << id ;
-  
-    return buffer;
-}
-
-void OEngine::associate_PBO_to_Texture(unsigned int texId)
-{
-    printf("OEngine::associate_PBO_to_Texture texId %u \n", texId);
-
-    assert(m_pbo > 0);
-    glBindBuffer( GL_PIXEL_UNPACK_BUFFER, m_pbo);
-    glBindTexture( GL_TEXTURE_2D, texId );
-
-    // this kills the teapot
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, NULL );
-}
-
-
-void OEngine::push_PBO_to_Texture(unsigned int texId)
-{
-    //printf("OEngine::push_PBO_to_Texture texId %u \n", texId);
-   // see  GLUTDisplay::displayFrame() 
-
-    RTsize buffer_width_rts, buffer_height_rts;
-    m_output_buffer->getSize( buffer_width_rts, buffer_height_rts );
-
-    int buffer_width  = static_cast<int>(buffer_width_rts);
-    int buffer_height = static_cast<int>(buffer_height_rts);
-
-    RTformat buffer_format = m_output_buffer->getFormat();
-
-    //
-    // glTexImage2D specifies mutable texture storage characteristics and provides the data
-    //
-    //    *internalFormat* 
-    //         format with which OpenGL should store the texels in the texture
-    //    *data*
-    //         location of the initial texel data in host memory, 
-    //         if a buffer is bound to the GL_PIXEL_UNPACK_BUFFER binding point, 
-    //         texel data is read from that buffer object, and *data* is interpreted 
-    //         as an offset into that buffer object from which to read the data. 
-    //    *format* and *type*
-    //         initial source texel data layout which OpenGL will convert 
-    //         to the internalFormat
-    // 
-
-   // send pbo to texture
-
-    assert(m_pbo > 0);
-
-    glBindTexture(GL_TEXTURE_2D, texId );
-
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo);
-
-    RTsize elementSize = m_output_buffer->getElementSize();
-    if      ((elementSize % 8) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
-    else if ((elementSize % 4) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    else if ((elementSize % 2) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
-    else                             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    switch(buffer_format) 
-    {   //               target   miplevl  internalFormat                     border  format   type           data  
-        case RT_FORMAT_UNSIGNED_BYTE4:
-            //printf("OEngine::push_PBO_to_Texture RT_FORMAT_UNSIGNED_BYTE4 tex:%d \n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, buffer_width, buffer_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
-            break ; 
-        case RT_FORMAT_FLOAT4:
-            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT4 tex:%d\n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, buffer_width, buffer_height, 0, GL_RGBA, GL_FLOAT, 0);
-            break;
-        case RT_FORMAT_FLOAT3:
-            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT3 tex:%d\n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F_ARB, buffer_width, buffer_height, 0, GL_RGB, GL_FLOAT, 0);
-            break;
-        case RT_FORMAT_FLOAT:
-            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT tex:%d\n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE32F_ARB, buffer_width, buffer_height, 0, GL_LUMINANCE, GL_FLOAT, 0);
-            break;
-        default:
-            assert(0 && "Unknown buffer format");
-    }
-
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-    //glBindTexture(GL_TEXTURE_2D, 0 );   get blank screen when do this here
-
-}
-
-
-void OEngine::render()
-{
-    if(!m_enabled) return ;
-    LOG(info) << "OEngine::render " << m_trace_count ; 
-
-    double t0 = getRealTime();
-    push_PBO_to_Texture(m_texture_id);
-    double t1 = getRealTime();
-
-    m_renderer->render();
-    double t2 = getRealTime();
-
-    m_render_count += 1 ; 
-    m_render_prep += t1 - t0 ; 
-    m_render_time += t2 - t1 ; 
-
-    glBindTexture(GL_TEXTURE_2D, 0 );  
-
-    if(m_render_count % 10 == 0) report("OEngine::render"); 
-
-}
-
 void OEngine::report(const char* msg)
 {
     LOG(info)<< msg ; 
-    if(m_trace_count == 0 || m_render_count == 0) return ; 
+    if(m_trace_count == 0 ) return ; 
 
     std::cout 
-          << " trace_count     " << std::setw(10) << m_trace_count  << std::endl 
-          << " trace_prep      " << std::setw(10) << m_trace_prep  << std::endl
-          << " trace_time      " << std::setw(10) << m_trace_time  << std::endl
-          << " avg trace_prep  " << std::setw(10) << m_trace_prep/m_trace_count  << std::endl
-          << " avg trace_time  " << std::setw(10) << m_trace_time/m_trace_count  << std::endl
-
-          << " render_count    " << std::setw(10) << m_render_count  << std::endl 
-          << " render_prep     " << std::setw(10) << m_render_prep  << std::endl
-          << " render_time     " << std::setw(10) << m_render_time  << std::endl
-          << " avg render_prep " << std::setw(10) << m_render_prep/m_render_count  << std::endl
-          << " avg render_time " << std::setw(10) << m_render_time/m_render_count  << std::endl
+          << " trace_count     " << std::setw(10) << m_trace_count  
+          << " trace_prep      " << std::setw(10) << m_trace_prep   << " avg " << std::setw(10) << m_trace_prep/m_trace_count  << std::endl
+          << " trace_time      " << std::setw(10) << m_trace_time   << " avg " << std::setw(10) << m_trace_time/m_trace_count  << std::endl
           << std::endl 
            ;
-
-}
-
-
-
-
-void OEngine::fill_PBO()
-{
-    // not working
-    //
-    //  https://www.opengl.org/wiki/Pixel_Buffer_Object
-    //  https://www.opengl.org/wiki/Pixel_Transfer
-
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo);
-    void* pboData = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-
-    for(unsigned int w=0 ; w<m_width ; ++w ){
-    for(unsigned int h=0 ; h<m_height ; ++h ) 
-    {
-        unsigned char* p = (unsigned char*)pboData ; 
-        *(p+0) = 0xAA ;
-        *(p+1) = 0xBB ;
-        *(p+2) = 0xCC ;
-        *(p+3) = 0x00 ;
-    }
-    } 
-    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 
@@ -930,26 +564,6 @@ void OEngine::cleanUp()
     m_context = 0;
 }
 
-optix::Context& OEngine::getContext()
-{
-    return m_context ; 
-}
-
-optix::Group& OEngine::getTopGroup()
-{
-    return m_top ; 
-}
-
-
-
-void OEngine::setSize(unsigned int width, unsigned int height)
-{
-    m_width = width ;
-    m_height = height ;
-
-    m_composition->setSize(width, height);
-    m_texture->setSize(width, height);
-}
 
 /*
 124 void SampleScene::resize(unsigned int width, unsigned int height)
