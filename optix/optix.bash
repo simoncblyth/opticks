@@ -14,6 +14,14 @@ Resources
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
 
+Fora Posts
+------------
+
+* https://devtalk.nvidia.com/default/topic/815975/optix/geometryinstances-toggling-objects-between-visible-invisible/
+* https://devtalk.nvidia.com/default/topic/817572/optix/graph-nodes-in-optix/
+* https://devtalk.nvidia.com/default/topic/771998/optix/optix-acceleration-structure/
+
+
 Conference Talks
 -------------------
 

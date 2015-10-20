@@ -110,7 +110,9 @@ optixthrust_add_library( ${name}
        OFrame.cc
        ORenderer.cc
        OBoundaryLib.cc
-       RayTraceConfig.cc
+       OConfig.cc
+       OAccel.cc
+       OTracer.cc
 
        cu/pinhole_camera.cu
        cu/constantbg.cu
@@ -154,7 +156,9 @@ set(hdrs
   OFrame.hh
   ORenderer.hh
   OBoundaryLib.hh
-  RayTraceConfig.hh
+  OConfig.hh
+  OAccel.hh
+  OTracer.hh
   define.h
 
   OBuf.hh

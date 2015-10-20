@@ -10,6 +10,11 @@ Simple Analytic Approximations to the CIE XYZ Color Matching Functions
 
 * http://www.ppsloan.org/publications/XYZJCGT.pdf
 
+Related
+
+* https://www.fourmilab.ch/documents/specrend/
+
+
 
 EOU
 }

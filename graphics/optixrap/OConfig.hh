@@ -7,13 +7,13 @@
 #include <string>
 #include <map>
 
-class RayTraceConfig {
+class OConfig {
 
 public:
    // singleton 
-   static RayTraceConfig* g_instance ; 
-   static RayTraceConfig* getInstance();
-   static RayTraceConfig* makeInstance(optix::Context context);
+   static OConfig* g_instance ; 
+   static OConfig* getInstance();
+   static OConfig* makeInstance(optix::Context context);
 
   static const char* _RT_FORMAT_UNKNOWN;
 
@@ -62,7 +62,7 @@ public:
    //static const char* PtxDir();
    static const char* RngDir();
 
-   static void Print(const char* msg="RayTraceConfig::Print");
+   static void Print(const char* msg="OConfig::Print");
    //static const char* const ptxpath( const std::string& target, const std::string& base );
 
    static optix::float3 make_contrast_color(int tag);
@@ -70,8 +70,8 @@ public:
    static const char* getFormatName(RTformat format);
 
 public:
-    RayTraceConfig(optix::Context context);
-    virtual ~RayTraceConfig();
+    OConfig(optix::Context context);
+    virtual ~OConfig();
 
     //const char* const ptxpath( const char* filename );
     optix::Program createProgram(const char* filename, const char* progname );

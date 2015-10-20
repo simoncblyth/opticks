@@ -10,6 +10,7 @@
 struct NSlice ; 
 class RayTraceConfig ; 
 
+class OContext ; 
 
 class GGeo ; 
 class GMergedMesh ; 
@@ -23,7 +24,7 @@ public:
     static const char* BUILDER ; 
     static const char* TRAVERSER ; 
 
-    OGeo(optix::Context& ctx, GGeo* gg, const char* builder=NULL, const char* traverser=NULL);
+    OGeo(OContext* ocontext, GGeo* gg, const char* builder=NULL, const char* traverser=NULL);
     void setTop(optix::Group top);
     void setSlice(NSlice* slice);
     const char* description(const char* msg="OGeo::description");
@@ -51,6 +52,7 @@ private:
 
 private:
     // input references
+    OContext*            m_ocontext ; 
     optix::Context       m_context ; 
     optix::Group         m_top ; 
     GGeo*                m_ggeo ; 
@@ -66,14 +68,13 @@ private:
 
 };
 
-inline OGeo::OGeo(optix::Context& ctx, GGeo* gg, const char* builder, const char* traverser)
+inline OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char* traverser)
            : 
-           m_context(ctx),
+           m_ocontext(ocontext),
            m_ggeo(gg),
            m_builder(builder ? strdup(builder) : BUILDER),
            m_traverser(traverser ? strdup(traverser) : TRAVERSER),
            m_description(NULL),
-           m_cfg(NULL),
            m_slice(NULL)
            
 {

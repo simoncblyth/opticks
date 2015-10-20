@@ -6,8 +6,7 @@
 // npy-
 #include "stringutil.hpp"
 
-
-#include "RayTraceConfig.hh"
+//#include "OConfig.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL

@@ -114,7 +114,8 @@ namespace fs = boost::filesystem;
 #include "OGeo.hh"
 #include "OBoundaryLib.hh"
 #include "OBuf.hh"
-#include "RayTraceConfig.hh"
+#include "OConfig.hh"
+#include "OTracer.hh"
 #include "cu/photon.h"
 
 // optix-
@@ -278,6 +279,7 @@ class App {
        OBoundaryLib*    m_olib ; 
        OFrame*          m_oframe ; 
        ORenderer*       m_orenderer ; 
+       OTracer*         m_otracer ; 
        OEngine*         m_engine ; 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
@@ -331,6 +333,7 @@ App::App(const char* prefix, const char* logname, const char* loglevel)
       m_olib(NULL),
       m_oframe(NULL),
       m_orenderer(NULL),
+      m_otracer(NULL),
       m_engine(NULL),
       m_bnd(NULL),
       m_pho(NULL),
@@ -1086,7 +1089,7 @@ void App::prepareEngine()
     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
-    m_ogeo = new OGeo(context, m_ggeo, builder, traverser);
+    m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
 
     std::string islice = m_fcfg->getISlice() ;;
     if(!islice.empty())
@@ -1105,6 +1108,8 @@ void App::prepareEngine()
     context["output_buffer"]->set( m_oframe->getOutputBuffer() );
 
     m_orenderer = new ORenderer(m_oframe, m_scene->getShaderDir(), m_scene->getShaderInclPath());
+
+    m_otracer = new OTracer(m_ocontext, m_composition);
 
     m_engine = new OEngine(m_ocontext, m_ocontext->getTop(), mode) ;       
 
@@ -1513,8 +1518,8 @@ void App::render()
     if(m_interactor->getOptiXMode()>0 && m_engine)
     { 
         unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
-        m_engine->setResolutionScale(scale) ;
-        m_engine->trace();
+        m_otracer->setResolutionScale(scale) ;
+        m_otracer->trace();
         LOG(info) << m_ogeo->description("App::render ogeo");
 
         m_orenderer->render();
@@ -1597,9 +1602,9 @@ void App::cleanup()
 {
 
 #ifdef OPTIX
-    if(m_engine)
+    if(m_ocontext)
     {
-        m_engine->cleanUp();
+        m_ocontext->cleanUp();
     }
 #endif
 #ifdef NPYSERVER

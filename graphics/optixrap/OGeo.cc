@@ -11,7 +11,8 @@
 #include <optix_world.h>
 
 // optixrap-
-#include "RayTraceConfig.hh"
+#include "OContext.hh"
+#include "OConfig.hh"
 #include "OEngine.hh"
 
 #include "GGeo.hh"
@@ -25,7 +26,7 @@
 #include "stringutil.hpp"
 
 
-#include "RayTraceConfig.hh"
+#include "OConfig.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -128,9 +129,9 @@ const char* OGeo::description(const char* msg)
 
 void OGeo::init()
 {
+    m_context = m_ocontext->getContext();
     m_geometry_group = m_context->createGeometryGroup();
     m_repeated_group = m_context->createGroup();
-    m_cfg = RayTraceConfig::makeInstance(m_context);
 }
 
 void OGeo::setTop(optix::Group top)
@@ -378,8 +379,8 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
 optix::Material OGeo::makeMaterial()
 {
     optix::Material material = m_context->createMaterial();
-    material->setClosestHitProgram(OContext::e_radiance_ray, m_cfg->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
-    material->setClosestHitProgram(OContext::e_propagate_ray, m_cfg->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
+    material->setClosestHitProgram(OContext::e_radiance_ray, m_ocontext->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
+    material->setClosestHitProgram(OContext::e_propagate_ray, m_ocontext->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
     return material ; 
 }
 
@@ -490,8 +491,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry->setPrimitiveCount( numSolids );
     geometry["primitive_count"]->setUint( numSolids );  // needed GPU side, for instanced offsets 
 
-    geometry->setIntersectionProgram(m_cfg->createProgram("hemi-pmt.cu.ptx", "intersect"));
-    geometry->setBoundingBoxProgram(m_cfg->createProgram("hemi-pmt.cu.ptx", "bounds"));
+    geometry->setIntersectionProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "intersect"));
+    geometry->setBoundingBoxProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "bounds"));
 
 
     optix::Buffer solidBuffer = createInputBuffer<optix::uint4>( solidBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "solidBuffer"); 
@@ -546,7 +547,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     //
 
     optix::Geometry geometry = m_context->createGeometry();
-    RayTraceConfig* cfg = RayTraceConfig::getInstance();
+    OConfig* cfg = OConfig::getInstance();
     geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
     geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
 
@@ -627,13 +628,13 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    unsigned int bit = buf->getNumItems() ; 
    unsigned int nit = bit/fold ; 
    unsigned int nel = buf->getNumElements();
-   unsigned int mul = RayTraceConfig::getMultiplicity(format) ;
+   unsigned int mul = OConfig::getMultiplicity(format) ;
 
    int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
    LOG(info)<<"OGeo::createInputBuffer"
-            << " fmt " << std::setw(20) << RayTraceConfig::getFormatName(format)
+            << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes
             << " bit " << std::setw(7) << bit 

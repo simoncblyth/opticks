@@ -1,4 +1,4 @@
-#include "RayTraceConfig.hh"
+#include "OConfig.hh"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -11,35 +11,35 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-RayTraceConfig* RayTraceConfig::g_instance = NULL ;  
-RayTraceConfig* RayTraceConfig::getInstance()
+OConfig* OConfig::g_instance = NULL ;  
+OConfig* OConfig::getInstance()
 {
    return g_instance ; 
 }
 
-RayTraceConfig* RayTraceConfig::makeInstance(optix::Context context)
+OConfig* OConfig::makeInstance(optix::Context context)
 {
    if(!g_instance)
    {  
-      g_instance = new RayTraceConfig(context);
+      g_instance = new OConfig(context);
    }
    return g_instance ; 
 }
 
 
 /*
-const char* RayTraceConfig::SrcDir()
+const char* OConfig::SrcDir()
 {
     return getenv("RAYTRACE_SRC_DIR") ;
 } 
 
-const char* RayTraceConfig::PtxDir()
+const char* OConfig::PtxDir()
 {
     return getenv("RAYTRACE_PTX_DIR") ;
 } 
 */
 
-const char* RayTraceConfig::RngDir()
+const char* OConfig::RngDir()
 {
     //return getenv("RAYTRACE_RNG_DIR") ;
     return RNGDIR ; 
@@ -47,7 +47,7 @@ const char* RayTraceConfig::RngDir()
 
 
 
-void RayTraceConfig::Print(const char* msg)
+void OConfig::Print(const char* msg)
 {
     printf("%s \n", msg);
 /*
@@ -57,28 +57,28 @@ void RayTraceConfig::Print(const char* msg)
 }
 
 
-RayTraceConfig::RayTraceConfig(optix::Context context )
+OConfig::OConfig(optix::Context context )
         : 
         m_context(context)
 {
-   // LOG(debug) << "RayTraceConfig::RayTraceConfig ptxdir " << PtxDir() << " target " <<  target ;
+   // LOG(debug) << "OConfig::OConfig ptxdir " << PtxDir() << " target " <<  target ;
    // m_target = strdup(target);
 }
 
-RayTraceConfig::~RayTraceConfig(void)
+OConfig::~OConfig(void)
 {
 }
 
 
 
-optix::Program RayTraceConfig::createProgram(const char* filename, const char* progname )
+optix::Program OConfig::createProgram(const char* filename, const char* progname )
 {
   std::string path = ptxpath(filename); 
   std::string key = path + ":" + progname ; 
 
   if(m_programs.find(key) == m_programs.end())
   { 
-       LOG(debug) << "RayTraceConfig::createProgram " << key ;
+       LOG(debug) << "OConfig::createProgram " << key ;
        optix::Program program = m_context->createProgramFromPTXFile( path.c_str(), progname ); 
        m_programs[key] = program ; 
   } 
@@ -89,19 +89,19 @@ optix::Program RayTraceConfig::createProgram(const char* filename, const char* p
   return m_programs[key];
 }
 
-void RayTraceConfig::setRayGenerationProgram( unsigned int index , const char* filename, const char* progname )
+void OConfig::setRayGenerationProgram( unsigned int index , const char* filename, const char* progname )
 {
     optix::Program program = createProgram(filename, progname);
     m_context->setRayGenerationProgram( index, program ); 
 }
 
-void RayTraceConfig::setExceptionProgram( unsigned int index , const char* filename, const char* progname )
+void OConfig::setExceptionProgram( unsigned int index , const char* filename, const char* progname )
 {
     optix::Program program = createProgram(filename, progname);
     m_context->setExceptionProgram( index, program ); 
 }
 
-void RayTraceConfig::setMissProgram( unsigned int index , const char* filename, const char* progname )
+void OConfig::setMissProgram( unsigned int index , const char* filename, const char* progname )
 {
     optix::Program program = createProgram(filename, progname);
     m_context->setMissProgram( index, program ); 
@@ -110,7 +110,7 @@ void RayTraceConfig::setMissProgram( unsigned int index , const char* filename, 
 
 
 
-optix::float3 RayTraceConfig::make_contrast_color( int tag )
+optix::float3 OConfig::make_contrast_color( int tag )
 {
   static const unsigned char s_Colors[16][3] =
   {
@@ -141,7 +141,7 @@ optix::float3 RayTraceConfig::make_contrast_color( int tag )
 
 
 
-unsigned int RayTraceConfig::getMultiplicity(RTformat format)
+unsigned int OConfig::getMultiplicity(RTformat format)
 {
    unsigned int mul(0) ;
    switch(format)
@@ -193,7 +193,7 @@ unsigned int RayTraceConfig::getMultiplicity(RTformat format)
 
 
 
-const char* RayTraceConfig::getFormatName(RTformat format)
+const char* OConfig::getFormatName(RTformat format)
 {
    const char* name = NULL ; 
    switch(format)
@@ -245,45 +245,45 @@ const char* RayTraceConfig::getFormatName(RTformat format)
 
 
 
-   const char* RayTraceConfig::_RT_FORMAT_UNKNOWN = "UNKNOWN" ;
+   const char* OConfig::_RT_FORMAT_UNKNOWN = "UNKNOWN" ;
 
-   const char* RayTraceConfig::_RT_FORMAT_FLOAT = "FLOAT" ;
-   const char* RayTraceConfig::_RT_FORMAT_FLOAT2 = "FLOAT2" ;
-   const char* RayTraceConfig::_RT_FORMAT_FLOAT3 = "FLOAT3" ;
-   const char* RayTraceConfig::_RT_FORMAT_FLOAT4 = "FLOAT4" ;
+   const char* OConfig::_RT_FORMAT_FLOAT = "FLOAT" ;
+   const char* OConfig::_RT_FORMAT_FLOAT2 = "FLOAT2" ;
+   const char* OConfig::_RT_FORMAT_FLOAT3 = "FLOAT3" ;
+   const char* OConfig::_RT_FORMAT_FLOAT4 = "FLOAT4" ;
 
-   const char* RayTraceConfig::_RT_FORMAT_BYTE = "BYTE" ;
-   const char* RayTraceConfig::_RT_FORMAT_BYTE2 = "BYTE2" ;
-   const char* RayTraceConfig::_RT_FORMAT_BYTE3 = "BYTE3" ;
-   const char* RayTraceConfig::_RT_FORMAT_BYTE4 = "BYTE4" ;
+   const char* OConfig::_RT_FORMAT_BYTE = "BYTE" ;
+   const char* OConfig::_RT_FORMAT_BYTE2 = "BYTE2" ;
+   const char* OConfig::_RT_FORMAT_BYTE3 = "BYTE3" ;
+   const char* OConfig::_RT_FORMAT_BYTE4 = "BYTE4" ;
 
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE = "UNSIGNED_BYTE" ;
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE2 = "UNSIGNED_BYTE2" ;
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE3 = "UNSIGNED_BYTE3" ;
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_BYTE4 = "UNSIGNED_BYTE4" ;
+   const char* OConfig::_RT_FORMAT_UNSIGNED_BYTE = "UNSIGNED_BYTE" ;
+   const char* OConfig::_RT_FORMAT_UNSIGNED_BYTE2 = "UNSIGNED_BYTE2" ;
+   const char* OConfig::_RT_FORMAT_UNSIGNED_BYTE3 = "UNSIGNED_BYTE3" ;
+   const char* OConfig::_RT_FORMAT_UNSIGNED_BYTE4 = "UNSIGNED_BYTE4" ;
 
-   const char* RayTraceConfig::_RT_FORMAT_SHORT = "SHORT" ;
-   const char* RayTraceConfig::_RT_FORMAT_SHORT2 = "SHORT2" ;
-   const char* RayTraceConfig::_RT_FORMAT_SHORT3 = "SHORT3" ;
-   const char* RayTraceConfig::_RT_FORMAT_SHORT4 = "SHORT4" ;
+   const char* OConfig::_RT_FORMAT_SHORT = "SHORT" ;
+   const char* OConfig::_RT_FORMAT_SHORT2 = "SHORT2" ;
+   const char* OConfig::_RT_FORMAT_SHORT3 = "SHORT3" ;
+   const char* OConfig::_RT_FORMAT_SHORT4 = "SHORT4" ;
 
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT = "UNSIGNED_SHORT" ;
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT2 = "UNSIGNED_SHORT2" ;
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT3 = "UNSIGNED_SHORT3";
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_SHORT4 = "UNSIGNED_SHORT4";
+   const char* OConfig::_RT_FORMAT_UNSIGNED_SHORT = "UNSIGNED_SHORT" ;
+   const char* OConfig::_RT_FORMAT_UNSIGNED_SHORT2 = "UNSIGNED_SHORT2" ;
+   const char* OConfig::_RT_FORMAT_UNSIGNED_SHORT3 = "UNSIGNED_SHORT3";
+   const char* OConfig::_RT_FORMAT_UNSIGNED_SHORT4 = "UNSIGNED_SHORT4";
 
-   const char* RayTraceConfig::_RT_FORMAT_INT = "INT" ;
-   const char* RayTraceConfig::_RT_FORMAT_INT2 = "INT2";
-   const char* RayTraceConfig::_RT_FORMAT_INT3 = "INT3";
-   const char* RayTraceConfig::_RT_FORMAT_INT4 = "INT4";
+   const char* OConfig::_RT_FORMAT_INT = "INT" ;
+   const char* OConfig::_RT_FORMAT_INT2 = "INT2";
+   const char* OConfig::_RT_FORMAT_INT3 = "INT3";
+   const char* OConfig::_RT_FORMAT_INT4 = "INT4";
 
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT = "UNSIGNED_INT" ;
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT2 = "UNSIGNED_INT2";
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT3 = "UNSIGNED_INT3";
-   const char* RayTraceConfig::_RT_FORMAT_UNSIGNED_INT4 = "UNSIGNED_INT4";
+   const char* OConfig::_RT_FORMAT_UNSIGNED_INT = "UNSIGNED_INT" ;
+   const char* OConfig::_RT_FORMAT_UNSIGNED_INT2 = "UNSIGNED_INT2";
+   const char* OConfig::_RT_FORMAT_UNSIGNED_INT3 = "UNSIGNED_INT3";
+   const char* OConfig::_RT_FORMAT_UNSIGNED_INT4 = "UNSIGNED_INT4";
 
-   const char* RayTraceConfig::_RT_FORMAT_USER = "USER" ;
-   const char* RayTraceConfig::_RT_FORMAT_BUFFER_ID = "BUFFER_ID" ;
-   const char* RayTraceConfig::_RT_FORMAT_PROGRAM_ID = "PROGRAM_ID" ;
+   const char* OConfig::_RT_FORMAT_USER = "USER" ;
+   const char* OConfig::_RT_FORMAT_BUFFER_ID = "BUFFER_ID" ;
+   const char* OConfig::_RT_FORMAT_PROGRAM_ID = "PROGRAM_ID" ;
 
 

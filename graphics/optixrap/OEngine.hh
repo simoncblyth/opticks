@@ -2,7 +2,7 @@
 
 class Composition ; 
 
-class RayTraceConfig ; 
+class OConfig ; 
 class GGeo ; 
 class GMergedMesh ;
 class GBoundaryLib ;
@@ -71,13 +71,11 @@ class OEngine {
         void setNumpyEvt(NumpyEvt* evt);
     public:
         void setSize(unsigned int width, unsigned int height);
-        void setResolutionScale(unsigned int resolution_scale);
-        unsigned int getResolutionScale();
+
     public:
         void downloadEvt();
     public:
         bool isEnabled();
-        void report(const char* msg="OEngine::report");
     public:
         void setRngMax(unsigned int rng_max);
         void setBounceMax(unsigned int bounce_max);
@@ -94,13 +92,11 @@ class OEngine {
         unsigned int getRngMax();
         unsigned int getBounceMax();
         unsigned int getRecordMax();
-        unsigned int getTraceCount();
         unsigned int getDebugPhoton();
     public:
         void init();
         void trace(); 
         void generate();
-        void cleanUp();
 
     public:
         OBuf* getSequenceBuf();
@@ -116,20 +112,7 @@ class OEngine {
 
         void preprocess();
 
-        void displayFrame(unsigned int texID);
 
-
-    public:
-        RTformat getFormat(NPYBase::Type_t type);
-
-        template<typename T>
-        optix::Buffer   createIOBuffer(NPY<T>* npy, const char* name);
-
-        template <typename T>
-        void upload(optix::Buffer& buffer, NPY<T>* npy);
-
-        template <typename T>
-        void download(optix::Buffer& buffer, NPY<T>* npy);
 
 
     protected:
@@ -160,7 +143,6 @@ class OEngine {
 
         Composition*     m_composition ; 
 
-        RayTraceConfig*  m_config ; 
         GGeo*            m_ggeo ; 
         GMergedMesh*     m_mergedmesh ; 
         GBoundaryLib*    m_boundarylib ; 
@@ -168,11 +150,6 @@ class OEngine {
         OFrame*          m_frame ; 
         OGeo*            m_ogeo ; 
         OBoundaryLib*    m_oboundarylib ; 
-
-        OTimes*          m_trace_times ; 
-        unsigned int     m_trace_count ; 
-        double           m_trace_prep ; 
-        double           m_trace_time ; 
 
         OTimes*          m_prep_times ; 
 
@@ -226,18 +203,12 @@ inline OEngine::OEngine(OContext* ocontext, optix::Group top, Mode_t mode) :
 
     m_composition(NULL),
 
-    m_config(NULL),
     m_ggeo(NULL),
     m_mergedmesh(NULL),
     m_boundarylib(NULL),
     m_frame(NULL),
     m_ogeo(NULL),
     m_oboundarylib(NULL),
-
-    m_trace_times(new OTimes),
-    m_trace_count(0),
-    m_trace_prep(0),
-    m_trace_time(0),
 
     m_prep_times(new OTimes),
 
@@ -383,11 +354,6 @@ inline unsigned int OEngine::getRecordMax()
 
 
 
-inline unsigned int OEngine::getTraceCount()
-{
-    return m_trace_count ; 
-}
-
 
 inline NPY<float>* OEngine::getDomain()
 {
@@ -430,15 +396,6 @@ inline void OEngine::setOverride(unsigned int override)
 inline void OEngine::setDebugPhoton(unsigned int debug_photon)
 {
     m_debug_photon = debug_photon ; 
-}
-
-inline void OEngine::setResolutionScale(unsigned int resolution_scale)
-{
-    m_resolution_scale = resolution_scale ; 
-}
-inline unsigned int OEngine::getResolutionScale()
-{
-    return m_resolution_scale ; 
 }
 
 

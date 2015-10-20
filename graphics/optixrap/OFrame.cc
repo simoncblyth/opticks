@@ -37,6 +37,31 @@ void OFrame::setSize(unsigned int width, unsigned int height)
 }
 
 
+
+/*
+124 void SampleScene::resize(unsigned int width, unsigned int height)
+125 {
+126   try {
+127     Buffer buffer = getOutputBuffer();
+128     buffer->setSize( width, height );
+129 
+130     if(m_use_vbo_buffer)
+131     {
+132       buffer->unregisterGLBuffer();
+133       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->getGLBOId());
+134       glBufferData(GL_PIXEL_UNPACK_BUFFER, buffer->getElementSize() * width * height, 0, GL_STREAM_DRAW);
+135       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+136       buffer->registerGLBuffer();
+137     }
+
+*/
+
+///usr/local/env/cuda/OptiX_370b2_sdk/sutil/MeshScene.cpp
+
+
+
+
+
 // "touch" mode is tied to the active rendering (currently only e_pinhole_camera)
 // as the meaning of x,y mouse/trackpad touches depends on that rendering.  
 // Because of this using a separate "touch" entry point may not so useful ?
