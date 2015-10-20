@@ -32,7 +32,7 @@ rtBuffer<float4>               photon_buffer;
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
 
-#define AUX 1
+//#define AUX 1
 #ifdef AUX
 rtBuffer<short4>                aux_buffer ; 
 #endif

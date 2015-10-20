@@ -20,9 +20,21 @@ class OContext {
                 e_rayTypeCount 
              };
 
+        typedef enum { COMPUTE, INTEROP } Mode_t ;   
+        static const char* COMPUTE_ ; 
+        static const char* INTEROP_ ; 
+
      public:
-            OContext(optix::Context context);
+            OContext(optix::Context context, Mode_t mode);
             void cleanUp();
+     public:
+            const char* getModeName();
+            OContext::Mode_t getMode();
+            bool isCompute();
+            bool isInterop();
+     public:
+            void setDebugPhoton(unsigned int debug_photon);
+            unsigned int getDebugPhoton();
      public:
             void launch(unsigned int entry, unsigned int width, unsigned int height=1, OTimes* times=NULL);
      public:
@@ -54,14 +66,21 @@ class OContext {
             optix::Context    m_context ; 
             optix::Group      m_top ; 
             OConfig*          m_cfg ; 
+            Mode_t            m_mode ; 
+            int               m_debug_photon ; 
 
 };
 
 
-inline OContext::OContext(optix::Context context) : m_context(context)
+inline OContext::OContext(optix::Context context, Mode_t mode) 
+    : 
+    m_context(context),
+    m_mode(mode),
+    m_debug_photon(-1)
 {
     init();
 }
+
 inline optix::Context OContext::getContext()
 {
      return m_context ; 
@@ -80,8 +99,30 @@ inline unsigned int OContext::getNumEntryPoint()
     return e_entryPointCount ; 
 }
 
+inline void OContext::setDebugPhoton(unsigned int debug_photon)
+{
+    m_debug_photon = debug_photon ; 
+}
+inline unsigned int OContext::getDebugPhoton()
+{
+    return m_debug_photon ; 
+}
 
 
+inline OContext::Mode_t OContext::getMode()
+{
+    return m_mode ; 
+}
+
+
+inline bool OContext::isCompute()
+{
+    return m_mode == COMPUTE ; 
+}
+inline bool OContext::isInterop()
+{
+    return m_mode == INTEROP ; 
+}
 
 
 

@@ -77,7 +77,7 @@ void OTracer::trace()
     m_context["resolution_scale"]->setUint( m_resolution_scale ) ;  
 
     if(m_trace_count % 100 == 0) 
-         LOG(info) << "OEngine::trace " 
+         LOG(info) << "OTracer::trace " 
                    << " trace_count " << m_trace_count 
                    << " resolution_scale " << m_resolution_scale 
                    << " size(" <<  width << "," <<  height << ")";

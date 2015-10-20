@@ -15,6 +15,21 @@
 using namespace optix ; 
 
 
+
+const char* OContext::COMPUTE_ = "COMPUTE" ; 
+const char* OContext::INTEROP_ = "INTEROP" ; 
+
+const char* OContext::getModeName()
+{
+    switch(m_mode)
+    {
+       case COMPUTE:return COMPUTE_ ; break ; 
+       case INTEROP:return INTEROP_ ; break ; 
+    }
+    assert(0);
+}
+
+
 void OContext::init()
 {
     m_context->setPrintEnabled(true);
@@ -26,7 +41,15 @@ void OContext::init()
     m_context->setRayTypeCount( getNumRayType() );
     m_top = m_context->createGroup();
 
+    //m_context["instance_index"]->setUint( 0u ); 
+    //m_context["primitive_count"]->setUint( 0u );
+    m_context[ "top_object" ]->set( m_top );
+
     m_cfg = OConfig::makeInstance(m_context);
+
+    LOG(info) << "OContext::init " 
+              << " mode " << getModeName()
+              ; 
 }
 
 

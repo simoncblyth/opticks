@@ -13,7 +13,6 @@
 // optixrap-
 #include "OContext.hh"
 #include "OConfig.hh"
-#include "OEngine.hh"
 
 #include "GGeo.hh"
 #include "GMergedMesh.hh"

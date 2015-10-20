@@ -32,7 +32,7 @@ void ORenderer::init(const char* dir, const char* incl_path)
 
     m_texture_id = m_texture->getTextureId() ;
 
-    LOG(debug) << "OEngine::initRenderer size(" << width << "," << height << ")  texture_id " << m_texture_id ;
+    LOG(debug) << "ORenderer::init size(" << width << "," << height << ")  texture_id " << m_texture_id ;
     m_renderer->upload(m_texture);
 }
 
@@ -70,7 +70,7 @@ void ORenderer::render()
 
     glBindTexture(GL_TEXTURE_2D, 0 );  
 
-    if(m_render_count % 10 == 0) report("OEngine::render"); 
+    if(m_render_count % 10 == 0) report("ORenderer::render"); 
 }
 
 

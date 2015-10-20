@@ -32,9 +32,11 @@ class OTracer {
 };
 
 
-inline OTracer::OTracer(OContext* ocontext, Composition* composition) :
+inline OTracer::OTracer(OContext* ocontext, Composition* composition) 
+    :
     m_ocontext(ocontext),
     m_composition(composition),
+    m_resolution_scale(1),
     m_trace_times(NULL),
     m_trace_count(0),
     m_trace_prep(0),

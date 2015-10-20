@@ -110,12 +110,12 @@ namespace fs = boost::filesystem;
 #include "OContext.hh"
 #include "OFrame.hh"
 #include "ORenderer.hh"
-#include "OEngine.hh"
 #include "OGeo.hh"
 #include "OBoundaryLib.hh"
 #include "OBuf.hh"
 #include "OConfig.hh"
 #include "OTracer.hh"
+#include "OPropagator.hh"
 #include "cu/photon.h"
 
 // optix-
@@ -280,7 +280,7 @@ class App {
        OFrame*          m_oframe ; 
        ORenderer*       m_orenderer ; 
        OTracer*         m_otracer ; 
-       OEngine*         m_engine ; 
+       OPropagator*     m_opropagator ; 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
        HitsNPY*         m_hit ; 
@@ -334,7 +334,7 @@ App::App(const char* prefix, const char* logname, const char* loglevel)
       m_oframe(NULL),
       m_orenderer(NULL),
       m_otracer(NULL),
-      m_engine(NULL),
+      m_opropagator(NULL),
       m_bnd(NULL),
       m_pho(NULL),
       m_hit(NULL),
@@ -1065,19 +1065,19 @@ void App::prepareEngine()
     int  override   = m_fcfg->getOverride();
     int  debugidx   = m_fcfg->getDebugIdx();
 
-    OEngine::Mode_t mode = compute ? OEngine::COMPUTE : OEngine::INTEROP ; 
+    OContext::Mode_t mode = compute ? OContext::COMPUTE : OContext::INTEROP ; 
 
-    const char* idpath = m_cache->getIdPath();
+    // const char* idpath = m_cache->getIdPath();  
+    // accel cache needs reworking, now that have many accel  
 
+    assert( mode == OContext::INTEROP && "COMPUTE mode not operational"); 
 
-    assert( mode == OEngine::INTEROP && "OEngine::COMPUTE mode not operational"); 
-
-
-    // start breaking up the monolith
 
     optix::Context context = optix::Context::create();
 
-    m_ocontext = new OContext(context); 
+    m_ocontext = new OContext(context, mode); 
+
+    m_ocontext->setDebugPhoton(debugidx);
 
     m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
 
@@ -1093,58 +1093,50 @@ void App::prepareEngine()
 
     std::string islice = m_fcfg->getISlice() ;;
     if(!islice.empty())
-    {
         m_ogeo->setSlice(new NSlice(islice.c_str()));
-    }
 
     m_ogeo->setTop(m_ocontext->getTop());
 
     m_ogeo->convert(); 
-
 
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
     m_oframe = new OFrame(context, width, height );
     context["output_buffer"]->set( m_oframe->getOutputBuffer() );
 
+    m_interactor->setTouchable(m_oframe);
+
     m_orenderer = new ORenderer(m_oframe, m_scene->getShaderDir(), m_scene->getShaderInclPath());
 
     m_otracer = new OTracer(m_ocontext, m_composition);
 
-    m_engine = new OEngine(m_ocontext, m_ocontext->getTop(), mode) ;       
-
-    m_engine->setOBoundaryLib(m_olib); 
-    m_engine->setOGeo(m_ogeo); 
-
-    m_interactor->setTouchable(m_oframe);
-
-    m_engine->setFilename(idpath);
-    m_engine->setOverride(override);
-    m_engine->setDebugPhoton(debugidx);
-    m_engine->setGGeo(m_ggeo);   
-    m_engine->setBoundaryLib(m_blib);   
-    m_engine->setNumpyEvt(noevent ? NULL : m_evt);
-    m_engine->setComposition(m_composition);                 
-    m_engine->setEnabled(!nooptix);
-    m_engine->setTrivial(trivial);
 
     if(!noevent)
     {
-        m_engine->setBounceMax(m_fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
-        m_engine->setRecordMax(m_evt->getMaxRec());       // 1:to minimize without breaking machinery 
+        m_opropagator = new OPropagator(m_ocontext, m_composition);
+
+        m_opropagator->setBounceMax(m_fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
+        m_opropagator->setRecordMax(m_evt->getMaxRec());       // 1:to minimize without breaking machinery 
+
+        m_opropagator->setNumpyEvt(m_evt);
+
+        m_opropagator->setTrivial(trivial);
+        m_opropagator->setOverride(override);
 
         int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);   // TODO: avoid envvar 
-
         assert(rng_max >= 1e6); 
-        m_engine->setRngMax(rng_max);
 
-        m_parameters->add<unsigned int>("RngMax",    m_engine->getRngMax() );
-        m_parameters->add<unsigned int>("BounceMax", m_engine->getBounceMax() );
-        m_parameters->add<unsigned int>("RecordMax", m_engine->getRecordMax() );
+        m_opropagator->setRngMax(rng_max);
+
+        m_parameters->add<unsigned int>("RngMax",    m_opropagator->getRngMax() );
+        m_parameters->add<unsigned int>("BounceMax", m_opropagator->getBounceMax() );
+        m_parameters->add<unsigned int>("RecordMax", m_opropagator->getRecordMax() );
+
+        m_opropagator->initRng();
+        m_opropagator->initEvent();
     }
 
-    LOG(info)<< " ******************* main.OptiXEngine::init creating OptiX context, when enabled *********************** " ;
-    m_engine->init();  
+
     LOG(info) << m_ogeo->description("App::prepareEngine ogeo");
 
 
@@ -1163,7 +1155,9 @@ void App::propagate()
     }
 
     LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
-    m_engine->generate();     
+
+    m_opropagator->propagate();     
+
     (*m_timer)("propagate"); 
 }
 
@@ -1218,7 +1212,7 @@ void App::indexSequence()
 {
     if(!m_evt) return ; 
 
-    OBuf* seq = m_engine->getSequenceBuf();
+    OBuf* seq = m_opropagator->getSequenceBuf();
 
     // NB hostside allocation deferred for these
     NPY<unsigned char>* phosel_data = m_evt->getPhoselData(); 
@@ -1305,7 +1299,7 @@ void App::indexBoundaries()
 {
     if(!m_evt) return ; 
 
-    OBuf* pho = m_engine->getPhotonBuf();
+    OBuf* pho = m_opropagator->getPhotonBuf();
 
 
     pho->setHexDump(false);
@@ -1432,7 +1426,7 @@ void App::indexEvtOld()
     {
         m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
         m_rec->setTypes(m_types);
-        m_rec->setDomains((NPY<float>*)m_engine->getDomain());
+        m_rec->setDomains((NPY<float>*)m_opropagator->getDomain());
 
         if(m_pho)
         {
@@ -1515,7 +1509,7 @@ void App::render()
     m_frame->clear();
 
 #ifdef OPTIX
-    if(m_interactor->getOptiXMode()>0 && m_engine)
+    if(m_interactor->getOptiXMode()>0 && m_otracer && m_orenderer)
     { 
         unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
         m_otracer->setResolutionScale(scale) ;
@@ -1523,7 +1517,6 @@ void App::render()
         LOG(info) << m_ogeo->description("App::render ogeo");
 
         m_orenderer->render();
-        //m_engine->report();  // trace time dominates 
     }
     else
 #endif

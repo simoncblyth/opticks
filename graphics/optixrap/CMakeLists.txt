@@ -35,7 +35,6 @@ endif ()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-private-field")
 
 
-# OEngine rendering forces to depend on these
 find_package(Boost REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
@@ -105,7 +104,6 @@ optixthrust_add_library( ${name}
        OptiXUtil.cc
        OContext.cc
        OTimes.cc
-       OEngine.cc
        OGeo.cc
        OFrame.cc
        ORenderer.cc
@@ -113,6 +111,7 @@ optixthrust_add_library( ${name}
        OConfig.cc
        OAccel.cc
        OTracer.cc
+       OPropagator.cc
 
        cu/pinhole_camera.cu
        cu/constantbg.cu
@@ -151,7 +150,6 @@ set(hdrs
   OptiXUtil.hh
   OContext.hh
   OTimes.hh
-  OEngine.hh
   OGeo.hh
   OFrame.hh
   ORenderer.hh
@@ -159,6 +157,7 @@ set(hdrs
   OConfig.hh
   OAccel.hh
   OTracer.hh
+  OPropagator.hh
   define.h
 
   OBuf.hh

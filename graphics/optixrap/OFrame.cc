@@ -113,7 +113,7 @@ void OFrame::associate_PBO_to_Texture(unsigned int texId)
 
 void OFrame::push_PBO_to_Texture(unsigned int texId)
 {
-    //printf("OEngine::push_PBO_to_Texture texId %u \n", texId);
+    //printf("OFrame::push_PBO_to_Texture texId %u \n", texId);
    // see  GLUTDisplay::displayFrame() 
 
     m_push_count += 1 ; 
@@ -158,19 +158,19 @@ void OFrame::push_PBO_to_Texture(unsigned int texId)
     switch(buffer_format) 
     {   //               target   miplevl  internalFormat                     border  format   type           data  
         case RT_FORMAT_UNSIGNED_BYTE4:
-            //printf("OEngine::push_PBO_to_Texture RT_FORMAT_UNSIGNED_BYTE4 tex:%d \n", texId);
+            //printf("OFrame::push_PBO_to_Texture RT_FORMAT_UNSIGNED_BYTE4 tex:%d \n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, buffer_width, buffer_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
             break ; 
         case RT_FORMAT_FLOAT4:
-            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT4 tex:%d\n", texId);
+            printf("OFrame::push_PBO_to_Texture RT_FORMAT_FLOAT4 tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, buffer_width, buffer_height, 0, GL_RGBA, GL_FLOAT, 0);
             break;
         case RT_FORMAT_FLOAT3:
-            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT3 tex:%d\n", texId);
+            printf("OFrame::push_PBO_to_Texture RT_FORMAT_FLOAT3 tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F_ARB, buffer_width, buffer_height, 0, GL_RGB, GL_FLOAT, 0);
             break;
         case RT_FORMAT_FLOAT:
-            printf("OEngine::push_PBO_to_Texture RT_FORMAT_FLOAT tex:%d\n", texId);
+            printf("OFrame::push_PBO_to_Texture RT_FORMAT_FLOAT tex:%d\n", texId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE32F_ARB, buffer_width, buffer_height, 0, GL_LUMINANCE, GL_FLOAT, 0);
             break;
         default:
