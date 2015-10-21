@@ -73,7 +73,8 @@ find_package(Bregex REQUIRED)
 find_package(ThrustRap REQUIRED)
 
 
-include_directories(
+
+set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
@@ -101,7 +102,7 @@ include_directories(
 
 
 
-add_definitions(
+set(DEFINITIONS
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
    ${OGLRap_DEFINITIONS}
@@ -117,6 +118,8 @@ add_definitions(
    ${Bregex_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
 )
+
+
 
 set(LIBRARIES 
 
@@ -150,10 +153,26 @@ set(LIBRARIES
       crypto 
 )
 
+
+include_directories(${INCLUDE_DIRS})
+add_definitions(${DEFINITIONS})
+
+add_library(${name}Lib SHARED
+              App.cc 
+)
+
+SET(hdrs 
+              App.hh
+)
+
+target_link_libraries( ${name}Lib ${LIBRARIES})
+
 add_executable( ${name} main.cc ) 
 
-target_link_libraries( ${name} ${LIBRARIES} )
+target_link_libraries( ${name} ${LIBRARIES} ${name}Lib )
 
-install(TARGETS ${name} DESTINATION bin)
+install(TARGETS ${name}Lib DESTINATION lib)
+install(FILES ${hdrs}      DESTINATION include)
+install(TARGETS ${name}    DESTINATION bin)
 
-#add_subdirectory(tests)
+add_subdirectory(tests)

@@ -546,9 +546,8 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     //
 
     optix::Geometry geometry = m_context->createGeometry();
-    OConfig* cfg = OConfig::getInstance();
-    geometry->setIntersectionProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
-    geometry->setBoundingBoxProgram(cfg->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
+    geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
+    geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
 
     unsigned int numSolids = mm->getNumSolids();
     unsigned int numFaces = mm->getNumFaces();

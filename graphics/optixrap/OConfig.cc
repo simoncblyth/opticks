@@ -11,6 +11,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+
+/*
 OConfig* OConfig::g_instance = NULL ;  
 OConfig* OConfig::getInstance()
 {
@@ -25,23 +27,11 @@ OConfig* OConfig::makeInstance(optix::Context context)
    }
    return g_instance ; 
 }
-
-
-/*
-const char* OConfig::SrcDir()
-{
-    return getenv("RAYTRACE_SRC_DIR") ;
-} 
-
-const char* OConfig::PtxDir()
-{
-    return getenv("RAYTRACE_PTX_DIR") ;
-} 
 */
+
 
 const char* OConfig::RngDir()
 {
-    //return getenv("RAYTRACE_RNG_DIR") ;
     return RNGDIR ; 
 } 
 
@@ -50,26 +40,9 @@ const char* OConfig::RngDir()
 void OConfig::Print(const char* msg)
 {
     printf("%s \n", msg);
-/*
-    printf("PtxDir %s \n", PtxDir() );
-    printf("RngDir %s \n", RngDir() );
-*/
 }
 
-
-OConfig::OConfig(optix::Context context )
-        : 
-        m_context(context)
-{
-   // LOG(debug) << "OConfig::OConfig ptxdir " << PtxDir() << " target " <<  target ;
-   // m_target = strdup(target);
-}
-
-OConfig::~OConfig(void)
-{
-}
-
-
+      
 
 optix::Program OConfig::createProgram(const char* filename, const char* progname )
 {
@@ -89,23 +62,87 @@ optix::Program OConfig::createProgram(const char* filename, const char* progname
   return m_programs[key];
 }
 
-void OConfig::setRayGenerationProgram( unsigned int index , const char* filename, const char* progname )
+
+
+void OConfig::setRayGenerationProgram( unsigned int index , const char* filename, const char* progname, bool defer)
 {
-    optix::Program program = createProgram(filename, progname);
-    m_context->setRayGenerationProgram( index, program ); 
+    OProg* prog = new OProg('R', index, filename, progname);
+    addProg(prog, defer);
+}
+void OConfig::setExceptionProgram( unsigned int index , const char* filename, const char* progname, bool defer)
+{
+    OProg* prog = new OProg('E', index, filename, progname);
+    addProg(prog, defer);
+}
+void OConfig::setMissProgram( unsigned int index , const char* filename, const char* progname, bool defer)
+{
+    OProg* prog = new OProg('M', index, filename, progname);
+    addProg(prog, defer);
 }
 
-void OConfig::setExceptionProgram( unsigned int index , const char* filename, const char* progname )
+void OConfig::addProg(OProg* prog, bool defer)
 {
-    optix::Program program = createProgram(filename, progname);
-    m_context->setExceptionProgram( index, program ); 
+    int index = prog->index ; 
+    if(index > m_index_max) m_index_max = index ;
+
+    LOG(info) << "OConfig::addProg"
+              << " desc " << prog->description()
+              << " index " << index 
+              << " m_index_max " << m_index_max 
+              ;
+
+    m_progs.push_back(prog);
+    if(!defer)
+        apply(prog);
+}
+    
+unsigned int OConfig::getNumEntryPoint()
+{
+    return m_index_max == -1 ? 0 : m_index_max + 1 ;  
 }
 
-void OConfig::setMissProgram( unsigned int index , const char* filename, const char* progname )
+void OConfig::apply(OProg* prog)
 {
-    optix::Program program = createProgram(filename, progname);
-    m_context->setMissProgram( index, program ); 
+    unsigned int index = prog->index ; 
+    char type = prog->type ; 
+    optix::Program program = createProgram(prog->filename, prog->progname);
+    switch(type)
+    {
+        case 'R':
+            m_context->setRayGenerationProgram( index, program ); 
+            break;
+        case 'E':
+            m_context->setExceptionProgram( index, program ); 
+            break;
+        case 'M':
+            m_context->setMissProgram( index, program ); 
+            break;
+    }  
 }
+
+void OConfig::apply()
+{
+    for(unsigned int i=0 ; i < m_progs.size() ; i++)
+    {
+         OProg* prog = m_progs[i];
+         apply(prog);
+    }
+}
+
+
+void OConfig::dump(const char* msg)
+{
+    LOG(info) << msg 
+              << " m_index_max " << m_index_max 
+              ;
+    for(unsigned int i=0 ; i < m_progs.size() ; i++)
+    {
+         OProg* prog = m_progs[i];
+         printf("%s\n", prog->description() );
+    }
+}
+
+
 
 
 

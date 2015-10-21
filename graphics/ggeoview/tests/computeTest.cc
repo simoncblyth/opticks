@@ -1,69 +1,18 @@
-
-// oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
-#include "Frame.hh"
-#include "Composition.hh"
-#include "FrameCfg.hh"
-// these are here just for commandline handling
-//  TODO: move commandline handling out of oglrap- into npy-/ggeoview- ? 
-
-
-// npy-
-#include "NPY.hpp"
-#include "G4StepNPY.hpp"
-#include "NumpyEvt.hpp"
-#include "Types.hpp"
-#include "Lookup.hpp"
-#include "Timer.hpp"
-#include "Parameters.hpp"
-#include "Times.hpp"
-#include "Report.hpp"
-#include "stringutil.hpp"
-
-// ggeo-
-#include "GGeo.hh"
-#include "GLoader.hh"
-#include "GCache.hh"
-#include "GMergedMesh.hh" 
-class GBoundaryLib ; 
-
-
-
-// assimpwrap-
-#include "AssimpGGeo.hh"
-
-// optixrap-
-#include "OEngine.hh"
-#include "RayTraceConfig.hh"
-
-
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/trivial.hpp>
-#include "boost/log/utility/setup.hpp"
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
-void logging_init()
-{
-   // see blogg-
-    boost::log::core::get()->set_filter
-    (
-        boost::log::trivial::severity >= boost::log::trivial::info
-    );
-
-    boost::log::add_console_log(
-        std::cerr, 
-        boost::log::keywords::format = "[%TimeStamp%]: %Message%",
-        boost::log::keywords::auto_flush = true
-    );  
-
-    boost::log::add_common_attributes();
-}
-
+#include "App.hh"
+#include <cassert>
 
 int main(int argc, char** argv)
 {
+    //App app("GGEOVIEW_", argv, argv );
+
+    assert(0) ; // needs drastic reworking for new architecture 
+
+
+    return 0 ; 
+}
+
+
+/*
     Parameters p ; 
     Timer t ; 
     t.setVerbose(true);
@@ -171,6 +120,7 @@ int main(int argc, char** argv)
     evt.setGenstepData(npy); 
 
 
+
     OEngine engine(OEngine::COMPUTE ) ;       
     engine.setFilename(idpath);
     engine.setMergedMesh(mm);   
@@ -255,5 +205,6 @@ int main(int argc, char** argv)
     r.save(rdir, Report::name(typ, tag).c_str());  // with timestamp prefix
 
 }
+*/
 
 

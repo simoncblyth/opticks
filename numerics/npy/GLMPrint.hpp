@@ -3,6 +3,7 @@
 #include "glm/fwd.hpp"
 #include <string>
 
+void fdump(float* f, unsigned int n=16, const char* msg="fdump");
 
 std::string format(int i);
 std::string format(float f);

@@ -20,9 +20,11 @@ fi
 
 
 if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
-   export GGEOVIEW_BINARY=$(ggeoview-compute-bin)
+   export GGEOVIEW_BINARY=$(ggeoview-bindir)/computeTest
 elif [ "${cmdline/--loader}" != "${cmdline}" ]; then
-   export GGEOVIEW_BINARY=$(ggeoview-loader-bin)
+   export GGEOVIEW_BINARY=$(ggeoview-bindir)/GLoaderTest
+elif [ "${cmdline/--tracer}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeoview-bindir)/OTracerTest
 elif [ "${cmdline/--blib}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibTest)
 elif [ "${cmdline/--mblib}" != "${cmdline}" ]; then

@@ -32,20 +32,21 @@ const char* OContext::getModeName()
 
 void OContext::init()
 {
+    m_cfg = new OConfig(m_context);
+
+
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
     //m_context->setPrintLaunchIndex(0,0,0);
     m_context->setStackSize( 2180 ); // TODO: make externally configurable, and explore performance implications
+    m_context->setRayTypeCount( getNumRayType() );   // more static than entry type count
 
-    m_context->setEntryPointCount( getNumEntryPoint() );  
-    m_context->setRayTypeCount( getNumRayType() );
     m_top = m_context->createGroup();
 
     //m_context["instance_index"]->setUint( 0u ); 
     //m_context["primitive_count"]->setUint( 0u );
     m_context[ "top_object" ]->set( m_top );
 
-    m_cfg = OConfig::makeInstance(m_context);
 
     LOG(info) << "OContext::init " 
               << " mode " << getModeName()
@@ -66,24 +67,56 @@ optix::Program OContext::createProgram(const char* filename, const char* prognam
 {
     return m_cfg->createProgram(filename, progname);
 }
+
 void OContext::setRayGenerationProgram( unsigned int index , const char* filename, const char* progname )
 {
-    m_cfg->setRayGenerationProgram(index, filename, progname);
+    m_cfg->setRayGenerationProgram(index, filename, progname, true);
 }
 void OContext::setExceptionProgram( unsigned int index , const char* filename, const char* progname )
 {
-    m_cfg->setExceptionProgram(index, filename, progname);
+    m_cfg->setExceptionProgram(index, filename, progname, true);
 }
 void OContext::setMissProgram( unsigned int index , const char* filename, const char* progname )
 {
-    m_cfg->setMissProgram(index, filename, progname);
+    m_cfg->setMissProgram(index, filename, progname, true);
 }
- 
+
+
+void OContext::close()
+{
+    if(m_closed) return ; 
+
+    m_closed = true ; 
+
+    unsigned int num = m_cfg->getNumEntryPoint() ;
+
+    LOG(info) << "OContext::close numEntryPoint " << num ; 
+
+    m_context->setEntryPointCount( num );
+  
+    m_cfg->dump("OContext::close");
+
+    m_cfg->apply();
+}
+
+
+void OContext::dump(const char* msg)
+{
+    m_cfg->dump(msg);
+}
+unsigned int OContext::getNumEntryPoint()
+{
+    return m_cfg->getNumEntryPoint();
+}
+
+
 
 
 
 void OContext::launch(unsigned int entry, unsigned int width, unsigned int height, OTimes* times)
 {
+    if(!m_closed) close();
+
     LOG(info)<< "OContext::launch";
 
     double t0,t1,t2,t3,t4 ; 

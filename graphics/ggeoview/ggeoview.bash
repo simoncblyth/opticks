@@ -1068,6 +1068,9 @@ ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
 ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
 ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
+ggeoview-bindir(){  echo $(ggeoview-idir)/bin ; }
+ggeoview-bin(){ echo ${GGEOVIEW_BINARY:-$(ggeoview-idir)/bin/$(ggeoview-name)} ; }
+
 
 #ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }  gets deleted too often for keeping RNG 
 ggeoview-rng-dir(){ echo $(ggeoview-idir)/cache/rng ; }
@@ -1082,8 +1085,7 @@ ggeoview-cd(){  cd $(ggeoview-sdir); }
 ggeoview-icd(){  cd $(ggeoview-idir); }
 ggeoview-bcd(){  cd $(ggeoview-bdir); }
 ggeoview-name(){ echo GGeoView ; }
-ggeoview-compute-name(){ echo computeTest ; }
-ggeoview-loader-name(){ echo GLoaderTest ; }
+
 ggeoview-edit(){     vi $(ggeoview-sdir)/ggv.sh ; }
 
 ggeoview-wipe(){
@@ -1135,9 +1137,10 @@ ggeoview-install(){
    ggeoview-make install
 }
 
-ggeoview-bin(){ echo ${GGEOVIEW_BINARY:-$(ggeoview-idir)/bin/$(ggeoview-name)} ; }
-ggeoview-compute-bin(){ echo $(ggeoview-idir)/bin/$(ggeoview-compute-name) ; }
-ggeoview-loader-bin(){  echo $(ggeoview-idir)/bin/$(ggeoview-loader-name) ; }
+
+
+
+
 
 ggeoview-accelcache()
 {

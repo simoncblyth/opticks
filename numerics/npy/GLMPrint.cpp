@@ -31,6 +31,21 @@ void assert_same(const char* msg, const glm::vec4& a, const glm::vec4& b)
 }
 
 
+void fdump(float* f, unsigned int n, const char* msg)
+{
+    if(!f) return ;
+
+    printf("%s\n", msg);
+    for(unsigned int i=0 ; i < n ; i++)
+    {   
+        if(i%4 == 0) printf("\n");
+        printf(" %10.4f ", f[i] );
+    }   
+    printf("\n");
+}
+
+
+
 
 void print(const glm::mat4& m, const char* msg)
 {

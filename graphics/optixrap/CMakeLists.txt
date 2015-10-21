@@ -103,6 +103,7 @@ add_definitions(
 optixthrust_add_library( ${name} 
        OptiXUtil.cc
        OContext.cc
+       OProg.cc
        OTimes.cc
        OGeo.cc
        OFrame.cc
@@ -149,12 +150,13 @@ set(cuhdrs
 set(hdrs 
   OptiXUtil.hh
   OContext.hh
+  OConfig.hh
+  OProg.hh
   OTimes.hh
   OGeo.hh
   OFrame.hh
   ORenderer.hh
   OBoundaryLib.hh
-  OConfig.hh
   OAccel.hh
   OTracer.hh
   OPropagator.hh

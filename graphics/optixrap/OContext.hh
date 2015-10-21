@@ -38,10 +38,13 @@ class OContext {
      public:
             void launch(unsigned int entry, unsigned int width, unsigned int height=1, OTimes* times=NULL);
      public:
+            // pass thru to OConfig
             optix::Program createProgram(const char* filename, const char* progname );
             void setRayGenerationProgram( unsigned int index , const char* filename, const char* progname );
             void setExceptionProgram( unsigned int index , const char* filename, const char* progname );
             void setMissProgram( unsigned int index , const char* filename, const char* progname );
+            void dump(const char* msg="OContext::dump");
+            void close();
      public:
             unsigned int      getNumEntryPoint();
             unsigned int      getNumRayType();
@@ -68,6 +71,7 @@ class OContext {
             OConfig*          m_cfg ; 
             Mode_t            m_mode ; 
             int               m_debug_photon ; 
+            bool              m_closed ; 
 
 };
 
@@ -76,7 +80,8 @@ inline OContext::OContext(optix::Context context, Mode_t mode)
     : 
     m_context(context),
     m_mode(mode),
-    m_debug_photon(-1)
+    m_debug_photon(-1),
+    m_closed(false)
 {
     init();
 }
@@ -93,11 +98,7 @@ inline unsigned int OContext::getNumRayType()
 {
     return e_rayTypeCount ;
 }
-inline unsigned int OContext::getNumEntryPoint()
-{
-    //return m_evt ? e_entryPointCount : e_entryPointCount - 1 ; 
-    return e_entryPointCount ; 
-}
+
 
 inline void OContext::setDebugPhoton(unsigned int debug_photon)
 {
