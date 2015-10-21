@@ -33,6 +33,7 @@ class OContext {
             bool isCompute();
             bool isInterop();
      public:
+            void setStackSize(unsigned int stacksize);
             void setDebugPhoton(unsigned int debug_photon);
             unsigned int getDebugPhoton();
      public:

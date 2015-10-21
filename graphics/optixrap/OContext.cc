@@ -30,15 +30,22 @@ const char* OContext::getModeName()
 }
 
 
+void OContext::setStackSize(unsigned int stacksize)
+{
+    LOG(info) << "OContext::setStackSize " << stacksize ;  
+    m_context->setStackSize(stacksize);
+}
+
 void OContext::init()
 {
     m_cfg = new OConfig(m_context);
 
-
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
+    
+    //m_context->setStackSize(2180);   // now set from App::prepareOptiX, can be changed with --stack option
     //m_context->setPrintLaunchIndex(0,0,0);
-    m_context->setStackSize( 2180 ); // TODO: make externally configurable, and explore performance implications
+
     m_context->setRayTypeCount( getNumRayType() );   // more static than entry type count
 
     m_top = m_context->createGroup();
@@ -46,7 +53,6 @@ void OContext::init()
     //m_context["instance_index"]->setUint( 0u ); 
     //m_context["primitive_count"]->setUint( 0u );
     m_context[ "top_object" ]->set( m_top );
-
 
     LOG(info) << "OContext::init " 
               << " mode " << getModeName()

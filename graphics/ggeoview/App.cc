@@ -898,8 +898,11 @@ void App::configureGeometry()
 
 void App::prepareOptiX()
 {
-    bool compute    = m_fcfg->hasOpt("compute"); 
-    int  debugidx   = m_fcfg->getDebugIdx();
+    bool compute  = m_fcfg->hasOpt("compute"); 
+    int  debugidx = m_fcfg->getDebugIdx();
+    int  stack    = m_fcfg->getStack();
+
+    LOG(info) << "App::prepareOptiX stack " << stack ;  
 
     OContext::Mode_t mode = compute ? OContext::COMPUTE : OContext::INTEROP ; 
 
@@ -908,6 +911,8 @@ void App::prepareOptiX()
     optix::Context context = optix::Context::create();
 
     m_ocontext = new OContext(context, mode); 
+
+    m_ocontext->setStackSize(stack);
 
     m_ocontext->setDebugPhoton(debugidx);
 

@@ -19,6 +19,7 @@ if [ "${cmdline/--oac}" != "${cmdline}" ]; then
 fi
 
 
+
 if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeoview-bindir)/computeTest
 elif [ "${cmdline/--loader}" != "${cmdline}" ]; then

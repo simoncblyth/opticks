@@ -5,6 +5,11 @@ ggv-d(){  ggeoview-depinstall ; }
 ggv-vi(){ ggeoview-vi ; }
 ggv-edit(){ ggeoview-edit ; }
 ggv--(){  ggeoview-depinstall ; }
+
+ggv-pmt(){    ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199 $* ; }
+ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
+
+
 ggv-lldb(){ 
    echo use ggv --dbg  in order to setup environment
    #ggeoview-lldb $* ; 

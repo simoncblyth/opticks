@@ -25,12 +25,15 @@ full context (including all those propagate buffers) and full geometry::
    pmt-parts 0:4
 
    ggv --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199
-          # single PMT
+
+   ggv-pmt    # abbreviation for above
+
+   ggv-allpmt --stack $((1024 + 512))      # stack can be reduced a bit with just the tracer
+
 
    ggv --tracer --restrictmesh 1 --analyticmesh 1 
-           # all PMTs
     
-
+   ggv-allpmt 
 
 
 

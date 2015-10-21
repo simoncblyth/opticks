@@ -25,6 +25,7 @@ class FrameCfg : public Cfg {
      int          getModulo(); 
      int          getOverride(); 
      int          getDebugIdx(); 
+     int          getStack(); 
 private:
      void init();
 private:
@@ -48,6 +49,7 @@ private:
      int         m_modulo ; 
      int         m_override ; 
      int         m_debugidx ; 
+     int         m_stack ; 
 };
 
 template <class Listener>
@@ -70,7 +72,8 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_analyticmesh(-1),
        m_modulo(-1),
        m_override(-1),
-       m_debugidx(0)
+       m_debugidx(0),
+       m_stack(2180)
 {   
    init();  
 }
@@ -176,6 +179,12 @@ inline void FrameCfg<Listener>::init()
    snprintf(debugidx,128, "Index of item eg Photon for debugging. Default %d", m_debugidx);
    m_desc.add_options()
        ("debugidx",  boost::program_options::value<int>(&m_debugidx), debugidx );
+
+   char stack[128];
+   snprintf(stack,128, "OptiX stack size, smaller the faster util get overflows. Default %d", m_stack);
+   m_desc.add_options()
+       ("stack",  boost::program_options::value<int>(&m_stack), stack );
+
 
 
    m_desc.add_options()
@@ -376,6 +385,12 @@ template <class Listener>
 inline int FrameCfg<Listener>::getDebugIdx()
 {
     return m_debugidx ; 
+}
+
+template <class Listener>
+inline int FrameCfg<Listener>::getStack()
+{
+    return m_stack ; 
 }
 
 
