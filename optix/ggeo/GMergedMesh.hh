@@ -56,6 +56,9 @@ private:
     unsigned int m_cur_solid ;
     GNode*       m_cur_base ;  
 
+
+
+
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
      
 };

@@ -10,6 +10,8 @@ class Texture ;
 class GBuffer ;
 class Composition ;
 
+struct NSlice ; 
+
 #include "RendererBase.hh"
 
 class Renderer : public RendererBase  {
@@ -45,7 +47,7 @@ class Renderer : public RendererBase  {
       void Print(const char* msg="Renderer::Print");
 
   private:
-      void upload_buffers(bool debug);
+      void upload_buffers(NSlice* slice);
       GLuint upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
 
       bool hasTex(){ return m_has_tex ; }

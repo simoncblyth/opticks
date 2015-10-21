@@ -16,12 +16,21 @@ const char* NSlice::description()
 }
 
 
+unsigned int NSlice::count()
+{
+    unsigned int n = 0 ;
+    for(unsigned int i=low ; i < high ; i+=step ) n+=1 ; 
+    return n ;  
+}
+
+
 NSlice::NSlice(const char* slice, const char* delim)
 {
     // defaults
     low = 0 ;
     high = 1 ; 
     step = 1 ; 
+    _description = 0 ; 
 
     unsigned int i = 0 ;
     char* str = strdup(slice);   

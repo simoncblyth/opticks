@@ -4,6 +4,7 @@
 #include "GVector.hh"
 #include "GMatrix.hh"
 #include "GDrawable.hh"
+struct NSlice ; 
 
 #include <vector>
 #include <string>
@@ -138,11 +139,15 @@ class GMesh : public GDrawable {
       void setIndex(unsigned int index);
       void setName(const char* name);
       void setGeoCode(char geocode);
+      void setSlice(NSlice* slice);
       void setVersion(const char* version);
+
       const char* getName();
       const char* getShortName();
       const char* getVersion();
       char getGeoCode();
+      NSlice* getSlice();
+
 
   private:
       void findShortName(); 
@@ -369,6 +374,7 @@ class GMesh : public GDrawable {
       const char*   m_shortname ; 
       const char*   m_version ; 
       char          m_geocode ; 
+      NSlice*       m_slice ; 
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -709,6 +715,18 @@ inline void GMesh::setGeoCode(char geocode)
 {
     m_geocode = geocode ; 
 }
+inline void GMesh::setSlice(NSlice* slice)
+{
+    m_slice = slice ; 
+}
+inline NSlice* GMesh::getSlice()
+{
+    return m_slice ; 
+}
+
+
+
+
 
 
 

@@ -1,6 +1,11 @@
 #include "GCache.hh"
 #include "GMergedMesh.hh"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 int main(int argc, char** argv)
 {
     GCache gc("GGEOVIEW_");

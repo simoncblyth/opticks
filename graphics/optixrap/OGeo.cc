@@ -144,7 +144,6 @@ void OGeo::convert()
 
     LOG(info) << "OGeo::convert"
               << " nmm " << nmm
-              << ( m_slice ? m_slice->description() : "" ) 
               ;
 
     for(unsigned int i=0 ; i < nmm ; i++)
@@ -171,7 +170,7 @@ void OGeo::convert()
         }
         else
         {
-            optix::Group group = makeRepeatedGroup(mm, m_slice);
+            optix::Group group = makeRepeatedGroup(mm);
             group->setAcceleration( makeAcceleration() );
             m_repeated_group->addChild(group); 
         }
@@ -205,11 +204,13 @@ void OGeo::convert()
 
 
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, NSlice* slice )
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
 {
     GBuffer* itransforms = mm->getITransformsBuffer();
+
+    NSlice* slice = mm->getSlice(); 
     if(!slice) slice = new NSlice(0, itransforms->getNumItems()) ;
-        
+
     unsigned int numTransforms =slice->count();
     assert(itransforms && numTransforms > 0);
 
@@ -223,8 +224,9 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, NSlice* slice )
               << " numTransforms " << numTransforms 
               << " numIdentity " << numIdentity  
               << " numSolids " << numSolids  
-              << " slice: " << slice->description() 
               ; 
+
+    printf("OGeo::makeRepeatedGroup slice %s \n", slice->description() );
 
     float* tptr = (float*)itransforms->getPointer(); 
 

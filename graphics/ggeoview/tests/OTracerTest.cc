@@ -1,4 +1,4 @@
-#include "app.hh"
+#include "App.hh"
 
 int main(int argc, char** argv)
 {
@@ -10,9 +10,9 @@ int main(int argc, char** argv)
     app.loadGeometry();
     if(app.isExit()) exit(EXIT_SUCCESS);
 
-    app.uploadGeometry();
+    app.configureGeometry();
 
-    app.configureOptiXGeometry();
+    app.uploadGeometry();
 
     app.prepareOptiX();
 

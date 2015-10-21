@@ -75,7 +75,7 @@ class App {
   public:
        int config(int argc, char** argv);
   public:
-       void prepareScene();   // creates OpenGL context window
+       void prepareScene();   // creates OpenGL context window and OpenGL renderers loading shaders
   public:
        void loadGeometry();
        void checkGeometry();
@@ -91,7 +91,7 @@ class App {
        void seedPhotonsFromGensteps();
        void initRecords();
   public:
-       void configureOptiXGeometry(); 
+       void configureGeometry(); 
        void prepareOptiX();
        void preparePropagator();
        void propagate();
@@ -217,8 +217,6 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_exit(false)
 {
     init(argc, argv);
-
-
 }
 
 inline GCache* App::getCache()

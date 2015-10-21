@@ -7,6 +7,7 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "NSlice.hpp"
 
 
 #include <glm/glm.hpp>  
@@ -73,26 +74,29 @@ void Renderer::upload(GBBoxMesh* bboxmesh, bool debug)
     m_bboxmesh = bboxmesh ;
     assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_bboxmesh);
-    upload_buffers(debug);
+    NSlice* slice = m_bboxmesh->getSlice();
+    upload_buffers(slice);
 }
 void Renderer::upload(GMergedMesh* geometry, bool debug)
 {
     m_geometry = geometry ;
     assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_geometry);
-    upload_buffers(debug);
+    NSlice* slice = m_geometry->getSlice();
+    upload_buffers(slice);
 }
 void Renderer::upload(Texture* texture, bool debug)
 {
     m_texture = texture ;
     assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
     m_drawable = static_cast<GDrawable*>(m_texture);
-    upload_buffers(debug);
+    NSlice* slice = NULL ; 
+    upload_buffers(slice);
 }
 
 
 
-void Renderer::upload_buffers(bool debug)
+void Renderer::upload_buffers(NSlice* slice)
 {
     // as there are two GL_ARRAY_BUFFER for vertices and colors need
     // to bind them again (despite bound in upload) in order to 
@@ -111,6 +115,8 @@ void Renderer::upload_buffers(bool debug)
     //
     // TODO: adopt the more flexible ViewNPY approach used for event data
     //
+    bool debug = false ; 
+
     assert(m_drawable);
 
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
@@ -126,8 +132,14 @@ void Renderer::upload_buffers(bool debug)
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 
-    GBuffer* ibuf = m_drawable->getITransformsBuffer();
+    GBuffer* ibuf_orig = m_drawable->getITransformsBuffer();
+    GBuffer* ibuf = ibuf_orig ;
     setHasTransforms(ibuf != NULL);
+    if(slice)
+    {
+        LOG(warning) << "Renderer::upload_buffers slicing ibuf with " << slice->description() ;
+        ibuf = ibuf_orig->make_slice(slice); 
+    }
 
     if(debug)
     {

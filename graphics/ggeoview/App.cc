@@ -275,7 +275,6 @@ void App::wiring()
     m_bookmarks->setComposition(m_composition);
     m_bookmarks->setScene(m_scene);
 
-
     m_frame->setInteractor(m_interactor);      
     m_frame->setComposition(m_composition);
     m_frame->setScene(m_scene);
@@ -315,7 +314,6 @@ int App::config(int argc, char** argv)
     if(m_fcfg->hasOpt("size")) m_size = m_frame->getSize() ;
     else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
     else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-
 
 
     m_composition->setSize( m_size );
@@ -368,6 +366,7 @@ void App::prepareScene()
     m_scene->initRenderers();  // reading shader source and creating renderers
 
     m_frame->init();  // creates OpenGL context
+
     m_window = m_frame->getWindow();
 
     m_scene->setComposition(m_composition);     // defer until renderers are setup 
@@ -456,8 +455,6 @@ void App::loadGeometry()
     m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
 
     m_mesh0 = m_ggeo->getMergedMesh(0); 
-    //assert(m_mesh0->getTransformsBuffer() == NULL && "expecting first mesh to be global, not instanced");
-    // global buffers now have transforms too, so cannot use this way to distinguish globals from instanced
 
    
     bool zexplode = m_fcfg->hasOpt("zexplode");
@@ -882,16 +879,20 @@ void App::initRecords()
 }
 
 
-void App::configureOptiXGeometry()
+void App::configureGeometry()
 {
     int restrict_mesh = m_fcfg->getRestrictMesh() ;  
     int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
+    std::string islice = m_fcfg->getISlice() ;;
+    NSlice* slice = !islice.empty() ? new NSlice(islice.c_str()) : NULL ; 
+
     unsigned int nmm = m_ggeo->getNumMergedMesh();
     for(unsigned int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode('K');      
         if(analytic_mesh > -1 && i == analytic_mesh && i > 0) mm->setGeoCode('S');      
+        if(i>0) mm->setSlice(slice);
     }
 }
 
@@ -920,9 +921,6 @@ void App::prepareOptiX()
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
     m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
-
-    std::string islice = m_fcfg->getISlice() ;;
-    if(!islice.empty()) m_ogeo->setSlice(new NSlice(islice.c_str()));
 
     m_ogeo->setTop(m_ocontext->getTop());
 

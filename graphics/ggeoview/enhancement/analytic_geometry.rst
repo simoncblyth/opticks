@@ -16,6 +16,24 @@ a technique to handle union intersections by applying boolean operations
 to intersection segments of the sub volumes. 
 
 
+Just Tracing a single instance
+--------------------------------
+
+Using OTracerTest with the below is much faster than with 
+full context (including all those propagate buffers) and full geometry::
+
+   pmt-parts 0:4
+
+   ggv --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199
+          # single PMT
+
+   ggv --tracer --restrictmesh 1 --analyticmesh 1 
+           # all PMTs
+    
+
+
+
+
 Plumbing check
 ----------------
 

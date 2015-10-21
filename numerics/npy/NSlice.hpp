@@ -23,8 +23,4 @@ inline NSlice::NSlice(unsigned int low, unsigned int high, unsigned int step)
 {
 }
 
-inline unsigned int NSlice::count()
-{
-    return high - low ; 
-}
 
