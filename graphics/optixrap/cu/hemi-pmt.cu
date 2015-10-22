@@ -1,6 +1,7 @@
 // based on /usr/local/env/cuda/OptiX_380_sdk/julia/sphere.cu
 
 #include <optix_world.h>
+#include "quad.h"
 
 using namespace optix;
 
@@ -180,19 +181,32 @@ Ericson, Real Time Collision Detection p196-198
 
 */
 
-static __device__
-void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, const uint4& identity )
+enum
 {
-    float3 position = make_float3( q0 ); 
-    float radius = q0.w;
-    float sizeZ = q1.x ; 
+    ENDCAP_P = 0x1 <<  0,    
+    ENDCAP_Q = 0x1 <<  1
+};    
+ 
 
+static __device__
+void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity )
+{
+    float3 position = make_float3( q0.f ); 
+    float radius = q0.f.w ;
+    float sizeZ = q1.f.x ; 
+    int flags = q1.i.w ; 
+    bool PCAP = flags & ENDCAP_P ; 
+    bool QCAP = flags & ENDCAP_Q ;
+
+    rtPrintf("intersect_ztubs flags %d PCAP %d QCAP %d \n", flags, PCAP, QCAP);
+ 
     float3 m = ray.origin - position ;
     float3 n = ray.direction ; 
     float3 d = make_float3(0.f, 0.f, sizeZ ); 
 
     float rr = radius*radius ; 
     float3 dnorm = normalize(d);
+
 
     float mm = dot(m, m) ; 
     float nn = dot(n, n) ; 
@@ -209,11 +223,11 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
 
     float disc = b*b-a*c;
 
-    // axial ray 
+    // axial ray endcap handling 
     if(fabs(a) < 1e-6f)     
     {
         if(c > 0.f) return ; // ray starts and ends outside cylinder
-        if(md < 0.f)         // ray origin on P side
+        if(md < 0.f && PCAP)         // ray origin on P side
         {
             float t = -mn/nn ;    // P endcap 
             if( rtPotentialIntersection(t) )
@@ -223,7 +237,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 rtReportIntersection(0);
             }
         } 
-        else if(md > dd) // ray origin on Q side 
+        else if(md > dd && QCAP) // ray origin on Q side 
         {
             float t = (nd - mn)/nn ;  // Q endcap
             if( rtPotentialIntersection(t) )
@@ -235,7 +249,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
         }
         else    // md 0:dd, ray origin inside 
         {
-            if( nd > 0.f ) // ray along +d 
+            if( nd > 0.f && PCAP) // ray along +d 
             {
                 float t = -mn/nn ;    // P endcap from inside
                 if( rtPotentialIntersection(t) )
@@ -245,7 +259,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                     rtReportIntersection(0);
                 }
             } 
-            else   // ray along -d
+            else if(QCAP)  // ray along -d
             {
                 float t = (nd - mn)/nn ;  // Q endcap from inside
                 if( rtPotentialIntersection(t) )
@@ -256,7 +270,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 }
             }
         }
-        return ; 
+        return ;   // hmm 
     }
 
     if(disc > 0.0f)  // intersection with the infinite cylinder
@@ -282,7 +296,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 rtReportIntersection(0);
             } 
         } 
-        else if( ad1 < 0.f ) //  intersection outside cylinder on P side
+        else if( ad1 < 0.f && PCAP ) //  intersection outside cylinder on P side
         {
             if( nd <= 0.f ) return ; // ray direction away from endcap
             float t = -md/nd ;   // P endcap 
@@ -297,7 +311,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 }
             } 
         } 
-        else if( ad1 > dd  ) //  intersection outside cylinder on Q side
+        else if( ad1 > dd && QCAP  ) //  intersection outside cylinder on Q side
         {
             if( nd >= 0.f ) return ; // ray direction away from endcap
             float t = (dd-md)/nd ;   // Q endcap 
@@ -331,7 +345,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 rtReportIntersection(0);
             } 
         } 
-        else if( ad2 < 0.f ) //  intersection from inside to P endcap
+        else if( ad2 < 0.f && PCAP ) //  intersection from inside to P endcap
         {
             float t = -md/nd ;   // P endcap 
             float checkr = k + t*(2.f*mn + t*nn) ; // bracket typo in book 2*t*t makes no sense   
@@ -345,7 +359,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
                 }
             } 
         } 
-        else if( ad2 > dd  ) //  intersection from inside to Q endcap
+        else if( ad2 > dd  && QCAP ) //  intersection from inside to Q endcap
         {
             float t = (dd-md)/nd ;   // Q endcap 
             float checkr = k + dd - 2.0f*md + t*(2.f*(mn-nd)+t*nn) ;             
@@ -403,10 +417,10 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
 
 template<bool use_robust_method>
 static __device__
-void intersect_zsphere(const float4& zrg, const float4& q0, const uint4& identity)
+void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
 {
-  float3 center = make_float3(q0);
-  float radius = q0.w;
+  float3 center = make_float3(q0.f);
+  float radius = q0.f.w;
 
   float3 O = ray.origin - center;
   float3 D = ray.direction;
@@ -445,7 +459,7 @@ void intersect_zsphere(const float4& zrg, const float4& q0, const uint4& identit
         }
         float3 P = ray.origin + (root1 + root11)*ray.direction ;  
         bool check_second = true;
-        if( P.z > zrg.x && P.z < zrg.y )
+        if( P.z > q2.f.z && P.z < q3.f.z )
         {
             if( rtPotentialIntersection( root1 + root11 ) ) 
             {
@@ -459,7 +473,7 @@ void intersect_zsphere(const float4& zrg, const float4& q0, const uint4& identit
         {
             float root2 = (-b + sdisc) + (do_refine ? root11 : 0.f);   // unconfirmed change root1 -> root11
             P = ray.origin + root2*ray.direction ;  
-            if( P.z > zrg.x && P.z < zrg.y )
+            if( P.z > q2.f.z && P.z < q3.f.z )
             { 
                 if( rtPotentialIntersection( root2 ) ) 
                 {
@@ -473,10 +487,10 @@ void intersect_zsphere(const float4& zrg, const float4& q0, const uint4& identit
 }
 
 static __device__
-void intersect_aabb(const float4& q2, const float4& q3, const uint4& identity)
+void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
 {
-  const float3 min_ = make_float3(q2.x, q2.y, q2.z); 
-  const float3 max_ = make_float3(q3.x, q3.y, q3.z); 
+  const float3 min_ = make_float3(q2.f.x, q2.f.y, q2.f.z); 
+  const float3 max_ = make_float3(q3.f.x, q3.f.y, q3.f.z); 
 
   float3 t0 = (min_ - ray.origin)/ray.direction;
   float3 t1 = (max_ - ray.origin)/ray.direction;
@@ -506,6 +520,10 @@ void intersect_aabb(const float4& q2, const float4& q3, const uint4& identity)
 }
 
 
+
+
+
+
 RT_PROGRAM void intersect(int primIdx)
 {
   const uint4& solid    = solidBuffer[primIdx]; 
@@ -518,24 +536,23 @@ RT_PROGRAM void intersect(int primIdx)
   {  
       unsigned int partIdx = solid.x + p ;  
 
-      const float4& q0 = partBuffer[4*partIdx+0];  
-      const float4& q1 = partBuffer[4*partIdx+1];  
-      const float4& q2 = partBuffer[4*partIdx+2] ;
-      const float4& q3 = partBuffer[4*partIdx+3]; 
+      quad q0, q1, q2, q3 ; 
 
-      float4 zrange = make_float4( q2.z , q3.z, 0.f, 0.f ) ;
-      int typecode = __float_as_int(q2.w); 
+      q0.f = partBuffer[4*partIdx+0];  
+      q1.f = partBuffer[4*partIdx+1];  
+      q2.f = partBuffer[4*partIdx+2] ;
+      q3.f = partBuffer[4*partIdx+3]; 
 
-      switch(typecode)
+      switch(q2.i.w)
       {
           case 0:
                 intersect_aabb(q2, q3, identity);
                 break ; 
           case 1:
-                intersect_zsphere<true>(zrange, q0, identity);
+                intersect_zsphere<true>(q0,q1,q2,q3,identity);
                 break ; 
           case 2:
-                intersect_ztubs(zrange,q0,q1, identity);
+                intersect_ztubs(q0,q1,q2,q3,identity);
                 break ; 
       }
   }
