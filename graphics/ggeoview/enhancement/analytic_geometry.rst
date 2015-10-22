@@ -16,6 +16,37 @@ a technique to handle union intersections by applying boolean operations
 to intersection segments of the sub volumes. 
 
 
+Face Slicing
+-------------
+
+::
+
+   ggv-pmt --fslice 0:720
+   ggv-pmt --fslice 720:1392
+   ggv-pmt --fslice 1392:2352
+   ggv-pmt --fslice 2352:2832
+   ggv-pmt --fslice 2832:2928
+
+       # selecting faces of single solids, nodeinfo.npy provides the face index ranges 
+
+::
+
+    In [1]: ni = np.load("GMergedMesh/1/nodeinfo.npy")
+
+    In [2]: ni
+    Out[2]: 
+    array([[ 720,  362, 3199, 3155],
+           [ 672,  338, 3200, 3199],
+           [ 960,  482, 3201, 3200],
+           [ 480,  242, 3202, 3200],
+           [  96,   50, 3203, 3200]], dtype=uint32)
+
+    In [3]: np.cumsum(ni[:,0])
+    Out[3]: array([ 720, 1392, 2352, 2832, 2928], dtype=uint64)
+
+
+
+
 Just Tracing a single instance
 --------------------------------
 

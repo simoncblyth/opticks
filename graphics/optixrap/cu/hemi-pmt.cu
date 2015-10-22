@@ -4,16 +4,16 @@
 
 using namespace optix;
 
-rtDeclareVariable(float4,  sphere, , );
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 rtDeclareVariable(unsigned int, instance_index,  ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
+// TODO: instanced analytic identity, using the above and below solid level identity buffer
+
 
 rtBuffer<float4> partBuffer; 
 rtBuffer<uint4>  solidBuffer; 
 rtBuffer<uint4>  identityBuffer; 
-
 
 // attributes communicate to closest hit program,
 // they must be set inbetween rtPotentialIntersection and rtReportIntersection
@@ -21,7 +21,6 @@ rtBuffer<uint4>  identityBuffer;
 rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
-
 
 
 /*
@@ -75,7 +74,7 @@ Ericson, Real Time Collision Detection p196-198
                     |  /     |        |                .
                     | /      |        | 
                     |/       |        |                .
-                    *        |        | 
+                    I        |        | 
                    /|        |        |                .
                   / |        |        | 
                  /  |        |        |               n.d
@@ -95,6 +94,12 @@ Ericson, Real Time Collision Detection p196-198
    A .  .   .  .   .   .   . | .  .  .  .  .  .   .    .    
 
 
+
+    
+     Normal at intersection point I is component of I-P 
+     with the axial component subtracted
+
+        (I-P) - (I-P).(Q-P)
 
 
        v = L(t) - P 
@@ -168,7 +173,6 @@ Ericson, Real Time Collision Detection p196-198
          (m + t n - d).(m + t n - d) < rr 
 
          mm + tt nn + dd  
-
 
 
 
@@ -392,35 +396,7 @@ void intersect_ztubs(const float4& zrg, const float4& q0, const float4& q1, cons
             ------------------
                   radius
 
-
-     Ray-Cylinder
-     ~~~~~~~~~~~~~
-
-         
-          \
-           \
-     +----+-\--+
-     |    |  \ |
-     |    |   \|
-     +----A----P--> normal   
-     |    |   /|\
-     |    |  / | \
-     |    | /  |  \  ray        
-     |    |/   |   \
-     +----C----+    \
-             r 
-         
-     Cylinder position C, axis C-A, intersection with ray at P
-
-    
-     Normal at intersection point is component of P-C 
-     with the axial component subtracted
-
-        (P-C) - (P-C).(A-C)
-
-
-     float3 I = (P - position)/radius ; // cylinder intersection point in cylinder frame and radius units   
-
+ 
 
 
 */
@@ -468,27 +444,28 @@ void intersect_zsphere(const float4& zrg, const float4& q0, const uint4& identit
             }
         }
         float3 P = ray.origin + (root1 + root11)*ray.direction ;  
+        bool check_second = true;
         if( P.z > zrg.x && P.z < zrg.y )
         {
-            bool check_second = true;
             if( rtPotentialIntersection( root1 + root11 ) ) 
             {
                 shading_normal = geometric_normal = (O + (root1 + root11)*D)/radius;
                 instanceIdentity = identity ; 
                 if(rtReportIntersection(0)) check_second = false;
             } 
-            if(check_second) 
-            {
-                float root2 = (-b + sdisc) + (do_refine ? root11 : 0.f);   // unconfirmed change root1 -> root11
-                P = ray.origin + root2*ray.direction ;  
-                if( P.z > zrg.x && P.z < zrg.y )
-                { 
-                    if( rtPotentialIntersection( root2 ) ) 
-                    {
-                        shading_normal = geometric_normal = (O + root2*D)/radius;
-                        instanceIdentity = identity ; 
-                        rtReportIntersection(0);   // material index 0 
-                    }
+        }
+
+        if(check_second) 
+        {
+            float root2 = (-b + sdisc) + (do_refine ? root11 : 0.f);   // unconfirmed change root1 -> root11
+            P = ray.origin + root2*ray.direction ;  
+            if( P.z > zrg.x && P.z < zrg.y )
+            { 
+                if( rtPotentialIntersection( root2 ) ) 
+                {
+                    shading_normal = geometric_normal = -(O + root2*D)/radius; // negating as inside always(?) 
+                    instanceIdentity = identity ; 
+                    rtReportIntersection(0);   // material index 0 
                 }
             }
         }
@@ -528,21 +505,6 @@ void intersect_aabb(const float4& q2, const float4& q3, const uint4& identity)
   }
 }
 
-static __device__
-bool intersect_aabb(const float4& q2, const float4& q3)
-{
-    const float3 min_ = make_float3(q2.x, q2.y, q2.z); 
-    const float3 max_ = make_float3(q3.x, q3.y, q3.z); 
-    float3 t0 = (min_ - ray.origin)/ray.direction;
-    float3 t1 = (max_ - ray.origin)/ray.direction;
-    float3 near = fminf(t0, t1);
-    float3 far = fmaxf(t0, t1);
-    float tmin = fmaxf( near );
-    float tmax = fminf( far );
-    return tmin <= tmax ;
-}
-
-
 
 RT_PROGRAM void intersect(int primIdx)
 {
@@ -573,7 +535,6 @@ RT_PROGRAM void intersect(int primIdx)
                 intersect_zsphere<true>(zrange, q0, identity);
                 break ; 
           case 2:
-                //intersect_aabb(q2, q3, identity);
                 intersect_ztubs(zrange,q0,q1, identity);
                 break ; 
       }

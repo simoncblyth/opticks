@@ -47,7 +47,7 @@ class Renderer : public RendererBase  {
       void Print(const char* msg="Renderer::Print");
 
   private:
-      void upload_buffers(NSlice* slice);
+      void upload_buffers(NSlice* islice, NSlice* fslice);
       GLuint upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
 
       bool hasTex(){ return m_has_tex ; }

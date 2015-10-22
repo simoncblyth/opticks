@@ -4,6 +4,8 @@
 #include <cstring>
 #include <cassert>
 
+#include <iostream>
+#include <iomanip>
 
 #include "numpy.hpp"
 #include "NSlice.hpp"
@@ -148,11 +150,12 @@ GBuffer* GBuffer::make_slice(NSlice* slice)
 
     char* src = (char*)getPointer();
     unsigned int count = slice->count();
-    assert(count <= ni);
 
     LOG(info) << "GBuffer::make_slice from " 
               << ni << " -> " << count 
               << " slice " << slice->description() ;
+
+    assert(count <= ni);
 
     unsigned int numBytes = count*size ; 
     char* dest = new char[numBytes] ;    
@@ -166,32 +169,40 @@ GBuffer* GBuffer::make_slice(NSlice* slice)
 } 
 
 
-void GBuffer::dump(const char* msg, unsigned int nfold)
+
+template<typename T>
+void GBuffer::dump(const char* msg, unsigned int limit)
 {
-    LOG(info) << msg ; 
+    Summary(msg);
 
     unsigned int ni = getNumItems(); 
     unsigned int sz = getItemSize(); 
     unsigned int nk = getNumElements(); 
     char* ptr = (char*)getPointer();
 
-    for(unsigned int i=0 ; i < ni ; i++)
+    for(unsigned int i=0 ; i < std::min(ni, limit) ; i++)
     {
-        float* f = (float*)(ptr + sz*i) ; 
+        T* v = (T*)(ptr + sz*i) ; 
         for(unsigned int k=0 ; k < nk ; k++)
         {   
-            if(k%nfold == 0) printf("\n");
-            if(k==0) printf("(%3u) ", i);
-            printf(" %10.4f ", *(f+k) );
+            if(k%nk == 0) std::cout << std::endl ; 
+
+            if(k==0) std::cout << "(" <<std::setw(3) << i << ") " ;
+            std::cout << " " << std::fixed << std::setprecision(3) << std::setw(10) << *(v+k) << " " ;  
         }   
    }
-   printf("\n");
+   std::cout << std::endl ; 
 }
 
 
 
 
 
+template void GBuffer::dump<int>(const char* , unsigned int );
+template void GBuffer::dump<unsigned int>(const char* , unsigned int);
+template void GBuffer::dump<float>(const char* , unsigned int);
+template void GBuffer::dump<short>(const char* , unsigned int);
+template void GBuffer::dump<unsigned long long>(const char* , unsigned int);
 
 template void GBuffer::save<int>(const char* );
 template void GBuffer::save<unsigned int>(const char* );

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 /*
 eg 10 float3 vertices, where the item is regarded at the float3 
 
@@ -17,8 +19,12 @@ class GBuffer {
     public:
         GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem);
     public:
+        void reshape(unsigned int nelem);
+        // NB reshape just changes interpretation, there is no change to NumBytes or NumElementsTotal
+        //    only NumItems and NumElements are changed (reversibly)
+    public:
         unsigned int getNumBytes();
-        void* getPointer();
+        void*        getPointer();
         unsigned int getItemSize();
         unsigned int getNumElements();
         unsigned int getNumItems();
@@ -27,11 +33,13 @@ class GBuffer {
         bool isEqual(GBuffer* other);
         float fractionDifferent(GBuffer* other);
         void Summary(const char* msg="GBuffer::Summary");
-        void dump(const char* msg="GBuffer::dump", unsigned int nfold=4);
     public:
         GBuffer* make_slice(const char* slice); 
         GBuffer* make_slice(NSlice* slice); 
     public:
+        template<typename T>
+        void dump(const char* msg="GBuffer::dump", unsigned int limit=10);
+
         template<typename T>
         void save(const char* path);
 
@@ -40,7 +48,6 @@ class GBuffer {
 
         template<typename T>
         static GBuffer* load(const char* dir, const char* name);
-
     public:
         // OpenGL related : but not requiring any headers
         void         setBufferId(int buffer_id);
@@ -67,7 +74,8 @@ inline GBuffer::GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsiz
          m_pointer(pointer),   // pointer to the bytes
          m_itemsize(itemsize), // sizeof each item, eg sizeof(gfloat3) = 3*4 = 12
          m_nelem(nelem),       // number of elements for each item, eg 2 or 3 for floats per vertex or 16 for a 4x4 matrix
-         m_buffer_id(-1)       // OpenGL buffer Id, set by Renderer on uploading to GPU 
+         m_buffer_id(-1),       // OpenGL buffer Id, set by Renderer on uploading to GPU 
+         m_buffer_target(0)
 {
 }
 
@@ -96,6 +104,30 @@ inline unsigned int GBuffer::getNumElementsTotal()
 {
     return m_nbytes/m_itemsize*m_nelem ;
 }
+
+inline void GBuffer::reshape(unsigned int nelem)
+{
+    if(nelem == m_nelem) return ; 
+
+    bool up = nelem > m_nelem ; 
+    if(up) 
+    { 
+        // reinterpret to a larger "item" with more elements
+        assert(nelem % m_nelem == 0);
+        unsigned int factor = nelem/m_nelem  ;
+        m_nelem = nelem ;
+        m_itemsize = m_itemsize*factor ; 
+    }
+    else
+    { 
+        // reinterpret to a smaller "item" with less elements  
+        assert(m_nelem % nelem == 0);
+        unsigned int factor = m_nelem/nelem  ;
+        m_nelem = nelem ;
+        m_itemsize = m_itemsize/factor ; 
+    }
+}
+
 
 
 // OpenGL related

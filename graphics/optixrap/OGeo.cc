@@ -208,10 +208,10 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
 {
     GBuffer* itransforms = mm->getITransformsBuffer();
 
-    NSlice* slice = mm->getSlice(); 
-    if(!slice) slice = new NSlice(0, itransforms->getNumItems()) ;
+    NSlice* islice = mm->getInstanceSlice(); 
+    if(!islice) islice = new NSlice(0, itransforms->getNumItems()) ;
 
-    unsigned int numTransforms =slice->count();
+    unsigned int numTransforms = islice->count();
     assert(itransforms && numTransforms > 0);
 
     GBuffer* ibuf = mm->getInstancedIdentityBuffer();
@@ -226,12 +226,12 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
               << " numSolids " << numSolids  
               ; 
 
-    printf("OGeo::makeRepeatedGroup slice %s \n", slice->description() );
+    printf("OGeo::makeRepeatedGroup islice %s \n", islice->description() );
 
     float* tptr = (float*)itransforms->getPointer(); 
 
     optix::Group assembly = m_context->createGroup();
-    assembly->setChildCount(slice->count());
+    assembly->setChildCount(islice->count());
 
     optix::Geometry gmm = makeGeometry(mm);
     optix::Material mat = makeMaterial();
@@ -243,7 +243,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
 
     unsigned int ichild = 0 ; 
 
-    for(unsigned int i=slice->low ; i<slice->high ; i+=slice->step)
+    for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step)
     {
         optix::Transform xform = m_context->createTransform();
         assembly->setChild(ichild, xform);

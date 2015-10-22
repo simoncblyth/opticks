@@ -34,7 +34,12 @@ GBBoxMesh::GBBoxMesh(GMergedMesh* mergedmesh)
       setColor(0.5,0.5,0.5);  
 
       // needed for instanced : but this is stealing 
-     setITransformsBuffer(m_mergedmesh->getITransformsBuffer());
+     setITransformsBuffer(mergedmesh->getITransformsBuffer());
+
+     setInstanceSlice(mergedmesh->getInstanceSlice());
+     //setFaceSlice(mergedmesh->getFaceSlice());
+     setFaceSlice(NULL);   // dont pass along the face slicing
+
 }
 
 

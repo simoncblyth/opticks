@@ -451,7 +451,6 @@ void Scene::uploadGeometry()
 
                 LOG(debug)<< "Scene::uploadGeometry bbox renderer " << m_num_instance_renderer  ;
                 GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
-                bb->setSlice(mm->getSlice());
 
                 m_bbox_mode[m_num_instance_renderer] = true ; 
                 m_bbox_renderer[m_num_instance_renderer]->upload(bb);

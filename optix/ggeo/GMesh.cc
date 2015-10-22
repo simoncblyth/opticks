@@ -97,7 +97,8 @@ GMesh::GMesh(GMesh* other)
      m_identity_buffer(other->getIdentityBuffer()),
      m_iidentity_buffer(other->getInstancedIdentityBuffer()),
      m_geocode(other->getGeoCode()),
-     m_slice(other->getSlice()),
+     m_islice(other->getInstanceSlice()),
+     m_fslice(other->getFaceSlice()),
      GDrawable()
 {
    updateBounds();
@@ -158,7 +159,8 @@ GMesh::GMesh(unsigned int index,
       m_shortname(NULL),
       m_version(NULL),
       m_geocode('T'),
-      m_slice(NULL),
+      m_islice(NULL),
+      m_fslice(NULL),
 
       m_vertices_buffer(NULL),
       m_normals_buffer(NULL),

@@ -79,9 +79,72 @@ Solid buffers in a GMesh (used from GMergedMesh)
 *meshes*
 
 *nodeinfo*
-      contains per-solid nface, nvert allowing solid selection even from 
+      contains per-solid nface, nvert, nodeindex, parent nodeindex
+      nface counts per-solid allowing solid selection even from 
       merged meshes by accessing the correct ranges  
 
+      ::
+
+          In [1]: np.load("nodeinfo.npy")
+          Out[1]: 
+          array([[ 720,  362, 3199, 3155],
+                 [ 672,  338, 3200, 3199],
+                 [ 960,  482, 3201, 3200],
+                 [ 480,  242, 3202, 3200],
+                 [  96,   50, 3203, 3200]], dtype=uint32)
+
+
+*identity*
+      per-solid identity info, nodeIndex, meshIndex, boundaryIndex, sensorSurfaceIndex
+      see GSolid::getIdentity
+       
+      ::
+
+          In [2]: np.load("identity.npy")
+          Out[2]: 
+          array([[3199,   47,   19,    0],
+                 [3200,   46,   20,    0],
+                 [3201,   43,   21,    3],
+                 [3202,   44,    1,    0],
+                 [3203,   45,    1,    0]], dtype=uint32)
+
+
+
+
+
+Indices relation to nodeinfo
+-------------------------------
+
+::
+
+    In [3]: i = np.load("indices.npy")
+
+    In [12]: i.reshape(-1,3)
+    Out[12]: 
+    array([[   0,    1,    2],
+           [   0,    2,    3],
+           [   0,    3,    4],
+           ..., 
+           [1466, 1473, 1468],
+           [1468, 1473, 1470],
+           [1470, 1473, 1425]], dtype=int32)
+
+    In [13]: i.reshape(-1,3).shape
+    Out[13]: (2928, 3)
+
+
+    In [6]: ni = np.load("nodeinfo.npy")
+
+    In [7]: ni
+    Out[7]: 
+    array([[ 720,  362, 3199, 3155],
+           [ 672,  338, 3200, 3199],
+           [ 960,  482, 3201, 3200],
+           [ 480,  242, 3202, 3200],
+           [  96,   50, 3203, 3200]], dtype=uint32)
+
+    In [9]: ni[:,0].sum()
+    Out[9]: 2928
 
 
 */
@@ -139,14 +202,16 @@ class GMesh : public GDrawable {
       void setIndex(unsigned int index);
       void setName(const char* name);
       void setGeoCode(char geocode);
-      void setSlice(NSlice* slice);
+      void setInstanceSlice(NSlice* slice);
+      void setFaceSlice(NSlice* slice);
       void setVersion(const char* version);
 
       const char* getName();
       const char* getShortName();
       const char* getVersion();
       char getGeoCode();
-      NSlice* getSlice();
+      NSlice* getInstanceSlice();
+      NSlice* getFaceSlice();
 
 
   private:
@@ -374,7 +439,8 @@ class GMesh : public GDrawable {
       const char*   m_shortname ; 
       const char*   m_version ; 
       char          m_geocode ; 
-      NSlice*       m_slice ; 
+      NSlice*       m_islice ; 
+      NSlice*       m_fslice ; 
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -715,13 +781,25 @@ inline void GMesh::setGeoCode(char geocode)
 {
     m_geocode = geocode ; 
 }
-inline void GMesh::setSlice(NSlice* slice)
+
+
+inline void GMesh::setInstanceSlice(NSlice* slice)
 {
-    m_slice = slice ; 
+    m_islice = slice ; 
 }
-inline NSlice* GMesh::getSlice()
+inline NSlice* GMesh::getInstanceSlice()
 {
-    return m_slice ; 
+    return m_islice ; 
+}
+
+
+inline void GMesh::setFaceSlice(NSlice* slice)
+{
+    m_fslice = slice ; 
+}
+inline NSlice* GMesh::getFaceSlice()
+{
+    return m_fslice ; 
 }
 
 

@@ -74,29 +74,32 @@ void Renderer::upload(GBBoxMesh* bboxmesh, bool debug)
     m_bboxmesh = bboxmesh ;
     assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_bboxmesh);
-    NSlice* slice = m_bboxmesh->getSlice();
-    upload_buffers(slice);
+    NSlice* islice = m_bboxmesh->getInstanceSlice();
+    NSlice* fslice = m_bboxmesh->getFaceSlice();
+    upload_buffers(islice, fslice);
 }
 void Renderer::upload(GMergedMesh* geometry, bool debug)
 {
     m_geometry = geometry ;
     assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_geometry);
-    NSlice* slice = m_geometry->getSlice();
-    upload_buffers(slice);
+    NSlice* islice = m_geometry->getInstanceSlice();
+    NSlice* fslice = m_geometry->getFaceSlice();
+    upload_buffers(islice, fslice);
 }
 void Renderer::upload(Texture* texture, bool debug)
 {
     m_texture = texture ;
     assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
     m_drawable = static_cast<GDrawable*>(m_texture);
-    NSlice* slice = NULL ; 
-    upload_buffers(slice);
+    NSlice* islice = NULL ; 
+    NSlice* fslice = NULL ; 
+    upload_buffers(islice, fslice);
 }
 
 
 
-void Renderer::upload_buffers(NSlice* slice)
+void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
 {
     // as there are two GL_ARRAY_BUFFER for vertices and colors need
     // to bind them again (despite bound in upload) in order to 
@@ -122,12 +125,36 @@ void Renderer::upload_buffers(NSlice* slice)
     glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
     glBindVertexArray (m_vao);     
 
+
+
+    //  nvert: vertices, normals, colors
     GBuffer* vbuf = m_drawable->getVerticesBuffer();
     GBuffer* nbuf = m_drawable->getNormalsBuffer();
     GBuffer* cbuf = m_drawable->getColorsBuffer();
-    GBuffer* fbuf = m_drawable->getIndicesBuffer();
+
+    assert(vbuf->getNumBytes() == cbuf->getNumBytes());
+    assert(nbuf->getNumBytes() == cbuf->getNumBytes());
+
+    
+    // 3*nface indices
+    GBuffer* fbuf_orig = m_drawable->getIndicesBuffer();
+    GBuffer* fbuf = fbuf_orig ; 
+    if(fslice)
+    {
+        LOG(warning) << "Renderer::upload_buffers face slicing the indices buffer " << fslice->description() ; 
+        unsigned int nelem = fbuf_orig->getNumElements();
+        assert(nelem == 1);
+        fbuf_orig->reshape(3);  // equivalent to NumPy buf.reshape(-1,3)  putting 3 triangle indices into each item 
+        fbuf = fbuf_orig->make_slice(fslice);
+        fbuf_orig->reshape(nelem);   // equivalent to NumPy buf.reshape(-1,1) 
+        fbuf->reshape(nelem);        // sliced buffer adopts shape of source, so reshape this too
+        assert(fbuf->getNumElements() == 1);
+    }
+      
+
 
     printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p fbuf %p \n", vbuf, nbuf, cbuf, fbuf );
+
 
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
@@ -135,19 +162,16 @@ void Renderer::upload_buffers(NSlice* slice)
     GBuffer* ibuf_orig = m_drawable->getITransformsBuffer();
     GBuffer* ibuf = ibuf_orig ;
     setHasTransforms(ibuf != NULL);
-    if(slice)
+    if(islice)
     {
-        LOG(warning) << "Renderer::upload_buffers slicing ibuf with " << slice->description() ;
-        ibuf = ibuf_orig->make_slice(slice); 
+        LOG(warning) << "Renderer::upload_buffers instance slicing ibuf with " << islice->description() ;
+        ibuf = ibuf_orig->make_slice(islice); 
     }
 
     if(debug)
     {
         dump( vbuf->getPointer(),vbuf->getNumBytes(),vbuf->getNumElements()*sizeof(float),0,vbuf->getNumItems() ); 
     }
-
-    assert(vbuf->getNumBytes() == cbuf->getNumBytes());
-    assert(nbuf->getNumBytes() == cbuf->getNumBytes());
 
  
     m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
@@ -174,7 +198,7 @@ void Renderer::upload_buffers(NSlice* slice)
 
 
     m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
-    m_indices_count = fbuf->getNumItems(); // number of indices = faces*3 ?
+    m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
 
     GLboolean normalized = GL_FALSE ; 
     GLsizei stride = 0 ;
