@@ -46,6 +46,69 @@ Face Slicing
 
 
 
+Just Tubs
+----------
+
+Some funny straight lines as rotate around::
+
+   pmt-parts 3:4   # just tubs
+
+   ggv-pmt 
+
+Either a bug or maybe optical illusion due to:
+
+* perspective projection 
+* no depth/inside/outside queues 
+
+Perhaps Z cut happening in wrong frame ? 
+
+TODO:
+
+* get orthographic projection working for OptiX raygen 
+* matplotlib projection plot of points of the mesh 
+
+::
+
+
+
+
+    In [4]: v = np.load("GMergedMesh/1/vertices.npy")
+
+    In [5]: v
+    Out[5]: 
+    array([[   0.   ,    0.   ,  131.   ],
+           [  33.905,    0.   ,  126.536],
+           [  32.75 ,    8.775,  126.536],
+           ..., 
+           [  26.563,   -7.118,    1.5  ],
+           [   0.   ,    0.   ,    1.5  ],
+           [   0.   ,    0.   , -164.5  ]], dtype=float32)
+
+    In [6]: v.shape
+    Out[6]: (1474, 3)
+
+    In [7]: ni[:,1].sum()  ## sum of vertices, it matches as these are fixed meshes with no dupes
+    Out[7]: 1474
+
+
+    In [10]: i = np.load("GMergedMesh/1/indices.npy").reshape(-1,3)
+
+    In [11]: i.shape
+    Out[11]: (2928, 3)
+
+    In [15]: np.unique(i[:720]).min()
+    Out[15]: 0
+
+    In [16]: np.unique(i[:720]).max()
+    Out[16]: 361
+
+    n [12]: ni[:,0].sum()
+    Out[12]: 2928
+
+    In [19]: np.unique(i[:720]).size    # hmm no need for doing indices look up into the vertices, its all contiguous
+    Out[19]: 362
+
+
 
 Just Tracing a single instance
 --------------------------------
@@ -53,7 +116,8 @@ Just Tracing a single instance
 Using OTracerTest with the below is much faster than with 
 full context (including all those propagate buffers) and full geometry::
 
-   pmt-parts 0:4
+   pmt-parts 0:4   # 3sphere + tubs
+
 
    ggv --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199
 
