@@ -14,6 +14,7 @@ class FrameCfg : public Cfg {
      std::string& getMeshVersion();
      std::string& getISlice();
      std::string& getFSlice();
+     std::string& getPrintIndex();
      std::string& getBuilder();
      std::string& getTraverser();
      int          getBounceMax(); 
@@ -39,6 +40,7 @@ private:
      std::string m_meshversion ;
      std::string m_islice ;
      std::string m_fslice ;
+     std::string m_pindex ;
      std::string m_builder ;
      std::string m_traverser  ;
      int         m_bouncemax ; 
@@ -64,6 +66,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_meshversion(""),
        m_islice(""),
        m_fslice(""),
+       m_pindex(""),
        m_builder(""),
        m_traverser(""),
        m_bouncemax(9),     
@@ -208,6 +211,9 @@ inline void FrameCfg<Listener>::init()
    m_desc.add_options()
        ("fslice",        boost::program_options::value<std::string>(&m_fslice), "debug only option for use of partial face geometry, specified by python slice style colon delimited ints " );
 
+   m_desc.add_options()
+       ("pindex",        boost::program_options::value<std::string>(&m_pindex), "debug OptiX launch print index specified by up to three comma delimited ints " );
+
 
    m_desc.add_options()
        ("builder",        boost::program_options::value<std::string>(&m_builder), "OptiX Accel structure builder, CAUTION case sensitive ");
@@ -327,6 +333,14 @@ inline std::string& FrameCfg<Listener>::getFSlice()
 {
     return m_fslice ;
 }
+
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getPrintIndex()
+{
+    return m_pindex ;
+}
+
+
 
 template <class Listener>
 inline std::string& FrameCfg<Listener>::getBuilder()

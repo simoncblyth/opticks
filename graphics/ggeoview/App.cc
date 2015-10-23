@@ -918,6 +918,9 @@ void App::prepareOptiX()
 
     m_ocontext->setStackSize(stack);
 
+    m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
+
+
     m_ocontext->setDebugPhoton(debugidx);
 
     m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());

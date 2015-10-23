@@ -2,6 +2,7 @@
 
 #include <optix_world.h>
 #include "quad.h"
+#include "hemi-pmt.h"
 
 using namespace optix;
 
@@ -10,7 +11,6 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 rtDeclareVariable(unsigned int, instance_index,  ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
 // TODO: instanced analytic identity, using the above and below solid level identity buffer
-
 
 rtBuffer<float4> partBuffer; 
 rtBuffer<uint4>  solidBuffer; 
@@ -190,20 +190,6 @@ enum
 };    
  
 
-enum 
-{
-    HP_PAXI_O,
-    HP_QAXI_O,
-    HP_PAXI_I,
-    HP_QAXI_I,
-    HP_WALL_O,
-    HP_PCAP_O,
-    HP_QCAP_O,
-    HP_WALL_I,
-    HP_PCAP_I,
-    HP_QCAP_I,
-    HP_NUMBER
-};
 
 static __device__
 void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity )
@@ -216,18 +202,22 @@ Position shift below is to match between different cylinder Z origin conventions
 
 */
     float sizeZ = q1.f.x ; 
-    float3 position = make_float3( q0.f.x, q0.f.y, q0.f.z - sizeZ/2.f );
+    float z0 = q0.f.z - sizeZ/2.f ;     
+    float3 position = make_float3( q0.f.x, q0.f.y, z0 );  // 0,0,-169.
+    float clipped_sizeZ = q3.f.z - q2.f.z ;  
  
     float radius = q0.f.w ;
     int flags = q1.i.w ; 
+
     bool PCAP = flags & ENDCAP_P ; 
     bool QCAP = flags & ENDCAP_Q ;
 
+    //rtPrintf("intersect_ztubs position %10.4f %10.4f %10.4f \n", position.x, position.y, position.z );
     //rtPrintf("intersect_ztubs flags %d PCAP %d QCAP %d \n", flags, PCAP, QCAP);
  
     float3 m = ray.origin - position ;
     float3 n = ray.direction ; 
-    float3 d = make_float3(0.f, 0.f, sizeZ ); 
+    float3 d = make_float3(0.f, 0.f, clipped_sizeZ ); 
 
     float rr = radius*radius ; 
     float3 dnorm = normalize(d);
@@ -430,8 +420,6 @@ Position shift below is to match between different cylinder Z origin conventions
                 }
             } 
         }
-
-
 
 
 
@@ -638,7 +626,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
       aabb->include( make_float3(q2), make_float3(q3) );
   } 
 
-/*
   rtPrintf("bounds primIdx %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, 
        result[0],
        result[1],
@@ -647,7 +634,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
        result[4],
        result[5]
      );
-*/
 
 }
 

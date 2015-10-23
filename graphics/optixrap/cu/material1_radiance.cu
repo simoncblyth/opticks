@@ -3,7 +3,6 @@
 
 #include "PerRayData_radiance.h"
 //#include "wavelength_lookup.h"
-#include "color_lookup.h"
 
 //geometric_normal is set by the closest hit intersection program 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, );
@@ -67,6 +66,7 @@ RT_PROGRAM void closest_hit_radiance()
 
 
     prd.result = make_float3( 0.5f*(1.0f-cos_theta) );  // lambertian shader
+    prd.flag   = instanceIdentity.y ;   //  hijacked to become the hemi-pmt intersection code
 
   //prd.result = make_float3( instanceIdentity.x/13000.f ) ;  // nodeIndex 
   //prd.result = make_float3( instanceIdentity.y/250.f ) ;    // meshIndex

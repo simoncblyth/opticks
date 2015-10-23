@@ -1,11 +1,8 @@
 #include <optix_world.h>
 #include "helpers.h"  // make_color
-
-//#include "RayTraceConfigInc.h"
-#include <curand_kernel.h>
-
+#include "color_lookup.h"
+#include "hemi-pmt.h"
 #include "PerRayData_radiance.h"
-
 
 using namespace optix;
 
@@ -35,6 +32,11 @@ rtDeclareVariable(uint2,         touch_index,  , );
 rtDeclareVariable(uint2,         touch_dim,  , );
 rtBuffer<uint4,2>         touch_buffer;
 
+// BGRA
+#define BLUE  make_uchar4(255u,  0u,  0u,255u)
+#define GREEN make_uchar4(  0u,255u,  0u,255u)
+#define RED   make_uchar4(  0u,  0u,255u,255u)
+
 
 RT_PROGRAM void pinhole_camera()
 {
@@ -50,22 +52,15 @@ RT_PROGRAM void pinhole_camera()
   // pixel coordinates -> normalized coordinates  [ -1:1, -1:1 ]
   //
 
+  //color_dump(); 
+
+
   PerRayData_radiance prd;
-  prd.importance = 1.f;
-  //prd.depth = 0;
-  //prd.touch = make_uint4(0,0,0,0) ;
+  prd.flag = 0u ; 
   prd.result = bad_color ;
 
   float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
 
-/*
-  float2 d = touch_mode ?  
-                     make_float2(touch_index) / make_float2(touch_dim) * 2.f - 1.f 
-                   : 
-                     make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f
-                   ;
-*/
-   
   float3 ray_origin = eye;
   float3 ray_direction = normalize(d.x*U + d.y*V + W);   
   optix::Ray ray = optix::make_Ray(ray_origin, ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX);
@@ -92,6 +87,7 @@ RT_PROGRAM void pinhole_camera()
   //
   // unsigned long long id = launch_index.x + launch_dim.x * launch_index.y ; 
 
+
   rtTrace(top_object, ray, prd);
 
 
@@ -101,13 +97,12 @@ RT_PROGRAM void pinhole_camera()
   float pixel_time     = ( t1 - t0 ) * time_view_scale * expected_fps;
   uchar4  color = = make_color( make_float3(  pixel_time ) ); 
 #else
-  uchar4 color = make_color( prd.result );
+  // BGRA
+  uchar4 color = prd.flag == HP_QCAP_O ? RED :  make_color( prd.result );
 
-  //if(touch_mode)
-  //{
-  //    touch_buffer[launch_index] = prd.touch  ;
-  //    //rtPrintf("pinhole_camera.cu::pinhole_camera(touch_mode)  node %d \n", prd.node );
-  //}
+  //if(prd.flag > 0u)
+  //   rtPrintf("prd.flag %u color %u %u %u %u \n", prd.flag, color.x, color.y, color.z, color.w ); 
+
 
 #endif
 

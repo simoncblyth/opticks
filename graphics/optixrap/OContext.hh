@@ -2,6 +2,7 @@
 
 class OConfig ; 
 struct OTimes ; 
+#include <string>
 #include <optixu/optixpp_namespace.h>
 #include "NPY.hpp"
 
@@ -34,6 +35,7 @@ class OContext {
             bool isInterop();
      public:
             void setStackSize(unsigned int stacksize);
+            void setPrintIndex(const std::string& pindex);
             void setDebugPhoton(unsigned int debug_photon);
             unsigned int getDebugPhoton();
      public:

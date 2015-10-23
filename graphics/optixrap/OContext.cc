@@ -6,6 +6,7 @@
 // npy-
 #include "timeutil.hpp"
 #include "NPY.hpp"
+#include "GLMFormat.hpp"
 
 #include <iomanip>
 #include <boost/log/trivial.hpp>
@@ -35,6 +36,21 @@ void OContext::setStackSize(unsigned int stacksize)
     LOG(info) << "OContext::setStackSize " << stacksize ;  
     m_context->setStackSize(stacksize);
 }
+
+void OContext::setPrintIndex(const std::string& pindex)
+{
+    LOG(info) << "OContext::setPrintIndex " << pindex ;  
+    if(!pindex.empty())
+    {
+        glm::ivec3 idx = givec3(pindex);
+        LOG(info) << "OContext::setPrintIndex " 
+                  << pindex
+                  << " idx " << gformat(idx) 
+                   ;  
+        m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
+    }
+}
+
 
 void OContext::init()
 {

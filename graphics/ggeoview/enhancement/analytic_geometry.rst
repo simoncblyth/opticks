@@ -46,6 +46,73 @@ Face Slicing
 
 
 
+Tubs Issue FIXED, was caused by cylinder poking outside its bbox
+-------------------------------------------------------------------
+
+* enable ENDCAP_P only in pmt-/dd.py and regen with::
+
+  pmt-parts 3:4
+
+* setup coloring in cu/pinhole_camera.cu::
+
+   100   // BGRA
+   101   uchar4 color = prd.flag == HP_PCAP_I ? RED :  make_color( prd.result );
+
+
+* get expected behavior for outer and inner HP_PCAP_O and HP_PCAP_I
+
+* PCAP endcap is to the right(in default initial ggv-pmt viewpoint) 
+
+* doing the same for QCAP see view dependent shape mis-behaviour, but disabling the 
+  partition_union resetting of bbox avoids it
+
+* the problem was the bbox was clipped in at the 3spehere interseciton plane 
+  but ZSize was not changed
+
+* from point of view of cylinder rendering the relevant PQ vector is not (0,0,sizeZ)
+  but rather (0,0,clipped_sizeZ)
+
+::
+
+    194 static __device__
+    195 void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity )
+    196 {
+    197 /* 
+    198 Position shift below is to match between different cylinder Z origin conventions
+    199 
+    200 * Ericson calc implemented below has cylinder origin at endcap P  
+    201 * detdesc/G4 Tubs has cylinder origin in the center 
+    202 
+    203 */
+    204     float sizeZ = q1.f.x ;
+    205     float z0 = q0.f.z - sizeZ/2.f ;
+    206     float3 position = make_float3( q0.f.x, q0.f.y, z0 );  // 0,0,-169.
+    207     float clipped_sizeZ = q3.f.z - q2.f.z ;
+    208 
+    209     float radius = q0.f.w ;
+    210     int flags = q1.i.w ;  
+    211     
+    212     bool PCAP = flags & ENDCAP_P ;
+    213     bool QCAP = flags & ENDCAP_Q ;
+    214     
+    215     //rtPrintf("intersect_ztubs position %10.4f %10.4f %10.4f \n", position.x, position.y, position.z );
+    216     //rtPrintf("intersect_ztubs flags %d PCAP %d QCAP %d \n", flags, PCAP, QCAP);
+    217     
+    218     float3 m = ray.origin - position ;
+    219     float3 n = ray.direction ; 
+    220     float3 d = make_float3(0.f, 0.f, clipped_sizeZ );
+    221     
+    222     float rr = radius*radius ;
+    223     float3 dnorm = normalize(d);
+    224     
+
+
+
+
+
+   
+
+
 Just Tubs
 ----------
 
