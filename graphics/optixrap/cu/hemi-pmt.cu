@@ -24,6 +24,8 @@ rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, );
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
 
+#define DEBUG 1
+
 /*
 Ericson, Real Time Collision Detection p196-198
 
@@ -188,17 +190,40 @@ enum
 };    
  
 
+enum 
+{
+    HP_PAXI_O,
+    HP_QAXI_O,
+    HP_PAXI_I,
+    HP_QAXI_I,
+    HP_WALL_O,
+    HP_PCAP_O,
+    HP_QCAP_O,
+    HP_WALL_I,
+    HP_PCAP_I,
+    HP_QCAP_I,
+    HP_NUMBER
+};
+
 static __device__
 void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity )
 {
-    float3 position = make_float3( q0.f ); 
-    float radius = q0.f.w ;
+/* 
+Position shift below is to match between different cylinder Z origin conventions
+
+* Ericson calc implemented below has cylinder origin at endcap P  
+* detdesc/G4 Tubs has cylinder origin in the center 
+
+*/
     float sizeZ = q1.f.x ; 
+    float3 position = make_float3( q0.f.x, q0.f.y, q0.f.z - sizeZ/2.f );
+ 
+    float radius = q0.f.w ;
     int flags = q1.i.w ; 
     bool PCAP = flags & ENDCAP_P ; 
     bool QCAP = flags & ENDCAP_Q ;
 
-    rtPrintf("intersect_ztubs flags %d PCAP %d QCAP %d \n", flags, PCAP, QCAP);
+    //rtPrintf("intersect_ztubs flags %d PCAP %d QCAP %d \n", flags, PCAP, QCAP);
  
     float3 m = ray.origin - position ;
     float3 n = ray.direction ; 
@@ -226,14 +251,18 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
     // axial ray endcap handling 
     if(fabs(a) < 1e-6f)     
     {
-        if(c > 0.f) return ; // ray starts and ends outside cylinder
-        if(md < 0.f && PCAP)         // ray origin on P side
+        if(c > 0.f) return ;    // ray starts and ends outside cylinder
+        if(md < 0.f && PCAP)    // ray origin on P side
         {
-            float t = -mn/nn ;    // P endcap 
+            float t = -mn/nn ;  // P endcap 
             if( rtPotentialIntersection(t) )
             {
                 shading_normal = geometric_normal = -dnorm  ;  
                 instanceIdentity = identity ; 
+#ifdef DEBUG
+                instanceIdentity.y = HP_PAXI_O ;
+#endif
+
                 rtReportIntersection(0);
             }
         } 
@@ -244,6 +273,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
             {
                 shading_normal = geometric_normal = dnorm ; 
                 instanceIdentity = identity ; 
+#ifdef DEBUG
+                instanceIdentity.y = HP_QAXI_O ;
+#endif
                 rtReportIntersection(0);
             }
         }
@@ -256,6 +288,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
                 {
                     shading_normal = geometric_normal = dnorm  ;  
                     instanceIdentity = identity ; 
+#ifdef DEBUG
+                    instanceIdentity.y = HP_PAXI_I ;
+#endif
                     rtReportIntersection(0);
                 }
             } 
@@ -266,6 +301,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
                 {
                     shading_normal = geometric_normal = -dnorm ; 
                     instanceIdentity = identity ; 
+#ifdef DEBUG
+                    instanceIdentity.y = HP_QAXI_I ;
+#endif
                     rtReportIntersection(0);
                 }
             }
@@ -277,7 +315,7 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
     {
         float sdisc = sqrtf(disc);
 
-        float root1 = (-b - sdisc)/a;     // what about other root ? 
+        float root1 = (-b - sdisc)/a;     
         float ad1 = md + root1*nd ;        // axial coord of intersection point 
         float3 P1 = ray.origin + root1*ray.direction ;  
 
@@ -293,6 +331,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
 
                 shading_normal = geometric_normal = normalize(N) ;
                 instanceIdentity = identity ; 
+#ifdef DEBUG
+                instanceIdentity.y = HP_WALL_O ;
+#endif
                 rtReportIntersection(0);
             } 
         } 
@@ -307,6 +348,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
                 {
                     shading_normal = geometric_normal = -dnorm  ;  
                     instanceIdentity = identity ; 
+#ifdef DEBUG
+                    instanceIdentity.y = HP_PCAP_O ;
+#endif
                     rtReportIntersection(0);
                 }
             } 
@@ -322,6 +366,10 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
                 {
                     shading_normal = geometric_normal = dnorm  ;  
                     instanceIdentity = identity ; 
+#ifdef DEBUG
+                    instanceIdentity.y = HP_QCAP_O ;
+#endif
+
                     rtReportIntersection(0);
                 }
             } 
@@ -342,6 +390,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
 
                 shading_normal = geometric_normal = -normalize(N) ;
                 instanceIdentity = identity ; 
+#ifdef DEBUG
+                instanceIdentity.y = HP_WALL_I ;
+#endif
                 rtReportIntersection(0);
             } 
         } 
@@ -355,6 +406,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
                 {
                     shading_normal = geometric_normal = dnorm  ;  
                     instanceIdentity = identity ; 
+#ifdef DEBUG
+                    instanceIdentity.y = HP_PCAP_I ;
+#endif
                     rtReportIntersection(0);
                 }
             } 
@@ -369,6 +423,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
                 {
                     shading_normal = geometric_normal = -dnorm  ;  
                     instanceIdentity = identity ; 
+#ifdef DEBUG
+                    instanceIdentity.y = HP_QCAP_I ;
+#endif
                     rtReportIntersection(0);
                 }
             } 

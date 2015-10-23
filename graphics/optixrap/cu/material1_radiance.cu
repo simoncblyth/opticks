@@ -1,6 +1,9 @@
 #include <optix.h>
+#include <optix_math.h>
+
 #include "PerRayData_radiance.h"
-#include "wavelength_lookup.h"
+//#include "wavelength_lookup.h"
+#include "color_lookup.h"
 
 //geometric_normal is set by the closest hit intersection program 
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, );
@@ -75,9 +78,6 @@ RT_PROGRAM void closest_hit_radiance()
   //prd.result = make_float3(0.f);
 
 
-
-  //prd.touch = make_uint4( nodeIndex, boundaryIndex, 0, 0) ;
-
   // if(cos_theta > 0.0f ) prd.result.x = 0.5f ; 
   //
   //
@@ -97,12 +97,6 @@ RT_PROGRAM void closest_hit_radiance()
   //   no problem is apparent for the external view of the PMT 
   // * from inside calibration assemblies quite a lot of speckly red/black
   // 
-
-
-  //float u2 = curand_uniform(&prd.rng); 
-  //prd.result = make_float3( u0, u1, u2) ; 
-  //prd.result = make_float3( u0, u1 , contrast_color.z) ; 
-  //prd.result.x = curand_uniform(&prd.rng); 
 
 
 

@@ -430,11 +430,14 @@ void App::loadGeometry()
 
     m_types->setMaterialsIndex(materials->getIndex());
 
-    GBuffer* colorbuffer = m_loader->getColorBuffer();  // composite buffer 0+:materials,  32+:flags
-    m_composition->setColorDomain( m_loader->getColorDomain() );
-    m_scene->uploadColorBuffer(colorbuffer);   // oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
-   
 
+    m_blib = m_ggeo->getBoundaryLib();
+
+    m_composition->setColorDomain( m_blib->getColorDomain() ); // parameters of composite buffer 0+:materials,  32+:flags
+
+    m_scene->uploadColorBuffer( m_blib->getColorBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
+
+ 
     m_ggeo->dumpStats("App::loadGeometry");
     //m_ggeo->dumpTree("App::loadGeometry");
 
@@ -444,8 +447,6 @@ void App::loadGeometry()
 
     checkGeometry();
 
-
-    m_blib = m_ggeo->getBoundaryLib();
     m_lookup = m_loader->getMaterialLookup();
     m_meta = m_loader->getMetadata(); 
     m_boundaries =  m_meta->getBoundaryNames();

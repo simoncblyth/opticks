@@ -470,9 +470,9 @@ void Composition::setTimeDomain(gfloat4 td)
 {
     m_domain_time = glm::vec4(td.x, td.y, td.z, td.w); 
 }
-void Composition::setColorDomain(gfloat4 cd)
+void Composition::setColorDomain(guint4 cd)
 {
-    m_domain_color = glm::vec4(cd.x, cd.y, cd.z, cd.w); 
+    m_domain_color = glm::uvec4(cd.x, cd.y, cd.z, cd.w); 
 }
 
 //void Composition::setLightPositionEye(gfloat4 lp)

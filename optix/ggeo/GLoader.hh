@@ -48,8 +48,6 @@ class GLoader {
 
          GColors*               getColors();
          Lookup*                getMaterialLookup();
-         GBuffer*               getColorBuffer();
-         gfloat4                getColorDomain();
          GBuffer*               getTransformsBuffer();
          int                    getRepeatIndex();
 
@@ -57,7 +55,6 @@ class GLoader {
          GGeo*                     m_ggeo ;    
          Types*                    m_types ; 
          GCache*                   m_cache ; 
-    //     GLoaderImpFunctionPtr     m_loader_imp ;  
          GMergedMesh*              m_mergedmesh ;
          GBoundaryLibMetadata*     m_metadata ;
 
@@ -70,8 +67,6 @@ class GLoader {
 
          Lookup*                   m_lookup ; 
 
-         GBuffer*                  m_color_buffer ; 
-         gfloat4                   m_color_domain ; 
 
          GTreeCheck*               m_treeanalyse ;  
          int                       m_repeatidx ; 
@@ -93,8 +88,6 @@ inline GLoader::GLoader(GGeo* ggeo)
    m_meshes(NULL),
    m_colors(NULL),
    m_lookup(NULL),
-   m_color_buffer(NULL),
-   m_color_domain(0,0,0,0),
    m_treeanalyse(NULL),
    m_repeatidx(-1),
    m_transforms_buffer(NULL),
@@ -170,6 +163,7 @@ inline GItemIndex* GLoader::getMeshes()
     return m_meshes ; 
 }
 
+/*
 inline GBuffer* GLoader::getColorBuffer()
 {
     return m_color_buffer  ; 
@@ -178,7 +172,7 @@ inline gfloat4 GLoader::getColorDomain()
 {
     return m_color_domain  ; 
 }
-
+*/
 
 
 

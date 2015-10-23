@@ -186,7 +186,6 @@ void GLoader::load(bool verbose)
     m_materials->setColorMap(GColorMap::load("$HOME/.opticks", "GMaterialIndexColors.json")); 
     m_surfaces->setColorMap(GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json"));   
 
-
     m_materials->setLabeller(GItemIndex::COLORKEY);
     m_surfaces->setLabeller(GItemIndex::COLORKEY);
     m_flags->setLabeller(GItemIndex::COLORKEY);
@@ -197,36 +196,19 @@ void GLoader::load(bool verbose)
 
 
     // formTable is needed to construct labels and codes when not pulling a buffer
+    // TODO: avoid this requirement
+    // TODO: move above color prep into GColors 
+
     m_surfaces->formTable();
     m_flags->formTable(); 
     m_materials->formTable();
 
+    m_colors->setupCompositeColorBuffer( m_materials, m_surfaces, m_flags  );
+    
+    m_ggeo->getBoundaryLib()->setColorBuffer(m_colors->getCompositeBuffer());
+    m_ggeo->getBoundaryLib()->setColorDomain(m_colors->getCompositeDomain());
 
-    unsigned int colormax = 256 ; 
-    m_colors->initCompositeColorBuffer(colormax);
 
-    std::vector<unsigned int>& material_codes = m_materials->getCodes() ; 
-    std::vector<unsigned int>& flag_codes     = m_flags->getCodes() ; 
-    std::vector<unsigned int>& psychedelic_codes = m_colors->getPsychedelicCodes();
-
-    assert(material_codes.size() < 32 );
-    assert(flag_codes.size() < 32 );
-    assert(psychedelic_codes.size() < colormax-32 );
-
-    unsigned int material_color_offset = 0 ; 
-    unsigned int flag_color_offset     = 32 ; 
-    unsigned int psychedelic_color_offset = 64 ; 
-
-    m_colors->addColors(material_codes, material_color_offset ) ;
-    m_colors->addColors(flag_codes    , flag_color_offset ) ;  
-    m_colors->addColors(psychedelic_codes , psychedelic_color_offset ) ;  
-
-    m_color_buffer = m_colors->getCompositeBuffer();
-
-    m_color_domain.y = m_color_buffer->getNumItems() ;
-    m_color_domain.z = float(psychedelic_codes.size()) ; 
-
-    //m_colors->dumpCompositeBuffer("GLoader::load");
 
     LOG(info) << "GLoader::load done " << idpath ;
     //assert(m_mergedmesh);

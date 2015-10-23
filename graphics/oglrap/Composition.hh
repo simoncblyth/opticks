@@ -97,7 +97,7 @@ class Composition : public Configurable {
       void setCenterExtent(glm::vec4& ce, bool autocam=false); // effectively points at what you want to look at 
       void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain
       void setTimeDomain(gfloat4 td);
-      void setColorDomain(gfloat4 cd);
+      void setColorDomain(guint4 cd);
       //void setLightPositionEye(gfloat4 lp);
 
   public:
@@ -203,7 +203,7 @@ class Composition : public Configurable {
       glm::vec4& getCenterExtent();
       glm::vec4& getDomainCenterExtent();
       glm::vec4& getTimeDomain();
-      glm::vec4& getColorDomain();
+      glm::uvec4& getColorDomain();
       glm::vec4& getLightPosition();
       float*     getLightPositionPtr();
       glm::vec4& getLightDirection();
@@ -256,7 +256,7 @@ class Composition : public Configurable {
       glm::vec4 m_domain_center_extent ; 
       glm::mat4 m_domain_isnorm ;     
       glm::vec4 m_domain_time ; 
-      glm::vec4 m_domain_color ; 
+      glm::uvec4 m_domain_color ; 
       glm::vec4 m_light_position  ; 
       glm::vec4 m_light_direction ; 
 
@@ -414,7 +414,7 @@ inline glm::vec4& Composition::getTimeDomain()
 {
     return m_domain_time ; 
 }
-inline glm::vec4& Composition::getColorDomain()
+inline glm::uvec4& Composition::getColorDomain()
 {
     return m_domain_color ; 
 }

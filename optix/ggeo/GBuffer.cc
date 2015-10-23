@@ -200,24 +200,28 @@ void GBuffer::dump(const char* msg, unsigned int limit)
 
 template void GBuffer::dump<int>(const char* , unsigned int );
 template void GBuffer::dump<unsigned int>(const char* , unsigned int);
+template void GBuffer::dump<unsigned char>(const char* , unsigned int);
 template void GBuffer::dump<float>(const char* , unsigned int);
 template void GBuffer::dump<short>(const char* , unsigned int);
 template void GBuffer::dump<unsigned long long>(const char* , unsigned int);
 
 template void GBuffer::save<int>(const char* );
 template void GBuffer::save<unsigned int>(const char* );
+template void GBuffer::save<unsigned char>(const char* );
 template void GBuffer::save<float>(const char* );
 template void GBuffer::save<short>(const char* );
 template void GBuffer::save<unsigned long long>(const char* );
 
 template GBuffer* GBuffer::load<int>(const char* );
 template GBuffer* GBuffer::load<unsigned int>(const char* );
+template GBuffer* GBuffer::load<unsigned char>(const char* );
 template GBuffer* GBuffer::load<float>(const char* );
 template GBuffer* GBuffer::load<short>(const char* );
 template GBuffer* GBuffer::load<unsigned long long>(const char* );
 
 template GBuffer* GBuffer::load<int>(const char* , const char* );
 template GBuffer* GBuffer::load<unsigned int>(const char* , const char* );
+template GBuffer* GBuffer::load<unsigned char>(const char* , const char* );
 template GBuffer* GBuffer::load<float>(const char* , const char* );
 template GBuffer* GBuffer::load<short>(const char* , const char* );
 template GBuffer* GBuffer::load<unsigned long long>(const char* , const char* );

@@ -7,6 +7,7 @@
 #include <vector>
 
 class GBuffer ; 
+class GItemIndex ; 
 
 /*
 
@@ -72,12 +73,14 @@ class GColors {
        void dump_uchar4_buffer( GBuffer* buffer );
 
    public: 
-       void initCompositeColorBuffer(unsigned int max_colors);
-       void addColors(std::vector<unsigned int>& codes, unsigned int offset=0 );
+       void setupCompositeColorBuffer(GItemIndex* materials, GItemIndex* surfaces, GItemIndex* flags);
        GBuffer* getCompositeBuffer();
+       guint4   getCompositeDomain();
        void dumpCompositeBuffer(const char* msg="GColors::dumpCompositeBuffer");
 
    private:
+       void initCompositeColorBuffer(unsigned int max_colors);
+       void addColors(std::vector<unsigned int>& codes, unsigned int offset=0 );
        void loadMaps(const char* dir);
 
    private:
@@ -85,16 +88,19 @@ class GColors {
        std::vector<unsigned int>           m_psychedelic_codes ;
        std::map<std::string, std::string>  m_name2hex ; 
        GBuffer*                            m_composite ; 
+       guint4                              m_composite_domain ; 
 
 };
 
 inline GColors::GColors()  
     :
-    m_composite(NULL)
+    m_composite(NULL),
+    m_composite_domain(0,0,0,0)
 {
 }
-
 inline GBuffer* GColors::getCompositeBuffer()
 {
-   return m_composite ;  
+    return m_composite ;  
 }
+
+

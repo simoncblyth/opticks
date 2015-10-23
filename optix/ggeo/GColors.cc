@@ -1,5 +1,6 @@
 #include "GColors.hh"
 #include "GBuffer.hh"
+#include "GItemIndex.hh"
 
 #include "jsonutil.hpp"
 #include "assert.h"
@@ -335,12 +336,6 @@ void GColors::dump_uchar4_buffer( GBuffer* buffer )
     }
 }
 
-
-
-
-
-
-
 gfloat3 GColors::makeColor( unsigned int rgb )
 {
     unsigned int red   =  ( rgb & 0xFF0000 ) >> 16 ;  
@@ -356,9 +351,46 @@ gfloat3 GColors::makeColor( unsigned int rgb )
 }
 
 
+guint4 GColors::getCompositeDomain()
+{
+    return m_composite_domain ; 
+}
 
+void GColors::setupCompositeColorBuffer(GItemIndex* materials, GItemIndex* surfaces, GItemIndex* flags)
+{
+    unsigned int colormax = 256 ; 
+    initCompositeColorBuffer(colormax);
+    assert( m_composite->getNumItems() == colormax );
 
+    unsigned int material_color_offset = 0 ; 
+    unsigned int flag_color_offset     = 32 ; 
+    unsigned int psychedelic_color_offset = 64 ; 
 
+    if(materials)
+    {
+        std::vector<unsigned int>& material_codes    = materials->getCodes() ; 
+        assert(material_codes.size() < 32 );
+        addColors(material_codes,     material_color_offset ) ;
+    }
+
+    if(flags)
+    {
+        std::vector<unsigned int>& flag_codes        = flags->getCodes() ; 
+        assert(flag_codes.size() < 32 );
+        addColors(flag_codes    ,     flag_color_offset ) ;  
+    }
+
+    std::vector<unsigned int>& psychedelic_codes = getPsychedelicCodes();
+    assert(psychedelic_codes.size() < colormax-32 );
+    addColors(psychedelic_codes , psychedelic_color_offset ) ;  
+
+    m_composite_domain.x = 0 ; 
+    m_composite_domain.y = colormax ;
+    m_composite_domain.z = m_psychedelic_codes.size() ; 
+    m_composite_domain.w = psychedelic_color_offset ; 
+  
+    // used in optixrap-/cu/color_lookup.h 
+}
 
 
 
