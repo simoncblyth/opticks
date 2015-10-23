@@ -45,6 +45,21 @@ Face Slicing
     Out[3]: array([ 720, 1392, 2352, 2832, 2928], dtype=uint64)
 
 
+First and Second Solids, Pyrex and contained vacuum
+-------------------------------------------------------
+
+OptiX render is as would expect, with pyrex and vacuum very thinly separated, 
+to make the inner volume visible adjust near to control the ray trace epsilon
+
+OpenGL render not as would expect, much fatter to the back. 
+As if pushed out by the dynode ?
+
+::
+
+   pmt-parts 0:8 
+   ggv-pmt --fslice 0:1392
+
+
 
 Tubs Issue FIXED, was caused by cylinder poking outside its bbox
 -------------------------------------------------------------------
