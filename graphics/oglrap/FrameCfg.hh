@@ -14,6 +14,7 @@ class FrameCfg : public Cfg {
      std::string& getMeshVersion();
      std::string& getISlice();
      std::string& getFSlice();
+     std::string& getPSlice();
      std::string& getPrintIndex();
      std::string& getBuilder();
      std::string& getTraverser();
@@ -40,6 +41,7 @@ private:
      std::string m_meshversion ;
      std::string m_islice ;
      std::string m_fslice ;
+     std::string m_pslice ;
      std::string m_pindex ;
      std::string m_builder ;
      std::string m_traverser  ;
@@ -66,6 +68,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        m_meshversion(""),
        m_islice(""),
        m_fslice(""),
+       m_pslice(""),
        m_pindex(""),
        m_builder(""),
        m_traverser(""),
@@ -212,6 +215,11 @@ inline void FrameCfg<Listener>::init()
        ("fslice",        boost::program_options::value<std::string>(&m_fslice), "debug only option for use of partial face geometry, specified by python slice style colon delimited ints " );
 
    m_desc.add_options()
+       ("pslice",        boost::program_options::value<std::string>(&m_pslice), "debug only option for selecting parts of analytic geometry, specified by python slice style colon delimited ints " );
+
+
+
+   m_desc.add_options()
        ("pindex",        boost::program_options::value<std::string>(&m_pindex), "debug OptiX launch print index specified by up to three comma delimited ints " );
 
 
@@ -333,6 +341,13 @@ inline std::string& FrameCfg<Listener>::getFSlice()
 {
     return m_fslice ;
 }
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getPSlice()
+{
+    return m_pslice ;
+}
+
+
 
 template <class Listener>
 inline std::string& FrameCfg<Listener>::getPrintIndex()

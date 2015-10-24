@@ -884,10 +884,14 @@ void App::configureGeometry()
 {
     int restrict_mesh = m_fcfg->getRestrictMesh() ;  
     int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
+
     std::string instance_slice = m_fcfg->getISlice() ;;
     std::string face_slice = m_fcfg->getFSlice() ;;
+    std::string part_slice = m_fcfg->getPSlice() ;;
+
     NSlice* islice = !instance_slice.empty() ? new NSlice(instance_slice.c_str()) : NULL ; 
     NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
+    NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
 
     unsigned int nmm = m_ggeo->getNumMergedMesh();
     for(unsigned int i=0 ; i < nmm ; i++)
@@ -896,7 +900,10 @@ void App::configureGeometry()
         if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode('K');      
         if(analytic_mesh > -1 && i == analytic_mesh && i > 0) mm->setGeoCode('S');      
         if(i>0) mm->setInstanceSlice(islice);
-        if(i>0) mm->setFaceSlice(fslice);    // restrict to non-global for now
+
+        // restrict to non-global for now
+        if(i>0) mm->setFaceSlice(fslice);   
+        if(i>0) mm->setPartSlice(pslice);   
     }
 }
 

@@ -18,7 +18,7 @@ if [ "${cmdline/--oac}" != "${cmdline}" ]; then
    export OPTIX_API_CAPTURE=1
 fi
 
-
+export GGEOVIEW_ARGS=$*
 
 if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeoview-bindir)/computeTest
@@ -32,6 +32,7 @@ elif [ "${cmdline/--gbuffer}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBufferTest)
 elif [ "${cmdline/--gpmt}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GPmtTest)
+   export GGEOVIEW_ARGS=${cmdline/--gpmt}
 elif [ "${cmdline/--mblib}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibMetadataTest)
 elif [ "${cmdline/--sensor}" != "${cmdline}" ]; then
@@ -140,8 +141,8 @@ if [ "${cmdline/--idp}" != "${cmdline}" ]; then
     echo $(ggeoview-run $*)
 else
     case $dbg in
-       0)  ggeoview-run $*  ;;
-       1)  ggeoview-dbg $*  ;;
+       0)  ggeoview-run ${GGEOVIEW_ARGS}  ;;
+       1)  ggeoview-dbg ${GGEOVIEW_ARGS}  ;;
     esac
 fi
 

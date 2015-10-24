@@ -45,6 +45,17 @@ Face Slicing
     Out[3]: array([ 720, 1392, 2352, 2832, 2928], dtype=uint64)
 
 
+Photocathode
+-------------
+
+::
+
+    pmt-parts   # move to writing full partition file, and pslicing as needed
+
+    ggv-pmt --fslice 1392:2352 --pslice 8:10
+
+
+
 First and Second Solids, Pyrex and contained vacuum
 -------------------------------------------------------
 

@@ -2,6 +2,7 @@
 #include "GBuffer.hh"
 #include "GVector.hh"
 
+
 #include <map>
 #include <cstdio>
 #include <cassert>
@@ -19,6 +20,21 @@ typedef union
    int i ; 
    float f ; 
 }              uif_t ; 
+
+
+
+const char* GPmt::SPHERE_ = "Sphere" ;
+const char* GPmt::TUBS_   = "Tubs" ;
+const char* GPmt::TypeName(unsigned int typecode)
+{
+    switch(typecode)
+    {
+        case 1:return SPHERE_ ; break ;
+        case 2:return TUBS_   ; break ;
+    }
+    return NULL ; 
+}
+
 
 
 GPmt* GPmt::load(const char* path)
@@ -45,6 +61,15 @@ unsigned int GPmt::getTypeCode(unsigned int part_index)
     assert(part_index < m_num_parts );
     return getUInt(part_index, TYPECODE_J, TYPECODE_K);
 }
+const char* GPmt::getTypeName(unsigned int part_index)
+{
+    unsigned int code = getTypeCode(part_index);
+    return GPmt::TypeName(code);
+}
+
+
+
+
 
 
 void GPmt::init()
@@ -55,6 +80,7 @@ void GPmt::init()
     unsigned int nmin(INT_MAX) ; 
     unsigned int nmax(0) ; 
 
+    // count parts for each nodeindex
     for(unsigned int i=0; i < m_num_parts; i++)
     {
         unsigned int nodeIndex = getNodeIndex(i);
@@ -65,13 +91,40 @@ void GPmt::init()
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
-    assert(nmin == 0 && nmax == m_parts_per_solid.size() - 1); // expecting contiguous node index starting at zero 
+
+    // with part slicing maybe relax contiguous ?
+    assert(nmax - nmin == m_parts_per_solid.size() - 1); 
+
     setNumSolids(m_parts_per_solid.size()) ;
 
     guint4* solidinfo = new guint4[m_num_solids] ;
 
+
+    typedef std::map<unsigned int, unsigned int> UU ; 
+
     unsigned int offset = 0 ; 
-    for(unsigned int s=0 ; s < m_num_solids ; s++)
+    unsigned int n = 0 ; 
+    for(UU::const_iterator it=m_parts_per_solid.begin() ; it != m_parts_per_solid.end() ; it++)
+    {
+        unsigned int s = it->first ; 
+        unsigned int snp = it->second ; 
+
+        guint4& si = *(solidinfo+n) ;
+        si.x = offset ; 
+        si.y = snp ;
+        si.z = s ; 
+        si.w = 0 ; 
+
+        printf("si %2u %2u %2u %2u \n", si.x,si.y,si.z,si.w);
+        offset += snp ; 
+        n++ ; 
+    }
+
+    
+    /* 
+    // assumimg contiguous
+    unsigned int offset = 0 ; 
+    for(unsigned int s=0 ; s < m_parts_per_solid ; s++)
     {
         guint4& si = *(solidinfo+s) ;
         unsigned int snp = getSolidNumParts(s);
@@ -81,8 +134,11 @@ void GPmt::init()
         si.z = s ; 
         si.w = 0 ; 
 
+        printf("si %2u %2u %2u %2u \n", si.x,si.y,si.z,si.w);
         offset += snp ; 
     }
+    */
+
 
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
@@ -161,13 +217,19 @@ void GPmt::dump(const char* msg)
 
     for(unsigned int i=0; i < ni; i++)
     {   
+       unsigned int tc = getTypeCode(i);
+       const char*  tn = getTypeName(i);
+
        for(unsigned int j=0 ; j < NJ ; j++)
        {   
           for(unsigned int k=0 ; k < NK ; k++) 
           {   
               uif.f = data[i*NJ*NK+j*NJ+k] ;
               if( j == TYPECODE_J && k == TYPECODE_K )
-                  printf(" %10d (typecode Sphere:1 Tubs:2) ", uif.i );
+              {
+                  assert( uif.u == tc );
+                  printf(" %10u (%s) ", uif.u, tn );
+              } 
               else if( j == NODEINDEX_J && k == NODEINDEX_K)
                   printf(" %10d (nodeIndex) ", uif.i );
               else

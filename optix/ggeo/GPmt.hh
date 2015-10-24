@@ -2,9 +2,14 @@
 
 #include <map>
 #include <cassert>
+
 class GBuffer ; 
 
-// source parts .npy created by pmt-/tree.py 
+// *GPmt::init* 
+//
+//      creates *solid* buffer from the *parts* buffer
+//      the *parts* buffer .npy is created by detdesc partitioning with pmt-/tree.py 
+//
 
 class GPmt {
    public:
@@ -14,6 +19,10 @@ class GPmt {
 
        enum { TYPECODE_J = 2,   TYPECODE_K = 3 };
        enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
+
+       static const char* SPHERE_ ;
+       static const char* TUBS_ ; 
+       static const char* TypeName(unsigned int typecode);
 
        static GPmt* load(const char* path="/tmp/pmt-hemi-parts.npy");
        GPmt(GBuffer* part_buffer);
@@ -25,6 +34,7 @@ class GPmt {
        unsigned int getNumParts();
        unsigned int getNodeIndex(unsigned int part_index);
        unsigned int getTypeCode(unsigned int part_index);
+       const char*  getTypeName(unsigned int part_index);
    private:
        void init();
        void setNumParts(unsigned int num_parts);

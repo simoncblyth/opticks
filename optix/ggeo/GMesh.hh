@@ -204,6 +204,7 @@ class GMesh : public GDrawable {
       void setGeoCode(char geocode);
       void setInstanceSlice(NSlice* slice);
       void setFaceSlice(NSlice* slice);
+      void setPartSlice(NSlice* slice);
       void setVersion(const char* version);
 
       const char* getName();
@@ -212,6 +213,7 @@ class GMesh : public GDrawable {
       char getGeoCode();
       NSlice* getInstanceSlice();
       NSlice* getFaceSlice();
+      NSlice* getPartSlice();
 
 
   private:
@@ -441,6 +443,7 @@ class GMesh : public GDrawable {
       char          m_geocode ; 
       NSlice*       m_islice ; 
       NSlice*       m_fslice ; 
+      NSlice*       m_pslice ; 
 
   private:
       GBuffer* m_vertices_buffer ;
@@ -801,6 +804,16 @@ inline NSlice* GMesh::getFaceSlice()
 {
     return m_fslice ; 
 }
+
+inline void GMesh::setPartSlice(NSlice* slice)
+{
+    m_pslice = slice ; 
+}
+inline NSlice* GMesh::getPartSlice()
+{
+    return m_pslice ; 
+}
+
 
 
 

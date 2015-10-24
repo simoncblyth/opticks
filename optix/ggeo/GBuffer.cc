@@ -138,13 +138,18 @@ GBuffer* GBuffer::load(const char* path)
 
 GBuffer* GBuffer::make_slice(const char* slice_)
 {
-    NSlice* slice = new NSlice(slice_);
+    NSlice* slice = slice_ ? new NSlice(slice_) : NULL ;
     return make_slice(slice);
 }
 
 GBuffer* GBuffer::make_slice(NSlice* slice)
 {
     unsigned int ni = getNumItems(); 
+    if(!slice) 
+    {
+        slice = new NSlice(0, ni, 1);
+        LOG(warning) << "GBuffer::make_slice NULL slice, defaulting to full copy " << slice->description() ;
+    }
     unsigned int nk = getNumElements(); 
     unsigned int size = getItemSize(); 
 

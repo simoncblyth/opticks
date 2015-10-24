@@ -454,13 +454,27 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
+    GBuffer* partBuf_orig = mm->getAnalyticGeometryBuffer();  // getter causes loading on first call
+    GBuffer* partBuf = partBuf_orig ; 
+    NSlice* pslice = mm->getPartSlice();
+    if(pslice)
+    {
+        LOG(info) << "OGeo::makeAnalyticGeometry part slicing the part buffer" ;
+        unsigned int nelem = partBuf_orig->getNumElements();
+        assert(nelem == 4 && "expecting quads");
+        partBuf_orig->reshape(4*GPmt::QUADS_PER_ITEM); 
+        partBuf = partBuf_orig->make_slice(pslice);   
+        partBuf_orig->reshape(nelem);
+        partBuf->reshape(nelem);
+    }
 
-    GBuffer* partBuf = mm->getAnalyticGeometryBuffer();
+
     GPmt* pmt = new GPmt(partBuf);
     pmt->dump();
     pmt->Summary();
 
     GBuffer* solidBuf = pmt->getSolidBuffer();
+    solidBuf->dump<unsigned int>("solidBuf partOffset/numParts/solidIndex/0");
 
     unsigned int numSolidsMesh = mm->getNumSolids();
     unsigned int numSolidsPmt  = pmt->getNumSolids();

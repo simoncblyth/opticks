@@ -99,6 +99,7 @@ GMesh::GMesh(GMesh* other)
      m_geocode(other->getGeoCode()),
      m_islice(other->getInstanceSlice()),
      m_fslice(other->getFaceSlice()),
+     m_pslice(other->getPartSlice()),
      GDrawable()
 {
    updateBounds();
@@ -161,6 +162,7 @@ GMesh::GMesh(unsigned int index,
       m_geocode('T'),
       m_islice(NULL),
       m_fslice(NULL),
+      m_pslice(NULL),
 
       m_vertices_buffer(NULL),
       m_normals_buffer(NULL),
@@ -1473,7 +1475,8 @@ GBuffer*  GMesh::getFaceRepeatedIdentityBuffer()
 
 GBuffer* GMesh::loadAnalyticGeometryBuffer(const char* path)
 {
-    return GBuffer::load<float>(path);
+    GBuffer* partBuf = GBuffer::load<float>(path);
+    return partBuf ; 
 }
 
 GBuffer*  GMesh::getAnalyticGeometryBuffer()
