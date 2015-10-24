@@ -17,24 +17,7 @@ class Camera : public Configurable  {
      static const char* ZOOM ; 
      static const char* PARALLEL ; 
 
-     Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float yfov=60.f, float zoom=1.f, bool parallel=false) 
-       :
-         m_changed(true)
-     {
-         setSize(width, height);
-         setPixelFactor(1); 
-
-         setNearClip(1e-6, 1e6);
-         setFarClip(1e-6, 1e6);
-         setYfovClip(1.f, 179.f);
-         setZoomClip(0.01f, 100.f);
-
-         setNear(near);
-         setFar(far);
-         setYfov(yfov);
-         setZoom(zoom);
-         setParallel(parallel);
-     } 
+     Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float yfov=60.f, float zoom=1.f, bool parallel=false) ;
 
      glm::mat4 getProjection();
      glm::mat4 getPerspective();
@@ -71,205 +54,56 @@ class Camera : public Configurable  {
      void configure(const char* name, const char* value);
      void configure(const char* name, float value);
 
+     void near_to( float x, float y, float dx, float dy );
+     void far_to( float x, float y, float dx, float dy );
+     void zoom_to( float x, float y, float dx, float dy );
+
+     void setNear(float near);
+     float getNear();
+     void setFar(float far);
+     float getFar();
 
 
-
-     void near_to( float x, float y, float dx, float dy )
-     {
-         setNear(m_near + m_near*dy );
-         //printf("Camera::near_to %10.3f \n", m_near);
-     }
-
-     void far_to( float x, float y, float dx, float dy )
-     {
-         setFar(m_far + m_far*dy );
-         //printf("Camera::far_to %10.3f \n", m_far);
-     }
-
-     void zoom_to( float x, float y, float dx, float dy )
-     {
-         setZoom(m_zoom + 50.*dy) ;
-         printf("Camera::zoom_to %10.3f \n", m_zoom);
-     }
-
-
-
-
-     void setNear(float near)
-     {
-         if(      near < m_nearclip[0] )  m_near = m_nearclip[0] ;
-         else if( near > m_nearclip[1] )  m_near = m_nearclip[1] ;
-         else                             m_near = near ;
-
-         m_changed = true ; 
-     }
-     float getNear()
-     {
-         return m_near ;
-     }
-     void setFar(float far)
-     {
-         if(      far < m_farclip[0] )  m_far = m_farclip[0] ;
-         else if( far > m_farclip[1] )  m_far = m_farclip[1] ;
-         else                           m_far = far ;
-         m_changed = true ; 
-     }
-     float getFar()
-     {
-         return m_far ;
-     }
-
-
-     float getZoom()
-     {
-         return m_zoom ; 
-     } 
-     void setZoom(float zoom)
-     {
-         if(      zoom < m_zoomclip[0] )  m_zoom = m_zoomclip[0] ;
-         else if( zoom > m_zoomclip[1] )  m_zoom = m_zoomclip[1] ;
-         else                             m_zoom = zoom ;
-         m_changed = true ; 
-     }
-
-     void setYfov(float yfov)
-     {
-          // fov = 2atan(1/zoom)
-          // zoom = 1/tan(fov/2)
-
-          float zoom = 1.f/tan(yfov*0.5f*M_PI/180.f );
-          setZoom( zoom );
-     }
-     float getYfov()
-     {
-          return 2.f*atan(1./m_zoom);
-     }
-     float getTanYfov()
-     {
-         return 1.f/m_zoom ;
-     } 
+     float getZoom();
+     void setZoom(float zoom);
+     void setYfov(float yfov);
+     float getYfov();
+     float getTanYfov();
 
 
 #ifdef PRIOR
-
-     void yfov_to( float x, float y, float dx, float dy )
-     {
-         setYfov(m_yfov + 50.*dy) ;
-         //printf("Camera::yfov_to %10.3f \n", m_yfov);
-     }
-
-     void setYfov(float yfov)
-     {
-         if(      yfov < m_yfovclip[0] )  m_yfov = m_yfovclip[0] ;
-         else if( yfov > m_yfovclip[1] )  m_yfov = m_yfovclip[1] ;
-         else                             m_yfov = yfov ;
-         m_changed = true ; 
-     }
-     float getYfov()
-     {
-         return m_yfov ;
-     }
-     float getTanYfov()
-     {
-         return tan( m_yfov*0.5f*M_PI/180.f );
-     } 
-
+     void yfov_to( float x, float y, float dx, float dy );
+     void setYfov(float yfov);
+     float getYfov();
+     float getTanYfov();
 #endif
+     void setSize(int width, int height );
+     void setPixelFactor(unsigned int factor);
 
-     void setSize(int width, int height )
-     {
-         m_size[0] = width ;
-         m_size[1] = height ;
-         m_changed = true ; 
-     }
+     void setNearClip(float _min, float _max);
+     void setFarClip(float _min, float _max);
+     void setYfovClip(float _min, float _max);
+     void setZoomClip(float _min, float _max);
 
-     void setPixelFactor(unsigned int factor)
-     {
-         m_pixel_factor = factor ; 
-         m_changed = true ; 
-     }
+     float getAspect(); // width/height (> 1 for landscape)
 
-     void setNearClip(float _min, float _max)
-     {
-         m_nearclip[0] = _min ;  
-         m_nearclip[1] = _max ;  
-     }
-     void setFarClip(float _min, float _max)
-     {
-         m_farclip[0] = _min ;  
-         m_farclip[1] = _max ;  
-     }
-     void setYfovClip(float _min, float _max)
-     {
-         m_yfovclip[0] = _min ;  
-         m_yfovclip[1] = _max ;  
-     }
-     void setZoomClip(float _min, float _max)
-     {
-         m_zoomclip[0] = _min ;  
-         m_zoomclip[1] = _max ;  
-     }
+     void setParallel(bool parallel);
+     bool getParallel();
 
-     float getAspect() // width/height (> 1 for landscape)
-     {
-         return (float)m_size[0]/(float)m_size[1] ;  
-     }
-
-
-     void setParallel(bool parallel)
-     {
-         m_parallel = parallel ;
-         m_changed = true ; 
-     }
-     bool getParallel()
-     {
-          return m_parallel ; 
-     }
-
-     float getTop()
-     {
-         return m_near * getTanYfov();
-     }
-     float getBottom()
-     {
-         return -m_near * getTanYfov();
-     }
-     float getLeft()
-     {
-         return getAspect() * getBottom() ;
-     } 
-     float getRight()
-     {
-         return getAspect() * getTop() ;
-     } 
+    // the below top/bottom/left/right scale with  m_near, perhaps more controllable to break that coupling ? 
+     float getTop();
+     float getBottom();
+     float getLeft();
+     float getRight();
 
      void Print(const char* msg="Camera::Print");
      void Summary(const char* msg="Camera::Summary");
 
-
-     unsigned int getWidth()
-     {
-         return m_size[0]; 
-     }
-     unsigned int getHeight()
-     {
-         return m_size[1]; 
-     }
-
-     unsigned int getPixelWidth()
-     {
-         return m_size[0]*m_pixel_factor; 
-     }
-     unsigned int getPixelHeight()
-     {
-         return m_size[1]*m_pixel_factor; 
-     }
-     unsigned int getPixelFactor()
-     {
-         return m_pixel_factor ; 
-     }
-
-
+     unsigned int getWidth();
+     unsigned int getHeight();
+     unsigned int getPixelWidth();
+     unsigned int getPixelHeight();
+     unsigned int getPixelFactor();
 
   private:
 
@@ -290,6 +124,27 @@ class Camera : public Configurable  {
      bool m_changed ; 
 
 };
+
+
+
+inline Camera::Camera(int width, int height, float near, float far, float yfov, float zoom, bool parallel) 
+       :
+         m_changed(true)
+{
+    setSize(width, height);
+    setPixelFactor(1); 
+
+    setNearClip(1e-6, 1e6);
+    setFarClip(1e-6, 1e6);
+    //setYfovClip(1.f, 179.f);
+    setZoomClip(0.01f, 100.f);
+
+    setNear(near);
+    setFar(far);
+    //setYfov(yfov);
+    setZoom(zoom);
+    setParallel(parallel);
+} 
 
 
 inline bool Camera::hasChanged()
@@ -315,6 +170,199 @@ inline Camera::Style_t Camera::getStyle()
 {
     return (Style_t)(m_parallel ? 1 : 0 ) ;
 }
+
+
+inline unsigned int Camera::getWidth()
+{
+    return m_size[0]; 
+}
+inline unsigned int Camera::getHeight()
+{
+    return m_size[1]; 
+}
+inline unsigned int Camera::getPixelWidth()
+{
+    return m_size[0]*m_pixel_factor; 
+}
+inline unsigned int Camera::getPixelHeight()
+{
+    return m_size[1]*m_pixel_factor; 
+}
+inline unsigned int Camera::getPixelFactor()
+{
+    return m_pixel_factor ; 
+}
+
+
+
+inline float Camera::getTop()
+{
+    return m_near * getTanYfov();
+}
+inline float Camera::getBottom()
+{
+    return -m_near * getTanYfov();
+}
+inline float Camera::getLeft()
+{
+    return getAspect() * getBottom() ;
+} 
+inline float Camera::getRight()
+{
+    return getAspect() * getTop() ;
+} 
+inline void Camera::setParallel(bool parallel)
+{
+    m_parallel = parallel ;
+    m_changed = true ; 
+}
+inline bool Camera::getParallel()
+{
+    return m_parallel ; 
+}
+
+inline float Camera::getAspect() // width/height (> 1 for landscape)
+{
+    return (float)m_size[0]/(float)m_size[1] ;  
+}
+
+inline void Camera::setNearClip(float _min, float _max)
+{
+    m_nearclip[0] = _min ;  
+    m_nearclip[1] = _max ;  
+}
+inline void Camera::setFarClip(float _min, float _max)
+{
+    m_farclip[0] = _min ;  
+    m_farclip[1] = _max ;  
+}
+inline void Camera::setYfovClip(float _min, float _max)
+{
+    m_yfovclip[0] = _min ;  
+    m_yfovclip[1] = _max ;  
+}
+inline void Camera::setZoomClip(float _min, float _max)
+{
+    m_zoomclip[0] = _min ;  
+    m_zoomclip[1] = _max ;  
+}
+
+inline void Camera::setSize(int width, int height )
+{
+    m_size[0] = width ;
+    m_size[1] = height ;
+    m_changed = true ; 
+}
+
+inline void Camera::setPixelFactor(unsigned int factor)
+{
+    m_pixel_factor = factor ; 
+    m_changed = true ; 
+}
+
+inline void Camera::setNear(float near)
+{
+    if(      near < m_nearclip[0] )  m_near = m_nearclip[0] ;
+    else if( near > m_nearclip[1] )  m_near = m_nearclip[1] ;
+    else                             m_near = near ;
+
+    m_changed = true ; 
+}
+inline float Camera::getNear()
+{
+    return m_near ;
+}
+
+inline void Camera::setFar(float far)
+{
+    if(      far < m_farclip[0] )  m_far = m_farclip[0] ;
+    else if( far > m_farclip[1] )  m_far = m_farclip[1] ;
+    else                           m_far = far ;
+    m_changed = true ; 
+}
+inline float Camera::getFar()
+{
+    return m_far ;
+}
+
+
+inline float Camera::getZoom()
+{
+    return m_zoom ; 
+} 
+inline void Camera::setZoom(float zoom)
+{
+    if(      zoom < m_zoomclip[0] )  m_zoom = m_zoomclip[0] ;
+    else if( zoom > m_zoomclip[1] )  m_zoom = m_zoomclip[1] ;
+    else                             m_zoom = zoom ;
+    m_changed = true ; 
+}
+
+
+inline void Camera::setYfov(float yfov)
+{
+    // fov = 2atan(1/zoom)
+    // zoom = 1/tan(fov/2)
+
+    float zoom = 1.f/tan(yfov*0.5f*M_PI/180.f );
+    setZoom( zoom );
+}
+inline float Camera::getYfov()
+{
+    return 2.f*atan(1./m_zoom);
+}
+inline float Camera::getTanYfov()
+{
+    return 1.f/m_zoom ;
+} 
+
+#ifdef PRIOR
+
+inline void Camera::yfov_to( float x, float y, float dx, float dy )
+{
+    setYfov(m_yfov + 50.*dy) ;
+    //printf("Camera::yfov_to %10.3f \n", m_yfov);
+}
+
+inline void Camera::setYfov(float yfov)
+{
+    if(      yfov < m_yfovclip[0] )  m_yfov = m_yfovclip[0] ;
+    else if( yfov > m_yfovclip[1] )  m_yfov = m_yfovclip[1] ;
+    else                             m_yfov = yfov ;
+    m_changed = true ; 
+}
+inline float Camera::getYfov()
+{
+    return m_yfov ;
+}
+inline float Camera::getTanYfov()
+{
+    return tan( m_yfov*0.5f*M_PI/180.f );
+} 
+
+#endif
+
+
+
+
+inline void Camera::near_to( float x, float y, float dx, float dy )
+{
+    setNear(m_near + m_near*dy );
+    //printf("Camera::near_to %10.3f \n", m_near);
+}
+
+inline void Camera::far_to( float x, float y, float dx, float dy )
+{
+    setFar(m_far + m_far*dy );
+    //printf("Camera::far_to %10.3f \n", m_far);
+}
+
+inline void Camera::zoom_to( float x, float y, float dx, float dy )
+{
+    setZoom(m_zoom + 50.*dy) ;
+    //printf("Camera::zoom_to %10.3f \n", m_zoom);
+}
+
 
 
 
