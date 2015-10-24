@@ -14,9 +14,10 @@ class Camera : public Configurable  {
      static const char* NEAR ; 
      static const char* FAR ; 
      static const char* YFOV ; 
+     static const char* ZOOM ; 
      static const char* PARALLEL ; 
 
-     Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float yfov=60.f, bool parallel=false) 
+     Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float yfov=60.f, float zoom=1.f, bool parallel=false) 
        :
          m_changed(true)
      {
@@ -26,10 +27,12 @@ class Camera : public Configurable  {
          setNearClip(1e-6, 1e6);
          setFarClip(1e-6, 1e6);
          setYfovClip(1.f, 179.f);
+         setZoomClip(0.01f, 100.f);
 
          setNear(near);
          setFar(far);
          setYfov(yfov);
+         setZoom(zoom);
          setParallel(parallel);
      } 
 
@@ -83,11 +86,14 @@ class Camera : public Configurable  {
          //printf("Camera::far_to %10.3f \n", m_far);
      }
 
-     void yfov_to( float x, float y, float dx, float dy )
+     void zoom_to( float x, float y, float dx, float dy )
      {
-         setYfov(m_yfov + 50.*dy) ;
-         //printf("Camera::yfov_to %10.3f \n", m_yfov);
+         setZoom(m_zoom + 50.*dy) ;
+         printf("Camera::zoom_to %10.3f \n", m_zoom);
      }
+
+
+
 
      void setNear(float near)
      {
@@ -112,6 +118,46 @@ class Camera : public Configurable  {
      {
          return m_far ;
      }
+
+
+     float getZoom()
+     {
+         return m_zoom ; 
+     } 
+     void setZoom(float zoom)
+     {
+         if(      zoom < m_zoomclip[0] )  m_zoom = m_zoomclip[0] ;
+         else if( zoom > m_zoomclip[1] )  m_zoom = m_zoomclip[1] ;
+         else                             m_zoom = zoom ;
+         m_changed = true ; 
+     }
+
+     void setYfov(float yfov)
+     {
+          // fov = 2atan(1/zoom)
+          // zoom = 1/tan(fov/2)
+
+          float zoom = 1.f/tan(yfov*0.5f*M_PI/180.f );
+          setZoom( zoom );
+     }
+     float getYfov()
+     {
+          return 2.f*atan(1./m_zoom);
+     }
+     float getTanYfov()
+     {
+         return 1.f/m_zoom ;
+     } 
+
+
+#ifdef PRIOR
+
+     void yfov_to( float x, float y, float dx, float dy )
+     {
+         setYfov(m_yfov + 50.*dy) ;
+         //printf("Camera::yfov_to %10.3f \n", m_yfov);
+     }
+
      void setYfov(float yfov)
      {
          if(      yfov < m_yfovclip[0] )  m_yfov = m_yfovclip[0] ;
@@ -123,6 +169,12 @@ class Camera : public Configurable  {
      {
          return m_yfov ;
      }
+     float getTanYfov()
+     {
+         return tan( m_yfov*0.5f*M_PI/180.f );
+     } 
+
+#endif
 
      void setSize(int width, int height )
      {
@@ -152,6 +204,11 @@ class Camera : public Configurable  {
          m_yfovclip[0] = _min ;  
          m_yfovclip[1] = _max ;  
      }
+     void setZoomClip(float _min, float _max)
+     {
+         m_zoomclip[0] = _min ;  
+         m_zoomclip[1] = _max ;  
+     }
 
      float getAspect() // width/height (> 1 for landscape)
      {
@@ -168,10 +225,7 @@ class Camera : public Configurable  {
      {
           return m_parallel ; 
      }
-     float getTanYfov()
-     {
-         return tan( m_yfov*0.5f*M_PI/180.f );
-     } 
+
      float getTop()
      {
          return m_near * getTanYfov();
@@ -225,10 +279,12 @@ class Camera : public Configurable  {
      float m_nearclip[2] ;
      float m_farclip[2] ;
      float m_yfovclip[2] ;
+     float m_zoomclip[2] ;
 
      float m_near ;
      float m_far ;
      float m_yfov ;
+     float m_zoom ;
 
      bool m_parallel ; 
      bool m_changed ; 

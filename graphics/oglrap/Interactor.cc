@@ -87,7 +87,7 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
 
     if( m_yfov_mode )
     {
-        m_camera->yfov_to(df*x,df*y,df*dx,df*dy);
+        m_camera->zoom_to(df*x,df*y,df*dx,df*dy);
     }
     else if( m_near_mode )
     {

@@ -18,6 +18,7 @@ const char* Camera::PRINT    = "print" ;
 const char* Camera::NEAR     = "near" ;
 const char* Camera::FAR      = "far" ;
 const char* Camera::YFOV     = "yfov" ;
+const char* Camera::ZOOM     = "zoom" ;
 const char* Camera::PARALLEL = "parallel" ;
 
 
@@ -26,6 +27,7 @@ bool Camera::accepts(const char* name)
     return 
           strcmp(name, NEAR) == 0  ||
           strcmp(name, FAR ) == 0  || 
+          strcmp(name, ZOOM ) == 0  || 
           strcmp(name, YFOV) == 0  ;
 }  
 
@@ -37,6 +39,7 @@ std::vector<std::string> Camera::getTags()
     tags.push_back(NEAR);
     tags.push_back(FAR);
     tags.push_back(YFOV);
+    tags.push_back(ZOOM);
     return tags ; 
 }
 
@@ -47,6 +50,7 @@ std::string Camera::get(const char* name)
     if(     strcmp(name,NEAR)==0)     v = getNear();
     else if(strcmp(name,FAR)== 0 )    v = getFar();
     else if(strcmp(name,YFOV)== 0 )   v = getYfov();
+    else if(strcmp(name,ZOOM)== 0 )   v = getZoom();
     else
          printf("Camera::get bad name %s\n", name);
 
@@ -60,6 +64,7 @@ void Camera::set(const char* name, std::string& s)
     if(     strcmp(name,NEAR)==0)    setNear(v);
     else if(strcmp(name,FAR)== 0 )   setFar(v);
     else if(strcmp(name,YFOV)== 0 )  setYfov(v);
+    else if(strcmp(name,ZOOM)== 0 )  setZoom(v);
     else
          printf("Camera::set bad name %s\n", name);
 }
@@ -74,6 +79,7 @@ void Camera::configure(const char* name, const char* val_)
 void Camera::configure(const char* name, float value)
 {
     if(      strcmp(name, YFOV) ==  0)      setYfov(value);
+    else if( strcmp(name, ZOOM) ==  0)      setZoom(value);
     else if( strcmp(name, NEAR) ==  0)      setNear(value);
     else if( strcmp(name, FAR) ==  0)       setFar(value);
     else if( strcmp(name, PARALLEL) ==  0)  setParallel( value==0.f ? false : true );
@@ -123,6 +129,7 @@ void Camera::gui()
     ImGui::SliderFloat("near",  &m_near, m_nearclip[0], m_nearclip[1], "%.3f", power );  
     ImGui::SliderFloat("far",   &m_far,  m_farclip[0],  m_farclip[1], "%.3f", power );
     ImGui::SliderFloat("yfov",  &m_yfov, m_yfovclip[0], m_yfovclip[1]);
+    ImGui::SliderFloat("zoom",  &m_zoom, m_zoomclip[0], m_zoomclip[1]);
     ImGui::Checkbox("parallel", &m_parallel);
     if (ImGui::Button("Camera Summary")) Summary();
 #endif  
@@ -133,7 +140,7 @@ void Camera::gui()
 
 void Camera::Print(const char* msg)
 {
-    printf("%s parallel %d  near %10.3f far %10.3f yfov %10.3f \n", msg, m_parallel, m_near, m_far, m_yfov );
+    printf("%s parallel %d  near %10.3f far %10.3f yfov %10.3f zoom %10.3f \n", msg, m_parallel, m_near, m_far, m_yfov, m_zoom );
 }
 
 
@@ -144,6 +151,7 @@ void Camera::Summary(const char* msg)
     printf(" near %10.3f  clip %10.3f %10.3f \n", m_near, m_nearclip[0], m_nearclip[1] );
     printf(" far  %10.3f  clip %10.3f %10.3f \n", m_far , m_farclip[0], m_farclip[1] );
     printf(" yfov %10.3f  clip %10.3f %10.3f \n", m_yfov, m_yfovclip[0], m_yfovclip[1] );
+    printf(" zoom %10.3f  clip %10.3f %10.3f \n", m_zoom, m_zoomclip[0], m_zoomclip[1] );
     printf(" top %10.3f bot %10.3f left %10.3f right %10.3f tan(yfov/2) %10.3f \n", getTop(), getBottom(), getLeft(), getRight(), getTanYfov() );
 
     glm::mat4 projection = getProjection();    
