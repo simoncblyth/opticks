@@ -45,6 +45,7 @@ GPmt* GPmt::load(const char* path)
 
 unsigned int GPmt::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
+    assert(i < m_num_parts );
     float* data = (float*)m_part_buffer->getPointer();
     uif_t uif ; 
     uif.f = data[i*NJ*NK+j*NJ+k] ;
@@ -53,14 +54,27 @@ unsigned int GPmt::getUInt(unsigned int i, unsigned int j, unsigned int k)
 
 unsigned int GPmt::getNodeIndex(unsigned int part_index)
 {
-    assert(part_index < m_num_parts );
     return getUInt(part_index, NODEINDEX_J, NODEINDEX_K);
 }
 unsigned int GPmt::getTypeCode(unsigned int part_index)
 {
-    assert(part_index < m_num_parts );
     return getUInt(part_index, TYPECODE_J, TYPECODE_K);
 }
+unsigned int GPmt::getIndex(unsigned int part_index)
+{
+    return getUInt(part_index, INDEX_J, INDEX_K);
+}
+unsigned int GPmt::getParent(unsigned int part_index)
+{
+    return getUInt(part_index, PARENT_J, PARENT_K);
+}
+unsigned int GPmt::getFlags(unsigned int part_index)
+{
+    return getUInt(part_index, FLAGS_J, FLAGS_K);
+}
+ 
+
+
 const char* GPmt::getTypeName(unsigned int part_index)
 {
     unsigned int code = getTypeCode(part_index);
@@ -121,24 +135,6 @@ void GPmt::init()
     }
 
     
-    /* 
-    // assumimg contiguous
-    unsigned int offset = 0 ; 
-    for(unsigned int s=0 ; s < m_parts_per_solid ; s++)
-    {
-        guint4& si = *(solidinfo+s) ;
-        unsigned int snp = getSolidNumParts(s);
-
-        si.x = offset ; 
-        si.y = snp ;
-        si.z = s ; 
-        si.w = 0 ; 
-
-        printf("si %2u %2u %2u %2u \n", si.x,si.y,si.z,si.w);
-        offset += snp ; 
-    }
-    */
-
 
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
@@ -187,6 +183,8 @@ void GPmt::Summary(const char* msg)
 }
 
 
+
+
 void GPmt::dump(const char* msg)
 {
     GBuffer* buf = m_part_buffer ;  
@@ -218,6 +216,9 @@ void GPmt::dump(const char* msg)
     for(unsigned int i=0; i < ni; i++)
     {   
        unsigned int tc = getTypeCode(i);
+       unsigned int id = getIndex(i);
+       unsigned int pid = getParent(i);
+       unsigned int flg = getFlags(i);
        const char*  tn = getTypeName(i);
 
        for(unsigned int j=0 ; j < NJ ; j++)
@@ -230,6 +231,21 @@ void GPmt::dump(const char* msg)
                   assert( uif.u == tc );
                   printf(" %10u (%s) ", uif.u, tn );
               } 
+              else if( j == INDEX_J && k == INDEX_K)
+              {
+                  assert( uif.u == id );
+                  printf(" %6u id   " , uif.u );
+              }
+              else if( j == PARENT_J && k == PARENT_K)
+              {
+                  assert( uif.u == pid );
+                  printf(" %6u pid  ", uif.u );
+              }
+              else if( j == FLAGS_J && k == FLAGS_K)
+              {
+                  assert( uif.u == flg );
+                  printf(" %6u flg  ", uif.u );
+              }
               else if( j == NODEINDEX_J && k == NODEINDEX_K)
                   printf(" %10d (nodeIndex) ", uif.i );
               else

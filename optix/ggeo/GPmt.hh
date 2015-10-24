@@ -17,7 +17,11 @@ class GPmt {
               NJ = 4,
               NK = 4 } ;
 
-       enum { TYPECODE_J = 2,   TYPECODE_K = 3 };
+       // below must match pmt-/tree.py:copy_parts 
+       enum { INDEX_J  = 1, INDEX_K  = 1 };
+       enum { PARENT_J = 1, PARENT_K = 2 };
+       enum { FLAGS_J  = 1, FLAGS_K  = 3 };
+       enum { TYPECODE_J  = 2, TYPECODE_K  = 3 };
        enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
 
        static const char* SPHERE_ ;
@@ -32,8 +36,13 @@ class GPmt {
        unsigned int getNumSolids();
        unsigned int getSolidNumParts(unsigned int solid_index);
        unsigned int getNumParts();
-       unsigned int getNodeIndex(unsigned int part_index);
+   public: 
+       unsigned int getIndex(unsigned int part_index);
+       unsigned int getParent(unsigned int part_index);
+       unsigned int getFlags(unsigned int part_index);
        unsigned int getTypeCode(unsigned int part_index);
+       unsigned int getNodeIndex(unsigned int part_index);
+   public:
        const char*  getTypeName(unsigned int part_index);
    private:
        void init();

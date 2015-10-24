@@ -54,6 +54,7 @@ Photocathode
 
     ggv-pmt --fslice 1392:2352 --pslice 8:10
 
+    ggv-pmt --fslice 1392:2352 --pslice 8:12   # after add inner spheres
 
 
 First and Second Solids, Pyrex and contained vacuum
