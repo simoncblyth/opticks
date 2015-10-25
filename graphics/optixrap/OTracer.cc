@@ -55,8 +55,10 @@ void OTracer::trace()
 
     m_composition->getEyeUVW(eye, U, V, W); // must setModelToWorld in composition first
 
+    bool parallel = m_composition->getParallel();
     float scene_epsilon = m_composition->getNear();
 
+    m_context[ "parallel"]->setUint( parallel ? 1u : 0u); 
     m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
     m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
     m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );

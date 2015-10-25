@@ -13,6 +13,7 @@ rtDeclareVariable(float3,        V, , );
 rtDeclareVariable(float3,        W, , );
 rtDeclareVariable(float3,        bad_color, , );
 rtDeclareVariable(float,         scene_epsilon, , );
+rtDeclareVariable(unsigned int,  parallel, , );
 rtBuffer<uchar4, 2>              output_buffer;
 
 
@@ -61,8 +62,22 @@ RT_PROGRAM void pinhole_camera()
 
   float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
 
-  float3 ray_origin = eye;
-  float3 ray_direction = normalize(d.x*U + d.y*V + W);   
+ 
+  float3 ray_origin ;
+  float3 ray_direction ;   
+
+  if(parallel == 0)
+  {
+      ray_origin = eye;
+      ray_direction = normalize(d.x*U + d.y*V + W);   
+  }
+  else
+  {
+      ray_origin    = eye + d.x*U + d.y*V ;
+      ray_direction = normalize(W) ; 
+  }  
+
+
   optix::Ray ray = optix::make_Ray(ray_origin, ray_direction, radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX);
 
   // (d.x,d.y) spans screen pixels (-1:1,-1:1) 

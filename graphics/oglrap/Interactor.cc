@@ -81,6 +81,7 @@ void Interactor::setComposition(Composition* composition)
 
 void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int iy )
 {
+    m_changed = true ; 
     //printf("Interactor::cursor_drag x,y  %0.5f,%0.5f dx,dy  %0.5f,%0.5f \n", x,y,dx,dy );
 
     float df = m_dragfactor ; 
@@ -97,12 +98,16 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     {
         m_camera->far_to(df*x,df*y,df*dx,df*dy);
     }
+    else if( m_scale_mode )
+    {
+        m_camera->scale_to(df*x,df*y,df*dx,df*dy);
+    }
     //else if( m_keys_down[_pan_mode_key] )
     else if( m_pan_mode )
     { 
         m_trackball->pan_to(df*x,df*y,df*dx,df*dy);
     } 
-    else if( m_zoom_mode )
+    else if( m_zoom_mode )  // bad name, actully z translate
     { 
         m_trackball->zoom_to(df*x,df*y,df*dx,df*dy);
     } 
@@ -137,6 +142,7 @@ const char* Interactor::keys =
 "\n P : Scene::nextPhotonStyle       dot/longline/shortline  "
 "\n Q : Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
 "\n R : rotate mode toggle  drag around rotate around viewpoint " 
+"\n S : screen scale mode toggle  drag up/down to change screen scale " 
 "\n V : View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
 "\n W : decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
 "\n X : pan mode toggle "
@@ -155,7 +161,7 @@ void Interactor::key_pressed(unsigned int key)
     switch (key)
     {
         //  ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        //  ******** *********   *****
+        //  ******** **********  *****
 
         case GLFW_KEY_A:
             m_composition->nextMode(getModifiers()) ; 
@@ -207,6 +213,9 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_R:
             m_rotate_mode = !m_rotate_mode ; 
+            break;
+        case GLFW_KEY_S:
+            m_scale_mode = !m_scale_mode ; 
             break;
         case GLFW_KEY_V:
             m_view->nextMode(getModifiers()) ; 
@@ -321,12 +330,13 @@ void Interactor::number_key_released(unsigned int number)
 
 void Interactor::updateStatus()
 {
-    snprintf(m_status, STATUS_SIZE , "%s%s%s%s%s%s%s%s %10.3f %u %s %s ",
+    snprintf(m_status, STATUS_SIZE , "%s%s%s%s%s%s%s%s%s %10.3f %u %s %s ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
            m_near_mode ? "n" : "-",
            m_yfov_mode ? "y" : "-",
+           m_scale_mode ? "s" : "-",
            m_rotate_mode ? "r" : "-",
            m_optix_mode ? "o" : "-",
            m_gui_mode ? "g" : "-",

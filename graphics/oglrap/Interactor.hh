@@ -96,6 +96,7 @@ class Interactor {
        bool m_near_mode ;
        bool m_far_mode ;
        bool m_yfov_mode ;
+       bool m_scale_mode ;
        bool m_rotate_mode ;
        bool m_bookmark_mode ;
        bool m_gui_mode ;
@@ -141,6 +142,7 @@ inline Interactor::Interactor()
    m_near_mode(false), 
    m_far_mode(false), 
    m_yfov_mode(false),
+   m_scale_mode(false),
    m_rotate_mode(false),
    m_bookmark_mode(false),
    m_gui_mode(false),

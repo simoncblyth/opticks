@@ -28,6 +28,9 @@ Compare glm::frustum and glm::ortho sources
 Scaling left, right, bottom, top by 1/near looks like it 
 might bring things closer.
 
+* http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+
 ::
 
     150     template <typename T>
@@ -54,13 +57,13 @@ might bring things closer.
     ///     essentially this is mapping onto a canonical box
     ///     in the normal symmetric case
     ///
-    ///          right = -left
-    ///          top   = -bottom
+    ///          right = -left     = w/2 
+    ///          top   = -bottom   = h/2
     ///
-    ///    | 2/w  0   0        0             |
-    ///    |  0  2/h  0        0             |
-    ///    |  0   0  -2/(f-n)  -(f+n)/(f-n)  |
-    ///    |  0   0   0        1             |
+    ///    | 2/w  0   0        -(r+l)/(r-l)   |
+    ///    |  0  2/h  0        -(t+b)/(t-b)   |
+    ///    |  0   0  -2/(f-n)  -(f+n)/(f-n)   |
+    ///    |  0   0   0          1            |
     ///
     ///
 
@@ -86,6 +89,13 @@ might bring things closer.
     207         Result[3][2] = -(static_cast<T>(2) * farVal * nearVal) / (farVal - nearVal);
     208         return Result;
     209     }
+
+    ///
+    ///    |   2n/w    0         0         (r+l)/(r-l)     | 
+    ///    |    0     2n/h       0         (t+b)/(t-b)     |
+    ///    |    0      0    -(f+n)/(f-n)   -2 f n/(f-n)    |
+    ///    |    0      0         -1           0            |
+    ///
 
 
 

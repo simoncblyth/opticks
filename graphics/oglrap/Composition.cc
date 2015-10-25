@@ -502,26 +502,64 @@ void Composition::setCenterExtent(glm::vec4& ce, bool autocam)
     setCenterExtent(gfloat4(ce.x,ce.y,ce.z,ce.w), autocam);
 }
 
-void Composition::setCenterExtent(gfloat4 ce, bool autocam) // replaces setModelToWorld
+void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToWorld
 {  
     m_center_extent.x = ce.x ;
     m_center_extent.y = ce.y ;
     m_center_extent.z = ce.z ;
     m_center_extent.w = ce.w ;
 
+    glm::vec4 ce_(ce.x,ce.y,ce.z,ce.w);
     glm::vec3 sc(ce.w);
     glm::vec3 tr(ce.x, ce.y, ce.z);
 
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
     m_extent = ce.w ; 
 
+    m_trackball->home();
+    update();
 
-    if(autocam)
+    if(aim_)
     {
-        m_trackball->home();
-        m_camera->setNear( m_extent/10.f ); 
-        m_camera->setFar(  m_extent*20.f );  
+        aim(ce_);
     }
+}
+
+
+void Composition::aim(glm::vec4& ce)
+{
+     print(ce, "Composition::aim ce (world frame)"); 
+     print(m_model_to_world, "Composition::aim m2w");
+
+     glm::vec4 eye  = m_view->getEye(m_model_to_world);
+     glm::vec4 look = m_view->getLook(m_model_to_world);
+     glm::vec4 gaze = m_view->getGaze(m_model_to_world);
+
+     print(eye,  "Composition::aim eye ");
+     print(look, "Composition::aim look ");
+     print(gaze, "Composition::aim gaze ");
+     print(m_gaze, "Composition::aim m_gaze");
+
+     //float basis = m_gazelength ; 
+     float basis = m_extent ; 
+ 
+     float a_near = basis/10. ;
+     float a_far  = basis*5. ;
+     float a_scale = basis/10. ; 
+
+     printf("Composition::aim gazelength %10.4f extent %10.4f a_near %10.4f a_far %10.4f a_scale %10.4f  \n", m_gazelength, m_extent, a_near, a_far, a_scale );
+
+     m_camera->setNear( a_near );
+     m_camera->setFar(  a_far );
+     m_camera->setScale( a_scale );
+}
+
+
+
+
+bool Composition::getParallel()
+{
+    return m_camera->getParallel();
 }
 float Composition::getNear()
 {
