@@ -61,11 +61,14 @@ int main(int argc, char* argv[])
 
     GBoundaryLib* blib = m_ggeo->getBoundaryLib();
     blib->Summary("GBoundaryLib");
-    blib->dumpSurfaces();
+    //blib->dumpSurfaces();
 
 
     GMergedMesh* mm = m_ggeo->makeMergedMesh();
     mm->Summary("GMergedMesh");
+
+    GMaterialLib* mlib = m_ggeo->getMaterialLib();
+    mlib->Summary();
 
 
     return 0 ; 

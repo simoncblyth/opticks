@@ -161,6 +161,7 @@ void GGeo::init()
    if(m_loaded) return ; 
 
    m_boundarylib = new GBoundaryLib();
+   m_materiallib = new GMaterialLib(m_cache);
 
 
    // chroma/chroma/geometry.py
@@ -606,7 +607,7 @@ void GGeo::traverse( GNode* node, unsigned int depth)
     NSensor* sensor = solid->getSensor(); 
 
     if(sensor)
-         LOG(info) << "GGeo::traverse " 
+         LOG(debug) << "GGeo::traverse " 
                    << " nodeIndex " << node->getIndex()
                    << sensor->description() 
                    ; 

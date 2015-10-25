@@ -50,6 +50,7 @@ add_library(${name} SHARED
                 GBorderSurface.cc
                 GOpticalSurface.cc
                 GBoundary.cc
+                GMaterialLib.cc
                 GBoundaryLib.cc
                 GBoundaryLibMetadata.cc
                 GSolid.cc
@@ -95,6 +96,7 @@ GBorderSurface.hh
 GOpticalSurface.hh
 GBoundary.hh
 GBoundaryLib.hh
+GMaterialLib.hh
 GBoundaryLibMetadata.hh
 GVector.hh
 GMatrix.hh

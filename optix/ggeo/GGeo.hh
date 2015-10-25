@@ -9,6 +9,7 @@
 #include "GVector.hh"
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
+#include "GMaterialLib.hh"
 
 class GCache; 
 class GMesh ; 
@@ -165,6 +166,7 @@ class GGeo {
 
     public:
         GBoundaryLib* getBoundaryLib();
+        GMaterialLib* getMaterialLib();
 
     public:
         GMesh* getMesh(unsigned int index);  
@@ -253,6 +255,7 @@ class GGeo {
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
         GBoundaryLib*                 m_boundarylib ; 
+        GMaterialLib*                 m_materiallib ; 
         NSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
@@ -287,6 +290,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
    m_loaded(false), 
    m_boundarylib(NULL),
+   m_materiallib(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
@@ -338,6 +342,8 @@ inline bool GGeo::isVolnames()
 
 inline void GGeo::add(GMaterial* material)
 {
+    m_materiallib->add(material);
+
     m_materials.push_back(material);
     addToIndex((GPropertyMap<float>*)material);
 }
@@ -355,6 +361,7 @@ inline void GGeo::add(GSkinSurface* surface)
 
 inline void GGeo::addRaw(GMaterial* material)
 {
+    m_materiallib->addRaw(material);
     m_materials_raw.push_back(material);
 }
 inline void GGeo::addRaw(GBorderSurface* surface)
@@ -443,6 +450,13 @@ inline GBoundaryLib* GGeo::getBoundaryLib()
 {
     return m_boundarylib ; 
 }
+inline GMaterialLib* GGeo::getMaterialLib()
+{
+    return m_materiallib ; 
+}
+
+
+
 inline NSensorList* GGeo::getSensorList()
 {
     return m_sensor_list ; 
