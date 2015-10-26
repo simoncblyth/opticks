@@ -22,6 +22,14 @@ void GSolid::setBoundary(GBoundary* boundary)
     setBoundaryIndices( boundary->getIndex() );
 }
 
+void GSolid::setBnd(guint4 bnd)
+{
+    m_bnd.x = bnd.x ; 
+    m_bnd.y = bnd.y ; 
+    m_bnd.z = bnd.z ; 
+    m_bnd.w = bnd.w ; 
+}
+
 void GSolid::setSensor(NSensor* sensor)
 {
     m_sensor = sensor ; 

@@ -21,6 +21,12 @@ std::string GPropertyLib::getCacheDir()
     return m_cache->getPropertyLibDir(m_type);
 }
 
+unsigned int GPropertyLib::getIndex(const char* shortname)
+{
+    assert(m_names);
+    return m_names->getIndex(shortname);
+}
+
 void GPropertyLib::init()
 {
     GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 

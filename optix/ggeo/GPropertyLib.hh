@@ -18,6 +18,7 @@ class GPropertyLib {
         static float        DOMAIN_HIGH ; 
         static float        DOMAIN_STEP ; 
     public:
+        unsigned int getIndex(const char* shortname);
         GPropertyLib(GCache* cache, const char* type);
         std::string getCacheDir();
         const char* getType();

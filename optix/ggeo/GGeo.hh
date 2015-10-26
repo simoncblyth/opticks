@@ -9,7 +9,6 @@
 #include "GVector.hh"
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
-#include "GMaterialLib.hh"
 
 class GCache; 
 class GMesh ; 
@@ -19,7 +18,12 @@ class GMaterial ;
 class GSkinSurface ; 
 class GBorderSurface ; 
 class GBoundary ;
+
+class GBndLib ;
 class GBoundaryLib ;
+class GMaterialLib ;
+class GSurfaceLib ;
+
 class GMergedMesh ;
 class NSensorList ; 
 class GColors ; 
@@ -165,8 +169,10 @@ class GGeo {
         unsigned int getNumRawBorderSurfaces();
 
     public:
+        GBndLib*      getBndLib();
         GBoundaryLib* getBoundaryLib();
         GMaterialLib* getMaterialLib();
+        GSurfaceLib*  getSurfaceLib();
 
     public:
         GMesh* getMesh(unsigned int index);  
@@ -254,8 +260,11 @@ class GGeo {
         std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
+        GBndLib*                      m_bndlib ; 
         GBoundaryLib*                 m_boundarylib ; 
         GMaterialLib*                 m_materiallib ; 
+        GSurfaceLib*                  m_surfacelib ; 
+
         NSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
@@ -289,8 +298,10 @@ class GGeo {
 inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
    m_loaded(false), 
+   m_bndlib(NULL),
    m_boundarylib(NULL),
    m_materiallib(NULL),
+   m_surfacelib(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
@@ -338,24 +349,6 @@ inline bool GGeo::isLoaded()
 inline bool GGeo::isVolnames()
 {
     return m_volnames ; 
-}
-
-inline void GGeo::add(GMaterial* material)
-{
-    m_materiallib->add(material);
-
-    m_materials.push_back(material);
-    addToIndex((GPropertyMap<float>*)material);
-}
-inline void GGeo::add(GBorderSurface* surface)
-{
-    m_border_surfaces.push_back(surface);
-    addToIndex((GPropertyMap<float>*)surface);
-}
-inline void GGeo::add(GSkinSurface* surface)
-{
-    m_skin_surfaces.push_back(surface);
-    addToIndex((GPropertyMap<float>*)surface);
 }
 
 
@@ -449,10 +442,19 @@ inline GBoundaryLib* GGeo::getBoundaryLib()
 {
     return m_boundarylib ; 
 }
+inline GBndLib* GGeo::getBndLib()
+{
+    return m_bndlib ; 
+}
 inline GMaterialLib* GGeo::getMaterialLib()
 {
     return m_materiallib ; 
 }
+inline GSurfaceLib* GGeo::getSurfaceLib()
+{
+    return m_surfacelib ; 
+}
+
 
 
 

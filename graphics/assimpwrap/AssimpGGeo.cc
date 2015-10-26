@@ -23,10 +23,11 @@
 #include "GOpticalSurface.hh"
 #include "GSolid.hh"
 #include "GBoundary.hh"
-#include "GBoundaryLib.hh"
 #include "GDomain.hh"
 
 
+#include "GBoundaryLib.hh"
+#include "GBndLib.hh"
 
 // npy-
 #include "stringutil.hpp"
@@ -890,7 +891,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
     GBoundaryLib* lib = gg->getBoundaryLib();  
-
+    GBndLib* blib = gg->getBndLib();  
 
 
     NSensorList* sens = gg->getSensorList();  
@@ -901,8 +902,10 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
  
    
     GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
+    guint4 bnd = blib->getOrCreate( mt, mt_p, isurf, osurf );
 
     solid->setBoundary(boundary);  
+    solid->setBnd(bnd);
 
 
     char* desc = node->getDescription("\n\noriginal node description"); 

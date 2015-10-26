@@ -8,7 +8,11 @@
 #include "GSolid.hh"
 #include "GMesh.hh"
 #include "GBoundary.hh"
+
+#include "GBndLib.hh"
 #include "GBoundaryLib.hh"
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
 
 #include "GMergedMesh.hh"
 #include "GColors.hh"
@@ -46,6 +50,41 @@ namespace fs = boost::filesystem;
 
 
 #define BSIZ 50
+
+
+
+
+
+
+
+
+void GGeo::add(GMaterial* material)
+{
+    m_materiallib->add(material);
+
+    m_materials.push_back(material);
+    addToIndex((GPropertyMap<float>*)material);
+}
+void GGeo::add(GBorderSurface* surface)
+{
+    m_surfacelib->add(surface);
+
+    m_border_surfaces.push_back(surface);
+    addToIndex((GPropertyMap<float>*)surface);
+}
+void GGeo::add(GSkinSurface* surface)
+{
+    m_surfacelib->add(surface);
+
+    m_skin_surfaces.push_back(surface);
+    addToIndex((GPropertyMap<float>*)surface);
+}
+
+
+
+
+
+
 
 
 
@@ -160,8 +199,12 @@ void GGeo::init()
 
    if(m_loaded) return ; 
 
+   m_bndlib = new GBndLib(m_cache);
    m_boundarylib = new GBoundaryLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
+   m_surfacelib  = new GSurfaceLib(m_cache);
+   m_bndlib->setMaterialLib(m_materiallib);
+   m_bndlib->setSurfaceLib(m_surfacelib);
 
 
    // chroma/chroma/geometry.py

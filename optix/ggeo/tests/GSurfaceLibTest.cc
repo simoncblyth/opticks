@@ -1,11 +1,11 @@
 #include "GCache.hh"
-#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
 
 int main()
 {
     GCache gc("GGEOVIEW_");
 
-    GMaterialLib* lib = GMaterialLib::load(&gc);
+    GSurfaceLib* lib = GSurfaceLib::load(&gc);
 
     lib->dump();
 

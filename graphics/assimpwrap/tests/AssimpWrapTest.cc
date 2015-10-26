@@ -16,7 +16,11 @@ Comparing with pycollada
 
 #include "GCache.hh"
 #include "GGeo.hh"
+
 #include "GBoundaryLib.hh"
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
+
 #include "GMergedMesh.hh"
 
 #include <stdio.h>
@@ -71,6 +75,14 @@ int main(int argc, char* argv[])
     mlib->Summary();
     mlib->createBuffer();
     mlib->saveToCache();
+
+
+    GSurfaceLib* slib = m_ggeo->getSurfaceLib();
+    slib->Summary();
+    slib->createBuffer();
+    slib->saveToCache();
+
+
 
 
     return 0 ; 

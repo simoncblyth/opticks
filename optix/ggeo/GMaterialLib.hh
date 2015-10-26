@@ -3,7 +3,6 @@
 #include <vector>
 #include "GPropertyLib.hh"
 
-
 class GMaterial ; 
 class GItemList ; 
 
@@ -41,6 +40,7 @@ class GMaterialLib : public GPropertyLib {
    public:
        void add(GMaterial* material);
        GMaterial* getMaterial(unsigned int i);
+   public:
    private:
        GMaterial* createStandardMaterial(GMaterial* src);
    public:

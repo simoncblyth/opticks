@@ -1,7 +1,9 @@
 #include "GBoundaryLib.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GItemIndex.hh"
+
 #include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
 //#include "GItemIndex.hh"
 
 #include "GCache.hh"
@@ -1105,15 +1107,6 @@ char* GBoundaryLib::digest(std::vector<GProperty<float>*>& props)
 }
 
 
-const char* GBoundaryLib::surfacePropertyName(unsigned int i)
-{
-    assert(i < 4);
-    if(i == 0) return detect ;
-    if(i == 1) return absorb ;
-    if(i == 2) return reflect_specular;
-    if(i == 3) return reflect_diffuse ;
-    return "?" ;
-}
 const char* GBoundaryLib::extraPropertyName(unsigned int i)
 {
     assert(i < 4);
@@ -1133,8 +1126,8 @@ char* GBoundaryLib::propertyName(unsigned int p, unsigned int i)
     {
        case 0: snprintf(name, 64, "%s%s", inner, GMaterialLib::propertyName(i) ); break;
        case 1: snprintf(name, 64, "%s%s", outer, GMaterialLib::propertyName(i) ); break;
-       case 2: snprintf(name, 64, "%s%s", inner, surfacePropertyName(i) ); break;
-       case 3: snprintf(name, 64, "%s%s", outer, surfacePropertyName(i) ); break;
+       case 2: snprintf(name, 64, "%s%s", inner, GSurfaceLib::propertyName(i) ); break;
+       case 3: snprintf(name, 64, "%s%s", outer, GSurfaceLib::propertyName(i) ); break;
        case 4: snprintf(name, 64, "%s%s", inner, extraPropertyName(i) ); break;
        case 5: snprintf(name, 64, "%s%s", outer, extraPropertyName(i) ); break;
     }
