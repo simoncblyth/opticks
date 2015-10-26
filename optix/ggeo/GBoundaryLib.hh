@@ -171,6 +171,8 @@ class GBoundaryLib : public GPropertyLib {
   private:
       // support for standardization 
       void defineDefaults(GPropertyMap<float>* defaults);
+      void import();
+
 
       GProperty<float>* getRamp();
 
@@ -204,7 +206,6 @@ class GBoundaryLib : public GPropertyLib {
   public:
       static unsigned int getNumProp();
       static unsigned int getNumQuad();
-      const char* materialPropertyName(unsigned int i);
       const char* surfacePropertyName(unsigned int i);
       const char* extraPropertyName(unsigned int i);
       char* propertyName(unsigned int p, unsigned int i);
@@ -241,7 +242,7 @@ class GBoundaryLib : public GPropertyLib {
 
 inline GBoundaryLib::GBoundaryLib(GCache* cache) 
           : 
-          GPropertyLib(cache),
+          GPropertyLib(cache, "GBoundaryLib"),
           m_standard(true), 
           m_num_quad(6), 
           m_ramp(NULL), 

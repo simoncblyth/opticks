@@ -108,6 +108,17 @@ std::string GCache::getMergedMeshPath(unsigned int ridx)
 }
 
 
+std::string GCache::getPropertyLibDir(const char* name)
+{
+    fs::path cachedir(m_idpath);
+    fs::path pld(cachedir/name );
+    return pld.string() ;
+}
+
+
+
+
+
 
 void GCache::Summary(const char* msg)
 {

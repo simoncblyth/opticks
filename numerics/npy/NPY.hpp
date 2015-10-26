@@ -52,6 +52,7 @@ class NPY : public NPYBase {
    friend class PhotonsNPY ; 
    friend class HitsNPY ; 
    friend class G4StepNPY ; 
+   friend class MaterialLibNPY ; 
 
    public:
        static Type_t type ;  // for type branching 
@@ -77,13 +78,16 @@ class NPY : public NPYBase {
    public:
        static NPY<T>* debugload(const char* path);
        static NPY<T>* load(const char* path);
+       static NPY<T>* load(const char* dir, const char* name);
        static NPY<T>* load(const char* typ, const char* tag, const char* det);
  
        void save(const char* path);
+       void save(const char* dir, const char* name);
        void save(const char* typ, const char* tag, const char* det );
        void save(const char* tfmt, const char* targ, const char* tag, const char* det);
 
        bool exists(const char* path);
+       bool exists(const char* dir, const char* name);
        bool exists(const char* typ, const char* tag, const char* det);
        bool exists(const char* tfmt, const char* targ, const char* tag, const char* det );
 

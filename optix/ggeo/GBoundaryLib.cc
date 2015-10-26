@@ -1,6 +1,7 @@
 #include "GBoundaryLib.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GItemIndex.hh"
+#include "GMaterialLib.hh"
 //#include "GItemIndex.hh"
 
 #include "GCache.hh"
@@ -353,6 +354,11 @@ GPropertyMap<float>* GBoundaryLib::createStandardProperties(const char* pname, G
     return ptex ; 
 }
 
+
+void GBoundaryLib::import()
+{
+    LOG(info) << "GBoundaryLib::import placeholder " ;
+}
 
 void GBoundaryLib::defineDefaults(GPropertyMap<float>* defaults)
 {
@@ -1099,16 +1105,6 @@ char* GBoundaryLib::digest(std::vector<GProperty<float>*>& props)
 }
 
 
-const char* GBoundaryLib::materialPropertyName(unsigned int i)
-{
-    assert(i < 4);
-    if(i == 0) return refractive_index ;
-    if(i == 1) return absorption_length ;
-    if(i == 2) return scattering_length ;
-    if(i == 3) return reemission_prob ;
-    return "?" ;
-}
-
 const char* GBoundaryLib::surfacePropertyName(unsigned int i)
 {
     assert(i < 4);
@@ -1135,8 +1131,8 @@ char* GBoundaryLib::propertyName(unsigned int p, unsigned int i)
     char name[64];
     switch(p)
     {
-       case 0: snprintf(name, 64, "%s%s", inner, materialPropertyName(i) ); break;
-       case 1: snprintf(name, 64, "%s%s", outer, materialPropertyName(i) ); break;
+       case 0: snprintf(name, 64, "%s%s", inner, GMaterialLib::propertyName(i) ); break;
+       case 1: snprintf(name, 64, "%s%s", outer, GMaterialLib::propertyName(i) ); break;
        case 2: snprintf(name, 64, "%s%s", inner, surfacePropertyName(i) ); break;
        case 3: snprintf(name, 64, "%s%s", outer, surfacePropertyName(i) ); break;
        case 4: snprintf(name, 64, "%s%s", inner, extraPropertyName(i) ); break;

@@ -361,7 +361,6 @@ inline void GGeo::add(GSkinSurface* surface)
 
 inline void GGeo::addRaw(GMaterial* material)
 {
-    m_materiallib->addRaw(material);
     m_materials_raw.push_back(material);
 }
 inline void GGeo::addRaw(GBorderSurface* surface)

@@ -69,6 +69,8 @@ int main(int argc, char* argv[])
 
     GMaterialLib* mlib = m_ggeo->getMaterialLib();
     mlib->Summary();
+    mlib->createBuffer();
+    mlib->saveToCache();
 
 
     return 0 ; 

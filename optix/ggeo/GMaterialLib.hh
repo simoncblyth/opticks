@@ -3,30 +3,36 @@
 #include <vector>
 #include "GPropertyLib.hh"
 
+
 class GMaterial ; 
+class GItemList ; 
 
 //
 // rationale: 
 //    * need dynamic boundary construction post-cache
 //
 // approach: 
-//    * constituent of GGeo that collects materials, standardizes and persists to GBuffer
+//    * constituent of GGeo that collects materials, standardizes and persists to NPY<float>
 //    * take over GMaterial handling from GGeo and GBoundaryLib
 //    * aiming togther with a GSurfaceLib to greatly simplify GBoundaryLib 
 //
 
 class GMaterialLib : public GPropertyLib {
    public:
-      // 4 standard material property names : interleaved into float4 wavelength texture
-      static const char* refractive_index ; 
-      static const char* absorption_length ; 
-      static const char* scattering_length ; 
-      static const char* reemission_prob ; 
+       // 4 standard material property names : interleaved into float4 wavelength texture
+       static const char* propertyName(unsigned int k);
+       static const char* refractive_index ; 
+       static const char* absorption_length ; 
+       static const char* scattering_length ; 
+       static const char* reemission_prob ; 
    public:
-      static const char* keyspec ;
+       static const char* keyspec ;
    public:
+       static GMaterialLib* load(GCache* cache);
        GMaterialLib(GCache* cache); 
        void Summary(const char* msg="GMaterialLib::Summary");
+       void dump(const char* msg="GMaterialLib::dump");
+       void dump(GMaterial* mat, const char* msg="GMaterialLib::dump");
    private:
        void init();
    public:
@@ -34,31 +40,31 @@ class GMaterialLib : public GPropertyLib {
        void defineDefaults(GPropertyMap<float>* defaults); 
    public:
        void add(GMaterial* material);
-       void addRaw(GMaterial* material);
-   public:
-       unsigned int getNumMaterials();
-       unsigned int getNumRawMaterials();
+       GMaterial* getMaterial(unsigned int i);
    private:
-       std::vector<GMaterial*>       m_materials ; 
+       GMaterial* createStandardMaterial(GMaterial* src);
+   public:
+       unsigned int getNumRawMaterials();
+       unsigned int getNumMaterials();
+   public:
+       void createBuffer();
+       void import();
+   private:
+       void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk );
+   private:
        std::vector<GMaterial*>       m_materials_raw ; 
+       std::vector<GMaterial*>       m_materials ; 
+
 
 };
 
 inline GMaterialLib::GMaterialLib(GCache* cache) 
     :
-    GPropertyLib(cache)
+    GPropertyLib(cache, "GMaterialLib")
 {
     init();
 }
  
-inline void GMaterialLib::add(GMaterial* material)
-{
-    m_materials.push_back(material);
-}
-inline void GMaterialLib::addRaw(GMaterial* material)
-{
-    m_materials_raw.push_back(material);
-}
 inline unsigned int GMaterialLib::getNumMaterials()
 {
     return m_materials.size();
@@ -67,4 +73,11 @@ inline unsigned int GMaterialLib::getNumRawMaterials()
 {
     return m_materials_raw.size();
 }
+
+inline GMaterial* GMaterialLib::getMaterial(unsigned int i)
+{
+    return m_materials[i] ;
+}
+
+
  

@@ -23,7 +23,8 @@ class NPYBase {
        std::vector<int>& getShapeVector();
        std::string  getItemShape(unsigned int ifr=1);
        std::string  getDigestString();
-       unsigned int getLength();
+       //unsigned int getLength();
+       unsigned int getNumItems();
        unsigned int getDimensions();
        unsigned int getShape(unsigned int dim);
        unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
@@ -45,6 +46,7 @@ class NPYBase {
        bool         isDynamic(); 
    public:
        // NumPy persistency
+       static std::string path(const char* dir, const char* name);
        static std::string path(const char* typ, const char* tag, const char* det);
        void setVerbose(bool verbose=true);
        void setAllowPrealloc(bool allow=true); 
@@ -59,6 +61,7 @@ class NPYBase {
        virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j ) = 0 ; 
 
        virtual void save(const char* path) = 0;
+       virtual void save(const char* dir, const char* name) = 0;
        virtual void save(const char* typ, const char* tag, const char* det) = 0;
        virtual void save(const char* tfmt, const char* targ, const char* tag, const char* det ) = 0;
  
@@ -127,10 +130,17 @@ inline std::vector<int>& NPYBase::getShapeVector()
 {
     return m_shape ; 
 }
-inline unsigned int NPYBase::getLength()
+
+
+//inline unsigned int NPYBase::getLength()
+//{
+//    return getShape(0);
+//}
+inline unsigned int NPYBase::getNumItems()
 {
     return getShape(0);
 }
+
 
 inline unsigned int NPYBase::getDimensions()
 {

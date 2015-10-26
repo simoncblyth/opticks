@@ -1,5 +1,4 @@
-#ifndef GMATERIAL_H
-#define GMATERIAL_H
+#pragma once
 
 //
 // analog of chroma.geometry.Material
@@ -15,6 +14,7 @@
 
 class GMaterial : public GPropertyMap<float> {
   public:
+      GMaterial(GMaterial* other);
       GMaterial(const char* name, unsigned int index);
       virtual ~GMaterial();
 
@@ -24,6 +24,5 @@ class GMaterial : public GPropertyMap<float> {
 };
 
 
-#endif
 
 

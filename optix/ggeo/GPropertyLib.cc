@@ -1,4 +1,8 @@
 #include "GPropertyLib.hh"
+#include "GCache.hh"
+#include "GItemList.hh"
+
+#include "NPY.hpp"
 #include <cassert>
 
 #include <iostream>
@@ -12,7 +16,10 @@ float        GPropertyLib::DOMAIN_HIGH = 810.f ;
 float        GPropertyLib::DOMAIN_STEP = 20.f ; 
 unsigned int GPropertyLib::DOMAIN_LENGTH = 39  ; 
 
-
+std::string GPropertyLib::getCacheDir()
+{
+    return m_cache->getPropertyLibDir(m_type);
+}
 
 void GPropertyLib::init()
 {
@@ -27,8 +34,38 @@ void GPropertyLib::init()
     GPropertyMap<float>* defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     defaults->setStandardDomain(getStandardDomain());
     setDefaults(defaults);
+
 }
 
+
+std::string GPropertyLib::getBufferName()
+{
+    std::string name = m_type ;  
+    return name + ".npy" ; 
+}
+
+void GPropertyLib::saveToCache()
+{
+    assert(m_buffer);
+    assert(m_names);
+
+    std::string dir = getCacheDir(); 
+    std::string name = getBufferName();
+
+    m_buffer->save(dir.c_str(), name.c_str());   
+    m_names->save(m_cache->getIdPath());
+}
+
+void GPropertyLib::loadFromCache()
+{
+    std::string dir = getCacheDir(); 
+    std::string name = getBufferName();
+
+    setBuffer(NPY<float>::load(dir.c_str(), name.c_str())); 
+    setNames(GItemList::load(m_cache->getIdPath(), m_type)); 
+
+    import();
+}
 
 
 

@@ -127,6 +127,9 @@ NPY<T>* NPY<T>::debugload(const char* path)
 }
 
 
+
+
+
 template <typename T>
 NPY<T>* NPY<T>::load(const char* path)
 {
@@ -158,6 +161,14 @@ NPY<T>* NPY<T>::load(const char* typ, const char* tag, const char* det)
     return load(path.c_str());
 }
 
+template <typename T>
+NPY<T>* NPY<T>::load(const char* dir, const char* name)
+{
+    std::string path = NPYBase::path(dir, name);
+    return load(path.c_str());
+}
+ 
+
 
 
 template <typename T>
@@ -175,6 +186,14 @@ void NPY<T>::save(const char* tfmt, const char* targ, const char* tag, const cha
     save(typ, tag, det);
 }
 
+
+
+template <typename T>
+bool NPY<T>::exists(const char* dir, const char* name)
+{
+    std::string path = NPYBase::path(dir, name);
+    return exists(path.c_str());
+}
 
 
 template <typename T>
@@ -199,6 +218,13 @@ bool NPY<T>::exists(const char* path_)
     return fs::exists(path) && fs::is_regular_file(path); 
 }
 
+template <typename T>
+void NPY<T>::save(const char* dir, const char* name)
+{
+    std::string path = NPYBase::path(dir, name);
+    save(path.c_str());
+}
+ 
 
 template <typename T>
 void NPY<T>::save(const char* path_)

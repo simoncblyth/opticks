@@ -135,6 +135,12 @@ Envvars are defined in env/export-
 
 
 
+std::string NPYBase::path(const char* dir, const char* name)
+{
+    char path[256];
+    snprintf(path, 256, "%s/%s", dir, name);
+    return path ; 
+}
 
 
 

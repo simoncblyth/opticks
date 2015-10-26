@@ -52,6 +52,7 @@ add_library( ${name}  SHARED
     HitsNPY.cpp
     RecordsNPY.cpp
     BoundariesNPY.cpp
+    MaterialLibNPY.cpp
     SequenceNPY.cpp
     AxisNPY.cpp
     Counts.cpp
@@ -94,6 +95,7 @@ PhotonsNPY.hpp
 HitsNPY.hpp
 RecordsNPY.hpp
 BoundariesNPY.hpp
+MaterialLibNPY.hpp
 SequenceNPY.hpp
 AxisNPY.hpp
 Counts.hpp
