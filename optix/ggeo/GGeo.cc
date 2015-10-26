@@ -160,7 +160,7 @@ void GGeo::init()
 
    if(m_loaded) return ; 
 
-   m_boundarylib = new GBoundaryLib();
+   m_boundarylib = new GBoundaryLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
 
 
@@ -168,7 +168,11 @@ void GGeo::init()
    // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
    //
    GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
+
    m_boundarylib->setStandardDomain( standard_wavelengths );
+   m_materiallib->setStandardDomain( standard_wavelengths );
+
+
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
@@ -214,7 +218,7 @@ void GGeo::loadFromCache()
         m_lvlist = GItemList::load(idpath, "LVNames");
     }
 
-    m_boundarylib = GBoundaryLib::load(idpath);
+    m_boundarylib = GBoundaryLib::load(m_cache);
 }
 
 

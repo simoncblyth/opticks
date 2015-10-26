@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 {
     GCache gc("GGEOVIEW_");
 
-    GBoundaryLib* lib = GBoundaryLib::load(gc.getIdPath());
+    GBoundaryLib* lib = GBoundaryLib::load(&gc);
     //lib->Summary("GBoundaryLib::Summary");
 
     for(unsigned int ib=0 ; ib < lib->getNumBoundary() ; ib++)

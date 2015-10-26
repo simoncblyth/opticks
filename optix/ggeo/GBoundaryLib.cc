@@ -20,7 +20,9 @@
 #include "stringutil.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
+
 #include <string>
 #include <map>
 
@@ -37,17 +39,14 @@ namespace fs = boost::filesystem;
 // trace/debug/info/warning/error/fatal
 
 
-#include <sstream>
+
 #include "assert.h"
 #include "stdio.h"
 #include "limits.h"
 #include "string.h"
 
 unsigned int GBoundaryLib::NUM_QUAD    = 6  ; 
-float        GBoundaryLib::DOMAIN_LOW  = 60.f ; 
-float        GBoundaryLib::DOMAIN_HIGH = 810.f ; 
-float        GBoundaryLib::DOMAIN_STEP = 20.f ; 
-unsigned int GBoundaryLib::DOMAIN_LENGTH = 39  ; 
+
 float        GBoundaryLib::SURFACE_UNSET = -1.f ; 
 float        GBoundaryLib::EXTRA_UNSET = -1.f ; 
 
@@ -138,49 +137,16 @@ bool GBoundaryLib::isScintillator(std::string& matShortName)
     return false ; 
 }
 
-void GBoundaryLib::setKeyMap(const char* spec)
-{
-    m_keymap.clear();
-    const char* kmap = spec ? spec : keymap ; 
-
-    char delim = ',' ;
-    std::istringstream f(kmap);
-    std::string s;
-    while (getline(f, s, delim)) 
-    {
-        std::size_t colon = s.find(":");
-        if(colon == std::string::npos)
-        {
-            printf("GBoundaryLib::setKeyMap SKIPPING ENTRY WITHOUT COLON %s\n", s.c_str());
-            continue ;
-        }
-        
-        std::string dk = s.substr(0, colon);
-        std::string lk = s.substr(colon+1);
-        //printf("GBoundaryLib::setKeyMap dk [%s] lk [%s] \n", dk.c_str(), lk.c_str());
-        m_keymap[dk] = lk ; 
-    }
-}
-
-
 
 
 void GBoundaryLib::init()
 {
+    setKeyMap(keymap);
+    defineDefaults(getDefaults());
+
     nameConstituents(m_names);
-
-    setKeyMap(NULL);
-    GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
-    setStandardDomain( domain );
-
-    GPropertyMap<float>* defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
-    defaults->setStandardDomain(getStandardDomain());
-
-    defineDefaults(defaults);
-    setDefaults(defaults);
-
-    m_ramp = GProperty<float>::ramp( domain->getLow(), domain->getStep(), domain->getValues(), domain->getLength() );
-
+    
+    m_ramp = makeRampProperty();
 
     m_meta = new GBoundaryLibMetadata ; 
     m_materials = new GItemIndex("GMaterialIndex") ; // names for compatibility with prior classes 
@@ -191,31 +157,6 @@ void GBoundaryLib::init()
 unsigned int GBoundaryLib::getNumBoundary()
 {
    return m_keys.size();
-}
-
-GDomain<float>* GBoundaryLib::getDefaultDomain()
-{
-   return new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
-}
-
-void GBoundaryLib::setStandardDomain(GDomain<float>* standard_domain)
-{
-    m_standard_domain = standard_domain ; 
-
-    assert(getStandardDomainLength() == DOMAIN_LENGTH );
-    assert(m_standard_domain->getLow()  == DOMAIN_LOW );
-    assert(m_standard_domain->getHigh() == DOMAIN_HIGH );
-    assert(m_standard_domain->getStep() == DOMAIN_STEP );
-}
-
-unsigned int GBoundaryLib::getStandardDomainLength()
-{
-    return m_standard_domain ? m_standard_domain->getLength() : 0 ;
-}
-
-GProperty<float>* GBoundaryLib::getDefaultProperty(const char* name)
-{
-    return m_defaults ? m_defaults->getProperty(name) : NULL ;
 }
 
 GBoundary* GBoundaryLib::getBoundary(unsigned int index)
@@ -386,11 +327,6 @@ void GBoundaryLib::dumpSurfaces(const char* msg)
 
 
 
-
-const char* GBoundaryLib::getLocalKey(const char* dkey) // mapping between standard keynames and local key names, eg refractive_index -> RINDEX
-{
-    return m_keymap[dkey].c_str();
-}
 
 
 
@@ -696,42 +632,6 @@ bool GBoundaryLib::checkSurface( GPropertyMap<float>* surf, const char* prefix)
 }
 
 
-
-GProperty<float>* GBoundaryLib::getProperty(GPropertyMap<float>* pmap, const char* dkey)
-{
-    assert(pmap);
-
-    const char* lkey = getLocalKey(dkey); assert(lkey);  // missing local key mapping 
-
-    GProperty<float>* prop = pmap->getProperty(lkey) ;
-
-    //assert(prop);
-    //if(!prop) LOG(warning) << "GBoundaryLib::getProperty failed to find property " << dkey << "/" << lkey ;
-
-    return prop ;  
-}
-
-
-
-GProperty<float>* GBoundaryLib::makeConstantProperty(float value)
-{
-    GProperty<float>* prop = GProperty<float>::from_constant( value, m_standard_domain->getValues(), m_standard_domain->getLength() );
-    return prop ; 
-}
-
-
-GProperty<float>* GBoundaryLib::getPropertyOrDefault(GPropertyMap<float>* pmap, const char* dkey)
-{
-    // convert destination key such as "detect" into local key "EFFICIENCY" 
-
-    const char* lkey = getLocalKey(dkey); assert(lkey);  // missing local key mapping 
-
-    GProperty<float>* fallback = getDefaultProperty(dkey);  assert(fallback);
-
-    GProperty<float>* prop = pmap ? pmap->getProperty(lkey) : NULL ;
-
-    return prop ? prop : fallback ;
-}
 
 
 
@@ -1505,8 +1405,10 @@ void GBoundaryLib::loadBuffers(const char* dir)
 }
 
 
-GBoundaryLib* GBoundaryLib::load(const char* dir)
+GBoundaryLib* GBoundaryLib::load(GCache* cache)
 {
+    const char* dir = cache->getIdPath() ;
+
     GBoundaryLib* lib(NULL);
     fs::path cachedir(dir);
     if(!fs::exists(cachedir))
@@ -1515,11 +1417,10 @@ GBoundaryLib* GBoundaryLib::load(const char* dir)
     }
     else
     {
-        lib = new GBoundaryLib() ;
+        lib = new GBoundaryLib(cache) ;
         GBoundaryLibMetadata* meta = GBoundaryLibMetadata::load(dir);
         lib->setMetadata(meta);  // buffer loading needs meta, so this has to come first
         lib->loadBuffers(dir);
-
     }
     return lib ; 
 }

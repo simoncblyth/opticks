@@ -1,15 +1,8 @@
 #pragma once
 
-#include <map>
 #include <vector>
-#include <string>
+#include "GPropertyLib.hh"
 
-#include "GVector.hh"
-#include "GDomain.hh"
-#include "GProperty.hh"
-#include "GPropertyMap.hh"
-
-class GCache ; 
 class GMaterial ; 
 
 //
@@ -22,33 +15,40 @@ class GMaterial ;
 //    * aiming togther with a GSurfaceLib to greatly simplify GBoundaryLib 
 //
 
-class GMaterialLib {
+class GMaterialLib : public GPropertyLib {
    public:
       // 4 standard material property names : interleaved into float4 wavelength texture
       static const char* refractive_index ; 
       static const char* absorption_length ; 
       static const char* scattering_length ; 
       static const char* reemission_prob ; 
-
+   public:
+      static const char* keyspec ;
    public:
        GMaterialLib(GCache* cache); 
        void Summary(const char* msg="GMaterialLib::Summary");
-
+   private:
+       void init();
+   public:
+       // concretization of GPropertyLib
+       void defineDefaults(GPropertyMap<float>* defaults); 
+   public:
        void add(GMaterial* material);
        void addRaw(GMaterial* material);
    public:
        unsigned int getNumMaterials();
        unsigned int getNumRawMaterials();
    private:
-       GCache*                       m_cache ; 
        std::vector<GMaterial*>       m_materials ; 
        std::vector<GMaterial*>       m_materials_raw ; 
 
 };
 
-inline GMaterialLib::GMaterialLib(GCache* cache) :
-   m_cache(cache)
+inline GMaterialLib::GMaterialLib(GCache* cache) 
+    :
+    GPropertyLib(cache)
 {
+    init();
 }
  
 inline void GMaterialLib::add(GMaterial* material)
@@ -67,7 +67,4 @@ inline unsigned int GMaterialLib::getNumRawMaterials()
 {
     return m_materials_raw.size();
 }
-
-
-
  

@@ -17,7 +17,10 @@ class GItemIndex ;
 //class GMaterialIndex ; 
 //class GSurfaceIndex ; 
 
-class GBoundaryLib {
+#include "GPropertyLib.hh"
+
+
+class GBoundaryLib : public GPropertyLib {
   public:
      typedef std::map<unsigned int, std::string> Index_t ;
      enum {
@@ -36,10 +39,7 @@ class GBoundaryLib {
     static const char* outer; 
   public:
     static unsigned int NUM_QUAD ; 
-    static unsigned int DOMAIN_LENGTH ; 
-    static float        DOMAIN_LOW ; 
-    static float        DOMAIN_HIGH ; 
-    static float        DOMAIN_STEP ; 
+
     static float        SURFACE_UNSET ; 
     static float        EXTRA_UNSET ; 
   public:
@@ -81,13 +81,13 @@ class GBoundaryLib {
     static std::vector<std::string>* vreemissionkey;
 
   public:
-      GBoundaryLib();
+      GBoundaryLib(GCache* cache);
       virtual ~GBoundaryLib();
   private:
       void init();
   public:
       // primary methods : lifecycle
-      void setStandardDomain(GDomain<float>* standard_domain);
+      // void setStandardDomain(GDomain<float>* standard_domain);
       GBoundary* getOrCreate(
                       GPropertyMap<float>* imaterial, 
                       GPropertyMap<float>* omaterial, 
@@ -112,7 +112,7 @@ class GBoundaryLib {
 
   public:
       // methods supporting save/load from file
-      static GBoundaryLib* load(const char* dir);  
+      static GBoundaryLib* load(GCache* cache);  
       void save(const char* dir);
 
   private:
@@ -145,7 +145,7 @@ class GBoundaryLib {
       GProperty<float>* constructInvertedReemissionCDF(GPropertyMap<float>* pmap);
   public:
       // primary methods : querying 
-      const char* getLocalKey(const char* dkey); // map standard -> local keys 
+
       unsigned int getNumBoundary();
       GBoundary* getBoundary(unsigned int index); 
       void dumpSurfaces(const char* msg="GBoundaryLib::dumpSurfaces");
@@ -168,29 +168,17 @@ class GBoundaryLib {
       bool checkSurface( GPropertyMap<float>* surf, const char* prefix );
       void dumpSurface( GPropertyMap<float>* surf, const char* prefix, const char* msg="GBoundaryLib::dumpSurface");
 
-      GProperty<float>* getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
-      GProperty<float>* getProperty(GPropertyMap<float>* pmap, const char* dkey);
-      GProperty<float>* makeConstantProperty(float value);
-
   private:
       // support for standardization 
       void defineDefaults(GPropertyMap<float>* defaults);
-      void setDefaults(GPropertyMap<float>* defaults);
-      GPropertyMap<float>* getDefaults();
-      GProperty<float>* getDefaultProperty(const char* name);
+
       GProperty<float>* getRamp();
-      void setKeyMap(const char* spec);
 
       char*  digest(std::vector<GProperty<float>*>& props);
       std::string digestString(std::vector<GProperty<float>*>& props);
 
       void digestDebug(GBoundary* boundary, unsigned int isub);
 
-  public:
-      // another classes need access to "shape" of the standardization
-      GDomain<float>*        getStandardDomain();
-      static GDomain<float>* getDefaultDomain();
-      unsigned int            getStandardDomainLength();
 
   public:
       void setMetadata(GBoundaryLibMetadata* meta); 
@@ -227,15 +215,12 @@ class GBoundaryLib {
 
 
   private:
-      std::map<std::string, std::string>   m_keymap ; //  
       std::map<std::string, GBoundary*>    m_registry ; 
       std::vector<std::string>             m_keys ; 
       Index_t                              m_index ; 
 
       bool                   m_standard ;     // transitional : keeping this set to true
       unsigned int           m_num_quad ; 
-      GDomain<float>*        m_standard_domain ;  
-      GPropertyMap<float>*   m_defaults ;  
       GProperty<float>*      m_ramp ;  
       GBoundaryLibMetadata*  m_meta ;
       GItemIndex*            m_materials ;
@@ -254,12 +239,11 @@ class GBoundaryLib {
 };
 
 
-inline GBoundaryLib::GBoundaryLib() 
+inline GBoundaryLib::GBoundaryLib(GCache* cache) 
           : 
+          GPropertyLib(cache),
           m_standard(true), 
           m_num_quad(6), 
-          m_standard_domain(NULL),
-          m_defaults(NULL), 
           m_ramp(NULL), 
           m_meta(NULL), 
           m_materials(NULL), 
@@ -359,21 +343,9 @@ inline unsigned int GBoundaryLib::getNumQuad()
 }
 
 
-inline void GBoundaryLib::setDefaults(GPropertyMap<float>* defaults)
-{
-    m_defaults = defaults ;
-}
-inline GPropertyMap<float>* GBoundaryLib::getDefaults()
-{
-    return m_defaults ;
-}
 inline GProperty<float>* GBoundaryLib::getRamp()
 {
    return m_ramp ;
-}
-inline GDomain<float>* GBoundaryLib::getStandardDomain()
-{
-    return m_standard_domain ;
 }
 
 
