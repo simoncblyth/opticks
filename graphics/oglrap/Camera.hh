@@ -7,6 +7,105 @@
 #include <string>
 #include "Configurable.hh"
 
+
+/*
+
+Perspective Projection
+-------------------------
+
+Matrix from getFrustum() uses::
+
+        glm::frustum( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() )
+
+with inputs:
+
+          left          -m_aspect*getScale()/m_zoom
+          right          m_aspect*getScale()/m_zoom 
+          top            getScale()/m_zoom
+          bottom        -getScale()/m_zoom
+          near 
+          far
+
+Note the opposing getScale() and zoom
+
+The matrix is of below form, note the -1 which preps the perspective divide by z 
+on converting from homogenous (see glm-)
+ 
+     |   2n/w    0         0         (r+l)/(r-l)     | 
+     |    0     2n/h       0         (t+b)/(t-b)     |
+     |    0      0    -(f+n)/(f-n)   -2 f n/(f-n)    |
+     |    0      0         -1           0            |
+ 
+
+Normally this results in the FOV changing on changing the near distance.  
+To avoid this getScale() returns m_near for perspective projection.  
+This means the effective screen size scales with m_near, so FOV stays 
+constant as m_near is varied, the only effect of changing m_near is 
+to change the clipping of objects.
+
+In order to change the FOV use the zoom setting.
+ 
+  
+Orthographic Projection
+------------------------
+
+Matrix from getOrtho() uses the below with same inputs as perspective::
+
+      glm::ortho( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
+
+has form (see glm-):
+
+    | 2/w  0   0        -(r+l)/(r-l)   |
+    |  0  2/h  0        -(t+b)/(t-b)   |
+    |  0   0  -2/(f-n)  -(f+n)/(f-n)   |
+    |  0   0   0          1            |
+
+
+Camera::aim invoked by Composition::aim
+-------------------------------------------
+
+*aim* sets near/far/scale given a basis length
+
+   float a_near = basis/10. ;
+   float a_far  = basis*5. ;
+   float a_scale = basis ; 
+
+Using gazelength basis matches raygen in the ray tracer, 
+so OptiX and OpenGL renders line up.
+
+
+Zoom
+-----
+
+zoom defined as apparent size of an object relative to the size for a 90 degree field of view
+
+   tan( 90/2 ) = 1.
+
+   math.tan(90.*0.5*math.pi/180.)
+   0.9999999999999999
+
+              + . . . +
+             /|       *
+            / |       *
+           /  |       *
+          /   |       * 
+         /    +       *
+        /  .  *       *
+       / .    *       *
+     -+-------*-------*------    
+       \ .    *       *
+        \  .  *       *
+         \    +       *
+          \  zoom~1   *
+           \  |       *
+            \ |       *
+             \|       *
+              + . . . +
+                    zoom~2
+
+*/
+
+
 class Camera : public Configurable  {
   public:
 
@@ -19,7 +118,7 @@ class Camera : public Configurable  {
 
      static const char* PARALLEL ; 
 
-     Camera(int width=1024, int height=768, float near=0.1f, float far=10000.f, float zoom=1.f, float scale=35.f,  bool parallel=false) ;
+     Camera(int width=1024, int height=768, float basis=1000.f ) ;
 
      glm::mat4 getProjection();
      glm::mat4 getPerspective();
@@ -79,14 +178,19 @@ class Camera : public Configurable  {
      bool getParallel();
      float getAspect(); // width/height (> 1 for landscape)
   public:
+     // sets near, far and the ortho scale 
+     void aim(float basis);
+  public:
      // interactive inputs
      void setNear(float near);
      void setFar(float far);
      void setZoom(float zoom);
      void setScale(float scale);
-  public:
+  private:
+     void setBasis(float basis);
      void setYfov(float yfov_degrees);  // alternative way to set zoom (= 1./tan(yfov/2))
   public:
+     float getBasis();
      float getNear();
      float getFar();
      float getZoom();
@@ -116,11 +220,11 @@ class Camera : public Configurable  {
      float m_zoomclip[2] ;
      float m_scaleclip[2] ;
 
+     float m_basis ; 
      float m_near ;
      float m_far ;
      float m_zoom ;
      float m_scale ; 
-     float m_ortho_kludge ; 
 
      bool m_parallel ; 
      bool m_changed ; 
@@ -129,26 +233,45 @@ class Camera : public Configurable  {
 
 
 
-inline Camera::Camera(int width, int height, float near, float far, float zoom, float scale, bool parallel) 
+inline Camera::Camera(int width, int height, float basis ) 
        :
-         m_changed(true),
-         m_ortho_kludge(8.0)
+         m_zoom(1.0f),
+         m_parallel(false),
+         m_changed(true)
 {
     setSize(width, height);
     setPixelFactor(1); 
 
-    setNearClip(1e-6, 1e6);
-    setFarClip(1e-6, 1e6);
+    aim(basis);
+
     setZoomClip(0.01f, 100.f);
-    setScaleClip(1.f, 10000.f);
-
-    setNear(near);
-    setFar(far);
-    setZoom(zoom);
-    setScale(scale);
-
-    setParallel(parallel);
 } 
+
+inline void Camera::aim(float basis)
+{
+   float a_near = basis/10. ;
+   float a_far  = basis*5. ;
+   float a_scale = basis ; 
+
+   printf("Camera::aim basis %10.4f a_near %10.4f a_far %10.4f a_scale %10.4f \n", basis, a_near, a_far, a_scale );
+
+   setBasis(basis);
+   setNear( a_near );
+   setFar(  a_far );
+
+   setNearClip( a_near/10.,  a_near*10.) ;
+   setFarClip(  a_far/10.,   a_far*10. );
+   setScaleClip( a_scale/10., a_scale*10. );
+
+   setScale( a_scale );  // scale should be renamed to Ortho scale, as only relevant to Orthographic projection
+}
+
+inline void Camera::setBasis(float basis)
+{
+    m_basis = basis ; 
+}
+
+
 
 
 inline bool Camera::hasChanged()
@@ -256,6 +379,7 @@ inline void Camera::setZoom(float zoom)
     else                             m_zoom = zoom ;
     m_changed = true ; 
 }
+
 inline void Camera::setScale(float scale)
 {
     if(      scale < m_scaleclip[0] )  m_scale = m_scaleclip[0] ;
@@ -266,10 +390,13 @@ inline void Camera::setScale(float scale)
 
 
 
+inline float Camera::getBasis(){ return m_basis ; } 
+
 inline float Camera::getNear(){  return m_near ; }
 inline float Camera::getFar(){   return m_far ;  }
 inline float Camera::getZoom(){  return m_zoom ; } 
-inline float Camera::getScale(){ return m_parallel ? m_scale*m_ortho_kludge : m_scale ; }
+
+inline float Camera::getScale(){ return m_parallel ? m_scale  : m_near ; }
 
 inline float Camera::getDepth(){   return m_far - m_near ; }
 inline float Camera::getTanYfov(){ return 1.f/m_zoom ; }  // actually tan(Yfov/2)
@@ -278,35 +405,6 @@ inline float Camera::getTop(){    return getScale() / m_zoom ; }
 inline float Camera::getBottom(){ return -getScale() / m_zoom ; }
 inline float Camera::getLeft(){   return -m_aspect * getScale() / m_zoom ; } 
 inline float Camera::getRight(){  return  m_aspect * getScale() / m_zoom ; } 
-
-/*
-zoom defined as apparent size of an object relative to the size for a 90 degree field of view
-
-   tan( 90/2 ) = 1.
-
-   math.tan(90.*0.5*math.pi/180.)
-   0.9999999999999999
-
-              + . . . +
-             /|       *
-            / |       *
-           /  |       *
-          /   |       * 
-         /    +       *
-        /  .  *       *
-       / .    *       *
-     -+-------*-------*------    
-       \ .    *       *
-        \  .  *       *
-         \    +       *
-          \  zoom~1   *
-           \  |       *
-            \ |       *
-             \|       *
-              + . . . +
-                    zoom~2
-
-*/
 
 inline void Camera::setYfov(float yfov)
 {
@@ -322,6 +420,9 @@ inline float Camera::getYfov()
 {
     return 2.f*atan(1./m_zoom)*180./M_PI;
 }
+
+
+
 
 
 inline void Camera::setNearClip(float _min, float _max)
@@ -344,4 +445,5 @@ inline void Camera::setScaleClip(float _min, float _max)
     m_scaleclip[0] = _min ;  
     m_scaleclip[1] = _max ;  
 }
+
 

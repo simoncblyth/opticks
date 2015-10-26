@@ -540,18 +540,10 @@ void Composition::aim(glm::vec4& ce)
      print(gaze, "Composition::aim gaze ");
      print(m_gaze, "Composition::aim m_gaze");
 
-     //float basis = m_gazelength ; 
-     float basis = m_extent ; 
- 
-     float a_near = basis/10. ;
-     float a_far  = basis*5. ;
-     float a_scale = basis/10. ; 
+     float basis = m_gazelength ;   // gazelength basis matches raygen in the ray tracer, so OptiX and OpenGL renders match
+     //float basis = m_extent ; 
 
-     printf("Composition::aim gazelength %10.4f extent %10.4f a_near %10.4f a_far %10.4f a_scale %10.4f  \n", m_gazelength, m_extent, a_near, a_far, a_scale );
-
-     m_camera->setNear( a_near );
-     m_camera->setFar(  a_far );
-     m_camera->setScale( a_scale );
+     m_camera->aim(basis);
 }
 
 

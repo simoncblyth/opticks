@@ -614,7 +614,7 @@ void Scene::jump()
 
 
 
-void Scene::setTarget(unsigned int target, bool autocam)
+void Scene::setTarget(unsigned int target, bool aim)
 {
     if(m_mesh0 == NULL)
     {
@@ -628,7 +628,7 @@ void Scene::setTarget(unsigned int target, bool autocam)
 
     LOG(info)<<"Scene::setTarget " 
              << " target " << target 
-             << " autocam " << autocam 
+             << " aim " << aim
              << " ce " 
              << " " << ce.x 
              << " " << ce.y 
@@ -636,7 +636,10 @@ void Scene::setTarget(unsigned int target, bool autocam)
              << " " << ce.w 
              ;
 
-    m_composition->setCenterExtent(ce, autocam); 
+    m_composition->setCenterExtent(ce, aim); 
+
+
+
 }
 
 

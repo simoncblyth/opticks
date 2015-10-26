@@ -120,7 +120,7 @@ class Scene : public Configurable {
         // target cannot live in Composition, as needs geometry 
         // to convert solid index into CenterExtent to give to Composition
         //
-        void setTarget(unsigned int index=0, bool autocam=false); 
+        void setTarget(unsigned int index=0, bool aim=true); 
         unsigned int getTarget(); 
         unsigned int getTargetDeferred();
 

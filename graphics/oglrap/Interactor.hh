@@ -88,7 +88,7 @@ class Interactor {
        Touchable*   m_touchable ; 
        Frame*       m_frame; 
        Scene*       m_scene; 
-       
+      
 
        bool m_zoom_mode ;
        bool m_pan_mode ;

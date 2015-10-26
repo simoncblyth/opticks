@@ -80,8 +80,8 @@ void Camera::configure(const char* name, const char* val_)
 
 void Camera::configure(const char* name, float value)
 {
-    if(      strcmp(name, SCALE) ==  0)     setScale(value);
-    else if( strcmp(name, ZOOM) ==  0)      setZoom(value);
+    if( strcmp(name, ZOOM) ==  0)      setZoom(value);
+    else if( strcmp(name, SCALE) ==  0)     setScale(value);
     else if( strcmp(name, NEAR) ==  0)      setNear(value);
     else if( strcmp(name, FAR) ==  0)       setFar(value);
     else if( strcmp(name, PARALLEL) ==  0)  setParallel( value==0.f ? false : true );
@@ -132,7 +132,6 @@ void Camera::gui()
     ImGui::SliderFloat("far",   &m_far,  std::max(m_near,m_farclip[0]),  m_farclip[1], "%.3f", power );
     ImGui::SliderFloat("zoom",  &m_zoom, m_zoomclip[0], m_zoomclip[1], "%.3f", power);
     ImGui::SliderFloat("scale", &m_scale, m_scaleclip[0], m_scaleclip[1], "%.3f", power);
-    ImGui::SliderFloat("okludge", &m_ortho_kludge, 0.1,  20.0 );
     ImGui::Checkbox("parallel", &m_parallel);
     if (ImGui::Button("Camera Summary")) Summary();
 #endif  
@@ -143,7 +142,7 @@ void Camera::gui()
 
 void Camera::Print(const char* msg)
 {
-    printf("%s parallel %d  near %10.3f far %10.3f zoom %10.3f scale %10.3f \n", msg, m_parallel, m_near, m_far, m_zoom, m_scale );
+    printf("%s parallel %d  near %10.3f far %10.3f zoom %10.3f scale %10.3f \n", msg, m_parallel, m_near, m_far, m_zoom, getScale() );
 }
 
 

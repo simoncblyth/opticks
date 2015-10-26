@@ -102,7 +102,6 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     {
         m_camera->scale_to(df*x,df*y,df*dx,df*dy);
     }
-    //else if( m_keys_down[_pan_mode_key] )
     else if( m_pan_mode )
     { 
         m_trackball->pan_to(df*x,df*y,df*dx,df*dy);
@@ -182,6 +181,7 @@ void Interactor::key_pressed(unsigned int key)
             m_far_mode = !m_far_mode ; 
             break;
         case GLFW_KEY_G:
+            printf("Interactor:G\n");
             m_gui_mode = !m_gui_mode ; 
             break;
         case GLFW_KEY_H:
