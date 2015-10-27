@@ -17,6 +17,7 @@ class GCache ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 
+// doesnt fit GPropertyLib as needs int buffer, maybe generalize
 class GBndLib {
   public:
        GBndLib(GCache* cache);
@@ -28,6 +29,8 @@ class GBndLib {
                GPropertyMap<float>* omat,  
                GPropertyMap<float>* isur,  
                GPropertyMap<float>* osur);  
+
+       void saveToCache();
   private:
        GCache*              m_cache ; 
        GMaterialLib*        m_mlib ; 
@@ -52,5 +55,4 @@ inline void GBndLib::setSurfaceLib(GSurfaceLib* slib)
 {
     m_slib = slib ;  
 }
-
 

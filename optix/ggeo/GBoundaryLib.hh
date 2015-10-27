@@ -65,9 +65,6 @@ class GBoundaryLib : public GPropertyLib {
     static const char* REFLECTIVITY ; 
   public:
      // workings for extra
-    static const char* slow_component; 
-    static const char* fast_component; 
-
   public:
     static const char* keymap ;
 
@@ -143,8 +140,7 @@ class GBoundaryLib : public GPropertyLib {
       // reemission handling 
       bool isScintillator(std::string& matShortName);
       bool isReemissionKey(std::string& lkey);
-      GProperty<float>* constructReemissionCDF(GPropertyMap<float>* pmap);
-      GProperty<float>* constructInvertedReemissionCDF(GPropertyMap<float>* pmap);
+
   public:
       // primary methods : querying 
 

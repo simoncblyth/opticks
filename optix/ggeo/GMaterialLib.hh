@@ -37,6 +37,9 @@ class GMaterialLib : public GPropertyLib {
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
+       void import();
+       NPY<float>* createBuffer();
+       GItemList*  createNames();
    public:
        // lifecycle
        void add(GMaterial* material);
@@ -46,12 +49,8 @@ class GMaterialLib : public GPropertyLib {
        unsigned int getNumMaterials();
    private:
        GMaterial*  createStandardMaterial(GMaterial* src);
-
-       NPY<float>* createBuffer();
-       GItemList*  createNames();
    private:
        // post-cache
-       void import();
        void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk );
    private:
        std::vector<GMaterial*>       m_materials_raw ; 
@@ -75,11 +74,9 @@ inline unsigned int GMaterialLib::getNumRawMaterials()
 {
     return m_materials_raw.size();
 }
-
 inline GMaterial* GMaterialLib::getMaterial(unsigned int i)
 {
     return m_materials[i] ;
 }
-
 
  

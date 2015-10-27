@@ -17,9 +17,11 @@ Comparing with pycollada
 #include "GCache.hh"
 #include "GGeo.hh"
 
+#include "GMaterial.hh"
 #include "GBoundaryLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GScintillatorLib.hh"
 
 #include "GMergedMesh.hh"
 
@@ -80,6 +82,14 @@ int main(int argc, char* argv[])
     slib->saveToCache();
 
 
+    // canonically done by GLoader::load
+    m_ggeo->findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB");
+    GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillatorMaterial(0));
+
+    GScintillatorLib* sclib = m_ggeo->getScintillatorLib(); 
+    sclib->add(scint);
+    sclib->saveToCache();
+    
 
 
     return 0 ; 

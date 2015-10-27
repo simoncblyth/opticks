@@ -5,6 +5,7 @@
 #include "GVector.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
+#include "GScintillatorLib.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GTraverse.hh"
 #include "GColorizer.hh"
@@ -114,7 +115,11 @@ void GLoader::load(bool verbose)
  
         GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillatorMaterial(0));  
 
-        blib->createReemissionBuffer(scint);
+        GScintillatorLib* sclib = m_ggeo->getScintillatorLib() ;
+        sclib->add(scint);
+        sclib->close(); 
+
+        //blib->createReemissionBuffer(scint);
 
         t("createReemissionBuffer"); 
 

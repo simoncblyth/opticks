@@ -77,8 +77,8 @@ const char* GBoundaryLib::extra_z           = "extra_z" ;
 const char* GBoundaryLib::extra_w           = "extra_w" ;
 
 // workings for "extra"
-const char* GBoundaryLib::slow_component    = "slow_component" ;
-const char* GBoundaryLib::fast_component    = "fast_component" ;
+//const char* GBoundaryLib::slow_component    = "slow_component" ;
+//const char* GBoundaryLib::fast_component    = "fast_component" ;
 
 const char* GBoundaryLib::REFLECTIVITY = "REFLECTIVITY" ;
 const char* GBoundaryLib::EFFICIENCY   = "EFFICIENCY" ;
@@ -425,90 +425,6 @@ void GBoundaryLib::standardizeMaterialProperties(GPropertyMap<float>* pstd, GPro
 
 
 
-GProperty<float>* GBoundaryLib::constructInvertedReemissionCDF(GPropertyMap<float>* pmap)
-{
-    std::string name = pmap->getShortNameString();
-
-    if(!isScintillator(name)) 
-    {
-        LOG(warning) << "GBoundaryLib::constructInvertedReemissionCDF " 
-                     << " name " << name
-                     << " ( NOT LISTED AS A SCINTILLATOR ) " 
-                     ; 
-                      
-        return NULL ;
-    }
-
-    typedef GProperty<float> P ; 
-
-    P* slow = getProperty(pmap, slow_component);
-    P* fast = getProperty(pmap, fast_component);
-
-    if( slow == NULL || fast == NULL)
-    {
-        LOG(warning) << "GBoundaryLib::constructInvertedReemissionCDF failed to find slow/fast for purported scintillator pmap: " << pmap->description() ;
-        return NULL ; 
-    }
-
-    float mxdiff = GProperty<float>::maxdiff(slow, fast);
-    assert(mxdiff < 1e-6 );
-
-    P* rrd = slow->createReversedReciprocalDomain();    // have to used reciprocal "energywise" domain for G4/NuWa agreement
-
-    P* srrd = rrd->createZeroTrimmed();                 // trim extraneous zero values, leaving at most one zero at either extremity
-
-    assert( srrd->getLength() == rrd->getLength() - 2); // expect to trim 2 values
-
-    P* rcdf = srrd->createCDF();
-
-    unsigned int nicdf = 4096 ; //  minor discrep ~600nm
-
-    //
-    // Why does lookup "sampling" require so many more bins to get agreeable 
-    // results than standard sampling ?
-    //
-    // * maybe because "agree" means it matches a prior standard sampling and in
-    //   the limit of many bins the techniques converge ?
-    //
-    // * Nope, its because of the fixed width raster across entire 0:1 in 
-    //   lookup compared to "effectively" variable raster when doing value binary search
-    //   as opposed to domain jump-to-the-bin : see notes in tests/GPropertyTest.cc
-    //
-
-    P* icdf = rcdf->createInverseCDF(nicdf); 
-
-    icdf->getValues()->reciprocate();  // avoid having to reciprocate lookup results : by doing it here 
-
-    return icdf ; 
-}
-
-GProperty<float>* GBoundaryLib::constructReemissionCDF(GPropertyMap<float>* pmap)
-{
-    std::string name = pmap->getShortNameString();
-    if(!isScintillator(name)) return getDefaultProperty( reemission_cdf ) ;
-
-    // LiquidScintillator,GdDopedLS
-    GProperty<float>* slow = getProperty(pmap, slow_component);
-    GProperty<float>* fast = getProperty(pmap, fast_component);
-
-    if(slow == NULL || fast == NULL )
-    {
-        LOG(warning)<<"GBoundaryLib::constructReemissionCDF failed to find slow/fast for pmap: " << pmap->description() ;
-        return getDefaultProperty( reemission_cdf ) ;
-    } 
-
-
-    float mxdiff = GProperty<float>::maxdiff(slow, fast);
-    //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
-    assert(mxdiff < 1e-6 );
-
-    GProperty<float>* rrd = slow->createReversedReciprocalDomain();
-    GProperty<float>* cdf = rrd->createCDF();
-    delete rrd ; 
-    return cdf ;
-}
-
-
 void GBoundaryLib::standardizeExtraProperties(GPropertyMap<float>* pstd, GPropertyMap<float>* pmap, const char* prefix)
 {
     //pstd->addProperty(reemission_cdf   , constructReemissionCDF( pmap )              , prefix);
@@ -735,46 +651,6 @@ unsigned int GBoundaryLib::getLine(unsigned int isub, unsigned int ioff)
 {
     assert(ioff < NUM_QUAD);
     return isub*NUM_QUAD + ioff ;   
-}
-
-GBuffer* GBoundaryLib::createReemissionBuffer(GPropertyMap<float>* scint)
-{
-    assert(scint);
-
-    // TODO: reposition the .npy inside idpath
-    // for comparison only
-    GProperty<float>* cdf = constructReemissionCDF(scint);
-    assert(cdf);
-    //cdf->save("/tmp/reemissionCDF.npy");
-
-    GProperty<float>* icdf = constructInvertedReemissionCDF(scint);
-    assert(icdf);
-    //icdf->Summary("GBoundaryLib::createReemissionBuffer icdf ", 256);
- 
-    //if(icdf == NULL)
-    //{
-    //    LOG(warning)<<"GBoundaryLib::createReemissionBuffer FAILED as no icdf from constructInvertedReemissionCDF for scint " << scint->description() ;
-    //    return NULL ; 
-    //}
- 
-    /*
-    {
-        icdf->save("/tmp/invertedReemissionCDF.npy");
-        GAry<float>* insitu = icdf->lookupCDF(1e6);
-        insitu->Summary("icdf->lookupCDF(1e6)");
-        insitu->save("/tmp/insitu.npy");
-    } 
-    */   
-
-    unsigned int numFloat = icdf->getLength();
-    LOG(info) << "GBoundaryLib::createReemissionBuffer numFloat " << numFloat ;  
-
-    GBuffer* buffer = new GBuffer( sizeof(float)*numFloat, new float[numFloat], sizeof(float), 1 );
-    float* data = (float*)buffer->getPointer();
-    for( unsigned int d = 0; d < numFloat ; ++d ) data[d] = icdf->getValue(d);
-
-    setReemissionBuffer(buffer);
-    return buffer ; 
 }
 
 

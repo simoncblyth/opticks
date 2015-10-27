@@ -4,6 +4,11 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
+
 guint4 GBndLib::getOrCreate(
                GPropertyMap<float>* imat_,  
                GPropertyMap<float>* omat_,  
@@ -31,4 +36,11 @@ guint4 GBndLib::getOrCreate(
 
     return bnd ; 
 }
+
+
+void GBndLib::saveToCache()
+{
+    LOG(info) << "GBndLib::saveToCache placeholder" ;
+}
+
  

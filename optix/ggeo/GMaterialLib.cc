@@ -22,6 +22,30 @@ const char* GMaterialLib::keyspec =
 ;
 
 
+
+
+GMaterialLib* GMaterialLib::load(GCache* cache)
+{
+    GMaterialLib* mlib = new GMaterialLib(cache);
+    mlib->loadFromCache();
+    return mlib ; 
+}
+
+
+void GMaterialLib::init()
+{
+    setKeyMap(keyspec);
+    defineDefaults(getDefaults());
+}
+
+void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
+{
+    defaults->addConstantProperty( refractive_index,      1.f  );
+    defaults->addConstantProperty( absorption_length,     1e6  );
+    defaults->addConstantProperty( scattering_length,     1e6  );
+    defaults->addConstantProperty( reemission_prob,       0.f  );
+}
+
 const char* GMaterialLib::propertyName(unsigned int i)
 {
     assert(i < 4);
@@ -39,21 +63,6 @@ void GMaterialLib::Summary(const char* msg)
               << " NumRawMaterials " << getNumRawMaterials() 
               ;
 }
-
-void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
-{
-    defaults->addConstantProperty( refractive_index,      1.f  );
-    defaults->addConstantProperty( absorption_length,     1e6  );
-    defaults->addConstantProperty( scattering_length,     1e6  );
-    defaults->addConstantProperty( reemission_prob,       0.f  );
-}
-
-void GMaterialLib::init()
-{
-    setKeyMap(keyspec);
-    defineDefaults(getDefaults());
-}
-
 void GMaterialLib::add(GMaterial* raw)
 {
     assert(!isClosed());
@@ -209,14 +218,6 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
               ; 
 }
 
-
-
-GMaterialLib* GMaterialLib::load(GCache* cache)
-{
-    GMaterialLib* mlib = new GMaterialLib(cache);
-    mlib->loadFromCache();
-    return mlib ; 
-}
 
 
 

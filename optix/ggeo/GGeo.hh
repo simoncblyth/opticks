@@ -23,6 +23,7 @@ class GBndLib ;
 class GBoundaryLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
+class GScintillatorLib ;
 
 class GMergedMesh ;
 class NSensorList ; 
@@ -174,6 +175,7 @@ class GGeo {
         GBoundaryLib* getBoundaryLib();
         GMaterialLib* getMaterialLib();
         GSurfaceLib*  getSurfaceLib();
+        GScintillatorLib*  getScintillatorLib();
 
     public:
         GMesh* getMesh(unsigned int index);  
@@ -265,6 +267,7 @@ class GGeo {
         GBoundaryLib*                 m_boundarylib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
+        GScintillatorLib*             m_scintillatorlib ; 
 
         NSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
@@ -303,6 +306,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_boundarylib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
+   m_scintillatorlib(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
@@ -452,6 +456,11 @@ inline GSurfaceLib* GGeo::getSurfaceLib()
 {
     return m_surfacelib ; 
 }
+inline GScintillatorLib* GGeo::getScintillatorLib()
+{
+    return m_scintillatorlib ; 
+}
+
 
 
 

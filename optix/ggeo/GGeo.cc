@@ -13,6 +13,7 @@
 #include "GBoundaryLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GScintillatorLib.hh"
 
 #include "GMergedMesh.hh"
 #include "GColors.hh"
@@ -192,6 +193,7 @@ void GGeo::init()
 
 
    if(m_loaded) return ; 
+
    //////////////  below only when operating pre-cache //////////////////////////
 
    m_boundarylib = new GBoundaryLib(m_cache);
@@ -200,8 +202,11 @@ void GGeo::init()
    m_bndlib = new GBndLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
    m_surfacelib  = new GSurfaceLib(m_cache);
+
    m_bndlib->setMaterialLib(m_materiallib);
    m_bndlib->setSurfaceLib(m_surfacelib);
+
+   m_scintillatorlib  = new GScintillatorLib(m_cache);
 
 
    // chroma/chroma/geometry.py
@@ -212,8 +217,6 @@ void GGeo::init()
    m_boundarylib->setStandardDomain( standard_wavelengths );
    m_materiallib->setStandardDomain( standard_wavelengths );
 
-
-
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
    if(m_volnames)
@@ -221,13 +224,6 @@ void GGeo::init()
        m_pvlist = new GItemList("PVNames") ; 
        m_lvlist = new GItemList("LVNames") ; 
    }
-}
-
-
-
-bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
-{
-    return listHasKey(ctrl, key, ",");
 }
 
 
@@ -241,8 +237,6 @@ void GGeo::loadFromG4DAE()
 
     assert(rc == 0);
 }
-
-
 
 void GGeo::loadFromCache()
 {   
@@ -259,6 +253,10 @@ void GGeo::loadFromCache()
     }
 
     m_boundarylib = GBoundaryLib::load(m_cache);
+
+    m_materiallib = GMaterialLib::load(m_cache);
+    m_surfacelib  = GSurfaceLib::load(m_cache);
+    m_scintillatorlib  = GScintillatorLib::load(m_cache);
 }
 
 
@@ -279,6 +277,11 @@ void GGeo::save(const char* idpath)
     m_boundarylib->saveIndex(idpath); 
     m_boundarylib->save(idpath);
 
+    m_materiallib->saveToCache();
+    m_surfacelib->saveToCache();
+    m_scintillatorlib->saveToCache();
+
+    m_bndlib->saveToCache();
 }
 
 
@@ -291,6 +294,13 @@ const char* GGeo::getLVName(unsigned int index)
 {
     return m_lvlist ? m_lvlist->getItem(index).c_str() : NULL ; 
 }
+
+
+bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
+{
+    return listHasKey(ctrl, key, ",");
+}
+
 
 
 
