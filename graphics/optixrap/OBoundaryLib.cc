@@ -41,22 +41,6 @@ optix::TextureSampler OBoundaryLib::makeWavelengthSampler(GBuffer* buffer)
     return sampler ; 
 }
 
-optix::TextureSampler OBoundaryLib::makeReemissionSampler(GBuffer* buffer)
-{
-    unsigned int domainLength = buffer->getNumElementsTotal();
-    unsigned int nx = domainLength ;
-    unsigned int ny = 1 ;
-
-    LOG(info) << "OBoundaryLib::makeReemissionSampler "
-              << " (nx)domainLength " << domainLength 
-              << " ny " << ny  ;
-
-    optix::TextureSampler sampler = makeSampler(buffer, RT_FORMAT_FLOAT, nx, ny);
-    return sampler ; 
-}
-
-
-
 optix::float4 OBoundaryLib::getDomain()
 {
     float domain_range = (GBoundaryLib::DOMAIN_HIGH - GBoundaryLib::DOMAIN_LOW); 
@@ -98,16 +82,6 @@ void OBoundaryLib::convertBoundaryProperties(GBoundaryLib* blib)
     optical_buffer->unmap();
     //optix::Buffer optical_buffer = createInputBuffer<unsigned int>( obuf, RT_FORMAT_UNSIGNED_INT4, 4);
     m_context["optical_buffer"]->setBuffer(optical_buffer);
-
-
-    GBuffer* reemissionBuffer = blib->getReemissionBuffer();
-    float reemissionStep = 1.f/reemissionBuffer->getNumElementsTotal() ; 
-    optix::float4 reemissionDomain = optix::make_float4(0.f , 1.f, reemissionStep, 0.f );
-    optix::TextureSampler reemissionSampler = makeReemissionSampler(reemissionBuffer);
-
-    m_context["reemission_texture"]->setTextureSampler(reemissionSampler);
-    m_context["reemission_domain"]->setFloat(reemissionDomain);
-
 
 }
 

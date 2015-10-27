@@ -116,6 +116,7 @@ namespace fs = boost::filesystem;
 #include "ORenderer.hh"
 #include "OGeo.hh"
 #include "OBoundaryLib.hh"
+#include "OScintillatorLib.hh"
 #include "OBuf.hh"
 #include "OConfig.hh"
 #include "OTracer.hh"
@@ -939,8 +940,12 @@ void App::prepareOptiX()
     m_ocontext->setDebugPhoton(debugidx);
 
     m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
-
     m_olib->convert(); 
+
+    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
+    m_oscin->convert(); 
+
+
 
     std::string builder_   = m_fcfg->getBuilder(); 
     std::string traverser_ = m_fcfg->getTraverser(); 

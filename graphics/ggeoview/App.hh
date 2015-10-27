@@ -51,6 +51,7 @@ class GItemIndex ;
 class OContext ; 
 class OGeo ; 
 class OBoundaryLib ; 
+class OScintillatorLib ; 
 class OFrame ;
 class ORenderer ; 
 class OTracer ; 
@@ -144,6 +145,7 @@ class App {
        OContext*        m_ocontext ; 
        OGeo*            m_ogeo ; 
        OBoundaryLib*    m_olib ; 
+       OScintillatorLib* m_oscin ; 
        OFrame*          m_oframe ; 
        ORenderer*       m_orenderer ; 
        OTracer*         m_otracer ; 
@@ -200,6 +202,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_ocontext(NULL),
       m_ogeo(NULL),
       m_olib(NULL),
+      m_oscin(NULL),
       m_oframe(NULL),
       m_orenderer(NULL),
       m_otracer(NULL),

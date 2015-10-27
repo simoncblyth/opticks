@@ -20,7 +20,6 @@ private:
 private:
     optix::TextureSampler makeSampler(GBuffer* buffer, RTformat format, unsigned int nx, unsigned int ny);
     optix::TextureSampler makeWavelengthSampler(GBuffer* wavelengthBuffer);
-    optix::TextureSampler makeReemissionSampler(GBuffer* reemissionBuffer);
     optix::TextureSampler makeColorSampler(GBuffer* colorBuffer);
     optix::float4         getDomain();
     optix::float4         getDomainReciprocal();
