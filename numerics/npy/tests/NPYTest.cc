@@ -184,7 +184,8 @@ void test_string()
         c++ ; 
     }     
 
-    NPY<ULL>* s = NPY<ULL>::make(1, 1, 1, vals);
+    NPY<ULL>* s = NPY<ULL>::make(1, 1, 1);
+    s->setData(vals);
     s->save("/tmp/test_string.npy");
 
 /*

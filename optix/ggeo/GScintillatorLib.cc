@@ -62,7 +62,7 @@ NPY<float>* GScintillatorLib::createBuffer()
               << " nk " << nk 
               ;  
 
-    NPY<float>* buf = NPY<float>::make(ni, nj, nk, NULL); 
+    NPY<float>* buf = NPY<float>::make(ni, nj, nk); 
     buf->zero();
     float* data = buf->getValues();
 

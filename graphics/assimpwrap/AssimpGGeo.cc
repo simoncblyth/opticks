@@ -902,11 +902,15 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
  
    
     GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
-    guint4 bnd = blib->getOrCreate( mt, mt_p, isurf, osurf );
-
     solid->setBoundary(boundary);  
-    solid->setBnd(bnd);
 
+    // boundary identification via 4-uint 
+    guint4 bnd = blib->add( mt->getShortName(), 
+                            mt_p->getShortName(),
+                            isurf ? isurf->getShortName() : NULL,
+                            osurf ? osurf->getShortName() : NULL);
+
+    solid->setBnd(bnd);
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);

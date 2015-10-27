@@ -2,11 +2,11 @@
 
 #include <string>
 #include <vector>
-#include <climits>
 
 
 class GItemList {
    public:
+       static unsigned int UNSET ; 
        static const char* GITEMLIST ; 
        static GItemList* load(const char* idpath, const char* itemtype);
    public:
@@ -24,6 +24,7 @@ class GItemList {
    private:
        std::string              m_itemtype ;
        std::vector<std::string> m_list ; 
+       std::string              m_empty ; 
 };
 
 inline GItemList::GItemList(const char* itemtype)
@@ -43,17 +44,7 @@ inline unsigned int GItemList::getNumItems()
 
 inline std::string& GItemList::getItem(unsigned int index)
 {
-    return m_list[index] ;
+    return index < m_list.size() ? m_list[index] : m_empty  ;
 }
-
-inline unsigned int GItemList::getIndex(const char* name)
-{
-    if(name)
-    {
-        for(unsigned int i=0 ; i < m_list.size() ; i++) if(m_list[i].compare(name) == 0) return i ;  
-    } 
-    return INT_MAX ; 
-}
-
 
 

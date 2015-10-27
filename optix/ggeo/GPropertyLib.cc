@@ -37,6 +37,15 @@ unsigned int GPropertyLib::getIndex(const char* shortname)
     return m_names->getIndex(shortname);
 }
 
+const char* GPropertyLib::getName(unsigned int index)
+{
+    assert(m_names);
+    std::string& item = m_names->getItem(index);
+    return item.empty() ? NULL : item.c_str(); 
+}
+
+
+
 void GPropertyLib::init()
 {
     GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
@@ -52,9 +61,10 @@ void GPropertyLib::init()
     setDefaults(defaults);
 }
 
-std::string GPropertyLib::getBufferName()
+std::string GPropertyLib::getBufferName(const char* suffix)
 {
     std::string name = m_type ;  
+    if(suffix) name += suffix ; 
     return name + ".npy" ; 
 }
 
@@ -66,6 +76,14 @@ void GPropertyLib::close()
     setNames(names);
     setBuffer(buf);
     setClosed();
+}
+
+void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
+{
+    assert(suffix);
+    std::string dir = getCacheDir(); 
+    std::string name = getBufferName(suffix);
+    buffer->save(dir.c_str(), name.c_str());   
 }
 
 void GPropertyLib::saveToCache()

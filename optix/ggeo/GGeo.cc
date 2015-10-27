@@ -254,8 +254,14 @@ void GGeo::loadFromCache()
 
     m_boundarylib = GBoundaryLib::load(m_cache);
 
+
+    m_bndlib = GBndLib::load(m_cache);  // GBndLib is persisted via index buffer, not float buffer
     m_materiallib = GMaterialLib::load(m_cache);
     m_surfacelib  = GSurfaceLib::load(m_cache);
+    m_bndlib->setMaterialLib(m_materiallib);
+    m_bndlib->setSurfaceLib(m_surfacelib);
+
+
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
 }
 
@@ -281,7 +287,7 @@ void GGeo::save(const char* idpath)
     m_surfacelib->saveToCache();
     m_scintillatorlib->saveToCache();
 
-    m_bndlib->saveToCache();
+    m_bndlib->saveIndexBuffer();  // NB bndlib exists for deferred boundary buffer creation,  
 }
 
 

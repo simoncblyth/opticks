@@ -252,9 +252,41 @@ void NPY<T>::save(const char* path_)
 
 
 
+
 template <typename T>
-NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, T* values)
+NPY<T>* NPY<T>::make(unsigned int ni)
 {
+    T* values = NULL ;
+
+    std::vector<int> shape ; 
+    if(ni > 0) shape.push_back(ni);
+
+    std::string metadata = "{}";
+
+    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
+    return npy ; 
+}
+
+template <typename T>
+NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj)
+{
+    T* values = NULL ;
+
+    std::vector<int> shape ; 
+    if(ni > 0) shape.push_back(ni);
+    if(nj > 0) shape.push_back(nj);
+
+    std::string metadata = "{}";
+
+    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
+    return npy ; 
+}
+
+template <typename T>
+NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk)
+{
+    T* values = NULL ;
+
     std::vector<int> shape ; 
     if(ni > 0) shape.push_back(ni);
     if(nj > 0) shape.push_back(nj);
@@ -265,6 +297,25 @@ NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, T* value
     NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
     return npy ; 
 }
+
+
+template <typename T>
+NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl)
+{
+    T* values = NULL ;
+
+    std::vector<int> shape ; 
+    if(ni > 0) shape.push_back(ni);
+    if(nj > 0) shape.push_back(nj);
+    if(nk > 0) shape.push_back(nk);
+    if(nl > 0) shape.push_back(nl);
+
+    std::string metadata = "{}";
+
+    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
+    return npy ; 
+}
+
 
 
 template <typename T>

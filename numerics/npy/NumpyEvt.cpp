@@ -98,25 +98,25 @@ void NumpyEvt::createHostBuffers()
               << " num_photons " << m_num_photons  
                ;
 
-    NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4, NULL); // must match GPU side photon.h:PNUMQUAD
+    NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<Sequence_t>* seq = NPY<Sequence_t>::make(m_num_photons, 1, 2, NULL);  // shape (np,1,2) (formerly initialized to 0)
+    NPY<Sequence_t>* seq = NPY<Sequence_t>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
     setSequenceData(seq);   
 
-    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4, NULL); // shape (np,1,4) (formerly initialized to 0)
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
     setPhoselData(phosel);   
 
     unsigned int num_records = getNumRecords();
 
-    NPY<short>* rec = NPY<short>::make(num_records, 2, 4, NULL);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+    NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
     setRecordData(rec);   
 
     // aka seqidx (SequenceNPY) or target ThrustIndex
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4, NULL); // shape (nr,1,4) (formerly initialized to 0) 
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
     setRecselData(recsel);   
 
-    NPY<short>* aux = NPY<short>::make(num_records, 1, 4, NULL);  // shape (nr,1,4)
+    NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
     setAuxData(aux);   
 
 

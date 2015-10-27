@@ -222,7 +222,7 @@ NPY<float>* GSurfaceLib::createBuffer()
     unsigned int nk = 4 ; 
     assert(ni > 0 && nj > 0);
 
-    NPY<float>* buf = NPY<float>::make(ni, nj, nk, NULL); 
+    NPY<float>* buf = NPY<float>::make(ni, nj, nk); 
     buf->zero();
 
     float* data = buf->getValues();

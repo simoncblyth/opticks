@@ -19,11 +19,15 @@ Comparing with pycollada
 
 #include "GMaterial.hh"
 #include "GBoundaryLib.hh"
+#include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
 
 #include "GMergedMesh.hh"
+
+#include "NPY.hpp"
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,7 +93,10 @@ int main(int argc, char* argv[])
     GScintillatorLib* sclib = m_ggeo->getScintillatorLib(); 
     sclib->add(scint);
     sclib->saveToCache();
-    
+
+    GBndLib* bnd = m_ggeo->getBndLib();
+    bnd->dump();
+    bnd->saveIndexBuffer();
 
 
     return 0 ; 

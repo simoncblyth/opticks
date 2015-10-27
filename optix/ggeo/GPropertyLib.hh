@@ -7,9 +7,11 @@
 #include "GPropertyMap.hh"
 
 template <typename T> class NPY ;
+class NPYBase ; 
 
 class GCache ; 
 class GItemList ; 
+
 
 class GPropertyLib {
     public:
@@ -18,6 +20,7 @@ class GPropertyLib {
         static float        DOMAIN_HIGH ; 
         static float        DOMAIN_STEP ; 
     public:
+        const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
         GPropertyLib(GCache* cache, const char* type);
         std::string getCacheDir();
@@ -60,10 +63,11 @@ class GPropertyLib {
         void setClosed(bool closed=true);
         bool isClosed();
         //bool hasBuffer();
-        std::string  getBufferName();
+        std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
         GItemList*   getNames();
     public:
+       void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveToCache();
        void loadFromCache();
     public:
@@ -130,11 +134,6 @@ inline NPY<float>* GPropertyLib::getBuffer()
 {
     return m_buffer ;
 }
-//inline bool GPropertyLib::hasBuffer()
-//{
-//    return m_buffer != NULL ; 
-//}
-
 
 inline void GPropertyLib::setNames(GItemList* names)
 {

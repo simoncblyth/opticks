@@ -62,12 +62,11 @@ class NPY : public NPYBase {
        // NB favor vec4 over vec3 for better GPU performance (due to memory coalescing/alignment)
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
 
-       //static NPY<T>* make_vec4(unsigned int ni, unsigned int nj=1, T init=0 );
-       //static NPY<T>* make_vec2(unsigned int ni, unsigned int nj=1, T init=0 );
-       //static NPY<T>* make_scalar(unsigned int ni, T init=0 );
-       //static NPY<T>* make_scalar(unsigned int ni, T* values);
+       static NPY<T>* make(unsigned int ni);
+       static NPY<T>* make(unsigned int ni, unsigned int nj );
+       static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk );
+       static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl );
 
-       static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, T* values=NULL );
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
 
        // ctor takes ownership of a copy of the inputs 

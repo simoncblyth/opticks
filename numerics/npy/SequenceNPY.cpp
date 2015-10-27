@@ -315,7 +315,9 @@ NPY<unsigned long long>* SequenceNPY::makeSequenceCountsArray(
         values.push_back(xseq);
         values.push_back(p.second);
     } 
-    return NPY<unsigned long long>::make(ni, nj, nk, values.data() ); 
+    NPY<unsigned long long>* npy = NPY<unsigned long long>::make(ni, nj, nk);
+    npy->setData( values.data() );
+    return npy ;  
 }
 
 

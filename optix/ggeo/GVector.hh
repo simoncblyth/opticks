@@ -1,9 +1,7 @@
-#ifndef GVECTOR_H
-#define GVECTOR_H
+#pragma once
 
 #include "GMatrix.hh"
-
-
+#include <climits>
 
 
 
@@ -165,6 +163,32 @@ struct guint4
     guint4() : x(0), y(0), z(0), w(0) {} ;
     guint4(unsigned int _x, unsigned int _y, unsigned int _z, unsigned int _w) : x(_x), y(_y), z(_z), w(_w) {} ;
 
+    unsigned int const operator[](unsigned int index) const
+    {
+        switch(index)
+        {  
+           case 0:return x; break;
+           case 1:return y; break;
+           case 2:return z; break;
+           case 3:return w; break;
+        }
+        return INT_MAX ; 
+    } 
+
+    bool operator==(const guint4& other) const 
+    {
+       return 
+           x == other.x && 
+           y == other.y && 
+           z == other.z && 
+           w == other.w 
+           ;
+    }
+    void Summary(const char* msg) const 
+    {
+       printf("%s : %10u %10u %10u %10u \n", msg, x, y, z, w);
+    }
+
     unsigned int x,y,z,w ;
 };
 
@@ -172,4 +196,3 @@ struct guint4
 
 
 
-#endif

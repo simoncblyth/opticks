@@ -1,5 +1,6 @@
 #include "GItemList.hh"
 
+#include <climits>
 #include <iostream>
 #include <fstream>
 #include <ostream>   
@@ -14,6 +15,18 @@
 namespace fs = boost::filesystem;
 
 const char* GItemList::GITEMLIST = "GItemList" ; 
+
+unsigned int GItemList::UNSET = UINT_MAX ; 
+
+unsigned int GItemList::getIndex(const char* name)
+{
+    if(name)
+    {
+        for(unsigned int i=0 ; i < m_list.size() ; i++) if(m_list[i].compare(name) == 0) return i ;  
+    } 
+    return UNSET  ; 
+}
+
 
 GItemList* GItemList::load(const char* idpath, const char* itemtype)
 {
