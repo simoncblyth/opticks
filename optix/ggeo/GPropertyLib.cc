@@ -9,6 +9,10 @@
 #include <sstream>
 #include <iomanip>
 
+#include <boost/log/trivial.hpp>
+#define LOG BOOST_LOG_TRIVIAL
+// trace/debug/info/warning/error/fatal
+
 
 
 float        GPropertyLib::DOMAIN_LOW  = 60.f ; 
@@ -23,6 +27,12 @@ std::string GPropertyLib::getCacheDir()
 
 unsigned int GPropertyLib::getIndex(const char* shortname)
 {
+    if(!isClosed())
+    {
+        LOG(warning) << "GPropertyLib::getIndex type " << m_type 
+                     << " TRIGGERED A CLOSE " << ( shortname ? shortname : "" ) ;
+        close();
+    }
     assert(m_names);
     return m_names->getIndex(shortname);
 }
@@ -40,9 +50,7 @@ void GPropertyLib::init()
     GPropertyMap<float>* defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     defaults->setStandardDomain(getStandardDomain());
     setDefaults(defaults);
-
 }
-
 
 std::string GPropertyLib::getBufferName()
 {
@@ -50,8 +58,20 @@ std::string GPropertyLib::getBufferName()
     return name + ".npy" ; 
 }
 
+void GPropertyLib::close()
+{
+    GItemList* names = createNames();
+    NPY<float>* buf = createBuffer() ;
+
+    setNames(names);
+    setBuffer(buf);
+    setClosed();
+}
+
 void GPropertyLib::saveToCache()
 {
+    if(!isClosed()) close();
+
     assert(m_buffer);
     assert(m_names);
 

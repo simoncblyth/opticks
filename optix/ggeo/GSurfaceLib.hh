@@ -40,6 +40,8 @@ class GSurfaceLib : public GPropertyLib {
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
+       NPY<float>* createBuffer();
+       GItemList*  createNames();
   public:
       // methods for debug
       void setFakeEfficiency(float fake_efficiency);
@@ -56,7 +58,6 @@ class GSurfaceLib : public GPropertyLib {
        unsigned int getNumRawSurfaces();
        unsigned int getNumSurfaces();
    public:
-       void createBuffer();
        void import();
    private:
        void import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk );

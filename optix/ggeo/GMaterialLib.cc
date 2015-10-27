@@ -56,6 +56,7 @@ void GMaterialLib::init()
 
 void GMaterialLib::add(GMaterial* raw)
 {
+    assert(!isClosed());
     m_materials_raw.push_back(raw);
     m_materials.push_back(createStandardMaterial(raw)); 
 }
@@ -82,14 +83,26 @@ GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
 }
 
 
-void GMaterialLib::createBuffer()
+
+GItemList* GMaterialLib::createNames()
+{
+    GItemList* names = new GItemList(getType());
+    unsigned int ni = getNumMaterials();
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GMaterial* mat = m_materials[i] ;
+        names->add(mat->getShortName());
+    }
+    return names ;
+}
+
+NPY<float>* GMaterialLib::createBuffer()
 {
     unsigned int ni = getNumMaterials();
     unsigned int nj = getStandardDomain()->getLength();
     unsigned int nk = 4 ; 
     assert(ni > 0 && nj > 0);
 
-    GItemList* names = new GItemList(getType());
     NPY<float>* mbuf = NPY<float>::make(ni, nj, nk, NULL); 
     mbuf->zero();
 
@@ -100,7 +113,6 @@ void GMaterialLib::createBuffer()
     for(unsigned int i=0 ; i < ni ; i++)
     {
         GMaterial* mat = m_materials[i] ;
-        names->add(mat->getShortName());
 
         p0 = mat->getPropertyByIndex(0);
         p1 = mat->getPropertyByIndex(1);
@@ -117,9 +129,7 @@ void GMaterialLib::createBuffer()
             data[offset+3] = p3->getValue(j) ;
         } 
     }
-
-    setBuffer(mbuf);
-    setNames(names);
+    return mbuf ; 
 }
 
 void GMaterialLib::import()

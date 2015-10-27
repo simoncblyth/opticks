@@ -128,6 +128,7 @@ class GGeo {
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
 
+        void close();
 
         void addToIndex(GPropertyMap<float>* obj);
         void dumpIndex(const char* msg="GGeo::dumpIndex");
@@ -374,7 +375,6 @@ inline unsigned int GGeo::getNumSolids()
 {
     return m_solids.size();
 }
-
 inline unsigned int GGeo::getNumMaterials()
 {
     return m_materials.size();
@@ -387,8 +387,6 @@ inline unsigned int GGeo::getNumSkinSurfaces()
 {
     return m_skin_surfaces.size();
 }
-
-
 inline unsigned int GGeo::getNumRawMaterials()
 {
     return m_materials_raw.size();

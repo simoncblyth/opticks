@@ -34,9 +34,11 @@ class GPropertyLib {
         GPropertyMap<float>* getDefaults();
         GProperty<float>*    getDefaultProperty(const char* name);
     public:
-        // defaults need to be set in concrete subclass
+        // pure virtuals that need to be implemented in concrete subclasses
         virtual void defineDefaults(GPropertyMap<float>* defaults) = 0 ; 
         virtual void import() = 0 ; 
+        virtual NPY<float>* createBuffer() = 0;
+        virtual GItemList*  createNames() = 0;
     public:
         GProperty<float>*    getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
         GProperty<float>*    getProperty(GPropertyMap<float>* pmap, const char* dkey);
@@ -49,7 +51,15 @@ class GPropertyLib {
         // another classes need access to "shape" of the standardization
         static GDomain<float>* getDefaultDomain();
     public:
-        bool hasBuffer();
+        //
+        // *close* serializes the objects into Buffer and Names, 
+        // this is triggered by the first call to getIndex, 
+        // which is canonically invoked by GBndLib::getOrCreate during AssimpGGeo::convertStructureVisit 
+        //
+        void close();
+        void setClosed(bool closed=true);
+        bool isClosed();
+        //bool hasBuffer();
         std::string  getBufferName();
         NPY<float>*  getBuffer();
         GItemList*   getNames();
@@ -67,7 +77,8 @@ class GPropertyLib {
         GDomain<float>*                      m_standard_domain ;  
     private:
         GPropertyMap<float>*                 m_defaults ;  
-        std::map<std::string, std::string>   m_keymap ; //  
+        std::map<std::string, std::string>   m_keymap ;   
+        bool                                 m_closed ;  
 };
 
 inline GPropertyLib::GPropertyLib(GCache* cache, const char* type) 
@@ -77,7 +88,8 @@ inline GPropertyLib::GPropertyLib(GCache* cache, const char* type)
      m_names(NULL),
      m_type(strdup(type)),
      m_standard_domain(NULL),
-     m_defaults(NULL)
+     m_defaults(NULL),
+     m_closed(false)
 {
      init();
 }
@@ -118,10 +130,10 @@ inline NPY<float>* GPropertyLib::getBuffer()
 {
     return m_buffer ;
 }
-inline bool GPropertyLib::hasBuffer()
-{
-    return m_buffer != NULL ; 
-}
+//inline bool GPropertyLib::hasBuffer()
+//{
+//    return m_buffer != NULL ; 
+//}
 
 
 inline void GPropertyLib::setNames(GItemList* names)
@@ -131,6 +143,14 @@ inline void GPropertyLib::setNames(GItemList* names)
 inline GItemList* GPropertyLib::getNames()
 {
     return m_names ;
+}
+inline void GPropertyLib::setClosed(bool closed)
+{
+    m_closed = closed ; 
+}
+inline bool GPropertyLib::isClosed()
+{
+    return m_closed ; 
 }
 
 

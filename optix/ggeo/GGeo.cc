@@ -83,12 +83,6 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
-
-
-
-
-
-
 const char* GGeo::GMERGEDMESH = "GMergedMesh" ; 
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 
@@ -198,9 +192,12 @@ void GGeo::init()
 
 
    if(m_loaded) return ; 
+   //////////////  below only when operating pre-cache //////////////////////////
+
+   m_boundarylib = new GBoundaryLib(m_cache);
+
 
    m_bndlib = new GBndLib(m_cache);
-   m_boundarylib = new GBoundaryLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
    m_surfacelib  = new GSurfaceLib(m_cache);
    m_bndlib->setMaterialLib(m_materiallib);
@@ -267,6 +264,8 @@ void GGeo::loadFromCache()
 
 void GGeo::save(const char* idpath)
 {
+    // currently this gets invoked from GLoader, TODO: move this up to the App
+
     saveMergedMeshes(idpath );
 
     m_meshindex->save(idpath);

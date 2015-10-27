@@ -84,6 +84,8 @@
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
+#include "GBndLib.hh"
+#include "GSurfaceLib.hh"
 #include "GBoundaryLibMetadata.hh"
 #include "GLoader.hh"
 #include "GCache.hh"
@@ -394,6 +396,9 @@ void App::loadGeometry()
     {
         GBoundaryLib* blib = m_ggeo->getBoundaryLib();
         blib->setFakeEfficiency(1.0);
+
+        GSurfaceLib* slib = m_ggeo->getSurfaceLib();
+        slib->setFakeEfficiency(1.0);
     }
 
 
@@ -412,6 +417,7 @@ void App::loadGeometry()
     
 
 
+    // TODO: get rid of GLoader
     m_loader = new GLoader(m_ggeo) ;
 
     m_loader->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
@@ -420,6 +426,8 @@ void App::loadGeometry()
     m_loader->setCache(m_cache);
 
     m_loader->load();
+
+
 
 
 

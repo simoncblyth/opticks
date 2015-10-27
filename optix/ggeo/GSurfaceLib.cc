@@ -80,6 +80,7 @@ void GSurfaceLib::add(GSkinSurface* raw)
 
 void GSurfaceLib::add(GPropertyMap<float>* surf)
 {
+    assert(!isClosed());
     m_surfaces_raw.push_back(surf);
     m_surfaces.push_back(createStandardSurface(surf)); 
 }
@@ -202,14 +203,25 @@ bool GSurfaceLib::checkSurface( GPropertyMap<float>* surf)
 }
 
 
-void GSurfaceLib::createBuffer()
+GItemList* GSurfaceLib::createNames()
+{
+    GItemList* names = new GItemList(getType());
+    unsigned int ni = getNumSurfaces();
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GPropertyMap<float>* surf = m_surfaces[i] ;
+        names->add(surf->getShortName());
+    }
+    return names ; 
+}
+
+NPY<float>* GSurfaceLib::createBuffer()
 {
     unsigned int ni = getNumSurfaces();
     unsigned int nj = getStandardDomain()->getLength();
     unsigned int nk = 4 ; 
     assert(ni > 0 && nj > 0);
 
-    GItemList* names = new GItemList(getType());
     NPY<float>* buf = NPY<float>::make(ni, nj, nk, NULL); 
     buf->zero();
 
@@ -220,8 +232,6 @@ void GSurfaceLib::createBuffer()
     for(unsigned int i=0 ; i < ni ; i++)
     {
         GPropertyMap<float>* surf = m_surfaces[i] ;
-        names->add(surf->getShortName());
-
         p0 = surf->getPropertyByIndex(0);
         p1 = surf->getPropertyByIndex(1);
         p2 = surf->getPropertyByIndex(2);
@@ -230,16 +240,13 @@ void GSurfaceLib::createBuffer()
         for( unsigned int j = 0; j < nj; j++ ) // interleave 4 properties into the buffer
         {   
             unsigned int offset = i*nj*nk + j*nk ;  
-
             data[offset+0] = p0->getValue(j) ;
             data[offset+1] = p1->getValue(j) ;
             data[offset+2] = p2->getValue(j) ;
             data[offset+3] = p3->getValue(j) ;
         } 
     }
-
-    setBuffer(buf);
-    setNames(names);
+    return buf ; 
 }
 
 void GSurfaceLib::import()

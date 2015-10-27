@@ -362,6 +362,18 @@ void GBoundaryLib::import()
     LOG(info) << "GBoundaryLib::import placeholder " ;
 }
 
+NPY<float>* GBoundaryLib::createBuffer()
+{
+    return NULL ; 
+}
+
+GItemList* GBoundaryLib::createNames()
+{
+    return NULL ;
+}
+
+
+
 void GBoundaryLib::defineDefaults(GPropertyMap<float>* defaults)
 {
     defaults->addConstantProperty( refractive_index,      1.f  );

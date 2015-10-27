@@ -73,13 +73,10 @@ int main(int argc, char* argv[])
 
     GMaterialLib* mlib = m_ggeo->getMaterialLib();
     mlib->Summary();
-    mlib->createBuffer();
     mlib->saveToCache();
-
 
     GSurfaceLib* slib = m_ggeo->getSurfaceLib();
     slib->Summary();
-    slib->createBuffer();
     slib->saveToCache();
 
 

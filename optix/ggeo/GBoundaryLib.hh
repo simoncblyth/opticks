@@ -14,8 +14,6 @@ class GBuffer ;
 class GBoundaryLibMetadata ; 
 class GBuffer ; 
 class GItemIndex ; 
-//class GMaterialIndex ; 
-//class GSurfaceIndex ; 
 
 #include "GPropertyLib.hh"
 
@@ -114,6 +112,10 @@ class GBoundaryLib : public GPropertyLib {
       // methods supporting save/load from file
       static GBoundaryLib* load(GCache* cache);  
       void save(const char* dir);
+
+  public:
+      NPY<float>* createBuffer();
+      GItemList* createNames();    
 
   private:
       static void nameConstituents(std::vector<std::string>& names);
