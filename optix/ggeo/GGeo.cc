@@ -283,11 +283,15 @@ void GGeo::save(const char* idpath)
     m_boundarylib->saveIndex(idpath); 
     m_boundarylib->save(idpath);
 
-    m_materiallib->saveToCache();
-    m_surfacelib->saveToCache();
-    m_scintillatorlib->saveToCache();
 
-    m_bndlib->saveIndexBuffer();  // NB bndlib exists for deferred boundary buffer creation,  
+
+    // details of save handled within the class, not here 
+
+    m_materiallib->save();
+    m_surfacelib->save();
+    m_scintillatorlib->save();
+    m_bndlib->save();  
+
 }
 
 

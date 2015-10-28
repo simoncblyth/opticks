@@ -7,6 +7,7 @@
 
 
 // this is turning into GGeoConfig rather than just GCache 
+// TODO: handle logging here, for control from tests
 class GCache {
     public:
          static GCache* getInstance();

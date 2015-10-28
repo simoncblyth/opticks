@@ -27,7 +27,9 @@ class GMaterialLib : public GPropertyLib {
    public:
        static const char* keyspec ;
    public:
+       void save();
        static GMaterialLib* load(GCache* cache);
+   public:
        GMaterialLib(GCache* cache); 
        void Summary(const char* msg="GMaterialLib::Summary");
        void dump(const char* msg="GMaterialLib::dump");

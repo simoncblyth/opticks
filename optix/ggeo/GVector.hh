@@ -2,6 +2,7 @@
 
 #include "GMatrix.hh"
 #include <climits>
+#include <string>
 
 
 
@@ -89,6 +90,7 @@ struct gfloat4
     {
         printf("%s gfloat4 %10.3f %10.3f %10.3f %10.3f\n", msg, x, y, z, w);
     }
+
 
 
     float x,y,z,w ;
@@ -186,8 +188,16 @@ struct guint4
     }
     void Summary(const char* msg) const 
     {
-       printf("%s : %10u %10u %10u %10u \n", msg, x, y, z, w);
+        printf("%s : %10u %10u %10u %10u \n", msg, x, y, z, w);
     }
+
+    std::string description()
+    {
+        char s[64] ;
+        snprintf(s, 64, " (%3u,%3u,%3u,%3u) ", x, y, z, w);
+        return s ; 
+    }
+
 
     unsigned int x,y,z,w ;
 };

@@ -21,6 +21,12 @@ const char* GScintillatorLib::keyspec =
 "reemission_cdf:DUMMY," 
 ;
 
+
+void GScintillatorLib::save()
+{
+    saveToCache();
+}
+
 GScintillatorLib* GScintillatorLib::load(GCache* cache)
 {
     GScintillatorLib* lib = new GScintillatorLib(cache);

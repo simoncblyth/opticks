@@ -2,9 +2,11 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
+#include "GVector.hh"
 
 template <typename T> class NPY ;
 class NPYBase ; 
@@ -15,6 +17,7 @@ class GItemList ;
 
 class GPropertyLib {
     public:
+        static unsigned int UNSET ; 
         static unsigned int NUM_QUAD ; 
         static unsigned int NUM_PROP ; 
         static unsigned int DOMAIN_LENGTH ; 
@@ -55,6 +58,10 @@ class GPropertyLib {
     public:
         // another classes need access to "shape" of the standardization
         static GDomain<float>* getDefaultDomain();
+
+    public:
+        NPY<unsigned int>* createUint4Buffer(std::vector<guint4>& vec);
+        void importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>* ibuf );
     public:
         //
         // *close* serializes the objects into Buffer and Names, 

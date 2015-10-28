@@ -19,10 +19,14 @@ class GSurfaceLib ;
 //
 // Instead the index buffer is used for persisting  
 // 
+// Former *GBoundaryLib* encompassed uint4 optical_buffer that 
+// contained surface properties from GOpticalSurface, that
+// is now moved to *GSurfaceLib*   
+//
 
 class GBndLib : public GPropertyLib {
   public:
-       static unsigned int UNSET ; 
+       void save();
        static GBndLib* load(GCache* cache);
        GBndLib(GCache* cache);
   private:

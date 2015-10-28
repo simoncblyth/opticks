@@ -22,7 +22,10 @@ const char* GMaterialLib::keyspec =
 ;
 
 
-
+void GMaterialLib::save()
+{
+    saveToCache();
+}
 
 GMaterialLib* GMaterialLib::load(GCache* cache)
 {

@@ -73,18 +73,17 @@ int main(int argc, char* argv[])
     blib->Summary("GBoundaryLib");
     //blib->dumpSurfaces();
 
-
     GMergedMesh* mm = m_ggeo->makeMergedMesh();
     mm->Summary("GMergedMesh");
 
     GMaterialLib* mlib = m_ggeo->getMaterialLib();
     mlib->Summary();
-    mlib->saveToCache();
+    mlib->save();
 
     GSurfaceLib* slib = m_ggeo->getSurfaceLib();
     slib->Summary();
-    slib->saveToCache();
-
+    slib->dump();
+    slib->save();
 
     // canonically done by GLoader::load
     m_ggeo->findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB");
@@ -92,11 +91,11 @@ int main(int argc, char* argv[])
 
     GScintillatorLib* sclib = m_ggeo->getScintillatorLib(); 
     sclib->add(scint);
-    sclib->saveToCache();
+    sclib->save();
 
     GBndLib* bnd = m_ggeo->getBndLib();
     bnd->dump();
-    bnd->saveIndexBuffer();
+    bnd->save();
 
 
     return 0 ; 

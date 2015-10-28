@@ -4,6 +4,7 @@
 
 #include "NPY.hpp"
 #include <cassert>
+#include <climits>
 
 #include <iostream>
 #include <sstream>
@@ -20,6 +21,7 @@ float        GPropertyLib::DOMAIN_HIGH = 810.f ;
 float        GPropertyLib::DOMAIN_STEP = 20.f ; 
 unsigned int GPropertyLib::DOMAIN_LENGTH = 39  ; 
 
+unsigned int GPropertyLib::UNSET = UINT_MAX ; 
 unsigned int GPropertyLib::NUM_QUAD = 4  ; 
 unsigned int GPropertyLib::NUM_PROP = 4  ; 
 
@@ -202,6 +204,49 @@ void GPropertyLib::setKeyMap(const char* spec)
         m_keymap[dk] = lk ; 
     }
 }
+
+
+
+
+NPY<unsigned int>* GPropertyLib::createUint4Buffer(std::vector<guint4>& vec)
+{
+    unsigned int ni = vec.size() ;
+    unsigned int nj = 4 ;  
+    NPY<unsigned int>* ibuf = NPY<unsigned int>::make( ni, nj) ;
+    ibuf->zero();
+    unsigned int* idat = ibuf->getValues();
+    for(unsigned int i=0 ; i < ni ; i++)     
+    {
+        const guint4& entry = vec[i] ;
+        for(unsigned int j=0 ; j < nj ; j++) idat[i*nj+j] = entry[j] ;  
+    }
+    return ibuf ; 
+}
+
+
+void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>* ibuf )
+{
+    LOG(info) << "GPropertyLib::importUint4Buffer" ; 
+
+    unsigned int* idat = ibuf->getValues();
+    unsigned int ni = ibuf->getShape(0);
+    unsigned int nj = ibuf->getShape(1);
+    assert(nj == 4); 
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        guint4 entry(UNSET,UNSET,UNSET,UNSET);
+
+        entry.x = idat[i*nj+0] ;
+        entry.y = idat[i*nj+1] ;
+        entry.z = idat[i*nj+2] ;
+        entry.w = idat[i*nj+3] ;
+
+        vec.push_back(entry);
+    }
+}
+
+
 
 
 

@@ -21,9 +21,36 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+void GBndLib::save()
+{
+    // NB bndlib exists for deferred boundary buffer creation,  
+    saveIndexBuffer();  
+}
+
+GBndLib* GBndLib::load(GCache* cache)
+{
+    GBndLib* blib = new GBndLib(cache);
+    blib->loadIndexBuffer();
+    blib->importIndexBuffer();
+    return blib ; 
+}
+
+void GBndLib::loadIndexBuffer()
+{
+    std::string dir = getCacheDir(); 
+    std::string name = getBufferName("Index");
+    setIndexBuffer(NPY<unsigned int>::load(dir.c_str(), name.c_str())); 
+}
+
+void GBndLib::saveIndexBuffer()
+{
+    NPY<unsigned int>* ibuf = createIndexBuffer();
+    saveToCache(ibuf, "Index") ; 
+    setIndexBuffer(ibuf);
+}
 
 
-unsigned int GBndLib::UNSET = UINT_MAX ; 
+
 
 void GBndLib::init()
 {
@@ -223,6 +250,9 @@ NPY<float>* GBndLib::createBuffer()
 
 NPY<unsigned int>* GBndLib::createIndexBuffer()
 {
+    return createUint4Buffer(m_bnd);
+
+    /*
     unsigned int ni = getNumBnd();
     unsigned int nj = 4 ;  
     NPY<unsigned int>* ibuf = NPY<unsigned int>::make( ni, nj) ;
@@ -237,6 +267,8 @@ NPY<unsigned int>* GBndLib::createIndexBuffer()
            idat[i*nj+j] = bnd[j] ;  
     }
     return ibuf ; 
+    */
+
 }
 
 void GBndLib::importIndexBuffer()
@@ -244,6 +276,10 @@ void GBndLib::importIndexBuffer()
     LOG(info) << "GBndLib::importIndexBuffer" ; 
 
     NPY<unsigned int>* ibuf = getIndexBuffer();
+    importUint4Buffer(m_bnd, ibuf );
+
+/*
+
     unsigned int* idat = ibuf->getValues();
 
     unsigned int ni = ibuf->getShape(0);
@@ -261,32 +297,12 @@ void GBndLib::importIndexBuffer()
 
         add(bnd);
     }
+*/
+
 }
 
 
-GBndLib* GBndLib::load(GCache* cache)
-{
-    GBndLib* blib = new GBndLib(cache);
 
-    blib->loadIndexBuffer();
-    blib->importIndexBuffer();
-
-    return blib ; 
-}
-
-void GBndLib::loadIndexBuffer()
-{
-    std::string dir = getCacheDir(); 
-    std::string name = getBufferName("Index");
-    setIndexBuffer(NPY<unsigned int>::load(dir.c_str(), name.c_str())); 
-}
-
-void GBndLib::saveIndexBuffer()
-{
-    NPY<unsigned int>* ibuf = createIndexBuffer();
-    saveToCache(ibuf, "Index") ; 
-    setIndexBuffer(ibuf);
-}
 
 
 void GBndLib::import()

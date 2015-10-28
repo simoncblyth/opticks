@@ -12,6 +12,8 @@ class GScintillatorLib : public GPropertyLib {
         static const char* slow_component; 
         static const char* fast_component; 
         static const char* keyspec ;
+    public:
+        void save();
         static GScintillatorLib* load(GCache* cache);
     public:
         GScintillatorLib(GCache* cache, unsigned int icdf_length=4096);
