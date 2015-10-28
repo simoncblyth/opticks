@@ -154,16 +154,34 @@ GItemList* GBndLib::createNames()
 }
 
 
+unsigned int GBndLib::getLine(unsigned int ibnd, unsigned int iquad)
+{
+    assert(iquad < NUM_QUAD);
+    return ibnd*NUM_QUAD + iquad ;   
+}
+unsigned int GBndLib::getLineMin()
+{
+    unsigned int lineMin = getLine(0, 0);
+    return lineMin ; 
+}
+unsigned int GBndLib::getLineMax()
+{
+    unsigned int numBnd = getNumBnd() ; 
+    unsigned int lineMax = getLine(numBnd - 1, NUM_QUAD-1);
+    return lineMax ; 
+}
+
 NPY<float>* GBndLib::createBuffer()
 {
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();
 
     unsigned int ni = getNumBnd();
-    unsigned int nj = 4 ;       // im-om-is-os
-    unsigned int nk = getStandardDomainLength() ;
-    unsigned int nl = 4 ;       // 4 interweaved props
+    unsigned int nj = NUM_QUAD ;       // im-om-is-os
+    unsigned int nk = DOMAIN_LENGTH ; 
+    unsigned int nl = NUM_PROP ;       // 4 interweaved props
 
+    assert(nk = getStandardDomainLength()) ;
     assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
     assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
 

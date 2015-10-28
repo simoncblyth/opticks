@@ -21,6 +21,40 @@ void OBoundaryLib::convert()
 }
 
 
+void OBoundaryLib::convertBoundaryProperties(GBoundaryLib* blib)
+{
+    GBuffer* wavelengthBuffer = blib->getWavelengthBuffer();
+    optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
+
+    optix::float4 wavelengthDomain = getDomain();
+    optix::float4 wavelengthDomainReciprocal = getDomainReciprocal();
+    optix::uint4 wavelengthBounds = optix::make_uint4(0, GBoundaryLib::DOMAIN_LENGTH - 1, blib->getLineMin(), blib->getLineMax() );
+
+    LOG(info) << "OBoundaryLib::convertBoundaryProperties wavelengthBounds " 
+              << " x " << wavelengthBounds.x 
+              << " y " << wavelengthBounds.y
+              << " z " << wavelengthBounds.z 
+              << " w " << wavelengthBounds.w 
+              ;
+
+    m_context["wavelength_texture"]->setTextureSampler(wavelengthSampler);
+    m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
+    m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
+    m_context["wavelength_bounds"]->setUint(wavelengthBounds); 
+
+    GBuffer* obuf = blib->getOpticalBuffer();
+
+    unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
+    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
+    memcpy( optical_buffer->map(), obuf->getPointer(), obuf->getNumBytes() );
+    optical_buffer->unmap();
+    //optix::Buffer optical_buffer = createInputBuffer<unsigned int>( obuf, RT_FORMAT_UNSIGNED_INT4, 4);
+    m_context["optical_buffer"]->setBuffer(optical_buffer);
+
+}
+
+
+
 optix::TextureSampler OBoundaryLib::makeWavelengthSampler(GBuffer* buffer)
 {
    // handles different numbers of substances, but uses static domain length
@@ -53,37 +87,14 @@ optix::float4 OBoundaryLib::getDomainReciprocal()
     return optix::make_float4(1./GBoundaryLib::DOMAIN_LOW, 1./GBoundaryLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
 }
 
-void OBoundaryLib::convertBoundaryProperties(GBoundaryLib* blib)
-{
-    GBuffer* wavelengthBuffer = blib->getWavelengthBuffer();
-    optix::TextureSampler wavelengthSampler = makeWavelengthSampler(wavelengthBuffer);
 
-    optix::float4 wavelengthDomain = getDomain();
-    optix::float4 wavelengthDomainReciprocal = getDomainReciprocal();
-    optix::uint4 wavelengthBounds = optix::make_uint4(0, GBoundaryLib::DOMAIN_LENGTH - 1, blib->getLineMin(), blib->getLineMax() );
 
-    LOG(info) << "OBoundaryLib::convertBoundaryProperties wavelengthBounds " 
-              << " x " << wavelengthBounds.x 
-              << " y " << wavelengthBounds.y
-              << " z " << wavelengthBounds.z 
-              << " w " << wavelengthBounds.w 
-              ;
 
-    m_context["wavelength_texture"]->setTextureSampler(wavelengthSampler);
-    m_context["wavelength_domain"]->setFloat(wavelengthDomain); 
-    m_context["wavelength_domain_reciprocal"]->setFloat(wavelengthDomainReciprocal); 
-    m_context["wavelength_bounds"]->setUint(wavelengthBounds); 
 
-    GBuffer* obuf = blib->getOpticalBuffer();
 
-    unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
-    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
-    memcpy( optical_buffer->map(), obuf->getPointer(), obuf->getNumBytes() );
-    optical_buffer->unmap();
-    //optix::Buffer optical_buffer = createInputBuffer<unsigned int>( obuf, RT_FORMAT_UNSIGNED_INT4, 4);
-    m_context["optical_buffer"]->setBuffer(optical_buffer);
 
-}
+
+
 
 
 void OBoundaryLib::convertColors(GBoundaryLib* blib)

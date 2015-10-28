@@ -172,7 +172,7 @@ struct guint4
            case 2:return z; break;
            case 3:return w; break;
         }
-        return INT_MAX ; 
+        return UINT_MAX ; 
     } 
 
     bool operator==(const guint4& other) const 

@@ -15,6 +15,8 @@ class GItemList ;
 
 class GPropertyLib {
     public:
+        static unsigned int NUM_QUAD ; 
+        static unsigned int NUM_PROP ; 
         static unsigned int DOMAIN_LENGTH ; 
         static float        DOMAIN_LOW ; 
         static float        DOMAIN_HIGH ; 

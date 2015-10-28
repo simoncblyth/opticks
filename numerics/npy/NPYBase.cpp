@@ -26,6 +26,12 @@ std::string NPYBase::getDigestString()
     return dig.finalize();
 }
 
+
+std::string NPYBase::getShapeString(unsigned int ifr)
+{
+    return getItemShape(ifr);
+}
+
 std::string NPYBase::getItemShape(unsigned int ifr)
 {
     std::stringstream ss ; 

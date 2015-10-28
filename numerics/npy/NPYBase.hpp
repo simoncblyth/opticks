@@ -26,6 +26,7 @@ class NPYBase {
        //unsigned int getLength();
        unsigned int getNumItems();
        unsigned int getDimensions();
+       std::string  getShapeString(unsigned int ifr=0);
        unsigned int getShape(unsigned int dim);
        unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
        unsigned int getNumValues(unsigned int from_dim=1);

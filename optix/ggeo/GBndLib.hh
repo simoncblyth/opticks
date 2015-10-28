@@ -50,6 +50,10 @@ class GBndLib : public GPropertyLib {
        NPY<unsigned int>* getIndexBuffer();
        void setIndexBuffer(NPY<unsigned int>* ibuf);
   public:
+      static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
+      unsigned int getLineMin();
+      unsigned int getLineMax();
+  public:
        GItemList* createNames();
        NPY<float>* createBuffer();
        void import();

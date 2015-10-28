@@ -109,7 +109,9 @@ optixthrust_add_library( ${name}
        OFrame.cc
        ORenderer.cc
        OBoundaryLib.cc
+       OBndLib.cc
        OScintillatorLib.cc
+       OPropertyLib.cc
        OConfig.cc
        OAccel.cc
        OTracer.cc
@@ -158,7 +160,9 @@ set(hdrs
   OFrame.hh
   ORenderer.hh
   OBoundaryLib.hh
+  OBndLib.hh
   OScintillatorLib.hh
+  OPropertyLib.hh
   OAccel.hh
   OTracer.hh
   OPropagator.hh

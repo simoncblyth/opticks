@@ -20,6 +20,9 @@ float        GPropertyLib::DOMAIN_HIGH = 810.f ;
 float        GPropertyLib::DOMAIN_STEP = 20.f ; 
 unsigned int GPropertyLib::DOMAIN_LENGTH = 39  ; 
 
+unsigned int GPropertyLib::NUM_QUAD = 4  ; 
+unsigned int GPropertyLib::NUM_PROP = 4  ; 
+
 std::string GPropertyLib::getCacheDir()
 {
     return m_cache->getPropertyLibDir(m_type);

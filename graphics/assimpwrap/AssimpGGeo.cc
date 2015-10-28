@@ -909,7 +909,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
                             mt_p->getShortName(),
                             isurf ? isurf->getShortName() : NULL,
                             osurf ? osurf->getShortName() : NULL);
-
     solid->setBnd(bnd);
 
     char* desc = node->getDescription("\n\noriginal node description"); 

@@ -180,6 +180,12 @@ GBoundary* GBoundaryLib::getBoundary(unsigned int index)
 
 
 
+unsigned int GBoundaryLib::getLine(unsigned int isub, unsigned int ioff)
+{
+    assert(ioff < NUM_QUAD);
+    return isub*NUM_QUAD + ioff ;   
+}
+
 unsigned int GBoundaryLib::getLineMin()
 {
     unsigned int lineMin = getLine(0, 0);
@@ -645,12 +651,6 @@ void GBoundaryLib::checkExtraProperties(GPropertyMap<float>* ptex, unsigned int 
 const char* GBoundaryLib::getDigest(unsigned int index)
 {
     return m_keys[index].c_str();
-}
-
-unsigned int GBoundaryLib::getLine(unsigned int isub, unsigned int ioff)
-{
-    assert(ioff < NUM_QUAD);
-    return isub*NUM_QUAD + ioff ;   
 }
 
 
