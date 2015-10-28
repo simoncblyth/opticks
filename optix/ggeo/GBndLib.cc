@@ -49,6 +49,20 @@ void GBndLib::saveIndexBuffer()
     setIndexBuffer(ibuf);
 }
 
+NPY<unsigned int>* GBndLib::createIndexBuffer()
+{
+    return createUint4Buffer(m_bnd);
+}
+
+void GBndLib::importIndexBuffer()
+{
+    LOG(info) << "GBndLib::importIndexBuffer" ; 
+
+    NPY<unsigned int>* ibuf = getIndexBuffer();
+    importUint4Buffer(m_bnd, ibuf );
+}
+
+
 
 
 
@@ -248,61 +262,47 @@ NPY<float>* GBndLib::createBuffer()
 }
 
 
-NPY<unsigned int>* GBndLib::createIndexBuffer()
+NPY<unsigned int>* GBndLib::createOpticalBuffer()
 {
-    return createUint4Buffer(m_bnd);
-
-    /*
     unsigned int ni = getNumBnd();
-    unsigned int nj = 4 ;  
-    NPY<unsigned int>* ibuf = NPY<unsigned int>::make( ni, nj) ;
-    ibuf->zero();
+    unsigned int nj = NUM_QUAD ;    // im-om-is-os
+    unsigned int nk = NUM_PROP ;      
 
-    unsigned int* idat = ibuf->getValues();
+    NPY<unsigned int>* optical = NPY<unsigned int>::make( ni, nj, nk) ;
+    optical->zero(); 
+    unsigned int* odat = optical->getValues();
 
     for(unsigned int i=0 ; i < ni ; i++)      // over bnd
     {
         const guint4& bnd = m_bnd[i] ;
         for(unsigned int j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
-           idat[i*nj+j] = bnd[j] ;  
+        {
+            unsigned int offset = nj*nk*i+nk*j ;
+            if(j == 0 || j == 1)      // imat/omat
+            {
+                unsigned int midx = bnd[j] ;
+                assert(midx != UNSET);
+                odat[offset+0] = midx ; 
+                odat[offset+1] = 0u ; 
+                odat[offset+2] = 0u ; 
+                odat[offset+3] = 0u ; 
+            }
+            else if(j == 2 || j == 3)  // isur/osur
+            {
+                unsigned int sidx = bnd[j] ;
+                if(sidx != UNSET)
+                {
+                    guint4 os = m_slib->getOpticalSurface(sidx) ;
+                    odat[offset+0] = os.x ; 
+                    odat[offset+1] = os.y ; 
+                    odat[offset+2] = os.z ; 
+                    odat[offset+3] = os.w ; 
+                }
+            }
+        } 
     }
-    return ibuf ; 
-    */
-
+    return optical ; 
 }
-
-void GBndLib::importIndexBuffer()
-{
-    LOG(info) << "GBndLib::importIndexBuffer" ; 
-
-    NPY<unsigned int>* ibuf = getIndexBuffer();
-    importUint4Buffer(m_bnd, ibuf );
-
-/*
-
-    unsigned int* idat = ibuf->getValues();
-
-    unsigned int ni = ibuf->getShape(0);
-    unsigned int nj = ibuf->getShape(1);
-    assert(nj == 4); 
-
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        guint4 bnd(UNSET,UNSET,UNSET,UNSET);
-
-        bnd.x = idat[i*nj+0] ;
-        bnd.y = idat[i*nj+1] ;
-        bnd.z = idat[i*nj+2] ;
-        bnd.w = idat[i*nj+3] ;
-
-        add(bnd);
-    }
-*/
-
-}
-
-
-
 
 
 void GBndLib::import()

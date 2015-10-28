@@ -17,7 +17,11 @@ class GSurfaceLib ;
 // in order to allow dynamic addition of boundaries for eg analytic
 // geometry inside-outs and for test boxes 
 //
-// Instead the index buffer is used for persisting  
+// Instead the index buffer is used for persisting, which contains
+// indices of materials and surfaces imat/omat/isur/osur 
+//
+// The boundary buffer is created dynamically by pulling the 
+// relevant bytes from the material and surface libs. 
 // 
 // Former *GBoundaryLib* encompassed uint4 optical_buffer that 
 // contained surface properties from GOpticalSurface, that
@@ -53,6 +57,8 @@ class GBndLib : public GPropertyLib {
        NPY<unsigned int>* createIndexBuffer();
        NPY<unsigned int>* getIndexBuffer();
        void setIndexBuffer(NPY<unsigned int>* ibuf);
+  public:
+       NPY<unsigned int>* createOpticalBuffer();
   public:
       static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
       unsigned int getLineMin();
@@ -97,7 +103,6 @@ inline unsigned int GBndLib::getNumBnd()
 {
     return m_bnd.size() ; 
 }
-
 inline NPY<unsigned int>* GBndLib::getIndexBuffer()
 {
     return m_ibuf ;

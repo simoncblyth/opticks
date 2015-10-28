@@ -30,6 +30,9 @@ int main()
     blib->setBuffer(blib->createBuffer());
     blib->getBuffer()->save("/tmp/bbuf.npy");
 
+    NPY<unsigned int>* op = blib->createOpticalBuffer();
+    op->save("/tmp/op.npy"); 
+
 
     return 0 ; 
 }
