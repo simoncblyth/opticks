@@ -6,14 +6,11 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-int main(int argc, char* argv[])
+
+
+
+void misc(GGeo* m_ggeo)
 {
-    GCache* m_cache = new GCache("GGEOVIEW_");
-
-    GGeo* m_ggeo = new GGeo(m_cache);
-
-    m_ggeo->loadFromCache();
-
     unsigned int nmm = m_ggeo->getNumMergedMesh();
     for(unsigned int i=0 ; i < nmm ; i++)
     { 
@@ -40,8 +37,20 @@ int main(int argc, char* argv[])
         if(frid) frid->save<unsigned int>("/tmp/frid.npy");
 
     }
+}
 
 
+
+int main(int argc, char* argv[])
+{
+    GCache* m_cache = new GCache("GGEOVIEW_");
+
+    GGeo* m_ggeo = new GGeo(m_cache);
+
+    m_ggeo->loadFromCache();
+
+
+    m_ggeo->dumpStats();
 
 
     return 0 ;

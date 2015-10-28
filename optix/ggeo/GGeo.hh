@@ -24,6 +24,7 @@ class GBoundaryLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
+class GTreeCheck ;
 
 class GMergedMesh ;
 class NSensorList ; 
@@ -241,8 +242,11 @@ class GGeo {
         void Summary(const char* msg="GGeo::Summary");
         void Details(const char* msg="GGeo::Details");
 
+    public:
+        GTreeCheck* getTreeCheck();
     private:
         GCache*                       m_cache ; 
+        GTreeCheck*                   m_treecheck ; 
         bool                          m_loaded ;  
         std::vector<GMesh*>           m_meshes ; 
         std::vector<GSolid*>          m_solids ; 
@@ -301,6 +305,7 @@ class GGeo {
 
 inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
+   m_treecheck(NULL), 
    m_loaded(false), 
    m_bndlib(NULL),
    m_boundarylib(NULL),
@@ -520,6 +525,10 @@ inline GCache* GGeo::getCache()
 {
     return m_cache ; 
 }
+inline GTreeCheck* GGeo::getTreeCheck()
+{
+    return m_treecheck ;
+}
 
 inline GMaterial* GGeo::getCathode()
 {
@@ -556,6 +565,5 @@ inline void GGeo::dumpCathodeLV(const char* msg)
         printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
     }
 }
-
 
 

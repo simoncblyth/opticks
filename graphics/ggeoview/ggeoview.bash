@@ -6,6 +6,7 @@ ggv-vi(){ ggeoview-vi ; }
 ggv-edit(){ ggeoview-edit ; }
 ggv--(){  ggeoview-depinstall ; }
 
+ggv-ppmt(){   ggv.sh --analyticmesh 1 --target 3199 --torchconfig "radius=1500;zenith_azimuth=1,0,1,0" $* ; }
 ggv-pmt(){    ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199 $* ; }
 ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
 

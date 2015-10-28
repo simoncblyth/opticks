@@ -393,6 +393,7 @@ void App::loadGeometry()
 
     m_ggeo = new GGeo(m_cache);
 
+
     if(m_fcfg->hasOpt("qe1"))
     {
         GBoundaryLib* blib = m_ggeo->getBoundaryLib();

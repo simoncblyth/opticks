@@ -253,7 +253,7 @@ inline void Camera::aim(float basis)
    float a_far  = basis*5. ;
    float a_scale = basis ; 
 
-   printf("Camera::aim basis %10.4f a_near %10.4f a_far %10.4f a_scale %10.4f \n", basis, a_near, a_far, a_scale );
+   //printf("Camera::aim basis %10.4f a_near %10.4f a_far %10.4f a_scale %10.4f \n", basis, a_near, a_far, a_scale );
 
    setBasis(basis);
    setNear( a_near );

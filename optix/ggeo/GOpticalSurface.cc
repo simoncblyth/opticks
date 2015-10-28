@@ -38,6 +38,25 @@ GOpticalSurface::GOpticalSurface(GOpticalSurface* other)
 } 
 
 
+
+bool GOpticalSurface::isSpecular()
+{
+    if(strncmp(m_finish,"0",strlen(m_finish))==0)  return true ;
+    if(strncmp(m_finish,"1",strlen(m_finish))==0)  return true ;  // used by JUNO.Mirror_opsurf m_finish 1
+    if(strncmp(m_finish,"3",strlen(m_finish))==0)  return false ;
+
+    LOG(info) << "GOpticalSurface::isSpecular " 
+              << " m_shortname " << ( m_shortname ? m_shortname : "-" )
+              << " m_finish "    << ( m_finish ? m_finish : "-" ) 
+              ;
+   
+    assert(0 && "expecting m_finish to be 0:polished or 3:ground ");
+    return false ; 
+}
+
+
+
+
 void GOpticalSurface::findShortName(char marker)
 {
     if(m_shortname) return ;

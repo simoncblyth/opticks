@@ -39,7 +39,6 @@ class GLoader {
          GMergedMesh*           getMergedMesh();
          GBoundaryLibMetadata*  getMetadata();
          GDrawable*             getDrawable();
-         GTreeCheck*            getTreeAnalyse();
 
          GItemIndex*            getMaterials();
          GItemIndex*            getSurfaces();
@@ -162,18 +161,6 @@ inline GItemIndex* GLoader::getMeshes()
 {
     return m_meshes ; 
 }
-
-/*
-inline GBuffer* GLoader::getColorBuffer()
-{
-    return m_color_buffer  ; 
-}
-inline gfloat4 GLoader::getColorDomain()
-{
-    return m_color_domain  ; 
-}
-*/
-
 
 
 inline int GLoader::getRepeatIndex()

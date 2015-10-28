@@ -8,6 +8,7 @@
 #include "GSolid.hh"
 #include "GMesh.hh"
 #include "GBoundary.hh"
+#include "GTreeCheck.hh"
 
 #include "GBndLib.hh"
 #include "GBoundaryLib.hh"
@@ -195,6 +196,13 @@ void GGeo::init()
    if(m_loaded) return ; 
 
    //////////////  below only when operating pre-cache //////////////////////////
+
+   m_treecheck = new GTreeCheck(this) ;
+   if(m_cache->isJuno())
+   {
+       m_treecheck->setVertexMin(250);
+   }
+
 
    m_boundarylib = new GBoundaryLib(m_cache);
 

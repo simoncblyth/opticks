@@ -11,14 +11,13 @@ Mesh mending
 
 
 
-
-
-
-
 Visualisations
 ---------------
 
 ::
+
+    ggv --jdyb --noinstanced -G 
+            # update geocache noinstanced otherwise trips GMesh asserts
 
     ggv --jdyb --zexplode --zexplodeconfig -5564.975,100. -O   
 

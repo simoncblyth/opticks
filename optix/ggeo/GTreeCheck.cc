@@ -19,41 +19,39 @@
 
 
 
-void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo, bool deltacheck)
+void GTreeCheck::createInstancedMergedMeshes(bool delta)
 {
-    Timer t("GTreeCheck::CreateInstancedMergedMeshes") ; 
+    Timer t("GTreeCheck::createInstancedMergedMeshes") ; 
     t.setVerbose(true);
     t.start();
 
-    GTreeCheck ta(ggeo);  // TODO: rename to GTreeAnalyse
-
-    if(deltacheck) 
+    if(delta) 
     {
-        ta.deltacheck();
+        deltacheck();
         t("deltacheck"); 
     }
 
-    ta.traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
+    traverse();   // spin over tree counting up progenyDigests to find repeated geometry 
     t("traverse"); 
 
-    ta.labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
+    labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
     t("labelTree"); 
 
 
-    GMergedMesh* mergedmesh = ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+    GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
 
-    unsigned int numRepeats = ta.getNumRepeats();
+    unsigned int numRepeats = getNumRepeats();
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
-         GNode*   rbase          = ta.getRepeatExample(ridx) ; 
-         GMergedMesh* mergedmesh = ggeo->makeMergedMesh(ridx, rbase); 
-         mergedmesh->dumpSolids("GTreeCheck::CreateInstancedMergedMeshes dumpSolids");
+         GNode*   rbase          = getRepeatExample(ridx) ; 
+         GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
+         mergedmesh->dumpSolids("GTreeCheck::createInstancedMergedMeshes dumpSolids");
 
-         GBuffer* itransforms    = ta.makeInstanceTransformsBuffer(ridx);
+         GBuffer* itransforms    = makeInstanceTransformsBuffer(ridx);
          mergedmesh->setITransformsBuffer(itransforms);
 
-         GBuffer* iidentity       = ta.makeInstanceIdentityBuffer(ridx);
+         GBuffer* iidentity       = makeInstanceIdentityBuffer(ridx);
          mergedmesh->setInstancedIdentityBuffer(iidentity);
 
 
@@ -61,10 +59,13 @@ void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo, bool deltacheck)
     }
     t("makeRepeatTransforms"); 
 
-    GTreePresent tp(ggeo, 0, 100, 1000);   // top,depth_max,sibling_max
+
+
+    // TODO: move this to be GGeo constituent
+    GTreePresent tp(m_ggeo, 0, 100, 1000);   // top,depth_max,sibling_max
     tp.traverse();
-    //tp.dump("GTreeCheck::CreateInstancedMergedMeshes GTreePresent");
-    tp.write(ggeo->getIdPath());
+    //tp.dump("GTreeCheck::createInstancedMergedMeshes GTreePresent");
+    tp.write(m_ggeo->getIdPath());
             
     t("treePresent"); 
 
@@ -73,16 +74,16 @@ void GTreeCheck::CreateInstancedMergedMeshes(GGeo* ggeo, bool deltacheck)
 }
 
 
-
-
 void GTreeCheck::init()
 {
-    m_root = m_ggeo->getSolid(0);
     m_digest_count = new Counts<unsigned int>("progenyDigest");
 }
 
 void GTreeCheck::traverse()
 {
+    m_root = m_ggeo->getSolid(0);
+    assert(m_root);
+
     // count occurences of distinct progeny digests (relative sub-tree identities) in m_digest_count 
     traverse(m_root, 0);
 
@@ -109,6 +110,9 @@ void GTreeCheck::traverse( GNode* node, unsigned int depth)
 void GTreeCheck::deltacheck()
 {
     // check consistency of the level transforms
+    m_root = m_ggeo->getSolid(0);
+    assert(m_root);
+
     deltacheck(m_root, 0);
 }
 
@@ -176,8 +180,8 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
        // but need to also require ndig > smth as dont want to repeat things like the world 
 
         bool select = ndig > repeat_min && nvert > vertex_min ;
-        LOG(debug) 
-                  << "GTreeCheck::findRepeatCandidates "
+        LOG(info) 
+                  << "GTreeCheck::findRepeatCandidates selected marked with ** "
                   << ( select ? "**" : "  " ) 
                   << " i "     << std::setw(3) << i 
                   << " pdig "  << std::setw(32) << pdig  

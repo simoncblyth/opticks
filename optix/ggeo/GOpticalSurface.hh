@@ -53,14 +53,6 @@ inline char* GOpticalSurface::getFinish()
     return m_finish ; 
 }
 
-inline bool GOpticalSurface::isSpecular()
-{
-    if(strncmp(m_finish,"0",strlen(m_finish))==0)  return true ;
-    if(strncmp(m_finish,"3",strlen(m_finish))==0)  return false ;
-    assert(0 && "expecting m_finish to be 0:polished or 3:ground ");
-    return false ; 
-}
-
 /*
  source/materials/include/G4OpticalSurface.hh 
 

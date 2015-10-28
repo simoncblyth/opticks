@@ -14,11 +14,12 @@ template<class T> class Counts ;
 
 class GTreeCheck {
    public:
-        // still canonically invoked by GLoader
-        static void CreateInstancedMergedMeshes(GGeo* ggeo, bool deltacheck=false);
         typedef std::map<std::string, std::vector<GNode*> > MSVN ; 
    public:
         GTreeCheck(GGeo* ggeo);
+        void setRepeatMin(unsigned int repeat_min);
+        void setVertexMin(unsigned int vertex_min);
+        void createInstancedMergedMeshes(bool deltacheck=false); // still canonically invoked by GLoader
    public:
         void init();
         void traverse();
@@ -76,6 +77,15 @@ inline GTreeCheck::GTreeCheck(GGeo* ggeo)
 inline unsigned int GTreeCheck::getNumRepeats()
 {
     return m_repeat_candidates.size();
+}
+
+inline void GTreeCheck::setRepeatMin(unsigned int repeat_min)
+{
+   m_repeat_min = repeat_min ; 
+}
+inline void GTreeCheck::setVertexMin(unsigned int vertex_min)
+{
+   m_vertex_min = vertex_min ; 
 }
 
 

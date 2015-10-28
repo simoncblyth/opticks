@@ -140,6 +140,13 @@ int AssimpGGeo::convert(const char* ctrl)
 
 void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property )
 {
+    const char* shortname = pmap->getShortName();
+
+    LOG(info) << "AssimpGGeo::addPropertyVector " 
+              << " shortname " << (shortname ? shortname : "-" )
+              << " k " << k 
+               ; 
+
     float* data = (float*)property->mData ;
     unsigned int nbyte  = property->mDataLength ; 
     unsigned int nfloat = nbyte/sizeof(float) ;
@@ -475,7 +482,13 @@ which are fabricated by AssimpGGeo::convertSensors.
 */
     convertSensors( gg, m_tree->getRoot(), 0); 
 
-    assert(m_cathode);
+    //assert(m_cathode);
+    if(!m_cathode)
+    {
+         LOG(warning) << "AssimpGGeo::convertSensors m_cathode NULL : no material with an efficiency property ?  " ;
+         return ; 
+    }
+
     unsigned int nclv = gg->getNumCathodeLV();
 
     GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 

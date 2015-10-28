@@ -135,7 +135,7 @@ void GLoader::load(bool verbose)
         if(m_instanced)
         { 
             bool deltacheck = true ; 
-            GTreeCheck::CreateInstancedMergedMeshes(m_ggeo, deltacheck); 
+            m_ggeo->getTreeCheck()->createInstancedMergedMeshes(deltacheck); 
         }
         else
         {
