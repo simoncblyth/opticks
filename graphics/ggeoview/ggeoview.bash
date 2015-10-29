@@ -5,10 +5,15 @@ ggv-d(){  ggeoview-depinstall ; }
 ggv-vi(){ ggeoview-vi ; }
 ggv-edit(){ ggeoview-edit ; }
 ggv--(){  ggeoview-depinstall ; }
+ggv-cd-jpmt(){ cd $(ggv --jpmt --idp) ; }
 
 ggv-ppmt(){   ggv.sh --analyticmesh 1 --target 3199 --torchconfig "radius=1500;zenith_azimuth=1,0,1,0" $* ; }
 ggv-pmt(){    ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199 $* ; }
 ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
+
+
+ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199;source=0,0,1000;target=0,0,0;radius=150;zenith_azimuth=1,0,1,0" $* ; }
+
 
 
 ggv-lldb(){ 
