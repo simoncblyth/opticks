@@ -45,12 +45,6 @@ void GLoader::load(bool verbose)
 
     const char* idpath = m_cache->getIdPath() ;
 
-    const char* path = m_cache->getPath() ;
-    const char* query = m_cache->getQuery() ;
-    const char* ctrl = m_cache->getCtrl() ;
-
-    const char* envprefix = m_cache->getEnvPrefix() ;
-
     LOG(info) << "GLoader::load start " 
               << " idpath " << idpath 
               << " repeatidx " << m_repeatidx 
@@ -82,7 +76,7 @@ void GLoader::load(bool verbose)
     } 
     else
     {
-        LOG(info) << "GLoader::load slow loading using m_loader_imp (disguised AssimpGGeo) " << envprefix ;
+        LOG(info) << "GLoader::load slow loading using m_loader_imp (disguised AssimpGGeo) " ;
 
 
         m_ggeo->loadFromG4DAE(); 
@@ -102,16 +96,6 @@ void GLoader::load(bool verbose)
 
         t("createWavelengthAndOpticalBuffers"); 
 
-
-        // avoid requiring specific scintillator name by picking the first material 
-        // with the requisite properties
-        m_ggeo->findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
- 
-        GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillatorMaterial(0));  
-
-        GScintillatorLib* sclib = m_ggeo->getScintillatorLib() ;
-        sclib->add(scint);
-        sclib->close(); 
 
         //blib->createReemissionBuffer(scint);
 
@@ -186,10 +170,10 @@ void GLoader::load(bool verbose)
     m_flags->setLabeller(GItemIndex::COLORKEY);
 
     GColors* colors = m_ggeo->getColors();
+    
     m_materials->setColorSource(colors);
     m_surfaces->setColorSource(colors);
     m_flags->setColorSource(colors);
-
 
     // formTable is needed to construct labels and codes when not pulling a buffer
     // TODO: avoid this requirement
@@ -199,7 +183,7 @@ void GLoader::load(bool verbose)
     m_flags->formTable(); 
     m_materials->formTable();
 
-    m_colors->setupCompositeColorBuffer( m_materials, m_surfaces, m_flags  );
+    colors->setupCompositeColorBuffer( m_materials, m_surfaces, m_flags  );
     
     m_ggeo->getBoundaryLib()->setColorBuffer(colors->getCompositeBuffer());
     m_ggeo->getBoundaryLib()->setColorDomain(colors->getCompositeDomain());

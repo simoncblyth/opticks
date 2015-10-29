@@ -63,10 +63,11 @@ class GGeo {
         GGeo(GCache* cache); 
         GCache* getCache();
         const char* getIdPath();
-
         void loadFromCache();
+    public:
         void loadFromG4DAE();  // AssimpGGeo::load
-
+        void prepareScintillatorLib();
+    public:
         const char* getPVName(unsigned int index);
         const char* getLVName(unsigned int index);
 

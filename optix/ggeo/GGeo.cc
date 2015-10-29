@@ -55,9 +55,73 @@ namespace fs = boost::filesystem;
 
 #define BSIZ 50
 
+const char* GGeo::GMERGEDMESH = "GMergedMesh" ; 
+const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 
 
 
+void GGeo::init()
+{
+   const char* idpath = m_cache->getIdPath() ;
+
+   fs::path geocache(idpath); 
+
+   m_loaded = fs::exists(geocache) && fs::is_directory(geocache) && m_cache->isGeocache() ;
+
+   const char* ctrl = m_cache->getCtrl() ;
+
+   m_volnames = GGeo::ctrlHasKey(ctrl, "volnames");
+ 
+   m_sensor_list = new NSensorList();
+
+   m_sensor_list->load( idpath, "idmap");
+
+   LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
+
+   m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
+
+   if(m_loaded) return ; 
+
+
+   //////////////  below only when operating pre-cache //////////////////////////
+
+
+   m_treecheck = new GTreeCheck(this) ;
+   if(m_cache->isJuno())
+   {
+       m_treecheck->setVertexMin(250);
+   }
+
+    // colorizer needs full tree, so pre-cache only 
+   m_colorizer = new GColorizer( this, GColorizer::PSYCHEDELIC_NODE ); 
+   m_colorizer->setColors(m_colors);
+
+   m_boundarylib = new GBoundaryLib(m_cache);
+
+   m_bndlib = new GBndLib(m_cache);
+   m_materiallib = new GMaterialLib(m_cache);
+   m_surfacelib  = new GSurfaceLib(m_cache);
+
+   m_bndlib->setMaterialLib(m_materiallib);
+   m_bndlib->setSurfaceLib(m_surfacelib);
+
+   m_scintillatorlib  = new GScintillatorLib(m_cache);
+
+
+   GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
+
+   m_boundarylib->setStandardDomain( standard_wavelengths );
+   m_materiallib->setStandardDomain( standard_wavelengths );
+   m_surfacelib->setStandardDomain( standard_wavelengths );
+
+   m_meshindex = new GItemIndex("MeshIndex") ; 
+
+   if(m_volnames)
+   {
+       m_pvlist = new GItemList("PVNames") ; 
+       m_lvlist = new GItemList("LVNames") ; 
+   }
+}
 
 
 
@@ -86,10 +150,6 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
-
-const char* GGeo::GMERGEDMESH = "GMergedMesh" ; 
-const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
-
 void GGeo::removeMergedMeshes(const char* idpath )
 {
    fs::path cachedir(idpath);
@@ -106,8 +166,6 @@ void GGeo::removeMergedMeshes(const char* idpath )
         }
    } 
 }
-
-
 
 void GGeo::loadMergedMeshes(const char* idpath )
 {
@@ -176,74 +234,6 @@ const char* GGeo::getIdPath()
     return m_cache->getIdPath();
 }
 
-void GGeo::init()
-{
-   const char* idpath = m_cache->getIdPath() ;
-
-   fs::path geocache(idpath); 
-
-   m_loaded = fs::exists(geocache) && fs::is_directory(geocache) && m_cache->isGeocache() ;
-
-   const char* ctrl = m_cache->getCtrl() ;
-
-   m_volnames = GGeo::ctrlHasKey(ctrl, "volnames");
- 
-   m_sensor_list = new NSensorList();
-
-   m_sensor_list->load( idpath, "idmap");
-
-   LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
-
-
-   m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
-
-
-   if(m_loaded) return ; 
-
-   //////////////  below only when operating pre-cache //////////////////////////
-
-   m_treecheck = new GTreeCheck(this) ;
-   if(m_cache->isJuno())
-   {
-       m_treecheck->setVertexMin(250);
-   }
-
-
-    // colorizer needs full tree, so pre-cache only 
-   m_colorizer = new GColorizer( this, GColorizer::PSYCHEDELIC_NODE ); 
-   m_colorizer->setColors(m_colors);
-
-
-   m_boundarylib = new GBoundaryLib(m_cache);
-
-
-   m_bndlib = new GBndLib(m_cache);
-   m_materiallib = new GMaterialLib(m_cache);
-   m_surfacelib  = new GSurfaceLib(m_cache);
-
-   m_bndlib->setMaterialLib(m_materiallib);
-   m_bndlib->setSurfaceLib(m_surfacelib);
-
-   m_scintillatorlib  = new GScintillatorLib(m_cache);
-
-
-   // chroma/chroma/geometry.py
-   // standard_wavelengths = np.arange(60, 810, 20).astype(np.float32)
-   //
-   GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
-
-   m_boundarylib->setStandardDomain( standard_wavelengths );
-   m_materiallib->setStandardDomain( standard_wavelengths );
-
-   m_meshindex = new GItemIndex("MeshIndex") ; 
-
-   if(m_volnames)
-   {
-       m_pvlist = new GItemList("PVNames") ; 
-       m_lvlist = new GItemList("LVNames") ; 
-   }
-}
-
 
 
 void GGeo::loadFromG4DAE()
@@ -254,7 +244,13 @@ void GGeo::loadFromG4DAE()
     int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
     assert(rc == 0);
+
+    prepareScintillatorLib();
+
 }
+
+
+
 
 void GGeo::loadFromCache()
 {   
@@ -715,11 +711,32 @@ void GGeo::dumpRawMaterialProperties(const char* msg)
 }
 
 
+
+
+
+
+
+void GGeo::prepareScintillatorLib()
+{
+    // avoid requiring specific scintillator name by picking the first material 
+    // with the requisite properties
+    findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
+
+    GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(getScintillatorMaterial(0));  
+
+    GScintillatorLib* sclib = getScintillatorLib() ;
+
+    sclib->add(scint);
+
+    sclib->close(); 
+}
+
 void GGeo::findScintillatorMaterials(const char* props)
 {
     m_scintillators_raw = getRawMaterialsWithProperties(props, ",");
     assert(m_scintillators_raw.size() > 0 );
 }
+
 void GGeo::dumpScintillatorMaterials(const char* msg)
 {
     LOG(info)<< msg ;
