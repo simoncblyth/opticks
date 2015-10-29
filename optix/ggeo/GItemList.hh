@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 
 class GItemList {
@@ -18,12 +19,19 @@ class GItemList {
        unsigned int getNumItems();
        std::string& getItem(unsigned int index);
        unsigned int getIndex(const char* name);  // 0-based index of first matching name, OR INT_MAX if no match
+
+   public:
+       bool operator()(const std::string& a_, const std::string& b_);
+       void setOrder(std::map<std::string, unsigned int>& order);
+       void sort();
+
    private:
        void read_(const char* txtpath);
        void load_(const char* idpath);
    private:
        std::string              m_itemtype ;
        std::vector<std::string> m_list ; 
+       std::map<std::string, unsigned int> m_order ; 
        std::string              m_empty ; 
 };
 
@@ -46,5 +54,14 @@ inline std::string& GItemList::getItem(unsigned int index)
 {
     return index < m_list.size() ? m_list[index] : m_empty  ;
 }
+
+inline void GItemList::setOrder(std::map<std::string, unsigned int>& order)
+{
+    m_order = order ; 
+}
+
+
+
+
 
 

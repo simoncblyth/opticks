@@ -98,3 +98,21 @@ void GItemList::dump(const char* msg)
     std::copy( m_list.begin(),m_list.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
 }
 
+
+bool GItemList::operator()(const std::string& a_, const std::string& b_)
+{
+    std::map<std::string, unsigned int>::const_iterator end = m_order.end() ; 
+    unsigned int ia = m_order.find(a_) == end ? UINT_MAX :  m_order[a_] ; 
+    unsigned int ib = m_order.find(b_) == end ? UINT_MAX :  m_order[b_] ; 
+    return ia < ib ; 
+}
+
+void GItemList::sort()
+{
+    if(m_order.size() == 0) return ; 
+    std::stable_sort( m_list.begin(), m_list.end(), *this );
+}
+
+
+
+

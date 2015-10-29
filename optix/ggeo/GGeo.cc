@@ -9,6 +9,8 @@
 #include "GMesh.hh"
 #include "GBoundary.hh"
 #include "GTreeCheck.hh"
+#include "GColorizer.hh"
+#include "GColors.hh"
 
 #include "GBndLib.hh"
 #include "GBoundaryLib.hh"
@@ -193,6 +195,9 @@ void GGeo::init()
    LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
 
+   m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
+
+
    if(m_loaded) return ; 
 
    //////////////  below only when operating pre-cache //////////////////////////
@@ -202,6 +207,11 @@ void GGeo::init()
    {
        m_treecheck->setVertexMin(250);
    }
+
+
+    // colorizer needs full tree, so pre-cache only 
+   m_colorizer = new GColorizer( this, GColorizer::PSYCHEDELIC_NODE ); 
+   m_colorizer->setColors(m_colors);
 
 
    m_boundarylib = new GBoundaryLib(m_cache);

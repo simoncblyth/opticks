@@ -16,8 +16,9 @@ class GColorizer {
                        PSYCHEDELIC_MESH, 
                        NUM_STYLES } Style_t ;  
    public:
-        GColorizer(gfloat3* target, GGeo* ggeo, GColorizer::Style_t style );  // vertex colorizer 
+        GColorizer(GGeo* ggeo, GColorizer::Style_t style );  // vertex colorizer 
    public:
+        void setTarget(gfloat3* target);
         void setRepeatIndex(unsigned int ridx);
         void setSurfaces(GItemIndex* surfaces);
         void setMaterials(GItemIndex* materials);
@@ -42,9 +43,9 @@ class GColorizer {
 };
 
 
-inline GColorizer::GColorizer(gfloat3* target, GGeo* ggeo, GColorizer::Style_t style ) 
+inline GColorizer::GColorizer(GGeo* ggeo, GColorizer::Style_t style ) 
        :
-       m_target(target),
+       m_target(NULL),
        m_ggeo(ggeo),
        m_style(style),
 
@@ -57,6 +58,11 @@ inline GColorizer::GColorizer(gfloat3* target, GGeo* ggeo, GColorizer::Style_t s
 {
 }
 
+
+inline void GColorizer::setTarget(gfloat3* target)
+{
+    m_target =  target ; 
+}
 inline void GColorizer::setSurfaces(GItemIndex* surfaces)
 {
     m_surfaces =  surfaces ; 

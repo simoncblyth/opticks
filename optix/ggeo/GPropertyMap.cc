@@ -158,7 +158,7 @@ std::string GPropertyMap<T>::getShortNameString()
     return getShortName(); 
 }
 template <typename T>
-const char* GPropertyMap<T>::getShortName()
+const char* GPropertyMap<T>::getShortName() const 
 {
     return m_shortname ; 
 }
@@ -251,6 +251,7 @@ bool GPropertyMap<T>::isSkinSurface()
 {
     return m_type == "skinsurface" ;
 }
+
 template <typename T>
 bool GPropertyMap<T>::isBorderSurface()
 {
@@ -261,6 +262,15 @@ bool GPropertyMap<T>::isMaterial()
 {
     return m_type == "material" ;
 }
+
+template <typename T>
+bool GPropertyMap<T>::isSurface()
+{
+    return m_type == "surface" || m_type == "skinsurface" || m_type == "bordersurface" ;
+}
+
+
+
 
 
 template <typename T>

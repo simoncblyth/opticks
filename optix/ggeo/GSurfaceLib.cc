@@ -8,7 +8,7 @@
 #include "NPY.hpp"
 
 #include <iomanip>
-#include <boost/lexical_cast.hpp>
+
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -79,7 +79,6 @@ void GSurfaceLib::Summary(const char* msg)
 {
     LOG(info) << msg  
               << " NumSurfaces " << getNumSurfaces() 
-              << " NumRawSurfaces " << getNumRawSurfaces() 
               ;
 }
 
@@ -112,27 +111,48 @@ void GSurfaceLib::add(GSkinSurface* raw)
 void GSurfaceLib::add(GPropertyMap<float>* surf)
 {
     assert(!isClosed());
-    m_surfaces_raw.push_back(surf);
+   
     m_surfaces.push_back(createStandardSurface(surf)); 
-    m_optical.push_back(createOpticalSurface(surf));
+
+    // GENERAL PATTERN: LESS STATE, LESS PROBLEMS
 }
+
+
+
+
+bool GSurfaceLib::operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_)
+{
+    const char* a = a_->getShortName();
+    const char* b = b_->getShortName();
+    std::map<std::string, unsigned int>::const_iterator end = m_order.end() ; 
+    unsigned int ia = m_order.find(a) == end ? UINT_MAX :  m_order[a] ; 
+    unsigned int ib = m_order.find(b) == end ? UINT_MAX :  m_order[b] ; 
+    return ia < ib ; 
+}
+
+void GSurfaceLib::sort()
+{
+    if(m_order.size() == 0) return ; 
+    std::stable_sort( m_surfaces.begin(), m_surfaces.end(), *this );
+}
+
 
 guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<float>* src)
 {
-   assert(src->isSkinSurface() || src->isBorderSurface());
+   assert(src->isSkinSurface() || src->isBorderSurface() || src->isSurface());
    GOpticalSurface* os = src->getOpticalSurface();
    assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
-
-   guint4 optical ; 
-   optical.x = m_optical.size() ; 
-   optical.y = boost::lexical_cast<unsigned int>(os->getType()); 
-   optical.z = boost::lexical_cast<unsigned int>(os->getFinish()); 
-   optical.w = boost::lexical_cast<float>(os->getValue())*100.f ;   // express as integer percentage 
-     
+   guint4 optical = os->getOptical();
    return optical ; 
 }
 
-
+guint4 GSurfaceLib::getOpticalSurface(unsigned int i)
+{
+    GPropertyMap<float>* surf = getSurface(i);    
+    guint4 os = createOpticalSurface(surf);
+    os.x = i ;
+    return os ; 
+}
 
 
 GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src)
@@ -299,16 +319,6 @@ NPY<float>* GSurfaceLib::createBuffer()
 }
 
 
-NPY<unsigned int>* GSurfaceLib::createOpticalBuffer()
-{
-    return createUint4Buffer(m_optical);
-}
-
-void GSurfaceLib::importOpticalBuffer(NPY<unsigned int>* ibuf)
-{
-    importUint4Buffer(m_optical, ibuf);  
-}
-
 
 void GSurfaceLib::import()
 {
@@ -332,7 +342,8 @@ void GSurfaceLib::import()
        LOG(debug) << std::setw(3) << i 
                  << " " << name ;
 
-       GPropertyMap<float>* surf = new GPropertyMap<float>(name.c_str());
+       GOpticalSurface* os = NULL ;
+       GPropertyMap<float>* surf = new GPropertyMap<float>(name.c_str(),i,"surface", os);
        import(surf, data + i*nj*nk, nj, nk );
 
        m_surfaces.push_back(surf);
@@ -351,6 +362,38 @@ void GSurfaceLib::import( GPropertyMap<float>* surf, float* data, unsigned int n
         surf->addProperty(propertyName(k), prop);
     } 
 }
+
+
+void GSurfaceLib::importOpticalBuffer(NPY<unsigned int>* ibuf)
+{
+    // invoked by load after loadFromCache and import have run 
+
+    std::vector<guint4> optical ; 
+    importUint4Buffer(optical, ibuf);  
+
+    // thence can revivify GOpticalSurface and associate them to the GPropertyMap<float>*
+    
+    unsigned int ni = optical.size();
+    assert(ni == getNumSurfaces());
+    assert(ni == m_names->getNumItems() );
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+       std::string name = m_names->getItem(i);
+       GPropertyMap<float>* surf = getSurface(i);
+       GOpticalSurface* os = GOpticalSurface::create( name.c_str(), optical[i] );
+       surf->setOpticalSurface(os);
+    }
+}
+
+NPY<unsigned int>* GSurfaceLib::createOpticalBuffer()
+{
+    std::vector<guint4> optical ; 
+    unsigned int ni = getNumSurfaces();
+    for(unsigned int i=0 ; i < ni ; i++) optical.push_back(getOpticalSurface(i));
+    return createUint4Buffer(optical);
+}
+
 
 
 void GSurfaceLib::dump(const char* msg)

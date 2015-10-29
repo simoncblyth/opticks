@@ -6,6 +6,7 @@
 #include <cassert>
 #include <climits>
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -29,7 +30,25 @@ std::string GPropertyLib::getCacheDir()
 {
     return m_cache->getPropertyLibDir(m_type);
 }
+std::string GPropertyLib::getPreferenceDir()
+{
+    return m_cache->getPreferenceDir();
+}
+std::string GPropertyLib::getPreferenceName()
+{
+    std::stringstream ss ; 
+    ss << m_type << ".json" ;
+    return ss.str();
+}
 
+
+
+
+//  GItemIndex approach allows index customization ?
+//  eg to put common materials at low indices for truncated compression
+//  to retain more info 
+//
+//
 unsigned int GPropertyLib::getIndex(const char* shortname)
 {
     if(!isClosed())
@@ -245,6 +264,7 @@ void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>
         vec.push_back(entry);
     }
 }
+
 
 
 

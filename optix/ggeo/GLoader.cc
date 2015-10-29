@@ -56,15 +56,6 @@ void GLoader::load(bool verbose)
               << " repeatidx " << m_repeatidx 
               ;
 
-    m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
-
-
-    // more flexible to pass in nascent ggeo rather than have it created
-    // in multiple other places 
-    // eg this allows setting up mesh joiner imp to be done at creation within 
-    // AssimpGGeo by GGeo
-
-
 
     if(m_ggeo->isLoaded()) 
     {
@@ -101,9 +92,12 @@ void GLoader::load(bool verbose)
         GBoundaryLib* blib = m_ggeo->getBoundaryLib();
 
         // material customization must be done prior to creating buffers, as they contain the customized indices ?
+        //  
+
         m_materials = blib->getMaterials();  
         m_materials->loadIndex("$HOME/.opticks"); 
 
+        // material/surface indices obtained from GItemIndex::getIndexLocal(shortname)
         blib->createWavelengthAndOpticalBuffers();
 
         t("createWavelengthAndOpticalBuffers"); 
@@ -129,7 +123,7 @@ void GLoader::load(bool verbose)
 
         GColorMap* sixc = GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json");
         m_surfaces->setColorMap(sixc);   
-        m_surfaces->setColorSource(m_colors);
+        m_surfaces->setColorSource(m_ggeo->getColors());
 
 
         if(m_instanced)
@@ -148,17 +142,15 @@ void GLoader::load(bool verbose)
 
 
         // GColorizer needs full tree,  so have to use pre-cache
-
         GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
-
         gfloat3* vertex_colors = mesh0->getColors();
 
-        GColorizer czr( vertex_colors, m_ggeo, GColorizer::PSYCHEDELIC_NODE ); 
+        GColorizer* czr = m_ggeo->getColorizer();
 
-        czr.setColors(m_colors);
-        czr.setSurfaces(m_surfaces);
-        czr.setRepeatIndex(mesh0->getIndex()); 
-        czr.traverse();
+        czr->setTarget( vertex_colors );
+        czr->setSurfaces(m_surfaces);
+        czr->setRepeatIndex(mesh0->getIndex()); 
+        czr->traverse();
 
         t("GColorizer"); 
 
@@ -173,7 +165,6 @@ void GLoader::load(bool verbose)
         m_materials->save(idpath);
         m_surfaces->save(idpath);
 
-
         t("save geocache"); 
     } 
   
@@ -185,9 +176,8 @@ void GLoader::load(bool verbose)
     Index* idx = m_types->getFlagsIndex() ;    
     m_flags = new GItemIndex( idx );     //GFlagIndex::load(idpath); 
 
-    m_flags->setColorMap(GColorMap::load("$HOME/.opticks", "GFlagIndexColors.json"));    
-
     // itemname => colorname 
+    m_flags->setColorMap(GColorMap::load("$HOME/.opticks", "GFlagIndexColors.json"));    
     m_materials->setColorMap(GColorMap::load("$HOME/.opticks", "GMaterialIndexColors.json")); 
     m_surfaces->setColorMap(GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json"));   
 
@@ -195,9 +185,10 @@ void GLoader::load(bool verbose)
     m_surfaces->setLabeller(GItemIndex::COLORKEY);
     m_flags->setLabeller(GItemIndex::COLORKEY);
 
-    m_materials->setColorSource(m_colors);
-    m_surfaces->setColorSource(m_colors);
-    m_flags->setColorSource(m_colors);
+    GColors* colors = m_ggeo->getColors();
+    m_materials->setColorSource(colors);
+    m_surfaces->setColorSource(colors);
+    m_flags->setColorSource(colors);
 
 
     // formTable is needed to construct labels and codes when not pulling a buffer
@@ -210,9 +201,8 @@ void GLoader::load(bool verbose)
 
     m_colors->setupCompositeColorBuffer( m_materials, m_surfaces, m_flags  );
     
-    m_ggeo->getBoundaryLib()->setColorBuffer(m_colors->getCompositeBuffer());
-    m_ggeo->getBoundaryLib()->setColorDomain(m_colors->getCompositeDomain());
-
+    m_ggeo->getBoundaryLib()->setColorBuffer(colors->getCompositeBuffer());
+    m_ggeo->getBoundaryLib()->setColorDomain(colors->getCompositeDomain());
 
 
     LOG(info) << "GLoader::load done " << idpath ;

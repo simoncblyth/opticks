@@ -45,9 +45,10 @@ class GMaterialLib : public GPropertyLib {
    public:
        // lifecycle
        void add(GMaterial* material);
+       void sort();
+       bool operator()(const GMaterial& a_, const GMaterial& b_);
    public:
        GMaterial* getMaterial(unsigned int i);
-       unsigned int getNumRawMaterials();
        unsigned int getNumMaterials();
    private:
        GMaterial*  createStandardMaterial(GMaterial* src);
@@ -55,7 +56,6 @@ class GMaterialLib : public GPropertyLib {
        // post-cache
        void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk );
    private:
-       std::vector<GMaterial*>       m_materials_raw ; 
        std::vector<GMaterial*>       m_materials ; 
 
 
@@ -71,10 +71,6 @@ inline GMaterialLib::GMaterialLib(GCache* cache)
 inline unsigned int GMaterialLib::getNumMaterials()
 {
     return m_materials.size();
-}
-inline unsigned int GMaterialLib::getNumRawMaterials()
-{
-    return m_materials_raw.size();
 }
 inline GMaterial* GMaterialLib::getMaterial(unsigned int i)
 {

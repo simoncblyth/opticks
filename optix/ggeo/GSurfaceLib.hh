@@ -53,6 +53,9 @@ class GSurfaceLib : public GPropertyLib {
        void add(GBorderSurface* bs);
        void add(GPropertyMap<float>* surf);
    public:
+       void sort();
+       bool operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_);
+   public:
        guint4               getOpticalSurface(unsigned int i);
        GPropertyMap<float>* getSurface(unsigned int i);
    private:
@@ -68,16 +71,13 @@ class GSurfaceLib : public GPropertyLib {
        void setOpticalBuffer(NPY<unsigned int>* ibuf);
        NPY<unsigned int>* getOpticalBuffer();
    public:
-       unsigned int getNumRawSurfaces();
        unsigned int getNumSurfaces();
    public:
        void import();
    private:
        void import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk );
    private:
-       std::vector<GPropertyMap<float>*>       m_surfaces_raw ; 
        std::vector<GPropertyMap<float>*>       m_surfaces ; 
-       std::vector<guint4>                     m_optical ; 
        float                                   m_fake_efficiency ; 
        NPY<unsigned int>*                      m_optical_buffer ; 
 
@@ -97,19 +97,10 @@ inline unsigned int GSurfaceLib::getNumSurfaces()
 {
     return m_surfaces.size();
 }
-inline unsigned int GSurfaceLib::getNumRawSurfaces()
-{
-    return m_surfaces_raw.size();
-}
 inline GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i)
 {
     return m_surfaces[i] ;
 }
-inline guint4 GSurfaceLib::getOpticalSurface(unsigned int i)
-{
-    return m_optical[i] ;
-}
-
 
 
 inline void GSurfaceLib::setFakeEfficiency(float fake_efficiency)

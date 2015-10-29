@@ -18,6 +18,7 @@ class GCache {
          
          static const char* JUNO ; 
          static const char* DAYABAY ; 
+         static const char* PREFERENCE_DIR  ;
     public:
          GCache(const char* envprefix);
     public:
@@ -48,6 +49,7 @@ class GCache {
 
     public:
          const char* getDetector();
+         const char* getPreferenceDir();
          bool        isJuno();
          bool        isDayabay();
 
@@ -71,6 +73,7 @@ class GCache {
           bool        m_dayabay ; 
           bool        m_juno ; 
           const char* m_detector ;
+          const char* m_prefdir ;
 };
 
 
@@ -93,7 +96,8 @@ inline GCache::GCache(const char* envprefix)
        m_geocache(false),
        m_dayabay(false),
        m_juno(false),
-       m_detector(NULL)
+       m_detector(NULL),
+       m_prefdir(NULL)
 {
        init();
        assert(g_instance == NULL && "GCache::GCache only one instance is allowed");
@@ -145,6 +149,11 @@ inline const char* GCache::getDetector()
 {
     return m_detector ;
 }
+inline const char* GCache::getPreferenceDir()
+{
+    return m_prefdir ? m_prefdir : PREFERENCE_DIR  ;
+}
+
 inline bool GCache::isJuno()
 {
    return m_juno ; 

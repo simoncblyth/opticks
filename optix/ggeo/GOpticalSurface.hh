@@ -1,13 +1,16 @@
 #pragma once
 #include <string>
 #include <cassert>
+#include "GVector.hh"
 
 class GOpticalSurface {
   public:
+      static GOpticalSurface* create(const char* name, guint4 opt );
       GOpticalSurface(GOpticalSurface* other);
       GOpticalSurface(const char* name, const char* type, const char* model, const char* finish, const char* value);
       virtual ~GOpticalSurface();
 
+      guint4 getOptical();
       bool isSpecular();
 
       std::string description();

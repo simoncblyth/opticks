@@ -58,6 +58,7 @@ add_library( ${name}  SHARED
     Counts.cpp
     Types.cpp
     Index.cpp
+    Map.cpp
     Timer.cpp
     Times.cpp
     NCache.cpp
@@ -106,6 +107,7 @@ timeutil.hpp
 Lookup.hpp
 Types.hpp
 Index.hpp
+Map.hpp
 Timer.hpp
 Times.hpp
 NCache.hpp

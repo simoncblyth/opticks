@@ -24,7 +24,10 @@ class GBoundaryLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
+
 class GTreeCheck ;
+class GColorizer ; 
+class GColors ; 
 
 class GMergedMesh ;
 class NSensorList ; 
@@ -119,7 +122,6 @@ class GGeo {
         char* getQuery(); 
         char* getCtrl(); 
         char* getIdentityPath(); 
-        GColors* getColors();
 
     public:
         void add(GMesh*    mesh);
@@ -177,6 +179,8 @@ class GGeo {
         GMaterialLib* getMaterialLib();
         GSurfaceLib*  getSurfaceLib();
         GScintillatorLib*  getScintillatorLib();
+        GColorizer*        getColorizer();
+        GColors*           getColors();
 
     public:
         GMesh* getMesh(unsigned int index);  
@@ -272,6 +276,7 @@ class GGeo {
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
         GScintillatorLib*             m_scintillatorlib ; 
+        GColorizer*                   m_colorizer ; 
 
         NSensorList*                  m_sensor_list ; 
         gfloat3*                      m_low ; 
@@ -312,6 +317,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_materiallib(NULL),
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
+   m_colorizer(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
@@ -465,6 +471,11 @@ inline GScintillatorLib* GGeo::getScintillatorLib()
 {
     return m_scintillatorlib ; 
 }
+inline GColorizer* GGeo::getColorizer()
+{
+    return m_colorizer ; 
+}
+
 
 
 
@@ -486,10 +497,10 @@ inline gfloat3* GGeo::getHigh()
    return m_high ; 
 }
 
-inline void GGeo::setColors(GColors* colors)
-{
-   m_colors = colors ; 
-}
+//inline void GGeo::setColors(GColors* colors)
+//{
+//   m_colors = colors ; 
+//}
 inline GColors* GGeo::getColors()
 {
    return m_colors ; 

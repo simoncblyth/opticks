@@ -7,10 +7,32 @@
 #include <sstream>
 #include <iomanip>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+
+GOpticalSurface* GOpticalSurface::create(const char* name, guint4 optical )
+{
+    std::string type   = boost::lexical_cast<std::string>(optical.y);   
+    std::string finish = boost::lexical_cast<std::string>(optical.z);   
+    std::string model  = "1" ; // always unified so skipped?  was that 1?
+    float fvalue  = boost::lexical_cast<float>(optical.w)/100.f ;   
+    std::string value = boost::lexical_cast<std::string>(fvalue);   
+    return new GOpticalSurface( name, type.c_str(), model.c_str(), finish.c_str(), value.c_str() ); 
+}
+
+
+guint4 GOpticalSurface::getOptical()
+{
+   guint4 optical ; 
+   optical.x = UINT_MAX ; //  place holder
+   optical.y = boost::lexical_cast<unsigned int>(getType()); 
+   optical.z = boost::lexical_cast<unsigned int>(getFinish()); 
+   optical.w = boost::lexical_cast<float>(getValue())*100.f ;   // express as integer percentage 
+   return optical ; 
+}
 
 
 GOpticalSurface::GOpticalSurface(const char* name, const char* type, const char* model, const char* finish, const char* value) 

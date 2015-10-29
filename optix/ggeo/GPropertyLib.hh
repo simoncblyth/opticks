@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
@@ -28,10 +29,15 @@ class GPropertyLib {
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
         GPropertyLib(GCache* cache, const char* type);
-        std::string getCacheDir();
-        const char* getType();
         virtual ~GPropertyLib();
-
+        const char* getType();
+        std::string getCacheDir();
+        std::string getPreferenceDir();
+        std::string getPreferenceName();
+    public:
+        void setOrder(std::map<std::string, unsigned int>& order);
+        std::map<std::string, unsigned int>& getOrder(); 
+    public:
         void setStandardDomain(GDomain<float>* standard_domain);
         void setDefaults(GPropertyMap<float>* defaults);
     private:
@@ -88,6 +94,7 @@ class GPropertyLib {
         GItemList*                           m_names ; 
         const char*                          m_type ; 
         GDomain<float>*                      m_standard_domain ;  
+        std::map<std::string, unsigned int>  m_order ;
     private:
         GPropertyMap<float>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   
@@ -130,6 +137,18 @@ inline void GPropertyLib::setDefaults(GPropertyMap<float>* defaults)
 {
     m_defaults = defaults ;
 }
+inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)
+{
+    m_order = order ; 
+}
+inline std::map<std::string, unsigned int>& GPropertyLib::getOrder()
+{
+    return m_order ; 
+}
+
+
+
+
 inline GPropertyMap<float>* GPropertyLib::getDefaults()
 {
     return m_defaults ;

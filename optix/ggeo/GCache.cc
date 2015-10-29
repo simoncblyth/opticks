@@ -14,6 +14,7 @@ namespace fs = boost::filesystem;
 
 const char* GCache::JUNO    = "juno" ; 
 const char* GCache::DAYABAY = "dayabay" ; 
+const char* GCache::PREFERENCE_DIR = "$HOME/.opticks" ; 
 
 GCache* GCache::g_instance = NULL ; 
 

@@ -25,7 +25,7 @@ class GPropertyMap {
      // caller should free the char* returned after dumping 
       //char* digest();
       char* pdigest(int ifr, int ito); 
-      const char* getShortName(); 
+      const char* getShortName() const ; 
       bool hasShortName(const char* name);
       bool hasDefinedName();
       bool hasNameEnding(const char* end);
@@ -44,6 +44,7 @@ class GPropertyMap {
       unsigned int getIndex();  // aiScene material index ("surfaces" and "materials" represented as Assimp materials)
       const char* getType();
 
+      bool isSurface();
       bool isSkinSurface();
       bool isBorderSurface();
       bool isMaterial();

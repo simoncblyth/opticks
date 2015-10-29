@@ -63,13 +63,11 @@ void GMaterialLib::Summary(const char* msg)
 {
     LOG(info) << msg  
               << " NumMaterials " << getNumMaterials() 
-              << " NumRawMaterials " << getNumRawMaterials() 
               ;
 }
 void GMaterialLib::add(GMaterial* raw)
 {
     assert(!isClosed());
-    m_materials_raw.push_back(raw);
     m_materials.push_back(createStandardMaterial(raw)); 
 }
 
@@ -95,6 +93,24 @@ GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
 }
 
 
+bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
+{
+    const char* a = a_.getShortName();
+    const char* b = b_.getShortName();
+    std::map<std::string, unsigned int>::const_iterator end = m_order.end() ; 
+    unsigned int ia = m_order.find(a) == end ? UINT_MAX :  m_order[a] ; 
+    unsigned int ib = m_order.find(b) == end ? UINT_MAX :  m_order[b] ; 
+    return ia < ib ; 
+}
+
+void GMaterialLib::sort()
+{
+    if(m_order.size() == 0) return ; 
+    std::stable_sort( m_materials.begin(), m_materials.end(), *this );
+}
+
+
+
 
 GItemList* GMaterialLib::createNames()
 {
@@ -105,6 +121,7 @@ GItemList* GMaterialLib::createNames()
         GMaterial* mat = m_materials[i] ;
         names->add(mat->getShortName());
     }
+
     return names ;
 }
 
@@ -220,9 +237,6 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
               << "\n" << table 
               ; 
 }
-
-
-
 
 
 

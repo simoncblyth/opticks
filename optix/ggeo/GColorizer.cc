@@ -16,9 +16,13 @@
 
 void GColorizer::traverse()
 {
+    if(!m_target)
+    {
+        LOG(warning) << "GColorizer::traverse must setTarget before traverse " ;
+        return ;  
+    }
     GSolid* root = m_ggeo->getSolid(0);
     traverse(root, 0);
-
     LOG(info) << "GColorizer::traverse colorized nodes " << m_num_colorized ; 
 }
 
