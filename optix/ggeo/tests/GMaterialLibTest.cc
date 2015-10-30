@@ -7,7 +7,9 @@ int main()
 
     GMaterialLib* lib = GMaterialLib::load(&gc);
 
-    lib->dump();
+    const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
+
+    lib->dumpMaterials(mats);
 
     return 0 ;
 }

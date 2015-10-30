@@ -79,8 +79,6 @@ class GMaterialLib : public GPropertyLib {
        void dump(GMaterial* mat, const char* msg="GMaterialLib::dump");
    private:
        void init();
-       void initOrder();
-       void initColor();
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
@@ -93,6 +91,7 @@ class GMaterialLib : public GPropertyLib {
        void sort();
        bool operator()(const GMaterial& a_, const GMaterial& b_);
    public:
+       void dumpMaterials(const char* mats, const char* msg="GMaterialLib::dumpMaterials");
        GMaterial* getMaterial(unsigned int i);
        unsigned int getNumMaterials();
    private:

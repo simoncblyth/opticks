@@ -3,10 +3,9 @@
 #include "GItemList.hh"
 #include "NPY.hpp"
 
-#include "Map.hpp"
-//#include "jsonutil.hpp"
 
 #include <iomanip>
+#include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -41,8 +40,6 @@ void GMaterialLib::init()
 {
     setKeyMap(keyspec);
     defineDefaults(getDefaults());
-    initOrder();
-    initColor();
 }
 
 void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
@@ -51,32 +48,6 @@ void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( absorption_length,     1e6  );
     defaults->addConstantProperty( scattering_length,     1e6  );
     defaults->addConstantProperty( reemission_prob,       0.f  );
-}
-
-void GMaterialLib::initOrder()
-{
-    std::string prefdir = getPreferenceDir();
-    const char* order_ = "order.json" ; 
-    typedef Map<std::string, unsigned int> MSU ;  
-    MSU* order = MSU::load(prefdir.c_str(), order_ ) ; 
-    if(order)
-    {
-        order->dump("GMaterialLib::initOrder custom material ordering");
-        setOrder(order->getMap());
-    }
-}
-
-void GMaterialLib::initColor()
-{
-    std::string prefdir = getPreferenceDir();
-    const char* color_ = "color.json" ; 
-    typedef Map<std::string, std::string> MSS ;  
-    MSS* color = MSS::load(prefdir.c_str(), color_ ) ; 
-    if(color)
-    {
-        color->dump("GMaterialLib::initColor custom material coloring");
-        setColor(color->getMap());
-    }
 }
 
 
@@ -232,6 +203,36 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigne
         GProperty<float>* prop = new GProperty<float>( values, domain, nj );
         mat->addProperty(propertyName(k), prop);
     } 
+}
+
+
+void GMaterialLib::dumpMaterials(const char* mats, const char* msg)
+{
+    typedef std::vector<std::string> VS ; 
+    VS elem ; 
+    boost::split(elem, mats, boost::is_any_of(","));
+
+    LOG(info) << msg << " " << mats ; 
+    for(VS::const_iterator it=elem.begin() ; it != elem.end() ; it++)
+    {
+        const char* key = it->c_str();
+        unsigned int idx = getIndex(key);
+        if(idx == GPropertyLib::UNSET)
+        {
+             LOG(warning) << "GMaterialLib::dumpMaterials no material named: " << *it ; 
+        }
+        else
+        {
+             const char* colorname = getColorName(key);  
+             unsigned int colorcode = getColorCode(key);              
+
+             std::cout << std::setw(5) << idx 
+                       << std::setw(30) << *it 
+                       << std::setw(10) << std::hex << colorcode << std::dec
+                       << std::setw(15) << colorname 
+                       << std::endl ; 
+        }
+    }
 }
 
 

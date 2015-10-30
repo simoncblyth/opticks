@@ -78,8 +78,6 @@ void GGeo::init()
 
    LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
-   m_colors = GColors::load("$HOME/.opticks","GColors.json");  // colorname => hexcode 
-
    if(m_loaded) return ; 
 
 
@@ -94,7 +92,7 @@ void GGeo::init()
 
     // colorizer needs full tree, so pre-cache only 
    m_colorizer = new GColorizer( this, GColorizer::PSYCHEDELIC_NODE ); 
-   m_colorizer->setColors(m_colors);
+   m_colorizer->setColors(m_cache->getColors());
 
    m_boundarylib = new GBoundaryLib(m_cache);
 
@@ -226,7 +224,10 @@ const char* GGeo::getIdPath()
 {
     return m_cache->getIdPath();
 }
-
+GColors* GGeo::getColors()
+{
+   return m_cache->getColors() ; 
+}
 
 
 void GGeo::loadFromG4DAE()

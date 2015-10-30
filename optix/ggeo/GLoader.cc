@@ -97,11 +97,6 @@ void GLoader::load(bool verbose)
         t("createWavelengthAndOpticalBuffers"); 
 
 
-        //blib->createReemissionBuffer(scint);
-
-        t("createReemissionBuffer"); 
-
-
         m_metadata = blib->getMetadata();
         m_surfaces = blib->getSurfaces();   
 

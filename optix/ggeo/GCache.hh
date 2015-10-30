@@ -5,6 +5,8 @@
 #include <cassert>
 #include <glm/glm.hpp>
 
+class GColors ; 
+
 
 // this is turning into GGeoConfig rather than just GCache 
 // TODO: handle logging here, for control from tests
@@ -21,9 +23,14 @@ class GCache {
          static const char* PREFERENCE_BASE  ;
     public:
          GCache(const char* envprefix);
+    private:
+         void init();
+         void readEnvironment();  
     public:
          void setGeocache(bool geocache=true);
          bool isGeocache();
+         void setColors(GColors* colors);
+         GColors* getColors();
     public:
          const char* getIdPath();
          std::string getRelativePath(const char* path); 
@@ -54,10 +61,8 @@ class GCache {
          bool        isDayabay();
 
     private:
-          void init();
-          void readEnvironment();  
-    private:
           const char* m_envprefix ; 
+          GColors*    m_colors ; 
     private:
           const char* m_geokey ;
           const char* m_path ;
@@ -73,6 +78,7 @@ class GCache {
           bool        m_dayabay ; 
           bool        m_juno ; 
           const char* m_detector ;
+        
 };
 
 
@@ -84,6 +90,7 @@ inline GCache* GCache::getInstance()
 inline GCache::GCache(const char* envprefix)
        :
        m_envprefix(strdup(envprefix)),
+       m_colors(NULL),
        m_geokey(NULL),
        m_path(NULL),
        m_query(NULL),
@@ -142,6 +149,19 @@ inline bool GCache::isGeocache()
 {
     return m_geocache ;
 }
+
+
+inline void GCache::setColors(GColors* colors)
+{
+    m_colors = colors ; 
+}
+inline GColors* GCache::getColors()
+{
+    return m_colors ;
+}
+
+
+
 
 inline const char* GCache::getDetector()
 {

@@ -1,8 +1,12 @@
 #include "GPropertyLib.hh"
 #include "GCache.hh"
+#include "GColors.hh"
 #include "GItemList.hh"
 
+// npy-
 #include "NPY.hpp"
+#include "Map.hpp"
+
 #include <cassert>
 #include <climits>
 
@@ -76,7 +80,57 @@ void GPropertyLib::init()
     GPropertyMap<float>* defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     defaults->setStandardDomain(getStandardDomain());
     setDefaults(defaults);
+
+    initOrder();
+    initColor();
 }
+
+
+void GPropertyLib::initOrder()
+{
+    std::string prefdir = getPreferenceDir();
+    const char* order_ = "order.json" ; 
+    typedef Map<std::string, unsigned int> MSU ;  
+    MSU* order = MSU::load(prefdir.c_str(), order_ ) ; 
+    if(order)
+    {
+        order->dump("GPropertyLib::initOrder");
+        setOrder(order->getMap());
+    }
+}
+
+void GPropertyLib::initColor()
+{
+    std::string prefdir = getPreferenceDir();
+    const char* color_ = "color.json" ; 
+    typedef Map<std::string, std::string> MSS ;  
+    MSS* color = MSS::load(prefdir.c_str(), color_ ) ; 
+    if(color)
+    {
+        color->dump("GPropertyLib::initColor");
+        setColor(color->getMap());
+    }
+}
+
+
+const char* GPropertyLib::getColorName(const char* key)
+{
+    return m_color.count(key) == 1 ? m_color[key].c_str() : NULL ; 
+}
+
+unsigned int GPropertyLib::getColorCode(const char* key )
+{
+    const char*  colorname =  getColorName(key) ;
+    GColors* palette = m_cache->getColors();
+    unsigned int colorcode  = palette->getCode(colorname, 0xFFFFFF) ; 
+    return colorcode ; 
+}
+
+
+
+
+
+
 
 std::string GPropertyLib::getBufferName(const char* suffix)
 {

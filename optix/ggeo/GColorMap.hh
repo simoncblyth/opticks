@@ -29,6 +29,11 @@ simon:.opticks blyth$ cat GFlagIndexColors.json
 
 */
 
+//
+// hmm this is just a string string map, nothing special for color .. 
+// replacing with npy-/Map<std::string, std::string> in new GPropertyLib approach 
+//
+
 class GColorMap  {
    public:
        static GColorMap* load(const char* dir, const char* name);

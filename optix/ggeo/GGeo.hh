@@ -115,7 +115,6 @@ class GGeo {
         void setCtrl(const char* ctrl);
         //void setVolNames(bool volnames);
         void setIdentityPath(const char* idpath);
-        void setColors(GColors* colors);
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion();
     public:
@@ -285,7 +284,6 @@ class GGeo {
         std::map<unsigned int,GMergedMesh*>     m_merged_mesh ; 
         std::map<unsigned int, unsigned int>    m_mesh_usage ; 
         std::map<unsigned int, std::vector<unsigned int> >    m_mesh_nodes ; 
-        GColors*                      m_colors ; 
         GItemIndex*                   m_meshindex ; 
         GItemList*                    m_pvlist ; 
         GItemList*                    m_lvlist ; 
@@ -322,7 +320,6 @@ inline GGeo::GGeo(GCache* cache) :
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
-   m_colors(NULL),
    m_meshindex(NULL),
    m_pvlist(NULL),
    m_lvlist(NULL),
@@ -498,14 +495,6 @@ inline gfloat3* GGeo::getHigh()
    return m_high ; 
 }
 
-//inline void GGeo::setColors(GColors* colors)
-//{
-//   m_colors = colors ; 
-//}
-inline GColors* GGeo::getColors()
-{
-   return m_colors ; 
-}
 
 inline GItemIndex* GGeo::getMeshIndex()
 {

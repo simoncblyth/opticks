@@ -47,6 +47,8 @@ class GPropertyLib {
         void setDefaults(GPropertyMap<float>* defaults);
     private:
         void init();
+        void initOrder();
+        void initColor();
     public:
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
@@ -87,6 +89,10 @@ class GPropertyLib {
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
         GItemList*   getNames();
+
+    public:
+        unsigned int getColorCode(const char* key );
+        const char*  getColorName(const char* key);
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveToCache();
