@@ -309,9 +309,13 @@ void GBndLib::import()
 {
     LOG(info) << "GBndLib::import" ; 
 }
-
+void GBndLib::sort()
+{
+    LOG(info) << "GBndLib::sort" ; 
+}
 void GBndLib::defineDefaults(GPropertyMap<float>* defaults)
 {
+    LOG(info) << "GBndLib::defineDefaults" ; 
 }
  
 void GBndLib::dump(const char* msg)

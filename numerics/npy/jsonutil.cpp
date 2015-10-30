@@ -22,8 +22,6 @@ namespace pt = boost::property_tree;
 
 
 
-
-
 bool existsPath(const char* dir_, const char* name )
 {
     std::string dir = os_path_expandvars(dir_) ; 
@@ -37,6 +35,7 @@ bool existsPath(const char* dir_, const char* name )
   
     return false ; 
 }
+
 
 
 std::string preparePath(const char* dir_, const char* name, bool create )

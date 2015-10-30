@@ -18,7 +18,7 @@ class GCache {
          
          static const char* JUNO ; 
          static const char* DAYABAY ; 
-         static const char* PREFERENCE_DIR  ;
+         static const char* PREFERENCE_BASE  ;
     public:
          GCache(const char* envprefix);
     public:
@@ -29,6 +29,7 @@ class GCache {
          std::string getRelativePath(const char* path); 
          std::string getMergedMeshPath(unsigned int ridx);
          std::string getPropertyLibDir(const char* name);
+         std::string getPreferenceDir(const char* type);
          const char* getEnvPrefix();
          bool idPathContains(const char* s); 
          void Summary(const char* msg="GCache::Summary");
@@ -49,7 +50,6 @@ class GCache {
 
     public:
          const char* getDetector();
-         const char* getPreferenceDir();
          bool        isJuno();
          bool        isDayabay();
 
@@ -73,7 +73,6 @@ class GCache {
           bool        m_dayabay ; 
           bool        m_juno ; 
           const char* m_detector ;
-          const char* m_prefdir ;
 };
 
 
@@ -96,8 +95,7 @@ inline GCache::GCache(const char* envprefix)
        m_geocache(false),
        m_dayabay(false),
        m_juno(false),
-       m_detector(NULL),
-       m_prefdir(NULL)
+       m_detector(NULL)
 {
        init();
        assert(g_instance == NULL && "GCache::GCache only one instance is allowed");
@@ -148,10 +146,6 @@ inline bool GCache::isGeocache()
 inline const char* GCache::getDetector()
 {
     return m_detector ;
-}
-inline const char* GCache::getPreferenceDir()
-{
-    return m_prefdir ? m_prefdir : PREFERENCE_DIR  ;
 }
 
 inline bool GCache::isJuno()

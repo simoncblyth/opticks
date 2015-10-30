@@ -3,6 +3,9 @@
 #include "GItemList.hh"
 #include "NPY.hpp"
 
+#include "Map.hpp"
+//#include "jsonutil.hpp"
+
 #include <iomanip>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -34,11 +37,12 @@ GMaterialLib* GMaterialLib::load(GCache* cache)
     return mlib ; 
 }
 
-
 void GMaterialLib::init()
 {
     setKeyMap(keyspec);
     defineDefaults(getDefaults());
+    initOrder();
+    initColor();
 }
 
 void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
@@ -48,6 +52,33 @@ void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( scattering_length,     1e6  );
     defaults->addConstantProperty( reemission_prob,       0.f  );
 }
+
+void GMaterialLib::initOrder()
+{
+    std::string prefdir = getPreferenceDir();
+    const char* order_ = "order.json" ; 
+    typedef Map<std::string, unsigned int> MSU ;  
+    MSU* order = MSU::load(prefdir.c_str(), order_ ) ; 
+    if(order)
+    {
+        order->dump("GMaterialLib::initOrder custom material ordering");
+        setOrder(order->getMap());
+    }
+}
+
+void GMaterialLib::initColor()
+{
+    std::string prefdir = getPreferenceDir();
+    const char* color_ = "color.json" ; 
+    typedef Map<std::string, std::string> MSS ;  
+    MSS* color = MSS::load(prefdir.c_str(), color_ ) ; 
+    if(color)
+    {
+        color->dump("GMaterialLib::initColor custom material coloring");
+        setColor(color->getMap());
+    }
+}
+
 
 const char* GMaterialLib::propertyName(unsigned int i)
 {

@@ -48,8 +48,12 @@ void GScintillatorLib::add(GPropertyMap<float>* scint)
 
 void GScintillatorLib::defineDefaults(GPropertyMap<float>* /*defaults*/)
 {
+    LOG(info) << "GScintillatorLib::defineDefaults"  ; 
 }
-
+void GScintillatorLib::sort()
+{
+    LOG(info) << "GScintillatorLib::sort"  ; 
+}
 void GScintillatorLib::import()
 {
     LOG(info) << "GScintillatorLib::import "  ; 

@@ -1,5 +1,6 @@
 #include "Map.hpp"
 
+#include <string>
 #include <iostream>
 #include <iomanip>
 
@@ -8,35 +9,39 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
-
-Map* Map::load(const char* dir, const char* name)
+template <typename K, typename V>
+Map<K,V>* Map<K,V>::load(const char* dir, const char* name)
 {
-    Map* m = new Map ; 
+    if(!existsPath(dir, name)) return NULL ;  
+    Map* m = new Map<K,V>() ; 
     m->loadFromCache(dir, name);
     return m ; 
 }
 
-void Map::loadFromCache(const char* dir, const char* name )
+template <typename K, typename V>
+void Map<K,V>::loadFromCache(const char* dir, const char* name )
 {
-    loadMap<std::string, unsigned int>( m_map, dir, name );  
+    loadMap<K, V>( m_map, dir, name );  
 }
 
-void Map::add(const char* name, unsigned int value)
+template <typename K, typename V>
+void Map<K,V>::add(K key, V value)
 {
-    m_map[name] = value ; 
+    m_map[key] = value ; 
 }
 
-void Map::save(const char* dir, const char* name)
+template <typename K, typename V>
+void Map<K,V>::save(const char* dir, const char* name)
 {
-    saveMap<std::string, unsigned int>( m_map, dir, name);
+    saveMap<K, V>( m_map, dir, name);
 }
 
-void Map::dump(const char* msg)
+template <typename K, typename V>
+void Map<K,V>::dump(const char* msg)
 {
     LOG(info) << msg ; 
-    typedef std::map<std::string, unsigned int> MSU ; 
-    for(MSU::iterator it=m_map.begin() ; it != m_map.end() ; it++ ) 
+    typedef std::map<K, V> MKV ; 
+    for(typename MKV::iterator it=m_map.begin() ; it != m_map.end() ; it++ ) 
     {
         std::cout << std::setw(5) << it->second 
                   << std::setw(30) << it->first 
@@ -45,6 +50,6 @@ void Map::dump(const char* msg)
 }
 
 
-
-
+template class Map<std::string, unsigned int>;
+template class Map<std::string, std::string>;
  

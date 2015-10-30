@@ -142,7 +142,7 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
 {
     const char* shortname = pmap->getShortName();
 
-    LOG(info) << "AssimpGGeo::addPropertyVector " 
+    LOG(debug) << "AssimpGGeo::addPropertyVector " 
               << " shortname " << (shortname ? shortname : "-" )
               << " k " << k 
                ; 
@@ -816,7 +816,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     //printf("AssimpGGeo::convertStructureVisit nodeIndex %d (mti %u mt %p) (mti_p %u mt_p %p) (msi %u mesh %p) \n", nodeIndex, mti, mt, mti_p, mt_p,  msi, mesh  );
     if(dbg)
-    LOG(info) << "AssimpGGeo::convertStructureVisit" 
+    LOG(debug) << "AssimpGGeo::convertStructureVisit" 
                << " nodeIndex " << std::setw(6) << nodeIndex
                << " ( mti " << std::setw(4) << mti << " mt " << (void*)mt << " ) "
                << std::setw(20) << ( mt ? mt->getShortName() : "-" ) 

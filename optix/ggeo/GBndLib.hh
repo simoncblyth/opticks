@@ -67,6 +67,7 @@ class GBndLib : public GPropertyLib {
        GItemList* createNames();
        NPY<float>* createBuffer();
        void import();
+       void sort();
        void defineDefaults(GPropertyMap<float>* defaults);
   public:
        void dump(const char* msg="GBndLib::dump");

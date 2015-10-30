@@ -32,15 +32,8 @@ std::string GPropertyLib::getCacheDir()
 }
 std::string GPropertyLib::getPreferenceDir()
 {
-    return m_cache->getPreferenceDir();
+    return m_cache->getPreferenceDir(m_type);
 }
-std::string GPropertyLib::getPreferenceName()
-{
-    std::stringstream ss ; 
-    ss << m_type << ".json" ;
-    return ss.str();
-}
-
 
 
 
@@ -94,6 +87,8 @@ std::string GPropertyLib::getBufferName(const char* suffix)
 
 void GPropertyLib::close()
 {
+    sort();
+
     GItemList* names = createNames();
     NPY<float>* buf = createBuffer() ;
 

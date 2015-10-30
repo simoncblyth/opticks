@@ -1,20 +1,63 @@
 #pragma once
+/*
+GMaterialLib
+=============
 
+Objective is to enable deferred boundary construction post-cache by persisting 
+Materials and Surfaces rather than directly persisting Boundaries.
+
+Contrary to initial thinking *GMaterialLib* now handles
+**only standardized material** collection. 
+General raw material handling is still done directly by *GGeo*.
+ 
+The *GPropertyLib* subclasses aim to replace *GBoundaryLib*.
+
+* *GMaterialLib* 
+* *GSurfaceLib*
+* *GScintillatorLib*
+* *GBndLib* 
+
+Lifecycle of all property lib are similar:
+
+*ctor*
+     constituent of GGeo instanciated in GGeo::init when running precache 
+     or via GGeo::loadFromCache when running from cache
+
+*init*
+     invoked by *ctor*, sets up the keymapping and default properties 
+     that are housed in GPropertyLib base
+
+*add*
+     from GGeo::loadFromG4DAE (ie in precache running only) 
+     GMaterial instances are collected via AssimpGGeo::convertMaterials and GGeo::add
+
+*close*
+     GPropertyLib::close first invokes *sort* and then 
+     serializes collected and potentially reordered objects via *createBuffer* 
+     and *createNames* 
+
+     * *close* is triggered by the first call to getIndex
+     * after *close* no new materials can be added
+     * *close* is canonically invoked by GBndLib::getOrCreate during AssimpGGeo::convertStructureVisit 
+ 
+*save*
+     buffer and names are written to cache by GPropertyLib::saveToCache
+
+*load*
+     static method that instanciates and populates via GPropertyLib::loadFromCache which
+     reads in the buffer and names and then invokes *import*
+     This allows operation from the cache without having to GGeo::loadFromG4DAE.
+
+*import*
+     reconstitutes the serialized objects and populates the collection of them
+     TODO: digest checking the reconstitution
+
+*/
 #include <vector>
 #include "GPropertyLib.hh"
 
 class GMaterial ; 
 class GItemList ; 
-
-//
-// rationale: 
-//    * need dynamic boundary construction post-cache
-//
-// approach: 
-//    * constituent of GGeo that collects materials, standardizes and persists to NPY<float>
-//    * take over GMaterial handling from GGeo and GBoundaryLib
-//    * aiming togther with a GSurfaceLib to greatly simplify GBoundaryLib 
-//
 
 class GMaterialLib : public GPropertyLib {
    public:
@@ -36,6 +79,8 @@ class GMaterialLib : public GPropertyLib {
        void dump(GMaterial* mat, const char* msg="GMaterialLib::dump");
    private:
        void init();
+       void initOrder();
+       void initColor();
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 

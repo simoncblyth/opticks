@@ -367,6 +367,12 @@ void GBoundaryLib::import()
 {
     LOG(info) << "GBoundaryLib::import placeholder " ;
 }
+void GBoundaryLib::sort()
+{
+    LOG(info) << "GBoundaryLib::sort placeholder " ;
+}
+
+
 
 NPY<float>* GBoundaryLib::createBuffer()
 {

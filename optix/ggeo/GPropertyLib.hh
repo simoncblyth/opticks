@@ -16,6 +16,10 @@ class GCache ;
 class GItemList ; 
 
 
+/*
+See GMaterialLib.hh for description of lifecycle of all GPropertyLib subclasses
+*/
+
 class GPropertyLib {
     public:
         static unsigned int UNSET ; 
@@ -33,10 +37,11 @@ class GPropertyLib {
         const char* getType();
         std::string getCacheDir();
         std::string getPreferenceDir();
-        std::string getPreferenceName();
     public:
         void setOrder(std::map<std::string, unsigned int>& order);
+        void setColor(std::map<std::string, std::string>& color);
         std::map<std::string, unsigned int>& getOrder(); 
+        std::map<std::string, std::string>& getColor(); 
     public:
         void setStandardDomain(GDomain<float>* standard_domain);
         void setDefaults(GPropertyMap<float>* defaults);
@@ -51,6 +56,7 @@ class GPropertyLib {
         // pure virtuals that need to be implemented in concrete subclasses
         virtual void defineDefaults(GPropertyMap<float>* defaults) = 0 ; 
         virtual void import() = 0 ; 
+        virtual void sort() = 0 ; 
         virtual NPY<float>* createBuffer() = 0;
         virtual GItemList*  createNames() = 0;
     public:
@@ -95,6 +101,7 @@ class GPropertyLib {
         const char*                          m_type ; 
         GDomain<float>*                      m_standard_domain ;  
         std::map<std::string, unsigned int>  m_order ;
+        std::map<std::string, std::string>   m_color ;
     private:
         GPropertyMap<float>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   
@@ -141,10 +148,20 @@ inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)
 {
     m_order = order ; 
 }
+inline void GPropertyLib::setColor(std::map<std::string, std::string>& color)
+{
+    m_color = color ; 
+}
+
 inline std::map<std::string, unsigned int>& GPropertyLib::getOrder()
 {
     return m_order ; 
 }
+inline std::map<std::string, std::string>& GPropertyLib::getColor()
+{
+    return m_color ; 
+}
+
 
 
 

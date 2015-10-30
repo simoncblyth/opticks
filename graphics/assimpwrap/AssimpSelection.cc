@@ -20,7 +20,7 @@ void AssimpSelection::init()
 
     m_selection.clear();
 
-    LOG(info) << "AssimpSelection::AssimpSelection"
+    LOG(debug) << "AssimpSelection::AssimpSelection"
               << " before SelectNodes " 
               << " m_query " << m_query 
               << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
@@ -29,7 +29,7 @@ void AssimpSelection::init()
 
     selectNodes(m_root, 0, false);
 
-    LOG(info) << "AssimpSelection::AssimpSelection"
+    LOG(debug) << "AssimpSelection::AssimpSelection"
               << " after SelectNodes " 
               << " m_selection size " << m_selection.size()
               << " out of m_count " << m_count 
@@ -157,7 +157,7 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
 
    if(m_count < 10)
    {
-      LOG(info) << "AssimpSelection::selectNodes "
+      LOG(debug) << "AssimpSelection::selectNodes "
                 << " m_count " << m_count 
                 << " m_index " << m_index
                 << " index " << index 

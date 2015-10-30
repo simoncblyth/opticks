@@ -107,13 +107,6 @@ void GGeo::init()
 
    m_scintillatorlib  = new GScintillatorLib(m_cache);
 
-
-   GDomain<float>* standard_wavelengths = new GDomain<float>(60.f, 810.f, 20.f );  
-
-   m_boundarylib->setStandardDomain( standard_wavelengths );
-   m_materiallib->setStandardDomain( standard_wavelengths );
-   m_surfacelib->setStandardDomain( standard_wavelengths );
-
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
    if(m_volnames)
@@ -718,8 +711,8 @@ void GGeo::dumpRawMaterialProperties(const char* msg)
 
 void GGeo::prepareScintillatorLib()
 {
-    // avoid requiring specific scintillator name by picking the first material 
-    // with the requisite properties
+    LOG(info) << "GGeo::prepareScintillatorLib " ; 
+
     findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
 
     GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(getScintillatorMaterial(0));  

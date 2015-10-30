@@ -170,6 +170,7 @@ class GBoundaryLib : public GPropertyLib {
       // support for standardization 
       void defineDefaults(GPropertyMap<float>* defaults);
       void import();
+      void sort();
 
 
       GProperty<float>* getRamp();

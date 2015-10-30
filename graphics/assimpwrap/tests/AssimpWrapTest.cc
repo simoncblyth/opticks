@@ -81,20 +81,16 @@ int main(int argc, char* argv[])
     mlib->save();
 
     GSurfaceLib* slib = m_ggeo->getSurfaceLib();
-    slib->Summary();
-    slib->dump();
+    //slib->dump();
     slib->save();
 
-    // canonically done by GLoader::load
-    m_ggeo->findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB");
-    GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(m_ggeo->getScintillatorMaterial(0));
 
-    GScintillatorLib* sclib = m_ggeo->getScintillatorLib(); 
-    sclib->add(scint);
+    GScintillatorLib* sclib = m_ggeo->getScintillatorLib();  // gets populated by GGeo::prepareScintillatorLib/GGeo::loadFromG4DAE
     sclib->save();
 
+
     GBndLib* bnd = m_ggeo->getBndLib();
-    bnd->dump();
+    //bnd->dump();
     bnd->save();
 
 

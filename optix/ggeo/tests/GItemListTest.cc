@@ -1,5 +1,6 @@
 #include "GItemList.hh"
 
+#include <string>
 #include "Map.hpp"
 
 
@@ -20,7 +21,7 @@ int main(int argc, char** argv)
     GItemList* t = GItemList::load("/tmp", "testlist");
     if(t) t->dump();
 
-    Map* m = new Map ;
+    Map<std::string, unsigned int>* m = new Map<std::string, unsigned int>() ;
 
     m->add("yellow",1);
     m->add("magenta",2);

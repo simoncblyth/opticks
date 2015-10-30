@@ -1,8 +1,9 @@
+#include <string>
 #include "Map.hpp"
 
 int main()
 {
-    Map* a = new Map ; 
+    Map<std::string, unsigned int>* a = new Map<std::string, unsigned int>() ; 
 
     a->add("red",1); 
     a->add("green",2); 
@@ -11,7 +12,7 @@ int main()
     a->save("/tmp", "test.json");
 
 
-    Map* b = Map::load("/tmp", "test.json");
+    Map<std::string, unsigned int>* b = Map<std::string, unsigned int>::load("/tmp", "test.json");
     b->dump();
 
 

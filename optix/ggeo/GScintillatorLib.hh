@@ -24,6 +24,7 @@ class GScintillatorLib : public GPropertyLib {
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
        void import();
+       void sort();
        NPY<float>* createBuffer();
        GItemList*  createNames();
     private:

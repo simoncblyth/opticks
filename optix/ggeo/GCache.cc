@@ -1,5 +1,6 @@
 #include "GCache.hh"
 
+#include <sstream>
 #include "assert.h"
 #include "stdio.h"
 
@@ -14,9 +15,17 @@ namespace fs = boost::filesystem;
 
 const char* GCache::JUNO    = "juno" ; 
 const char* GCache::DAYABAY = "dayabay" ; 
-const char* GCache::PREFERENCE_DIR = "$HOME/.opticks" ; 
+const char* GCache::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
 GCache* GCache::g_instance = NULL ; 
+
+std::string GCache::getPreferenceDir(const char* type)
+{
+    std::stringstream ss ; 
+    ss << PREFERENCE_BASE << "/" << type ; 
+    return ss.str();
+}
+
 
 
 void GCache::readEnvironment()

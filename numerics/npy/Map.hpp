@@ -3,26 +3,30 @@
 #include <string>
 #include <map>
 
+
+template <typename K, typename V>
 class Map {
     public:
         Map();
-        static Map* load(const char* dir, const char* name);     
+        static Map<K,V>* load(const char* dir, const char* name);     
         void loadFromCache(const char* dir, const char* name);
-        void add(const char* name, unsigned int value);
+        void add(K key, V value);
         void save(const char* dir, const char* name);
         void dump(const char* msg="Map::dump");
-        std::map<std::string, unsigned int>& getMap(); 
+        std::map<K, V>& getMap(); 
     private:
-        std::map<std::string, unsigned int> m_map ; 
+        std::map<K, V> m_map ; 
 
 };
 
 
-inline Map::Map()
+template <typename K, typename V>
+inline Map<K,V>::Map()
 {
 }
 
-inline std::map<std::string, unsigned int>& Map::getMap()
+template <typename K, typename V>
+inline std::map<K, V>& Map<K,V>::getMap()
 {
     return m_map ; 
 }
