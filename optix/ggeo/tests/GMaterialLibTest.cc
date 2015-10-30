@@ -9,7 +9,7 @@ int main()
 
     const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
 
-    lib->dumpMaterials(mats);
+    lib->dumpItems(mats);
 
     return 0 ;
 }

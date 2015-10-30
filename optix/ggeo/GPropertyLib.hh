@@ -93,6 +93,7 @@ class GPropertyLib {
     public:
         unsigned int getColorCode(const char* key );
         const char*  getColorName(const char* key);
+        void dumpItems(const char* items, const char* msg="GPropertyLib::dump");
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveToCache();

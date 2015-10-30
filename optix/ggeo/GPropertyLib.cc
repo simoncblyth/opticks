@@ -15,6 +15,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -126,7 +127,34 @@ unsigned int GPropertyLib::getColorCode(const char* key )
     return colorcode ; 
 }
 
+void GPropertyLib::dumpItems(const char* items, const char* msg)
+{
+    typedef std::vector<std::string> VS ; 
+    VS elem ; 
+    boost::split(elem, items, boost::is_any_of(","));
 
+    LOG(info) << msg << " " << items ; 
+    for(VS::const_iterator it=elem.begin() ; it != elem.end() ; it++)
+    {
+        const char* key = it->c_str();
+        unsigned int idx = getIndex(key);
+        if(idx == GPropertyLib::UNSET)
+        {
+             LOG(warning) << "GPropertyLib::dump no item named: " << *it ; 
+        }
+        else
+        {
+             const char* colorname = getColorName(key);  
+             unsigned int colorcode = getColorCode(key);              
+
+             std::cout << std::setw(5) << idx 
+                       << std::setw(30) << *it 
+                       << std::setw(10) << std::hex << colorcode << std::dec
+                       << std::setw(15) << colorname 
+                       << std::endl ; 
+        }
+    }
+}
 
 
 
