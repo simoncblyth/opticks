@@ -17,7 +17,6 @@ void OBoundaryLib::convert()
 {
     LOG(info) << "OBoundaryLib::convert" ;
     convertBoundaryProperties(m_boundarylib);
-    convertColors(m_boundarylib);
 }
 
 
@@ -90,44 +89,6 @@ optix::float4 OBoundaryLib::getDomainReciprocal()
 
 
 
-
-
-
-
-
-
-
-void OBoundaryLib::convertColors(GBoundaryLib* blib)
-{
-    GBuffer* colorBuffer = blib->getColorBuffer();
-    optix::TextureSampler colorSampler = makeColorSampler(colorBuffer);
-    guint4 cd = blib->getColorDomain();
-    m_context["color_texture"]->setTextureSampler(colorSampler);
-    m_context["color_domain"]->setUint(optix::make_uint4(cd.x, cd.y, cd.z, cd.w));
-
-    // see cu/color_lookup.h
-}
-
-
-
-optix::TextureSampler OBoundaryLib::makeColorSampler(GBuffer* buffer)
-{
-    unsigned int numElem  = buffer->getNumElements();
-    unsigned int numItems = buffer->getNumItems();
-    unsigned int numElemTot  = buffer->getNumElementsTotal();
-
-    assert(numElem == 1 && numElemTot == numItems);
-
-    unsigned int nx = numItems ;
-    unsigned int ny = 1 ;
-
-    LOG(info) << "OBoundaryLib::makeColorSampler "
-              << " nx " << nx 
-              << " ny " << ny  ;
-
-    optix::TextureSampler sampler = makeSampler(buffer, RT_FORMAT_UNSIGNED_BYTE4, nx, ny);
-    return sampler ; 
-}
 
 
 

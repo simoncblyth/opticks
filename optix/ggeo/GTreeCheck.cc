@@ -155,6 +155,7 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
               << " nall " << nall 
               << " repeat_min " << repeat_min 
               << " vertex_min " << vertex_min 
+              << " candidates marked with ** "
               ;
 
     // over distinct subtrees (ie progeny digests)
@@ -180,8 +181,8 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
        // but need to also require ndig > smth as dont want to repeat things like the world 
 
         bool select = ndig > repeat_min && nvert > vertex_min ;
-        LOG(info) 
-                  << "GTreeCheck::findRepeatCandidates selected marked with ** "
+
+        if(i < 15) LOG(info) 
                   << ( select ? "**" : "  " ) 
                   << " i "     << std::setw(3) << i 
                   << " pdig "  << std::setw(32) << pdig  

@@ -67,6 +67,8 @@ class GGeo {
     public:
         void loadFromG4DAE();  // AssimpGGeo::load
         void prepareScintillatorLib();
+        void prepareMeshes();
+        void prepareVertexColors();
     public:
         const char* getPVName(unsigned int index);
         const char* getLVName(unsigned int index);

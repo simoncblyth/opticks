@@ -1,4 +1,5 @@
 #include "GColors.hh"
+#include <vector>
 #include "stdlib.h"
 
 int main(int argc, char** argv)
@@ -7,13 +8,11 @@ int main(int argc, char** argv)
     m_colors->dump();
     m_colors->test(); 
 
-
-    GItemIndex* materials = NULL ; 
-    GItemIndex* surfaces  = NULL ; 
-    GItemIndex* flags = NULL ; 
+    std::vector<unsigned int> material_codes ; 
+    std::vector<unsigned int> flag_codes ; 
 
     // canonically done in GLoader
-    m_colors->setupCompositeColorBuffer(materials, surfaces, flags);   
+    m_colors->setupCompositeColorBuffer(material_codes, flag_codes);   
     GBuffer* m_color_buffer = m_colors->getCompositeBuffer(); 
 
     // really its uchar4 but aoba wull probably not handle that, so use unsigned int

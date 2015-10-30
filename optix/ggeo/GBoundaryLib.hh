@@ -132,10 +132,10 @@ class GBoundaryLib : public GPropertyLib {
       GBuffer*     getReemissionBuffer();
       GBuffer*     getOpticalBuffer();
   public:
-      void         setColorBuffer(GBuffer* buffer);
-      GBuffer*     getColorBuffer();
-      void         setColorDomain(guint4 domain);
-      guint4       getColorDomain();
+      //void         setColorBuffer(GBuffer* buffer);
+      //GBuffer*     getColorBuffer();
+      //void         setColorDomain(guint4 domain);
+      //guint4       getColorDomain();
   public:
       // reemission handling 
       bool isScintillator(std::string& matShortName);
@@ -308,27 +308,6 @@ inline void GBoundaryLib::setReemissionBuffer(GBuffer* reemission_buffer)
 {
     m_reemission_buffer = reemission_buffer ; 
 }
-
-
-inline GBuffer* GBoundaryLib::getColorBuffer()
-{
-    return m_color_buffer ; 
-}
-inline void GBoundaryLib::setColorBuffer(GBuffer* color_buffer)
-{
-    m_color_buffer = color_buffer ; 
-}
-
-
-inline guint4 GBoundaryLib::getColorDomain()
-{
-    return m_color_domain  ; 
-}
-inline void GBoundaryLib::setColorDomain(guint4 color_domain)
-{
-    m_color_domain = color_domain ; 
-}
-
 
 
 

@@ -7,7 +7,6 @@
 #include <vector>
 
 class GBuffer ; 
-class GItemIndex ; 
 
 /*
 
@@ -73,7 +72,7 @@ class GColors {
        void dump_uchar4_buffer( GBuffer* buffer );
 
    public: 
-       void setupCompositeColorBuffer(GItemIndex* materials, GItemIndex* surfaces, GItemIndex* flags);
+       void setupCompositeColorBuffer(std::vector<unsigned int>&  material_codes, std::vector<unsigned int>& flag_codes);
        GBuffer* getCompositeBuffer();
        guint4   getCompositeDomain();
        void dumpCompositeBuffer(const char* msg="GColors::dumpCompositeBuffer");

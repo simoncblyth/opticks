@@ -31,6 +31,9 @@ class GCache {
          bool isGeocache();
          void setColors(GColors* colors);
          GColors* getColors();
+
+         void setInstanced(bool instanced=true);
+         bool isInstanced();
     public:
          const char* getIdPath();
          std::string getRelativePath(const char* path); 
@@ -78,6 +81,7 @@ class GCache {
           bool        m_dayabay ; 
           bool        m_juno ; 
           const char* m_detector ;
+          bool        m_instanced ; 
         
 };
 
@@ -102,7 +106,8 @@ inline GCache::GCache(const char* envprefix)
        m_geocache(false),
        m_dayabay(false),
        m_juno(false),
-       m_detector(NULL)
+       m_detector(NULL),
+       m_instanced(true)
 {
        init();
        assert(g_instance == NULL && "GCache::GCache only one instance is allowed");
@@ -149,6 +154,19 @@ inline bool GCache::isGeocache()
 {
     return m_geocache ;
 }
+
+
+inline void GCache::setInstanced(bool instanced)
+{
+   m_instanced = instanced ;
+}
+inline bool GCache::isInstanced()
+{
+   return m_instanced ; 
+}
+
+
+
 
 
 inline void GCache::setColors(GColors* colors)

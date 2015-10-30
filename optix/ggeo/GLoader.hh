@@ -31,9 +31,6 @@ class GLoader {
          void setRepeatIndex(int repeatidx);
          void load(bool verbose=false);
     public:
-         void setInstanced(bool instanced=true);
-         bool isInstanced();
-
     public:
          GGeo*                  getGGeo();
          GMergedMesh*           getMergedMesh();
@@ -87,22 +84,12 @@ inline GLoader::GLoader(GGeo* ggeo)
    m_treeanalyse(NULL),
    m_repeatidx(-1),
    m_transforms_buffer(NULL),
-   m_instanced(true),
    m_mesh_version(NULL)
 {
 }
 
 
 
-inline void GLoader::setInstanced(bool instanced)
-{
-   m_instanced = instanced ;
-}
-
-inline bool GLoader::isInstanced()
-{
-   return m_instanced ; 
-}
 inline void GLoader::setTypes(Types* types)
 {
     m_types = types ; 

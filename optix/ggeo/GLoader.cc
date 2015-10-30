@@ -96,7 +96,6 @@ void GLoader::load(bool verbose)
 
         t("createWavelengthAndOpticalBuffers"); 
 
-
         m_metadata = blib->getMetadata();
         m_surfaces = blib->getSurfaces();   
 
@@ -104,32 +103,6 @@ void GLoader::load(bool verbose)
         m_surfaces->setColorMap(sixc);   
         m_surfaces->setColorSource(m_ggeo->getColors());
 
-
-        if(m_instanced)
-        { 
-            bool deltacheck = true ; 
-            m_ggeo->getTreeCheck()->createInstancedMergedMeshes(deltacheck); 
-        }
-        else
-        {
-            LOG(warning) << "GLoader::load instancing is inhibited " ;
-            m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
-        }
-
-
-        t("create MergedMesh"); 
-
-
-        // GColorizer needs full tree,  so have to use pre-cache
-        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
-        gfloat3* vertex_colors = mesh0->getColors();
-
-        GColorizer* czr = m_ggeo->getColorizer();
-
-        czr->setTarget( vertex_colors );
-        czr->setSurfaces(m_surfaces);
-        czr->setRepeatIndex(mesh0->getIndex()); 
-        czr->traverse();
 
         t("GColorizer"); 
 
@@ -178,10 +151,14 @@ void GLoader::load(bool verbose)
     m_flags->formTable(); 
     m_materials->formTable();
 
-    colors->setupCompositeColorBuffer( m_materials, m_surfaces, m_flags  );
+
+    std::vector<unsigned int>& material_codes = m_materials->getCodes() ; 
+    std::vector<unsigned int>& flag_codes     = m_flags->getCodes() ; 
+
+    colors->setupCompositeColorBuffer( material_codes, flag_codes  );
     
-    m_ggeo->getBoundaryLib()->setColorBuffer(colors->getCompositeBuffer());
-    m_ggeo->getBoundaryLib()->setColorDomain(colors->getCompositeDomain());
+    //m_ggeo->getBoundaryLib()->setColorBuffer(colors->getCompositeBuffer());
+    //m_ggeo->getBoundaryLib()->setColorDomain(colors->getCompositeDomain());
 
 
     LOG(info) << "GLoader::load done " << idpath ;
@@ -189,7 +166,5 @@ void GLoader::load(bool verbose)
     t.stop();
     if(verbose) t.dump();
 }
-
-
 
 

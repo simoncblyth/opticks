@@ -89,6 +89,7 @@
 #include "GBoundaryLibMetadata.hh"
 #include "GLoader.hh"
 #include "GCache.hh"
+#include "GColors.hh"
 #include "GMaterialIndex.hh"
 
 // assimpwrap
@@ -112,6 +113,7 @@ namespace fs = boost::filesystem;
 
 // optixrap-
 #include "OContext.hh"
+#include "OColors.hh"
 #include "OFrame.hh"
 #include "ORenderer.hh"
 #include "OGeo.hh"
@@ -390,9 +392,9 @@ void App::loadGeometry()
 
 
     m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
+    m_cache->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
 
     m_ggeo = new GGeo(m_cache);
-
 
     if(m_fcfg->hasOpt("qe1"))
     {
@@ -422,14 +424,12 @@ void App::loadGeometry()
     // TODO: get rid of GLoader
     m_loader = new GLoader(m_ggeo) ;
 
-    m_loader->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
+    //m_loader->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
     m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
     m_loader->setTypes(m_types);
     m_loader->setCache(m_cache);
 
     m_loader->load();
-
-
 
 
 
@@ -443,9 +443,12 @@ void App::loadGeometry()
 
     m_blib = m_ggeo->getBoundaryLib();
 
-    m_composition->setColorDomain( m_blib->getColorDomain() ); // parameters of composite buffer 0+:materials,  32+:flags
 
-    m_scene->uploadColorBuffer( m_blib->getColorBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
+    GColors* colors = m_cache->getColors();
+
+    m_composition->setColorDomain( colors->getCompositeDomain() ); 
+
+    m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
  
     m_ggeo->dumpStats("App::loadGeometry");
@@ -937,15 +940,16 @@ void App::prepareOptiX()
 
     m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
 
-
     m_ocontext->setDebugPhoton(debugidx);
+
+    m_ocolors = new OColors(context, m_cache->getColors() );
+    m_ocolors->convert();
 
     m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
     m_olib->convert(); 
 
     m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
     m_oscin->convert(); 
-
 
 
     std::string builder_   = m_fcfg->getBuilder(); 

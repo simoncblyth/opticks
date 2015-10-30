@@ -91,7 +91,13 @@ void GGeo::init()
    }
 
     // colorizer needs full tree, so pre-cache only 
-   m_colorizer = new GColorizer( this, GColorizer::PSYCHEDELIC_NODE ); 
+
+   //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
+   GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
+
+   m_colorizer = new GColorizer( this, style ); 
+
+
    m_colorizer->setColors(m_cache->getColors());
 
    m_boundarylib = new GBoundaryLib(m_cache);
@@ -240,6 +246,10 @@ void GGeo::loadFromG4DAE()
     assert(rc == 0);
 
     prepareScintillatorLib();
+
+    prepareMeshes();
+
+    prepareVertexColors();
 
 }
 
@@ -753,6 +763,45 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 {
     return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
 }
+
+
+
+void GGeo::prepareMeshes()
+{
+    bool instanced = m_cache->isInstanced();
+    if(instanced)
+    { 
+        bool deltacheck = true ; 
+        m_treecheck->createInstancedMergedMeshes(deltacheck); 
+    }
+    else
+    {
+        LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
+        makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+    }
+}
+
+
+void GGeo::prepareVertexColors()
+{
+    // GColorizer needs full tree,  so have to use pre-cache
+    GMergedMesh* mesh0 = getMergedMesh(0);
+    gfloat3* vertex_colors = mesh0->getColors();
+
+    GColorizer* czr = getColorizer();
+
+    czr->setTarget( vertex_colors );
+    //czr->setSurfaces(m_surfaces);   NO LONGER USING this GLoader approach 
+    czr->setRepeatIndex(mesh0->getIndex()); 
+    czr->traverse();
+
+}
+
+
+
+
+
+
 
 
 

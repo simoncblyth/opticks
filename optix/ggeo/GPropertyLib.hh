@@ -93,6 +93,7 @@ class GPropertyLib {
     public:
         unsigned int getColorCode(const char* key );
         const char*  getColorName(const char* key);
+        std::vector<unsigned int>& getColorCodes();
         void dumpItems(const char* items, const char* msg="GPropertyLib::dump");
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
@@ -109,6 +110,7 @@ class GPropertyLib {
         GDomain<float>*                      m_standard_domain ;  
         std::map<std::string, unsigned int>  m_order ;
         std::map<std::string, std::string>   m_color ;
+        std::vector<unsigned int>            m_color_codes ; 
     private:
         GPropertyMap<float>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   

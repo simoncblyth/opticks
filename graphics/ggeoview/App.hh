@@ -56,6 +56,7 @@ class OFrame ;
 class ORenderer ; 
 class OTracer ; 
 class OPropagator ; 
+class OColors ; 
 
 
 #include <map>
@@ -143,6 +144,7 @@ class App {
        GMergedMesh*     m_mesh0 ;  
        Lookup*          m_lookup ;
        OContext*        m_ocontext ; 
+       OColors*         m_ocolors ; 
        OGeo*            m_ogeo ; 
        OBoundaryLib*    m_olib ; 
        OScintillatorLib* m_oscin ; 
@@ -200,6 +202,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_mesh0(NULL),
       m_lookup(NULL),
       m_ocontext(NULL),
+      m_ocolors(NULL),
       m_ogeo(NULL),
       m_olib(NULL),
       m_oscin(NULL),

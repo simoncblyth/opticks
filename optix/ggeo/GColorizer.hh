@@ -29,6 +29,8 @@ class GColorizer {
         void traverse();   // full traverse from node 0, root
    private:
         gfloat3* getSurfaceColor(GNode* node);
+        gfloat3* getSurfaceColor_PRIOR(GNode* node);
+
         void traverse( GNode* node, unsigned int depth );
    private:
         gfloat3*               m_target ; 

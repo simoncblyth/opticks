@@ -1,6 +1,5 @@
 #include "GColors.hh"
 #include "GBuffer.hh"
-#include "GItemIndex.hh"
 
 #include "jsonutil.hpp"
 #include "assert.h"
@@ -336,6 +335,10 @@ void GColors::dump_uchar4_buffer( GBuffer* buffer )
     }
 }
 
+
+
+
+
 gfloat3 GColors::makeColor( unsigned int rgb )
 {
     unsigned int red   =  ( rgb & 0xFF0000 ) >> 16 ;  
@@ -356,7 +359,7 @@ guint4 GColors::getCompositeDomain()
     return m_composite_domain ; 
 }
 
-void GColors::setupCompositeColorBuffer(GItemIndex* materials, GItemIndex* surfaces, GItemIndex* flags)
+void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_codes, std::vector<unsigned int>& flag_codes)
 {
     unsigned int colormax = 256 ; 
     initCompositeColorBuffer(colormax);
@@ -366,16 +369,14 @@ void GColors::setupCompositeColorBuffer(GItemIndex* materials, GItemIndex* surfa
     unsigned int flag_color_offset     = 32 ; 
     unsigned int psychedelic_color_offset = 64 ; 
 
-    if(materials)
+    if(material_codes.size() > 0)
     {
-        std::vector<unsigned int>& material_codes    = materials->getCodes() ; 
         assert(material_codes.size() < 32 );
         addColors(material_codes,     material_color_offset ) ;
     }
 
-    if(flags)
+    if(flag_codes.size() > 0)
     {
-        std::vector<unsigned int>& flag_codes        = flags->getCodes() ; 
         assert(flag_codes.size() < 32 );
         addColors(flag_codes    ,     flag_color_offset ) ;  
     }

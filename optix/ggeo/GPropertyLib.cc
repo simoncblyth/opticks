@@ -127,6 +127,24 @@ unsigned int GPropertyLib::getColorCode(const char* key )
     return colorcode ; 
 }
 
+
+std::vector<unsigned int>& GPropertyLib::getColorCodes()
+{
+    if(m_color_codes.size() == 0)
+    {
+        unsigned int ni = m_names->getNumItems();
+        for(unsigned int i=0 ; i < ni ; i++)
+        {
+            std::string& item = m_names->getItem(i);
+            assert(!item.empty()); 
+            unsigned int code = getColorCode(item.c_str());
+            m_color_codes.push_back(code);
+        }         
+    }
+    return m_color_codes ; 
+}
+
+
 void GPropertyLib::dumpItems(const char* items, const char* msg)
 {
     typedef std::vector<std::string> VS ; 
@@ -155,9 +173,6 @@ void GPropertyLib::dumpItems(const char* items, const char* msg)
         }
     }
 }
-
-
-
 
 
 std::string GPropertyLib::getBufferName(const char* suffix)
@@ -341,9 +356,5 @@ void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>
         vec.push_back(entry);
     }
 }
-
-
-
-
 
 
