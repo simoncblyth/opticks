@@ -66,6 +66,11 @@ const char* GPropertyLib::getName(unsigned int index)
     return item.empty() ? NULL : item.c_str(); 
 }
 
+std::string GPropertyLib::getAbbr(const char* shortname)
+{
+    return m_abbrev.count(shortname) == 1 ? m_abbrev[shortname] : shortname ; 
+}
+
 
 
 void GPropertyLib::init()
@@ -84,6 +89,7 @@ void GPropertyLib::init()
 
     initOrder();
     initColor();
+    initAbbrev();
 }
 
 
@@ -95,7 +101,7 @@ void GPropertyLib::initOrder()
     MSU* order = MSU::load(prefdir.c_str(), order_ ) ; 
     if(order)
     {
-        order->dump("GPropertyLib::initOrder");
+        //order->dump("GPropertyLib::initOrder");
         setOrder(order->getMap());
     }
 }
@@ -108,8 +114,21 @@ void GPropertyLib::initColor()
     MSS* color = MSS::load(prefdir.c_str(), color_ ) ; 
     if(color)
     {
-        color->dump("GPropertyLib::initColor");
+        //color->dump("GPropertyLib::initColor");
         setColor(color->getMap());
+    }
+}
+
+void GPropertyLib::initAbbrev()
+{
+    std::string prefdir = getPreferenceDir();
+    const char* abbrev_ = "abbrev.json" ; 
+    typedef Map<std::string, std::string> MSS ;  
+    MSS* abbrev = MSS::load(prefdir.c_str(), abbrev_ ) ; 
+    if(abbrev)
+    {
+        //abbrev->dump("GPropertyLib::initAbbrev");
+        setAbbrev(abbrev->getMap());
     }
 }
 
@@ -162,6 +181,7 @@ void GPropertyLib::dumpItems(const char* items, const char* msg)
         }
         else
         {
+             std::string abbr = getAbbr(key);  
              const char* colorname = getColorName(key);  
              unsigned int colorcode = getColorCode(key);              
 
@@ -169,6 +189,7 @@ void GPropertyLib::dumpItems(const char* items, const char* msg)
                        << std::setw(30) << *it 
                        << std::setw(10) << std::hex << colorcode << std::dec
                        << std::setw(15) << colorname 
+                       << std::setw(15) << abbr
                        << std::endl ; 
         }
     }
@@ -206,14 +227,17 @@ void GPropertyLib::saveToCache()
 {
     if(!isClosed()) close();
 
-    assert(m_buffer);
-    assert(m_names);
+    if(m_buffer)
+    {
+        std::string dir = getCacheDir(); 
+        std::string name = getBufferName();
+        m_buffer->save(dir.c_str(), name.c_str());   
+    }
 
-    std::string dir = getCacheDir(); 
-    std::string name = getBufferName();
-
-    m_buffer->save(dir.c_str(), name.c_str());   
-    m_names->save(m_cache->getIdPath());
+    if(m_names)
+    {
+        m_names->save(m_cache->getIdPath());
+    }
 }
 
 void GPropertyLib::loadFromCache()

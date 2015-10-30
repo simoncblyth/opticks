@@ -236,6 +236,15 @@ GColors* GGeo::getColors()
 }
 
 
+void GGeo::loadGeometry()
+{
+
+}
+
+
+
+
+
 void GGeo::loadFromG4DAE()
 {
     LOG(info) << "GGeo::loadFromG4DAE" ; 
@@ -250,9 +259,7 @@ void GGeo::loadFromG4DAE()
     prepareMeshes();
 
     prepareVertexColors();
-
 }
-
 
 
 
@@ -279,9 +286,13 @@ void GGeo::loadFromCache()
     m_bndlib->setMaterialLib(m_materiallib);
     m_bndlib->setSurfaceLib(m_surfacelib);
 
-
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
+
+
 }
+
+
+
 
 
 void GGeo::save(const char* idpath)
@@ -796,6 +807,8 @@ void GGeo::prepareVertexColors()
     czr->traverse();
 
 }
+
+
 
 
 

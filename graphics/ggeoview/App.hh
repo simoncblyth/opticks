@@ -136,13 +136,12 @@ class App {
        Cfg*             m_cfg ;
        FrameCfg<Frame>* m_fcfg ; 
        Types*           m_types ; 
-       Index*           m_flags ; 
        GLoader*         m_loader ; 
        GGeo*            m_ggeo ; 
-       GBoundaryLib*    m_blib ; 
-       GBoundaryLibMetadata*    m_meta; 
+       //GBoundaryLib*    m_blib ; 
+       //GBoundaryLibMetadata*    m_meta; 
        GMergedMesh*     m_mesh0 ;  
-       Lookup*          m_lookup ;
+       //Lookup*          m_lookup ;
        OContext*        m_ocontext ; 
        OColors*         m_ocolors ; 
        OGeo*            m_ogeo ; 
@@ -194,13 +193,12 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_cfg(NULL),
       m_fcfg(NULL),
       m_types(NULL),
-      m_flags(NULL),
       m_loader(NULL),
       m_ggeo(NULL),
-      m_blib(NULL),
-      m_meta(NULL),
+      //m_blib(NULL),
+      //m_meta(NULL),
       m_mesh0(NULL),
-      m_lookup(NULL),
+      //m_lookup(NULL),
       m_ocontext(NULL),
       m_ocolors(NULL),
       m_ogeo(NULL),

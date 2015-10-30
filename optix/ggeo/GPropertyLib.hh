@@ -32,16 +32,21 @@ class GPropertyLib {
     public:
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
+        std::string  getAbbr(const char* shortname);
+    public:
         GPropertyLib(GCache* cache, const char* type);
         virtual ~GPropertyLib();
+    public:
         const char* getType();
         std::string getCacheDir();
         std::string getPreferenceDir();
     public:
         void setOrder(std::map<std::string, unsigned int>& order);
         void setColor(std::map<std::string, std::string>& color);
+        void setAbbrev(std::map<std::string, std::string>& color);
         std::map<std::string, unsigned int>& getOrder(); 
         std::map<std::string, std::string>& getColor(); 
+        std::map<std::string, std::string>& getAbbrev(); 
     public:
         void setStandardDomain(GDomain<float>* standard_domain);
         void setDefaults(GPropertyMap<float>* defaults);
@@ -49,6 +54,7 @@ class GPropertyLib {
         void init();
         void initOrder();
         void initColor();
+        void initAbbrev();
     public:
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
@@ -110,6 +116,7 @@ class GPropertyLib {
         GDomain<float>*                      m_standard_domain ;  
         std::map<std::string, unsigned int>  m_order ;
         std::map<std::string, std::string>   m_color ;
+        std::map<std::string, std::string>   m_abbrev ;
         std::vector<unsigned int>            m_color_codes ; 
     private:
         GPropertyMap<float>*                 m_defaults ;  
@@ -161,6 +168,10 @@ inline void GPropertyLib::setColor(std::map<std::string, std::string>& color)
 {
     m_color = color ; 
 }
+inline void GPropertyLib::setAbbrev(std::map<std::string, std::string>& abbrev)
+{
+    m_abbrev = abbrev ; 
+}
 
 inline std::map<std::string, unsigned int>& GPropertyLib::getOrder()
 {
@@ -170,8 +181,10 @@ inline std::map<std::string, std::string>& GPropertyLib::getColor()
 {
     return m_color ; 
 }
-
-
+inline std::map<std::string, std::string>& GPropertyLib::getAbbrev()
+{
+    return m_abbrev ; 
+}
 
 
 

@@ -9,34 +9,10 @@
 
 class Index ; 
 
-/*
-
-TODO: rejig material codes just plucking most common as index 1-15, and using code 0 for "Other" 
-      this is needed to fit into 4 bits per material in sequence machinery  
-
-[2015-06-30 20:36:21.012404] [0x000007fff79cb931] [info]    SequenceNPY::countMaterials  m1/m2 codes in all records 5187214 unique material codes 16
-    0   13   2084363            Acrylic .
-    1   12    839627         MineralOil .
-    2   15    714965          GdDopedLS .
-    3   14    683857 LiquidScintillator .
-    4   11    273739     StainlessSteel .
-    5   10    265339           IwsWater .
-    6   18     89379 UnstStainlessSteel .
-    7    3     63342                Air .
-    8   16     56527              Pyrex .
-    9    1     52492             Vacuum .
-   10   19     28483                ESR .
-   11    2     16029               Rock .
-   12   17     13187           Bialkali .
-   13   20      4466              Water .
-   14   21      1288           Nitrogen .
-   15   24       131                PVC .
-
-*/
 
 // TODO: split mechanics into a base class 
 //       with specializations for History and Material
-//
+
 class Types {
    public:
        static const char* TAIL ; 
@@ -50,15 +26,16 @@ class Types {
 
    public:
        Types(); 
-
+   private:
+       void init();
+   public:
        void         setTail(const char* tail);
        const char*  getTail();
        void         setAbbrev(bool abbrev);
-
    public:
-       Index*                    getFlagsIndex();
-       Index*                    getMaterialsIndex();
-       void                      setMaterialsIndex(Index* index);
+       Index*       getFlagsIndex();
+       Index*       getMaterialsIndex();
+       void         setMaterialsIndex(Index* index);
    public:
        std::string getMaskString(unsigned int mask, Item_t etype);
        std::string getMaterialString(unsigned int flags);
@@ -83,6 +60,7 @@ class Types {
 
        void readFlags(const char* path); // parse enum flags from photon.h
        void dumpFlags(const char* msg="Types::dumpFlags");
+       void saveFlags(const char* idpath, const char* ext=".ini");
    private:
        void makeFlagAbbrev();
    public:
@@ -138,6 +116,7 @@ inline Types::Types() :
      m_tail(TAIL),
      m_abbrev(false)
 {
+    init();
 };
 
 

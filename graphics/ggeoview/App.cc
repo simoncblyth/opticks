@@ -344,15 +344,20 @@ int App::config(int argc, char** argv)
     }
 #endif
 
+
+
+/*
     m_types = new Types ;  
     m_types->readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");  
+
+
     // TODO: avoid hardcoding (or at least duplication of) paths, grab via cmake configure_file ?
     //       here optixrap lib should have a compiled in constant for this
     //
     m_flags = m_types->getFlagsIndex(); 
     m_flags->setExt(".ini");
     m_flags->save(idpath);
-
+*/
 
     return 0 ; 
 }
@@ -400,16 +405,12 @@ void App::loadGeometry()
     {
         GBoundaryLib* blib = m_ggeo->getBoundaryLib();
         blib->setFakeEfficiency(1.0);
-
         GSurfaceLib* slib = m_ggeo->getSurfaceLib();
         slib->setFakeEfficiency(1.0);
     }
 
-
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
-
     m_ggeo->setMeshJoinCfg( m_cache->getMeshfix() );
 
     std::string meshversion = m_fcfg->getMeshVersion() ;;
@@ -420,49 +421,28 @@ void App::loadGeometry()
     }
     
 
-
     // TODO: get rid of GLoader
     m_loader = new GLoader(m_ggeo) ;
-
-    //m_loader->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
-    m_loader->setRepeatIndex(m_fcfg->getRepeatIndex()); // --repeatidx
-    m_loader->setTypes(m_types);
+    m_loader->setTypes(m_cache->getTypes());
     m_loader->setCache(m_cache);
-
     m_loader->load();
 
-
-
-    m_parameters->add<int>("repeatIdx", m_loader->getRepeatIndex() );
-
-    GItemIndex* materials = m_loader->getMaterials();
-    ////materials->dump("App::loadGeometry materials from m_loader");
-
-    m_types->setMaterialsIndex(materials->getIndex());
-
-
-    m_blib = m_ggeo->getBoundaryLib();
-
+    m_cache->getTypes()->setMaterialsIndex(m_loader->getMaterials()->getIndex()); // TODO
 
     GColors* colors = m_cache->getColors();
-
     m_composition->setColorDomain( colors->getCompositeDomain() ); 
-
     m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
- 
     m_ggeo->dumpStats("App::loadGeometry");
     //m_ggeo->dumpTree("App::loadGeometry");
 
     for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++)
         m_ggeo->dumpNodeInfo(i);
 
-
     checkGeometry();
 
-    m_lookup = m_loader->getMaterialLookup();
-    m_meta = m_loader->getMetadata(); 
-    m_boundaries =  m_meta->getBoundaryNames();
+    m_boundaries =  m_loader->getMetadata()->getBoundaryNames();  // TODO
+
  
     m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
 
@@ -698,7 +678,7 @@ void App::loadGenstep()
 
         if(m_cache->isDayabay())
         {   
-            m_g4step->setLookup(m_loader->getMaterialLookup()); 
+            m_g4step->setLookup(m_loader->getMaterialLookup());   // TODO
             m_g4step->applyLookup(0, 2);      
             // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
             m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
@@ -1156,13 +1136,16 @@ void App::indexSequence()
     rphosel.unmapGLToCUDA(); 
     rrecsel.unmapGLToCUDA(); 
 
+
+    Types* types = m_cache->getTypes();
+
     m_seqhis->setTitle("Photon Flag Sequence Selection");
-    m_seqhis->setTypes(m_types);
+    m_seqhis->setTypes(types);
     m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
     m_seqhis->formTable();
 
     m_seqmat->setTitle("Photon Material Sequence Selection");
-    m_seqmat->setTypes(m_types);
+    m_seqmat->setTypes(types);
     m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
     m_seqmat->formTable();
 
@@ -1201,7 +1184,7 @@ void App::indexBoundaries()
         // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
         LOG(info) << "App::indexBoundaries host based " ;
         m_bnd = new BoundariesNPY(dpho); 
-        m_bnd->setTypes(m_types);
+        m_bnd->setTypes(m_cache->getTypes());
         m_bnd->setBoundaryNames(m_boundaries); // map<int,string>
         m_bnd->indexBoundaries();     
     } 
@@ -1284,10 +1267,13 @@ void App::indexEvtOld()
 
     NPY<float>* dpho = m_evt->getPhotonData();
 
+    Types* types = m_cache->getTypes();
+
+
     if(dpho->hasData())
     {
         m_pho = new PhotonsNPY(dpho);   // a detailed photon/record dumper : looks good for photon level debug 
-        m_pho->setTypes(m_types);
+        m_pho->setTypes(types);
 
         m_hit = new HitsNPY(dpho, m_ggeo->getSensorList());
         m_hit->debugdump();
@@ -1300,7 +1286,7 @@ void App::indexEvtOld()
     if(drec->hasData())
     {
         m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
-        m_rec->setTypes(m_types);
+        m_rec->setTypes(types);
         m_rec->setDomains((NPY<float>*)m_opropagator->getDomain());
 
         if(m_pho)
@@ -1354,7 +1340,8 @@ void App::prepareGUI()
 {
 
 #ifdef GUI_
- 
+
+    m_types = m_cache->getTypes();
     m_photons = new Photons(m_types, m_pho, m_bnd, m_seqhis, m_seqmat ) ; // GUI jacket : m_pho seems unused 
     m_scene->setPhotons(m_photons);
 
@@ -1365,7 +1352,7 @@ void App::prepareGUI()
     m_gui->setComposition(m_composition);
     m_gui->setBookmarks(m_bookmarks);
     m_gui->setInteractor(m_interactor);   // status line
-    m_gui->setLoader(m_loader);           // access to Material / Surface indices
+    m_gui->setLoader(m_loader);           // access to Material / Surface indices  // TODO
     
     m_gui->init(m_window);
     m_gui->setupHelpText( m_cfg->getDescString() );

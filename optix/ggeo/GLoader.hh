@@ -40,11 +40,11 @@ class GLoader {
          GItemIndex*            getMaterials();
          GItemIndex*            getSurfaces();
          GItemIndex*            getFlags();
-         GItemIndex*            getMeshes();
+         //GItemIndex*            getMeshes();
 
          Lookup*                getMaterialLookup();
          GBuffer*               getTransformsBuffer();
-         int                    getRepeatIndex();
+       //  int                    getRepeatIndex();
 
     private:
          GGeo*                     m_ggeo ;    
@@ -63,7 +63,7 @@ class GLoader {
 
 
          GTreeCheck*               m_treeanalyse ;  
-         int                       m_repeatidx ; 
+      //   int                       m_repeatidx ; 
          GBuffer*                  m_transforms_buffer ; 
          bool                      m_instanced ; 
          char*                     m_mesh_version ; 
@@ -82,7 +82,7 @@ inline GLoader::GLoader(GGeo* ggeo)
    m_meshes(NULL),
    m_lookup(NULL),
    m_treeanalyse(NULL),
-   m_repeatidx(-1),
+  // m_repeatidx(-1),
    m_transforms_buffer(NULL),
    m_mesh_version(NULL)
 {
@@ -137,20 +137,4 @@ inline GItemIndex* GLoader::getFlags()
 {
     return m_flags ; 
 }
-inline GItemIndex* GLoader::getMeshes()
-{
-    return m_meshes ; 
-}
-
-
-inline int GLoader::getRepeatIndex()
-{
-    return m_repeatidx ; 
-}
-inline void GLoader::setRepeatIndex(int repeatidx)
-{
-    m_repeatidx = repeatidx  ; 
-}
-
-
 

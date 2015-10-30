@@ -22,6 +22,19 @@ const char* Types::HISTORYSEQ_ = "historyseq" ;
 const char* Types::MATERIALSEQ_ = "materialseq" ;
 
 
+void Types::init()
+{
+    readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");  
+}
+
+void Types::saveFlags(const char* idpath, const char* ext)
+{
+    m_flags->setExt(ext); 
+    m_flags->save(idpath);    
+}
+
+
+
 const char* Types::getItemName(Item_t item)
 {
     const char* name(NULL);
@@ -355,6 +368,8 @@ std::string Types::getMaskString(unsigned int mask, Item_t etype)
     }
     return mstr ; 
 }
+
+
 
 
 

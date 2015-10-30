@@ -8,6 +8,8 @@
 // npy-
 #include "stringutil.hpp"
 #include "GLMFormat.hpp"
+#include "Types.hpp"
+
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -35,6 +37,10 @@ void GCache::init()
 
     std::string prefdir = getPreferenceDir("GCache");
     m_colors = GColors::load(prefdir.c_str(),"GColors.json");  // colorname => hexcode 
+
+
+    m_types = new Types ;  
+    m_types->saveFlags(m_idpath, ".ini");
 }
 
 

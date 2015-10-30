@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 class GColors ; 
-
+class Types ; 
 
 // this is turning into GGeoConfig rather than just GCache 
 // TODO: handle logging here, for control from tests
@@ -31,6 +31,7 @@ class GCache {
          bool isGeocache();
          void setColors(GColors* colors);
          GColors* getColors();
+         Types*   getTypes();
 
          void setInstanced(bool instanced=true);
          bool isInstanced();
@@ -66,6 +67,7 @@ class GCache {
     private:
           const char* m_envprefix ; 
           GColors*    m_colors ; 
+          Types*      m_types ;
     private:
           const char* m_geokey ;
           const char* m_path ;
@@ -95,6 +97,7 @@ inline GCache::GCache(const char* envprefix)
        :
        m_envprefix(strdup(envprefix)),
        m_colors(NULL),
+       m_types(NULL),
        m_geokey(NULL),
        m_path(NULL),
        m_query(NULL),
@@ -176,6 +179,10 @@ inline void GCache::setColors(GColors* colors)
 inline GColors* GCache::getColors()
 {
     return m_colors ;
+}
+inline Types* GCache::getTypes()
+{
+    return m_types ;
 }
 
 

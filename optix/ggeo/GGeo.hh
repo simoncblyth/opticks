@@ -56,16 +56,18 @@ class GGeo {
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
         static const char* GMERGEDMESH ; 
-        static GGeo* load(const char* idpath, const char* mesh_version=NULL);
+        //static GGeo* load(const char* idpath, const char* mesh_version=NULL);
         static bool ctrlHasKey(const char* ctrl, const char* key);
         enum { MAX_MERGED_MESH = 10 } ;
     public:
         GGeo(GCache* cache); 
         GCache* getCache();
         const char* getIdPath();
-        void loadFromCache();
     public:
+        void loadGeometry();  // GLoader remnamts to go here 
+        void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
+    public:
         void prepareScintillatorLib();
         void prepareMeshes();
         void prepareVertexColors();
