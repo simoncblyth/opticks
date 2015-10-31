@@ -85,7 +85,8 @@ void GLoader::load(bool verbose)
     //
     m_lookup = new Lookup() ; 
     m_lookup->create(idpath);   
-    //m_lookup->dump("GLoader::load");  
+    m_lookup->dump("GLoader::load");  
+
 
 
     Index* idx = m_cache->getTypes()->getFlagsIndex() ;    

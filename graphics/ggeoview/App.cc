@@ -419,10 +419,9 @@ void App::loadGeometry()
         LOG(warning) << "App::loadGeometry using debug meshversion " << meshversion ;  
         m_ggeo->setMeshVersion(meshversion.c_str());
     }
-    
-    // TODO: get rid of GLoader
-    m_loader = new GLoader(m_ggeo) ;
-    m_loader->load();
+   
+
+    m_ggeo->loadGeometry();
 
     (*m_timer)("loadGeometry"); 
 
@@ -441,7 +440,9 @@ void App::loadGeometry()
 
 void App::registerGeometry()
 {
-    m_cache->getTypes()->setMaterialsIndex(m_loader->getMaterials()->getIndex()); // TODO
+    GLoader* loader = m_ggeo->getLoader();
+
+    m_cache->getTypes()->setMaterialsIndex(loader->getMaterials()->getIndex()); // TODO
 
     GColors* colors = m_cache->getColors();
 
@@ -456,7 +457,7 @@ void App::registerGeometry()
     m_mesh0 = m_ggeo->getMergedMesh(0); 
 
 
-    m_boundaries =  m_loader->getMetadata()->getBoundaryNames();  // TODO
+    m_boundaries = loader->getMetadata()->getBoundaryNames();  // TODO
  
     m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
 
@@ -595,12 +596,8 @@ TorchStepNPY* App::makeSimpleTorchStep()
     TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1);
 
     std::string config = m_fcfg->getTorchConfig() ;
+
     if(!config.empty()) torchstep->configure(config.c_str());
-
-    m_ggeo->targetTorchStep(torchstep);
-
-    bool verbose = true ; 
-    torchstep->addStep(verbose);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
     return torchstep ; 
 }
@@ -670,12 +667,11 @@ void App::loadGenstep()
     m_parameters->add<std::string>("Tag", tag );
     m_parameters->add<std::string>("Detector", det );
 
+    GLoader* loader = m_ggeo->getLoader();
 
     NPY<float>* npy = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION )
     {
-      
-
         npy = loadGenstepFromFile(typ, tag, det ); 
 
         m_g4step = new G4StepNPY(npy);    
@@ -683,7 +679,7 @@ void App::loadGenstep()
 
         if(m_cache->isDayabay())
         {   
-            m_g4step->setLookup(m_loader->getMaterialLookup());   // TODO
+            m_g4step->setLookup(loader->getMaterialLookup());   // TODO
             m_g4step->applyLookup(0, 2);      
             // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
             m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
@@ -692,7 +688,22 @@ void App::loadGenstep()
     else if(code == TORCH)
     {
         m_torchstep = makeSimpleTorchStep();
-        //m_torchstep = makeCalibrationTorchStep(1);
+
+        m_ggeo->targetTorchStep(m_torchstep);
+
+        const char* material = m_torchstep->getMaterial() ;
+        unsigned int matline = m_ggeo->getMaterialLine(material);
+        m_torchstep->setMaterialLine(matline);  
+
+        LOG(info) << "App::makeSimpleTorchStep"
+                  << " config " << m_torchstep->getConfig() 
+                  << " material " << material 
+                  << " matline " << matline
+                  ;
+
+        bool verbose = true ; 
+        m_torchstep->addStep(verbose);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
+
         npy = m_torchstep->getNPY(); 
     }
     
@@ -1357,7 +1368,7 @@ void App::prepareGUI()
     m_gui->setComposition(m_composition);
     m_gui->setBookmarks(m_bookmarks);
     m_gui->setInteractor(m_interactor);   // status line
-    m_gui->setLoader(m_loader);           // access to Material / Surface indices  // TODO
+    m_gui->setLoader(m_ggeo->getLoader());           // access to Material / Surface indices  // TODO
     
     m_gui->init(m_window);
     m_gui->setupHelpText( m_cfg->getDescString() );

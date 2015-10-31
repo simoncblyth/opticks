@@ -3,6 +3,7 @@
 #include <string>
 #include <boost/property_tree/ptree.hpp>
 
+class GBoundaryLib ; 
 #include "GPropertyMap.hh"
 
 // the canonical instance of GBoundaryLibMetadata 
@@ -15,7 +16,7 @@ class GBoundaryLibMetadata {
       static const char* filename ; 
       static const char* mapname ; 
 
-      GBoundaryLibMetadata();
+      GBoundaryLibMetadata(GBoundaryLib* lib=NULL);
 
   public:
       static GBoundaryLibMetadata* load(const char* dir);
@@ -27,6 +28,8 @@ class GBoundaryLibMetadata {
       // 1-based boundary code to allow cos_theta sign flipped boundary code, zero corresponds to "nohit"
       unsigned int getBoundaryCode(unsigned int isub);
       std::string getBoundaryName(unsigned int isub);
+      unsigned int getMaterialLine(const char* shortname);
+
       unsigned int getNumBoundary();
       void dumpNames();
       std::map<int, std::string> getBoundaryNames();
@@ -47,8 +50,20 @@ class GBoundaryLibMetadata {
       void add(const char* kfmt, unsigned int isub, const char* cat, const char* tag, const char* val);
 
   private:
+      GBoundaryLib*                 m_lib ; 
       boost::property_tree::ptree   m_tree;
       boost::property_tree::ptree   m_material_map ;
 
 };
+
+
+
+inline GBoundaryLibMetadata::GBoundaryLibMetadata(GBoundaryLib* lib)  :
+   m_lib(lib)
+{
+}
+
+
+
+
 

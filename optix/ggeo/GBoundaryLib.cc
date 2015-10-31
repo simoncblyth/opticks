@@ -48,8 +48,8 @@ namespace fs = boost::filesystem;
 #include "limits.h"
 #include "string.h"
 
-unsigned int GBoundaryLib::NUM_QUAD    = 6  ; 
-//unsigned int GBoundaryLib::NUM_QUAD    = 4  ; 
+//unsigned int GBoundaryLib::NUM_QUAD    = 6  ; 
+unsigned int GBoundaryLib::NUM_QUAD    = 4  ; 
 
 float        GBoundaryLib::SURFACE_UNSET = -1.f ; 
 float        GBoundaryLib::EXTRA_UNSET = -1.f ; 

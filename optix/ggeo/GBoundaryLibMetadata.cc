@@ -69,11 +69,6 @@ Out[15]:
 */
 
 
-
-GBoundaryLibMetadata::GBoundaryLibMetadata() 
-{
-}
-
 void GBoundaryLibMetadata::add(const char* kfmt, unsigned int isub, const char* cat, const char* tag, const char* val)
 {
     char key[128];
@@ -200,6 +195,23 @@ std::string GBoundaryLibMetadata::getBoundaryName(unsigned int isub)
 
     return boost::algorithm::join(vals, ".");
 }
+
+
+unsigned int GBoundaryLibMetadata::getMaterialLine(const char* shortname)
+{
+    unsigned int nsub = getNumBoundary();
+    for(unsigned int isub=0 ; isub < nsub ; isub++)
+    {
+        std::string imat = getBoundaryQty(isub, "imat", "shortname") ;
+        std::string omat = getBoundaryQty(isub, "omat", "shortname") ;
+ 
+        if(imat.compare(shortname) == 0) return GBoundaryLib::getLine(isub, 0) ; 
+        if(omat.compare(shortname) == 0) return GBoundaryLib::getLine(isub, 1) ; 
+    }
+    return 0 ; 
+}
+
+
 
 
 std::map<int, std::string> GBoundaryLibMetadata::getBoundaryNames()

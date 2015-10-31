@@ -6,6 +6,8 @@
 #include "stdio.h"
 #include "string.h"
 
+
+
 int main(int argc, char** argv)
 {
     GCache gc("GGEOVIEW_"); 
@@ -17,12 +19,15 @@ int main(int argc, char** argv)
     meta->Summary(idpath);
     meta->dumpNames();
 
+    unsigned int line = meta->getMaterialLine("GdDopedLS");
+    printf(" GdLs : %u \n", line);
+
 
     GBuffer* wbuf = GBuffer::load<float>(idpath, "wavelength.npy");
     wbuf->Summary("wavelength buffer");
 
-    //GBuffer* obuf = GBuffer::load<unsigned int>(idpath, "optical.npy");
-      GBuffer* obuf = GBuffer::load<int>(idpath, "optical.npy");
+    GBuffer* obuf = GBuffer::load<unsigned int>(idpath, "optical.npy");
+    // GBuffer* obuf = GBuffer::load<int>(idpath, "optical.npy");
     //GBuffer* obuf = GBuffer::load<float>(idpath, "optical.npy");
     obuf->Summary("optical buffer");
 

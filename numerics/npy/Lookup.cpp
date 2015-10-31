@@ -35,9 +35,6 @@ void Lookup::create(const char* dir)
     loadb(dir);
 
 
-
-
-
     m_a2b = _create(m_a, m_b);
     m_b2a = _create(m_b, m_a);
 }

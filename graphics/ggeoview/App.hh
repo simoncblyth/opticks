@@ -137,7 +137,7 @@ class App {
        Cfg*             m_cfg ;
        FrameCfg<Frame>* m_fcfg ; 
        Types*           m_types ; 
-       GLoader*         m_loader ; 
+       //GLoader*         m_loader ; 
        GGeo*            m_ggeo ; 
        //GBoundaryLib*    m_blib ; 
        //GBoundaryLibMetadata*    m_meta; 
@@ -194,7 +194,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_cfg(NULL),
       m_fcfg(NULL),
       m_types(NULL),
-      m_loader(NULL),
+      //m_loader(NULL),
       m_ggeo(NULL),
       //m_blib(NULL),
       //m_meta(NULL),

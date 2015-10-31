@@ -3,6 +3,23 @@
 #include <map>
 #include <string>
 
+/*
+NB the codes are all divide into 6... they are the line numbers into the texture 
+
+delta:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ cat GBoundaryLibMetadataMaterialMap.json
+{
+    "ADTableStainlessSteel": "336",
+    "Acrylic": "84",
+    "Air": "12",
+    "Aluminium": "24",
+    "Bialkali": "126",
+    "DeadWater": "42",
+    "ESR": "162",
+    "Foam": "30",
+    "GdDopedLS": "102",
+
+*/
+
 class Lookup {
    public:  
 

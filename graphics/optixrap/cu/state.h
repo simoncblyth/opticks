@@ -22,7 +22,7 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
     // >0 outward going photon
     // <0 inward going photon
 
-    int line = boundary > 0 ? (boundary - 1)*6 : (-boundary - 1)*6  ; 
+    int line = boundary > 0 ? (boundary - 1)*BNUMQUAD : (-boundary - 1)*BNUMQUAD  ; 
 
     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
     // 

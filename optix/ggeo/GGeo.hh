@@ -19,6 +19,7 @@ class GSkinSurface ;
 class GBorderSurface ; 
 class GBoundary ;
 
+class GLoader ;
 class GBndLib ;
 class GBoundaryLib ;
 class GMaterialLib ;
@@ -77,6 +78,7 @@ class GGeo {
 
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode();  
+        unsigned int getMaterialLine(const char* shortname);
 
         virtual ~GGeo();
    private:
@@ -178,6 +180,7 @@ class GGeo {
         unsigned int getNumRawBorderSurfaces();
 
     public:
+        GLoader*      getLoader();
         GBndLib*      getBndLib();
         GBoundaryLib* getBoundaryLib();
         GMaterialLib* getMaterialLib();
@@ -275,6 +278,7 @@ class GGeo {
         std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
+        GLoader*                      m_loader ; 
         GBndLib*                      m_bndlib ; 
         GBoundaryLib*                 m_boundarylib ; 
         GMaterialLib*                 m_materiallib ; 
@@ -315,6 +319,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
    m_treecheck(NULL), 
    m_loaded(false), 
+   m_loader(NULL),
    m_bndlib(NULL),
    m_boundarylib(NULL),
    m_materiallib(NULL),
@@ -453,10 +458,16 @@ inline char* GGeo::getIdentityPath()
 }
 
 
+
+inline GLoader* GGeo::getLoader()
+{
+    return m_loader ; 
+}
 inline GBoundaryLib* GGeo::getBoundaryLib()
 {
     return m_boundarylib ; 
 }
+
 inline GBndLib* GGeo::getBndLib()
 {
     return m_bndlib ; 

@@ -125,6 +125,7 @@ RT_PROGRAM void generate()
 
     unsigned long long seqhis(0) ;
     unsigned long long seqmat(0) ;
+
     int MaterialIndex(0) ; 
 
     State s ;   

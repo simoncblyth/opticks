@@ -11,8 +11,10 @@
 #include "GTreeCheck.hh"
 #include "GColorizer.hh"
 #include "GColors.hh"
+#include "GLoader.hh"
 
 #include "GBndLib.hh"
+#include "GBoundaryLibMetadata.hh"
 #include "GBoundaryLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -234,10 +236,19 @@ GColors* GGeo::getColors()
 }
 
 
+
+unsigned int GGeo::getMaterialLine(const char* shortname)
+{
+    GBoundaryLibMetadata* meta = m_loader->getMetadata() ;
+    assert(meta);
+    return meta->getMaterialLine(shortname);
+}
+
+
 void GGeo::loadGeometry()
 {
-
-
+    m_loader = new GLoader(this) ;
+    m_loader->load();
 }
 
 

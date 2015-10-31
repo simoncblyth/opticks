@@ -16,7 +16,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
     "source=0,0,0;"
     "target=0,0,1;"
     "num_photons=500000;"
-    "material_line=102;"
+    "material=GdDopedLS;"   
     "wavelength=500;"
     "weight=1.0;"
     "time=0.1;"
@@ -24,13 +24,16 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
     "radius=0" ;
 
 // NB time 0.f causes 1st step record rendering to be omitted, as zero is special
-// TODO: material_line:102 corresponds to GdLS, arrange to detect the material from the pos_target 
+// NB the material string needs to be externally translated into a material line
+//
+// TODO: material lookup based on the frame volume solid ?
+//
  
 const char* TorchStepNPY::FRAME_ = "frame"; 
 const char* TorchStepNPY::SOURCE_ = "source"; 
 const char* TorchStepNPY::TARGET_ = "target" ; 
 const char* TorchStepNPY::NUM_PHOTONS_ = "num_photons" ; 
-const char* TorchStepNPY::MATERIAL_LINE_ = "material_line" ; 
+const char* TorchStepNPY::MATERIAL_ = "material" ; 
 const char* TorchStepNPY::ZENITH_AZIMUTH_ = "zenith_azimuth" ; 
 const char* TorchStepNPY::WAVELENGTH_     = "wavelength" ; 
 const char* TorchStepNPY::WEIGHT_     = "weight" ; 
@@ -45,7 +48,7 @@ TorchStepNPY::Param_t TorchStepNPY::getParam(const char* k)
     else if(strcmp(k,SOURCE_)==0)         param = SOURCE ; 
     else if(strcmp(k,TARGET_)==0)         param = TARGET ; 
     else if(strcmp(k,NUM_PHOTONS_)==0)    param = NUM_PHOTONS ; 
-    else if(strcmp(k,MATERIAL_LINE_)==0)  param = MATERIAL_LINE ; 
+    else if(strcmp(k,MATERIAL_)==0)       param = MATERIAL ; 
     else if(strcmp(k,ZENITH_AZIMUTH_)==0) param = ZENITH_AZIMUTH ; 
     else if(strcmp(k,WAVELENGTH_)==0)     param = WAVELENGTH ; 
     else if(strcmp(k,WEIGHT_)==0)         param = WEIGHT ; 
@@ -79,7 +82,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
         case SOURCE         : setSourceLocal(s)    ;break;
         case TARGET         : setTargetLocal(s)    ;break;
         case NUM_PHOTONS    : setNumPhotons(s)     ;break;
-        case MATERIAL_LINE  : setMaterialLine(s)   ;break;
+        case MATERIAL       : setMaterial(s)       ;break;
         case ZENITH_AZIMUTH : setZenithAzimuth(s)  ;break;
         case WAVELENGTH     : setWavelength(s)     ;break;
         case WEIGHT         : setWeight(s)         ;break;
@@ -136,12 +139,19 @@ void TorchStepNPY::setNumPhotons(unsigned int num_photons)
 }
 
 
-
-
-void TorchStepNPY::setMaterialLine(const char* s)
+void TorchStepNPY::setMaterial(const char* s)
 {
-    m_ctrl.z = boost::lexical_cast<int>(s) ; 
+    m_material = strdup(s);
 }
+
+
+void TorchStepNPY::setMaterialLine(unsigned int ml)
+{
+    m_ctrl.z = ml ; 
+}
+
+
+
 void TorchStepNPY::setDirection(const char* s)
 {
     std::string ss(s);
@@ -240,7 +250,7 @@ void TorchStepNPY::update()
 
 void TorchStepNPY::dump(const char* msg)
 {
-    printf("%s config %s  \n", msg, m_config );
+    printf("%s config %s material %s  \n", msg, m_config, m_material );
 
     print(m_frame,        "m_frame ");
     print(m_source_local, "m_source_local ", m_src, "m_src");

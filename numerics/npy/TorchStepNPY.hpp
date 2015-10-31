@@ -16,7 +16,7 @@ Photon Torpedo along X axis:
 
 class TorchStepNPY {
    public:
-       typedef enum { FRAME, SOURCE, TARGET, NUM_PHOTONS, MATERIAL_LINE, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
+       typedef enum { FRAME, SOURCE, TARGET, NUM_PHOTONS, MATERIAL, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
@@ -24,7 +24,7 @@ class TorchStepNPY {
        static const char* SOURCE_ ; 
        static const char* TARGET_ ; 
        static const char* NUM_PHOTONS_ ; 
-       static const char* MATERIAL_LINE_ ; 
+       static const char* MATERIAL_ ; 
        static const char* ZENITH_AZIMUTH_ ; 
        static const char* WAVELENGTH_ ; 
        static const char* WEIGHT_ ; 
@@ -57,8 +57,13 @@ class TorchStepNPY {
        // currently ignored on the GPU
        void setPolarization(glm::vec3& pol);
    public:  
+       // need external help to set the MaterialLine
+       void setMaterial(const char* s );
+       const char* getConfig();
+       const char* getMaterial();
+   public:  
        void setNumPhotons(const char* s );
-       void setMaterialLine(const char* s );
+       void setMaterialLine(unsigned int ml);
        void setDirection(const char* s );
        void setZenithAzimuth(const char* s );
        void setWavelength(const char* s );
@@ -95,6 +100,7 @@ class TorchStepNPY {
   private:
        unsigned int m_genstep_id ; 
        const char*  m_config ;
+       const char*  m_material ;
   private:
        glm::ivec4   m_frame ;
        glm::mat4    m_frame_transform ; 
@@ -124,6 +130,7 @@ inline TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step
        :  
        m_genstep_id(genstep_id), 
        m_config(config ? strdup(config) : DEFAULT_CONFIG),
+       m_material(NULL),
        m_num_step(num_step),
        m_step_index(0),
        m_npy(NULL)
@@ -168,4 +175,19 @@ inline void TorchStepNPY::setPolarization(glm::vec3& pol)
     m_polw.y = pol.y ; 
     m_polw.z = pol.z ; 
 }
+
+
+inline const char* TorchStepNPY::getMaterial()
+{
+    return m_material ; 
+}
+inline const char* TorchStepNPY::getConfig()
+{
+    return m_config ; 
+}
+
+
+
+
+
 
