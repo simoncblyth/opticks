@@ -40,13 +40,24 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 IMMEDIATES
 -----------
 
-* revisit npy- genstep_sequence_material_mismatch.py to confirm the iav,oav geofix 
+Refactor to eliminate GLoader
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* check materials of other known solids which are using split union meshes, 
-  see how many are transparent : looking for opengl flickering shows lots up 
-  center column, but not around PMT 
+* pragmatically moved GLoader ops into GGeo::loadGeometry, 
+  retaining it there until have corresponding materials/flags/ handling 
+  in the new GBndLib/GPropertyLib approach 
 
-* apply geometry checking to jpmt geometry 
+  * maybe a derived GItemIndex constituent of GPropertyLib 
+    can ease the transition
+
+  * sticking blocks from npy- Types eg abbreviated name conversions 
+
+
+Refactor to replace GBoundaryLib with GBndLib,GMaterialLib,GSurfaceLib,GPropertyLib,GScintillatorLib
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* the GBndLib derived buffers now matching the old ones, 
+  so OptiX end replacing OBoundaryLib with OBndLib should be easy 
 
 
 
