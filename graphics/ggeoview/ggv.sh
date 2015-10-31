@@ -30,6 +30,8 @@ elif [ "${cmdline/--blib}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBoundaryLibTest)
 elif [ "${cmdline/--bnd}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBndLibTest)
+elif [ "${cmdline/--pybnd}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-tdir)/GBndLibTest.py
 elif [ "${cmdline/--mat}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GMaterialLibTest)
 elif [ "${cmdline/--surf}" != "${cmdline}" ]; then
@@ -144,7 +146,7 @@ fi
 
 # TODO: make binary for this to avoid the exception
 if [ "${cmdline/--idp}" != "${cmdline}" ]; then
-    echo $(ggeoview-run $*)
+    echo $(ggeoview-run ${GGEOVIEW_ARGS})
 else
     case $dbg in
        0)  ggeoview-run ${GGEOVIEW_ARGS}  ;;

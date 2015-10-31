@@ -157,7 +157,6 @@ guint4 GSurfaceLib::getOpticalSurface(unsigned int i)
 
 GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src)
 {
-
     GProperty<float>* _detect           = NULL ; 
     GProperty<float>* _absorb           = NULL ; 
     GProperty<float>* _reflect_specular = NULL ; 

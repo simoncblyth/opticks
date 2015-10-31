@@ -828,6 +828,11 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
                 m_surfaces->add(shortname.c_str(), psrc->getIndex() );  // registering source indices (aiScene mat index) into GItemIndex
                 unsigned int index_local = m_surfaces->getIndexLocal(shortname.c_str());  
 
+                LOG(info) << "GBoundaryLib::createWavelengthAndOpticalBuffers surf"
+                          << " sn " << shortname 
+                          << " index_local " << index_local 
+                          ;
+
                 optical_data[opticalOffset + p*4 + optical_index]  =  index_local ; 
                 optical_data[opticalOffset + p*4 + optical_type]   =  boost::lexical_cast<unsigned int>(os->getType()); 
                 optical_data[opticalOffset + p*4 + optical_finish] =  boost::lexical_cast<unsigned int>(os->getFinish()); 

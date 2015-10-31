@@ -49,6 +49,14 @@ void GBndLib::saveIndexBuffer()
     setIndexBuffer(ibuf);
 }
 
+void GBndLib::saveOpticalBuffer()
+{
+    NPY<unsigned int>* ibuf = createOpticalBuffer();
+    saveToCache(ibuf, "Optical") ; 
+}
+
+
+
 NPY<unsigned int>* GBndLib::createIndexBuffer()
 {
     return createUint4Buffer(m_bnd);
@@ -282,6 +290,7 @@ NPY<float>* GBndLib::createBuffer()
 
 NPY<unsigned int>* GBndLib::createOpticalBuffer()
 {
+    bool one_based = true ; // surface and material indices 1-based, so 0 can stand for unset
     unsigned int ni = getNumBnd();
     unsigned int nj = NUM_QUAD ;    // im-om-is-os
     unsigned int nk = NUM_PROP ;      
@@ -300,7 +309,7 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
             {
                 unsigned int midx = bnd[j] ;
                 assert(midx != UNSET);
-                odat[offset+0] = midx ; 
+                odat[offset+0] = one_based ? midx + 1 : midx  ; 
                 odat[offset+1] = 0u ; 
                 odat[offset+2] = 0u ; 
                 odat[offset+3] = 0u ; 
@@ -311,7 +320,7 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
                 if(sidx != UNSET)
                 {
                     guint4 os = m_slib->getOpticalSurface(sidx) ;
-                    odat[offset+0] = os.x ; 
+                    odat[offset+0] = one_based ? sidx + 1 : sidx  ; 
                     odat[offset+1] = os.y ; 
                     odat[offset+2] = os.z ; 
                     odat[offset+3] = os.w ; 
@@ -320,6 +329,10 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
         } 
     }
     return optical ; 
+
+    // bnd indices originate during cache creation from the AssimpGGeo call of GBndLib::add with the shortnames 
+    // this means that for order preferences ~/.opticks/GMaterialLib/order.json and ~/.opticks/GSurfaceLib/order.json
+    // to be reflected need to rebuild the cache with ggv -G first 
 }
 
 

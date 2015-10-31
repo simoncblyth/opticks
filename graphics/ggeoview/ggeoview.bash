@@ -1223,8 +1223,14 @@ ggeoview-export-dump()
 ggeoview-run(){ 
    local bin=$(ggeoview-bin)
    ggeoview-export
-   $bin $*
+   if [ "${bin: -3}" == ".py" ]; then 
+      python $bin $* 
+   else    
+      $bin $*
+   fi
 }
+
+
 
 ggeoview-compute(){ 
    local bin=$(ggeoview-compute-bin)

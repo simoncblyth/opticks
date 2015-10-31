@@ -1014,6 +1014,7 @@ EOU
 ggeo-idir(){ echo $(local-base)/env/optix/ggeo; }  # prefix
 ggeo-bdir(){ echo $(local-base)/env/optix/ggeo.build ; }
 ggeo-sdir(){ echo $(env-home)/optix/ggeo ; }
+ggeo-tdir(){ echo $(env-home)/optix/ggeo/tests ; }
 
 ggeo-icd(){  cd $(ggeo-idir); }
 ggeo-bcd(){  cd $(ggeo-bdir); }

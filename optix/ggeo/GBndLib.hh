@@ -60,6 +60,7 @@ class GBndLib : public GPropertyLib {
        void setIndexBuffer(NPY<unsigned int>* ibuf);
   public:
        NPY<unsigned int>* createOpticalBuffer();
+       void saveOpticalBuffer();
   public:
        unsigned int getMaterialLine(const char* shortname);
        static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
