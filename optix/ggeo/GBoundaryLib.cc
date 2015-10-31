@@ -49,6 +49,7 @@ namespace fs = boost::filesystem;
 #include "string.h"
 
 unsigned int GBoundaryLib::NUM_QUAD    = 6  ; 
+//unsigned int GBoundaryLib::NUM_QUAD    = 4  ; 
 
 float        GBoundaryLib::SURFACE_UNSET = -1.f ; 
 float        GBoundaryLib::EXTRA_UNSET = -1.f ; 
@@ -240,7 +241,13 @@ GBoundary* GBoundaryLib::getOrCreate(
 
     GBoundary raw(imaterial, omaterial, isurface, osurface, iextra, oextra);
     GBoundary* standard = createStandardBoundary(&raw) ;
-    std::string key = standard->pdigest(0,4);  // standard digest based identity 
+
+    bool old = NUM_QUAD == 6 ; 
+    std::string key = old ? standard->pdigest(0,4) : standard->digest() ;  
+    //
+    // old way: standard digest based identity 
+    // new way: name based identity, to align with GBndLib
+    //
 
     if(m_registry.count(key) == 0) // not yet registered
     { 
@@ -749,6 +756,17 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
     unsigned int numUInt  =              NUM_QUAD*4*numBoundary ; 
 
 
+    assert(NUM_QUAD == 6 || NUM_QUAD == 4);
+    bool extra = NUM_QUAD == 6 ;  
+    bool name = !extra ;
+
+    
+    // for comparison againt new GBndLib 
+    //    * adopt name based identity
+    //    * eliminate the extra 
+    //
+
+
     m_wavelength_buffer = new GBuffer( sizeof(float)*numFloat, new float[numFloat], sizeof(float), 1 );
     float* wavelength_data = (float*)m_wavelength_buffer->getPointer();
 
@@ -765,9 +783,9 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
         assert(boundaryIndex < numBoundary);
         assert(isub == boundaryIndex);
 
-        const char* dig = getDigest(isub);
+        const char* dig = getDigest(isub); // m_keys lookup
         {
-            char* ckdig = boundary->pdigest(0,4);
+            char* ckdig = boundary->pdigest(0,4,name);
             assert(strcmp(ckdig, dig) == 0);
         }
 
@@ -862,10 +880,6 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
             props.push_back(p3);
             std::string pdig = digestString(props);
           
-            // no-longer-matches as optical surface info now in digest 
-            //std::string ckdig = psrc->getPDigestString(0,4);
-            //assert(strcmp(pdig.c_str(), ckdig.c_str())==0); 
-
             switch(p)
             {
                case 0:
@@ -893,63 +907,6 @@ void GBoundaryLib::createWavelengthAndOpticalBuffers()
     }
 
     m_meta->createMaterialMap();
-
-    //m_materials->dump("GBoundaryLib::createWavelengthAndOpticalBuffers");
-    //m_surfaces->dump("GBoundaryLib::createWavelengthAndOpticalBuffers");
-
-
-    //m_optical_buffer->save<unsigned int>("/tmp/optical_buffer_debug.npy");
-
-
- /*
-
-   In [40]: a.reshape(-1,6,39,4).shape
-   Out[40]: (18, 6, 39, 4)
-
-    In [47]: a.reshape(-1,6,39,4)[6]
-    Out[47]: 
-    array([[[       1.33 ,      273.208,  1000000.   ,        0.   ],
-            [       1.33 ,      273.208,  1000000.   ,        0.   ],
-            [       1.33 ,      273.208,  1000000.   ,        0.   ],
-            [       1.33 ,      273.208,  1000000.   ,        0.   ],
-            [       1.345,      273.208,  1000000.   ,        0.   ],
-            [       1.36 ,      273.208,  1000000.   ,        0.   ],
-            [       1.375,      273.208,  1000000.   ,        0.   ],
-            [       1.39 ,      691.558,  1000000.   ,        0.   ],
-            [       1.384,     1507.119,  1000000.   ,        0.   ],
-
-    In [54]: 17*6
-    Out[54]: 102
-
- */ 
-
-/*
-
-    In [1]: o = np.load("optical.npy")
-
-    In [9]: o.view(np.uint32).reshape(-1,6,4).shape
-    Out[9]: (56, 6, 4)    # 56 boundaries
-
-    In [15]: o.view(np.uint32).reshape(-1,6,4)[3:10]
-    Out[15]: 
-    array([[[  4,   0,   0,   0],
-            [  3,   0,   0,   0],
-            [  0,   0,   0,   0],
-            [  1,   0,   3, 100],
-            [  0,   0,   0,   0],
-            [  0,   0,   0,   0]],
-
-           [[  5,   0,   0,   0],
-            [  3,   0,   0,   0],
-            [  0,   0,   0,   0],
-            [  0,   0,   0,   0],
-            [  0,   0,   0,   0],
-            [  0,   0,   0,   0]],
-
-*/
-
-
-
 
 
 }
@@ -1323,11 +1280,9 @@ void GBoundaryLib::setWavelengthBuffer(GBuffer* buffer)
     unsigned int domainLength = domain->getLength(); 
     unsigned int numProp = getNumProp();
     unsigned int numBoundary = numElementsTotal/(numProp*domainLength);
-    //assert(numBoundary == 54);
-    if(numBoundary != 56)
-    {
-        LOG(warning) << "GBoundaryLib::setWavelengthBuffer didnt see 54, numBoundary: " << numBoundary ; 
-    }
+
+    LOG(info) << "GBoundaryLib::setWavelengthBuffer  numBoundary: " << numBoundary ;
+
 
     for(unsigned int isub=0 ; isub < numBoundary ; ++isub )
     {
@@ -1335,7 +1290,8 @@ void GBoundaryLib::setWavelengthBuffer(GBuffer* buffer)
         GBoundary* boundary = loadBoundary(data + subOffset, isub); 
         //boundary->Summary("GBoundaryLib::loadWavelengthBuffer",1);
 
-        std::string key = boundary->pdigest(0,4);  
+        //std::string key = boundary->pdigest(0,4);  
+        std::string key = boundary->digest();  // name based identity  
         assert(m_registry.count(key) == 0); // there should be no digest duplicates in wavelengthBuffer
 
         boundary->setIndex(m_keys.size());

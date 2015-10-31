@@ -903,17 +903,15 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
+
+    NSensorList* sens = gg->getSensorList();  
+    NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
+    solid->setSensor( sensor );  
+
+
     GBoundaryLib* lib = gg->getBoundaryLib();  
     GBndLib* blib = gg->getBndLib();  
 
-
-    NSensorList* sens = gg->getSensorList();  
-
-    NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
-
-    solid->setSensor( sensor );  
- 
-   
     GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
     solid->setBoundary(boundary);  
 
@@ -923,6 +921,22 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
                             isurf ? isurf->getShortName() : NULL,
                             osurf ? osurf->getShortName() : NULL);
     solid->setBnd(bnd);
+
+
+    //assert(boundary->getIndex() == blib->index(bnd));
+
+    // bnd uses name based identity, old boundary used property digest
+    // after modification to use name based identity the old indices
+    // are aligned with the new
+    
+    if(boundary->getIndex() != blib->index(bnd))
+    {
+        LOG(warning) << "AssimpGGeo::convertStructureVisit"
+                     << " boundary_index " << boundary->getIndex()
+                     << " bnd_index " << blib->index(bnd)
+                     ;
+    } 
+    
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);

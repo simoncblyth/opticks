@@ -1,18 +1,11 @@
 #include "GLoader.hh"
 
-// look no hands : no dependency on AssimpWrap 
-
 #include "GVector.hh"
 #include "GMergedMesh.hh"
 #include "GBoundaryLib.hh"
-#include "GScintillatorLib.hh"
 #include "GBoundaryLibMetadata.hh"
-#include "GTraverse.hh"
 #include "GColorizer.hh"
-#include "GTreeCheck.hh"
-#include "GTreePresent.hh"
 #include "GItemIndex.hh"
-#include "GBuffer.hh"
 #include "GMaterial.hh"
 
 #include "GGeo.hh"
@@ -21,14 +14,8 @@
 #include "GColorMap.hh"
 
 // npy-
-#include "NSensorList.hpp"
-#include "stringutil.hpp"
 #include "Lookup.hpp"
 #include "Types.hpp"
-#include "Timer.hpp"
-
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -37,6 +24,8 @@ namespace fs = boost::filesystem;
 
 void GLoader::load(bool verbose)
 {
+    GCache* m_cache = m_ggeo->getCache();  // prep for move into GGeo
+
     const char* idpath = m_cache->getIdPath() ;
 
     LOG(info) << "GLoader::load start " 
@@ -91,7 +80,6 @@ void GLoader::load(bool verbose)
     } 
 
 
-    //
     // argh, Lookup  loads ChromaMaterialMap.json, GBoundaryLibMetadataMaterialMap.json 
     // ie more GBoundaryLib entanglement
     //
@@ -100,7 +88,7 @@ void GLoader::load(bool verbose)
     //m_lookup->dump("GLoader::load");  
 
 
-    Index* idx = m_types->getFlagsIndex() ;    
+    Index* idx = m_cache->getTypes()->getFlagsIndex() ;    
     m_flags = new GItemIndex( idx );   
 
     m_flags->setColorMap(GColorMap::load("$HOME/.opticks", "GFlagIndexColors.json"));    // itemname => colorname 
@@ -126,5 +114,4 @@ void GLoader::load(bool verbose)
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
     
 }
-
 

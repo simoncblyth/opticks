@@ -285,8 +285,7 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, glm::vec4 delta, const c
 
             if(close && backtoback) 
             {
-#ifdef DEBUG
-                 std::cout 
+                 LOG(debug)
                        << std::setw(3) << npair 
                        << " (" << std::setw(3) << fa
                        << "," << std::setw(3) << fb 
@@ -296,7 +295,6 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, glm::vec4 delta, const c
                        << " a.b " << std::setprecision(3) << std::fixed << std::setw(10) << adotb
                        << " dp " << std::setprecision(3) << std::fixed << std::setw(20)  << dp
                        << std::endl ;  
-#endif
                  npair++ ; 
 
                  // mark the paired faces
@@ -342,7 +340,7 @@ unsigned int MWrap<MeshT>::deleteFaces(const char* fpredicate_name )
     //std::cout << std::endl ; 
 
     mesh->garbage_collection();
-    LOG(info) << "deleteFaces " << fpredicate_name << " " << count ; 
+    LOG(info) << "MWrap::deleteFaces " << fpredicate_name << " " << count ; 
     return count ; 
 }
 
@@ -662,7 +660,7 @@ void MWrap<MeshT>::dumpBoundaryLoop(const char* msg)
 template <typename MeshT>
 std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT>::findBoundaryVertexMap(MWrap<MeshT>* wa, MWrap<MeshT>* wb)
 {
-    LOG(info) << "findBoundaryVertexMapping" ; 
+    LOG(info) << "MWrap::findBoundaryVertexMapping" ; 
 
     typedef typename MeshT::VertexHandle VH ;
     typedef typename MeshT::Point P ; 
@@ -699,8 +697,7 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
                 bmin = dpn ; 
                 bclosest = *bv ; 
             }   
-#ifdef DEBUG
-            std::cout 
+            LOG(debug)
                 << " (" << std::setw(3) << ai
                 << "->" << std::setw(3) << bi 
                 << ")" 
@@ -709,7 +706,6 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
                 << " dp " << std::setprecision(3) << std::fixed << std::setw(20)  << dp
                 << " dpn " << std::setprecision(3) << std::fixed << std::setw(10)  << dpn
                 << std::endl ;  
-#endif
         } 
         
         P bpc = b->point(bclosest);
@@ -718,7 +714,7 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
 
         a2b[*av] = bclosest ; 
 
-        std::cout 
+        LOG(debug)
                 << " (" << std::setw(3) << ai
                 << "->" << std::setw(3) << bic 
                 << ")" 
@@ -763,7 +759,7 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
     typedef typename std::vector<VH> VHV ;
     typedef typename std::map<VH,VH> VHM ;
 
-    LOG(info) << "createWithWeldedBoundary " << a2b.size() ; 
+    LOG(info) << "MWrap::createWithWeldedBoundary " << a2b.size() ; 
 
     MeshT* c = m_mesh ; 
 
@@ -784,7 +780,7 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
         VH avc = a2c[av] ;  
         VH bvc = b2c[bv] ; 
 
-        std::cout 
+        LOG(debug)
              << "(" << av.idx() << "->" << bv.idx() << ")" 
              << "(" << avc.idx() << "->" << bvc.idx() << ")" 
              << std::endl ; 
@@ -823,8 +819,7 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
          c->add_face( a0c, a1c, b0c );
          c->add_face( b1c, b0c, a1c );
         
-#ifdef DEBUG 
-        std::cout 
+         LOG(debug)
              << " a0 " << std::setw(3) << a0.idx() 
              << " a1 " << std::setw(3) << a1.idx() 
              << " b0 " << std::setw(3) << b0.idx() 
@@ -834,7 +829,6 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
              << " b0c " << std::setw(3) << b0c.idx() 
              << " b1c " << std::setw(3) << b1c.idx() 
              << std::endl ; 
-#endif
     }
 
     c->request_face_normals();

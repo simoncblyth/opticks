@@ -23,7 +23,7 @@ class GPropertyMap {
 
   public:
      // caller should free the char* returned after dumping 
-      //char* digest();
+      //char* ndigest();
       char* pdigest(int ifr, int ito); 
       const char* getShortName() const ; 
       bool hasShortName(const char* name);

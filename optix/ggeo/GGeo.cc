@@ -96,11 +96,9 @@ void GGeo::init()
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
 
    m_colorizer = new GColorizer( this, style ); 
-
-
    m_colorizer->setColors(m_cache->getColors());
 
-   m_boundarylib = new GBoundaryLib(m_cache);
+   m_boundarylib = new GBoundaryLib(m_cache); // slated to be replaced by GBndLib
 
    m_bndlib = new GBndLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
@@ -239,16 +237,13 @@ GColors* GGeo::getColors()
 void GGeo::loadGeometry()
 {
 
+
 }
-
-
-
 
 
 void GGeo::loadFromG4DAE()
 {
     LOG(info) << "GGeo::loadFromG4DAE" ; 
-
 
     int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
@@ -287,7 +282,6 @@ void GGeo::loadFromCache()
     m_bndlib->setSurfaceLib(m_surfacelib);
 
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
-
 
 }
 

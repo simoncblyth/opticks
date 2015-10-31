@@ -116,42 +116,50 @@ std::string GBoundary::getPDigestString(int ifr, int ito)
 }
 
 
+char* GBoundary::digest()
+{
+   return pdigest(0,4,true) ;
+}
 
-char* GBoundary::pdigest(int ifr, int ito)
+char* GBoundary::pdigest(int ifr, int ito, bool name)
 {
    MD5Digest dig ;
 
    if(m_imaterial)
    {
-       char* pdig = m_imaterial->pdigest(ifr, ito);
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
+       const char* pdig = name ? m_imaterial->getShortName() : m_imaterial->pdigest(ifr, ito);
+       //printf("GBoundary::pdigest im %s \n", pdig);
+       dig.update((char*)pdig, strlen(pdig));
+       //free(pdig);
    }
    if(m_omaterial)
    {
-       char* pdig = m_omaterial->pdigest(ifr, ito);
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
+       const char* pdig = name ? m_omaterial->getShortName() : m_omaterial->pdigest(ifr, ito);
+       //printf("GBoundary::pdigest om %s \n", pdig);
+       dig.update((char*)pdig, strlen(pdig));
+       //free(pdig);
    }
    if(m_isurface)
    {
-       char* pdig = m_isurface->pdigest(ifr, ito);
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
+       const char* pdig = name ? m_isurface->getShortName() : m_isurface->pdigest(ifr, ito);
+       //printf("GBoundary::pdigest is %s \n", pdig);
+       dig.update((char*)pdig, strlen(pdig));
+       //free(pdig);
    }
    if(m_osurface)
    {
-       char* pdig = m_osurface->pdigest(ifr, ito);
-       dig.update(pdig, strlen(pdig));
-       free(pdig);
+       const char* pdig = name ? m_osurface->getShortName() : m_osurface->pdigest(ifr, ito);
+       //printf("GBoundary::pdigest os %s \n", pdig);
+       dig.update((char*)pdig, strlen(pdig));
+       //free(pdig);
    }
-   if(m_iextra)
+   if(m_iextra && !name)
    {
        char* pdig = m_iextra->pdigest(ifr, ito);
        dig.update(pdig, strlen(pdig));
        free(pdig);
    }
-   if(m_oextra)
+   if(m_oextra && !name)
    {
        char* pdig = m_oextra->pdigest(ifr, ito);
        dig.update(pdig, strlen(pdig));

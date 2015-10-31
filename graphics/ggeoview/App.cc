@@ -420,64 +420,59 @@ void App::loadGeometry()
         m_ggeo->setMeshVersion(meshversion.c_str());
     }
     
-
     // TODO: get rid of GLoader
     m_loader = new GLoader(m_ggeo) ;
-    m_loader->setTypes(m_cache->getTypes());
-    m_loader->setCache(m_cache);
     m_loader->load();
 
-    m_cache->getTypes()->setMaterialsIndex(m_loader->getMaterials()->getIndex()); // TODO
-
-    GColors* colors = m_cache->getColors();
-    m_composition->setColorDomain( colors->getCompositeDomain() ); 
-    m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
-
-    m_ggeo->dumpStats("App::loadGeometry");
-    //m_ggeo->dumpTree("App::loadGeometry");
-
-    for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++)
-        m_ggeo->dumpNodeInfo(i);
+    (*m_timer)("loadGeometry"); 
 
     checkGeometry();
 
-    m_boundaries =  m_loader->getMetadata()->getBoundaryNames();  // TODO
+    registerGeometry();
 
- 
-    m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
-
-    m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
-
-    m_mesh0 = m_ggeo->getMergedMesh(0); 
-
-   
-    bool zexplode = m_fcfg->hasOpt("zexplode");
-    if(zexplode)
-    {
-       // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
-        glm::vec4 zexplodeconfig = gvec4(m_fcfg->getZExplodeConfig());
-        print(zexplodeconfig, "zexplodeconfig");
-        m_mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
-    }
-
-
-    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
-    m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
-
-    LOG(info) << "loadGeometry ce0: " 
-                      << " x " << ce0.x
-                      << " y " << ce0.y
-                      << " z " << ce0.z
-                      << " w " << ce0.w
-                      ;
- 
-    (*m_timer)("loadGeometry"); 
 
     if(!m_cache->isGeocache())
     {
         LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 
         setExit(true); 
     }
+}
+
+
+void App::registerGeometry()
+{
+    m_cache->getTypes()->setMaterialsIndex(m_loader->getMaterials()->getIndex()); // TODO
+
+    GColors* colors = m_cache->getColors();
+
+    m_composition->setColorDomain( colors->getCompositeDomain() ); 
+
+    m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
+
+    m_ggeo->dumpStats("App::registerGeometry");
+    //m_ggeo->dumpTree("App::registerGeometry");
+
+    for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
+    m_mesh0 = m_ggeo->getMergedMesh(0); 
+
+
+    m_boundaries =  m_loader->getMetadata()->getBoundaryNames();  // TODO
+ 
+    m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
+
+    m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
+  
+    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+
+    m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
+
+    LOG(info) << "App::registerGeometry ce0: " 
+                      << " x " << ce0.x
+                      << " y " << ce0.y
+                      << " z " << ce0.z
+                      << " w " << ce0.w
+                      ;
+ 
 }
 
 void App::checkGeometry()
@@ -565,8 +560,18 @@ void App::checkGeometry()
     }
 
 
-}
+ 
+    bool zexplode = m_fcfg->hasOpt("zexplode");
+    if(zexplode)
+    {
+       // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
+        glm::vec4 zexplodeconfig = gvec4(m_fcfg->getZExplodeConfig());
+        print(zexplodeconfig, "zexplodeconfig");
 
+        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
+        mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
+    }
+}
 
 
 void App::uploadGeometry()

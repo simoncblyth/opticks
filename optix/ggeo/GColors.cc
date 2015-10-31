@@ -361,29 +361,33 @@ guint4 GColors::getCompositeDomain()
 
 void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_codes, std::vector<unsigned int>& flag_codes)
 {
+    std::vector<unsigned int>& psychedelic_codes = getPsychedelicCodes();
+
     unsigned int colormax = 256 ; 
     initCompositeColorBuffer(colormax);
     assert( m_composite->getNumItems() == colormax );
 
+
     unsigned int material_color_offset = 0 ; 
-    unsigned int flag_color_offset     = 32 ; 
-    unsigned int psychedelic_color_offset = 64 ; 
+    unsigned int flag_color_offset     = 64 ; 
+    unsigned int psychedelic_color_offset = flag_color_offset + 32 ; 
 
     if(material_codes.size() > 0)
     {
-        assert(material_codes.size() < 32 );
+        assert(material_codes.size() < 64 );
         addColors(material_codes,     material_color_offset ) ;
     }
-
     if(flag_codes.size() > 0)
     {
-        assert(flag_codes.size() < 32 );
-        addColors(flag_codes    ,     flag_color_offset ) ;  
+        assert(flag_color_offset + flag_codes.size() < psychedelic_color_offset );
+        addColors(flag_codes, flag_color_offset ) ;  
+    }
+    if(psychedelic_codes.size() > 0)
+    {
+        assert(psychedelic_color_offset + psychedelic_codes.size() < colormax );
+        addColors(psychedelic_codes , psychedelic_color_offset ) ;  
     }
 
-    std::vector<unsigned int>& psychedelic_codes = getPsychedelicCodes();
-    assert(psychedelic_codes.size() < colormax-32 );
-    addColors(psychedelic_codes , psychedelic_color_offset ) ;  
 
     m_composite_domain.x = 0 ; 
     m_composite_domain.y = colormax ;

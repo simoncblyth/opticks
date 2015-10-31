@@ -47,7 +47,8 @@ class GBoundary {
 
   public:
       void Summary(const char* msg="GBoundary::Summary", unsigned int nline=0);
-      char* pdigest(int ifr, int ito);
+      char* digest();
+      char* pdigest(int ifr, int ito, bool name=false); // name true aligns indices with GBndLib
       std::string getPDigestString(int ifr, int ito);
       std::string description();
 

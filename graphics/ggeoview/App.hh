@@ -80,6 +80,7 @@ class App {
        void prepareScene();   // creates OpenGL context window and OpenGL renderers loading shaders
   public:
        void loadGeometry();
+       void registerGeometry();
        void checkGeometry();
        void uploadGeometry();
   public:

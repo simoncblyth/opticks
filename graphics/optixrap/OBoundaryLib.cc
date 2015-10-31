@@ -12,13 +12,11 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-
 void OBoundaryLib::convert()
 {
     LOG(info) << "OBoundaryLib::convert" ;
     convertBoundaryProperties(m_boundarylib);
 }
-
 
 void OBoundaryLib::convertBoundaryProperties(GBoundaryLib* blib)
 {
@@ -32,8 +30,8 @@ void OBoundaryLib::convertBoundaryProperties(GBoundaryLib* blib)
     LOG(info) << "OBoundaryLib::convertBoundaryProperties wavelengthBounds " 
               << " x " << wavelengthBounds.x 
               << " y " << wavelengthBounds.y
-              << " z " << wavelengthBounds.z 
-              << " w " << wavelengthBounds.w 
+              << " z (lmin)" << wavelengthBounds.z 
+              << " w (lmax)" << wavelengthBounds.w 
               ;
 
     m_context["wavelength_texture"]->setTextureSampler(wavelengthSampler);
@@ -43,21 +41,26 @@ void OBoundaryLib::convertBoundaryProperties(GBoundaryLib* blib)
 
     GBuffer* obuf = blib->getOpticalBuffer();
 
-    unsigned int numBoundaries = obuf->getNumBytes()/(4*6*sizeof(unsigned int)) ;
-    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
+    unsigned int numQuad = GBoundaryLib::NUM_QUAD ; 
+    unsigned int numBoundaries = obuf->getNumBytes()/(4*numQuad*sizeof(unsigned int)) ;
+
+    LOG(info) << "OBoundaryLib::convertBoundaryProperties"
+              << " numQuad " << numQuad 
+              << " numBoundaries " << numBoundaries
+              ; 
+
+    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*numQuad );
     memcpy( optical_buffer->map(), obuf->getPointer(), obuf->getNumBytes() );
     optical_buffer->unmap();
     //optix::Buffer optical_buffer = createInputBuffer<unsigned int>( obuf, RT_FORMAT_UNSIGNED_INT4, 4);
     m_context["optical_buffer"]->setBuffer(optical_buffer);
-
 }
-
-
 
 optix::TextureSampler OBoundaryLib::makeWavelengthSampler(GBuffer* buffer)
 {
    // handles different numbers of substances, but uses static domain length
     unsigned int domainLength = GBoundaryLib::DOMAIN_LENGTH ;
+    unsigned int numQuad = GBoundaryLib::NUM_QUAD ; 
     unsigned int numElementsTotal = buffer->getNumElementsTotal();
     assert( numElementsTotal % domainLength == 0 );
 
@@ -68,7 +71,7 @@ optix::TextureSampler OBoundaryLib::makeWavelengthSampler(GBuffer* buffer)
               << " numElementsTotal " << numElementsTotal  
               << " (nx)domainLength " << domainLength 
               << " ny (props*subs)  " << ny 
-              << " ny/(6*4) " << ny/(6*4) ; 
+              << " ny/(numQuad*4)   " << ny/(numQuad*4) ; 
 
     optix::TextureSampler sampler = makeSampler(buffer, RT_FORMAT_FLOAT4, nx, ny);
     return sampler ; 
@@ -85,11 +88,6 @@ optix::float4 OBoundaryLib::getDomainReciprocal()
     // only endpoints used for sampling, not the step 
     return optix::make_float4(1./GBoundaryLib::DOMAIN_LOW, 1./GBoundaryLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
 }
-
-
-
-
-
 
 
 

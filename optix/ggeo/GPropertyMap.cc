@@ -110,6 +110,20 @@ char* GPropertyMap<T>::digest()
 */
 
 
+
+
+/*
+template <typename T>
+char* GPropertyMap<T>::ndigest()
+{
+    // simple name based identity
+    MD5Digest dig ;
+    const char* pdig = getShortName();
+    dig.update(pdig, strlen(pdig));
+    return dig.finalize();
+}
+*/
+
 template <typename T>
 char* GPropertyMap<T>::pdigest(int ifr, int ito)
 {
