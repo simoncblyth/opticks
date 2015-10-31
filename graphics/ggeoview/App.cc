@@ -395,7 +395,6 @@ void App::loadGeometry()
     // will not do appropriate rebuilds, if get perplexing fails
     // try wiping and rebuilding assimpwrap- and ggeo-
 
-
     m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
     m_cache->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
 
@@ -419,7 +418,6 @@ void App::loadGeometry()
         LOG(warning) << "App::loadGeometry using debug meshversion " << meshversion ;  
         m_ggeo->setMeshVersion(meshversion.c_str());
     }
-   
 
     m_ggeo->loadGeometry();
 
@@ -428,7 +426,6 @@ void App::loadGeometry()
     checkGeometry();
 
     registerGeometry();
-
 
     if(!m_cache->isGeocache())
     {

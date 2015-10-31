@@ -37,6 +37,7 @@ class GBndLib : public GPropertyLib {
        void init(); 
   public:
        unsigned int getNumBnd();
+  public:
        std::string description(const guint4& bnd);
        std::string shortname(const guint4& bnd);
        bool contains(const guint4& bnd);
@@ -60,9 +61,10 @@ class GBndLib : public GPropertyLib {
   public:
        NPY<unsigned int>* createOpticalBuffer();
   public:
-      static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
-      unsigned int getLineMin();
-      unsigned int getLineMax();
+       unsigned int getMaterialLine(const char* shortname);
+       static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
+       unsigned int getLineMin();
+       unsigned int getLineMax();
   public:
        GItemList* createNames();
        NPY<float>* createBuffer();

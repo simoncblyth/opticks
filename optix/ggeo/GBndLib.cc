@@ -149,6 +149,8 @@ unsigned int GBndLib::index(const guint4& bnd)
 }
 
 
+
+
 std::string GBndLib::description(const guint4& bnd)
 {
     unsigned int idx = index(bnd) ;
@@ -195,6 +197,22 @@ GItemList* GBndLib::createNames()
 }
 
 
+
+
+
+unsigned int GBndLib::getMaterialLine(const char* shortname)
+{
+    unsigned int ni = getNumBnd();
+    for(unsigned int i=0 ; i < ni ; i++)    
+    {
+        const guint4& bnd = m_bnd[i] ;
+        const char* imat = m_mlib->getName(bnd.x);
+        const char* omat = m_mlib->getName(bnd.y);
+        if(strncmp(imat, shortname, strlen(shortname))==0) return getLine(i, 0);
+        if(strncmp(omat, shortname, strlen(shortname))==0) return getLine(i, 1);
+    }
+    return 0 ;
+}
 unsigned int GBndLib::getLine(unsigned int ibnd, unsigned int iquad)
 {
     assert(iquad < NUM_QUAD);
@@ -227,7 +245,7 @@ NPY<float>* GBndLib::createBuffer()
     assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
 
     NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl ) ;
-    wav->zero(); 
+    wav->fill(-1.0f);   // match GBoundaryLib::SURFACE_UNSET
 
     float* mdat = mat->getValues();
     float* sdat = sur->getValues();
