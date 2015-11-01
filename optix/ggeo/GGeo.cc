@@ -19,6 +19,7 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
+#include "GFlags.hh"
 
 #include "GMergedMesh.hh"
 #include "GColors.hh"
@@ -78,6 +79,9 @@ void GGeo::init()
 
    m_sensor_list->load( idpath, "idmap");
 
+   m_flags = new GFlags(m_cache);  // parses cu/photon.h enum
+
+
    LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
    if(m_loaded) return ; 
@@ -110,6 +114,7 @@ void GGeo::init()
    m_bndlib->setSurfaceLib(m_surfacelib);
 
    m_scintillatorlib  = new GScintillatorLib(m_cache);
+
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
@@ -332,11 +337,11 @@ void GGeo::save(const char* idpath)
 
 const char* GGeo::getPVName(unsigned int index)
 {
-    return m_pvlist ? m_pvlist->getItem(index).c_str() : NULL ; 
+    return m_pvlist ? m_pvlist->getKey(index) : NULL ; 
 }
 const char* GGeo::getLVName(unsigned int index)
 {
-    return m_lvlist ? m_lvlist->getItem(index).c_str() : NULL ; 
+    return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
 
 
@@ -1072,8 +1077,8 @@ void GGeo::dumpTree(const char* msg)
     // all these are full traverse counts, not reduced by selections or instancing
     unsigned int nso = mm0->getNumSolids();  
     guint4* nodeinfo = mm0->getNodeInfo(); 
-    unsigned int npv = m_pvlist->getNumItems(); 
-    unsigned int nlv = m_lvlist->getNumItems(); 
+    unsigned int npv = m_pvlist->getNumKeys(); 
+    unsigned int nlv = m_lvlist->getNumKeys(); 
 
     LOG(info) << msg 
               << " nso " << nso 
@@ -1096,11 +1101,11 @@ void GGeo::dumpTree(const char* msg)
     {
          guint4* info = nodeinfo + i ;  
          glm::ivec4 offnum = getNodeOffsetCount(i);
-         std::string& pv = m_pvlist->getItem(i);
-         std::string& lv = m_lvlist->getItem(i);
+         const char* pv = m_pvlist->getKey(i);
+         const char* lv = m_lvlist->getKey(i);
          printf(" %6u : nf %4d nv %4d id %6u pid %6d : %4d %4d %4d %4d  :%50s %50s \n", i, 
                     info->x, info->y, info->z, info->w,  offnum.x, offnum.y, offnum.z, offnum.w,
-                    pv.c_str(), lv.c_str() ); 
+                    pv, lv ); 
     }
 }
 

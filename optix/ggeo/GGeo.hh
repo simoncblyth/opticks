@@ -17,14 +17,19 @@ class GNode ;
 class GMaterial ; 
 class GSkinSurface ; 
 class GBorderSurface ; 
-class GBoundary ;
 
-class GLoader ;
-class GBndLib ;
+// on the way out
+class GBoundary ;
 class GBoundaryLib ;
+class GLoader ;
+class GItemIndex ; 
+
+// contenders
+class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
+class GFlags ; 
 
 class GTreeCheck ;
 class GColorizer ; 
@@ -32,8 +37,6 @@ class GColors ;
 
 class GMergedMesh ;
 class NSensorList ; 
-class GColors ; 
-class GItemIndex ; 
 class GItemList ; 
 
 
@@ -180,12 +183,16 @@ class GGeo {
         unsigned int getNumRawBorderSurfaces();
 
     public:
+        // on way out 
         GLoader*      getLoader();
-        GBndLib*      getBndLib();
         GBoundaryLib* getBoundaryLib();
-        GMaterialLib* getMaterialLib();
-        GSurfaceLib*  getSurfaceLib();
+    public:
+        GBndLib*           getBndLib();
+        GMaterialLib*      getMaterialLib();
+        GSurfaceLib*       getSurfaceLib();
         GScintillatorLib*  getScintillatorLib();
+        GFlags*            getFlags(); 
+    public:
         GColorizer*        getColorizer();
         GColors*           getColors();
 
@@ -279,11 +286,14 @@ class GGeo {
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
         GLoader*                      m_loader ; 
+
         GBndLib*                      m_bndlib ; 
         GBoundaryLib*                 m_boundarylib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
         GScintillatorLib*             m_scintillatorlib ; 
+        GFlags*                       m_flags ; 
+
         GColorizer*                   m_colorizer ; 
 
         NSensorList*                  m_sensor_list ; 
@@ -325,6 +335,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_materiallib(NULL),
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
+   m_flags(NULL),
    m_colorizer(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
@@ -484,6 +495,15 @@ inline GScintillatorLib* GGeo::getScintillatorLib()
 {
     return m_scintillatorlib ; 
 }
+inline GFlags* GGeo::getFlags()
+{
+    return m_flags ; 
+}
+
+
+
+
+
 inline GColorizer* GGeo::getColorizer()
 {
     return m_colorizer ; 

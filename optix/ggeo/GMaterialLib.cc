@@ -98,20 +98,24 @@ bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
 {
     const char* a = a_.getShortName();
     const char* b = b_.getShortName();
-    std::map<std::string, unsigned int>::const_iterator end = m_order.end() ; 
-    unsigned int ia = m_order.find(a) == end ? UINT_MAX :  m_order[a] ; 
-    unsigned int ib = m_order.find(b) == end ? UINT_MAX :  m_order[b] ; 
+
+    typedef std::map<std::string, unsigned int> MSU ;
+    MSU& order = getOrder();  
+
+    MSU::const_iterator end = order.end() ; 
+    unsigned int ia = order.find(a) == end ? UINT_MAX :  order[a] ; 
+    unsigned int ib = order.find(b) == end ? UINT_MAX :  order[b] ; 
     return ia < ib ; 
 }
 
 void GMaterialLib::sort()
 {
-    if(m_order.size() == 0) return ; 
+    typedef std::map<std::string, unsigned int> MSU ;
+    MSU& order = getOrder();  
+
+    if(order.size() == 0) return ; 
     std::stable_sort( m_materials.begin(), m_materials.end(), *this );
 }
-
-
-
 
 GItemList* GMaterialLib::createNames()
 {
@@ -122,7 +126,6 @@ GItemList* GMaterialLib::createNames()
         GMaterial* mat = m_materials[i] ;
         names->add(mat->getShortName());
     }
-
     return names ;
 }
 
@@ -164,7 +167,7 @@ NPY<float>* GMaterialLib::createBuffer()
 
 void GMaterialLib::import()
 {
-    assert( m_buffer->getNumItems() == m_names->getNumItems() );
+    assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
     unsigned int ni = m_buffer->getShape(0);
     unsigned int nj = m_buffer->getShape(1);
@@ -180,11 +183,11 @@ void GMaterialLib::import()
    float* data = m_buffer->getValues();
    for(unsigned int i=0 ; i < ni ; i++)
    {
-       std::string name = m_names->getItem(i);
+       const char* key = m_names->getKey(i);
        LOG(info) << std::setw(3) << i 
-                 << " " << name ;
+                 << " " << key ;
 
-       GMaterial* mat = new GMaterial(name.c_str(), i);
+       GMaterial* mat = new GMaterial(key, i);
        import(mat, data + i*nj*nk, nj, nk );
 
        m_materials.push_back(mat);

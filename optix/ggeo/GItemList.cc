@@ -18,11 +18,11 @@ const char* GItemList::GITEMLIST = "GItemList" ;
 
 unsigned int GItemList::UNSET = UINT_MAX ; 
 
-unsigned int GItemList::getIndex(const char* name)
+unsigned int GItemList::getIndex(const char* key)
 {
-    if(name)
+    if(key)
     {
-        for(unsigned int i=0 ; i < m_list.size() ; i++) if(m_list[i].compare(name) == 0) return i ;  
+        for(unsigned int i=0 ; i < m_list.size() ; i++) if(m_list[i].compare(key) == 0) return i ;  
     } 
     return UNSET  ; 
 }

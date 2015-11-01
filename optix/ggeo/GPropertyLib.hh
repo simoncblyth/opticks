@@ -14,7 +14,7 @@ class NPYBase ;
 
 class GCache ; 
 class GItemList ; 
-class GAttrList ; 
+class GAttrSeq ; 
 
 
 /*
@@ -41,13 +41,11 @@ class GPropertyLib {
         std::string getCacheDir();
         std::string getPreferenceDir();
     public:
-        void setOrder(std::map<std::string, unsigned int>& order);
+        //void setOrder(std::map<std::string, unsigned int>& order);
         std::map<std::string, unsigned int>& getOrder(); 
     private:
         void init();
         void initOrder();
-        void initColor();
-        void initAbbrev();
     public:
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
@@ -87,7 +85,7 @@ class GPropertyLib {
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
         GItemList*   getNames();
-        GAttrList*   getAttrNames();
+        GAttrSeq*    getAttrNames();
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveToCache();
@@ -98,11 +96,10 @@ class GPropertyLib {
     protected:
         GCache*                              m_cache ; 
         NPY<float>*                          m_buffer ; 
-        GAttrList*                           m_attrnames ; 
+        GAttrSeq*                            m_attrnames ; 
         GItemList*                           m_names ; 
         const char*                          m_type ; 
         GDomain<float>*                      m_standard_domain ;  
-        std::map<std::string, unsigned int>  m_order ;
 
     private:
         GPropertyMap<float>*                 m_defaults ;  
@@ -139,17 +136,12 @@ inline GDomain<float>* GPropertyLib::getStandardDomain()
     return m_standard_domain ;
 }
 
+/*
 inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)
 {
     m_order = order ; 
 }
-
-
-inline std::map<std::string, unsigned int>& GPropertyLib::getOrder()
-{
-    return m_order ; 
-}
-
+*/
 
 inline GPropertyMap<float>* GPropertyLib::getDefaults()
 {
@@ -169,7 +161,7 @@ inline GItemList* GPropertyLib::getNames()
 {
     return m_names ;
 }
-inline GAttrList* GPropertyLib::getAttrNames()
+inline GAttrSeq* GPropertyLib::getAttrNames()
 {
     return m_attrnames ;
 }

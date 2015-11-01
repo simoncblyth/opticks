@@ -10,7 +10,7 @@ History
    GItemList
         simple list of strings, used by GPropertyLib and subclasses 
 
-   GAttrList
+   GAttrSeq
         a list with attributes like colors, abbreviations 
 
         provide the singing and dancing add-ons around the persistable GItemList 
@@ -23,56 +23,78 @@ History
 #include <vector>
 
 class GCache ; 
-class GItemList ; 
+class NSequence ; 
 
-class GAttrList {
+/*
+Classes fulfilling NSequence include GItemList 
+*/
+class GAttrSeq {
     public:
-        GAttrList(GCache* cache, const char* type);
+        static unsigned int ERROR_COLOR ; 
+    public:
+        GAttrSeq(GCache* cache, const char* type);
+        void loadPrefs();
         const char* getType();
-        void setColor(std::map<std::string, std::string>& color);
-        void setAbbrev(std::map<std::string, std::string>& abbrev);
-        void setNames(GItemList* names);
+
+        std::map<std::string, unsigned int>& getOrder();
+        //std::map<std::string, std::string>& getColor();
+        //std::map<std::string, std::string>& getAbbrev();
+
+        void setSequence(NSequence* seq);
     public:
-        std::string  getAbbr(const char* shortname);
+        std::string  getAbbr(const char* key);
         unsigned int getColorCode(const char* key );
         const char*  getColorName(const char* key);
         std::vector<unsigned int>& getColorCodes();
         std::vector<std::string>&  getLabels();
     public:
-        void dump(const char* items, const char* msg="GAttrList::dump");
+        void dump(const char* keys=NULL, const char* msg="GAttrSeq::dump");
+        void dumpKey(const char* key);
     private:
         GCache*                              m_cache ; 
         const char*                          m_type ; 
+        NSequence*                           m_sequence ; 
+    private:
         std::map<std::string, std::string>   m_abbrev ;
         std::map<std::string, std::string>   m_color ;
-        GItemList*                           m_names ; 
+        std::map<std::string, unsigned int>  m_order ;
     private:
         std::vector<unsigned int>            m_color_codes ; 
         std::vector<std::string>             m_labels ; 
 
 };
 
-inline GAttrList::GAttrList(GCache* cache, const char* type)
+inline GAttrSeq::GAttrSeq(GCache* cache, const char* type)
    :
    m_cache(cache),
    m_type(strdup(type)),
-   m_names(NULL)
+   m_sequence(NULL)
 {
 }
 
-inline void GAttrList::setColor(std::map<std::string, std::string>& color)
+/*
+inline std::map<std::string, std::string>&  GAttrSeq::getColor()
 {
-    m_color = color ; 
+   return m_color ;
 }
-inline void GAttrList::setAbbrev(std::map<std::string, std::string>& abbrev)
+inline std::map<std::string, std::string>&  GAttrSeq::getAbbrev()
 {
-    m_abbrev = abbrev ; 
+   return m_abbrev ;
 }
-inline void GAttrList::setNames(GItemList* names)
+*/
+
+inline std::map<std::string, unsigned int>&  GAttrSeq::getOrder()
 {
-    m_names = names ; 
+   return m_order ;
 }
-inline const char* GAttrList::getType()
+
+
+
+
+
+
+
+inline const char* GAttrSeq::getType()
 {
     return m_type ; 
 }

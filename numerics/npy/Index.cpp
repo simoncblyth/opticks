@@ -73,6 +73,28 @@ unsigned int Index::getNumItems()
 }
 
 
+// fulfil NSequence
+unsigned int Index::getNumKeys()
+{
+    return m_local.size();
+}
+const char* Index::getKey(unsigned int i)
+{
+    return getNameLocal(i);
+}
+unsigned int Index::getIndex(const char* key)
+{
+    return getIndexLocal(key);
+}
+
+
+
+
+
+
+
+
+
 unsigned int Index::getIndexSource(const char* name, unsigned int missing)
 {
     return m_source.count(name) == 1 ? m_source[name] : missing ; 

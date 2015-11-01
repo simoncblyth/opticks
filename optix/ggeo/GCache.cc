@@ -9,6 +9,7 @@
 #include "stringutil.hpp"
 #include "GLMFormat.hpp"
 #include "Types.hpp"
+#include "Map.hpp"
 
 
 #include <boost/lexical_cast.hpp>
@@ -50,6 +51,34 @@ std::string GCache::getPreferenceDir(const char* type)
     ss << PREFERENCE_BASE << "/" << type ; 
     return ss.str();
 }
+
+
+bool GCache::loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name)
+{
+    std::string prefdir = getPreferenceDir(type);
+    typedef Map<std::string, std::string> MSS ;  
+    MSS* pref = MSS::load(prefdir.c_str(), name ) ; 
+    if(pref)
+        mss = pref->getMap(); 
+    return pref != NULL ; 
+}
+
+
+bool GCache::loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name)
+{
+    std::string prefdir = getPreferenceDir(type);
+    typedef Map<std::string, unsigned int> MSU ;  
+    MSU* pref = MSU::load(prefdir.c_str(), name ) ; 
+    if(pref)
+        msu = pref->getMap(); 
+    return pref != NULL ; 
+}
+
+
+
+
+
+
 
 
 void GCache::readEnvironment()

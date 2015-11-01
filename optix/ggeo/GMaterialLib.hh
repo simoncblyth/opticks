@@ -91,7 +91,7 @@ class GMaterialLib : public GPropertyLib {
        void sort();
        bool operator()(const GMaterial& a_, const GMaterial& b_);
    public:
-       GMaterial* getMaterial(unsigned int i);
+       GMaterial* getMaterial(unsigned int i); // zero based index
        unsigned int getNumMaterials();
    private:
        GMaterial*  createStandardMaterial(GMaterial* src);

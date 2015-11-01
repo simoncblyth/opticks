@@ -4,8 +4,9 @@
 #include <vector>
 #include <map>
 
+#include "NSequence.hpp"
 
-class GItemList {
+class GItemList : public NSequence {
    public:
        static unsigned int UNSET ; 
        static const char* GITEMLIST ; 
@@ -16,10 +17,11 @@ class GItemList {
        void save(const char* idpath);
        void dump(const char* msg="GItemList::dump");
 
-       unsigned int getNumItems();
-       std::string& getItem(unsigned int index);
-       unsigned int getIndex(const char* name);  // 0-based index of first matching name, OR INT_MAX if no match
-
+    public:
+       // fulfil NSequence protocol
+       unsigned int getNumKeys();
+       const char* getKey(unsigned int index);
+       unsigned int getIndex(const char* key);    // 0-based index of first matching name, OR INT_MAX if no match
    public:
        bool operator()(const std::string& a_, const std::string& b_);
        void setOrder(std::map<std::string, unsigned int>& order);
@@ -35,7 +37,7 @@ class GItemList {
        std::string              m_empty ; 
 };
 
-inline GItemList::GItemList(const char* itemtype)
+inline GItemList::GItemList(const char* itemtype) : NSequence()
 {
     m_itemtype = itemtype ; 
 }
@@ -45,14 +47,13 @@ inline void GItemList::add(const char* name)
     m_list.push_back(name);
 }
 
-inline unsigned int GItemList::getNumItems()
+inline unsigned int GItemList::getNumKeys()
 {
     return m_list.size();
 }
-
-inline std::string& GItemList::getItem(unsigned int index)
+inline const char* GItemList::getKey(unsigned int index)
 {
-    return index < m_list.size() ? m_list[index] : m_empty  ;
+    return index < m_list.size() ? m_list[index].c_str() : NULL  ;
 }
 
 inline void GItemList::setOrder(std::map<std::string, unsigned int>& order)

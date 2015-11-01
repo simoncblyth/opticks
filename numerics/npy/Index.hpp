@@ -6,7 +6,9 @@
 #include <map>
 #include <vector>
 
-class Index {
+#include "NSequence.hpp"
+
+class Index : public NSequence {
    public:
         typedef std::vector<std::string> VS ;
    public:
@@ -21,7 +23,11 @@ class Index {
    public:
         int* getSelectedPtr();
         int  getSelected();
-
+   public:
+        // fulfil NSequence, in order to use with GAttrSequence
+        unsigned int getNumKeys();
+        const char* getKey(unsigned int i);
+        unsigned int getIndex(const char* key);
    private:
         void loadMaps(const char* idpath);
         void crossreference();
@@ -66,6 +72,7 @@ class Index {
 
 inline Index::Index(const char* itemtype, const char* title)
    : 
+   NSequence(),
    m_itemtype(strdup(itemtype)),
    m_title(title ? strdup(title) : strdup(itemtype)),
    m_ext(".json"),

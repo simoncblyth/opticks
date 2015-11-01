@@ -124,15 +124,22 @@ bool GSurfaceLib::operator()(const GPropertyMap<float>* a_, const GPropertyMap<f
 {
     const char* a = a_->getShortName();
     const char* b = b_->getShortName();
-    std::map<std::string, unsigned int>::const_iterator end = m_order.end() ; 
-    unsigned int ia = m_order.find(a) == end ? UINT_MAX :  m_order[a] ; 
-    unsigned int ib = m_order.find(b) == end ? UINT_MAX :  m_order[b] ; 
+
+    typedef std::map<std::string, unsigned int> MSU ;
+    MSU& order = getOrder();   
+    MSU::const_iterator end = order.end() ; 
+ 
+    unsigned int ia = order.find(a) == end ? UINT_MAX :  order[a] ; 
+    unsigned int ib = order.find(b) == end ? UINT_MAX :  order[b] ; 
     return ia < ib ; 
 }
 
 void GSurfaceLib::sort()
 {
-    if(m_order.size() == 0) return ; 
+    typedef std::map<std::string, unsigned int> MSU ;
+    MSU& order = getOrder();  
+
+    if(order.size() == 0) return ; 
     std::stable_sort( m_surfaces.begin(), m_surfaces.end(), *this );
 }
 
@@ -321,7 +328,7 @@ NPY<float>* GSurfaceLib::createBuffer()
 
 void GSurfaceLib::import()
 {
-    assert( m_buffer->getNumItems() == m_names->getNumItems() );
+    assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
     unsigned int ni = m_buffer->getShape(0);
     unsigned int nj = m_buffer->getShape(1);
@@ -337,12 +344,12 @@ void GSurfaceLib::import()
    float* data = m_buffer->getValues();
    for(unsigned int i=0 ; i < ni ; i++)
    {
-       std::string name = m_names->getItem(i);
+       const char* key = m_names->getKey(i);
        LOG(debug) << std::setw(3) << i 
-                 << " " << name ;
+                 << " " << key ;
 
        GOpticalSurface* os = NULL ;
-       GPropertyMap<float>* surf = new GPropertyMap<float>(name.c_str(),i,"surface", os);
+       GPropertyMap<float>* surf = new GPropertyMap<float>(key,i,"surface", os);
        import(surf, data + i*nj*nk, nj, nk );
 
        m_surfaces.push_back(surf);
@@ -374,13 +381,13 @@ void GSurfaceLib::importOpticalBuffer(NPY<unsigned int>* ibuf)
     
     unsigned int ni = optical.size();
     assert(ni == getNumSurfaces());
-    assert(ni == m_names->getNumItems() );
+    assert(ni == m_names->getNumKeys() );
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
-       std::string name = m_names->getItem(i);
+       const char* key = m_names->getKey(i);
        GPropertyMap<float>* surf = getSurface(i);
-       GOpticalSurface* os = GOpticalSurface::create( name.c_str(), optical[i] );
+       GOpticalSurface* os = GOpticalSurface::create( key, optical[i] );
        surf->setOpticalSurface(os);
     }
 }

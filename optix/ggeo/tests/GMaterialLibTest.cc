@@ -1,6 +1,6 @@
 #include "GCache.hh"
 #include "GMaterialLib.hh"
-#include "GAttrList.hh"
+#include "GAttrSeq.hh"
 
 #include <string>
 #include <iostream>

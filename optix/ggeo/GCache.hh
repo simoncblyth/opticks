@@ -3,6 +3,8 @@
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <map>
+
 #include <glm/glm.hpp>
 
 class GColors ; 
@@ -40,7 +42,11 @@ class GCache {
          std::string getRelativePath(const char* path); 
          std::string getMergedMeshPath(unsigned int ridx);
          std::string getPropertyLibDir(const char* name);
+    public:
          std::string getPreferenceDir(const char* type);
+         bool loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name);
+         bool loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name);
+    public:
          const char* getEnvPrefix();
          bool idPathContains(const char* s); 
          void Summary(const char* msg="GCache::Summary");

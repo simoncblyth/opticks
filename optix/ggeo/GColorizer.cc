@@ -4,7 +4,7 @@
 #include "GMesh.hh"
 #include "GSolid.hh"
 #include "GItemIndex.hh"
-#include "GAttrList.hh"
+#include "GAttrSeq.hh"
 #include "GBoundary.hh"
 #include "GColors.hh"
 #include "GSurfaceLib.hh"

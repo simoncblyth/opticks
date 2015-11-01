@@ -56,6 +56,7 @@ add_library(${name} SHARED
                 GBndLib.cc
                 GScintillatorLib.cc
                 GPropertyLib.cc
+                GFlags.cc
                 GBoundaryLibMetadata.cc
                 GSolid.cc
                 GMesh.cc
@@ -81,7 +82,7 @@ add_library(${name} SHARED
                 GTreePresent.cc
                 GBBoxMesh.cc
                 GItemList.cc
-                GAttrList.cc
+                GAttrSeq.cc
                 GMeshFixer.cc
                 GPmt.cc
 )
@@ -106,6 +107,7 @@ GBoundaryLib.hh
 GBndLib.hh
 GMaterialLib.hh
 GSurfaceLib.hh
+GFlags.hh
 GBoundaryLibMetadata.hh
 GVector.hh
 GMatrix.hh
@@ -127,7 +129,7 @@ GTreeCheck.hh
 GTreePresent.hh
 GBBoxMesh.hh
 GItemList.hh
-GAttrList.hh
+GAttrSeq.hh
 GMeshFixer.hh
 GPmt.hh
 )

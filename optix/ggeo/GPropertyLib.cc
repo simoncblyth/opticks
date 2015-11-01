@@ -1,7 +1,7 @@
 #include "GPropertyLib.hh"
 #include "GCache.hh"
 #include "GItemList.hh"
-#include "GAttrList.hh"
+#include "GAttrSeq.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -42,14 +42,15 @@ void GPropertyLib::init()
     m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);
 
-    m_attrnames = new GAttrList(m_cache, m_type);
+    m_attrnames = new GAttrSeq(m_cache, m_type);
+    m_attrnames->loadPrefs(); // color, abbrev and order 
 
-    initOrder();
-    initColor();
-    initAbbrev();
 }
 
-
+std::map<std::string, unsigned int>& GPropertyLib::getOrder()
+{
+    return m_attrnames->getOrder() ; 
+}
 
 
 
@@ -77,51 +78,11 @@ unsigned int GPropertyLib::getIndex(const char* shortname)
 const char* GPropertyLib::getName(unsigned int index)
 {
     assert(m_names);
-    std::string& item = m_names->getItem(index);
-    return item.empty() ? NULL : item.c_str(); 
+    const char* key = m_names->getKey(index);
+    return key ; 
 }
 
 
-
-
-void GPropertyLib::initOrder()
-{
-    std::string prefdir = getPreferenceDir();
-    const char* order_ = "order.json" ; 
-    typedef Map<std::string, unsigned int> MSU ;  
-    MSU* order = MSU::load(prefdir.c_str(), order_ ) ; 
-    if(order)
-    {
-        //order->dump("GPropertyLib::initOrder");
-        setOrder(order->getMap());
-    }
-}
-
-void GPropertyLib::initColor()
-{
-    std::string prefdir = getPreferenceDir();
-    const char* color_ = "color.json" ; 
-    typedef Map<std::string, std::string> MSS ;  
-    MSS* color = MSS::load(prefdir.c_str(), color_ ) ; 
-    if(color)
-    {
-        //color->dump("GPropertyLib::initColor");
-        m_attrnames->setColor(color->getMap());
-    }
-}
-
-void GPropertyLib::initAbbrev()
-{
-    std::string prefdir = getPreferenceDir();
-    const char* abbrev_ = "abbrev.json" ; 
-    typedef Map<std::string, std::string> MSS ;  
-    MSS* abbrev = MSS::load(prefdir.c_str(), abbrev_ ) ; 
-    if(abbrev)
-    {
-        //abbrev->dump("GPropertyLib::initAbbrev");
-        m_attrnames->setAbbrev(abbrev->getMap());
-    }
-}
 
 
 
@@ -186,7 +147,7 @@ void GPropertyLib::loadFromCache()
 void GPropertyLib::setNames(GItemList* names)
 {
     m_names = names ;
-    m_attrnames->setNames(names);
+    m_attrnames->setSequence(names);
 }
 
 

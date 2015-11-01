@@ -11,9 +11,13 @@
 #include "GGeo.hh"
 #include "GSurfaceLib.hh"
 #include "GMaterialLib.hh"
+#include "GFlags.hh"
+#include "GAttrSeq.hh"
+
+// on way out
 #include "GLoader.hh"
 #include "GItemIndex.hh"
-#include "GAttrList.hh"
+
 
 // oglrap-
 #include "Interactor.hh"
@@ -171,35 +175,27 @@ void GUI::show(bool* opened)
 
 
 
-    GItemIndex* materials = m_loader ? m_loader->getMaterials() : NULL ; 
-    if(materials)
+    GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames();
+    if(qmat)
     {
         ImGui::Spacing();
-        gui_item_index(materials);
+        gui_item_index(qmat);
     } 
 
-    GAttrList* matl = m_ggeo->getMaterialLib()->getAttrNames();
-    if(matl)
+    GAttrSeq* qsur = m_ggeo->getSurfaceLib()->getAttrNames();
+    if(qsur)
     {
         ImGui::Spacing();
-        gui_item_index(matl);
+        gui_item_index(qsur);
     } 
 
-
-
-    GItemIndex* surfaces = m_loader ? m_loader->getSurfaces() : NULL ; 
-    if(surfaces)
+    GAttrSeq* qflg = m_ggeo->getFlags()->getAttrIndex();
+    if(qflg)
     {
         ImGui::Spacing();
-        gui_item_index(surfaces);
+        gui_item_index(qflg);
     } 
 
-    GAttrList* surl = m_ggeo->getSurfaceLib()->getAttrNames();
-    if(surl)
-    {
-        ImGui::Spacing();
-        gui_item_index(surl);
-    } 
 
 
 
@@ -262,7 +258,7 @@ GUI::~GUI()
 
 
 
-void GUI::gui_item_index(GAttrList* al)
+void GUI::gui_item_index(GAttrSeq* al)
 {
     gui_item_index( al->getType(), al->getLabels(), al->getColorCodes());
 }

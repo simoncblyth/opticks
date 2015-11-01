@@ -56,8 +56,8 @@ class GSurfaceLib : public GPropertyLib {
        void sort();
        bool operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_);
    public:
-       guint4               getOpticalSurface(unsigned int i);
-       GPropertyMap<float>* getSurface(unsigned int i);
+       guint4               getOpticalSurface(unsigned int i);  // zero based index
+       GPropertyMap<float>* getSurface(unsigned int i);         // zero based index
    private:
        guint4               createOpticalSurface(GPropertyMap<float>* src);
        GPropertyMap<float>* createStandardSurface(GPropertyMap<float>* src);
