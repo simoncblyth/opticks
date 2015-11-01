@@ -1,7 +1,7 @@
 #include "GPropertyLib.hh"
 #include "GCache.hh"
-#include "GColors.hh"
 #include "GItemList.hh"
+#include "GAttrList.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -31,6 +31,28 @@ unsigned int GPropertyLib::UNSET = UINT_MAX ;
 unsigned int GPropertyLib::NUM_QUAD = 4  ; 
 unsigned int GPropertyLib::NUM_PROP = 4  ; 
 
+
+
+void GPropertyLib::init()
+{
+    m_standard_domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
+
+    assert(getStandardDomainLength() == DOMAIN_LENGTH );
+
+    m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
+    m_defaults->setStandardDomain(m_standard_domain);
+
+    m_attrnames = new GAttrList(m_cache, m_type);
+
+    initOrder();
+    initColor();
+    initAbbrev();
+}
+
+
+
+
+
 std::string GPropertyLib::getCacheDir()
 {
     return m_cache->getPropertyLibDir(m_type);
@@ -40,13 +62,6 @@ std::string GPropertyLib::getPreferenceDir()
     return m_cache->getPreferenceDir(m_type);
 }
 
-
-
-//  GItemIndex approach allows index customization ?
-//  eg to put common materials at low indices for truncated compression
-//  to retain more info 
-//
-//
 unsigned int GPropertyLib::getIndex(const char* shortname)
 {
     if(!isClosed())
@@ -66,31 +81,7 @@ const char* GPropertyLib::getName(unsigned int index)
     return item.empty() ? NULL : item.c_str(); 
 }
 
-std::string GPropertyLib::getAbbr(const char* shortname)
-{
-    return m_abbrev.count(shortname) == 1 ? m_abbrev[shortname] : shortname ; 
-}
 
-
-
-void GPropertyLib::init()
-{
-    GDomain<float>* domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
-    setStandardDomain( domain );
-
-    assert(getStandardDomainLength() == DOMAIN_LENGTH );
-    assert(m_standard_domain->getLow()  == DOMAIN_LOW );
-    assert(m_standard_domain->getHigh() == DOMAIN_HIGH );
-    assert(m_standard_domain->getStep() == DOMAIN_STEP );
-
-    GPropertyMap<float>* defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
-    defaults->setStandardDomain(getStandardDomain());
-    setDefaults(defaults);
-
-    initOrder();
-    initColor();
-    initAbbrev();
-}
 
 
 void GPropertyLib::initOrder()
@@ -115,7 +106,7 @@ void GPropertyLib::initColor()
     if(color)
     {
         //color->dump("GPropertyLib::initColor");
-        setColor(color->getMap());
+        m_attrnames->setColor(color->getMap());
     }
 }
 
@@ -128,72 +119,10 @@ void GPropertyLib::initAbbrev()
     if(abbrev)
     {
         //abbrev->dump("GPropertyLib::initAbbrev");
-        setAbbrev(abbrev->getMap());
+        m_attrnames->setAbbrev(abbrev->getMap());
     }
 }
 
-
-const char* GPropertyLib::getColorName(const char* key)
-{
-    return m_color.count(key) == 1 ? m_color[key].c_str() : NULL ; 
-}
-
-unsigned int GPropertyLib::getColorCode(const char* key )
-{
-    const char*  colorname =  getColorName(key) ;
-    GColors* palette = m_cache->getColors();
-    unsigned int colorcode  = palette->getCode(colorname, 0xFFFFFF) ; 
-    return colorcode ; 
-}
-
-
-std::vector<unsigned int>& GPropertyLib::getColorCodes()
-{
-    if(m_color_codes.size() == 0)
-    {
-        unsigned int ni = m_names->getNumItems();
-        for(unsigned int i=0 ; i < ni ; i++)
-        {
-            std::string& item = m_names->getItem(i);
-            assert(!item.empty()); 
-            unsigned int code = getColorCode(item.c_str());
-            m_color_codes.push_back(code);
-        }         
-    }
-    return m_color_codes ; 
-}
-
-
-void GPropertyLib::dumpItems(const char* items, const char* msg)
-{
-    typedef std::vector<std::string> VS ; 
-    VS elem ; 
-    boost::split(elem, items, boost::is_any_of(","));
-
-    LOG(info) << msg << " " << items ; 
-    for(VS::const_iterator it=elem.begin() ; it != elem.end() ; it++)
-    {
-        const char* key = it->c_str();
-        unsigned int idx = getIndex(key);
-        if(idx == GPropertyLib::UNSET)
-        {
-             LOG(warning) << "GPropertyLib::dump no item named: " << *it ; 
-        }
-        else
-        {
-             std::string abbr = getAbbr(key);  
-             const char* colorname = getColorName(key);  
-             unsigned int colorcode = getColorCode(key);              
-
-             std::cout << std::setw(5) << idx 
-                       << std::setw(30) << *it 
-                       << std::setw(10) << std::hex << colorcode << std::dec
-                       << std::setw(15) << colorname 
-                       << std::setw(15) << abbr
-                       << std::endl ; 
-        }
-    }
-}
 
 
 std::string GPropertyLib::getBufferName(const char* suffix)
@@ -246,10 +175,20 @@ void GPropertyLib::loadFromCache()
     std::string name = getBufferName();
 
     setBuffer(NPY<float>::load(dir.c_str(), name.c_str())); 
-    setNames(GItemList::load(m_cache->getIdPath(), m_type)); 
+
+    GItemList* names = GItemList::load(m_cache->getIdPath(), m_type);
+    setNames(names); 
 
     import();
 }
+
+
+void GPropertyLib::setNames(GItemList* names)
+{
+    m_names = names ;
+    m_attrnames->setNames(names);
+}
+
 
 
 

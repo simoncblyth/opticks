@@ -2,8 +2,8 @@
 
 #include <map>
 #include <string>
+
 #include <vector>
-#include <map>
 
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
@@ -14,6 +14,7 @@ class NPYBase ;
 
 class GCache ; 
 class GItemList ; 
+class GAttrList ; 
 
 
 /*
@@ -32,7 +33,6 @@ class GPropertyLib {
     public:
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
-        std::string  getAbbr(const char* shortname);
     public:
         GPropertyLib(GCache* cache, const char* type);
         virtual ~GPropertyLib();
@@ -42,14 +42,7 @@ class GPropertyLib {
         std::string getPreferenceDir();
     public:
         void setOrder(std::map<std::string, unsigned int>& order);
-        void setColor(std::map<std::string, std::string>& color);
-        void setAbbrev(std::map<std::string, std::string>& color);
         std::map<std::string, unsigned int>& getOrder(); 
-        std::map<std::string, std::string>& getColor(); 
-        std::map<std::string, std::string>& getAbbrev(); 
-    public:
-        void setStandardDomain(GDomain<float>* standard_domain);
-        void setDefaults(GPropertyMap<float>* defaults);
     private:
         void init();
         void initOrder();
@@ -91,16 +84,10 @@ class GPropertyLib {
         void close();
         void setClosed(bool closed=true);
         bool isClosed();
-        //bool hasBuffer();
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
         GItemList*   getNames();
-
-    public:
-        unsigned int getColorCode(const char* key );
-        const char*  getColorName(const char* key);
-        std::vector<unsigned int>& getColorCodes();
-        void dumpItems(const char* items, const char* msg="GPropertyLib::dump");
+        GAttrList*   getAttrNames();
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveToCache();
@@ -111,13 +98,12 @@ class GPropertyLib {
     protected:
         GCache*                              m_cache ; 
         NPY<float>*                          m_buffer ; 
+        GAttrList*                           m_attrnames ; 
         GItemList*                           m_names ; 
         const char*                          m_type ; 
         GDomain<float>*                      m_standard_domain ;  
         std::map<std::string, unsigned int>  m_order ;
-        std::map<std::string, std::string>   m_color ;
-        std::map<std::string, std::string>   m_abbrev ;
-        std::vector<unsigned int>            m_color_codes ; 
+
     private:
         GPropertyMap<float>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   
@@ -128,6 +114,7 @@ inline GPropertyLib::GPropertyLib(GCache* cache, const char* type)
      :
      m_cache(cache),
      m_buffer(NULL),
+     m_attrnames(NULL),
      m_names(NULL),
      m_type(strdup(type)),
      m_standard_domain(NULL),
@@ -147,45 +134,21 @@ inline GPropertyLib::~GPropertyLib()
 {
 }
 
-inline void GPropertyLib::setStandardDomain(GDomain<float>* standard_domain)
-{
-    m_standard_domain = standard_domain ; 
-}
 inline GDomain<float>* GPropertyLib::getStandardDomain()
 {
     return m_standard_domain ;
 }
 
-inline void GPropertyLib::setDefaults(GPropertyMap<float>* defaults)
-{
-    m_defaults = defaults ;
-}
 inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)
 {
     m_order = order ; 
 }
-inline void GPropertyLib::setColor(std::map<std::string, std::string>& color)
-{
-    m_color = color ; 
-}
-inline void GPropertyLib::setAbbrev(std::map<std::string, std::string>& abbrev)
-{
-    m_abbrev = abbrev ; 
-}
+
 
 inline std::map<std::string, unsigned int>& GPropertyLib::getOrder()
 {
     return m_order ; 
 }
-inline std::map<std::string, std::string>& GPropertyLib::getColor()
-{
-    return m_color ; 
-}
-inline std::map<std::string, std::string>& GPropertyLib::getAbbrev()
-{
-    return m_abbrev ; 
-}
-
 
 
 inline GPropertyMap<float>* GPropertyLib::getDefaults()
@@ -202,14 +165,16 @@ inline NPY<float>* GPropertyLib::getBuffer()
     return m_buffer ;
 }
 
-inline void GPropertyLib::setNames(GItemList* names)
-{
-    m_names = names ;
-}
 inline GItemList* GPropertyLib::getNames()
 {
     return m_names ;
 }
+inline GAttrList* GPropertyLib::getAttrNames()
+{
+    return m_attrnames ;
+}
+
+
 inline void GPropertyLib::setClosed(bool closed)
 {
     m_closed = closed ; 
@@ -218,8 +183,5 @@ inline bool GPropertyLib::isClosed()
 {
     return m_closed ; 
 }
-
-
-
 
 

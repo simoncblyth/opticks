@@ -1,5 +1,6 @@
 #include "GCache.hh"
 #include "GMaterialLib.hh"
+#include "GAttrList.hh"
 
 #include <string>
 #include <iostream>
@@ -12,7 +13,7 @@
 
 void colorcodes(GMaterialLib* lib)
 {
-    std::vector<unsigned int> cc = lib->getColorCodes();
+    std::vector<unsigned int> cc = lib->getAttrNames()->getColorCodes();
 
     //std::copy( cc.begin(), cc.end(), std::ostream_iterator<unsigned int>(std::cout, "\n"));
 
@@ -34,7 +35,7 @@ int main()
 
     const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
 
-    lib->dumpItems(mats);
+    lib->getAttrNames()->dump(mats);
 
 
     return 0 ;

@@ -8,8 +8,12 @@
 #include "Index.hpp"
 
 // ggeo-
+#include "GGeo.hh"
+#include "GSurfaceLib.hh"
+#include "GMaterialLib.hh"
 #include "GLoader.hh"
 #include "GItemIndex.hh"
+#include "GAttrList.hh"
 
 // oglrap-
 #include "Interactor.hh"
@@ -165,12 +169,22 @@ void GUI::show(bool* opened)
         m_photons->gui(); 
     }
 
+
+
     GItemIndex* materials = m_loader ? m_loader->getMaterials() : NULL ; 
     if(materials)
     {
         ImGui::Spacing();
         gui_item_index(materials);
     } 
+
+    GAttrList* matl = m_ggeo->getMaterialLib()->getAttrNames();
+    if(matl)
+    {
+        ImGui::Spacing();
+        gui_item_index(matl);
+    } 
+
 
 
     GItemIndex* surfaces = m_loader ? m_loader->getSurfaces() : NULL ; 
@@ -180,12 +194,31 @@ void GUI::show(bool* opened)
         gui_item_index(surfaces);
     } 
 
+    GAttrList* surl = m_ggeo->getSurfaceLib()->getAttrNames();
+    if(surl)
+    {
+        ImGui::Spacing();
+        gui_item_index(surl);
+    } 
+
+
+
+
+
+
+
     GItemIndex* flags = m_loader ? m_loader->getFlags() : NULL ; 
     if(flags)
     {
         ImGui::Spacing();
         gui_item_index(flags);
     } 
+
+
+
+
+
+
 
 
     ImGui::Spacing();
@@ -229,20 +262,24 @@ GUI::~GUI()
 
 
 
+void GUI::gui_item_index(GAttrList* al)
+{
+    gui_item_index( al->getType(), al->getLabels(), al->getColorCodes());
+}
 
 void GUI::gui_item_index(GItemIndex* ii)
 {
+    Index* idx = ii->getIndex(); 
+    gui_item_index( idx->getItemType(), ii->getLabels(), ii->getCodes());
+}
+
+
+void GUI::gui_item_index(const char* type, std::vector<std::string>& labels, std::vector<unsigned int>& codes)
+{
 #ifdef GUI_
-    Index* index = ii->getIndex(); 
-
-    if (ImGui::CollapsingHeader(index->getItemType()))
+    if (ImGui::CollapsingHeader(type))
     {   
-       typedef std::vector<std::string> VS ; 
-       typedef std::vector<unsigned int> VI ; 
-
-       VS& labels = ii->getLabels();
-       VI& codes = ii->getCodes();
-
+       assert(labels.size() == codes.size());
        for(unsigned int i=0 ; i < labels.size() ; i++)
        {   
            unsigned int code = codes[i] ;
@@ -255,6 +292,8 @@ void GUI::gui_item_index(GItemIndex* ii)
     }   
 #endif
 }
+
+
 
 void GUI::gui_radio_select(GItemIndex* ii)
 {
@@ -286,10 +325,5 @@ void GUI::gui_radio_select(GItemIndex* ii)
    }   
 #endif
 }
-
-
-
-
-
 
 

@@ -81,6 +81,7 @@ add_library(${name} SHARED
                 GTreePresent.cc
                 GBBoxMesh.cc
                 GItemList.cc
+                GAttrList.cc
                 GMeshFixer.cc
                 GPmt.cc
 )
@@ -126,6 +127,7 @@ GTreeCheck.hh
 GTreePresent.hh
 GBBoxMesh.hh
 GItemList.hh
+GAttrList.hh
 GMeshFixer.hh
 GPmt.hh
 )

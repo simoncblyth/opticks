@@ -437,9 +437,18 @@ void App::loadGeometry()
 
 void App::registerGeometry()
 {
-    GLoader* loader = m_ggeo->getLoader();
+    // TODO: replace these with equivalents from GPropertyLib subclasses
 
-    m_cache->getTypes()->setMaterialsIndex(loader->getMaterials()->getIndex()); // TODO
+    GLoader* loader = m_ggeo->getLoader();
+    GItemIndex* materials = loader->getMaterials() ;
+    GBoundaryLibMetadata* meta = loader->getMetadata() ;
+    Index* matidx = materials->getIndex() ;
+
+    m_cache->getTypes()->setMaterialsIndex(matidx); 
+
+    m_boundaries = meta->getBoundaryNames();   // int,string map used by BoundariesNPY in App::indexBoundaries
+
+    ////////////////////////////////////////////////////////
 
     GColors* colors = m_cache->getColors();
 
@@ -454,7 +463,6 @@ void App::registerGeometry()
     m_mesh0 = m_ggeo->getMergedMesh(0); 
 
 
-    m_boundaries = loader->getMetadata()->getBoundaryNames();  // TODO
  
     m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
 
@@ -1359,7 +1367,7 @@ void App::prepareGUI()
     m_scene->setPhotons(m_photons);
 
 
-    m_gui = new GUI ;
+    m_gui = new GUI(m_ggeo) ;
     m_gui->setScene(m_scene);
     m_gui->setPhotons(m_photons);
     m_gui->setComposition(m_composition);

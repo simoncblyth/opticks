@@ -4,6 +4,7 @@
 #include "GMesh.hh"
 #include "GSolid.hh"
 #include "GItemIndex.hh"
+#include "GAttrList.hh"
 #include "GBoundary.hh"
 #include "GColors.hh"
 #include "GSurfaceLib.hh"
@@ -132,11 +133,11 @@ gfloat3* GColorizer::getSurfaceColor(GNode* node)
     unsigned int colorcode(UINT_MAX) ; 
     if(isur)
     {
-        colorcode = slib->getColorCode(isur);    
+        colorcode = slib->getAttrNames()->getColorCode(isur);    
     } 
     else if(osur)
     {
-        colorcode = slib->getColorCode(osur);    
+        colorcode = slib->getAttrNames()->getColorCode(osur);    
     }  
 
     if(colorcode != UINT_MAX )

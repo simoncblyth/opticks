@@ -145,7 +145,8 @@ class GBoundaryLib : public GPropertyLib {
       void Summary(const char* msg="GBoundaryLib::Summary");
       const char* getDigest(unsigned int index);
   public:
-      GBoundaryLibMetadata* getMetadata(); // populated by createWavelengthBuffer
+      // populated by createWavelengthBuffer, only? accessed from GLoader
+      GBoundaryLibMetadata* getMetadata(); 
       GItemIndex*           getMaterials(); 
       GItemIndex*           getSurfaces(); 
 
@@ -217,6 +218,8 @@ class GBoundaryLib : public GPropertyLib {
       bool                   m_standard ;     // transitional : keeping this set to true
       unsigned int           m_num_quad ; 
       GProperty<float>*      m_ramp ;  
+
+      // the below three are created in ctor and populated as side effect of createWavelengthAndOpticalBuffers
       GBoundaryLibMetadata*  m_meta ;
       GItemIndex*            m_materials ;
       GItemIndex*            m_surfaces ;
@@ -267,7 +270,6 @@ inline void GBoundaryLib::setMetadata(GBoundaryLibMetadata* meta)
 {
     m_meta = meta ; 
 }
-
 inline GItemIndex* GBoundaryLib::getMaterials()
 {
     return m_materials ; 

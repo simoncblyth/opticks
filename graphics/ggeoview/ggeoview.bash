@@ -53,11 +53,27 @@ Refactor to eliminate GLoader
   * sticking blocks from npy- Types eg abbreviated name conversions 
 
 
-Refactor to replace GBoundaryLib with GBndLib,GMaterialLib,GSurfaceLib,GPropertyLib,GScintillatorLib
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Refactor to replace GBoundaryLib/GBoundaryLibMetadata with GBndLib,GMaterialLib,GSurfaceLib,GPropertyLib,GScintillatorLib
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * the GBndLib derived buffers now matching the old ones, 
   so OptiX end replacing OBoundaryLib with OBndLib should be easy 
+
+* sticking block: Lookup using GBoundaryLibMetadata specifcally GBoundaryLibMetadataMaterialMap.json
+  can write a GBndLibMaterialMap.json to standin here, hmm but dynamic ? yes but not fully dynamic
+  just need to add boundaries based in command line args of a postcache run and analytic geometry
+  requirements.  After that can do the lookup translation of genstep indices into material lines 
+  into the boundary texture.
+
+::
+
+      1 {
+      2     "ADTableStainlessSteel": "352",
+      3     "Acrylic": "80",
+      4     "Air": "8",
+      5     "Aluminium": "16",
+      6     "BPE": "200",
+
 
 
 

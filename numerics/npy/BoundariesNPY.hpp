@@ -17,7 +17,7 @@ class BoundariesNPY {
        BoundariesNPY(NPY<float>* photons); 
    public:
        void setTypes(Types* types);
-       void setBoundaryNames(std::map<int, std::string> names);    
+       void setBoundaryNames(std::map<int, std::string> names);     // just used to give a name to a boundary code
 
    public:
        // boundary code integer is cos_theta signed by OptiX in cu/material1_propagate.cu

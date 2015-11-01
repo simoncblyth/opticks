@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 
+class GGeo ; 
 class GLoader ; 
 class GItemIndex ; 
+class GAttrList ; 
 
 class Interactor ; 
 class Scene ; 
@@ -27,7 +29,7 @@ class GUI {
        //
        typedef std::vector<std::pair<int, std::string> > Choices_t ;
 
-       GUI();
+       GUI(GGeo* ggeo);
        virtual ~GUI();
 
        void setScene(Scene* scene);
@@ -39,7 +41,7 @@ class GUI {
        void setClipper(Clipper* clipper);
        void setTrackball(Trackball* trackball);
        void setBookmarks(Bookmarks* bookmarks);
-       void setLoader(GLoader* loader);
+       void setLoader(GLoader* loader);  // used to access GItemIndex materials, surfaces, flags 
 
        void init(GLFWwindow* window);
        void newframe();
@@ -53,6 +55,10 @@ class GUI {
 
    public:
        static void gui_item_index(GItemIndex* ii);
+       static void gui_item_index(GAttrList* al);
+       static void gui_item_index(const char* type, std::vector<std::string>& labels, std::vector<unsigned int>& codes);
+
+
        static void gui_radio_select(GItemIndex* ii);
 
   private:
@@ -63,12 +69,9 @@ class GUI {
        //void choose( std::vector<std::pair<int, std::string> >& choices, std::vector<int>& selection );
 
   private:
-       bool  m_show_test_window ;
-       float       m_bg_alpha ; 
-       std::string m_help ; 
-       std::vector<std::string> m_stats ; 
-       std::vector<std::string> m_params ; 
-
+       GGeo*         m_ggeo ; 
+       bool          m_show_test_window ;
+       float         m_bg_alpha ; 
        Interactor*   m_interactor ; 
        Scene*        m_scene ; 
        Composition*  m_composition ; 
@@ -80,11 +83,17 @@ class GUI {
        Photons*      m_photons ; 
        GLoader*      m_loader ; 
 
+       std::string   m_help ; 
+       std::vector<std::string> m_stats ; 
+       std::vector<std::string> m_params ; 
+
+
 };
 
 
-inline GUI::GUI() 
+inline GUI::GUI(GGeo* ggeo) 
    :
+   m_ggeo(ggeo),
    m_show_test_window(false),
    m_bg_alpha(0.65f),
    m_interactor(NULL),

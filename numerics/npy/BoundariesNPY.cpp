@@ -23,14 +23,21 @@ void BoundariesNPY::indexBoundaries()
     m_boundaries.clear();
 
     printf("BoundariesNPY::indexBoundaries \n");
-    std::map<int,int> uniqn = m_photons->count_uniquei(3,0) ;  // boundary signing now done by OptiX
 
     // To allow sorting by count
     //      map<boundary_code, count> --> vector <pair<boundary_code,count>>
 
+    std::map<int,int> uniqn = m_photons->count_uniquei(3,0) ;  // boundary signing now done by OptiX
+
+
     std::vector<std::pair<int,int> > pairs ; 
+
     for(std::map<int,int>::iterator it=uniqn.begin() ; it != uniqn.end() ; it++) pairs.push_back(*it);
+
     std::sort(pairs.begin(), pairs.end(), second_value_order );
+
+
+
 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {

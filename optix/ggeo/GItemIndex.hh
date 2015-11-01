@@ -23,6 +23,10 @@ class Types ;
 //   * flag sequences
 //
 //
+//  This got overcomplicated due to the GBoundaryLib attempt 
+//  to jump several steps and not have persistable GMaterialLib GSurfaceLib GPropertyLib
+//  
+//
 // adds colors and gui to basis Index constituent 
 class GItemIndex {
    public:
