@@ -163,8 +163,9 @@ std::string GAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctr
     for(unsigned int i=0 ; i < lseq.size() ; i++) 
     {
         std::string sub = lseq.substr(i, 1) ;
-        unsigned int code = hex_lexical_cast<unsigned int>(sub.c_str());
-        const char* key = m_sequence->getKey(code) ;
+        unsigned int local = hex_lexical_cast<unsigned int>(sub.c_str());
+        unsigned int idx =  ctrl & ONEBASED ? local - 1 : local ;  
+        const char* key = m_sequence->getKey(idx) ;
         std::string elem = ( ctrl & ABBREVIATE ) ? getAbbr(key) : key ; 
         ss << elem << " " ; 
     }

@@ -34,7 +34,8 @@ class GAttrSeq {
 
         enum {
                 REVERSE = 0x1 << 0,  
-                ABBREVIATE = 0x1 << 1
+                ABBREVIATE = 0x1 << 1,
+                ONEBASED = 0x1 << 2
              };
 
     public:
@@ -54,7 +55,7 @@ class GAttrSeq {
         std::vector<unsigned int>& getColorCodes();
         std::vector<std::string>&  getLabels();
     public:
-        std::string decodeHexSequenceString(const char* seq, unsigned char ctrl=REVERSE|ABBREVIATE );
+        std::string decodeHexSequenceString(const char* seq, unsigned char ctrl=REVERSE|ABBREVIATE|ONEBASED );
     public:
         void dump(const char* keys=NULL, const char* msg="GAttrSeq::dump");
         void dumpKey(const char* key);
