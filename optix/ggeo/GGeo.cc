@@ -79,7 +79,6 @@ void GGeo::init()
 
    m_sensor_list->load( idpath, "idmap");
 
-   m_flags = new GFlags(m_cache);  // parses cu/photon.h enum
 
 
    LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
@@ -231,6 +230,14 @@ GColors* GGeo::getColors()
 {
    return m_cache->getColors() ; 
 }
+GFlags* GGeo::getFlags()
+{
+    return m_cache->getFlags();
+}
+
+
+
+
 
 
 unsigned int GGeo::getMaterialLine(const char* shortname)
@@ -320,8 +327,10 @@ void GGeo::setupColors()
 {
     LOG(info) << "GGeo::setupColors" ; 
 
+    GFlags* flags = m_cache->getFlags();
+
     std::vector<unsigned int>& material_codes = m_materiallib->getAttrNames()->getColorCodes() ; 
-    std::vector<unsigned int>& flag_codes     = m_flags->getAttrIndex()->getColorCodes() ; 
+    std::vector<unsigned int>& flag_codes     = flags->getAttrIndex()->getColorCodes() ; 
 
     GColors* colors = m_cache->getColors();
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );

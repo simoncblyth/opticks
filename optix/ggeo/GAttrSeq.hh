@@ -31,6 +31,12 @@ Classes fulfilling NSequence include GItemList
 class GAttrSeq {
     public:
         static unsigned int ERROR_COLOR ; 
+
+        enum {
+                REVERSE = 0x1 << 0,  
+                ABBREVIATE = 0x1 << 1
+             };
+
     public:
         GAttrSeq(GCache* cache, const char* type);
         void loadPrefs();
@@ -47,6 +53,8 @@ class GAttrSeq {
         const char*  getColorName(const char* key);
         std::vector<unsigned int>& getColorCodes();
         std::vector<std::string>&  getLabels();
+    public:
+        std::string decodeHexSequenceString(const char* seq, unsigned char ctrl=REVERSE|ABBREVIATE );
     public:
         void dump(const char* keys=NULL, const char* msg="GAttrSeq::dump");
         void dumpKey(const char* key);
@@ -72,6 +80,11 @@ inline GAttrSeq::GAttrSeq(GCache* cache, const char* type)
 {
 }
 
+inline const char* GAttrSeq::getType()
+{
+    return m_type ; 
+}
+
 /*
 inline std::map<std::string, std::string>&  GAttrSeq::getColor()
 {
@@ -86,17 +99,6 @@ inline std::map<std::string, std::string>&  GAttrSeq::getAbbrev()
 inline std::map<std::string, unsigned int>&  GAttrSeq::getOrder()
 {
    return m_order ;
-}
-
-
-
-
-
-
-
-inline const char* GAttrSeq::getType()
-{
-    return m_type ; 
 }
 
 

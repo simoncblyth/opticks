@@ -1,4 +1,5 @@
 #include "GCache.hh"
+#include "GFlags.hh"
 #include "GColors.hh"
 
 #include <sstream>
@@ -42,6 +43,9 @@ void GCache::init()
 
     m_types = new Types ;  
     m_types->saveFlags(m_idpath, ".ini");
+
+    m_flags = new GFlags(this);  // parses cu/photon.h enum
+
 }
 
 

@@ -12,13 +12,15 @@ class Index : public NSequence {
    public:
         typedef std::vector<std::string> VS ;
    public:
-        Index(const char* itemtype, const char* title=NULL);
+        Index(const char* itemtype, const char* title=NULL, bool onebased=true);
    public:
         static Index* load(const char* idpath, const char* itemtype);
         void save(const char* idpath);
-        const char* getItemType();
    public:
+        const char* getItemType();
         const char* getTitle();
+        bool isOneBased();     
+   public:
         void setTitle(const char* title);
    public:
         int* getSelectedPtr();
@@ -51,14 +53,15 @@ class Index : public NSequence {
 
    public:
         unsigned int getNumItems();
-        void test(const char* msg="GItemIndex::test", bool verbose=true);
-        void dump(const char* msg="GItemIndex::dump");
+        void test(const char* msg="Index::test", bool verbose=true);
+        void dump(const char* msg="Index::dump");
 
    private:
         const char*                          m_itemtype ; 
         const char*                          m_title ; 
         const char*                          m_ext ; 
         int                                  m_selected ; 
+        bool                                 m_onebased ; 
         std::map<std::string, unsigned int>  m_source ; 
         std::map<std::string, unsigned int>  m_local ; 
         std::map<unsigned int, unsigned int> m_source2local ; 
@@ -70,13 +73,14 @@ class Index : public NSequence {
         std::vector<unsigned int>            m_codes ; 
 };
 
-inline Index::Index(const char* itemtype, const char* title)
+inline Index::Index(const char* itemtype, const char* title, bool onebased)
    : 
    NSequence(),
    m_itemtype(strdup(itemtype)),
    m_title(title ? strdup(title) : strdup(itemtype)),
    m_ext(".json"),
-   m_selected(0)
+   m_selected(0),
+   m_onebased(onebased)
 {
 }
 inline const char* Index::getItemType()
@@ -88,6 +92,13 @@ inline const char* Index::getTitle()
 {
     return m_title ; 
 }
+
+inline bool Index::isOneBased()
+{
+    return m_onebased ; 
+}
+
+
 
 inline void Index::setTitle(const char* title)
 {

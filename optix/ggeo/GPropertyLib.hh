@@ -96,8 +96,8 @@ class GPropertyLib {
     protected:
         GCache*                              m_cache ; 
         NPY<float>*                          m_buffer ; 
-        GAttrSeq*                            m_attrnames ; 
-        GItemList*                           m_names ; 
+        GAttrSeq*                            m_attrnames ; // attributed name list 
+        GItemList*                           m_names ;     // simple name list 
         const char*                          m_type ; 
         GDomain<float>*                      m_standard_domain ;  
 

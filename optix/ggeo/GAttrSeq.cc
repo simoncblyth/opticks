@@ -3,6 +3,7 @@
 #include "GItemList.hh"
 #include "GCache.hh"
 #include "GColors.hh"
+#include "stringutil.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -32,7 +33,6 @@ void GAttrSeq::loadPrefs()
 void GAttrSeq::setSequence(NSequence* seq)
 {
     m_sequence = seq ; 
-    //m_sequence = dynamic_cast<NSequence*>(seq) ; 
 }
 
 const char* GAttrSeq::getColorName(const char* key)
@@ -148,6 +148,31 @@ void GAttrSeq::dumpKey(const char* key)
                   << std::endl ; 
     }
 }
+
+
+
+std::string GAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctrl)
+{
+    if(!seq) return "NULL" ;
+
+    std::string lseq(seq);
+    if(ctrl & REVERSE)
+        std::reverse(lseq.begin(), lseq.end());
+  
+    std::stringstream ss ; 
+    for(unsigned int i=0 ; i < lseq.size() ; i++) 
+    {
+        std::string sub = lseq.substr(i, 1) ;
+        unsigned int code = hex_lexical_cast<unsigned int>(sub.c_str());
+        const char* key = m_sequence->getKey(code) ;
+        std::string elem = ( ctrl & ABBREVIATE ) ? getAbbr(key) : key ; 
+        ss << elem << " " ; 
+    }
+    return ss.str();
+}
+
+
+
 
 
 

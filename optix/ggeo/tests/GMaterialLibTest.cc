@@ -31,11 +31,13 @@ int main()
 {
     GCache gc("GGEOVIEW_");
 
-    GMaterialLib* lib = GMaterialLib::load(&gc);
+    GMaterialLib* mlib = GMaterialLib::load(&gc);
 
     const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
 
-    lib->getAttrNames()->dump(mats);
+    GAttrSeq* amat = mlib->getAttrNames();
+
+    amat->dump(mats);
 
 
     return 0 ;

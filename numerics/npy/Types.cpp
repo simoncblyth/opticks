@@ -34,7 +34,6 @@ void Types::saveFlags(const char* idpath, const char* ext)
 }
 
 
-
 const char* Types::getItemName(Item_t item)
 {
     const char* name(NULL);
@@ -625,6 +624,4 @@ void Types::prepSequenceString(std::string& lseq, unsigned int& elen, unsigned i
         nelem = lseq.size()/elen ;
     }
 }
- 
-
 

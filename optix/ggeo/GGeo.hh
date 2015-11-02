@@ -29,11 +29,11 @@ class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
-class GFlags ; 
 
 class GTreeCheck ;
 class GColorizer ; 
 class GColors ; 
+class GFlags ; 
 
 class GMergedMesh ;
 class NSensorList ; 
@@ -186,21 +186,16 @@ class GGeo {
         unsigned int getNumRawMaterials();
         unsigned int getNumRawSkinSurfaces();
         unsigned int getNumRawBorderSurfaces();
-
-    public:
-        // on way out 
-        //GLoader*      getLoader();
-        //GBoundaryLib* getBoundaryLib();
     public:
         GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
         GScintillatorLib*  getScintillatorLib();
-        GFlags*            getFlags(); 
         Lookup*            getLookup(); 
     public:
         GColorizer*        getColorizer();
         GColors*           getColors();
+        GFlags*            getFlags(); 
     public:
         GMesh* getMesh(unsigned int index);  
         GMaterial* getMaterial(unsigned int index);  
@@ -298,7 +293,6 @@ class GGeo {
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
         GScintillatorLib*             m_scintillatorlib ; 
-        GFlags*                       m_flags ; 
 
         GColorizer*                   m_colorizer ; 
 
@@ -342,7 +336,6 @@ inline GGeo::GGeo(GCache* cache) :
    m_materiallib(NULL),
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
-   m_flags(NULL),
    m_colorizer(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
@@ -502,10 +495,7 @@ inline GScintillatorLib* GGeo::getScintillatorLib()
 {
     return m_scintillatorlib ; 
 }
-inline GFlags* GGeo::getFlags()
-{
-    return m_flags ; 
-}
+
 
 inline Lookup* GGeo::getLookup()
 {

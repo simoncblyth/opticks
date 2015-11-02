@@ -30,7 +30,9 @@ void Index::add(const char* name, unsigned int source, bool sort )
     if(m_source.count(name)==0)
     { 
         m_source[name] = source ;
-        unsigned int local = m_local.size() + 1 ; // 1-based index in addition order  
+
+       // historically have been using : 1-based index in addition order  
+        unsigned int local = m_onebased ? m_local.size() + 1 : m_local.size() ; 
         m_local[name] = local ; 
 
         m_source2local[source] = local ; 
@@ -74,20 +76,21 @@ unsigned int Index::getNumItems()
 
 
 // fulfil NSequence
+//   NSequence indices are zero-based, so have to convert when one-based
 unsigned int Index::getNumKeys()
 {
     return m_local.size();
 }
 const char* Index::getKey(unsigned int i)
 {
-    return getNameLocal(i);
+    unsigned int local = m_onebased ? i + 1 : i ;
+    return getNameLocal(local);
 }
 unsigned int Index::getIndex(const char* key)
 {
-    return getIndexLocal(key);
+    unsigned int local = getIndexLocal(key);
+    return m_onebased ? local - 1 : local ; 
 }
-
-
 
 
 

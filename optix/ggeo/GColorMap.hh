@@ -6,26 +6,6 @@
 /*
 
 *GColorMap* manages the association of named items with colors
- 
-Example of usage from GLoader::
-
-    m_flags->setColorMap(GColorMap::load("$HOME/.opticks", "GFlagIndexColors.json"));      
-    m_materials->setColorMap(GColorMap::load("$HOME/.opticks", "GMaterialIndexColors.json"));
-    m_surfaces->setColorMap(GColorMap::load("$HOME/.opticks", "GSurfaceIndexColors.json"));
-  
-simon:.opticks blyth$ cat GFlagIndexColors.json 
-{
-    "CERENKOV":"white",
-    "SCINTILLATION":"white",
-    "TORCH":"white",
-    "MISS":"grey",
-    "BULK_ABSORB":"red",
-    "BULK_REEMIT":"green", 
-    "BULK_SCATTER":"blue",    
-    "SURFACE_DETECT":"purple",
-    "SURFACE_ABSORB":"orange",      
-     ...
-
 
 */
 

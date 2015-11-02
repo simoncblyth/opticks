@@ -74,6 +74,7 @@ class GMaterialLib : public GPropertyLib {
        static GMaterialLib* load(GCache* cache);
    public:
        GMaterialLib(GCache* cache); 
+   public:
        void Summary(const char* msg="GMaterialLib::Summary");
        void dump(const char* msg="GMaterialLib::dump");
        void dump(GMaterial* mat, const char* msg="GMaterialLib::dump");

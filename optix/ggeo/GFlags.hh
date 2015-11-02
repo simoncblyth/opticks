@@ -15,6 +15,7 @@ class GFlags {
         void init(const char* path);
         Index* parseFlags(const char* path);
     public:
+        Index*      getIndex();  
         GAttrSeq*   getAttrIndex();  
     private:
         GCache*      m_cache  ;
@@ -35,5 +36,9 @@ inline GFlags::GFlags(GCache* cache, const char* path)
 inline GAttrSeq* GFlags::getAttrIndex()
 {
     return m_aindex ; 
+}  
+inline Index* GFlags::getIndex()
+{
+    return m_index ; 
 }  
 

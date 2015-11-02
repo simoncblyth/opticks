@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 class GColors ; 
+class GFlags ; 
 class Types ; 
 
 // this is turning into GGeoConfig rather than just GCache 
@@ -33,6 +34,7 @@ class GCache {
          bool isGeocache();
          void setColors(GColors* colors);
          GColors* getColors();
+         GFlags*  getFlags();
          Types*   getTypes();
 
          void setInstanced(bool instanced=true);
@@ -74,6 +76,7 @@ class GCache {
     private:
           const char* m_envprefix ; 
           GColors*    m_colors ; 
+          GFlags*     m_flags ; 
           Types*      m_types ;
     private:
           const char* m_geokey ;
@@ -105,6 +108,7 @@ inline GCache::GCache(const char* envprefix)
        :
        m_envprefix(strdup(envprefix)),
        m_colors(NULL),
+       m_flags(NULL),
        m_types(NULL),
        m_geokey(NULL),
        m_path(NULL),
@@ -198,6 +202,11 @@ inline Types* GCache::getTypes()
 {
     return m_types ;
 }
+inline GFlags* GCache::getFlags()
+{
+    return m_flags ;
+}
+
 
 
 

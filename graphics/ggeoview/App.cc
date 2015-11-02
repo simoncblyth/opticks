@@ -338,21 +338,6 @@ int App::config(int argc, char** argv)
     }
 #endif
 
-
-
-/*
-    m_types = new Types ;  
-    m_types->readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");  
-
-
-    // TODO: avoid hardcoding (or at least duplication of) paths, grab via cmake configure_file ?
-    //       here optixrap lib should have a compiled in constant for this
-    //
-    m_flags = m_types->getFlagsIndex(); 
-    m_flags->setExt(".ini");
-    m_flags->save(idpath);
-*/
-
     return 0 ; 
 }
 
@@ -436,16 +421,9 @@ void App::registerGeometry()
     //GLoader* loader = m_ggeo->getLoader();
     //GItemIndex* materials = loader->getMaterials() ;
     //GBoundaryLibMetadata* meta = loader->getMetadata() ;
-    
-
-
     //Index* matidx = materials->getIndex() ;
-
     //m_cache->getTypes()->setMaterialsIndex(matidx); 
-
     //m_boundaries = meta->getBoundaryNames();   // int,string map used by BoundariesNPY in App::indexBoundaries
-
-
 
 
     ////////////////////////////////////////////////////////
@@ -1126,7 +1104,7 @@ void App::indexSequence()
                   ; 
 #endif
 
-        TSparse<unsigned long long> seqhis("History Sequence", seq->slice(2,0)); // stride,begin 
+        TSparse<unsigned long long> seqhis("History_Sequence", seq->slice(2,0)); // stride,begin 
         seqhis.make_lookup();
         m_seqhis = new GItemIndex(seqhis.getIndex()) ;  
         seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0));  // stride, begin
@@ -1137,7 +1115,7 @@ void App::indexSequence()
         seqhis.dump("App::indexSequence seqhis");
 #endif
 
-        TSparse<unsigned long long> seqmat("Material Sequence", seq->slice(2,1)); // stride,begin 
+        TSparse<unsigned long long> seqmat("Material_Sequence", seq->slice(2,1)); // stride,begin 
         seqmat.make_lookup();
         m_seqmat = new GItemIndex(seqmat.getIndex()) ;  
         seqmat.apply_lookup<unsigned char>( tphosel.slice(4,1));
@@ -1162,17 +1140,27 @@ void App::indexSequence()
     rrecsel.unmapGLToCUDA(); 
 
 
+    // perhaps can simplify this stuff... with new GPropertyLib approach 
+    // so write out the indices, to base some tests on
+    m_seqhis->getIndex()->save(m_cache->getIdPath());
+    m_seqmat->getIndex()->save(m_cache->getIdPath());
+
+
     Types* types = m_cache->getTypes();
+
 
     m_seqhis->setTitle("Photon Flag Sequence Selection");
     m_seqhis->setTypes(types);
     m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
     m_seqhis->formTable();
 
+
+
     m_seqmat->setTitle("Photon Material Sequence Selection");
     m_seqmat->setTypes(types);
     m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
     m_seqmat->formTable();
+    // invokes the labeller on all the keys of the index
 
     (*m_timer)("indexSequence"); 
 }
@@ -1366,10 +1354,9 @@ void App::prepareGUI()
 
 #ifdef GUI_
 
-    m_types = m_cache->getTypes();
+    m_types = m_cache->getTypes();  // needed for each render
     m_photons = new Photons(m_types, m_pho, m_bnd, m_seqhis, m_seqmat ) ; // GUI jacket : m_pho seems unused 
     m_scene->setPhotons(m_photons);
-
 
     m_gui = new GUI(m_ggeo) ;
     m_gui->setScene(m_scene);
@@ -1377,7 +1364,6 @@ void App::prepareGUI()
     m_gui->setComposition(m_composition);
     m_gui->setBookmarks(m_bookmarks);
     m_gui->setInteractor(m_interactor);   // status line
-    //m_gui->setLoader(m_ggeo->getLoader());           // access to Material / Surface indices  // TODO
     
     m_gui->init(m_window);
     m_gui->setupHelpText( m_cfg->getDescString() );

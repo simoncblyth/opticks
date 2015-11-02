@@ -65,8 +65,10 @@ class Types {
        void makeFlagAbbrev();
    public:
        glm::ivec4                getFlags();
-       std::vector<std::string>& getFlagLabels();
        bool*                     initBooleanSelection(unsigned int n);
+
+       // used from Photons::gui_flag_selection for ImGui::Checkbox
+       std::vector<std::string>& getFlagLabels();
        bool*                     getFlagSelection();
    public:
        std::string getHistoryAbbrev(std::string label);
@@ -86,6 +88,7 @@ class Types {
        void prepSequenceString(std::string& lseq, unsigned int& elen, unsigned int& nelem, bool hex);
        std::string decodeSequenceString(std::string& seq, Item_t etype, bool hex=false);
 
+       // used by GItemIndex::materialSeqLabeller GItemIndex::historySeqLabeller
        std::string abbreviateHexSequenceString(std::string& seq, Item_t etype);
 
    private:
