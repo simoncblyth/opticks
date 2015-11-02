@@ -13,11 +13,6 @@
 
 #include "GBndLib.hh"
 
-//#include "GLoader.hh"
-//#include "GBoundary.hh"
-//#include "GBoundaryLibMetadata.hh"
-//#include "GBoundaryLib.hh"
-
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
@@ -90,10 +85,7 @@ void GGeo::init()
    LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
    if(m_loaded) return ; 
-
-
    //////////////  below only when operating pre-cache //////////////////////////
-
 
    m_treecheck = new GTreeCheck(this) ;
    if(m_cache->isJuno())
@@ -101,15 +93,10 @@ void GGeo::init()
        m_treecheck->setVertexMin(250);
    }
 
-    // colorizer needs full tree, so pre-cache only 
-
    //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
 
-   m_colorizer = new GColorizer( this, style ); 
-   //m_colorizer->setColors(m_cache->getColors());
-
-   //m_boundarylib = new GBoundaryLib(m_cache); // slated to be replaced by GBndLib
+   m_colorizer = new GColorizer( this, style ); // colorizer needs full tree, so pre-cache only 
 
    m_bndlib = new GBndLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
@@ -119,7 +106,6 @@ void GGeo::init()
    m_bndlib->setSurfaceLib(m_surfacelib);
 
    m_scintillatorlib  = new GScintillatorLib(m_cache);
-
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
@@ -132,30 +118,29 @@ void GGeo::init()
 
 
 
-
 void GGeo::add(GMaterial* material)
 {
     m_materiallib->add(material);
-
     m_materials.push_back(material);
     addToIndex((GPropertyMap<float>*)material);
 }
 void GGeo::add(GBorderSurface* surface)
 {
     m_surfacelib->add(surface);
-
     m_border_surfaces.push_back(surface);
     addToIndex((GPropertyMap<float>*)surface);
 }
 void GGeo::add(GSkinSurface* surface)
 {
     m_surfacelib->add(surface);
-
     m_skin_surfaces.push_back(surface);
     addToIndex((GPropertyMap<float>*)surface);
 }
 
 
+
+// hmm maybe bud off mesh management to a separate class GMeshMgr  
+// or do it in GMergedMesh static methods
 
 void GGeo::removeMergedMeshes(const char* idpath )
 {
@@ -236,6 +221,8 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 }
 
 
+
+
 const char* GGeo::getIdPath()
 {
     return m_cache->getIdPath();
@@ -246,23 +233,14 @@ GColors* GGeo::getColors()
 }
 
 
-
 unsigned int GGeo::getMaterialLine(const char* shortname)
 {
-   /*
-    GBoundaryLibMetadata* meta = m_loader->getMetadata() ;
-    assert(meta);
-    return meta->getMaterialLine(shortname);
-   */
     return m_bndlib->getMaterialLine(shortname);
 }
 
 
 void GGeo::loadGeometry()
 {
-    //m_loader = new GLoader(this) ;
-    //m_loader->load();
-
     const char* idpath = getIdPath() ;
 
     if(!isLoaded())
@@ -310,8 +288,6 @@ void GGeo::loadFromCache()
         m_lvlist = GItemList::load(idpath, "LVNames");
     }
 
-    //m_boundarylib = GBoundaryLib::load(m_cache);
-
     m_bndlib = GBndLib::load(m_cache);  // GBndLib is persisted via index buffer, not float buffer
     m_materiallib = GMaterialLib::load(m_cache);
     m_surfacelib  = GSurfaceLib::load(m_cache);
@@ -323,15 +299,20 @@ void GGeo::loadFromCache()
 
 
 
-
-
-
 void GGeo::setupLookup()
 {
-    const char* idpath = getIdPath() ;
+    // see ggeo-/tests/LookupTest.cc
+
     m_lookup = new Lookup() ; 
-    m_lookup->create(idpath);   
+
+    m_lookup->loadA( m_cache->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
+
+    m_bndlib->fillMaterialLineMap( m_lookup->getB() ) ;    
+
+    m_lookup->crossReference();
+
     m_lookup->dump("GGeo::setupLookup");  
+
 }
 
 
@@ -345,11 +326,6 @@ void GGeo::setupColors()
     GColors* colors = m_cache->getColors();
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 }
-
-
-
-
-
 
 
 

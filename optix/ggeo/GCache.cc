@@ -143,6 +143,13 @@ void GCache::readEnvironment()
 
     m_idpath = strdup(kfn.c_str());
 
+    m_idfold = strdup(m_idpath);
+
+    char* p = (char*)strrchr(m_idfold, '/');  // point to last slash 
+    *p = '\0' ;                               // chop to give parent fold
+ 
+
+
     //Summary("GCache::readEnvironment");
 
     int overwrite = 1; 

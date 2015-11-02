@@ -8,6 +8,7 @@
 
 int main(int argc, char** argv)
 {
+    /*
     if(argc < 2)
     {
         printf("%s : expecting argument directory containing %s \n", argv[0], Lookup::BNAME);
@@ -24,7 +25,6 @@ int main(int argc, char** argv)
 
     
 
-    /*
     cs.setLookup(&lookup);
     cs.applyLookup(0, 2); // materialIndex  (1st quad, 3rd number)
 

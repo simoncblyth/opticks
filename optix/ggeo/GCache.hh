@@ -39,6 +39,7 @@ class GCache {
          bool isInstanced();
     public:
          const char* getIdPath();
+         const char* getIdFold();  // parent directory of idpath
          std::string getRelativePath(const char* path); 
          std::string getMergedMeshPath(unsigned int ridx);
          std::string getPropertyLibDir(const char* name);
@@ -83,6 +84,7 @@ class GCache {
           const char* m_meshfixcfg ;
     private:
           const char* m_idpath ;
+          const char* m_idfold ;
           const char* m_digest ;
     private:
           bool        m_geocache ; 
@@ -111,6 +113,7 @@ inline GCache::GCache(const char* envprefix)
        m_meshfix(NULL),
        m_meshfixcfg(NULL),
        m_idpath(NULL),
+       m_idfold(NULL),
        m_digest(NULL),
        m_geocache(false),
        m_dayabay(false),
@@ -127,6 +130,11 @@ inline const char* GCache::getIdPath()
 {
     return m_idpath ;
 }
+inline const char* GCache::getIdFold()
+{
+    return m_idfold ;
+}
+
 inline const char* GCache::getEnvPrefix()
 {
     return m_envprefix ;

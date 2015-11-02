@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <string>
 
@@ -32,7 +33,7 @@ class GSurfaceLib ;
 class GBndLib : public GPropertyLib {
   public:
        void save();
-       static GBndLib* load(GCache* cache);
+       static GBndLib* load(GCache* cache, bool constituents=false);
   public:
        GBndLib(GCache* cache);
   private:
@@ -77,6 +78,9 @@ class GBndLib : public GPropertyLib {
   public:
        void setIndexBuffer(NPY<unsigned int>* index_buffer);
        void setOpticalBuffer(NPY<unsigned int>* optical_buffer);
+  public:
+       void fillMaterialLineMap(std::map<std::string, unsigned int>& msu);
+       void dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, const char* msg="GBndLib::dumpMaterialLineMap");
   public:
        unsigned int getMaterialLine(const char* shortname);
        static unsigned int getLine(unsigned int ibnd, unsigned int iquad);

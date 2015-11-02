@@ -27,11 +27,19 @@ void GBndLib::save()
     saveIndexBuffer();  
 }
 
-GBndLib* GBndLib::load(GCache* cache)
+GBndLib* GBndLib::load(GCache* cache, bool constituents)
 {
     GBndLib* blib = new GBndLib(cache);
     blib->loadIndexBuffer();
     blib->importIndexBuffer();
+
+    if(constituents)
+    {
+        GMaterialLib* mlib = GMaterialLib::load(cache);
+        GSurfaceLib* slib = GSurfaceLib::load(cache);
+        blib->setMaterialLib(mlib);
+        blib->setSurfaceLib(slib);
+    }
     return blib ; 
 }
 
@@ -256,6 +264,36 @@ GItemList* GBndLib::createNames()
     return names ; 
 }
 
+
+
+void GBndLib::dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, const char* msg)
+{ 
+    LOG(info) << msg ; 
+    typedef std::map<std::string, unsigned int> MSU ; 
+    for(MSU::const_iterator it = msu.begin() ; it != msu.end() ; it++)
+    {
+        std::cout << std::setw(5) << it->second 
+                  << std::setw(30) << it->first 
+                  << std::endl ; 
+    }
+}
+
+void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
+{
+    // first occurence of a material within the boundaries
+    // has its material line recorded in the MaterialLineMap
+
+    for(unsigned int i=0 ; i < getNumBnd() ; i++)    
+    {
+        const guint4& bnd = m_bnd[i] ;
+        const char* imat = m_mlib->getName(bnd.x);
+        const char* omat = m_mlib->getName(bnd.y);
+        assert(imat && omat);
+        if(msu.count(imat) == 0) msu[imat] = getLine(i, 0) ;
+        if(msu.count(omat) == 0) msu[omat] = getLine(i, 1) ;
+    }
+    dumpMaterialLineMap(msu);
+}
 
 
 
