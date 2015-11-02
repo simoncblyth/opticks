@@ -5,8 +5,10 @@
 #include "GSolid.hh"
 #include "GItemIndex.hh"
 #include "GAttrSeq.hh"
-#include "GBoundary.hh"
+//#include "GBoundary.hh"
+//#include "GBoundaryLib.hh"
 #include "GColors.hh"
+#include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
 #include <iomanip>
@@ -14,6 +16,13 @@
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
+void GColorizer::init()
+{
+    m_blib = m_ggeo->getBndLib();
+    m_slib = m_ggeo->getSurfaceLib();
+    m_colors = m_ggeo->getColors();
+}
 
 
 void GColorizer::traverse()
@@ -74,7 +83,7 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
 
 
 
-
+/*
 gfloat3* GColorizer::getSurfaceColor_PRIOR(GNode* node)
 {
     if(!m_surfaces) return NULL ; 
@@ -112,32 +121,32 @@ gfloat3* GColorizer::getSurfaceColor_PRIOR(GNode* node)
 
     return colorcode == UINT_MAX ? NULL : GItemIndex::makeColor(colorcode) ; 
 }
-
+*/
 
 
 gfloat3* GColorizer::getSurfaceColor(GNode* node)
 {
-    if(!m_surfaces) return NULL ; 
 
     gfloat3* nodecolor(NULL) ; 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
-    guint4 bnd = solid->getBnd();
+    unsigned int boundary = solid->getBoundary();
+
+    guint4 bnd = m_blib->getBnd(boundary);
     unsigned int isur_ = bnd.z ;  
     unsigned int osur_ = bnd.w ;  
 
-    GSurfaceLib* slib = m_ggeo->getSurfaceLib();
-    const char* isur = slib->getName(isur_);
-    const char* osur = slib->getName(osur_);
+    const char* isur = m_slib->getName(isur_);
+    const char* osur = m_slib->getName(osur_);
 
     unsigned int colorcode(UINT_MAX) ; 
     if(isur)
     {
-        colorcode = slib->getAttrNames()->getColorCode(isur);    
+        colorcode = m_slib->getAttrNames()->getColorCode(isur);    
     } 
     else if(osur)
     {
-        colorcode = slib->getAttrNames()->getColorCode(osur);    
+        colorcode = m_slib->getAttrNames()->getColorCode(osur);    
     }  
 
     if(colorcode != UINT_MAX )

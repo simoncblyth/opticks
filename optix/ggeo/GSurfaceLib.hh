@@ -28,6 +28,7 @@ class GSurfaceLib : public GPropertyLib {
        static const char* EFFICIENCY ; 
        static const char* REFLECTIVITY ; 
    public:
+       static const char*  SENSOR_SURFACE ;
        static float        SURFACE_UNSET ; 
        static const char* keyspec ;
    public:
@@ -72,6 +73,7 @@ class GSurfaceLib : public GPropertyLib {
        NPY<unsigned int>* getOpticalBuffer();
    public:
        unsigned int getNumSurfaces();
+       bool isSensorSurface(unsigned int surface); // name suffix based, see AssimpGGeo::convertSensor
    public:
        void import();
    private:

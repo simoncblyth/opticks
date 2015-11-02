@@ -6,11 +6,12 @@
 #include "GVector.hh"
 #include "GMatrix.hh"
 
+class GGeo ; 
 class GMesh ;
 
 class GNode {
   public:
-      GNode(unsigned int index, GMatrixF* transform, GMesh* mesh);
+      GNode(GGeo* ggeo, unsigned int index, GMatrixF* transform, GMesh* mesh);
       virtual ~GNode();
 
   private:
@@ -60,6 +61,7 @@ class GNode {
 
   public:
       unsigned int  getIndex();
+      GGeo*         getGGeo(); 
       GNode*        getParent(); 
       GNode*        getChild(unsigned int index);
       unsigned int  getNumChildren();
@@ -117,6 +119,7 @@ class GNode {
   private:
       bool                m_selfdigest ; // when true getProgenyDigest includes self node 
   protected: 
+      GGeo*               m_ggeo ; 
       unsigned int        m_index ; 
   private:
       GNode*              m_parent ; 
@@ -155,9 +158,10 @@ class GNode {
  
 
 
-inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) 
+inline GNode::GNode(GGeo* ggeo, unsigned int index, GMatrixF* transform, GMesh* mesh) 
     :
     m_selfdigest(true),
+    m_ggeo(ggeo),
     m_index(index), 
     m_parent(NULL),
     m_description(NULL),
@@ -177,6 +181,11 @@ inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh)
     init();
 }
 
+
+inline GGeo* GNode::getGGeo()
+{
+    return m_ggeo ; 
+}
 
 inline gfloat3* GNode::getLow()
 {

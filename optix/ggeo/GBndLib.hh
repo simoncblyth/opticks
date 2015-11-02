@@ -10,6 +10,7 @@ template <typename T> class GPropertyMap ;
 class GCache ; 
 class GMaterialLib ; 
 class GSurfaceLib ; 
+//class GBnd ; 
 
 //
 // *GBndLib* differs from *GMaterialLib* and *GSurfaceLib* in that 
@@ -43,9 +44,18 @@ class GBndLib : public GPropertyLib {
        bool contains(const guint4& bnd);
        unsigned int index(const guint4& bnd);
   public:
+       // boundary index lookups
+       guint4 getBnd(unsigned int boundary);
+       unsigned int getInnerMaterial(unsigned int boundary);
+       unsigned int getOuterMaterial(unsigned int boundary);
+       unsigned int getInnerSurface(unsigned int boundary);
+       unsigned int getOuterSurface(unsigned int boundary);
+  public:
        guint4 parse( const char* spec, bool flip=false);
        bool contains( const char* spec, bool flip=false);
   public:
+       unsigned int addBoundary( const char* imat, const char* omat, const char* isur, const char* osur) ;
+  private:
        // Bnd are only added if not already present
        void add(const guint4& bnd);
        guint4 add(const char* spec, bool flip=false);
@@ -66,6 +76,8 @@ class GBndLib : public GPropertyLib {
        static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
        unsigned int getLineMin();
        unsigned int getLineMax();
+  public:
+       void createDynamicBuffer();
   public:
        GItemList* createNames();
        NPY<float>* createBuffer();

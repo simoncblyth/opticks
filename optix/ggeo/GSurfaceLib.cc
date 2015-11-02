@@ -22,6 +22,7 @@ const char* GSurfaceLib::reflect_diffuse   = "reflect_diffuse" ;
 
 const char* GSurfaceLib::REFLECTIVITY = "REFLECTIVITY" ;
 const char* GSurfaceLib::EFFICIENCY   = "EFFICIENCY" ;
+const char* GSurfaceLib::SENSOR_SURFACE = "SensorSurface" ;
 
 
 const char* GSurfaceLib::keyspec = 
@@ -457,4 +458,23 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
 }
 
 
+bool GSurfaceLib::isSensorSurface(unsigned int surface)
+{
+    // name suffix based, see AssimpGGeo::convertSensor
+    const char* name = getName(surface); 
+    if(!name) return false ; 
+
+    int pos = strlen(name) - strlen(SENSOR_SURFACE) ;
+    bool iss = pos > 0 && strncmp(name + pos, SENSOR_SURFACE, strlen(SENSOR_SURFACE)) == 0 ;
+
+    if(iss)
+    LOG(debug) << "GSurfaceLib::isSensorSurface"
+              << " surface " << surface  
+              << " name " << name 
+              << " pos " << pos 
+              << " iss " << iss 
+              ;
+
+    return iss ; 
+}
 

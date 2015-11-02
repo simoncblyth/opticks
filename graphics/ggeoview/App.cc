@@ -83,11 +83,11 @@
 // ggeo-
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-#include "GBoundaryLib.hh"
+//#include "GBoundaryLib.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
-#include "GBoundaryLibMetadata.hh"
-#include "GLoader.hh"
+//#include "GBoundaryLibMetadata.hh"
+//#include "GLoader.hh"
 #include "GCache.hh"
 #include "GColors.hh"
 #include "GMaterialIndex.hh"
@@ -117,7 +117,8 @@ namespace fs = boost::filesystem;
 #include "OFrame.hh"
 #include "ORenderer.hh"
 #include "OGeo.hh"
-#include "OBoundaryLib.hh"
+//#include "OBoundaryLib.hh"
+#include "OBndLib.hh"
 #include "OScintillatorLib.hh"
 #include "OBuf.hh"
 #include "OConfig.hh"
@@ -402,8 +403,8 @@ void App::loadGeometry()
 
     if(m_fcfg->hasOpt("qe1"))
     {
-        GBoundaryLib* blib = m_ggeo->getBoundaryLib();
-        blib->setFakeEfficiency(1.0);
+        //GBoundaryLib* blib = m_ggeo->getBoundaryLib();
+        //blib->setFakeEfficiency(1.0);
         GSurfaceLib* slib = m_ggeo->getSurfaceLib();
         slib->setFakeEfficiency(1.0);
     }
@@ -439,14 +440,20 @@ void App::registerGeometry()
 {
     // TODO: replace these with equivalents from GPropertyLib subclasses
 
-    GLoader* loader = m_ggeo->getLoader();
-    GItemIndex* materials = loader->getMaterials() ;
-    GBoundaryLibMetadata* meta = loader->getMetadata() ;
-    Index* matidx = materials->getIndex() ;
+    //GLoader* loader = m_ggeo->getLoader();
+    //GItemIndex* materials = loader->getMaterials() ;
+    //GBoundaryLibMetadata* meta = loader->getMetadata() ;
+    
 
-    m_cache->getTypes()->setMaterialsIndex(matidx); 
 
-    m_boundaries = meta->getBoundaryNames();   // int,string map used by BoundariesNPY in App::indexBoundaries
+    //Index* matidx = materials->getIndex() ;
+
+    //m_cache->getTypes()->setMaterialsIndex(matidx); 
+
+    //m_boundaries = meta->getBoundaryNames();   // int,string map used by BoundariesNPY in App::indexBoundaries
+
+
+
 
     ////////////////////////////////////////////////////////
 
@@ -672,7 +679,7 @@ void App::loadGenstep()
     m_parameters->add<std::string>("Tag", tag );
     m_parameters->add<std::string>("Detector", det );
 
-    GLoader* loader = m_ggeo->getLoader();
+    Lookup* lookup = m_ggeo->getLookup();
 
     NPY<float>* npy = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION )
@@ -684,7 +691,7 @@ void App::loadGenstep()
 
         if(m_cache->isDayabay())
         {   
-            m_g4step->setLookup(loader->getMaterialLookup());   // TODO
+            m_g4step->setLookup(lookup);   
             m_g4step->applyLookup(0, 2);      
             // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
             m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
@@ -946,8 +953,12 @@ void App::prepareOptiX()
     m_ocolors = new OColors(context, m_cache->getColors() );
     m_ocolors->convert();
 
-    m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
+    //m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
+    //m_olib->convert(); 
+
+    m_olib = new OBndLib(context,m_ggeo->getBndLib());
     m_olib->convert(); 
+
 
     m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
     m_oscin->convert(); 
@@ -1373,7 +1384,7 @@ void App::prepareGUI()
     m_gui->setComposition(m_composition);
     m_gui->setBookmarks(m_bookmarks);
     m_gui->setInteractor(m_interactor);   // status line
-    m_gui->setLoader(m_ggeo->getLoader());           // access to Material / Surface indices  // TODO
+    //m_gui->setLoader(m_ggeo->getLoader());           // access to Material / Surface indices  // TODO
     
     m_gui->init(m_window);
     m_gui->setupHelpText( m_cfg->getDescString() );

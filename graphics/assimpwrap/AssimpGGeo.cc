@@ -10,6 +10,7 @@
 #include <assimp/scene.h>
 #include <algorithm>
 #include <iomanip>
+#include <climits>
 
 
 #include "GCache.hh"
@@ -22,12 +23,13 @@
 #include "GSkinSurface.hh"
 #include "GOpticalSurface.hh"
 #include "GSolid.hh"
-#include "GBoundary.hh"
 #include "GDomain.hh"
 
+//#include "GBoundary.hh"
+//#include "GBoundaryLib.hh"
 
-#include "GBoundaryLib.hh"
 #include "GBndLib.hh"
+#include "GSurfaceLib.hh"
 
 // npy-
 #include "stringutil.hpp"
@@ -331,7 +333,8 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
              << " mNumMaterials " << scene->mNumMaterials  
              ;
 
-    GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
+    //GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
+    GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
 
 
     for(unsigned int i = 0; i < scene->mNumMaterials; i++)
@@ -491,7 +494,8 @@ which are fabricated by AssimpGGeo::convertSensors.
 
     unsigned int nclv = gg->getNumCathodeLV();
 
-    GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
+    //GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
+    GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
 
     // DYB: nclv=2 for hemi and headon PMTs 
     for(unsigned int i=0 ; i < nclv ; i++)
@@ -503,7 +507,7 @@ which are fabricated by AssimpGGeo::convertSensors.
                   ;
 
         std::string name = trimPointerSuffixPrefix(sslv, NULL );
-        name += "SensorSurface" ; 
+        name += GSurfaceLib::SENSOR_SURFACE ; 
 
         const char* osnam = name.c_str() ;
         const char* ostyp = "0" ; 
@@ -825,7 +829,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
                << " ( msi " << std::setw(4) << msi << " mesh " << (void*)mesh << " ) " << ( mesh ? mesh->getName() : "-" )
                ;  
 
-    GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, NULL, NULL ); // boundary and sensor start NULL
+
+    GSolid* solid = new GSolid(gg, nodeIndex, gtransform, mesh, UINT_MAX, NULL ); // sensor starts NULL
     solid->setLevelTransform(ltransform);
 
     const char* lv   = node->getName(0); 
@@ -909,18 +914,20 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     solid->setSensor( sensor );  
 
 
-    GBoundaryLib* lib = gg->getBoundaryLib();  
+    //GBoundaryLib* lib = gg->getBoundaryLib();  
     GBndLib* blib = gg->getBndLib();  
 
-    GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
-    solid->setBoundary(boundary);  
+    //GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
+    //solid->setBoundary(boundary);  
 
     // boundary identification via 4-uint 
-    guint4 bnd = blib->add( mt->getShortName(), 
-                            mt_p->getShortName(),
-                            isurf ? isurf->getShortName() : NULL,
-                            osurf ? osurf->getShortName() : NULL);
-    solid->setBnd(bnd);
+    unsigned int boundary = blib->addBoundary( mt->getShortName(), 
+                                               mt_p->getShortName(),
+                                               isurf ? isurf->getShortName() : NULL,
+                                               osurf ? osurf->getShortName() : NULL);
+
+    solid->setBoundary(boundary);
+
 
 
     //assert(boundary->getIndex() == blib->index(bnd));
@@ -929,13 +936,13 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     // after modification to use name based identity the old indices
     // are aligned with the new
     
-    if(boundary->getIndex() != blib->index(bnd))
-    {
-        LOG(warning) << "AssimpGGeo::convertStructureVisit"
-                     << " boundary_index " << boundary->getIndex()
-                     << " bnd_index " << blib->index(bnd)
-                     ;
-    } 
+    //if(boundary->getIndex() != blib->index(bnd))
+    //{
+    //    LOG(warning) << "AssimpGGeo::convertStructureVisit"
+    //                 << " boundary_index " << boundary->getIndex()
+    //                 << " bnd_index " << blib->index(bnd)
+    //                 ;
+    //} 
     
 
     char* desc = node->getDescription("\n\noriginal node description"); 

@@ -99,6 +99,13 @@ add_definitions(
     ${CUDAWrap_DEFINITIONS} 
 )
 
+
+set(DEAD
+       OBoundaryLib.cc
+)
+
+
+
 # OptiX prog within subdir "cu/" Thrust/CUDA not in subdir 
 optixthrust_add_library( ${name} 
        OptiXUtil.cc
@@ -108,7 +115,6 @@ optixthrust_add_library( ${name}
        OGeo.cc
        OFrame.cc
        ORenderer.cc
-       OBoundaryLib.cc
        OColors.cc
        OBndLib.cc
        OScintillatorLib.cc
@@ -151,6 +157,13 @@ set(cuhdrs
     cu/photon.h
 )
 
+
+
+set(DEAD_H
+       OBoundaryLib.hh
+)
+
+
 set(hdrs 
   OptiXUtil.hh
   OContext.hh
@@ -161,7 +174,6 @@ set(hdrs
   OFrame.hh
   ORenderer.hh
   OColors.hh
-  OBoundaryLib.hh
   OBndLib.hh
   OScintillatorLib.hh
   OPropertyLib.hh

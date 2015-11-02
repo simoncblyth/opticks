@@ -1,7 +1,9 @@
 #pragma once
 
+class GGeo ; 
+class GBndLib ; 
+class GSurfaceLib ; 
 class GMesh ;
-class GBoundary ; 
 class NSensor ; 
 
 #include "GNode.hh"
@@ -19,66 +21,57 @@ class NSensor ;
 //
 class GSolid : public GNode {
   public:
-      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  GBoundary* boundary, NSensor* sensor);
-      virtual ~GSolid();
-
+      GSolid( GGeo* ggeo, unsigned int index, GMatrixF* transform, GMesh* mesh,  unsigned int boundary, NSensor* sensor);
+  private:  
+      void init(); 
   public:
-     void setSelected(bool selected);
-     bool isSelected();
+      void setSelected(bool selected);
+      bool isSelected();
   public:
-     void setBnd(guint4 bnd);
-     void setBoundary(GBoundary* boundary);
-     void setSensor(NSensor* sensor);
-     unsigned int getSensorSurfaceIndex();
+      void setBoundary(unsigned int boundary);
+      void setSensor(NSensor* sensor);
+      unsigned int getSensorSurfaceIndex();
   public:
-     // need to resort to names for debugging IAV top lid issue
-     void setPVName(const char* pvname);
-     void setLVName(const char* lvname);
-     const char* getPVName();
-     const char* getLVName();
-
+      // need to resort to names for debugging IAV top lid issue
+      void setPVName(const char* pvname);
+      void setLVName(const char* lvname);
+      const char* getPVName();
+      const char* getLVName();
   public:
-     guint4     getBnd();
-     guint4     getIdentity();
-     GBoundary* getBoundary();
-     NSensor*   getSensor();
-
+      unsigned int getBoundary();
+      guint4       getIdentity();
+      NSensor*     getSensor();
   public: 
       void Summary(const char* msg="GSolid::Summary");
- 
   private:
-      GBoundary*        m_boundary ; 
-      guint4            m_bnd ; 
+      unsigned int      m_boundary ; 
       NSensor*          m_sensor ; 
       bool              m_selected ;
       const char*       m_pvname ; 
       const char*       m_lvname ; 
+      GBndLib*          m_blib ; 
+      GSurfaceLib*      m_slib ; 
 
 };
 
-inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, GBoundary* boundary, NSensor* sensor)
+inline GSolid::GSolid( GGeo* ggeo, unsigned int index, GMatrixF* transform, GMesh* mesh, unsigned int boundary, NSensor* sensor)
          : 
-         GNode(index, transform, mesh ),
+         GNode(ggeo, index, transform, mesh ),
          m_boundary(boundary),
-         m_bnd(INT_MAX,INT_MAX,INT_MAX,INT_MAX),
          m_sensor(sensor),
          m_selected(true),
          m_pvname(NULL),
-         m_lvname(NULL)
+         m_lvname(NULL),
+         m_blib(NULL),
+         m_slib(NULL)
 {
+    init();
 }
 
-inline GSolid::~GSolid()
-{
-}
 
-inline GBoundary* GSolid::getBoundary()
+inline unsigned int GSolid::getBoundary()
 {
     return m_boundary ; 
-}
-inline guint4 GSolid::getBnd()
-{
-    return m_bnd ; 
 }
 
 

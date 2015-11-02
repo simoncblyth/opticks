@@ -1,12 +1,15 @@
-#include  "GTraverse.hh"
+#include "GTraverse.hh"
 #include "GGeo.hh"
+#include "GBndLib.hh"
+#include "GMaterialLib.hh"
 #include "GSolid.hh"
-#include "GBoundary.hh"
-#include "Counts.hpp"
 
+#include "Counts.hpp"
 
 void GTraverse::init()
 {
+    m_blib = m_ggeo->getBndLib();
+    m_mlib = m_ggeo->getMaterialLib();
     m_materials_count = new Counts<unsigned int>("materials");
 }
 
@@ -26,15 +29,12 @@ void GTraverse::traverse( GNode* node, unsigned int depth)
     bool selected = solid->isSelected();
     if(selected)
     {
-        GBoundary* boundary = solid->getBoundary();
-        GPropertyMap<float>* imat = boundary->getInnerMaterial() ;
-        GPropertyMap<float>* omat = boundary->getOuterMaterial() ;
-
-        std::string im = imat->getShortName();
-        std::string om = omat->getShortName();
-
-        m_materials_count->add(im.c_str());
-        m_materials_count->add(om.c_str());
+        unsigned int boundary = solid->getBoundary();
+        guint4 bnd = m_blib->getBnd(boundary);
+        const char* im = m_mlib->getName(bnd.x);
+        const char* om = m_mlib->getName(bnd.y);
+        m_materials_count->add(im);
+        m_materials_count->add(om);
     }
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );

@@ -243,6 +243,15 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
               ; 
 }
 
+const char* GMaterialLib::getNameCheck(unsigned int i)
+{
+    GMaterial* mat = getMaterial(i);
+    const char* name1 =  mat->getShortName();
+    const char* name2 = getName(i);
+    assert(strcmp(name1, name2) == 0);
+
+    return name1 ; 
+}
 
 
 

@@ -18,7 +18,8 @@ Comparing with pycollada
 #include "GGeo.hh"
 
 #include "GMaterial.hh"
-#include "GBoundaryLib.hh"
+//#include "GBoundaryLib.hh"
+
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -69,8 +70,8 @@ int main(int argc, char* argv[])
 
     m_ggeo->traverse();
 
-    GBoundaryLib* blib = m_ggeo->getBoundaryLib();
-    blib->Summary("GBoundaryLib");
+    //GBoundaryLib* blib = m_ggeo->getBoundaryLib();
+    //blib->Summary("GBoundaryLib");
     //blib->dumpSurfaces();
 
     GMergedMesh* mm = m_ggeo->makeMergedMesh();

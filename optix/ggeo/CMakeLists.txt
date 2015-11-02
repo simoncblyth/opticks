@@ -40,6 +40,14 @@ set(DEFINITIONS
 include_directories(${INCLUDE_DIRS})   
 add_definitions(${DEFINITIONS})
 
+
+set(DEAD
+                GBoundary.cc
+                GBoundaryLib.cc
+                GBoundaryLibMetadata.cc
+                GLoader.cc
+)
+
 add_library(${name} SHARED 
                 GProperty.cc
                 GDomain.cc
@@ -49,15 +57,12 @@ add_library(${name} SHARED
                 GSkinSurface.cc
                 GBorderSurface.cc
                 GOpticalSurface.cc
-                GBoundary.cc
                 GMaterialLib.cc
                 GSurfaceLib.cc
-                GBoundaryLib.cc
                 GBndLib.cc
                 GScintillatorLib.cc
                 GPropertyLib.cc
                 GFlags.cc
-                GBoundaryLibMetadata.cc
                 GSolid.cc
                 GMesh.cc
                 GMergedMesh.cc
@@ -68,7 +73,6 @@ add_library(${name} SHARED
                 GBuffer.cc
                 GDrawable.cc
                 GArray.cc
-                GLoader.cc
                 GCache.cc
                 GItemIndex.cc
                 GMaterialIndex.cc
@@ -87,6 +91,16 @@ add_library(${name} SHARED
                 GPmt.cc
 )
 
+
+
+set(DEAD_H
+              GBoundary.hh
+              GBoundaryLib.hh
+              GBoundaryLibMetadata.hh
+              GLoader.hh
+)
+
+
 SET(hdrs 
 GGeo.hh
 GMaterial.hh
@@ -100,22 +114,18 @@ GSolid.hh
 GSkinSurface.hh
 GBorderSurface.hh
 GOpticalSurface.hh
-GBoundary.hh
 GScintillatorLib.hh
 GPropertyLib.hh
-GBoundaryLib.hh
 GBndLib.hh
 GMaterialLib.hh
 GSurfaceLib.hh
 GFlags.hh
-GBoundaryLibMetadata.hh
 GVector.hh
 GMatrix.hh
 GNode.hh
 GBuffer.hh
 GDrawable.hh
 GArray.hh
-GLoader.hh
 GCache.hh
 GItemIndex.hh
 GMaterialIndex.hh

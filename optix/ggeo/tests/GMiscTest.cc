@@ -3,7 +3,7 @@
 #include "GVector.hh"
 #include "GMatrix.hh"
 #include "GCache.hh"
-#include "GBoundaryLib.hh"
+//#include "GBoundaryLib.hh"
 
 #include <string>
 #include <vector>
@@ -68,6 +68,7 @@ void test_material()
 }
 
 
+/*
 void test_substancelib()
 {
     GCache gc("GGEOVIEW_");
@@ -75,7 +76,7 @@ void test_substancelib()
     const char* ri = lib->getLocalKey("refractive_index");
     printf("ri %s \n", ri );
 }
-
+*/
 
 
 

@@ -69,7 +69,6 @@ void GLoader::load(bool verbose)
         m_ggeo->loadFromCache() ; 
 
         GBoundaryLib* blib = m_ggeo->getBoundaryLib();
-
         m_metadata = blib->getMetadata() ; 
 
         m_materials  = GItemIndex::load(idpath, "GMaterialIndex"); 
@@ -88,7 +87,7 @@ void GLoader::load(bool verbose)
     m_lookup->dump("GLoader::load");  
 
 
-
+/*
     Index* idx = m_cache->getTypes()->getFlagsIndex() ;    
     m_flags = new GItemIndex( idx );   
 
@@ -113,6 +112,9 @@ void GLoader::load(bool verbose)
     std::vector<unsigned int>& flag_codes     = m_flags->getCodes() ; 
 
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
+
+*/
+
     
 }
 

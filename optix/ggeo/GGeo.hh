@@ -39,6 +39,8 @@ class GMergedMesh ;
 class NSensorList ; 
 class GItemList ; 
 
+class Lookup ; 
+
 
 class TorchStepNPY ; 
 //
@@ -71,6 +73,9 @@ class GGeo {
         void loadGeometry();  // GLoader remnamts to go here 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
+    public:
+        void setupLookup();
+        void setupColors();
     public:
         void prepareScintillatorLib();
         void prepareMeshes();
@@ -184,18 +189,18 @@ class GGeo {
 
     public:
         // on way out 
-        GLoader*      getLoader();
-        GBoundaryLib* getBoundaryLib();
+        //GLoader*      getLoader();
+        //GBoundaryLib* getBoundaryLib();
     public:
         GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
         GScintillatorLib*  getScintillatorLib();
         GFlags*            getFlags(); 
+        Lookup*            getLookup(); 
     public:
         GColorizer*        getColorizer();
         GColors*           getColors();
-
     public:
         GMesh* getMesh(unsigned int index);  
         GMaterial* getMaterial(unsigned int index);  
@@ -285,10 +290,11 @@ class GGeo {
         std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
-        GLoader*                      m_loader ; 
+        //GLoader*                      m_loader ; 
+        Lookup*                       m_lookup ; 
 
         GBndLib*                      m_bndlib ; 
-        GBoundaryLib*                 m_boundarylib ; 
+        //GBoundaryLib*                 m_boundarylib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
         GScintillatorLib*             m_scintillatorlib ; 
@@ -329,9 +335,10 @@ inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
    m_treecheck(NULL), 
    m_loaded(false), 
-   m_loader(NULL),
+   //m_loader(NULL),
+   m_lookup(NULL),
    m_bndlib(NULL),
-   m_boundarylib(NULL),
+   //m_boundarylib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
@@ -470,14 +477,14 @@ inline char* GGeo::getIdentityPath()
 
 
 
-inline GLoader* GGeo::getLoader()
-{
-    return m_loader ; 
-}
-inline GBoundaryLib* GGeo::getBoundaryLib()
-{
-    return m_boundarylib ; 
-}
+//inline GLoader* GGeo::getLoader()
+//{
+//    return m_loader ; 
+//}
+//inline GBoundaryLib* GGeo::getBoundaryLib()
+//{
+//    return m_boundarylib ; 
+//}
 
 inline GBndLib* GGeo::getBndLib()
 {
@@ -499,6 +506,12 @@ inline GFlags* GGeo::getFlags()
 {
     return m_flags ; 
 }
+
+inline Lookup* GGeo::getLookup()
+{
+    return m_lookup ; 
+}
+
 
 
 

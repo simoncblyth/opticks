@@ -7,7 +7,7 @@
 #include <vector>
 
 class GGeo ; 
-class GLoader ; 
+//class GLoader ; 
 class GItemIndex ; 
 class GAttrSeq ; 
 
@@ -41,7 +41,7 @@ class GUI {
        void setClipper(Clipper* clipper);
        void setTrackball(Trackball* trackball);
        void setBookmarks(Bookmarks* bookmarks);
-       void setLoader(GLoader* loader);  // used to access GItemIndex materials, surfaces, flags 
+       //void setLoader(GLoader* loader);  // used to access GItemIndex materials, surfaces, flags 
 
        void init(GLFWwindow* window);
        void newframe();
@@ -54,7 +54,7 @@ class GUI {
        void setupParams(const std::vector<std::string>& params);
 
    public:
-       static void gui_item_index(GItemIndex* ii);
+       //static void gui_item_index(GItemIndex* ii);
        static void gui_item_index(GAttrSeq* al);
        static void gui_item_index(const char* type, std::vector<std::string>& labels, std::vector<unsigned int>& codes);
 
@@ -81,7 +81,7 @@ class GUI {
        Trackball*    m_trackball ; 
        Bookmarks*    m_bookmarks ; 
        Photons*      m_photons ; 
-       GLoader*      m_loader ; 
+       //GLoader*      m_loader ; 
 
        std::string   m_help ; 
        std::vector<std::string> m_stats ; 
@@ -104,8 +104,8 @@ inline GUI::GUI(GGeo* ggeo)
    m_clipper(NULL),
    m_trackball(NULL),
    m_bookmarks(NULL),
-   m_photons(NULL),
-   m_loader(NULL)
+   m_photons(NULL)
+   //m_loader(NULL)
 {
 }
 
@@ -137,10 +137,11 @@ inline void GUI::setBookmarks(Bookmarks* bookmarks)
 {
     m_bookmarks = bookmarks ; 
 }
-inline void GUI::setLoader(GLoader* loader)
-{
-    m_loader = loader ; 
-}
+
+//inline void GUI::setLoader(GLoader* loader)
+//{
+//    m_loader = loader ; 
+//}
 
 
 inline void GUI::setupHelpText(const std::string& txt)

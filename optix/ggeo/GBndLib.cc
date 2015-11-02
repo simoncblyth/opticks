@@ -55,6 +55,11 @@ void GBndLib::saveOpticalBuffer()
     saveToCache(ibuf, "Optical") ; 
 }
 
+void GBndLib::createDynamicBuffer()
+{
+    NPY<float>* buf = createBuffer();
+    setBuffer(buf);
+}
 
 
 NPY<unsigned int>* GBndLib::createIndexBuffer()
@@ -109,6 +114,15 @@ guint4 GBndLib::parse( const char* spec, bool flip)
               guint4(imat, omat, isur, osur) 
                 ;   
 }
+
+
+unsigned int GBndLib::addBoundary( const char* imat, const char* omat, const char* isur, const char* osur)
+{
+    guint4 bnd = add(imat, omat, isur, osur);
+    //GBnd* boundary = new GBnd(index(bnd), bnd);   // hmm there would be multile GBnd instances for the same boundary like this
+    return index(bnd) ; 
+}
+
 
 guint4 GBndLib::add( const char* spec, bool flip)
 {
@@ -189,6 +203,42 @@ std::string GBndLib::shortname(const guint4& bnd)
        ;
     return ss.str();
 }
+
+
+
+guint4 GBndLib::getBnd(unsigned int boundary)
+{
+    unsigned int ni = getNumBnd();
+    assert(boundary < ni);
+    const guint4& bnd = m_bnd[boundary];
+    return bnd ;  
+}
+
+unsigned int GBndLib::getInnerMaterial(unsigned int boundary)
+{
+    guint4 bnd = getBnd(boundary);
+    return bnd.x ; 
+}
+unsigned int GBndLib::getOuterMaterial(unsigned int boundary)
+{
+    guint4 bnd = getBnd(boundary);
+    return bnd.y ; 
+}
+unsigned int GBndLib::getInnerSurface(unsigned int boundary)
+{
+    guint4 bnd = getBnd(boundary);
+    return bnd.z ; 
+}
+unsigned int GBndLib::getOuterSurface(unsigned int boundary)
+{
+    guint4 bnd = getBnd(boundary);
+    return bnd.w ; 
+}
+
+
+
+
+
 
 
 

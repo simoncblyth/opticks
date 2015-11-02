@@ -1,12 +1,23 @@
 #include "GSolid.hh"
 #include "GPropertyMap.hh"
 #include "GMesh.hh"
-#include "GBoundary.hh"
+
+#include "GGeo.hh"
+#include "GBndLib.hh"
+#include "GSurfaceLib.hh"
+
+//#include "GBoundary.hh"
 
 // npy-
 #include "NSensor.hpp"
 
 #include "stdio.h"
+
+void GSolid::init()
+{
+    m_blib = m_ggeo->getBndLib(); 
+    m_slib = m_ggeo->getSurfaceLib(); 
+}
 
 void GSolid::Summary(const char* msg )
 {
@@ -16,19 +27,12 @@ void GSolid::Summary(const char* msg )
 }
 
 
-void GSolid::setBoundary(GBoundary* boundary)
+void GSolid::setBoundary(unsigned int boundary)
 {
     m_boundary = boundary ; 
-    setBoundaryIndices( boundary->getIndex() );
+    setBoundaryIndices( boundary );
 }
 
-void GSolid::setBnd(guint4 bnd)
-{
-    m_bnd.x = bnd.x ; 
-    m_bnd.y = bnd.y ; 
-    m_bnd.z = bnd.z ; 
-    m_bnd.w = bnd.w ; 
-}
 
 void GSolid::setSensor(NSensor* sensor)
 {
@@ -45,7 +49,12 @@ unsigned int GSolid::getSensorSurfaceIndex()
     // this is a workaround that requires an associated sensitive surface
     // in order for the index to be provided
 
-    bool oss = m_boundary ? m_boundary->hasOuterSensorSurface() : false ; 
+    //bool oss = m_boundary ? m_boundary->hasOuterSensorSurface() : false ; 
+    //unsigned int ssi = oss ? NSensor::RefIndex(m_sensor) : 0 ;  
+    //return ssi ; 
+
+    unsigned int surface = m_blib->getOuterSurface(m_boundary);
+    bool oss = m_slib->isSensorSurface(surface); 
     unsigned int ssi = oss ? NSensor::RefIndex(m_sensor) : 0 ;  
     return ssi ; 
 }
@@ -55,8 +64,11 @@ guint4 GSolid::getIdentity()
     return guint4(
                    m_index, 
                    m_mesh ? m_mesh->getIndex() : 0, 
-                   m_boundary ? m_boundary->getIndex() : 0,
+                   m_boundary,
                    getSensorSurfaceIndex()
                  );
 }
  
+
+
+

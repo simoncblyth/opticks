@@ -11,6 +11,9 @@
 void OBndLib::convert()
 {
     LOG(info) << "OBndLib::convert" ;
+
+    m_lib->createDynamicBuffer();
+
     makeBoundaryTexture(m_lib->getBuffer());
 
     // hmm the index and optical buffer are not the same.. optical has the GOpticalSurface content...

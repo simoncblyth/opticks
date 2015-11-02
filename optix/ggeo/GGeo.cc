@@ -14,12 +14,15 @@
 #include "GLoader.hh"
 
 #include "GBndLib.hh"
-#include "GBoundaryLibMetadata.hh"
-#include "GBoundaryLib.hh"
+
+//#include "GBoundaryLibMetadata.hh"
+//#include "GBoundaryLib.hh"
+
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
 #include "GFlags.hh"
+#include "GAttrSeq.hh"
 
 #include "GMergedMesh.hh"
 #include "GColors.hh"
@@ -36,6 +39,8 @@
 #include "TorchStepNPY.hpp"
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
+#include "Lookup.hpp"
+
 
 
 #include "assert.h"
@@ -102,9 +107,9 @@ void GGeo::init()
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
 
    m_colorizer = new GColorizer( this, style ); 
-   m_colorizer->setColors(m_cache->getColors());
+   //m_colorizer->setColors(m_cache->getColors());
 
-   m_boundarylib = new GBoundaryLib(m_cache); // slated to be replaced by GBndLib
+   //m_boundarylib = new GBoundaryLib(m_cache); // slated to be replaced by GBndLib
 
    m_bndlib = new GBndLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
@@ -244,16 +249,34 @@ GColors* GGeo::getColors()
 
 unsigned int GGeo::getMaterialLine(const char* shortname)
 {
+   /*
     GBoundaryLibMetadata* meta = m_loader->getMetadata() ;
     assert(meta);
     return meta->getMaterialLine(shortname);
+   */
+    return m_bndlib->getMaterialLine(shortname);
 }
 
 
 void GGeo::loadGeometry()
 {
-    m_loader = new GLoader(this) ;
-    m_loader->load();
+    //m_loader = new GLoader(this) ;
+    //m_loader->load();
+
+    const char* idpath = getIdPath() ;
+
+    if(!isLoaded())
+    {
+        loadFromG4DAE();
+        save(idpath);
+    }
+    else
+    {
+        loadFromCache();
+    } 
+
+    setupLookup();
+    setupColors();
 }
 
 
@@ -273,7 +296,6 @@ void GGeo::loadFromG4DAE()
 }
 
 
-
 void GGeo::loadFromCache()
 {   
     const char* idpath = m_cache->getIdPath() ;
@@ -288,8 +310,7 @@ void GGeo::loadFromCache()
         m_lvlist = GItemList::load(idpath, "LVNames");
     }
 
-    m_boundarylib = GBoundaryLib::load(m_cache);
-
+    //m_boundarylib = GBoundaryLib::load(m_cache);
 
     m_bndlib = GBndLib::load(m_cache);  // GBndLib is persisted via index buffer, not float buffer
     m_materiallib = GMaterialLib::load(m_cache);
@@ -298,8 +319,36 @@ void GGeo::loadFromCache()
     m_bndlib->setSurfaceLib(m_surfacelib);
 
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
-
 }
+
+
+
+
+
+
+void GGeo::setupLookup()
+{
+    const char* idpath = getIdPath() ;
+    m_lookup = new Lookup() ; 
+    m_lookup->create(idpath);   
+    m_lookup->dump("GGeo::setupLookup");  
+}
+
+
+void GGeo::setupColors()
+{
+    LOG(info) << "GGeo::setupColors" ; 
+
+    std::vector<unsigned int>& material_codes = m_materiallib->getAttrNames()->getColorCodes() ; 
+    std::vector<unsigned int>& flag_codes     = m_flags->getAttrIndex()->getColorCodes() ; 
+
+    GColors* colors = m_cache->getColors();
+    colors->setupCompositeColorBuffer( material_codes, flag_codes  );
+}
+
+
+
+
 
 
 
@@ -319,10 +368,8 @@ void GGeo::save(const char* idpath)
         m_lvlist->save(idpath);
     }
 
-    m_boundarylib->saveIndex(idpath); 
-    m_boundarylib->save(idpath);
-
-
+    //m_boundarylib->saveIndex(idpath); 
+    //m_boundarylib->save(idpath);
 
     // details of save handled within the class, not here 
 
@@ -357,7 +404,7 @@ GGeo::~GGeo()
 {
    delete m_low ; 
    delete m_high ; 
-   delete m_boundarylib ;
+   //delete m_boundarylib ;
 }
 
 void GGeo::setLow(const gfloat3& low)
@@ -706,8 +753,6 @@ void GGeo::traverse(const char* msg)
 void GGeo::traverse( GNode* node, unsigned int depth)
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
-
-    GBoundary* boundary = solid->getBoundary(); 
 
     NSensor* sensor = solid->getSensor(); 
 

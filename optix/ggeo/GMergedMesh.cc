@@ -1,8 +1,9 @@
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 #include "GSolid.hh"
-#include "GBoundaryLib.hh"
-#include "GBoundary.hh"
+
+//#include "GBoundaryLib.hh"
+//#include "GBoundary.hh"
 
 
 // npy-
@@ -89,24 +90,24 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     GNode* base = getCurrentBase();
 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    GBoundary* boundary = solid->getBoundary();
+    unsigned int boundary = solid->getBoundary();
     NSensor* sensor = solid->getSensor();
     GMesh* mesh = solid->getMesh();
 
     unsigned int nodeIndex = node->getIndex();
     unsigned int meshIndex = mesh->getIndex();
-    unsigned int boundaryIndex = boundary->getIndex();
     unsigned int sensorIndex = NSensor::RefIndex(sensor) ; 
 
     guint4 _identity = solid->getIdentity();
 
     assert(_identity.x == nodeIndex);
     assert(_identity.y == meshIndex);
-    assert(_identity.z == boundaryIndex);
+    assert(_identity.z == boundary);
     //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
     
     LOG(debug) << "GMergedMesh::traverse"
               << " nodeIndex " << nodeIndex
+              << " boundaryIndex " << boundary
               << " sensorIndex " << sensorIndex
               << " sensor " << ( sensor ? sensor->description() : "NULL" )
               ;

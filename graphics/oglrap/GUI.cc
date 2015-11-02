@@ -15,7 +15,7 @@
 #include "GAttrSeq.hh"
 
 // on way out
-#include "GLoader.hh"
+//#include "GLoader.hh"
 #include "GItemIndex.hh"
 
 
@@ -200,23 +200,6 @@ void GUI::show(bool* opened)
 
 
 
-
-
-
-    GItemIndex* flags = m_loader ? m_loader->getFlags() : NULL ; 
-    if(flags)
-    {
-        ImGui::Spacing();
-        gui_item_index(flags);
-    } 
-
-
-
-
-
-
-
-
     ImGui::Spacing();
 
     if (ImGui::CollapsingHeader("Dev"))
@@ -263,11 +246,11 @@ void GUI::gui_item_index(GAttrSeq* al)
     gui_item_index( al->getType(), al->getLabels(), al->getColorCodes());
 }
 
-void GUI::gui_item_index(GItemIndex* ii)
-{
-    Index* idx = ii->getIndex(); 
-    gui_item_index( idx->getItemType(), ii->getLabels(), ii->getCodes());
-}
+//void GUI::gui_item_index(GItemIndex* ii)
+//{
+//    Index* idx = ii->getIndex(); 
+//    gui_item_index( idx->getItemType(), ii->getLabels(), ii->getCodes());
+//}
 
 
 void GUI::gui_item_index(const char* type, std::vector<std::string>& labels, std::vector<unsigned int>& codes)

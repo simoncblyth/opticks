@@ -50,7 +50,8 @@ class GItemIndex ;
 // optixrap
 class OContext ; 
 class OGeo ; 
-class OBoundaryLib ; 
+//class OBoundaryLib ; 
+class OBndLib ; 
 class OScintillatorLib ; 
 class OFrame ;
 class ORenderer ; 
@@ -146,7 +147,8 @@ class App {
        OContext*        m_ocontext ; 
        OColors*         m_ocolors ; 
        OGeo*            m_ogeo ; 
-       OBoundaryLib*    m_olib ; 
+       //OBoundaryLib*    m_olib ; 
+       OBndLib*          m_olib ; 
        OScintillatorLib* m_oscin ; 
        OFrame*          m_oframe ; 
        ORenderer*       m_orenderer ; 
