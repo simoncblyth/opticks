@@ -53,7 +53,6 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "Lookup.hpp"
-// #include "Sensor.hpp"
 #include "G4StepNPY.hpp"
 #include "TorchStepNPY.hpp"
 #include "PhotonsNPY.hpp"
@@ -83,14 +82,11 @@
 // ggeo-
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-//#include "GBoundaryLib.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
-//#include "GBoundaryLibMetadata.hh"
-//#include "GLoader.hh"
 #include "GCache.hh"
 #include "GColors.hh"
-#include "GMaterialIndex.hh"
+#include "GItemIndex.hh"
 
 // assimpwrap
 #include "AssimpGGeo.hh"
@@ -106,7 +102,6 @@ namespace fs = boost::filesystem;
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-//#include <boost/log/utility/setup/file.hpp>
 #include "boost/log/utility/setup.hpp"
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -117,7 +112,6 @@ namespace fs = boost::filesystem;
 #include "OFrame.hh"
 #include "ORenderer.hh"
 #include "OGeo.hh"
-//#include "OBoundaryLib.hh"
 #include "OBndLib.hh"
 #include "OScintillatorLib.hh"
 #include "OBuf.hh"
@@ -128,7 +122,6 @@ namespace fs = boost::filesystem;
 
 // optix-
 #include <optixu/optixpp_namespace.h>
-
 
 
 // cudawrap-

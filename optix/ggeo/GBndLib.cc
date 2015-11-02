@@ -44,22 +44,27 @@ void GBndLib::loadIndexBuffer()
 
 void GBndLib::saveIndexBuffer()
 {
-    NPY<unsigned int>* ibuf = createIndexBuffer();
-    saveToCache(ibuf, "Index") ; 
-    setIndexBuffer(ibuf);
+    NPY<unsigned int>* index_buffer = createIndexBuffer();
+    setIndexBuffer(index_buffer);
+    saveToCache(index_buffer, "Index") ; 
 }
 
 void GBndLib::saveOpticalBuffer()
 {
-    NPY<unsigned int>* ibuf = createOpticalBuffer();
-    saveToCache(ibuf, "Optical") ; 
+    NPY<unsigned int>* optical_buffer = createOpticalBuffer();
+    setOpticalBuffer(optical_buffer);
+    saveToCache(optical_buffer, "Optical") ; 
 }
 
-void GBndLib::createDynamicBuffer()
+void GBndLib::createDynamicBuffers()
 {
     NPY<float>* buf = createBuffer();
     setBuffer(buf);
+
+    NPY<unsigned int>* optical_buffer = createOpticalBuffer();
+    setOpticalBuffer(optical_buffer);
 }
+
 
 
 NPY<unsigned int>* GBndLib::createIndexBuffer()
@@ -74,9 +79,6 @@ void GBndLib::importIndexBuffer()
     NPY<unsigned int>* ibuf = getIndexBuffer();
     importUint4Buffer(m_bnd, ibuf );
 }
-
-
-
 
 
 void GBndLib::init()

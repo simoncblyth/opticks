@@ -3,7 +3,6 @@
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_math_namespace.h>
 
-
 class GBndLib ; 
 template <typename T> class NPY ;
 
@@ -17,6 +16,7 @@ public:
     void convert();
 private:
     void makeBoundaryTexture(NPY<float>* buf);
+    void makeBoundaryOptical(NPY<unsigned int>* obuf);
 private:
     GBndLib*             m_lib ; 
 

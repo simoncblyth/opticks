@@ -137,8 +137,10 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     //
     //  polarization already normalized into -1.f:1.f
     //  wavelenth normalized via  (wavelength - low)/range into 0.:1. 
+    //
+    // TODO: avoid reliance on wavelength_lookup here ?
 
-    float nwavelength = 255.f*(p.wavelength - wavelength_domain.x)/wavelength_domain.w ; // 255.f*0.f->1.f 
+    float nwavelength = 255.f*(p.wavelength - boundary_domain.x)/boundary_domain.w ; // 255.f*0.f->1.f 
 
     qquad qpolw ;    
     qpolw.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;

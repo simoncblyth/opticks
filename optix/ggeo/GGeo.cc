@@ -7,14 +7,14 @@
 #include "GPropertyMap.hh"
 #include "GSolid.hh"
 #include "GMesh.hh"
-#include "GBoundary.hh"
 #include "GTreeCheck.hh"
 #include "GColorizer.hh"
 #include "GColors.hh"
-#include "GLoader.hh"
 
 #include "GBndLib.hh"
 
+//#include "GLoader.hh"
+//#include "GBoundary.hh"
 //#include "GBoundaryLibMetadata.hh"
 //#include "GBoundaryLib.hh"
 

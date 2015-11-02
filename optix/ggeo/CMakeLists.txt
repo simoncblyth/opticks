@@ -46,6 +46,10 @@ set(DEAD
                 GBoundaryLib.cc
                 GBoundaryLibMetadata.cc
                 GLoader.cc
+
+                GMaterialIndex.cc
+                GSurfaceIndex.cc
+                GFlagIndex.cc
 )
 
 add_library(${name} SHARED 
@@ -75,9 +79,7 @@ add_library(${name} SHARED
                 GArray.cc
                 GCache.cc
                 GItemIndex.cc
-                GMaterialIndex.cc
-                GSurfaceIndex.cc
-                GFlagIndex.cc
+
                 GColors.cc
                 GColorMap.cc
                 GTraverse.cc
@@ -94,10 +96,14 @@ add_library(${name} SHARED
 
 
 set(DEAD_H
-              GBoundary.hh
-              GBoundaryLib.hh
-              GBoundaryLibMetadata.hh
-              GLoader.hh
+GBoundary.hh
+GBoundaryLib.hh
+GBoundaryLibMetadata.hh
+GLoader.hh
+
+GMaterialIndex.hh
+GSurfaceIndex.hh
+GFlagIndex.hh
 )
 
 
@@ -128,9 +134,6 @@ GDrawable.hh
 GArray.hh
 GCache.hh
 GItemIndex.hh
-GMaterialIndex.hh
-GSurfaceIndex.hh
-GFlagIndex.hh
 GColors.hh
 GColorMap.hh
 GTraverse.hh

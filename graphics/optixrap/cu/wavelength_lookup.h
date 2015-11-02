@@ -9,10 +9,10 @@
 rtTextureSampler<float, 2>  reemission_texture ;
 rtDeclareVariable(float4, reemission_domain, , );
 
-rtTextureSampler<float4, 2>  wavelength_texture ;
-rtDeclareVariable(float4, wavelength_domain, , );
-rtDeclareVariable(float4, wavelength_domain_reciprocal, , );
-rtDeclareVariable(uint4, wavelength_bounds, , );
+rtTextureSampler<float4, 2>  boundary_texture ;
+rtDeclareVariable(float4, boundary_domain, , );
+rtDeclareVariable(float4, boundary_domain_reciprocal, , );
+rtDeclareVariable(uint4, boundary_bounds, , );
 
 
 static __device__ __inline__ float reemission_lookup(float u)
@@ -25,15 +25,15 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
 {
     // x:low y:high z:step w:mid   tex coords are offset by 0.5 
     // texture lookups benefit from hardware interpolation 
-    float nmi = (nm - wavelength_domain.x)/wavelength_domain.z + 0.5f ;   
+    float nmi = (nm - boundary_domain.x)/boundary_domain.z + 0.5f ;   
 
-    if( line > wavelength_bounds.w )
+    if( line > boundary_bounds.w )
     {
         rtPrintf("wavelength_lookup OUT OF BOUNDS line %4d nmi %10.4f \n", line, nmi );
     }
 
-    return line <= wavelength_bounds.w ? 
-                  tex2D(wavelength_texture, nmi, line + 0.5f ) : 
+    return line <= boundary_bounds.w ? 
+                  tex2D(boundary_texture, nmi, line + 0.5f ) : 
                   make_float4(1.123456789f, 123456789.f, 123456789.f, 1.0f )    ;    // some obnoxious values for debug 
 
     // refractive_index, absorption_length, scattering_length, reemission_prob
@@ -43,14 +43,14 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
 static __device__ __inline__ float sample_reciprocal_domain(const float& u)
 {
     // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
-    float iw = lerp( wavelength_domain_reciprocal.x , wavelength_domain_reciprocal.y, u ) ;
+    float iw = lerp( boundary_domain_reciprocal.x , boundary_domain_reciprocal.y, u ) ;
     return 1.f/iw ;  
 }
 
 static __device__ __inline__ float sample_domain(const float& u)
 {
     // return wavelength, from uniform sampling of wavelength domain
-    return lerp( wavelength_domain.x , wavelength_domain.y, u ) ;
+    return lerp( boundary_domain.x , boundary_domain.y, u ) ;
 }
 
 
@@ -59,7 +59,7 @@ static __device__ __inline__ void wavelength_dump(unsigned int line, unsigned in
 {
   for(int i=-5 ; i < 45 ; i+=step )
   { 
-     float nm = wavelength_domain.x + wavelength_domain.z*i ; 
+     float nm = boundary_domain.x + boundary_domain.z*i ; 
      float4 lookup = wavelength_lookup( nm, line ); 
      rtPrintf("wavelength_dump i %2d nm %10.3f line %u  lookup  %10.3f %10.3f %10.3f %10.3f \n", 
         i,

@@ -15,6 +15,7 @@ int main(int argc, char** argv)
     app.uploadGeometry();
 
     bool nooptix = app.hasOpt("nooptix");
+    bool noindex = app.hasOpt("noindex");
     bool noevent = app.hasOpt("noevent");
     bool save    = app.hasOpt("save");
 
@@ -37,7 +38,7 @@ int main(int argc, char** argv)
 
             app.propagate();
 
-            app.indexEvt();
+            if(!noindex) app.indexEvt();
 
             if(save)
             {

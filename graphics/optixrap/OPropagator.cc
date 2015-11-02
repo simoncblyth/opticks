@@ -84,9 +84,9 @@ void OPropagator::recordDomains()
     m_domain->setQuad(e_time_domain  , 0, td );
 
     glm::vec4 wd ;
-    m_context["wavelength_domain"]->getFloat(wd.x,wd.y,wd.z,wd.w);
-    m_domain->setQuad(e_wavelength_domain  , 0, wd );
-    print(wd, "OPropagator::initGeometry wavelength_domain");
+    m_context["boundary_domain"]->getFloat(wd.x,wd.y,wd.z,wd.w);
+    m_domain->setQuad(e_boundary_domain  , 0, wd );
+    print(wd, "OPropagator::initGeometry boundary_domain");
 
         // cf with MeshViewer::initGeometry
     LOG(info) << "OPropagator::initGeometry DONE "

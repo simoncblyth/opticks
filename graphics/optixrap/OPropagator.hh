@@ -19,7 +19,7 @@ class OPropagator {
         enum { 
                 e_center_extent, 
                 e_time_domain, 
-                e_wavelength_domain,
+                e_boundary_domain,
                 e_number_domain
              } ;
     public:

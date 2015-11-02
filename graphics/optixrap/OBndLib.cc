@@ -12,12 +12,11 @@ void OBndLib::convert()
 {
     LOG(info) << "OBndLib::convert" ;
 
-    m_lib->createDynamicBuffer();
+    m_lib->createDynamicBuffers();
 
     makeBoundaryTexture(m_lib->getBuffer());
 
-    // hmm the index and optical buffer are not the same.. optical has the GOpticalSurface content...
-    //makeBoundaryIndex(m_lib->getIndexBuffer());
+    makeBoundaryOptical(m_lib->getOpticalBuffer());
 }
 
 void OBndLib::makeBoundaryTexture(NPY<float>* buf)
@@ -74,21 +73,25 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 }
 
 
-/*
-void OBndLib::makeBoundaryIndex(NPY<unsigned int>* buf)
+void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
 {
-    unsigned int numBytes = buf->getNumBytes(0) ;
-    unsigned int numBnd = numBytes/(NUM_QUAD*NUM_PROP*sizeof(unsigned int)) ;
-    assert( buf->getShape(0) == numBnd );
+    unsigned int numBytes = obuf->getNumBytes(0) ;
+    unsigned int numBnd = numBytes/(GPropertyLib::NUM_QUAD*GPropertyLib::NUM_PROP*sizeof(unsigned int)) ;
+    unsigned int nx = numBnd*GPropertyLib::NUM_QUAD ;
 
+    LOG(info) << "OBndLib::makeBoundaryOptical obuf " 
+              << obuf->getShapeString() 
+              << " numBnd " << numBnd 
+              << " nx " << nx
+              ;
 
-    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, numBoundaries*6 );
-    memcpy( optical_buffer->map(), obuf->getBytes(), obuf->getNumBytes() );
+    assert( obuf->getShape(0) == numBnd );
+
+    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, nx );
+    memcpy( optical_buffer->map(), obuf->getBytes(), numBytes );
     optical_buffer->unmap();
-    //optix::Buffer optical_buffer = createInputBuffer<unsigned int>( obuf, RT_FORMAT_UNSIGNED_INT4, 4);
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 }
-*/
 
 
 

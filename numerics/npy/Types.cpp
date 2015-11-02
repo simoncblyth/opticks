@@ -139,7 +139,7 @@ std::string Types::getMaterialAbbrevInvert(std::string label, bool hex)
 {
      if(hex)
      {
-         std::string name = m_materials_index->getNameLocal(hex_lexical_cast<unsigned int>(label.c_str()), "?" );
+         std::string name = m_materials_index ? m_materials_index->getNameLocal(hex_lexical_cast<unsigned int>(label.c_str()), "?" ) : label ;
          return name + m_tail ; 
      }
      return m_abbrev2material.count(label) == 1 ? m_abbrev2material[label] : label  ;

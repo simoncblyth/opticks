@@ -33,6 +33,7 @@ class GBndLib : public GPropertyLib {
   public:
        void save();
        static GBndLib* load(GCache* cache);
+  public:
        GBndLib(GCache* cache);
   private:
        void init(); 
@@ -62,22 +63,27 @@ class GBndLib : public GPropertyLib {
        guint4 add(const char* imat, const char* omat, const char* isur, const char* osur);
        guint4 add(unsigned int imat, unsigned int omat, unsigned int isur, unsigned int osur);
   public:
-       void importIndexBuffer();
-       void saveIndexBuffer();
        void loadIndexBuffer();
-       NPY<unsigned int>* createIndexBuffer();
-       NPY<unsigned int>* getIndexBuffer();
-       void setIndexBuffer(NPY<unsigned int>* ibuf);
+       void importIndexBuffer();
   public:
-       NPY<unsigned int>* createOpticalBuffer();
+       void saveIndexBuffer();
        void saveOpticalBuffer();
+  public:
+       NPY<unsigned int>* createIndexBuffer();
+       NPY<unsigned int>* createOpticalBuffer();
+  public:
+       NPY<unsigned int>* getIndexBuffer();
+       NPY<unsigned int>* getOpticalBuffer();
+  public:
+       void setIndexBuffer(NPY<unsigned int>* index_buffer);
+       void setOpticalBuffer(NPY<unsigned int>* optical_buffer);
   public:
        unsigned int getMaterialLine(const char* shortname);
        static unsigned int getLine(unsigned int ibnd, unsigned int iquad);
        unsigned int getLineMin();
        unsigned int getLineMax();
   public:
-       void createDynamicBuffer();
+       void createDynamicBuffers();
   public:
        GItemList* createNames();
        NPY<float>* createBuffer();
@@ -93,7 +99,8 @@ class GBndLib : public GPropertyLib {
        GMaterialLib*        m_mlib ; 
        GSurfaceLib*         m_slib ; 
        std::vector<guint4>  m_bnd ; 
-       NPY<unsigned int>*   m_ibuf ;  
+       NPY<unsigned int>*   m_index_buffer ;  
+       NPY<unsigned int>*   m_optical_buffer ;  
 };
 
 
@@ -101,7 +108,9 @@ inline GBndLib::GBndLib(GCache* cache)
    :
     GPropertyLib(cache, "GBndLib"),
     m_mlib(NULL),
-    m_slib(NULL)
+    m_slib(NULL),
+    m_index_buffer(NULL),
+    m_optical_buffer(NULL)
 {
     init();
 }
@@ -119,13 +128,23 @@ inline unsigned int GBndLib::getNumBnd()
 {
     return m_bnd.size() ; 
 }
+
 inline NPY<unsigned int>* GBndLib::getIndexBuffer()
 {
-    return m_ibuf ;
+    return m_index_buffer ;
 }
-inline void GBndLib::setIndexBuffer(NPY<unsigned int>* ibuf)
+inline void GBndLib::setIndexBuffer(NPY<unsigned int>* index_buffer)
 {
-    m_ibuf = ibuf ;
+    m_index_buffer = index_buffer ;
+}
+
+inline NPY<unsigned int>* GBndLib::getOpticalBuffer()
+{
+    return m_optical_buffer ;
+}
+inline void GBndLib::setOpticalBuffer(NPY<unsigned int>* optical_buffer)
+{
+    m_optical_buffer = optical_buffer ;
 }
 
 
