@@ -30,7 +30,6 @@ void Photons::gui()
         }
     }
 
-    // TODO: Checkbox multiple-select that works with GItemList
     if(m_boundaries)
     {
         ImGui::Spacing();
@@ -50,24 +49,6 @@ void Photons::gui()
     }
 #endif
 }
-
-
-/*
-void Photons::gui_boundary_selection()
-{
-#ifdef GUI_
-
-    std::vector< std::pair<int, std::string> >&  boundaries = m_boundaries->getBoundaries();
-    bool* boundaries_selection = m_boundaries->getBoundariesSelection();
-
-    for(unsigned int i=0 ; i < boundaries.size() ; i++)
-    {
-        std::pair<int, std::string> choice = boundaries[i];
-        ImGui::Checkbox(choice.second.c_str(), boundaries_selection+i );
-    }
-#endif
-}
-*/
 
 
 void Photons::gui_flag_selection()

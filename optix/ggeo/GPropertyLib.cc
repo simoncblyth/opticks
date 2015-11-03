@@ -261,7 +261,7 @@ NPY<unsigned int>* GPropertyLib::createUint4Buffer(std::vector<guint4>& vec)
 
 void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>* ibuf )
 {
-    LOG(info) << "GPropertyLib::importUint4Buffer" ; 
+    LOG(debug) << "GPropertyLib::importUint4Buffer" ; 
 
     unsigned int* idat = ibuf->getValues();
     unsigned int ni = ibuf->getShape(0);

@@ -82,7 +82,7 @@ NPY<unsigned int>* GBndLib::createIndexBuffer()
 
 void GBndLib::importIndexBuffer()
 {
-    LOG(info) << "GBndLib::importIndexBuffer" ; 
+    LOG(debug) << "GBndLib::importIndexBuffer" ; 
 
     NPY<unsigned int>* ibuf = getIndexBuffer();
     importUint4Buffer(m_bnd, ibuf );
@@ -126,13 +126,19 @@ guint4 GBndLib::parse( const char* spec, bool flip)
 }
 
 
-unsigned int GBndLib::addBoundary( const char* imat, const char* omat, const char* isur, const char* osur)
+
+unsigned int GBndLib::addBoundary( const char* spec, bool flip)
 {
-    guint4 bnd = add(imat, omat, isur, osur);
-    //GBnd* boundary = new GBnd(index(bnd), bnd);   // hmm there would be multile GBnd instances for the same boundary like this
+    guint4 bnd = parse(spec, flip);
+    add(bnd);
     return index(bnd) ; 
 }
 
+unsigned int GBndLib::addBoundary( const char* imat, const char* omat, const char* isur, const char* osur)
+{
+    guint4 bnd = add(imat, omat, isur, osur);
+    return index(bnd) ; 
+}
 
 guint4 GBndLib::add( const char* spec, bool flip)
 {
@@ -428,15 +434,15 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
 
 void GBndLib::import()
 {
-    LOG(info) << "GBndLib::import" ; 
+    LOG(debug) << "GBndLib::import" ; 
 }
 void GBndLib::sort()
 {
-    LOG(info) << "GBndLib::sort" ; 
+    LOG(debug) << "GBndLib::sort" ; 
 }
 void GBndLib::defineDefaults(GPropertyMap<float>* defaults)
 {
-    LOG(info) << "GBndLib::defineDefaults" ; 
+    LOG(debug) << "GBndLib::defineDefaults" ; 
 }
  
 void GBndLib::dump(const char* msg)

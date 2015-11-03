@@ -56,6 +56,7 @@ class GBndLib : public GPropertyLib {
        guint4 parse( const char* spec, bool flip=false);
        bool contains( const char* spec, bool flip=false);
   public:
+       unsigned int addBoundary( const char* spec, bool flip=false) ;
        unsigned int addBoundary( const char* imat, const char* omat, const char* isur, const char* osur) ;
   private:
        // Bnd are only added if not already present

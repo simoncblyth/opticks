@@ -28,11 +28,15 @@ void BoundariesNPY::indexBoundaries()
 
     std::vector<std::pair<int,int> > pairs = m_photons->count_uniquei_descending(3,0) ;
 
+    m_total = 0 ; 
+
     for(unsigned int i=0 ; i < pairs.size() ; i++)
     {
         std::pair<int,int> p = pairs[i]; 
         int code = p.first ;
         int count = p.second ;
+        m_total += count ;   
+
         std::string name ;
         if(m_names.count(abs(code)) > 0) name = m_names[abs(code)] ; 
 
@@ -56,7 +60,8 @@ void BoundariesNPY::indexBoundaries()
 
 void BoundariesNPY::dump(const char* msg)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg << " total : " << m_total  ; 
+
     for(unsigned int i=0 ; i < m_boundaries.size() ; i++)
     {
          std::pair<int, std::string> p = m_boundaries[i];

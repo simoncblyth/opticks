@@ -54,7 +54,7 @@ void GItemList::load_(const char* idpath)
 
 void GItemList::read_(const char* txtpath)
 {
-   LOG(info) << "GItemList::read_ " << txtpath ;  
+   LOG(debug) << "GItemList::read_ " << txtpath ;  
 
    std::ifstream ifs(txtpath);
 

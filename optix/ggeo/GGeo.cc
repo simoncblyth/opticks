@@ -496,6 +496,24 @@ GMesh* GGeo::getMesh(unsigned int aindex)
     return mesh ;
 }  
 
+/*
+
+hmm the individual mesh aint going to be there post-cache 
+
+unsigned int GGeo::getNextMeshIndex()
+{
+    unsigned int mn(0) ;
+    unsigned int mx(0) ;
+    GMesh* mesh = NULL ; 
+    for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
+    { 
+        mesh = 
+
+    }
+}
+*/
+
+
 
 void GGeo::add(GMesh* mesh)
 {

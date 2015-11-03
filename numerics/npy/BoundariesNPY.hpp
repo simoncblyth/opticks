@@ -37,6 +37,8 @@ class BoundariesNPY {
        std::map<unsigned int, std::string>          m_names ; 
        Types*                                       m_types ; 
        std::vector< std::pair<int, std::string> >   m_boundaries ; 
+       unsigned int                                 m_total ; 
+
        //bool*                                        m_boundaries_selection ; 
 
 };
@@ -44,7 +46,8 @@ class BoundariesNPY {
 
 inline BoundariesNPY::BoundariesNPY(NPY<float>* photons) 
        :  
-       m_photons(photons)
+       m_photons(photons),
+       m_total(0)
     //   m_types(NULL),
     //   m_boundaries_selection(NULL)
 {

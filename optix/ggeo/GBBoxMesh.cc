@@ -42,8 +42,13 @@ GBBoxMesh::GBBoxMesh(GMergedMesh* mergedmesh)
 
 }
 
-
 void GBBoxMesh::twentyfour()
+{
+    gbbox bb = m_mergedmesh->getBBox(0);
+    twentyfour(bb, m_vertices, m_faces, m_normals );
+}
+
+void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3* normals)
 {
    /*
       Bounding boxes look OK with filled rendering, 
@@ -57,7 +62,6 @@ void GBBoxMesh::twentyfour()
    */
 
 
-     gbbox bb = m_mergedmesh->getBBox(0);
      //bb.Summary("GBBoxMesh::twentyfour");
 
 
@@ -103,11 +107,11 @@ void GBBoxMesh::twentyfour()
                  2            3
  
                  */
-                       m_vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
-                       m_vertices[nv+1] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
-                       m_vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
-                       m_vertices[nv+3] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
-                       for(unsigned int i=0 ; i < 4 ; i++) m_normals[nv+i]  = gfloat3( 1.f, 0.f, 0.f );
+                       vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
+                       for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 1.f, 0.f, 0.f );
                        break;
              case kMX:
              /* 
@@ -130,11 +134,11 @@ void GBBoxMesh::twentyfour()
 
              */
 
-                       m_vertices[nv+0] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
-                       m_vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
-                       m_vertices[nv+2] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
-                       m_vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
-                       for(unsigned int i=0 ; i < 4 ; i++) m_normals[nv+i]  = gfloat3( -1.f, 0.f, 0.f );
+                       vertices[nv+0] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
+                       for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( -1.f, 0.f, 0.f );
                        break;
             
              case kPY:
@@ -158,11 +162,11 @@ void GBBoxMesh::twentyfour()
                  2            3
  
                  */
-                       m_vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
-                       m_vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
-                       m_vertices[nv+2] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
-                       m_vertices[nv+3] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
-                       for(unsigned int i=0 ; i < 4 ; i++) m_normals[nv+i]  = gfloat3( 0.f, 1.f, 0.f );
+                       vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
+                       for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, 1.f, 0.f );
                        break;
              case kMY:
              /* 
@@ -185,11 +189,11 @@ void GBBoxMesh::twentyfour()
 
              */
 
-                       m_vertices[nv+0] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
-                       m_vertices[nv+1] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
-                       m_vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
-                       m_vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
-                       for(unsigned int i=0 ; i < 4 ; i++) m_normals[nv+i]  = gfloat3( 0.f, -1.f, 0.f );
+                       vertices[nv+0] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
+                       for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, -1.f, 0.f );
                        break;
 
              case kPZ:
@@ -212,11 +216,11 @@ void GBBoxMesh::twentyfour()
                  2            3
  
                  */
-                       m_vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
-                       m_vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
-                       m_vertices[nv+2] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
-                       m_vertices[nv+3] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
-                       for(unsigned int i=0 ; i < 4 ; i++) m_normals[nv+i]  = gfloat3( 0.f, 0.f, 1.f );
+                       vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
+                       for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, 0.f, 1.f );
                        break;
 
              case kMZ:
@@ -239,18 +243,18 @@ void GBBoxMesh::twentyfour()
                  2            3
  
                  */
-                       m_vertices[nv+0] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
-                       m_vertices[nv+1] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
-                       m_vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
-                       m_vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
-                       for(unsigned int i=0 ; i < 4 ; i++) m_normals[nv+i]  = gfloat3( 0.f, 0.f, -1.f );
+                       vertices[nv+0] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
+                       for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, 0.f, -1.f );
                        break;
          }
 
 
 
-         m_faces[nf+0] = guint3(nv+0, nv+1, nv+2 );
-         m_faces[nf+1] = guint3(nv+2, nv+3, nv+0 ); 
+         faces[nf+0] = guint3(nv+0, nv+1, nv+2 );
+         faces[nf+1] = guint3(nv+2, nv+3, nv+0 ); 
 
          nv += 4 ; 
          nf += 2 ; 

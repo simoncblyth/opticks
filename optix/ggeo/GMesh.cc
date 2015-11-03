@@ -797,12 +797,15 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
         printf(" fac %5u  %5u %5u %5u \n", i, fac.x, fac.y, fac.z );
     } 
 
-    for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
+    if(m_nodes && m_boundaries)
     {
-        unsigned int& node = m_nodes[i] ;
-        unsigned int& boundary = m_boundaries[i] ;
-        printf(" fac %5u  node %5u boundary %5u  \n", i, node, boundary );
-    } 
+        for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
+        {
+            unsigned int& node = m_nodes[i] ;
+            unsigned int& boundary = m_boundaries[i] ;
+            printf(" fac %5u  node %5u boundary %5u  \n", i, node, boundary );
+        } 
+    }
 }
 
 

@@ -93,6 +93,7 @@
 #include "GColors.hh"
 #include "GItemIndex.hh"
 #include "GAttrSeq.hh"
+#include "GTestBox.hh"
 
 
 // assimpwrap
@@ -335,6 +336,16 @@ void App::loadGeometry()
 }
 
 
+void App::makeDynamicGeometry()
+{
+    if(!m_fcfg->hasOpt("box")) return ; 
+    std::string config = m_fcfg->getBoxConfig() ;
+    m_testbox = new GTestBox( m_ggeo, config.empty() ? NULL : config.c_str() );
+    m_testbox->make();
+    m_testbox->dump("App::makeDynamicGeometry");
+}
+
+
 void App::registerGeometry()
 {
     // TODO: replace these with equivalents from GPropertyLib subclasses
@@ -471,6 +482,7 @@ void App::checkGeometry()
         mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
     }
 }
+
 
 
 void App::uploadGeometry()
@@ -1220,7 +1232,6 @@ void App::indexEvtOld()
 
         m_hit = new HitsNPY(dpho, m_ggeo->getSensorList());
         m_hit->debugdump();
-
     }
 
     // hmm thus belongs in NumpyEvt rather than here
@@ -1285,7 +1296,7 @@ void App::prepareGUI()
 #ifdef GUI_
 
     m_types = m_cache->getTypes();  // needed for each render
-    m_photons = new Photons(m_types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket : m_pho seems unused 
+    m_photons = new Photons(m_types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
     m_scene->setPhotons(m_photons);
 
     m_gui = new GUI(m_ggeo) ;
@@ -1335,11 +1346,13 @@ void App::render()
         m_gui->show(show_gui_window);
         if(m_photons)
         {
-            if(m_bnd)
+            if(m_boundaries)
             {
-                glm::ivec4 sel = m_bnd->getSelection() ;
-                m_composition->setSelection(sel); 
-                m_composition->getPick().y = sel.x ;   //  1st boundary 
+                //glm::ivec4 sel = m_bnd->getSelection() ;
+                //m_composition->setSelection(sel); 
+                //m_composition->getPick().y = sel.x ;   //  1st boundary 
+
+                m_composition->getPick().y = m_boundaries->getSelected() ;   //  1st boundary 
             }
             glm::ivec4& recsel = m_composition->getRecSelect();
             recsel.x = m_seqhis ? m_seqhis->getSelected() : 0 ; 

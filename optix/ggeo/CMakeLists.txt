@@ -41,17 +41,6 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 
-set(DEAD
-                GBoundary.cc
-                GBoundaryLib.cc
-                GBoundaryLibMetadata.cc
-                GLoader.cc
-
-                GMaterialIndex.cc
-                GSurfaceIndex.cc
-                GFlagIndex.cc
-)
-
 add_library(${name} SHARED 
                 GProperty.cc
                 GDomain.cc
@@ -91,20 +80,9 @@ add_library(${name} SHARED
                 GAttrSeq.cc
                 GMeshFixer.cc
                 GPmt.cc
+                GTestBox.cc
 )
 
-
-
-set(DEAD_H
-GBoundary.hh
-GBoundaryLib.hh
-GBoundaryLibMetadata.hh
-GLoader.hh
-
-GMaterialIndex.hh
-GSurfaceIndex.hh
-GFlagIndex.hh
-)
 
 
 SET(hdrs 
@@ -145,6 +123,7 @@ GItemList.hh
 GAttrSeq.hh
 GMeshFixer.hh
 GPmt.hh
+GTestBox.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

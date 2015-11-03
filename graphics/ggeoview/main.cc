@@ -10,6 +10,8 @@ int main(int argc, char** argv)
     app.loadGeometry();
     if(app.isExit()) exit(EXIT_SUCCESS);
 
+    app.makeDynamicGeometry();
+
     app.configureGeometry();
 
     app.uploadGeometry();

@@ -46,6 +46,7 @@ class GBoundaryLib ;
 class GBoundaryLibMetadata ;
 class GMergedMesh ; 
 class GItemIndex ; 
+class GTestBox ; 
 
 // optixrap
 class OContext ; 
@@ -81,6 +82,7 @@ class App {
        void prepareScene();   // creates OpenGL context window and OpenGL renderers loading shaders
   public:
        void loadGeometry();
+       void makeDynamicGeometry();
        void registerGeometry();
        void checkGeometry();
        void uploadGeometry();
@@ -160,6 +162,7 @@ class App {
        GUI*             m_gui ; 
        G4StepNPY*       m_g4step ; 
        TorchStepNPY*    m_torchstep ; 
+       GTestBox*        m_testbox ; 
        bool             m_exit ; 
 
 
@@ -213,6 +216,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_gui(NULL),
       m_g4step(NULL),
       m_torchstep(NULL),
+      m_testbox(NULL),
       m_exit(false)
 {
     init(argc, argv);

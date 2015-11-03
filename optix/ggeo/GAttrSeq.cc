@@ -24,13 +24,13 @@ unsigned int GAttrSeq::ERROR_COLOR = 0xAAAAAA ;
 void GAttrSeq::loadPrefs()
 {
     if(m_cache->loadPreference(m_color, m_type, "color.json"))
-        LOG(info) << "GAttrSeq::loadPrefs color " << m_type ;
+        LOG(debug) << "GAttrSeq::loadPrefs color " << m_type ;
 
     if(m_cache->loadPreference(m_abbrev, m_type, "abbrev.json"))
-        LOG(info) << "GAttrSeq::loadPrefs abbrev " << m_type ;
+        LOG(debug) << "GAttrSeq::loadPrefs abbrev " << m_type ;
 
     if(m_cache->loadPreference(m_order, m_type, "order.json"))
-        LOG(info) << "GAttrSeq::loadPrefs order " << m_type ;
+        LOG(debug) << "GAttrSeq::loadPrefs order " << m_type ;
 }
 
 

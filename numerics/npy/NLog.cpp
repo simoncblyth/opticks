@@ -33,7 +33,7 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
     {    
         if (fs::create_directories(logdir))
         {    
-            printf("logging_init: created directory %s \n", ldir) ;
+            printf("NLog logging_init: created directory %s \n", ldir) ;
         }    
     }    
 
@@ -59,7 +59,7 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
     );   
 
 
-    LOG(info) << "logging_init " << path ; 
+    LOG(debug) << "NLog logging_init " << path ; 
 }
 
 
