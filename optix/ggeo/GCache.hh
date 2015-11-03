@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 
+class NLog ; 
 class GColors ; 
 class GFlags ; 
 class Types ; 
@@ -20,19 +21,19 @@ class GCache {
          // singleton instance
          static GCache* g_instance ; 
     public:
-         
          static const char* JUNO ; 
          static const char* DAYABAY ; 
          static const char* PREFERENCE_BASE  ;
     public:
-         GCache(const char* envprefix);
+         GCache(const char* envprefix, const char* logname="ggeoview.log", const char* loglevel="info");
+         void configure(int argc, char** argv);
     private:
          void init();
          void readEnvironment();  
     public:
          void setGeocache(bool geocache=true);
          bool isGeocache();
-         void setColors(GColors* colors);
+         //void setColors(GColors* colors);
          GColors* getColors();
          GFlags*  getFlags();
          Types*   getTypes();
@@ -75,6 +76,9 @@ class GCache {
 
     private:
           const char* m_envprefix ; 
+          const char* m_logname  ; 
+          const char* m_loglevel  ; 
+          NLog*       m_log ; 
           GColors*    m_colors ; 
           GFlags*     m_flags ; 
           Types*      m_types ;
@@ -104,9 +108,12 @@ inline GCache* GCache::getInstance()
    return g_instance ;  
 }
 
-inline GCache::GCache(const char* envprefix)
+inline GCache::GCache(const char* envprefix, const char* logname, const char* loglevel)
        :
        m_envprefix(strdup(envprefix)),
+       m_logname(strdup(logname)),
+       m_loglevel(strdup(loglevel)),
+       m_log(NULL),
        m_colors(NULL),
        m_flags(NULL),
        m_types(NULL),
@@ -190,22 +197,10 @@ inline bool GCache::isInstanced()
 
 
 
-inline void GCache::setColors(GColors* colors)
-{
-    m_colors = colors ; 
-}
-inline GColors* GCache::getColors()
-{
-    return m_colors ;
-}
-inline Types* GCache::getTypes()
-{
-    return m_types ;
-}
-inline GFlags* GCache::getFlags()
-{
-    return m_flags ;
-}
+//inline void GCache::setColors(GColors* colors)
+//{
+//    m_colors = colors ; 
+//}
 
 
 

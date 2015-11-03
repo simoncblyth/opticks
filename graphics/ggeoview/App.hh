@@ -71,7 +71,7 @@ class App {
        App(const char* prefix, int argc, char** argv );
        bool isExit();
   private:
-       void loggingConfig(int argc, char** argv);
+       //void loggingConfig(int argc, char** argv);
        void init(int argc, char** argv);
        void wiring();
        void setExit(bool exit=true);
@@ -118,9 +118,6 @@ class App {
 
   private:
        const char*  m_prefix ; 
-       const char*  m_logname ; 
-       const char*  m_loglevel ;
- 
        Parameters*  m_parameters ; 
        Timer*       m_timer ; 
        GCache*      m_cache ; 
@@ -138,16 +135,11 @@ class App {
        Cfg*             m_cfg ;
        FrameCfg<Frame>* m_fcfg ; 
        Types*           m_types ; 
-       //GLoader*         m_loader ; 
        GGeo*            m_ggeo ; 
-       //GBoundaryLib*    m_blib ; 
-       //GBoundaryLibMetadata*    m_meta; 
        GMergedMesh*     m_mesh0 ;  
-       //Lookup*          m_lookup ;
        OContext*        m_ocontext ; 
        OColors*         m_ocolors ; 
        OGeo*            m_ogeo ; 
-       //OBoundaryLib*    m_olib ; 
        OBndLib*          m_olib ; 
        OScintillatorLib* m_oscin ; 
        OFrame*          m_oframe ; 
@@ -196,12 +188,8 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_cfg(NULL),
       m_fcfg(NULL),
       m_types(NULL),
-      //m_loader(NULL),
       m_ggeo(NULL),
-      //m_blib(NULL),
-      //m_meta(NULL),
       m_mesh0(NULL),
-      //m_lookup(NULL),
       m_ocontext(NULL),
       m_ocolors(NULL),
       m_ogeo(NULL),

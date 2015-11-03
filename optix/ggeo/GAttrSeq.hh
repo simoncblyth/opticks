@@ -24,6 +24,7 @@ History
 
 class GCache ; 
 class NSequence ; 
+class Index ; 
 
 /*
 Classes fulfilling NSequence include GItemList 
@@ -59,6 +60,8 @@ class GAttrSeq {
     public:
         void dump(const char* keys=NULL, const char* msg="GAttrSeq::dump");
         void dumpKey(const char* key);
+    public:
+        void dumpHexTable(Index* table, const char* msg="GAttrSeq::dumpHexTable");
     private:
         GCache*                              m_cache ; 
         const char*                          m_type ; 

@@ -44,6 +44,9 @@ class Index : public NSequence {
         void setExt(const char* ext);
         unsigned int getIndexLocal(const char* name, unsigned int missing=0);
         unsigned int getIndexSource(const char* name, unsigned int missing=0);
+        unsigned int getIndexSourceTotal();
+        float        getIndexSourceFraction(const char* name);
+
         bool         hasItem(const char* key);
         const char* getNameLocal(unsigned int local, const char* missing=NULL);
         const char* getNameSource(unsigned int source, const char* missing=NULL);
@@ -62,6 +65,7 @@ class Index : public NSequence {
         const char*                          m_ext ; 
         int                                  m_selected ; 
         bool                                 m_onebased ; 
+        unsigned int                         m_source_total ; 
         std::map<std::string, unsigned int>  m_source ; 
         std::map<std::string, unsigned int>  m_local ; 
         std::map<unsigned int, unsigned int> m_source2local ; 
@@ -80,7 +84,8 @@ inline Index::Index(const char* itemtype, const char* title, bool onebased)
    m_title(title ? strdup(title) : strdup(itemtype)),
    m_ext(".json"),
    m_selected(0),
-   m_onebased(onebased)
+   m_onebased(onebased),
+   m_source_total(0)
 {
 }
 inline const char* Index::getItemType()

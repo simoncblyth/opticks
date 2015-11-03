@@ -93,10 +93,22 @@ unsigned int Index::getIndex(const char* key)
 }
 
 
+unsigned int Index::getIndexSourceTotal()
+{
+    if(m_source_total == 0)
+    {
+        typedef std::map<std::string, unsigned int> MSU ; 
+        for(MSU::iterator it=m_source.begin() ; it != m_source.end() ; it++ ) m_source_total += it->second ; 
+    }
+    return m_source_total ; 
+}
 
-
-
-
+float Index::getIndexSourceFraction(const char* name)
+{
+     unsigned int total = getIndexSourceTotal();
+     unsigned int value = getIndexSource(name);
+     return total > 0 ? float(value)/float(total) : 0.f ; 
+}
 
 unsigned int Index::getIndexSource(const char* name, unsigned int missing)
 {

@@ -1,9 +1,12 @@
 #include "GAttrSeq.hh"
 
+// npy-
+#include "Index.hpp"
+#include "stringutil.hpp"
+
 #include "GItemList.hh"
 #include "GCache.hh"
 #include "GColors.hh"
-#include "stringutil.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -174,6 +177,33 @@ std::string GAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctr
 
 
 
+
+
+void GAttrSeq::dumpHexTable(Index* seqtab, const char* msg)
+{
+    LOG(info) << msg ;
+
+    for(unsigned int i=0 ; i < seqtab->getNumKeys() ; i++)
+    {
+        const char* key = seqtab->getKey(i);
+        unsigned int count = seqtab->getIndexSource(key);
+        float fraction = seqtab->getIndexSourceFraction(key);
+
+        std::string dseq = decodeHexSequenceString(key);
+
+        std::cout << std::setw(5) << i 
+                  << std::setw(10) << count 
+                  << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
+                  << std::setw(25) << ( key ? key : "-" ) 
+                  << std::setw(40) << dseq 
+                  << std::endl ;
+    }
+
+    std::cout << std::setw(5) << "TOT" 
+              << std::setw(10) << seqtab->getIndexSourceTotal()
+              << std::endl ;
+
+}
 
 
 

@@ -7,6 +7,7 @@
 #include "stdio.h"
 
 // npy-
+#include "NLog.hpp"
 #include "stringutil.hpp"
 #include "GLMFormat.hpp"
 #include "Types.hpp"
@@ -25,9 +26,9 @@ const char* GCache::PREFERENCE_BASE = "$HOME/.opticks" ;
 GCache* GCache::g_instance = NULL ; 
 
 
-
 void GCache::init()
 {
+    m_log = new NLog(m_logname, m_loglevel);
     readEnvironment();
     m_juno     = idPathContains("env/geant4/geometry/export/juno") ;
     m_dayabay  = idPathContains("env/geant4/geometry/export/DayaBay") ;
@@ -35,18 +36,53 @@ void GCache::init()
 
     if(m_juno)    m_detector = JUNO ; 
     if(m_dayabay) m_detector = DAYABAY ; 
-
-
-    std::string prefdir = getPreferenceDir("GCache");
-    m_colors = GColors::load(prefdir.c_str(),"GColors.json");  // colorname => hexcode 
-
-
-    m_types = new Types ;  
-    m_types->saveFlags(m_idpath, ".ini");
-
-    m_flags = new GFlags(this);  // parses cu/photon.h enum
-
 }
+
+
+void GCache::configure(int argc, char** argv)
+{
+    m_log->configure(argc, argv);
+    m_log->init(m_idpath);
+}
+
+
+
+// lazy constituent construction : as want to avoid any output until after logging is configured
+
+GColors* GCache::getColors()
+{
+    if(m_colors == NULL)
+    {
+        std::string prefdir = getPreferenceDir("GCache");
+        m_colors = GColors::load(prefdir.c_str(),"GColors.json");  // colorname => hexcode 
+    }
+    return m_colors ;
+}
+
+Types* GCache::getTypes()
+{
+    if(m_types == NULL)
+    {
+        m_types = new Types ;  
+        m_types->saveFlags(m_idpath, ".ini");
+    }
+    return m_types ;
+}
+
+GFlags* GCache::getFlags()
+{
+    if(m_flags == NULL)
+    {
+        m_flags = new GFlags(this);  // parses cu/photon.h enum
+    }
+    return m_flags ;
+}
+
+
+
+
+
+
 
 
 std::string GCache::getPreferenceDir(const char* type)
