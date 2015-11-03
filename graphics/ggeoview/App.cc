@@ -340,7 +340,6 @@ void App::registerGeometry()
     // TODO: replace these with equivalents from GPropertyLib subclasses
     //Index* matidx = materials->getIndex() ;
     //m_cache->getTypes()->setMaterialsIndex(matidx); 
-    //m_boundaries = meta->getBoundaryNames();   // int,string map used by BoundariesNPY in App::indexBoundaries
 
     ////////////////////////////////////////////////////////
 
@@ -830,22 +829,15 @@ void App::prepareOptiX()
     optix::Context context = optix::Context::create();
 
     m_ocontext = new OContext(context, mode); 
-
     m_ocontext->setStackSize(stack);
-
     m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
-
     m_ocontext->setDebugPhoton(debugidx);
 
     m_ocolors = new OColors(context, m_cache->getColors() );
     m_ocolors->convert();
 
-    //m_olib = new OBoundaryLib(context,m_ggeo->getBoundaryLib());
-    //m_olib->convert(); 
-
     m_olib = new OBndLib(context,m_ggeo->getBndLib());
     m_olib->convert(); 
-
 
     m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
     m_oscin->convert(); 
@@ -857,9 +849,7 @@ void App::prepareOptiX()
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
     m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
-
     m_ogeo->setTop(m_ocontext->getTop());
-
     m_ogeo->convert(); 
 
     unsigned int width  = m_composition->getPixelWidth();
@@ -1066,8 +1056,11 @@ void App::indexSequence()
     GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
     GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
 
-    qflg->dumpHexTable(m_seqhis->getIndex(), "m_seqhis"); 
-    qmat->dumpHexTable(m_seqmat->getIndex(), "m_seqmat"); 
+
+    qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+    qflg->dumpTable(m_seqhis->getIndex(), "App::indexSequence m_seqhis"); 
+    qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+    qmat->dumpTable(m_seqmat->getIndex(), "App::indexSequence m_seqmat"); 
 
     // looks like types only used by GItemIndex for the labels
     // by formTable/getLabel which is invoked by the labeller 
@@ -1078,14 +1071,10 @@ void App::indexSequence()
     // need pointers for radio selects etc..
 
     m_seqhis->setTitle("Photon Flag Sequence Selection");
-    //m_seqhis->setTypes(types);
-    //m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
     m_seqhis->setHandler(qflg);
     m_seqhis->formTable();
 
     m_seqmat->setTitle("Photon Material Sequence Selection");
-    //m_seqmat->setTypes(types);
-    //m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
     m_seqmat->setHandler(qmat);
     m_seqmat->formTable();
 
@@ -1096,37 +1085,49 @@ void App::indexSequence()
 
 void App::indexBoundaries()
 {
+    /*
+    Indexing the signed integer boundary code, from optixrap-/cu/generate.cu::
+
+         208      p.flags.i.x = prd.boundary ;
+
+    */
     if(!m_evt) return ; 
 
     OBuf* pho = m_opropagator->getPhotonBuf();
-
-
     pho->setHexDump(false);
 
-/*
-    unsigned int npha = pho->getNumAtoms(); 
-    unsigned int nphd  = std::min(npha,4*4*100u); 
-    pho->dump<int>("App::indexBoundaries pho->dump<int>", 4*4, 4*3+0, nphd);
-*/
-
-    TSparse<int> boundaries("Boundaries", pho->slice(4*4,4*3+0)); // stride,begin 
-    boundaries.setHexDump(false);
+    bool hexkey = false ; 
+    TSparse<int> boundaries("indexBoundaries", pho->slice(4*4,4*3+0), hexkey); // stride,begin  hexkey effects Index and dumping only 
     boundaries.make_lookup();
-    //boundaries.dump("App::indexBoundaries");
+    boundaries.dump("App::indexBoundaries TSparse<int>::dump");
 
+
+    GBndLib* blib = m_ggeo->getBndLib();
+    blib->close();                         // cannot add new boundaries after a close
+    GAttrSeq* qbnd = blib->getAttrNames();
+    qbnd->setCtrl(GAttrSeq::VALUE_DEFAULTS);
+
+    std::map<unsigned int, std::string> boundary_names = qbnd->getNamesMap(GAttrSeq::ONEBASED) ;
+        
+    m_boundaries = new GItemIndex(boundaries.getIndex()) ;  
+    m_boundaries->setTitle("Photon Termination Boundaries");
+    m_boundaries->setHandler(qbnd);
+
+    m_boundaries->getIndex()->save(m_cache->getIdPath());
+
+    m_boundaries->formTable();
 
     (*m_timer)("indexBoundaries"); 
 
 
-    NPY<float>* dpho = m_evt->getPhotonData();
 
+    NPY<float>* dpho = m_evt->getPhotonData();
     if(dpho->hasData())
     {
         // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
         LOG(info) << "App::indexBoundaries host based " ;
         m_bnd = new BoundariesNPY(dpho); 
-        m_bnd->setTypes(m_cache->getTypes());
-        m_bnd->setBoundaryNames(m_boundaries); // map<int,string>
+        m_bnd->setBoundaryNames(boundary_names); 
         m_bnd->indexBoundaries();     
     } 
 
@@ -1134,6 +1135,7 @@ void App::indexBoundaries()
 
 
 /*
+TODO: investigate the zero slot artifact
 
 App::indexBoundaries : num_unique 31 
                0         0      ## hmm this is an empty slot ...
@@ -1283,7 +1285,7 @@ void App::prepareGUI()
 #ifdef GUI_
 
     m_types = m_cache->getTypes();  // needed for each render
-    m_photons = new Photons(m_types, m_pho, m_bnd, m_seqhis, m_seqmat ) ; // GUI jacket : m_pho seems unused 
+    m_photons = new Photons(m_types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket : m_pho seems unused 
     m_scene->setPhotons(m_photons);
 
     m_gui = new GUI(m_ggeo) ;

@@ -10,8 +10,11 @@
 class Index ; 
 
 
-// TODO: split mechanics into a base class 
-//       with specializations for History and Material
+//
+// this is on the way out 
+// moving to GPropertyLib GAttrSeq approach divvying 
+// out labelling into handlers from GFlags, GMaterialLib, GSurfaceLib, ...
+//
 
 class Types {
    public:

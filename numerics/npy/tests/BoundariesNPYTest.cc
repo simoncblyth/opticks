@@ -6,6 +6,9 @@
 #include "GLMPrint.hpp"
 #include "stdlib.h"
 
+
+// see ggv-/tests/BoundariesNPYTest.cc
+
 int main(int argc, char** argv)
 {
     const char* idpath = getenv("IDPATH");

@@ -173,7 +173,7 @@ void GMaterialLib::import()
     unsigned int nj = m_buffer->getShape(1);
     unsigned int nk = m_buffer->getShape(2);
 
-    LOG(info) << " GMaterialLib::import "    
+    LOG(debug) << " GMaterialLib::import "    
               << " ni " << ni 
               << " nj " << nj 
               << " nk " << nk
@@ -184,7 +184,7 @@ void GMaterialLib::import()
    for(unsigned int i=0 ; i < ni ; i++)
    {
        const char* key = m_names->getKey(i);
-       LOG(info) << std::setw(3) << i 
+       LOG(debug) << std::setw(3) << i 
                  << " " << key ;
 
        GMaterial* mat = new GMaterial(key, i);

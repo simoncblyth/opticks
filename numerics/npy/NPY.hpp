@@ -117,6 +117,9 @@ class NPY : public NPYBase {
 
        std::map<unsigned int,unsigned int> count_unique_u(unsigned int j, unsigned int k);
 
+       std::vector<std::pair<int,int> > count_uniquei_descending(unsigned int j, unsigned int k); 
+       static bool second_value_order(const std::pair<int,int>&a, const std::pair<int,int>&b);
+
     public:
        // type shifting get/set using union trick
 

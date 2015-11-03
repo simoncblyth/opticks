@@ -141,9 +141,9 @@ void TSparse<T>::dump(const char* msg)
     for(unsigned int  i=0 ; i < m_values_h.size() ; i++)
     {
         std::cout << "[" << std::setw(2) << i << "] "  ;
-        if(m_hexdump) std::cout << std::hex ; 
+        if(m_hexkey) std::cout << std::hex ; 
         std::cout << std::setw(16) << m_values_h[i] ;
-        if(m_hexdump) std::cout << std::dec ; 
+        if(m_hexkey) std::cout << std::dec ; 
         std::cout << std::setw(10) << m_counts_h[i] ;
         std::cout << std::endl ;  
     } 
@@ -206,8 +206,8 @@ Index* TSparse<T>::make_index()
     Index* index = new Index(m_label);
     for(unsigned int i=0 ; i < m_values_h.size() ; i++)
     { 
-        std::string name = as_hex(m_values_h[i]);
-        index->add(name.c_str(), m_counts_h[i] ); 
+        std::string key = m_hexkey ? as_hex(m_values_h[i]) : as_dec(m_values_h[i]) ;
+        index->add(key.c_str(), m_counts_h[i] ); 
     }
     return index ; 
 }

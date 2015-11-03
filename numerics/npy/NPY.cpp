@@ -486,6 +486,30 @@ std::set<int> NPY<T>::uniquei(unsigned int j, unsigned int k)
     return uniq ; 
 }
 
+
+
+
+template <typename T>
+bool NPY<T>::second_value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)
+{
+    return a.second > b.second ;
+}
+
+template <typename T>
+std::vector<std::pair<int,int> > NPY<T>::count_uniquei_descending(unsigned int j, unsigned int k)
+{
+    std::map<int,int> uniqn = count_uniquei(j,k) ; 
+
+    std::vector<std::pair<int,int> > pairs ; 
+    for(std::map<int,int>::iterator it=uniqn.begin() ; it != uniqn.end() ; it++) pairs.push_back(*it);
+
+    std::sort(pairs.begin(), pairs.end(), second_value_order );
+
+    return pairs ; 
+}
+
+
+
 template <typename T>
 std::map<int,int> NPY<T>::count_uniquei(unsigned int j, unsigned int k, int sj, int sk )
 {

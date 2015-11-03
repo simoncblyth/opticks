@@ -53,6 +53,17 @@ inline std::string as_hex(T in) {
     return ss.str();
 }
 
+template<typename T>
+inline std::string as_dec(T in) {
+    std::stringstream ss; 
+    ss <<  std::dec << in; 
+    return ss.str();
+}
+
+
+
+
+
 
 template<typename T>
 std::string arraydigest( T* data, unsigned int n );

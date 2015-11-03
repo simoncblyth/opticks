@@ -11,13 +11,11 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+
+#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include "NLog.hpp"
-
-//#include <boost/log/trivial.hpp>
-//#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 
 unsigned int GAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
@@ -39,6 +37,20 @@ void GAttrSeq::loadPrefs()
 void GAttrSeq::setSequence(NSequence* seq)
 {
     m_sequence = seq ; 
+}
+
+
+std::map<unsigned int, std::string> GAttrSeq::getNamesMap(unsigned char ctrl)
+{
+     std::map<unsigned int, std::string> mus ; 
+     unsigned int ni = m_sequence->getNumKeys();
+     for(unsigned int i=0 ; i < ni ; i++)
+     {
+         const char* key = m_sequence->getKey(i);
+         unsigned int idx = ctrl & ONEBASED ? i + 1 : i ; 
+         mus[idx] = key ; 
+     }
+     return mus ; 
 }
 
 const char* GAttrSeq::getColorName(const char* key)
@@ -98,13 +110,18 @@ std::vector<std::string>& GAttrSeq::getLabels()
 
 std::string GAttrSeq::getAbbr(const char* key)
 {
+    if(key == NULL) return "NULL" ; 
     return m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
 }
 
 
 void GAttrSeq::dump(const char* keys, const char* msg)
 {
-    if(!m_sequence) return ; 
+    if(!m_sequence) 
+    {
+        LOG(warning) << "GAttrSeq::dump no sequence " ; 
+        return ; 
+    }
     LOG(info) << msg << " " << ( keys ? keys : "-" ) ; 
 
     if(keys)
@@ -159,6 +176,7 @@ void GAttrSeq::dumpKey(const char* key)
 
 std::string GAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctrl)
 {
+    // decodes hex keys like "4ccc1"  eg those from seqmat and seqhis 
     if(!seq) return "NULL" ;
 
     std::string lseq(seq);
@@ -180,9 +198,49 @@ std::string GAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctr
 
 
 
+std::string GAttrSeq::decodeString(const char* seq, unsigned char ctrl)
+{
+    // decodes keys like "-38"  eg those from boundaries
+    if(!seq) return "NULL" ;
+
+    std::stringstream ss ; 
+    int code = boost::lexical_cast<int>(seq);
+    unsigned int acode = abs(code);
+    unsigned int idx = ctrl & ONEBASED ? acode - 1 : acode ;  
+    const char* key = m_sequence->getKey(idx) ;
+    std::string name = ( ctrl & ABBREVIATE ) ? getAbbr(key) : key ; 
+    ss << name ; 
+    return ss.str();
+}
 
 
-void GAttrSeq::dumpHexTable(Index* seqtab, const char* msg)
+
+std::string GAttrSeq::getLabel(Index* index, const char* key, unsigned int& colorcode)
+{
+    colorcode = 0xFFFFFF ;
+
+    unsigned int source = index->getIndexSource(key); // the count for seqmat, seqhis
+    float fraction      = index->getIndexSourceFraction(key);
+    std::string dseq    = m_ctrl & HEXKEY 
+                                ? 
+                                   decodeHexSequenceString(key)
+                                :
+                                   decodeString(key)
+                                ;
+
+    std::stringstream ss ;  
+    ss
+        << std::setw(10) << source 
+        << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
+        << std::setw(25) << ( key ? key : "-" ) 
+        << std::setw(40) << dseq 
+        ; 
+    
+    return ss.str();
+}
+
+
+void GAttrSeq::dumpTable(Index* seqtab, const char* msg)
 {
     LOG(info) << msg ;
 
@@ -202,33 +260,6 @@ void GAttrSeq::dumpHexTable(Index* seqtab, const char* msg)
               << std::endl ;
 }
 
-
-std::string GAttrSeq::getLabel(Index* index, const char* key, unsigned int& colorcode)
-{
-    colorcode = 0xFFFFFF ;
-
-    unsigned int source = index->getIndexSource(key); // the count for seqmat, seqhis
-    float fraction      = index->getIndexSourceFraction(key);
-    std::string dseq    = decodeHexSequenceString(key);
-
-    std::stringstream ss ;  
-    ss
-        << std::setw(10) << source 
-        << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
-        << std::setw(25) << ( key ? key : "-" ) 
-        << std::setw(40) << dseq 
-        ; 
-    
-    return ss.str();
-}
-
-
-
-/*
-std::pair<std::string, unsigned int>  GAttrSeq::getLabel(const char* key)
-{
-}
-*/
 
 
 

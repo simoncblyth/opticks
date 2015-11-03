@@ -146,12 +146,16 @@ class App {
        ORenderer*       m_orenderer ; 
        OTracer*         m_otracer ; 
        OPropagator*     m_opropagator ; 
+
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
        HitsNPY*         m_hit ; 
        RecordsNPY*      m_rec ; 
+
        GItemIndex*      m_seqhis ; 
        GItemIndex*      m_seqmat ; 
+       GItemIndex*      m_boundaries ; 
+
        Photons*         m_photons ; 
        GUI*             m_gui ; 
        G4StepNPY*       m_g4step ; 
@@ -160,7 +164,6 @@ class App {
 
 
    private:
-       std::map<int, std::string> m_boundaries ;
        glm::uvec4       m_size ;
 
 };
@@ -205,6 +208,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_rec(NULL),
       m_seqhis(NULL),
       m_seqmat(NULL),
+      m_boundaries(NULL),
       m_photons(NULL),
       m_gui(NULL),
       m_g4step(NULL),

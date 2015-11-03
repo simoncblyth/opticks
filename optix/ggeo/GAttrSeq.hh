@@ -34,9 +34,15 @@ class GAttrSeq {
         static unsigned int ERROR_COLOR ; 
 
         enum {
-                REVERSE = 0x1 << 0,  
+                REVERSE    = 0x1 << 0,  
                 ABBREVIATE = 0x1 << 1,
-                ONEBASED = 0x1 << 2
+                ONEBASED   = 0x1 << 2,
+                HEXKEY     = 0x1 << 3
+             };
+
+        enum {
+                 SEQUENCE_DEFAULTS = REVERSE|ABBREVIATE|ONEBASED|HEXKEY,
+                 VALUE_DEFAULTS = ABBREVIATE|ONEBASED
              };
 
     public:
@@ -58,12 +64,15 @@ class GAttrSeq {
         std::vector<unsigned int>& getColorCodes();
         std::vector<std::string>&  getLabels();
     public:
+        std::map<unsigned int, std::string> getNamesMap(unsigned char ctrl=ONEBASED);
+    public:
         std::string decodeHexSequenceString(const char* seq, unsigned char ctrl=REVERSE|ABBREVIATE|ONEBASED );
+        std::string decodeString(const char* seq, unsigned char ctrl=ABBREVIATE|ONEBASED);
     public:
         void dump(const char* keys=NULL, const char* msg="GAttrSeq::dump");
         void dumpKey(const char* key);
     public:
-        void dumpHexTable(Index* table, const char* msg="GAttrSeq::dumpHexTable");
+        void dumpTable(   Index* table, const char* msg="GAttrSeq::dumpTable");
     private:
         GCache*                              m_cache ; 
         const char*                          m_type ; 
@@ -92,17 +101,6 @@ inline const char* GAttrSeq::getType()
 {
     return m_type ; 
 }
-
-/*
-inline std::map<std::string, std::string>&  GAttrSeq::getColor()
-{
-   return m_color ;
-}
-inline std::map<std::string, std::string>&  GAttrSeq::getAbbrev()
-{
-   return m_abbrev ;
-}
-*/
 
 inline std::map<std::string, unsigned int>&  GAttrSeq::getOrder()
 {

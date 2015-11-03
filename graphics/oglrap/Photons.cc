@@ -3,7 +3,7 @@
 
 // npy-
 #include "PhotonsNPY.hpp"
-#include "BoundariesNPY.hpp"
+//#include "BoundariesNPY.hpp"
 #include "Index.hpp"
 
 // ggeo-
@@ -21,14 +21,6 @@ void Photons::gui()
 {
 #ifdef GUI_
 
-    if(m_boundaries)
-    {
-        if (ImGui::CollapsingHeader("Photon Boundary Selection"))
-        {
-            gui_boundary_selection();
-        }
-    }
-
     if(m_types)
     {
         ImGui::Spacing();
@@ -36,6 +28,13 @@ void Photons::gui()
         {
             gui_flag_selection();
         }
+    }
+
+    // TODO: Checkbox multiple-select that works with GItemList
+    if(m_boundaries)
+    {
+        ImGui::Spacing();
+        GUI::gui_radio_select(m_boundaries);
     }
 
     if(m_seqhis)
@@ -53,8 +52,7 @@ void Photons::gui()
 }
 
 
-
-
+/*
 void Photons::gui_boundary_selection()
 {
 #ifdef GUI_
@@ -69,6 +67,7 @@ void Photons::gui_boundary_selection()
     }
 #endif
 }
+*/
 
 
 void Photons::gui_flag_selection()
