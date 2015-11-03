@@ -12,8 +12,11 @@
 #include <iostream>
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+
+#include "NLog.hpp"
+
+//#include <boost/log/trivial.hpp>
+//#define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
 
@@ -183,27 +186,51 @@ void GAttrSeq::dumpHexTable(Index* seqtab, const char* msg)
 {
     LOG(info) << msg ;
 
+    unsigned int colorcode(0xFFFFFF);
+
     for(unsigned int i=0 ; i < seqtab->getNumKeys() ; i++)
     {
         const char* key = seqtab->getKey(i);
-        unsigned int count = seqtab->getIndexSource(key);
-        float fraction = seqtab->getIndexSourceFraction(key);
-
-        std::string dseq = decodeHexSequenceString(key);
-
-        std::cout << std::setw(5) << i 
-                  << std::setw(10) << count 
-                  << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
-                  << std::setw(25) << ( key ? key : "-" ) 
-                  << std::setw(40) << dseq 
-                  << std::endl ;
+        std::string label = getLabel(seqtab, key, colorcode ); 
+        std::cout << std::setw(5) << i
+                  << label 
+                  << std::endl ; 
     }
 
     std::cout << std::setw(5) << "TOT" 
               << std::setw(10) << seqtab->getIndexSourceTotal()
               << std::endl ;
-
 }
+
+
+std::string GAttrSeq::getLabel(Index* index, const char* key, unsigned int& colorcode)
+{
+    colorcode = 0xFFFFFF ;
+
+    unsigned int source = index->getIndexSource(key); // the count for seqmat, seqhis
+    float fraction      = index->getIndexSourceFraction(key);
+    std::string dseq    = decodeHexSequenceString(key);
+
+    std::stringstream ss ;  
+    ss
+        << std::setw(10) << source 
+        << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
+        << std::setw(25) << ( key ? key : "-" ) 
+        << std::setw(40) << dseq 
+        ; 
+    
+    return ss.str();
+}
+
+
+
+/*
+std::pair<std::string, unsigned int>  GAttrSeq::getLabel(const char* key)
+{
+}
+*/
+
+
 
 
 

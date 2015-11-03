@@ -2,6 +2,7 @@
 
 class GColors ; 
 class GColorMap ; 
+class GAttrSeq ; 
 class GBuffer ; 
 
 struct gfloat3 ; 
@@ -22,9 +23,15 @@ class Types ;
 //   * material sequences
 //   * flag sequences
 //
-//
 //  This got overcomplicated due to the GBoundaryLib attempt 
 //  to jump several steps and not have persistable GMaterialLib GSurfaceLib GPropertyLib
+// 
+//
+//  TODO:
+//      rejig labelling functionality, remove from here 
+//      and use from the GAttrSeq constituent
+//      of GMaterialLib GSurfaceLib GBndLib GFlags 
+//
 //  
 //
 // adds colors and gui to basis Index constituent 
@@ -34,6 +41,7 @@ class GItemIndex {
         GItemIndex(const char* itemtype);
         void setTitle(const char* title);
    public:
+        ///////// AIMING TO KILL ///////////////////////////////////////////////////////////
         typedef std::string (*GItemIndexLabellerPtr)(GItemIndex*, const char*, unsigned int& );
         typedef enum { DEFAULT, COLORKEY, MATERIALSEQ, HISTORYSEQ } Labeller_t ;
    public:
@@ -45,9 +53,19 @@ class GItemIndex {
         void setLabeller(GItemIndexLabellerPtr labeller);
         void setLabeller(Labeller_t labeller );
         std::string getLabel(const char* key, unsigned int& colorcode);
+        //////////////////////////////////////////////////////////////////////////////////////
    public:
         void     setTypes(Types* types);
         Types*   getTypes();
+   public:
+        // aiming to replace generic Types + messy multiple labellers
+        // with specific handler for the type of thing in question 
+        // eg material, surface, material sequence, history sequence, history 
+        // 
+        // all the color stuff belongs in the handler, not here 
+        //
+        void     setHandler(GAttrSeq* handler);  
+        //
    public:
         void add(const char* name, unsigned int source);
    public:
@@ -97,6 +115,8 @@ class GItemIndex {
         GBuffer*                             m_colorbuffer ; 
         Types*                               m_types ; 
    private:
+        GAttrSeq*                            m_handler ; 
+   private:
         // populated by formTable
         std::vector<std::string>             m_labels ; 
         std::vector<unsigned int>            m_codes ; 
@@ -108,7 +128,8 @@ inline GItemIndex::GItemIndex(const char* itemtype)
    m_colors(NULL),
    m_colormap(NULL),
    m_colorbuffer(NULL),
-   m_types(NULL)
+   m_types(NULL),
+   m_handler(NULL)
 {
    init(itemtype);
    setLabeller(DEFAULT);
@@ -122,7 +143,8 @@ inline GItemIndex::GItemIndex(Index* index)
    m_colors(NULL),
    m_colormap(NULL),
    m_colorbuffer(NULL),
-   m_types(NULL)
+   m_types(NULL),
+   m_handler(NULL)
 {
    setLabeller(DEFAULT);
 }
@@ -144,6 +166,13 @@ inline void GItemIndex::setTypes(Types* types)
 {
    m_types = types ; 
 }
+inline void GItemIndex::setHandler(GAttrSeq* handler)
+{
+   m_handler = handler ; 
+}
+
+
+
 inline Types* GItemIndex::getTypes()
 {
    return m_types ;
@@ -163,6 +192,10 @@ inline Index* GItemIndex::getIndex()
 {
    return m_index ; 
 }
+
+
+
+
 
 inline std::vector<unsigned int>& GItemIndex::getCodes()
 {

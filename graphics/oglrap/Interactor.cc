@@ -132,6 +132,7 @@ const char* Interactor::keys =
 "\n F : far mode toggle : swipe up/down change frustum far "
 "\n G : gui mode    toggle GUI "
 "\n H : Trackball::home  "
+"\n I : Scene::nextInstanceStyle style of instanced geometry eg PMT visibility  "
 "\n J : Scene::jump  "
 "\n K : Composition::nextPickPhotonStyle "
 "\n L : Composition::nextNormalStyle     flip normal in shaders "
@@ -160,7 +161,7 @@ void Interactor::key_pressed(unsigned int key)
     switch (key)
     {
         //  ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        //  ******** **********  *****
+        //  *******************  *****
 
         case GLFW_KEY_A:
             m_composition->nextMode(getModifiers()) ; 
@@ -186,6 +187,9 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_H:
             m_trackball->home(); 
+            break;
+        case GLFW_KEY_I:
+            m_scene->nextInstanceStyle(); 
             break;
         case GLFW_KEY_J:
             m_scene->jump(); 

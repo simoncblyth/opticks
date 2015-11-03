@@ -81,13 +81,19 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // ggeo-
+#include "GCache.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
+
 #include "GBndLib.hh"
+#include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
-#include "GCache.hh"
+#include "GFlags.hh"
+
 #include "GColors.hh"
 #include "GItemIndex.hh"
+#include "GAttrSeq.hh"
+
 
 // assimpwrap
 #include "AssimpGGeo.hh"
@@ -100,11 +106,11 @@
 namespace fs = boost::filesystem;
 
 
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/trivial.hpp>
-#include "boost/log/utility/setup.hpp"
-#define LOG BOOST_LOG_TRIVIAL
+//#include <boost/log/core.hpp>
+//#include <boost/log/expressions.hpp>
+//#include <boost/log/trivial.hpp>
+//#include "boost/log/utility/setup.hpp"
+//#define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
 // optixrap-
@@ -150,7 +156,7 @@ bool App::hasOpt(const char* name)
 void App::init(int argc, char** argv)
 {
     m_cache     = new GCache(m_prefix, "ggeoview.log", "info");
-    m_cache->configure(argc, argv);
+    m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
 
     m_parameters = new Parameters ; 
     m_timer      = new Timer("main");
@@ -300,12 +306,7 @@ void App::loadGeometry()
     m_ggeo = new GGeo(m_cache);
 
     if(m_fcfg->hasOpt("qe1"))
-    {
-        //GBoundaryLib* blib = m_ggeo->getBoundaryLib();
-        //blib->setFakeEfficiency(1.0);
-        GSurfaceLib* slib = m_ggeo->getSurfaceLib();
-        slib->setFakeEfficiency(1.0);
-    }
+        m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
 
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
@@ -337,14 +338,9 @@ void App::loadGeometry()
 void App::registerGeometry()
 {
     // TODO: replace these with equivalents from GPropertyLib subclasses
-
-    //GLoader* loader = m_ggeo->getLoader();
-    //GItemIndex* materials = loader->getMaterials() ;
-    //GBoundaryLibMetadata* meta = loader->getMetadata() ;
     //Index* matidx = materials->getIndex() ;
     //m_cache->getTypes()->setMaterialsIndex(matidx); 
     //m_boundaries = meta->getBoundaryNames();   // int,string map used by BoundariesNPY in App::indexBoundaries
-
 
     ////////////////////////////////////////////////////////
 
@@ -1066,21 +1062,33 @@ void App::indexSequence()
     m_seqmat->getIndex()->save(m_cache->getIdPath());
 
 
-    Types* types = m_cache->getTypes();
+    //Types* types = m_cache->getTypes();   
+    GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
+    GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
 
+    qflg->dumpHexTable(m_seqhis->getIndex(), "m_seqhis"); 
+    qmat->dumpHexTable(m_seqmat->getIndex(), "m_seqmat"); 
+
+    // looks like types only used by GItemIndex for the labels
+    // by formTable/getLabel which is invoked by the labeller 
+    // on all the keys of the index
+    // which are then access in oglrap-/GUI by getLabels()
+    //
+    // but for GUI selection cannot just create vectors of labels
+    // need pointers for radio selects etc..
 
     m_seqhis->setTitle("Photon Flag Sequence Selection");
-    m_seqhis->setTypes(types);
-    m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
+    //m_seqhis->setTypes(types);
+    //m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
+    m_seqhis->setHandler(qflg);
     m_seqhis->formTable();
 
-
-
     m_seqmat->setTitle("Photon Material Sequence Selection");
-    m_seqmat->setTypes(types);
-    m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
+    //m_seqmat->setTypes(types);
+    //m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
+    m_seqmat->setHandler(qmat);
     m_seqmat->formTable();
-    // invokes the labeller on all the keys of the index
+
 
     (*m_timer)("indexSequence"); 
 }

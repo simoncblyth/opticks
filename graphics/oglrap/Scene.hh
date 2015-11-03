@@ -79,11 +79,14 @@ class Scene : public Configurable {
         void nextGeometryStyle();
    public:
         void setWireframe(bool wire=true);
-
    public:
         typedef enum { GVIS, GVISVEC, GVEC, GINVIS, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
         void nextGlobalStyle();
         void applyGlobalStyle();
+   public:
+        typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
+        void nextInstanceStyle();
+        void applyInstanceStyle();
    public:
         Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL, const char* shader_dynamic_dir=NULL );
    private:
@@ -204,6 +207,7 @@ class Scene : public Configurable {
         RecordStyle_t   m_record_style ; 
         GeometryStyle_t m_geometry_style ; 
         GlobalStyle_t   m_global_style ; 
+        InstanceStyle_t m_instance_style ; 
         bool            m_initialized ;  
         float           m_time_fraction ;  
 
@@ -246,6 +250,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_record_style(REC),
             m_geometry_style(BBOX),
             m_global_style(GVIS),
+            m_instance_style(IVIS),
             m_initialized(false),
             m_time_fraction(0.f)
 {
@@ -410,6 +415,9 @@ inline void Scene::nextGlobalStyle()
     applyGlobalStyle();
 }
 
+
+
+
 inline void Scene::applyGlobalStyle()
 {
     switch(m_global_style)
@@ -436,6 +444,55 @@ inline void Scene::applyGlobalStyle()
         
     }
 }
+
+
+
+
+inline void Scene::nextInstanceStyle()
+{
+    int next = (m_instance_style + 1) % NUM_INSTANCE_STYLE ; 
+    m_instance_style = (InstanceStyle_t)next ; 
+    applyInstanceStyle();
+}
+
+inline void Scene::applyInstanceStyle()
+{
+    // hmm some overlap with GeometryStyle ... but that includes wireframe which can be very slow
+    bool inst(false);
+    switch(m_instance_style)
+    {
+        case IVIS:
+                  inst = true ;    
+                  break ; 
+        case IINVIS:
+                  inst = false ;    
+                  break ; 
+         default:
+                  assert(0);
+        
+    }
+
+   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
+   {
+       m_instance_mode[i] = inst ; 
+   } 
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 inline unsigned int Scene::getTargetDeferred()
 {

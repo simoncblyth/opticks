@@ -41,6 +41,7 @@ class GAttrSeq {
 
     public:
         GAttrSeq(GCache* cache, const char* type);
+        void setCtrl(unsigned char ctrl);
         void loadPrefs();
         const char* getType();
 
@@ -50,6 +51,7 @@ class GAttrSeq {
 
         void setSequence(NSequence* seq);
     public:
+        std::string  getLabel(Index* index, const char* key, unsigned int& colorcode);
         std::string  getAbbr(const char* key);
         unsigned int getColorCode(const char* key );
         const char*  getColorName(const char* key);
@@ -65,6 +67,7 @@ class GAttrSeq {
     private:
         GCache*                              m_cache ; 
         const char*                          m_type ; 
+        unsigned char                        m_ctrl ; 
         NSequence*                           m_sequence ; 
     private:
         std::map<std::string, std::string>   m_abbrev ;
@@ -80,6 +83,7 @@ inline GAttrSeq::GAttrSeq(GCache* cache, const char* type)
    :
    m_cache(cache),
    m_type(strdup(type)),
+   m_ctrl(0),
    m_sequence(NULL)
 {
 }
@@ -102,8 +106,11 @@ inline std::map<std::string, std::string>&  GAttrSeq::getAbbrev()
 
 inline std::map<std::string, unsigned int>&  GAttrSeq::getOrder()
 {
-   return m_order ;
+    return m_order ;
 }
 
-
+inline void GAttrSeq::setCtrl(unsigned char ctrl)
+{
+    m_ctrl = ctrl ; 
+}
 

@@ -1,4 +1,5 @@
 #include "GItemIndex.hh"
+#include "GAttrSeq.hh"
 #include "GColorMap.hh"
 #include "GColors.hh"
 #include "GBuffer.hh"
@@ -113,12 +114,14 @@ void GItemIndex::dump(const char* msg)
 
 
 
-
 std::string GItemIndex::getLabel(const char* key, unsigned int& colorcode)
 {
-    return (*m_labeller)(this, key, colorcode);
+    // Trojan Handler : out to kill most of this class
+    return m_handler ? 
+                       m_handler->getLabel(m_index, key, colorcode) 
+                     : 
+                      (*m_labeller)(this, key, colorcode);
 }
-
 
 
 void GItemIndex::setLabeller(Labeller_t labeller )
