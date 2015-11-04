@@ -11,6 +11,7 @@
 #include "GPropertyMap.hh"
 
 class GCache; 
+
 class GMesh ; 
 class GSolid ; 
 class GNode ; 
@@ -18,13 +19,6 @@ class GMaterial ;
 class GSkinSurface ; 
 class GBorderSurface ; 
 
-// on the way out
-class GBoundary ;
-class GBoundaryLib ;
-class GLoader ;
-class GItemIndex ; 
-
-// contenders
 class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
@@ -35,14 +29,16 @@ class GColorizer ;
 class GColors ; 
 class GFlags ; 
 
+class GItemIndex ; 
+class GItemList ; 
+
 class GMergedMesh ;
 class NSensorList ; 
-class GItemList ; 
 
 class Lookup ; 
 
-
 class TorchStepNPY ; 
+
 //
 // NB GGeo is a dumb substrate from which the geometry model is created,
 //    eg by AssimpGGeo::convert 
@@ -88,7 +84,6 @@ class GGeo {
         GMaterial* getCathode();  
         unsigned int getMaterialLine(const char* shortname);
 
-        virtual ~GGeo();
    private:
         void init(); 
         void loadMergedMeshes(const char* idpath);
@@ -124,19 +119,8 @@ class GGeo {
         bool isLoaded();
         bool isVolnames();
 
-        void setPath(const char* path);
-        void setQuery(const char* query);
-        void setCtrl(const char* ctrl);
-        //void setVolNames(bool volnames);
-        void setIdentityPath(const char* idpath);
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion();
-    public:
-        char* getPath(); 
-        char* getQuery(); 
-        char* getCtrl(); 
-        char* getIdentityPath(); 
-
     public:
         void add(GMesh*    mesh);
         void add(GSolid*    solid);
@@ -273,7 +257,7 @@ class GGeo {
         std::vector<GBorderSurface*>  m_border_surfaces ; 
 
         std::vector<GSolid*>           m_sensitive_solids ; 
-        std::unordered_set<GBoundary*> m_sensitive_boundaries ; 
+        //std::unordered_set<GBoundary*> m_sensitive_boundaries ; 
 
         std::unordered_set<std::string> m_cathode_lv ; 
 
@@ -285,11 +269,9 @@ class GGeo {
         std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
-        //GLoader*                      m_loader ; 
         Lookup*                       m_lookup ; 
 
         GBndLib*                      m_bndlib ; 
-        //GBoundaryLib*                 m_boundarylib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
         GScintillatorLib*             m_scintillatorlib ; 
@@ -297,19 +279,17 @@ class GGeo {
         GColorizer*                   m_colorizer ; 
 
         NSensorList*                  m_sensor_list ; 
+
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
-        std::map<unsigned int,GMergedMesh*>     m_merged_mesh ; 
-        std::map<unsigned int, unsigned int>    m_mesh_usage ; 
+
+        std::map<unsigned int,GMergedMesh*>                   m_merged_mesh ; 
+        std::map<unsigned int, unsigned int>                  m_mesh_usage ; 
         std::map<unsigned int, std::vector<unsigned int> >    m_mesh_nodes ; 
         GItemIndex*                   m_meshindex ; 
         GItemList*                    m_pvlist ; 
         GItemList*                    m_lvlist ; 
 
-        char*                         m_path ;
-        char*                         m_query ;
-        char*                         m_ctrl ;
-        char*                         m_idpath ;
         char*                         m_mesh_version ;
 
     private:
@@ -329,10 +309,8 @@ inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
    m_treecheck(NULL), 
    m_loaded(false), 
-   //m_loader(NULL),
    m_lookup(NULL),
    m_bndlib(NULL),
-   //m_boundarylib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
@@ -343,10 +321,6 @@ inline GGeo::GGeo(GCache* cache) :
    m_meshindex(NULL),
    m_pvlist(NULL),
    m_lvlist(NULL),
-   m_path(NULL),
-   m_query(NULL),
-   m_ctrl(NULL),
-   m_idpath(NULL),
    m_mesh_version(NULL),
    m_sensitive_count(0),
    m_volnames(false),
@@ -450,35 +424,6 @@ inline GBorderSurface* GGeo::getBorderSurface(unsigned int index)
 }
 
 
-
-inline char* GGeo::getPath()
-{
-   return m_path ;
-}
-inline char* GGeo::getQuery()
-{
-   return m_query ;
-}
-inline char* GGeo::getCtrl()
-{
-   return m_ctrl ;
-}
-inline char* GGeo::getIdentityPath()
-{
-   return m_idpath ;
-}
-
-
-
-//inline GLoader* GGeo::getLoader()
-//{
-//    return m_loader ; 
-//}
-//inline GBoundaryLib* GGeo::getBoundaryLib()
-//{
-//    return m_boundarylib ; 
-//}
-
 inline GBndLib* GGeo::getBndLib()
 {
     return m_bndlib ; 
@@ -496,44 +441,18 @@ inline GScintillatorLib* GGeo::getScintillatorLib()
     return m_scintillatorlib ; 
 }
 
-
 inline Lookup* GGeo::getLookup()
 {
     return m_lookup ; 
 }
-
-
-
-
-
-
 inline GColorizer* GGeo::getColorizer()
 {
     return m_colorizer ; 
 }
-
-
-
-
-
-
 inline NSensorList* GGeo::getSensorList()
 {
     return m_sensor_list ; 
 }
-
-
-
-inline gfloat3* GGeo::getLow()
-{
-   return m_low ; 
-}
-inline gfloat3* GGeo::getHigh()
-{
-   return m_high ; 
-}
-
-
 inline GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshindex ; 
@@ -547,18 +466,28 @@ inline GItemList* GGeo::getLVList()
     return m_lvlist ; 
 }
 
+
+
+
+inline gfloat3* GGeo::getLow()
+{
+   return m_low ; 
+}
+inline gfloat3* GGeo::getHigh()
+{
+   return m_high ; 
+}
+
+
 inline void GGeo::setMeshVersion(const char* mesh_version)
 {
     m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
 }
-
-
-
-
 inline const char* GGeo::getMeshVersion()
 {
     return m_mesh_version ;
 }
+
 
 inline GCache* GGeo::getCache()
 {
@@ -568,7 +497,6 @@ inline GTreeCheck* GGeo::getTreeCheck()
 {
     return m_treecheck ;
 }
-
 inline GMaterial* GGeo::getCathode()
 {
     return m_cathode ; 
@@ -604,5 +532,4 @@ inline void GGeo::dumpCathodeLV(const char* msg)
         printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
     }
 }
-
 

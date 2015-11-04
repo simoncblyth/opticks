@@ -235,21 +235,14 @@ GFlags* GGeo::getFlags()
     return m_cache->getFlags();
 }
 
-
-
-
-
-
 unsigned int GGeo::getMaterialLine(const char* shortname)
 {
     return m_bndlib->getMaterialLine(shortname);
 }
 
-
 void GGeo::loadGeometry()
 {
     const char* idpath = getIdPath() ;
-
     if(!isLoaded())
     {
         loadFromG4DAE();
@@ -263,7 +256,6 @@ void GGeo::loadGeometry()
     setupLookup();
     setupColors();
 }
-
 
 void GGeo::loadFromG4DAE()
 {
@@ -279,7 +271,6 @@ void GGeo::loadFromG4DAE()
 
     prepareVertexColors();
 }
-
 
 void GGeo::loadFromCache()
 {   
@@ -304,12 +295,9 @@ void GGeo::loadFromCache()
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
 }
 
-
-
 void GGeo::setupLookup()
 {
     // see ggeo-/tests/LookupTest.cc
-
     m_lookup = new Lookup() ; 
 
     m_lookup->loadA( m_cache->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
@@ -318,10 +306,8 @@ void GGeo::setupLookup()
 
     m_lookup->crossReference();
 
-    m_lookup->dump("GGeo::setupLookup");  
-
+    //m_lookup->dump("GGeo::setupLookup");  
 }
-
 
 void GGeo::setupColors()
 {
@@ -336,13 +322,8 @@ void GGeo::setupColors()
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 }
 
-
-
-
 void GGeo::save(const char* idpath)
 {
-    // currently this gets invoked from GLoader, TODO: move this up to the App
-
     saveMergedMeshes(idpath );
 
     m_meshindex->save(idpath);
@@ -353,16 +334,11 @@ void GGeo::save(const char* idpath)
         m_lvlist->save(idpath);
     }
 
-    //m_boundarylib->saveIndex(idpath); 
-    //m_boundarylib->save(idpath);
-
     // details of save handled within the class, not here 
-
     m_materiallib->save();
     m_surfacelib->save();
     m_scintillatorlib->save();
     m_bndlib->save();  
-
 }
 
 
@@ -376,21 +352,11 @@ const char* GGeo::getLVName(unsigned int index)
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
 
-
 bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
 {
     return listHasKey(ctrl, key, ",");
 }
 
-
-
-
-GGeo::~GGeo()
-{
-   delete m_low ; 
-   delete m_high ; 
-   //delete m_boundarylib ;
-}
 
 void GGeo::setLow(const gfloat3& low)
 {
@@ -401,6 +367,8 @@ void GGeo::setHigh(const gfloat3& high)
     m_high = new gfloat3(high);
 }
 
+
+/*
 void GGeo::setPath(const char* path)
 {
    m_path = strdup(path);
@@ -417,6 +385,9 @@ void GGeo::setIdentityPath(const char* idpath)
 {
    m_idpath = strdup(idpath);
 }
+*/
+
+
 
 void GGeo::updateBounds(GNode* node)
 {

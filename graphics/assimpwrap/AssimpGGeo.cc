@@ -109,10 +109,12 @@ int AssimpGGeo::load(GGeo* ggeo)
 
     int rc = agg.convert(ctrl);
 
+    /*
     ggeo->setPath(path);
     ggeo->setQuery(query);
     ggeo->setCtrl(ctrl);
     ggeo->setIdentityPath(idpath);
+    */
 
     return rc ;
 }
