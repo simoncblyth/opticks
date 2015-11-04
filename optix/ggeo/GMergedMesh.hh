@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 
+class GCache ; 
 class GGeo ; 
 class GNode ;
 class GSolid ; 
@@ -21,17 +22,23 @@ public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
     static GMergedMesh* create(unsigned int index, GGeo* ggeo, GNode* base=NULL);
+    static GMergedMesh* load(GCache* cache  , unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids) ;
+    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid ) ;
 public:
-    GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
+    //GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;
 private:
-    void count( GMesh*  mesh, bool selected ); // applies to mm too
-    void merge( GSolid* solid, bool selected );
-    void traverse( GNode* node, unsigned int depth, unsigned int pass);
+    // NB cannot treat GMergedMesh as a GMesh wrt calling getNumSolids 
+    // explicit naming to avoid subclass confusion
+    void countMergedMesh( GMergedMesh* other, bool selected );   
+    void countSolid( GSolid*      solid, bool selected ); 
+    void countMesh( GMesh* mesh ); 
+    void mergeSolid( GSolid* solid, bool selected );
+    void mergeMergedMesh( GMergedMesh* other, bool selected );
 public:
-    void merge( GMergedMesh* other, bool selected );
+    void traverse( GNode* node, unsigned int depth, unsigned int pass);
 public:
     float* getModelToWorldPtr(unsigned int index);
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
@@ -52,6 +59,8 @@ private:
      
 };
 
+
+/*
 inline GMergedMesh::GMergedMesh(GMergedMesh* other)
        : 
        GMesh(other),
@@ -61,6 +70,7 @@ inline GMergedMesh::GMergedMesh(GMergedMesh* other)
        m_cur_base(NULL)
 {
 }
+*/
 
 inline GMergedMesh::GMergedMesh(unsigned int index)
        : 

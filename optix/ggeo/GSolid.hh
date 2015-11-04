@@ -1,8 +1,5 @@
 #pragma once
 
-class GGeo ; 
-class GBndLib ; 
-class GSurfaceLib ; 
 class GMesh ;
 class NSensor ; 
 
@@ -15,21 +12,19 @@ class NSensor ;
 //   chroma.geometry.Solid is all about splaying things across all the triangles
 //  relationship between how many materials for each mesh is up for grabs
 //
-//
 // Instances are created by:
 //       GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 //
 class GSolid : public GNode {
   public:
-      GSolid( GGeo* ggeo, unsigned int index, GMatrixF* transform, GMesh* mesh,  unsigned int boundary, NSensor* sensor);
-  private:  
-      void init(); 
+      GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh,  unsigned int boundary, NSensor* sensor);
   public:
       void setSelected(bool selected);
       bool isSelected();
   public:
       void setBoundary(unsigned int boundary);
       void setSensor(NSensor* sensor);
+      void setSensorSurfaceIndex(unsigned int ssi);
       unsigned int getSensorSurfaceIndex();
   public:
       // need to resort to names for debugging IAV top lid issue
@@ -49,23 +44,20 @@ class GSolid : public GNode {
       bool              m_selected ;
       const char*       m_pvname ; 
       const char*       m_lvname ; 
-      GBndLib*          m_blib ; 
-      GSurfaceLib*      m_slib ; 
+      unsigned int      m_sensor_surface_index ; 
 
 };
 
-inline GSolid::GSolid( GGeo* ggeo, unsigned int index, GMatrixF* transform, GMesh* mesh, unsigned int boundary, NSensor* sensor)
+inline GSolid::GSolid( unsigned int index, GMatrixF* transform, GMesh* mesh, unsigned int boundary, NSensor* sensor)
          : 
-         GNode(ggeo, index, transform, mesh ),
+         GNode(index, transform, mesh ),
          m_boundary(boundary),
          m_sensor(sensor),
          m_selected(true),
          m_pvname(NULL),
          m_lvname(NULL),
-         m_blib(NULL),
-         m_slib(NULL)
+         m_sensor_surface_index(0)
 {
-    init();
 }
 
 
@@ -73,7 +65,6 @@ inline unsigned int GSolid::getBoundary()
 {
     return m_boundary ; 
 }
-
 
 inline NSensor* GSolid::getSensor()
 {
@@ -107,6 +98,11 @@ inline const char* GSolid::getLVName()
     return m_lvname ; 
 }
 
-
-
-
+inline void GSolid::setSensorSurfaceIndex(unsigned int ssi)
+{
+    m_sensor_surface_index = ssi ; 
+}
+inline unsigned int GSolid::getSensorSurfaceIndex()
+{
+    return m_sensor_surface_index ; 
+}

@@ -1,4 +1,5 @@
 #include "GMergedMesh.hh"
+#include "GCache.hh"
 #include "GGeo.hh"
 #include "GSolid.hh"
 
@@ -19,34 +20,40 @@
 namespace fs = boost::filesystem;
 
 
-
-
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* solid)
+{
+    std::vector<GSolid*> solids ; 
+    solids.push_back(solid);
+    return combine(index, mm, solids );
+}
 
 GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
 {
     GMergedMesh* com = new GMergedMesh( index ); 
 
-    com->count(mm, true);
+    com->countMergedMesh(mm, true);
 
     typedef std::vector<GSolid*> VS ; 
     for(VS::const_iterator it=solids.begin() ; it != solids.end() ; it++)
     {
         GSolid* solid = *it ; 
-        com->count(solid->getMesh(), true);
+        com->countSolid(solid, true);
     } 
 
     com->allocate(); 
  
+    com->mergeMergedMesh(mm, true);
 
-
-
+    for(VS::const_iterator it=solids.begin() ; it != solids.end() ; it++)
+    {
+        GSolid* solid = *it ; 
+        com->mergeSolid(solid, true);
+    } 
 
     com->updateBounds();
 
     return com ; 
 }
-
-
 
 
 
@@ -109,26 +116,111 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 }
 
 
-void GMergedMesh::count( GMesh* mesh, bool selected)
+
+/*
+Huh ? why do OAV and IAV give a number of solids of 1 whereas all others give zero ? 
+
+[2015-Nov-04 17:28:12.203204]:info: GMergedMesh::count  selected false mesh.nsolid 0 mesh.name near_pool_iws_box0xc288ce8 num_solids 0 num_solids_selected 0
+[2015-Nov-04 17:28:12.203320]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name ade0xc2a7438 num_solids 0 num_solids_selected 0
+[2015-Nov-04 17:28:12.203430]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name sst0xbf4b060 num_solids 0 num_solids_selected 0
+[2015-Nov-04 17:28:12.203538]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name oil0xbf5ed48 num_solids 0 num_solids_selected 0
+[2015-Nov-04 17:28:12.203648]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name oav0xc2ed7c8 num_solids 1 num_solids_selected 0
+[2015-Nov-04 17:28:12.203758]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name lso0xc028a38 num_solids 1 num_solids_selected 1
+[2015-Nov-04 17:28:12.203866]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name iav0xc346f90 num_solids 2 num_solids_selected 1
+[2015-Nov-04 17:28:12.203974]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name gds0xc28d3f0 num_solids 2 num_solids_selected 2
+[2015-Nov-04 17:28:12.204082]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name OcrGdsInIav0xc405b10 num_solids 2 num_solids_selected 2
+[2015-Nov-04 17:28:12.204195]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name IavTopHub0xc405968 num_solids 2 num_solids_selected 2
+[2015-Nov-04 17:28:12.204310]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name CtrGdsOflBotClp0xbf5dec0 num_solids 2 num_solids_selected 2
+...
+[2015-Nov-04 17:28:12.397076]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name MOFTTopCover0xc047878 num_solids 2 num_solids_selected 2
+[2015-Nov-04 17:28:12.397190]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name ade0xc2a7438 num_solids 2 num_solids_selected 2
+[2015-Nov-04 17:28:12.397297]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name sst0xbf4b060 num_solids 2 num_solids_selected 2
+[2015-Nov-04 17:28:12.397406]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name oil0xbf5ed48 num_solids 2 num_solids_selected 2
+[2015-Nov-04 17:28:12.397512]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name oav0xc2ed7c8 num_solids 3 num_solids_selected 2
+[2015-Nov-04 17:28:12.397619]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name lso0xc028a38 num_solids 3 num_solids_selected 3
+[2015-Nov-04 17:28:12.397725]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name iav0xc346f90 num_solids 4 num_solids_selected 3
+[2015-Nov-04 17:28:12.397831]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name gds0xc28d3f0 num_solids 4 num_solids_selected 4
+[2015-Nov-04 17:28:12.397936]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name OcrGdsInIav0xc405b10 num_solids 4 num_solids_selected 4
+[2015-Nov-04 17:28:12.398048]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name IavTopHub0xc405968 num_solids 4 num_solids_selected 4
+
+*/
+
+
+
+// NB what is appropriate for a merged mesh is not for a mesh ... wrt counting solids
+// so cannot lump the below together using GMesh base class
+
+void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
 {
-    m_num_solids += 1 ; 
+    unsigned int nsolid = other->getNumSolids();
+
+    m_num_solids += nsolid ;
+
     if(selected)
     {
-        m_num_solids_selected += 1;
-
-        unsigned int nface = mesh->getNumFaces();
-        unsigned int nvert = mesh->getNumVertices();
-        unsigned int meshIndex = mesh->getIndex();
-
-        m_num_vertices += nvert ;
-        m_num_faces    += nface ; 
-        m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
+        m_num_solids_selected += 1 ;
+        countMesh( other ); 
     }
+
+    LOG(debug) << "GMergedMesh::count other GMergedMesh  " 
+              << " selected " << selected
+              << " num_solids " << m_num_solids 
+              << " num_solids_selected " << m_num_solids_selected 
+              ;
+}
+
+void GMergedMesh::countSolid( GSolid* solid, bool selected)
+{
+    GMesh* mesh = solid->getMesh();
+
+    m_num_solids += 1 ; 
+
+    if(selected)
+    {
+        m_num_solids_selected += 1 ;
+        countMesh( mesh ); 
+    }
+
+    LOG(debug) << "GMergedMesh::count GSolid " 
+              << " selected " << selected
+              << " num_solids " << m_num_solids 
+              << " num_solids_selected " << m_num_solids_selected 
+              ;
+}
+
+void GMergedMesh::countMesh( GMesh* mesh )
+{
+    unsigned int nface = mesh->getNumFaces();
+    unsigned int nvert = mesh->getNumVertices();
+    unsigned int meshIndex = mesh->getIndex();
+
+    m_num_vertices += nvert ;
+    m_num_faces    += nface ; 
+    m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
 }
 
 
-void GMergedMesh::merge( GMergedMesh* other, bool selected )
+
+
+
+void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 {
+    // solids are present irrespective of selection as prefer absolute solid indexing 
+
+    unsigned int nsolid = other->getNumSolids();
+    for(unsigned int i=0 ; i < nsolid ; i++)
+    {
+        m_bbox[m_cur_solid] = other->getBBox(i) ;  
+        m_center_extent[m_cur_solid] = other->getCenterExtent(i) ;
+        m_nodeinfo[m_cur_solid] = other->getNodeInfo(i) ; 
+        m_identity[m_cur_solid] = other->getIdentity(i) ; 
+        m_meshes[m_cur_solid] = other->getMeshIndice(i) ; 
+
+        memcpy( getTransform(m_cur_solid), other->getTransform(i), 16*sizeof(float) ); 
+
+        m_cur_solid += 1 ; 
+    }
+
     unsigned int nvert = other->getNumVertices();
     unsigned int nface = other->getNumFaces();
 
@@ -170,7 +262,7 @@ void GMergedMesh::merge( GMergedMesh* other, bool selected )
 
 }
 
-void GMergedMesh::merge( GSolid* solid, bool selected )
+void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
 {
     GMesh* mesh = solid->getMesh();
     unsigned int nvert = mesh->getNumVertices();
@@ -192,7 +284,8 @@ void GMergedMesh::merge( GSolid* solid, bool selected )
     assert(_identity.z == boundary);
     //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
     
-    LOG(info) << "GMergedMesh::merge"
+    LOG(debug) << "GMergedMesh::mergeSolid"
+              << " m_cur_solid " << m_cur_solid 
               << " nodeIndex " << nodeIndex
               << " boundaryIndex " << boundary
               << " sensorIndex " << sensorIndex
@@ -207,8 +300,11 @@ void GMergedMesh::merge( GSolid* solid, bool selected )
 
     m_bbox[m_cur_solid] = bb ;  
     m_center_extent[m_cur_solid] = bb.center_extent() ;
-    transform->copyTo( getTransform(m_cur_solid) );
 
+    float* dest = getTransform(m_cur_solid);
+    assert(dest);
+
+    transform->copyTo(dest);
     m_meshes[m_cur_solid] = meshIndex ; 
 
     // face and vertex counts must use same selection as above to be usable 
@@ -225,6 +321,8 @@ void GMergedMesh::merge( GSolid* solid, bool selected )
     m_identity[m_cur_solid] = _identity ; 
 
     m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
+
+
 
     if(selected)
     {
@@ -266,9 +364,7 @@ void GMergedMesh::merge( GSolid* solid, bool selected )
 
 void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
-    GNode* base = getCurrentBase();
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    GMesh* mesh = solid->getMesh();
 
     // using repeat index labelling in the tree
     bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
@@ -276,9 +372,9 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 
     switch(pass)
     {
-       case PASS_COUNT:    count(mesh, selected)   ;break;
-       case PASS_MERGE:    merge(solid, selected)  ;break;
-               default:    assert(0)               ;break;
+       case PASS_COUNT:    countSolid(solid, selected)  ;break;
+       case PASS_MERGE:    mergeSolid(solid, selected)  ;break;
+               default:    assert(0)                    ;break;
     }
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1, pass);
@@ -310,6 +406,15 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 }
 
 
+
+
+GMergedMesh* GMergedMesh::load(GCache* cache, unsigned int ridx, const char* version)
+{
+    std::string mmpath = cache->getMergedMeshPath(ridx);
+    GMergedMesh* mm = GMergedMesh::load(mmpath.c_str(), ridx, version);
+    return mm ; 
+}
+
 GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* version)
 {
     GMergedMesh* mm(NULL);
@@ -333,9 +438,18 @@ void GMergedMesh::dumpSolids(const char* msg)
     LOG(info) << msg ; 
     for(unsigned int index=0 ; index < getNumSolids() ; ++index)
     {
-        if(index % 1000 != 0) continue ; 
+        //if(index % 1000 != 0) continue ; 
         gfloat4 ce = getCenterExtent(index) ;
-        printf("  %u :    center %10.3f %10.3f %10.3f   extent %10.3f \n", index, ce.x, ce.y, ce.z, ce.w ); 
+        gbbox bb = getBBox(index) ; 
+
+        std::cout 
+             << std::setw(5)  << index         
+             << " ce " << std::setw(64) << ce.description()       
+             << " bb " << std::setw(64) << bb.description()       
+             << std::endl 
+             ;
+
+        //printf("  %u :    center %10.3f %10.3f %10.3f   extent %10.3f \n", index, ce.x, ce.y, ce.z, ce.w ); 
     }
 }
 

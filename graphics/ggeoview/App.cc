@@ -340,9 +340,13 @@ void App::loadGeometry()
 void App::makeDynamicGeometry()
 {
     if(!m_fcfg->hasOpt("box")) return ; 
+
+    m_testbox = new GTestBox( m_cache) ;
+    m_testbox->setBndLib(m_ggeo->getBndLib());
+
     std::string config = m_fcfg->getBoxConfig() ;
-    m_testbox = new GTestBox( m_ggeo, config.empty() ? NULL : config.c_str() );
-    m_testbox->make();
+    m_testbox->configure( config.empty() ? NULL : config.c_str() );
+
     m_testbox->dump("App::makeDynamicGeometry");
 }
 

@@ -65,6 +65,8 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
 
 
 
+
+/*
 // is this used ?
 GMesh::GMesh(GMesh* other) 
      :
@@ -105,7 +107,7 @@ GMesh::GMesh(GMesh* other)
    updateBounds();
    nameConstituents(m_names);
 }
-
+*/
 
 
 int GMesh::g_instance_count = 0 ;
@@ -186,11 +188,8 @@ GMesh::GMesh(unsigned int index,
 
       GDrawable()
 {
-   // not yet taking ownership, depends on continued existance of data source 
 
    g_instance_count += 1 ; 
-
-   //printf("GMesh::GMesh  index %d g_instance_count %d \n", index, g_instance_count );
 
    setVertices(vertices);
    setFaces(faces);
@@ -199,7 +198,6 @@ GMesh::GMesh(unsigned int index,
    updateBounds();
    nameConstituents(m_names);
 }
-
 
 
 
@@ -460,8 +458,16 @@ unsigned int GMesh::getNumITransforms()
 
 float* GMesh::getTransform(unsigned int index)
 {
+    if(index >= m_num_solids)
+    {
+        LOG(warning) << "GMesh::getTransform out of bounds " 
+                     << " m_num_solids " << m_num_solids 
+                     << " index " << index
+                     ;
+    }
     return index < m_num_solids ? m_transforms + index*16 : NULL  ;
 }
+
 float* GMesh::getITransform(unsigned int index)
 {
     unsigned int num_itransforms = getNumITransforms();
@@ -761,7 +767,10 @@ void GMesh::setColor(float r, float g, float b)
 
 void GMesh::Dump(const char* msg, unsigned int nmax)
 {
-    printf("%s\n", msg);
+    LOG(info) << msg  ;
+    LOG(info) << " num_vertices " << m_num_vertices 
+              ;  
+
     for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
     {
         gfloat3& vtx = m_vertices[i] ;
@@ -773,7 +782,6 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
         gfloat3& nrm = m_normals[i] ;
         printf(" nrm %5u  %10.3f %10.3f %10.3f \n", i, nrm.x, nrm.y, nrm.z );
     } 
-
 
     if(hasTexcoords())
     { 
@@ -791,6 +799,9 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
     } 
 
 
+    LOG(info) << " num_faces " << m_num_faces 
+              ;  
+
     for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
     {
         guint3& fac = m_faces[i] ;
@@ -806,11 +817,17 @@ void GMesh::Dump(const char* msg, unsigned int nmax)
             printf(" fac %5u  node %5u boundary %5u  \n", i, node, boundary );
         } 
     }
+
+    LOG(info) << " num_solids " << m_num_solids
+              ;
 }
 
 
 void GMesh::Summary(const char* msg)
 {
+
+   LOG(info) << msg ;  
+
    printf("%s idx %u vx %u fc %u n %s sn %s \n",
       msg, 
       m_index, 

@@ -1,17 +1,11 @@
 #include "GCache.hh"
 #include "GMergedMesh.hh"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
+#include "NLog.hpp"
 
 int main(int argc, char** argv)
 {
     GCache gc("GGEOVIEW_");
-    unsigned int ridx = 1 ;  
-    std::string mmpath = gc.getMergedMeshPath(ridx);
-    GMergedMesh* mm = GMergedMesh::load(mmpath.c_str(), ridx);
+    GMergedMesh* mm = GMergedMesh::load(&gc, 1);
 
     mm->Summary("mm loading");
     mm->Dump("mm dump", 10);

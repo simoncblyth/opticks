@@ -182,7 +182,7 @@ class GMesh : public GDrawable {
 
 
 
-      GMesh(GMesh* other); // stealing copy ctor
+      //GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index=0, 
             gfloat3* vertices=NULL, unsigned int num_vertices=0, 
             guint3*  faces=NULL,    unsigned int num_faces=0,  
@@ -225,6 +225,7 @@ class GMesh : public GDrawable {
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
       gfloat4  getCenterExtent(unsigned int index);
       gbbox    getBBox(unsigned int index);
+      gbbox*   getBBoxPtr();
       float* getTransform(unsigned int index);
       float* getITransform(unsigned int index);
       gfloat3* getDimensions();
@@ -339,9 +340,19 @@ class GMesh : public GDrawable {
       virtual unsigned int*  getNodes();
       virtual unsigned int*  getBoundaries();
       virtual unsigned int*  getSensors();
-      virtual guint4*  getNodeInfo();
-      virtual guint4*  getIdentity();
-      virtual guint4*  getInstancedIdentity();
+
+      virtual guint4*        getNodeInfo();
+      virtual guint4         getNodeInfo(unsigned int index);
+
+      virtual guint4*        getIdentity();
+      virtual guint4         getIdentity(unsigned int index);
+
+      virtual guint4*        getInstancedIdentity();
+      virtual guint4         getInstancedIdentity(unsigned int index);
+
+      virtual unsigned int*  getMeshIndice();
+      virtual unsigned int   getMeshIndice(unsigned int index);
+
 
       virtual GBuffer* getNodesBuffer();
       virtual GBuffer* getBoundariesBuffer();
@@ -637,6 +648,14 @@ inline gbbox GMesh::getBBox(unsigned int index)
 {
     return m_bbox[index] ;
 }
+inline gbbox* GMesh::getBBoxPtr()
+{
+    return m_bbox ;
+}
+
+
+
+
 
 
 inline float GMesh::getExtent()
@@ -661,19 +680,46 @@ inline unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMerge
 {
     return m_nodes ;
 }
+
+
+
+inline unsigned int* GMesh::getMeshIndice()  
+{
+    return m_meshes ;
+}
+inline unsigned int GMesh::getMeshIndice(unsigned int index)  
+{
+    return m_meshes[index] ;
+}
+
+
+
 inline guint4* GMesh::getNodeInfo()
 {
     return m_nodeinfo ; 
 }
+inline guint4 GMesh::getNodeInfo(unsigned int index)
+{
+    return m_nodeinfo[index] ; 
+}
+
 inline guint4* GMesh::getIdentity()
 {
     return m_identity ; 
 }
+inline guint4 GMesh::getIdentity(unsigned int index)
+{
+    return m_identity[index] ; 
+}
+
 inline guint4* GMesh::getInstancedIdentity()
 {
     return m_iidentity ; 
 }
-
+inline guint4 GMesh::getInstancedIdentity(unsigned int index)
+{
+    return m_iidentity[index] ; 
+}
 
 
 

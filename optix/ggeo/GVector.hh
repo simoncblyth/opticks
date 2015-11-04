@@ -91,6 +91,12 @@ struct gfloat4
         printf("%s gfloat4 %10.3f %10.3f %10.3f %10.3f\n", msg, x, y, z, w);
     }
 
+    std::string description()
+    {
+        char s[128] ;
+        snprintf(s, 128, "gfloat4 %10.3f %10.3f %10.3f %10.3f ", x, y, z, w);
+        return s ; 
+    }
 
 
     float x,y,z,w ;
@@ -138,6 +144,14 @@ struct gbbox
    {
        printf("%s min %10.3f %10.3f %10.3f  max %10.3f %10.3f %10.3f \n", msg, min.x, min.y, min.z, max.x, max.y, max.z );
    }
+
+   std::string description()
+   {
+       char s[128] ;
+       snprintf(s, 128, "bb min %10.3f %10.3f %10.3f  max %10.3f %10.3f %10.3f ", min.x, min.y, min.z, max.x, max.y, max.z );
+       return s ; 
+   }
+
 
    gfloat3 min ; 
    gfloat3 max ; 

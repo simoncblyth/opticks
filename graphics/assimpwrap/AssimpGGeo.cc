@@ -25,8 +25,6 @@
 #include "GSolid.hh"
 #include "GDomain.hh"
 
-//#include "GBoundary.hh"
-//#include "GBoundaryLib.hh"
 
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
@@ -34,6 +32,7 @@
 // npy-
 #include "stringutil.hpp"
 #include "NSensorList.hpp"
+#include "NSensor.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
@@ -815,7 +814,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
                ;  
 
 
-    GSolid* solid = new GSolid(gg, nodeIndex, gtransform, mesh, UINT_MAX, NULL ); // sensor starts NULL
+    GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, UINT_MAX, NULL ); // sensor starts NULL
     solid->setLevelTransform(ltransform);
 
     const char* lv   = node->getName(0); 
@@ -898,12 +897,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
     solid->setSensor( sensor );  
 
-
-    //GBoundaryLib* lib = gg->getBoundaryLib();  
     GBndLib* blib = gg->getBndLib();  
-
-    //GBoundary* boundary = lib->getOrCreate( mt, mt_p, isurf, osurf, iextra, oextra ); 
-    //solid->setBoundary(boundary);  
+    GSurfaceLib* slib = gg->getSurfaceLib();  
 
     // boundary identification via 4-uint 
     unsigned int boundary = blib->addBoundary( mt->getShortName(), 
@@ -912,23 +907,17 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
                                                osurf ? osurf->getShortName() : NULL);
 
     solid->setBoundary(boundary);
+    {
+       // sensor indices are set even for non sensitive volumes in PMT viscinity
+       // TODO: change that 
+       // this is a workaround that requires an associated sensitive surface
+       // in order for the index to be provided
 
-
-
-    //assert(boundary->getIndex() == blib->index(bnd));
-
-    // bnd uses name based identity, old boundary used property digest
-    // after modification to use name based identity the old indices
-    // are aligned with the new
-    
-    //if(boundary->getIndex() != blib->index(bnd))
-    //{
-    //    LOG(warning) << "AssimpGGeo::convertStructureVisit"
-    //                 << " boundary_index " << boundary->getIndex()
-    //                 << " bnd_index " << blib->index(bnd)
-    //                 ;
-    //} 
-    
+        unsigned int surface = blib->getOuterSurface(boundary);
+        bool oss = slib->isSensorSurface(surface); 
+        unsigned int ssi = oss ? NSensor::RefIndex(sensor) : 0 ; 
+        solid->setSensorSurfaceIndex( ssi ); 
+    } 
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     solid->setDescription(desc);

@@ -37,8 +37,10 @@ How to hookup a GTestBox, and do it postcache ?
 */
 
 struct gbbox ; 
-class GGeo ; 
+class GCache ; 
+class GBndLib ; 
 class GMesh ; 
+class GSolid ; 
 
 class GTestBox {
    public:
@@ -54,22 +56,28 @@ class GTestBox {
        static const char* FRAME_ ; 
        static const char* BOUNDARY_ ; 
    public:
-       GTestBox(GGeo* ggeo, const char* config=NULL);
-       void make();
+       GTestBox(GCache* cache);
+       GSolid* getSolid();
+   public:
+       void setBndLib(GBndLib* blib);
+       void configure(const char* config=NULL);
+   public:
+       void make(gbbox& bb, unsigned int meshindex, unsigned int nodeindex);
    private:
-       void configure(const char* config);
+       GMesh* makeMesh(gbbox& bb, unsigned int meshindex);
+       GSolid* makeSolid(unsigned int nodeindex);
+   private:
        Param_t getParam(const char* k);
        void set(Param_t p, const char* s);
-   public:
        void setFrame(const char* s);
        void setBoundary(const char* s);
    public:
-       GMesh* makeMesh(unsigned int index, gbbox& bb); 
-   public:
        void dump(const char* msg="GTestBox::dump");
    private:
-       GGeo*        m_ggeo ;  
+       GCache*      m_cache ;  
+       GBndLib*     m_bndlib ;  
        GMesh*       m_mesh ; 
+       GSolid*      m_solid ; 
        const char*  m_config ; 
        glm::ivec4   m_frame ;
        unsigned int m_boundary ; 
@@ -77,11 +85,24 @@ class GTestBox {
 };
 
 
-inline GTestBox::GTestBox(GGeo* ggeo, const char* config)
+inline GTestBox::GTestBox(GCache* cache)
     :
-    m_ggeo(ggeo),
-    m_mesh(NULL)
+    m_cache(cache),
+    m_bndlib(NULL),
+    m_mesh(NULL),
+    m_solid(NULL)
 {
-    configure(config);
 }
+
+inline void GTestBox::setBndLib(GBndLib* blib)
+{
+    m_bndlib = blib ; 
+}
+
+inline GSolid* GTestBox::getSolid()
+{
+    return m_solid ; 
+}
+
+
 

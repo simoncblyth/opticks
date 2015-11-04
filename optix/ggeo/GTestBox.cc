@@ -1,10 +1,12 @@
 #include "GTestBox.hh"
-#include "GGeo.hh"
+#include "GCache.hh"
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
 #include "GMesh.hh"
+#include "GSolid.hh"
 #include "GBndLib.hh"
 #include "GVector.hh"
+#include "GMatrix.hh"
 
 #include "NLog.hpp"
 #include "GLMFormat.hpp"
@@ -67,13 +69,11 @@ void GTestBox::dump(const char* msg)
               << " boundary " << m_boundary 
               ; 
 
-    if(m_mesh)
+    if(m_solid)
     {
-       m_mesh->Dump(); 
+       m_solid->Summary(); 
     }
 }
-
-
 
 void GTestBox::setFrame(const char* s)
 {
@@ -83,23 +83,14 @@ void GTestBox::setFrame(const char* s)
 
 void GTestBox::setBoundary(const char* s)
 {
-    GBndLib* blib = m_ggeo->getBndLib();
-    m_boundary = blib->addBoundary(s); 
-}
-
-void GTestBox::make()
-{
-    GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
-    assert(mesh0);
-
-    gbbox bb = mesh0->getBBox( m_frame.x );   
-    unsigned int index = 1000 ; // TODO: find a propa index
-    m_mesh = makeMesh(index, bb ); 
+    m_boundary = m_bndlib->addBoundary(s); 
 }
 
 
 
-GMesh* GTestBox::makeMesh(unsigned int index, gbbox& bb)
+
+
+GMesh* GTestBox::makeMesh(gbbox& bb, unsigned int meshindex)
 {
     gfloat3* vertices = new gfloat3[NUM_VERTICES] ;
     guint3* faces = new guint3[NUM_FACES] ;
@@ -107,10 +98,10 @@ GMesh* GTestBox::makeMesh(unsigned int index, gbbox& bb)
 
     GBBoxMesh::twentyfour(bb, vertices, faces, normals );
 
-    GMesh* mesh = new GMesh(index, vertices, NUM_VERTICES,  
-                                   faces, NUM_FACES,    
-                                   normals,  
-                                   NULL ); // texcoords
+    GMesh* mesh = new GMesh(meshindex, vertices, NUM_VERTICES,  
+                                       faces, NUM_FACES,    
+                                       normals,  
+                                       NULL ); // texcoords
 
     mesh->setColors(  new gfloat3[NUM_VERTICES]);
     mesh->setColor(0.5,0.5,0.5);  
@@ -119,6 +110,25 @@ GMesh* GTestBox::makeMesh(unsigned int index, gbbox& bb)
 }
 
 
+GSolid* GTestBox::makeSolid(unsigned int nodeindex)
+{
+    GMatrixF* transform = new GMatrix<float>();
+
+    GSolid* solid = new GSolid(nodeindex, transform, m_mesh, UINT_MAX, NULL );     
+
+    solid->setBoundary(m_boundary);    // unlike ctor these setters creates corresponding indices array
+
+    solid->setSensor( NULL );    
+
+    return solid ; 
+}
+
+
+void GTestBox::make(gbbox& bb, unsigned int meshindex, unsigned int nodeindex)
+{
+    m_mesh = makeMesh(bb, meshindex);
+    m_solid = makeSolid( nodeindex );
+}
 
 
 
