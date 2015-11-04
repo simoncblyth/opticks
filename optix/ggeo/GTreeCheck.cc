@@ -2,6 +2,7 @@
 #include "GTreePresent.hh"
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
+#include "GGeoLib.hh"
 #include "GSolid.hh"
 #include "GMatrix.hh"
 #include "GBuffer.hh"
@@ -17,6 +18,11 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+void GTreeCheck::init()
+{
+    m_digest_count = new Counts<unsigned int>("progenyDigest");
+    m_geolib = m_ggeo->getGeoLib() ;
+}
 
 
 void GTreeCheck::createInstancedMergedMeshes(bool delta)
@@ -38,14 +44,14 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
     t("labelTree"); 
 
 
-    GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+    GMergedMesh* mergedmesh = m_geolib->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
 
     unsigned int numRepeats = getNumRepeats();
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
          GNode*   rbase          = getRepeatExample(ridx) ; 
-         GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
+         GMergedMesh* mergedmesh = m_geolib->makeMergedMesh(ridx, rbase); 
          mergedmesh->dumpSolids("GTreeCheck::createInstancedMergedMeshes dumpSolids");
 
          GBuffer* itransforms    = makeInstanceTransformsBuffer(ridx);
@@ -74,10 +80,6 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
 }
 
 
-void GTreeCheck::init()
-{
-    m_digest_count = new Counts<unsigned int>("progenyDigest");
-}
 
 void GTreeCheck::traverse()
 {

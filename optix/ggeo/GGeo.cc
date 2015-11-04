@@ -11,8 +11,8 @@
 #include "GColorizer.hh"
 #include "GColors.hh"
 
+#include "GGeoLib.hh"
 #include "GBndLib.hh"
-
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
@@ -37,7 +37,6 @@
 #include "Lookup.hpp"
 
 
-
 #include "assert.h"
 #include "stdio.h"
 #include "string.h"
@@ -58,7 +57,6 @@ namespace fs = boost::filesystem;
 
 #define BSIZ 50
 
-const char* GGeo::GMERGEDMESH = "GMergedMesh" ; 
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 
 
@@ -79,18 +77,17 @@ void GGeo::init()
 
    m_sensor_list->load( idpath, "idmap");
 
-
+   m_geolib = new GGeoLib(this);
 
    LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
    if(m_loaded) return ; 
+
    //////////////  below only when operating pre-cache //////////////////////////
 
    m_treecheck = new GTreeCheck(this) ;
    if(m_cache->isJuno())
-   {
        m_treecheck->setVertexMin(250);
-   }
 
    //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
@@ -138,87 +135,20 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
-// hmm maybe bud off mesh management to a separate class GMeshMgr  
-// or do it in GMergedMesh static methods
-
-void GGeo::removeMergedMeshes(const char* idpath )
-{
-   fs::path cachedir(idpath);
-
-   for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
-   {   
-        fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
-        if(fs::exists(mmdir) && fs::is_directory(mmdir))
-        {   
-            unsigned long nrm = fs::remove_all(mmdir);
-            LOG(info) << "GGeo::removeMergedMeshes " << mmdir.string() 
-                      << " removed " << nrm 
-                      ; 
-        }
-   } 
-}
-
-void GGeo::loadMergedMeshes(const char* idpath )
-{
-   GCache* gc = GCache::getInstance();
-
-   fs::path cachedir(idpath);
-
-   for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
-   {   
-        fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
-        if(fs::exists(mmdir) && fs::is_directory(mmdir))
-        {   
-            const char* path = mmdir.string().c_str() ;
-            LOG(debug) << "GGeo::loadMergedMeshes " << gc->getRelativePath(path) ;
-            m_merged_mesh[ridx] = GMergedMesh::load( path, ridx, m_mesh_version );
-        }
-        else
-        {
-            LOG(debug) << "GGeo::loadMergedMeshes " 
-                       << " no mmdir for ridx " << ridx 
-                       ;
-        }
-   }
-   LOG(info) << "GGeo::loadMergedMeshes" 
-             << " loaded "  << m_merged_mesh.size()
-             ;
-}
-
-void GGeo::saveMergedMeshes(const char* idpath)
-{
-    removeMergedMeshes(idpath); // clean old meshes to avoid duplication when repeat counts go down 
-
-    typedef std::map<unsigned int,GMergedMesh*>::const_iterator MUMI ; 
-    for(MUMI it=m_merged_mesh.begin() ; it != m_merged_mesh.end() ; it++)
-    {
-        unsigned int ridx = it->first ; 
-        GMergedMesh* mergedmesh = it->second ; 
-        assert(mergedmesh->getIndex() == ridx);
-        mergedmesh->save(idpath, GMERGEDMESH, boost::lexical_cast<std::string>(ridx).c_str()); 
-    }
-}
-
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
-{
-    if(m_merged_mesh.find(index) == m_merged_mesh.end())
-    {
-        m_merged_mesh[index] = GMergedMesh::create(index, this, base);
-    }
-    return m_merged_mesh[index] ;
-}
-
 unsigned int GGeo::getNumMergedMesh()
 {
-    return m_merged_mesh.size();
+    return m_geolib->getNumMergedMesh();
 }
 
 GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 {
-    if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
-    return m_merged_mesh[index] ;
+    return m_geolib->getMergedMesh(index);
 }
 
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
+{
+    return m_geolib->makeMergedMesh(index, base);
+}
 
 
 
@@ -274,10 +204,9 @@ void GGeo::loadFromG4DAE()
 
 void GGeo::loadFromCache()
 {   
-    const char* idpath = m_cache->getIdPath() ;
-
-    loadMergedMeshes(idpath);
+    m_geolib->loadFromCache();
         
+    const char* idpath = m_cache->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");
 
     if(m_volnames)
@@ -324,7 +253,7 @@ void GGeo::setupColors()
 
 void GGeo::save(const char* idpath)
 {
-    saveMergedMeshes(idpath );
+    m_geolib->saveToCache();
 
     m_meshindex->save(idpath);
 
@@ -367,25 +296,6 @@ void GGeo::setHigh(const gfloat3& high)
     m_high = new gfloat3(high);
 }
 
-
-/*
-void GGeo::setPath(const char* path)
-{
-   m_path = strdup(path);
-}
-void GGeo::setQuery(const char* query)
-{
-   m_query = strdup(query);
-}
-void GGeo::setCtrl(const char* ctrl)
-{
-   m_ctrl = strdup(ctrl);
-}
-void GGeo::setIdentityPath(const char* idpath)
-{
-   m_idpath = strdup(idpath);
-}
-*/
 
 
 
@@ -817,7 +727,7 @@ void GGeo::prepareMeshes()
     else
     {
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
-        makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+        m_geolib->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     }
 }
 

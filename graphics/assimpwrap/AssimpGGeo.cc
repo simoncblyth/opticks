@@ -103,29 +103,12 @@ int AssimpGGeo::load(GGeo* ggeo)
 
     AssimpSelection* selection = ageo.select(query);
 
-
-
     AssimpGGeo agg(ggeo, ageo.getTree(), selection); 
 
     int rc = agg.convert(ctrl);
 
-    /*
-    ggeo->setPath(path);
-    ggeo->setQuery(query);
-    ggeo->setCtrl(ctrl);
-    ggeo->setIdentityPath(idpath);
-    */
-
     return rc ;
 }
-
-
-
-
-AssimpGGeo::~AssimpGGeo()
-{
-}
-
 
 
 int AssimpGGeo::convert(const char* ctrl)

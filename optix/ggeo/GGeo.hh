@@ -19,6 +19,7 @@ class GMaterial ;
 class GSkinSurface ; 
 class GBorderSurface ; 
 
+class GGeoLib ;
 class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
@@ -57,16 +58,14 @@ class GGeo {
         GMesh* invokeMeshJoin(GMesh* mesh);    // used from AssimpGGeo::convertMeshes immediately after GMesh birth and deduping
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
-        static const char* GMERGEDMESH ; 
-        //static GGeo* load(const char* idpath, const char* mesh_version=NULL);
         static bool ctrlHasKey(const char* ctrl, const char* key);
-        enum { MAX_MERGED_MESH = 10 } ;
+
     public:
         GGeo(GCache* cache); 
         GCache* getCache();
         const char* getIdPath();
     public:
-        void loadGeometry();  // GLoader remnamts to go here 
+        void loadGeometry(); 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
     public:
@@ -93,6 +92,8 @@ class GGeo {
     private:
         void saveMergedMeshes(const char* idpath);
     public:
+        // pass thru to geolib
+        GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
         unsigned int getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
     public:
@@ -119,8 +120,6 @@ class GGeo {
         bool isLoaded();
         bool isVolnames();
 
-        void setMeshVersion(const char* mesh_version);
-        const char* getMeshVersion();
     public:
         void add(GMesh*    mesh);
         void add(GSolid*    solid);
@@ -171,6 +170,7 @@ class GGeo {
         unsigned int getNumRawSkinSurfaces();
         unsigned int getNumRawBorderSurfaces();
     public:
+        GGeoLib*           getGeoLib();
         GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
@@ -204,7 +204,6 @@ class GGeo {
     public:
         GPropertyMap<float>* findRawMaterial(const char* shortname);
         GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname);
-
     public:
         GSolid* getSolid(unsigned int index);  
         GSolid* getSolidSimple(unsigned int index);  
@@ -226,15 +225,13 @@ class GGeo {
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
 
     public:
-        GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
-
-    public:
         std::map<unsigned int, unsigned int>& getMeshUsage();
         std::map<unsigned int, std::vector<unsigned int> >& getMeshNodes();
         void countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* lv, const char* pv);
         void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
 
 #if 0
+    TODO: see if this can be reinstated
     public:
         void materialConsistencyCheck();
         unsigned int materialConsistencyCheck(GSolid* solid);
@@ -257,8 +254,6 @@ class GGeo {
         std::vector<GBorderSurface*>  m_border_surfaces ; 
 
         std::vector<GSolid*>           m_sensitive_solids ; 
-        //std::unordered_set<GBoundary*> m_sensitive_boundaries ; 
-
         std::unordered_set<std::string> m_cathode_lv ; 
 
         // _raw mainly for debug
@@ -271,6 +266,7 @@ class GGeo {
 
         Lookup*                       m_lookup ; 
 
+        GGeoLib*                      m_geolib ; 
         GBndLib*                      m_bndlib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
@@ -283,14 +279,14 @@ class GGeo {
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
 
-        std::map<unsigned int,GMergedMesh*>                   m_merged_mesh ; 
+        // maybe into GGeoLib ? 
+
         std::map<unsigned int, unsigned int>                  m_mesh_usage ; 
         std::map<unsigned int, std::vector<unsigned int> >    m_mesh_nodes ; 
         GItemIndex*                   m_meshindex ; 
         GItemList*                    m_pvlist ; 
         GItemList*                    m_lvlist ; 
 
-        char*                         m_mesh_version ;
 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
@@ -310,6 +306,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_treecheck(NULL), 
    m_loaded(false), 
    m_lookup(NULL),
+   m_geolib(NULL),
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
@@ -321,7 +318,6 @@ inline GGeo::GGeo(GCache* cache) :
    m_meshindex(NULL),
    m_pvlist(NULL),
    m_lvlist(NULL),
-   m_mesh_version(NULL),
    m_sensitive_count(0),
    m_volnames(false),
    m_cathode(NULL),
@@ -424,10 +420,15 @@ inline GBorderSurface* GGeo::getBorderSurface(unsigned int index)
 }
 
 
+inline GGeoLib* GGeo::getGeoLib()
+{
+    return m_geolib ; 
+}
 inline GBndLib* GGeo::getBndLib()
 {
     return m_bndlib ; 
 }
+
 inline GMaterialLib* GGeo::getMaterialLib()
 {
     return m_materiallib ; 
@@ -479,15 +480,6 @@ inline gfloat3* GGeo::getHigh()
 }
 
 
-inline void GGeo::setMeshVersion(const char* mesh_version)
-{
-    m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
-}
-inline const char* GGeo::getMeshVersion()
-{
-    return m_mesh_version ;
-}
-
 
 inline GCache* GGeo::getCache()
 {
@@ -497,6 +489,10 @@ inline GTreeCheck* GGeo::getTreeCheck()
 {
     return m_treecheck ;
 }
+
+
+
+
 inline GMaterial* GGeo::getCathode()
 {
     return m_cathode ; 

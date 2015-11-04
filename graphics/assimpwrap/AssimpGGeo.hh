@@ -19,7 +19,6 @@ struct aiScene ;
 class AssimpGGeo {
 public:
     AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection);
-    virtual ~AssimpGGeo();
     int convert(const char* ctrl);
 private:
     void init();

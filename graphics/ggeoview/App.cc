@@ -85,6 +85,7 @@
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 
+#include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -317,7 +318,7 @@ void App::loadGeometry()
     if(!meshversion.empty())
     {
         LOG(warning) << "App::loadGeometry using debug meshversion " << meshversion ;  
-        m_ggeo->setMeshVersion(meshversion.c_str());
+        m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
     }
 
     m_ggeo->loadGeometry();

@@ -5,6 +5,7 @@
 #include <vector>
 
 class GGeo ; 
+class GGeoLib ; 
 class GNode ; 
 class GSolid ; 
 class GBuffer ;
@@ -46,6 +47,7 @@ class GTreeCheck {
 
    private:
        GGeo*                     m_ggeo ; 
+       GGeoLib*                  m_geolib ; 
        unsigned int              m_repeat_min ; 
        unsigned int              m_vertex_min ; 
        GSolid*                   m_root ; 
@@ -64,6 +66,7 @@ class GTreeCheck {
 inline GTreeCheck::GTreeCheck(GGeo* ggeo) 
        :
        m_ggeo(ggeo),
+       m_geolib(NULL),
        m_repeat_min(120),
        m_vertex_min(300),   // aiming to include leaf? sStrut and sFasteners
        m_root(NULL),
