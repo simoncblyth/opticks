@@ -210,12 +210,25 @@ glm::vec4 GCache::getMeshfixFacePairingCriteria()
 
 
 
-std::string GCache::getMergedMeshPath(unsigned int ridx)
+std::string GCache::getMergedMeshPath(unsigned int index)
+{
+    return getObjectPath("GMergedMesh", index);
+}
+
+std::string GCache::getPmtPath(unsigned int index)
+{
+    return getObjectPath("GPmt", index);
+}
+
+std::string GCache::getObjectPath(const char* name, unsigned int index)
 {
     fs::path cachedir(m_idpath);
-    fs::path mmdir(cachedir/"GMergedMesh"/boost::lexical_cast<std::string>(ridx) );
+    fs::path mmdir(cachedir/name/boost::lexical_cast<std::string>(index) );
     return mmdir.string() ;
 }
+
+
+
 
 
 std::string GCache::getPropertyLibDir(const char* name)

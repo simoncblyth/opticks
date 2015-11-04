@@ -1,28 +1,33 @@
+//  ggv --pmt
+
+#include "GCache.hh"
 #include "GPmt.hh"
 #include "GBuffer.hh"
+#include "NLog.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
+    GCache* cache = new GCache("GGEOVIEW_", "pmttest.log", "info");
+    cache->configure(argc, argv);
+
     for(unsigned int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
- 
     const char* slice = argc > 1 ? argv[1] : NULL ;  
+    
+    GPmt* pmt = GPmt::load(cache, 0);
 
-    GBuffer* orig = GBuffer::load<float>("/tmp/hemi-pmt-parts.npy");
-
-
+    GBuffer* orig = pmt->getPartBuffer();
     unsigned int nelem = orig->getNumElements();
     assert(nelem == 4 && "expecting quads");
+
+    /*
+    // TODO: is the below just needed for slicing ?
     orig->reshape(4*GPmt::QUADS_PER_ITEM);  
     GBuffer* pbuf = orig->make_slice(slice);
     orig->reshape(nelem);
     pbuf->reshape(nelem);
-
-
     GPmt* pmt = new GPmt(pbuf);
+    */
+
     pmt->dump();
     pmt->Summary();
 

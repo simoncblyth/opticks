@@ -302,6 +302,8 @@ void GGeo::modifyGeometry(const char* config)
 
     GMergedMesh* cmm = GMergedMesh::combine( mm_index, mm, solid );   
 
+    cmm->setGeoCode('S');  // signal OGeo to use Analytic geometry
+
     m_geolib->clear();
 
     m_geolib->setMergedMesh( 0, cmm );

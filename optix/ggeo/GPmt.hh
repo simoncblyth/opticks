@@ -3,6 +3,7 @@
 #include <map>
 #include <cassert>
 
+class GCache ; 
 class GBuffer ; 
 
 // *GPmt::init* 
@@ -24,13 +25,19 @@ class GPmt {
        enum { TYPECODE_J  = 2, TYPECODE_K  = 3 };
        enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
 
+       static const char* FILENAME ;  
+       static const char* GPMT ;  
        static const char* SPHERE_ ;
        static const char* TUBS_ ; 
        static const char* TypeName(unsigned int typecode);
-
-       static GPmt* load(const char* path="/tmp/pmt-hemi-parts.npy");
-       GPmt(GBuffer* part_buffer);
+   public:
+       static GPmt* load(GCache* cache, unsigned int index=0);
+       static GPmt* load(const char* path="/tmp/pmt-hemi-parts.npy", unsigned int index=0);
+       GPmt(GCache* cache, unsigned int index=0);
+       GPmt(GBuffer* part_buffer, unsigned int index=0);
+   public:
        GBuffer* getSolidBuffer();
+       GBuffer* getPartBuffer();
        void dump(const char* msg="GPmt::dump");
        void Summary(const char* msg="GPmt::Summary");
        unsigned int getNumSolids();
@@ -51,15 +58,33 @@ class GPmt {
        void setSolidBuffer(GBuffer* solid_buffer);
        unsigned int getUInt(unsigned int part_index, unsigned int j, unsigned int k);
    private:
-       GBuffer* m_part_buffer ; 
-       GBuffer* m_solid_buffer ; 
+       GCache*      m_cache ; 
+       unsigned int m_index ;
+       GBuffer*     m_part_buffer ; 
+       GBuffer*     m_solid_buffer ; 
        unsigned int m_num_solids ; 
        unsigned int m_num_parts ; 
        std::map<unsigned int, unsigned int> m_parts_per_solid ;
 
 };
 
-inline GPmt::GPmt(GBuffer* part_buffer) :
+
+inline GPmt::GPmt(GCache* cache, unsigned int index) 
+    :
+    m_cache(cache),
+    m_index(index),
+    m_part_buffer(NULL),
+    m_solid_buffer(NULL),
+    m_num_solids(0),
+    m_num_parts(0)
+{
+   init();
+}
+
+inline GPmt::GPmt(GBuffer* part_buffer, unsigned int index) 
+    :
+    m_cache(NULL),
+    m_index(index),
     m_part_buffer(part_buffer),
     m_solid_buffer(NULL),
     m_num_solids(0),
@@ -98,5 +123,9 @@ inline void GPmt::setSolidBuffer(GBuffer* solid_buffer)
 inline GBuffer* GPmt::getSolidBuffer()
 {
     return m_solid_buffer ; 
+}
+inline GBuffer* GPmt::getPartBuffer()
+{
+    return m_part_buffer ; 
 }
 

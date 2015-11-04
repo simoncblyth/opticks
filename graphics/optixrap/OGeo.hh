@@ -12,6 +12,7 @@ class RayTraceConfig ;
 class OContext ; 
 
 class GGeo ; 
+class GCache ; 
 class GMergedMesh ; 
 class GBuffer ; 
 
@@ -54,6 +55,7 @@ private:
     optix::Context       m_context ; 
     optix::Group         m_top ; 
     GGeo*                m_ggeo ; 
+    GCache*              m_cache ; 
     const char*          m_builder ; 
     const char*          m_traverser ; 
     const char*          m_description ; 
@@ -69,6 +71,7 @@ inline OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char*
            : 
            m_ocontext(ocontext),
            m_ggeo(gg),
+           m_cache(NULL),
            m_builder(builder ? strdup(builder) : BUILDER),
            m_traverser(traverser ? strdup(traverser) : TRAVERSER),
            m_description(NULL)

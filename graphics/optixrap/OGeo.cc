@@ -128,6 +128,7 @@ const char* OGeo::description(const char* msg)
 
 void OGeo::init()
 {
+    m_cache = m_ggeo->getCache();
     m_context = m_ocontext->getContext();
     m_geometry_group = m_context->createGeometryGroup();
     m_repeated_group = m_context->createGroup();
@@ -418,42 +419,12 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
-    // replacing instance1 with a sphere positioned to match the cathode front face
-
-    /*
-
-      when intersect with bbox things look as would expect, 
-      when intersect with the primitve parts of spheres within 
-      get bizarre image that varys according to direction
-
-      splitting at part level and hoping that OptiX manages
-      to pick the correct part from the bbox doesnt work in 3D
-      ... because corner bbox intersects will fail to match 
-      but should then intersert with the bbox behind    
-
-      seems need to operate at prim == solid level
-      and pass the number of parts, then loop over the small number of parts (eg 1,2 or 3-4) 
-      intersecting with each to pick the closest
-
-      so need to combine the bbox 
-
-
-      ... can rename analyticBuffer t 
-
-     need a uint4 solidBuffer providing
- 
-          .x offset into partBuffer 
-          .y count of parts
-
-
-    */
-
-    assert(mm->getIndex() == 1 ); 
-
+    //assert(mm->getIndex() == 1 ); 
 
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
+    /*
     GBuffer* partBuf_orig = mm->getAnalyticGeometryBuffer();  // getter causes loading on first call
     GBuffer* partBuf = partBuf_orig ; 
     NSlice* pslice = mm->getPartSlice();
@@ -467,12 +438,17 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
         partBuf_orig->reshape(nelem);
         partBuf->reshape(nelem);
     }
+    */
+    // TODO: move above slicing mechanics into GPmt 
+    // hmm grabbing from cache, not from GMergedMesh ?
+ 
+    GPmt* pmt = GPmt::load(m_cache, 0);
 
-
-    GPmt* pmt = new GPmt(partBuf);
+   // GPmt* pmt = new GPmt(partBuf);
     pmt->dump();
     pmt->Summary();
 
+    GBuffer* partBuf = pmt->getPartBuffer();
     GBuffer* solidBuf = pmt->getSolidBuffer();
     solidBuf->dump<unsigned int>("solidBuf partOffset/numParts/solidIndex/0");
 

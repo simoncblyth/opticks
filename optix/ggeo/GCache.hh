@@ -44,7 +44,9 @@ class GCache {
          const char* getIdPath();
          const char* getIdFold();  // parent directory of idpath
          std::string getRelativePath(const char* path); 
+         std::string getObjectPath(const char* name, unsigned int ridx);
          std::string getMergedMeshPath(unsigned int ridx);
+         std::string getPmtPath(unsigned int index);
          std::string getPropertyLibDir(const char* name);
     public:
          std::string getPreferenceDir(const char* type);

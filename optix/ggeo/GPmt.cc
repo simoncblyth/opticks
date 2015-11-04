@@ -1,7 +1,7 @@
 #include "GPmt.hh"
+#include "GCache.hh"
 #include "GBuffer.hh"
 #include "GVector.hh"
-
 
 #include <map>
 #include <cstdio>
@@ -23,6 +23,7 @@ typedef union
 
 
 
+const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::SPHERE_ = "Sphere" ;
 const char* GPmt::TUBS_   = "Tubs" ;
 const char* GPmt::TypeName(unsigned int typecode)
@@ -36,11 +37,17 @@ const char* GPmt::TypeName(unsigned int typecode)
 }
 
 
-
-GPmt* GPmt::load(const char* path)
+GPmt* GPmt::load(GCache* cache, unsigned int index)
 {
-    GBuffer* buf = GBuffer::load<float>(path);
-    return new GPmt(buf);    
+    std::string path = cache->getPmtPath(index); 
+    return GPmt::load(path.c_str(), index );
+}
+
+GPmt* GPmt::load(const char* path, unsigned int index)
+{
+    LOG(info) << "GPmt::load " << path ; 
+    GBuffer* buf = GBuffer::load<float>(path, FILENAME);
+    return new GPmt(buf, index);    
 }
 
 unsigned int GPmt::getUInt(unsigned int i, unsigned int j, unsigned int k)
