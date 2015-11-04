@@ -2,10 +2,6 @@
 #include "GGeo.hh"
 #include "GSolid.hh"
 
-//#include "GBoundaryLib.hh"
-//#include "GBoundary.hh"
-
-
 // npy-
 #include "Timer.hpp"
 #include "NSensor.hpp"
@@ -49,7 +45,6 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
              << " from base " << base->getName() ;
              ; 
 
-
     // 1st pass traversal : counts vertices and faces
 
     mm->traverse( base, 0, PASS_COUNT );  
@@ -84,151 +79,146 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 }
 
 
-
-void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
+void GMergedMesh::count( GSolid* solid, bool selected )
 {
-    GNode* base = getCurrentBase();
+    if(!selected) return ; 
 
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GMesh* mesh = solid->getMesh();
+    unsigned int nface = mesh->getNumFaces();
+    unsigned int nvert = mesh->getNumVertices();
+    unsigned int meshIndex = mesh->getIndex();
+
+    m_num_vertices += nvert ;
+    m_num_faces    += nface ; 
+    m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
+}
+
+void GMergedMesh::merge( GSolid* solid, bool selected )
+{
+    GMesh* mesh = solid->getMesh();
+    unsigned int nvert = mesh->getNumVertices();
+    unsigned int nface = mesh->getNumFaces();
+
+    GNode* base = getCurrentBase();
+    GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;    
+    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
+
     unsigned int boundary = solid->getBoundary();
     NSensor* sensor = solid->getSensor();
-    GMesh* mesh = solid->getMesh();
 
-    unsigned int nodeIndex = node->getIndex();
+    unsigned int nodeIndex = solid->getIndex();
     unsigned int meshIndex = mesh->getIndex();
     unsigned int sensorIndex = NSensor::RefIndex(sensor) ; 
-
     guint4 _identity = solid->getIdentity();
-
     assert(_identity.x == nodeIndex);
     assert(_identity.y == meshIndex);
     assert(_identity.z == boundary);
     //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
     
-    LOG(debug) << "GMergedMesh::traverse"
+    LOG(info) << "GMergedMesh::merge"
               << " nodeIndex " << nodeIndex
               << " boundaryIndex " << boundary
               << " sensorIndex " << sensorIndex
               << " sensor " << ( sensor ? sensor->description() : "NULL" )
               ;
 
-    unsigned int nface = mesh->getNumFaces();
-    unsigned int nvert = mesh->getNumVertices();
-
-    GNode* parent = node->getParent();
+    GNode* parent = solid->getParent();
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
+
+    // needs to be outside the selection branch for the all solid center extent
+    gbbox bb = GMesh::findBBox(vertices, nvert) ;
+
+    m_bbox[m_cur_solid] = bb ;  
+    m_center_extent[m_cur_solid] = bb.center_extent() ;
+    transform->copyTo( getTransform(m_cur_solid) );
+
+    m_meshes[m_cur_solid] = meshIndex ; 
+
+    // face and vertex counts must use same selection as above to be usable 
+    // with the above filled vertices and indices 
+
+    m_nodeinfo[m_cur_solid].x = selected ? nface : 0 ; 
+    m_nodeinfo[m_cur_solid].y = selected ? nvert : 0 ; 
+    m_nodeinfo[m_cur_solid].z = nodeIndex ;  
+    m_nodeinfo[m_cur_solid].w = parentIndex ; 
+
+    if(isGlobal())
+         assert(nodeIndex == m_cur_solid);
+
+    m_identity[m_cur_solid] = _identity ; 
+
+    if(selected)
+    {
+        gfloat3* normals = mesh->getTransformedNormals(*transform);  
+        guint3* faces = mesh->getFaces();
+
+        for(unsigned int i=0 ; i<nvert ; ++i )
+        {
+            m_vertices[m_cur_vertices+i] = vertices[i] ; 
+            m_normals[m_cur_vertices+i] = normals[i] ; 
+        }
+
+        // TODO: consolidate into uint4 (with one spare)
+        unsigned int* node_indices = solid->getNodeIndices();
+        unsigned int* boundary_indices = solid->getBoundaryIndices();
+        unsigned int* sensor_indices = solid->getSensorIndices();
+        assert(node_indices);
+        assert(boundary_indices);
+        assert(sensor_indices);
+
+        // offset the vertex indices as are combining all meshes into single vertex list 
+        for(unsigned int i=0 ; i<nface ; ++i )
+        {
+            m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
+            m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
+            m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
+
+            m_nodes[m_cur_faces+i]      = node_indices[i] ;
+            m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
+            m_sensors[m_cur_faces+i]    = sensor_indices[i] ;
+        }
+
+        // offset within the flat arrays
+        m_cur_vertices += nvert ;
+        m_cur_faces    += nface ;
+    }
+}
+
+
+void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
+{
+    GNode* base = getCurrentBase();
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
     // using repeat index labelling in the tree
     bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
     bool selected = solid->isSelected() && repsel ;
 
-    // needs to be out here for the all solid center extent
-    GMatrixF* transform = base ? node->getRelativeTransform(base) : node->getTransform() ;    
-    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
-
-
-    if(selected)
-    {
-        if(pass == PASS_COUNT )
-        {
-            m_num_vertices += nvert ;
-            m_num_faces    += nface ; 
-            m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
-        }
-        else if(pass == PASS_MERGE )
-        {
-            for(unsigned int i=0 ; i<nvert ; ++i )
-            {
-                m_vertices[m_cur_vertices+i] = vertices[i] ; 
-            }
-
-            // TODO: change transform to be the transpose of the inverse  ?
-            // But so long as othonormal?, not needed.  
-            // Ordinary rotation, translation, and uniform scaling are OK.
-            //
-            gfloat3* normals = mesh->getTransformedNormals(*transform);  
-            for(unsigned int i=0 ; i<nvert ; ++i )
-            {
-                m_normals[m_cur_vertices+i] = normals[i] ; 
-            }
-
-            // offset the vertex indices as are combining all meshes into single vertex list 
-            guint3* faces = mesh->getFaces();
-
-            // NB from the GNode not the GMesh 
-            // (there are only ~250 GMesh instances which are recycled by the ~12k GNode)
-
-            // TODO: consolidate into uint4 (with one spare)
-            unsigned int* node_indices = node->getNodeIndices();
-            unsigned int* boundary_indices = node->getBoundaryIndices();
-            unsigned int* sensor_indices = node->getSensorIndices();
-
-            assert(node_indices);
-            assert(boundary_indices);
-            assert(sensor_indices);
-
-            for(unsigned int i=0 ; i<nface ; ++i )
-            {
-                m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
-                m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
-                m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
-
-                m_nodes[m_cur_faces+i]      = node_indices[i] ;
-                m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
-                m_sensors[m_cur_faces+i]    = sensor_indices[i] ;
-            }
-
-            // offset within the flat arrays
-            m_cur_vertices += nvert ;
-            m_cur_faces    += nface ;
-
-        } // count or merge passes
-    }     // selected
-
-
-
-    // for all (not just selected) as prefer absolute solid indexing 
     if(pass == PASS_COUNT )
     {
+        count(solid, selected);
         m_num_solids += 1 ; 
         if(selected) m_num_solids_selected += 1;
     }
-    else if( pass == PASS_MERGE ) 
+    else if(pass == PASS_MERGE )
     {
-        gbbox bb = GMesh::findBBox(vertices, nvert) ;
-
-        m_bbox[m_cur_solid] = bb ;  
-        m_center_extent[m_cur_solid] = bb.center_extent() ;
-
-        transform->copyTo( getTransform(m_cur_solid) );
-
-        m_meshes[m_cur_solid] = meshIndex ; 
-
-        // face and vertex counts must use same selection as above to be usable 
-        // with the above filled vertices and indices 
-
-        m_nodeinfo[m_cur_solid].x = selected ? nface : 0 ; 
-        m_nodeinfo[m_cur_solid].y = selected ? nvert : 0 ; 
-        m_nodeinfo[m_cur_solid].z = nodeIndex ;  
-        m_nodeinfo[m_cur_solid].w = parentIndex ; 
-
-        if(isGlobal())
-        {
-            assert(nodeIndex == m_cur_solid);
-        }
-
-        m_identity[m_cur_solid] = _identity ; 
-        m_cur_solid += 1 ; 
+        merge(solid, selected);
+        m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
     }
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1, pass);
 }
 
 
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
+{
+    return NULL ; 
+}
+
 
 void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 {
-     printf("%s\n", msg);
+     LOG(info) << msg ; 
      typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
 
      unsigned int tv(0) ; 
@@ -256,7 +246,7 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
     fs::path cachedir(dir);
     if(!fs::exists(cachedir))
     {
-        printf("GMergedMesh::load directory %s DOES NOT EXIST \n", dir);
+        LOG(warning) << "GMergedMesh::load directory DOES NOT EXIST " <<  dir ;
     }
     else
     {
@@ -268,13 +258,9 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
 }
 
 
-
-
-
-
 void GMergedMesh::dumpSolids(const char* msg)
 {
-    printf("%s\n", msg);
+    LOG(info) << msg ; 
     for(unsigned int index=0 ; index < getNumSolids() ; ++index)
     {
         if(index % 1000 != 0) continue ; 
@@ -283,17 +269,9 @@ void GMergedMesh::dumpSolids(const char* msg)
     }
 }
 
-
 float* GMergedMesh::getModelToWorldPtr(unsigned int index)
 {
-    if(index == 0)
-    {
-        return GMesh::getModelToWorldPtr(0);
-    }
-    else
-    {
-        return NULL ; 
-    }
+    return index == 0 ? GMesh::getModelToWorldPtr(0) : NULL ;
 }
 
 
