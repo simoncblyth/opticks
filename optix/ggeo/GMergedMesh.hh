@@ -27,9 +27,11 @@ public:
     GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;
 private:
+    void count( GMesh*  mesh, bool selected ); // applies to mm too
     void merge( GSolid* solid, bool selected );
-    void count( GSolid* solid, bool selected );
     void traverse( GNode* node, unsigned int depth, unsigned int pass);
+public:
+    void merge( GMergedMesh* other, bool selected );
 public:
     float* getModelToWorldPtr(unsigned int index);
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");

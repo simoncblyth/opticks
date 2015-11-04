@@ -19,9 +19,39 @@
 namespace fs = boost::filesystem;
 
 
+
+
+
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
+{
+    GMergedMesh* com = new GMergedMesh( index ); 
+
+    com->count(mm, true);
+
+    typedef std::vector<GSolid*> VS ; 
+    for(VS::const_iterator it=solids.begin() ; it != solids.end() ; it++)
+    {
+        GSolid* solid = *it ; 
+        com->count(solid->getMesh(), true);
+    } 
+
+    com->allocate(); 
+ 
+
+
+
+
+    com->updateBounds();
+
+    return com ; 
+}
+
+
+
+
+
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 {
-
     Timer t("GMergedMesh::create") ; 
     t.setVerbose(false);
     t.start();
@@ -79,18 +109,65 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 }
 
 
-void GMergedMesh::count( GSolid* solid, bool selected )
+void GMergedMesh::count( GMesh* mesh, bool selected)
 {
-    if(!selected) return ; 
+    m_num_solids += 1 ; 
+    if(selected)
+    {
+        m_num_solids_selected += 1;
 
-    GMesh* mesh = solid->getMesh();
-    unsigned int nface = mesh->getNumFaces();
-    unsigned int nvert = mesh->getNumVertices();
-    unsigned int meshIndex = mesh->getIndex();
+        unsigned int nface = mesh->getNumFaces();
+        unsigned int nvert = mesh->getNumVertices();
+        unsigned int meshIndex = mesh->getIndex();
 
-    m_num_vertices += nvert ;
-    m_num_faces    += nface ; 
-    m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
+        m_num_vertices += nvert ;
+        m_num_faces    += nface ; 
+        m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
+    }
+}
+
+
+void GMergedMesh::merge( GMergedMesh* other, bool selected )
+{
+    unsigned int nvert = other->getNumVertices();
+    unsigned int nface = other->getNumFaces();
+
+    gfloat3* vertices = other->getVertices();
+    gfloat3* normals = other->getNormals();
+    guint3*  faces = other->getFaces();
+
+    unsigned int* node_indices = other->getNodes();
+    unsigned int* boundary_indices = other->getBoundaries();
+    unsigned int* sensor_indices = other->getSensors();
+
+    assert(node_indices);
+    assert(boundary_indices);
+    assert(sensor_indices);
+
+    if(selected)
+    {
+        for(unsigned int i=0 ; i<nvert ; ++i )
+        {
+            m_vertices[m_cur_vertices+i] = vertices[i] ; 
+            m_normals[m_cur_vertices+i] = normals[i] ; 
+        }
+
+        for(unsigned int i=0 ; i<nface ; ++i )
+        {
+            m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
+            m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
+            m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
+
+            m_nodes[m_cur_faces+i]      = node_indices[i] ;
+            m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
+            m_sensors[m_cur_faces+i]    = sensor_indices[i] ;
+        }
+
+        // offset within the flat arrays
+        m_cur_vertices += nvert ;
+        m_cur_faces    += nface ;
+    }
+
 }
 
 void GMergedMesh::merge( GSolid* solid, bool selected )
@@ -147,6 +224,8 @@ void GMergedMesh::merge( GSolid* solid, bool selected )
 
     m_identity[m_cur_solid] = _identity ; 
 
+    m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
+
     if(selected)
     {
         gfloat3* normals = mesh->getTransformedNormals(*transform);  
@@ -189,31 +268,22 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
 {
     GNode* base = getCurrentBase();
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GMesh* mesh = solid->getMesh();
 
     // using repeat index labelling in the tree
     bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
     bool selected = solid->isSelected() && repsel ;
 
-    if(pass == PASS_COUNT )
+    switch(pass)
     {
-        count(solid, selected);
-        m_num_solids += 1 ; 
-        if(selected) m_num_solids_selected += 1;
-    }
-    else if(pass == PASS_MERGE )
-    {
-        merge(solid, selected);
-        m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
+       case PASS_COUNT:    count(mesh, selected)   ;break;
+       case PASS_MERGE:    merge(solid, selected)  ;break;
+               default:    assert(0)               ;break;
     }
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1, pass);
 }
 
-
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
-{
-    return NULL ; 
-}
 
 
 void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
