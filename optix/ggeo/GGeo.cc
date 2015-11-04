@@ -9,6 +9,7 @@
 #include "GMesh.hh"
 #include "GTreeCheck.hh"
 #include "GColorizer.hh"
+#include "GTestBox.hh"
 #include "GColors.hh"
 
 #include "GGeoLib.hh"
@@ -77,13 +78,14 @@ void GGeo::init()
 
    m_sensor_list->load( idpath, "idmap");
 
-   m_geolib = new GGeoLib(this);
 
    LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
    if(m_loaded) return ; 
 
    //////////////  below only when operating pre-cache //////////////////////////
+
+   m_geolib = new GGeoLib(m_cache);
 
    m_treecheck = new GTreeCheck(this) ;
    if(m_cache->isJuno())
@@ -147,7 +149,7 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 
 GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
 {
-    return m_geolib->makeMergedMesh(index, base);
+    return m_geolib->makeMergedMesh(this, index, base);
 }
 
 
@@ -204,7 +206,7 @@ void GGeo::loadFromG4DAE()
 
 void GGeo::loadFromCache()
 {   
-    m_geolib->loadFromCache();
+    m_geolib = GGeoLib::load(m_cache);
         
     const char* idpath = m_cache->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");
@@ -268,6 +270,43 @@ void GGeo::save(const char* idpath)
     m_surfacelib->save();
     m_scintillatorlib->save();
     m_bndlib->save();  
+}
+
+
+void GGeo::modifyGeometry(const char* config)
+{
+    m_testbox = new GTestBox( m_cache) ;
+
+    m_testbox->setBndLib(m_bndlib);
+
+    m_testbox->configure( config );
+
+    unsigned int target = 1 ; 
+
+    GMergedMesh* mm = getMergedMesh(target); 
+
+    gbbox bb = mm->getBBox(0);   
+
+    LOG(info) << "GGeo::modifyGeometry "
+              << " numMeshes " << getNumMeshes() 
+              ;
+ 
+    // TODO: how to find appropriate indices post cache ? 
+    unsigned int mm_index = 1000 ; 
+    unsigned int mesh_index = 1000 ; 
+    unsigned int node_index = mm->getNumSolids() ; // node indices need to be contiguous ?
+    
+    m_testbox->make(bb, mesh_index, node_index );
+
+    GSolid* solid = m_testbox->getSolid();
+
+    GMergedMesh* cmm = GMergedMesh::combine( mm_index, mm, solid );   
+
+    m_geolib->clear();
+
+    m_geolib->setMergedMesh( 0, cmm );
+     
+    m_testbox->dump("GGeo::modifyGeometry");
 }
 
 
@@ -666,10 +705,6 @@ void GGeo::dumpRawMaterialProperties(const char* msg)
 
 
 
-
-
-
-
 void GGeo::prepareScintillatorLib()
 {
     LOG(info) << "GGeo::prepareScintillatorLib " ; 
@@ -727,7 +762,7 @@ void GGeo::prepareMeshes()
     else
     {
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
-        m_geolib->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+        makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     }
 }
 

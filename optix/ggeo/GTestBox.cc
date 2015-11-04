@@ -83,10 +83,9 @@ void GTestBox::setFrame(const char* s)
 
 void GTestBox::setBoundary(const char* s)
 {
+    // passing in bndlib just for this seems funny
     m_boundary = m_bndlib->addBoundary(s); 
 }
-
-
 
 
 

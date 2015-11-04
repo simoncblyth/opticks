@@ -44,14 +44,14 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
     t("labelTree"); 
 
 
-    GMergedMesh* mergedmesh = m_geolib->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+    GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
 
     unsigned int numRepeats = getNumRepeats();
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
          GNode*   rbase          = getRepeatExample(ridx) ; 
-         GMergedMesh* mergedmesh = m_geolib->makeMergedMesh(ridx, rbase); 
+         GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
          mergedmesh->dumpSolids("GTreeCheck::createInstancedMergedMeshes dumpSolids");
 
          GBuffer* itransforms    = makeInstanceTransformsBuffer(ridx);

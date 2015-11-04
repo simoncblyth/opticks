@@ -59,6 +59,8 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vect
 
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 {
+    // needs GGeo just to access root node
+
     Timer t("GMergedMesh::create") ; 
     t.setVerbose(false);
     t.start();

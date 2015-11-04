@@ -12,21 +12,25 @@ class GGeoLib {
         static const char* GMERGEDMESH ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
-        GGeoLib(GGeo* ggeo);
+        static GGeoLib* load(GCache* cache);
+    public:
+        GGeoLib(GCache* cache);
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion();
     public:
         void loadFromCache();
         void saveToCache();
-        GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
+        GMergedMesh* makeMergedMesh(GGeo* ggeo, unsigned int index=0, GNode* base=NULL);
     private:
-        void init();
         void loadMergedMeshes(const char* idpath);
         void removeMergedMeshes(const char* idpath);
         void saveMergedMeshes(const char* idpath);
     public:
         unsigned int getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
+        void setMergedMesh(unsigned int index, GMergedMesh* mm);
+        void eraseMergedMesh(unsigned int index);
+        void clear();
     private:
         GGeo*   m_ggeo ; 
         GCache* m_cache ; 
@@ -34,13 +38,11 @@ class GGeoLib {
         std::map<unsigned int,GMergedMesh*>  m_merged_mesh ; 
 };
 
-inline GGeoLib::GGeoLib(GGeo* ggeo) 
+inline GGeoLib::GGeoLib(GCache* cache) 
      :
-     m_ggeo(ggeo),
-     m_cache(NULL),
+     m_cache(cache),
      m_mesh_version(NULL)
 {
-    init();
 }
 
 
@@ -54,6 +56,11 @@ inline GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
     if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
     return m_merged_mesh[index] ;
 }
+
+
+
+
+
 
 inline void GGeoLib::setMeshVersion(const char* mesh_version)
 {

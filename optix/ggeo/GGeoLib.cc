@@ -17,10 +17,13 @@ namespace fs = boost::filesystem;
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
 
 
-void GGeoLib::init()
+GGeoLib* GGeoLib::load(GCache* cache)
 {
-    m_cache = m_ggeo->getCache();
+    GGeoLib* glib = new GGeoLib(cache);
+    glib->loadFromCache();
+    return glib ; 
 }
+
 
 void GGeoLib::loadFromCache()
 {
@@ -33,9 +36,6 @@ void GGeoLib::saveToCache()
     const char* idpath = m_cache->getIdPath() ;
     saveMergedMeshes(idpath);
 }
-
-
-
 
 
 void GGeoLib::removeMergedMeshes(const char* idpath )
@@ -94,13 +94,44 @@ void GGeoLib::saveMergedMeshes(const char* idpath)
     }
 }
 
-GMergedMesh* GGeoLib::makeMergedMesh(unsigned int index, GNode* base)
+GMergedMesh* GGeoLib::makeMergedMesh(GGeo* ggeo, unsigned int index, GNode* base)
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
-        m_merged_mesh[index] = GMergedMesh::create(index, m_ggeo, base);
+        m_merged_mesh[index] = GMergedMesh::create(index, ggeo, base);
     }
     return m_merged_mesh[index] ;
 }
+
+void GGeoLib::setMergedMesh(unsigned int index, GMergedMesh* mm)
+{
+    if(m_merged_mesh.find(index) != m_merged_mesh.end())
+        LOG(warning) << "GGeoLib::setMergedMesh REPLACING GMergedMesh "
+                     << " index " << index 
+                     ;
+    m_merged_mesh[index] = mm ; 
+}
+
+
+void GGeoLib::eraseMergedMesh(unsigned int index)
+{
+    std::map<unsigned int, GMergedMesh*>::iterator it = m_merged_mesh.find(index);
+    if(it == m_merged_mesh.end())
+    {
+        LOG(warning) << "GGeoLib::eraseMergedMesh NO SUCH  "
+                     << " index " << index 
+                     ;
+    }
+    else
+    {
+        m_merged_mesh.erase(it); 
+    }
+}
+
+void GGeoLib::clear()
+{
+    m_merged_mesh.clear(); 
+}
+
 
 

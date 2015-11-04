@@ -13,12 +13,17 @@ int main(int argc, char** argv)
     GMergedMesh* mm = GMergedMesh::load(cache, 1);  // instance-1  triangulated PMT 5-solids
     mm->dumpSolids();
 
+
+
+
     GBndLib* blib = GBndLib::load(cache, true) ;
 
     GTestBox* box = new GTestBox(cache) ;
+
     box->setBndLib(blib);
 
     box->configure(); 
+
 
     gbbox bb = mm->getBBox(0);   
     
@@ -36,6 +41,10 @@ int main(int argc, char** argv)
     GMergedMesh* com = GMergedMesh::combine( mm_index, mm , solid );   
 
     com->Dump();
+
+
+
+
 
     return 1 ;
 }

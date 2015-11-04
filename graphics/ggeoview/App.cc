@@ -325,6 +325,13 @@ void App::loadGeometry()
 
     (*m_timer)("loadGeometry"); 
 
+    if(m_fcfg->hasOpt("box"))
+    {
+        std::string modconf = m_fcfg->getBoxConfig();
+        m_ggeo->modifyGeometry( modconf.empty() ? NULL : modconf.c_str() );
+        (*m_timer)("modifyGeometry"); 
+    }
+
     checkGeometry();
 
     registerGeometry();
@@ -336,19 +343,6 @@ void App::loadGeometry()
     }
 }
 
-
-void App::makeDynamicGeometry()
-{
-    if(!m_fcfg->hasOpt("box")) return ; 
-
-    m_testbox = new GTestBox( m_cache) ;
-    m_testbox->setBndLib(m_ggeo->getBndLib());
-
-    std::string config = m_fcfg->getBoxConfig() ;
-    m_testbox->configure( config.empty() ? NULL : config.c_str() );
-
-    m_testbox->dump("App::makeDynamicGeometry");
-}
 
 
 void App::registerGeometry()
