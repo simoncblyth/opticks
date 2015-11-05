@@ -16,20 +16,16 @@
 
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-//#include "GBoundaryLib.hh"
 #include "GPmt.hh"
 
-
 // npy-
+#include "NLog.hpp"
+#include "NPY.hpp"
 #include "NSlice.hpp"
 #include "stringutil.hpp"
 
 
 #include "OConfig.hh"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 
 //  Prior to instancing 
@@ -424,33 +420,27 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
-    /*
-    GBuffer* partBuf_orig = mm->getAnalyticGeometryBuffer();  // getter causes loading on first call
-    GBuffer* partBuf = partBuf_orig ; 
-    NSlice* pslice = mm->getPartSlice();
-    if(pslice)
-    {
-        LOG(info) << "OGeo::makeAnalyticGeometry part slicing the part buffer" ;
-        unsigned int nelem = partBuf_orig->getNumElements();
-        assert(nelem == 4 && "expecting quads");
-        partBuf_orig->reshape(4*GPmt::QUADS_PER_ITEM); 
-        partBuf = partBuf_orig->make_slice(pslice);   
-        partBuf_orig->reshape(nelem);
-        partBuf->reshape(nelem);
-    }
-    */
-    // TODO: move above slicing mechanics into GPmt 
-    // hmm grabbing from cache, not from GMergedMesh ?
- 
-    GPmt* pmt = GPmt::load(m_cache, 0);
 
-   // GPmt* pmt = new GPmt(partBuf);
-    pmt->dump();
-    pmt->Summary();
+    GPmt* lpmt = GPmt::load(m_cache, 0);
+    lpmt->dump();
+    lpmt->Summary();
 
-    GBuffer* partBuf = pmt->getPartBuffer();
-    GBuffer* solidBuf = pmt->getSolidBuffer();
-    solidBuf->dump<unsigned int>("solidBuf partOffset/numParts/solidIndex/0");
+    // TODO: invoke pslicing here , or perhaps at loading stage : as solid buffer is derived from sliced part buffer
+    // NSlice* pslice = mm->getPartSlice();
+    // GPmt* spmt = pmt->make_slice(pslice) ;
+
+    GPmt* pmt = lpmt ; 
+
+
+    NPY<float>* partBuf = pmt->getPartBuffer();
+    NPY<unsigned int>* solidBuf = pmt->getSolidBuffer();
+
+    //GBuffer* partBuf = pmt->getPartBuffer();
+    //GBuffer* solidBuf = pmt->getSolidBuffer();
+    //solidBuf->dump<unsigned int>("solidBuf partOffset/numParts/solidIndex/0");
+
+    solidBuf->dump("solidBuf partOffset/numParts/solidIndex/0");
+
 
     unsigned int numSolidsMesh = mm->getNumSolids();
     unsigned int numSolidsPmt  = pmt->getNumSolids();
@@ -486,10 +476,10 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "bounds"));
 
 
-    optix::Buffer solidBuffer = createInputBuffer<optix::uint4>( solidBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "solidBuffer"); 
+    optix::Buffer solidBuffer = createInputBuffer<optix::uint4, unsigned int>( solidBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "solidBuffer"); 
     geometry["solidBuffer"]->setBuffer(solidBuffer);
 
-    optix::Buffer partBuffer = createInputBuffer<optix::float4>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
+    optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);
 
 
@@ -515,7 +505,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
                   ;
         assert( id->getNumItems() == numSolidsMesh );
     }
-
 
 
 
@@ -623,7 +612,7 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
-   LOG(info)<<"OGeo::createInputBuffer"
+   LOG(info)<<"OGeo::createInputBuffer [GBuffer]"
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes
@@ -637,6 +626,64 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
             << " id " << std::setw(3) << buffer_id 
             ;
 
+   assert(sizeof(T)*nit == buf->getNumBytes() );
+   assert(nel == mul/fold );
+
+   optix::Buffer buffer ;
+
+   if(buffer_id > -1 && reuse)
+   {
+       /*
+       Reuse attempt fails, getting 
+       Caught exception: GL error: Invalid enum
+       */
+
+        glBindBuffer(buffer_target, buffer_id) ;
+
+        buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, buffer_id);
+        buffer->setFormat(format); 
+        buffer->setSize(nit);
+
+        glBindBuffer(buffer_target, 0) ;
+   } 
+   else
+   {
+        buffer = m_context->createBuffer( RT_BUFFER_INPUT, format, nit );
+        memcpy( buffer->map(), buf->getPointer(), buf->getNumBytes() );
+        buffer->unmap();
+   } 
+
+   return buffer ; 
+}
+
+template <typename T, typename S>
+optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
+{
+   unsigned int bytes = buf->getNumBytes() ;
+   unsigned int nel = buf->getNumElements();    // size of the last dimension
+   unsigned int bit = buf->getNumItems(0,-1) ;  // size of all but the last dimension
+   unsigned int nit = bit/fold ; 
+   unsigned int mul = OConfig::getMultiplicity(format) ; // eg multiplicity of FLOAT4 is 4
+
+   int buffer_target = buf->getBufferTarget();
+   int buffer_id = buf->getBufferId() ;
+
+   LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
+            << " fmt " << std::setw(20) << OConfig::getFormatName(format)
+            << " name " << std::setw(20) << name
+            << " bytes " << std::setw(8) << bytes
+            << " bit " << std::setw(7) << bit 
+            << " nit " << std::setw(7) << nit 
+            << " nel " << std::setw(3) << nel 
+            << " mul " << std::setw(3) << mul 
+            << " fold " << std::setw(3) << fold 
+            << " sizeof(T) " << std::setw(3) << sizeof(T)
+            << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit
+            << " id " << std::setw(3) << buffer_id 
+            ;
+
+
+   // typical T is optix::float4, typically NPY buffers should arrange last dimension 4 
    assert(sizeof(T)*nit == buf->getNumBytes() );
    assert(nel == mul/fold );
 

@@ -2,7 +2,8 @@
 
 #include "GCache.hh"
 #include "GPmt.hh"
-#include "GBuffer.hh"
+//#include "GBuffer.hh"
+#include "NPY.hpp"
 #include "NLog.hpp"
 
 int main(int argc, char** argv)
@@ -15,8 +16,17 @@ int main(int argc, char** argv)
     
     GPmt* pmt = GPmt::load(cache, 0);
 
-    GBuffer* orig = pmt->getPartBuffer();
-    unsigned int nelem = orig->getNumElements();
+    //GBuffer* orig = pmt->getPartBuffer();
+
+    NPY<float>* orig = pmt->getPartBuffer();
+
+    LOG(info) << "partBuffer shape: " << orig->getShapeString() ;
+
+
+    assert( orig->getDimensions() == 3 );
+
+    //unsigned int nelem = orig->getNumElements();
+    unsigned int nelem = orig->getShape(2);
     assert(nelem == 4 && "expecting quads");
 
     /*
@@ -31,9 +41,11 @@ int main(int argc, char** argv)
     pmt->dump();
     pmt->Summary();
 
-    GBuffer* sb = pmt->getSolidBuffer();
-    sb->save<unsigned int>("/tmp/hemi-pmt-solids.npy");
-    sb->dump<unsigned int>("solidBuffer partOffset/numParts/solidIndex/0 ");
+    //GBuffer* sb = pmt->getSolidBuffer();
+    NPY<unsigned int>* sb = pmt->getSolidBuffer();
+
+    //sb->save<unsigned int>("/tmp/hemi-pmt-solids.npy");
+    //sb->dump<unsigned int>("solidBuffer partOffset/numParts/solidIndex/0 ");
 
     return 0 ;
 }

@@ -1,31 +1,21 @@
 #include "GPmt.hh"
 #include "GCache.hh"
-#include "GBuffer.hh"
 #include "GVector.hh"
+
+// npy-
+#include "NPY.hpp"
+#include "NLog.hpp"
 
 #include <map>
 #include <cstdio>
 #include <cassert>
 #include <climits>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
-
-typedef union 
-{   
-   unsigned int u ; 
-   int i ; 
-   float f ; 
-}              uif_t ; 
-
-
 
 const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::SPHERE_ = "Sphere" ;
 const char* GPmt::TUBS_   = "Tubs" ;
+
 const char* GPmt::TypeName(unsigned int typecode)
 {
     switch(typecode)
@@ -39,21 +29,35 @@ const char* GPmt::TypeName(unsigned int typecode)
 
 GPmt* GPmt::load(GCache* cache, unsigned int index)
 {
-    std::string path = cache->getPmtPath(index); 
-    return GPmt::load(path.c_str(), index );
+    GPmt* pmt = new GPmt(cache, index);
+    pmt->loadFromCache();
+    return pmt ; 
 }
 
-GPmt* GPmt::load(const char* path, unsigned int index)
+void GPmt::loadFromCache()
 {
-    LOG(info) << "GPmt::load " << path ; 
-    GBuffer* buf = GBuffer::load<float>(path, FILENAME);
-    return new GPmt(buf, index);    
+    std::string path = m_cache->getPmtPath(m_index); 
+    NPY<float>* partBuf = NPY<float>::load( path.c_str(), FILENAME );
+    setPartBuffer(partBuf);
+    import();
 }
+
+
+unsigned int GPmt::getNumParts()
+{
+    return m_part_buffer ? m_part_buffer->getShape(0) : 0 ; 
+}
+
+unsigned int GPmt::getNumSolids()
+{
+    return m_solid_buffer ? m_solid_buffer->getShape(0) : 0 ; 
+}
+
 
 unsigned int GPmt::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
-    assert(i < m_num_parts );
-    float* data = (float*)m_part_buffer->getPointer();
+    assert(i < getNumParts() );
+    float* data = m_part_buffer->getValues();
     uif_t uif ; 
     uif.f = data[i*NJ*NK+j*NJ+k] ;
     return uif.u ; 
@@ -79,8 +83,6 @@ unsigned int GPmt::getFlags(unsigned int part_index)
 {
     return getUInt(part_index, FLAGS_J, FLAGS_K);
 }
- 
-
 
 const char* GPmt::getTypeName(unsigned int part_index)
 {
@@ -88,21 +90,15 @@ const char* GPmt::getTypeName(unsigned int part_index)
     return GPmt::TypeName(code);
 }
 
-
-
-
-
-
-void GPmt::init()
+void GPmt::import()
 {
     unsigned int numQuads = m_part_buffer->getNumItems(); // buffer reshaped (-1,4) in pmt-/tree.py  items are 
-    setNumParts( numQuads/QUADS_PER_ITEM ) ; 
 
     unsigned int nmin(INT_MAX) ; 
     unsigned int nmax(0) ; 
 
     // count parts for each nodeindex
-    for(unsigned int i=0; i < m_num_parts; i++)
+    for(unsigned int i=0; i < getNumParts() ; i++)
     {
         unsigned int nodeIndex = getNodeIndex(i);
         //printf("init %2u : %d \n", i, nodeIndex );
@@ -112,14 +108,11 @@ void GPmt::init()
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
-
     // with part slicing maybe relax contiguous ?
     assert(nmax - nmin == m_parts_per_solid.size() - 1); 
 
-    setNumSolids(m_parts_per_solid.size()) ;
-
-    guint4* solidinfo = new guint4[m_num_solids] ;
-
+    unsigned int num_solids = m_parts_per_solid.size() ;
+    guint4* solidinfo = new guint4[num_solids] ;
 
     typedef std::map<unsigned int, unsigned int> UU ; 
 
@@ -136,40 +129,23 @@ void GPmt::init()
         si.z = s ; 
         si.w = 0 ; 
 
-        printf("si %2u %2u %2u %2u \n", si.x,si.y,si.z,si.w);
+        //printf("si %2u %2u %2u %2u \n", si.x,si.y,si.z,si.w);
         offset += snp ; 
         n++ ; 
     }
 
-    
+    NPY<unsigned int>* buf = NPY<unsigned int>::make( num_solids, 4 );
+    buf->setData((unsigned int*)solidinfo);
 
-    unsigned int size = sizeof(guint4);
-    assert(size == sizeof(unsigned int)*4 );
-    GBuffer* buf = new GBuffer(size*m_num_solids, (void*)solidinfo, size, 4);
     setSolidBuffer(buf);
 }
-
-/*
-
-In [87]: s = np.load("/tmp/hemi-pmt-solids.npy")
-
-In [88]: s
-Out[88]: 
-array([[ 0,  4,  0,  0],
-       [ 4,  4,  1,  0],
-       [ 8,  2,  2,  0],
-       [10,  1,  3,  0],
-       [11,  1,  4,  0]], dtype=uint32)
-
-*/
-
 
 
 void GPmt::Summary(const char* msg)
 {
     LOG(info) << msg 
-              << " num_parts " << m_num_parts 
-              << " num_solids " << m_num_solids
+              << " num_parts " << getNumParts() 
+              << " num_solids " << getNumSolids()
               ;
  
     typedef std::map<unsigned int, unsigned int> UU ; 
@@ -182,7 +158,7 @@ void GPmt::Summary(const char* msg)
         assert( nparts == nparts2 );
     }
 
-    for(unsigned int i=0 ; i < m_num_parts ; i++)
+    for(unsigned int i=0 ; i < getNumParts() ; i++)
     {
         printf(" part %2u : node %2u type %2u \n", i, getNodeIndex(i), getTypeCode(i) ); 
     }
@@ -190,34 +166,21 @@ void GPmt::Summary(const char* msg)
 }
 
 
-
-
 void GPmt::dump(const char* msg)
 {
-    GBuffer* buf = m_part_buffer ;  
+    NPY<float>* buf = m_part_buffer ; 
     assert(buf);
+    assert(buf->getDimensions() == 3);
 
-    float* data = (float*)buf->getPointer();
-    unsigned int numBytes    = buf->getNumBytes();
-    unsigned int numQuads    = buf->getNumItems();
-    unsigned int numElements = buf->getNumElements();
-    unsigned int quadsPerItem = QUADS_PER_ITEM ; 
-    unsigned int numItems    = numQuads/quadsPerItem ;  // buffer is reshaped for easy  GBuffer::load in pmt-/tree.py  
- 
-    LOG(info) << msg 
-              << " numBytes " << numBytes 
-              << " numQuads " << numQuads 
-              << " quadsPerItem " << quadsPerItem 
-              << " numItems " << numItems 
-              << " numElements " << numElements
-              << " numElements*numItems*sizeof(T) " << numElements*numItems*sizeof(float)  
-              ;   
+    unsigned int ni = buf->getShape(0) ;
+    unsigned int nj = buf->getShape(1) ;
+    unsigned int nk = buf->getShape(2) ;
 
-    assert(numElements < 17); // elements within an item, eg 3/4 for float3/float4  
-    assert(numElements*numQuads*sizeof(float) == numBytes );  
+    assert( nj == NJ );
+    assert( nk == NK );
 
-    unsigned int ni = numItems ;
-    assert( NJ*NK == quadsPerItem*numElements );  
+    float* data = buf->getValues();
+
     uif_t uif ; 
 
     for(unsigned int i=0; i < ni; i++)
@@ -265,3 +228,22 @@ void GPmt::dump(const char* msg)
 }
 
 
+/*
+Former part slicing kludge from OGeo::makeAnalyticGeometry 
+working around GBuffer shape inflexibility.
+Due to this migrated from GBuffer to NPY.::
+
+    GBuffer* partBuf_orig = mm->getAnalyticGeometryBuffer();  // getter causes loading on first call
+    GBuffer* partBuf = partBuf_orig ; 
+    NSlice* pslice = mm->getPartSlice();
+    if(pslice)
+    {
+        LOG(info) << "OGeo::makeAnalyticGeometry part slicing the part buffer" ;
+        unsigned int nelem = partBuf_orig->getNumElements();
+        assert(nelem == 4 && "expecting quads");
+        partBuf_orig->reshape(4*GPmt::QUADS_PER_ITEM); 
+        partBuf = partBuf_orig->make_slice(pslice);   
+        partBuf_orig->reshape(nelem);
+        partBuf->reshape(nelem);
+    }
+*/

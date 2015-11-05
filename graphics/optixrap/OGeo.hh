@@ -15,6 +15,7 @@ class GGeo ;
 class GCache ; 
 class GMergedMesh ; 
 class GBuffer ; 
+template <typename S> class NPY ;
 
 // used by OEngine::initGeometry
 
@@ -34,6 +35,7 @@ private:
 
 public:
     template <typename T> optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
+    template <typename T, typename S> optix::Buffer createInputBuffer(NPY<S>*  buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
     optix::Group   makeRepeatedGroup(GMergedMesh* mm);
     optix::Group   PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
 

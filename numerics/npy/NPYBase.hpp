@@ -24,7 +24,8 @@ class NPYBase {
        std::string  getItemShape(unsigned int ifr=1);
        std::string  getDigestString();
        //unsigned int getLength();
-       unsigned int getNumItems();
+       unsigned int getNumItems(int ifr=0, int ito=1);  // default ifr/ito=0/1 is size of 1st dimension
+       unsigned int getNumElements();   // size of last dimension
        unsigned int getDimensions();
        std::string  getShapeString(unsigned int ifr=0);
        unsigned int getShape(unsigned int dim);
@@ -34,13 +35,17 @@ class NPYBase {
        // depending on sizeoftype
        Type_t        getType();
        unsigned char getSizeOfType();
-       unsigned int  getNumBytes(unsigned int from_dim=1);
+       unsigned int  getNumBytes(unsigned int from_dim=0);
        unsigned int  getByteIndex(unsigned int i, unsigned int j, unsigned int k);
 
    public:
        // OpenGL related
        void         setBufferId(int buffer_id);
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
+
+       void         setBufferTarget(int buffer_target);
+       int          getBufferTarget();  // -1 if unset
+
        void         setAux(void* aux);
        void*        getAux();
        void         setDynamic(bool dynamic=true);
@@ -79,6 +84,7 @@ class NPYBase {
        unsigned char      m_sizeoftype ; 
        Type_t             m_type ; 
        int                m_buffer_id ; 
+       int                m_buffer_target ; 
        void*              m_aux ; 
        bool               m_verbose ; 
        bool               m_allow_prealloc ; 
@@ -97,6 +103,7 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_sizeoftype(sizeoftype),
          m_type(type),
          m_buffer_id(-1),
+         m_buffer_target(-1),
          m_aux(NULL),
          m_verbose(false),
          m_allow_prealloc(false),
@@ -132,14 +139,27 @@ inline std::vector<int>& NPYBase::getShapeVector()
     return m_shape ; 
 }
 
-
-//inline unsigned int NPYBase::getLength()
-//{
-//    return getShape(0);
-//}
-inline unsigned int NPYBase::getNumItems()
+inline unsigned int NPYBase::getNumItems(int ifr, int ito)
 {
-    return getShape(0);
+    //  default ifr/ito  0/1 correponds to shape of 1st dimension
+    //
+    // example ifr/ito  0/-1 for ndim 3   gives number items excluding last dimension 
+    //           -->    0/2   --> shape(0)*shape(1)
+    //
+    unsigned int ndim = m_shape.size();
+    if(ifr < 0) ifr += ndim ; 
+    if(ito < 0) ito += ndim ; 
+
+    assert(ifr >= 0 && ifr < ndim);
+    assert(ito >= 0 && ito < ndim);
+
+    unsigned int nit(1) ; 
+    for(unsigned int i=ifr ; i < ito ; i++) nit *= getShape(i);
+    return nit ;
+}
+inline unsigned int NPYBase::getNumElements()
+{
+    return getShape(m_shape.size()-1);
 }
 
 
@@ -149,7 +169,7 @@ inline unsigned int NPYBase::getDimensions()
 }
 inline unsigned int NPYBase::getShape(unsigned int n)
 {
-    return n < m_shape.size() ? m_shape[n] : -1 ;
+    return n < m_shape.size() ? m_shape[n] : 0 ;
 }
 
 
@@ -164,6 +184,19 @@ inline int NPYBase::getBufferId()
 {
     return m_buffer_id ;
 }
+
+inline void NPYBase::setBufferTarget(int buffer_target)
+{
+    m_buffer_target = buffer_target  ;
+}
+inline int NPYBase::getBufferTarget()
+{
+    return m_buffer_target ;
+}
+
+
+
+
 
 // used for CUDA OpenGL interop
 inline void NPYBase::setAux(void* aux)

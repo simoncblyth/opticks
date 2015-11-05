@@ -96,6 +96,7 @@ class NPY : public NPYBase {
        T* getValues();
        T* getValues(unsigned int i);
        void* getBytes();
+       void* getPointer();   // aping GBuffer for easier migration
        void read(void* ptr);
        std::vector<T>& data();
     public:
@@ -187,6 +188,14 @@ inline void* NPY<T>::getBytes()
 {
     return hasData() ? (void*)getValues() : NULL ;
 }
+
+template <typename T> 
+inline void* NPY<T>::getPointer()
+{
+    return getBytes() ;
+}
+
+
 
 
 template <typename T> 

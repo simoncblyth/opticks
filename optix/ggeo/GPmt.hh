@@ -4,7 +4,8 @@
 #include <cassert>
 
 class GCache ; 
-class GBuffer ; 
+
+template <typename T> class NPY ;
 
 // *GPmt::init* 
 //
@@ -32,17 +33,18 @@ class GPmt {
        static const char* TypeName(unsigned int typecode);
    public:
        static GPmt* load(GCache* cache, unsigned int index=0);
-       static GPmt* load(const char* path="/tmp/pmt-hemi-parts.npy", unsigned int index=0);
        GPmt(GCache* cache, unsigned int index=0);
-       GPmt(GBuffer* part_buffer, unsigned int index=0);
+   private:
+       void loadFromCache();   
    public:
-       GBuffer* getSolidBuffer();
-       GBuffer* getPartBuffer();
+       NPY<unsigned int>* getSolidBuffer();
+       NPY<float>*        getPartBuffer();
+       unsigned int       getNumSolids();
+       unsigned int       getNumParts();
+       unsigned int       getSolidNumParts(unsigned int solid_index);
+   public:
        void dump(const char* msg="GPmt::dump");
        void Summary(const char* msg="GPmt::Summary");
-       unsigned int getNumSolids();
-       unsigned int getSolidNumParts(unsigned int solid_index);
-       unsigned int getNumParts();
    public: 
        unsigned int getIndex(unsigned int part_index);
        unsigned int getParent(unsigned int part_index);
@@ -52,18 +54,15 @@ class GPmt {
    public:
        const char*  getTypeName(unsigned int part_index);
    private:
-       void init();
-       void setNumParts(unsigned int num_parts);
-       void setNumSolids(unsigned int num_solids);
-       void setSolidBuffer(GBuffer* solid_buffer);
+       void         import();
+       void         setPartBuffer(NPY<float>* part_buffer);
+       void         setSolidBuffer(NPY<unsigned int>* solid_buffer);
        unsigned int getUInt(unsigned int part_index, unsigned int j, unsigned int k);
    private:
-       GCache*      m_cache ; 
-       unsigned int m_index ;
-       GBuffer*     m_part_buffer ; 
-       GBuffer*     m_solid_buffer ; 
-       unsigned int m_num_solids ; 
-       unsigned int m_num_parts ; 
+       GCache*            m_cache ; 
+       unsigned int       m_index ;
+       NPY<float>*        m_part_buffer ; 
+       NPY<unsigned int>* m_solid_buffer ; 
        std::map<unsigned int, unsigned int> m_parts_per_solid ;
 
 };
@@ -74,40 +73,8 @@ inline GPmt::GPmt(GCache* cache, unsigned int index)
     m_cache(cache),
     m_index(index),
     m_part_buffer(NULL),
-    m_solid_buffer(NULL),
-    m_num_solids(0),
-    m_num_parts(0)
+    m_solid_buffer(NULL)
 {
-   init();
-}
-
-inline GPmt::GPmt(GBuffer* part_buffer, unsigned int index) 
-    :
-    m_cache(NULL),
-    m_index(index),
-    m_part_buffer(part_buffer),
-    m_solid_buffer(NULL),
-    m_num_solids(0),
-    m_num_parts(0)
-{
-   init();
-}
-
-inline unsigned int GPmt::getNumSolids()
-{
-    return m_num_solids ; 
-}
-inline unsigned int GPmt::getNumParts()
-{
-    return m_num_parts ; 
-}
-inline void GPmt::setNumParts(unsigned int num_parts)
-{
-    m_num_parts = num_parts ; 
-}
-inline void GPmt::setNumSolids(unsigned int num_solids)
-{
-    m_num_solids = num_solids ; 
 }
 
 inline unsigned int GPmt::getSolidNumParts(unsigned int solid_index)
@@ -115,16 +82,20 @@ inline unsigned int GPmt::getSolidNumParts(unsigned int solid_index)
     return m_parts_per_solid.count(solid_index)==1 ? m_parts_per_solid[solid_index] : 0 ; 
 }
 
-
-inline void GPmt::setSolidBuffer(GBuffer* solid_buffer)
+inline void GPmt::setSolidBuffer(NPY<unsigned int>* solid_buffer)
 {
     m_solid_buffer = solid_buffer ; 
 }
-inline GBuffer* GPmt::getSolidBuffer()
+inline NPY<unsigned int>* GPmt::getSolidBuffer()
 {
     return m_solid_buffer ; 
 }
-inline GBuffer* GPmt::getPartBuffer()
+
+inline void GPmt::setPartBuffer(NPY<float>* part_buffer)
+{
+    m_part_buffer = part_buffer ; 
+}
+inline NPY<float>* GPmt::getPartBuffer()
 {
     return m_part_buffer ; 
 }
