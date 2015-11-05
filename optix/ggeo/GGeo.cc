@@ -287,6 +287,8 @@ void GGeo::modifyGeometry(const char* config)
 
     gbbox bb = mm->getBBox(0);   
 
+    bb.enlarge(5.f);
+
     LOG(info) << "GGeo::modifyGeometry "
               << " numMeshes " << getNumMeshes() 
               ;

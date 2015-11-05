@@ -377,6 +377,8 @@ NPY<T>* NPY<T>::make_slice(NSlice* slice)
     char* src = (char*)getBytes();
     unsigned int size = getNumBytes(1);  // from dimension 1  
     unsigned int numBytes = count*size ; 
+
+
     char* dest = new char[numBytes] ;    
 
     unsigned int offset = 0 ; 
@@ -394,7 +396,8 @@ NPY<T>* NPY<T>::make_slice(NSlice* slice)
     shape[0] = count ; 
 
     NPY<T>* npy = NPY<T>::make(shape);
-    npy->setData( (T*)dest );
+    npy->setData( (T*)dest );        // reads into NPYs owned storage 
+    delete[] dest ; 
     return npy ; 
 }
 

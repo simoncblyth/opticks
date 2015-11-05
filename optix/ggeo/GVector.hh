@@ -4,8 +4,6 @@
 #include <climits>
 #include <string>
 
-
-
 struct gfloat2 
 {
     gfloat2() : u(0.f), v(0.f) {} ;
@@ -31,6 +29,22 @@ struct gfloat3
     bool operator==(const gfloat3& other) const 
     {
         return x == other.x && y == other.y && z == other.z   ;
+    }
+
+    gfloat3& operator += (const gfloat3& other)
+    {
+         x += other.x ; 
+         y += other.y ; 
+         z += other.z ; 
+         return *this ;
+    }
+
+    gfloat3& operator -= (const gfloat3& other)
+    {
+         x -= other.x ; 
+         y -= other.y ; 
+         z -= other.z ; 
+         return *this ;
     }
 
     gfloat3& operator *= (const GMatrixF& m)
@@ -119,6 +133,23 @@ struct gbbox
    gfloat3 center()
    {
        return gfloat3( (max.x + min.x)/2.0f , (max.y + min.y)/2.0f , (max.z + min.z)/2.0f ) ;
+   }
+
+   void enlarge(float factor)  //  multiple of extent
+   {
+       gfloat3 dim = dimensions();
+       float ext = extent(dim); 
+       float amount = ext*factor ; 
+       min -= gfloat3(amount) ;
+       max += gfloat3(amount) ;
+   }
+
+
+   gbbox& operator *= (const GMatrixF& m)
+   {
+       min *= m ; 
+       max *= m ; 
+       return *this ;
    }
 
    float extent(const gfloat3& dim)
