@@ -47,14 +47,14 @@ std::string NPYBase::getItemShape(unsigned int ifr)
 void NPYBase::Summary(const char* msg)
 {
     std::string desc = description(msg);
-    std::cout << desc << std::endl ; 
+    LOG(info) << desc ; 
 }   
 
 void NPYBase::dump(const char* msg)
 {
     LOG(info) << msg ; 
     std::string desc = description(msg);
-    std::cout << desc << std::endl ; 
+    LOG(info) << desc ; 
 }   
 
 

@@ -57,7 +57,7 @@ void GScintillatorLib::sort()
 void GScintillatorLib::import()
 {
     LOG(info) << "GScintillatorLib::import "  ; 
-    m_buffer->Summary();
+    m_buffer->Summary("GScintillatorLib::import");
 }
 
 NPY<float>* GScintillatorLib::createBuffer()

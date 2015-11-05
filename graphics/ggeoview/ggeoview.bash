@@ -15,6 +15,14 @@ ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
 ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199;source=0,0,1000;target=0,0,0;radius=150;zenith_azimuth=1,0,1,0" $* ; }
 
 
+ggv-box(){
+   ggv --box \
+        --animtimemax 7 \
+        --boxconfig "size=2;boundary=MineralOil/Rock//;" \
+        --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" \
+         $*
+}
+
 
 ggv-lldb(){ 
    echo use ggv --dbg  in order to setup environment

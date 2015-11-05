@@ -49,15 +49,18 @@ class GTestBox {
 
        typedef enum { FRAME, 
                       BOUNDARY, 
+                      SIZE , 
                       UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
    public:
        static const char* FRAME_ ; 
        static const char* BOUNDARY_ ; 
+       static const char* SIZE_ ; 
    public:
        GTestBox(GCache* cache);
        GSolid* getSolid();
+       float   getSize();  // bbox enlargement in units of extent, ie 0:standard bbox, 1:double sized bbox
    public:
        void setBndLib(GBndLib* blib);
        void configure(const char* config=NULL);
@@ -69,8 +72,10 @@ class GTestBox {
    private:
        Param_t getParam(const char* k);
        void set(Param_t p, const char* s);
+   public:
        void setFrame(const char* s);
        void setBoundary(const char* s);
+       void setSize(const char* s);
    public:
        void dump(const char* msg="GTestBox::dump");
    private:
@@ -81,6 +86,7 @@ class GTestBox {
        const char*  m_config ; 
        glm::ivec4   m_frame ;
        unsigned int m_boundary ; 
+       float        m_size ; 
 
 };
 
@@ -90,7 +96,8 @@ inline GTestBox::GTestBox(GCache* cache)
     m_cache(cache),
     m_bndlib(NULL),
     m_mesh(NULL),
-    m_solid(NULL)
+    m_solid(NULL),
+    m_size(0.f)
 {
 }
 
@@ -104,5 +111,8 @@ inline GSolid* GTestBox::getSolid()
     return m_solid ; 
 }
 
-
+inline float GTestBox::getSize()
+{
+    return m_size ; 
+}
 

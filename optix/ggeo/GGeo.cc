@@ -287,14 +287,12 @@ void GGeo::modifyGeometry(const char* config)
 
     gbbox bb = mm->getBBox(0);   
 
-    bb.enlarge(5.f);
-
     LOG(info) << "GGeo::modifyGeometry "
+              << " creating new geometry based on " << mm->getIndex()
               << " numMeshes " << getNumMeshes() 
               ;
  
     // TODO: how to find appropriate indices post cache ? 
-    unsigned int mm_index = 1000 ; 
     unsigned int mesh_index = 1000 ; 
     unsigned int node_index = mm->getNumSolids() ; // node indices need to be contiguous ?
     
@@ -302,7 +300,7 @@ void GGeo::modifyGeometry(const char* config)
 
     GSolid* solid = m_testbox->getSolid();
 
-    GMergedMesh* cmm = GMergedMesh::combine( mm_index, mm, solid );   
+    GMergedMesh* cmm = GMergedMesh::combine( mm->getIndex(), mm, solid );   
 
     cmm->setGeoCode('S');  // signal OGeo to use Analytic geometry
 

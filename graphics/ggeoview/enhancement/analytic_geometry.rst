@@ -16,6 +16,143 @@ a technique to handle union intersections by applying boolean operations
 to intersection segments of the sub volumes. 
 
 
+Test Box Debugging
+--------------------
+
+::
+
+    ggv-box(){
+       ggv --box \
+            --animtimemax 7 \
+            --boxconfig "size=2;boundary=MineralOil/Rock//;" \
+            --torchconfig "source=0,0,400;target=0,0,0;radius=150;zenith_azimuth=1,0,1,0" \
+             $*   
+    }
+
+
+
+* two potentially mismatched geometries
+
+  * OpenGL : created by the "--box" option and config 
+  * OptiX  : created by pmt-parts 
+
+* need to sort out analytic boundary identity labelling, the missers
+  think they are in Pyrex, when should be MO
+
+* currently the analytic containment box is added in python by pmt-parts, 
+  it would be better to do that in GPmt in order to 
+  have a single size input to OpenGL (GTestBox) and OptiX (GPmt)
+  and allow pslice to apply to content and not the containment box
+
+* GGeo/GMergedMesh should be orchestrating the analytic PMT for commality, 
+  currently OGeo/GPmt just grabbing from GCache
+
+* where do i set the boundary of the analytic test box ?
+  again need to bring control of triangulated and analytic together 
+  to avoid confusion
+
+
+From OptiX point of view there 5 (or 6 with the container) primitives.
+These need to line up with the triangulated solids for identity to work.
+Each primitive has a small numbers of parts (up to 4).
+Total of 16 parts.
+
+
+The triangulated GMergedMesh was created by combination of the PMT 
+subtree merged mesh one and a fabricated solid.
+
+When put the container at the end in pmt-parts the material mapping 
+works better as that aligns with GMergedMesh::combine order.
+This is brittle, will fail when slicing.
+
+::
+
+    [2015-Nov-05 19:50:49.364081]:info: OGeo::makeAnalyticGeometry identity buffer BufferId   -1 BufferTarget    0 NumBytes      96 ItemSize      16 NumElements       4 NumItems       6 NumElementsTotal      24
+
+    (  0)        3199          47          27           0 
+    (  1)        3200          46          28           0 
+    (  2)        3201          43          29           3 
+    (  3)        3202          44          30           0 
+    (  4)        3203          45          30           0 
+    (  5)           5        1000         123           0 
+
+
+
+::
+
+    [2015-11-05 19:53:00.317306] [0x000007fff7448031] [info]    GBndLib::dump
+     (  0) im:                   Vacuum om:                   Vacuum is:                          os:                         
+     ...
+     ( 27) im:                    Pyrex om:               MineralOil is:                          os:                         
+     ( 28) im:                   Vacuum om:                    Pyrex is:                          os:                         
+     ( 29) im:                 Bialkali om:                   Vacuum is:                          os:lvPmtHemiCathodeSensorSurface
+     ( 30) im:             OpaqueVacuum om:                   Vacuum is:                          os:                         
+     ...
+     (122) im:                  RadRock om:                     Rock is:                          os:                         
+
+
+
+::
+
+    simon:pmt blyth$ ggv --pmt 0:15
+    [2015-Nov-05 20:44:09.782958]:info: 0:/usr/local/env/optix/ggeo/bin/GPmtTest
+    [2015-Nov-05 20:44:09.783831]:info: 1:0:15
+    [2015-Nov-05 20:44:09.784031]:info: NPY::make_slice from 16 -> 15 slice NSlice      0 :    15 :     1 
+    [2015-Nov-05 20:44:09.784205]:info: GPmt::loadFromCache slicing partBuf  origBuf 16,4,4 partBuf 15,4,4
+    GPmt::make_container pbb min   -101.168   -101.168    -23.838  max    101.168    101.168     56.000 
+    GPmt::make_container pbb min   -101.168   -101.168     56.000  max    101.168    101.168    100.070 
+    GPmt::make_container pbb min    -84.540    -84.540    100.070  max     84.540     84.540    131.000 
+    GPmt::make_container pbb min    -42.250    -42.250   -169.000  max     42.250     42.250    -23.838 
+    GPmt::make_container pbb min    -98.143    -98.143    -21.887  max     98.143     98.143     56.000 
+    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
+    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
+    GPmt::make_container pbb min    -39.250    -39.250   -164.500  max     39.250     39.250    -21.887 
+    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
+    GPmt::make_container pbb min    -82.248    -82.248     98.013  max     82.248     82.248    127.950 
+    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
+    GPmt::make_container pbb min    -98.093    -98.093     55.993  max     98.093     98.093     98.013 
+    GPmt::make_container pbb min    -98.143    -98.143    -30.000  max     98.143     98.143     56.000 
+    GPmt::make_container pbb min    -97.151    -97.151    -29.000  max     97.151     97.151     56.131 
+    GPmt::make_container pbb min    -27.500    -27.500   -164.500  max     27.500     27.500      1.500 
+    GPmt::make_container bb min   -101.168   -101.168   -169.000  max    101.168    101.168    131.000 
+    GPmt::make_container bb factor 3.0  min   -551.168   -551.168   -619.000  max    551.168    551.168    581.000 
+    [2015-Nov-05 20:44:09.784475]:info: parts shape: 15,4,4
+         0.0000      0.0000     69.0000    102.0000 
+
+::
+
+    simon:pmt blyth$ ggv --pmt 0:16
+    [2015-Nov-05 20:44:54.266290]:info: 0:/usr/local/env/optix/ggeo/bin/GPmtTest
+    [2015-Nov-05 20:44:54.266963]:info: 1:0:16
+    [2015-Nov-05 20:44:54.267173]:info: NPY::make_slice from 16 -> 16 slice NSlice      0 :    16 :     1 
+    [2015-Nov-05 20:44:54.267336]:info: GPmt::loadFromCache slicing partBuf  origBuf 16,4,4 partBuf 16,4,4
+    GPmt::make_container pbb min   -101.168   -101.168    -23.838  max    101.168    101.168     56.000 
+    GPmt::make_container pbb min   -101.168   -101.168     56.000  max    101.168    101.168    100.070 
+    GPmt::make_container pbb min    -84.540    -84.540    100.070  max     84.540     84.540    131.000 
+    GPmt::make_container pbb min    -42.250    -42.250   -169.000  max     42.250     42.250    -23.838 
+    GPmt::make_container pbb min    -98.143    -98.143    -21.887  max     98.143     98.143     56.000 
+    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
+    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
+    GPmt::make_container pbb min    -39.250    -39.250   -164.500  max     39.250     39.250    -21.887 
+    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
+    GPmt::make_container pbb min    -82.248    -82.248     98.013  max     82.248     82.248    127.950 
+    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
+    GPmt::make_container pbb min    -98.093    -98.093     55.993  max     98.093     98.093     98.013 
+    GPmt::make_container pbb min    -98.143    -98.143    -30.000  max     98.143     98.143     56.000 
+    GPmt::make_container pbb min    -97.151    -97.151    -29.000  max     97.151     97.151     56.131 
+    GPmt::make_container pbb min    -27.500    -27.500   -164.500  max     27.500     27.500      1.500 
+    GPmt::make_container pbb min   -551.168   -551.168   -619.000  max    551.168    551.168    581.000 
+    GPmt::make_container bb min   -551.168   -551.168   -619.000  max    551.168    551.168    581.000 
+    GPmt::make_container bb factor 3.0  min  -2351.168  -2351.168  -2419.000  max   2351.168   2351.168   2381.000 
+    [2015-Nov-05 20:44:54.267608]:info: parts shape: 16,4,4
+
+
+
+
+
+
+
+
 Face Slicing
 -------------
 

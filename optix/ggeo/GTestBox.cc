@@ -16,12 +16,13 @@
 
 const char* GTestBox::DEFAULT_CONFIG = 
     "frame=3153;"
+    "size=2;"   // bbox enlargement in units of extent  
     "boundary=MineralOil/Rock//;"
     ;
 
-
 const char* GTestBox::FRAME_ = "frame"; 
 const char* GTestBox::BOUNDARY_ = "boundary"; 
+const char* GTestBox::SIZE_ = "size"; 
 
 
 void GTestBox::configure(const char* config_)
@@ -46,6 +47,7 @@ GTestBox::Param_t GTestBox::getParam(const char* k)
     Param_t param = UNRECOGNIZED ; 
     if(     strcmp(k,FRAME_)==0)          param = FRAME ; 
     else if(strcmp(k,BOUNDARY_)==0)       param = BOUNDARY ; 
+    else if(strcmp(k,SIZE_)==0)           param = SIZE ; 
     return param ;   
 }
 
@@ -56,6 +58,7 @@ void GTestBox::set(Param_t p, const char* s)
     {
         case FRAME          : setFrame(s)          ;break;
         case BOUNDARY       : setBoundary(s)       ;break;
+        case SIZE           : setSize(s)           ;break;
         case UNRECOGNIZED   :
                     LOG(warning) << "GTestBox::set WARNING ignoring unrecognized parameter " ;
     }
@@ -87,6 +90,10 @@ void GTestBox::setBoundary(const char* s)
     m_boundary = m_bndlib->addBoundary(s); 
 }
 
+void GTestBox::setSize(const char* s)
+{
+    m_size = boost::lexical_cast<float>(s) ;
+}
 
 
 GMesh* GTestBox::makeMesh(gbbox& bb, unsigned int meshindex)
@@ -125,9 +132,19 @@ GSolid* GTestBox::makeSolid(unsigned int nodeindex)
 
 void GTestBox::make(gbbox& bb, unsigned int meshindex, unsigned int nodeindex)
 {
-    m_mesh = makeMesh(bb, meshindex);
+    float factor = getSize();
+
+    // hmm frame not currently used
+
+    gbbox cbb(bb);
+    cbb.enlarge( factor );
+
+    LOG(info) << "GTestBox::make"
+              << " factor " << factor 
+              ;
+
+    m_mesh = makeMesh(cbb, meshindex);
     m_solid = makeSolid( nodeindex );
 }
-
 
 

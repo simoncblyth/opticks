@@ -496,6 +496,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     }
 
 
+    id->dump<unsigned int>("OGeo::makeAnalyticGeometry identity buffer");
+
 
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     geometry["identityBuffer"]->setBuffer(identityBuffer);

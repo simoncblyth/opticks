@@ -16,17 +16,20 @@
 const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::SPHERE_ = "Sphere" ;
 const char* GPmt::TUBS_   = "Tubs" ;
+const char* GPmt::BOX_    = "Box" ;
 
 const char* GPmt::TypeName(unsigned int typecode)
 {
+    LOG(debug) << "GPmt::TypeName " << typecode ; 
     switch(typecode)
     {
-        case 1:return SPHERE_ ; break ;
-        case 2:return TUBS_   ; break ;
+        case SPHERE:return SPHERE_ ; break ;
+        case   TUBS:return TUBS_   ; break ;
+        case    BOX:return BOX_    ; break ;
+        default:  assert(0) ; break ; 
     }
     return NULL ; 
 }
-
 
 GPmt* GPmt::load(GCache* cache, unsigned int index, NSlice* slice)
 {
@@ -37,6 +40,11 @@ GPmt* GPmt::load(GCache* cache, unsigned int index, NSlice* slice)
 
 void GPmt::loadFromCache(NSlice* slice)
 {
+   /*
+     want slicing to apply to content, not container..
+     so need to add container afterwards
+   */
+
     std::string path = m_cache->getPmtPath(m_index); 
     NPY<float>* origBuf = NPY<float>::load( path.c_str(), FILENAME );
     NPY<float>* partBuf(NULL);
@@ -65,6 +73,22 @@ unsigned int GPmt::getNumParts()
 unsigned int GPmt::getNumSolids()
 {
     return m_solid_buffer ? m_solid_buffer->getShape(0) : 0 ; 
+}
+
+     
+gfloat3 GPmt::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
+{
+    float* data = m_part_buffer->getValues();
+    float* ptr = data + i*NJ*NK+j*NJ+k ;
+    return gfloat3( *ptr, *(ptr+1), *(ptr+2) ); 
+}
+
+gbbox GPmt::getBBox(unsigned int i)
+{
+   gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  
+   gfloat3 max = getGfloat3(i, BBMAX_J, BBMAX_K );  
+   gbbox bb(min, max) ; 
+   return bb ; 
 }
 
 
@@ -98,6 +122,8 @@ unsigned int GPmt::getFlags(unsigned int part_index)
     return getUInt(part_index, FLAGS_J, FLAGS_K);
 }
 
+
+
 const char* GPmt::getTypeName(unsigned int part_index)
 {
     unsigned int code = getTypeCode(part_index);
@@ -115,14 +141,18 @@ void GPmt::import()
     for(unsigned int i=0; i < getNumParts() ; i++)
     {
         unsigned int nodeIndex = getNodeIndex(i);
-        //printf("init %2u : %d \n", i, nodeIndex );
+
+        LOG(debug) << "GPmt::import"
+                   << " i " << std::setw(3) << i  
+                   << " nodeIndex " << std::setw(3) << nodeIndex
+                   ;  
+                     
         m_parts_per_solid[nodeIndex] += 1 ; 
 
         if(nodeIndex < nmin) nmin = nodeIndex ; 
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
-    // with part slicing maybe relax contiguous ?
     assert(nmax - nmin == m_parts_per_solid.size() - 1); 
 
     unsigned int num_solids = m_parts_per_solid.size() ;
@@ -143,7 +173,8 @@ void GPmt::import()
         si.z = s ; 
         si.w = 0 ; 
 
-        //printf("si %2u %2u %2u %2u \n", si.x,si.y,si.z,si.w);
+        LOG(debug) << "GPmt::import solidinfo " << si.description() ;       
+
         offset += snp ; 
         n++ ; 
     }
@@ -178,6 +209,28 @@ void GPmt::Summary(const char* msg)
     }
 
 }
+
+GPmt* GPmt::copy_with_container(GPmt* src, float container_factor)
+{
+    unsigned int ni = src->getNumParts();
+
+    gbbox bb ; 
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        gbbox pbb = src->getBBox(i);
+        bb.include(pbb);
+    }
+    bb.Summary("GPmt::make_container bb");
+    bb.enlarge(container_factor);
+    bb.Summary("GPmt::make_container bb factor 3.0 ");
+
+    //GPmt* dest = new GPmt(src, bb );
+    // hmm needs to handle deltails of Parts in a GPart class
+    // also need to add items to a copy buffer
+
+    return NULL ; 
+}
+
 
 
 void GPmt::dump(const char* msg)
@@ -242,22 +295,4 @@ void GPmt::dump(const char* msg)
 }
 
 
-/*
-Former part slicing kludge from OGeo::makeAnalyticGeometry 
-working around GBuffer shape inflexibility.
-Due to this migrated from GBuffer to NPY.::
 
-    GBuffer* partBuf_orig = mm->getAnalyticGeometryBuffer();  // getter causes loading on first call
-    GBuffer* partBuf = partBuf_orig ; 
-    NSlice* pslice = mm->getPartSlice();
-    if(pslice)
-    {
-        LOG(info) << "OGeo::makeAnalyticGeometry part slicing the part buffer" ;
-        unsigned int nelem = partBuf_orig->getNumElements();
-        assert(nelem == 4 && "expecting quads");
-        partBuf_orig->reshape(4*GPmt::QUADS_PER_ITEM); 
-        partBuf = partBuf_orig->make_slice(pslice);   
-        partBuf_orig->reshape(nelem);
-        partBuf->reshape(nelem);
-    }
-*/

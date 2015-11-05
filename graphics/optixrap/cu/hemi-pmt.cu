@@ -531,6 +531,26 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
     }
 }
 
+
+/*
+             
+               |            |
+               |            | 
+               |            |
+     ----------+------------+--------------
+               |            |
+               |            |
+               |            |
+               |            |
+               |            |
+     ----------+------------+---------------
+               |            |
+               |            |
+               |            |
+    
+
+*/
+
 static __device__
 void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
 {
@@ -550,17 +570,32 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
 
   if(tmin <= tmax) 
   {
+      bool check_second = true;
       if(rtPotentialIntersection(tmin))
       {
-          // hmm what about inside box ?
-          if(     tmin == near.x) n.x = 1. ;
-          else if(tmin == near.y) n.y = 1. ;
-          else if(tmin == near.z) n.z = 1. ;
+          if(     tmin == near.x) n.x = 1.f ;
+          else if(tmin == near.y) n.y = 1.f ;
+          else if(tmin == near.z) n.z = 1.f ;
 
           shading_normal = geometric_normal = n ;
           instanceIdentity = identity ;
-          rtReportIntersection(0);   // material index 0 
+          if(rtReportIntersection(0)) check_second = false ;   // material index 0 
       } 
+
+      // handle when inside box ?
+      if(check_second)
+      {
+          if(rtPotentialIntersection(tmax))
+          {
+              if(     tmax == far.x) n.x = -1.f ;
+              else if(tmax == far.y) n.y = -1.f ;
+              else if(tmax == far.z) n.z = -1.f ;
+
+              shading_normal = geometric_normal = n ;
+              instanceIdentity = identity ;
+              rtReportIntersection(0);
+          } 
+      }
   }
 }
 
@@ -599,6 +634,10 @@ RT_PROGRAM void intersect(int primIdx)
           case 2:
                 intersect_ztubs(q0,q1,q2,q3,identity);
                 break ; 
+          case 3:
+                intersect_aabb(q2,q3,identity);
+                break ; 
+
       }
   }
 

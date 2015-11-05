@@ -277,11 +277,9 @@ void GBndLib::dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, cons
     LOG(info) << msg ; 
     typedef std::map<std::string, unsigned int> MSU ; 
     for(MSU::const_iterator it = msu.begin() ; it != msu.end() ; it++)
-    {
-        std::cout << std::setw(5) << it->second 
-                  << std::setw(30) << it->first 
-                  << std::endl ; 
-    }
+        LOG(debug) << std::setw(5) << it->second 
+                   << std::setw(30) << it->first 
+                   ;
 }
 
 void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
@@ -298,7 +296,7 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
         if(msu.count(imat) == 0) msu[imat] = getLine(i, 0) ;
         if(msu.count(omat) == 0) msu[omat] = getLine(i, 1) ;
     }
-    dumpMaterialLineMap(msu);
+    dumpMaterialLineMap(msu, "GBndLib::fillMaterialLineMap");
 }
 
 

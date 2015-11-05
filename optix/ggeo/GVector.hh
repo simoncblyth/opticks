@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GMatrix.hh"
+#include <cmath>
 #include <climits>
 #include <string>
 
@@ -19,8 +20,19 @@ struct gfloat2
 };
 
 
+
+
 struct gfloat3 
 {
+    static gfloat3 minimum(const gfloat3& a, const gfloat3& b)
+    {
+        return gfloat3( fmin(a.x, b.x), fmin(a.y, b.y), fmin(a.z, b.z) );
+    }
+
+    static  gfloat3 maximum(const gfloat3& a, const gfloat3& b)
+    {
+        return gfloat3( fmax(a.x, b.x), fmax(a.y, b.y), fmax(a.z, b.z) );
+    }
     gfloat3() : x(0.f), y(0.f), z(0.f) {} ;
     gfloat3(float _x) : x(_x), y(_x), z(_x) {} ;
     gfloat3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {} ;
@@ -47,6 +59,7 @@ struct gfloat3
          return *this ;
     }
 
+
     gfloat3& operator *= (const GMatrixF& m)
     {
        float _x, _y, _z ;   
@@ -69,6 +82,10 @@ struct gfloat3
 
     float x,y,z ;
 };
+
+
+
+
 
 
 
@@ -144,6 +161,11 @@ struct gbbox
        max += gfloat3(amount) ;
    }
 
+   void include(const gbbox& other)
+   { 
+       min = gfloat3::minimum( min, other.min ); 
+       max = gfloat3::maximum( max, other.max ); 
+   }
 
    gbbox& operator *= (const GMatrixF& m)
    {
