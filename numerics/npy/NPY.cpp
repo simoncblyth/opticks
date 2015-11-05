@@ -1,4 +1,5 @@
 #include "NPY.hpp"
+#include "NSlice.hpp"
 
 #include <algorithm>
 #include <boost/log/trivial.hpp>
@@ -249,72 +250,59 @@ void NPY<T>::save(const char* path_)
 }
 
 
-
-
-
-
 template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni)
 {
-    T* values = NULL ;
-
     std::vector<int> shape ; 
     if(ni > 0) shape.push_back(ni);
-
-    std::string metadata = "{}";
-
-    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
-    return npy ; 
+    return make(shape);
 }
 
 template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj)
 {
-    T* values = NULL ;
-
     std::vector<int> shape ; 
     if(ni > 0) shape.push_back(ni);
     if(nj > 0) shape.push_back(nj);
-
-    std::string metadata = "{}";
-
-    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
-    return npy ; 
+    return make(shape);
 }
 
 template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk)
 {
-    T* values = NULL ;
-
     std::vector<int> shape ; 
     if(ni > 0) shape.push_back(ni);
     if(nj > 0) shape.push_back(nj);
     if(nk > 0) shape.push_back(nk);
-
-    std::string metadata = "{}";
-
-    NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
-    return npy ; 
+    return make(shape);
 }
 
 
 template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl)
 {
-    T* values = NULL ;
-
     std::vector<int> shape ; 
     if(ni > 0) shape.push_back(ni);
     if(nj > 0) shape.push_back(nj);
     if(nk > 0) shape.push_back(nk);
     if(nl > 0) shape.push_back(nl);
+    return make(shape);
+}
 
+
+template <typename T>
+NPY<T>* NPY<T>::make(std::vector<int>& shape)
+{
+    T* values = NULL ;
     std::string metadata = "{}";
-
     NPY<T>* npy = new NPY<T>(shape,values,metadata) ;
     return npy ; 
 }
+
+
+
+
+
 
 
 
@@ -357,6 +345,57 @@ NPY<T>* NPY<T>::make_modulo(NPY<T>* src, unsigned int scaledown)
 
     NPY<T>* dst = new NPY<T>(dshape,ddata,dmetadata) ;
     return dst ; 
+}
+
+
+
+
+template <typename T>
+NPY<T>* NPY<T>::make_slice(const char* slice_)
+{
+    NSlice* slice = slice_ ? new NSlice(slice_) : NULL ;
+    return make_slice(slice);
+}
+
+template <typename T>
+NPY<T>* NPY<T>::make_slice(NSlice* slice)
+{
+    unsigned int ni = getShape(0);
+    if(!slice)
+    {
+        slice = new NSlice(0, ni, 1);
+        LOG(warning) << "NPY::make_slice NULL slice, defaulting to full copy " << slice->description() ;
+    }
+    unsigned int count = slice->count();
+
+    LOG(info) << "NPY::make_slice from " 
+              << ni << " -> " << count 
+              << " slice " << slice->description() ;
+
+    assert(count <= ni);
+
+    char* src = (char*)getBytes();
+    unsigned int size = getNumBytes(1);  // from dimension 1  
+    unsigned int numBytes = count*size ; 
+    char* dest = new char[numBytes] ;    
+
+    unsigned int offset = 0 ; 
+    for(unsigned int i=slice->low ; i < slice->high ; i+=slice->step)
+    {   
+        memcpy( (void*)(dest + offset),(void*)(src + size*i), size ) ; 
+        offset += size ; 
+    }   
+
+    std::vector<int>& orig = getShapeVector();
+    std::vector<int> shape(orig.size()) ; 
+    std::copy(orig.begin(), orig.end(), shape.begin() );
+
+    assert(shape[0] == ni); 
+    shape[0] = count ; 
+
+    NPY<T>* npy = NPY<T>::make(shape);
+    npy->setData( (T*)dest );
+    return npy ; 
 }
 
 

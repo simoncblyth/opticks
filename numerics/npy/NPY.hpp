@@ -18,6 +18,8 @@ class G4StepNPY ;
 
 #include "NPYBase.hpp"
 
+struct NSlice ; 
+
 
 /*
 Interop NumPy -> NPY
@@ -62,6 +64,7 @@ class NPY : public NPYBase {
        // NB favor vec4 over vec3 for better GPU performance (due to memory coalescing/alignment)
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
 
+       static NPY<T>* make(std::vector<int>& shape);
        static NPY<T>* make(unsigned int ni);
        static NPY<T>* make(unsigned int ni, unsigned int nj );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk );
@@ -91,6 +94,9 @@ class NPY : public NPYBase {
        bool exists(const char* tfmt, const char* targ, const char* tag, const char* det );
 
        // manipulations change types, not tags:  tfmt % targ -> typ
+   public:
+       NPY<T>* make_slice(const char* slice);
+       NPY<T>* make_slice(NSlice* slice);
 
    public:
        T* getValues();

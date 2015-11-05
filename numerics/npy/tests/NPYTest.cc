@@ -8,6 +8,18 @@
 #include <glm/glm.hpp>
 
 
+
+void test_slice()
+{
+   NPY<float>* dom = NPY<float>::make(10,4,4) ;
+   dom->fill(0.f);
+   dom->dump();   
+
+   NPY<float>* som = dom->make_slice("0:3");
+   som->dump();   
+}
+
+
 void test_setQuad()
 {
    NPY<float>* dom = NPY<float>::make(10,1,4) ;
@@ -230,7 +242,9 @@ int main()
 
     //test_g4stepnpy();   
     //test_make_modulo();   
-    test_g4stepnpy_materials();
+    //test_g4stepnpy_materials();
+
+    test_slice();
 
     return 0 ;
 }

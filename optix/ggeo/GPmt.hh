@@ -4,6 +4,7 @@
 #include <cassert>
 
 class GCache ; 
+struct NSlice ; 
 
 template <typename T> class NPY ;
 
@@ -32,10 +33,10 @@ class GPmt {
        static const char* TUBS_ ; 
        static const char* TypeName(unsigned int typecode);
    public:
-       static GPmt* load(GCache* cache, unsigned int index=0);
+       static GPmt* load(GCache* cache, unsigned int index=0, NSlice* slice=NULL);
        GPmt(GCache* cache, unsigned int index=0);
    private:
-       void loadFromCache();   
+       void loadFromCache(NSlice* slice);   
    public:
        NPY<unsigned int>* getSolidBuffer();
        NPY<float>*        getPartBuffer();

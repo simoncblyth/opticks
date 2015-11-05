@@ -420,27 +420,16 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
+    NSlice* pslice = mm->getPartSlice();
 
-    GPmt* lpmt = GPmt::load(m_cache, 0);
-    lpmt->dump();
-    lpmt->Summary();
-
-    // TODO: invoke pslicing here , or perhaps at loading stage : as solid buffer is derived from sliced part buffer
-    // NSlice* pslice = mm->getPartSlice();
-    // GPmt* spmt = pmt->make_slice(pslice) ;
-
-    GPmt* pmt = lpmt ; 
-
+    GPmt* pmt = GPmt::load(m_cache, 0, pslice);
+    pmt->dump();
+    pmt->Summary();
 
     NPY<float>* partBuf = pmt->getPartBuffer();
     NPY<unsigned int>* solidBuf = pmt->getSolidBuffer();
 
-    //GBuffer* partBuf = pmt->getPartBuffer();
-    //GBuffer* solidBuf = pmt->getSolidBuffer();
-    //solidBuf->dump<unsigned int>("solidBuf partOffset/numParts/solidIndex/0");
-
     solidBuf->dump("solidBuf partOffset/numParts/solidIndex/0");
-
 
     unsigned int numSolidsMesh = mm->getNumSolids();
     unsigned int numSolidsPmt  = pmt->getNumSolids();

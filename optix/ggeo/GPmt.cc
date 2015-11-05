@@ -4,6 +4,7 @@
 
 // npy-
 #include "NPY.hpp"
+#include "NSlice.hpp"
 #include "NLog.hpp"
 
 #include <map>
@@ -27,17 +28,30 @@ const char* GPmt::TypeName(unsigned int typecode)
 }
 
 
-GPmt* GPmt::load(GCache* cache, unsigned int index)
+GPmt* GPmt::load(GCache* cache, unsigned int index, NSlice* slice)
 {
     GPmt* pmt = new GPmt(cache, index);
-    pmt->loadFromCache();
+    pmt->loadFromCache(slice);
     return pmt ; 
 }
 
-void GPmt::loadFromCache()
+void GPmt::loadFromCache(NSlice* slice)
 {
     std::string path = m_cache->getPmtPath(m_index); 
-    NPY<float>* partBuf = NPY<float>::load( path.c_str(), FILENAME );
+    NPY<float>* origBuf = NPY<float>::load( path.c_str(), FILENAME );
+    NPY<float>* partBuf(NULL);
+    if(slice)
+    {
+        partBuf = origBuf->make_slice(slice) ; 
+        LOG(info) << "GPmt::loadFromCache slicing partBuf " 
+                  << " origBuf " << origBuf->getShapeString() 
+                  << " partBuf " << partBuf->getShapeString()
+                  ; 
+    }
+    else
+    {
+        partBuf = origBuf ; 
+    }
     setPartBuffer(partBuf);
     import();
 }

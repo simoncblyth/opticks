@@ -141,17 +141,23 @@ inline std::vector<int>& NPYBase::getShapeVector()
 
 inline unsigned int NPYBase::getNumItems(int ifr, int ito)
 {
-    //  default ifr/ito  0/1 correponds to shape of 1st dimension
+    //  A) default ifr/ito  0/1 correponds to shape of 1st dimension
     //
-    // example ifr/ito  0/-1 for ndim 3   gives number items excluding last dimension 
-    //           -->    0/2   --> shape(0)*shape(1)
+    //  B) example ifr/ito  0/-1  gives number of items excluding last dimension 
+    //               -->    0/2   --> shape(0)*shape(1)    for ndim 3 
+    //
+    //  C)       ifr/ito  0/3 for ndim 3   shape(0)*shape(1)*shape(2)
+    //
+    //  D)  ifr/ito 0/0     for any dimension
+    //           -> 0/ndim     -> shape of all dimensions  
+    //
     //
     unsigned int ndim = m_shape.size();
-    if(ifr < 0) ifr += ndim ; 
-    if(ito < 0) ito += ndim ; 
+    if(ifr <  0) ifr += ndim ; 
+    if(ito <= 0) ito += ndim ; 
 
     assert(ifr >= 0 && ifr < ndim);
-    assert(ito >= 0 && ito < ndim);
+    assert(ito >= 0 && ito <= ndim);
 
     unsigned int nit(1) ; 
     for(unsigned int i=ifr ; i < ito ; i++) nit *= getShape(i);
