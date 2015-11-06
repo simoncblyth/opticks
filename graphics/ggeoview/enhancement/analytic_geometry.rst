@@ -51,12 +51,10 @@ Test Box Debugging
   again need to bring control of triangulated and analytic together 
   to avoid confusion
 
-
 From OptiX point of view there 5 (or 6 with the container) primitives.
 These need to line up with the triangulated solids for identity to work.
 Each primitive has a small numbers of parts (up to 4).
 Total of 16 parts.
-
 
 The triangulated GMergedMesh was created by combination of the PMT 
 subtree merged mesh one and a fabricated solid.
@@ -92,6 +90,9 @@ This is brittle, will fail when slicing.
 
 
 
+
+Implementing container making C++ side ? 
+
 ::
 
     simon:pmt blyth$ ggv --pmt 0:15
@@ -100,19 +101,7 @@ This is brittle, will fail when slicing.
     [2015-Nov-05 20:44:09.784031]:info: NPY::make_slice from 16 -> 15 slice NSlice      0 :    15 :     1 
     [2015-Nov-05 20:44:09.784205]:info: GPmt::loadFromCache slicing partBuf  origBuf 16,4,4 partBuf 15,4,4
     GPmt::make_container pbb min   -101.168   -101.168    -23.838  max    101.168    101.168     56.000 
-    GPmt::make_container pbb min   -101.168   -101.168     56.000  max    101.168    101.168    100.070 
-    GPmt::make_container pbb min    -84.540    -84.540    100.070  max     84.540     84.540    131.000 
-    GPmt::make_container pbb min    -42.250    -42.250   -169.000  max     42.250     42.250    -23.838 
-    GPmt::make_container pbb min    -98.143    -98.143    -21.887  max     98.143     98.143     56.000 
-    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
-    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
-    GPmt::make_container pbb min    -39.250    -39.250   -164.500  max     39.250     39.250    -21.887 
-    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
-    GPmt::make_container pbb min    -82.248    -82.248     98.013  max     82.248     82.248    127.950 
-    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
-    GPmt::make_container pbb min    -98.093    -98.093     55.993  max     98.093     98.093     98.013 
-    GPmt::make_container pbb min    -98.143    -98.143    -30.000  max     98.143     98.143     56.000 
-    GPmt::make_container pbb min    -97.151    -97.151    -29.000  max     97.151     97.151     56.131 
+    ...
     GPmt::make_container pbb min    -27.500    -27.500   -164.500  max     27.500     27.500      1.500 
     GPmt::make_container bb min   -101.168   -101.168   -169.000  max    101.168    101.168    131.000 
     GPmt::make_container bb factor 3.0  min   -551.168   -551.168   -619.000  max    551.168    551.168    581.000 
@@ -129,15 +118,7 @@ This is brittle, will fail when slicing.
     GPmt::make_container pbb min   -101.168   -101.168    -23.838  max    101.168    101.168     56.000 
     GPmt::make_container pbb min   -101.168   -101.168     56.000  max    101.168    101.168    100.070 
     GPmt::make_container pbb min    -84.540    -84.540    100.070  max     84.540     84.540    131.000 
-    GPmt::make_container pbb min    -42.250    -42.250   -169.000  max     42.250     42.250    -23.838 
-    GPmt::make_container pbb min    -98.143    -98.143    -21.887  max     98.143     98.143     56.000 
-    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
-    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
-    GPmt::make_container pbb min    -39.250    -39.250   -164.500  max     39.250     39.250    -21.887 
-    GPmt::make_container pbb min    -82.285    -82.285     98.047  max     82.285     82.285    128.000 
-    GPmt::make_container pbb min    -82.248    -82.248     98.013  max     82.248     82.248    127.950 
-    GPmt::make_container pbb min    -98.143    -98.143     56.000  max     98.143     98.143     98.047 
-    GPmt::make_container pbb min    -98.093    -98.093     55.993  max     98.093     98.093     98.013 
+    ...
     GPmt::make_container pbb min    -98.143    -98.143    -30.000  max     98.143     98.143     56.000 
     GPmt::make_container pbb min    -97.151    -97.151    -29.000  max     97.151     97.151     56.131 
     GPmt::make_container pbb min    -27.500    -27.500   -164.500  max     27.500     27.500      1.500 
@@ -147,9 +128,52 @@ This is brittle, will fail when slicing.
     [2015-Nov-05 20:44:54.267608]:info: parts shape: 16,4,4
 
 
+Fixing box normals
+-------------------
+
+After fixing ray box normals, get very pretty Lambertian render of PMT in box with *ggv-pmt* ie::
+
+    ggv-pmt () 
+    { 
+        ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199 $*
+    }
+
+But the OptiX mode of *ggv-box* is far less pretty with nasty black faces, thats with::
+
+    ggv-box () 
+    { 
+        ggv --box --animtimemax 7 --boxconfig "size=2;boundary=MineralOil/Rock//;" --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" $*
+    }
+
+Also photon reflections show non-symmetric behaviour, discriminating againt two of the box faces.
+
+How is that possible ? 
+
+* different code in propagator and tracer ? 
+* different geometry ? 
+* normal issue or iimpinging other geometry ?
+ 
+
+::
+
+    ggv.sh --tracer  --analyticmesh 1 --islice 0 --target 3199 $*
+    # not restricting to instanced, see pretty render of analytic PMT with no extra box ?  
+
+    ggv.sh --tracer  --islice 0 --target 3199 $*
+    # triangulated PMT 
 
 
+After fixing *ggv-box* mismatch, changing to *size=3* get the pretty render in OptiX mode and symmetric reflections::
 
+    ggv-box () 
+    { 
+        ggv --box --animtimemax 7 --boxconfig "size=3;boundary=MineralOil/Rock//;" --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" $*
+    }
+
+
+* Explain that ?
+
+* Also, still material colors seem wrong.
 
 
 
