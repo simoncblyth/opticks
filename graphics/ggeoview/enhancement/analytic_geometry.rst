@@ -16,6 +16,49 @@ a technique to handle union intersections by applying boolean operations
 to intersection segments of the sub volumes. 
 
 
+
+Aligning three geometries
+-----------------------------
+
+Actually not 2 but 3 geometries:
+
+OpenGL 
+      GMergedMesh triangulated geometry, to first order only impacts visualization not propagation/tracing,
+      but the solid identity infomation including boundary indices comes from GMergedMesh.
+
+      Geometry is modified by *--box*  option according to *--boxconfig*. The orignal instance-1 
+      GMergedMesh is combined with the GSolid fabricated by GTestBox 
+
+
+OptiX Triangulated 
+      translation of GMergedMesh triangulated into OptiX
+
+OptiX Analytic 
+      somewhat manual addon entering via GPmt and created in python by *pmt-parts*
+
+
+Containment Box Handling
+--------------------------
+
+Actually the parameters of the containment bbox should be obtained from GMergedMesh.1, 
+it should be enlarged according to input parameter and the resulting gbbox 
+should then be fed down via GGeo::modifyGeometry to: 
+
+GTestBox
+     to fabricate the GSolid 
+
+GPmt
+     to create a *Part* struct to tack on to the parts buffer  
+
+
+* Avoids mal-duplication.
+* allows pslice to apply to content and not the containment box
+  (but pslicing is a low level Analytic Part debug thing, 
+   as it cannot be applied at triangulated level)
+
+Currently the analytic containment box is added in python by pmt-parts, 
+
+
 Test Box Debugging
 --------------------
 
@@ -29,21 +72,8 @@ Test Box Debugging
              $*   
     }
 
-
-
-* two potentially mismatched geometries
-
-  * OpenGL : created by the "--box" option and config 
-  * OptiX  : created by pmt-parts 
-
 * need to sort out analytic boundary identity labelling, the missers
   think they are in Pyrex, when should be MO
-
-* currently the analytic containment box is added in python by pmt-parts, 
-  it would be better to do that in GPmt in order to 
-  have a single size input to OpenGL (GTestBox) and OptiX (GPmt)
-  and allow pslice to apply to content and not the containment box
-
 * GGeo/GMergedMesh should be orchestrating the analytic PMT for commality, 
   currently OGeo/GPmt just grabbing from GCache
 
@@ -55,9 +85,6 @@ From OptiX point of view there 5 (or 6 with the container) primitives.
 These need to line up with the triangulated solids for identity to work.
 Each primitive has a small numbers of parts (up to 4).
 Total of 16 parts.
-
-The triangulated GMergedMesh was created by combination of the PMT 
-subtree merged mesh one and a fabricated solid.
 
 When put the container at the end in pmt-parts the material mapping 
 works better as that aligns with GMergedMesh::combine order.
