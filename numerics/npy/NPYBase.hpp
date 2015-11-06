@@ -77,6 +77,8 @@ class NPYBase {
        std::string description(const char* msg="NPYBase::description");
 
    protected:
+       void setNumItems(unsigned int ni);
+   protected:
        unsigned int       m_dim ; 
        unsigned int       m_len0 ; 
        unsigned int       m_len1 ; 
@@ -117,8 +119,6 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
     m_len2 = getShape(2);
     m_dim  = m_shape.size();
 } 
-
-
 
 
 inline void NPYBase::setHasData(bool has_data)

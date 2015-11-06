@@ -7,7 +7,22 @@
 
 #include <glm/glm.hpp>
 
+void test_add()
+{
+   NPY<float>* dom = NPY<float>::make(10,4,4) ;
+   dom->fill(1.f);
+   dom->dump();   
 
+   NPY<float>* ext = NPY<float>::make(3,4,4) ;
+   ext->fill(2.f);
+   ext->dump();   
+
+   dom->add(ext);
+   dom->dump();
+
+   dom->save("/tmp/test_add.npy");
+
+}
 
 void test_slice()
 {
@@ -244,7 +259,9 @@ int main()
     //test_make_modulo();   
     //test_g4stepnpy_materials();
 
-    test_slice();
+    //test_slice();
+
+    test_add();
 
     return 0 ;
 }

@@ -19,6 +19,20 @@
 const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/$2/%s.npy" ; 
 
 
+void NPYBase::setNumItems(unsigned int ni)
+{
+    unsigned int orig = m_shape[0] ;
+    assert(ni >= orig);
+
+    LOG(info) << "NPYBase::setNumItems"
+              << " increase from " << orig << " to " << ni 
+              ; 
+ 
+    m_shape[0] = ni ; 
+    m_len0 = getShape(0);
+}
+
+
 std::string NPYBase::getDigestString()
 {
     MD5Digest dig ;

@@ -90,6 +90,42 @@ void NPY<T>::read(void* ptr)
 
 
 template <typename T>
+T* NPY<T>::grow(unsigned int nitems)
+{
+    unsigned int origvals = m_data.size() ; 
+    unsigned int itemvals = getNumValues(1); 
+    unsigned int growvals = nitems*itemvals ; 
+
+    LOG(info) << "NPY<T>::grow with space for"
+              << " nitems " << nitems
+              << " itemvals " << itemvals
+              << " origvals " << origvals   
+              << " growvals " << growvals
+              ;
+
+    m_data.resize(origvals + growvals);
+    return m_data.data() + origvals ;
+}
+
+template <typename T>
+void NPY<T>::add(NPY<T>* other)      // add another buffer to this one, they must have same itemsize (ie size after 1st dimension)
+{
+    unsigned int orig = getNumItems();
+    unsigned int extra = other->getNumItems();
+
+    LOG(info) << "NPY<T>::add items "
+              << " orig " << orig 
+              << " extra " << extra 
+              ;
+
+    assert(other->getNumValues(1) == getNumValues(1));
+    memcpy( grow(extra), other->getBytes(), other->getNumBytes(0) );
+
+    setNumItems( orig + extra );
+}
+
+
+template <typename T>
 T* NPY<T>::getUnsetItem()
 {
     if(!m_unset_item)
