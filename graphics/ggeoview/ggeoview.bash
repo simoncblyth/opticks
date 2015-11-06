@@ -8,19 +8,32 @@ ggv--(){  ggeoview-depinstall ; }
 ggv-cd-jpmt(){ cd $(ggv --jpmt --idp) ; }
 
 ggv-ppmt(){   ggv.sh --analyticmesh 1 --target 3199 --torchconfig "radius=1500;zenith_azimuth=1,0,1,0" $* ; }
-ggv-pmt(){    ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 --islice 0 --target 3199 $* ; }
+
 ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
 
 
 ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199;source=0,0,1000;target=0,0,0;radius=150;zenith_azimuth=1,0,1,0" $* ; }
 
 
+ggv-pmt(){
+   type $FUNCNAME
+   ggv --tracer --box --eye 0.5,0.5,0.0 ; 
+}
+
 ggv-box(){
+   type $FUNCNAME
    ggv --box \
+        --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
-        --boxconfig "size=3;boundary=MineralOil/Rock//;" \
+        --boxconfig "boundary=MineralOil/Rock/perfectAbsorbSurface/;" \
         --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" \
          $*
+
+   cat << SCRATCH
+        --eye 0.5,0.5,0.0 \
+        --up 0,1,0 \
+
+SCRATCH
 }
 
 

@@ -14,15 +14,14 @@
 
 #include <boost/lexical_cast.hpp>
 
+
+//    "frame=3153;"
 const char* GTestBox::DEFAULT_CONFIG = 
-    "frame=3153;"
-    "size=2;"   // bbox enlargement in units of extent  
     "boundary=MineralOil/Rock//;"
     ;
 
 const char* GTestBox::FRAME_ = "frame"; 
 const char* GTestBox::BOUNDARY_ = "boundary"; 
-const char* GTestBox::SIZE_ = "size"; 
 
 
 void GTestBox::configure(const char* config_)
@@ -47,7 +46,6 @@ GTestBox::Param_t GTestBox::getParam(const char* k)
     Param_t param = UNRECOGNIZED ; 
     if(     strcmp(k,FRAME_)==0)          param = FRAME ; 
     else if(strcmp(k,BOUNDARY_)==0)       param = BOUNDARY ; 
-    else if(strcmp(k,SIZE_)==0)           param = SIZE ; 
     return param ;   
 }
 
@@ -58,7 +56,6 @@ void GTestBox::set(Param_t p, const char* s)
     {
         case FRAME          : setFrame(s)          ;break;
         case BOUNDARY       : setBoundary(s)       ;break;
-        case SIZE           : setSize(s)           ;break;
         case UNRECOGNIZED   :
                     LOG(warning) << "GTestBox::set WARNING ignoring unrecognized parameter " ;
     }
@@ -90,19 +87,13 @@ void GTestBox::setBoundary(const char* s)
     m_boundary = m_bndlib->addBoundary(s); 
 }
 
-void GTestBox::setSize(const char* s)
-{
-    m_size = boost::lexical_cast<float>(s) ;
-}
-
-
-GMesh* GTestBox::makeMesh(gbbox& bb, unsigned int meshindex)
+GMesh* GTestBox::makeMesh(unsigned int meshindex)
 {
     gfloat3* vertices = new gfloat3[NUM_VERTICES] ;
     guint3* faces = new guint3[NUM_FACES] ;
     gfloat3* normals = new gfloat3[NUM_VERTICES] ;
 
-    GBBoxMesh::twentyfour(bb, vertices, faces, normals );
+    GBBoxMesh::twentyfour(m_bbox, vertices, faces, normals );
 
     GMesh* mesh = new GMesh(meshindex, vertices, NUM_VERTICES,  
                                        faces, NUM_FACES,    
@@ -130,20 +121,11 @@ GSolid* GTestBox::makeSolid(unsigned int nodeindex)
 }
 
 
-void GTestBox::make(gbbox& bb, unsigned int meshindex, unsigned int nodeindex)
+void GTestBox::make(unsigned int meshindex, unsigned int nodeindex)
 {
-    float factor = getSize();
-
-    // hmm frame not currently used
-
-    gbbox cbb(bb);
-    cbb.enlarge( factor );
-
-    LOG(info) << "GTestBox::make"
-              << " factor " << factor 
-              ;
-
-    m_mesh = makeMesh(cbb, meshindex);
+    // hmm frame and size not currently used
+    LOG(info) << "GTestBox::make" ;
+    m_mesh = makeMesh(meshindex);
     m_solid = makeSolid( nodeindex );
 }
 

@@ -420,9 +420,9 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
-    NSlice* pslice = mm->getPartSlice();
 
-    GPmt* pmt = GPmt::load(m_cache, 0, pslice);
+    GPmt* pmt = mm->getPmt();
+    assert(pmt && "GMergedMesh with GeoCode S must have associated GPmt, see GGeo::modifyGeometry "); 
     pmt->dump();
     pmt->Summary();
 
@@ -435,12 +435,15 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned int numSolidsPmt  = pmt->getNumSolids();
     unsigned int numParts = pmt->getNumParts();
 
-    //assert(numSolidsMesh == numSolidsPmt );  // analytic and triangulated solid counts must match 
+    assert(numSolidsMesh == numSolidsPmt );  // analytic and triangulated solid counts must match 
+    /*
     if(numSolidsMesh != numSolidsPmt)
        LOG(warning) << "OGeo::makeAnalyticGeometry MISMATCH "
                     << " numSolidsMesh " << numSolidsMesh
                     << " numSolidsPmt " << numSolidsPmt
                     ;
+
+    */
 
     unsigned int numSolids = numSolidsPmt ; 
     assert( numSolids < 10 );            // expecting small number

@@ -271,5 +271,13 @@ struct guint4
 
 
 
+// complaints about ctors
+//union gquad 
+//{
+//   gfloat4 f ;  
+//   guint4  u ;  
+//};
+
+
 
 

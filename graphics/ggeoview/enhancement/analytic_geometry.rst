@@ -59,6 +59,38 @@ GPmt
 Currently the analytic containment box is added in python by pmt-parts, 
 
 
+GPmt Operation
+---------------
+
+* reads *pmt-parts* written float parts buffer, deriving a solid buffer from it 
+  using solid or node indices which are embedded into the parts buffer
+
+* these five indices 0..4 hail from the detdesc tree parse of *hemi-pmt.xml* 
+  and these must match the indices from the GMergedMesh identity buffer 
+
+* for debug want to skip some solids, eg to see behavior with a solid lump of Pyrex/Vacuum/Bialkali
+  but at the moment the identity would then be misaligned ?
+
+
+Photocathode
+-------------
+
+Geant4/detdesc model is with seperate very thin spherical parts, including 
+a shared boundary with the inside of the pyrex.
+
+For surface based geometry coincident boundaries are unhealthy, so instead model it 
+similar to how Pyrex/Vacuum modelling of the pyrex envelope is done.
+
+Again this might entail adding solids, which will mess up identity.  Seems 
+
+
+Identity handling
+------------------
+
+Currently rely in 
+
+
+
 Test Box Debugging
 --------------------
 

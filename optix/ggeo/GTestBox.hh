@@ -36,7 +36,7 @@ How to hookup a GTestBox, and do it postcache ?
 
 */
 
-struct gbbox ; 
+#include "GVector.hh"
 class GCache ; 
 class GBndLib ; 
 class GMesh ; 
@@ -49,25 +49,23 @@ class GTestBox {
 
        typedef enum { FRAME, 
                       BOUNDARY, 
-                      SIZE , 
                       UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
    public:
        static const char* FRAME_ ; 
        static const char* BOUNDARY_ ; 
-       static const char* SIZE_ ; 
    public:
        GTestBox(GCache* cache);
        GSolid* getSolid();
-       float   getSize();  // bbox enlargement in units of extent, ie 0:standard bbox, 1:double sized bbox
    public:
        void setBndLib(GBndLib* blib);
+       void setBBox(gbbox bb);
        void configure(const char* config=NULL);
    public:
-       void make(gbbox& bb, unsigned int meshindex, unsigned int nodeindex);
+       void make(unsigned int meshindex, unsigned int nodeindex);
    private:
-       GMesh* makeMesh(gbbox& bb, unsigned int meshindex);
+       GMesh* makeMesh(unsigned int meshindex);
        GSolid* makeSolid(unsigned int nodeindex);
    private:
        Param_t getParam(const char* k);
@@ -75,18 +73,17 @@ class GTestBox {
    public:
        void setFrame(const char* s);
        void setBoundary(const char* s);
-       void setSize(const char* s);
    public:
        void dump(const char* msg="GTestBox::dump");
    private:
        GCache*      m_cache ;  
        GBndLib*     m_bndlib ;  
+       gbbox        m_bbox ; 
        GMesh*       m_mesh ; 
        GSolid*      m_solid ; 
        const char*  m_config ; 
        glm::ivec4   m_frame ;
        unsigned int m_boundary ; 
-       float        m_size ; 
 
 };
 
@@ -96,8 +93,7 @@ inline GTestBox::GTestBox(GCache* cache)
     m_cache(cache),
     m_bndlib(NULL),
     m_mesh(NULL),
-    m_solid(NULL),
-    m_size(0.f)
+    m_solid(NULL)
 {
 }
 
@@ -106,13 +102,14 @@ inline void GTestBox::setBndLib(GBndLib* blib)
     m_bndlib = blib ; 
 }
 
+inline void GTestBox::setBBox(gbbox bb)
+{
+    m_bbox = bb ; 
+}
+
 inline GSolid* GTestBox::getSolid()
 {
     return m_solid ; 
 }
 
-inline float GTestBox::getSize()
-{
-    return m_size ; 
-}
 

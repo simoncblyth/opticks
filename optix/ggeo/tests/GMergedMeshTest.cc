@@ -1,6 +1,7 @@
 //  ggv --mm
 
 #include "GCache.hh"
+#include "GVector.hh"
 #include "GMergedMesh.hh"
 #include "NLog.hpp"
 
@@ -29,9 +30,18 @@ int main(int argc, char** argv)
         bb.Summary("bb"); 
     }
 
+
+    GBuffer* idbuf = mm->getIdentityBuffer();
+    idbuf->dump<unsigned int>("idbuf");
+
+    for(unsigned int i=0 ; i < mm->getNumSolids() ; i++)
+    {
+        guint4 id = mm->getIdentity(i);
+        LOG(info) << id.description() ; 
+    }
+
     //mm->getLow()->Summary("low");
     //mm->getHigh()->Summary("high");
-
 
 
     return 0 ;

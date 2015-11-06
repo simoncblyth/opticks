@@ -290,8 +290,8 @@ template <typename T>
 inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T value)
 {
     unsigned int idx = getValueIndex(i,j,k);
-    T* data = getValues();
-    *(data + idx) = value ;
+    T* dat = getValues();
+    *(dat + idx) = value ;
 }
 
 
@@ -301,6 +301,7 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::vec4& vec )
     assert( m_len2 == 4 );  
     for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
 }
+
 
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )

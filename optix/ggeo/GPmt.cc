@@ -83,6 +83,15 @@ gfloat3 GPmt::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
     return gfloat3( *ptr, *(ptr+1), *(ptr+2) ); 
 }
 
+
+guint4 GPmt::getSolidInfo(unsigned int isolid)
+{
+    unsigned int* data = m_solid_buffer->getValues();
+    unsigned int* ptr = data + isolid*SK  ;
+    return guint4( *ptr, *(ptr+1), *(ptr+2), *(ptr+3) );
+}
+
+
 gbbox GPmt::getBBox(unsigned int i)
 {
    gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  
@@ -123,6 +132,32 @@ unsigned int GPmt::getFlags(unsigned int part_index)
 }
 
 
+void GPmt::addContainer(gbbox& bb, unsigned int nodeindex)
+{
+    unsigned int i = 0u ; 
+    unsigned int typecode = BOX ; 
+    unsigned int partindex = getNumParts() + 1  ; // 1-based  ?
+
+    LOG(info) << "GPmt::addContainer"
+              << " nodeindex " << nodeindex 
+              << " partindex " << partindex
+               ; 
+
+    NPY<float>* part = NPY<float>::make(1, NJ, NK );
+    part->zero();
+
+    assert(BBMIN_K == 0 );
+    assert(BBMAX_K == 0 );
+    part->setQuad( i, BBMIN_J, bb.min.x, bb.min.y, bb.min.z , 0.f );
+    part->setQuad( i, BBMAX_J, bb.max.x, bb.max.y, bb.max.z , 0.f );
+    part->setUInt( i, NODEINDEX_J, NODEINDEX_K, nodeindex ); 
+    part->setUInt( i, TYPECODE_J,  TYPECODE_K,  typecode ); 
+    part->setUInt( i, INDEX_J,     INDEX_K,     partindex ); 
+
+    m_part_buffer->add(part);
+    import(); // recreate the solid buffer
+}
+
 
 const char* GPmt::getTypeName(unsigned int part_index)
 {
@@ -132,8 +167,7 @@ const char* GPmt::getTypeName(unsigned int part_index)
 
 void GPmt::import()
 {
-    unsigned int numQuads = m_part_buffer->getNumItems(); // buffer reshaped (-1,4) in pmt-/tree.py  items are 
-
+    m_parts_per_solid.clear();
     unsigned int nmin(INT_MAX) ; 
     unsigned int nmax(0) ; 
 
@@ -153,36 +187,49 @@ void GPmt::import()
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
-    assert(nmax - nmin == m_parts_per_solid.size() - 1); 
+    assert(nmax - nmin == m_parts_per_solid.size() - 1);  // expect contiguous node indices
 
     unsigned int num_solids = m_parts_per_solid.size() ;
+
     guint4* solidinfo = new guint4[num_solids] ;
 
     typedef std::map<unsigned int, unsigned int> UU ; 
-
-    unsigned int offset = 0 ; 
+    unsigned int part_offset = 0 ; 
     unsigned int n = 0 ; 
     for(UU::const_iterator it=m_parts_per_solid.begin() ; it != m_parts_per_solid.end() ; it++)
     {
-        unsigned int s = it->first ; 
-        unsigned int snp = it->second ; 
+        unsigned int node_index = it->first ; 
+        unsigned int parts_for_solid = it->second ; 
 
         guint4& si = *(solidinfo+n) ;
-        si.x = offset ; 
-        si.y = snp ;
-        si.z = s ; 
+
+        si.x = part_offset ; 
+        si.y = parts_for_solid ;
+        si.z = node_index ; 
         si.w = 0 ; 
 
         LOG(debug) << "GPmt::import solidinfo " << si.description() ;       
 
-        offset += snp ; 
+        part_offset += parts_for_solid ; 
         n++ ; 
     }
 
     NPY<unsigned int>* buf = NPY<unsigned int>::make( num_solids, 4 );
     buf->setData((unsigned int*)solidinfo);
+    delete [] solidinfo ; 
 
     setSolidBuffer(buf);
+}
+
+
+void GPmt::dumpSolidInfo(const char* msg)
+{
+    LOG(info) << msg << " (part_offset, parts_for_solid, solid_index, 0) " ;
+    for(unsigned int i=0 ; i < getNumSolids(); i++)
+    {
+        guint4 si = getSolidInfo(i);
+        LOG(info) << si.description() ;
+    }
 }
 
 
@@ -210,31 +257,15 @@ void GPmt::Summary(const char* msg)
 
 }
 
-GPmt* GPmt::copy_with_container(GPmt* src, float container_factor)
-{
-    unsigned int ni = src->getNumParts();
 
-    gbbox bb ; 
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        gbbox pbb = src->getBBox(i);
-        bb.include(pbb);
-    }
-    bb.Summary("GPmt::make_container bb");
-    bb.enlarge(container_factor);
-    bb.Summary("GPmt::make_container bb factor 3.0 ");
 
-    //GPmt* dest = new GPmt(src, bb );
-    // hmm needs to handle deltails of Parts in a GPart class
-    // also need to add items to a copy buffer
-
-    return NULL ; 
-}
 
 
 
 void GPmt::dump(const char* msg)
 {
+    dumpSolidInfo(msg);
+
     NPY<float>* buf = m_part_buffer ; 
     assert(buf);
     assert(buf->getDimensions() == 3);
@@ -292,6 +323,7 @@ void GPmt::dump(const char* msg)
        }   
        printf("\n");
     }   
+
 }
 
 

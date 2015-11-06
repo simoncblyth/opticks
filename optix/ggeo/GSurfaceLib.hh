@@ -49,10 +49,14 @@ class GSurfaceLib : public GPropertyLib {
    public:
       // methods for debug
        void setFakeEfficiency(float fake_efficiency);
+       GPropertyMap<float>* makePerfect(const char* name, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_);
+       void addPerfectSurfaces();
    public:
        void add(GSkinSurface* ss);
        void add(GBorderSurface* bs);
        void add(GPropertyMap<float>* surf);
+   private:
+       void addDirect(GPropertyMap<float>* surf);
    public:
        void sort();
        bool operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_);

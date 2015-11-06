@@ -113,9 +113,16 @@ void GSurfaceLib::add(GPropertyMap<float>* surf)
 {
     assert(!isClosed());
    
-    m_surfaces.push_back(createStandardSurface(surf)); 
+    GPropertyMap<float>* ssurf = createStandardSurface(surf) ;
 
-    // GENERAL PATTERN: LESS STATE, LESS PROBLEMS
+    addDirect(ssurf);
+}
+
+
+void GSurfaceLib::addDirect(GPropertyMap<float>* surf)
+{
+    assert(!isClosed());
+    m_surfaces.push_back(surf); 
 }
 
 
@@ -180,7 +187,7 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     else
     {
         assert(getStandardDomain()->isEqual(src->getStandardDomain()));
-        assert(src->isSkinSurface() || src->isBorderSurface());
+        assert(src->isSurface());
         GOpticalSurface* os = src->getOpticalSurface() ;  // GSkinSurface and GBorderSurface ctor plant the OpticalSurface into the PropertyMap
 
         if(src->isSensor())
@@ -245,6 +252,45 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     return dst ; 
 }
 
+GPropertyMap<float>* GSurfaceLib::makePerfect(const char* name, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_)
+{
+    GProperty<float>* _detect           = makeConstantProperty(detect_) ;    
+    GProperty<float>* _absorb           = makeConstantProperty(absorb_) ;    
+    GProperty<float>* _reflect_specular = makeConstantProperty(reflect_specular_) ;    
+    GProperty<float>* _reflect_diffuse  = makeConstantProperty(reflect_diffuse_) ;    
+
+
+    // placeholders
+    const char* type = "1" ; 
+    const char* model = "1" ; 
+    const char* finish = "1" ; 
+    const char* value = "1" ; 
+    GOpticalSurface* os = new GOpticalSurface(name, type, model, finish, value);
+
+    unsigned int index = 1000 ;   // does this matter ? 
+    GPropertyMap<float>* dst = new GPropertyMap<float>(name, index, "surface", os);
+    dst->setStandardDomain(getStandardDomain());
+
+    dst->addProperty( detect          , _detect          );
+    dst->addProperty( absorb          , _absorb          );
+    dst->addProperty( reflect_specular, _reflect_specular);
+    dst->addProperty( reflect_diffuse , _reflect_diffuse );
+    return dst ;  
+}
+
+
+void GSurfaceLib::addPerfectSurfaces()
+{
+    GPropertyMap<float>* _detect = makePerfect("perfectDetectSurface", 1.f, 0.f, 0.f, 0.f );
+    GPropertyMap<float>* _absorb = makePerfect("perfectAbsorbSurface", 0.f, 1.f, 0.f, 0.f );
+    GPropertyMap<float>* _specular = makePerfect("perfectSpecularSurface", 0.f, 1.f, 0.f, 0.f );
+    GPropertyMap<float>* _diffuse  = makePerfect("perfectDiffuseSurface", 0.f, 1.f, 0.f, 0.f );
+
+    addDirect(_detect);
+    addDirect(_absorb);
+    addDirect(_specular);
+    addDirect(_diffuse);
+}
 
 
 

@@ -454,6 +454,7 @@ void AssimpGGeo::convertMaterials(const aiScene* scene, GGeo* gg, const char* qu
     }
 
 
+    m_ggeo->afterConvertMaterials(); 
 }
 
 

@@ -10,6 +10,7 @@
 #include "GTreeCheck.hh"
 #include "GColorizer.hh"
 #include "GTestBox.hh"
+#include "GPmt.hh"
 #include "GColors.hh"
 
 #include "GGeoLib.hh"
@@ -204,6 +205,14 @@ void GGeo::loadFromG4DAE()
     prepareVertexColors();
 }
 
+void GGeo::afterConvertMaterials()
+{
+    LOG(info) << "GGeo::afterConvertMaterials and before convertStructure" ; 
+
+    prepareSurfaceLib(); 
+}
+
+
 void GGeo::loadFromCache()
 {   
     m_geolib = GGeoLib::load(m_cache);
@@ -275,40 +284,41 @@ void GGeo::save(const char* idpath)
 
 void GGeo::modifyGeometry(const char* config)
 {
-    m_testbox = new GTestBox( m_cache) ;
+    GMergedMesh* mm = getMergedMesh(1);
+    gbbox bb = mm->getBBox(0);     // solid-0 contains them all
+    bb.enlarge(5.f);               // the **ONE** place for sizing containment box
 
+    ///////////////////////////////////////////////////////////
+
+    GPmt* pmt = GPmt::load( m_cache, 0, NULL );  // part slicing disfavored, as only works at one level 
+    pmt->dump();
+    assert( pmt->getNumSolids() == mm->getNumSolids() );
+
+    // prep the extra solid
+
+    m_testbox = new GTestBox(m_cache) ;
+    m_testbox->setBBox(bb);
     m_testbox->setBndLib(m_bndlib);
-
-    m_testbox->configure( config );
-
-    unsigned int target = 1 ; 
-
-    GMergedMesh* mm = getMergedMesh(target); 
-
-    gbbox bb = mm->getBBox(0);   
-
-    LOG(info) << "GGeo::modifyGeometry "
-              << " creating new geometry based on " << mm->getIndex()
-              << " numMeshes " << getNumMeshes() 
-              ;
- 
-    // TODO: how to find appropriate indices post cache ? 
-    unsigned int mesh_index = 1000 ; 
-    unsigned int node_index = mm->getNumSolids() ; // node indices need to be contiguous ?
-    
-    m_testbox->make(bb, mesh_index, node_index );
-
+    m_testbox->configure(NULL);
+    m_testbox->make(1000, mm->getNumSolids() ); // mesh_index, node_index: node indices need to be contiguous  
+    m_testbox->dump("GGeo::modifyGeometry");
     GSolid* solid = m_testbox->getSolid();
 
-    GMergedMesh* cmm = GMergedMesh::combine( mm->getIndex(), mm, solid );   
+    // create combined mesh 
+    m_dynamic = GMergedMesh::combine( mm->getIndex(), mm, solid );   
+    m_dynamic->Dump();
+    m_dynamic->setGeoCode('S');  // signal OGeo to use Analytic geometry, TODO: set it not signal it  
+    m_dynamic->setPmt(pmt);
 
-    cmm->setGeoCode('S');  // signal OGeo to use Analytic geometry
+    unsigned int nodeindex = pmt->getNumSolids();
+    pmt->addContainer(bb, nodeindex );
+    pmt->dump("after addContainer");
 
+    assert( m_dynamic->getNumSolids() == pmt->getNumSolids() );
+    
     m_geolib->clear();
-
-    m_geolib->setMergedMesh( 0, cmm );
+    m_geolib->setMergedMesh( 0, m_dynamic );
      
-    m_testbox->dump("GGeo::modifyGeometry");
 }
 
 
@@ -705,6 +715,15 @@ void GGeo::dumpRawMaterialProperties(const char* msg)
     }
 }
 
+
+void GGeo::prepareSurfaceLib()
+{
+    LOG(info) << "GGeo::prepareSurfaceLib " ; 
+
+    GSurfaceLib* slib = getSurfaceLib() ;
+   
+    slib->addPerfectSurfaces(); 
+}
 
 
 void GGeo::prepareScintillatorLib()

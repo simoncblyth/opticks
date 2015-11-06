@@ -5,6 +5,7 @@
 
 class GCache ; 
 
+struct guint4 ; 
 struct gbbox ; 
 struct gfloat3 ; 
 struct NSlice ; 
@@ -32,9 +33,12 @@ class GPmt {
 
        static const char* TypeName(unsigned int typecode);
    public:
-       enum { QUADS_PER_ITEM = 4, 
+       enum { 
+              QUADS_PER_ITEM = 4, 
               NJ = 4,
-              NK = 4 } ;
+              NK = 4,
+              SK = 4  
+            } ;
 
        // below must match pmt-/tree.py:copy_parts 
        enum { INDEX_J  = 1, INDEX_K  = 1 };
@@ -48,10 +52,10 @@ class GPmt {
        static const char* FILENAME ;  
        static const char* GPMT ;  
    public:
-       static GPmt* copy_with_container(GPmt* src, float container_factor=3.0f);
        static GPmt* load(GCache* cache, unsigned int index=0, NSlice* slice=NULL);
+   public:
        GPmt(GCache* cache, unsigned int index=0);
-       void make_container();
+       void addContainer(gbbox& bb, unsigned int nodeindex );
    private:
        void loadFromCache(NSlice* slice);   
    public:
@@ -62,6 +66,7 @@ class GPmt {
        unsigned int       getSolidNumParts(unsigned int solid_index);
    public:
        void dump(const char* msg="GPmt::dump");
+       void dumpSolidInfo(const char* msg="GPmt::dumpSolidInfo");
        void Summary(const char* msg="GPmt::Summary");
    public: 
        unsigned int getIndex(unsigned int part_index);
@@ -71,6 +76,8 @@ class GPmt {
        unsigned int getNodeIndex(unsigned int part_index);
        gbbox        getBBox(unsigned int i);
        gfloat3      getGfloat3(unsigned int i, unsigned int j, unsigned int k);
+   public: 
+       guint4       getSolidInfo(unsigned int isolid);
    public:
        const char*  getTypeName(unsigned int part_index);
    private:
@@ -79,6 +86,8 @@ class GPmt {
        void         setSolidBuffer(NPY<unsigned int>* solid_buffer);
        unsigned int getUInt(unsigned int part_index, unsigned int j, unsigned int k);
    private:
+       // almost no state, just icing on top of the buffers
+       // allowing this to copied/used on GPU in cu/hemi-pmt.cu
        GCache*            m_cache ; 
        unsigned int       m_index ;
        NPY<float>*        m_part_buffer ; 

@@ -69,12 +69,14 @@ class GGeo {
         void loadGeometry(); 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
+        void afterConvertMaterials();
     public:
         void modifyGeometry(const char* config);
     public:
         void setupLookup();
         void setupColors();
     public:
+        void prepareSurfaceLib();
         void prepareScintillatorLib();
         void prepareMeshes();
         void prepareVertexColors();
@@ -277,6 +279,7 @@ class GGeo {
 
         GColorizer*                   m_colorizer ; 
         GTestBox*                     m_testbox ;  
+        GMergedMesh*                  m_dynamic ;  
 
         NSensorList*                  m_sensor_list ; 
 
@@ -317,6 +320,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_scintillatorlib(NULL),
    m_colorizer(NULL),
    m_testbox(NULL),
+   m_dynamic(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),

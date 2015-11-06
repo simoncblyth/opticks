@@ -19,9 +19,6 @@ int main(int argc, char** argv)
 
     GPmt* pmt = GPmt::load(cache, 0, slice);
 
-    GPmt* pmt2 = GPmt::copy_with_container(pmt, 3.0f) ;
-
-
     NPY<float>* parts = pmt->getPartBuffer();
     LOG(info) << "parts shape: " << parts->getShapeString() ;
     assert( parts->getDimensions() == 3 );
