@@ -31,7 +31,10 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vect
 {
     GMergedMesh* com = new GMergedMesh( index ); 
 
-    com->countMergedMesh(mm, true);
+    if(mm)
+    {
+        com->countMergedMesh(mm, true);
+    }
 
     typedef std::vector<GSolid*> VS ; 
     for(VS::const_iterator it=solids.begin() ; it != solids.end() ; it++)
@@ -42,7 +45,10 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vect
 
     com->allocate(); 
  
-    com->mergeMergedMesh(mm, true);
+    if(mm)
+    {
+        com->mergeMergedMesh(mm, true);
+    } 
 
     for(VS::const_iterator it=solids.begin() ; it != solids.end() ; it++)
     {

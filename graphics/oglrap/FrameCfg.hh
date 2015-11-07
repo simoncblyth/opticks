@@ -10,7 +10,7 @@ class FrameCfg : public Cfg {
      std::string& getEventTag();
      std::string& getLiveLine();
      std::string& getTorchConfig();
-     std::string& getBoxConfig();
+     std::string& getTestConfig();
      std::string& getZExplodeConfig();
      std::string& getMeshVersion();
      std::string& getISlice();
@@ -38,7 +38,7 @@ private:
      std::string m_event_tag ;
      std::string m_liveline ;
      std::string m_torchconfig ;
-     std::string m_boxconfig ;
+     std::string m_testconfig ;
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;
      std::string m_islice ;
@@ -66,7 +66,7 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
        Cfg(name, live),
        m_listener(listener),
        m_torchconfig(""),
-       m_boxconfig(""),
+       m_testconfig(""),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
        m_islice(""),
@@ -169,10 +169,10 @@ inline void FrameCfg<Listener>::init()
        ("torchconfig",   boost::program_options::value<std::string>(&m_torchconfig), "torch configuration" );
 
    m_desc.add_options()
-       ("box",  "fabricate dynamic test box with geometry,materials and surface configured via boxconfig settings") ;
+       ("test",  "fabricate dynamic test geometry, materials and surfaces configured via testconfig settings") ;
 
    m_desc.add_options()
-       ("boxconfig",   boost::program_options::value<std::string>(&m_boxconfig), "dynamic test box configuration" );
+       ("testconfig",   boost::program_options::value<std::string>(&m_testconfig), "dynamic test geometry configuration" );
 
 
    m_desc.add_options()
@@ -330,9 +330,9 @@ inline std::string& FrameCfg<Listener>::getTorchConfig()
     return m_torchconfig ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getBoxConfig()
+inline std::string& FrameCfg<Listener>::getTestConfig()
 {
-    return m_boxconfig ;
+    return m_testconfig ;
 }
 
 template <class Listener>

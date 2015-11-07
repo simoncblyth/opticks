@@ -9,7 +9,7 @@
 #include "GMesh.hh"
 #include "GTreeCheck.hh"
 #include "GColorizer.hh"
-#include "GTestBox.hh"
+#include "GGeoTest.hh"
 #include "GPmt.hh"
 #include "GColors.hh"
 
@@ -65,6 +65,8 @@ const char* GGeo::CATHODE_MATERIAL = "Bialkali" ;
 
 void GGeo::init()
 {
+   m_cache->setGGeo(this); 
+
    const char* idpath = m_cache->getIdPath() ;
 
    fs::path geocache(idpath); 
@@ -284,43 +286,11 @@ void GGeo::save(const char* idpath)
 
 void GGeo::modifyGeometry(const char* config)
 {
-    GMergedMesh* mm = getMergedMesh(1);
-    gbbox bb = mm->getBBox(0);     // solid-0 contains them all
-    bb.enlarge(5.f);               // the **ONE** place for sizing containment box
-
-    ///////////////////////////////////////////////////////////
-
-    GPmt* pmt = GPmt::load( m_cache, 0, NULL );  // part slicing disfavored, as only works at one level 
-    pmt->dump();
-    assert( pmt->getNumSolids() == mm->getNumSolids() );
-
-    // prep the extra solid
-
-    m_testbox = new GTestBox(m_cache) ;
-    m_testbox->setBBox(bb);
-    m_testbox->setBndLib(m_bndlib);
-    m_testbox->configure(NULL);
-    m_testbox->make(1000, mm->getNumSolids() ); // mesh_index, node_index: node indices need to be contiguous  
-    m_testbox->dump("GGeo::modifyGeometry");
-    GSolid* solid = m_testbox->getSolid();
-
-    // create combined mesh 
-    m_dynamic = GMergedMesh::combine( mm->getIndex(), mm, solid );   
-    m_dynamic->Dump();
-    m_dynamic->setGeoCode('S');  // signal OGeo to use Analytic geometry, TODO: set it not signal it  
-    m_dynamic->setPmt(pmt);
-
-    unsigned int nodeindex = pmt->getNumSolids();
-    pmt->addContainer(bb, nodeindex );
-    pmt->dump("after addContainer");
-
-    assert( m_dynamic->getNumSolids() == pmt->getNumSolids() );
-    
-    m_geolib->clear();
-    m_geolib->setMergedMesh( 0, m_dynamic );
-     
+    assert(m_geotest == NULL);
+    m_geotest = new GGeoTest(m_cache);
+    m_geotest->configure(config);
+    m_geotest->modifyGeometry();
 }
-
 
 
 const char* GGeo::getPVName(unsigned int index)

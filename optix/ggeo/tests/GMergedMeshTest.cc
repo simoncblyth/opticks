@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     GMergedMesh* mm = GMergedMesh::load(&gc, 1);
 
     mm->Summary("mm loading");
-    mm->Dump("mm dump", 10);
+    mm->dump("mm dump", 10);
     mm->dumpSolids("dumpSolids");
 
     unsigned int numSolids = mm->getNumSolids();

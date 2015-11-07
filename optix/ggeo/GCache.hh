@@ -10,6 +10,7 @@
 class NLog ; 
 class GColors ; 
 class GFlags ; 
+class GGeo ; 
 class Types ; 
 
 // this is turning into GGeoConfig rather than just GCache 
@@ -37,9 +38,11 @@ class GCache {
          GColors* getColors();
          GFlags*  getFlags();
          Types*   getTypes();
-
          void setInstanced(bool instanced=true);
          bool isInstanced();
+    public:
+         GGeo*    getGGeo();
+         void     setGGeo(GGeo* ggeo);
     public:
          const char* getIdPath();
          const char* getIdFold();  // parent directory of idpath
@@ -84,6 +87,7 @@ class GCache {
           GColors*    m_colors ; 
           GFlags*     m_flags ; 
           Types*      m_types ;
+          GGeo*       m_ggeo ; 
     private:
           const char* m_geokey ;
           const char* m_path ;
@@ -119,6 +123,7 @@ inline GCache::GCache(const char* envprefix, const char* logname, const char* lo
        m_colors(NULL),
        m_flags(NULL),
        m_types(NULL),
+       m_ggeo(NULL),
        m_geokey(NULL),
        m_path(NULL),
        m_query(NULL),
@@ -172,6 +177,19 @@ inline const char* GCache::getMeshfixCfg()
 {
     return m_meshfixcfg ;
 }
+
+
+
+
+inline void GCache::setGGeo(GGeo* ggeo)
+{
+    m_ggeo = ggeo ; 
+}
+inline GGeo* GCache::getGGeo()
+{
+    return m_ggeo ;
+}
+
 
 
 

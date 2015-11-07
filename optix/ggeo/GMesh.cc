@@ -765,7 +765,7 @@ void GMesh::setColor(float r, float g, float b)
 
 
 
-void GMesh::Dump(const char* msg, unsigned int nmax)
+void GMesh::dump(const char* msg, unsigned int nmax)
 {
     LOG(info) << msg  ;
     LOG(info) << " num_vertices " << m_num_vertices 

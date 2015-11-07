@@ -97,6 +97,7 @@ class GBndLib : public GPropertyLib {
        void defineDefaults(GPropertyMap<float>* defaults);
   public:
        void dump(const char* msg="GBndLib::dump");
+       void dumpBoundaries(std::vector<unsigned int>& boundaries, const char* msg="GBndLib::dumpBoundaries");
   public:
        void setMaterialLib(GMaterialLib* mlib);
        void setSurfaceLib(GSurfaceLib* slib);

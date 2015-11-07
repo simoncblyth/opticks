@@ -29,7 +29,7 @@ class GTreeCheck ;
 class GColorizer ; 
 class GColors ; 
 class GFlags ; 
-class GTestBox ;
+class GGeoTest ;
 
 class GItemIndex ; 
 class GItemList ; 
@@ -278,8 +278,7 @@ class GGeo {
         GScintillatorLib*             m_scintillatorlib ; 
 
         GColorizer*                   m_colorizer ; 
-        GTestBox*                     m_testbox ;  
-        GMergedMesh*                  m_dynamic ;  
+        GGeoTest*                     m_geotest ;  
 
         NSensorList*                  m_sensor_list ; 
 
@@ -319,8 +318,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
    m_colorizer(NULL),
-   m_testbox(NULL),
-   m_dynamic(NULL),
+   m_geotest(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),

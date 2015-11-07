@@ -82,6 +82,7 @@ add_library(${name} SHARED
                 GMeshFixer.cc
                 GPmt.cc
                 GTestBox.cc
+                GGeoTest.cc
 )
 
 
@@ -126,6 +127,7 @@ GAttrSeq.hh
 GMeshFixer.hh
 GPmt.hh
 GTestBox.hh
+GGeoTest.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

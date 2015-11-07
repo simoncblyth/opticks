@@ -456,4 +456,24 @@ void GBndLib::dump(const char* msg)
     } 
 }
 
+
+
+void GBndLib::dumpBoundaries(std::vector<unsigned int>& boundaries, const char* msg)
+{
+    LOG(info) << msg ; 
+    unsigned int nb = boundaries.size() ;
+    for(unsigned int i=0 ; i < nb ; i++)
+    {
+        unsigned int boundary = boundaries[i];
+        guint4 bnd = getBnd(boundary);
+        std::cout << std::setw(3) << i 
+                  << std::setw(5) << boundary 
+                  << std::setw(20) << bnd.description() 
+                  << " : " 
+                  << description(bnd) << std::endl ; 
+    }
+}
+
+
+
  

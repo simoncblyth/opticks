@@ -197,7 +197,7 @@ class GMesh : public GDrawable {
       GMesh* makeDedupedCopy();
 
       void Summary(const char* msg="GMesh::Summary");
-      void Dump(const char* msg="GMesh::Dump", unsigned int nmax=10);
+      void dump(const char* msg="GMesh::dump", unsigned int nmax=10);
   public:
       void setIndex(unsigned int index);
       void setName(const char* name);

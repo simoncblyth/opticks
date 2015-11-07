@@ -325,10 +325,10 @@ void App::loadGeometry()
 
     (*m_timer)("loadGeometry"); 
 
-    if(m_fcfg->hasOpt("box"))
+    if(m_fcfg->hasOpt("test"))
     {
-        std::string modconf = m_fcfg->getBoxConfig();
-        m_ggeo->modifyGeometry( modconf.empty() ? NULL : modconf.c_str() );
+        std::string testconf = m_fcfg->getTestConfig();
+        m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
         (*m_timer)("modifyGeometry"); 
     }
 
