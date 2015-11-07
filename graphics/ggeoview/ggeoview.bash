@@ -26,8 +26,11 @@ ggv-bib-tracer(){
    ggv  --tracer \
          --test \
         --eye 0.5,0.5,0.0 \
-        --testconfig "mode=BoxInBox;dimensions=4,2,0,0;boundary=MineralOil/Rock/perfectAbsorbSurface/;boundary=Pyrex/MineralOil//;" \
+        --testconfig "mode=BoxInBox;dimensions=4,0,0,0;boundary=Pyrex/MineralOil//;" \
          $*
+
+      # --testconfig "mode=BoxInBox;dimensions=4,2,0,0;boundary=MineralOil/Rock/perfectAbsorbSurface/;boundary=Pyrex/MineralOil//;" \
+
 }
 
 

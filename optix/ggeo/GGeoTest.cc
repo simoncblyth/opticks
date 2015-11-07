@@ -117,37 +117,38 @@ void GGeoTest::addBoundary(const char* s)
 
 void GGeoTest::modifyGeometry()
 {
+    GMergedMesh* tmm(NULL);
+
     if(strcmp(m_mode, "PmtInBox") == 0)
     {
          assert(m_dimensions.x  > 0);
          assert(m_boundaries.size() > 0);
-         createPmtInBox(m_dimensions.x, m_boundaries[0]); 
+         tmm = createPmtInBox(m_dimensions.x, m_boundaries[0]); 
     }
     else if(strcmp(m_mode, "BoxInBox") == 0)
     {
          unsigned int n = m_boundaries.size() ;
          assert(n > 0 && n < 4);
-         createBoxInBox(); 
+         tmm = createBoxInBox(); 
     }
     else
     {
          LOG(warning) << "GGeoTest::modifyGeometry mode not recognized " << m_mode ; 
     }
+
+    if(!tmm) return ; 
+
+    tmm->dump("GGeoTest::modifyGeometry");
+    m_geolib->clear();
+    m_geolib->setMergedMesh( 0, tmm );
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////
 
-void GGeoTest::createPmtInBox(float size, unsigned int boundary)
+GMergedMesh* GGeoTest::createPmtInBox(float size, unsigned int boundary)
 {
     GMergedMesh* mm = m_geolib->getMergedMesh(1);
-    GMergedMesh* pib = createPmtInBox(mm, size, boundary) ;
-    m_geolib->clear();
-    m_geolib->setMergedMesh( 0, pib );
-}
 
-GMergedMesh* GGeoTest::createPmtInBox(GMergedMesh* mm, float size, unsigned int boundary)
-{
     GPmt* pmt = GPmt::load( m_cache, 0, NULL );  // part slicing disfavored, as only works at one level 
     pmt->dump();
     assert( pmt->getNumSolids() == mm->getNumSolids() );
@@ -174,7 +175,7 @@ GMergedMesh* GGeoTest::createPmtInBox(GMergedMesh* mm, float size, unsigned int 
 
 
 
-void GGeoTest::createBoxInBox()
+GMergedMesh* GGeoTest::createBoxInBox()
 {
     float s = 100 ; 
     gbbox basebb = gbbox(gfloat3(-s), gfloat3(s));  
@@ -195,10 +196,8 @@ void GGeoTest::createBoxInBox()
     }
 
     GMergedMesh* bib = GMergedMesh::combine( 0, NULL, solids );
-    bib->dump();
 
-    m_geolib->clear();
-    m_geolib->setMergedMesh( 0, bib );
+    return bib ; 
 } 
 
 

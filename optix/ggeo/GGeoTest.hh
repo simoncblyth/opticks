@@ -40,10 +40,8 @@ class GGeoTest {
        void setDimensions(const char* s);
        void addBoundary(const char* s);
     private:
-       void createPmtInBox(float size, unsigned int boundary);
-       GMergedMesh* createPmtInBox(GMergedMesh* mm, float size, unsigned int boundary);
-    private:
-       void createBoxInBox();
+       GMergedMesh* createPmtInBox(float size, unsigned int boundary);
+       GMergedMesh* createBoxInBox();
     private:
        GCache*      m_cache ; 
        const char*  m_config ; 

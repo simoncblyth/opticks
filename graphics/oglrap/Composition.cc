@@ -393,6 +393,7 @@ void Composition::setPickFace(glm::ivec4 pickface)
 {
     // gets called on recieving udp messages via boost bind done in CompositionCfg 
     m_pickface = pickface ;  
+    LOG(info) << "Composition::setPickFace " << gformat(pickface) ;   
     if(m_pickface.x > 0)
     {
         print(m_pickface, "Composition::setPickFace face targetting");
@@ -410,6 +411,10 @@ void Composition::setPickFace(glm::ivec4 pickface)
         {
             LOG(warning) << "Composition::setPickFace requires Scene lodged in Composition " ;
         }
+    }
+    else
+    {
+        LOG(warning) << "Composition::setPickFace IGNORING " << gformat(pickface) ;   
     }
 }
 

@@ -108,13 +108,6 @@
 namespace fs = boost::filesystem;
 
 
-//#include <boost/log/core.hpp>
-//#include <boost/log/expressions.hpp>
-//#include <boost/log/trivial.hpp>
-//#include "boost/log/utility/setup.hpp"
-//#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
 // optixrap-
 #include "OContext.hh"
 #include "OColors.hh"

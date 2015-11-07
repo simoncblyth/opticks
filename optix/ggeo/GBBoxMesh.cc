@@ -51,21 +51,7 @@ void GBBoxMesh::twentyfour()
 void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3* normals)
 {
    /*
-      Bounding boxes look OK with filled rendering, 
-      wireframe rendering has cosmetic problems: need to 
-      rearrange the ordering of the triangles to get a 
-      proper wireframe...
- 
-      However wireframe is generally slow compared to filled
-      and the whole point of using bbox is speed so 
-      currently just using the easier to get right filled triangle rendering.
-   */
 
-
-     //bb.Summary("GBBoxMesh::twentyfour");
-
-
-            /*
 
       +y         Axis Aligned Box
       |
@@ -75,16 +61,48 @@ void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3*
     /
    +z     
 
-            */
 
+   Fixing some ingrowing normals
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   OptiX render of the box shows a single black face, all others being lighter.
+   OpenGL render with normals shown (Q mode) shows two triangles in the same face 
+   with inwards pointing normals. They could be picked with::
+
+        ggv --tracer --test --eye 0.5,0.5,0.0 --testconfig "mode=BoxInBox;dimensions=4,0,0,0;boundary=Pyrex/MineralOil//;" 
+        udp.py --pickface 8,10
+
+   Issue with kMY::
+
+          0,1
+          2,3
+          4,5
+          6,7
+          8,9      <--- kMY
+          10,11
+
+    Fixed by correcting the winding order in the below.
+    */
 
      enum { kPX, kPY, kPZ, kMX, kMY, kMZ, kFace } ;
 
      unsigned int nv(0) ;
      unsigned int nf(0) ;
 
+     float coord(0.);
+
      for(unsigned int face=0 ; face < kFace ; face++)   // over 6 faces of the bbox
      {
+         switch(face)
+         {
+             case kPX:  coord = bb.max.x ; break ; 
+             case kPY:  coord = bb.max.y ; break ; 
+             case kPZ:  coord = bb.max.z ; break ; 
+             case kMX:  coord = bb.min.x ; break ; 
+             case kMY:  coord = bb.min.y ; break ; 
+             case kMZ:  coord = bb.min.z ; break ; 
+         } 
+
 
          switch(face)
          {                        
@@ -107,10 +125,10 @@ void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3*
                  2            3
  
                  */
-                       vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
-                       vertices[nv+1] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
-                       vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
-                       vertices[nv+3] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
+                       vertices[nv+0] = gfloat3( coord, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+1] = gfloat3( coord, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+2] = gfloat3( coord, bb.min.y, bb.max.z ) ; 
+                       vertices[nv+3] = gfloat3( coord, bb.min.y, bb.min.z ) ; 
                        for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 1.f, 0.f, 0.f );
                        break;
              case kMX:
@@ -134,10 +152,10 @@ void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3*
 
              */
 
-                       vertices[nv+0] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
-                       vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
-                       vertices[nv+2] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
-                       vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
+                       vertices[nv+0] = gfloat3( coord, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+1] = gfloat3( coord, bb.max.y, bb.min.z ) ; 
+                       vertices[nv+2] = gfloat3( coord, bb.min.y, bb.min.z ) ; 
+                       vertices[nv+3] = gfloat3( coord, bb.min.y, bb.max.z ) ; 
                        for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( -1.f, 0.f, 0.f );
                        break;
             
@@ -162,10 +180,10 @@ void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3*
                  2            3
  
                  */
-                       vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
-                       vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
-                       vertices[nv+2] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
-                       vertices[nv+3] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
+                       vertices[nv+0] = gfloat3( bb.max.x, coord, bb.min.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.min.x, coord, bb.min.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.min.x, coord, bb.max.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.max.x, coord, bb.max.z ) ; 
                        for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, 1.f, 0.f );
                        break;
              case kMY:
@@ -189,10 +207,18 @@ void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3*
 
              */
 
-                       vertices[nv+0] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
-                       vertices[nv+1] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
-                       vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
-                       vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
+                      /*
+                      // this results in ingrowing normals for the 2 resulting triangles
+                       vertices[nv+0] = gfloat3( bb.min.x, coord, bb.max.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.max.x, coord, bb.max.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.max.x, coord, bb.min.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.min.x, coord, bb.min.z ) ; 
+                      */
+                       vertices[nv+0] = gfloat3( bb.max.x, coord, bb.max.z ) ; 
+                       vertices[nv+1] = gfloat3( bb.min.x, coord, bb.max.z ) ; 
+                       vertices[nv+2] = gfloat3( bb.min.x, coord, bb.min.z ) ; 
+                       vertices[nv+3] = gfloat3( bb.max.x, coord, bb.min.z ) ; 
+
                        for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, -1.f, 0.f );
                        break;
 
@@ -216,10 +242,10 @@ void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3*
                  2            3
  
                  */
-                       vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, bb.max.z ) ; 
-                       vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, bb.max.z ) ; 
-                       vertices[nv+2] = gfloat3( bb.min.x, bb.min.y, bb.max.z ) ; 
-                       vertices[nv+3] = gfloat3( bb.max.x, bb.min.y, bb.max.z ) ; 
+                       vertices[nv+0] = gfloat3( bb.max.x, bb.max.y, coord ) ; 
+                       vertices[nv+1] = gfloat3( bb.min.x, bb.max.y, coord ) ; 
+                       vertices[nv+2] = gfloat3( bb.min.x, bb.min.y, coord ) ; 
+                       vertices[nv+3] = gfloat3( bb.max.x, bb.min.y, coord ) ; 
                        for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, 0.f, 1.f );
                        break;
 
@@ -243,10 +269,10 @@ void GBBoxMesh::twentyfour(gbbox& bb, gfloat3* vertices, guint3* faces, gfloat3*
                  2            3
  
                  */
-                       vertices[nv+0] = gfloat3( bb.min.x, bb.max.y, bb.min.z ) ; 
-                       vertices[nv+1] = gfloat3( bb.max.x, bb.max.y, bb.min.z ) ; 
-                       vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, bb.min.z ) ; 
-                       vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, bb.min.z ) ; 
+                       vertices[nv+0] = gfloat3( bb.min.x, bb.max.y, coord ) ; 
+                       vertices[nv+1] = gfloat3( bb.max.x, bb.max.y, coord ) ; 
+                       vertices[nv+2] = gfloat3( bb.max.x, bb.min.y, coord ) ; 
+                       vertices[nv+3] = gfloat3( bb.min.x, bb.min.y, coord ) ; 
                        for(unsigned int i=0 ; i < 4 ; i++) normals[nv+i]  = gfloat3( 0.f, 0.f, -1.f );
                        break;
          }
