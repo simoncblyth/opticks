@@ -15,6 +15,8 @@
 
 #include "strided_range.h"
 
+// avoid boost as this is compiled by nvcc
+
 //
 // *dev_tsparse_lookup* 
 //        is a global symbol pointing at device constant memory 
@@ -85,10 +87,12 @@ void TSparse<T>::count_unique()
     thrust::sort_by_key( 
                           m_counts.begin(),     // keys_first
                             m_counts.end(),     // keys_last 
-                          m_values.begin()      // values_first
+                          m_values.begin(),     // values_first
+                     thrust::greater<int>()
                        );
-    // sorts keys and values into ascending key order, as the counts are in 
-    // the key slots this sorts in ascending count order
+
+    // sorts keys and values into descending key order, as the counts are in 
+    // the key slots this sorts in descending count order
 
 }
 
@@ -100,25 +104,15 @@ void TSparse<T>::update_lookup()
 
     unsigned int n = TSPARSE_LOOKUP_N ; 
 
-    m_values_h.resize(n, 0);   // TODO verify that using 0 as "empty" will not be mis-construed as a valid index 
+    m_values_h.resize(n, 0);  // 0 as empty 
     m_counts_h.resize(n, 0);
 
-    if(m_num_unique > n)
-    {
-        thrust::copy( m_values.end() - n, m_values.end(), m_values_h.begin() );
-        thrust::copy( m_counts.end() - n, m_counts.end(), m_counts_h.begin() );
-    }
-    else
-    {
-        thrust::copy( m_values.begin(), m_values.end(), m_values_h.begin() );
-        thrust::copy( m_counts.begin(), m_counts.end(), m_counts_h.begin() );
-    }  
+    unsigned int ncopy = std::min( m_num_unique, n ); 
 
-    thrust::reverse(m_values_h.begin(), m_values_h.end());
-    thrust::reverse(m_counts_h.begin(), m_counts_h.end());
+    thrust::copy_n( m_values.begin(), ncopy , m_values_h.begin() );
+    thrust::copy_n( m_counts.begin(), ncopy , m_counts_h.begin() );
 
     T* data = m_values_h.data();
-
 
 #ifdef DEBUG
     printf("TSparse<T>::update_lookup<T>\n");
@@ -131,8 +125,15 @@ void TSparse<T>::update_lookup()
     cudaMemcpyToSymbol(dev_tsparse_lookup,data,TSPARSE_LOOKUP_N*sizeof(T));
 }
 
-
-
+/*
+Nov 2015: 
+   Fixed Issue with *update_lookup* occuring when the number of uniques 
+   is less than the defined number of lookup slots, the indexing got messed up. 
+   Picking a slot in GUI yielded no selection or the wrong selection.  
+   The cause was zeros repesenting empty in the lookup array taking valid 
+   indices. Fix was to switch to descending count sort order on device
+   to avoid empties messing with the indices. 
+*/
 
 template <typename T>
 void TSparse<T>::dump(const char* msg)
@@ -206,13 +207,22 @@ Index* TSparse<T>::make_index()
     Index* index = new Index(m_label);
     for(unsigned int i=0 ; i < m_values_h.size() ; i++)
     { 
-        std::string key = m_hexkey ? as_hex(m_values_h[i]) : as_dec(m_values_h[i]) ;
-        index->add(key.c_str(), m_counts_h[i] ); 
+        T val = m_values_h[i] ; 
+        int cnt = m_counts_h[i] ;
+        std::string key = m_hexkey ? as_hex(val) : as_dec(val) ;
+
+        std::cout << "TSparse<T>::make_index " 
+                  << " i " << std::setw(4) << i
+                  << " val " << std::setw(10) << val
+                  << " cnt " << std::setw(10) << cnt
+                  << " key " << key 
+                  << std::endl 
+                  ;
+
+        if(cnt > 0) index->add(key.c_str(), cnt ); 
     }
     return index ; 
 }
-
-
 
 
 template class TSparse<unsigned long long> ;

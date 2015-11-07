@@ -1004,9 +1004,9 @@ void App::indexSequence()
         unsigned int npsd = std::min(nphosel,100u) ;
         unsigned int nsqa = seq->getNumAtoms(); 
         unsigned int nsqd = std::min(nsqa,100u); 
-        assert(nphosel == 2*nseqa);
+        assert(nphosel == 2*nsqa);
         unsigned int nrecsel = trecsel.getSize() ; 
-        assert(nrecsel == maxrec*2*nseqa);
+        assert(nrecsel == maxrec*2*nsqa);
         LOG(info) << "App::indexSequence "
                   << " nsqa (2*num_photons)" << nsqa 
                   << " nphosel " << nphosel
@@ -1085,6 +1085,8 @@ void App::indexSequence()
 
     (*m_timer)("indexSequence"); 
 }
+
+
 
 
 void App::indexBoundaries()

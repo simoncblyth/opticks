@@ -5,10 +5,7 @@
 #include <thrust/device_vector.h>
 class Index ; 
 
-#define TSPARSE_LOOKUP_N 32 
-
-// (hopefully) a simplification of ThrustIdx, ThrustHistogram
-
+#define TSPARSE_LOOKUP_N 32
 template <typename T>
 class TSparse {
    public:
