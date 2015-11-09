@@ -32,6 +32,13 @@ class GSurfaceLib ;
 
 class GBndLib : public GPropertyLib {
   public:
+       enum {
+               OMAT,
+               OSUR,
+               ISUR,
+               IMAT
+            };
+  public:
        void save();
        static GBndLib* load(GCache* cache, bool constituents=false);
   public:
@@ -57,13 +64,13 @@ class GBndLib : public GPropertyLib {
        bool contains( const char* spec, bool flip=false);
   public:
        unsigned int addBoundary( const char* spec, bool flip=false) ;
-       unsigned int addBoundary( const char* imat, const char* omat, const char* isur, const char* osur) ;
+       unsigned int addBoundary( const char* omat, const char* osur, const char* isur, const char* imat) ;
   private:
        // Bnd are only added if not already present
        void add(const guint4& bnd);
        guint4 add(const char* spec, bool flip=false);
-       guint4 add(const char* imat, const char* omat, const char* isur, const char* osur);
-       guint4 add(unsigned int imat, unsigned int omat, unsigned int isur, unsigned int osur);
+       guint4 add(const char* omat, const char* osur, const char* isur, const char* imat);
+       guint4 add(unsigned int omat, unsigned int osur, unsigned int isur, unsigned int imat);
   public:
        void loadIndexBuffer();
        void importIndexBuffer();

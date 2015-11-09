@@ -203,6 +203,8 @@ void App::wiring()
 
 int App::config(int argc, char** argv)
 {
+    for(unsigned int i=1 ; i < argc ; i++ ) LOG(info) << "[" << std::setw(2) << i << "]" << argv[i] ;
+
     m_cfg  = new Cfg("unbrella", false) ; 
     m_fcfg = new FrameCfg<Frame>("frame", m_frame,false);
     m_cfg->add(m_fcfg);

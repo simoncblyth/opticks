@@ -26,7 +26,7 @@ int main()
 
 
 /*
-    const char* spec = "Bialkali/Vacuum//lvPmtHemiCathodeSensorSurface" ; // imat/omat/isur/osur
+    const char* spec = "Vacuum/lvPmtHemiCathodeSensorSurface//Bialkali" ; // omat/osur/isur/imat
     assert(blib->contains(spec));
     bool flip = true ; 
     blib->add(spec, flip);

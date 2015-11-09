@@ -902,10 +902,12 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GSurfaceLib* slib = gg->getSurfaceLib();  
 
     // boundary identification via 4-uint 
-    unsigned int boundary = blib->addBoundary( mt->getShortName(), 
+    unsigned int boundary = blib->addBoundary( 
                                                mt_p->getShortName(),
-                                               isurf ? isurf->getShortName() : NULL,
-                                               osurf ? osurf->getShortName() : NULL);
+                                               osurf ? osurf->getShortName() : NULL ,
+                                               isurf ? isurf->getShortName() : NULL ,
+                                               mt->getShortName()
+                                             );
 
     solid->setBoundary(boundary);
     {

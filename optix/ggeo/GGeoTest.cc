@@ -16,9 +16,9 @@
 #include <boost/lexical_cast.hpp>
 
 const char* GGeoTest::DEFAULT_CONFIG = 
-    "mode=PmtInBox;"
-    "boundary=MineralOil/Rock//;"
-    "dimensions=3,0,0,0;"
+    "mode=PmtInBox_"
+    "boundary=Rock///MineralOil_"
+    "dimensions=3,0,0,0_"
     ;
 
 const char* GGeoTest::MODE_ = "mode"; 
@@ -45,16 +45,22 @@ void GGeoTest::init()
 
 void GGeoTest::configure(const char* config_)
 {
+    LOG(info) << "GGeoTest::configure" ; 
     m_config = config_ ? strdup(config_) : DEFAULT_CONFIG ; 
 
     std::string config(m_config);
     typedef std::pair<std::string,std::string> KV ; 
-    std::vector<KV> ekv = ekv_split(config.c_str(),';',"=");
+    std::vector<KV> ekv = ekv_split(config.c_str(),'_',"="); // element-delim, keyval-delim
 
-    printf("GGeoTest::configure %s \n", config.c_str() );
+
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
     {
-        printf(" %20s : %s \n", it->first.c_str(), it->second.c_str() );
+        LOG(info) 
+                  << std::setw(20) << it->first
+                  << " : " 
+                  << it->second 
+                  ;
+
         set(getParam(it->first.c_str()), it->second.c_str());
     }
 }

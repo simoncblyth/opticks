@@ -1,5 +1,6 @@
 // porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
 
+
 #include <curand_kernel.h>
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>

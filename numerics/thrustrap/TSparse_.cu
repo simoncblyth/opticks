@@ -211,6 +211,7 @@ Index* TSparse<T>::make_index()
         int cnt = m_counts_h[i] ;
         std::string key = m_hexkey ? as_hex(val) : as_dec(val) ;
 
+#ifdef DEBUG
         std::cout << "TSparse<T>::make_index " 
                   << " i " << std::setw(4) << i
                   << " val " << std::setw(10) << val
@@ -218,6 +219,7 @@ Index* TSparse<T>::make_index()
                   << " key " << key 
                   << std::endl 
                   ;
+#endif
 
         if(cnt > 0) index->add(key.c_str(), cnt ); 
     }

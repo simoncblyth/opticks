@@ -2,6 +2,9 @@
 
 cmdline="$*"
 
+echo cmdline $cmdline
+
+
 npy-
 ggeo- 
 ggeoview-
@@ -18,7 +21,7 @@ if [ "${cmdline/--oac}" != "${cmdline}" ]; then
    export OPTIX_API_CAPTURE=1
 fi
 
-export GGEOVIEW_ARGS=$*
+export GGEOVIEW_ARGS="$*"
 
 if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeoview-bindir)/computeTest

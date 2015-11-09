@@ -286,12 +286,13 @@ void GGeo::save(const char* idpath)
 
 void GGeo::modifyGeometry(const char* config)
 {
+    LOG(info) << "GGeo::modifyGeometry" 
+              << " config [" << config << "]" ; 
     assert(m_geotest == NULL);
     m_geotest = new GGeoTest(m_cache);
     m_geotest->configure(config);
     m_geotest->modifyGeometry();
 }
-
 
 const char* GGeo::getPVName(unsigned int index)
 {

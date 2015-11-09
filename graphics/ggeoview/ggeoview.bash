@@ -26,30 +26,28 @@ ggv-bib-tracer(){
    ggv  --tracer \
          --test \
         --eye 0.5,0.5,0.0 \
-        --testconfig "mode=BoxInBox;dimensions=4,0,0,0;boundary=Pyrex/MineralOil//;" \
+        --testconfig "mode=BoxInBox;dimensions=4,0,0,0;boundary=MineralOil///Pyrex;" \
          $*
-
-      # --testconfig "mode=BoxInBox;dimensions=4,2,0,0;boundary=MineralOil/Rock/perfectAbsorbSurface/;boundary=Pyrex/MineralOil//;" \
-
+      # --testconfig "mode=BoxInBox;dimensions=4,2,0,0;boundary=Rock//perfectAbsorbSurface/MineralOil;boundary=MineralOil///Pyrex;" \
 }
 
 
 ggv-bib(){
    type $FUNCNAME
-   ggv  --test \
+   ggv.sh  --test \
         --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
-        --testconfig "mode=BoxInBox;dimensions=4,2,0,0;boundary=MineralOil/Rock/perfectAbsorbSurface/;boundary=Pyrex/MineralOil//;" \
+        --testconfig "mode=BoxInBox_dimensions=4,2,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_boundary=MineralOil///Pyrex_" \
         --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" \
          $*
 }
 
 ggv-box(){
    type $FUNCNAME
-   ggv --test \
+   ggv.sh --test \
         --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
-        --testconfig "mode=PmtInBox;dimensions=3,0,0,0;boundary=MineralOil/Rock/perfectAbsorbSurface/;" \
+        --testconfig "mode=PmtInBox;dimensions=3,0,0,0;boundary=Rock//perfectAbsorbSurface/MineralOil;" \
         --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" \
          $*
 }

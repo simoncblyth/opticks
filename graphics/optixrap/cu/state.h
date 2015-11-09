@@ -16,6 +16,14 @@ struct State
 };
 
 
+// TODO: get this from a GBndLib rather than duplicating 
+enum {
+    OMAT,
+    OSUR,
+    ISUR,
+    IMAT 
+};
+
 __device__ void fill_state( State& s, int boundary, uint4 identity, float wavelength )
 {
     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
@@ -26,9 +34,9 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
 
     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
     // 
-    int m1_line = boundary > 0 ? line + 0 : line + 1 ;   // inner-material / outer-material
-    int m2_line = boundary > 0 ? line + 1 : line + 0 ;   // outer-material / inner-material
-    int su_line = boundary > 0 ? line + 2 : line + 3 ;   // inner-surface  / outer-surface
+    int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;   
+    int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;   
+    int su_line = boundary > 0 ? line + ISUR : line + OSUR ;   
 
     //  consider photons arriving at PMT cathode surface
     //  geometry normals are expected to be out of the PMT 

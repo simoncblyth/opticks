@@ -106,22 +106,22 @@ guint4 GBndLib::parse( const char* spec, bool flip)
     boost::split(elem, spec, boost::is_any_of("/"));
 
     unsigned int nelem = elem.size();
-    assert(nelem > 1);
+    assert(nelem == 4);
 
-    const char* imat_ = nelem > 0 ? elem[0].c_str() : NULL ;
-    const char* omat_ = nelem > 1 ? elem[1].c_str() : NULL ;
-    const char* isur_ = nelem > 2 ? elem[2].c_str() : NULL ;
-    const char* osur_ = nelem > 3 ? elem[3].c_str() : NULL ;
+    const char* omat_ = elem[0].c_str() ;
+    const char* osur_ = elem[1].c_str() ;
+    const char* isur_ = elem[2].c_str() ;
+    const char* imat_ = elem[3].c_str() ;
 
-    unsigned int imat = m_mlib->getIndex(imat_) ;
     unsigned int omat = m_mlib->getIndex(omat_) ;
-    unsigned int isur = m_slib->getIndex(isur_) ;
     unsigned int osur = m_slib->getIndex(osur_) ;
+    unsigned int isur = m_slib->getIndex(isur_) ;
+    unsigned int imat = m_mlib->getIndex(imat_) ;
 
     return flip ? 
-              guint4(omat, imat, osur, isur)
+              guint4(imat, isur, osur, omat)
                 :
-              guint4(imat, omat, isur, osur) 
+              guint4(omat, osur, isur, imat) 
                 ;   
 }
 
@@ -134,9 +134,9 @@ unsigned int GBndLib::addBoundary( const char* spec, bool flip)
     return index(bnd) ; 
 }
 
-unsigned int GBndLib::addBoundary( const char* imat, const char* omat, const char* isur, const char* osur)
+unsigned int GBndLib::addBoundary( const char* omat, const char* osur, const char* isur, const char* imat)
 {
-    guint4 bnd = add(imat, omat, isur, osur);
+    guint4 bnd = add(omat, osur, isur, imat);
     return index(bnd) ; 
 }
 
@@ -147,18 +147,18 @@ guint4 GBndLib::add( const char* spec, bool flip)
     return bnd ; 
 }
 
-guint4 GBndLib::add( const char* imat_ , const char* omat_, const char* isur_, const char* osur_ )
+guint4 GBndLib::add( const char* omat_ , const char* osur_, const char* isur_, const char* imat_ )
 {
-    unsigned int imat = m_mlib->getIndex(imat_) ;
     unsigned int omat = m_mlib->getIndex(omat_) ;
-    unsigned int isur = m_slib->getIndex(isur_) ;
     unsigned int osur = m_slib->getIndex(osur_) ;
-    return add(imat, omat, isur, osur);
+    unsigned int isur = m_slib->getIndex(isur_) ;
+    unsigned int imat = m_mlib->getIndex(imat_) ;
+    return add(omat, osur, isur, imat);
 }
 
-guint4 GBndLib::add( unsigned int imat , unsigned int omat, unsigned int isur, unsigned int osur )
+guint4 GBndLib::add( unsigned int omat , unsigned int osur, unsigned int isur, unsigned int imat )
 {
-    guint4 bnd = guint4(imat, omat, isur, osur);
+    guint4 bnd = guint4(omat, osur, isur, imat);
     add(bnd);
     return bnd ; 
 }
@@ -197,10 +197,10 @@ std::string GBndLib::description(const guint4& bnd)
     std::stringstream ss ; 
     ss 
        << " ("   << std::setw(3) << tag << ")" 
-       << " im:" << std::setw(25) << m_mlib->getName(bnd.x) 
-       << " om:" << std::setw(25) << m_mlib->getName(bnd.y) 
-       << " is:" << std::setw(25) << (bnd.z == UNSET ? "" : m_slib->getName(bnd.z)) 
-       << " os:" << std::setw(25) << (bnd.w == UNSET ? "" : m_slib->getName(bnd.w))  
+       << " om:" << std::setw(25) << m_mlib->getName(bnd[OMAT]) 
+       << " os:" << std::setw(25) << (bnd[OSUR] == UNSET ? "" : m_slib->getName(bnd[OSUR]))  
+       << " is:" << std::setw(25) << (bnd[ISUR] == UNSET ? "" : m_slib->getName(bnd[ISUR])) 
+       << " im:" << std::setw(25) << m_mlib->getName(bnd[IMAT]) 
        ;
     return ss.str();
 }
@@ -209,13 +209,13 @@ std::string GBndLib::shortname(const guint4& bnd)
 {
     std::stringstream ss ; 
     ss 
-       << m_mlib->getName(bnd.x) 
+       << m_mlib->getName(bnd[OMAT]) 
        << "/"
-       << m_mlib->getName(bnd.y) 
+       << (bnd[OSUR] == UNSET ? "" : m_slib->getName(bnd[OSUR])) 
        << "/" 
-       << (bnd.z == UNSET ? "" : m_slib->getName(bnd.z)) 
+       << (bnd[ISUR] == UNSET ? "" : m_slib->getName(bnd[ISUR]))  
        << "/" 
-       << (bnd.w == UNSET ? "" : m_slib->getName(bnd.w))  
+       << m_mlib->getName(bnd[IMAT]) 
        ;
     return ss.str();
 }
@@ -233,22 +233,22 @@ guint4 GBndLib::getBnd(unsigned int boundary)
 unsigned int GBndLib::getInnerMaterial(unsigned int boundary)
 {
     guint4 bnd = getBnd(boundary);
-    return bnd.x ; 
+    return bnd[IMAT] ; 
 }
 unsigned int GBndLib::getOuterMaterial(unsigned int boundary)
 {
     guint4 bnd = getBnd(boundary);
-    return bnd.y ; 
+    return bnd[OMAT] ; 
 }
 unsigned int GBndLib::getInnerSurface(unsigned int boundary)
 {
     guint4 bnd = getBnd(boundary);
-    return bnd.z ; 
+    return bnd[ISUR] ; 
 }
 unsigned int GBndLib::getOuterSurface(unsigned int boundary)
 {
     guint4 bnd = getBnd(boundary);
-    return bnd.w ; 
+    return bnd[OSUR] ; 
 }
 
 
@@ -290,8 +290,8 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
     for(unsigned int i=0 ; i < getNumBnd() ; i++)    
     {
         const guint4& bnd = m_bnd[i] ;
-        const char* imat = m_mlib->getName(bnd.x);
-        const char* omat = m_mlib->getName(bnd.y);
+        const char* omat = m_mlib->getName(bnd[OMAT]);
+        const char* imat = m_mlib->getName(bnd[IMAT]);
         assert(imat && omat);
         if(msu.count(imat) == 0) msu[imat] = getLine(i, 0) ;
         if(msu.count(omat) == 0) msu[omat] = getLine(i, 1) ;
@@ -308,8 +308,8 @@ unsigned int GBndLib::getMaterialLine(const char* shortname)
     for(unsigned int i=0 ; i < ni ; i++)    
     {
         const guint4& bnd = m_bnd[i] ;
-        const char* imat = m_mlib->getName(bnd.x);
-        const char* omat = m_mlib->getName(bnd.y);
+        const char* omat = m_mlib->getName(bnd[OMAT]);
+        const char* imat = m_mlib->getName(bnd[IMAT]);
         if(strncmp(imat, shortname, strlen(shortname))==0) return getLine(i, 0);
         if(strncmp(omat, shortname, strlen(shortname))==0) return getLine(i, 1);
     }
@@ -360,14 +360,14 @@ NPY<float>* GBndLib::createBuffer()
         {
             unsigned int wof = nj*nk*nl*i + nk*nl*j ;
 
-            if(j == 0 || j == 1)      // imat/omat
+            if(j == IMAT || j == OMAT)    
             {
                 unsigned int midx = bnd[j] ;
                 assert(midx != UNSET);
                 unsigned int mof = nk*nl*midx ;  
                 memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl );  
             }
-            else if(j == 2 || j == 3)  // isur/osur
+            else if(j == ISUR || j == OSUR)  // isur/osur
             {
                 unsigned int sidx = bnd[j] ;
                 if(sidx != UNSET)
@@ -399,7 +399,7 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
         for(unsigned int j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
         {
             unsigned int offset = nj*nk*i+nk*j ;
-            if(j == 0 || j == 1)      // imat/omat
+            if(j == IMAT || j == OMAT)    
             {
                 unsigned int midx = bnd[j] ;
                 assert(midx != UNSET);
@@ -408,13 +408,15 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
                 odat[offset+2] = 0u ; 
                 odat[offset+3] = 0u ; 
             }
-            else if(j == 2 || j == 3)  // isur/osur
+            else if(j == ISUR || j == OSUR)  
             {
                 unsigned int sidx = bnd[j] ;
                 if(sidx != UNSET)
                 {
+      
                     guint4 os = m_slib->getOpticalSurface(sidx) ;
                     odat[offset+0] = one_based ? sidx + 1 : sidx  ; 
+                 // TODO: enum these
                     odat[offset+1] = os.y ; 
                     odat[offset+2] = os.z ; 
                     odat[offset+3] = os.w ; 
