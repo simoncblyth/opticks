@@ -26,7 +26,7 @@ ggv-bib-tracer(){
    ggv  --tracer \
          --test \
         --eye 0.5,0.5,0.0 \
-        --testconfig "mode=BoxInBox_dimensions=4,0,0,0_boundary=MineralOil///Pyrex_" \
+        --testconfig "mode=BoxInBox_dimensions=500,0,0,0_boundary=MineralOil///Pyrex_" \
          $*
       # --testconfig "mode=BoxInBox_dimensions=4,2,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_boundary=MineralOil///Pyrex_" \
 }
@@ -37,8 +37,8 @@ ggv-bib(){
    ggv.sh  --test \
         --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
-        --testconfig "mode=BoxInBox_dimensions=4,2,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_boundary=MineralOil///Pyrex_" \
-        --torchconfig "type=invsphere_source=0,0,1_target=0,0,-1_radius=102_zenithazimuth=0,0.5,0,1" \
+        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" \
+        --torchconfig "frame=1_type=invsphere_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" \
          $*
 }
 

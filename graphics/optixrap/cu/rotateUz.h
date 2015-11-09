@@ -24,6 +24,58 @@
  89   return *this;
  90 }
 
+
+    for example
+       u = [0,0,-1]   
+
+       up = 0.   axial z 
+
+       u.z < 0.
+
+                | -1  0   0  |  
+         d ->   |  0  1   0  | d
+                |  0  0  -1  |  
+
+
+        u = [0,1,1]
+
+
+                 |   0 -1  0  |   
+                 |   1  0  1  | 
+                 |  -1  0  1  |
+
+
+          x' = -y
+          y' = 
+
+
+
+
+
+                |  u.x * u.z / up   -u.y / up    u.x  |        
+        d  =    |  u.y * u.z / up   +u.x / up    u.y  |      p
+                |   -up               0.         u.z  |      
+    
+
+https://root.cern.ch/phpBB3/viewtopic.php?t=7421
+
+ TVector3 direction = v.Unit() 
+  v1.RotateUz(direction); // direction must be TVector3 of unit length
+
+transforms v1 from the rotated frame 
+   (z' parallel to direction, 
+    x' in the theta plane and 
+    y' in the xy plane as well as perpendicular to the theta plane) 
+ to the (x,y,z) frame.
+
+
+https://proj-clhep.web.cern.ch/proj-clhep/manual/UserGuide/VectorDefs/node49.html
+
+This rotates the reference frame such that the original Z-axis will lie in the
+direction of $\hat{u}$. Many rotations would accomplish this; the one selected
+uses $u$ as its third column and is given by: 
+
+
 */
 
 __device__ void rotateUz(float3& d, float3& u )

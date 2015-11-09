@@ -154,7 +154,7 @@ void App::init(int argc, char** argv)
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
 
     m_parameters = new Parameters ; 
-    m_timer      = new Timer("main");
+    m_timer      = new Timer("App::");
     m_timer->setVerbose(true);
     m_timer->start();
 
@@ -203,7 +203,7 @@ void App::wiring()
 
 int App::config(int argc, char** argv)
 {
-    for(unsigned int i=1 ; i < argc ; i++ ) LOG(info) << "[" << std::setw(2) << i << "]" << argv[i] ;
+    for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::config " << "[" << std::setw(2) << i << "]" << argv[i] ;
 
     m_cfg  = new Cfg("unbrella", false) ; 
     m_fcfg = new FrameCfg<Frame>("frame", m_frame,false);
@@ -222,7 +222,8 @@ int App::config(int argc, char** argv)
 
     const std::string cmdline = m_cfg->getCommandLine(); 
     m_timer->setCommandLine(cmdline);
-    LOG(info) << argv[0] << " " << cmdline ; 
+
+    LOG(debug) << argv[0] << " " << cmdline ; 
 
     const char* idpath = m_cache->getIdPath();
 

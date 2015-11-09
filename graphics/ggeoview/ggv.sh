@@ -2,7 +2,7 @@
 
 cmdline="$*"
 
-echo cmdline $cmdline
+#echo cmdline $cmdline
 
 
 npy-

@@ -335,8 +335,6 @@ RT_PROGRAM void generate()
 }
 
 
-
-
 RT_PROGRAM void exception()
 {
     //const unsigned int code = rtGetExceptionCode();

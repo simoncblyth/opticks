@@ -144,7 +144,7 @@ void GGeoTest::modifyGeometry()
 
     if(!tmm) return ; 
 
-    tmm->dump("GGeoTest::modifyGeometry");
+    //tmm->dump("GGeoTest::modifyGeometry tmm ");
     m_geolib->clear();
     m_geolib->setMergedMesh( 0, tmm );
 }
@@ -183,26 +183,28 @@ GMergedMesh* GGeoTest::createPmtInBox(float size, unsigned int boundary)
 
 GMergedMesh* GGeoTest::createBoxInBox()
 {
-    float s = 100 ; 
-    gbbox basebb = gbbox(gfloat3(-s), gfloat3(s));  
-
     std::vector<GSolid*> solids ; 
 
     unsigned int n = m_boundaries.size();
     for(unsigned int i=0 ; i < n ; i++)
     {
-        gbbox bb(basebb);
-        bb.enlarge(m_dimensions[i]);
+        float s = m_dimensions[i] ;
+        gbbox bb(gfloat3(-s), gfloat3(s));  
 
         GSolid* solid = GTestBox::makeSolid(bb, 1000, i ) ; // meshIndex, nodeIndex
-        solid->setBoundary(m_boundaries[i]);
+        unsigned int boundary = m_boundaries[i];
+        solid->setBoundary(boundary);
         solid->setSensor(NULL);
-
         solids.push_back(solid);
+
+        LOG(info) << "GGeoTest::createBoxInBox"
+                  << " solid " << std::setw(2) << i 
+                  << " boundary " << std::setw(3) << boundary
+                  << bb.description() 
+                  ;
     }
 
     GMergedMesh* bib = GMergedMesh::combine( 0, NULL, solids );
-
     return bib ; 
 } 
 

@@ -94,6 +94,19 @@ __device__ void tsdebug( TorchStep& ts )
 }
 
 
+/*
+
+http://mathworld.wolfram.com/SpherePointPicking.html
+
+To obtain points such that any small area on the sphere is expected to contain
+the same number of points (right figure above), choose U and V to be random
+variates on (0,1). Then
+
+theta   =   2 pi U    
+phi     =   acos( 2V-1 )
+
+
+*/
 
 __device__ void
 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
@@ -125,7 +138,9 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 
           p.direction = ts.p0 ;
 
-          float r = radius*u1 ; 
+          //float r = radius*u1 ; 
+          float r = radius*sqrtf(u1) ;   // avoid bunching 
+
           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
           rotateUz(discPosition, ts.p0);
 
@@ -139,14 +154,18 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       else if( ts.type == T_SPHERE )
       {
           // fixed point uniform spherical emitter with configurable zenith, azimuth ranges
-
+         
           float sinTheta, cosTheta;
-          sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
+          //sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);  // distribution bunched at poles like this
+
+          //  range zenithazimuth.x:.y
+          cosTheta = 1.f - 2.0f*u1  ;     // 0:0.5 ->  1->0.
+          sinTheta = sqrtf( 1.0f - cosTheta*cosTheta );
 
           float3 photonMomentum = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
           rotateUz(photonMomentum, ts.p0 );
 
-          float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta); // adhoc
+          float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta); // perp to above
           rotateUz(photonPolarization, ts.p0);
 
           p.direction = photonMomentum ;
@@ -156,13 +175,17 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       }
       else if( ts.type == T_INVSPHERE )
       {
-          // emit from regions on the surface of a sphere all targetting single point at center of sphere  
+          // emit from surface of sphere directed to center 
 
           float sinTheta, cosTheta;
-          sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
+          cosTheta = 1.f - 2.0f*u1 ; 
+          sinTheta = sqrtf( 1.0f - cosTheta*cosTheta );
 
           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
-          float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta); // adhoc
+
+          float3 photonPolarization = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta );  // para to direction
+          //float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta);  // perp to above
+
           rotateUz(photonPolarization, ts.p0);
 
           p.polarization = photonPolarization ;

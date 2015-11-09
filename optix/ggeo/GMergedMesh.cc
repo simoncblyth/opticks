@@ -126,7 +126,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 
 
 /*
-Huh ? why do OAV and IAV give a number of solids of 1 whereas all others give zero ? 
+Huh ? why do OAV and IAV give a number of solids of 1 whereas all others give zero ?  maybe related to mesh fixing 
 
 [2015-Nov-04 17:28:12.203204]:info: GMergedMesh::count  selected false mesh.nsolid 0 mesh.name near_pool_iws_box0xc288ce8 num_solids 0 num_solids_selected 0
 [2015-Nov-04 17:28:12.203320]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name ade0xc2a7438 num_solids 0 num_solids_selected 0

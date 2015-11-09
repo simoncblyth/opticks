@@ -9,7 +9,7 @@
 
 GSolid* GTestBox::makeSolid(gbbox& bbox, unsigned int meshindex, unsigned int nodeindex)
 {
-    LOG(info) << "GTestBox::make" ;
+    LOG(debug) << "GTestBox::make" ;
 
     GMesh* mesh = makeMesh(bbox, meshindex);
 

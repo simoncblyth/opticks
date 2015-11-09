@@ -6,8 +6,6 @@
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
-//#include "GBoundary.hh"
-
 // npy-
 #include "NSensor.hpp"
 
@@ -18,6 +16,12 @@ void GSolid::Summary(const char* msg )
    if(!msg) msg = getDescription();
    if(!msg) msg = "GSolid::Summary" ;
    printf("%s\n", msg );
+}
+
+
+std::string GSolid::description()
+{
+   return getDescription(); 
 }
 
 

@@ -65,51 +65,6 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
 
 
 
-
-/*
-// is this used ?
-GMesh::GMesh(GMesh* other) 
-     :
-     m_index(other->getIndex()),
-     m_vertices(other->getVertices()),
-     m_vertices_buffer(other->getVerticesBuffer()),
-     m_num_vertices(other->getNumVertices()),
-     m_faces(other->getFaces()),
-     m_indices_buffer(other->getIndicesBuffer()),
-     m_num_faces(other->getNumFaces()),
-     m_colors(other->getColors()),
-     m_colors_buffer(other->getColorsBuffer()),
-     m_texcoords(other->getTexcoords()),
-     m_texcoords_buffer(other->getTexcoordsBuffer()),
-     //m_num_colors(other->getNumColors()),
-     m_normals(other->getNormals()),
-     m_normals_buffer(other->getNormalsBuffer()),
-     m_nodes(other->getNodes()),
-     m_nodes_buffer(other->getNodesBuffer()),
-     m_boundaries(other->getBoundaries()),
-     m_boundaries_buffer(other->getBoundariesBuffer()),
-     m_center_extent_buffer(other->getCenterExtentBuffer()),
-     m_bbox_buffer(other->getBBoxBuffer()),
-     m_num_solids(other->getNumSolids()),
-     m_num_solids_selected(other->getNumSolidsSelected()),
-     m_transforms_buffer(other->getTransformsBuffer()),
-     m_itransforms_buffer(other->getITransformsBuffer()),
-     m_meshes_buffer(other->getMeshesBuffer()),
-     m_nodeinfo_buffer(other->getNodeInfoBuffer()),
-     m_identity_buffer(other->getIdentityBuffer()),
-     m_iidentity_buffer(other->getInstancedIdentityBuffer()),
-     m_geocode(other->getGeoCode()),
-     m_islice(other->getInstanceSlice()),
-     m_fslice(other->getFaceSlice()),
-     m_pslice(other->getPartSlice()),
-     GDrawable()
-{
-   updateBounds();
-   nameConstituents(m_names);
-}
-*/
-
-
 int GMesh::g_instance_count = 0 ;
 
 

@@ -140,6 +140,7 @@ struct gfloat4
 struct gbbox 
 {
    gbbox() : min(gfloat3(0.f)), max(gfloat3(0.f)) {} ;
+   gbbox(float s) :  min(gfloat3(-s)), max(gfloat3(s)) {} ; 
    gbbox(const gfloat3& _min, const gfloat3& _max) :  min(_min), max(_max) {} ; 
    gbbox(const gbbox& other ) : min(other.min), max(other.max) {} ;
 

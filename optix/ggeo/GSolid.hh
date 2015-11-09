@@ -3,9 +3,12 @@
 class GMesh ;
 class NSensor ; 
 
+
 #include "GNode.hh"
 #include "GMatrix.hh"
 #include "GVector.hh"
+
+#include <string>
 #include <climits>
 
 //  hmm the difference between the models is focussed in here 
@@ -38,6 +41,7 @@ class GSolid : public GNode {
       NSensor*     getSensor();
   public: 
       void Summary(const char* msg="GSolid::Summary");
+      std::string description();
   private:
       unsigned int      m_boundary ; 
       NSensor*          m_sensor ; 

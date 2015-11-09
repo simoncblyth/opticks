@@ -48,15 +48,15 @@ void GScintillatorLib::add(GPropertyMap<float>* scint)
 
 void GScintillatorLib::defineDefaults(GPropertyMap<float>* /*defaults*/)
 {
-    LOG(info) << "GScintillatorLib::defineDefaults"  ; 
+    LOG(debug) << "GScintillatorLib::defineDefaults"  ; 
 }
 void GScintillatorLib::sort()
 {
-    LOG(info) << "GScintillatorLib::sort"  ; 
+    LOG(debug) << "GScintillatorLib::sort"  ; 
 }
 void GScintillatorLib::import()
 {
-    LOG(info) << "GScintillatorLib::import "  ; 
+    LOG(debug) << "GScintillatorLib::import "  ; 
     m_buffer->Summary("GScintillatorLib::import");
 }
 
@@ -66,7 +66,7 @@ NPY<float>* GScintillatorLib::createBuffer()
     unsigned int nj = m_icdf_length ;
     unsigned int nk = 1 ; 
 
-    LOG(info) << "GScintillatorLib::createBuffer " 
+    LOG(debug) << "GScintillatorLib::createBuffer " 
               << " ni " << ni 
               << " nj " << nj 
               << " nk " << nk 

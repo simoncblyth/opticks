@@ -17,6 +17,17 @@ def ihex_(i):
     # trim the 0x and L
     return xs 
 
+
+def count_unique(vals):
+    """  
+    http://stackoverflow.com/questions/10741346/numpy-frequency-counts-for-unique-values-in-an-array
+    """
+    uniq = np.unique(vals)
+    bins = uniq.searchsorted(vals)
+    return np.vstack((uniq, np.bincount(bins))).T
+
+
+
 pro_ = lambda _:load_("prop",_)
 ppp_ = lambda _:load_("photon",_)
 hhh_ = lambda _:load_("hit",_)
@@ -315,6 +326,69 @@ def iabflags_():
     flg = abflags_()  
     return dict(zip(map(int,flg.values()),map(str,flg.keys())))
 
+def maskflags_():
+    iaf = iabflags_()
+    return dict(zip(map(lambda b:0x1 << (b-1),iaf.keys()),iaf.values()))
+
+
+class Index(object):
+    def table(self, cu, hex_=False):
+        assert len(cu.shape) == 2 and cu.shape[1] == 2 
+        for msk,cnt in sorted(cu, key=lambda _:_[1], reverse=True):
+            label = ihex_(msk) if hex_ else int(msk)
+            print "%20s %10d : %40s " % ( label, int(cnt), self(msk) ) 
+        pass
+
+class GFlags(Index):
+    def __init__(self):
+        self.mf = maskflags_()
+        self.skip = ["TORCH"]
+    def __call__(self, i):
+        return "|".join(map(lambda kv:kv[1], filter(lambda kv:kv[1] not in self.skip,filter(lambda kv:i & kv[0], self.mf.items()))))
+
+def gflags_table(cu):
+    gf = GFlags()
+    gf.table(cu)
+ 
+
+class SeqHis(Index):
+    def __init__(self, abbrev=True): 
+        self.f  = abflags_() if abbrev else flags_()
+        self.fi = iabflags_() if abbrev else iflags_()
+    def __call__(self, i):
+        x = ihex_(i) 
+        return " ".join(map(lambda _:self.fi[int(_,16)], x[::-1] )) 
+    def seqhis_int(self, s):
+        f = self.f
+        return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f[n], s.split(" ")))))
+
+
+def seqhis_int(s, abbrev=True):
+    f  = abflags_() if abbrev else flags_()
+    return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f[n], s.split(" ")))))
+
+def seqhis_table(cu):
+    sh = SeqHis()
+    sh.table(cu, hex_=True)
+
+def seqhis_table_(): 
+    seq = load_("phtorch","1","dayabay") 
+    seqhis = seq[:,0,0]
+    cu = count_unique(seqhis)
+    sh = SeqHis()
+    sh.table(cu, hex_=True)
+
+
+def maskflags_string(i, skip=["TORCH"]):
+    mf = maskflags_()
+    return "|".join(map(lambda kv:kv[1], filter(lambda kv:kv[1] not in skip,filter(lambda kv:i & kv[0], mf.items()))))
+
+def maskflags_int(s):
+    mf = maskflags_()
+    fm = dict(zip(mf.values(),mf.keys()))
+    return reduce(lambda a,b:a|b, map(lambda n:fm[n], s.split("|")))
+
+
 
 
 _abbrev_mat = {
@@ -350,19 +424,14 @@ def seqmat_(i, abbrev=True):
 
 
 
+DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/$2/%s.npy"  ## cf C++ NPYBase::
 
-
-
-
-def path_(typ, tag):
-    envvar = "DAE_%s_PATH_TEMPLATE" % typ.upper()
-    tmpl = os.environ.get(envvar, os.path.expandvars(DEFAULT_PATH_TEMPLATE.replace("$1", typ)) )
+def path_(typ, tag, det="dayabay"):
+    tmpl = os.path.expandvars(DEFAULT_PATH_TEMPLATE.replace("$1", det).replace("$2",typ)) 
     return tmpl % str(tag)
 
-#load_ = lambda typ,tag:np.load(path_(typ,tag))     
-
-def load_(typ, tag):
-    path = path_(typ,tag)
+def load_(typ, tag, det="dayabay"):
+    path = path_(typ,tag, det)
     log.info("loading %s " % path )
     os.system("ls -l %s " % path)
     return np.load(path)
