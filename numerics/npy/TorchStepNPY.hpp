@@ -1,35 +1,42 @@
 #pragma once
+
+// for both non-CUDA and CUDA compilation
+typedef enum {
+   T_UNDEF,
+   T_SPHERE,
+   T_DISC,
+   T_INVSPHERE,
+   T_NUM_TYPE
+}               Torch_t ;
+
+#ifndef __CUDACC__
+
 #include <cstring>
 #include <glm/glm.hpp>
 
 template<typename T> class NPY ; 
 
-/*
-Photon Torpedo along X axis: 
-
-     ggv --torchconfig "radius=1000;direction=1,0,0"    
-
-     ggv --torchconfig "radius=100;dir_target=600,1"    # direct at instance index 600 of merged mesh 1 
-
-*/
-
-
 class TorchStepNPY {
    public:
-       typedef enum { FRAME, SOURCE, TARGET, NUM_PHOTONS, MATERIAL, ZENITH_AZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
+       typedef enum { TYPE, FRAME, SOURCE, TARGET, PHOTONS, MATERIAL, ZENITHAZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
+       static const char* TYPE_; 
        static const char* FRAME_ ; 
        static const char* SOURCE_ ; 
        static const char* TARGET_ ; 
-       static const char* NUM_PHOTONS_ ; 
+       static const char* PHOTONS_ ; 
        static const char* MATERIAL_ ; 
-       static const char* ZENITH_AZIMUTH_ ; 
+       static const char* ZENITHAZIMUTH_ ; 
        static const char* WAVELENGTH_ ; 
        static const char* WEIGHT_ ; 
        static const char* TIME_ ; 
        static const char* RADIUS_ ; 
+
+       static const char* T_SPHERE_ ; 
+       static const char* T_DISC_ ; 
+       static const char* T_INVSPHERE_ ; 
    public:  
        TorchStepNPY(unsigned int genstep_id, unsigned int num_step=1, const char* config=NULL); 
        void configure(const char* config);
@@ -37,10 +44,12 @@ class TorchStepNPY {
        NPY<float>* getNPY();
    private:
        void update();
-       Param_t getParam(const char* k);
+       ::Torch_t parseType(const char* k);
+       Param_t parseParam(const char* k);
        void set(TorchStepNPY::Param_t param, const char* s );
    public:  
        // target setting needs external info regarding geometry 
+       void setType(const char* s );
        void setFrame(const char* s );
        void setFrame(unsigned int vindex );
        glm::ivec4&  getFrame();
@@ -48,7 +57,7 @@ class TorchStepNPY {
        // targetting needs frame transform info which is done by GGeo::targetTorchStep(torchstep)
 
    public:
-       // local positions
+       // local positions, frame transform is applied in *update* yielding world frame m_post m_dirw 
        void setSourceLocal(const char* s );
        void setTargetLocal(const char* s );
        glm::vec4& getSourceLocal();
@@ -74,6 +83,8 @@ class TorchStepNPY {
        void setNumPhotons(unsigned int num_photons );
        void setRadius(float radius );
 
+
+       ::Torch_t getType();
        unsigned int getNumPhotons();
        unsigned int getMaterialLine();
 
@@ -140,12 +151,10 @@ inline TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step
 }
 
 
-
 inline glm::ivec4& TorchStepNPY::getFrame()
 {
     return m_frame ; 
 }
-
 inline void TorchStepNPY::setFrameTransform(glm::mat4& frame_transform)
 {
     m_frame_transform = frame_transform ;
@@ -159,24 +168,16 @@ inline glm::vec4& TorchStepNPY::getTargetLocal()
 {
     return m_target_local ; 
 }
-
-
-
 inline void TorchStepNPY::setGenstepId()
 {
    m_ctrl.x = m_genstep_id ; 
 }
-
-
-
 inline void TorchStepNPY::setPolarization(glm::vec3& pol)
 {
     m_polw.x = pol.x ; 
     m_polw.y = pol.y ; 
     m_polw.z = pol.z ; 
 }
-
-
 inline const char* TorchStepNPY::getMaterial()
 {
     return m_material ; 
@@ -187,7 +188,4 @@ inline const char* TorchStepNPY::getConfig()
 }
 
 
-
-
-
-
+#endif

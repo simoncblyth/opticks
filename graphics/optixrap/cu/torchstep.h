@@ -2,6 +2,7 @@
 
 #include "quad.h"
 #include "rotateUz.h"
+#include "TorchStepNPY.hpp"
 
 struct TorchStep
 {
@@ -30,12 +31,14 @@ struct TorchStep
     // (5) m_beam : radius, ...  
     float4 beam ; 
 
+    // transient: derived from beam.w
+    unsigned int type ; 
 };
 
 
 __device__ void tsload( TorchStep& ts, optix::buffer<float4>& genstep, unsigned int offset, unsigned int genstep_id)
 {
-    union quad ctrl ;
+    union quad ctrl, beam ;
  
     ctrl.f = genstep[offset+0];     
     ts.Id = genstep_id ; 
@@ -58,10 +61,9 @@ __device__ void tsload( TorchStep& ts, optix::buffer<float4>& genstep, unsigned 
     float4 zeaz = genstep[offset+4];
     ts.zeaz = make_float4(zeaz.x, zeaz.y, zeaz.z, zeaz.w );
 
-    float4 beam = genstep[offset+5];
-    ts.beam = make_float4(beam.x, beam.y, beam.z, beam.w );
- 
-
+    beam.f = genstep[offset+5];
+    ts.beam = make_float4(beam.f.x, beam.f.y, beam.f.z, 0.f );
+    ts.type = beam.u.w ; 
     
 }
 
@@ -104,6 +106,7 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       p.flags.u.z = 0 ;
       p.flags.u.w = 0 ;
 
+      float radius = ts.beam.x ; 
 
       float u1 = uniform(&rng, ts.zeaz.x, ts.zeaz.y);
       float u2 = uniform(&rng, ts.zeaz.z, ts.zeaz.w );
@@ -115,14 +118,14 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       // (in coord system with primary particle direction 
       //  aligned with the z axis)
       // then rotate momentum direction back to global reference system  
-
-      if(ts.beam.x > 0.f)
+      
+      if( ts.type == T_DISC )
       { 
           // disc single direction emitter 
 
           p.direction = ts.p0 ;
 
-          float r = ts.beam.x*u1 ; 
+          float r = radius*u1 ; 
           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
           rotateUz(discPosition, ts.p0);
 
@@ -133,7 +136,7 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 
           p.polarization = photonPolarization ;
       }
-      else
+      else if( ts.type == T_SPHERE )
       {
           // fixed point uniform spherical emitter with configurable zenith, azimuth ranges
 
@@ -149,7 +152,25 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.direction = photonMomentum ;
           p.polarization = photonPolarization ;
           p.position = ts.x0 ;
+
       }
+      else if( ts.type == T_INVSPHERE )
+      {
+          // emit from regions on the surface of a sphere all targetting single point at center of sphere  
+
+          float sinTheta, cosTheta;
+          sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
+
+          float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
+          float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta); // adhoc
+          rotateUz(photonPolarization, ts.p0);
+
+          p.polarization = photonPolarization ;
+          p.direction = -spherePosition  ;
+          p.position = ts.x0 + radius*spherePosition ;
+
+      }
+
 
 }
 

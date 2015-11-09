@@ -38,10 +38,6 @@ rtBuffer<short4>                aux_buffer ;
 #endif
 
 
-//rtBuffer<unsigned char>        phosel_buffer; 
-//rtBuffer<unsigned char>        recsel_buffer; 
-
-
 rtBuffer<curandState, 1>       rng_states ;
 
 rtDeclareVariable(float4,        center_extent, , );

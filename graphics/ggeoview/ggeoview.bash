@@ -7,12 +7,12 @@ ggv-edit(){ ggeoview-edit ; }
 ggv--(){  ggeoview-depinstall ; }
 ggv-cd-jpmt(){ cd $(ggv --jpmt --idp) ; }
 
-ggv-ppmt(){   ggv.sh --analyticmesh 1 --target 3199 --torchconfig "radius=1500;zenith_azimuth=1,0,1,0" $* ; }
+ggv-ppmt(){   ggv.sh --analyticmesh 1 --target 3199 --torchconfig "radius=1500_zenithazimuth=0,1,0,1" $* ; }
 
 ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
 
 
-ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199;source=0,0,1000;target=0,0,0;radius=150;zenith_azimuth=1,0,1,0" $* ; }
+ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199_source=0,0,1000_target=0,0,0_radius=150_zenithazimuth=0,1,0,1" $* ; }
 
 
 ggv-pmt(){
@@ -26,9 +26,9 @@ ggv-bib-tracer(){
    ggv  --tracer \
          --test \
         --eye 0.5,0.5,0.0 \
-        --testconfig "mode=BoxInBox;dimensions=4,0,0,0;boundary=MineralOil///Pyrex;" \
+        --testconfig "mode=BoxInBox_dimensions=4,0,0,0_boundary=MineralOil///Pyrex_" \
          $*
-      # --testconfig "mode=BoxInBox;dimensions=4,2,0,0;boundary=Rock//perfectAbsorbSurface/MineralOil;boundary=MineralOil///Pyrex;" \
+      # --testconfig "mode=BoxInBox_dimensions=4,2,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_boundary=MineralOil///Pyrex_" \
 }
 
 
@@ -38,7 +38,7 @@ ggv-bib(){
         --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
         --testconfig "mode=BoxInBox_dimensions=4,2,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_boundary=MineralOil///Pyrex_" \
-        --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" \
+        --torchconfig "type=invsphere_source=0,0,1_target=0,0,-1_radius=102_zenithazimuth=0,0.5,0,1" \
          $*
 }
 
@@ -47,8 +47,8 @@ ggv-box(){
    ggv.sh --test \
         --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
-        --testconfig "mode=PmtInBox;dimensions=3,0,0,0;boundary=Rock//perfectAbsorbSurface/MineralOil;" \
-        --torchconfig "source=0,0,400;target=0,0,0;radius=102;zenith_azimuth=1,0,1,0" \
+        --testconfig "mode=PmtInBox_dimensions=3,0,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_" \
+        --torchconfig "source=0,0,400_target=0,0,0_radius=102_zenithazimuth=0,1,0,1" \
          $*
 }
 
