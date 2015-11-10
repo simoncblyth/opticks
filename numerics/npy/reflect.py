@@ -36,6 +36,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from env.python.utils import *
 from env.numerics.npy.types import *
+import env.numerics.npy.PropLib as PropLib 
+
 
 np.set_printoptions(suppress=True, precision=3)
 
@@ -45,30 +47,94 @@ from  _npar import npar as q
 logging.basicConfig(level=logging.INFO)
 
 
-o = np.load("/usr/local/env/dayabay/oxtorch/1.npy") 
+mlib = PropLib.PropLib("GMaterialLib")
 
-flags = o.view(np.uint32)[:,3,3]
+wavelength = 500 
+m1 = "Vacuum"
+m2 = "Pyrex"
+
+n1 = mlib.interp(m1,wavelength,PropLib.M_REFRACTIVE_INDEX)
+n2 = mlib.interp(m2,wavelength,PropLib.M_REFRACTIVE_INDEX)
+xd = np.linspace(0,90,91)
+x = xd*np.pi/180.
+
+def fresnel(x, n1, n2, spol=True):
+    """
+    https://en.wikipedia.org/wiki/Fresnel_equations
+    """
+    cx = np.cos(x)
+    sx = np.sin(x) 
+    disc = 1. - np.square(n1*sx/n2)
+    qdisc = np.sqrt(disc)
+    pass
+    if spol:
+        num = (n1*cx - n2*qdisc)
+        den = (n1*cx + n2*qdisc) 
+    else:
+        num = (n1*qdisc - n2*cx)
+        den = (n1*qdisc + n2*cx) 
+    return np.square(num/den) 
+
+
+spol = fresnel(x, n1, n2, True)
+ppol = fresnel(x, n1, n2, False)
+
+src = "torch"
+tag = "1"
+
+ox = load_("ox"+src,tag) 
+rx = load_("rx"+src,tag) 
+ph = load_("ph"+src,tag)
+
+seqhis = ph[:,0,0]
+seqmat = ph[:,0,1]
+
+flags = ox.view(np.uint32)[:,3,3]
 gflags_table(count_unique(flags))
 brsa = maskflags_int("BR|SA|TORCH")
 
-seq = np.load("/usr/local/env/dayabay/phtorch/1.npy") 
-seqhis = seq[:,0,0]
-seqmat = seq[:,0,1]
 
 seqhis_table(count_unique(seqhis))
 sqi = seqhis_int("TORCH BR SA")
+sqj = seqhis_int("TORCH BR AB")
+
+# hmm misses reflected photons absorbed before hitting the sides
+
 
 #s = flags == brsa
-s = seqhis == sqi        
+s = np.logical_or(seqhis == sqi, seqhis == sqj)       
 
-rf = o[s]
+rf = ox[s]
+
 
 r = np.sqrt(rf[:,0,0]*rf[:,0,0]+rf[:,0,1]*rf[:,0,1])
 z = rf[:,0,2] - 300.
-a = np.arctan(z/r)*180./np.pi
+
+a = 90. - np.arctan(z/r)*180./np.pi
+
+ap = a[rf[:,0,0]>0]
+am = a[rf[:,0,0]<0]
 
 
-plt.hist(90.-a, bins=91, range=[0,90])
+fig = plt.figure()
+
+nx, ny = 3, 1
+
+kwa = {}
+kwa['bins'] = 91 
+kwa['range'] = [0,90]
+kwa['alpha'] = 0.5
+kwa['log'] = False
 
 
+ax = fig.add_subplot(ny,nx,1)
+plt.plot(xd, spol, xd, ppol)
 
+ax = fig.add_subplot(ny,nx,2)
+ax.hist(ap, **kwa)
+
+ax = fig.add_subplot(ny,nx,3)
+ax.hist(am, **kwa)
+
+
+fig.show()

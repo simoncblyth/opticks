@@ -68,7 +68,41 @@ void TorchStepNPY::setType(const char* s)
 }
 
 
+
+const char* TorchStepNPY::M_SPOL_ = "spol" ; 
+const char* TorchStepNPY::M_PPOL_ = "ppol" ; 
+
+Polz_t TorchStepNPY::parsePolz(const char* k)
+{
+    Polz_t mode = M_UNDEF ;
+    if(       strcmp(k,M_SPOL_)==0)      mode = M_SPOL ; 
+    else if(  strcmp(k,M_PPOL_)==0)      mode = M_PPOL ; 
+    return mode ;   
+}
+
+::Polz_t TorchStepNPY::getPolz()
+{
+    uif_t uif ;
+    uif.f = m_beam.z ; 
+    Polz_t mode = M_UNDEF ;
+    switch(uif.u)
+    {
+       case M_SPOL: mode=M_SPOL ;break; 
+       case M_PPOL: mode=M_PPOL ;break; 
+    }
+    return mode ; 
+}
+
+void TorchStepNPY::setPolz(const char* s)
+{
+    ::Polz_t mode = parsePolz(s) ;
+    uif_t uif ; 
+    uif.u = mode ; 
+    m_beam.z = uif.f ;
+}
+
 const char* TorchStepNPY::TYPE_ = "type"; 
+const char* TorchStepNPY::POLZ_ = "polz"; 
 const char* TorchStepNPY::FRAME_ = "frame"; 
 const char* TorchStepNPY::SOURCE_ = "source"; 
 const char* TorchStepNPY::TARGET_ = "target" ; 
@@ -85,6 +119,7 @@ TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
     Param_t param = UNRECOGNIZED ; 
     if(     strcmp(k,FRAME_)==0)          param = FRAME ; 
     else if(strcmp(k,TYPE_)==0)           param = TYPE ; 
+    else if(strcmp(k,POLZ_)==0)           param = POLZ ; 
     else if(strcmp(k,SOURCE_)==0)         param = SOURCE ; 
     else if(strcmp(k,TARGET_)==0)         param = TARGET ; 
     else if(strcmp(k,PHOTONS_)==0)        param = PHOTONS ; 
@@ -102,6 +137,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
     switch(p)
     {
         case TYPE           : setType(s)           ;break;
+        case POLZ           : setPolz(s)           ;break;
         case FRAME          : setFrame(s)          ;break;
         case SOURCE         : setSourceLocal(s)    ;break;
         case TARGET         : setTargetLocal(s)    ;break;

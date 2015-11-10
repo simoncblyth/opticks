@@ -37,9 +37,15 @@ ggv-bib(){
    ggv.sh  --test \
         --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
-        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" \
-        --torchconfig "frame=1_type=invsphere_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" \
+        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Pyrex_boundary=Pyrex///Vacuum_" \
+        --torchconfig "polz=spol_frame=1_type=invsphere_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" \
          $*
+
+
+   cat << SCRATCH
+        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" 
+SCRATCH
+
 }
 
 ggv-box(){

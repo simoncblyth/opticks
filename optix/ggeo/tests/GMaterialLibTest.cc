@@ -11,9 +11,9 @@
 
 
 
-void colorcodes(GMaterialLib* lib)
+void colorcodes(GMaterialLib* mlib)
 {
-    std::vector<unsigned int> cc = lib->getAttrNames()->getColorCodes();
+    std::vector<unsigned int> cc = mlib->getAttrNames()->getColorCodes();
 
     //std::copy( cc.begin(), cc.end(), std::ostream_iterator<unsigned int>(std::cout, "\n"));
 
@@ -26,6 +26,17 @@ void colorcodes(GMaterialLib* lib)
 }
 
 
+void attrdump( GMaterialLib* mlib)
+{
+    const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
+
+    GAttrSeq* amat = mlib->getAttrNames();
+
+    amat->dump(mats);
+}
+
+
+
 
 int main()
 {
@@ -33,11 +44,11 @@ int main()
 
     GMaterialLib* mlib = GMaterialLib::load(&gc);
 
-    const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
+    const char* name = "Water" ;
 
-    GAttrSeq* amat = mlib->getAttrNames();
+    GMaterial* mat = mlib->getMaterial(name);
 
-    amat->dump(mats);
+    mlib->dump(mat, name);
 
 
     return 0 ;

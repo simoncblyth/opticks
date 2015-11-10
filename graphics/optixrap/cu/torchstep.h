@@ -33,6 +33,11 @@ struct TorchStep
 
     // transient: derived from beam.w
     unsigned int type ; 
+
+    // transient: derived from beam.z
+    unsigned int polz ; 
+
+
 };
 
 
@@ -62,8 +67,9 @@ __device__ void tsload( TorchStep& ts, optix::buffer<float4>& genstep, unsigned 
     ts.zeaz = make_float4(zeaz.x, zeaz.y, zeaz.z, zeaz.w );
 
     beam.f = genstep[offset+5];
-    ts.beam = make_float4(beam.f.x, beam.f.y, beam.f.z, 0.f );
+    ts.beam = make_float4(beam.f.x, beam.f.y, 0.f, 0.f );
     ts.type = beam.u.w ; 
+    ts.polz = beam.u.z ; 
     
 }
 
@@ -182,14 +188,21 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           sinTheta = sqrtf( 1.0f - cosTheta*cosTheta );
 
           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
+          p.direction = -spherePosition  ;
 
-          float3 photonPolarization = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta );  // para to direction
-          //float3 photonPolarization = make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta);  // perp to above
+          float3 surfaceNormal = make_float3( 0.f, 0.f, 1.f );     // special casing known geometry, TODO: make an input    
+          float3 photonPolarization = normalize(cross(p.direction, surfaceNormal));
 
+          /*
+          float3 photonPolarization = spherePosition.x > 0.f ? 
+                                 make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta)
+                              :
+                                 make_float3( sinTheta*sinPhi, -sinTheta*cosPhi, 0.f )   
+                              ;
           rotateUz(photonPolarization, ts.p0);
+          */ 
 
           p.polarization = photonPolarization ;
-          p.direction = -spherePosition  ;
           p.position = ts.x0 + radius*spherePosition ;
 
       }

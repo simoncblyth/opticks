@@ -254,4 +254,8 @@ const char* GMaterialLib::getNameCheck(unsigned int i)
 }
 
 
-
+GMaterial* GMaterialLib::getMaterial(const char* name)
+{
+    unsigned int index = getIndex(name);
+    return getMaterial(index);   
+}

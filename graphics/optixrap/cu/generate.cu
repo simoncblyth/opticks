@@ -1,6 +1,5 @@
 // porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
 
-
 #include <curand_kernel.h>
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
@@ -23,6 +22,7 @@ rtBuffer<uint4>                optical_buffer;
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
 #include "torchstep.h"
+
 
 #include "rayleigh.h"
 #include "propagate.h"
