@@ -21,6 +21,23 @@ Reflection distrib following BoxInBox with save::
         [0,0,300] r 
 
 
+
+ Spherical Coordinates (where theta is polar angle 0:pi, phi is azimuthal 0:2pi)
+
+     x = r sin(th) cos(ph)  = r st cp   
+     y = r sin(th) sin(ph)  = r st sp  
+     z = r cos(th)          = r ct     
+
+
+     sqrt(x*x + y*y) = r sin(th)
+                  z  = r cos(th)
+
+       atan( sqrt(x*x+y*y) / z ) = th 
+
+
+* http://www.ece.rice.edu/~daniel/262/pdf/lecture13.pdf
+
+
 TODO:
 
 * compare to Fresnel eqn
@@ -47,37 +64,6 @@ from  _npar import npar as q
 logging.basicConfig(level=logging.INFO)
 
 
-mlib = PropLib.PropLib("GMaterialLib")
-
-wavelength = 500 
-m1 = "Vacuum"
-m2 = "Pyrex"
-
-n1 = mlib.interp(m1,wavelength,PropLib.M_REFRACTIVE_INDEX)
-n2 = mlib.interp(m2,wavelength,PropLib.M_REFRACTIVE_INDEX)
-xd = np.linspace(0,90,91)
-x = xd*np.pi/180.
-
-def fresnel(x, n1, n2, spol=True):
-    """
-    https://en.wikipedia.org/wiki/Fresnel_equations
-    """
-    cx = np.cos(x)
-    sx = np.sin(x) 
-    disc = 1. - np.square(n1*sx/n2)
-    qdisc = np.sqrt(disc)
-    pass
-    if spol:
-        num = (n1*cx - n2*qdisc)
-        den = (n1*cx + n2*qdisc) 
-    else:
-        num = (n1*qdisc - n2*cx)
-        den = (n1*qdisc + n2*cx) 
-    return np.square(num/den) 
-
-
-spol = fresnel(x, n1, n2, True)
-ppol = fresnel(x, n1, n2, False)
 
 src = "torch"
 tag = "1"
@@ -95,46 +81,45 @@ brsa = maskflags_int("BR|SA|TORCH")
 
 
 seqhis_table(count_unique(seqhis))
+
 sqi = seqhis_int("TORCH BR SA")
 sqj = seqhis_int("TORCH BR AB")
 
 # hmm misses reflected photons absorbed before hitting the sides
 
 
-#s = flags == brsa
-s = np.logical_or(seqhis == sqi, seqhis == sqj)       
+oxs = np.logical_or(seqhis == sqi, seqhis == sqj)       
+rxs = np.repeat(oxs, 10)
 
-rf = ox[s]
+rf = ox[oxs]
+sf = rx[rxs].reshape(-1,10,2,4)
 
 
-r = np.sqrt(rf[:,0,0]*rf[:,0,0]+rf[:,0,1]*rf[:,0,1])
-z = rf[:,0,2] - 300.
 
-a = 90. - np.arctan(z/r)*180./np.pi
-
-ap = a[rf[:,0,0]>0]
-am = a[rf[:,0,0]<0]
-
+xyz = rf[:,0,:3] - [0,0,300.]
+r = np.linalg.norm(xyz, ord=2, axis=1) 
+z = xyz[:,2]
+zr = z/r
+th = np.arccos(zr[zr<1])*180./np.pi
 
 fig = plt.figure()
 
-nx, ny = 3, 1
+nx, ny = 2, 1
 
 kwa = {}
 kwa['bins'] = 91 
 kwa['range'] = [0,90]
 kwa['alpha'] = 0.5
 kwa['log'] = False
-
+kwa['histtype'] = "step"
 
 ax = fig.add_subplot(ny,nx,1)
 plt.plot(xd, spol, xd, ppol)
 
-ax = fig.add_subplot(ny,nx,2)
-ax.hist(ap, **kwa)
 
-ax = fig.add_subplot(ny,nx,3)
-ax.hist(am, **kwa)
+ax = fig.add_subplot(ny,nx,2)
+ax.hist(th, **kwa)
+
 
 
 fig.show()

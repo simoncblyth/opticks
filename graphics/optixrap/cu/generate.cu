@@ -118,10 +118,8 @@ RT_PROGRAM void generate()
     curandState rng = rng_states[photon_id];
 
     // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
-
     unsigned long long seqhis(0) ;
     unsigned long long seqmat(0) ;
-
     int MaterialIndex(0) ; 
 
     State s ;   

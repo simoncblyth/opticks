@@ -35,6 +35,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
 const char* TorchStepNPY::T_SPHERE_ = "sphere" ; 
 const char* TorchStepNPY::T_DISC_   = "disc" ; 
 const char* TorchStepNPY::T_INVSPHERE_ = "invsphere" ; 
+const char* TorchStepNPY::T_REFLTEST_ = "refltest" ; 
 
 Torch_t TorchStepNPY::parseType(const char* k)
 {
@@ -42,6 +43,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     if(       strcmp(k,T_SPHERE_)==0)    type = T_SPHERE ; 
     else if(  strcmp(k,T_DISC_)==0)      type = T_DISC ; 
     else if(  strcmp(k,T_INVSPHERE_)==0) type = T_INVSPHERE ; 
+    else if(  strcmp(k,T_REFLTEST_)==0)  type = T_REFLTEST ; 
     return type ;   
 }
 
@@ -63,6 +65,7 @@ void TorchStepNPY::setType(const char* s)
        case T_SPHERE:      type=T_SPHERE     ;break; 
        case T_DISC:        type=T_DISC       ;break; 
        case T_INVSPHERE:   type=T_INVSPHERE  ;break; 
+       case T_REFLTEST:    type=T_REFLTEST   ;break; 
     }
     return type ; 
 }

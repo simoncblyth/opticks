@@ -938,6 +938,8 @@ void App::downloadEvt()
 {
     if(!m_evt) return ; 
 
+    m_opropagator->saveDomains( m_cache->getIdPath());
+
     NPY<float>* dpho = m_evt->getPhotonData();
     Rdr::download(dpho);
 
@@ -1238,7 +1240,10 @@ void App::indexEvtOld()
     {
         m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
         m_rec->setTypes(types);
-        m_rec->setDomains((NPY<float>*)m_opropagator->getDomain());
+
+        NPY<float>* fdom = m_opropagator->getDomain() ;
+
+        m_rec->setDomains(fdom);
 
         if(m_pho)
         {

@@ -127,8 +127,8 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 
       float radius = ts.beam.x ; 
 
-      float u1 = uniform(&rng, ts.zeaz.x, ts.zeaz.y);
-      float u2 = uniform(&rng, ts.zeaz.z, ts.zeaz.w );
+      float u1 = uniform(&rng, ts.zeaz.x, ts.zeaz.y);   // eg 0->0.5
+      float u2 = uniform(&rng, ts.zeaz.z, ts.zeaz.w );  // eg 0->1
 
       float sinPhi, cosPhi;
       sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);
@@ -205,7 +205,28 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.polarization = photonPolarization ;
           p.position = ts.x0 + radius*spherePosition ;
 
+
       }
+      else if( ts.type == T_REFLTEST )
+      {
+          // for reflection test need a uniform distribution of incident angle
+          float sinTheta, cosTheta;
+          sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);  
+
+          float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
+          p.direction = -spherePosition  ;
+
+          float3 surfaceNormal = make_float3( 0.f, 0.f, 1.f );     // special casing known geometry, TODO: make an input    
+
+          // S-polarized : ie perpendicular to plane of incidence
+          // P-polarized : parallel to plane of incidence
+
+          float3 photonPolarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
+
+          p.polarization = photonPolarization ;
+          p.position = ts.x0 + radius*spherePosition ;
+      }
+
 
 
 }

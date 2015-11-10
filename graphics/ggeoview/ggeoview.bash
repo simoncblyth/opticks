@@ -34,16 +34,25 @@ ggv-bib-tracer(){
 
 ggv-bib(){
    type $FUNCNAME
-   ggv.sh  --test \
+   local pol=${1:-s}
+   case $pol in  
+      s) tag=1 ;;
+      p) tag=2 ;;
+   esac
+   echo  pol $pol tag $tag
+
+   ggv.sh  --test --save --tag $tag \
         --eye 0.5,0.5,0.0 \
         --animtimemax 7 \
-        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Pyrex_boundary=Pyrex///Vacuum_" \
-        --torchconfig "polz=spol_frame=1_type=invsphere_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" \
+        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" \
+        --torchconfig "polz=${pol}pol_frame=1_type=refltest_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" \
          $*
 
 
    cat << SCRATCH
         --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" 
+        --torchconfig "polz=spol_frame=1_type=refltest_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" 
+
 SCRATCH
 
 }
