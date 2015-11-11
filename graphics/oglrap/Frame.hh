@@ -1,5 +1,4 @@
-#ifndef FRAME_H
-#define FRAME_H
+#pragma once
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -203,6 +202,5 @@ inline void Frame::setScene(Scene* scene)
 
 
 
-#endif
 
 

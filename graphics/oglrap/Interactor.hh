@@ -76,7 +76,7 @@ class Interactor {
   public:
        void Print(const char* msg);
        void updateStatus();
-       const char* getStatus(); 
+       const char* getStatus();  // this feeds into Frame title, visible on window surround 
 
   private:
        Composition* m_composition ; 

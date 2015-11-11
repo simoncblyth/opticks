@@ -11,6 +11,7 @@
 #include "stringutil.hpp"
 #include "GLMFormat.hpp"
 #include "Types.hpp"
+#include "Typ.hpp"
 #include "Map.hpp"
 
 
@@ -57,6 +58,15 @@ GColors* GCache::getColors()
         m_colors = GColors::load(prefdir.c_str(),"GColors.json");  // colorname => hexcode 
     }
     return m_colors ;
+}
+
+Typ* GCache::getTyp()
+{
+    if(m_typ == NULL)
+    {
+       m_typ = new Typ ; 
+    }
+    return m_typ ; 
 }
 
 Types* GCache::getTypes()

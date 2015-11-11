@@ -334,7 +334,7 @@ void Interactor::number_key_released(unsigned int number)
 
 void Interactor::updateStatus()
 {
-    snprintf(m_status, STATUS_SIZE , "%s%s%s%s%s%s%s%s%s %10.3f %u %s %s ",
+    snprintf(m_status, STATUS_SIZE , "%s%s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
@@ -347,6 +347,7 @@ void Interactor::updateStatus()
            m_dragfactor,
            m_container,
            m_composition->getColorStyleName(),          
+           m_composition->getGeometryStyleName(),          
            m_scene->getRecordStyleName()          
            );
 }

@@ -1,6 +1,5 @@
 #version 400
 
-
 uniform mat4 Projection ;
 uniform mat4 ModelViewProjection ;
 uniform vec4 Param ; 

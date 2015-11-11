@@ -12,6 +12,7 @@ class GColors ;
 class GFlags ; 
 class GGeo ; 
 class Types ; 
+class Typ ; 
 
 // this is turning into GGeoConfig rather than just GCache 
 // TODO: handle logging here, for control from tests
@@ -38,6 +39,8 @@ class GCache {
          GColors* getColors();
          GFlags*  getFlags();
          Types*   getTypes();
+         Typ*     getTyp();
+
          void setInstanced(bool instanced=true);
          bool isInstanced();
     public:
@@ -87,6 +90,7 @@ class GCache {
           GColors*    m_colors ; 
           GFlags*     m_flags ; 
           Types*      m_types ;
+          Typ*        m_typ ;
           GGeo*       m_ggeo ; 
     private:
           const char* m_geokey ;
@@ -123,6 +127,7 @@ inline GCache::GCache(const char* envprefix, const char* logname, const char* lo
        m_colors(NULL),
        m_flags(NULL),
        m_types(NULL),
+       m_typ(NULL),
        m_ggeo(NULL),
        m_geokey(NULL),
        m_path(NULL),
@@ -214,23 +219,10 @@ inline bool GCache::isInstanced()
 }
 
 
-
-
-
-//inline void GCache::setColors(GColors* colors)
-//{
-//    m_colors = colors ; 
-//}
-
-
-
-
-
 inline const char* GCache::getDetector()
 {
     return m_detector ;
 }
-
 inline bool GCache::isJuno()
 {
    return m_juno ; 

@@ -42,6 +42,12 @@ this is put togther in GLoader::load
 
 class GColors {  
    public:
+        enum {
+           MATERIAL_COLOR_OFFSET    = 0,  
+           FLAG_COLOR_OFFSET        = 64,
+           PSYCHEDELIC_COLOR_OFFSET = 96
+       };
+   public:
        static const char* NAME ; 
        static GColors* load(const char* dir, const char* name=NAME);
    public:

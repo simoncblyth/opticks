@@ -80,7 +80,27 @@ const char* Composition::getColorStyleName(Composition::ColorStyle_t style)
        case FLAG2:return FLAG2_ ; break ; 
        case POL1 :return POL1_ ; break ; 
        case POL2 :return POL2_ ; break ; 
-       case NUM_COLORSTYLE :assert(0) ; break ; 
+       case NUM_COLOR_STYLE :assert(0) ; break ; 
+    }
+    assert(0);
+    return NULL ; 
+}
+
+
+const char* Composition::DEF_GEOMETRY_ = "default" ; 
+const char* Composition::NRMCOL_GEOMETRY_ = "nrmcol" ; 
+const char* Composition::VTXCOL_GEOMETRY_ = "vtxcol" ; 
+const char* Composition::FACECOL_GEOMETRY_ = "facecol" ; 
+ 
+const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style)
+{
+    switch(style)
+    {
+       case DEF_GEOMETRY:return DEF_GEOMETRY_ ; break ; 
+       case NRMCOL_GEOMETRY:return NRMCOL_GEOMETRY_ ; break ; 
+       case VTXCOL_GEOMETRY:return VTXCOL_GEOMETRY_ ; break ; 
+       case FACECOL_GEOMETRY:return FACECOL_GEOMETRY_ ; break ; 
+       case NUM_GEOMETRY_STYLE :assert(0) ; break ; 
     }
     assert(0);
     return NULL ; 
@@ -254,8 +274,9 @@ void Composition::gui()
     ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
 
     int* colpar = glm::value_ptr(m_colorparam) ;
-    ImGui::SliderInt( "colorparam.x", colpar + 0,  0, NUM_COLORSTYLE  );  // record color mode
+    ImGui::SliderInt( "colorparam.x", colpar + 0,  0, NUM_COLOR_STYLE  );  // record color mode
     ImGui::Text(" colorstyle : %s ", getColorStyleName()); 
+    ImGui::Text(" geometrystyle : %s ", getGeometryStyleName()); 
 
 
     int* np = glm::value_ptr(m_nrmparam) ;

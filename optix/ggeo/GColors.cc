@@ -367,10 +367,9 @@ void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_cod
     initCompositeColorBuffer(colormax);
     assert( m_composite->getNumItems() == colormax );
 
-
-    unsigned int material_color_offset = 0 ; 
-    unsigned int flag_color_offset     = 64 ; 
-    unsigned int psychedelic_color_offset = flag_color_offset + 32 ; 
+    unsigned int material_color_offset = MATERIAL_COLOR_OFFSET ; 
+    unsigned int flag_color_offset     = FLAG_COLOR_OFFSET ; 
+    unsigned int psychedelic_color_offset = PSYCHEDELIC_COLOR_OFFSET ; 
 
     if(material_codes.size() > 0)
     {
@@ -394,7 +393,13 @@ void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_cod
     m_composite_domain.z = m_psychedelic_codes.size() ; 
     m_composite_domain.w = psychedelic_color_offset ; 
   
-    // used in optixrap-/cu/color_lookup.h 
+    // used in 
+    //        optixrap-/cu/color_lookup.h 
+    //        oglrap-/gl/fcolor.h
+    //
+    //     frag_colour = texture(Colors, float(64 + gl_PrimitiveID % int(ColorDomain.z))/ColorDomain.y ) ;
+    //
+
 }
 
 

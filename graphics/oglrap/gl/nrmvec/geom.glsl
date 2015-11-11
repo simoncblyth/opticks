@@ -56,9 +56,5 @@ void main()
    gl_Position = ModelViewProjection * vec4 (pc + a1*length, 1.0);
    EmitVertex();
    EndPrimitive();
-
-
-
-
 }
 

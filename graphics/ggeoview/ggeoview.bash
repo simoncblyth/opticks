@@ -17,7 +17,7 @@ ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199_source=0,0,1000
 
 ggv-pmt(){
    type $FUNCNAME
-   ggv --tracer --box --eye 0.5,0.5,0.0 ; 
+   ggv --tracer --test --eye 0.5,0.5,0.0 ; 
 }
 
 
@@ -35,7 +35,7 @@ ggv-bib-tracer(){
 join(){ local IFS="$1"; shift; echo "$*"; }
 
 
-ggv-reflection-torchconfig(){
+ggv-reflect-torchconfig(){
     local pol=${1:-s}
     local torch=(
                  type=refltest
@@ -51,7 +51,7 @@ ggv-reflection-torchconfig(){
     echo "$(join _ ${torch[@]})"
 }
 
-ggv-reflection-testconfig(){
+ggv-reflect-testconfig(){
     local test=(
                  mode=BoxInBox
                  dimensions=500,300,0,0
@@ -61,7 +61,7 @@ ggv-reflection-testconfig(){
     echo "$(join _ ${test[@]})"
 }
 
-ggv-reflection(){
+ggv-reflect(){
     type $FUNCNAME
     local pol=${1:-s}
     case $pol in  
@@ -73,8 +73,8 @@ ggv-reflection(){
             --eye 0.5,0.5,0.0 \
             --animtimemax 7 \
             --test \
-            --testconfig "$(ggv-reflection-testconfig)" \
-            --torchconfig "$(ggv-reflection-torchconfig $pol)" \
+            --testconfig "$(ggv-reflect-testconfig)" \
+            --torchconfig "$(ggv-reflect-torchconfig $pol)" \
             --save \
             --tag $tag \
             $*

@@ -30,16 +30,17 @@ int main(int argc, char** argv)
     GCache* cache = new GCache("GGEOVIEW_", "recs.log", "info");
     cache->configure(argc, argv);
     Types* types = cache->getTypes();
-    GFlags* flags = cache->getFlags();
-
 
     GBndLib* blib = GBndLib::load(cache, true); 
     GMaterialLib* mlib = blib->getMaterialLib();
     GSurfaceLib*  slib = blib->getSurfaceLib();
 
-    Typ* typ = new Typ();
+    // see GGeo::setupTyp
+    Typ* typ = cache->getTyp();
+    GFlags* flags = cache->getFlags();
     typ->setMaterialNames(mlib->getNamesMap());
     typ->setFlagNames(flags->getNamesMap());
+
 
     const char* idpath = cache->getIdPath();
     NPY<float>* fdom = NPY<float>::load(idpath, "OPropagatorF.npy");

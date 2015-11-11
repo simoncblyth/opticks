@@ -44,7 +44,12 @@ class Composition : public Configurable {
       static const char* POL1_ ; 
       static const char* POL2_ ; 
   public:
- 
+      static const char* DEF_GEOMETRY_ ; 
+      static const char* NRMCOL_GEOMETRY_ ; 
+      static const char* VTXCOL_GEOMETRY_ ; 
+      static const char* FACECOL_GEOMETRY_ ; 
+  public:
+
       Composition();
 
       virtual ~Composition();
@@ -53,7 +58,7 @@ class Composition : public Configurable {
       unsigned int getCount();
 
    public:
-       typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLORSTYLE } ColorStyle_t ;
+       typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLOR_STYLE } ColorStyle_t ;
        static const char* getColorStyleName(Composition::ColorStyle_t style);
        const char* getColorStyleName();
        void nextColorStyle();
@@ -66,6 +71,8 @@ class Composition : public Configurable {
        Composition::NormalStyle_t getNormalStyle();
    public:
        typedef enum { DEF_GEOMETRY, NRMCOL_GEOMETRY, VTXCOL_GEOMETRY, FACECOL_GEOMETRY, NUM_GEOMETRY_STYLE } GeometryStyle_t ;
+       static const char* getGeometryStyleName(Composition::GeometryStyle_t style);
+       const char* getGeometryStyleName();
        void nextGeometryStyle();
        void setGeometryStyle(Composition::GeometryStyle_t style);
        Composition::GeometryStyle_t getGeometryStyle();
@@ -506,7 +513,7 @@ inline MultiViewNPY* Composition::getAxisAttr()
 
 inline void Composition::nextColorStyle()
 {
-    int next = (getColorStyle() + 1) % NUM_COLORSTYLE ; 
+    int next = (getColorStyle() + 1) % NUM_COLOR_STYLE ; 
     setColorStyle( (ColorStyle_t)next ) ; 
 }
 
@@ -541,6 +548,10 @@ inline void Composition::setGeometryStyle(GeometryStyle_t style)
 inline Composition::GeometryStyle_t Composition::getGeometryStyle()
 {
     return (GeometryStyle_t)m_nrmparam.y ;
+}
+inline const char* Composition::getGeometryStyleName()
+{
+    return Composition::getGeometryStyleName(getGeometryStyle());
 }
 
 

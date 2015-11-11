@@ -37,6 +37,7 @@
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 #include "Lookup.hpp"
+#include "Typ.hpp"
 
 
 #include "assert.h"
@@ -71,7 +72,17 @@ void GGeo::init()
 
    fs::path geocache(idpath); 
 
-   m_loaded = fs::exists(geocache) && fs::is_directory(geocache) && m_cache->isGeocache() ;
+   bool gc_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
+   bool gc_request = m_cache->isGeocache() ; 
+
+   m_loaded = gc_exists && gc_request ;
+
+   LOG(info) << "GGeo::init"
+             << " idpath " << idpath
+             << " gc_exists " << gc_exists 
+             << " gc_request " << gc_request
+             << " m_loaded " << m_loaded 
+             ;
 
    const char* ctrl = m_cache->getCtrl() ;
 
@@ -190,6 +201,7 @@ void GGeo::loadGeometry()
 
     setupLookup();
     setupColors();
+    setupTyp();
 }
 
 void GGeo::loadFromG4DAE()
@@ -251,6 +263,15 @@ void GGeo::setupLookup()
     //m_lookup->dump("GGeo::setupLookup");  
 }
 
+void GGeo::setupTyp()
+{
+   // hmm maybe better elsewhere to avoid repetition from tests ? 
+    Typ* typ = m_cache->getTyp();
+    GFlags* flags = m_cache->getFlags();
+    typ->setMaterialNames(m_materiallib->getNamesMap());
+    typ->setFlagNames(flags->getNamesMap());
+}
+
 void GGeo::setupColors()
 {
     LOG(info) << "GGeo::setupColors" ; 
@@ -287,7 +308,8 @@ void GGeo::save(const char* idpath)
 void GGeo::modifyGeometry(const char* config)
 {
     LOG(info) << "GGeo::modifyGeometry" 
-              << " config [" << config << "]" ; 
+              << " config [" << ( config ? config : "" ) << "]" ; 
+
     assert(m_geotest == NULL);
     m_geotest = new GGeoTest(m_cache);
     m_geotest->configure(config);

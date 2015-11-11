@@ -73,8 +73,10 @@ class GGeo {
     public:
         void modifyGeometry(const char* config);
     public:
+        // post-load setup
         void setupLookup();
         void setupColors();
+        void setupTyp();
     public:
         void prepareSurfaceLib();
         void prepareScintillatorLib();

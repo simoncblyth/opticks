@@ -167,7 +167,6 @@ void App::init(int argc, char** argv)
 
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
 
- 
     m_composition = new Composition ; 
     m_frame       = new Frame ; 
     m_bookmarks   = new Bookmarks ; 
@@ -245,6 +244,16 @@ int App::config(int argc, char** argv)
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(fullscreen);
 
+    m_dd = new DynamicDefine();   // configuration used in oglrap- shaders
+    m_dd->add("MAXREC",m_fcfg->getRecordMax());    
+    m_dd->add("MAXTIME",m_fcfg->getTimeMax());    
+    m_dd->add("PNUMQUAD", 4);  // quads per photon
+    m_dd->add("RNUMQUAD", 2);  // quads per record 
+    m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)GColors::MATERIAL_COLOR_OFFSET );
+    m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)GColors::FLAG_COLOR_OFFSET );
+    m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)GColors::PSYCHEDELIC_COLOR_OFFSET );
+
+
     m_evt  = hasOpt("noevent") ? NULL : new NumpyEvt ; 
     m_scene->setNumpyEvt(m_evt);
 
@@ -268,13 +277,8 @@ int App::config(int argc, char** argv)
 
 void App::prepareScene()
 {
-    DynamicDefine dd ;
-    dd.add("MAXREC",m_fcfg->getRecordMax());    
-    dd.add("MAXTIME",m_fcfg->getTimeMax());    
-    dd.add("PNUMQUAD", 4);  // quads per photon
-    dd.add("RNUMQUAD", 2);  // quads per record 
 
-    m_scene->write(&dd);
+    m_scene->write(m_dd);
 
     m_scene->initRenderers();  // reading shader source and creating renderers
 
@@ -1221,6 +1225,7 @@ void App::indexEvtOld()
 
     // TODO: wean this off use of Types, for the new way (GFlags..)
     Types* types = m_cache->getTypes();
+    Typ* typ = m_cache->getTyp();
 
     NPY<float>* dpho = m_evt->getPhotonData();
 
@@ -1229,6 +1234,7 @@ void App::indexEvtOld()
     {
         m_pho = new PhotonsNPY(dpho);   // a detailed photon/record dumper : looks good for photon level debug 
         m_pho->setTypes(types);
+        m_pho->setTyp(typ);
 
         m_hit = new HitsNPY(dpho, m_ggeo->getSensorList());
         m_hit->debugdump();
@@ -1241,6 +1247,7 @@ void App::indexEvtOld()
     {
         m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
         m_rec->setTypes(types);
+        m_rec->setTyp(typ);
 
         NPY<float>* fdom = m_opropagator->getDomain() ;
         m_rec->setDomains(fdom);

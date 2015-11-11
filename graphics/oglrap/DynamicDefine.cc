@@ -23,6 +23,7 @@ void DynamicDefine::write(const char* dir, const char* name)
      typedef std::vector<std::pair<std::string, std::string> >::const_iterator  VSSI ;
 
      std::stringstream ss ; 
+     ss << "// see oglrap-/DynamicDefine::write invoked by Scene::write App::prepareScene " << std::endl ; 
      for(VSSI it=m_defines.begin() ; it != m_defines.end() ; it++)
      {
          ss << "#define " << it->first << " " << it->second << std::endl ; 

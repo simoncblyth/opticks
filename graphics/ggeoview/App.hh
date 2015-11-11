@@ -34,6 +34,7 @@ class Bookmarks ;
 class Interactor ; 
 class GUI ; 
 class Photons ; 
+class DynamicDefine ; 
 
 // glfw-
 struct GLFWwindow ; 
@@ -119,6 +120,7 @@ class App {
        Parameters*  m_parameters ; 
        Timer*       m_timer ; 
        GCache*      m_cache ; 
+       DynamicDefine* m_dd ; 
        Scene*       m_scene ; 
        Composition* m_composition ;
        Frame*       m_frame ;
@@ -175,6 +177,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_parameters(NULL),
       m_timer(NULL),
       m_cache(NULL),
+      m_dd(NULL),
       m_scene(NULL),
       m_composition(NULL),
       m_frame(NULL),

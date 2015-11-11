@@ -1,5 +1,7 @@
 #version 400
 
+#incl dynamic.h
+
 uniform mat4 ModelViewProjection ;
 uniform mat4 ModelView ;
 uniform vec4 ClipPlane ;
@@ -39,7 +41,7 @@ void main ()
 
     vec3 ambient = vec3(0.1, 0.1, 0.1) ;
 
-#incl colour.h
+#incl vcolor.h
 
     gl_Position = ModelViewProjection * vec4 (vertex_position, 1.0);
 

@@ -8,14 +8,8 @@
 // (*) total number of colors is required to convert a buffer index 
 //     into float 0->1 for texture access
 //
-// in the below the offsets into the color buffer are:
-//
-//      materials   : 0
-//      flags       : 32
-//      psychedelic : 64    
-//
-//  ColorBuffer and ColorDomain are setup in ggeo-/GLoader
-//
+// offsets into the color buffer are obtained from dynamic define
+// in order to match those of  GColors::setupCompositeColorBuffer
 //
 
     switch(ColorParam.x)
@@ -23,13 +17,13 @@
        case 0:
               fcolor = vec4(1.0,1.0,1.0,1.0) ; break;
        case 1:
-              fcolor = texture(Colors, (float(flq[0].x) - 1.0 + 0.5)/ColorDomain.y ) ; break; 
+              fcolor = texture(Colors, (float(flq[0].x) + MATERIAL_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) ; break; 
        case 2:
-              fcolor = texture(Colors, (float(flq[1].x) - 1.0 + 0.5)/ColorDomain.y ) ; break; 
+              fcolor = texture(Colors, (float(flq[1].x) + MATERIAL_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) ; break; 
        case 3:
-              fcolor = texture(Colors, (float(flq[0].w) + 32.0 - 1.0 + 0.5)/ColorDomain.y ) ; break; 
+              fcolor = texture(Colors, (float(flq[0].w) + FLAG_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) ; break; 
        case 4:
-              fcolor = texture(Colors, (float(flq[1].w) + 32.0 - 1.0 + 0.5)/ColorDomain.y ) ; break; 
+              fcolor = texture(Colors, (float(flq[1].w) + FLAG_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) ; break; 
        case 5:
               fcolor = vec4(vec3(polarization[0]), 1.0) ; break;
        case 6:
