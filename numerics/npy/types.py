@@ -27,6 +27,7 @@ def count_unique(vals):
     return np.vstack((uniq, np.bincount(bins))).T
 
 
+idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
 
 pro_ = lambda _:load_("prop",_)
 ppp_ = lambda _:load_("photon",_)
