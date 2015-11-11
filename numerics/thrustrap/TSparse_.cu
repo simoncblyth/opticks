@@ -4,6 +4,7 @@
 #include "stringutil.hpp"
 #include "Index.hpp"
 
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 
@@ -136,19 +137,31 @@ Nov 2015:
 */
 
 template <typename T>
-void TSparse<T>::dump(const char* msg)
+std::string TSparse<T>::dump_(const char* msg)
 {
-    printf("%s : num_unique %u \n", msg, m_num_unique );
+    std::stringstream ss ; 
+    ss << msg << " : num_unique " << m_num_unique << std::endl ; 
+    //printf("%s : num_unique %u \n", msg, m_num_unique );
     for(unsigned int  i=0 ; i < m_values_h.size() ; i++)
     {
-        std::cout << "[" << std::setw(2) << i << "] "  ;
-        if(m_hexkey) std::cout << std::hex ; 
-        std::cout << std::setw(16) << m_values_h[i] ;
-        if(m_hexkey) std::cout << std::dec ; 
-        std::cout << std::setw(10) << m_counts_h[i] ;
-        std::cout << std::endl ;  
+        ss << "[" << std::setw(2) << i << "] "  ;
+        if(m_hexkey) ss << std::hex ; 
+        ss << std::setw(16) << m_values_h[i] ;
+        if(m_hexkey) ss << std::dec ; 
+        ss << std::setw(10) << m_counts_h[i] ;
+        ss << std::endl ;  
     } 
+    return ss.str();
 }
+
+
+
+template <typename T>
+void TSparse<T>::dump(const char* msg)
+{
+    std::cout << dump_(msg) ; 
+}
+
 
 
 template <typename T, typename S>

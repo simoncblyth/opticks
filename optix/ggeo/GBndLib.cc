@@ -274,7 +274,7 @@ GItemList* GBndLib::createNames()
 
 void GBndLib::dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, const char* msg)
 { 
-    LOG(info) << msg ; 
+    LOG(debug) << msg ; 
     typedef std::map<std::string, unsigned int> MSU ; 
     for(MSU::const_iterator it = msu.begin() ; it != msu.end() ; it++)
         LOG(debug) << std::setw(5) << it->second 

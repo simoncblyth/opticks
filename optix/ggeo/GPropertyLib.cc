@@ -52,6 +52,11 @@ std::map<std::string, unsigned int>& GPropertyLib::getOrder()
     return m_attrnames->getOrder() ; 
 }
 
+std::map<unsigned int, std::string> GPropertyLib::getNamesMap()
+{
+    return m_attrnames->getNamesMap() ; 
+}
+
 
 
 std::string GPropertyLib::getCacheDir()
@@ -67,7 +72,7 @@ unsigned int GPropertyLib::getIndex(const char* shortname)
 {
     if(!isClosed())
     {
-        LOG(warning) << "GPropertyLib::getIndex type " << m_type 
+        LOG(debug) << "GPropertyLib::getIndex type " << m_type 
                      << " TRIGGERED A CLOSE " << ( shortname ? shortname : "" ) ;
         close();
     }

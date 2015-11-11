@@ -246,18 +246,22 @@ void GAttrSeq::dumpTable(Index* seqtab, const char* msg)
 
     unsigned int colorcode(0xFFFFFF);
 
+    std::stringstream ss ; 
+
     for(unsigned int i=0 ; i < seqtab->getNumKeys() ; i++)
     {
         const char* key = seqtab->getKey(i);
         std::string label = getLabel(seqtab, key, colorcode ); 
-        std::cout << std::setw(5) << i
+        ss << std::setw(5) << i
                   << label 
                   << std::endl ; 
     }
 
-    std::cout << std::setw(5) << "TOT" 
+    ss << std::setw(5) << "TOT" 
               << std::setw(10) << seqtab->getIndexSourceTotal()
               << std::endl ;
+
+    LOG(info) << ss.str() ;
 }
 
 

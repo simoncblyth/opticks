@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
+#include <map>
 
 class GCache ; 
 class GAttrSeq ; 
@@ -14,6 +16,8 @@ class GFlags {
     private:
         void init(const char* path);
         Index* parseFlags(const char* path);
+    public:
+        std::map<unsigned int, std::string> getNamesMap(); 
     public:
         Index*      getIndex();  
         GAttrSeq*   getAttrIndex();  

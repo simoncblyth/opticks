@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "stdio.h"
 #include "CBufSlice.hh"
 #include <thrust/device_vector.h>
@@ -19,6 +20,7 @@ class TSparse {
       void update_lookup(); // writes small number (eg 32) of most popular uniques to global device constant memory   
       Index* make_index();
    public:
+      std::string dump_(const char* msg="TSparse<T>::dump");
       void dump(const char* msg="TSparse<T>::dump");
    private:
       // input buffer slice specification

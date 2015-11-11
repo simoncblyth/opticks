@@ -103,7 +103,7 @@ void Frame::setSize(std::string str)
         unsigned int height = boost::lexical_cast<unsigned int>(whf[1]);  
         unsigned int coord2pixel  = boost::lexical_cast<unsigned int>(whf[2]);  
 
-        LOG(info)<< "Frame::setSize" 
+        LOG(debug)<< "Frame::setSize" 
                  << " str " << str 
                  ;
         setSize(width, height, coord2pixel);
@@ -121,7 +121,7 @@ void Frame::setSize(std::string str)
 
 void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
-    LOG(info) << "Frame::setSize "
+    LOG(debug) << "Frame::setSize "
               << " width " << width 
               << " height " << height 
               << " coord2pixel " << coord2pixel 
@@ -215,12 +215,12 @@ void Frame::initContext()
     // get version info
     const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
     const GLubyte* version = glGetString (GL_VERSION); // version as a string
-    LOG(info) << "Frame::gl_init_window Renderer: " << renderer ;
-    LOG(info) << "Frame::gl_init_window OpenGL version supported " <<  version ;
+    LOG(debug) << "Frame::gl_init_window Renderer: " << renderer ;
+    LOG(debug) << "Frame::gl_init_window OpenGL version supported " <<  version ;
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
-    LOG(info)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;  
+    LOG(debug)<<"Frame::gl_init_window glfwGetFramebufferSize " << width << "," << height ;  
 }
 
 

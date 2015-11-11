@@ -69,7 +69,8 @@ class GPropertyLib {
     public:
         // another classes need access to "shape" of the standardization
         static GDomain<float>* getDefaultDomain();
-
+    public:
+        std::map<unsigned int, std::string> getNamesMap(); 
     public:
         NPY<unsigned int>* createUint4Buffer(std::vector<guint4>& vec);
         void importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>* ibuf );

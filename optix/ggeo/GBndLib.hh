@@ -108,6 +108,8 @@ class GBndLib : public GPropertyLib {
   public:
        void setMaterialLib(GMaterialLib* mlib);
        void setSurfaceLib(GSurfaceLib* slib);
+       GMaterialLib* getMaterialLib();
+       GSurfaceLib*  getSurfaceLib();
   private:
        GMaterialLib*        m_mlib ; 
        GSurfaceLib*         m_slib ; 
@@ -136,6 +138,15 @@ inline void GBndLib::setSurfaceLib(GSurfaceLib* slib)
 {
     m_slib = slib ;  
 }
+inline GMaterialLib* GBndLib::getMaterialLib()
+{
+    return m_mlib ; 
+}
+inline GSurfaceLib* GBndLib::getSurfaceLib()
+{
+    return m_slib ; 
+}
+
 
 inline unsigned int GBndLib::getNumBnd()
 {

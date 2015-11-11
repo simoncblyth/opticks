@@ -153,7 +153,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
       
 
 
-    printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p fbuf %p \n", vbuf, nbuf, cbuf, fbuf );
+    //printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p fbuf %p \n", vbuf, nbuf, cbuf, fbuf );
 
 
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
@@ -189,11 +189,11 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     {
         m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
         m_itransform_count = ibuf->getNumItems() ;
-        LOG(info) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
+        LOG(debug) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
     }
     else
     {
-        LOG(info) << "Renderer::upload_buffers NO TRANSFORMS " ;
+        LOG(debug) << "Renderer::upload_buffers NO TRANSFORMS " ;
     }
 
 

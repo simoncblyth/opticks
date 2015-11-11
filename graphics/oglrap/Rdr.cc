@@ -149,7 +149,7 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
         glGenBuffers(1, &buffer_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-        LOG(info) << "Rdr::upload glBufferData " 
+        LOG(debug) << "Rdr::upload glBufferData " 
                   << " vnpy name " << std::setw(8) << vnpy->getName()
                   << " count " << std::setw(8) << vnpy->getCount()
                   << " buffer_id " << std::setw(5) << buffer_id

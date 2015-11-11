@@ -82,7 +82,7 @@ void GGeo::init()
    m_sensor_list->load( idpath, "idmap");
 
 
-   LOG(info) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
+   LOG(debug) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
    if(m_loaded) return ; 
 

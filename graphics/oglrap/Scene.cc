@@ -308,7 +308,7 @@ void Scene::setWireframe(bool wire)
 
 void Scene::initRenderers()
 {
-    LOG(info) << "Scene::initRenderers " 
+    LOG(debug) << "Scene::initRenderers " 
               << " shader_dir " << m_shader_dir 
               << " shader_incl_path " << m_shader_incl_path 
                ;
@@ -400,7 +400,7 @@ void Scene::uploadGeometry()
 
 
 
-    LOG(info) << "Scene::uploadGeometry"
+    LOG(debug) << "Scene::uploadGeometry"
               << " nmm " << nmm
               ;
 
@@ -413,7 +413,7 @@ void Scene::uploadGeometry()
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
 
         bool skip = mm->getGeoCode() == 'K' ;
-        LOG(info) << "Scene::uploadGeometry " 
+        LOG(debug) << "Scene::uploadGeometry " 
                   << i 
                   << " geoCode " << mm->getGeoCode() ; 
 
@@ -467,7 +467,7 @@ void Scene::uploadGeometry()
     }
 
 
-    LOG(info)<<"Scene::uploadGeometry" 
+    LOG(debug)<<"Scene::uploadGeometry" 
              << " n_global "   << n_global
              << " m_num_instance_renderer " << m_num_instance_renderer
              ; 

@@ -45,7 +45,7 @@ void GGeoTest::init()
 
 void GGeoTest::configure(const char* config_)
 {
-    LOG(info) << "GGeoTest::configure" ; 
+    LOG(debug) << "GGeoTest::configure" ; 
     m_config = config_ ? strdup(config_) : DEFAULT_CONFIG ; 
 
     std::string config(m_config);
@@ -55,7 +55,7 @@ void GGeoTest::configure(const char* config_)
 
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
     {
-        LOG(info) 
+        LOG(debug) 
                   << std::setw(20) << it->first
                   << " : " 
                   << it->second 

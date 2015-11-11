@@ -32,29 +32,52 @@ ggv-bib-tracer(){
 }
 
 
-ggv-bib(){
-   type $FUNCNAME
-   local pol=${1:-s}
-   case $pol in  
-      s) tag=1 ;;
-      p) tag=2 ;;
-   esac
-   echo  pol $pol tag $tag
-
-   ggv.sh  --test --save --tag $tag \
-        --eye 0.5,0.5,0.0 \
-        --animtimemax 7 \
-        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" \
-        --torchconfig "polz=${pol}pol_frame=1_type=refltest_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" \
-         $*
+join(){ local IFS="$1"; shift; echo "$*"; }
 
 
-   cat << SCRATCH
-        --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" 
-        --torchconfig "polz=spol_frame=1_type=refltest_source=0,0,300_target=0,0,1_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" 
+ggv-reflection-torchconfig(){
+    local pol=${1:-s}
+    local torch=(
+                 type=refltest
+                 photons=500000
+                 polz=${pol}pol
+                 frame=1
+                 source=10,0,300
+                 target=10,0,0
+                 radius=102
+                 zenithazimuth=0,0.5,0,1
+                 material=Vacuum
+               )
+    echo "$(join _ ${torch[@]})"
+}
 
-SCRATCH
+ggv-reflection-testconfig(){
+    local test=(
+                 mode=BoxInBox
+                 dimensions=500,300,0,0
+                 boundary=Rock//perfectAbsorbSurface/Vacuum
+                 boundary=Vacuum///Pyrex 
+               )
+    echo "$(join _ ${test[@]})"
+}
 
+ggv-reflection(){
+    type $FUNCNAME
+    local pol=${1:-s}
+    case $pol in  
+        s) tag=1 ;;
+        p) tag=2 ;;
+    esac
+    echo  pol $pol tag $tag
+    ggv.sh  \
+            --eye 0.5,0.5,0.0 \
+            --animtimemax 7 \
+            --test \
+            --testconfig "$(ggv-reflection-testconfig)" \
+            --torchconfig "$(ggv-reflection-torchconfig $pol)" \
+            --save \
+            --tag $tag \
+            $*
 }
 
 ggv-box(){

@@ -373,7 +373,7 @@ void GMesh::setTransforms(float* transforms)
     unsigned int numElements = 16 ; 
     unsigned int size = sizeof(float)*numElements;
 
-    LOG(info) << "GMesh::setTransforms " 
+    LOG(debug) << "GMesh::setTransforms " 
               << " num_solids " << m_num_solids 
               << " size " << size 
               << " fsize " << sizeof(float)

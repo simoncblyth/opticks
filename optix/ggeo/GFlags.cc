@@ -42,3 +42,9 @@ Index* GFlags::parseFlags(const char* path)
     return index ; 
 }
 
+
+std::map<unsigned int, std::string> GFlags::getNamesMap()
+{
+    return m_aindex->getNamesMap() ; 
+}
+

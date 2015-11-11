@@ -205,7 +205,7 @@ void OPropagator::propagate()
     if(!m_evt) return ;
 
     unsigned int numPhotons = m_evt->getNumPhotons();
-    assert( numPhotons < getRngMax() && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
+    assert( numPhotons <= getRngMax() && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
 
     unsigned int width  = numPhotons ;
     unsigned int height = 1 ;

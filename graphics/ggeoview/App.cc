@@ -285,7 +285,7 @@ void App::prepareScene()
     m_scene->setComposition(m_composition);     // defer until renderers are setup 
 
     (*m_timer)("prepareScene"); 
-    LOG(info) << "App::prepareScene DONE ";
+    LOG(debug) << "App::prepareScene DONE ";
 } 
 
 
@@ -384,7 +384,7 @@ void App::checkGeometry()
 {
     if(m_ggeo->isLoaded())
     {
-        LOG(info) << "App::checkGeometry needs to be done precache " ;
+        LOG(debug) << "App::checkGeometry needs to be done precache " ;
         return ; 
     }
 
@@ -488,7 +488,7 @@ void App::uploadGeometry()
 
     // handle commandline --target option that needs loaded geometry 
     unsigned int target = m_scene->getTargetDeferred();   // default to 0 
-    LOG(info) << "App::uploadGeometry setting target " << target ; 
+    LOG(debug) << "App::uploadGeometry setting target " << target ; 
 
     m_scene->setTarget(target, autocam);
  
@@ -1027,7 +1027,7 @@ void App::indexSequence()
 #ifdef DEBUG
         seq->dump<unsigned long long>("App::indexSequence OBuf seq.dump", 2, 0, nsqd);
         tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,0)", 4,0, npsd) ;
-        seqhis.dump("App::indexSequence seqhis");
+        LOG(info) << seqhis.dump_("App::indexSequence seqhis (dump_)");
 #endif
 
         TSparse<unsigned long long> seqmat("Material_Sequence", seq->slice(2,1)); // stride,begin 
@@ -1219,9 +1219,10 @@ void App::indexEvtOld()
 {
     if(!m_evt) return ; 
 
-    NPY<float>* dpho = m_evt->getPhotonData();
-
+    // TODO: wean this off use of Types, for the new way (GFlags..)
     Types* types = m_cache->getTypes();
+
+    NPY<float>* dpho = m_evt->getPhotonData();
 
 
     if(dpho->hasData())
@@ -1242,7 +1243,6 @@ void App::indexEvtOld()
         m_rec->setTypes(types);
 
         NPY<float>* fdom = m_opropagator->getDomain() ;
-
         m_rec->setDomains(fdom);
 
         if(m_pho)
