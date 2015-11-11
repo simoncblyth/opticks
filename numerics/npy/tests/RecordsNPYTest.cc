@@ -14,8 +14,10 @@ int main(int argc, char** argv)
     NPY<short>* records = NPY<short>::load("rxcerenkov", tag, "dayabay");
     NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
     NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
+
     unsigned int maxrec = idom->getValue(0,0,3) ; // TODO: enumerate the k indices 
     assert(maxrec == 10);
+
 
     Types types ; 
     types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
@@ -31,7 +33,6 @@ int main(int argc, char** argv)
     NPY<unsigned long long>* seqn = r.makeSequenceArray(Types::HISTORY);
     seqn->save("/tmp/seqn.npy");
 
-    
     for(unsigned int i=0 ; i < 100 ; i++)
     { 
         unsigned int photon_id = i ;  

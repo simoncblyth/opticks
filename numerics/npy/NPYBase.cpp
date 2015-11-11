@@ -100,7 +100,13 @@ std::string NPYBase::description(const char* msg)
     return ss.str();
 }
 
-
+std::string NPYBase::path(const char* pfx, const char* gen, const char* tag, const char* det)
+{
+    std::stringstream ss ;
+    ss << pfx << gen ;
+    return path(ss.str().c_str(), tag, det );
+}
+  
 std::string NPYBase::path(const char* typ, const char* tag, const char* det)
 {
 /*

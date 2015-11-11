@@ -34,8 +34,9 @@ def theta(xyz):
     return th
 
 class Evt(object):
-    def __init__(self, tag="1", src="torch"):
+    def __init__(self, tag="1", src="torch", label=""):
         self.tag = str(tag)
+        self.label = label
         self.src = src
         self.ox = load_("ox"+src,tag) 
         self.rx = load_("rx"+src,tag) 
@@ -46,7 +47,7 @@ class Evt(object):
         self.fdom = np.load(idp_("OPropagatorF.npy"))
 
     def __repr__(self):
-        return "Evt(%s,\"%s\")" % (self.tag, self.src)
+        return "Evt(%s,\"%s\",\"%s\")" % (self.tag, self.src, self.label)
 
     def history_table(self):
         seqhis = self.seqhis

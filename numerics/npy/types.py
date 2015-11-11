@@ -276,10 +276,10 @@ _ini = {}
 def ini_(path):
     global _ini 
     if _ini.get(path,None):
-        log.info("return cached ini for key %s" % path)
+        log.debug("return cached ini for key %s" % path)
         return _ini[path] 
     try: 
-        log.info("parsing ini for key %s" % path)
+        log.debug("parsing ini for key %s" % path)
         _ini[path] = iniparse(file(os.path.expandvars(os.path.expanduser(path))).read())
     except IOError:
         log.warning("failed to load ini from %s" % path)
@@ -433,7 +433,7 @@ def path_(typ, tag, det="dayabay"):
 
 def load_(typ, tag, det="dayabay"):
     path = path_(typ,tag, det)
-    log.info("loading %s " % path )
+    log.debug("loading %s " % path )
     os.system("ls -l %s " % path)
     return np.load(path)
 

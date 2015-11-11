@@ -89,7 +89,7 @@ void NSensorList::read(const char* path)
         count++;
     }
     in.close();
-    LOG(info) << "NSensorList::read " 
+    LOG(debug) << "NSensorList::read " 
               << " path " << path 
               << " desc " << description() 
               ; 

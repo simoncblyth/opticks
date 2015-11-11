@@ -6,6 +6,7 @@
 #include "NPY.hpp"
 
 class Index ; 
+class Typ ;
 
 class RecordsNPY {
    public:  
@@ -13,6 +14,7 @@ class RecordsNPY {
    public:  
        NPY<short>*           getRecords();
        void                  setTypes(Types* types);
+       void                  setTyp(Typ* typ);
        unsigned int          getMaxRec();
    public:  
        NPY<unsigned long long>* makeSequenceArray(Types::Item_t etype);
@@ -57,6 +59,7 @@ class RecordsNPY {
        NPY<short>*      m_records ; 
        unsigned int     m_maxrec ; 
        Types*           m_types ; 
+       Typ*             m_typ ; 
 
    private:
        glm::vec4        m_center_extent ; 
@@ -70,7 +73,8 @@ inline RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec)
     :
     m_records(records),
     m_maxrec(maxrec),
-    m_types(NULL)
+    m_types(NULL),
+    m_typ(NULL)
 {
 }
 
@@ -102,6 +106,10 @@ inline void RecordsNPY::setWavelengthDomain(glm::vec4& wd)
 inline void RecordsNPY::setTypes(Types* types)
 {  
     m_types = types ; 
+}
+inline void RecordsNPY::setTyp(Typ* typ)
+{  
+    m_typ = typ ; 
 }
 
 

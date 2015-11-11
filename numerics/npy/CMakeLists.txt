@@ -57,6 +57,7 @@ add_library( ${name}  SHARED
     AxisNPY.cpp
     Counts.cpp
     Types.cpp
+    Typ.cpp
     Index.cpp
     Map.cpp
     Timer.cpp
@@ -108,6 +109,7 @@ jsonutil.hpp
 timeutil.hpp
 Lookup.hpp
 Types.hpp
+Typ.hpp
 Index.hpp
 Map.hpp
 Timer.hpp

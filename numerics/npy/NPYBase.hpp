@@ -54,6 +54,7 @@ class NPYBase {
        // NumPy persistency
        static std::string path(const char* dir, const char* name);
        static std::string path(const char* typ, const char* tag, const char* det);
+       static std::string path(const char* pfx, const char* gen, const char* tag, const char* det);
        void setVerbose(bool verbose=true);
        void setAllowPrealloc(bool allow=true); 
 

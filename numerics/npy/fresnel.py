@@ -34,8 +34,6 @@ def fresnel(x, n1, n2, spol=True):
 
 
 
-
-
 class Fresnel(object):
     def __init__(self, m1="Vacuum", m2="Pyrex", wavelength=500., dom=None ):
         if dom is None:
@@ -43,6 +41,7 @@ class Fresnel(object):
         mlib = PropLib.PropLib("GMaterialLib")
         n1 = mlib.interp(m1,wavelength,PropLib.M_REFRACTIVE_INDEX)
         n2 = mlib.interp(m2,wavelength,PropLib.M_REFRACTIVE_INDEX)
+
         th = dom*np.pi/180.
         spol = fresnel(th, n1, n2, True)
         ppol = fresnel(th, n1, n2, False)
@@ -55,13 +54,12 @@ class Fresnel(object):
         self.n2 = n2
         self.dom = dom
         self.th = th
-        self.spol = spol
-        self.ppol = ppol
-        self.upol = (spol+ppol)/2.   # unpol?
 
-        # scrunch down to match bin counts
-        self.a_spol = (spol[1:] + spol[:-1])/2.  
-        self.a_ppol = (ppol[1:] + ppol[:-1])/2.
+        # avg of bin edge values
+        self.spol = (spol[:-1] + spol[1:])/2.  
+        self.ppol = (ppol[:-1] + ppol[1:])/2.
+        self.upol = (self.spol+self.ppol)/2.     # unpol?
+
         self.brewster = np.arctan(n2/n1)*180./np.pi
         self.critical = np.arcsin(n1/n2)*180./np.pi
 
@@ -80,11 +78,14 @@ class Fresnel(object):
 
 
     def pl(self):
-        plt.plot(self.dom, self.spol, label="S (perp)")
-        plt.plot(self.dom, self.ppol, label="P (para)")
+        plt.plot(self.cen, self.spol, label="S (perp)", c="r")
+        plt.plot(self.cen, self.ppol, label="P (para)", c="b")
+
+    def title(self):
+        return "Fresnel %s/%s %4.3f/%4.3f (%3d nm)" % (self.m1, self.m2, self.n1, self.n2, self.wl )
 
     def plot(self, fig, ny=1, nx=1, n=1):
-        plt.title("Fresnel %s/%s %4.3f/%4.3f (%3d nm)" % (self.m1, self.m2, self.n1, self.n2, self.wl )) 
+        plt.title(self.title()) 
         ax = fig.add_subplot(ny,nx,n)
         self.pl()
         self.angles()
@@ -93,9 +94,9 @@ class Fresnel(object):
 
     def angles(self):
         a = self.brewster
-        plt.plot([a, a], [0, 1], 'k-', c="b", lw=2, label="Brewster")
+        plt.plot([a, a], [1e-6, 1], 'k-', c="b", lw=2, label="Brewster")
         a = self.critical
-        plt.plot([a, a], [0, 1], 'k-', c="r", lw=2, label="Critical")
+        plt.plot([a, a], [1e-6, 1], 'k-', c="r", lw=2, label="Critical")
 
 if __name__ == '__main__':
 

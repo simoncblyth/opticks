@@ -13,6 +13,9 @@
 #include <iomanip>
 #include <algorithm>
 
+#include "Typ.hpp"
+
+
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -241,8 +244,8 @@ void RecordsNPY::dumpRecord(unsigned int i, const char* msg)
     unpack_material_flags(          flag, i, 1, 2, 3);  // i,j,k0,k1
     unpack_material_flags_i(       iflag, i, 1, 2, 3);  // i,j,k0,k1
 
-    std::string m1 = m_types->findMaterialName(flag.x) ;
-    std::string m2 = m_types->findMaterialName(flag.y) ;
+    std::string m1 = m_typ->findMaterialName(flag.x) ;
+    std::string m2 = m_typ->findMaterialName(flag.y) ;
 
     // flag.w is the result of ffs on a single set bit field, returning a 1-based bit position
     std::string history = m_types->getHistoryString( 1 << (flag.w-1) ); 

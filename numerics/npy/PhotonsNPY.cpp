@@ -13,6 +13,7 @@
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 
+#include "Typ.hpp"
 
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -182,12 +183,6 @@ void PhotonsNPY::debugdump(const char* msg)
 }
 
 
-
-
-//glm::ivec4 PhotonsNPY::getFlags()
-//{
-//    return m_types->getFlags();
-//}
 
 
 

@@ -191,6 +191,17 @@ NPY<T>* NPY<T>::load(const char* path)
 }
 
 
+
+
+
+template <typename T>
+NPY<T>* NPY<T>::load(const char* pfx, const char* gen, const char* tag, const char* det)
+{
+    std::string path = NPYBase::path(pfx, gen, tag, det);
+    return load(path.c_str());
+}
+
+
 template <typename T>
 NPY<T>* NPY<T>::load(const char* typ, const char* tag, const char* det)
 {
