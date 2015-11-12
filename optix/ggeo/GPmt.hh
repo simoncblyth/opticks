@@ -4,6 +4,7 @@
 #include <cassert>
 
 class GCache ; 
+class GItemList ; 
 
 struct guint4 ; 
 struct gbbox ; 
@@ -59,6 +60,7 @@ class GPmt {
    private:
        void loadFromCache(NSlice* slice);   
    public:
+       GItemList*         getBndSpec();
        NPY<unsigned int>* getSolidBuffer();
        NPY<float>*        getPartBuffer();
        unsigned int       getNumSolids();
@@ -82,6 +84,7 @@ class GPmt {
        const char*  getTypeName(unsigned int part_index);
    private:
        void         import();
+       void         setBndSpec(GItemList* bndspec);
        void         setPartBuffer(NPY<float>* part_buffer);
        void         setSolidBuffer(NPY<unsigned int>* solid_buffer);
        unsigned int getUInt(unsigned int part_index, unsigned int j, unsigned int k);
@@ -90,8 +93,10 @@ class GPmt {
        // allowing this to copied/used on GPU in cu/hemi-pmt.cu
        GCache*            m_cache ; 
        unsigned int       m_index ;
+       GItemList*         m_bndspec ; 
        NPY<float>*        m_part_buffer ; 
        NPY<unsigned int>* m_solid_buffer ; 
+
        std::map<unsigned int, unsigned int> m_parts_per_solid ;
 
 };
@@ -101,6 +106,7 @@ inline GPmt::GPmt(GCache* cache, unsigned int index)
     :
     m_cache(cache),
     m_index(index),
+    m_bndspec(NULL), 
     m_part_buffer(NULL),
     m_solid_buffer(NULL)
 {
@@ -110,6 +116,17 @@ inline unsigned int GPmt::getSolidNumParts(unsigned int solid_index)
 {
     return m_parts_per_solid.count(solid_index)==1 ? m_parts_per_solid[solid_index] : 0 ; 
 }
+
+
+inline void GPmt::setBndSpec(GItemList* bndspec)
+{
+    m_bndspec = bndspec ;
+}
+inline GItemList* GPmt::getBndSpec()
+{
+    return m_bndspec ; 
+}
+
 
 inline void GPmt::setSolidBuffer(NPY<unsigned int>* solid_buffer)
 {

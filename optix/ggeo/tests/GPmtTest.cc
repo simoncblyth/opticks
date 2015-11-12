@@ -14,8 +14,7 @@ int main(int argc, char** argv)
     cache->configure(argc, argv);
 
     for(unsigned int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
-    const char* slice_ = argc > 1 ? argv[1] : NULL ;  
-    NSlice* slice = new NSlice(slice_);
+    NSlice* slice = argc > 1 ? new NSlice(argv[1]) : NULL ;
 
     GPmt* pmt = GPmt::load(cache, 0, slice);
 

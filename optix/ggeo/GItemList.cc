@@ -28,9 +28,9 @@ unsigned int GItemList::getIndex(const char* key)
 }
 
 
-GItemList* GItemList::load(const char* idpath, const char* itemtype)
+GItemList* GItemList::load(const char* idpath, const char* itemtype, const char* reldir)
 {
-    GItemList* gil = new GItemList(itemtype);
+    GItemList* gil = new GItemList(itemtype, reldir);
     gil->load_(idpath); 
     return gil ;
 }
@@ -38,7 +38,7 @@ GItemList* GItemList::load(const char* idpath, const char* itemtype)
 void GItemList::load_(const char* idpath)
 {
    fs::path cachedir(idpath);
-   fs::path typedir(cachedir / GITEMLIST );
+   fs::path typedir(cachedir / m_reldir );
 
    if(fs::exists(typedir) && fs::is_directory(typedir))
    {
@@ -69,7 +69,7 @@ void GItemList::read_(const char* txtpath)
 void GItemList::save(const char* idpath)
 {
    fs::path cachedir(idpath);
-   fs::path typedir(cachedir / GITEMLIST );
+   fs::path typedir(cachedir / m_reldir );
 
    if(!fs::exists(typedir))
    {

@@ -225,16 +225,25 @@ std::string GCache::getMergedMeshPath(unsigned int index)
     return getObjectPath("GMergedMesh", index);
 }
 
-std::string GCache::getPmtPath(unsigned int index)
+std::string GCache::getPmtPath(unsigned int index, bool relative)
 {
-    return getObjectPath("GPmt", index);
+    return getObjectPath("GPmt", index, relative);
 }
 
-std::string GCache::getObjectPath(const char* name, unsigned int index)
+std::string GCache::getObjectPath(const char* name, unsigned int index, bool relative)
 {
-    fs::path cachedir(m_idpath);
-    fs::path mmdir(cachedir/name/boost::lexical_cast<std::string>(index) );
-    return mmdir.string() ;
+    fs::path dir ; 
+    if(!relative)
+    {
+        fs::path cachedir(m_idpath);
+        dir = cachedir/name/boost::lexical_cast<std::string>(index) ;
+    }
+    else
+    {
+        fs::path reldir(name);
+        dir = reldir/boost::lexical_cast<std::string>(index) ;
+    }
+    return dir.string() ;
 }
 
 

@@ -25,8 +25,6 @@ export GGEOVIEW_ARGS="$*"
 
 if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeoview-bindir)/computeTest
-elif [ "${cmdline/--loader}" != "${cmdline}" ]; then
-   export GGEOVIEW_BINARY=$(ggeoview-bindir)/GLoaderTest
 elif [ "${cmdline/--boundaries}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin BoundariesNPYTest)
 elif [ "${cmdline/--recs}" != "${cmdline}" ]; then
@@ -37,6 +35,8 @@ elif [ "${cmdline/--lookup}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin LookupTest)
 elif [ "${cmdline/--bnd}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBndLibTest)
+elif [ "${cmdline/--itemlist}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin GItemListTest)
 elif [ "${cmdline/--pybnd}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-tdir)/GBndLibTest.py
 elif [ "${cmdline/--mat}" != "${cmdline}" ]; then

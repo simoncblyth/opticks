@@ -1,6 +1,7 @@
 #include "GPmt.hh"
 #include "GCache.hh"
 #include "GVector.hh"
+#include "GItemList.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -44,6 +45,11 @@ void GPmt::loadFromCache(NSlice* slice)
      want slicing to apply to content, not container..
      so need to add container afterwards
    */
+
+    std::string relpath = m_cache->getPmtPath(m_index, true); 
+    GItemList* bndspec = GItemList::load(m_cache->getIdPath(), "GPmt", relpath.c_str() );
+    bndspec->dump();
+    setBndSpec(bnd);
 
     std::string path = m_cache->getPmtPath(m_index); 
     NPY<float>* origBuf = NPY<float>::load( path.c_str(), FILENAME );
@@ -167,6 +173,11 @@ const char* GPmt::getTypeName(unsigned int part_index)
 
 void GPmt::import()
 {
+    // hmm have to break connection to solids 
+    // as uncoincident translation rejigs boundaries away 
+    // from direct translation triangulated ones
+    
+
     m_parts_per_solid.clear();
     unsigned int nmin(INT_MAX) ; 
     unsigned int nmax(0) ; 

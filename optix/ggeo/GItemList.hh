@@ -10,9 +10,9 @@ class GItemList : public NSequence {
    public:
        static unsigned int UNSET ; 
        static const char* GITEMLIST ; 
-       static GItemList* load(const char* idpath, const char* itemtype);
+       static GItemList* load(const char* idpath, const char* itemtype, const char* reldir=NULL);
    public:
-       GItemList(const char* itemtype);
+       GItemList(const char* itemtype, const char* reldir=NULL);
        void add(const char* name);
        void save(const char* idpath);
        void dump(const char* msg="GItemList::dump");
@@ -32,14 +32,16 @@ class GItemList : public NSequence {
        void load_(const char* idpath);
    private:
        std::string              m_itemtype ;
+       std::string              m_reldir ;
        std::vector<std::string> m_list ; 
        std::map<std::string, unsigned int> m_order ; 
        std::string              m_empty ; 
 };
 
-inline GItemList::GItemList(const char* itemtype) : NSequence()
+inline GItemList::GItemList(const char* itemtype, const char* reldir) : NSequence()
 {
     m_itemtype = itemtype ; 
+    m_reldir   = reldir ? reldir : GITEMLIST ; 
 }
 
 inline void GItemList::add(const char* name)
