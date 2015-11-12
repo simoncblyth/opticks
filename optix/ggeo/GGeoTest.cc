@@ -9,6 +9,7 @@
 #include "GPmt.hh"
 #include "GSolid.hh"
 #include "GTestBox.hh"
+#include "GItemList.hh"
 
 #include "NLog.hpp"
 #include "GLMFormat.hpp"
@@ -159,6 +160,28 @@ GMergedMesh* GGeoTest::createPmtInBox(float size, unsigned int boundary)
 
     GPmt* pmt = GPmt::load( m_cache, 0, NULL );  // part slicing disfavored, as only works at one level 
     pmt->dump();
+
+    GItemList* bndspec = pmt->getBndSpec();
+    unsigned int nbnd = bndspec->getNumKeys();
+
+    for(unsigned int i=0 ; i < nbnd ; i++)
+    {
+        const char* bnd = bndspec->getKey(i);
+        LOG(info) << "GGeoTest::createPmtInBox"
+                  << std::setw(3) << i 
+                  << " : " << bnd 
+                  ; 
+
+        if(strncmp(bnd, GPmt::OUTERMATERIAL, strlen(GPmt::OUTERMATERIAL)) == 0)
+        {
+            LOG(info) << "starts with marker" ; 
+        }
+
+
+    }
+
+
+    // TODO: break this requirement, GPmt needs to manage its own identities...
     assert( pmt->getNumSolids() == mm->getNumSolids() );
 
     gbbox bb = mm->getBBox(0);     // solid-0 contains them all

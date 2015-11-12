@@ -50,6 +50,7 @@ class GPmt {
        enum { BBMAX_J = 3, BBMAX_K = 0 };
        enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
 
+       static const char* OUTERMATERIAL ; 
        static const char* FILENAME ;  
        static const char* GPMT ;  
    public:

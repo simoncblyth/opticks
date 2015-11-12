@@ -65,19 +65,6 @@ private:
      
 };
 
-
-/*
-inline GMergedMesh::GMergedMesh(GMergedMesh* other)
-       : 
-       GMesh(other),
-       m_cur_vertices(0),
-       m_cur_faces(0),
-       m_cur_solid(0),
-       m_cur_base(NULL)
-{
-}
-*/
-
 inline GMergedMesh::GMergedMesh(unsigned int index)
        : 
        GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
