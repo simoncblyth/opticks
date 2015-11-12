@@ -153,6 +153,8 @@ void GGeoTest::modifyGeometry()
 
 GMergedMesh* GGeoTest::createPmtInBox(float size, unsigned int boundary)
 {
+    LOG(info) << "GGeoTest::createPmtInBox" ; 
+
     GMergedMesh* mm = m_geolib->getMergedMesh(1);
 
     GPmt* pmt = GPmt::load( m_cache, 0, NULL );  // part slicing disfavored, as only works at one level 

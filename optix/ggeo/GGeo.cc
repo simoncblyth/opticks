@@ -307,6 +307,8 @@ void GGeo::save(const char* idpath)
 
 void GGeo::modifyGeometry(const char* config)
 {
+    // NB only invoked with test option : "ggv --test" 
+
     LOG(info) << "GGeo::modifyGeometry" 
               << " config [" << ( config ? config : "" ) << "]" ; 
 

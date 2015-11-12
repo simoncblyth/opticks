@@ -55,6 +55,7 @@ class Fresnel(object):
         self.dom = dom
         self.th = th
 
+        self.cen  = (dom[:-1] + dom[1:])/2.
         # avg of bin edge values
         self.spol = (spol[:-1] + spol[1:])/2.  
         self.ppol = (ppol[:-1] + ppol[1:])/2.

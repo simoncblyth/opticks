@@ -33,6 +33,20 @@ def theta(xyz):
     th = np.arccos(z/r)*180./np.pi
     return th
 
+
+
+class Rat(object):
+    def __init__(self, n, d, label=""):
+        n = len(n)
+        d = len(d)
+        r = float(n)/float(d)
+        self.n = n
+        self.d = d
+        self.r = r
+        self.label = label 
+    def __repr__(self):
+        return "Rat %s %s/%s %5.3f " % (self.label,self.n, self.d, self.r)
+
 class Evt(object):
     def __init__(self, tag="1", src="torch", label=""):
         self.tag = str(tag)
@@ -45,6 +59,9 @@ class Evt(object):
         self.seqmat = self.ph[:,0,1]
         self.flags = self.ox.view(np.uint32)[:,3,3]
         self.fdom = np.load(idp_("OPropagatorF.npy"))
+
+    def msize(self):
+        return float(self.ox.shape[0])/1e6
 
     def __repr__(self):
         return "Evt(%s,\"%s\",\"%s\")" % (self.tag, self.src, self.label)

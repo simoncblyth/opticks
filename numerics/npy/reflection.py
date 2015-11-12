@@ -3,12 +3,12 @@
 Reflection distrib following BoxInBox::
 
     ggv-
-    ggv-reflection s
-    ggv-reflection p
+    ggv-reflect s
+    ggv-reflect p
 
 ::
 
-    ggv-bib () 
+    ggv-reflect() 
     { 
         local pol=${1:-s};
         case $pol in 
@@ -69,7 +69,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
-from env.numerics.npy.ana import Evt, Selection, theta
+from env.numerics.npy.ana import Evt, Selection, Rat, theta
 from env.numerics.npy.fresnel import Fresnel
 
 np.set_printoptions(suppress=True, precision=3)
@@ -81,19 +81,6 @@ def scatter3d(fig,  xyz):
 def histo(fig,  vals): 
     ax = fig.add_subplot(111)
     ax.hist(vals, bins=91,range=[0,90])
-
-
-class Rat(object):
-    def __init__(self, n, d, label=""):
-        n = len(n)
-        d = len(d)
-        r = float(n)/float(d)
-        self.n = n
-        self.d = d
-        self.r = r
-        self.label = label 
-    def __repr__(self):
-        return "Rat %s %s/%s %5.3f " % (self.label,self.n, self.d, self.r)
 
 rat_ = lambda n,d:float(len(n))/float(len(d))
 
@@ -120,6 +107,7 @@ class Reflect(object):
         miss = p1[:,2] != p1[0,2]
         # missers confirmed to be a triangulation crack effect
         # avoid by not targetting cracks with millions of photons whilst doing reflection tests
+        # ...get **ZERO** missers when avoid cracks ...
 
         th0 = theta(p0[np.logical_not(miss)])
         th2 = theta(p2[np.logical_not(miss)])  
@@ -162,6 +150,9 @@ class Reflect(object):
 
         distinct structure, with islands, somehow inversely related to the 
         position of cracks in geometry
+
+        YEP: confirmed, easily avoided 
+        by shifting the focus point to avoid cracks
         """
         miss = self.miss
         p0m = self.p0[miss]  # destined to miss
@@ -218,7 +209,8 @@ class ReflectionPlot(object):
         fr.angles()
 
     def title(self):
-        return "npy-/reflection.py : %s : %s " % (repr(self.focus),self.fr.title())
+        msize = self.e1.msize()
+        return "npy-/reflection.py %3.1fM: %s : %s " % (msize,repr(self.focus),self.fr.title())
 
     def legend(self, ax, log_=False):
         if log_:
@@ -261,8 +253,8 @@ if __name__ == '__main__':
     fr = Fresnel(m1="Vacuum", m2="Pyrex", wavelength=500., dom=dom) 
     rp = ReflectionPlot(fr, focus)
 
-    #oneplot(fr,rp,log_=False)
-    oneplot(fr,rp,log_=True)
+    oneplot(fr,rp,log_=False)
+    #oneplot(fr,rp,log_=True)
     #twoplot(fr,rp)
 
 
