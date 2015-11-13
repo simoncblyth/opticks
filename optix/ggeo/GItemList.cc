@@ -6,7 +6,13 @@
 #include <ostream>   
 #include <algorithm>
 #include <iterator>
+#include <iomanip>
 
+
+
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
@@ -113,6 +119,51 @@ void GItemList::sort()
     std::stable_sort( m_list.begin(), m_list.end(), *this );
 }
 
+
+void GItemList::dumpFields(const char* msg, const char* delim, unsigned int fwid)
+{
+    LOG(info) << msg ; 
+    typedef std::vector<std::string> VS ; 
+    for(unsigned int i=0 ; i < getNumKeys() ; i++)
+    {
+        const char* key = getKey(i);
+        VS elem ; 
+        boost::split(elem, key, boost::is_any_of(delim));
+
+        std::stringstream ss ; 
+        for(VS::const_iterator it=elem.begin() ; it != elem.end() ; it++)
+             ss << std::setw(fwid) << *it << " " ; 
+
+        LOG(info) << ss.str() ; 
+    }
+}
+
+void GItemList::replaceField(unsigned int field, const char* from, const char* to, const char* delim)
+{
+    typedef std::vector<std::string> VS ; 
+    for(unsigned int i=0 ; i < getNumKeys() ; i++)
+    {
+        unsigned int changes = 0 ; 
+        const char* key = getKey(i);
+        VS elem ; 
+        boost::split(elem, key, boost::is_any_of(delim));
+        if(field >= elem.size()) continue ;  
+
+        if(elem[field].compare(from) == 0)
+        {
+            elem[field] = to ; 
+            changes += 1 ;  
+        }
+
+
+        if(changes > 0)
+        {
+            std::string edited = boost::algorithm::join(elem, delim);
+            setKey(i, edited.c_str());
+        }
+
+    }
+}
 
 
 

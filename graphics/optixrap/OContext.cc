@@ -139,7 +139,7 @@ void OContext::launch(unsigned int entry, unsigned int width, unsigned int heigh
 {
     if(!m_closed) close();
 
-    LOG(info)<< "OContext::launch";
+    LOG(debug)<< "OContext::launch";
 
     double t0,t1,t2,t3,t4 ; 
 

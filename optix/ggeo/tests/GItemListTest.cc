@@ -1,3 +1,5 @@
+// ggv --itemlist
+
 #include "GCache.hh"
 #include "GItemList.hh"
 
@@ -43,9 +45,11 @@ int main(int argc, char** argv)
     GCache* cache = new GCache("GGEOVIEW_", "GItemList.log", "info");
 
     GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
-
     il->dump();
-
+    il->dumpFields();
+    il->replaceField(0, "OUTERMATERIAL", "MineralOil" );
+    il->replaceField(1, "OUTERSURFACE", "lvPmtHemiCathodeSensorSurface" );
+    il->dumpFields("after replace");
 
     return 0 ;
 

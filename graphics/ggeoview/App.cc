@@ -831,7 +831,7 @@ void App::prepareOptiX()
     int  debugidx = m_fcfg->getDebugIdx();
     int  stack    = m_fcfg->getStack();
 
-    LOG(info) << "App::prepareOptiX stack " << stack ;  
+    LOG(debug) << "App::prepareOptiX stack " << stack ;  
 
     OContext::Mode_t mode = compute ? OContext::COMPUTE : OContext::INTEROP ; 
 
@@ -874,7 +874,7 @@ void App::prepareOptiX()
 
     m_otracer = new OTracer(m_ocontext, m_composition);
 
-    LOG(info) << m_ogeo->description("App::prepareOptiX ogeo");
+    LOG(debug) << m_ogeo->description("App::prepareOptiX ogeo");
 
     (*m_timer)("prepareOptiX"); 
     LOG(info) << "App::prepareOptiX DONE "; 
@@ -1337,7 +1337,7 @@ void App::render()
         unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
         m_otracer->setResolutionScale(scale) ;
         m_otracer->trace();
-        LOG(info) << m_ogeo->description("App::render ogeo");
+        //LOG(debug) << m_ogeo->description("App::render ogeo");
 
         m_orenderer->render();
     }

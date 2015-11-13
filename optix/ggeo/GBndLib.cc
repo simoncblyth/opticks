@@ -205,6 +205,13 @@ std::string GBndLib::description(const guint4& bnd)
     return ss.str();
 }
 
+std::string GBndLib::shortname(unsigned int boundary)
+{
+    guint4 bnd = getBnd(boundary);
+    return shortname(bnd);
+}
+
+
 std::string GBndLib::shortname(const guint4& bnd)
 {
     std::stringstream ss ; 

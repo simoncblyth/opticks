@@ -5,6 +5,7 @@
 
 class GCache ; 
 class GItemList ; 
+class GBndLib ; 
 
 struct guint4 ; 
 struct gbbox ; 
@@ -41,25 +42,39 @@ class GPmt {
               SK = 4  
             } ;
 
-       // below must match pmt-/tree.py:copy_parts 
+       // below must match locations in pmt-/tree.py:convert 
        enum { INDEX_J  = 1, INDEX_K  = 1 };
-       enum { PARENT_J = 1, PARENT_K = 2 };
+       //enum { PARENT_J = 1, PARENT_K = 2 };
+       enum { BOUNDARY_J = 1, BOUNDARY_K = 2 };
        enum { FLAGS_J  = 1, FLAGS_K  = 3 };
-       enum { BBMIN_J = 2, BBMIN_K = 0 };
+
+       enum { BBMIN_J = 2,     BBMIN_K = 0 };
        enum { TYPECODE_J  = 2, TYPECODE_K  = 3 };
-       enum { BBMAX_J = 3, BBMAX_K = 0 };
+
+       enum { BBMAX_J = 3,     BBMAX_K = 0 };
        enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
 
-       static const char* OUTERMATERIAL ; 
+       static const char* CONTAINING_MATERIAL ; 
+       static const char* SENSOR_SURFACE ; 
        static const char* FILENAME ;  
        static const char* GPMT ;  
    public:
        static GPmt* load(GCache* cache, unsigned int index=0, NSlice* slice=NULL);
    public:
        GPmt(GCache* cache, unsigned int index=0);
-       void addContainer(gbbox& bb, unsigned int nodeindex );
+       void addContainer(gbbox& bb, unsigned int nodeindex, unsigned int boundary );
    private:
        void loadFromCache(NSlice* slice);   
+   public:
+       void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
+       void setContainingMaterial(const char* material="MineralOil");
+       void setBndLib(GBndLib* blib);
+       void registerBoundaries();
+   private:
+       void setBoundary(unsigned int part, unsigned int boundary);
+   public:
+       unsigned int getBoundary(unsigned int part);
+       std::string  getBoundaryName(unsigned int part);
    public:
        GItemList*         getBndSpec();
        NPY<unsigned int>* getSolidBuffer();
@@ -72,27 +87,28 @@ class GPmt {
        void dumpSolidInfo(const char* msg="GPmt::dumpSolidInfo");
        void Summary(const char* msg="GPmt::Summary");
    public: 
-       unsigned int getIndex(unsigned int part_index);
-       unsigned int getParent(unsigned int part_index);
-       unsigned int getFlags(unsigned int part_index);
-       unsigned int getTypeCode(unsigned int part_index);
-       unsigned int getNodeIndex(unsigned int part_index);
+       unsigned int getIndex(unsigned int part);
+       unsigned int getFlags(unsigned int part);
+       unsigned int getTypeCode(unsigned int part);
+       unsigned int getNodeIndex(unsigned int part);
        gbbox        getBBox(unsigned int i);
        gfloat3      getGfloat3(unsigned int i, unsigned int j, unsigned int k);
    public: 
        guint4       getSolidInfo(unsigned int isolid);
    public:
-       const char*  getTypeName(unsigned int part_index);
+       const char*  getTypeName(unsigned int part);
    private:
        void         import();
        void         setBndSpec(GItemList* bndspec);
        void         setPartBuffer(NPY<float>* part_buffer);
        void         setSolidBuffer(NPY<unsigned int>* solid_buffer);
-       unsigned int getUInt(unsigned int part_index, unsigned int j, unsigned int k);
+       unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
+       void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
    private:
        // almost no state, just icing on top of the buffers
        // allowing this to copied/used on GPU in cu/hemi-pmt.cu
        GCache*            m_cache ; 
+       GBndLib*           m_bndlib ; 
        unsigned int       m_index ;
        GItemList*         m_bndspec ; 
        NPY<float>*        m_part_buffer ; 
@@ -106,6 +122,7 @@ class GPmt {
 inline GPmt::GPmt(GCache* cache, unsigned int index) 
     :
     m_cache(cache),
+    m_bndlib(NULL),
     m_index(index),
     m_bndspec(NULL), 
     m_part_buffer(NULL),
@@ -126,6 +143,11 @@ inline void GPmt::setBndSpec(GItemList* bndspec)
 inline GItemList* GPmt::getBndSpec()
 {
     return m_bndspec ; 
+}
+
+inline void GPmt::setBndLib(GBndLib* bndlib)
+{
+    m_bndlib = bndlib ; 
 }
 
 

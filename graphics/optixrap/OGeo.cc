@@ -415,19 +415,16 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
-    //assert(mm->getIndex() == 1 ); 
-
     GBuffer* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
-
     GPmt* pmt = mm->getPmt();
     assert(pmt && "GMergedMesh with GeoCode S must have associated GPmt, see GGeo::modifyGeometry "); 
-    pmt->dump();
+    //pmt->dump();
     pmt->Summary();
 
     NPY<float>* partBuf = pmt->getPartBuffer();
-    NPY<unsigned int>* solidBuf = pmt->getSolidBuffer();
+    NPY<unsigned int>* solidBuf = pmt->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
 
     solidBuf->dump("solidBuf partOffset/numParts/solidIndex/0");
 

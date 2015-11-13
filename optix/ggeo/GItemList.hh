@@ -16,10 +16,13 @@ class GItemList : public NSequence {
        void add(const char* name);
        void save(const char* idpath);
        void dump(const char* msg="GItemList::dump");
-
+    public:
+       void dumpFields(const char* msg="GItemList::dumpFields", const char* delim="/", unsigned int fwid=30);
+       void replaceField(unsigned int field, const char* from, const char* to, const char* delim="/");
     public:
        // fulfil NSequence protocol
        unsigned int getNumKeys();
+       void setKey(unsigned int index, const char* newkey);
        const char* getKey(unsigned int index);
        unsigned int getIndex(const char* key);    // 0-based index of first matching name, OR INT_MAX if no match
    public:
@@ -57,6 +60,12 @@ inline const char* GItemList::getKey(unsigned int index)
 {
     return index < m_list.size() ? m_list[index].c_str() : NULL  ;
 }
+
+inline void GItemList::setKey(unsigned int index, const char* newkey)
+{
+    if(index < m_list.size()) m_list[index] = newkey  ; 
+}
+
 
 inline void GItemList::setOrder(std::map<std::string, unsigned int>& order)
 {

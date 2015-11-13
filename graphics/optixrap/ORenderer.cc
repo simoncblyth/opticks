@@ -1,5 +1,9 @@
 #include "ORenderer.hh"
 
+#include <string>
+#include <sstream>
+#include <iostream>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -52,7 +56,7 @@ void ORenderer::setSize(unsigned int width, unsigned int height)
 
 void ORenderer::render()
 {
-    LOG(info) << "ORenderer::render " << m_render_count ; 
+    LOG(debug) << "ORenderer::render " << m_render_count ; 
 
     double t0 = getRealTime();
 
@@ -77,15 +81,17 @@ void ORenderer::render()
 
 void ORenderer::report(const char* msg)
 {
-    LOG(info)<< msg ; 
     if(m_render_count == 0) return ; 
 
-    std::cout 
+    std::stringstream ss ; 
+    ss 
           << " render_count    " << std::setw(10) << m_render_count  << std::endl 
           << " render_prep     " << std::setw(10) << m_render_prep  << " avg " << std::setw(10) << m_render_prep/m_render_count  << std::endl
           << " render_time     " << std::setw(10) << m_render_time  << " avg " << std::setw(10) << m_render_time/m_render_count  << std::endl
-          << std::endl 
            ;
+
+    LOG(debug) << msg << std::endl << ss.str() ; 
+
 }
 
 

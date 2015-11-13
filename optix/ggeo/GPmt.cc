@@ -2,6 +2,7 @@
 #include "GCache.hh"
 #include "GVector.hh"
 #include "GItemList.hh"
+#include "GBndLib.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -13,7 +14,8 @@
 #include <cassert>
 #include <climits>
 
-const char* GPmt::OUTERMATERIAL = "OUTERMATERIAL" ;  
+const char* GPmt::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
+const char* GPmt::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
 const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::SPHERE_ = "Sphere" ;
 const char* GPmt::TUBS_   = "Tubs" ;
@@ -65,6 +67,40 @@ void GPmt::loadFromCache(NSlice* slice)
 }
 
 
+void GPmt::setContainingMaterial(const char* material)
+{
+    m_bndspec->replaceField(0, GPmt::CONTAINING_MATERIAL, material );
+}
+
+void GPmt::setSensorSurface(const char* surface)
+{
+    m_bndspec->replaceField(1, GPmt::SENSOR_SURFACE, surface ) ; 
+    m_bndspec->replaceField(2, GPmt::SENSOR_SURFACE, surface ) ; 
+}
+
+void GPmt::registerBoundaries()
+{
+   assert(m_bndlib); 
+   unsigned int nbnd = m_bndspec->getNumKeys() ; 
+   assert( getNumParts() == nbnd );
+   for(unsigned int i=0 ; i < nbnd ; i++)
+   {
+       const char* spec = m_bndspec->getKey(i);
+       unsigned int boundary = m_bndlib->addBoundary(spec);
+       setBoundary(i, boundary);
+
+      LOG(debug) << "GPmt::registerBoundaries " 
+                << std::setw(3) << i
+                << std::setw(30) << spec
+                << " --> "
+                << std::setw(4) << boundary 
+                << std::setw(30) << m_bndlib->shortname(boundary)
+                ;
+
+   } 
+}
+
+
 unsigned int GPmt::getNumParts()
 {
     return m_part_buffer ? m_part_buffer->getShape(0) : 0 ; 
@@ -104,35 +140,52 @@ gbbox GPmt::getBBox(unsigned int i)
 unsigned int GPmt::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(i < getNumParts() );
-    float* data = m_part_buffer->getValues();
-    uif_t uif ; 
-    uif.f = data[i*NJ*NK+j*NJ+k] ;
-    return uif.u ; 
+    return m_part_buffer->getUInt(i,j,k);
+
 }
 
-unsigned int GPmt::getNodeIndex(unsigned int part_index)
+void GPmt::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int value)
 {
-    return getUInt(part_index, NODEINDEX_J, NODEINDEX_K);
-}
-unsigned int GPmt::getTypeCode(unsigned int part_index)
-{
-    return getUInt(part_index, TYPECODE_J, TYPECODE_K);
-}
-unsigned int GPmt::getIndex(unsigned int part_index)
-{
-    return getUInt(part_index, INDEX_J, INDEX_K);
-}
-unsigned int GPmt::getParent(unsigned int part_index)
-{
-    return getUInt(part_index, PARENT_J, PARENT_K);
-}
-unsigned int GPmt::getFlags(unsigned int part_index)
-{
-    return getUInt(part_index, FLAGS_J, FLAGS_K);
+    assert(i < getNumParts() );
+    m_part_buffer->setUInt(i,j,k, value);
 }
 
 
-void GPmt::addContainer(gbbox& bb, unsigned int nodeindex)
+unsigned int GPmt::getNodeIndex(unsigned int part)
+{
+    return getUInt(part, NODEINDEX_J, NODEINDEX_K);
+}
+unsigned int GPmt::getTypeCode(unsigned int part)
+{
+    return getUInt(part, TYPECODE_J, TYPECODE_K);
+}
+unsigned int GPmt::getIndex(unsigned int part)
+{
+    return getUInt(part, INDEX_J, INDEX_K);
+}
+unsigned int GPmt::getBoundary(unsigned int part)
+{
+    return getUInt(part, BOUNDARY_J, BOUNDARY_K);
+}
+void GPmt::setBoundary(unsigned int part, unsigned int boundary)
+{
+    setUInt(part, BOUNDARY_J, BOUNDARY_K, boundary);
+}
+
+std::string GPmt::getBoundaryName(unsigned int part)
+{
+    unsigned int boundary = getBoundary(part);
+    std::string name = m_bndlib ? m_bndlib->shortname(boundary) : "" ;
+    return name ;
+}
+
+unsigned int GPmt::getFlags(unsigned int part)
+{
+    return getUInt(part, FLAGS_J, FLAGS_K);
+}
+
+
+void GPmt::addContainer(gbbox& bb, unsigned int nodeindex, unsigned int boundary)
 {
     unsigned int i = 0u ; 
     unsigned int typecode = BOX ; 
@@ -141,6 +194,7 @@ void GPmt::addContainer(gbbox& bb, unsigned int nodeindex)
     LOG(info) << "GPmt::addContainer"
               << " nodeindex " << nodeindex 
               << " partindex " << partindex
+              << " boundary " << boundary 
                ; 
 
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
@@ -153,6 +207,7 @@ void GPmt::addContainer(gbbox& bb, unsigned int nodeindex)
     part->setUInt( i, NODEINDEX_J, NODEINDEX_K, nodeindex ); 
     part->setUInt( i, TYPECODE_J,  TYPECODE_K,  typecode ); 
     part->setUInt( i, INDEX_J,     INDEX_K,     partindex ); 
+    part->setUInt( i, BOUNDARY_J,  BOUNDARY_K,  boundary ); 
 
     m_part_buffer->add(part);
     import(); // recreate the solid buffer
@@ -356,13 +411,10 @@ void GPmt::Summary(const char* msg)
 
     for(unsigned int i=0 ; i < getNumParts() ; i++)
     {
-        printf(" part %2u : node %2u type %2u \n", i, getNodeIndex(i), getTypeCode(i) ); 
+        std::string bn = getBoundaryName(i);
+        printf(" part %2u : node %2u type %2u boundary [%3u] %s  \n", i, getNodeIndex(i), getTypeCode(i), getBoundary(i), bn.c_str() ); 
     }
-
 }
-
-
-
 
 
 
@@ -389,7 +441,8 @@ void GPmt::dump(const char* msg)
     {   
        unsigned int tc = getTypeCode(i);
        unsigned int id = getIndex(i);
-       unsigned int pid = getParent(i);
+       unsigned int bnd = getBoundary(i);
+       std::string  bn = getBoundaryName(i);
        unsigned int flg = getFlags(i);
        const char*  tn = getTypeName(i);
 
@@ -408,10 +461,10 @@ void GPmt::dump(const char* msg)
                   assert( uif.u == id );
                   printf(" %6u id   " , uif.u );
               }
-              else if( j == PARENT_J && k == PARENT_K)
+              else if( j == BOUNDARY_J && k == BOUNDARY_K)
               {
-                  assert( uif.u == pid );
-                  printf(" %6u pid  ", uif.u );
+                  assert( uif.u == bnd );
+                  printf(" %6u bnd  ", uif.u );
               }
               else if( j == FLAGS_J && k == FLAGS_K)
               {
@@ -423,12 +476,13 @@ void GPmt::dump(const char* msg)
               else
                   printf(" %10.4f ", uif.f );
           }   
+
+          if( j == BOUNDARY_J ) printf(" bn %s ", bn.c_str() );
           printf("\n");
        }   
        printf("\n");
     }   
 
 }
-
 
 

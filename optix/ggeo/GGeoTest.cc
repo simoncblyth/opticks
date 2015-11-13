@@ -154,51 +154,46 @@ void GGeoTest::modifyGeometry()
 
 GMergedMesh* GGeoTest::createPmtInBox(float size, unsigned int boundary)
 {
-    LOG(info) << "GGeoTest::createPmtInBox" ; 
+    LOG(info) << "GGeoTest::createPmtInBox" 
+              << " container boundary " << boundary
+               ; 
 
-    GMergedMesh* mm = m_geolib->getMergedMesh(1);
 
     GPmt* pmt = GPmt::load( m_cache, 0, NULL );  // part slicing disfavored, as only works at one level 
-    pmt->dump();
 
-    GItemList* bndspec = pmt->getBndSpec();
-    unsigned int nbnd = bndspec->getNumKeys();
+    const char* material = "MineralOil";  // hmm should be extracted from innermaterial of boundary  
+    const char* surface =  "lvPmtHemiCathodeSensorSurface" ;
 
-    for(unsigned int i=0 ; i < nbnd ; i++)
-    {
-        const char* bnd = bndspec->getKey(i);
-        LOG(info) << "GGeoTest::createPmtInBox"
-                  << std::setw(3) << i 
-                  << " : " << bnd 
-                  ; 
+    pmt->setContainingMaterial(material);
+    pmt->setSensorSurface(surface);
+    pmt->setBndLib(m_bndlib);
 
-        if(strncmp(bnd, GPmt::OUTERMATERIAL, strlen(GPmt::OUTERMATERIAL)) == 0)
-        {
-            LOG(info) << "starts with marker" ; 
-        }
+    pmt->registerBoundaries();
 
 
-    }
-
-
-    // TODO: break this requirement, GPmt needs to manage its own identities...
-    assert( pmt->getNumSolids() == mm->getNumSolids() );
-
+    // still using mesh to set container box size basis for the analytic...
+    GMergedMesh* mm = m_geolib->getMergedMesh(1);
     gbbox bb = mm->getBBox(0);     // solid-0 contains them all
     bb.enlarge(size);               // the **ONE** place for sizing containment box
+
+    unsigned int nodeindex = pmt->getNumSolids();
+    pmt->addContainer(bb, nodeindex, boundary );
+    //pmt->dump("GGeoTest::createPmtInBox");
+
+
+
+    // triangulated setup 
 
     GSolid* solid = GTestBox::makeSolid(bb, 1000, mm->getNumSolids()) ; // meshIndex, nodeIndex
     solid->setBoundary(boundary); 
 
     GMergedMesh* pib = GMergedMesh::combine( mm->getIndex(), mm, solid );   
-    pib->dump();
-    pib->setGeoCode('S');  // signal OGeo to use Analytic geometry, TODO: set it not signal it  
+    //pib->dump("GGeoTest::createPmtInBox");
+
+    pib->setGeoCode('S');  // signal OGeo to use Analytic geometry
     pib->setPmt(pmt);
 
-    unsigned int nodeindex = pmt->getNumSolids();
-    pmt->addContainer(bb, nodeindex );
-    pmt->dump("after addContainer");
-
+    // below is currently "accidentally" satisfied
     assert( pib->getNumSolids() == pmt->getNumSolids() );
 
     return pib ; 

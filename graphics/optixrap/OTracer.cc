@@ -44,7 +44,7 @@ void OTracer::init()
 
 void OTracer::trace()
 {
-    LOG(info) << "OTracer::trace " << m_trace_count ; 
+    LOG(debug) << "OTracer::trace " << m_trace_count ; 
 
     double t0 = getRealTime();
 
@@ -95,7 +95,7 @@ void OTracer::trace()
     m_trace_prep += t1 - t0 ; 
     m_trace_time += t2 - t1 ; 
 
-    LOG(info) << m_trace_times->description("OTracer::trace m_trace_times") ;
+    LOG(debug) << m_trace_times->description("OTracer::trace m_trace_times") ;
 
 
 }

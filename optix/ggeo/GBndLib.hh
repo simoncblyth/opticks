@@ -50,6 +50,7 @@ class GBndLib : public GPropertyLib {
   public:
        std::string description(const guint4& bnd);
        std::string shortname(const guint4& bnd);
+       std::string shortname(unsigned int boundary);
        bool contains(const guint4& bnd);
        unsigned int index(const guint4& bnd);
   public:

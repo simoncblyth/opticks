@@ -17,7 +17,7 @@ ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199_source=0,0,1000
 
 ggv-pmt(){
    type $FUNCNAME
-   ggv --tracer --test --eye 0.5,0.5,0.0 ; 
+   ggv --tracer --test --eye 0.5,0.5,0.0 $* ; 
 }
 
 
