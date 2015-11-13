@@ -260,6 +260,27 @@ unsigned int GBndLib::getOuterSurface(unsigned int boundary)
 
 
 
+const char* GBndLib::getOuterMaterialName(unsigned int boundary)
+{
+    unsigned int omat = getOuterMaterial(boundary);
+    return m_mlib->getName(omat);
+}
+const char* GBndLib::getInnerMaterialName(unsigned int boundary)
+{
+    unsigned int imat = getInnerMaterial(boundary);
+    return m_mlib->getName(imat);
+}
+
+const char* GBndLib::getOuterSurfaceName(unsigned int boundary)
+{
+    unsigned int osur = getOuterSurface(boundary);
+    return m_slib->getName(osur);
+}
+const char* GBndLib::getInnerSurfaceName(unsigned int boundary)
+{
+    unsigned int isur = getInnerSurface(boundary);
+    return m_slib->getName(isur);
+}
 
 
 

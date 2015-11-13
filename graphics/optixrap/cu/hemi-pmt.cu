@@ -789,8 +789,12 @@ RT_PROGRAM void intersect(int primIdx)
 {
   const uint4& solid    = solidBuffer[primIdx]; 
   unsigned int numParts = solid.y ; 
-  const uint4& identity = identityBuffer[primIdx] ; 
+
+  //const uint4& identity = identityBuffer[primIdx] ; 
   //const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
+
+  // try with just one identity per-instance 
+  uint4 identity = identityBuffer[instance_index] ; 
 
 
   for(unsigned int p=0 ; p < numParts ; p++)
@@ -803,6 +807,8 @@ RT_PROGRAM void intersect(int primIdx)
       q1.f = partBuffer[4*partIdx+1];  
       q2.f = partBuffer[4*partIdx+2] ;
       q3.f = partBuffer[4*partIdx+3]; 
+
+      identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
 
       switch(q2.i.w)
       {
@@ -832,6 +838,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 {
   // could do offline
   const uint4& solid    = solidBuffer[primIdx]; 
+  uint4 identity = identityBuffer[instance_index] ; 
   unsigned int numParts = solid.y ; 
 
   optix::Aabb* aabb = (optix::Aabb*)result;
@@ -840,10 +847,24 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   for(unsigned int p=0 ; p < numParts ; p++)
   { 
       unsigned int partIdx = solid.x + p ;  
-      const float4& q2 = partBuffer[4*partIdx+2] ;
-      const float4& q3 = partBuffer[4*partIdx+3]; 
 
-      aabb->include( make_float3(q2), make_float3(q3) );
+      quad q0, q1, q2, q3 ; 
+
+      q0.f = partBuffer[4*partIdx+0];  
+      q1.f = partBuffer[4*partIdx+1];  
+      q2.f = partBuffer[4*partIdx+2] ;
+      q3.f = partBuffer[4*partIdx+3]; 
+
+      identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
+      unsigned int boundary = q1.u.z ; 
+      rtPrintf("bounds primIdx %u p %u partIdx %u boundary %u identity (%u,%u,%u,%u) \n", primIdx, p, partIdx, boundary, 
+                  identity.x, 
+                  identity.y, 
+                  identity.z, 
+                  identity.w 
+              );  
+
+      aabb->include( make_float3(q2.f), make_float3(q3.f) );
   } 
 
   rtPrintf("bounds primIdx %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, 

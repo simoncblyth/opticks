@@ -367,6 +367,7 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 }
 
 
+// TODO: migrate GBuffer to NPY<float>
 GBuffer* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx) 
 {
     // collecting transforms from the instances into a buffer
@@ -427,7 +428,7 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
 
             unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
 
-            LOG(info) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
+            LOG(debug) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
                       << " s " << std::setw(3) << s 
                       << " sid " << std::setw(10) << std::hex << sid << std::dec 
                       << " ss " << (ss ? ss->description() : "NULL" )
@@ -443,7 +444,7 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
         glm::uvec4 aii ; 
 
         aii.x = base->getIndex();        
-        aii.y = 0 ;  // leave free, for some analytic equivalent of mesh index ?
+        aii.y = i ;  // instance index (for triangulated this contains the mesh index)
         aii.z = 0 ;  // formerly boundary, but with analytic have broken 1-1 solid/boundary relationship so boundary must live in partBuffer
         aii.w = NSensor::RefIndex(sensor) ;  // the only critical one 
 

@@ -180,7 +180,7 @@ class GMesh : public GDrawable {
       // per instance global transforms of repeated geometry 
       static const char* itransforms ;    
       static const char* iidentity ;     // guint4: node, mesh, boundary, sensor
-
+      static const char* aiidentity ;    
 
 
       //GMesh(GMesh* other); // stealing copy ctor
@@ -194,6 +194,8 @@ class GMesh : public GDrawable {
       void deallocate(); 
       virtual ~GMesh();
 
+  private:
+      void init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords);
   public:
       GMesh* makeDedupedCopy();
 
@@ -270,6 +272,10 @@ class GMesh : public GDrawable {
       void loadBuffer(const char* path, const char* name);
       static void nameConstituents(std::vector<std::string>& names);
   private: 
+      bool isNPYBuffer(const char* name);
+      void loadNPYBuffer(const char* path, const char* name);
+      void saveNPYBuffer(const char* path, const char* name);
+  private: 
       GBuffer* getBuffer(const char* name);
       void setBuffer(const char* name, GBuffer* buffer);
       bool isIntBuffer(const char* name);
@@ -294,8 +300,8 @@ class GMesh : public GDrawable {
       void setNodeInfoBuffer(GBuffer* buffer);
       void setIdentityBuffer(GBuffer* buffer);
       void setInstancedIdentityBuffer(GBuffer* buffer);
-      void setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* aii);
-
+  public:
+      void setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf);
   public:
       bool hasTransformsBuffer(); 
       bool hasITransformsBuffer(); 
@@ -316,6 +322,7 @@ class GMesh : public GDrawable {
       GBuffer* getNodeInfoBuffer();
       GBuffer* getIdentityBuffer();
       GBuffer* getInstancedIdentityBuffer(); // created by GTreeCheck::CreateInstancedMergedMeshes 
+  public:
       NPY<unsigned int>* getAnalyticInstancedIdentityBuffer();
 
       GBuffer* getITransformsBuffer();
@@ -366,11 +373,6 @@ class GMesh : public GDrawable {
 
   private:
       virtual void updateDistinctBoundaries();
-
-  protected:
-      unsigned int* m_nodes ; 
-      unsigned int* m_boundaries ; 
-      unsigned int* m_sensors ; 
 
   private: 
       std::vector<unsigned int> m_distinct_boundaries ;
@@ -424,6 +426,10 @@ class GMesh : public GDrawable {
       unsigned int    m_num_faces ;
       unsigned int    m_num_solids  ;         // used from GMergedMesh subclass
       unsigned int    m_num_solids_selected  ;
+
+      unsigned int*   m_nodes ; 
+      unsigned int*   m_boundaries ; 
+      unsigned int*   m_sensors ; 
  
       gfloat3*        m_vertices ;
       gfloat3*        m_normals ;
@@ -476,7 +482,8 @@ class GMesh : public GDrawable {
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
       GBuffer* m_iidentity_buffer ;
-      NPY<unsigned int>* m_aii_buffer ; 
+
+      NPY<unsigned int>* m_aiidentity_buffer ; 
 
       // transients
       GBuffer* m_facerepeated_identity_buffer ;
@@ -484,6 +491,84 @@ class GMesh : public GDrawable {
       GBuffer* m_analytic_geometry_buffer ; 
 
 };
+
+
+
+inline GMesh::GMesh(unsigned int index, 
+             gfloat3* vertices, 
+             unsigned int num_vertices, 
+             guint3* faces, 
+             unsigned int num_faces, 
+             gfloat3* normals, 
+             gfloat2* texcoords
+            ) 
+        :
+      GDrawable(),
+      m_index(index),
+
+      m_num_vertices(num_vertices), 
+      m_num_faces(num_faces),
+      m_num_solids(0),
+      m_num_solids_selected(0),
+
+      m_nodes(NULL),          
+      m_boundaries(NULL),
+      m_sensors(NULL),
+
+      m_vertices(NULL),
+      m_normals(NULL),
+      m_colors(NULL),
+      m_texcoords(NULL),
+      m_faces(NULL),
+
+      m_low(NULL),
+      m_high(NULL),
+      m_dimensions(NULL),
+      m_center(NULL),
+      m_extent(0.f),
+
+      m_center_extent(NULL),
+      m_bbox(NULL),
+      m_transforms(NULL),
+      m_itransforms(NULL),
+      m_meshes(NULL),
+      m_nodeinfo(NULL),
+      m_identity(NULL),
+      m_iidentity(NULL),
+
+      m_model_to_world(NULL),
+      m_name(NULL),
+      m_shortname(NULL),
+      m_version(NULL),
+      m_geocode('T'),
+      m_islice(NULL),
+      m_fslice(NULL),
+      m_pslice(NULL),
+
+      m_vertices_buffer(NULL),
+      m_normals_buffer(NULL),
+      m_colors_buffer(NULL),
+      m_texcoords_buffer(NULL),
+      m_indices_buffer(NULL),
+      m_center_extent_buffer(NULL),
+      m_bbox_buffer(NULL),
+      m_boundaries_buffer(NULL),
+      m_sensors_buffer(NULL),
+      m_transforms_buffer(NULL),
+      m_itransforms_buffer(NULL),
+      m_meshes_buffer(NULL),
+      m_nodeinfo_buffer(NULL),
+      m_identity_buffer(NULL),
+      m_iidentity_buffer(NULL),
+      m_aiidentity_buffer(NULL),
+
+      m_facerepeated_identity_buffer(NULL),
+      m_facerepeated_iidentity_buffer(NULL),
+      m_analytic_geometry_buffer(NULL)
+
+{
+     init(vertices, faces, normals, texcoords);
+}
 
 
 
@@ -793,7 +878,7 @@ inline GBuffer*  GMesh::getInstancedIdentityBuffer()
 }
 inline NPY<unsigned int>*  GMesh::getAnalyticInstancedIdentityBuffer()
 {
-    return m_aii_buffer ;
+    return m_aiidentity_buffer ;
 }
 
 

@@ -56,10 +56,16 @@ class GBndLib : public GPropertyLib {
   public:
        // boundary index lookups
        guint4 getBnd(unsigned int boundary);
-       unsigned int getInnerMaterial(unsigned int boundary);
+  public:
        unsigned int getOuterMaterial(unsigned int boundary);
-       unsigned int getInnerSurface(unsigned int boundary);
        unsigned int getOuterSurface(unsigned int boundary);
+       unsigned int getInnerSurface(unsigned int boundary);
+       unsigned int getInnerMaterial(unsigned int boundary);
+  public:
+       const char* getOuterMaterialName(unsigned int boundary);
+       const char* getOuterSurfaceName(unsigned int boundary);
+       const char* getInnerSurfaceName(unsigned int boundary);
+       const char* getInnerMaterialName(unsigned int boundary);
   public:
        guint4 parse( const char* spec, bool flip=false);
        bool contains( const char* spec, bool flip=false);

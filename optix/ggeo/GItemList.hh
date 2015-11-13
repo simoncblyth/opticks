@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 
+struct NSlice ;
 #include "NSequence.hpp"
 
 class GItemList : public NSequence {
@@ -16,6 +17,9 @@ class GItemList : public NSequence {
        void add(const char* name);
        void save(const char* idpath);
        void dump(const char* msg="GItemList::dump");
+    public:
+       GItemList* make_slice(const char* slice);
+       GItemList* make_slice(NSlice* slice);
     public:
        void dumpFields(const char* msg="GItemList::dumpFields", const char* delim="/", unsigned int fwid=30);
        void replaceField(unsigned int field, const char* from, const char* to, const char* delim="/");

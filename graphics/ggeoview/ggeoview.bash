@@ -14,10 +14,55 @@ ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
 
 ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199_source=0,0,1000_target=0,0,0_radius=150_zenithazimuth=0,1,0,1" $* ; }
 
+join(){ local IFS="$1"; shift; echo "$*"; }
+
+
 
 ggv-pmt(){
    type $FUNCNAME
-   ggv --tracer --test --eye 0.5,0.5,0.0 $* ; 
+
+   local test_config=(
+                 mode=PmtInBox
+                 slice=0:0
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 dimensions=3,0,0,0
+                   ) 
+
+   ggv --tracer \
+          --test --testconfig "$(join _ ${test_config[@]})" \
+          --eye 0.5,0.5,0.0 \
+           $*  
+}
+
+
+ggv-pmt-test(){
+   type $FUNCNAME
+
+   local test_config=(
+                 mode=PmtInBox
+                 slice=0:0
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 dimensions=3,0,0,0
+                   ) 
+
+   local torch_config=(
+                 type=sphere
+                 photons=500000
+                 frame=1
+                 source=0,0,300
+                 target=0,0,0
+                 radius=202
+                 zenithazimuth=0,1,0,1
+                 material=Vacuum
+               )
+
+   ggv \
+       --test --testconfig "$(join _ ${test_config[@]})" \
+       --torch --torchconfig "$(join _ ${torch_config[@]})" \
+       --animtimemax 10 \
+       --eye 0.5,0.5,0.0 \
+       $* 
+
 }
 
 
@@ -32,12 +77,18 @@ ggv-bib-tracer(){
 }
 
 
-join(){ local IFS="$1"; shift; echo "$*"; }
 
-
-ggv-reflect-torchconfig(){
+ggv-reflect()
+{
+    type $FUNCNAME
     local pol=${1:-s}
-    local torch=(
+    case $pol in  
+        s) tag=1 ;;
+        p) tag=2 ;;
+    esac
+    echo  pol $pol tag $tag
+
+    local torch_config=(
                  type=refltest
                  photons=500000
                  polz=${pol}pol
@@ -48,37 +99,29 @@ ggv-reflect-torchconfig(){
                  zenithazimuth=0,0.5,0,1
                  material=Vacuum
                )
-    echo "$(join _ ${torch[@]})"
-}
 
-ggv-reflect-testconfig(){
-    local test=(
+    local test_config=(
                  mode=BoxInBox
                  dimensions=500,300,0,0
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 
                )
-    echo "$(join _ ${test[@]})"
-}
 
-ggv-reflect(){
-    type $FUNCNAME
-    local pol=${1:-s}
-    case $pol in  
-        s) tag=1 ;;
-        p) tag=2 ;;
-    esac
-    echo  pol $pol tag $tag
     ggv.sh  \
             --eye 0.5,0.5,0.0 \
             --animtimemax 7 \
-            --test \
-            --testconfig "$(ggv-reflect-testconfig)" \
-            --torchconfig "$(ggv-reflect-torchconfig $pol)" \
-            --save \
-            --tag $tag \
+            --test --testconfig "$(join _ ${test_config[@]})" \
+            --torch --torchconfig "$(join _ ${torch_config[@]})" \
+            --save --tag $tag \
             $*
 }
+
+
+
+
+
+
+
 
 ggv-box(){
    type $FUNCNAME

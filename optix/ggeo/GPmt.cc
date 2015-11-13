@@ -44,25 +44,34 @@ GPmt* GPmt::load(GCache* cache, unsigned int index, NSlice* slice)
 void GPmt::loadFromCache(NSlice* slice)
 {
     std::string relpath = m_cache->getPmtPath(m_index, true); 
-    GItemList* bndspec = GItemList::load(m_cache->getIdPath(), "GPmt", relpath.c_str() );
-    setBndSpec(bndspec);
+    GItemList*  origSpec = GItemList::load(m_cache->getIdPath(), "GPmt", relpath.c_str() );
 
     std::string path = m_cache->getPmtPath(m_index); 
     NPY<float>* origBuf = NPY<float>::load( path.c_str(), FILENAME );
+
+
     NPY<float>* partBuf(NULL);
+    GItemList* bndSpec(NULL);
     if(slice)
     {
         partBuf = origBuf->make_slice(slice) ; 
+        bndSpec = origSpec->make_slice(slice);
         LOG(info) << "GPmt::loadFromCache slicing partBuf " 
                   << " origBuf " << origBuf->getShapeString() 
                   << " partBuf " << partBuf->getShapeString()
                   ; 
+
     }
     else
     {
         partBuf = origBuf ; 
+        bndSpec = origSpec ; 
     }
+
+
+    setBndSpec(bndSpec);
     setPartBuffer(partBuf);
+
     import();
 }
 
@@ -77,6 +86,52 @@ void GPmt::setSensorSurface(const char* surface)
     m_bndspec->replaceField(1, GPmt::SENSOR_SURFACE, surface ) ; 
     m_bndspec->replaceField(2, GPmt::SENSOR_SURFACE, surface ) ; 
 }
+
+
+
+void GPmt::addContainer(gbbox& bb, const char* spec)
+{
+    unsigned int typecode = BOX ; 
+    unsigned int nodeindex = getNumSolids() ; 
+    unsigned int partindex = getNumParts() + 1  ; // 1-based  ?
+
+    unsigned int boundary = m_bndlib->addBoundary(spec);
+    const char* imat = m_bndlib->getInnerMaterialName(boundary);
+    assert(strcmp(imat,"MineralOil")==0);
+
+    LOG(info) << "GPmt::addContainer"
+              << " nodeindex " << nodeindex 
+              << " partindex " << partindex
+              << " spec " << spec 
+              << " boundary " << boundary
+              << " inner material " << imat 
+               ; 
+
+    // fill in the blanks for CONTAINING_MATERIAL///Pyrex
+
+    setContainingMaterial(imat); 
+
+
+    NPY<float>* part = NPY<float>::make(1, NJ, NK );
+    part->zero();
+
+    assert(BBMIN_K == 0 );
+    assert(BBMAX_K == 0 );
+    unsigned int i = 0u ; 
+    part->setQuad( i, BBMIN_J, bb.min.x, bb.min.y, bb.min.z , 0.f );
+    part->setQuad( i, BBMAX_J, bb.max.x, bb.max.y, bb.max.z , 0.f );
+    part->setUInt( i, NODEINDEX_J, NODEINDEX_K, nodeindex ); 
+    part->setUInt( i, TYPECODE_J,  TYPECODE_K,  typecode ); 
+    part->setUInt( i, INDEX_J,     INDEX_K,     partindex ); 
+    part->setUInt( i, BOUNDARY_J,  BOUNDARY_K,  boundary ); 
+
+    m_bndspec->add(spec);
+    m_part_buffer->add(part);
+
+    import(); // recreate the solid buffer
+}
+
+
 
 void GPmt::registerBoundaries()
 {
@@ -185,35 +240,6 @@ unsigned int GPmt::getFlags(unsigned int part)
 }
 
 
-void GPmt::addContainer(gbbox& bb, unsigned int nodeindex, unsigned int boundary)
-{
-    unsigned int i = 0u ; 
-    unsigned int typecode = BOX ; 
-    unsigned int partindex = getNumParts() + 1  ; // 1-based  ?
-
-    LOG(info) << "GPmt::addContainer"
-              << " nodeindex " << nodeindex 
-              << " partindex " << partindex
-              << " boundary " << boundary 
-               ; 
-
-    NPY<float>* part = NPY<float>::make(1, NJ, NK );
-    part->zero();
-
-    assert(BBMIN_K == 0 );
-    assert(BBMAX_K == 0 );
-    part->setQuad( i, BBMIN_J, bb.min.x, bb.min.y, bb.min.z , 0.f );
-    part->setQuad( i, BBMAX_J, bb.max.x, bb.max.y, bb.max.z , 0.f );
-    part->setUInt( i, NODEINDEX_J, NODEINDEX_K, nodeindex ); 
-    part->setUInt( i, TYPECODE_J,  TYPECODE_K,  typecode ); 
-    part->setUInt( i, INDEX_J,     INDEX_K,     partindex ); 
-    part->setUInt( i, BOUNDARY_J,  BOUNDARY_K,  boundary ); 
-
-    m_part_buffer->add(part);
-    import(); // recreate the solid buffer
-}
-
-
 const char* GPmt::getTypeName(unsigned int part_index)
 {
     unsigned int code = getTypeCode(part_index);
@@ -260,7 +286,7 @@ No matter which grouping is used identity and solid buffer need the same
 shape and identity content needs to mimic the triangulated ones (other than mesh index).
 Triangulated identity buffer hails from GSolid::getIdentity with guint4 per solid
 
-* node index (critical)
+* node index (useful)
 * mesh index (not used yet? handy for mesh debug)
 * boundary index (critical)
 * sensor surface index (critical)
@@ -343,9 +369,17 @@ Part   Tubs OpaqueVacuum             pmt-hemi-dynode_part   [0, 0, -81.5] r:  27
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
-    assert(nmax - nmin == m_parts_per_solid.size() - 1);  // expect contiguous node indices
-
     unsigned int num_solids = m_parts_per_solid.size() ;
+    //assert(nmax - nmin == num_solids - 1);  // expect contiguous node indices
+    if(nmax - nmin != num_solids - 1)
+    {
+        LOG(warning) << "GPmt::import non-contiguous node indices"
+                     << " nmin " << nmin 
+                     << " nmax " << nmax
+                     << " num_solids " << num_solids 
+                     ; 
+    }
+
 
     guint4* solidinfo = new guint4[num_solids] ;
 
@@ -363,9 +397,6 @@ Part   Tubs OpaqueVacuum             pmt-hemi-dynode_part   [0, 0, -81.5] r:  27
         si.y = parts_for_solid ;
         si.z = node_index ; 
         si.w = 0 ;              
-
-        // hmm do boundary lookups in here ? only if pass in the containing material name
-        // to replace the TOPMATERIAL
 
         LOG(debug) << "GPmt::import solidinfo " << si.description() ;       
 

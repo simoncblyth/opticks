@@ -38,18 +38,39 @@ void base()
 }
 
 
-
-
-int main(int argc, char** argv)
+void test_replaceFields(GCache* cache)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "GItemList.log", "info");
-
     GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
     il->dump();
     il->dumpFields();
     il->replaceField(0, "OUTERMATERIAL", "MineralOil" );
     il->replaceField(1, "OUTERSURFACE", "lvPmtHemiCathodeSensorSurface" );
     il->dumpFields("after replace");
+}
+
+
+void test_makeSlice(GCache* cache)
+{
+    GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
+    il->dump();
+
+    GItemList* sl = il->make_slice("0:4");
+    sl->dump("sliced");
+}
+
+
+
+
+
+
+
+
+int main(int argc, char** argv)
+{
+    GCache* cache = new GCache("GGEOVIEW_", "GItemList.log", "info");
+
+    //test_replaceFields(cache);
+    test_makeSlice(cache);
 
     return 0 ;
 

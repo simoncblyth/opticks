@@ -261,7 +261,7 @@ void GAttrSeq::dumpTable(Index* seqtab, const char* msg)
               << std::setw(10) << seqtab->getIndexSourceTotal()
               << std::endl ;
 
-    LOG(info) << ss.str() ;
+    LOG(info) << std::endl << ss.str() ;
 }
 
 

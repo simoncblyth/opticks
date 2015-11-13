@@ -62,7 +62,7 @@ class GPmt {
        static GPmt* load(GCache* cache, unsigned int index=0, NSlice* slice=NULL);
    public:
        GPmt(GCache* cache, unsigned int index=0);
-       void addContainer(gbbox& bb, unsigned int nodeindex, unsigned int boundary );
+       void addContainer(gbbox& bb, const char* bnd );
    private:
        void loadFromCache(NSlice* slice);   
    public:

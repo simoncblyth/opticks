@@ -33,6 +33,16 @@ std::string GLMFormat::format(int i)
     m_ss << i ; 
     return m_ss.str();
 }
+std::string GLMFormat::format(unsigned int u)
+{
+    m_ss.str(""); // clear buffer
+    m_ss << u ; 
+    return m_ss.str();
+}
+
+
+
+
 std::string GLMFormat::format(const glm::vec3& v)
 {
     std::vector<std::string> vals ; 
@@ -52,8 +62,6 @@ std::string GLMFormat::format(const glm::vec4& v)
 }
 
 
-
-
 std::string GLMFormat::format(const glm::ivec4& v)
 {
     std::vector<std::string> vals ; 
@@ -63,6 +71,19 @@ std::string GLMFormat::format(const glm::ivec4& v)
     vals.push_back(format(v.w));
     return boost::algorithm::join(vals, ",");
 }
+std::string GLMFormat::format(const glm::uvec4& v)
+{
+    std::vector<std::string> vals ; 
+    vals.push_back(format(v.x));
+    vals.push_back(format(v.y));
+    vals.push_back(format(v.z));
+    vals.push_back(format(v.w));
+    return boost::algorithm::join(vals, ",");
+}
+
+
+
+
 
 std::string GLMFormat::format(const glm::ivec3& v)
 {
@@ -98,6 +119,14 @@ int GLMFormat::int_(const std::string& s )
     int i = boost::lexical_cast<int>(s);
     return i ;
 }
+
+unsigned int GLMFormat::uint_(const std::string& s )
+{
+    unsigned int u = boost::lexical_cast<unsigned int>(s);
+    return u ;
+}
+
+
 
 
 glm::quat GLMFormat::quat(const std::string& s )
@@ -160,6 +189,26 @@ glm::ivec4 GLMFormat::ivec4(const std::string& s )
     return v ; 
 }
 
+glm::uvec4 GLMFormat::uvec4(const std::string& s )
+{
+    std::vector<std::string> tp; 
+    boost::split(tp, s, boost::is_any_of(","));
+
+    unsigned int size = tp.size();
+
+    glm::uvec4 v(0,0,0,0) ;  
+    if(size > 0) v.x = boost::lexical_cast<unsigned int>(tp[0]); 
+    if(size > 1) v.y = boost::lexical_cast<unsigned int>(tp[1]); 
+    if(size > 2) v.z = boost::lexical_cast<unsigned int>(tp[2]); 
+    if(size > 3) v.w = boost::lexical_cast<unsigned int>(tp[3]); 
+
+    return v ; 
+}
+
+
+
+
+
 glm::ivec3 GLMFormat::ivec3(const std::string& s )
 {
     std::vector<std::string> tp; 
@@ -193,6 +242,15 @@ std::string gformat(int i)
     GLMFormat fmt; 
     return fmt.format(i);
 }
+std::string gformat(unsigned int i)
+{
+    GLMFormat fmt; 
+    return fmt.format(i);
+}
+
+
+
+
 std::string gformat(const glm::vec3& v )
 {
     GLMFormat fmt; 
@@ -208,6 +266,13 @@ std::string gformat(const glm::ivec4& v )
     GLMFormat fmt; 
     return fmt.format(v);
 }
+std::string gformat(const glm::uvec4& v )
+{
+    GLMFormat fmt; 
+    return fmt.format(v);
+}
+
+
 std::string gformat(const glm::ivec3& v )
 {
     GLMFormat fmt; 
@@ -256,6 +321,15 @@ int gint_(const std::string&s )
     GLMFormat fmt; 
     return fmt.int_(s);
 }
+unsigned int guint_(const std::string&s )
+{
+    GLMFormat fmt; 
+    return fmt.uint_(s);
+}
+
+
+
+
 glm::vec3 gvec3(const std::string& s )
 {
     GLMFormat fmt; 
@@ -271,6 +345,12 @@ glm::ivec4 givec4(const std::string& s )
     GLMFormat fmt; 
     return fmt.ivec4(s);
 }
+glm::uvec4 guvec4(const std::string& s )
+{
+    GLMFormat fmt; 
+    return fmt.uvec4(s);
+}
+
 glm::ivec3 givec3(const std::string& s )
 {
     GLMFormat fmt; 

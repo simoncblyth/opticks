@@ -8,7 +8,7 @@
 #include <iterator>
 #include <iomanip>
 
-
+#include "NSlice.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -163,6 +163,38 @@ void GItemList::replaceField(unsigned int field, const char* from, const char* t
         }
 
     }
+}
+
+GItemList* GItemList::make_slice(const char* slice_)
+{
+    NSlice* slice = slice_ ? new NSlice(slice_) : NULL ;
+    return make_slice(slice);
+}
+
+GItemList* GItemList::make_slice(NSlice* slice)
+{
+    GItemList* spawn = new GItemList( m_itemtype.c_str(), m_reldir.c_str() );
+    spawn->setOrder(m_order);
+
+    unsigned int ni = getNumKeys();
+    if(!slice)
+    {   
+        slice = new NSlice(0, ni, 1); 
+        LOG(warning) << "GItemList::make_slice NULL slice, defaulting to full copy " << slice->description() ;
+    }   
+    unsigned int count = slice->count();
+
+    LOG(info) << "GItemList::make_slice from " 
+              << ni << " -> " << count 
+              << " slice " << slice->description() ;
+
+    assert(count <= ni);
+
+    for(unsigned int i=slice->low ; i < slice->high ; i+=slice->step)
+    {   
+         spawn->add(getKey(i));
+    }   
+    return spawn ; 
 }
 
 

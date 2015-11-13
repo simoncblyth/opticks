@@ -415,25 +415,29 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
-    GBuffer* itransforms = mm->getITransformsBuffer();
-    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
+    // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
     GPmt* pmt = mm->getPmt();
     assert(pmt && "GMergedMesh with GeoCode S must have associated GPmt, see GGeo::modifyGeometry "); 
-    //pmt->dump();
     pmt->Summary();
 
     NPY<float>* partBuf = pmt->getPartBuffer();
     NPY<unsigned int>* solidBuf = pmt->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
-
-
     solidBuf->dump("solidBuf partOffset/numParts/solidIndex/0");
+
+    NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
+
+    GBuffer* itransforms = mm->getITransformsBuffer();
+    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
+    assert(idBuf->getNumItems() == numITransforms );
+
 
     unsigned int numSolidsMesh = mm->getNumSolids();
     unsigned int numSolidsPmt  = pmt->getNumSolids();
     unsigned int numParts = pmt->getNumParts();
 
-    assert(numSolidsMesh == numSolidsPmt );  // analytic and triangulated solid counts must match 
+    //assert(numSolidsMesh == numSolidsPmt );  // analytic and triangulated solid counts must match 
+
     /*
     if(numSolidsMesh != numSolidsPmt)
        LOG(warning) << "OGeo::makeAnalyticGeometry MISMATCH "
@@ -456,7 +460,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
                  << " numITransforms " << numITransforms 
                  ;
 
-
     optix::Geometry geometry = m_context->createGeometry();
 
     geometry->setPrimitiveCount( numSolids );
@@ -465,20 +468,31 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry->setIntersectionProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "intersect"));
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "bounds"));
 
-
     optix::Buffer solidBuffer = createInputBuffer<optix::uint4, unsigned int>( solidBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "solidBuffer"); 
     geometry["solidBuffer"]->setBuffer(solidBuffer);
 
     optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);
 
+    //optix::Buffer identityBuffer = PRIOR_makeAnalyticGeometryIdentityBuffer(mm, numSolidsMesh);
+    optix::Buffer identityBuffer = createInputBuffer<optix::uint4, unsigned int>( idBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
+    geometry["identityBuffer"]->setBuffer(identityBuffer);
+
+    return geometry ; 
+}
+
+
+optix::Buffer OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, unsigned int numSolidsMesh)
+{
+    GBuffer* itransforms = mm->getITransformsBuffer();
+    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
     GBuffer* id = NULL ; 
     if(numITransforms > 0)
     {
         id = mm->getInstancedIdentityBuffer();
         assert(id);
-        LOG(info) << "OGeo::makeAnalyticGeometry using InstancedIdentityBuffer"
+        LOG(info) << "OGeo::makeAnalyticGeometryIdentityBuffer (Instanced)"
                   << " iid items " << id->getNumItems() 
                   << " numITransforms*numSolidsMesh " << numITransforms*numSolidsMesh
                   ;
@@ -489,7 +503,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     {
         id = mm->getIdentityBuffer();
         assert(id);
-        LOG(info) << "OGeo::makeAnalyticGeometry using IdentityBuffer"
+        LOG(info) << "OGeo::makeAnalyticGeometryIdentityBuffer (Global)"
                   << " id items " << id->getNumItems() 
                   << " numSolidsMesh " << numSolidsMesh
                   ;
@@ -497,14 +511,13 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     }
 
 
-    id->dump<unsigned int>("OGeo::makeAnalyticGeometry identity buffer");
-
-
+    id->dump<unsigned int>("OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer");
+    
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
-    geometry["identityBuffer"]->setBuffer(identityBuffer);
-
-    return geometry ; 
+    return identityBuffer ;
 }
+
+
 
 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
 {

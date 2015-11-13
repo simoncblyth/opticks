@@ -40,6 +40,22 @@ const char* GMesh::nodeinfo       = "nodeinfo" ;
 const char* GMesh::identity       = "identity" ;
 const char* GMesh::iidentity       = "iidentity" ;
 
+const char* GMesh::aiidentity      = "aiidentity" ;
+
+
+
+int GMesh::g_instance_count = 0 ;
+
+void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords)
+{
+   g_instance_count += 1 ; 
+   setVertices(vertices);
+   setFaces(faces);
+   setNormals(normals);
+   setTexcoords(texcoords);
+   updateBounds();
+   nameConstituents(m_names);
+}
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
 {
@@ -61,100 +77,9 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(nodeinfo); 
     names.push_back(identity); 
     names.push_back(iidentity); 
+
+    names.push_back(aiidentity); 
 }
-
-
-
-int GMesh::g_instance_count = 0 ;
-
-
-
-GMesh::GMesh(unsigned int index, 
-             gfloat3* vertices, 
-             unsigned int num_vertices, 
-             guint3* faces, 
-             unsigned int num_faces, 
-             gfloat3* normals, 
-             gfloat2* texcoords
-            ) 
-        :
-      m_index(index),
-
-      m_num_vertices(num_vertices), 
-      m_num_faces(num_faces),
-      m_num_solids(0),
-      m_num_solids_selected(0),
-
-      // nodes and boundaries are somwhat confusing : use only with subclasses like GMergedMesh
-      m_nodes(NULL),          
-
-      m_vertices(NULL),
-      m_normals(NULL),
-      m_colors(NULL),
-      m_texcoords(NULL),
-      m_faces(NULL),
-
-      m_boundaries(NULL),
-      m_sensors(NULL),
-
-      m_low(NULL),
-      m_high(NULL),
-      m_dimensions(NULL),
-      m_center(NULL),
-      m_extent(0.f),
-
-      m_center_extent(NULL),
-      m_bbox(NULL),
-      m_transforms(NULL),
-      m_itransforms(NULL),
-      m_meshes(NULL),
-      m_nodeinfo(NULL),
-      m_identity(NULL),
-      m_iidentity(NULL),
-
-      m_model_to_world(NULL),
-      m_name(NULL),
-      m_shortname(NULL),
-      m_version(NULL),
-      m_geocode('T'),
-      m_islice(NULL),
-      m_fslice(NULL),
-      m_pslice(NULL),
-
-      m_vertices_buffer(NULL),
-      m_normals_buffer(NULL),
-      m_colors_buffer(NULL),
-      m_texcoords_buffer(NULL),
-      m_indices_buffer(NULL),
-      m_center_extent_buffer(NULL),
-      m_bbox_buffer(NULL),
-      m_boundaries_buffer(NULL),
-      m_sensors_buffer(NULL),
-      m_transforms_buffer(NULL),
-      m_itransforms_buffer(NULL),
-      m_meshes_buffer(NULL),
-      m_nodeinfo_buffer(NULL),
-      m_identity_buffer(NULL),
-      m_iidentity_buffer(NULL),
-
-      m_facerepeated_identity_buffer(NULL),
-      m_facerepeated_iidentity_buffer(NULL),
-      m_analytic_geometry_buffer(NULL),
-
-      GDrawable()
-{
-
-   g_instance_count += 1 ; 
-
-   setVertices(vertices);
-   setFaces(faces);
-   setNormals(normals);
-   setTexcoords(texcoords);
-   updateBounds();
-   nameConstituents(m_names);
-}
-
-
 
 
 void GMesh::allocate()
@@ -217,6 +142,9 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, identity) == 0)        return m_identity_buffer ; 
     if(strcmp(name, iidentity) == 0)       return m_iidentity_buffer ; 
 
+    // NPY buffers
+    if(strcmp(name, aiidentity) == 0)      return NULL ; 
+
     return NULL ;
 }
 
@@ -259,28 +187,6 @@ void GMesh::setVerticesBuffer(GBuffer* buffer)
     m_num_vertices = numBytes/sizeof(gfloat3);
 }
 
-void GMesh::explodeZVertices(float zoffset, float zcut)
-{
-    unsigned int noffset(0);
-    for(unsigned int i=0 ; i < m_num_vertices ; i++)
-    {
-        gfloat3* v = m_vertices + i  ;
-        if( v->z > zcut )
-        {
-            noffset += 1 ; 
-            v->z += zoffset ; 
-            printf("GMesh::explodeZVertices %6d : %10.4f %10.4f %10.4f \n", i, v->x, v->y, v->z );
-        }
-    }
-    LOG(info) << "GMesh::explodeZVertices" 
-              << " noffset " << noffset 
-              << " zoffset " << zoffset 
-              << " zcut " << zcut 
-              ;
-}
-
-
-
 
 void GMesh::setNormals(gfloat3* normals)
 {
@@ -314,13 +220,9 @@ void GMesh::setColorsBuffer(GBuffer* buffer)
     unsigned int num_colors = numBytes/sizeof(gfloat3);
 
     assert( m_num_vertices == num_colors );  // must load vertices before colors
-    //m_num_colors = m_num_vertices ; // TODO: get rid of m_num_colors: duplication is evil
 }
 
 
-
-
-// used from GMergedMesh
 void GMesh::setCenterExtent(gfloat4* center_extent)  
 {
     m_center_extent = center_extent ;  
@@ -339,7 +241,6 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
 }
 
 
-
 void GMesh::setBBox(gbbox* bb)  
 {
     m_bbox = bb ;  
@@ -347,7 +248,6 @@ void GMesh::setBBox(gbbox* bb)
     m_bbox_buffer = new GBuffer( sizeof(gbbox)*m_num_solids, (void*)m_bbox, sizeof(gbbox), 6 ); 
     assert(sizeof(gbbox) == sizeof(float)*6);
 }
-
 void GMesh::setBBoxBuffer(GBuffer* buffer) 
 {
     m_bbox_buffer = buffer ;  
@@ -359,9 +259,6 @@ void GMesh::setBBoxBuffer(GBuffer* buffer)
 
     setNumSolids(numSolids);
 }
-
-
-
 
 
 
@@ -516,9 +413,9 @@ void GMesh::setInstancedIdentityBuffer(GBuffer* buffer)
     m_iidentity = (guint4*)buffer->getPointer();
 }
 
-void GMesh::setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* aii)
+void GMesh::setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf)
 {
-    m_aii_buffer = aii ;
+    m_aiidentity_buffer = buf ;
 }
 
 
@@ -535,46 +432,6 @@ void GMesh::setNumSolids(unsigned int numSolids)
         assert(numSolids == m_num_solids);
     }
 }
-
-
-unsigned int GMesh::findContainer(gfloat3 p)
-{
-   // find volumes that contains the point
-   // returning the index of the volume with the smallest extent 
-   // or 0 if none found
-   //
-    unsigned int container(0);
-    float cext(FLT_MAX) ; 
-
-    for(unsigned int index=0 ; index < m_num_solids ; index++)
-    {
-         gfloat4 ce = m_center_extent[index] ;
-         gfloat3 hi(ce.x + ce.w, ce.y + ce.w, ce.z + ce.w );
-         gfloat3 lo(ce.x - ce.w, ce.y - ce.w, ce.z - ce.w );
-
-         if( 
-              p.x > lo.x && p.x < hi.x  &&
-              p.y > lo.y && p.y < hi.y  &&
-              p.z > lo.z && p.z < hi.z 
-           )
-          {
-               //printf("GMesh::findContainer %d   %10.4f %10.4f %10.4f %10.4f  \n", index, ce.x, ce.y, ce.z, ce.w  );
-               if(ce.w < cext)
-               {
-                   cext = ce.w ; 
-                   container = index ; 
-               }
-          }
-    }
-    return container ; 
-}
-
-
-
-
-
-
-
 
 
 void GMesh::setTexcoords(gfloat2* texcoords)
@@ -596,11 +453,6 @@ void GMesh::setTexcoordsBuffer(GBuffer* buffer)
 }
 
 
-
-
-
-
-
 void GMesh::setFaces(guint3* faces)
 {
     assert(sizeof(guint3) == 3*4);
@@ -612,7 +464,6 @@ void GMesh::setFaces(guint3* faces)
     m_indices_buffer = new GBuffer( totbytes, (void*)m_faces, itemsize, nelem ) ;
     assert(sizeof(guint3) == sizeof(unsigned int)*3);
 }
-
 void GMesh::setIndicesBuffer(GBuffer* buffer)
 {
     m_indices_buffer = buffer ; 
@@ -622,11 +473,6 @@ void GMesh::setIndicesBuffer(GBuffer* buffer)
     unsigned int numBytes = buffer->getNumBytes();
     m_num_faces = numBytes/sizeof(guint3);    // NB kludge equating "int" buffer to "unsigned int" 
 }
-
-
-
-
-
 
 
 void GMesh::setNodes(unsigned int* nodes)   // only makes sense to use from single subclasses instances like GMergedMesh 
@@ -688,12 +534,7 @@ void GMesh::setSensorsBuffer(GBuffer* buffer)
 
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int num_sensors = numBytes/sizeof(unsigned int);
-
-
     assert(m_num_faces == num_sensors);   // must load indices before sensors, for m_num_faces
-    //if(m_num_faces != num_sensors)
-    //    LOG(warning) << "GMesh::setSensorsBuffer allowing inconsistency " ; 
-
 }
 
 
@@ -1007,6 +848,11 @@ std::vector<unsigned int>& GMesh::getDistinctBoundaries()
 }
 
 
+
+
+
+
+
 bool GMesh::isFloatBuffer(const char* name)
 {
 
@@ -1039,6 +885,16 @@ bool GMesh::isUIntBuffer(const char* name)
            );
 }
 
+
+bool GMesh::isNPYBuffer(const char* name)
+{
+    return 
+           ( 
+              strcmp( name, aiidentity ) == 0  
+           );
+}
+
+
 void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
 {
     LOG(debug) << "GMesh::saveBuffer "
@@ -1046,25 +902,74 @@ void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
                << " path " << path  
                ;
 
-    if(isFloatBuffer(name))     buffer->save<float>(path);
-    else if(isIntBuffer(name))  buffer->save<int>(path);
-    else if(isUIntBuffer(name)) buffer->save<unsigned int>(path);
-    else 
-       printf("GMesh::saveBuffer WARNING NOT saving uncharacterized buffer %s into %s \n", name, path );
+    if(isNPYBuffer(name))  
+    {
+         saveNPYBuffer(path, name);
+    }
+    else if(buffer != NULL)
+    {
+        if(isFloatBuffer(name))     buffer->save<float>(path);
+        else if(isIntBuffer(name))  buffer->save<int>(path);
+        else if(isUIntBuffer(name)) buffer->save<unsigned int>(path);
+        else 
+           printf("GMesh::saveBuffer WARNING NOT saving uncharacterized buffer %s into %s \n", name, path );
+    }
 }
+
+
+
+void GMesh::saveNPYBuffer(const char* path, const char* name)
+{
+    if(strcmp(name, aiidentity) == 0)
+    {
+        NPY<unsigned int>* buf = getAnalyticInstancedIdentityBuffer();
+        if(buf) 
+        {
+            buf->save(path);
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+}
+
+
 
 
 void GMesh::loadBuffer(const char* path, const char* name)
 {
-    GBuffer* buffer(NULL); 
-    if(isFloatBuffer(name))                    buffer = GBuffer::load<float>(path);
-    else if(isIntBuffer(name))                 buffer = GBuffer::load<int>(path);
-    else if(isUIntBuffer(name))                buffer = GBuffer::load<unsigned int>(path);
+    if(isNPYBuffer(name))
+    {
+         loadNPYBuffer(path, name);
+    }
     else
-        printf("GMesh::loadBuffer WARNING not loading %s from %s \n", name, path ); 
+    {
+        GBuffer* buffer(NULL); 
+        if(isFloatBuffer(name))                    buffer = GBuffer::load<float>(path);
+        else if(isIntBuffer(name))                 buffer = GBuffer::load<int>(path);
+        else if(isUIntBuffer(name))                buffer = GBuffer::load<unsigned int>(path);
+        else
+            printf("GMesh::loadBuffer WARNING not loading %s from %s \n", name, path ); 
 
-    if(buffer) setBuffer(name, buffer);
+        if(buffer) setBuffer(name, buffer);
+    }
 }
+
+
+void GMesh::loadNPYBuffer(const char* path, const char* name)
+{
+    if(strcmp(name, aiidentity) == 0)
+    {
+        NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
+        setAnalyticInstancedIdentityBuffer(buf);
+    }
+    else
+    {
+        assert(0);
+    }
+}
+
 
 std::vector<std::string>& GMesh::getNames()
 {
@@ -1163,7 +1068,6 @@ void GMesh::saveBuffers(const char* dir)
         bufpath /= vname + ".npy" ; 
 
         GBuffer* buffer = getBuffer(name.c_str());
-        if(!buffer) continue ; 
 
         saveBuffer(bufpath.string().c_str(), name.c_str(), buffer);  
     } 
@@ -1460,6 +1364,63 @@ GBuffer*  GMesh::getAnalyticGeometryBuffer()
     //return m_analytic_geometry_buffer ;
     return NULL ; 
 }
+
+
+
+void GMesh::explodeZVertices(float zoffset, float zcut)
+{
+    unsigned int noffset(0);
+    for(unsigned int i=0 ; i < m_num_vertices ; i++)
+    {
+        gfloat3* v = m_vertices + i  ;
+        if( v->z > zcut )
+        {
+            noffset += 1 ; 
+            v->z += zoffset ; 
+            printf("GMesh::explodeZVertices %6d : %10.4f %10.4f %10.4f \n", i, v->x, v->y, v->z );
+        }
+    }
+    LOG(info) << "GMesh::explodeZVertices" 
+              << " noffset " << noffset 
+              << " zoffset " << zoffset 
+              << " zcut " << zcut 
+              ;
+}
+
+
+unsigned int GMesh::findContainer(gfloat3 p)
+{
+   // find volumes that contains the point
+   // returning the index of the volume with the smallest extent 
+   // or 0 if none found
+   //
+    unsigned int container(0);
+    float cext(FLT_MAX) ; 
+
+    for(unsigned int index=0 ; index < m_num_solids ; index++)
+    {
+         gfloat4 ce = m_center_extent[index] ;
+         gfloat3 hi(ce.x + ce.w, ce.y + ce.w, ce.z + ce.w );
+         gfloat3 lo(ce.x - ce.w, ce.y - ce.w, ce.z - ce.w );
+
+         if( 
+              p.x > lo.x && p.x < hi.x  &&
+              p.y > lo.y && p.y < hi.y  &&
+              p.z > lo.z && p.z < hi.z 
+           )
+          {
+               //printf("GMesh::findContainer %d   %10.4f %10.4f %10.4f %10.4f  \n", index, ce.x, ce.y, ce.z, ce.w  );
+               if(ce.w < cext)
+               {
+                   cext = ce.w ; 
+                   container = index ; 
+               }
+          }
+    }
+    return container ; 
+}
+
+
 
 
 

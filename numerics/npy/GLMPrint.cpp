@@ -113,11 +113,15 @@ void print(const glm::vec4& v, const char* tmpl, unsigned int incl)
 
 
 
-void print(const glm::ivec4& v, const char* msg)
+void print_i(const glm::ivec4& v, const char* msg)
 {
     printf("%15s ivec4  %7d %7d %7d %7d \n", msg, v.x, v.y, v.z, v.w);
 }
 
+void print_u(const glm::uvec4& v, const char* msg)
+{
+    printf("%15s uvec4  %7u %7u %7u %7u \n", msg, v.x, v.y, v.z, v.w);
+}
 
 void print(const glm::vec3& v, const char* msg)
 {

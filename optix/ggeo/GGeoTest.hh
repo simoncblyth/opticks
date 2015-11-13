@@ -2,7 +2,10 @@
 
 #include <cstddef>
 #include <glm/glm.hpp>
+#include <string>
 #include <vector>
+
+struct NSlice ; 
 
 class GCache ; 
 class GGeo ; 
@@ -17,6 +20,7 @@ class GGeoTest {
                       FRAME, 
                       DIMENSIONS, 
                       BOUNDARY, 
+                      SLICE, 
                       UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
@@ -25,6 +29,7 @@ class GGeoTest {
        static const char* FRAME_ ; 
        static const char* DIMENSIONS_; 
        static const char* BOUNDARY_ ; 
+       static const char* SLICE_ ; 
     public:
        GGeoTest(GCache* cache);
        void configure(const char* config=NULL);
@@ -39,8 +44,9 @@ class GGeoTest {
        void setFrame(const char* s);
        void setDimensions(const char* s);
        void addBoundary(const char* s);
+       void setSlice(const char* s);
     private:
-       GMergedMesh* createPmtInBox(float size, unsigned int boundary);
+       GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
     private:
        GCache*      m_cache ; 
@@ -50,9 +56,10 @@ class GGeoTest {
        GBndLib*     m_bndlib ; 
     private:
        const char*  m_mode ; 
+       NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::vec4    m_dimensions ;
-       std::vector<unsigned int> m_boundaries ; 
+       std::vector<std::string> m_boundaries ; 
 };
 
 inline GGeoTest::GGeoTest(GCache* cache) 
@@ -62,7 +69,8 @@ inline GGeoTest::GGeoTest(GCache* cache)
     m_ggeo(NULL),
     m_geolib(NULL),
     m_bndlib(NULL),
-    m_mode(NULL)
+    m_mode(NULL),
+    m_slice(NULL)
 {
     init();
 }
