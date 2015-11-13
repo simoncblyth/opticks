@@ -8,9 +8,13 @@
 #include "GBuffer.hh"
 
 // npy-
+#include "NPY.hpp"
+#include "NSensor.hpp"
 #include "Counts.hpp"
 #include "Timer.hpp"
 
+
+#include <glm/glm.hpp>
 
 #include <iomanip>
 
@@ -66,13 +70,12 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
     t("makeRepeatTransforms"); 
 
 
-
-    // TODO: move this to be GGeo constituent
-    GTreePresent tp(m_ggeo, 0, 100, 1000);   // top,depth_max,sibling_max
-    tp.traverse();
-    //tp.dump("GTreeCheck::createInstancedMergedMeshes GTreePresent");
-    tp.write(m_ggeo->getIdPath());
-            
+    GTreePresent* tp = m_ggeo->getTreePresent();
+    tp->traverse();
+    //tp->dump("GTreeCheck::createInstancedMergedMeshes GTreePresent");
+    tp->write(m_ggeo->getIdPath());
+    
+        
     t("treePresent"); 
 
     t.stop();
@@ -386,6 +389,56 @@ GBuffer* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
     return buffer ;
 }
 
+
+
+NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int ridx) 
+{
+    std::vector<GNode*> placements = getPlacements(ridx);
+    unsigned int ni = placements.size() ;
+    NPY<unsigned int>* buf = NPY<unsigned int>::make(ni, 1, 4);
+    buf->zero(); 
+
+    unsigned int numProgeny = placements[0]->getProgenyCount();
+    unsigned int numSolids  = numProgeny + 1 ; 
+
+    // observe that each instance has only one sensor, so not need 
+    // to repeat over the number of solids just one entry per instance
+
+    for(unsigned int i=0 ; i < ni ; i++) // over instances of the same geometry
+    {
+        GNode* base = placements[i] ;
+        assert( numProgeny == base->getProgenyCount() );  // repeated geometry for the instances, so the progeny counts must match 
+        std::vector<GNode*>& progeny = base->getProgeny();
+        assert( progeny.size() == numProgeny );
+
+      
+        NSensor* sensor = NULL ;  
+        for(unsigned int s=0 ; s < numSolids ; s++ )
+        {
+            GNode* node = s == 0 ? base : progeny[s-1] ; 
+            GSolid* solid = dynamic_cast<GSolid*>(node) ;
+            NSensor* ss = solid->getSensor();
+            if(ss)
+            {
+                assert(sensor == NULL && "not expecting more than one sensor solid within an instance of repeated geometry");
+                sensor = ss ; 
+            }
+        }
+
+        glm::uvec4 aii ; 
+
+        aii.x = base->getIndex();        
+        aii.y = 0 ;  // leave free, for some analytic equivalent of mesh index ?
+        aii.z = 0 ;  // formerly boundary, but with analytic have broken 1-1 solid/boundary relationship so boundary must live in partBuffer
+        aii.w = NSensor::RefIndex(sensor) ;  // the only critical one 
+
+        buf->setQuadU(i, 0, aii ); 
+    }
+    return buf ; 
+}
+
+
+
 GBuffer* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx) 
 {
     /*
@@ -408,6 +461,7 @@ GBuffer* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx)
 
     std::vector<GNode*> placements = getPlacements(ridx);
     unsigned int numInstances = placements.size() ;
+
     unsigned int numProgeny = placements[0]->getProgenyCount();
     unsigned int numSolids  = numProgeny + 1 ; 
 

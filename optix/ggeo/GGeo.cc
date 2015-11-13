@@ -8,6 +8,7 @@
 #include "GSolid.hh"
 #include "GMesh.hh"
 #include "GTreeCheck.hh"
+#include "GTreePresent.hh"
 #include "GColorizer.hh"
 #include "GGeoTest.hh"
 #include "GPmt.hh"
@@ -104,6 +105,8 @@ void GGeo::init()
    m_treecheck = new GTreeCheck(this) ;
    if(m_cache->isJuno())
        m_treecheck->setVertexMin(250);
+
+   m_treepresent = new GTreePresent(this, 0, 100, 1000);   // top,depth_max,sibling_max
 
    //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;

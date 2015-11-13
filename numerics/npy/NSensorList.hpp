@@ -8,7 +8,6 @@
 
 class NSensor ; 
 
-// TODO: migrate to npy-
 
 class NSensorList {
     public:
@@ -40,7 +39,6 @@ inline NSensorList::NSensorList()
 }
 inline NSensor* NSensorList::getSensor(unsigned int index)
 {
-    //assert(0);
     return index < m_sensors.size() ? m_sensors[index] : NULL ; 
 }
 inline unsigned int NSensorList::getNumSensors()

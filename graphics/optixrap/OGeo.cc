@@ -426,6 +426,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     NPY<float>* partBuf = pmt->getPartBuffer();
     NPY<unsigned int>* solidBuf = pmt->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
 
+
     solidBuf->dump("solidBuf partOffset/numParts/solidIndex/0");
 
     unsigned int numSolidsMesh = mm->getNumSolids();

@@ -22,6 +22,37 @@
 namespace fs = boost::filesystem;
 
 
+/*
+
+simon:DayaBay_VGDX_20140414-1300 blyth$ head -10 g4_00.idmap
+# GiGaRunActionExport::WriteIdMap fields: index,pmtid,pmtid(hex),pvname  npv:12230
+0 0 0 (0,0,0) (1,0,0)(0,1,0)(0,0,1) Universe
+1 0 0 (664494,-449556,2110) (-0.543174,-0.83962,0)(0.83962,-0.543174,0)(0,0,1) /dd/Structure/Sites/db-rock
+2 0 0 (661994,-449056,-5390) (-0.543174,-0.83962,0)(0.83962,-0.543174,0)(0,0,1) /dd/Geometry/Sites/lvNearSiteRock#pvNearHallTop
+3 0 0 (664494,-449556,2088) (-0.543174,-0.83962,0)(0.83962,-0.543174,0)(0,0,1) /dd/Geometry/Sites/lvNearHallTop#pvNearTopCover
+4 0 0 (668975,-437058,-683.904) (-0.53472,-0.84503,0)(0.84503,-0.53472,0)(0,0,1) /dd/Geometry/Sites/lvNearHallTop#pvNearTeleRpc#pvNearTeleRpc:1
+5 0 0 (668985,-437063,-683.904) (-0.53472,-0.84503,0)(0.84503,-0.53472,0)(0,0,1) /dd/Geometry/RPC/lvRPCMod#pvRPCFoam
+6 0 0 (668985,-437063,-669.904) (-0.53472,-0.84503,0)(0.84503,-0.53472,0)(0,0,1) /dd/Geometry/RPC/lvRPCFoam#pvBarCham14Array#pvBarCham14ArrayOne:1#pvBarCham14Unit
+7 0 0 (668985,-437063,-669.904) (-0.53472,-0.84503,0)(0.84503,-0.53472,0)(0,0,1) /dd/Geometry/RPC/lvRPCBarCham14#pvRPCGasgap14
+8 0 0 (-437063,-669895,-669.904) (-0.84503,0.53472,0)(-0.53472,-0.84503,0)(0,0,1) /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:1#pvStrip14Unit
+simon:DayaBay_VGDX_20140414-1300 blyth$ 
+simon:DayaBay_VGDX_20140414-1300 blyth$ grep PMT g4_00.idmap | head -10
+3200 16843009 1010101 (8842.5,532069,599609) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum
+3201 16843009 1010101 (8842.5,532069,599609) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode
+3202 16843009 1010101 (8842.5,532069,599540) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiBottom
+3203 16843009 1010101 (8842.5,532069,599690) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiDynode
+3206 16843010 1010102 (8842.5,668528,441547) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum
+3207 16843010 1010102 (8842.5,668528,441547) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode
+3208 16843010 1010102 (8842.5,668528,441478) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiBottom
+3209 16843010 1010102 (8842.5,668528,441628) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiDynode
+3212 16843011 1010103 (8842.5,759428,253553) (5.76825e-17,0.335452,-0.942057)(-2.05398e-17,0.942057,0.335452)(1,6.16298e-33,6.12303e-17) /dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum
+3213 16843011 1010103 (8842.5,759428,253553) (5.76825e-17,0.335452,-0.942057)(-2.05398e-17,0.942057,0.335452)(1,6.16298e-33,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode
+simon:DayaBay_VGDX_20140414-1300 blyth$ 
+
+*/
+
+
+
 
 void NSensorList::load(const char* idpath_, const char* ext)
 {
@@ -120,7 +151,8 @@ NSensor* NSensorList::createSensor(std::vector<std::string>& elem )
     if( id > 0 )
     {
         unsigned int index = m_sensors.size() ;    // 0-based in tree node order
-        sensor = new NSensor(index, id, elem[5].c_str(), nodeIndex);
+        const char* nodeName = elem[5].c_str() ; 
+        sensor = new NSensor(index, id, nodeName, nodeIndex);
     }
     return sensor ; 
 }

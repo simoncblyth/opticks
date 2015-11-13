@@ -26,6 +26,7 @@ class GSurfaceLib ;
 class GScintillatorLib ;
 
 class GTreeCheck ;
+class GTreePresent ;
 class GColorizer ; 
 class GColors ; 
 class GFlags ; 
@@ -250,9 +251,11 @@ class GGeo {
 
     public:
         GTreeCheck* getTreeCheck();
+        GTreePresent* getTreePresent();
     private:
         GCache*                       m_cache ; 
         GTreeCheck*                   m_treecheck ; 
+        GTreePresent*                 m_treepresent ; 
         bool                          m_loaded ;  
         std::vector<GMesh*>           m_meshes ; 
         std::vector<GSolid*>          m_solids ; 
@@ -312,6 +315,7 @@ class GGeo {
 inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
    m_treecheck(NULL), 
+   m_treepresent(NULL), 
    m_loaded(false), 
    m_lookup(NULL),
    m_geolib(NULL),
@@ -497,6 +501,10 @@ inline GCache* GGeo::getCache()
 inline GTreeCheck* GGeo::getTreeCheck()
 {
     return m_treecheck ;
+}
+inline GTreePresent* GGeo::getTreePresent()
+{
+    return m_treepresent ;
 }
 
 

@@ -10,6 +10,7 @@ class GNode ;
 class GSolid ; 
 class GBuffer ;
 template<class T> class Counts ;
+template<class T> class NPY ;
 
 
 
@@ -33,6 +34,7 @@ class GTreeCheck {
         // canonically invoked by CreateInstancedMergedMeshes
         GBuffer* makeInstanceTransformsBuffer(unsigned int ridx);
         GBuffer* makeInstanceIdentityBuffer(unsigned int ridx) ;
+        NPY<unsigned int>* makeAnalyticInstanceIdentityBuffer(unsigned int ridx);
    public:
         bool operator()(const std::string& dig) ;
    private:

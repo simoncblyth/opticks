@@ -15,6 +15,9 @@ eg 10 float3 vertices, where the item is regarded at the float3
 
 struct NSlice ; 
 
+// ARE TRANSITIONING FROM GBuffer TO NPY<T> WHERE POSSIBLE : 
+//    **DO NOT USE GBuffer IN NEW DEVELOPMENTS**
+
 class GBuffer {
     public:
         GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem);
