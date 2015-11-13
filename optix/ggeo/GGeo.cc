@@ -776,7 +776,7 @@ void GGeo::prepareMeshes()
     if(instanced)
     { 
         bool deltacheck = true ; 
-        m_treecheck->createInstancedMergedMeshes(deltacheck); 
+        m_treecheck->createInstancedMergedMeshes(deltacheck);   // GTreeCheck::createInstancedMergedMeshes
     }
     else
     {

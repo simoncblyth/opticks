@@ -27,7 +27,7 @@ class NSensor {
    public:
        static unsigned int RefIndex(NSensor* sensor);
        static const unsigned int UNSET_INDEX ;   
-
+       static const char* CATHODE_NODE_NAME ; 
    public:
        NSensor( unsigned int index, unsigned int id, const char* node_name, unsigned int node_index  );
 
@@ -37,9 +37,10 @@ class NSensor {
        unsigned int getId();
        const char*  getNodeName();
        unsigned int getNodeIndex();
-
        std::string description();
-
+   public:
+       // kludge using CATHODE_NODE_NAME necessary until fix idmap to only put id on cathodes
+       bool         isCathode();
    private:
        unsigned int m_index ;
        unsigned int m_id ;

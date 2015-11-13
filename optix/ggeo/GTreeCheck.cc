@@ -31,6 +31,8 @@ void GTreeCheck::init()
 
 void GTreeCheck::createInstancedMergedMeshes(bool delta)
 {
+    //assert(0);  
+
     Timer t("GTreeCheck::createInstancedMergedMeshes") ; 
     t.setVerbose(true);
     t.start();
@@ -63,6 +65,9 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
 
          GBuffer* iidentity       = makeInstanceIdentityBuffer(ridx);
          mergedmesh->setInstancedIdentityBuffer(iidentity);
+
+         NPY<unsigned int>* aii   = makeAnalyticInstanceIdentityBuffer(ridx);
+         mergedmesh->setAnalyticInstancedIdentityBuffer(aii);
 
 
          //mergedmesh->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
@@ -418,9 +423,19 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
             GNode* node = s == 0 ? base : progeny[s-1] ; 
             GSolid* solid = dynamic_cast<GSolid*>(node) ;
             NSensor* ss = solid->getSensor();
-            if(ss)
+            assert(ss);
+
+            unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
+
+            LOG(info) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
+                      << " s " << std::setw(3) << s 
+                      << " sid " << std::setw(10) << std::hex << sid << std::dec 
+                      << " ss " << (ss ? ss->description() : "NULL" )
+                      ;
+
+            if(sid > 0)
             {
-                assert(sensor == NULL && "not expecting more than one sensor solid within an instance of repeated geometry");
+                assert(sensor == NULL && "not expecting more than one sensor solid with non-zero id within an instance of repeated geometry");
                 sensor = ss ; 
             }
         }

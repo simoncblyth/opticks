@@ -513,17 +513,13 @@ void GMesh::setInstancedIdentityBuffer(GBuffer* buffer)
 {
     m_iidentity_buffer = buffer ;  
     if(!buffer) return ; 
-
     m_iidentity = (guint4*)buffer->getPointer();
-
 }
 
-
-
-
-
-
-
+void GMesh::setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* aii)
+{
+    m_aii_buffer = aii ;
+}
 
 
 
@@ -1456,11 +1452,13 @@ GBuffer* GMesh::loadAnalyticGeometryBuffer(const char* path)
 
 GBuffer*  GMesh::getAnalyticGeometryBuffer()
 {
-    if(m_analytic_geometry_buffer == NULL)
-    {
-        m_analytic_geometry_buffer = loadAnalyticGeometryBuffer() ; // FIX: relying on default temporary path
-    }
-    return m_analytic_geometry_buffer ;
+    assert(0);
+    //if(m_analytic_geometry_buffer == NULL)
+    //{
+    //    m_analytic_geometry_buffer = loadAnalyticGeometryBuffer() ; // FIX: relying on default temporary path
+    //}
+    //return m_analytic_geometry_buffer ;
+    return NULL ; 
 }
 
 

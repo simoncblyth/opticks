@@ -424,6 +424,8 @@ inline unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int
         case FLOAT:uif.f = t ; break ; 
         case DOUBLE:uif.f = t ; break ; 
         case SHORT:uif.i = t ; break ; 
+        case UINT:uif.u = t ; break ; 
+        case INT:uif.i = t ; break ; 
         default: assert(0);  break ;
     }
     return uif.u ;
@@ -441,6 +443,8 @@ inline void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsi
         case FLOAT:t = uif.f ; break ; 
         case DOUBLE:t = uif.f ; break ; 
         case SHORT:t = uif.i ; break ; 
+        case UINT:t = uif.u ; break ; 
+        case INT:t = uif.i ; break ; 
         default: assert(0);  break ;
     }
     setValue(i,j,k,t); 

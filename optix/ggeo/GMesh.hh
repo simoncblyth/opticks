@@ -1,14 +1,15 @@
 #pragma once
 
+struct NSlice ; 
 #include "NPY.hpp"
+
+
 #include "GVector.hh"
 #include "GMatrix.hh"
 #include "GDrawable.hh"
-struct NSlice ; 
 
 #include <vector>
 #include <string>
-
 
 class GBuffer ; 
 
@@ -293,6 +294,7 @@ class GMesh : public GDrawable {
       void setNodeInfoBuffer(GBuffer* buffer);
       void setIdentityBuffer(GBuffer* buffer);
       void setInstancedIdentityBuffer(GBuffer* buffer);
+      void setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* aii);
 
   public:
       bool hasTransformsBuffer(); 
@@ -314,6 +316,7 @@ class GMesh : public GDrawable {
       GBuffer* getNodeInfoBuffer();
       GBuffer* getIdentityBuffer();
       GBuffer* getInstancedIdentityBuffer(); // created by GTreeCheck::CreateInstancedMergedMeshes 
+      NPY<unsigned int>* getAnalyticInstancedIdentityBuffer();
 
       GBuffer* getITransformsBuffer();
 
@@ -329,7 +332,7 @@ class GMesh : public GDrawable {
   private: 
       GBuffer* makeFaceRepeatedInstancedIdentityBuffer();
       GBuffer* makeFaceRepeatedIdentityBuffer();
-      GBuffer* loadAnalyticGeometryBuffer(const char* path="/tmp/hemi-pmt-parts.npy"); // TODO: adopt a standard idpath location ??
+      GBuffer* loadAnalyticGeometryBuffer(const char* path); 
 
   ///////// for use from subclass  /////////////////////////////////////
   public:
@@ -473,6 +476,7 @@ class GMesh : public GDrawable {
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
       GBuffer* m_iidentity_buffer ;
+      NPY<unsigned int>* m_aii_buffer ; 
 
       // transients
       GBuffer* m_facerepeated_identity_buffer ;
@@ -787,6 +791,11 @@ inline GBuffer*  GMesh::getInstancedIdentityBuffer()
 {
     return m_iidentity_buffer ;
 }
+inline NPY<unsigned int>*  GMesh::getAnalyticInstancedIdentityBuffer()
+{
+    return m_aii_buffer ;
+}
+
 
 
 

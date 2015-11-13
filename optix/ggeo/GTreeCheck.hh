@@ -14,6 +14,8 @@ template<class T> class NPY ;
 
 
 
+// *createInstancedMergedMeshes* is canonically invoked by GGeo::loadFromG4DAE GGeo::prepareMeshes
+
 class GTreeCheck {
    public:
         typedef std::map<std::string, std::vector<GNode*> > MSVN ; 
@@ -21,7 +23,7 @@ class GTreeCheck {
         GTreeCheck(GGeo* ggeo);
         void setRepeatMin(unsigned int repeat_min);
         void setVertexMin(unsigned int vertex_min);
-        void createInstancedMergedMeshes(bool deltacheck=false); // still canonically invoked by GLoader
+        void createInstancedMergedMeshes(bool deltacheck=false); 
    public:
         void init();
         void traverse();
