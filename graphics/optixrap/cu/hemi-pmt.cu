@@ -690,7 +690,11 @@ Ray Box Intersection Slab Method
        value of (x,y,z) of local box frame intersection point. 
 
        Normal is defined to be in opposite direction
-       to the impinging ray.  
+       to the impinging ray. 
+
+       * **WRONG : NOT AT INTERSECT LEVEL
+       * INTERSECT LEVEL IS FOR DEFINING GEOMETRY, NOT THE RELATIONSHIP 
+         OF VIEWPOINT AND GEOEMTRY : THAT COMES LATER
           
  
                   +---@4------+
@@ -717,6 +721,23 @@ Ray Box Intersection Slab Method
 
             @6   [ 0.5,-1,0] =>  [ 0,-1,0]   ( -y from outside, no-flip)
 
+
+
+      RULES FOR GEOMETRIC NORMALS  
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      * MUST BE RIGIDLY AND CONSISTENTLY "ATTACHED" TO GEOMETRY DEPENDING ONLY ON
+        THE GEOMETRY AT THE INTERSECTION POINT AND SOME FIXED CONVENTION 
+        (CONSIDER TRIANGLE INTERSECTION EXAMPLE)
+
+      * I ADOPT STANDARD CONVENTION OF OUTWARDS POINTED NORMALS : 
+        SO IT SHOULD BE DARK INSIDE BOXES
+
+      THIS MEANS:
+
+      **DO NOT FLIP BASED ON WHERE THE RAYS ARE COMING FROM OR BEING INSIDE BOX**   
+
+
 */
 
 static __device__
@@ -740,7 +761,6 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
   {
       bool check_second = true;
       float tint = tmin > 0.f ? tmin : tmax ; 
-      float flip = copysignf(1.f, tmin);  // when inside: tmin < 0.f -> flip = -1.f  
 
       if(rtPotentialIntersection(tint))
       {
@@ -749,9 +769,9 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
           float pmax = fmaxf(pa);
 
           float3 n = make_float3(0.f);  
-          if(      pmax == pa.x) n.x = copysignf( 1.f , flip*p.x ) ;              
-          else if (pmax == pa.y) n.y = copysignf( 1.f , flip*p.y ) ;              
-          else if (pmax == pa.z) n.z = copysignf( 1.f , flip*p.z ) ;              
+          if(      pmax == pa.x) n.x = copysignf( 1.f , p.x ) ;              
+          else if (pmax == pa.y) n.y = copysignf( 1.f , p.y ) ;              
+          else if (pmax == pa.z) n.z = copysignf( 1.f , p.z ) ;              
 
           shading_normal = geometric_normal = n ;
           instanceIdentity = identity ;
@@ -768,9 +788,9 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
               float pmax = fmaxf(pa);
               float3 n = make_float3(0.f);  
 
-              if(      pmax == pa.x) n.x = copysignf( 1.f , flip*p.x ) ;              
-              else if (pmax == pa.y) n.y = copysignf( 1.f , flip*p.y ) ;              
-              else if (pmax == pa.z) n.z = copysignf( 1.f , flip*p.z ) ;              
+              if(      pmax == pa.x) n.x = copysignf( 1.f , p.x ) ;              
+              else if (pmax == pa.y) n.y = copysignf( 1.f , p.y ) ;              
+              else if (pmax == pa.z) n.z = copysignf( 1.f , p.z ) ;              
 
               shading_normal = geometric_normal = n ;
               instanceIdentity = identity ;

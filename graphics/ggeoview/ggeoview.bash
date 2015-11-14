@@ -46,12 +46,12 @@ ggv-pmt-test(){
                    ) 
 
    local torch_config=(
-                 type=sphere
+                 type=invsphere
                  photons=500000
                  frame=1
                  source=0,0,300
                  target=0,0,0
-                 radius=202
+                 radius=1000
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
