@@ -198,4 +198,10 @@ GItemList* GItemList::make_slice(NSlice* slice)
 }
 
 
+void GItemList::add(GItemList* other)
+{
+    unsigned int ok = other->getNumKeys();
+    for(unsigned int i=0 ; i < ok ; i++) add(other->getKey(i));
+}
+
 

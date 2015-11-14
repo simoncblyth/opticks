@@ -16,7 +16,7 @@
 
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-#include "GPmt.hh"
+#include "GParts.hh"
 
 // npy-
 #include "NLog.hpp"
@@ -417,12 +417,22 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
     // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
-    GPmt* pmt = mm->getPmt();
-    assert(pmt && "GMergedMesh with GeoCode S must have associated GPmt, see GGeo::modifyGeometry "); 
+    GParts* pmt = mm->getParts();
+    assert(pmt && "GMergedMesh with GeoCode S must have associated GParts, see GGeo::modifyGeometry "); 
+
+    if(pmt->getSolidBuffer() == NULL)
+    {
+        LOG(warning) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry" ; 
+        pmt->close();
+    }
+
     pmt->Summary();
 
     NPY<float>* partBuf = pmt->getPartBuffer();
     NPY<unsigned int>* solidBuf = pmt->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
+
+    assert(solidBuf);
+
     solidBuf->dump("solidBuf partOffset/numParts/solidIndex/0");
 
     NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
@@ -431,30 +441,14 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
     assert(idBuf->getNumItems() == numITransforms );
 
+    unsigned int numSolids = solidBuf->getNumItems();
+    unsigned int numParts = partBuf->getNumItems();
 
-    unsigned int numSolidsMesh = mm->getNumSolids();
-    unsigned int numSolidsPmt  = pmt->getNumSolids();
-    unsigned int numParts = pmt->getNumParts();
-
-    //assert(numSolidsMesh == numSolidsPmt );  // analytic and triangulated solid counts must match 
-
-    /*
-    if(numSolidsMesh != numSolidsPmt)
-       LOG(warning) << "OGeo::makeAnalyticGeometry MISMATCH "
-                    << " numSolidsMesh " << numSolidsMesh
-                    << " numSolidsPmt " << numSolidsPmt
-                    ;
-
-    */
-
-    unsigned int numSolids = numSolidsPmt ; 
-    assert( numSolids < 10 );            // expecting small number
+    assert( numSolids < 10 );  // expecting small number
 
 
     LOG(warning) << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
-                 << " numSolidsMesh " << numSolidsMesh 
-                 << " numSolidsPmt " << numSolidsPmt 
                  << " numSolids " << numSolids 
                  << " numParts " << numParts
                  << " numITransforms " << numITransforms 

@@ -10,6 +10,7 @@
 #include "GSolid.hh"
 #include "GTestBox.hh"
 #include "GItemList.hh"
+#include "GParts.hh"
 
 #include "NLog.hpp"
 #include "NSlice.hpp"
@@ -28,6 +29,7 @@ const char* GGeoTest::FRAME_ = "frame";
 const char* GGeoTest::DIMENSIONS_ = "dimensions"; 
 const char* GGeoTest::BOUNDARY_ = "boundary"; 
 const char* GGeoTest::SLICE_ = "slice"; 
+const char* GGeoTest::ANALYTIC_ = "analytic"; 
 
 void GGeoTest::init()
 {
@@ -76,6 +78,7 @@ GGeoTest::Param_t GGeoTest::getParam(const char* k)
     else if(strcmp(k,DIMENSIONS_)==0) param = DIMENSIONS ; 
     else if(strcmp(k,BOUNDARY_)==0)   param = BOUNDARY ; 
     else if(strcmp(k,SLICE_)==0)      param = SLICE ; 
+    else if(strcmp(k,ANALYTIC_)==0)   param = ANALYTIC ; 
     return param ;   
 }
 
@@ -88,6 +91,7 @@ void GGeoTest::set(Param_t p, const char* s)
         case DIMENSIONS     : setDimensions(s)     ;break;
         case BOUNDARY       : addBoundary(s)       ;break;
         case SLICE          : setSlice(s)          ;break;
+        case ANALYTIC       : setAnalytic(s)       ;break;
         case UNRECOGNIZED   :
                     LOG(warning) << "GGeoTest::set WARNING ignoring unrecognized parameter " ;
     }
@@ -99,8 +103,6 @@ void GGeoTest::dump(const char* msg)
               << " config " << m_config 
               << " mode " << m_mode 
               ; 
-
-    //m_bndlib->dumpBoundaries(m_boundaries, "GGeoTest::dump");
 }
 
 void GGeoTest::setMode(const char* s)
@@ -115,6 +117,11 @@ void GGeoTest::setFrame(const char* s)
 {
     std::string ss(s);
     m_frame = givec4(ss);
+}
+void GGeoTest::setAnalytic(const char* s)
+{
+    std::string ss(s);
+    m_analytic = givec4(ss);
 }
 void GGeoTest::setDimensions(const char* s)
 {
@@ -163,27 +170,29 @@ GMergedMesh* GGeoTest::createPmtInBox()
     float size = m_dimensions.x ;
     const char* spec = m_boundaries[0].c_str() ;
     unsigned int boundary = m_bndlib->addBoundary(spec);
+    const char* imat = m_bndlib->getInnerMaterialName(boundary);
 
     LOG(info) << "GGeoTest::createPmtInBox" 
               << " container size  " << size
               << " spec " << spec
               << " boundary " << boundary
-               ; 
+              << " imat " << imat
+              ; 
 
     // still using mesh to set container box size basis for the analytic...
     GMergedMesh* mm = m_geolib->getMergedMesh(1);
-    gbbox bb = mm->getBBox(0);     // solid-0 contains them all
+    gbbox bb = mm->getBBox(0);      // solid-0 contains them all
+
     bb.enlarge(size);               // the **ONE** place for sizing containment box
 
 
-    GPmt* pmt = GPmt::load( m_cache, 0, m_slice );  
+    GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, m_slice );    // pmtIndex:0
 
-    const char* surface = "lvPmtHemiCathodeSensorSurface" ; // kludge, TODO: investigate where triangulated gets this from
-
-    pmt->setSensorSurface(surface);
-    pmt->setBndLib(m_bndlib);
-    pmt->addContainer(bb, spec );
-    pmt->registerBoundaries();
+    GParts* ppmt = pmt->getParts();
+    ppmt->setContainingMaterial(imat);   // match outer material of PMT with inner material of the box
+    ppmt->add(GParts::makeBox(bb, spec));
+    ppmt->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
+    ppmt->close();
 
 
     // triangulated setup 
@@ -195,17 +204,16 @@ GMergedMesh* GGeoTest::createPmtInBox()
     //pib->dump("GGeoTest::createPmtInBox");
 
     pib->setGeoCode('S');  // signal OGeo to use Analytic geometry
-    pib->setPmt(pmt);
-
+    pib->setParts(ppmt);
     pib->setAnalyticInstancedIdentityBuffer(mm->getAnalyticInstancedIdentityBuffer());
     pib->setITransformsBuffer(mm->getITransformsBuffer());
 
 
-    if( pib->getNumSolids() != pmt->getNumSolids() )
+    if( pib->getNumSolids() != ppmt->getNumSolids() )
         LOG(warning) << "GGeoTest::createPmtInBox"
                      << " analytic/triangulated solid count mismatch "
                      << " triangulated " << pib->getNumSolids()
-                     << " analytic " << pmt->getNumSolids()
+                     << " analytic " << ppmt->getNumSolids()
                      ;
 
 
@@ -217,6 +225,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
 GMergedMesh* GGeoTest::createBoxInBox()
 {
     std::vector<GSolid*> solids ; 
+    GParts* analytic = new GParts(m_bndlib);
 
     unsigned int n = m_boundaries.size();
     for(unsigned int i=0 ; i < n ; i++)
@@ -232,6 +241,8 @@ GMergedMesh* GGeoTest::createBoxInBox()
         solid->setSensor(NULL);
         solids.push_back(solid);
 
+        analytic->add(GParts::makeBox(bb, spec));
+
         LOG(info) << "GGeoTest::createBoxInBox"
                   << " solid " << std::setw(2) << i 
                   << " boundary " << std::setw(3) << boundary
@@ -241,6 +252,24 @@ GMergedMesh* GGeoTest::createBoxInBox()
     }
 
     GMergedMesh* bib = GMergedMesh::combine( 0, NULL, solids );
+    bib->setParts(analytic);
+
+    // TODO: rustle up below buffers for test geometry
+    // bib->setAnalyticInstancedIdentityBuffer(mm->getAnalyticInstancedIdentityBuffer());
+    // bib->setITransformsBuffer(mm->getITransformsBuffer());
+
+
+    if(m_analytic.x > 0)
+    {
+        LOG(info) << "GGeoTest::createBoxInBox using analytic " ; 
+        bib->setGeoCode('S');  // signal OGeo to use Analytic geometry
+    }
+    else
+    {
+        bib->setGeoCode('T');  
+        LOG(info) << "GGeoTest::createBoxInBox using triangulated " ; 
+    }
+
     return bib ; 
 } 
 

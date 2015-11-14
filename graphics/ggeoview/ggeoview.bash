@@ -21,9 +21,10 @@ join(){ local IFS="$1"; shift; echo "$*"; }
 ggv-pmt(){
    type $FUNCNAME
 
+   # slice=0:0
+
    local test_config=(
                  mode=PmtInBox
-                 slice=0:0
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  dimensions=3,0,0,0
                    ) 
@@ -105,6 +106,7 @@ ggv-reflect()
                  dimensions=500,300,0,0
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 
+                 analytic=0,0,0,0
                )
 
     ggv.sh  \

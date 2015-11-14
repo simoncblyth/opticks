@@ -13,7 +13,7 @@ class GCache ;
 class GGeo ; 
 class GNode ;
 class GSolid ; 
-class GPmt ; 
+class GParts ; 
 
 #include "GMesh.hh"
 #include "GVector.hh"
@@ -52,15 +52,15 @@ public:
     bool   isInstanced(); 
 public:
     // analytic geometry standin for OptiX
-    void setPmt(GPmt* pmt);
-    GPmt* getPmt();
+    void setParts(GParts* parts);
+    GParts* getParts();
 private:
     // transients that do not need persisting, persistables are down in GMesh
     unsigned int m_cur_vertices ;
     unsigned int m_cur_faces ;
     unsigned int m_cur_solid ;
     GNode*       m_cur_base ;  
-    GPmt*        m_pmt ; 
+    GParts*      m_parts ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
      
 };
@@ -72,7 +72,7 @@ inline GMergedMesh::GMergedMesh(unsigned int index)
        m_cur_faces(0),
        m_cur_solid(0),
        m_cur_base(NULL),
-       m_pmt(NULL)
+       m_parts(NULL)
 {
 } 
 
@@ -95,13 +95,13 @@ inline bool GMergedMesh::isInstanced()
     return m_cur_base != NULL ; 
 }
 
-inline void GMergedMesh::setPmt(GPmt* pmt)
+inline void GMergedMesh::setParts(GParts* parts)
 {
-    m_pmt = pmt ; 
+    m_parts = parts ; 
 }
-inline GPmt* GMergedMesh::getPmt()
+inline GParts* GMergedMesh::getParts()
 {
-    return m_pmt ; 
+    return m_parts ; 
 }
 
 

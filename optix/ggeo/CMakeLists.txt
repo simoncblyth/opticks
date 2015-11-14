@@ -80,6 +80,7 @@ add_library(${name} SHARED
                 GItemList.cc
                 GAttrSeq.cc
                 GMeshFixer.cc
+                GParts.cc
                 GPmt.cc
                 GTestBox.cc
                 GGeoTest.cc
@@ -125,6 +126,7 @@ GBBoxMesh.hh
 GItemList.hh
 GAttrSeq.hh
 GMeshFixer.hh
+GParts.hh
 GPmt.hh
 GTestBox.hh
 GGeoTest.hh

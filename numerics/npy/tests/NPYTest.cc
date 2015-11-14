@@ -1,11 +1,34 @@
 #include "NPY.hpp"
 #include "G4StepNPY.hpp"
 
-
+#include <vector>
 #include <iostream>
 #include "assert.h"
 
 #include <glm/glm.hpp>
+
+
+void test_empty_add()
+{
+   std::vector<int> shape ; 
+   shape.push_back(0); 
+   shape.push_back(4); 
+   shape.push_back(4); 
+
+   NPY<float>* a = NPY<float>::make(shape);
+   a->zero();
+
+   for(unsigned int i=0 ; i < 10 ; i++)
+   {
+       NPY<float>* ext = NPY<float>::make(1,4,4) ;
+       ext->fill(float(i));
+       a->add(ext);
+   }
+
+   a->dump();
+   a->save("/tmp/test_empty_add.npy");
+}
+
 
 void test_add()
 {
@@ -261,7 +284,8 @@ int main()
 
     //test_slice();
 
-    test_add();
+    //test_add();
+    test_empty_add();
 
     return 0 ;
 }

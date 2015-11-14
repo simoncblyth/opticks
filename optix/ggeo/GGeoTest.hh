@@ -21,6 +21,7 @@ class GGeoTest {
                       DIMENSIONS, 
                       BOUNDARY, 
                       SLICE, 
+                      ANALYTIC, 
                       UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
@@ -30,6 +31,7 @@ class GGeoTest {
        static const char* DIMENSIONS_; 
        static const char* BOUNDARY_ ; 
        static const char* SLICE_ ; 
+       static const char* ANALYTIC_ ; 
     public:
        GGeoTest(GCache* cache);
        void configure(const char* config=NULL);
@@ -45,6 +47,7 @@ class GGeoTest {
        void setDimensions(const char* s);
        void addBoundary(const char* s);
        void setSlice(const char* s);
+       void setAnalytic(const char* s);
     private:
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
@@ -59,6 +62,7 @@ class GGeoTest {
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::vec4    m_dimensions ;
+       glm::ivec4   m_analytic ;
        std::vector<std::string> m_boundaries ; 
 };
 
@@ -70,7 +74,9 @@ inline GGeoTest::GGeoTest(GCache* cache)
     m_geolib(NULL),
     m_bndlib(NULL),
     m_mode(NULL),
-    m_slice(NULL)
+    m_slice(NULL),
+    m_frame(0,0,0,0),
+    m_analytic(0,0,0,0)
 {
     init();
 }

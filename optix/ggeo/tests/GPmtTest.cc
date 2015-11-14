@@ -3,7 +3,9 @@
 //
 
 #include "GCache.hh"
+#include "GBndLib.hh"
 #include "GPmt.hh"
+#include "GParts.hh"
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NLog.hpp"
@@ -16,16 +18,20 @@ int main(int argc, char** argv)
     for(unsigned int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
     NSlice* slice = argc > 1 ? new NSlice(argv[1]) : NULL ;
 
-    GPmt* pmt = GPmt::load(cache, 0, slice);
+    GBndLib* blib = GBndLib::load(cache, true);
 
-    NPY<float>* parts = pmt->getPartBuffer();
-    LOG(info) << "parts shape: " << parts->getShapeString() ;
-    assert( parts->getDimensions() == 3 );
+    GPmt* pmt = GPmt::load(cache, blib, 0, slice);
 
-    pmt->dump();
-    pmt->Summary();
+    GParts* ppmt = pmt->getParts();
 
-    NPY<unsigned int>* sb = pmt->getSolidBuffer();
+    NPY<float>* pb = ppmt->getPartBuffer();
+    LOG(info) << "parts shape: " << pb->getShapeString() ;
+    assert( pb->getDimensions() == 3 );
+
+    ppmt->dump();
+    ppmt->Summary();
+
+    NPY<unsigned int>* sb = ppmt->getSolidBuffer();
     sb->dump("solidBuffer partOffset/numParts/solidIndex/0 ");
 
     return 0 ;

@@ -738,6 +738,22 @@ Ray Box Intersection Slab Method
       **DO NOT FLIP BASED ON WHERE THE RAYS ARE COMING FROM OR BEING INSIDE BOX**   
 
 
+      Edge Cases
+      ~~~~~~~~~~~~
+
+      http://tavianator.com/fast-branchless-raybounding-box-intersections/
+      http://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/ 
+ 
+      Floating-point infinity handling should correctly deal 
+      with axis aligned ray directions but there is literally an edge case 
+      when the ray starts exactly on the edge the box 
+    
+          0 * inf = nan which occurs when the ray starts 
+  
+
+
+
+
 */
 
 static __device__
@@ -767,8 +783,8 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
           float3 p = ray.origin + tint*ray.direction - cen_ ; 
           float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
           float pmax = fmaxf(pa);
-
           float3 n = make_float3(0.f);  
+
           if(      pmax == pa.x) n.x = copysignf( 1.f , p.x ) ;              
           else if (pmax == pa.y) n.y = copysignf( 1.f , p.y ) ;              
           else if (pmax == pa.z) n.z = copysignf( 1.f , p.z ) ;              

@@ -15,6 +15,7 @@ class GItemList : public NSequence {
    public:
        GItemList(const char* itemtype, const char* reldir=NULL);
        void add(const char* name);
+       void add(GItemList* other);
        void save(const char* idpath);
        void dump(const char* msg="GItemList::dump");
     public:
@@ -23,6 +24,8 @@ class GItemList : public NSequence {
     public:
        void dumpFields(const char* msg="GItemList::dumpFields", const char* delim="/", unsigned int fwid=30);
        void replaceField(unsigned int field, const char* from, const char* to, const char* delim="/");
+    public:
+       unsigned int getNumItems();
     public:
        // fulfil NSequence protocol
        unsigned int getNumKeys();
@@ -56,10 +59,15 @@ inline void GItemList::add(const char* name)
     m_list.push_back(name);
 }
 
+inline unsigned int GItemList::getNumItems()
+{
+    return m_list.size();
+}
 inline unsigned int GItemList::getNumKeys()
 {
     return m_list.size();
 }
+
 inline const char* GItemList::getKey(unsigned int index)
 {
     return index < m_list.size() ? m_list[index].c_str() : NULL  ;

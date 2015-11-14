@@ -301,7 +301,7 @@ template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni)
 {
     std::vector<int> shape ; 
-    if(ni > 0) shape.push_back(ni);
+    shape.push_back(ni);
     return make(shape);
 }
 
@@ -309,8 +309,8 @@ template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj)
 {
     std::vector<int> shape ; 
-    if(ni > 0) shape.push_back(ni);
-    if(nj > 0) shape.push_back(nj);
+    shape.push_back(ni);
+    shape.push_back(nj);
     return make(shape);
 }
 
@@ -318,9 +318,9 @@ template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk)
 {
     std::vector<int> shape ; 
-    if(ni > 0) shape.push_back(ni);
-    if(nj > 0) shape.push_back(nj);
-    if(nk > 0) shape.push_back(nk);
+    shape.push_back(ni);
+    shape.push_back(nj);
+    shape.push_back(nk);
     return make(shape);
 }
 
@@ -329,10 +329,10 @@ template <typename T>
 NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl)
 {
     std::vector<int> shape ; 
-    if(ni > 0) shape.push_back(ni);
-    if(nj > 0) shape.push_back(nj);
-    if(nk > 0) shape.push_back(nk);
-    if(nl > 0) shape.push_back(nl);
+    shape.push_back(ni);
+    shape.push_back(nj);
+    shape.push_back(nk);
+    shape.push_back(nl);
     return make(shape);
 }
 
