@@ -10,14 +10,10 @@ class GSolid ;
 
 class GTestSphere {
    public:
-       enum { NUM_VERTICES = 24, 
-              NUM_FACES = 6*2 } ;
-   public:
        GTestSphere();
    public:
-       static void tesselate(float radius, gfloat3* vertices, guint3* faces, gfloat3* normals);
-       static GMesh*  makeMesh(glm::vec4&  spec, unsigned int meshindex);
-       static GSolid* makeSolid(glm::vec4& spec, unsigned int meshindex, unsigned int nodeindex);
+       static GMesh*  makeMesh(glm::vec4&  spec, unsigned int meshindex=0);
+       static GSolid* makeSolid(glm::vec4& spec, unsigned int meshindex=0, unsigned int nodeindex=0);
 
 };
 

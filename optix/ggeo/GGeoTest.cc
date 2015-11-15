@@ -9,6 +9,7 @@
 #include "GPmt.hh"
 #include "GSolid.hh"
 #include "GTestBox.hh"
+#include "GTestSphere.hh"
 #include "GItemList.hh"
 #include "GParts.hh"
 #include "GTransforms.hh"
@@ -230,13 +231,16 @@ GMergedMesh* GGeoTest::createBoxInBox()
     GTransforms* transforms = new GTransforms();
     GIds* aii = new GIds();
 
+
     unsigned int n = m_boundaries.size();
     for(unsigned int i=0 ; i < n ; i++)
     {
         float s = m_dimensions[i] ;
         gbbox bb(gfloat3(-s), gfloat3(s));  
+        glm::vec4 sphere(0.f,0.f,0.f,s) ;
 
-        GSolid* solid = GTestBox::makeSolid(bb, 1000, i ) ; // meshIndex, nodeIndex
+        //GSolid* solid = GTestBox::makeSolid(bb, 1000, i ) ; // meshIndex, nodeIndex
+        GSolid* solid = GTestSphere::makeSolid(sphere, 1000, i ) ; // meshIndex, nodeIndex
 
         const char* spec = m_boundaries[i].c_str() ;
         unsigned int boundary = m_bndlib->addBoundary(spec);
