@@ -55,6 +55,7 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
 
 
     bool itransforms_check = false ; 
+    bool iidentity_check = false ; 
 
     unsigned int numRepeats = getNumRepeats();
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
@@ -76,13 +77,16 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
          }
 
 
-         GBuffer* iidentity       = makeInstanceIdentityBuffer(ridx);
-         NPY<unsigned int>* iidentity2  = makeInstanceIdentityBuffer2(ridx);
-         assert(iidentity2->isEqualTo(iidentity->getPointer(), iidentity->getNumBytes()));
-
-
+         NPY<unsigned int>* iidentity  = makeInstanceIdentityBuffer(ridx);
          mergedmesh->setInstancedIdentityBuffer(iidentity);
 
+         if(iidentity_check)
+         {
+             GBuffer* iidentity_old       = PRIOR_makeInstanceIdentityBuffer(ridx);
+             iidentity->save("/tmp/iidentity.npy");
+             iidentity_old->save<unsigned int>("/tmp/iidentity_old.npy");
+             assert(iidentity->isEqualTo(iidentity_old->getPointer(), iidentity_old->getNumBytes()));
+         }
 
 
          NPY<unsigned int>* aii   = makeAnalyticInstanceIdentityBuffer(ridx);
@@ -490,7 +494,7 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
 }
 
 
-GBuffer* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx) 
+GBuffer* GTreeCheck::PRIOR_makeInstanceIdentityBuffer(unsigned int ridx) 
 {
     /*
      Instances need to know the sensor they correspond 
@@ -517,7 +521,7 @@ GBuffer* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx)
     unsigned int num = numSolids*numInstances ; 
     guint4* iidentity = new guint4[num]; 
 
-    LOG(info) << "GTreeCheck::makeInstanceIdentityBuffer" 
+    LOG(info) << "GTreeCheck::PRIOR_makeInstanceIdentityBuffer" 
               << " numInstances " << numInstances 
               << " numProgeny " << numProgeny 
               << " numSolids " << numSolids 
@@ -561,7 +565,7 @@ GBuffer* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx)
 
 
 
-NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer2(unsigned int ridx) 
+NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx) 
 {
     std::vector<GNode*> placements = getPlacements(ridx);
     unsigned int numInstances = placements.size() ;

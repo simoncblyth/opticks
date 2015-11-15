@@ -299,9 +299,9 @@ class GMesh : public GDrawable {
       void setMeshesBuffer(GBuffer* buffer);
       void setNodeInfoBuffer(GBuffer* buffer);
       void setIdentityBuffer(GBuffer* buffer);
-      void setInstancedIdentityBuffer(GBuffer* buffer);
   public:
       void setITransformsBuffer(NPY<float>* buf);
+      void setInstancedIdentityBuffer(NPY<unsigned int>* buf);
       void setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf);
   public:
       bool hasTransformsBuffer(); 
@@ -326,7 +326,7 @@ class GMesh : public GDrawable {
       // all instanced buffers created by GTreeCheck
       NPY<unsigned int>* getAnalyticInstancedIdentityBuffer();
       NPY<float>*        getITransformsBuffer();
-      GBuffer* getInstancedIdentityBuffer(); 
+      NPY<unsigned int>* getInstancedIdentityBuffer(); 
 
   public:
       float  getExtent();
@@ -483,7 +483,7 @@ class GMesh : public GDrawable {
       GBuffer* m_meshes_buffer ;
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
-      GBuffer* m_iidentity_buffer ;
+      NPY<unsigned int>* m_iidentity_buffer ;
 
       NPY<unsigned int>* m_aiidentity_buffer ; 
 
@@ -874,7 +874,7 @@ inline GBuffer*  GMesh::getIdentityBuffer()
 {
     return m_identity_buffer ;
 }
-inline GBuffer*  GMesh::getInstancedIdentityBuffer()
+inline NPY<unsigned int>*  GMesh::getInstancedIdentityBuffer()
 {
     return m_iidentity_buffer ;
 }

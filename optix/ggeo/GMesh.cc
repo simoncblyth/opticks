@@ -34,12 +34,13 @@ const char* GMesh::sensors      = "sensors" ;
 const char* GMesh::center_extent = "center_extent" ;
 const char* GMesh::bbox           = "bbox" ;
 const char* GMesh::transforms     = "transforms" ;
-const char* GMesh::itransforms    = "itransforms" ;
 const char* GMesh::meshes         = "meshes" ;
 const char* GMesh::nodeinfo       = "nodeinfo" ;
 const char* GMesh::identity       = "identity" ;
-const char* GMesh::iidentity       = "iidentity" ;
 
+
+const char* GMesh::itransforms    = "itransforms" ;
+const char* GMesh::iidentity       = "iidentity" ;
 const char* GMesh::aiidentity      = "aiidentity" ;
 
 
@@ -72,12 +73,12 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(center_extent); 
     names.push_back(bbox); 
     names.push_back(transforms); 
-    names.push_back(itransforms); 
     names.push_back(meshes); 
     names.push_back(nodeinfo); 
     names.push_back(identity); 
-    names.push_back(iidentity); 
 
+    names.push_back(itransforms); 
+    names.push_back(iidentity); 
     names.push_back(aiidentity); 
 }
 
@@ -123,6 +124,8 @@ void GMesh::allocate()
 
 GBuffer* GMesh::getBuffer(const char* name)
 {
+    if(isNPYBuffer(name)) return NULL ; 
+
     if(strcmp(name, vertices) == 0)     return m_vertices_buffer ; 
     if(strcmp(name, normals) == 0)      return m_normals_buffer ; 
     if(strcmp(name, colors) == 0)       return m_colors_buffer ; 
@@ -136,14 +139,9 @@ GBuffer* GMesh::getBuffer(const char* name)
     if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
     if(strcmp(name, bbox) == 0)            return m_bbox_buffer ; 
     if(strcmp(name, transforms) == 0)      return m_transforms_buffer ; 
-    if(strcmp(name, itransforms) == 0)     return NULL ; 
     if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
     if(strcmp(name, nodeinfo) == 0)        return m_nodeinfo_buffer ; 
     if(strcmp(name, identity) == 0)        return m_identity_buffer ; 
-    if(strcmp(name, iidentity) == 0)       return m_iidentity_buffer ; 
-
-    // NPY buffers
-    if(strcmp(name, aiidentity) == 0)      return NULL ; 
 
     return NULL ;
 }
@@ -151,6 +149,8 @@ GBuffer* GMesh::getBuffer(const char* name)
 
 void GMesh::setBuffer(const char* name, GBuffer* buffer)
 {
+    if(isNPYBuffer(name)) return ; 
+
     if(strcmp(name, vertices) == 0)     setVerticesBuffer(buffer) ; 
     if(strcmp(name, normals) == 0)      setNormalsBuffer(buffer) ; 
     if(strcmp(name, colors) == 0)       setColorsBuffer(buffer) ; 
@@ -164,11 +164,10 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
     if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
     if(strcmp(name, bbox) == 0)            setBBoxBuffer(buffer) ; 
     if(strcmp(name, transforms) == 0)      setTransformsBuffer(buffer) ; 
-    //if(strcmp(name, itransforms) == 0)     setITransformsBuffer(buffer) ; 
     if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
     if(strcmp(name, nodeinfo) == 0)        setNodeInfoBuffer(buffer) ; 
     if(strcmp(name, identity) == 0)        setIdentityBuffer(buffer) ; 
-    if(strcmp(name, iidentity) == 0)       setInstancedIdentityBuffer(buffer) ; 
+
 }
 
 void GMesh::setVertices(gfloat3* vertices)
@@ -286,13 +285,6 @@ void GMesh::setTransformsBuffer(GBuffer* buffer)
     if(!buffer) return ; 
     m_transforms = (float*)buffer->getPointer();
 }
-
-//void GMesh::setITransformsBuffer(GBuffer* buffer) 
-//{
-//    m_itransforms_buffer = buffer ;  
-//    if(!buffer) return ; 
-//    m_itransforms = (float*)buffer->getPointer();
-//}
 
 void GMesh::setITransformsBuffer(NPY<float>* buffer) 
 {
@@ -418,7 +410,7 @@ void GMesh::setIdentityBuffer(GBuffer* buffer)
 
 
 
-void GMesh::setInstancedIdentityBuffer(GBuffer* buffer) 
+void GMesh::setInstancedIdentityBuffer(NPY<unsigned int>* buffer) 
 {
     m_iidentity_buffer = buffer ;  
     if(!buffer) return ; 
@@ -902,6 +894,7 @@ bool GMesh::isNPYBuffer(const char* name)
     return 
            ( 
               strcmp( name, aiidentity ) == 0  ||
+              strcmp( name, iidentity ) == 0  ||
               strcmp( name, itransforms) == 0  
            );
 }
@@ -941,6 +934,7 @@ NPYBase* GMesh::getNPYBuffer(const char* name)
 {
     NPYBase* buf(NULL);
     if(     strcmp(name, aiidentity)  == 0) buf = getAnalyticInstancedIdentityBuffer();
+    else if(strcmp(name, iidentity) == 0)   buf = getInstancedIdentityBuffer();
     else if(strcmp(name, itransforms) == 0) buf = getITransformsBuffer();
     return buf ; 
 }
@@ -952,6 +946,11 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
     {
         NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
         setAnalyticInstancedIdentityBuffer(buf);
+    }
+    else if(strcmp(name, iidentity) == 0)
+    {
+        NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
+        setInstancedIdentityBuffer(buf);
     }
     else if(strcmp(name, itransforms) == 0)
     {

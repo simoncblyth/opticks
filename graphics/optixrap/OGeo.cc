@@ -211,10 +211,10 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
     unsigned int numTransforms = islice->count();
     assert(itransforms && numTransforms > 0);
 
-    GBuffer* ibuf = mm->getInstancedIdentityBuffer();
+    NPY<unsigned int>* ibuf = mm->getInstancedIdentityBuffer();
     unsigned int numIdentity = ibuf->getNumItems();
 
-    assert(numIdentity % numTransforms == 0); 
+    assert(numIdentity % numTransforms == 0 && "expecting numIdentity to be integer multiple of numTransforms"); 
     unsigned int numSolids = numIdentity/numTransforms ;
 
     LOG(info) << "OGeo::makeRepeatedGroup"
@@ -481,33 +481,32 @@ optix::Buffer OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, un
     NPY<float>* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
-    GBuffer* id = NULL ; 
+    optix::Buffer identityBuffer ;
     if(numITransforms > 0)
     {
-        id = mm->getInstancedIdentityBuffer();
+        NPY<unsigned int>* id = mm->getInstancedIdentityBuffer();
         assert(id);
-        LOG(info) << "OGeo::makeAnalyticGeometryIdentityBuffer (Instanced)"
+        LOG(info) << "OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer (Instanced)"
                   << " iid items " << id->getNumItems() 
                   << " numITransforms*numSolidsMesh " << numITransforms*numSolidsMesh
                   ;
 
         assert( id->getNumItems() == numITransforms*numSolidsMesh );
+        identityBuffer = createInputBuffer<optix::uint4, unsigned int>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     }
     else
     {
-        id = mm->getIdentityBuffer();
+        GBuffer* id = mm->getIdentityBuffer();
         assert(id);
-        LOG(info) << "OGeo::makeAnalyticGeometryIdentityBuffer (Global)"
+        LOG(info) << "OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer (Global)"
                   << " id items " << id->getNumItems() 
                   << " numSolidsMesh " << numSolidsMesh
                   ;
         assert( id->getNumItems() == numSolidsMesh );
+        id->dump<unsigned int>("OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer");
+        identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     }
 
-
-    id->dump<unsigned int>("OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer");
-    
-    optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     return identityBuffer ;
 }
 

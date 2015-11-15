@@ -17,10 +17,10 @@ class GDrawable {
       virtual GBuffer* getIndicesBuffer() = 0;
       virtual GBuffer* getNodesBuffer() = 0;
       virtual GBuffer* getTransformsBuffer() = 0;
-      //virtual GBuffer* getITransformsBuffer() = 0;
-      virtual NPY<float>* getITransformsBuffer() = 0;
       virtual GBuffer* getIdentityBuffer() = 0;
-      virtual GBuffer* getInstancedIdentityBuffer() = 0;
+
+      virtual NPY<float>*        getITransformsBuffer() = 0;
+      virtual NPY<unsigned int>* getInstancedIdentityBuffer() = 0;
 
       virtual GBuffer* getBoundariesBuffer() = 0;
       virtual GBuffer* getModelToWorldBuffer() = 0;
