@@ -106,7 +106,7 @@ ggv-reflect()
                  dimensions=500,300,0,0
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 
-                 analytic=0,0,0,0
+                 analytic=1,0,0,0
                )
 
     ggv.sh  \

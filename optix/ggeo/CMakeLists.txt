@@ -63,6 +63,8 @@ add_library(${name} SHARED
                 GGeo.cc
                 GVector.cc
                 GMatrix.cc
+                GIds.cc
+                GTransforms.cc
                 GNode.cc
                 GBuffer.cc
                 GDrawable.cc
@@ -110,6 +112,8 @@ GSurfaceLib.hh
 GFlags.hh
 GVector.hh
 GMatrix.hh
+GIds.hh
+GTransforms.hh
 GNode.hh
 GBuffer.hh
 GDrawable.hh

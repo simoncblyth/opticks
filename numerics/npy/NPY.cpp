@@ -127,7 +127,7 @@ void NPY<T>::add(NPY<T>* other)      // add another buffer to this one, they mus
 }
 
 template <typename T>
-void NPY<T>::add(T* values, unsigned int nvals)  
+void NPY<T>::add(const T* values, unsigned int nvals)  
 {
     unsigned int orig = getNumItems();
     unsigned int itemsize = getNumValues(1) ;

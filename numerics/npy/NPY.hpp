@@ -108,7 +108,7 @@ class NPY : public NPYBase {
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
     public:
        void add(NPY<T>* other);      // add another buffer, it must have same itemsize (ie size after 1st dimension)
-       void add(T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
+       void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
        void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes
        void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
     public:

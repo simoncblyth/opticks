@@ -1121,7 +1121,6 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 /*
      Canonically invoked by optixrap-/OGeo::makeTriangulatedGeometry
 
-
      For debugging::
 
           ggv --ggeo

@@ -11,6 +11,8 @@
 #include "GTestBox.hh"
 #include "GItemList.hh"
 #include "GParts.hh"
+#include "GTransforms.hh"
+#include "GIds.hh"
 
 #include "NLog.hpp"
 #include "NSlice.hpp"
@@ -227,6 +229,9 @@ GMergedMesh* GGeoTest::createBoxInBox()
     std::vector<GSolid*> solids ; 
     GParts* analytic = new GParts(m_bndlib);
 
+    GTransforms* transforms = new GTransforms();
+    GIds* aii = new GIds();
+
     unsigned int n = m_boundaries.size();
     for(unsigned int i=0 ; i < n ; i++)
     {
@@ -241,6 +246,9 @@ GMergedMesh* GGeoTest::createBoxInBox()
         solid->setSensor(NULL);
         solids.push_back(solid);
 
+        transforms->add();
+        aii->add(0,0,0,0);
+
         analytic->add(GParts::makeBox(bb, spec));
 
         LOG(info) << "GGeoTest::createBoxInBox"
@@ -254,9 +262,11 @@ GMergedMesh* GGeoTest::createBoxInBox()
     GMergedMesh* bib = GMergedMesh::combine( 0, NULL, solids );
     bib->setParts(analytic);
 
-    // TODO: rustle up below buffers for test geometry
-    // bib->setAnalyticInstancedIdentityBuffer(mm->getAnalyticInstancedIdentityBuffer());
-    // bib->setITransformsBuffer(mm->getITransformsBuffer());
+
+
+    bib->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
+    bib->setITransformsBuffer(transforms->getBuffer());
+    //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
 
 
     if(m_analytic.x > 0)
@@ -266,6 +276,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
     }
     else
     {
+        bib->setITransformsBuffer(NULL); // run into FaceRepeated complications when non-NULL
         bib->setGeoCode('T');  
         LOG(info) << "GGeoTest::createBoxInBox using triangulated " ; 
     }
