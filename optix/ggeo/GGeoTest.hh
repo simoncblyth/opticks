@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#include <map>
 
 struct NSlice ; 
 
@@ -24,6 +25,7 @@ class GGeoTest {
                       ANALYTIC, 
                       UNRECOGNIZED } Param_t ;
 
+       typedef std::pair<std::string,std::string> KV ; 
        static const char* DEFAULT_CONFIG ; 
     public:
        static const char* MODE_; 
@@ -37,6 +39,7 @@ class GGeoTest {
        void configure(const char* config=NULL);
        void modifyGeometry();
        void dump(const char* msg="GGeoTest::dump");
+       std::vector<std::pair<std::string, std::string> >& getCfg();
     private:
        void init();
        Param_t getParam(const char* k);
@@ -64,6 +67,8 @@ class GGeoTest {
        glm::vec4    m_dimensions ;
        glm::ivec4   m_analytic ;
        std::vector<std::string> m_boundaries ; 
+       std::vector<KV> m_cfg ; 
+
 };
 
 inline GGeoTest::GGeoTest(GCache* cache) 
@@ -79,6 +84,11 @@ inline GGeoTest::GGeoTest(GCache* cache)
     m_analytic(0,0,0,0)
 {
     init();
+}
+
+inline std::vector<std::pair<std::string, std::string> >& GGeoTest::getCfg()
+{
+    return m_cfg ; 
 }
 
 

@@ -23,7 +23,7 @@
 const char* GGeoTest::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
     "boundary=Rock///MineralOil_"
-    "dimensions=3,0,0,0_"
+    "dimensions=300,0,0,0_"
     ;
 
 const char* GGeoTest::MODE_ = "mode"; 
@@ -55,12 +55,9 @@ void GGeoTest::configure(const char* config_)
     LOG(debug) << "GGeoTest::configure" ; 
     m_config = config_ ? strdup(config_) : DEFAULT_CONFIG ; 
 
-    std::string config(m_config);
-    typedef std::pair<std::string,std::string> KV ; 
-    std::vector<KV> ekv = ekv_split(config.c_str(),'_',"="); // element-delim, keyval-delim
+    m_cfg = ekv_split(m_config,'_',"="); // element-delim, keyval-delim
 
-
-    for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
+    for(std::vector<KV>::const_iterator it=m_cfg.begin() ; it!=m_cfg.end() ; it++)
     {
         LOG(debug) 
                   << std::setw(20) << it->first
@@ -183,9 +180,10 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
     // still using mesh to set container box size basis for the analytic...
     GMergedMesh* mm = m_geolib->getMergedMesh(1);
-    gbbox bb = mm->getBBox(0);      // solid-0 contains them all
+    //gbbox bb = mm->getBBox(0);      // solid-0 contains them all
+    //bb->enlarge(size);   // THIS OLD APPROACH SHOWS BLACK EDGED BOX OPTIX RENDER, NOT SEED WITH ABSOLUTE DIMENSIONS
 
-    bb.enlarge(size);               // the **ONE** place for sizing containment box
+    gbbox bb(gfloat3(-size), gfloat3(size));  
 
 
     GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, m_slice );    // pmtIndex:0
@@ -247,7 +245,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
         solids.push_back(solid);
 
         transforms->add();
-        aii->add(0,0,0,0);
+        aii->add(0,0,0,0);  // placeholder
 
         analytic->add(GParts::makeBox(bb, spec));
 
@@ -261,7 +259,6 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
     GMergedMesh* bib = GMergedMesh::combine( 0, NULL, solids );
     bib->setParts(analytic);
-
 
 
     bib->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  

@@ -41,7 +41,6 @@ class GUI {
        void setClipper(Clipper* clipper);
        void setTrackball(Trackball* trackball);
        void setBookmarks(Bookmarks* bookmarks);
-       //void setLoader(GLoader* loader);  // used to access GItemIndex materials, surfaces, flags 
 
        void init(GLFWwindow* window);
        void newframe();
@@ -105,7 +104,6 @@ inline GUI::GUI(GGeo* ggeo)
    m_trackball(NULL),
    m_bookmarks(NULL),
    m_photons(NULL)
-   //m_loader(NULL)
 {
 }
 
@@ -137,11 +135,6 @@ inline void GUI::setBookmarks(Bookmarks* bookmarks)
 {
     m_bookmarks = bookmarks ; 
 }
-
-//inline void GUI::setLoader(GLoader* loader)
-//{
-//    m_loader = loader ; 
-//}
 
 
 inline void GUI::setupHelpText(const std::string& txt)

@@ -26,7 +26,7 @@ ggv-pmt(){
    local test_config=(
                  mode=PmtInBox
                  boundary=Rock//perfectAbsorbSurface/MineralOil
-                 dimensions=3,0,0,0
+                 dimensions=300,0,0,0
                    ) 
 
    ggv --tracer \
@@ -43,8 +43,9 @@ ggv-pmt-test(){
                  mode=PmtInBox
                  slice=0:0
                  boundary=Rock//perfectAbsorbSurface/MineralOil
-                 dimensions=3,0,0,0
+                 dimensions=300,0,0,0
                    ) 
+
 
    local torch_config=(
                  type=invsphere
