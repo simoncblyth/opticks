@@ -106,9 +106,13 @@ class NPY : public NPYBase {
        void* getPointer();   // aping GBuffer for easier migration
        void read(void* ptr);
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
-       void add(NPY<T>* other);      // add another buffer, it must have same itemsize (ie size after 1st dimension)
-       std::vector<T>& data();
     public:
+       void add(NPY<T>* other);      // add another buffer, it must have same itemsize (ie size after 1st dimension)
+       void add(T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
+       void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes
+       void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
+    public:
+       std::vector<T>& data();
        void setData(T* data);
        void fill(T value);
        T* zero();

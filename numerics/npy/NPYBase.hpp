@@ -23,6 +23,9 @@ class NPYBase {
        std::vector<int>& getShapeVector();
        std::string  getItemShape(unsigned int ifr=1);
        std::string  getDigestString();
+       static std::string  getDigestString(void* bytes, unsigned int nbytes);
+       bool isEqualTo(void* bytes, unsigned int nbytes);
+
        //unsigned int getLength();
        unsigned int getNumItems(int ifr=0, int ito=1);  // default ifr/ito=0/1 is size of 1st dimension
        unsigned int getNumElements();   // size of last dimension

@@ -930,7 +930,7 @@ void GGeo::dumpStats(const char* msg)
     {
         GMergedMesh* mm = getMergedMesh(i);
         GBuffer* tbuf = mm->getTransformsBuffer();
-        GBuffer* ibuf = mm->getITransformsBuffer();
+        NPY<float>* ibuf = mm->getITransformsBuffer();
         GBuffer* vbuf = mm->getVerticesBuffer();
         GBuffer* fbuf = mm->getIndicesBuffer();
 

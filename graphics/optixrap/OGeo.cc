@@ -203,7 +203,7 @@ void OGeo::convert()
 
 optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
 {
-    GBuffer* itransforms = mm->getITransformsBuffer();
+    NPY<float>* itransforms = mm->getITransformsBuffer();
 
     NSlice* islice = mm->getInstanceSlice(); 
     if(!islice) islice = new NSlice(0, itransforms->getNumItems()) ;
@@ -290,7 +290,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
 optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 {
     assert(0);
-    GBuffer* tbuf = mm->getITransformsBuffer();
+    NPY<float>* tbuf = mm->getITransformsBuffer();
     unsigned int numTransforms = limit > 0 ? std::min(tbuf->getNumItems(), limit) : tbuf->getNumItems() ;
     assert(tbuf && numTransforms > 0);
 
@@ -437,7 +437,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
 
-    GBuffer* itransforms = mm->getITransformsBuffer();
+    NPY<float>* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
     assert(idBuf->getNumItems() == numITransforms );
 
@@ -478,7 +478,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
 optix::Buffer OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, unsigned int numSolidsMesh)
 {
-    GBuffer* itransforms = mm->getITransformsBuffer();
+    NPY<float>* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
 
     GBuffer* id = NULL ; 

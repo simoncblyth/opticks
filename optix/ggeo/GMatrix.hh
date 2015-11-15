@@ -8,6 +8,8 @@
 #include "md5digest.hpp"
 
 
+// TODO: replace with glm 
+
 template<typename T>
 class GMatrix : public GBuffer 
 {

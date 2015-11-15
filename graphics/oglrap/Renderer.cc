@@ -43,7 +43,10 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 }
 
 
-GLuint Renderer::upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name)
+
+
+template <typename B>
+GLuint Renderer::upload(GLenum target, GLenum usage, B* buffer, const char* name)
 {
     GLuint buffer_id ; 
     int prior_id = buffer->getBufferId();
@@ -159,8 +162,8 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
 
-    GBuffer* ibuf_orig = m_drawable->getITransformsBuffer();
-    GBuffer* ibuf = ibuf_orig ;
+    NPY<float>* ibuf_orig = m_drawable->getITransformsBuffer();
+    NPY<float>* ibuf = ibuf_orig ;
     setHasTransforms(ibuf != NULL);
     if(islice)
     {
@@ -174,20 +177,20 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     }
 
  
-    m_vertices  = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
-    m_normals   = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
-    m_colors    = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
+    m_vertices  = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
+    m_normals   = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
+    m_colors    = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
 
     if(hasTex())
     {
-        m_texcoords = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
+        m_texcoords = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
     }
 
     if(m_instanced) assert(hasTransforms()) ;
 
     if(hasTransforms())
     {
-        m_transforms = upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
+        m_transforms = upload<NPY<float> >(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
         m_itransform_count = ibuf->getNumItems() ;
         LOG(debug) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
     }
@@ -197,7 +200,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     }
 
 
-    m_indices  = upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
+    m_indices  = upload<GBuffer>(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
     m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
 
     GLboolean normalized = GL_FALSE ; 

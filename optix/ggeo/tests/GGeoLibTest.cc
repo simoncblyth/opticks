@@ -21,7 +21,8 @@ int main(int argc, char** argv)
     GMergedMesh* mm = geolib->getMergedMesh(1);
 
 
-    GBuffer* itransforms = mm->getITransformsBuffer();
+    //GBuffer* itransforms = mm->getITransformsBuffer();
+    NPY<float>* itransforms = mm->getITransformsBuffer();
 
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;
 

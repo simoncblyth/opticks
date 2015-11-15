@@ -443,7 +443,7 @@ void Scene::uploadGeometry()
                 assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
                 LOG(info)<< "Scene::uploadGeometry instance renderer " << m_num_instance_renderer  ;
 
-                GBuffer* ibuf = mm->getITransformsBuffer();
+                NPY<float>* ibuf = mm->getITransformsBuffer();
                 assert(ibuf);
 
                 m_instance_renderer[m_num_instance_renderer]->upload(mm);

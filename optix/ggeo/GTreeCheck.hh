@@ -33,9 +33,13 @@ class GTreeCheck {
         unsigned int getNumRepeats(); 
         GNode* getRepeatExample(unsigned int ridx);
 
-        // canonically invoked by CreateInstancedMergedMeshes
-        GBuffer* makeInstanceTransformsBuffer(unsigned int ridx);
+        // canonically invoked by GTreeCheck::createInstancedMergedMeshes
+        GBuffer* PRIOR_makeInstanceTransformsBuffer(unsigned int ridx);
+        NPY<float>* makeInstanceTransformsBuffer(unsigned int ridx);
+
         GBuffer* makeInstanceIdentityBuffer(unsigned int ridx) ;
+        NPY<unsigned int>* makeInstanceIdentityBuffer2(unsigned int ridx);
+
         NPY<unsigned int>* makeAnalyticInstanceIdentityBuffer(unsigned int ridx);
    public:
         bool operator()(const std::string& dig) ;

@@ -24,7 +24,7 @@ void NPYBase::setNumItems(unsigned int ni)
     unsigned int orig = m_shape[0] ;
     assert(ni >= orig);
 
-    LOG(info) << "NPYBase::setNumItems"
+    LOG(debug) << "NPYBase::setNumItems"
               << " increase from " << orig << " to " << ni 
               ; 
  
@@ -35,10 +35,34 @@ void NPYBase::setNumItems(unsigned int ni)
 
 std::string NPYBase::getDigestString()
 {
+    return getDigestString(getBytes(), getNumBytes(0));
+}
+
+std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes)
+{
     MD5Digest dig ;
-    dig.update( (char*)getBytes(), getNumBytes(0));
+    dig.update( (char*)bytes, nbytes);
     return dig.finalize();
 }
+
+bool NPYBase::isEqualTo(void* bytes, unsigned int nbytes)
+{
+    std::string self = getDigestString();
+    std::string other = getDigestString(bytes, nbytes);
+
+    bool same = self.compare(other) == 0 ; 
+
+    if(!same)
+         LOG(warning) << "NPYBase::isEqualTo NO "
+                      << " self " << self 
+                      << " other " << other
+                      ;
+ 
+
+    return same ; 
+}
+
+
 
 
 std::string NPYBase::getShapeString(unsigned int ifr)

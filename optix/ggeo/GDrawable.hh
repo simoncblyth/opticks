@@ -3,6 +3,8 @@
 #include "GBuffer.hh"
 #include "GVector.hh"
 #include <vector>
+template <typename T> class NPY ;
+
 
 class GDrawable {
   public:
@@ -15,7 +17,8 @@ class GDrawable {
       virtual GBuffer* getIndicesBuffer() = 0;
       virtual GBuffer* getNodesBuffer() = 0;
       virtual GBuffer* getTransformsBuffer() = 0;
-      virtual GBuffer* getITransformsBuffer() = 0;
+      //virtual GBuffer* getITransformsBuffer() = 0;
+      virtual NPY<float>* getITransformsBuffer() = 0;
       virtual GBuffer* getIdentityBuffer() = 0;
       virtual GBuffer* getInstancedIdentityBuffer() = 0;
 

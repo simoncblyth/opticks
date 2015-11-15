@@ -275,6 +275,7 @@ class GMesh : public GDrawable {
       bool isNPYBuffer(const char* name);
       void loadNPYBuffer(const char* path, const char* name);
       void saveNPYBuffer(const char* path, const char* name);
+      NPYBase* getNPYBuffer(const char* name);
   private: 
       GBuffer* getBuffer(const char* name);
       void setBuffer(const char* name, GBuffer* buffer);
@@ -295,12 +296,12 @@ class GMesh : public GDrawable {
       void setCenterExtentBuffer(GBuffer* buffer);
       void setBBoxBuffer(GBuffer* buffer);
       void setTransformsBuffer(GBuffer* buffer);
-      void setITransformsBuffer(GBuffer* buffer);
       void setMeshesBuffer(GBuffer* buffer);
       void setNodeInfoBuffer(GBuffer* buffer);
       void setIdentityBuffer(GBuffer* buffer);
       void setInstancedIdentityBuffer(GBuffer* buffer);
   public:
+      void setITransformsBuffer(NPY<float>* buf);
       void setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf);
   public:
       bool hasTransformsBuffer(); 
@@ -321,12 +322,13 @@ class GMesh : public GDrawable {
       GBuffer* getMeshesBuffer();
       GBuffer* getNodeInfoBuffer();
       GBuffer* getIdentityBuffer();
-      GBuffer* getInstancedIdentityBuffer(); // created by GTreeCheck::CreateInstancedMergedMeshes 
   public:
+      // all instanced buffers created by GTreeCheck
       NPY<unsigned int>* getAnalyticInstancedIdentityBuffer();
+      NPY<float>*        getITransformsBuffer();
+      GBuffer* getInstancedIdentityBuffer(); 
 
-      GBuffer* getITransformsBuffer();
-
+  public:
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
       unsigned int findContainer(gfloat3 p);
@@ -477,7 +479,7 @@ class GMesh : public GDrawable {
       GBuffer* m_boundaries_buffer ;
       GBuffer* m_sensors_buffer ;
       GBuffer* m_transforms_buffer ;
-      GBuffer* m_itransforms_buffer ;
+      NPY<float>* m_itransforms_buffer ;
       GBuffer* m_meshes_buffer ;
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
@@ -853,7 +855,7 @@ inline GBuffer*  GMesh::getTransformsBuffer()
 {
     return m_transforms_buffer ;
 }
-inline GBuffer*  GMesh::getITransformsBuffer()
+inline NPY<float>*  GMesh::getITransformsBuffer()
 {
     return m_itransforms_buffer ;
 }

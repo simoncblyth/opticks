@@ -48,7 +48,9 @@ class Renderer : public RendererBase  {
 
   private:
       void upload_buffers(NSlice* islice, NSlice* fslice);
-      GLuint upload(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
+
+      template <typename B>
+      GLuint upload(GLenum target, GLenum usage, B* buffer, const char* name=NULL);
 
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }

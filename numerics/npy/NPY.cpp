@@ -92,11 +92,13 @@ void NPY<T>::read(void* ptr)
 template <typename T>
 T* NPY<T>::grow(unsigned int nitems)
 {
+    setHasData(true);
+
     unsigned int origvals = m_data.size() ; 
     unsigned int itemvals = getNumValues(1); 
     unsigned int growvals = nitems*itemvals ; 
 
-    LOG(info) << "NPY<T>::grow with space for"
+    LOG(debug) << "NPY<T>::grow with space for"
               << " nitems " << nitems
               << " itemvals " << itemvals
               << " origvals " << origvals   
@@ -123,6 +125,55 @@ void NPY<T>::add(NPY<T>* other)      // add another buffer to this one, they mus
 
     setNumItems( orig + extra );
 }
+
+template <typename T>
+void NPY<T>::add(T* values, unsigned int nvals)  
+{
+    unsigned int orig = getNumItems();
+    unsigned int itemsize = getNumValues(1) ;
+    assert( nvals % itemsize == 0 && "values adding is restricted to integral multiples of the item size");
+    unsigned int extra = nvals/itemsize ; 
+    memcpy( grow(extra), values, nvals*sizeof(T) );
+    setNumItems( orig + extra );
+}
+
+
+template <typename T>
+void NPY<T>::add(void* bytes, unsigned int nbytes)  
+{
+    unsigned int orig = getNumItems();
+    unsigned int itembytes = getNumBytes(1) ;
+    assert( nbytes % itembytes == 0 && "bytes adding is restricted to integral multiples of itembytes");
+    unsigned int extra = nbytes/itembytes ; 
+    memcpy( grow(extra), bytes, nbytes );
+
+    setNumItems( orig + extra );
+}
+
+
+template <typename T>
+void NPY<T>::add(T x, T y, T z, T w)  
+{
+    unsigned int orig = getNumItems();
+    unsigned int itemsize = getNumValues(1) ;
+    assert( itemsize == 4 && "quad adding is restricted to quad sized items");
+    unsigned int extra = 1 ;
+
+    T* vals = new T[4] ;
+    vals[0] = x ; 
+    vals[1] = y ; 
+    vals[2] = z ; 
+    vals[3] = w ; 
+ 
+    memcpy( grow(extra), vals, 4*sizeof(T) );
+
+    delete [] vals ; 
+
+    setNumItems( orig + extra );
+}
+
+
+
 
 
 template <typename T>

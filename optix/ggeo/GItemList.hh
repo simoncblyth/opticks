@@ -7,6 +7,8 @@
 struct NSlice ;
 #include "NSequence.hpp"
 
+// TODO: rename to GNameList/GKeyList/GStringList  
+
 class GItemList : public NSequence {
    public:
        static unsigned int UNSET ; 
