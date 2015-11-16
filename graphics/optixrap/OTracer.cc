@@ -2,6 +2,8 @@
 #include "OContext.hh"
 #include "OTimes.hh"
 
+#include <iomanip>
+
 
 #include <optixu/optixu.h>
 #include <optixu/optixu_math_stream_namespace.h>

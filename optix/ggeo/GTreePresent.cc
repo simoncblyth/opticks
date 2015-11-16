@@ -4,7 +4,9 @@
 #include "GSolid.hh"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
+#include <fstream>
 #include <algorithm>
 #include <iterator>
 

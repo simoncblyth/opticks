@@ -19,6 +19,11 @@
 #include "NSlice.hpp"
 #include "GLMFormat.hpp"
 #include "stringutil.hpp"
+
+#include <iomanip>
+
+
+
 #include <boost/lexical_cast.hpp>
 
 const char* GGeoTest::DEFAULT_CONFIG = 
@@ -181,8 +186,11 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
     // still using mesh to set container box size basis for the analytic...
     GMergedMesh* mm = m_geolib->getMergedMesh(1);
+
     //gbbox bb = mm->getBBox(0);      // solid-0 contains them all
-    //bb->enlarge(size);   // THIS OLD APPROACH SHOWS BLACK EDGED BOX OPTIX RENDER, NOT SEED WITH ABSOLUTE DIMENSIONS
+    //bb->enlarge(size);   
+    // THIS OLD APPROACH SHOWS BLACK EDGED BOX OPTIX RENDER, 
+    // ISSUE NOT YET SEEN WITH ABSOLUTE DIMENSIONS
 
     gbbox bb(gfloat3(-size), gfloat3(size));  
 

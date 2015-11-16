@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

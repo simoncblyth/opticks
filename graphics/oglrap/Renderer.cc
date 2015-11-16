@@ -6,6 +6,7 @@
 #include "Texture.hh"
 
 // npy-
+#include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "NSlice.hpp"
 

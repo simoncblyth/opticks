@@ -12,7 +12,6 @@ class GTestSphere {
    public:
        GTestSphere();
    public:
-       static GMesh*  makeMesh(glm::vec4&  spec, unsigned int meshindex=0);
        static GSolid* makeSolid(glm::vec4& spec, unsigned int meshindex=0, unsigned int nodeindex=0);
 
 };

@@ -11,6 +11,7 @@
 #include "NLog.hpp"
 
 #include <map>
+#include <iomanip>
 #include <cstdio>
 #include <cassert>
 #include <climits>

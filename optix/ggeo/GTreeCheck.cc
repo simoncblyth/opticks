@@ -13,7 +13,6 @@
 #include "Counts.hpp"
 #include "Timer.hpp"
 
-
 #include <glm/glm.hpp>
 
 #include <iomanip>

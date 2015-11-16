@@ -1,4 +1,5 @@
 #include "GMesh.hh"
+#include "NPY.hpp"
 #include "GMeshFixer.hh"
 #include "GBuffer.hh"
 
@@ -1440,3 +1441,60 @@ unsigned int GMesh::findContainer(gfloat3 p)
 
 
 
+GMesh* GMesh::make_mesh(NPY<float>* triangles, float scale, unsigned int meshindex)
+{
+    unsigned int ni = triangles->getShape(0) ;
+    unsigned int nj = triangles->getShape(1) ;
+    unsigned int nk = triangles->getShape(2) ;
+    assert( nj == 3 && nk == 3); 
+
+    float* bvals = triangles->getValues() ;
+
+    unsigned int nface = ni ; 
+    unsigned int nvert = ni*3 ; 
+
+    gfloat3* vertices = new gfloat3[nvert] ;
+    guint3* faces = new guint3[nface] ;
+    gfloat3* normals = new gfloat3[nvert] ;
+
+    unsigned int v = 0 ; 
+    unsigned int f = 0 ; 
+
+    for(unsigned int i=0 ; i < nface ; i++)
+    {
+        guint3& tri = faces[f] ;
+        for(unsigned int j=0 ; j < 3 ; j++)
+        {
+             float* ijvals = bvals + i*nj*nk + j*nk ;
+
+             gfloat3& vtx = vertices[v] ;
+             gfloat3& nrm = normals[v] ;
+
+             nrm.x = *(ijvals + 0); 
+             nrm.y = *(ijvals + 1); 
+             nrm.z = *(ijvals + 2); 
+
+             vtx.x = nrm.x * scale ; 
+             vtx.y = nrm.y * scale ;
+             vtx.z = nrm.z * scale ;  
+
+             v += 1 ; 
+        }
+
+        tri.x = i*3 + 0 ; 
+        tri.y = i*3 + 1 ; 
+        tri.z = i*3 + 2 ; 
+
+        f += 1 ; 
+    }
+   
+    GMesh* mesh = new GMesh(meshindex, vertices, nvert,  
+                                       faces, nface,    
+                                       normals,  
+                                       NULL ); // texcoords
+
+    mesh->setColors(  new gfloat3[nvert]);
+    mesh->setColor(0.5,0.5,0.5);  
+
+    return mesh ; 
+}

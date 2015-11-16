@@ -33,6 +33,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // npy-
+#include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "TorchStepNPY.hpp"
 #include "NSensorList.hpp"
