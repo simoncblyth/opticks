@@ -5,6 +5,8 @@ template <typename T> class NPY ;
 
 class GTransforms {
     public:
+        static GTransforms* make(unsigned int n);
+    public:
         void save(const char* path);
         static GTransforms* load(const char* path);
         NPY<float>* getBuffer();

@@ -2,6 +2,8 @@
 
 #include <map>
 #include <cassert>
+#include <vector>
+#include <glm/glm.hpp>
 
 struct guint4 ; 
 struct gbbox ; 
@@ -53,8 +55,10 @@ class GParts {
         enum { BBMAX_J = 3,     BBMAX_K = 0 };
         enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
     public:
+        static GParts* make(char typecode, glm::vec4& param, const char* spec );
         static GParts* makePart(gbbox& bb, const char* spec );
         static GParts* makeBox(gbbox& bb, const char* spec );
+        static GParts* combine(std::vector<GParts*> subs);
     public:
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib=NULL);
@@ -86,6 +90,7 @@ class GParts {
         void setIndex(unsigned int part, unsigned int index);
         void setBoundary(unsigned int part, unsigned int boundary);
     public:
+        GBndLib*           getBndLib();
         GItemList*         getBndSpec();
         NPY<unsigned int>* getSolidBuffer();
         NPY<float>*        getPartBuffer();
@@ -183,6 +188,13 @@ inline void GParts::setBndLib(GBndLib* bndlib)
 {
     m_bndlib = bndlib ; 
 }
+inline GBndLib* GParts::getBndLib()
+{
+    return m_bndlib ; 
+}
+
+
+
 
 
 inline void GParts::setSolidBuffer(NPY<unsigned int>* solid_buffer)

@@ -396,15 +396,17 @@ optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, opt
 optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 {
     optix::Geometry geometry ; 
-    switch(mergedmesh->getGeoCode())
+    char geocode = mergedmesh->getGeoCode();
+    switch(geocode)
     { 
         case 'T':
                    geometry = makeTriangulatedGeometry(mergedmesh);
                    break ; 
-        case 'S':
+        case 'A':
                    geometry = makeAnalyticGeometry(mergedmesh);
                    break ; 
         default:
+                   LOG(fatal) << "OGeo::makeGeometry geocode must be T or A, not [" << (char)geocode  << "]" ;
                    assert(0);
                    break ; 
     }

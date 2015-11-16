@@ -38,6 +38,33 @@ const char* GParts::TypeName(unsigned int typecode)
 }
 
 
+GParts* GParts::combine(std::vector<GParts*> subs)
+{
+    GParts* parts = new GParts(); 
+    GBndLib* bndlib = NULL ; 
+    for(unsigned int i=0 ; i < subs.size() ; i++)
+    {
+        GParts* sp = subs[i];
+        parts->add(sp);
+        if(!bndlib) bndlib = sp->getBndLib(); 
+    } 
+    if(bndlib) parts->setBndLib(bndlib);
+    return parts ; 
+}
+
+GParts* GParts::make(char typecode, glm::vec4& param, const char* spec )
+{
+    float size = param.w ;  
+    gbbox bb(gfloat3(-size), gfloat3(size));  
+    GParts* pt = makePart(bb, spec);
+    switch(typecode)
+    {
+        case 'B': pt->setTypeCode(0u, BOX)   ;break;
+        case 'S': pt->setTypeCode(0u, SPHERE);break;
+    }
+    return pt ; 
+} 
+
 GParts* GParts::makePart(gbbox& bb, const char* spec )
 {
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
@@ -114,31 +141,6 @@ void GParts::add(GParts* other)
 }
 
 
-/*
-void GPmt::addContainer(gbbox& bb, const char* spec)
-{
-    unsigned int typecode = BOX ; 
-    unsigned int nodeindex = getNumSolids() ; 
-    unsigned int partindex = getNumParts() + 1  ; // 1-based  ?
-
-    unsigned int boundary = m_bndlib->addBoundary(spec);
-    const char* imat = m_bndlib->getInnerMaterialName(boundary);
-    assert(strcmp(imat,"MineralOil")==0);
-
-    LOG(info) << "GPmt::addContainer"
-              << " nodeindex " << nodeindex 
-              << " partindex " << partindex
-              << " spec " << spec 
-              << " boundary " << boundary
-              << " inner material " << imat 
-               ; 
-
-    // fill in the blanks for CONTAINING_MATERIAL///Pyrex
-
-    setContainingMaterial(imat); 
-*/
-
-
 
 void GParts::setContainingMaterial(const char* material)
 {
@@ -153,9 +155,6 @@ void GParts::setSensorSurface(const char* surface)
     m_bndspec->replaceField(1, GParts::SENSOR_SURFACE, surface ) ; 
     m_bndspec->replaceField(2, GParts::SENSOR_SURFACE, surface ) ; 
 }
-
-
-
 
 
 

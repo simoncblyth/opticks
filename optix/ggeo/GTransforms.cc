@@ -2,6 +2,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "NPY.hpp"
 
+
+GTransforms* GTransforms::make(unsigned int n)
+{
+    GTransforms* t = new GTransforms();
+    for(unsigned int i=0 ; i < n ; i++) t->add();
+    return t ;
+}
+
 GTransforms* GTransforms::load(const char* path)
 {
     NPY<float>* buf = NPY<float>::load(path);

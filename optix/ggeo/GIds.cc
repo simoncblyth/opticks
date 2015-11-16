@@ -2,6 +2,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "NPY.hpp"
 
+
+GIds* GIds::make(unsigned int n)
+{
+    GIds* ids = new GIds();
+    for(unsigned int i=0 ; i < n ; i++) ids->add(0,0,0,0);
+    return ids ;
+}
+
 GIds* GIds::load(const char* path)
 {
     NPY<unsigned int>* buf = NPY<unsigned int>::load(path);

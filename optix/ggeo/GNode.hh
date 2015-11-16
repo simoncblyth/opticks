@@ -11,6 +11,7 @@ class GMesh ;
 class GNode {
   public:
       GNode(unsigned int index, GMatrixF* transform, GMesh* mesh);
+      void setIndex(unsigned int index);
       virtual ~GNode();
 
   private:
@@ -175,6 +176,12 @@ inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh)
     m_progeny_num_vertices(0)
 {
     init();
+}
+
+
+inline void GNode::setIndex(unsigned int index)
+{
+    m_index = index ; 
 }
 
 inline gfloat3* GNode::getLow()

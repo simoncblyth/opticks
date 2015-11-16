@@ -27,6 +27,7 @@ ggv-pmt(){
                  mode=PmtInBox
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  dimensions=300,0,0,0
+                 shape=S,B
                    ) 
 
    ggv --tracer \
@@ -105,6 +106,7 @@ ggv-reflect()
     local test_config=(
                  mode=BoxInBox
                  dimensions=500,300,0,0
+                 shape=B,S
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 
                  analytic=1,0,0,0

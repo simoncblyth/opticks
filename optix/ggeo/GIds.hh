@@ -5,6 +5,8 @@ template <typename T> class NPY ;
 
 class GIds {
     public:
+        static GIds* make(unsigned int n);
+    public:
         static GIds* load(const char* path);
         void save(const char* path);
         NPY<unsigned int>* getBuffer();
