@@ -40,6 +40,7 @@ const char* GGeoTest::SHAPE_ = "shape";
 const char* GGeoTest::SLICE_ = "slice"; 
 const char* GGeoTest::ANALYTIC_ = "analytic"; 
 
+
 void GGeoTest::init()
 {
     m_ggeo = m_cache->getGGeo();
@@ -166,6 +167,8 @@ void GGeoTest::modifyGeometry()
 {
     GMergedMesh* tmm(NULL);
 
+    // TODO: eliminate the mode unifying createPmtInBox, createBoxInBox -> create
+
     if(strcmp(m_mode, "PmtInBox") == 0)
     {
          assert(m_dimensions.x  > 0);
@@ -185,17 +188,20 @@ void GGeoTest::modifyGeometry()
 
     if(!tmm) return ; 
 
+
+    bool analytic = m_analytic.x > 0 ;
+
+    tmm->setGeoCode( analytic ? 'A' : 'T' );  // to OGeo
+    if(tmm->getGeoCode() == 'T') 
+    { 
+        tmm->setITransformsBuffer(NULL); // avoiding FaceRepeated complications 
+    } 
+
     //tmm->dump("GGeoTest::modifyGeometry tmm ");
     m_geolib->clear();
     m_geolib->setMergedMesh( 0, tmm );
 }
 
-
-
-//gbbox bb = mm->getBBox(0);      // solid-0 contains them all
-//bb->enlarge(size);   
-// THIS OLD APPROACH SHOWS BLACK EDGED BOX OPTIX RENDER, 
-// ISSUE NOT YET SEEN WITH ABSOLUTE DIMENSIONS
 
 
 GMergedMesh* GGeoTest::createPmtInBox()
@@ -205,34 +211,34 @@ GMergedMesh* GGeoTest::createPmtInBox()
     const char* imat = m_bndlib->getInnerMaterialName(boundary);
     char shapecode = (char)m_shape[0] ;
 
-    glm::vec4 param(0.f,0.f,0.f,m_dimensions[0]) ;
-
     LOG(info) << "GGeoTest::createPmtInBox" << " spec " << spec << " boundary " << boundary << " imat " << imat ; 
 
     GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, m_slice );    // pmtIndex:0
     GMergedMesh* mmpmt = m_geolib->getMergedMesh(1);
+    mmpmt->setParts(pmt->getParts());  // associate analytic parts with the triangulated PMT
 
-    std::vector<GParts*> analytic ; 
+    glm::vec4 param(0.f,0.f,0.f,m_dimensions[0]) ;
 
-
-    analytic.push_back(pmt->getParts());
-    analytic.push_back(GParts::make(shapecode, param, spec));
+    // TODO: move GParts creation/association inside GTestShape
 
     GSolid* solid = GTestShape::make( shapecode, param) ;
     solid->getMesh()->setIndex(1000);
     solid->setIndex(mmpmt->getNumSolids());
     solid->setBoundary(boundary); 
 
+    GParts* pts = GParts::make(shapecode, param, spec);
+    pts->setNodeIndex(0u, solid->getIndex());
+
+    solid->setParts(pts);
+
 
     GMergedMesh* tri = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
-    GParts* anl = GParts::combine( analytic );
+    GParts* anl = tri->getParts();
 
     anl->setContainingMaterial(imat);   // match outer material of PMT with inner material of the box
     anl->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
     anl->close();
 
-    tri->setGeoCode('S');  // signal OGeo to use Analytic geometry
-    tri->setParts(anl);
     tri->setAnalyticInstancedIdentityBuffer(mmpmt->getAnalyticInstancedIdentityBuffer());
     tri->setITransformsBuffer(mmpmt->getITransformsBuffer());
 
@@ -240,21 +246,26 @@ GMergedMesh* GGeoTest::createPmtInBox()
 }
 
 
-
 GMergedMesh* GGeoTest::createBoxInBox()
 {
-    std::vector<GSolid*> triangulated ; 
-    std::vector<GParts*> analytic ; 
-
+    std::vector<GSolid*> solids ; 
     unsigned int n = m_boundaries.size();
-    GTransforms* txf = GTransforms::make(n); // identities
-    GIds*        aii = GIds::make(n);        // zeros
-
     for(unsigned int i=0 ; i < n ; i++)
     {
         char shapecode = (char)m_shape[i] ;
+        const char* shapename = GTestShape::ShapeName(shapecode);
         const char* spec = m_boundaries[i].c_str() ;
         unsigned int boundary = m_bndlib->addBoundary(spec);
+
+        LOG(info) << "GGeoTest::createBoxInBox" 
+                  << " i " << std::setw(2) << i 
+                  << " solid " << std::setw(2) << i 
+                  << " shapecode " << std::setw(2) << shapecode 
+                  << " boundary " << std::setw(3) << boundary
+                  << " shapename " << std::setw(15) << shapename
+                  << " spec " << spec
+                  ;
+        
         glm::vec4 param(0.f,0.f,0.f,m_dimensions[i]) ;
 
         GSolid* solid = GTestShape::make(shapecode, param ); 
@@ -264,50 +275,26 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
         GParts* pts = GParts::make(shapecode, param, spec);
         pts->setIndex(0u, i);
+        pts->setNodeIndex(0u, i);
+        pts->setBndLib(m_bndlib);
 
-        triangulated.push_back(solid);
-        analytic.push_back(pts);
-        
-        LOG(info) << "GGeoTest::createBoxInBox"
-                  << " solid " << std::setw(2) << i 
-                  << " shapecode " << std::setw(2) << shapecode 
-                  << " boundary " << std::setw(3) << boundary
-                  << " spec " << spec
-                  ;
+        solid->setParts(pts);
+
+        solids.push_back(solid);
     }
 
-    GMergedMesh* tri = GMergedMesh::combine( 0, NULL, triangulated );
-    GParts*      anl = GParts::combine(analytic);
-    anl->setBndLib(m_bndlib);
+    GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );
 
-    tri->setParts(anl);
+    GTransforms* txf = GTransforms::make(n); // identities
+    GIds*        aii = GIds::make(n);        // zeros
+
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
 
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
-
-    if(m_analytic.x > 0)
-    {
-        LOG(info) << "GGeoTest::createBoxInBox using analytic " ; 
-        tri->setGeoCode('A');  // signal OGeo to use Analytic geometry
-    }
-    else
-    {
-        tri->setITransformsBuffer(NULL); // run into FaceRepeated complications when non-NULL
-        tri->setGeoCode('T');  
-        LOG(info) << "GGeoTest::createBoxInBox using triangulated " ; 
-    }
-
     return tri ; 
 } 
 
 
-
-
-
-GMergedMesh* GGeoTest::createRussianDoll()
-{
-    return NULL ; 
-}
 
 

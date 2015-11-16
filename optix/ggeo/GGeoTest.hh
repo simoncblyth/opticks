@@ -55,7 +55,6 @@ class GGeoTest {
        void setSlice(const char* s);
        void setAnalytic(const char* s);
     private:
-       GMergedMesh* createRussianDoll();
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
     private:
@@ -87,7 +86,7 @@ inline GGeoTest::GGeoTest(GCache* cache)
     m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
-    m_shape('B','B','B','B')
+    m_shape('U','U','U','U')
 {
     init();
 }

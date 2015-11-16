@@ -88,12 +88,14 @@ void NPYBase::Summary(const char* msg)
     LOG(info) << desc ; 
 }   
 
-void NPYBase::dump(const char* msg)
-{
-    LOG(info) << msg ; 
-    std::string desc = description(msg);
-    LOG(info) << desc ; 
-}   
+
+
+
+
+
+
+
+
 
 
 

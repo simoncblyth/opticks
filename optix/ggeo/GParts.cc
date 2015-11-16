@@ -56,36 +56,31 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec )
 {
     float size = param.w ;  
     gbbox bb(gfloat3(-size), gfloat3(size));  
-    GParts* pt = makePart(bb, spec);
-    switch(typecode)
-    {
-        case 'B': pt->setTypeCode(0u, BOX)   ;break;
-        case 'S': pt->setTypeCode(0u, SPHERE);break;
-    }
-    return pt ; 
-} 
 
-GParts* GParts::makePart(gbbox& bb, const char* spec )
-{
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
     part->zero();
 
     assert(BBMIN_K == 0 );
     assert(BBMAX_K == 0 );
+
     unsigned int i = 0u ; 
+    part->setQuad( i, PARAM_J, param.x, param.y, param.z, param.w );
     part->setQuad( i, BBMIN_J, bb.min.x, bb.min.y, bb.min.z , 0.f );
     part->setQuad( i, BBMAX_J, bb.max.x, bb.max.y, bb.max.z , 0.f );
 
-    return new GParts(part, spec) ;
-}
+    GParts* pt = new GParts(part, spec) ;
 
-
-GParts* GParts::makeBox(gbbox& bb, const char* spec )
-{
-    GParts* pt = makePart(bb, spec);
-    pt->setTypeCode(0u, BOX );
+    if( typecode == 'B' )     pt->setTypeCode(0u, BOX);
+    else if(typecode == 'S' ) pt->setTypeCode(0u, SPHERE);
+    else
+    {
+        LOG(fatal) << "GParts::make bad typecode [" << typecode << "]" ; 
+        assert(0) ; 
+    }
     return pt ; 
-}
+} 
+
+
 
 void GParts::init(const char* spec)
 {

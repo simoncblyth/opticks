@@ -20,14 +20,29 @@ join(){ local IFS="$1"; shift; echo "$*"; }
 
 ggv-pmt(){
    type $FUNCNAME
-
-   # slice=0:0
-
    local test_config=(
                  mode=PmtInBox
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  dimensions=300,0,0,0
-                 shape=S,B
+                 shape=S
+                 analytic=0
+                   ) 
+
+   ggv --tracer \
+          --test --testconfig "$(join _ ${test_config[@]})" \
+          --eye 0.5,0.5,0.0 \
+           $*  
+}
+
+ggv-bib(){
+   type $FUNCNAME
+   local test_config=(
+                 mode=BoxInBox
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 boundary=MineralOil///Pyrex
+                 dimensions=500,300,0,0
+                 shape=S,S
+                 analytic=1
                    ) 
 
    ggv --tracer \
@@ -37,15 +52,9 @@ ggv-pmt(){
 }
 
 
+
 ggv-pmt-test(){
    type $FUNCNAME
-
-   local test_config=(
-                 mode=PmtInBox
-                 slice=0:0
-                 boundary=Rock//perfectAbsorbSurface/MineralOil
-                 dimensions=300,0,0,0
-                   ) 
 
 
    local torch_config=(
@@ -59,6 +68,15 @@ ggv-pmt-test(){
                  material=Vacuum
                )
 
+   # slice=0:0
+   local test_config=(
+                 mode=PmtInBox
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 dimensions=300,0,0,0
+                 shape=B
+                 analytic=1
+                   ) 
+
    ggv \
        --test --testconfig "$(join _ ${test_config[@]})" \
        --torch --torchconfig "$(join _ ${torch_config[@]})" \
@@ -68,16 +86,6 @@ ggv-pmt-test(){
 
 }
 
-
-ggv-bib-tracer(){
-   type $FUNCNAME
-   ggv  --tracer \
-         --test \
-        --eye 0.5,0.5,0.0 \
-        --testconfig "mode=BoxInBox_dimensions=500,0,0,0_boundary=MineralOil///Pyrex_" \
-         $*
-      # --testconfig "mode=BoxInBox_dimensions=4,2,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_boundary=MineralOil///Pyrex_" \
-}
 
 
 
@@ -96,20 +104,23 @@ ggv-reflect()
                  photons=500000
                  polz=${pol}pol
                  frame=1
-                 source=10,0,300
-                 target=10,0,0
-                 radius=102
+                 source=0,0,300
+                 target=0,0,0
+                 radius=100
                  zenithazimuth=0,0.5,0,1
                  material=Vacuum
                )
 
+    # no leaks with analytic box,  so no need to offset *source* to eg 10,0,300 to avoid cracks
+    # analytic sphere a bit leaky ? 
+
     local test_config=(
                  mode=BoxInBox
                  dimensions=500,300,0,0
-                 shape=B,S
+                 shape=S,S
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 
-                 analytic=1,0,0,0
+                 analytic=1
                )
 
     ggv.sh  \

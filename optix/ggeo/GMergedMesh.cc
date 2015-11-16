@@ -2,11 +2,13 @@
 #include "GCache.hh"
 #include "GGeo.hh"
 #include "GSolid.hh"
+#include "GParts.hh"
 
 // npy-
 #include "Timer.hpp"
 #include "NSensor.hpp"
 
+#include <vector>
 #include <climits>
 #include <iostream>
 #include <iomanip>
@@ -29,11 +31,19 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* s
 
 GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
 {
+    std::vector<GParts*> analytic ; 
     GMergedMesh* com = new GMergedMesh( index ); 
 
     if(mm)
     {
         com->countMergedMesh(mm, true);
+        GParts* pts = mm->getParts();
+
+        if(pts)
+            analytic.push_back(pts);
+        else
+            LOG(warning) << "GMergedMesh::combine mm has no analytic GParts attached " ; 
+
     }
 
     typedef std::vector<GSolid*> VS ; 
@@ -41,6 +51,13 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vect
     {
         GSolid* solid = *it ; 
         com->countSolid(solid, true);
+
+        GParts* pts = solid->getParts();
+        if(pts)
+            analytic.push_back(pts);
+        else
+            LOG(warning) << "GMergedMesh::combine solid has no analytic GParts attached " ; 
+
     } 
 
     com->allocate(); 
@@ -57,6 +74,23 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vect
     } 
 
     com->updateBounds();
+
+
+
+    unsigned int ncomp = solids.size() + ( mm ? 1 : 0 ) ;
+
+    if(analytic.size() == ncomp)
+    {
+        GParts*      anl = GParts::combine(analytic);
+        com->setParts(anl);
+    }
+    else
+    {
+        LOG(warning) << "GMergedMesh::combine CANNOT combine analytic parts are incomplete " 
+                     << " ncomp " << ncomp 
+                     << " nanalytic " << analytic.size()
+                     ;
+    }
 
     return com ; 
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 class GMesh ;
+class GParts ; 
 class NSensor ; 
 
 
@@ -39,6 +40,9 @@ class GSolid : public GNode {
       unsigned int getBoundary();
       guint4       getIdentity();
       NSensor*     getSensor();
+  public:
+      GParts*      getParts();
+      void         setParts(GParts* pts);
   public: 
       void Summary(const char* msg="GSolid::Summary");
       std::string description();

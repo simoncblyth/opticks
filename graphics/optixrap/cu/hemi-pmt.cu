@@ -464,6 +464,8 @@ template<bool use_robust_method>
 static __device__
 void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
 {
+  // TODO: debug some leakiness, predominantly at near normal incidence
+
   float3 center = make_float3(q0.f);
   float radius = q0.f.w;
 
@@ -504,7 +506,7 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
         }
         float3 P = ray.origin + (root1 + root11)*ray.direction ;  
         bool check_second = true;
-        if( P.z > q2.f.z && P.z < q3.f.z )
+        if( P.z >= q2.f.z && P.z <= q3.f.z )
         {
             if( rtPotentialIntersection( root1 + root11 ) ) 
             {
@@ -518,11 +520,11 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
         {
             float root2 = (-b + sdisc) + (do_refine ? root11 : 0.f);   // unconfirmed change root1 -> root11
             P = ray.origin + root2*ray.direction ;  
-            if( P.z > q2.f.z && P.z < q3.f.z )
+            if( P.z >= q2.f.z && P.z <= q3.f.z )
             { 
                 if( rtPotentialIntersection( root2 ) ) 
                 {
-                    shading_normal = geometric_normal = -(O + root2*D)/radius; // negating as inside always(?) 
+                    shading_normal = geometric_normal = (O + root2*D)/radius; // NOT: negating when inside as that would break rules regards geometric normals
                     instanceIdentity = identity ; 
                     rtReportIntersection(0);   // material index 0 
                 }
@@ -852,7 +854,7 @@ RT_PROGRAM void intersect(int primIdx)
                 intersect_aabb(q2, q3, identity);
                 break ; 
           case 1:
-                intersect_zsphere<true>(q0,q1,q2,q3,identity);
+                intersect_zsphere<false>(q0,q1,q2,q3,identity);
                 break ; 
           case 2:
                 intersect_ztubs(q0,q1,q2,q3,identity);
@@ -873,6 +875,9 @@ RT_PROGRAM void intersect(int primIdx)
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
   // could do offline
+  // but this is great place to dump things checking GPU side state
+  // as only run once
+
   const uint4& solid    = solidBuffer[primIdx]; 
   uint4 identity = identityBuffer[instance_index] ; 
   unsigned int numParts = solid.y ; 

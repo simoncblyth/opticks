@@ -120,7 +120,8 @@ class NPY : public NPYBase {
     public:
        T* getUnsetItem();
        bool isUnsetItem(unsigned int i);
-
+    public:
+       void dump(const char* msg="NPY::dump", unsigned int limit=15);
     public:
        // methods assuming 3D shape
        std::set<int> uniquei(unsigned int j, unsigned int k);

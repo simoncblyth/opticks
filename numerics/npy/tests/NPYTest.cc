@@ -8,6 +8,13 @@
 #include <glm/glm.hpp>
 
 
+void test_dump()
+{
+   NPY<unsigned int>* solidBuf = NPY<unsigned int>::load("/tmp/solidBuf.npy");
+   solidBuf->dump();
+}
+
+
 void test_empty_add()
 {
    std::vector<int> shape ; 
@@ -285,7 +292,8 @@ int main()
     //test_slice();
 
     //test_add();
-    test_empty_add();
+    //test_empty_add();
+    test_dump();
 
     return 0 ;
 }

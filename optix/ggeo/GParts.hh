@@ -45,6 +45,8 @@ class GParts {
               SK = 4  
             } ;
 
+        enum { PARAM_J  = 0, PARAM_K  = 0 };
+
         enum { INDEX_J  = 1, INDEX_K  = 1 };
         enum { BOUNDARY_J = 1, BOUNDARY_K = 2 };
         enum { FLAGS_J  = 1, FLAGS_K  = 3 };
@@ -56,8 +58,7 @@ class GParts {
         enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
     public:
         static GParts* make(char typecode, glm::vec4& param, const char* spec );
-        static GParts* makePart(gbbox& bb, const char* spec );
-        static GParts* makeBox(gbbox& bb, const char* spec );
+    public:
         static GParts* combine(std::vector<GParts*> subs);
     public:
         GParts(GBndLib* bndlib=NULL);

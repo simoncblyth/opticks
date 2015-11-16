@@ -420,7 +420,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
     GParts* pmt = mm->getParts();
-    assert(pmt && "GMergedMesh with GeoCode S must have associated GParts, see GGeo::modifyGeometry "); 
+    assert(pmt && "GMergedMesh with GeoCode A must have associated GParts, see GGeo::modifyGeometry "); 
 
     if(pmt->getSolidBuffer() == NULL)
     {
@@ -433,9 +433,14 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     NPY<float>* partBuf = pmt->getPartBuffer();
     NPY<unsigned int>* solidBuf = pmt->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
 
+    assert(partBuf);
     assert(solidBuf);
 
-    solidBuf->dump("solidBuf partOffset/numParts/solidIndex/0");
+    partBuf->dump("OGeo::makeAnalyticGeometry partBuf");
+    solidBuf->dump("OGeo::makeAnalyticGeometry solidBuf partOffset/numParts/solidIndex/0");
+    //partBuf->save("/tmp/partBuf.npy");
+    //solidBuf->save("/tmp/solidBuf.npy");
+
 
     NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
     NPY<float>* itransforms = mm->getITransformsBuffer();
@@ -469,7 +474,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);
 
-    //optix::Buffer identityBuffer = PRIOR_makeAnalyticGeometryIdentityBuffer(mm, numSolidsMesh);
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4, unsigned int>( idBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     geometry["identityBuffer"]->setBuffer(identityBuffer);
 

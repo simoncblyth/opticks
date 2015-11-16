@@ -50,17 +50,12 @@ public:
     GNode* getCurrentBase(); 
     bool   isGlobal(); 
     bool   isInstanced(); 
-public:
-    // analytic geometry standin for OptiX
-    void setParts(GParts* parts);
-    GParts* getParts();
 private:
     // transients that do not need persisting, persistables are down in GMesh
     unsigned int m_cur_vertices ;
     unsigned int m_cur_faces ;
     unsigned int m_cur_solid ;
     GNode*       m_cur_base ;  
-    GParts*      m_parts ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
      
 };
@@ -71,8 +66,7 @@ inline GMergedMesh::GMergedMesh(unsigned int index)
        m_cur_vertices(0),
        m_cur_faces(0),
        m_cur_solid(0),
-       m_cur_base(NULL),
-       m_parts(NULL)
+       m_cur_base(NULL)
 {
 } 
 
@@ -95,13 +89,5 @@ inline bool GMergedMesh::isInstanced()
     return m_cur_base != NULL ; 
 }
 
-inline void GMergedMesh::setParts(GParts* parts)
-{
-    m_parts = parts ; 
-}
-inline GParts* GMergedMesh::getParts()
-{
-    return m_parts ; 
-}
 
 

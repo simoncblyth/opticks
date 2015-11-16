@@ -77,7 +77,6 @@ class NPYBase {
  
     public:
        void Summary(const char* msg="NPYBase::Summary");
-       void dump(const char* msg="NPYBase::dump");
        std::string description(const char* msg="NPYBase::description");
 
    protected:

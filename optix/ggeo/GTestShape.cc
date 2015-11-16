@@ -14,12 +14,27 @@
 #include "NSphere.hpp"
 #include "NLog.hpp"
 
+const char* GTestShape::SPHERE = "sphere" ; 
+const char* GTestShape::BOX = "box" ; 
+const char* GTestShape::PMT = "pmt" ; 
+const char* GTestShape::UNDEFINED = "undefined" ; 
+ 
+const char* GTestShape::ShapeName(char shapecode)
+{
+    switch(shapecode) 
+    {
+       case 'B':return BOX    ; break ; 
+       case 'S':return SPHERE ; break ; 
+       case 'P':return PMT    ; break ; 
+       case 'U':return UNDEFINED ; break ;
+    }
+    return NULL ;
+} 
 
-
-GSolid* GTestShape::make(char typecode, glm::vec4& spec )
+GSolid* GTestShape::make(char shapecode, glm::vec4& spec )
 {
     GSolid* solid = NULL ; 
-    switch(typecode)
+    switch(shapecode)
     {
         case 'B': solid = makeBox(spec)    ;break;
         case 'S': solid = makeSphere(spec) ;break;
@@ -71,13 +86,12 @@ GSolid* GTestShape::makeBox(gbbox& bbox)
 
 
 
-GSolid* GTestShape::makeSphere(glm::vec4& spec)
+GSolid* GTestShape::makeSphere(glm::vec4& spec, unsigned int subdiv)
 {
     LOG(debug) << "GTestShape::makeSphere" ;
 
-    unsigned int subdiv = 0 ; 
     unsigned int ntri = 20*(1 << (subdiv * 2)) ;
-    NPY<float>* triangles = NSphere::icosahedron(0);  // (subdiv, ntri)  (0,20)
+    NPY<float>* triangles = NSphere::icosahedron(subdiv);  // (subdiv, ntri)  (0,20) (3,1280)
     assert(triangles->getNumItems() == ntri);
 
     float radius = spec.w ; 

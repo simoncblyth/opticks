@@ -3,6 +3,8 @@
 struct NSlice ; 
 template <typename T> class NPY ;
 class NPYBase ; 
+class GParts ; 
+
 
 #include "GMatrix.hh"
 #include "GDrawable.hh"
@@ -421,6 +423,10 @@ class GMesh : public GDrawable {
       void setNumFaces(   unsigned int num_faces);
       void setNumSolids(unsigned int num_solids);
 
+  public:
+      // analytic geometry standin for OptiX
+      void setParts(GParts* parts);
+      GParts* getParts();
 
   protected:
       unsigned int    m_index ;
@@ -493,6 +499,7 @@ class GMesh : public GDrawable {
       GBuffer* m_facerepeated_iidentity_buffer ;
       GBuffer* m_analytic_geometry_buffer ; 
 
+      GParts*      m_parts ; 
 };
 
 
@@ -567,8 +574,9 @@ inline GMesh::GMesh(unsigned int index,
 
       m_facerepeated_identity_buffer(NULL),
       m_facerepeated_iidentity_buffer(NULL),
-      m_analytic_geometry_buffer(NULL)
+      m_analytic_geometry_buffer(NULL),
 
+      m_parts(NULL)
 {
      init(vertices, faces, normals, texcoords);
 }
@@ -958,6 +966,15 @@ inline NSlice* GMesh::getPartSlice()
 }
 
 
+
+inline void GMesh::setParts(GParts* parts)
+{
+    m_parts = parts ; 
+}
+inline GParts* GMesh::getParts()
+{
+    return m_parts ; 
+}
 
 
 

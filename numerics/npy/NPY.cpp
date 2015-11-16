@@ -1,6 +1,7 @@
 #include "NPY.hpp"
 #include "NSlice.hpp"
 
+#include <iomanip>
 #include <algorithm>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
@@ -712,6 +713,53 @@ std::map<unsigned int,unsigned int> NPY<T>::count_unique_u(unsigned int j, unsig
         else                      uniq[uval] += 1 ; 
     }
     return uniq ; 
+}
+
+
+
+template <typename T>
+void NPY<T>::dump(const char* msg, unsigned int limit)
+{
+    LOG(info) << msg << " (" << getShapeString() << ") " ; 
+
+    unsigned int ni = getShape(0);
+
+    unsigned int nj, nk ; 
+
+    if(m_dim == 3)
+    {
+        nj = getShape(1);
+        nk = getShape(2);
+    }
+    else if(m_dim == 2)
+    {
+        nj = 1;
+        nk = getShape(1);
+    }
+
+
+    T* ptr = getValues();
+
+
+    for(unsigned int i=0 ; i < std::min(ni, limit) ; i++)
+    {   
+        for(unsigned int j=0 ; j < nj ; j++)
+        {
+            for(unsigned int k=0 ; k < nk ; k++)
+            {   
+                unsigned int offset = i*nj*nk + j*nk + k ; 
+                T* v = ptr + offset ; 
+                if(k%nk == 0) std::cout << std::endl ; 
+
+                if(k==0) std::cout << "(" <<std::setw(3) << i << ") " ;
+                std::cout << " " << std::fixed << std::setprecision(3) << std::setw(10) << *v << " " ;   
+            }   
+        }
+   }   
+
+
+
+   std::cout << std::endl ; 
 }
 
 
