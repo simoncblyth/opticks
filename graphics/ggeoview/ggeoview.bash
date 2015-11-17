@@ -18,21 +18,6 @@ join(){ local IFS="$1"; shift; echo "$*"; }
 
 
 
-ggv-pmt(){
-   type $FUNCNAME
-   local test_config=(
-                 mode=PmtInBox
-                 boundary=Rock//perfectAbsorbSurface/MineralOil
-                 dimensions=300,0,0,0
-                 shape=S
-                 analytic=0
-                   ) 
-
-   ggv --tracer \
-          --test --testconfig "$(join _ ${test_config[@]})" \
-          --eye 0.5,0.5,0.0 \
-           $*  
-}
 
 ggv-bib(){
    type $FUNCNAME
@@ -53,22 +38,40 @@ ggv-bib(){
 
 
 
+
+ggv-pmt(){
+   type $FUNCNAME
+   local test_config=(
+                 mode=PmtInBox
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 dimensions=300,0,0,0
+                 shape=S
+                 analytic=1
+                   ) 
+
+   ggv --tracer \
+          --test --testconfig "$(join _ ${test_config[@]})" \
+          --eye 0.5,0.5,0.0 \
+           $*  
+}
+
 ggv-pmt-test(){
    type $FUNCNAME
 
-
    local torch_config=(
-                 type=invsphere
+                 type=disclin
                  photons=500000
                  frame=1
                  source=0,0,300
                  target=0,0,0
-                 radius=1000
+                 radius=100
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
+                 
 
-   # slice=0:0
+   #  slice=2:3  PMT front face only
+
    local test_config=(
                  mode=PmtInBox
                  boundary=Rock//perfectAbsorbSurface/MineralOil
@@ -86,9 +89,6 @@ ggv-pmt-test(){
 
 }
 
-
-
-
     
 # For invsphere and refltest "source" provides the
 # center of the sphere and target is not used
@@ -99,7 +99,8 @@ ggv-pmt-test(){
 #
 #
 # no leaks with analytic box,  so no need to offset *source* to eg 10,0,300 to avoid cracks
-# analytic sphere a bit leaky ? 
+# analytic sphere needs bbox expanded slightly to avoid leaks at touch points
+#
 
 ggv-reflect()
 {

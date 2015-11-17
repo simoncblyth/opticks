@@ -47,6 +47,7 @@ class Rat(object):
     def __repr__(self):
         return "Rat %s %s/%s %5.3f " % (self.label,self.n, self.d, self.r)
 
+
 class Evt(object):
     def __init__(self, tag="1", src="torch", label=""):
         self.tag = str(tag)
@@ -68,12 +69,20 @@ class Evt(object):
 
     def history_table(self):
         seqhis = self.seqhis
-        seqhis_table(count_unique(seqhis))
+        cu = count_unique(seqhis)
+        seqhis_table(cu)
+        tot = cu[:,1].astype(np.int32).sum()
+        print "tot:", tot
+        return cu
 
     def flags_table(self):
         flags = self.flags
-        gflags_table(count_unique(flags))
+        cu = count_unique(flags)
+        gflags_table(cu)
+        tot = cu[:,1].astype(np.int32).sum()
+        print "tot:", tot
         brsa = maskflags_int("BR|SA|TORCH")
+        return cu
 
     def seqhis_or(self, *args):
         """

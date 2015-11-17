@@ -166,14 +166,15 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       //  aligned with the z axis)
       // then rotate momentum direction back to global reference system  
       
-      if( ts.type == T_DISC )
+      if( ts.type == T_DISC || ts.type == T_DISCLIN )
       { 
           // disc single direction emitter 
+          //  http://mathworld.wolfram.com/DiskPointPicking.html
 
           p.direction = ts.p0 ;
 
-          //float r = radius*u1 ; 
-          float r = radius*sqrtf(u1) ;   // avoid bunching 
+          float r = ts.type == T_DISC ? radius*sqrtf(u1) : radius*u1    ;   
+          // taking sqrt intended to avoid pole bunchung 
 
           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
           rotateUz(discPosition, ts.p0);

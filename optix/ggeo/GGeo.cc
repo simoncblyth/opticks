@@ -79,7 +79,7 @@ void GGeo::init()
 
    m_loaded = gc_exists && gc_request ;
 
-   LOG(info) << "GGeo::init"
+   LOG(debug) << "GGeo::init"
              << " idpath " << idpath
              << " gc_exists " << gc_exists 
              << " gc_request " << gc_request
@@ -225,7 +225,7 @@ void GGeo::loadFromG4DAE()
 
 void GGeo::afterConvertMaterials()
 {
-    LOG(info) << "GGeo::afterConvertMaterials and before convertStructure" ; 
+    LOG(debug) << "GGeo::afterConvertMaterials and before convertStructure" ; 
 
     prepareSurfaceLib(); 
 }
@@ -278,7 +278,7 @@ void GGeo::setupTyp()
 
 void GGeo::setupColors()
 {
-    LOG(info) << "GGeo::setupColors" ; 
+    LOG(debug) << "GGeo::setupColors" ; 
 
     GFlags* flags = m_cache->getFlags();
 

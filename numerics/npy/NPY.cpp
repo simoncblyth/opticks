@@ -116,7 +116,7 @@ void NPY<T>::add(NPY<T>* other)      // add another buffer to this one, they mus
     unsigned int orig = getNumItems();
     unsigned int extra = other->getNumItems();
 
-    LOG(info) << "NPY<T>::add items "
+    LOG(debug) << "NPY<T>::add items "
               << " orig " << orig 
               << " extra " << extra 
               ;

@@ -471,8 +471,16 @@ Position shift below is to match between different cylinder Z origin conventions
      pyrex when actually in vacuum (ie they failed to intersect at the targetted +Z pole)
      Visible as a red Pyrex leak within the white Vacuum outside the sphere.
 
-     suspect problem along the axes where the sphere touches it bounding box
+     Problem confirmed to be due to bbox effectively clipping the sphere pole
+     (and presumably all 6 points where bbox touches the sphere are clipped) 
 
+
+
+Alternate sphere intersection using geometrical 
+rather than algebraic approach, starting from 
+t(closest approach) to sphere center
+
+* http://www.vis.uky.edu/~ryang/teaching/cs535-2012spr/Lectures/13-RayTracing-II.pdf
 
 */
 

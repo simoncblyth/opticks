@@ -1,5 +1,18 @@
-Reflection Debug
-==================
+Leaky Triangulated Box
+========================
+
+
+Summary
+-------
+
+Shooting millions of photons at triangulation edges is 
+fount to let some thru.  The solution is to 
+avoid doing that eg by shifting targetted point to avoid cracks
+or use analytic box instead.
+
+
+Initial Observation
+-------------------------
 
 
 BoxInBox Pyrex block in Vacuum lit by spherical focus light targetting single point::

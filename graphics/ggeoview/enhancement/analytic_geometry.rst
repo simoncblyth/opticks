@@ -1,7 +1,6 @@
 Analytic Geometry
 ===================
 
-
 Principal
 ----------
 
@@ -14,13 +13,6 @@ Ray intersection with CSG solids boils down to
 analytic solving quadratic/cubic polynomials. There is 
 a technique to handle union intersections by applying boolean operations
 to intersection segments of the sub volumes. 
-
-
-
-Leaky Sphere
---------------
-
-
 
 
 Aligning three geometries
@@ -60,9 +52,7 @@ GPmt
 * Avoids mal-duplication.
 * allows pslice to apply to content and not the containment box
   (but pslicing is a low level Analytic Part debug thing, 
-   as it cannot be applied at triangulated level)
-
-Currently the analytic containment box is added in python by pmt-parts, 
+  as it cannot be applied at triangulated level)
 
 
 GPmt Operation
@@ -71,7 +61,7 @@ GPmt Operation
 * reads *pmt-parts* written float parts buffer, deriving a solid buffer from it 
   using solid or node indices which are embedded into the parts buffer
 
-* these five indices 0..4 hail from the detdesc tree parse of *hemi-pmt.xml* 
+* these five indices 0:4 hail from the detdesc tree parse of *hemi-pmt.xml* 
   and these must match the indices from the GMergedMesh identity buffer 
 
 * for debug want to skip some solids, eg to see behavior with a solid lump of Pyrex/Vacuum/Bialkali
@@ -90,13 +80,6 @@ similar to how Pyrex/Vacuum modelling of the pyrex envelope is done.
 Again this might entail adding solids, which will mess up identity.  Seems 
 
 
-Identity handling
-------------------
-
-Currently rely in 
-
-
-
 Test Box Debugging
 --------------------
 
@@ -110,14 +93,21 @@ Test Box Debugging
              $*   
     }
 
+
 * need to sort out analytic boundary identity labelling, the missers
   think they are in Pyrex, when should be MO
+  [FIXED] 
+
+
 * GGeo/GMergedMesh should be orchestrating the analytic PMT for commality, 
   currently OGeo/GPmt just grabbing from GCache
+  [FIXED]
 
 * where do i set the boundary of the analytic test box ?
   again need to bring control of triangulated and analytic together 
   to avoid confusion
+  [FIXED]
+
 
 From OptiX point of view there 5 (or 6 with the container) primitives.
 These need to line up with the triangulated solids for identity to work.
@@ -302,11 +292,15 @@ As if pushed out by the dynode ?
 Tubs Issue FIXED, was caused by cylinder poking outside its bbox
 -------------------------------------------------------------------
 
-* enable ENDCAP_P only in pmt-/dd.py and regen with::
+* enable ENDCAP_P only in pmt-/dd.py and regen with
 
-  pmt-parts 3:4
+::
 
-* setup coloring in cu/pinhole_camera.cu::
+   pmt-parts 3:4
+
+* setup coloring in cu/pinhole_camera.cu
+
+::
 
    100   // BGRA
    101   uchar4 color = prd.flag == HP_PCAP_I ? RED :  make_color( prd.result );

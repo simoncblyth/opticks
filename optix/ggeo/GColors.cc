@@ -41,7 +41,7 @@ void GColors::loadMaps(const char* dir)
 
 void GColors::sort()
 {
-    LOG(info) << "GColors::sort" ; 
+    LOG(debug) << "GColors::sort" ; 
 
     typedef std::map<std::string, std::string> MSS ; 
     for(MSS::iterator it=m_name2hex.begin() ; it != m_name2hex.end() ; it++ ) m_psychedelic_names.push_back(it->first) ;

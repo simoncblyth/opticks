@@ -99,7 +99,7 @@ void GParts::init()
         m_bndspec = new GItemList("GParts");
     } 
 
-    LOG(info) << "GParts::init" 
+    LOG(debug) << "GParts::init" 
               << " part_buffer items " << m_part_buffer->getNumItems() 
               << " bndspec items " <<  m_bndspec->getNumItems() 
               ;
