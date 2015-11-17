@@ -67,6 +67,11 @@ class GBndLib : public GPropertyLib {
        const char* getInnerSurfaceName(unsigned int boundary);
        const char* getInnerMaterialName(unsigned int boundary);
   public:
+       const char* getOuterMaterialName(const char* spec);
+       const char* getOuterSurfaceName(const char* spec);
+       const char* getInnerSurfaceName(const char* spec);
+       const char* getInnerMaterialName(const char* spec);
+  public:
        guint4 parse( const char* spec, bool flip=false);
        bool contains( const char* spec, bool flip=false);
   public:

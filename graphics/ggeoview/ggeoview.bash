@@ -111,23 +111,27 @@ ggv-reflect()
     esac
     echo  pol $pol tag $tag
 
+    # traditional hemi point targetting
+    #     source=0,0,300
+    #     target=0,0,0
+    #     radius=100
 
     local torch_config=(
-                 type=refltest
+                 type=disc
                  photons=500000
                  polz=${pol}pol
                  frame=1
-                 source=0,0,300
+                 source=0,0,700
                  target=0,0,0
-                 radius=100
-                 zenithazimuth=0,0.5,0,1
+                 radius=600
+                 zenithazimuth=0,1,0,1
                  material=Vacuum
                )
 
     local test_config=(
                  mode=BoxInBox
-                 dimensions=500,300,0,0
-                 shape=S,S
+                 dimensions=700,300,0,0
+                 shape=B,S
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 
                  analytic=1

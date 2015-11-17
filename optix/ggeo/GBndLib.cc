@@ -271,6 +271,8 @@ const char* GBndLib::getInnerMaterialName(unsigned int boundary)
     return m_mlib->getName(imat);
 }
 
+
+
 const char* GBndLib::getOuterSurfaceName(unsigned int boundary)
 {
     unsigned int osur = getOuterSurface(boundary);
@@ -281,6 +283,34 @@ const char* GBndLib::getInnerSurfaceName(unsigned int boundary)
     unsigned int isur = getInnerSurface(boundary);
     return m_slib->getName(isur);
 }
+
+
+
+
+
+
+const char* GBndLib::getOuterMaterialName(const char* spec)
+{
+    unsigned int boundary = addBoundary(spec);
+    return getOuterMaterialName(boundary);
+}
+const char* GBndLib::getInnerMaterialName(const char* spec)
+{
+    unsigned int boundary = addBoundary(spec);
+    return getInnerMaterialName(boundary);
+}
+const char* GBndLib::getOuterSurfaceName(const char* spec)
+{
+    unsigned int boundary = addBoundary(spec);
+    return getOuterSurfaceName(boundary);
+}
+const char* GBndLib::getInnerSurfaceName(const char* spec)
+{
+    unsigned int boundary = addBoundary(spec);
+    return getInnerSurfaceName(boundary);
+}
+
+
 
 
 
