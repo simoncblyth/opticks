@@ -27,11 +27,14 @@ class Animator ;
 
 class Composition : public Configurable {
   public:
+      // see CompositionCfg.hh
       static const char* PRINT ;  
       static const char* SELECT ;  
       static const char* RECSELECT ;  
       static const char* PICKPHOTON ;  
       static const char* PICKFACE ;  
+      static const char* EYEW ; 
+      static const char* LOOKW ; 
 
       friend class Interactor ;   
       friend class Bookmarks ;   
@@ -160,7 +163,12 @@ class Composition : public Configurable {
       void setTarget(unsigned int target);
       void setScene(Scene* scene);
       void addConfig(Cfg* cfg);
-
+  public:
+      void setLookW(glm::vec4 lookw);
+      void setLookW(std::string lookw);
+  public:
+      void setEyeW(glm::vec4 eyew);
+      void setEyeW(std::string eyew);
   public: 
       void home();
       void update();
@@ -189,6 +197,7 @@ class Composition : public Configurable {
   public: 
       // getters of inputs 
       glm::mat4& getModelToWorld();
+      glm::mat4& getWorldToModel();
       float getExtent();
       float getNear();
       float getFar();
@@ -260,6 +269,7 @@ class Composition : public Configurable {
   private:
       // inputs 
       glm::mat4 m_model_to_world ; 
+      glm::mat4 m_world_to_model ; 
       float     m_extent ; 
       glm::vec4 m_center_extent ; 
       glm::vec4 m_domain_center_extent ; 
@@ -342,6 +352,7 @@ class Composition : public Configurable {
 inline Composition::Composition()
   :
   m_model_to_world(),
+  m_world_to_model(),
   m_extent(1.0f),
   m_center_extent(),
   m_pickphoton(0,0,0,0), 
@@ -489,6 +500,12 @@ inline glm::mat4& Composition::getModelToWorld()
 {
     return m_model_to_world ; 
 }
+inline glm::mat4& Composition::getWorldToModel()
+{
+    return m_world_to_model ; 
+}
+
+
 inline float Composition::getExtent()
 {
     return m_extent ; 

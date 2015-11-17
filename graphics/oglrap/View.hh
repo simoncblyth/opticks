@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>  
 #include <vector>
 #include <string>
+#include <cstdio>
 #include <math.h>
 
 #include "Configurable.hh"
@@ -39,6 +40,10 @@ public:
    void setEye( float _x, float _y, float _z);
    void setLook(float _x, float _y, float _z);
    void setUp(  float _x, float _y, float _z);
+
+   void setEye( glm::vec4& eye );
+   void setLook( glm::vec4& look );
+   void setUp(  glm::vec4& up);
 
    glm::vec4 getEye();
    glm::vec4 getLook();
@@ -128,14 +133,11 @@ inline View::~View()
 {
 }
 
-inline void View::setEye( float _x, float _y, float _z)
-{
-    m_eye.x = _x ;  
-    m_eye.y = _y ;  
-    m_eye.z = _z ;  
-    updateEyePhase();
-    m_changed = true ; 
-}  
+
+
+
+
+// TODO: generalize to handle a choice of rotation axis
 
 inline void View::updateEyePhase()
 {
@@ -148,6 +150,7 @@ inline float View::getEyePhase()
    // somewhat dodgy derived qyt 
     return m_eye_phase ; 
 }
+
 
 
 inline float View::getDistanceToAxis()
@@ -171,12 +174,28 @@ inline void View::setEyePhase(float t)
 }
 
 
+
+
+inline void View::setEye( float _x, float _y, float _z)
+{
+    m_eye.x = _x ;  
+    m_eye.y = _y ;  
+    m_eye.z = _z ;  
+    updateEyePhase();
+    m_changed = true ; 
+
+    printf("View::setEye %10.3f %10.3f %10.3f \n", _x, _y, _z);
+}  
+
+
 inline void View::setLook(float _x, float _y, float _z)
 {
     m_look.x = _x ;  
     m_look.y = _y ;  
     m_look.z = _z ;  
     m_changed = true ; 
+
+    printf("View::setLook %10.3f %10.3f %10.3f \n", _x, _y, _z);
 }
 
 inline void View::setUp(  float _x, float _y, float _z)
@@ -186,6 +205,22 @@ inline void View::setUp(  float _x, float _y, float _z)
     m_up.z = _z ;  
     m_changed = true ; 
 } 
+
+
+inline void View::setLook(glm::vec4& look)
+{
+    setLook(look.x, look.y, look.z );
+}
+inline void View::setEye(glm::vec4& eye)
+{
+    setEye(eye.x, eye.y, eye.z );
+}
+inline void View::setUp(glm::vec4& up)
+{
+    setUp(up.x, up.y, up.z );
+}
+
+
 
 
 

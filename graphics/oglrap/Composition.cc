@@ -57,7 +57,8 @@ const char* Composition::SELECT = "select" ;
 const char* Composition::RECSELECT = "recselect" ; 
 const char* Composition::PICKPHOTON = "pickphoton" ; 
 const char* Composition::PICKFACE = "pickface" ; 
-
+const char* Composition::EYEW = "eyew" ;
+const char* Composition::LOOKW = "lookw" ;
 
 
 const char* Composition::WHITE_ = "white" ; 
@@ -147,6 +148,8 @@ void Composition::set(const char* name, std::string& s)
     else if(strcmp(name,RECSELECT)==0) setRecSelect(s);
     else if(strcmp(name,PICKPHOTON)==0) setPickPhoton(s);
     else if(strcmp(name,PICKFACE)==0) setPickFace(s);
+    else if(strcmp(name,LOOKW)==0) setLookW(s);
+    else if(strcmp(name,EYEW)==0) setEyeW(s);
     else
          printf("Composition::set bad name %s\n", name);
 }
@@ -376,6 +379,8 @@ void Composition::setPickPhoton(std::string pickphoton)
 
 
 
+
+
 void Composition::setPickPhoton(glm::ivec4 pickphoton) 
 {
    // currently this relies on photon/record data being downloaded to host
@@ -539,7 +544,11 @@ void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToW
     glm::vec3 sc(ce.w);
     glm::vec3 tr(ce.x, ce.y, ce.z);
 
+    glm::vec3 isc(1.f/ce.w);
+
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
+    m_world_to_model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);   // see tests/CompositionTest.cc
+
     m_extent = ce.w ; 
 
     m_trackball->home();
@@ -550,6 +559,43 @@ void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToW
         aim(ce_);
     }
 }
+
+
+
+void Composition::setLookW(std::string lookw)
+{
+    setLookW(gvec4(lookw));
+}
+void Composition::setEyeW(std::string eyew)
+{
+    setEyeW(gvec4(eyew));
+}
+
+void Composition::setLookW(glm::vec4 lookw)
+{
+    glm::vec4 look = m_world_to_model * lookw ; 
+
+    LOG(info) << "Composition::setLookW" ; 
+    print(lookw, "lookw");
+    print(look, "look");
+
+    m_view->setLook(look);
+}
+
+void Composition::setEyeW(glm::vec4 eyew)
+{
+    glm::vec4 eye = m_world_to_model * eyew ; 
+
+    LOG(info) << "Composition::setEyeW" ; 
+    print(eyew, "eyew");
+    print(eye, "eye");
+
+    m_view->setEye(eye);
+}
+
+
+
+
 
 
 void Composition::aim(glm::vec4& ce)
