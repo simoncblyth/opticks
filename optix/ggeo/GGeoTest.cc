@@ -9,7 +9,7 @@
 #include "GPmt.hh"
 #include "GSolid.hh"
 
-#include "GTestShape.hh"
+#include "GMaker.hh"
 
 #include "GItemList.hh"
 #include "GParts.hh"
@@ -56,6 +56,9 @@ void GGeoTest::init()
         m_geolib = GGeoLib::load(m_cache);
         m_bndlib = GBndLib::load(m_cache, true );
     }
+
+
+    m_maker = new GMaker(m_cache);
 }
 
 
@@ -145,7 +148,10 @@ void GGeoTest::setDebug(const char* s)
     std::string ss(s);
     m_debug = gvec4(ss);
 }
-
+void GGeoTest::addBoundary(const char* s)
+{
+    m_boundaries.push_back(s);
+}
 void GGeoTest::setShape(const char* s)
 {
     std::vector<std::string> elem ; 
@@ -162,13 +168,9 @@ void GGeoTest::setShape(const char* s)
               << " z " << (char)m_shape.z
               << " w " << (char)m_shape.w
               ;
-
 }
 
-void GGeoTest::addBoundary(const char* s)
-{
-    m_boundaries.push_back(s);
-}
+
 
 
 void GGeoTest::modifyGeometry()
@@ -215,8 +217,10 @@ void GGeoTest::modifyGeometry()
 GMergedMesh* GGeoTest::createPmtInBox()
 {
     const char* spec = m_boundaries[0].c_str() ;
+
     unsigned int boundary = m_bndlib->addBoundary(spec);
     const char* imat = m_bndlib->getInnerMaterialName(boundary);
+
     char shapecode = (char)m_shape[0] ;
 
     LOG(info) << "GGeoTest::createPmtInBox" << " spec " << spec << " boundary " << boundary << " imat " << imat ; 
@@ -227,22 +231,21 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
     glm::vec4 param(0.f,0.f,0.f,m_dimensions[0]) ;
 
-    // TODO: move GParts creation/association inside GTestShape
+    // TODO: move GParts creation/association inside GMaker
 
-    GSolid* solid = GTestShape::make( shapecode, param) ;
+
+    unsigned int index = mmpmt->getNumSolids() ;
+    GSolid* solid = m_maker->make( index, shapecode, param, spec) ;
     solid->getMesh()->setIndex(1000);
-    solid->setIndex(mmpmt->getNumSolids());
-    solid->setBoundary(boundary); 
 
-    GParts* pts = GParts::make(shapecode, param, spec);
-    pts->setNodeIndex(0u, solid->getIndex());
-
-    solid->setParts(pts);
-
+    //GParts* pts = GParts::make(shapecode, param, spec);
+    //pts->setNodeIndex(0u, solid->getIndex());
+    //solid->setParts(pts);
 
     GMergedMesh* tri = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
-    GParts* anl = tri->getParts();
 
+
+    GParts* anl = tri->getParts();
     anl->setContainingMaterial(imat);   // match outer material of PMT with inner material of the box
     anl->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
     anl->close();
@@ -258,36 +261,25 @@ GMergedMesh* GGeoTest::createBoxInBox()
 {
     std::vector<GSolid*> solids ; 
     unsigned int n = m_boundaries.size();
+
+    // TODO: inner/outer material consistency check ? 
     for(unsigned int i=0 ; i < n ; i++)
     {
-        char shapecode = (char)m_shape[i] ;
-        const char* shapename = GTestShape::ShapeName(shapecode);
+        char   shapecode = (char)m_shape[i] ;
         const char* spec = m_boundaries[i].c_str() ;
-        unsigned int boundary = m_bndlib->addBoundary(spec);
 
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
                   << " solid " << std::setw(2) << i 
                   << " shapecode " << std::setw(2) << shapecode 
-                  << " boundary " << std::setw(3) << boundary
-                  << " shapename " << std::setw(15) << shapename
+                  << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
                   << " spec " << spec
                   ;
         
         glm::vec4 param(0.f,0.f,0.f,m_dimensions[i]) ;
 
-        GSolid* solid = GTestShape::make(shapecode, param ); 
-        solid->setIndex(i) ; 
-        solid->setBoundary(boundary);
+        GSolid* solid = m_maker->make(i, shapecode, param, spec ); 
         solid->setSensor(NULL);
-
-        float bbscale = m_debug.x ; 
-        GParts* pts = GParts::make(shapecode, param, spec, bbscale);
-        pts->setIndex(0u, i);
-        pts->setNodeIndex(0u, i);
-        pts->setBndLib(m_bndlib);
-
-        solid->setParts(pts);
 
         solids.push_back(solid);
     }
@@ -296,14 +288,9 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
     GTransforms* txf = GTransforms::make(n); // identities
     GIds*        aii = GIds::make(n);        // zeros
-
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
-
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
     return tri ; 
 } 
-
-
-
 

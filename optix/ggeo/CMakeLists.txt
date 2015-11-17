@@ -84,7 +84,7 @@ add_library(${name} SHARED
                 GMeshFixer.cc
                 GParts.cc
                 GPmt.cc
-                GTestShape.cc
+                GMaker.cc
                 GGeoTest.cc
 )
 
@@ -132,7 +132,7 @@ GAttrSeq.hh
 GMeshFixer.hh
 GParts.hh
 GPmt.hh
-GTestShape.hh
+GMaker.hh
 GGeoTest.hh
 )
 

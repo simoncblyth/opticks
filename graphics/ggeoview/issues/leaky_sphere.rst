@@ -11,6 +11,12 @@ OR enlarge bounding boxes by very small factors to avoid the touching.::
     debug=1.000001
 
 
+Refs about floating point epsilon
+----------------------------------
+
+* https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+
+
 Polar Leak
 ------------
 
@@ -41,7 +47,9 @@ Polar Leak
 Shooting millions of photons from Vacuum at the +Z pole of Pyrex sphere  
 from a hemi-spherical torch source leads some 8% incorrectly 
 thinking already in pyrex when actually in vacuum 
-(ie they failed to intersect at the targetted +Z pole)
+(ie rays failed to intersect at the targetted +Z pole outer surface instead intersecting 
+all the way across on other side of sphere from "inside")
+
 
 Select them interactively with material sequences starting Py::
 

@@ -12,6 +12,7 @@ class GCache ;
 class GGeo ; 
 class GGeoLib ; 
 class GBndLib ; 
+class GMaker ; 
 class GMergedMesh ; 
 
 class GGeoTest {
@@ -66,6 +67,7 @@ class GGeoTest {
        GGeo*        m_ggeo ; 
        GGeoLib*     m_geolib ; 
        GBndLib*     m_bndlib ; 
+       GMaker*      m_maker ; 
     private:
        const char*  m_mode ; 
        NSlice*      m_slice ; 
@@ -86,6 +88,7 @@ inline GGeoTest::GGeoTest(GCache* cache)
     m_ggeo(NULL),
     m_geolib(NULL),
     m_bndlib(NULL),
+    m_maker(NULL),
     m_mode(NULL),
     m_slice(NULL),
     m_frame(0,0,0,0),
