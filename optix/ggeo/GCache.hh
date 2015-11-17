@@ -81,6 +81,8 @@ class GCache {
          const char* getDetector();
          bool        isJuno();
          bool        isDayabay();
+         int         getLastArgInt();
+         const char* getLastArg();
 
     private:
           const char* m_envprefix ; 
@@ -109,6 +111,7 @@ class GCache {
           bool        m_juno ; 
           const char* m_detector ;
           bool        m_instanced ; 
+          const char* m_lastarg ; 
         
 };
 
@@ -142,7 +145,8 @@ inline GCache::GCache(const char* envprefix, const char* logname, const char* lo
        m_dayabay(false),
        m_juno(false),
        m_detector(NULL),
-       m_instanced(true)
+       m_instanced(true),
+       m_lastarg(NULL)
 {
        init();
        assert(g_instance == NULL && "GCache::GCache only one instance is allowed");

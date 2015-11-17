@@ -44,9 +44,31 @@ void GCache::configure(int argc, char** argv)
 {
     m_log->configure(argc, argv);
     m_log->init(m_idpath);
+
+    m_lastarg = argc > 1 ? strdup(argv[argc-1]) : NULL ;
 }
 
 
+const char* GCache::getLastArg()
+{
+   return m_lastarg ; 
+}
+int GCache::getLastArgInt()
+{
+    int index(-1);
+    if(!m_lastarg) return index ;
+ 
+    try{ 
+        index = boost::lexical_cast<int>(m_lastarg) ;
+    }
+    catch (const boost::bad_lexical_cast& e ) {
+        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+    }
+    catch( ... ){
+        LOG(warning) << "Unknown exception caught!" ;
+    }
+    return index;
+}
 
 // lazy constituent construction : as want to avoid any output until after logging is configured
 

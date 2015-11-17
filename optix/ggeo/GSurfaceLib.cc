@@ -1,5 +1,6 @@
 #include "GSurfaceLib.hh"
 
+#include "GCache.hh"
 #include "GOpticalSurface.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
@@ -467,15 +468,20 @@ void GSurfaceLib::dump(const char* msg)
                   ;
     } 
 
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        guint4 optical = getOpticalSurface(i);
-        GPropertyMap<float>* surf = getSurface(i);
-        std::string desc = optical.description() + surf->description() ; 
-        dump(surf, desc.c_str());
-    }
+    int arg = m_cache->getLastArgInt();
+    if(arg > -1)
+        dump(arg);
+    else
+        for(unsigned int i=0 ; i < ni ; i++) dump(i);
 }
 
+void GSurfaceLib::dump( unsigned int index )
+{
+    guint4 optical = getOpticalSurface(index);
+    GPropertyMap<float>* surf = getSurface(index);
+    std::string desc = optical.description() + surf->description() ; 
+    dump(surf, desc.c_str());
+}
 
 
 void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)

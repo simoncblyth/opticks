@@ -38,6 +38,7 @@ class GSurfaceLib : public GPropertyLib {
        GSurfaceLib(GCache* cache); 
        void Summary(const char* msg="GSurfaceLib::Summary");
        void dump(const char* msg="GSurfaceLib::dump");
+       void dump(unsigned int index);
        void dump(GPropertyMap<float>* surf, const char* msg="GSurfaceLib::dump");
    private:
        void init();
