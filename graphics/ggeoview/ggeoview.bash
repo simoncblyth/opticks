@@ -1,5 +1,6 @@
 ggv-(){   ggeoview- ; }
-ggv-cd(){ ggeoview-cd ; }
+ggv-cd(){ ggeoview-cd $1 ; }
+ggv-cdi(){ ggv-cd issues ; }
 ggv-i(){  ggeoview-install ; }
 ggv-d(){  ggeoview-depinstall ; }
 ggv-vi(){ ggeoview-vi ; }
@@ -61,6 +62,7 @@ ggv-pmt-test(){
    local torch_config=(
                  type=disclin
                  photons=500000
+                 wavelength=380 
                  frame=1
                  source=0,0,300
                  target=0,0,0
@@ -1267,7 +1269,7 @@ ggeoview-rng-ls(){  ls -l $(ggeoview-rng-dir) ; }
 ggeoview-ptx-ls(){  ls -l $(ggeoview-ptx-dir) ; }
 
 ggeoview-scd(){  cd $(ggeoview-sdir); }
-ggeoview-cd(){  cd $(ggeoview-sdir); }
+ggeoview-cd(){  cd $(ggeoview-sdir)/$1 ; }
 
 ggeoview-icd(){  cd $(ggeoview-idir); }
 ggeoview-bcd(){  cd $(ggeoview-bdir); }

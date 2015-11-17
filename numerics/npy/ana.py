@@ -34,6 +34,16 @@ def theta(xyz):
     return th
 
 
+def scatter3d(fig,  xyz): 
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(xyz[:,0], xyz[:,1], xyz[:,2])
+
+def histo(fig,  vals): 
+    ax = fig.add_subplot(111)
+    ax.hist(vals, bins=91,range=[0,90])
+
+
+
 
 class Rat(object):
     def __init__(self, n, d, label=""):

@@ -74,14 +74,6 @@ from env.numerics.npy.fresnel import Fresnel
 
 np.set_printoptions(suppress=True, precision=3)
 
-def scatter3d(fig,  xyz): 
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(xyz[:,0], xyz[:,1], xyz[:,2])
-
-def histo(fig,  vals): 
-    ax = fig.add_subplot(111)
-    ax.hist(vals, bins=91,range=[0,90])
-
 rat_ = lambda n,d:float(len(n))/float(len(d))
 
 

@@ -2,6 +2,9 @@
 Surface Debug : lacking hits due to surface/volume model mismatch 
 ====================================================================
 
+*FIXED* long ago
+
+
 Not getting any SURFACE_DETECT despite photons obviously traversing PMTs
 because the requisite boundaries have no associated surfaces.
 

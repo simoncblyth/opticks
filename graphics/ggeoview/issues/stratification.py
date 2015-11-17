@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from env.numerics.npy.ana import Evt, Selection, Rat, theta
+from env.numerics.npy.ana import Evt, Selection, Rat, theta, scatter3d
 
 np.set_printoptions(suppress=True, precision=3)
 
@@ -40,6 +40,11 @@ if __name__ == '__main__':
 
     i = s.recpos(1)
     z = i[:,2]
+
+
+    fig = plt.figure()
+    scatter3d(fig, i)
+    fig.show()
 
     
 

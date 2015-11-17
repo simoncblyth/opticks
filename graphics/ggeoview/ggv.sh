@@ -58,6 +58,7 @@ elif [ "${cmdline/--attr}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GAttrSeqTest)
 elif [ "${cmdline/--surf}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GSurfaceLibTest)
+   export GGEOVIEW_ARGS=${cmdline/--surf}
 elif [ "${cmdline/--flags}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GFlagsTest)
 elif [ "${cmdline/--gbuffer}" != "${cmdline}" ]; then
