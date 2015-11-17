@@ -39,6 +39,7 @@ const char* GGeoTest::BOUNDARY_ = "boundary";
 const char* GGeoTest::SHAPE_ = "shape"; 
 const char* GGeoTest::SLICE_ = "slice"; 
 const char* GGeoTest::ANALYTIC_ = "analytic"; 
+const char* GGeoTest::DEBUG_ = "debug"; 
 
 
 void GGeoTest::init()
@@ -80,13 +81,14 @@ void GGeoTest::configure(const char* config_)
 GGeoTest::Param_t GGeoTest::getParam(const char* k)
 {
     Param_t param = UNRECOGNIZED ; 
-    if(           strcmp(k,MODE_)==0) param = MODE ; 
-    else if(     strcmp(k,FRAME_)==0) param = FRAME ; 
+    if(     strcmp(k,MODE_)==0)       param = MODE ; 
+    else if(strcmp(k,FRAME_)==0)      param = FRAME ; 
     else if(strcmp(k,DIMENSIONS_)==0) param = DIMENSIONS ; 
     else if(strcmp(k,BOUNDARY_)==0)   param = BOUNDARY ; 
     else if(strcmp(k,SHAPE_)==0)      param = SHAPE ; 
     else if(strcmp(k,SLICE_)==0)      param = SLICE ; 
     else if(strcmp(k,ANALYTIC_)==0)   param = ANALYTIC ; 
+    else if(strcmp(k,DEBUG_)==0)      param = DEBUG ; 
     return param ;   
 }
 
@@ -101,6 +103,7 @@ void GGeoTest::set(Param_t p, const char* s)
         case SHAPE          : setShape(s)          ;break;
         case SLICE          : setSlice(s)          ;break;
         case ANALYTIC       : setAnalytic(s)       ;break;
+        case DEBUG          : setDebug(s)          ;break;
         case UNRECOGNIZED   :
                     LOG(warning) << "GGeoTest::set WARNING ignoring unrecognized parameter " ;
     }
@@ -136,6 +139,11 @@ void GGeoTest::setDimensions(const char* s)
 {
     std::string ss(s);
     m_dimensions = gvec4(ss);
+}
+void GGeoTest::setDebug(const char* s)
+{
+    std::string ss(s);
+    m_debug = gvec4(ss);
 }
 
 void GGeoTest::setShape(const char* s)
@@ -273,7 +281,8 @@ GMergedMesh* GGeoTest::createBoxInBox()
         solid->setBoundary(boundary);
         solid->setSensor(NULL);
 
-        GParts* pts = GParts::make(shapecode, param, spec);
+        float bbscale = m_debug.x ; 
+        GParts* pts = GParts::make(shapecode, param, spec, bbscale);
         pts->setIndex(0u, i);
         pts->setNodeIndex(0u, i);
         pts->setBndLib(m_bndlib);

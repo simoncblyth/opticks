@@ -52,9 +52,9 @@ GParts* GParts::combine(std::vector<GParts*> subs)
     return parts ; 
 }
 
-GParts* GParts::make(char typecode, glm::vec4& param, const char* spec )
+GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bbscale)
 {
-    float size = param.w ;  
+    float size = param.w*bbscale ;  
     gbbox bb(gfloat3(-size), gfloat3(size));  
 
     NPY<float>* part = NPY<float>::make(1, NJ, NK );

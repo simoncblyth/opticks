@@ -89,6 +89,18 @@ ggv-pmt-test(){
 
 
 
+    
+# For invsphere and refltest "source" provides the
+# center of the sphere and target is not used
+# the photons start from a position on the sphere and go in 
+# direction towards the center of the sphere 
+# where the "source" position provides the center of the sphere 
+# (so in this case the target is not used)
+#
+#
+# no leaks with analytic box,  so no need to offset *source* to eg 10,0,300 to avoid cracks
+# analytic sphere a bit leaky ? 
+
 ggv-reflect()
 {
     type $FUNCNAME
@@ -98,6 +110,7 @@ ggv-reflect()
         p) tag=2 ;;
     esac
     echo  pol $pol tag $tag
+
 
     local torch_config=(
                  type=refltest
@@ -111,12 +124,10 @@ ggv-reflect()
                  material=Vacuum
                )
 
-    # no leaks with analytic box,  so no need to offset *source* to eg 10,0,300 to avoid cracks
-    # analytic sphere a bit leaky ? 
-
     local test_config=(
                  mode=BoxInBox
                  dimensions=500,300,0,0
+                 debug=1.000001
                  shape=S,S
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 

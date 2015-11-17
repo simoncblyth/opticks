@@ -460,6 +460,22 @@ Position shift below is to match between different cylinder Z origin conventions
 
 */
 
+
+
+
+/*
+
+*intersect_zsphere*
+     shooting millions of photons at the +Z pole (Pyrex sphere in vacuum) 
+     from a hemi-spherical torch source leads to ~5% level thinking already in
+     pyrex when actually in vacuum (ie they failed to intersect at the targetted +Z pole)
+     Visible as a red Pyrex leak within the white Vacuum outside the sphere.
+
+     suspect problem along the axes where the sphere touches it bounding box
+
+
+*/
+
 template<bool use_robust_method>
 static __device__
 void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
@@ -884,6 +900,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
   optix::Aabb* aabb = (optix::Aabb*)result;
   *aabb = optix::Aabb();
+  // expand aabb to include all the bbox of the parts 
 
   for(unsigned int p=0 ; p < numParts ; p++)
   { 

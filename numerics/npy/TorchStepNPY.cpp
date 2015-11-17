@@ -316,7 +316,7 @@ void TorchStepNPY::dump(const char* msg)
     print(m_frame,        "m_frame ");
     print(m_source_local, "m_source_local ", m_src, "m_src");
     print(m_target_local, "m_target_local ", m_tgt, "m_tgt");
-    print(m_dir, "m_dir");
+    print(m_dir, "m_die [normalize(m_tgt - m_src)] ");
 
 
     //print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );

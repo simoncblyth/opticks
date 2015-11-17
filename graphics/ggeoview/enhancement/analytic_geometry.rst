@@ -17,6 +17,12 @@ to intersection segments of the sub volumes.
 
 
 
+Leaky Sphere
+--------------
+
+
+
+
 Aligning three geometries
 -----------------------------
 

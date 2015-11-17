@@ -114,6 +114,34 @@ phi     =   acos( 2V-1 )
 
 */
 
+
+
+
+/*
+
+
+
+*disc*
+    Photons start from a point on the disc
+
+
+*sphere*
+
+    Torch photons start from the transformed "source" 
+    and are emitted in the direction 
+    of the transformed "target"  ie direction normalize(tgt - src )
+
+
+*invsphere*
+*refltest*
+    Photons start from a position on the sphere and go in 
+    direction towards the center of the sphere 
+    where the "source" position provides the center of the sphere 
+    (so in this case the target is not used)
+
+
+*/
+
 __device__ void
 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 {
@@ -162,7 +190,6 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           // fixed point uniform spherical emitter with configurable zenith, azimuth ranges
          
           float sinTheta, cosTheta;
-          //sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);  // distribution bunched at poles like this
 
           //  range zenithazimuth.x:.y
           cosTheta = 1.f - 2.0f*u1  ;     // 0:0.5 ->  1->0.
@@ -190,33 +217,29 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
           p.direction = -spherePosition  ;
 
-          float3 surfaceNormal = make_float3( 0.f, 0.f, 1.f );     // special casing known geometry, TODO: make an input    
-          float3 photonPolarization = normalize(cross(p.direction, surfaceNormal));
+          float3 surfaceNormal = make_float3( 0.f, 0.f, 1.f );     
+          // TODO: generalize, see below T_REFLTEST
 
-          /*
-          float3 photonPolarization = spherePosition.x > 0.f ? 
-                                 make_float3( cosTheta*cosPhi, cosTheta*sinPhi, -sinTheta)
-                              :
-                                 make_float3( sinTheta*sinPhi, -sinTheta*cosPhi, 0.f )   
-                              ;
-          rotateUz(photonPolarization, ts.p0);
-          */ 
+          float3 photonPolarization = normalize(cross(p.direction, surfaceNormal));
 
           p.polarization = photonPolarization ;
           p.position = ts.x0 + radius*spherePosition ;
-
 
       }
       else if( ts.type == T_REFLTEST )
       {
           // for reflection test need a uniform distribution of incident angle
+          // (this leads to distribution bunched at poles)
+
           float sinTheta, cosTheta;
           sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);  
 
           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
           p.direction = -spherePosition  ;
 
-          float3 surfaceNormal = make_float3( 0.f, 0.f, 1.f );     // special casing known geometry, TODO: make an input    
+          float3 surfaceNormal = make_float3( 0.f, 0.f, 1.f );    
+          // *surfaceNormal* used to setup pure polarizations for specific geometry of first intersections
+          // TODO: generalize somehow
 
           // S-polarized : ie perpendicular to plane of incidence
           // P-polarized : parallel to plane of incidence

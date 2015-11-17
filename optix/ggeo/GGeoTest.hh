@@ -24,6 +24,7 @@ class GGeoTest {
                       SHAPE, 
                       SLICE, 
                       ANALYTIC, 
+                      DEBUG,
                       UNRECOGNIZED } Param_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -36,6 +37,7 @@ class GGeoTest {
        static const char* SHAPE_ ; 
        static const char* SLICE_ ; 
        static const char* ANALYTIC_ ; 
+       static const char* DEBUG_ ; 
     public:
        GGeoTest(GCache* cache);
        void configure(const char* config=NULL);
@@ -54,6 +56,7 @@ class GGeoTest {
        void addBoundary(const char* s);
        void setSlice(const char* s);
        void setAnalytic(const char* s);
+       void setDebug(const char* s);
     private:
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
@@ -70,6 +73,7 @@ class GGeoTest {
        glm::vec4    m_dimensions ;
        glm::ivec4   m_analytic ;
        glm::ivec4   m_shape ;
+       glm::vec4    m_debug ;
        std::vector<std::string> m_boundaries ; 
        std::vector<KV> m_cfg ; 
 
@@ -86,7 +90,8 @@ inline GGeoTest::GGeoTest(GCache* cache)
     m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
-    m_shape('U','U','U','U')
+    m_shape('U','U','U','U'),
+    m_debug(1.f,0.f,0.f,0.f)
 {
     init();
 }

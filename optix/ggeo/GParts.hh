@@ -57,7 +57,7 @@ class GParts {
         enum { BBMAX_J = 3,     BBMAX_K = 0 };
         enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
     public:
-        static GParts* make(char typecode, glm::vec4& param, const char* spec );
+        static GParts* make(char typecode, glm::vec4& param, const char* spec, float bbscale=1.0f);
     public:
         static GParts* combine(std::vector<GParts*> subs);
     public:
