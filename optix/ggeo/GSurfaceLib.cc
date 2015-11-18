@@ -282,10 +282,10 @@ GPropertyMap<float>* GSurfaceLib::makePerfect(const char* name, float detect_, f
 
 void GSurfaceLib::addPerfectSurfaces()
 {
-    GPropertyMap<float>* _detect = makePerfect("perfectDetectSurface", 1.f, 0.f, 0.f, 0.f );
-    GPropertyMap<float>* _absorb = makePerfect("perfectAbsorbSurface", 0.f, 1.f, 0.f, 0.f );
-    GPropertyMap<float>* _specular = makePerfect("perfectSpecularSurface", 0.f, 1.f, 0.f, 0.f );
-    GPropertyMap<float>* _diffuse  = makePerfect("perfectDiffuseSurface", 0.f, 1.f, 0.f, 0.f );
+    GPropertyMap<float>* _detect = makePerfect("perfectDetectSurface"    , 1.f, 0.f, 0.f, 0.f );
+    GPropertyMap<float>* _absorb = makePerfect("perfectAbsorbSurface"    , 0.f, 1.f, 0.f, 0.f );
+    GPropertyMap<float>* _specular = makePerfect("perfectSpecularSurface", 0.f, 0.f, 1.f, 0.f );
+    GPropertyMap<float>* _diffuse  = makePerfect("perfectDiffuseSurface" , 0.f, 0.f, 0.f, 1.f );
 
     addDirect(_detect);
     addDirect(_absorb);
@@ -468,21 +468,35 @@ void GSurfaceLib::dump(const char* msg)
                   ;
     } 
 
-    int arg = m_cache->getLastArgInt();
-    if(arg > -1)
-        dump(arg);
+    int index = m_cache->getLastArgInt();
+    const char* lastarg = m_cache->getLastArg();
+    if(hasSurface(index))
+        dump(index);
+    else if(hasSurface(lastarg))
+        dump(getSurface(lastarg));
     else
         for(unsigned int i=0 ; i < ni ; i++) dump(i);
 }
+
+
+
 
 void GSurfaceLib::dump( unsigned int index )
 {
     guint4 optical = getOpticalSurface(index);
     GPropertyMap<float>* surf = getSurface(index);
+    assert(surf->getIndex() == index ); 
     std::string desc = optical.description() + surf->description() ; 
     dump(surf, desc.c_str());
 }
 
+void GSurfaceLib::dump(GPropertyMap<float>* surf)
+{
+    unsigned int index = surf->getIndex();
+    guint4 optical = getOpticalSurface(index);
+    std::string desc = optical.description() + surf->description() ; 
+    dump(surf, desc.c_str());
+}
 
 void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
 {
@@ -529,4 +543,31 @@ bool GSurfaceLib::isSensorSurface(unsigned int surface)
 
     return iss ; 
 }
+
+
+
+
+bool GSurfaceLib::hasSurface(const char* name)
+{
+    return getSurface(name) != NULL ; 
+}
+
+bool GSurfaceLib::hasSurface(unsigned int index)
+{
+    return getSurface(index) != NULL ; 
+}
+
+GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i)
+{
+    return i < m_surfaces.size() ? m_surfaces[i] : NULL ;
+}
+
+GPropertyMap<float>* GSurfaceLib::getSurface(const char* name)
+{
+    unsigned int index = m_names->getIndex(name);
+    GPropertyMap<float>* surf = getSurface(index);
+    return surf ; 
+}
+
+
 

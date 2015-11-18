@@ -36,10 +36,12 @@ class GSurfaceLib : public GPropertyLib {
        static GSurfaceLib* load(GCache* cache);
    public:
        GSurfaceLib(GCache* cache); 
+   public:
        void Summary(const char* msg="GSurfaceLib::Summary");
        void dump(const char* msg="GSurfaceLib::dump");
+       void dump(GPropertyMap<float>* surf);
+       void dump(GPropertyMap<float>* surf, const char* msg);
        void dump(unsigned int index);
-       void dump(GPropertyMap<float>* surf, const char* msg="GSurfaceLib::dump");
    private:
        void init();
    public:
@@ -62,8 +64,11 @@ class GSurfaceLib : public GPropertyLib {
        void sort();
        bool operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_);
    public:
-       guint4               getOpticalSurface(unsigned int i);  // zero based index
-       GPropertyMap<float>* getSurface(unsigned int i);         // zero based index
+       guint4               getOpticalSurface(unsigned int index);  // zero based index
+       GPropertyMap<float>* getSurface(unsigned int index);         // zero based index
+       GPropertyMap<float>* getSurface(const char* name);        
+       bool hasSurface(unsigned int index); 
+       bool hasSurface(const char* name); 
    private:
        guint4               createOpticalSurface(GPropertyMap<float>* src);
        GPropertyMap<float>* createStandardSurface(GPropertyMap<float>* src);
@@ -103,10 +108,6 @@ inline GSurfaceLib::GSurfaceLib(GCache* cache)
 inline unsigned int GSurfaceLib::getNumSurfaces()
 {
     return m_surfaces.size();
-}
-inline GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i)
-{
-    return m_surfaces[i] ;
 }
 
 

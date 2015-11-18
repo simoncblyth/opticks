@@ -1,5 +1,6 @@
 // ggv --surf
-// ggv --surf 6    // summary of all and detail of just the one index
+// ggv --surf 6        // summary of all and detail of just the one index
+// ggv --surf lvPmtHemiCathodeSensorSurface
 
 #include "GCache.hh"
 #include "GSurfaceLib.hh"
