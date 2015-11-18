@@ -59,8 +59,14 @@ GSolid* GMaker::make(unsigned int index, char shapecode, glm::vec4& param, const
     GSolid* solid = NULL ; 
     switch(shapecode)
     {
-        case 'B': solid = makeBox(param)    ;break;
-        case 'S': solid = makeSphere(param) ;break;
+        case 'B': 
+                  solid = makeBox(param);
+                  break;
+        case 'S': 
+                  unsigned int nsubdiv = 3 ; 
+                  char type = 'O' ;  // I:icosahedron O:octagon
+                  solid = makeSphere(param, nsubdiv, type) ;
+                  break;
     }
     assert(solid);
     unsigned int boundary = m_bndlib->addBoundary(spec);
@@ -124,13 +130,25 @@ GSolid* GMaker::makeBox(gbbox& bbox)
 
 
 
-GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv)
+GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, char type)
 {
     LOG(debug) << "GMaker::makeSphere" ;
 
-    unsigned int ntri = 20*(1 << (subdiv * 2)) ;
-    NPY<float>* triangles = NSphere::icosahedron(subdiv);  // (subdiv, ntri)  (0,20) (3,1280)
-    assert(triangles->getNumItems() == ntri);
+
+    NPY<float>* triangles(NULL);
+
+    if(type == 'I')
+    {
+        unsigned int ntri = 20*(1 << (subdiv * 2)) ;
+        triangles = NSphere::icosahedron(subdiv);  // (subdiv, ntri)  (0,20) (3,1280)
+        assert(triangles->getNumItems() == ntri);
+    }
+    else if(type == 'O')
+    {
+        unsigned int ntri = 8*(1 << (subdiv * 2)) ;
+        triangles = NSphere::octahedron(subdiv); 
+        assert(triangles->getNumItems() == ntri);
+    }
 
     float radius = param.w ; 
 

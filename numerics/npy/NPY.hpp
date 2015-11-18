@@ -12,9 +12,9 @@ class G4StepNPY ;
 #include <set>
 #include <map>
 
-#include "string.h"
-#include "stdlib.h"
-#include "assert.h"
+#include <cstring>
+#include <cstdlib>
+#include <cassert>
 
 #include "NPYBase.hpp"
 
@@ -98,7 +98,8 @@ class NPY : public NPYBase {
    public:
        NPY<T>* make_slice(const char* slice);
        NPY<T>* make_slice(NSlice* slice);
-
+   public:
+       T maxdiff(NPY<T>* other);
    public:
        T* getValues();
        T* getValues(unsigned int i);

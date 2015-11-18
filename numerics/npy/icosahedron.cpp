@@ -12,6 +12,7 @@
 
 #include "icosahedron.hpp"
 
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 
@@ -19,9 +20,18 @@ typedef struct {
     float x, y, z;
 } point;
 
-typedef struct {
-    point pt[3];
-} triangle;
+struct triangle 
+{
+   void copyTo(float* b)
+   {
+       memcpy(b+0, &pt[0], sizeof(float)*3);
+       memcpy(b+3, &pt[1], sizeof(float)*3);
+       memcpy(b+6, &pt[2], sizeof(float)*3);
+   }
+   point pt[3];
+};
+
+
 
 /* six equidistant points lying on the unit sphere */
 #define XPLUS {  1,  0,  0 }    /*  X */
@@ -30,6 +40,41 @@ typedef struct {
 #define YMIN  {  0, -1,  0 }    /* -Y */
 #define ZPLUS {  0,  0,  1 }    /*  Z */
 #define ZMIN  {  0,  0, -1 }    /* -Z */
+
+
+#define PX   { 1, 0,  0} 
+#define MX   {-1, 0,  0}
+#define PY   { 0, 1,  0} 
+#define MY   { 0,-1,  0}
+#define PZ   { 0, 0,  1} 
+#define MZ   { 0, 0, -1}
+
+
+static triangle _octahedron[8] = {
+        /* top pyramid */
+        { {PX,  PZ,  MY}, },
+        { {MY,  PZ,  MX}, },
+        { {MX,  PZ,  PY}, },
+        { {PY,  PZ,  PX}, },
+        /* bottom pyramid */
+        { {PX,  MY,  MZ}, },
+        { {MY,  MX,  MZ}, },
+        { {MX,  PY,  MZ}, },
+        { {PY,  PX,  MZ}, }
+};
+
+float* octahedron_()
+{
+    float* buf = (float *)malloc(8*3*3*sizeof(float));
+    for(int s = 0; s < 8; s++) 
+    {
+        triangle *t = &_octahedron[s];
+        t->copyTo(buf+s*3*3); 
+    }
+    return buf ;
+}
+
+
 
 /* for icosahedron */
 #define CZ (0.89442719099991)   /*  2/sqrt(5) */
@@ -58,7 +103,7 @@ typedef struct {
 #define Im5     {0.,    0.,     -1.}
 
 /* vertices of a unit icosahedron */
-static triangle icosahedron[20]= {
+static triangle _icosahedron[20]= {
         /* front pole */
         { {Ip0, Ip1, Ip2}, },
         { {Ip0, Ip5, Ip1}, },
@@ -85,6 +130,20 @@ static triangle icosahedron[20]= {
         { {Im1, Im0, Im5}, },
         { {Im2, Im1, Im5}, },
 };
+
+float* icosahedron_()
+{
+    float* buf = (float *)malloc(20*3*3*sizeof(float));
+    for(int s = 0; s < 20; s++) 
+    {
+        triangle *t = &_icosahedron[s];
+        t->copyTo(buf+s*3*3); 
+    }
+    return buf ;
+}
+
+
+
 
 /* normalize point r */
 static void
@@ -136,6 +195,8 @@ int icosahedron_ntris(int maxlevel)
     return n ; 
 }
 
+
+
 float* icosahedron_tris(int maxlevel) 
 {
     int nrows = 1 << maxlevel;
@@ -148,7 +209,7 @@ float* icosahedron_tris(int maxlevel)
     /* iterate over the 20 sides of the icosahedron */
     for(s = 0; s < 20; s++) {
         int i;
-        triangle *t = &icosahedron[s];
+        triangle *t = &_icosahedron[s];
         for(i = 0; i < nrows; i++) {
             /* create a tstrip for each row */
             /* number of triangles in this row is number in previous +2 */

@@ -25,7 +25,7 @@ class GMaker {
    private:
        void init();    
        static GSolid* makeBox(glm::vec4& spec);
-       static GSolid* makeSphere(glm::vec4& spec, unsigned int subdiv=3);
+       static GSolid* makeSphere(glm::vec4& spec, unsigned int subdiv=3, char type='I');
        static GSolid* makeBox(gbbox& bbox);
    private:
        GCache*   m_cache ; 

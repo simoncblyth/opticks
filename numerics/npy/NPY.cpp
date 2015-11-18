@@ -174,6 +174,26 @@ void NPY<T>::add(T x, T y, T z, T w)
 }
 
 
+template <typename T>
+T NPY<T>::maxdiff(NPY<T>* other)
+{
+    unsigned int nv = getNumValues(0);
+    unsigned int no = getNumValues(0);
+    assert( no == nv);
+    T* v_ = getValues();
+    T* o_ = other->getValues();
+
+    T mx(0); 
+    for(unsigned int i=0 ; i < nv ; i++)
+    {
+        T v = *(v_+i) ; 
+        T o = *(o_+i) ; 
+
+        T df = std::fabs(v - o);
+        mx = std::max(mx, df );
+    }  
+    return mx ;  
+}
 
 
 

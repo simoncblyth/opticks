@@ -60,7 +60,7 @@ void NTesselate::subdivide(unsigned int nsubdiv)
 
     int ntri = nb*(1 << (nsubdiv * 2));
 
-    LOG(info) << "NTesselate::subdivide base triangles " << nb << " ntri " << ntri  ; 
+    LOG(debug) << "NTesselate::subdivide base triangles " << nb << " ntri " << ntri  ; 
 
     m_tris = NPY<float>::make( 0, 3, 3 ) ;
 
@@ -76,7 +76,7 @@ void NTesselate::subdivide(unsigned int nsubdiv)
 void NTesselate::subdivide(unsigned int nsubdiv, triangle& t)
 {
     int nrows = 1 << nsubdiv ;
-    LOG(info) << "NTesselate::subdivide nsubdiv " << nsubdiv << " nrows " << nrows  ; 
+    LOG(debug) << "NTesselate::subdivide nsubdiv " << nsubdiv << " nrows " << nrows  ; 
 
     for(int i = 0; i < nrows; i++) 
     {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iomanip>
 #include <cstring>
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
