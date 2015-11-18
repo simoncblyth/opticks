@@ -70,6 +70,7 @@ add_library( ${name}  SHARED
     NLog.cpp
     icosahedron.cpp
     NSphere.cpp
+    NTesselate.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -122,6 +123,7 @@ NSensorList.hpp
 NSlice.hpp
 NSequence.hpp
 NSphere.hpp
+NTesselate.hpp
 NLog.hpp
 Parameters.hpp
 md5digest.hpp

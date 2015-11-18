@@ -45,6 +45,11 @@ std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes)
     return dig.finalize();
 }
 
+bool NPYBase::isEqualTo(NPYBase* other)
+{
+    return isEqualTo(other->getBytes(), other->getNumBytes(0));
+}
+
 bool NPYBase::isEqualTo(void* bytes, unsigned int nbytes)
 {
     std::string self = getDigestString();
