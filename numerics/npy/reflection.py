@@ -76,6 +76,8 @@ np.set_printoptions(suppress=True, precision=3)
 
 rat_ = lambda n,d:float(len(n))/float(len(d))
 
+X,Y,Z,W = 0,1,2,3
+
 
 class Reflect(object):
     def __init__(self, evt, focus):
@@ -85,15 +87,15 @@ class Reflect(object):
         """
 
         al = Selection(evt)
-        p0a = al.recpos(0) - focus
+        p0a = al.recpost(0)[:W] - focus
         tha = theta(p0a) 
         # initial position with no selection applied
 
         br = Selection(evt,"BR SA","BR AB")
 
-        p0 = br.recpos(0) - focus
-        p1 = br.recpos(1) - focus
-        p2 = br.recpos(2) - focus
+        p0 = br.recpost(0)[:W] - focus
+        p1 = br.recpost(1)[:W] - focus
+        p2 = br.recpost(2)[:W] - focus
         # 3 positions, start/refl-point/end for single reflection selection
 
         miss = p1[:,2] != p1[0,2]

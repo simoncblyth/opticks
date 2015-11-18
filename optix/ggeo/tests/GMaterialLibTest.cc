@@ -1,3 +1,5 @@
+// ggv --mat
+
 #include "GCache.hh"
 #include "GMaterialLib.hh"
 #include "GAttrSeq.hh"
@@ -36,20 +38,22 @@ void attrdump( GMaterialLib* mlib)
 }
 
 
-
-
-int main()
+void test_getMaterial(GMaterialLib* mlib)
 {
-    GCache gc("GGEOVIEW_");
+    const char* name = "Water" ;
+    GMaterial* mat = mlib->getMaterial(name);
+    mlib->dump(mat, name);
+}
+
+
+
+int main(int argc, char** argv)
+{
+    GCache gc("GGEOVIEW_","mats.log", "info");
+    gc.configure(argc, argv);
 
     GMaterialLib* mlib = GMaterialLib::load(&gc);
-
-    const char* name = "Water" ;
-
-    GMaterial* mat = mlib->getMaterial(name);
-
-    mlib->dump(mat, name);
-
+    mlib->dump();
 
     return 0 ;
 }

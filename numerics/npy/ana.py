@@ -7,6 +7,8 @@ from env.numerics.npy.types import *
 import env.numerics.npy.PropLib as PropLib 
 log = logging.getLogger(__name__)
 
+X,Y,Z,W = 0,1,2,3
+
 def theta(xyz):
     """
     :param xyz: array of cartesian coordinates
@@ -105,11 +107,28 @@ class Evt(object):
         s_seqhis = map(lambda _:self.seqhis == seqhis_int(_), seqs)
         return np.logical_or.reduce(s_seqhis)      
 
-    def recpos(self, recs, irec):
-        center = self.fdom[0,0,:3] 
-        extent = self.fdom[0,0,3] 
-        p = recs[:,irec,0,:3].astype(np.float32)*extent/32767.0 + center 
+    def post_center_extent(self):
+        p_center = self.fdom[0,0,:W] 
+        p_extent = self.fdom[0,0,W] 
+
+        t_center = self.fdom[1,0,X]
+        t_extent = self.fdom[1,0,Y]
+        
+        center = np.zeros(4)
+        center[:W] = p_center 
+        center[W] = t_center
+
+        extent = np.zeros(4)
+        extent[:W] = p_extent*np.ones(3)
+        extent[W] = t_extent
+
+        return center, extent 
+
+    def recpost(self, recs, irec):
+        center, extent = self.post_center_extent()
+        p = recs[:,irec,0].astype(np.float32)*extent/32767.0 + center 
         return p 
+
 
 
 class Selection(object):
@@ -131,8 +150,8 @@ class Selection(object):
         self.ox = ox
         self.rx = rx
 
-    def recpos(self, irec):
-        return self.evt.recpos(self.rx, irec)
+    def recpost(self, irec):
+        return self.evt.recpost(self.rx, irec)
 
 
 

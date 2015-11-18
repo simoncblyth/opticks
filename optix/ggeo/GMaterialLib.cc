@@ -1,4 +1,5 @@
 #include "GMaterialLib.hh"
+#include "GCache.hh"
 #include "GMaterial.hh"
 #include "GItemList.hh"
 #include "NPY.hpp"
@@ -209,18 +210,41 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigne
 
 
 
+
+
 void GMaterialLib::dump(const char* msg)
 {
     Summary(msg);
 
     unsigned int ni = getNumMaterials() ; 
-    for(unsigned int i=0 ; i < ni ; i++)
+
+    int index = m_cache->getLastArgInt();
+    const char* lastarg = m_cache->getLastArg();
+
+    if(hasMaterial(index))
     {
-        GMaterial* mat = getMaterial(i);
-        dump(mat, mat->description().c_str());
+        dump(index);
+    } 
+    else if(hasMaterial(lastarg))
+    {
+        GMaterial* mat = getMaterial(lastarg);
+        dump(mat);
     }
+    else
+        for(unsigned int i=0 ; i < ni ; i++) dump(i);
 }
 
+
+void GMaterialLib::dump(unsigned int index)
+{
+    GMaterial* mat = getMaterial(index);
+    dump(mat);
+}
+
+void GMaterialLib::dump(GMaterial* mat)
+{
+    dump(mat, mat->description().c_str());
+}
 
 void GMaterialLib::dump( GMaterial* mat, const char* msg)
 {
@@ -254,8 +278,28 @@ const char* GMaterialLib::getNameCheck(unsigned int i)
 }
 
 
+
+bool GMaterialLib::hasMaterial(const char* name)
+{
+    return getMaterial(name) != NULL ; 
+}
+
+bool GMaterialLib::hasMaterial(unsigned int index)
+{
+    return getMaterial(index) != NULL ; 
+}
+
 GMaterial* GMaterialLib::getMaterial(const char* name)
 {
     unsigned int index = getIndex(name);
     return getMaterial(index);   
 }
+
+GMaterial* GMaterialLib::getMaterial(unsigned int index)
+{
+    return index < m_materials.size() ? m_materials[index] : NULL  ;
+}
+
+
+
+

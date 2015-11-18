@@ -573,6 +573,7 @@ void Composition::setEyeW(std::string eyew)
 
 void Composition::setLookW(glm::vec4 lookw)
 {
+    lookw.w = 1.0f ; 
     glm::vec4 look = m_world_to_model * lookw ; 
 
     LOG(info) << "Composition::setLookW" ; 
@@ -584,6 +585,7 @@ void Composition::setLookW(glm::vec4 lookw)
 
 void Composition::setEyeW(glm::vec4 eyew)
 {
+    eyew.w = 1.0f ; 
     glm::vec4 eye = m_world_to_model * eyew ; 
 
     LOG(info) << "Composition::setEyeW" ; 

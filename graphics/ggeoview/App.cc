@@ -365,7 +365,6 @@ void App::registerGeometry()
     for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
     m_mesh0 = m_ggeo->getMergedMesh(0); 
 
-
  
     m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
 

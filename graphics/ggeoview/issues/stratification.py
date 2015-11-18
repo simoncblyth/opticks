@@ -16,18 +16,11 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from env.numerics.npy.ana import Evt, Selection, Rat, theta, scatter3d
 
+X,Y,Z,W = 0,1,2,3
+
 np.set_printoptions(suppress=True, precision=3)
 
-def scatter3d(fig,  xyz): 
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(xyz[:,0], xyz[:,1], xyz[:,2])
-
-def histo(fig,  vals): 
-    ax = fig.add_subplot(111)
-    ax.hist(vals, bins=91,range=[0,90])
-
 rat_ = lambda n,d:float(len(n))/float(len(d))
-
 
 
 if __name__ == '__main__':
@@ -38,21 +31,20 @@ if __name__ == '__main__':
     a = Selection(e)
     s = Selection(e,"BT SA")
 
-    i = s.recpos(1)
-    z = i[:,2]
+    i = s.recpost(1)
+    z = i[:,Z]
+    t = i[:,W]
 
 
-    fig = plt.figure()
-    scatter3d(fig, i)
-    fig.show()
+    #fig = plt.figure()
+    #scatter3d(fig, i)
+    #fig.show()
 
-    
 
-    #p0a = a.recpos(0) 
- 
-    #p0 = s.recpos(0)
-    #p1 = s.recpos(1)
-    #p2 = s.recpos(2)
+    #p0a = a.recpost(0) 
+    #p0 = s.recpost(0)
+    #p1 = s.recpost(1)
+    #p2 = s.recpost(2)
 
 
 

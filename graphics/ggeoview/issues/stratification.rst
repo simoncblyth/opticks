@@ -1,18 +1,16 @@
 Torch Stratification
 ======================
 
-Refs
------
+Summary
+--------
 
-* http://paulbourke.net/miscellaneous/aliasing/
+Confirmed to be due to time compression domain of 200ns being 
+inappropriate for small scale testing.  Reducing time domain to 10ns
+eliminates visible stratification.
 
 ::
 
-    Since the resultant colour of each pixel is based upon one infinitely small
-    sample taken within the centre of each pixel and because pixels occur at
-    regular intervals frequency based aliasing problems often arise. Aliasing
-    refers to the inclusion of characteristics or artifacts in an image that could
-    have come from more than one scene description.
+  ggv-;ggv-pmt-test --timemax 10
 
 
 Issue
@@ -111,14 +109,134 @@ See same stratification pattern with just the MO/Pyrex of very front face, just
 not quite as wide.  
 
 
-Visualization Artifact Only ? 
+Visualization Artifact Only ? NO
 ---------------------------------
 
 Plotting the z position of the intersect shows no stair stepping.
 
+* temporal compression is biting far more than spatial 
 
-Compression Artifact ? Dont think so
----------------------------------------
+
+Time Banding
+--------------
+
+::
+
+    In [2]: run stratification.py
+    -rw-r--r--  1 blyth  staff  32000080 Nov 17 16:56 /usr/local/env/dayabay/oxtorch/1.npy
+    -rw-r--r--  1 blyth  staff  80000080 Nov 17 16:56 /usr/local/env/dayabay/rxtorch/1.npy
+    -rw-r--r--  1 blyth  staff  8000080 Nov 17 16:56 /usr/local/env/dayabay/phtorch/1.npy
+        
+
+    In [16]: cu = count_unique(t)   # 26 
+    Out[16]: 
+    array([[     0.928,   9470.   ],
+           [     0.934,  15620.   ],
+           [     0.94 ,  15575.   ],
+           [     0.946,  15433.   ],
+           [     0.952,  15309.   ],
+           [     0.958,  15100.   ],
+           [     0.964,  14928.   ],
+           [     0.97 ,  14858.   ],
+           [     0.977,  14547.   ],
+           [     0.983,  14366.   ],
+           [     0.989,  14178.   ],
+           [     0.995,  14093.   ],
+           [     1.001,  13906.   ],
+           [     1.007,  13886.   ],
+           [     1.013,  13681.   ],
+           [     1.019,  13598.   ],
+           [     1.025,  13292.   ],
+           [     1.032,  13172.   ],
+           [     1.038,  13150.   ],
+           [     1.044,  12745.   ],
+           [     1.05 ,  12687.   ],
+           [     1.056,  12576.   ],
+           [     1.062,  12264.   ],
+           [     1.068,  12346.   ],
+           [     1.074,  12073.   ],
+           [     1.08 ,   2510.   ]])
+
+
+
+Time Compression Artifact ? YEP 
+----------------------------------
+
+Time not as easy as position to contain based on geometry as will 
+want to use different time horizons depending on what looking at.
+
+* Time domain extent `--timemax` default is 200ns, distinct from `--animtimemax`
+
+* Speed of light in vacuum :  299.792 mm/ns  ~300 mm/ns 
+
+* Domain of 200ns corresponds to time for light to travel 60m ( 200*300 = 60,000 mm ) 
+  in order to contain large detector geometries
+
+* Are compressing into 16 bit short int with (0x1 << 15) - 1 = 32767 values, 
+  so the steps between possible times correspond to time light 
+  in vacuum would go 60000./32767 = 1.83 mm, so in MineralOil  1.83*1.482 = 2.712 mm
+
+* Range of positions across frontface of PMT is 31mm (as shown below)
+  31./2.712 = 11 (this suggests 11 steps, when see 26 distinct times)
+
+* Factor of 2 somewhere ?  
+
+* There are actually two relevant compressed times at either ends of the step.
+
+
+Refractive indices at 380nm
+
+* `ggv --mat Pyrex`       1.458  
+* `ggv --mat MineralOil`  1.48264 
+
+
+Improve Time Compression ?
+------------------------------
+
+* shortnorm compression uses signed short for easy handling of position 
+  using geometry center offset and extent scaling, for time the 
+  center is taken as zero which wastes half the bits as never have negative times
+ 
+cu/photon.h::
+
+    102 __device__ short shortnorm( float v, float center, float extent )
+    103 {
+    104     // range of short is -32768 to 32767
+    105     // Expect no positions out of range, as constrained by the geometry are bouncing on,
+    106     // but getting times beyond the range eg 0.:100 ns is expected
+    107     //
+    108     int inorm = __float2int_rn(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
+    109     return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
+    110 }
+
+
+
+
+Changing Position/Time Domain used for record compression
+-----------------------------------------------------------
+
+App::registerGeometry::
+
+    m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
+
+    m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
+
+    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+
+    m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
+
+
+::
+
+      ggv --help
+
+      --timemax arg            Maximum time in nanoseconds. Default 200 
+      --animtimemax arg        Maximum animation time in nanoseconds. Default 50 
+
+
+
+Position Compression Artifact ? Dont think so
+-----------------------------------------------
 
 Where does the position come from:
 
@@ -239,5 +357,21 @@ Real histo of record data shows nothing unexpected::
     (array([  52.,   76.,   84., ...,  113.,  122.,   84.]),
      array([ 100.07 ,  100.079,  100.088, ...,  130.979,  130.988,  130.998]),
      <a list of 3379 Patch objects>)
+
+
+
+
+Refs
+-----
+
+* http://paulbourke.net/miscellaneous/aliasing/
+
+::
+
+    Since the resultant colour of each pixel is based upon one infinitely small
+    sample taken within the centre of each pixel and because pixels occur at
+    regular intervals frequency based aliasing problems often arise. Aliasing
+    refers to the inclusion of characteristics or artifacts in an image that could
+    have come from more than one scene description.
 
 

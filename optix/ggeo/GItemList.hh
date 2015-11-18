@@ -34,6 +34,7 @@ class GItemList : public NSequence {
        void setKey(unsigned int index, const char* newkey);
        const char* getKey(unsigned int index);
        unsigned int getIndex(const char* key);    // 0-based index of first matching name, OR INT_MAX if no match
+       static bool isUnset(unsigned int index);
    public:
        bool operator()(const std::string& a_, const std::string& b_);
        void setOrder(std::map<std::string, unsigned int>& order);

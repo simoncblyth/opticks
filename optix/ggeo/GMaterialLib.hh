@@ -77,7 +77,9 @@ class GMaterialLib : public GPropertyLib {
    public:
        void Summary(const char* msg="GMaterialLib::Summary");
        void dump(const char* msg="GMaterialLib::dump");
-       void dump(GMaterial* mat, const char* msg="GMaterialLib::dump");
+       void dump(GMaterial* mat, const char* msg);
+       void dump(GMaterial* mat);
+       void dump(unsigned int index);
    private:
        void init();
    public:
@@ -92,6 +94,8 @@ class GMaterialLib : public GPropertyLib {
        void sort();
        bool operator()(const GMaterial& a_, const GMaterial& b_);
    public:
+       bool hasMaterial(unsigned int index);
+       bool hasMaterial(const char* name);
        GMaterial* getMaterial(const char* name); 
        GMaterial* getMaterial(unsigned int i); // zero based index
        const char* getNameCheck(unsigned int i);
@@ -118,9 +122,6 @@ inline unsigned int GMaterialLib::getNumMaterials()
 {
     return m_materials.size();
 }
-inline GMaterial* GMaterialLib::getMaterial(unsigned int i)
-{
-    return m_materials[i] ;
-}
+
 
  

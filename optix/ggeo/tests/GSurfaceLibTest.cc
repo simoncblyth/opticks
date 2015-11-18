@@ -9,8 +9,8 @@ int main(int argc, char** argv)
     GCache gc("GGEOVIEW_", "surf.log", "info");
     gc.configure(argc, argv); 
 
-    GSurfaceLib* lib = GSurfaceLib::load(&gc);
-    lib->dump();
+    GSurfaceLib* slib = GSurfaceLib::load(&gc);
+    slib->dump();
 
     return 0 ;
 }

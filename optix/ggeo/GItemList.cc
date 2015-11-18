@@ -24,6 +24,12 @@ const char* GItemList::GITEMLIST = "GItemList" ;
 
 unsigned int GItemList::UNSET = UINT_MAX ; 
 
+
+bool GItemList::isUnset(unsigned int index)
+{
+    return index == UNSET ; 
+}
+
 unsigned int GItemList::getIndex(const char* key)
 {
     if(key)
