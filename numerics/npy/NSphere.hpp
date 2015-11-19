@@ -15,7 +15,9 @@ class NSphere {
     public:
         static NPY<float>* icosahedron(unsigned int nsubdiv) ; 
         static NPY<float>* octahedron(unsigned int nsubdiv) ; 
+        static NPY<float>* cube(unsigned int nsubdiv) ; 
         static NPY<float>* latlon(unsigned int npolar=24, unsigned int nazimuthal=24) ; 
+
 };
 
 

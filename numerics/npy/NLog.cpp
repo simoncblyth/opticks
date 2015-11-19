@@ -64,7 +64,7 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
 
 
 
-void NLog::configure(int argc, char** argv)
+void NLog::configure(int argc, char** argv, const char* idpath)
 {
     // full argument parsing is done in App::config, 
     // but logging setup needs to happen before that 
@@ -94,6 +94,9 @@ void NLog::configure(int argc, char** argv)
 
     if(loglevel)
         m_loglevel = strdup(loglevel);
+
+    if(idpath)
+        init(idpath) ;
 
 }
 

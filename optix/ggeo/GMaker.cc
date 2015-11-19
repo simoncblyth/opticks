@@ -64,7 +64,7 @@ GSolid* GMaker::make(unsigned int index, char shapecode, glm::vec4& param, const
                   break;
         case 'S': 
                   unsigned int nsubdiv = 3 ; 
-                  char type = 'O' ;  // I:icosahedron O:octagon
+                  char type = 'C' ;  // I:icosahedron O:octagon C:cube L:latlon (ignores nsubdiv)
                   solid = makeSphere(param, nsubdiv, type) ;
                   break;
     }
@@ -147,6 +147,20 @@ GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, char type)
     {
         unsigned int ntri = 8*(1 << (subdiv * 2)) ;
         triangles = NSphere::octahedron(subdiv); 
+        assert(triangles->getNumItems() == ntri);
+    }
+    else if(type == 'C')
+    {
+        unsigned int ntri = 2*6*(1 << (subdiv * 2)) ;
+        triangles = NSphere::cube(subdiv); 
+        assert(triangles->getNumItems() == ntri);
+    }
+    else if(type == 'L')
+    {
+        unsigned int n_polar = 24 ; 
+        unsigned int n_azimuthal = 24 ; 
+        unsigned int ntri = n_polar*(n_azimuthal-1)*2 ; 
+        triangles = NSphere::latlon(n_polar, n_azimuthal); 
         assert(triangles->getNumItems() == ntri);
     }
 

@@ -1,10 +1,15 @@
 #include "NTesselate.hpp"
+#include "NTriangle.hpp"
+#include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
 #include "NLog.hpp"
 
 #include "GLMPrint.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+
+
 
 
 void NTesselate::init()
@@ -15,42 +20,11 @@ void NTesselate::init()
     assert(ni > 0 && nj == 3 && nk == 3);
 }
 
-struct triangle 
+
+NPY<float>* NTesselate::getBuffer()
 {
-    triangle(glm::vec3& a, glm::vec3& b, glm::vec3& c) 
-    {
-        p[0] = a ; 
-        p[1] = b ; 
-        p[2] = c ; 
-    }
-
-    triangle(float* ptr)
-    {
-        p[0] = glm::make_vec3(ptr) ; 
-        p[1] = glm::make_vec3(ptr+3) ; 
-        p[2] = glm::make_vec3(ptr+6) ; 
-    }    
-
-    float* values()
-    {
-         float* ptr = new float[9] ;
-         memcpy( ptr+0, glm::value_ptr(p[0]), sizeof(float)*3 );
-         memcpy( ptr+3, glm::value_ptr(p[1]), sizeof(float)*3 );
-         memcpy( ptr+6, glm::value_ptr(p[2]), sizeof(float)*3 );
-         return ptr ; 
-    }
-
-    void dump(const char* msg)
-    {
-        LOG(info) << msg ; 
-        print(p[0], "p[0]");
-        print(p[1], "p[1]");
-        print(p[2], "p[2]");
-    }
-
-    glm::vec3 p[3];
-}; 
-
+    return m_tris->getBuffer() ; 
+}
 
 
 void NTesselate::subdivide(unsigned int nsubdiv)
@@ -62,19 +36,25 @@ void NTesselate::subdivide(unsigned int nsubdiv)
 
     LOG(debug) << "NTesselate::subdivide base triangles " << nb << " ntri " << ntri  ; 
 
-    m_tris = NPY<float>::make( 0, 3, 3 ) ;
+    m_tris = new NTrianglesNPY();
 
     for(int s = 0; s < nb ; s++) 
     {
-        triangle t(basis + s*3*3);
+        ntriangle t(basis + s*3*3);
         subdivide( nsubdiv, t );
     }
-    assert(m_tris->getNumItems() == ntri);
+    assert(m_tris->getNumTriangles() == ntri);
 }
 
 
-void NTesselate::subdivide(unsigned int nsubdiv, triangle& t)
+void NTesselate::subdivide(unsigned int nsubdiv, ntriangle& t)
 {
+    /*
+    Developed from  
+    https://www.cosc.brocku.ca/Offerings/3P98/course/OpenGL/glut-3.7/progs/advanced/sphere.c
+    by David Blythe, SGI 
+    */
+
     int nrows = 1 << nsubdiv ;
     LOG(debug) << "NTesselate::subdivide nsubdiv " << nsubdiv << " nrows " << nrows  ; 
 
@@ -111,20 +91,17 @@ void NTesselate::subdivide(unsigned int nsubdiv, triangle& t)
 
 void NTesselate::add(glm::vec3& a, glm::vec3& c, const glm::vec3& v)
 {
+    // first two points are projected onto unit sphere(aka normalized) in caller context, 
+    // third stays constant
+
     glm::vec3 x(v) ; 
 
     a = glm::normalize(a);
     c = glm::normalize(c);
     x = glm::normalize(x); 
    
-    triangle t(a,c,x);
-
-    float* vals = t.values();
-    m_tris->add(vals, 3*3);
-
-    delete [] vals ; 
+    m_tris->add(a,c,x); 
 }
-
 
 
 

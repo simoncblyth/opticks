@@ -68,9 +68,10 @@ add_library( ${name}  SHARED
     NSlice.cpp
     NSequence.cpp
     NLog.cpp
-    icosahedron.cpp
     NSphere.cpp
     NTesselate.cpp
+    NTriangle.cpp
+    NTrianglesNPY.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -124,6 +125,8 @@ NSlice.hpp
 NSequence.hpp
 NSphere.hpp
 NTesselate.hpp
+NTriangle.hpp
+NTrianglesNPY.hpp
 NLog.hpp
 Parameters.hpp
 md5digest.hpp

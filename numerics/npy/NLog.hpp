@@ -9,7 +9,7 @@
 class NLog {
     public:
          NLog(const char* logname="ggeoview.log", const char* loglevel="info");
-         void configure(int argc, char** argv);
+         void configure(int argc, char** argv, const char* idpath=NULL);
          void init(const char* idpath);
     private:
          const char* m_logname ; 

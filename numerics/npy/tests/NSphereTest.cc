@@ -1,10 +1,28 @@
 #include "NSphere.hpp"
+#include "NLog.hpp"
 #include "NPY.hpp"
 
-int main(int argc, char** argv)
+void test_icosahedron()
 {
     NPY<float>* icos = NSphere::icosahedron(0) ; 
     icos->save("/tmp/icos.npy"); 
+}
+
+void test_latlon()
+{
+    NPY<float>* ll = NSphere::latlon() ; 
+    ll->save("/tmp/ll.npy"); 
+}
+
+
+int main(int argc, char** argv)
+{
+    NLog nl("sphere.log","info");
+    nl.configure(argc, argv, "/tmp");
+
+    //test_icosahedron();
+    test_latlon();
+
     return 0 ; 
 }
 
