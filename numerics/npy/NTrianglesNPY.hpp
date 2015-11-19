@@ -41,11 +41,11 @@ class NTrianglesNPY {
         static const glm::vec3 MXMYPZ ; 
         static const glm::vec3 MXMYMZ ; 
     public:
-        static NTrianglesNPY* disk(float z, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(unsigned int n_polar=24, unsigned int n_azimuthal=24); 
-        static NTrianglesNPY* sphere(float zmin, float zmax, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
+        static NTrianglesNPY* sphere(glm::vec4& param, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
+        static NTrianglesNPY* disk(glm::vec4& param, unsigned int n_azimuthal=24); 
     public:
-        NTrianglesNPY(unsigned int n=0);
+        NTrianglesNPY();
         NTrianglesNPY(NPY<float>* tris);
     public:
         NTrianglesNPY* transform(glm::mat4& m);

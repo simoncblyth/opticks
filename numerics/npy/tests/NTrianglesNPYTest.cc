@@ -29,18 +29,9 @@ void test_latlon()
      NTrianglesNPY* s = NTrianglesNPY::sphere(n_polar, n_azimuthal);
      s->getBuffer()->dump("s");
 
-     NTrianglesNPY* hp = NTrianglesNPY::sphere(0.,1., n_polar, n_azimuthal);
+     glm::vec4 param(0.,1.,0,0) ;
+     NTrianglesNPY* hp = NTrianglesNPY::sphere(param, n_polar, n_azimuthal);
      hp->getBuffer()->dump("hp");
-
-     NTrianglesNPY* hm = NTrianglesNPY::sphere(-1.,0., n_polar, n_azimuthal);
-     hm->getBuffer()->dump("hm");
-
-     NTrianglesNPY* qph = NTrianglesNPY::sphere(0.5,1., n_polar, n_azimuthal);
-     qph->getBuffer()->dump("qph");
-
-     NTrianglesNPY* qpl = NTrianglesNPY::sphere(0.,0.5, n_polar, n_azimuthal);
-     qpl->getBuffer()->dump("qpl");
-
 }
 
 

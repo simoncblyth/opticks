@@ -1,27 +1,18 @@
-#include "NTesselate.hpp"
+#include "NTrianglesNPY.hpp"
 #include "NLog.hpp"
-#include "NSphere.hpp"
 #include "NPY.hpp"
 
 void test_icosahedron_subdiv(unsigned int nsd)
 {
-    NPY<float>* icos_0 = NSphere::icosahedron(0);
-    NPY<float>* icos = NSphere::icosahedron(nsd);
+    NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
 
-    NTesselate* tess = new NTesselate(icos_0);
-    tess->subdivide(nsd);         
-    NPY<float>* tris = tess->getBuffer();
+    NPY<float>* tris = icos->subdivide(nsd);         
    
-    unsigned int ntr_i = icos->getNumItems();
     unsigned int ntr = tris->getNumItems();
-    assert(ntr_i == ntr);
-
-    float mxd = tris->maxdiff(icos);
 
     LOG(info) << "test_icosahedron_subdiv" 
               << " nsd " << std::setw(4) << nsd
               << " ntr " << std::setw(6) << ntr 
-              << " mxdiff " << mxd  
               ; 
 }
 
@@ -34,8 +25,12 @@ void test_icosahedron_subdiv()
 
 void test_octahedron_subdiv(unsigned int nsd)
 {
-    NPY<float>* oct = NSphere::octahedron(nsd);
-    unsigned int ntr = oct->getNumItems();
+    NTrianglesNPY* oct = NTrianglesNPY::octahedron();
+
+    NPY<float>* tris = oct->subdivide(nsd);
+
+    unsigned int ntr = tris->getNumItems();
+
     LOG(info) << "test_octahedron_subdiv" 
               << " nsd " << std::setw(4) << nsd
               << " ntr " << std::setw(6) << ntr 

@@ -29,8 +29,9 @@ class GMaker {
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);
        static GSolid* makeSphere(glm::vec4& param, unsigned int subdiv=3, const char* type="I");
-       static GSolid* makeSphere(glm::vec4& param, NPY<float>* triangles);
+       static GSolid* makeSphere(NPY<float>* triangles);
        static GSolid* makeBox(gbbox& bbox);
+       static GSolid* makeZSphereIntersect(glm::vec4& aparam, glm::vec4& bparam);
    private:
        GCache*   m_cache ; 
        GGeo*     m_ggeo ; 

@@ -349,6 +349,11 @@ unsigned int GParts::getBoundary(unsigned int part)
 {
     return getUInt(part, BOUNDARY_J, BOUNDARY_K);
 }
+unsigned int GParts::getFlags(unsigned int part)
+{
+    return getUInt(part, FLAGS_J, FLAGS_K);
+}
+
 
 
 void GParts::setNodeIndex(unsigned int part, unsigned int nodeindex)
@@ -367,6 +372,11 @@ void GParts::setBoundary(unsigned int part, unsigned int boundary)
 {
     setUInt(part, BOUNDARY_J, BOUNDARY_K, boundary);
 }
+void GParts::setFlags(unsigned int part, unsigned int flags)
+{
+    setUInt(part, FLAGS_J, FLAGS_K, flags);
+}
+
 
 
 
@@ -379,10 +389,8 @@ std::string GParts::getBoundaryName(unsigned int part)
     return name ;
 }
 
-unsigned int GParts::getFlags(unsigned int part)
-{
-    return getUInt(part, FLAGS_J, FLAGS_K);
-}
+
+
 
 void GParts::dump(const char* msg)
 {

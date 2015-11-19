@@ -124,7 +124,7 @@ ggv-reflect()
                  photons=500000
                  polz=${pol}pol
                  frame=1
-                 source=0,0,700
+                 source=0,0,-700
                  target=0,0,0
                  radius=600
                  zenithazimuth=0,1,0,1

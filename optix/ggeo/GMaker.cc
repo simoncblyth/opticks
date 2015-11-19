@@ -18,7 +18,6 @@
 
 // npy-
 #include "NPY.hpp"
-#include "NSphere.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NLog.hpp"
 
@@ -92,8 +91,8 @@ GSolid* GMaker::make(unsigned int index, char shapecode, glm::vec4& param, const
     pts->setNodeIndex(0u, solid->getIndex());
     pts->setBndLib(m_bndlib);
 
-    solid->setParts(pts);
 
+    solid->setParts(pts);  // hang the analytic on the triangulated
     return solid ; 
 }
 
@@ -141,7 +140,7 @@ GSolid* GMaker::makeBox(gbbox& bbox)
 
 
 
-GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, const char* type)
+GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int nsubdiv, const char* type)
 {
     LOG(debug) << "GMaker::makeSphere" ;
 
@@ -150,25 +149,28 @@ GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, const char* ty
 
     if(strcmp(type,"I")==0)
     {
-        unsigned int ntri = 20*(1 << (subdiv * 2)) ;
-        triangles = NSphere::icosahedron(subdiv);  // (subdiv, ntri)  (0,20) (3,1280)
+        unsigned int ntri = 20*(1 << (nsubdiv * 2)) ;
+        NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
+        triangles = icos->subdivide(nsubdiv);  // (subdiv, ntri)  (0,20) (3,1280)
         assert(triangles->getNumItems() == ntri);
     }
     else if(strcmp(type,"O")==0)
     {
-        unsigned int ntri = 8*(1 << (subdiv * 2)) ;
-        triangles = NSphere::octahedron(subdiv); 
+        unsigned int ntri = 8*(1 << (nsubdiv * 2)) ;
+        NTrianglesNPY* octa = NTrianglesNPY::octahedron();
+        triangles = octa->subdivide(nsubdiv); 
         assert(triangles->getNumItems() == ntri);
     }
     else if(strcmp(type,"HO")==0)
     {
-        unsigned int ntri = 4*(1 << (subdiv * 2)) ;
-        triangles = NSphere::hemi_octahedron(subdiv); 
+        unsigned int ntri = 4*(1 << (nsubdiv * 2)) ;
+        NTrianglesNPY* ho = NTrianglesNPY::hemi_octahedron(); 
+        triangles = ho->subdivide(nsubdiv); 
         assert(triangles->getNumItems() == ntri);
     }
     else if(strcmp(type,"HOS")==0)
     {
-        unsigned int ntri = 4*(1 << (subdiv * 2)) ;
+        unsigned int ntri = 4*(1 << (nsubdiv * 2)) ;
 
         glm::vec3 tr(0.,0.,0.5);
         glm::vec3 sc(1.,1.,1.);
@@ -179,62 +181,57 @@ GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, const char* ty
         // aim for spherical segments via subdiv, thwarted by curved edges
         // unclear what basis shape will do what want 
 
-        triangles = NSphere::hemi_octahedron(subdiv, m); 
+        NTrianglesNPY* ho = NTrianglesNPY::hemi_octahedron(); 
+        NTrianglesNPY* tho = ho->transform(m);
+        triangles = tho->subdivide(nsubdiv); 
         assert(triangles->getNumItems() == ntri);
     }
     else if(strcmp(type,"C")==0)
     {
-        unsigned int ntri = 2*6*(1 << (subdiv * 2)) ;
-        triangles = NSphere::cube(subdiv); 
+        unsigned int ntri = 2*6*(1 << (nsubdiv * 2)) ;
+        NTrianglesNPY* cube = NTrianglesNPY::cube();
+        triangles = cube->subdivide(nsubdiv); 
         assert(triangles->getNumItems() == ntri);
     }
     else if(strcmp(type,"L")==0)
     {
-        unsigned int n_polar = 24 ; 
-        unsigned int n_azimuthal = 24 ; 
-        unsigned int ntri = n_polar*(n_azimuthal-1)*2 ; 
-        triangles = NSphere::latlon(n_polar, n_azimuthal); 
-        assert(triangles->getNumItems() == ntri);
+        NTrianglesNPY* ll = NTrianglesNPY::sphere();
+        triangles = ll->getBuffer();
     }
     else if(strcmp(type,"LZ")==0)
     {
-        unsigned int n_polar = 24 ; 
-        unsigned int n_azimuthal = 24 ; 
-        triangles = NSphere::latlon(param.x, param.y, n_polar, n_azimuthal); 
+        NTrianglesNPY* ll = NTrianglesNPY::sphere(param);
+        triangles = ll->getBuffer();
     }
 
     assert(triangles);
-    return makeSphere(param, triangles);
+
+    NPY<float>* ttris = triangles->scale(param.w) ; // above deal in unit sphers
+
+    return makeSphere(ttris);
 }
 
 
 
 GSolid* GMaker::makeZSphere(glm::vec4& param)
 {
-    unsigned int n_polar = 24 ; 
-    unsigned int n_azimuthal = 24 ; 
-
-    float zmin = param.x ; 
-    float zmax = param.y ; 
-
-    NTrianglesNPY* ll = NTrianglesNPY::sphere(zmin, zmax, n_polar, n_azimuthal);
-    NTrianglesNPY* dk = NTrianglesNPY::disk(zmin, n_azimuthal);
+    NTrianglesNPY* ll = NTrianglesNPY::sphere(param);
+    NTrianglesNPY* dk = NTrianglesNPY::disk(param);
     ll->add(dk);
 
-    NPY<float>* triangles = ll->getBuffer();
- 
-    return makeSphere(param, triangles);
+    NPY<float>* tris = ll->getBuffer();
+    NPY<float>* ttris = tris->scale(param.w) ; // radius
+
+    return makeSphere(ttris);
 }
 
-
-GSolid* GMaker::makeSphere(glm::vec4& param, NPY<float>* triangles)
+GSolid* GMaker::makeSphere(NPY<float>* triangles)
 {
-    float radius = param.w ; 
-
     unsigned int meshindex = 0 ; 
     unsigned int nodeindex = 0 ; 
 
-    GMesh* mesh = GMesh::make_mesh(triangles, radius, meshindex);
+    // TODO: this is assuming unit sphere for normals, fix by normalizing 
+    GMesh* mesh = GMesh::make_mesh(triangles, 1.0, meshindex);
 
     GMatrixF* transform = new GMatrix<float>();
 
@@ -245,5 +242,27 @@ GSolid* GMaker::makeSphere(glm::vec4& param, NPY<float>* triangles)
 
     return solid ; 
 }
+
+
+GSolid* GMaker::makeZSphereIntersect(glm::vec4& aparam, glm::vec4& bparam)
+{
+    NTrianglesNPY* a = NTrianglesNPY::sphere(aparam);
+    NTrianglesNPY* b = NTrianglesNPY::sphere(bparam);
+
+    NTrianglesNPY* tris = new NTrianglesNPY();
+
+    // TODO: radius scaling with the add , translate too ? 
+    tris->add(a);
+    tris->add(b);
+
+
+    NPY<float>* buf = tris->getBuffer(); 
+
+    return makeSphere(buf);
+}
+
+
+
+
 
 

@@ -474,6 +474,7 @@ Position shift below is to match between different cylinder Z origin conventions
      Problem confirmed to be due to bbox effectively clipping the sphere pole
      (and presumably all 6 points where bbox touches the sphere are clipped) 
 
+     Avoid issue by slightly increasing bbox size by factor ~ 1+1e-6
 
 
 Alternate sphere intersection using geometrical 
@@ -488,7 +489,6 @@ template<bool use_robust_method>
 static __device__
 void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
 {
-  // TODO: debug some leakiness, predominantly at near normal incidence
 
   float3 center = make_float3(q0.f);
   float radius = q0.f.w;
@@ -548,9 +548,14 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
             { 
                 if( rtPotentialIntersection( root2 ) ) 
                 {
-                    shading_normal = geometric_normal = (O + root2*D)/radius; // NOT: negating when inside as that would break rules regards geometric normals
+                    shading_normal = geometric_normal = (O + root2*D)/radius; 
                     instanceIdentity = identity ; 
                     rtReportIntersection(0);   // material index 0 
+
+                    // NB: **NOT** negating normal when inside as that 
+                    //     would break rules regards "solidity" of geometric normals
+                    //     normal must depend on geometry at intersection point **only**, 
+                    //     with no dependence on ray direction
                 }
             }
         }

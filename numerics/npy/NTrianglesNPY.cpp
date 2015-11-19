@@ -4,9 +4,9 @@
 #include "NPY.hpp"
 
 
-NTrianglesNPY::NTrianglesNPY(unsigned int n)
+NTrianglesNPY::NTrianglesNPY()
 {
-    m_tris = NPY<float>::make(n,3,3);
+    m_tris = NPY<float>::make(0,3,3);
 }
 
 NTrianglesNPY::NTrianglesNPY(NPY<float>* tris)
@@ -204,12 +204,16 @@ void sincos_(const T angle, T& s, T& c)
 
 NTrianglesNPY* NTrianglesNPY::sphere(unsigned int n_polar, unsigned int n_azimuthal) 
 {
-    return sphere(-1.f, 1.f, n_polar, n_azimuthal);
+    glm::vec4 param(-1.f, 1.f, 0.f, 0.f);
+    return sphere(param, n_polar, n_azimuthal);
 }
 
 
-NTrianglesNPY* NTrianglesNPY::sphere(float zmin, float zmax, unsigned int n_polar, unsigned int n_azimuthal) 
+NTrianglesNPY* NTrianglesNPY::sphere(glm::vec4& param, unsigned int n_polar, unsigned int n_azimuthal) 
 {
+    float zmin = param.x ; 
+    float zmax = param.y ; 
+
     NTrianglesNPY* tris = new NTrianglesNPY();
 
     /*
@@ -275,7 +279,6 @@ NTrianglesNPY* NTrianglesNPY::sphere(float zmin, float zmax, unsigned int n_pola
             sincos_<double>(p0, sp0, cp0 ); 
             sincos_<double>(p1, sp1, cp1 ); 
 
-            // quad on unit sphere
             glm::vec3 x00( st0*cp0, st0*sp0, ct0 );
             glm::vec3 x10( st0*cp1, st0*sp1, ct0 );
 
@@ -321,8 +324,12 @@ NTrianglesNPY* NTrianglesNPY::sphere(float zmin, float zmax, unsigned int n_pola
 
 
 
-NTrianglesNPY* NTrianglesNPY::disk(float z, unsigned int n_azimuthal) 
+NTrianglesNPY* NTrianglesNPY::disk(glm::vec4& param, unsigned int n_azimuthal) 
 {
+    float ct = param.x ; 
+    double ct0, st0 ;
+    sincos_<double>(acos(ct), st0, ct0 ); 
+
     NTrianglesNPY* tris = new NTrianglesNPY();
     for(unsigned int p=0 ; p < n_azimuthal ; p++)
     {
@@ -333,9 +340,9 @@ NTrianglesNPY* NTrianglesNPY::disk(float z, unsigned int n_azimuthal)
         sincos_<double>(p0, sp0, cp0 ); 
         sincos_<double>(p1, sp1, cp1 ); 
 
-        glm::vec3 x0(     cp0,     sp0,   z );
-        glm::vec3 x1(     cp1,     sp1,   z );
-        glm::vec3 xc(       0,       0,   z );
+        glm::vec3 x0(   st0*cp0,  st0*sp0,   ct0 );
+        glm::vec3 x1(   st0*cp1,  st0*sp1,   ct0 );
+        glm::vec3 xc(         0,        0,   ct0 );
 
         tris->add(x0,x1,xc); // winding order directs normal along -z 
     }

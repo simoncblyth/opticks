@@ -1,17 +1,17 @@
-#include "NSphere.hpp"
+#include "NTrianglesNPY.hpp"
 #include "NLog.hpp"
 #include "NPY.hpp"
 
 void test_icosahedron()
 {
-    NPY<float>* icos = NSphere::icosahedron(0) ; 
-    icos->save("/tmp/icos.npy"); 
+    NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
+    icos->getBuffer()->save("/tmp/icos.npy"); 
 }
 
 void test_latlon()
 {
-    NPY<float>* ll = NSphere::latlon() ; 
-    ll->save("/tmp/ll.npy"); 
+    NTrianglesNPY* ll = NTrianglesNPY::sphere();
+    ll->getBuffer()->save("/tmp/ll.npy"); 
 }
 
 

@@ -78,6 +78,7 @@ class GParts {
         unsigned int getTypeCode(unsigned int part);
         unsigned int getNodeIndex(unsigned int part);
         unsigned int getBoundary(unsigned int part);
+    public: 
         std::string  getBoundaryName(unsigned int part);
         const char*  getTypeName(unsigned int part);
    private:
@@ -86,9 +87,10 @@ class GParts {
     public:
         guint4       getSolidInfo(unsigned int isolid);
    public:
+        void setIndex(unsigned int part, unsigned int index);
+        void setFlags(unsigned int part, unsigned int flags);
         void setTypeCode(unsigned int part, unsigned int typecode);
         void setNodeIndex(unsigned int part, unsigned int nodeindex);
-        void setIndex(unsigned int part, unsigned int index);
         void setBoundary(unsigned int part, unsigned int boundary);
     public:
         GBndLib*           getBndLib();

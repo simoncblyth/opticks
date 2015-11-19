@@ -784,6 +784,15 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
 
 
 
+
+template <typename T>
+NPY<T>* NPY<T>::scale(float factor)
+{ 
+   glm::mat4 m = glm::scale(glm::mat4(1.0f), glm::vec3(factor));
+   return transform(m);
+}
+
+
 template <typename T>
 NPY<T>* NPY<T>::transform(glm::mat4& mat)
 { 
