@@ -42,8 +42,12 @@ class NTrianglesNPY {
         static const glm::vec3 MXMYMZ ; 
     public:
         static NTrianglesNPY* sphere(unsigned int n_polar=24, unsigned int n_azimuthal=24); 
+        static NTrianglesNPY* sphere(float zmin, float zmax, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
     public:
         NTrianglesNPY(unsigned int n=0);
+        NTrianglesNPY(NPY<float>* tris);
+    public:
+        NTrianglesNPY* transform(glm::mat4& m);
     public:
         NPY<float>* subdivide(unsigned int nsubdiv);
     public:

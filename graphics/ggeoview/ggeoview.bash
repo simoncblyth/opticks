@@ -27,7 +27,7 @@ ggv-bib(){
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  boundary=MineralOil///Pyrex
                  dimensions=500,300,0,0
-                 shape=S,S
+                 shape=S,Z
                  analytic=1
                    ) 
 

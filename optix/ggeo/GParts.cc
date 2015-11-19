@@ -57,6 +57,12 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bb
     float size = param.w*bbscale ;  
     gbbox bb(gfloat3(-size), gfloat3(size));  
 
+    if(typecode == 'Z')
+    {
+        bb.min.z = param.x ; 
+        bb.max.z = param.y ; 
+    } 
+
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
     part->zero();
 
@@ -71,7 +77,8 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bb
     GParts* pt = new GParts(part, spec) ;
 
     if( typecode == 'B' )     pt->setTypeCode(0u, BOX);
-    else if(typecode == 'S' ) pt->setTypeCode(0u, SPHERE);
+    else if(typecode == 'S')  pt->setTypeCode(0u, SPHERE);
+    else if(typecode == 'Z')  pt->setTypeCode(0u, SPHERE);
     else
     {
         LOG(fatal) << "GParts::make bad typecode [" << typecode << "]" ; 

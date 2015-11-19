@@ -257,6 +257,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
     {
         char   shapecode = (char)m_shape[i] ;
         const char* spec = m_boundaries[i].c_str() ;
+        bool zsp = shapecode == 'Z' ;
 
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
@@ -265,7 +266,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
                   << " spec " << spec
                   ;
         
-        glm::vec4 param(0.f,0.f,0.f,m_dimensions[i]) ;
+        glm::vec4 param(zsp ? 0.5 : 0.f,zsp ? 1.0 : 0.f,0.f,m_dimensions[i]) ;
         GSolid* solid = m_maker->make(i, shapecode, param, spec ); 
         solid->setSensor(NULL);
 

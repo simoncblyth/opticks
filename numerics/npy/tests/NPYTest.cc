@@ -8,6 +8,34 @@
 #include <glm/glm.hpp>
 
 
+void test_transform()
+{
+   NPY<float>* dom = NPY<float>::make(10,1,4) ;
+   dom->fill(0.f);
+
+   glm::vec4 q0(0.f,1.f,2.f,1.f);
+   glm::vec4 q1(1.f,1.f,2.f,1.f);
+   glm::vec4 q9(9.f,1.f,2.f,1.f);
+
+   dom->setQuad(0,0, q0 );
+   dom->setQuad(1,0, q1 );
+   dom->setQuad(9,0, q9 );
+
+   dom->dump();
+    
+   //glm::mat4 m(glm::translate(glm::vec3(10.,10.,10.)));
+   //glm::mat4 m = glm::translate(glm::vec3(10.,10.,10.));
+
+   glm::vec3 tr(10.,10.,10);
+   glm::vec3 sc(10.,5.,-10);
+
+   glm::mat4 m = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
+
+   NPY<float>* tdom = dom->transform(m);
+   tdom->dump(); 
+}
+
+
 void test_dump()
 {
    NPY<unsigned int>* solidBuf = NPY<unsigned int>::load("/tmp/solidBuf.npy");
@@ -293,7 +321,9 @@ int main()
 
     //test_add();
     //test_empty_add();
-    test_dump();
+    //test_dump();
+
+    test_transform();
 
     return 0 ;
 }

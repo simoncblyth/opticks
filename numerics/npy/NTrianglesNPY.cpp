@@ -9,6 +9,20 @@ NTrianglesNPY::NTrianglesNPY(unsigned int n)
     m_tris = NPY<float>::make(n,3,3);
 }
 
+NTrianglesNPY::NTrianglesNPY(NPY<float>* tris)
+{
+    m_tris = tris ;
+}
+
+NTrianglesNPY* NTrianglesNPY::transform(glm::mat4& m)
+{
+    NPY<float>* tbuf = m_tris->transform(m);
+
+    NTrianglesNPY* t = new NTrianglesNPY(tbuf);
+
+    return t ; 
+}
+
 unsigned int NTrianglesNPY::getNumTriangles()
 {
     return m_tris->getNumItems();
@@ -177,19 +191,70 @@ void sincos_(const T angle, T& s, T& c)
 }
 
 
+
 NTrianglesNPY* NTrianglesNPY::sphere(unsigned int n_polar, unsigned int n_azimuthal) 
+{
+    return sphere(-1.f, 1.f, n_polar, n_azimuthal);
+}
+
+
+NTrianglesNPY* NTrianglesNPY::sphere(float zmin, float zmax, unsigned int n_polar, unsigned int n_azimuthal) 
 {
     NTrianglesNPY* tris = new NTrianglesNPY();
 
+    /*
+ 
+                                  t0             t1            ct0       
+
+            t = 0                  0             1/n_polar      +1   
+
+            t = n_polar - 1      1 - 1/n_polar     1            -1   
+
+
+
+                 -  ct0
+                    max_exclude:  ct1 > zmax 
+                 -  ct1               - ct0
+    zmax     +-----------------+        max_straddle
+            /    -              \     - ct1
+           /                     \
+          /      -                \   - ct0
+    zmin +-------------------------+    min_straddle
+                 - ct0                - ct1
+                   min_exclude:  ct0 < zmin
+                 - ct1
+
+    */
+ 
+    assert(zmax > zmin && zmax <= 1.f && zmin >= -1.f);
+
     for(unsigned int t=0 ; t < n_polar ; t++)
     {
-                                                   //  t = 0     -->    t = n_polar - 1    
-        double t0 = 1.0f*M_PI*float(t)/n_polar ;   //     0      -->  (n_polar-1)/n_polar =  1 - 1/n_polar
-        double t1 = 1.0f*M_PI*float(t+1)/n_polar ; // 1/n_polar  -->   n_polar/n_polar    =  1
+        double t0 = 1.0f*M_PI*float(t)/n_polar ; 
+        double t1 = 1.0f*M_PI*float(t+1)/n_polar ;
 
         double st0,st1,ct0,ct1 ;
         sincos_<double>(t0, st0, ct0 ); 
         sincos_<double>(t1, st1, ct1 ); 
+        assert( ct0 > ct1 );
+
+        bool max_exclude  = ct1 > zmax ;
+        bool max_straddle = zmax <= ct0 && zmax > ct1 ; 
+        bool min_straddle = zmin <= ct0 && zmin > ct1 ; 
+        bool min_exclude  = ct0 < zmin ;  
+
+        if(max_exclude || min_exclude ) 
+        {
+            continue ; 
+        }
+        else if(max_straddle)
+        {
+            sincos_<double>(acos(zmax), st0, ct0 ); 
+        }
+        else if(min_straddle) 
+        {
+            sincos_<double>(acos(zmin), st1, ct1 ); 
+        }
 
         for(unsigned int p=0 ; p < n_azimuthal ; p++)
         {

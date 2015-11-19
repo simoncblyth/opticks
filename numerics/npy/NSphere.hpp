@@ -1,4 +1,6 @@
 #pragma once
+
+#include <glm/glm.hpp>
 template <typename T> class NPY ;
 
 /*
@@ -16,8 +18,11 @@ class NSphere {
         static NPY<float>* icosahedron(unsigned int nsubdiv) ; 
         static NPY<float>* octahedron(unsigned int nsubdiv) ; 
         static NPY<float>* hemi_octahedron(unsigned int nsubdiv) ; 
+        static NPY<float>* hemi_octahedron(unsigned int nsubdiv, glm::mat4& m) ; 
         static NPY<float>* cube(unsigned int nsubdiv) ; 
         static NPY<float>* latlon(unsigned int npolar=24, unsigned int nazimuthal=24) ; 
+        static NPY<float>* latlon(float zmin, float zmax, unsigned int npolar=24, unsigned int nazimuthal=24) ;
+        // z in polar direction, (theta,z) (0,+1) (pi,-1)
 
 };
 

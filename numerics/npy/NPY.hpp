@@ -98,6 +98,7 @@ class NPY : public NPYBase {
    public:
        NPY<T>* make_slice(const char* slice);
        NPY<T>* make_slice(NSlice* slice);
+       NPY<T>* transform(glm::mat4& tr);
    public:
        T maxdiff(NPY<T>* other);
    public:

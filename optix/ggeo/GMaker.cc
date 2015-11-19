@@ -1,3 +1,5 @@
+#include <glm/glm.hpp>
+
 #include "GMaker.hh"
 
 #include "GCache.hh"
@@ -13,14 +15,19 @@
 #include "GSolid.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
-#include "NLog.hpp"
 
 // npy-
 #include "NPY.hpp"
 #include "NSphere.hpp"
 #include "NLog.hpp"
 
+
+#include <glm/glm.hpp>
+
+
+
 const char* GMaker::SPHERE = "sphere" ; 
+const char* GMaker::ZSPHERE = "zsphere" ; 
 const char* GMaker::BOX = "box" ; 
 const char* GMaker::PMT = "pmt" ; 
 const char* GMaker::UNDEFINED = "undefined" ; 
@@ -29,9 +36,10 @@ const char* GMaker::ShapeName(char shapecode)
 {
     switch(shapecode) 
     {
-       case 'B':return BOX    ; break ; 
-       case 'S':return SPHERE ; break ; 
-       case 'P':return PMT    ; break ; 
+       case 'B':return BOX     ; break ; 
+       case 'S':return SPHERE  ; break ; 
+       case 'Z':return ZSPHERE ; break ; 
+       case 'P':return PMT     ; break ; 
        case 'U':return UNDEFINED ; break ;
     }
     return NULL ;
@@ -63,9 +71,11 @@ GSolid* GMaker::make(unsigned int index, char shapecode, glm::vec4& param, const
                   solid = makeBox(param);
                   break;
         case 'S': 
-                  unsigned int nsubdiv = 3 ; 
-                  const char* type = "HO" ;  // I:icosahedron O:octahedron HO:hemi-octahedron C:cube L:latlon (ignores nsubdiv)
-                  solid = makeSphere(param, nsubdiv, type) ;
+                  solid = makeSphere(param, 3, "O") ;
+                  // I:icosahedron O:octahedron HO:hemi-octahedron C:cube L:latlon (ignores nsubdiv)
+                  break;
+        case 'Z':
+                  solid = makeZSphere(param) ;
                   break;
     }
     assert(solid);
@@ -155,6 +165,22 @@ GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, const char* ty
         triangles = NSphere::hemi_octahedron(subdiv); 
         assert(triangles->getNumItems() == ntri);
     }
+    else if(strcmp(type,"HOS")==0)
+    {
+        unsigned int ntri = 4*(1 << (subdiv * 2)) ;
+
+        glm::vec3 tr(0.,0.,0.5);
+        glm::vec3 sc(1.,1.,1.);
+
+        // scale and then translate   (translation not scaled)
+        glm::mat4 m = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
+
+        // aim for spherical segments via subdiv, thwarted by curved edges
+        // unclear what basis shape will do what want 
+
+        triangles = NSphere::hemi_octahedron(subdiv, m); 
+        assert(triangles->getNumItems() == ntri);
+    }
     else if(strcmp(type,"C")==0)
     {
         unsigned int ntri = 2*6*(1 << (subdiv * 2)) ;
@@ -169,7 +195,32 @@ GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, const char* ty
         triangles = NSphere::latlon(n_polar, n_azimuthal); 
         assert(triangles->getNumItems() == ntri);
     }
+    else if(strcmp(type,"LZ")==0)
+    {
+        unsigned int n_polar = 24 ; 
+        unsigned int n_azimuthal = 24 ; 
+        triangles = NSphere::latlon(param.x, param.y, n_polar, n_azimuthal); 
+    }
 
+    assert(triangles);
+    return makeSphere(param, triangles);
+}
+
+
+
+GSolid* GMaker::makeZSphere(glm::vec4& param)
+{
+    unsigned int n_polar = 24 ; 
+    unsigned int n_azimuthal = 24 ; 
+
+    NPY<float>* triangles = NSphere::latlon(param.x, param.y, n_polar, n_azimuthal); 
+ 
+    return makeSphere(param, triangles);
+}
+
+
+GSolid* GMaker::makeSphere(glm::vec4& param, NPY<float>* triangles)
+{
     float radius = param.w ; 
 
     unsigned int meshindex = 0 ; 
@@ -186,8 +237,5 @@ GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, const char* ty
 
     return solid ; 
 }
-
-
-
 
 

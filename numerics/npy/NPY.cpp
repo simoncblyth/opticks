@@ -743,7 +743,6 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
     LOG(info) << msg << " (" << getShapeString() << ") " ; 
 
     unsigned int ni = getShape(0);
-
     unsigned int nj, nk ; 
 
     if(m_dim == 3)
@@ -783,6 +782,61 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
 }
 
 
+
+
+template <typename T>
+NPY<T>* NPY<T>::transform(glm::mat4& mat)
+{ 
+    unsigned int ni = getShape(0);
+    unsigned int nj, nk ; 
+
+    if(m_dim == 3)
+    {
+        nj = getShape(1);
+        nk = getShape(2);
+    }
+    else if(m_dim == 2)
+    {
+        nj = 1;
+        nk = getShape(1);
+    }
+    else
+        assert(0);
+
+    assert(nk == 3 || nk == 4);
+
+    std::vector<int> shape = getShapeVector();
+    NPY<T>* tr = NPY<T>::make(shape);
+    tr->zero();
+
+    T* v0 = getValues();
+    T* t0 = tr->getValues();
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {   
+        for(unsigned int j=0 ; j < nj ; j++)
+        {
+             unsigned int offset = i*nj*nk + j*nk + 0 ; 
+             T* v = v0 + offset ; 
+             T* t = t0 + offset ; 
+ 
+             glm::vec4 vec ;
+             vec.x = *(v+0) ;  
+             vec.y = *(v+1) ;  
+             vec.z = *(v+2) ; 
+             vec.w = nk == 4 ? *(v+3) : 1.0f ;  
+
+             glm::vec4 tvec = mat * vec ;
+
+             *(t+0) = tvec.x ; 
+             *(t+1) = tvec.y ; 
+             *(t+2) = tvec.z ; 
+
+             if(nk == 4) *(t+3) = tvec.w ;  
+        }
+    }
+    return tr ; 
+}
 
 
 

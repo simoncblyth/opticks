@@ -1,5 +1,6 @@
 #pragma once
 
+template <typename T> class NPY ;
 #include <cstddef>
 #include <glm/glm.hpp>
 
@@ -13,6 +14,7 @@ class GSolid ;
 
 class GMaker {
    public:
+       static const char* ZSPHERE ; 
        static const char* SPHERE ; 
        static const char* BOX ; 
        static const char* PMT ; 
@@ -24,8 +26,10 @@ class GMaker {
        static const char* ShapeName(char shapecode); 
    private:
        void init();    
-       static GSolid* makeBox(glm::vec4& spec);
-       static GSolid* makeSphere(glm::vec4& spec, unsigned int subdiv=3, const char* type="I");
+       static GSolid* makeBox(glm::vec4& param);
+       static GSolid* makeZSphere(glm::vec4& param);
+       static GSolid* makeSphere(glm::vec4& param, unsigned int subdiv=3, const char* type="I");
+       static GSolid* makeSphere(glm::vec4& param, NPY<float>* triangles);
        static GSolid* makeBox(gbbox& bbox);
    private:
        GCache*   m_cache ; 
