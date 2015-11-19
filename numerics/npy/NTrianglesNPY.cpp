@@ -150,6 +150,21 @@ NTrianglesNPY* NTrianglesNPY::octahedron()
     return tris ;
 }
 
+NTrianglesNPY* NTrianglesNPY::hemi_octahedron()
+{
+    NTrianglesNPY* tris = new NTrianglesNPY();
+
+    // PZ pyramid
+    tris->add(PX,PZ,MY);
+    tris->add(MY,PZ,MX);
+    tris->add(MX,PZ,PY);
+    tris->add(PY,PZ,PX);
+
+    return tris ;
+}
+
+
+
 
 template<typename T>
 void sincos_(const T angle, T& s, T& c)

@@ -64,7 +64,7 @@ GSolid* GMaker::make(unsigned int index, char shapecode, glm::vec4& param, const
                   break;
         case 'S': 
                   unsigned int nsubdiv = 3 ; 
-                  char type = 'C' ;  // I:icosahedron O:octagon C:cube L:latlon (ignores nsubdiv)
+                  const char* type = "HO" ;  // I:icosahedron O:octahedron HO:hemi-octahedron C:cube L:latlon (ignores nsubdiv)
                   solid = makeSphere(param, nsubdiv, type) ;
                   break;
     }
@@ -130,32 +130,38 @@ GSolid* GMaker::makeBox(gbbox& bbox)
 
 
 
-GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, char type)
+GSolid* GMaker::makeSphere(glm::vec4& param, unsigned int subdiv, const char* type)
 {
     LOG(debug) << "GMaker::makeSphere" ;
 
 
     NPY<float>* triangles(NULL);
 
-    if(type == 'I')
+    if(strcmp(type,"I")==0)
     {
         unsigned int ntri = 20*(1 << (subdiv * 2)) ;
         triangles = NSphere::icosahedron(subdiv);  // (subdiv, ntri)  (0,20) (3,1280)
         assert(triangles->getNumItems() == ntri);
     }
-    else if(type == 'O')
+    else if(strcmp(type,"O")==0)
     {
         unsigned int ntri = 8*(1 << (subdiv * 2)) ;
         triangles = NSphere::octahedron(subdiv); 
         assert(triangles->getNumItems() == ntri);
     }
-    else if(type == 'C')
+    else if(strcmp(type,"HO")==0)
+    {
+        unsigned int ntri = 4*(1 << (subdiv * 2)) ;
+        triangles = NSphere::hemi_octahedron(subdiv); 
+        assert(triangles->getNumItems() == ntri);
+    }
+    else if(strcmp(type,"C")==0)
     {
         unsigned int ntri = 2*6*(1 << (subdiv * 2)) ;
         triangles = NSphere::cube(subdiv); 
         assert(triangles->getNumItems() == ntri);
     }
-    else if(type == 'L')
+    else if(strcmp(type,"L")==0)
     {
         unsigned int n_polar = 24 ; 
         unsigned int n_azimuthal = 24 ; 

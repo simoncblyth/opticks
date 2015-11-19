@@ -7,6 +7,7 @@ struct ntriangle ;
 
 class NTrianglesNPY {
     public:
+        static NTrianglesNPY* hemi_octahedron();
         static NTrianglesNPY* octahedron();
         static const glm::vec3 PX ; 
         static const glm::vec3 PY ; 
