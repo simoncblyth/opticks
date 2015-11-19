@@ -59,8 +59,8 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bb
 
     if(typecode == 'Z')
     {
-        bb.min.z = param.x ; 
-        bb.max.z = param.y ; 
+        bb.min.z = param.x*param.w ; 
+        bb.max.z = param.y*param.w ; 
     } 
 
     NPY<float>* part = NPY<float>::make(1, NJ, NK );

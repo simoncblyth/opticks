@@ -60,6 +60,16 @@ void NTrianglesNPY::add(const ntriangle& t )
 }
 
 
+void NTrianglesNPY::add(NTrianglesNPY* other )
+{
+    m_tris->add(other->getBuffer());
+}
+
+
+
+
+
+
 NPY<float>* NTrianglesNPY::subdivide(unsigned int nsubdiv)
 {
     NTesselate* tess = new NTesselate(m_tris);
@@ -306,6 +316,34 @@ NTrianglesNPY* NTrianglesNPY::sphere(float zmin, float zmax, unsigned int n_pola
                x01 x11 degenerate (0,0,-1)  
 
 */
+
+
+
+
+
+NTrianglesNPY* NTrianglesNPY::disk(float z, unsigned int n_azimuthal) 
+{
+    NTrianglesNPY* tris = new NTrianglesNPY();
+    for(unsigned int p=0 ; p < n_azimuthal ; p++)
+    {
+        float p0 = 2.0f*M_PI*float(p)/n_azimuthal ;
+        float p1 = 2.0f*M_PI*float(p+1)/n_azimuthal ;
+
+        double sp0,sp1,cp0,cp1 ;
+        sincos_<double>(p0, sp0, cp0 ); 
+        sincos_<double>(p1, sp1, cp1 ); 
+
+        glm::vec3 x0(     cp0,     sp0,   z );
+        glm::vec3 x1(     cp1,     sp1,   z );
+        glm::vec3 xc(       0,       0,   z );
+
+        tris->add(x0,x1,xc); // winding order directs normal along -z 
+    }
+    return tris ; 
+}
+
+
+
 
 
 

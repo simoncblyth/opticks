@@ -13,6 +13,8 @@ template <typename T> class NPY ;
 
 */
 
+// hmm maybe eliminate this class, just passing thru to NTrianglesNPY ? 
+
 class NSphere {
     public:
         static NPY<float>* icosahedron(unsigned int nsubdiv) ; 

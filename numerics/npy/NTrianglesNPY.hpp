@@ -41,6 +41,7 @@ class NTrianglesNPY {
         static const glm::vec3 MXMYPZ ; 
         static const glm::vec3 MXMYMZ ; 
     public:
+        static NTrianglesNPY* disk(float z, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(unsigned int n_polar=24, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(float zmin, float zmax, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
     public:
@@ -54,6 +55,7 @@ class NTrianglesNPY {
         void add(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& d);
         void add(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c);
         void add(const ntriangle& t );
+        void add(NTrianglesNPY* other);
     public:
         NPY<float>* getBuffer();
         unsigned int getNumTriangles();

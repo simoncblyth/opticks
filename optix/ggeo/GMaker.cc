@@ -19,6 +19,7 @@
 // npy-
 #include "NPY.hpp"
 #include "NSphere.hpp"
+#include "NTrianglesNPY.hpp"
 #include "NLog.hpp"
 
 
@@ -213,7 +214,14 @@ GSolid* GMaker::makeZSphere(glm::vec4& param)
     unsigned int n_polar = 24 ; 
     unsigned int n_azimuthal = 24 ; 
 
-    NPY<float>* triangles = NSphere::latlon(param.x, param.y, n_polar, n_azimuthal); 
+    float zmin = param.x ; 
+    float zmax = param.y ; 
+
+    NTrianglesNPY* ll = NTrianglesNPY::sphere(zmin, zmax, n_polar, n_azimuthal);
+    NTrianglesNPY* dk = NTrianglesNPY::disk(zmin, n_azimuthal);
+    ll->add(dk);
+
+    NPY<float>* triangles = ll->getBuffer();
  
     return makeSphere(param, triangles);
 }

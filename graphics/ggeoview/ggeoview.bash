@@ -134,7 +134,7 @@ ggv-reflect()
     local test_config=(
                  mode=BoxInBox
                  dimensions=700,300,0,0
-                 shape=B,S
+                 shape=B,Z
                  boundary=Rock//perfectAbsorbSurface/Vacuum
                  boundary=Vacuum///Pyrex 
                  analytic=1

@@ -20,14 +20,12 @@ NPY<float>* NSphere::hemi_octahedron(unsigned int nsubdiv)
     return hocta->subdivide(nsubdiv) ; 
 }
 
-
 NPY<float>* NSphere::hemi_octahedron(unsigned int nsubdiv, glm::mat4& m)
 {
     NTrianglesNPY* ho = NTrianglesNPY::hemi_octahedron();
     NTrianglesNPY* tho = ho->transform(m);
     return tho->subdivide(nsubdiv) ; 
 }
-
 
 NPY<float>* NSphere::cube(unsigned int nsubdiv)
 {
@@ -40,7 +38,6 @@ NPY<float>* NSphere::latlon(unsigned int npolar, unsigned int nazimuthal)
     NTrianglesNPY* ll = NTrianglesNPY::sphere(npolar, nazimuthal);
     return ll->getBuffer();
 }
-
 
 
 NPY<float>* NSphere::latlon(float zmin, float zmax, unsigned int npolar, unsigned int nazimuthal) 
