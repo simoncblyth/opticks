@@ -1,18 +1,34 @@
-#include "NTrianglesNPY.hpp"
+#include "NSphere.hpp"
+#include "NPlane.hpp"
+#include "NPart.hpp"
 #include "NLog.hpp"
-#include "NPY.hpp"
 
-void test_icosahedron()
+
+
+
+void test_part()
 {
-    NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
-    icos->getBuffer()->save("/tmp/icos.npy"); 
+    nsphere s(0,0,3,10);
+    npart p = s.part();
+    p.dump("p");
 }
 
-void test_latlon()
+void test_intersect()
 {
-    NTrianglesNPY* ll = NTrianglesNPY::sphere();
-    ll->getBuffer()->save("/tmp/ll.npy"); 
+    nsphere s1(0,0,3,10);
+    nsphere s2(0,0,1,10);
+
+    ndisc d12 = nsphere::intersect(s1,s2) ;
+    d12.dump("d12");
+
+    float z = d12.z() ;
+
+    npart s1l = s1.zlhs(z);
+    npart s1r = s1.zrhs(z);
+
+
 }
+
 
 
 int main(int argc, char** argv)
@@ -20,40 +36,12 @@ int main(int argc, char** argv)
     NLog nl("sphere.log","info");
     nl.configure(argc, argv, "/tmp");
 
-    //test_icosahedron();
-    test_latlon();
+    //test_part();
+    test_intersect();
 
     return 0 ; 
 }
 
-/*
-// python -c "import numpy as np; print np.load('/tmp/icos.npy')"
 
-::
-
-    In [1]: i = np.load("/tmp/icos.npy")
-
-    In [2]: i
-    Out[2]: 
-    array([[[ 0.   ,  0.   ,  1.   ],
-            [-0.526, -0.724,  0.447],
-            [ 0.526, -0.724,  0.447]],
-    ...
-           [[ 0.851, -0.276, -0.447],
-            [ 0.   , -0.894, -0.447],
-            [ 0.   ,  0.   , -1.   ]]], dtype=float32)
-
-    In [3]: np.linalg.norm(i.reshape(-1,3), 2, 1 )
-    Out[3]: 
-    array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.], dtype=float32)
-
-    In [4]: i.shape
-    Out[4]: (20, 3, 3)
-
-*/
 
 

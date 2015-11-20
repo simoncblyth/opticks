@@ -69,6 +69,9 @@ add_library( ${name}  SHARED
     NSequence.cpp
     NLog.cpp
     NSphere.cpp
+    NPlane.cpp
+    NQuad.cpp
+    NPart.cpp
     NTesselate.cpp
     NTriangle.cpp
     NTrianglesNPY.cpp
@@ -124,6 +127,9 @@ NSensorList.hpp
 NSlice.hpp
 NSequence.hpp
 NSphere.hpp
+NPlane.hpp
+NQuad.hpp
+NPart.hpp
 NTesselate.hpp
 NTriangle.hpp
 NTrianglesNPY.hpp

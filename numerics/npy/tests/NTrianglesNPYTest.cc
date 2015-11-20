@@ -35,6 +35,12 @@ void test_latlon()
 }
 
 
+void test_icosahedron()
+{
+    NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
+    icos->getBuffer()->save("/tmp/icos.npy"); 
+}
+
 
 
 int main(int argc, char**argv)
@@ -42,8 +48,22 @@ int main(int argc, char**argv)
     NLog nl("triangles.log", "info");
     nl.configure(argc, argv, "/tmp");
 
+    //test_icosahedron();
     //test_transform();
     test_latlon();
 
 }
+
+
+
+/*
+    In [3]: np.linalg.norm(i.reshape(-1,3), 2, 1 )
+    Out[3]: 
+    array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
+            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
+            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
+            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
+            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.], dtype=float32)
+
+*/
 
