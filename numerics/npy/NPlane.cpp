@@ -4,7 +4,7 @@
 
 void nplane::dump(const char* msg)
 {
-    print(param, msg);
+    param.dump(msg);
 }
 
 void ndisc::dump(const char* msg)
@@ -17,8 +17,8 @@ void ndisc::dump(const char* msg)
 void nbbox::dump(const char* msg)
 {
     printf("%s\n", msg);
-    print(min, "bb min");
-    print(max, "bb max");
+    min.dump("bb min");
+    max.dump("bb max");
 }
 
 

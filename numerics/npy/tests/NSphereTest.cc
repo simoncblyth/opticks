@@ -24,7 +24,9 @@ void test_intersect()
     float z = d12.z() ;
 
     npart s1l = s1.zlhs(z);
-    npart s1r = s1.zrhs(z);
+    s1l.dump("s1l");
+
+    //npart s1r = s1.zrhs(z);
 
 
 }

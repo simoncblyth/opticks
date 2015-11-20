@@ -1,31 +1,68 @@
 #pragma once 
+#include <cstdio>
 
-#include <glm/glm.hpp>
-
-// this might be a problem with older compilers
+// initially attempted to use glm vec constituents 
+// but that runs into complications with unions and non-default ctor, dtor, copy-ctor
+//  
 // http://stackoverflow.com/questions/26572240/why-does-union-has-deleted-default-constructor-if-one-of-its-member-doesnt-have
+// http://stackoverflow.com/questions/7299171/union-member-has-a-non-trivial-copy-constructor
+// http://www.boost.org/doc/libs/1_47_0/doc/html/variant.html
+//
+
+enum { X, Y, Z, W };
+
+struct nuvec4 {
+  unsigned int x ; 
+  unsigned int y ; 
+  unsigned int z ; 
+  unsigned int w ; 
+  void dump(const char* msg);
+};
+
+struct nivec4 {
+  int x ; 
+  int y ; 
+  int z ; 
+  int w ; 
+  void dump(const char* msg);
+};
+
+struct nvec4 {
+  float x ; 
+  float y ; 
+  float z ; 
+  float w ; 
+  void dump(const char* msg);
+};
 
 union nquad 
 {
-   nquad();
-   nquad(const nquad& other);
-   nquad(const glm::vec4& f_);
-   nquad(const glm::uvec4& u_);
-   nquad(const glm::ivec4& i_);
-   ~nquad();
-
-   glm::uvec4 u ; 
-   glm::ivec4 i ; 
-   glm::vec4  f ; 
+   nuvec4 u ; 
+   nivec4 i ; 
+   nvec4  f ; 
+   void dump(const char* msg);
 };
 
 
-inline nquad::nquad() : f(0,0,0,0) {}
+inline void nuvec4::dump(const char* msg)
+{
+    printf("%s : %10u %10u %10u %10u \n",msg, x,y,z,w ); 
+}
+inline void nivec4::dump(const char* msg)
+{
+    printf("%s : %10d %10d %10d %10d \n",msg, x,y,z,w ); 
+}
+inline void nvec4::dump(const char* msg)
+{
+    printf("%s : %10.4f %10.4f %10.4f %10.4f \n",msg, x,y,z,w ); 
+}
+inline void nquad::dump(const char* msg)
+{
+    printf("%s\n", msg);
+    f.dump("f");
+    u.dump("u");
+    i.dump("i");
+}
 
-inline nquad::nquad(const nquad& other) : f(other.f) {}
-inline nquad::nquad(const glm::vec4&  f_) : f(f_) {}
-inline nquad::nquad(const glm::ivec4& i_) : i(i_) {}
-inline nquad::nquad(const glm::uvec4& u_) : u(u_) {}
 
-inline nquad::~nquad() {}
 

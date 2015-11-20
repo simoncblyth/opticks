@@ -1,6 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
+
+#include "NQuad.hpp"
 
 
 struct nbbox {
@@ -8,8 +9,8 @@ struct nbbox {
     nbbox(float zmin, float zmax, float ymin, float ymax); 
     void dump(const char* msg);
 
-    glm::vec4 min ; 
-    glm::vec4 max ; 
+    nvec4 min ; 
+    nvec4 max ; 
 };
 
 
@@ -35,10 +36,10 @@ struct nplane {
     // xyz: normalized normal vector, w:distance from origin
 
     nplane(float x, float y, float z, float w);
-    nplane(const glm::vec4& param_);
+    nplane(const nvec4& param_);
     void dump(const char* msg);
 
-    glm::vec4 param ; 
+    nvec4 param ; 
 };
 
 inline nplane::nplane(float x, float y, float z, float w)
@@ -49,7 +50,7 @@ inline nplane::nplane(float x, float y, float z, float w)
     param.w = w  ;
 }
 
-inline nplane::nplane(const glm::vec4& param_)
+inline nplane::nplane(const nvec4& param_)
 {
     param = param_ ;
 }

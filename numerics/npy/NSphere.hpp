@@ -1,6 +1,9 @@
 #pragma once
 
-#include <glm/glm.hpp>
+//#include <glm/glm.hpp>
+
+#include "NQuad.hpp"
+
 
 struct nplane ; 
 struct ndisc ; 
@@ -8,7 +11,7 @@ struct npart ;
 
 struct nsphere {
     nsphere(float x, float y, float z, float w);
-    nsphere(const glm::vec4& param_);
+    nsphere(const nvec4& param_);
 
     static ndisc intersect(nsphere& a, nsphere& b);
 
@@ -18,7 +21,7 @@ struct nsphere {
 
     void dump(const char* msg);
 
-    glm::vec4 param ; 
+    nvec4 param ; 
 };
 
 
@@ -30,7 +33,7 @@ inline nsphere::nsphere(float x, float y, float z, float w)
     param.w = w  ;
 }
 
-inline nsphere::nsphere(const glm::vec4& param_)
+inline nsphere::nsphere(const nvec4& param_)
 {
     param = param_ ;
 }

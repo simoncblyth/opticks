@@ -1,30 +1,22 @@
 #include "NQuad.hpp"
-#include "GLMPrint.hpp"
-
-void p(const nquad& q, const char* msg)
-{
-    printf("%s\n", msg);
-    print(q.f, "q.f");
-    print(q.u, "q.u");
-    print(q.i, "q.i");
-}
-
 
 int main()
 {
-    nquad qu(glm::uvec4(1,1,1,1)) ;
-    nquad qf(glm::vec4(1,1,1,1)) ;
-    nquad qi(glm::ivec4(1,1,1,1)) ;
+    nquad qu, qf, qi, qv ;
 
-    p(qu, "qu(1,1,1,1)" );
-    p(qf, "qf(1,1,1,1)" );
-    p(qi, "qi(1,1,1,1)" );
+    qu.u = {1,1,1,1}  ;
+    qf.f = {1,1,1,1} ;
+    qi.i = {1,1,1,1} ;
 
-    //int v10 = 1092616192 ; // integer behind floating point 10.
+    qu.dump("qu");
+    qf.dump("qf");
+    qi.dump("qi");
+
+
     int v1 = 1065353216 ; // integer behind floating point 1.
 
-    nquad qv(glm::ivec4(v1+0,v1-1,v1+1,v1+2));
-    p(qv, "qv");
+    qv.i = {v1+0,v1-1,v1+1,v1+2} ;
+    qv.dump("qv");
 
     float ulp[4];
 

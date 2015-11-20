@@ -1,7 +1,6 @@
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
-#include "GLMPrint.hpp"
 #include <cmath>
 
 ndisc nsphere::intersect(nsphere& a, nsphere& b)
@@ -17,11 +16,14 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
     float r = b.param.w ; 
 
     // operate in frame of Sphere a 
-    glm::vec3 dab = glm::vec3(b.param) - glm::vec3(a.param) ;
 
-    assert(dab.x == 0 && dab.y == 0 && dab.z != 0);
+    float dx = b.param.x - a.param.x ; 
+    float dy = b.param.y - a.param.y ; 
+    float dz = b.param.z - a.param.z ; 
 
-    float d = dab.z ;  
+    assert(dx == 0 && dy == 0 && dz != 0);
+
+    float d = dz ;  
     float dd_m_rr_p_RR = d*d - r*r + R*R  ; 
     float z = dd_m_rr_p_RR/(2.*d) ;
     float yy = (4.*d*d*R*R - dd_m_rr_p_RR*dd_m_rr_p_RR)/(4.*d*d)  ;
@@ -33,13 +35,15 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
 
 void nsphere::dump(const char* msg)
 {
-    print(param, msg);
+    param.dump(msg);
 }
 
 
 npart nsphere::part()
 {
+    //npart p = npart();   //  ctor like this zeroes
     npart p ; 
+    p.zero();              // but this is clearer
 
     p.q0.f = param ; 
 
