@@ -43,14 +43,15 @@ class NTrianglesNPY {
     public:
         static NTrianglesNPY* sphere(unsigned int n_polar=24, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(glm::vec4& param, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
+        static NTrianglesNPY* sphere(float ctmin, float ctmax, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
+    public:
         static NTrianglesNPY* disk(glm::vec4& param, unsigned int n_azimuthal=24); 
     public:
         NTrianglesNPY();
         NTrianglesNPY(NPY<float>* tris);
     public:
         NTrianglesNPY* transform(glm::mat4& m);
-    public:
-        NPY<float>* subdivide(unsigned int nsubdiv);
+        NTrianglesNPY* subdivide(unsigned int nsubdiv);
     public:
         void add(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& d);
         void add(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c);
@@ -59,8 +60,12 @@ class NTrianglesNPY {
     public:
         NPY<float>* getBuffer();
         unsigned int getNumTriangles();
+        void setTransform(const glm::mat4& transform);
+        void setTransform(const glm::vec3& scale, const glm::vec3& translate);
+        glm::mat4 getTransform();
     private:
         NPY<float>*  m_tris ; 
+        glm::mat4    m_transform ; 
 
 };
 
@@ -68,6 +73,15 @@ class NTrianglesNPY {
 inline NPY<float>* NTrianglesNPY::getBuffer()
 {
     return m_tris ; 
+}
+
+inline void NTrianglesNPY::setTransform(const glm::mat4& transform)
+{
+    m_transform = transform ; 
+}
+inline glm::mat4 NTrianglesNPY::getTransform()
+{
+    return m_transform ; 
 }
 
 

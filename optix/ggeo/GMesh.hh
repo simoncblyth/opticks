@@ -184,7 +184,7 @@ class GMesh : public GDrawable {
       static const char* iidentity ;     // guint4: node, mesh, boundary, sensor
       static const char* aiidentity ;    
 
-      static GMesh* make_mesh(NPY<float>* triangles, float scale=1.0f, unsigned int meshindex=0);
+      static GMesh* make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex=0);  
 
       //GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index=0, 

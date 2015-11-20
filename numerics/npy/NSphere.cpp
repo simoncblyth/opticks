@@ -1,7 +1,9 @@
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
+
 #include <cmath>
+#include <cassert>
 
 ndisc nsphere::intersect(nsphere& a, nsphere& b)
 {
@@ -12,14 +14,14 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
     //
     // cf pmt-/dd.py 
 
-    float R = a.param.w ; 
-    float r = b.param.w ; 
+    float R = a.radius() ; 
+    float r = b.radius() ; 
 
     // operate in frame of Sphere a 
 
-    float dx = b.param.x - a.param.x ; 
-    float dy = b.param.y - a.param.y ; 
-    float dz = b.param.z - a.param.z ; 
+    float dx = b.x() - a.x() ; 
+    float dy = b.y() - a.y() ; 
+    float dz = b.z() - a.z() ; 
 
     assert(dx == 0 && dy == 0 && dz != 0);
 
@@ -41,37 +43,43 @@ void nsphere::dump(const char* msg)
 
 npart nsphere::part()
 {
-    //npart p = npart();   //  ctor like this zeroes
+    float _z = z() ;  
+    float r  = radius() ; 
+
+    nbbox bb(_z - r, _z + r, -r, r);
+
     npart p ; 
-    p.zero();              // but this is clearer
-
-    p.q0.f = param ; 
-
-    float z = param.z ;  
-    float radius = param.w ; 
-
-    nbbox bb(z-radius, z+radius, -radius, radius);
-
-    p.q2.f = bb.min ; 
-    p.q3.f = bb.max ; 
-
-    p.setTypeCode(SPHERE); // must come after setting bbox 
+    p.zero();            
+    p.setParam(param) ; 
+    p.setTypeCode(SPHERE); 
+    p.setBBox(bb);
 
     return p ; 
 }
 
 
 
-npart nsphere::zlhs(float z)
+npart nsphere::zlhs(const ndisc& dsk)
 {
     npart p = part();
+
+    float _z = z() ;  
+    float r  = radius() ; 
+    nbbox bb(_z - r, dsk.z(), -dsk.radius, dsk.radius);
+    p.setBBox(bb);
+
     return p ; 
 }
 
-
-npart nsphere::zrhs(float z)
+npart nsphere::zrhs(const ndisc& dsk)
 {
     npart p = part();
+
+    float _z = z() ;  
+    float r  = radius() ; 
+    nbbox bb(dsk.z(), _z + r, -dsk.radius, dsk.radius);
+    p.setBBox(bb);
+
     return p ; 
 }
 

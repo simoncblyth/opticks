@@ -1441,7 +1441,7 @@ unsigned int GMesh::findContainer(gfloat3 p)
 
 
 
-GMesh* GMesh::make_mesh(NPY<float>* triangles, float scale, unsigned int meshindex)
+GMesh* GMesh::make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex)
 {
     unsigned int ni = triangles->getShape(0) ;
     unsigned int nj = triangles->getShape(1) ;
@@ -1465,18 +1465,25 @@ GMesh* GMesh::make_mesh(NPY<float>* triangles, float scale, unsigned int meshind
         guint3& tri = faces[f] ;
         for(unsigned int j=0 ; j < 3 ; j++)
         {
-             float* ijvals = bvals + i*nj*nk + j*nk ;
+             float* ijv = bvals + i*nj*nk + j*nk ;
 
              gfloat3& vtx = vertices[v] ;
              gfloat3& nrm = normals[v] ;
 
-             nrm.x = *(ijvals + 0); 
-             nrm.y = *(ijvals + 1); 
-             nrm.z = *(ijvals + 2); 
+             glm::vec3 vpos = glm::make_vec3( ijv )  ;
+             glm::vec3 npos = glm::normalize(vpos) ; 
 
-             vtx.x = nrm.x * scale ; 
-             vtx.y = nrm.y * scale ;
-             vtx.z = nrm.z * scale ;  
+             nrm.x = npos.x ; 
+             nrm.y = npos.y ; 
+             nrm.z = npos.z ; 
+
+             // using the normalized position as the normal 
+             // restricts triangles to being in spherelocal coordinates
+             // ie the sphere must be centered at origin
+
+             vtx.x = vpos.x ; 
+             vtx.y = vpos.y ;
+             vtx.z = vpos.z ;  
 
              v += 1 ; 
         }

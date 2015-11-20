@@ -534,7 +534,10 @@ void Composition::setCenterExtent(glm::vec4& ce, bool autocam)
 }
 
 void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToWorld
-{  
+{ 
+    // this is invoked by App::uploadGeometry/Scene::setTarget
+
+    //assert(0); 
     m_center_extent.x = ce.x ;
     m_center_extent.y = ce.y ;
     m_center_extent.z = ce.z ;

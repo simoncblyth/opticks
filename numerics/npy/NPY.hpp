@@ -17,6 +17,7 @@ class G4StepNPY ;
 #include <cassert>
 
 #include "NPYBase.hpp"
+#include "NQuad.hpp"
 
 struct NSlice ; 
 
@@ -157,6 +158,8 @@ class NPY : public NPYBase {
        void         setFloat(unsigned int i, unsigned int j, unsigned int k, float value);
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);
        void         setInt(  unsigned int i, unsigned int j, unsigned int k, int value);
+
+       void         setQuad(unsigned int i, unsigned int j, const nvec4& f );
 
        void         setQuad(unsigned int i, unsigned int j, glm::vec4&  vec );
        void         setQuadI(unsigned int i, unsigned int j, glm::ivec4& vec );
@@ -301,6 +304,7 @@ inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T v
 {
     unsigned int idx = getValueIndex(i,j,k);
     T* dat = getValues();
+    assert(dat && "must zero() the buffer before can setValue");
     *(dat + idx) = value ;
 }
 
@@ -311,6 +315,15 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::vec4& vec )
     assert( m_len2 == 4 );  
     for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
 }
+
+template <typename T> 
+inline void NPY<T>::setQuad(unsigned int i, unsigned int j, const nvec4& f )
+{
+    glm::vec4 vec(f.x,f.y,f.z,f.w); 
+    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
+}
+
+
 
 
 template <typename T> 

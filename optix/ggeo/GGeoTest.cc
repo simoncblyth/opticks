@@ -29,13 +29,12 @@
 const char* GGeoTest::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
     "boundary=Rock///MineralOil_"
-    "dimensions=300,0,0,0_"
     ;
 
 const char* GGeoTest::MODE_ = "mode"; 
 const char* GGeoTest::FRAME_ = "frame"; 
-const char* GGeoTest::DIMENSIONS_ = "dimensions"; 
 const char* GGeoTest::BOUNDARY_ = "boundary"; 
+const char* GGeoTest::PARAMETERS_ = "parameters"; 
 const char* GGeoTest::SHAPE_ = "shape"; 
 const char* GGeoTest::SLICE_ = "slice"; 
 const char* GGeoTest::ANALYTIC_ = "analytic"; 
@@ -77,32 +76,32 @@ void GGeoTest::configure(const char* config_)
                   << it->second 
                   ;
 
-        set(getParam(it->first.c_str()), it->second.c_str());
+        set(getArg(it->first.c_str()), it->second.c_str());
     }
 }
 
-GGeoTest::Param_t GGeoTest::getParam(const char* k)
+GGeoTest::Arg_t GGeoTest::getArg(const char* k)
 {
-    Param_t param = UNRECOGNIZED ; 
-    if(     strcmp(k,MODE_)==0)       param = MODE ; 
-    else if(strcmp(k,FRAME_)==0)      param = FRAME ; 
-    else if(strcmp(k,DIMENSIONS_)==0) param = DIMENSIONS ; 
-    else if(strcmp(k,BOUNDARY_)==0)   param = BOUNDARY ; 
-    else if(strcmp(k,SHAPE_)==0)      param = SHAPE ; 
-    else if(strcmp(k,SLICE_)==0)      param = SLICE ; 
-    else if(strcmp(k,ANALYTIC_)==0)   param = ANALYTIC ; 
-    else if(strcmp(k,DEBUG_)==0)      param = DEBUG ; 
-    return param ;   
+    Arg_t arg = UNRECOGNIZED ; 
+    if(     strcmp(k,MODE_)==0)       arg = MODE ; 
+    else if(strcmp(k,FRAME_)==0)      arg = FRAME ; 
+    else if(strcmp(k,BOUNDARY_)==0)   arg = BOUNDARY ; 
+    else if(strcmp(k,PARAMETERS_)==0) arg = PARAMETERS ; 
+    else if(strcmp(k,SHAPE_)==0)      arg = SHAPE ; 
+    else if(strcmp(k,SLICE_)==0)      arg = SLICE ; 
+    else if(strcmp(k,ANALYTIC_)==0)   arg = ANALYTIC ; 
+    else if(strcmp(k,DEBUG_)==0)      arg = DEBUG ; 
+    return arg ;   
 }
 
-void GGeoTest::set(Param_t p, const char* s)
+void GGeoTest::set(Arg_t arg, const char* s)
 {
-    switch(p)
+    switch(arg)
     {
         case MODE           : setMode(s)           ;break;
         case FRAME          : setFrame(s)          ;break;
-        case DIMENSIONS     : setDimensions(s)     ;break;
         case BOUNDARY       : addBoundary(s)       ;break;
+        case PARAMETERS     : addParameters(s)     ;break;
         case SHAPE          : setShape(s)          ;break;
         case SLICE          : setSlice(s)          ;break;
         case ANALYTIC       : setAnalytic(s)       ;break;
@@ -138,20 +137,23 @@ void GGeoTest::setAnalytic(const char* s)
     std::string ss(s);
     m_analytic = givec4(ss);
 }
-void GGeoTest::setDimensions(const char* s)
-{
-    std::string ss(s);
-    m_dimensions = gvec4(ss);
-}
+
 void GGeoTest::setDebug(const char* s)
 {
     std::string ss(s);
     m_debug = gvec4(ss);
 }
+void GGeoTest::addParameters(const char* s)
+{
+    std::string ss(s);
+    m_parameters.push_back(gvec4(ss));
+}
+
 void GGeoTest::addBoundary(const char* s)
 {
     m_boundaries.push_back(s);
 }
+
 void GGeoTest::setShape(const char* s)
 {
     std::vector<std::string> elem ; 
@@ -179,9 +181,17 @@ void GGeoTest::modifyGeometry()
 
     // TODO: eliminate the mode unifying createPmtInBox, createBoxInBox -> create
 
+    unsigned int nbnd = m_boundaries.size() ; 
+    unsigned int npar = m_parameters.size() ; 
+
+    if(npar > 0)
+    {
+         assert(npar == nbnd && "when parameters used there must be one for every boundary");
+    }    
+
+
     if(strcmp(m_mode, "PmtInBox") == 0)
     {
-         assert(m_dimensions.x  > 0);
          assert(m_boundaries.size() > 0);
          tmm = createPmtInBox(); 
     }
@@ -213,6 +223,14 @@ void GGeoTest::modifyGeometry()
 }
 
 
+glm::vec4 GGeoTest::getParameters(unsigned int i)
+{
+    unsigned int npars = m_parameters.size();
+    assert( i < npars ) ; 
+    glm::vec4 param = m_parameters[i] ;
+    return param ;  
+}
+
 
 GMergedMesh* GGeoTest::createPmtInBox()
 {
@@ -226,14 +244,17 @@ GMergedMesh* GGeoTest::createPmtInBox()
     //TODO: some kinda matching sanity check between analytic and triangulated ? 
     mmpmt->setParts(pmt->getParts());  // associate analytic parts with the triangulated PMT
 
-
     unsigned int index = mmpmt->getNumSolids() ;
 
-    glm::vec4 param(0.f,0.f,0.f,m_dimensions[0]) ;
-    GSolid* solid = m_maker->make( index, shapecode, param, spec) ;
-    solid->getMesh()->setIndex(1000);
+    glm::vec4 param = getParameters(0);
+    std::vector<GSolid*> solids = m_maker->make( index, shapecode, param, spec) ;
+    for(unsigned int j=0 ; j < solids.size() ; j++)
+    {
+        GSolid* solid = solids[j];
+        solid->getMesh()->setIndex(1000);
+    }
 
-    GMergedMesh* tri = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
+    GMergedMesh* tri = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solids );   
 
     GParts* anl = tri->getParts();
     const char* imat = m_bndlib->getInnerMaterialName(spec);
@@ -257,7 +278,6 @@ GMergedMesh* GGeoTest::createBoxInBox()
     {
         char   shapecode = (char)m_shape[i] ;
         const char* spec = m_boundaries[i].c_str() ;
-        bool zsp = shapecode == 'Z' ;
 
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
@@ -265,13 +285,32 @@ GMergedMesh* GGeoTest::createBoxInBox()
                   << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
                   << " spec " << spec
                   ;
-        
-        glm::vec4 param(zsp ? 0.5 : 0.f,zsp ? 1.0 : 0.f,0.f,m_dimensions[i]) ;
-        GSolid* solid = m_maker->make(i, shapecode, param, spec ); 
-        solid->setSensor(NULL);
 
-        solids.push_back(solid);
+        glm::vec4 param = getParameters(i);
+
+        std::vector<GSolid*> ss = m_maker->make(i, shapecode, param, spec );  // some shapes need more than one solid
+        for(unsigned int j=0 ; j < ss.size() ; j++)
+        {
+            GSolid* s = ss[j];
+            solids.push_back(s);
+        } 
     }
+
+
+    for(unsigned int i=0 ; i < solids.size() ; i++)
+    {
+        GSolid* solid = solids[i];
+        solid->setIndex(i);
+        GParts* pts = solid->getParts();
+        if(pts)
+        { 
+            pts->setIndex(0u, solid->getIndex());
+            pts->setNodeIndex(0u, solid->getIndex());
+            pts->setBndLib(m_bndlib);
+        }
+    }
+    
+
 
     GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );
 

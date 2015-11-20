@@ -4,8 +4,6 @@
 #include "NLog.hpp"
 
 
-
-
 void test_part()
 {
     nsphere s(0,0,3,10);
@@ -21,16 +19,13 @@ void test_intersect()
     ndisc d12 = nsphere::intersect(s1,s2) ;
     d12.dump("d12");
 
-    float z = d12.z() ;
 
-    npart s1l = s1.zlhs(z);
+    npart s1l = s1.zlhs(d12);
     s1l.dump("s1l");
 
-    //npart s1r = s1.zrhs(z);
-
-
+    npart s1r = s1.zrhs(d12);
+    s1r.dump("s1r");
 }
-
 
 
 int main(int argc, char** argv)

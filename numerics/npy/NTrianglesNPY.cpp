@@ -2,6 +2,7 @@
 #include "NTesselate.hpp"
 #include "NTriangle.hpp"
 #include "NPY.hpp"
+#include "GLMPrint.hpp"
 
 
 NTrianglesNPY::NTrianglesNPY()
@@ -22,6 +23,23 @@ NTrianglesNPY* NTrianglesNPY::transform(glm::mat4& m)
 
     return t ; 
 }
+
+NTrianglesNPY* NTrianglesNPY::subdivide(unsigned int nsubdiv)
+{
+    NTesselate* tess = new NTesselate(m_tris);
+
+    tess->subdivide(nsubdiv);
+
+    NPY<float>* tbuf = tess->getBuffer();
+
+    NTrianglesNPY* t = new NTrianglesNPY(tbuf);
+
+    t->setTransform( getTransform() );
+
+    return t ;
+}
+
+
 
 unsigned int NTrianglesNPY::getNumTriangles()
 {
@@ -69,17 +87,6 @@ void NTrianglesNPY::add(NTrianglesNPY* other )
 
 
 
-
-NPY<float>* NTrianglesNPY::subdivide(unsigned int nsubdiv)
-{
-    NTesselate* tess = new NTesselate(m_tris);
-
-    tess->subdivide(nsubdiv);
-
-    NPY<float>* buf = tess->getBuffer();
-
-    return buf ;
-}
 
 
 
@@ -204,16 +211,47 @@ void sincos_(const T angle, T& s, T& c)
 
 NTrianglesNPY* NTrianglesNPY::sphere(unsigned int n_polar, unsigned int n_azimuthal) 
 {
-    glm::vec4 param(-1.f, 1.f, 0.f, 0.f);
+    glm::vec4 param(-1.f, 1.f, 0.f, 1.f);
     return sphere(param, n_polar, n_azimuthal);
 }
 
 
+void NTrianglesNPY::setTransform(const glm::vec3& scale, const glm::vec3& translate)
+{
+    glm::mat4 m_scale = glm::scale(glm::mat4(1.0f), scale);
+    glm::mat4 m_translate = glm::translate(glm::mat4(1.0f), translate);
+    glm::mat4 mat = m_translate * m_scale ; 
+
+    print(mat, "NTrianglesNPY::setTransform");
+
+    setTransform(mat);
+}
+
+
+
 NTrianglesNPY* NTrianglesNPY::sphere(glm::vec4& param, unsigned int n_polar, unsigned int n_azimuthal) 
 {
-    float zmin = param.x ; 
-    float zmax = param.y ; 
+    float ctmin = param.x ; 
+    float ctmax = param.y ; 
+    float zpos  = param.z ; 
+    float radius = param.w ; 
 
+    // unit sphere at origin 
+    NTrianglesNPY* tris = sphere(ctmin, ctmax, n_polar, n_azimuthal);  
+
+    glm::vec3 scale(radius);
+    glm::vec3 translate(0,0,zpos);
+    tris->setTransform(scale, translate);   
+
+    // dont apply the transform yet, as whilst sphere at origin
+    // can easily get normals from the positions
+
+    return tris ;
+}
+
+
+NTrianglesNPY* NTrianglesNPY::sphere(float ctmin, float ctmax, unsigned int n_polar, unsigned int n_azimuthal) 
+{
     NTrianglesNPY* tris = new NTrianglesNPY();
 
     /*
@@ -240,7 +278,7 @@ NTrianglesNPY* NTrianglesNPY::sphere(glm::vec4& param, unsigned int n_polar, uns
 
     */
  
-    assert(zmax > zmin && zmax <= 1.f && zmin >= -1.f);
+    assert(ctmax > ctmin && ctmax <= 1.f && ctmin >= -1.f);
 
     for(unsigned int t=0 ; t < n_polar ; t++)
     {
@@ -252,10 +290,10 @@ NTrianglesNPY* NTrianglesNPY::sphere(glm::vec4& param, unsigned int n_polar, uns
         sincos_<double>(t1, st1, ct1 ); 
         assert( ct0 > ct1 );
 
-        bool max_exclude  = ct1 > zmax ;
-        bool max_straddle = zmax <= ct0 && zmax > ct1 ; 
-        bool min_straddle = zmin <= ct0 && zmin > ct1 ; 
-        bool min_exclude  = ct0 < zmin ;  
+        bool max_exclude  = ct1 > ctmax ;
+        bool max_straddle = ctmax <= ct0 && ctmax > ct1 ; 
+        bool min_straddle = ctmin <= ct0 && ctmin > ct1 ; 
+        bool min_exclude  = ct0 < ctmin ;  
 
         if(max_exclude || min_exclude ) 
         {
@@ -263,11 +301,11 @@ NTrianglesNPY* NTrianglesNPY::sphere(glm::vec4& param, unsigned int n_polar, uns
         }
         else if(max_straddle)
         {
-            sincos_<double>(acos(zmax), st0, ct0 ); 
+            sincos_<double>(acos(ctmax), st0, ct0 ); 
         }
         else if(min_straddle) 
         {
-            sincos_<double>(acos(zmin), st1, ct1 ); 
+            sincos_<double>(acos(ctmin), st1, ct1 ); 
         }
 
         for(unsigned int p=0 ; p < n_azimuthal ; p++)

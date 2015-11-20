@@ -6,9 +6,9 @@ void test_icosahedron_subdiv(unsigned int nsd)
 {
     NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
 
-    NPY<float>* tris = icos->subdivide(nsd);         
+    NTrianglesNPY* tris = icos->subdivide(nsd);         
    
-    unsigned int ntr = tris->getNumItems();
+    unsigned int ntr = tris->getNumTriangles();
 
     LOG(info) << "test_icosahedron_subdiv" 
               << " nsd " << std::setw(4) << nsd
@@ -27,9 +27,9 @@ void test_octahedron_subdiv(unsigned int nsd)
 {
     NTrianglesNPY* oct = NTrianglesNPY::octahedron();
 
-    NPY<float>* tris = oct->subdivide(nsd);
+    NTrianglesNPY* tris = oct->subdivide(nsd);
 
-    unsigned int ntr = tris->getNumItems();
+    unsigned int ntr = tris->getNumTriangles();
 
     LOG(info) << "test_octahedron_subdiv" 
               << " nsd " << std::setw(4) << nsd

@@ -78,6 +78,37 @@ GMatrix<T>::GMatrix(const GMatrix& m) :
       d1(m.d1), d2(m.d2), d3(m.d3), d4(m.d4) 
 { 
 }
+
+
+template<typename T>
+GMatrix<T>::GMatrix(T* buf) :
+      GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
+
+      a1(buf[0]),
+      b1(buf[1]),
+      c1(buf[2]),
+      d1(buf[3]),
+
+      a2(buf[4]),
+      b2(buf[5]),
+      c2(buf[6]),
+      d2(buf[7]),
+
+      a3(buf[8]),
+      b3(buf[9]),
+      c3(buf[10]),
+      d3(buf[11]),
+
+      a4(buf[12]),
+      b4(buf[13]),
+      c4(buf[14]),
+      d4(buf[15])
+{
+}
+
+
+
+
 template<typename T>
 GMatrix<T>::GMatrix(
           T _a1, T _a2, T _a3, T _a4,
@@ -117,6 +148,8 @@ void GMatrix<T>::copyTo(T* buf)
     buf[14] = c4 ;  // 15th t_z 
     buf[15] = d4 ;  // 16th 1.0
 }
+
+
 
 template <typename T>
 void* GMatrix<T>::getPointer()
@@ -245,6 +278,10 @@ std::string GMatrix<T>::digest()
     dig.update( (char*)getPointer(), sizeof(T)*16 );  
     return dig.finalize();
 }
+
+
+
+
 
 
 

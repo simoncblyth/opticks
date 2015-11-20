@@ -1,6 +1,9 @@
 #pragma once
 
 template <typename T> class NPY ;
+class NTrianglesNPY ; 
+
+#include <vector>
 #include <cstddef>
 #include <glm/glm.hpp>
 
@@ -15,23 +18,27 @@ class GSolid ;
 class GMaker {
    public:
        static const char* ZSPHERE ; 
+       static const char* ZSPHEREINTERSECT ; 
        static const char* SPHERE ; 
        static const char* BOX ; 
        static const char* PMT ; 
        static const char* UNDEFINED ; 
+       static const char* ShapeName(char shapecode); 
    public:
        GMaker(GCache* cache);
    public:
-       GSolid* make(unsigned int index, char shapecode, glm::vec4& param, const char* spec);
-       static const char* ShapeName(char shapecode); 
+       std::vector<GSolid*> make(unsigned int index, char shapecode, glm::vec4& param, const char* spec);
    private:
        void init();    
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);
-       static GSolid* makeSphere(glm::vec4& param, unsigned int subdiv=3, const char* type="I");
-       static GSolid* makeSphere(NPY<float>* triangles);
+       static void makeZSphereIntersect(std::vector<GSolid*>& solids, glm::vec4& param, const char* spec);
+   private:
        static GSolid* makeBox(gbbox& bbox);
-       static GSolid* makeZSphereIntersect(glm::vec4& aparam, glm::vec4& bparam);
+   private:
+       static GSolid* makeSubdivSphere(glm::vec4& param, unsigned int subdiv=3, const char* type="I");
+       static NTrianglesNPY* makeSubdivSphere(unsigned int nsubdiv=3, const char* type="I");
+       static GSolid* makeSphere(NTrianglesNPY* tris);
    private:
        GCache*   m_cache ; 
        GGeo*     m_ggeo ; 

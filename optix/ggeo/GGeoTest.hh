@@ -20,21 +20,21 @@ class GGeoTest {
        typedef enum { 
                       MODE, 
                       FRAME, 
-                      DIMENSIONS, 
                       BOUNDARY, 
+                      PARAMETERS, 
                       SHAPE, 
                       SLICE, 
                       ANALYTIC, 
                       DEBUG,
-                      UNRECOGNIZED } Param_t ;
+                      UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
        static const char* DEFAULT_CONFIG ; 
     public:
        static const char* MODE_; 
        static const char* FRAME_ ; 
-       static const char* DIMENSIONS_; 
        static const char* BOUNDARY_ ; 
+       static const char* PARAMETERS_ ; 
        static const char* SHAPE_ ; 
        static const char* SLICE_ ; 
        static const char* ANALYTIC_ ; 
@@ -47,17 +47,19 @@ class GGeoTest {
        std::vector<std::pair<std::string, std::string> >& getCfg();
     private:
        void init();
-       Param_t getParam(const char* k);
-       void set(Param_t p, const char* s);
+       Arg_t getArg(const char* k);
+       void set(Arg_t arg, const char* s);
     private:
        void setMode(const char* s);
        void setFrame(const char* s);
-       void setDimensions(const char* s);
        void setShape(const char* s);
        void addBoundary(const char* s);
+       void addParameters(const char* s);
        void setSlice(const char* s);
        void setAnalytic(const char* s);
        void setDebug(const char* s);
+    private:
+       glm::vec4 getParameters(unsigned int i);
     private:
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
@@ -72,11 +74,11 @@ class GGeoTest {
        const char*  m_mode ; 
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
-       glm::vec4    m_dimensions ;
        glm::ivec4   m_analytic ;
        glm::ivec4   m_shape ;
        glm::vec4    m_debug ;
        std::vector<std::string> m_boundaries ; 
+       std::vector<glm::vec4>   m_parameters ; 
        std::vector<KV> m_cfg ; 
 
 };

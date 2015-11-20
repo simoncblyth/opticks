@@ -123,7 +123,7 @@ class GGeo {
         glm::ivec4 getNodeOffsetCount(unsigned int index);
         glm::vec4 getFaceCenterExtent(unsigned int face_index, unsigned int solid_index, unsigned int mergedmesh_index=0 );
         glm::vec4 getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mergedmesh_index=0 );
-        glm::mat4 getTransform(unsigned int index);
+        glm::mat4 getTransform(int index);
     public:
         bool isLoaded();
         bool isVolnames();

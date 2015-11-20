@@ -5,7 +5,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "NPart.hpp"
+
+struct npart ; 
 
 struct guint4 ; 
 struct gbbox ; 
@@ -33,15 +34,6 @@ class GParts {
        static const char* BOX_ ; 
        static const char* TypeName(unsigned int typecode);
 
-/*
-       enum {
-              ZERO, 
-              SPHERE, 
-              TUBS, 
-              BOX
-            };
-*/
-
     public:
         // buffer layout, must match locations in pmt-/tree.py:convert 
         enum { 
@@ -51,21 +43,8 @@ class GParts {
               SK = 4  
             } ;
 
-/*
-        enum { PARAM_J  = 0, PARAM_K  = 0 };
-
-        enum { INDEX_J  = 1, INDEX_K  = 1 };
-        enum { BOUNDARY_J = 1, BOUNDARY_K = 2 };
-        enum { FLAGS_J  = 1, FLAGS_K  = 3 };
-
-        enum { BBMIN_J = 2,     BBMIN_K = 0 };
-        enum { TYPECODE_J  = 2, TYPECODE_K  = 3 };
-
-        enum { BBMAX_J = 3,     BBMAX_K = 0 };
-        enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
-*/
-
     public:
+        static GParts* make(const npart& pt, const char* spec, float bbscale=1.0f);
         static GParts* make(char typecode, glm::vec4& param, const char* spec, float bbscale=1.0f);
     public:
         static GParts* combine(std::vector<GParts*> subs);

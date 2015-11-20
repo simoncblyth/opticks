@@ -9,6 +9,7 @@
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NLog.hpp"
+#include "NPart.hpp"
 
 #include <map>
 #include <iomanip>
@@ -51,6 +52,26 @@ GParts* GParts::combine(std::vector<GParts*> subs)
     if(bndlib) parts->setBndLib(bndlib);
     return parts ; 
 }
+
+
+GParts* GParts::make(const npart& pt, const char* spec, float bbscale)
+{
+    NPY<float>* part = NPY<float>::make(1, NJ, NK );
+    part->zero();
+
+    part->setQuad( 0u, 0u, pt.q0.f );
+    part->setQuad( 0u, 1u, pt.q1.f );
+    part->setQuad( 0u, 2u, pt.q2.f );
+    part->setQuad( 0u, 3u, pt.q3.f );
+
+    GParts* gpt = new GParts(part, spec) ;
+    char typecode = gpt->getTypeCode(0u);
+    assert(typecode == BOX || typecode == SPHERE );
+
+    return gpt ; 
+}
+
+
 
 GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bbscale)
 {

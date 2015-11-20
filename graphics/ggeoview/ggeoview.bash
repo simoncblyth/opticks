@@ -24,11 +24,14 @@ ggv-bib(){
    type $FUNCNAME
    local test_config=(
                  mode=BoxInBox
-                 boundary=Rock//perfectAbsorbSurface/MineralOil
-                 boundary=MineralOil///Pyrex
-                 dimensions=500,300,0,0
-                 shape=S,Z
+                 shape=B,L
                  analytic=1
+
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 parameters=-1,1,0,500
+
+                 boundary=MineralOil///Pyrex
+                 parameters=100,100,-50,50
                    ) 
 
    ggv --tracer \
@@ -45,7 +48,7 @@ ggv-pmt(){
    local test_config=(
                  mode=PmtInBox
                  boundary=Rock//perfectAbsorbSurface/MineralOil
-                 dimensions=300,0,0,0
+                 parameters=-1,1,0,300
                  shape=S
                  analytic=1
                    ) 
@@ -77,7 +80,7 @@ ggv-pmt-test(){
    local test_config=(
                  mode=PmtInBox
                  boundary=Rock//perfectAbsorbSurface/MineralOil
-                 dimensions=300,0,0,0
+                 parameters=-1,1,0,300
                  shape=B
                  analytic=1
                    ) 
@@ -123,7 +126,7 @@ ggv-reflect()
                  type=disc
                  photons=500000
                  polz=${pol}pol
-                 frame=1
+                 frame=-1
                  source=0,0,-700
                  target=0,0,0
                  radius=600
@@ -133,11 +136,16 @@ ggv-reflect()
 
     local test_config=(
                  mode=BoxInBox
-                 dimensions=700,300,0,0
-                 shape=B,Z
-                 boundary=Rock//perfectAbsorbSurface/Vacuum
-                 boundary=Vacuum///Pyrex 
                  analytic=1
+
+                 shape=B,L
+
+                 boundary=Rock//perfectAbsorbSurface/Vacuum
+                 parameters=-1,1,0,700
+
+                 boundary=Vacuum///Pyrex 
+                 parameters=100,100,-50,50
+
                )
 
     ggv.sh  \

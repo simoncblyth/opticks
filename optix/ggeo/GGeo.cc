@@ -992,12 +992,15 @@ void GGeo::dumpNodeInfo(unsigned int mmindex, const char* msg)
 
 
 
-glm::mat4 GGeo::getTransform(unsigned int index)
+glm::mat4 GGeo::getTransform(int index)
 {
-    GMergedMesh* mesh0 = getMergedMesh(0);
-    float* transform = mesh0 ? mesh0->getTransform(index) : NULL ;
     glm::mat4 vt ;
-    if(transform) vt = glm::make_mat4(transform) ;
+    if(index > -1)
+    {
+        GMergedMesh* mesh0 = getMergedMesh(0);
+        float* transform = mesh0 ? mesh0->getTransform(index) : NULL ;
+        if(transform) vt = glm::make_mat4(transform) ;
+    }
     return vt ;  
 }
 
@@ -1044,6 +1047,7 @@ void GGeo::targetTorchStep( TorchStepNPY* torchstep )
 
     glm::ivec4& iframe = torchstep->getFrame();
     LOG(info) << "GGeo::targetTorchStep setting frame " << iframe.x  ; 
+
     glm::mat4 transform = getTransform( iframe.x );
     print(transform, "GGeo::targetTorchStep transform");
     torchstep->setFrameTransform(transform);

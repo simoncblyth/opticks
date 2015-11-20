@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "NQuad.hpp"
-
 
 struct nbbox {
     // ctor assuming rotational symmetry around z axis
@@ -26,9 +24,6 @@ inline nbbox::nbbox(float zmin, float zmax, float ymin, float ymax)
     max.z = zmax ;
     max.w = 0 ;
 }
-
-
-
 
 
 struct nplane {
@@ -56,15 +51,13 @@ inline nplane::nplane(const nvec4& param_)
 }
 
 
-
-
 struct ndisc {
     ndisc( const nplane& plane_, float radius_ );
-    void dump(const char* msg);
-    float z();
-
+    float z() const;
     nplane plane ;
     float radius ;  
+
+    void dump(const char* msg);
 };
 
 inline ndisc::ndisc(const nplane& plane_, float radius_) 
@@ -75,10 +68,11 @@ inline ndisc::ndisc(const nplane& plane_, float radius_)
 }
 
 
-inline float ndisc::z()
+inline float ndisc::z() const 
 {
    return plane.param.w ;  
 }
+
 
 
 

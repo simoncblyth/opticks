@@ -13,6 +13,7 @@ class GMatrix : public GBuffer
        GMatrix(T _x, T _y, T _z, T _s=1.0f); // homogenous translate then scale matrix (ie translation not scaled)
        GMatrix();
        GMatrix(const GMatrix& m);
+       GMatrix(T* buf);
        GMatrix(
           T _a1, T _a2, T _a3, T _a4,
           T _b1, T _b2, T _b3, T _b4,
@@ -40,6 +41,8 @@ class GMatrix : public GBuffer
        T b1, b2, b3, b4 ; 
        T c1, c2, c3, c4 ; 
        T d1, d2, d3, d4 ; 
+
+
 
 
 };

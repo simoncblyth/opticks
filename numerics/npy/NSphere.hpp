@@ -1,9 +1,6 @@
 #pragma once
 
-//#include <glm/glm.hpp>
-
 #include "NQuad.hpp"
-
 
 struct nplane ; 
 struct ndisc ; 
@@ -13,11 +10,18 @@ struct nsphere {
     nsphere(float x, float y, float z, float w);
     nsphere(const nvec4& param_);
 
-    static ndisc intersect(nsphere& a, nsphere& b);
+    float x();
+    float y();
+    float z();
+    float radius();
+    float costheta(float z);
 
     npart part();
-    npart zrhs(float z); // +z to the right  
-    npart zlhs(float z);  
+    static ndisc intersect(nsphere& a, nsphere& b);
+
+    // result of intersect allows partitioning 
+    npart zrhs(const ndisc& dsc); // +z to the right  
+    npart zlhs(const ndisc& dsc);  
 
     void dump(const char* msg);
 
@@ -38,4 +42,12 @@ inline nsphere::nsphere(const nvec4& param_)
     param = param_ ;
 }
 
+inline float nsphere::radius(){ return param.w ; }
+inline float nsphere::x(){      return param.x ; }
+inline float nsphere::y(){      return param.y ; }
+inline float nsphere::z(){      return param.z ; }
 
+inline float nsphere::costheta(float z)
+{
+   return (z - param.z)/param.w ;  
+}

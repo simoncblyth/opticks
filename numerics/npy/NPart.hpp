@@ -1,7 +1,6 @@
 #pragma once
 
 #include "NQuad.hpp"
-#include <cassert>
 
 enum {
       ZERO, 
@@ -9,6 +8,10 @@ enum {
       TUBS, 
       BOX 
       };  
+
+
+// these internals exposed, 
+// as still being used at higher level in ggeo-/GParts
 
 enum { PARAM_J  = 0, PARAM_K  = 0 };
 
@@ -23,6 +26,7 @@ enum { BBMAX_J = 3,     BBMAX_K = 0 };
 enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
 
 
+struct nbbox ; 
 
 struct npart 
 {
@@ -34,20 +38,13 @@ struct npart
     void zero();
     void dump(const char* msg);
     void setTypeCode(unsigned int typecode);
+    void setBBox(const nbbox& bb);
+    void setParam(const nvec4& param);
 };
 
 
-inline void npart::zero()
-{
-    q0.u = {0,0,0,0} ;
-    q1.u = {0,0,0,0} ;
-    q2.u = {0,0,0,0} ;
-    q3.u = {0,0,0,0} ;
-}
 
 
-inline void npart::setTypeCode(unsigned int typecode)
-{
-    assert( TYPECODE_J == 2 && TYPECODE_K == W );
-    q2.u.w = typecode ; 
-}
+
+
+

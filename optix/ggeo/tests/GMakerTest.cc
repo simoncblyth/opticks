@@ -19,12 +19,19 @@ int main(int argc, char** argv)
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
 
-    GSolid* solid = maker->make(0u, 'S', param, spec );
+    std::vector<GSolid*> solids = maker->make(0u, 'S', param, spec );
 
-    solid->Summary();
+    for(unsigned int i=0 ; i < solids.size() ; i++)
+    {
+        GSolid* solid = solids[i] ;
 
-    GMesh* mesh = solid->getMesh();
+        solid->Summary();
 
-    mesh->dump();
+        GMesh* mesh = solid->getMesh();
+
+        mesh->dump();
+
+    }
+
 }
 
