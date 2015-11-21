@@ -22,6 +22,7 @@ class GMaker {
        static const char* SPHERE ; 
        static const char* BOX ; 
        static const char* PMT ; 
+       static const char* PRISM ; 
        static const char* UNDEFINED ; 
        static const char* ShapeName(char shapecode); 
    public:
@@ -30,6 +31,7 @@ class GMaker {
        std::vector<GSolid*> make(unsigned int index, char shapecode, glm::vec4& param, const char* spec);
    private:
        void init();    
+       static GSolid* makePrism(glm::vec4& param, const char* spec);
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);
        static void makeZSphereIntersect(std::vector<GSolid*>& solids, glm::vec4& param, const char* spec);

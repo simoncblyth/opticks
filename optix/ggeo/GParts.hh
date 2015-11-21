@@ -32,6 +32,7 @@ class GParts {
        static const char* SPHERE_ ;
        static const char* TUBS_ ; 
        static const char* BOX_ ; 
+       static const char* PRISM_ ; 
        static const char* TypeName(unsigned int typecode);
 
     public:

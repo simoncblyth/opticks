@@ -477,6 +477,13 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4, unsigned int>( idBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     geometry["identityBuffer"]->setBuffer(identityBuffer);
 
+
+    optix::Buffer prismBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
+    prismBuffer->setFormat(RT_FORMAT_FLOAT4);
+    prismBuffer->setSize(5);
+    geometry["prismBuffer"]->setBuffer(prismBuffer);
+
+
     return geometry ; 
 }
 

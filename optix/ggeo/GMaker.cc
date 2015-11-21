@@ -24,6 +24,7 @@
 
 #include "NSphere.hpp"
 #include "NPlane.hpp"
+#include "NPrism.hpp"
 #include "NPart.hpp"
 
 #include <glm/glm.hpp>
@@ -35,6 +36,7 @@ const char* GMaker::ZSPHERE = "zsphere" ;
 const char* GMaker::ZSPHEREINTERSECT = "zsphereintersect" ; 
 const char* GMaker::BOX = "box" ; 
 const char* GMaker::PMT = "pmt" ; 
+const char* GMaker::PRISM = "prism" ; 
 const char* GMaker::UNDEFINED = "undefined" ; 
  
 const char* GMaker::ShapeName(char shapecode)
@@ -46,6 +48,7 @@ const char* GMaker::ShapeName(char shapecode)
        case 'Z':return ZSPHERE ; break ; 
        case 'L':return ZSPHEREINTERSECT ; break ; 
        case 'P':return PMT     ; break ; 
+       case 'M':return PRISM     ; break ; 
        case 'U':return UNDEFINED ; break ;
     }
     return NULL ;
@@ -66,6 +69,12 @@ std::vector<GSolid*> GMaker::make(unsigned int index, char shapecode, glm::vec4&
         case 'B': 
                   {
                       solid = makeBox(param);
+                      solids.push_back(solid); 
+                  }
+                  break;
+        case 'M': 
+                  {
+                      solid = makePrism(param, spec);
                       solids.push_back(solid); 
                   }
                   break;
@@ -91,16 +100,13 @@ std::vector<GSolid*> GMaker::make(unsigned int index, char shapecode, glm::vec4&
 
     unsigned int nsolids = solids.size();
 
-    if(nsolids == 1)
+    // NB only for when part setting not done already (in above methods with spec argument)
+    if(nsolids == 1 && solid->getParts() == NULL)
     {
         solid = solids[0] ;
         float bbscale = 1.00001f ; 
         GParts* pts = GParts::make(shapecode, param, spec, bbscale);
         solid->setParts(pts);
-    }
-    else
-    {
-        // composite analytics must be handled at lower level 
     }
 
 
@@ -150,6 +156,10 @@ GSolid* GMaker::makeBox(glm::vec4& param)
     return makeBox(bb);
 }
 
+
+
+
+
 GSolid* GMaker::makeBox(gbbox& bbox)
 {
     LOG(debug) << "GMaker::makeBox" ;
@@ -186,6 +196,36 @@ GSolid* GMaker::makeBox(gbbox& bbox)
 
     return solid ; 
 }
+
+
+GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
+{
+    NTrianglesNPY* tris = NTrianglesNPY::prism(param);
+
+    unsigned int meshindex = 0 ; 
+    unsigned int nodeindex = 0 ; 
+
+    GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), meshindex);
+
+    glm::mat4 txf = tris->getTransform(); 
+    GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
+
+    GSolid* solid = new GSolid(nodeindex, transform, mesh, UINT_MAX, NULL );     
+
+    solid->setBoundary(0);     // unlike ctor these create arrays
+    solid->setSensor( NULL );      
+
+
+    nprism prism(param.x, param.y, param.z, param.w);
+    npart  pprism = prism.part();
+    float bbscale = 1.00001f ;  // TODO: currently ignored
+    GParts* pts = GParts::make(pprism, spec, bbscale);
+
+    solid->setParts(pts);
+
+    return solid ; 
+}
+
 
 
 GSolid* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const char* type)

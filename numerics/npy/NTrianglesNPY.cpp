@@ -420,5 +420,51 @@ NTrianglesNPY* NTrianglesNPY::cube()
 }
 
 
+NTrianglesNPY* NTrianglesNPY::prism(const glm::vec4& param)
+{
+/*
+::
 
+   .                
+               
+               A'
+                    A  (0,height)
+                   /|\
+                  / | \
+                 /  |  \
+                /   h   \
+               /    |    \ (x,y)   
+         L'   M     |     N   
+             /      |      \
+            L-------O-------R   
+                               
+     (-hwidth,0)  (0,0)    (hwidth, 0)     
 
+*/
+
+    // hmm how to avoid duplication between here and hemi-pmt.cu/make_prism
+    float angle = param.x > 0.f ? param.x : 90.f ; 
+    float height = param.y > 0.f ? param.y : param.w  ;
+    float depth = param.z > 0.f ? param.z : param.w ;
+
+    float hwidth = height*tan((M_PI/180.f)*angle/2.0f) ;      
+
+    glm::vec3 apex_near(0.f, height, depth/2.f );
+    glm::vec3 apex_far(0.f, height, -depth/2.f );
+
+    glm::vec3 left_near(-hwidth, 0.f, depth/2.f);    
+    glm::vec3 left_far(-hwidth, 0.f, -depth/2.f);    
+
+    glm::vec3 right_near(-hwidth, 0.f, depth/2.f);    
+    glm::vec3 right_far(-hwidth, 0.f, -depth/2.f);    
+
+    NTrianglesNPY* tris = new NTrianglesNPY();
+
+    tris->add( apex_near, apex_far, left_far, left_near );
+    tris->add( apex_near, right_near,  right_far,  apex_far );
+    tris->add( left_near, left_far, right_far, right_near );
+    tris->add( apex_near, left_near, right_near );
+    tris->add( apex_far,  right_far, left_far );
+
+    return tris ; 
+}

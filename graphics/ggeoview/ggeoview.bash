@@ -129,7 +129,7 @@ ggv-reflect()
                  frame=-1
                  source=0,0,-700
                  target=0,0,0
-                 radius=600
+                 radius=100
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
@@ -144,7 +144,7 @@ ggv-reflect()
                  parameters=-1,1,0,700
 
                  boundary=Vacuum///Pyrex 
-                 parameters=100,100,-50,50
+                 parameters=641.2,641.2,-600,600
 
                )
 

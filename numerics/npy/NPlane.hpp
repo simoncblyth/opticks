@@ -3,6 +3,7 @@
 #include "NQuad.hpp"
 
 struct nbbox {
+    nbbox(); 
     // ctor assuming rotational symmetry around z axis
     nbbox(float zmin, float zmax, float ymin, float ymax); 
     void dump(const char* msg);
@@ -11,6 +12,9 @@ struct nbbox {
     nvec4 max ; 
 };
 
+inline nbbox::nbbox()
+{
+}
 
 inline nbbox::nbbox(float zmin, float zmax, float ymin, float ymax)
 {

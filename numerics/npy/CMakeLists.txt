@@ -72,6 +72,7 @@ add_library( ${name}  SHARED
     NPlane.cpp
     NQuad.cpp
     NPart.cpp
+    NPrism.cpp
     NTesselate.cpp
     NTriangle.cpp
     NTrianglesNPY.cpp
@@ -130,6 +131,7 @@ NSphere.hpp
 NPlane.hpp
 NQuad.hpp
 NPart.hpp
+NPrism.hpp
 NTesselate.hpp
 NTriangle.hpp
 NTrianglesNPY.hpp

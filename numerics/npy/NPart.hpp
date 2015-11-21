@@ -6,7 +6,8 @@ enum {
       ZERO, 
       SPHERE, 
       TUBS, 
-      BOX 
+      BOX,
+      PRISM
       };  
 
 

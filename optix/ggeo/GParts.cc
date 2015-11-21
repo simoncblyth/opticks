@@ -24,6 +24,7 @@ const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;
 const char* GParts::SPHERE_ = "Sphere" ;
 const char* GParts::TUBS_   = "Tubs" ;
 const char* GParts::BOX_    = "Box" ;
+const char* GParts::PRISM_  = "Prism" ;
 
 const char* GParts::TypeName(unsigned int typecode)
 {
@@ -33,6 +34,7 @@ const char* GParts::TypeName(unsigned int typecode)
         case SPHERE:return SPHERE_ ; break ;
         case   TUBS:return TUBS_   ; break ;
         case    BOX:return BOX_    ; break ;
+        case  PRISM:return PRISM_  ; break ;
         default:  assert(0) ; break ; 
     }
     return NULL ; 
@@ -56,6 +58,8 @@ GParts* GParts::combine(std::vector<GParts*> subs)
 
 GParts* GParts::make(const npart& pt, const char* spec, float bbscale)
 {
+    // TODO: bbscale ignored ?
+
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
     part->zero();
 
@@ -66,7 +70,7 @@ GParts* GParts::make(const npart& pt, const char* spec, float bbscale)
 
     GParts* gpt = new GParts(part, spec) ;
     char typecode = gpt->getTypeCode(0u);
-    assert(typecode == BOX || typecode == SPHERE );
+    assert(typecode == BOX || typecode == SPHERE || typecode == PRISM);
 
     return gpt ; 
 }
@@ -100,6 +104,7 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bb
     if( typecode == 'B' )     pt->setTypeCode(0u, BOX);
     else if(typecode == 'S')  pt->setTypeCode(0u, SPHERE);
     else if(typecode == 'Z')  pt->setTypeCode(0u, SPHERE);
+    else if(typecode == 'M')  pt->setTypeCode(0u, PRISM);
     else
     {
         LOG(fatal) << "GParts::make bad typecode [" << typecode << "]" ; 

@@ -46,6 +46,7 @@ class NTrianglesNPY {
         static NTrianglesNPY* sphere(float ctmin, float ctmax, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
     public:
         static NTrianglesNPY* disk(glm::vec4& param, unsigned int n_azimuthal=24); 
+        static NTrianglesNPY* prism(const glm::vec4& param); 
     public:
         NTrianglesNPY();
         NTrianglesNPY(NPY<float>* tris);

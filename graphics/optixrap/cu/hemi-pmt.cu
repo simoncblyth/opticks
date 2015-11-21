@@ -15,6 +15,7 @@ rtDeclareVariable(unsigned int, primitive_count, ,);
 rtBuffer<float4> partBuffer; 
 rtBuffer<uint4>  solidBuffer; 
 rtBuffer<uint4>  identityBuffer; 
+rtBuffer<float4> prismBuffer ;
 
 // attributes communicate to closest hit program,
 // they must be set inbetween rtPotentialIntersection and rtReportIntersection
@@ -23,6 +24,8 @@ rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
+
+#define FLT_MAX         1e30
 
 #define DEBUG 1
 
@@ -852,6 +855,60 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
 
 
 
+
+// from tutorial9 intersect_chull
+static __device__
+void intersect_prism(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
+{
+  int nplane = 5 ; // prism.size();
+  float t0 = -FLT_MAX;
+  float t1 = FLT_MAX;
+  float3 t0_normal = make_float3(0);
+  float3 t1_normal = make_float3(0);
+
+  for(int i = 0; i < nplane && t0 < t1; ++i ) 
+  {
+    float4 plane = prismBuffer[i];
+    float3 n = make_float3(plane);
+    float  d = plane.w;
+
+    float denom = dot(n, ray.direction);
+    float t = -(d + dot(n, ray.origin))/denom;
+    if( denom < 0){
+      // enter
+      if(t > t0){
+        t0 = t;
+        t0_normal = n;
+      }
+    } else {
+      //exit
+      if(t < t1){
+        t1 = t;
+        t1_normal = n;
+      }
+    }
+  }
+
+  if(t0 > t1)
+    return;
+
+  if(rtPotentialIntersection( t0 )){
+    shading_normal = geometric_normal = t0_normal;
+    instanceIdentity = identity ;
+    rtReportIntersection(0);
+  } else if(rtPotentialIntersection( t1 )){
+    shading_normal = geometric_normal = t1_normal;
+    instanceIdentity = identity ;
+    rtReportIntersection(0);
+  }
+}
+
+
+
+
+
+
+
 RT_PROGRAM void intersect(int primIdx)
 {
   const uint4& solid    = solidBuffer[primIdx]; 
@@ -877,7 +934,10 @@ RT_PROGRAM void intersect(int primIdx)
 
       identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
 
-      switch(q2.i.w)
+      int partType = q2.i.w ; 
+
+      // TODO: use enum
+      switch(partType)
       {
           case 0:
                 intersect_aabb(q2, q3, identity);
@@ -891,6 +951,9 @@ RT_PROGRAM void intersect(int primIdx)
           case 3:
                 intersect_aabb(q2,q3,identity);
                 break ; 
+          case 4:
+                intersect_prism(q0,q1,q2,q3,identity);
+                break ; 
 
       }
   }
@@ -898,7 +961,39 @@ RT_PROGRAM void intersect(int primIdx)
 }
 
 
+static __device__
+float4 make_plane( float3 n, float3 p ) 
+{
+  n = normalize(n);
+  float d = -dot(n, p); 
+  return make_float4( n, d );
+}
 
+
+static __device__
+void make_prism( const float4& param, optix::Aabb* aabb ) 
+{
+    float angle  = param.x > 0.f ? param.x : 90.f ; 
+    float height = param.y > 0.f ? param.y : param.w  ;
+    float depth  = param.z > 0.f ? param.x : param.w  ;
+
+    float hwidth = height*tan((M_PIf/180.f)*angle/2.0f) ;   
+
+    rtPrintf("make_prism angle %10.4f height %10.4f depth %10.4f hwidth %10.4f \n", angle, height, depth, hwidth);
+
+    float3 apex = make_float3(0.f, height, 0.f );
+    float3 base = make_float3(0.f, 0.f, 0.f) ; 
+    float3 front = make_float3(0.f, 0.f, depth/2.f) ; 
+    float3 back  = make_float3(0.f, 0.f, -depth/2.f) ; 
+
+    prismBuffer[0] = make_plane( make_float3(height, hwidth ,0.f), apex ) ; 
+    prismBuffer[1] = make_plane( make_float3(height, -hwidth,0.f), apex ) ; 
+    prismBuffer[2] = make_plane( make_float3(0.f, -1.0f, 0.f ), base)  ; 
+    prismBuffer[3] = make_plane( front, front)  ; 
+    prismBuffer[4] = make_plane( back,  back )  ; 
+
+    aabb->include( make_float3(-hwidth, 0.f, -depth/2.f), make_float3(hwidth, height, depth/2.f));
+}
 
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
@@ -925,6 +1020,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
       q1.f = partBuffer[4*partIdx+1];  
       q2.f = partBuffer[4*partIdx+2] ;
       q3.f = partBuffer[4*partIdx+3]; 
+      
+      int partType = q2.i.w ; 
 
       identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
       unsigned int boundary = q1.u.z ; 
@@ -935,7 +1032,14 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                   identity.w 
               );  
 
-      aabb->include( make_float3(q2.f), make_float3(q3.f) );
+      if(partType == 4) 
+      {
+          make_prism(q0.f, aabb) ;
+      }
+      else
+      {
+          aabb->include( make_float3(q2.f), make_float3(q3.f) );
+      }
   } 
 
   rtPrintf("bounds primIdx %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, 

@@ -185,8 +185,8 @@ class GMesh : public GDrawable {
       static const char* aiidentity ;    
 
       static GMesh* make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex=0);  
+      static GMesh* make_mesh(NPY<float>* triangles, unsigned int meshindex=0);
 
-      //GMesh(GMesh* other); // stealing copy ctor
       GMesh(unsigned int index=0, 
             gfloat3* vertices=NULL, unsigned int num_vertices=0, 
             guint3*  faces=NULL,    unsigned int num_faces=0,  

@@ -33,10 +33,12 @@ Records : corresponding to each recorded step of the photon
  
 
 rec
-
+      flying point presentation
 altrec
-
+      long line strip presentation
 devrec
+      vector (short line) presentation, vector length is controllable interactively 
+      via Composition/param.y  
 
 
 
