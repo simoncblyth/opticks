@@ -61,6 +61,18 @@ std::string GLMFormat::format(const glm::vec4& v)
     return boost::algorithm::join(vals, ",");
 }
 
+std::string GLMFormat::format(const glm::mat4& m)
+{
+    std::vector<std::string> vals ; 
+    vals.push_back(format(m[0]));
+    vals.push_back(format(m[1]));
+    vals.push_back(format(m[2]));
+    vals.push_back(format(m[3]));
+    return boost::algorithm::join(vals, " ");
+}
+
+
+
 
 std::string GLMFormat::format(const glm::ivec4& v)
 {
@@ -286,6 +298,12 @@ std::string gformat(const glm::quat& q )
 {
     GLMFormat fmt; 
     return fmt.format(q);
+}
+
+std::string gformat(const glm::mat4& m )
+{
+    GLMFormat fmt; 
+    return fmt.format(m);
 }
 
 

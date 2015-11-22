@@ -45,8 +45,8 @@ class GParts {
             } ;
 
     public:
-        static GParts* make(const npart& pt, const char* spec, float bbscale=1.0f);
-        static GParts* make(char typecode, glm::vec4& param, const char* spec, float bbscale=1.0f);
+        static GParts* make(const npart& pt, const char* spec);
+        static GParts* make(char typecode, glm::vec4& param, const char* spec);
     public:
         static GParts* combine(std::vector<GParts*> subs);
     public:
@@ -58,6 +58,8 @@ class GParts {
         void add(GParts* other);
         void close();
         bool isClosed();
+        void enlargeBBox(unsigned int part, float epsilon=0.00001f);
+        void enlargeBBoxAll(float epsilon=0.00001f);
     private:
         void init(const char* spec);        
         void init();        
@@ -73,6 +75,7 @@ class GParts {
    private:
         gbbox        getBBox(unsigned int i);
         gfloat3      getGfloat3(unsigned int i, unsigned int j, unsigned int k);
+        float*       getValues(unsigned int i, unsigned int j, unsigned int k);
     public:
         guint4       getSolidInfo(unsigned int isolid);
    public:
@@ -81,6 +84,7 @@ class GParts {
         void setTypeCode(unsigned int part, unsigned int typecode);
         void setNodeIndex(unsigned int part, unsigned int nodeindex);
         void setBoundary(unsigned int part, unsigned int boundary);
+        void setBoundaryAll(unsigned int boundary);
     public:
         GBndLib*           getBndLib();
         GItemList*         getBndSpec();

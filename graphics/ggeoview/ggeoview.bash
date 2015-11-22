@@ -24,12 +24,13 @@ ggv-bib(){
    type $FUNCNAME
    local test_config=(
                  mode=BoxInBox
-                 shape=B,L
                  analytic=1
 
+                 shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=-1,1,0,500
 
+                 shape=lens
                  boundary=MineralOil///Pyrex
                  parameters=100,100,-50,50
                    ) 
@@ -47,10 +48,11 @@ ggv-pmt(){
    type $FUNCNAME
    local test_config=(
                  mode=PmtInBox
+                 analytic=1
+
+                 shape=sphere
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=-1,1,0,300
-                 shape=S
-                 analytic=1
                    ) 
 
    ggv --tracer \
@@ -79,10 +81,11 @@ ggv-pmt-test(){
 
    local test_config=(
                  mode=PmtInBox
+                 analytic=1
+ 
+                 shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=-1,1,0,300
-                 shape=B
-                 analytic=1
                    ) 
 
    ggv \
@@ -123,13 +126,14 @@ ggv-reflect()
     #     radius=100
 
     local torch_config=(
-                 type=disc
+                 type=discaxial
                  photons=500000
                  polz=${pol}pol
                  frame=-1
-                 source=0,0,-700
+                 source=0,20,0
                  target=0,0,0
                  radius=100
+                 distance=500
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
@@ -138,22 +142,21 @@ ggv-reflect()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=B,L
+                 shape=box parameters=-1,1,0,700 boundary=Rock//perfectAbsorbSurface/Vacuum
 
-                 boundary=Rock//perfectAbsorbSurface/Vacuum
-                 parameters=-1,1,0,700
-
-                 boundary=Vacuum///Pyrex 
-                 parameters=641.2,641.2,-600,600
+                 #shape=box parameters=-1,1,0,150            boundary=Vacuum///Pyrex 
+                 shape=prism parameters=90,200,200,200       boundary=Vacuum///Pyrex 
+                 #shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///Pyrex 
 
                )
+
 
     ggv.sh  \
             --eye 0.5,0.5,0.0 \
             --animtimemax 7 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --save --tag $tag \
+        #    --save --tag $tag \
             $*
 }
 

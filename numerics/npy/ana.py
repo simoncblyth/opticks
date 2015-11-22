@@ -44,6 +44,11 @@ def histo(fig,  vals):
     ax = fig.add_subplot(111)
     ax.hist(vals, bins=91,range=[0,90])
 
+def xyz3d(fig, path):
+    xyz = np.load(path).reshape(-1,3)
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(xyz[:,0], xyz[:,1], xyz[:,2])
+
 
 
 

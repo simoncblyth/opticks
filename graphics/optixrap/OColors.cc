@@ -30,7 +30,7 @@ optix::TextureSampler OColors::makeColorSampler(GBuffer* buffer)
     unsigned int nx = numItems ;
     unsigned int ny = 1 ;
 
-    LOG(info) << "OColors::makeColorSampler "
+    LOG(debug) << "OColors::makeColorSampler "
               << " nx " << nx 
               << " ny " << ny  ;
 

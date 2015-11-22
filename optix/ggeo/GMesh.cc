@@ -560,6 +560,19 @@ void GMesh::setColor(float r, float g, float b)
     }
 }
 
+void GMesh::dumpNormals(const char* msg, unsigned int nmax)
+{
+    LOG(info) << msg  ;
+    LOG(info) << " num_vertices " << m_num_vertices 
+              ;  
+
+    for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
+    {
+        gfloat3& nrm = m_normals[i] ;
+        printf(" nrm %5u  %10.3f %10.3f %10.3f \n", i, nrm.x, nrm.y, nrm.z );
+    } 
+}
+
 
 
 void GMesh::dump(const char* msg, unsigned int nmax)

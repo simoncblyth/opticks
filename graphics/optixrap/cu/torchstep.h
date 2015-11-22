@@ -124,6 +124,9 @@ phi     =   acos( 2V-1 )
 *disc*
     Photons start from a point on the disc
 
+*discaxial*
+    Shoot target with disc beam from 26 directions: from every axis(6), quadrant(4*3=12) and octant(8) 
+    Expanding radius beyond the size of the object is useful for finding geometry bugs 
 
 *sphere*
 
@@ -142,6 +145,49 @@ phi     =   acos( 2V-1 )
 
 */
 
+
+__device__ float3 get_direction(unsigned int i)
+{  
+     float3 dir ; 
+     switch(i)
+     {
+        case 0:dir = make_float3( 1.f,  0.f,  0.f);break;  // +X
+        case 1:dir = make_float3(-1.f,  0.f,  0.f);break;  // -X
+        case 2:dir = make_float3( 0.f,  1.f,  0.f);break;  // +Y
+        case 3:dir = make_float3( 0.f, -1.f,  0.f);break;  // -Y
+        case 4:dir = make_float3( 0.f,  0.f,  1.f);break;  // +Z
+        case 5:dir = make_float3( 0.f,  0.f, -1.f);break;  // -Z
+
+        case 6:dir = make_float3(  1.f,  1.f,  0.f);break;  // +X+Y     XY quadrants
+        case 7:dir = make_float3( -1.f,  1.f,  0.f);break;  // -X+Y
+        case 8:dir = make_float3( -1.f, -1.f,  0.f);break;  // -X-Y
+        case 9:dir = make_float3(  1.f, -1.f,  0.f);break;  // +X-Y
+
+        case 10:dir = make_float3(  1.f,  0.f, 1.f);break;  // +X+Z     XZ quadrants
+        case 11:dir = make_float3( -1.f,  0.f, 1.f);break;  // -X+Z
+        case 12:dir = make_float3( -1.f,  0.f,-1.f);break;  // -X-Z
+        case 13:dir = make_float3(  1.f,  0.f,-1.f);break;  // +X-Z
+
+        case 14:dir = make_float3(  0.f,  1.f, 1.f);break;  // +Y+Z     YZ quadrants
+        case 15:dir = make_float3(  0.f, -1.f, 1.f);break;  // -Y+Z
+        case 16:dir = make_float3(  0.f, -1.f,-1.f);break;  // -Y-Z
+        case 17:dir = make_float3(  0.f,  1.f,-1.f);break;  // +Y-Z
+
+        case 18:dir = make_float3(  1.f,   1.f,  1.f);break;  // +X+Y+Z   8 corners of unit cube
+        case 19:dir = make_float3( -1.f,   1.f,  1.f);break;  // -X+Y+Z     one flip
+        case 20:dir = make_float3(  1.f,  -1.f,  1.f);break;  // +X-Y+Z      
+        case 21:dir = make_float3(  1.f,   1.f, -1.f);break;  // +X+Y-Z     
+        case 22:dir = make_float3( -1.f,  -1.f,  1.f);break;  // -X-Y+Z     two flip
+        case 23:dir = make_float3( -1.f,   1.f, -1.f);break;  // -X+Y-Z 
+        case 24:dir = make_float3(  1.f,  -1.f, -1.f);break;  // +X-Y-Z 
+        case 25:dir = make_float3( -1.f,  -1.f, -1.f);break;  // -X-Y-Z     all flip  
+     }
+     return normalize(dir) ; 
+}
+
+
+
+
 __device__ void
 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 {
@@ -153,7 +199,9 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       p.flags.u.z = 0 ;
       p.flags.u.w = 0 ;
 
+
       float radius = ts.beam.x ; 
+      float distance = ts.beam.y ; 
 
       float u1 = uniform(&rng, ts.zeaz.x, ts.zeaz.y);   // eg 0->0.5
       float u2 = uniform(&rng, ts.zeaz.z, ts.zeaz.w );  // eg 0->1
@@ -185,6 +233,21 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           rotateUz(photonPolarization, ts.p0);
 
           p.polarization = photonPolarization ;
+      }
+      else if( ts.type == T_DISCAXIAL )
+      {
+          unsigned long long photon_id = launch_index.x ;  
+          unsigned int iaxis = photon_id % 26 ; 
+          float3 dir = get_direction( iaxis );
+
+          float r = radius*sqrtf(u1) ; // sqrt avoids pole bunchung 
+          float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
+          rotateUz(discPosition, dir);
+
+          p.position = ts.x0 + distance*dir + discPosition ;
+          p.direction = -dir ;
+          p.polarization = make_float3(0.f, 0.f, 1.f );
+
       }
       else if( ts.type == T_SPHERE )
       {

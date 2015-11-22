@@ -29,7 +29,7 @@ const char* NumpyEvt::aux = "aux" ;
 void NumpyEvt::init()
 {
     m_timer = new Timer("NumpyEvt"); 
-    m_timer->setVerbose(true);
+    m_timer->setVerbose(false);
 }
 
 
@@ -89,12 +89,12 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     //}
 
     m_timer->stop();
-    m_timer->dump();
+    //m_timer->dump();
 }
 
 void NumpyEvt::createHostBuffers()
 {
-    LOG(info) << "NumpyEvt::createHostBuffers "
+    LOG(debug) << "NumpyEvt::createHostBuffers "
               << " num_photons " << m_num_photons  
                ;
 

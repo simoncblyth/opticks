@@ -33,17 +33,17 @@ const char* OContext::getModeName()
 
 void OContext::setStackSize(unsigned int stacksize)
 {
-    LOG(info) << "OContext::setStackSize " << stacksize ;  
+    LOG(debug) << "OContext::setStackSize " << stacksize ;  
     m_context->setStackSize(stacksize);
 }
 
 void OContext::setPrintIndex(const std::string& pindex)
 {
-    LOG(info) << "OContext::setPrintIndex " << pindex ;  
+    LOG(debug) << "OContext::setPrintIndex " << pindex ;  
     if(!pindex.empty())
     {
         glm::ivec3 idx = givec3(pindex);
-        LOG(info) << "OContext::setPrintIndex " 
+        LOG(debug) << "OContext::setPrintIndex " 
                   << pindex
                   << " idx " << gformat(idx) 
                    ;  

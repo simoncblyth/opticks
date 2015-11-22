@@ -35,6 +35,7 @@
 // npy-
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 #include "TorchStepNPY.hpp"
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
@@ -1046,10 +1047,8 @@ void GGeo::targetTorchStep( TorchStepNPY* torchstep )
     // based on integer frame volume index
 
     glm::ivec4& iframe = torchstep->getFrame();
-    LOG(info) << "GGeo::targetTorchStep setting frame " << iframe.x  ; 
-
     glm::mat4 transform = getTransform( iframe.x );
-    print(transform, "GGeo::targetTorchStep transform");
+    LOG(debug) << "GGeo::targetTorchStep setting frame " << iframe.x << " " << gformat(transform) ;  
     torchstep->setFrameTransform(transform);
 
     glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored

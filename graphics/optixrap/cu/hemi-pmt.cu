@@ -860,7 +860,7 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
 static __device__
 void intersect_prism(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
 {
-  int nplane = 5 ; // prism.size();
+  int nplane = 5 ;
   float t0 = -FLT_MAX;
   float t1 = FLT_MAX;
   float3 t0_normal = make_float3(0);
@@ -973,9 +973,32 @@ float4 make_plane( float3 n, float3 p )
 static __device__
 void make_prism( const float4& param, optix::Aabb* aabb ) 
 {
+
+
+/*
+ Mid line of the symmetric prism spanning along z from -depth/2 to depth/2
+
+
+                            A  (0,height,0)
+                           /|\
+                          / | \
+                         /  |  \
+                        /   h   \
+                       /    |    \ (x,y)   
+                      M     |     N   
+                     /      |      \
+                    L-------O-------R   
+         (-hwidth,0, 0)           (hwidth, 0, 0)
+
+
+    For apex angle 90 degrees, hwidth = height 
+
+*/
+
+
     float angle  = param.x > 0.f ? param.x : 90.f ; 
     float height = param.y > 0.f ? param.y : param.w  ;
-    float depth  = param.z > 0.f ? param.x : param.w  ;
+    float depth  = param.z > 0.f ? param.z : param.w  ;
 
     float hwidth = height*tan((M_PIf/180.f)*angle/2.0f) ;   
 
@@ -986,13 +1009,23 @@ void make_prism( const float4& param, optix::Aabb* aabb )
     float3 front = make_float3(0.f, 0.f, depth/2.f) ; 
     float3 back  = make_float3(0.f, 0.f, -depth/2.f) ; 
 
-    prismBuffer[0] = make_plane( make_float3(height, hwidth ,0.f), apex ) ; 
-    prismBuffer[1] = make_plane( make_float3(height, -hwidth,0.f), apex ) ; 
+    prismBuffer[0] = make_plane( make_float3(  height, hwidth ,0.f), apex ) ; 
+    prismBuffer[1] = make_plane( make_float3( -height, hwidth ,0.f), apex ) ; 
     prismBuffer[2] = make_plane( make_float3(0.f, -1.0f, 0.f ), base)  ; 
     prismBuffer[3] = make_plane( front, front)  ; 
     prismBuffer[4] = make_plane( back,  back )  ; 
 
-    aabb->include( make_float3(-hwidth, 0.f, -depth/2.f), make_float3(hwidth, height, depth/2.f));
+    rtPrintf("make_prism plane[0] %10.4f %10.4f %10.4f %10.4f \n", prismBuffer[0].x, prismBuffer[0].y, prismBuffer[0].z, prismBuffer[0].w );
+    rtPrintf("make_prism plane[1] %10.4f %10.4f %10.4f %10.4f \n", prismBuffer[1].x, prismBuffer[1].y, prismBuffer[1].z, prismBuffer[1].w );
+    rtPrintf("make_prism plane[2] %10.4f %10.4f %10.4f %10.4f \n", prismBuffer[2].x, prismBuffer[2].y, prismBuffer[2].z, prismBuffer[2].w );
+    rtPrintf("make_prism plane[3] %10.4f %10.4f %10.4f %10.4f \n", prismBuffer[3].x, prismBuffer[3].y, prismBuffer[3].z, prismBuffer[3].w );
+    rtPrintf("make_prism plane[4] %10.4f %10.4f %10.4f %10.4f \n", prismBuffer[4].x, prismBuffer[4].y, prismBuffer[4].z, prismBuffer[4].w );
+
+    float3 min = make_float3(-hwidth, 0.f, -depth/2.f);
+    float3 max = make_float3(hwidth, height, depth/2.f);
+    float3 eps = make_float3( 0.001f );
+    aabb->include( min - eps, max + eps );
+
 }
 
 

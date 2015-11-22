@@ -103,7 +103,7 @@ class Composition : public Configurable {
       void gui();
 
   public: 
-      void aim(glm::vec4& ce);
+      void aim(glm::vec4& ce, bool verbose=false);
       void setCenterExtent(gfloat4 ce, bool aim=false); // effectively points at what you want to look at 
       void setCenterExtent(glm::vec4& ce, bool aim=false); // effectively points at what you want to look at 
       void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain

@@ -10,7 +10,7 @@
 
 void OBndLib::convert()
 {
-    LOG(info) << "OBndLib::convert" ;
+    LOG(debug) << "OBndLib::convert" ;
 
     m_lib->createDynamicBuffers();
 
@@ -34,7 +34,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int nx = nk ;
     unsigned int ny = ni*nj ;   // not nl as using float4
 
-    LOG(info) << "OBndLib::makeBoundaryTexture buf " 
+    LOG(debug) << "OBndLib::makeBoundaryTexture buf " 
               << buf->getShapeString() 
               << " ---> "  
               << " nx " << nx
@@ -51,7 +51,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 
     optix::uint4 bounds = optix::make_uint4(wmin, wmax, lmin, lmax );
 
-    LOG(info) << "OBndLib::makeBoundaryTexture bounds " 
+    LOG(debug) << "OBndLib::makeBoundaryTexture bounds " 
               << " x " << bounds.x 
               << " y " << bounds.y
               << " z " << bounds.z 
@@ -79,7 +79,7 @@ void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
     unsigned int numBnd = numBytes/(GPropertyLib::NUM_QUAD*GPropertyLib::NUM_PROP*sizeof(unsigned int)) ;
     unsigned int nx = numBnd*GPropertyLib::NUM_QUAD ;
 
-    LOG(info) << "OBndLib::makeBoundaryOptical obuf " 
+    LOG(debug) << "OBndLib::makeBoundaryOptical obuf " 
               << obuf->getShapeString() 
               << " numBnd " << numBnd 
               << " nx " << nx

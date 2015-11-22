@@ -31,10 +31,10 @@
 
 
 
+const char* GMaker::BOX = "box" ; 
 const char* GMaker::SPHERE = "sphere" ; 
 const char* GMaker::ZSPHERE = "zsphere" ; 
-const char* GMaker::ZSPHEREINTERSECT = "zsphereintersect" ; 
-const char* GMaker::BOX = "box" ; 
+const char* GMaker::ZLENS = "lens" ; 
 const char* GMaker::PMT = "pmt" ; 
 const char* GMaker::PRISM = "prism" ; 
 const char* GMaker::UNDEFINED = "undefined" ; 
@@ -46,7 +46,7 @@ const char* GMaker::ShapeName(char shapecode)
        case 'B':return BOX     ; break ; 
        case 'S':return SPHERE  ; break ; 
        case 'Z':return ZSPHERE ; break ; 
-       case 'L':return ZSPHEREINTERSECT ; break ; 
+       case 'L':return ZLENS   ; break ; 
        case 'P':return PMT     ; break ; 
        case 'M':return PRISM     ; break ; 
        case 'U':return UNDEFINED ; break ;
@@ -54,80 +54,59 @@ const char* GMaker::ShapeName(char shapecode)
     return NULL ;
 } 
 
+char GMaker::ShapeCode(const char* shapename)
+{
+    char sc = 'U' ;
+    if(     strcmp(shapename, BOX) == 0)     sc = 'B' ; 
+    else if(strcmp(shapename, SPHERE) == 0)  sc = 'S' ; 
+    else if(strcmp(shapename, ZSPHERE) == 0) sc = 'Z' ; 
+    else if(strcmp(shapename, ZLENS) == 0)   sc = 'L' ; 
+    else if(strcmp(shapename, PMT) == 0)     sc = 'P' ;  // not operational
+    else if(strcmp(shapename, PRISM) == 0)   sc = 'M' ; 
+    return sc ; 
+}
 
 
 
 std::vector<GSolid*> GMaker::make(unsigned int index, char shapecode, glm::vec4& param, const char* spec )
 {
-    GSolid* solid = NULL ; 
-
-    // TODO: split composites from primitives
-
     std::vector<GSolid*> solids ; 
-    switch(shapecode)
+    bool is_composite = shapecode == 'L' ;
+    if(is_composite)
     {
-        case 'B': 
-                  {
-                      solid = makeBox(param);
-                      solids.push_back(solid); 
-                  }
-                  break;
-        case 'M': 
-                  {
-                      solid = makePrism(param, spec);
-                      solids.push_back(solid); 
-                  }
-                  break;
-        case 'S': 
-                  {
-                      // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
-                      const char* type = "I" ; 
-                      solid = makeSubdivSphere(param, 3, type) ;
-                      solids.push_back(solid); 
-                  }
-                  break;
-        case 'Z':
-                  {
-                      solid = makeZSphere(param) ;
-                      solids.push_back(solid); 
-                  }
-                  break;
-        case 'L':
-                  makeZSphereIntersect(solids, param, spec) ;
-                  break;
-
+        switch(shapecode)
+        {
+            case 'L': makeZSphereIntersect(solids, param, spec) ; break;
+        }
     }
-
-    unsigned int nsolids = solids.size();
-
-    // NB only for when part setting not done already (in above methods with spec argument)
-    if(nsolids == 1 && solid->getParts() == NULL)
+    else
     {
-        solid = solids[0] ;
-        float bbscale = 1.00001f ; 
-        GParts* pts = GParts::make(shapecode, param, spec, bbscale);
-        solid->setParts(pts);
+        GSolid* solid = NULL ; 
+        switch(shapecode)
+        {
+            case 'B': solid = makeBox(param); break;
+            case 'M': solid = makePrism(param, spec); break;
+            case 'S': solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
+            case 'Z': solid = makeZSphere(param) ; break;
+        }
+        assert(solid);
+        solids.push_back(solid); 
     }
-
 
     unsigned int boundary = m_bndlib->addBoundary(spec);
     for(unsigned int i=0 ; i < solids.size() ; i++)
     {
-         solid = solids[i];
+         GSolid* solid = solids[i];
+         GParts* pts = solid->getParts();
+         if(pts==NULL)
+         {
+             pts = GParts::make(shapecode, param, spec);
+             solid->setParts(pts);
+         }
          solid->setBoundary(boundary);
-
-         //solid->setIndex(index);
-
-         //GParts* pts = solid->getParts(); 
-         // moved these to GGeoTest
-         //if(pts)
-         //{
-           //  pts->setIndex(0u, solid->getIndex());
-           //  pts->setNodeIndex(0u, solid->getIndex());
-           //  pts->setBndLib(m_bndlib);
-         //}
+         assert(pts);
+         pts->enlargeBBoxAll(0.01f );
     } 
-
     return solids ; 
 }
 
@@ -200,26 +179,28 @@ GSolid* GMaker::makeBox(gbbox& bbox)
 
 GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
 {
+   /*
+   */
+
     NTrianglesNPY* tris = NTrianglesNPY::prism(param);
 
     unsigned int meshindex = 0 ; 
     unsigned int nodeindex = 0 ; 
 
     GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), meshindex);
+    //mesh->dumpNormals("GMaker::makePrism normals", 24);
 
     glm::mat4 txf = tris->getTransform(); 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
     GSolid* solid = new GSolid(nodeindex, transform, mesh, UINT_MAX, NULL );     
-
     solid->setBoundary(0);     // unlike ctor these create arrays
     solid->setSensor( NULL );      
 
-
     nprism prism(param.x, param.y, param.z, param.w);
     npart  pprism = prism.part();
-    float bbscale = 1.00001f ;  // TODO: currently ignored
-    GParts* pts = GParts::make(pprism, spec, bbscale);
+
+    GParts* pts = GParts::make(pprism, spec);
 
     solid->setParts(pts);
 
@@ -343,9 +324,8 @@ void GMaker::makeZSphereIntersect(std::vector<GSolid*>& solids,  glm::vec4& para
     GSolid* a_solid = makeSphere(a_tris);
     GSolid* b_solid = makeSphere(b_tris);
 
-    float bbscale = 1.00001f ;  // TODO: currently ignored
-    GParts* a_pts = GParts::make(ar, spec, bbscale);
-    GParts* b_pts = GParts::make(bl, spec, bbscale);
+    GParts* a_pts = GParts::make(ar, spec);
+    GParts* b_pts = GParts::make(bl, spec);
 
     a_solid->setParts(a_pts);
     b_solid->setParts(b_pts);

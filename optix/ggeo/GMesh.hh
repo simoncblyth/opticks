@@ -204,6 +204,7 @@ class GMesh : public GDrawable {
 
       void Summary(const char* msg="GMesh::Summary");
       void dump(const char* msg="GMesh::dump", unsigned int nmax=10);
+      void dumpNormals(const char* msg="GMesh::dumpNormals", unsigned int nmax=10);
   public:
       void setIndex(unsigned int index);
       void setName(const char* name);

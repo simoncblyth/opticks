@@ -18,13 +18,14 @@ class GSolid ;
 class GMaker {
    public:
        static const char* ZSPHERE ; 
-       static const char* ZSPHEREINTERSECT ; 
+       static const char* ZLENS ; 
        static const char* SPHERE ; 
        static const char* BOX ; 
        static const char* PMT ; 
        static const char* PRISM ; 
        static const char* UNDEFINED ; 
        static const char* ShapeName(char shapecode); 
+       static char ShapeCode(const char* shapename); 
    public:
        GMaker(GCache* cache);
    public:

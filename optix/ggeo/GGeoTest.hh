@@ -52,14 +52,17 @@ class GGeoTest {
     private:
        void setMode(const char* s);
        void setFrame(const char* s);
-       void setShape(const char* s);
-       void addBoundary(const char* s);
-       void addParameters(const char* s);
        void setSlice(const char* s);
        void setAnalytic(const char* s);
        void setDebug(const char* s);
     private:
+       void addShape(const char* s);
+       void addBoundary(const char* s);
+       void addParameters(const char* s);
+    private:
+       const char* getBoundary(unsigned int i);
        glm::vec4 getParameters(unsigned int i);
+       char      getShape(unsigned int i);
     private:
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
@@ -75,8 +78,8 @@ class GGeoTest {
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;
-       glm::ivec4   m_shape ;
        glm::vec4    m_debug ;
+       std::vector<std::string> m_shapes ; 
        std::vector<std::string> m_boundaries ; 
        std::vector<glm::vec4>   m_parameters ; 
        std::vector<KV> m_cfg ; 
@@ -95,7 +98,6 @@ inline GGeoTest::GGeoTest(GCache* cache)
     m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
-    m_shape('U','U','U','U'),
     m_debug(1.f,0.f,0.f,0.f)
 {
     init();

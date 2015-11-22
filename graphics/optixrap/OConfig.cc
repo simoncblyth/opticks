@@ -85,7 +85,7 @@ void OConfig::addProg(OProg* prog, bool defer)
     int index = prog->index ; 
     if(index > m_index_max) m_index_max = index ;
 
-    LOG(info) << "OConfig::addProg"
+    LOG(debug) << "OConfig::addProg"
               << " desc " << prog->description()
               << " index " << index 
               << " m_index_max " << m_index_max 

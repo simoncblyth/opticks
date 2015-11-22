@@ -20,6 +20,7 @@ class GLMFormat {
        std::string format(const glm::uvec4& v);
        std::string format(const glm::ivec3& v);
        std::string format(const glm::quat& q);
+       std::string format(const glm::mat4& m);
 
    public:
        float         float_(const std::string& s );
@@ -49,6 +50,7 @@ std::string gformat(const glm::ivec4& v );
 std::string gformat(const glm::uvec4& v );
 std::string gformat(const glm::ivec3& v );
 std::string gformat(const glm::quat& q );
+std::string gformat(const glm::mat4& m );
 
 float       gfloat_(const std::string& s );
 int           gint_(const std::string& s );

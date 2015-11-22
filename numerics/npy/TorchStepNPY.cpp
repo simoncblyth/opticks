@@ -35,6 +35,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
 const char* TorchStepNPY::T_SPHERE_    = "sphere" ; 
 const char* TorchStepNPY::T_DISC_      = "disc" ; 
 const char* TorchStepNPY::T_DISCLIN_   = "disclin" ; 
+const char* TorchStepNPY::T_DISCAXIAL_   = "discaxial" ; 
 const char* TorchStepNPY::T_INVSPHERE_ = "invsphere" ; 
 const char* TorchStepNPY::T_REFLTEST_  = "refltest" ; 
 
@@ -44,6 +45,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     if(       strcmp(k,T_SPHERE_)==0)    type = T_SPHERE ; 
     else if(  strcmp(k,T_DISC_)==0)      type = T_DISC ; 
     else if(  strcmp(k,T_DISCLIN_)==0)   type = T_DISCLIN ; 
+    else if(  strcmp(k,T_DISCAXIAL_)==0) type = T_DISCAXIAL ; 
     else if(  strcmp(k,T_INVSPHERE_)==0) type = T_INVSPHERE ; 
     else if(  strcmp(k,T_REFLTEST_)==0)  type = T_REFLTEST ; 
     return type ;   
@@ -59,6 +61,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
        case T_SPHERE:      type=T_SPHERE     ;break; 
        case T_DISC:        type=T_DISC       ;break; 
        case T_DISCLIN:     type=T_DISCLIN    ;break; 
+       case T_DISCAXIAL:   type=T_DISCAXIAL  ;break; 
        case T_INVSPHERE:   type=T_INVSPHERE  ;break; 
        case T_REFLTEST:    type=T_REFLTEST   ;break; 
     }
@@ -120,6 +123,7 @@ const char* TorchStepNPY::WAVELENGTH_     = "wavelength" ;
 const char* TorchStepNPY::WEIGHT_     = "weight" ; 
 const char* TorchStepNPY::TIME_     = "time" ; 
 const char* TorchStepNPY::RADIUS_   = "radius" ; 
+const char* TorchStepNPY::DISTANCE_   = "distance" ; 
 
 TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
 {
@@ -136,6 +140,7 @@ TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
     else if(strcmp(k,WEIGHT_)==0)         param = WEIGHT ; 
     else if(strcmp(k,TIME_)==0)           param = TIME ; 
     else if(strcmp(k,RADIUS_)==0)         param = RADIUS ; 
+    else if(strcmp(k,DISTANCE_)==0)       param = DISTANCE ; 
     return param ;  
 }
 
@@ -155,6 +160,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
         case WEIGHT         : setWeight(s)         ;break;
         case TIME           : setTime(s)           ;break;
         case RADIUS         : setRadius(s)         ;break;
+        case DISTANCE       : setDistance(s)       ;break;
         case UNRECOGNIZED   : 
                     LOG(warning) << "TorchStepNPY::set WARNING ignoring unrecognized parameter " ; 
     }
@@ -255,6 +261,21 @@ void TorchStepNPY::setRadius(float radius)
 {
     m_beam.x = radius ;
 }
+
+
+void TorchStepNPY::setDistance(const char* s)
+{
+    setDistance(boost::lexical_cast<float>(s)) ;
+}
+void TorchStepNPY::setDistance(float distance)
+{
+    m_beam.y = distance ;
+}
+
+
+
+
+
 void TorchStepNPY::setZenithAzimuth(const char* s)
 {
     std::string ss(s);

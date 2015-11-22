@@ -18,11 +18,13 @@ rtBuffer<uint4>                optical_buffer;
 #include "state.h"
 #include "photon.h"
 
+rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
+rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+
 #define GNUMQUAD 6
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
 #include "torchstep.h"
-
 
 #include "rayleigh.h"
 #include "propagate.h"
@@ -48,9 +50,6 @@ rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
 rtDeclareVariable(unsigned int,  record_max, , );
 rtDeclareVariable(rtObject,      top_object, , );
-
-rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
-rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 // beyond MAXREC overwrite save into top slot
  

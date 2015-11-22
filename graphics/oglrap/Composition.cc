@@ -603,19 +603,22 @@ void Composition::setEyeW(glm::vec4 eyew)
 
 
 
-void Composition::aim(glm::vec4& ce)
+void Composition::aim(glm::vec4& ce, bool verbose)
 {
-     print(ce, "Composition::aim ce (world frame)"); 
-     print(m_model_to_world, "Composition::aim m2w");
+     if(verbose)
+     {
+         print(ce, "Composition::aim ce (world frame)"); 
+         print(m_model_to_world, "Composition::aim m2w");
 
-     glm::vec4 eye  = m_view->getEye(m_model_to_world);
-     glm::vec4 look = m_view->getLook(m_model_to_world);
-     glm::vec4 gaze = m_view->getGaze(m_model_to_world);
+         glm::vec4 eye  = m_view->getEye(m_model_to_world);
+         glm::vec4 look = m_view->getLook(m_model_to_world);
+         glm::vec4 gaze = m_view->getGaze(m_model_to_world);
 
-     print(eye,  "Composition::aim eye ");
-     print(look, "Composition::aim look ");
-     print(gaze, "Composition::aim gaze ");
-     print(m_gaze, "Composition::aim m_gaze");
+         print(eye,  "Composition::aim eye ");
+         print(look, "Composition::aim look ");
+         print(gaze, "Composition::aim gaze ");
+         print(m_gaze, "Composition::aim m_gaze");
+     }
 
      float basis = m_gazelength ;   // gazelength basis matches raygen in the ray tracer, so OptiX and OpenGL renders match
      //float basis = m_extent ; 

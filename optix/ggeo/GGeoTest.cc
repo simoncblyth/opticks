@@ -102,7 +102,7 @@ void GGeoTest::set(Arg_t arg, const char* s)
         case FRAME          : setFrame(s)          ;break;
         case BOUNDARY       : addBoundary(s)       ;break;
         case PARAMETERS     : addParameters(s)     ;break;
-        case SHAPE          : setShape(s)          ;break;
+        case SHAPE          : addShape(s)          ;break;
         case SLICE          : setSlice(s)          ;break;
         case ANALYTIC       : setAnalytic(s)       ;break;
         case DEBUG          : setDebug(s)          ;break;
@@ -154,63 +154,30 @@ void GGeoTest::addBoundary(const char* s)
     m_boundaries.push_back(s);
 }
 
-void GGeoTest::setShape(const char* s)
+void GGeoTest::addShape(const char* s)
 {
-    std::vector<std::string> elem ; 
-    boost::split(elem, s, boost::is_any_of(","));    
-    unsigned int n = elem.size();
-    for(unsigned int k=0 ; k < 4 ; k++)
-    {
-       if( n > k) m_shape[k] = boost::lexical_cast<char>(elem[k]);     
-    }
-
-    LOG(info) << "GGeoTest::setShape " 
-              << " x " << (char)m_shape.x
-              << " y " << (char)m_shape.y
-              << " z " << (char)m_shape.z
-              << " w " << (char)m_shape.w
-              ;
+    m_shapes.push_back(s);
 }
-
-
 
 
 void GGeoTest::modifyGeometry()
 {
-    GMergedMesh* tmm(NULL);
-
-    // TODO: eliminate the mode unifying createPmtInBox, createBoxInBox -> create
-
     unsigned int nbnd = m_boundaries.size() ; 
     unsigned int npar = m_parameters.size() ; 
+    unsigned int nshp = m_shapes.size() ; 
 
-    if(npar > 0)
-    {
-         assert(npar == nbnd && "when parameters used there must be one for every boundary");
-    }    
+    assert( nbnd == npar && nbnd == nshp && "need equal number of boundaries, parameters and shapes");
+    assert(nbnd > 0);
 
-
-    if(strcmp(m_mode, "PmtInBox") == 0)
-    {
-         assert(m_boundaries.size() > 0);
-         tmm = createPmtInBox(); 
-    }
-    else if(strcmp(m_mode, "BoxInBox") == 0)
-    {
-         unsigned int n = m_boundaries.size() ;
-         assert(n > 0 && n < 4);
-         tmm = createBoxInBox(); 
-    }
-    else
-    {
-         LOG(warning) << "GGeoTest::modifyGeometry mode not recognized " << m_mode ; 
-    }
+    GMergedMesh* tmm(NULL);
+    // TODO: eliminate the mode unifying createPmtInBox, createBoxInBox -> create
+    if(     strcmp(m_mode, "PmtInBox") == 0) tmm = createPmtInBox(); 
+    else if(strcmp(m_mode, "BoxInBox") == 0) tmm = createBoxInBox(); 
+    else  LOG(warning) << "GGeoTest::modifyGeometry mode not recognized " << m_mode ; 
 
     if(!tmm) return ; 
 
-
     bool analytic = m_analytic.x > 0 ;
-
     tmm->setGeoCode( analytic ? 'A' : 'T' );  // to OGeo
     if(tmm->getGeoCode() == 'T') 
     { 
@@ -231,22 +198,37 @@ glm::vec4 GGeoTest::getParameters(unsigned int i)
     return param ;  
 }
 
+char GGeoTest::getShape(unsigned int i)
+{
+    assert( i < m_shapes.size() );
+    char shapecode = GMaker::ShapeCode(m_shapes[i].c_str());
+    return shapecode ; 
+}
+
+const char* GGeoTest::getBoundary(unsigned int i)
+{
+    assert( i < m_boundaries.size() );
+    const char* spec = m_boundaries[i].c_str() ;
+    return spec ; 
+}
+
+
 
 GMergedMesh* GGeoTest::createPmtInBox()
 {
-    const char* spec = m_boundaries[0].c_str() ;
-    char shapecode = (char)m_shape[0] ;
+    const char* spec = getBoundary(0);
+    char shapecode = getShape(0) ;
+    glm::vec4 param = getParameters(0);
 
-    LOG(info) << "GGeoTest::createPmtInBox" << " spec " << spec ; 
+    LOG(info) << "GGeoTest::createPmtInBox " << shapecode << " : " << spec << " " << gformat(param)  ; 
 
     GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, m_slice );    // pmtIndex:0
+
     GMergedMesh* mmpmt = m_geolib->getMergedMesh(1);  // DYB mesh-1 is the PMT 5-solids 
-    //TODO: some kinda matching sanity check between analytic and triangulated ? 
     mmpmt->setParts(pmt->getParts());  // associate analytic parts with the triangulated PMT
 
     unsigned int index = mmpmt->getNumSolids() ;
 
-    glm::vec4 param = getParameters(0);
     std::vector<GSolid*> solids = m_maker->make( index, shapecode, param, spec) ;
     for(unsigned int j=0 ; j < solids.size() ; j++)
     {
@@ -276,23 +258,30 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
     for(unsigned int i=0 ; i < n ; i++)
     {
-        char   shapecode = (char)m_shape[i] ;
-        const char* spec = m_boundaries[i].c_str() ;
+        char shapecode = getShape(i) ;
+        const char* spec = getBoundary(i);
+        glm::vec4 param = getParameters(i);
+        unsigned int boundary = m_bndlib->addBoundary(spec);
 
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
                   << " shapecode " << std::setw(2) << shapecode 
                   << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
                   << " spec " << spec
+                  << " boundary " << boundary
+                  << " param " << gformat(param)
                   ;
 
-        glm::vec4 param = getParameters(i);
+        std::vector<GSolid*> ss = m_maker->make(i, shapecode, param, spec ); 
 
-        std::vector<GSolid*> ss = m_maker->make(i, shapecode, param, spec );  // some shapes need more than one solid
         for(unsigned int j=0 ; j < ss.size() ; j++)
         {
-            GSolid* s = ss[j];
-            solids.push_back(s);
+            GSolid* solid = ss[j];
+            solid->setBoundary(boundary);
+            GParts* pts = solid->getParts();
+            if(pts) pts->setBoundaryAll(boundary);
+
+            solids.push_back(solid);
         } 
     }
 

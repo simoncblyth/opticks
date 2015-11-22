@@ -10,6 +10,7 @@
 #include "NSlice.hpp"
 #include "NLog.hpp"
 #include "NPart.hpp"
+#include "GLMFormat.hpp"
 
 #include <map>
 #include <iomanip>
@@ -56,10 +57,8 @@ GParts* GParts::combine(std::vector<GParts*> subs)
 }
 
 
-GParts* GParts::make(const npart& pt, const char* spec, float bbscale)
+GParts* GParts::make(const npart& pt, const char* spec)
 {
-    // TODO: bbscale ignored ?
-
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
     part->zero();
 
@@ -75,11 +74,9 @@ GParts* GParts::make(const npart& pt, const char* spec, float bbscale)
     return gpt ; 
 }
 
-
-
-GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bbscale)
+GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
 {
-    float size = param.w*bbscale ;  
+    float size = param.w ;  
     gbbox bb(gfloat3(-size), gfloat3(size));  
 
     if(typecode == 'Z')
@@ -112,7 +109,6 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec, float bb
     }
     return pt ; 
 } 
-
 
 
 void GParts::init(const char* spec)
@@ -162,7 +158,7 @@ void GParts::add(GParts* other)
         setIndex(p, p);
     }
 
-    LOG(info) << "GParts::add"
+    LOG(debug) << "GParts::add"
               << " n0 " << n0  
               << " n1 " << n1
               ;  
@@ -203,7 +199,7 @@ void GParts::registerBoundaries()
        unsigned int boundary = m_bndlib->addBoundary(spec);
        setBoundary(i, boundary);
 
-      LOG(debug) << "GParts::registerBoundaries " 
+      LOG(info) << "GParts::registerBoundaries " 
                 << std::setw(3) << i
                 << std::setw(30) << spec
                 << " --> "
@@ -327,10 +323,16 @@ const char* GParts::getTypeName(unsigned int part_index)
     return GParts::TypeName(code);
 }
      
-gfloat3 GParts::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
+float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k)
 {
     float* data = m_part_buffer->getValues();
     float* ptr = data + i*NJ*NK+j*NJ+k ;
+    return ptr ; 
+}
+     
+gfloat3 GParts::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
+{
+    float* ptr = getValues(i,j,k);
     return gfloat3( *ptr, *(ptr+1), *(ptr+2) ); 
 }
 guint4 GParts::getSolidInfo(unsigned int isolid)
@@ -346,6 +348,38 @@ gbbox GParts::getBBox(unsigned int i)
    gbbox bb(min, max) ; 
    return bb ; 
 }
+
+void GParts::enlargeBBoxAll(float epsilon)
+{
+   for(unsigned int part=0 ; part < getNumParts() ; part++) enlargeBBox(part, epsilon);
+}
+
+void GParts::enlargeBBox(unsigned int part, float epsilon)
+{
+    float* pmin = getValues(part,BBMIN_J,BBMIN_K);
+    float* pmax = getValues(part,BBMAX_J,BBMAX_K);
+
+    glm::vec3 min = glm::make_vec3(pmin) - glm::vec3(epsilon);
+    glm::vec3 max = glm::make_vec3(pmax) + glm::vec3(epsilon);
+ 
+    *(pmin+0 ) = min.x ; 
+    *(pmin+1 ) = min.y ; 
+    *(pmin+2 ) = min.z ; 
+
+    *(pmax+0 ) = max.x ; 
+    *(pmax+1 ) = max.y ; 
+    *(pmax+2 ) = max.z ; 
+
+    LOG(info) << "GParts::enlargeBBox"
+              << " part " << part 
+              << " epsilon " << epsilon
+              << " min " << gformat(min) 
+              << " max " << gformat(max)
+              ; 
+
+}
+
+
 unsigned int GParts::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(i < getNumParts() );
@@ -404,6 +438,10 @@ void GParts::setFlags(unsigned int part, unsigned int flags)
 }
 
 
+void GParts::setBoundaryAll(unsigned int boundary)
+{
+    for(unsigned int i=0 ; i < getNumParts() ; i++) setBoundary(i, boundary);
+}
 
 
 

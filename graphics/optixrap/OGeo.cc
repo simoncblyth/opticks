@@ -139,7 +139,7 @@ void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(info) << "OGeo::convert"
+    LOG(debug) << "OGeo::convert"
               << " nmm " << nmm
               ;
 
@@ -178,7 +178,7 @@ void OGeo::convert()
     unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
     unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
    
-    LOG(info) << "OGeo::convert"
+    LOG(debug) << "OGeo::convert"
               << " geometryGroupCount " << geometryGroupCount
               << " repeatedGroupCount " << repeatedGroupCount
               ;
@@ -362,7 +362,7 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
     const char* ubuilder = builder ? builder : m_builder ;
     const char* utraverser = traverser ? traverser : m_traverser ;
 
-    LOG(info) << "OGeo::makeAcceleration " 
+    LOG(debug) << "OGeo::makeAcceleration " 
               << " ubuilder " << ubuilder 
               << " utraverser " << utraverser
               ; 
@@ -678,7 +678,7 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
    int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
-   LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
+   LOG(debug)<<"OGeo::createInputBuffer [NPY<T>] "
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes

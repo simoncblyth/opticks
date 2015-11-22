@@ -42,7 +42,7 @@ void OPropagator::init()
     m_context[ "record_max" ]->setUint( m_record_max );
 
     optix::uint4 debugControl = optix::make_uint4(m_ocontext->getDebugPhoton(),0,0,0);
-    LOG(info) << "OPropagator::init debugControl " 
+    LOG(debug) << "OPropagator::init debugControl " 
               << " x " << debugControl.x 
               << " y " << debugControl.y
               << " z " << debugControl.z 
@@ -52,7 +52,7 @@ void OPropagator::init()
     m_context["debug_control"]->setUint(debugControl); 
  
     const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
-    LOG(info) << "OPropagtor::init " << raygenprg ; 
+    LOG(debug) << "OPropagtor::init " << raygenprg ; 
 
     m_ocontext->setRayGenerationProgram( OContext::e_generate_entry, "generate.cu.ptx", raygenprg );
     m_ocontext->setExceptionProgram(    OContext::e_generate_entry, "generate.cu.ptx", "exception");

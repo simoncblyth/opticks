@@ -10,7 +10,7 @@
 
 void OScintillatorLib::convert()
 {
-    LOG(info) << "OScintillatorLib::convert" ;
+    LOG(debug) << "OScintillatorLib::convert" ;
     NPY<float>* buf = m_lib->getBuffer();
     makeReemissionTexture(buf);
 }
@@ -25,7 +25,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     unsigned int nx = nj ;
     unsigned int ny = 1 ;
 
-    LOG(info) << "OScintillatorLib::makeReemissionTexture "
+    LOG(debug) << "OScintillatorLib::makeReemissionTexture "
               << " nx " << nx
               << " ny " << ny  
               ;

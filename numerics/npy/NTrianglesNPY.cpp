@@ -455,8 +455,8 @@ NTrianglesNPY* NTrianglesNPY::prism(const glm::vec4& param)
     glm::vec3 left_near(-hwidth, 0.f, depth/2.f);    
     glm::vec3 left_far(-hwidth, 0.f, -depth/2.f);    
 
-    glm::vec3 right_near(-hwidth, 0.f, depth/2.f);    
-    glm::vec3 right_far(-hwidth, 0.f, -depth/2.f);    
+    glm::vec3 right_near( hwidth, 0.f, depth/2.f);    
+    glm::vec3 right_far( hwidth, 0.f, -depth/2.f);    
 
     NTrianglesNPY* tris = new NTrianglesNPY();
 

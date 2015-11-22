@@ -603,13 +603,13 @@ void App::loadGenstep()
         unsigned int matline = m_ggeo->getMaterialLine(material);
         m_torchstep->setMaterialLine(matline);  
 
-        LOG(info) << "App::makeSimpleTorchStep"
+        LOG(debug) << "App::makeSimpleTorchStep"
                   << " config " << m_torchstep->getConfig() 
                   << " material " << material 
                   << " matline " << matline
                   ;
 
-        bool verbose = true ; 
+        bool verbose = false ; 
         m_torchstep->addStep(verbose);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
         npy = m_torchstep->getNPY(); 

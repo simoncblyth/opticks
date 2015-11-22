@@ -93,7 +93,7 @@ optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, 
     buffer->setFormat(format);
     buffer->setSize( width, height );
 
-    LOG(info) << "OFrame::createOutputBuffer_PBO  element_size " << element_size << " size (" << width << "," << height << ") pbo id " << id ;
+    LOG(debug) << "OFrame::createOutputBuffer_PBO  element_size " << element_size << " size (" << width << "," << height << ") pbo id " << id ;
   
     return buffer;
 }

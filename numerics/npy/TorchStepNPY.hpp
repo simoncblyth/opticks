@@ -6,6 +6,7 @@ typedef enum {
    T_SPHERE,
    T_DISC,
    T_DISCLIN,
+   T_DISCAXIAL,
    T_INVSPHERE,
    T_REFLTEST,
    T_NUM_TYPE
@@ -28,7 +29,7 @@ template<typename T> class NPY ;
 
 class TorchStepNPY {
    public:
-       typedef enum { TYPE, POLZ, FRAME, SOURCE, TARGET, PHOTONS, MATERIAL, ZENITHAZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, UNRECOGNIZED } Param_t ;
+       typedef enum { TYPE, POLZ, FRAME, SOURCE, TARGET, PHOTONS, MATERIAL, ZENITHAZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, DISTANCE, UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
@@ -44,10 +45,12 @@ class TorchStepNPY {
        static const char* WEIGHT_ ; 
        static const char* TIME_ ; 
        static const char* RADIUS_ ; 
+       static const char* DISTANCE_ ; 
 
        static const char* T_SPHERE_ ; 
        static const char* T_DISC_ ; 
        static const char* T_DISCLIN_ ; 
+       static const char* T_DISCAXIAL_ ; 
        static const char* T_INVSPHERE_ ; 
        static const char* T_REFLTEST_ ; 
 
@@ -99,9 +102,11 @@ class TorchStepNPY {
        void setWeight(const char* s );
        void setTime(const char* s );
        void setRadius(const char* s );
+       void setDistance(const char* s );
 
        void setNumPhotons(unsigned int num_photons );
        void setRadius(float radius );
+       void setDistance(float distance);
 
 
        ::Polz_t  getPolz();
