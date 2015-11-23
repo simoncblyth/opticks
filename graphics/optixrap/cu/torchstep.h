@@ -146,10 +146,29 @@ phi     =   acos( 2V-1 )
 */
 
 
-__device__ float3 get_direction(unsigned int i)
+
+
+__device__ float3 get_direction_4(unsigned int idir, float delta)
+{ 
+     // rays from these directions failed to intersect with the 
+     // symmetric prism of apex 90 degres until modified intersect_prism 
+     // to avoid the infinities 
+     float3 dir ; 
+     switch(idir)
+     {
+        case 0:dir = make_float3( 1.f  ,  delta,  delta);break;  // +X
+        case 1:dir = make_float3( delta,  1.f  ,  delta);break;  // +Y
+        case 2:dir = make_float3( delta,  delta,  delta);break;  // +Z
+        case 3:dir = make_float3( 1.   ,  1.f  ,  delta);break;  // +X+Y    
+     }
+     return normalize(dir) ; 
+}
+
+
+__device__ float3 get_direction_26(unsigned int idir)
 {  
      float3 dir ; 
-     switch(i)
+     switch(idir)
      {
         case 0:dir = make_float3( 1.f,  0.f,  0.f);break;  // +X
         case 1:dir = make_float3(-1.f,  0.f,  0.f);break;  // -X
@@ -237,8 +256,8 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       else if( ts.type == T_DISCAXIAL )
       {
           unsigned long long photon_id = launch_index.x ;  
-          unsigned int iaxis = photon_id % 26 ; 
-          float3 dir = get_direction( iaxis );
+          float3 dir = get_direction_26( photon_id % 26 );
+          //float3 dir = get_direction_4( photon_id % 4, 0.f );
 
           float r = radius*sqrtf(u1) ; // sqrt avoids pole bunchung 
           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 

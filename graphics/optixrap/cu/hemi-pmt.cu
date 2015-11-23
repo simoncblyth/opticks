@@ -3,6 +3,7 @@
 #include <optix_world.h>
 #include "quad.h"
 #include "hemi-pmt.h"
+#include "math_constants.h"
 
 using namespace optix;
 
@@ -25,7 +26,7 @@ rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, );
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
 
-#define FLT_MAX         1e30
+//#define FLT_MAX         1e30
 
 #define DEBUG 1
 
@@ -856,32 +857,41 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
 
 
 
+
 // from tutorial9 intersect_chull
 static __device__
 void intersect_prism(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
 {
   int nplane = 5 ;
-  float t0 = -FLT_MAX;
-  float t1 = FLT_MAX;
-  float3 t0_normal = make_float3(0);
-  float3 t1_normal = make_float3(0);
 
-  for(int i = 0; i < nplane && t0 < t1; ++i ) 
+  float t0 = -CUDART_INF_F ; 
+  float t1 =  CUDART_INF_F ; 
+
+  float3 t0_normal = make_float3(0.f);
+  float3 t1_normal = make_float3(0.f);
+
+  for(int i = 0; i < nplane && t0 < t1 ; ++i ) 
   {
     float4 plane = prismBuffer[i];
     float3 n = make_float3(plane);
     float  d = plane.w;
 
     float denom = dot(n, ray.direction);
+    if(denom == 0.f) continue ;   
     float t = -(d + dot(n, ray.origin))/denom;
-    if( denom < 0){
-      // enter
+    
+    // Avoiding infinities.
+    // Somehow infinities arising from perpendicular other planes
+    // prevent normal incidence plane intersection.
+    // In aabb slab method infinities were well behaved and
+    // did not change the result, but not here.
+    
+    if( denom < 0.f){  // ray opposite to normal, ie ray from outside entering
       if(t > t0){
         t0 = t;
         t0_normal = n;
       }
-    } else {
-      //exit
+    } else {          // ray same hemi as normal, ie ray from inside exiting 
       if(t < t1){
         t1 = t;
         t1_normal = n;
@@ -904,61 +914,33 @@ void intersect_prism(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
 }
 
 
+/*
+Ray-plane intersection 
+
+     n.(O + t D - p) = 0 
+
+     n.O + t n.D - n.p = 0
+
+           t = (n.p - n.O)/n.D  
+           t = ( -d - n.O)/n.D
+             = -(d + n.O)/n.D
+
+   n.D = 0   when ray direction in plane of face
+
+  why is +Z problematic  n = (0,0,1)
+
+  axial direction rays from +X, +Y, +Z and +X+Y are 
+  failing to intersect the prism.  
+
+  Breaking axial with a small delta 0.0001f 
+  avoids the issue. 
+
+
+*/
 
 
 
 
-
-RT_PROGRAM void intersect(int primIdx)
-{
-  const uint4& solid    = solidBuffer[primIdx]; 
-  unsigned int numParts = solid.y ; 
-
-  //const uint4& identity = identityBuffer[primIdx] ; 
-  //const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
-
-  // try with just one identity per-instance 
-  uint4 identity = identityBuffer[instance_index] ; 
-
-
-  for(unsigned int p=0 ; p < numParts ; p++)
-  {  
-      unsigned int partIdx = solid.x + p ;  
-
-      quad q0, q1, q2, q3 ; 
-
-      q0.f = partBuffer[4*partIdx+0];  
-      q1.f = partBuffer[4*partIdx+1];  
-      q2.f = partBuffer[4*partIdx+2] ;
-      q3.f = partBuffer[4*partIdx+3]; 
-
-      identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
-
-      int partType = q2.i.w ; 
-
-      // TODO: use enum
-      switch(partType)
-      {
-          case 0:
-                intersect_aabb(q2, q3, identity);
-                break ; 
-          case 1:
-                intersect_zsphere<false>(q0,q1,q2,q3,identity);
-                break ; 
-          case 2:
-                intersect_ztubs(q0,q1,q2,q3,identity);
-                break ; 
-          case 3:
-                intersect_aabb(q2,q3,identity);
-                break ; 
-          case 4:
-                intersect_prism(q0,q1,q2,q3,identity);
-                break ; 
-
-      }
-  }
-
-}
 
 
 static __device__
@@ -969,12 +951,34 @@ float4 make_plane( float3 n, float3 p )
   return make_float4( n, d );
 }
 
+/*
+
+http://mathworld.wolfram.com/Plane.html
+
+    n.(x - p) = 0    normal n = (a,b,c), point in plane p
+
+    n.x - n.p = 0
+
+    ax + by + cz + d = 0        d = -n.p
+
++Z face of unit cube
+
+    n = (0,0,1)
+    p = (0,0,1)
+    d = -n.p = -1   ==> z + (-1)  = 0,     z = 1     
+
+-Z face of unit cube
+
+    n = (0,0,-1)
+    p = (0,0,-1)
+    d = -n.p = -1   ==>  (-z) + (-1) = 0,    z = -1   
+
+*/
+
 
 static __device__
 void make_prism( const float4& param, optix::Aabb* aabb ) 
 {
-
-
 /*
  Mid line of the symmetric prism spanning along z from -depth/2 to depth/2
 
@@ -1009,11 +1013,11 @@ void make_prism( const float4& param, optix::Aabb* aabb )
     float3 front = make_float3(0.f, 0.f, depth/2.f) ; 
     float3 back  = make_float3(0.f, 0.f, -depth/2.f) ; 
 
-    prismBuffer[0] = make_plane( make_float3(  height, hwidth ,0.f), apex ) ; 
-    prismBuffer[1] = make_plane( make_float3( -height, hwidth ,0.f), apex ) ; 
-    prismBuffer[2] = make_plane( make_float3(0.f, -1.0f, 0.f ), base)  ; 
-    prismBuffer[3] = make_plane( front, front)  ; 
-    prismBuffer[4] = make_plane( back,  back )  ; 
+    prismBuffer[0] = make_plane( make_float3(  height, hwidth ,0.f), apex ) ;  // +X+Y 
+    prismBuffer[1] = make_plane( make_float3( -height, hwidth ,0.f), apex ) ;  // -X+Y 
+    prismBuffer[2] = make_plane( make_float3(0.f, -1.0f, 0.f ), base)  ;       //   -Y 
+    prismBuffer[3] = make_plane( front, front)  ;                              //   +Z
+    prismBuffer[4] = make_plane( back,  back )  ;                              //   -Z
 
     rtPrintf("make_prism plane[0] %10.4f %10.4f %10.4f %10.4f \n", prismBuffer[0].x, prismBuffer[0].y, prismBuffer[0].z, prismBuffer[0].w );
     rtPrintf("make_prism plane[1] %10.4f %10.4f %10.4f %10.4f \n", prismBuffer[1].x, prismBuffer[1].y, prismBuffer[1].z, prismBuffer[1].w );
@@ -1026,7 +1030,18 @@ void make_prism( const float4& param, optix::Aabb* aabb )
     float3 eps = make_float3( 0.001f );
     aabb->include( min - eps, max + eps );
 
+/*
+make_prism angle    90.0000 height   200.0000 depth   200.0000 hwidth   200.0000 
+make_prism plane[0]     0.7071     0.7071     0.0000  -141.4214 
+make_prism plane[1]    -0.7071     0.7071     0.0000  -141.4214 
+make_prism plane[2]     0.0000    -1.0000     0.0000    -0.0000 
+make_prism plane[3]     0.0000     0.0000     1.0000  -100.0000 
+make_prism plane[4]     0.0000     0.0000    -1.0000  -100.0000 
+*/
+
 }
+
+
 
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
@@ -1085,4 +1100,58 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
      );
 
 }
+
+
+
+RT_PROGRAM void intersect(int primIdx)
+{
+  const uint4& solid    = solidBuffer[primIdx]; 
+  unsigned int numParts = solid.y ; 
+
+  //const uint4& identity = identityBuffer[primIdx] ; 
+  //const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
+
+  // try with just one identity per-instance 
+  uint4 identity = identityBuffer[instance_index] ; 
+
+
+  for(unsigned int p=0 ; p < numParts ; p++)
+  {  
+      unsigned int partIdx = solid.x + p ;  
+
+      quad q0, q1, q2, q3 ; 
+
+      q0.f = partBuffer[4*partIdx+0];  
+      q1.f = partBuffer[4*partIdx+1];  
+      q2.f = partBuffer[4*partIdx+2] ;
+      q3.f = partBuffer[4*partIdx+3]; 
+
+      identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
+
+      int partType = q2.i.w ; 
+
+      // TODO: use enum
+      switch(partType)
+      {
+          case 0:
+                intersect_aabb(q2, q3, identity);
+                break ; 
+          case 1:
+                intersect_zsphere<false>(q0,q1,q2,q3,identity);
+                break ; 
+          case 2:
+                intersect_ztubs(q0,q1,q2,q3,identity);
+                break ; 
+          case 3:
+                intersect_aabb(q2,q3,identity);
+                break ; 
+          case 4:
+                intersect_prism(q0,q1,q2,q3,identity);
+                break ; 
+
+      }
+  }
+
+}
+
 

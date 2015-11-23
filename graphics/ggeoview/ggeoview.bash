@@ -152,12 +152,12 @@ ggv-reflect()
 
 
     ggv.sh  \
+            $* \
             --eye 0.5,0.5,0.0 \
             --animtimemax 7 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
-        #    --save --tag $tag \
-            $*
+        #    --save --tag $tag 
 }
 
 
@@ -199,45 +199,22 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
-IMMEDIATES
------------
+Tips for Geometry Debug
+--------------------------
 
-Refactor to eliminate GLoader
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* using propagation functions like ggv-reflect just adding a "--tracer" 
+  option provides much faster OptiX renders by avoiding propagation overheads
 
-* pragmatically moved GLoader ops into GGeo::loadGeometry, 
-  retaining it there until have corresponding materials/flags/ handling 
-  in the new GBndLib/GPropertyLib approach 
+* look for artifacts in OptiX render, especially from axial directions,
+  to put viewpoint precisely in axes use eg: udp.py --eyew 0,500,0
 
-  * maybe a derived GItemIndex constituent of GPropertyLib 
-    can ease the transition
+* use discaxial torch with time fixed prior to intersections and color view 
+  set to m2, can see immediately the directions from which rays are failing 
+  to intersect
 
-  * sticking blocks from npy- Types eg abbreviated name conversions 
-
-
-Refactor to replace GBoundaryLib/GBoundaryLibMetadata with GBndLib,GMaterialLib,GSurfaceLib,GPropertyLib,GScintillatorLib
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* the GBndLib derived buffers now matching the old ones, 
-  so OptiX end replacing OBoundaryLib with OBndLib should be easy 
-
-* sticking block: Lookup using GBoundaryLibMetadata specifcally GBoundaryLibMetadataMaterialMap.json
-  can write a GBndLibMaterialMap.json to standin here, hmm but dynamic ? yes but not fully dynamic
-  just need to add boundaries based in command line args of a postcache run and analytic geometry
-  requirements.  After that can do the lookup translation of genstep indices into material lines 
-  into the boundary texture.
-
-::
-
-      1 {
-      2     "ADTableStainlessSteel": "352",
-      3     "Acrylic": "80",
-      4     "Air": "8",
-      5     "Aluminium": "16",
-      6     "BPE": "200",
-
-
-
+* review how code handles axial direction infinities, infinities arising from 
+  attempted intersections against other planes can mess up intersection again
+  
 
 Wireframe view
 ----------------
