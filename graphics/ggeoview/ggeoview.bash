@@ -130,8 +130,8 @@ ggv-reflect()
                  photons=500000
                  polz=${pol}pol
                  frame=-1
-                 source=-600,100,0
-                 target=0,100,0
+                 source=-600,0,0
+                 target=0,0,0
                  radius=25
                  distance=500
                  zenithazimuth=0,1,0,1
@@ -145,7 +145,7 @@ ggv-reflect()
                  shape=box parameters=-1,1,0,700 boundary=Rock//perfectAbsorbSurface/Vacuum
 
                  #shape=box parameters=-1,1,0,150            boundary=Vacuum///Pyrex 
-                 shape=prism parameters=90,300,300,200       boundary=Vacuum///Pyrex 
+                 shape=prism parameters=60,300,300,200       boundary=Vacuum///Pyrex 
                  #shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///Pyrex 
 
                )
@@ -157,7 +157,7 @@ ggv-reflect()
             --animtimemax 7 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
-        #    --save --tag $tag 
+            --save --tag $tag 
 }
 
 

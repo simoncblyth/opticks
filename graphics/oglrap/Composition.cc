@@ -253,6 +253,14 @@ void Composition::gui()
 
     if(ImGui::Button("home")) home();
 
+    glm::vec4 eye  = m_view->getEye(m_model_to_world);
+    glm::vec4 look = m_view->getLook(m_model_to_world);
+    glm::vec4 gaze = m_view->getGaze(m_model_to_world);
+
+    ImGui::Text(" eye  : %s ", gformat(eye).c_str()); 
+    ImGui::Text(" look : %s ", gformat(look).c_str()); 
+    ImGui::Text(" gaze : %s ", gformat(gaze).c_str()); 
+
     float* param = glm::value_ptr(m_param) ;
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1.0f, "%0.3f", 2.0f );

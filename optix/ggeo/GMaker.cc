@@ -233,6 +233,9 @@ GSolid* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const c
 
 NTrianglesNPY* GMaker::makeSubdivSphere(unsigned int nsubdiv, const char* type)
 {
+    // approach to using geodesic subdiv for partial spheres 
+    // http://www.unitbv.ro/faculties/biblio/Buletin_univ/pdf/Iacob.pdf
+
     NTrianglesNPY* tris(NULL);
     if(strcmp(type,"I")==0)
     {

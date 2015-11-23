@@ -443,7 +443,7 @@ NTrianglesNPY* NTrianglesNPY::prism(const glm::vec4& param)
 */
 
     // hmm how to avoid duplication between here and hemi-pmt.cu/make_prism
-    float angle = param.x > 0.f ? param.x : 90.f ; 
+    float angle = param.x > 0.f ? param.x : 60.f ; 
     float height = param.y > 0.f ? param.y : param.w  ;
     float depth = param.z > 0.f ? param.z : param.w ;
 
