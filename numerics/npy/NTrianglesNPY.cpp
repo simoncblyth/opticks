@@ -449,14 +449,17 @@ NTrianglesNPY* NTrianglesNPY::prism(const glm::vec4& param)
 
     float hwidth = height*tan((M_PI/180.f)*angle/2.0f) ;      
 
-    glm::vec3 apex_near(0.f, height, depth/2.f );
-    glm::vec3 apex_far(0.f, height, -depth/2.f );
+    float ymax =  height/2.0f ; 
+    float ymin = -height/2.0f ; 
 
-    glm::vec3 left_near(-hwidth, 0.f, depth/2.f);    
-    glm::vec3 left_far(-hwidth, 0.f, -depth/2.f);    
+    glm::vec3 apex_near(0.f,     ymax, depth/2.f );
+    glm::vec3 apex_far( 0.f,     ymax, -depth/2.f );
 
-    glm::vec3 right_near( hwidth, 0.f, depth/2.f);    
-    glm::vec3 right_far( hwidth, 0.f, -depth/2.f);    
+    glm::vec3 left_near(-hwidth,  ymin, depth/2.f);    
+    glm::vec3 left_far(-hwidth,   ymin, -depth/2.f);    
+
+    glm::vec3 right_near( hwidth, ymin, depth/2.f);    
+    glm::vec3 right_far( hwidth,  ymin, -depth/2.f);    
 
     NTrianglesNPY* tris = new NTrianglesNPY();
 
