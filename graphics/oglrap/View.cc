@@ -4,6 +4,7 @@
 #include "stdio.h"
 
 // npy-
+#include "NLog.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
@@ -167,6 +168,36 @@ void View::getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm:
 }  
 
 
+void View::updateEyePhase()
+{
+   // atan2 : Principal arc tangent of y/x, in the interval [-pi,+pi] radians 
+   // so eye phase range is -1:1
+    m_eye_phase = atan2(m_eye.y,m_eye.x)/(1.0f*M_PI);
+
+   // invoked by setEye, so handle here problematic viewpoints
+   glm::vec3 gaze = glm::normalize(m_look - m_eye) ; 
+   float eul = glm::length(glm::cross(gaze, m_up));
+
+   if(eul==0.f)
+   {
+       LOG(warning) << "View::updateEyePhase new viewpoint causes degeneracy, so changing up axis " ; 
+       for(unsigned int i=0 ; i < m_axes.size() ; i++)
+       {
+            glm::vec4 axis = m_axes[i] ; 
+            float aul = glm::length(glm::cross(gaze, glm::vec3(axis)));
+            if(aul > 0.f)
+            {
+                  setUp(axis);
+                  LOG(warning) << "View::updateEyePhase picked new up axis " << i ; 
+                  break ; 
+            }
+        }
+   }
+
+
+
+
+}
 
 
 

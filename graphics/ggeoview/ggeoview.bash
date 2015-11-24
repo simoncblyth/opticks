@@ -130,7 +130,7 @@ ggv-reflect()
                  photons=500000
                  polz=${pol}pol
                  frame=-1
-                 source=-600,0,0
+                 source=-611.873,-158.615,0
                  target=0,0,0
                  radius=25
                  distance=500
@@ -151,9 +151,11 @@ ggv-reflect()
                )
 
 
+    # --eye 0.5,0.5,0.0 \
+
+
     ggv.sh  \
             $* \
-            --eye 0.5,0.5,0.0 \
             --animtimemax 7 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \

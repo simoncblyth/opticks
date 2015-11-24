@@ -169,6 +169,8 @@ class Composition : public Configurable {
   public:
       void setEyeW(glm::vec4 eyew);
       void setEyeW(std::string eyew);
+  public:
+      void setEyeGUI(glm::vec3 gui);
   public: 
       void home();
       void update();

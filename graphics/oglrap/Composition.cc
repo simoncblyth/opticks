@@ -261,6 +261,20 @@ void Composition::gui()
     ImGui::Text(" look : %s ", gformat(look).c_str()); 
     ImGui::Text(" gaze : %s ", gformat(gaze).c_str()); 
 
+    ImGui::Text(" setEyeGUI ");
+    if(ImGui::Button(" +X")) setEyeGUI(glm::vec3(1,0,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" -X")) setEyeGUI(glm::vec3(-1,0,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" +Y")) setEyeGUI(glm::vec3(0,1,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" -Y")) setEyeGUI(glm::vec3(0,-1,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" +Z")) setEyeGUI(glm::vec3(0,0,1));
+    ImGui::SameLine();
+    if(ImGui::Button(" -Z")) setEyeGUI(glm::vec3(0,0,-1));
+
+
     float* param = glm::value_ptr(m_param) ;
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1.0f, "%0.3f", 2.0f );
@@ -604,6 +618,25 @@ void Composition::setEyeW(glm::vec4 eyew)
     print(eye, "eye");
 
     m_view->setEye(eye);
+}
+
+void Composition::setEyeGUI(glm::vec3 gui)
+{
+    glm::vec4 eyew ;
+
+    eyew.x = m_extent*gui.x ;  
+    eyew.y = m_extent*gui.y ;  
+    eyew.z = m_extent*gui.z ;  
+    eyew.w = 1.0f ;  
+
+    glm::vec4 eye = m_world_to_model * eyew ; 
+
+    LOG(info) << "Composition::setEyeGUI extent " << m_extent  ; 
+    print(eyew, "eyew");
+    print(eye, "eye");
+
+    m_view->setEye(eye);
+
 }
 
 

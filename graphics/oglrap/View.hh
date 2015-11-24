@@ -82,7 +82,7 @@ private:
    glm::vec3 m_look ; 
    glm::vec3 m_up ; 
    bool      m_changed ; 
-
+   std::vector<glm::vec4> m_axes ; 
    Animator* m_animator ; 
 
 };
@@ -92,6 +92,10 @@ inline View::View() : m_animator(NULL)
 {
     home();
     initAnimator();
+
+    m_axes.push_back(glm::vec4(0,1,0,0));
+    m_axes.push_back(glm::vec4(0,0,1,0));
+    m_axes.push_back(glm::vec4(1,0,0,0));
 }
 
 
@@ -139,12 +143,6 @@ inline View::~View()
 
 // TODO: generalize to handle a choice of rotation axis
 
-inline void View::updateEyePhase()
-{
-   // atan2 : Principal arc tangent of y/x, in the interval [-pi,+pi] radians 
-   // so eye phase range is -1:1
-    m_eye_phase = atan2(m_eye.y,m_eye.x)/(1.0f*M_PI);
-}
 inline float View::getEyePhase()
 {
    // somewhat dodgy derived qyt 
