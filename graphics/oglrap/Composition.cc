@@ -117,6 +117,8 @@ void Composition::init()
     m_trackball = new Trackball() ;
     m_clipper = new Clipper() ;
 
+    m_command.resize(m_command_length);
+
     initAxis();
 }
 
@@ -261,6 +263,13 @@ void Composition::gui()
     ImGui::Text(" look : %s ", gformat(look).c_str()); 
     ImGui::Text(" gaze : %s ", gformat(gaze).c_str()); 
 
+    // problem with keyboard input is just about all keys are taken already as shortcuts
+    // so are unable to enter anything 
+    ImGui::InputText(" command ", (char*)m_command.c_str(), m_command_length ); 
+    ImGui::SameLine();
+    ImGui::Text(" : %s ", m_command.c_str()) ; 
+
+
     ImGui::Text(" setEyeGUI ");
     if(ImGui::Button(" +X")) setEyeGUI(glm::vec3(1,0,0));
     ImGui::SameLine();
@@ -291,7 +300,7 @@ void Composition::gui()
          m_animator->gui("time (ns)", "%0.3f", 2.0f);
 
          float* target = m_animator->getTarget();
-         ImGui::Text(" time (ns) * c (.299792458 m/ns) horizon : %10.3f m ", *target * SPEED_OF_LIGHT / 1000.f );
+         ImGui::Text(" time (ns) * SPEED_OF_LIGHT (mm/ns) : %10.3f mm ", *target * SPEED_OF_LIGHT / 1000.f );
     }
 
     int* pick = glm::value_ptr(m_pick) ;

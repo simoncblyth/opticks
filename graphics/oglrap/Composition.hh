@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <glm/glm.hpp>  
 
@@ -342,6 +343,8 @@ class Composition : public Configurable {
       glm::vec4 m_axis_y_color ; 
       glm::vec4 m_axis_z_color ; 
 
+      std::string   m_command ; 
+      unsigned int  m_command_length ; 
 
   public: 
       void Summary(const char* msg);
@@ -380,7 +383,8 @@ inline Composition::Composition()
   m_axis_z(0.f   ,    0.f, 1000.f, 0.f),
   m_axis_x_color(1.f,0.f,0.f,1.f),
   m_axis_y_color(0.f,1.f,0.f,1.f),
-  m_axis_z_color(0.f,0.f,1.f,1.f)
+  m_axis_z_color(0.f,0.f,1.f,1.f),
+  m_command_length(256) 
 {
     init();
 }

@@ -332,7 +332,21 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.polarization = photonPolarization ;
           p.position = ts.x0 + radius*spherePosition ;
       }
+      else if( ts.type == T_INVCYLINDER )
+      {
+           // for prism test it is convenient for emission in all directions constrained to a plane 
 
+          float3 cylinderPosition = make_float3( cosPhi, sinPhi, 1.f - 2.0f*u1 );  
+          float3 cylinderDirection = make_float3( cosPhi, sinPhi, 0.f ) ;
+
+          //rotateUz(cylinderPosition, ts.p0 );  not rotating as desired
+
+          p.direction = -cylinderDirection ; 
+          p.position = ts.x0 + radius*cylinderPosition ;
+          p.polarization = p.direction ;
+
+      }
+      // TODO: ripple tank source, ie waves with time gaps 
 
 
 }

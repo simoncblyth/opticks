@@ -185,6 +185,37 @@ glm::vec4 GLMFormat::vec4(const std::string& s )
     return v ; 
 }
 
+
+
+
+glm::mat4 GLMFormat::mat4(const std::string& s, bool flip )
+{
+    std::vector<std::string> tp; 
+    boost::split(tp, s, boost::is_any_of(","));
+    unsigned int size = tp.size();
+    glm::mat4 m;
+    for(unsigned int j=0 ; j < 4 ; j++) 
+    for(unsigned int k=0 ; k < 4 ; k++) 
+    {
+        unsigned int offset = j*4+k ;   
+        if(offset >= size) break ; 
+        float v = boost::lexical_cast<float>(tp[offset]) ;
+        if(flip)
+        {
+            m[j][k] = v ; 
+        }
+        else
+        {
+            m[k][j] = v ; 
+        }   
+    }
+    return m ; 
+}
+
+
+
+
+
 glm::ivec4 GLMFormat::ivec4(const std::string& s )
 {
     std::vector<std::string> tp; 
@@ -353,6 +384,7 @@ glm::vec3 gvec3(const std::string& s )
     GLMFormat fmt; 
     return fmt.vec3(s);
 }
+
 glm::vec4 gvec4(const std::string& s )
 {
     GLMFormat fmt; 
@@ -374,14 +406,16 @@ glm::ivec3 givec3(const std::string& s )
     GLMFormat fmt; 
     return fmt.ivec3(s);
 }
-
-
 glm::quat gquat(const std::string& s )
 {
     GLMFormat fmt; 
     return fmt.quat(s);
 }
-
+glm::mat4 gmat4(const std::string& s, bool flip)
+{
+    GLMFormat fmt; 
+    return fmt.mat4(s, flip);
+}
 
 
 

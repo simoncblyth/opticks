@@ -32,6 +32,7 @@ class GLMFormat {
        glm::ivec3 ivec3(const std::string& s );
        glm::vec3 vec3(const std::string& s );
        glm::quat quat(const std::string& s );
+       glm::mat4 mat4(const std::string& s, bool flip=false);
 
    private:
        std::ostringstream m_ss  ;
@@ -61,6 +62,7 @@ glm::ivec4  givec4(const std::string& s );
 glm::uvec4  guvec4(const std::string& s );
 glm::ivec3  givec3(const std::string& s );
 glm::quat   gquat(const std::string& s );
+glm::mat4   gmat4(const std::string& s, bool flip=false);
 
 std::string gpresent(const glm::vec4& v, unsigned int prec=3, unsigned int wid=10);
 

@@ -11,6 +11,14 @@
 #include <vector>
 
 
+void test_gmat4()
+{
+    std::string s = "0.500,-0.866,0.000,-86.603,0.866,0.500,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000," ;
+    glm::mat4 m = gmat4(s);
+    print(m, "mat4");
+}
+
+
 
 void test_ivec4()
 {
@@ -54,7 +62,8 @@ void test_misc()
 
 int main()
 {
-    test_ivec4();
+    //test_ivec4();
+    test_gmat4();
     return 0 ; 
 }
 

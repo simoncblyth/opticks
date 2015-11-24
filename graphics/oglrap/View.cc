@@ -173,6 +173,8 @@ void View::updateEyePhase()
    // atan2 : Principal arc tangent of y/x, in the interval [-pi,+pi] radians 
    // so eye phase range is -1:1
     m_eye_phase = atan2(m_eye.y,m_eye.x)/(1.0f*M_PI);
+    
+    // TODO: rotate about up, not always z
 
    // invoked by setEye, so handle here problematic viewpoints
    glm::vec3 gaze = glm::normalize(m_look - m_eye) ; 

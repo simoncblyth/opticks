@@ -38,6 +38,7 @@ const char* TorchStepNPY::T_DISCLIN_   = "disclin" ;
 const char* TorchStepNPY::T_DISCAXIAL_   = "discaxial" ; 
 const char* TorchStepNPY::T_INVSPHERE_ = "invsphere" ; 
 const char* TorchStepNPY::T_REFLTEST_  = "refltest" ; 
+const char* TorchStepNPY::T_INVCYLINDER_ = "invcylinder" ; 
 
 Torch_t TorchStepNPY::parseType(const char* k)
 {
@@ -47,6 +48,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     else if(  strcmp(k,T_DISCLIN_)==0)   type = T_DISCLIN ; 
     else if(  strcmp(k,T_DISCAXIAL_)==0) type = T_DISCAXIAL ; 
     else if(  strcmp(k,T_INVSPHERE_)==0) type = T_INVSPHERE ; 
+    else if(  strcmp(k,T_INVCYLINDER_)==0) type = T_INVCYLINDER ; 
     else if(  strcmp(k,T_REFLTEST_)==0)  type = T_REFLTEST ; 
     return type ;   
 }
@@ -64,6 +66,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
        case T_DISCAXIAL:   type=T_DISCAXIAL  ;break; 
        case T_INVSPHERE:   type=T_INVSPHERE  ;break; 
        case T_REFLTEST:    type=T_REFLTEST   ;break; 
+       case T_INVCYLINDER: type=T_INVCYLINDER;break; 
     }
     return type ; 
 }
@@ -114,6 +117,7 @@ void TorchStepNPY::setPolz(const char* s)
 const char* TorchStepNPY::TYPE_ = "type"; 
 const char* TorchStepNPY::POLZ_ = "polz"; 
 const char* TorchStepNPY::FRAME_ = "frame"; 
+const char* TorchStepNPY::TRANSFORM_ = "transform"; 
 const char* TorchStepNPY::SOURCE_ = "source"; 
 const char* TorchStepNPY::TARGET_ = "target" ; 
 const char* TorchStepNPY::PHOTONS_ = "photons" ; 
@@ -129,6 +133,7 @@ TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
 {
     Param_t param = UNRECOGNIZED ; 
     if(     strcmp(k,FRAME_)==0)          param = FRAME ; 
+    else if(strcmp(k,TRANSFORM_)==0)      param = TRANSFORM ; 
     else if(strcmp(k,TYPE_)==0)           param = TYPE ; 
     else if(strcmp(k,POLZ_)==0)           param = POLZ ; 
     else if(strcmp(k,SOURCE_)==0)         param = SOURCE ; 
@@ -150,6 +155,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
     {
         case TYPE           : setType(s)           ;break;
         case POLZ           : setPolz(s)           ;break;
+        case TRANSFORM      : setFrameTransform(s) ;break;
         case FRAME          : setFrame(s)          ;break;
         case SOURCE         : setSourceLocal(s)    ;break;
         case TARGET         : setTargetLocal(s)    ;break;
@@ -189,6 +195,8 @@ void TorchStepNPY::setFrame(const char* s)
     std::string ss(s);
     m_frame = givec4(ss);
 }
+
+
 void TorchStepNPY::setFrame(unsigned int vindex)
 {
     m_frame.x = vindex ; 
@@ -196,6 +204,17 @@ void TorchStepNPY::setFrame(unsigned int vindex)
     m_frame.z = 0 ; 
     m_frame.w = 0 ; 
 }
+
+
+void TorchStepNPY::setFrameTransform(const char* s)
+{
+    std::string ss(s);
+    bool flip = true ;  
+    glm::mat4 transform = gmat4(ss, flip);
+    setFrameTransform(transform);
+    setFrameTargetted(true);
+}
+
 
 void TorchStepNPY::setSourceLocal(const char* s)
 {
@@ -315,6 +334,9 @@ void TorchStepNPY::addStep(bool verbose)
 
 void TorchStepNPY::update()
 {
+   // direction from: target - source
+   // position from : source
+
     m_src = m_frame_transform * m_source_local  ; 
     m_tgt = m_frame_transform * m_target_local  ; 
     m_dir = glm::vec3(m_tgt) - glm::vec3(m_src) ;

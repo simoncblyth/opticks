@@ -110,6 +110,88 @@ ggv-pmt-test(){
 # analytic sphere needs bbox expanded slightly to avoid leaks at touch points
 #
 
+
+ggv-prism()
+{
+
+    # position from: source
+    # direction from: target - source
+
+    local tag="1"
+    #     source=-611.873,-158.615,0
+
+    transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
+
+    # zenithazimuth .z:.w  provides azimuth phi fraction range
+    # ie the generated random range within 0:1 (that is mapped to 0:2pi) 
+    #
+    # apex angle 60, half = 30
+    # phi=0 corresponds to x axis
+    # offset phi by 180-90-30=60 
+    # hence phifrac0 = 60/360
+
+    local phifrac0=0.167  # 60/360  
+    local phifrac1=0.667  # 0.167+0.5
+
+
+    # below transform string obtained from prism.py s_i2w
+    # is the 
+    #
+    #     origin within the face 
+    #     +Y normal to face 
+    #     +X towards the apex 
+
+
+    local torch_config=(
+                 type=invcylinder
+                 photons=500000
+                 polz=${pol}pol
+                 frame=-1
+                 transform=0.500,0.866,0.000,0.000,-0.866,0.500,0.000,0.000,0.000,0.000,1.000,0.000,-86.603,0.000,0.000,1.000
+                 target=0,-500,0
+                 source=0,0,0 
+                 radius=25
+                 distance=500
+                 zenithazimuth=0,1,$phifrac0,$phifrac1
+                 material=Vacuum
+               )
+ 
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=box parameters=-1,1,0,700 boundary=Rock//perfectAbsorbSurface/Vacuum
+
+                 #shape=box parameters=-1,1,0,150            boundary=Vacuum///Pyrex 
+                 shape=prism parameters=60,300,300,200       boundary=Vacuum///Pyrex 
+                 #shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///Pyrex 
+
+               )
+
+
+
+    ggv.py  \
+            $* \
+            --animtimemax 7 \
+            --test --testconfig "$(join _ ${test_config[@]})" \
+            --torch --torchconfig "$(join _ ${torch_config[@]})" \
+            --save --tag $tag 
+
+
+    #echo >/dev/null ggv.sh  \
+    ggv.sh  \
+            $* \
+            --animtimemax 7 \
+            --geocenter \
+            --eye 0,0,1 \
+            --test --testconfig "$(join _ ${test_config[@]})" \
+            --torch --torchconfig "$(join _ ${torch_config[@]})" \
+            --save --tag $tag 
+
+}
+
+
+
 ggv-reflect()
 {
     type $FUNCNAME

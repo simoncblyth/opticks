@@ -9,6 +9,7 @@ typedef enum {
    T_DISCAXIAL,
    T_INVSPHERE,
    T_REFLTEST,
+   T_INVCYLINDER,
    T_NUM_TYPE
 }               Torch_t ;
 
@@ -29,13 +30,14 @@ template<typename T> class NPY ;
 
 class TorchStepNPY {
    public:
-       typedef enum { TYPE, POLZ, FRAME, SOURCE, TARGET, PHOTONS, MATERIAL, ZENITHAZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, DISTANCE, UNRECOGNIZED } Param_t ;
+       typedef enum { TYPE, POLZ, FRAME, TRANSFORM, SOURCE, TARGET, PHOTONS, MATERIAL, ZENITHAZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, DISTANCE, UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
        static const char* TYPE_; 
        static const char* POLZ_; 
        static const char* FRAME_ ; 
+       static const char* TRANSFORM_ ; 
        static const char* SOURCE_ ; 
        static const char* TARGET_ ; 
        static const char* PHOTONS_ ; 
@@ -53,6 +55,7 @@ class TorchStepNPY {
        static const char* T_DISCAXIAL_ ; 
        static const char* T_INVSPHERE_ ; 
        static const char* T_REFLTEST_ ; 
+       static const char* T_INVCYLINDER_ ; 
 
        static const char* M_SPOL_ ; 
        static const char* M_PPOL_ ; 
@@ -76,8 +79,13 @@ class TorchStepNPY {
        void setFrame(const char* s );
        void setFrame(unsigned int vindex );
        glm::ivec4&  getFrame();
-       void setFrameTransform(glm::mat4& frame_transform);
+       void setFrameTransform(glm::mat4& transform);
        // targetting needs frame transform info which is done by GGeo::targetTorchStep(torchstep)
+
+       void setFrameTransform(const char* s );       // directly from string of 16 comma delimited floats 
+       void setFrameTargetted(bool targetted=true);
+       bool isFrameTargetted();
+       const glm::mat4& getFrameTransform();
 
    public:
        // local positions, frame transform is applied in *update* yielding world frame m_post m_dirw 
@@ -141,6 +149,7 @@ class TorchStepNPY {
   private:
        glm::ivec4   m_frame ;
        glm::mat4    m_frame_transform ; 
+       bool         m_frame_targetted ; 
        glm::vec4    m_source_local ; 
        glm::vec4    m_target_local ; 
        glm::vec4    m_src ;
@@ -168,10 +177,10 @@ inline TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step
        m_genstep_id(genstep_id), 
        m_config(config ? strdup(config) : DEFAULT_CONFIG),
        m_material(NULL),
+       m_frame_targetted(false),
        m_num_step(num_step),
        m_step_index(0),
        m_npy(NULL)
-      
 {
    configure(m_config);
 }
@@ -185,6 +194,21 @@ inline void TorchStepNPY::setFrameTransform(glm::mat4& frame_transform)
 {
     m_frame_transform = frame_transform ;
 }
+inline const glm::mat4& TorchStepNPY::getFrameTransform()
+{
+    return m_frame_transform ;
+}
+
+inline void TorchStepNPY::setFrameTargetted(bool targetted)
+{
+    m_frame_targetted = targetted ;
+}
+inline bool TorchStepNPY::isFrameTargetted()
+{
+    return m_frame_targetted ;
+} 
+
+
 
 inline glm::vec4& TorchStepNPY::getSourceLocal()
 {
@@ -213,5 +237,6 @@ inline const char* TorchStepNPY::getConfig()
     return m_config ; 
 }
 
-
 #endif
+
+

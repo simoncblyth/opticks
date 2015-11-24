@@ -123,7 +123,6 @@ import numpy as np
 rad = np.pi/180.
 from env.python.utils import *
 from env.numerics.npy.types import *
-import env.numerics.npy.PropLib as PropLib 
 
 log = logging.getLogger(__name__)
 
@@ -132,82 +131,41 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
 from env.numerics.npy.ana import Evt, Selection, Rat, theta
-from env.numerics.npy.fresnel import Fresnel
+from env.numerics.npy.geometry import Shape, Plane, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
 
 
 np.set_printoptions(suppress=True, precision=3)
 np.seterr(divide="ignore", invalid="ignore")
-# http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.seterr.html
 
 rat_ = lambda n,d:float(len(n))/float(len(d))
 
 X,Y,Z,W = 0,1,2,3
 
 
+class Box(Shape):
+    def __init__(self, parameters, boundary, wavelength=380 ):
+        Shape.__init__(self, parameters, boundary) 
 
 
+class Prism(Shape):
+    def __init__(self, parameters, boundary, wavelength=380 ):
+        Shape.__init__(self, parameters, boundary) 
 
-class Ray(object):
-    def __init__(self, o, d):
-        self.origin = np.array(o) 
-        self.direction = np.array(d) 
+        alpha = self.parameters[0]
+        height = self.parameters[1]
+        depth = self.parameters[2]
 
-    def position(self, t):
-        return self.origin + t*self.direction
-
-
-class Plane(object):
-    def __init__(self, n, p):
-        """
-        :param n: normal 
-        :param p: point in the plane 
-        """
-        n = np.array(n)
-        p = np.array(p)
-        n = n/np.linalg.norm(n,2,0)
-        d = -np.dot(n,p)
-        pass
-        self.n = n
-        self.p = p
-        self.d = d
-
-    def ntile(self, num):
-        return np.tile( self.n, num).reshape(-1,3)
-
-    def intersect(self, ray):
-        denom_ = np.dot( self.n, ray.direction )
-        return denom_, -(self.d + np.dot(self.n, ray.origin))/denom_
-
-
-class Intersect(object):
-    def __init__(self, i0, t0, n0 ,p0, i1, t1, n1, p1):
-        self.i0 = i0
-        self.t0 = t0 
-        self.n0 = n0
-        self.p0 = p0
-
-        self.i1 = i1
-        self.t1 = t1
-        self.n1 = n1 
-        self.p1 = p1
-
-    def __repr__(self):
-        return "i0 %2d t0 %10.4f n0 %25s p0 %25s   i1 %2d t1 %10.4f n1 %25s p1 %25s " % (self.i0, self.t0, self.n0,self.p0, self.i1, self.t1, self.n1, self.p1 )
- 
-
-
-class Prism(object):
-    def __init__(self, alpha, n, height=300., depth=300.):
         a  = alpha*rad
         pass
         self.a = a 
         self.sa = np.sin(a)
         self.ca = np.cos(a)
+        self.alpha = alpha
+
+        n = self.refractive_index(wavelength)  # via base class
         self.n = n
         self.nn = n*n
         self.ni = 1./n
-        self.alpha = alpha
-
 
         ymax =  height/2.
         ymin = -height/2.
@@ -238,8 +196,8 @@ class Prism(object):
     def intersect(self, ray):
          t0 = -np.inf
          t1 =  np.inf
-         t0_normal = np.array([0,0,0])
-         t1_normal = np.array([0,0,0])
+         n0 = np.array([0,0,0])
+         n1 = np.array([0,0,0])
 
          for i, pl in enumerate(self.planes):
              n = pl.n
@@ -250,22 +208,22 @@ class Prism(object):
                 if t > t0:
                     i0 = i 
                     t0 = t 
-                    t0_normal = n  
+                    n0 = n  
              else:
                  if t < t1:
                     i1 = i 
                     t1 = t 
-                    t1_normal = n 
+                    n1 = n 
 
-             log.info("i %2d denom %10.4f t %10.4f t0 %10.4f t1 %10.4f t0n %25s t1n %25s " % (i, denom, t, t0, t1, t0_normal, t1_normal ))
+             log.info("i %2d denom %10.4f t %10.4f t0 %10.4f t1 %10.4f n0 %25s n1 %25s " % (i, denom, t, t0, t1, n0, n1 ))
 
          if t0 > t1:
              log.into("no intersect")
-             return None
+             return []
          else:
              p0 = ray.position(t0)
              p1 = ray.position(t1)
-             return Intersect(i0, t0, t0_normal, p0,  i1, t1, t1_normal, p1)
+             return Intersect(i0, t0, n0, p0),Intersect(i1, t1, n1, p1)
 
 
 
@@ -317,12 +275,6 @@ class Prism(object):
        
 
 dot_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
-norm_ = lambda v:v/np.linalg.norm(v)  
-
-def hom_(v):
-    h = np.ones(4)
-    h[:3] = v 
-    return h 
 
 
 class PrismCheck(object):
@@ -375,73 +327,11 @@ class PrismCheck(object):
 
 
 
-class IntersectFrame(object):
-    """
-    world_to_intersect 4x4 homogenous matrix
-    intersect frame basis 
-    
-    Arrange frame with origin at 
-    intersection point and with basis vectors
-
-    U: in plane of face
-    V: normal to the intersected plane
-    W: perpendicular to both the above
-
-                 V
-                 |
-                 |
-          -------*---U------A-
-                W           another      
-    """
-    def __init__(self, isect, another):
-
-        p0 = isect.p0
-        n0 = isect.n0
-
-        U = norm_( another - p0 )
-        V = n0
-        W = np.cross(U,V)
-
-        ro = np.identity(4)
-        ro[:3,0] = U
-        ro[:3,1] = V
-        ro[:3,2] = W
-
-        tr = np.identity(4)  
-        tr[:3,3] = p0
-
-        itr = np.identity(4)  
-        itr[:3,3] = -p0
-
-        self.w2i = np.dot(ro.T,itr)
-        self.i2w = np.dot(tr, ro)  
-
-
-    def homogenize(self, v, w=1):
-        assert len(v) == 3
-        vh = np.zeros(4)
-        vh[:3] = v 
-        vh[3] = w
-        return vh
-
-    def world_to_intersect(self, v, w=1): 
-        wfp = self.homogenize(v, w)
-        ifp = np.dot( self.w2i, wfp )
-        log.info("world_to_intersect  wfp %s -> ifp %s " % (wfp, ifp)) 
-        return ifp 
-
-    def intersect_to_world(self, v, w=1): 
-        ifp = self.homogenize(v, w)
-        wfp = np.dot( self.i2w, ifp )
-        log.info("intersect_to_world  ifp %s -> wfp %s " % (ifp, wfp)) 
-        return wfp
- 
-
-
 
 if __name__ == '__main__':
 
-    prism = Prism(60., 1.458)
+    wavelength = 380
+    prism = Prism("60.,300,300,0", "Air///Pyrex", wavelength)
     dom, dl = prism.expected()
 
     i1m = prism.i1m()
@@ -464,29 +354,30 @@ if __name__ == '__main__':
     ray = middle
 
     isect = prism.intersect(ray)   
-    if isect is None:
-        log.info("no intersect")
-    else:
-        log.info(isect)
-        log.info("p0 %s n0 %s " % (isect.p0,isect.n0))
+    assert len(isect) 
 
-        another = prism.apex  
-        # another point in the plane of the intersected face, 
-        # in order to define intersect face basis
-        ifr = IntersectFrame( isect, another)
+    i0, i1 = isect
+    log.info("i0 %s " % i0)
+    log.info("i1 %s " % i1)
+    log.info("p0 %s n0 %s " % (i0.p,i0.n))
 
-        ifr.world_to_intersect(isect.p0)      
-        ifr.world_to_intersect(isect.n0, w=0)     # direction, not coordinate 
-        ifr.world_to_intersect([0,0,1], w=0)     # direction, not coordinate 
- 
-        ifr.intersect_to_world([0,0,0])
+    another = prism.apex  
+    # another point in the plane of the intersected face, 
+    # in order to define intersect face basis
+    ifr = IntersectFrame( i0, another)
 
-        ifpm = np.array([-1, 1./ti1m,0])*400
-        ifr.intersect_to_world(ifpm)
-        
+    ifr.world_to_intersect(i0.p)      
+    ifr.world_to_intersect(i0.n, w=0)     # direction, not coordinate 
+    ifr.world_to_intersect([0,0,1], w=0)     # direction, not coordinate 
 
+    ifr.intersect_to_world([0,0,0])
 
+    ifpm = np.array([-1, 1./ti1m,0])*400
+    ifr.intersect_to_world(ifpm)
+    
 
+    s_i2w = mat4_tostring(ifr.i2w.T)     
+    s_id = mat4_tostring(np.identity(4))     
 
 
 
