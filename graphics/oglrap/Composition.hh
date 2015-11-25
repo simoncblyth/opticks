@@ -327,6 +327,9 @@ class Composition : public Configurable {
       glm::mat4 m_world2clip_isnorm ;     
       glm::mat4 m_projection ;     
 
+      glm::mat4 m_rotation ;     
+      glm::mat4 m_irotation ;
+     
       glm::mat4 m_trackballing ;     
       glm::mat4 m_itrackballing ;     
 

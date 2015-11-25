@@ -873,19 +873,17 @@ void Composition::update()
 
     m_view->getTransforms(m_model_to_world, m_world2camera, m_camera2world, m_gaze );   // model_to_world is input, the others are updated
 
+    // the eye2look look2eye pair allows trackball rot to be applied around the look 
     m_gazelength = glm::length(m_gaze);
-
     m_eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,m_gazelength));  
-
     m_look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-m_gazelength));
 
     m_trackball->getOrientationMatrices(m_trackballrot, m_itrackballrot);
     m_trackball->getTranslationMatrices(m_trackballtra, m_itrackballtra);
-    //m_trackball->getCombinedMatrices(m_trackballing, m_itrackballing);
 
-    m_world2eye = m_trackballtra * m_look2eye * m_trackballrot * m_eye2look * m_world2camera ;           // ModelView
+    m_world2eye = m_trackballtra * m_look2eye * m_trackballrot * m_rotation * m_eye2look * m_world2camera ;           // ModelView
 
-    m_eye2world = m_camera2world * m_look2eye * m_itrackballrot * m_eye2look * m_itrackballtra ;          // InverseModelView
+    m_eye2world = m_camera2world * m_look2eye * m_irotation * m_itrackballrot * m_eye2look * m_itrackballtra ;          // InverseModelView
 
     m_projection = m_camera->getProjection();
 

@@ -3,7 +3,49 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 
+void test_rotate()
+{
+    glm::vec3 X(1,0,0);
+    glm::vec3 Y(0,1,0);
+    glm::vec3 Z(0,0,1);
 
+    float angle = 0.f ; 
+    for(unsigned int i=0 ; i < 6 ; i++)
+    {
+        switch(i)
+        {
+            case 0:angle = 0.f ; break;   
+            case 1:angle = 30.f ; break;   
+            case 2:angle = 45.f ; break;   
+            case 3:angle = 60.f ; break;   
+            case 4:angle = 90.f ; break;   
+            case 5:angle = 180.f ; break;   
+        }
+
+        float a = angle*M_PI/180. ; 
+        printf(" angle %10.4f a %10.4f \n", angle, a );
+
+        glm::mat4 rotX = glm::rotate(glm::mat4(1.0), a, X );
+        glm::mat4 rotY = glm::rotate(glm::mat4(1.0), a, Y );
+        glm::mat4 rotZ = glm::rotate(glm::mat4(1.0), a, Z );
+
+        glm::mat4 irotX = glm::transpose(rotX);
+        glm::mat4 irotY = glm::transpose(rotY);
+        glm::mat4 irotZ = glm::transpose(rotZ);
+
+        print(rotX, "rotX"); 
+        print(irotX, "irotX"); 
+
+        print(rotY, "rotY"); 
+        print(irotY, "irotY"); 
+
+        print(rotZ, "rotZ"); 
+        print(irotZ, "irotZ"); 
+
+
+
+   }
+}
 
 
 
@@ -44,7 +86,8 @@ void test_setCenterExtent()
 int main()
 {
    //test_center_extent();
-   test_setCenterExtent();
+   //test_setCenterExtent();
+   test_rotate();
 
     
    return 0 ;

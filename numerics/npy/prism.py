@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 """
+TODO:
+
+* make comparison after histogramming, like reflection.py does
+* but here have incident angle as well as the deviation, so need 2d 
+* http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.histogram2d.html
+
+
+See *ggv-prism*
+
+
+Prism Deviation Angle Calculation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Hecht p163, two refractions thru a prism, CB and CD are normal to surface planes::
 
    .                
@@ -110,10 +123,8 @@ At minimum deviation delta, ray are parallel to base and have symmetric ray
         i1 = arcsin( n sin(alpha/2) )
 
 
-Where to shoot from to get minimum deviation ?
-
-      
-
+Where to shoot from to get minimum deviation ? 
+* Use intersect frame coordinate with the transform explicitly specifified
 
 
 """
@@ -314,11 +325,12 @@ class Prism(Shape):
     def t2(self, i1):
         return np.arcsin(self.sa*np.sqrt(self.nn - np.sin(i1)*np.sin(i1)) - np.sin(i1)*self.ca)  
 
-       
-
 
 
 class PrismCheck(object):
+    def title(self):
+        return "prism.py deviation vs incident angle"  
+
     def __init__(self, prism, evt, mask=True):
       
         s = Selection(evt,"BT BT SA")   # smth like 70 percent 
@@ -433,15 +445,6 @@ class PrismCheck(object):
 
 
 
-
-def test_targetting(prism):
-    # light source and target basis, to which random disc position is added     
-    src = np.array([[-600,0,0]])
-    tgt = np.array([[0,0,0]])
-    lnorm = prism.lhs.ntile(1)   # particular intersection assumption
-    cta = costheta_( src-tgt, lnorm )
-
-
 def test_intersectframe(prism):
     """
     Establish a frame at midface lhs intersection point with the prism 
@@ -485,6 +488,19 @@ def deviation_plot(pc,sl=None):
     """ 
     scatter_plot(pc.mi1, pc.mdf, sl)
 
+
+def oneplot(pc, log_=False):
+    fig = plt.figure()
+    plt.title(pc.title())
+    ax = fig.add_subplot(111)
+
+    vanity_plot(pc, sl=slice(0,10000))
+    #deviation_plot(pc, sl=slice(0,10000))
+    #deviation_plot(pc, sl=None)
+
+    fig.show()
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
@@ -494,9 +510,7 @@ if __name__ == '__main__':
 
     pc = PrismCheck(prism, evt )
 
-    vanity_plot(pc, sl=slice(0,10000))
-    #deviation_plot(pc, sl=slice(0,10000))
-    #deviation_plot(pc, sl=None)
+    oneplot(pc, log_=False)
 
     plt.show()
 
