@@ -128,15 +128,15 @@ class IntersectFrame(object):
           -------*---U------A-
                 W           another      
     """
-    def __init__(self, isect, another):
+    def __init__(self, isect, a):
 
-        p0 = isect.p
-        n0 = isect.n
+        p = isect.p
+        n = isect.n
 
         norm_ = lambda v:v/np.linalg.norm(v)  
 
-        U = norm_( another - p0 )
-        V = n0
+        U = norm_( a - p )
+        V = n
         W = np.cross(U,V)
 
         ro = np.identity(4)
@@ -145,13 +145,18 @@ class IntersectFrame(object):
         ro[:3,2] = W
 
         tr = np.identity(4)  
-        tr[:3,3] = p0
+        tr[:3,3] = p
 
         itr = np.identity(4)  
-        itr[:3,3] = -p0
+        itr[:3,3] = -p
 
         self.w2i = np.dot(ro.T,itr)
         self.i2w = np.dot(tr, ro)  
+
+        self.p = p
+        self.n = n 
+        self.a = a
+
 
 
     def homogenize(self, v, w=1):
@@ -173,6 +178,12 @@ class IntersectFrame(object):
         log.info("intersect_to_world  ifp %s -> wfp %s " % (ifp, wfp)) 
         return wfp
  
+    def i2w_string(self):
+        return mat4_tostring(self.i2w.T)
+
+    def id_string(self):
+        return mat4_tostring(np.identity(4))
+
 
 
 

@@ -300,7 +300,7 @@ void Composition::gui()
          m_animator->gui("time (ns)", "%0.3f", 2.0f);
 
          float* target = m_animator->getTarget();
-         ImGui::Text(" time (ns) * SPEED_OF_LIGHT (mm/ns) : %10.3f mm ", *target * SPEED_OF_LIGHT / 1000.f );
+         ImGui::Text(" time (ns) * %10.3f (mm/ns) : %10.3f mm ", SPEED_OF_LIGHT, *target * SPEED_OF_LIGHT );
     }
 
     int* pick = glm::value_ptr(m_pick) ;

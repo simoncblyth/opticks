@@ -129,10 +129,20 @@ ggv-prism()
     # phi=0 corresponds to x axis
     # offset phi by 180-90-30=60 
     # hence phifrac0 = 60/360
+    #
+    # focus on critical angle 24.7632939454   (60.+90.+24.763)/360. = 0.4854527777777778
+    #
 
-    local phifrac0=0.167  # 60/360  
-    local phifrac1=0.667  # 0.167+0.5
+    local phifrac0=0.1667  # 60/360  
+    local phifrac1=0.4167  # 0.1667+0.250   from 1-2 is selects lower quadrant 
+    local phifrac2=0.6667  # 0.1667+0.5
+    local quadrant=$phifrac1,$phifrac2  
 
+    # phifrac range around critical angle
+    local critical=0.4854,0.4855       # 19k sneak out, grazing prism face  
+    #local critical=0.485452,0.485453     # no "BT BT SA" getting TIR at 2nd interface
+
+    local azimuth=$quadrant
 
     # below transform string obtained from prism.py s_i2w
     # is the 
@@ -140,7 +150,10 @@ ggv-prism()
     #     origin within the face 
     #     +Y normal to face 
     #     +X towards the apex 
-
+    #
+    # with invcylinder
+    #     distance corresponds to length of the cylinder 
+    #     using 25mm is good for ripple tank effect 
 
     local torch_config=(
                  type=invcylinder
@@ -150,29 +163,24 @@ ggv-prism()
                  transform=0.500,0.866,0.000,0.000,-0.866,0.500,0.000,0.000,0.000,0.000,1.000,0.000,-86.603,0.000,0.000,1.000
                  target=0,-500,0
                  source=0,0,0 
-                 radius=25
-                 distance=500
-                 zenithazimuth=0,1,$phifrac0,$phifrac1
+                 radius=300
+                 distance=25
+                 zenithazimuth=0,1,$azimuth
                  material=Vacuum
                )
  
     local test_config=(
                  mode=BoxInBox
                  analytic=1
-
-                 shape=box parameters=-1,1,0,700 boundary=Rock//perfectAbsorbSurface/Vacuum
-
-                 #shape=box parameters=-1,1,0,150            boundary=Vacuum///Pyrex 
-                 shape=prism parameters=60,300,300,200       boundary=Vacuum///Pyrex 
-                 #shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///Pyrex 
-
+                 shape=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=prism parameters=60,300,300,200   boundary=Vacuum///Pyrex 
                )
-
 
 
     ggv.py  \
             $* \
             --animtimemax 7 \
+            --timemax 7 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --save --tag $tag 

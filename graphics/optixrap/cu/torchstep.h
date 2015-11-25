@@ -336,17 +336,25 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       {
            // for prism test it is convenient for emission in all directions constrained to a plane 
 
-          float3 cylinderPosition = make_float3( cosPhi, sinPhi, 1.f - 2.0f*u1 );  
+          float3 cylinderPosition = make_float3( radius*cosPhi, radius*sinPhi, distance*(1.f - 2.0f*u1) );  
           float3 cylinderDirection = make_float3( cosPhi, sinPhi, 0.f ) ;
 
-          //rotateUz(cylinderPosition, ts.p0 );  not rotating as desired
+          //rotateUz(cylinderPosition, ts.p0 );  not rotating as desired, so have to carefullt select 
+          // azimuthal phifrac
 
           p.direction = -cylinderDirection ; 
-          p.position = ts.x0 + radius*cylinderPosition ;
+          p.position = ts.x0 + cylinderPosition ;
           p.polarization = p.direction ;
 
+          // ripple tank effect
+          unsigned long long photon_id = launch_index.x ;  
+          float tdelta = float(photon_id % 100)*0.03333 ;  
+          //  300 mm/ns * 0.0333 ns = ~10 mm
+
+          p.time = ts.t0 + tdelta ; 
+
+
       }
-      // TODO: ripple tank source, ie waves with time gaps 
 
 
 }
