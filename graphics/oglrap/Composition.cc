@@ -610,10 +610,11 @@ void Composition::setLookW(glm::vec4 lookw)
     lookw.w = 1.0f ; 
     glm::vec4 look = m_world_to_model * lookw ; 
 
-    LOG(info) << "Composition::setLookW" ; 
-    print(lookw, "lookw");
-    print(look, "look");
-
+    LOG(debug) << "Composition::setLookW" 
+               << " lookw: " << gformat(lookw)
+               << " look: " << gformat(look)
+               ;
+               
     m_view->setLook(look);
 }
 
@@ -622,9 +623,11 @@ void Composition::setEyeW(glm::vec4 eyew)
     eyew.w = 1.0f ; 
     glm::vec4 eye = m_world_to_model * eyew ; 
 
-    LOG(info) << "Composition::setEyeW" ; 
-    print(eyew, "eyew");
-    print(eye, "eye");
+    LOG(debug) << "Composition::setEyeW" 
+               << " eyew: " << gformat(eyew)
+               << " eye: " << gformat(eye)
+               ;
+
 
     m_view->setEye(eye);
 }

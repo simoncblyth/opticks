@@ -69,7 +69,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
-from env.numerics.npy.ana import Evt, Selection, Rat, theta
+from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_
 from env.numerics.npy.fresnel import Fresnel
 
 np.set_printoptions(suppress=True, precision=3)
@@ -80,31 +80,48 @@ X,Y,Z,W = 0,1,2,3
 
 
 class Reflect(object):
-    def __init__(self, evt, focus):
+
+    def theta(self, vecs, normal):
+        N = len(vecs)
+        nrm = np.tile(normal, N).reshape(-1, len(normal))
+        ct = costheta_(vecs, nrm)
+        th = np.arccos(ct)*180./np.pi
+        return th
+
+    def __init__(self, evt, focus, normal):
         """
         :param evt:
         :param focus: coordinates of reflection point
+
+        
+        p0a initial position with no selection applied
+
         """
 
-        al = Selection(evt)
-        p0a = al.recpost(0)[:W] - focus
-        tha = theta(p0a) 
-        # initial position with no selection applied
+        al = Selection(evt)  
+        p0a = al.recpost(0)[:,:W] - focus
+        tha = self.theta( p0a, normal ) 
 
         br = Selection(evt,"BR SA","BR AB")
 
-        p0 = br.recpost(0)[:W] - focus
-        p1 = br.recpost(1)[:W] - focus
-        p2 = br.recpost(2)[:W] - focus
-        # 3 positions, start/refl-point/end for single reflection selection
+        p0 = br.recpost(0)[:,:W] - focus   # start
+        p1 = br.recpost(1)[:,:W] - focus   # refl point
+        p2 = br.recpost(2)[:,:W] - focus   # end
 
-        miss = p1[:,2] != p1[0,2]
+        #miss = p1[:,2] != p1[0,2]   # this assumes a particular geometry 
         # missers confirmed to be a triangulation crack effect
         # avoid by not targetting cracks with millions of photons whilst doing reflection tests
         # ...get **ZERO** missers when avoid cracks ...
 
-        th0 = theta(p0[np.logical_not(miss)])
-        th2 = theta(p2[np.logical_not(miss)])  
+
+        miss = np.tile(False, len(p1))
+
+        msk = ~miss
+        p0m = p0[msk]
+        p2m = p2[msk]
+
+        th0 = self.theta(p0m, normal)
+        th2 = self.theta(p2m, normal)
 
         missrat = Rat(th0,p0,"th0/p0")
 
@@ -121,10 +138,13 @@ class Reflect(object):
         # th0 and th2 are incident and reflected angles
         # matching very well after exclude miss-ers
 
+        self.evt = evt
         self.focus = focus
+        self.normal = normal
         self.al = al 
         self.br = br 
         self.p0a = p0a
+        self.tha = tha
         self.p0 = p0
         self.p1 = p1
         self.p2 = p2
@@ -132,7 +152,6 @@ class Reflect(object):
         self.th0 = th0
         self.th2 = th2
         self.th = th
-        self.tha = tha
         self.missfrac = 1. - missrat.r
 
     def plot_misser(self):
@@ -158,21 +177,11 @@ class Reflect(object):
 
 
 class ReflectionPlot(object):
-    def __init__(self, fr, focus):
-
-        e1 = Evt(tag="1", label="S")
-        e2 = Evt(tag="2", label="P")
-
-        s = Reflect(e1, focus=focus)
-        p = Reflect(e2, focus=focus)
-        pass
-        self.fr = fr
-        self.focus = focus
-        self.dom = fr.dom
-        self.e1 = e1
-        self.e2 = e2
+    def __init__(self, s, p, fr):
         self.s = s
         self.p = p
+        self.fr = fr
+        self.dom = fr.dom
 
     def ratio(self, xsel, xall):
         dom = self.dom
@@ -203,8 +212,8 @@ class ReflectionPlot(object):
         fr.angles()
 
     def title(self):
-        msize = self.e1.msize()
-        return "npy-/reflection.py %3.1fM: %s : %s " % (msize,repr(self.focus),self.fr.title())
+        msize = self.s.evt.msize()
+        return "npy-/reflection.py %3.1fM: %s " % (msize,self.fr.title())
 
     def legend(self, ax, log_=False):
         if log_:
@@ -242,13 +251,30 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     dom = np.linspace(0,90,250)
-    focus = [10,0,300]
+
+    #focus = np.array([10,0,300])    
+
+    # ggv-prism the intesect plane is tilted, not horizontal as reflection.py is assuming
+    transform = "0.500,0.866,0.000,0.000,-0.866,0.500,0.000,0.000,0.000,0.000,1.000,0.000,-86.603,0.000,0.000,1.000"
+    tx = np.fromstring(transform, sep=",").reshape(4,4)
+    focus = np.dot([0,0,0,1],tx)[:3]
+    normal = np.dot([0,1,0,0],tx)[:3]
+
 
     fr = Fresnel(m1="Vacuum", m2="Pyrex", wavelength=500., dom=dom) 
-    rp = ReflectionPlot(fr, focus)
 
-    oneplot(fr,rp,log_=False)
-    #oneplot(fr,rp,log_=True)
+    es = Evt(tag="1", label="S")
+    ep = Evt(tag="2", label="P")
+
+    s = Reflect(es, focus=focus, normal=normal)
+    p = Reflect(ep, focus=focus, normal=normal)
+
+    rp = ReflectionPlot(s, p, fr)
+
+    #oneplot(fr,rp,log_=False)
+    oneplot(fr,rp,log_=True)
     #twoplot(fr,rp)
+
+
 
 

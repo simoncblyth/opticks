@@ -263,7 +263,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
         glm::vec4 param = getParameters(i);
         unsigned int boundary = m_bndlib->addBoundary(spec);
 
-        LOG(info) << "GGeoTest::createBoxInBox" 
+        LOG(debug) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
                   << " shapecode " << std::setw(2) << shapecode 
                   << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)

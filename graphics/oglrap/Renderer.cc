@@ -240,7 +240,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
 
     if(hasTransforms())
     {
-        LOG(info) << "Renderer::upload_buffers setup transform attributes " ;
+        LOG(debug) << "Renderer::upload_buffers setup instance transform attributes " ;
         glBindBuffer (GL_ARRAY_BUFFER, m_transforms);
 
         long qsize = sizeof(GLfloat) * 4 ;

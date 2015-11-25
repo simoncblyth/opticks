@@ -314,7 +314,7 @@ void GGeo::modifyGeometry(const char* config)
 {
     // NB only invoked with test option : "ggv --test" 
 
-    LOG(info) << "GGeo::modifyGeometry" 
+    LOG(debug) << "GGeo::modifyGeometry" 
               << " config [" << ( config ? config : "" ) << "]" ; 
 
     assert(m_geotest == NULL);
@@ -1058,8 +1058,8 @@ void GGeo::targetTorchStep( TorchStepNPY* torchstep )
         torchstep->setFrameTransform(transform);
     }
 
-    glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
-    torchstep->setPolarization(pol);
+    //glm::vec3 pol( 0.f, 0.f, 1.f);  // currently ignored
+    //torchstep->setPolarization(pol);
 
 }
 

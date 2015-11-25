@@ -30,12 +30,28 @@ template<typename T> class NPY ;
 
 class TorchStepNPY {
    public:
-       typedef enum { TYPE, POLZ, FRAME, TRANSFORM, SOURCE, TARGET, PHOTONS, MATERIAL, ZENITHAZIMUTH, WAVELENGTH, WEIGHT, TIME, RADIUS, DISTANCE, UNRECOGNIZED } Param_t ;
+       typedef enum { TYPE, 
+                      POLZ, 
+                      POLARIZATION, 
+                      FRAME,  
+                      TRANSFORM, 
+                      SOURCE, 
+                      TARGET, 
+                      PHOTONS, 
+                      MATERIAL, 
+                      ZENITHAZIMUTH, 
+                      WAVELENGTH, 
+                      WEIGHT, 
+                      TIME, 
+                      RADIUS, 
+                      DISTANCE, 
+                      UNRECOGNIZED } Param_t ;
 
        static const char* DEFAULT_CONFIG ; 
 
        static const char* TYPE_; 
        static const char* POLZ_; 
+       static const char* POLARIZATION_; 
        static const char* FRAME_ ; 
        static const char* TRANSFORM_ ; 
        static const char* SOURCE_ ; 
@@ -88,19 +104,23 @@ class TorchStepNPY {
        const glm::mat4& getFrameTransform();
 
    public:
-       // local positions, frame transform is applied in *update* yielding world frame m_post m_dirw 
+       // local positions/vectors, frame transform is applied in *update* yielding world frame m_post m_dirw 
        void setSourceLocal(const char* s );
        void setTargetLocal(const char* s );
+       void setPolarizationLocal(const char* s );
        glm::vec4& getSourceLocal();
        glm::vec4& getTargetLocal();
-   public:  
-       // currently ignored on the GPU
-       void setPolarization(glm::vec3& pol);
+       glm::vec4& getPolarizationLocal();
    public:  
        // need external help to set the MaterialLine
        void setMaterial(const char* s );
        const char* getConfig();
        const char* getMaterial();
+   public:  
+        // methods invoked by update after frame transform is available
+       void setPosition(const glm::vec4& pos );
+       void setDirection(const glm::vec3& dir );
+       void setPolarization(const glm::vec4& pol );
    public:  
        void setNumPhotons(const char* s );
        void setMaterialLine(unsigned int ml);
@@ -150,10 +170,15 @@ class TorchStepNPY {
        glm::ivec4   m_frame ;
        glm::mat4    m_frame_transform ; 
        bool         m_frame_targetted ; 
+  private:
+       // position and directions to which the frame transform is applied in update
        glm::vec4    m_source_local ; 
        glm::vec4    m_target_local ; 
+       glm::vec4    m_polarization_local ; 
+  private:
        glm::vec4    m_src ;
        glm::vec4    m_tgt ;
+       glm::vec4    m_pol ;
        glm::vec3    m_dir ;
   private:
        // 6 quads that are copied into the genstep 
@@ -161,7 +186,7 @@ class TorchStepNPY {
        glm::vec4    m_post ;
        glm::vec4    m_dirw ;
        glm::vec4    m_polw ;
-       glm::vec4    m_zenith_azimuth ;
+       glm::vec4    m_zeaz ;
        glm::vec4    m_beam ; 
   private:
        unsigned int m_num_step ; 
@@ -198,7 +223,6 @@ inline const glm::mat4& TorchStepNPY::getFrameTransform()
 {
     return m_frame_transform ;
 }
-
 inline void TorchStepNPY::setFrameTargetted(bool targetted)
 {
     m_frame_targetted = targetted ;
@@ -218,16 +242,14 @@ inline glm::vec4& TorchStepNPY::getTargetLocal()
 {
     return m_target_local ; 
 }
-inline void TorchStepNPY::setGenstepId()
+inline glm::vec4& TorchStepNPY::getPolarizationLocal()
 {
-   m_ctrl.x = m_genstep_id ; 
+    return m_polarization_local ; 
 }
-inline void TorchStepNPY::setPolarization(glm::vec3& pol)
-{
-    m_polw.x = pol.x ; 
-    m_polw.y = pol.y ; 
-    m_polw.z = pol.z ; 
-}
+
+
+
+
 inline const char* TorchStepNPY::getMaterial()
 {
     return m_material ; 

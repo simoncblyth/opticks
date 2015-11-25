@@ -75,7 +75,7 @@ void GGeoLib::loadMergedMeshes(const char* idpath )
                        ;
         }
    }
-   LOG(info) << "GGeoLib::loadMergedMeshes" 
+   LOG(debug) << "GGeoLib::loadMergedMeshes" 
              << " loaded "  << m_merged_mesh.size()
              ;
 }

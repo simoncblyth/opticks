@@ -169,6 +169,10 @@ inline void FrameCfg<Listener>::init()
        ("torchconfig",   boost::program_options::value<std::string>(&m_torchconfig), "torch configuration" );
 
    m_desc.add_options()
+       ("torchdbg",  "dump details of torch config") ;
+
+
+   m_desc.add_options()
        ("test",  "fabricate dynamic test geometry, materials and surfaces configured via testconfig settings") ;
 
    m_desc.add_options()

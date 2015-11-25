@@ -131,7 +131,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
-from env.numerics.npy.ana import Evt, Selection, Rat, theta
+from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_
 from env.numerics.npy.geometry import Shape, Plane, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
 
 
@@ -316,7 +316,6 @@ class Prism(Shape):
 
        
 
-dot_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
 
 
 class PrismCheck(object):
@@ -349,7 +348,7 @@ class PrismCheck(object):
         self.p12 = p12
         self.p23 = p23
 
-        cdv = dot_( p01, p23 )    # total deviation angle
+        cdv = costheta_( p01, p23 )    # total deviation angle
         dv = np.arccos(cdv)
         self.cdv = cdv 
 
@@ -359,10 +358,10 @@ class PrismCheck(object):
         lno = prism.lhs.ntile(N)  # prism lhs normal, repeated
         rno = prism.rhs.ntile(N)  # prism rhs normal, repeated
 
-        ci1 = dot_(-p01, lno )    # incident 1 
-        ct1 = dot_(-p12, lno )    # transmit 1 
-        ci2 = dot_( p12, rno )    # incident 2
-        ct2 = dot_( p23, rno )    # transmit 2
+        ci1 = costheta_(-p01, lno )    # incident 1 
+        ct1 = costheta_(-p12, lno )    # transmit 1 
+        ci2 = costheta_( p12, rno )    # incident 2
+        ct2 = costheta_( p23, rno )    # transmit 2
 
         i1 = np.arccos(ci1)
         t1 = np.arccos(ct1)
@@ -440,7 +439,7 @@ def test_targetting(prism):
     src = np.array([[-600,0,0]])
     tgt = np.array([[0,0,0]])
     lnorm = prism.lhs.ntile(1)   # particular intersection assumption
-    cta = dot_( src-tgt, lnorm )
+    cta = costheta_( src-tgt, lnorm )
 
 
 def test_intersectframe(prism):
@@ -495,9 +494,9 @@ if __name__ == '__main__':
 
     pc = PrismCheck(prism, evt )
 
-    #vanity_plot(pc, sl=slice(0,10000))
+    vanity_plot(pc, sl=slice(0,10000))
     #deviation_plot(pc, sl=slice(0,10000))
-    deviation_plot(pc, sl=None)
+    #deviation_plot(pc, sl=None)
 
     plt.show()
 

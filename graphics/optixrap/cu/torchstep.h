@@ -211,8 +211,9 @@ __device__ void
 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 {
       p.wavelength = ts.wavelength ; 
-      p.time = ts.t0 ;
-      p.weight = ts.weight ;
+      p.time       = ts.t0 ;
+      p.weight     = ts.weight ;
+
       p.flags.u.x = 0 ;
       p.flags.u.y = 0 ;
       p.flags.u.z = 0 ;
@@ -339,17 +340,19 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           float3 cylinderPosition = make_float3( radius*cosPhi, radius*sinPhi, distance*(1.f - 2.0f*u1) );  
           float3 cylinderDirection = make_float3( cosPhi, sinPhi, 0.f ) ;
 
-          //rotateUz(cylinderPosition, ts.p0 );  not rotating as desired, so have to carefullt select 
-          // azimuthal phifrac
+          // rotateUz(cylinderPosition, ts.p0 );  
+          // the above rotation is about wrong axis, so have to carefully select 
+          // azimuthal phifrac to fit the geometry
 
           p.direction = -cylinderDirection ; 
           p.position = ts.x0 + cylinderPosition ;
-          p.polarization = p.direction ;
 
-          // ripple tank effect
+          float3 surfaceNormal = ts.pol ; 
+          float3 photonPolarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
+          p.polarization = photonPolarization ;
+
           unsigned long long photon_id = launch_index.x ;  
-          float tdelta = float(photon_id % 100)*0.03333 ;  
-          //  300 mm/ns * 0.0333 ns = ~10 mm
+          float tdelta = float(photon_id % 100)*0.03333 ; // ripple effect 300 mm/ns * 0.0333 ns = ~10 mm between ripples
 
           p.time = ts.t0 + tdelta ; 
 

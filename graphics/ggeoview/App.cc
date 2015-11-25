@@ -359,7 +359,7 @@ void App::registerGeometry()
 
     m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    m_ggeo->dumpStats("App::registerGeometry");
+    //m_ggeo->dumpStats("App::registerGeometry dumpStats");
     //m_ggeo->dumpTree("App::registerGeometry");
 
     for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
@@ -374,7 +374,7 @@ void App::registerGeometry()
 
     m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
 
-    LOG(info) << "App::registerGeometry ce0: " 
+    LOG(debug) << "App::registerGeometry ce0: " 
                       << " x " << ce0.x
                       << " y " << ce0.y
                       << " z " << ce0.z
@@ -609,7 +609,7 @@ void App::loadGenstep()
                   << " matline " << matline
                   ;
 
-        bool verbose = false ; 
+        bool verbose = hasOpt("torchdbg");
         m_torchstep->addStep(verbose);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
         npy = m_torchstep->getNPY(); 

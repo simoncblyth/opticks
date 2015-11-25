@@ -370,7 +370,7 @@ void GParts::enlargeBBox(unsigned int part, float epsilon)
     *(pmax+1 ) = max.y ; 
     *(pmax+2 ) = max.z ; 
 
-    LOG(info) << "GParts::enlargeBBox"
+    LOG(debug) << "GParts::enlargeBBox"
               << " part " << part 
               << " epsilon " << epsilon
               << " min " << gformat(min) 

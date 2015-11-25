@@ -113,15 +113,19 @@ ggv-pmt-test(){
 
 ggv-prism()
 {
+    type $FUNCNAME
+    local pol=${1:-s}
+    local tag=1 
+    case $pol in  
+        s) tag=1 ;;
+        p) tag=2 ;;
+    esac
+    echo  pol $pol tag $tag
+
 
     # position from: source
     # direction from: target - source
-
-    local tag="1"
-    #     source=-611.873,-158.615,0
-
-    transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
-
+    #
     # zenithazimuth .z:.w  provides azimuth phi fraction range
     # ie the generated random range within 0:1 (that is mapped to 0:2pi) 
     #
@@ -143,6 +147,7 @@ ggv-prism()
     #local critical=0.485452,0.485453     # no "BT BT SA" getting TIR at 2nd interface
 
     local azimuth=$quadrant
+    local surfaceNormal=0,1,0
 
     # below transform string obtained from prism.py s_i2w
     # is the 
@@ -152,13 +157,18 @@ ggv-prism()
     #     +X towards the apex 
     #
     # with invcylinder
-    #     distance corresponds to length of the cylinder 
+    #     *distance* corresponds to length of the cylinder 
     #     using 25mm is good for ripple tank effect 
+    # 
+    #     *polarization* used to carry in the surface normal in intersect frame
+    # 
+    transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
 
     local torch_config=(
                  type=invcylinder
                  photons=500000
                  polz=${pol}pol
+                 polarization=$surfaceNormal
                  frame=-1
                  transform=0.500,0.866,0.000,0.000,-0.866,0.500,0.000,0.000,0.000,0.000,1.000,0.000,-86.603,0.000,0.000,1.000
                  target=0,-500,0
@@ -177,16 +187,8 @@ ggv-prism()
                )
 
 
-    ggv.py  \
-            $* \
-            --animtimemax 7 \
-            --timemax 7 \
-            --test --testconfig "$(join _ ${test_config[@]})" \
-            --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --save --tag $tag 
-
-
     #echo >/dev/null ggv.sh  \
+    #ggv.py \ 
     ggv.sh  \
             $* \
             --animtimemax 7 \
@@ -194,6 +196,7 @@ ggv-prism()
             --eye 0,0,1 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
+            --torchdbg \
             --save --tag $tag 
 
 }

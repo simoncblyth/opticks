@@ -37,7 +37,7 @@ void Colors::upload()
     }
 
     unsigned char* colors = (unsigned char*)m_colorbuffer->getPointer();
-    LOG(info) <<"Colors::upload ncol " << ncol ;  
+    LOG(debug) <<"Colors::upload ncol " << ncol ;  
 
     // https://open.gl/textures
     GLenum  target = GL_TEXTURE_1D ;   // Must be GL_TEXTURE_1D or GL_PROXY_TEXTURE_1D

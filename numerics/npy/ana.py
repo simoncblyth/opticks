@@ -35,6 +35,9 @@ def theta(xyz):
     th = np.arccos(z/r)*180./np.pi
     return th
 
+costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
+ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
+
 
 def scatter3d(fig,  xyz): 
     ax = fig.add_subplot(111, projection='3d')

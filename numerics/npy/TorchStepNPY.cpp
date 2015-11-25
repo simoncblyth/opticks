@@ -106,16 +106,9 @@ Polz_t TorchStepNPY::parsePolz(const char* k)
     return mode ; 
 }
 
-void TorchStepNPY::setPolz(const char* s)
-{
-    ::Polz_t mode = parsePolz(s) ;
-    uif_t uif ; 
-    uif.u = mode ; 
-    m_beam.z = uif.f ;
-}
-
 const char* TorchStepNPY::TYPE_ = "type"; 
 const char* TorchStepNPY::POLZ_ = "polz"; 
+const char* TorchStepNPY::POLARIZATION_ = "polarization"; 
 const char* TorchStepNPY::FRAME_ = "frame"; 
 const char* TorchStepNPY::TRANSFORM_ = "transform"; 
 const char* TorchStepNPY::SOURCE_ = "source"; 
@@ -136,6 +129,7 @@ TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
     else if(strcmp(k,TRANSFORM_)==0)      param = TRANSFORM ; 
     else if(strcmp(k,TYPE_)==0)           param = TYPE ; 
     else if(strcmp(k,POLZ_)==0)           param = POLZ ; 
+    else if(strcmp(k,POLARIZATION_)==0)   param = POLARIZATION ; 
     else if(strcmp(k,SOURCE_)==0)         param = SOURCE ; 
     else if(strcmp(k,TARGET_)==0)         param = TARGET ; 
     else if(strcmp(k,PHOTONS_)==0)        param = PHOTONS ; 
@@ -157,6 +151,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
         case POLZ           : setPolz(s)           ;break;
         case TRANSFORM      : setFrameTransform(s) ;break;
         case FRAME          : setFrame(s)          ;break;
+        case POLARIZATION   : setPolarizationLocal(s) ;break;
         case SOURCE         : setSourceLocal(s)    ;break;
         case TARGET         : setTargetLocal(s)    ;break;
         case PHOTONS        : setNumPhotons(s)     ;break;
@@ -216,6 +211,25 @@ void TorchStepNPY::setFrameTransform(const char* s)
 }
 
 
+
+
+void TorchStepNPY::setMaterial(const char* s)
+{
+    m_material = strdup(s);
+}
+
+
+void TorchStepNPY::setDirection(const char* s)
+{
+    std::string ss(s);
+    glm::vec3 dir = gvec3(ss) ;
+    setDirection(dir);
+}
+
+
+
+
+
 void TorchStepNPY::setSourceLocal(const char* s)
 {
     std::string ss(s);
@@ -225,6 +239,7 @@ void TorchStepNPY::setSourceLocal(const char* s)
     m_source_local.z = v.z;
     m_source_local.w = 1.0;
 }
+
 void TorchStepNPY::setTargetLocal(const char* s)
 {
     std::string ss(s);
@@ -235,79 +250,42 @@ void TorchStepNPY::setTargetLocal(const char* s)
     m_target_local.w = 1.0;
 }
 
-void TorchStepNPY::setNumPhotons(const char* s)
-{
-    setNumPhotons(boost::lexical_cast<unsigned int>(s)) ; 
-}
-void TorchStepNPY::setNumPhotons(unsigned int num_photons)
-{
-    m_ctrl.w = num_photons ; 
-}
-void TorchStepNPY::setMaterial(const char* s)
-{
-    m_material = strdup(s);
-}
-void TorchStepNPY::setMaterialLine(unsigned int ml)
-{
-    m_ctrl.z = ml ; 
-}
-
-void TorchStepNPY::setDirection(const char* s)
+void TorchStepNPY::setPolarizationLocal(const char* s)
 {
     std::string ss(s);
-    glm::vec3 dir = gvec3(ss) ;
-    m_dirw.x = dir.x ; 
-    m_dirw.y = dir.y ; 
-    m_dirw.z = dir.z ; 
+    glm::vec3 v = gvec3(ss) ; 
+    m_polarization_local.x = v.x;
+    m_polarization_local.y = v.y;
+    m_polarization_local.z = v.z;
+    m_polarization_local.w = 0.0;  // direction not position
 }
-void TorchStepNPY::setWavelength(const char* s)
+
+
+
+
+void TorchStepNPY::update()
 {
-    m_polw.w = boost::lexical_cast<float>(s) ;
-}
-void TorchStepNPY::setWeight(const char* s)
-{
-    m_dirw.w = boost::lexical_cast<float>(s) ;
-}
-void TorchStepNPY::setTime(const char* s)
-{
-    m_post.w = boost::lexical_cast<float>(s) ;
-}
-void TorchStepNPY::setRadius(const char* s)
-{
-    setRadius(boost::lexical_cast<float>(s)) ;
-}
-void TorchStepNPY::setRadius(float radius)
-{
-    m_beam.x = radius ;
-}
+   // direction from: target - source
+   // position from : source
 
+    m_src = m_frame_transform * m_source_local  ; 
+    m_tgt = m_frame_transform * m_target_local  ; 
+    m_pol = m_frame_transform * m_polarization_local  ; 
 
-void TorchStepNPY::setDistance(const char* s)
-{
-    setDistance(boost::lexical_cast<float>(s)) ;
-}
-void TorchStepNPY::setDistance(float distance)
-{
-    m_beam.y = distance ;
+    m_dir = glm::vec3(m_tgt) - glm::vec3(m_src) ;
+
+    glm::vec3 dir = glm::normalize( m_dir );
+
+    setPosition(m_src);
+    setDirection(dir);
+    setPolarization(m_pol);
 }
 
 
 
 
+/// seqializing and setting the transport quads
 
-void TorchStepNPY::setZenithAzimuth(const char* s)
-{
-    std::string ss(s);
-    m_zenith_azimuth = gvec4(ss) ;
-}
-
-
-
-NPY<float>* TorchStepNPY::getNPY()
-{
-    assert( m_step_index == m_num_step ); // TorchStepNPY is incomplete
-    return m_npy ; 
-}
 void TorchStepNPY::addStep(bool verbose)
 {
     if(m_npy == NULL)
@@ -326,31 +304,130 @@ void TorchStepNPY::addStep(bool verbose)
     m_npy->setQuad( i, 1, m_post );
     m_npy->setQuad( i, 2, m_dirw );
     m_npy->setQuad( i, 3, m_polw );
-    m_npy->setQuad( i, 4, m_zenith_azimuth );
+    m_npy->setQuad( i, 4, m_zeaz );
     m_npy->setQuad( i, 5, m_beam );
 
     m_step_index++ ; 
 }
 
-void TorchStepNPY::update()
+NPY<float>* TorchStepNPY::getNPY()
 {
-   // direction from: target - source
-   // position from : source
+    assert( m_step_index == m_num_step ); // TorchStepNPY is incomplete
+    return m_npy ; 
+}
 
-    m_src = m_frame_transform * m_source_local  ; 
-    m_tgt = m_frame_transform * m_target_local  ; 
-    m_dir = glm::vec3(m_tgt) - glm::vec3(m_src) ;
 
-    m_post.x = m_src.x ; 
-    m_post.y = m_src.y ; 
-    m_post.z = m_src.z ; 
 
-    glm::vec3 dir = glm::normalize( m_dir );
 
+// m_ctrl
+
+void TorchStepNPY::setGenstepId()
+{
+   m_ctrl.x = m_genstep_id ; 
+}
+
+
+void TorchStepNPY::setMaterialLine(unsigned int ml)
+{
+    m_ctrl.z = ml ; 
+}
+
+void TorchStepNPY::setNumPhotons(const char* s)
+{
+    setNumPhotons(boost::lexical_cast<unsigned int>(s)) ; 
+}
+void TorchStepNPY::setNumPhotons(unsigned int num_photons)
+{
+    m_ctrl.w = num_photons ; 
+}
+
+
+
+// m_post
+
+void TorchStepNPY::setPosition(const glm::vec4& pos)
+{
+    m_post.x = pos.x ; 
+    m_post.y = pos.y ; 
+    m_post.z = pos.z ; 
+}
+void TorchStepNPY::setTime(const char* s)
+{
+    m_post.w = boost::lexical_cast<float>(s) ;
+}
+
+
+
+// m_dirw
+
+void TorchStepNPY::setDirection(const glm::vec3& dir)
+{
     m_dirw.x = dir.x ; 
     m_dirw.y = dir.y ; 
     m_dirw.z = dir.z ; 
 }
+void TorchStepNPY::setWeight(const char* s)
+{
+    m_dirw.w = boost::lexical_cast<float>(s) ;
+}
+
+
+// m_polw
+
+void TorchStepNPY::setPolarization(const glm::vec4& pol)
+{
+    m_polw.x = pol.x ; 
+    m_polw.y = pol.y ; 
+    m_polw.z = pol.z ; 
+}
+void TorchStepNPY::setWavelength(const char* s)
+{
+    m_polw.w = boost::lexical_cast<float>(s) ;
+}
+
+
+
+// m_zeaz
+
+void TorchStepNPY::setZenithAzimuth(const char* s)
+{
+    std::string ss(s);
+    m_zeaz = gvec4(ss) ;
+}
+
+
+
+/// m_beam
+
+void TorchStepNPY::setRadius(const char* s)
+{
+    setRadius(boost::lexical_cast<float>(s)) ;
+}
+void TorchStepNPY::setRadius(float radius)
+{
+    m_beam.x = radius ;
+}
+
+void TorchStepNPY::setDistance(const char* s)
+{
+    setDistance(boost::lexical_cast<float>(s)) ;
+}
+void TorchStepNPY::setDistance(float distance)
+{
+    m_beam.y = distance ;
+}
+void TorchStepNPY::setPolz(const char* s)
+{
+    ::Polz_t mode = parsePolz(s) ;
+    uif_t uif ; 
+    uif.u = mode ; 
+    m_beam.z = uif.f ;
+}
+
+
+
+
+
 
 
 void TorchStepNPY::dump(const char* msg)
@@ -360,17 +437,21 @@ void TorchStepNPY::dump(const char* msg)
               << " material " << m_material
               ; 
 
-    print(m_frame,        "m_frame ");
-    print(m_source_local, "m_source_local ", m_src, "m_src");
-    print(m_target_local, "m_target_local ", m_tgt, "m_tgt");
-    print(m_dir, "m_die [normalize(m_tgt - m_src)] ");
+    print(m_frame,              "m_frame ");
+    print(m_source_local,       "m_source_local       ", m_src, "m_src");
+    print(m_target_local,       "m_target_local       ", m_tgt, "m_tgt");
+    print(m_polarization_local, "m_polarization_local ", m_pol, "m_pol");
 
+    print(m_dir, "m_dir [normalize(m_tgt - m_src)] ");
 
-    //print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
+    print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
     print(m_post, "m_post : position, time " ); 
     print(m_dirw, "m_dirw : direction, weight" ); 
-    //print(m_polw, "m_polw : polarization, wavelength" ); 
-    //print(m_zenith_azimuth, "m_zenith_azimuth : zenith, azimuth " ); 
-    //print(m_beam, "m_beam: radius,... " ); 
+    print(m_polw, "m_polw : polarization, wavelength" ); 
+    print(m_zeaz, "m_zeaz: zenith, azimuth " ); 
+    print(m_beam, "m_beam: radius,... " ); 
 }
+
+
+
 
