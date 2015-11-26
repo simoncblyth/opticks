@@ -232,7 +232,7 @@ void Composition::initAnimator()
 
 void Composition::initRotator()
 {
-    m_rotator = new Animator(&m_lookphi, 180, 0.f, 360.f ); 
+    m_rotator = new Animator(&m_lookphi, 180, -180.f, 180.f ); 
     m_rotator->setModeRestrict(Animator::NORM);  // only OFF and SLOW 
     m_rotator->Summary("Composition::initRotator");
 }
@@ -276,6 +276,20 @@ void Composition::gui()
     if (!ImGui::CollapsingHeader("Composition")) return ;
 
 
+
+    if(m_animator)
+    {
+         m_animator->gui("time (ns)", "%0.3f", 2.0f);
+
+         float* target = m_animator->getTarget();
+         ImGui::Text(" time (ns) * %10.3f (mm/ns) : %10.3f mm ", SPEED_OF_LIGHT, *target * SPEED_OF_LIGHT );
+    }
+
+    ImGui::SliderFloat( "lookPhi", &m_lookphi,  -180.f, 180.0f, "%0.3f");
+    ImGui::SameLine();
+    if(ImGui::Button("zeroPhi")) m_lookphi = 0.f ;
+
+
     if(ImGui::Button("home")) home();
 
     glm::vec4 eye  = m_view->getEye(m_model_to_world);
@@ -286,11 +300,14 @@ void Composition::gui()
     ImGui::Text(" look : %s ", gformat(look).c_str()); 
     ImGui::Text(" gaze : %s ", gformat(gaze).c_str()); 
 
+
+   /*
     // problem with keyboard input is just about all keys are taken already as shortcuts
     // so are unable to enter anything 
     ImGui::InputText(" command ", (char*)m_command.c_str(), m_command_length ); 
     ImGui::SameLine();
     ImGui::Text(" : %s ", m_command.c_str()) ; 
+   */
 
 
     ImGui::Text(" setEyeGUI ");
@@ -306,7 +323,6 @@ void Composition::gui()
     ImGui::SameLine();
     if(ImGui::Button(" -Z")) setEyeGUI(glm::vec3(0,0,-1));
 
-    ImGui::SliderFloat( "lookPhi", &m_lookphi,  0.f, 360.0f, "%0.3f");
 
     float* param = glm::value_ptr(m_param) ;
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
@@ -320,13 +336,6 @@ void Composition::gui()
     float* ldir = m_light->getDirectionPtr() ;
     ImGui::SliderFloat3( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
 
-    if(m_animator)
-    {
-         m_animator->gui("time (ns)", "%0.3f", 2.0f);
-
-         float* target = m_animator->getTarget();
-         ImGui::Text(" time (ns) * %10.3f (mm/ns) : %10.3f mm ", SPEED_OF_LIGHT, *target * SPEED_OF_LIGHT );
-    }
 
     int* pick = glm::value_ptr(m_pick) ;
     ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down

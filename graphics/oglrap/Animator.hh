@@ -6,6 +6,7 @@
 #include "assert.h"
 #include "Interactor.hh"
 
+#define ANIMATOR_DEBUG 1
 
 // TODO: try to support live changing of the range 
 
@@ -156,7 +157,11 @@ inline void Animator::modeTransition(float fraction)
     // adjust the count to new raster, to avoid animation jumps 
     if(m_mode == OFF) return ;
     int count = find_closest_index(fraction); 
+
+#ifdef ANIMATOR_DEBUG
     printf("Animator::modeTransition fraction %10.3f closest count %d \n", fraction, count ); 
+#endif
+
     m_count = count ; 
 }
 
@@ -200,9 +205,18 @@ inline float Animator::getFractionForValue(float value)
  
 inline bool Animator::step(bool& bump)
 {
+   // still seeing occasional jumps, but cannot reproduce
+
     if(m_mode == OFF) return false ; 
 
     bump = isBump();
+
+#ifdef ANIMATOR_DEBUG
+    if(bump)
+       printf("Animator::step bump m_count %d \n", m_count );
+#endif
+
+
     float value = getValue() ;
     
     m_count += m_increment  ;       // NB increment only after getting the value (which depends on m_count) and bump
