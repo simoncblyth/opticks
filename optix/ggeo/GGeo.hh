@@ -79,6 +79,7 @@ class GGeo {
         void setupColors();
         void setupTyp();
     public:
+        void prepareMaterialLib();
         void prepareSurfaceLib();
         void prepareScintillatorLib();
         void prepareMeshes();

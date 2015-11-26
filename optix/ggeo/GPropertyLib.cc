@@ -31,11 +31,14 @@ unsigned int GPropertyLib::UNSET = UINT_MAX ;
 unsigned int GPropertyLib::NUM_QUAD = 4  ; 
 unsigned int GPropertyLib::NUM_PROP = 4  ; 
 
-
+GDomain<float>* GPropertyLib::getDefaultDomain()
+{
+   return new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
+}
 
 void GPropertyLib::init()
 {
-    m_standard_domain = new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
+    m_standard_domain = getDefaultDomain(); 
 
     assert(getStandardDomainLength() == DOMAIN_LENGTH );
 
@@ -100,6 +103,8 @@ std::string GPropertyLib::getBufferName(const char* suffix)
 
 void GPropertyLib::close()
 {
+    //assert(0);
+
     sort();
 
     GItemList* names = createNames();
@@ -157,11 +162,6 @@ void GPropertyLib::setNames(GItemList* names)
 
 
 
-
-GDomain<float>* GPropertyLib::getDefaultDomain()
-{
-   return new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
-}
 
 unsigned int GPropertyLib::getStandardDomainLength()
 {

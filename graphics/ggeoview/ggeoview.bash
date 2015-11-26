@@ -146,6 +146,10 @@ ggv-prism()
     local critical=0.4854,0.4855       # 19k sneak out, grazing prism face  
     #local critical=0.485452,0.485453     # no "BT BT SA" getting TIR at 2nd interface
 
+
+    #local material=Pyrex
+    local material=GlassSchottF2
+
     local azimuth=$quadrant
     local surfaceNormal=0,1,0
 
@@ -183,7 +187,7 @@ ggv-prism()
                  mode=BoxInBox
                  analytic=1
                  shape=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=prism parameters=60,300,300,200   boundary=Vacuum///Pyrex 
+                 shape=prism parameters=60,300,300,200   boundary=Vacuum///$material
                )
 
 

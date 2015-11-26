@@ -16,6 +16,8 @@ const char* GMaterialLib::absorption_length = "absorption_length" ;
 const char* GMaterialLib::scattering_length = "scattering_length" ;
 const char* GMaterialLib::reemission_prob   = "reemission_prob" ;
 
+const char* GMaterialLib::refractive_index_local  = "RINDEX" ;
+
 const char* GMaterialLib::keyspec = 
 "refractive_index:RINDEX,"
 "absorption_length:ABSLENGTH,"
@@ -298,6 +300,44 @@ GMaterial* GMaterialLib::getMaterial(const char* name)
 GMaterial* GMaterialLib::getMaterial(unsigned int index)
 {
     return index < m_materials.size() ? m_materials[index] : NULL  ;
+}
+
+
+void GMaterialLib::addTestMaterials()
+{
+    typedef std::pair<std::string, std::string> SS ; 
+    typedef std::vector<SS> VSS ; 
+
+    VSS rix ; 
+    rix.push_back(SS("GlassSchottF2", "$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy"));
+
+    // NB when adding test materials also need to set in prefs ~/.opticks/GMaterialLib
+    //
+    //    * priority order (for transparent materials arrange to be less than 16 for material sequence tracking)
+    //    * color 
+    //    * two letter abbreviation
+    //
+    // for these settings to be acted upon must rebuild the geocache with : "ggv -G"      
+    //
+
+    for(VSS::const_iterator it=rix.begin() ; it != rix.end() ; it++)
+    {
+        std::string name = it->first ; 
+        std::string path = it->second ; 
+
+        LOG(info) << "GMaterialLib::addTestMaterials" 
+                  << " name " << std::setw(30) << name 
+                  << " path " << path 
+                  ;
+
+        GProperty<float>* rif = GProperty<float>::load(path.c_str());
+        if(!rif) continue ; 
+
+        GMaterial* raw = new GMaterial(name.c_str(), getNumMaterials() );
+        raw->addPropertyStandardized( GMaterialLib::refractive_index_local, rif ); 
+        
+        add(raw);
+   } 
 }
 
 

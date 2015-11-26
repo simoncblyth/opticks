@@ -8,6 +8,10 @@
 // trace/debug/info/warning/error/fatal
 
 
+//bregex- 
+#include "regexsearch.hh"
+
+
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -240,8 +244,10 @@ NPY<T>* NPY<T>::debugload(const char* path)
 
 
 template <typename T>
-NPY<T>* NPY<T>::load(const char* path)
+NPY<T>* NPY<T>::load(const char* path_)
 {
+    std::string path = os_path_expandvars( path_ ); 
+
     std::vector<int> shape ;
     std::vector<T> data ;
     std::string metadata = "{}";
@@ -251,7 +257,7 @@ NPY<T>* NPY<T>::load(const char* path)
     NPY* npy = NULL ;
     try 
     {
-        aoba::LoadArrayFromNumpy<T>(path, shape, data );
+        aoba::LoadArrayFromNumpy<T>(path.c_str(), shape, data );
         npy = new NPY<T>(shape,data,metadata) ;
     } 
     catch(const std::runtime_error& error)

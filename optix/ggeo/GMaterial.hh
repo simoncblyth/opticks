@@ -17,7 +17,8 @@ class GMaterial : public GPropertyMap<float> {
       GMaterial(GMaterial* other);
       GMaterial(const char* name, unsigned int index);
       virtual ~GMaterial();
-
+  private:
+      void init(); 
   public: 
       void Summary(const char* msg="GMaterial::Summary");
 

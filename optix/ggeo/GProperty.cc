@@ -35,6 +35,12 @@ template <typename T>
 GProperty<T>* GProperty<T>::load(const char* path)
 {
     NPY<T>* npy = NPY<T>::load(path);
+    if(!npy)
+    {
+        LOG(warning) << "GProperty<T>::load FAILED for path " << path ;
+        return NULL ; 
+    }
+
     npy->Summary();
 
     assert(npy->getDimensions() == 2);

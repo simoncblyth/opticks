@@ -305,6 +305,13 @@ void GPropertyMap<T>::addProperty(const char* pname, T* values, T* domain, unsig
    GAry<T>* doms  = new GAry<T>( length, domain );
    GProperty<T>* orig = new GProperty<T>(vals, doms)  ;  
 
+   addPropertyStandardized(pname, orig, prefix);
+}
+
+
+template <typename T>
+void GPropertyMap<T>::addPropertyStandardized(const char* pname,  GProperty<T>* orig, const char* prefix)
+{
    if(m_standard_domain)
    {
        GProperty<T>* ipol = orig->createInterpolatedProperty(m_standard_domain); 
@@ -319,6 +326,7 @@ void GPropertyMap<T>::addProperty(const char* pname, T* values, T* domain, unsig
        addProperty(pname, orig, prefix);
    }
 }
+ 
 
 
 template <typename T>
@@ -387,6 +395,12 @@ const char* GPropertyMap<T>::getPropertyNameByIndex(int index)
 }
 
 
+
+template <typename T>
+void GPropertyMap<T>::dump(const char* msg, unsigned int nline)
+{
+    Summary(msg, nline);
+}
 
 
 template <typename T>

@@ -68,6 +68,8 @@ class GMaterialLib : public GPropertyLib {
        static const char* scattering_length ; 
        static const char* reemission_prob ; 
    public:
+       static const char* refractive_index_local ; 
+   public:
        static const char* keyspec ;
    public:
        void save();
@@ -94,13 +96,15 @@ class GMaterialLib : public GPropertyLib {
        void sort();
        bool operator()(const GMaterial& a_, const GMaterial& b_);
    public:
+       void addTestMaterials();
+   public:
        bool hasMaterial(unsigned int index);
        bool hasMaterial(const char* name);
        GMaterial* getMaterial(const char* name); 
        GMaterial* getMaterial(unsigned int i); // zero based index
        const char* getNameCheck(unsigned int i);
        unsigned int getNumMaterials();
-   private:
+   public:
        GMaterial*  createStandardMaterial(GMaterial* src);
    private:
        // post-cache

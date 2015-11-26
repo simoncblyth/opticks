@@ -228,6 +228,7 @@ void GGeo::afterConvertMaterials()
 {
     LOG(debug) << "GGeo::afterConvertMaterials and before convertStructure" ; 
 
+    prepareMaterialLib(); 
     prepareSurfaceLib(); 
 }
 
@@ -715,6 +716,16 @@ void GGeo::dumpRawMaterialProperties(const char* msg)
     }
 }
 
+
+
+void GGeo::prepareMaterialLib()
+{
+    LOG(info) << "GGeo::prepareMaterialLib " ; 
+
+    GMaterialLib* mlib = getMaterialLib() ;
+   
+    mlib->addTestMaterials(); 
+}
 
 void GGeo::prepareSurfaceLib()
 {

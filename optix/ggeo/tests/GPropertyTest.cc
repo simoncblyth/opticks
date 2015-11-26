@@ -43,6 +43,16 @@ typedef GAry<float> A ;
 typedef GProperty<float> P ;
 
 
+
+void test_interpolate()
+{
+   P* ri = P::load("$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy");
+   ri->Summary("F2 ri", 100);
+
+}
+
+
+
 void test_createSliced()
 {
     P* slow = P::load("/tmp/slowcomponent.npy");
@@ -183,9 +193,12 @@ void test_inverseCDF_lookup()
 
 int main(int argc, char** argv)
 {
-    test_createSliced();
-    test_createReciprocalCDF();
-    test_traditional_remission_cdf_sampling();
-    test_inverseCDF_lookup();
+    //test_createSliced();
+    //test_createReciprocalCDF();
+    //test_traditional_remission_cdf_sampling();
+    //test_inverseCDF_lookup();
+
+    test_interpolate();
+
     return 0 ;
 }

@@ -47,8 +47,12 @@ class GPropertyLib {
         void init();
         void initOrder();
     public:
+        // other classes need access to "shape" of the standardization
+        static GDomain<float>* getDefaultDomain();
+    public:
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
+    public:
         GPropertyMap<float>* getDefaults();
         GProperty<float>*    getDefaultProperty(const char* name);
     public:
@@ -67,8 +71,6 @@ class GPropertyLib {
         void setKeyMap(const char* spec);
         const char* getLocalKey(const char* dkey); // map standard -> local keys 
     public:
-        // another classes need access to "shape" of the standardization
-        static GDomain<float>* getDefaultDomain();
     public:
         std::map<unsigned int, std::string> getNamesMap(); 
     public:

@@ -59,6 +59,7 @@ class GPropertyMap {
       GOpticalSurface* getOpticalSurface(); 
 
 
+      void dump(const char* msg="GPropertyMap::Summary", unsigned int nline=1);
       void Summary(const char* msg="GPropertyMap::Summary", unsigned int nline=1);
 
   public:
@@ -69,8 +70,14 @@ class GPropertyMap {
   public:
       void add(GPropertyMap<T>* other, const char* prefix=NULL);
       void addConstantProperty(const char* pname, T value, const char* prefix=NULL);
+
+      // when a standard domain is defined these methods interpolates the values provided onto that domain
       void addProperty(const char* pname, T* values, T* domain, unsigned int length, const char* prefix=NULL);
+      void addPropertyStandardized(const char* pname,  GProperty<T>* orig, const char* prefix=NULL);
+
+       // this one does not interpolate  
       void addProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
+
       unsigned int getNumProperties();
 
   public:

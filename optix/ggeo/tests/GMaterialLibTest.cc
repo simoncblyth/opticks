@@ -4,6 +4,13 @@
 #include "GMaterialLib.hh"
 #include "GAttrSeq.hh"
 
+
+#include "GProperty.hh"
+//#include "GDomain.hh"
+#include "GMaterial.hh"
+#include "GPropertyMap.hh"
+
+
 #include <string>
 #include <iostream>
 #include <ostream>   
@@ -46,6 +53,23 @@ void test_getMaterial(GMaterialLib* mlib)
 }
 
 
+void test_addTestMaterial(GMaterialLib* mlib)
+{
+    // see GGeo::addTestMaterials
+
+    GProperty<float>* f2 = GProperty<float>::load("$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy");
+    if(f2)
+    {
+        f2->Summary("F2 ri", 100);
+        GMaterial* raw = new GMaterial("GlassSchottF2", mlib->getNumMaterials() );
+        raw->addPropertyStandardized( GMaterialLib::refractive_index_local, f2 ); 
+
+        mlib->setClosed(false);  // OK for testing only 
+        mlib->add(raw);
+    }
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -53,6 +77,9 @@ int main(int argc, char** argv)
     gc.configure(argc, argv);
 
     GMaterialLib* mlib = GMaterialLib::load(&gc);
+
+    //test_addTestMaterial(mlib);
+
     mlib->dump();
 
     return 0 ;

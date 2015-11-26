@@ -128,7 +128,18 @@ GProperty<float>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<
 
     P* srrd = rrd->createZeroTrimmed();                 // trim extraneous zero values, leaving at most one zero at either extremity
 
-    assert( srrd->getLength() == rrd->getLength() - 2); // expect to trim 2 values
+
+    unsigned int l_srrd = srrd->getLength() ;
+    unsigned int l_rrd = rrd->getLength()  ;
+
+    if( l_srrd != l_rrd - 2)
+    {
+       LOG(fatal) << "GScintillatorLib::constructInvertedReemissionCDF  was expecting to trim 2 values "
+                  << " l_srrd " << l_srrd 
+                  << " l_rrd " << l_rrd 
+                  ;
+    }
+    //assert( l_srrd == l_rrd - 2); // expect to trim 2 values
 
     P* rcdf = srrd->createCDF();
 
