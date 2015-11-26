@@ -115,13 +115,131 @@ class Evt(object):
         s_seqhis = map(lambda _:self.seqhis == seqhis_int(_), seqs)
         return np.logical_or.reduce(s_seqhis)      
 
+
+    def wavelength(self, recs, irec):
+        """
+        ::
+
+            In [1]: np.load("OPropagatorF.npy")
+            Out[1]: 
+            array([[[   0.,    0.,    0.,  700.]],
+
+                   [[   0.,  200.,    7.,    0.]],
+
+                   [[  60.,  810.,   20.,  750.]]], dtype=float32)
+
+
+        cu/wavelength_lookup.h::     
+
+            float nmi = (nm - boundary_domain.x)/boundary_domain.z + 0.5f ;
+
+            #  (60.  - 60.)/20. + 0.5 ->    0.0 + 0.5 
+            #  (810. - 60.)/20. + 0.5 ->   37.0 + 0.5  
+
+        cu/photon.h:rsave::
+
+            143     float nwavelength = 255.f*(p.wavelength - boundary_domain.x)/boundary_domain.w ; // 255.f*0.f->1.f 
+            ///
+            ///        255.*(60. - 60.)/750. -> 255.*0.
+            ///        255.*(810.- 60.)/750. -> 255.*1.
+            ///
+            144         
+            145     qquad qpolw ;
+            146     qpolw.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;
+            147     qpolw.uchar_.y = __float2uint_rn((p.polarization.y+1.f)*127.f) ;
+            148     qpolw.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
+            149     qpolw.uchar_.w = __float2uint_rn(nwavelength)  ;
+            150 
+            151     // tightly packed, polarization and wavelength into 4*int8 = 32 bits (1st 2 npy columns) 
+            152     hquad polw ;    // union of short4, ushort4
+            153     polw.ushort_.x = qpolw.uchar_.x | qpolw.uchar_.y << 8 ;
+            154     polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
+            155    
+ 
+        :: 
+
+            recs = pc.s.rx
+            pzwl = recs[:,0,1,1]
+            wl = (pzwl & np.uint16(0xFF00)) >> 8
+
+            count_unique(wl)  # gives expected 10 possibilities form the comb
+
+        ::
+
+            In [24]: count_unique(p_wavelength)
+            Out[24]: 
+            array([[   101.176,  12145.   ],
+                   [   168.824,  12037.   ],
+                   [   239.412,  12232.   ],
+                   [   310.   ,  11995.   ],
+                   [   380.588,  13467.   ],
+                   [   451.176,  14516.   ],
+                   [   518.823,  14841.   ],
+                   [   589.412,  15151.   ],
+                   [   660.   ,  15621.   ],
+                   [   730.588,  15780.   ]])
+
+
+            p.wavelength = float(photon_id % 10)*70.f + 100.f ; // toothcomb wavelength distribution 
+
+            In [28]: np.arange(10, dtype=np.float32)*70. + 100.
+            Out[28]: array([ 100.,  170.,  240.,  310.,  380.,  450.,  520.,  590.,  660.,  730.], dtype=float32)
+
+        """
+        boundary_domain = self.fdom[2,0]
+
+        pzwl = recs[:,irec,1,1]
+
+        nwavelength = (pzwl & np.uint16(0xFF00)) >> 8
+
+        p_wavelength = nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
+
+        return p_wavelength 
+
+
+    def polarization(self, recs, irec):
+        """
+        ::
+ 
+            In [40]: count_unique(px)
+            Out[40]: array([[   127, 137785]])
+
+            In [41]: count_unique(py)
+            Out[41]: array([[   127, 137785]])
+
+            In [42]: count_unique(pz)
+            Out[42]: array([[   254, 137785]])
+
+        Yep (0,0,1) looks expected for SPOL with ggv-prism::
+
+            350           float3 surfaceNormal = ts.pol ;
+            351           float3 photonPolarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;
+            352           p.polarization = photonPolarization ;
+
+        """ 
+        pxpy = recs[:,irec,1,0]
+        pzwl = recs[:,irec,1,1]
+
+        ipx = pxpy & np.uint16(0xFF)
+        ipy = (pxpy & np.uint16(0xFF00)) >> 8
+        ipz = pzwl & np.uint16(0xFF) 
+
+        px = ipx.astype(np.float32)/127. - 1.
+        py = ipy.astype(np.float32)/127. - 1.
+        pz = ipz.astype(np.float32)/127. - 1.
+
+        # TODO: form empty of correct shape and populate with these
+        # thats easy if irec is just an integer, but it could be a slice
+
+
+
     def post_center_extent(self):
         p_center = self.fdom[0,0,:W] 
         p_extent = self.fdom[0,0,W] 
 
         t_center = self.fdom[1,0,X]
         t_extent = self.fdom[1,0,Y]
-        
+       
         center = np.zeros(4)
         center[:W] = p_center 
         center[W] = t_center
@@ -140,17 +258,20 @@ class Evt(object):
 
 
 class Selection(object):
+    """
+    """
     def __init__(self, evt, *seqs):
+        nrec = 10  # TODO: get from idom ?
         if len(seqs) > 0:
             psel = evt.seqhis_or(*seqs)
-            rsel = np.repeat(psel, 10) # TODO: get these 10 from idom
+            rsel = np.repeat(psel, nrec) 
             ox = evt.ox[psel]
-            rx = evt.rx[rsel].reshape(-1,10,2,4)  
+            rx = evt.rx[rsel].reshape(-1,nrec,2,4)  
         else:
             psel = None
             rsel = None
             ox = evt.ox
-            rx = evt.rx.reshape(-1,10,2,4)
+            rx = evt.rx.reshape(-1,nrec,2,4)
         pass
         self.evt = evt 
         self.psel = psel
@@ -160,6 +281,26 @@ class Selection(object):
 
     def recpost(self, irec):
         return self.evt.recpost(self.rx, irec)
+
+    def wavelength(self, irec):
+        """
+        Hmm empty records yielding the offset 60.::
+
+            In [12]: pc.sel.wavelength(slice(0,10))
+            Out[12]: 
+            array([[ 660.   ,  660.   ,  660.   , ...,   60.   ,   60.   ,   60.   ],
+                   [ 239.412,  239.412,  239.412, ...,   60.   ,   60.   ,   60.   ],
+                   [ 451.176,  451.176,  451.176, ...,   60.   ,   60.   ,   60.   ],
+                   ..., 
+                   [ 380.588,  380.588,  380.588, ...,   60.   ,   60.   ,   60.   ],
+                   [ 451.176,  451.176,  451.176, ...,   60.   ,   60.   ,   60.   ],
+                   [ 730.588,  730.588,  730.588, ...,   60.   ,   60.   ,   60.   ]], dtype=float32)
+
+        """
+        return self.evt.wavelength(self.rx, irec)
+
+    def polarization(self, irec):
+        return self.evt.polarization(self.rx, irec)
 
 
 

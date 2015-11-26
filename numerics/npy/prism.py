@@ -333,16 +333,16 @@ class PrismCheck(object):
 
     def __init__(self, prism, evt, mask=True):
       
-        s = Selection(evt,"BT BT SA")   # smth like 70 percent 
+        sel = Selection(evt,"BT BT SA")   # smth like 70 percent 
 
         self.prism = prism 
         self.evt = evt 
-        self.s = s
+        self.sel = sel
 
-        p0 = s.recpost(0)[:,:3]  # light source position  
-        p1 = s.recpost(1)[:,:3]  # 1st refraction point
-        p2 = s.recpost(2)[:,:3]  # 2nd refraction point
-        p3 = s.recpost(3)[:,:3]  # light absorption point
+        p0 = sel.recpost(0)[:,:3]  # light source position  
+        p1 = sel.recpost(1)[:,:3]  # 1st refraction point
+        p2 = sel.recpost(2)[:,:3]  # 2nd refraction point
+        p3 = sel.recpost(3)[:,:3]  # light absorption point
      
         assert len(p0) == len(p1) == len(p2) == len(p3)
         N = len(p0)
@@ -503,6 +503,8 @@ def oneplot(pc, log_=False):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+
+    plt.ion()
 
     prism = Prism("60.,300,300,0", "Vacuum///Pyrex", wavelength=380)
 
