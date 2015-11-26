@@ -8,10 +8,7 @@
 
 #include "Configurable.hh"
 
-
-//#define EYEPHASE
-
-class Animator ; 
+//#define VIEW_DEBUG
 
 class View : public Configurable {
 public:
@@ -20,8 +17,6 @@ public:
    static const char* UP ; 
 
    View();
-
-  
 
    void configureS(const char* name, std::vector<std::string> values);
    void gui();
@@ -67,45 +62,28 @@ public:
 
    void getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm::vec3& v, glm::vec3& w);
    void getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze );
-
-public:
-   float getDistanceToAxis();
-
-public:
-#ifdef EYEPHASE
-   float getEyePhase();
-   void updateEyePhase();
-   void setEyePhase( float t);
-#endif
 public:
    bool hasChanged();
    void setChanged(bool changed); 
 
 private:
    glm::vec3 m_eye ; 
-#ifdef EYEPHASE
-   float     m_eye_phase ; 
-#endif
    glm::vec3 m_look ; 
    glm::vec3 m_up ; 
    bool      m_changed ; 
    std::vector<glm::vec4> m_axes ; 
- //  Animator* m_animator ; 
 
 };
 
 
 inline View::View() 
-   //: m_animator(NULL)
 {
     home();
-   // initAnimator();
 
     m_axes.push_back(glm::vec4(0,1,0,0));
     m_axes.push_back(glm::vec4(0,0,1,0));
     m_axes.push_back(glm::vec4(1,0,0,0));
 }
-
 
 inline bool View::hasChanged()
 {
@@ -117,17 +95,12 @@ inline void View::setChanged(bool changed)
     m_changed = changed ; 
 }
 
-
 inline void View::home()
 {
     m_changed = true ; 
     m_eye.x = -1.f ; 
     m_eye.y = -1.f ; 
     m_eye.z =  0.f ;
-
-#ifdef EYEPHASE
-    updateEyePhase();
-#endif
 
     m_look.x =  0.f ; 
     m_look.y =  0.f ; 
@@ -136,40 +109,7 @@ inline void View::home()
     m_up.x =  0.f ; 
     m_up.y =  0.f ; 
     m_up.z =  1.f ;
-
 }
-
-
-inline float View::getDistanceToAxis()
-{
-    return sqrt( m_eye.x*m_eye.x + m_eye.y*m_eye.y );
-}
-
-
-
-#ifdef EYEPHASE
-inline float View::getEyePhase()
-{
-   // somewhat dodgy derived qyt 
-    return m_eye_phase ; 
-}
-
-inline void View::setEyePhase(float t)
-{
-    float d = getDistanceToAxis() ;
-    m_eye_phase = t  ;
-    double s, c ;  
-#ifdef __APPLE__
-    __sincos( m_eye_phase*M_PI , &s, &c);
-#else
-    sincos(m_eye_phase*M_PI , &s, &c);
-#endif
-    m_eye.x = d*c ; 
-    m_eye.y = d*s ;
-    m_changed = true ; 
-}
-#endif
-
 
 inline void View::setEye( float _x, float _y, float _z)
 {
@@ -180,11 +120,9 @@ inline void View::setEye( float _x, float _y, float _z)
     handleDegenerates();
     m_changed = true ; 
 
-#ifdef EYEPHASE
-    updateEyePhase();
-#endif
-
+#ifdef VIEW_DEBUG
     printf("View::setEye %10.3f %10.3f %10.3f \n", _x, _y, _z);
+#endif
 }  
 
 inline void View::setLook(float _x, float _y, float _z)
@@ -196,7 +134,9 @@ inline void View::setLook(float _x, float _y, float _z)
     handleDegenerates();
     m_changed = true ; 
 
+#ifdef VIEW_DEBUG
     printf("View::setLook %10.3f %10.3f %10.3f \n", _x, _y, _z);
+#endif
 }
 
 inline void View::setUp(  float _x, float _y, float _z)
@@ -204,8 +144,8 @@ inline void View::setUp(  float _x, float _y, float _z)
     m_up.x = _x ;  
     m_up.y = _y ;  
     m_up.z = _z ;  
-    handleDegenerates();
 
+    handleDegenerates();
     m_changed = true ; 
 } 
 
@@ -221,6 +161,4 @@ inline void View::setUp(glm::vec4& up)
 {
     setUp(up.x, up.y, up.z );
 }
-
-
 

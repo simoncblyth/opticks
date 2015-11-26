@@ -1,5 +1,4 @@
 #include "View.hh"
-#include "Animator.hh"
 
 #include "stdio.h"
 
@@ -7,7 +6,6 @@
 #include "NLog.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
@@ -101,12 +99,6 @@ void View::gui()
     ImGui::SliderFloat3("eye",  getEyePtr(),  -1.0f, 1.0f);
     ImGui::SliderFloat3("look", getLookPtr(), -1.0f, 1.0f);
     ImGui::SliderFloat3("up",   getUpPtr(), -1.0f, 1.0f);
-
-#ifdef EYEPHASE
-    updateEyePhase();
-    if(ImGui::SliderFloat("eyephase", &m_eye_phase,  -1.f, 1.f)) setEyePhase(m_eye_phase);
-#endif
-
 #endif    
 }
 
@@ -158,7 +150,9 @@ void View::handleDegenerates()
    float eul = glm::length(glm::cross(gaze, m_up));
    if(eul==0.f)
    {
+#ifdef VIEW_DEBUG
        LOG(warning) << "View::handleDegenerates looking for ne changing up axis " ; 
+#endif
        for(unsigned int i=0 ; i < m_axes.size() ; i++)
        {
             glm::vec4 axis = m_axes[i] ; 
@@ -166,7 +160,9 @@ void View::handleDegenerates()
             if(aul > 0.f)
             {
                   setUp(axis);
+#ifdef VIEW_DEBUG
                   LOG(warning) << "View::handleDegenerates picked new up axis " << i ; 
+#endif
                   break ; 
             }
         }
@@ -174,18 +170,6 @@ void View::handleDegenerates()
 }
 
 
-
-#ifdef EYEPHASE
-void View::updateEyePhase()
-{
-   // atan2 : Principal arc tangent of y/x, in the interval [-pi,+pi] radians 
-   // so eye phase range is -1:1
-    m_eye_phase = atan2(m_eye.y,m_eye.x)/(1.0f*M_PI);
-    
-    // TODO: rotate about up, not always z
-
-}
-#endif
 
 
 void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
