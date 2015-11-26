@@ -93,23 +93,6 @@ void View::Print(const char* msg)
     print(getEye(), getLook(), getUp() , "eye/look/up");
 }
 
-void View::nextMode(unsigned int modifiers)
-{
-    m_animator->nextMode(modifiers);
-}
-
-void View::initAnimator()
-{
-    m_animator = new Animator(&m_eye_phase, 200, -1.f, 1.f ); 
-    m_animator->setModeRestrict(Animator::NORM);  // only OFF and SLOW 
-    //m_animator->Summary("View::initAnimator");
-}
-
-void View::tick()
-{
-    bool bump(false);
-    if(m_animator->step(bump)) setEyePhase(m_eye_phase);
-}
 
 void View::gui()
 {
@@ -119,10 +102,10 @@ void View::gui()
     ImGui::SliderFloat3("look", getLookPtr(), -1.0f, 1.0f);
     ImGui::SliderFloat3("up",   getUpPtr(), -1.0f, 1.0f);
 
+#ifdef EYEPHASE
     updateEyePhase();
     if(ImGui::SliderFloat("eyephase", &m_eye_phase,  -1.f, 1.f)) setEyePhase(m_eye_phase);
-
-    if(m_animator->gui("animate eyephase", "%0.3f", 1.0f)) setEyePhase(m_eye_phase) ;
+#endif
 
 #endif    
 }
@@ -168,6 +151,31 @@ void View::getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm:
 }  
 
 
+void View::handleDegenerates()
+{
+   // invoked by setEye, so handle here problematic viewpoints
+   glm::vec3 gaze = glm::normalize(m_look - m_eye) ; 
+   float eul = glm::length(glm::cross(gaze, m_up));
+   if(eul==0.f)
+   {
+       LOG(warning) << "View::handleDegenerates looking for ne changing up axis " ; 
+       for(unsigned int i=0 ; i < m_axes.size() ; i++)
+       {
+            glm::vec4 axis = m_axes[i] ; 
+            float aul = glm::length(glm::cross(gaze, glm::vec3(axis)));
+            if(aul > 0.f)
+            {
+                  setUp(axis);
+                  LOG(warning) << "View::handleDegenerates picked new up axis " << i ; 
+                  break ; 
+            }
+        }
+   }
+}
+
+
+
+#ifdef EYEPHASE
 void View::updateEyePhase()
 {
    // atan2 : Principal arc tangent of y/x, in the interval [-pi,+pi] radians 
@@ -176,31 +184,8 @@ void View::updateEyePhase()
     
     // TODO: rotate about up, not always z
 
-   // invoked by setEye, so handle here problematic viewpoints
-   glm::vec3 gaze = glm::normalize(m_look - m_eye) ; 
-   float eul = glm::length(glm::cross(gaze, m_up));
-
-   if(eul==0.f)
-   {
-       LOG(warning) << "View::updateEyePhase new viewpoint causes degeneracy, so changing up axis " ; 
-       for(unsigned int i=0 ; i < m_axes.size() ; i++)
-       {
-            glm::vec4 axis = m_axes[i] ; 
-            float aul = glm::length(glm::cross(gaze, glm::vec3(axis)));
-            if(aul > 0.f)
-            {
-                  setUp(axis);
-                  LOG(warning) << "View::updateEyePhase picked new up axis " << i ; 
-                  break ; 
-            }
-        }
-   }
-
-
-
-
 }
-
+#endif
 
 
 void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
@@ -278,15 +263,6 @@ void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat
 }
  
 
-
-
-
-
-
-
-
-
-
 /*
 
   glm::lookAt transforms from worldspace into OpenGL eye space 
@@ -326,18 +302,7 @@ void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat
 410         Result[3][2] = dot(f, eye);
 411         return Result;
 
-
-
-
 */
-
-
-
-
-
-
-
-
 
 
 glm::vec4 View::getEye()
@@ -367,8 +332,6 @@ float* View::getUpPtr()
 {
     return glm::value_ptr(m_up);
 }
-
-
 
 
 

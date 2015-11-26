@@ -32,7 +32,7 @@ class Animator {
         float* getTarget(); 
         float getLow(); 
         float getHigh(); 
-        bool isAnimating();
+        bool isActive();
 
         bool gui(const char* label, const char* fmt, float power=1.0f);
 
@@ -161,7 +161,7 @@ inline void Animator::modeTransition(float fraction)
 }
 
 
-inline bool Animator::isAnimating()
+inline bool Animator::isActive()
 {
     return m_mode != OFF ; 
 }

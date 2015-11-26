@@ -164,7 +164,7 @@ void Interactor::key_pressed(unsigned int key)
         //  *******************  *****
 
         case GLFW_KEY_A:
-            m_composition->nextMode(getModifiers()) ; 
+            m_composition->nextAnimatorMode(getModifiers()) ; 
             break;
         case GLFW_KEY_B:
             m_scene->nextGeometryStyle(); 
@@ -222,7 +222,8 @@ void Interactor::key_pressed(unsigned int key)
             m_scale_mode = !m_scale_mode ; 
             break;
         case GLFW_KEY_V:
-            m_view->nextMode(getModifiers()) ; 
+            m_composition->nextRotatorMode(getModifiers()) ; 
+            //m_view->nextMode(getModifiers()) ; 
             break;
         case GLFW_KEY_W:
             nextOptiXResolutionScale(getModifiers()); 

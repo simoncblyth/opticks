@@ -9,6 +9,8 @@
 #include "Configurable.hh"
 
 
+//#define EYEPHASE
+
 class Animator ; 
 
 class View : public Configurable {
@@ -18,10 +20,8 @@ public:
    static const char* UP ; 
 
    View();
-   void initAnimator();
-   void nextMode(unsigned int modifiers);
-   void tick();
-   virtual ~View();
+
+  
 
    void configureS(const char* name, std::vector<std::string> values);
    void gui();
@@ -40,6 +40,7 @@ public:
    void setEye( float _x, float _y, float _z);
    void setLook(float _x, float _y, float _z);
    void setUp(  float _x, float _y, float _z);
+   void handleDegenerates();
 
    void setEye( glm::vec4& eye );
    void setLook( glm::vec4& look );
@@ -69,29 +70,36 @@ public:
 
 public:
    float getDistanceToAxis();
+
+public:
+#ifdef EYEPHASE
    float getEyePhase();
    void updateEyePhase();
    void setEyePhase( float t);
+#endif
 public:
    bool hasChanged();
    void setChanged(bool changed); 
 
 private:
    glm::vec3 m_eye ; 
+#ifdef EYEPHASE
    float     m_eye_phase ; 
+#endif
    glm::vec3 m_look ; 
    glm::vec3 m_up ; 
    bool      m_changed ; 
    std::vector<glm::vec4> m_axes ; 
-   Animator* m_animator ; 
+ //  Animator* m_animator ; 
 
 };
 
 
-inline View::View() : m_animator(NULL)
+inline View::View() 
+   //: m_animator(NULL)
 {
     home();
-    initAnimator();
+   // initAnimator();
 
     m_axes.push_back(glm::vec4(0,1,0,0));
     m_axes.push_back(glm::vec4(0,0,1,0));
@@ -116,7 +124,10 @@ inline void View::home()
     m_eye.x = -1.f ; 
     m_eye.y = -1.f ; 
     m_eye.z =  0.f ;
+
+#ifdef EYEPHASE
     updateEyePhase();
+#endif
 
     m_look.x =  0.f ; 
     m_look.y =  0.f ; 
@@ -129,31 +140,18 @@ inline void View::home()
 }
 
 
-
-
-
-
-inline View::~View()
+inline float View::getDistanceToAxis()
 {
+    return sqrt( m_eye.x*m_eye.x + m_eye.y*m_eye.y );
 }
 
 
 
-
-
-// TODO: generalize to handle a choice of rotation axis
-
+#ifdef EYEPHASE
 inline float View::getEyePhase()
 {
    // somewhat dodgy derived qyt 
     return m_eye_phase ; 
-}
-
-
-
-inline float View::getDistanceToAxis()
-{
-    return sqrt( m_eye.x*m_eye.x + m_eye.y*m_eye.y );
 }
 
 inline void View::setEyePhase(float t)
@@ -170,8 +168,7 @@ inline void View::setEyePhase(float t)
     m_eye.y = d*s ;
     m_changed = true ; 
 }
-
-
+#endif
 
 
 inline void View::setEye( float _x, float _y, float _z)
@@ -179,18 +176,24 @@ inline void View::setEye( float _x, float _y, float _z)
     m_eye.x = _x ;  
     m_eye.y = _y ;  
     m_eye.z = _z ;  
-    updateEyePhase();
+
+    handleDegenerates();
     m_changed = true ; 
+
+#ifdef EYEPHASE
+    updateEyePhase();
+#endif
 
     printf("View::setEye %10.3f %10.3f %10.3f \n", _x, _y, _z);
 }  
-
 
 inline void View::setLook(float _x, float _y, float _z)
 {
     m_look.x = _x ;  
     m_look.y = _y ;  
     m_look.z = _z ;  
+
+    handleDegenerates();
     m_changed = true ; 
 
     printf("View::setLook %10.3f %10.3f %10.3f \n", _x, _y, _z);
@@ -201,9 +204,10 @@ inline void View::setUp(  float _x, float _y, float _z)
     m_up.x = _x ;  
     m_up.y = _y ;  
     m_up.z = _z ;  
+    handleDegenerates();
+
     m_changed = true ; 
 } 
-
 
 inline void View::setLook(glm::vec4& look)
 {
@@ -217,9 +221,6 @@ inline void View::setUp(glm::vec4& up)
 {
     setUp(up.x, up.y, up.z );
 }
-
-
-
 
 
 

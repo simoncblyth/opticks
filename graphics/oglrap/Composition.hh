@@ -53,14 +53,21 @@ class Composition : public Configurable {
       static const char* VTXCOL_GEOMETRY_ ; 
       static const char* FACECOL_GEOMETRY_ ; 
   public:
+      static const glm::vec3 X ; 
+      static const glm::vec3 Y ; 
+      static const glm::vec3 Z ; 
+  public:
 
       Composition();
-
       virtual ~Composition();
-      void nextMode(unsigned int modifiers);
+   public:
+      void nextAnimatorMode(unsigned int modifiers);
+      void nextRotatorMode(unsigned int modifiers);
       unsigned int tick();
       unsigned int getCount();
-
+   private:
+      void initAnimator();
+      void initRotator();
    public:
        typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLOR_STYLE } ColorStyle_t ;
        static const char* getColorStyleName(Composition::ColorStyle_t style);
@@ -88,8 +95,6 @@ class Composition : public Configurable {
   private:
       void init();
       void initAxis();
-      void initAnimator();
-
   public:
       // Configurable : for bookmarking 
       static bool accepts(const char* name);
@@ -164,6 +169,8 @@ class Composition : public Configurable {
       void setTarget(unsigned int target);
       void setScene(Scene* scene);
       void addConfig(Cfg* cfg);
+  public:
+      void setLookAngle(float phi);
   public:
       void setLookW(glm::vec4 lookw);
       void setLookW(std::string lookw);
@@ -298,6 +305,7 @@ class Composition : public Configurable {
   private:
       // residents
       Animator*   m_animator ; 
+      Animator*   m_rotator ; 
       Camera*    m_camera ;
       Trackball* m_trackball ;
       View*      m_view ;
@@ -327,8 +335,9 @@ class Composition : public Configurable {
       glm::mat4 m_world2clip_isnorm ;     
       glm::mat4 m_projection ;     
 
-      glm::mat4 m_rotation ;     
-      glm::mat4 m_irotation ;
+      glm::mat4 m_lookrotation ;     
+      glm::mat4 m_ilookrotation ;
+      float     m_lookphi ;  // degrees
      
       glm::mat4 m_trackballing ;     
       glm::mat4 m_itrackballing ;     
@@ -371,6 +380,7 @@ inline Composition::Composition()
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
   m_param(25.f,0.030f,0.f,0.f),   // x: arbitrary scaling of genstep length, y: vector length dfrac
   m_animator(NULL),
+  m_rotator(NULL),
   m_camera(NULL),
   m_trackball(NULL),
   m_view(NULL),
@@ -381,6 +391,7 @@ inline Composition::Composition()
   m_axis_attr(NULL),
   m_changed(true), 
   m_scene(NULL),
+  m_lookphi(0.f), 
   m_axis_x(1000.f,    0.f,    0.f, 0.f),
   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
   m_axis_z(0.f   ,    0.f, 1000.f, 0.f),

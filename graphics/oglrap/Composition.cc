@@ -68,6 +68,10 @@ const char* Composition::FLAG1_ = "flag1";
 const char* Composition::FLAG2_ = "flag2"; 
 const char* Composition::POL1_  = "pol1"; 
 const char* Composition::POL2_  = "pol2" ; 
+
+const glm::vec3 Composition::X = glm::vec3(1.f,0.f,0.f) ;  
+const glm::vec3 Composition::Y = glm::vec3(0.f,1.f,0.f) ;  
+const glm::vec3 Composition::Z = glm::vec3(0.f,0.f,1.f) ;  
  
 
 const char* Composition::getColorStyleName(Composition::ColorStyle_t style)
@@ -226,21 +230,40 @@ void Composition::initAnimator()
     m_animator->Summary("Composition::gui setup Animation");
 }
 
-void Composition::nextMode(unsigned int modifiers)
+void Composition::initRotator()
+{
+    m_rotator = new Animator(&m_lookphi, 180, 0.f, 360.f ); 
+    m_rotator->setModeRestrict(Animator::NORM);  // only OFF and SLOW 
+    m_rotator->Summary("Composition::initRotator");
+}
+
+
+void Composition::nextAnimatorMode(unsigned int modifiers)
 {
     if(!m_animator) initAnimator() ;
     m_animator->nextMode(modifiers);
 }
+
+void Composition::nextRotatorMode(unsigned int modifiers)
+{
+    if(!m_rotator) initRotator();
+    m_rotator->nextMode(modifiers);
+}
+
+
 
 unsigned int Composition::tick()
 {
     m_count++ ; 
 
     if(!m_animator) initAnimator();
+    if(!m_rotator)  initRotator();
+
     bool bump(false);
     m_animator->step(bump);
+    m_rotator->step(bump);
 
-    m_view->tick();
+    //m_view->tick();
 
     return m_count ; 
 }
@@ -283,11 +306,13 @@ void Composition::gui()
     ImGui::SameLine();
     if(ImGui::Button(" -Z")) setEyeGUI(glm::vec3(0,0,-1));
 
+    ImGui::SliderFloat( "lookPhi", &m_lookphi,  0.f, 360.0f, "%0.3f");
 
     float* param = glm::value_ptr(m_param) ;
     ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
     ImGui::SliderFloat( "param.y", param + 1,  0.f, 1.0f, "%0.3f", 2.0f );
     ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
+
 
     float* lpos = m_light->getPositionPtr() ;
     ImGui::SliderFloat3( "lightposition", lpos,  -2.0f, 2.0f, "%0.3f");
@@ -826,7 +851,7 @@ glm::vec3 Composition::unProject(unsigned int x, unsigned int y, float z)
 
 bool Composition::hasChanged()
 {
-    return m_animator->isAnimating() || m_view->hasChanged() || m_camera->hasChanged() || m_trackball->hasChanged() ;
+    return m_rotator->isActive() || m_animator->isActive() || m_view->hasChanged() || m_camera->hasChanged() || m_trackball->hasChanged() ;
 }
 
 void Composition::setChanged(bool changed)
@@ -836,7 +861,10 @@ void Composition::setChanged(bool changed)
     m_trackball->setChanged(changed);
 }
 
-
+void Composition::setLookAngle(float phi)
+{
+    m_lookphi = phi ; 
+}
 
 
 void Composition::update()
@@ -863,12 +891,20 @@ void Composition::update()
     //       eye  (0,0,0)
     //       look (0,0,-m_gazelength) 
     //
+    //   look frame
+    //       look (0,0,0) 
+    //       eye  (0,0,m_gazelength)
+    //
 
     m_view->setChanged(false);
     m_camera->setChanged(false);
     m_trackball->setChanged(false);
 
     m_viewport = glm::vec4( 0.f, 0.f, getPixelWidth(), getPixelHeight() );
+
+    m_lookrotation = glm::rotate(glm::mat4(1.f), m_lookphi*float(M_PI)/180.f , Y );
+    m_ilookrotation = glm::transpose(m_lookrotation);
+
 
 
     m_view->getTransforms(m_model_to_world, m_world2camera, m_camera2world, m_gaze );   // model_to_world is input, the others are updated
@@ -881,9 +917,9 @@ void Composition::update()
     m_trackball->getOrientationMatrices(m_trackballrot, m_itrackballrot);
     m_trackball->getTranslationMatrices(m_trackballtra, m_itrackballtra);
 
-    m_world2eye = m_trackballtra * m_look2eye * m_trackballrot * m_rotation * m_eye2look * m_world2camera ;           // ModelView
+    m_world2eye = m_trackballtra * m_look2eye * m_trackballrot * m_lookrotation * m_eye2look * m_world2camera ;           // ModelView
 
-    m_eye2world = m_camera2world * m_look2eye * m_irotation * m_itrackballrot * m_eye2look * m_itrackballtra ;          // InverseModelView
+    m_eye2world = m_camera2world * m_look2eye * m_ilookrotation * m_itrackballrot * m_eye2look * m_itrackballtra ;          // InverseModelView
 
     m_projection = m_camera->getProjection();
 
