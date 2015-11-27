@@ -361,10 +361,10 @@ void NPY<T>::save(const char* path_)
 
     if(!fs::exists(dir))
     {   
-        LOG(info)<< "NPYBase::save creating directory [" << dir.string() << "]" << path_ ;
-        if (fs::create_directory(dir))
+        LOG(info)<< "NPYBase::save creating directories [" << dir.string() << "]" << path_ ;
+        if (fs::create_directories(dir))
         {   
-            LOG(info)<< "NPYBase::save created directory [" << dir.string() << "]" ;
+            LOG(info)<< "NPYBase::save created directories [" << dir.string() << "]" ;
         }   
     }   
 

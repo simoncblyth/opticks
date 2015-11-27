@@ -353,10 +353,10 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 
           unsigned long long photon_id = launch_index.x ;  
 
-          //float tdelta = float(photon_id % 100)*0.03333f ; // ripple effect 300 mm/ns * 0.0333 ns = ~10 mm between ripples
-          //p.time = ts.t0 + tdelta ; 
+          float tdelta = float(photon_id % 100)*0.03333f ; // ripple effect 300 mm/ns * 0.0333 ns = ~10 mm between ripples
+          p.time = ts.t0 + tdelta ; 
 
-          p.wavelength = float(photon_id % 10)*70.f + 100.f ; // toothcomb wavelength distribution 
+          //p.wavelength = float(photon_id % 10)*70.f + 100.f ; // toothcomb wavelength distribution 
 
       }
 

@@ -8,6 +8,7 @@ class FrameCfg : public Cfg {
   public:
      std::string& getConfigPath();
      std::string& getEventTag();
+     std::string& getEventCat();
      std::string& getLiveLine();
      std::string& getTorchConfig();
      std::string& getTestConfig();
@@ -35,6 +36,7 @@ private:
 private:
      Listener*   m_listener ; 
      std::string m_configpath ;
+     std::string m_event_cat ;
      std::string m_event_tag ;
      std::string m_liveline ;
      std::string m_torchconfig ;
@@ -219,6 +221,11 @@ inline void FrameCfg<Listener>::init()
        ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load" );
 
    m_desc.add_options()
+       ("cat",   boost::program_options::value<std::string>(&m_event_cat), "event category for organization of event files, typically used instead of detector for test geometries such as prism and lens" );
+
+
+
+   m_desc.add_options()
        ("meshversion",   boost::program_options::value<std::string>(&m_meshversion), "debug only option for testing alternate mesh versions" );
 
    m_desc.add_options()
@@ -323,6 +330,13 @@ inline std::string& FrameCfg<Listener>::getEventTag()
 {
     return m_event_tag ;
 }
+template <class Listener>
+inline std::string& FrameCfg<Listener>::getEventCat()
+{
+    return m_event_cat ;
+}
+
+
 template <class Listener>
 inline std::string& FrameCfg<Listener>::getLiveLine()
 {

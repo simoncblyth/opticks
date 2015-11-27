@@ -166,7 +166,6 @@ ggv-prism()
     # 
     #     *polarization* used to carry in the surface normal in intersect frame
     # 
-    transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
 
     local torch_config=(
                  type=invcylinder
@@ -196,18 +195,19 @@ ggv-prism()
     ggv.sh  \
             $* \
             --animtimemax 7 \
+            --timemax 7 \
             --geocenter \
             --eye 0,0,1 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --save --tag $tag 
+            --save --tag $tag --cat prism
 
 }
 
 
 
-ggv-reflect()
+ggv-lens()
 {
     type $FUNCNAME
     local pol=${1:-s}
@@ -217,19 +217,17 @@ ggv-reflect()
     esac
     echo  pol $pol tag $tag
 
-    # traditional hemi point targetting
-    #     source=0,0,300
-    #     target=0,0,0
-    #     radius=100
+    local material=GlassSchottF2
 
     local torch_config=(
                  type=disc
                  photons=500000
                  polz=${pol}pol
                  frame=-1
-                 source=-611.873,-158.615,0
+                 transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
                  target=0,0,0
-                 radius=25
+                 source=0,0,-600
+                 radius=100
                  distance=500
                  zenithazimuth=0,1,0,1
                  material=Vacuum
@@ -239,24 +237,21 @@ ggv-reflect()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=box parameters=-1,1,0,700 boundary=Rock//perfectAbsorbSurface/Vacuum
-
-                 #shape=box parameters=-1,1,0,150            boundary=Vacuum///Pyrex 
-                 shape=prism parameters=60,300,300,200       boundary=Vacuum///Pyrex 
-                 #shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///Pyrex 
-
+                 shape=box   parameters=-1,1,0,700           boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///$material
                )
-
-
-    # --eye 0.5,0.5,0.0 \
-
 
     ggv.sh  \
             $* \
             --animtimemax 7 \
+            --timemax 7 \
+            --geocenter \
+            --eye 0,1,0 \
+            --up  1,0,0 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --save --tag $tag 
+            --torchdbg \
+            --save --tag $tag --cat lens
 }
 
 

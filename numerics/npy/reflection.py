@@ -70,6 +70,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
 from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_
+from env.numerics.npy.geometry import Boundary
 from env.numerics.npy.fresnel import Fresnel
 
 np.set_printoptions(suppress=True, precision=3)
@@ -260,11 +261,19 @@ if __name__ == '__main__':
     focus = np.dot([0,0,0,1],tx)[:3]
     normal = np.dot([0,1,0,0],tx)[:3]
 
+    boundary = Boundary("Vacuum///GlassSchottF2")
 
-    fr = Fresnel(m1="Vacuum", m2="Pyrex", wavelength=500., dom=dom) 
 
-    es = Evt(tag="1", label="S")
-    ep = Evt(tag="2", label="P")
+    wl = 380 
+
+    n1 = boundary.omat.refractive_index(wl)  
+    n2 = boundary.imat.refractive_index(wl)  
+
+
+    fr = Fresnel(boundary, wavelength=wl, dom=dom) 
+
+    es = Evt(tag="1", label="S", det="prism")
+    ep = Evt(tag="2", label="P", det="prism")
 
     s = Reflect(es, focus=focus, normal=normal)
     p = Reflect(ep, focus=focus, normal=normal)

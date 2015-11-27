@@ -566,14 +566,20 @@ void App::loadGenstep()
 
     std::string typ = photon_enum_label(code) ; 
     boost::algorithm::to_lower(typ);
+
     std::string tag = m_fcfg->getEventTag();
     if(tag.empty()) tag = "1" ; 
+
+    std::string cat = m_fcfg->getEventCat();
+    if(cat.empty()) cat = "" ; 
 
     std::string det = m_cache->getDetector();
 
     m_parameters->add<std::string>("Type", typ );
     m_parameters->add<std::string>("Tag", tag );
+    m_parameters->add<std::string>("Cat", cat );
     m_parameters->add<std::string>("Detector", det );
+
 
     Lookup* lookup = m_ggeo->getLookup();
 
@@ -967,17 +973,28 @@ void App::downloadEvt()
 
     const char* typ = m_parameters->getStringValue("Type").c_str();
     const char* tag = m_parameters->getStringValue("Tag").c_str();
+    const char* cat = m_parameters->getStringValue("Cat").c_str();
     const char* det = m_parameters->getStringValue("Detector").c_str();
+
+    const char* udet = strlen(cat) > 0 ? cat : det ; 
+
+    LOG(info) << "App::downloadEvt"
+              << " typ: " << typ
+              << " tag: " << tag
+              << " cat: " << cat
+              << " det: " << det
+              << " udet: " << udet
+              ;
 
     // app.saveEvt
     dpho->setVerbose();
-    dpho->save("ox%s", typ,  tag, det);
+    dpho->save("ox%s", typ,  tag, udet);
     drec->setVerbose();
-    drec->save("rx%s", typ,  tag, det);
+    drec->save("rx%s", typ,  tag, udet);
     dhis->setVerbose();
-    dhis->save("ph%s", typ,  tag, det);
+    dhis->save("ph%s", typ,  tag, udet);
     daux->setVerbose();
-    daux->save("au%s", typ,  tag, det);
+    daux->save("au%s", typ,  tag, udet);
 
 
     (*m_timer)("evtSave"); 

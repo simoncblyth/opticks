@@ -16,8 +16,7 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/$2/%s.npy" ; 
-
+const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2/%s.npy" ; 
 
 void NPYBase::setNumItems(unsigned int ni)
 {
@@ -158,34 +157,15 @@ Envvars are defined in env/export-
 
 */
 
-
-   // const char* TYP = uppercase(typ);
-   // char envvar[64];
-   // snprintf(envvar, 64, "DAE_%s_PATH_TEMPLATE", TYP ); 
-   // free((void*)TYP); 
-
-
     char path_[256];
 
     std::string deftmpl(DEFAULT_PATH_TEMPLATE) ; 
-    //char* tmpl = getenv(envvar) ;
-    //if(!tmpl)
-    //{
 
-        boost::replace_first(deftmpl, "$1", det );
-        boost::replace_first(deftmpl, "$2", typ );
-        deftmpl = os_path_expandvars( deftmpl.c_str() ); 
-        char* tmpl = (char*)deftmpl.c_str();
+    boost::replace_first(deftmpl, "$1", det );
+    boost::replace_first(deftmpl, "$2", typ );
+    deftmpl = os_path_expandvars( deftmpl.c_str() ); 
+    char* tmpl = (char*)deftmpl.c_str();
 
-       //   LOG(debug)<<"NPY<T>::path using default path template " << tmpl  
-       //               << " as envvar " << envvar << " is  not defined "  
-       //               << " define new typs with env-;export-;export-vi " ; 
-        // LOG(fatal)<< "NPY<T>::path missing envvar for "
-        //           << " typ " << typ 
-        //           << " envvar " << envvar  
-        // assert(0);
-        // return "missing-template-envvar" ; 
-    //}
     snprintf(path_, 256, tmpl, tag );
     return path_ ;   
 }

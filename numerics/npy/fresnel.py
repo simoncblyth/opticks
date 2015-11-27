@@ -35,20 +35,19 @@ def fresnel(x, n1, n2, spol=True):
 
 
 class Fresnel(object):
-    def __init__(self, m1="Vacuum", m2="Pyrex", wavelength=500., dom=None ):
+    def __init__(self, boundary, wavelength=500., dom=None ):
         if dom is None:
             dom = np.linspace(0,90,91)
-        mlib = PropLib.PropLib("GMaterialLib")
-        n1 = mlib.interp(m1,wavelength,PropLib.M_REFRACTIVE_INDEX)
-        n2 = mlib.interp(m2,wavelength,PropLib.M_REFRACTIVE_INDEX)
+
+        n1 = boundary.omat.refractive_index(wavelength)  
+        n2 = boundary.imat.refractive_index(wavelength)  
 
         th = dom*np.pi/180.
         spol = fresnel(th, n1, n2, True)
         ppol = fresnel(th, n1, n2, False)
         pass
-        self.mlib = mlib
-        self.m1 = m1
-        self.m2 = m2
+        self.boundary = boundary 
+
         self.wl = wavelength
         self.n1 = n1
         self.n2 = n2
@@ -83,7 +82,7 @@ class Fresnel(object):
         plt.plot(self.cen, self.ppol, label="P (para)", c="b")
 
     def title(self):
-        return "Fresnel %s/%s %4.3f/%4.3f (%3d nm)" % (self.m1, self.m2, self.n1, self.n2, self.wl )
+        return "Fresnel %s %4.3f/%4.3f (%3d nm)" % (self.boundary.title(), self.n1, self.n2, self.wl )
 
     def plot(self, fig, ny=1, nx=1, n=1):
         plt.title(self.title()) 

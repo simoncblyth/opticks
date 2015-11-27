@@ -2,6 +2,7 @@
 """
 TODO:
 
+* handle multiple wavelengths
 * make comparison after histogramming, like reflection.py does
 * but here have incident angle as well as the deviation, so need 2d 
 * http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.histogram2d.html
@@ -143,7 +144,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
 from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_
-from env.numerics.npy.geometry import Shape, Plane, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
+from env.numerics.npy.geometry import Shape, Plane, Boundary, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
 
 
 np.set_printoptions(suppress=True, precision=3)
@@ -160,7 +161,7 @@ class Box(Shape):
 
 
 class Prism(Shape):
-    def __init__(self, parameters, boundary, wavelength=380 ):
+    def __init__(self, parameters, boundary):
         Shape.__init__(self, parameters, boundary) 
 
         alpha = self.parameters[0]
@@ -172,12 +173,8 @@ class Prism(Shape):
         self.a = a 
         self.sa = np.sin(a)
         self.ca = np.cos(a)
-        self.alpha = alpha
 
-        n = self.refractive_index(wavelength)  # via base class
-        self.n = n
-        self.nn = n*n
-        self.ni = 1./n
+        self.alpha = alpha
 
         ymax =  height/2.
         ymin = -height/2.
@@ -278,8 +275,6 @@ class Prism(Shape):
              p1 = ray.position(t1)
              return Intersect(i0, t0, n0, p0),Intersect(i1, t1, n1, p1)
 
-
-
     def intersect_unrolled(self, ray):
         """
         http://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
@@ -290,53 +285,76 @@ class Prism(Shape):
         pl = self.planes[0]
         t0 = pl
 
-    def expected(self):
-        _i1c = self.i1c()/rad
-        _i2c = self.i2c()/rad
-        log.debug( "_i1c %s " % _i1c)
-        log.debug( "_i2c %s " % _i2c)
-        dom = self.i1_domain()
-        dl = self.delta(dom*rad)/rad
-        log.info("plt.plot(dom,dl)")
-        return dom, dl
 
-    def i1_domain(self, num=100):
-        _i1c = self.i1c()/rad
-        return np.linspace(_i1c+1e-9,90,200)
- 
-    def delta(self, i1):
-        return i1 + self.t2(i1) - self.a
 
-    def i1mindev(self):
-        """
-        incident angle with minimum deviation
-        """ 
-        return np.arcsin( self.n*np.sin(self.a/2.) )
+class PrismExpected(object):
+    def __init__(self, a, n):
+        self.a = a
+        self.sa = np.sin(a)
+        self.ca = np.cos(a)
 
-    def i2c(self):
+        self.single = type(n) is np.float64
+
+        self.n = n
+        self.nn = n*n
+        self.ni = 1./n
+
+        self.i2c = self.i2c_()
+        self.i1c = self.i1c_()
+
+    def i2c_(self):
         return np.arcsin(1./self.n)
 
-    def i1c(self):
+    def i1c_(self):
         return np.arcsin( self.n*np.sin(self.a - np.arcsin(self.ni)))
 
-    def sint2(self, i1):
+    def st2_(self, i1):
         return self.sa*np.sqrt(self.nn - np.sin(i1)*np.sin(i1)) - np.sin(i1)*self.ca  
 
-    def t2(self, i1):
+    def t2_(self, i1):
         return np.arcsin(self.sa*np.sqrt(self.nn - np.sin(i1)*np.sin(i1)) - np.sin(i1)*self.ca)  
+
+    def delta_(self, i1):
+        return i1 + self.t2_(i1) - self.a
+
+    def i1mindev_(self):
+        return np.arcsin( self.n*np.sin(self.a/2.) )  # incident angle with minimum deviation
+
+    def i1_domain(self):
+        assert self.single
+        _i1c = self.i1c/rad
+        _i2c = self.i2c/rad
+        log.debug( "_i1c %s " % _i1c)
+        log.debug( "_i2c %s " % _i2c)
+        log.info("plt.plot(dom,dl)")
+        return np.linspace(_i1c+1e-9,90,200)
+    
+    def expected(self):
+        assert self.single
+        dom = self.i1_domain()
+        dl = self.delta_(dom*rad)/rad
+        return dom, dl
+ 
+    def spawn_singles(self):
+        """
+        For plotting need a domains and corresponding values, BUT must 
+        split up by refractive index to avoid spagetti 
+        """
+        return [PrismExpected(self.a, n) for n in np.unique(self.n)]
 
 
 
 class PrismCheck(object):
+    """
+    Assumes canonical passage thru prism (ie not out the bottom) 
+    """
     def title(self):
         return "prism.py deviation vs incident angle"  
 
-    def __init__(self, prism, evt, mask=True):
+    def __init__(self, prism, xprism, sel, mask=True):
       
-        sel = Selection(evt,"BT BT SA")   # smth like 70 percent 
-
         self.prism = prism 
-        self.evt = evt 
+        self.xprism = xprism 
         self.sel = sel
 
         p0 = sel.recpost(0)[:,:3]  # light source position  
@@ -362,11 +380,10 @@ class PrismCheck(object):
 
         cdv = costheta_( p01, p23 )    # total deviation angle
         dv = np.arccos(cdv)
+
         self.cdv = cdv 
+        self.dv = dv    # simulated deviation
 
-
-        # below assumes a particular intersection 
-                 
         lno = prism.lhs.ntile(N)  # prism lhs normal, repeated
         rno = prism.rhs.ntile(N)  # prism rhs normal, repeated
 
@@ -385,32 +402,52 @@ class PrismCheck(object):
         self.i2 = i2
         self.t2 = t2
 
-        # Snell check 
+        # Snell check : refractive index from the angles at the 2 refractions
         n1 = np.sin(i1)/np.sin(t1)
         n2 = np.sin(t2)/np.sin(i2)
+        dn = n1 - n2
+        assert dn.max() < 1e-3
+        assert dn.min() > -1e-3
 
         self.n1 = n1
         self.n2 = n2
 
-        xdv = prism.delta(i1)  # compare expected deviation with simulation result
+        self.expected_deviation()
+        self.compare_expected_with_simulated()
+
+    def expected_deviation(self):
+        """  
+        Get 8 nan close to critical angle
+
+        In [108]: pc.i1[pc.inan]*deg
+        Out[108]: 
+        array([ 24.752,  24.752,  24.752,  24.752,  24.752,  24.752,  24.752,
+                24.752])
+
+        simulating just those around critical angle, 
+        see that they are just sneaking out the prism grazing the face
+        """ 
+        i1 = self.i1
+
+        xdv = self.xprism.delta_(i1)  
         ina = np.arange(len(xdv))[np.isnan(xdv)]
         msk = np.arange(len(xdv))[~np.isnan(xdv)]
 
         if len(ina)>0:
-           log.warning("comparison requires nan masking required ina:%s len(ina):%s " % (ina, len(ina))) 
+           log.warning("expected_deviation needs nan masking ina:%s len(ina):%s " % (ina, len(ina))) 
 
+        self.xdv = xdv 
         self.ina = ina
         self.msk = msk 
-        self.dv = dv 
-        self.xdv = xdv 
 
-        self.checknan()
-        self.checkdev()
+        i1c = self.xprism.i1c_()
 
-    def checkdev(self):
+        log.info("ina: %s " % self.ina)
+        log.info("i1[ina]*deg: %s " % (i1[self.ina]*deg) )
+        log.info("i1c*deg : %s " % (i1c*deg) )
+
+    def compare_expected_with_simulated(self):
         """
-        plt.hist(pc.ddv, range=(-0.002,0.002), bins=100)
-
         """
         msk = self.msk
         mdf = self.dv[msk] - self.xdv[msk]
@@ -422,26 +459,6 @@ class PrismCheck(object):
         self.mdv = self.dv[msk]
         self.mi1 = self.i1[msk]
 
-
-    def checknan(self):
-        """
-        Get 8 nan close to critical angle
-
-        In [108]: pc.i1[pc.inan]*deg
-        Out[108]: 
-        array([ 24.752,  24.752,  24.752,  24.752,  24.752,  24.752,  24.752,
-                24.752])
-
-        simulating just those around critical angle, 
-        see that they are just sneaking out the prism grazing the face
-        """
-        ina = self.ina
-        i1 = self.i1
-        i1c = self.prism.i1c()
-
-        log.info("ina: %s " % self.ina)
-        log.info("i1[ina]*deg: %s " % (i1[self.ina]*deg) )
-        log.info("i1c*deg : %s " % (i1c*deg) )
 
 
 
@@ -473,8 +490,10 @@ def scatter_plot(xq, yq, sl):
 
 
 def vanity_plot(pc, sl=None):
-    dom, dl = pc.prism.expected()
-    plt.plot(dom,dl)
+    for xprism in pc.xprism.spawn_singles():
+        dom, dl = xprism.expected()
+        plt.plot(dom,dl)
+
     scatter_plot(pc.i1, pc.dv, sl)
 
 def deviation_plot(pc,sl=None):
@@ -506,13 +525,25 @@ if __name__ == '__main__':
 
     plt.ion()
 
-    prism = Prism("60.,300,300,0", "Vacuum///Pyrex", wavelength=380)
+    #wl = np.arange(10, dtype=np.float32)*70. + 100.  
+    # low range is off edge of the refractive index values 
 
-    evt = Evt(tag="1")
+    evt = Evt(tag="1", det="prism")
 
-    pc = PrismCheck(prism, evt )
+    sel = Selection(evt,"BT BT SA")  
+
+    boundary = Boundary("Vacuum///GlassSchottF2")
+
+    prism = Prism("60.,300,300,0", boundary)
+
+    n = boundary.imat.refractive_index(sel.wl)  
+
+    xprism = PrismExpected(prism.a, n)
+
+    pc = PrismCheck(prism, xprism, sel )
 
     oneplot(pc, log_=False)
 
     plt.show()
+
 

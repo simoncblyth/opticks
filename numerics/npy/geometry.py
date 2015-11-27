@@ -25,33 +25,45 @@ class Material(object):
         self.name = name
         self.mlib = None
 
-    def refractive_index(self, wavelength):
+    def lookup(self, prop, wavelength):
         if self.mlib is None:
             self.mlib = PropLib.PropLib("GMaterialLib")
         pass
-        n = self.mlib.interp(self.name,wavelength,PropLib.M_REFRACTIVE_INDEX)
-        return n 
+        return self.mlib.interp(self.name,wavelength,prop)
+ 
+    def refractive_index(self, wavelength):
+        return self.lookup(PropLib.M_REFRACTIVE_INDEX, wavelength)
+
 
 class Boundary(object):
     def __init__(self, spec):
-         elem = spec.split("/")
-         assert len(elem) == 4
-         omat, osur, isur, imat = elem
+        elem = spec.split("/")
+        assert len(elem) == 4
+        omat, osur, isur, imat = elem
 
-         self.omat = Material(omat)
-         self.osur = osur
-         self.isur = isur
-         self.imat = Material(imat)
-         self.spec = spec
+        self.omat = Material(omat)
+        self.osur = osur
+        self.isur = isur
+        self.imat = Material(imat)
+        self.spec = spec
 
+    def title(self):
+        return self.spec
 
     def __repr__(self):
-         return "%s %s " % (  self.__class__.__name__ , self.spec )
+        return "%s %s " % (  self.__class__.__name__ , self.spec )
+
+
 
 class Shape(object):
     def __init__(self, parameters, boundary):
          self.parameters = np.fromstring(parameters, sep=",")
-         self.boundary = Boundary(boundary)
+         if type(boundary) is str:
+             self.boundary = Boundary(boundary)
+         else:
+             self.boundary = boundary
+         pass
+ 
 
     def refractive_index(self, wavelength):
          return self.boundary.imat.refractive_index(wavelength)
@@ -187,8 +199,14 @@ class IntersectFrame(object):
 
 
 
-
-
-
 if __name__ == '__main__':
     pass
+    mat = Material("GlassSchottF2")
+    wl = np.arange(10, dtype=np.float32)*70. + 100.
+    ri = mat.refractive_index(wl)
+    print wl,"\n", ri
+
+
+
+
+

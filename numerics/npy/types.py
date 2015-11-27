@@ -62,7 +62,6 @@ g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)
 
 
-DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/dayabay/$1/%s.npy"  ## cf C++ NPYBase::
 
 
 _json = {}
@@ -425,7 +424,7 @@ def seqmat_(i, abbrev=True):
 
 
 
-DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/$1/$2/%s.npy"  ## cf C++ NPYBase::
+DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2/%s.npy"  ## cf C++ NPYBase::
 
 def path_(typ, tag, det="dayabay"):
     tmpl = os.path.expandvars(DEFAULT_PATH_TEMPLATE.replace("$1", det).replace("$2",typ)) 

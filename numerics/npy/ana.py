@@ -69,15 +69,22 @@ class Rat(object):
 
 
 class Evt(object):
-    def __init__(self, tag="1", src="torch", label=""):
+    def __init__(self, tag="1", src="torch", det="dayabay", label=""):
         self.tag = str(tag)
         self.label = label
         self.src = src
-        self.ox = load_("ox"+src,tag) 
-        self.rx = load_("rx"+src,tag) 
-        self.ph = load_("ph"+src,tag)
+        self.ox = load_("ox"+src,tag,det) 
+        self.rx = load_("rx"+src,tag,det) 
+
+        self.ph = load_("ph"+src,tag,det)
         self.seqhis = self.ph[:,0,0]
         self.seqmat = self.ph[:,0,1]
+
+        # photon level qtys, 
+        # ending values as opposed to the compressed step by step records
+        self.wavelength = self.ox[:,2,W] 
+        self.post = self.ox[:,0] 
+
         self.flags = self.ox.view(np.uint32)[:,3,3]
         self.fdom = np.load(idp_("OPropagatorF.npy"))
 
@@ -116,7 +123,7 @@ class Evt(object):
         return np.logical_or.reduce(s_seqhis)      
 
 
-    def wavelength(self, recs, irec):
+    def recwavelength(self, recs, irec):
         """
         ::
 
@@ -197,7 +204,7 @@ class Evt(object):
         return p_wavelength 
 
 
-    def polarization(self, recs, irec):
+    def recpolarization(self, recs, irec):
         """
         ::
  
@@ -259,6 +266,7 @@ class Evt(object):
 
 class Selection(object):
     """
+    Apply photon and record level selections 
     """
     def __init__(self, evt, *seqs):
         nrec = 10  # TODO: get from idom ?
@@ -266,11 +274,13 @@ class Selection(object):
             psel = evt.seqhis_or(*seqs)
             rsel = np.repeat(psel, nrec) 
             ox = evt.ox[psel]
+            wl = evt.wavelength[psel]
             rx = evt.rx[rsel].reshape(-1,nrec,2,4)  
         else:
             psel = None
             rsel = None
             ox = evt.ox
+            wl = evt.wavelength
             rx = evt.rx.reshape(-1,nrec,2,4)
         pass
         self.evt = evt 
@@ -278,11 +288,12 @@ class Selection(object):
         self.rsel = rsel
         self.ox = ox
         self.rx = rx
+        self.wl = wl
 
     def recpost(self, irec):
         return self.evt.recpost(self.rx, irec)
 
-    def wavelength(self, irec):
+    def recwavelength(self, irec):
         """
         Hmm empty records yielding the offset 60.::
 
@@ -297,10 +308,20 @@ class Selection(object):
                    [ 730.588,  730.588,  730.588, ...,   60.   ,   60.   ,   60.   ]], dtype=float32)
 
         """
-        return self.evt.wavelength(self.rx, irec)
+        return self.evt.recwavelength(self.rx, irec)
 
-    def polarization(self, irec):
-        return self.evt.polarization(self.rx, irec)
+    def recpolarization(self, irec):
+        return self.evt.recpolarization(self.rx, irec)
+
+    def check_wavelength(self):
+        """
+        Compare uncompressed photon final wavelength 
+        with first record compressed wavelength
+        """
+        pwl = self.wl
+        rwl = self.recwavelength(0)
+        dwl = np.absolute(pwl - rwl)
+        assert dwl.max() < 2. 
 
 
 
