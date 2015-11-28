@@ -27,6 +27,16 @@ EOU
 ciexyz-dir(){ echo $(env-home)/graphics/ciexyz ; }
 ciexyz-cd(){  cd $(ciexyz-dir); }
 
+ciexyz-pdf(){
+   local path=$(ciexyz-pdfpath)
+   mkdir -p $(dirname $path)
+   [ ! -f "$path" ] && curl -L http://www.ppsloan.org/publications/XYZJCGT.pdf -o $path
+   open $path
+}
+
+ciexyz-pdfpath(){
+   echo $LOCAL_BASE/env/graphics/ciexyz/XYZJCGT.pdf
+}
 ciexyz-lib(){
    echo $LOCAL_BASE/env/graphics/ciexyz/ciexyz.dylib
 }
