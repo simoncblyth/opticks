@@ -22,6 +22,22 @@ Related
 
 
 
+
+The CIE XYZ and xyY Color Spaces, Douglas A. Kerr
+
+* http://dougkerr.net/Pumpkin/articles/CIE_XYZ.pdf
+
+* color matching funcs chosen to make Y the luminance
+
+
+
+RGB Color Space Conversion
+
+* http://www.ryanjuckett.com/programming/rgb-color-space-conversion/
+
+
+
+
 EOU
 }
 ciexyz-dir(){ echo $(env-home)/graphics/ciexyz ; }

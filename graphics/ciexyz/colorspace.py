@@ -2,31 +2,23 @@
 """
 Good Reference in Chromaticity etc..
 
-NTULib QC495 H84, Measuring Colour second edition, R.W.G Hunt 
-
-p62
-p204 
+Measuring Colour, R.W.G Hunt 
+NTULib QC495 H84, (2nd edition) p62, p204 
 
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import hsv_to_rgb
-from env.graphics.ciexyz.XYZ import XYZ, xyz2rgb 
+
+from env.graphics.ciexyz.XYZ import XYZ
+from env.graphics.ciexyz.RGB import RGB 
+from env.graphics.ciexyz.tri import Tri 
+
 
 def hsv_plot():
     """
     # http://stackoverflow.com/questions/10787103/2d-hsv-color-space-in-matplotlib
-
-    Shapes of the arrays
-
-    V   (100, 300)
-    H   (100, 300)
-    S   (100, 300)
-
-    HSV (100, 300, 3)
-    RGB (100, 300, 3)
-
     """
     V, H = np.mgrid[0:1:100j, 0:1:300j]   # complex step means inclusive
     S = np.ones_like(V)
@@ -42,58 +34,142 @@ def hsv_plot():
 
 
 
+class ChromaticitySpace(object):
+    """
+    http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
+
+    ::
+
+              x Y
+        X =   ---
+                y
+
+        Y = Y
+
+              (1 - x - y)   Y       z Y
+        Z =  ----------------   =   ----
+                    y                y 
+
+
+
+    Chromaticity coordinates, xyY color space
+
+                     X
+        x =    ---------------       
+                 X + Y + Z
+
+                     Y
+        y =    ---------------       
+                 X + Y + Z
+
+
+
+                     Z
+        z =    ---------------    = 1 - x - y     
+                 X + Y + Z
+
+
+    """
+    def __init__(self, nbin=500):
+
+        start = 1./nbin  # skip zero to avoid infinity, nan handling 
+        end = 1.
+        step = complex(0,nbin)
+
+
+        extent = [start, end, start, end]
+        y, x = np.mgrid[start:end:step,start:end:step]
+        z = np.ones_like(y) - x - y 
+        w = np.ones_like(y)
+        xyzw = np.dstack((x,y,z,w))
+
+        # the above grid is xyY, need to convert into XYZ before
+        # can apply the color space transforms ?
+        # BUT: what normalization to use ?   Using Y=1
+
+        XYZW = np.empty_like(xyzw)
+        XYZW[:,:,0] = x/y 
+        XYZW[:,:,1] = np.ones_like(XYZW[:,:,1])
+        XYZW[:,:,2] = z/y 
+        XYZW[:,:,3] = np.ones_like(XYZW[:,:,3])
+
+
+        # maybe should not divide by this sum, as that returns to x,y,z ? 
+        XYZsum = np.repeat(np.sum(XYZW[:,:,:3], axis=2),3).reshape(nbin,nbin,3)
+        NXYZW = np.empty_like(xyzw)
+        NXYZW[:,:,:3] = XYZW[:,:,:3]/XYZsum
+        NXYZW[:,:,3] = np.ones_like(NXYZW[:,:,3])
+
+        self.xyzw = xyzw
+        self.XYZW = XYZW
+        self.XYZsum = XYZsum
+        self.NXYZW = NXYZW
+        self.extent = extent
+
+
+    def incorrect_gamut_plot(self, rgb):
+        """
+        Attempting to map gamut boundaries by RGB value 
+        excursions beyond 0,1 seems to not be valid 
+        yields very small gamuts ? 
+        """
+
+        RGBA = np.dot(self.NXYZW, rgb.x2r_4  )
+
+        b = np.max(RGBA[:,:,:3], axis=2) > 1.
+        d = np.min(RGBA[:,:,:3], axis=2) < 0.
+        RGBA[b,3] = 0.1
+        RGBA[d,3] = 0.1
+
+        plt.imshow(RGBA, origin="lower", extent=[0,0.8,0,0.9], aspect=1, alpha=0.5, vmin=0, vmax=1)
+ 
+
+    def triangle_gamut_plot(self, rgb):
+        pass
+
+
+
 if __name__ == '__main__':
 
     plt.ion()
 
     fig = plt.figure()
-    ax = fig.add_subplot(121)
+    ax = fig.add_subplot(111)
 
-    xyz = XYZ()
+    plt.axis([0,1,0,1])
+    plt.plot([0,1],[1,0])
 
-    nbin = 500j
-    Y, X = np.mgrid[0:1:nbin, 0:1:nbin]
-    Z = np.ones_like(X) - X - Y 
-    W = np.ones_like(X)
-    cs = np.dstack((X,Y,Z,W))
+    cs = ChromaticitySpace()
 
-    spaces = []
-    #spaces.append("sRGB/D65")
-    #spaces.append("WideGamutRGB/D50")
-    #spaces.append("CIE_RGB/E")
-    spaces.append("AdobeRGB/D65")
+    for space in RGB.spaces()[0:1]:
+        rgb = RGB(space)
+        cs.triangle_gamut_plot(rgb)
 
-    for space in spaces:
-        x2r,r2x = xyz2rgb(space)
-        x2r_w = np.identity(4)
-        x2r_w[:3,:3] = x2r
+        rgb.plot()
 
-        RGBA = np.dot(cs, x2r_w  )
+        t = Tri(rgb.xyz[1:4,:2]) 
 
-        # instead of clipping out of gamut, mask them
-        b = np.max(RGBA[:,:,:3], axis=2) > 1.
-        d = np.min(RGBA[:,:,:3], axis=2) < 0.
-        RGBA[b,3] = 0
-        RGBA[d,3] = 0
+        b = t.inside(cs.xyzw[:,:,:2])
 
-        plt.imshow(RGBA, origin="lower", extent=[0,0.8,0,0.9], aspect=1, alpha=0.5)
+        RGBA =  np.dot( cs.XYZW, rgb.x2r_4 )
+
+        #RGBA = np.zeros_like(cs.XYZW)
+        #RGBA[:,:,0] = 1
+        #RGBA[:,:,1] = 1
+        #RGBA[:,:,2] = 1
+
+        RGBA[b,3] = 1
+        RGBA[~b,3] = 0
+
+        plt.imshow(RGBA,origin="lower",alpha=1,extent=cs.extent, aspect=1)
     pass
 
 
+    xyz = XYZ()
 
-    sl = slice(150,-150) 
-    #sl = slice(0,len(xyz.w))
-    plt.plot( xyz.nmono[sl,0], xyz.nmono[sl,1] )
+
+
  
-    ll = slice(150,-150,10) 
-    wls = xyz.w[ll]
-    xyn = xyz.nmono[ll,:2]
- 
-    plt.scatter( xyn[:,0], xyn[:,1] )
-
-    for i in range(len(wls)):
-        plt.annotate(wls[i], xy = xyn[i], xytext = (0.5, 0.5), textcoords = 'offset points')
-
 
 
 
