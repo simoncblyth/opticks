@@ -6,15 +6,13 @@ Measuring Colour, R.W.G Hunt
 NTULib QC495 H84, (2nd edition) p62, p204 
 
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import hsv_to_rgb
+from matplotlib.colors import hsv_to_rgb, Normalize
 
 from env.graphics.ciexyz.XYZ import XYZ
 from env.graphics.ciexyz.RGB import RGB 
 from env.graphics.ciexyz.tri import Tri 
-
 
 def hsv_plot():
     """
@@ -31,7 +29,6 @@ def hsv_plot():
     plt.ylabel("V")
     plt.title("$S_{HSV}=1$")
     plt.show()
-
 
 
 class ChromaticitySpace(object):
@@ -53,6 +50,8 @@ class ChromaticitySpace(object):
 
 
     Chromaticity coordinates, xyY color space
+    (not called xyz as need one of the originals, conventionally Y, to be reversible)
+
 
                      X
         x =    ---------------       
@@ -61,8 +60,6 @@ class ChromaticitySpace(object):
                      Y
         y =    ---------------       
                  X + Y + Z
-
-
 
                      Z
         z =    ---------------    = 1 - x - y     
@@ -89,45 +86,53 @@ class ChromaticitySpace(object):
 
         XYZW = np.empty_like(xyzw)
         XYZW[:,:,0] = x/y 
-        XYZW[:,:,1] = np.ones_like(XYZW[:,:,1])
+        XYZW[:,:,1] = np.ones_like(y)
         XYZW[:,:,2] = z/y 
-        XYZW[:,:,3] = np.ones_like(XYZW[:,:,3])
-
-
-        # maybe should not divide by this sum, as that returns to x,y,z ? 
-        XYZsum = np.repeat(np.sum(XYZW[:,:,:3], axis=2),3).reshape(nbin,nbin,3)
-        NXYZW = np.empty_like(xyzw)
-        NXYZW[:,:,:3] = XYZW[:,:,:3]/XYZsum
-        NXYZW[:,:,3] = np.ones_like(NXYZW[:,:,3])
+        XYZW[:,:,3] = np.ones_like(y)
 
         self.xyzw = xyzw
         self.XYZW = XYZW
-        self.XYZsum = XYZsum
-        self.NXYZW = NXYZW
         self.extent = extent
 
+    def rgba(self, rgb, clip=True):
+        m = rgb.x2r_4.T
+        if clip:
+            RGBA =  np.clip(np.dot( self.XYZW, m ),0,1)  
+        else:
+            RGBA =  np.dot( self.XYZW, m )  
+        pass
+        return RGBA
 
-    def incorrect_gamut_plot(self, rgb):
+    def incorrect_gamut_plot(self, rgb, clip=True):
         """
         Attempting to map gamut boundaries by RGB value 
         excursions beyond 0,1 seems to not be valid 
-        yields very small gamuts ? 
+        as it yields very small gamuts ? 
         """
-
-        RGBA = np.dot(self.NXYZW, rgb.x2r_4  )
+        RGBA = self.rgba(rgb, clip)
 
         b = np.max(RGBA[:,:,:3], axis=2) > 1.
         d = np.min(RGBA[:,:,:3], axis=2) < 0.
-        RGBA[b,3] = 0.1
-        RGBA[d,3] = 0.1
+        RGBA[b,3] = 0
+        RGBA[d,3] = 0
 
-        plt.imshow(RGBA, origin="lower", extent=[0,0.8,0,0.9], aspect=1, alpha=0.5, vmin=0, vmax=1)
+        plt.imshow(RGBA, origin="lower", extent=self.extent, aspect=1, alpha=1, vmin=0, vmax=1)
+
+    def triangle_gamut_plot(self, rgb, clip=True):
+        """
+        Instead map the gamut by being within the xy space triangle 
+        formed by the R,G,B primaries
+        """
+        RGBA = self.rgba(rgb, clip)
+
+        t = Tri(rgb.xyz[1:4,:2]) 
+        b = t.inside(self.xyzw[:,:,:2]) 
+
+        RGBA[b,3] = 1
+        RGBA[~b,3] = 0   # mask the out of triangle
+
+        plt.imshow(RGBA,origin="lower",alpha=1,extent=self.extent, aspect=1, vmin=0, vmax=1)
  
-
-    def triangle_gamut_plot(self, rgb):
-        pass
-
-
 
 if __name__ == '__main__':
 
@@ -141,33 +146,14 @@ if __name__ == '__main__':
 
     cs = ChromaticitySpace()
 
-    for space in RGB.spaces()[0:1]:
-        rgb = RGB(space)
-        cs.triangle_gamut_plot(rgb)
+    rgb = RGB("sRGB/D65")
+    print rgb.x2r_4
 
-        rgb.plot()
+    #cs.incorrect_gamut_plot(rgb)
+    cs.triangle_gamut_plot(rgb)
+    rgb.plot()
 
-        t = Tri(rgb.xyz[1:4,:2]) 
-
-        b = t.inside(cs.xyzw[:,:,:2])
-
-        RGBA =  np.dot( cs.XYZW, rgb.x2r_4 )
-
-        #RGBA = np.zeros_like(cs.XYZW)
-        #RGBA[:,:,0] = 1
-        #RGBA[:,:,1] = 1
-        #RGBA[:,:,2] = 1
-
-        RGBA[b,3] = 1
-        RGBA[~b,3] = 0
-
-        plt.imshow(RGBA,origin="lower",alpha=1,extent=cs.extent, aspect=1)
-    pass
-
-
-    xyz = XYZ()
-
-
+    XYZ.plot()
 
  
 

@@ -67,3 +67,11 @@ class Space(object):
 if __name__ == '__main__':
     pass
 
+    for key in Space.s.keys():
+        x2r, r2x = Space.space(key)
+        print "\n\n"
+        print "\n[%s] XYZ -> RGB\n" % key, x2r
+        print "\n[%s] RGB -> XYZ\n" % key, r2x
+
+
+
