@@ -340,7 +340,12 @@ class PrismExpected(object):
         For plotting need a domains and corresponding values, BUT must 
         split up by refractive index to avoid spagetti 
         """
-        return [PrismExpected(self.a, n) for n in np.unique(self.n)]
+        un = np.unique(self.n)
+        if len(un) > 10:
+           log.warn("too many distinct indices");
+           return []
+
+        return [PrismExpected(self.a, n) for n in un]
 
 
 
@@ -361,14 +366,26 @@ class PrismCheck(object):
         p1 = sel.recpost(1)[:,:3]  # 1st refraction point
         p2 = sel.recpost(2)[:,:3]  # 2nd refraction point
         p3 = sel.recpost(3)[:,:3]  # light absorption point
-     
-        assert len(p0) == len(p1) == len(p2) == len(p3)
+        assert len(p0) == len(p1) == len(p2) == len(p3) 
         N = len(p0)
+
+        w0 = sel.recwavelength(0)
+        w1 = sel.recwavelength(1)
+        w2 = sel.recwavelength(2)
+        w3 = sel.recwavelength(3)
+        assert len(w0) == len(w1) == len(w2) == len(w3) 
+        assert len(w0) == len(p0)
+        assert np.all(w0 == w1)
+        assert np.all(w0 == w2)
+        assert np.all(w0 == w3)
+        self.wx = w0
+        # prism does spatial sorting, no wavelength changes as no reemission
 
         self.p0 = p0
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
+
 
         p01 = p1 - p0
         p12 = p2 - p1 
@@ -406,14 +423,16 @@ class PrismCheck(object):
         n1 = np.sin(i1)/np.sin(t1)
         n2 = np.sin(t2)/np.sin(i2)
         dn = n1 - n2
-        assert dn.max() < 1e-3
-        assert dn.min() > -1e-3
+
+        #assert dn.max() < 1e-3
+        #assert dn.min() > -1e-3
+
 
         self.n1 = n1
         self.n2 = n2
 
         self.expected_deviation()
-        self.compare_expected_with_simulated()
+        #self.compare_expected_with_simulated()
 
     def expected_deviation(self):
         """  
@@ -542,8 +561,27 @@ if __name__ == '__main__':
 
     pc = PrismCheck(prism, xprism, sel )
 
-    oneplot(pc, log_=False)
+    #oneplot(pc, log_=False)
+    #plt.show()
+
+
+    # spatial checking 
+    # ... need XYZ from wavelength spectra obtained from y bins
+
+    w = pc.wx
+    x = pc.p3[:,0]
+    y = pc.p3[:,1]
+    z = pc.p3[:,2]
+    assert np.all(x == 700.)
+
+
+    from env.graphics.ciexyz.XYZ import Spectrum
+    from matplotlib.colors import LogNorm
+    #plt.hist2d( y, z, bins=100, norm=LogNorm())
+
+    plt.hist2d( y, w, bins=100, norm=LogNorm())
 
     plt.show()
+
 
 

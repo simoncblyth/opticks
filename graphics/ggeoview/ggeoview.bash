@@ -111,6 +111,66 @@ ggv-pmt-test(){
 #
 
 
+
+ggv-newton()
+{
+    type $FUNCNAME
+    local pol=${1:-s}
+    local tag=1 
+    case $pol in  
+        s) tag=1 ;;
+        p) tag=2 ;;
+    esac
+    echo  pol $pol tag $tag
+
+    local material=GlassSchottF2
+    local surfaceNormal=0,1,0
+
+
+    # i1_mindev arcsin( n*sin(a/2)) ) = arcsin(n/2)    for sin(60/2)=0.5 
+    #In [10]: 1./np.tan(np.arcsin(1.613/2.))
+    #Out[10]: 0.73308628728462222
+    #In [11]: 500.*1./np.tan(np.arcsin(1.613/2.))
+    #Out[11]: 366.54314364231112
+
+
+    local torch_config=(
+                 type=disc
+                 photons=500000
+                 polz=${pol}pol
+                 polarization=$surfaceNormal
+                 frame=-1
+                 transform=0.500,0.866,0.000,0.000,-0.866,0.500,0.000,0.000,0.000,0.000,1.000,0.000,-86.603,0.000,0.000,1.000
+                 source=-200,200,0
+                 target=0,0,0
+                 radius=50
+                 distance=25
+                 zenithazimuth=0,1,0,1
+                 material=Vacuum
+               )
+ 
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+                 shape=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=prism parameters=60,300,300,200   boundary=Vacuum///$material
+               )
+
+    ggv.sh  \
+            $* \
+            --animtimemax 7 \
+            --timemax 7 \
+            --geocenter \
+            --eye 0,0,1 \
+            --test --testconfig "$(join _ ${test_config[@]})" \
+            --torch --torchconfig "$(join _ ${torch_config[@]})" \
+            --torchdbg \
+            --save --tag $tag --cat prism
+
+}
+
+
+
 ggv-prism()
 {
     type $FUNCNAME
