@@ -582,8 +582,8 @@ GAry<T>* GProperty<T>::sampleCDF(GAry<T>* ua)  // start from values, not domain
     GAry<T>* sample = new GAry<T>(len); 
     for(unsigned int i=0 ; i < len ; i++)
     {
-         T x = u[i] ;                     // domain value 
-         T f = m_values->fractional_binary_search(x);
+         T x = u[i] ;                                    // domain value (normally in range 0 to 1)
+         T f = m_values->fractional_binary_search(x);    // fractional bin index corresponding to x
          T d = m_domain->getValueFractional(f);
          sample->setValue(i,  d );
 

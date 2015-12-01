@@ -652,6 +652,7 @@ int GAry<T>::linear_search(T key)
 template <typename T>
 int GAry<T>::binary_search(T key)
 {
+   // Find bin index containing the key   
    //
    // :param key: value to be "placed" within the sequence of ascending values
    // :return: index of the low side value  
@@ -696,7 +697,7 @@ T GAry<T>::fractional_binary_search(T u)
     // is can delay resorting to using domain information for a bit longer
 
     int idx = binary_search(u);
-    T frac  = (u - m_values[idx])/(m_values[idx+1]-m_values[idx]);
+    T frac  = (u - m_values[idx])/(m_values[idx+1]-m_values[idx]);  // fraction of bin 
     return T(idx) + frac ; 
 }
 
