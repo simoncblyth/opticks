@@ -167,7 +167,7 @@ ciexyz-make()
 ciexyz-test-ufunc()
 {
    ciexyz-cd
-   python ciexyz_ufunc.py 
+   python ciexyz_ufunc_test.py 
 }
 
 

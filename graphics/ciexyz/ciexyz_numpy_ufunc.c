@@ -90,6 +90,9 @@ PyUFuncGenericFunction z_funcs[2] = { &float_cieZ, &double_cieZ };
 static char z_types[4] = { NPY_FLOAT, NPY_FLOAT, NPY_DOUBLE, NPY_DOUBLE, };
 static void * z_data[2] = { NULL, NULL } ;
 
+
+
+
 PyUFuncGenericFunction bb5k_funcs[2] = { &float_bb5k, &double_bb5k };
 static char bb5k_types[4] = { NPY_FLOAT, NPY_FLOAT, NPY_DOUBLE, NPY_DOUBLE, };
 static void * bb5k_data[2] = { NULL, NULL } ;
@@ -129,34 +132,37 @@ PyMODINIT_FUNC PyInit_ciexyz(void)
 #else
 PyMODINIT_FUNC initciexyz(void)
 {
-    PyObject *m ;
+    PyObject *m, *d, *f ;
     m = Py_InitModule("ciexyz", CiexyzMethods);
     if(!m) return ;
 #endif
 
-    PyObject *X,*Y,*Z,*BB5K,*BB6K,*d;
     import_array();
     import_umath();
 
-    X = PyUFunc_FromFuncAndData(x_funcs, x_data, x_types, 2, 1, 1, PyUFunc_None, "X", "cieX_docstring", 0);
-    Y = PyUFunc_FromFuncAndData(y_funcs, y_data, y_types, 2, 1, 1, PyUFunc_None, "Y", "cieY_docstring", 0);
-    Z = PyUFunc_FromFuncAndData(z_funcs, z_data, z_types, 2, 1, 1, PyUFunc_None, "Z", "cieZ_docstring", 0);
-    BB5K = PyUFunc_FromFuncAndData(bb5k_funcs, bb5k_data, bb5k_types, 2, 1, 1, PyUFunc_None, "BB5K", "BB5K_docstring", 0);
-    BB6K = PyUFunc_FromFuncAndData(bb6k_funcs, bb6k_data, bb6k_types, 2, 1, 1, PyUFunc_None, "BB6K", "BB6K_docstring", 0);
-
     d = PyModule_GetDict(m);
 
-    PyDict_SetItemString(d, "X", X);
-    PyDict_SetItemString(d, "Y", Y);
-    PyDict_SetItemString(d, "Z", Z);
-    PyDict_SetItemString(d, "BB5K", BB5K);
-    PyDict_SetItemString(d, "BB6K", BB6K);
+    //                                                  ntyp/ninp/nout/identity/name/docstring/unused
+    f = PyUFunc_FromFuncAndData(x_funcs, x_data, x_types, 2, 1, 1, PyUFunc_None, "X", "cieX_docstring", 0);
+    PyDict_SetItemString(d, "X", f);
+    Py_DECREF(f);
 
-    Py_DECREF(X);
-    Py_DECREF(Y);
-    Py_DECREF(Z);
-    Py_DECREF(BB5K);
-    Py_DECREF(BB6K);
+    f = PyUFunc_FromFuncAndData(y_funcs, y_data, y_types, 2, 1, 1, PyUFunc_None, "Y", "cieY_docstring", 0);
+    PyDict_SetItemString(d, "Y", f);
+    Py_DECREF(f);
+
+    f = PyUFunc_FromFuncAndData(z_funcs, z_data, z_types, 2, 1, 1, PyUFunc_None, "Z", "cieZ_docstring", 0);
+    PyDict_SetItemString(d, "Z", f);
+    Py_DECREF(f);
+
+    f = PyUFunc_FromFuncAndData(bb5k_funcs, bb5k_data, bb5k_types, 2, 1, 1, PyUFunc_None, "BB5K", "BB5K_docstring", 0);
+    PyDict_SetItemString(d, "BB5K", f);
+    Py_DECREF(f);
+
+    f = PyUFunc_FromFuncAndData(bb6k_funcs, bb6k_data, bb6k_types, 2, 1, 1, PyUFunc_None, "BB6K", "BB6K_docstring", 0);
+    PyDict_SetItemString(d, "BB6K", f);
+    Py_DECREF(f);
+
 
 #if PY_VERSION_HEX >= 0x03000000
     return m;
