@@ -41,6 +41,7 @@
 
 typedef GAry<float> A ;
 typedef GProperty<float> P ;
+typedef GDomain<float> D ;
 
 
 
@@ -51,6 +52,12 @@ void test_interpolate()
 
 }
 
+void test_planck()
+{
+    D* dom = new D(300.,800.,1.); 
+    P* p = P::planck_spectral_radiance(dom);
+    p->save("/tmp/dom_planck.npy"); 
+}
 
 
 void test_createSliced()
@@ -198,7 +205,8 @@ int main(int argc, char** argv)
     //test_traditional_remission_cdf_sampling();
     //test_inverseCDF_lookup();
 
-    test_interpolate();
+    //test_interpolate();
+    test_planck();
 
     return 0 ;
 }

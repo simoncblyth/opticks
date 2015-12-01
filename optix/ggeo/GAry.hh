@@ -1,5 +1,7 @@
 #pragma once
 
+template <class T> class GDomain ; 
+
 template <class T>
 class GAry {
 
@@ -14,10 +16,13 @@ public:
    static GAry<T>* zeros(unsigned int length);
    static GAry<T>* ones(unsigned int length);
    static GAry<T>* ramp(unsigned int length, T low, T step );
+   static GAry<T>* from_domain(GDomain<T>* domain);
    static GAry<T>* linspace(T num, T start=0, T stop=1);
    static T            step(T num, T start=0, T stop=1);
    static GAry<T>* np_interp(GAry<T>* xi, GAry<T>* xp, GAry<T>* fp );
    static T np_interp(const T z, GAry<T>* xp, GAry<T>* fp );
+public: 
+   static GAry<T>* planck_spectral_radiance(GAry<T>* nm, T blackbody_temp_kelvin=6500.);
 
 public: 
    GAry<T>* copy();

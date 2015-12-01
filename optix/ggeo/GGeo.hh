@@ -24,6 +24,7 @@ class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
+class GSourceLib ;
 
 class GTreeCheck ;
 class GTreePresent ;
@@ -184,6 +185,7 @@ class GGeo {
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
         GScintillatorLib*  getScintillatorLib();
+        GSourceLib*        getSourceLib();
         Lookup*            getLookup(); 
     public:
         GColorizer*        getColorizer();
@@ -282,6 +284,7 @@ class GGeo {
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
         GScintillatorLib*             m_scintillatorlib ; 
+        GSourceLib*                   m_sourcelib ; 
 
         GColorizer*                   m_colorizer ; 
         GGeoTest*                     m_geotest ;  
@@ -324,6 +327,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_materiallib(NULL),
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
+   m_sourcelib(NULL),
    m_colorizer(NULL),
    m_geotest(NULL),
    m_sensor_list(NULL),
@@ -454,6 +458,10 @@ inline GSurfaceLib* GGeo::getSurfaceLib()
 inline GScintillatorLib* GGeo::getScintillatorLib()
 {
     return m_scintillatorlib ; 
+}
+inline GSourceLib* GGeo::getSourceLib()
+{
+    return m_sourcelib ; 
 }
 
 inline Lookup* GGeo::getLookup()

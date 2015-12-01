@@ -27,7 +27,7 @@ unsigned int GDomain<T>::getLength()
       x += m_step ;
       n++ ; 
    }
-   assert(n < 500); // sanity check 
+   assert(n < 5000); // sanity check 
 
    return n+1 ;
 } 

@@ -53,6 +53,7 @@ class OContext ;
 class OGeo ; 
 class OBndLib ; 
 class OScintillatorLib ; 
+class OSourceLib ; 
 class OFrame ;
 class ORenderer ; 
 class OTracer ; 
@@ -142,6 +143,7 @@ class App {
        OGeo*            m_ogeo ; 
        OBndLib*          m_olib ; 
        OScintillatorLib* m_oscin ; 
+       OSourceLib*       m_osrc ; 
        OFrame*          m_oframe ; 
        ORenderer*       m_orenderer ; 
        OTracer*         m_otracer ; 
@@ -199,6 +201,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_ogeo(NULL),
       m_olib(NULL),
       m_oscin(NULL),
+      m_osrc(NULL),
       m_oframe(NULL),
       m_orenderer(NULL),
       m_otracer(NULL),

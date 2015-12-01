@@ -23,6 +23,7 @@ public:
                                    GProperty<T>* d=NULL, const char* dtitle=NULL,
                                    int fw=20 );
    static GProperty<T>* ramp(T low, T step, T* domain, unsigned int length );
+   static GProperty<T>* planck_spectral_radiance(GDomain<T>* nm, T blackbody_temp_kelvin=6500.);
 public:
    GProperty(GProperty<T>* other);
    GProperty(T* values, T* domain, unsigned int length );

@@ -9,6 +9,10 @@
 rtTextureSampler<float, 2>  reemission_texture ;
 rtDeclareVariable(float4, reemission_domain, , );
 
+rtTextureSampler<float, 2>  source_texture ;
+rtDeclareVariable(float4, source_domain, , );
+
+
 rtTextureSampler<float4, 2>  boundary_texture ;
 rtDeclareVariable(float4, boundary_domain, , );
 rtDeclareVariable(float4, boundary_domain_reciprocal, , );
@@ -20,6 +24,36 @@ static __device__ __inline__ float reemission_lookup(float u)
     float ui = u/reemission_domain.z + 0.5f ;   
     return tex2D(reemission_texture, ui, 0.5f );  // line 0
 }
+
+static __device__ __inline__ void reemission_check()
+{
+    float nm_a = reemission_lookup(0.0f); 
+    float nm_b = reemission_lookup(0.5f); 
+    float nm_c = reemission_lookup(1.0f); 
+    rtPrintf("reemission_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
+}
+
+
+
+
+static __device__ __inline__ float source_lookup(float u)
+{
+    float ui = u/source_domain.z + 0.5f ;   
+    return tex2D(source_texture, ui, 0.5f );  // line 0
+}
+
+static __device__ __inline__ void source_check()
+{
+    float nm_a = source_lookup(0.0f); 
+    float nm_b = source_lookup(0.5f); 
+    float nm_c = source_lookup(1.0f); 
+    rtPrintf("source_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
+}
+
+
+
+
+
 
 static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int line )
 {
@@ -70,14 +104,6 @@ static __device__ __inline__ void wavelength_dump(unsigned int line, unsigned in
         lookup.z,
         lookup.w);
   } 
-}
-
-static __device__ __inline__ void reemission_check()
-{
-    float nm_a = reemission_lookup(0.0f); 
-    float nm_b = reemission_lookup(0.5f); 
-    float nm_c = reemission_lookup(1.0f); 
-    rtPrintf("reemission_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
 }
 
 

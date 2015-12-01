@@ -3,6 +3,19 @@
 
 typedef GAry<float> A ;
 
+void test_planck()
+{
+
+   A* a = A::linspace(500, 300., 800.);
+
+   A* b = A::planck_spectral_radiance( a, 6500.f ); 
+
+   b->Summary();
+
+   b->save("/tmp/ary_planck.npy");
+}
+
+
 void test_misc()
 {
     A* a = A::from_constant(10, 1.f) ;
@@ -41,6 +54,7 @@ void test_sliced()
 
 int main(int argc, char** argv)
 {
-    test_sliced();   
+    //test_sliced();   
+    test_planck();   
     return 0 ;
 }

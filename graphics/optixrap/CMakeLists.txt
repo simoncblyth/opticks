@@ -100,10 +100,6 @@ add_definitions(
 )
 
 
-set(DEAD
-       OBoundaryLib.cc
-)
-
 
 
 # OptiX prog within subdir "cu/" Thrust/CUDA not in subdir 
@@ -118,6 +114,7 @@ optixthrust_add_library( ${name}
        OColors.cc
        OBndLib.cc
        OScintillatorLib.cc
+       OSourceLib.cc
        OPropertyLib.cc
        OConfig.cc
        OAccel.cc
@@ -176,6 +173,7 @@ set(hdrs
   OColors.hh
   OBndLib.hh
   OScintillatorLib.hh
+  OSourceLib.hh
   OPropertyLib.hh
   OAccel.hh
   OTracer.hh

@@ -519,6 +519,19 @@ GProperty<T>* GProperty<T>::createInverseCDF(unsigned int n)
 
 
 template <typename T>
+GProperty<T>* GProperty<T>::planck_spectral_radiance(GDomain<T>* nmdom, T blackbody_temp_kelvin)
+{
+    GAry<T>* nm = GAry<T>::from_domain(nmdom );
+
+    GAry<T>* vals   = GAry<T>::planck_spectral_radiance( nm, blackbody_temp_kelvin );
+
+    return new GProperty<T>( vals, nm ); 
+}
+
+
+
+
+template <typename T>
 GAry<T>* GProperty<T>::lookupCDF(unsigned int n)
 {
     GAry<T>* ua = GAry<T>::urandom(n); 

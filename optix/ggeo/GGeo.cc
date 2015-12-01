@@ -19,6 +19,7 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
+#include "GSourceLib.hh"
 #include "GFlags.hh"
 #include "GAttrSeq.hh"
 
@@ -123,6 +124,7 @@ void GGeo::init()
    m_bndlib->setSurfaceLib(m_surfacelib);
 
    m_scintillatorlib  = new GScintillatorLib(m_cache);
+   m_sourcelib  = new GSourceLib(m_cache);
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
@@ -253,6 +255,7 @@ void GGeo::loadFromCache()
     m_bndlib->setSurfaceLib(m_surfacelib);
 
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
+    m_sourcelib  = GSourceLib::load(m_cache);
 }
 
 void GGeo::setupLookup()
@@ -307,6 +310,7 @@ void GGeo::save(const char* idpath)
     m_materiallib->save();
     m_surfacelib->save();
     m_scintillatorlib->save();
+    m_sourcelib->save();
     m_bndlib->save();  
 }
 

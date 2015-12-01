@@ -76,6 +76,7 @@ add_library( ${name}  SHARED
     NTesselate.cpp
     NTriangle.cpp
     NTrianglesNPY.cpp
+    NPlanck.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -135,6 +136,7 @@ NPrism.hpp
 NTesselate.hpp
 NTriangle.hpp
 NTrianglesNPY.hpp
+NPlanck.hpp
 NLog.hpp
 Parameters.hpp
 md5digest.hpp

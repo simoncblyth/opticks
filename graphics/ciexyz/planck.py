@@ -38,7 +38,7 @@ except ImportError:
     k = 1.3806488e-23
 
 
-def planck(nm, K):
+def planck(nm, K=6500.):
     wav = nm/1e9 
     a = 2.0*h*c*c
     b = (h*c)/(k*K)/wav
@@ -89,12 +89,14 @@ class Planck(object):
         wid = np.diff(w)            # bin width
         mid = (w[:-1]+w[1:])/2.     # bin middle
 
-        avg /= avg.sum()  # NB norming later avoids last bin excursion in generated distribution
+        pdf = avg*wid
+
+        pdf /= pdf.sum()  # NB norming later avoids last bin excursion in generated distribution
 
         dom = w
         cdf = np.empty(len(dom))
         cdf[0] = 0.                        # lay down zero probability 1st bin 
-        np.cumsum(avg*wid, out=cdf[1:])
+        np.cumsum(pdf, out=cdf[1:])
         
         idom = np.linspace(0,1,N)  
         icdf = np.interp( idom, cdf, dom )  
@@ -103,6 +105,7 @@ class Planck(object):
         self.avg = avg
         self.wid = wid
         self.mid = mid
+        self.pdf = pdf
 
         self.cdf = cdf
         self.dom = dom
@@ -117,11 +120,17 @@ class Planck(object):
 
 
 
+def cf_gsrclib():
+    sl = np.load("/tmp/gsrclib.npy")
+    return sl[0,:,0]
+    
+
+
 if __name__ == '__main__':
 
     plt.ion()
 
-    w = np.arange(300,801,1, dtype=np.float64)
+    w = np.arange(300,801,.1, dtype=np.float64)
 
     pk = Planck(w, K=6500)
 
@@ -130,13 +139,13 @@ if __name__ == '__main__':
     gen = pk(u)    
  
 
-    nm = 5
+    nm = 50
     wb = w[::nm]
     hn, hd = np.histogram(gen, wb)
     assert np.all(hd == wb)
     assert len(hn) == len(wb) - 1   # looses one bin 
 
-    s_avg = pk.avg * hn.sum() * nm
+    s_avg = pk.pdf * hn.sum() * nm
 
 
 

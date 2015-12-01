@@ -37,6 +37,12 @@ elif [ "${cmdline/--bnd}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GBndLibTest)
 elif [ "${cmdline/--itemlist}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin GItemListTest)
+
+elif [ "${cmdline/--gsource}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin GSourceTest)
+elif [ "${cmdline/--gsrclib}" != "${cmdline}" ]; then
+   export GGEOVIEW_BINARY=$(ggeo-bin GSourceLibTest)
+
 elif [ "${cmdline/--pybnd}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-tdir)/GBndLibTest.py
 elif [ "${cmdline/--mat}" != "${cmdline}" ]; then

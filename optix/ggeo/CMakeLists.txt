@@ -47,6 +47,7 @@ add_library(${name} SHARED
                 GAry.cc
                 GPropertyMap.cc
                 GMaterial.cc
+                GSource.cc
                 GSkinSurface.cc
                 GBorderSurface.cc
                 GOpticalSurface.cc
@@ -55,6 +56,7 @@ add_library(${name} SHARED
                 GSurfaceLib.cc
                 GBndLib.cc
                 GScintillatorLib.cc
+                GSourceLib.cc
                 GPropertyLib.cc
                 GFlags.cc
                 GSolid.cc
@@ -93,6 +95,7 @@ add_library(${name} SHARED
 SET(hdrs 
 GGeo.hh
 GMaterial.hh
+GSource.hh
 GMesh.hh
 GMergedMesh.hh
 GProperty.hh
@@ -105,6 +108,7 @@ GBorderSurface.hh
 GOpticalSurface.hh
 GGeoLib.hh
 GScintillatorLib.hh
+GSourceLib.hh
 GPropertyLib.hh
 GBndLib.hh
 GMaterialLib.hh

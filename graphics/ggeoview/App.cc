@@ -116,6 +116,7 @@ namespace fs = boost::filesystem;
 #include "OGeo.hh"
 #include "OBndLib.hh"
 #include "OScintillatorLib.hh"
+#include "OSourceLib.hh"
 #include "OBuf.hh"
 #include "OConfig.hh"
 #include "OTracer.hh"
@@ -842,6 +843,8 @@ void App::prepareOptiX()
 
     assert( mode == OContext::INTEROP && "COMPUTE mode not operational"); 
 
+    // TODO: move inside OGeo ? 
+
     optix::Context context = optix::Context::create();
 
     m_ocontext = new OContext(context, mode); 
@@ -857,6 +860,10 @@ void App::prepareOptiX()
 
     m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
     m_oscin->convert(); 
+
+    m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
+    m_osrc->convert(); 
+
 
 
     std::string builder_   = m_fcfg->getBuilder(); 

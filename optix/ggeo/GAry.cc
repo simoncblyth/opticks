@@ -1,4 +1,5 @@
 #include "GAry.hh"
+#include "GDomain.hh"
 
 #include "assert.h"
 #include <string.h>
@@ -6,7 +7,10 @@
 #include <stdio.h>
 #include "float.h"
 #include <vector>
+
+
 #include "NPY.hpp"
+#include "NPlanck.hpp"
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
@@ -15,6 +19,10 @@
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
+
+
+
 
 
 template <typename T>
@@ -305,9 +313,23 @@ GAry<T>* GAry<T>::urandom(unsigned int length)
 }
 
 
+template <typename T>
+GAry<T>* GAry<T>::from_domain(GDomain<T>* domain)
+{
+    GAry<T>* ary = new GAry<T>( domain->getLength(), domain->getValues() );
+    return ary ; 
+}
 
 
-
+template <typename T>
+GAry<T>* GAry<T>::planck_spectral_radiance(GAry<T>* nm, T blackbody_temp_kelvin)
+{
+    T* nmv = nm->getValues();
+    GAry<T>* ary = new GAry<T>( nm->getLength(), NULL );
+    T* vals = ary->getValues();
+    for(unsigned int i=0 ; i < ary->getLength(); i++) vals[i] = ::planck_spectral_radiance(nmv[i], blackbody_temp_kelvin) ;  
+    return ary ;
+}
 
 
 
