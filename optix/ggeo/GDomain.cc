@@ -5,6 +5,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <sstream>
+#include <string>
+#include "NLog.hpp"
+
+
+template <typename T>
+void GDomain<T>::Summary(const char* msg)
+{
+   unsigned int len = getLength();
+
+   LOG(info) << msg 
+             << " low " << m_low
+             << " high " << m_high
+             << " step " << m_step
+             << " len " << len 
+             ;
+
+   T* vals = getValues();
+   std::stringstream ss ;  
+   for(unsigned int i=0 ; i < len ; i++) ss << i << ":" << vals[i] << " " ; 
+
+   LOG(info) << "values: " << ss.str() ;
+}
+
+
 
 template <typename T>
 bool GDomain<T>::isEqual(GDomain<T>* other)

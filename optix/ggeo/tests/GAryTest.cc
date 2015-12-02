@@ -1,18 +1,22 @@
 #include "GAry.hh"
+#include "GDomain.hh"
 #include "assert.h"
 
 typedef GAry<float> A ;
 
 void test_planck()
 {
+   GDomain<float>* nmdom = new GDomain<float>(60.f, 810.f, 20.f );
+   nmdom->Summary("nmdom");
 
-   A* a = A::linspace(500, 300., 800.);
+   A* nm = A::from_domain(nmdom);
+   nm->Summary("nm from_domain");
 
-   A* b = A::planck_spectral_radiance( a, 6500.f ); 
+   A* bb = A::planck_spectral_radiance( nm, 6500.f ); 
+   bb->Summary("bb planck_spectral_radiance");
 
-   b->Summary();
-
-   b->save("/tmp/ary_planck.npy");
+   nm->save("/tmp/GAry_test_planck_nm.npy");
+   bb->save("/tmp/GAry_test_planck_bb.npy");
 }
 
 

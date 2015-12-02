@@ -10,6 +10,7 @@ class GDomain {
      T getHigh(){ return m_high ; }   
      T getStep(){ return m_step ; }
   public: 
+     void Summary(const char* msg="GDomain::Summary");
      bool isEqual(GDomain<T>* other); 
      unsigned int getLength();   
      T* getValues();   
