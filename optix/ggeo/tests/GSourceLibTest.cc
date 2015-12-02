@@ -17,12 +17,14 @@ int main(int argc, char** argv)
 
     GSourceLib* sl = new GSourceLib(cache);
 
+    sl->generateBlackBodySample();
+
     //GSource* source = GSource::make_blackbody_source("D65", 0, 6500.f );    
     //sl->add(source);
 
-    NPY<float>* buf = sl->createBuffer();
+    //NPY<float>* buf = sl->createBuffer();
 
-    buf->save("/tmp/gsrclib.npy");
+    //buf->save("/tmp/gsrclib.npy");
 
     return 0 ; 
 }

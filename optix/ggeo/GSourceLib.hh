@@ -20,6 +20,8 @@ class GSourceLib : public GPropertyLib {
         void add(GSource* source);
         unsigned int getNumSources();
     public:
+        void generateBlackBodySample(unsigned int n=500000);
+    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
        void import();

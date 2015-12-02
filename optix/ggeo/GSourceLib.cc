@@ -49,6 +49,17 @@ void GSourceLib::import()
     LOG(debug) << "GSourceLib::import "  ; 
 }
 
+
+void GSourceLib::generateBlackBodySample(unsigned int n)
+{
+    GSource* source = GSource::make_blackbody_source("D65", 0, 6500.f );    
+    GProperty<float>* icdf = constructInvertedSourceCDF(source);
+    GAry<float>* sample = icdf->lookupCDF(n);     
+    sample->save("/tmp/blackbody.npy");
+}
+
+
+
 NPY<float>* GSourceLib::createBuffer()
 {
     if(getNumSources() == 0)

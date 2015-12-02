@@ -7,6 +7,8 @@
 
 using namespace optix;
 
+#include "wavelength_lookup.h"
+
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 rtDeclareVariable(unsigned int, instance_index,  ,);
@@ -1063,6 +1065,9 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // could do offline
   // but this is great place to dump things checking GPU side state
   // as only run once
+
+
+  source_check(); 
 
   const uint4& solid    = solidBuffer[primIdx]; 
   uint4 identity = identityBuffer[instance_index] ; 

@@ -50,8 +50,10 @@ static __device__ __inline__ void source_check()
     rtPrintf("source_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
 }
 
-
-
+/*
+source_check nm_a     60.000    506.041    820.000  
+source_check nm_a     60.000    506.041    820.000  
+*/
 
 
 
