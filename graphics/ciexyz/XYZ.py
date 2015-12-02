@@ -12,6 +12,20 @@ class XYZ(object):
     """
     Wavelength range is not an input, its a feature of
     human vision and CIE weighting functions
+
+    They all sum to approx the same value::
+
+        In [8]: cie.X(ww).sum()
+        Out[8]: 106.71446798936442
+
+        In [9]: cie.Y(ww).sum()
+        Out[9]: 106.94658649406502
+
+        In [10]: cie.Z(ww).sum()
+        Out[10]: 106.85851877731031
+
+        In [11]: ww = np.arange(60,810,1)
+
     """
     w = np.arange(399.,675.+1.,1.)   # adjusted to avoid 0,0,0 in the matching functions 
     wls = np.array([400,460,470,480,490,500,520,540,560,580,600,620,675])

@@ -4,6 +4,7 @@
 typedef enum {
    T_UNDEF,
    T_SPHERE,
+   T_POINT,
    T_DISC,
    T_DISCLIN,
    T_DISCAXIAL,
@@ -66,6 +67,7 @@ class TorchStepNPY {
        static const char* DISTANCE_ ; 
 
        static const char* T_SPHERE_ ; 
+       static const char* T_POINT_ ; 
        static const char* T_DISC_ ; 
        static const char* T_DISCLIN_ ; 
        static const char* T_DISCAXIAL_ ; 

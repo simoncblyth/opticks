@@ -145,6 +145,7 @@ from scipy.optimize import curve_fit
 
 from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_
 from env.numerics.npy.geometry import Shape, Plane, Boundary, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
+import ciexyz.ciexyz as cie
 
 
 np.set_printoptions(suppress=True, precision=3)
@@ -577,9 +578,15 @@ if __name__ == '__main__':
 
     from env.graphics.ciexyz.XYZ import Spectrum
     from matplotlib.colors import LogNorm
-    #plt.hist2d( y, z, bins=100, norm=LogNorm())
 
-    plt.hist2d( y, w, bins=100, norm=LogNorm())
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    wX = cie.X(w)
+    wY = cie.Y(w)
+    wZ = cie.Z(w)
+
+    ax.hist2d( y, w, bins=100, norm=LogNorm())
 
     plt.show()
 

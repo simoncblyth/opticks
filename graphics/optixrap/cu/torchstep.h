@@ -255,6 +255,15 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           rotateUz(photonPolarization, ts.p0);
 
           p.polarization = photonPolarization ;
+
+      }
+      else if( ts.type == T_POINT )
+      {
+          p.direction = ts.p0 ;
+          p.position = ts.x0 ;
+          float3 photonPolarization = make_float3( sinPhi, -cosPhi, 0.f); // adhoc
+          rotateUz(photonPolarization, ts.p0);
+          p.polarization = photonPolarization ;
       }
       else if( ts.type == T_DISCAXIAL )
       {

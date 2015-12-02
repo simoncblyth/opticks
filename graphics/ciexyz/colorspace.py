@@ -73,7 +73,6 @@ class ChromaticitySpace(object):
         end = 1.
         step = complex(0,nbin)
 
-
         extent = [start, end, start, end]
         y, x = np.mgrid[start:end:step,start:end:step]
         z = np.ones_like(y) - x - y 

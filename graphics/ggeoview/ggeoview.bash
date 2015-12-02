@@ -135,7 +135,7 @@ ggv-newton()
 
 
     local torch_config=(
-                 type=disc
+                 type=point
                  photons=500000
                  polz=${pol}pol
                  polarization=$surfaceNormal

@@ -32,6 +32,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
 // TODO: material lookup based on the frame volume solid ?
 //
  
+const char* TorchStepNPY::T_POINT_    = "point" ; 
 const char* TorchStepNPY::T_SPHERE_    = "sphere" ; 
 const char* TorchStepNPY::T_DISC_      = "disc" ; 
 const char* TorchStepNPY::T_DISCLIN_   = "disclin" ; 
@@ -44,6 +45,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
 {
     Torch_t type = T_UNDEF ;
     if(       strcmp(k,T_SPHERE_)==0)    type = T_SPHERE ; 
+    else if(  strcmp(k,T_POINT_)==0)     type = T_POINT ; 
     else if(  strcmp(k,T_DISC_)==0)      type = T_DISC ; 
     else if(  strcmp(k,T_DISCLIN_)==0)   type = T_DISCLIN ; 
     else if(  strcmp(k,T_DISCAXIAL_)==0) type = T_DISCAXIAL ; 
@@ -62,6 +64,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     {
        case T_SPHERE:      type=T_SPHERE     ;break; 
        case T_DISC:        type=T_DISC       ;break; 
+       case T_POINT:       type=T_POINT      ;break; 
        case T_DISCLIN:     type=T_DISCLIN    ;break; 
        case T_DISCAXIAL:   type=T_DISCAXIAL  ;break; 
        case T_INVSPHERE:   type=T_INVSPHERE  ;break; 
