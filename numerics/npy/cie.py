@@ -8,11 +8,11 @@ from env.graphics.ciexyz.XYZ import Spectrum
 from env.graphics.ciexyz.RGB import RGB
 
 
-def cie_hist1d(w, x, nx=100, colorspace="sRGB/D65"):
+def cie_hist1d(w, x, xb, colorspace="sRGB/D65"):
     """
     :param w: array of wavelengths
     :param x: coordinate
-    :param nx: number of bins
+    :param xb: bin edges
 
     :return hRGB: 
     :return hb: 
@@ -48,14 +48,6 @@ def cie_hist1d(w, x, nx=100, colorspace="sRGB/D65"):
         separate from scipy, but under the "brand"
 
     """
-    xmin = x.min()
-    xmax = x.max()
-    if xmin == xmax:
-        xmin = -1
-        xmax = 1
-
-    xb = np.linspace(xmin, xmax, nx)
-
     hX, hXx = np.histogram(x,bins=xb, weights=_cie.X(w))   
     hY, hYx = np.histogram(x,bins=xb, weights=_cie.Y(w))   
     hZ, hZx = np.histogram(x,bins=xb, weights=_cie.Z(w))   
@@ -74,15 +66,8 @@ def cie_hist1d(w, x, nx=100, colorspace="sRGB/D65"):
 
 
 
-def cie_hist2d(w, x, y, nx=100, ny=100, colorspace="sRGB/D65"):
+def cie_hist2d(w, x, y, xb, yb, colorspace="sRGB/D65"):
 
-    xmin = x.min()
-    xmax = x.max()
-    ymin = y.min()
-    ymax = y.max()
-
-    xb = np.linspace(xmin, xmax, nx)
-    yb = np.linspace(ymin, ymax, ny)
     bins = [xb,yb]
 
     hX, hXx, hXy = np.histogram2d(x,y,bins=bins, weights=_cie.X(w))   
