@@ -362,35 +362,40 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
             case  Types::MATERIALSEQ: assert(0)        ;break; 
             case   Types::HISTORYSEQ: assert(0)        ;break; 
         }  
-        assert(bitpos < 32);
 
-        unsigned int bitmask = bitpos == 0 ? 0 : 1 << (bitpos - 1); // added handling of 0 
-        assert(ffs(bitmask) == bitpos);
-
-        if(ffs(bitmask) != bitpos)
+        if(bitpos >= 32)
         {
-             LOG(warning) << "RecordsNPY::getSequenceString"
-                          << " UNEXPECTED ffs(bitmask) != bitpos "
-                          << " bitmask " << std::hex << bitmask << std::dec
-                          << " ffs(bitmask) " <<  ffs(bitmask)
-                          << " bitpos " << bitpos 
-                          ; 
+            LOG(fatal) << "RecordsNPY::getSequenceString"
+                       << " bitpos out of range "  << bitpos
+                       << " record " << r
+                       << " record_id " << record_id
+                       << " photon_id " << photon_id
+                       << " flag " << gformat(flag)
+                       << " etype " << etype
+                       ;
+                
 
-/*
-In [16]: "%x" % (1 << 31)
-Out[16]: '80000000'
+        } 
+        //assert(bitpos < 32);
 
-In [18]: ffs_(1<<31)
-Out[18]: 32
+        std::string abbrev = "ERR" ; 
+        if(bitpos < 32)
+        { 
+            unsigned int bitmask = bitpos == 0 ? 0 : 1 << (bitpos - 1); 
+            assert(ffs(bitmask) == bitpos);
+            if(ffs(bitmask) != bitpos)
+            {
+                 LOG(warning) << "RecordsNPY::getSequenceString"
+                              << " UNEXPECTED ffs(bitmask) != bitpos "
+                              << " bitmask " << std::hex << bitmask << std::dec
+                              << " ffs(bitmask) " <<  ffs(bitmask)
+                              << " bitpos " << bitpos 
+                              ; 
 
-In [20]: ffs_(0)
-Out[20]: 0
-
-*/
+            }
+            std::string label = m_types->getMaskString( bitmask, etype) ;
+            abbrev = m_types->getAbbrev(label, etype) ; 
         }
-
-        std::string label = m_types->getMaskString( bitmask, etype) ;
-        std::string abbrev = m_types->getAbbrev(label, etype) ; 
 
         //if(photon_id == 0) printf("bitpos %u bitmask %x label %s abbrev %s \n", bitpos, bitmask, label.c_str(), abbrev.c_str());
 
@@ -399,6 +404,48 @@ Out[20]: 0
     }
     return ss.str();
 }
+
+
+/*
+
+32 bit limit::
+
+    In [16]: "%x" % (1 << 31)
+    Out[16]: '80000000'
+
+    In [41]: ffs_??
+    Type:       function
+    String Form:<function <lambda> at 0x10575d7d0>
+    File:       /usr/local/env/chroma_env/lib/python2.7/site-packages/env/numerics/npy/types.py
+    Definition: ffs_(_)
+    Source:     ffs_ = lambda _:libcpp.ffs(_)
+
+
+    In [20]: ffs_(0)
+    Out[20]: 0
+
+    In [35]: ffs_( 1 << (31-1) )
+    Out[35]: 31
+
+    In [36]: ffs_( 1 << (32-1) )
+    Out[36]: 32
+
+    In [37]: ffs_( 1 << (33-1) )
+    Out[37]: 0
+
+    In [38]: ffs_( 1 << (34-1) )
+    Out[38]: 0
+
+    In [39]: ffs_( 1 << (35-1) )
+    Out[39]: 0
+
+    In [40]: ffs_( 1 << (64-1) )
+    Out[40]: 0
+
+*/
+
+
+
 
 
 void RecordsNPY::appendMaterials(std::vector<unsigned int>& materials, unsigned int photon_id)

@@ -210,8 +210,7 @@ __device__ float3 get_direction_26(unsigned int idir)
 __device__ void
 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 {
-      //p.wavelength = ts.wavelength ; 
-      p.wavelength = source_lookup(curand_uniform(&rng));  // Planck black body source 6500K standard illuminant 
+      p.wavelength = ts.wavelength > 50. ? ts.wavelength : source_lookup(curand_uniform(&rng));  // Planck black body source 6500K standard illuminant 
 
       p.time       = ts.t0 ;
       p.weight     = ts.weight ;

@@ -7,7 +7,7 @@
 #include "NPY.hpp"
 #include "NLog.hpp"
 
-const unsigned int GSourceLib::icdf_length = 256 ; 
+const unsigned int GSourceLib::icdf_length = 1024 ; 
 const char* GSourceLib::radiance_ = "radiance" ; 
 
 

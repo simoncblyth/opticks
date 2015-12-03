@@ -143,19 +143,21 @@ ggv-rainbow()
                  distance=25
                  zenithazimuth=0,1,0,1
                  material=Vacuum
+                 wavelength=500 
                )
+    # wavelength=0 for Plankian D65 white light 
  
     local test_config=(
                  mode=BoxInBox
                  analytic=1
-                 shape=box    parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=box    parameters=-1,1,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
                  shape=sphere parameters=-1,1,0,100       boundary=Vacuum///$material
                )
 
     ggv.sh  \
             $* \
-            --animtimemax 7 \
-            --timemax 7 \
+            --animtimemax 10 \
+            --timemax 10 \
             --geocenter \
             --eye 0,0,1 \
             --test --testconfig "$(join _ ${test_config[@]})" \
@@ -203,6 +205,7 @@ ggv-newton()
                  distance=25
                  zenithazimuth=0,1,0,1
                  material=Vacuum
+                 wavelength=0 
                )
  
     local test_config=(

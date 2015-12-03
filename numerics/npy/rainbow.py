@@ -26,9 +26,9 @@ First 15 bows...
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-from mpl_toolkits.mplot3d import Axes3D
 
 from env.numerics.npy.ana import Evt, Selection, costheta_
 from env.numerics.npy.geometry import Boundary   
@@ -36,7 +36,7 @@ from env.numerics.npy.geometry import Boundary
 from env.numerics.npy.cie  import cie_hist1d, cie_hist2d
 
 
-def rainbow(ax, pos, w, nb=100, rmin=-1, mode="cie", style="1d"):
+def rainbow(ax, pos, w, nb=100, rmin=-1, wmin=200, mode="cie", style="1d"):
 
     assert style in ["cie", "hist", "test"]
     assert mode in ["1d","2d"]
@@ -47,15 +47,17 @@ def rainbow(ax, pos, w, nb=100, rmin=-1, mode="cie", style="1d"):
     r = np.sqrt(y*y + z*z)
     #assert np.all(x == -700. )
     # huh 
+    b = np.logical_and(r > rmin, w > wmin)
 
 
     yb = np.linspace(y.min(), y.max(), nb)
     zb = np.linspace(z.min(), z.max(), nb)
-    rb = np.linspace(r.min(), r.max(), nb)
+    #rb = np.linspace(r.min(), r.max(), nb)
+
     ntile = nb
     tb = np.linspace(0, 1, ntile)
 
-    b = r > rmin
+    rb = np.linspace(r[b].min(), r[b].max(), nb)
 
     if style == "cie":
 
@@ -108,6 +110,21 @@ def rainbow_deviation_angle(n, k=1):
     return k*np.pi + 2*i - 2*r*(k+1)
 
 
+
+def offplot(x,y,z):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.scatter(x, y, z)
+
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+
+    plt.show()
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
@@ -140,8 +157,13 @@ if __name__ == '__main__':
     xv = rainbow_deviation_angle(n, 1)  # expected deviation angle
 
     #plt.hist((xv - dv)*180./np.pi, bins=100)  
-    #spikes at zero, but asymmetric tail off to -13 degrees
-    #plt.hist(dv*180./np.pi, bins=100)
+    #   spikes at zero, but asymmetric tail off to -13 degrees (GlassSchottF2)
+    #   very big zero spike, but long asymmetruc tail off to -40 degress (MainH2OHale)
+    #   same behavior with monochromatic 500nm
+    #
+    #plt.close();plt.hist(dv*180./np.pi, bins=100)
+    #    (with mono 500nm) deviation spike at 138 deg  (180-138=42) 
+    #    (nothing below that but extending up to 170) 
     #
     #plt.hist2d(dv*180./np.pi, w, bins=100)
     #
@@ -159,13 +181,16 @@ if __name__ == '__main__':
     z = p4[:,2]
     r = np.sqrt(y*y + z*z)
 
+    #off = x != -1200.
+    #offplot(x[off],y[off],z[off])
 
     fig = plt.figure()
 
 
     nb = 100
     rmin = 40
-    mode = "2d"
+    #rmin = 650
+    mode = "1d"
 
     ax= fig.add_subplot(1,2,1)
     rainbow(ax, p4, w, nb=nb, rmin=rmin, style="cie", mode=mode )
