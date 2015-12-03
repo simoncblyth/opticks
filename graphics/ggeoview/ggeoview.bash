@@ -126,12 +126,13 @@ ggv-rainbow()
     esac
     echo  pol $pol tag $tag
 
-    local material=GlassSchottF2
+    #local material=GlassSchottF2
+    local material=MainH2OHale
     local surfaceNormal=0,1,0
 
     local torch_config=(
                  type=disc
-                 photons=3000000
+                 photons=500000
                  polz=${pol}pol
                  polarization=$surfaceNormal
                  frame=-1

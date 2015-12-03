@@ -45,7 +45,9 @@ def rainbow(ax, pos, w, nb=100, rmin=-1, mode="cie", style="1d"):
     y = pos[:,1]
     z = pos[:,2]
     r = np.sqrt(y*y + z*z)
-    assert np.all(x == -700. )
+    #assert np.all(x == -700. )
+    # huh 
+
 
     yb = np.linspace(y.min(), y.max(), nb)
     zb = np.linspace(z.min(), z.max(), nb)
@@ -115,7 +117,8 @@ if __name__ == '__main__':
 
     sel = Selection(evt,"BT BR BT SA")  # single reflection corresponds to 1st rainbow
 
-    boundary = Boundary("Vacuum///GlassSchottF2")
+    boundary = Boundary("Vacuum///MainH2OHale")
+    #boundary = Boundary("Vacuum///GlassSchottF2")
 
     n = boundary.imat.refractive_index(sel.wl)  
     wd = np.arange(80,820,10)
@@ -160,9 +163,9 @@ if __name__ == '__main__':
     fig = plt.figure()
 
 
-    nb = 200
+    nb = 100
     rmin = 40
-    mode = "1d"
+    mode = "2d"
 
     ax= fig.add_subplot(1,2,1)
     rainbow(ax, p4, w, nb=nb, rmin=rmin, style="cie", mode=mode )

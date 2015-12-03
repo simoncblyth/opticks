@@ -1,6 +1,65 @@
 #!/usr/bin/env python
 """
 
+Generated photons feature a plateau from 80nm to 205nm followed 
+by step up to join the curve.  
+
+* pushing out generation to 10M, 100M doesnt change this feature
+  other than scaling the plateau level
+
+* low bins of pk.pdf feature very small numbers..., 
+  attempt to avoid numerical issues using arbitrary scaling moves the cut 
+  to 210nm, also a step structure in the generated distribution is 
+  apparent 
+
+* problem presumably from too great a probability range... so that 
+  never get to generate any at lower bins somehow convolved with 
+  numerical precision to cause steps ? 
+
+::
+
+    In [11]: pk.cdf[0]
+    Out[11]: 0.0
+
+    In [12]: pk.cdf[1]
+    Out[12]: 1.0708856422955714e-17
+
+    In [13]: pk.cdf[-1]
+    Out[13]: 0.99999999999999045
+
+
+    In [18]: u.min()
+    Out[18]: 3.6289631744068629e-07
+
+    In [19]: u.max()
+    Out[19]: 0.99999976714026029
+
+    In [20]: u[u>3.6289631744068629e-07].min()
+    Out[20]: 1.9915794777780604e-06
+
+
+Huh 200nm is on the plateau but the cdf is not outrageously small there ?::
+
+    In [27]: pk.cdf[15001]
+    Out[27]: 0.0065557782251502248
+
+    In [28]: np.where(np.logical_and(w > 200.,w<200.1) )
+    Out[28]: (array([15001, 15002, 15003, 15004, 15005, 15006, 15007, 15008, 15009, 15010]),)
+
+
+Moving the low wavelength up from 80nm to 200nm avoids the objectionable plateau and cliff,
+but there is still a stepping structure though.
+
+
+**RESOLVED** 
+
+    The interpolation was using too coarse a binning that 
+    worked fine for most of the distribution, but not good enough 
+    for the low wavelength turn on 
+
+
+
+
 * http://www.yale.edu/ceo/Documentation/ComputingThePlanckFunction.pdf
 
 ::
@@ -14,6 +73,14 @@
              hc/kT
     beta =   -----
               w
+
+
+Where e^(beta) >> 1  (Wien approximation) Plank tends to 
+
+
+   Bw(T) = 2hc^2 w^-5 e^(-beta)
+             
+
 
 
 
@@ -38,10 +105,19 @@ except ImportError:
     k = 1.3806488e-23
 
 
-def planck(nm, K=6500.):
-    wav = nm/1e9 
-    a = 2.0*h*c*c
-    b = (h*c)/(k*K)/wav
+def planck(nm, K=6500., arbitrary=True):
+    if arbitrary:
+       wav = nm
+       a = np.power(200,5)
+    else:
+       wav = nm/1e9 
+       a = 2.0*h*c*c
+    pass
+
+    hc_over_kT = (h*c)/(k*K)
+
+    b = hc_over_kT*1e9/nm
+
     return a/(np.power(wav,5) * np.expm1(b))  
 
 
@@ -80,7 +156,7 @@ def construct_inverse_cdf_0( bva, bdo,  N ):
 
 
 class Planck(object):
-    def __init__(self, w, K=6500, N=100):
+    def __init__(self, w, K=6500, N_idom=4096):
 
         bb = planck(w, K=K)
 
@@ -98,7 +174,7 @@ class Planck(object):
         cdf[0] = 0.                        # lay down zero probability 1st bin 
         np.cumsum(pdf, out=cdf[1:])
         
-        idom = np.linspace(0,1,N)  
+        idom = np.linspace(0,1, N_idom)  
         icdf = np.interp( idom, cdf, dom )  
 
  
@@ -116,6 +192,8 @@ class Planck(object):
 
     def __call__(self, u ):
         gen = np.interp( u, self.idom, self.icdf )   
+        self.u = u
+        self.gen = gen 
         return gen
 
 
@@ -130,7 +208,7 @@ if __name__ == '__main__':
 
     plt.ion()
 
-    w = np.arange(300,801,.1, dtype=np.float64)
+    w = np.arange(80.,801,.1, dtype=np.float64)
 
     pk = Planck(w, K=6500)
 
@@ -139,7 +217,7 @@ if __name__ == '__main__':
     gen = pk(u)    
  
 
-    nm = 50
+    nm = 100
     wb = w[::nm]
     hn, hd = np.histogram(gen, wb)
     assert np.all(hd == wb)
@@ -148,8 +226,9 @@ if __name__ == '__main__':
     s_avg = pk.pdf * hn.sum() * nm
 
 
+    # hmm lands spot on with -post
 
-    plt.plot( hd[:-1], hn , drawstyle="steps")
+    plt.plot( hd[:-1], hn , drawstyle="steps-post")  # -pre -mid -post
 
     plt.plot( pk.mid, s_avg ) 
 

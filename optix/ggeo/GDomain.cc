@@ -54,7 +54,13 @@ unsigned int GDomain<T>::getLength()
    }
    assert(n < 5000); // sanity check 
 
-   return n+1 ;
+   //return n+1 ;  
+   //   **old-off-by-one-bug** that has been hiding due to another bug in the domain, 
+   //   was 810nm which did not fit in with the step of 20 and num of 39  
+   //   the final n increment is not felt by <= m_high check, so the necessary extra
+   //   +1 happened already inside the while 
+   //
+   return n ;
 } 
 
 

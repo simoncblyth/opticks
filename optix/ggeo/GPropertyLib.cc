@@ -21,9 +21,51 @@
 // trace/debug/info/warning/error/fatal
 
 
+/*
+
+
+
+In [120]: np.arange(60,820.1,20)
+Out[120]: 
+array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
+        240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
+        420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
+        600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
+        780.,  800.,  820.])
+
+In [121]: np.linspace(60,820,39)
+Out[121]: 
+array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
+        240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
+        420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
+        600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
+        780.,  800.,  820.])
+
+
+
+TODO: try moving 60nm (extreme UV) up to smth more reasonable like 200nm (far UV)
+
+In [126]: np.linspace(200,800,31)
+Out[126]: 
+array([ 200.,  220.,  240.,  260.,  280.,  300.,  320.,  340.,  360.,
+        380.,  400.,  420.,  440.,  460.,  480.,  500.,  520.,  540.,
+        560.,  580.,  600.,  620.,  640.,  660.,  680.,  700.,  720.,
+        740.,  760.,  780.,  800.])
+
+In [128]: np.arange(200,800.1,20)
+Out[128]: 
+array([ 200.,  220.,  240.,  260.,  280.,  300.,  320.,  340.,  360.,
+        380.,  400.,  420.,  440.,  460.,  480.,  500.,  520.,  540.,
+        560.,  580.,  600.,  620.,  640.,  660.,  680.,  700.,  720.,
+        740.,  760.,  780.,  800.])
+
+
+
+*/
+
 
 float        GPropertyLib::DOMAIN_LOW  = 60.f ; 
-float        GPropertyLib::DOMAIN_HIGH = 810.f ; 
+float        GPropertyLib::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
 float        GPropertyLib::DOMAIN_STEP = 20.f ; 
 unsigned int GPropertyLib::DOMAIN_LENGTH = 39  ; 
 
@@ -40,7 +82,19 @@ void GPropertyLib::init()
 {
     m_standard_domain = getDefaultDomain(); 
 
-    assert(getStandardDomainLength() == DOMAIN_LENGTH );
+    unsigned int len = getStandardDomainLength() ;
+
+    if(len != DOMAIN_LENGTH)
+    { 
+        m_standard_domain->Summary("GPropertyLib::m_standard_domain");
+        LOG(fatal) << "GPropertyLib::init"
+                   << " mismatch "
+                   << " DOMAIN_LENGTH " << DOMAIN_LENGTH
+                   << " len " << len 
+                   ;
+    }
+
+    assert(len == DOMAIN_LENGTH );
 
     m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);
