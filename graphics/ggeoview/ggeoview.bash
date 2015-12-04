@@ -129,6 +129,7 @@ ggv-rainbow()
     #local material=GlassSchottF2
     local material=MainH2OHale
     local surfaceNormal=0,1,0
+    local azimuth=-0.25,0.25
 
     local torch_config=(
                  type=disc
@@ -141,7 +142,7 @@ ggv-rainbow()
                  target=0,0,0
                  radius=100
                  distance=25
-                 zenithazimuth=0,1,0,1
+                 zenithazimuth=0,1,$azimuth
                  material=Vacuum
                  wavelength=500 
                )
