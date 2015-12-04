@@ -118,18 +118,30 @@ ggv-pmt-test(){
 ggv-rainbow()
 {
     type $FUNCNAME
-    local pol=${1:-s}
-    local tag=1 
-    case $pol in  
-        s) tag=1 ;;
-        p) tag=2 ;;
+    local color=${1:-white}
+
+    # nm of CIE X,Y,Z weighting function maxima
+    local X_red=600.0
+    local Y_green=554.0
+    local Z_blue=448.0   
+    # huh this is magenta 
+
+    local tag=0
+    local wavelength=0
+
+    case $color in  
+        white) wavelength=0        ; tag=1 ;;
+          red) wavelength=$X_red   ; tag=2 ;;
+        green) wavelength=$Y_green ; tag=3 ;;
+         blue) wavelength=$Z_blue  ; tag=4 ;;
     esac
-    echo  pol $pol tag $tag
+    echo  color $color wavelength $wavelength tag $tag
 
     #local material=GlassSchottF2
     local material=MainH2OHale
     local surfaceNormal=0,1,0
     local azimuth=-0.25,0.25
+    local pol=s
 
     local torch_config=(
                  type=disc
@@ -144,7 +156,7 @@ ggv-rainbow()
                  distance=25
                  zenithazimuth=0,1,$azimuth
                  material=Vacuum
-                 wavelength=500 
+                 wavelength=$wavelength 
                )
     # wavelength=0 for Plankian D65 white light 
  
@@ -225,7 +237,7 @@ ggv-newton()
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --save --tag $tag --cat prism
+            --save --tag $tag --cat newton
 
 }
 
@@ -300,6 +312,7 @@ ggv-prism()
                  distance=25
                  zenithazimuth=0,1,$azimuth
                  material=Vacuum
+                 wavelength=0
                )
  
     local test_config=(

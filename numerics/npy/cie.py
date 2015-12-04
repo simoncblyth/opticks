@@ -1,93 +1,197 @@
 #!/usr/bin/env python
+"""
+Conversion of the binned wavelength spectra into XYZ (using 
+CIE weighting functions) and then RGB produces a spectrum
+
+[FIXED] Unphysical color repetition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+Uniform scaling by maximal single X,Y,Z or R,G,B 
+prior to clipping gets rid of the unphysical color repetition
+but theres kinda a between the green and the blue, where cyan 
+should be 
+
+    #hRGB_raw /= hRGB_raw[0,:,0].max()  # scaling by maximal red, results in muted spectrum
+    #hRGB_raw /= hRGB_raw[0,:,1].max()  # scaling by maximal green,  OK  
+    #hRGB_raw /= hRGB_raw[0,:,2].max()  # scaling by maximal blue, similar to green by pumps the blues and nice yellow  
+
+The entire spectral locus is outside sRGB gamut (the triangle),
+so all bins are being clipped.
+
+Not clipping produces a psychedelic mess.
+
+
+[ISSUE] Cyan missing
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Need better way to handle out of gamut ?
+
+Raw numbers show that green ramps up thru 430..480 nm but
+its all negative, so that info is clipped.
+
+::
+
+    In [68]: np.set_printoptions(linewidth=150)
+
+    In [75]: np.hstack([wd[:-1,None],c.raw[0],c.xyz[0],c.rgb[0]])
+    Out[75]: 
+    array([[  350.   ,     0.   ,     0.016,     0.102,     0.   ,     0.   ,     0.   ,    -0.   ,     0.   ,     0.   ],
+           [  370.   ,     0.015,     0.105,     1.922,     0.   ,     0.   ,     0.001,    -0.001,     0.   ,     0.001],
+           [  390.   ,     1.873,     0.582,    20.444,     0.001,     0.   ,     0.011,    -0.003,     0.   ,     0.012],
+           [  410.   ,    49.306,     2.691,   205.061,     0.028,     0.002,     0.115,     0.03 ,    -0.019,     0.123],
+           [  430.   ,   273.393,    10.384,  1386.823,     0.153,     0.006,     0.779,     0.1  ,    -0.105,     0.83 ],
+           [  450.   ,   343.75 ,    33.415,  1781.385,     0.193,     0.019,     1.   ,     0.098,    -0.11 ,     1.064],
+           [  470.   ,   191.832,    89.944,  1294.473,     0.108,     0.05 ,     0.727,    -0.091,     0.021,     0.764],
+           [  490.   ,    32.012,   213.069,   465.525,     0.018,     0.12 ,     0.261,    -0.256,     0.218,     0.253],
+           [  510.   ,    16.48 ,   500.611,   155.962,     0.009,     0.281,     0.088,    -0.446,     0.522,     0.036],
+           [  530.   ,   159.607,   869.052,    43.036,     0.09 ,     0.488,     0.024,    -0.472,     0.829,    -0.069],
+           [  550.   ,   433.715,   994.463,     8.758,     0.243,     0.558,     0.005,    -0.072,     0.812,    -0.095],
+           [  570.   ,   772.904,   950.107,     1.308,     0.434,     0.533,     0.001,     0.586,     0.58 ,    -0.084],
+           [  590.   ,  1021.039,   762.587,     0.143,     0.573,     0.428,     0.   ,     1.199,     0.248,    -0.055],
+           [  610.   ,  1000.205,   500.338,     0.012,     0.561,     0.281,     0.   ,     1.388,    -0.017,    -0.026],
+           [  630.   ,   656.21 ,   263.667,     0.001,     0.368,     0.148,     0.   ,     0.966,    -0.079,    -0.01 ],
+           [  650.   ,   283.632,   110.045,     0.   ,     0.159,     0.062,     0.   ,     0.421,    -0.038,    -0.004],
+           [  670.   ,    80.766,    36.117,     0.   ,     0.045,     0.02 ,     0.   ,     0.116,    -0.006,    -0.002],
+           [  690.   ,    17.024,    11.172,     0.   ,     0.01 ,     0.006,     0.   ,     0.021,     0.003,    -0.001]])
+
+
+
+Chromatic Adaption
+~~~~~~~~~~~~~~~~~~~~
+
+* http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+
+     
+
+Refs
+~~~~~
+
+https://github.com/colour-science/colour/issues/191
+http://www.scipy-lectures.org/advanced/image_processing/index.html
+http://www.scipy-lectures.org/packages/scikit-image/index.html#scikit-image
+
+http://www.scipy.org/scikits.html
+    separate from scipy, but under the "brand"
+
+"""
 
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
+np.set_printoptions(linewidth=150)
 
+import matplotlib.pyplot as plt
 import ciexyz.ciexyz as _cie
 from env.graphics.ciexyz.XYZ import Spectrum
 from env.graphics.ciexyz.RGB import RGB
 
 
-def cie_hist1d(w, x, xb, colorspace="sRGB/D65"):
-    """
-    :param w: array of wavelengths
-    :param x: coordinate
-    :param xb: bin edges
+class CIE(object):
+    def __init__(self, colorspace="sRGB/D65"):
+        cs = RGB(colorspace)
+        self.x2r = cs.x2r
 
-    :return hRGB: 
-    :return hb: 
+    def hist1d_XYZ(self,w,x,xb):
+        hX, hXx = np.histogram(x,bins=xb, weights=_cie.X(w))   
+        hY, hYx = np.histogram(x,bins=xb, weights=_cie.Y(w))   
+        hZ, hZx = np.histogram(x,bins=xb, weights=_cie.Z(w))   
+        assert np.all(hXx == xb) & np.all(hYx == xb ) & np.all(hZx == xb)
+        raw = np.dstack([hX,hY,hZ])
+        self.raw = np.copy(raw)
+        return raw
+
+    def hist2d_XYZ(self,w,x,y,xb,yb):
+        bins = [xb,yb]
+        hX, hXx, hXy = np.histogram2d(x,y,bins=bins, weights=_cie.X(w))   
+        hY, hYx, hYy = np.histogram2d(x,y,bins=bins, weights=_cie.Y(w))   
+        hZ, hZx, hZy = np.histogram2d(x,y,bins=bins, weights=_cie.Z(w))   
+        assert np.all(hXx == xb) & np.all(hYx == xb ) & np.all(hZx == xb)
+        assert np.all(hXy == yb) & np.all(hYy == yb ) & np.all(hZy == yb)
+        return np.dstack([hX,hY,hZ])
+
+    def norm_XYZ(self, hXYZ, norm=2, compress=1):
+
+        if norm in [0,1,2]:
+            scale = hXYZ[:,:,norm].max()         # scale by maximal of  X,Y,Z 
+        elif norm == 3:
+            scale = np.sum(hXYZ, axis=2).max()   # scale by maximal X+Y+Z
+        else:
+            scale = 1 
+        pass
+        self.scale = scale
+
+        hXYZ /= scale                  # scale by maximal X,Y,Z 
+        hXYZ /= compress
+
+        # hXYZ[:,:,1] = hXYZ[:,:,2]   doing reveals some cyan
+        self.xyz = np.copy(hXYZ)
+        return hXYZ
+
+    def XYZ_to_RGB(self, hXYZ):
+        return np.dot( hXYZ, self.x2r.T )
+
+    def hist1d(self, w, x, xb, norm=2):
+        hXYZ_raw = self.hist1d_XYZ(w,x,xb)
+        hXYZ = self.norm_XYZ(hXYZ_raw, norm=norm) 
+        hRGB =  self.XYZ_to_RGB(hXYZ)
+        self.rgb = np.copy(hRGB)
+        return hRGB,hXYZ,xb
+
+    def hist2d(self, w, x, y, xb, yb, norm=2):
+        hXYZ_raw = self.hist2d_XYZ(w,x,y,xb,yb)
+        self.raw = hXYZ_raw
+        hXYZ = self.norm_XYZ(hXYZ_raw, norm=norm) 
+        hRGB =  self.XYZ_to_RGB(hXYZ)
+        extent = [xb[0], xb[-1], yb[0], yb[-1]]
+        return hRGB,hXYZ,extent
+
+    def spectral_plot(self, wd, norm=2):
+ 
+        ndupe = 1000
+        w = np.tile(wd, ndupe)
+        x = np.tile(wd, ndupe)
+        xb = wd 
+
+        hRGB_raw, hXYZ_raw, bx = self.hist1d(w, x, xb, norm=norm)
+
+        #hRGB_raw[:,:,1] += 0.3
+
+        hRGB_1d = np.clip(hRGB_raw, 0, 1)
+        ntile = 100
+        hRGB = np.tile(hRGB_1d, ntile ).reshape(-1,ntile,3)
+        extent = [0,2,bx[0],bx[-1]] 
+        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto')
+        ax.yaxis.set_visible(True)
+        ax.xaxis.set_visible(False)
 
 
-    Scatter plot of wavelength against the appropriate prism coordinate
-    shows expected behaviour, except at the endpoints with outlier at high wavelength 
-    and a cliff drop off at low wavelenth. 
-    Perhaps these are due to restricted range of refractive index values or 
-    problem with spectral edges of the black body light source. 
+def cie_hist1d(w, x, xb, norm=1, colorspace="sRGB/D65"):
+    c = CIE(colorspace)
+    return c.hist1d(w,x,xb,norm)
 
-    TODO: check undispersed spot, extend refractive index values 
-
-    Conversion of the binned wavelength spectra into XYZ (using 
-    CIE weighting functions) and then RGB produces a spectrum, BUT
-    are seeing unexpected repetition of colors.  
-
-    Presumably the repetition arises from the trivial 0,1 
-    clipping of RGB values.
-    The entire spectral locus is outside sRGB gamut (the triangle),
-    so all bins are being clipped.
-
-    Not clipping produces a psychedelic mess.
-   
-    Better way to handle out of gamut ?
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     
-    https://github.com/colour-science/colour/issues/191
-    http://www.scipy-lectures.org/advanced/image_processing/index.html
-    http://www.scipy-lectures.org/packages/scikit-image/index.html#scikit-image
-
-    http://www.scipy.org/scikits.html
-        separate from scipy, but under the "brand"
-
-    """
-    hX, hXx = np.histogram(x,bins=xb, weights=_cie.X(w))   
-    hY, hYx = np.histogram(x,bins=xb, weights=_cie.Y(w))   
-    hZ, hZx = np.histogram(x,bins=xb, weights=_cie.Z(w))   
-
-    assert np.all(hXx == xb) & np.all(hYx == xb ) & np.all(hZx == xb)
-
-    hXYZ = np.dstack([hX,hY,hZ])
-
-    hXYZ /= hXYZ[0,:,1].max()   # try scale by maximal Y 
-
-    cs = RGB(colorspace)
-
-    hRGB =  np.dot( hXYZ, cs.x2r.T )
-
-    return hRGB,hXYZ,xb
+def cie_hist2d(w, x, y, xb, yb, norm=1, colorspace="sRGB/D65"):
+    c = CIE(colorspace)
+    return c.hist2d(w,x,y,xb,yb,norm)
 
 
-
-def cie_hist2d(w, x, y, xb, yb, colorspace="sRGB/D65"):
-
-    bins = [xb,yb]
-
-    hX, hXx, hXy = np.histogram2d(x,y,bins=bins, weights=_cie.X(w))   
-    hY, hYx, hYy = np.histogram2d(x,y,bins=bins, weights=_cie.Y(w))   
-    hZ, hZx, hZy = np.histogram2d(x,y,bins=bins, weights=_cie.Z(w))   
-
-    assert np.all(hXx == xb) & np.all(hYx == xb ) & np.all(hZx == xb)
-    assert np.all(hXy == yb) & np.all(hYy == yb ) & np.all(hZy == yb)
-
-    hXYZ = np.dstack([hX,hY,hZ])
-
-    hXYZ /= hXYZ[:,:,1].max()   # try scale by maximal Y 
-
-    cs = RGB(colorspace)
-    hRGB =  np.dot( hXYZ, cs.x2r.T )
-
-    extent = [xb[0], xb[-1], yb[0], yb[-1]]
-    return hRGB,hXYZ,extent
 
 
 
 if __name__ == '__main__':
     pass
+
+    plt.close()
+    plt.ion()
+
+    wd = np.arange(350,720,20)
+
+
+    c = CIE()
+    fig = plt.figure()
+    for i, norm in enumerate([0,1,2,3]):
+        ax = fig.add_subplot(1,4,i)
+        c.spectral_plot(wd, norm)
+
+    plt.show()
+
+
+

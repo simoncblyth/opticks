@@ -16,8 +16,6 @@ Alexanders dark band, between the 1st and 2nd bows
 (due to no rays below min deviation for each bow)
 
 
-
-
 """
 
 import os, logging, numpy as np
@@ -66,16 +64,14 @@ class XRainbow(object):
            2   230.37  233.48
 
 
-        Assume a half disc of rays enter from say, x = -500 
-        such that incident vectors are all [+500,0,0]
+        0:180 
+             signifies rays exiting in hemisphere opposite 
+             to the incident hemisphere
 
-        Normal incidence rays intersect the sphere at [+100,0,0]
-
-        Define the "clock" axis about which angles from 0:360 are 
-        provided to be the +Y axis [0,1,0] 
-
-        http://stackoverflow.com/questions/14066933/direct-way-of-computing-clockwise-angle-between-2-vectors/16544330#16544330
-
+        180:360 
+             signifies rays exiting in same hemisphere  
+             as incidence
+ 
         """
         n = boundary.imat.refractive_index(w) 
 
@@ -88,7 +84,8 @@ class XRainbow(object):
         self.k = k
         self.i = i
         self.r = r
-        self.dv = dv
+        self.dv = dv % (2*np.pi)    # keep inside 0:360
+
         self.boundary = boundary
 
     def dbins(self, nb, window=[-0.5,2]):
@@ -130,11 +127,12 @@ class Rainbow(object):
 
     In general have k internal reflections BR sandwiched between
     the transmits BT.
-
-
-
     """
-    def __init__(self, evt, boundary, k=1):
+    def __init__(self, evt, boundary, k=1, side=[0,0,1]):
+        """
+        :param side: vector perpendicular to incident rays, 
+                     used to define the side for 0:180,180:360 splitting
+        """
         ssel = "BT " + "BR " * k + "BT SA"  
         sel = Selection(evt, ssel) 
 
@@ -144,12 +142,23 @@ class Rainbow(object):
         p1 = sel.recpost(1)[:,:3]
         p_in = p1 - p0  
 
+        assert len(w) == len(p0) == len(p1)
+
+        # assuming axial incidence towards +X
+        assert np.all( p_in[:,1] == 0)
+        assert np.all( p_in[:,2] == 0)
+
+
         pp = sel.recpost(3+k-1)[:,:3]
         pl = sel.recpost(3+k)[:,:3]
         p_out = pl - pp
 
+        side = np.tile(side, len(p_in)).reshape(-1,3)
+        assert np.all(np.sum(side*p_in, axis=1) == 0.), "side vector must be perpendicular to incident vectors"
+        cside = costheta_(p_out, side)
+
         cdv = costheta_(p_in, p_out)
-        dv = np.arccos(cdv)         
+        dv = np.piecewise( cdv, [cside>=0, cside<0], [np.arccos,lambda _:2*np.pi - np.arccos(_)])  
 
         xbow = XRainbow(w, boundary, k=k )
 
@@ -157,6 +166,7 @@ class Rainbow(object):
         self.pl = pl
         self.p_in = p_in
         self.p_out = p_out
+        self.cside = cside
         self.evt = evt
         self.xbow = xbow
         self.ssel = ssel
@@ -213,10 +223,20 @@ class Rainbow(object):
         if b is None:b = w > 0
 
         hRGB_raw, hXYZ_raw, bx= cie_hist1d(w[b],d[b], db, colorspace="sRGB/D65")
+
         hRGB_1d = np.clip(hRGB_raw, 0, 1)
+
         hRGB = np.tile(hRGB_1d, ntile ).reshape(-1,ntile,3)
-        extent = [0,1,bx[0],bx[-1]] 
-        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1)
+
+        extent = [0,2,bx[0],bx[-1]] 
+
+        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto')
+
+        ax.yaxis.set_visible(False)
+        ax.xaxis.set_visible(False)
+        for x in bx[::20]:
+            ax.annotate("%3d" % x, xy=(0.5, x), color='white')
+
         return hRGB
 
     def hist_1d(self, b=None, nb=100, ntile=50):
@@ -228,7 +248,7 @@ class Rainbow(object):
         h, hx = np.histogram(d[b],bins=db)   
         extent = [0,1,hx[0],hx[-1]] 
         ht = np.repeat(h,ntile).reshape(-1, ntile)
-        im = ax.matshow(ht, origin="lower", extent=extent, alpha=1)
+        im = ax.matshow(ht, origin="lower", extent=extent, alpha=1, aspect='auto')
         fig.colorbar(im)
         return ht
 
@@ -304,13 +324,23 @@ if __name__ == '__main__':
 
     boundary = Boundary("Vacuum///MainH2OHale")
 
-    evt = Evt(tag="1", det="rainbow")
 
-    bow1 = Rainbow(evt, boundary, k=1)
-    bow2 = Rainbow(evt, boundary, k=2)
-    bow3 = Rainbow(evt, boundary, k=3)
+    # created with ggv-;ggv-rainbow green    etc..
+    # huh the blue is coming out magenta 
+    # (maximal Z at 
+    white, red, green, blue = "1","2","3","4"
 
-    bow = bow1
+    evt = Evt(tag=white, det="rainbow")
+
+
+    bows = {}
+
+    nk = 6  # restricted by bounce max, record max of the simulation
+    for k in range(1,nk+1):
+        bows[k] = Rainbow(evt, boundary, k=k) 
+
+
+    bow = bows[1]
 
     w = bow.w 
     dv = bow.dv
@@ -323,23 +353,25 @@ if __name__ == '__main__':
     n = xbow.n
     xv = xbow.dv
 
-    #xr = cross_(bow.p_in,bow.p_out)
-    #nrm = np.array([0,1,0])
-    #tnrm = np.tile(nrm, len(xr)).reshape(-1,3)
-    #txr = np.sum( tnrm*xr , axis=1)
-
 
 if 1:
     fig = plt.figure()
+    for k in range(1,nk+1):
+        ax = fig.add_subplot(1,nk,k)
+        bows[k].cieplot_1d()
 
-    ax = fig.add_subplot(131)
-    bow.cieplot_1d()
+if 0:
+    fig = plt.figure()
+    for k in range(1,nk+1):
+        ax = fig.add_subplot(1,nk,k)
+        bows[k].hist_1d()
 
-    ax = fig.add_subplot(132)
-    h = bow.hist_1d()
+if 0:
+    fig = plt.figure()
+    for k in range(1,nk+1):
+        ax = fig.add_subplot(1,nk,k)
+        bows[k].plot_1d()
 
-    ax = fig.add_subplot(133)
-    h = bow.plot_1d()
 
 
 if 0:

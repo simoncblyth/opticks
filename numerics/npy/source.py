@@ -69,7 +69,8 @@ if __name__ == '__main__':
     wp = evt.wavelength
     w0 = sel.recwavelength(0)  
 
-    w = w0
+    w = wp
+    #w = w0
 
     wd = np.linspace(60,820,256) - 1.  
     # reduce bin edges by 1nm to avoid aliasing artifact in the histogram

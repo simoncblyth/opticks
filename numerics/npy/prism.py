@@ -147,6 +147,8 @@ from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_
 from env.numerics.npy.geometry import Shape, Plane, Boundary, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
 import ciexyz.ciexyz as cie
 
+deg = np.pi/180.
+
 
 np.set_printoptions(suppress=True, precision=3)
 np.seterr(divide="ignore", invalid="ignore")

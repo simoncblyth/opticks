@@ -8,9 +8,9 @@ from env.graphics.ciexyz.XYZ import XYZ
 def plot_XYZ(xyz):
     fig = plt.figure()
 
-    plt.plot(xyz.w,xyz.xf,label="X", c="r")
-    plt.plot(xyz.w,xyz.yf,label="Y", c="g")
-    plt.plot(xyz.w,xyz.zf,label="Z", c="b")
+    plt.plot(xyz.w,xyz.X,label="X", c="r")
+    plt.plot(xyz.w,xyz.Y,label="Y", c="g")
+    plt.plot(xyz.w,xyz.Z,label="Z", c="b")
 
     plt.legend()
     fig.show()
@@ -18,9 +18,9 @@ def plot_XYZ(xyz):
 def plot_XYZr(xyz):
     fig = plt.figure()
 
-    plt.plot(xyz.w,xyz.xr,label="Xr", c="r")
-    plt.plot(xyz.w,xyz.yr,label="Yr", c="g")
-    plt.plot(xyz.w,xyz.zr,label="Zr", c="b")
+    plt.plot(xyz.w,xyz.X,label="Xr", c="r")
+    plt.plot(xyz.w,xyz.Y,label="Yr", c="g")
+    plt.plot(xyz.w,xyz.Z,label="Zr", c="b")
 
     plt.legend()
     fig.show()
@@ -39,9 +39,20 @@ if __name__ == '__main__':
 
     plt.ion()
 
-    xyz = XYZ(w)
+    xyz = XYZ()
 
     plot_XYZ(xyz)
+
+    Xmax = xyz.w[np.argmax(xyz.X)]
+    Ymax = xyz.w[np.argmax(xyz.Y)]
+    Zmax = xyz.w[np.argmax(xyz.Z)]
+
+    print "wavelengths (nm) of weighting function maxima X %s Y %s Z %s " % (Xmax, Ymax, Zmax)
+    # Zmax looks magenta, not blue ?
+    #
+
+
+if 0:
     plot_XYZr(xyz)
     plot_BB(xyz)
 
