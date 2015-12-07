@@ -489,6 +489,19 @@ t(closest approach) to sphere center
 
 * http://www.vis.uky.edu/~ryang/teaching/cs535-2012spr/Lectures/13-RayTracing-II.pdf
 
+
+
+ISSUE : tangential incidence artifact
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Intersecting a disc of parallel rays of the same radius as a sphere
+causes artifacts at tangential incidence (irregular bunched heart shape of reflected photons), 
+changing radius of disc to avoid tangentials (eg radius of sphere 100, disc 95) avoids the 
+issue.
+
+TODO: focus on issue using annular torch and find the code path causing it
+
+
 */
 
 template<bool use_robust_method>

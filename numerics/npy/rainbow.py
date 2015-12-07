@@ -27,7 +27,7 @@ from matplotlib.colors import LogNorm
 
 from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
 from env.numerics.npy.geometry import Boundary   
-from env.numerics.npy.cie  import cie_hist1d, cie_hist2d
+from env.numerics.npy.cie  import CIE
 deg = np.pi/180.
 
 
@@ -36,7 +36,7 @@ class XRainbow(object):
         """
         :param w: wavelength array
         :param boundary: instance
-        :param k: rainbow index 
+        :param k: 1.. rainbow index, -1 direct reflection 
 
         Attributes:
 
@@ -75,9 +75,19 @@ class XRainbow(object):
         """
         n = boundary.imat.refractive_index(w) 
 
-        i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))
-        r = np.arcsin( np.sin(i)/n )
-        dv = k*np.pi + 2*i - 2*r*(k+1)
+
+        if k == -1:
+            i = 0
+            r = 0
+            dv = np.ones(len(w))*np.pi
+        else:
+            # incident, refracted angles at the minimum deviation
+            # NB these are arrays corresponding to all refractive indices of the 
+            # wavelengths of the sample
+            i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))
+            r = np.arcsin( np.sin(i)/n )
+            dv = k*np.pi + 2*i - 2*r*(k+1)
+        pass
 
         self.w = w 
         self.n = n
@@ -113,6 +123,10 @@ class XRainbow(object):
 
 
 
+
+
+
+
 class Rainbow(object):
     """
     Position indices for first k=1 rainbow::
@@ -133,8 +147,14 @@ class Rainbow(object):
         :param side: vector perpendicular to incident rays, 
                      used to define the side for 0:180,180:360 splitting
         """
-        ssel = "BT " + "BR " * k + "BT SA"  
+
+        if k == -1:
+            ssel = "BR SA"  
+        else:
+            ssel = "BT " + "BR " * k + "BT SA"  
+
         sel = Selection(evt, ssel) 
+        cie = CIE(colorspace="sRGB/D65", whitepoint=evt.whitepoint)
 
         w = sel.wl
 
@@ -160,6 +180,7 @@ class Rainbow(object):
         cdv = costheta_(p_in, p_out)
         dv = np.piecewise( cdv, [cside>=0, cside<0], [np.arccos,lambda _:2*np.pi - np.arccos(_)])  
 
+
         xbow = XRainbow(w, boundary, k=k )
 
         self.p0 = p0
@@ -168,6 +189,7 @@ class Rainbow(object):
         self.p_out = p_out
         self.cside = cside
         self.evt = evt
+        self.cie = cie
         self.xbow = xbow
         self.ssel = ssel
         self.sel = sel
@@ -214,7 +236,7 @@ class Rainbow(object):
 
         plt.hist((xv - dv)*180./np.pi, bins=100)  
 
-    def cieplot_1d(self, b=None, nb=100, ntile=50):
+    def cieplot_1d(self, b=None, nb=100, ntile=50, norm=2):
 
         w = self.w
         d = self.dv/deg
@@ -222,7 +244,7 @@ class Rainbow(object):
 
         if b is None:b = w > 0
 
-        hRGB_raw, hXYZ_raw, bx= cie_hist1d(w[b],d[b], db, colorspace="sRGB/D65")
+        hRGB_raw, hXYZ_raw, bx= self.cie.hist1d(w[b],d[b], db, norm=norm)
 
         hRGB_1d = np.clip(hRGB_raw, 0, 1)
 
@@ -262,7 +284,7 @@ class Rainbow(object):
 
         return d[b]
 
-    def cieplot_2d(self, b=None, nb=100):
+    def cieplot_2d(self, b=None, nb=100, norm=2):
 
         w = self.w
         x = self.pos[:,0]
@@ -275,7 +297,7 @@ class Rainbow(object):
         r = np.sqrt(y*y + z*z)
         if b is None:b = w > 0
 
-        hRGB_raw, hXYZ_raw, extent = cie_hist2d(w[b],y[b],z[b], yb, zb, colorspace="sRGB/D65")
+        hRGB_raw, hXYZ_raw, extent = self.cie.hist2d(w[b],y[b],z[b], yb, zb, norm=norm)
         hRGB = np.clip(hRGB_raw, 0, 1)
         ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1)
 
@@ -316,6 +338,9 @@ class Rainbow(object):
 
 
 
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
@@ -335,10 +360,15 @@ if __name__ == '__main__':
 
     bows = {}
 
+    # direct reflection for white point checking  
+    # but it aint peaked enough ...
+    #bows[-1] = Rainbow(evt, boundary, k=-1)  
+
     nk = 6  # restricted by bounce max, record max of the simulation
+    nk = 1
+
     for k in range(1,nk+1):
         bows[k] = Rainbow(evt, boundary, k=k) 
-
 
     bow = bows[1]
 
@@ -356,9 +386,9 @@ if __name__ == '__main__':
 
 if 1:
     fig = plt.figure()
-    for k in range(1,nk+1):
-        ax = fig.add_subplot(1,nk,k)
-        bows[k].cieplot_1d()
+    for i,k in enumerate(range(1,nk+1)):
+        ax = fig.add_subplot(1,nk,i+1)
+        bows[k].cieplot_1d(norm=5)
 
 if 0:
     fig = plt.figure()

@@ -86,9 +86,24 @@ from env.graphics.ciexyz.RGB import RGB
 
 
 class CIE(object):
-    def __init__(self, colorspace="sRGB/D65"):
+    def __init__(self, colorspace="sRGB/D65", whitepoint=None):
         cs = RGB(colorspace)
         self.x2r = cs.x2r
+        self.whitepoint = whitepoint
+
+    def hist0d_XYZ(self,w, nb=100):
+
+        X = np.sum(_cie.X(w))
+        Y = np.sum(_cie.Y(w))
+        Z = np.sum(_cie.Z(w))
+
+        hX = np.repeat(X, nb)
+        hY = np.repeat(Y, nb)
+        hZ = np.repeat(Z, nb)
+
+        raw = np.dstack([hX,hY,hZ])
+        self.raw = np.copy(raw)
+        return raw
 
     def hist1d_XYZ(self,w,x,xb):
         hX, hXx = np.histogram(x,bins=xb, weights=_cie.X(w))   
@@ -108,30 +123,63 @@ class CIE(object):
         assert np.all(hXy == yb) & np.all(hYy == yb ) & np.all(hZy == yb)
         return np.dstack([hX,hY,hZ])
 
-    def norm_XYZ(self, hXYZ, norm=2, compress=1):
+    def norm_XYZ(self, hXYZ, norm=2, scale=1):
+        """
+        Trying to find an appropriate way to normalize XYZ values
 
+        0,1,2
+              scale by maximal of X,Y,Z 
+        3
+              scale by maximal X+Y+Z
+        4
+              scale by Yint of an externally determined whitepoint
+              (problem is that is liable to be with very much more light 
+              than are looking at...)
+        5
+              scale by Yint of the spectrum provided, this 
+              is also yielding very small X,Y,Z 
+
+
+        """  
         if norm in [0,1,2]:
-            scale = hXYZ[:,:,norm].max()         # scale by maximal of  X,Y,Z 
+            nscale = hXYZ[:,:,norm].max()         
         elif norm == 3:
-            scale = np.sum(hXYZ, axis=2).max()   # scale by maximal X+Y+Z
+            nscale = np.sum(hXYZ, axis=2).max()   
+        elif norm == 4:
+            assert not self.whitepoint is None
+            nscale = self.whitepoint[4]
+        elif norm == 5:
+            nscale = scale
         else:
-            scale = 1 
+            nscale = 1 
         pass
-        self.scale = scale
 
-        hXYZ /= scale                  # scale by maximal X,Y,Z 
-        hXYZ /= compress
-
-        # hXYZ[:,:,1] = hXYZ[:,:,2]   doing reveals some cyan
+        hXYZ /= nscale             
+        self.scale = nscale
         self.xyz = np.copy(hXYZ)
         return hXYZ
 
     def XYZ_to_RGB(self, hXYZ):
         return np.dot( hXYZ, self.x2r.T )
 
+    def hist0d(self, w, norm=2, nb=100):
+        hXYZ_raw = self.hist0d_XYZ(w, nb=nb)
+        hXYZ = self.norm_XYZ(hXYZ_raw, norm=norm) 
+        hRGB =  self.XYZ_to_RGB(hXYZ)
+        self.rgb = np.copy(hRGB)
+        return hRGB,hXYZ,None
+
     def hist1d(self, w, x, xb, norm=2):
         hXYZ_raw = self.hist1d_XYZ(w,x,xb)
-        hXYZ = self.norm_XYZ(hXYZ_raw, norm=norm) 
+
+        if norm == 5:
+            scale = np.sum(_cie.Y(w))
+        else:
+            scale = 1
+        pass
+
+
+        hXYZ = self.norm_XYZ(hXYZ_raw, norm=norm, scale=scale) 
         hRGB =  self.XYZ_to_RGB(hXYZ)
         self.rgb = np.copy(hRGB)
         return hRGB,hXYZ,xb
@@ -163,16 +211,46 @@ class CIE(object):
         ax.yaxis.set_visible(True)
         ax.xaxis.set_visible(False)
 
+    def swatch_plot(self, wd, norm=2):
+        ndupe = 1000
+        w = np.tile(wd, ndupe)
+        hRGB_raw, hXYZ_raw, bx = self.hist0d(w, norm=norm)
 
-def cie_hist1d(w, x, xb, norm=1, colorspace="sRGB/D65"):
-    c = CIE(colorspace)
+        hRGB_1d = np.clip(hRGB_raw, 0, 1)
+        ntile = 100
+        hRGB = np.tile(hRGB_1d, ntile ).reshape(-1,ntile,3)
+        extent = [0,2,0,1]
+        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto')
+        ax.yaxis.set_visible(True)
+        ax.xaxis.set_visible(False)
+
+
+
+def cie_hist1d(w, x, xb, norm=1, colorspace="sRGB/D65", whitepoint=None):
+    c = CIE(colorspace, whitepoint=whitepoint)
     return c.hist1d(w,x,xb,norm)
 
-def cie_hist2d(w, x, y, xb, yb, norm=1, colorspace="sRGB/D65"):
-    c = CIE(colorspace)
+def cie_hist2d(w, x, y, xb, yb, norm=1, colorspace="sRGB/D65", whitepoint=None):
+    c = CIE(colorspace, whitepoint=whitepoint)
     return c.hist2d(w,x,y,xb,yb,norm)
 
 
+def whitepoint(wd):
+    bb = _cie.BB6K(wd)
+    bb /= bb.max()
+
+    X = np.sum( _cie.X(wd)*bb )
+    Y = np.sum( _cie.Y(wd)*bb )
+    Z = np.sum( _cie.Z(wd)*bb )
+
+    norm = Y 
+
+    # Normalize Y to 1
+    X /= norm
+    Y /= norm
+    Z /= norm
+
+    return [X,Y,Z], norm
 
 
 
@@ -187,11 +265,29 @@ if __name__ == '__main__':
 
     c = CIE()
     fig = plt.figure()
+
+
+    nplot = 4*2
+
     for i, norm in enumerate([0,1,2,3]):
-        ax = fig.add_subplot(1,4,i)
+        ax = fig.add_subplot(1,nplot,2*i+1)
         c.spectral_plot(wd, norm)
 
+        ax = fig.add_subplot(1,nplot,2*i+2)
+        c.swatch_plot(wd, norm)
+
     plt.show()
+
+
+    wp = whitepoint(wd)
+
+ 
+
+
+
+
+
+
 
 
 

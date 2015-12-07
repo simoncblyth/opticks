@@ -5,6 +5,8 @@ import numpy as np
 from env.python.utils import *
 from env.numerics.npy.types import *
 import env.numerics.npy.PropLib as PropLib 
+import ciexyz.ciexyz as _cie
+
 log = logging.getLogger(__name__)
 
 X,Y,Z,W = 0,1,2,3
@@ -84,6 +86,8 @@ class Evt(object):
         # photon level qtys, 
         # ending values as opposed to the compressed step by step records
         self.wavelength = self.ox[:,2,W] 
+        self.whitepoint = self.whitepoint_(self.wavelength)
+
         self.post = self.ox[:,0] 
 
         self.flags = self.ox.view(np.uint32)[:,3,3]
@@ -122,6 +126,36 @@ class Evt(object):
         seqs = map(lambda _:"%s %s" % (self.src.upper(),_), args)
         s_seqhis = map(lambda _:self.seqhis == seqhis_int(_), seqs)
         return np.logical_or.reduce(s_seqhis)      
+
+
+    def whitepoint_(self, w=None):
+        """
+        For spectra close to original (think perfect diffuse reflector) 
+        this is expected to yield the characteristic of the illuminant.
+
+        XYZ values must be normalized as clearly simulating more photons
+        will give larger values...
+
+        The Yint is hoped to provide a less adhoc way of doing the
+        normalization. 
+        """
+        if w is None:
+            w = self.wavelength
+
+        X = np.sum(_cie.X(w))
+        Y = np.sum(_cie.Y(w))
+        Z = np.sum(_cie.Z(w))
+
+        Yint = Y
+
+        X /= Yint      # normalize such that Y=1
+        Y /= Yint
+        Z /= Yint
+
+        x = X/(X+Y+Z)  # Chromaticity coordinates 
+        y = Y/(X+Y+Z)
+
+        return np.array([X,Y,Z,Yint,x,y])
 
 
     def recwavelength(self, recs, irec):
