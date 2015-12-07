@@ -89,6 +89,8 @@ class Evt(object):
         self.whitepoint = self.whitepoint_(self.wavelength)
 
         self.post = self.ox[:,0] 
+        self.dirw = self.ox[:,1]
+        self.polw = self.ox[:,2]
 
         self.flags = self.ox.view(np.uint32)[:,3,3]
         self.fdom = np.load(idp_("OPropagatorF.npy"))
@@ -126,6 +128,32 @@ class Evt(object):
         seqs = map(lambda _:"%s %s" % (self.src.upper(),_), args)
         s_seqhis = map(lambda _:self.seqhis == seqhis_int(_), seqs)
         return np.logical_or.reduce(s_seqhis)      
+
+
+    def deviation_angle(self, side=None, incident=None):
+        """
+        Deviation angle for parallel squadrons of incident photons 
+        without assuming a bounce count
+        """
+        if side is None:
+            side = np.array([0,0,1]) 
+
+        if incident is None:
+            incident = np.array([1,0,0]) 
+
+        p_out = self.ox[:,1, :3]  # final/last direction (bounce limited)
+
+        assert np.sum(side*incident) == 0., "side vector must be perpendicular to incident vectors"
+        side = np.tile(side, len(p_out)).reshape(-1,3)
+        p_in  = np.tile(incident, len(p_out)).reshape(-1,3)
+
+        cside = costheta_(p_out, side)
+
+        cdv = costheta_(p_in, p_out)
+        dv = np.piecewise( cdv, [cside>=0, cside<0], [np.arccos,lambda _:2*np.pi - np.arccos(_)])  
+
+        return dv 
+
 
 
     def whitepoint_(self, w=None):
@@ -325,6 +353,11 @@ class Selection(object):
         self.rx = rx
         self.wl = wl
 
+    x = property(lambda self:self.ox[:,0,0])
+    y = property(lambda self:self.ox[:,0,1])
+    z = property(lambda self:self.ox[:,0,2])
+    t = property(lambda self:self.ox[:,0,3])
+
     def recpost(self, irec):
         return self.evt.recpost(self.rx, irec)
 
@@ -342,6 +375,9 @@ class Selection(object):
                    [ 451.176,  451.176,  451.176, ...,   60.   ,   60.   ,   60.   ],
                    [ 730.588,  730.588,  730.588, ...,   60.   ,   60.   ,   60.   ]], dtype=float32)
 
+        Can use this to get the record count per photon ? Or is that available elsewhere ?
+        This would be useful to enable access to the last and penultimate record position, for 
+        the final direction.  But actually can use the uncompressed photon direction to get that.  
         """
         return self.evt.recwavelength(self.rx, irec)
 

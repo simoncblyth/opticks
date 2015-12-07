@@ -21,8 +21,8 @@ so all bins are being clipped.
 Not clipping produces a psychedelic mess.
 
 
-[ISSUE] Cyan missing
-~~~~~~~~~~~~~~~~~~~~~~~~~
+[ISSUE] Blue/Green transition looks unphysical 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Need better way to handle out of gamut ?
 
@@ -139,7 +139,17 @@ class CIE(object):
               scale by Yint of the spectrum provided, this 
               is also yielding very small X,Y,Z 
 
+        >50
+              scale is used, for normalization with Y value
+              obtained from the histogram norm identified bin 
 
+
+        Hmm, some adhoc exposure factor seems unavoidable given the 
+        range of intensities so perhaps the adhoc techniques are appropriate after all.
+
+        Initial thinking was that the out-of-gamut problem was tied up with the 
+        exposure problem, but they are kinda orthogonal: think vectors in XYZ space,
+        the length of the vector doesnt change the hue.  
         """  
         if norm in [0,1,2]:
             nscale = hXYZ[:,:,norm].max()         
@@ -148,7 +158,7 @@ class CIE(object):
         elif norm == 4:
             assert not self.whitepoint is None
             nscale = self.whitepoint[4]
-        elif norm == 5:
+        elif norm == 5 or norm > 50:
             nscale = scale
         else:
             nscale = 1 
@@ -174,10 +184,12 @@ class CIE(object):
 
         if norm == 5:
             scale = np.sum(_cie.Y(w))
+        elif norm > 50:
+            # assume norm is pointing to a bin, the Y value of which is used for scaling 
+            scale = hXYZ_raw[0,norm,1]
         else:
-            scale = 1
+            scale = 1 
         pass
-
 
         hXYZ = self.norm_XYZ(hXYZ_raw, norm=norm, scale=scale) 
         hRGB =  self.XYZ_to_RGB(hXYZ)
@@ -192,7 +204,7 @@ class CIE(object):
         extent = [xb[0], xb[-1], yb[0], yb[-1]]
         return hRGB,hXYZ,extent
 
-    def spectral_plot(self, wd, norm=2):
+    def spectral_plot(self, ax, wd, norm=2):
  
         ndupe = 1000
         w = np.tile(wd, ndupe)
@@ -201,13 +213,17 @@ class CIE(object):
 
         hRGB_raw, hXYZ_raw, bx = self.hist1d(w, x, xb, norm=norm)
 
-        #hRGB_raw[:,:,1] += 0.3
-
         hRGB_1d = np.clip(hRGB_raw, 0, 1)
         ntile = 100
         hRGB = np.tile(hRGB_1d, ntile ).reshape(-1,ntile,3)
         extent = [0,2,bx[0],bx[-1]] 
-        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto')
+
+        #interpolation = 'none'
+        #interpolation = 'mitchell'
+        #interpolation = 'hanning'
+        interpolation = 'gaussian'
+
+        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto', interpolation=interpolation)
         ax.yaxis.set_visible(True)
         ax.xaxis.set_visible(False)
 
@@ -254,6 +270,28 @@ def whitepoint(wd):
 
 
 
+def compare_norms(wd):
+    """
+    norm 0:X,1:Y 
+             look almost identical  
+    
+    norm 2:Z, 3:X+Y+Z 
+              also look the same
+    
+    0,1 have better yellow and less of a murky gap between green and blue
+    """
+    c = CIE()
+
+    nplot = 4
+
+    for i, norm in enumerate([0,1,2,3]):
+        ax = fig.add_subplot(1,nplot,i+1)
+        c.spectral_plot(ax, wd, norm)
+
+        #ax = fig.add_subplot(1,nplot,2*i+2)
+        #c.swatch_plot(wd, norm)
+
+
 if __name__ == '__main__':
     pass
 
@@ -263,18 +301,9 @@ if __name__ == '__main__':
     wd = np.arange(350,720,20)
 
 
-    c = CIE()
     fig = plt.figure()
 
-
-    nplot = 4*2
-
-    for i, norm in enumerate([0,1,2,3]):
-        ax = fig.add_subplot(1,nplot,2*i+1)
-        c.spectral_plot(wd, norm)
-
-        ax = fig.add_subplot(1,nplot,2*i+2)
-        c.swatch_plot(wd, norm)
+    compare_norms(wd)
 
     plt.show()
 

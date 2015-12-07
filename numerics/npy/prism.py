@@ -542,6 +542,28 @@ def oneplot(pc, log_=False):
     fig.show()
 
 
+
+def spatial(pc):
+    """
+    """
+    w = pc.wx
+    x = pc.p3[:,0]
+    y = pc.p3[:,1]
+    z = pc.p3[:,2]
+
+    #assert np.all(x == 1200.)
+    #off = x != 1200.   
+    #print pc.p3[off] 
+
+    from matplotlib.colors import LogNorm
+
+    ax.hist2d( w, y, bins=100, norm=LogNorm())
+
+
+
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
@@ -550,7 +572,7 @@ if __name__ == '__main__':
     #wl = np.arange(10, dtype=np.float32)*70. + 100.  
     # low range is off edge of the refractive index values 
 
-    evt = Evt(tag="1", det="prism")
+    evt = Evt(tag="1", det="newton") # "prism" uses all incident angles, "newton" uses one
 
     sel = Selection(evt,"BT BT SA")  
 
@@ -562,33 +584,19 @@ if __name__ == '__main__':
 
     xprism = PrismExpected(prism.a, n)
 
+
     pc = PrismCheck(prism, xprism, sel )
 
-    #oneplot(pc, log_=False)
-    #plt.show()
-
-
-    # spatial checking 
-    # ... need XYZ from wavelength spectra obtained from y bins
-
-    w = pc.wx
-    x = pc.p3[:,0]
-    y = pc.p3[:,1]
-    z = pc.p3[:,2]
-    assert np.all(x == 700.)
-
-
-    from env.graphics.ciexyz.XYZ import Spectrum
-    from matplotlib.colors import LogNorm
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    wX = cie.X(w)
-    wY = cie.Y(w)
-    wZ = cie.Z(w)
 
-    ax.hist2d( y, w, bins=100, norm=LogNorm())
+
+    oneplot(pc, log_=False)
+    #spatial(pc)
+
+  
 
     plt.show()
 

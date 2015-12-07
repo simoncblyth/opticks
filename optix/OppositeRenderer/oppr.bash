@@ -60,6 +60,21 @@ Methods from are invoked from
 
 
 
+Photon maps used for global illumination can get away with being rather coarse, as
+most of the scene detail comes from direct ray tracing and the global illumination just
+fills out shadows, caustics
+
+OptixRenderer.cpp::
+
+     30 #if ACCELERATION_STRUCTURE == ACCELERATION_STRUCTURE_UNIFORM_GRID
+     31 const unsigned int OptixRenderer::PHOTON_GRID_MAX_SIZE = 100*100*100;   
+
+
+For photon simulation the photon map is much more important than the geometry.
+
+
+
+
 
 EOU
 }

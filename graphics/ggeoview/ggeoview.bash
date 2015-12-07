@@ -140,13 +140,13 @@ ggv-rainbow()
     #local material=GlassSchottF2
     local material=MainH2OHale
     local surfaceNormal=0,1,0
-    #local azimuth=-0.25,0.25
-    local azimuth=0,1
+    local azimuth=-0.25,0.25
+    #local azimuth=0,1
     local pol=s
 
     local torch_config=(
                  type=disc
-                 photons=500000
+                 photons=3000000
                  polz=${pol}pol
                  polarization=$surfaceNormal
                  frame=-1

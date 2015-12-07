@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+from matplotlib.patches import Rectangle
 
 from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
 from env.numerics.npy.geometry import Boundary   
@@ -73,37 +74,40 @@ class XRainbow(object):
              as incidence
  
         """
-        n = boundary.imat.refractive_index(w) 
-
-
-        if k == -1:
-            i = 0
-            r = 0
-            dv = np.ones(len(w))*np.pi
-        else:
-            # incident, refracted angles at the minimum deviation
-            # NB these are arrays corresponding to all refractive indices of the 
-            # wavelengths of the sample
-            i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))
-            r = np.arcsin( np.sin(i)/n )
-            dv = k*np.pi + 2*i - 2*r*(k+1)
-        pass
-
-        self.w = w 
-        self.n = n
+        self.boundary = boundary
+        self.w = w  
         self.k = k
+
+        redblue = np.array([780., 380.])
+        self.dvr = self.deviation_angle(redblue, k)
+        self.dv = self.deviation_angle(w, k)
+
+
+
+    def deviation_angle(self, w, k=1): 
+        """
+        incident, refracted angles at the minimum deviation
+        NB these are arrays corresponding to all refractive indices of the 
+        wavelengths of the sample
+        """
+        n = boundary.imat.refractive_index(w) 
+        i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))
+        r = np.arcsin( np.sin(i)/n )
+        dv = ( k*np.pi + 2*i - 2*r*(k+1) ) % (2*np.pi)
+
+        self.n = n
         self.i = i
         self.r = r
-        self.dv = dv % (2*np.pi)    # keep inside 0:360
 
-        self.boundary = boundary
+        return dv 
 
-    def dbins(self, nb, window=[-0.5,2]):
+
+    def dbins(self, nb, window=[-0.5,0.5]):
         """
         :param nb: number of bins
         :param window: degress of window around predicted min/max deviation
         """
-        d = self.dv 
+        d = self.dvr 
         dmin = d.min() + window[0]*deg
         dmax = d.max() + window[1]*deg
         return np.linspace(dmin,dmax, nb)
@@ -120,10 +124,6 @@ class XRainbow(object):
         plt.plot(wd, nd)
 
         return wd, nd
-
-
-
-
 
 
 
@@ -149,14 +149,19 @@ class Rainbow(object):
         """
 
         if k == -1:
-            ssel = "BR SA"  
+            ssel = None
+            sel = Selection(evt) 
         else:
             ssel = "BT " + "BR " * k + "BT SA"  
+            sel = Selection(evt, ssel) 
+        pass
 
-        sel = Selection(evt, ssel) 
+
         cie = CIE(colorspace="sRGB/D65", whitepoint=evt.whitepoint)
 
         w = sel.wl
+        #b = np.logical_and( w > 380., w < 780. )   # visible range
+        b = np.logical_and( w > 200., w < 800. )  
 
         p0 = sel.recpost(0)[:,:3]
         p1 = sel.recpost(1)[:,:3]
@@ -183,6 +188,7 @@ class Rainbow(object):
 
         xbow = XRainbow(w, boundary, k=k )
 
+        self.b = b
         self.p0 = p0
         self.pl = pl
         self.p_in = p_in
@@ -236,13 +242,16 @@ class Rainbow(object):
 
         plt.hist((xv - dv)*180./np.pi, bins=100)  
 
-    def cieplot_1d(self, b=None, nb=100, ntile=50, norm=2):
+    def cieplot_1d(self, b=None, nb=20, ntile=50, norm=2):
 
         w = self.w
         d = self.dv/deg
         db = self.xbow.dbins(nb)/deg
+        dvr = self.xbow.dvr/deg
 
-        if b is None:b = w > 0
+        log.info("cieplot_1d %s " % str(dvr))
+
+        if b is None:b = np.logical_and( w > 380., w < 780. )   # visible range
 
         hRGB_raw, hXYZ_raw, bx= self.cie.hist1d(w[b],d[b], db, norm=norm)
 
@@ -252,12 +261,28 @@ class Rainbow(object):
 
         extent = [0,2,bx[0],bx[-1]] 
 
-        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto')
+        #interpolation = 'none'
+        #interpolation = 'mitchell'
+        interpolation = 'gaussian'
+
+        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto', interpolation=interpolation)
+
+        # http://stackoverflow.com/questions/16829436/overlay-matplotlib-imshow-with-line-plots-that-are-arranged-in-a-grid
+        # trick to overlay lines on top of an image
+        box = ax._position.bounds
+        tmp_ax = fig.add_axes([box[0], box[1], box[2], box[3]])
+        tmp_ax.set_axis_off()
+        tmp_ax.set_ylim(extent[2], extent[3])
+        tmp_ax.set_xlim(extent[0], extent[1])
+        tmp_ax.plot( [0.1, 0.1], [dvr[0],dvr[1]], "w-" )
+
+        tmp_ax.annotate( "%3.1f" % dvr[0], xy=(0.2, dvr[0]), color='white')
+        tmp_ax.annotate( "%3.1f" % dvr[1], xy=(0.2, dvr[1]), color='white')
 
         ax.yaxis.set_visible(False)
         ax.xaxis.set_visible(False)
-        for x in bx[::20]:
-            ax.annotate("%3d" % x, xy=(0.5, x), color='white')
+        #for x in bx[::20]:
+        #    ax.annotate("%3d" % x, xy=(0.5, x), color='white')
 
         return hRGB
 
@@ -265,7 +290,6 @@ class Rainbow(object):
 
         d = self.dv/deg
         db = self.xbow.dbins(nb)/deg
-        if b is None:b = d > 0
 
         h, hx = np.histogram(d[b],bins=db)   
         extent = [0,1,hx[0],hx[-1]] 
@@ -274,14 +298,12 @@ class Rainbow(object):
         fig.colorbar(im)
         return ht
 
-    def plot_1d(self, b=None, nb=100):
+    def plot_1d(self, b=None, nb=20):
 
+        if b is None:b = self.b
         d = self.dv/deg
         db = self.xbow.dbins(nb)/deg
-        if b is None:b = d > 0
-
         plt.hist(d[b], bins=db)
-
         return d[b]
 
     def cieplot_2d(self, b=None, nb=100, norm=2):
@@ -295,11 +317,11 @@ class Rainbow(object):
         zb = np.linspace(z.min(), z.max(), nb)
 
         r = np.sqrt(y*y + z*z)
-        if b is None:b = w > 0
+        if b is None:b = self.b
 
         hRGB_raw, hXYZ_raw, extent = self.cie.hist2d(w[b],y[b],z[b], yb, zb, norm=norm)
         hRGB = np.clip(hRGB_raw, 0, 1)
-        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1)
+        ax.imshow(hRGB, origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, interpolation='none')
 
     def hist_2d(self, b=None, nb=100):
 
@@ -307,7 +329,7 @@ class Rainbow(object):
         x = self.pos[:,0]
         y = self.pos[:,1]
         z = self.pos[:,2]
-        if b is None:b = w > 0
+        if b is None:b = self.b
 
         yb = np.linspace(y.min(), y.max(), nb)
         zb = np.linspace(z.min(), z.max(), nb)
@@ -325,7 +347,7 @@ class Rainbow(object):
         z = self.pos[:,2]
         r = np.sqrt(y*y + z*z)
 
-        if b is None:b = r > -1
+        if b is None:b = self.b
 
         ax.scatter(x[b], y[b], z[b])
 
@@ -336,6 +358,92 @@ class Rainbow(object):
         plt.show()
 
 
+
+
+
+
+def deviation_plot_0(evt):
+    """
+    looking at deviation angle without assuming a particular rainbow, 
+    to allow seeing all bows at once and comparing intensities
+    """
+
+    dv0 = evt.deviation_angle()
+    w = evt.wavelength
+    b = w > 0 
+
+    d = dv0/deg
+    db = np.arange(0,360,1)
+
+    cnt, bns, ptc = plt.hist(d, bins=db, log=True)
+
+    cie = CIE(colorspace="sRGB/D65", whitepoint=evt.whitepoint)
+
+    hRGB_raw, hXYZ_raw, bx= cie.hist1d(w[b],d[b], db, norm=1)
+    hRGB = np.clip(hRGB_raw, 0, 1)
+
+    hRGB[0] /= np.repeat(np.max( hRGB[0], axis=1), 3).reshape(-1,3)  
+
+    # pumping exposure like this, with a different factor for every bin creates a mess 
+    # brains expect single exposures, need to pick a reference bin (eg 1st bow)
+    # and pump to expose that 
+
+    for i in range(len(ptc)):
+        if cnt[i] > 1000:
+            ptc[i].set_facecolor(hRGB[0,i])
+            ptc[i].set_edgecolor(hRGB[0,i])
+
+
+def deviation_plot(evt, bows):
+
+    dv0 = evt.deviation_angle()
+    w = evt.wavelength
+    b = w > 0 
+
+    d = dv0/deg
+    db = np.arange(0,360,1)
+
+    ax = fig.add_subplot(3,1,1)
+    ax.set_xlim(0,360)
+    ax.set_ylim(1,1e5)
+
+    cnt, bns, ptc = ax.hist(d, bins=db,  log=True, histtype='step')
+    ymin, ymax = ax.get_ylim()
+    dy = ymax - ymin
+
+    for k in range(1,nk+1):
+        dvr = bows[k].xbow.dvr/deg
+        rect = Rectangle( (dvr[0], ymin), dvr[1]-dvr[0], ymax-ymin, alpha=0.1 ) 
+        ax.add_patch(rect)
+        ax.annotate( "%s" % k, xy=((dvr[0]+dvr[1])/2, 2), color='red')
+    pass
+
+    ax.annotate("Rainbow visible ranges",xy=(250,2), color='red') 
+
+
+    cie = CIE(colorspace="sRGB/D65", whitepoint=evt.whitepoint)
+
+    # expose for bow1 bin 138 
+    hRGB_raw_H, hXYZ_raw_H, bx_H = cie.hist1d(w[b],d[b], db, norm=138)
+    hRGB_H = np.tile(np.clip(hRGB_raw_H,0,1), 50).reshape(-1,50,3)
+
+    # expose for bow2 bin 232
+    hRGB_raw_L, hXYZ_raw_L, bx_L= cie.hist1d(w[b],d[b], db, norm=232)
+    hRGB_L = np.tile(np.clip(hRGB_raw_L,0,1), 50).reshape(-1,50,3)
+
+    extent = [db[0],db[-1],0,2] 
+
+    #interpolation = 'none'
+    #interpolation = 'mitchell'
+    interpolation = 'gaussian'
+
+    ax = fig.add_subplot(3,1,2)
+    ax.imshow( np.swapaxes(hRGB_H,0,1), origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto', interpolation=interpolation)
+    ax.yaxis.set_visible(False)
+
+    ax = fig.add_subplot(3,1,3)
+    ax.imshow( np.swapaxes(hRGB_L,0,1), origin="lower", extent=extent, alpha=1, vmin=0, vmax=1, aspect='auto', interpolation=interpolation)
+    ax.yaxis.set_visible(False)
 
 
 
@@ -360,13 +468,7 @@ if __name__ == '__main__':
 
     bows = {}
 
-    # direct reflection for white point checking  
-    # but it aint peaked enough ...
-    #bows[-1] = Rainbow(evt, boundary, k=-1)  
-
     nk = 6  # restricted by bounce max, record max of the simulation
-    nk = 1
-
     for k in range(1,nk+1):
         bows[k] = Rainbow(evt, boundary, k=k) 
 
@@ -384,11 +486,24 @@ if __name__ == '__main__':
     xv = xbow.dv
 
 
+if 0:
+    fig = plt.figure()
+    fig.suptitle("Simulated Deviation Angles of 3M Optical Photons Incident on Spherical Water Droplet")
+    deviation_plot(evt, bows)
+
+
 if 1:
     fig = plt.figure()
+    fig.suptitle("Interpolated Spectrum Images of 1st 6 Rainbows (3M Simulated Photons incident on water droplet)")
     for i,k in enumerate(range(1,nk+1)):
         ax = fig.add_subplot(1,nk,i+1)
-        bows[k].cieplot_1d(norm=5)
+        bows[k].cieplot_1d(norm=1)
+
+if 0:
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    bows[1].cieplot_1d(norm=1)
+
 
 if 0:
     fig = plt.figure()
@@ -398,10 +513,9 @@ if 0:
 
 if 0:
     fig = plt.figure()
-    for k in range(1,nk+1):
-        ax = fig.add_subplot(1,nk,k)
+    for i,k in enumerate(range(1,nk+1)):
+        ax = fig.add_subplot(2,3,i+1)
         bows[k].plot_1d()
-
 
 
 if 0:
