@@ -491,15 +491,15 @@ t(closest approach) to sphere center
 
 
 
-ISSUE : tangential incidence artifact
+RESOLVED : tangential incidence artifact
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**PILOT ERROR: the sphere was offset at (-1,1,0) when should have been at origin, hangover from leak avoidance?** 
 
 Intersecting a disc of parallel rays of the same radius as a sphere
 causes artifacts at tangential incidence (irregular bunched heart shape of reflected photons), 
 changing radius of disc to avoid tangentials (eg radius of sphere 100, disc 95) avoids the 
 issue.
-
-TODO: focus on issue using annular torch and find the code path causing it
 
 
 */

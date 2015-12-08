@@ -111,23 +111,17 @@ ggv-pmt-test(){
 #
 
 
-
-
-
-
-ggv-rainbow()
+ggv-wavelength()
 {
-    type $FUNCNAME
     local color=${1:-white}
-
-    # nm of CIE X,Y,Z weighting function maxima
     local X_red=600.0
     local Y_green=554.0
     local Z_blue=448.0   
-    # huh this is magenta 
+    # huh blue coming out magenta 
 
     local tag=0
     local wavelength=0
+    # wavelength=0 for Plankian D65 white light 
 
     case $color in  
         white) wavelength=0        ; tag=1 ;;
@@ -136,17 +130,32 @@ ggv-rainbow()
          blue) wavelength=$Z_blue  ; tag=4 ;;
     esac
     echo  color $color wavelength $wavelength tag $tag
+}
+
+
+
+ggv-rainbow()
+{
+    type $FUNCNAME
+
+    local pol=${1:-s}
 
     #local material=GlassSchottF2
     local material=MainH2OHale
     local surfaceNormal=0,1,0
     local azimuth=-0.25,0.25
+    local wavelength=0
     #local azimuth=0,1
-    local pol=s
+
+    local tag
+    case $pol in 
+       s) tag=5 ;;   
+       p) tag=6 ;;   
+    esac
 
     local torch_config=(
-                 type=disc
-                 photons=3000000
+                 type=discIntersectSphere
+                 photons=500000
                  polz=${pol}pol
                  polarization=$surfaceNormal
                  frame=-1
@@ -159,13 +168,12 @@ ggv-rainbow()
                  material=Vacuum
                  wavelength=$wavelength 
                )
-    # wavelength=0 for Plankian D65 white light 
  
     local test_config=(
                  mode=BoxInBox
                  analytic=1
                  shape=box    parameters=-1,1,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=sphere parameters=-1,1,0,100       boundary=Vacuum///$material
+                 shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
                )
 
     ggv.sh  \

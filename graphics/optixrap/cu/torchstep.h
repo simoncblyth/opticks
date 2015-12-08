@@ -256,6 +256,48 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.polarization = photonPolarization ;
 
       }
+      else if( ts.type == T_DISC_INTERSECT_SPHERE )
+      {
+          p.direction = ts.p0 ;
+
+          float r = radius*sqrtf(u1) ;   
+
+          float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
+          rotateUz(discPosition, ts.p0);
+
+          p.position = ts.x0 + discPosition ;
+
+          {
+              // look ahead sphere intersection in order to determine
+              // surface normal at intersection so can set appropriate
+              // polarization 
+
+              float3 ray_origin = p.position ; 
+              float3 ray_direction = make_float3( 1.f, 0.f, 0.f ) ; // +X
+              float3 sphere_center = make_float3( 0.f, 0.f, 0.f ) ;           
+              float  sphere_radius = 100.f ; 
+
+              float3 O = ray_origin - sphere_center   ; 
+              float3 D = ray_direction ;
+              
+              float b = dot(O, D); 
+              float c = dot(O, O) - sphere_radius*sphere_radius ; 
+              float disc = b*b-c  ;
+
+              if(disc > 0.f )
+              {
+                  float sdisc = sqrtf(disc) ;               
+                  float root1 = (-b - sdisc);
+                  float3 surfaceNormal = (O + root1*D)/sphere_radius;
+                  p.polarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
+              }
+              else
+              {
+                  p.polarization = p.direction ; 
+              }
+          }
+
+      }
       else if( ts.type == T_POINT )
       {
           p.direction = ts.p0 ;

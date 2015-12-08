@@ -362,7 +362,6 @@ class SeqHis(Index):
         f = self.f
         return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f[n], s.split(" ")))))
 
-
 def seqhis_int(s, abbrev=True):
     f  = abflags_() if abbrev else flags_()
     return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f[n], s.split(" ")))))
@@ -377,6 +376,9 @@ def seqhis_table_():
     cu = count_unique(seqhis)
     sh = SeqHis()
     sh.table(cu, hex_=True)
+
+
+
 
 
 def maskflags_string(i, skip=["TORCH"]):
@@ -411,7 +413,6 @@ def iabmat_():
     d[0] = '??'
     return d 
 
-
 def seqhis_(i, abbrev=True): 
     fi = iabflags_() if abbrev else iflags_()
     x = ihex_(i) 
@@ -421,6 +422,7 @@ def seqmat_(i, abbrev=True):
     mi = iabmat_() if abbrev else imat_()
     x = ihex_(i) 
     return " ".join(map(lambda _:mi[int(_,16)], x[::-1] ))
+
 
 
 

@@ -3,7 +3,11 @@
 import os, logging
 import numpy as np
 from env.python.utils import *
-from env.numerics.npy.types import *
+
+from env.numerics.npy.types import seqhis_table
+from env.numerics.npy.types import *  # TODO: spell out imports
+
+
 import env.numerics.npy.PropLib as PropLib 
 import ciexyz.ciexyz as _cie
 
@@ -76,6 +80,8 @@ class Evt(object):
         self.tag = str(tag)
         self.label = label
         self.src = src
+
+
         self.ox = load_("ox"+src,tag,det) 
         self.rx = load_("rx"+src,tag,det) 
 
@@ -94,6 +100,7 @@ class Evt(object):
 
         self.flags = self.ox.view(np.uint32)[:,3,3]
         self.fdom = np.load(idp_("OPropagatorF.npy"))
+        self.nrec = 10 # TODO: get from idom ?
 
     def msize(self):
         return float(self.ox.shape[0])/1e6
@@ -105,6 +112,14 @@ class Evt(object):
         seqhis = self.seqhis
         cu = count_unique(seqhis)
         seqhis_table(cu)
+        tot = cu[:,1].astype(np.int32).sum()
+        print "tot:", tot
+        return cu
+
+    def material_table(self):
+        seqmat = self.seqmat
+        cu = count_unique(seqmat)
+        seqmat_table(cu)
         tot = cu[:,1].astype(np.int32).sum()
         print "tot:", tot
         return cu
@@ -325,6 +340,9 @@ class Evt(object):
         p = recs[:,irec,0].astype(np.float32)*extent/32767.0 + center 
         return p 
 
+    def rpost_(self, irec):
+        rx = self.rx.reshape(-1, self.nrec,2,4)
+        return self.recpost(rx, irec) 
 
 
 class Selection(object):
@@ -332,19 +350,18 @@ class Selection(object):
     Apply photon and record level selections 
     """
     def __init__(self, evt, *seqs):
-        nrec = 10  # TODO: get from idom ?
         if len(seqs) > 0:
             psel = evt.seqhis_or(*seqs)
-            rsel = np.repeat(psel, nrec) 
+            rsel = np.repeat(psel, evt.nrec) 
             ox = evt.ox[psel]
             wl = evt.wavelength[psel]
-            rx = evt.rx[rsel].reshape(-1,nrec,2,4)  
+            rx = evt.rx[rsel].reshape(-1,evt.nrec,2,4)  
         else:
             psel = None
             rsel = None
             ox = evt.ox
             wl = evt.wavelength
-            rx = evt.rx.reshape(-1,nrec,2,4)
+            rx = evt.rx.reshape(-1,evt.nrec,2,4)
         pass
         self.evt = evt 
         self.psel = psel
@@ -397,8 +414,8 @@ class Selection(object):
 
 
 if __name__ == '__main__':
-    e1 = Evt(1)
 
+    evt = Evt(tag="1", det="rainbow")
 
 
 

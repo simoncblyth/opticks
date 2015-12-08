@@ -1,23 +1,36 @@
 #!/usr/bin/env python
 """
+Catching Rainbows
+===================
 
-Kurt Nassau, The Physics and Chemistry of Color
+Using derivations from: Jearl D. Walker
+"Multiple rainbows from single drops of water and other liquids",  
 
-p219, Dispersion with single reflection (in spherical raindrop)
-      (shadow of head at center of bow)
-
-first bow
-      V:41 R:43 degree cone around the eye-antisolar point axis
-
-2nd bow 
-      R:50, V:54 
+* http://www.patarnott.com/atms749/pdf/MultipleRainbowsSingleDrops.pdf
 
 Alexanders dark band, between the 1st and 2nd bows 
 (due to no rays below min deviation for each bow)
 
+Polarization Check
+-------------------
+
+Plane of incidence defined by initial direction vector 
+(a constant vector) and the surface normal at point of incidence, 
+which will be different for every intersection point. 
+
+Thus need to specially prepare the polarizations in order to
+arrange S-polarized incident light. Basically need to 
+calculate surface normal for all points of sphere.
+
+S-polarized :  perpendicular to the plane of incidence
+
+
+
+
+
+
 
 """
-
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
@@ -49,11 +62,6 @@ class XRainbow(object):
             refractive indices corresponding to wavelength array
 
         
-        Using derivations from: Jearl D. Walker
-        "Multiple rainbows from single drops of water and other liquids",  
-
-        * http://www.patarnott.com/atms749/pdf/MultipleRainbowsSingleDrops.pdf
-
 
         There is symmetry about the ray at normal incidence so consider
         a half illuminated drop.
@@ -124,6 +132,9 @@ class XRainbow(object):
         plt.plot(wd, nd)
 
         return wd, nd
+
+
+
 
 
 
@@ -394,6 +405,23 @@ def deviation_plot_0(evt):
             ptc[i].set_edgecolor(hRGB[0,i])
 
 
+
+
+
+def polarization_plot(pevt, sevt):
+    s_dv0 = sevt.deviation_angle()
+    p_dv0 = pevt.deviation_angle()
+    db = np.arange(0,360,1)
+
+    ax = fig.add_subplot(1,1,1)
+
+    for i,d in enumerate([s_dv0/deg, p_dv0/deg]):
+        ax.set_xlim(0,360)
+        ax.set_ylim(1,1e5)
+        cnt, bns, ptc = ax.hist(d, bins=db,  log=True, histtype='step')
+    pass
+
+
 def deviation_plot(evt, bows):
 
     dv0 = evt.deviation_angle()
@@ -461,9 +489,9 @@ if __name__ == '__main__':
     # created with ggv-;ggv-rainbow green    etc..
     # huh the blue is coming out magenta 
     # (maximal Z at 
-    white, red, green, blue = "1","2","3","4"
+    white, red, green, blue, spol, ppol = "1","2","3","4","5", "6"
 
-    evt = Evt(tag=white, det="rainbow")
+    evt = Evt(tag=spol, det="rainbow")
 
 
     bows = {}
@@ -486,13 +514,25 @@ if __name__ == '__main__':
     xv = xbow.dv
 
 
+
+if 1:
+    fig = plt.figure()
+    fig.suptitle("Compare deviation with S and P polarizations")
+    pevt = Evt(tag=ppol, det="rainbow")
+    sevt = Evt(tag=spol, det="rainbow")
+
+    polarization_plot(pevt, sevt)
+
+
+
+
 if 0:
     fig = plt.figure()
     fig.suptitle("Simulated Deviation Angles of 3M Optical Photons Incident on Spherical Water Droplet")
     deviation_plot(evt, bows)
 
 
-if 1:
+if 0:
     fig = plt.figure()
     fig.suptitle("Interpolated Spectrum Images of 1st 6 Rainbows (3M Simulated Photons incident on water droplet)")
     for i,k in enumerate(range(1,nk+1)):

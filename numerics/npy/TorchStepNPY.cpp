@@ -35,6 +35,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
 const char* TorchStepNPY::T_POINT_    = "point" ; 
 const char* TorchStepNPY::T_SPHERE_    = "sphere" ; 
 const char* TorchStepNPY::T_DISC_      = "disc" ; 
+const char* TorchStepNPY::T_DISC_INTERSECT_SPHERE_ = "discIntersectSphere" ; 
 const char* TorchStepNPY::T_DISCLIN_   = "disclin" ; 
 const char* TorchStepNPY::T_DISCAXIAL_   = "discaxial" ; 
 const char* TorchStepNPY::T_INVSPHERE_ = "invsphere" ; 
@@ -49,6 +50,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     else if(  strcmp(k,T_DISC_)==0)      type = T_DISC ; 
     else if(  strcmp(k,T_DISCLIN_)==0)   type = T_DISCLIN ; 
     else if(  strcmp(k,T_DISCAXIAL_)==0) type = T_DISCAXIAL ; 
+    else if(  strcmp(k,T_DISC_INTERSECT_SPHERE_)==0) type = T_DISC_INTERSECT_SPHERE ; 
     else if(  strcmp(k,T_INVSPHERE_)==0) type = T_INVSPHERE ; 
     else if(  strcmp(k,T_INVCYLINDER_)==0) type = T_INVCYLINDER ; 
     else if(  strcmp(k,T_REFLTEST_)==0)  type = T_REFLTEST ; 
@@ -67,6 +69,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
        case T_POINT:       type=T_POINT      ;break; 
        case T_DISCLIN:     type=T_DISCLIN    ;break; 
        case T_DISCAXIAL:   type=T_DISCAXIAL  ;break; 
+       case T_DISC_INTERSECT_SPHERE:   type=T_DISC_INTERSECT_SPHERE  ;break; 
        case T_INVSPHERE:   type=T_INVSPHERE  ;break; 
        case T_REFLTEST:    type=T_REFLTEST   ;break; 
        case T_INVCYLINDER: type=T_INVCYLINDER;break; 
