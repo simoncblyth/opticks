@@ -250,6 +250,56 @@ ggv-newton()
 
 }
 
+ggv-reflect()
+{
+    type $FUNCNAME
+    local pol=${1:-s}
+    local tag=1 
+    case $pol in  
+        s) tag=1 ;;
+        p) tag=2 ;;
+    esac
+    echo  pol $pol tag $tag
+
+    local material=GlassSchottF2
+
+    # target is ignored for refltest
+
+    local torch_config=(
+                 type=refltest
+                 photons=500000
+                 mode=${pol}pol,flatTheta
+                 polarization=0,0,-1
+                 frame=-1
+                 transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
+                 source=0,0,-200
+                 radius=100
+                 distance=25
+                 zenithazimuth=0.5,1,0,1
+                 material=Vacuum
+                 wavelength=550
+               )
+
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+                 shape=box   parameters=0,0,0,1000       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=box   parameters=0,0,0,200        boundary=Vacuum///$material
+               )
+
+    ggv.sh  \
+            $* \
+            --animtimemax 7 \
+            --timemax 7 \
+            --geocenter \
+            --eye 0,0,1 \
+            --test --testconfig "$(join _ ${test_config[@]})" \
+            --torch --torchconfig "$(join _ ${torch_config[@]})" \
+            --torchdbg \
+            --save --tag $tag --cat reflect
+}
+
+
 
 
 ggv-prism()
@@ -395,10 +445,6 @@ ggv-lens()
             --torchdbg \
             --save --tag $tag --cat lens
 }
-
-
-
-
 
 
 

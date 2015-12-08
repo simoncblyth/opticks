@@ -86,34 +86,33 @@ void TorchStepNPY::setType(const char* s)
 }
 
 
-
-
 const char* TorchStepNPY::M_SPOL_ = "spol" ; 
 const char* TorchStepNPY::M_PPOL_ = "ppol" ; 
+const char* TorchStepNPY::M_FLAT_THETA_ = "flatTheta" ; 
+const char* TorchStepNPY::M_FLAT_COSTHETA_ = "flatCosTheta" ; 
 
-Polz_t TorchStepNPY::parsePolz(const char* k)
+Mode_t TorchStepNPY::parseMode(const char* k)
 {
-    Polz_t mode = M_UNDEF ;
+    Mode_t mode = M_UNDEF ;
     if(       strcmp(k,M_SPOL_)==0)      mode = M_SPOL ; 
     else if(  strcmp(k,M_PPOL_)==0)      mode = M_PPOL ; 
+    else if(  strcmp(k,M_FLAT_THETA_)==0)      mode = M_FLAT_THETA ; 
+    else if(  strcmp(k,M_FLAT_COSTHETA_)==0)   mode = M_FLAT_COSTHETA ; 
     return mode ;   
 }
 
-::Polz_t TorchStepNPY::getPolz()
+::Mode_t TorchStepNPY::getMode()
 {
     uif_t uif ;
     uif.f = m_beam.z ; 
-    Polz_t mode = M_UNDEF ;
-    switch(uif.u)
-    {
-       case M_SPOL: mode=M_SPOL ;break; 
-       case M_PPOL: mode=M_PPOL ;break; 
-    }
+
+    ::Mode_t mode = (::Mode_t)uif.u ;
+
     return mode ; 
 }
 
 const char* TorchStepNPY::TYPE_ = "type"; 
-const char* TorchStepNPY::POLZ_ = "polz"; 
+const char* TorchStepNPY::MODE_ = "mode"; 
 const char* TorchStepNPY::POLARIZATION_ = "polarization"; 
 const char* TorchStepNPY::FRAME_ = "frame"; 
 const char* TorchStepNPY::TRANSFORM_ = "transform"; 
@@ -134,7 +133,7 @@ TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
     if(     strcmp(k,FRAME_)==0)          param = FRAME ; 
     else if(strcmp(k,TRANSFORM_)==0)      param = TRANSFORM ; 
     else if(strcmp(k,TYPE_)==0)           param = TYPE ; 
-    else if(strcmp(k,POLZ_)==0)           param = POLZ ; 
+    else if(strcmp(k,MODE_)==0)           param = MODE ; 
     else if(strcmp(k,POLARIZATION_)==0)   param = POLARIZATION ; 
     else if(strcmp(k,SOURCE_)==0)         param = SOURCE ; 
     else if(strcmp(k,TARGET_)==0)         param = TARGET ; 
@@ -154,7 +153,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
     switch(p)
     {
         case TYPE           : setType(s)           ;break;
-        case POLZ           : setPolz(s)           ;break;
+        case MODE           : setMode(s)           ;break;
         case TRANSFORM      : setFrameTransform(s) ;break;
         case FRAME          : setFrame(s)          ;break;
         case POLARIZATION   : setPolarizationLocal(s) ;break;
@@ -422,17 +421,31 @@ void TorchStepNPY::setDistance(float distance)
 {
     m_beam.y = distance ;
 }
-void TorchStepNPY::setPolz(const char* s)
+void TorchStepNPY::setMode(const char* s)
 {
-    ::Polz_t mode = parsePolz(s) ;
+    std::vector<std::string> tp; 
+    boost::split(tp, s, boost::is_any_of(","));
+
+    //::Mode_t mode = M_UNDEF ; 
+    unsigned int mode = 0 ; 
+
+    for(unsigned int i=0 ; i < tp.size() ; i++)
+    {
+        const char* emode_ = tp[i].c_str() ;
+        ::Mode_t emode = parseMode(emode_) ;
+        mode |= emode ; 
+        LOG(info) << "TorchStepNPY::setMode" 
+                  << " emode_ " << emode_
+                  << " emode " << emode
+                  << " mode " << mode 
+                  ; 
+    }
+
+
     uif_t uif ; 
     uif.u = mode ; 
     m_beam.z = uif.f ;
 }
-
-
-
-
 
 
 

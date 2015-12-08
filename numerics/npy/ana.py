@@ -10,6 +10,7 @@ from env.numerics.npy.types import *  # TODO: spell out imports
 
 import env.numerics.npy.PropLib as PropLib 
 import ciexyz.ciexyz as _cie
+deg = np.pi/180.
 
 log = logging.getLogger(__name__)
 
@@ -78,6 +79,7 @@ class Rat(object):
 class Evt(object):
     def __init__(self, tag="1", src="torch", det="dayabay", label=""):
         self.tag = str(tag)
+        self.det = det  
         self.label = label
         self.src = src
 
@@ -105,8 +107,13 @@ class Evt(object):
     def msize(self):
         return float(self.ox.shape[0])/1e6
 
+    def unique_wavelength(self):
+        uwl = np.unique(self.wavelength)
+        assert len(uwl) == 1 
+        return uwl[0]
+
     def __repr__(self):
-        return "Evt(%s,\"%s\",\"%s\")" % (self.tag, self.src, self.label)
+        return "Evt(%s,\"%s\",\"%s\",\"%s\")" % (self.tag, self.src, self.det,self.label)
 
     def history_table(self):
         seqhis = self.seqhis
@@ -343,6 +350,47 @@ class Evt(object):
     def rpost_(self, irec):
         rx = self.rx.reshape(-1, self.nrec,2,4)
         return self.recpost(rx, irec) 
+
+
+
+
+def recpos_plot(fig, evts, irec=0, nb=100, origin=[0,0,0] ):
+
+    origin = np.asarray(origin)
+
+    nr = len(evts)
+    nc = 3
+    clab = ["X","Y","Z"]
+
+    for ir,evt in enumerate(evts):
+        pos = evt.rpost_(irec)[:,:3] - origin 
+
+        for ic, lab in enumerate(clab):
+            ax = fig.add_subplot(nr,nc,1+ic+nc*ir)
+            ax.hist(pos[:,ic],bins=nb)
+            ax.set_xlabel(lab)
+
+
+def angle_plot(fig, evts, irec=0, axis=[0,0,1], origin=[0,0,-200], nb=100):
+
+    origin = np.asarray(origin)
+    nc = len(evts)
+    nr = 1
+
+    for ic,evt in enumerate(evts):
+        pos = evt.rpost_(irec)[:,:3] - origin
+
+        axis_ = np.tile(axis, len(pos)).reshape(-1, len(axis))
+
+        ct = costheta_(pos, axis_)
+        th = np.arccos(ct)/deg
+
+        ax = fig.add_subplot(nr,nc,1+ic)
+        ax.hist(th, bins=nb) 
+        ax.set_xlabel("angle to axis %s " % str(axis))
+
+
+
 
 
 class Selection(object):

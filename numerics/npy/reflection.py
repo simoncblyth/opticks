@@ -66,12 +66,11 @@ import env.numerics.npy.PropLib as PropLib
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.optimize import curve_fit
 
-from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_
+from env.numerics.npy.ana import Evt, Selection, Rat, theta, costheta_, recpos_plot, angle_plot
 from env.numerics.npy.geometry import Boundary
 from env.numerics.npy.fresnel import Fresnel
+deg = np.pi/180.
 
 np.set_printoptions(suppress=True, precision=3)
 
@@ -123,6 +122,7 @@ class Reflect(object):
 
         th0 = self.theta(p0m, normal)
         th2 = self.theta(p2m, normal)
+        th = th0
 
         missrat = Rat(th0,p0,"th0/p0")
 
@@ -135,7 +135,6 @@ class Reflect(object):
         log.info("%s : %s " % (repr(evt),msg))
 
 
-        th = th0
         # th0 and th2 are incident and reflected angles
         # matching very well after exclude miss-ers
 
@@ -154,6 +153,7 @@ class Reflect(object):
         self.th2 = th2
         self.th = th
         self.missfrac = 1. - missrat.r
+        self.rats = rats
 
     def plot_misser(self):
         """
@@ -246,37 +246,50 @@ def twoplot(fr,rp):
     rp.plot(ax,log_=True)
     fig.show()
 
-
-if __name__ == '__main__':
-
-    logging.basicConfig(level=logging.INFO)
-
-    dom = np.linspace(0,90,250)
-
-    #focus = np.array([10,0,300])    
-
-    # ggv-prism the intesect plane is tilted, not horizontal as reflection.py is assuming
+def attic():
     transform = "0.500,0.866,0.000,0.000,-0.866,0.500,0.000,0.000,0.000,0.000,1.000,0.000,-86.603,0.000,0.000,1.000"
     tx = np.fromstring(transform, sep=",").reshape(4,4)
     focus = np.dot([0,0,0,1],tx)[:3]
     normal = np.dot([0,1,0,0],tx)[:3]
 
+
+
+
+
+if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.INFO)
+
+    es = Evt(tag="1", label="S", det="reflect")
+    ep = Evt(tag="2", label="P", det="reflect")
+
+    normal = [0,0,-1]
+    source = [0,0,-200] 
+
+
+    #fig = plt.figure()
+    #recpos_plot(fig, [es,ep], origin=source)
+
+    #fig = plt.figure()
+    #angle_plot(fig, [es,ep], axis=normal, origin=source)
+
+
+    swl = es.unique_wavelength()
+    pwl = ep.unique_wavelength()
+    assert swl == pwl 
+
     boundary = Boundary("Vacuum///GlassSchottF2")
-
-
-    wl = 380 
-
+    wl = swl
     n1 = boundary.omat.refractive_index(wl)  
     n2 = boundary.imat.refractive_index(wl)  
 
 
+    dom = np.linspace(0,90,250)
     fr = Fresnel(boundary, wavelength=wl, dom=dom) 
 
-    es = Evt(tag="1", label="S", det="prism")
-    ep = Evt(tag="2", label="P", det="prism")
 
-    s = Reflect(es, focus=focus, normal=normal)
-    p = Reflect(ep, focus=focus, normal=normal)
+    s = Reflect(es, focus=source, normal=normal)
+    p = Reflect(ep, focus=source, normal=normal)
 
     rp = ReflectionPlot(s, p, fr)
 

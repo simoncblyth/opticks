@@ -476,6 +476,67 @@ def deviation_plot(evt, bows):
 
 
 
+class Rainbows(object):
+    """
+    # max rainbow index restricted by bounce max, record max of the simulation
+    """
+    def __init__(self, evt, boundary, nk=6):
+        bows = {}
+        for k in range(1,nk+1):
+            bows[k] = Rainbow(evt, boundary, k=k) 
+
+        self.nk = nk 
+        self.bows = bows
+        self.evt = evt
+
+    def keys(self):
+        return self.bows.keys()
+ 
+    def __getitem__(self, key):
+        return self.bows[key]
+
+    def selection_counts(self):
+        npho = len(self.evt.wavelength) 
+        log.info("evt %s : %s " % (repr(self.evt),npho))
+        for key in sorted(self.keys()):
+            bow = self[key]
+            log.info("bow %4s : %6d %4.3f " % (key, len(bow.w), float(len(bow.w))/float(npho) ))
+
+
+
+
+class XFrac(object):
+    """
+    S-pol/P-pol (polarized perperndicular/parallel to plane of incidence) intensity fraction
+    """
+    def __init__(self, n, k=np.arange(1,6)):
+
+        i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))  # bow angle
+        r = np.arcsin( np.sin(i)/n )                    
+     
+        ss = np.sin(i-r)/np.sin(i+r)
+        tt = np.tan(i-r)/np.tan(i+r)
+
+        p = np.power((1 - ss*ss),2)*np.power(ss,2*k)   # ek1: parallel polarization fraction 
+        s = np.power((1 - tt*tt),2)*np.power(tt,2*k)   # ek2: perpendicular polarization fraction 
+
+        # Jearl D. Walker p426, demo that ek1 is indep of n 
+        rr = np.sqrt( k*k + k + 1 )
+        qq = (rr - 1)/(rr + 1)
+        pq = np.power((1-qq*qq),2)*np.power(qq, 2*k)      
+
+        self.i = i
+        self.r = r
+        self.ss = ss
+        self.tt = tt
+        self.qq = qq 
+
+        self.p = p
+        self.pq = pq
+        self.s = s
+
+        
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -491,16 +552,25 @@ if __name__ == '__main__':
     # (maximal Z at 
     white, red, green, blue, spol, ppol = "1","2","3","4","5", "6"
 
-    evt = Evt(tag=spol, det="rainbow")
+    w_evt = Evt(tag=white, det="rainbow", label="3M")
+    p_evt = Evt(tag=ppol, det="rainbow", label="P")
+    s_evt = Evt(tag=spol, det="rainbow", label="S")
+
+    n = boundary.imat.refractive_index(w_evt.wavelength) 
+    xfmin = XFrac(n.min())
+    xfmax = XFrac(n.max())
 
 
-    bows = {}
+    w_bows = Rainbows(w_evt, boundary, nk=6)
+    p_bows = Rainbows(p_evt, boundary, nk=6)
+    s_bows = Rainbows(s_evt, boundary, nk=6)
 
-    nk = 6  # restricted by bounce max, record max of the simulation
-    for k in range(1,nk+1):
-        bows[k] = Rainbow(evt, boundary, k=k) 
+    w_bows.selection_counts()
+    p_bows.selection_counts()
+    s_bows.selection_counts()
 
-    bow = bows[1]
+
+    bow = s_bows[1]
 
     w = bow.w 
     dv = bow.dv
@@ -518,10 +588,7 @@ if __name__ == '__main__':
 if 1:
     fig = plt.figure()
     fig.suptitle("Compare deviation with S and P polarizations")
-    pevt = Evt(tag=ppol, det="rainbow")
-    sevt = Evt(tag=spol, det="rainbow")
-
-    polarization_plot(pevt, sevt)
+    polarization_plot(p_evt, s_evt)
 
 
 
@@ -529,7 +596,7 @@ if 1:
 if 0:
     fig = plt.figure()
     fig.suptitle("Simulated Deviation Angles of 3M Optical Photons Incident on Spherical Water Droplet")
-    deviation_plot(evt, bows)
+    deviation_plot(p_evt, bows)
 
 
 if 0:

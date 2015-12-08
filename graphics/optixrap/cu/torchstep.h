@@ -35,7 +35,7 @@ struct TorchStep
     unsigned int type ; 
 
     // transient: derived from beam.z
-    unsigned int polz ; 
+    unsigned int mode ; 
 
 
 };
@@ -69,7 +69,7 @@ __device__ void tsload( TorchStep& ts, optix::buffer<float4>& genstep, unsigned 
     beam.f = genstep[offset+5];
     ts.beam = make_float4(beam.f.x, beam.f.y, 0.f, 0.f );
     ts.type = beam.u.w ; 
-    ts.polz = beam.u.z ; 
+    ts.mode = beam.u.z ; 
     
 }
 
@@ -253,6 +253,10 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           float3 photonPolarization = make_float3( sinPhi, -cosPhi, 0.f); // adhoc
           rotateUz(photonPolarization, ts.p0);
 
+          // huh, bow count numbers for this adhoc polarization are "by accident" 
+          // matching those for the below careful setup of S-polarization by 
+          // working out the sphere surface normal 
+
           p.polarization = photonPolarization ;
 
       }
@@ -289,7 +293,7 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
                   float sdisc = sqrtf(disc) ;               
                   float root1 = (-b - sdisc);
                   float3 surfaceNormal = (O + root1*D)/sphere_radius;
-                  p.polarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
+                  p.polarization = ts.mode & M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
               }
               else
               {
@@ -364,23 +368,44 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       }
       else if( ts.type == T_REFLTEST )
       {
+          //  **REFLTEST**
+          //
+          //        *source* argument (ts.x0) is the center of the sphere 
+          //        towards which the photons are directed
+          //
+          //        *target* argument is ignored, as direction comes from
+          //        the inverse sphere position
+          //
+          //        *polarization* argument is used to set the surface normal vector
+          //
+          //        *mode* argument spol/ppol controls the initial polarization
+          //
+          //        S-polarized : ie perpendicular to plane of incidence
+          //        P-polarized : parallel to plane of incidence
+          //
           // for reflection test need a uniform distribution of incident angle
           // (this leads to distribution bunched at poles)
 
+          //  uniform polar angle, http://mathproofs.blogspot.tw/2005/04/uniform-random-distribution-on-sphere.html
+
           float sinTheta, cosTheta;
-          sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);  
+          if(ts.mode & M_FLAT_COSTHETA )   
+          { 
+              cosTheta = 1.f - 2.0f*u1 ; 
+              sinTheta = sqrtf( 1.0f - cosTheta*cosTheta );
+          }
+          else if( ts.mode & M_FLAT_THETA )  
+          {
+              sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
+          }
+
 
           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
           p.direction = -spherePosition  ;
 
-          float3 surfaceNormal = make_float3( 0.f, 0.f, 1.f );    
-          // *surfaceNormal* used to setup pure polarizations for specific geometry of first intersections
-          // TODO: generalize somehow
+          float3 surfaceNormal = ts.pol ; 
 
-          // S-polarized : ie perpendicular to plane of incidence
-          // P-polarized : parallel to plane of incidence
-
-          float3 photonPolarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
+          float3 photonPolarization = ts.mode & M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
 
           p.polarization = photonPolarization ;
           p.position = ts.x0 + radius*spherePosition ;
@@ -400,7 +425,7 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.position = ts.x0 + cylinderPosition ;
 
           float3 surfaceNormal = ts.pol ; 
-          float3 photonPolarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
+          float3 photonPolarization = ts.mode & M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
           p.polarization = photonPolarization ;
 
           unsigned long long photon_id = launch_index.x ;  

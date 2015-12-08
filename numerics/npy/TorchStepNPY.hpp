@@ -15,12 +15,15 @@ typedef enum {
    T_NUM_TYPE
 }               Torch_t ;
 
+
+
 typedef enum {
-   M_UNDEF,
-   M_SPOL,
-   M_PPOL,
-   M_NUM_POLZ
-}              Polz_t ; 
+   M_UNDEF         = 0x0 ,
+   M_SPOL          = 0x1 << 0,
+   M_PPOL          = 0x1 << 1,
+   M_FLAT_THETA    = 0x1 << 2, 
+   M_FLAT_COSTHETA = 0x1 << 3
+}              Mode_t ; 
 
 
 #ifndef __CUDACC__
@@ -33,7 +36,7 @@ template<typename T> class NPY ;
 class TorchStepNPY {
    public:
        typedef enum { TYPE, 
-                      POLZ, 
+                      MODE, 
                       POLARIZATION, 
                       FRAME,  
                       TRANSFORM, 
@@ -52,7 +55,7 @@ class TorchStepNPY {
        static const char* DEFAULT_CONFIG ; 
 
        static const char* TYPE_; 
-       static const char* POLZ_; 
+       static const char* MODE_; 
        static const char* POLARIZATION_; 
        static const char* FRAME_ ; 
        static const char* TRANSFORM_ ; 
@@ -79,6 +82,8 @@ class TorchStepNPY {
 
        static const char* M_SPOL_ ; 
        static const char* M_PPOL_ ; 
+       static const char* M_FLAT_THETA_ ; 
+       static const char* M_FLAT_COSTHETA_ ; 
 
    public:  
        TorchStepNPY(unsigned int genstep_id, unsigned int num_step=1, const char* config=NULL); 
@@ -87,12 +92,12 @@ class TorchStepNPY {
        NPY<float>* getNPY();
    private:
        void update();
-       ::Polz_t  parsePolz(const char* k);
+       ::Mode_t  parseMode(const char* k);
        ::Torch_t parseType(const char* k);
        Param_t parseParam(const char* k);
        void set(TorchStepNPY::Param_t param, const char* s );
    public:  
-       void setPolz(const char* s );
+       void setMode(const char* s );
        void setType(const char* s );
    public:  
        // target setting needs external info regarding geometry 
@@ -141,7 +146,7 @@ class TorchStepNPY {
        void setDistance(float distance);
 
 
-       ::Polz_t  getPolz();
+       ::Mode_t  getMode();
        ::Torch_t getType();
        unsigned int getNumPhotons();
        unsigned int getMaterialLine();
