@@ -285,7 +285,7 @@ if __name__ == '__main__':
 
 
     dom = np.linspace(0,90,250)
-    fr = Fresnel(boundary, wavelength=wl, dom=dom) 
+    fr = Fresnel(n1, n2, dom=dom) 
 
 
     s = Reflect(es, focus=source, normal=normal)

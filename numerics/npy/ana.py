@@ -308,6 +308,10 @@ class Evt(object):
             351           float3 photonPolarization = ts.polz == M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;
             352           p.polarization = photonPolarization ;
 
+
+        # TODO: form empty of correct shape and populate with these
+        # thats easy if irec is just an integer, but it could be a slice
+
         """ 
         pxpy = recs[:,irec,1,0]
         pzwl = recs[:,irec,1,1]
@@ -320,9 +324,12 @@ class Evt(object):
         py = ipy.astype(np.float32)/127. - 1.
         pz = ipz.astype(np.float32)/127. - 1.
 
-        # TODO: form empty of correct shape and populate with these
-        # thats easy if irec is just an integer, but it could be a slice
+        pol = np.empty( (len(px), 3))
+        pol[:,0] = px
+        pol[:,1] = py
+        pol[:,2] = pz
 
+        return pol
 
 
     def post_center_extent(self):
@@ -350,6 +357,10 @@ class Evt(object):
     def rpost_(self, irec):
         rx = self.rx.reshape(-1, self.nrec,2,4)
         return self.recpost(rx, irec) 
+
+    def rpol_(self, irec):
+        rx = self.rx.reshape(-1, self.nrec,2,4)
+        return self.recpolarization(rx, irec) 
 
 
 

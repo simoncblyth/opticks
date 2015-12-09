@@ -156,7 +156,7 @@ ggv-rainbow()
     local torch_config=(
                  type=discIntersectSphere
                  photons=500000
-                 polz=${pol}pol
+                 mode=${pol}pol
                  polarization=$surfaceNormal
                  frame=-1
                  transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000

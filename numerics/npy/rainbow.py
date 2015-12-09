@@ -25,6 +25,51 @@ calculate surface normal for all points of sphere.
 S-polarized :  perpendicular to the plane of incidence
 
 
+Rendering Spectra
+-------------------
+
+Comparison of several approaches to handling out of gamut spectral colors
+
+* http://www-rohan.sdsu.edu/~aty/explain/optics/rendering.html
+
+Collection of color science links
+
+* http://www.midnightkite.com/color.html
+
+
+Rainbow Calculations
+----------------------
+
+The mathematical physics of rainbows and glories, John A. Adam
+
+* http://ww2.odu.edu/~jadam/docs/rainbow_glory_review.pdf
+
+
+
+Optics of a water drop
+------------------------
+
+* http://www.philiplaven.com/index1.html
+
+Fig 4, Provides relative intensities of S/P-polarizations 
+at each step for primary bow.  
+
+
+Thru multiple Relect/Transmit : is S/P polarization retained ?
+------------------------------------------------------------------
+
+S/P polarization is defined with respect to the surface normal 
+at the point if incidence.  
+
+Every reflection/transmission happens in the same plane, so that 
+suggests  
+
+
+
+Maybe the assumption of constant polarization
+state is in fact a valid one ?  
+
+* does this depend on the geometry 
 
 
 
@@ -41,6 +86,7 @@ from matplotlib.patches import Rectangle
 
 from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
 from env.numerics.npy.geometry import Boundary   
+from env.numerics.npy.fresnel import fresnel_factor
 from env.numerics.npy.cie  import CIE
 deg = np.pi/180.
 
@@ -91,14 +137,14 @@ class XRainbow(object):
         self.dv = self.deviation_angle(w, k)
 
 
-
     def deviation_angle(self, w, k=1): 
         """
         incident, refracted angles at the minimum deviation
         NB these are arrays corresponding to all refractive indices of the 
         wavelengths of the sample
         """
-        n = boundary.imat.refractive_index(w) 
+        n = self.boundary.imat.refractive_index(w) 
+
         i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))
         r = np.arcsin( np.sin(i)/n )
         dv = ( k*np.pi + 2*i - 2*r*(k+1) ) % (2*np.pi)
@@ -108,6 +154,7 @@ class XRainbow(object):
         self.r = r
 
         return dv 
+
 
 
     def dbins(self, nb, window=[-0.5,0.5]):
@@ -133,9 +180,7 @@ class XRainbow(object):
 
         return wd, nd
 
-
-
-
+    
 
 
 class Rainbow(object):
@@ -160,10 +205,11 @@ class Rainbow(object):
         """
 
         if k == -1:
+            assert 0
             ssel = None
             sel = Selection(evt) 
         else:
-            ssel = "BT " + "BR " * k + "BT SA"  
+            ssel = "BT " + "BR " * k + "BT "  
             sel = Selection(evt, ssel) 
         pass
 
@@ -407,18 +453,15 @@ def deviation_plot_0(evt):
 
 
 
-
-def polarization_plot(pevt, sevt):
-    s_dv0 = sevt.deviation_angle()
-    p_dv0 = pevt.deviation_angle()
-    db = np.arange(0,360,1)
-
-    ax = fig.add_subplot(1,1,1)
-
-    for i,d in enumerate([s_dv0/deg, p_dv0/deg]):
-        ax.set_xlim(0,360)
-        ax.set_ylim(1,1e5)
-        cnt, bns, ptc = ax.hist(d, bins=db,  log=True, histtype='step')
+def bow_angle_plot(bows):
+    ax = plt.gca()
+    ymin, ymax = ax.get_ylim()
+    nk = max(map(int,bows.keys()))
+    for k in range(1,nk+1):
+        dvr = bows[k].xbow.dvr/deg
+        rect = Rectangle( (dvr[0], ymin), dvr[1]-dvr[0], ymax-ymin, alpha=0.1 ) 
+        ax.add_patch(rect)
+        ax.annotate( "%s" % k, xy=((dvr[0]+dvr[1])/2, 2), color='red')
     pass
 
 
@@ -439,12 +482,8 @@ def deviation_plot(evt, bows):
     ymin, ymax = ax.get_ylim()
     dy = ymax - ymin
 
-    for k in range(1,nk+1):
-        dvr = bows[k].xbow.dvr/deg
-        rect = Rectangle( (dvr[0], ymin), dvr[1]-dvr[0], ymax-ymin, alpha=0.1 ) 
-        ax.add_patch(rect)
-        ax.annotate( "%s" % k, xy=((dvr[0]+dvr[1])/2, 2), color='red')
-    pass
+    bow_angle_plot(bows) 
+
 
     ax.annotate("Rainbow visible ranges",xy=(250,2), color='red') 
 
@@ -513,29 +552,53 @@ class XFrac(object):
 
         i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))  # bow angle
         r = np.arcsin( np.sin(i)/n )                    
-     
-        ss = np.sin(i-r)/np.sin(i+r)
-        tt = np.tan(i-r)/np.tan(i+r)
 
-        p = np.power((1 - ss*ss),2)*np.power(ss,2*k)   # ek1: parallel polarization fraction 
-        s = np.power((1 - tt*tt),2)*np.power(tt,2*k)   # ek2: perpendicular polarization fraction 
+        # rainbow paper 
+        #     Jearl D. Walker p426, demo that ek1 is indep of n 
+        #
+        #     derivations assume that the S/P polarization will stay the same 
+        #     across all the reflections, that seems surprising 
+        # 
+        #     swapped the sin and tan for S/P factors
+        # 
 
-        # Jearl D. Walker p426, demo that ek1 is indep of n 
-        rr = np.sqrt( k*k + k + 1 )
-        qq = (rr - 1)/(rr + 1)
+    
+        # perpendicular to plane of incidence, S-pol 
+        fs = np.power( np.sin(i-r)/np.sin(i+r) , 2 )
+        ts = 1 - fs 
+        s = ts*ts*np.power(fs, k)
+
+        # parallel to plane of incidence, P-pol 
+        fp = np.power( np.tan(i-r)/np.tan(i+r) , 2 )
+        tp = 1 - fp
+        p = tp*tp*np.power(fp, k)   
+
+
+        kk = np.sqrt( k*k + k + 1 )
+        qq = (kk - 1)/(kk + 1)
         pq = np.power((1-qq*qq),2)*np.power(qq, 2*k)      
 
         self.i = i
         self.r = r
-        self.ss = ss
-        self.tt = tt
-        self.qq = qq 
 
+        self.fp = fp
+        self.tp = tp
         self.p = p
-        self.pq = pq
+
+        self.fs = fs
+        self.ts = ts
         self.s = s
 
-        
+        self.t = s + p 
+
+
+        self.kk = kk 
+        self.qq = qq 
+        self.pq = pq
+
+
+
+
 
 
 if __name__ == '__main__':
@@ -544,6 +607,11 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
+    #intensity_plot() 
+    #scattering_angle_plot() 
+
+
+if 1:
     boundary = Boundary("Vacuum///MainH2OHale")
 
 
@@ -557,9 +625,11 @@ if __name__ == '__main__':
     s_evt = Evt(tag=spol, det="rainbow", label="S")
 
     n = boundary.imat.refractive_index(w_evt.wavelength) 
-    xfmin = XFrac(n.min())
-    xfmax = XFrac(n.max())
 
+    navg = (n.min() + n.max())/2.
+
+    nred = 1.331
+    xfa = XFrac(nred)
 
     w_bows = Rainbows(w_evt, boundary, nk=6)
     p_bows = Rainbows(p_evt, boundary, nk=6)
@@ -583,12 +653,6 @@ if __name__ == '__main__':
     n = xbow.n
     xv = xbow.dv
 
-
-
-if 1:
-    fig = plt.figure()
-    fig.suptitle("Compare deviation with S and P polarizations")
-    polarization_plot(p_evt, s_evt)
 
 
 

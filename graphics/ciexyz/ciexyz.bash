@@ -6,7 +6,7 @@ ciexyz-env(){      elocal- ; }
 ciexyz-usage(){ cat << EOU
 
 
-Simple Analytic Approximations to the CIE XYZ Color Matching Functions
+Simple Analytic Approximations to the CIE XYZ Color Matching Functions, from NVIDIA researchers.
 
 * http://www.ppsloan.org/publications/XYZJCGT.pdf
 
@@ -19,8 +19,6 @@ Simple Analytic Approximations to the CIE XYZ Color Matching Functions
 Related
 
 * https://www.fourmilab.ch/documents/specrend/
-
-
 
 
 The CIE XYZ and xyY Color Spaces, Douglas A. Kerr
@@ -39,6 +37,13 @@ RGB Color Space Conversion
 Gary M Meyer, Tutorial on Color Science
 
 * http://zach.in.tu-clausthal.de/teaching/cg_literatur/tutorial_on_color_science.pdf
+
+
+
+Comparison of XYZ to RGB conversion approaches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://gilles.rougeron.free.fr/egwr97/egwr97.pdf
 
 
 
