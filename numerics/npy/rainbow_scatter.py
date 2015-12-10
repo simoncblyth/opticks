@@ -160,7 +160,7 @@ class Scatter(object):
         if p == 0:
            th = 2*i - np.pi 
         elif p == 1:
-           th = 2*(i-r)
+           th = 2*(i-r)   # note same as below for bow k=0
         elif p > 1:
            th = k*np.pi + 2*i - 2*r*(k+1)
         else:
@@ -172,6 +172,33 @@ class Scatter(object):
     def dthetadi(self, i):
         """
         This goes to infinity at the bow angles 
+
+
+        ::
+
+           theta = k pi + 2*i - 2r(k+1) 
+
+           r = arcsin( sin(i)/n )
+
+          sin r = sin i /n
+
+
+
+           d                     1
+           --  arcsin(x) =  ---------    
+           dx               sqrt(1-x*x)
+
+
+           dr            cos(i)                    cos(i)
+           --  =     ---------------------    =    -------
+           di      sqrt(1-sin(i)sin(i)/n*n)        cos(r)
+           
+
+           d theta        2. -  2(k+1) dr
+           --        =                 --
+           di                          di
+
+
         """
         n = self.n
         p = self.p
@@ -182,15 +209,17 @@ class Scatter(object):
         if p == 0:
             dthdi = 2.*np.ones(len(i))
         elif p == 1:
-            dthdi = 2.-2*np.tan(r)/np.tan(i)
+            #dthdi = 2.-2*np.tan(r)/np.tan(i)
+            dthdi = 2.-2*np.cos(i)/np.cos(r)
         elif p > 1:
-            dthdi = 2.-2*(k+1)*np.tan(r)/np.tan(i)
+            #dthdi = 2.-2*(k+1)*np.tan(r)/np.tan(i)
+            dthdi = 2.-2*(k+1)*np.cos(i)/np.cos(r)
         else:
             assert 0
         return dthdi
 
 
-    def intensity(self, i):
+    def intensity(self, i, kludge=False, flip=False, scale=1, infscale=1, fold=False):
         """
         Particular incident angle yields a particular scatter angle theta, 
         BUT how much is scattered in a particular theta bin relative to the
@@ -199,27 +228,59 @@ class Scatter(object):
         For "BR SA" geom is contant 0.5 and dthetadi is 2. leaving just the 
         familiar from reflection.py fresnel S, P factors.
 
-        Are missing the modululation coming from the initial beam.
+        Are missing the modululation coming from the initial beam. 
+        With extra sin(2i) get a match for p=0 and p=1
 
         What is the primordial incident angle distribution within the category ?  
+
+
         """
         pass
-        th = self.theta(i)
+        t = self.theta(i)
+
         dthdi = self.dthetadi(i)
-        geom = np.abs(0.5*np.sin(2*i)/np.sin(th))
+
+        if kludge:
+            geom = np.abs(0.5*np.sin(2*i))
+        else:
+            geom = np.abs(0.5*np.sin(2*i)/np.sin(t))
 
         assert len(self.seq) == 1
         seq = self.seq[0]
  
-        s = fresnel_factor(seq, i, self.n1, self.n2, spol=True)
-        p = fresnel_factor(seq, i, self.n1, self.n2, spol=False)
+        sff = fresnel_factor(seq, i, self.n1, self.n2, spol=True)
+        pff = fresnel_factor(seq, i, self.n1, self.n2, spol=False)
 
-        #adhoc = np.sin(i)
+        s = sff*geom/dthdi 
+        p = pff*geom/dthdi 
 
-        s_inten = s*geom/dthdi 
-        p_inten = p*geom/dthdi 
+        if flip:
+           s = -s 
+           p = -p 
 
-        return th, s_inten, p_inten
+        s *= scale*infscale ; 
+        p *= scale*infscale ; 
+
+        if fold:
+           # interpolate negative lobe to same theta positions as positive lobe and add 
+
+           ot = np.argsort(t[s<0])
+           nt = t[s<0][ot]
+
+           s_neg = np.interp( t[s>0], t[s<0][ot], s[s<0][ot] )  
+           sfold = np.zeros_like( t[s>0] )
+           sfold += s[s>0]
+           sfold += -s_neg
+
+           p_neg = np.interp( t[p>0], t[p<0][ot], p[p<0][ot] )  
+           pfold = np.zeros_like( t[p>0] )
+           pfold += p[p>0]
+           pfold += -p_neg
+
+           assert np.allclose( t[s>0], t[p>0])
+           t = t[s>0] 
+
+        return t, s, p
 
     def table(self, i):
         th = self.theta(i)
@@ -267,33 +328,34 @@ class Scatter(object):
         cls._intensity_plot(tsp, log_=log_, ylim=ylim, flip=flip, scale=scale, mask=mask)
             
     @classmethod
-    def _intensity_plot(cls, tsp, log_=True, ylim=None, flip=False, scale=1, mask=False):
+    def _intensity_plot(cls, tsp, log_=True, ylim=None, xlim=None, mask=False):
 
         th, s_inten, p_inten = tsp
-        if flip:
-           s_inten = -s_inten 
-           p_inten = -p_inten 
-
         if mask:
            msk = s_inten > 0
         else:
             msk = np.tile(True, len(th)) 
 
         ax = plt.gca()
-        ax.plot( th[msk]/deg, s_inten[msk]*scale )
-        ax.plot( th[msk]/deg, p_inten[msk]*scale )
+        ax.plot( th[msk]/deg, s_inten[msk] )
+        ax.plot( th[msk]/deg, p_inten[msk] )
  
         if ylim:
             ax.set_ylim(ylim)
+        if xlim:
+            ax.set_xlim(xlim)
         if log_:
             ax.set_yscale('log')
 
-    def intensity_plot(self, i, log_=True, ylim=None, flip=False, scale=1, mask=False):
+    def intensity_plot(self, i, log_=True, ylim=None, flip=False, scale=1, infscale=1, mask=False, kludge=False):
         """
         Lots of negative lobes
         """
-        tsp = self.intensity(i)
-        self._intensity_plot(tsp, log_=log_, ylim=ylim, flip=flip, scale=scale, mask=mask)
+        tsp = self.intensity(i, kludge=kludge, flip=flip, scale=scale, infscale=infscale)
+        self._intensity_plot(tsp, log_=log_, ylim=ylim, mask=mask)
+
+
+
 
 def scatter_plot_all(pevt, sevt):
     s_dv0 = sevt.deviation_angle()
@@ -308,8 +370,28 @@ def scatter_plot_all(pevt, sevt):
         cnt, bns, ptc = ax.hist(d, bins=db,  log=True, histtype='step')
     pass
 
+
+
+
+
+
+def _scatter_plot_one(ax, sc, bins, xlim=None, ylim=None, log_=True):
+    s_dv = sc.ssim.deviation_angle()
+    p_dv = sc.psim.deviation_angle()
+
+    for i,d in enumerate([s_dv/deg, p_dv/deg]):
+        cnt, bns, ptc = ax.hist(d, bins=bins,  log=log_, histtype='step')
+    pass
+
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    else:
+        ax.set_xlim(0,360)
+    if ylim is not None:
+        ax.set_ylim(ylim)
+ 
    
-def scatter_plot_split(pevt, sevt, pp=range(1), ylim=None):
+def scatter_plot_split(pevt, sevt, pp=range(1), ylim=None, log_=True):
     pass
     db = np.arange(0,360,1)
     nplot = len(pp)+1
@@ -322,39 +404,47 @@ def scatter_plot_split(pevt, sevt, pp=range(1), ylim=None):
         else:
             ax = fig.add_subplot(nplot,1,i+1, sharex=ax0)
         pass
-        _scatter_plot_one(ax, sc, bins=db, ylim=ylim)
-    
+        _scatter_plot_one(ax, sc, bins=db, ylim=ylim, log_=log_)
 
-def scatter_plot_component(pevt, sevt, p=0, ylim=None):
+
+def scatter_plot_component(pevt, sevt, p=0, ylim=None, xlim=None, scale=15000, infscale=10):
+    """
+    p=0
+         get match after modifying intensity formula with extra sin(2i) 
+         .. the initial factor of sin(2i) got cancelled by the sin(theta) ? 
+         then conform to the beam profile evelope
+
+    p=1
+         immediate match using same scaling and adhoc intensity change as p=0
+
+    p=2
+         not matching 
+
+
+
+    """
     db = np.arange(0,360,1)
     sc = Scatter(p, psim=pevt, ssim=sevt, not_=False)
 
+    #kludge = p in (0,1)
+    kludge = True
+    flip = True
+
     idom = np.arange(0,90,1.)*deg 
-    tsp = sc.intensity(idom)
+    tsp = sc.intensity(idom, kludge=kludge, flip=flip, scale=scale, infscale=infscale, fold=True)
 
     ax0 = fig.add_subplot(2,1,1)
-    _scatter_plot_one(ax0, sc, bins=db, ylim=ylim)
-    sc._intensity_plot(tsp, log_=True, ylim=ylim, flip=False, scale=10000, mask=False)
+    _scatter_plot_one(ax0, sc, bins=db, ylim=ylim, xlim=xlim, log_=True)
+    sc._intensity_plot(tsp, log_=True, ylim=ylim, xlim=xlim, mask=False)
 
     ax = fig.add_subplot(2,1,2, sharex=ax0)
-    sc._intensity_plot(tsp, log_=True, ylim=ylim, flip=False, scale=1, mask=False)
+    _scatter_plot_one(ax, sc, bins=db, ylim=ylim, xlim=xlim, log_=False)
+    sc._intensity_plot(tsp, log_=False, ylim=[-ylim[1], ylim[1]],xlim=xlim,  mask=False)
 
     print sc.table(idom[::10])
     sc.tsp = tsp
     return sc
    
-
-def _scatter_plot_one(ax, sc, bins, ylim=None):
-    s_dv = sc.ssim.deviation_angle()
-    p_dv = sc.psim.deviation_angle()
-
-    for i,d in enumerate([s_dv/deg, p_dv/deg]):
-        cnt, bns, ptc = ax.hist(d, bins=bins,  log=True, histtype='step')
-    pass
-    ax.set_xlim(0,360)
-    if ylim is not None:
-        ax.set_ylim(ylim)
- 
 
 
 
@@ -453,49 +543,64 @@ if 0:
     scatter_plot_split(p_evt, s_evt, pp=range(0,8), ylim=ylim)
     fig.subplots_adjust(hspace=0)
 
-if 0:
+if 1:
     fig = plt.figure()
-    p = 0
+    p = 2
     fig.suptitle("Scatter angle for %s" % Scatter.seqhis_(p))
-    ylim = [1e0,1e5] 
+
+    xlim = None
+    if p == 0:
+        ylim = [1e0,1e3] 
+    elif p == 1:
+        ylim = [1e0,2e4]
+    elif p == 2:
+        ylim = [1e0,2e4]
+        xlim = [130,200] ; 
+    else:
+        ylim = None
+
+    scale = 18000   # by-eye against log distrib for p=0
     #ylim = None
-    sc = scatter_plot_component(p_evt, s_evt, p=p, ylim=ylim)
+    sc = scatter_plot_component(p_evt, s_evt, p=p, ylim=ylim, xlim=xlim, scale=scale, infscale=4)
     fig.subplots_adjust(hspace=0)
      
-    check_radius(sc,slice(None,None,100)) 
+    #check_radius(sc,slice(None,None,100)) 
 
-if 1:
+
+if 0:
     fig = plt.figure()
     p = 0
     fig.suptitle("Incident angle for %s compared to distribution without selection" % Scatter.seqhis_(p))
     xlim = [0,90]
+    nb = 100 
+    dm = np.linspace(xlim[0],xlim[1],nb)*deg 
 
     sc = Scatter(p, psim=p_evt, ssim=s_evt, not_=False)
 
     ax = fig.add_subplot(2,2,1)
     pci = sc.psim.incident_angle()
-    ax.hist(np.arccos(pci)/deg, bins=100)
+    ax.hist(np.arccos(pci)/deg, bins=nb, histtype='step')
     ax.set_xlim(xlim)
 
     ax = fig.add_subplot(2,2,2)
     sci = sc.ssim.incident_angle()
-    ax.hist(np.arccos(sci)/deg, bins=100)
+    ax.hist(np.arccos(sci)/deg, bins=nb, histtype='step')
     ax.set_xlim(xlim)
 
 
     ax = fig.add_subplot(2,2,3)
     pall = Selection(p_evt)
     pca = pall.incident_angle()
-    ax.hist(np.arccos(pca)/deg, bins=100)
+    ax.hist(np.arccos(pca)/deg, bins=nb, histtype='step')
     ax.set_xlim(xlim)
 
     ax = fig.add_subplot(2,2,4)
     sall = Selection(s_evt)
     sca = sall.incident_angle()
-    ax.hist(np.arccos(sca)/deg, bins=100)
+    ax.hist(np.arccos(sca)/deg, bins=nb, histtype='step')
     ax.set_xlim(xlim)
-    
-
+   
+    ax.plot( dm/deg, np.sin(2*dm)*15500)
 
 
 
