@@ -140,7 +140,7 @@ class Evt(object):
         brsa = maskflags_int("BR|SA|TORCH")
         return cu
 
-    def seqhis_or(self, *args):
+    def seqhis_or(self, args):
         """
         :param args: sequence strings excluding source, eg "BR SA" "BR AB"
         :return: selection boolean array of photon length
@@ -151,19 +151,26 @@ class Evt(object):
         s_seqhis = map(lambda _:self.seqhis == seqhis_int(_), seqs)
         return np.logical_or.reduce(s_seqhis)      
 
+    def seqhis_or_not(self, args):
+        return np.logical_not(self.seqhis_or(args))    
 
     def deviation_angle(self, side=None, incident=None):
         """
         Deviation angle for parallel squadrons of incident photons 
         without assuming a bounce count
         """
+        p_out = self.ox[:,1, :3]  # final/last direction (bounce limited)
+        return self._deviation_angle(p_out, side=side, incident=incident)
+
+    @classmethod
+    def _deviation_angle(cls, p_out, side=None, incident=None):
+
         if side is None:
             side = np.array([0,0,1]) 
 
         if incident is None:
             incident = np.array([1,0,0]) 
 
-        p_out = self.ox[:,1, :3]  # final/last direction (bounce limited)
 
         assert np.sum(side*incident) == 0., "side vector must be perpendicular to incident vectors"
         side = np.tile(side, len(p_out)).reshape(-1,3)
@@ -175,6 +182,19 @@ class Evt(object):
         dv = np.piecewise( cdv, [cside>=0, cside<0], [np.arccos,lambda _:2*np.pi - np.arccos(_)])  
 
         return dv 
+
+    @classmethod
+    def _incident_angle(cls, p0, p1, center=[0,0,0]):
+        """
+        Thinking of parallel beam incident on a sphere at center
+        """
+        pass
+        cen = np.tile(center, len(p1)).reshape(-1,3)
+        pin = p1 - p0
+        nrm = p1 - cen 
+        ct = costheta_(nrm, -pin)
+        return ct 
+
 
 
 
@@ -401,16 +421,17 @@ def angle_plot(fig, evts, irec=0, axis=[0,0,1], origin=[0,0,-200], nb=100):
         ax.set_xlabel("angle to axis %s " % str(axis))
 
 
-
-
-
 class Selection(object):
     """
     Apply photon and record level selections 
     """
-    def __init__(self, evt, *seqs):
+    def __init__(self, evt, seqs=[], not_=False):
         if len(seqs) > 0:
-            psel = evt.seqhis_or(*seqs)
+            log.info("Selection seqs %s " % repr(seqs))
+            psel = evt.seqhis_or(seqs)
+            if not_:
+                psel = np.logical_not(psel)
+
             rsel = np.repeat(psel, evt.nrec) 
             ox = evt.ox[psel]
             wl = evt.wavelength[psel]
@@ -433,6 +454,23 @@ class Selection(object):
     y = property(lambda self:self.ox[:,0,1])
     z = property(lambda self:self.ox[:,0,2])
     t = property(lambda self:self.ox[:,0,3])
+
+    def incident_angle(self, center=[0,0,0]):
+        """
+        Thinking of parallel beam incident on a sphere at center
+        """
+        pass
+        p0 = self.recpost(0)[:,:3]
+        p1 = self.recpost(1)[:,:3]
+        return Evt._incident_angle(p0,p1, center)
+
+    def deviation_angle(self, side=None, incident=None):
+        """
+        Deviation angle for parallel squadrons of incident photons 
+        without assuming a bounce count
+        """
+        p_out = self.ox[:,1, :3]  # final/last direction (bounce limited)
+        return Evt._deviation_angle(p_out, side=side, incident=incident)
 
     def recpost(self, irec):
         return self.evt.recpost(self.rx, irec)

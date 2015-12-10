@@ -36,24 +36,25 @@ def fresnel(x, n1, n2, spol=True):
 
 def fresnel_factor(seqhis, i, n1, n2, spol=True):
     """
-    :param seqhis: history sequence string eg "TO BT BR BT SA "
+    :param seqhis: history sequence string eg "TO BT BR BT SA"
     :param n1: refractive index of initial material
     :param n2: refractive index of material that is transmitted into 
 
     Not aiming for generality, only works for simple geometries like raindrops, prisms, lens
     """
-    assert len(seqhis) % 3 == 0
-    nseq = len(seqhis) / 3
+
+    seqs = seqhis.split(" ")
+
     rx = fresnel(i, n1, n2, spol=spol )
     tx = 1 - rx
+
     ff = np.ones(len(i))
-    for q in range(nseq):
-        step = seqhis[q*3:q*3+3]
+    for step in seqs:
         #print step
-        if step in ("TO ", "SA "):continue
-        if step == "BT ":
+        if step in ("TO", "SA"):continue
+        if step == "BT":
             ff *= tx
-        elif step == "BR ":
+        elif step == "BR":
             ff *= rx
         else:
             assert 0, step 
