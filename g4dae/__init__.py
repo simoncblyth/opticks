@@ -43,9 +43,12 @@ from env.geant4.geometry.collada.g4daenode import DAENode
 from env.geant4.geometry.collada.g4daeview.daegeometry import DAEGeometry
 from chroma.detector import Detector
 
-from env.g4dae.types import NPY, pro_, Prop
-from env.g4dae.types import CerenkovStep, G4CerenkovPhoton, ChCerenkovPhoton
-from env.g4dae.types import ScintillationStep, G4ScintillationPhoton, ChScintillationPhoton
+#from env.g4dae.types import NPY, pro_, Prop
+#from env.g4dae.types import CerenkovStep, G4CerenkovPhoton, ChCerenkovPhoton
+#from env.g4dae.types import ScintillationStep, G4ScintillationPhoton, ChScintillationPhoton
+
+#from env.numerics.npy.types import NPY, pro_, Prop
+
 
 from env.python.utils import *
 
