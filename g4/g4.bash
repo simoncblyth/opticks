@@ -5,6 +5,8 @@ g4-vi(){       vi $(g4-source) ; }
 g4-env(){      elocal- ; }
 g4-usage(){ cat << EOU
 
+Geant4
+========
 
 Geant4 10.2, December 4th, 2015
 ----------------------------------
@@ -13,6 +15,8 @@ Geant4 10.2, December 4th, 2015
 * https://geant4.web.cern.ch/geant4/support/download.shtml
 * http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/InstallationGuide/html/
 
+Prerequisites
+---------------
 
 CMake 3.3 or higher
 ~~~~~~~~~~~~~~~~~~~~
@@ -25,58 +29,30 @@ compile and target features.
 Installed via macports, annoyingly required to install java too and entailed
 rebuilding several other packages including python, mysql, llvm see ~/macports/cmake33.log
 
-
 Xcode 6 or higher
 ~~~~~~~~~~~~~~~~~~
 
+See xcode-vi for install notes
 
 
-
-Macports Geant4
------------------
+Example B1
+------------
 
 ::
 
-    simon:env blyth$ port info geant4.10.1
-    geant4.10.1 @4.10.01.p02 (science)
-    Variants:             clhep, debug, examples, [+]gdml, motif_x11, opengl_x11, [+]qt, qt5, raytracer_x11, threads, universal
+    simon:B1.build blyth$ ./exampleB1 
+    Available UI session types: [ GAG, tcsh, csh ]
 
-    Description:          Geant4 is a toolkit for the simulation of the passage of particles through matter. Its areas of application include high energy, nuclear and
-                          accelerator physics, as well as studies in medical and space science. The two main reference papers for Geant4 are published in Nuclear
-                          Instruments and Methods in Physics Research A 506 (2003) 250-303, and IEEE Transactions on Nuclear Science 53 No. 1 (2006) 270-278.
-    Homepage:             http://geant4.web.cern.ch/
-
-    Build Dependencies:   cmake, pkgconfig
-    Library Dependencies: geant4.10.1-data, expat, zlib, qt4-mac, xercesc3
-    Runtime Dependencies: geant4_select
-    Platforms:            darwin
-    License:              Restrictive/Distributable
-    Maintainers:          mojca@macports.org, openmaintainer@macports.org
-    simon:env blyth$ 
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : PART70000
+          issued by : G4NuclideTable
+    G4ENSDFSTATEDATA environment variable must be set
+    *** Fatal Exception *** core dump ***
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
 
 
-    https://guide.macports.org/chunked/using.variants.html
-   
-    Variants marked with "+" are included by default, can negate these with a "-"
- 
-
-    simon:workflow blyth$ port variants geant4.10.1
-    geant4.10.1 has the variants:
-       clhep: Use external clhep
-       debug
-       examples: Build and install examples (not recommended)
-    [+]gdml: Build with Geometry Description Markup Language (GDML)
-       motif_x11: Build with Motif (X11) user interface and visualization driver
-       opengl_x11: Build with X11 visualisation drivers
-    [+]qt: Build with Qt 4 support
-         * conflicts with qt5
-       qt5: Build with Qt 5 support
-         * conflicts with qt
-       raytracer_x11: Build with Raytracer (X11) visualization driver
-       threads: Build with multi-threading support
-       universal: Build for multiple architectures
-    simon:workflow blyth$ 
-
+    *** G4Exception: Aborting execution ***
+    Abort trap: 6
 
 
 
@@ -85,10 +61,28 @@ EOU
 }
 
 g4-name(){ echo geant4.10.02 ; } 
-g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
+g4-name2(){ echo Geant4-10.2.0 ; }
+
+
 g4-edir(){ echo $(env-home)/g4 ; }
-g4-cd(){   cd $(g4-dir); }
+g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
+g4-idir(){ echo $(g4-dir).install ; }
+g4-bdir(){ echo $(g4-dir).build ; }
+
+g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
+
+
+g4-cmake-dir(){ echo $(g4-idir)/lib/$(g4-name2) ; }
+g4-examples-dir(){  echo $(g4-idir)/share/$(g4-name2)/examples ; }
+
+
 g4-ecd(){  cd $(g4-edir); }
+g4-cd(){   cd $(g4-dir); }
+g4-icd(){  cd $(g4-idir); }
+g4-bcd(){  cd $(g4-bdir); }
+g4-ccd(){  cd $(g4-cmake-dir); }
+g4-xcd(){  cd $(g4-examples-dir); }
+
 
 g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name).tar.gz ; }
 g4-get(){
@@ -101,6 +95,45 @@ g4-get(){
    [ ! -d "$nam" ] && tar zxvf $tgz 
 }
 
+
+g4-wipe(){
+   local bdir=$(g4-bdir)
+   rm -rf $bdir
+}
+
+g4-cmake(){
+   local iwd=$PWD
+
+   local bdir=$(g4-bdir)
+   mkdir -p $bdir
+
+   local idir=$(g4-idir)
+   mkdir -p $idir
+
+   g4-bcd
+   cmake \
+       -DCMAKE_BUILD_TYPE=Debug \
+       -DGEANT4_INSTALL_DATA=ON \
+       -DCMAKE_INSTALL_PREFIX=$idir \
+       $(g4-dir)
+
+   cd $iwd
+}
+
+g4-make(){
+   g4-bcd
+   make -j4
+}
+
+g4-install(){
+   g4-bcd
+   make install
+}
+
+
+g4-export(){
+   source $(g4-idir)/bin/geant4.sh
+}
 
 
 
