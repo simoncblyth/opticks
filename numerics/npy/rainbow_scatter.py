@@ -478,6 +478,37 @@ def check_radius(sc, sli=slice(None)):
         In [59]: rp1.max()
         Out[59]: 83.357268171136297
 
+
+    After a rerun of ggv-rainbow get the expected radius::
+
+        In [3]: p1
+        Out[3]: 
+        array([[-73.4642, -33.9122, -58.7786],
+               [-58.6688,  -5.237 , -80.8252],
+               [-35.4503,  93.35  ,  -5.4933],
+               ..., 
+               [-71.4133,  69.9118,  -3.4059],
+               [-28.2357, -90.64  , -31.4585],
+               [-72.5486,  68.2272,  -8.8992]])
+
+        In [4]: np.linalg.norm(p1, 2, 1)
+        Out[4]: array([ 100.0097,  100.0108,  100.0056, ...,   99.9956,  100.0125,   99.9872])
+
+
+    From idp::
+
+        In [1]: np.load("OPropagatorF.npy")
+        Out[1]: 
+        array([[[    0.,     0.,     0.,  1200.]],
+
+               [[    0.,    10.,    10.,     0.]],
+
+               [[   60.,   820.,    20.,   760.]]], dtype=float32)
+
+
+    Clearly the domains should live beside corresponding data files not in idp, where they 
+    get overwritten by other test geometries, or changed geometry sizes. 
+
     """
     s_p1 = sc.ssim.recpost(1)[:,:3]
     p_p1 = sc.psim.recpost(1)[:,:3]

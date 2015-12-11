@@ -50,15 +50,15 @@ class OPropagator {
         OBuf* getPhotonBuf();
 
     public:
-        void saveDomains(const char* dir);
+        //void saveDomains(const char* dir);
         NPY<float>* getDomain();
+        NPY<int>*   getIDomain();
 
     private:
         void init();
         void initEvent(NumpyEvt* evt);
         void makeDomains();
         void recordDomains();
-        NPY<int>*   getIDomain();
 
     private:
         OContext*        m_ocontext ; 

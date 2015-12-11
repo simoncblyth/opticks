@@ -954,7 +954,6 @@ void App::downloadEvt()
 {
     if(!m_evt) return ; 
 
-    m_opropagator->saveDomains( m_cache->getIdPath());
 
     NPY<float>* dpho = m_evt->getPhotonData();
     Rdr::download(dpho);
@@ -1002,6 +1001,12 @@ void App::downloadEvt()
     dhis->save("ph%s", typ,  tag, udet);
     daux->setVerbose();
     daux->save("au%s", typ,  tag, udet);
+
+
+    NPY<float>* fdom = m_opropagator->getDomain();
+    NPY<int>*   idom = m_opropagator->getIDomain();
+    fdom->save("fdom%s", typ,  tag, udet);
+    idom->save("idom%s", typ,  tag, udet);
 
 
     (*m_timer)("evtSave"); 

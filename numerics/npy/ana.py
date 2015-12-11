@@ -83,6 +83,9 @@ class Evt(object):
         self.label = label
         self.src = src
 
+        #self.fdom = np.load(idp_("OPropagatorF.npy"))
+        self.fdom = load_("fdom"+src,tag,det) 
+        self.idom = load_("idom"+src,tag,det) 
 
         self.ox = load_("ox"+src,tag,det) 
         self.rx = load_("rx"+src,tag,det) 
@@ -101,7 +104,6 @@ class Evt(object):
         self.polw = self.ox[:,2]
 
         self.flags = self.ox.view(np.uint32)[:,3,3]
-        self.fdom = np.load(idp_("OPropagatorF.npy"))
         self.nrec = 10 # TODO: get from idom ?
 
     def msize(self):
