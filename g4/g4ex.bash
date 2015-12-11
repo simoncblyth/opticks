@@ -16,7 +16,8 @@ g4ex-env(){
 }
 
 #g4ex-name(){ echo basic/B1 ; }
-g4ex-name(){ echo extended/optical/LXe ; }
+#g4ex-name(){ echo extended/optical/LXe ; }
+g4ex-name(){ echo extended/optical/OpNovice ; }
 
 g4ex-cd(){   cd $(g4ex-dir); }
 g4ex-dir(){  echo $(g4-examples-dir)/$(g4ex-name) ; }

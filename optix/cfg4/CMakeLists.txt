@@ -49,6 +49,8 @@ PhysicsList.cc
 DetectorConstruction.cc
 PrimaryGeneratorAction.cc
 ActionInitialization.cc
+SteppingAction.cc
+SteppingVerbose.cc
 )
 
 SET(hdrs 
@@ -56,6 +58,8 @@ PhysicsList.hh
 DetectorConstruction.hh
 PrimaryGeneratorAction.hh
 ActionInitialization.hh
+SteppingAction.hh
+SteppingVerbose.hh
 )
    
 target_link_libraries(${name} ${LIBRARIES})

@@ -11,6 +11,7 @@ class ActionInitialization : public G4VUserActionInitialization
     virtual ~ActionInitialization();
 
     virtual void Build() const;
+    virtual G4VSteppingVerbose* InitializeSteppingVerbose() const; 
 
   private:
     RecorderBase* m_recorder;
