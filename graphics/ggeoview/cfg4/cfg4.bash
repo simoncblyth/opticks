@@ -31,6 +31,17 @@ Objectives
 * reuse ggeo- machinery as much as possible
 
 
+Geant4 Stepping Action
+------------------------
+
+Coordination with EventAction extended/electromagnetic/TestEm4/src/SteppingAction.cc::
+
+     55 void SteppingAction::UserSteppingAction(const G4Step* aStep)
+     56 {
+     57  G4double EdepStep = aStep->GetTotalEnergyDeposit();
+     58  if (EdepStep > 0.) fEventAction->addEdep(EdepStep);
+
+With detector extended/polarisation/Pol01/src/SteppingAction.cc
 
 
 
