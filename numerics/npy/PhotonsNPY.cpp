@@ -38,9 +38,9 @@ void PhotonsNPY::dumpPhotons(const char* msg, unsigned int ndump)
     if(!m_photons) return ;
     printf("%s\n", msg);
 
-    unsigned int ni = m_photons->m_len0 ;
-    unsigned int nj = m_photons->m_len1 ;
-    unsigned int nk = m_photons->m_len2 ;
+    unsigned int ni = m_photons->m_ni ;
+    unsigned int nj = m_photons->m_nj ;
+    unsigned int nk = m_photons->m_nk ;
     assert( nj == 4 && nk == 4 );
 
     for(unsigned int i=0 ; i<ni ; i++ )
@@ -71,7 +71,7 @@ void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
 
 NPY<float>* PhotonsNPY::make_pathinfo()
 {
-    unsigned int num_photons = m_photons->m_len0 ;
+    unsigned int num_photons = m_photons->m_ni ;
     NPY<float>* pathinfo = NPY<float>::make(num_photons,6,4) ;
     pathinfo->zero();
     for(unsigned int i=0 ; i < num_photons ; i++)
@@ -134,9 +134,9 @@ void PhotonsNPY::debugdump(const char* msg)
     if(!m_photons) return ;
     printf("%s\n", msg);
 
-    unsigned int ni = m_photons->m_len0 ;
-    unsigned int nj = m_photons->m_len1 ;
-    unsigned int nk = m_photons->m_len2 ;
+    unsigned int ni = m_photons->m_ni ;
+    unsigned int nj = m_photons->m_nj ;
+    unsigned int nk = m_photons->m_nk ;
 
     assert( nj == 4 && nk == 4 );
 

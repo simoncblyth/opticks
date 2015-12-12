@@ -33,7 +33,7 @@ class NPYBase {
        unsigned int getDimensions();
        std::string  getShapeString(unsigned int ifr=0);
        unsigned int getShape(unsigned int dim);
-       unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k);
+       unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
        unsigned int getNumValues(unsigned int from_dim=1);
    public:
        // depending on sizeoftype
@@ -84,9 +84,12 @@ class NPYBase {
        void setNumItems(unsigned int ni);
    protected:
        unsigned int       m_dim ; 
-       unsigned int       m_len0 ; 
-       unsigned int       m_len1 ; 
-       unsigned int       m_len2 ; 
+
+       unsigned int       m_ni ; 
+       unsigned int       m_nj ; 
+       unsigned int       m_nk ; 
+       unsigned int       m_nl ; 
+
        unsigned char      m_sizeoftype ; 
        Type_t             m_type ; 
        int                m_buffer_id ; 
@@ -118,9 +121,11 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_has_data(has_data),
          m_dynamic(false)
 {
-    m_len0 = getShape(0);
-    m_len1 = getShape(1);
-    m_len2 = getShape(2);
+    m_ni = getShape(0);
+    m_nj = getShape(1);
+    m_nk = getShape(2);
+    m_nl = getShape(3);
+
     m_dim  = m_shape.size();
 } 
 
@@ -234,12 +239,14 @@ inline void NPYBase::setAllowPrealloc(bool allow)
 }
 
 
-inline unsigned int NPYBase::getValueIndex(unsigned int i, unsigned int j, unsigned int k)
+inline unsigned int NPYBase::getValueIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
-    assert(m_dim == 3 ); 
-    unsigned int nj = m_len1 ;
-    unsigned int nk = m_len2 ;
-    return  i*nj*nk + j*nk + k ;
+    //assert(m_dim == 3 ); 
+    unsigned int nj = m_nj ;
+    unsigned int nk = m_nk ;
+    unsigned int nl = m_nl == 0 ? 1 : m_nl ;
+
+    return  i*nj*nk*nl + j*nk*nl + k*nl + l ;
 }
 
 inline unsigned int NPYBase::getNumValues(unsigned int from_dim)

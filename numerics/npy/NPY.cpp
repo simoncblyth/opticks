@@ -571,51 +571,14 @@ NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 
 
 
-/*
-
-template <typename T>
-NPY<T>* NPY<T>::make_scalar(unsigned int ni, T init)
-{
-    NPY<T>* npy = NPY<T>::make( ni, 1, 1);
-    npy->fill(init);
-    return npy ; 
-}
-
-
-template <typename T>
-NPY<T>* NPY<T>::make_scalar(unsigned int ni, T* values)
-{
-    return NPY<T>::make( ni, 1, 1, values ) ; 
-}
-
-template <typename T>
-NPY<T>* NPY<T>::make_vec4(unsigned int ni, unsigned int nj, T value)
-{
-    NPY<T>* npy =  NPY<T>::make(ni, nj, 4 );
-    npy->fill(value);
-    return npy ;
-}
-
-template <typename T>
-NPY<T>* NPY<T>::make_vec2(unsigned int ni, unsigned int nj, T value)
-{
-    NPY<T>* npy =  NPY<T>::make(ni, nj, 2 );
-    npy->fill(value);
-    return npy ;
-}
-
-*/
-
-
-
 
 
 template <typename T>
 unsigned int NPY<T>::getUSum(unsigned int j, unsigned int k)
 {
-    unsigned int ni = m_len0 ;
-    unsigned int nj = m_len1 ;
-    unsigned int nk = m_len2 ;
+    unsigned int ni = m_ni ;
+    unsigned int nj = m_nj ;
+    unsigned int nk = m_nk ;
 
     assert(m_dim == 3 && j < nj && k < nk);
 
@@ -636,9 +599,9 @@ unsigned int NPY<T>::getUSum(unsigned int j, unsigned int k)
 template <typename T>
 std::set<int> NPY<T>::uniquei(unsigned int j, unsigned int k)
 {
-    unsigned int ni = m_len0 ;
-    unsigned int nj = m_len1 ;
-    unsigned int nk = m_len2 ;
+    unsigned int ni = m_ni ;
+    unsigned int nj = m_nj ;
+    unsigned int nk = m_nk ;
     assert(m_dim == 3 && j < nj && k < nk);
 
     std::set<int> uniq ; 
@@ -680,9 +643,9 @@ std::vector<std::pair<int,int> > NPY<T>::count_uniquei_descending(unsigned int j
 template <typename T>
 std::map<int,int> NPY<T>::count_uniquei(unsigned int j, unsigned int k, int sj, int sk )
 {
-    unsigned int ni = m_len0 ;
-    unsigned int nj = m_len1 ;
-    unsigned int nk = m_len2 ;
+    unsigned int ni = m_ni ; 
+    unsigned int nj = m_nj ;
+    unsigned int nk = m_nk ;
     assert(m_dim == 3 && j < nj && k < nk);
 
     bool sign = sj > -1 && sk > -1 ;
@@ -722,9 +685,9 @@ std::map<int,int> NPY<T>::count_uniquei(unsigned int j, unsigned int k, int sj, 
 template <typename T>
 std::map<unsigned int,unsigned int> NPY<T>::count_unique_u(unsigned int j, unsigned int k )
 {
-    unsigned int ni = m_len0 ;
-    unsigned int nj = m_len1 ;
-    unsigned int nk = m_len2 ;
+    unsigned int ni = m_ni ;
+    unsigned int nj = m_nj ;
+    unsigned int nk = m_nk ;
 
     assert(m_dim == 3 && j < nj && k < nk);
 

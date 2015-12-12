@@ -20,9 +20,9 @@ void AxisNPY::dump(const char* msg)
     if(!m_axis) return ;
     LOG(info) << msg ; 
 
-    unsigned int ni = m_axis->m_len0 ;
-    unsigned int nj = m_axis->m_len1 ;
-    unsigned int nk = m_axis->m_len2 ;
+    unsigned int ni = m_axis->m_ni ;
+    unsigned int nj = m_axis->m_nj ;
+    unsigned int nk = m_axis->m_nk ;
     assert( nj == 3 && nk == 4 );
 
 

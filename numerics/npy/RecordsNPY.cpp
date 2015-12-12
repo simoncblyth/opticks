@@ -269,9 +269,9 @@ void RecordsNPY::dumpRecords(const char* msg, unsigned int ndump)
 {
     if(!m_records) return ;
 
-    unsigned int ni = m_records->m_len0 ;
-    unsigned int nj = m_records->m_len1 ;
-    unsigned int nk = m_records->m_len2 ;
+    unsigned int ni = m_records->m_ni ;
+    unsigned int nj = m_records->m_nj ;
+    unsigned int nk = m_records->m_nk ;
     assert( nj == 2 && nk == 4 );
 
     printf("%s numrec %d maxrec %d \n", msg, ni, m_maxrec );

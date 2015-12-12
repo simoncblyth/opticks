@@ -15,9 +15,9 @@ void G4StepNPY::dump(const char* msg)
 
     printf("%s\n", msg);
 
-    unsigned int ni = m_npy->m_len0 ;
-    unsigned int nj = m_npy->m_len1 ;
-    unsigned int nk = m_npy->m_len2 ;
+    unsigned int ni = m_npy->m_ni ;
+    unsigned int nj = m_npy->m_nj ;
+    unsigned int nk = m_npy->m_nk ;
     std::vector<float>& data = m_npy->m_data ; 
 
     printf(" ni %u nj %u nk %u nj*nk %u \n", ni, nj, nk, nj*nk ); 
@@ -79,11 +79,11 @@ written into the *Id* of GPU structs.
 
 */
     LOG(info)<<"G4StepNPY::relabel" ;
-    for(unsigned int i=0 ; i<m_npy->m_len0 ; i++ )
+    for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
     {
         int code = m_npy->getInt(i,0u,0u);
         if(i % 1000 == 0) printf("G4StepNPY::relabel (%u) %d -> %d \n", i, code, label );
-        m_npy->setInt(i,0u,0u, label);
+        m_npy->setInt(i,0u,0u,0u, label);
     }
 }
 
@@ -147,9 +147,9 @@ void G4StepNPY::applyLookup(unsigned int jj, unsigned int kk)
 {
     unsigned int nfail = 0 ;
 
-    unsigned int ni = m_npy->m_len0 ;
-    unsigned int nj = m_npy->m_len1 ;
-    unsigned int nk = m_npy->m_len2 ;
+    unsigned int ni = m_npy->m_ni ;
+    unsigned int nj = m_npy->m_nj ;
+    unsigned int nk = m_npy->m_nk ;
 
     for(unsigned int i=0 ; i<ni ; i++ ){
     for(unsigned int j=0 ; j<nj ; j++ ){

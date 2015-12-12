@@ -63,7 +63,7 @@ void SequenceNPY::countMaterials()
     typedef std::map<unsigned int, unsigned int> MUU ; 
     typedef std::pair<unsigned int, unsigned int> PUU ;
 
-    unsigned int ni = m_photons->m_len0 ;
+    unsigned int ni = m_photons->m_ni ;
     VU materials ; 
 
     // collect m1, m2 material codes from all records of all photons
@@ -110,7 +110,7 @@ void SequenceNPY::indexSequences(unsigned int maxidx)
 {
     LOG(info)<<"SequenceNPY::indexSequences START ... this takes a while " ; 
 
-    unsigned int ni = m_photons->m_len0 ;
+    unsigned int ni = m_photons->m_ni ;
 
     typedef std::vector<unsigned int> VU ;
     VU mismatch ;
@@ -229,7 +229,7 @@ void SequenceNPY::fillSequenceIndex(
             for(unsigned int r=0 ; r < m_maxrec ; r++)
             {
                 unsigned int record_id = photon_id*m_maxrec + r  ;  
-                seqidx->setValue(record_id, 0, k, pseq );
+                seqidx->setValue(record_id, 0, k,0, pseq );
                 nseq++;
             }
         }

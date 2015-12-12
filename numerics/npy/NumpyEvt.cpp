@@ -203,7 +203,7 @@ void NumpyEvt::seedPhotonData()
         for(unsigned int n=0 ; n < npho ; ++n)
         { 
             assert(count < numPhoton);
-            m_photon_data->setUInt(count, 0,0, index );  // set "phead" : repeating step index for every photon to be generated for the step
+            m_photon_data->setUInt(count, 0,0,0, index );  // set "phead" : repeating step index for every photon to be generated for the step
             count += 1 ;         
         }  // over photons for each step
     }      // over gen steps

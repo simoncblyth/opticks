@@ -28,7 +28,7 @@ void NPYBase::setNumItems(unsigned int ni)
               ; 
  
     m_shape[0] = ni ; 
-    m_len0 = getShape(0);
+    m_ni = getShape(0);
 }
 
 
@@ -116,9 +116,10 @@ std::string NPYBase::description(const char* msg)
         if( i < m_shape.size() - 1) ss << "," ;
     }
     ss << ") " ;
-    ss << " len0 " << m_len0 ;
-    ss << " len1 " << m_len1 ;
-    ss << " len2 " << m_len2 ;
+    ss << " ni " << m_ni ;
+    ss << " nj " << m_nj ;
+    ss << " nk " << m_nk ;
+    ss << " nl " << m_nl ;
 
     ss << " getNumBytes(0) " << getNumBytes(0) ;
     ss << " getNumBytes(1) " << getNumBytes(1) ;

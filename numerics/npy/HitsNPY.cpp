@@ -11,9 +11,9 @@ void HitsNPY::debugdump(const char* msg)
 {
     LOG(info) << msg ; 
 
-    unsigned int ni = m_photons->m_len0 ;
-    unsigned int nj = m_photons->m_len1 ;
-    unsigned int nk = m_photons->m_len2 ;
+    unsigned int ni = m_photons->m_ni ;
+    unsigned int nj = m_photons->m_nj ;
+    unsigned int nk = m_photons->m_nk ;
     assert( nj == 4 && nk == 4 && ni > 0 );
 
     enum { X, Y, Z, W } ;

@@ -145,23 +145,25 @@ class NPY : public NPYBase {
 
        unsigned int getUSum(unsigned int j, unsigned int k);
 
-       T            getValue(unsigned int i, unsigned int j, unsigned int k);
-       float        getFloat(unsigned int i, unsigned int j, unsigned int k);
-       unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k);
-       int          getInt(  unsigned int i, unsigned int j, unsigned int k);
+       T            getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+       float        getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+       unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+       int          getInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+
        void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k);
        ucharfour    getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 );
        charfour     getChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 );
 
 
-       void         setValue(unsigned int i, unsigned int j, unsigned int k, T value);
-       void         setFloat(unsigned int i, unsigned int j, unsigned int k, float value);
-       void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int value);
-       void         setInt(  unsigned int i, unsigned int j, unsigned int k, int value);
+       void         setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value);
+       void         setFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l, float value);
+       void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value);
+       void         setInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l, int value);
 
        void         setQuad(unsigned int i, unsigned int j, const nvec4& f );
 
        void         setQuad(unsigned int i, unsigned int j, glm::vec4&  vec );
+       void         setQuad(unsigned int i, unsigned int j, unsigned int k, glm::vec4&  vec );
        void         setQuadI(unsigned int i, unsigned int j, glm::ivec4& vec );
        void         setQuadU(unsigned int i, unsigned int j, glm::uvec4& vec );
 
@@ -169,6 +171,9 @@ class NPY : public NPYBase {
        void         setQuad(unsigned int i, unsigned int j, glm::uvec4& vec );
 
        void         setQuad(unsigned int i, unsigned int j, float x, float y=0.f, float z=0.f, float w=0.f );
+       void         setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y=0.f, float z=0.f, float w=0.f );
+
+
        glm::vec4    getQuad(unsigned int i, unsigned int j );
        glm::ivec4   getQuadI(unsigned int i, unsigned int j );
        glm::uvec4   getQuadU(unsigned int i, unsigned int j );
@@ -220,9 +225,9 @@ inline void* NPY<T>::getPointer()
 
 
 template <typename T> 
-inline T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k)
+inline T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
-    unsigned int idx = getValueIndex(i,j,k);
+    unsigned int idx = getValueIndex(i,j,k,l);
     T* data = getValues();
     return  *(data + idx);
 }
@@ -298,11 +303,22 @@ charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k0, uns
 
 
 
-
+/*
 template <typename T> 
 inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T value)
 {
     unsigned int idx = getValueIndex(i,j,k);
+    T* dat = getValues();
+    assert(dat && "must zero() the buffer before can setValue");
+    *(dat + idx) = value ;
+}
+*/
+
+
+template <typename T> 
+inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value)
+{
+    unsigned int idx = getValueIndex(i,j,k,l);
     T* dat = getValues();
     assert(dat && "must zero() the buffer before can setValue");
     *(dat + idx) = value ;
@@ -312,15 +328,26 @@ inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T v
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::vec4& vec )
 {
-    assert( m_len2 == 4 );  
-    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
+    assert( m_nk == 4 );  
+    unsigned int l=0 ;  
+    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,l, vec[k]); 
 }
+
+template <typename T> 
+inline void NPY<T>::setQuad(unsigned int i, unsigned int j, unsigned int k, glm::vec4& vec )
+{
+    assert( m_nl == 4 );  
+    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l,vec[l]); 
+}
+
+
 
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, const nvec4& f )
 {
+    unsigned int l=0 ;  
     glm::vec4 vec(f.x,f.y,f.z,f.w); 
-    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
+    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,l, vec[k]); 
 }
 
 
@@ -333,34 +360,46 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, fl
     setQuad(i, j, vec);
 }
 
+template <typename T> 
+inline void NPY<T>::setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y, float z, float w )
+{
+    glm::vec4 vec(x,y,z,w); 
+    setQuad(i, j, k, vec);
+}
+
+
+
+
 
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::ivec4& vec )
 {
-    assert( m_len2 == 4 );  
-    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
+    unsigned int l=0 ;  
+    assert( m_nk == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,l,vec[k]); 
 }
 
 template <typename T> 
 inline void NPY<T>::setQuadI(unsigned int i, unsigned int j, glm::ivec4& vec )
 {
-    assert( m_len2 == 4 );  
-    for(unsigned int k=0 ; k < 4 ; k++) setInt(i,j,k,vec[k]); 
+    unsigned int l=0 ;  
+    assert( m_nk == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setInt(i,j,k,l,vec[k]); 
 }
 template <typename T> 
 inline void NPY<T>::setQuadU(unsigned int i, unsigned int j, glm::uvec4& vec )
 {
-    assert( m_len2 == 4 );  
-    for(unsigned int k=0 ; k < 4 ; k++) setUInt(i,j,k,vec[k]); 
+    unsigned int l=0 ;  
+    assert( m_nk == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setUInt(i,j,k,l,vec[k]); 
 }
-
-
 
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::uvec4& vec )
 {
-    assert( m_len2 == 4 );  
-    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,vec[k]); 
+    unsigned int l=0 ;  
+    assert( m_nk == 4 );  
+    for(unsigned int k=0 ; k < 4 ; k++) setValue(i,j,k,l,vec[k]); 
 }
 
 
@@ -369,7 +408,7 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::uvec4& vec )
 template <typename T> 
 inline glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j)
 {
-    assert( m_len2 == 4 );  
+    assert( m_nk == 4 );  
     glm::vec4 vec ; 
     for(unsigned int k=0 ; k < 4 ; k++) vec[k] = getValue(i,j,k); 
     return vec ; 
@@ -378,7 +417,7 @@ inline glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j)
 template <typename T> 
 inline glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j)
 {
-    assert( m_len2 == 4 );  
+    assert( m_nk == 4 );  
     glm::ivec4 vec ; 
     for(unsigned int k=0 ; k < 4 ; k++) vec[k] = getValue(i,j,k); 
     return vec ; 
@@ -387,7 +426,7 @@ inline glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j)
 template <typename T> 
 inline glm::uvec4 NPY<T>::getQuadU(unsigned int i, unsigned int j)
 {
-    assert( m_len2 == 4 );  
+    assert( m_nk == 4 );  
     glm::uvec4 vec ; 
     for(unsigned int k=0 ; k < 4 ; k++) vec[k] = getUInt(i,j,k); 
     return vec ; 
@@ -401,11 +440,11 @@ inline glm::uvec4 NPY<T>::getQuadU(unsigned int i, unsigned int j)
 
 
 template <typename T> 
-inline float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k)
+inline float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
     uif_t uif ; 
 
-    T t = getValue(i,j,k);
+    T t = getValue(i,j,k,l);
     switch(type)
     {
         case FLOAT:uif.f = t ; break ; 
@@ -417,7 +456,7 @@ inline float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k)
 }
 
 template <typename T> 
-inline void NPY<T>::setFloat(unsigned int i, unsigned int j, unsigned int k, float  value)
+inline void NPY<T>::setFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l, float  value)
 {
     uif_t uif ; 
     uif.f = value ;
@@ -430,17 +469,17 @@ inline void NPY<T>::setFloat(unsigned int i, unsigned int j, unsigned int k, flo
         case SHORT:t = uif.i ; break ; 
         default: assert(0);  break ;
     }
-    setValue(i,j,k,t); 
+    setValue(i,j,k,l,t); 
 }
 
 
 
 template <typename T> 
-inline unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int k)
+inline unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
     uif_t uif ; 
 
-    T t = getValue(i,j,k);
+    T t = getValue(i,j,k,l);
     switch(type)
     {
         case FLOAT:uif.f = t ; break ; 
@@ -454,7 +493,7 @@ inline unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int
 }
 
 template <typename T> 
-inline void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int value)
+inline void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value)
 {
     uif_t uif ; 
     uif.u = value ;
@@ -469,14 +508,14 @@ inline void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsi
         case INT:t = uif.i ; break ; 
         default: assert(0);  break ;
     }
-    setValue(i,j,k,t); 
+    setValue(i,j,k,l, t); 
 }
 
 template <typename T> 
-inline int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k)
+inline int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
     uif_t uif ;             // how does union handle different sizes ? 
-    T t = getValue(i,j,k);
+    T t = getValue(i,j,k,l);
     switch(type)
     {   
         case FLOAT: uif.f = t ; break;
@@ -488,7 +527,7 @@ inline int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k)
 }
 
 template <typename T> 
-inline void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, int value)
+inline void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, int value)
 {
     uif_t uif ; 
     uif.i = value ;
@@ -501,7 +540,7 @@ inline void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, int v
         case SHORT:t = uif.i ; break ; 
         default: assert(0);  break ;
     }
-    setValue(i,j,k,t); 
+    setValue(i,j,k,l, t); 
 }
 
 

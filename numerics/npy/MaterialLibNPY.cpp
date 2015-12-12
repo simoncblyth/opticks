@@ -8,9 +8,9 @@
 
 void MaterialLibNPY::dump(const char* msg)
 {
-    unsigned int ni = m_lib->m_len0 ;
-    unsigned int nj = m_lib->m_len1 ;
-    unsigned int nk = m_lib->m_len2 ;
+    unsigned int ni = m_lib->m_ni ;
+    unsigned int nj = m_lib->m_nj ;
+    unsigned int nk = m_lib->m_nk ;
 
     LOG(info) << msg 
               << " ni " << ni 
