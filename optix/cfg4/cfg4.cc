@@ -9,10 +9,8 @@
 #include "PhysicsList.hh"
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
+#include "Recorder.hh"
 
-/*
-#include "LXeRecorderBase.hh"
-*/
 
 int main(int argc, char** argv)
 {
@@ -22,10 +20,12 @@ int main(int argc, char** argv)
     runManager->SetUserInitialization(new PhysicsList());
     runManager->SetUserInitialization(new DetectorConstruction());
 
-    RecorderBase* recorder = NULL; //No recording is done in this example
+    RecorderBase* recorder = new Recorder(1000,10); // photon_max, step_max
     runManager->SetUserInitialization(new ActionInitialization(recorder));
     runManager->Initialize();
     runManager->BeamOn(1);
+
+    recorder->save("/tmp/recorder.npy");
 
     delete runManager;
     return 0 ; 

@@ -42,6 +42,15 @@ Coordination with EventAction extended/electromagnetic/TestEm4/src/SteppingActio
 With detector extended/polarisation/Pol01/src/SteppingAction.cc
 
 
+Torch via General Particle Source
+-------------------------------------
+
+* /usr/local/env/g4/geant4.10.02/source/event/include/G4SingleParticleSource.hh
+* https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch02s07.html
+
+
+
+
 
 
 EOU
@@ -118,6 +127,13 @@ cfg4-run(){
    cfg4-export
    $bin $*
 }
+
+cfg4-dbg(){
+   local bin=$(cfg4-bin)
+   cfg4-export
+   lldb $bin -- $*
+}
+
 
 
 

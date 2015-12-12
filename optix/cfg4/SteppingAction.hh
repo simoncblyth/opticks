@@ -1,9 +1,12 @@
 #pragma once
 
 #include "G4UserSteppingAction.hh"
+#include "G4OpBoundaryProcess.hh"
 #include "globals.hh"
 
 class RecorderBase ; 
+class G4StepPoint ; 
+class G4Track ; 
 
 class SteppingAction : public G4UserSteppingAction
 {
@@ -11,6 +14,8 @@ class SteppingAction : public G4UserSteppingAction
     SteppingAction(RecorderBase* recorder);
     SteppingAction();
     virtual ~SteppingAction();
+
+    G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
 
     virtual void UserSteppingAction(const G4Step*);
 

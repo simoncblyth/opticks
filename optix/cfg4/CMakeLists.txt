@@ -45,6 +45,8 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 add_library(${name} SHARED 
+Format.cc
+Recorder.cc
 PhysicsList.cc
 DetectorConstruction.cc
 PrimaryGeneratorAction.cc
@@ -54,6 +56,8 @@ SteppingVerbose.cc
 )
 
 SET(hdrs 
+Format.hh
+Recorder.hh
 PhysicsList.hh
 DetectorConstruction.hh
 PrimaryGeneratorAction.hh

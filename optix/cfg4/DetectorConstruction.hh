@@ -6,6 +6,8 @@ class G4Box;
 class G4Sphere;
 
 class G4Material ; 
+class G4NistManager ;
+class G4MaterialPropertiesTable ; 
 
 
 #include "G4VUserDetectorConstruction.hh"
@@ -13,15 +15,20 @@ class G4Material ;
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
+    static G4double photonEnergy[] ;
 
     DetectorConstruction();
     virtual ~DetectorConstruction();
 
+    void DumpDomain(const char* msg="DetectorConstruction::DumpDomain");
     virtual G4VPhysicalVolume* Construct();
   private:
-    G4Material* MakeWater();
-    G4Material* MakeVacuum();
+    void init();
+  private:
     G4VPhysicalVolume* ConstructDetector();
+    G4MaterialPropertiesTable* MakeWaterProps();
+    G4MaterialPropertiesTable* MakeVacuumProps();
+
 
   private:
     G4LogicalVolume*   m_box_log;
@@ -31,6 +38,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4Material*        m_vacuum;
     G4Material*        m_water ;
 
+    G4NistManager*     m_nistMan ; 
 
 };
 
@@ -41,8 +49,10 @@ inline DetectorConstruction::DetectorConstruction()
   m_water(NULL),
   m_box_log(NULL),
   m_box_phys(NULL),
-  m_sphere_phys(NULL)
+  m_sphere_phys(NULL),
+  m_nistMan(NULL)
 {
+    init();
 }
 
 

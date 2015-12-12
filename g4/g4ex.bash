@@ -17,12 +17,16 @@ g4ex-env(){
 
 #g4ex-name(){ echo basic/B1 ; }
 #g4ex-name(){ echo extended/optical/LXe ; }
-g4ex-name(){ echo extended/optical/OpNovice ; }
+#g4ex-name(){ echo extended/optical/OpNovice ; }
+g4ex-name(){ echo extended/optical/wls ; }
 
 g4ex-cd(){   cd $(g4ex-dir); }
 g4ex-dir(){  echo $(g4-examples-dir)/$(g4ex-name) ; }
 g4ex-bdir(){ echo $(local-base)/env/g4ex/$(g4ex-name).build   ; }
 g4ex-idir(){ echo $(local-base)/env/g4ex/$(g4ex-name).install ; }
+
+g4ex-hhfind(){ find $(g4-examples-dir) -name '*.hh' -exec grep -H ${1:-Gun} {} \; ; }
+g4ex-ccfind(){ find $(g4-examples-dir) -name '*.cc' -exec grep -H ${1:-Gun} {} \; ; }
 
 g4ex-wipe(){
    local bdir=$(g4ex-bdir)

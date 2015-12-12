@@ -16,5 +16,7 @@ class RecorderBase {
     virtual void RecordTrack(const G4Track*) {};
     virtual void RecordStep(const G4Step*) {};
 
+    virtual void save(const char*) {};
+
 };
 

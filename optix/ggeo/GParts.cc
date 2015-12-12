@@ -383,12 +383,14 @@ void GParts::enlargeBBox(unsigned int part, float epsilon)
 unsigned int GParts::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(i < getNumParts() );
-    return m_part_buffer->getUInt(i,j,k);
+    unsigned int l=0u ; 
+    return m_part_buffer->getUInt(i,j,k,l);
 }
 void GParts::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int value)
 {
     assert(i < getNumParts() );
-    m_part_buffer->setUInt(i,j,k, value);
+    unsigned int l=0u ; 
+    m_part_buffer->setUInt(i,j,k,l, value);
 }
 
 

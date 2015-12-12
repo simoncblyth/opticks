@@ -70,6 +70,7 @@ g4-idir(){ echo $(g4-dir).install ; }
 g4-bdir(){ echo $(g4-dir).build ; }
 
 g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
+g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
 
 
 g4-cmake-dir(){ echo $(g4-idir)/lib/$(g4-name2) ; }
