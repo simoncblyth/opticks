@@ -10,7 +10,7 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::Build() const
 {
-    SetUserAction(new PrimaryGeneratorAction());
+    SetUserAction(new PrimaryGeneratorAction(m_recorder));
     SetUserAction(new SteppingAction(m_recorder));
 }
 

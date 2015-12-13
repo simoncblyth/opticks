@@ -5,8 +5,6 @@
 #include "globals.hh"
 
 class RecorderBase ; 
-class G4StepPoint ; 
-class G4Track ; 
 
 class SteppingAction : public G4UserSteppingAction
 {
@@ -16,14 +14,22 @@ class SteppingAction : public G4UserSteppingAction
     virtual ~SteppingAction();
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
-
     virtual void UserSteppingAction(const G4Step*);
 
   private:
     RecorderBase*  m_recorder ; 
-    G4int fScintillationCounter;
-    G4int fCerenkovCounter;
-    G4int fEventNumber;
 };
+
+inline SteppingAction::SteppingAction(RecorderBase* recorder)
+   : 
+   G4UserSteppingAction(),
+   m_recorder(recorder)
+{ 
+}
+
+inline SteppingAction::~SteppingAction()
+{ 
+}
+
 
 

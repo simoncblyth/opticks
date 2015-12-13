@@ -47,6 +47,8 @@ add_definitions(${DEFINITIONS})
 add_library(${name} SHARED 
 Format.cc
 Recorder.cc
+OpSource.cc
+OpStatus.cc
 PhysicsList.cc
 DetectorConstruction.cc
 PrimaryGeneratorAction.cc
@@ -58,6 +60,8 @@ SteppingVerbose.cc
 SET(hdrs 
 Format.hh
 Recorder.hh
+OpSource.hh
+OpStatus.hh
 PhysicsList.hh
 DetectorConstruction.hh
 PrimaryGeneratorAction.hh
