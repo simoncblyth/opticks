@@ -4,6 +4,7 @@
 #include <string>
 
 #include <vector>
+#include <glm/glm.hpp>
 
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
@@ -49,6 +50,7 @@ class GPropertyLib {
     public:
         // other classes need access to "shape" of the standardization
         static GDomain<float>* getDefaultDomain();
+        static glm::vec4      getDefaultDomainSpec();
     public:
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();

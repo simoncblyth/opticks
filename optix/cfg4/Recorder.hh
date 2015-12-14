@@ -1,8 +1,10 @@
 #pragma once
 
 #include "G4OpBoundaryProcess.hh"
+
 #include <climits>
 #include <cstring>
+#include <glm/glm.hpp>
 
 class G4Run ;
 class G4Step ; 
@@ -22,6 +24,9 @@ class Recorder : public RecorderBase {
         void RecordStep(const G4Step*);
    public:
         void RecordStepPoint(const G4StepPoint* point, unsigned int record_id, unsigned int slot, unsigned int flag, bool last);
+        void setCenterExtent(const glm::vec4& center_extent);
+        void setBoundaryDomain(const glm::vec4& boundary_domain);
+
         void save();
    public:
         unsigned int getRecordId();
@@ -55,8 +60,15 @@ class Recorder : public RecorderBase {
         unsigned long long m_seqhis ; 
         unsigned long long m_seqmat ; 
 
-        NPY<float>*               m_records ; 
+        NPY<float>*               m_fdom ; 
+        NPY<int>*                 m_idom ; 
+        NPY<float>*               m_photons ; 
+        NPY<short>*               m_records ; 
         NPY<unsigned long long>*  m_history ; 
+
+        glm::vec4    m_center_extent ; 
+        glm::vec4    m_time_domain ; 
+        glm::vec4    m_boundary_domain ; 
 
 };
 
@@ -75,8 +87,14 @@ inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsi
    m_boundary_status(Undefined),
    m_seqhis(0),
    m_seqmat(0),
+   m_fdom(0),
+   m_idom(0),
+   m_photons(0),
    m_records(0),
-   m_history(0)
+   m_history(0),
+   m_center_extent(0.f,0.f,0.f,0.f),
+   m_time_domain(0.f,0.f,0.f,0.f),
+   m_boundary_domain(0.f,0.f,0.f,0.f)
 {
    init();
 }
@@ -146,5 +164,19 @@ inline void Recorder::RecordBeginOfRun(const G4Run*)
 inline void Recorder::RecordEndOfRun(const G4Run*)
 {
 }
+
+inline void Recorder::setCenterExtent(const glm::vec4& center_extent)
+{
+   m_center_extent = center_extent ; 
+}
+inline void Recorder::setBoundaryDomain(const glm::vec4& boundary_domain)
+{
+   m_boundary_domain = boundary_domain ; 
+}
+
+
+
+
+
 
 

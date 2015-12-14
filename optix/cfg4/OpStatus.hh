@@ -35,4 +35,6 @@ std::string  OpBoundaryString(const G4OpBoundaryProcessStatus status);
 unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status);
 
 std::string OpFlagString(const unsigned int flag);
+std::string OpFlagSequenceString(const unsigned long long seqhis);
+
 

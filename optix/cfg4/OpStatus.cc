@@ -22,6 +22,21 @@ std::string OpStepString(const G4StepStatus status)
     return ss.str() ;
 }
 
+std::string OpFlagSequenceString(const unsigned long long seqhis)
+{
+    std::stringstream ss ;
+    assert(sizeof(unsigned long long)*8 == 16*4);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {
+        unsigned long long f = (seqhis >> i*4) & 0xF ; 
+        if(f == 0) break ; 
+        unsigned int flg = 0x1 << (f - 1) ; 
+        ss << OpFlagString(flg);
+        ss << " " ;
+    }
+    return ss.str();
+}
+
 std::string OpFlagString(const unsigned int flag)
 {
     std::stringstream ss ; 

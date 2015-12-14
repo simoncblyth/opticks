@@ -59,16 +59,20 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               ;
 
 
-    float domain_range = (GPropertyLib::DOMAIN_HIGH - GPropertyLib::DOMAIN_LOW); 
-    optix::float4 domain = optix::make_float4(GPropertyLib::DOMAIN_LOW, GPropertyLib::DOMAIN_HIGH, GPropertyLib::DOMAIN_STEP, domain_range); 
+    //float domain_range = (GPropertyLib::DOMAIN_HIGH - GPropertyLib::DOMAIN_LOW); 
+    //optix::float4 domain = optix::make_float4(GPropertyLib::DOMAIN_LOW, GPropertyLib::DOMAIN_HIGH, GPropertyLib::DOMAIN_STEP, domain_range); 
+    //optix::float4 domain_reciprocal = optix::make_float4(1.f/GPropertyLib::DOMAIN_LOW, 1.f/GPropertyLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
 
-    // only endpoints used for sampling, not the step 
-    optix::float4 domain_reciprocal = optix::make_float4(1.f/GPropertyLib::DOMAIN_LOW, 1.f/GPropertyLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
+    glm::vec4 dom = GPropertyLib::getDefaultDomainSpec() ;
+    glm::vec4 rdom( 1.f/dom.x, 1.f/dom.y , 0.f, 0.f ); // not flipping order, only endpoints used for sampling, not the step 
 
     // formerly(with OBoundaryLib)  prefixed wavelength_ 
     m_context["boundary_texture"]->setTextureSampler(tex);
-    m_context["boundary_domain"]->setFloat(domain); 
-    m_context["boundary_domain_reciprocal"]->setFloat(domain_reciprocal); 
+
+    //m_context["boundary_domain"]->setFloat(domain); 
+    m_context["boundary_domain"]->setFloat(dom.x, dom.y, dom.z, dom.w); 
+    m_context["boundary_domain_reciprocal"]->setFloat(rdom.x, rdom.y, rdom.z, rdom.w); 
+
     m_context["boundary_bounds"]->setUint(bounds); 
 }
 

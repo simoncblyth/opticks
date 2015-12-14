@@ -6,6 +6,8 @@
 #include "G4Step.hh"
 #include "G4OpBoundaryProcess.hh"
 
+#include <glm/glm.hpp>
+
 class RecorderBase {
   public:
     virtual ~RecorderBase() {};
@@ -22,6 +24,8 @@ class RecorderBase {
     virtual unsigned int getPhotonId() = 0 ; 
     virtual unsigned int getStepId() = 0 ; 
     virtual void setBoundaryStatus(G4OpBoundaryProcessStatus) = 0;
+    virtual void setCenterExtent(const glm::vec4&) = 0;
+    virtual void setBoundaryDomain(const glm::vec4&) = 0;
  
     virtual void save() {};
 

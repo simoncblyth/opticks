@@ -7,6 +7,8 @@
 #include "NPY.hpp"
 #include "Map.hpp"
 
+
+
 #include <cassert>
 #include <climits>
 
@@ -77,6 +79,19 @@ GDomain<float>* GPropertyLib::getDefaultDomain()
 {
    return new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
 }
+
+glm::vec4 GPropertyLib::getDefaultDomainSpec()
+{
+    glm::vec4 bd ;
+
+    bd.x = DOMAIN_LOW ;
+    bd.y = DOMAIN_HIGH ;
+    bd.z = DOMAIN_STEP ;
+    bd.w = DOMAIN_HIGH - DOMAIN_LOW ;
+
+    return bd ; 
+}
+
 
 void GPropertyLib::init()
 {

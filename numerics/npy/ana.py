@@ -83,7 +83,6 @@ class Evt(object):
         self.label = label
         self.src = src
 
-        #self.fdom = np.load(idp_("OPropagatorF.npy"))
         self.fdom = load_("fdom"+src,tag,det) 
         self.idom = load_("idom"+src,tag,det) 
 

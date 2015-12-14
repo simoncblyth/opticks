@@ -336,7 +336,7 @@ class Index(object):
         assert len(cu.shape) == 2 and cu.shape[1] == 2 
         for msk,cnt in sorted(cu, key=lambda _:_[1], reverse=True):
             label = ihex_(msk) if hex_ else int(msk)
-            log.info("Index msk %d cnt %d label %s " % (msk, cnt, label))
+            log.debug("Index msk %d cnt %d label %s " % (msk, cnt, label))
             print "%20s %10d : %40s " % ( label, int(cnt), self(msk) ) 
         pass
 
@@ -358,7 +358,7 @@ class SeqHis(Index):
         self.fi = iabflags_() if abbrev else iflags_()
     def __call__(self, i):
         x = ihex_(i) 
-        log.info("seqhis %s " % x )
+        log.debug("seqhis %s " % x )
         return " ".join(map(lambda _:self.fi.get(int(_,16),'?%s?' % int(_,16) ), x[::-1] )) 
     def seqhis_int(self, s):
         f = self.f

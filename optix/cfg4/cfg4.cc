@@ -14,6 +14,8 @@
 #include "NLog.hpp"
 #include <boost/lexical_cast.hpp>
 
+
+
 int parse(char* arg)
 {
    int iarg = 0 ;
@@ -60,13 +62,19 @@ int main(int argc, char** argv)
               << " nphotons " << nphotons
               ;
 
+    DetectorConstruction* dc = new DetectorConstruction() ; 
+    RecorderBase* recorder = new Recorder(typ,tag,det,nphotons,10, photons_per_event); 
+
     G4RunManager* runManager = new G4RunManager;
     runManager->SetUserInitialization(new PhysicsList());
-    runManager->SetUserInitialization(new DetectorConstruction());
-
-    RecorderBase* recorder = new Recorder(typ,tag,det,nphotons,10, photons_per_event); 
+    runManager->SetUserInitialization(dc);
     runManager->SetUserInitialization(new ActionInitialization(recorder));
     runManager->Initialize();
+
+    recorder->setCenterExtent(dc->getCenterExtent());
+    recorder->setBoundaryDomain(dc->getBoundaryDomain());
+    
+
     runManager->BeamOn(nevt);
 
     recorder->save();

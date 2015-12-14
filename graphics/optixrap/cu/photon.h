@@ -154,8 +154,6 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
     
 
-
-
 #ifdef IDENTITY_CHECK
     // spread uint32 photon_id across two uint16
     unsigned int photon_id = p.flags.u.y ;

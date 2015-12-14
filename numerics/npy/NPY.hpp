@@ -336,10 +336,9 @@ inline void NPY<T>::setQuad(unsigned int i, unsigned int j, glm::vec4& vec )
 template <typename T> 
 inline void NPY<T>::setQuad(unsigned int i, unsigned int j, unsigned int k, glm::vec4& vec )
 {
-    assert( m_nl == 4 );  
+    //assert( m_nl == 4 );  
     for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l,vec[l]); 
 }
-
 
 
 template <typename T> 

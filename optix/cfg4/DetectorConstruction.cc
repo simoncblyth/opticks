@@ -1,5 +1,8 @@
 #include "DetectorConstruction.hh"
 
+#include "NLog.hpp"
+#include "GPropertyLib.hh"
+
 #include "G4RunManager.hh"
 
 
@@ -38,6 +41,13 @@ void DetectorConstruction::init()
     m_nistMan = G4NistManager::Instance(); 
    // m_nistMan->SetVerbose(5);
 
+    float extent = 1200.f ;  
+    m_center_extent.x = 0.f ; 
+    m_center_extent.y = 0.f ; 
+    m_center_extent.z = 0.f ; 
+    m_center_extent.w = extent ; 
+
+    m_boundary_domain = GPropertyLib::getDefaultDomainSpec() ;
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
@@ -135,10 +145,14 @@ G4MaterialPropertiesTable* DetectorConstruction::MakeVacuumProps()
 
 G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 {
+  float extent = m_center_extent.w ;
+
+  LOG(info) << "DetectorConstruction::ConstructDetector extent " << extent << " mm " << mm ;  
   {
-      G4double x = 1200.*mm;
-      G4double y = 1200.*mm;
-      G4double z = 1200.*mm;
+  
+      G4double x = extent*mm;
+      G4double y = extent*mm;
+      G4double z = extent*mm;
       G4Box* solid = new G4Box("box_solid", x,y,z);
 
       m_box_log = new G4LogicalVolume(solid, m_vacuum,"box_log",0,0,0);
