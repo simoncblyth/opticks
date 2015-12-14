@@ -4,6 +4,7 @@
 
 #include <climits>
 #include <cstring>
+#include <vector>
 #include <glm/glm.hpp>
 
 class G4Run ;
@@ -11,6 +12,15 @@ class G4Step ;
 
 template <typename T> class NPY ;
 #include "RecorderBase.hh"
+
+//
+//  *RecordStep* is called for all G4Step
+//  each of which is comprised of *pre* and *post* G4StepPoint, 
+//  as a result the same G4StepPoint are "seen" twice, 
+//  thus *RecordStep* only records the 1st of the pair 
+//  (the 2nd will come around as the first at the next call)
+//  except for the last G4Step pair where both points are recorded
+//
 
 class Recorder : public RecorderBase {
    public:
@@ -22,25 +32,32 @@ class Recorder : public RecorderBase {
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         void RecordStep(const G4Step*);
+
+        void DumpSteps(const char* msg="Recorder::DumpSteps");
+        void DumpStep(const G4Step* step);
    public:
-        void RecordStepPoint(const G4StepPoint* point, unsigned int record_id, unsigned int slot, unsigned int flag, bool last);
+        void RecordStepPoint(const G4StepPoint* point, unsigned int flag, bool last);
+        void Clear();
+        void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status);
+   public:
         void setCenterExtent(const glm::vec4& center_extent);
         void setBoundaryDomain(const glm::vec4& boundary_domain);
-
+        void Dump(const char* msg="Recorder::Dump");
         void save();
    public:
-        unsigned int getRecordId();
         unsigned int getEventId();
         unsigned int getPhotonId();
         unsigned int getStepId();
+        unsigned int getRecordId();
    public:
-        unsigned int getPointFlag(G4StepPoint* point);
+        unsigned int getPointFlag(const G4StepPoint* point);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
         G4OpBoundaryProcessStatus getBoundaryStatus();
    private:
         void setEventId(unsigned int event_id);
         void setPhotonId(unsigned int photon_id);
         void setStepId(unsigned int step_id);
+        void setRecordId(unsigned int record_id);
    private:
         void init();
    private:
@@ -55,10 +72,12 @@ class Recorder : public RecorderBase {
         unsigned int m_event_id ; 
         unsigned int m_photon_id ; 
         unsigned int m_step_id ; 
+        unsigned int m_record_id ; 
         G4OpBoundaryProcessStatus m_boundary_status ; 
 
         unsigned long long m_seqhis ; 
         unsigned long long m_seqmat ; 
+        unsigned int m_slot ; 
 
         NPY<float>*               m_fdom ; 
         NPY<int>*                 m_idom ; 
@@ -69,6 +88,11 @@ class Recorder : public RecorderBase {
         glm::vec4    m_center_extent ; 
         glm::vec4    m_time_domain ; 
         glm::vec4    m_boundary_domain ; 
+
+        std::vector<const G4StepPoint*>         m_points ; 
+        std::vector<unsigned int>               m_flags ; 
+        std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
+
 
 };
 
@@ -87,6 +111,7 @@ inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsi
    m_boundary_status(Undefined),
    m_seqhis(0),
    m_seqmat(0),
+   m_slot(0),
    m_fdom(0),
    m_idom(0),
    m_photons(0),
@@ -128,8 +153,12 @@ inline unsigned int Recorder::getStepId()
 }
 inline unsigned int Recorder::getRecordId()
 {
-    return m_photons_per_event*m_event_id + m_photon_id ; 
+   return m_record_id ; 
 }
+
+
+
+
 
 inline G4OpBoundaryProcessStatus Recorder::getBoundaryStatus()
 {
@@ -150,6 +179,15 @@ inline void Recorder::setStepId(unsigned int step_id)
 {
     m_step_id = step_id ; 
 }
+inline void Recorder::setRecordId(unsigned int record_id)
+{
+    m_record_id = record_id ; 
+}
+
+
+
+
+
 inline void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status)
 {
    m_boundary_status = boundary_status ; 

@@ -18,6 +18,9 @@
 #include "NPY.hpp"
 #include "NLog.hpp"
 
+#include "Recorder.icc"
+
+
 
 void Recorder::init()
 {
@@ -66,8 +69,6 @@ void Recorder::save()
 }
 
 
-
-
 #define RSAVE(flag, material, slot)  \
 {    \
     unsigned int shift = slot*4 ; \
@@ -77,10 +78,11 @@ void Recorder::save()
     m_seqmat |= mat << shift ; \
 }   \
 
-unsigned int Recorder::getPointFlag(G4StepPoint* point)
+unsigned int Recorder::getPointFlag(const G4StepPoint* point)
 {
     G4StepStatus status = point->GetStepStatus()  ;
 
+    // TODO: cache the relevant process objects, so can just compare pointers ?
     const G4VProcess* process = point->GetProcessDefinedStep() ;
     const G4String& processName = process ? process->GetProcessName() : "NoProc" ; 
 
@@ -102,160 +104,96 @@ unsigned int Recorder::getPointFlag(G4StepPoint* point)
     return flag ; 
 }
 
-
 void Recorder::RecordStep(const G4Step* step)
 {
+    // seeing duplicate StepPoints differ-ing only in the volume
+    // skip these by early exit
+    // TODO:  more careful handling for correct material recording
+    //
+
+
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-    bool startEvent = eid != m_event_id ; 
-    setEventId(eid);
 
     G4Track* track = step->GetTrack();
-    G4int tid = track->GetTrackID();
+    G4int photon_id = track->GetTrackID() - 1;
+    G4int step_id  = track->GetCurrentStepNumber() - 1 ;
 
-    G4int sid = track->GetCurrentStepNumber() ;
-    assert(tid >= 1 && sid >= 1);   // one-based
+    setEventId(eid);
+    setPhotonId(photon_id);   
+    setStepId(step_id);
 
-    bool startPhoton = tid-1 != m_photon_id ; 
-    setPhotonId(tid-1);   // zero-based
-    setStepId(sid-1);
+    unsigned int record_id = m_photons_per_event*m_event_id + m_photon_id ; 
+    setRecordId(record_id);
 
-    if(startPhoton)
+    if(record_id >= m_record_max) return ; 
+
+    bool first = step_id == 0; 
+    if(first)
     {
         m_seqhis = 0 ; 
         m_seqmat = 0 ; 
+        m_slot = 0 ; 
+        Clear();
     }
 
-    unsigned int record_id = getRecordId();
-    if(record_id >= m_record_max) return ; 
-
-    G4StepPoint* pre  = step->GetPreStepPoint() ; 
-    G4StepPoint* post = step->GetPostStepPoint() ; 
-
-    // TODO: cache the relevant process objects, so can just compare pointers
-
-    //  RecordStep is called for all G4Step
-    //  each is comprised of pre and post points, so 
-    //  see the same points twice : thus need to pick one to record
-    //  except for the last 
+    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
 
     unsigned int preFlag  = m_step_id == 0 ? m_gen : getPointFlag(pre);
     unsigned int postFlag = getPointFlag(post) ;
+
+    if(m_boundary_status == StepTooSmall ) return ;  
+
     bool last = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
 
+    RecordStepPoint(pre, preFlag, false );
+    if(last)
+        RecordStepPoint(post, postFlag, true );
 
-    RecordStepPoint(pre, record_id, m_step_id, preFlag, false );
     if(last)
     {
-        RecordStepPoint(post, record_id, m_step_id+1, postFlag, true );
+        assert(m_flags.size() == m_points.size());
+        bool issue = false ; 
+        for(unsigned int i=0 ; i < m_flags.size() ; i++) if(m_flags[i] == 0 || m_flags[i] == NAN_ABORT) issue = true ; 
+        if(m_record_id < 10 || issue) Dump("Recorder::RecordStep") ;
     }
+}
 
+void Recorder::Dump(const char* msg)
+{
+    LOG(info) << msg 
+              << " seqhis " << std::hex << m_seqhis << std::dec 
+              << " " << OpFlagSequenceString(m_seqhis) ;
 
-    //if(0)
-    if(m_photon_id < 10) 
+    for(unsigned int i=0 ; i<m_points.size() ; i++) 
     {
-        G4StepStatus preStatus = pre->GetStepStatus()  ;
-        G4StepStatus postStatus = post->GetStepStatus()  ;
-
-        const G4VProcess* preProcess = pre->GetProcessDefinedStep() ;
-        const G4String& preProcessName = preProcess ? preProcess->GetProcessName() : "NoPreProc" ; 
-
-        const G4VProcess* postProcess = post->GetProcessDefinedStep() ;
-        const G4String& postProcessName = postProcess ? postProcess->GetProcessName() : "NoPostProc" ; 
-
-        if(startPhoton)
-        LOG(info) 
-              << "\n\n"
-              << "Recorder::RecordStep" 
-              << " photon_id " << m_photon_id
-              ;
-
-        LOG(info) 
-              << " [" << m_step_id << "]"
-              << " " << OpFlagString(preFlag) << "/" << OpFlagString(postFlag) 
-              << " " << OpStepString(preStatus) << "/" << OpStepString(postStatus)
-              << " " << OpBoundaryString(m_boundary_status) 
-              << " " << preProcessName << "/" << postProcessName 
-              << " eid " << m_event_id 
-              << " pid " << m_photon_id 
-              << " rid " << record_id 
-              << "\n"
-              << Format(step) ; 
-              ;
+       std::cout << Format(m_points[i]) << std::endl ;
+       G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
+       if( i < m_points.size() - 1 && bst != FresnelRefraction) std::cout << OpBoundaryString(bst) << std::endl ; 
     }
-
 }
 
-
-
-#define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
-#define iround(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
-
-short shortnorm( float v, float center, float extent )
+void Recorder::Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status)
 {
-    // range of short is -32768 to 32767
-    // Expect no positions out of range, as constrained by the geometry are bouncing on,
-    // but getting times beyond the range eg 0.:100 ns is expected
-    //  
-    int inorm = iround(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
-    return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
-} 
-
-unsigned char uchar_( float f )  // f in range -1.:1. 
-{
-    int ipol = iround((f+1.f)*127.f) ;
-    return ipol ; 
+    m_points.push_back(new G4StepPoint(*point));
+    m_flags.push_back(flag);
+    m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
 }
 
-
-struct short4 
-{  
-   short x ; 
-   short y ; 
-   short z ; 
-   short w ; 
-};
-
-struct ushort4 
-{  
-   unsigned short x ; 
-   unsigned short y ; 
-   unsigned short z ; 
-   unsigned short w ; 
-};
-
-union hquad
-{   
-   short4   short_ ;
-   ushort4  ushort_ ;
-};  
-
-struct char4
+void Recorder::Clear()
 {
-   char x ; 
-   char y ; 
-   char z ; 
-   char w ; 
-};
+    for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
+    m_points.clear();
+    m_flags.clear();
+    m_bndstats.clear();
+}
 
-struct uchar4
+void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, bool last)
 {
-   unsigned char x ; 
-   unsigned char y ; 
-   unsigned char z ; 
-   unsigned char w ; 
-};
+    Collect(point, flag, m_boundary_status);
 
-union qquad
-{   
-   char4   char_   ;
-   uchar4  uchar_  ;
-};  
-
-
-
-void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int record_id, unsigned int slot, unsigned int flag, bool last)
-{
-    unsigned int slot_offset =  slot < m_steps_per_photon  ? slot : m_steps_per_photon - 1 ;
+    unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
+    m_slot += 1 ; 
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -267,15 +205,15 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int record_id,
     G4double weight = 1.0 ; 
 
     unsigned int material = 0 ; 
-    RSAVE(flag,material,slot_offset)
 
+    RSAVE(flag,material,slot )
 
     short posx = shortnorm(pos.x()/mm, m_center_extent.x, m_center_extent.w ); 
     short posy = shortnorm(pos.y()/mm, m_center_extent.y, m_center_extent.w ); 
     short posz = shortnorm(pos.z()/mm, m_center_extent.z, m_center_extent.w ); 
     short time_ = shortnorm(time/ns,    m_time_domain.x, m_time_domain.y );
 
-    m_records->setQuad(record_id, slot_offset, 0, posx, posy, posz, time_ );
+    m_records->setQuad(m_record_id, slot, 0, posx, posy, posz, time_ );
 
     unsigned char polx = uchar_( pol.x() );
     unsigned char poly = uchar_( pol.y() );
@@ -294,24 +232,20 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int record_id,
     polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;
     polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
 
-    m_records->setQuad(record_id, slot_offset, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
+    m_records->setQuad(m_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
 
     if(last)
     {
-        m_photons->setQuad(record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-        m_photons->setQuad(record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-        m_photons->setQuad(record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-        m_photons->setQuad(record_id, 3, 0, 0,0,0,0 );     // TODO: these flags
+        m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+        m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+        m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+        m_photons->setQuad(m_record_id, 3, 0, 0,0,0,0 );     // TODO: these flags
 
-        LOG(info) << "Recorder::RecordStepPoint"
-                  << " record_id " << record_id 
-                  << " slot_offset " << slot_offset
-                  << " seqhis " << std::hex << m_seqhis << std::dec 
-                  << " " << OpFlagSequenceString(m_seqhis) ;
-
-        unsigned long long* history = m_history->getValues() + 2*record_id ;
+        unsigned long long* history = m_history->getValues() + 2*m_record_id ;
         *(history+0) = m_seqhis ; 
         *(history+1) = m_seqmat ; 
     }
+
+
 }
 

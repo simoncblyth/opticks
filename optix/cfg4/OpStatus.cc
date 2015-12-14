@@ -29,10 +29,16 @@ std::string OpFlagSequenceString(const unsigned long long seqhis)
     for(unsigned int i=0 ; i < 16 ; i++)
     {
         unsigned long long f = (seqhis >> i*4) & 0xF ; 
-        if(f == 0) break ; 
-        unsigned int flg = 0x1 << (f - 1) ; 
-        ss << OpFlagString(flg);
-        ss << " " ;
+        if(f == 0) 
+        {
+            ss << "." ;
+        }
+        else
+        { 
+            unsigned int flg = 0x1 << (f - 1) ; 
+            ss << OpFlagString(flg);
+            ss << " " ;
+        }
     }
     return ss.str();
 }
@@ -127,6 +133,7 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
     {
         case FresnelRefraction:flag=BOUNDARY_TRANSMIT;break;
         case FresnelReflection:flag=BOUNDARY_REFLECT;break;
+        case StepTooSmall:flag=NAN_ABORT;break;
 
         case Undefined:
         case Transmission:
@@ -139,7 +146,6 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case Detection:
         case NotAtBoundary:
         case SameMaterial:
-        case StepTooSmall:
         case NoRINDEX:
         case PolishedLumirrorAirReflection:
         case PolishedLumirrorGlueReflection:
