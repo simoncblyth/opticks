@@ -336,6 +336,7 @@ class Index(object):
         assert len(cu.shape) == 2 and cu.shape[1] == 2 
         for msk,cnt in sorted(cu, key=lambda _:_[1], reverse=True):
             label = ihex_(msk) if hex_ else int(msk)
+            log.info("Index msk %d cnt %d label %s " % (msk, cnt, label))
             print "%20s %10d : %40s " % ( label, int(cnt), self(msk) ) 
         pass
 
@@ -357,7 +358,8 @@ class SeqHis(Index):
         self.fi = iabflags_() if abbrev else iflags_()
     def __call__(self, i):
         x = ihex_(i) 
-        return " ".join(map(lambda _:self.fi[int(_,16)], x[::-1] )) 
+        log.info("seqhis %s " % x )
+        return " ".join(map(lambda _:self.fi.get(int(_,16),'?%s?' % int(_,16) ), x[::-1] )) 
     def seqhis_int(self, s):
         f = self.f
         return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f[n], s.split(" ")))))
@@ -434,9 +436,14 @@ def path_(typ, tag, det="dayabay"):
 
 def load_(typ, tag, det="dayabay"):
     path = path_(typ,tag, det)
-    log.debug("loading %s " % path )
-    os.system("ls -l %s " % path)
-    return np.load(path)
+
+    if os.path.exists(path):
+        log.debug("loading %s " % path )
+        os.system("ls -l %s " % path)
+        return np.load(path)
+    pass
+    log.warning("load_ no such path %s " % path )  
+    return None
 
 
 gjspath_ = lambda _:os.path.expandvars("$IDPATH/%s" % _)

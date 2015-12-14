@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-std::string OpStatusString(const G4StepStatus status)
+std::string OpStepString(const G4StepStatus status)
 {
     std::stringstream ss ;
     std::string s ; 
@@ -18,11 +18,39 @@ std::string OpStatusString(const G4StepStatus status)
         case fUndefined:              s="Undefined"              ;break; 
         default:                      s="G4StepStatus-ERROR"     ;break;
     }
-    ss << " " << s << " " ; 
+    ss << s ; 
     return ss.str() ;
 }
 
-std::string OpStatusString(const G4OpBoundaryProcessStatus status)
+std::string OpFlagString(const unsigned int flag)
+{
+    std::stringstream ss ; 
+    std::string s ; 
+    switch(flag)
+    {
+        case 0:                s="ZERO";break;
+        case CERENKOV:         s="CERENKOV";break;
+        case SCINTILLATION:    s="SCINTILLATION" ;break; 
+        case MISS:             s="MISS" ;break; 
+        case BULK_ABSORB:      s="BULK_ABSORB" ;break; 
+        case BULK_REEMIT:      s="BULK_REEMIT" ;break; 
+        case BULK_SCATTER:     s="BULK_SCATTER" ;break; 
+        case SURFACE_DETECT:   s="SURFACE_DETECT" ;break; 
+        case SURFACE_ABSORB:   s="SURFACE_ABSORB" ;break; 
+        case SURFACE_DREFLECT: s="SURFACE_DREFLECT" ;break; 
+        case SURFACE_SREFLECT: s="SURFACE_SREFLECT" ;break; 
+        case BOUNDARY_REFLECT: s="BOUNDARY_REFLECT" ;break; 
+        case BOUNDARY_TRANSMIT:s="BOUNDARY_TRANSMIT" ;break; 
+        case TORCH:            s="TORCH" ;break; 
+        case NAN_ABORT:        s="NAN_ABORT" ;break; 
+        default:               s="ERROR" ;break; 
+    }
+    ss << s ; 
+    return ss.str();
+}
+
+
+std::string OpBoundaryString(const G4OpBoundaryProcessStatus status)
 {
     std::stringstream ss ; 
     std::string s ; 
@@ -69,8 +97,64 @@ std::string OpStatusString(const G4OpBoundaryProcessStatus status)
         case GroundVM2000GlueReflection:s="GroundVM2000GlueReflection";break;
         case Dichroic:s="Dichroic";break;
     }
-    ss << " " << s << " " ; 
+    ss << s ; 
     return ss.str();
 }
+
+
+
+
+
+unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
+{
+    unsigned int flag = 0 ; 
+    switch(status)
+    {
+        case FresnelRefraction:flag=BOUNDARY_TRANSMIT;break;
+        case FresnelReflection:flag=BOUNDARY_REFLECT;break;
+
+        case Undefined:
+        case Transmission:
+        case TotalInternalReflection:
+        case LambertianReflection:
+        case LobeReflection:
+        case SpikeReflection:
+        case BackScattering:
+        case Absorption:
+        case Detection:
+        case NotAtBoundary:
+        case SameMaterial:
+        case StepTooSmall:
+        case NoRINDEX:
+        case PolishedLumirrorAirReflection:
+        case PolishedLumirrorGlueReflection:
+        case PolishedAirReflection:
+        case PolishedTeflonAirReflection:
+        case PolishedTiOAirReflection:
+        case PolishedTyvekAirReflection:
+        case PolishedVM2000AirReflection:
+        case PolishedVM2000GlueReflection:
+        case EtchedLumirrorAirReflection:
+        case EtchedLumirrorGlueReflection:
+        case EtchedAirReflection:
+        case EtchedTeflonAirReflection:
+        case EtchedTiOAirReflection:
+        case EtchedTyvekAirReflection:
+        case EtchedVM2000AirReflection:
+        case EtchedVM2000GlueReflection:
+        case GroundLumirrorAirReflection:
+        case GroundLumirrorGlueReflection:
+        case GroundAirReflection:
+        case GroundTeflonAirReflection:
+        case GroundTiOAirReflection:
+        case GroundTyvekAirReflection:
+        case GroundVM2000AirReflection:
+        case GroundVM2000GlueReflection:
+        case Dichroic:
+                      flag=0;break;
+    }
+    return flag ; 
+}
+
 
 

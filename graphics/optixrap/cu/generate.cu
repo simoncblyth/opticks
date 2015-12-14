@@ -52,6 +52,7 @@ rtDeclareVariable(unsigned int,  record_max, , );
 rtDeclareVariable(rtObject,      top_object, , );
 
 // beyond MAXREC overwrite save into top slot
+// TODO: check shift = slot_offset*4 rather than slot*4  ? 
  
 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
 {    \
@@ -331,16 +332,10 @@ RT_PROGRAM void generate()
     rng_states[photon_id] = rng ;
 }
 
-
 RT_PROGRAM void exception()
 {
     //const unsigned int code = rtGetExceptionCode();
     rtPrintExceptionDetails();
     photon_buffer[launch_index.x] = make_float4(-1.f, -1.f, -1.f, -1.f);
 }
-
-
-
-
-
 

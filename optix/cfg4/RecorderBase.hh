@@ -21,9 +21,9 @@ class RecorderBase {
     virtual unsigned int getRecordMax() = 0 ; 
     virtual unsigned int getPhotonId() = 0 ; 
     virtual unsigned int getStepId() = 0 ; 
-    virtual void setStepStatus(G4OpBoundaryProcessStatus) = 0;
+    virtual void setBoundaryStatus(G4OpBoundaryProcessStatus) = 0;
  
-    virtual void save(const char*) {};
+    virtual void save() {};
 
 };
 

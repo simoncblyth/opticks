@@ -4,7 +4,7 @@ import os, logging
 import numpy as np
 from env.python.utils import *
 
-from env.numerics.npy.types import seqhis_table
+from env.numerics.npy.types import SeqHis
 from env.numerics.npy.types import *  # TODO: spell out imports
 
 
@@ -96,6 +96,9 @@ class Evt(object):
 
         # photon level qtys, 
         # ending values as opposed to the compressed step by step records
+
+        if self.ox is None:return
+
         self.wavelength = self.ox[:,2,W] 
         self.whitepoint = self.whitepoint_(self.wavelength)
 
@@ -120,7 +123,11 @@ class Evt(object):
     def history_table(self):
         seqhis = self.seqhis
         cu = count_unique(seqhis)
-        seqhis_table(cu)
+
+        sh = SeqHis()
+        sh.table(cu, hex_=True)
+        self.sh = sh
+
         tot = cu[:,1].astype(np.int32).sum()
         print "tot:", tot
         return cu

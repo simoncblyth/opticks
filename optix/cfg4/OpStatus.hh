@@ -29,7 +29,10 @@ enum
 #include "G4OpBoundaryProcess.hh"
 #include <string>
 
-std::string OpStatusString(const G4StepStatus status);
-std::string OpStatusString(const G4OpBoundaryProcessStatus status);
+std::string OpStepString(const G4StepStatus status);
 
+std::string  OpBoundaryString(const G4OpBoundaryProcessStatus status);
+unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status);
+
+std::string OpFlagString(const unsigned int flag);
 

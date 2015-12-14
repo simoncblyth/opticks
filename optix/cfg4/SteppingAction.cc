@@ -42,8 +42,7 @@ G4OpBoundaryProcessStatus SteppingAction::GetOpBoundaryProcessStatus()
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
-
-  m_recorder->setStepStatus(GetOpBoundaryProcessStatus());
-  m_recorder->RecordStep(step); 
+    m_recorder->setBoundaryStatus(GetOpBoundaryProcessStatus());
+    m_recorder->RecordStep(step); 
 }
 

@@ -29,20 +29,34 @@ int parse(char* arg)
     return iarg ;   
 }
 
+
+
 int main(int argc, char** argv)
 {
     printf("%s\n", argv[0]);
 
     int nevt = argc > 1 ? parse(argv[argc-1]) : 0 ;
-    if(!nevt) nevt = 1 ; 
 
-    // G4 cant handle large numbers of primaries
-    // so split the propagation into multiple "events" 
-    unsigned int photons_per_event = 10000 ; 
+    const char* typ = "torch" ;
+    const char* tag = "-1" ;
+    const char* det = "rainbow" ;
+
+    unsigned int photons_per_event(0) ; 
+    if(nevt==0) 
+    {
+        nevt = 1 ; 
+        photons_per_event = 10 ;
+    }
+    else
+    {
+        photons_per_event = 10000 ; 
+    } 
+
     unsigned int nphotons = nevt*photons_per_event ; 
 
     LOG(info) << argv[0] 
               << " nevt " << nevt 
+              << " photons_per_event " << photons_per_event
               << " nphotons " << nphotons
               ;
 
@@ -50,12 +64,12 @@ int main(int argc, char** argv)
     runManager->SetUserInitialization(new PhysicsList());
     runManager->SetUserInitialization(new DetectorConstruction());
 
-    RecorderBase* recorder = new Recorder(nphotons,10, photons_per_event); 
+    RecorderBase* recorder = new Recorder(typ,tag,det,nphotons,10, photons_per_event); 
     runManager->SetUserInitialization(new ActionInitialization(recorder));
     runManager->Initialize();
     runManager->BeamOn(nevt);
 
-    recorder->save("/tmp/recorder.npy");
+    recorder->save();
 
     delete runManager;
     return 0 ; 

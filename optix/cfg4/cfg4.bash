@@ -153,12 +153,18 @@ cfg4-install(){
    cfg4-make install
 }
 
-cfg4--(){
+cfg4---(){
    cfg4-wipe
    cfg4-cmake
    cfg4-make
    cfg4-install
 }
+
+cfg4--(){
+   cfg4-make
+   cfg4-install
+}
+
 
 cfg4-export()
 {

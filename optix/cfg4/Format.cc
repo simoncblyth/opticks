@@ -72,7 +72,7 @@ std::string Format(const G4StepPoint* point, const char* msg)
     ss << "(" << msg << " ;" 
        << std::setw(15) << pvName 
        << std::setw(15) << processName 
-       << std::setw(15) << OpStatusString(status)
+       << std::setw(15) << OpStepString(status)
        << Format(pos, "pos")
        << Format(dir, "dir")
        << Format(pol, "pol")
