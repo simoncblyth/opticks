@@ -18,10 +18,11 @@ int main(int argc, char** argv)
     bool noindex = app.hasOpt("noindex");
     bool noevent = app.hasOpt("noevent");
     bool save    = app.hasOpt("save");
+    bool load    = app.hasOpt("load");
+    if(load) save = false ; 
 
-    if(!nooptix)
+    if(!nooptix && !load)
     {
-
         app.loadGenstep();
 
         app.uploadEvt();    // allocates GPU buffers with OpenGL glBufferData
@@ -51,6 +52,11 @@ int main(int argc, char** argv)
 
         app.makeReport();
     }
+    else if(load)
+    {
+        app.loadEvtFromFile();
+    }
+   
 
     app.prepareGUI();
 

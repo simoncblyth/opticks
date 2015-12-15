@@ -253,9 +253,15 @@ int App::config(int argc, char** argv)
     m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)GColors::MATERIAL_COLOR_OFFSET );
     m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)GColors::FLAG_COLOR_OFFSET );
     m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)GColors::PSYCHEDELIC_COLOR_OFFSET );
-
+    // TODO: add spectral colors in wavelength bins to color texture
 
     m_evt  = hasOpt("noevent") ? NULL : new NumpyEvt ; 
+
+
+
+
+
+
     m_scene->setNumpyEvt(m_evt);
 
 #ifdef NPYSERVER
@@ -552,6 +558,18 @@ TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
 }
 
 
+unsigned int App::getSourceCode()
+{
+    unsigned int code ; 
+    if(     m_fcfg->hasOpt("cerenkov"))      code = CERENKOV ;
+    else if(m_fcfg->hasOpt("scintillation")) code = SCINTILLATION ;
+    else if(m_fcfg->hasOpt("torch"))         code = TORCH ;
+    else                                     code = TORCH ;
+    return code ; 
+}
+
+
+
 void App::loadGenstep()
 {
     if(hasOpt("nooptix|noevent")) 
@@ -559,12 +577,12 @@ void App::loadGenstep()
         LOG(warning) << "App::loadGenstep skip due to --nooptix/--noevent " ;
         return ;
     }
-    unsigned int code ; 
-    if(     m_fcfg->hasOpt("cerenkov"))      code = CERENKOV ;
-    else if(m_fcfg->hasOpt("scintillation")) code = SCINTILLATION ;
-    else if(m_fcfg->hasOpt("torch"))         code = TORCH ;
-    else                                     code = TORCH ;
 
+
+
+    // TODO: move into NumpyEvt 
+
+    unsigned int code = getSourceCode();
     std::string typ = photon_enum_label(code) ; 
     boost::algorithm::to_lower(typ);
 
@@ -580,6 +598,8 @@ void App::loadGenstep()
     m_parameters->add<std::string>("Tag", tag );
     m_parameters->add<std::string>("Cat", cat );
     m_parameters->add<std::string>("Detector", det );
+
+
 
 
     Lookup* lookup = m_ggeo->getLookup();
@@ -665,6 +685,16 @@ void App::loadGenstep()
     m_parameters->add<unsigned int>("NumRecords", m_evt->getNumRecords());
 
 }
+
+
+
+void App::loadEvtFromFile()
+{
+
+
+}
+
+
 
 
 NPY<float>* App::loadGenstepFromFile(const std::string& typ, const std::string& tag, const std::string& det)
@@ -954,6 +984,7 @@ void App::downloadEvt()
 {
     if(!m_evt) return ; 
 
+    // TODO: move into NumpyEvt 
 
     NPY<float>* dpho = m_evt->getPhotonData();
     Rdr::download(dpho);
@@ -1180,45 +1211,11 @@ void App::indexBoundaries()
     (*m_timer)("indexBoundariesOld"); 
 
 
-/*
-TODO: investigate the zero slot artifact
-
-App::indexBoundaries : num_unique 31 
-               0         0      ## hmm this is an empty slot ...
-              18    179870
-               0    158960
-              13     56510
-            ....
-             -55        29
-              20        26
-              22         1
-
-Comparing with np the dump matches except for the zero slot artifact::
-
-    In [1]: p = np.load("/usr/local/env/dayabay/oxcerenkov/1.npy")
-
-    In [2]: b = p[:,3,0].view(np.int32)
-
-    In [3]: c = count_unique(b)
-
-    In [5]: c[c[:,1].argsort()[::-1]]
-    Out[5]: 
-    array([[    18, 179870],
-           [     0, 158960],
-           [    13,  56510],
-           ...
-           [   -55,     29],
-           [    20,     26],
-           [    22,      1]])
-
-*/
-
 }
 
 
 void App::indexEvt()
 {
-
    /*
 
        INTEROP mode GPU buffer access C:create R:read W:write

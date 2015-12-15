@@ -186,12 +186,17 @@ ggv-rainbow()
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --save --tag $tag --cat rainbow
+            --tag $tag --cat rainbow \
+            --load 
+
+
+   # --load
+   #      needs to be used with exactly the  same testconfig as that used at creation ? 
+   #      need to somehow persist the test geometry  ??
+   #      does not need the torch config 
+   #      some of the others like animtimemax and timemax can ride in the fdom/idom/..
 
 }
-
-
-
 
 
 
