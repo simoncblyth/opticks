@@ -11,17 +11,27 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "G4SPSPosDistribution.hh"
+#include "G4SPSAngDistribution.hh"
+#include "G4SPSEneDistribution.hh"
+#include "G4SPSRandomGenerator.hh"
+
 void PrimaryGeneratorAction::init()
 {
     unsigned int npho = m_recorder->getPhotonsPerEvent();
-    m_generator = MakeGenerator(npho);
+    bool isspol = m_recorder->getIncidentSphereSPolarized();
+    m_generator = MakeGenerator(npho, isspol);
 }
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
     m_generator->GeneratePrimaryVertex(event);
 }
-G4VPrimaryGenerator* PrimaryGeneratorAction::MakeGenerator(unsigned int n)
+
+G4VPrimaryGenerator* PrimaryGeneratorAction::MakeGenerator(unsigned int n, bool isspol)
 {
+    // TODO: pass in some object with below config 
+
     OpSource* src = new OpSource();
     G4SPSPosDistribution* posGen = src->GetPosDist();
     G4SPSAngDistribution* angGen = src->GetAngDist();
@@ -44,6 +54,8 @@ G4VPrimaryGenerator* PrimaryGeneratorAction::MakeGenerator(unsigned int n)
     src->SetParticleTime(time);
     src->SetParticlePosition(pos);
     src->SetParticlePolarization(pol);
+    // specific custom S-polarization for rainbow geometry with incident planar disc of photons
+    src->setIncidentSphereSPolarized(isspol);
 
     posGen->SetPosDisType("Plane");
     posGen->SetPosDisShape("Circle");

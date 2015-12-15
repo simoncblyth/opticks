@@ -18,7 +18,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void init();
   public:
     virtual void GeneratePrimaries(G4Event*);
-    G4VPrimaryGenerator* MakeGenerator(unsigned int n);
+    G4VPrimaryGenerator* MakeGenerator(unsigned int n, bool isspol=false);
   private:
     G4VPrimaryGenerator*  m_generator ;
     RecorderBase*         m_recorder ;  

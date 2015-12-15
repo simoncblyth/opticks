@@ -47,6 +47,9 @@ class Recorder : public RecorderBase {
         void Dump(const char* msg="Recorder::Dump");
         void save();
    public:
+        void setIncidentSphereSPolarized(bool isspol);
+        bool getIncidentSphereSPolarized();
+   public:
         unsigned int getEventId();
         unsigned int getPhotonId();
         unsigned int getStepId();
@@ -72,6 +75,7 @@ class Recorder : public RecorderBase {
         unsigned int m_steps_per_photon ; 
         unsigned int m_photons_per_event ; 
 
+        bool         m_isspol ;
         unsigned int m_event_id ; 
         unsigned int m_photon_id ; 
         unsigned int m_step_id ; 
@@ -111,6 +115,7 @@ inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsi
    m_record_max(record_max),
    m_steps_per_photon(steps_per_photon),
    m_photons_per_event(photons_per_event),
+   m_isspol(false),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
    m_step_id(UINT_MAX),
@@ -130,6 +135,15 @@ inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsi
    m_boundary_domain(0.f,0.f,0.f,0.f)
 {
    init();
+}
+
+inline void Recorder::setIncidentSphereSPolarized(bool isspol)
+{
+    m_isspol = isspol ; 
+}
+inline bool Recorder::getIncidentSphereSPolarized()
+{
+    return m_isspol ; 
 }
 
 

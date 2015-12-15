@@ -30,6 +30,9 @@ class RecorderBase {
     virtual void setStepId(unsigned int) = 0 ; 
     virtual void startPhoton() = 0 ; 
 
+    virtual void setIncidentSphereSPolarized(bool) = 0 ;
+    virtual bool getIncidentSphereSPolarized() = 0 ;
+
     virtual unsigned int getStepId() = 0 ; 
     virtual void setBoundaryStatus(G4OpBoundaryProcessStatus) = 0;
     virtual void setCenterExtent(const glm::vec4&) = 0;

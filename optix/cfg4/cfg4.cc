@@ -40,7 +40,8 @@ int main(int argc, char** argv)
     int nevt = argc > 1 ? parse(argv[argc-1]) : 0 ;
 
     const char* typ = "torch" ;
-    const char* tag = "-1" ;
+    //const char* tag = "-5" ;
+    const char* tag = "-6" ;
     const char* det = "rainbow" ;
 
     unsigned int photons_per_event(0) ; 
@@ -64,6 +65,9 @@ int main(int argc, char** argv)
 
     DetectorConstruction* dc = new DetectorConstruction() ; 
     RecorderBase* recorder = new Recorder(typ,tag,det,nphotons,10, photons_per_event); 
+
+    if(strcmp(tag, "-5") == 0)  recorder->setIncidentSphereSPolarized(true) ;
+
 
     G4RunManager* runManager = new G4RunManager;
     runManager->SetUserInitialization(new PhysicsList());

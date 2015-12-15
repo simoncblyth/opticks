@@ -325,7 +325,7 @@ class Scatter(object):
     @classmethod
     def combined_intensity_plot(cls, pp=[1,2,3,4], log_=True, ylim=None, flip=False, scale=1, mask=False):
         tsp = cls.combined_intensity(pp)
-        cls._intensity_plot(tsp, log_=log_, ylim=ylim, flip=flip, scale=scale, mask=mask)
+        cls._intensity_plot(tsp, log_=log_, ylim=ylim, mask=mask)
             
     @classmethod
     def _intensity_plot(cls, tsp, log_=True, ylim=None, xlim=None, mask=False):
@@ -356,23 +356,16 @@ class Scatter(object):
 
 
 
-
-def scatter_plot_all(pevt, sevt):
-    s_dv0 = sevt.deviation_angle()
-    p_dv0 = pevt.deviation_angle()
+def scatter_plot_all(ax, p_evt, s_evt):
+    s_dv = s_evt.zdeviation_angle()
+    p_dv = p_evt.zdeviation_angle()
     db = np.arange(0,360,1)
 
-    ax = fig.add_subplot(1,1,1)
-
-    for i,d in enumerate([s_dv0/deg, p_dv0/deg]):
+    for i,d in enumerate([s_dv/deg, p_dv/deg]):
         ax.set_xlim(0,360)
         ax.set_ylim(1,1e5)
         cnt, bns, ptc = ax.hist(d, bins=db,  log=True, histtype='step')
     pass
-
-
-
-
 
 
 def _scatter_plot_one(ax, sc, bins, xlim=None, ylim=None, log_=True):
@@ -559,12 +552,33 @@ if 1:
     p_evt = Evt(tag=ppol, det="rainbow", label="P")
     s_evt = Evt(tag=spol, det="rainbow", label="S")
 
+if 1:
+    spol_g4,ppol_g4 = "-5", "-6"
+    p_evt_g4 = Evt(tag=ppol_g4, det="rainbow", label="P G4")
+    s_evt_g4 = Evt(tag=spol_g4, det="rainbow", label="S G4")
+
 if 0:
     fig = plt.figure()
     fig.suptitle("Deviation angles without selection")
     ax = fig.add_subplot(1,1,1)
-    scatter_plot(p_evt, s_evt)
-    Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
+    scatter_plot_all(ax, p_evt, s_evt)
+    #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
+
+if 1:
+    fig = plt.figure()
+    fig.suptitle("Deviation angles without selection, cf G4")
+
+    ylim = [1e0,1e5]
+    ax = fig.add_subplot(2,1,1)
+    scatter_plot_all(ax, p_evt, s_evt)
+    ax.set_ylim(ylim)
+
+    ax = fig.add_subplot(2,1,2)
+    scatter_plot_all(ax, p_evt_g4, s_evt_g4)
+    ax.set_ylim(ylim)
+
+    #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
+
 
 if 0:
     fig = plt.figure()
@@ -574,7 +588,7 @@ if 0:
     scatter_plot_split(p_evt, s_evt, pp=range(0,8), ylim=ylim)
     fig.subplots_adjust(hspace=0)
 
-if 1:
+if 0:
     fig = plt.figure()
     p = 2
     fig.suptitle("Scatter angle for %s" % Scatter.seqhis_(p))

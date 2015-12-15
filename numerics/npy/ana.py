@@ -162,13 +162,35 @@ class Evt(object):
     def seqhis_or_not(self, args):
         return np.logical_not(self.seqhis_or(args))    
 
+
+    p0 = property(lambda self:self.rpost_(0))
+    p_out = property(lambda self:self.ox[:,1, :3], doc="final/last direction (bounce limited)")
+
     def deviation_angle(self, side=None, incident=None):
         """
         Deviation angle for parallel squadrons of incident photons 
         without assuming a bounce count
         """
-        p_out = self.ox[:,1, :3]  # final/last direction (bounce limited)
-        return self._deviation_angle(p_out, side=side, incident=incident)
+        return self._deviation_angle(self.p_out, side=side, incident=incident)
+
+    def zside(self):
+        """
+        Use z coordinate of initial position to define side of incidence
+        unit vector.
+     
+        Those at zero are aribitrarily put on one side
+
+        This can be used for defining 0-360 degrees deviation angles 
+        """
+        z0 = self.p0[:,2]
+        zs = np.piecewise( z0, [z0>0, z0<0, z0==0], [-1,1,1] ) 
+        zside  = np.zeros((len(zs),3))
+        zside[:,2] = zs 
+        return zside 
+
+    def zdeviation_angle(self, incident=None):
+        zside = self.zside()
+        return self._deviation_angle(self.p_out, side=zside, incident=incident)  
 
     @classmethod
     def _deviation_angle(cls, p_out, side=None, incident=None):
@@ -179,14 +201,17 @@ class Evt(object):
         if incident is None:
             incident = np.array([1,0,0]) 
 
+        if len(side.shape) == 1:
+            side = np.tile(side, len(p_out)).reshape(-1,3)
+
+        if len(incident.shape) == 1:
+            incident  = np.tile(incident, len(p_out)).reshape(-1,3)
 
         assert np.sum(side*incident) == 0., "side vector must be perpendicular to incident vectors"
-        side = np.tile(side, len(p_out)).reshape(-1,3)
-        p_in  = np.tile(incident, len(p_out)).reshape(-1,3)
 
         cside = costheta_(p_out, side)
 
-        cdv = costheta_(p_in, p_out)
+        cdv = costheta_(incident, p_out)
         dv = np.piecewise( cdv, [cside>=0, cside<0], [np.arccos,lambda _:2*np.pi - np.arccos(_)])  
 
         return dv 
@@ -202,8 +227,6 @@ class Evt(object):
         nrm = p1 - cen 
         ct = costheta_(nrm, -pin)
         return ct 
-
-
 
 
     def whitepoint_(self, w=None):

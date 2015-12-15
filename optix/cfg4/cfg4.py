@@ -11,7 +11,10 @@ deg = np.pi/180.
 
 
 if __name__ == '__main__':
-    evt = Evt(tag="-1", det="rainbow", label="G4")
-    evt.history_table()
+    s_evt = Evt(tag="-5", det="rainbow", label="G4 S")
+    p_evt = Evt(tag="-6", det="rainbow", label="G4 P")
+
+    s_evt.history_table()
+    p_evt.history_table()
 
 

@@ -143,7 +143,8 @@ ggv-rainbow()
     #local material=GlassSchottF2
     local material=MainH2OHale
     local surfaceNormal=0,1,0
-    local azimuth=-0.25,0.25
+    #local azimuth=-0.25,0.25
+    local azimuth=0,1
     local wavelength=0
     #local azimuth=0,1
 
@@ -155,7 +156,7 @@ ggv-rainbow()
 
     local torch_config=(
                  type=discIntersectSphere
-                 photons=500000
+                 photons=1000000
                  mode=${pol}pol
                  polarization=$surfaceNormal
                  frame=-1
