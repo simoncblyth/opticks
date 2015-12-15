@@ -2,9 +2,6 @@
 #include "Format.hh"
 #include "OpStatus.hh"
 
-#include "G4RunManager.hh"
-#include "G4Event.hh"
-
 #include "G4Track.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
@@ -69,23 +66,12 @@ void Recorder::save()
 }
 
 
-#define RSAVE(flag, material, slot)  \
-{    \
-    unsigned int shift = slot*4 ; \
-    unsigned long long his = ffs(flag) & 0xF ; \
-    unsigned long long mat = material < 0xF ? material : 0xF ; \
-    m_seqhis |= his << shift ; \
-    m_seqmat |= mat << shift ; \
-}   \
-
-unsigned int Recorder::getPointFlag(const G4StepPoint* point)
+unsigned int Recorder::getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst)
 {
     G4StepStatus status = point->GetStepStatus()  ;
-
     // TODO: cache the relevant process objects, so can just compare pointers ?
     const G4VProcess* process = point->GetProcessDefinedStep() ;
     const G4String& processName = process ? process->GetProcessName() : "NoProc" ; 
-
     bool transportation = strcmp(processName,"Transportation")==0 ;
 
     unsigned int flag(0);
@@ -99,9 +85,40 @@ unsigned int Recorder::getPointFlag(const G4StepPoint* point)
     }
     else if(transportation && status == fGeomBoundary )
     {
-        flag = OpBoundaryFlag(m_boundary_status) ; 
+        flag = OpBoundaryFlag(bst) ;
     } 
     return flag ; 
+}
+
+
+void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status)
+{
+    // this is invoked before RecordStep is called from SteppingAction
+    m_prior_boundary_status = m_boundary_status ; 
+    m_boundary_status = boundary_status ; 
+}
+
+void Recorder::startPhoton()
+{
+    if(m_record_id % 10000 == 0)
+    LOG(info) << "Recorder::startPhoton"
+              << " event_id " << m_event_id 
+              << " photon_id " << m_photon_id 
+              << " record_id " << m_record_id 
+              << " step_id " << m_step_id 
+              ;
+
+    assert(m_step_id == 0);
+
+    m_prior_boundary_status = Undefined ; 
+    m_boundary_status = Undefined ; 
+
+    m_seqhis = 0 ; 
+    //m_seqhis_select = 0xfbbbbbbbcd ;
+    m_seqhis_select = 0x8cbbbbbc0 ;
+    m_seqmat = 0 ; 
+    m_slot = 0 ; 
+    Clear();
 }
 
 void Recorder::RecordStep(const G4Step* step)
@@ -109,75 +126,79 @@ void Recorder::RecordStep(const G4Step* step)
     // seeing duplicate StepPoints differ-ing only in the volume
     // skip these by early exit
     // TODO:  more careful handling for correct material recording
-    //
-
-
-    unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-
-    G4Track* track = step->GetTrack();
-    G4int photon_id = track->GetTrackID() - 1;
-    G4int step_id  = track->GetCurrentStepNumber() - 1 ;
-
-    setEventId(eid);
-    setPhotonId(photon_id);   
-    setStepId(step_id);
-
-    unsigned int record_id = m_photons_per_event*m_event_id + m_photon_id ; 
-    setRecordId(record_id);
-
-    if(record_id >= m_record_max) return ; 
-
-    bool first = step_id == 0; 
-    if(first)
-    {
-        m_seqhis = 0 ; 
-        m_seqmat = 0 ; 
-        m_slot = 0 ; 
-        Clear();
-    }
 
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
-    unsigned int preFlag  = m_step_id == 0 ? m_gen : getPointFlag(pre);
-    unsigned int postFlag = getPointFlag(post) ;
+    unsigned int preFlag(0);
+    unsigned int postFlag(0);
 
-    if(m_boundary_status == StepTooSmall ) return ;  
+    if(m_step_id == 0)
+    {
+        preFlag = m_gen ;         
+        postFlag = getPointFlag(post, m_boundary_status) ;
+    }
+    else
+    {
+        preFlag  = getPointFlag(pre, m_prior_boundary_status);
+        postFlag = getPointFlag(post, m_boundary_status) ;
+    }
 
     bool last = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
 
-    RecordStepPoint(pre, preFlag, false );
+
+    if( m_prior_boundary_status != StepTooSmall)
+    RecordStepPoint(pre, preFlag, m_prior_boundary_status, false );
+
     if(last)
-        RecordStepPoint(post, postFlag, true );
+        RecordStepPoint(post, postFlag, m_boundary_status, true );
+    
 
     if(last)
     {
-        assert(m_flags.size() == m_points.size());
-        bool issue = false ; 
-        for(unsigned int i=0 ; i < m_flags.size() ; i++) if(m_flags[i] == 0 || m_flags[i] == NAN_ABORT) issue = true ; 
-        if(m_record_id < 10 || issue) Dump("Recorder::RecordStep") ;
+        bool issue = hasIssue();
+        if(m_record_id < 10 || issue || m_seqhis == m_seqhis_select ) Dump("Recorder::RecordStep") ;
     }
 }
+
+bool Recorder::hasIssue()
+{
+    unsigned int npoints = m_points.size() ;
+    assert(m_flags.size() == npoints);
+    assert(m_bndstats.size() == npoints);
+
+    bool issue = false ; 
+    for(unsigned int i=0 ; i < npoints ; i++) 
+    {
+       if(m_flags[i] == 0 || m_flags[i] == NAN_ABORT) issue = true ; 
+    }
+    return issue ; 
+}
+
 
 void Recorder::Dump(const char* msg)
 {
     LOG(info) << msg 
+              << " record_id " << std::setw(7) << m_record_id
               << " seqhis " << std::hex << m_seqhis << std::dec 
               << " " << OpFlagSequenceString(m_seqhis) ;
 
     for(unsigned int i=0 ; i<m_points.size() ; i++) 
     {
-       std::cout << Format(m_points[i]) << std::endl ;
+       //unsigned long long seqhis = m_seqhis_dbg[i] ;
        G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
-       if( i < m_points.size() - 1 && bst != FresnelRefraction) std::cout << OpBoundaryString(bst) << std::endl ; 
+       std::string bs = OpBoundaryAbbrevString(bst) ;
+       //std::cout << std::hex << seqhis << std::dec << std::endl ; 
+       std::cout << std::setw(7) << i << " " << Format(m_points[i], bs.c_str()) << std::endl ;
     }
 }
 
-void Recorder::Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status)
+void Recorder::Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis)
 {
     m_points.push_back(new G4StepPoint(*point));
     m_flags.push_back(flag);
     m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
+    //m_seqhis_dbg.push_back(seqhis);
 }
 
 void Recorder::Clear()
@@ -186,13 +207,33 @@ void Recorder::Clear()
     m_points.clear();
     m_flags.clear();
     m_bndstats.clear();
+    //m_seqhis_dbg.clear();
 }
 
-void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, bool last)
+
+void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool last)
 {
-    Collect(point, flag, m_boundary_status);
+    if(flag == 0x1 << 14) LOG(warning) << "Recorder::RecordStepPoint bad flag " << flag ;
+
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
+    unsigned int material = 0 ; 
+
+    // * masked combination needed (not just m_seqhis |= ) 
+    //   in order to correctly handle truncation overwrite
+    //
+    // * all ingredients must be 64bit otherwise slips down to 32bit 
+    //   causing wraparounds, causing bad flags
+
+    unsigned long long shift = slot*4ull ; 
+    unsigned long long msk = 0xFull << shift ; 
+    unsigned long long his = ffs(flag) & 0xFull ; 
+    unsigned long long mat = material < 0xFull ? material : 0xFull ; 
+    m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
+    m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
+
+    Collect(point, flag, boundary_status, m_seqhis);
+
     m_slot += 1 ; 
 
     const G4ThreeVector& pos = point->GetPosition();
@@ -203,10 +244,6 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, bool
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ; 
-
-    unsigned int material = 0 ; 
-
-    RSAVE(flag,material,slot )
 
     short posx = shortnorm(pos.x()/mm, m_center_extent.x, m_center_extent.w ); 
     short posy = shortnorm(pos.y()/mm, m_center_extent.y, m_center_extent.w ); 
@@ -245,7 +282,5 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, bool
         *(history+0) = m_seqhis ; 
         *(history+1) = m_seqmat ; 
     }
-
-
 }
 

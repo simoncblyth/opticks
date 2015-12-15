@@ -49,10 +49,6 @@ std::string Format(const G4Track* track, const char* msg)
     return ss.str();
 }
 
-
-
-
-
 std::string Format(const G4StepPoint* point, const char* msg)
 {
     const G4ThreeVector& pos = point->GetPosition();
@@ -76,9 +72,9 @@ std::string Format(const G4StepPoint* point, const char* msg)
        << std::setw(15) << pvName 
        << std::setw(15) << processName 
        << std::setw(20) << OpStepString(status)
-       << Format(pos, "pos", 10)
-       << Format(dir, "dir", 10)
-       << Format(pol, "pol", 10)
+       << Format(pos, "pos", 8)
+       << Format(dir, "dir", 8)
+       << Format(pol, "pol", 8)
        << std::setprecision(3) << std::fixed
        << " ns " << std::setw(6) << time/ns 
        << " nm " << std::setw(6) << wavelength/nm

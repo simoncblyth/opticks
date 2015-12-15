@@ -343,10 +343,17 @@ class Evt(object):
         """ 
         pxpy = recs[:,irec,1,0]
         pzwl = recs[:,irec,1,1]
+        m1m2 = recs[:,irec,1,2]
+        bdfl = recs[:,irec,1,3]
 
         ipx = pxpy & np.uint16(0xFF)
         ipy = (pxpy & np.uint16(0xFF00)) >> 8
         ipz = pzwl & np.uint16(0xFF) 
+
+        m1 = m1m2 & np.uint16(0xFF)  
+        m2 = (m1m2 & np.uint16(0xFF00)) >> 8 
+        bd = bdfl & np.uint16(0xFF)  
+        fl = (bdfl & np.uint16(0xFF00)) >> 8   
 
         px = ipx.astype(np.float32)/127. - 1.
         py = ipy.astype(np.float32)/127. - 1.
@@ -358,6 +365,22 @@ class Evt(object):
         pol[:,2] = pz
 
         return pol
+
+    def recflags(self, recs, irec):
+        m1m2 = recs[:,irec,1,2]
+        bdfl = recs[:,irec,1,3]
+
+        m1 = m1m2 & np.uint16(0xFF)  
+        m2 = (m1m2 & np.uint16(0xFF00)) >> 8 
+        bd = bdfl & np.uint16(0xFF)  
+        fl = (bdfl & np.uint16(0xFF00)) >> 8   
+
+        flgs = np.empty( (len(m1), 4), dtype=np.int32)
+        flgs[:,0] = m1
+        flgs[:,1] = m2
+        flgs[:,2] = bd
+        flgs[:,3] = fl
+        return flgs
 
 
     def post_center_extent(self):

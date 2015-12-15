@@ -22,6 +22,14 @@ class RecorderBase {
     virtual unsigned int getPhotonsPerEvent() = 0 ; 
     virtual unsigned int getRecordMax() = 0 ; 
     virtual unsigned int getPhotonId() = 0 ; 
+    virtual unsigned int defineRecordId() = 0 ; 
+
+    virtual void setEventId(unsigned int) = 0 ; 
+    virtual void setPhotonId(unsigned int) = 0 ; 
+    virtual void setRecordId(unsigned int) = 0 ; 
+    virtual void setStepId(unsigned int) = 0 ; 
+    virtual void startPhoton() = 0 ; 
+
     virtual unsigned int getStepId() = 0 ; 
     virtual void setBoundaryStatus(G4OpBoundaryProcessStatus) = 0;
     virtual void setCenterExtent(const glm::vec4&) = 0;

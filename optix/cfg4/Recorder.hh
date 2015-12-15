@@ -32,13 +32,15 @@ class Recorder : public RecorderBase {
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         void RecordStep(const G4Step*);
+        void startPhoton();
 
         void DumpSteps(const char* msg="Recorder::DumpSteps");
         void DumpStep(const G4Step* step);
    public:
-        void RecordStepPoint(const G4StepPoint* point, unsigned int flag, bool last);
+        void RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool last);
         void Clear();
-        void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status);
+        void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis);
+        bool hasIssue();
    public:
         void setCenterExtent(const glm::vec4& center_extent);
         void setBoundaryDomain(const glm::vec4& boundary_domain);
@@ -48,9 +50,10 @@ class Recorder : public RecorderBase {
         unsigned int getEventId();
         unsigned int getPhotonId();
         unsigned int getStepId();
+        unsigned int defineRecordId();
         unsigned int getRecordId();
    public:
-        unsigned int getPointFlag(const G4StepPoint* point);
+        unsigned int getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
         G4OpBoundaryProcessStatus getBoundaryStatus();
    private:
@@ -74,7 +77,9 @@ class Recorder : public RecorderBase {
         unsigned int m_step_id ; 
         unsigned int m_record_id ; 
         G4OpBoundaryProcessStatus m_boundary_status ; 
+        G4OpBoundaryProcessStatus m_prior_boundary_status ; 
 
+        unsigned long long m_seqhis_select ; 
         unsigned long long m_seqhis ; 
         unsigned long long m_seqmat ; 
         unsigned int m_slot ; 
@@ -92,6 +97,7 @@ class Recorder : public RecorderBase {
         std::vector<const G4StepPoint*>         m_points ; 
         std::vector<unsigned int>               m_flags ; 
         std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
+        std::vector<unsigned long long>         m_seqhis_dbg  ; 
 
 
 };
@@ -109,7 +115,9 @@ inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsi
    m_photon_id(UINT_MAX),
    m_step_id(UINT_MAX),
    m_boundary_status(Undefined),
+   m_prior_boundary_status(Undefined),
    m_seqhis(0),
+   m_seqhis_select(0),
    m_seqmat(0),
    m_slot(0),
    m_fdom(0),
@@ -159,7 +167,6 @@ inline unsigned int Recorder::getRecordId()
 
 
 
-
 inline G4OpBoundaryProcessStatus Recorder::getBoundaryStatus()
 {
    return m_boundary_status ; 
@@ -179,6 +186,11 @@ inline void Recorder::setStepId(unsigned int step_id)
 {
     m_step_id = step_id ; 
 }
+inline unsigned int Recorder::defineRecordId()   
+{
+   return m_photons_per_event*m_event_id + m_photon_id ; 
+}
+
 inline void Recorder::setRecordId(unsigned int record_id)
 {
     m_record_id = record_id ; 
@@ -186,12 +198,6 @@ inline void Recorder::setRecordId(unsigned int record_id)
 
 
 
-
-
-inline void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status)
-{
-   m_boundary_status = boundary_status ; 
-}
 
 
 

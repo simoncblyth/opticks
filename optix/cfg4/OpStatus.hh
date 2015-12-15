@@ -32,6 +32,7 @@ enum
 std::string OpStepString(const G4StepStatus status);
 
 std::string  OpBoundaryString(const G4OpBoundaryProcessStatus status);
+std::string OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status);
 unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status);
 
 std::string OpFlagString(const unsigned int flag);
