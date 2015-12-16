@@ -1,5 +1,7 @@
 #include "Recorder.hh"
 #include "Format.hh"
+
+#include "Opticks.hh"
 #include "OpStatus.hh"
 
 #include "G4Track.hh"
@@ -20,11 +22,8 @@
 
 void Recorder::init()
 {
-    if(     strcmp(m_typ,"torch")==0)         m_gen = TORCH ;
-    else if(strcmp(m_typ,"cerenkov")==0)      m_gen = CERENKOV ;
-    else if(strcmp(m_typ,"scintillation")==0) m_gen = SCINTILLATION ;
-    else
-         assert(0);
+    m_gen = Opticks::SourceCode(m_typ);
+
 
     m_history = NPY<unsigned long long>::make( m_record_max, 1, 2) ; 
     m_history->zero();
@@ -180,7 +179,7 @@ void Recorder::Dump(const char* msg)
     LOG(info) << msg 
               << " record_id " << std::setw(7) << m_record_id
               << " seqhis " << std::hex << m_seqhis << std::dec 
-              << " " << OpFlagSequenceString(m_seqhis) ;
+              << " " << Opticks::FlagSequence(m_seqhis) ;
 
     for(unsigned int i=0 ; i<m_points.size() ; i++) 
     {

@@ -76,7 +76,7 @@
 //opticks-
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
-
+#include "OpticksPhoton.h"
 
 // glm-
 #include <glm/glm.hpp>
@@ -125,7 +125,9 @@ namespace fs = boost::filesystem;
 #include "OConfig.hh"
 #include "OTracer.hh"
 #include "OPropagator.hh"
-#include "cu/photon.h"
+
+
+//#include "cu/photon.h"
 
 // optix-
 #include <optixu/optixpp_namespace.h>
@@ -524,17 +526,6 @@ void App::uploadGeometry()
 }
 
 
-TorchStepNPY* App::makeSimpleTorchStep()
-{
-    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1);
-
-    std::string config = m_fcfg->getTorchConfig() ;
-
-    if(!config.empty()) torchstep->configure(config.c_str());
-
-    return torchstep ; 
-}
-
 
 TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
 {
@@ -576,17 +567,6 @@ TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
 }
 
 
-unsigned int App::getSourceCode()
-{
-    unsigned int code ; 
-    if(     m_fcfg->hasOpt("cerenkov"))      code = CERENKOV ;
-    else if(m_fcfg->hasOpt("scintillation")) code = SCINTILLATION ;
-    else if(m_fcfg->hasOpt("torch"))         code = TORCH ;
-    else                                     code = TORCH ;
-    return code ; 
-}
-
-
 
 void App::loadGenstep()
 {
@@ -596,13 +576,8 @@ void App::loadGenstep()
         return ;
     }
 
-
-
-    // TODO: move into NumpyEvt 
-
-    unsigned int code = getSourceCode();
-    std::string typ = photon_enum_label(code) ; 
-    boost::algorithm::to_lower(typ);
+    unsigned int code = m_opticks->getSourceCode();
+    std::string typ = Opticks::SourceType(code);
 
     std::string tag = m_fcfg->getEventTag();
     std::string cat = m_fcfg->getEventCat();
@@ -637,7 +612,7 @@ void App::loadGenstep()
     }
     else if(code == TORCH)
     {
-        m_torchstep = makeSimpleTorchStep();
+        m_torchstep = m_opticks->makeSimpleTorchStep();
 
         m_ggeo->targetTorchStep(m_torchstep);
 

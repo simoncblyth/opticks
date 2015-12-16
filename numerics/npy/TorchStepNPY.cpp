@@ -345,6 +345,11 @@ void TorchStepNPY::setNumPhotons(unsigned int num_photons)
 {
     m_ctrl.w = num_photons ; 
 }
+unsigned int TorchStepNPY::getNumPhotons()
+{
+    return m_ctrl.w ; 
+}
+
 
 
 

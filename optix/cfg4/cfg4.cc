@@ -12,32 +12,18 @@
 #include "Recorder.hh"
 
 // npy-
+#include "TorchStepNPY.hpp"
 #include "NLog.hpp"
 
 //opticks-
 #include "Opticks.hh"
+#include "OpticksPhoton.h"
 #include "OpticksCfg.hh"
 
-/*
-#include <boost/lexical_cast.hpp>
-int parse(char* arg)
+#include <boost/algorithm/string.hpp>    
+
+class CfG4 
 {
-   int iarg = 0 ;
-   try{ 
-        iarg = boost::lexical_cast<int>(arg) ;
-    }   
-    catch (const boost::bad_lexical_cast& e ) { 
-        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
-    }   
-    catch( ... ){
-        LOG(warning) << "Unknown exception caught!" ;
-    }
-    return iarg ;   
-}
-*/
-
-
-class CfG4 {
    public:
         CfG4();
         virtual ~CfG4();
@@ -50,14 +36,15 @@ class CfG4 {
    private:
         Opticks*              m_opticks ;  
         OpticksCfg<Opticks>*  m_cfg ;
+        TorchStepNPY*         m_torch ; 
    private:
         DetectorConstruction* m_detector ; 
         Recorder*             m_recorder ; 
         G4RunManager*         m_runManager ;
    private:
-        unsigned int          m_nevt ; 
-        unsigned int          m_photons_per_event ; 
-        unsigned int          m_nphotons ; 
+        unsigned int          m_g4_nevt ; 
+        unsigned int          m_g4_photons_per_event ; 
+        unsigned int          m_num_photons ; 
 
 };
 
@@ -65,12 +52,13 @@ inline CfG4::CfG4()
    :
      m_opticks(NULL),
      m_cfg(NULL),
+     m_torch(NULL),
      m_detector(NULL),
      m_recorder(NULL),
      m_runManager(NULL),
-     m_nevt(0),
-     m_photons_per_event(0),
-     m_nphotons(0)
+     m_g4_nevt(0),
+     m_g4_photons_per_event(0),
+     m_num_photons(0)
 {
     init();
 }
@@ -84,28 +72,40 @@ inline void CfG4::init()
 inline void CfG4::configure(int argc, char** argv)
 {
     m_cfg->commandline(argc, argv);  
+
+    bool cfg4 = m_cfg->hasOpt("cfg4");
+    assert(cfg4);
+
+    unsigned int code = m_opticks->getSourceCode();
+    assert(code == TORCH && "cfg4 only supports source type TORCH" );
+
+    std::string typ = Opticks::SourceType(code);
+    boost::algorithm::to_lower(typ);
+
+    m_torch = m_opticks->makeSimpleTorchStep();
+    m_torch->dump();
+
+    m_num_photons = m_torch->getNumPhotons();
  
     std::string tag = m_cfg->getEventTag();
     std::string cat = m_cfg->getEventCat();
+    if(cfg4) tag = std::string("-") + tag ;   // -ve tag are problematic for commandline parsing 
 
-    m_photons_per_event = m_cfg->getG4PhotonsPerEvent();
+    m_g4_photons_per_event = m_cfg->getG4PhotonsPerEvent();
+    assert( m_num_photons % m_g4_photons_per_event == 0 && "expecting num_photons to be exactly divisible by g4_photons_per_event" );
 
-   // TODO: get rid of these, by pulling photon count from 
-    // torchconfig and moving source check into OpticksCfg
-    const char* typ = "torch" ;
-    m_nevt = argc > 1 ? parse(argv[argc-1]) : 1 ;
-
-    m_nphotons = m_nevt*m_photons_per_event ; 
+    m_g4_nevt = m_num_photons / m_g4_photons_per_event ; 
 
     LOG(info) << "CfG4::configure" 
+              << " typ " << typ
               << " tag " << tag 
               << " cat " << cat
-              << " m_nevt " << m_nevt 
-              << " m_photons_per_event " << m_photons_per_event
-              << " m_nphotons " << m_nphotons
+              << " m_g4_nevt " << m_g4_nevt 
+              << " m_g4_photons_per_event " << m_g4_photons_per_event
+              << " m_num_photons " << m_num_photons
               ;
 
-    m_recorder = new Recorder(typ,tag.c_str(),cat.c_str(),m_nphotons,10, m_photons_per_event); 
+    m_recorder = new Recorder(typ.c_str(),tag.c_str(),cat.c_str(),m_num_photons,10, m_g4_photons_per_event); 
     if(strcmp(tag.c_str(), "-5") == 0)  m_recorder->setIncidentSphereSPolarized(true) ;
 
     m_detector  = new DetectorConstruction() ; 
@@ -119,24 +119,23 @@ inline void CfG4::configure(int argc, char** argv)
     m_recorder->setCenterExtent(m_detector->getCenterExtent());
     m_recorder->setBoundaryDomain(m_detector->getBoundaryDomain());
 }
-
-
-
 inline void CfG4::propagate()
 {
-    m_runManager->BeamOn(m_nevt);
+    LOG(info) << "CfG4::propagate"
+              << " g4_nevt " << m_g4_nevt 
+              << " m_g4_photons_per_event " << m_g4_photons_per_event
+              << " num_photons " << m_num_photons 
+              ; 
+    m_runManager->BeamOn(m_g4_nevt);
 }
 inline void CfG4::save()
 {
     m_recorder->save();
 }
-
 inline CfG4::~CfG4()
 {
     delete m_runManager;
 }
-
-
 
 
 

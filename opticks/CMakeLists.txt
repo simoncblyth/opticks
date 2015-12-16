@@ -10,39 +10,46 @@ include(EnvBuildOptions)
 
 
 find_package(Boost REQUIRED)
+find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 find_package(Cfg REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS} 
+   ${GLM_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
    ${Cfg_INCLUDE_DIRS}  
 )
 
 add_definitions( 
    ${Boost_DEFINITIONS} 
+   ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
    ${Cfg_DEFINITIONS} 
     -DVERBOSE 
 )
+
+set(LIBRARIES
+      ${Boost_LIBRARIES}
+      ${Cfg_LIBRARIES}
+      ${GLM_LIBRARIES}
+      ${NPY_LIBRARIES}
+)
+
 
 add_library( ${name}  SHARED
     Opticks.cc
     OpticksCfg.cc
 )
 
-set(LIBRARIES
-      ${Boost_LIBRARIES}
-      ${Cfg_LIBRARIES}
-      ${NPY_LIBRARIES}
-)
 
 target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
     Opticks.hh
     OpticksCfg.hh
+    OpticksPhoton.h
 )
 
 install(TARGETS ${name}  DESTINATION lib)

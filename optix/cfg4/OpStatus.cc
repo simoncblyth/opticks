@@ -1,5 +1,6 @@
 #include "OpStatus.hh"
 
+#include "Opticks.hh"
 #include <sstream>
 #include "NLog.hpp"
 
@@ -21,56 +22,6 @@ std::string OpStepString(const G4StepStatus status)
     }
     ss << s ; 
     return ss.str() ;
-}
-
-std::string OpFlagSequenceString(const unsigned long long seqhis)
-{
-    std::stringstream ss ;
-    assert(sizeof(unsigned long long)*8 == 16*4);
-    for(unsigned int i=0 ; i < 16 ; i++)
-    {
-        unsigned long long f = (seqhis >> i*4) & 0xF ; 
-        if(f == 0) 
-        {
-            ss << "." ;
-        }
-        else
-        { 
-            unsigned int flg = 0x1 << (f - 1) ; 
-            ss << OpFlagString(flg);
-            ss << " " ;
-        }
-    }
-    return ss.str();
-}
-
-std::string OpFlagString(const unsigned int flag)
-{
-    std::stringstream ss ; 
-    std::string s ; 
-    switch(flag)
-    {
-        case 0:                s="ZERO";break;
-        case CERENKOV:         s="CERENKOV";break;
-        case SCINTILLATION:    s="SCINTILLATION" ;break; 
-        case MISS:             s="MISS" ;break; 
-        case BULK_ABSORB:      s="BULK_ABSORB" ;break; 
-        case BULK_REEMIT:      s="BULK_REEMIT" ;break; 
-        case BULK_SCATTER:     s="BULK_SCATTER" ;break; 
-        case SURFACE_DETECT:   s="SURFACE_DETECT" ;break; 
-        case SURFACE_ABSORB:   s="SURFACE_ABSORB" ;break; 
-        case SURFACE_DREFLECT: s="SURFACE_DREFLECT" ;break; 
-        case SURFACE_SREFLECT: s="SURFACE_SREFLECT" ;break; 
-        case BOUNDARY_REFLECT: s="BOUNDARY_REFLECT" ;break; 
-        case BOUNDARY_TRANSMIT:s="BOUNDARY_TRANSMIT" ;break; 
-        case TORCH:            s="TORCH" ;break; 
-        case NAN_ABORT:        s="NAN_ABORT" ;break; 
-        default:
-                  LOG(warning) << "OpFlagString bad flag [" << flag << "]" << std::hex << flag << std::dec ;             
-                  s="ERROR" ;break; 
-    }
-    ss << s ; 
-    return ss.str();
 }
 
 

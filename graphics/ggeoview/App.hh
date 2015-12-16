@@ -88,13 +88,11 @@ class App {
        void checkGeometry();
        void uploadGeometry();
   public:
-       unsigned int getSourceCode();
        void loadGenstep();
        void loadEvtFromFile();
 
        NPY<float>* loadGenstepFromFile(const std::string& typ, const std::string& tag, const std::string& det);
 
-       TorchStepNPY* makeSimpleTorchStep();
        TorchStepNPY* makeCalibrationTorchStep(unsigned int imesh);
 
        void uploadEvt();

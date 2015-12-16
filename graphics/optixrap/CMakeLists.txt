@@ -41,6 +41,7 @@ find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
+find_package(Opticks REQUIRED)
 
 find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
@@ -61,6 +62,7 @@ include_directories(
     ${OGLRap_INCLUDE_DIRS}
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
+    ${Opticks_INCLUDE_DIRS} 
 
     ${OptiX_INCLUDE}  
     ${CUDA_INCLUDE_DIRS}
@@ -82,6 +84,7 @@ set(LIBRARIES
       ${GGeo_LIBRARIES}
       ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
+      ${Opticks_LIBRARIES} 
       optix
       optixu
       ${CUDAWrap_LIBRARIES}
@@ -93,6 +96,7 @@ add_definitions(
     ${GLEW_DEFINITIONS}
     ${GLFW_DEFINITIONS}
     ${OGLRap_DEFINITIONS}
+    ${Opticks_DEFINITIONS} 
 
     ${Assimp_DEFINITIONS} 
     ${OptiX_DEFINITIONS} 

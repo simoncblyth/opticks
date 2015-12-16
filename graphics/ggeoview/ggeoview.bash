@@ -139,6 +139,12 @@ ggv-rainbow()
     type $FUNCNAME
 
     local pol=${1:-s}
+    local g4=0
+    local tag
+    case $pol in 
+       s) tag=5 ;;   
+       p) tag=6 ;;   
+    esac
 
     #local material=GlassSchottF2
     local material=MainH2OHale
@@ -148,17 +154,13 @@ ggv-rainbow()
     local wavelength=0
     #local azimuth=0,1
 
-    local tag
-    case $pol in 
-       s) tag=5 ;;   
-       p) tag=6 ;;   
-    esac
-
-    local g4=1
-    local script="ggv.sh"
+    local script
+    local xopt
     if [ "$g4" == "1" ]; then
-       script="cfg4.sh"
-       tag=-$tag
+        script="cfg4.sh"
+        xopt="--cfg4"
+    else
+        script="ggv.sh"
     fi 
 
     local torch_config=(
@@ -184,6 +186,7 @@ ggv-rainbow()
                  shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
                )
 
+
     $script  \
             $* \
             --animtimemax 10 \
@@ -194,14 +197,8 @@ ggv-rainbow()
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
             --tag $tag --cat rainbow \
+            $xopt \
             --save
-
-
-   # --load
-   #      needs to be used with exactly the  same testconfig as that used at creation ? 
-   #      need to somehow persist the test geometry  ??
-   #      does not need the torch config 
-   #      some of the others like animtimemax and timemax can ride in the fdom/idom/..
 
 }
 

@@ -93,12 +93,16 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_g4_photons_per_event(10000)
 {   
    init();  
+   m_listener->setCfg(this); 
 }
 
 
 template <class Listener>
 inline void OpticksCfg<Listener>::init()
 {
+   m_desc.add_options()
+       ("cfg4", "use Geant4 for generation/propagation, only supports TORCH source type with test geometries") ;
+
    m_desc.add_options()
        ("version,v", "print version string") ;
 
