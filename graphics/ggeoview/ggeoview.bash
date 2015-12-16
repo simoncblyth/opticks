@@ -138,13 +138,22 @@ ggv-rainbow()
 {
     type $FUNCNAME
 
+    local cmdline=$*
     local pol=${1:-s}
-    local g4=0
+    local cfg4=1
     local tag
     case $pol in 
        s) tag=5 ;;   
        p) tag=6 ;;   
     esac
+
+    local utag
+    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+        utag=-$tag  
+    else
+        utag=$tag 
+    fi 
+    echo utag $utag NEGATED
 
     #local material=GlassSchottF2
     local material=MainH2OHale
@@ -154,19 +163,12 @@ ggv-rainbow()
     local wavelength=0
     #local azimuth=0,1
 
-    local script
-    #local xopt
-    if [ "$g4" == "1" ]; then
-        script="cfg4.sh"
-        tag=-$tag
-        #xopt="--cfg4"
-    else
-        script="ggv.sh"
-    fi 
+    #local photons=1000000
+    local photons=10000
 
     local torch_config=(
                  type=discIntersectSphere
-                 photons=1000000
+                 photons=$photons
                  mode=${pol}pol
                  polarization=$surfaceNormal
                  frame=-1
@@ -187,8 +189,7 @@ ggv-rainbow()
                  shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
                )
 
-
-    $script  \
+    ggv.sh  \
             $* \
             --animtimemax 10 \
             --timemax 10 \
@@ -197,7 +198,7 @@ ggv-rainbow()
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --tag $tag --cat rainbow \
+            --tag $utag --cat rainbow \
             --save
 
 }

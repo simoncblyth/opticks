@@ -10,6 +10,7 @@ ggeo-
 ggeoview-
 assimpwrap-
 openmeshrap-
+cfg4-
 
 
 dbg=0
@@ -27,6 +28,9 @@ if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeoview-bindir)/computeTest
 elif [ "${cmdline/--boundaries}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin BoundariesNPYTest)
+elif [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+   cfg4-export
+   export GGEOVIEW_BINARY=$(cfg4-bin)
 elif [ "${cmdline/--recs}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin RecordsNPYTest)
 elif [ "${cmdline/--tracer}" != "${cmdline}" ]; then

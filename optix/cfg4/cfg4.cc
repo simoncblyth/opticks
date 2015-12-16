@@ -21,10 +21,13 @@
 #include "OpticksCfg.hh"
 
 
+//ggeo-
+#include "GCache.hh"
+
 class CfG4 
 {
    public:
-        CfG4();
+        CfG4(const char* prefix);
         virtual ~CfG4();
    private:
         void init();
@@ -33,8 +36,10 @@ class CfG4
         void propagate();
         void save();
    private:
+        const char*           m_prefix ;
         Opticks*              m_opticks ;  
         OpticksCfg<Opticks>*  m_cfg ;
+        GCache*               m_cache ; 
         TorchStepNPY*         m_torch ; 
    private:
         DetectorConstruction* m_detector ; 
@@ -47,10 +52,12 @@ class CfG4
 
 };
 
-inline CfG4::CfG4() 
+inline CfG4::CfG4(const char* prefix) 
    :
+     m_prefix(strdup(prefix)),
      m_opticks(NULL),
      m_cfg(NULL),
+     m_cache(NULL),
      m_torch(NULL),
      m_detector(NULL),
      m_recorder(NULL),
@@ -66,10 +73,12 @@ inline void CfG4::init()
 {
     m_opticks = new Opticks();
     m_cfg = new OpticksCfg<Opticks>("opticks", m_opticks,false);
+    m_cache = new GCache(m_prefix, "cfg4.log", "info");
 }
 
 inline void CfG4::configure(int argc, char** argv)
 {
+    m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
 
     unsigned int code = m_opticks->getSourceCode();
@@ -140,7 +149,7 @@ inline CfG4::~CfG4()
 
 int main(int argc, char** argv)
 {
-    CfG4* app = new CfG4() ;
+    CfG4* app = new CfG4("GGEOVIEW_") ; // TODO: change prefix to "OPTICKS_" to reflect generality 
 
     app->configure(argc, argv);
     app->propagate();
