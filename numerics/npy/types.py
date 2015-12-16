@@ -281,7 +281,7 @@ def ini_(path):
         log.debug("parsing ini for key %s" % path)
         _ini[path] = iniparse(file(os.path.expandvars(os.path.expanduser(path))).read())
     except IOError:
-        log.warning("failed to load ini from %s" % path)
+        log.fatal("failed to load ini from %s" % path)
         _ini[path] = {}
     pass
     return _ini[path] 
@@ -290,7 +290,11 @@ def ini_(path):
 def iniparse(ini):
     return dict(map(lambda _:_.split("="), filter(None,ini.split("\n")) ))
 
-def flags_(path="$IDPATH/GFlagIndexLocal.ini"):
+def flags_(path=None):
+    if path is None:
+        #path = "$IDPATH/GFlagIndexLocal.ini"
+        path = "$IDPATH/GFlagsLocal.ini"
+    pass
     ini = ini_(path) 
     return dict(zip(ini.keys(),map(int,ini.values())))
 

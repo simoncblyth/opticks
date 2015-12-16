@@ -101,17 +101,17 @@ Types* GCache::getTypes()
     return m_types ;
 }
 
+
 GFlags* GCache::getFlags()
 {
     if(m_flags == NULL)
     {
-        m_flags = new GFlags(this);  // parses cu/photon.h enum
+        m_flags = new GFlags(this);  // parses the flags enum source, from $ENV_HOME/opticks/OpticksPhoton.h
+        m_flags->save(m_idpath);
+
     }
     return m_flags ;
 }
-
-
-
 
 
 

@@ -29,13 +29,15 @@ class Opticks {
        static const char* TORCH_ ;
        static const char* NAN_ABORT_ ;
        static const char* BAD_FLAG_ ;
+       static const char* OTHER_ ;
 
        static const char* cerenkov_ ;
        static const char* scintillation_ ;
        static const char* torch_ ;
+       static const char* other_ ;
          
-       static const char* OTHER_ ;
        static const char* SourceType(int code);
+       static const char* SourceTypeLowercase(int code);
        static unsigned int SourceCode(const char* type);
        static const char* Flag(const unsigned int flag);
        static std::string FlagSequence(const unsigned long long seqhis);

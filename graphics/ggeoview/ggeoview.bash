@@ -155,10 +155,11 @@ ggv-rainbow()
     #local azimuth=0,1
 
     local script
-    local xopt
+    #local xopt
     if [ "$g4" == "1" ]; then
         script="cfg4.sh"
-        xopt="--cfg4"
+        tag=-$tag
+        #xopt="--cfg4"
     else
         script="ggv.sh"
     fi 
@@ -197,7 +198,6 @@ ggv-rainbow()
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
             --tag $tag --cat rainbow \
-            $xopt \
             --save
 
 }

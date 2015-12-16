@@ -26,6 +26,7 @@ const char* Opticks::BAD_FLAG_          = "BAD_FLAG" ;
 const char* Opticks::cerenkov_          = "cerenkov" ;
 const char* Opticks::scintillation_     = "scintillation" ;
 const char* Opticks::torch_             = "torch" ; 
+const char* Opticks::other_             = "other" ;
 
 
 const char* Opticks::SourceType( int code )
@@ -40,6 +41,22 @@ const char* Opticks::SourceType( int code )
     }
     return name ; 
 }
+
+const char* Opticks::SourceTypeLowercase( int code )
+{
+    const char* name = 0 ; 
+    switch(code)
+    {
+       case CERENKOV     :name = cerenkov_      ;break;
+       case SCINTILLATION:name = scintillation_ ;break;
+       case TORCH        :name = torch_         ;break;
+       default           :name = other_         ;break; 
+    }
+    return name ; 
+}
+
+
+
 
 unsigned int Opticks::SourceCode(const char* type)
 {

@@ -12,7 +12,10 @@ class Index ;
 
 class GFlags {
     public:
-        GFlags(GCache* cache, const char* path="$ENV_HOME/graphics/optixrap/cu/photon.h");
+        static const char* ENUM_HEADER_PATH ;  
+    public:
+        GFlags(GCache* cache, const char* path=ENUM_HEADER_PATH);
+        void save(const char* idpath);
     private:
         void init(const char* path);
         Index* parseFlags(const char* path);

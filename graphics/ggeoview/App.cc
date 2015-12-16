@@ -577,8 +577,7 @@ void App::loadGenstep()
     }
 
     unsigned int code = m_opticks->getSourceCode();
-    std::string typ = Opticks::SourceType(code);
-
+    std::string typ = Opticks::SourceTypeLowercase(code);
     std::string tag = m_fcfg->getEventTag();
     std::string cat = m_fcfg->getEventCat();
 
@@ -588,8 +587,6 @@ void App::loadGenstep()
     m_parameters->add<std::string>("Tag", tag );
     m_parameters->add<std::string>("Cat", cat );
     m_parameters->add<std::string>("Detector", det );
-
-
 
 
     Lookup* lookup = m_ggeo->getLookup();
@@ -677,8 +674,6 @@ void App::loadGenstep()
 
 void App::loadEvtFromFile()
 {
-
-
 }
 
 
@@ -707,10 +702,6 @@ NPY<float>* App::loadGenstepFromFile(const std::string& typ, const std::string& 
     }
     return npy ; 
 }
-
-
-
-
 
 
 void App::uploadEvt()
@@ -944,10 +935,6 @@ void App::preparePropagator()
     (*m_timer)("preparePropagator"); 
     LOG(info) << "App::preparePropagator DONE "; 
 }
-
-
-
-
 
 
 void App::propagate()

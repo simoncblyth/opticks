@@ -20,7 +20,6 @@
 #include "OpticksPhoton.h"
 #include "OpticksCfg.hh"
 
-#include <boost/algorithm/string.hpp>    
 
 class CfG4 
 {
@@ -73,14 +72,10 @@ inline void CfG4::configure(int argc, char** argv)
 {
     m_cfg->commandline(argc, argv);  
 
-    bool cfg4 = m_cfg->hasOpt("cfg4");
-    assert(cfg4);
-
     unsigned int code = m_opticks->getSourceCode();
     assert(code == TORCH && "cfg4 only supports source type TORCH" );
 
-    std::string typ = Opticks::SourceType(code);
-    boost::algorithm::to_lower(typ);
+    std::string typ = Opticks::SourceTypeLowercase(code);
 
     m_torch = m_opticks->makeSimpleTorchStep();
     m_torch->dump();
@@ -89,7 +84,10 @@ inline void CfG4::configure(int argc, char** argv)
  
     std::string tag = m_cfg->getEventTag();
     std::string cat = m_cfg->getEventCat();
-    if(cfg4) tag = std::string("-") + tag ;   // -ve tag are problematic for commandline parsing 
+
+    unsigned int maxrec = m_cfg->getRecordMax();
+    assert(maxrec == 10);
+
 
     m_g4_photons_per_event = m_cfg->getG4PhotonsPerEvent();
     assert( m_num_photons % m_g4_photons_per_event == 0 && "expecting num_photons to be exactly divisible by g4_photons_per_event" );
@@ -103,9 +101,10 @@ inline void CfG4::configure(int argc, char** argv)
               << " m_g4_nevt " << m_g4_nevt 
               << " m_g4_photons_per_event " << m_g4_photons_per_event
               << " m_num_photons " << m_num_photons
+              << " maxrec " << maxrec
               ;
 
-    m_recorder = new Recorder(typ.c_str(),tag.c_str(),cat.c_str(),m_num_photons,10, m_g4_photons_per_event); 
+    m_recorder = new Recorder(typ.c_str(),tag.c_str(),cat.c_str(),m_num_photons,maxrec, m_g4_photons_per_event); 
     if(strcmp(tag.c_str(), "-5") == 0)  m_recorder->setIncidentSphereSPolarized(true) ;
 
     m_detector  = new DetectorConstruction() ; 

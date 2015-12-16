@@ -8,10 +8,11 @@
 #include "GAttrSeq.hh"
 
 #include "regexsearch.hh"
+#include "NLog.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+
+//const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;
+const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
 
 void GFlags::init(const char* path)
 {
@@ -22,6 +23,13 @@ void GFlags::init(const char* path)
 
     m_aindex->setSequence(m_index);
 }
+
+void GFlags::save(const char* idpath)
+{
+    m_index->setExt(".ini"); 
+    m_index->save(idpath);    
+}
+
 
 Index* GFlags::parseFlags(const char* path)
 {
