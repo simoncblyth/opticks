@@ -524,6 +524,15 @@ def check_radius(sc, sli=slice(None)):
 
 
 
+class Pair(object):
+   def __init__(self, tags, labels, det, src='torch',name=None):
+       self.p = Evt(tag=tags[0],src=src, det=det, label=labels[0])
+       self.s = Evt(tag=tags[1],src=src, det=det, label=labels[1])
+       self.name = name
+       self.det = det 
+   def __str__(self):
+       return "%s %s " % (self.name, self.det)  
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -536,7 +545,6 @@ if __name__ == '__main__':
     #intensity_plot() 
     #scattering_angle_plot() 
 
-    
     step = .1
     #step = 10
     idom = np.arange(0,90,step)*deg 
@@ -548,45 +556,40 @@ if 0:
     ax = fig.add_subplot(1,1,1)
 
 if 1:
-    spol,ppol = "5", "6"
-    p_evt = Evt(tag=ppol, det="rainbow", label="P")
-    s_evt = Evt(tag=spol, det="rainbow", label="S")
+    evt_op = Pair(tags=["5","6"], labels=["P","S"], det="rainbow" )
+    evt = evt_op
 
 if 1:
-    spol_g4,ppol_g4 = "-5", "-6"
-    p_evt_g4 = Evt(tag=ppol_g4, det="rainbow", label="P G4")
-    s_evt_g4 = Evt(tag=spol_g4, det="rainbow", label="S G4")
+    evt_g4 = Pair(tags=["-5","-6"], labels=["P G4","S G4"], det="rainbow" )
+
 
 if 0:
     fig = plt.figure()
     fig.suptitle("Deviation angles without selection")
     ax = fig.add_subplot(1,1,1)
-    scatter_plot_all(ax, p_evt, s_evt)
+    scatter_plot_all(ax, evt.p, evt.s)
     #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
 
 if 1:
     fig = plt.figure()
     fig.suptitle("Deviation angles without selection, cf G4")
-
     ylim = [1e0,1e5]
-    ax = fig.add_subplot(2,1,1)
-    scatter_plot_all(ax, p_evt, s_evt)
-    ax.set_ylim(ylim)
-
-    ax = fig.add_subplot(2,1,2)
-    scatter_plot_all(ax, p_evt_g4, s_evt_g4)
-    ax.set_ylim(ylim)
-
+    for i, evt in enumerate([evt_op, evt_g4]):
+        ax = fig.add_subplot(2,1,i+1)
+        scatter_plot_all(ax, evt.p, evt.s)
+        ax.set_ylim(ylim)
+    pass
     #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
 
 
 if 0:
-    fig = plt.figure()
-    fig.suptitle("Scatter plot split by mode, for R TT TRT TRRT ...")
-    #ylim = [1e0,1e5] 
-    ylim = None
-    scatter_plot_split(p_evt, s_evt, pp=range(0,8), ylim=ylim)
-    fig.subplots_adjust(hspace=0)
+    for evt in [evt_op, evt_g4]:
+        fig = plt.figure()
+        fig.suptitle("%s : Scatter plot split by mode, for R TT TRT TRRT ..." % str(evt))
+        #ylim = [1e0,1e5] 
+        ylim = None
+        scatter_plot_split(evt.p, evt.s, pp=range(0,8), ylim=ylim)
+        fig.subplots_adjust(hspace=0)
 
 if 0:
     fig = plt.figure()
@@ -606,7 +609,7 @@ if 0:
 
     scale = 18000   # by-eye against log distrib for p=0
     #ylim = None
-    sc = scatter_plot_component(p_evt, s_evt, p=p, ylim=ylim, xlim=xlim, scale=scale, infscale=4)
+    sc = scatter_plot_component(evt.p, evt.s, p=p, ylim=ylim, xlim=xlim, scale=scale, infscale=4)
     fig.subplots_adjust(hspace=0)
      
     #check_radius(sc,slice(None,None,100)) 
@@ -620,7 +623,7 @@ if 0:
     nb = 100 
     dm = np.linspace(xlim[0],xlim[1],nb)*deg 
 
-    sc = Scatter(p, psim=p_evt, ssim=s_evt, not_=False)
+    sc = Scatter(p, psim=evt.p, ssim=evt.s, not_=False)
 
     ax = fig.add_subplot(2,2,1)
     pci = sc.psim.incident_angle()

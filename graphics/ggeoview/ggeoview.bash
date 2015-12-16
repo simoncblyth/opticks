@@ -1287,8 +1287,8 @@ Package Dependencies Tree of GGeoView
     cudawrap* (~5 classes)
        CUDA
 
-
-
+    Opticks
+       Cfg 
  
     GGeo*  (~22 classes)
        NPY*
@@ -1757,6 +1757,8 @@ ggeoview-depinstall()
     bregex-install
     npy-
     npy-install
+    opticks-
+    opticks-install
     ggeo-
     ggeo-install
     assimpwrap- 

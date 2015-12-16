@@ -82,7 +82,6 @@ add_library( ${name}  SHARED
                 CompositionCfg.cc
                 Texture.cc
                 Frame.cc
-                FrameCfg.cc
                 Interactor.cc
                 InteractorCfg.cc
                 Scene.cc
@@ -118,7 +117,6 @@ SET(hdrs
         CompositionCfg.hh
         Texture.hh
         Frame.hh
-        FrameCfg.hh
         Interactor.hh
         InteractorCfg.hh
         Scene.hh

@@ -16,13 +16,14 @@
 #define OPTIX 1
 
 
+
 // oglrap-
 #define GUI_ 1
 #ifdef GUI_
 #include "GUI.hh"
 #endif
 
-#include "FrameCfg.hh"
+#include "OpticksCfg.hh"
 #include "Scene.hh"
 #include "SceneCfg.hh"
 #include "Renderer.hh"
@@ -73,6 +74,11 @@
 
 // bregex-
 #include "regexsearch.hh"
+
+//opticks-
+#include "Opticks.hh"
+#include "OpticksCfg.hh"
+
 
 // glm-
 #include <glm/glm.hpp>
@@ -151,6 +157,8 @@ bool App::hasOpt(const char* name)
 
 void App::init(int argc, char** argv)
 {
+    m_opticks = new Opticks(); 
+
     m_cache     = new GCache(m_prefix, "ggeoview.log", "info");
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
 
@@ -205,8 +213,21 @@ int App::config(int argc, char** argv)
 {
     for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::config " << "[" << std::setw(2) << i << "]" << argv[i] ;
 
-    m_cfg  = new Cfg("unbrella", false) ; 
-    m_fcfg = new FrameCfg<Frame>("frame", m_frame,false);
+    m_cfg  = new Cfg("umbrella", false) ; 
+
+    // TODO: extracate configuration (a very low dependency thing that needs to be highly portable, eg for use from cfg4-)
+    //       from high dependency oglrap-/Frame and other OpenGL level objects
+    //
+    //       config and oglrap- objects got entangled in order to support live UDP config of high 
+    //       level objects via boost bind 
+    //
+    //       need a way to disentangle whilst retaining this messaging functionality 
+    //       split up config options according to need (eg low level things that 
+    //       apply wherever file tag etc.. and those that apply to high level objects)
+    //
+
+    m_fcfg = new OpticksCfg<Opticks>("opticks", m_opticks,false);
+
     m_cfg->add(m_fcfg);
 #ifdef NPYSERVER
     m_cfg->add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
@@ -229,8 +250,7 @@ int App::config(int argc, char** argv)
 
     if(m_fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
     if(m_fcfg->hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
-
-    if(m_fcfg->isAbort()) return 1 ; 
+    if(m_fcfg->hasOpt("help|version|idpath")) return 1 ; 
 
     bool fullscreen = m_fcfg->hasOpt("fullscreen");
 
@@ -649,11 +669,8 @@ void App::loadGenstep()
 
     m_evt->setMaxRec(m_fcfg->getRecordMax());          // must set this before setGenStepData to have effect
 
-    bool nooptix    = m_fcfg->hasOpt("nooptix");
     bool geocenter  = m_fcfg->hasOpt("geocenter");
 
-    m_evt->setOptix(!nooptix);
-    m_evt->setAllocate(false);   
 
     m_evt->setGenstepData(npy);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
 

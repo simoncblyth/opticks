@@ -2,9 +2,9 @@
 #include "Cfg.hh"
 
 template <class Listener>
-class FrameCfg : public Cfg {
+class OpticksCfg : public Cfg {
   public:
-     FrameCfg(const char* name, Listener* listener, bool live);
+     OpticksCfg(const char* name, Listener* listener, bool live);
   public:
      std::string& getConfigPath();
      std::string& getEventTag();
@@ -63,7 +63,7 @@ private:
 };
 
 template <class Listener>
-inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool live) 
+inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live) 
        : 
        Cfg(name, live),
        m_listener(listener),
@@ -94,8 +94,15 @@ inline FrameCfg<Listener>::FrameCfg(const char* name, Listener* listener, bool l
 
 
 template <class Listener>
-inline void FrameCfg<Listener>::init()
+inline void OpticksCfg<Listener>::init()
 {
+
+
+
+
+
+
+
    m_desc.add_options()
        ("version,v", "print version string") ;
 
@@ -104,9 +111,6 @@ inline void FrameCfg<Listener>::init()
 
    m_desc.add_options()
        ("idpath,i",  "print idpath based on input envvars") ;
-
-
-   // TODO: move the below to somewhere more appropriate
 
    m_desc.add_options()
        ("nogeocache,G",  "inhibit use of the geocache") ;
@@ -314,7 +318,7 @@ inline void FrameCfg<Listener>::init()
             "size", 
             "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
    // this size is being overriden: 
-   // the screen size is set by Frame::init using size from composition 
+   // the screen size is set by Opticks::init using size from composition 
 
    addOptionI<Listener>(m_listener, 
             "dumpevent", 
@@ -324,61 +328,61 @@ inline void FrameCfg<Listener>::init()
 
 
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getConfigPath()
+inline std::string& OpticksCfg<Listener>::getConfigPath()
 {
     return m_configpath ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getEventTag()
+inline std::string& OpticksCfg<Listener>::getEventTag()
 {
     return m_event_tag ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getEventCat()
+inline std::string& OpticksCfg<Listener>::getEventCat()
 {
     return m_event_cat ;
 }
 
 
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getLiveLine()
+inline std::string& OpticksCfg<Listener>::getLiveLine()
 {
     return m_liveline ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getTorchConfig()
+inline std::string& OpticksCfg<Listener>::getTorchConfig()
 {
     return m_torchconfig ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getTestConfig()
+inline std::string& OpticksCfg<Listener>::getTestConfig()
 {
     return m_testconfig ;
 }
 
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getZExplodeConfig()
+inline std::string& OpticksCfg<Listener>::getZExplodeConfig()
 {
     return m_zexplodeconfig ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getMeshVersion()
+inline std::string& OpticksCfg<Listener>::getMeshVersion()
 {
     return m_meshversion ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getISlice()
+inline std::string& OpticksCfg<Listener>::getISlice()
 {
     return m_islice ;
 }
 
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getFSlice()
+inline std::string& OpticksCfg<Listener>::getFSlice()
 {
     return m_fslice ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getPSlice()
+inline std::string& OpticksCfg<Listener>::getPSlice()
 {
     return m_pslice ;
 }
@@ -386,7 +390,7 @@ inline std::string& FrameCfg<Listener>::getPSlice()
 
 
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getPrintIndex()
+inline std::string& OpticksCfg<Listener>::getPrintIndex()
 {
     return m_pindex ;
 }
@@ -394,12 +398,12 @@ inline std::string& FrameCfg<Listener>::getPrintIndex()
 
 
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getBuilder()
+inline std::string& OpticksCfg<Listener>::getBuilder()
 {
     return m_builder ;
 }
 template <class Listener>
-inline std::string& FrameCfg<Listener>::getTraverser()
+inline std::string& OpticksCfg<Listener>::getTraverser()
 {
     return m_traverser ;
 }
@@ -407,23 +411,23 @@ inline std::string& FrameCfg<Listener>::getTraverser()
 
 
 template <class Listener>
-inline int FrameCfg<Listener>::getBounceMax()
+inline int OpticksCfg<Listener>::getBounceMax()
 {
     return m_bouncemax ; 
 }
 template <class Listener>
-inline int FrameCfg<Listener>::getRecordMax()
+inline int OpticksCfg<Listener>::getRecordMax()
 {
     return m_recordmax ; 
 }
 template <class Listener>
-inline int FrameCfg<Listener>::getTimeMax()
+inline int OpticksCfg<Listener>::getTimeMax()
 {
     return m_timemax ; 
 }
 
 template <class Listener>
-inline int FrameCfg<Listener>::getAnimTimeMax()
+inline int OpticksCfg<Listener>::getAnimTimeMax()
 {
     return m_animtimemax ; 
 }
@@ -431,17 +435,17 @@ inline int FrameCfg<Listener>::getAnimTimeMax()
 
 
 template <class Listener>
-inline int FrameCfg<Listener>::getRepeatIndex()
+inline int OpticksCfg<Listener>::getRepeatIndex()
 {
     return m_repeatidx ; 
 }
 template <class Listener>
-inline int FrameCfg<Listener>::getRestrictMesh()
+inline int OpticksCfg<Listener>::getRestrictMesh()
 {
     return m_restrictmesh ; 
 }
 template <class Listener>
-inline int FrameCfg<Listener>::getAnalyticMesh()
+inline int OpticksCfg<Listener>::getAnalyticMesh()
 {
     return m_analyticmesh ; 
 }
@@ -451,23 +455,23 @@ inline int FrameCfg<Listener>::getAnalyticMesh()
 
 
 template <class Listener>
-inline int FrameCfg<Listener>::getModulo()
+inline int OpticksCfg<Listener>::getModulo()
 {
     return m_modulo ; 
 }
 template <class Listener>
-inline int FrameCfg<Listener>::getOverride()
+inline int OpticksCfg<Listener>::getOverride()
 {
     return m_override ; 
 }
 template <class Listener>
-inline int FrameCfg<Listener>::getDebugIdx()
+inline int OpticksCfg<Listener>::getDebugIdx()
 {
     return m_debugidx ; 
 }
 
 template <class Listener>
-inline int FrameCfg<Listener>::getStack()
+inline int OpticksCfg<Listener>::getStack()
 {
     return m_stack ; 
 }

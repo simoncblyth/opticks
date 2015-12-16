@@ -18,7 +18,6 @@
 #include "Recorder.icc"
 
 
-
 void Recorder::init()
 {
     if(     strcmp(m_typ,"torch")==0)         m_gen = TORCH ;
@@ -123,9 +122,7 @@ void Recorder::startPhoton()
 
 void Recorder::RecordStep(const G4Step* step)
 {
-    // seeing duplicate StepPoints differ-ing only in the volume
-    // skip these by early exit
-    // TODO:  more careful handling for correct material recording
+    // TODO:  material recording
 
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -147,13 +144,15 @@ void Recorder::RecordStep(const G4Step* step)
     bool last = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
 
 
+    // StepTooSmall occurs at boundaries with pre/post StepPoints 
+    // almost the same differing only in their associated volume
+
     if( m_prior_boundary_status != StepTooSmall)
-    RecordStepPoint(pre, preFlag, m_prior_boundary_status, false );
+        RecordStepPoint(pre, preFlag, m_prior_boundary_status, false );
 
     if(last)
         RecordStepPoint(post, postFlag, m_boundary_status, true );
     
-
     if(last)
     {
         bool issue = hasIssue();
@@ -213,9 +212,6 @@ void Recorder::Clear()
 
 void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool last)
 {
-    if(flag == 0x1 << 14) LOG(warning) << "Recorder::RecordStepPoint bad flag " << flag ;
-
-
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
     unsigned int material = 0 ; 
 

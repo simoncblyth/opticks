@@ -7,7 +7,6 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
 
-
 /*
 Listener classes need to provide a methods::
 
@@ -20,7 +19,6 @@ Typically the last value in the vector should be used to call the Listeners
 setter method as selected by the name.
 
 */
-
 
 class Cfg {
 
@@ -39,13 +37,11 @@ protected:
     template <class Listener>
     void addOptionS(Listener* listener, const char* name, const char* description);
 
-
 public:
     Cfg(const char* name, bool live);
     bool isLive();
     const char* getName();
     bool hasOpt(const char* opt);   
-    bool isAbort();
 
 public:
     // holding others 
@@ -101,14 +97,6 @@ inline bool Cfg::hasOpt(const char* opt)
    }
    return count > 0 ; 
 }   
-
-inline bool Cfg::isAbort()
-{
-    // TODO: eliminate this by supporting comma delimited hasOpt checking 
-    //return hasOpt("help") || hasOpt("version") || hasOpt("idpath") ; 
-    return hasOpt("help|version|idpath") ; 
-}
-
 
 template <class Listener>
 void Cfg::addOptionF(Listener* listener, const char* name, const char* description )

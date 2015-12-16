@@ -70,23 +70,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     m_num_gensteps = m_genstep_data->getShape(0) ;
     m_num_photons = m_genstep_data->getUSum(0,3);
 
-    if(!m_optix)
-    {
-        LOG(info) << "NumpyEvt::setGenstepData early exit due to --nooptix/-O " ;
-        return ;  
-    } 
-
     createHostBuffers();
-
-    //if(m_allocate)
-    //{
-    //    allocateHostBuffers();
-    //    seedPhotonData();
-    //}
-    //else
-    //{
-    //    LOG(warning) << "NumpyEvt::setGenstepData skipping allocateHostBuffer/seedPhotonData : GPU alternatives need to be done " ;
-    //}
 
     m_timer->stop();
     //m_timer->dump();
@@ -101,7 +85,7 @@ void NumpyEvt::createHostBuffers()
     NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<Sequence_t>* seq = NPY<Sequence_t>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
+    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
     setSequenceData(seq);   
 
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
@@ -122,46 +106,6 @@ void NumpyEvt::createHostBuffers()
 
     (*m_timer)("createHostBuffers");
 }
-
-void NumpyEvt::allocateHostBuffers()
-{
-    // NPY::make(ni,nj,nk) now defaults to not allocating, 
-    // so allocate here 
-    //
-    // TODO: eliminate this preallocation by moving to GPU resident
-
-
-    LOG(info) << "NumpyEvt::allocateHostBuffers "
-              << " num_photons " << m_num_photons  
-               ;
-
-    assert(0);
-
-    m_photon_data->zero();
-    m_photon_data->setAllowPrealloc(true);
-
-
-  /*
-    m_sequence_data->zero();
-    m_sequence_data->setAllowPrealloc(true);
-
-    m_phosel_data->zero();
-    m_phosel_data->setAllowPrealloc(true);
-
-    assert(SHRT_MIN == -(1 << 15));      // -32768
-    assert(SHRT_MAX ==  (1 << 15) - 1);  // +32767
-
-    m_record_data->fill(SHRT_MIN);
-    m_record_data->setAllowPrealloc(true);
-
-    m_recsel_data->zero();
-    m_recsel_data->setAllowPrealloc(true);
-  */
-
-    (*m_timer)("allocateHostBuffers");
-}
-
-
 
 
 void NumpyEvt::seedPhotonData()
@@ -323,10 +267,10 @@ void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
 }
 
 
-void NumpyEvt::setSequenceData(NPY<Sequence_t>* sequence_data)
+void NumpyEvt::setSequenceData(NPY<unsigned long long>* sequence_data)
 {
     m_sequence_data = sequence_data  ;
-    assert(sizeof(Sequence_t) == 4*sizeof(unsigned short));  
+    assert(sizeof(unsigned long long) == 4*sizeof(unsigned short));  
     //
     // 64 bit uint used to hold the sequence flag sequence 
     // is presented to OpenGL shaders as 4 *16bit ushort 

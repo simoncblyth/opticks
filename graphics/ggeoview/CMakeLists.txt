@@ -59,6 +59,7 @@ endif()
 find_package(GLM  REQUIRED)
 find_package(NPY   REQUIRED)
 find_package(Cfg REQUIRED)
+find_package(Opticks REQUIRED)
 
 find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
@@ -85,6 +86,7 @@ set(INCLUDE_DIRS
    ${NumpyServer_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS} 
+   ${Opticks_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${Assimp_INCLUDE_DIRS}  
    ${AssimpWrap_INCLUDE_DIRS}  
@@ -117,6 +119,7 @@ set(DEFINITIONS
    ${ImGui_DEFINITIONS}
    ${Bregex_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
+   ${Opticks_DEFINITIONS}
 )
 
 
@@ -132,6 +135,7 @@ set(LIBRARIES
       ${Boost_LIBRARIES}
       ${ZMQ_LIBRARIES}
       ${Cfg_LIBRARIES}
+      ${Opticks_LIBRARIES}
       ${NumpyServer_LIBRARIES}
       ${NPY_LIBRARIES}
 

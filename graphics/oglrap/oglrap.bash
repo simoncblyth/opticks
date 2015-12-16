@@ -255,7 +255,6 @@ Demo
 
 CameraCfg
 CompositionCfg
-FrameCfg
 InteractorCfg
 RendererCfg
 TrackBallCfg

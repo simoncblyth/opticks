@@ -22,25 +22,19 @@ class NumpyEvt {
        static const char* recsel  ;
        static const char* sequence  ;
        static const char* aux ;
-
-      
-       typedef unsigned long long Sequence_t ;
    public:
        void setGenstepData(NPY<float>* genstep_data);
    public:
        void setIncomingData(NPY<float>* incoming_data);
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
-       void setOptix(bool optix=true);
-       void setAllocate(bool allocate=true);
    private:
        // invoked internally, as knock on from setGenstepData
        void createHostBuffers(); 
-       void allocateHostBuffers(); 
        void seedPhotonData();
        
        void setPhotonData(NPY<float>* photon_data);
-       void setSequenceData(NPY<Sequence_t>* history_data);
+       void setSequenceData(NPY<unsigned long long>* history_data);
        void setRecordData(NPY<short>* record_data);
        void setAuxData(NPY<short>* aux_data);
        void setRecselData(NPY<unsigned char>* recsel_data);
@@ -54,7 +48,7 @@ class NumpyEvt {
        NPY<short>*          getAuxData();
        NPY<unsigned char>*  getPhoselData();
        NPY<unsigned char>*  getRecselData();
-       NPY<Sequence_t>*     getSequenceData();
+       NPY<unsigned long long>*  getSequenceData();
 
    public:
        // optionals lodged here for debug dumping single photons/records  
@@ -95,7 +89,7 @@ class NumpyEvt {
        NPY<short>*           m_aux_data ;
        NPY<unsigned char>*   m_phosel_data ;
        NPY<unsigned char>*   m_recsel_data ;
-       NPY<Sequence_t>*      m_sequence_data ;
+       NPY<unsigned long long>*  m_sequence_data ;
 
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
@@ -111,10 +105,6 @@ class NumpyEvt {
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_photons ; 
        unsigned int    m_maxrec ; 
-
-       // temporary dev switches
-       bool            m_optix ; 
-       bool            m_allocate ; 
 
 };
 
@@ -141,21 +131,9 @@ inline NumpyEvt::NumpyEvt()
           m_photons(NULL),
           m_num_gensteps(0),
           m_num_photons(0),
-          m_maxrec(1),
-          m_optix(true),
-          m_allocate(true)
+          m_maxrec(1)
 {
     init();
-}
-
-
-inline void NumpyEvt::setOptix(bool optix)
-{
-    m_optix = optix ; 
-}
-inline void NumpyEvt::setAllocate(bool allocate)
-{
-    m_allocate = allocate ; 
 }
 
 
@@ -252,7 +230,7 @@ inline MultiViewNPY* NumpyEvt::getRecselAttr()
 
 
 
-inline NPY<NumpyEvt::Sequence_t>* NumpyEvt::getSequenceData()
+inline NPY<unsigned long long>* NumpyEvt::getSequenceData()
 {
     return m_sequence_data ;
 }

@@ -25,8 +25,11 @@ class Lookup ;
 #include "numpyserver.hpp"
 #endif
 
+//opticks-
+class Opticks ; 
+template <typename> class OpticksCfg ;
+
 // oglrap-
-template <typename> class FrameCfg ;
 class Scene ; 
 class Composition ; 
 class Frame ; 
@@ -116,10 +119,11 @@ class App {
 
   public:
        GCache* getCache(); 
-       FrameCfg<Frame>* getFrameCfg();
+       OpticksCfg<Opticks>* getOpticksCfg();
        bool hasOpt(const char* name);
 
   private:
+       Opticks*     m_opticks ; 
        const char*  m_prefix ; 
        Parameters*  m_parameters ; 
        Timer*       m_timer ; 
@@ -137,7 +141,8 @@ class App {
 #endif
        NumpyEvt*        m_evt ;
        Cfg*             m_cfg ;
-       FrameCfg<Frame>* m_fcfg ; 
+
+       OpticksCfg<Opticks>* m_fcfg ;   
        Types*           m_types ; 
        GGeo*            m_ggeo ; 
        GMergedMesh*     m_mesh0 ;  
@@ -178,6 +183,7 @@ class App {
 
 inline App::App(const char* prefix, int argc, char** argv )
    : 
+      m_opticks(NULL),
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),
@@ -230,10 +236,13 @@ inline GCache* App::getCache()
     return m_cache ; 
 }
 
-inline FrameCfg<Frame>* App::getFrameCfg()
+inline OpticksCfg<Opticks>* App::getOpticksCfg()
 {
     return m_fcfg ; 
 }
+
+
+
 inline bool App::isExit()
 {
     return m_exit ; 
