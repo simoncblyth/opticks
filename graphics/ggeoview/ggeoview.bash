@@ -154,6 +154,13 @@ ggv-rainbow()
        p) tag=6 ;;   
     esac
 
+    local g4=1
+    local script="ggv.sh"
+    if [ "$g4" == "1" ]; then
+       script="cfg4.sh"
+       tag=-$tag
+    fi 
+
     local torch_config=(
                  type=discIntersectSphere
                  photons=1000000
@@ -177,7 +184,7 @@ ggv-rainbow()
                  shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
                )
 
-    ggv.sh  \
+    $script  \
             $* \
             --animtimemax 10 \
             --timemax 10 \
@@ -187,7 +194,7 @@ ggv-rainbow()
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
             --tag $tag --cat rainbow \
-            --load 
+            --save
 
 
    # --load
@@ -197,6 +204,8 @@ ggv-rainbow()
    #      some of the others like animtimemax and timemax can ride in the fdom/idom/..
 
 }
+
+
 
 
 

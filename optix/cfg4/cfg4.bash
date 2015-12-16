@@ -161,6 +161,10 @@ cfg4---(){
 }
 
 cfg4--(){
+
+   opticks-
+   opticks-- 
+
    cfg4-make
    cfg4-install
 }

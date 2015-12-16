@@ -56,7 +56,7 @@ void Recorder::save()
 
     m_idom->setQuad(0, 0, ci );
 
-
+    m_photons->setVerbose(true);
     m_photons->save("ox%s", m_typ, m_tag, m_det);
     m_records->save("rx%s", m_typ, m_tag, m_det);
     m_history->save("ph%s", m_typ, m_tag, m_det);

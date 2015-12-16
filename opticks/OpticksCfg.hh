@@ -31,6 +31,7 @@ class OpticksCfg : public Cfg {
      int          getOverride(); 
      int          getDebugIdx(); 
      int          getStack(); 
+     int          getG4PhotonsPerEvent(); 
 private:
      void init();
 private:
@@ -60,6 +61,7 @@ private:
      int         m_override ; 
      int         m_debugidx ; 
      int         m_stack ; 
+     int         m_g4_photons_per_event;
 };
 
 template <class Listener>
@@ -87,7 +89,8 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_modulo(-1),
        m_override(-1),
        m_debugidx(0),
-       m_stack(2180)
+       m_stack(2180),
+       m_g4_photons_per_event(10000)
 {   
    init();  
 }
@@ -96,13 +99,6 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
 template <class Listener>
 inline void OpticksCfg<Listener>::init()
 {
-
-
-
-
-
-
-
    m_desc.add_options()
        ("version,v", "print version string") ;
 
@@ -152,8 +148,6 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()("warning",  "loglevel");
    m_desc.add_options()("error",  "loglevel");
    m_desc.add_options()("fatal",  "loglevel");
-
-
 
 
    m_desc.add_options()
@@ -216,7 +210,12 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("stack",  boost::program_options::value<int>(&m_stack), stack );
 
-
+   char g4ppe[256];
+   snprintf(g4ppe,256, 
+"Number of torch photons to generate/propagate per event with Geant4 cfg4.sh,"
+" changing the number of events to meet the photon total. Default %d", m_g4_photons_per_event);
+   m_desc.add_options()
+       ("g4ppe",  boost::program_options::value<int>(&m_g4_photons_per_event), g4ppe );
 
    m_desc.add_options()
        ("alt,a",  "use alternative record renderer") ;
@@ -335,11 +334,13 @@ inline std::string& OpticksCfg<Listener>::getConfigPath()
 template <class Listener>
 inline std::string& OpticksCfg<Listener>::getEventTag()
 {
+    if(m_event_tag.empty()) m_event_tag = "1" ;
     return m_event_tag ;
 }
 template <class Listener>
 inline std::string& OpticksCfg<Listener>::getEventCat()
 {
+    if(m_event_cat.empty()) m_event_cat = "" ;
     return m_event_cat ;
 }
 
@@ -476,8 +477,11 @@ inline int OpticksCfg<Listener>::getStack()
     return m_stack ; 
 }
 
-
-
+template <class Listener>
+inline int OpticksCfg<Listener>::getG4PhotonsPerEvent()
+{
+    return m_g4_photons_per_event ; 
+}
 
 
 

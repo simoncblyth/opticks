@@ -12,9 +12,7 @@
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
-
 #define OPTIX 1
-
 
 
 // oglrap-
@@ -607,10 +605,7 @@ void App::loadGenstep()
     boost::algorithm::to_lower(typ);
 
     std::string tag = m_fcfg->getEventTag();
-    if(tag.empty()) tag = "1" ; 
-
     std::string cat = m_fcfg->getEventCat();
-    if(cat.empty()) cat = "" ; 
 
     std::string det = m_cache->getDetector();
 

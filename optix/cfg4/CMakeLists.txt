@@ -10,23 +10,26 @@ set(BUILD_SHARED_LIBS ON)
 
 include(EnvBuildOptions)
 
-
 find_package(Boost REQUIRED)
 find_package(Bregex REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
+find_package(Cfg REQUIRED)
 find_package(GGeo REQUIRED)
+find_package(Opticks REQUIRED)
 
 find_package(Geant4 REQUIRED)  
 
 
-set(INCLUDE_DIRS
+set(INCLUDE_DIRS  
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS}
    ${Bregex_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
+   ${Cfg_INCLUDE_DIRS}
    ${GGeo_INCLUDE_DIRS}
+   ${Opticks_INCLUDE_DIRS}
    ${Geant4_INCLUDE_DIRS}
 )
 
@@ -34,14 +37,19 @@ set(LIBRARIES
    ${Boost_LIBRARIES}
    ${Bregex_LIBRARIES}
    ${NPY_LIBRARIES}
+   ${Cfg_LIBRARIES}
    ${GGeo_LIBRARIES}
+   ${Opticks_LIBRARIES}
    ${Geant4_LIBRARIES}
 )
 
 set(DEFINITIONS
    ${Boost_DEFINITIONS} 
    ${Bregex_DEFINITIONS} 
+   ${NPY_DEFINITIONS} 
    ${GGeo_DEFINITIONS} 
+   ${Cfg_DEFINITIONS} 
+   ${Opticks_DEFINITIONS}
    ${Geant4_DEFINITIONS}
 )
 
