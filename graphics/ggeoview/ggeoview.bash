@@ -17,6 +17,37 @@ ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199_source=0,0,1000
 
 join(){ local IFS="$1"; shift; echo "$*"; }
 
+dump(){
+  local IFS="$1" ; shift  
+  local elements
+  read -ra elements <<< "$*"
+  local elem
+  for elem in "${elements[@]}"; do
+      printf "   %s\n" $elem
+  done
+}
+
+ggv-joinsplit(){
+
+   local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=box
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 parameters=-1,1,0,500
+
+                 shape=lens
+                 boundary=MineralOil///Pyrex
+                 parameters=100,100,-50,50
+                   ) 
+
+   echo test_config ${test_config[@]} 
+
+   local packed="$(join _ ${test_config[@]})"
+   echo packed $packed 
+   dump _ "$packed"
+}
 
 
 
@@ -40,6 +71,7 @@ ggv-bib(){
           --eye 0.5,0.5,0.0 \
            $*  
 }
+
 
 
 
@@ -133,27 +165,45 @@ ggv-wavelength()
 }
 
 
+ggv-rainbow-usage(){ cat << EOU
+
+ggv-;ggv-rainbow 
+ggv-;ggv-rainbow --ppol
+ggv-;ggv-rainbow --spol
+ggv-;ggv-rainbow --cfg4 --spol
+ggv-;ggv-rainbow --cfg4 --ppol
+ggv-;ggv-rainbow --cfg4 --ppol --dbg
+
+EOU
+}
 
 ggv-rainbow()
 {
-    type $FUNCNAME
+    local msg="=== $FUNCNAME :"
 
     local cmdline=$*
-    local pol=${1:-s}
-    local cfg4=1
+
+    local pol
+    if [ "${cmdline/--spol}" != "${cmdline}" ]; then
+         pol=s
+         cmdline=${cmdline/--spol}
+    elif [ "${cmdline/--ppol}" != "${cmdline}" ]; then
+         pol=p
+         cmdline=${cmdline/--ppol}
+    else
+         pol=s
+    fi  
+
     local tag
     case $pol in 
        s) tag=5 ;;   
        p) tag=6 ;;   
     esac
 
-    local utag
     if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
-        utag=-$tag  
-    else
-        utag=$tag 
+        tag=-$tag  
     fi 
-    echo utag $utag NEGATED
+
 
     #local material=GlassSchottF2
     local material=MainH2OHale
@@ -161,8 +211,7 @@ ggv-rainbow()
     #local azimuth=-0.25,0.25
     local azimuth=0,1
     local wavelength=0
-    #local azimuth=0,1
-
+    local identity=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
     #local photons=1000000
     local photons=10000
 
@@ -172,7 +221,7 @@ ggv-rainbow()
                  mode=${pol}pol
                  polarization=$surfaceNormal
                  frame=-1
-                 transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
+                 transform=$identity
                  source=-600,0,0
                  target=0,0,0
                  radius=100
@@ -189,8 +238,9 @@ ggv-rainbow()
                  shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
                )
 
+    #args.sh  \
     ggv.sh  \
-            $* \
+            $cmdline \
             --animtimemax 10 \
             --timemax 10 \
             --geocenter \
@@ -198,7 +248,7 @@ ggv-rainbow()
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --tag $utag --cat rainbow \
+            --tag $tag --cat rainbow \
             --save
 
 }

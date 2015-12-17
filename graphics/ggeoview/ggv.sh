@@ -1,8 +1,28 @@
 #!/bin/bash -l
-
 cmdline="$*"
 
-#echo cmdline $cmdline
+dump(){
+  local IFS="$1" ; shift  
+  local elements
+  read -ra elements <<< "$*" 
+  local elem 
+  for elem in "${elements[@]}"; do
+      printf "   %s\n" $elem
+  done 
+}
+
+
+echo $0 dumping cmdline arguments
+for arg in $cmdline 
+do
+   if [ "${arg/=}" == "${arg}" ]; then  
+       printf "%s\n" $arg
+   else
+       dump _ $arg
+   fi
+done
+
+#exit
 
 
 npy-

@@ -88,6 +88,7 @@ add_library(${name} SHARED
                 GPmt.cc
                 GMaker.cc
                 GGeoTest.cc
+                GGeoTestConfig.cc
 )
 
 
@@ -138,6 +139,7 @@ GParts.hh
 GPmt.hh
 GMaker.hh
 GGeoTest.hh
+GGeoTestConfig.hh
 )
 
 target_link_libraries(${name} ${LIBRARIES})

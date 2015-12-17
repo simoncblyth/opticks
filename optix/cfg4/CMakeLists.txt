@@ -57,6 +57,7 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 add_library(${name} SHARED 
+CfG4.cc
 Format.cc
 Recorder.cc
 OpSource.cc
@@ -70,6 +71,7 @@ SteppingVerbose.cc
 )
 
 SET(hdrs 
+CfG4.hh
 Format.hh
 Recorder.hh
 OpSource.hh
@@ -87,7 +89,7 @@ target_link_libraries(${name} ${LIBRARIES})
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
 
-add_executable(${name}test ${name}.cc)                  
+add_executable(${name}test main.cc)                  
 target_link_libraries(${name}test ${name} ${LIBRARIES})
 
 install(TARGETS ${name}test    DESTINATION bin)

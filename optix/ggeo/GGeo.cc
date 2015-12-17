@@ -10,6 +10,7 @@
 #include "GTreeCheck.hh"
 #include "GTreePresent.hh"
 #include "GColorizer.hh"
+#include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
 #include "GPmt.hh"
 #include "GColors.hh"
@@ -318,13 +319,14 @@ void GGeo::save(const char* idpath)
 void GGeo::modifyGeometry(const char* config)
 {
     // NB only invoked with test option : "ggv --test" 
+    GGeoTestConfig* gtc = new GGeoTestConfig(config);
 
     LOG(debug) << "GGeo::modifyGeometry" 
               << " config [" << ( config ? config : "" ) << "]" ; 
 
     assert(m_geotest == NULL);
-    m_geotest = new GGeoTest(m_cache);
-    m_geotest->configure(config);
+
+    m_geotest = new GGeoTest(m_cache, gtc);
     m_geotest->modifyGeometry();
 }
 

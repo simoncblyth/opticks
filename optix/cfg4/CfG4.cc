@@ -1,11 +1,5 @@
-#include <cstdio>
-
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
-#include "G4String.hh"
-#include "G4UIExecutive.hh"
-
 // cfg4-
+#include "CfG4.hh"
 #include "PhysicsList.hh"
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
@@ -20,83 +14,47 @@
 #include "OpticksPhoton.h"
 #include "OpticksCfg.hh"
 
-
 //ggeo-
 #include "GCache.hh"
+#include "GBndLib.hh"
 
-class CfG4 
-{
-   public:
-        CfG4(const char* prefix);
-        virtual ~CfG4();
-   private:
-        void init();
-   public:
-        void configure(int argc, char** argv);
-        void propagate();
-        void save();
-   private:
-        const char*           m_prefix ;
-        Opticks*              m_opticks ;  
-        OpticksCfg<Opticks>*  m_cfg ;
-        GCache*               m_cache ; 
-        TorchStepNPY*         m_torch ; 
-   private:
-        DetectorConstruction* m_detector ; 
-        Recorder*             m_recorder ; 
-        G4RunManager*         m_runManager ;
-   private:
-        unsigned int          m_g4_nevt ; 
-        unsigned int          m_g4_photons_per_event ; 
-        unsigned int          m_num_photons ; 
+//g4-
+#include "G4RunManager.hh"
+//#include "G4UImanager.hh"
+#include "G4String.hh"
+//#include "G4UIExecutive.hh"
 
-};
-
-inline CfG4::CfG4(const char* prefix) 
-   :
-     m_prefix(strdup(prefix)),
-     m_opticks(NULL),
-     m_cfg(NULL),
-     m_cache(NULL),
-     m_torch(NULL),
-     m_detector(NULL),
-     m_recorder(NULL),
-     m_runManager(NULL),
-     m_g4_nevt(0),
-     m_g4_photons_per_event(0),
-     m_num_photons(0)
-{
-    init();
-}
-
-inline void CfG4::init()
+void CfG4::init()
 {
     m_opticks = new Opticks();
     m_cfg = new OpticksCfg<Opticks>("opticks", m_opticks,false);
     m_cache = new GCache(m_prefix, "cfg4.log", "info");
 }
 
-inline void CfG4::configure(int argc, char** argv)
+void CfG4::configure(int argc, char** argv)
 {
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
 
-    unsigned int code = m_opticks->getSourceCode();
+    bool constituents ; 
+    m_blib = GBndLib::load(m_cache, constituents=true);
+    m_blib->Summary("CfG4::configure");
+
+    unsigned int code = m_opticks->getSourceCode(); // cfg is lodged inside opticks
     assert(code == TORCH && "cfg4 only supports source type TORCH" );
 
-    std::string typ = Opticks::SourceTypeLowercase(code);
 
     m_torch = m_opticks->makeSimpleTorchStep();
     m_torch->dump();
 
     m_num_photons = m_torch->getNumPhotons();
  
+    std::string typ = Opticks::SourceTypeLowercase(code);
     std::string tag = m_cfg->getEventTag();
     std::string cat = m_cfg->getEventCat();
 
     unsigned int maxrec = m_cfg->getRecordMax();
     assert(maxrec == 10);
-
 
     m_g4_photons_per_event = m_cfg->getG4PhotonsPerEvent();
     assert( m_num_photons % m_g4_photons_per_event == 0 && "expecting num_photons to be exactly divisible by g4_photons_per_event" );
@@ -124,10 +82,11 @@ inline void CfG4::configure(int argc, char** argv)
     m_runManager->SetUserInitialization(new ActionInitialization(m_recorder));
     m_runManager->Initialize();
 
+    // domains used for record compression 
     m_recorder->setCenterExtent(m_detector->getCenterExtent());
     m_recorder->setBoundaryDomain(m_detector->getBoundaryDomain());
 }
-inline void CfG4::propagate()
+void CfG4::propagate()
 {
     LOG(info) << "CfG4::propagate"
               << " g4_nevt " << m_g4_nevt 
@@ -136,25 +95,15 @@ inline void CfG4::propagate()
               ; 
     m_runManager->BeamOn(m_g4_nevt);
 }
-inline void CfG4::save()
+
+void CfG4::save()
 {
     m_recorder->save();
 }
-inline CfG4::~CfG4()
+CfG4::~CfG4()
 {
     delete m_runManager;
 }
 
 
 
-int main(int argc, char** argv)
-{
-    CfG4* app = new CfG4("GGEOVIEW_") ; // TODO: change prefix to "OPTICKS_" to reflect generality 
-
-    app->configure(argc, argv);
-    app->propagate();
-    app->save();
-
-    delete app ; 
-    return 0 ; 
-}
