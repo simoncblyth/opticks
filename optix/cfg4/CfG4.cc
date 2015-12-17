@@ -1,7 +1,7 @@
 // cfg4-
 #include "CfG4.hh"
 #include "PhysicsList.hh"
-#include "DetectorConstruction.hh"
+#include "Detector.hh"
 #include "ActionInitialization.hh"
 #include "Recorder.hh"
 
@@ -17,12 +17,11 @@
 //ggeo-
 #include "GCache.hh"
 #include "GBndLib.hh"
+#include "GGeoTestConfig.hh"
 
 //g4-
 #include "G4RunManager.hh"
-//#include "G4UImanager.hh"
 #include "G4String.hh"
-//#include "G4UIExecutive.hh"
 
 void CfG4::init()
 {
@@ -36,19 +35,20 @@ void CfG4::configure(int argc, char** argv)
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
 
-    bool constituents ; 
-    m_blib = GBndLib::load(m_cache, constituents=true);
-    m_blib->Summary("CfG4::configure");
 
     unsigned int code = m_opticks->getSourceCode(); // cfg is lodged inside opticks
     assert(code == TORCH && "cfg4 only supports source type TORCH" );
-
-
     m_torch = m_opticks->makeSimpleTorchStep();
-    m_torch->dump();
-
+    //m_torch->dump();
     m_num_photons = m_torch->getNumPhotons();
  
+
+    assert( m_cfg->hasOpt("test") && "cfg4 only supports test geometries");
+    std::string testconfig = m_cfg->getTestConfig();
+    m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
+    //m_testconfig->dump("CfG4::configure");
+
+
     std::string typ = Opticks::SourceTypeLowercase(code);
     std::string tag = m_cfg->getEventTag();
     std::string cat = m_cfg->getEventCat();
@@ -74,7 +74,11 @@ void CfG4::configure(int argc, char** argv)
     m_recorder = new Recorder(typ.c_str(),tag.c_str(),cat.c_str(),m_num_photons,maxrec, m_g4_photons_per_event); 
     if(strcmp(tag.c_str(), "-5") == 0)  m_recorder->setIncidentSphereSPolarized(true) ;
 
-    m_detector  = new DetectorConstruction() ; 
+    m_detector  = new Detector(m_cache, m_testconfig) ; 
+
+    G4VPhysicalVolume* dev = m_detector->CreateBoxInBox();
+
+
     m_runManager = new G4RunManager;
 
     m_runManager->SetUserInitialization(new PhysicsList());

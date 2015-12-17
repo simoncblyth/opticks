@@ -1,32 +1,9 @@
-#include "DetectorConstruction.hh"
-
-#include "NLog.hpp"
-#include "GPropertyLib.hh"
-
-#include "G4RunManager.hh"
 
 
-#include "G4NistManager.hh"
-
-#include "G4MaterialTable.hh"
-#include "G4Material.hh"
-#include "G4Box.hh"
-#include "G4Sphere.hh"
-#include "G4LogicalVolume.hh"
-#include "G4ThreeVector.hh"
-#include "G4PVPlacement.hh"
-#include "globals.hh"
-#include "G4UImanager.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4RotationMatrix.hh"
-
-// /usr/local/env/g4/geant4.10.02.install/share/Geant4-10.2.0/examples/extended/optical/OpNovice/src/OpNoviceDetectorConstruction.cc
-
-DetectorConstruction::~DetectorConstruction() {}
 
 
-G4double DetectorConstruction::photonEnergy[] =
+
+G4double Detector::photonEnergy[] =
             { 2.034*eV, 2.068*eV, 2.103*eV, 2.139*eV,
               2.177*eV, 2.216*eV, 2.256*eV, 2.298*eV,
               2.341*eV, 2.386*eV, 2.433*eV, 2.481*eV,
@@ -36,32 +13,14 @@ G4double DetectorConstruction::photonEnergy[] =
               3.353*eV, 3.446*eV, 3.545*eV, 3.649*eV,
               3.760*eV, 3.877*eV, 4.002*eV, 4.136*eV };
 
-void DetectorConstruction::init()
-{
-    m_nistMan = G4NistManager::Instance(); 
-   // m_nistMan->SetVerbose(5);
 
-    float extent = 1200.f ;  
-    m_center_extent.x = 0.f ; 
-    m_center_extent.y = 0.f ; 
-    m_center_extent.z = 0.f ; 
-    m_center_extent.w = extent ; 
 
-    m_boundary_domain = GPropertyLib::getDefaultDomainSpec() ;
-}
 
-G4VPhysicalVolume* DetectorConstruction::Construct()
-{
-    m_vacuum = m_nistMan->FindOrBuildMaterial("G4_Galactic");
-    m_vacuum->SetMaterialPropertiesTable(MakeVacuumProps());
 
-    m_water  = m_nistMan->FindOrBuildMaterial("G4_WATER");
-    m_water->SetMaterialPropertiesTable(MakeWaterProps());
 
-    return ConstructDetector();
-}
 
-void DetectorConstruction::DumpDomain(const char* msg)
+
+void Detector::DumpDomain(const char* msg)
 {
   const G4int nEntries = sizeof(photonEnergy)/sizeof(G4double);
   G4cout << msg << " " << nEntries << G4endl ;  
@@ -81,7 +40,11 @@ void DetectorConstruction::DumpDomain(const char* msg)
   } 
 }
 
-G4MaterialPropertiesTable* DetectorConstruction::MakeWaterProps()
+
+
+
+
+G4MaterialPropertiesTable* Detector::MakeWaterProps()
 {
     const G4int nEntries = sizeof(photonEnergy)/sizeof(G4double);
 
@@ -115,7 +78,7 @@ G4MaterialPropertiesTable* DetectorConstruction::MakeWaterProps()
 }
 
 
-G4MaterialPropertiesTable* DetectorConstruction::MakeVacuumProps()
+G4MaterialPropertiesTable* Detector::MakeVacuumProps()
 {
     const G4int nEntries = sizeof(photonEnergy)/sizeof(G4double);
 
@@ -142,12 +105,11 @@ G4MaterialPropertiesTable* DetectorConstruction::MakeVacuumProps()
 
 
 
-
-G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
+G4VPhysicalVolume* Detector::ConstructDetector_Old()
 {
   float extent = m_center_extent.w ;
 
-  LOG(info) << "DetectorConstruction::ConstructDetector extent " << extent << " mm " << mm ;  
+  LOG(info) << "Detector::ConstructDetector extent " << extent << " mm " << mm ;  
   {
   
       G4double x = extent*mm;
@@ -161,7 +123,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 
   {
      G4double radius = 100.*mm;
-     G4Sphere* solid = new G4Sphere("sphere_solid", 0., radius, 0., twopi, 0., pi);    //size
+     G4Sphere* solid = new G4Sphere("sphere_solid", 0., radius, 0., twopi, 0., pi);   
 
      G4LogicalVolume* log = new G4LogicalVolume(solid, m_water, "sphere_log");
     
@@ -174,10 +136,18 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
                              false,                     //no boolean operation
                              0);                        //copy number
   } 
-
   return m_box_phys ;
 }
 
 
+G4VPhysicalVolume* Detector::Construct_Old()
+{
+    m_vacuum = m_nistMan->FindOrBuildMaterial("G4_Galactic");
+    m_vacuum->SetMaterialPropertiesTable(MakeVacuumProps());
 
+    m_water  = m_nistMan->FindOrBuildMaterial("G4_WATER");
+    m_water->SetMaterialPropertiesTable(MakeWaterProps());
+
+    return ConstructDetector();
+}
 

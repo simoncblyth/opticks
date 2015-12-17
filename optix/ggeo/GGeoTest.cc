@@ -45,28 +45,22 @@ void GGeoTest::init()
 }
 
 
-
 void GGeoTest::dump(const char* msg)
 {
     LOG(info) << msg  
               ; 
 }
 
-
-
 void GGeoTest::modifyGeometry()
 {
-    unsigned int nbnd = m_config->getNumBoundaries();
-    unsigned int npar = m_config->getNumParameters();
-    unsigned int nshp = m_config->getNumShapes();
+    unsigned int nelem = m_config->getNumElements();
+    assert(nelem > 0);
+
     const char* mode = m_config->getMode();
     bool analytic = m_config->getAnalytic();
 
-
-    assert( nbnd == npar && nbnd == nshp && "need equal number of boundaries, parameters and shapes");
-    assert(nbnd > 0);
-
     GMergedMesh* tmm(NULL);
+
     // TODO: eliminate the mode split, unifying createPmtInBox, createBoxInBox -> create
     if(     strcmp(mode, "PmtInBox") == 0) tmm = createPmtInBox(); 
     else if(strcmp(mode, "BoxInBox") == 0) tmm = createBoxInBox(); 
@@ -131,7 +125,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
 GMergedMesh* GGeoTest::createBoxInBox()
 {
     std::vector<GSolid*> solids ; 
-    unsigned int n = m_config->getNumBoundaries();
+    unsigned int n = m_config->getNumElements();
 
     for(unsigned int i=0 ; i < n ; i++)
     {

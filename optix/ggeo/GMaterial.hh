@@ -7,7 +7,6 @@
 //     absorption_length
 //     scattering_length
 //     reemission_prob
-//     reemission_cdf
 //
 
 #include "GPropertyMap.hh"

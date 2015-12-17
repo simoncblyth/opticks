@@ -57,12 +57,14 @@ class GGeoTestConfig {
        NSlice*   getSlice();
        bool      getAnalytic();
        const char* getMode();
+       unsigned int getNumElements();
 
+       std::vector<std::pair<std::string, std::string> >& getCfg();
+       void dump(const char* msg="GGeoTestConfig::dump");
+   private:
        unsigned int getNumBoundaries();
        unsigned int getNumParameters();
        unsigned int getNumShapes();
-       std::vector<std::pair<std::string, std::string> >& getCfg();
-       void dump(const char* msg="GGeoTestConfig::dump");
    private:
        const char*  m_config ; 
        const char*  m_mode ; 

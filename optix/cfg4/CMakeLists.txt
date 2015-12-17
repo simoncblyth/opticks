@@ -63,7 +63,7 @@ Recorder.cc
 OpSource.cc
 OpStatus.cc
 PhysicsList.cc
-DetectorConstruction.cc
+Detector.cc
 PrimaryGeneratorAction.cc
 ActionInitialization.cc
 SteppingAction.cc
@@ -77,7 +77,7 @@ Recorder.hh
 OpSource.hh
 OpStatus.hh
 PhysicsList.hh
-DetectorConstruction.hh
+Detector.hh
 PrimaryGeneratorAction.hh
 ActionInitialization.hh
 SteppingAction.hh

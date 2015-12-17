@@ -6,8 +6,9 @@ class Opticks ;
 template <typename T> class OpticksCfg ;
 class GCache ; 
 class GBndLib ;
+class GGeoTestConfig ; 
 class TorchStepNPY ;
-class DetectorConstruction ; 
+class Detector ; 
 class Recorder ; 
 class G4RunManager ; 
 
@@ -26,11 +27,11 @@ class CfG4
         const char*           m_prefix ;
         Opticks*              m_opticks ;  
         OpticksCfg<Opticks>*  m_cfg ;
+        GGeoTestConfig*       m_testconfig ; 
         GCache*               m_cache ; 
-        GBndLib*              m_blib ; 
         TorchStepNPY*         m_torch ; 
    private:
-        DetectorConstruction* m_detector ; 
+        Detector*             m_detector ; 
         Recorder*             m_recorder ; 
         G4RunManager*         m_runManager ;
    private:
@@ -45,8 +46,8 @@ inline CfG4::CfG4(const char* prefix)
      m_prefix(strdup(prefix)),
      m_opticks(NULL),
      m_cfg(NULL),
+     m_testconfig(NULL),
      m_cache(NULL),
-     m_blib(NULL),
      m_torch(NULL),
      m_detector(NULL),
      m_recorder(NULL),

@@ -115,6 +115,7 @@ class GBndLib : public GPropertyLib {
        void sort();
        void defineDefaults(GPropertyMap<float>* defaults);
   public:
+       void Summary(const char* msg="GBndLib::Summary");
        void dump(const char* msg="GBndLib::dump");
        void dumpBoundaries(std::vector<unsigned int>& boundaries, const char* msg="GBndLib::dumpBoundaries");
   public:

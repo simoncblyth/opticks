@@ -503,6 +503,12 @@ void GBndLib::defineDefaults(GPropertyMap<float>* defaults)
     LOG(debug) << "GBndLib::defineDefaults" ; 
 }
  
+void GBndLib::Summary(const char* msg)
+{
+    unsigned int ni = getNumBnd();
+    LOG(info) << msg << " NumBnd:" << ni ; 
+}
+
 void GBndLib::dump(const char* msg)
 {
     LOG(info) << msg ; 

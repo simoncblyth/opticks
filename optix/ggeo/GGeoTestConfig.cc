@@ -81,12 +81,44 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
     }
 }
 
+
+
+unsigned int GGeoTestConfig::getNumElements()
+{
+    unsigned int nbnd = getNumBoundaries();
+    unsigned int nshp = getNumShapes();
+    unsigned int npar = getNumParameters();
+
+    assert( nbnd == npar && nbnd == nshp && "need equal number of boundaries, parameters and shapes");
+    assert(nbnd > 0);
+    return nbnd ; 
+}
+
+
 void GGeoTestConfig::dump(const char* msg)
 {
+    unsigned int n = getNumElements();
     LOG(info) << msg  
               << " config " << m_config 
               << " mode " << m_mode 
+              << " nelem " << n 
               ; 
+
+    for(unsigned int i=0 ; i < n ; i++)
+    {
+        char shapecode = getShape(i) ;
+        const char* spec = getBoundary(i);
+        glm::vec4 param = getParameters(i);
+
+        std::cout
+                  << " i " << std::setw(2) << i 
+                  << " shapecode " << std::setw(2) << shapecode 
+                  << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
+                  << " param " << std::setw(50) << gformat(param)
+                  << " spec " << std::setw(30) << spec
+                  << std::endl 
+                  ;
+    }
 }
 
 void GGeoTestConfig::setMode(const char* s)
