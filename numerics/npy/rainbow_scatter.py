@@ -530,9 +530,8 @@ class Pair(object):
        self.s = Evt(tag=tags[1],src=src, det=det, label=labels[1])
        self.name = name
        self.det = det 
-   def __str__(self):
-       return "%s %s " % (self.name, self.det)  
-
+   def __repr__(self):
+       return "p %s s %s" % (repr(self.p), repr(self.s))  
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

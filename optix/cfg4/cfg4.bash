@@ -15,16 +15,79 @@ Objectives
 * Add requisite step action(?) to record photon steps in the same format as
   optixrap- using NPY 
 
+Classes
+--------
 
-1st approach : try to follow Chroma g4py use of Geant4 
----------------------------------------------------------
+CfG4
+     app umbrella, bringing together Opticks and G4 
+
+ActionInitialization
+     G4VUserActionInitialization subclass, providing UserAction plumbing 
+
+Detector
+     G4VUserDetectorConstruction subclass, creating G4Materials and logical/physical
+     volumes based 
+     configured based on a GGeoTestConfig instance
+
+PrimaryGeneratorAction
+     G4VUserPrimaryGeneratorAction subclass, providing GeneratePrimaries(G4Event*)
+
+OpSource
+     G4VPrimaryGenerator subclass, providing GeneratePrimaryVertex(G4Event *evt)
+     using distribution generators from SingleParticleSource to generate 
+     squadrons of optical photons
+
+     G4SPSPosDistribution
+     G4SPSAngDistribution
+     G4SPSEneDistribution
+
+     TODO: configure based on TorchStepNPY 
+     HMM: maybe split Torch config parsing into separate class analogously to GGeoTestConfig  
+
+PhysicsList
+     G4VModularPhysicsList subclass, follow chroma : registered just 
+
+     G4OpticalPhysics() 
+     G4EmPenelopePhysics(0) 
+
+OpStatus
+     status code formatters and translation of G4 codes to Opticks flags 
+
+SteppingAction
+     G4UserSteppingAction subclass, obtains G4OpBoundaryProcessStatus
+     and feeds contained Recorder instance with G4Step
+
+Recorder
+     RecorderBase subclass, collects photons and compressed 
+     photon step records into NPY arrays in Opticks array format
+     which are persisted to .npy  
+
+RecorderBase
+     pure virtual base of limited utility, 
+     maybe eliminate and just use Recorder directly 
+
+Format
+     G4 object debug descriptions
+
+SteppingVerbose
+     Not currently used
+
+
+
+
+[ABANDONED AFTER 1HR] 1st approach : try to follow Chroma g4py use of Geant4 
+-------------------------------------------------------------------------------
 
 * /usr/local/env/chroma_env/src/chroma/chroma/generator
 * ~/env/chroma/chroma_geant4_integration.rst
 
+Too complicated an environment to work with (python/numpy/pyublas/g4py/g4/chroma/..)  
+for little gain over my bog standard G4 C++ examples approach in cfg4-
+with NPY persisting to for python analysis
 
-2nd approach : C++ following Geant4 examples 
-----------------------------------------------
+
+[PURSUING] 2nd approach : C++ following Geant4 examples 
+--------------------------------------------------------
 
 * reuse ggeo- machinery as much as possible
 

@@ -70,16 +70,23 @@ unsigned int Recorder::getPointFlag(const G4StepPoint* point, const G4OpBoundary
     // TODO: cache the relevant process objects, so can just compare pointers ?
     const G4VProcess* process = point->GetProcessDefinedStep() ;
     const G4String& processName = process ? process->GetProcessName() : "NoProc" ; 
-    bool transportation = strcmp(processName,"Transportation")==0 ;
+
+    bool transportation = strcmp(processName,"Transportation") == 0 ;
+    bool scatter = strcmp(processName, "OpRayleigh") == 0 ; 
+    bool absorption = strcmp(processName, "OpAbsorption") == 0 ;
 
     unsigned int flag(0);
-    if(strcmp(processName,"OpAbsorption")==0 && status == fPostStepDoItProc )
+    if(absorption && status == fPostStepDoItProc )
     {
         flag = BULK_ABSORB ;
     }
+    else if(scatter && status == fPostStepDoItProc )
+    {
+        flag = BULK_SCATTER ;
+    }
     else if(transportation && status == fWorldBoundary )
     {
-        flag = SURFACE_ABSORB ;   // kludge
+        flag = SURFACE_ABSORB ;   // kludge for fWorldBoundary - no surface handling yet 
     }
     else if(transportation && status == fGeomBoundary )
     {

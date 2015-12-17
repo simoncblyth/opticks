@@ -139,13 +139,19 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
     unsigned int flag = 0 ; 
     switch(status)
     {
-        case FresnelRefraction:flag=BOUNDARY_TRANSMIT;break;
-        case FresnelReflection:flag=BOUNDARY_REFLECT;break;
-        case StepTooSmall:flag=NAN_ABORT;break;
+        case FresnelRefraction:
+                               flag=BOUNDARY_TRANSMIT;
+                               break;
+        case TotalInternalReflection:
+        case       FresnelReflection:
+                               flag=BOUNDARY_REFLECT;
+                               break;
+        case StepTooSmall:
+                               flag=NAN_ABORT;
+                               break;
 
         case Undefined:
         case Transmission:
-        case TotalInternalReflection:
         case LambertianReflection:
         case LobeReflection:
         case SpikeReflection:
@@ -180,7 +186,8 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case GroundVM2000AirReflection:
         case GroundVM2000GlueReflection:
         case Dichroic:
-                      flag=0;break;
+                      flag=0;
+                      break;
     }
     return flag ; 
 }

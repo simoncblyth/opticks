@@ -119,12 +119,13 @@ class Evt(object):
     def __repr__(self):
         return "Evt(%s,\"%s\",\"%s\",\"%s\")" % (self.tag, self.src, self.det,self.label)
 
-    def history_table(self):
+    def history_table(self, sli=slice(None)):
         seqhis = self.seqhis
         cu = count_unique(seqhis)
+        cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
 
         sh = SeqHis()
-        sh.table(cu, hex_=True)
+        sh.table(cu[sli], hex_=True)
         self.sh = sh
 
         tot = cu[:,1].astype(np.int32).sum()

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "G4StepStatus.hh"
 #include "G4OpBoundaryProcess.hh"
 #include <string>

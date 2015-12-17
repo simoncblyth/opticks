@@ -212,8 +212,9 @@ ggv-rainbow()
     local azimuth=0,1
     local wavelength=0
     local identity=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
-    #local photons=1000000
-    local photons=10000
+
+    local photons=1000000
+    #local photons=10000
 
     local torch_config=(
                  type=discIntersectSphere

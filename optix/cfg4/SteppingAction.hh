@@ -10,7 +10,6 @@ class SteppingAction : public G4UserSteppingAction
 {
   public:
     SteppingAction(RecorderBase* recorder);
-    SteppingAction();
     virtual ~SteppingAction();
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
