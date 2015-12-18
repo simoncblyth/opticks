@@ -106,6 +106,7 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		// create new primaries and set them to the vertex
 		G4double mass = m_definition->GetPDGMass();
 
+
 		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
 		particle->SetKineticEnergy(pp.energy );
 		particle->SetMass( mass );
@@ -114,8 +115,9 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
         if(m_isspol)
         {
-            G4double phi = std::atan2( pp.position.y(), pp.position.x() ); 
-		    particle->SetPolarization(std::sin(phi), -std::cos(phi), 0. );
+            //G4double phi = std::atan2( pp.position.y(), pp.position.x() );
+            G4double phi = std::atan2( pp.position.y(), pp.position.z() );
+		    particle->SetPolarization(0., -std::sin(phi), std::cos(phi) );  // see cfg4.rst
         }
         else
         {
@@ -132,14 +134,11 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		}
 		// Set bweight equal to the multiple of all non-zero weights
 		G4double weight = m_eneGen->GetWeight()*m_ranGen->GetBiasWeight();
-		// pass it to primary particle
 		particle->SetWeight(weight);
 
 		vertex->SetPrimary(particle);
 
         evt->AddPrimaryVertex(vertex);
-        if (m_verbosityLevel > 1)
-            G4cout << " Primary Vetex generated !" << G4endl;
 	}
 }
 
@@ -147,14 +146,17 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
 void OpSource::configure()
 {
+    m_torch->Summary("OpSource::configure");
+
     unsigned int n = m_torch->getNumPhotonsPerG4Event();
     SetNumberOfParticles(n);
 
     G4ParticleDefinition* definition = G4ParticleTable::GetParticleTable()->FindParticle("opticalphoton");
     SetParticleDefinition(definition);
 
-    bool isspol = m_torch->getIncidentSphereSPolarized();
+    bool isspol = m_torch->isIncidentSphere() && m_torch->isSPolarized() ;
     setIncidentSphereSPolarized(isspol);
+
     // specific custom S-polarization for rainbow geometry with incident planar disc of photons
 
     float w = m_torch->getWavelength() ; 
@@ -171,33 +173,43 @@ void OpSource::configure()
     }
 
 
-    float t = m_torch->getTime();
-    G4double time = t*ns ;
-    SetParticleTime(time);
 
-    // hmm these are for rainbow geometry 
-    G4ThreeVector pos(-600.0*mm,0.0*mm,0.0*mm);
+    float _t = m_torch->getTime();
+    glm::vec3 _pos = m_torch->getPosition();
+    glm::vec3 _dir = m_torch->getDirection();
+
+    float _radius = m_torch->getRadius();
+
+
+    SetParticleTime(_t*ns);
+    G4ThreeVector pos(_pos.x*mm,_pos.y*mm,_pos.z*mm);
     SetParticlePosition(pos);
 
-
     G4ThreeVector cen(pos);
-    G4ThreeVector dir(1.,0.,0.);
-    G4ThreeVector pol(1.,0.,0.);
-    G4ThreeVector posX(0,1.,0.);
-    G4ThreeVector posY(0,0.,1.);
 
+    // TODO: from config? need more state as the pol holds surfaceNormal ?
+    G4ThreeVector pol(1.,0.,0.); 
     SetParticlePolarization(pol);
 
+    // hmm these are for rainbow geometry 
     m_posGen->SetPosDisType("Plane");
     m_posGen->SetPosDisShape("Circle");
-    m_posGen->SetRadius(100.0*mm);
+    m_posGen->SetRadius(_radius*mm);
+
     m_posGen->SetCentreCoords(cen);
+
+    G4ThreeVector posX(0,1.,0.);
+    G4ThreeVector posY(0,0.,1.);
     m_posGen->SetPosRot1(posX);
     m_posGen->SetPosRot2(posY);
-    //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(posGen->GenerateOne(), "posGen", 10) << G4endl ; 
 
     m_angGen->SetAngDistType("planar");
+
+    G4ThreeVector dir(_dir.x,_dir.y,_dir.z);
     m_angGen->SetParticleMomentumDirection(dir);
+
+
+    //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(posGen->GenerateOne(), "posGen", 10) << G4endl ; 
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(angGen->GenerateOne(), "angGen") << G4endl ; 
 
 }

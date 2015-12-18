@@ -6,6 +6,7 @@ from env.python.utils import *
 
 from env.numerics.npy.types import SeqHis
 from env.numerics.npy.types import *  # TODO: spell out imports
+from env.numerics.npy.types import A
 
 
 import env.numerics.npy.PropLib as PropLib 
@@ -83,13 +84,13 @@ class Evt(object):
         self.label = label
         self.src = src
 
-        self.fdom = load_("fdom"+src,tag,det) 
-        self.idom = load_("idom"+src,tag,det) 
+        self.fdom = A.load_("fdom"+src,tag,det) 
+        self.idom = A.load_("idom"+src,tag,det) 
 
-        self.ox = load_("ox"+src,tag,det) 
-        self.rx = load_("rx"+src,tag,det) 
+        self.ox = A.load_("ox"+src,tag,det) 
+        self.rx = A.load_("rx"+src,tag,det) 
 
-        self.ph = load_("ph"+src,tag,det)
+        self.ph = A.load_("ph"+src,tag,det)
         self.seqhis = self.ph[:,0,0]
         self.seqmat = self.ph[:,0,1]
 
@@ -124,6 +125,7 @@ class Evt(object):
         cu = count_unique(seqhis)
         cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
 
+        print self
         sh = SeqHis()
         sh.table(cu[sli], hex_=True)
         self.sh = sh

@@ -26,7 +26,8 @@
 void CfG4::init()
 {
     m_opticks = new Opticks();
-    m_cfg = new OpticksCfg<Opticks>("opticks", m_opticks,false);
+    m_cfg = m_opticks->getCfg();
+
     m_cache = new GCache(m_prefix, "cfg4.log", "info");
 }
 
@@ -48,12 +49,20 @@ void CfG4::configure(int argc, char** argv)
 
 
     m_torch = m_opticks->makeSimpleTorchStep();
+    m_torch->update();  // sets pos,dir,pol using the frame transform
 
     m_torch->setNumPhotonsPerG4Event(photons_per_g4event);
     m_num_photons = m_torch->getNumPhotons();
     m_num_g4event = m_torch->getNumG4Event();
 
-    if(strcmp(tag.c_str(), "-5") == 0)  m_torch->setIncidentSphereSPolarized(true) ;
+    bool incidentSphere = m_torch->isIncidentSphere()  ;
+    bool isspol = false ;
+    if(incidentSphere)
+    { 
+        isspol = m_torch->isSPolarized();
+        if(strcmp(tag.c_str(), "-5") == 0)  assert(isspol == true );
+        if(strcmp(tag.c_str(), "-6") == 0)  assert(isspol == false );
+    }
 
 
     // TODO: move event metadata handling/persisting into NumpyEvt
@@ -62,6 +71,7 @@ void CfG4::configure(int argc, char** argv)
     LOG(info) << "CfG4::configure" 
               << " typ " << typ
               << " tag " << tag 
+              << " isspol " << isspol
               << " cat " << cat
               << " num_g4event " << m_num_g4event 
               << " num_photons " << m_num_photons
@@ -85,8 +95,10 @@ void CfG4::configure(int argc, char** argv)
 
     // domains used for record compression 
     m_recorder->setCenterExtent(m_detector->getCenterExtent());
+    m_recorder->setTimeDomain(m_opticks->getTimeDomain());
     m_recorder->setBoundaryDomain(m_detector->getBoundaryDomain());
 }
+
 void CfG4::propagate()
 {
     LOG(info) << "CfG4::propagate"

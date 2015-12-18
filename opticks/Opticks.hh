@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
 
 template <typename> class OpticksCfg ;
 
@@ -45,6 +46,7 @@ class Opticks {
        Opticks();
        OpticksCfg<Opticks>* getCfg();
        TorchStepNPY* makeSimpleTorchStep();
+       const glm::vec4& getTimeDomain();
    public:
        unsigned int getSourceCode();
        std::string getSourceType();
@@ -58,6 +60,7 @@ class Opticks {
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
        OpticksCfg<Opticks>* m_cfg ; 
+       glm::vec4            m_time_domain ; 
 };
 
 inline Opticks::Opticks() 
@@ -76,9 +79,11 @@ inline OpticksCfg<Opticks>* Opticks::getCfg()
     return m_cfg ; 
 }
 
-inline void Opticks::init()
+inline const glm::vec4& Opticks::getTimeDomain()
 {
+    return m_time_domain ; 
 }
+
 
 inline void Opticks::configureS(const char* name, std::vector<std::string> values)
 {

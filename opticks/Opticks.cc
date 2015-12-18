@@ -67,6 +67,17 @@ unsigned int Opticks::SourceCode(const char* type)
 
 
 
+void Opticks::init()
+{
+   m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
+
+   m_time_domain.x = 0.f  ;
+   m_time_domain.y = m_cfg->getTimeMax() ;
+   m_time_domain.z = m_cfg->getAnimTimeMax() ;
+   m_time_domain.w = 0.f  ;
+}
+
+
 
 
 unsigned int Opticks::getSourceCode()
@@ -127,6 +138,9 @@ std::string Opticks::FlagSequence(const unsigned long long seqhis)
     }
     return ss.str();
 }
+
+
+
 
 
 

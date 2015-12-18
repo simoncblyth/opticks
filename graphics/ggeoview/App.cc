@@ -393,6 +393,9 @@ void App::registerGeometry()
     m_mesh0 = m_ggeo->getMergedMesh(0); 
 
  
+
+    //glm::vec4 time_domain = m_opticks->getTimeDomain();   TODO: adopt this
+
     m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
 
     m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 

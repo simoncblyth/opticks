@@ -357,14 +357,12 @@ class Scatter(object):
 
 
 def scatter_plot_all(ax, p_evt, s_evt):
-    s_dv = s_evt.zdeviation_angle()
-    p_dv = p_evt.zdeviation_angle()
     db = np.arange(0,360,1)
-
-    for i,d in enumerate([s_dv/deg, p_dv/deg]):
+    for i,evt in enumerate([p_evt, s_evt]):
+        dv = evt.zdeviation_angle()/deg
         ax.set_xlim(0,360)
         ax.set_ylim(1,1e5)
-        cnt, bns, ptc = ax.hist(d, bins=db,  log=True, histtype='step')
+        cnt, bns, ptc = ax.hist(dv, bins=db,  log=True, histtype='step', label=evt.label)
     pass
 
 
@@ -443,65 +441,6 @@ def scatter_plot_component(pevt, sevt, p=0, ylim=None, xlim=None, scale=15000, i
 
 def check_radius(sc, sli=slice(None)):
     """
-    Huh getting wrong radius::
-
-        In [53]: p1 = sc.ssim.recpost(1)[:,:3]
-
-        In [54]: p1
-        Out[54]: 
-        array([[-80.9046, -19.9591,  -0.0305],
-               [-49.0738, -62.1967, -25.8492],
-               [-42.5733,  52.9191, -48.3108],
-               ..., 
-               [-42.2376,   5.2187, -71.6575],
-               [-17.7007,  80.4773, -12.36  ],
-               [-13.245 ,  76.7541, -29.6335]])
-
-        In [55]: np.linalg.norm(p1, 2, 1)
-        Out[55]: array([ 83.3302,  83.3357,  83.3478, ...,  83.3429,  83.3228,  83.3352])
-
-        In [56]: rp1 = np.linalg.norm(p1, 2, 1)
-
-        In [57]: rp1
-        Out[57]: array([ 83.3302,  83.3357,  83.3478, ...,  83.3429,  83.3228,  83.3352])
-
-        In [58]: rp1.min()
-        Out[58]: 83.308185981350476
-
-        In [59]: rp1.max()
-        Out[59]: 83.357268171136297
-
-
-    After a rerun of ggv-rainbow get the expected radius::
-
-        In [3]: p1
-        Out[3]: 
-        array([[-73.4642, -33.9122, -58.7786],
-               [-58.6688,  -5.237 , -80.8252],
-               [-35.4503,  93.35  ,  -5.4933],
-               ..., 
-               [-71.4133,  69.9118,  -3.4059],
-               [-28.2357, -90.64  , -31.4585],
-               [-72.5486,  68.2272,  -8.8992]])
-
-        In [4]: np.linalg.norm(p1, 2, 1)
-        Out[4]: array([ 100.0097,  100.0108,  100.0056, ...,   99.9956,  100.0125,   99.9872])
-
-
-    From idp::
-
-        In [1]: np.load("OPropagatorF.npy")
-        Out[1]: 
-        array([[[    0.,     0.,     0.,  1200.]],
-
-               [[    0.,    10.,    10.,     0.]],
-
-               [[   60.,   820.,    20.,   760.]]], dtype=float32)
-
-
-    Clearly the domains should live beside corresponding data files not in idp, where they 
-    get overwritten by other test geometries, or changed geometry sizes. 
-
     """
     s_p1 = sc.ssim.recpost(1)[:,:3]
     p_p1 = sc.psim.recpost(1)[:,:3]
@@ -524,14 +463,54 @@ def check_radius(sc, sli=slice(None)):
 
 
 
+def check_intersect(evt, radius=100):
+    """
+    Assuming incident direction along +X axis
+    """
+    pos = evt.rpost_(0)[:,:3]
+
+    yz = np.clip( np.linalg.norm(pos[:,1:], 2, 1), 0, radius ) 
+    x  = np.sqrt(radius*radius - yz*yz )
+
+    isp = np.copy(pos)   # point of first intersection with sphere
+    isp[:,0] = -x 
+    
+    return isp 
+
+
+def check_polarization(evt):
+     isp = evt.rpost_(1)[:,:3]
+
+
+
+
+
+
 class Pair(object):
    def __init__(self, tags, labels, det, src='torch',name=None):
-       self.p = Evt(tag=tags[0],src=src, det=det, label=labels[0])
-       self.s = Evt(tag=tags[1],src=src, det=det, label=labels[1])
+       self.s = Evt(tag=tags[0],src=src, det=det, label=labels[0])
+       self.p = Evt(tag=tags[1],src=src, det=det, label=labels[1])
        self.name = name
        self.det = det 
    def __repr__(self):
-       return "p %s s %s" % (repr(self.p), repr(self.s))  
+       return "s %s p %s" % (repr(self.s), repr(self.p))  
+
+
+class Cf(object):
+    def __init__(self, evt_op, evt_g4):
+        self.op=evt_op
+        self.g4=evt_g4
+
+    def check_splits(self, sli=slice(0,15)):
+        print " ---- P ----- "
+        cu = self.op.p.history_table(sli)
+        cu = self.g4.p.history_table(sli)
+        print " ---- S ----- "
+        cu = self.op.s.history_table(sli)
+        cu = self.g4.s.history_table(sli)
+
+
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -555,11 +534,16 @@ if 0:
     ax = fig.add_subplot(1,1,1)
 
 if 1:
-    evt_op = Pair(tags=["5","6"], labels=["P","S"], det="rainbow" )
+    evt_op = Pair(tags=["5","6"], labels=["S Op","P Op"], det="rainbow" )
     evt = evt_op
 
 if 1:
-    evt_g4 = Pair(tags=["-5","-6"], labels=["P G4","S G4"], det="rainbow" )
+    evt_g4 = Pair(tags=["-5","-6"], labels=["S G4","P G4"], det="rainbow" )
+
+if 1:
+    cf = Cf(evt_op, evt_g4)
+    cf.check_splits() 
+
 
 
 if 0:
@@ -569,9 +553,27 @@ if 0:
     scatter_plot_all(ax, evt.p, evt.s)
     #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
 
+
 if 1:
     fig = plt.figure()
-    fig.suptitle("Deviation angles without selection, cf G4")
+    fig.suptitle("Compare Op/G4 scatter angle  a) P b) S")
+    ylim = [1e0,1e5]
+    ax = fig.add_subplot(2,1,1)
+    scatter_plot_all(ax, evt_op.p, evt_g4.p)
+    ax.set_ylim(ylim)
+    ax.legend()
+
+    ax = fig.add_subplot(2,1,2)
+    scatter_plot_all(ax, evt_op.s, evt_g4.s)
+    ax.set_ylim(ylim)
+    ax.legend()
+
+    pass
+ 
+
+if 0:
+    fig = plt.figure()
+    fig.suptitle("S/P Deviation angles without selection, a) Op b) G4")
     ylim = [1e0,1e5]
     for i, evt in enumerate([evt_op, evt_g4]):
         ax = fig.add_subplot(2,1,i+1)

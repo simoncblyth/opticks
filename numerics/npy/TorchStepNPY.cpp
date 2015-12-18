@@ -7,6 +7,8 @@
 
 #include <vector>
 #include <iomanip>
+#include <sstream>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
@@ -32,6 +34,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
 // TODO: material lookup based on the frame volume solid ?
 //
  
+const char* TorchStepNPY::T_UNDEF_    = "undef" ; 
 const char* TorchStepNPY::T_POINT_    = "point" ; 
 const char* TorchStepNPY::T_SPHERE_    = "sphere" ; 
 const char* TorchStepNPY::T_DISC_      = "disc" ; 
@@ -77,6 +80,31 @@ Torch_t TorchStepNPY::parseType(const char* k)
     return type ; 
 }
 
+const char* TorchStepNPY::getTypeName()
+{
+    ::Torch_t type = getType();
+    const char* name = NULL ; 
+    switch(type)
+    {
+       case T_SPHERE:      name=T_SPHERE_     ;break; 
+       case T_DISC:        name=T_DISC_       ;break; 
+       case T_POINT:       name=T_POINT_      ;break; 
+       case T_DISCLIN:     name=T_DISCLIN_    ;break; 
+       case T_DISCAXIAL:   name=T_DISCAXIAL_  ;break; 
+       case T_DISC_INTERSECT_SPHERE:   name=T_DISC_INTERSECT_SPHERE_  ;break; 
+       case T_INVSPHERE:   name=T_INVSPHERE_  ;break; 
+       case T_REFLTEST:    name=T_REFLTEST_   ;break; 
+       case T_INVCYLINDER: name=T_INVCYLINDER_;break; 
+
+       case T_UNDEF:       name=T_UNDEF_      ;break; 
+       default:    
+                           assert(0)  ;
+
+    }
+    return name ; 
+}
+
+
 void TorchStepNPY::setType(const char* s)
 {
     ::Torch_t type = parseType(s) ;
@@ -84,6 +112,8 @@ void TorchStepNPY::setType(const char* s)
     uif.u = type ; 
     m_beam.w = uif.f ;
 }
+
+
 
 
 const char* TorchStepNPY::M_SPOL_ = "spol" ; 
@@ -110,6 +140,20 @@ Mode_t TorchStepNPY::parseMode(const char* k)
 
     return mode ; 
 }
+
+std::string TorchStepNPY::getModeString()
+{
+    std::stringstream ss ; 
+    ::Mode_t mode = getMode();
+
+    if(mode & M_SPOL) ss << M_SPOL_ << " " ;
+    if(mode & M_PPOL) ss << M_PPOL_ << " " ;
+    if(mode & M_FLAT_THETA) ss << M_FLAT_THETA_ << " " ; 
+    if(mode & M_FLAT_COSTHETA) ss << M_FLAT_COSTHETA_ << " " ; 
+
+    return ss.str();
+} 
+
 
 const char* TorchStepNPY::TYPE_ = "type"; 
 const char* TorchStepNPY::MODE_ = "mode"; 
@@ -361,6 +405,7 @@ void TorchStepNPY::setPosition(const glm::vec4& pos)
     m_post.y = pos.y ; 
     m_post.z = pos.z ; 
 }
+
 void TorchStepNPY::setTime(const char* s)
 {
     m_post.w = boost::lexical_cast<float>(s) ;
@@ -368,6 +413,11 @@ void TorchStepNPY::setTime(const char* s)
 float TorchStepNPY::getTime()
 {
     return m_post.w ; 
+}
+
+glm::vec3 TorchStepNPY::getPosition()
+{
+    return glm::vec3(m_post);
 }
 
 
@@ -381,6 +431,16 @@ void TorchStepNPY::setDirection(const glm::vec3& dir)
     m_dirw.y = dir.y ; 
     m_dirw.z = dir.z ; 
 }
+
+glm::vec3 TorchStepNPY::getDirection()
+{
+    return glm::vec3(m_dirw);
+}
+
+
+
+
+
 void TorchStepNPY::setWeight(const char* s)
 {
     m_dirw.w = boost::lexical_cast<float>(s) ;
@@ -402,6 +462,10 @@ void TorchStepNPY::setWavelength(const char* s)
 float TorchStepNPY::getWavelength()
 {
     return m_polw.w ; 
+}
+glm::vec3 TorchStepNPY::getPolarization()
+{
+    return glm::vec3(m_polw);
 }
 
 
@@ -428,6 +492,12 @@ void TorchStepNPY::setRadius(float radius)
 {
     m_beam.x = radius ;
 }
+float TorchStepNPY::getRadius()
+{
+    return m_beam.x ; 
+}
+
+
 
 void TorchStepNPY::setDistance(const char* s)
 {
@@ -488,5 +558,27 @@ void TorchStepNPY::dump(const char* msg)
 }
 
 
+
+void TorchStepNPY::Summary(const char* msg)
+{
+    glm::vec3 pos = getPosition() ;
+    glm::vec3 dir = getDirection() ;
+    glm::vec3 pol = getPolarization() ;
+
+    LOG(info) << msg  
+              << " typeName " << getTypeName() 
+              << " modeString " << getModeString() 
+              << " incidentSphere " << isIncidentSphere()
+              << " sPolarized " << isSPolarized()
+              << " pPolarized " << isPPolarized()
+              << " position " << gformat(pos)
+              << " direction " << gformat(dir)
+              << " polarization " << gformat(pol)
+              << " radius " << getRadius()
+              << " wavelength " << getWavelength()
+              << " time " << getTime()
+              ; 
+
+}
 
 

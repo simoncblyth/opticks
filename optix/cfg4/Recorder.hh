@@ -41,6 +41,7 @@ class Recorder {
         bool hasIssue();
    public:
         void setCenterExtent(const glm::vec4& center_extent);
+        void setTimeDomain(const glm::vec4& time_domain);
         void setBoundaryDomain(const glm::vec4& boundary_domain);
         void Dump(const char* msg="Recorder::Dump");
         void save();
@@ -208,6 +209,10 @@ inline void Recorder::setCenterExtent(const glm::vec4& center_extent)
 inline void Recorder::setBoundaryDomain(const glm::vec4& boundary_domain)
 {
    m_boundary_domain = boundary_domain ; 
+}
+inline void Recorder::setTimeDomain(const glm::vec4& time_domain)
+{
+   m_time_domain = time_domain ; 
 }
 
 

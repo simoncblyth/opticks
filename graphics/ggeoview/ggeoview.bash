@@ -213,7 +213,7 @@ ggv-rainbow()
     local test_config=(
                  mode=BoxInBox
                  analytic=1
-                 shape=box    parameters=-1,1,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=box    parameters=0,0,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
                  shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
                )
 

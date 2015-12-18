@@ -128,10 +128,15 @@ void Recorder::startPhoton()
 
 void Recorder::RecordStep(const G4Step* step)
 {
-    // TODO:  material recording
 
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+    // TODO:  material recording
+    /*
+    G4VPhysicalVolume* prePV  = pre->GetPhysicalVolume();
+    G4VPhysicalVolume* postPV  = post->GetPhysicalVolume();
+    */
 
     unsigned int preFlag(0);
     unsigned int postFlag(0);
@@ -253,6 +258,21 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
     short time_ = shortnorm(time/ns,    m_time_domain.x, m_time_domain.y );
 
     m_records->setQuad(m_record_id, slot, 0, posx, posy, posz, time_ );
+
+
+    /*
+    if(m_record_id < 10)
+        LOG(info) << "Recorder::RecordStepPoint" 
+                  << " record_id " << m_record_id
+                  << " slot " << slot 
+                  << " time " << time
+                  << " time_ " << time_
+                  << " ns " << ns
+                  << " time_domain.x " << m_time_domain.x
+                  << " time_domain.y " << m_time_domain.y
+                  ;
+    */
+ 
 
     unsigned char polx = uchar_( pol.x() );
     unsigned char poly = uchar_( pol.y() );

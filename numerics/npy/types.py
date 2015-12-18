@@ -438,6 +438,24 @@ def path_(typ, tag, det="dayabay"):
     tmpl = os.path.expandvars(DEFAULT_PATH_TEMPLATE.replace("$1", det).replace("$2",typ)) 
     return tmpl % str(tag)
 
+class A(np.ndarray):
+    @classmethod
+    def load_(cls, typ, tag, det="dayabay"):
+        path = path_(typ,tag, det)
+        a = None
+        if os.path.exists(path):
+            log.debug("loading %s " % path )
+            os.system("ls -l %s " % path)
+            arr = np.load(path)
+            a = arr.view(cls)
+            a.path = path 
+            a.typ = typ
+            a.tag = tag
+            a.det = det 
+        pass
+        return a 
+             
+
 def load_(typ, tag, det="dayabay"):
     path = path_(typ,tag, det)
 

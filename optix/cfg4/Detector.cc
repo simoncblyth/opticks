@@ -37,22 +37,11 @@ void Detector::init()
 {
     bool constituents ; 
     m_bndlib = GBndLib::load(m_cache, constituents=true);
-    m_bndlib->dump("Detector::init");
     m_mlib = m_bndlib->getMaterialLib();
     m_slib = m_bndlib->getSurfaceLib();
 
-   //m_nistMan = G4NistManager::Instance(); 
-   // m_nistMan->SetVerbose(5);
-
-    float extent = 1200.f ;  
-    m_center_extent.x = 0.f ; 
-    m_center_extent.y = 0.f ; 
-    m_center_extent.z = 0.f ; 
-    m_center_extent.w = extent ; 
-
     m_boundary_domain = GPropertyLib::getDefaultDomainSpec() ;
 }
-
 
 G4VPhysicalVolume* Detector::Construct()
 {
@@ -132,7 +121,7 @@ G4MaterialPropertiesTable* Detector::makeMaterialPropertiesTable(unsigned int in
         bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
 
         GProperty<float>* prop = kmat->getPropertyByIndex(i);
-        prop->Summary(lkey);   
+        //prop->Summary(lkey);   
 
         unsigned int nval  = prop->getLength();
 
@@ -193,7 +182,7 @@ G4Material* Detector::makeVacuum(const char* name)
 G4Material* Detector::makeMaterial(unsigned int index)
 {
     GMaterial* kmat = m_mlib->getMaterial(index);
-    m_mlib->dump(kmat);
+    //m_mlib->dump(kmat);
 
     const char* name = kmat->getShortName();
 
@@ -214,7 +203,7 @@ G4Material* Detector::makeMaterial(unsigned int index)
     }
 
     G4MaterialPropertiesTable* mpt = makeMaterialPropertiesTable(index);
-    mpt->DumpTable();
+    //mpt->DumpTable();
     material->SetMaterialPropertiesTable(mpt);
 
     return material ; 
@@ -253,12 +242,14 @@ G4VPhysicalVolume* Detector::CreateBoxInBox()
         G4VSolid* solid = makeSolid(shapecode, param);  
         G4Material* material = makeInnerMaterial(spec); 
 
-        //material = i == 0 ? m_vacuum : m_water ;  // kludge whilst check hookup
-
         G4LogicalVolume* lv = new G4LogicalVolume(solid, material, lvn.c_str(), 0,0,0);
         G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
  
-        if(top == NULL) top = pv ; 
+        if(top == NULL)
+        {
+            top = pv ; 
+            setCenterExtent(param.x, param.y, param.z, param.w );
+        }
         mother = lv ; 
     }   
     return top ;  

@@ -27,6 +27,7 @@ typedef enum {
 #ifndef __CUDACC__
 
 #include <cstring>
+#include <string>
 #include <glm/glm.hpp>
 #include <cassert>
 
@@ -69,6 +70,7 @@ class TorchStepNPY {
        static const char* RADIUS_ ; 
        static const char* DISTANCE_ ; 
 
+       static const char* T_UNDEF_ ; 
        static const char* T_SPHERE_ ; 
        static const char* T_POINT_ ; 
        static const char* T_DISC_ ; 
@@ -89,8 +91,8 @@ class TorchStepNPY {
        void configure(const char* config);
        void addStep(bool verbose=false); // increments m_step_index
        NPY<float>* getNPY();
-   private:
        void update();
+   private:
        ::Mode_t  parseMode(const char* k);
        ::Torch_t parseType(const char* k);
        Param_t parseParam(const char* k);
@@ -115,8 +117,10 @@ class TorchStepNPY {
        void setNumPhotonsPerG4Event(unsigned int n);
        unsigned int getNumPhotonsPerG4Event(); 
        unsigned int getNumG4Event();
-       void setIncidentSphereSPolarized(bool isspol=true); // kludge, as should be discernable without additional state
-       bool getIncidentSphereSPolarized();
+       bool isIncidentSphere();
+       bool isSPolarized();
+       bool isPPolarized();
+       void Summary(const char* msg="TorchStepNPY::Summary");
    public:
        // local positions/vectors, frame transform is applied in *update* yielding world frame m_post m_dirw 
        void setSourceLocal(const char* s );
@@ -150,13 +154,20 @@ class TorchStepNPY {
        void setRadius(float radius );
        void setDistance(float distance);
    public:  
-       float getWavelength();
+       glm::vec3 getPosition();
+       glm::vec3 getDirection();
+       glm::vec3 getPolarization();
+
        float getTime();
+       float getRadius();
+       float getWavelength();
 
 
    public:  
        ::Mode_t  getMode();
        ::Torch_t getType();
+       std::string getModeString();
+       const char* getTypeName();
        unsigned int getNumPhotons();
        unsigned int getMaterialLine();
 
@@ -199,7 +210,7 @@ class TorchStepNPY {
        glm::vec4    m_pol ;
        glm::vec3    m_dir ;
   private:
-       // 6 quads that are copied into the genstep 
+       // 6 quads that are copied into the genstep and passed to GPU cu/torchstep.h
        glm::ivec4   m_ctrl ;
        glm::vec4    m_post ;
        glm::vec4    m_dirw ;
@@ -212,7 +223,6 @@ class TorchStepNPY {
        NPY<float>*  m_npy ; 
   private:
        unsigned int m_num_photons_per_g4event ;
-       bool         m_isspol ; 
  
 };
 
@@ -227,8 +237,7 @@ inline TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step
        m_num_step(num_step),
        m_step_index(0),
        m_npy(NULL),
-       m_num_photons_per_g4event(10000),
-       m_isspol(false)
+       m_num_photons_per_g4event(10000)
 {
    configure(m_config);
 }
@@ -302,15 +311,22 @@ inline unsigned int TorchStepNPY::getNumG4Event()
 }
 
 
+inline bool TorchStepNPY::isIncidentSphere()
+{
+    ::Torch_t type = getType();
+    return type == T_DISC_INTERSECT_SPHERE  ;
+}
+inline bool TorchStepNPY::isSPolarized()
+{
+    ::Mode_t  mode = getMode();
+    return (mode & M_SPOL) != 0  ;
+}
+inline bool TorchStepNPY::isPPolarized()
+{
+    ::Mode_t  mode = getMode();
+    return (mode & M_PPOL) != 0  ;
+}
 
-inline void TorchStepNPY::setIncidentSphereSPolarized(bool isspol)
-{
-    m_isspol = isspol ; 
-}
-inline bool TorchStepNPY::getIncidentSphereSPolarized()
-{
-    return m_isspol ;
-}
 
 
 
