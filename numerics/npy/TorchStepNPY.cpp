@@ -365,6 +365,11 @@ void TorchStepNPY::setTime(const char* s)
 {
     m_post.w = boost::lexical_cast<float>(s) ;
 }
+float TorchStepNPY::getTime()
+{
+    return m_post.w ; 
+}
+
 
 
 
@@ -394,6 +399,12 @@ void TorchStepNPY::setWavelength(const char* s)
 {
     m_polw.w = boost::lexical_cast<float>(s) ;
 }
+float TorchStepNPY::getWavelength()
+{
+    return m_polw.w ; 
+}
+
+
 
 
 

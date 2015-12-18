@@ -27,29 +27,6 @@ dump(){
   done
 }
 
-ggv-joinsplit(){
-
-   local test_config=(
-                 mode=BoxInBox
-                 analytic=1
-
-                 shape=box
-                 boundary=Rock//perfectAbsorbSurface/MineralOil
-                 parameters=-1,1,0,500
-
-                 shape=lens
-                 boundary=MineralOil///Pyrex
-                 parameters=100,100,-50,50
-                   ) 
-
-   echo test_config ${test_config[@]} 
-
-   local packed="$(join _ ${test_config[@]})"
-   echo packed $packed 
-   dump _ "$packed"
-}
-
-
 
 ggv-bib(){
    type $FUNCNAME
@@ -210,7 +187,8 @@ ggv-rainbow()
     local surfaceNormal=0,1,0
     #local azimuth=-0.25,0.25
     local azimuth=0,1
-    local wavelength=0
+    #local wavelength=0
+    local wavelength=500
     local identity=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
 
     local photons=1000000

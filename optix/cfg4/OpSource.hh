@@ -12,20 +12,20 @@ class G4SPSAngDistribution ;
 class G4SPSEneDistribution ;
 class G4SPSRandomGenerator ;
 
+class TorchStepNPY ; 
+
+
+
 class OpSource: public G4VPrimaryGenerator 
 {
   public:
-    OpSource();
+    OpSource(TorchStepNPY* torch);
   private:
     void init();
+    void configure();
   public:
     ~OpSource();
     void GeneratePrimaryVertex(G4Event *evt);
-  public:
-    G4SPSPosDistribution* GetPosDist() const ;
-    G4SPSAngDistribution* GetAngDist() const ;
-    G4SPSEneDistribution* GetEneDist() const ;
-    G4SPSRandomGenerator* GetBiasRndm() const ;
   public:
     void SetVerbosity(G4int);
   public:
@@ -45,10 +45,12 @@ class OpSource: public G4VPrimaryGenerator
     G4double              GetParticleTime() const;
 private:
     // residents 
-    G4SPSPosDistribution* m_posGenerator;
-    G4SPSAngDistribution* m_angGenerator;
-    G4SPSEneDistribution* m_eneGenerator;
-    G4SPSRandomGenerator* m_biasRndm;
+    TorchStepNPY*         m_torch ;
+
+    G4SPSPosDistribution* m_posGen;
+    G4SPSAngDistribution* m_angGen;
+    G4SPSEneDistribution* m_eneGen;
+    G4SPSRandomGenerator* m_ranGen;
 
     struct part_prop_t 
     {
@@ -71,12 +73,13 @@ private:
 };
 
 
-inline OpSource::OpSource()  
+inline OpSource::OpSource(TorchStepNPY* torch)  
     :
-    m_posGenerator(NULL),
-    m_angGenerator(NULL),
-    m_eneGenerator(NULL),
-    m_biasRndm(NULL),
+    m_torch(torch),
+    m_posGen(NULL),
+    m_angGen(NULL),
+    m_eneGen(NULL),
+    m_ranGen(NULL),
 	m_num(1),
     m_isspol(false),
 	m_charge(0.0),
@@ -86,27 +89,6 @@ inline OpSource::OpSource()
 {
     init();
 }
-
-
-// residents 
-
-inline G4SPSPosDistribution* OpSource::GetPosDist() const 
-{
-    return m_posGenerator;
-}
-inline G4SPSAngDistribution* OpSource::GetAngDist() const 
-{
-    return m_angGenerator;
-}
-inline G4SPSEneDistribution* OpSource::GetEneDist() const 
-{
-    return m_eneGenerator;
-}
-inline G4SPSRandomGenerator* OpSource::GetBiasRndm() const 
-{
-    return m_biasRndm;
-}
-
 
 
 

@@ -1,9 +1,16 @@
 // based on /usr/local/env/g4/geant4.10.02/source/event/include/G4SingleParticleSource.hh 
 #include <cmath>
 
+// npy-
+#include "TorchStepNPY.hpp"
+
+// cfg4-
 #include "OpSource.hh"
 
+// g4-
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
+
 #include "G4PrimaryParticle.hh"
 #include "G4Event.hh"
 #include "Randomize.hh"
@@ -32,14 +39,20 @@ OpSource::part_prop_t::part_prop_t()
 void OpSource::init()
 {
 	m_definition = G4Geantino::GeantinoDefinition();
-	m_biasRndm = new G4SPSRandomGenerator();
-	m_posGenerator = new G4SPSPosDistribution();
-	m_posGenerator->SetBiasRndm(m_biasRndm);
-	m_angGenerator = new G4SPSAngDistribution();
-	m_angGenerator->SetPosDistribution(m_posGenerator);
-	m_angGenerator->SetBiasRndm(m_biasRndm);
-	m_eneGenerator = new G4SPSEneDistribution();
-	m_eneGenerator->SetBiasRndm(m_biasRndm);
+
+	m_ranGen = new G4SPSRandomGenerator();
+
+	m_posGen = new G4SPSPosDistribution();
+	m_posGen->SetBiasRndm(m_ranGen);
+
+	m_angGen = new G4SPSAngDistribution();
+	m_angGen->SetPosDistribution(m_posGen);
+	m_angGen->SetBiasRndm(m_ranGen);
+
+	m_eneGen = new G4SPSEneDistribution();
+	m_eneGen->SetBiasRndm(m_ranGen);
+
+    configure();
     
     G4MUTEXINIT(m_mutex);
 }
@@ -47,10 +60,10 @@ void OpSource::init()
 
 OpSource::~OpSource() 
 {
-	delete m_biasRndm;
-	delete m_posGenerator;
-	delete m_angGenerator;
-	delete m_eneGenerator;
+	delete m_ranGen;
+	delete m_posGen;
+	delete m_angGen;
+	delete m_eneGen;
 
     G4MUTEXDESTROY(m_mutex);
 }
@@ -59,9 +72,9 @@ void OpSource::SetVerbosity(int vL)
 {
     G4AutoLock l(&m_mutex);
 	m_verbosityLevel = vL;
-	m_posGenerator->SetVerbosity(vL);
-	m_angGenerator->SetVerbosity(vL);
-	m_eneGenerator->SetVerbosity(vL);
+	m_posGen->SetVerbosity(vL);
+	m_angGen->SetVerbosity(vL);
+	m_eneGen->SetVerbosity(vL);
 }
 
 void OpSource::SetParticleDefinition(G4ParticleDefinition* definition) 
@@ -82,11 +95,11 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
 	for (G4int i = 0; i < m_num; i++) 
     {
-	    pp.position = m_posGenerator->GenerateOne();
+	    pp.position = m_posGen->GenerateOne();
         G4PrimaryVertex* vertex = new G4PrimaryVertex(pp.position,m_time);
 
-		pp.momentum_direction = m_angGenerator->GenerateOne();
-		pp.energy = m_eneGenerator->GenerateOne(m_definition);
+		pp.momentum_direction = m_angGen->GenerateOne();
+		pp.energy = m_eneGen->GenerateOne(m_definition);
 
 		if (m_verbosityLevel >= 2)
 			G4cout << "Creating primaries and assigning to vertex" << G4endl;
@@ -118,7 +131,7 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 					<< G4endl;
 		}
 		// Set bweight equal to the multiple of all non-zero weights
-		G4double weight = m_eneGenerator->GetWeight()*m_biasRndm->GetBiasWeight();
+		G4double weight = m_eneGen->GetWeight()*m_ranGen->GetBiasWeight();
 		// pass it to primary particle
 		particle->SetWeight(weight);
 
@@ -129,5 +142,65 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
             G4cout << " Primary Vetex generated !" << G4endl;
 	}
 }
+
+
+
+void OpSource::configure()
+{
+    unsigned int n = m_torch->getNumPhotonsPerG4Event();
+    SetNumberOfParticles(n);
+
+    G4ParticleDefinition* definition = G4ParticleTable::GetParticleTable()->FindParticle("opticalphoton");
+    SetParticleDefinition(definition);
+
+    bool isspol = m_torch->getIncidentSphereSPolarized();
+    setIncidentSphereSPolarized(isspol);
+    // specific custom S-polarization for rainbow geometry with incident planar disc of photons
+
+    float w = m_torch->getWavelength() ; 
+    if(w > 0.f)
+    {
+        G4double wavelength = w*nm ; 
+        G4double energy = h_Planck*c_light/wavelength ;
+        m_eneGen->SetEnergyDisType("Mono");
+        m_eneGen->SetMonoEnergy(energy);
+    }
+    else
+    {
+        assert(0 && "only mono supported"); 
+    }
+
+
+    float t = m_torch->getTime();
+    G4double time = t*ns ;
+    SetParticleTime(time);
+
+    // hmm these are for rainbow geometry 
+    G4ThreeVector pos(-600.0*mm,0.0*mm,0.0*mm);
+    SetParticlePosition(pos);
+
+
+    G4ThreeVector cen(pos);
+    G4ThreeVector dir(1.,0.,0.);
+    G4ThreeVector pol(1.,0.,0.);
+    G4ThreeVector posX(0,1.,0.);
+    G4ThreeVector posY(0,0.,1.);
+
+    SetParticlePolarization(pol);
+
+    m_posGen->SetPosDisType("Plane");
+    m_posGen->SetPosDisShape("Circle");
+    m_posGen->SetRadius(100.0*mm);
+    m_posGen->SetCentreCoords(cen);
+    m_posGen->SetPosRot1(posX);
+    m_posGen->SetPosRot2(posY);
+    //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(posGen->GenerateOne(), "posGen", 10) << G4endl ; 
+
+    m_angGen->SetAngDistType("planar");
+    m_angGen->SetParticleMomentumDirection(dir);
+    //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(angGen->GenerateOne(), "angGen") << G4endl ; 
+
+}
+
 
 

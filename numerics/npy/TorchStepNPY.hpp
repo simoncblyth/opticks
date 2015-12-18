@@ -15,8 +15,6 @@ typedef enum {
    T_NUM_TYPE
 }               Torch_t ;
 
-
-
 typedef enum {
    M_UNDEF         = 0x0 ,
    M_SPOL          = 0x1 << 0,
@@ -30,6 +28,7 @@ typedef enum {
 
 #include <cstring>
 #include <glm/glm.hpp>
+#include <cassert>
 
 template<typename T> class NPY ; 
 
@@ -111,7 +110,13 @@ class TorchStepNPY {
        void setFrameTargetted(bool targetted=true);
        bool isFrameTargetted();
        const glm::mat4& getFrameTransform();
-
+   public:
+       // slots used by Geant4 only (not Opticks) from cfg4- 
+       void setNumPhotonsPerG4Event(unsigned int n);
+       unsigned int getNumPhotonsPerG4Event(); 
+       unsigned int getNumG4Event();
+       void setIncidentSphereSPolarized(bool isspol=true); // kludge, as should be discernable without additional state
+       bool getIncidentSphereSPolarized();
    public:
        // local positions/vectors, frame transform is applied in *update* yielding world frame m_post m_dirw 
        void setSourceLocal(const char* s );
@@ -144,8 +149,12 @@ class TorchStepNPY {
        void setNumPhotons(unsigned int num_photons );
        void setRadius(float radius );
        void setDistance(float distance);
+   public:  
+       float getWavelength();
+       float getTime();
 
 
+   public:  
        ::Mode_t  getMode();
        ::Torch_t getType();
        unsigned int getNumPhotons();
@@ -201,6 +210,9 @@ class TorchStepNPY {
        unsigned int m_num_step ; 
        unsigned int m_step_index ; 
        NPY<float>*  m_npy ; 
+  private:
+       unsigned int m_num_photons_per_g4event ;
+       bool         m_isspol ; 
  
 };
 
@@ -214,7 +226,9 @@ inline TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step
        m_frame_targetted(false),
        m_num_step(num_step),
        m_step_index(0),
-       m_npy(NULL)
+       m_npy(NULL),
+       m_num_photons_per_g4event(10000),
+       m_isspol(false)
 {
    configure(m_config);
 }
@@ -267,6 +281,38 @@ inline const char* TorchStepNPY::getConfig()
 {
     return m_config ; 
 }
+
+
+// used from cfg4-
+inline void TorchStepNPY::setNumPhotonsPerG4Event(unsigned int n)
+{
+    m_num_photons_per_g4event = n ; 
+}
+inline unsigned int TorchStepNPY::getNumPhotonsPerG4Event()
+{
+    return m_num_photons_per_g4event ;
+}
+inline unsigned int TorchStepNPY::getNumG4Event()
+{
+    unsigned int num_photons = getNumPhotons();
+    unsigned int ppe = m_num_photons_per_g4event ; 
+    assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
+    unsigned int num_g4event = num_photons / ppe ; 
+    return num_g4event ; 
+}
+
+
+
+inline void TorchStepNPY::setIncidentSphereSPolarized(bool isspol)
+{
+    m_isspol = isspol ; 
+}
+inline bool TorchStepNPY::getIncidentSphereSPolarized()
+{
+    return m_isspol ;
+}
+
+
 
 #endif
 

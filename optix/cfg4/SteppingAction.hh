@@ -4,22 +4,22 @@
 #include "G4OpBoundaryProcess.hh"
 #include "globals.hh"
 
-class RecorderBase ; 
+class Recorder ; 
 
 class SteppingAction : public G4UserSteppingAction
 {
   public:
-    SteppingAction(RecorderBase* recorder);
+    SteppingAction(Recorder* recorder);
     virtual ~SteppingAction();
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
     virtual void UserSteppingAction(const G4Step*);
 
   private:
-    RecorderBase*  m_recorder ; 
+    Recorder*  m_recorder ; 
 };
 
-inline SteppingAction::SteppingAction(RecorderBase* recorder)
+inline SteppingAction::SteppingAction(Recorder* recorder)
    : 
    G4UserSteppingAction(),
    m_recorder(recorder)

@@ -55,9 +55,6 @@ const char* Opticks::SourceTypeLowercase( int code )
     return name ; 
 }
 
-
-
-
 unsigned int Opticks::SourceCode(const char* type)
 {
     unsigned int code = 0 ; 
@@ -66,6 +63,10 @@ unsigned int Opticks::SourceCode(const char* type)
     else if(strcmp(type,scintillation_)==0) code = SCINTILLATION ;
     return code ; 
 }
+
+
+
+
 
 
 unsigned int Opticks::getSourceCode()
@@ -86,10 +87,6 @@ std::string Opticks::getSourceType()
     boost::algorithm::to_lower(typ);
     return typ ; 
 }
-
-
-
-
 
 const char* Opticks::Flag(const unsigned int flag)
 {

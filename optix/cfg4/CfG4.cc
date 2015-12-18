@@ -35,55 +35,52 @@ void CfG4::configure(int argc, char** argv)
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
 
-
+    bool test = m_cfg->hasOpt("test") ;
     unsigned int code = m_opticks->getSourceCode(); // cfg is lodged inside opticks
-    assert(code == TORCH && "cfg4 only supports source type TORCH" );
-    m_torch = m_opticks->makeSimpleTorchStep();
-    //m_torch->dump();
-    m_num_photons = m_torch->getNumPhotons();
- 
-
-    assert( m_cfg->hasOpt("test") && "cfg4 only supports test geometries");
-    std::string testconfig = m_cfg->getTestConfig();
-    m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-    //m_testconfig->dump("CfG4::configure");
-
+    assert( test && code == TORCH && "cfg4 only supports source type TORCH with test geometries" );
 
     std::string typ = Opticks::SourceTypeLowercase(code);
     std::string tag = m_cfg->getEventTag();
     std::string cat = m_cfg->getEventCat();
 
-    unsigned int maxrec = m_cfg->getRecordMax();
-    assert(maxrec == 10);
+    unsigned int steps_per_photon = m_cfg->getRecordMax();
+    unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;
 
-    m_g4_photons_per_event = m_cfg->getG4PhotonsPerEvent();
-    assert( m_num_photons % m_g4_photons_per_event == 0 && "expecting num_photons to be exactly divisible by g4_photons_per_event" );
 
-    m_g4_nevt = m_num_photons / m_g4_photons_per_event ; 
+    m_torch = m_opticks->makeSimpleTorchStep();
+
+    m_torch->setNumPhotonsPerG4Event(photons_per_g4event);
+    m_num_photons = m_torch->getNumPhotons();
+    m_num_g4event = m_torch->getNumG4Event();
+
+    if(strcmp(tag.c_str(), "-5") == 0)  m_torch->setIncidentSphereSPolarized(true) ;
+
+
+    // TODO: move event metadata handling/persisting into NumpyEvt
+    m_recorder = new Recorder(typ.c_str(),tag.c_str(),cat.c_str(),m_num_photons,steps_per_photon, photons_per_g4event); 
 
     LOG(info) << "CfG4::configure" 
               << " typ " << typ
               << " tag " << tag 
               << " cat " << cat
-              << " m_g4_nevt " << m_g4_nevt 
-              << " m_g4_photons_per_event " << m_g4_photons_per_event
-              << " m_num_photons " << m_num_photons
-              << " maxrec " << maxrec
+              << " num_g4event " << m_num_g4event 
+              << " num_photons " << m_num_photons
+              << " steps_per_photon " << steps_per_photon
               ;
 
-    m_recorder = new Recorder(typ.c_str(),tag.c_str(),cat.c_str(),m_num_photons,maxrec, m_g4_photons_per_event); 
-    if(strcmp(tag.c_str(), "-5") == 0)  m_recorder->setIncidentSphereSPolarized(true) ;
+
+    std::string testconfig = m_cfg->getTestConfig();
+    m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
+
 
     m_detector  = new Detector(m_cache, m_testconfig) ; 
-
-    G4VPhysicalVolume* dev = m_detector->CreateBoxInBox();
-
 
     m_runManager = new G4RunManager;
 
     m_runManager->SetUserInitialization(new PhysicsList());
     m_runManager->SetUserInitialization(m_detector);
-    m_runManager->SetUserInitialization(new ActionInitialization(m_recorder));
+    ActionInitialization* ai = new ActionInitialization(m_recorder, m_torch) ;
+    m_runManager->SetUserInitialization(ai);
     m_runManager->Initialize();
 
     // domains used for record compression 
@@ -93,11 +90,10 @@ void CfG4::configure(int argc, char** argv)
 void CfG4::propagate()
 {
     LOG(info) << "CfG4::propagate"
-              << " g4_nevt " << m_g4_nevt 
-              << " m_g4_photons_per_event " << m_g4_photons_per_event
+              << " num_g4event " << m_num_g4event 
               << " num_photons " << m_num_photons 
               ; 
-    m_runManager->BeamOn(m_g4_nevt);
+    m_runManager->BeamOn(m_num_g4event);
 }
 
 void CfG4::save()

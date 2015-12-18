@@ -31,7 +31,7 @@ class OpticksCfg : public Cfg {
      int          getOverride(); 
      int          getDebugIdx(); 
      int          getStack(); 
-     int          getG4PhotonsPerEvent(); 
+     int          getNumPhotonsPerG4Event(); 
 private:
      void init();
 private:
@@ -61,7 +61,7 @@ private:
      int         m_override ; 
      int         m_debugidx ; 
      int         m_stack ; 
-     int         m_g4_photons_per_event;
+     int         m_num_photons_per_g4event;
 };
 
 template <class Listener>
@@ -90,7 +90,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_override(-1),
        m_debugidx(0),
        m_stack(2180),
-       m_g4_photons_per_event(10000)
+       m_num_photons_per_g4event(10000)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -217,9 +217,9 @@ inline void OpticksCfg<Listener>::init()
    char g4ppe[256];
    snprintf(g4ppe,256, 
 "Number of torch photons to generate/propagate per event with Geant4 cfg4.sh,"
-" changing the number of events to meet the photon total. Default %d", m_g4_photons_per_event);
+" changing the number of events to meet the photon total. Default %d", m_num_photons_per_g4event);
    m_desc.add_options()
-       ("g4ppe",  boost::program_options::value<int>(&m_g4_photons_per_event), g4ppe );
+       ("g4ppe",  boost::program_options::value<int>(&m_num_photons_per_g4event), g4ppe );
 
    m_desc.add_options()
        ("alt,a",  "use alternative record renderer") ;
@@ -482,9 +482,9 @@ inline int OpticksCfg<Listener>::getStack()
 }
 
 template <class Listener>
-inline int OpticksCfg<Listener>::getG4PhotonsPerEvent()
+inline int OpticksCfg<Listener>::getNumPhotonsPerG4Event()
 {
-    return m_g4_photons_per_event ; 
+    return m_num_photons_per_g4event ; 
 }
 
 

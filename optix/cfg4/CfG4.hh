@@ -35,8 +35,7 @@ class CfG4
         Recorder*             m_recorder ; 
         G4RunManager*         m_runManager ;
    private:
-        unsigned int          m_g4_nevt ; 
-        unsigned int          m_g4_photons_per_event ; 
+        unsigned int          m_num_g4event ; 
         unsigned int          m_num_photons ; 
 
 };
@@ -52,8 +51,7 @@ inline CfG4::CfG4(const char* prefix)
      m_detector(NULL),
      m_recorder(NULL),
      m_runManager(NULL),
-     m_g4_nevt(0),
-     m_g4_photons_per_event(0),
+     m_num_g4event(0),
      m_num_photons(0)
 {
     init();

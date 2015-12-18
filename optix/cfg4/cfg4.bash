@@ -12,8 +12,14 @@ Objectives
 * Construct Geant4 test geometries and light sources from the same commandline
   arguments as ggv invokations like ggv-rainbow, ggv-prism.
 
-* Add requisite step action(?) to record photon steps in the same format as
-  optixrap- using NPY 
+  * TODO: light source config, blackbody
+
+* Add stepping action to record photon steps in the same format as
+  optixrap- using NPY persistency 
+
+  * TODO: material tracing   
+
+ 
 
 Classes
 --------
@@ -26,11 +32,14 @@ ActionInitialization
 
 Detector
      G4VUserDetectorConstruction subclass, creating G4Materials and logical/physical
-     volumes based 
-     configured based on a GGeoTestConfig instance
+     volumes, configured based on a GGeoTestConfig instance
 
 PrimaryGeneratorAction
      G4VUserPrimaryGeneratorAction subclass, providing GeneratePrimaries(G4Event*)
+
+     G4VPrimaryGenerator* PrimaryGeneratorAction::MakeGenerator creates/configures 
+     the photon source OpSource
+
 
 OpSource
      G4VPrimaryGenerator subclass, providing GeneratePrimaryVertex(G4Event *evt)
@@ -58,13 +67,9 @@ SteppingAction
      and feeds contained Recorder instance with G4Step
 
 Recorder
-     RecorderBase subclass, collects photons and compressed 
-     photon step records into NPY arrays in Opticks array format
+     collects photons and compressed photon step records 
+     into NPY arrays in Opticks array format
      which are persisted to .npy  
-
-RecorderBase
-     pure virtual base of limited utility, 
-     maybe eliminate and just use Recorder directly 
 
 Format
      G4 object debug descriptions

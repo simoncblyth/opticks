@@ -11,7 +11,6 @@ class G4Run ;
 class G4Step ; 
 
 template <typename T> class NPY ;
-#include "RecorderBase.hh"
 
 //
 //  *RecordStep* is called for all G4Step
@@ -22,12 +21,11 @@ template <typename T> class NPY ;
 //  except for the last G4Step pair where both points are recorded
 //
 
-class Recorder : public RecorderBase {
+class Recorder {
    public:
-        Recorder(const char* typ, const char* tag, const char* det, unsigned int record_max, unsigned int steps_per_photon, unsigned int photons_per_event);
+        Recorder(const char* typ, const char* tag, const char* det, unsigned int record_max, unsigned int steps_per_photon, unsigned int photons_per_g4event);
         unsigned int getRecordMax();
         unsigned int getStepsPerPhoton();
-        unsigned int getPhotonsPerEvent();
    public:
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
@@ -47,8 +45,10 @@ class Recorder : public RecorderBase {
         void Dump(const char* msg="Recorder::Dump");
         void save();
    public:
-        void setIncidentSphereSPolarized(bool isspol);
-        bool getIncidentSphereSPolarized();
+        void setEventId(unsigned int event_id);
+        void setPhotonId(unsigned int photon_id);
+        void setStepId(unsigned int step_id);
+        void setRecordId(unsigned int record_id);
    public:
         unsigned int getEventId();
         unsigned int getPhotonId();
@@ -60,11 +60,6 @@ class Recorder : public RecorderBase {
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
         G4OpBoundaryProcessStatus getBoundaryStatus();
    private:
-        void setEventId(unsigned int event_id);
-        void setPhotonId(unsigned int photon_id);
-        void setStepId(unsigned int step_id);
-        void setRecordId(unsigned int record_id);
-   private:
         void init();
    private:
         const char*  m_typ ; 
@@ -73,9 +68,8 @@ class Recorder : public RecorderBase {
         unsigned int m_gen ; 
         unsigned int m_record_max ; 
         unsigned int m_steps_per_photon ; 
-        unsigned int m_photons_per_event ; 
+        unsigned int m_photons_per_g4event ; 
 
-        bool         m_isspol ;
         unsigned int m_event_id ; 
         unsigned int m_photon_id ; 
         unsigned int m_step_id ; 
@@ -106,7 +100,7 @@ class Recorder : public RecorderBase {
 
 };
 
-inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsigned int record_max, unsigned int steps_per_photon, unsigned int photons_per_event) 
+inline Recorder::Recorder(const char* typ, const char* tag, const char* det, unsigned int record_max, unsigned int steps_per_photon, unsigned int photons_per_g4event) 
    :
    m_typ(strdup(typ)),
    m_tag(strdup(tag)),
@@ -114,8 +108,7 @@ inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsi
    m_gen(0),
    m_record_max(record_max),
    m_steps_per_photon(steps_per_photon),
-   m_photons_per_event(photons_per_event),
-   m_isspol(false),
+   m_photons_per_g4event(photons_per_g4event),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
    m_step_id(UINT_MAX),
@@ -137,29 +130,14 @@ inline Recorder::Recorder(const char* typ, const char* tag, const char* det,unsi
    init();
 }
 
-inline void Recorder::setIncidentSphereSPolarized(bool isspol)
-{
-    m_isspol = isspol ; 
-}
-inline bool Recorder::getIncidentSphereSPolarized()
-{
-    return m_isspol ; 
-}
-
-
 inline unsigned int Recorder::getRecordMax()
 {
    return m_record_max ; 
-}
-inline unsigned int Recorder::getPhotonsPerEvent()
-{
-   return m_photons_per_event ; 
 }
 inline unsigned int Recorder::getStepsPerPhoton()
 {
    return m_steps_per_photon ; 
 }
-
 
 inline unsigned int Recorder::getEventId()
 {
@@ -202,7 +180,7 @@ inline void Recorder::setStepId(unsigned int step_id)
 }
 inline unsigned int Recorder::defineRecordId()   
 {
-   return m_photons_per_event*m_event_id + m_photon_id ; 
+   return m_photons_per_g4event*m_event_id + m_photon_id ; 
 }
 
 inline void Recorder::setRecordId(unsigned int record_id)
@@ -231,10 +209,5 @@ inline void Recorder::setBoundaryDomain(const glm::vec4& boundary_domain)
 {
    m_boundary_domain = boundary_domain ; 
 }
-
-
-
-
-
 
 

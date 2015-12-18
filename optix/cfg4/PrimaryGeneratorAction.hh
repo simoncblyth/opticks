@@ -5,32 +5,30 @@
 
 class G4VPrimaryGenerator ;
 class G4Event;
-class RecorderBase ; 
+class TorchStepNPY ; 
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction(RecorderBase*);
+    PrimaryGeneratorAction(TorchStepNPY* torch);
     virtual ~PrimaryGeneratorAction();
   private:
     void init();
 
   public:
     virtual void GeneratePrimaries(G4Event*);
-    G4VPrimaryGenerator* MakeGenerator(unsigned int n, bool isspol=false);
 
   private:
     G4VPrimaryGenerator*  m_generator ;
-    RecorderBase*         m_recorder ;  
+    TorchStepNPY*         m_torch ; 
 
 };
 
-inline PrimaryGeneratorAction::PrimaryGeneratorAction(RecorderBase* recorder)
+inline PrimaryGeneratorAction::PrimaryGeneratorAction(TorchStepNPY* torch)
     : 
     G4VUserPrimaryGeneratorAction(), 
     m_generator(NULL),
-    m_recorder(recorder)
+    m_torch(torch)
 {
     init();
-
 }
