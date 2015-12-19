@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
-from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
+from env.numerics.npy.ana import Evt, Selection, costheta_, cross_, norm_
 from env.numerics.npy.geometry import Boundary   
 from env.numerics.npy.cie  import CIE
 deg = np.pi/180.
@@ -15,7 +15,7 @@ deg = np.pi/180.
 
 class SphereReflect(object):
     def __init__(self, evt):
-        sel = Selection(evt, "BR SA") 
+        sel = Selection(evt, ["BR SA"]) 
     
         p0 = sel.recpost(0)[:,:3]
         p1 = sel.recpost(1)[:,:3]
@@ -25,11 +25,18 @@ class SphereReflect(object):
         pl = sel.recpost(2)[:,:3]
         p_out = pl - pp
 
+        e0 = sel.recpolarization(0)
+        e1 = sel.recpolarization(1)
+
         self.p0 = p0
         self.p1 = p1
         self.pl = pl
         self.p_in = p_in
         self.p_out = p_out
+
+        self.e0 = e0
+        self.e1 = e1
+
 
     def check_radius(self):
         """
@@ -116,6 +123,8 @@ class SphereReflect(object):
             In [156]: sr.mdp1[:,0].max()
             Out[156]: 1.8097476126588909
 
+            plt.hist(sr.dp1[sr.msk], bins=100)     # sharp zero spike
+
         """
         sr = self
 
@@ -132,9 +141,87 @@ class SphereReflect(object):
         self.mdp1 = mdp1
         self.rperp = rperp
 
+        nrm = norm_(p1c)                                    # surface normal at intersection points 
+        #inc = np.tile( [1,0,0], len(nrm) ).reshape(-1,3)    # directions of squadron incident along +X
+
+        idir = norm_(self.p_in)
+        ndir = norm_(self.p_out) 
+        trans = np.cross(idir, nrm )                          # direction perpendicular to plane of incidence, A_trans
+        paral = norm_(np.cross( ndir, trans ))   # exit basis
+
+        self.nrm = nrm
+        self.idir = idir
+        self.ndir = ndir 
+        self.trans = trans
+        self.paral = paral
 
         #sr = self
         #plt.hist2d(sr.rperp[sr.msk], sr.mdp1[:,0], bins=100)   # largest deviations are tangential
+
+
+
+
+    def check_polarization(self):
+        """
+        Direction of incident rays and reflection/transmission rays together 
+        with surface normal allow the orthonormal bases at each stage to be calculated. 
+        With which the polarisation can be projected upon to see if it makes sense.
+
+        Polarized in direction of photon(not real) will that mess things up?::
+
+            In [78]: e0 = sel.recpolarization(0)
+
+            In [79]: e1 = sel.recpolarization(1)
+
+            In [80]: e0
+            Out[80]: 
+            array([[ 1.,  0.,  0.],
+                   [ 1.,  0.,  0.],
+                   [ 1.,  0.,  0.],
+                   ..., 
+                   [ 1.,  0.,  0.],
+                   [ 1.,  0.,  0.],
+                   [ 1.,  0.,  0.]])
+
+            In [81]: e1
+            Out[81]: 
+            array([[ 0.843, -0.528, -0.11 ],
+                   [-0.386, -0.835, -0.386],
+                   [-0.52 ,  0.819, -0.252],
+                   ..., 
+                   [-0.071, -0.15 , -0.984],
+                   [-0.236, -0.898, -0.378],
+                   [-0.362, -0.598, -0.717]])
+
+            In [82]: paral
+            Out[82]: 
+            array([[ 0.841, -0.531, -0.108],
+                   [ 0.385,  0.838,  0.387],
+                   [ 0.517, -0.817,  0.255],
+                   ..., 
+                   [ 0.072,  0.148,  0.986],
+                   [ 0.238,  0.896,  0.374],
+                   [ 0.363,  0.598,  0.715]])
+
+            In [83]: np.sum( e1*paral , axis=1)
+            Out[83]: array([ 1.   , -0.997, -1.002, ..., -0.998, -1.002, -1.001])
+
+            In [84]: trans
+            Out[84]: 
+            array([[ 0.   ,  0.095, -0.469],
+                   [ 0.   ,  0.411, -0.89 ],
+                   [-0.   ,  0.287,  0.92 ],
+                   ..., 
+                   [ 0.   ,  0.988, -0.148],
+                   [ 0.   ,  0.383, -0.916],
+                   [ 0.   ,  0.754, -0.631]])
+
+            In [85]: np.sum(e1*trans, axis=1)
+            Out[85]: array([ 0.002,  0.001,  0.003, ..., -0.002,  0.003,  0.001])
+
+        """
+        pass
+
 
 
 
@@ -207,8 +294,7 @@ if __name__ == '__main__':
     boundary = Boundary("Vacuum///MainH2OHale")
 
 
-
-    evt = Evt(tag="1", det="rainbow")
+    evt = Evt(tag="-6", det="rainbow", label="G4 P")
 
     sr = SphereReflect(evt)
 

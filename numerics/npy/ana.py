@@ -46,6 +46,7 @@ def theta(xyz):
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
 cross_ = lambda a,b:np.cross(a,b)/np.repeat(np.linalg.norm(a, 2, 1),3).reshape(-1,3)/np.repeat(np.linalg.norm(b, 2, 1),3).reshape(-1,3)
+norm_ = lambda a:a/np.repeat(np.linalg.norm(a, 2,1 ), 3).reshape(-1,3)
 
 
 def scatter3d(fig,  xyz): 
@@ -489,20 +490,24 @@ class Selection(object):
             if not_:
                 psel = np.logical_not(psel)
 
-            rsel = np.repeat(psel, evt.nrec) 
             ox = evt.ox[psel]
             wl = evt.wavelength[psel]
-            rx = evt.rx[rsel].reshape(-1,evt.nrec,2,4)  
+            rx = evt.rx[psel].reshape(-1,evt.nrec,2,4)  
+            #
+            # not needed since using 4d NPY with pre-shaped records
+            #rsel = np.repeat(psel, evt.nrec) 
+            #rx = evt.rx[rsel].reshape(-1,evt.nrec,2,4)  
         else:
             psel = None
             rsel = None
             ox = evt.ox
             wl = evt.wavelength
-            rx = evt.rx.reshape(-1,evt.nrec,2,4)
+            #rx = evt.rx.reshape(-1,evt.nrec,2,4)
+            rx = evt.rx
         pass
         self.evt = evt 
         self.psel = psel
-        self.rsel = rsel
+        self.rsel = None
         self.ox = ox
         self.rx = rx
         self.wl = wl

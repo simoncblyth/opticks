@@ -479,9 +479,22 @@ def check_intersect(evt, radius=100):
 
 
 def check_polarization(evt):
-     isp = evt.rpost_(1)[:,:3]
+    """
 
+    ::   
 
+        In [50]: p1[~msk].shape
+        Out[50]: (574, 3)
+
+        In [51]: p1[msk].shape
+        Out[51]: (999426, 3) 
+
+    """
+    p1 = evt.rpost_(1)[:,:3]
+    rp1 = np.linalg.norm(p1,2,1)
+    msk = np.abs( rp1 - 100. ) < 0.1
+
+    o1 = evt.rpol_(1)[:,:3]
 
 
 

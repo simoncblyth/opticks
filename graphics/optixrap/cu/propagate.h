@@ -235,6 +235,101 @@ Tacitly returns CONTINUE
 
 */
 
+
+
+
+__device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandState &rng)
+{
+    // see g4op-/G4OpBoundaryProcess.cc annotations to follow this
+
+    const float n1 = s.material1.x ;
+    const float n2 = s.material2.x ;   
+    const float eta = n1/n2 ; 
+
+    const float c1 = -dot(p.direction, s.surface_normal ); // c1 arranged to be +ve   
+    const float eta_c1 = eta * c1 ; 
+
+    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ; 
+     
+    bool tir = c2c2 < 0.f ; 
+    const float EdotN = dot(p.polarization , s.surface_normal ) ;  // used for TIR polarization
+
+    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
+
+    const float n1c1 = n1*c1 ; 
+    const float n2c2 = n2*c2 ; 
+    const float n2c1 = n2*c1 ; 
+    const float n1c2 = n1*c2 ; 
+
+    const float3 A_trans = fabs(c1) > 0.999999f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
+    
+    // decompose p.polarization onto incident orthogonal basis
+
+    const float E1_perp = dot(p.polarization, A_trans);   // fraction of E vector perpendicular to plane of incidence, ie S polarization
+    const float3 E1pp = E1_perp * A_trans ;               // S-pol transverse component   
+    const float3 E1pl = p.polarization - E1pp ;           // P-pol parallel component 
+    const float E1_parl = length(E1pl) ;
+  
+    // when polarization vector in direction of photon 
+    // [actually this doesnt happen as transverse]  TODO: adopt real P pol
+    //  will get E_perp 0. and E_parl 1.
+
+
+    // G4OpBoundaryProcess at normal incidence, mentions Jackson and uses 
+    //        
+    //      A_trans  = OldPolarization; E1_perp = 0. E1_parl = 1. 
+    //
+    // but that seems inconsistent, above is swapped cf that
+     
+    // hmm could use float2 here to hold perp/parl
+
+    const float E2_perp_t = 2.f*n1c1*E1_perp/(n1c1+n2c2);  // Fresnel S-pol transmittance
+    const float E2_parl_t = 2.f*n1c1*E1_parl/(n2c1+n1c2);  // Fresnel P-pol transmittance
+
+    const float E2_perp_r = E2_perp_t - E1_perp;           // Fresnel S-pol reflectance
+    const float E2_parl_r = (n2*E2_parl_t/n1) - E1_parl ;    // Fresnel P-pol reflectance
+
+    const float2 E2_t = make_float2( E2_perp_t, E2_parl_t ) ;
+    const float2 E2_r = make_float2( E2_perp_r, E2_parl_r ) ;
+
+    const float  E2_total_t = dot(E2_t,E2_t) ; 
+
+    const float2 T = normalize(E2_t) ; 
+    const float2 R = normalize(E2_r) ; 
+
+    const float TransCoeff =  tir ? 1.0f : n2c2*E2_total_t/n1c1 ; 
+
+    bool reflect = curand_uniform(&rng) > TransCoeff  ;
+
+    p.direction = reflect 
+                    ? 
+                       p.direction + 2.0f*c1*s.surface_normal 
+                    : 
+                       eta*p.direction + (eta_c1 - c2)*s.surface_normal
+                    ;   
+   // normalized ?
+
+    const float3 A_paral = normalize(cross(p.direction, A_trans));
+
+    p.polarization = reflect ?
+                                ( tir ? 
+                                        -p.polarization + 2.f*EdotN*s.surface_normal 
+                                      :
+                                        R.x*A_trans + R.y*A_paral 
+                                )
+                             :
+                                T.x*A_trans + T.y*A_paral 
+                             ;
+
+
+    s.flag = reflect     ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
+
+    p.flags.i.x = 0 ;  // no-boundary-yet for new direction
+
+}
+
+
+
 __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
 {
 
