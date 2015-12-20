@@ -39,6 +39,7 @@ const char* TorchStepNPY::T_POINT_    = "point" ;
 const char* TorchStepNPY::T_SPHERE_    = "sphere" ; 
 const char* TorchStepNPY::T_DISC_      = "disc" ; 
 const char* TorchStepNPY::T_DISC_INTERSECT_SPHERE_ = "discIntersectSphere" ; 
+const char* TorchStepNPY::T_DISC_INTERSECT_SPHERE_DUMB_ = "discIntersectSphereDumb" ; 
 const char* TorchStepNPY::T_DISCLIN_   = "disclin" ; 
 const char* TorchStepNPY::T_DISCAXIAL_   = "discaxial" ; 
 const char* TorchStepNPY::T_INVSPHERE_ = "invsphere" ; 
@@ -54,6 +55,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     else if(  strcmp(k,T_DISCLIN_)==0)   type = T_DISCLIN ; 
     else if(  strcmp(k,T_DISCAXIAL_)==0) type = T_DISCAXIAL ; 
     else if(  strcmp(k,T_DISC_INTERSECT_SPHERE_)==0) type = T_DISC_INTERSECT_SPHERE ; 
+    else if(  strcmp(k,T_DISC_INTERSECT_SPHERE_DUMB_)==0) type = T_DISC_INTERSECT_SPHERE_DUMB ; 
     else if(  strcmp(k,T_INVSPHERE_)==0) type = T_INVSPHERE ; 
     else if(  strcmp(k,T_INVCYLINDER_)==0) type = T_INVCYLINDER ; 
     else if(  strcmp(k,T_REFLTEST_)==0)  type = T_REFLTEST ; 
@@ -73,6 +75,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
        case T_DISCLIN:     type=T_DISCLIN    ;break; 
        case T_DISCAXIAL:   type=T_DISCAXIAL  ;break; 
        case T_DISC_INTERSECT_SPHERE:   type=T_DISC_INTERSECT_SPHERE  ;break; 
+       case T_DISC_INTERSECT_SPHERE_DUMB:   type=T_DISC_INTERSECT_SPHERE_DUMB  ;break; 
        case T_INVSPHERE:   type=T_INVSPHERE  ;break; 
        case T_REFLTEST:    type=T_REFLTEST   ;break; 
        case T_INVCYLINDER: type=T_INVCYLINDER;break; 
@@ -92,6 +95,7 @@ const char* TorchStepNPY::getTypeName()
        case T_DISCLIN:     name=T_DISCLIN_    ;break; 
        case T_DISCAXIAL:   name=T_DISCAXIAL_  ;break; 
        case T_DISC_INTERSECT_SPHERE:   name=T_DISC_INTERSECT_SPHERE_  ;break; 
+       case T_DISC_INTERSECT_SPHERE_DUMB:   name=T_DISC_INTERSECT_SPHERE_DUMB_  ;break; 
        case T_INVSPHERE:   name=T_INVSPHERE_  ;break; 
        case T_REFLTEST:    name=T_REFLTEST_   ;break; 
        case T_INVCYLINDER: name=T_INVCYLINDER_;break; 

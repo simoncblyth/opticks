@@ -201,7 +201,7 @@ ggv-rainbow()
                  polarization=$surfaceNormal
                  frame=-1
                  transform=$identity
-                 source=-600,0,0
+                 source=0,0,600
                  target=0,0,0
                  radius=100
                  distance=25

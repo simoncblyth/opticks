@@ -13,6 +13,7 @@ from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
 from env.numerics.npy.geometry import Boundary   
 from env.numerics.npy.fresnel import fresnel_factor
 
+X,Y,Z,W = 0,1,2,3
 
 
 deg = np.pi/180.
@@ -356,10 +357,10 @@ class Scatter(object):
 
 
 
-def scatter_plot_all(ax, p_evt, s_evt):
+def scatter_plot_all(ax, p_evt, s_evt, axis=X):
     db = np.arange(0,360,1)
     for i,evt in enumerate([p_evt, s_evt]):
-        dv = evt.zdeviation_angle()/deg
+        dv = evt.a_deviation_angle(axis=axis)/deg
         ax.set_xlim(0,360)
         ax.set_ylim(1,1e5)
         cnt, bns, ptc = ax.hist(dv, bins=db,  log=True, histtype='step', label=evt.label)
@@ -563,7 +564,7 @@ if 0:
     fig = plt.figure()
     fig.suptitle("Deviation angles without selection")
     ax = fig.add_subplot(1,1,1)
-    scatter_plot_all(ax, evt.p, evt.s)
+    scatter_plot_all(ax, evt.p, evt.s, axis=X)
     #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
 
 
@@ -572,12 +573,12 @@ if 1:
     fig.suptitle("Compare Op/G4 scatter angle  a) P b) S")
     ylim = [1e0,1e5]
     ax = fig.add_subplot(2,1,1)
-    scatter_plot_all(ax, evt_op.p, evt_g4.p)
+    scatter_plot_all(ax, evt_op.p, evt_g4.p, axis=X)
     ax.set_ylim(ylim)
     ax.legend()
 
     ax = fig.add_subplot(2,1,2)
-    scatter_plot_all(ax, evt_op.s, evt_g4.s)
+    scatter_plot_all(ax, evt_op.s, evt_g4.s, axis=X)
     ax.set_ylim(ylim)
     ax.legend()
 

@@ -177,33 +177,32 @@ class Evt(object):
         """
         return self._deviation_angle(self.p_out, side=side, incident=incident)
 
-    def zside(self):
+    def a_side(self, axis=Z):
         """
-        Use z coordinate of initial position to define side of incidence
+        Use a coordinate of the initial position to define side of incidence
         unit vector.
      
         Those at zero are aribitrarily put on one side
 
         This can be used for defining 0-360 degrees deviation angles 
         """
-        z0 = self.p0[:,2]
-        zs = np.piecewise( z0, [z0>0, z0<0, z0==0], [-1,1,1] ) 
-        zside  = np.zeros((len(zs),3))
-        zside[:,2] = zs 
-        return zside 
+        a0 = self.p0[:,axis]
+        aside  = np.zeros((len(a0),3))
+        aside[:,axis] = np.piecewise( a0, [a0>0, a0<0, a0==0], [-1,1,1] ) 
+        return aside 
 
-    def zdeviation_angle(self, incident=None):
-        zside = self.zside()
-        return self._deviation_angle(self.p_out, side=zside, incident=incident)  
+    def a_deviation_angle(self, incident=None, axis=Z):
+        aside = self.a_side(axis=axis)
+        return self._deviation_angle(self.p_out, side=aside, incident=incident)  
 
     @classmethod
     def _deviation_angle(cls, p_out, side=None, incident=None):
 
         if side is None:
-            side = np.array([0,0,1]) 
+            side = np.array([1,0,0]) 
 
         if incident is None:
-            incident = np.array([1,0,0]) 
+            incident = np.array([0,0,-1]) 
 
         if len(side.shape) == 1:
             side = np.tile(side, len(p_out)).reshape(-1,3)

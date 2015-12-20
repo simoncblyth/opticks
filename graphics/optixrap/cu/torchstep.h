@@ -263,6 +263,56 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       else if( ts.type == T_DISC_INTERSECT_SPHERE )
       {
           p.direction = ts.p0 ;
+          float r = radius*sqrtf(u1) ;   
+          float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
+          //rotateUz(discPosition, ts.p0);
+
+          p.position = ts.x0 + discPosition ;
+
+          p.polarization = ts.mode & M_SPOL ? 
+                                              normalize( make_float3(-discPosition.y, discPosition.x, 0.f)) 
+                                            :
+                                              normalize( make_float3(discPosition.x, discPosition.y, 0.f)) 
+                                            ;  
+
+          // TODO: allow setting arbitrary polarization, not just S/P
+
+          //rotateUz(p.polarization, ts.p0);
+
+          /*
+           Disc squadron of parallel photons incident on sphere of same radius
+
+           Very Special Geometry/Source situation:
+
+           For definiteness consider spherical coordinate system with 
+           photons incident from above the Z pole
+
+                x_sphere = r sin(th) cos(ph)
+                y_sphere = r sin(th) sin(ph)
+                z_sphere = r cos(th)
+
+                surface_normal = [x_sphere, y_sphere, z_sphere ]
+  
+                z ^ surface_normal =  [ -y , x,  0 ]      normal to the plane of incidence  (S-pol direction)
+
+                                      [  x,  y,  0 ]      perpendicular to above, within the plane of incidence (P-pol direction)
+
+
+           Project that onto disc coordinate system where photons are coming from, 
+           the coordinate systems share phi and r_disc
+
+                x_disc   = r_disc cos(ph) = x_sphere = r sin(th) cos(ph)
+                y_disc   = r_disc sin(ph) = y_sphere = r sin(th) sin(ph)
+                  
+           Surface normals of sphere are vectors from the center to points on surface  
+
+          */
+
+
+      }
+      else if( ts.type == T_DISC_INTERSECT_SPHERE_DUMB )
+      {
+          p.direction = ts.p0 ;
 
           float r = radius*sqrtf(u1) ;   
 

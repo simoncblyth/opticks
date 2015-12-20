@@ -34,7 +34,6 @@ class OpSource: public G4VPrimaryGenerator
     void SetParticleTime(G4double time);
     void SetParticleCharge(G4double charge);
     void SetParticlePolarization(G4ThreeVector polarization);
-    void setIncidentSphereSPolarized(bool spol); 
   public:
     G4int                 GetNumberOfParticles() const ;
     G4ParticleDefinition* GetParticleDefinition() const ;
@@ -63,7 +62,6 @@ private:
     G4Cache<part_prop_t>  m_pp;
 
     G4int                 m_num;
-    bool                  m_isspol ; 
     G4ParticleDefinition* m_definition;
     G4double              m_charge;
     G4double              m_time;
@@ -81,7 +79,6 @@ inline OpSource::OpSource(TorchStepNPY* torch)
     m_eneGen(NULL),
     m_ranGen(NULL),
 	m_num(1),
-    m_isspol(false),
 	m_charge(0.0),
 	m_time(0.0),
 	m_polarization(1.0,0.0,0.0),
@@ -107,11 +104,6 @@ inline void OpSource::SetParticleCharge(G4double charge)
 inline void OpSource::SetParticlePolarization(G4ThreeVector polarization) 
 {
     m_polarization = polarization ;
-}
-
-inline void OpSource::setIncidentSphereSPolarized(bool isspol)
-{
-    m_isspol = isspol ; 
 }
 
 

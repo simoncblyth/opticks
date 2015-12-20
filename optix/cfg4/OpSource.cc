@@ -31,7 +31,7 @@
 
 OpSource::part_prop_t::part_prop_t() 
 {
-  momentum_direction = G4ParticleMomentum(1,0,0);
+  momentum_direction = G4ParticleMomentum(0,0,-1);
   energy = 1.*MeV;
   position = G4ThreeVector();
 }
@@ -93,6 +93,10 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
     part_prop_t& pp = m_pp.Get();
 
+    bool incidentSphere = m_torch->isIncidentSphere() ;
+    bool SPol =  incidentSphere && m_torch->isSPolarized() ;
+    bool PPol =  incidentSphere && m_torch->isPPolarized() ;
+
 	for (G4int i = 0; i < m_num; i++) 
     {
 	    pp.position = m_posGen->GenerateOne();
@@ -113,16 +117,23 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		particle->SetMomentumDirection( pp.momentum_direction );
 		particle->SetCharge( m_charge );
 
-        if(m_isspol)
+        if(incidentSphere)
         {
-            //G4double phi = std::atan2( pp.position.y(), pp.position.x() );
-            G4double phi = std::atan2( pp.position.y(), pp.position.z() );
-		    particle->SetPolarization(0., -std::sin(phi), std::cos(phi) );  // see cfg4.rst
+            G4ThreeVector tangent(-pp.position.y(),  pp.position.x(), 0. ); 
+            G4ThreeVector radial(  pp.position.x(),  pp.position.y(), 0. ); 
+            if(SPol)
+		       particle->SetPolarization(tangent.unit()); 
+            else if(PPol)
+		       particle->SetPolarization(radial.unit());  
+            else
+		       particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
+
         }
         else
         {
 		    particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
-        }
+        }  
+
 
 		if (m_verbosityLevel > 1) {
 			G4cout << "Particle name: "
@@ -154,8 +165,6 @@ void OpSource::configure()
     G4ParticleDefinition* definition = G4ParticleTable::GetParticleTable()->FindParticle("opticalphoton");
     SetParticleDefinition(definition);
 
-    bool isspol = m_torch->isIncidentSphere() && m_torch->isSPolarized() ;
-    setIncidentSphereSPolarized(isspol);
 
     // specific custom S-polarization for rainbow geometry with incident planar disc of photons
 
@@ -198,8 +207,12 @@ void OpSource::configure()
 
     m_posGen->SetCentreCoords(cen);
 
-    G4ThreeVector posX(0,1.,0.);
-    G4ThreeVector posY(0,0.,1.);
+    //G4ThreeVector posX(0,1.,0.);
+    //G4ThreeVector posY(0,0.,1.);
+
+    G4ThreeVector posX(1,0.,0.);
+    G4ThreeVector posY(0,1.,0.);
+
     m_posGen->SetPosRot1(posX);
     m_posGen->SetPosRot2(posY);
 
