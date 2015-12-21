@@ -17,12 +17,13 @@
 // trace/debug/info/warning/error/fatal
 
 
-ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int size, Type_t type, bool norm, bool iatt) :
+ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt) :
             m_name(strdup(name)),
             m_npy(npy),
             m_bytes(npy->getBytes()),
             m_j(j),
             m_k(k),
+            m_l(l),
             m_size(size),
             m_type(type),
             m_norm(norm),
@@ -43,7 +44,7 @@ ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k,
     // these dont require the data, just the shape
     m_numbytes = m_npy->getNumBytes(0) ;
     m_stride   = m_npy->getNumBytes(1) ;
-    m_offset   = m_npy->getByteIndex(0,m_j,m_k) ;
+    m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;
     m_count    = m_npy->getShape(0) ;
 
     if( m_npy->hasData() )
@@ -66,7 +67,7 @@ unsigned int ViewNPY::getValueOffset()
     // serial offset of the qty within each rec 
     // obtained from first rec (i=0)
     //
-    return m_npy->getValueIndex(0,m_j,m_k); 
+    return m_npy->getValueIndex(0,m_j,m_k,m_l); 
 }
 
 void ViewNPY::setCustomOffset(unsigned long offset)

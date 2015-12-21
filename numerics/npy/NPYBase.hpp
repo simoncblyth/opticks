@@ -40,7 +40,7 @@ class NPYBase {
        Type_t        getType();
        unsigned char getSizeOfType();
        unsigned int  getNumBytes(unsigned int from_dim=0);
-       unsigned int  getByteIndex(unsigned int i, unsigned int j, unsigned int k);
+       unsigned int  getByteIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
 
    public:
        // OpenGL related
@@ -66,10 +66,10 @@ class NPYBase {
        // provided by subclass
        virtual void read(void* ptr) = 0;
        virtual void* getBytes() = 0 ;
-       virtual void setQuad(unsigned int i, unsigned int j, glm::vec4&  vec ) = 0 ;
-       virtual void setQuad(unsigned int i, unsigned int j, glm::ivec4& vec ) = 0 ;
-       virtual glm::vec4  getQuad(unsigned int i, unsigned int j ) = 0 ; 
-       virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j ) = 0 ; 
+       virtual void setQuad(unsigned int i, unsigned int j, unsigned int k, glm::vec4&  vec ) = 0 ;
+       virtual void setQuad(unsigned int i, unsigned int j, unsigned int k, glm::ivec4& vec ) = 0 ;
+       virtual glm::vec4  getQuad(unsigned int i, unsigned int j, unsigned int k ) = 0 ; 
+       virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j, unsigned int k ) = 0 ; 
 
        virtual void save(const char* path) = 0;
        virtual void save(const char* dir, const char* name) = 0;
@@ -274,9 +274,9 @@ inline unsigned int NPYBase::getNumBytes(unsigned int from_dim)
 {
     return m_sizeoftype*getNumValues(from_dim);
 }
-inline unsigned int NPYBase::getByteIndex(unsigned int i, unsigned int j, unsigned int k)
+inline unsigned int NPYBase::getByteIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
-    return m_sizeoftype*getValueIndex(i,j,k);
+    return m_sizeoftype*getValueIndex(i,j,k,l);
 }
 
 inline void NPYBase::setDynamic(bool dynamic)

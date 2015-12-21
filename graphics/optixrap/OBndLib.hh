@@ -24,9 +24,9 @@ private:
 
 
 inline OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
-           : 
-           OPropertyLib(ctx),
-           m_lib(lib)
+    : 
+    OPropertyLib(ctx),
+    m_lib(lib)
 {
 }
 

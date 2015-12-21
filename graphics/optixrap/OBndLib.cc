@@ -1,5 +1,8 @@
 #include "OBndLib.hh"
 #include "GBndLib.hh"
+
+
+#include "Opticks.hh"
 #include "GPropertyLib.hh"
 #include "NPY.hpp"
 
@@ -29,7 +32,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int nl = buf->getShape(3);
 
     assert(ni == m_lib->getNumBnd()) ;
-    assert(nj == GPropertyLib::NUM_QUAD && nk == GPropertyLib::DOMAIN_LENGTH && nl == GPropertyLib::NUM_PROP );
+    assert(nj == GPropertyLib::NUM_QUAD && nk == Opticks::DOMAIN_LENGTH && nl == GPropertyLib::NUM_PROP );
 
     unsigned int nx = nk ;
     unsigned int ny = ni*nj ;   // not nl as using float4
@@ -58,21 +61,12 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               << " w " << bounds.w 
               ;
 
-
-    //float domain_range = (GPropertyLib::DOMAIN_HIGH - GPropertyLib::DOMAIN_LOW); 
-    //optix::float4 domain = optix::make_float4(GPropertyLib::DOMAIN_LOW, GPropertyLib::DOMAIN_HIGH, GPropertyLib::DOMAIN_STEP, domain_range); 
-    //optix::float4 domain_reciprocal = optix::make_float4(1.f/GPropertyLib::DOMAIN_LOW, 1.f/GPropertyLib::DOMAIN_HIGH, 0.f, 0.f); // not flipping order 
-
-    glm::vec4 dom = GPropertyLib::getDefaultDomainSpec() ;
+    glm::vec4 dom = Opticks::getDefaultDomainSpec() ;
     glm::vec4 rdom( 1.f/dom.x, 1.f/dom.y , 0.f, 0.f ); // not flipping order, only endpoints used for sampling, not the step 
 
-    // formerly(with OBoundaryLib)  prefixed wavelength_ 
     m_context["boundary_texture"]->setTextureSampler(tex);
-
-    //m_context["boundary_domain"]->setFloat(domain); 
     m_context["boundary_domain"]->setFloat(dom.x, dom.y, dom.z, dom.w); 
     m_context["boundary_domain_reciprocal"]->setFloat(rdom.x, rdom.y, rdom.z, rdom.w); 
-
     m_context["boundary_bounds"]->setUint(bounds); 
 }
 
@@ -96,7 +90,6 @@ void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
     optical_buffer->unmap();
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 }
-
 
 
 

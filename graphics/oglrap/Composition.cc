@@ -562,24 +562,18 @@ void Composition::setParam(glm::vec4 param)
 }
  
  
-void Composition::setTimeDomain(gfloat4 td)
+void Composition::setTimeDomain(const glm::vec4& td)
 {
     m_domain_time = glm::vec4(td.x, td.y, td.z, td.w); 
 }
+
 void Composition::setColorDomain(guint4 cd)
 {
     m_domain_color = glm::uvec4(cd.x, cd.y, cd.z, cd.w); 
 }
 
-//void Composition::setLightPositionEye(gfloat4 lp)
-//{
-//    m_light_position_eye = glm::vec4(lp.x, lp.y, lp.z, lp.w); 
-//}
 
-
-
-
-void Composition::setDomainCenterExtent(gfloat4 ce)
+void Composition::setDomainCenterExtent(const glm::vec4& ce)
 {
     m_domain_center_extent.x = ce.x ;
     m_domain_center_extent.y = ce.y ;
@@ -1010,10 +1004,10 @@ void Composition::setAxisData(NPY<float>* axis_data)
 {
     m_axis_data = axis_data ;  
     m_axis_attr = new MultiViewNPY();
-    //                                              j k sz   type          norm   iatt
-    m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,4,ViewNPY::FLOAT, false, false));     
-    m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,4,ViewNPY::FLOAT, false, false));     
-    m_axis_attr->add(new ViewNPY("vcol",m_axis_data,2,0,4,ViewNPY::FLOAT, false, false));     
+    //                                              j k l sz   type          norm   iatt
+    m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,0,4,ViewNPY::FLOAT, false, false));     
+    m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,0,4,ViewNPY::FLOAT, false, false));     
+    m_axis_attr->add(new ViewNPY("vcol",m_axis_data,2,0,0,4,ViewNPY::FLOAT, false, false));     
 }
 
 

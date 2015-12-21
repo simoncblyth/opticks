@@ -1,12 +1,14 @@
 #pragma once
 
 #include <vector>
+#include <cstring>
+
 class ViewNPY ; 
 
 class MultiViewNPY {
     public:
-        MultiViewNPY();
-
+        MultiViewNPY(const char* name="no-name");
+        const char* getName();
     public:
         void add(ViewNPY* vec);
         ViewNPY* operator [](const char* name);
@@ -21,8 +23,19 @@ class MultiViewNPY {
         ViewNPY* find(const char* name);
 
     private:
+        const char*           m_name ; 
         std::vector<ViewNPY*> m_vecs ;  
 
 };
 
+inline MultiViewNPY::MultiViewNPY(const char* name)
+   :   
+    m_name(strdup(name))
+{
+}
+
+inline const char* MultiViewNPY::getName()
+{
+    return m_name ;
+}
 

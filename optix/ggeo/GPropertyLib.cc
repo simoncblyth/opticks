@@ -3,6 +3,10 @@
 #include "GItemList.hh"
 #include "GAttrSeq.hh"
 
+// opticks-
+#include "Opticks.hh"
+
+
 // npy-
 #include "NPY.hpp"
 #include "Map.hpp"
@@ -66,30 +70,13 @@ array([ 200.,  220.,  240.,  260.,  280.,  300.,  320.,  340.,  360.,
 */
 
 
-float        GPropertyLib::DOMAIN_LOW  = 60.f ; 
-float        GPropertyLib::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
-float        GPropertyLib::DOMAIN_STEP = 20.f ; 
-unsigned int GPropertyLib::DOMAIN_LENGTH = 39  ; 
-
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 
 unsigned int GPropertyLib::NUM_QUAD = 4  ; 
 unsigned int GPropertyLib::NUM_PROP = 4  ; 
 
 GDomain<float>* GPropertyLib::getDefaultDomain()
 {
-   return new GDomain<float>(DOMAIN_LOW, DOMAIN_HIGH, DOMAIN_STEP ); 
-}
-
-glm::vec4 GPropertyLib::getDefaultDomainSpec()
-{
-    glm::vec4 bd ;
-
-    bd.x = DOMAIN_LOW ;
-    bd.y = DOMAIN_HIGH ;
-    bd.z = DOMAIN_STEP ;
-    bd.w = DOMAIN_HIGH - DOMAIN_LOW ;
-
-    return bd ; 
+   return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
 }
 
 
@@ -99,17 +86,17 @@ void GPropertyLib::init()
 
     unsigned int len = getStandardDomainLength() ;
 
-    if(len != DOMAIN_LENGTH)
+    if(len != Opticks::DOMAIN_LENGTH)
     { 
         m_standard_domain->Summary("GPropertyLib::m_standard_domain");
         LOG(fatal) << "GPropertyLib::init"
                    << " mismatch "
-                   << " DOMAIN_LENGTH " << DOMAIN_LENGTH
+                   << " DOMAIN_LENGTH " << Opticks::DOMAIN_LENGTH
                    << " len " << len 
                    ;
     }
 
-    assert(len == DOMAIN_LENGTH );
+    assert(len == Opticks::DOMAIN_LENGTH );
 
     m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);

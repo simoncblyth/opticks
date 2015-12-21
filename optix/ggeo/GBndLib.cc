@@ -1,7 +1,7 @@
 #include "GBndLib.hh"
 #include "GPropertyMap.hh"
 
-
+#include "Opticks.hh"
 #include "NPY.hpp"
 
 #include "GMaterialLib.hh"
@@ -397,7 +397,7 @@ NPY<float>* GBndLib::createBuffer()
 
     unsigned int ni = getNumBnd();
     unsigned int nj = NUM_QUAD ;       // im-om-is-os
-    unsigned int nk = DOMAIN_LENGTH ; 
+    unsigned int nk = Opticks::DOMAIN_LENGTH ; 
     unsigned int nl = NUM_PROP ;       // 4 interweaved props
 
     assert(nk = getStandardDomainLength()) ;

@@ -17,7 +17,6 @@ Trailing dimension usually 4 as quads are convenient and efficient on GPU.
 
 */
 
-
 class ViewNPY {
     public:
         typedef enum { 
@@ -33,7 +32,7 @@ class ViewNPY {
                    UNSIGNED_INT_10F_11F_11F_REV } Type_t ;
          
     public:
-        ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
+        ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
         void addressNPY();
         void setCustomOffset(unsigned long offset);
         unsigned int getValueOffset(); // ?? multiply by sizeof(att-type) to get byte offset
@@ -70,6 +69,7 @@ class ViewNPY {
     private:
         unsigned char m_j ; 
         unsigned char m_k ; 
+        unsigned char m_l ; 
         unsigned int  m_size   ;   
         Type_t        m_type ; 
         bool          m_norm ;

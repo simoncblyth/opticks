@@ -5,7 +5,8 @@ template <typename T> class NPY ;
 
 class cuRANDWrapper ; 
 class NumpyEvt ; 
-class Composition ; 
+class Opticks ; 
+
 class OContext ; 
 class OBuf ; 
 struct OTimes ; 
@@ -23,8 +24,7 @@ class OPropagator {
                 e_number_domain
              } ;
     public:
-        OPropagator(OContext* ocontext, Composition* composition); 
-        // hmm Composition mainly graphical but needed for domains, maybe split these off ?
+        OPropagator(OContext* ocontext, Opticks* opticks); 
         void initRng();
     public:
         void initEvent();
@@ -32,15 +32,7 @@ class OPropagator {
         void downloadEvent();
     public:
         void setNumpyEvt(NumpyEvt* evt);
-        void setRngMax(unsigned int rng_max);
-        void setBounceMax(unsigned int bounce_max);
-        void setRecordMax(unsigned int record_max);
-
-    public:
         NumpyEvt*    getNumpyEvt();
-        unsigned int getRngMax();
-        unsigned int getBounceMax();
-        unsigned int getRecordMax();
 
     public:
         void setTrivial(bool trivial=true);
@@ -48,11 +40,6 @@ class OPropagator {
     public:
         OBuf* getSequenceBuf();
         OBuf* getPhotonBuf();
-
-    public:
-        //void saveDomains(const char* dir);
-        NPY<float>* getDomain();
-        NPY<int>*   getIDomain();
 
     private:
         void init();
@@ -62,12 +49,9 @@ class OPropagator {
 
     private:
         OContext*        m_ocontext ; 
-        Composition*     m_composition ; 
+        Opticks*         m_opticks ; 
         optix::Context   m_context ;
         NumpyEvt*        m_evt ; 
-        unsigned int     m_rng_max ; 
-        unsigned int     m_bounce_max ; 
-        unsigned int     m_record_max ; 
 
     protected:
         optix::Buffer   m_genstep_buffer ; 
@@ -93,20 +77,15 @@ class OPropagator {
 
     private:
         int             m_override ; 
-        NPY<float>*     m_domain ;
-        NPY<int>*       m_idomain ;
  
 };
 
 
 
-inline OPropagator::OPropagator(OContext* ocontext, Composition* composition) :
+inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks) :
     m_ocontext(ocontext),
-    m_composition(composition),
+    m_opticks(opticks),
     m_evt(NULL),
-    m_rng_max(0),
-    m_bounce_max(9),
-    m_record_max(10),
     m_photon_buf(NULL),
     m_sequence_buf(NULL),
     m_rng_wrapper(NULL),
@@ -115,9 +94,7 @@ inline OPropagator::OPropagator(OContext* ocontext, Composition* composition) :
     m_count(0),
     m_prep(0),
     m_time(0),
-    m_override(0),
-    m_domain(NULL),
-    m_idomain(NULL)
+    m_override(0)
 {
     init();
 }
@@ -137,50 +114,6 @@ inline NumpyEvt* OPropagator::getNumpyEvt()
     return m_evt ;
 }
 
-
-inline void OPropagator::setRngMax(unsigned int rng_max)
-{
-// default of 0 disables Rng 
-// otherwise maximum number of RNG streams, 
-// should be a little more than the max number of photons to generate/propagate eg 3e6
-    m_rng_max = rng_max ;
-}
-inline unsigned int OPropagator::getRngMax()
-{
-    return m_rng_max ; 
-}
-
-inline void OPropagator::setBounceMax(unsigned int bounce_max)
-{
-    m_bounce_max = bounce_max ;
-}
-inline unsigned int OPropagator::getBounceMax()
-{
-    return m_bounce_max ; 
-}
-
-inline void OPropagator::setRecordMax(unsigned int record_max)
-{
-    m_record_max = record_max ;
-}
-inline unsigned int OPropagator::getRecordMax()
-{
-    return m_record_max ; 
-}
-
-
-
-
-
-
-inline NPY<float>* OPropagator::getDomain()
-{
-    return m_domain ;
-}
-inline NPY<int>* OPropagator::getIDomain()
-{
-    return m_idomain ;
-}
 
 
 

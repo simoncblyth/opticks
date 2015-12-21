@@ -9,7 +9,7 @@ void test_ViewNPY()
 {   
     NPY<float>* npy = NPY<float>::load("cerenkov","1","dayabay");
 
-    ViewNPY v("test", npy,1,0);  // [:,1,0:3]
+    ViewNPY v("test", npy,1,0,0);  // [:,1,0:3]
     v.dump("vecNPY"); 
     v.Summary("ViewNPY::Summary");
 

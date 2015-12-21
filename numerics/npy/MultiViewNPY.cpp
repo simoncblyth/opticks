@@ -6,9 +6,6 @@
 #include "assert.h"
 
 
-MultiViewNPY::MultiViewNPY()
-{
-}
 
 void MultiViewNPY::add(ViewNPY* vec)
 { 

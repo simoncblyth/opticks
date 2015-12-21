@@ -62,13 +62,15 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
 void NumpyEvt::setGenstepData(NPY<float>* genstep)
 {
     m_timer->start();
-
     m_genstep_data = genstep  ;
 
-    m_genstep_attr = new MultiViewNPY();
-    //                                                    j k sz   type        norm   iatt
-    m_genstep_attr->add(new ViewNPY("vpos",m_genstep_data,1,0,4,ViewNPY::FLOAT,false,false));    // (x0, t0)                     2nd GenStep quad 
-    m_genstep_attr->add(new ViewNPY("vdir",m_genstep_data,2,0,4,ViewNPY::FLOAT,false,false));    // (DeltaPosition, step_length) 3rd GenStep quad
+    //                                                j k l sz   type        norm   iatt
+    ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false);    // (x0, t0)                     2nd GenStep quad 
+    ViewNPY* vdir = new ViewNPY("vdir",m_genstep_data,2,0,0,4,ViewNPY::FLOAT,false,false);    // (DeltaPosition, step_length) 3rd GenStep quad
+
+    m_genstep_attr = new MultiViewNPY("genstep_attr");
+    m_genstep_attr->add(vpos);
+    m_genstep_attr->add(vdir);
 
     // attribute offset calulated by  npy->getByteIndex(0,j,k) 
     // assuming the size of the attribute type matches that of the NPY<T>
@@ -97,17 +99,19 @@ void NumpyEvt::createHostBuffers()
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
     setPhoselData(phosel);   
 
-    unsigned int num_records = getNumRecords();
+    //unsigned int num_records = getNumRecords();
 
     //NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
     NPY<short>* rec = NPY<short>::make(m_num_photons, m_maxrec, 2, 4); 
     setRecordData(rec);   
 
     // aka seqidx (SequenceNPY) or target ThrustIndex
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+    //NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
     setRecselData(recsel);   
 
-    NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
+    //NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
+    NPY<short>* aux = NPY<short>::make(m_num_photons, m_maxrec, 1, 4);  // shape (nr,1,4)
     setAuxData(aux);   
 
     // TODO: adopt split shape like rec for recsel and aux
@@ -130,9 +134,9 @@ void NumpyEvt::createHostBuffers()
 void NumpyEvt::dumpDomains(const char* msg)
 {
     LOG(info) << msg 
-              << "\n center_extent   " << gformat(m_center_extent)
-              << "\n time_domain     " << gformat(m_time_domain)
-              << "\n boundary_domain " << gformat(m_boundary_domain)
+              << "\n space_domain      " << gformat(m_space_domain)
+              << "\n time_domain       " << gformat(m_time_domain)
+              << "\n wavelength_domain " << gformat(m_wavelength_domain)
               ;
 }
 
@@ -140,9 +144,9 @@ void NumpyEvt::updateDomainsBuffer()
 {
     NPY<float>* fdom = getFDomain();
 
-    fdom->setQuad(0, 0, m_center_extent );
+    fdom->setQuad(0, 0, m_space_domain );
     fdom->setQuad(1, 0, m_time_domain );
-    fdom->setQuad(2, 0, m_boundary_domain );
+    fdom->setQuad(2, 0, m_wavelength_domain );
 
     glm::ivec4 ci ;
     ci.x = 0 ; //m_bounce_max
@@ -228,12 +232,12 @@ void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 {
     m_photon_data = photon_data  ;
     m_photon_data->setDynamic();  // need to update with seeding so GL_DYNAMIC_DRAW needed 
-    m_photon_attr = new MultiViewNPY();
-    //                                                  j k sz   type          norm   iatt
-    m_photon_attr->add(new ViewNPY("vpos",m_photon_data,0,0,4,ViewNPY::FLOAT, false, false));      // 1st quad
-    m_photon_attr->add(new ViewNPY("vdir",m_photon_data,1,0,4,ViewNPY::FLOAT, false, false));      // 2nd quad
-    m_photon_attr->add(new ViewNPY("vpol",m_photon_data,2,0,4,ViewNPY::FLOAT, false, false));      // 3rd quad
-    m_photon_attr->add(new ViewNPY("iflg",m_photon_data,3,0,4,ViewNPY::INT  , false, true ));      // 4th quad
+    m_photon_attr = new MultiViewNPY("photon_attr");
+    //                                                  j k l,sz   type          norm   iatt
+    m_photon_attr->add(new ViewNPY("vpos",m_photon_data,0,0,0,4,ViewNPY::FLOAT, false, false));      // 1st quad
+    m_photon_attr->add(new ViewNPY("vdir",m_photon_data,1,0,0,4,ViewNPY::FLOAT, false, false));      // 2nd quad
+    m_photon_attr->add(new ViewNPY("vpol",m_photon_data,2,0,0,4,ViewNPY::FLOAT, false, false));      // 3rd quad
+    m_photon_attr->add(new ViewNPY("iflg",m_photon_data,3,0,0,4,ViewNPY::INT  , false, true ));      // 4th quad
 
     //
     //  photon array 
@@ -265,9 +269,9 @@ void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 void NumpyEvt::setAuxData(NPY<short>* aux_data)
 {
     m_aux_data = aux_data  ;
-    m_aux_attr = new MultiViewNPY();
-    //                                            j k sz   type                  norm   iatt
-    ViewNPY* ibnd = new ViewNPY("ibnd",m_aux_data,0,0,4,ViewNPY::SHORT          ,false,  true);
+    m_aux_attr = new MultiViewNPY("aux_attr");
+    //                                            j k l sz   type                  norm   iatt
+    ViewNPY* ibnd = new ViewNPY("ibnd",m_aux_data,0,0,0,4,ViewNPY::SHORT          ,false,  true);
     m_aux_attr->add(ibnd);
 }
 
@@ -275,14 +279,14 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
 {
     m_record_data = record_data  ;
 
-    //                                               j k sz   type                  norm   iatt
-    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,4,ViewNPY::SHORT          ,true,  false);
-    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,4,ViewNPY::UNSIGNED_BYTE  ,true,  false);   
+    //                                               j k l sz   type                  norm   iatt
+    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0,4,ViewNPY::SHORT          ,true,  false);
+    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,0,4,ViewNPY::UNSIGNED_BYTE  ,true,  false);   
 
-    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,2,ViewNPY::UNSIGNED_SHORT ,false, true);   
+    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,0,2,ViewNPY::UNSIGNED_SHORT ,false, true);   
     // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
 
-    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,4,ViewNPY::UNSIGNED_BYTE  ,false, true);   
+    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,0,4,ViewNPY::UNSIGNED_BYTE  ,false, true);   
     // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
     
 
@@ -295,7 +299,8 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
     //rpol->setCustomOffset(sizeof(unsigned char)*rpol->getValueOffset());
     // this is not needed
 
-    m_record_attr = new MultiViewNPY();
+    m_record_attr = new MultiViewNPY("record_attr");
+
     m_record_attr->add(rpos);
     m_record_attr->add(rpol);
     m_record_attr->add(rflg);
@@ -308,9 +313,9 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
 void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
 {
     m_phosel_data = phosel_data ;
-    //                                               j k sz   type                norm   iatt
-    ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
-    m_phosel_attr = new MultiViewNPY();
+    //                                               j k l sz   type                norm   iatt
+    ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
+    m_phosel_attr = new MultiViewNPY("phosel_attr");
     m_phosel_attr->add(psel);
 }
 
@@ -318,9 +323,9 @@ void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
 void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
 {
     m_recsel_data = recsel_data ;
-    //                                                  j k sz   type                norm   iatt
-    ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
-    m_recsel_attr = new MultiViewNPY();
+    //                                               j k l sz   type                norm   iatt
+    ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
+    m_recsel_attr = new MultiViewNPY("recsel_attr");
     m_recsel_attr->add(rsel);
 }
 
@@ -338,10 +343,10 @@ void NumpyEvt::setSequenceData(NPY<unsigned long long>* sequence_data)
     //      Have not taken the diddling route, 
     //      instead using separate Recsel/Phosel buffers for the indices
     // 
-    //                                                j k sz   type                norm   iatt
-    ViewNPY* phis = new ViewNPY("phis",m_sequence_data,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
-    ViewNPY* pmat = new ViewNPY("pmat",m_sequence_data,0,1,4,ViewNPY::UNSIGNED_SHORT,false,  true);
-    m_sequence_attr = new MultiViewNPY();
+    //                                                 j k l sz   type                norm   iatt
+    ViewNPY* phis = new ViewNPY("phis",m_sequence_data,0,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
+    ViewNPY* pmat = new ViewNPY("pmat",m_sequence_data,0,1,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
+    m_sequence_attr = new MultiViewNPY("sequence_attr");
     m_sequence_attr->add(phis);
     m_sequence_attr->add(pmat);
 
@@ -414,7 +419,6 @@ void NumpyEvt::save(bool verbose)
     daux->save("au%s", m_typ,  m_tag, udet);
 
 
-
     updateDomainsBuffer();
 
     NPY<float>* fdom = getFDomain();
@@ -422,10 +426,7 @@ void NumpyEvt::save(bool verbose)
 
     NPY<int>* idom = getIDomain();
     idom->save("idom%s", m_typ,  m_tag, udet);
-
-
 }
-
 
 
 
@@ -451,6 +452,4 @@ NPY<float>* NumpyEvt::loadGenstepFromFile(int modulo)
     }
     return npy ;
 }
-
-
 

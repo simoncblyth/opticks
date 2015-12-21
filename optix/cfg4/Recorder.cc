@@ -230,23 +230,22 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ; 
 
-    const glm::vec4& center_extent = m_evt->getCenterExtent() ; 
-    const glm::vec4& time_domain = m_evt->getTimeDomain() ; 
-    const glm::vec4& boundary_domain = m_evt->getBoundaryDomain() ; 
+    const glm::vec4& sd = m_evt->getSpaceDomain() ; 
+    const glm::vec4& td = m_evt->getTimeDomain() ; 
+    const glm::vec4& wd = m_evt->getWavelengthDomain() ; 
 
-    short posx = shortnorm(pos.x()/mm, center_extent.x, center_extent.w ); 
-    short posy = shortnorm(pos.y()/mm, center_extent.y, center_extent.w ); 
-    short posz = shortnorm(pos.z()/mm, center_extent.z, center_extent.w ); 
-    short time_ = shortnorm(time/ns,   time_domain.x,   time_domain.y );
+    short posx = shortnorm(pos.x()/mm, sd.x, sd.w ); 
+    short posy = shortnorm(pos.y()/mm, sd.y, sd.w ); 
+    short posz = shortnorm(pos.z()/mm, sd.z, sd.w ); 
+    short time_ = shortnorm(time/ns,   td.x, td.y );
 
     m_records->setQuad(m_record_id, slot, 0, posx, posy, posz, time_ );
 
- 
 
     unsigned char polx = uchar_( pol.x() );
     unsigned char poly = uchar_( pol.y() );
     unsigned char polz = uchar_( pol.z() );
-    unsigned char wavl = uchar_( 255.f*(wavelength/nm - boundary_domain.x)/boundary_domain.w );
+    unsigned char wavl = uchar_( 255.f*(wavelength/nm - wd.x)/wd.w );
 
     qquad qaux ; 
     qaux.uchar_.x = 0 ; // TODO:m1 

@@ -1,13 +1,13 @@
 #include "OPropagator.hh"
 
-#include "Composition.hh"
+// opticks-
+#include "Opticks.hh"
 
 #include "OContext.hh"
 #include "OConfig.hh"
 #include "OTimes.hh"
 #include "OBuf.hh"
 #include "OBufPair.hh"
-
 
 #include <optixu/optixu.h>
 #include <optixu/optixu_math_stream_namespace.h>
@@ -17,10 +17,7 @@
 #include "timeutil.hpp"
 #include "NPY.hpp"
 #include "NumpyEvt.hpp"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 
 using namespace optix ; 
@@ -30,16 +27,14 @@ using namespace optix ;
 #include "cuRANDWrapper.hh"
 
 
-
-
 void OPropagator::init()
 {
     m_context = m_ocontext->getContext();
 
     float pe = 0.1f ; 
     m_context[ "propagate_epsilon"]->setFloat(pe);  // TODO: check impact of changing propagate_epsilon
-    m_context[ "bounce_max" ]->setUint( m_bounce_max );
-    m_context[ "record_max" ]->setUint( m_record_max );
+    m_context[ "bounce_max" ]->setUint( m_opticks->getBounceMax() );
+    m_context[ "record_max" ]->setUint( m_opticks->getRecordMax() );
 
     optix::uint4 debugControl = optix::make_uint4(m_ocontext->getDebugPhoton(),0,0,0);
     LOG(debug) << "OPropagator::init debugControl " 
@@ -59,67 +54,33 @@ void OPropagator::init()
 
     m_times = new OTimes ; 
 
-    makeDomains();
-    recordDomains();
-}
-
-
-void OPropagator::makeDomains()
-{
-    m_domain = NPY<float>::make(e_number_domain,1,4) ;
-    m_domain->fill(0.f);
-    m_idomain = NPY<int>::make(e_number_idomain,1,4) ;
-    m_idomain->fill(0);
-}
-
-void OPropagator::recordDomains()
-{
-    glm::vec4 ce = m_composition->getDomainCenterExtent();
-    glm::vec4 td = m_composition->getTimeDomain();
+    const glm::vec4& ce = m_opticks->getSpaceDomain();
+    const glm::vec4& td = m_opticks->getTimeDomain();
 
     m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
     m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
-
-    m_domain->setQuad(e_center_extent, 0, ce );
-    m_domain->setQuad(e_time_domain  , 0, td );
-
-    glm::vec4 wd ;
-    m_context["boundary_domain"]->getFloat(wd.x,wd.y,wd.z,wd.w);
-    m_domain->setQuad(e_boundary_domain  , 0, wd );
-    print(wd, "OPropagator::initGeometry boundary_domain");
-
-        // cf with MeshViewer::initGeometry
-    LOG(info) << "OPropagator::initGeometry DONE "
-              << " y: " << ce.y  
-              << " z: " << ce.z  
-              << " w: " << ce.w  ;
-
-
-    glm::ivec4 ci ;
-    ci.x = m_bounce_max ;  
-    ci.y = m_rng_max ;  
-    ci.z = 0 ;  
-    ci.w = m_evt ? m_evt->getMaxRec() : 0 ;  
-    m_idomain->setQuad(e_config_idomain, 0, ci );
 }
 
 
 void OPropagator::initRng()
 {
-    if(m_rng_max == 0 ) return ;
+    unsigned int rng_max = m_opticks->getRngMax();
+
+    if(rng_max == 0 ) return ;
+
 
     const char* rngCacheDir = OConfig::RngDir() ;
-    m_rng_wrapper = cuRANDWrapper::instanciate( m_rng_max, rngCacheDir );
+    m_rng_wrapper = cuRANDWrapper::instanciate( rng_max, rngCacheDir );
 
     // OptiX owned RNG states buffer (not CUDA owned)
     m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
     m_rng_states->setElementSize(sizeof(curandState));
-    m_rng_states->setSize(m_rng_max);
+    m_rng_states->setSize(rng_max);
     m_context["rng_states"]->setBuffer(m_rng_states);
 
     curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
-    m_rng_wrapper->setItems(m_rng_max);
-    m_rng_wrapper->fillHostBuffer(host_rng_states, m_rng_max);
+    m_rng_wrapper->setItems(rng_max);
+    m_rng_wrapper->fillHostBuffer(host_rng_states, rng_max);
     m_rng_states->unmap();
 
     //
@@ -197,7 +158,7 @@ void OPropagator::propagate()
     if(!m_evt) return ;
 
     unsigned int numPhotons = m_evt->getNumPhotons();
-    assert( numPhotons <= getRngMax() && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
+    assert( numPhotons <= m_opticks->getRngMax() && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
 
     unsigned int width  = numPhotons ;
     unsigned int height = 1 ;

@@ -260,12 +260,12 @@ inline void OpticksCfg<Listener>::init()
        ("traverser",      boost::program_options::value<std::string>(&m_traverser), "OptiX Accel structure traverser, CAUTION case sensitive ");
 
 
-
    char bouncemax[128];
-   snprintf(bouncemax,128, "Maximum number of boundary bounces, 0:to just generate. Default %d ", m_bouncemax);
+   snprintf(bouncemax,128, 
+"Maximum number of boundary bounces, 0:prevents any propagation leaving generated photons"
+"Default %d ", m_bouncemax);
    m_desc.add_options()
        ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
-
 
 
    // keeping bouncemax one less than recordmax is advantageous 
@@ -273,7 +273,8 @@ inline void OpticksCfg<Listener>::init()
    // as this avoiding truncation of the records
 
    char recordmax[128];
-   snprintf(recordmax,128, "Maximum number of photon records, 1:to minimize. Default %d ", m_recordmax);
+   snprintf(recordmax,128, 
+"Maximum number of photon step records per photon, 1:to minimize without breaking machinery. Default %d ", m_recordmax);
    m_desc.add_options()
        ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
 

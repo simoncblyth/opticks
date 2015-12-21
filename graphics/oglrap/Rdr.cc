@@ -41,8 +41,12 @@ void Rdr::setPrimitive(Primitive_t prim )
 void Rdr::upload(MultiViewNPY* mvn)
 {
     if(!mvn) return ; 
+
     // MultiViewNPY are constrained to all refer to the same underlying NPY 
     // so only do upload and m_buffer creation for the first 
+
+    mvn->Summary("Rdr::upload mvn");
+
 
     // need to compile and link shader for access to attribute locations
     if(m_first_upload)
@@ -66,10 +70,19 @@ void Rdr::upload(MultiViewNPY* mvn)
 
             if(m_first_upload)
             {
+                LOG(info) << "Rdr::upload" 
+                          << " mvn " << mvn->getName() 
+                          << " (first)count " << count
+                           ;
                 setCountDefault(count);
             }
             else
             {
+                LOG(info) << "Rdr::upload" 
+                          << " mvn " << mvn->getName() 
+                          << " expected  " << getCountDefault()
+                          << " found " << count 
+                          ; 
                 assert(count == getCountDefault() && "subsequent Rdr::uploads must have same count as first");
             }
 

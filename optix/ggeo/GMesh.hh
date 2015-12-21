@@ -231,6 +231,8 @@ class GMesh : public GDrawable {
   public:
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
       gfloat4  getCenterExtent(unsigned int index);
+
+
       gbbox    getBBox(unsigned int index);
       gbbox*   getBBoxPtr();
       float* getTransform(unsigned int index);

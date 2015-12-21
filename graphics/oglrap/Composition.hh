@@ -112,8 +112,11 @@ class Composition : public Configurable {
       void aim(glm::vec4& ce, bool verbose=false);
       void setCenterExtent(gfloat4 ce, bool aim=false); // effectively points at what you want to look at 
       void setCenterExtent(glm::vec4& ce, bool aim=false); // effectively points at what you want to look at 
-      void setDomainCenterExtent(gfloat4 ce);               // typically whole geometry domain
-      void setTimeDomain(gfloat4 td);
+
+      void setDomainCenterExtent(const glm::vec4& ce);               // typically whole geometry domain
+      void setTimeDomain(const glm::vec4& td);
+
+
       void setColorDomain(guint4 cd);
       //void setLightPositionEye(gfloat4 lp);
 

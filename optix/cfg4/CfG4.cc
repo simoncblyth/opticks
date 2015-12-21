@@ -62,10 +62,12 @@ void CfG4::configure(int argc, char** argv)
 
     // compression domains set after runManager::Initialize, 
     // as extent only known after detector construction
+
+    m_opticks->setSpaceDomain(m_detector->getCenterExtent());
+
     m_evt->setTimeDomain(m_opticks->getTimeDomain());  
-    m_evt->setCenterExtent(m_detector->getCenterExtent());
-    m_evt->setBoundaryDomain(GPropertyLib::getDefaultDomainSpec()) ; 
-    // TODO: move domains into Opticks
+    m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain()) ; 
+    m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
 
     m_evt->dumpDomains("CfG4::configure dumpDomains");
 }

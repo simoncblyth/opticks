@@ -2,6 +2,7 @@
 #include "OpticksCfg.hh"
 #include "OpticksPhoton.h"
 
+#include "Parameters.hpp"
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "NLog.hpp"
@@ -28,6 +29,29 @@ const char* Opticks::cerenkov_          = "cerenkov" ;
 const char* Opticks::scintillation_     = "scintillation" ;
 const char* Opticks::torch_             = "torch" ; 
 const char* Opticks::other_             = "other" ;
+
+
+
+// formerly of GPropertyLib, now booted upstairs
+float        Opticks::DOMAIN_LOW  = 60.f ;
+float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
+float        Opticks::DOMAIN_STEP = 20.f ; 
+unsigned int Opticks::DOMAIN_LENGTH = 39  ;
+
+
+glm::vec4 Opticks::getDefaultDomainSpec()
+{
+    glm::vec4 bd ;
+
+    bd.x = DOMAIN_LOW ;
+    bd.y = DOMAIN_HIGH ;
+    bd.z = DOMAIN_STEP ;
+    bd.w = DOMAIN_HIGH - DOMAIN_LOW ;
+
+    return bd ; 
+}
+
+
 
 
 const char* Opticks::SourceType( int code )
@@ -71,15 +95,30 @@ unsigned int Opticks::SourceCode(const char* type)
 void Opticks::init()
 {
    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
+   m_parameters = new Parameters ;  
 
    m_time_domain.x = 0.f  ;
    m_time_domain.y = m_cfg->getTimeMax() ;
    m_time_domain.z = m_cfg->getAnimTimeMax() ;
    m_time_domain.w = 0.f  ;
+
+   m_space_domain.x = 0.f ; 
+   m_space_domain.y = 0.f ; 
+   m_space_domain.z = 0.f ; 
+   m_space_domain.w = 1000.f ; 
+
+   m_wavelength_domain = getDefaultDomainSpec() ;  
+
+   m_bounce_max = m_cfg->getBounceMax() ;
+   m_record_max = m_cfg->getRecordMax() ; 
 }
 
-
-
+void Opticks::collectParameters()
+{
+    m_parameters->add<unsigned int>("RngMax",    m_rng_max );
+    m_parameters->add<unsigned int>("BounceMax", m_bounce_max );
+    m_parameters->add<unsigned int>("RecordMax", m_record_max );
+}
 
 unsigned int Opticks::getSourceCode()
 {

@@ -277,8 +277,8 @@ int App::config(int argc, char** argv)
     // TODO: add spectral colors in wavelength bins to color texture
 
 
+    if(!hasOpt("noevent")) m_evt = m_opticks->makeEvt() ; 
 
-    m_evt  = hasOpt("noevent") ? NULL : m_opticks->makeEvt() ; 
     m_scene->setNumpyEvt(m_evt);
 
 #ifdef NPYSERVER
@@ -389,17 +389,22 @@ void App::registerGeometry()
     for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
     m_mesh0 = m_ggeo->getMergedMesh(0); 
 
- 
 
-    //glm::vec4 time_domain = m_opticks->getTimeDomain();   TODO: adopt this
-
-    m_composition->setTimeDomain( gfloat4(0.f, m_fcfg->getTimeMax(), m_fcfg->getAnimTimeMax(), 0.f) );  
-
-    m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
-  
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+    m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
 
-    m_composition->setDomainCenterExtent(ce0);  // define range in compressions etc.. 
+    // treat opticks as the common authority 
+
+
+    m_composition->setTimeDomain( m_opticks->getTimeDomain() );
+    m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
+
+    if(m_evt)
+    {
+        m_evt->setTimeDomain(m_opticks->getTimeDomain());
+        m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
+        m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain());
+    }
 
     LOG(debug) << "App::registerGeometry ce0: " 
                       << " x " << ce0.x
@@ -407,6 +412,10 @@ void App::registerGeometry()
                       << " z " << ce0.z
                       << " w " << ce0.w
                       ;
+
+    // TODO move into opticks
+    m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
+
  
 }
 
@@ -859,10 +868,7 @@ void App::preparePropagator()
 
     assert(!noevent);
 
-    m_opropagator = new OPropagator(m_ocontext, m_composition);
-
-    m_opropagator->setBounceMax(m_fcfg->getBounceMax());  // 0:prevents any propagation leaving generated photons
-    m_opropagator->setRecordMax(m_evt->getMaxRec());       // 1:to minimize without breaking machinery 
+    m_opropagator = new OPropagator(m_ocontext, m_opticks);
 
     m_opropagator->setNumpyEvt(m_evt);
 
@@ -872,11 +878,7 @@ void App::preparePropagator()
     int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);   // TODO: avoid envvar 
     assert(rng_max >= 1e6); 
 
-    m_opropagator->setRngMax(rng_max);
-
-    m_parameters->add<unsigned int>("RngMax",    m_opropagator->getRngMax() );
-    m_parameters->add<unsigned int>("BounceMax", m_opropagator->getBounceMax() );
-    m_parameters->add<unsigned int>("RecordMax", m_opropagator->getRecordMax() );
+    m_opticks->setRngMax(rng_max);
 
     m_opropagator->initRng();
     m_opropagator->initEvent();
@@ -918,13 +920,7 @@ void App::downloadEvt()
 
     (*m_timer)("checkDigests"); 
 
-    // huh, seems silly the domains should reside in the NumpyEvt not m_opropagator
-    NPY<float>* fdom = m_opropagator->getDomain();
-    NPY<int>*   idom = m_opropagator->getIDomain();
-
-    m_evt->setFDomain( fdom );
-    m_evt->setIDomain( idom );
-
+    m_evt->dumpDomains("App::downloadEvt dumpDomains");
     m_evt->save(true);
  
     (*m_timer)("evtSave"); 
@@ -1160,9 +1156,7 @@ void App::indexEvtOld()
         m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
         m_rec->setTypes(types);
         m_rec->setTyp(typ);
-
-        NPY<float>* fdom = m_opropagator->getDomain() ;
-        m_rec->setDomains(fdom);
+        m_rec->setDomains(m_evt->getFDomain()) ;
 
         if(m_pho)
         {
