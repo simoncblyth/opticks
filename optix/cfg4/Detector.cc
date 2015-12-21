@@ -7,7 +7,6 @@
 
 // ggeo-
 #include "GMaker.hh"
-#include "GPropertyLib.hh"
 #include "GCache.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
@@ -40,7 +39,6 @@ void Detector::init()
     m_mlib = m_bndlib->getMaterialLib();
     m_slib = m_bndlib->getSurfaceLib();
 
-    m_boundary_domain = GPropertyLib::getDefaultDomainSpec() ;
 }
 
 G4VPhysicalVolume* Detector::Construct()

@@ -13,13 +13,11 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-
 #include "NumpyEvt.hpp"
 #include "NPY.hpp"
 #include "NLog.hpp"
 
 #include "Recorder.icc"
-
 
 void Recorder::init()
 {
@@ -32,39 +30,16 @@ void Recorder::init()
               ;
 
     m_evt->zero();
+
     m_history = m_evt->getSequenceData();
     m_photons = m_evt->getPhotonData();
     m_records = m_evt->getRecordData();
 
     const char* typ = m_evt->getTyp();
     assert(strcmp(typ,Opticks::torch_) == 0);
-
     m_gen = Opticks::SourceCode(typ);
     assert( m_gen == TORCH );
 }
-
-void Recorder::save()
-{
-   // TODO: move the domain management into a common place to avoid duplication
-
-    NPY<float>* fdom = m_evt->getFDomain();
-
-    fdom->setQuad(0, 0, m_center_extent ); 
-    fdom->setQuad(1, 0, m_time_domain ); 
-
-    glm::ivec4 ci ;
-    ci.x = 0 ; //m_bounce_max
-    ci.y = 0 ; //m_rng_max    
-    ci.z = 0 ;   
-    ci.w = m_steps_per_photon ; 
-
-    NPY<int>* idom = m_evt->getIDomain();
-    idom->setQuad(0, 0, ci );
-
-    m_evt->save(true);
-}
-
-
 
 
 unsigned int Recorder::getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst)
@@ -255,32 +230,23 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ; 
 
-    short posx = shortnorm(pos.x()/mm, m_center_extent.x, m_center_extent.w ); 
-    short posy = shortnorm(pos.y()/mm, m_center_extent.y, m_center_extent.w ); 
-    short posz = shortnorm(pos.z()/mm, m_center_extent.z, m_center_extent.w ); 
-    short time_ = shortnorm(time/ns,    m_time_domain.x, m_time_domain.y );
+    const glm::vec4& center_extent = m_evt->getCenterExtent() ; 
+    const glm::vec4& time_domain = m_evt->getTimeDomain() ; 
+    const glm::vec4& boundary_domain = m_evt->getBoundaryDomain() ; 
+
+    short posx = shortnorm(pos.x()/mm, center_extent.x, center_extent.w ); 
+    short posy = shortnorm(pos.y()/mm, center_extent.y, center_extent.w ); 
+    short posz = shortnorm(pos.z()/mm, center_extent.z, center_extent.w ); 
+    short time_ = shortnorm(time/ns,   time_domain.x,   time_domain.y );
 
     m_records->setQuad(m_record_id, slot, 0, posx, posy, posz, time_ );
 
-
-    /*
-    if(m_record_id < 10)
-        LOG(info) << "Recorder::RecordStepPoint" 
-                  << " record_id " << m_record_id
-                  << " slot " << slot 
-                  << " time " << time
-                  << " time_ " << time_
-                  << " ns " << ns
-                  << " time_domain.x " << m_time_domain.x
-                  << " time_domain.y " << m_time_domain.y
-                  ;
-    */
  
 
     unsigned char polx = uchar_( pol.x() );
     unsigned char poly = uchar_( pol.y() );
     unsigned char polz = uchar_( pol.z() );
-    unsigned char wavl = uchar_( 255.f*(wavelength/nm - m_boundary_domain.x)/m_boundary_domain.w );
+    unsigned char wavl = uchar_( 255.f*(wavelength/nm - boundary_domain.x)/boundary_domain.w );
 
     qquad qaux ; 
     qaux.uchar_.x = 0 ; // TODO:m1 
@@ -295,6 +261,20 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
     polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
 
     m_records->setQuad(m_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
+
+    /*
+    if(m_record_id < 10000)
+        LOG(info) << "Recorder::RecordStepPoint" 
+                  << " record_id " << m_record_id
+                  << " m_slot " << m_slot 
+                  << " slot " << slot 
+                  << " time " << time
+                  << " time_ " << time_
+                  << " ns " << ns
+                  << " time_domain.x " << m_time_domain.x
+                  << " time_domain.y " << m_time_domain.y
+                  ;
+     */ 
 
     if(last)
     {

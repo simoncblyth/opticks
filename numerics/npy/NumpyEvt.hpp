@@ -32,6 +32,17 @@ class NumpyEvt {
        void setIncomingData(NPY<float>* incoming_data);
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
+   public:
+       // domains used for record compression
+       void setCenterExtent(const glm::vec4& center_extent);
+       void setTimeDomain(const glm::vec4& time_domain);
+       void setBoundaryDomain(const glm::vec4& boundary_domain);
+       const glm::vec4& getCenterExtent();
+       const glm::vec4& getTimeDomain();
+       const glm::vec4& getBoundaryDomain();
+   private:
+       void updateDomainsBuffer();
+   public:
        void save(bool verbose=false);
    private:
        // invoked internally, as knock on from setGenstepData
@@ -66,6 +77,7 @@ class NumpyEvt {
        PhotonsNPY*          getPhotonsNPY();
        NPY<float>*          getFDomain();
        NPY<int>*            getIDomain();
+       void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
    public:
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
@@ -128,6 +140,11 @@ class NumpyEvt {
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_photons ; 
        unsigned int    m_maxrec ; 
+
+       glm::vec4       m_center_extent ; 
+       glm::vec4       m_time_domain ; 
+       glm::vec4       m_boundary_domain ; 
+
 
 };
 
@@ -344,4 +361,30 @@ inline const char* NumpyEvt::getCat()
 }
 
 
+inline void NumpyEvt::setCenterExtent(const glm::vec4& center_extent)
+{
+    m_center_extent = center_extent ; 
+}
+inline void NumpyEvt::setTimeDomain(const glm::vec4& time_domain)
+{
+    m_time_domain = time_domain  ; 
+}
+inline void NumpyEvt::setBoundaryDomain(const glm::vec4& boundary_domain)
+{
+    m_boundary_domain = boundary_domain  ; 
+}
 
+
+inline const glm::vec4& NumpyEvt::getCenterExtent()
+{
+    return m_center_extent ; 
+}
+inline const glm::vec4& NumpyEvt::getTimeDomain()
+{
+    return m_time_domain ;
+}
+inline const glm::vec4& NumpyEvt::getBoundaryDomain()
+{ 
+    return m_boundary_domain ; 
+}
+ 

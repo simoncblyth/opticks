@@ -28,7 +28,6 @@ void CfG4::init()
 {
     m_opticks = new Opticks();
     m_cfg = m_opticks->getCfg();
-
     m_cache = new GCache(m_prefix, "cfg4.log", "info");
 }
 
@@ -36,78 +35,39 @@ void CfG4::configure(int argc, char** argv)
 {
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
+    assert( m_cfg->hasOpt("test") && m_opticks->getSourceCode() == TORCH && "cfg4 only supports source type TORCH with test geometries" );
 
-
-    bool test = m_cfg->hasOpt("test") ;
-    unsigned int code = m_opticks->getSourceCode(); // cfg is lodged inside opticks
-    assert( test && code == TORCH && "cfg4 only supports source type TORCH with test geometries" );
-
-    //std::string typ = Opticks::SourceTypeLowercase(code);
-    //std::string tag = m_cfg->getEventTag();
-    //std::string cat = m_cfg->getEventCat();
-
-    //unsigned int steps_per_photon = m_cfg->getRecordMax();
-    //unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;
-    //m_torch->setNumPhotonsPerG4Event(photons_per_g4event);
+    std::string testconfig = m_cfg->getTestConfig();
+    m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
+    m_detector  = new Detector(m_cache, m_testconfig) ; 
 
     m_evt = m_opticks->makeEvt();
-    m_torch = m_opticks->makeSimpleTorchStep();
 
+    m_torch = m_opticks->makeSimpleTorchStep();
     m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
 
     m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
-
-    //m_num_photons = m_torch->getNumPhotons();
     m_num_g4event = m_torch->getNumG4Event();
-
-
-    const char* tag = m_evt->getTag(); 
-
-    bool incidentSphere = m_torch->isIncidentSphere()  ;
-    bool isspol = false ;
-    if(incidentSphere)
-    { 
-        isspol = m_torch->isSPolarized();
-        if(strcmp(tag, "-5") == 0)  assert(isspol == true );
-        if(strcmp(tag, "-6") == 0)  assert(isspol == false );
-    }
-
-
     m_num_photons = m_evt->getNumPhotons();
-    unsigned int steps_per_photon = m_evt->getMaxRec() ;
+
     unsigned int photons_per_g4event = m_torch->getNumPhotonsPerG4Event();
 
     m_recorder = new Recorder(m_evt , photons_per_g4event); 
 
-    LOG(info) << "CfG4::configure" 
-              << " typ " << m_evt->getTyp()
-              << " tag " << m_evt->getTag()
-              << " isspol " << isspol
-              << " cat " << m_evt->getCat()
-              << " num_g4event " << m_num_g4event 
-              << " num_photons " << m_num_photons
-              << " steps_per_photon " << steps_per_photon
-              ;
-
-
-    std::string testconfig = m_cfg->getTestConfig();
-    m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-
-
-    m_detector  = new Detector(m_cache, m_testconfig) ; 
-
     m_runManager = new G4RunManager;
-
     m_runManager->SetUserInitialization(new PhysicsList());
     m_runManager->SetUserInitialization(m_detector);
-    ActionInitialization* ai = new ActionInitialization(m_recorder, m_torch) ;
-    m_runManager->SetUserInitialization(ai);
+    m_runManager->SetUserInitialization(new ActionInitialization(m_recorder, m_torch)) ;
     m_runManager->Initialize();
 
-    // domains used for record compression 
-    m_recorder->setCenterExtent(m_detector->getCenterExtent());
-    m_recorder->setTimeDomain(m_opticks->getTimeDomain());
-    m_recorder->setBoundaryDomain(m_detector->getBoundaryDomain());
+    // compression domains set after runManager::Initialize, 
+    // as extent only known after detector construction
+    m_evt->setTimeDomain(m_opticks->getTimeDomain());  
+    m_evt->setCenterExtent(m_detector->getCenterExtent());
+    m_evt->setBoundaryDomain(GPropertyLib::getDefaultDomainSpec()) ; 
+    // TODO: move domains into Opticks
+
+    m_evt->dumpDomains("CfG4::configure dumpDomains");
 }
 
 void CfG4::propagate()
@@ -115,18 +75,18 @@ void CfG4::propagate()
     LOG(info) << "CfG4::propagate"
               << " num_g4event " << m_num_g4event 
               << " num_photons " << m_num_photons 
+              << " steps_per_photon " << m_evt->getMaxRec()
               ; 
     m_runManager->BeamOn(m_num_g4event);
 }
 
 void CfG4::save()
 {
-    m_recorder->save();
+    m_evt->save(true);
 }
+
 CfG4::~CfG4()
 {
     delete m_runManager;
 }
-
-
 

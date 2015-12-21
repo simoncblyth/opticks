@@ -3,6 +3,7 @@
 
 // npy-
 #include "TorchStepNPY.hpp"
+#include "NLog.hpp"
 
 // cfg4-
 #include "OpSource.hh"
@@ -99,6 +100,16 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
     bool SPol =  m_torch->isSPolarized() ;
     bool PPol =  m_torch->isPPolarized() ;
 
+    
+    LOG(debug) << "OpSource::GeneratePrimaryVertex"
+              << " incidentSphere " << incidentSphere
+              << " reflTest " << reflTest
+              << " SPol " << SPol 
+              << " PPol " << PPol 
+              << " num " << m_num 
+              ;
+
+
 	for (G4int i = 0; i < m_num; i++) 
     {
 	    pp.position = m_posGen->GenerateOne();
@@ -190,9 +201,7 @@ void OpSource::configure()
     float _t = m_torch->getTime();
     glm::vec3 _pos = m_torch->getPosition();
     glm::vec3 _dir = m_torch->getDirection();
-
     float _radius = m_torch->getRadius();
-
 
     SetParticleTime(_t*ns);
     G4ThreeVector pos(_pos.x*mm,_pos.y*mm,_pos.z*mm);

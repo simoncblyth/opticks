@@ -346,7 +346,8 @@ if __name__ == '__main__':
     boundary = Boundary("Vacuum///MainH2OHale")
 
 
-    evt = Evt(tag="-6", det="rainbow", label="G4 P")
+    #evt = Evt(tag="-6", det="rainbow", label="P G4")
+    evt = Evt(tag="-5", det="rainbow", label="S G4")
 
     sr = SphereReflect(evt)
 

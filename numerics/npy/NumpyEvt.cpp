@@ -6,6 +6,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "Parameters.hpp"
+#include "GLMFormat.hpp"
 #include "Timer.hpp"
 #include "stringutil.hpp"
 
@@ -98,7 +99,8 @@ void NumpyEvt::createHostBuffers()
 
     unsigned int num_records = getNumRecords();
 
-    NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+    //NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+    NPY<short>* rec = NPY<short>::make(m_num_photons, m_maxrec, 2, 4); 
     setRecordData(rec);   
 
     // aka seqidx (SequenceNPY) or target ThrustIndex
@@ -107,6 +109,8 @@ void NumpyEvt::createHostBuffers()
 
     NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
     setAuxData(aux);   
+
+    // TODO: adopt split shape like rec for recsel and aux
 
     NPY<float>* fdom = NPY<float>::make(3,1,4);
     setFDomain(fdom);
@@ -121,6 +125,35 @@ void NumpyEvt::createHostBuffers()
 
     (*m_timer)("createHostBuffers");
 }
+
+
+void NumpyEvt::dumpDomains(const char* msg)
+{
+    LOG(info) << msg 
+              << "\n center_extent   " << gformat(m_center_extent)
+              << "\n time_domain     " << gformat(m_time_domain)
+              << "\n boundary_domain " << gformat(m_boundary_domain)
+              ;
+}
+
+void NumpyEvt::updateDomainsBuffer()
+{
+    NPY<float>* fdom = getFDomain();
+
+    fdom->setQuad(0, 0, m_center_extent );
+    fdom->setQuad(1, 0, m_time_domain );
+    fdom->setQuad(2, 0, m_boundary_domain );
+
+    glm::ivec4 ci ;
+    ci.x = 0 ; //m_bounce_max
+    ci.y = 0 ; //m_rng_max    
+    ci.z = 0 ;
+    ci.w = m_maxrec ;
+
+    NPY<int>* idom = getIDomain();
+    idom->setQuad(0, 0, ci );
+}
+
 
 
 void NumpyEvt::zero()
@@ -381,13 +414,14 @@ void NumpyEvt::save(bool verbose)
     daux->save("au%s", m_typ,  m_tag, udet);
 
 
+
+    updateDomainsBuffer();
+
     NPY<float>* fdom = getFDomain();
-    if(fdom)
-        fdom->save("fdom%s", m_typ,  m_tag, udet);
+    fdom->save("fdom%s", m_typ,  m_tag, udet);
 
     NPY<int>* idom = getIDomain();
-    if(idom)
-        idom->save("idom%s", m_typ,  m_tag, udet);
+    idom->save("idom%s", m_typ,  m_tag, udet);
 
 
 }

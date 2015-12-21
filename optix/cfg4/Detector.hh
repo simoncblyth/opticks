@@ -54,7 +54,6 @@ class Detector : public G4VUserDetectorConstruction
     GSurfaceLib*       m_slib ; 
   private:
     glm::vec4          m_center_extent ; 
-    glm::vec4          m_boundary_domain ; 
 
 };
 
@@ -83,10 +82,7 @@ inline const glm::vec4& Detector::getCenterExtent()
 {
     return m_center_extent ; 
 }
-inline const glm::vec4& Detector::getBoundaryDomain()
-{
-    return m_boundary_domain ; 
-}
+
 
 inline Detector::~Detector()
 {

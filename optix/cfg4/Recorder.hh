@@ -11,7 +11,7 @@ class G4Run ;
 class G4Step ; 
 
 
-class NumpyEvt ; 
+#include "NumpyEvt.hpp"
 template <typename T> class NPY ;
 
 //
@@ -25,10 +25,7 @@ template <typename T> class NPY ;
 
 class Recorder {
    public:
-        //Recorder(const char* typ, const char* tag, const char* det, unsigned int record_max, unsigned int steps_per_photon, unsigned int photons_per_g4event);
         Recorder(NumpyEvt* evt, unsigned int photons_per_g4event);
-        unsigned int getRecordMax();
-        unsigned int getStepsPerPhoton();
    public:
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
@@ -43,15 +40,7 @@ class Recorder {
         void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis);
         bool hasIssue();
    public:
-
-         // TODO: below domains belong inside NumpyEvt 
-        void setCenterExtent(const glm::vec4& center_extent);
-        void setTimeDomain(const glm::vec4& time_domain);
-        void setBoundaryDomain(const glm::vec4& boundary_domain);
-
-
         void Dump(const char* msg="Recorder::Dump");
-        void save();
    public:
         void setEventId(unsigned int event_id);
         void setPhotonId(unsigned int photon_id);
@@ -63,6 +52,7 @@ class Recorder {
         unsigned int getStepId();
         unsigned int defineRecordId();
         unsigned int getRecordId();
+        unsigned int getRecordMax();
    public:
         unsigned int getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
@@ -72,20 +62,16 @@ class Recorder {
    private:
         NumpyEvt*    m_evt ; 
 
-        // TODO: replace below with m_evt 
-        const char*  m_typ ; 
-        const char*  m_tag ; 
-        const char*  m_det ; 
         unsigned int m_gen ; 
         unsigned int m_record_max ; 
         unsigned int m_steps_per_photon ; 
         unsigned int m_photons_per_g4event ; 
 
-
         unsigned int m_event_id ; 
         unsigned int m_photon_id ; 
         unsigned int m_step_id ; 
         unsigned int m_record_id ; 
+
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
 
@@ -94,15 +80,9 @@ class Recorder {
         unsigned long long m_seqmat ; 
         unsigned int m_slot ; 
 
-        NPY<float>*               m_fdom ; 
-        NPY<int>*                 m_idom ; 
         NPY<float>*               m_photons ; 
         NPY<short>*               m_records ; 
         NPY<unsigned long long>*  m_history ; 
-
-        glm::vec4    m_center_extent ; 
-        glm::vec4    m_time_domain ; 
-        glm::vec4    m_boundary_domain ; 
 
         std::vector<const G4StepPoint*>         m_points ; 
         std::vector<unsigned int>               m_flags ; 
@@ -112,17 +92,10 @@ class Recorder {
 
 };
 
-//inline Recorder::Recorder(const char* typ, const char* tag, const char* det, unsigned int record_max, unsigned int steps_per_photon, unsigned int photons_per_g4event) 
 inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event) 
    :
    m_evt(evt),
-
-   //m_typ(strdup(typ)),
-   //m_tag(strdup(tag)),
-   //m_det(strdup(det)),
    m_gen(0),
-   //m_record_max(record_max),
-   //m_steps_per_photon(steps_per_photon),
    m_photons_per_g4event(photons_per_g4event),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
@@ -133,26 +106,19 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
    m_seqhis_select(0),
    m_seqmat(0),
    m_slot(0),
-   m_fdom(0),
-   m_idom(0),
    m_photons(0),
    m_records(0),
-   m_history(0),
-   m_center_extent(0.f,0.f,0.f,0.f),
-   m_time_domain(0.f,0.f,0.f,0.f),
-   m_boundary_domain(0.f,0.f,0.f,0.f)
+   m_history(0)
 {
    init();
 }
+
 
 inline unsigned int Recorder::getRecordMax()
 {
    return m_record_max ; 
 }
-inline unsigned int Recorder::getStepsPerPhoton()
-{
-   return m_steps_per_photon ; 
-}
+
 
 inline unsigned int Recorder::getEventId()
 {
@@ -205,28 +171,12 @@ inline void Recorder::setRecordId(unsigned int record_id)
 
 
 
-
-
-
 inline void Recorder::RecordBeginOfRun(const G4Run*)
 {
 }
 
 inline void Recorder::RecordEndOfRun(const G4Run*)
 {
-}
-
-inline void Recorder::setCenterExtent(const glm::vec4& center_extent)
-{
-   m_center_extent = center_extent ; 
-}
-inline void Recorder::setBoundaryDomain(const glm::vec4& boundary_domain)
-{
-   m_boundary_domain = boundary_domain ; 
-}
-inline void Recorder::setTimeDomain(const glm::vec4& time_domain)
-{
-   m_time_domain = time_domain ; 
 }
 
 

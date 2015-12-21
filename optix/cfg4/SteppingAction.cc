@@ -18,6 +18,8 @@
 #include "Recorder.hh"
 #include "Format.hh"
 
+#include "NLog.hpp"
+
 
 G4OpBoundaryProcessStatus SteppingAction::GetOpBoundaryProcessStatus()
 {
@@ -50,6 +52,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     G4Track* track = step->GetTrack();
     G4int photon_id = track->GetTrackID() - 1;
     G4int step_id  = track->GetCurrentStepNumber() - 1 ;
+
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
 
     m_recorder->setEventId(eid);
@@ -57,8 +60,19 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     m_recorder->setPhotonId(photon_id);   
 
     unsigned int record_id = m_recorder->defineRecordId();
+    unsigned int record_max = m_recorder->getRecordMax() ;
 
-    if(record_id < m_recorder->getRecordMax())
+    /*
+    if(startPhoton)
+         LOG(info) << "SteppingAction::UserSteppingAction"
+                   << " photon_id " << photon_id 
+                   << " step_id " << step_id 
+                   << " record_id " << record_id 
+                   << " record_max " << record_max
+                   ;
+    */
+
+    if(record_id < record_max)
     {
         m_recorder->setRecordId(record_id);
         if(startPhoton) m_recorder->startPhoton();

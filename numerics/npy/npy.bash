@@ -118,6 +118,11 @@ npy-scd(){  cd $(npy-sdir); }
 npy-icd(){  cd $(npy-idir); }
 npy-bcd(){  cd $(npy-bdir); }
 
+npy-i(){
+   npy-cd
+   i
+}
+
 npy-bindir(){ echo $(npy-idir)/bin ; } 
 npy-bin(){    echo $(npy-bindir)/$1 ; } 
 
