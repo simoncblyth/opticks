@@ -249,7 +249,7 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     const float c1 = -dot(p.direction, s.surface_normal ); // c1 arranged to be +ve   
     const float eta_c1 = eta * c1 ; 
 
-    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ; 
+    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law 
      
     bool tir = c2c2 < 0.f ; 
     const float EdotN = dot(p.polarization , s.surface_normal ) ;  // used for TIR polarization
@@ -270,24 +270,15 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     const float3 E1pl = p.polarization - E1pp ;           // P-pol parallel component 
     const float E1_parl = length(E1pl) ;
   
-    // when polarization vector in direction of photon 
-    // [actually this doesnt happen as transverse]  TODO: adopt real P pol
-    //  will get E_perp 0. and E_parl 1.
-
-
     // G4OpBoundaryProcess at normal incidence, mentions Jackson and uses 
-    //        
     //      A_trans  = OldPolarization; E1_perp = 0. E1_parl = 1. 
-    //
-    // but that seems inconsistent, above is swapped cf that
-     
-    // hmm could use float2 here to hold perp/parl
+    // but that seems inconsistent with the above dot product, above is swapped cf that
 
     const float E2_perp_t = 2.f*n1c1*E1_perp/(n1c1+n2c2);  // Fresnel S-pol transmittance
     const float E2_parl_t = 2.f*n1c1*E1_parl/(n2c1+n1c2);  // Fresnel P-pol transmittance
 
     const float E2_perp_r = E2_perp_t - E1_perp;           // Fresnel S-pol reflectance
-    const float E2_parl_r = (n2*E2_parl_t/n1) - E1_parl ;    // Fresnel P-pol reflectance
+    const float E2_parl_r = (n2*E2_parl_t/n1) - E1_parl ;  // Fresnel P-pol reflectance
 
     const float2 E2_t = make_float2( E2_perp_t, E2_parl_t ) ;
     const float2 E2_r = make_float2( E2_perp_r, E2_parl_r ) ;
@@ -307,7 +298,6 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
                     : 
                        eta*p.direction + (eta_c1 - c2)*s.surface_normal
                     ;   
-   // normalized ?
 
     const float3 A_paral = normalize(cross(p.direction, A_trans));
 
@@ -325,14 +315,12 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     s.flag = reflect     ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
-
 }
 
 
 
 __device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
 {
-
     float eta = s.material1.x/s.material2.x ;    // eta = n1/n2   x:refractive_index  PRE-FLIPPED
 
     float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;

@@ -244,7 +244,6 @@ void TorchStepNPY::setFrame(const char* s)
     m_frame = givec4(ss);
 }
 
-
 void TorchStepNPY::setFrame(unsigned int vindex)
 {
     m_frame.x = vindex ; 
@@ -252,7 +251,6 @@ void TorchStepNPY::setFrame(unsigned int vindex)
     m_frame.z = 0 ; 
     m_frame.w = 0 ; 
 }
-
 
 void TorchStepNPY::setFrameTransform(const char* s)
 {
@@ -263,14 +261,10 @@ void TorchStepNPY::setFrameTransform(const char* s)
     setFrameTargetted(true);
 }
 
-
-
-
 void TorchStepNPY::setMaterial(const char* s)
 {
     m_material = strdup(s);
 }
-
 
 void TorchStepNPY::setDirection(const char* s)
 {
@@ -278,10 +272,6 @@ void TorchStepNPY::setDirection(const char* s)
     glm::vec3 dir = gvec3(ss) ;
     setDirection(dir);
 }
-
-
-
-
 
 void TorchStepNPY::setSourceLocal(const char* s)
 {
@@ -312,6 +302,7 @@ void TorchStepNPY::setPolarizationLocal(const char* s)
     m_polarization_local.z = v.z;
     m_polarization_local.w = 0.0;  // direction not position
 }
+
 
 
 

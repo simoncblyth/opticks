@@ -101,7 +101,6 @@ __device__ void tsdebug( TorchStep& ts )
 
 
 /*
-
 http://mathworld.wolfram.com/SpherePointPicking.html
 
 To obtain points such that any small area on the sphere is expected to contain
@@ -112,15 +111,6 @@ theta   =   2 pi U
 phi     =   acos( 2V-1 )
 
 
-*/
-
-
-
-
-/*
-
-
-
 *disc*
     Photons start from a point on the disc
 
@@ -129,23 +119,59 @@ phi     =   acos( 2V-1 )
     Expanding radius beyond the size of the object is useful for finding geometry bugs 
 
 *sphere*
-
     Torch photons start from the transformed "source" 
     and are emitted in the direction 
     of the transformed "target"  ie direction normalize(tgt - src )
 
-
 *invsphere*
-*refltest*
+*refltest T_REFLTEST*
+
     Photons start from a position on the sphere and go in 
     direction towards the center of the sphere 
     where the "source" position provides the center of the sphere 
     (so in this case the target is not used)
 
+*discIntersectSphere T_DISC_INTERSECT_SPHERE*
+
+    Photons start from position on a disc canonically centered at [0,0,+600] 
+    and all travel in same -Z direction [0,0,-1]. 
+    They are incident on a sphere of the same radius as the disc. 
+
+    For definiteness consider spherical coordinate system with 
+    photons incident from above the Z pole
+
+         x_sphere = r sin(th) cos(ph)
+         y_sphere = r sin(th) sin(ph)
+         z_sphere = r cos(th)
+
+    At the point of intersection the surface normal is given by 
+
+         surface_normal = [x_sphere, y_sphere, z_sphere ]  
+  
+    Plane of incidence contains the photon direction (actually the plane wave k vector)
+    and the surface normal. 
+
+    Cross product of the photon direction and surface normal is perpendicular
+    to the plane of incidence, this corresponds to the S-polarized direction.
+
+            norm_( z ^ surface_normal ) 
+
+         =  norm_( [ -y , x,  0 ]  )     
+
+    Where y and x are the coordinates generated on the original disc, using
+    the aligned coordinate systems of sphere and disc
+
+    A vector perpendicular the above and the photon direction  
+    is within the plane of incidence and defines the P-polarized direction.
+
+             norm_( [  x,  y,  0 ] )     
+
+    The spherical geometry and alighment of the source disc and sphere
+    means that it is straightforward to arrange S-pol and P-pol without 
+    needing to calculate the intersect.
+
 
 */
-
-
 
 
 __device__ float3 get_direction_4(unsigned int idir, float delta)
@@ -263,51 +289,18 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       else if( ts.type == T_DISC_INTERSECT_SPHERE )
       {
           p.direction = ts.p0 ;
+
           float r = radius*sqrtf(u1) ;   
+
           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
-          //rotateUz(discPosition, ts.p0);
 
           p.position = ts.x0 + discPosition ;
 
           p.polarization = ts.mode & M_SPOL ? 
-                                              normalize( make_float3(-discPosition.y, discPosition.x, 0.f)) 
+                                              normalize(make_float3(-discPosition.y, discPosition.x, 0.f)) 
                                             :
-                                              normalize( make_float3(discPosition.x, discPosition.y, 0.f)) 
+                                              normalize(make_float3(discPosition.x, discPosition.y, 0.f)) 
                                             ;  
-
-          // TODO: allow setting arbitrary polarization, not just S/P
-
-          //rotateUz(p.polarization, ts.p0);
-
-          /*
-           Disc squadron of parallel photons incident on sphere of same radius
-
-           Very Special Geometry/Source situation:
-
-           For definiteness consider spherical coordinate system with 
-           photons incident from above the Z pole
-
-                x_sphere = r sin(th) cos(ph)
-                y_sphere = r sin(th) sin(ph)
-                z_sphere = r cos(th)
-
-                surface_normal = [x_sphere, y_sphere, z_sphere ]
-  
-                z ^ surface_normal =  [ -y , x,  0 ]      normal to the plane of incidence  (S-pol direction)
-
-                                      [  x,  y,  0 ]      perpendicular to above, within the plane of incidence (P-pol direction)
-
-
-           Project that onto disc coordinate system where photons are coming from, 
-           the coordinate systems share phi and r_disc
-
-                x_disc   = r_disc cos(ph) = x_sphere = r sin(th) cos(ph)
-                y_disc   = r_disc sin(ph) = y_sphere = r sin(th) sin(ph)
-                  
-           Surface normals of sphere are vectors from the center to points on surface  
-
-          */
-
 
       }
       else if( ts.type == T_DISC_INTERSECT_SPHERE_DUMB )
@@ -327,7 +320,7 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
               // polarization 
 
               float3 ray_origin = p.position ; 
-              float3 ray_direction = make_float3( 1.f, 0.f, 0.f ) ; // +X
+              float3 ray_direction = make_float3( 0.f, 0.f, -1.f ) ; // -Z
               float3 sphere_center = make_float3( 0.f, 0.f, 0.f ) ;           
               float  sphere_radius = 100.f ; 
 
@@ -343,11 +336,15 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
                   float sdisc = sqrtf(disc) ;               
                   float root1 = (-b - sdisc);
                   float3 surfaceNormal = (O + root1*D)/sphere_radius;
-                  p.polarization = ts.mode & M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
+                  p.polarization = ts.mode & M_SPOL ? 
+                                                      normalize(cross(p.direction, surfaceNormal)) 
+                                                    : 
+                                                      p.direction   // TODO: PPOL should be transverse
+                                                    ;  
               }
               else
               {
-                  p.polarization = p.direction ; 
+                  p.polarization = p.direction ; //TODO: should be transverse 
               }
           }
 
@@ -430,14 +427,20 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           //
           //        *mode* argument spol/ppol controls the initial polarization
           //
-          //        S-polarized : ie perpendicular to plane of incidence
-          //        P-polarized : parallel to plane of incidence
+          //        Very special spherical geometry allows S-pol/P-pol direction vectors
+          //        to be ontained by inspection:
+          // 
+          //           S-polarized : ie perpendicular to plane of incidence
+          //           P-polarized : parallel to plane of incidence
           //
-          // for reflection test need a uniform distribution of incident angle
-          // (this leads to distribution bunched at poles)
-
-          //  uniform polar angle, http://mathproofs.blogspot.tw/2005/04/uniform-random-distribution-on-sphere.html
-
+          //        Comparison of simulation results against analytic Fresnel formula 
+          //        is simplified by use of M_FLAT_THETA to produce an initial 
+          //        uniform distribution of incident angle.  Note the distribution is then 
+          //        not uniform on area of the sphere, being bunched at poles. 
+          //
+          //        http://mathproofs.blogspot.tw/2005/04/uniform-random-distribution-on-sphere.html
+          //
+        
           float sinTheta, cosTheta;
           if(ts.mode & M_FLAT_COSTHETA )   
           { 
@@ -449,16 +452,18 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
               sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
           }
 
-
           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta ); 
+
+          p.position = ts.x0 + radius*spherePosition ;
+
           p.direction = -spherePosition  ;
 
-          float3 surfaceNormal = ts.pol ; 
+          p.polarization = ts.mode & M_SPOL ? 
+                                               make_float3(spherePosition.y, -spherePosition.x , 0.f ) 
+                                            :  
+                                               make_float3(-spherePosition.x, -spherePosition.y , 0.f ) 
+                                            ;  
 
-          float3 photonPolarization = ts.mode & M_SPOL ? normalize(cross(p.direction, surfaceNormal)) : p.direction ;  
-
-          p.polarization = photonPolarization ;
-          p.position = ts.x0 + radius*spherePosition ;
       }
       else if( ts.type == T_INVCYLINDER )
       {
@@ -484,10 +489,7 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.time = ts.t0 + tdelta ; 
 
           //p.wavelength = float(photon_id % 10)*70.f + 100.f ; // toothcomb wavelength distribution 
-
       }
-
-
 }
 
 

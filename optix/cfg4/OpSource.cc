@@ -94,8 +94,10 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
     part_prop_t& pp = m_pp.Get();
 
     bool incidentSphere = m_torch->isIncidentSphere() ;
-    bool SPol =  incidentSphere && m_torch->isSPolarized() ;
-    bool PPol =  incidentSphere && m_torch->isPPolarized() ;
+    bool reflTest = m_torch->isReflTest() ;
+
+    bool SPol =  m_torch->isSPolarized() ;
+    bool PPol =  m_torch->isPPolarized() ;
 
 	for (G4int i = 0; i < m_num; i++) 
     {
@@ -119,7 +121,10 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
         if(incidentSphere)
         {
-            G4ThreeVector tangent(-pp.position.y(),  pp.position.x(), 0. ); 
+            // custom S/P-polarization specific to "rainbow geometry" 
+            // (planar disc of photons incident on sphere with same radius as disc)
+            //
+            G4ThreeVector tangent(-pp.position.y(),  pp.position.x(), 0. );  // anti-clockwise tangent
             G4ThreeVector radial(  pp.position.x(),  pp.position.y(), 0. ); 
             if(SPol)
 		       particle->SetPolarization(tangent.unit()); 
@@ -166,7 +171,6 @@ void OpSource::configure()
     SetParticleDefinition(definition);
 
 
-    // specific custom S-polarization for rainbow geometry with incident planar disc of photons
 
     float w = m_torch->getWavelength() ; 
     if(w > 0.f)
@@ -198,29 +202,42 @@ void OpSource::configure()
 
     // TODO: from config? need more state as the pol holds surfaceNormal ?
     G4ThreeVector pol(1.,0.,0.); 
-    SetParticlePolarization(pol);
+    SetParticlePolarization(pol); // reset later for the custom configs 
 
-    // hmm these are for rainbow geometry 
-    m_posGen->SetPosDisType("Plane");
-    m_posGen->SetPosDisShape("Circle");
-    m_posGen->SetRadius(_radius*mm);
+    
+    bool incidentSphere = m_torch->isIncidentSphere() ;
+    bool reflTest = m_torch->isReflTest() ;
 
-    m_posGen->SetCentreCoords(cen);
-
-    //G4ThreeVector posX(0,1.,0.);
-    //G4ThreeVector posY(0,0.,1.);
+    // for sanity test geometries use standard X Y for 
 
     G4ThreeVector posX(1,0.,0.);
     G4ThreeVector posY(0,1.,0.);
-
     m_posGen->SetPosRot1(posX);
     m_posGen->SetPosRot2(posY);
 
-    m_angGen->SetAngDistType("planar");
 
-    G4ThreeVector dir(_dir.x,_dir.y,_dir.z);
-    m_angGen->SetParticleMomentumDirection(dir);
+    if(incidentSphere)  // "rainbow" geometry 
+    {
+        m_posGen->SetPosDisType("Plane");
+        m_posGen->SetPosDisShape("Circle");
+        m_posGen->SetRadius(_radius*mm);
+        m_posGen->SetCentreCoords(cen);
 
+        m_angGen->SetAngDistType("planar");
+        G4ThreeVector dir(_dir.x,_dir.y,_dir.z);
+        m_angGen->SetParticleMomentumDirection(dir);
+
+    } 
+    else if( reflTest ) 
+    {
+        m_posGen->SetPosDisType("Surface");
+        m_posGen->SetPosDisShape("Sphere");
+        m_posGen->SetRadius(_radius*mm);
+        m_posGen->SetCentreCoords(cen);
+
+        m_angGen->SetAngDistType("focused");
+        m_angGen->SetFocusPoint(cen); 
+    }
 
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(posGen->GenerateOne(), "posGen", 10) << G4endl ; 
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(angGen->GenerateOne(), "angGen") << G4endl ; 

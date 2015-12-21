@@ -79,7 +79,8 @@ class Rat(object):
 
 
 class Evt(object):
-    def __init__(self, tag="1", src="torch", det="dayabay", label=""):
+    def __init__(self, tag="1", src="torch", det="dayabay", label="", nrec=10):
+        self.nrec = nrec # TODO: get nrec from idom ?
         self.tag = str(tag)
         self.det = det  
         self.label = label
@@ -89,7 +90,7 @@ class Evt(object):
         self.idom = A.load_("idom"+src,tag,det) 
 
         self.ox = A.load_("ox"+src,tag,det) 
-        self.rx = A.load_("rx"+src,tag,det) 
+        self.rx = A.load_("rx"+src,tag,det).reshape(-1,nrec,2,4) 
 
         self.ph = A.load_("ph"+src,tag,det)
         self.seqhis = self.ph[:,0,0]
@@ -108,7 +109,6 @@ class Evt(object):
         self.polw = self.ox[:,2]
 
         self.flags = self.ox.view(np.uint32)[:,3,3]
-        self.nrec = 10 # TODO: get from idom ?
 
     def msize(self):
         return float(self.ox.shape[0])/1e6
@@ -432,13 +432,10 @@ class Evt(object):
         return p 
 
     def rpost_(self, irec):
-        rx = self.rx.reshape(-1, self.nrec,2,4)
-        return self.recpost(rx, irec) 
+        return self.recpost(self.rx, irec) 
 
     def rpol_(self, irec):
-        rx = self.rx.reshape(-1, self.nrec,2,4)
-        return self.recpolarization(rx, irec) 
-
+        return self.recpolarization(self.rx, irec) 
 
 
 
@@ -501,8 +498,8 @@ class Selection(object):
             rsel = None
             ox = evt.ox
             wl = evt.wavelength
-            #rx = evt.rx.reshape(-1,evt.nrec,2,4)
-            rx = evt.rx
+            rx = evt.rx.reshape(-1,evt.nrec,2,4)
+            #rx = evt.rx
         pass
         self.evt = evt 
         self.psel = psel
@@ -535,6 +532,10 @@ class Selection(object):
 
     def recpost(self, irec):
         return self.evt.recpost(self.rx, irec)
+
+    def rpost_(self, irec):
+        rx = self.rx.reshape(-1, self.evt.nrec,2,4)
+        return self.evt.recpost(rx, irec) 
 
     def recwavelength(self, irec):
         """

@@ -99,14 +99,14 @@ class Reflect(object):
         """
 
         al = Selection(evt)  
-        p0a = al.recpost(0)[:,:W] - focus
+        p0a = al.rpost_(0)[:,:W] - focus
         tha = self.theta( p0a, normal ) 
 
-        br = Selection(evt,"BR SA","BR AB")
+        br = Selection(evt,["BR SA","BR AB"])
 
-        p0 = br.recpost(0)[:,:W] - focus   # start
-        p1 = br.recpost(1)[:,:W] - focus   # refl point
-        p2 = br.recpost(2)[:,:W] - focus   # end
+        p0 = br.rpost_(0)[:,:W] - focus   # start
+        p1 = br.rpost_(1)[:,:W] - focus   # refl point
+        p2 = br.rpost_(2)[:,:W] - focus   # end
 
         #miss = p1[:,2] != p1[0,2]   # this assumes a particular geometry 
         # missers confirmed to be a triangulation crack effect
@@ -278,7 +278,9 @@ if __name__ == '__main__':
     pwl = ep.unique_wavelength()
     assert swl == pwl 
 
-    boundary = Boundary("Vacuum///GlassSchottF2")
+    #boundary = Boundary("Vacuum///GlassSchottF2")
+    boundary = Boundary("Vacuum///MainH2OHale")
+    
     wl = swl
     n1 = boundary.omat.refractive_index(wl)  
     n2 = boundary.imat.refractive_index(wl)  

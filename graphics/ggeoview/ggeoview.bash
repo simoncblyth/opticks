@@ -154,12 +154,13 @@ ggv-;ggv-rainbow --cfg4 --ppol --dbg
 EOU
 }
 
+
+
 ggv-rainbow()
 {
     local msg="=== $FUNCNAME :"
 
     local cmdline=$*
-
     local pol
     if [ "${cmdline/--spol}" != "${cmdline}" ]; then
          pol=s
@@ -172,6 +173,7 @@ ggv-rainbow()
     fi  
 
     local tag
+
     case $pol in 
        s) tag=5 ;;   
        p) tag=6 ;;   
@@ -232,20 +234,32 @@ ggv-rainbow()
 
 }
 
-
-
-
-
 ggv-newton()
 {
     type $FUNCNAME
-    local pol=${1:-s}
+
+
+
+    local cmdline=$*
+    local pol
+    if [ "${cmdline/--spol}" != "${cmdline}" ]; then
+         pol=s
+         cmdline=${cmdline/--spol}
+    elif [ "${cmdline/--ppol}" != "${cmdline}" ]; then
+         pol=p
+         cmdline=${cmdline/--ppol}
+    else
+         pol=s
+    fi  
+
+
     local tag=1 
     case $pol in  
         s) tag=1 ;;
         p) tag=2 ;;
     esac
     echo  pol $pol tag $tag
+
 
     local material=GlassSchottF2
     local surfaceNormal=0,1,0
@@ -295,7 +309,19 @@ ggv-newton()
 ggv-reflect()
 {
     type $FUNCNAME
-    local pol=${1:-s}
+
+    local cmdline=$*
+    local pol
+    if [ "${cmdline/--spol}" != "${cmdline}" ]; then
+         pol=s
+         cmdline=${cmdline/--spol}
+    elif [ "${cmdline/--ppol}" != "${cmdline}" ]; then
+         pol=p
+         cmdline=${cmdline/--ppol}
+    else
+         pol=s
+    fi  
+
     local tag=1 
     case $pol in  
         s) tag=1 ;;
@@ -303,13 +329,17 @@ ggv-reflect()
     esac
     echo  pol $pol tag $tag
 
-    local material=GlassSchottF2
 
-    # target is ignored for refltest
+    local photons=10000
+
+    #local material=GlassSchottF2
+    local material=MainH2OHale
+
+    # target is ignored for refltest, source is the focus point 
 
     local torch_config=(
                  type=refltest
-                 photons=500000
+                 photons=$photons
                  mode=${pol}pol,flatTheta
                  polarization=0,0,-1
                  frame=-1

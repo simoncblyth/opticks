@@ -120,6 +120,7 @@ class TorchStepNPY {
        unsigned int getNumPhotonsPerG4Event(); 
        unsigned int getNumG4Event();
        bool isIncidentSphere();
+       bool isReflTest();
        bool isSPolarized();
        bool isPPolarized();
        void Summary(const char* msg="TorchStepNPY::Summary");
@@ -318,6 +319,14 @@ inline bool TorchStepNPY::isIncidentSphere()
     ::Torch_t type = getType();
     return type == T_DISC_INTERSECT_SPHERE  ;
 }
+
+inline bool TorchStepNPY::isReflTest()
+{
+    ::Torch_t type = getType();
+    return type == T_REFLTEST ;
+}
+
+
 inline bool TorchStepNPY::isSPolarized()
 {
     ::Mode_t  mode = getMode();
