@@ -1,9 +1,11 @@
 #pragma once
 #include <string>
+#include <cstring>
 
 #include "NPY.hpp"
 
 class Timer ; 
+class Parameters ;
 class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
@@ -11,7 +13,7 @@ class PhotonsNPY ;
 
 class NumpyEvt {
    public:
-       NumpyEvt();
+       NumpyEvt(const char* typ, const char* tag, const char* det, const char* cat=NULL);
    private:
        void init();
    public:
@@ -23,11 +25,14 @@ class NumpyEvt {
        static const char* sequence  ;
        static const char* aux ;
    public:
+       NPY<float>* loadGenstepFromFile(int modulo=0);
        void setGenstepData(NPY<float>* genstep_data);
+       void zero();
    public:
        void setIncomingData(NPY<float>* incoming_data);
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
+       void save(bool verbose=false);
    private:
        // invoked internally, as knock on from setGenstepData
        void createHostBuffers(); 
@@ -40,6 +45,9 @@ class NumpyEvt {
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
 
+   public:
+       void setFDomain(NPY<float>* fdom);
+       void setIDomain(NPY<int>* idom);
    public:
        NPY<float>*          getIncomingData();
        NPY<float>*          getGenstepData();
@@ -56,6 +64,8 @@ class NumpyEvt {
        void setPhotonsNPY(PhotonsNPY* pho);
        RecordsNPY*          getRecordsNPY();
        PhotonsNPY*          getPhotonsNPY();
+       NPY<float>*          getFDomain();
+       NPY<int>*            getIDomain();
    public:
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
@@ -79,8 +89,18 @@ class NumpyEvt {
        void         dumpPhotonData();
        static void  dumpPhotonData(NPY<float>* photon_data);
 
+       const char*  getTyp();
+       const char*  getTag();
+       const char*  getDet();
+       const char*  getCat();
    private:
+       const char*           m_typ ; 
+       const char*           m_tag ; 
+       const char*           m_det ; 
+       const char*           m_cat ; 
+
        Timer*                m_timer ;
+       Parameters*           m_parameters ;
 
        NPY<float>*           m_incoming_data ; 
        NPY<float>*           m_genstep_data ;
@@ -90,6 +110,9 @@ class NumpyEvt {
        NPY<unsigned char>*   m_phosel_data ;
        NPY<unsigned char>*   m_recsel_data ;
        NPY<unsigned long long>*  m_sequence_data ;
+
+       NPY<float>*           m_fdom ; 
+       NPY<int>*             m_idom ; 
 
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
@@ -109,9 +132,16 @@ class NumpyEvt {
 };
 
 
-inline NumpyEvt::NumpyEvt() 
+inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, const char* cat) 
           :
+          m_typ(strdup(typ)),
+          m_tag(strdup(tag)),
+          m_det(strdup(det)),
+          m_cat(strdup(cat)),
+
           m_timer(NULL),
+          m_parameters(NULL),
+
           m_incoming_data(NULL),
           m_genstep_data(NULL),
           m_photon_data(NULL),
@@ -120,6 +150,10 @@ inline NumpyEvt::NumpyEvt()
           m_phosel_data(NULL),
           m_recsel_data(NULL),
           m_sequence_data(NULL),
+
+          m_fdom(NULL),
+          m_idom(NULL),
+
           m_genstep_attr(NULL),
           m_photon_attr(NULL),
           m_record_attr(NULL),
@@ -127,6 +161,7 @@ inline NumpyEvt::NumpyEvt()
           m_phosel_attr(NULL),
           m_recsel_attr(NULL),
           m_sequence_attr(NULL),
+
           m_records(NULL),
           m_photons(NULL),
           m_num_gensteps(0),
@@ -271,6 +306,42 @@ inline PhotonsNPY* NumpyEvt::getPhotonsNPY()
 }
 
 
+
+
+inline void NumpyEvt::setFDomain(NPY<float>* fdom)
+{
+    m_fdom = fdom ; 
+}
+inline void NumpyEvt::setIDomain(NPY<int>* idom)
+{
+    m_idom = idom ; 
+}
+
+inline NPY<float>* NumpyEvt::getFDomain()
+{
+    return m_fdom ; 
+}
+inline NPY<int>* NumpyEvt::getIDomain()
+{
+    return m_idom ; 
+}
+
+inline const char* NumpyEvt::getTyp()
+{
+    return m_typ ; 
+}
+inline const char* NumpyEvt::getTag()
+{
+    return m_tag ; 
+}
+inline const char* NumpyEvt::getDet()
+{
+    return m_det ; 
+}
+inline const char* NumpyEvt::getCat()
+{
+    return m_cat ; 
+}
 
 
 

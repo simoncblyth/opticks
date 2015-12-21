@@ -6,6 +6,8 @@
 
 class MultiViewNPY ;
 class ViewNPY ;
+class NumpyEvt ; 
+
 class Composition ; 
 class Device ; 
 
@@ -39,6 +41,8 @@ class Rdr : public RendererBase  {
       // *download* : when an OpenGL buffer object is associated, glMapBuffer and read data from GPU into NPY instance 
       template <typename T>
       static void download(NPY<T>* npy);  
+
+      static void download( NumpyEvt* evt );
 
       static void* mapbuffer( int buffer_id, GLenum target );
       static void unmapbuffer(GLenum target);

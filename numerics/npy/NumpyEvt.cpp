@@ -5,6 +5,7 @@
 #include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
+#include "Parameters.hpp"
 #include "Timer.hpp"
 #include "stringutil.hpp"
 
@@ -30,6 +31,8 @@ void NumpyEvt::init()
 {
     m_timer = new Timer("NumpyEvt"); 
     m_timer->setVerbose(false);
+
+    m_parameters = new Parameters ;
 }
 
 
@@ -52,6 +55,8 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
     assert(mvn);
     return (*mvn)[elem[1].c_str()] ;
 }
+
+
 
 void NumpyEvt::setGenstepData(NPY<float>* genstep)
 {
@@ -103,9 +108,29 @@ void NumpyEvt::createHostBuffers()
     NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
     setAuxData(aux);   
 
+    NPY<float>* fdom = NPY<float>::make(3,1,4);
+    setFDomain(fdom);
+
+    NPY<int>* idom = NPY<int>::make(1,1,4);
+    setIDomain(idom);
+
+    // these small ones can be zeroed directly 
+    fdom->zero();
+    idom->zero();
+
 
     (*m_timer)("createHostBuffers");
 }
+
+
+void NumpyEvt::zero()
+{
+    m_photon_data->zero();
+    m_record_data->zero();
+    m_sequence_data->zero();
+    m_aux_data->zero();
+}
+
 
 
 void NumpyEvt::seedPhotonData()
@@ -323,6 +348,74 @@ std::string NumpyEvt::description(const char* msg)
     if(m_genstep_data)  ss << m_genstep_data->description("m_genstep_data") ;
     if(m_photon_data)   ss << m_photon_data->description("m_photon_data") ;
     return ss.str();
+}
+
+
+
+void NumpyEvt::save(bool verbose)
+{
+    const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
+
+    LOG(info) << "NumpyEvt::save"
+              << " typ: " << m_typ
+              << " tag: " << m_tag
+              << " det: " << m_det
+              << " cat: " << m_cat
+              << " udet: " << udet 
+              ;    
+
+    NPY<float>* dpho = getPhotonData();
+    dpho->setVerbose(verbose);
+    dpho->save("ox%s", m_typ,  m_tag, udet);
+
+    NPY<short>* drec = getRecordData();    
+    drec->setVerbose(verbose);
+    drec->save("rx%s", m_typ,  m_tag, udet);
+
+    NPY<unsigned long long>* dhis = getSequenceData();
+    dhis->setVerbose(verbose);
+    dhis->save("ph%s", m_typ,  m_tag, udet);
+
+    NPY<short>* daux = getAuxData();
+    daux->setVerbose(verbose);
+    daux->save("au%s", m_typ,  m_tag, udet);
+
+
+    NPY<float>* fdom = getFDomain();
+    if(fdom)
+        fdom->save("fdom%s", m_typ,  m_tag, udet);
+
+    NPY<int>* idom = getIDomain();
+    if(idom)
+        idom->save("idom%s", m_typ,  m_tag, udet);
+
+
+}
+
+
+
+
+NPY<float>* NumpyEvt::loadGenstepFromFile(int modulo)
+{
+    LOG(info) << "NumpyEvt::loadGenstepFromFile  "
+              << " typ " << m_typ
+              << " tag " << m_tag
+              << " det " << m_det
+              ;
+
+    NPY<float>* npy = NPY<float>::load(m_typ, m_tag, m_det ) ;
+
+    m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
+
+    m_parameters->add<int>("Modulo", modulo );
+
+    if(modulo > 0)
+    {
+        LOG(warning) << "App::loadGenstepFromFile applying modulo scaledown " << modulo ;
+        npy = NPY<float>::make_modulo(npy, modulo);
+        m_parameters->add<std::string>("genstepModulo",   npy->getDigestString()  );
+    }
+    return npy ;
 }
 
 

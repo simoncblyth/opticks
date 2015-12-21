@@ -1,12 +1,14 @@
 #pragma once
 
 #include <string>
+#include <cstring>
 #include <vector>
 #include <glm/glm.hpp>
 
 template <typename> class OpticksCfg ;
 
 class TorchStepNPY ; 
+class NumpyEvt ;
 
 #include "OpticksPhoton.h"
 
@@ -45,7 +47,10 @@ class Opticks {
    public:
        Opticks();
        OpticksCfg<Opticks>* getCfg();
+       void setDetector(const char* detector); 
+
        TorchStepNPY* makeSimpleTorchStep();
+       NumpyEvt* makeEvt(); 
        const glm::vec4& getTimeDomain();
    public:
        unsigned int getSourceCode();
@@ -60,12 +65,14 @@ class Opticks {
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
        OpticksCfg<Opticks>* m_cfg ; 
+       const char*          m_detector ; 
        glm::vec4            m_time_domain ; 
 };
 
 inline Opticks::Opticks() 
    :
-    m_cfg(NULL)
+    m_cfg(NULL),
+    m_detector(NULL)
 {
     init();
 }
@@ -83,6 +90,14 @@ inline const glm::vec4& Opticks::getTimeDomain()
 {
     return m_time_domain ; 
 }
+
+inline void Opticks::setDetector(const char* detector)
+{
+    m_detector = detector ? strdup(detector) : NULL ; 
+}
+
+
+
 
 
 inline void Opticks::configureS(const char* name, std::vector<std::string> values)

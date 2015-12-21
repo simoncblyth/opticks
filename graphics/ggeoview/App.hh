@@ -91,7 +91,6 @@ class App {
        void loadGenstep();
        void loadEvtFromFile();
 
-       NPY<float>* loadGenstepFromFile(const std::string& typ, const std::string& tag, const std::string& det);
 
        TorchStepNPY* makeCalibrationTorchStep(unsigned int imesh);
 

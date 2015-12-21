@@ -8,6 +8,7 @@ class GCache ;
 class GBndLib ;
 class GGeoTestConfig ; 
 class TorchStepNPY ;
+class NumpyEvt ; 
 class Detector ; 
 class Recorder ; 
 class G4RunManager ; 
@@ -30,6 +31,7 @@ class CfG4
         GGeoTestConfig*       m_testconfig ; 
         GCache*               m_cache ; 
         TorchStepNPY*         m_torch ; 
+        NumpyEvt*             m_evt ; 
    private:
         Detector*             m_detector ; 
         Recorder*             m_recorder ; 
@@ -48,6 +50,7 @@ inline CfG4::CfG4(const char* prefix)
      m_testconfig(NULL),
      m_cache(NULL),
      m_torch(NULL),
+     m_evt(NULL),
      m_detector(NULL),
      m_recorder(NULL),
      m_runManager(NULL),

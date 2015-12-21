@@ -154,13 +154,15 @@ bool App::hasOpt(const char* name)
     return m_fcfg->hasOpt(name);
 }
 
-
 void App::init(int argc, char** argv)
 {
     m_opticks = new Opticks(); 
 
     m_cache     = new GCache(m_prefix, "ggeoview.log", "info");
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
+
+    std::string detector = m_cache->getDetector();
+    m_opticks->setDetector(detector.c_str()); 
 
     m_parameters = new Parameters ; 
     m_timer      = new Timer("App::");
@@ -253,7 +255,6 @@ int App::config(int argc, char** argv)
     if(m_fcfg->hasOpt("help|version|idpath")) return 1 ; 
 
     bool fullscreen = m_fcfg->hasOpt("fullscreen");
-
     if(m_fcfg->hasOpt("size")) m_size = m_frame->getSize() ;
     else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
     else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
@@ -275,13 +276,9 @@ int App::config(int argc, char** argv)
     m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)GColors::PSYCHEDELIC_COLOR_OFFSET );
     // TODO: add spectral colors in wavelength bins to color texture
 
-    m_evt  = hasOpt("noevent") ? NULL : new NumpyEvt ; 
 
 
-
-
-
-
+    m_evt  = hasOpt("noevent") ? NULL : m_opticks->makeEvt() ; 
     m_scene->setNumpyEvt(m_evt);
 
 #ifdef NPYSERVER
@@ -583,7 +580,6 @@ void App::loadGenstep()
     std::string typ = Opticks::SourceTypeLowercase(code);
     std::string tag = m_fcfg->getEventTag();
     std::string cat = m_fcfg->getEventCat();
-
     std::string det = m_cache->getDetector();
 
     m_parameters->add<std::string>("Type", typ );
@@ -592,12 +588,14 @@ void App::loadGenstep()
     m_parameters->add<std::string>("Detector", det );
 
 
+
     Lookup* lookup = m_ggeo->getLookup();
 
     NPY<float>* npy = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION )
     {
-        npy = loadGenstepFromFile(typ, tag, det ); 
+        int modulo = m_fcfg->getModulo();
+        npy = m_evt->loadGenstepFromFile(modulo);
 
         m_g4step = new G4StepNPY(npy);    
         m_g4step->relabel(code); // becomes the ghead.i.x used in cu/generate.cu
@@ -635,9 +633,8 @@ void App::loadGenstep()
 
     (*m_timer)("loadGenstep"); 
 
- 
-
-    m_evt->setMaxRec(m_fcfg->getRecordMax());          // must set this before setGenStepData to have effect
+    // m_evt->setMaxRec(m_fcfg->getRecordMax()); 
+    // moved to Opticks::makeEvt  (must set this before setGenStepData to have effect)
 
     bool geocenter  = m_fcfg->hasOpt("geocenter");
 
@@ -645,8 +642,6 @@ void App::loadGenstep()
     m_evt->setGenstepData(npy);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
 
     (*m_timer)("hostEvtAllocation"); 
-
-
 
 
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
@@ -680,31 +675,6 @@ void App::loadEvtFromFile()
 }
 
 
-
-
-NPY<float>* App::loadGenstepFromFile(const std::string& typ, const std::string& tag, const std::string& det)
-{
-    LOG(info) << "App::loadGenstepFromFile  " 
-              << " typ " << typ
-              << " tag " << tag 
-              << " det " << det
-              ; 
-
-    NPY<float>* npy = NPY<float>::load(typ.c_str(), tag.c_str(), det.c_str() ) ;
-
-    m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
-
-    int modulo = m_fcfg->getModulo();
-    m_parameters->add<int>("Modulo", modulo );
-
-    if(modulo > 0)
-    {
-        LOG(warning) << "App::loadGenstepFromFile applying modulo scaledown " << modulo ; 
-        npy = NPY<float>::make_modulo(npy, modulo); 
-        m_parameters->add<std::string>("genstepModulo",   npy->getDigestString()  );
-    }
-    return npy ; 
-}
 
 
 void App::uploadEvt()
@@ -741,10 +711,7 @@ void App::seedPhotonsFromGensteps()
     //  This per-photon genstep index is used by OptiX photon propagation 
     //  program cu/generate.cu to access the appropriate values from the genstep buffer
     //
-    //
     //  TODO: make this operational in COMPUTE as well as INTEROP modes without code duplication ?
-    //
-
 
     LOG(info)<<"App::seedPhotonsFromGensteps" ;
 
@@ -753,14 +720,6 @@ void App::seedPhotonsFromGensteps()
     NPY<float>* photons  =  m_evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
 
     unsigned int nv0 = gensteps->getNumValues(0) ; 
-
-    // interop specific, but the result of the mapping 
-    // hmm... does OptiX expose buffer id ? 
-    // 
-    // this is done prior to OptiX involvement in INTEROP mode
-    // hmm could keep that in COMPUTE mode by 
-    // creating buffers in Thrust and then doing gloptixthrust- CUDAToOptiX setDevicePointer 
-    //
 
     CResource rgs( gensteps->getBufferId(), CResource::R );
     CResource rph( photons->getBufferId(), CResource::RW );
@@ -784,18 +743,6 @@ void App::seedPhotonsFromGensteps()
     rph.unmapGLToCUDA(); 
 
     (*m_timer)("seedPhotonsFromGensteps"); 
-
-    // below approach in OEngine failed due to getting bad pointer from OptiX::  
-    //
-    //     OBuf gs("gs", m_genstep_buffer);
-    //     unsigned int num_photons = gs.reduce<unsigned int>(6*4, 3) ;  // stride, offset
-    //     assert(num_photons == m_evt->getNumPhotons());
-    //     LOG(info)<<"OEngine::seedPhotonsFromGensteps num_photons " << num_photons ;
-    //
-    //     OBuf ph("ph", m_photon_buffer) ;
-    //     OBufPair<unsigned int> bp(gs.slice(6*4,3,0), ph.slice(4*4,0,0));
-    //     bp.seedDestination();
-    //
 }
 
 void App::initRecords()
@@ -874,7 +821,6 @@ void App::prepareOptiX()
 
     m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
     m_osrc->convert(); 
-
 
 
     std::string builder_   = m_fcfg->getBuilder(); 
@@ -961,65 +907,26 @@ void App::downloadEvt()
 {
     if(!m_evt) return ; 
 
-    // TODO: move into NumpyEvt 
-
-    NPY<float>* dpho = m_evt->getPhotonData();
-    Rdr::download(dpho);
-
-    NPY<short>* drec = m_evt->getRecordData();
-    Rdr::download(drec);
-
-    NPY<unsigned long long>* dhis = m_evt->getSequenceData();
-    Rdr::download(dhis);
-
-    NPY<short>* daux = m_evt->getAuxData();
-    Rdr::download(daux);
-
+    Rdr::download(m_evt);
 
     (*m_timer)("evtDownload"); 
 
-    m_parameters->add<std::string>("photonData",   dpho->getDigestString()  );
-    m_parameters->add<std::string>("recordData",   drec->getDigestString()  );
-    m_parameters->add<std::string>("sequenceData", dhis->getDigestString()  );
-    m_parameters->add<std::string>("auxData",      daux->getDigestString()  );
+    m_parameters->add<std::string>("photonData",   m_evt->getPhotonData()->getDigestString()  );
+    m_parameters->add<std::string>("recordData",   m_evt->getRecordData()->getDigestString()  );
+    m_parameters->add<std::string>("sequenceData", m_evt->getSequenceData()->getDigestString()  );
+    m_parameters->add<std::string>("auxData",      m_evt->getAuxData()->getDigestString()  );
 
     (*m_timer)("checkDigests"); 
 
-    const char* typ = m_parameters->getStringValue("Type").c_str();
-    const char* tag = m_parameters->getStringValue("Tag").c_str();
-    const char* cat = m_parameters->getStringValue("Cat").c_str();
-    const char* det = m_parameters->getStringValue("Detector").c_str();
-
-    const char* udet = strlen(cat) > 0 ? cat : det ; 
-
-    LOG(info) << "App::downloadEvt"
-              << " typ: " << typ
-              << " tag: " << tag
-              << " cat: " << cat
-              << " det: " << det
-              << " udet: " << udet
-              ;
-
-    // app.saveEvt
-    dpho->setVerbose();
-    dpho->save("ox%s", typ,  tag, udet);
-
-    drec->setVerbose();
-    drec->save("rx%s", typ,  tag, udet);
-
-    dhis->setVerbose();
-    dhis->save("ph%s", typ,  tag, udet);
-
-    daux->setVerbose();
-    daux->save("au%s", typ,  tag, udet);
-
-
+    // huh, seems silly the domains should reside in the NumpyEvt not m_opropagator
     NPY<float>* fdom = m_opropagator->getDomain();
     NPY<int>*   idom = m_opropagator->getIDomain();
-    fdom->save("fdom%s", typ,  tag, udet);
-    idom->save("idom%s", typ,  tag, udet);
 
+    m_evt->setFDomain( fdom );
+    m_evt->setIDomain( idom );
 
+    m_evt->save(true);
+ 
     (*m_timer)("evtSave"); 
 }
 

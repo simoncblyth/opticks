@@ -103,15 +103,6 @@ void OPropagator::recordDomains()
     m_idomain->setQuad(e_config_idomain, 0, ci );
 }
 
-/*
-void OPropagator::saveDomains(const char* dir)
-{
-    LOG(info) << "OPropagator::saveDomains" ; 
-    m_domain->save(dir, "OPropagatorF.npy");
-    m_idomain->save(dir, "OPropagatorI.npy");
-}
-*/
-
 
 void OPropagator::initRng()
 {
@@ -241,6 +232,4 @@ void OPropagator::downloadEvent()
 
     LOG(info)<<"OPropagator::downloadEvent DONE" ;
 }
-
-
 

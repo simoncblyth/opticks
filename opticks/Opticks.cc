@@ -2,6 +2,7 @@
 #include "OpticksCfg.hh"
 #include "OpticksPhoton.h"
 
+#include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "NLog.hpp"
 
@@ -173,8 +174,28 @@ TorchStepNPY* Opticks::makeSimpleTorchStep()
 
     if(!config.empty()) torchstep->configure(config.c_str());
 
+
+    unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
+    torchstep->setNumPhotonsPerG4Event(photons_per_g4event);
+
     return torchstep ; 
 }
+
+NumpyEvt* Opticks::makeEvt()
+{
+    unsigned int code = getSourceCode();
+    std::string typ = SourceTypeLowercase(code); // cerenkov, scintillation, torch
+    std::string tag = m_cfg->getEventTag();
+
+    std::string det = m_detector ? m_detector : "" ;
+    std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
+
+    NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
+    evt->setMaxRec(m_cfg->getRecordMax());
+
+    return evt ; 
+}
+
 
 
 

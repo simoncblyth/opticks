@@ -14,6 +14,7 @@
 #include "G4PhysicalConstants.hh"
 
 
+#include "NumpyEvt.hpp"
 #include "NPY.hpp"
 #include "NLog.hpp"
 
@@ -22,30 +23,34 @@
 
 void Recorder::init()
 {
-    m_gen = Opticks::SourceCode(m_typ);
+    m_record_max = m_evt->getNumPhotons(); 
+    m_steps_per_photon = m_evt->getMaxRec() ;    
 
+    LOG(info) << "Recorder::init"
+              << " record_max " << m_record_max
+              << " steps_per_photon " << m_steps_per_photon 
+              ;
 
-    m_history = NPY<unsigned long long>::make( m_record_max, 1, 2) ; 
-    m_history->zero();
+    m_evt->zero();
+    m_history = m_evt->getSequenceData();
+    m_photons = m_evt->getPhotonData();
+    m_records = m_evt->getRecordData();
 
-    m_photons = NPY<float>::make( m_record_max, 4, 4) ; 
-    m_photons->zero();
+    const char* typ = m_evt->getTyp();
+    assert(strcmp(typ,Opticks::torch_) == 0);
 
-    m_records = NPY<short>::make( m_record_max, m_steps_per_photon, 2, 4) ; 
-    m_records->zero();
-
-    m_fdom = NPY<float>::make(3,1,4);
-    m_fdom->zero();
-
-    m_idom = NPY<int>::make(1,1,4);
-    m_idom->zero();
-
+    m_gen = Opticks::SourceCode(typ);
+    assert( m_gen == TORCH );
 }
 
 void Recorder::save()
 {
-    m_fdom->setQuad(0, 0, m_center_extent ); 
-    m_fdom->setQuad(1, 0, m_time_domain ); 
+   // TODO: move the domain management into a common place to avoid duplication
+
+    NPY<float>* fdom = m_evt->getFDomain();
+
+    fdom->setQuad(0, 0, m_center_extent ); 
+    fdom->setQuad(1, 0, m_time_domain ); 
 
     glm::ivec4 ci ;
     ci.x = 0 ; //m_bounce_max
@@ -53,15 +58,13 @@ void Recorder::save()
     ci.z = 0 ;   
     ci.w = m_steps_per_photon ; 
 
-    m_idom->setQuad(0, 0, ci );
+    NPY<int>* idom = m_evt->getIDomain();
+    idom->setQuad(0, 0, ci );
 
-    m_photons->setVerbose(true);
-    m_photons->save("ox%s", m_typ, m_tag, m_det);
-    m_records->save("rx%s", m_typ, m_tag, m_det);
-    m_history->save("ph%s", m_typ, m_tag, m_det);
-    m_fdom->save("fdom%s", m_typ,  m_tag, m_det);
-    m_idom->save("idom%s", m_typ,  m_tag, m_det);
+    m_evt->save(true);
 }
+
+
 
 
 unsigned int Recorder::getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst)

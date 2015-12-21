@@ -6,6 +6,7 @@
 #include "Recorder.hh"
 
 // npy-
+#include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "NLog.hpp"
 
@@ -36,43 +37,53 @@ void CfG4::configure(int argc, char** argv)
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
 
+
     bool test = m_cfg->hasOpt("test") ;
     unsigned int code = m_opticks->getSourceCode(); // cfg is lodged inside opticks
     assert( test && code == TORCH && "cfg4 only supports source type TORCH with test geometries" );
 
-    std::string typ = Opticks::SourceTypeLowercase(code);
-    std::string tag = m_cfg->getEventTag();
-    std::string cat = m_cfg->getEventCat();
+    //std::string typ = Opticks::SourceTypeLowercase(code);
+    //std::string tag = m_cfg->getEventTag();
+    //std::string cat = m_cfg->getEventCat();
 
-    unsigned int steps_per_photon = m_cfg->getRecordMax();
-    unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;
+    //unsigned int steps_per_photon = m_cfg->getRecordMax();
+    //unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;
+    //m_torch->setNumPhotonsPerG4Event(photons_per_g4event);
 
-
+    m_evt = m_opticks->makeEvt();
     m_torch = m_opticks->makeSimpleTorchStep();
-    m_torch->update();  // sets pos,dir,pol using the frame transform
 
-    m_torch->setNumPhotonsPerG4Event(photons_per_g4event);
-    m_num_photons = m_torch->getNumPhotons();
+    m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
+
+    m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
+
+    //m_num_photons = m_torch->getNumPhotons();
     m_num_g4event = m_torch->getNumG4Event();
+
+
+    const char* tag = m_evt->getTag(); 
 
     bool incidentSphere = m_torch->isIncidentSphere()  ;
     bool isspol = false ;
     if(incidentSphere)
     { 
         isspol = m_torch->isSPolarized();
-        if(strcmp(tag.c_str(), "-5") == 0)  assert(isspol == true );
-        if(strcmp(tag.c_str(), "-6") == 0)  assert(isspol == false );
+        if(strcmp(tag, "-5") == 0)  assert(isspol == true );
+        if(strcmp(tag, "-6") == 0)  assert(isspol == false );
     }
 
 
-    // TODO: move event metadata handling/persisting into NumpyEvt
-    m_recorder = new Recorder(typ.c_str(),tag.c_str(),cat.c_str(),m_num_photons,steps_per_photon, photons_per_g4event); 
+    m_num_photons = m_evt->getNumPhotons();
+    unsigned int steps_per_photon = m_evt->getMaxRec() ;
+    unsigned int photons_per_g4event = m_torch->getNumPhotonsPerG4Event();
+
+    m_recorder = new Recorder(m_evt , photons_per_g4event); 
 
     LOG(info) << "CfG4::configure" 
-              << " typ " << typ
-              << " tag " << tag 
+              << " typ " << m_evt->getTyp()
+              << " tag " << m_evt->getTag()
               << " isspol " << isspol
-              << " cat " << cat
+              << " cat " << m_evt->getCat()
               << " num_g4event " << m_num_g4event 
               << " num_photons " << m_num_photons
               << " steps_per_photon " << steps_per_photon

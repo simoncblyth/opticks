@@ -9,6 +9,7 @@
 
 // npy-
 #include "NPY.hpp"
+#include "NumpyEvt.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "stringutil.hpp"
@@ -407,4 +408,18 @@ void Rdr::dump_uniforms()
 
 
 
+void Rdr::download( NumpyEvt* evt )
+{
+    NPY<float>* dpho = evt->getPhotonData();
+    Rdr::download(dpho);
+
+    NPY<short>* drec = evt->getRecordData();
+    Rdr::download(drec);
+
+    NPY<unsigned long long>* dhis = evt->getSequenceData();
+    Rdr::download(dhis);
+
+    NPY<short>* daux = evt->getAuxData();
+    Rdr::download(daux);
+}
 
