@@ -17,9 +17,9 @@ void test_transform()
    glm::vec4 q1(1.f,1.f,2.f,1.f);
    glm::vec4 q9(9.f,1.f,2.f,1.f);
 
-   dom->setQuad(0,0, q0 );
-   dom->setQuad(1,0, q1 );
-   dom->setQuad(9,0, q9 );
+   dom->setQuad(q0, 0,0);
+   dom->setQuad(q1, 1,0);
+   dom->setQuad(q9, 9,0);
 
    dom->dump();
     
@@ -102,9 +102,9 @@ void test_setQuad()
    glm::vec4 q1(1.f,1.f,2.f,3.f);
    glm::vec4 q9(9.f,1.f,2.f,3.f);
 
-   dom->setQuad(0,0, q0 );
-   dom->setQuad(1,0, q1 );
-   dom->setQuad(9,0, q9 );
+   dom->setQuad(q0, 0,0);
+   dom->setQuad(q1, 1,0);
+   dom->setQuad(q9, 9,0);
     
    dom->save("/tmp/test_setQuad.npy");
 }

@@ -344,12 +344,12 @@ void TorchStepNPY::addStep(bool verbose)
 
     if(verbose) dump("TorchStepNPY::addStep");
 
-    m_npy->setQuadI(i, 0, m_ctrl );
-    m_npy->setQuad( i, 1, m_post );
-    m_npy->setQuad( i, 2, m_dirw );
-    m_npy->setQuad( i, 3, m_polw );
-    m_npy->setQuad( i, 4, m_zeaz );
-    m_npy->setQuad( i, 5, m_beam );
+    m_npy->setQuadI(m_ctrl, i, 0 );
+    m_npy->setQuad( m_post, i, 1);
+    m_npy->setQuad( m_dirw, i, 2);
+    m_npy->setQuad( m_polw, i, 3);
+    m_npy->setQuad( m_zeaz, i, 4);
+    m_npy->setQuad( m_beam, i, 5);
 
     m_step_index++ ; 
 }

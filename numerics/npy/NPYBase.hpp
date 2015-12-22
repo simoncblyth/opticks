@@ -66,8 +66,10 @@ class NPYBase {
        // provided by subclass
        virtual void read(void* ptr) = 0;
        virtual void* getBytes() = 0 ;
-       virtual void setQuad(unsigned int i, unsigned int j, unsigned int k, glm::vec4&  vec ) = 0 ;
-       virtual void setQuad(unsigned int i, unsigned int j, unsigned int k, glm::ivec4& vec ) = 0 ;
+
+       virtual void setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k) = 0 ;
+       virtual void setQuad(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k) = 0 ;
+
        virtual glm::vec4  getQuad(unsigned int i, unsigned int j, unsigned int k ) = 0 ; 
        virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j, unsigned int k ) = 0 ; 
 

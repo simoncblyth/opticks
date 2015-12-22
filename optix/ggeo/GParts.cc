@@ -62,10 +62,10 @@ GParts* GParts::make(const npart& pt, const char* spec)
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
     part->zero();
 
-    part->setQuad( 0u, 0u, pt.q0.f );
-    part->setQuad( 0u, 1u, pt.q1.f );
-    part->setQuad( 0u, 2u, pt.q2.f );
-    part->setQuad( 0u, 3u, pt.q3.f );
+    part->setQuad( pt.q0.f, 0u, 0u );
+    part->setQuad( pt.q1.f, 0u, 1u );
+    part->setQuad( pt.q2.f, 0u, 2u );
+    part->setQuad( pt.q3.f, 0u, 3u );
 
     GParts* gpt = new GParts(part, spec) ;
     char typecode = gpt->getTypeCode(0u);

@@ -87,13 +87,13 @@ NPY<float>* PhotonsNPY::make_pathinfo()
         glm::vec4 polw = m_photons->getQuad(i,2);
         glm::vec4 flag = m_photons->getQuad(i,3);
 
-        pathinfo->setQuad( i, 0, post );
-        pathinfo->setQuad( i, 1, dirw );
-        pathinfo->setQuad( i, 2, polw );
-        pathinfo->setQuad( i, 3, flag );
+        pathinfo->setQuad( post, i, 0);
+        pathinfo->setQuad( dirw, i, 1);
+        pathinfo->setQuad( polw, i, 2);
+        pathinfo->setQuad( flag, i, 3);
 
-        pathinfo->setQuad( i, 4, ce  );
-        pathinfo->setQuad( i, 5, ldd );
+        pathinfo->setQuad( ce,   i, 4 );
+        pathinfo->setQuad( ldd,  i, 5 );
     }  
     return pathinfo ; 
 }

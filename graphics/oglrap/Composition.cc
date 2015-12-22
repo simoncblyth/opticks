@@ -940,17 +940,17 @@ void Composition::update()
     //print(m_light_position, "Composition::update m_light_position");
 
 
-    m_axis_data->setQuad(0,0,  m_light_position  );
-    m_axis_data->setQuad(0,1,  m_axis_x );
-    m_axis_data->setQuad(0,2,  m_axis_x_color );
+    m_axis_data->setQuad(m_light_position, 0,0 );
+    m_axis_data->setQuad(m_axis_x        , 0,1 );
+    m_axis_data->setQuad(m_axis_x_color  , 0,2 );
 
-    m_axis_data->setQuad(1,0,  m_light_position  );
-    m_axis_data->setQuad(1,1,  m_axis_y );
-    m_axis_data->setQuad(1,2,  m_axis_y_color );
+    m_axis_data->setQuad(m_light_position, 1,0 );
+    m_axis_data->setQuad(m_axis_y        , 1,1 );
+    m_axis_data->setQuad(m_axis_y_color  , 1,2 );
 
-    m_axis_data->setQuad(2,0,  m_light_position  );
-    m_axis_data->setQuad(2,1,  m_axis_z );
-    m_axis_data->setQuad(2,2,  m_axis_z_color );
+    m_axis_data->setQuad(m_light_position, 2,0 );
+    m_axis_data->setQuad(m_axis_z        , 2,1 );
+    m_axis_data->setQuad(m_axis_z_color  , 2,2 );
 
 
 

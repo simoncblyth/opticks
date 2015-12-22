@@ -144,9 +144,9 @@ void NumpyEvt::updateDomainsBuffer()
 {
     NPY<float>* fdom = getFDomain();
 
-    fdom->setQuad(0, 0, m_space_domain );
-    fdom->setQuad(1, 0, m_time_domain );
-    fdom->setQuad(2, 0, m_wavelength_domain );
+    fdom->setQuad(m_space_domain     , 0);
+    fdom->setQuad(m_time_domain      , 1);
+    fdom->setQuad(m_wavelength_domain, 2);
 
     glm::ivec4 ci ;
     ci.x = 0 ; //m_bounce_max
@@ -155,7 +155,7 @@ void NumpyEvt::updateDomainsBuffer()
     ci.w = m_maxrec ;
 
     NPY<int>* idom = getIDomain();
-    idom->setQuad(0, 0, ci );
+    idom->setQuad(ci, 0 );
 }
 
 

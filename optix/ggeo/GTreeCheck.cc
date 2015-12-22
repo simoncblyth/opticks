@@ -487,7 +487,7 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
         aii.z = 0 ;  // formerly boundary, but with analytic have broken 1-1 solid/boundary relationship so boundary must live in partBuffer
         aii.w = NSensor::RefIndex(sensor) ;  // the only critical one 
 
-        buf->setQuadU(i, 0, aii ); 
+        buf->setQuadU(aii, i, 0); 
     }
     return buf ; 
 }
