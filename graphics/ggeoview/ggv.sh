@@ -38,6 +38,13 @@ if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
    dbg=1
 fi
 
+# cfg4- doesnt handle visualization of loaded NumpyEvt so pass to ggv-
+load=0
+if [ "${cmdline/--load}" != "${cmdline}" ]; then
+   load=1
+fi
+
+
 if [ "${cmdline/--oac}" != "${cmdline}" ]; then
    export OPTIX_API_CAPTURE=1
 fi
@@ -49,8 +56,12 @@ if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
 elif [ "${cmdline/--boundaries}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin BoundariesNPYTest)
 elif [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
-   cfg4-export
-   export GGEOVIEW_BINARY=$(cfg4-bin)
+
+   if [ "$load" == "0" ]; then
+       cfg4-export
+       export GGEOVIEW_BINARY=$(cfg4-bin)
+   fi
+
 elif [ "${cmdline/--recs}" != "${cmdline}" ]; then
    export GGEOVIEW_BINARY=$(ggeo-bin RecordsNPYTest)
 elif [ "${cmdline/--tracer}" != "${cmdline}" ]; then

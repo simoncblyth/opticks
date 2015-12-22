@@ -314,6 +314,9 @@ bool NPY<T>::exists(const char* tfmt, const char* targ, const char* tag, const c
     snprintf(typ, 64, tfmt, targ ); 
     return exists(typ, tag, det);
 }
+
+
+
 template <typename T>
 void NPY<T>::save(const char* tfmt, const char* targ, const char* tag, const char* det)
 {

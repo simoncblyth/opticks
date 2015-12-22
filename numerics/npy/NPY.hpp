@@ -78,7 +78,6 @@ class NPY : public NPYBase {
        NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;
 
    public:
-   public:
        static NPY<T>* debugload(const char* path);
        static NPY<T>* load(const char* path);
        static NPY<T>* load(const char* dir, const char* name);

@@ -8,6 +8,7 @@
 #include "Parameters.hpp"
 #include "GLMFormat.hpp"
 #include "Timer.hpp"
+#include "Index.hpp"
 #include "stringutil.hpp"
 
 #include "limits.h"
@@ -453,6 +454,16 @@ void NumpyEvt::save(bool verbose)
     daux->save("au%s", m_typ,  m_tag, udet);
 
 
+
+    NPY<unsigned char>* ps = getPhoselData();
+    ps->setVerbose(verbose);
+    ps->save("ps%s", m_typ,  m_tag, udet);
+
+    NPY<unsigned char>* rs = getRecselData();
+    rs->setVerbose(verbose);
+    rs->save("rs%s", m_typ,  m_tag, udet);
+
+
     updateDomainsBuffer();
 
     NPY<float>* fdom = getFDomain();
@@ -460,6 +471,21 @@ void NumpyEvt::save(bool verbose)
 
     NPY<int>* idom = getIDomain();
     idom->save("idom%s", m_typ,  m_tag, udet);
+
+
+    if(m_seqhis)
+    {
+        std::string sh_dir = NPYBase::directory("sh%s", m_typ, udet );
+        m_seqhis->save(sh_dir.c_str(), m_tag);        
+    }
+
+    if(m_seqmat)
+    {
+        std::string sm_dir = NPYBase::directory("sm%s", m_typ, udet );
+        m_seqmat->save(sm_dir.c_str(), m_tag);        
+    }
+
+
 }
 
 
@@ -477,27 +503,90 @@ void NumpyEvt::load(bool verbose)
 
     // genstep skipped, it plays a special role so need to handle differently 
 
-    NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
-    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet );
-    NPY<short>* rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet );
-    NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet );
+
     NPY<float>* fdom = NPY<float>::load("fdom%s", m_typ,  m_tag, udet );
     NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet );
 
-    setPhotonData(ox);
-    setSequenceData(ph);
-    setRecordData(rx);
-    setAuxData(au);
     setFDomain(fdom);
     setIDomain(idom);
 
     readDomainsBuffer();
     dumpDomains("NumpyEvt::load dumpDomains");
 
+    std::string sh_dir = NPYBase::directory("sh%s", m_typ, udet );
+    m_seqhis = Index::load(sh_dir.c_str(), m_tag, "History_Sequence" );
+ 
+    std::string sm_dir = NPYBase::directory("sm%s", m_typ, udet );
+    m_seqmat = Index::load(sm_dir.c_str(), m_tag, "Material_Sequence");
+
+
+    NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet );
+    NPY<short>* rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet );
+    NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet );
+
+    NPY<unsigned char>* ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet );
+    NPY<unsigned char>* rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet );
+
+    unsigned int num_photons = ox->getShape(0);
+    unsigned int num_history = ph->getShape(0);
+    unsigned int num_phosel  = ps->getShape(0);
+    assert(num_photons == num_history && num_photons == num_phosel);
+
+    unsigned int num_records = rx->getShape(0);
+    unsigned int num_aux     = au->getShape(0);
+    unsigned int num_recsel  = rs->getShape(0);
+    assert(num_records == num_aux && num_records == num_recsel  ); 
+
+    if(num_records == num_photons*m_maxrec)
+    {
+        LOG(info) << "NumpyEvt::load flat records (Opticks style) detected " ;
+    } 
+    else if(num_records == num_photons)
+    {
+        LOG(info) << "NumpyEvt::load non-flat records (cfg4- style) detected :  RESHAPING " ;
+        {
+            rx->Summary("rx init");
+            unsigned int ni = rx->getShape(0);
+            unsigned int nj = rx->getShape(1);
+            unsigned int nk = rx->getShape(2);
+            unsigned int nl = rx->getShape(3);
+            rx->reshape(ni*nj, 1, nk, nl);
+            rx->Summary("rx reshaped");
+        }       
+        {
+            rs->Summary("rs init");
+            unsigned int ni = rs->getShape(0);
+            unsigned int nj = rs->getShape(1);
+            unsigned int nk = rs->getShape(2);
+            unsigned int nl = rs->getShape(3);
+            rs->reshape(ni*nj, 1, nk, nl);
+            rs->Summary("rs reshaped");
+        }       
+        {
+            au->Summary("au init");
+            unsigned int ni = au->getShape(0);
+            unsigned int nj = au->getShape(1);
+            unsigned int nk = au->getShape(2);
+            unsigned int nl = au->getShape(3);
+            au->reshape(ni*nj, 1, nk, nl);       
+            au->Summary("au reshaped");
+        }
+    }
+
+    setPhotonData(ox);
+    setPhoselData(ps);
+    setSequenceData(ph);
+    setRecordData(rx);
+    setAuxData(au);
+    setRecselData(rs);
+
     if(verbose)
     {
         ox->Summary("ox");
+        ps->Summary("ps");
         rx->Summary("rx");
+        rs->Summary("rs");
         ph->Summary("ph");
         au->Summary("au");
         fdom->Summary("fdom");

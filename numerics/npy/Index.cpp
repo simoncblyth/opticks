@@ -213,13 +213,25 @@ void Index::crossreference()
    }
 }
 
+std::string Index::directory(const char* pfold, const char* rfold)
+{
+    std::stringstream ss ; 
+    ss << pfold << "/" << rfold ; 
+    std::string dir = ss.str();
+    return dir ; 
+}
+
+void Index::save(const char* pfold, const char* rfold)
+{
+   std::string dir = directory(pfold, rfold);
+   save(dir.c_str());
+}
 
 void Index::save(const char* idpath)
 {
     saveMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source").c_str() );  
     saveMap<std::string, unsigned int>( m_local , idpath, getPrefixedString("Local").c_str() );  
 }
-
 std::string Index::getPrefixedString(const char* tail)
 {
     std::string prefix(m_itemtype); 
@@ -235,6 +247,11 @@ void Index::loadMaps(const char* idpath)
     crossreference();
 }
 
+Index* Index::load(const char* pfold, const char* rfold, const char* itemtype)
+{
+   std::string dir = directory(pfold, rfold);
+   return load(dir.c_str(), itemtype );
+}
 
 Index* Index::load(const char* idpath, const char* itemtype)
 {

@@ -944,7 +944,7 @@ void App::indexSequence()
     // NB hostside allocation deferred for these
     NPY<unsigned char>* phosel_data = m_evt->getPhoselData(); 
     NPY<unsigned char>* recsel_data = m_evt->getRecselData();
-    unsigned int maxrec = m_evt->getMaxRec(); // 10 
+    unsigned int maxrec = m_evt->getMaxRec(); 
 
     // note the layering here, this pattern will hopefully facilitate moving 
     // from OpenGL backed to OptiX backed for COMPUTE mode
@@ -975,7 +975,9 @@ void App::indexSequence()
 
         TSparse<unsigned long long> seqhis("History_Sequence", seq->slice(2,0)); // stride,begin 
         seqhis.make_lookup();
-        m_seqhis = new GItemIndex(seqhis.getIndex()) ;  
+        m_evt->setHistorySeq(seqhis.getIndex());
+
+
         seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0));  // stride, begin
 
 #ifdef DEBUG
@@ -986,7 +988,9 @@ void App::indexSequence()
 
         TSparse<unsigned long long> seqmat("Material_Sequence", seq->slice(2,1)); // stride,begin 
         seqmat.make_lookup();
-        m_seqmat = new GItemIndex(seqmat.getIndex()) ;  
+        m_evt->setMaterialSeq(seqmat.getIndex());
+
+
         seqmat.apply_lookup<unsigned char>( tphosel.slice(4,1));
 
 #ifdef DEBUG
@@ -997,10 +1001,11 @@ void App::indexSequence()
 
         tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), maxrec );  // other, stride, begin, end, repeats
 
-#ifdef DEBUG
+
         tphosel.download<unsigned char>( phosel_data );  // cudaMemcpyDeviceToHost
-        phosel_data->save("/tmp/phosel.npy");  
         trecsel.download<unsigned char>( recsel_data );
+#ifdef DEBUG
+        phosel_data->save("/tmp/phosel.npy");  
         recsel_data->save("/tmp/recsel.npy");  
 #endif
 
@@ -1011,27 +1016,41 @@ void App::indexSequence()
 
     // perhaps can simplify this stuff... with new GPropertyLib approach 
     // so write out the indices, to base some tests on
-    m_seqhis->getIndex()->save(m_cache->getIdPath());
-    m_seqmat->getIndex()->save(m_cache->getIdPath());
 
 
-    //Types* types = m_cache->getTypes();   
+    (*m_timer)("indexSequence"); 
+}
+
+
+void App::indexPrep()
+{
+    if(!m_evt) return ; 
+
+    Index* seqhis = m_evt->getHistorySeq() ;
+    Index* seqmat = m_evt->getMaterialSeq();
+
+    if(!seqhis || !seqmat)
+    {
+         LOG(warning) << "App::indexPrep NULL index"
+                      << " seqhis " << seqhis 
+                      << " seqmat " << seqmat
+                      ; 
+         return ;
+    }
+
+
     GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
     GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
 
-
     qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    qflg->dumpTable(m_seqhis->getIndex(), "App::indexSequence m_seqhis"); 
-    qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    qmat->dumpTable(m_seqmat->getIndex(), "App::indexSequence m_seqmat"); 
+    qflg->dumpTable(seqhis, "App::indexPrep seqhis"); 
 
-    // looks like types only used by GItemIndex for the labels
-    // by formTable/getLabel which is invoked by the labeller 
-    // on all the keys of the index
-    // which are then access in oglrap-/GUI by getLabels()
-    //
-    // but for GUI selection cannot just create vectors of labels
-    // need pointers for radio selects etc..
+    qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+    qmat->dumpTable(seqmat, "App::indexPrep seqmat"); 
+
+
+    m_seqhis = new GItemIndex(seqhis) ;  
+    m_seqmat = new GItemIndex(seqmat) ;  
 
     m_seqhis->setTitle("Photon Flag Sequence Selection");
     m_seqhis->setHandler(qflg);
@@ -1041,11 +1060,8 @@ void App::indexSequence()
     m_seqmat->setHandler(qmat);
     m_seqmat->formTable();
 
-
-    (*m_timer)("indexSequence"); 
+    (*m_timer)("indexPrep"); 
 }
-
-
 
 
 void App::indexBoundaries()
@@ -1127,6 +1143,8 @@ void App::indexEvt()
     if(!m_evt) return ; 
    
     indexSequence();
+
+    indexPrep();
 
     indexBoundaries();
 

@@ -57,9 +57,10 @@ int main(int argc, char** argv)
     {
         app.loadEvtFromFile();
 
+        app.indexPrep();
+
         app.uploadEvt();               // allocates GPU buffers with OpenGL glBufferData
     }
-   
 
     app.prepareGUI();
 

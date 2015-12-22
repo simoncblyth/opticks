@@ -13,7 +13,7 @@
 class NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
-       static const char* DEFAULT_PATH_TEMPLATE  ; 
+       static const char* DEFAULT_DIR_TEMPLATE  ; 
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
         void setHasData(bool has_data=true);
@@ -59,6 +59,9 @@ class NPYBase {
        bool         isDynamic(); 
    public:
        // NumPy persistency
+       static std::string directory(const char* tfmt, const char* targ, const char* det);
+       static std::string directory(const char* typ, const char* det);
+
        static std::string path(const char* dir, const char* name);
        static std::string path(const char* typ, const char* tag, const char* det);
        static std::string path(const char* pfx, const char* gen, const char* tag, const char* det);

@@ -14,8 +14,11 @@ class Index : public NSequence {
    public:
         Index(const char* itemtype, const char* title=NULL, bool onebased=true);
    public:
+        static Index* load(const char* pfold, const char* rfold, const char* itemtype);
         static Index* load(const char* idpath, const char* itemtype);
+        static std::string directory(const char* pfold, const char* rfold);
         void save(const char* idpath);
+        void save(const char* pfold, const char* rfold);
    public:
         const char* getItemType();
         const char* getTitle();

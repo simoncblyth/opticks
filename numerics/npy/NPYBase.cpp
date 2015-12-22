@@ -17,7 +17,7 @@
 #include "NLog.hpp"
 
 
-const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2/%s.npy" ; 
+const char* NPYBase::DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2" ; 
 
 void NPYBase::setNumItems(unsigned int ni)
 {
@@ -44,7 +44,13 @@ void NPYBase::reshape(int ni, unsigned int nj, unsigned int nk, unsigned int nl)
                               << " nv_new " << nv_new
                               ;
 
-    assert(nv_old != nv_new && "NPYBase::reshape cannot change number of values, just their addressing");
+    assert(nv_old == nv_new && "NPYBase::reshape cannot change number of values, just their addressing");
+
+    LOG(info) << "NPYBase::reshape "
+              << "(" << m_ni << "," << m_nj << "," << m_nk << "," << m_nl << ")"
+              << " --> "
+              << "(" <<   ni << "," <<   nj << "," <<   nk << "," <<   nl << ")"
+              ;
 
     setShape(0, ni);
     setShape(1, nj);
@@ -116,18 +122,6 @@ void NPYBase::Summary(const char* msg)
     LOG(info) << desc ; 
 }   
 
-
-
-
-
-
-
-
-
-
-
-
-
 std::string NPYBase::description(const char* msg)
 {
     std::stringstream ss ; 
@@ -161,6 +155,23 @@ std::string NPYBase::path(const char* pfx, const char* gen, const char* tag, con
     ss << pfx << gen ;
     return path(ss.str().c_str(), tag, det );
 }
+
+std::string NPYBase::directory(const char* tfmt, const char* targ, const char* det)
+{
+    char typ[64];
+    snprintf(typ, 64, tfmt, targ ); 
+    std::string dir = directory(typ, det);
+    return dir ; 
+}
+
+std::string NPYBase::directory(const char* typ, const char* det)
+{
+    std::string deftmpl(DEFAULT_DIR_TEMPLATE) ; 
+    boost::replace_first(deftmpl, "$1", det );
+    boost::replace_first(deftmpl, "$2", typ );
+    std::string dir = os_path_expandvars( deftmpl.c_str() ); 
+    return dir ;
+}
   
 std::string NPYBase::path(const char* typ, const char* tag, const char* det)
 {
@@ -168,47 +179,26 @@ std::string NPYBase::path(const char* typ, const char* tag, const char* det)
 :param typ: object type name, eg oxcerenkov rxcerenkov 
 :param tag: event tag, usually numerical 
 :param det: detector tag, eg dyb, juno
-
-The typ is used to identify the name of an envvar 
-in which the template path at which to save/load such 
-objects must be found.
-
-For example for typ "rxcerenkov" the  below envvar
-must be present in the environment. 
-
-    DAE_RXCERENKOV_PATH_TEMPLATE 
-
-Envvars are defined in env/export-
-
 */
 
+    std::string dir = directory(typ, det);
+    dir += "/%s.npy" ; 
+
+    char* tmpl = (char*)dir.c_str();
     char path_[256];
-
-    std::string deftmpl(DEFAULT_PATH_TEMPLATE) ; 
-
-    boost::replace_first(deftmpl, "$1", det );
-    boost::replace_first(deftmpl, "$2", typ );
-    deftmpl = os_path_expandvars( deftmpl.c_str() ); 
-    char* tmpl = (char*)deftmpl.c_str();
-
     snprintf(path_, 256, tmpl, tag );
-
 
     LOG(debug) << "NPYBase::path"
               << " typ " << typ
               << " tag " << tag
               << " det " << det
-              << " DEFAULT_PATH_TEMPLATE " << DEFAULT_PATH_TEMPLATE
-              << " deftmpl " << deftmpl
+              << " DEFAULT_DIR_TEMPLATE " << DEFAULT_DIR_TEMPLATE
               << " tmpl " << tmpl
               << " path_ " << path_
               ;
 
-
     return path_ ;   
 }
-
-
 
 std::string NPYBase::path(const char* dir, const char* name)
 {
@@ -216,7 +206,5 @@ std::string NPYBase::path(const char* dir, const char* name)
     snprintf(path, 256, "%s/%s", dir, name);
     return path ; 
 }
-
-
 
 

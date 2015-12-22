@@ -6,6 +6,7 @@
 
 class Timer ; 
 class Parameters ;
+class Index ; 
 class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
@@ -35,6 +36,11 @@ class NumpyEvt {
        void setIncomingData(NPY<float>* incoming_data);
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
+   public:
+       void setHistorySeq(Index* seqhis);
+       void setMaterialSeq(Index* seqmat);
+       Index* getHistorySeq();
+       Index* getMaterialSeq();
    public:
        // domains used for record compression
        void setSpaceDomain(const glm::vec4& space_domain);
@@ -152,6 +158,10 @@ class NumpyEvt {
 
        glm::ivec4      m_settings ; 
 
+       Index*          m_seqhis ; 
+       Index*          m_seqmat ; 
+
+
 
 };
 
@@ -191,7 +201,9 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_photons(NULL),
           m_num_gensteps(0),
           m_num_photons(0),
-          m_maxrec(1)
+          m_maxrec(1),
+          m_seqhis(NULL),
+          m_seqmat(NULL)
 {
     init();
 }
@@ -402,4 +414,23 @@ inline const glm::vec4& NumpyEvt::getWavelengthDomain()
 { 
     return m_wavelength_domain ; 
 }
- 
+
+
+
+inline void NumpyEvt::setHistorySeq(Index* seqhis)
+{
+    m_seqhis = seqhis ; 
+}
+inline void NumpyEvt::setMaterialSeq(Index* seqmat)
+{
+    m_seqmat = seqmat ; 
+}
+inline Index* NumpyEvt::getHistorySeq()
+{
+    return m_seqhis ; 
+} 
+inline Index* NumpyEvt::getMaterialSeq()
+{
+    return m_seqmat ; 
+} 
+  
