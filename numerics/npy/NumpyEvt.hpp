@@ -14,6 +14,8 @@ class PhotonsNPY ;
 class NumpyEvt {
    public:
        NumpyEvt(const char* typ, const char* tag, const char* det, const char* cat=NULL);
+       void setFlat(bool flat);
+       bool isFlat();
    private:
        void init();
    public:
@@ -110,6 +112,7 @@ class NumpyEvt {
        const char*           m_tag ; 
        const char*           m_det ; 
        const char*           m_cat ; 
+       bool                  m_flat ; 
 
        Timer*                m_timer ;
        Parameters*           m_parameters ;
@@ -155,6 +158,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_tag(strdup(tag)),
           m_det(strdup(det)),
           m_cat(strdup(cat)),
+          m_flat(false),
 
           m_timer(NULL),
           m_parameters(NULL),
@@ -189,8 +193,14 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
 }
 
 
-
-
+inline void NumpyEvt::setFlat(bool flat)
+{
+    m_flat = flat ;
+}
+inline bool NumpyEvt::isFlat()
+{
+    return m_flat ; 
+}
 
 
 inline unsigned int NumpyEvt::getNumGensteps()

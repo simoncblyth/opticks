@@ -41,6 +41,7 @@ class PhotonsNPY {
 
    private:
        NPY<float>*                  m_photons ; 
+       bool                         m_flat ;
        RecordsNPY*                  m_recs ; 
        Types*                       m_types ; 
        Typ*                         m_typ ; 
@@ -51,6 +52,7 @@ class PhotonsNPY {
 inline PhotonsNPY::PhotonsNPY(NPY<float>* photons) 
        :  
        m_photons(photons),
+       m_flat(false),
        m_recs(NULL),
        m_types(NULL),
        m_typ(NULL),

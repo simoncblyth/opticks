@@ -87,6 +87,7 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 void NumpyEvt::createHostBuffers()
 {
     LOG(info) << "NumpyEvt::createHostBuffers "
+              << " flat " << m_flat 
               << " m_num_photons " << m_num_photons  
               << " m_maxrec " << m_maxrec
                ;
@@ -100,22 +101,30 @@ void NumpyEvt::createHostBuffers()
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
     setPhoselData(phosel);   
 
-    //unsigned int num_records = getNumRecords();
+    if(m_flat)
+    {
+        unsigned int num_records = getNumRecords();
+        NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+        setRecordData(rec);   
 
-    //NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
-    NPY<short>* rec = NPY<short>::make(m_num_photons, m_maxrec, 2, 4); 
-    setRecordData(rec);   
+        NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+        setRecselData(recsel);   
 
-    // aka seqidx (SequenceNPY) or target ThrustIndex
-    //NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-    setRecselData(recsel);   
+        NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
+        setAuxData(aux);   
+    }
+    else
+    {
+        NPY<short>* rec = NPY<short>::make(m_num_photons, m_maxrec, 2, 4); 
+        setRecordData(rec);   
 
-    //NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
-    NPY<short>* aux = NPY<short>::make(m_num_photons, m_maxrec, 1, 4);  // shape (nr,1,4)
-    setAuxData(aux);   
+        NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+        setRecselData(recsel);   
 
-    // TODO: adopt split shape like rec for recsel and aux
+        NPY<short>* aux = NPY<short>::make(m_num_photons, m_maxrec, 1, 4);  // shape (nr,1,4)
+        setAuxData(aux);   
+    }
+
 
     NPY<float>* fdom = NPY<float>::make(3,1,4);
     setFDomain(fdom);

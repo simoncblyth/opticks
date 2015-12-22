@@ -151,18 +151,22 @@ float RecordsNPY::uncharnorm_wavelength(unsigned char value)
 }
 
 
+
 void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distance, float& duration )
 {
     std::vector<glm::vec4> posts ; 
     for(unsigned int r=0 ; r < m_maxrec ; r++ )
     {
-        //unsigned int record_id = photon_id*m_maxrec + r ; 
-        bool unset = m_records->isUnsetItem(photon_id, r);
+        unsigned int record_id = photon_id*m_maxrec + r ; 
+        unsigned int i = m_flat ? record_id : photon_id ;
+        unsigned int j = m_flat ? 0         : r ;
+
+        bool unset = m_records->isUnsetItem(i, j);
+
         if(unset) continue ; 
 
         glm::vec4 post ; 
-        //unpack_position_time( post, record_id, 0 ); // i,j 
-        unpack_position_time( post, photon_id, r,  0 ); // i,j,k
+        unpack_position_time( post, i, j,  0 );
         posts.push_back(post);
     }
 
@@ -200,8 +204,13 @@ glm::vec4 RecordsNPY::getCenterExtent(unsigned int photon_id)
         if(unset) continue ; 
 
         glm::vec4 post ; 
-        //unpack_position_time( post, record_id, 0 ); // i,j 
-        unpack_position_time( post, photon_id, r,  0 ); // i,j,k 
+
+
+        unsigned int record_id = photon_id*m_maxrec + r ; 
+        unsigned int i = m_flat ? record_id : photon_id ;
+        unsigned int j = m_flat ? 0         : r ;
+
+        unpack_position_time( post, i, j,  0 ); // i,j,k 
 
         min.x = std::min( min.x, post.x);
         min.y = std::min( min.y, post.y);
@@ -229,6 +238,31 @@ glm::vec4 RecordsNPY::getCenterExtent(unsigned int photon_id)
     glm::vec4 center_extent((min.x + max.x)/2.0f, (min.y + max.y)/2.0f , (min.z + max.z)/2.0f, extent ); 
     return center_extent ; 
 }
+
+
+
+bool RecordsNPY::exists(unsigned int photon_id , unsigned int r )
+{
+    unsigned int record_id = photon_id*m_maxrec + r ;
+    unsigned int i = m_flat ? record_id : photon_id ;
+    unsigned int j = m_flat ? 0         : r ;
+    bool unset = m_records->isUnsetItem(i, j);
+    return !unset ;  
+}
+
+void RecordsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int photon_id , unsigned int r )
+{
+    unsigned int record_id = photon_id*m_maxrec + r ;
+    unsigned int i = m_flat ? record_id : photon_id ;
+    unsigned int j = m_flat ? 0         : r ;
+
+    bool unset = m_records->isUnsetItem(i, j);
+    assert(!unset);
+
+    unpack_material_flags(flag, i,j,  1, 2, 3);  // i,j,k0,k1
+}
+
+
 
 
 void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
@@ -267,6 +301,12 @@ void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
                 history.c_str());
 
 }
+
+
+
+
+
+
 
 
 void RecordsNPY::dumpRecords(const char* msg, unsigned int ndump)
@@ -315,17 +355,17 @@ NPY<unsigned long long>* RecordsNPY::makeSequenceArray(Types::Item_t etype)
 
 
 
+
+
 unsigned long long RecordsNPY::getSequence(unsigned int photon_id, Types::Item_t etype)
 {
     unsigned long long seq = 0ull ; 
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        //unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(photon_id, r);
-        if(unset) break ; 
+        if(!exists(photon_id, r )) break ;
 
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, photon_id, r, 1, 2, 3);  // i,j,k0,k1
+        unpack_material_flags(flag, photon_id, r);
 
         unsigned long long bitpos(0ull) ; 
         switch(etype)
@@ -342,25 +382,19 @@ unsigned long long RecordsNPY::getSequence(unsigned int photon_id, Types::Item_t
 }
 
 
+
+
+
 std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t etype)
 {
     // express variable length sequence of bit positions as string of 
     std::stringstream ss ; 
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        //unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(photon_id, r);
-        if(unset) continue ; 
-
-        // NB over all slots even if no records are written there, so 
-        //    must handle unset if the above unset check fails...
-        //
-        //    hmm looks like a change in the unset values in the buffer 
-        //    not reflected by update of NPY template specialization UNSET
-        //
+        if(!exists(photon_id, r )) continue ;
 
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, photon_id, r,  1, 2, 3); // flag from m_records->getUChar4( i, j, k0, k1 );
+        unpack_material_flags(flag, photon_id, r);
 
         unsigned int bitpos(0) ; 
         unsigned int bitmax(0) ; 
@@ -462,16 +496,16 @@ void RecordsNPY::appendMaterials(std::vector<unsigned int>& materials, unsigned 
 {
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        //unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(photon_id, r);
-        if(unset) break ; 
+        if(!exists(photon_id, r )) continue ;
+
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, photon_id,r,  1, 2, 3);  // i,j,k0,k1
+        unpack_material_flags(flag, photon_id, r);
 
         materials.push_back(flag.x); ; 
         materials.push_back(flag.y); ; 
     }
 }
+
 
 void RecordsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounce, unsigned int& history, unsigned int& material)
 {
@@ -481,12 +515,10 @@ void RecordsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounc
 
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        //unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(photon_id, r);
-        if(unset) continue ; 
+        if(!exists(photon_id, r)) continue ;
 
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, photon_id, r, 1, 2, 3);  // i,j,k0,k1
+        unpack_material_flags(flag, photon_id, r);
 
         bounce += 1 ; 
         unsigned int  s_history = 1 << (flag.w - 1) ; 
@@ -499,5 +531,4 @@ void RecordsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounc
         material |= s_material2 ; 
     } 
 }
-
 

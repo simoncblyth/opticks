@@ -45,7 +45,7 @@ void Rdr::upload(MultiViewNPY* mvn)
     // MultiViewNPY are constrained to all refer to the same underlying NPY 
     // so only do upload and m_buffer creation for the first 
 
-    LOG(info) << "Rdr::upload mvn " << mvn->getName() ; 
+    LOG(debug) << "Rdr::upload mvn " << mvn->getName() ; 
     //mvn->Summary("Rdr::upload mvn");
 
     // need to compile and link shader for access to attribute locations
@@ -141,6 +141,8 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
 
     prepare_vao();
 
+    MultiViewNPY* parent = vnpy->getParent();
+    assert(parent);
 
     bool dynamic = npy->isDynamic();
 
@@ -156,18 +158,19 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
         void* data = npy->getBytes();
         unsigned int nbytes = npy->getNumBytes(0) ;
 
-        char repdata[32] ;
-        snprintf( repdata, 32, "%p", data );
+        char repdata[16] ;
+        snprintf( repdata, 16, "%p", data );
 
         GLuint buffer_id ;  
         glGenBuffers(1, &buffer_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-        LOG(debug) << "Rdr::upload glBufferData " 
-                  << " vnpy name " << std::setw(8) << vnpy->getName()
+        LOG(info) << "Rdr::upload glBufferData " 
+                  << std::setw(15) << parent->getName() 
+                  << std::setw(5)  << vnpy->getName()
                   << " count " << std::setw(8) << vnpy->getCount()
                   << " buffer_id " << std::setw(5) << buffer_id
-                  << " data " << std::setw(32) << repdata 
+                  << " data " << std::setw(16) << repdata 
                   << " hasData " << std::setw(5) << ( npy->hasData() ? "Y" : "N" )
                   << " nbytes " << std::setw(10) << nbytes 
                   << " " << (dynamic ? "GL_DYNAMIC_DRAW" : "GL_STATIC_DRAW" )

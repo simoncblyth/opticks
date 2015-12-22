@@ -504,21 +504,21 @@ Rdr* Scene::getRecordRenderer(RecordStyle_t style)
 
 void Scene::upload()
 {
-    LOG(info) << "Scene::upload START  " ;
+    LOG(debug) << "Scene::upload START  " ;
         
     uploadAxis();
 
-    LOG(info) << "Scene::upload uploadAxis  DONE " ;
+    LOG(debug) << "Scene::upload uploadAxis  DONE " ;
 
     uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
 
-    LOG(info) << "Scene::upload uploadEvt  DONE " ;
+    LOG(debug) << "Scene::upload uploadEvt  DONE " ;
 
     uploadSelection();   // recsel upload
 
-    LOG(info) << "Scene::upload uploadSelection  DONE " ;
+    LOG(debug) << "Scene::upload uploadSelection  DONE " ;
 
-    LOG(info) << "Scene::upload DONE  " ;
+    LOG(debug) << "Scene::upload DONE  " ;
 }
 
 
@@ -554,10 +554,7 @@ void Scene::uploadEvt()
 
 void Scene::uploadSelection()
 {
-    // this was used after the slow SequenceNPY (CPU side std::map based photon history/material indexing)
-    // following move to thrust is not done just after uploadEvt
     assert(m_evt);
-    LOG(info)<<"Scene::uploadSelection";
     uploadRecordAttr(m_evt->getRecselAttr()); 
 }
 

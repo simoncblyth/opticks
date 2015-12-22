@@ -21,6 +21,7 @@ void PhotonsNPY::setRecs(RecordsNPY* recs)
 {
     m_recs = recs ; 
     m_maxrec = recs->getMaxRec();
+    m_flat = recs->isFlat();
 }
 
 void PhotonsNPY::dump(unsigned int photon_id, const char* msg)

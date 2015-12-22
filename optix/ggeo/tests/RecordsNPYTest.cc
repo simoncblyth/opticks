@@ -56,7 +56,8 @@ int main(int argc, char** argv)
     rx->Summary();
 
     unsigned int maxrec = 10 ; 
-    RecordsNPY* rec = new RecordsNPY(rx, maxrec);
+    bool flat = true ; 
+    RecordsNPY* rec = new RecordsNPY(rx, maxrec, flat);
     rec->setDomains(fdom);
     rec->setTypes(types);
     rec->setTyp(typ);

@@ -41,7 +41,10 @@ class NPYBase {
        unsigned char getSizeOfType();
        unsigned int  getNumBytes(unsigned int from_dim=0);
        unsigned int  getByteIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
-
+   public:
+       void reshape(int ni, unsigned int nj, unsigned int nk, unsigned int nl);
+   private:
+       void setShape(unsigned int d, unsigned int v);
    public:
        // OpenGL related
        void         setBufferId(int buffer_id);
@@ -149,6 +152,21 @@ inline std::vector<int>& NPYBase::getShapeVector()
 {
     return m_shape ; 
 }
+
+
+inline void NPYBase::setShape(unsigned int d, unsigned int v)
+{
+    switch(d)
+    {
+       case 0:m_ni=v ; break;
+       case 1:m_nj=v ; break; 
+       case 2:m_nk=v ; break;
+       case 3:m_nl=v ; break;
+       default:  assert(0) ;
+    }
+    m_shape[d] = v ;
+}
+
 
 inline unsigned int NPYBase::getNumItems(int ifr, int ito)
 {

@@ -1,7 +1,10 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "NPY.hpp"
+#include <string>
+#include <cstring>
+
+
 /*
 
 ViewNPY is ultra-lightweight, just managing: 
@@ -16,6 +19,9 @@ eg with shapes like (10000,6,4) in which case j 0:5 k 0:3 size=1:4
 Trailing dimension usually 4 as quads are convenient and efficient on GPU.
 
 */
+
+class NPYBase ; 
+class MultiViewNPY ; 
 
 class ViewNPY {
     public:
@@ -36,11 +42,13 @@ class ViewNPY {
         void addressNPY();
         void setCustomOffset(unsigned long offset);
         unsigned int getValueOffset(); // ?? multiply by sizeof(att-type) to get byte offset
-
+    private:
+        void init();
     public:
         void dump(const char* msg);
         void Summary(const char* msg);
         void Print(const char* msg);
+        std::string description();
 
         NPYBase*     getNPY(){    return m_npy   ; }
         void*        getBytes(){  return m_bytes ; }
@@ -60,12 +68,18 @@ class ViewNPY {
         float*       getModelToWorldPtr();
         float        getExtent();
 
+    public:
+        // for debugging
+        void setParent(MultiViewNPY* parent);
+        MultiViewNPY* getParent();
+
     private:
         void findBounds();
     private:
-        char*        m_name   ; 
-        NPYBase*     m_npy ; 
-        void*        m_bytes   ;
+        char*         m_name   ; 
+        NPYBase*      m_npy ; 
+        MultiViewNPY* m_parent ;  
+        void*         m_bytes   ;
     private:
         unsigned char m_j ; 
         unsigned char m_k ; 
@@ -93,7 +107,55 @@ class ViewNPY {
 };
 
 
+
+
+inline ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt) 
+  :
+            m_name(strdup(name)),
+            m_npy(npy),
+            m_parent(NULL),
+            m_bytes(NULL),
+            m_j(j),
+            m_k(k),
+            m_l(l),
+            m_size(size),
+            m_type(type),
+            m_norm(norm),
+            m_iatt(iatt),
+            m_numbytes(0),
+            m_stride(0),
+            m_offset(0),
+            m_count(0),
+            m_low(NULL),
+            m_high(NULL),
+            m_dimensions(NULL),
+            m_center(NULL),
+            m_model_to_world(),
+            m_extent(0.f),
+            m_addressed(false)
+{
+    init();
+}
+
+
+
+
+
 inline glm::vec4& ViewNPY::getCenterExtent()
 {
     return m_center_extent ; 
 } 
+inline MultiViewNPY* ViewNPY::getParent()
+{
+    return m_parent ; 
+}
+inline void ViewNPY::setParent(MultiViewNPY* parent)
+{
+    m_parent = parent ; 
+}
+
+
+
+
+
+

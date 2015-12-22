@@ -1,9 +1,12 @@
 #include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
 
 #include "float.h"
 #include "string.h"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
+
+#include <sstream>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -11,35 +14,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 
-ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt) :
-            m_name(strdup(name)),
-            m_npy(npy),
-            m_bytes(npy->getBytes()),
-            m_j(j),
-            m_k(k),
-            m_l(l),
-            m_size(size),
-            m_type(type),
-            m_norm(norm),
-            m_iatt(iatt),
-            m_numbytes(0),
-            m_stride(0),
-            m_offset(0),
-            m_count(0),
-            m_low(NULL),
-            m_high(NULL),
-            m_dimensions(NULL),
-            m_center(NULL),
-            m_model_to_world(),
-            m_extent(0.f),
-            m_addressed(false)
+void ViewNPY::init()
 {
+    m_bytes    = m_npy->getBytes() ;
 
     // these dont require the data, just the shape
     m_numbytes = m_npy->getNumBytes(0) ;
@@ -218,6 +198,17 @@ void ViewNPY::Print(const char* msg)
 {
     printf("%s name %s type %c numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_type, m_numbytes, m_stride, m_offset, m_count, m_extent );
 }
+
+std::string ViewNPY::description()
+{
+    std::stringstream ss ;
+    ss << "ViewNPY " 
+       << ( m_parent ? m_parent->getName() : "" )
+       <<  " " << std::setw(10) << m_name ;
+
+    return ss.str();
+}
+
 
 
 

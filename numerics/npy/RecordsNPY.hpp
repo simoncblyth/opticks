@@ -10,12 +10,13 @@ class Typ ;
 
 class RecordsNPY {
    public:  
-       RecordsNPY(NPY<short>* records, unsigned int maxrec=10); 
+       RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat); 
    public:  
        NPY<short>*           getRecords();
        void                  setTypes(Types* types);
        void                  setTyp(Typ* typ);
        unsigned int          getMaxRec();
+       bool                  isFlat();
    public:  
        NPY<unsigned long long>* makeSequenceArray(Types::Item_t etype);
 
@@ -54,10 +55,15 @@ class RecordsNPY {
    public:
        std::string getSequenceString(unsigned int photon_id, Types::Item_t etype);
        unsigned long long getSequence(unsigned int photon_id, Types::Item_t etype);
+   public:
+       // higer level access
+       void unpack_material_flags(glm::uvec4& flag, unsigned int photon_id , unsigned int r );
+       bool exists(unsigned int photon_id , unsigned int r );
 
    private:
        NPY<short>*      m_records ; 
        unsigned int     m_maxrec ; 
+       bool             m_flat ;
        Types*           m_types ; 
        Typ*             m_typ ; 
 
@@ -69,10 +75,11 @@ class RecordsNPY {
 }; 
 
 
-inline RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec)
+inline RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat)
     :
     m_records(records),
     m_maxrec(maxrec),
+    m_flat(flat),
     m_types(NULL),
     m_typ(NULL)
 {
@@ -81,6 +88,11 @@ inline RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec)
 inline NPY<short>* RecordsNPY::getRecords()
 {
     return m_records; 
+}
+
+inline bool RecordsNPY::isFlat()
+{
+    return m_flat ; 
 }
 
 inline unsigned int RecordsNPY::getMaxRec()

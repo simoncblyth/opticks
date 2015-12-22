@@ -25,7 +25,8 @@ int main(int argc, char** argv)
     types.readMaterials(idpath, "GMaterialIndex");
     types.dumpMaterials();
 
-    RecordsNPY r(records, maxrec);
+    bool flat = true ; 
+    RecordsNPY r(records, maxrec, flat);
     r.setTypes(&types);
     r.setDomains(domains);
 

@@ -277,7 +277,11 @@ int App::config(int argc, char** argv)
     // TODO: add spectral colors in wavelength bins to color texture
 
 
-    if(!hasOpt("noevent")) m_evt = m_opticks->makeEvt() ; 
+    if(!hasOpt("noevent"))
+    {
+        m_evt = m_opticks->makeEvt() ; 
+        m_evt->setFlat(true);
+    } 
 
     m_scene->setNumpyEvt(m_evt);
 
@@ -1151,7 +1155,7 @@ void App::indexEvtOld()
 
     if(drec->hasData())
     {
-        m_rec = new RecordsNPY(drec, m_evt->getMaxRec());
+        m_rec = new RecordsNPY(drec, m_evt->getMaxRec(), m_evt->isFlat());
         m_rec->setTypes(types);
         m_rec->setTyp(typ);
         m_rec->setDomains(m_evt->getFDomain()) ;

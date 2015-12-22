@@ -15,6 +15,7 @@ void MultiViewNPY::add(ViewNPY* vec)
         assert(prior->getNPY() == vec->getNPY() && "LIMITATION : all ViewNPY in a MultiViewNPY must be views of the same underlying NPY");
     }
     m_vecs.push_back(vec);
+    vec->setParent(this);
 }
 
 unsigned int  MultiViewNPY::getNumVecs()

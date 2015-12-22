@@ -12,9 +12,10 @@
 #include "regexsearch.hh"
 
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+
+
+#include "NLog.hpp"
+
 
 const char* NPYBase::DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2/%s.npy" ; 
 
@@ -27,9 +28,32 @@ void NPYBase::setNumItems(unsigned int ni)
               << " increase from " << orig << " to " << ni 
               ; 
  
-    m_shape[0] = ni ; 
-    m_ni = getShape(0);
+    setShape(0, ni);
 }
+
+
+void NPYBase::reshape(int ni, unsigned int nj, unsigned int nk, unsigned int nl)
+{
+    unsigned int nv_old = m_ni*m_nj*m_nk*m_nl ; 
+    if(ni < 0) ni = nv_old/(nj*nk*nl) ;
+
+    unsigned int nv_new = ni*nj*nk*nl ; 
+
+    if(nv_old != nv_new) LOG(fatal) << "NPYBase::reshape INVALID AS CHANGES COUNTS " 
+                              << " nv_old " << nv_old 
+                              << " nv_new " << nv_new
+                              ;
+
+    assert(nv_old != nv_new && "NPYBase::reshape cannot change number of values, just their addressing");
+
+    setShape(0, ni);
+    setShape(1, nj);
+    setShape(2, nk);
+    setShape(3, nl);
+}
+
+
+
 
 
 std::string NPYBase::getDigestString()

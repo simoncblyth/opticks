@@ -33,8 +33,8 @@ int main(int argc, char** argv)
     types.dumpMaterials();
 
 
-
-    RecordsNPY r(records, maxrec);
+    bool flat = false ; 
+    RecordsNPY r(records, maxrec, flat);
     r.setTypes(&types);
     r.setDomains(domains);
 
