@@ -238,6 +238,14 @@ std::string Index::getPrefixedString(const char* tail)
     return prefix + tail + m_ext ; 
 }
 
+
+bool Index::exists(const char* idpath)
+{
+    bool sx = existsPath(idpath, getPrefixedString("Source").c_str());
+    bool lx = existsPath(idpath, getPrefixedString("Local").c_str());
+    return sx && lx ; 
+}
+
 void Index::loadMaps(const char* idpath)
 {
     loadMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source").c_str() );  
@@ -256,7 +264,15 @@ Index* Index::load(const char* pfold, const char* rfold, const char* itemtype)
 Index* Index::load(const char* idpath, const char* itemtype)
 {
     Index* idx = new Index(itemtype);
-    idx->loadMaps(idpath);
+    if(idx->exists(idpath))
+    {
+       idx->loadMaps(idpath);
+    }
+    else
+    {
+        LOG(warning) << "Index::load FAILED to load index for " << idpath << " " << itemtype ;
+        idx = NULL ;
+    }
     return idx ; 
 }
 

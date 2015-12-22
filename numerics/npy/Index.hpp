@@ -17,6 +17,7 @@ class Index : public NSequence {
         static Index* load(const char* pfold, const char* rfold, const char* itemtype);
         static Index* load(const char* idpath, const char* itemtype);
         static std::string directory(const char* pfold, const char* rfold);
+        bool exists(const char* idpath);
         void save(const char* idpath);
         void save(const char* pfold, const char* rfold);
    public:

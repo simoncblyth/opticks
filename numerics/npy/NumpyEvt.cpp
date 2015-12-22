@@ -347,6 +347,8 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
 void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
 {
     m_phosel_data = phosel_data ;
+    if(!m_phosel_data) return ; 
+
     //                                               j k l sz   type                norm   iatt
     ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
     m_phosel_attr = new MultiViewNPY("phosel_attr");
@@ -357,6 +359,7 @@ void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
 void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
 {
     m_recsel_data = recsel_data ;
+    if(!m_recsel_data) return ; 
     //                                               j k l sz   type                norm   iatt
     ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
     m_recsel_attr = new MultiViewNPY("recsel_attr");
@@ -530,13 +533,15 @@ void NumpyEvt::load(bool verbose)
 
     unsigned int num_photons = ox->getShape(0);
     unsigned int num_history = ph->getShape(0);
-    unsigned int num_phosel  = ps->getShape(0);
-    assert(num_photons == num_history && num_photons == num_phosel);
+    unsigned int num_phosel  = ps ? ps->getShape(0) : 0 ;
+    assert(num_photons == num_history );
+    assert(num_phosel == 0 || num_photons == num_phosel );
 
     unsigned int num_records = rx->getShape(0);
     unsigned int num_aux     = au->getShape(0);
-    unsigned int num_recsel  = rs->getShape(0);
-    assert(num_records == num_aux && num_records == num_recsel  ); 
+    unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
+    assert(num_records == num_aux ); 
+    assert(num_recsel == 0 || num_records == num_recsel );
 
     if(num_records == num_photons*m_maxrec)
     {
@@ -554,6 +559,8 @@ void NumpyEvt::load(bool verbose)
             rx->reshape(ni*nj, 1, nk, nl);
             rx->Summary("rx reshaped");
         }       
+        
+        if(rs)
         {
             rs->Summary("rs init");
             unsigned int ni = rs->getShape(0);
@@ -575,22 +582,24 @@ void NumpyEvt::load(bool verbose)
     }
 
     setPhotonData(ox);
-    setPhoselData(ps);
     setSequenceData(ph);
     setRecordData(rx);
     setAuxData(au);
+
+    setPhoselData(ps);
     setRecselData(rs);
 
     if(verbose)
     {
         ox->Summary("ox");
-        ps->Summary("ps");
         rx->Summary("rx");
-        rs->Summary("rs");
         ph->Summary("ph");
         au->Summary("au");
         fdom->Summary("fdom");
         idom->Summary("idom");
+
+        if(ps) ps->Summary("ps");
+        if(rs) rs->Summary("rs");
     }
 
 }
