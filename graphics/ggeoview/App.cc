@@ -688,9 +688,13 @@ void App::loadGenstep()
 
 void App::loadEvtFromFile()
 {
-    LOG(info) << "App::loadEvtFromFile" ;
-
     m_evt->load(true);
+
+    if(m_evt->isNoLoad())
+    {
+        LOG(info) << "App::loadEvtFromFile LOAD FAILED " ;
+    }
+
 }
 
 

@@ -164,18 +164,39 @@ void NumpyEvt::readDomainsBuffer()
 {
     NPY<float>* fdom = getFDomain();
 
-    m_space_domain = fdom->getQuad(0);
-    m_time_domain = fdom->getQuad(1);
-    m_wavelength_domain = fdom->getQuad(2);
+    if(fdom)
+    {
+        m_space_domain = fdom->getQuad(0);
+        m_time_domain = fdom->getQuad(1);
+        m_wavelength_domain = fdom->getQuad(2);
+    }
+    else
+    {
+        LOG(warning) << "NumpyEvt::readDomainsBuffer"
+                     << " fdom NULL "
+                     ;
+    }
+
 
     NPY<int>* idom = getIDomain();
 
-    m_settings = idom->getQuad(0); 
-    m_maxrec = m_settings.w ; 
+    if(idom)
+    {
+        m_settings = idom->getQuad(0); 
+        m_maxrec = m_settings.w ; 
 
-    LOG(info) << "NumpyEvt::readDomainsBuffer" 
-              << " from idom settings m_maxrec " << m_maxrec 
-              ;
+        LOG(info) << "NumpyEvt::readDomainsBuffer" 
+                  << " from idom settings m_maxrec " << m_maxrec 
+                  ;
+    }
+    else
+    {
+        LOG(warning) << "NumpyEvt::readDomainsBuffer"
+                     << " idom NULL "
+                     ;
+ 
+    }
+ 
 
 }
 
@@ -184,7 +205,9 @@ void NumpyEvt::readDomainsBuffer()
 void NumpyEvt::zero()
 {
     m_photon_data->zero();
+    m_phosel_data->zero();
     m_record_data->zero();
+    m_recsel_data->zero();
     m_sequence_data->zero();
     m_aux_data->zero();
 }
@@ -339,9 +362,7 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
     m_record_attr->add(rpol);
     m_record_attr->add(rflg);
     m_record_attr->add(rflq);
-
 }
-
 
 
 void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
@@ -496,22 +517,24 @@ void NumpyEvt::load(bool verbose)
 {
     const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
 
-    LOG(info) << "NumpyEvt::load" 
-              << " typ: " << m_typ
-              << " tag: " << m_tag
-              << " det: " << m_det
-              << " cat: " << m_cat
-              << " udet: " << udet 
-              ;    
-
-    // genstep skipped, it plays a special role so need to handle differently 
-
+    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet );
+    if(!idom)
+    {
+        m_noload = true ; 
+        LOG(warning) << "NumpyEvt::load NO SUCH EVENT : RUN WITHOUT --load OPTION TO CREATE IT " 
+                     << " typ: " << m_typ
+                     << " tag: " << m_tag
+                     << " det: " << m_det
+                     << " cat: " << m_cat
+                     << " udet: " << udet 
+                    ;     
+        return ; 
+    }
 
     NPY<float>* fdom = NPY<float>::load("fdom%s", m_typ,  m_tag, udet );
-    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet );
 
-    setFDomain(fdom);
     setIDomain(idom);
+    setFDomain(fdom);
 
     readDomainsBuffer();
     dumpDomains("NumpyEvt::load dumpDomains");
@@ -530,6 +553,7 @@ void NumpyEvt::load(bool verbose)
 
     NPY<unsigned char>* ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet );
     NPY<unsigned char>* rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet );
+
 
     unsigned int num_photons = ox->getShape(0);
     unsigned int num_history = ph->getShape(0);

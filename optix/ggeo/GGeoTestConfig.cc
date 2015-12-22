@@ -61,6 +61,10 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,SLICE_)==0)      arg = SLICE ; 
     else if(strcmp(k,ANALYTIC_)==0)   arg = ANALYTIC ; 
     else if(strcmp(k,DEBUG_)==0)      arg = DEBUG ; 
+
+    if(arg == UNRECOGNIZED)
+        LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
+
     return arg ;   
 }
 
@@ -77,7 +81,7 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case ANALYTIC       : setAnalytic(s)       ;break;
         case DEBUG          : setDebug(s)          ;break;
         case UNRECOGNIZED   :
-                    LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " ;
+             LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
 }
 

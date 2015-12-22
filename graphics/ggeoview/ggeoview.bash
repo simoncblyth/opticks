@@ -327,6 +327,9 @@ ggv-reflect()
         s) tag=1 ;;
         p) tag=2 ;;
     esac
+    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+        tag=-$tag  
+    fi 
     echo  pol $pol tag $tag
 
 

@@ -17,6 +17,7 @@ class NumpyEvt {
        NumpyEvt(const char* typ, const char* tag, const char* det, const char* cat=NULL);
        void setFlat(bool flat);
        bool isFlat();
+       bool isNoLoad();
    private:
        void init();
    public:
@@ -121,6 +122,7 @@ class NumpyEvt {
        const char*           m_det ; 
        const char*           m_cat ; 
        bool                  m_flat ; 
+       bool                  m_noload ; 
 
        Timer*                m_timer ;
        Parameters*           m_parameters ;
@@ -173,6 +175,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_det(strdup(det)),
           m_cat(strdup(cat)),
           m_flat(false),
+          m_noload(false),
 
           m_timer(NULL),
           m_parameters(NULL),
@@ -217,6 +220,12 @@ inline bool NumpyEvt::isFlat()
 {
     return m_flat ; 
 }
+inline bool NumpyEvt::isNoLoad()
+{
+    return m_noload ; 
+}
+
+
 
 
 inline unsigned int NumpyEvt::getNumGensteps()
