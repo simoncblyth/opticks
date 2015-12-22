@@ -222,7 +222,7 @@ void NTrianglesNPY::setTransform(const glm::vec3& scale, const glm::vec3& transl
     glm::mat4 m_translate = glm::translate(glm::mat4(1.0f), translate);
     glm::mat4 mat = m_translate * m_scale ; 
 
-    print(mat, "NTrianglesNPY::setTransform");
+    //print(mat, "NTrianglesNPY::setTransform");
 
     setTransform(mat);
 }

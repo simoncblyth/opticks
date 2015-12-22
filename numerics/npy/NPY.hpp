@@ -106,7 +106,7 @@ class NPY : public NPYBase {
        T maxdiff(NPY<T>* other);
    public:
        T* getValues();
-       T* getValues(unsigned int i);
+       T* getValues(unsigned int i, unsigned int j=0);
        void* getBytes();
        void* getPointer();   // aping GBuffer for easier migration
        void read(void* ptr);
@@ -124,7 +124,7 @@ class NPY : public NPYBase {
        T* allocate();
     public:
        T* getUnsetItem();
-       bool isUnsetItem(unsigned int i);
+       bool isUnsetItem(unsigned int i, unsigned int j);
     public:
        void dump(const char* msg="NPY::dump", unsigned int limit=15);
     public:
@@ -150,9 +150,10 @@ class NPY : public NPYBase {
        unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
        int          getInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
 
-       void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k);
-       ucharfour    getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 );
-       charfour     getChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 );
+       void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+
+       ucharfour    getUChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 );
+       charfour     getChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 );
 
        void         setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value);
        void         setFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l, float value);
@@ -200,9 +201,9 @@ inline T* NPY<T>::getValues()
 }
 
 template <typename T> 
-inline T* NPY<T>::getValues(unsigned int i)
+inline T* NPY<T>::getValues(unsigned int i, unsigned int j)
 {
-    unsigned int idx = getValueIndex(i,0,0);
+    unsigned int idx = getValueIndex(i,j,0);
     return m_data.data() + idx ;
 }
 
@@ -231,13 +232,13 @@ inline T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsign
 }
 
 template <typename T> 
-inline void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k)
+inline void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
     // used for unpacking photon records
 
     assert(type == SHORT); // pragmatic template specialization, by death if you try to use the wrong one...
 
-    unsigned int index = getValueIndex(i,j,k);
+    unsigned int index = getValueIndex(i,j,k,l);
 
     value = m_data[index] ;
 
@@ -252,12 +253,12 @@ inline void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& m
 }
 
 template <typename T> 
-ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 )
+ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 )
 {
     assert(type == SHORT); // OOPS: pragmatic template specialization, by death if you try to use the wrong one... 
 
-    unsigned int index_0 = getValueIndex(i,j,k0);
-    unsigned int index_1 = getValueIndex(i,j,k1);
+    unsigned int index_0 = getValueIndex(i,j,k,l0);
+    unsigned int index_1 = getValueIndex(i,j,k,l1);
 
     hui_t hui_0, hui_1 ;
 
@@ -275,12 +276,12 @@ ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k0, u
 }
 
 template <typename T> 
-charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k0, unsigned int k1 )
+charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 )
 {
     assert(type == SHORT); // OOPS: pragmatic template specialization, by death if you try to use the wrong one... 
 
-    unsigned int index_0 = getValueIndex(i,j,k0);
-    unsigned int index_1 = getValueIndex(i,j,k1);
+    unsigned int index_0 = getValueIndex(i,j,k,l0);
+    unsigned int index_1 = getValueIndex(i,j,k,l1);
 
     hui_t hui_0, hui_1 ;
 

@@ -515,7 +515,7 @@ void TorchStepNPY::setMode(const char* s)
         const char* emode_ = tp[i].c_str() ;
         ::Mode_t emode = parseMode(emode_) ;
         mode |= emode ; 
-        LOG(info) << "TorchStepNPY::setMode" 
+        LOG(debug) << "TorchStepNPY::setMode" 
                   << " emode_ " << emode_
                   << " emode " << emode
                   << " mode " << mode 

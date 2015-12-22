@@ -502,12 +502,31 @@ Rdr* Scene::getRecordRenderer(RecordStyle_t style)
 
 
 
-void Scene::uploadAxis()
+void Scene::upload()
 {
-    LOG(info) << "Scene::uploadAxis  " ;
-    m_axis_renderer->upload(m_composition->getAxisAttr());
+    LOG(info) << "Scene::upload START  " ;
+        
+    uploadAxis();
+
+    LOG(info) << "Scene::upload uploadAxis  DONE " ;
+
+    uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
+
+    LOG(info) << "Scene::upload uploadEvt  DONE " ;
+
+    uploadSelection();   // recsel upload
+
+    LOG(info) << "Scene::upload uploadSelection  DONE " ;
+
+    LOG(info) << "Scene::upload DONE  " ;
 }
 
+
+
+void Scene::uploadAxis()
+{
+    m_axis_renderer->upload(m_composition->getAxisAttr());
+}
 
 void Scene::uploadEvt()
 {

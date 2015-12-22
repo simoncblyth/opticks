@@ -75,36 +75,36 @@ float RecordsNPY::unshortnorm_time(short v, unsigned int k )
 
 
 
-void RecordsNPY::unpack_position_time(glm::vec4& post, unsigned int i, unsigned int j)
+void RecordsNPY::unpack_position_time(glm::vec4& post, unsigned int i, unsigned int j, unsigned int k)
 {
-    glm::uvec4 v = m_records->getQuadU( i, j );
+    glm::uvec4 v = m_records->getQuadU( i, j, k);
     post.x = unshortnorm_position(v.x, 0);
     post.y = unshortnorm_position(v.y, 1);
     post.z = unshortnorm_position(v.z, 2);
     post.w = unshortnorm_time(v.w, 3);
 }
 
-void RecordsNPY::unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
+void RecordsNPY::unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1)
 {
-    ucharfour v = m_records->getUChar4( i, j, k0, k1 ); 
+    ucharfour v = m_records->getUChar4( i, j, k, l0, l1 ); 
     polw.x =  uncharnorm_polarization(v.x);  
     polw.y =  uncharnorm_polarization(v.y);  
     polw.z =  uncharnorm_polarization(v.z);  
     polw.w =  uncharnorm_wavelength(v.w);  
 }
 
-void RecordsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
+void RecordsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1)
 {
-    ucharfour v = m_records->getUChar4( i, j, k0, k1 ); 
+    ucharfour v = m_records->getUChar4( i, j, k, l0, l1 ); 
     flag.x =  v.x ;  
     flag.y =  v.y ;  
     flag.z =  v.z ;  
     flag.w =  v.w ;  
 }
 
-void RecordsNPY::unpack_material_flags_i(glm::ivec4& flag, unsigned int i, unsigned int j, unsigned int k0, unsigned int k1)
+void RecordsNPY::unpack_material_flags_i(glm::ivec4& flag, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1)
 {
-    charfour v = m_records->getChar4( i, j, k0, k1 ); 
+    charfour v = m_records->getChar4( i, j, k, l0, l1 ); 
     flag.x =  v.x ;  
     flag.y =  v.y ;  
     flag.z =  v.z ;  
@@ -156,12 +156,13 @@ void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distanc
     std::vector<glm::vec4> posts ; 
     for(unsigned int r=0 ; r < m_maxrec ; r++ )
     {
-        unsigned int record_id = photon_id*m_maxrec + r ; 
-        bool unset = m_records->isUnsetItem(record_id);
+        //unsigned int record_id = photon_id*m_maxrec + r ; 
+        bool unset = m_records->isUnsetItem(photon_id, r);
         if(unset) continue ; 
 
         glm::vec4 post ; 
-        unpack_position_time( post, record_id, 0 ); // i,j 
+        //unpack_position_time( post, record_id, 0 ); // i,j 
+        unpack_position_time( post, photon_id, r,  0 ); // i,j,k
         posts.push_back(post);
     }
 
@@ -194,12 +195,13 @@ glm::vec4 RecordsNPY::getCenterExtent(unsigned int photon_id)
 
     for(unsigned int r=0 ; r < m_maxrec ; r++ )
     {
-        unsigned int record_id = photon_id*m_maxrec + r ; 
-        bool unset = m_records->isUnsetItem(record_id);
+        //unsigned int record_id = photon_id*m_maxrec + r ; 
+        bool unset = m_records->isUnsetItem(photon_id, r);
         if(unset) continue ; 
 
         glm::vec4 post ; 
-        unpack_position_time( post, record_id, 0 ); // i,j 
+        //unpack_position_time( post, record_id, 0 ); // i,j 
+        unpack_position_time( post, photon_id, r,  0 ); // i,j,k 
 
         min.x = std::min( min.x, post.x);
         min.y = std::min( min.y, post.y);
@@ -229,9 +231,9 @@ glm::vec4 RecordsNPY::getCenterExtent(unsigned int photon_id)
 }
 
 
-void RecordsNPY::dumpRecord(unsigned int i, const char* msg)
+void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
 {
-    bool unset = m_records->isUnsetItem(i);
+    bool unset = m_records->isUnsetItem(i, j);
     if(unset) return ;
 
     glm::vec4  post ; 
@@ -239,10 +241,12 @@ void RecordsNPY::dumpRecord(unsigned int i, const char* msg)
     glm::uvec4 flag ; 
     glm::ivec4 iflag ; 
 
-    unpack_position_time(           post, i, 0 );       // i,j 
-    unpack_polarization_wavelength( polw, i, 1, 0, 1 ); // i,j,k0,k1
-    unpack_material_flags(          flag, i, 1, 2, 3);  // i,j,k0,k1
-    unpack_material_flags_i(       iflag, i, 1, 2, 3);  // i,j,k0,k1
+    // formerly records was flat 
+
+    unpack_position_time(           post, i, j, 0 );       // i,j
+    unpack_polarization_wavelength( polw, i, j, 1, 0, 1 ); // i,j,k0,k1
+    unpack_material_flags(          flag, i, j, 1, 2, 3);  // i,j,k0,k1
+    unpack_material_flags_i(       iflag, i, j, 1, 2, 3);  // i,j,k0,k1
 
     std::string m1 = m_typ->findMaterialName(flag.x) ;
     std::string m2 = m_typ->findMaterialName(flag.y) ;
@@ -272,18 +276,22 @@ void RecordsNPY::dumpRecords(const char* msg, unsigned int ndump)
     unsigned int ni = m_records->m_ni ;
     unsigned int nj = m_records->m_nj ;
     unsigned int nk = m_records->m_nk ;
-    assert( nj == 2 && nk == 4 );
+    unsigned int nl = m_records->m_nl ;
+    assert( nk == 2 && nl == 4 );
 
     printf("%s numrec %d maxrec %d \n", msg, ni, m_maxrec );
     unsigned int unrec = 0 ; 
 
     for(unsigned int i=0 ; i<ni ; i++ )
     {
-        bool unset = m_records->isUnsetItem(i);
-        if(unset) unrec++ ;
-        if(unset) continue ; 
-        bool out = i < ndump || i > ni-ndump ; 
-        if(out) dumpRecord(i);
+        for(unsigned int j=0 ; j<nj ; j++ )
+        {
+            bool unset = m_records->isUnsetItem(i, j);
+            if(unset) unrec++ ;
+            if(unset) continue ; 
+            bool out = i < ndump || i > ni-ndump ; 
+            if(out) dumpRecord(i,j);
+        }
     }    
     printf("unrec %d/%d \n", unrec, ni );
 }
@@ -312,12 +320,12 @@ unsigned long long RecordsNPY::getSequence(unsigned int photon_id, Types::Item_t
     unsigned long long seq = 0ull ; 
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(record_id);
+        //unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(photon_id, r);
         if(unset) break ; 
 
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+        unpack_material_flags(flag, photon_id, r, 1, 2, 3);  // i,j,k0,k1
 
         unsigned long long bitpos(0ull) ; 
         switch(etype)
@@ -340,8 +348,8 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
     std::stringstream ss ; 
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(record_id);
+        //unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(photon_id, r);
         if(unset) continue ; 
 
         // NB over all slots even if no records are written there, so 
@@ -352,23 +360,25 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         //
 
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, record_id, 1, 2, 3); // flag from m_records->getUChar4( i, j, k0, k1 );
+        unpack_material_flags(flag, photon_id, r,  1, 2, 3); // flag from m_records->getUChar4( i, j, k0, k1 );
 
         unsigned int bitpos(0) ; 
+        unsigned int bitmax(0) ; 
         switch(etype)
         {
-            case     Types::MATERIAL: bitpos = flag.x  ;break; 
-            case      Types::HISTORY: bitpos = flag.w  ;break; 
+            case     Types::MATERIAL: bitpos = flag.x ; bitmax = 40 ;break; 
+            case      Types::HISTORY: bitpos = flag.w ; bitmax = 32  ;break; 
             case  Types::MATERIALSEQ: assert(0)        ;break; 
             case   Types::HISTORYSEQ: assert(0)        ;break; 
         }  
 
-        if(bitpos >= 32)
+        // test materials are often exceeding the hard history limit of 32
+        if(bitpos >= bitmax)
         {
             LOG(fatal) << "RecordsNPY::getSequenceString"
                        << " bitpos out of range "  << bitpos
+                       << " bitmax " << bitmax
                        << " record " << r
-                       << " record_id " << record_id
                        << " photon_id " << photon_id
                        << " flag " << gformat(flag)
                        << " etype " << etype
@@ -452,11 +462,11 @@ void RecordsNPY::appendMaterials(std::vector<unsigned int>& materials, unsigned 
 {
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(record_id);
+        //unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(photon_id, r);
         if(unset) break ; 
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+        unpack_material_flags(flag, photon_id,r,  1, 2, 3);  // i,j,k0,k1
 
         materials.push_back(flag.x); ; 
         materials.push_back(flag.y); ; 
@@ -471,12 +481,12 @@ void RecordsNPY::constructFromRecord(unsigned int photon_id, unsigned int& bounc
 
     for(unsigned int r=0 ; r<m_maxrec ; r++)
     {
-        unsigned int record_id = photon_id*m_maxrec + r ;
-        bool unset = m_records->isUnsetItem(record_id);
+        //unsigned int record_id = photon_id*m_maxrec + r ;
+        bool unset = m_records->isUnsetItem(photon_id, r);
         if(unset) continue ; 
 
         glm::uvec4 flag ; 
-        unpack_material_flags(flag, record_id, 1, 2, 3);  // i,j,k0,k1
+        unpack_material_flags(flag, photon_id, r, 1, 2, 3);  // i,j,k0,k1
 
         bounce += 1 ; 
         unsigned int  s_history = 1 << (flag.w - 1) ; 

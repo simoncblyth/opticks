@@ -211,7 +211,7 @@ GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
 
 GSolid* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const char* type)
 {
-    LOG(info) << "GMaker::makeSphere" 
+    LOG(debug) << "GMaker::makeSphere" 
               << " nsubdiv " << nsubdiv
               << " type " << type
               << " param " << gformat(param) 
@@ -354,7 +354,7 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    transform->Summary("GMaker::makeSphere");
+    //transform->Summary("GMaker::makeSphere");
 
     GSolid* solid = new GSolid(nodeindex, transform, mesh, UINT_MAX, NULL );     
 

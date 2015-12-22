@@ -15,18 +15,13 @@
 
 #include "Typ.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
+#include "NLog.hpp"
 
 void PhotonsNPY::setRecs(RecordsNPY* recs)
 {
     m_recs = recs ; 
     m_maxrec = recs->getMaxRec();
 }
-
 
 void PhotonsNPY::dump(unsigned int photon_id, const char* msg)
 {
@@ -54,11 +49,7 @@ void PhotonsNPY::dumpPhotons(const char* msg, unsigned int ndump)
 void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
 {
     printf("%s\n", msg);
-    for(unsigned int r=0 ; r<m_maxrec ; r++)
-    {
-        unsigned int record_id = photon_id*m_maxrec + r ;
-        m_recs->dumpRecord(record_id);
-    }  
+    for(unsigned int r=0 ; r<m_maxrec ; r++) m_recs->dumpRecord(photon_id, r);
     dumpPhoton(photon_id);
     printf("\n");
 

@@ -596,8 +596,6 @@ void App::loadGenstep()
     m_parameters->add<std::string>("Cat", cat );
     m_parameters->add<std::string>("Detector", det );
 
-
-
     Lookup* lookup = m_ggeo->getLookup();
 
     NPY<float>* npy = NULL ; 
@@ -657,9 +655,9 @@ void App::loadGenstep()
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     glm::vec4 uuce = geocenter ? mmce : gsce ;
 
-    print(mmce, "loadGenstep mmce");
-    print(gsce, "loadGenstep gsce");
-    print(uuce, "loadGenstep uuce");
+    //print(mmce, "loadGenstep mmce");
+    //print(gsce, "loadGenstep gsce");
+    //print(uuce, "loadGenstep uuce");
 
     if(m_scene->getTarget() == 0)
     {
@@ -694,15 +692,15 @@ void App::uploadEvt()
         return ;
     }
  
+    LOG(info) << "App::uploadEvt START " ;
+
     m_composition->update();
 
-    m_scene->uploadAxis();
-
-    m_scene->uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
-
-    m_scene->uploadSelection();   // recsel upload
+    m_scene->upload();
 
     (*m_timer)("uploadEvt"); 
+
+    LOG(info) << "App::uploadEvt DONE " ;
 }
 
 
@@ -1161,7 +1159,7 @@ void App::indexEvtOld()
         if(m_pho)
         {
             m_pho->setRecs(m_rec);
-            if(m_torchstep) m_torchstep->dump("App::indexEvtOld TorchStepNPY");
+            //if(m_torchstep) m_torchstep->dump("App::indexEvtOld TorchStepNPY");
 
             m_pho->dump(0  ,  "App::indexEvtOld dpho 0");
             m_pho->dump(100,  "App::indexEvtOld dpho 100" );

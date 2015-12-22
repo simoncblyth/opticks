@@ -228,10 +228,10 @@ ggv-rainbow()
             --eye 0,0,1 \
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --torchdbg \
             --tag $tag --cat rainbow \
             --save
 
+        #    --torchdbg \
 }
 
 ggv-newton()

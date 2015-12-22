@@ -86,8 +86,9 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
 void NumpyEvt::createHostBuffers()
 {
-    LOG(debug) << "NumpyEvt::createHostBuffers "
-              << " num_photons " << m_num_photons  
+    LOG(info) << "NumpyEvt::createHostBuffers "
+              << " m_num_photons " << m_num_photons  
+              << " m_maxrec " << m_maxrec
                ;
 
     NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
@@ -126,6 +127,7 @@ void NumpyEvt::createHostBuffers()
     fdom->zero();
     idom->zero();
 
+    LOG(info) << "NumpyEvt::createHostBuffers DONE " ;
 
     (*m_timer)("createHostBuffers");
 }

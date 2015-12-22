@@ -214,10 +214,10 @@ T* NPY<T>::getUnsetItem()
 }
 
 template <typename T>
-bool NPY<T>::isUnsetItem(unsigned int i)
+bool NPY<T>::isUnsetItem(unsigned int i, unsigned int j)
 {
     T* unset = getUnsetItem();
-    T* item  = getValues(i);
+    T* item  = getValues(i, j);
     unsigned int nbytes = getNumBytes(1); // bytes in an item  
     return memcmp(unset, item, nbytes ) == 0 ;  // memcmp 0 for match
 }
