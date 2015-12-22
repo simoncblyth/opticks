@@ -230,6 +230,7 @@ NumpyEvt* Opticks::makeEvt()
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
     NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
+
     evt->setMaxRec(m_cfg->getRecordMax());
 
     return evt ; 

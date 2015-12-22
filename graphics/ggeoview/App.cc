@@ -216,18 +216,6 @@ int App::config(int argc, char** argv)
     for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::config " << "[" << std::setw(2) << i << "]" << argv[i] ;
 
     m_cfg  = new Cfg("umbrella", false) ; 
-
-    // TODO: extracate configuration (a very low dependency thing that needs to be highly portable, eg for use from cfg4-)
-    //       from high dependency oglrap-/Frame and other OpenGL level objects
-    //
-    //       config and oglrap- objects got entangled in order to support live UDP config of high 
-    //       level objects via boost bind 
-    //
-    //       need a way to disentangle whilst retaining this messaging functionality 
-    //       split up config options according to need (eg low level things that 
-    //       apply wherever file tag etc.. and those that apply to high level objects)
-    //
-
     m_fcfg = new OpticksCfg<Opticks>("opticks", m_opticks,false);
 
     m_cfg->add(m_fcfg);
@@ -243,10 +231,21 @@ int App::config(int argc, char** argv)
 
     m_cfg->commandline(argc, argv);
 
+
     const std::string cmdline = m_cfg->getCommandLine(); 
     m_timer->setCommandLine(cmdline);
 
-    LOG(debug) << argv[0] << " " << cmdline ; 
+    LOG(debug) << "App:config" 
+              << " argv[0] " << argv[0] 
+              << " cmdline " << cmdline 
+              ; 
+
+    if(m_fcfg->hasError())
+    {
+        LOG(fatal) << "App::config parse error " << m_fcfg->getErrorMessage() ; 
+        m_fcfg->dump("App::config m_fcfg");
+        return 1 ;
+    }
 
     const char* idpath = m_cache->getIdPath();
 
@@ -305,12 +304,11 @@ int App::config(int argc, char** argv)
 
 void App::prepareScene()
 {
-
     m_scene->write(m_dd);
 
     m_scene->initRenderers();  // reading shader source and creating renderers
 
-    m_frame->init();  // creates OpenGL context
+    m_frame->init();           // creates OpenGL context
 
     m_window = m_frame->getWindow();
 
@@ -329,6 +327,11 @@ void App::loadGeometry()
     // BUT that also means that CMake dependency tracking 
     // will not do appropriate rebuilds, if get perplexing fails
     // try wiping and rebuilding assimpwrap- and ggeo-
+
+    bool test = m_fcfg->hasOpt("test") ;
+    LOG(info) << "App::loadGeometry" 
+              << " test " << test 
+              ;
 
     m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
     m_cache->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
@@ -353,7 +356,7 @@ void App::loadGeometry()
 
     (*m_timer)("loadGeometry"); 
 
-    if(m_fcfg->hasOpt("test"))
+    if(test)
     {
         std::string testconf = m_fcfg->getTestConfig();
         m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
@@ -526,7 +529,9 @@ void App::checkGeometry()
 void App::uploadGeometry()
 {
     m_scene->setGeometry(m_ggeo);
+
     m_scene->uploadGeometry();
+
     bool autocam = true ; 
 
     // handle commandline --target option that needs loaded geometry 
@@ -683,8 +688,10 @@ void App::loadGenstep()
 
 void App::loadEvtFromFile()
 {
-}
+    LOG(info) << "App::loadEvtFromFile" ;
 
+    m_evt->load(true);
+}
 
 
 
@@ -706,7 +713,6 @@ void App::uploadEvt()
 
     LOG(info) << "App::uploadEvt DONE " ;
 }
-
 
 
 void App::seedPhotonsFromGensteps()

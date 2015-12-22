@@ -398,15 +398,11 @@ void Scene::uploadGeometry()
     assert(m_ggeo && "must setGeometry first");
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
-
-
     LOG(debug) << "Scene::uploadGeometry"
               << " nmm " << nmm
               ;
 
     unsigned int n_global(0);
-
-    
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {

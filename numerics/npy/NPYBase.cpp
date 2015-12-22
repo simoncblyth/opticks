@@ -192,6 +192,19 @@ Envvars are defined in env/export-
     char* tmpl = (char*)deftmpl.c_str();
 
     snprintf(path_, 256, tmpl, tag );
+
+
+    LOG(debug) << "NPYBase::path"
+              << " typ " << typ
+              << " tag " << tag
+              << " det " << det
+              << " DEFAULT_PATH_TEMPLATE " << DEFAULT_PATH_TEMPLATE
+              << " deftmpl " << deftmpl
+              << " tmpl " << tmpl
+              << " path_ " << path_
+              ;
+
+
     return path_ ;   
 }
 

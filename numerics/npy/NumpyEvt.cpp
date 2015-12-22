@@ -27,15 +27,12 @@ const char* NumpyEvt::recsel  = "recsel" ;
 const char* NumpyEvt::sequence  = "sequence" ; 
 const char* NumpyEvt::aux = "aux" ; 
 
-
 void NumpyEvt::init()
 {
     m_timer = new Timer("NumpyEvt"); 
     m_timer->setVerbose(false);
-
     m_parameters = new Parameters ;
 }
-
 
 ViewNPY* NumpyEvt::operator [](const char* spec)
 {
@@ -61,7 +58,6 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
 
 void NumpyEvt::setGenstepData(NPY<float>* genstep)
 {
-    m_timer->start();
     m_genstep_data = genstep  ;
 
     //                                                j k l sz   type        norm   iatt
@@ -78,8 +74,8 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     m_num_gensteps = m_genstep_data->getShape(0) ;
     m_num_photons = m_genstep_data->getUSum(0,3);
 
+    m_timer->start();
     createHostBuffers();
-
     m_timer->stop();
     //m_timer->dump();
 }
@@ -159,14 +155,27 @@ void NumpyEvt::updateDomainsBuffer()
     fdom->setQuad(m_time_domain      , 1);
     fdom->setQuad(m_wavelength_domain, 2);
 
-    glm::ivec4 ci ;
-    ci.x = 0 ; //m_bounce_max
-    ci.y = 0 ; //m_rng_max    
-    ci.z = 0 ;
-    ci.w = m_maxrec ;
+    NPY<int>* idom = getIDomain();
+    idom->setQuad(m_settings, 0 );
+}
+
+void NumpyEvt::readDomainsBuffer()
+{
+    NPY<float>* fdom = getFDomain();
+
+    m_space_domain = fdom->getQuad(0);
+    m_time_domain = fdom->getQuad(1);
+    m_wavelength_domain = fdom->getQuad(2);
 
     NPY<int>* idom = getIDomain();
-    idom->setQuad(ci, 0 );
+
+    m_settings = idom->getQuad(0); 
+    m_maxrec = m_settings.w ; 
+
+    LOG(info) << "NumpyEvt::readDomainsBuffer" 
+              << " from idom settings m_maxrec " << m_maxrec 
+              ;
+
 }
 
 
@@ -242,6 +251,19 @@ void NumpyEvt::seedPhotonData()
 void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 {
     m_photon_data = photon_data  ;
+    if(m_num_photons == 0) 
+    {
+        m_num_photons = photon_data->getShape(0) ;
+
+        LOG(info) << "NumpyEvt::setPhotonData"
+                  << " setting m_num_photons from shape(0) " << m_num_photons 
+                  ;
+    }
+    else
+    {
+        assert(m_num_photons == photon_data->getShape(0));
+    }
+
     m_photon_data->setDynamic();  // need to update with seeding so GL_DYNAMIC_DRAW needed 
     m_photon_attr = new MultiViewNPY("photon_attr");
     //                                                  j k l,sz   type          norm   iatt
@@ -388,8 +410,6 @@ void NumpyEvt::dumpPhotonData(NPY<float>* photons)
     }  
 }
 
-
-
 std::string NumpyEvt::description(const char* msg)
 {
     std::stringstream ss ; 
@@ -412,6 +432,9 @@ void NumpyEvt::save(bool verbose)
               << " cat: " << m_cat
               << " udet: " << udet 
               ;    
+
+    // genstep normally not saved as it exists already coming from elsewhere,
+    //  but for TorchStep that insnt the case
 
     NPY<float>* dpho = getPhotonData();
     dpho->setVerbose(verbose);
@@ -438,6 +461,51 @@ void NumpyEvt::save(bool verbose)
     NPY<int>* idom = getIDomain();
     idom->save("idom%s", m_typ,  m_tag, udet);
 }
+
+
+void NumpyEvt::load(bool verbose)
+{
+    const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
+
+    LOG(info) << "NumpyEvt::load" 
+              << " typ: " << m_typ
+              << " tag: " << m_tag
+              << " det: " << m_det
+              << " cat: " << m_cat
+              << " udet: " << udet 
+              ;    
+
+    // genstep skipped, it plays a special role so need to handle differently 
+
+    NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet );
+    NPY<short>* rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet );
+    NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet );
+    NPY<float>* fdom = NPY<float>::load("fdom%s", m_typ,  m_tag, udet );
+    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet );
+
+    setPhotonData(ox);
+    setSequenceData(ph);
+    setRecordData(rx);
+    setAuxData(au);
+    setFDomain(fdom);
+    setIDomain(idom);
+
+    readDomainsBuffer();
+    dumpDomains("NumpyEvt::load dumpDomains");
+
+    if(verbose)
+    {
+        ox->Summary("ox");
+        rx->Summary("rx");
+        ph->Summary("ph");
+        au->Summary("au");
+        fdom->Summary("fdom");
+        idom->Summary("idom");
+    }
+
+}
+
 
 
 

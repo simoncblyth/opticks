@@ -83,7 +83,7 @@ class NPY : public NPYBase {
        static NPY<T>* load(const char* path);
        static NPY<T>* load(const char* dir, const char* name);
        static NPY<T>* load(const char* typ, const char* tag, const char* det);
-       static NPY<T>* load(const char* pfx, const char* gen, const char* tag, const char* det); // type split into prefix and gen:cerenkov,scintillation,torch
+       static NPY<T>* load(const char* tfmt, const char* targ, const char* tag, const char* det, bool verbose=false); 
  
        void save(const char* path);
        void save(const char* dir, const char* name);

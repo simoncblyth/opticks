@@ -30,6 +30,7 @@ class NumpyEvt {
        NPY<float>* loadGenstepFromFile(int modulo=0);
        void setGenstepData(NPY<float>* genstep_data);
        void zero();
+       void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
    public:
        void setIncomingData(NPY<float>* incoming_data);
    public:
@@ -44,8 +45,10 @@ class NumpyEvt {
        const glm::vec4& getWavelengthDomain();
    private:
        void updateDomainsBuffer();
+       void readDomainsBuffer();
    public:
        void save(bool verbose=false);
+       void load(bool verbose=true);
    private:
        // invoked internally, as knock on from setGenstepData
        void createHostBuffers(); 
@@ -79,7 +82,6 @@ class NumpyEvt {
        PhotonsNPY*          getPhotonsNPY();
        NPY<float>*          getFDomain();
        NPY<int>*            getIDomain();
-       void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
    public:
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getPhotonAttr();
@@ -147,6 +149,8 @@ class NumpyEvt {
        glm::vec4       m_space_domain ; 
        glm::vec4       m_time_domain ; 
        glm::vec4       m_wavelength_domain ; 
+
+       glm::ivec4      m_settings ; 
 
 
 };
@@ -222,6 +226,7 @@ inline unsigned int NumpyEvt::getMaxRec()
 inline void NumpyEvt::setMaxRec(unsigned int maxrec)
 {
     m_maxrec = maxrec ; 
+    m_settings.w = m_maxrec ; 
 }
 
 

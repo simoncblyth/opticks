@@ -8,18 +8,8 @@
 #include <boost/tokenizer.hpp>
 
 
+
 namespace po = boost::program_options;
-
-Cfg::Cfg(const char* name, bool live)
-    : 
-    m_desc(name), 
-    m_name(strdup(name)),
-    m_live(live)
-{
-}
-
-
-
 
 
 const char* Cfg::getName()
@@ -167,8 +157,9 @@ std::vector<std::string> Cfg::parse_liveline(const char* _line)
 }
 
 
-std::vector<std::string> Cfg::parse_commandline(int argc, char** argv)
+std::vector<std::string> Cfg::parse_commandline(int argc, char** argv, bool verbose)
 {
+    if(verbose) std::cout << "Cfg::parse_commandline " << m_name << std::endl ;  
     std::vector<std::string> unrecognized ; 
     try {
          po::command_line_parser parser(argc, argv);
@@ -184,8 +175,15 @@ std::vector<std::string> Cfg::parse_commandline(int argc, char** argv)
     }
     catch(std::exception& e)
     {
+        m_error = true ; 
+        m_error_message = e.what();
         std::cout << e.what() << "\n";
     }    
+  
+    if(verbose) std::cout << "Cfg::parse_commandline " << m_name << " DONE " 
+              << " error " << m_error
+              << " error_message " << m_error_message
+              << std::endl ;  
     return unrecognized ; 
 }
 

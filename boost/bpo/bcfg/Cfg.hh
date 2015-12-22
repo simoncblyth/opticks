@@ -61,7 +61,7 @@ public:
     void liveline(const char* line);
     void configfile(const char* path);
 
-    std::vector<std::string> parse_commandline(int argc, char** argv);
+    std::vector<std::string> parse_commandline(int argc, char** argv, bool verbose=false);
     std::vector<std::string> parse_configfile(const char* path);
     std::vector<std::string> parse_liveline(const char* line);
     std::vector<std::string> parse_tokens(std::vector<std::string>& tokens);
@@ -73,13 +73,38 @@ public:
     static void dump(boost::program_options::variables_map&       vm, const char* msg);
     static void dump(boost::program_options::parsed_options& opts, const char* msg );
 
+    bool hasError(); 
+    std::string getErrorMessage(); 
 private:
     const char* m_name ;    
     std::vector<Cfg*> m_others ; 
     std::string m_commandline ; 
     bool m_live ; 
+    bool m_error ; 
+    std::string m_error_message ; 
 
 };
+
+
+inline Cfg::Cfg(const char* name, bool live)
+    : 
+    m_desc(name), 
+    m_name(strdup(name)),
+    m_live(live),
+    m_error(false)
+{
+}
+
+inline bool Cfg::hasError()
+{
+    return m_error ; 
+}
+
+inline std::string Cfg::getErrorMessage()
+{
+    return m_error_message ; 
+}
+
 
 inline const std::string& Cfg::getCommandLine()
 {
