@@ -111,6 +111,7 @@ void CResource::unmapGLToCUDA()
 
 template CBufSpec CResource::mapGLToCUDA<unsigned char>();
 template CBufSpec CResource::mapGLToCUDA<unsigned int>();
+template CBufSpec CResource::mapGLToCUDA<unsigned long long>();
 template CBufSpec CResource::mapGLToCUDA<short>();
 
 

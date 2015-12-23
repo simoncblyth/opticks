@@ -76,10 +76,21 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     m_num_photons = m_genstep_data->getUSum(0,3);
 
     m_timer->start();
+
     createHostBuffers();
+    createHostIndexBuffers();
+
     m_timer->stop();
     //m_timer->dump();
 }
+
+
+void NumpyEvt::prepareForIndexing()
+{
+    assert(m_num_photons > 0 );
+    createHostIndexBuffers();
+}
+
 
 void NumpyEvt::createHostBuffers()
 {
@@ -94,9 +105,6 @@ void NumpyEvt::createHostBuffers()
 
     NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
     setSequenceData(seq);   
-
-    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
-    setPhoselData(phosel);   
 
     if(m_flat)
     {
@@ -137,6 +145,38 @@ void NumpyEvt::createHostBuffers()
 
     (*m_timer)("createHostBuffers");
 }
+
+
+
+
+
+void NumpyEvt::createHostIndexBuffers()
+{
+    LOG(info) << "NumpyEvt::createHostIndexBuffers "
+              << " flat " << m_flat 
+              << " m_num_photons " << m_num_photons  
+              << " m_maxrec " << m_maxrec
+               ;
+
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
+    setPhoselData(phosel);   
+
+    if(m_flat)
+    {
+        unsigned int num_records = getNumRecords();
+
+        NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+        setRecselData(recsel);   
+    }
+    else
+    {
+        NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+        setRecselData(recsel);   
+    }
+}
+
+
+
 
 
 void NumpyEvt::dumpDomains(const char* msg)
@@ -626,6 +666,11 @@ void NumpyEvt::load(bool verbose)
         if(rs) rs->Summary("rs");
     }
 
+}
+
+bool NumpyEvt::isIndexed()
+{
+    return m_phosel_data != NULL && m_recsel_data != NULL && m_seqhis != NULL && m_seqmat != NULL ;
 }
 
 

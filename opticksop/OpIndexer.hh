@@ -47,6 +47,7 @@
 class OBuf ; 
 class TBuf ; 
 class NumpyEvt ; 
+struct CBufSlice ; 
 template <typename T> class NPY ;
 template <typename T> class TSparse ;
 
@@ -61,25 +62,35 @@ class OpIndexer {
       void indexSequence();
    private:
       void init();
-
+      void updateEvt();
+      void indexSequenceGLThrust();
+      void indexSequenceOptiXThrust();
+      void indexSequence(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose );
       void dump(const TBuf& tphosel, const TBuf& trecsel);
       void dumpHis(const TBuf& tphosel, const TSparse<unsigned long long>& seqhis) ;
       void dumpMat(const TBuf& tphosel, const TSparse<unsigned long long>& seqhis) ;
       void saveSel();
    private:
-      OBuf*               m_seq ; 
-      NumpyEvt*           m_evt ;
-      NPY<unsigned char>* m_recsel ;
-      NPY<unsigned char>* m_phosel ;
-      unsigned int        m_maxrec ; 
+      // resident
+      Timer*                   m_timer ; 
+   private:
+      // externally set 
+      OBuf*                    m_seq ; 
+      NumpyEvt*                m_evt ;
+   private:
+      // transients updated by updateEvt at indexSequence
+      NPY<unsigned long long>* m_sequence ;
+      NPY<unsigned char>*      m_recsel ;
+      NPY<unsigned char>*      m_phosel ;
+      unsigned int             m_maxrec ; 
 
-      Timer*    m_timer ; 
 };
 
 inline OpIndexer::OpIndexer()  
    :
      m_seq(NULL),
      m_evt(NULL),
+     m_sequence(NULL),
      m_recsel(NULL),
      m_phosel(NULL),
      m_maxrec(0)

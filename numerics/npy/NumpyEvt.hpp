@@ -18,6 +18,7 @@ class NumpyEvt {
        void setFlat(bool flat);
        bool isFlat();
        bool isNoLoad();
+       bool isIndexed();
    private:
        void init();
    public:
@@ -33,6 +34,7 @@ class NumpyEvt {
        void setGenstepData(NPY<float>* genstep_data);
        void zero();
        void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
+       void prepareForIndexing();
    public:
        void setIncomingData(NPY<float>* incoming_data);
    public:
@@ -59,6 +61,7 @@ class NumpyEvt {
    private:
        // invoked internally, as knock on from setGenstepData
        void createHostBuffers(); 
+       void createHostIndexBuffers(); 
        void seedPhotonData();
        
        void setPhotonData(NPY<float>* photon_data);

@@ -698,8 +698,8 @@ void App::loadEvtFromFile()
     if(m_evt->isNoLoad())
     {
         LOG(info) << "App::loadEvtFromFile LOAD FAILED " ;
+        return ; 
     }
-
 }
 
 
@@ -719,6 +719,19 @@ void App::uploadEvt()
     m_scene->upload();
 
     (*m_timer)("uploadEvt"); 
+
+
+    if(!m_evt->isIndexed())
+    {
+        LOG(info) << "App::uploadEvt event is not indexed, try to make the index " ;
+
+        m_evt->prepareForIndexing(); 
+
+        m_scene->uploadSelection();
+
+        indexSequence();    
+    }
+
 
     LOG(info) << "App::uploadEvt DONE " ;
 }
@@ -950,19 +963,22 @@ void App::indexSequence()
 {
     if(!m_evt) return ; 
 
-    OBuf* seq = m_opropagator ? m_opropagator->getSequenceBuf() : NULL ;
-
-    if(!seq)
+    if(m_evt->isIndexed())
     {
-        LOG(warning) << "App::indexSequence no seq to index " ;
-        return ;
+        LOG(info) << "App::indexSequence" 
+                  << " already indexed SKIP " 
+                  ;
+        return ; 
     }
 
-    OpIndexer* ixr = new OpIndexer();
+    OpIndexer* indexer = new OpIndexer();
+    indexer->setEvt(m_evt);
 
-    ixr->setEvt(m_evt);
-    ixr->setSeq(seq);
-    ixr->indexSequence(); 
+    OBuf* seq = m_opropagator ? m_opropagator->getSequenceBuf() : NULL ;
+    if(seq)
+        indexer->setSeq(seq);
+
+    indexer->indexSequence(); 
 
     // indexSequence 
     //     updates seqhis and seqhis indices and recsel and phosel buffers
@@ -970,7 +986,6 @@ void App::indexSequence()
     //     providing fast category selection
     //
 }
-
 
 
 void App::indexPresentationPrep()

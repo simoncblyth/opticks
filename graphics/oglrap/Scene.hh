@@ -134,10 +134,10 @@ class Scene : public Configurable {
 
    public:
         void upload();
+        void uploadSelection();
    private:
         void uploadEvt();
         void uploadAxis();
-        void uploadSelection();
    private:
         void uploadRecordAttr(MultiViewNPY* attr);
    public:

@@ -539,8 +539,6 @@ void Scene::uploadEvt()
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
 
     m_photon_renderer->upload(m_evt->getPhotonAttr());
-    m_photon_renderer->upload(m_evt->getSequenceAttr());
-    m_photon_renderer->upload(m_evt->getPhoselAttr());
 
     uploadRecordAttr(m_evt->getRecordAttr());
 
@@ -551,6 +549,10 @@ void Scene::uploadEvt()
 void Scene::uploadSelection()
 {
     assert(m_evt);
+
+    m_photon_renderer->upload(m_evt->getSequenceAttr());
+    m_photon_renderer->upload(m_evt->getPhoselAttr());
+
     uploadRecordAttr(m_evt->getRecselAttr()); 
 }
 
