@@ -82,7 +82,8 @@ class OPropagator {
 
 
 
-inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks) :
+inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks) 
+   :
     m_ocontext(ocontext),
     m_opticks(opticks),
     m_evt(NULL),
@@ -99,12 +100,10 @@ inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks) :
     init();
 }
 
-
 inline void OPropagator::setTrivial(bool trivial)
 {
     m_trivial = trivial ; 
 }
-
 inline void OPropagator::setNumpyEvt(NumpyEvt* evt)
 {
     m_evt = evt ;
@@ -113,11 +112,6 @@ inline NumpyEvt* OPropagator::getNumpyEvt()
 {
     return m_evt ;
 }
-
-
-
-
-
 inline OBuf* OPropagator::getSequenceBuf()
 {
     return m_sequence_buf ; 
@@ -130,6 +124,4 @@ inline void OPropagator::setOverride(unsigned int override)
 {
     m_override = override ; 
 }
-
-
 

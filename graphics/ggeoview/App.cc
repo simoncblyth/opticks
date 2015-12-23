@@ -943,7 +943,43 @@ void App::indexSequence()
 {
     if(!m_evt) return ; 
 
+    // High level view:
+    //
+    //     indexes history and material sequences from the sequence buffer
+    //     (each photon has unsigned long long 64-bit ints containg step-by-step flags and material indices)   
+    //     The sequences are sparse histogrammed (essentially an index of the popularity of each sequence)
+    //     creating a small lookup table that is then applied to all photons to create the phosel and 
+    //     recsel arrays containg the popularity index.
+    //     This index allows fast selection of all photons from the top 32 categories, this
+    //     can be used both graphically and in analysis.
+    //     The recsel buffer repeats the phosel values maxrec times to provide fast access to the
+    //     selection at record level.
+    //
+    //
+    // optixwrap-/OBuf 
+    //       optix buffer wrapper
+    // 
+    // thrustrap-/TBuf 
+    //       thrust buffer wrapper, with download to NPY interface 
+    //
+    // thrustrap-/TSparse
+    //       GPU Thrust sparse histogramming 
+    //
+    // cudawrap-/CBufSpec   lightweight struct holding device pointer
+    //
+    // cudawrap-/CBufSlice  lightweight struct holding device pointer and slice addressing begin/end
+    //
+    // cudawrap-/CResource  
+    //       OpenGL buffer made available as a CUDA Resource, 
+    //       mapGLToCUDA returns CBufSpec struct 
+    //
+    // OBuf and TBuf have slice methods that return CBufSlice structs 
+    // identifying a view of the GPU buffers 
+    //
+    //
+
     OBuf* seq = m_opropagator->getSequenceBuf();
+
 
     // NB hostside allocation deferred for these
     NPY<unsigned char>* phosel_data = m_evt->getPhoselData(); 
@@ -961,6 +997,7 @@ void App::indexSequence()
         TBuf tphosel("tphosel", rphosel.mapGLToCUDA<unsigned char>() );
         tphosel.zero();
         TBuf trecsel("trecsel", rrecsel.mapGLToCUDA<unsigned char>() );
+        // now Thrust has access to the OpenGL addressable phosel and recsel buffers
 
 #ifdef DEBUG
         unsigned int nphosel = tphosel.getSize() ; 
@@ -980,8 +1017,6 @@ void App::indexSequence()
         TSparse<unsigned long long> seqhis("History_Sequence", seq->slice(2,0)); // stride,begin 
         seqhis.make_lookup();
         m_evt->setHistorySeq(seqhis.getIndex());
-
-
         seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0));  // stride, begin
 
 #ifdef DEBUG
@@ -993,8 +1028,6 @@ void App::indexSequence()
         TSparse<unsigned long long> seqmat("Material_Sequence", seq->slice(2,1)); // stride,begin 
         seqmat.make_lookup();
         m_evt->setMaterialSeq(seqmat.getIndex());
-
-
         seqmat.apply_lookup<unsigned char>( tphosel.slice(4,1));
 
 #ifdef DEBUG
@@ -1018,15 +1051,11 @@ void App::indexSequence()
     rrecsel.unmapGLToCUDA(); 
 
 
-    // perhaps can simplify this stuff... with new GPropertyLib approach 
-    // so write out the indices, to base some tests on
-
-
     (*m_timer)("indexSequence"); 
 }
 
 
-void App::indexPrep()
+void App::indexPresentationPrep()
 {
     if(!m_evt) return ; 
 
@@ -1035,7 +1064,7 @@ void App::indexPrep()
 
     if(!seqhis || !seqmat)
     {
-         LOG(warning) << "App::indexPrep NULL index"
+         LOG(warning) << "App::indexPresentationPrep NULL index"
                       << " seqhis " << seqhis 
                       << " seqmat " << seqmat
                       ; 
@@ -1047,10 +1076,10 @@ void App::indexPrep()
     GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
 
     qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    qflg->dumpTable(seqhis, "App::indexPrep seqhis"); 
+    qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
 
     qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    qmat->dumpTable(seqmat, "App::indexPrep seqmat"); 
+    qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
 
 
     m_seqhis = new GItemIndex(seqhis) ;  
@@ -1064,12 +1093,14 @@ void App::indexPrep()
     m_seqmat->setHandler(qmat);
     m_seqmat->formTable();
 
-    (*m_timer)("indexPrep"); 
+    (*m_timer)("indexPresentationPrep"); 
 }
 
 
 void App::indexBoundaries()
 {
+   // TODO: manage the boundaries inside m_evt like seqhis, seqmat above 
+
     /*
     Indexing the signed integer boundary code, from optixrap-/cu/generate.cu::
 
@@ -1148,10 +1179,7 @@ void App::indexEvt()
    
     indexSequence();
 
-    indexPrep();
-
     indexBoundaries();
-
 
     (*m_timer)("indexEvt"); 
 }

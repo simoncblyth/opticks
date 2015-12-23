@@ -66,8 +66,8 @@ G4StepNPY
     * dumping 
     * lookups for material code mapping 
 
-VecNPY
-    Weak holder of a single NPY* instance consituent, 
+ViewNPY
+    Weak holder of a single NPY* instance constituent, 
     together with offset, strides and size to identify 
     a subset of the data. Also provides bounds finding
     typically useful with geometrical data. 
@@ -78,14 +78,10 @@ VecNPY
     * turn VecNPY into glVertexAttribPointer, allowing OpenGL
       drawing of the data
 
-    TODO: rename to ViewNPY
-
-MultiVecNPY
-    A list of VecNPY with name and index access.
-    All the VecNPY are constrained to 
+MultiViewNPY
+    A list of ViewNPY with name and index access.
+    All the ViewNPY are constrained to 
     refer to the same NPY array, 
-
-    TODO: rename to MultiViewNPY
 
 Lookup
     Creates material code translation lookup tables from 

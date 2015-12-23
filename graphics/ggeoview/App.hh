@@ -105,7 +105,7 @@ class App {
        void downloadEvt();
        void indexEvt();
        void indexSequence();
-       void indexPrep();
+       void indexPresentationPrep();
        void indexBoundaries();
        void indexEvtOld();
   public:

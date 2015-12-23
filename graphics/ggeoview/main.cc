@@ -40,11 +40,15 @@ int main(int argc, char** argv)
 
             app.propagate();
 
-            if(!noindex) app.indexEvt();
+            if(!noindex) 
+            {
+                app.indexEvt();
+
+                app.indexPresentationPrep();
+            } 
 
             if(save)
             {
-
                 app.downloadEvt();
 
                 app.indexEvtOld();  // indexing that depends on downloading to host 
@@ -57,7 +61,7 @@ int main(int argc, char** argv)
     {
         app.loadEvtFromFile();
 
-        app.indexPrep();
+        app.indexPresentationPrep();
 
         app.uploadEvt();               // allocates GPU buffers with OpenGL glBufferData
     }

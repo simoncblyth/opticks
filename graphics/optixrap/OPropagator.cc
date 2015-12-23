@@ -3,12 +3,14 @@
 // opticks-
 #include "Opticks.hh"
 
+// optixrap-
 #include "OContext.hh"
 #include "OConfig.hh"
 #include "OTimes.hh"
 #include "OBuf.hh"
 #include "OBufPair.hh"
 
+// optix-
 #include <optixu/optixu.h>
 #include <optixu/optixu_math_stream_namespace.h>
 
@@ -88,9 +90,6 @@ void OPropagator::initRng()
     //       potential for eliminating cudawrap- 
     //
 }
-
-
-
 
 
 void OPropagator::initEvent()

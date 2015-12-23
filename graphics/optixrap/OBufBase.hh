@@ -1,10 +1,11 @@
 #pragma once
+// NB implementation in OBufBase_.cu as requires nvcc compilation
 #include <optix_world.h>
 #include <optixu/optixpp_namespace.h>
 
+// cudawrap- struct 
 #include "CBufSlice.hh"
 class NPYBase ; 
-
 
 // non-view-type specifics
 class OBufBase {
@@ -48,18 +49,6 @@ class OBufBase {
 };
 
 
-inline CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsigned int end )
-{
-   return CBufSlice( getDevicePtr(), getSize(), getNumBytes(), stride, begin, end == 0u ? getNumAtoms() : end);
-}
-
-inline void OBufBase::Summary(const char* msg)
-{
-    printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u NumBytes %u \n", msg, m_name, m_size, m_multiplicity, m_sizeofatom, getNumAtoms(), m_numbytes );
-}
-
-
-
 inline OBufBase::OBufBase(const char* name, optix::Buffer& buffer) 
    :
    m_buffer(buffer), 
@@ -75,11 +64,20 @@ inline OBufBase::OBufBase(const char* name, optix::Buffer& buffer)
 }
 
 
+inline CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsigned int end )
+{
+   return CBufSlice( getDevicePtr(), getSize(), getNumBytes(), stride, begin, end == 0u ? getNumAtoms() : end);
+}
+
+inline void OBufBase::Summary(const char* msg)
+{
+    printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u NumBytes %u \n", msg, m_name, m_size, m_multiplicity, m_sizeofatom, getNumAtoms(), m_numbytes );
+}
+
 inline void OBufBase::setHexDump(bool hexdump)
 {
    m_hexdump = hexdump ; 
 }
-
 
 /*
    *getSize()* Excludes multiplicity of the type of the OptiX buffer
@@ -108,8 +106,6 @@ inline unsigned int OBufBase::getNumBytes()
 {
     return m_numbytes ; 
 }
-
-
 
 
 

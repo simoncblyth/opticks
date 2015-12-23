@@ -1,5 +1,7 @@
 #pragma once
 #include "OBufBase.hh"
+// NB implementation in OBuf_.cu as requires nvcc compilation
+
 
 // anything not using or related to template type should go in OBufBase
 
