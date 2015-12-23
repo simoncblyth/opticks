@@ -89,6 +89,10 @@ void NumpyEvt::prepareForIndexing()
 {
     assert(m_num_photons > 0 );
     createHostIndexBuffers();
+
+    m_recsel_data->setDynamic();    
+    m_phosel_data->setDynamic();    
+
 }
 
 

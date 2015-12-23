@@ -156,8 +156,40 @@ ggv-;ggv-rainbow --load
     # load and visualized photons persisted from Opticks
 
 ggv-;ggv-rainbow --cfg4 --load
+    #
     # load and visualize photons persisted from Geant4 (cfg4) simulation
-    # flag and pol presentations have crazy colors
+    #
+    # an attempt to create the index on load using opop-/OpIndexer 
+    # is succeeding to index random bits of GPU memory 
+    #
+    # OpenGL needs to be involved for the ouput recsel and phosel
+    # but the input sequence buffer could be 
+    # pushed to GPU with Thrust alone, currently trying with OpenGL
+    # for that.. but getting random bits...
+    #
+    # the phtorch data written by cfg4- looks OK: 
+    #
+
+In [1]: a = np.load("-5.npy")
+
+In [2]: a
+Out[2]: 
+array([[[ 36045,      0]],
+
+       [[  2237,      0]],
+
+       [[ 36045,      0]],
+
+       ..., 
+       [[ 36045,      0]],
+
+       [[ 36045,      0]],
+
+       [[576461,      0]]], dtype=uint64)
+
+In [3]: pwd
+Out[3]: u'/usr/local/env/opticks/rainbow/phtorch'
+
 
 
 EOU

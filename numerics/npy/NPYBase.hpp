@@ -57,7 +57,7 @@ class NPYBase {
        void         setAux(void* aux);
        void*        getAux();
        void         setDynamic(bool dynamic=true);
-       bool         isDynamic(); 
+       bool         isDynamic();    // used by oglrap-/Rdr::upload
    public:
        // NumPy persistency
        static std::string directory(const char* tfmt, const char* targ, const char* det);
