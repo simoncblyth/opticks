@@ -3,6 +3,7 @@
 #include "string.h"
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 // npy-
 #include "stringutil.hpp"
@@ -19,6 +20,21 @@
 
 const char* NPYBase::DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2" ; 
 
+void NPYBase::init()
+{
+   updateDimensions(); 
+}
+
+void NPYBase::updateDimensions()
+{
+    m_ni = getShape(0); 
+    m_nj = getShape(1);
+    m_nk = getShape(2);
+    m_nl = getShape(3);  // gives 0 when beyond dimensions
+    m_dim = m_shape.size();
+}
+
+
 void NPYBase::setNumItems(unsigned int ni)
 {
     unsigned int orig = m_shape[0] ;
@@ -28,37 +44,40 @@ void NPYBase::setNumItems(unsigned int ni)
               << " increase from " << orig << " to " << ni 
               ; 
  
-    setShape(0, ni);
+    m_shape[0] = ni ; 
+    m_ni = ni ; 
 }
 
 
-void NPYBase::reshape(int ni, unsigned int nj, unsigned int nk, unsigned int nl)
+void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl)
 {
-    unsigned int nv_old = m_ni*m_nj*m_nk*m_nl ; 
-    if(ni < 0) ni = nv_old/(nj*nk*nl) ;
+    unsigned int nvals = std::max(1u,m_ni)*std::max(1u,m_nj)*std::max(1u,m_nk)*std::max(1u,m_nl) ; 
+    unsigned int njkl  = std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl) ;
+    unsigned int ni    = ni_ < 0 ? nvals/njkl : ni_ ;    // auto resizing of 1st dimension, when -ve
 
-    unsigned int nv_new = ni*nj*nk*nl ; 
+    unsigned int nvals2 = std::max(1u,ni)*std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl) ; 
 
-    if(nv_old != nv_new) LOG(fatal) << "NPYBase::reshape INVALID AS CHANGES COUNTS " 
-                              << " nv_old " << nv_old 
-                              << " nv_new " << nv_new
+    if(nvals != nvals2) LOG(fatal) << "NPYBase::reshape INVALID AS CHANGES COUNTS " 
+                              << " nvals " << nvals
+                              << " nvals2 " << nvals2
                               ;
 
-    assert(nv_old == nv_new && "NPYBase::reshape cannot change number of values, just their addressing");
+    assert(nvals == nvals2 && "NPYBase::reshape cannot change number of values, just their addressing");
 
-    LOG(info) << "NPYBase::reshape "
+    LOG(info) << "NPYBase::reshape (0 means no-dimension) "
               << "(" << m_ni << "," << m_nj << "," << m_nk << "," << m_nl << ")"
               << " --> "
               << "(" <<   ni << "," <<   nj << "," <<   nk << "," <<   nl << ")"
               ;
 
-    setShape(0, ni);
-    setShape(1, nj);
-    setShape(2, nk);
-    setShape(3, nl);
+    m_shape.clear();
+    if(ni > 0) m_shape.push_back(ni);
+    if(nj > 0) m_shape.push_back(nj);
+    if(nk > 0) m_shape.push_back(nk);
+    if(nl > 0) m_shape.push_back(nl);
+
+    updateDimensions();
 }
-
-
 
 
 

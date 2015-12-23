@@ -42,9 +42,10 @@ class NPYBase {
        unsigned int  getNumBytes(unsigned int from_dim=0);
        unsigned int  getByteIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
    public:
-       void reshape(int ni, unsigned int nj, unsigned int nk, unsigned int nl);
+       void reshape(int ni, unsigned int nj=0, unsigned int nk=0, unsigned int nl=0);
    private:
-       void setShape(unsigned int d, unsigned int v);
+       void init();
+       void updateDimensions();
    public:
        // OpenGL related
        void         setBufferId(int buffer_id);
@@ -92,7 +93,6 @@ class NPYBase {
        void setNumItems(unsigned int ni);
    protected:
        unsigned int       m_dim ; 
-
        unsigned int       m_ni ; 
        unsigned int       m_nj ; 
        unsigned int       m_nk ; 
@@ -129,13 +129,10 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
          m_has_data(has_data),
          m_dynamic(false)
 {
-    m_ni = getShape(0);
-    m_nj = getShape(1);
-    m_nk = getShape(2);
-    m_nl = getShape(3);
-
-    m_dim  = m_shape.size();
+   init();
 } 
+
+
 
 
 inline void NPYBase::setHasData(bool has_data)
@@ -156,19 +153,6 @@ inline std::vector<int>& NPYBase::getShapeVector()
     return m_shape ; 
 }
 
-
-inline void NPYBase::setShape(unsigned int d, unsigned int v)
-{
-    switch(d)
-    {
-       case 0:m_ni=v ; break;
-       case 1:m_nj=v ; break; 
-       case 2:m_nk=v ; break;
-       case 3:m_nl=v ; break;
-       default:  assert(0) ;
-    }
-    m_shape[d] = v ;
-}
 
 
 inline unsigned int NPYBase::getNumItems(int ifr, int ito)

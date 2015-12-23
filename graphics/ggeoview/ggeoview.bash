@@ -151,6 +151,15 @@ ggv-;ggv-rainbow --cfg4 --spol
 ggv-;ggv-rainbow --cfg4 --ppol
 ggv-;ggv-rainbow --cfg4 --ppol --dbg
 
+
+ggv-;ggv-rainbow --load
+    # load and visualized photons persisted from Opticks
+
+ggv-;ggv-rainbow --cfg4 --load
+    # load and visualize photons persisted from Geant4 (cfg4) simulation
+    # flag and pol presentations have crazy colors
+
+
 EOU
 }
 

@@ -8,6 +8,27 @@
 #include <glm/glm.hpp>
 
 
+
+void test_reshape()
+{
+   NPY<int>* rx = NPY<int>::make(100,10,2,4) ;
+   rx->zero();
+
+   rx->Summary("before reshape");
+
+   unsigned int ni = rx->getShape(0); 
+   unsigned int nj = rx->getShape(1); 
+   unsigned int nk = rx->getShape(2); 
+   unsigned int nl = rx->getShape(3); 
+
+   rx->reshape( ni*nj, nk, nl, 0 );
+
+   rx->Summary("after reshape");
+
+}
+
+
+
 void test_transform()
 {
    NPY<float>* dom = NPY<float>::make(10,1,4) ;
@@ -323,7 +344,8 @@ int main()
     //test_empty_add();
     //test_dump();
 
-    test_transform();
+    //test_transform();
+    test_reshape();
 
     return 0 ;
 }

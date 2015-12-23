@@ -580,7 +580,7 @@ void NumpyEvt::load(bool verbose)
             unsigned int nj = rx->getShape(1);
             unsigned int nk = rx->getShape(2);
             unsigned int nl = rx->getShape(3);
-            rx->reshape(ni*nj, 1, nk, nl);
+            rx->reshape(ni*nj, nk, nl, 0);
             rx->Summary("rx reshaped");
         }       
         
@@ -591,7 +591,7 @@ void NumpyEvt::load(bool verbose)
             unsigned int nj = rs->getShape(1);
             unsigned int nk = rs->getShape(2);
             unsigned int nl = rs->getShape(3);
-            rs->reshape(ni*nj, 1, nk, nl);
+            rs->reshape(ni*nj, nk, nl, 0);
             rs->Summary("rs reshaped");
         }       
         {
@@ -600,7 +600,7 @@ void NumpyEvt::load(bool verbose)
             unsigned int nj = au->getShape(1);
             unsigned int nk = au->getShape(2);
             unsigned int nl = au->getShape(3);
-            au->reshape(ni*nj, 1, nk, nl);       
+            au->reshape(ni*nj, nk, nl, 0);       
             au->Summary("au reshaped");
         }
     }
