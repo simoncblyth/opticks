@@ -28,12 +28,20 @@
 
 __constant__ unsigned long long dev_tsparse_lookup[TSPARSE_LOOKUP_N]; 
 
+
+template <typename T>
+void TSparse<T>::init()
+{
+    m_index_h = new Index(m_label);
+}
+
+
 template <typename T>
 void TSparse<T>::make_lookup()
 {
     count_unique();
     update_lookup();
-    m_index_h = make_index();
+    populate_index(m_index_h);
 }
 
 
@@ -137,7 +145,7 @@ Nov 2015:
 */
 
 template <typename T>
-std::string TSparse<T>::dump_(const char* msg)
+std::string TSparse<T>::dump_(const char* msg) const 
 {
     std::stringstream ss ; 
     ss << msg << " : num_unique " << m_num_unique << std::endl ; 
@@ -157,7 +165,7 @@ std::string TSparse<T>::dump_(const char* msg)
 
 
 template <typename T>
-void TSparse<T>::dump(const char* msg)
+void TSparse<T>::dump(const char* msg) const 
 {
     std::cout << dump_(msg) ; 
 }
@@ -215,9 +223,8 @@ void TSparse<T>::apply_lookup(CBufSlice target)
 
 
 template <typename T>
-Index* TSparse<T>::make_index()
+void TSparse<T>::populate_index(Index* index)
 {
-    Index* index = new Index(m_label);
     for(unsigned int i=0 ; i < m_values_h.size() ; i++)
     { 
         T val = m_values_h[i] ; 
@@ -225,7 +232,7 @@ Index* TSparse<T>::make_index()
         std::string key = m_hexkey ? as_hex(val) : as_dec(val) ;
 
 #ifdef DEBUG
-        std::cout << "TSparse<T>::make_index " 
+        std::cout << "TSparse<T>::populate_index " 
                   << " i " << std::setw(4) << i
                   << " val " << std::setw(10) << val
                   << " cnt " << std::setw(10) << cnt
@@ -236,7 +243,6 @@ Index* TSparse<T>::make_index()
 
         if(cnt > 0) index->add(key.c_str(), cnt ); 
     }
-    return index ; 
 }
 
 

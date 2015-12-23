@@ -73,6 +73,7 @@ find_package(ImGui REQUIRED)
 find_package(Bregex REQUIRED)
 find_package(ThrustRap REQUIRED)
 
+find_package(OpticksOp REQUIRED)
 
 
 set(INCLUDE_DIRS
@@ -100,6 +101,7 @@ set(INCLUDE_DIRS
    ${ImGui_INCLUDE_DIRS}
    ${Bregex_INCLUDE_DIRS}
    ${ThrustRap_INCLUDE_DIRS}
+   ${OpticksOp_INCLUDE_DIRS} 
 )
 
 
@@ -120,6 +122,7 @@ set(DEFINITIONS
    ${Bregex_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
    ${Opticks_DEFINITIONS}
+   ${OpticksOp_DEFINITIONS}
 )
 
 
@@ -152,6 +155,7 @@ set(LIBRARIES
       ${ImGui_LIBRARIES}
       ${Bregex_LIBRARIES}
       ${ThrustRap_LIBRARIES}
+      ${OpticksOp_LIBRARIES}
 
       ssl
       crypto 

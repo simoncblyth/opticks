@@ -145,6 +145,11 @@ namespace fs = boost::filesystem;
 #include "TBufPair.hh"
 #include "TSparse.hh"
 
+// opop-
+#include "OpIndexer.hh"
+
+
+
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
 
@@ -939,120 +944,33 @@ void App::downloadEvt()
 }
 
 
+
+
 void App::indexSequence()
 {
     if(!m_evt) return ; 
 
-    // High level view:
-    //
-    //     indexes history and material sequences from the sequence buffer
-    //     (each photon has unsigned long long 64-bit ints containg step-by-step flags and material indices)   
-    //     The sequences are sparse histogrammed (essentially an index of the popularity of each sequence)
-    //     creating a small lookup table that is then applied to all photons to create the phosel and 
-    //     recsel arrays containg the popularity index.
-    //     This index allows fast selection of all photons from the top 32 categories, this
-    //     can be used both graphically and in analysis.
-    //     The recsel buffer repeats the phosel values maxrec times to provide fast access to the
-    //     selection at record level.
-    //
-    //
-    // optixwrap-/OBuf 
-    //       optix buffer wrapper
-    // 
-    // thrustrap-/TBuf 
-    //       thrust buffer wrapper, with download to NPY interface 
-    //
-    // thrustrap-/TSparse
-    //       GPU Thrust sparse histogramming 
-    //
-    // cudawrap-/CBufSpec   lightweight struct holding device pointer
-    //
-    // cudawrap-/CBufSlice  lightweight struct holding device pointer and slice addressing begin/end
-    //
-    // cudawrap-/CResource  
-    //       OpenGL buffer made available as a CUDA Resource, 
-    //       mapGLToCUDA returns CBufSpec struct 
-    //
-    // OBuf and TBuf have slice methods that return CBufSlice structs 
-    // identifying a view of the GPU buffers 
-    //
-    //
+    OBuf* seq = m_opropagator ? m_opropagator->getSequenceBuf() : NULL ;
 
-    OBuf* seq = m_opropagator->getSequenceBuf();
-
-
-    // NB hostside allocation deferred for these
-    NPY<unsigned char>* phosel_data = m_evt->getPhoselData(); 
-    NPY<unsigned char>* recsel_data = m_evt->getRecselData();
-    unsigned int maxrec = m_evt->getMaxRec(); 
-
-    // note the layering here, this pattern will hopefully facilitate moving 
-    // from OpenGL backed to OptiX backed for COMPUTE mode
-    // although this isnt a good example as indexSequence is not 
-    // necessary in COMPUTE mode 
-
-    CResource rphosel( phosel_data->getBufferId(), CResource::W );
-    CResource rrecsel( recsel_data->getBufferId(), CResource::W );
+    if(!seq)
     {
-        TBuf tphosel("tphosel", rphosel.mapGLToCUDA<unsigned char>() );
-        tphosel.zero();
-        TBuf trecsel("trecsel", rrecsel.mapGLToCUDA<unsigned char>() );
-        // now Thrust has access to the OpenGL addressable phosel and recsel buffers
-
-#ifdef DEBUG
-        unsigned int nphosel = tphosel.getSize() ; 
-        unsigned int npsd = std::min(nphosel,100u) ;
-        unsigned int nsqa = seq->getNumAtoms(); 
-        unsigned int nsqd = std::min(nsqa,100u); 
-        assert(nphosel == 2*nsqa);
-        unsigned int nrecsel = trecsel.getSize() ; 
-        assert(nrecsel == maxrec*2*nsqa);
-        LOG(info) << "App::indexSequence "
-                  << " nsqa (2*num_photons)" << nsqa 
-                  << " nphosel " << nphosel
-                  << " nrecsel " << nrecsel
-                  ; 
-#endif
-
-        TSparse<unsigned long long> seqhis("History_Sequence", seq->slice(2,0)); // stride,begin 
-        seqhis.make_lookup();
-        m_evt->setHistorySeq(seqhis.getIndex());
-        seqhis.apply_lookup<unsigned char>( tphosel.slice(4,0));  // stride, begin
-
-#ifdef DEBUG
-        seq->dump<unsigned long long>("App::indexSequence OBuf seq.dump", 2, 0, nsqd);
-        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,0)", 4,0, npsd) ;
-        LOG(info) << seqhis.dump_("App::indexSequence seqhis (dump_)");
-#endif
-
-        TSparse<unsigned long long> seqmat("Material_Sequence", seq->slice(2,1)); // stride,begin 
-        seqmat.make_lookup();
-        m_evt->setMaterialSeq(seqmat.getIndex());
-        seqmat.apply_lookup<unsigned char>( tphosel.slice(4,1));
-
-#ifdef DEBUG
-        seq->dump<unsigned long long>("App::indexSequence OBuf seq.dump", 2, 1, nsqd);
-        seqmat.dump("App::indexSequence seqmat");
-        tphosel.dumpint<unsigned char>("tphosel.dumpint<unsigned char>(4,1)", 4,1, npsd) ;
-#endif
-
-        tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), maxrec );  // other, stride, begin, end, repeats
-
-
-        tphosel.download<unsigned char>( phosel_data );  // cudaMemcpyDeviceToHost
-        trecsel.download<unsigned char>( recsel_data );
-#ifdef DEBUG
-        phosel_data->save("/tmp/phosel.npy");  
-        recsel_data->save("/tmp/recsel.npy");  
-#endif
-
+        LOG(warning) << "App::indexSequence no seq to index " ;
+        return ;
     }
-    rphosel.unmapGLToCUDA(); 
-    rrecsel.unmapGLToCUDA(); 
 
+    OpIndexer* ixr = new OpIndexer();
 
-    (*m_timer)("indexSequence"); 
+    ixr->setEvt(m_evt);
+    ixr->setSeq(seq);
+    ixr->indexSequence(); 
+
+    // indexSequence 
+    //     updates seqhis and seqhis indices and recsel and phosel buffers
+    //     inside NumpyEvt 
+    //     providing fast category selection
+    //
 }
+
 
 
 void App::indexPresentationPrep()

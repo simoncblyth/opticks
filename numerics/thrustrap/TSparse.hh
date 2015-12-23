@@ -11,6 +11,8 @@ template <typename T>
 class TSparse {
    public:
       TSparse(const char* label, CBufSlice source, bool hexkey=true);
+   private:
+      void init();
    public:
       void make_lookup(); 
       template <typename S> void apply_lookup(CBufSlice target);
@@ -18,10 +20,10 @@ class TSparse {
    private:
       void count_unique();  // creates on device sparse histogram 
       void update_lookup(); // writes small number (eg 32) of most popular uniques to global device constant memory   
-      Index* make_index();
+      void populate_index(Index* index);
    public:
-      std::string dump_(const char* msg="TSparse<T>::dump");
-      void dump(const char* msg="TSparse<T>::dump");
+      std::string dump_(const char* msg="TSparse<T>::dump") const ;
+      void dump(const char* msg="TSparse<T>::dump") const ;
    private:
       // input buffer slice specification
       const char* m_label ; 
@@ -46,6 +48,7 @@ inline TSparse<T>::TSparse(const char* label, CBufSlice source, bool hexkey ) :
         m_index_h(NULL),
         m_hexkey(hexkey)
 {
+    init();
 }
 
 template <typename T>

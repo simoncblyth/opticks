@@ -12,7 +12,7 @@
 #include "NPY.hpp"
 
 template <typename T>
-void TBuf::download(NPY<T>* npy)
+void TBuf::download(NPY<T>* npy) const 
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
     assert(numBytes == getNumBytes());
@@ -27,7 +27,7 @@ void TBuf::zero()
 }
 
 template <typename T>
-void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end )
+void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const 
 {
     Summary(msg);
 
@@ -47,7 +47,7 @@ void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsign
 
 
 template <typename T>
-void TBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end)
+void TBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end) const 
 {
 
     // dumpint necessitated in addition to dump as streaming unsigned char gives characters not integers
@@ -81,13 +81,8 @@ void TBuf::dumpint(const char* msg, unsigned int stride, unsigned int begin, uns
 }
 
 
-
-
-
-
-
 template <typename T>
-T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end )
+T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end ) const 
 {
     thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
@@ -108,7 +103,7 @@ T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end )
 
 
 template <typename T>
-void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats )
+void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats ) const 
 {
     thrust::device_ptr<T> src = thrust::device_pointer_cast((T*)getDevicePtr()) ;
     thrust::device_ptr<T> tgt = thrust::device_pointer_cast((T*)other->getDevicePtr()) ;
@@ -122,11 +117,9 @@ void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsi
 
 
 
-template void TBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int);
-template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
-template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int);
-template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int);
-template void TBuf::download<unsigned char>(NPY<unsigned char>* npy);
-
-
+template void TBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int) const ;
+template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::download<unsigned char>(NPY<unsigned char>* npy) const ;
 

@@ -1851,6 +1851,8 @@ ggeoview-depinstall()
     thrustrap-install 
     optixrap-
     optixrap-install 
+    opop-
+    opop-install
     ggeoview-
     ggeoview-install  
 }
@@ -1874,6 +1876,8 @@ oglrap
 optixrap
 cudawrap
 thrustrap
+opticks
+opop
 EOD
 }
 
