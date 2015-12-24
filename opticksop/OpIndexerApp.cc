@@ -28,7 +28,7 @@ void OpIndexerApp::configure(int argc, char** argv)
 
     m_cfg->commandline(argc, argv); 
 
-    LOG(info) << "OpIndexerApp::configure" ; 
+    LOG(debug) << "OpIndexerApp::configure" ; 
 
     m_evt = m_opticks->makeEvt();
     m_evt->Summary("OpIndexerApp::configure");
@@ -37,9 +37,9 @@ void OpIndexerApp::configure(int argc, char** argv)
 }
 
 
-void OpIndexerApp::loadEvtFromFile()
+void OpIndexerApp::loadEvtFromFile(bool verbose)
 {
-    m_evt->load(true);
+    m_evt->load(verbose);
 
     if(m_evt->isNoLoad())
     {    
@@ -59,8 +59,11 @@ void OpIndexerApp::makeIndex()
 
     m_evt->Summary("OpIndexerApp::makeIndex");
 
+    m_evt->prepareForIndexing();
+
     m_indexer->indexSequence();
- 
+
+    m_evt->saveIndex(true);
 }
 
 

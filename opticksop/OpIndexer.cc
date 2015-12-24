@@ -25,10 +25,8 @@
 // optixrap-
 #include "OBuf.hh"
 
-
 void OpIndexer::init()
 {
-    LOG(info) << "OpIndexer::init" ;
     m_timer      = new Timer("OpIndexer::");
     m_timer->setVerbose(true);
 }
@@ -40,120 +38,79 @@ void OpIndexer::setEvt(NumpyEvt* evt)
 
 void OpIndexer::updateEvt()
 {
+    assert(m_evt) ;
     m_phosel = m_evt->getPhoselData(); 
     m_recsel = m_evt->getRecselData();
     m_maxrec = m_evt->getMaxRec(); 
-    m_sequence = m_evt->getSequenceData();
 
     setNumPhotons(m_evt->getNumPhotons());
 }
 
-
 void OpIndexer::setNumPhotons(unsigned int num_photons)
 {
-    assert(num_photons == m_sequence->getShape(0));
+    assert(num_photons == m_evt->getSequenceData()->getShape(0));
     m_num_photons = num_photons ; 
+}
+
+void OpIndexer::indexSequenceViaOpenGL()
+{
+     // used by standard indexing from ggv- ie with OptiX OpenGL and Thrust all in play 
+    updateEvt();
+    if(m_evt->isIndexed()) return ;  
+
+    assert(m_seq);
+
+    LOG(info) << "OpIndexer::indexSequenceViaOpenGL(OBuf*)" ; 
+    CBufSlice seqh = m_seq->slice(2,0) ;  // stride, begin
+    CBufSlice seqm = m_seq->slice(2,1) ;
+
+    TSparse<unsigned long long> seqhis("History_Sequence",  seqh );
+    TSparse<unsigned long long> seqmat("Material_Sequence", seqm ); 
+
+    m_evt->setHistorySeq(seqhis.getIndex());
+    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
+
+    m_timer->start();
+    indexSequenceViaOpenGL(seqhis, seqmat, true);
+    m_timer->stop();
+
+    (*m_timer)("indexSequenceThrustViaOpenGL"); 
 }
 
 
 void OpIndexer::indexSequence()
 {
-    if(!m_evt) return ; 
+    LOG(info) << "OpIndexer::indexSequence" ; 
     updateEvt();
-
-    if(m_evt->isIndexed())
-    {
-        LOG(info) << "OpIndexer::indexSequence evt is indexed already : SKIPPING " ; 
-        return ; 
-    }
-
-    m_evt->prepareForIndexing();
-    updateEvt();
-
-    if(m_seq)
-    {
-        // used by standard indexing from ggv- ie with OptiX OpenGL and Thrust all in play 
-        indexSequenceOptiXGLThrust();
-    }
-    else
-    {
-        // used by the opop- indexer with just Thrust in play 
-        indexSequenceThrust();
-    }
-}
-
-
-void OpIndexer::indexSequenceThrust()
-{
-    LOG(info) << "OpIndexer::indexSequenceThrust" ; 
+    if(m_evt->isIndexed()) return ;  
 
     NPY<unsigned long long>* ph = m_evt->getSequenceData(); 
-
     thrust::device_vector<unsigned long long> dph(ph->begin(),ph->end());
-
     CBufSpec cph = make_bufspec<unsigned long long>(dph); 
 
     TBuf tph("tph", cph);
-
     tph.dump<unsigned long long>("tph dump", 2, 0, 10 );  
     
     CBufSlice phh = tph.slice(2,0) ; // stride, begin  
     CBufSlice phm = tph.slice(2,1) ;
 
-    indexSequenceThrust(phh, phm, true);
-}
+    TSparse<unsigned long long> seqhis("History_Sequence",  phh );
+    TSparse<unsigned long long> seqmat("Material_Sequence", phm ); 
 
-
-
-void OpIndexer::indexSequenceOptiXGLThrust()
-{
-    LOG(info) << "OpIndexer::indexSequenceOptiXGLThrust" ; 
-    CBufSlice seqh = m_seq->slice(2,0) ;  // stride, begin
-    CBufSlice seqm = m_seq->slice(2,1) ;
-    indexSequenceGLThrust(seqh, seqm, true);
-}
-
-void OpIndexer::indexSequenceGLThrust()
-{
-    // loaded does not involve OptiX, so there is no OBuf 
-    // instead grab the sequence 
-    LOG(info) << "OpIndexer::indexSequenceGLThrust" ; 
-
-    CResource rsequence( m_sequence->getBufferId(), CResource::W );
-    {
-        CBufSpec seqbuf = rsequence.mapGLToCUDA<unsigned long long>() ;
-        TBuf tsequence("tsequence", seqbuf );
-        CBufSlice seqh = tsequence.slice(2,0) ; // stride, begin  
-        CBufSlice seqm = tsequence.slice(2,1) ;
-        indexSequenceThrust(seqh, seqm, true);
-    }
-    rsequence.unmapGLToCUDA(); 
-}
-
-
-void OpIndexer::indexSequenceGLThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose )
-{
-    m_timer->start();
-
-    TSparse<unsigned long long> seqhis("History_Sequence", seqh );
-    TSparse<unsigned long long> seqmat("Material_Sequence", seqm ); 
     m_evt->setHistorySeq(seqhis.getIndex());
     m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
-    CResource rphosel( m_phosel->getBufferId(), CResource::W );
-    CResource rrecsel( m_recsel->getBufferId(), CResource::W );
-    CBufSpec rps = rphosel.mapGLToCUDA<unsigned char>() ;
-    CBufSpec rrs = rrecsel.mapGLToCUDA<unsigned char>() ;
-   
-    indexSequenceThrust(seqhis, seqmat, rps, rrs, verbose);
+    assert(m_phosel != 0 && m_recsel != 0);
 
-    rphosel.unmapGLToCUDA(); 
-    rrecsel.unmapGLToCUDA(); 
-
+    m_timer->start();
+    indexSequence(seqhis, seqmat, true);
     m_timer->stop();
 
-    (*m_timer)("indexSequenceGLThrust"); 
+    (*m_timer)("indexSequence"); 
 }
+
+
+
 
 
 
@@ -209,11 +166,4 @@ void OpIndexer::dump(const TBuf& tphosel, const TBuf& trecsel)
     } 
 }
 
-
-
-void OpIndexer::saveSel()
-{
-    m_phosel->save("/tmp/phosel.npy");  
-    m_recsel->save("/tmp/recsel.npy");  
-}
 

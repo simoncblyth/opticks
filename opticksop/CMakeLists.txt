@@ -74,7 +74,7 @@ set(LIBRARIES
 
 
 
-CUDA_ADD_LIBRARY( ${name}
+CUDA_ADD_LIBRARY( ${name} SHARED
     OpIndexerApp.cc
     OpIndexer.cc
     OpIndexer_.cu

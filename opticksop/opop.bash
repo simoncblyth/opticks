@@ -97,3 +97,21 @@ opop-index(){
     esac
 }
 
+opop-index-op(){
+   local base=/usr/local/env/opticks
+   local tag=-5
+   local cat=rainbow
+   local typ=torch
+   local comps="ps rs sh sm"
+   local comp
+   for comp in $comps ; do
+       case $comp in 
+          ps|rs) echo $base/$cat/$comp$typ/$tag.npy  ;;
+          sh|sm) echo $base/$cat/$comp$typ/$tag/     ;;
+       esac 
+   done
+}
+
+
+
+

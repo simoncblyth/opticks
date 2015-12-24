@@ -14,7 +14,7 @@ class OpIndexerApp {
    public:
       OpIndexerApp();
       void configure(int argc, char** argv);
-      void loadEvtFromFile();
+      void loadEvtFromFile(bool verbose=false);
       void makeIndex();
    private:
       void init();

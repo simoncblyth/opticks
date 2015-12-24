@@ -57,6 +57,7 @@ class NumpyEvt {
        void readDomainsBuffer();
    public:
        void save(bool verbose=false);
+       void saveIndex(bool verbose=false);
        void load(bool verbose=true);
    private:
        // invoked internally, as knock on from setGenstepData

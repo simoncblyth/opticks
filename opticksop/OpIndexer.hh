@@ -60,28 +60,34 @@ class OpIndexer {
    public:
       OpIndexer();
       void setEvt(NumpyEvt* evt);
-      void setSeq(OBuf* seq);
       void setNumPhotons(unsigned int num_photons);
    public:
-      void indexSequence();
+      void setSeq(OBuf* seq);
+      void indexSequence(); 
+      void indexSequenceViaOpenGL();  
    private:
       void init();
       void updateEvt();
-
-      void indexSequenceThrust();
-      void indexSequenceThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose );
-
-      void indexSequenceOptiXGLThrust();
-      void indexSequenceGLThrust();
-      void indexSequenceGLThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose );
-
-      void indexSequenceThrust(
+   private:
+      // implemented in OpIndexer_.cu for nvcc compilation
+      void indexSequence(         
+           TSparse<unsigned long long>& seqhis, 
+           TSparse<unsigned long long>& seqmat, 
+           bool verbose 
+      );
+      void indexSequenceViaOpenGL(
+           TSparse<unsigned long long>& seqhis, 
+           TSparse<unsigned long long>& seqmat, 
+           bool verbose 
+      );
+      void indexSequenceImp(
            TSparse<unsigned long long>& seqhis, 
            TSparse<unsigned long long>& seqmat, 
            const CBufSpec& rps,
            const CBufSpec& rrs,
            bool verbose 
       );
+   private:
 
       void dump(const TBuf& tphosel, const TBuf& trecsel);
       void dumpHis(const TBuf& tphosel, const TSparse<unsigned long long>& seqhis) ;
@@ -96,9 +102,8 @@ class OpIndexer {
       NumpyEvt*                m_evt ;
    private:
       // transients updated by updateEvt at indexSequence
-      NPY<unsigned long long>* m_sequence ;
-      NPY<unsigned char>*      m_recsel ;
       NPY<unsigned char>*      m_phosel ;
+      NPY<unsigned char>*      m_recsel ;
       unsigned int             m_maxrec ; 
       unsigned int             m_num_photons ; 
 
@@ -108,9 +113,8 @@ inline OpIndexer::OpIndexer()
    :
      m_seq(NULL),
      m_evt(NULL),
-     m_sequence(NULL),
-     m_recsel(NULL),
      m_phosel(NULL),
+     m_recsel(NULL),
      m_maxrec(0),
      m_num_photons(0)
 {

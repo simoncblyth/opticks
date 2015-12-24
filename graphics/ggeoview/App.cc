@@ -722,16 +722,9 @@ void App::uploadEvt()
 
 
     if(!m_evt->isIndexed())
-    {
-        LOG(info) << "App::uploadEvt event is not indexed, try to make the index " ;
+        LOG(warning) << "App::uploadEvt event is not indexed, considerer indexing see: opop-;opop-index  " ;
 
-        m_evt->prepareForIndexing(); 
-
-        m_scene->uploadSelection();
-
-        indexSequence();    
-    }
-
+    m_scene->uploadSelection();
 
     LOG(info) << "App::uploadEvt DONE " ;
 }
@@ -751,6 +744,7 @@ void App::seedPhotonsFromGensteps()
     //  program cu/generate.cu to access the appropriate values from the genstep buffer
     //
     //  TODO: make this operational in COMPUTE as well as INTEROP modes without code duplication ?
+    //  TODO: this belongs in opop-
 
     LOG(info)<<"App::seedPhotonsFromGensteps" ;
 
@@ -976,11 +970,12 @@ void App::indexSequence()
 
     OBuf* seq = m_opropagator ? m_opropagator->getSequenceBuf() : NULL ;
     if(seq)
+    {
         indexer->setSeq(seq);
+        indexer->indexSequenceViaOpenGL(); 
+    }
 
-    indexer->indexSequence(); 
-
-    // indexSequence 
+    // indexSequenceViaOpenGL 
     //     updates seqhis and seqhis indices and recsel and phosel buffers
     //     inside NumpyEvt 
     //     providing fast category selection

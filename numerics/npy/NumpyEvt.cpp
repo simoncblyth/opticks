@@ -535,17 +535,6 @@ void NumpyEvt::save(bool verbose)
     daux->setVerbose(verbose);
     daux->save("au%s", m_typ,  m_tag, udet);
 
-
-
-    NPY<unsigned char>* ps = getPhoselData();
-    ps->setVerbose(verbose);
-    ps->save("ps%s", m_typ,  m_tag, udet);
-
-    NPY<unsigned char>* rs = getRecselData();
-    rs->setVerbose(verbose);
-    rs->save("rs%s", m_typ,  m_tag, udet);
-
-
     updateDomainsBuffer();
 
     NPY<float>* fdom = getFDomain();
@@ -554,6 +543,22 @@ void NumpyEvt::save(bool verbose)
     NPY<int>* idom = getIDomain();
     idom->save("idom%s", m_typ,  m_tag, udet);
 
+
+    saveIndex(verbose);
+}
+
+
+void NumpyEvt::saveIndex(bool verbose)
+{
+    const char* udet = getUDet();
+
+    NPY<unsigned char>* ps = getPhoselData();
+    ps->setVerbose(verbose);
+    ps->save("ps%s", m_typ,  m_tag, udet);
+
+    NPY<unsigned char>* rs = getRecselData();
+    rs->setVerbose(verbose);
+    rs->save("rs%s", m_typ,  m_tag, udet);
 
     if(m_seqhis)
     {
@@ -566,9 +571,8 @@ void NumpyEvt::save(bool verbose)
         std::string sm_dir = NPYBase::directory("sm%s", m_typ, udet );
         m_seqmat->save(sm_dir.c_str(), m_tag);        
     }
-
-
 }
+
 
 
 void NumpyEvt::load(bool verbose)
@@ -633,33 +637,33 @@ void NumpyEvt::load(bool verbose)
     {
         LOG(info) << "NumpyEvt::load non-flat records (cfg4- style) detected :  RESHAPING " ;
         {
-            rx->Summary("rx init");
+            if(verbose) rx->Summary("rx init");
             unsigned int ni = rx->getShape(0);
             unsigned int nj = rx->getShape(1);
             unsigned int nk = rx->getShape(2);
             unsigned int nl = rx->getShape(3);
             rx->reshape(ni*nj, nk, nl, 0);
-            rx->Summary("rx reshaped");
+            if(verbose) rx->Summary("rx reshaped");
         }       
         
         if(rs)
         {
-            rs->Summary("rs init");
+            if(verbose) rs->Summary("rs init");
             unsigned int ni = rs->getShape(0);
             unsigned int nj = rs->getShape(1);
             unsigned int nk = rs->getShape(2);
             unsigned int nl = rs->getShape(3);
             rs->reshape(ni*nj, nk, nl, 0);
-            rs->Summary("rs reshaped");
+            if(verbose) rs->Summary("rs reshaped");
         }       
         {
-            au->Summary("au init");
+            if(verbose) au->Summary("au init");
             unsigned int ni = au->getShape(0);
             unsigned int nj = au->getShape(1);
             unsigned int nk = au->getShape(2);
             unsigned int nl = au->getShape(3);
             au->reshape(ni*nj, nk, nl, 0);       
-            au->Summary("au reshaped");
+            if(verbose) au->Summary("au reshaped");
         }
     }
 

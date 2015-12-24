@@ -64,7 +64,7 @@ void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl
 
     assert(nvals == nvals2 && "NPYBase::reshape cannot change number of values, just their addressing");
 
-    LOG(info) << "NPYBase::reshape (0 means no-dimension) "
+    LOG(debug) << "NPYBase::reshape (0 means no-dimension) "
               << "(" << m_ni << "," << m_nj << "," << m_nk << "," << m_nl << ")"
               << " --> "
               << "(" <<   ni << "," <<   nj << "," <<   nk << "," <<   nl << ")"

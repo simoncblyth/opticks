@@ -3,7 +3,6 @@
 #include <cassert>
 
 // npy-
-#include "Timer.hpp"
 #include "NumpyEvt.hpp"  
 #include "NPY.hpp"  
 
@@ -19,29 +18,40 @@
 // thrust 
 #include <thrust/device_vector.h>
 
-
-
-void OpIndexer::indexSequenceThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose )
+void OpIndexer::indexSequence(
+   TSparse<unsigned long long>& seqhis, 
+   TSparse<unsigned long long>& seqmat, 
+   bool verbose
+)
 {
-    m_timer->start();
-    TSparse<unsigned long long> seqhis("History_Sequence", seqh );
-    TSparse<unsigned long long> seqmat("Material_Sequence", seqm ); 
-    m_evt->setHistorySeq(seqhis.getIndex());
-    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
-
-    assert(m_phosel != 0 && m_recsel != 0);
-
-    thrust::device_vector<unsigned char> dps(m_num_photons);
-    thrust::device_vector<unsigned char> drs(m_num_photons*m_maxrec);
+    thrust::device_vector<unsigned char> dps(m_phosel->getNumValues());
+    thrust::device_vector<unsigned char> drs(m_recsel->getNumValues());
 
     CBufSpec rps = make_bufspec<unsigned char>(dps); 
     CBufSpec rrs = make_bufspec<unsigned char>(drs) ;
 
-    indexSequenceThrust(seqhis, seqmat, rps, rrs, verbose);
+    indexSequenceImp(seqhis, seqmat, rps, rrs, verbose);
 }
 
+void OpIndexer::indexSequenceViaOpenGL(
+   TSparse<unsigned long long>& seqhis, 
+   TSparse<unsigned long long>& seqmat, 
+   bool verbose
+)
+{
+    CResource rphosel( m_phosel->getBufferId(), CResource::W );
+    CResource rrecsel( m_recsel->getBufferId(), CResource::W );
 
-void OpIndexer::indexSequenceThrust(
+    CBufSpec rps = rphosel.mapGLToCUDA<unsigned char>() ;
+    CBufSpec rrs = rrecsel.mapGLToCUDA<unsigned char>() ;
+   
+    indexSequenceImp(seqhis, seqmat, rps, rrs, verbose);
+
+    rphosel.unmapGLToCUDA(); 
+    rrecsel.unmapGLToCUDA(); 
+}
+
+void OpIndexer::indexSequenceImp(
    TSparse<unsigned long long>& seqhis, 
    TSparse<unsigned long long>& seqmat, 
    const CBufSpec& rps,
@@ -74,6 +84,5 @@ void OpIndexer::indexSequenceThrust(
     tphosel.download<unsigned char>( m_phosel );  // cudaMemcpyDeviceToHost
     trecsel.download<unsigned char>( m_recsel );
 }
-
 
 
