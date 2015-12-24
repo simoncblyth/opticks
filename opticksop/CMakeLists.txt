@@ -72,13 +72,18 @@ set(LIBRARIES
 )
 
 
-add_library( ${name}  SHARED
-    OpIndexer.cc
+
+
+CUDA_ADD_LIBRARY( ${name}
     OpIndexerApp.cc
+    OpIndexer.cc
+    OpIndexer_.cu
+
+    OPTIONS -gencode=arch=compute_30,code=sm_30
 )
 
-
 target_link_libraries( ${name} ${LIBRARIES} )
+
 
 SET(hdrs 
     OpIndexer.hh
@@ -86,6 +91,7 @@ SET(hdrs
 )
 
 install(TARGETS ${name}  DESTINATION lib)
+
 install(FILES ${hdrs}    DESTINATION include)
 
 add_subdirectory(tests)

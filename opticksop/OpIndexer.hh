@@ -76,8 +76,8 @@ class OpIndexer {
       void indexSequenceGLThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose );
 
       void indexSequenceThrust(
-           const TSparse<unsigned long long>& seqhis, 
-           const TSparse<unsigned long long>& seqmat, 
+           TSparse<unsigned long long>& seqhis, 
+           TSparse<unsigned long long>& seqmat, 
            const CBufSpec& rps,
            const CBufSpec& rrs,
            bool verbose 

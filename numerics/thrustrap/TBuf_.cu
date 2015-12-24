@@ -17,7 +17,16 @@ template <typename T>
 void TBuf::download(NPY<T>* npy) const 
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
-    assert(numBytes == getNumBytes());
+
+    unsigned int numBytes2 = getNumBytes();
+
+    if(numBytes != numBytes2)
+        std::cout << "TBuf::download FATAL numBytes mismatch "
+                  << " numBytes " << numBytes 
+                  << " numBytes2 " << numBytes2
+                  << std::endl ;  
+
+    assert(numBytes == numBytes2);
     void* src = getDevicePtr();
     void* dst = npy->zero();
     cudaMemcpy( dst, src, numBytes, cudaMemcpyDeviceToHost );
