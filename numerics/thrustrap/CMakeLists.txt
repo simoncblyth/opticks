@@ -51,6 +51,7 @@ CUDA_ADD_LIBRARY( ${name}
        TBuf_.cu
        TBufPair_.cu
        TSparse_.cu
+       TUtil_.cu
        OPTIONS -gencode=arch=compute_30,code=sm_30
 )
  
@@ -61,6 +62,7 @@ SET(hdrs
   TBuf.hh
   TBufPair.hh
   TSparse.hh
+  TUtil.hh
   strided_range.h 
   iexpand.h 
 )

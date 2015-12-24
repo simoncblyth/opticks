@@ -22,4 +22,6 @@ struct CBufSpec
 
 }; 
 
+// size expected to be num_bytes/sizeof(T)
+
 

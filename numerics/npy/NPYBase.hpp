@@ -34,7 +34,7 @@ class NPYBase {
        std::string  getShapeString(unsigned int ifr=0);
        unsigned int getShape(unsigned int dim);
        unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
-       unsigned int getNumValues(unsigned int from_dim=1);
+       unsigned int getNumValues(unsigned int from_dim=0);
    public:
        // depending on sizeoftype
        Type_t        getType();

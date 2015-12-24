@@ -74,6 +74,7 @@ set(LIBRARIES
 
 add_library( ${name}  SHARED
     OpIndexer.cc
+    OpIndexerApp.cc
 )
 
 
@@ -81,10 +82,11 @@ target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
     OpIndexer.hh
+    OpIndexerApp.hh
 )
 
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${hdrs}    DESTINATION include)
 
-#add_subdirectory(tests)
+add_subdirectory(tests)
 

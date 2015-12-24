@@ -479,21 +479,35 @@ void NumpyEvt::dumpPhotonData(NPY<float>* photons)
     }  
 }
 
+
+
+void NumpyEvt::Summary(const char* msg)
+{
+    LOG(info) << description(msg) ; 
+}
+
 std::string NumpyEvt::description(const char* msg)
 {
     std::stringstream ss ; 
-    ss << msg << " " ;
-    if(m_genstep_data)  ss << m_genstep_data->description("m_genstep_data") ;
-    if(m_photon_data)   ss << m_photon_data->description("m_photon_data") ;
+    ss << msg << " " 
+       << " typ: " << m_typ 
+       << " tag: " << m_tag 
+       << " det: " << m_det 
+       << " cat: " << m_cat 
+       << " udet: " << getUDet()
+       << " num_photons: " <<  m_num_photons
+       ;
+
+    //if(m_genstep_data)  ss << m_genstep_data->description("m_genstep_data") ;
+    //if(m_photon_data)   ss << m_photon_data->description("m_photon_data") ;
+
     return ss.str();
 }
 
 
-
 void NumpyEvt::save(bool verbose)
 {
-    const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
-
+    const char* udet = getUDet();
     LOG(info) << "NumpyEvt::save"
               << " typ: " << m_typ
               << " tag: " << m_tag

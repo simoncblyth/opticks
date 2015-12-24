@@ -17,6 +17,10 @@
 #include "TBuf.hh"
 #include "TSparse.hh"
 
+// thrust 
+#include <thrust/device_vector.h>
+
+
 // optixrap-
 #include "OBuf.hh"
 
@@ -39,29 +43,70 @@ void OpIndexer::updateEvt()
     m_recsel = m_evt->getRecselData();
     m_maxrec = m_evt->getMaxRec(); 
     m_sequence = m_evt->getSequenceData();
+
+    setNumPhotons(m_evt->getNumPhotons());
 }
+
+
+void OpIndexer::setNumPhotons(unsigned int num_photons)
+{
+    unsigned int num_photons = m_evt->getNumPhotons();
+    assert(num_photons == m_sequence->getShape(0));
+    m_num_photons = num_photons ; 
+}
+
 
 void OpIndexer::indexSequence()
 {
     if(!m_evt) return ; 
 
     updateEvt();
+
     if(m_seq)
     {
-        indexSequenceOptiXThrust();
+        // used by standard indexing from ggv- ie with OptiX OpenGL and Thrust all in play 
+        indexSequenceOptiXGLThrust();
     }
     else
     {
-        indexSequenceGLThrust();
+        // used by the opop- indexer with just Thrust in play 
+        indexSequenceThrust();
     }
 }
 
-void OpIndexer::indexSequenceOptiXThrust()
+
+void OpIndexer::indexSequenceThrust()
 {
-    LOG(info) << "OpIndexer::indexSequenceOptiXThrust" ; 
+    LOG(info) << "OpIndexer::indexSequenceThrust" ; 
+
+    NPY<unsigned long long>* ph = m_evt->getSequenceData(); 
+
+    thrust::device_vector<unsigned long long> dph(ph->begin(),ph->end());
+
+    CBufSpec cph = make_bufspec<unsigned long long>(dph); 
+
+    TBuf tph("tph", cph);
+
+    tph.dump<unsigned long long>("tph dump", 2, 0, 10 );  
+    
+    CBufSlice phh = tph.slice(2,0) ; // stride, begin  
+    CBufSlice phm = tph.slice(2,1) ;
+
+    indexSequenceThrust(phh, phm, true);
+}
+
+
+
+
+
+
+
+void OpIndexer::indexSequenceOptiXGLThrust()
+{
+    LOG(info) << "OpIndexer::indexSequenceOptiXGLThrust" ; 
     CBufSlice seqh = m_seq->slice(2,0) ;  // stride, begin
     CBufSlice seqm = m_seq->slice(2,1) ;
-    indexSequence(seqh, seqm, true);
+    indexSequenceGLThrust(seqh, seqm, true);
 }
 
 void OpIndexer::indexSequenceGLThrust()
@@ -72,7 +117,8 @@ void OpIndexer::indexSequenceGLThrust()
 
     CResource rsequence( m_sequence->getBufferId(), CResource::W );
     {
-        TBuf tsequence("tsequence", rsequence.mapGLToCUDA<unsigned long long>() );
+        CBufSpec seqbuf = rsequence.mapGLToCUDA<unsigned long long>() ;
+        TBuf tsequence("tsequence", seqbuf );
         CBufSlice seqh = tsequence.slice(2,0) ; // stride, begin  
         CBufSlice seqm = tsequence.slice(2,1) ;
         indexSequence(seqh, seqm, true);
@@ -80,48 +126,85 @@ void OpIndexer::indexSequenceGLThrust()
     rsequence.unmapGLToCUDA(); 
 }
 
-void OpIndexer::indexSequence(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose )
+
+void OpIndexer::indexSequenceThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose )
 {
     m_timer->start();
     TSparse<unsigned long long> seqhis("History_Sequence", seqh );
     TSparse<unsigned long long> seqmat("Material_Sequence", seqm ); 
     m_evt->setHistorySeq(seqhis.getIndex());
-    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated the the make_lookup below
+    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
+
+    thrust::device_vector<unsigned char> dps(m_num_photons);
+    thrust::device_vector<unsigned char> drs(m_num_photons*m_maxrec);
+
+    CBufSpec rps = make_bufspec<unsigned char>(dps); 
+    CBufSpec rrs = make_bufspec<unsigned char>(drs) ;
+
+    indexSequenceThrust(seqhis, seqmat, rps, rrs, verbose);
+}
+
+
+void OpIndexer::indexSequenceThrust(
+   const TSparse<unsigned long long>& seqhis, 
+   const TSparse<unsigned long long>& seqmat, 
+   const CBufSpec& rps,
+   const CBufSpec& rrs,
+   bool verbose 
+)
+{
+    TBuf tphosel("tphosel", rps );
+    tphosel.zero();
+
+    TBuf trecsel("trecsel", rrs );
+
+    if(verbose) dump(tphosel, trecsel);
+
+    seqhis.make_lookup(); 
+
+    // phosel buffer is shaped (num_photons, 1, 4)
+    CBufSlice tp_his = tphosel.slice(4,0) ; // stride, begin  
+    CBufSlice tp_mat = tphosel.slice(4,1) ; 
+  
+    seqhis.apply_lookup<unsigned char>(tp_his); 
+    if(verbose) dumpHis(tphosel, seqhis) ;
+
+    seqmat.make_lookup();
+    seqmat.apply_lookup<unsigned char>(tp_mat);
+    if(verbose) dumpMat(tphosel, seqmat) ;
+
+    tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), m_maxrec );  // other, stride, begin, end, repeats
+
+    tphosel.download<unsigned char>( m_phosel );  // cudaMemcpyDeviceToHost
+    trecsel.download<unsigned char>( m_recsel );
+}
+
+
+
+void OpIndexer::indexSequenceGLThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose )
+{
+    m_timer->start();
+
+    TSparse<unsigned long long> seqhis("History_Sequence", seqh );
+    TSparse<unsigned long long> seqmat("Material_Sequence", seqm ); 
+    m_evt->setHistorySeq(seqhis.getIndex());
+    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
     CResource rphosel( m_phosel->getBufferId(), CResource::W );
     CResource rrecsel( m_recsel->getBufferId(), CResource::W );
-    {
-        TBuf tphosel("tphosel", rphosel.mapGLToCUDA<unsigned char>() );
-        tphosel.zero();
+    CBufSpec rps = rphosel.mapGLToCUDA<unsigned char>() 
+    CBufSpec rrs = rrecsel.mapGLToCUDA<unsigned char>() 
+   
+    indexSequenceThrust(seqhis, seqmat, rps, rrs, verbose);
 
-        TBuf trecsel("trecsel", rrecsel.mapGLToCUDA<unsigned char>() );
-        if(verbose) dump(tphosel, trecsel);
-
-        seqhis.make_lookup(); 
-
-        // phosel buffer is shaped (num_photons, 1, 4)
-        CBufSlice tp_his = tphosel.slice(4,0) ; // stride, begin  
-        CBufSlice tp_mat = tphosel.slice(4,1) ; 
-      
-        seqhis.apply_lookup<unsigned char>(tp_his); 
-        if(verbose) dumpHis(tphosel, seqhis) ;
-
-        seqmat.make_lookup();
-        seqmat.apply_lookup<unsigned char>(tp_mat);
-        if(verbose) dumpMat(tphosel, seqmat) ;
-
-        tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), m_maxrec );  // other, stride, begin, end, repeats
-
-        tphosel.download<unsigned char>( m_phosel );  // cudaMemcpyDeviceToHost
-        trecsel.download<unsigned char>( m_recsel );
-    }
     rphosel.unmapGLToCUDA(); 
     rrecsel.unmapGLToCUDA(); 
 
     m_timer->stop();
 
-    (*m_timer)("indexSequence"); 
+    (*m_timer)("indexSequenceGLThrust"); 
 }
+
 
 
 void OpIndexer::dumpHis(const TBuf& tphosel, const TSparse<unsigned long long>& seqhis)

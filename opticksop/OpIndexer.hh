@@ -21,9 +21,11 @@
 // thrustrap-/TSparse
 //       GPU Thrust sparse histogramming 
 //
-// cudawrap-/CBufSpec   lightweight struct holding device pointer
+// cudawrap-/CBufSpec   
+//       lightweight struct holding device pointer
 //
-// cudawrap-/CBufSlice  lightweight struct holding device pointer and slice addressing begin/end
+// cudawrap-/CBufSlice  
+//       lightweight struct holding device pointer and slice addressing begin/end
 //
 // cudawrap-/CResource  
 //       OpenGL buffer made available as a CUDA Resource, 
@@ -48,6 +50,7 @@ class OBuf ;
 class TBuf ; 
 class NumpyEvt ; 
 struct CBufSlice ; 
+struct CBufSpec ; 
 template <typename T> class NPY ;
 template <typename T> class TSparse ;
 
@@ -58,14 +61,28 @@ class OpIndexer {
       OpIndexer();
       void setEvt(NumpyEvt* evt);
       void setSeq(OBuf* seq);
+      void setNumPhotons(unsigned int num_photons);
    public:
       void indexSequence();
    private:
       void init();
       void updateEvt();
+
+      void indexSequenceThrust();
+      void indexSequenceThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose );
+
+      void indexSequenceOptiXGLThrust();
       void indexSequenceGLThrust();
-      void indexSequenceOptiXThrust();
-      void indexSequence(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose );
+      void indexSequenceGLThrust(const CBufSlice& seqh, const CBufSlice& seqm, bool verbose );
+
+      void indexSequenceThrust(
+           const TSparse<unsigned long long>& seqhis, 
+           const TSparse<unsigned long long>& seqmat, 
+           const CBufSpec& rps,
+           const CBufSpec& rrs,
+           bool verbose 
+      );
+
       void dump(const TBuf& tphosel, const TBuf& trecsel);
       void dumpHis(const TBuf& tphosel, const TSparse<unsigned long long>& seqhis) ;
       void dumpMat(const TBuf& tphosel, const TSparse<unsigned long long>& seqhis) ;
@@ -83,6 +100,7 @@ class OpIndexer {
       NPY<unsigned char>*      m_recsel ;
       NPY<unsigned char>*      m_phosel ;
       unsigned int             m_maxrec ; 
+      unsigned int             m_num_photons ; 
 
 };
 
@@ -93,7 +111,8 @@ inline OpIndexer::OpIndexer()
      m_sequence(NULL),
      m_recsel(NULL),
      m_phosel(NULL),
-     m_maxrec(0)
+     m_maxrec(0),
+     m_num_photons(0)
 {
    init(); 
 }

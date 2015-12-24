@@ -35,6 +35,12 @@ void CfG4::configure(int argc, char** argv)
 {
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
+    //
+    // TODO: consolidate these, 
+    //       it feels wrong that need GCache to setup logging, 
+    //       actually you dont just slip down a level to use NLog
+    //
+
     assert( m_cfg->hasOpt("test") && m_opticks->getSourceCode() == TORCH && "cfg4 only supports source type TORCH with test geometries" );
 
     std::string testconfig = m_cfg->getTestConfig();

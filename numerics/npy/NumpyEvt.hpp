@@ -111,6 +111,7 @@ class NumpyEvt {
        unsigned int getMaxRec();  // per-photon
 
    public:
+       void Summary(const char* msg="NumpyEvt::Summary");
        std::string  description(const char* msg);
        void         dumpPhotonData();
        static void  dumpPhotonData(NPY<float>* photon_data);
@@ -119,6 +120,7 @@ class NumpyEvt {
        const char*  getTag();
        const char*  getDet();
        const char*  getCat();
+       const char*  getUDet();
    private:
        const char*           m_typ ; 
        const char*           m_tag ; 
@@ -398,6 +400,12 @@ inline const char* NumpyEvt::getCat()
 {
     return m_cat ; 
 }
+inline const char* NumpyEvt::getUDet()
+{
+    return strlen(m_cat) > 0 ? m_cat : m_det ; 
+}
+
+
 
 
 inline void NumpyEvt::setSpaceDomain(const glm::vec4& space_domain)

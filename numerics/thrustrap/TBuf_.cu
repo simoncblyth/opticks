@@ -1,4 +1,5 @@
 #include "TBuf.hh"
+#include "TUtil.hh"
 
 #include "strided_range.h"
 #include "strided_repeated_range.h"
@@ -10,6 +11,7 @@
 #include <iostream>
 
 #include "NPY.hpp"
+
 
 template <typename T>
 void TBuf::download(NPY<T>* npy) const 
@@ -117,9 +119,17 @@ void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsi
 
 
 
+template void TBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::dump<unsigned long long>(const char*, unsigned int, unsigned int, unsigned int) const ;
+
 template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int) const ;
+
 template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int) const ;
 template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const ;
-template void TBuf::download<unsigned char>(NPY<unsigned char>* npy) const ;
+
+template void TBuf::download<unsigned char>(NPY<unsigned char>*) const ;
+
+
+
 

@@ -105,6 +105,10 @@ class NPY : public NPYBase {
        T maxdiff(NPY<T>* other);
    public:
        T* getValues();
+       //unsigned int getNumValues(); tis in base class
+       T* begin();
+       T* end();
+
        T* getValues(unsigned int i, unsigned int j=0);
        void* getBytes();
        void* getPointer();   // aping GBuffer for easier migration
@@ -198,6 +202,31 @@ inline T* NPY<T>::getValues()
 {
     return m_data.data();
 }
+
+
+template <typename T> 
+inline T* NPY<T>::begin()
+{
+    return m_data.data();
+}
+
+template <typename T> 
+inline T* NPY<T>::end()
+{
+    return m_data.data() + getNumValues(0) ;
+}
+
+
+
+
+
+
+//template <typename T> 
+//inline unsigned int NPY<T>::getNumValues()
+//{
+//    return m_data.size();
+//}
+
 
 template <typename T> 
 inline T* NPY<T>::getValues(unsigned int i, unsigned int j)

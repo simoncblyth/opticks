@@ -7,6 +7,10 @@ opop-usage(){ cat << EOU
 Opticks Operations
 ====================
 
+::
+
+   opop-;opop-index --dbg
+
 
 EOU
 }
@@ -14,6 +18,7 @@ EOU
 opop-sdir(){ echo $(env-home)/opticksop ; }
 opop-idir(){ echo $(local-base)/env/opticksop ; }
 opop-bdir(){ echo $(opop-idir).build ; }
+opop-bin(){  echo $(opop-idir)/bin/${1:-OpIndexerTest} ; }
 
 opop-scd(){  cd $(opop-sdir); }
 opop-cd(){  cd $(opop-sdir); }
@@ -26,7 +31,6 @@ opop-wipe(){
    local bdir=$(opop-bdir)
    rm -rf $bdir
 }
-
 
 opop-env(){
     elocal-
@@ -80,5 +84,16 @@ opop--()
     opop-install
 }
 
+opop-index(){
 
+    local cmdline=$*
+    local dbg=0
+    if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
+       dbg=1
+    fi
+    case $dbg in  
+       0) $(opop-bin) --tag -5 --cat rainbow   ;;
+       1) lldb $(opop-bin) -- --tag -5 --cat rainbow   ;;
+    esac
+}
 
