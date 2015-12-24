@@ -11,6 +11,12 @@ Opticks Operations
 
    opop-;opop-index --dbg
 
+   opop-;opop-index -5 rainbow
+   opop-;opop-index -6 rainbow
+
+   opop-;opop-index -1 reflect
+   opop-;opop-index -2 reflect
+
 
 EOU
 }
@@ -85,6 +91,18 @@ opop--()
 }
 
 opop-index(){
+    local msg="=== $FUNCNAME : "
+    local tag=${1:--5}
+    local cat=${2:-rainbow}
+    local typ=${3:-torch}
+
+    local shdir=$(opop-index-path sh $tag $cat $typ)
+    if [ -d "$shdir" ]; then 
+        echo $msg index exists already tag $tag cat $cat typ $typ shdir $shdir
+        return 
+    else
+        echo $msg index does not exist for tag $tag cat $cat typ $typ shdir $shdir
+    fi
 
     local cmdline=$*
     local dbg=0
@@ -92,23 +110,35 @@ opop-index(){
        dbg=1
     fi
     case $dbg in  
-       0) $(opop-bin) --tag -5 --cat rainbow   ;;
-       1) lldb $(opop-bin) -- --tag -5 --cat rainbow   ;;
+       0) $(opop-bin) --tag $tag --cat $cat   ;;
+       1) lldb $(opop-bin) -- --tag $tag --cat $cat   ;;
     esac
 }
 
+
+opop-index-path(){
+    local cmp=${1:-ps}
+    local tag=${2:-5}
+    local cat=${3:-rainbow}
+    local typ=${4:-torch}
+    local base=$LOCAL_BASE/env/opticks
+    case $cmp in 
+        ps|rs) echo $base/$cat/$cmp$typ/$tag.npy  ;;
+        sh|sm) echo $base/$cat/$cmp$typ/$tag/     ;;
+    esac 
+}
+
 opop-index-op(){
-   local base=/usr/local/env/opticks
    local tag=-5
    local cat=rainbow
    local typ=torch
-   local comps="ps rs sh sm"
-   local comp
-   for comp in $comps ; do
-       case $comp in 
-          ps|rs) echo $base/$cat/$comp$typ/$tag.npy  ;;
-          sh|sm) echo $base/$cat/$comp$typ/$tag/     ;;
-       esac 
+   local cmps="ps rs sh sm"
+   local path 
+   local cmp
+   for cmp in $cmps ; do
+       #echo $cmp $tag $cat $typ
+       path=$(opop-index-path $cmp $tag $cat $typ)  
+       echo $path
    done
 }
 
