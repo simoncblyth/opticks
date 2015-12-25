@@ -280,7 +280,25 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
         m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
         m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
         m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-        m_photons->setQuad(m_record_id, 3, 0, 0,0,0,0 );     // TODO: these flags
+
+        unsigned int ux = m_slot ;  // untruncated 
+        unsigned int uy = 0u ; 
+        unsigned int uz = 0u ; 
+        unsigned int uw = 0u ; 
+
+        m_photons->setUInt(m_record_id, 3, 0, 0, ux );
+        m_photons->setUInt(m_record_id, 3, 0, 1, uy );
+        m_photons->setUInt(m_record_id, 3, 0, 2, uz );
+        m_photons->setUInt(m_record_id, 3, 0, 3, uw );
+
+
+        // generate.cu
+        //
+        //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
+        //  (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
+        //  (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
+        //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
+        //
 
         unsigned long long* history = m_history->getValues() + 2*m_record_id ;
         *(history+0) = m_seqhis ; 

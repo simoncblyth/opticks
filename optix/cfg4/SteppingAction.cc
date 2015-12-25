@@ -53,6 +53,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     G4int photon_id = track->GetTrackID() - 1;
     G4int step_id  = track->GetCurrentStepNumber() - 1 ;
 
+    //track->SetTrackStatus(fStopAndKill);
+
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
 
     m_recorder->setEventId(eid);

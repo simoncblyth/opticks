@@ -6,11 +6,13 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 
 from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
 from env.numerics.npy.geometry import Boundary   
+from env.numerics.npy.droplet import Droplet
 from env.numerics.npy.fresnel import fresnel_factor
 
 X,Y,Z,W = 0,1,2,3
@@ -357,14 +359,20 @@ class Scatter(object):
 
 
 
-def scatter_plot_all(ax, p_evt, s_evt, axis=X):
+def scatter_plot_all(ax, a_evt, b_evt, axis=X):
     db = np.arange(0,360,1)
-    for i,evt in enumerate([p_evt, s_evt]):
+    cnt = {}
+    bns = {}
+    ptc = {}
+    for i,evt in enumerate([a_evt, b_evt]):
         dv = evt.a_deviation_angle(axis=axis)/deg
         ax.set_xlim(0,360)
         ax.set_ylim(1,1e5)
-        cnt, bns, ptc = ax.hist(dv, bins=db,  log=True, histtype='step', label=evt.label)
+        cnt[i], bns[i], ptc[i] = ax.hist(dv, bins=db,  log=True, histtype='step', label=evt.label)
     pass
+    assert np.all( bns[0] == bns[1] )
+    return cnt, bns[0]
+
 
 
 def _scatter_plot_one(ax, sc, bins, xlim=None, ylim=None, log_=True):
@@ -531,6 +539,11 @@ if __name__ == '__main__':
 
     np.set_printoptions(precision=4, linewidth=200)
 
+
+    boundary = Boundary("Vacuum///MainH2OHale")
+    droplet = Droplet(boundary)
+
+
     plt.ion()
     plt.close()
 
@@ -560,29 +573,72 @@ if 1:
 
 
 
-if 0:
+if 1:
     fig = plt.figure()
     fig.suptitle("Deviation angles without selection")
-    ax = fig.add_subplot(1,1,1)
-    scatter_plot_all(ax, evt.p, evt.s, axis=X)
+
+
+    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+
+    ax = fig.add_subplot(gs[0])
+    #ax = fig.add_subplot(2,1,1)
+
+    c, bns = scatter_plot_all(ax, evt_op.s, evt_g4.s, axis=X)
+    droplet.bow_angle_rectangles()
+
+
+    xlim = ax.get_xlim()
+
+
+    # ChiSquared or KS
+    # http://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm 
+    # https://en.wikipedia.org/wiki/Propagation_of_uncertainty
+    # http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
+    # http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
+
+    #ax = fig.add_subplot(2,1,2)
+    ax = fig.add_subplot(gs[1])
+
+    a,b = c[0],c[1]
+
+    c2 = np.power(a-b,2)/(a+b)
+    c2p = c2.sum()/len(a)
+
+    #y = d
+    #ey = d*ed 
+    #ax.errorbar( bns[:-1], y, yerr=ey, fmt='o')
+    
+    plt.plot( bns[:-1], c2, drawstyle='steps', label="chi2/ndf %4.2f" % c2p )
+    ax.set_xlim(xlim) 
+    ax.legend()
+
+    #ax.set_ylim([-3,3]) 
+
+
+    droplet.bow_angle_rectangles()
     #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
 
 
-if 1:
+if 0:
     fig = plt.figure()
     fig.suptitle("Compare Op/G4 scatter angle  a) P b) S")
     ylim = [1e0,1e5]
     ax = fig.add_subplot(2,1,1)
     scatter_plot_all(ax, evt_op.p, evt_g4.p, axis=X)
     ax.set_ylim(ylim)
+    droplet.bow_angle_rectangles()
+
     ax.legend()
 
     ax = fig.add_subplot(2,1,2)
     scatter_plot_all(ax, evt_op.s, evt_g4.s, axis=X)
     ax.set_ylim(ylim)
+    droplet.bow_angle_rectangles()
+
     ax.legend()
 
     pass
+
  
 
 if 0:

@@ -88,7 +88,10 @@ from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
 from env.numerics.npy.geometry import Boundary   
 from env.numerics.npy.fresnel import fresnel_factor
 from env.numerics.npy.cie  import CIE
+from env.numerics.npy.droplet  import Droplet
 deg = np.pi/180.
+
+   
 
 
 class XRainbow(object):
@@ -107,7 +110,6 @@ class XRainbow(object):
         n 
             refractive indices corresponding to wavelength array
 
-        
 
         There is symmetry about the ray at normal incidence so consider
         a half illuminated drop.
@@ -129,32 +131,13 @@ class XRainbow(object):
  
         """
         self.boundary = boundary
+        self.droplet = Droplet(boundary)
         self.w = w  
         self.k = k
 
         redblue = np.array([780., 380.])
-        self.dvr = self.deviation_angle(redblue, k)
-        self.dv = self.deviation_angle(w, k)
-
-
-    def deviation_angle(self, w, k=1): 
-        """
-        incident, refracted angles at the minimum deviation
-        NB these are arrays corresponding to all refractive indices of the 
-        wavelengths of the sample
-        """
-        n = self.boundary.imat.refractive_index(w) 
-
-        i = np.arccos( np.sqrt((n*n - 1.)/(k*(k+2.)) ))
-        r = np.arcsin( np.sin(i)/n )
-        dv = ( k*np.pi + 2*i - 2*r*(k+1) ) % (2*np.pi)
-
-        self.n = n
-        self.i = i
-        self.r = r
-
-        return dv 
-
+        self.dvr = self.droplet.deviation_angle(redblue, k)
+        self.dv = self.droplet.deviation_angle(w, k)
 
 
     def dbins(self, nb, window=[-0.5,0.5]):
