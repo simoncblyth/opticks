@@ -22,6 +22,9 @@ class OpticksCfg : public Cfg {
      std::string& getPrintIndex();
      std::string& getBuilder();
      std::string& getTraverser();
+
+     float        getEpsilon(); 
+     int          getRngMax(); 
      int          getBounceMax(); 
      int          getRecordMax(); 
      int          getTimeMax(); 
@@ -52,6 +55,9 @@ private:
      std::string m_pindex ;
      std::string m_builder ;
      std::string m_traverser  ;
+
+     float       m_epsilon ; 
+     int         m_rngmax ; 
      int         m_bouncemax ; 
      int         m_recordmax ; 
      int         m_timemax ; 
@@ -81,6 +87,8 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_pindex(""),
        m_builder(""),
        m_traverser(""),
+       m_epsilon(0.1),     
+       m_rngmax(3e6),     
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),
@@ -216,6 +224,12 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("stack",  boost::program_options::value<int>(&m_stack), stack );
 
+   char epsilon[128];
+   snprintf(epsilon,128, "OptiX propagate epsilon. Default %10.4f", m_epsilon);
+   m_desc.add_options()
+       ("epsilon",  boost::program_options::value<float>(&m_epsilon), epsilon );
+
+
    char g4ppe[256];
    snprintf(g4ppe,256, 
 "Number of torch photons to generate/propagate per event with Geant4 cfg4.sh,"
@@ -261,6 +275,14 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("traverser",      boost::program_options::value<std::string>(&m_traverser), "OptiX Accel structure traverser, CAUTION case sensitive ");
 
+   char rngmax[128];
+   snprintf(rngmax,128, 
+"Maximum number of photons that can be generated/propagated as limited by the number of pre-persisted curand streams. "
+"Value must match envvar CUDAWRAP_RNG_MAX and corresponding pre-cooked seeds, see cudawrap- for details. "
+"Default %d ", m_rngmax);
+
+   m_desc.add_options()
+       ("rngmax",  boost::program_options::value<int>(&m_rngmax), rngmax );
 
    char bouncemax[128];
    snprintf(bouncemax,128, 
@@ -419,10 +441,23 @@ inline std::string& OpticksCfg<Listener>::getTraverser()
 
 
 template <class Listener>
+inline float OpticksCfg<Listener>::getEpsilon()
+{
+    return m_epsilon ; 
+}
+
+template <class Listener>
+inline int OpticksCfg<Listener>::getRngMax()
+{
+    return m_rngmax ; 
+}
+
+template <class Listener>
 inline int OpticksCfg<Listener>::getBounceMax()
 {
     return m_bouncemax ; 
 }
+
 template <class Listener>
 inline int OpticksCfg<Listener>::getRecordMax()
 {

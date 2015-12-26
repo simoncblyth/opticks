@@ -35,6 +35,8 @@ class Recorder {
         void DumpSteps(const char* msg="Recorder::DumpSteps");
         void DumpStep(const G4Step* step);
    public:
+        NumpyEvt* getEvt();
+   public:
         void RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool last);
         void Clear();
         void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis);
@@ -114,9 +116,14 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
 }
 
 
+
+inline NumpyEvt* Recorder::getEvt()
+{
+    return m_evt ; 
+}
 inline unsigned int Recorder::getRecordMax()
 {
-   return m_record_max ; 
+    return m_record_max ; 
 }
 
 

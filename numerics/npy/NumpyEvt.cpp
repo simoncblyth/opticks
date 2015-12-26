@@ -59,6 +59,16 @@ void NumpyEvt::init()
 }
 
 
+unsigned int NumpyEvt::getBounceMax()
+{
+    return m_parameters->get<unsigned int>("BounceMax");
+}
+unsigned int NumpyEvt::getRngMax()
+{
+    return m_parameters->get<unsigned int>("RngMax");
+}
+
+
 ViewNPY* NumpyEvt::operator [](const char* spec)
 {
     std::vector<std::string> elem ; 

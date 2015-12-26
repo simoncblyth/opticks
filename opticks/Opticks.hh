@@ -67,17 +67,11 @@ class Opticks {
        const glm::ivec4& getSettings();
    public:
        void setSpaceDomain(const glm::vec4& pd);
-       void collectParameters();
-   public:
-       void setRngMax(unsigned int rng_max);
-       void setBounceMax(unsigned int bounce_max);
-       void setRecordMax(unsigned int record_max);
-   private:
-       void updateSettings();
    public:
        unsigned int getRngMax();
        unsigned int getBounceMax();
        unsigned int getRecordMax();
+       float        getEpsilon();
    public:
        unsigned int getSourceCode();
        std::string getSourceType();
@@ -99,19 +93,23 @@ class Opticks {
 
    private:
        glm::ivec4       m_settings ; 
-       unsigned int     m_rng_max ; 
-       unsigned int     m_bounce_max ; 
-       unsigned int     m_record_max ; 
+
+       //NB avoid duplication between here and OpticksCfg 
+       //unsigned int     m_rng_max ; 
+       //unsigned int     m_bounce_max ; 
+       //unsigned int     m_record_max ; 
+       //float            m_propagate_epsilon ;
 };
 
 inline Opticks::Opticks() 
    :
     m_cfg(NULL),
     m_parameters(NULL),
-    m_detector(NULL),
-    m_rng_max(0),
-    m_bounce_max(9),
-    m_record_max(10)
+    m_detector(NULL)
+    //m_rng_max(0),
+    //m_bounce_max(9),
+    //m_record_max(10),
+    //m_epsilon(0.1)
 {
     init();
 }
@@ -149,69 +147,10 @@ inline const glm::ivec4& Opticks::getSettings()
 }
 
 
-
-inline void Opticks::updateSettings()
-{
-    m_settings.x = m_bounce_max ;   
-    m_settings.y = m_rng_max ;   
-    m_settings.z = 0 ;   
-    m_settings.w = m_record_max ;   
-}
-
-
-
-inline void Opticks::setRngMax(unsigned int rng_max)
-{
-// default of 0 disables Rng 
-// otherwise maximum number of RNG streams, 
-// should be a little more than the max number of photons to generate/propagate eg 3e6
-    m_rng_max = rng_max ;
-    updateSettings();
-}
-inline unsigned int Opticks::getRngMax()
-{
-    return m_rng_max ;
-}
-
-inline void Opticks::setBounceMax(unsigned int bounce_max)
-{
-    m_bounce_max = bounce_max ;
-    updateSettings();
-}
-inline unsigned int Opticks::getBounceMax()
-{
-    return m_bounce_max ;
-}
-
-inline void Opticks::setRecordMax(unsigned int record_max)
-{
-    m_record_max = record_max ;
-    updateSettings();
-}
-inline unsigned int Opticks::getRecordMax()
-{
-    return m_record_max ;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 inline void Opticks::setDetector(const char* detector)
 {
     m_detector = detector ? strdup(detector) : NULL ; 
 }
-
 inline void Opticks::setSpaceDomain(const glm::vec4& sd)
 {
     m_space_domain.x = sd.x  ; 
@@ -219,7 +158,6 @@ inline void Opticks::setSpaceDomain(const glm::vec4& sd)
     m_space_domain.z = sd.z  ; 
     m_space_domain.w = sd.w  ; 
 }
-
 
 
 inline void Opticks::configureS(const char* name, std::vector<std::string> values)

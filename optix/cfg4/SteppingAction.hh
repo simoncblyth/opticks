@@ -16,7 +16,10 @@ class SteppingAction : public G4UserSteppingAction
     virtual void UserSteppingAction(const G4Step*);
 
   private:
-    Recorder*  m_recorder ; 
+    void init();
+  private:
+    Recorder*    m_recorder   ; 
+    unsigned int m_bounce_max ; 
 };
 
 inline SteppingAction::SteppingAction(Recorder* recorder)
@@ -24,6 +27,7 @@ inline SteppingAction::SteppingAction(Recorder* recorder)
    G4UserSteppingAction(),
    m_recorder(recorder)
 { 
+   init();
 }
 
 inline SteppingAction::~SteppingAction()

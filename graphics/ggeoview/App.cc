@@ -231,7 +231,8 @@ int App::config(int argc, char** argv)
     for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::config " << "[" << std::setw(2) << i << "]" << argv[i] ;
 
     m_cfg  = new Cfg("umbrella", false) ; 
-    m_fcfg = new OpticksCfg<Opticks>("opticks", m_opticks,false);
+    m_fcfg = m_opticks->getCfg();
+    //new OpticksCfg<Opticks>("opticks", m_opticks,false);
 
     m_cfg->add(m_fcfg);
 #ifdef NPYSERVER
@@ -855,11 +856,6 @@ void App::preparePropagator()
     m_opropagator->setTrivial(trivial);
     m_opropagator->setOverride(override);
 
-    int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1);   // TODO: avoid envvar 
-    assert(rng_max >= 1e6); 
-
-    m_opticks->setRngMax(rng_max);
-
     m_opropagator->initRng();
     m_opropagator->initEvent();
 
@@ -884,12 +880,9 @@ void App::propagate()
     TIMER("propagate"); 
 }
 
-
-
 void App::downloadEvt()
 {
     if(!m_evt) return ; 
-
 
     Rdr::download(m_evt);
 
@@ -900,8 +893,6 @@ void App::downloadEvt()
  
     TIMER("evtSave"); 
 }
-
-
 
 void App::indexSequence()
 {
@@ -926,12 +917,6 @@ void App::indexSequence()
     }
 
     TIMER("indexSequence"); 
-
-    // indexSequenceViaOpenGL 
-    //     updates seqhis and seqhis indices and recsel and phosel buffers
-    //     inside NumpyEvt 
-    //     providing fast category selection
-    //
 }
 
 
@@ -950,7 +935,6 @@ void App::indexPresentationPrep()
                       ; 
          return ;
     }
-
 
     GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
     GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
@@ -1275,6 +1259,4 @@ void App::cleanup()
         m_frame->exit();
     }
 }
-
-
 

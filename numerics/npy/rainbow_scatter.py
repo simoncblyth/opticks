@@ -581,11 +581,10 @@ if 1:
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
 
     ax = fig.add_subplot(gs[0])
-    #ax = fig.add_subplot(2,1,1)
 
     c, bns = scatter_plot_all(ax, evt_op.s, evt_g4.s, axis=X)
     droplet.bow_angle_rectangles()
-
+    ax.legend()
 
     xlim = ax.get_xlim()
 
@@ -596,7 +595,6 @@ if 1:
     # http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
     # http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
 
-    #ax = fig.add_subplot(2,1,2)
     ax = fig.add_subplot(gs[1])
 
     a,b = c[0],c[1]
@@ -612,7 +610,7 @@ if 1:
     ax.set_xlim(xlim) 
     ax.legend()
 
-    #ax.set_ylim([-3,3]) 
+    ax.set_ylim([0,10]) 
 
 
     droplet.bow_angle_rectangles()

@@ -26,6 +26,15 @@ std::string Parameters::getStringValue(const char* name)
 }
 
 
+template <typename T>
+T Parameters::get(const char* name)
+{
+    std::string value = getStringValue(name);
+    return boost::lexical_cast<T>(value);
+}
+
+
+
 void Parameters::load_(const char* path)
 {
     loadList<std::string, std::string>(m_parameters, path);
@@ -95,5 +104,16 @@ template void Parameters::add(const char* name, int value);
 template void Parameters::add(const char* name, unsigned int value);
 template void Parameters::add(const char* name, std::string value);
 template void Parameters::add(const char* name, float value);
+
+
+template int          Parameters::get(const char* name);
+template unsigned int Parameters::get(const char* name);
+template std::string  Parameters::get(const char* name);
+template float        Parameters::get(const char* name);
+
+
+
+
+
 
 

@@ -33,8 +33,7 @@ void OPropagator::init()
 {
     m_context = m_ocontext->getContext();
 
-    float pe = 0.1f ; 
-    m_context[ "propagate_epsilon"]->setFloat(pe);  // TODO: check impact of changing propagate_epsilon
+    m_context[ "propagate_epsilon"]->setFloat( m_opticks->getEpsilon() );  // TODO: check impact of changing propagate_epsilon
     m_context[ "bounce_max" ]->setUint( m_opticks->getBounceMax() );
     m_context[ "record_max" ]->setUint( m_opticks->getRecordMax() );
 

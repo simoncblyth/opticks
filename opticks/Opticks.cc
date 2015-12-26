@@ -2,6 +2,7 @@
 #include "OpticksCfg.hh"
 #include "OpticksPhoton.h"
 
+#include "stringutil.hpp"
 #include "Parameters.hpp"
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
@@ -37,6 +38,30 @@ float        Opticks::DOMAIN_LOW  = 60.f ;
 float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
 float        Opticks::DOMAIN_STEP = 20.f ; 
 unsigned int Opticks::DOMAIN_LENGTH = 39  ;
+
+
+
+
+
+unsigned int Opticks::getRngMax()
+{
+    return m_cfg->getRngMax(); 
+}
+unsigned int Opticks::getBounceMax()
+{
+    return m_cfg->getBounceMax();
+}
+unsigned int Opticks::getRecordMax()
+{
+    return m_cfg->getRecordMax() ;
+}
+float Opticks::getEpsilon()
+{
+    return m_cfg->getEpsilon()  ;
+}
+
+
+
 
 
 glm::vec4 Opticks::getDefaultDomainSpec()
@@ -102,6 +127,8 @@ void Opticks::init()
    m_time_domain.z = m_cfg->getAnimTimeMax() ;
    m_time_domain.w = 0.f  ;
 
+
+   // space domain is updated once geometry is loaded
    m_space_domain.x = 0.f ; 
    m_space_domain.y = 0.f ; 
    m_space_domain.z = 0.f ; 
@@ -109,16 +136,53 @@ void Opticks::init()
 
    m_wavelength_domain = getDefaultDomainSpec() ;  
 
-   m_bounce_max = m_cfg->getBounceMax() ;
-   m_record_max = m_cfg->getRecordMax() ; 
+   int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1); 
+   assert(rng_max == getRngMax()  && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
 }
 
-void Opticks::collectParameters()
+
+NumpyEvt* Opticks::makeEvt()
 {
-    m_parameters->add<unsigned int>("RngMax",    m_rng_max );
-    m_parameters->add<unsigned int>("BounceMax", m_bounce_max );
-    m_parameters->add<unsigned int>("RecordMax", m_record_max );
+    unsigned int code = getSourceCode();
+    std::string typ = SourceTypeLowercase(code); // cerenkov, scintillation, torch
+    std::string tag = m_cfg->getEventTag();
+
+    std::string det = m_detector ? m_detector : "" ;
+    std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
+
+    NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
+
+    evt->setMaxRec(m_cfg->getRecordMax());
+ 
+    // ctor args define the identity of the Evt, coming in from config
+    // other params are best keep in m_parameters where they get saved/loaded  
+    // with the evt 
+
+    Parameters* parameters = evt->getParameters();
+
+    unsigned int rng_max = getRngMax() ;
+    unsigned int bounce_max = getBounceMax() ;
+    unsigned int record_max = getRecordMax() ;
+
+    parameters->add<unsigned int>("RngMax",    rng_max );
+    parameters->add<unsigned int>("BounceMax", bounce_max );
+    parameters->add<unsigned int>("RecordMax", record_max );
+
+    assert( parameters->get<unsigned int>("RngMax") == rng_max );
+    assert( parameters->get<unsigned int>("BounceMax") == bounce_max );
+    assert( parameters->get<unsigned int>("RecordMax") == record_max );
+
+    // TODO: use these parameters from here, instead of from config again ?
+
+    m_settings.x = bounce_max ;   
+    m_settings.y = rng_max ;   
+    m_settings.z = 0 ;   
+    m_settings.w = record_max ;   
+
+    return evt ; 
 }
+
+
 
 unsigned int Opticks::getSourceCode()
 {
@@ -218,22 +282,6 @@ TorchStepNPY* Opticks::makeSimpleTorchStep()
     torchstep->setNumPhotonsPerG4Event(photons_per_g4event);
 
     return torchstep ; 
-}
-
-NumpyEvt* Opticks::makeEvt()
-{
-    unsigned int code = getSourceCode();
-    std::string typ = SourceTypeLowercase(code); // cerenkov, scintillation, torch
-    std::string tag = m_cfg->getEventTag();
-
-    std::string det = m_detector ? m_detector : "" ;
-    std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
-
-    NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
-
-    evt->setMaxRec(m_cfg->getRecordMax());
-
-    return evt ; 
 }
 
 

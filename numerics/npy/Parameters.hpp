@@ -16,10 +16,13 @@ class Parameters {
    public:
        Parameters();
 
-       template <typename T>
+       template <typename T> 
        void add(const char* name, T value);
 
        std::string getStringValue(const char* name);
+
+       template <typename T> 
+       T get(const char* name);
 
        void dump(const char* msg="Parameters::dump");
        void prepLines();

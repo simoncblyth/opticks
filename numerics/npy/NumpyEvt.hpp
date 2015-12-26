@@ -26,6 +26,10 @@ class NumpyEvt {
        bool isFlat();
        bool isNoLoad();
        bool isIndexed();
+   public:
+       // from parameters
+       unsigned int getBounceMax();
+       unsigned int getRngMax();
    private:
        void init();
    public:
@@ -133,7 +137,7 @@ class NumpyEvt {
 
    public:
        void Summary(const char* msg="NumpyEvt::Summary");
-       std::string  description(const char* msg);
+       std::string  description(const char* msg="NumpyEvt::description");
        void         dumpPhotonData();
        static void  dumpPhotonData(NPY<float>* photon_data);
 

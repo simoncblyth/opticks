@@ -45,6 +45,20 @@ G4OpBoundaryProcessStatus SteppingAction::GetOpBoundaryProcessStatus()
 }
 
 
+void SteppingAction::init()
+{
+    NumpyEvt* evt = m_recorder->getEvt();
+
+    m_bounce_max = evt->getBounceMax();
+
+    LOG(info) << "SteppingAction::init " 
+              << " evt " << evt->description() 
+              << " m_bounce_max  " << m_bounce_max 
+              ;
+}
+
+
+
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
@@ -52,8 +66,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     G4Track* track = step->GetTrack();
     G4int photon_id = track->GetTrackID() - 1;
     G4int step_id  = track->GetCurrentStepNumber() - 1 ;
-
-    //track->SetTrackStatus(fStopAndKill);
 
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
 
@@ -81,5 +93,11 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         m_recorder->setBoundaryStatus(GetOpBoundaryProcessStatus());
         m_recorder->RecordStep(step); 
     }
+
+    //if(step_id == m_bounce_max )
+    //    track->SetTrackStatus(fStopAndKill);
+
+
+
 }
 
