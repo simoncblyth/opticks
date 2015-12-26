@@ -1,5 +1,6 @@
 #include "Timer.hpp"
 #include "Times.hpp"
+#include "TimesTable.hpp"
 #include "limits.h"
 
 int main()
@@ -14,13 +15,12 @@ int main()
     t("after loop");
 
     t.stop();
-    t.dump();
 
 
-    Times* ts = t.getTimes();
-    ts->save("/tmp", "TimerTest.ini");
+    TimesTable* tt = t.makeTable();
+    tt->save("/tmp");
 
-
+    tt->dump();
 
 
     return 0 ; 

@@ -66,6 +66,7 @@
 
 #include "Timer.hpp"
 #include "Times.hpp"
+#include "TimesTable.hpp"
 #include "Parameters.hpp"
 #include "Report.hpp"
 #include "NSlice.hpp"
@@ -152,6 +153,15 @@ namespace fs = boost::filesystem;
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
+#define TIMER(s) \
+    { \
+       (*m_timer)((s)); \
+       if(m_evt)\
+       {\
+          Timer& t = *(m_evt->getTimer()) ;\
+          t((s)) ;\
+       }\
+    }
 
 
 bool App::hasOpt(const char* name)
@@ -237,12 +247,8 @@ int App::config(int argc, char** argv)
     m_cfg->commandline(argc, argv);
 
 
-    const std::string cmdline = m_cfg->getCommandLine(); 
-    m_timer->setCommandLine(cmdline);
-
     LOG(debug) << "App:config" 
               << " argv[0] " << argv[0] 
-              << " cmdline " << cmdline 
               ; 
 
     if(m_fcfg->hasError())
@@ -285,9 +291,12 @@ int App::config(int argc, char** argv)
     {
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
+        m_evt->getParameters()->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
     } 
 
     m_scene->setNumpyEvt(m_evt);
+
+    TIMER("configure");
 
 #ifdef NPYSERVER
     m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
@@ -319,7 +328,8 @@ void App::prepareScene()
 
     m_scene->setComposition(m_composition);     // defer until renderers are setup 
 
-    (*m_timer)("prepareScene"); 
+    TIMER("prepareScene");
+
     LOG(debug) << "App::prepareScene DONE ";
 } 
 
@@ -359,13 +369,16 @@ void App::loadGeometry()
 
     m_ggeo->loadGeometry();
 
-    (*m_timer)("loadGeometry"); 
+
+    TIMER("loadGeometry");
+
 
     if(test)
     {
         std::string testconf = m_fcfg->getTestConfig();
         m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
-        (*m_timer)("modifyGeometry"); 
+
+        TIMER("modifyGeometry"); 
     }
 
     checkGeometry();
@@ -545,48 +558,7 @@ void App::uploadGeometry()
 
     m_scene->setTarget(target, autocam);
  
-    (*m_timer)("uploadGeometry"); 
-}
-
-
-
-TorchStepNPY* App::makeCalibrationTorchStep(unsigned int imesh)
-{
-    assert(0);
-    // TODO: need way to get the volume indices of the instances for this to work.. 
-
-    assert(imesh > 0);
-    GMergedMesh* mmi = m_ggeo->getMergedMesh(imesh);
-    unsigned int nti = mmi->getNumTransforms();
-
-    // need to restrict to same AD instances, simply dividing by 2 doesnt work
-    // TODO: make targetted instance ranges or lists configurable 
-
-    LOG(info) << "App::makeCalibrationTorchStep " 
-              <<  " imesh " << imesh 
-              <<  " nti " << nti 
-              ; 
-
-    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, nti);
-    std::string config = m_fcfg->getTorchConfig() ;
-    if(!config.empty()) torchstep->configure(config.c_str());
-
-    torchstep->setNumPhotons(100);
-    torchstep->setRadius(100);
-
-
-    for(unsigned int i=0 ; i < nti ; i++)
-    {
-        torchstep->setFrame(i);  // this needs the volume index 
- 
-        m_ggeo->targetTorchStep(torchstep); // uses above set frame index to set the frame transform
-
-        torchstep->addStep(); 
-
-        // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
-    }
- 
-    return torchstep ; 
+    TIMER("uploadGeometry"); 
 }
 
 
@@ -600,17 +572,9 @@ void App::loadGenstep()
     }
 
     unsigned int code = m_opticks->getSourceCode();
-    std::string typ = Opticks::SourceTypeLowercase(code);
-    std::string tag = m_fcfg->getEventTag();
-    std::string cat = m_fcfg->getEventCat();
-    std::string det = m_cache->getDetector();
-
-    m_parameters->add<std::string>("Type", typ );
-    m_parameters->add<std::string>("Tag", tag );
-    m_parameters->add<std::string>("Cat", cat );
-    m_parameters->add<std::string>("Detector", det );
-
     Lookup* lookup = m_ggeo->getLookup();
+
+    //Parameters* parameters = m_evt->getParameters(); 
 
     NPY<float>* npy = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION )
@@ -626,7 +590,7 @@ void App::loadGenstep()
             m_g4step->setLookup(lookup);   
             m_g4step->applyLookup(0, 2);      
             // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
-            m_parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
+            //parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
         }
     }
     else if(code == TORCH)
@@ -652,21 +616,17 @@ void App::loadGenstep()
     }
     
 
-    (*m_timer)("loadGenstep"); 
-
-    // m_evt->setMaxRec(m_fcfg->getRecordMax()); 
-    // moved to Opticks::makeEvt  (must set this before setGenStepData to have effect)
-
-    bool geocenter  = m_fcfg->hasOpt("geocenter");
+    TIMER("loadGenstep"); 
 
 
     m_evt->setGenstepData(npy);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
 
-    (*m_timer)("hostEvtAllocation"); 
+    TIMER("setGenstepData"); 
 
 
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
+    bool geocenter  = m_fcfg->hasOpt("geocenter");
     glm::vec4 uuce = geocenter ? mmce : gsce ;
 
     //print(mmce, "loadGenstep mmce");
@@ -680,13 +640,7 @@ void App::loadGenstep()
         m_composition->setCenterExtent( uuce , autocam );
     }
 
-
     m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
-
-    m_parameters->add<unsigned int>("NumGensteps", m_evt->getNumGensteps());
-    m_parameters->add<unsigned int>("NumPhotons", m_evt->getNumPhotons());
-    m_parameters->add<unsigned int>("NumRecords", m_evt->getNumRecords());
-
 }
 
 
@@ -718,11 +672,10 @@ void App::uploadEvt()
 
     m_scene->upload();
 
-    (*m_timer)("uploadEvt"); 
-
+    TIMER("uploadEvt"); 
 
     if(!m_evt->isIndexed())
-        LOG(warning) << "App::uploadEvt event is not indexed, considerer indexing see: opop-;opop-index  " ;
+        LOG(warning) << "App::uploadEvt event is not indexed, consider indexing see: opop-;opop-index  " ;
 
     m_scene->uploadSelection();
 
@@ -744,7 +697,7 @@ void App::seedPhotonsFromGensteps()
     //  program cu/generate.cu to access the appropriate values from the genstep buffer
     //
     //  TODO: make this operational in COMPUTE as well as INTEROP modes without code duplication ?
-    //  TODO: this belongs in opop-
+    //  TODO: migrate into opop-
 
     LOG(info)<<"App::seedPhotonsFromGensteps" ;
 
@@ -775,7 +728,7 @@ void App::seedPhotonsFromGensteps()
     rgs.unmapGLToCUDA(); 
     rph.unmapGLToCUDA(); 
 
-    (*m_timer)("seedPhotonsFromGensteps"); 
+    TIMER("seedPhotonsFromGensteps"); 
 }
 
 void App::initRecords()
@@ -791,7 +744,7 @@ void App::initRecords()
 
     rec.unmapGLToCUDA(); 
 
-    (*m_timer)("initRecords"); 
+    TIMER("initRecords"); 
 }
 
 
@@ -820,6 +773,8 @@ void App::configureGeometry()
         if(i>0) mm->setFaceSlice(fslice);   
         if(i>0) mm->setPartSlice(pslice);   
     }
+
+    TIMER("configureGeometry"); 
 }
 
 void App::prepareOptiX()
@@ -878,10 +833,11 @@ void App::prepareOptiX()
 
     LOG(debug) << m_ogeo->description("App::prepareOptiX ogeo");
 
-    (*m_timer)("prepareOptiX"); 
     LOG(info) << "App::prepareOptiX DONE "; 
 
     m_ocontext->dump("App::prepareOptiX");
+
+    TIMER("prepareOptiX"); 
 }
 
 void App::preparePropagator()
@@ -907,8 +863,9 @@ void App::preparePropagator()
     m_opropagator->initRng();
     m_opropagator->initEvent();
 
-    (*m_timer)("preparePropagator"); 
     LOG(info) << "App::preparePropagator DONE "; 
+
+    TIMER("preparePropagator"); 
 }
 
 
@@ -924,7 +881,7 @@ void App::propagate()
 
     m_opropagator->propagate();     
 
-    (*m_timer)("propagate"); 
+    TIMER("propagate"); 
 }
 
 
@@ -933,23 +890,16 @@ void App::downloadEvt()
 {
     if(!m_evt) return ; 
 
+
     Rdr::download(m_evt);
 
-    (*m_timer)("evtDownload"); 
-
-    m_parameters->add<std::string>("photonData",   m_evt->getPhotonData()->getDigestString()  );
-    m_parameters->add<std::string>("recordData",   m_evt->getRecordData()->getDigestString()  );
-    m_parameters->add<std::string>("sequenceData", m_evt->getSequenceData()->getDigestString()  );
-    m_parameters->add<std::string>("auxData",      m_evt->getAuxData()->getDigestString()  );
-
-    (*m_timer)("checkDigests"); 
+    TIMER("evtDownload"); 
 
     m_evt->dumpDomains("App::downloadEvt dumpDomains");
     m_evt->save(true);
  
-    (*m_timer)("evtSave"); 
+    TIMER("evtSave"); 
 }
-
 
 
 
@@ -974,6 +924,8 @@ void App::indexSequence()
         indexer->setSeq(seq);
         indexer->indexSequenceViaOpenGL(); 
     }
+
+    TIMER("indexSequence"); 
 
     // indexSequenceViaOpenGL 
     //     updates seqhis and seqhis indices and recsel and phosel buffers
@@ -1021,7 +973,7 @@ void App::indexPresentationPrep()
     m_seqmat->setHandler(qmat);
     m_seqmat->formTable();
 
-    (*m_timer)("indexPresentationPrep"); 
+    TIMER("indexPresentationPrep"); 
 }
 
 
@@ -1061,8 +1013,7 @@ void App::indexBoundaries()
 
     m_boundaries->formTable();
 
-    (*m_timer)("indexBoundaries"); 
-
+    TIMER("indexBoundaries"); 
 
 
     NPY<float>* dpho = m_evt->getPhotonData();
@@ -1075,8 +1026,7 @@ void App::indexBoundaries()
         m_bnd->indexBoundaries();     
     } 
 
-    (*m_timer)("indexBoundariesOld"); 
-
+    TIMER("indexBoundariesOld"); 
 
 }
 
@@ -1109,7 +1059,7 @@ void App::indexEvt()
 
     indexBoundaries();
 
-    (*m_timer)("indexEvt"); 
+    TIMER("indexEvt"); 
 }
 
 
@@ -1158,37 +1108,18 @@ void App::indexEvtOld()
         m_evt->setPhotonsNPY(m_pho);
     }
 
-    (*m_timer)("indexEvtOld"); 
+    TIMER("indexEvtOld"); 
 }
 
 
 
 void App::makeReport()
 {
-    m_timer->stop();
+    if(!m_evt) return ; 
 
-    m_parameters->dump();
-    m_timer->dump();
-
-    Report r ; 
-    r.add(m_parameters->getLines()); 
-    r.add(m_timer->getLines()); 
-
-    const char* typ = m_parameters->getStringValue("Type").c_str();
-    const char* tag = m_parameters->getStringValue("Tag").c_str();
-    //const char* det = m_parameters->getStringValue("Detector").c_str();
-
-    Times* ts = m_timer->getTimes();
-    ts->save("$IDPATH/times", Times::name(typ, tag).c_str());
-
-    char rdir[128];
-    snprintf(rdir, 128, "$IDPATH/report/%s/%s", tag, typ ); 
-    r.save(rdir, Report::name(typ, tag).c_str());  // with timestamp prefix
-
-
+    m_evt->makeReport();
+    m_evt->saveReport();
 }
-
-
 
 
 void App::prepareGUI()
@@ -1210,9 +1141,19 @@ void App::prepareGUI()
     m_gui->init(m_window);
     m_gui->setupHelpText( m_cfg->getDescString() );
 
-    // TODO: use GItemIndex ? for stats to make it persistable
-    m_gui->setupStats(m_timer->getStats());
-    m_gui->setupParams(m_parameters->getLines());
+    TimesTable* tt = m_evt ? m_evt->getTimesTable() : NULL ; 
+    if(tt)
+    {
+        m_gui->setupStats(tt->getLines());
+    }
+    else
+    {
+        LOG(warning) << "App::prepareGUI NULL TimesTable " ; 
+    }  
+
+    Parameters* parameters = m_evt ? m_evt->getParameters() : m_parameters ; 
+
+    m_gui->setupParams(parameters->getLines());
 
 #endif
 

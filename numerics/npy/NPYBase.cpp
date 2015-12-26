@@ -1,6 +1,6 @@
 #include "NPYBase.hpp"
 
-#include "string.h"
+#include <cstring>
 #include <sstream>
 #include <iostream>
 #include <algorithm>
@@ -178,10 +178,21 @@ std::string NPYBase::path(const char* pfx, const char* gen, const char* tag, con
 std::string NPYBase::directory(const char* tfmt, const char* targ, const char* det)
 {
     char typ[64];
-    snprintf(typ, 64, tfmt, targ ); 
+    if(strchr (tfmt, '%' ) == NULL)
+    {
+        snprintf(typ, 64, "%s%s", tfmt, targ ); 
+    }
+    else
+    { 
+        snprintf(typ, 64, tfmt, targ ); 
+    }
     std::string dir = directory(typ, det);
     return dir ; 
 }
+
+
+
+
 
 std::string NPYBase::directory(const char* typ, const char* det)
 {

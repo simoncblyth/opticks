@@ -320,6 +320,17 @@ template void loadList<std::string, double>(std::vector<std::pair<std::string, d
 
 ///////////////  SS /////////////////
 
+template void saveList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* dir, const char* name) ;
+template void saveList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* path) ;
+
+template void loadList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* dir, const char* name) ;
+template void loadList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* path) ;
+
+
+
+
+///////////////  SS /////////////////
+
 
 template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
 template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;

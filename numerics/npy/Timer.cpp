@@ -1,16 +1,16 @@
 #include "Timer.hpp"
 
 #include "Times.hpp"
+#include "TimesTable.hpp"
+
 #include "timeutil.hpp"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
-
+const char* Timer::COLUMNS = "t_absolute,t_delta" ;
 const char* Timer::START = "START" ;
 const char* Timer::STOP  = "STOP" ;
 
@@ -27,25 +27,29 @@ void Timer::start()
 void Timer::stop()
 {
    (*this)(STOP);
-   prepTable();
 }
+
 
 void Timer::dump(const char* msg)
 {
-   std::cout << m_name << " " << msg << std::endl ; 
-   typedef std::vector<std::string>::const_iterator VSI ;  
-   for(VSI it=m_lines.begin() ; it != m_lines.end() ; it++) std::cout << *it << std::endl ;  
+    TimesTable* tt = makeTable();
+    tt->dump(msg);
 }
 
-void Timer::prepTable()
+
+TimesTable* Timer::loadTable(const char* dir)
 {
+    TimesTable* tt = new TimesTable(COLUMNS) ; 
+    tt->load(dir);
+    return tt ;
+}
+
+TimesTable* Timer::makeTable()
+{
+    TimesTable* tt = new TimesTable(COLUMNS) ; 
+
     double t0(0.);
     double tp(0.);
-
-    m_times = new Times ; 
-
-    m_lines.clear();
-    if(!m_commandline.empty()) m_lines.push_back(m_commandline);
 
     for(VSDI it=m_marks.begin() ; it != m_marks.end() ; it++)
     {
@@ -57,28 +61,17 @@ void Timer::prepTable()
 
         if(start) t0 = t ; 
         
-        double dp = t - tp ; 
         double d0 = t - t0 ; 
-
-        std::stringstream ss ;  
+        double dp = t - tp ; 
 
         if(!start && !stop)
         {
-           ss 
-             << std::fixed
-             << std::setw(15) << std::setprecision(3) << d0  
-             << std::setw(15) << std::setprecision(3) << dp   
-             << " : " 
-             << it->first   ;
-        
-           m_times->add(it->first.c_str(), dp);
-           m_lines.push_back(ss.str());
+           tt->getColumn(0)->add(it->first.c_str(), d0);
+           tt->getColumn(1)->add(it->first.c_str(), dp);
         }
-
         tp = t ; 
     }
+    return tt ;
 }
-
-
 
 

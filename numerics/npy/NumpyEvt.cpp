@@ -7,18 +7,21 @@
 #include "MultiViewNPY.hpp"
 #include "Parameters.hpp"
 #include "GLMFormat.hpp"
-#include "Timer.hpp"
 #include "Index.hpp"
+
 #include "stringutil.hpp"
+#include "timeutil.hpp"
+
+#include "Report.hpp"
+#include "Timer.hpp"
+#include "Times.hpp"
+#include "TimesTable.hpp"
 
 #include "limits.h"
 #include "assert.h"
 #include <sstream>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
+#include "NLog.hpp"
 
 const char* NumpyEvt::genstep = "genstep" ; 
 const char* NumpyEvt::photon  = "photon" ; 
@@ -28,12 +31,33 @@ const char* NumpyEvt::recsel  = "recsel" ;
 const char* NumpyEvt::sequence  = "sequence" ; 
 const char* NumpyEvt::aux = "aux" ; 
 
+const char* NumpyEvt::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
+
+std::string NumpyEvt::timestamp()
+{
+    char* tsl =  now(TIMEFORMAT, 20, 0);
+    std::string timestamp =  tsl ;
+    free((void*)tsl);
+    return timestamp ; 
+}
+
+
 void NumpyEvt::init()
 {
     m_timer = new Timer("NumpyEvt"); 
     m_timer->setVerbose(false);
+    m_timer->start();
+
     m_parameters = new Parameters ;
+    m_report = new Report ; 
+
+    m_parameters->add<std::string>("Type", m_typ );
+    m_parameters->add<std::string>("Tag", m_tag );
+    m_parameters->add<std::string>("Detector", m_det );
+    m_parameters->add<std::string>("Cat", m_cat );
+    m_parameters->add<std::string>("UDet", getUDet() );
 }
+
 
 ViewNPY* NumpyEvt::operator [](const char* spec)
 {
@@ -60,6 +84,7 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
 void NumpyEvt::setGenstepData(NPY<float>* genstep)
 {
     m_genstep_data = genstep  ;
+    m_parameters->add<std::string>("genstepDigest",   genstep->getDigestString()  );
 
     //                                                j k l sz   type        norm   iatt
     ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false);    // (x0, t0)                     2nd GenStep quad 
@@ -75,13 +100,14 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     m_num_gensteps = m_genstep_data->getShape(0) ;
     m_num_photons = m_genstep_data->getUSum(0,3);
 
-    m_timer->start();
 
     createHostBuffers();
     createHostIndexBuffers();
 
-    m_timer->stop();
-    //m_timer->dump();
+
+    m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
+    m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
+    m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
 }
 
 
@@ -505,8 +531,21 @@ std::string NumpyEvt::description(const char* msg)
 }
 
 
+void NumpyEvt::recordDigests()
+{
+    m_parameters->add<std::string>("photonData",   getPhotonData()->getDigestString()  );
+    m_parameters->add<std::string>("recordData",   getRecordData()->getDigestString()  );
+    m_parameters->add<std::string>("sequenceData", getSequenceData()->getDigestString()  );
+    m_parameters->add<std::string>("auxData",      getAuxData()->getDigestString()  );
+}
+
 void NumpyEvt::save(bool verbose)
 {
+    recordDigests();
+    makeReport();
+    saveReport();
+ 
+
     const char* udet = getUDet();
     LOG(info) << "NumpyEvt::save"
               << " typ: " << m_typ
@@ -545,6 +584,25 @@ void NumpyEvt::save(bool verbose)
 
 
     saveIndex(verbose);
+    saveParameters();
+
+}
+
+
+void NumpyEvt::saveParameters()
+{
+    std::string pm_dir = getSpeciesDir("pm");
+    std::string pm_name = m_tag ;
+    pm_name += ".json" ;
+    m_parameters->save(pm_dir.c_str(), pm_name.c_str());
+}
+
+void NumpyEvt::loadParameters()
+{
+    std::string pm_dir = getSpeciesDir("pm");
+    std::string pm_name = m_tag ;
+    pm_name += ".json" ;
+    m_parameters->load_(pm_dir.c_str(), pm_name.c_str());
 }
 
 
@@ -562,15 +620,72 @@ void NumpyEvt::saveIndex(bool verbose)
 
     if(m_seqhis)
     {
-        std::string sh_dir = NPYBase::directory("sh%s", m_typ, udet );
+        std::string sh_dir = getSpeciesDir("sh");
         m_seqhis->save(sh_dir.c_str(), m_tag);        
     }
 
     if(m_seqmat)
     {
-        std::string sm_dir = NPYBase::directory("sm%s", m_typ, udet );
+        std::string sm_dir = getSpeciesDir("sm");
         m_seqmat->save(sm_dir.c_str(), m_tag);        
     }
+}
+
+
+void NumpyEvt::makeReport()
+{
+    LOG(info) << "NumpyEvt::makeReport" ; 
+
+    m_parameters->dump();
+
+    m_timer->stop();
+
+    m_ttable = m_timer->makeTable();
+    m_ttable->dump("NumpyEvt::makeReport");
+
+    m_report->add(m_parameters->getLines());
+    m_report->add(m_ttable->getLines());
+}
+
+
+std::string NumpyEvt::getSpeciesDir(const char* species)
+{
+    const char* udet = getUDet();
+    std::string dir = NPYBase::directory(species, m_typ, udet );
+    return dir ; 
+}
+
+std::string NumpyEvt::getTagDir(const char* species, bool tstamp)
+{
+    std::stringstream ss ;
+    ss << getSpeciesDir(species) << "/" << m_tag  ;
+    if(tstamp) ss << "/" << timestamp() ;
+    return ss.str();
+}
+
+void NumpyEvt::saveReport()
+{
+    std::string mdd = getTagDir("md", false);  
+    saveReport(mdd.c_str());
+
+    std::string mdd_ts = getTagDir("md", true);  
+    saveReport(mdd_ts.c_str());
+}
+
+void NumpyEvt::saveReport(const char* dir)
+{
+    if(!m_ttable || !m_report) return ; 
+    LOG(info) << "NumpyEvt::saveReport to " << dir  ; 
+
+    m_ttable->save(dir);
+    m_report->save(dir);  
+}
+
+void NumpyEvt::loadReport()
+{
+    std::string mdd = getTagDir("md", false);  
+    m_ttable = Timer::loadTable(mdd.c_str());
+    m_report = Report::load(mdd.c_str());
 }
 
 
@@ -598,13 +713,17 @@ void NumpyEvt::load(bool verbose)
     setIDomain(idom);
     setFDomain(fdom);
 
+    loadReport();
+    loadParameters();
     readDomainsBuffer();
     dumpDomains("NumpyEvt::load dumpDomains");
 
-    std::string sh_dir = NPYBase::directory("sh%s", m_typ, udet );
+    //std::string sh_dir = NPYBase::directory("sh%s", m_typ, udet );
+    std::string sh_dir = getSpeciesDir("sh");
     m_seqhis = Index::load(sh_dir.c_str(), m_tag, "History_Sequence" );
  
-    std::string sm_dir = NPYBase::directory("sm%s", m_typ, udet );
+    //std::string sm_dir = NPYBase::directory("sm%s", m_typ, udet );
+    std::string sm_dir = getSpeciesDir("sm");
     m_seqmat = Index::load(sm_dir.c_str(), m_tag, "Material_Sequence");
 
 

@@ -4,6 +4,9 @@
 #include <iostream>
 #include <iomanip>
 
+#include "jsonutil.hpp"
+
+
 template <typename T>
 void Parameters::add(const char* name, T value)
 {
@@ -21,6 +24,40 @@ std::string Parameters::getStringValue(const char* name)
     }
     return value ;  
 }
+
+
+void Parameters::load_(const char* path)
+{
+    loadList<std::string, std::string>(m_parameters, path);
+}
+void Parameters::load_(const char* dir, const char* name)
+{
+    loadList<std::string, std::string>(m_parameters, dir, name);
+}
+Parameters* Parameters::load(const char* path)
+{
+    Parameters* p = new Parameters ;
+    p->load_(path); 
+    return p ; 
+}
+Parameters* Parameters::load(const char* dir, const char* name)
+{
+    Parameters* p = new Parameters ;
+    p->load_(dir, name); 
+    return p ; 
+}
+
+
+
+void Parameters::save(const char* path)
+{
+    saveList<std::string, std::string>(m_parameters, path);
+}
+void Parameters::save(const char* dir, const char* name)
+{
+    saveList<std::string, std::string>(m_parameters, dir, name);
+}
+
 
 
 

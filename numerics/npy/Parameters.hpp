@@ -7,6 +7,9 @@
 
 class Parameters {
    public:
+       static Parameters* load(const char* path);
+       static Parameters* load(const char* dir, const char* name);
+   public:
        typedef std::pair<std::string, std::string>   SS ; 
        typedef std::vector<SS>                      VSS ; 
        typedef std::vector<std::string>              VS ; 
@@ -22,8 +25,12 @@ class Parameters {
        void prepLines();
 
        std::vector<std::string>& getLines();
-
-
+   public:
+       void save(const char* path);
+       void save(const char* dir, const char* name);
+   public:
+       void load_(const char* path);
+       void load_(const char* dir, const char* name);
    private:
        VSS m_parameters ; 
        VS  m_lines ;  

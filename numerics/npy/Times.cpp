@@ -12,19 +12,29 @@
 // trace/debug/info/warning/error/fatal
 
 
-void Times::save(const char* dir, const char* name)
+void Times::save(const char* dir)
 {
-    saveList<std::string, double>( m_times, dir, name);
+    std::string nam = name();
+    std::string path = preparePath(dir, nam.c_str(), true);
+    LOG(info) << "Times::save to " << path ;
+    saveList<std::string, double>( m_times, dir, nam.c_str());
 }
-void Times::load_(const char* dir, const char* name)
+
+
+Times* Times::load(const char* label, const char* dir, const char* name)
+{
+    Times* t = new Times(label) ;
+    t->load(dir, name);
+    return t ; 
+}
+void Times::load(const char* dir, const char* name)
 {
     loadList<std::string, double>( m_times, dir, name);
 }
-Times* Times::load(const char* dir, const char* name)
+void Times::load(const char* dir)
 {
-    Times* t = new Times ; 
-    t->load_(dir, name);
-    return t ; 
+    std::string nam = name();
+    load(dir, nam.c_str()) ; 
 }
 
 void Times::dump(const char* msg)
@@ -37,6 +47,13 @@ void Times::dump(const char* msg)
           <<  std::setw(25) << it->second
           <<  std::endl ; 
    } 
+}
+
+std::string Times::name()
+{
+    std::stringstream ss ; 
+    ss << m_label << ".ini" ;
+    return ss.str();
 }
 
 std::string Times::name(const char* typ, const char* tag)

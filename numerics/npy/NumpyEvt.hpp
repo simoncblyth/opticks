@@ -6,13 +6,20 @@
 
 class Timer ; 
 class Parameters ;
+class Report ;
+class TimesTable ; 
+
 class Index ; 
 class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 
+
 class NumpyEvt {
+   public:
+      static const char* TIMEFORMAT ;  
+      static std::string timestamp();
    public:
        NumpyEvt(const char* typ, const char* tag, const char* det, const char* cat=NULL);
        void setFlat(bool flat);
@@ -35,6 +42,15 @@ class NumpyEvt {
        void zero();
        void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
        void prepareForIndexing();
+   public:
+       Parameters* getParameters();
+       Timer* getTimer();
+       TimesTable* getTimesTable();
+       void makeReport();
+       void saveReport();
+       void loadReport();
+   private:
+       void saveReport(const char* dir);
    public:
        void setIncomingData(NPY<float>* incoming_data);
    public:
@@ -71,7 +87,12 @@ class NumpyEvt {
        void setAuxData(NPY<short>* aux_data);
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
-
+   private:
+       void recordDigests();
+       std::string getSpeciesDir(const char* species); // tag in the name
+       std::string getTagDir(const char* species, bool tstamp);     // tag in the dir 
+       void saveParameters();
+       void loadParameters();
    public:
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
@@ -104,7 +125,6 @@ class NumpyEvt {
 
        ViewNPY* operator [](const char* spec);
 
-   private:
    public:
        unsigned int getNumGensteps();
        unsigned int getNumPhotons();
@@ -132,6 +152,8 @@ class NumpyEvt {
 
        Timer*                m_timer ;
        Parameters*           m_parameters ;
+       Report*               m_report ;
+       TimesTable*           m_ttable ;
 
        NPY<float>*           m_incoming_data ; 
        NPY<float>*           m_genstep_data ;
@@ -185,6 +207,8 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
 
           m_timer(NULL),
           m_parameters(NULL),
+          m_report(NULL),
+          m_ttable(NULL),
 
           m_incoming_data(NULL),
           m_genstep_data(NULL),
@@ -454,4 +478,21 @@ inline Index* NumpyEvt::getMaterialSeq()
 {
     return m_seqmat ; 
 } 
+
+inline Parameters* NumpyEvt::getParameters()
+{
+    return m_parameters ;
+}
+inline Timer* NumpyEvt::getTimer()
+{
+    return m_timer ;
+}
+inline TimesTable* NumpyEvt::getTimesTable()
+{
+    return m_ttable ;
+}
+
+
+
+
   

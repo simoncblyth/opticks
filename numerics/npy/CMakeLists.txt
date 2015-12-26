@@ -62,6 +62,7 @@ add_library( ${name}  SHARED
     Map.cpp
     Timer.cpp
     Times.cpp
+    TimesTable.cpp
     NCache.cpp
     NSensor.cpp
     NSensorList.cpp
@@ -123,6 +124,7 @@ Index.hpp
 Map.hpp
 Timer.hpp
 Times.hpp
+TimesTable.hpp
 NCache.hpp
 NSensor.hpp
 NSensorList.hpp
