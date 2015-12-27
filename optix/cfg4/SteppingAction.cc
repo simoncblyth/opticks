@@ -48,15 +48,10 @@ G4OpBoundaryProcessStatus SteppingAction::GetOpBoundaryProcessStatus()
 void SteppingAction::init()
 {
     NumpyEvt* evt = m_recorder->getEvt();
-
-    m_bounce_max = evt->getBounceMax();
-
     LOG(info) << "SteppingAction::init " 
               << " evt " << evt->description() 
-              << " m_bounce_max  " << m_bounce_max 
               ;
 }
-
 
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
@@ -93,9 +88,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         m_recorder->setBoundaryStatus(GetOpBoundaryProcessStatus());
         m_recorder->RecordStep(step); 
     }
-
-    //if(step_id == m_bounce_max )
-    //    track->SetTrackStatus(fStopAndKill);
 
 
 

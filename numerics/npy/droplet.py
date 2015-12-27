@@ -46,7 +46,7 @@ class Droplet(object):
             fmt = "%3d " + " %10.2f " * 7 
             print fmt % (k, dv[0]/deg, dv[1]/deg, (dv[1]-dv[0])/deg, i[0]/deg, i[1]/deg, r[0]/deg, r[1]/deg ) 
 
-    def bow_angle_rectangles(self, ks=range(1,10+1), yleg=2):
+    def bow_angle_rectangles(self, ks=range(1,11+1), yleg=2):
         ax = plt.gca()
         ymin, ymax = ax.get_ylim()
         for k in ks:

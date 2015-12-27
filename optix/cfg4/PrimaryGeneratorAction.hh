@@ -5,30 +5,26 @@
 
 class G4VPrimaryGenerator ;
 class G4Event;
-class TorchStepNPY ; 
+class OpSource ; 
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction(TorchStepNPY* torch);
+    PrimaryGeneratorAction(OpSource* generator);
     virtual ~PrimaryGeneratorAction();
-  private:
-    void init();
 
   public:
     virtual void GeneratePrimaries(G4Event*);
 
   private:
-    G4VPrimaryGenerator*  m_generator ;
-    TorchStepNPY*         m_torch ; 
+    //G4VPrimaryGenerator*  m_generator ;
+    OpSource*  m_generator ;
 
 };
 
-inline PrimaryGeneratorAction::PrimaryGeneratorAction(TorchStepNPY* torch)
+inline PrimaryGeneratorAction::PrimaryGeneratorAction(OpSource* generator)
     : 
     G4VUserPrimaryGeneratorAction(), 
-    m_generator(NULL),
-    m_torch(torch)
+    m_generator(generator)
 {
-    init();
 }

@@ -9,6 +9,9 @@
 #include "G4StepPoint.hh"
 #include "G4StepStatus.hh"
 #include "G4ThreeVector.hh"
+#include "G4PrimaryVertex.hh"
+#include "G4PrimaryParticle.hh"
+
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
@@ -19,13 +22,63 @@
 
 #include "Recorder.icc"
 
+
+/*
+Truncation that matches optixrap-/cu/generate.cu::
+
+    generate...
+
+    int bounce = 0 ;
+    int slot = 0 ;
+    int slot_min = photon_id*MAXREC ;       // eg 0 for photon_id=0
+    int slot_max = slot_min + MAXREC - 1 ;  // eg 9 for photon_id=0, MAXREC=10
+    int slot_offset = 0 ;
+
+    while( bounce < bounce_max )
+    {
+        bounce++
+
+        rtTrace...
+
+        slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
+
+          // eg 0,1,2,3,4,5,6,7,8,9,9,9,9,9,....  if bounce_max were greater than MAXREC
+          //    0,1,2,3,4,5,6,7,8,9       for bounce_max = 9, MAXREC = 10 
+
+        RSAVE(..., slot, slot_offset)...
+        slot++ ;
+
+        propagate_to_boundary...
+        propagate_at_boundary... 
+    }
+
+    slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
+
+    RSAVE(..., slot, slot_offset)
+
+
+Consider truncated case with bounce_max = 9, MAXREC = 10 
+
+* last while loop starts at bounce = 8 
+* RSAVE inside the loop invoked with bounce=1:9 
+  and then once more beyond the while 
+  for a total of 10 RSAVEs 
+
+
+*/
+
+
+
+
 void Recorder::init()
 {
     m_record_max = m_evt->getNumPhotons(); 
+    m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
 
     LOG(info) << "Recorder::init"
               << " record_max " << m_record_max
+              << " bounce_max  " << m_bounce_max 
               << " steps_per_photon " << m_steps_per_photon 
               ;
 
@@ -39,6 +92,57 @@ void Recorder::init()
     assert(strcmp(typ,Opticks::torch_) == 0);
     m_gen = Opticks::SourceCode(typ);
     assert( m_gen == TORCH );
+}
+
+
+void Recorder::setupPrimaryRecording()
+{
+    m_evt->prepareForPrimaryRecording();
+
+    m_primary = m_evt->getPrimaryData() ;
+    m_primary_max = m_primary->getShape(0) ;
+
+    m_primary_id = 0 ;  
+    m_primary->zero();
+
+    LOG(info) << "Recorder::setupPrimaryRecording"
+              << " primary_max " << m_primary_max 
+              ; 
+ 
+}
+
+void Recorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
+{
+    if(m_primary == NULL || m_primary_id >= m_primary_max ) return ; 
+
+    G4ThreeVector pos = vertex->GetPosition() ;
+    G4double time = vertex->GetT0() ;
+
+    G4PrimaryParticle* particle = vertex->GetPrimary();     
+
+    const G4ThreeVector& dir = particle->GetMomentumDirection()  ; 
+    G4ThreeVector pol = particle->GetPolarization() ;
+  
+    G4double energy = particle->GetTotalEnergy()  ; 
+    G4double wavelength = h_Planck*c_light/energy ;
+    G4double weight = particle->GetWeight() ; 
+
+    m_primary->setQuad(m_primary_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    m_primary->setQuad(m_primary_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    m_primary->setQuad(m_primary_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+
+    unsigned int ux = 0u ; 
+    unsigned int uy = 0u ; 
+    unsigned int uz = 0u ; 
+    unsigned int uw = 0u ; 
+
+    m_primary->setUInt(m_primary_id, 3, 0, 0, ux );
+    m_primary->setUInt(m_primary_id, 3, 0, 1, uy );
+    m_primary->setUInt(m_primary_id, 3, 0, 2, uz );
+    m_primary->setUInt(m_primary_id, 3, 0, 3, uw );
+
+    m_primary_id += 1 ; 
+
 }
 
 
@@ -81,15 +185,24 @@ void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status)
     m_boundary_status = boundary_status ; 
 }
 
-void Recorder::startPhoton()
+
+void Recorder::Summary(const char* msg)
 {
-    if(m_record_id % 10000 == 0)
-    LOG(info) << "Recorder::startPhoton"
+    LOG(info) <<  msg
               << " event_id " << m_event_id 
               << " photon_id " << m_photon_id 
               << " record_id " << m_record_id 
               << " step_id " << m_step_id 
+              << " m_slot " << m_slot 
               ;
+}
+
+
+void Recorder::startPhoton()
+{
+    //LOG(info) << "Recorder::startPhoton" ; 
+
+    if(m_record_id % 10000 == 0) Summary("Recorder::startPhoton") ;
 
     assert(m_step_id == 0);
 
@@ -106,7 +219,6 @@ void Recorder::startPhoton()
 
 void Recorder::RecordStep(const G4Step* step)
 {
-
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
@@ -132,21 +244,47 @@ void Recorder::RecordStep(const G4Step* step)
 
     bool last = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
 
+    bool truncate = false ; 
 
     // StepTooSmall occurs at boundaries with pre/post StepPoints 
     // almost the same differing only in their associated volume
 
     if( m_prior_boundary_status != StepTooSmall)
+    {
         RecordStepPoint(pre, preFlag, m_prior_boundary_status, false );
 
-    if(last)
+        truncate = m_slot == m_bounce_max  ; 
+
+        // m_slot zeroed in startPhoton, incremented in RecordStepPoint after Collect 
+        // truncate raised here to mimick optixrap- final RSAVE beyond the while  
+        //
+        // maybe constrain bounce_max to be odd so as to always lead to mid step truncation ?
+        // (or should that be even?)
+        //
+        // traditionally have been using bounce_max = record_max - 1 
+        //
+        // cannot based truncation on step_id as that is messed up by 
+        // StepTooSmall extra steps
+    }
+
+    if(last || truncate)
         RecordStepPoint(post, postFlag, m_boundary_status, true );
     
+
     if(last)
     {
         bool issue = hasIssue();
         if(m_record_id < 10 || issue || m_seqhis == m_seqhis_select ) Dump("Recorder::RecordStep") ;
     }
+
+    if(truncate)
+    {
+        //Summary("Recorder::RecordStep TRUNCATE");
+        G4Track* track = step->GetTrack();
+        track->SetTrackStatus(fStopAndKill);
+    }
+
+
 }
 
 bool Recorder::hasIssue()
@@ -199,10 +337,20 @@ void Recorder::Clear()
 }
 
 
-void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool last)
+void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool write_photon)
 {
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
     unsigned int material = 0 ; 
+
+   /*
+    LOG(info) << "Recorder::RecordStepPoint" 
+              << " m_step_id " << m_step_id 
+              << " m_slot " << m_slot 
+              << " slot " << slot 
+              << " write_photon " << write_photon 
+              ;
+    */
+
 
     // * masked combination needed (not just m_seqhis |= ) 
     //   in order to correctly handle truncation overwrite
@@ -275,7 +423,7 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
                   ;
      */ 
 
-    if(last)
+    if(write_photon)
     {
         m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
         m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );

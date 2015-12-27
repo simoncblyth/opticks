@@ -9,6 +9,7 @@
 
 class G4Run ;
 class G4Step ; 
+class G4PrimaryVertex ; 
 
 
 #include "NumpyEvt.hpp"
@@ -32,6 +33,10 @@ class Recorder {
         void RecordStep(const G4Step*);
         void startPhoton();
 
+        void setupPrimaryRecording();
+        void RecordPrimaryVertex(G4PrimaryVertex* vertex);
+
+        void Summary(const char* msg);
         void DumpSteps(const char* msg="Recorder::DumpSteps");
         void DumpStep(const G4Step* step);
    public:
@@ -66,6 +71,7 @@ class Recorder {
 
         unsigned int m_gen ; 
         unsigned int m_record_max ; 
+        unsigned int m_bounce_max ; 
         unsigned int m_steps_per_photon ; 
         unsigned int m_photons_per_g4event ; 
 
@@ -73,6 +79,8 @@ class Recorder {
         unsigned int m_photon_id ; 
         unsigned int m_step_id ; 
         unsigned int m_record_id ; 
+        unsigned int m_primary_id ; 
+        unsigned int m_primary_max ; 
 
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
@@ -82,6 +90,7 @@ class Recorder {
         unsigned long long m_seqmat ; 
         unsigned int m_slot ; 
 
+        NPY<float>*               m_primary ; 
         NPY<float>*               m_photons ; 
         NPY<short>*               m_records ; 
         NPY<unsigned long long>*  m_history ; 
@@ -98,16 +107,25 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
    :
    m_evt(evt),
    m_gen(0),
+   m_record_max(0),
+   m_bounce_max(0),
+   m_steps_per_photon(0), 
    m_photons_per_g4event(photons_per_g4event),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
    m_step_id(UINT_MAX),
+   m_record_id(UINT_MAX),
+
+   m_primary_id(UINT_MAX),
+   m_primary_max(0),
+
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
    m_seqhis(0),
    m_seqhis_select(0),
    m_seqmat(0),
    m_slot(0),
+   m_primary(0),
    m_photons(0),
    m_records(0),
    m_history(0)

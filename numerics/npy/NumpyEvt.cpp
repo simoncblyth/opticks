@@ -23,6 +23,7 @@
 
 #include "NLog.hpp"
 
+const char* NumpyEvt::primary = "primary" ; 
 const char* NumpyEvt::genstep = "genstep" ; 
 const char* NumpyEvt::photon  = "photon" ; 
 const char* NumpyEvt::record  = "record" ; 
@@ -130,6 +131,17 @@ void NumpyEvt::prepareForIndexing()
     //m_phosel_data->setDynamic();    
 
 }
+
+void NumpyEvt::prepareForPrimaryRecording()
+{
+    LOG(info) << "NumpyEvt::prepareForPrimaryRecording"
+              << " m_num_photons " << m_num_photons  
+               ;
+
+   NPY<float>* primary = NPY<float>::make(m_num_photons, 4, 4) ;
+   setPrimaryData(primary);
+}
+
 
 
 void NumpyEvt::createHostBuffers()
@@ -568,6 +580,14 @@ void NumpyEvt::save(bool verbose)
     // genstep normally not saved as it exists already coming from elsewhere,
     //  but for TorchStep that insnt the case
 
+    NPY<float>* dpri = getPrimaryData();
+    if(dpri)
+    {
+        dpri->setVerbose(verbose);
+        dpri->save("pr%s", m_typ,  m_tag, udet);
+    }
+
+
     NPY<float>* dpho = getPhotonData();
     dpho->setVerbose(verbose);
     dpho->save("ox%s", m_typ,  m_tag, udet);
@@ -737,6 +757,7 @@ void NumpyEvt::load(bool verbose)
     m_seqmat = Index::load(sm_dir.c_str(), m_tag, "Material_Sequence");
 
 
+    NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet );
     NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet );
     NPY<short>* rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet );
@@ -796,6 +817,7 @@ void NumpyEvt::load(bool verbose)
         }
     }
 
+    setPrimaryData(pr);
     setPhotonData(ox);
     setSequenceData(ph);
     setRecordData(rx);

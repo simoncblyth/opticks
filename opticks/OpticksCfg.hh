@@ -195,6 +195,10 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("testconfig",   boost::program_options::value<std::string>(&m_testconfig), "dynamic test geometry configuration" );
 
+   m_desc.add_options()
+       ("primary",  "Enable recording of primary vertices in cfg4-, stored in NumpyEvt primary ") ;
+
+
 
    m_desc.add_options()
        ("zexplode",  "explode mesh in z for debugging split unions") ;

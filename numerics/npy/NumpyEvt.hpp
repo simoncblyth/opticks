@@ -33,6 +33,7 @@ class NumpyEvt {
    private:
        void init();
    public:
+       static const char* primary ;
        static const char* genstep ;
        static const char* photon ;
        static const char* record  ;
@@ -46,6 +47,7 @@ class NumpyEvt {
        void zero();
        void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
        void prepareForIndexing();
+       void prepareForPrimaryRecording();
    public:
        Parameters* getParameters();
        Timer* getTimer();
@@ -85,6 +87,7 @@ class NumpyEvt {
        void createHostIndexBuffers(); 
        void seedPhotonData();
        
+       void setPrimaryData(NPY<float>* primary_data);
        void setPhotonData(NPY<float>* photon_data);
        void setSequenceData(NPY<unsigned long long>* history_data);
        void setRecordData(NPY<short>* record_data);
@@ -101,6 +104,7 @@ class NumpyEvt {
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
    public:
+       NPY<float>*          getPrimaryData();
        NPY<float>*          getIncomingData();
        NPY<float>*          getGenstepData();
        NPY<float>*          getPhotonData();
@@ -159,6 +163,7 @@ class NumpyEvt {
        Report*               m_report ;
        TimesTable*           m_ttable ;
 
+       NPY<float>*           m_primary_data ; 
        NPY<float>*           m_incoming_data ; 
        NPY<float>*           m_genstep_data ;
        NPY<float>*           m_photon_data ;
@@ -214,6 +219,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_report(NULL),
           m_ttable(NULL),
 
+          m_primary_data(NULL),
           m_incoming_data(NULL),
           m_genstep_data(NULL),
           m_photon_data(NULL),
@@ -360,6 +366,20 @@ inline MultiViewNPY* NumpyEvt::getSequenceAttr()
 {
     return m_sequence_attr ;
 }
+
+
+
+
+
+inline NPY<float>* NumpyEvt::getPrimaryData()
+{
+    return m_primary_data ;
+}
+inline void NumpyEvt::setPrimaryData(NPY<float>* primary_data)
+{
+    m_primary_data = primary_data ;
+}
+
 
 
 

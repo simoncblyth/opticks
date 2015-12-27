@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 """
+# ChiSquared or KS
+# http://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm 
+# https://en.wikipedia.org/wiki/Propagation_of_uncertainty
+# http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
+# http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
 """
 
 import os, logging, numpy as np
@@ -420,8 +425,6 @@ def scatter_plot_component(pevt, sevt, p=0, ylim=None, xlim=None, scale=15000, i
     p=2
          not matching 
 
-
-
     """
     db = np.arange(0,360,1)
     sc = Scatter(p, psim=pevt, ssim=sevt, not_=False)
@@ -506,8 +509,6 @@ def check_polarization(evt):
     o1 = evt.rpol_(1)[:,:3]
 
 
-
-
 class Pair(object):
    def __init__(self, tags, labels, det, src='torch',name=None):
        self.s = Evt(tag=tags[0],src=src, det=det, label=labels[0])
@@ -577,7 +578,6 @@ if 1:
     fig = plt.figure()
     fig.suptitle("Deviation angles without selection")
 
-
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
 
     ax = fig.add_subplot(gs[0])
@@ -587,13 +587,6 @@ if 1:
     ax.legend()
 
     xlim = ax.get_xlim()
-
-
-    # ChiSquared or KS
-    # http://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm 
-    # https://en.wikipedia.org/wiki/Propagation_of_uncertainty
-    # http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
-    # http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
 
     ax = fig.add_subplot(gs[1])
 

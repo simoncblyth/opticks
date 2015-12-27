@@ -13,13 +13,14 @@ class G4SPSEneDistribution ;
 class G4SPSRandomGenerator ;
 
 class TorchStepNPY ; 
+class Recorder ; 
 
 
 
 class OpSource: public G4VPrimaryGenerator 
 {
   public:
-    OpSource(TorchStepNPY* torch);
+    OpSource(TorchStepNPY* torch, Recorder* recorder);
   private:
     void init();
     void configure();
@@ -45,6 +46,7 @@ class OpSource: public G4VPrimaryGenerator
 private:
     // residents 
     TorchStepNPY*         m_torch ;
+    Recorder*             m_recorder ; 
 
     G4SPSPosDistribution* m_posGen;
     G4SPSAngDistribution* m_angGen;
@@ -71,9 +73,10 @@ private:
 };
 
 
-inline OpSource::OpSource(TorchStepNPY* torch)  
+inline OpSource::OpSource(TorchStepNPY* torch, Recorder* recorder)  
     :
     m_torch(torch),
+    m_recorder(recorder),
     m_posGen(NULL),
     m_angGen(NULL),
     m_eneGen(NULL),

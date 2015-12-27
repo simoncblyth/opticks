@@ -4,6 +4,9 @@
 #include "Detector.hh"
 #include "ActionInitialization.hh"
 #include "Recorder.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "SteppingAction.hh"
+#include "OpSource.hh"
 
 // npy-
 #include "NumpyEvt.hpp"
@@ -55,10 +58,21 @@ void CfG4::configure(int argc, char** argv)
 
     m_recorder = new Recorder(m_evt , photons_per_g4event); 
 
+    if(m_cfg->hasOpt("primary"))
+    {
+        m_recorder->setupPrimaryRecording();
+    }
+
     m_runManager = new G4RunManager;
     m_runManager->SetUserInitialization(new PhysicsList());
     m_runManager->SetUserInitialization(m_detector);
-    m_runManager->SetUserInitialization(new ActionInitialization(m_recorder, m_torch)) ;
+
+
+    OpSource* generator = new OpSource(m_torch, m_recorder);
+    PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(generator) ;
+    SteppingAction* sa = new SteppingAction(m_recorder);
+
+    m_runManager->SetUserInitialization(new ActionInitialization(pga, sa)) ;
     m_runManager->Initialize();
 
     // compression domains set after runManager::Initialize, 

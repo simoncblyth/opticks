@@ -7,6 +7,7 @@
 
 // cfg4-
 #include "OpSource.hh"
+#include "Recorder.hh"
 
 // g4-
 #include "G4SystemOfUnits.hh"
@@ -164,6 +165,8 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		particle->SetWeight(weight);
 
 		vertex->SetPrimary(particle);
+
+        m_recorder->RecordPrimaryVertex(vertex);
 
         evt->AddPrimaryVertex(vertex);
 	}

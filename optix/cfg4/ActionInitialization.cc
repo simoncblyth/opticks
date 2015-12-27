@@ -9,8 +9,8 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::Build() const
 {
-    SetUserAction(new PrimaryGeneratorAction(m_torch));
-    SetUserAction(new SteppingAction(m_recorder));
+    SetUserAction(m_pga);
+    SetUserAction(m_sa);
 }
 
 G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const

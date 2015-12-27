@@ -19,7 +19,6 @@ class SteppingAction : public G4UserSteppingAction
     void init();
   private:
     Recorder*    m_recorder   ; 
-    unsigned int m_bounce_max ; 
 };
 
 inline SteppingAction::SteppingAction(Recorder* recorder)

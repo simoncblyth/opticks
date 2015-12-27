@@ -1,30 +1,31 @@
 #pragma once
 
-class Recorder;
-class TorchStepNPY ; 
+class PrimaryGeneratorAction ;
+class SteppingAction ; 
 
 #include "G4VUserActionInitialization.hh"
 
 class ActionInitialization : public G4VUserActionInitialization
 {
   public:
-    ActionInitialization(Recorder* recorder, TorchStepNPY* torch);
+    ActionInitialization(PrimaryGeneratorAction* pga, SteppingAction* sa);
     virtual ~ActionInitialization();
 
     virtual void Build() const;
     virtual G4VSteppingVerbose* InitializeSteppingVerbose() const; 
 
   private:
-    Recorder* m_recorder;
-    TorchStepNPY* m_torch ; 
+    PrimaryGeneratorAction* m_pga ;  
+    SteppingAction*         m_sa ; 
+
 };
 
 
-inline ActionInitialization::ActionInitialization(Recorder* recorder, TorchStepNPY* torch)
+inline ActionInitialization::ActionInitialization(PrimaryGeneratorAction* pga, SteppingAction* sa)
     : 
     G4VUserActionInitialization(), 
-    m_recorder(recorder),
-    m_torch(torch)
+    m_pga(pga),
+    m_sa(sa)
 {}
 
 
