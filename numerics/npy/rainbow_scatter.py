@@ -15,7 +15,8 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 
-from env.numerics.npy.ana import Evt, Selection, costheta_, cross_
+
+from env.numerics.npy.evt import Evt, costheta_, cross_
 from env.numerics.npy.geometry import Boundary   
 from env.numerics.npy.droplet import Droplet
 from env.numerics.npy.fresnel import fresnel_factor
@@ -92,47 +93,23 @@ class Scatter(object):
 
     """
 
-    @classmethod
-    def seqhis(cls, pp):
-        return map(cls.seqhis_, pp) 
-
-    @classmethod
-    def seqhis_(cls, p):
-        if p == 0:
-            seq = "BR "
-        elif p == 1:
-            seq = "BT BT "
-        elif p > 1:
-            seq = "BT " + "BR " * (p-1) + "BT "  
-        else:
-            assert 0 
-        pass
-        seq += "SA"
-        return seq 
-
     def __init__(self, p, n1=1, n2=n2ref, psim=None, ssim=None, not_=False):
 
-        composite = type(p) is not int
-        if composite:
-            seq = self.seqhis(p)
-            k = None
-        else: 
-            seq = [self.seqhis_(p)]
-            k = p - 1
-        pass
+        seqs = Droplet.seqhis(p)
+        k = p - 1 if len(seqs) == 1 else None
 
         self.p = p
         self.k = k
         self.n1 = n1
         self.n2 = n2
         self.n  = n2/n1
-        self.seq = seq
+        self.seqs = seqs
         self.not_ = not_
 
         log.info("seq [%s] " % seq )
 
         if psim is not None:
-           psim = Selection(psim, seq, not_=not_)
+           psim = Evt(psim, seq, not_=not_)
         self.psim = psim
 
         if ssim is not None:
@@ -364,21 +341,6 @@ class Scatter(object):
 
 
 
-def scatter_plot_all(ax, a_evt, b_evt, axis=X):
-    db = np.arange(0,360,1)
-    cnt = {}
-    bns = {}
-    ptc = {}
-    for i,evt in enumerate([a_evt, b_evt]):
-        dv = evt.a_deviation_angle(axis=axis)/deg
-        ax.set_xlim(0,360)
-        ax.set_ylim(1,1e5)
-        cnt[i], bns[i], ptc[i] = ax.hist(dv, bins=db,  log=True, histtype='step', label=evt.label)
-    pass
-    assert np.all( bns[0] == bns[1] )
-    return cnt, bns[0]
-
-
 
 def _scatter_plot_one(ax, sc, bins, xlim=None, ylim=None, log_=True):
     s_dv = sc.ssim.deviation_angle()
@@ -451,89 +413,6 @@ def scatter_plot_component(pevt, sevt, p=0, ylim=None, xlim=None, scale=15000, i
 
 
 
-def check_radius(sc, sli=slice(None)):
-    """
-    """
-    s_p1 = sc.ssim.recpost(1)[:,:3]
-    p_p1 = sc.psim.recpost(1)[:,:3]
-
-    rs = np.linalg.norm(s_p1, 2, 1)
-    rp = np.linalg.norm(p_p1, 2, 1)
-
-    log.info("rs %s %s " % (rs.min(), rs.max()))
-    log.info("rp %s %s " % (rp.min(), rp.max()))
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter3D(s_p1[sli,0], s_p1[sli,1], s_p1[sli,2] )
-
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-
-    ax.auto_scale_xyz( [-100,100], [-100,100], [-100,100] )
-
-
-
-def check_intersect(evt, radius=100):
-    """
-    Assuming incident direction along +X axis
-    """
-    pos = evt.rpost_(0)[:,:3]
-
-    yz = np.clip( np.linalg.norm(pos[:,1:], 2, 1), 0, radius ) 
-    x  = np.sqrt(radius*radius - yz*yz )
-
-    isp = np.copy(pos)   # point of first intersection with sphere
-    isp[:,0] = -x 
-    
-    return isp 
-
-
-def check_polarization(evt):
-    """
-
-    ::   
-
-        In [50]: p1[~msk].shape
-        Out[50]: (574, 3)
-
-        In [51]: p1[msk].shape
-        Out[51]: (999426, 3) 
-
-    """
-    p1 = evt.rpost_(1)[:,:3]
-    rp1 = np.linalg.norm(p1,2,1)
-    msk = np.abs( rp1 - 100. ) < 0.1
-
-    o1 = evt.rpol_(1)[:,:3]
-
-
-class Pair(object):
-   def __init__(self, tags, labels, det, src='torch',name=None):
-       self.s = Evt(tag=tags[0],src=src, det=det, label=labels[0])
-       self.p = Evt(tag=tags[1],src=src, det=det, label=labels[1])
-       self.name = name
-       self.det = det 
-   def __repr__(self):
-       return "s %s p %s" % (repr(self.s), repr(self.p))  
-
-
-class Cf(object):
-    def __init__(self, evt_op, evt_g4):
-        self.op=evt_op
-        self.g4=evt_g4
-
-    def check_splits(self, sli=slice(0,15)):
-        print " ---- P ----- "
-        cu = self.op.p.history_table(sli)
-        cu = self.g4.p.history_table(sli)
-        print " ---- S ----- "
-        cu = self.op.s.history_table(sli)
-        cu = self.g4.s.history_table(sli)
-
-
-
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -573,41 +452,6 @@ if 1:
     cf.check_splits() 
 
 
-
-if 1:
-    fig = plt.figure()
-    fig.suptitle("Deviation angles without selection")
-
-    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
-
-    ax = fig.add_subplot(gs[0])
-
-    c, bns = scatter_plot_all(ax, evt_op.s, evt_g4.s, axis=X)
-    droplet.bow_angle_rectangles()
-    ax.legend()
-
-    xlim = ax.get_xlim()
-
-    ax = fig.add_subplot(gs[1])
-
-    a,b = c[0],c[1]
-
-    c2 = np.power(a-b,2)/(a+b)
-    c2p = c2.sum()/len(a)
-
-    #y = d
-    #ey = d*ed 
-    #ax.errorbar( bns[:-1], y, yerr=ey, fmt='o')
-    
-    plt.plot( bns[:-1], c2, drawstyle='steps', label="chi2/ndf %4.2f" % c2p )
-    ax.set_xlim(xlim) 
-    ax.legend()
-
-    ax.set_ylim([0,10]) 
-
-
-    droplet.bow_angle_rectangles()
-    #Scatter.combined_intensity_plot([1,2,3,4,5], ylim=ylim, scale=5e4, flip=False )
 
 
 if 0:

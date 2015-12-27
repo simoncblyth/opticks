@@ -251,6 +251,42 @@ def cie_hist2d(w, x, y, xb, yb, norm=1, colorspace="sRGB/D65", whitepoint=None):
     return c.hist2d(w,x,y,xb,yb,norm)
 
 
+
+class Whitepoint(object):
+    def __init__(self, w):
+        """
+        For spectra close to original (think perfect diffuse reflector) 
+        this is expected to yield the characteristic of the illuminant.
+
+        XYZ values must be normalized as clearly simulating more photons
+        will give larger values...
+
+        The Yint is hoped to provide a less adhoc way of doing the
+        normalization. 
+        """
+        assert w is not None:
+
+        X = np.sum(_cie.X(w))
+        Y = np.sum(_cie.Y(w))
+        Z = np.sum(_cie.Z(w))
+
+        Yint = Y
+
+        X /= Yint      # normalize such that Y=1
+        Y /= Yint
+        Z /= Yint
+
+        x = X/(X+Y+Z)  # Chromaticity coordinates 
+        y = Y/(X+Y+Z)
+
+        self.wp = np.array([X,Y,Z,Yint,x,y])
+
+    def __repr__(self):
+        return str(self.wp)
+
+
+
+
 def whitepoint(wd):
     bb = _cie.BB6K(wd)
     bb /= bb.max()

@@ -14,6 +14,26 @@ class Droplet(object):
     def __init__(self, boundary):
         self.boundary = boundary 
 
+    @classmethod
+    def seqhis(cls, arg):
+        pp = [arg] if type(arg) is int else arg 
+        return map(cls.seqhis_, pp) 
+
+    @classmethod
+    def seqhis_(cls, p):
+        if p == 0:
+            seq = "BR "
+        elif p == 1:
+            seq = "BT BT "
+        elif p > 1:
+            seq = "BT " + "BR " * (p-1) + "BT "  
+        else:
+            assert 0 
+        pass
+        seq += "SA"
+        return seq 
+
+
     def deviation_angle(self, w, k=1): 
         d = self.deviation_angle_(w, k=k)
         return d['dv'] 
