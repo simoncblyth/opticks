@@ -15,8 +15,8 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 
-
-from env.numerics.npy.evt import Evt, History, costheta_, cross_
+from env.numerics.npy.evt import Evt, costheta_, cross_
+from env.numerics.npy.history import History
 from env.numerics.npy.geometry import Boundary   
 from env.numerics.npy.droplet import Droplet
 from env.numerics.npy.fresnel import fresnel_factor
@@ -28,19 +28,58 @@ deg = np.pi/180.
 n2ref = 1.33257
 
 
-def scatter_plot_cf(ax, a_evt, b_evt, axis=X):
+def scatter_plot_cf(ax, a_evt, b_evt, axis=X, log_=False):
     db = np.arange(0,360,1)
     cnt = {}
     bns = {}
     ptc = {}
+    j = -1
     for i,evt in enumerate([a_evt, b_evt]):
         dv = evt.a_deviation_angle(axis=axis)/deg
         ax.set_xlim(0,360)
-        ax.set_ylim(1,1e5)
-        cnt[i], bns[i], ptc[i] = ax.hist(dv, bins=db,  log=True, histtype='step', label=evt.label)
+        if len(dv) > 0:
+            cnt[i], bns[i], ptc[i] = ax.hist(dv, bins=db,  log=log_, histtype='step', label=evt.label)
+            j = i 
     pass
-    assert np.all( bns[0] == bns[1] )
-    return cnt, bns[0]
+    if len(bns) == 2:
+        assert np.all( bns[0] == bns[1] )
+
+    return cnt, bns[j]
+
+
+def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5]):
+
+    fig = plt.figure()
+    fig.suptitle("Rainbow cfg4 " + label )
+
+    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+
+    ax = fig.add_subplot(gs[0])
+
+    c, bns = scatter_plot_cf(ax, evt_a, evt_b, axis=X, log_=log_)
+    droplet.bow_angle_rectangles()
+    ax.set_ylim(ylim)
+    ax.legend()
+
+    xlim = ax.get_xlim()
+
+    ax = fig.add_subplot(gs[1])
+
+    if len(c) == 2:
+        a,b = c[0],c[1]
+
+        msk = a+b > 0  
+        c2 = np.zeros_like(a)
+        c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]
+        c2p = c2.sum()/len(a[msk])
+        
+        plt.plot( bns[:-1], c2, drawstyle='steps', label="chi2/ndf %4.2f" % c2p )
+        ax.set_xlim(xlim) 
+        ax.legend()
+
+        ax.set_ylim([0,10]) 
+
+        droplet.bow_angle_rectangles()
 
 
 
@@ -59,49 +98,38 @@ if __name__ == '__main__':
     tag = "5"
     src = "torch"
     det = "rainbow"
-    seqs = Droplet.seqhis([0,1,2,3,4,5,6,7])
-    not_ = True
+    seqs = Droplet.seqhis([0,1,2,3,4,5,6,7],src="TO")
+    not_ = False
 
+    his_a = History.for_evt(tag="%s" % tag, src=src, det=det)
     his_b = History.for_evt(tag="-%s" % tag, src=src, det=det)
 
-    evt_a =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_)
-    evt_b =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_)
+    sa = set(his_a.table.labels)
+    sb = set(his_b.table.labels)
 
-    #sli = slice(0,15)
-    sli = slice(None)
-    evt_a.history_table(sli)
-    evt_b.history_table(sli)
+    sc = sorted(list(sa & sb), key=lambda _:his_a.table.label2count.get(_, None)) 
 
-    fig = plt.figure()
-    fig.suptitle("Rainbow cfg4")
+    ba = sb - sa
+    print "Opticks but not G4, his_a.table(sa-sb)\n", his_a.table(sa - sb)
+    print "G4 but not Opticks, his_b.table(sb-sa)\n", his_b.table(sb - sa)
 
-    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+    g4o = ["TO BT BR BR BR BR BR BR BR NA", "TO BT SC BR BR BR BR BR BR NA"]   # two largest G4 only, 482 23
+    opo = ["TO BT BR BR BR BR BR BR BR BR", "TO BT BR BR BR BR BR BR BR BT" ]  # two largest Op only, 304 183 
+    sq = g4o + opo
 
-    ax = fig.add_subplot(gs[0])
+if 1:
+    for seq in sq:
 
-    c, bns = scatter_plot_cf(ax, evt_a, evt_b, axis=X)
-    droplet.bow_angle_rectangles()
-    ax.legend()
+        seqs = [seq]
+        evt_a =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_)
+        evt_b =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_)
 
-    xlim = ax.get_xlim()
+        #sli = slice(0,15)
+        sli = slice(None)
+        evt_a.history_table(sli)
+        evt_b.history_table(sli)
 
-    ax = fig.add_subplot(gs[1])
+        cf_plot(evt_a, evt_b, label=seq, log_=False, ylim=None)
 
-    a,b = c[0],c[1]
-
-    msk = a+b > 0  
-
-    c2 = np.zeros_like(a)
-    c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]
-    c2p = c2.sum()/len(a)
-
-    
-    plt.plot( bns[:-1], c2, drawstyle='steps', label="chi2/ndf %4.2f" % c2p )
-    ax.set_xlim(xlim) 
-    ax.legend()
-
-    ax.set_ylim([0,10]) 
-
-    droplet.bow_angle_rectangles()
 
 

@@ -15,18 +15,19 @@ class Droplet(object):
         self.boundary = boundary 
 
     @classmethod
-    def seqhis(cls, arg):
+    def seqhis(cls, arg, src=None):
         pp = [arg] if type(arg) is int else arg 
-        return map(cls.seqhis_, pp) 
+        return map(lambda _:cls.seqhis_(_,src=src), pp) 
 
     @classmethod
-    def seqhis_(cls, p):
+    def seqhis_(cls, p, src=None):
+        seq = "" if src is None else src + " "
         if p == 0:
-            seq = "BR "
+            seq += "BR "
         elif p == 1:
-            seq = "BT BT "
+            seq += "BT BT "
         elif p > 1:
-            seq = "BT " + "BR " * (p-1) + "BT "  
+            seq += "BT " + "BR " * (p-1) + "BT "  
         else:
             assert 0 
         pass

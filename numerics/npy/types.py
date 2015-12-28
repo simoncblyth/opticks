@@ -2,30 +2,13 @@
 import os, datetime, logging, json
 log = logging.getLogger(__name__)
 import numpy as np
-import ctypes
-libcpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
 
-ffs_ = lambda _:libcpp.ffs(_)
+from env.numerics.npy.base import json_, ffs_, ihex_
+from env.numerics.npy.nbase import count_unique
 
 lsb2_ = lambda _:(_ & 0xFF) 
 msb2_ = lambda _:(_ & 0xFF00) >> 8 
 hex_ = lambda _:"0x%x" % _
-
-def ihex_(i):
-    xs = hex(i)[2:]
-    xs = xs[:-1] if xs[-1] == 'L' else xs 
-    # trim the 0x and L
-    return xs 
-
-
-def count_unique(vals):
-    """  
-    http://stackoverflow.com/questions/10741346/numpy-frequency-counts-for-unique-values-in-an-array
-    """
-    uniq = np.unique(vals)
-    bins = uniq.searchsorted(vals)
-    return np.vstack((uniq, np.bincount(bins))).T
-
 
 idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
 
@@ -61,23 +44,6 @@ g4c_ = lambda _:load_("gopcerenkov",_)
 g4s_ = lambda _:load_("gopscintillation",_)
 pmt_ = lambda _:load_("pmthit",_)
 
-
-
-
-_json = {}
-def json_(path):
-    global _json 
-    if _json.get(path,None):
-        log.debug("return cached json for key %s" % path)
-        return _json[path] 
-    try: 
-        log.info("parsing json for key %s" % path)
-        _json[path] = json.load(file(os.path.expandvars(os.path.expanduser(path))))
-    except IOError:
-        log.warning("failed to load json from %s" % path)
-        _json[path] = {}
-    pass
-    return _json[path] 
 
 def mat_(path="~/.opticks/GMaterialIndexLocal.json"):
     """
@@ -271,69 +237,6 @@ def line2mat_():
     line2g = line2g_()
     return dict(zip(line2g.keys(),map(lambda _:im.get(_,None),line2g.values())))
 
-_ini = {}
-def ini_(path):
-    global _ini 
-    if _ini.get(path,None):
-        log.debug("return cached ini for key %s" % path)
-        return _ini[path] 
-    try: 
-        log.debug("parsing ini for key %s" % path)
-        _ini[path] = iniparse(file(os.path.expandvars(os.path.expanduser(path))).read())
-    except IOError:
-        log.fatal("failed to load ini from %s" % path)
-        _ini[path] = {}
-    pass
-    return _ini[path] 
-
-       
-def iniparse(ini):
-    return dict(map(lambda _:_.split("="), filter(None,ini.split("\n")) ))
-
-def flags_(path=None):
-    if path is None:
-        #path = "$IDPATH/GFlagIndexLocal.ini"
-        path = "$IDPATH/GFlagsLocal.ini"
-    pass
-    ini = ini_(path) 
-    return dict(zip(ini.keys(),map(int,ini.values())))
-
-def iflags_():
-    flg = flags_()  
-    return dict(zip(map(int,flg.values()),map(str,flg.keys())))
-
-
-
-_abbrev_flags = {
-     "CERENKOV":"CK",
-     "SCINTILLATION":"SC",
-     "MISS":"MI",
-     "BULK_ABSORB":"AB",
-     "BULK_REEMIT":"RE",
-     "BULK_SCATTER":"BS",
-     "SURFACE_DETECT":"SD",
-     "SURFACE_ABSORB":"SA",
-     "SURFACE_DREFLECT":"DR",
-     "SURFACE_SREFLECT":"SR",
-     "BOUNDARY_REFLECT":"BR",   
-     "BOUNDARY_TRANSMIT":"BT",
-     "NAN_ABORT":"NA" }
-
-def abbrev_flags_(flg):
-    return _abbrev_flags.get(flg,flg)
-
-def abflags_():
-    flg = flags_()
-    return dict(zip(map(abbrev_flags_,flg.keys()),flg.values()))    
-
-def iabflags_():
-    flg = abflags_()  
-    return dict(zip(map(int,flg.values()),map(str,flg.keys())))
-
-def maskflags_():
-    iaf = iabflags_()
-    return dict(zip(map(lambda b:0x1 << (b-1),iaf.keys()),iaf.values()))
-
 
 class Index(object):
     def table(self, cu, hex_=False):
@@ -386,6 +289,25 @@ def seqhis_table_():
 
 
 
+class GFlags(Index):
+    def __init__(self):
+        self.mf = maskflags_()
+        self.skip = ["TORCH"]
+    def __call__(self, i):
+        return "|".join(map(lambda kv:kv[1], filter(lambda kv:kv[1] not in self.skip,filter(lambda kv:i & kv[0], self.mf.items()))))
+
+def gflags_table(cu):
+    gf = GFlags()
+    gf.table(cu)
+ 
+def maskflags_():
+    iaf = iabflags_()
+    return dict(zip(map(lambda b:0x1 << (b-1),iaf.keys()),iaf.values()))
+
+
+
+
+
 
 def maskflags_string(i, skip=["TORCH"]):
     mf = maskflags_()
@@ -432,29 +354,7 @@ def seqmat_(i, abbrev=True):
 
 
 
-DEFAULT_PATH_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2/%s.npy"  ## cf C++ NPYBase::
-
-def path_(typ, tag, det="dayabay"):
-    tmpl = os.path.expandvars(DEFAULT_PATH_TEMPLATE.replace("$1", det).replace("$2",typ)) 
-    return tmpl % str(tag)
-
-class A(np.ndarray):
-    @classmethod
-    def load_(cls, typ, tag, det="dayabay"):
-        path = path_(typ,tag, det)
-        a = None
-        if os.path.exists(path):
-            log.debug("loading %s " % path )
-            os.system("ls -l %s " % path)
-            arr = np.load(path)
-            a = arr.view(cls)
-            a.path = path 
-            a.typ = typ
-            a.tag = tag
-            a.det = det 
-        pass
-        return a 
-             
+            
 
 def load_(typ, tag, det="dayabay"):
     path = path_(typ,tag, det)

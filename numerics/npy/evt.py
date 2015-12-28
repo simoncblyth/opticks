@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 
 from env.python.utils import *
 from env.numerics.npy.types import SeqHis, seqhis_int
-from env.numerics.npy.types import A
+from env.numerics.npy.nload import A
+from env.numerics.npy.history import History
 
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
@@ -19,47 +20,6 @@ deg = np.pi/180.
 log = logging.getLogger(__name__)
 
 X,Y,Z,W = 0,1,2,3
-
-
-class History(object):
-    @classmethod 
-    def for_evt(cls, tag="1", src="torch", det="dayabay"):
-        ph = A.load_("ph"+src,tag,det)
-        seqhis = ph[:,0,0]
-        return cls(seqhis)
-    
-    def __init__(self, seqhis):
-        cu = count_unique(seqhis)
-        cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
-        tot = cu[:,1].astype(np.int32).sum()
-
-        self.seqhis = seqhis
-        self.cu = cu
-        self.tot = tot
-
-    def seqhis_or(self, args, src="torch", not_=False):
-        """
-        :param args: sequence strings excluding source, eg "BR SA" "BR AB"
-        :return: selection boolean array of photon length
-
-        photon level selection based on history sequence 
-        """
-        seqs = map(lambda _:"%s %s" % (src.upper(),_), args)
-
-        s_seqhis = map(lambda _:self.seqhis == seqhis_int(_), seqs)
-
-        psel = np.logical_or.reduce(s_seqhis)      
-        if not_:
-            psel = np.logical_not(psel)
-
-        return psel 
-
-    def table(self, sli=slice(None)):
-        sh = SeqHis()
-        sh.table(self.cu[sli], hex_=True)
-        self.sh = sh
-        print "tot:", self.tot
-
 
 
 class Evt(object):
@@ -91,7 +51,7 @@ class Evt(object):
 
         if len(seqs) > 0:
             log.info("Evt seqs %s " % repr(seqs))
-            psel = history.seqhis_or(seqs, src=src, not_=not_)
+            psel = history.seqhis_or(seqs, not_=not_)
             ox = ox[psel]
             wl = wl[psel]
             rx = rx[psel]
@@ -143,7 +103,8 @@ class Evt(object):
 
     def history_table(self, sli=slice(None)):
         print self
-        return self.history.table(sli)
+        self.history.table.sli = sli 
+        print self.history.table
 
     def material_table(self):
         seqmat = self.seqmat
@@ -164,7 +125,6 @@ class Evt(object):
 
     def seqhis_or_not(self, args):
         return np.logical_not(self.seqhis_or(args))    
-
 
 
     def recwavelength(self, irec, recs=None):
