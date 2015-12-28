@@ -16,7 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 
 from env.numerics.npy.evt import Evt, costheta_, cross_
-from env.numerics.npy.history import History
+from env.numerics.npy.history import History, AbbFlags
 from env.numerics.npy.geometry import Boundary   
 from env.numerics.npy.droplet import Droplet
 from env.numerics.npy.fresnel import fresnel_factor
@@ -44,10 +44,15 @@ def scatter_plot_cf(ax, a_evt, b_evt, axis=X, log_=False):
     if len(bns) == 2:
         assert np.all( bns[0] == bns[1] )
 
-    return cnt, bns[j]
+    if j == -1:
+        bns = None
+    else:
+        bns = bns[j] 
+
+    return cnt, bns
 
 
-def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5]):
+def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10]):
 
     fig = plt.figure()
     fig.suptitle("Rainbow cfg4 " + label )
@@ -77,7 +82,7 @@ def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5]):
         ax.set_xlim(xlim) 
         ax.legend()
 
-        ax.set_ylim([0,10]) 
+        ax.set_ylim(ylim2) 
 
         droplet.bow_angle_rectangles()
 
@@ -90,6 +95,7 @@ if __name__ == '__main__':
 
     boundary = Boundary("Vacuum///MainH2OHale")
     droplet = Droplet(boundary)
+    af = AbbFlags()
 
     plt.ion()
     plt.close()
@@ -100,36 +106,35 @@ if __name__ == '__main__':
     det = "rainbow"
     seqs = Droplet.seqhis([0,1,2,3,4,5,6,7],src="TO")
     not_ = False
+    log_ = True
 
     his_a = History.for_evt(tag="%s" % tag, src=src, det=det)
     his_b = History.for_evt(tag="-%s" % tag, src=src, det=det)
 
+    cf = his_a.table.compare(his_b.table)
+    print cf
+
     sa = set(his_a.table.labels)
     sb = set(his_b.table.labels)
-
     sc = sorted(list(sa & sb), key=lambda _:his_a.table.label2count.get(_, None)) 
 
-    ba = sb - sa
     print "Opticks but not G4, his_a.table(sa-sb)\n", his_a.table(sa - sb)
     print "G4 but not Opticks, his_b.table(sb-sa)\n", his_b.table(sb - sa)
 
-    g4o = ["TO BT BR BR BR BR BR BR BR NA", "TO BT SC BR BR BR BR BR BR NA"]   # two largest G4 only, 482 23
-    opo = ["TO BT BR BR BR BR BR BR BR BR", "TO BT BR BR BR BR BR BR BR BT" ]  # two largest Op only, 304 183 
-    sq = g4o + opo
+    sq = [None]
 
-if 1:
     for seq in sq:
 
-        seqs = [seq]
+        seqs = [] if seq is None else [seq]
         evt_a =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_)
         evt_b =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_)
 
         #sli = slice(0,15)
-        sli = slice(None)
-        evt_a.history_table(sli)
-        evt_b.history_table(sli)
+        #sli = slice(None)
+        #evt_a.history_table(sli)
+        #evt_b.history_table(sli)
 
-        cf_plot(evt_a, evt_b, label=seq, log_=False, ylim=None)
+        cf_plot(evt_a, evt_b, label=str(seqs), log_=log_, ylim=[0.8,4e4],ylim2=None)
 
 
 

@@ -63,6 +63,11 @@ class AbbFlags(object):
         f = self.abbr2code
         return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f[n], s.split(" ")))))
 
+    def __call__(self, args):
+        for a in args:
+            return self.seqhis_int(a) 
+
+
     def seqhis_label(self, i):
         xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
         seq = map(lambda _:int(_,16), xs ) 
@@ -73,36 +78,76 @@ class AbbFlags(object):
          
 
 class HistoryTable(object):
-    def __init__(self, cu): 
-        assert len(cu.shape) == 2 and cu.shape[1] == 2 
-
+    def __init__(self, cu, cnames=[]): 
+        assert len(cu.shape) == 2 and cu.shape[1] >= 2 
         af = AbbFlags()
-        seqs  = map(long, cu[:,0])
-        counts = map(int, cu[:,1])
-        labels = map(lambda i:af.seqhis_label(i), cu[:,0] )
+        ncol = cu.shape[1] - 1 
 
-        fmt = "%20s %10s : %40s "
-        lines = map(lambda n:fmt % ( ihex_(seqs[n]), counts[n], labels[n]), range(len(cu)) ) 
+        self.cu = cu 
+        self.ncol = ncol
 
+        seqs = cu[:,0]
         self.seqs = seqs
-        self.counts = counts
+
+        counts = cu[:,1]
+        labels = map(lambda i:af.seqhis_label(i), cu[:,0] )
+        nstep = map(lambda l:len(l.split(" ")),labels)
+        self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
+
+        lines = map(lambda n:self.line(n), range(len(cu)))
+
+        self.counts = counts
         self.lines = lines
+
         self.label2count = dict(zip(labels, counts))
         self.label2line = dict(zip(labels, lines))
+        self.label2code = dict(zip(labels, seqs))
 
+
+
+
+
+        self.cnames = cnames
         self.af = af
-        self.cu = cu 
-        self.tot = cu[:,1].astype(np.int32).sum()
+        self.tots = [cu[:,n].sum() for n in range(1,ncol+1)]
         self.sli = slice(None)
+
+    def line(self, n):
+        xs = "%20s " % ihex_(self.cu[n,0])        
+        vals = map(lambda _:" %10s " % _, self.cu[n,1:] ) 
+        label = self.labels[n]
+        nstep = "[%-2d]" % self.label2nstep[label]
+
+
+        return " ".join([xs] + vals + ["   "]+ [nstep, label]) 
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 
         return "\n".join(map(lambda _:self.label2line.get(_,None), ll )) 
 
     def __repr__(self):
-        tail = [" tot: %s " % self.tot ]
-        return "\n".join(self.lines[self.sli] + tail)
+        space = "%20s " % ""
+        body_ = lambda _:" %10s " % _
+        head = space + " ".join(map(body_, self.cnames ))
+        tail = space + " ".join(map(body_, self.tots ))
+        return "\n".join([head] + self.lines[self.sli] + [tail])
+
+    def compare(self, other):
+         l = set(self.labels)
+         o = set(other.labels)
+         u = sorted(list(l | o), key=lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0)), reverse=True)
+
+         cf = np.zeros( (len(u),3), dtype=np.uint64 )
+
+         cf[:,0] = map(lambda _:self.af.seqhis_int(_), u )
+         cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
+         cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
+      
+         cnames = self.cnames + other.cnames 
+
+         return HistoryTable(cf, cnames=cnames)    
+
 
 
 
@@ -111,11 +156,11 @@ class History(object):
     def for_evt(cls, tag="1", src="torch", det="dayabay"):
         ph = A.load_("ph"+src,tag,det)
         seqhis = ph[:,0,0]
-        return cls(seqhis)
+        return cls(seqhis, cnames=[tag])
     
-    def __init__(self, seqhis):
+    def __init__(self, seqhis, cnames=["noname"]):
         cu = count_unique_sorted(seqhis)
-        self.table = HistoryTable(cu)
+        self.table = HistoryTable(cu, cnames=cnames)
         self.seqhis = seqhis
         self.cu = cu
 
@@ -138,6 +183,17 @@ class History(object):
 
 
 
+def test_HistoryTable(ht, seqhis):
+     for seq in ht.labels:
+         seqs = [seq]
+         s_seqhis = map(lambda _:seqhis == af.seqhis_int(_), seqs )
+         psel = np.logical_or.reduce(s_seqhis)      
+
+         n = len(seqhis[psel])
+         assert n == ht.label2count.get(seq)
+         print "%10s %s " % (n, seq ) 
+
+
 
 if __name__ == '__main__':
      af = AbbFlags()
@@ -153,6 +209,10 @@ if __name__ == '__main__':
      cu = count_unique_sorted(seqhis)
 
      ht = HistoryTable(cu)
+     
+     test_HistoryTable(ht, seqhis)
+
+
 
 
 

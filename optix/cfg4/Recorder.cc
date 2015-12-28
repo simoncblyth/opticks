@@ -67,7 +67,8 @@ Consider truncated case with bounce_max = 9, MAXREC = 10
 
 */
 
-
+const char* Recorder::PRE  = "PRE" ; 
+const char* Recorder::POST = "POST" ; 
 
 
 void Recorder::init()
@@ -214,22 +215,18 @@ void Recorder::startPhoton()
     m_seqhis_select = 0x8cbbbbbc0 ;
     m_seqmat = 0 ; 
     m_slot = 0 ; 
+    m_truncate = false ; 
+
     Clear();
 }
 
-void Recorder::RecordStep(const G4Step* step)
+bool Recorder::RecordStep(const G4Step* step)
 {
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
-    // TODO:  material recording
-    /*
-    G4VPhysicalVolume* prePV  = pre->GetPhysicalVolume();
-    G4VPhysicalVolume* postPV  = post->GetPhysicalVolume();
-    */
-
-    unsigned int preFlag(0);
-    unsigned int postFlag(0);
+    unsigned int preFlag ; 
+    unsigned int postFlag ; 
 
     if(m_step_id == 0)
     {
@@ -242,132 +239,70 @@ void Recorder::RecordStep(const G4Step* step)
         postFlag = getPointFlag(post, m_boundary_status) ;
     }
 
-    bool last = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
-
+    bool postLast = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
+    bool preSkip = m_prior_boundary_status == StepTooSmall ;
     bool truncate = false ; 
 
-    // StepTooSmall occurs at boundaries with pre/post StepPoints 
-    // almost the same differing only in their associated volume
+    if(!preSkip)
+       truncate = RecordStepPoint( pre, preFlag, m_prior_boundary_status, PRE ); 
 
-    if( m_prior_boundary_status != StepTooSmall)
-    {
-        RecordStepPoint(pre, preFlag, m_prior_boundary_status, false );
+    if(postLast && !truncate)
+       truncate = RecordStepPoint( post, postFlag, m_boundary_status, POST ); 
 
-        truncate = m_slot == m_bounce_max  ; 
+    // when not postLast the post step will become the pre step at next RecordStep
 
-        // m_slot zeroed in startPhoton, incremented in RecordStepPoint after Collect 
-        // truncate raised here to mimick optixrap- final RSAVE beyond the while  
-        //
-        // maybe constrain bounce_max to be odd so as to always lead to mid step truncation ?
-        // (or should that be even?)
-        //
-        // traditionally have been using bounce_max = record_max - 1 
-        //
-        // cannot based truncation on step_id as that is messed up by 
-        // StepTooSmall extra steps
-    }
-
-    if(last || truncate)
-        RecordStepPoint(post, postFlag, m_boundary_status, true );
-    
-
-    if(last)
-    {
-        bool issue = hasIssue();
-        if(m_record_id < 10 || issue || m_seqhis == m_seqhis_select ) Dump("Recorder::RecordStep") ;
-    }
-
-    if(truncate)
-    {
-        //Summary("Recorder::RecordStep TRUNCATE");
-        G4Track* track = step->GetTrack();
-        track->SetTrackStatus(fStopAndKill);
-    }
-
-
+    return truncate ;
 }
 
-bool Recorder::hasIssue()
+bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label)
 {
-    unsigned int npoints = m_points.size() ;
-    assert(m_flags.size() == npoints);
-    assert(m_bndstats.size() == npoints);
+    bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
 
-    bool issue = false ; 
-    for(unsigned int i=0 ; i < npoints ; i++) 
-    {
-       if(m_flags[i] == 0 || m_flags[i] == NAN_ABORT) issue = true ; 
-    }
-    return issue ; 
-}
-
-
-void Recorder::Dump(const char* msg)
-{
-    LOG(info) << msg 
-              << " record_id " << std::setw(7) << m_record_id
-              << " seqhis " << std::hex << m_seqhis << std::dec 
-              << " " << Opticks::FlagSequence(m_seqhis) ;
-
-    for(unsigned int i=0 ; i<m_points.size() ; i++) 
-    {
-       //unsigned long long seqhis = m_seqhis_dbg[i] ;
-       G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
-       std::string bs = OpBoundaryAbbrevString(bst) ;
-       //std::cout << std::hex << seqhis << std::dec << std::endl ; 
-       std::cout << std::setw(7) << i << " " << Format(m_points[i], bs.c_str()) << std::endl ;
-    }
-}
-
-void Recorder::Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis)
-{
-    m_points.push_back(new G4StepPoint(*point));
-    m_flags.push_back(flag);
-    m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
-    //m_seqhis_dbg.push_back(seqhis);
-}
-
-void Recorder::Clear()
-{
-    for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
-    m_points.clear();
-    m_flags.clear();
-    m_bndstats.clear();
-    //m_seqhis_dbg.clear();
-}
-
-
-void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool write_photon)
-{
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
+
+    //Dump(label,  slot, point, boundary_status );
+ 
+    RecordStepPoint(slot, point, flag, label);
+
+    Collect(point, flag, boundary_status, m_seqhis);
+    m_slot += 1 ; 
+    bool truncate = m_slot > m_bounce_max  ;  
+
+    if(truncate || absorb)
+    {
+        RecordPhoton( point );
+        //Dump("Recorder::RecordStepPoint");
+        return true ; 
+    }
+    return false ; 
+}
+
+
+void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, const char* label )
+{
     unsigned int material = 0 ; 
+    unsigned long long shift = slot*4ull ;   
 
-   /*
-    LOG(info) << "Recorder::RecordStepPoint" 
-              << " m_step_id " << m_step_id 
-              << " m_slot " << m_slot 
-              << " slot " << slot 
-              << " write_photon " << write_photon 
-              ;
-    */
-
-
-    // * masked combination needed (not just m_seqhis |= ) 
-    //   in order to correctly handle truncation overwrite
-    //
-    // * all ingredients must be 64bit otherwise slips down to 32bit 
-    //   causing wraparounds, causing bad flags
-
-    unsigned long long shift = slot*4ull ; 
     unsigned long long msk = 0xFull << shift ; 
     unsigned long long his = ffs(flag) & 0xFull ; 
     unsigned long long mat = material < 0xFull ? material : 0xFull ; 
     m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
     m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
 
-    Collect(point, flag, boundary_status, m_seqhis);
 
-    m_slot += 1 ; 
+    /*
+    LOG(info) << "Recorder::RecordStepPoint" 
+              << " label " << label 
+              << " m_record_id " << m_record_id 
+              << " m_step_id " << m_step_id 
+              << " m_slot " << m_slot 
+              << " slot " << slot 
+              << " flag " << flag
+              << " his " << his
+              << " shift " << shift 
+              << " m_seqhis " << std::hex << m_seqhis << std::dec 
+              ;
+    */
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -408,49 +343,105 @@ void Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
     polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
 
     m_records->setQuad(m_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
+}
 
-    /*
-    if(m_record_id < 10000)
-        LOG(info) << "Recorder::RecordStepPoint" 
-                  << " record_id " << m_record_id
-                  << " m_slot " << m_slot 
-                  << " slot " << slot 
-                  << " time " << time
-                  << " time_ " << time_
-                  << " ns " << ns
-                  << " time_domain.x " << m_time_domain.x
-                  << " time_domain.y " << m_time_domain.y
-                  ;
-     */ 
 
-    if(write_photon)
+
+void Recorder::RecordPhoton(const G4StepPoint* point)
+{
+    const G4ThreeVector& pos = point->GetPosition();
+    const G4ThreeVector& dir = point->GetMomentumDirection();
+    const G4ThreeVector& pol = point->GetPolarization();
+
+    G4double time = point->GetGlobalTime();
+    G4double energy = point->GetKineticEnergy();
+    G4double wavelength = h_Planck*c_light/energy ;
+    G4double weight = 1.0 ; 
+
+    m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+
+    unsigned int ux = m_slot ;  // untruncated 
+    unsigned int uy = 0u ; 
+    unsigned int uz = 0u ; 
+    unsigned int uw = 0u ; 
+
+    m_photons->setUInt(m_record_id, 3, 0, 0, ux );
+    m_photons->setUInt(m_record_id, 3, 0, 1, uy );
+    m_photons->setUInt(m_record_id, 3, 0, 2, uz );
+    m_photons->setUInt(m_record_id, 3, 0, 3, uw );
+
+
+    // generate.cu
+    //
+    //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
+    //  (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
+    //  (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
+    //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
+    //
+
+    unsigned long long* history = m_history->getValues() + 2*m_record_id ;
+    *(history+0) = m_seqhis ; 
+    *(history+1) = m_seqmat ; 
+
+}
+
+
+
+
+bool Recorder::hasIssue()
+{
+    unsigned int npoints = m_points.size() ;
+    assert(m_flags.size() == npoints);
+    assert(m_bndstats.size() == npoints);
+
+    bool issue = false ; 
+    for(unsigned int i=0 ; i < npoints ; i++) 
     {
-        m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-        m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-        m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+       if(m_flags[i] == 0 || m_flags[i] == NAN_ABORT) issue = true ; 
+    }
+    return issue ; 
+}
 
-        unsigned int ux = m_slot ;  // untruncated 
-        unsigned int uy = 0u ; 
-        unsigned int uz = 0u ; 
-        unsigned int uw = 0u ; 
+void Recorder::Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status )
+{
+    std::string bs = OpBoundaryAbbrevString(boundary_status) ;
+    std::cout << std::setw(7) << index << " " << Format(point, bs.c_str()) << std::endl ;
+}
 
-        m_photons->setUInt(m_record_id, 3, 0, 0, ux );
-        m_photons->setUInt(m_record_id, 3, 0, 1, uy );
-        m_photons->setUInt(m_record_id, 3, 0, 2, uz );
-        m_photons->setUInt(m_record_id, 3, 0, 3, uw );
+void Recorder::Dump(const char* msg)
+{
+    LOG(info) << msg 
+              << " record_id " << std::setw(7) << m_record_id
+              << " seqhis " << std::hex << m_seqhis << std::dec 
+              << " " << Opticks::FlagSequence(m_seqhis) ;
 
-
-        // generate.cu
-        //
-        //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
-        //  (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
-        //  (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
-        //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
-        //
-
-        unsigned long long* history = m_history->getValues() + 2*m_record_id ;
-        *(history+0) = m_seqhis ; 
-        *(history+1) = m_seqmat ; 
+    for(unsigned int i=0 ; i<m_points.size() ; i++) 
+    {
+       //unsigned long long seqhis = m_seqhis_dbg[i] ;
+       G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
+       Dump(msg, i, m_points[i], bst );
+       //std::cout << std::hex << seqhis << std::dec << std::endl ; 
     }
 }
+
+void Recorder::Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis)
+{
+    m_points.push_back(new G4StepPoint(*point));
+    m_flags.push_back(flag);
+    m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
+    //m_seqhis_dbg.push_back(seqhis);
+}
+
+void Recorder::Clear()
+{
+    for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
+    m_points.clear();
+    m_flags.clear();
+    m_bndstats.clear();
+    //m_seqhis_dbg.clear();
+}
+
+
 

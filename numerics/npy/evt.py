@@ -41,23 +41,26 @@ class Evt(object):
         wl = ox[:,2,W] 
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
-        history = History(seqhis)  # full history without selection
+        all_history = History(seqhis)  # full history without selection
 
         # qtys without selection applied 
         self.nrec = nrec 
+        self.seqhis = seqhis
+        self.all_history = all_history
         self.seqmat = seqmat
         self.seqs = seqs
         self.nrec = nrec
 
         if len(seqs) > 0:
             log.info("Evt seqs %s " % repr(seqs))
-            psel = history.seqhis_or(seqs, not_=not_)
+            psel = all_history.seqhis_or(seqs, not_=not_)
             ox = ox[psel]
             wl = wl[psel]
             rx = rx[psel]
             history = History(seqhis[psel])   # history with selection applied
         else:
             psel = None
+            history = all_history
 
         pass
         self.history = history

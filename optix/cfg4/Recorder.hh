@@ -26,11 +26,14 @@ template <typename T> class NPY ;
 
 class Recorder {
    public:
+        static const char* PRE ; 
+        static const char* POST ; 
+   public:
         Recorder(NumpyEvt* evt, unsigned int photons_per_g4event);
    public:
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
-        void RecordStep(const G4Step*);
+        bool RecordStep(const G4Step*);
         void startPhoton();
 
         void setupPrimaryRecording();
@@ -42,12 +45,16 @@ class Recorder {
    public:
         NumpyEvt* getEvt();
    public:
-        void RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, bool last);
+        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label);
+        void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, const char* label);
+
+        void RecordPhoton(const G4StepPoint* point);
         void Clear();
         void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis);
         bool hasIssue();
    public:
         void Dump(const char* msg="Recorder::Dump");
+        void Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status );
    public:
         void setEventId(unsigned int event_id);
         void setPhotonId(unsigned int photon_id);
@@ -88,7 +95,8 @@ class Recorder {
         unsigned long long m_seqhis_select ; 
         unsigned long long m_seqhis ; 
         unsigned long long m_seqmat ; 
-        unsigned int m_slot ; 
+        unsigned int       m_slot ; 
+        bool               m_truncate ; 
 
         NPY<float>*               m_primary ; 
         NPY<float>*               m_photons ; 
@@ -125,6 +133,8 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
    m_seqhis_select(0),
    m_seqmat(0),
    m_slot(0),
+   m_truncate(false),
+
    m_primary(0),
    m_photons(0),
    m_records(0),

@@ -13,9 +13,10 @@ def count_unique(vals):
     return np.vstack((uniq, np.bincount(bins))).T
 
 def count_unique_sorted(vals):
+    vals = vals.astype(np.uint64)
     cu = count_unique(vals)
     cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
-    return cu
+    return cu.astype(np.uint64)
 
 
 
