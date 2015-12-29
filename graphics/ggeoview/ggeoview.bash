@@ -1731,7 +1731,8 @@ ggeoview-accelcache-rm()
 ggeoview-rng-max()
 {
    # maximal number of photons that can be handled : move to cudawrap- ?
-    echo $(( 1000*1000*3 ))
+    #echo $(( 1000*1000*3 ))
+    echo $(( 1000*1000*1 ))
 }
 
 ggeoview-rng-prep()

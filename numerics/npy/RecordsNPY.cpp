@@ -171,6 +171,14 @@ void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distanc
     }
 
     length = 0.f ;
+
+    if(posts.size() == 0) 
+    {
+        LOG(warning) << "RecordsNPY::tracePath" 
+                     << " no posts " ;
+        return ;  
+    }
+
     unsigned int last = posts.size() - 1 ; 
     for(unsigned int i=1 ; i <= last ; i++)
     {
@@ -184,9 +192,9 @@ void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distanc
 
 glm::vec4 RecordsNPY::getLengthDistanceDuration(unsigned int photon_id)
 {
-    float length ;
-    float distance ;
-    float duration  ;
+    float length(0.f) ;
+    float distance(0.f) ;
+    float duration(0.f)  ;
     tracePath(photon_id, length, distance, duration );
     return glm::vec4(length, distance, 0.f, duration );
 }

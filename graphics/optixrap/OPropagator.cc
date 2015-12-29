@@ -69,9 +69,18 @@ void OPropagator::initRng()
 
     if(rng_max == 0 ) return ;
 
-
+    unsigned int num_photons = m_evt->getNumPhotons();
     const char* rngCacheDir = OConfig::RngDir() ;
+
+    LOG(info) << "OPropagator::initRng"
+               << " rng_max " << rng_max
+               << " num_photons " << num_photons 
+               << " rngCacheDir " << rngCacheDir
+               ;
+
+
     m_rng_wrapper = cuRANDWrapper::instanciate( rng_max, rngCacheDir );
+
 
     // OptiX owned RNG states buffer (not CUDA owned)
     m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
@@ -79,10 +88,15 @@ void OPropagator::initRng()
     m_rng_states->setSize(rng_max);
     m_context["rng_states"]->setBuffer(m_rng_states);
 
-    curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
-    m_rng_wrapper->setItems(rng_max);
-    m_rng_wrapper->fillHostBuffer(host_rng_states, rng_max);
-    m_rng_states->unmap();
+
+    {
+        curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
+
+        m_rng_wrapper->setItems(rng_max);
+        m_rng_wrapper->fillHostBuffer(host_rng_states, rng_max);
+
+        m_rng_states->unmap();
+    }
 
     //
     // TODO: investigate Thrust based alternatives for curand initialization 

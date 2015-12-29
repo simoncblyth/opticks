@@ -73,13 +73,12 @@ class OColors ;
 class App {
   public:
        App(const char* prefix, int argc, char** argv );
+       void initGL(int argc, char** argv);
+       int config(int argc, char** argv);
        bool isExit();
   private:
        void init(int argc, char** argv);
-       void wiring();
        void setExit(bool exit=true);
-  public:
-       int config(int argc, char** argv);
   public:
        void prepareScene();   // creates OpenGL context window and OpenGL renderers loading shaders
   public:

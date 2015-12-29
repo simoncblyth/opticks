@@ -3,7 +3,10 @@
 int main(int argc, char** argv)
 {
     App app("GGEOVIEW_", argc, argv);       // NumpyEvt created in App::config 
-    if(app.isExit()) exit(EXIT_SUCCESS);
+
+    app.initGL(argc, argv);
+
+    if(app.config(argc, argv) != 0) exit(EXIT_SUCCESS);
 
     app.prepareScene();       // setup OpenGL shaders and creates OpenGL context (the window)
 

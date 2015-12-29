@@ -184,6 +184,16 @@ void App::init(int argc, char** argv)
     m_timer->setVerbose(true);
     m_timer->start();
 
+#ifdef NPYSERVER
+    m_delegate    = new numpydelegate ; 
+#endif
+    
+
+}
+
+
+void App::initGL(int argc, char** argv)
+{
     // the envvars are normally not defined, using 
     // cmake configure_file values instead
     const char* shader_dir = getenv("SHADER_DIR"); 
@@ -197,19 +207,8 @@ void App::init(int argc, char** argv)
     m_frame       = new Frame ; 
     m_bookmarks   = new Bookmarks ; 
     m_interactor  = new Interactor ; 
-#ifdef NPYSERVER
-    m_delegate    = new numpydelegate ; 
-#endif
-
-    wiring();
-
-    int rc = config(argc, argv) ;
-    if(rc) m_exit = true ; 
-}
 
 
-void App::wiring()
-{
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
     m_interactor->setComposition(m_composition);
@@ -224,6 +223,9 @@ void App::wiring()
     m_frame->setComposition(m_composition);
     m_frame->setScene(m_scene);
 }
+
+
+
 
 
 int App::config(int argc, char** argv)
