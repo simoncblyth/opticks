@@ -22,7 +22,28 @@
 #include "NLog.hpp"
 
 #include "Recorder.h"
-#include "Recorder.icc"
+
+
+
+#define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
+#define iround(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
+
+short shortnorm( float v, float center, float extent )
+{
+    // range of short is -32768 to 32767
+    // Expect no positions out of range, as constrained by the geometry are bouncing on,
+    // but getting times beyond the range eg 0.:100 ns is expected
+    //  
+    int inorm = iround(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
+    return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
+} 
+
+unsigned char uchar_( float f )  // f in range -1.:1. 
+{
+    int ipol = iround((f+1.f)*127.f) ;
+    return ipol ; 
+}
+
 
 
 /*
@@ -81,10 +102,13 @@ void Recorder::init()
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
 
+    m_step = m_evt->isStep();
+
     LOG(info) << "Recorder::init"
               << " record_max " << m_record_max
               << " bounce_max  " << m_bounce_max 
               << " steps_per_photon " << m_steps_per_photon 
+              << " isStep " << m_step  
               ;
 
     m_evt->zero();
@@ -244,17 +268,17 @@ bool Recorder::RecordStep(const G4Step* step)
 
     bool postLast = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
     bool preSkip = m_prior_boundary_status == StepTooSmall ;
-    bool truncate = false ; 
+    bool done = false ; 
 
     if(!preSkip)
-       truncate = RecordStepPoint( pre, preFlag, m_prior_boundary_status, PRE ); 
+       done = RecordStepPoint( pre, preFlag, m_prior_boundary_status, PRE ); 
 
-    if(postLast && !truncate)
-       truncate = RecordStepPoint( post, postFlag, m_boundary_status, POST ); 
+    if(postLast && !done)
+       done = RecordStepPoint( post, postFlag, m_boundary_status, POST ); 
 
     // when not postLast the post step will become the pre step at next RecordStep
 
-    return truncate ;
+    return done ;
 }
 
 
@@ -279,6 +303,47 @@ void Recorder::RecordQuadrant(const G4Step* step)
 }
 
 
+
+void Recorder::RecordPhoton(const G4Step* step)
+{
+    const G4StepPoint* point  = step->GetPostStepPoint() ; 
+
+    const G4ThreeVector& pos = point->GetPosition();
+    const G4ThreeVector& dir = point->GetMomentumDirection();
+    const G4ThreeVector& pol = point->GetPolarization();
+
+    G4double time = point->GetGlobalTime();
+    G4double energy = point->GetKineticEnergy();
+    G4double wavelength = h_Planck*c_light/energy ;
+    G4double weight = 1.0 ; 
+
+    m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+
+    m_photons->setUInt(m_record_id, 3, 0, 0, m_slot );
+    m_photons->setUInt(m_record_id, 3, 0, 1, 0u );
+    m_photons->setUInt(m_record_id, 3, 0, 2, m_c4.u );
+    m_photons->setUInt(m_record_id, 3, 0, 3, 0u );
+
+    // generate.cu
+    //
+    //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
+    //  (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
+    //  (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
+    //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
+    //
+
+    if(m_step)
+    {
+        unsigned long long* history = m_history->getValues() + 2*m_record_id ;
+        *(history+0) = m_seqhis ; 
+        *(history+1) = m_seqmat ; 
+    }
+}
+
+
+
 bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label)
 {
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
@@ -286,35 +351,32 @@ bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
 
     //Dump(label,  slot, point, boundary_status );
- 
-    RecordStepPoint(slot, point, flag, label);
 
-    Collect(point, flag, boundary_status, m_seqhis);
+    if(m_step)
+    {
+        unsigned int material = 0 ; 
+        unsigned long long shift = slot*4ull ;   
+        unsigned long long msk = 0xFull << shift ; 
+        unsigned long long his = ffs(flag) & 0xFull ; 
+        unsigned long long mat = material < 0xFull ? material : 0xFull ; 
+        m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
+        m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
+
+        RecordStepPoint(slot, point, flag, label);
+
+        Collect(point, flag, boundary_status, m_seqhis);
+    }
+
     m_slot += 1 ; 
+
     bool truncate = m_slot > m_bounce_max  ;  
 
-    if(truncate || absorb)
-    {
-        RecordPhoton( point );
-        //Dump("Recorder::RecordStepPoint");
-        return true ; 
-    }
-    return false ; 
+    return truncate || absorb ;
 }
 
 
 void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, const char* label )
 {
-    unsigned int material = 0 ; 
-    unsigned long long shift = slot*4ull ;   
-
-    unsigned long long msk = 0xFull << shift ; 
-    unsigned long long his = ffs(flag) & 0xFull ; 
-    unsigned long long mat = material < 0xFull ? material : 0xFull ; 
-    m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
-    m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
-
-
     /*
     LOG(info) << "Recorder::RecordStepPoint" 
               << " label " << label 
@@ -359,7 +421,7 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     qaux.uchar_.x = 0 ; // TODO:m1 
     qaux.uchar_.y = 0 ; // TODO:m2 
     qaux.char_.z  = 0 ; // TODO:boundary (G4 equivalent ?)
-    qaux.uchar_.w = ffs(flag) ; 
+    qaux.uchar_.w = ffs(flag) ;   // ? duplicates seqhis  
 
     hquad polw ; 
     polw.ushort_.x = polx | poly << 8 ; 
@@ -370,42 +432,6 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     m_records->setQuad(m_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
 }
 
-
-
-void Recorder::RecordPhoton(const G4StepPoint* point)
-{
-    const G4ThreeVector& pos = point->GetPosition();
-    const G4ThreeVector& dir = point->GetMomentumDirection();
-    const G4ThreeVector& pol = point->GetPolarization();
-
-    G4double time = point->GetGlobalTime();
-    G4double energy = point->GetKineticEnergy();
-    G4double wavelength = h_Planck*c_light/energy ;
-    G4double weight = 1.0 ; 
-
-    m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-    m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-    m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-
-    m_photons->setUInt(m_record_id, 3, 0, 0, m_slot );
-    m_photons->setUInt(m_record_id, 3, 0, 1, 0u );
-    m_photons->setUInt(m_record_id, 3, 0, 2, m_c4.u );
-    m_photons->setUInt(m_record_id, 3, 0, 3, 0u );
-
-
-    // generate.cu
-    //
-    //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
-    //  (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
-    //  (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
-    //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
-    //
-
-    unsigned long long* history = m_history->getValues() + 2*m_record_id ;
-    *(history+0) = m_seqhis ; 
-    *(history+1) = m_seqmat ; 
-
-}
 
 
 

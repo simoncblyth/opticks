@@ -126,12 +126,27 @@ void OPropagator::initEvent(NumpyEvt* evt)
 
     m_photon_buffer = m_ocontext->createIOBuffer<float>( evt->getPhotonData(), "photon" );
     m_context["photon_buffer"]->set( m_photon_buffer );
+    m_photon_buf = new OBuf("photon", m_photon_buffer );
 
-    m_record_buffer = m_ocontext->createIOBuffer<short>( evt->getRecordData(), "record");
-    m_context["record_buffer"]->set( m_record_buffer );
+    if(evt->isStep())
+    {
+        NPY<short>* rx = evt->getRecordData() ;
+        assert(rx);
+        m_record_buffer = m_ocontext->createIOBuffer<short>( rx, "record");
+        m_context["record_buffer"]->set( m_record_buffer );
 
-    m_sequence_buffer = m_ocontext->createIOBuffer<unsigned long long>( evt->getSequenceData(), "sequence" );
-    m_context["sequence_buffer"]->set( m_sequence_buffer );
+        m_sequence_buffer = m_ocontext->createIOBuffer<unsigned long long>( evt->getSequenceData(), "sequence" );
+        m_context["sequence_buffer"]->set( m_sequence_buffer );
+
+        m_sequence_buf = new OBuf("sequence", m_sequence_buffer );
+        m_sequence_buf->setMultiplicity(1u);
+        m_sequence_buf->setHexDump(true);
+    }
+    else
+    {
+        LOG(info) << "OPropagator::initEvent skipping record/sequence buffer creation as nonStep " ;
+    }
+
 
 /*
     m_aux_buffer = m_ocontext->createIOBuffer<short>( evt->getAuxData(), "aux" );
@@ -139,12 +154,6 @@ void OPropagator::initEvent(NumpyEvt* evt)
        m_context["aux_buffer"]->set( m_aux_buffer );
 */
 
-
-    m_sequence_buf = new OBuf("sequence", m_sequence_buffer );
-    m_sequence_buf->setMultiplicity(1u);
-    m_sequence_buf->setHexDump(true);
-
-    m_photon_buf = new OBuf("photon", m_photon_buffer );
 
     // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
@@ -182,11 +191,14 @@ void OPropagator::downloadEvent()
     NPY<float>* dpho = m_evt->getPhotonData();
     OContext::download<float>( m_photon_buffer, dpho );
 
-    NPY<short>* drec = m_evt->getRecordData();
-    OContext::download<short>( m_record_buffer, drec );
+    if(m_evt->isStep())
+    {
+        NPY<short>* drec = m_evt->getRecordData();
+        OContext::download<short>( m_record_buffer, drec );
 
-    NPY<unsigned long long>* dhis = m_evt->getSequenceData();
-    OContext::download<unsigned long long>( m_sequence_buffer, dhis );
+        NPY<unsigned long long>* dhis = m_evt->getSequenceData();
+        OContext::download<unsigned long long>( m_sequence_buffer, dhis );
+    }
 
     LOG(info)<<"OPropagator::downloadEvent DONE" ;
 }

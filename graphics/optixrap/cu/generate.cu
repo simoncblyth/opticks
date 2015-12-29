@@ -1,4 +1,49 @@
-// porting from /usr/local/env/chroma_env/src/chroma/chroma/cuda/generate.cu
+// Where best to record the propagation ? 
+// =======================================
+//
+// Code prior to inloop record save 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//                             /\
+//      *--> . . . . . . m1  ./* \ - m2 - - - -
+//     p                     / su \
+//                          /______\
+//
+// * finds intersected triangle along ray from p.position along p.direction
+// * uses triangle primIdx to find boundaryIndex 
+// * use boundaryIndex and p.wavelength to look up surface/material properties 
+//   including s.index.x/y/z  m1/m2/su indices 
+// 
+// * **NB THIS CODE DOES NOT change p.direction/p.position/p.time** 
+//   they are still at their generated OR last changed positions 
+//   from CONTINUE-ers from the below propagation code 
+//
+//  In summary this code is looking ahead to see where to go next
+//  while the photon remains with exitant position and direction
+//  and flags from the last "step"
+//
+// Code after inloop record save
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// * changes p.position p.time p.direction p.polarization ... 
+//   then CONTINUEs back to the above to find the next intersection
+//   or BREAKs
+//
+//
+//            BULK_SCATTER/BULK_REEMIT
+//                 ^
+//                 |           /\
+//      *--> . # . *. . . m1  /* \ - m2 - - - -
+//     p       .             / su \
+//          BULK_ABSORB     /______\
+//
+// * each turn of the loop only sets a single history bit  
+// * bit position is used rather than the full mask in the photon record
+//   to save bits  
+//
+// * control the or-ing of that flag into photon history at this level
+// * integrate surface optical props: finish=polished/ground
+//
+//
 
 #include <curand_kernel.h>
 #include <optix_world.h>
@@ -22,6 +67,7 @@ rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 #define GNUMQUAD 6
+
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
 #include "torchstep.h"
@@ -31,8 +77,12 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               photon_buffer;
+
+//#define RECORD 1
+#ifdef RECORD
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
+#endif
 
 //#define AUX 1
 #ifdef AUX
@@ -99,7 +149,6 @@ RT_PROGRAM void generate()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
-    unsigned int MAXREC = record_max ; 
 
     // first 4 bytes of photon_buffer photon records is seeded with genstep_id 
     // this seeding is done by App::seedPhotonsFromGensteps
@@ -124,9 +173,7 @@ RT_PROGRAM void generate()
     curandState rng = rng_states[photon_id];
 
     // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
-    unsigned long long seqhis(0) ;
-    unsigned long long seqmat(0) ;
-    int MaterialIndex(0) ; 
+
 
     State s ;   
     Photon p ;  
@@ -141,7 +188,7 @@ RT_PROGRAM void generate()
         if(dbg) csdebug(cs);
 #endif
         generate_cerenkov_photon(p, cs, rng );         
-        MaterialIndex = cs.MaterialIndex ;  
+        //MaterialIndex = cs.MaterialIndex ;  
         s.flag = CERENKOV ;  
     }
     else if(ghead.i.x == SCINTILLATION)
@@ -152,7 +199,7 @@ RT_PROGRAM void generate()
         if(dbg) ssdebug(ss);
 #endif
         generate_scintillation_photon(p, ss, rng );         
-        MaterialIndex = ss.MaterialIndex ;  
+        //MaterialIndex = ss.MaterialIndex ;  
         s.flag = SCINTILLATION ;  
     }
     else if(ghead.i.x == TORCH)
@@ -163,7 +210,7 @@ RT_PROGRAM void generate()
         if(dbg) tsdebug(ts);
 #endif
         generate_torch_photon(p, ts, rng );         
-        MaterialIndex = ts.MaterialIndex ;  
+        //MaterialIndex = ts.MaterialIndex ;  
         s.flag = TORCH ;  
     }
 
@@ -185,9 +232,16 @@ RT_PROGRAM void generate()
     int command = START ; 
 
     int slot = 0 ;
+
+#ifdef RECORD
+    unsigned long long seqhis(0) ;
+    unsigned long long seqmat(0) ;
+    int MaterialIndex(0) ; 
+    unsigned int MAXREC = record_max ; 
     int slot_min = photon_id*MAXREC ; 
     int slot_max = slot_min + MAXREC - 1 ; 
     int slot_offset = 0 ; 
+#endif
 
     PerRayData_propagate prd ;
 
@@ -226,9 +280,10 @@ RT_PROGRAM void generate()
 
         FLAGS(p, s, prd); 
 
-
+#ifdef RECORD
         slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
         RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
+#endif
 
 #ifdef AUX
         if(dbg)
@@ -240,56 +295,6 @@ RT_PROGRAM void generate()
         ASAVE(p, s, slot, slot_offset, MaterialIndex );
 #endif
         slot++ ; 
-
-
-        // Where best to record the propagation ? 
-        // =======================================
-        //
-        // The above code: 
-        // ~~~~~~~~~~~~~~~~   
-        //                             /\
-        //      *--> . . . . . . m1  ./* \ - m2 - - - -
-        //     p                     / su \
-        //                          /______\
-        //
-        // * finds intersected triangle along ray from p.position along p.direction
-        // * uses triangle primIdx to find boundaryIndex 
-        // * use boundaryIndex and p.wavelength to look up surface/material properties 
-        //   including s.index.x/y/z  m1/m2/su indices 
-        // 
-        // * **NB ABOVE CODE DOES NOT change p.direction/p.position/p.time** 
-        //   they are still at their generated OR last changed positions 
-        //   from CONTINUE-ers from the below propagation code 
-        //
-        //  In summary the above code is looking ahead to see where to go next
-        //  while the photon remains with exitant position and direction
-        //  and flags from the last "step"
-        //
-        // The below code:
-        // ~~~~~~~~~~~~~~~~
-        //
-        // * changes p.position p.time p.direction p.polarization ... 
-        //   then CONTINUEs back to the above to find the next intersection
-        //   or BREAKs
-        //
-        //
-        //            BULK_SCATTER/BULK_REEMIT
-        //                 ^
-        //                 |           /\
-        //      *--> . # . *. . . m1  /* \ - m2 - - - -
-        //     p       .             / su \
-        //          BULK_ABSORB     /______\
-        //
-        //
-        //
-        // * each turn of the loop only sets a single history bit  
-        // * bit position is used rather than the full mask in the photon record
-        //   to save bits  
-        //
-        // * control the or-ing of that flag into photon history at this level
-        // * integrate surface optical props: finish=polished/ground
-        //
-
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
@@ -319,18 +324,13 @@ RT_PROGRAM void generate()
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset, c4 ); 
 
-    // building history sequence, bounce by bounce
-    // s.flag is unexpected coming out 0xf 20% of time ? always here on the last placement ?
-    // skipping the 2nd seqset :
-    //    0) avoids the problem of trailing f 
-    //    1) causes all the MISS to get zero, the initial seqhis value
-    //
-
+#ifdef RECORD
     slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
     RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
 
     sequence_buffer[photon_id*2 + 0] = seqhis ; 
     sequence_buffer[photon_id*2 + 1] = seqmat ;  
+#endif
 
 
 #ifdef AUX

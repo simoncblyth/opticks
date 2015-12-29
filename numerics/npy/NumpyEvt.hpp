@@ -23,9 +23,12 @@ class NumpyEvt {
    public:
        NumpyEvt(const char* typ, const char* tag, const char* det, const char* cat=NULL);
        void setFlat(bool flat);
+       void setStep(bool step);
+   public:
        bool isFlat();
        bool isNoLoad();
        bool isIndexed();
+       bool isStep();
    public:
        // from parameters
        unsigned int getBounceMax();
@@ -156,6 +159,7 @@ class NumpyEvt {
        const char*           m_det ; 
        const char*           m_cat ; 
        bool                  m_flat ; 
+       bool                  m_step ; 
        bool                  m_noload ; 
 
        Timer*                m_timer ;
@@ -212,6 +216,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_det(strdup(det)),
           m_cat(strdup(cat)),
           m_flat(false),
+          m_step(true),
           m_noload(false),
 
           m_timer(NULL),
@@ -260,6 +265,18 @@ inline bool NumpyEvt::isFlat()
 {
     return m_flat ; 
 }
+
+inline void NumpyEvt::setStep(bool step)
+{
+    m_step = step ;
+}
+inline bool NumpyEvt::isStep()
+{
+    return m_step ; 
+}
+
+
+
 inline bool NumpyEvt::isNoLoad()
 {
     return m_noload ; 

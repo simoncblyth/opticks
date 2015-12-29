@@ -152,6 +152,8 @@ NumpyEvt* Opticks::makeEvt()
 
     NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
 
+    bool nostep = m_cfg->hasOpt("nostep") ;
+    evt->setStep(!nostep);
     evt->setMaxRec(m_cfg->getRecordMax());
  
     // ctor args define the identity of the Evt, coming in from config

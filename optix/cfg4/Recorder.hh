@@ -36,6 +36,8 @@ class Recorder {
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         bool RecordStep(const G4Step*);
+
+        void RecordPhoton(const G4Step* step);
         void startPhoton();
 
         void setupPrimaryRecording();
@@ -51,7 +53,6 @@ class Recorder {
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, const char* label);
         void RecordQuadrant(const G4Step* step);
 
-        void RecordPhoton(const G4StepPoint* point);
         void Clear();
         void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis);
         bool hasIssue();
@@ -103,6 +104,7 @@ class Recorder {
         unsigned long long m_seqmat ; 
         unsigned int       m_slot ; 
         bool               m_truncate ; 
+        bool               m_step ; 
 
         NPY<float>*               m_primary ; 
         NPY<float>*               m_photons ; 
@@ -140,6 +142,7 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
    m_seqmat(0),
    m_slot(0),
    m_truncate(false),
+   m_step(true),
 
    m_primary(0),
    m_photons(0),

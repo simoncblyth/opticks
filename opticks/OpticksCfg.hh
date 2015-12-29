@@ -132,6 +132,9 @@ inline void OpticksCfg<Listener>::init()
        ("noevent,E",  "inhibit event handling") ;
 
    m_desc.add_options()
+       ("nostep,S",  "inhibit step by step recording") ;
+
+   m_desc.add_options()
        ("nooptix,O",  "inhibit use of OptiX") ;
 
    m_desc.add_options()

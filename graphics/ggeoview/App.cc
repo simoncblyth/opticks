@@ -734,13 +734,16 @@ void App::seedPhotonsFromGensteps()
 
 void App::initRecords()
 {
-    // TODO: find an OpenGL way to zero a VBO, here resort to CUDA
+    NPY<short>* rx =  m_evt->getRecordData() ;
+
+    if(!rx) return ; 
+    
     LOG(info)<<"App::initRecords" ;
 
-    NPY<short>* records =  m_evt->getRecordData() ;
-    CResource rec( records->getBufferId(), CResource::W );
+    CResource rec( rx->getBufferId(), CResource::W );
 
     TBuf trec("trec", rec.mapGLToCUDA<short>() );
+
     trec.zero();
 
     rec.unmapGLToCUDA(); 
@@ -1055,25 +1058,25 @@ void App::indexEvtOld()
     Types* types = m_cache->getTypes();
     Typ* typ = m_cache->getTyp();
 
-    NPY<float>* dpho = m_evt->getPhotonData();
+    NPY<float>* ox = m_evt->getPhotonData();
 
 
-    if(dpho->hasData())
+    if(ox && ox->hasData())
     {
-        m_pho = new PhotonsNPY(dpho);   // a detailed photon/record dumper : looks good for photon level debug 
+        m_pho = new PhotonsNPY(ox);   // a detailed photon/record dumper : looks good for photon level debug 
         m_pho->setTypes(types);
         m_pho->setTyp(typ);
 
-        m_hit = new HitsNPY(dpho, m_ggeo->getSensorList());
+        m_hit = new HitsNPY(ox, m_ggeo->getSensorList());
         m_hit->debugdump();
     }
 
     // hmm thus belongs in NumpyEvt rather than here
-    NPY<short>* drec = m_evt->getRecordData();
+    NPY<short>* rx = m_evt->getRecordData();
 
-    if(drec->hasData())
+    if(rx && rx->hasData())
     {
-        m_rec = new RecordsNPY(drec, m_evt->getMaxRec(), m_evt->isFlat());
+        m_rec = new RecordsNPY(rx, m_evt->getMaxRec(), m_evt->isFlat());
         m_rec->setTypes(types);
         m_rec->setTyp(typ);
         m_rec->setDomains(m_evt->getFDomain()) ;

@@ -426,16 +426,20 @@ void Rdr::dump_uniforms()
 
 void Rdr::download( NumpyEvt* evt )
 {
-    NPY<float>* dpho = evt->getPhotonData();
-    Rdr::download(dpho);
+    NPY<float>* ox = evt->getPhotonData();
+    if(ox)
+        Rdr::download(ox);
 
-    NPY<short>* drec = evt->getRecordData();
-    Rdr::download(drec);
+    NPY<short>* rx = evt->getRecordData();
+    if(rx)
+        Rdr::download(rx);
 
-    NPY<unsigned long long>* dhis = evt->getSequenceData();
-    Rdr::download(dhis);
+    NPY<unsigned long long>* ph = evt->getSequenceData();
+    if(ph)
+        Rdr::download(ph);
 
-    NPY<short>* daux = evt->getAuxData();
-    Rdr::download(daux);
+    NPY<short>* au = evt->getAuxData();
+    if(au)
+        Rdr::download(au);
 }
 

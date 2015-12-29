@@ -113,23 +113,29 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
 
 
     createHostBuffers();
-    createHostIndexBuffers();
 
+    if(m_step)
+    {
+        createHostIndexBuffers();
+    }
 
     m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
     m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
-    m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
+
+    if(m_step)
+    {
+        m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
+    }
+   
 }
 
 
 void NumpyEvt::prepareForIndexing()
 {
+    if(!m_step) return ; 
     assert(m_num_photons > 0 );
+
     createHostIndexBuffers();
-
-    //m_recsel_data->setDynamic();    
-    //m_phosel_data->setDynamic();    
-
 }
 
 void NumpyEvt::prepareForPrimaryRecording()
@@ -157,28 +163,37 @@ void NumpyEvt::createHostBuffers()
     NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
-    setSequenceData(seq);   
+    if(m_step)
+    {
+        NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
+        setSequenceData(seq);   
+    }
 
     if(m_flat)
     {
         unsigned int num_records = getNumRecords();
-        NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
-        setRecordData(rec);   
+        if(m_step)
+        {
+            NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+            setRecordData(rec);   
 
-        NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-        setRecselData(recsel);   
+            NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+            setRecselData(recsel);   
+        }
 
         NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
         setAuxData(aux);   
     }
     else
     {
-        NPY<short>* rec = NPY<short>::make(m_num_photons, m_maxrec, 2, 4); 
-        setRecordData(rec);   
+        if(m_step)
+        {
+            NPY<short>* rec = NPY<short>::make(m_num_photons, m_maxrec, 2, 4); 
+            setRecordData(rec);   
 
-        NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-        setRecselData(recsel);   
+            NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+            setRecselData(recsel);   
+        }
 
         NPY<short>* aux = NPY<short>::make(m_num_photons, m_maxrec, 1, 4);  // shape (nr,1,4)
         setAuxData(aux);   
@@ -206,6 +221,8 @@ void NumpyEvt::createHostBuffers()
 
 void NumpyEvt::createHostIndexBuffers()
 {
+    assert( m_step );
+
     LOG(info) << "NumpyEvt::createHostIndexBuffers "
               << " flat " << m_flat 
               << " m_num_photons " << m_num_photons  
@@ -299,11 +316,15 @@ void NumpyEvt::readDomainsBuffer()
 void NumpyEvt::zero()
 {
     m_photon_data->zero();
-    m_phosel_data->zero();
-    m_record_data->zero();
-    m_recsel_data->zero();
-    m_sequence_data->zero();
     m_aux_data->zero();
+
+    if(m_step)
+    {
+        m_phosel_data->zero();
+        m_record_data->zero();
+        m_recsel_data->zero();
+        m_sequence_data->zero();
+    }
 }
 
 
@@ -428,6 +449,8 @@ void NumpyEvt::setAuxData(NPY<short>* aux_data)
 
 void NumpyEvt::setRecordData(NPY<short>* record_data)
 {
+    assert(m_step);
+
     m_record_data = record_data  ;
 
     //                                               j k l sz   type                  norm   iatt
@@ -461,6 +484,7 @@ void NumpyEvt::setRecordData(NPY<short>* record_data)
 
 void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
 {
+    assert(m_step);
     m_phosel_data = phosel_data ;
     if(!m_phosel_data) return ; 
 
@@ -473,6 +497,7 @@ void NumpyEvt::setPhoselData(NPY<unsigned char>* phosel_data)
 
 void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
 {
+    assert(m_step);
     m_recsel_data = recsel_data ;
     if(!m_recsel_data) return ; 
     //                                               j k l sz   type                norm   iatt
@@ -484,6 +509,7 @@ void NumpyEvt::setRecselData(NPY<unsigned char>* recsel_data)
 
 void NumpyEvt::setSequenceData(NPY<unsigned long long>* sequence_data)
 {
+    assert(m_step);
     m_sequence_data = sequence_data  ;
     assert(sizeof(unsigned long long) == 4*sizeof(unsigned short));  
     //
@@ -558,9 +584,13 @@ std::string NumpyEvt::description(const char* msg)
 void NumpyEvt::recordDigests()
 {
     m_parameters->add<std::string>("photonData",   getPhotonData()->getDigestString()  );
-    m_parameters->add<std::string>("recordData",   getRecordData()->getDigestString()  );
-    m_parameters->add<std::string>("sequenceData", getSequenceData()->getDigestString()  );
     m_parameters->add<std::string>("auxData",      getAuxData()->getDigestString()  );
+
+    if(m_step)
+    {
+        m_parameters->add<std::string>("recordData",   getRecordData()->getDigestString()  );
+        m_parameters->add<std::string>("sequenceData", getSequenceData()->getDigestString()  );
+    }
 }
 
 void NumpyEvt::save(bool verbose)
@@ -581,29 +611,40 @@ void NumpyEvt::save(bool verbose)
     // genstep normally not saved as it exists already coming from elsewhere,
     //  but for TorchStep that insnt the case
 
-    NPY<float>* dpri = getPrimaryData();
-    if(dpri)
+    NPY<float>* pr = getPrimaryData();
+    if(pr)
     {
-        dpri->setVerbose(verbose);
-        dpri->save("pr%s", m_typ,  m_tag, udet);
+        pr->setVerbose(verbose);
+        pr->save("pr%s", m_typ,  m_tag, udet);
     }
 
+    NPY<float>* ox = getPhotonData();
+    if(ox)
+    {
+        ox->setVerbose(verbose);
+        ox->save("ox%s", m_typ,  m_tag, udet);
+    } 
 
-    NPY<float>* dpho = getPhotonData();
-    dpho->setVerbose(verbose);
-    dpho->save("ox%s", m_typ,  m_tag, udet);
+    NPY<short>* rx = getRecordData();    
+    if(rx)
+    {
+        rx->setVerbose(verbose);
+        rx->save("rx%s", m_typ,  m_tag, udet);
+    }
 
-    NPY<short>* drec = getRecordData();    
-    drec->setVerbose(verbose);
-    drec->save("rx%s", m_typ,  m_tag, udet);
+    NPY<unsigned long long>* ph = getSequenceData();
+    if(ph)
+    {
+        ph->setVerbose(verbose);
+        ph->save("ph%s", m_typ,  m_tag, udet);
+    }
 
-    NPY<unsigned long long>* dhis = getSequenceData();
-    dhis->setVerbose(verbose);
-    dhis->save("ph%s", m_typ,  m_tag, udet);
-
-    NPY<short>* daux = getAuxData();
-    daux->setVerbose(verbose);
-    daux->save("au%s", m_typ,  m_tag, udet);
+    NPY<short>* au = getAuxData();
+    if(au)
+    {
+        au->setVerbose(verbose);
+        au->save("au%s", m_typ,  m_tag, udet);
+    } 
 
     updateDomainsBuffer();
 
@@ -646,12 +687,18 @@ void NumpyEvt::saveIndex(bool verbose)
     const char* udet = getUDet();
 
     NPY<unsigned char>* ps = getPhoselData();
-    ps->setVerbose(verbose);
-    ps->save("ps%s", m_typ,  m_tag, udet);
+    if(ps)
+    {
+        ps->setVerbose(verbose);
+        ps->save("ps%s", m_typ,  m_tag, udet);
+    }
 
     NPY<unsigned char>* rs = getRecselData();
-    rs->setVerbose(verbose);
-    rs->save("rs%s", m_typ,  m_tag, udet);
+    if(rs)
+    {
+        rs->setVerbose(verbose);
+        rs->save("rs%s", m_typ,  m_tag, udet);
+    }
 
     if(m_seqhis)
     {
@@ -765,24 +812,34 @@ void NumpyEvt::load(bool verbose)
 
     NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet );
     NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
-    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet );
-    NPY<short>* rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet );
     NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet );
+    
+    NPY<unsigned long long>* ph = NULL ; 
+    NPY<short>*              rx = NULL ; 
+    NPY<unsigned char>*      ps = NULL ; 
+    NPY<unsigned char>*      rs = NULL ; 
 
-    NPY<unsigned char>* ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet );
-    NPY<unsigned char>* rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet );
+    // hmm should m_step be detected from the files or imposed from config  
+    if(m_step)
+    {
+        rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet );
+        ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet );
+        ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet );
+        rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet );
+    }
 
 
-    unsigned int num_photons = ox->getShape(0);
-    unsigned int num_history = ph->getShape(0);
+    unsigned int num_photons = ox ? ox->getShape(0) : 0 ;
+    unsigned int num_history = ph ? ph->getShape(0) : 0 ;
     unsigned int num_phosel  = ps ? ps->getShape(0) : 0 ;
-    assert(num_photons == num_history );
+
+    assert(num_history == 0 || num_photons == num_history );
     assert(num_phosel == 0 || num_photons == num_phosel );
 
-    unsigned int num_records = rx->getShape(0);
-    unsigned int num_aux     = au->getShape(0);
+    unsigned int num_records = rx ? rx->getShape(0) : 0 ;
+    unsigned int num_aux     = au ? au->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
-    assert(num_records == num_aux ); 
+    assert(num_records == 0 || num_records == num_aux ); 
     assert(num_recsel == 0 || num_records == num_recsel );
 
     if(num_records == num_photons*m_maxrec)
@@ -822,6 +879,10 @@ void NumpyEvt::load(bool verbose)
             if(verbose) au->Summary("au reshaped");
         }
     }
+    else
+    {
+         LOG(info) << "NumpyEvt::load no step " ; 
+    }
 
     setPrimaryData(pr);
     setPhotonData(ox);
@@ -836,13 +897,13 @@ void NumpyEvt::load(bool verbose)
 
     if(verbose)
     {
-        ox->Summary("ox");
-        rx->Summary("rx");
-        ph->Summary("ph");
-        au->Summary("au");
         fdom->Summary("fdom");
         idom->Summary("idom");
 
+        if(ox) ox->Summary("ox");
+        if(rx) rx->Summary("rx");
+        if(ph) ph->Summary("ph");
+        if(au) au->Summary("au");
         if(ps) ps->Summary("ps");
         if(rs) rs->Summary("rs");
     }

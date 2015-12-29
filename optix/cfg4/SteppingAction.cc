@@ -90,9 +90,14 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         }
         m_recorder->setRecordId(record_id);
         m_recorder->setBoundaryStatus(GetOpBoundaryProcessStatus());
-        bool truncate = m_recorder->RecordStep(step); 
-        if(truncate)
+
+        bool done = m_recorder->RecordStep(step); 
+
+        if(done)
+        {
+            m_recorder->RecordPhoton(step);
             track->SetTrackStatus(fStopAndKill);
+        } 
     }
 
 }
