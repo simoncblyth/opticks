@@ -1,5 +1,4 @@
-#ifndef CURANDWRAPPER_H
-#define CURANDWRAPPER_H
+#pragma once
 
 class LaunchSequence ; 
 
@@ -47,10 +46,12 @@ class LaunchSequence ;
 */
 
 
+
+
+
 class cuRANDWrapper {
   public: 
      cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed=0, unsigned long long offset=0 );
-     virtual ~cuRANDWrapper();
  
      static cuRANDWrapper* instanciate(
          unsigned int elements, 
@@ -61,44 +62,33 @@ class cuRANDWrapper {
          unsigned int threads_per_block=256
      );
 
-     unsigned int getSeed(){   return m_seed ; }
-     unsigned int getOffset(){ return m_offset ; }
-     LaunchSequence* getLaunchSequence(){ return m_launchseq ; }
-
+  public: 
+     char* getCachePath();
+     unsigned int getSeed();
+     unsigned int getOffset();
+     LaunchSequence* getLaunchSequence();
      unsigned int getItems();
+     bool isOwner();
+     char* digest();
+     char* testdigest();
+     CUdeviceptr getDevRngStates();
+     curandState* getHostRngStates();
+
+  public: 
+     void setCacheDir(const char* dir);
+     void setDevRngStates(CUdeviceptr dev_rng_states, bool owner );
      void setItems(unsigned int items);
+     void setCacheEnabled(bool enabled);
+     void setImod(unsigned int imod);
+     bool hasCacheEnabled();
 
-     void setCacheEnabled(bool enabled){ m_cache_enabled = enabled ; }
-     bool hasCacheEnabled(){ return m_cache_enabled ; }
-
+  public: 
+     void resize(unsigned int elements);
      int fillHostBuffer(curandState* host_rng_states, unsigned int elements);
      int LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements);
 
      void Summary(const char* msg);
      void Dump(const char* msg="cuRANDWrapper::Dump", unsigned int imod=1000);
-     char* digest();
-     char* testdigest();
-
-     bool isOwner(){ return m_owner ; } 
-
-     void setDevRngStates(CUdeviceptr dev_rng_states, bool owner )
-     {
-         m_dev_rng_states = dev_rng_states ;
-         m_owner = owner ; 
-     } 
-     CUdeviceptr getDevRngStates(){ return m_dev_rng_states ; }
-     curandState* getHostRngStates(){ return m_host_rng_states ; }
-     
-     void resize(unsigned int elements);
-
-     void setImod(unsigned int imod)
-     {
-         m_imod = imod ; 
-     }
-
-
-     char* getCachePath();
-     void setCacheDir(const char* dir);
 
   public:
      int Allocate();
@@ -126,21 +116,68 @@ class cuRANDWrapper {
      unsigned long long m_offset ;
 
   private:
-     CUdeviceptr m_dev_rng_states ;
-     curandState* m_host_rng_states ;
-     float* m_test ;
-     LaunchSequence* m_launchseq ; 
-     unsigned int m_imod ;
-     char* m_cache_dir ; 
-     bool m_cache_enabled ;
-     bool m_owner ; 
-     bool m_first_resize ; 
-
+     CUdeviceptr      m_dev_rng_states ;
+     curandState*     m_host_rng_states ;
+     float*           m_test ;
+     LaunchSequence*  m_launchseq ; 
+     unsigned int     m_imod ;
+     char*            m_cache_dir ; 
+     bool             m_cache_enabled ;
+     bool             m_owner ; 
+     bool             m_first_resize ; 
 
      std::vector<LaunchSequence*> m_launchrec ; 
-
 
 };
 
 
-#endif
+
+inline unsigned int cuRANDWrapper::getSeed()
+{  
+    return m_seed ; 
+}
+inline unsigned int cuRANDWrapper::getOffset()
+{ 
+    return m_offset ; 
+}
+inline LaunchSequence* cuRANDWrapper::getLaunchSequence()
+{ 
+    return m_launchseq ; 
+}
+inline void cuRANDWrapper::setCacheEnabled(bool enabled)
+{ 
+    m_cache_enabled = enabled ; 
+}
+inline bool cuRANDWrapper::hasCacheEnabled()
+{
+    return m_cache_enabled ; 
+}
+
+inline void cuRANDWrapper::setDevRngStates(CUdeviceptr dev_rng_states, bool owner )
+{
+    m_dev_rng_states = dev_rng_states ;
+    m_owner = owner ; 
+} 
+inline CUdeviceptr cuRANDWrapper::getDevRngStates()
+{ 
+    return m_dev_rng_states ; 
+}
+inline bool cuRANDWrapper::isOwner()
+{ 
+    return m_owner ; 
+} 
+
+inline curandState* cuRANDWrapper::getHostRngStates()
+{ 
+    return m_host_rng_states ; 
+}
+
+inline void cuRANDWrapper::setImod(unsigned int imod)
+{
+    m_imod = imod ; 
+}
+
+
+
+
+

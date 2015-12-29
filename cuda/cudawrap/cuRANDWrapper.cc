@@ -30,14 +30,10 @@ void cuRANDWrapper::setCacheDir(const char* dir)
 {
     m_cache_dir = strdup(dir);
 }
-cuRANDWrapper::~cuRANDWrapper()
-{
-    free(m_cache_dir);
-}
  
 void cuRANDWrapper::setItems(unsigned int items)
 {
-   m_launchseq->setItems(items); 
+    m_launchseq->setItems(items); 
 }
 unsigned int cuRANDWrapper::getItems()
 { 

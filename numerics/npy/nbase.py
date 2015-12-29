@@ -25,6 +25,11 @@ def chi2(a, b, cut=30):
         c2, c2n = chi2(a, b)
         c2ndf = c2.sum()/c2n
 
+    # ChiSquared or KS
+    # http://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm 
+    # https://en.wikipedia.org/wiki/Propagation_of_uncertainty
+    # http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
+    # http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
     """
     msk = a+b > cut
     c2 = np.zeros_like(a)

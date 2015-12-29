@@ -88,7 +88,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_builder(""),
        m_traverser(""),
        m_epsilon(0.1),     
-       m_rngmax(3e6),     
+       m_rngmax(1e6),     
        m_bouncemax(9),     
        m_recordmax(10),
        m_timemax(200),

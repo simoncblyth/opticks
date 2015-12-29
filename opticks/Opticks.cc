@@ -137,7 +137,16 @@ void Opticks::init()
    m_wavelength_domain = getDefaultDomainSpec() ;  
 
    int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1); 
-   assert(rng_max == getRngMax()  && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
+
+   int x_rng_max = getRngMax() ;
+
+   if(rng_max != x_rng_max)
+       LOG(fatal) << "Opticks::init"
+                  << " CUDAWRAP_RNG_MAX " << rng_max 
+                  << " x_rng_max " << x_rng_max 
+                  ;
+
+   assert(rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
 }
 
 

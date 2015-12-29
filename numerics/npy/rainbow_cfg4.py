@@ -1,23 +1,66 @@
 #!/usr/bin/env python
 """
-# ChiSquared or KS
-# http://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm 
-# https://en.wikipedia.org/wiki/Propagation_of_uncertainty
-# http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
-# http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
+Seconds for rainbow 1M 
+-----------------------
+
+CAVEAT: using laptop GPU with only 384 cores, desktop GPUs expected x20-30 faster
+
+Disabling step-by-step recording has large improvement
+factor for Opticks of about x3 but not much impact on cfg4-.
+The result match between G4 and Op remains unchanged.
+
+Seems like reducing the number and size of 
+buffers in context is a big win for Opticks.
+
+With step by step and sequence recording::
+
+   Op   4.6    5.8      # Opticks timings rather fickle to slight code changes, maybe stack 
+   G4   56.8  55.9
+
+Just final photon recording:: 
+
+   Op    1.8 
+   G4   47.9
+
+
+Matching curand buffer to requirement
+---------------------------------------
+
+* tried using 1M cuRAND buffer matching the requirement rather than using default 3M all the time,
+  saw no change in propagation time 
+
+::
+
+    # change ggeoview-rng-max value down to 1M
+
+    ggeoview-rng-prep  # create the states cache 
+ 
+    #  opticks-/OpticksCfg.hh accordingly 
 
 
 TODO:
+------
 
-* try living without step-by-step recording, 
-  to see the peformance impact of doing so 
-  and of having ginormous record and sequence 
-  arrays in the context 
+* revive compute mode, with no OpenGL in the mix
 
-  * need to get ox only plotting to work, 
-    this requires primary recording to get the side
+* look at how time scales with photon count  
 
-* revive compute only mode, ie without OpenGL involvement
+
+To do this check
+-------------------
+
+After standard comparison::
+
+   ggv-;ggv-rainbow 
+   ggv-;ggv-rainbow --cfg4 
+
+* recompile optixrap- without RECORD define 
+* run with --nostep option::
+
+   ggv-;ggv-rainbow --nostep 
+   ggv-;ggv-rainbow --cfg4 --nostep 
+
+
 
 """
 import os, logging, numpy as np
