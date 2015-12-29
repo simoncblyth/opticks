@@ -76,6 +76,14 @@ rtDeclareVariable(rtObject,      top_object, , );
 }  \
         
 
+#define FLAGS(p, s, prd) \
+{ \
+    p.flags.i.x = prd.boundary ;  \
+    p.flags.u.y = s.identity.w ;  \
+    p.flags.u.z = s.index.x ;   \
+    p.flags.u.w |= s.flag ; \
+} \
+
 
 
 RT_PROGRAM void trivial()
@@ -122,6 +130,8 @@ RT_PROGRAM void generate()
 
     State s ;   
     Photon p ;  
+    uifchar4 c4 ; 
+
 
     if(ghead.i.x == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
     {
@@ -158,7 +168,11 @@ RT_PROGRAM void generate()
     }
 
 
-    //p.flags.u.y = photon_id ;  // debug
+    c4.uchar_.x = 1u ; 
+    c4.uchar_.y = 2u ; 
+    c4.uchar_.z = 3u ; 
+    c4.uchar_.w = 4u ; 
+   
 
     int bounce = 0 ; 
     int command = START ; 
@@ -184,7 +198,6 @@ RT_PROGRAM void generate()
 
         rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
 
-
         if(prd.boundary == 0)
         {
             s.flag = MISS ;  // overwrite CERENKOV/SCINTILLATION for the no hitters
@@ -197,8 +210,6 @@ RT_PROGRAM void generate()
         }   
         // initial and CONTINUE-ing records
 
-        p.flags.i.x = prd.boundary ;  
-
         // use boundary index at intersection point to do optical constant + material/surface property lookups 
         fill_state(s, prd.boundary, prd.identity, p.wavelength );
 
@@ -206,9 +217,7 @@ RT_PROGRAM void generate()
         s.surface_normal = prd.surface_normal ; 
         s.cos_theta = prd.cos_theta ; 
 
-        p.flags.u.z = s.index.x ;   // material1 index 
-
-        p.flags.u.w |= s.flag ; 
+        FLAGS(p, s, prd); 
 
 
         slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
@@ -296,19 +305,12 @@ RT_PROGRAM void generate()
     }   // bounce < max_bounce
 
 
+
+    FLAGS(p, s, prd); 
+
+
     // breakers and maxers saved here
-    p.flags.u.w |= s.flag ; 
-
-
-    //p.flags.u.y = photon_id ;      // photon_id matches the position in photon array
-    //p.flags.u.y =  s.identity.x ;  // nodeIndex
-    //p.flags.u.y =  s.identity.y ;  // meshIndex
-    //p.flags.u.y =  s.identity.z ;  // boundaryIndex 0-based
-    p.flags.u.y =  s.identity.w ;  // sensorIndex  >0 only for cathode hits
-
-
-
-    psave(p, photon_buffer, photon_offset ); 
+    psave(p, photon_buffer, photon_offset, c4 ); 
 
     // building history sequence, bounce by bounce
     // s.flag is unexpected coming out 0xf 20% of time ? always here on the last placement ?

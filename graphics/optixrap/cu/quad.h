@@ -26,6 +26,18 @@ union qquad
    uchar4  uchar_  ;
 };
 
+union uifchar4
+{
+   unsigned int u ; 
+   int          i ; 
+   float        f ; 
+   char4        char_   ;
+   uchar4       uchar_  ;
+};
+
+
+
+
 
 
 

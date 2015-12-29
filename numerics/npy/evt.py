@@ -35,6 +35,8 @@ class Evt(object):
         assert idom[0,0,3] == nrec
 
         ox = A.load_("ox"+src,tag,det) 
+        c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
+        ## NB shape changing dtype splitting the 32 bits into 4*8 bits  
 
         rx = A.load_("rx"+src,tag,det).reshape(-1, nrec, 2, 4)
         ph = A.load_("ph"+src,tag,det)
@@ -61,6 +63,7 @@ class Evt(object):
             log.info("Evt seqs %s " % repr(seqs))
             psel = all_history.seqhis_or(seqs, not_=not_)
             ox = ox[psel]
+            c4 = c4[psel]
             wl = wl[psel]
             rx = rx[psel]
             history = History(seqhis[psel])   # history with selection applied
@@ -72,6 +75,7 @@ class Evt(object):
         self.history = history
         self.psel = psel
         self.ox = ox
+        self.c4 = c4
         self.rx = rx
         self.wl = wl
         self.td = td

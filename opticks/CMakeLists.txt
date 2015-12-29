@@ -50,6 +50,7 @@ SET(hdrs
     Opticks.hh
     OpticksCfg.hh
     OpticksPhoton.h
+    OpticksFlags.h
 )
 
 install(TARGETS ${name}  DESTINATION lib)
