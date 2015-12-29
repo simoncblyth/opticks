@@ -83,7 +83,11 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
     if(record_id < record_max)
     {
-        if(startPhoton) m_recorder->startPhoton();  // MUST be invoked from up here,  prior to setBoundaryStatus
+        if(startPhoton)
+        { 
+            m_recorder->startPhoton();  // MUST be invoked from up here,  prior to setBoundaryStatus
+            m_recorder->RecordQuadrant(step);
+        }
         m_recorder->setRecordId(record_id);
         m_recorder->setBoundaryStatus(GetOpBoundaryProcessStatus());
         bool truncate = m_recorder->RecordStep(step); 

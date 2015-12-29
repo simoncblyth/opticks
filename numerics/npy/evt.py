@@ -23,81 +23,89 @@ X,Y,Z,W = 0,1,2,3
 
 
 class Evt(object):
-    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label="", nrec=10):
+    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label="", nrec=10, rec=True):
 
+        self.nrec = nrec
+        self.seqs = seqs
+        self.label = label
+        self.rec = rec
+
+        self.init_metadata(tag, src, det)
+        self.init_photons(tag, src, det)
+
+        if rec:
+            self.init_records(tag, src, det)
+            self.init_selection(seqs, not_ )
+        else:
+            self.history = None
+        pass
+
+    def init_metadata(self, tag, src, det):
         self.tag = str(tag)
         self.src = src
         self.det = det  
-        self.label = label
 
         fdom = A.load_("fdom"+src,tag,det) 
         idom = A.load_("idom"+src,tag,det) 
-        assert idom[0,0,3] == nrec
-
-        ox = A.load_("ox"+src,tag,det) 
-        c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
-        ## NB shape changing dtype splitting the 32 bits into 4*8 bits  
-
-        rx = A.load_("rx"+src,tag,det).reshape(-1, nrec, 2, 4)
-        ph = A.load_("ph"+src,tag,det)
+        assert idom[0,0,3] == self.nrec
 
         td = I.load_("md"+src,tag,det, name="t_delta.ini")
         tdii = II.load_("md"+src,tag,det, name="t_delta.ini")
 
-        #nrec = rx.shape[1]
-        #assert nrec == 10
-        wl = ox[:,2,W] 
-        seqhis = ph[:,0,0]
-        seqmat = ph[:,0,1]
-        all_history = History(seqhis)  # full history without selection
-
-        # qtys without selection applied 
-        self.nrec = nrec 
-        self.seqhis = seqhis
-        self.all_history = all_history
-        self.seqmat = seqmat
-        self.seqs = seqs
-        self.nrec = nrec
-
-        if len(seqs) > 0:
-            log.info("Evt seqs %s " % repr(seqs))
-            psel = all_history.seqhis_or(seqs, not_=not_)
-            ox = ox[psel]
-            c4 = c4[psel]
-            wl = wl[psel]
-            rx = rx[psel]
-            history = History(seqhis[psel])   # history with selection applied
-        else:
-            psel = None
-            history = all_history
-
-        pass
-        self.history = history
-        self.psel = psel
-        self.ox = ox
-        self.c4 = c4
-        self.rx = rx
-        self.wl = wl
         self.td = td
         self.tdii = tdii
 
         self.fdom = fdom
         self.idom = idom
+
+    def init_photons(self, tag, src, det):
+        """
+        #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
+        """
+        ox = A.load_("ox"+src,tag,det) 
+        wl = ox[:,2,W] 
+        c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
+
+        log.info("ox shape %s " % str(ox.shape))
+
+        self.c4 = c4
         self.ox = ox
+        self.wl = wl
+        self.post = ox[:,0] 
+        self.dirw = ox[:,1]
+        self.polw = ox[:,2]
+        self.flags = ox.view(np.uint32)[:,3,3]
+
+    def init_records(self, tag, src, det):
+
+        rx = A.load_("rx"+src,tag,det).reshape(-1, self.nrec, 2, 4)
+        ph = A.load_("ph"+src,tag,det)
+
+        log.info("rx shape %s " % str(rx.shape))
+
+        seqhis = ph[:,0,0]
+        seqmat = ph[:,0,1]
+        all_history = History(seqhis)  # full history without selection
+
         self.rx = rx
         self.ph = ph
+        self.seqhis = seqhis
+        self.seqmat = seqmat
+        self.all_history = all_history
+        self.history = all_history
 
-        # photon level qtys, 
-        # ending values as opposed to the compressed step by step records
-        #if self.ox is None:return
+    def init_selection(self, seqs, not_):
+        if not self.rec or len(seqs) == 0:return  
 
-        self.post = self.ox[:,0] 
-        self.dirw = self.ox[:,1]
-        self.polw = self.ox[:,2]
+        log.info("Evt seqs %s " % repr(seqs))
+        psel = self.all_history.seqhis_or(seqs, not_=not_)
 
-        #print self.ox
-        self.flags = self.ox.view(np.uint32)[:,3,3]
-
+        self.ox = self.ox[psel]
+        self.c4 = self.c4[psel]
+        self.wl = self.wl[psel]
+        self.rx = self.rx[psel]
+        self.history = History(self.seqhis[psel])   # history with selection applied
+ 
 
     x = property(lambda self:self.ox[:,0,0])
     y = property(lambda self:self.ox[:,0,1])
@@ -117,6 +125,7 @@ class Evt(object):
         return uwl[0]
 
     def history_table(self, sli=slice(None)):
+        if not self.history:return 
         print self
         self.history.table.sli = sli 
         print self.history.table
@@ -277,9 +286,39 @@ class Evt(object):
 
         return dv 
 
+
+
+    def a_recside(self, axis=Z):
+        """
+        Use a coordinate of the initial position to define side of incidence
+        unit vector.
+     
+        Those at zero are aribitrarily put on one side
+
+        This can be used for defining 0-360 degrees deviation angles 
+        """
+        a0 = self.p0[:,axis]
+        aside  = np.zeros((len(a0),3))
+        aside[:,axis] = np.piecewise( a0, [a0>0, a0<0, a0==0], [-1,1,1] ) 
+        return aside 
+
+    def a_side(self, axis=X):
+        """
+        :return: (N,3) unit vector array pointing along the axis of initial generated position  
+
+        #. generation side of initial photon position
+        #. NB does not require photon step records, just the c4 photon flags  
+
+        """
+        posaxis = (self.c4.x & (0x1 << axis)) != 0   
+        vside = np.zeros( (len(posaxis), 3), dtype=np.float32)
+        vside[:,axis][posaxis] = -1.
+        vside[:,axis][~posaxis] = 1.
+        return vside
+
     def a_deviation_angle(self, incident=None, axis=Z):
-        aside = self.a_side(axis=axis)
-        return self._deviation_angle(self.p_out, side=aside, incident=incident)  
+        vside = self.a_side(axis=axis)
+        return self._deviation_angle(self.p_out, side=vside, incident=incident)  
 
     def deviation_angle(self, side=None, incident=None):
         """
@@ -299,20 +338,6 @@ class Evt(object):
         """
         return self._deviation_angle(self.p_out, side=side, incident=incident)
 
-    def a_side(self, axis=Z):
-        """
-        Use a coordinate of the initial position to define side of incidence
-        unit vector.
-     
-        Those at zero are aribitrarily put on one side
-
-        This can be used for defining 0-360 degrees deviation angles 
-        """
-        a0 = self.p0[:,axis]
-        aside  = np.zeros((len(a0),3))
-        aside[:,axis] = np.piecewise( a0, [a0>0, a0<0, a0==0], [-1,1,1] ) 
-        return aside 
-
 
 
 def check_wavelength(evt):
@@ -329,13 +354,19 @@ def check_wavelength(evt):
 
 
 if __name__ == '__main__':
-    evt = Evt("-5", "torch", "rainbow", label="S G4" )
+
+    rec = True  
+
+    evt = Evt("-5", "torch", "rainbow", label="S G4", rec=rec)
 
     evt.history_table()
 
     dv = evt.a_deviation_angle(axis=X)
 
-    plt.hist(dv/deg, bins=360, log=True) 
+    plt.close()
+    plt.ion()
+
+    plt.hist(dv/deg, bins=360, log=True, histtype="step") 
 
     plt.show()
 

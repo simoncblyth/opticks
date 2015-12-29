@@ -41,14 +41,16 @@ deg = np.pi/180.
 n2ref = 1.33257
 
 
-def scatter_plot_cf(ax, a_evt, b_evt, axis=X, log_=False):
+def a_scatter_plot_cf(ax, a_evt, b_evt, log_=False):
     db = np.arange(0,360,1)
+
+    incident = np.array([0,0,-1])
     cnt = {}
     bns = {}
     ptc = {}
     j = -1
     for i,evt in enumerate([a_evt, b_evt]):
-        dv = evt.a_deviation_angle(axis=axis)/deg
+        dv = evt.a_deviation_angle(axis=X, incident=incident)/deg
         ax.set_xlim(0,360)
         if len(dv) > 0:
             cnt[i], bns[i], ptc[i] = ax.hist(dv, bins=db,  log=log_, histtype='step', label=evt.label)
@@ -77,7 +79,7 @@ def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10]):
 
     ax = fig.add_subplot(gs[0])
 
-    c, bns = scatter_plot_cf(ax, evt_a, evt_b, axis=X, log_=log_)
+    c, bns = a_scatter_plot_cf(ax, evt_a, evt_b, log_=log_)
     droplet.bow_angle_rectangles()
     ax.set_ylim(ylim)
     ax.legend()
@@ -114,9 +116,12 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
+    rec = False
     tag = "5"
     src = "torch"
     det = "rainbow"
+    log_ = True
+    not_ = False
 
     if det == "rainbow":
        if tag == "5":
@@ -127,36 +132,39 @@ if __name__ == '__main__':
            label = "no label"
 
 
-    seqs = Droplet.seqhis([0,1,2,3,4,5,6,7],src="TO")
-    not_ = False
-    log_ = True
+    if rec:
+        seqs = Droplet.seqhis([0,1,2,3,4,5,6,7],src="TO")
 
-    his_a = History.for_evt(tag="%s" % tag, src=src, det=det)
-    his_b = History.for_evt(tag="-%s" % tag, src=src, det=det)
+        his_a = History.for_evt(tag="%s" % tag, src=src, det=det)
+        his_b = History.for_evt(tag="-%s" % tag, src=src, det=det)
 
-    cf = his_a.table.compare(his_b.table)
-    print cf
+        cf = his_a.table.compare(his_b.table)
+        print cf
 
-    sa = set(his_a.table.labels)
-    sb = set(his_b.table.labels)
-    sc = sorted(list(sa & sb), key=lambda _:his_a.table.label2count.get(_, None)) 
+        sa = set(his_a.table.labels)
+        sb = set(his_b.table.labels)
+        sc = sorted(list(sa & sb), key=lambda _:his_a.table.label2count.get(_, None)) 
 
-    print "Opticks but not G4, his_a.table(sa-sb)\n", his_a.table(sa - sb)
-    print "G4 but not Opticks, his_b.table(sb-sa)\n", his_b.table(sb - sa)
+        print "Opticks but not G4, his_a.table(sa-sb)\n", his_a.table(sa - sb)
+        print "G4 but not Opticks, his_b.table(sb-sa)\n", his_b.table(sb - sa)
+        sq = [None]
 
-    sq = [None]
+    else:
+        sq = [None]
 
     for seq in sq:
 
         seqs = [] if seq is None else [seq]
-        evt_a =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_)
-        evt_b =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_)
+        evt_a =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_, rec=rec)
+        evt_b =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec)
 
         #sli = slice(0,15)
         #sli = slice(None)
         #evt_a.history_table(sli)
         #evt_b.history_table(sli)
 
+
+    if 1:
         cf_plot(evt_a, evt_b, label=str(seqs), log_=log_, ylim=[0.8,4e4],ylim2=None)
 
 

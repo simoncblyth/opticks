@@ -2,6 +2,7 @@
 #include "Format.hh"
 
 #include "Opticks.hh"
+#include "OpticksFlags.h"
 #include "OpStatus.hh"
 
 #include "G4Track.hh"
@@ -20,6 +21,7 @@
 #include "NPY.hpp"
 #include "NLog.hpp"
 
+#include "Recorder.h"
 #include "Recorder.icc"
 
 
@@ -73,6 +75,8 @@ const char* Recorder::POST = "POST" ;
 
 void Recorder::init()
 {
+    m_c4.u = 0u ; 
+
     m_record_max = m_evt->getNumPhotons(); 
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
@@ -132,15 +136,10 @@ void Recorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
     m_primary->setQuad(m_primary_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
     m_primary->setQuad(m_primary_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
 
-    unsigned int ux = 0u ; 
-    unsigned int uy = 0u ; 
-    unsigned int uz = 0u ; 
-    unsigned int uw = 0u ; 
-
-    m_primary->setUInt(m_primary_id, 3, 0, 0, ux );
-    m_primary->setUInt(m_primary_id, 3, 0, 1, uy );
-    m_primary->setUInt(m_primary_id, 3, 0, 2, uz );
-    m_primary->setUInt(m_primary_id, 3, 0, 3, uw );
+    m_primary->setUInt(m_primary_id, 3, 0, 0, 0u );
+    m_primary->setUInt(m_primary_id, 3, 0, 1, 0u );
+    m_primary->setUInt(m_primary_id, 3, 0, 2, 0u );
+    m_primary->setUInt(m_primary_id, 3, 0, 3, 0u );
 
     m_primary_id += 1 ; 
 
@@ -207,6 +206,8 @@ void Recorder::startPhoton()
 
     assert(m_step_id == 0);
 
+    m_c4.u = 0u ; 
+
     m_prior_boundary_status = Undefined ; 
     m_boundary_status = Undefined ; 
 
@@ -228,6 +229,8 @@ bool Recorder::RecordStep(const G4Step* step)
     unsigned int preFlag ; 
     unsigned int postFlag ; 
 
+    // shift flags by 1 relative to steps, in order to set the generation code on first step
+    // this doesnt miss flags, as record both pre and post at last step    
     if(m_step_id == 0)
     {
         preFlag = m_gen ;         
@@ -253,6 +256,28 @@ bool Recorder::RecordStep(const G4Step* step)
 
     return truncate ;
 }
+
+
+
+void Recorder::RecordQuadrant(const G4Step* step)
+{
+    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    const G4ThreeVector& pos = pre->GetPosition();
+
+    // initial quadrant 
+    m_c4.uchar_.x = 
+                  (  pos.x() > 0.f ? QX : 0u ) 
+                   |   
+                  (  pos.y() > 0.f ? QY : 0u ) 
+                   |   
+                  (  pos.z() > 0.f ? QZ : 0u )
+                  ;   
+
+    m_c4.uchar_.y = 2u ; 
+    m_c4.uchar_.z = 3u ; 
+    m_c4.uchar_.w = 4u ; 
+}
+
 
 bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label)
 {
@@ -362,15 +387,10 @@ void Recorder::RecordPhoton(const G4StepPoint* point)
     m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
     m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
 
-    unsigned int ux = m_slot ;  // untruncated 
-    unsigned int uy = 0u ; 
-    unsigned int uz = 0u ; 
-    unsigned int uw = 0u ; 
-
-    m_photons->setUInt(m_record_id, 3, 0, 0, ux );
-    m_photons->setUInt(m_record_id, 3, 0, 1, uy );
-    m_photons->setUInt(m_record_id, 3, 0, 2, uz );
-    m_photons->setUInt(m_record_id, 3, 0, 3, uw );
+    m_photons->setUInt(m_record_id, 3, 0, 0, m_slot );
+    m_photons->setUInt(m_record_id, 3, 0, 1, 0u );
+    m_photons->setUInt(m_record_id, 3, 0, 2, m_c4.u );
+    m_photons->setUInt(m_record_id, 3, 0, 3, 0u );
 
 
     // generate.cu
@@ -442,6 +462,4 @@ void Recorder::Clear()
     m_bndstats.clear();
     //m_seqhis_dbg.clear();
 }
-
-
 

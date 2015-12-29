@@ -168,11 +168,18 @@ RT_PROGRAM void generate()
     }
 
 
-    c4.uchar_.x = 1u ; 
+    // initial quadrant 
+    c4.uchar_.x = 
+                  (  p.position.x > 0.f ? QX : 0u ) 
+                   |
+                  (  p.position.y > 0.f ? QY : 0u ) 
+                   |
+                  (  p.position.z > 0.f ? QZ : 0u )
+                  ; 
+
     c4.uchar_.y = 2u ; 
     c4.uchar_.z = 3u ; 
     c4.uchar_.w = 4u ; 
-   
 
     int bounce = 0 ; 
     int command = START ; 

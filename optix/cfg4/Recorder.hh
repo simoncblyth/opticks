@@ -12,6 +12,8 @@ class G4Step ;
 class G4PrimaryVertex ; 
 
 
+#include "Recorder.h"
+
 #include "NumpyEvt.hpp"
 template <typename T> class NPY ;
 
@@ -47,6 +49,7 @@ class Recorder {
    public:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, const char* label);
+        void RecordQuadrant(const G4Step* step);
 
         void RecordPhoton(const G4StepPoint* point);
         void Clear();
@@ -88,6 +91,9 @@ class Recorder {
         unsigned int m_record_id ; 
         unsigned int m_primary_id ; 
         unsigned int m_primary_max ; 
+
+        uifchar4     m_c4 ; 
+
 
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
@@ -141,6 +147,7 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
    m_history(0)
 {
    init();
+   
 }
 
 
