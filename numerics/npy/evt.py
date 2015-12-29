@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from env.python.utils import *
 from env.numerics.npy.types import SeqHis, seqhis_int
-from env.numerics.npy.nload import A
+from env.numerics.npy.nload import A, I, II
 from env.numerics.npy.history import History
 
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
@@ -32,9 +32,15 @@ class Evt(object):
 
         fdom = A.load_("fdom"+src,tag,det) 
         idom = A.load_("idom"+src,tag,det) 
+        assert idom[0,0,3] == nrec
+
         ox = A.load_("ox"+src,tag,det) 
+
         rx = A.load_("rx"+src,tag,det).reshape(-1, nrec, 2, 4)
         ph = A.load_("ph"+src,tag,det)
+
+        td = I.load_("md"+src,tag,det, name="t_delta.ini")
+        tdii = II.load_("md"+src,tag,det, name="t_delta.ini")
 
         #nrec = rx.shape[1]
         #assert nrec == 10
@@ -68,6 +74,8 @@ class Evt(object):
         self.ox = ox
         self.rx = rx
         self.wl = wl
+        self.td = td
+        self.tdii = tdii
 
         self.fdom = fdom
         self.idom = idom

@@ -85,7 +85,7 @@ void OPropagator::initRng()
     m_rng_states->unmap();
 
     //
-    // TODO: investigate Thrust based alternatives to curand initialization 
+    // TODO: investigate Thrust based alternatives for curand initialization 
     //       potential for eliminating cudawrap- 
     //
 }
@@ -123,7 +123,6 @@ void OPropagator::initEvent(NumpyEvt* evt)
                   << " gensteps handed to OptiX by referencing OpenGL buffer id  "
                   ;
     }
-
 
     m_photon_buffer = m_ocontext->createIOBuffer<float>( evt->getPhotonData(), "photon" );
     m_context["photon_buffer"]->set( m_photon_buffer );

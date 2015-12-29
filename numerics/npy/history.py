@@ -4,7 +4,7 @@ log = logging.getLogger(__name__)
 import numpy as np
 
 from env.numerics.npy.base import ini_, json_, ihex_, ffs_
-from env.numerics.npy.nbase import count_unique_sorted
+from env.numerics.npy.nbase import count_unique_sorted, chi2
 from env.numerics.npy.nload import A
 
 class Flags(object):
@@ -87,11 +87,28 @@ class HistoryTable(object):
         self.ncol = ncol
 
         seqs = cu[:,0]
+        tots = [cu[:,n].sum() for n in range(1,ncol+1)]
+
+        if ncol == 2:
+            a = cu[:,1].astype(np.float64)
+            b = cu[:,2].astype(np.float64)
+            c2, c2n = chi2(a, b, cut=30)
+            c2p = c2.sum()/c2n
+            cnames += ["c2"]
+            tots += ["%10.2f" % c2p ]
+        else:
+            c2 = None
+            c2p = None
+
+        self.c2 = c2
+        self.c2p = c2p
+
         self.seqs = seqs
 
         counts = cu[:,1]
         labels = map(lambda i:af.seqhis_label(i), cu[:,0] )
         nstep = map(lambda l:len(l.split(" ")),labels)
+
         self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
 
@@ -104,13 +121,9 @@ class HistoryTable(object):
         self.label2line = dict(zip(labels, lines))
         self.label2code = dict(zip(labels, seqs))
 
-
-
-
-
         self.cnames = cnames
+        self.tots = tots
         self.af = af
-        self.tots = [cu[:,n].sum() for n in range(1,ncol+1)]
         self.sli = slice(None)
 
     def line(self, n):
@@ -119,8 +132,13 @@ class HistoryTable(object):
         label = self.labels[n]
         nstep = "[%-2d]" % self.label2nstep[label]
 
+        if self.c2 is not None:
+            sc2 = " %10.2f " % self.c2[n]
+        else:
+            sc2 = ""
+        pass
 
-        return " ".join([xs] + vals + ["   "]+ [nstep, label]) 
+        return " ".join([xs] + vals + ["   "]+ [sc2, nstep, label]) 
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 
@@ -134,19 +152,19 @@ class HistoryTable(object):
         return "\n".join([head] + self.lines[self.sli] + [tail])
 
     def compare(self, other):
-         l = set(self.labels)
-         o = set(other.labels)
-         u = sorted(list(l | o), key=lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0)), reverse=True)
+        l = set(self.labels)
+        o = set(other.labels)
+        u = sorted(list(l | o), key=lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0)), reverse=True)
 
-         cf = np.zeros( (len(u),3), dtype=np.uint64 )
+        cf = np.zeros( (len(u),3), dtype=np.uint64 )
 
-         cf[:,0] = map(lambda _:self.af.seqhis_int(_), u )
-         cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
-         cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
-      
-         cnames = self.cnames + other.cnames 
+        cf[:,0] = map(lambda _:self.af.seqhis_int(_), u )
+        cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
+        cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
 
-         return HistoryTable(cf, cnames=cnames)    
+        cnames = self.cnames + other.cnames 
+
+        return HistoryTable(cf, cnames=cnames)    
 
 
 

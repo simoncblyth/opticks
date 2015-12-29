@@ -18,5 +18,18 @@ def count_unique_sorted(vals):
     cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
     return cu.astype(np.uint64)
 
+def chi2(a, b, cut=30):
+    """
+    ::
+
+        c2, c2n = chi2(a, b)
+        c2ndf = c2.sum()/c2n
+
+    """
+    msk = a+b > cut
+    c2 = np.zeros_like(a)
+    c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]
+    return c2, len(a[msk]) 
+ 
 
 

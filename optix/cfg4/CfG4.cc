@@ -9,6 +9,7 @@
 #include "OpSource.hh"
 
 // npy-
+#include "Timer.hpp"
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "NLog.hpp"
@@ -27,11 +28,24 @@
 #include "G4RunManager.hh"
 #include "G4String.hh"
 
+
+#define TIMER(s) \
+    { \
+       if(m_evt)\
+       {\
+          Timer& t = *(m_evt->getTimer()) ;\
+          t((s)) ;\
+       }\
+    }
+
+
 void CfG4::init()
 {
     m_opticks = new Opticks();
     m_cfg = m_opticks->getCfg();
     m_cache = new GCache(m_prefix, "cfg4.log", "info");
+
+    TIMER("init");
 }
 
 void CfG4::configure(int argc, char** argv)
@@ -85,6 +99,8 @@ void CfG4::configure(int argc, char** argv)
     m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
 
     m_evt->dumpDomains("CfG4::configure dumpDomains");
+
+    TIMER("configure");
 }
 
 void CfG4::propagate()
@@ -95,7 +111,11 @@ void CfG4::propagate()
               << " steps_per_photon " << m_evt->getMaxRec()
               << " bounce_max " << m_evt->getBounceMax()
               ; 
+    TIMER("_propagate");
+
     m_runManager->BeamOn(m_num_g4event);
+
+    TIMER("propagate");
 }
 
 void CfG4::save()

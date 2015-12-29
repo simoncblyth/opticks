@@ -716,7 +716,7 @@ void App::seedPhotonsFromGensteps()
     
     //tgs.dump<unsigned int>("App::seedPhotonsFromGensteps tgs", 6*4, 3, nv0 ); // stride, begin, end 
 
-    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, nv0 );
+    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, nv0 );  // adding photon counts for each genstep 
 
     assert(num_photons == m_evt->getNumPhotons() && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
 

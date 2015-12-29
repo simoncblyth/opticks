@@ -84,9 +84,7 @@ RT_PROGRAM void trivial()
    wavelength_dump(42, 10);    
    wavelength_dump(48, 10);    
    wavelength_dump(1048, 10);    
-
 }
-
 
 
 RT_PROGRAM void generate()
@@ -213,17 +211,16 @@ RT_PROGRAM void generate()
         p.flags.u.w |= s.flag ; 
 
 
+        slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
+        RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
+
+#ifdef AUX
         if(dbg)
         {
            rtPrintf("bounce %d \n", bounce);
            rtPrintf("post  %10.3f %10.3f %10.3f %10.3f  % \n", p.position.x, p.position.y, p.position.z, p.time );
            rtPrintf("polw  %10.3f %10.3f %10.3f %10.3f  % \n", p.polarization.x, p.polarization.y, p.polarization.z, p.wavelength );
         } 
-
-
-        slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
-        RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
-#ifdef AUX
         ASAVE(p, s, slot, slot_offset, MaterialIndex );
 #endif
         slot++ ; 
@@ -323,12 +320,13 @@ RT_PROGRAM void generate()
     slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
     RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
 
+    sequence_buffer[photon_id*2 + 0] = seqhis ; 
+    sequence_buffer[photon_id*2 + 1] = seqmat ;  
+
+
 #ifdef AUX
     ASAVE(p, s, slot, slot_offset, MaterialIndex);
 #endif
-
-    sequence_buffer[photon_id*2 + 0] = seqhis ; 
-    sequence_buffer[photon_id*2 + 1] = seqmat ;  
 
     rng_states[photon_id] = rng ;
 }

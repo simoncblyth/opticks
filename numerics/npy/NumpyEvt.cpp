@@ -146,6 +146,8 @@ void NumpyEvt::prepareForPrimaryRecording()
 
 void NumpyEvt::createHostBuffers()
 {
+    (*m_timer)("_createHostBuffers");
+
     LOG(info) << "NumpyEvt::createHostBuffers "
               << " flat " << m_flat 
               << " m_num_photons " << m_num_photons  
@@ -563,10 +565,9 @@ void NumpyEvt::recordDigests()
 
 void NumpyEvt::save(bool verbose)
 {
+    (*m_timer)("_save");
+
     recordDigests();
-    makeReport();
-    saveReport();
- 
 
     const char* udet = getUDet();
     LOG(info) << "NumpyEvt::save"
@@ -616,6 +617,10 @@ void NumpyEvt::save(bool verbose)
     saveIndex(verbose);
     saveParameters();
 
+    (*m_timer)("save");
+
+    makeReport();  // after timer save, in order to include that in the report
+    saveReport();
 }
 
 
@@ -722,6 +727,7 @@ void NumpyEvt::loadReport()
 
 void NumpyEvt::load(bool verbose)
 {
+    (*m_timer)("_load");
     const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
 
     NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet );
@@ -825,6 +831,8 @@ void NumpyEvt::load(bool verbose)
 
     setPhoselData(ps);
     setRecselData(rs);
+
+    (*m_timer)("load");
 
     if(verbose)
     {

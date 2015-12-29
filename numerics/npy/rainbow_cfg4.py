@@ -5,8 +5,21 @@
 # https://en.wikipedia.org/wiki/Propagation_of_uncertainty
 # http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
 # http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
-"""
 
+
+TODO:
+
+* try living without step-by-step recording, 
+  to see the peformance impact of doing so 
+  and of having ginormous record and sequence 
+  arrays in the context 
+
+  * need to get ox only plotting to work, 
+    this requires primary recording to get the side
+
+* revive compute only mode, ie without OpenGL involvement
+
+"""
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
@@ -20,9 +33,9 @@ from env.numerics.npy.history import History, AbbFlags
 from env.numerics.npy.geometry import Boundary   
 from env.numerics.npy.droplet import Droplet
 from env.numerics.npy.fresnel import fresnel_factor
+from env.numerics.npy.nbase import chi2
 
 X,Y,Z,W = 0,1,2,3
-
 
 deg = np.pi/180.
 n2ref = 1.33257
@@ -54,8 +67,11 @@ def scatter_plot_cf(ax, a_evt, b_evt, axis=X, log_=False):
 
 def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10]):
 
+    tim_a = " ".join(map(lambda f:"%5.2f" % f, map(float, filter(None, evt_a.tdii['propagate']) )))
+    tim_b = " ".join(map(lambda f:"%5.2f" % f, map(float, filter(None, evt_b.tdii['propagate']) )))
+
     fig = plt.figure()
-    fig.suptitle("Rainbow cfg4 " + label )
+    fig.suptitle("Rainbow cfg4 " + label + "[" + tim_a + "] [" + tim_b + "]"  )
 
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
 
@@ -73,10 +89,8 @@ def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10]):
     if len(c) == 2:
         a,b = c[0],c[1]
 
-        msk = a+b > 0  
-        c2 = np.zeros_like(a)
-        c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]
-        c2p = c2.sum()/len(a[msk])
+        c2, c2n = chi2(a, b, cut=30)
+        c2p = c2.sum()/c2n
         
         plt.plot( bns[:-1], c2, drawstyle='steps', label="chi2/ndf %4.2f" % c2p )
         ax.set_xlim(xlim) 
@@ -100,10 +114,19 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    label = "S"
     tag = "5"
     src = "torch"
     det = "rainbow"
+
+    if det == "rainbow":
+       if tag == "5":
+           label = "S-Pol"
+       elif tag == "6":
+           label = "P-Pol"
+       else:
+           label = "no label"
+
+
     seqs = Droplet.seqhis([0,1,2,3,4,5,6,7],src="TO")
     not_ = False
     log_ = True
