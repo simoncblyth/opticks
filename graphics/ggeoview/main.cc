@@ -2,15 +2,19 @@
 
 int main(int argc, char** argv)
 {
-    App app("GGEOVIEW_", argc, argv);       // NumpyEvt created in App::config 
+    App app("GGEOVIEW_", argc, argv);     
 
-    app.initGL(argc, argv);
+    app.initViz();
 
-    if(app.config(argc, argv) != 0) exit(EXIT_SUCCESS);
+    // NumpyEvt created in App::config 
+    app.configure(argc, argv);  
+    if(app.isExit()) exit(EXIT_SUCCESS);
 
-    app.prepareScene();       // setup OpenGL shaders and creates OpenGL context (the window)
-
-    app.loadGeometry();       // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+    // setup OpenGL shaders and creates OpenGL context (the window)
+    app.prepareViz();      
+ 
+    // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+    app.loadGeometry();      
     if(app.isExit()) exit(EXIT_SUCCESS);
 
     app.configureGeometry();   // setup geometry slicing for debug 

@@ -149,8 +149,6 @@ namespace fs = boost::filesystem;
 // opop-
 #include "OpIndexer.hh"
 
-
-
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
 #define TIMER(s) \
@@ -164,13 +162,11 @@ namespace fs = boost::filesystem;
     }
 
 
-bool App::hasOpt(const char* name)
-{
-    return m_fcfg->hasOpt(name);
-}
 
 void App::init(int argc, char** argv)
 {
+    for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::init " << "[" << std::setw(2) << i << "]" << argv[i] ;
+
     m_opticks = new Opticks(); 
 
     m_cache     = new GCache(m_prefix, "ggeoview.log", "info");
@@ -184,15 +180,18 @@ void App::init(int argc, char** argv)
     m_timer->setVerbose(true);
     m_timer->start();
 
+    m_cfg  = new Cfg("umbrella", false) ; 
+    m_fcfg = m_opticks->getCfg();
+
+    m_cfg->add(m_fcfg);
+
 #ifdef NPYSERVER
     m_delegate    = new numpydelegate ; 
+    m_cfg->add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
 #endif
-    
-
 }
 
-
-void App::initGL(int argc, char** argv)
+void App::initViz()
 {
     // the envvars are normally not defined, using 
     // cmake configure_file values instead
@@ -208,7 +207,6 @@ void App::initGL(int argc, char** argv)
     m_bookmarks   = new Bookmarks ; 
     m_interactor  = new Interactor ; 
 
-
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
     m_interactor->setComposition(m_composition);
@@ -222,73 +220,38 @@ void App::initGL(int argc, char** argv)
     m_frame->setInteractor(m_interactor);      
     m_frame->setComposition(m_composition);
     m_frame->setScene(m_scene);
-}
-
-
-
-
-
-int App::config(int argc, char** argv)
-{
-    for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::config " << "[" << std::setw(2) << i << "]" << argv[i] ;
-
-    m_cfg  = new Cfg("umbrella", false) ; 
-    m_fcfg = m_opticks->getCfg();
-    //new OpticksCfg<Opticks>("opticks", m_opticks,false);
-
-    m_cfg->add(m_fcfg);
-#ifdef NPYSERVER
-    m_cfg->add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
-#endif
 
     m_cfg->add(new SceneCfg<Scene>(           "scene",       m_scene,                      true));
     m_cfg->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
     m_cfg->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
     m_composition->addConfig(m_cfg); 
+}
 
+
+void App::configure(int argc, char** argv)
+{
     m_cfg->commandline(argc, argv);
 
-
-    LOG(debug) << "App:config" 
-              << " argv[0] " << argv[0] 
-              ; 
+    LOG(debug) << "App:config" << argv[0] ; 
 
     if(m_fcfg->hasError())
     {
         LOG(fatal) << "App::config parse error " << m_fcfg->getErrorMessage() ; 
         m_fcfg->dump("App::config m_fcfg");
-        return 1 ;
+        setExit(true);
+        return ; 
     }
 
     const char* idpath = m_cache->getIdPath();
 
     if(m_fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
     if(m_fcfg->hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
-    if(m_fcfg->hasOpt("help|version|idpath")) return 1 ; 
-
-    bool fullscreen = m_fcfg->hasOpt("fullscreen");
-    if(m_fcfg->hasOpt("size")) m_size = m_frame->getSize() ;
-    else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
-    else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-
-
-    m_composition->setSize( m_size );
-
-    m_bookmarks->load(idpath); 
-    m_frame->setTitle("GGeoView");
-    m_frame->setFullscreen(fullscreen);
-
-    m_dd = new DynamicDefine();   // configuration used in oglrap- shaders
-    m_dd->add("MAXREC",m_fcfg->getRecordMax());    
-    m_dd->add("MAXTIME",m_fcfg->getTimeMax());    
-    m_dd->add("PNUMQUAD", 4);  // quads per photon
-    m_dd->add("RNUMQUAD", 2);  // quads per record 
-    m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)GColors::MATERIAL_COLOR_OFFSET );
-    m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)GColors::FLAG_COLOR_OFFSET );
-    m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)GColors::PSYCHEDELIC_COLOR_OFFSET );
-    // TODO: add spectral colors in wavelength bins to color texture
-
+    if(m_fcfg->hasOpt("help|version|idpath"))
+    {
+        setExit(true);
+        return ; 
+    }
 
     if(!hasOpt("noevent"))
     {
@@ -296,10 +259,6 @@ int App::config(int argc, char** argv)
         m_evt->setFlat(true);
         m_evt->getParameters()->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
     } 
-
-    m_scene->setNumpyEvt(m_evt);
-
-    TIMER("configure");
 
 #ifdef NPYSERVER
     m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
@@ -315,12 +274,40 @@ int App::config(int argc, char** argv)
     }
 #endif
 
-    return 0 ; 
+    TIMER("configure");
 }
 
 
-void App::prepareScene()
+
+
+void App::prepareViz()
 {
+    bool fullscreen = m_fcfg->hasOpt("fullscreen");
+    if(m_fcfg->hasOpt("size")) m_size = m_frame->getSize() ;
+    else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
+    else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
+
+    m_scene->setNumpyEvt(m_evt);
+
+    m_composition->setSize( m_size );
+
+    const char* idpath = m_cache->getIdPath();
+    m_bookmarks->load(idpath); 
+
+    m_frame->setTitle("GGeoView");
+    m_frame->setFullscreen(fullscreen);
+
+    m_dd = new DynamicDefine();   // configuration used in oglrap- shaders
+    m_dd->add("MAXREC",m_fcfg->getRecordMax());    
+    m_dd->add("MAXTIME",m_fcfg->getTimeMax());    
+    m_dd->add("PNUMQUAD", 4);  // quads per photon
+    m_dd->add("RNUMQUAD", 2);  // quads per record 
+    m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)GColors::MATERIAL_COLOR_OFFSET );
+    m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)GColors::FLAG_COLOR_OFFSET );
+    m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)GColors::PSYCHEDELIC_COLOR_OFFSET );
+    // TODO: add spectral colors in wavelength bins to color texture
+
+
     m_scene->write(m_dd);
 
     m_scene->initRenderers();  // reading shader source and creating renderers
@@ -1263,5 +1250,11 @@ void App::cleanup()
     {
         m_frame->exit();
     }
+}
+
+
+bool App::hasOpt(const char* name)
+{
+    return m_fcfg->hasOpt(name);
 }
 

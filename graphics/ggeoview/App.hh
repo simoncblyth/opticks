@@ -73,14 +73,14 @@ class OColors ;
 class App {
   public:
        App(const char* prefix, int argc, char** argv );
-       void initGL(int argc, char** argv);
-       int config(int argc, char** argv);
+       void initViz();
+       void configure(int argc, char** argv);
        bool isExit();
   private:
        void init(int argc, char** argv);
        void setExit(bool exit=true);
   public:
-       void prepareScene();   // creates OpenGL context window and OpenGL renderers loading shaders
+       void prepareViz();   // creates OpenGL context window and OpenGL renderers loading shaders
   public:
        void loadGeometry();
        void registerGeometry();
@@ -237,8 +237,6 @@ inline OpticksCfg<Opticks>* App::getOpticksCfg()
 {
     return m_fcfg ; 
 }
-
-
 
 inline bool App::isExit()
 {
