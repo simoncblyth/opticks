@@ -51,7 +51,7 @@ void OPropagator::init()
     LOG(debug) << "OPropagtor::init " << raygenprg ; 
 
     m_ocontext->setRayGenerationProgram( OContext::e_generate_entry, "generate.cu.ptx", raygenprg );
-    m_ocontext->setExceptionProgram(    OContext::e_generate_entry, "generate.cu.ptx", "exception");
+    m_ocontext->setExceptionProgram(     OContext::e_generate_entry, "generate.cu.ptx", "exception");
 
     m_times = new OTimes ; 
 
@@ -122,6 +122,7 @@ void OPropagator::initEvent(NumpyEvt* evt)
 
     m_genstep_buffer = m_ocontext->createIOBuffer<float>( gensteps, "gensteps");
     m_context["genstep_buffer"]->set( m_genstep_buffer );
+    m_genstep_buf = new OBuf("genstep", m_genstep_buffer );
 
     if(m_ocontext->isCompute()) 
     {
@@ -148,6 +149,7 @@ void OPropagator::initEvent(NumpyEvt* evt)
         assert(rx);
         m_record_buffer = m_ocontext->createIOBuffer<short>( rx, "record");
         m_context["record_buffer"]->set( m_record_buffer );
+        m_record_buf = new OBuf("record", m_record_buffer );
 
         m_sequence_buffer = m_ocontext->createIOBuffer<unsigned long long>( evt->getSequenceData(), "sequence" );
         m_context["sequence_buffer"]->set( m_sequence_buffer );

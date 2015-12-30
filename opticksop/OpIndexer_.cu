@@ -18,7 +18,7 @@
 // thrust 
 #include <thrust/device_vector.h>
 
-void OpIndexer::indexSequence(
+void OpIndexer::indexSequenceViaThrust(
    TSparse<unsigned long long>& seqhis, 
    TSparse<unsigned long long>& seqmat, 
    bool verbose

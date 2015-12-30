@@ -20,6 +20,7 @@
 namespace fs = boost::filesystem;
 
 
+const char* GCache::COMPUTE = "--compute" ; 
 const char* GCache::JUNO    = "juno" ; 
 const char* GCache::DAYABAY = "dayabay" ; 
 const char* GCache::PREFERENCE_BASE = "$HOME/.opticks" ; 
@@ -42,6 +43,16 @@ void GCache::init()
 
 void GCache::configure(int argc, char** argv)
 {
+    for(unsigned int i=1 ; i < argc ; i++ )
+    {
+        printf("GCache::configure  %2d : %s \n", i, argv[i] );
+        if(strcmp(argv[i], COMPUTE) == 0) 
+        {
+            printf("GCache::configure setting compute \n");
+            m_compute = true ; 
+        }
+    }
+
     m_log->configure(argc, argv);
     m_log->init(m_idpath);
 

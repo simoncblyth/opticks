@@ -8,6 +8,7 @@ class OpticksCfg : public Cfg {
   public:
      void dump(const char* msg="OpticksCfg::dump");
 
+
      std::string& getConfigPath();
      std::string& getEventTag();
      std::string& getEventCat();

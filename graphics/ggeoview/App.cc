@@ -135,17 +135,18 @@ namespace fs = boost::filesystem;
 
 
 // cudawrap-
-#include "CResource.hh"
-#include "CBufSpec.hh"
+//#include "CResource.hh"
+//#include "CBufSpec.hh"
 
 // thrustrap-
-#include "TBuf.hh"
-#include "TBufPair.hh"
+//#include "TBuf.hh"
+//#include "TBufPair.hh"
 #include "TSparse.hh"
 
 // opop-
 #include "OpIndexer.hh"
 #include "OpSeeder.hh"
+#include "OpZeroer.hh"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -170,6 +171,11 @@ void App::init(int argc, char** argv)
     m_cache     = new GCache(m_prefix, "ggeoview.log", "info");
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
 
+    // need to know where compute mode is active prior to standard configuration is done, 
+    // so do in the pre-configure here
+    bool compute = m_cache->isCompute();
+    m_opticks->setCompute(compute);
+
     std::string detector = m_cache->getDetector();
     m_opticks->setDetector(detector.c_str()); 
 
@@ -191,6 +197,8 @@ void App::init(int argc, char** argv)
 
 void App::initViz()
 {
+    if(m_opticks->isCompute()) return ; 
+
     // the envvars are normally not defined, using 
     // cmake configure_file values instead
     const char* shader_dir = getenv("SHADER_DIR"); 
@@ -241,6 +249,9 @@ void App::configure(int argc, char** argv)
         return ; 
     }
 
+    bool compute = m_fcfg->hasOpt("compute") ;
+    assert(compute == m_opticks->isCompute() && "App::configure compute mismatch between GCache pre-configure and configure"  ); 
+
     const char* idpath = m_cache->getIdPath();
 
     if(m_fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
@@ -280,6 +291,8 @@ void App::configure(int argc, char** argv)
 
 void App::prepareViz()
 {
+    if(m_opticks->isCompute()) return ; 
+
     bool fullscreen = m_fcfg->hasOpt("fullscreen");
     if(m_fcfg->hasOpt("size")) m_size = m_frame->getSize() ;
     else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
@@ -554,6 +567,7 @@ void App::registerGeometry()
 
 void App::uploadGeometryViz()
 {
+    if(m_opticks->isCompute()) return ; 
 
     GColors* colors = m_cache->getColors();
 
@@ -652,6 +666,8 @@ void App::loadGenstep()
 
 void App::targetViz()
 {
+    if(m_opticks->isCompute()) return ; 
+
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     bool geocenter  = m_fcfg->hasOpt("geocenter");
@@ -689,6 +705,8 @@ void App::loadEvtFromFile()
 
 void App::uploadEvtViz()
 {
+    if(m_opticks->isCompute()) return ; 
+
     if(hasOpt("nooptix|noevent")) 
     {
         LOG(warning) << "App::uploadEvtViz skip due to --nooptix/--noevent " ;
@@ -707,62 +725,22 @@ void App::uploadEvtViz()
 }
 
 
-void App::seedPhotonsFromGensteps()
-{
-    OpSeeder* seeder = new OpSeeder ; 
-
-    seeder->setEvt(m_evt);
-
-    seeder->seedPhotonsFromGenstepsViaOpenGL();
-}
-
-
-
-void App::initRecords()
-{
-    // TODO: migrate to opop-
-
-    NPY<short>* rx =  m_evt->getRecordData() ;
-
-    if(!rx) return ; 
-    
-    LOG(info)<<"App::initRecords" ;
-
-    CResource crx( rx->getBufferId(), CResource::W );
-
-    CBufSpec crx_ = crx.mapGLToCUDA<short>() ;
-
-    TBuf trec("trec", crx_ );
-
-    trec.zero();
-
-    crx.unmapGLToCUDA(); 
-
-    TIMER("initRecords"); 
-}
-
 
 
 void App::prepareOptiX()
 {
     // TODO: move inside OGeo ? 
 
-    bool compute  = m_fcfg->hasOpt("compute"); 
-    int  debugidx = m_fcfg->getDebugIdx();
-    int  stack    = m_fcfg->getStack();
+    LOG(debug) << "App::prepareOptiX" ;  
 
-    LOG(debug) << "App::prepareOptiX stack " << stack ;  
-
-    OContext::Mode_t mode = compute ? OContext::COMPUTE : OContext::INTEROP ; 
-
-    assert( mode == OContext::INTEROP && "COMPUTE mode not operational"); 
+    OContext::Mode_t mode = m_opticks->isCompute() ? OContext::COMPUTE : OContext::INTEROP ; 
 
     optix::Context context = optix::Context::create();
 
     m_ocontext = new OContext(context, mode); 
-    m_ocontext->setStackSize(stack);
+    m_ocontext->setStackSize(m_fcfg->getStack());
     m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
-    m_ocontext->setDebugPhoton(debugidx);
+    m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
 
     m_ocolors = new OColors(context, m_cache->getColors() );
     m_ocolors->convert();
@@ -794,6 +772,8 @@ void App::prepareOptiX()
 
 void App::prepareOptiXViz()
 {
+    if(m_opticks->isCompute()) return ; 
+
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
 
@@ -841,6 +821,29 @@ void App::preparePropagator()
 }
 
 
+void App::seedPhotonsFromGensteps()
+{
+    OpSeeder* seeder = new OpSeeder(m_ocontext) ; 
+
+    seeder->setEvt(m_evt);
+    seeder->setPropagator(m_opropagator);  // only used in compute mode
+
+    seeder->seedPhotonsFromGensteps();
+}
+
+
+void App::initRecords()
+{
+    OpZeroer* zeroer = new OpZeroer(m_ocontext) ; 
+
+    zeroer->setEvt(m_evt);
+    zeroer->setPropagator(m_opropagator);  // only used in compute mode
+
+    zeroer->zeroRecords();
+}
+
+
+
 void App::propagate()
 {
     if(hasOpt("nooptix|noevent|nopropagate")) 
@@ -862,7 +865,14 @@ void App::downloadEvt()
 {
     if(!m_evt) return ; 
 
-    Rdr::download(m_evt);
+    if(m_opticks->isCompute())
+    {
+        m_opropagator->downloadEvent();
+    }
+    else
+    {
+        Rdr::download(m_evt);
+    }
 
     TIMER("evtDownload"); 
 
@@ -877,23 +887,10 @@ void App::indexSequence()
 {
     if(!m_evt) return ; 
 
-    if(m_evt->isIndexed())
-    {
-        LOG(info) << "App::indexSequence" 
-                  << " already indexed SKIP " 
-                  ;
-        return ; 
-    }
-
-    OpIndexer* indexer = new OpIndexer();
+    OpIndexer* indexer = new OpIndexer(m_ocontext);
     indexer->setEvt(m_evt);
-
-    OBuf* seq = m_opropagator ? m_opropagator->getSequenceBuf() : NULL ;
-    if(seq)
-    {
-        indexer->setSeq(seq);
-        indexer->indexSequenceViaOpenGL(); 
-    }
+    indexer->setPropagator(m_opropagator);
+    indexer->indexSequence();
 
     TIMER("indexSequence"); 
 }
@@ -943,6 +940,7 @@ void App::indexPresentationPrep()
 void App::indexBoundaries()
 {
    // TODO: manage the boundaries inside m_evt like seqhis, seqmat above 
+   // TODO: move mechanics into opop-
 
     /*
     Indexing the signed integer boundary code, from optixrap-/cu/generate.cu::
@@ -1087,6 +1085,7 @@ void App::makeReport()
 
 void App::prepareGUI()
 {
+    if(m_opticks->isCompute()) return ; 
 
 #ifdef GUI_
 
@@ -1124,6 +1123,8 @@ void App::prepareGUI()
 
 void App::render()
 {
+    if(m_opticks->isCompute()) return ; 
+
     m_frame->viewport();
     m_frame->clear();
 
@@ -1176,6 +1177,8 @@ void App::render()
 
 void App::renderLoop()
 {
+    if(m_opticks->isCompute()) return ; 
+
     bool noviz      = m_fcfg->hasOpt("noviz");
     if(noviz)
     {

@@ -27,6 +27,7 @@ class NumpyEvt {
    public:
        bool isFlat();
        bool isNoLoad();
+       bool isLoaded();
        bool isIndexed();
        bool isStep();
    public:
@@ -161,6 +162,7 @@ class NumpyEvt {
        bool                  m_flat ; 
        bool                  m_step ; 
        bool                  m_noload ; 
+       bool                  m_loaded ; 
 
        Timer*                m_timer ;
        Parameters*           m_parameters ;
@@ -218,6 +220,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_flat(false),
           m_step(true),
           m_noload(false),
+          m_loaded(false),
 
           m_timer(NULL),
           m_parameters(NULL),
@@ -280,6 +283,11 @@ inline bool NumpyEvt::isStep()
 inline bool NumpyEvt::isNoLoad()
 {
     return m_noload ; 
+}
+
+inline bool NumpyEvt::isLoaded()
+{
+    return m_loaded ; 
 }
 
 

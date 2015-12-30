@@ -7,30 +7,18 @@
 #include "string.h"
 #include <boost/tokenizer.hpp>
 
-
-
 namespace po = boost::program_options;
-
-
-const char* Cfg::getName()
-{
-    return m_name ; 
-}
-
-bool Cfg::isLive()
-{
-    return m_live ; 
-}
-
 
 bool Cfg::containsOthers()
 {
     return !m_others.empty();
 }
+
 unsigned int Cfg::getNumOthers()
 {
     return m_others.size();
 }
+
 Cfg* Cfg::getOther(unsigned int index)
 {
     return m_others[index];
@@ -62,7 +50,6 @@ boost::program_options::options_description& Cfg::getDesc()
 {
     return m_desc ; 
 }
-
 
 std::string Cfg::getDescString()
 {

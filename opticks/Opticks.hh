@@ -76,6 +76,9 @@ class Opticks {
        unsigned int getSourceCode();
        std::string getSourceType();
    public:
+       bool isCompute();
+       void setCompute(bool compute=true);
+   public:
        // methods required by Cfg listener classes
        void configureF(const char* name, std::vector<float> values);
        void configureI(const char* name, std::vector<int> values);
@@ -93,23 +96,18 @@ class Opticks {
 
    private:
        glm::ivec4       m_settings ; 
+       //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
-       //NB avoid duplication between here and OpticksCfg 
-       //unsigned int     m_rng_max ; 
-       //unsigned int     m_bounce_max ; 
-       //unsigned int     m_record_max ; 
-       //float            m_propagate_epsilon ;
+       bool             m_compute ; 
+
 };
 
 inline Opticks::Opticks() 
    :
     m_cfg(NULL),
     m_parameters(NULL),
-    m_detector(NULL)
-    //m_rng_max(0),
-    //m_bounce_max(9),
-    //m_record_max(10),
-    //m_epsilon(0.1)
+    m_detector(NULL),
+    m_compute(false)
 {
     init();
 }
@@ -122,6 +120,19 @@ inline OpticksCfg<Opticks>* Opticks::getCfg()
 {
     return m_cfg ; 
 }
+
+inline bool Opticks::isCompute()
+{
+    return m_compute ; 
+}
+inline void Opticks::setCompute(bool compute)
+{
+    m_compute = compute ; 
+}
+
+
+
+
 
 inline Parameters* Opticks::getParameters()
 {

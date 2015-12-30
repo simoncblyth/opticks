@@ -1,33 +1,12 @@
 #include "OConfig.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 #include "Config.hh"  // ptxpath, RNGDIR
 
-
-#include "string.h"
-#include "stdio.h"
-#include "stdlib.h"
-
-
-/*
-OConfig* OConfig::g_instance = NULL ;  
-OConfig* OConfig::getInstance()
-{
-   return g_instance ; 
-}
-
-OConfig* OConfig::makeInstance(optix::Context context)
-{
-   if(!g_instance)
-   {  
-      g_instance = new OConfig(context);
-   }
-   return g_instance ; 
-}
-*/
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 
 const char* OConfig::RngDir()
@@ -85,7 +64,7 @@ void OConfig::addProg(OProg* prog, bool defer)
     int index = prog->index ; 
     if(index > m_index_max) m_index_max = index ;
 
-    LOG(debug) << "OConfig::addProg"
+    LOG(info) << "OConfig::addProg"
               << " desc " << prog->description()
               << " index " << index 
               << " m_index_max " << m_index_max 

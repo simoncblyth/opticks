@@ -5,6 +5,7 @@
 
 // cudawrap- struct 
 #include "CBufSlice.hh"
+#include "CBufSpec.hh"
 class NPYBase ; 
 
 // non-view-type specifics
@@ -21,6 +22,7 @@ class OBufBase {
       static unsigned int getElementSizeInBytes(RTformat format); // eg sizeof(RT_FORMAT_FLOAT4) = 4*4 = 16 
       static unsigned int getNumBytes(const optix::Buffer& buffer);
    public:
+      CBufSpec  bufspec();
       CBufSlice slice( unsigned int stride, unsigned int begin=0u , unsigned int end=0u );
       void*        getDevicePtr();
       unsigned int getMultiplicity(); // typically 4, for RT_FORMAT_FLOAT4/RT_FORMAT_UINT4
@@ -68,6 +70,12 @@ inline CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsig
 {
    return CBufSlice( getDevicePtr(), getSize(), getNumBytes(), stride, begin, end == 0u ? getNumAtoms() : end);
 }
+
+inline CBufSpec OBufBase::bufspec()
+{
+   return CBufSpec( getDevicePtr(), getSize(), getNumBytes()) ;
+}
+
 
 inline void OBufBase::Summary(const char* msg)
 {

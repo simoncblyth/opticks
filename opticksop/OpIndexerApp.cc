@@ -17,7 +17,7 @@ void OpIndexerApp::init()
     m_opticks = new Opticks();
     m_cfg = m_opticks->getCfg();
 
-    m_indexer = new OpIndexer();
+    m_indexer = new OpIndexer(NULL);
 } 
 
 

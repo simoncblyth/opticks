@@ -47,7 +47,11 @@
 
 #include <cstddef>
 class OBuf ; 
+class OContext ; 
+class OPropagator ; 
+
 class TBuf ; 
+
 class NumpyEvt ; 
 struct CBufSlice ; 
 struct CBufSpec ; 
@@ -58,19 +62,23 @@ class Timer ;
 
 class OpIndexer {
    public:
-      OpIndexer();
+      OpIndexer(OContext* ocontext);
       void setEvt(NumpyEvt* evt);
       void setNumPhotons(unsigned int num_photons);
-   public:
       void setSeq(OBuf* seq);
+      void setPropagator(OPropagator* propagator);
+   public:
       void indexSequence(); 
-      void indexSequenceViaOpenGL();  
+   private:
+      void indexSequenceLoaded();  
+      void indexSequenceInterop();  
+      void indexSequenceCompute();  
    private:
       void init();
-      void updateEvt();
+      void update();
    private:
       // implemented in OpIndexer_.cu for nvcc compilation
-      void indexSequence(         
+      void indexSequenceViaThrust(         
            TSparse<unsigned long long>& seqhis, 
            TSparse<unsigned long long>& seqmat, 
            bool verbose 
@@ -80,6 +88,8 @@ class OpIndexer {
            TSparse<unsigned long long>& seqmat, 
            bool verbose 
       );
+
+
       void indexSequenceImp(
            TSparse<unsigned long long>& seqhis, 
            TSparse<unsigned long long>& seqmat, 
@@ -95,9 +105,10 @@ class OpIndexer {
       void saveSel();
    private:
       // resident
-      Timer*                   m_timer ; 
+      OContext*                m_ocontext ;
    private:
       // externally set 
+      OPropagator*             m_propagator ; 
       OBuf*                    m_seq ; 
       NumpyEvt*                m_evt ;
    private:
@@ -109,8 +120,10 @@ class OpIndexer {
 
 };
 
-inline OpIndexer::OpIndexer()  
+inline OpIndexer::OpIndexer(OContext* ocontext)  
    :
+     m_ocontext(ocontext),
+     m_propagator(NULL),
      m_seq(NULL),
      m_evt(NULL),
      m_phosel(NULL),
@@ -118,14 +131,20 @@ inline OpIndexer::OpIndexer()
      m_maxrec(0),
      m_num_photons(0)
 {
-   init(); 
 }
 
 inline void OpIndexer::setSeq(OBuf* seq)
 {
     m_seq = seq ; 
 }
-
+inline void OpIndexer::setPropagator(OPropagator* propagator)
+{
+    m_propagator = propagator ; 
+}
+inline void OpIndexer::setEvt(NumpyEvt* evt)
+{
+    m_evt = evt ; 
+}
 
 
 

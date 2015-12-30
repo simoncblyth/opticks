@@ -40,6 +40,8 @@ class OPropagator {
     public:
         OBuf* getSequenceBuf();
         OBuf* getPhotonBuf();
+        OBuf* getGenstepBuf();
+        OBuf* getRecordBuf();
 
     private:
         void init();
@@ -63,6 +65,8 @@ class OPropagator {
 
         OBuf*           m_photon_buf ;
         OBuf*           m_sequence_buf ;
+        OBuf*           m_genstep_buf ;
+        OBuf*           m_record_buf ;
 
     protected:
         optix::Buffer   m_rng_states ;
@@ -89,6 +93,8 @@ inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks)
     m_evt(NULL),
     m_photon_buf(NULL),
     m_sequence_buf(NULL),
+    m_genstep_buf(NULL),
+    m_record_buf(NULL),
     m_rng_wrapper(NULL),
     m_trivial(false),
     m_times(NULL),
@@ -104,6 +110,13 @@ inline void OPropagator::setTrivial(bool trivial)
 {
     m_trivial = trivial ; 
 }
+inline void OPropagator::setOverride(unsigned int override)
+{
+    m_override = override ; 
+}
+
+
+
 inline void OPropagator::setNumpyEvt(NumpyEvt* evt)
 {
     m_evt = evt ;
@@ -112,6 +125,7 @@ inline NumpyEvt* OPropagator::getNumpyEvt()
 {
     return m_evt ;
 }
+
 inline OBuf* OPropagator::getSequenceBuf()
 {
     return m_sequence_buf ; 
@@ -120,8 +134,15 @@ inline OBuf* OPropagator::getPhotonBuf()
 {
     return m_photon_buf ; 
 }
-inline void OPropagator::setOverride(unsigned int override)
+inline OBuf* OPropagator::getGenstepBuf()
 {
-    m_override = override ; 
+    return m_genstep_buf ; 
 }
+inline OBuf* OPropagator::getRecordBuf()
+{
+    return m_record_buf ; 
+}
+
+
+
 

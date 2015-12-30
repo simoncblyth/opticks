@@ -9,8 +9,8 @@ struct OTimes ;
 class OContext {
     public:
         enum { 
-               e_pinhole_camera_entry,
                e_generate_entry,
+               e_pinhole_camera_entry,
                e_entryPointCount 
             };
 
@@ -64,7 +64,7 @@ class OContext {
             static void           download(optix::Buffer& buffer, NPY<T>* npy);
 
             template<typename T>
-            optix::Buffer  createIOBuffer(NPY<T>* npy, const char* name, bool interop=true);
+            optix::Buffer  createIOBuffer(NPY<T>* npy, const char* name);
 
      private:
             void init();

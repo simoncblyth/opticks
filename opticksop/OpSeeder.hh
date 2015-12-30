@@ -25,40 +25,54 @@
 
 #include <cstddef>
 
-//class OBuf ; 
-//class TBuf ; 
 class NumpyEvt ; 
+class OPropagator ; 
+class OContext ; 
 
-//struct CBufSlice ; 
-//struct CBufSpec ; 
-//template <typename T> class NPY ;
+struct CBufSpec ; 
+
 
 class OpSeeder {
    public:
-      OpSeeder();
+      OpSeeder(OContext* ocontext);
+   public:
       void setEvt(NumpyEvt* evt);
+      void setPropagator(OPropagator* propagator);
+   public:
       void seedPhotonsFromGensteps();
+   private:
+      void seedPhotonsFromGenstepsViaOptiX();
       void seedPhotonsFromGenstepsViaOpenGL();
+      void seedPhotonsFromGenstepsImp(const CBufSpec& rgs_, const CBufSpec& rox_);
    private:
       void init();
    private:
+      OContext*                m_ocontext ;
       NumpyEvt*                m_evt ;
-
+      OPropagator*             m_propagator ;
 };
 
-inline OpSeeder::OpSeeder()  
+inline OpSeeder::OpSeeder(OContext* ocontext)  
    :
-     m_evt(NULL)
+     m_ocontext(ocontext),
+     m_evt(NULL),
+     m_propagator(NULL)
 {
    init(); 
 }
 
-void OpSeeder::setEvt(NumpyEvt* evt)
+inline void OpSeeder::init()
+{
+}
+
+inline void OpSeeder::setEvt(NumpyEvt* evt)
 {
     m_evt = evt ; 
 }  
-
-
+inline void OpSeeder::setPropagator(OPropagator* propagator)
+{
+    m_propagator = propagator ; 
+}  
 
 
 

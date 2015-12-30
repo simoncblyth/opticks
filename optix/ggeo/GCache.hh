@@ -23,6 +23,7 @@ class GCache {
          // singleton instance
          static GCache* g_instance ; 
     public:
+         static const char* COMPUTE ; 
          static const char* JUNO ; 
          static const char* DAYABAY ; 
          static const char* PREFERENCE_BASE  ;
@@ -35,6 +36,7 @@ class GCache {
     public:
          void setGeocache(bool geocache=true);
          bool isGeocache();
+         bool isCompute();  // need to know this prior to standard configuration is done, so do in the pre-configure here
          //void setColors(GColors* colors);
          GColors* getColors();
          GFlags*  getFlags();
@@ -106,6 +108,7 @@ class GCache {
           const char* m_idfold ;
           const char* m_digest ;
     private:
+          bool        m_compute ; 
           bool        m_geocache ; 
           bool        m_dayabay ; 
           bool        m_juno ; 
@@ -141,6 +144,7 @@ inline GCache::GCache(const char* envprefix, const char* logname, const char* lo
        m_idpath(NULL),
        m_idfold(NULL),
        m_digest(NULL),
+       m_compute(false),
        m_geocache(false),
        m_dayabay(false),
        m_juno(false),
@@ -161,6 +165,11 @@ inline const char* GCache::getIdFold()
 {
     return m_idfold ;
 }
+inline bool GCache::isCompute()
+{
+    return m_compute ; 
+}
+
 
 inline const char* GCache::getEnvPrefix()
 {

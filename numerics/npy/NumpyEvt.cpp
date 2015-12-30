@@ -583,13 +583,24 @@ std::string NumpyEvt::description(const char* msg)
 
 void NumpyEvt::recordDigests()
 {
-    m_parameters->add<std::string>("photonData",   getPhotonData()->getDigestString()  );
-    m_parameters->add<std::string>("auxData",      getAuxData()->getDigestString()  );
+
+    NPY<float>* ox = getPhotonData() ;
+    if(ox && ox->hasData())
+        m_parameters->add<std::string>("photonData",   ox->getDigestString()  );
+
+    NPY<short>* au = getAuxData() ;
+    if(au && au->hasData())
+        m_parameters->add<std::string>("auxData",      au->getDigestString()  );
 
     if(m_step)
     {
-        m_parameters->add<std::string>("recordData",   getRecordData()->getDigestString()  );
-        m_parameters->add<std::string>("sequenceData", getSequenceData()->getDigestString()  );
+        NPY<short>* rx = getRecordData() ;
+        if(rx && rx->hasData())
+            m_parameters->add<std::string>("recordData",   rx->getDigestString()  );
+
+        NPY<unsigned long long>* ph = getSequenceData() ;
+        if(ph && ph->hasData())
+            m_parameters->add<std::string>("sequenceData", ph->getDigestString()  );
     }
 }
 
@@ -640,7 +651,7 @@ void NumpyEvt::save(bool verbose)
     }
 
     NPY<short>* au = getAuxData();
-    if(au)
+    if(au && au->hasData())
     {
         au->setVerbose(verbose);
         au->save("au%s", m_typ,  m_tag, udet);
@@ -774,6 +785,7 @@ void NumpyEvt::loadReport()
 
 void NumpyEvt::load(bool verbose)
 {
+
     (*m_timer)("_load");
     const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
 
@@ -790,6 +802,8 @@ void NumpyEvt::load(bool verbose)
                     ;     
         return ; 
     }
+
+    m_loaded = true ; 
 
     NPY<float>* fdom = NPY<float>::load("fdom%s", m_typ,  m_tag, udet );
 

@@ -200,15 +200,17 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 
 
 template <typename T>
-optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool interop)
+optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
     unsigned int ni = npy->getShape(0);
     unsigned int nj = npy->getShape(1);  
     unsigned int nk = npy->getShape(2);  
 
+    bool compute = isCompute();
+
     Buffer buffer;
-    if(interop)
+    if(!compute)
     {
         int buffer_id = npy ? npy->getBufferId() : -1 ;
         if(buffer_id > -1 )
@@ -309,8 +311,8 @@ template void OContext::upload<unsigned long long>(optix::Buffer&, NPY<unsigned 
 template void OContext::download<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
 
 
-template optix::Buffer OContext::createIOBuffer(NPY<float>*, const char*, bool );
-template optix::Buffer OContext::createIOBuffer(NPY<short>*, const char*, bool );
-template optix::Buffer OContext::createIOBuffer(NPY<unsigned long long>*, const char*, bool );
+template optix::Buffer OContext::createIOBuffer(NPY<float>*, const char*);
+template optix::Buffer OContext::createIOBuffer(NPY<short>*, const char*);
+template optix::Buffer OContext::createIOBuffer(NPY<unsigned long long>*, const char*);
 
 

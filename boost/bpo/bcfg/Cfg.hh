@@ -57,7 +57,7 @@ public:
     std::string getDescString();
 
     const std::string& getCommandLine(); 
-    void commandline(int argc, char** argv);
+    virtual void commandline(int argc, char** argv);
     void liveline(const char* line);
     void configfile(const char* path);
 
@@ -122,6 +122,21 @@ inline bool Cfg::hasOpt(const char* opt)
    }
    return count > 0 ; 
 }   
+
+
+inline const char* Cfg::getName()
+{
+    return m_name ; 
+}
+
+inline bool Cfg::isLive()
+{
+    return m_live ; 
+}
+
+
+
+
 
 template <class Listener>
 void Cfg::addOptionF(Listener* listener, const char* name, const char* description )
