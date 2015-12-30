@@ -14,11 +14,14 @@ int main(int argc, char** argv)
     app.loadGeometry();
     if(app.isExit()) exit(EXIT_SUCCESS);
 
-    app.configureGeometry();
 
-    app.uploadGeometry();
+    app.uploadGeometryViz();
 
     app.prepareOptiX();
+
+    app.prepareOptiXViz();
+
+
 
     app.prepareGUI();
 

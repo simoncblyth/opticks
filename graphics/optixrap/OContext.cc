@@ -58,16 +58,12 @@ void OContext::init()
 
     m_context->setPrintEnabled(true);
     m_context->setPrintBufferSize(8192);
-    
-    //m_context->setStackSize(2180);   // now set from App::prepareOptiX, can be changed with --stack option
     //m_context->setPrintLaunchIndex(0,0,0);
 
     m_context->setRayTypeCount( getNumRayType() );   // more static than entry type count
 
     m_top = m_context->createGroup();
 
-    //m_context["instance_index"]->setUint( 0u ); 
-    //m_context["primitive_count"]->setUint( 0u );
     m_context[ "top_object" ]->set( m_top );
 
     LOG(info) << "OContext::init " 
@@ -144,14 +140,21 @@ void OContext::launch(unsigned int entry, unsigned int width, unsigned int heigh
     double t0,t1,t2,t3,t4 ; 
 
     t0 = getRealTime();
+
     m_context->validate();
+
     t1 = getRealTime();
+
     m_context->compile();
+
     t2 = getRealTime();
-    //m_context->launch( entry, 0); 
+
     m_context->launch( entry, 0, 0); 
+
     t3 = getRealTime();
+
     m_context->launch( entry, width, height ); 
+
     t4 = getRealTime();
 
     if(times)

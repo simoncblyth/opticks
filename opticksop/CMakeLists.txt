@@ -77,6 +77,7 @@ set(LIBRARIES
 CUDA_ADD_LIBRARY( ${name} SHARED
     OpIndexerApp.cc
     OpIndexer.cc
+    OpSeeder.cc
     OpIndexer_.cu
 
     OPTIONS -gencode=arch=compute_30,code=sm_30
@@ -87,6 +88,7 @@ target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
     OpIndexer.hh
+    OpSeeder.hh
     OpIndexerApp.hh
 )
 

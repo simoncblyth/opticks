@@ -2,29 +2,59 @@
 
 int main(int argc, char** argv)
 {
-    App app("GGEOVIEW_", argc, argv);       // NumpyEvt created in App::config 
+    App app("GGEOVIEW_", argc, argv);     
+
+    // NumpyEvt created in App::config 
+    app.configure(argc, argv);  
     if(app.isExit()) exit(EXIT_SUCCESS);
 
-    app.loadGeometry();       // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+    // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+    app.loadGeometry();      
     if(app.isExit()) exit(EXIT_SUCCESS);
 
-    app.loadGenstep();
 
-    app.uploadEvt();               // allocates GPU buffers with OpenGL glBufferData
+    bool nooptix = app.hasOpt("nooptix");
+    bool noindex = app.hasOpt("noindex");
+    bool noevent = app.hasOpt("noevent");
+    bool save    = app.hasOpt("save");
+    bool load    = app.hasOpt("load");
 
-    app.seedPhotonsFromGensteps(); // distributes genstep indices into the photons VBO using CUDA
+    if(load) save = false ; 
 
-    //  app.initRecords();             // zero records VBO using CUDA
+    if(!nooptix && !load)
+    {
+        app.loadGenstep();
 
-    app.prepareOptiX();
+        app.seedPhotonsFromGensteps(); // distributes genstep indices into the photons VBO using CUDA
 
-    app.preparePropagator();
+        app.initRecords();             // zero records VBO using CUDA
 
-    app.propagate();
+        app.prepareOptiX();
 
-    app.downloadEvt();
+        if(!noevent)
+        {
+            app.preparePropagator();
 
-    app.makeReport();
+            app.propagate();
+
+            if(!noindex) 
+            {
+                app.indexEvt();
+
+                app.indexPresentationPrep();
+            } 
+
+            if(save)
+            {
+                app.downloadEvt();
+
+                app.indexEvtOld();  // indexing that depends on downloading to host 
+            }
+        }
+
+        app.makeReport();
+    }
+
 
     app.cleanup();
 

@@ -81,24 +81,33 @@ class App {
        void setExit(bool exit=true);
   public:
        void prepareViz();   // creates OpenGL context window and OpenGL renderers loading shaders
+
   public:
        void loadGeometry();
-       void registerGeometry();
+  private: 
+       void loadGeometryBase();
+       void modifyGeometry();
        void checkGeometry();
-       void uploadGeometry();
+       void registerGeometry();
+       void configureGeometry(); 
+
+  public:
+       void uploadGeometryViz();
   public:
        void loadGenstep();
+       void targetViz();
+
        void loadEvtFromFile();
 
 
-       TorchStepNPY* makeCalibrationTorchStep(unsigned int imesh);
+       void uploadEvtViz();
 
-       void uploadEvt();
        void seedPhotonsFromGensteps();
        void initRecords();
   public:
-       void configureGeometry(); 
        void prepareOptiX();
+       void prepareOptiXViz();
+
        void preparePropagator();
        void propagate();
        void downloadEvt();

@@ -12,14 +12,13 @@ int main(int argc, char** argv)
 
     // setup OpenGL shaders and creates OpenGL context (the window)
     app.prepareViz();      
- 
+
     // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
     app.loadGeometry();      
     if(app.isExit()) exit(EXIT_SUCCESS);
 
-    app.configureGeometry();   // setup geometry slicing for debug 
+    app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
-    app.uploadGeometry();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
     bool nooptix = app.hasOpt("nooptix");
     bool noindex = app.hasOpt("noindex");
@@ -31,19 +30,25 @@ int main(int argc, char** argv)
 
     if(!nooptix && !load)
     {
-        app.loadGenstep();
+        app.loadGenstep();             // hostside load genstep into NumpyEvt
 
-        app.uploadEvt();               // allocates GPU buffers with OpenGL glBufferData
+        app.targetViz();               // point Camera at gensteps 
 
-        app.seedPhotonsFromGensteps(); // distributes genstep indices into the photons VBO using CUDA
+        app.uploadEvtViz();            // allocates GPU buffers with OpenGL glBufferData
 
-        app.initRecords();             // zero records VBO using CUDA
+        app.prepareOptiX();            // places geometry into OptiX context with OGeo 
 
-        app.prepareOptiX();
+        app.prepareOptiXViz();         // creates ORenderer, OTracer
+
 
         if(!noevent)
         {
-            app.preparePropagator();
+            app.preparePropagator();       // creates OptiX buffers and OBuf wrappers as members of OPropagator
+
+            app.seedPhotonsFromGensteps(); // distributes genstep indices into the photons buffer
+
+            app.initRecords();             // zero records buffer
+
 
             app.propagate();
 
@@ -70,7 +75,7 @@ int main(int argc, char** argv)
 
         app.indexPresentationPrep();
 
-        app.uploadEvt();               // allocates GPU buffers with OpenGL glBufferData
+        app.uploadEvtViz();               // allocates GPU buffers with OpenGL glBufferData
     }
 
     app.prepareGUI();

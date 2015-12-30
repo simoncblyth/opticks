@@ -139,15 +139,13 @@ namespace fs = boost::filesystem;
 #include "CBufSpec.hh"
 
 // thrustrap-
-#include "ThrustIdx.hh"
-#include "ThrustHistogram.hh"
-#include "ThrustArray.hh"
 #include "TBuf.hh"
 #include "TBufPair.hh"
 #include "TSparse.hh"
 
 // opop-
 #include "OpIndexer.hh"
+#include "OpSeeder.hh"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -165,7 +163,7 @@ namespace fs = boost::filesystem;
 
 void App::init(int argc, char** argv)
 {
-    for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::init " << "[" << std::setw(2) << i << "]" << argv[i] ;
+    //for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::init " << "[" << std::setw(2) << i << "]" << argv[i] ;
 
     m_opticks = new Opticks(); 
 
@@ -324,26 +322,36 @@ void App::prepareViz()
 } 
 
 
+
+
 void App::loadGeometry()
 {
-    // func pointer shenanigans allows GGeo to use AssimpWrap functionality 
-    // without depending on assimpwrap- 
-    //
-    // BUT that also means that CMake dependency tracking 
-    // will not do appropriate rebuilds, if get perplexing fails
-    // try wiping and rebuilding assimpwrap- and ggeo-
+    loadGeometryBase();
 
-    bool test = m_fcfg->hasOpt("test") ;
-    LOG(info) << "App::loadGeometry" 
-              << " test " << test 
-              ;
+    if(hasOpt("test")) modifyGeometry() ;
 
+    checkGeometry();
+
+    registerGeometry();
+
+    if(!m_cache->isGeocache())
+    {
+        LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 
+        setExit(true); 
+    }
+
+    configureGeometry();
+}
+
+
+void App::loadGeometryBase()
+{
     m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
     m_cache->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
 
     m_ggeo = new GGeo(m_cache);
 
-    if(m_fcfg->hasOpt("qe1"))
+    if(hasOpt("qe1"))
         m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
 
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
@@ -359,80 +367,21 @@ void App::loadGeometry()
 
     m_ggeo->loadGeometry();
 
-
-    TIMER("loadGeometry");
-
-
-    if(test)
-    {
-        std::string testconf = m_fcfg->getTestConfig();
-        m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
-
-        TIMER("modifyGeometry"); 
-    }
-
-    checkGeometry();
-
-    registerGeometry();
-
-    if(!m_cache->isGeocache())
-    {
-        LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 
-        setExit(true); 
-    }
+    TIMER("loadGeometryBase");
 }
 
-
-
-void App::registerGeometry()
+void App::modifyGeometry()
 {
-    // TODO: replace these with equivalents from GPropertyLib subclasses
-    //Index* matidx = materials->getIndex() ;
-    //m_cache->getTypes()->setMaterialsIndex(matidx); 
+    assert(hasOpt("test"));
 
-    ////////////////////////////////////////////////////////
+    LOG(info) << "App::modifyGeometry" ;
 
-    GColors* colors = m_cache->getColors();
+    std::string testconf = m_fcfg->getTestConfig();
+    m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
 
-    m_composition->setColorDomain( colors->getCompositeDomain() ); 
-
-    m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
-
-    //m_ggeo->dumpStats("App::registerGeometry dumpStats");
-    //m_ggeo->dumpTree("App::registerGeometry");
-
-    for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
-    m_mesh0 = m_ggeo->getMergedMesh(0); 
-
-
-    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
-    m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
-
-    // treat opticks as the common authority 
-
-
-    m_composition->setTimeDomain( m_opticks->getTimeDomain() );
-    m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
-
-    if(m_evt)
-    {
-        m_evt->setTimeDomain(m_opticks->getTimeDomain());
-        m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
-        m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain());
-    }
-
-    LOG(debug) << "App::registerGeometry ce0: " 
-                      << " x " << ce0.x
-                      << " y " << ce0.y
-                      << " z " << ce0.z
-                      << " w " << ce0.w
-                      ;
-
-    // TODO move into opticks
-    m_parameters->add<float>("timeMax",m_composition->getTimeDomain().y  ); 
-
- 
+    TIMER("modifyGeometry"); 
 }
+
 
 void App::checkGeometry()
 {
@@ -534,8 +483,88 @@ void App::checkGeometry()
 
 
 
-void App::uploadGeometry()
+void App::configureGeometry()
 {
+    int restrict_mesh = m_fcfg->getRestrictMesh() ;  
+    int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
+
+    std::string instance_slice = m_fcfg->getISlice() ;;
+    std::string face_slice = m_fcfg->getFSlice() ;;
+    std::string part_slice = m_fcfg->getPSlice() ;;
+
+    NSlice* islice = !instance_slice.empty() ? new NSlice(instance_slice.c_str()) : NULL ; 
+    NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
+    NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
+
+    unsigned int nmm = m_ggeo->getNumMergedMesh();
+    for(unsigned int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode('K');      
+        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) mm->setGeoCode('S');      
+        if(i>0) mm->setInstanceSlice(islice);
+
+        // restrict to non-global for now
+        if(i>0) mm->setFaceSlice(fslice);   
+        if(i>0) mm->setPartSlice(pslice);   
+    }
+
+    TIMER("configureGeometry"); 
+}
+
+
+
+
+void App::registerGeometry()
+{
+
+    for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
+    m_mesh0 = m_ggeo->getMergedMesh(0); 
+
+
+    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+    m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
+
+    // treat opticks as the common authority 
+
+    if(m_evt)
+    {
+        m_evt->setTimeDomain(m_opticks->getTimeDomain());
+        m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
+        m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain());
+    }
+
+    LOG(debug) << "App::registerGeometry ce0: " 
+                      << " x " << ce0.x
+                      << " y " << ce0.y
+                      << " z " << ce0.z
+                      << " w " << ce0.w
+                      ;
+
+    // TODO move into opticks
+    m_parameters->add<float>("timeMax",m_opticks->getTimeDomain().y  ); 
+
+ 
+}
+
+
+
+
+
+
+void App::uploadGeometryViz()
+{
+
+    GColors* colors = m_cache->getColors();
+
+    m_composition->setColorDomain( colors->getCompositeDomain() ); 
+
+    m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
+
+    m_composition->setTimeDomain( m_opticks->getTimeDomain() );
+    m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
+
+
     m_scene->setGeometry(m_ggeo);
 
     m_scene->uploadGeometry();
@@ -544,12 +573,18 @@ void App::uploadGeometry()
 
     // handle commandline --target option that needs loaded geometry 
     unsigned int target = m_scene->getTargetDeferred();   // default to 0 
-    LOG(debug) << "App::uploadGeometry setting target " << target ; 
+    LOG(debug) << "App::uploadGeometryViz setting target " << target ; 
 
     m_scene->setTarget(target, autocam);
  
-    TIMER("uploadGeometry"); 
+    TIMER("uploadGeometryViz"); 
 }
+
+
+
+
+
+
 
 
 
@@ -564,7 +599,6 @@ void App::loadGenstep()
     unsigned int code = m_opticks->getSourceCode();
     Lookup* lookup = m_ggeo->getLookup();
 
-    //Parameters* parameters = m_evt->getParameters(); 
 
     NPY<float>* npy = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION )
@@ -612,8 +646,12 @@ void App::loadGenstep()
     m_evt->setGenstepData(npy);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
 
     TIMER("setGenstepData"); 
+}
 
 
+
+void App::targetViz()
+{
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     bool geocenter  = m_fcfg->hasOpt("geocenter");
@@ -631,8 +669,9 @@ void App::loadGenstep()
     }
 
     m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
-}
 
+    TIMER("targetViz"); 
+}
 
 
 void App::loadEvtFromFile()
@@ -648,130 +687,66 @@ void App::loadEvtFromFile()
 
 
 
-void App::uploadEvt()
+void App::uploadEvtViz()
 {
     if(hasOpt("nooptix|noevent")) 
     {
-        LOG(warning) << "App::uploadEvt skip due to --nooptix/--noevent " ;
+        LOG(warning) << "App::uploadEvtViz skip due to --nooptix/--noevent " ;
         return ;
     }
  
-    LOG(info) << "App::uploadEvt START " ;
+    LOG(info) << "App::uploadEvtViz START " ;
 
     m_composition->update();
 
     m_scene->upload();
 
-    TIMER("uploadEvt"); 
-
-    if(!m_evt->isIndexed())
-        LOG(warning) << "App::uploadEvt event is not indexed, consider indexing see: opop-;opop-index  " ;
-
     m_scene->uploadSelection();
 
-    LOG(info) << "App::uploadEvt DONE " ;
+    TIMER("uploadEvtViz"); 
 }
 
 
 void App::seedPhotonsFromGensteps()
 {
-    //  Distributes unsigned int genstep indices 0:m_num_gensteps-1 into the first 
-    //  4 bytes of the 4*float4 photon record in the photon buffer 
-    //  using the number of photons per genstep obtained from the genstep buffer 
-    //  
-    //  Note that this is done almost entirely on the GPU, only the num_photons reduction
-    //  needs to come back to CPU in order to allocate an appropriately sized OptiX photon 
-    //  buffer on GPU.
-    //  
-    //  This per-photon genstep index is used by OptiX photon propagation 
-    //  program cu/generate.cu to access the appropriate values from the genstep buffer
-    //
-    //  TODO: make this operational in COMPUTE as well as INTEROP modes without code duplication ?
-    //  TODO: migrate into opop-
+    OpSeeder* seeder = new OpSeeder ; 
 
-    LOG(info)<<"App::seedPhotonsFromGensteps" ;
+    seeder->setEvt(m_evt);
 
-    NPY<float>* gensteps =  m_evt->getGenstepData() ;
-
-    NPY<float>* photons  =  m_evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
-
-    unsigned int nv0 = gensteps->getNumValues(0) ; 
-
-    CResource rgs( gensteps->getBufferId(), CResource::R );
-    CResource rph( photons->getBufferId(), CResource::RW );
-
-    TBuf tgs("tgs", rgs.mapGLToCUDA<unsigned int>() );
-    TBuf tph("tph", rph.mapGLToCUDA<unsigned int>() );
-    
-    //tgs.dump<unsigned int>("App::seedPhotonsFromGensteps tgs", 6*4, 3, nv0 ); // stride, begin, end 
-
-    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, nv0 );  // adding photon counts for each genstep 
-
-    assert(num_photons == m_evt->getNumPhotons() && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
-
-    CBufSlice src = tgs.slice(6*4,3,nv0) ;
-    CBufSlice dst = tph.slice(4*4,0,num_photons*4*4) ;
-
-    TBufPair<unsigned int> tgp(src, dst);
-    tgp.seedDestination();
-
-    rgs.unmapGLToCUDA(); 
-    rph.unmapGLToCUDA(); 
-
-    TIMER("seedPhotonsFromGensteps"); 
+    seeder->seedPhotonsFromGenstepsViaOpenGL();
 }
+
+
 
 void App::initRecords()
 {
+    // TODO: migrate to opop-
+
     NPY<short>* rx =  m_evt->getRecordData() ;
 
     if(!rx) return ; 
     
     LOG(info)<<"App::initRecords" ;
 
-    CResource rec( rx->getBufferId(), CResource::W );
+    CResource crx( rx->getBufferId(), CResource::W );
 
-    TBuf trec("trec", rec.mapGLToCUDA<short>() );
+    CBufSpec crx_ = crx.mapGLToCUDA<short>() ;
+
+    TBuf trec("trec", crx_ );
 
     trec.zero();
 
-    rec.unmapGLToCUDA(); 
+    crx.unmapGLToCUDA(); 
 
     TIMER("initRecords"); 
 }
 
 
-void App::configureGeometry()
-{
-    int restrict_mesh = m_fcfg->getRestrictMesh() ;  
-    int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
-
-    std::string instance_slice = m_fcfg->getISlice() ;;
-    std::string face_slice = m_fcfg->getFSlice() ;;
-    std::string part_slice = m_fcfg->getPSlice() ;;
-
-    NSlice* islice = !instance_slice.empty() ? new NSlice(instance_slice.c_str()) : NULL ; 
-    NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
-    NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
-
-    unsigned int nmm = m_ggeo->getNumMergedMesh();
-    for(unsigned int i=0 ; i < nmm ; i++)
-    {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode('K');      
-        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) mm->setGeoCode('S');      
-        if(i>0) mm->setInstanceSlice(islice);
-
-        // restrict to non-global for now
-        if(i>0) mm->setFaceSlice(fslice);   
-        if(i>0) mm->setPartSlice(pslice);   
-    }
-
-    TIMER("configureGeometry"); 
-}
 
 void App::prepareOptiX()
 {
+    // TODO: move inside OGeo ? 
+
     bool compute  = m_fcfg->hasOpt("compute"); 
     int  debugidx = m_fcfg->getDebugIdx();
     int  stack    = m_fcfg->getStack();
@@ -781,8 +756,6 @@ void App::prepareOptiX()
     OContext::Mode_t mode = compute ? OContext::COMPUTE : OContext::INTEROP ; 
 
     assert( mode == OContext::INTEROP && "COMPUTE mode not operational"); 
-
-    // TODO: move inside OGeo ? 
 
     optix::Context context = optix::Context::create();
 
@@ -813,9 +786,21 @@ void App::prepareOptiX()
     m_ogeo->setTop(m_ocontext->getTop());
     m_ogeo->convert(); 
 
+    LOG(debug) << m_ogeo->description("App::prepareOptiX ogeo");
+
+    TIMER("prepareOptiX"); 
+}
+
+
+void App::prepareOptiXViz()
+{
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
+
+    optix::Context context = m_ocontext->getContext();
+
     m_oframe = new OFrame(context, width, height );
+
     context["output_buffer"]->set( m_oframe->getOutputBuffer() );
 
     m_interactor->setTouchable(m_oframe);
@@ -824,14 +809,13 @@ void App::prepareOptiX()
 
     m_otracer = new OTracer(m_ocontext, m_composition);
 
-    LOG(debug) << m_ogeo->description("App::prepareOptiX ogeo");
-
-    LOG(info) << "App::prepareOptiX DONE "; 
+    LOG(info) << "App::prepareOptiXViz DONE "; 
 
     m_ocontext->dump("App::prepareOptiX");
 
-    TIMER("prepareOptiX"); 
+    TIMER("prepareOptiXViz"); 
 }
+
 
 void App::preparePropagator()
 {
@@ -872,6 +856,8 @@ void App::propagate()
     TIMER("propagate"); 
 }
 
+
+
 void App::downloadEvt()
 {
     if(!m_evt) return ; 
@@ -885,6 +871,7 @@ void App::downloadEvt()
  
     TIMER("evtSave"); 
 }
+
 
 void App::indexSequence()
 {
