@@ -834,6 +834,14 @@ void App::seedPhotonsFromGensteps()
 
 void App::initRecords()
 {
+    if(!m_evt) return ; 
+
+    if(!m_evt->isStep())
+    {
+        LOG(info) << "App::initRecords --nostep mode skipping " ;
+        return ; 
+    }
+
     OpZeroer* zeroer = new OpZeroer(m_ocontext) ; 
 
     zeroer->setEvt(m_evt);
@@ -886,6 +894,11 @@ void App::downloadEvt()
 void App::indexSequence()
 {
     if(!m_evt) return ; 
+    if(!m_evt->isStep())
+    {
+        LOG(info) << "App::indexSequence --nostep mode skipping " ;
+        return ; 
+    }
 
     OpIndexer* indexer = new OpIndexer(m_ocontext);
     indexer->setEvt(m_evt);

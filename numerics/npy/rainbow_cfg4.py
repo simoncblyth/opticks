@@ -38,16 +38,36 @@ Matching curand buffer to requirement
     #  opticks-/OpticksCfg.hh accordingly 
 
 
-TODO:
-------
+Compute Mode, ie no OpenGL
+-----------------------------
 
-* revive compute mode, with no OpenGL in the mix
+Revived "--compute" mode of ggv binary which uses OptiX owned buffers
+as opposed to the usual interop approach of using OpenGL buffers.
+Both with and without step recording is giving similar times in 
+compute mode. This is very different from interop mode where 
+cutting down on buffers gives big wins.
+
+::
+
+    Op   0.75  0.65 
+    G4   57.   56.
+
+A related cmp mode controlled by "--cmp" option uses different computeTest binary, 
+is not operational and little motivation now that "--compute" mode works.
+Could create package without OpenGL dependencies if there is a need.
+
+::
+
+   ggv-;ggv-rainbow --compute 
+   ggv-;ggv-rainbow --compute --nostep 
+   ggv-;ggv-rainbow --compute --nostep --dbg
+
 
 * look at how time scales with photon count  
 
 
-To do this check
--------------------
+To do the nostep check
+------------------------
 
 After standard comparison::
 

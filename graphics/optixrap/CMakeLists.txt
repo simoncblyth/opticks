@@ -160,11 +160,6 @@ set(cuhdrs
 
 
 
-set(DEAD_H
-       OBoundaryLib.hh
-)
-
-
 set(hdrs 
   OptiXUtil.hh
   OContext.hh
