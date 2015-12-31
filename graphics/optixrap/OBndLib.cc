@@ -4,11 +4,9 @@
 
 #include "Opticks.hh"
 #include "GPropertyLib.hh"
-#include "NPY.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NPY.hpp"
+#include "NLog.hpp"
 
 
 void OBndLib::convert()

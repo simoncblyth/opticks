@@ -45,10 +45,10 @@ void GCache::configure(int argc, char** argv)
 {
     for(unsigned int i=1 ; i < argc ; i++ )
     {
-        printf("GCache::configure  %2d : %s \n", i, argv[i] );
+        //printf("GCache::configure  %2d : %s \n", i, argv[i] );
         if(strcmp(argv[i], COMPUTE) == 0) 
         {
-            printf("GCache::configure setting compute \n");
+            //printf("GCache::configure setting compute \n");
             m_compute = true ; 
         }
     }

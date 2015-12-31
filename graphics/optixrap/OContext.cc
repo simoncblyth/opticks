@@ -60,7 +60,9 @@ void OContext::init()
     m_context->setPrintBufferSize(8192);
     //m_context->setPrintLaunchIndex(0,0,0);
 
-    m_context->setRayTypeCount( getNumRayType() );   // more static than entry type count
+    unsigned int num_ray_type = getNumRayType() ;
+
+    m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
 
     m_top = m_context->createGroup();
 
@@ -68,6 +70,7 @@ void OContext::init()
 
     LOG(info) << "OContext::init " 
               << " mode " << getModeName()
+              << " num_ray_type " << num_ray_type 
               ; 
 }
 
@@ -135,7 +138,11 @@ void OContext::launch(unsigned int entry, unsigned int width, unsigned int heigh
 {
     if(!m_closed) close();
 
-    LOG(debug)<< "OContext::launch";
+    LOG(info)<< "OContext::launch" 
+              << " entry " << entry 
+              << " width " << width 
+              << " height " << height 
+              ;
 
     double t0,t1,t2,t3,t4 ; 
 
@@ -176,6 +183,7 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 
     LOG(info)<<"OContext::upload" 
              << " numBytes " << numBytes 
+             << npy->description("upload")
              ;
 
     memcpy( buffer->map(), npy->getBytes(), numBytes );
@@ -189,6 +197,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     unsigned int numBytes = npy->getNumBytes(0) ;
     LOG(info)<<"OContext::download" 
              << " numBytes " << numBytes 
+             << npy->description("download")
              ;
 
     void* ptr = buffer->map() ; 
@@ -206,6 +215,7 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
     unsigned int ni = npy->getShape(0);
     unsigned int nj = npy->getShape(1);  
     unsigned int nk = npy->getShape(2);  
+    unsigned int nl = npy->getShape(3);  
 
     bool compute = isCompute();
 
@@ -235,7 +245,14 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
     } 
     else
     {
-        LOG(info) << "OContext::createIOBuffer (COMPUTE)" ;
+        LOG(info) << "OContext::createIOBuffer (COMPUTE)"  
+                  << " name " << name
+                  << " ni " << ni
+                  << " nj " << nj
+                  << " nk " << nk
+                  << " nl " << nl
+                  << " desc " << npy->description("createIOBuffer")
+                  ;
         buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     }
 
@@ -259,7 +276,7 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
         size = ni*nj ; 
         LOG(debug) << "OContext::createIOBuffer "
                   << " (quad) " 
-                  << " size " << size 
+                  << " size (ni*nj) " << size 
                   ;
 
     }

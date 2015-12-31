@@ -139,7 +139,7 @@ void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(debug) << "OGeo::convert"
+    LOG(info) << "OGeo::convert"
               << " nmm " << nmm
               ;
 
@@ -178,7 +178,7 @@ void OGeo::convert()
     unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
     unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
    
-    LOG(debug) << "OGeo::convert"
+    LOG(info) << "OGeo::convert"
               << " geometryGroupCount " << geometryGroupCount
               << " repeatedGroupCount " << repeatedGroupCount
               ;
@@ -286,7 +286,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
 
 
 
-
+/*
 optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
 {
     assert(0);
@@ -321,6 +321,9 @@ optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
     }
     return assembly ;
 
+}
+*/
+
    /*
    Before instance ID possible
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -342,9 +345,6 @@ optix::Group OGeo::PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit)
              ...
 
    */
-
-}
-
 
 
 
@@ -376,6 +376,11 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
 
 optix::Material OGeo::makeMaterial()
 {
+    LOG(info) << "OGeo::makeMaterial " 
+               << " radiance_ray " << OContext::e_radiance_ray  
+               << " propagate_ray " << OContext::e_propagate_ray  
+               ; 
+
     optix::Material material = m_context->createMaterial();
     material->setClosestHitProgram(OContext::e_radiance_ray, m_ocontext->createProgram("material1_radiance.cu.ptx", "closest_hit_radiance"));
     material->setClosestHitProgram(OContext::e_propagate_ray, m_ocontext->createProgram("material1_propagate.cu.ptx", "closest_hit_propagate"));
@@ -488,6 +493,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 }
 
 
+
+/*
 optix::Buffer OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, unsigned int numSolidsMesh)
 {
     NPY<float>* itransforms = mm->getITransformsBuffer();
@@ -521,6 +528,8 @@ optix::Buffer OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, un
 
     return identityBuffer ;
 }
+*/
+
 
 
 
@@ -608,7 +617,6 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
 }
 
 
-
 template <typename T>
 optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
 {
@@ -643,10 +651,7 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
 
    if(buffer_id > -1 && reuse)
    {
-       /*
-       Reuse attempt fails, getting 
-       Caught exception: GL error: Invalid enum
-       */
+       //Reuse attempt fails, with:  Caught exception: GL error: Invalid enum
 
         glBindBuffer(buffer_target, buffer_id) ;
 
@@ -666,6 +671,7 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    return buffer ; 
 }
 
+
 template <typename T, typename S>
 optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
 {
@@ -678,7 +684,10 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
    int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
-   LOG(debug)<<"OGeo::createInputBuffer [NPY<T>] "
+   bool from_gl = buffer_id > -1 && reuse ;
+
+
+   LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes
@@ -690,6 +699,7 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
             << " sizeof(T) " << std::setw(3) << sizeof(T)
             << " sizeof(T)*nit " << std::setw(3) << sizeof(T)*nit
             << " id " << std::setw(3) << buffer_id 
+            << " from_gl " << from_gl 
             ;
 
 
@@ -699,12 +709,9 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
    optix::Buffer buffer ;
 
-   if(buffer_id > -1 && reuse)
+   if(from_gl)
    {
-       /*
-       Reuse attempt fails, getting 
-       Caught exception: GL error: Invalid enum
-       */
+       // Reuse attempt fails, getting: Caught exception: GL error: Invalid enum
 
         glBindBuffer(buffer_target, buffer_id) ;
 

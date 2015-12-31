@@ -36,10 +36,11 @@ int main(int argc, char** argv)
 
         app.uploadEvtViz();            // allocates GPU buffers with OpenGL glBufferData
 
+
+
         app.prepareOptiX();            // places geometry into OptiX context with OGeo 
 
         app.prepareOptiXViz();         // creates ORenderer, OTracer
-
 
         if(!noevent)
         {
@@ -49,8 +50,10 @@ int main(int argc, char** argv)
 
             app.initRecords();             // zero records buffer
 
-
             app.propagate();
+
+
+
 
             if(!noindex) 
             {

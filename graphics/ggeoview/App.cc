@@ -874,7 +874,7 @@ void App::downloadEvt()
         Rdr::download(m_evt);
     }
 
-    TIMER("evtDownload"); 
+    TIMER("downloadEvt"); 
 
     m_evt->dumpDomains("App::downloadEvt dumpDomains");
     m_evt->save(true);
@@ -1042,7 +1042,7 @@ void App::indexEvtOld()
         m_pho->setTyp(typ);
 
         m_hit = new HitsNPY(ox, m_ggeo->getSensorList());
-        m_hit->debugdump();
+        //m_hit->debugdump();
     }
 
     // hmm thus belongs in NumpyEvt rather than here

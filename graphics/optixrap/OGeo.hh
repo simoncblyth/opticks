@@ -38,7 +38,7 @@ public:
     template <typename T, typename S> optix::Buffer createInputBuffer(NPY<S>*  buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
 public:
     optix::Group   makeRepeatedGroup(GMergedMesh* mm);
-    optix::Group   PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
+    //optix::Group   PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
 
 private:
     optix::Acceleration     makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
@@ -50,7 +50,7 @@ private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
 private:
-    optix::Buffer PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, unsigned int numSolidsMesh);
+    //optix::Buffer PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, unsigned int numSolidsMesh);
 private:
     void dump(const char* msg, const float* m);
 
