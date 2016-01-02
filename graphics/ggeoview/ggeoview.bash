@@ -196,9 +196,17 @@ EOU
 }
 
 
+ggv-catdir(){ echo $LOCAL_BASE/env/opticks/${1:-rainbow} ; }
+
 ggv-times(){
    local udet=${1:-rainbow}
-   find $LOCAL_BASE/env/opticks/$udet  -name t_delta.ini -exec grep -H ^propagate {} \;
+   find $(ggv-catdir $udet)  -name t_delta.ini -exec grep -H ^propagate {} \;
+}
+
+ggv-param(){
+   local parm=${1:-photonData}
+   local udet=${2:-rainbow}
+   find $(ggv-catdir $udet)  -name parameters.json -exec grep -H $parm {} \;
 }
 
 ggv-rainbow()

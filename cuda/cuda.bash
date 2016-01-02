@@ -37,6 +37,29 @@ Debugging GPGPU code using cuda-gdb is no longer supported on the Mac platform.
 
 
 
+
+Using CUDA GPU from Console Mode on Macbook Pro
+-------------------------------------------------
+
+* http://developer.download.nvidia.com/compute/cuda/6_0/rel/docs/CUDA_Getting_Started_Mac.pdf
+
+To run CUDA applications in console mode on MacBook Pro with both an integrated GPU and a discrete GPU, 
+use the following settings before dropping to console mode:
+
+1. Uncheck System Preferences > Energy Saver > Automatic Graphic Switch
+2. Drag the Computer sleep bar to Never in System Preferences > Energy Saver
+
+
+To login with ">console" mode:
+
+* logout 
+* enter ">console" in the usename panel, press return : will drop to console login prompt 
+* after running commands, ctrl-D to return to GUI login  
+
+
+
+
+
 CUDA Debugging
 ----------------
 

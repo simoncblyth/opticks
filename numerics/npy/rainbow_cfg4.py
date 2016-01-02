@@ -77,9 +77,37 @@ Doing this get::
 
     Op (interop mode)         1.509 
     Op (--compute)            0.290
-    Op (--compute --nostep)   0.294     
+    Op (--compute --nostep)   0.294     # skipping step recording not advantageous   
+    Op (--compute)            0.1416    # hmm some performance instability
 
-Again skipping step recording has no impact.
+In ">console" login mode "ggv-rainbow" gives error that no GPU available
+
+Immediately after login getting::
+
+    Op (--compute)            0.148
+
+
+Testing in Console Mode
+-------------------------
+
+::
+
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_170136/t_delta.ini:propagate=0.14798854396212846
+
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_171121/t_delta.ini:propagate=0.44531063502654433  # try >console mode 
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_171142/t_delta.ini:propagate=0.45501201006118208
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_171156/t_delta.ini:propagate=0.33855076995678246 
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_171213/t_delta.ini:propagate=0.46851423906628042
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_171226/t_delta.ini:propagate=0.33861030195839703
+
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_171527/t_delta.ini:propagate=1.5933509200112894   # GUI interop mode
+    /usr/local/env/opticks/rainbow/mdtorch/5/20160102_171548/t_delta.ini:propagate=0.27229616406839341  # GUI --compute mode
+
+Immediately after switching back to automatic graphics switching, then shortly after that::
+
+    0.142      
+    0.293
+
 
 
 To do the nostep check
