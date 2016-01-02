@@ -60,15 +60,44 @@ template <typename T> class TSparse ;
 
 class Timer ; 
 
+/*
+Sequence Indexing histograms the per-photon sequ
+
+   sequence buffer -> recsel/phosel buffers
+
+
+*Interop*
+    sequence from OBuf, maps preexisting OpenGL recsel and phosel buffers
+    as destination for the indices
+
+*Compute*
+
+   Although indexing is not strictly necessary, it has proved so useful 
+   for analysis that it is retained.
+
+*Loaded*
+   used for example with Geant4 cfg4- sequence data, 
+   which comes from host NPY arrays. 
+
+   The sequence data is uploaded to the GPU using thrust device_vectors
+   and output indices are written to thrust created  
+    
+
+
+*/
+
 class OpIndexer {
    public:
       OpIndexer(OContext* ocontext);
+      void setVerbose(bool verbose=true);
       void setEvt(NumpyEvt* evt);
       void setNumPhotons(unsigned int num_photons);
       void setSeq(OBuf* seq);
+      void setPho(OBuf* pho);
       void setPropagator(OPropagator* propagator);
    public:
       void indexSequence(); 
+      void indexBoundaries(); 
    private:
       void indexSequenceLoaded();  
       void indexSequenceInterop();  
@@ -78,11 +107,13 @@ class OpIndexer {
       void update();
    private:
       // implemented in OpIndexer_.cu for nvcc compilation
+      // allocates recsel and phosel buffers with Thrust device_vector 
       void indexSequenceViaThrust(         
            TSparse<unsigned long long>& seqhis, 
            TSparse<unsigned long long>& seqmat, 
            bool verbose 
       );
+      // maps preexisting OpenGL buffers to CUDA
       void indexSequenceViaOpenGL(
            TSparse<unsigned long long>& seqhis, 
            TSparse<unsigned long long>& seqmat, 
@@ -110,7 +141,9 @@ class OpIndexer {
       // externally set 
       OPropagator*             m_propagator ; 
       OBuf*                    m_seq ; 
+      OBuf*                    m_pho ; 
       NumpyEvt*                m_evt ;
+      bool                     m_verbose ; 
    private:
       // transients updated by updateEvt at indexSequence
       NPY<unsigned char>*      m_phosel ;
@@ -125,7 +158,9 @@ inline OpIndexer::OpIndexer(OContext* ocontext)
      m_ocontext(ocontext),
      m_propagator(NULL),
      m_seq(NULL),
+     m_pho(NULL),
      m_evt(NULL),
+     m_verbose(false),
      m_phosel(NULL),
      m_recsel(NULL),
      m_maxrec(0),
@@ -137,6 +172,18 @@ inline void OpIndexer::setSeq(OBuf* seq)
 {
     m_seq = seq ; 
 }
+inline void OpIndexer::setPho(OBuf* pho)
+{
+    m_pho = pho ; 
+}
+inline void OpIndexer::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+
+
+
+
 inline void OpIndexer::setPropagator(OPropagator* propagator)
 {
     m_propagator = propagator ; 

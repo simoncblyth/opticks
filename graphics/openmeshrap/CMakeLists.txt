@@ -36,11 +36,13 @@ add_definitions(
 add_library( ${name}  SHARED
      MWrap.cc
      MTool.cc
+     MFixer.cc
 ) 
 
 set(hdrs
      MWrap.hh
      MTool.hh
+     MFixer.hh
 )
 
 

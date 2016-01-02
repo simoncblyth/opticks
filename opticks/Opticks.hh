@@ -39,6 +39,10 @@ class Opticks {
        static const char* scintillation_ ;
        static const char* torch_ ;
        static const char* other_ ;
+
+       static const char* BNDIDX_NAME_ ;
+       static const char* SEQHIS_NAME_ ;
+       static const char* SEQMAT_NAME_ ;
          
        static const char* SourceType(int code);
        static const char* SourceTypeLowercase(int code);

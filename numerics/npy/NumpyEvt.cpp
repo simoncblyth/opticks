@@ -33,6 +33,7 @@ const char* NumpyEvt::sequence  = "sequence" ;
 const char* NumpyEvt::aux = "aux" ; 
 
 const char* NumpyEvt::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
+const char* NumpyEvt::PARAMETERS_NAME = "parameters.json" ;
 
 std::string NumpyEvt::timestamp()
 {
@@ -52,6 +53,7 @@ void NumpyEvt::init()
     m_parameters = new Parameters ;
     m_report = new Report ; 
 
+    m_parameters->add<std::string>("TimeStamp", timestamp() );
     m_parameters->add<std::string>("Type", m_typ );
     m_parameters->add<std::string>("Tag", m_tag );
     m_parameters->add<std::string>("Detector", m_det );
@@ -59,6 +61,10 @@ void NumpyEvt::init()
     m_parameters->add<std::string>("UDet", getUDet() );
 }
 
+std::string NumpyEvt::getTimeStamp()
+{
+    return m_parameters->get<std::string>("TimeStamp");
+}
 
 unsigned int NumpyEvt::getBounceMax()
 {
@@ -331,19 +337,7 @@ void NumpyEvt::zero()
 
 void NumpyEvt::seedPhotonData()
 {
-    //
-    // NB cf with 
-    //           Scene::uploadEvt
-    //           Scene::uploadSelection
-    //           OptiXEngine::init
-    //
-    // stuff genstep index into the photon allocation 
-    // to allow generation to access appropriate genstep 
-    //
-    // see thrustrap-/iexpand.h and iexpandTest.cc for an 
-    // initial try at moving genstep identification per photon
-    // to GPU side  
-    //
+    assert(0); // this is now done by opop-/OpSeeder
 
     G4StepNPY gs(m_genstep_data);  
 
@@ -676,22 +670,6 @@ void NumpyEvt::save(bool verbose)
 }
 
 
-void NumpyEvt::saveParameters()
-{
-    std::string pm_dir = getSpeciesDir("pm");
-    std::string pm_name = m_tag ;
-    pm_name += ".json" ;
-    m_parameters->save(pm_dir.c_str(), pm_name.c_str());
-}
-
-void NumpyEvt::loadParameters()
-{
-    std::string pm_dir = getSpeciesDir("pm");
-    std::string pm_name = m_tag ;
-    pm_name += ".json" ;
-    m_parameters->load_(pm_dir.c_str(), pm_name.c_str());
-}
-
 
 void NumpyEvt::saveIndex(bool verbose)
 {
@@ -711,18 +689,29 @@ void NumpyEvt::saveIndex(bool verbose)
         rs->save("rs%s", m_typ,  m_tag, udet);
     }
 
+    std::string ixdir = getSpeciesDir("ix");
+
     if(m_seqhis)
-    {
-        std::string sh_dir = getSpeciesDir("sh");
-        m_seqhis->save(sh_dir.c_str(), m_tag);        
-    }
+        m_seqhis->save(ixdir.c_str(), m_tag);        
 
     if(m_seqmat)
-    {
-        std::string sm_dir = getSpeciesDir("sm");
-        m_seqmat->save(sm_dir.c_str(), m_tag);        
-    }
+        m_seqmat->save(ixdir.c_str(), m_tag);        
+
+    if(m_bndidx)
+        m_bndidx->save(ixdir.c_str(), m_tag);        
+
 }
+
+
+void NumpyEvt::loadIndex()
+{
+    std::string ixdir = getSpeciesDir("ix");
+    // TODO: promote NumpyEvt into Opticks OR OpOp in order to have access to the opticks- header for this
+    m_seqhis = Index::load(ixdir.c_str(), m_tag, "History_Sequence" );  // SEQHIS_NAME_
+    m_seqmat = Index::load(ixdir.c_str(), m_tag, "Material_Sequence");  // SEQMAT_NAME_
+    m_bndidx = Index::load(ixdir.c_str(), m_tag, "Boundary_Index");     // BNDIDX_NAME_
+}
+
 
 
 void NumpyEvt::makeReport()
@@ -752,8 +741,25 @@ std::string NumpyEvt::getTagDir(const char* species, bool tstamp)
 {
     std::stringstream ss ;
     ss << getSpeciesDir(species) << "/" << m_tag  ;
-    if(tstamp) ss << "/" << timestamp() ;
+    if(tstamp) ss << "/" << getTimeStamp() ;
     return ss.str();
+}
+
+
+void NumpyEvt::saveParameters()
+{
+    std::string mddir = getTagDir("md", false);
+    m_parameters->save(mddir.c_str(), PARAMETERS_NAME);
+
+    std::string mddir_ts = getTagDir("md", true);
+    m_parameters->save(mddir_ts.c_str(), PARAMETERS_NAME);
+}
+
+
+void NumpyEvt::loadParameters()
+{
+    std::string pmdir = getTagDir("md", false);
+    m_parameters->load_(pmdir.c_str(), PARAMETERS_NAME );
 }
 
 void NumpyEvt::saveReport()
@@ -764,6 +770,8 @@ void NumpyEvt::saveReport()
     std::string mdd_ts = getTagDir("md", true);  
     saveReport(mdd_ts.c_str());
 }
+
+
 
 void NumpyEvt::saveReport(const char* dir)
 {
@@ -812,16 +820,10 @@ void NumpyEvt::load(bool verbose)
 
     loadReport();
     loadParameters();
+    loadIndex();
+
     readDomainsBuffer();
     dumpDomains("NumpyEvt::load dumpDomains");
-
-    //std::string sh_dir = NPYBase::directory("sh%s", m_typ, udet );
-    std::string sh_dir = getSpeciesDir("sh");
-    m_seqhis = Index::load(sh_dir.c_str(), m_tag, "History_Sequence" );
- 
-    //std::string sm_dir = NPYBase::directory("sm%s", m_typ, udet );
-    std::string sm_dir = getSpeciesDir("sm");
-    m_seqmat = Index::load(sm_dir.c_str(), m_tag, "Material_Sequence");
 
 
     NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet );

@@ -107,6 +107,7 @@
 
 
 // openmeshrap-
+#include "MFixer.hh"
 #include "MTool.hh"
 
 #include <boost/filesystem.hpp>
@@ -128,20 +129,9 @@ namespace fs = boost::filesystem;
 #include "OPropagator.hh"
 
 
-//#include "cu/photon.h"
-
 // optix-
 #include <optixu/optixpp_namespace.h>
 
-
-// cudawrap-
-//#include "CResource.hh"
-//#include "CBufSpec.hh"
-
-// thrustrap-
-//#include "TBuf.hh"
-//#include "TBufPair.hh"
-#include "TSparse.hh"
 
 // opop-
 #include "OpIndexer.hh"
@@ -164,15 +154,20 @@ namespace fs = boost::filesystem;
 
 void App::init(int argc, char** argv)
 {
-    //for(unsigned int i=1 ; i < argc ; i++ ) LOG(debug) << "App::init " << "[" << std::setw(2) << i << "]" << argv[i] ;
+    const char* logname = NULL ; 
+    for(unsigned int i=1 ; i < argc ; i++ ) 
+    {
+        if(strcmp(argv[i], "--logname") == 0 && i+1 < argc ) logname = argv[i+1] ; // need logname prior to config, so do manually 
+        //std::cout << "App::init " << "[" << std::setw(2) << i << "]" << argv[i] << std::endl ;
+    }
 
     m_opticks = new Opticks(); 
 
-    m_cache     = new GCache(m_prefix, "ggeoview.log", "info");
+    m_cache     = new GCache(m_prefix, logname ? logname : "ggeoview.log", "info");
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
 
-    // need to know where compute mode is active prior to standard configuration is done, 
-    // so do in the pre-configure here
+    // need to know whether compute mode is active prior to standard configuration is done, 
+    // in order to skip the Viz methods, so do in the pre-configure here 
     bool compute = m_cache->isCompute();
     m_opticks->setCompute(compute);
 
@@ -249,14 +244,12 @@ void App::configure(int argc, char** argv)
         return ; 
     }
 
-    bool compute = m_fcfg->hasOpt("compute") ;
+    bool compute = hasOpt("compute") ;
     assert(compute == m_opticks->isCompute() && "App::configure compute mismatch between GCache pre-configure and configure"  ); 
 
-    const char* idpath = m_cache->getIdPath();
-
-    if(m_fcfg->hasOpt("idpath")) std::cout << idpath << std::endl ;
-    if(m_fcfg->hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
-    if(m_fcfg->hasOpt("help|version|idpath"))
+    if(hasOpt("idpath")) std::cout << m_cache->getIdPath() << std::endl ;
+    if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
+    if(hasOpt("help|version|idpath"))
     {
         setExit(true);
         return ; 
@@ -266,12 +259,15 @@ void App::configure(int argc, char** argv)
     {
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
-        m_evt->getParameters()->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
+
+        Parameters* params = m_evt->getParameters() ;
+        params->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
+        params->add<std::string>("mode",    compute ? "compute" : "interop" ); 
     } 
 
 #ifdef NPYSERVER
     m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
-    m_delegate->setNumpyEvt(m_evt); // allows delegate to update evt when NPY messages arrive
+    m_delegate->setNumpyEvt(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
 
     try { 
         m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
@@ -293,8 +289,8 @@ void App::prepareViz()
 {
     if(m_opticks->isCompute()) return ; 
 
-    bool fullscreen = m_fcfg->hasOpt("fullscreen");
-    if(m_fcfg->hasOpt("size")) m_size = m_frame->getSize() ;
+    bool fullscreen = hasOpt("fullscreen");
+    if(hasOpt("size"))         m_size = m_frame->getSize() ;
     else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
     else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
 
@@ -343,7 +339,7 @@ void App::loadGeometry()
 
     if(hasOpt("test")) modifyGeometry() ;
 
-    checkGeometry();
+    fixGeometry();
 
     registerGeometry();
 
@@ -386,8 +382,7 @@ void App::loadGeometryBase()
 void App::modifyGeometry()
 {
     assert(hasOpt("test"));
-
-    LOG(info) << "App::modifyGeometry" ;
+    LOG(debug) << "App::modifyGeometry" ;
 
     std::string testconf = m_fcfg->getTestConfig();
     m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
@@ -396,91 +391,16 @@ void App::modifyGeometry()
 }
 
 
-void App::checkGeometry()
+void App::fixGeometry()
 {
     if(m_ggeo->isLoaded())
     {
-        LOG(debug) << "App::checkGeometry needs to be done precache " ;
+        LOG(debug) << "App::fixGeometry needs to be done precache " ;
         return ; 
     }
 
-    MTool mtool ; 
-
-    unsigned int nso = m_ggeo->getNumSolids();
-    unsigned int nme = m_ggeo->getNumMeshes();
-
-    LOG(info) << "App::checkGeometry " 
-              << " nso " << nso  
-              << " nme " << nme 
-              ; 
-
-    typedef std::map<unsigned int, unsigned int> MUU ; 
-    typedef MUU::const_iterator MUUI ; 
-
-    typedef std::vector<unsigned int> VU ; 
-    typedef std::map<unsigned int, VU > MUVU ; 
-
-    MUU& mesh_usage = m_ggeo->getMeshUsage();
-    MUVU& mesh_nodes = m_ggeo->getMeshNodes();
-
-    for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
-    {    
-        unsigned int meshIndex = it->first ; 
-        unsigned int nodeCount = it->second ; 
-
-        VU& nodes = mesh_nodes[meshIndex] ;
-        assert(nodes.size() == nodeCount );
-
-        std::stringstream nss ; 
-        for(unsigned int i=0 ; i < std::min( nodes.size(), 5ul ) ; i++) nss << nodes[i] << "," ;
-
-
-        GMesh* mesh = m_ggeo->getMesh(meshIndex);
-        gfloat4 ce = mesh->getCenterExtent(0);
-
-        const char* shortName = mesh->getShortName();
-
-        bool join = m_ggeo->shouldMeshJoin(mesh);
-
-        unsigned int nv = mesh->getNumVertices() ; 
-        unsigned int nf = mesh->getNumFaces() ; 
-        unsigned int tc = mtool.countMeshComponents(mesh); // topological components
-
-        assert( tc >= 1 );  // should be 1, some meshes have topological issues however
-
-        std::string& out = mtool.getOut();
-        std::string& err =  mtool.getErr();
-        unsigned int noise = mtool.getNoise();
-
-        const char* highlight = join ? "**" : "  " ; 
-
-        bool dump = noise > 0 || tc > 1 || join ;
-        //bool dump = true ; 
-
-        if(dump)
-            printf("  %4d (v%5d f%5d )%s(t%5d oe%5u) : x%10.3f : n%6d : n*v%7d : %40s : %s \n", meshIndex, nv, nf, highlight, tc, noise, ce.w, nodeCount, nodeCount*nv, shortName, nss.str().c_str() );
-
-        if(noise > 0)
-        {
-            if(out.size() > 0 ) LOG(debug) << "out " << out ;  
-            if(err.size() > 0 ) LOG(debug) << "err " << err ;  
-        }
-
-   }    
-
-
-    for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
-    {
-        unsigned int meshIndex = it->first ; 
-        GMesh* mesh = m_ggeo->getMesh(meshIndex);
-        bool join = m_ggeo->shouldMeshJoin(mesh);
-        if(join)
-        {
-             mesh->Summary("App::checkGeometry joined mesh");
-        }
-    }
-
-
+    MFixer* fixer = new MFixer(m_ggeo);
+    fixer->fixMesh();
  
     bool zexplode = m_fcfg->hasOpt("zexplode");
     if(zexplode)
@@ -554,8 +474,6 @@ void App::registerGeometry()
                       << " w " << ce0.w
                       ;
 
-    // TODO move into opticks
-    m_parameters->add<float>("timeMax",m_opticks->getTimeDomain().y  ); 
 
  
 }
@@ -656,8 +574,7 @@ void App::loadGenstep()
 
     TIMER("loadGenstep"); 
 
-
-    m_evt->setGenstepData(npy);         // CAUTION : KNOCK ON ALLOCATES FOR PHOTONS AND RECORDS  
+    m_evt->setGenstepData(npy); 
 
     TIMER("setGenstepData"); 
 }
@@ -823,6 +740,8 @@ void App::preparePropagator()
 
 void App::seedPhotonsFromGensteps()
 {
+    if(!m_evt) return ; 
+
     OpSeeder* seeder = new OpSeeder(m_ocontext) ; 
 
     seeder->setEvt(m_evt);
@@ -860,16 +779,20 @@ void App::propagate()
         return ;
     }
 
-    LOG(info)<< " ******************* (main) OptiXEngine::generate + propagate  *********************** " ;
+    LOG(info)<< "App::propagate" ;
 
-    m_opropagator->propagate();     
+    m_opropagator->prelaunch();     
+    TIMER("prelaunch"); 
 
+    m_opropagator->launch();     
     TIMER("propagate"); 
+
+    m_opropagator->dumpTimes("App::propagate");
 }
 
 
 
-void App::downloadEvt()
+void App::saveEvt()
 {
     if(!m_evt) return ; 
 
@@ -884,10 +807,10 @@ void App::downloadEvt()
 
     TIMER("downloadEvt"); 
 
-    m_evt->dumpDomains("App::downloadEvt dumpDomains");
+    m_evt->dumpDomains("App::saveEvt dumpDomains");
     m_evt->save(true);
  
-    TIMER("evtSave"); 
+    TIMER("saveEvt"); 
 }
 
 
@@ -901,9 +824,12 @@ void App::indexSequence()
     }
 
     OpIndexer* indexer = new OpIndexer(m_ocontext);
+    indexer->setVerbose(hasOpt("indexdbg"));
     indexer->setEvt(m_evt);
     indexer->setPropagator(m_opropagator);
+
     indexer->indexSequence();
+    indexer->indexBoundaries();
 
     TIMER("indexSequence"); 
 }
@@ -915,28 +841,44 @@ void App::indexPresentationPrep()
 
     Index* seqhis = m_evt->getHistorySeq() ;
     Index* seqmat = m_evt->getMaterialSeq();
+    Index* bndidx = m_evt->getBoundaryIdx();
 
-    if(!seqhis || !seqmat)
+    if(!seqhis || !seqmat || !bndidx)
     {
          LOG(warning) << "App::indexPresentationPrep NULL index"
                       << " seqhis " << seqhis 
                       << " seqmat " << seqmat
+                      << " bndidx " << bndidx
                       ; 
          return ;
     }
 
+
+    GBndLib* blib = m_ggeo->getBndLib();
+    GAttrSeq* qbnd = blib->getAttrNames();
+    if(!qbnd->hasSequence())
+    {
+        blib->close();
+        assert(qbnd->hasSequence());
+    }
+
+
     GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
     GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
 
+    qbnd->setCtrl(GAttrSeq::VALUE_DEFAULTS);
+    //qbnd->dumpTable(bndidx, "App::indexPresentationPrep bndidx"); 
+
     qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
+    //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
 
     qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
+    //qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
 
 
     m_seqhis = new GItemIndex(seqhis) ;  
     m_seqmat = new GItemIndex(seqmat) ;  
+    m_boundaries = new GItemIndex(bndidx) ;  
 
     m_seqhis->setTitle("Photon Flag Sequence Selection");
     m_seqhis->setHandler(qflg);
@@ -946,49 +888,31 @@ void App::indexPresentationPrep()
     m_seqmat->setHandler(qmat);
     m_seqmat->formTable();
 
+    m_boundaries->setTitle("Photon Termination Boundaries");
+    m_boundaries->setHandler(qbnd);
+    m_boundaries->formTable();
+
+
     TIMER("indexPresentationPrep"); 
 }
 
 
-void App::indexBoundaries()
+void App::indexBoundariesHost()
 {
-   // TODO: manage the boundaries inside m_evt like seqhis, seqmat above 
-   // TODO: move mechanics into opop-
+    // Indexing the final signed integer boundary code (p.flags.i.x = prd.boundary) from optixrap-/cu/generate.cu
+    // see also opop-/OpIndexer::indexBoundaries for GPU version of this indexing 
 
-    /*
-    Indexing the signed integer boundary code, from optixrap-/cu/generate.cu::
-
-         208      p.flags.i.x = prd.boundary ;
-
-    */
     if(!m_evt) return ; 
 
-    OBuf* pho = m_opropagator->getPhotonBuf();
-    pho->setHexDump(false);
-
-    bool hexkey = false ; 
-    TSparse<int> boundaries("indexBoundaries", pho->slice(4*4,4*3+0), hexkey); // stride,begin  hexkey effects Index and dumping only 
-    boundaries.make_lookup();
-    boundaries.dump("App::indexBoundaries TSparse<int>::dump");
-
-
     GBndLib* blib = m_ggeo->getBndLib();
-    blib->close();                         // cannot add new boundaries after a close
     GAttrSeq* qbnd = blib->getAttrNames();
-    qbnd->setCtrl(GAttrSeq::VALUE_DEFAULTS);
+    if(!qbnd->hasSequence())
+    {
+         blib->close();
+         assert(qbnd->hasSequence());
+    }
 
     std::map<unsigned int, std::string> boundary_names = qbnd->getNamesMap(GAttrSeq::ONEBASED) ;
-        
-    m_boundaries = new GItemIndex(boundaries.getIndex()) ;  
-    m_boundaries->setTitle("Photon Termination Boundaries");
-    m_boundaries->setHandler(qbnd);
-
-    m_boundaries->getIndex()->save(m_cache->getIdPath());
-
-    m_boundaries->formTable();
-
-    TIMER("indexBoundaries"); 
-
 
     NPY<float>* dpho = m_evt->getPhotonData();
     if(dpho->hasData())
@@ -1000,8 +924,7 @@ void App::indexBoundaries()
         m_bnd->indexBoundaries();     
     } 
 
-    TIMER("indexBoundariesOld"); 
-
+    TIMER("indexBoundariesHost"); 
 }
 
 
@@ -1031,7 +954,7 @@ void App::indexEvt()
    
     indexSequence();
 
-    indexBoundaries();
+    indexBoundariesHost();
 
     TIMER("indexEvt"); 
 }
@@ -1086,14 +1009,6 @@ void App::indexEvtOld()
 }
 
 
-
-void App::makeReport()
-{
-    if(!m_evt) return ; 
-
-    m_evt->makeReport();
-    m_evt->saveReport();
-}
 
 
 void App::prepareGUI()
@@ -1192,10 +1107,9 @@ void App::renderLoop()
 {
     if(m_opticks->isCompute()) return ; 
 
-    bool noviz      = m_fcfg->hasOpt("noviz");
-    if(noviz)
+    if(hasOpt("noviz"))
     {
-        LOG(info) << "ggeoview/main.cc early exit due to --noviz/-V option " ; 
+        LOG(info) << "App::renderLoop early exit due to --noviz/-V option " ; 
         return ;
     }
     LOG(info) << "enter runloop "; 
@@ -1232,27 +1146,15 @@ void App::cleanup()
 {
 
 #ifdef OPTIX
-    if(m_ocontext)
-    {
-        m_ocontext->cleanUp();
-    }
+    if(m_ocontext) m_ocontext->cleanUp();
 #endif
 #ifdef NPYSERVER
-    if(m_server)
-    {
-        m_server->stop();
-    }
+    if(m_server) m_server->stop();
 #endif
 #ifdef GUI_
-    if(m_gui)
-    {
-        m_gui->shutdown();
-    }
+    if(m_gui) m_gui->shutdown();
 #endif
-    if(m_frame)
-    {
-        m_frame->exit();
-    }
+    if(m_frame) m_frame->exit();
 }
 
 

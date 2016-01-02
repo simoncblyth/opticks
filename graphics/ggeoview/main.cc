@@ -53,8 +53,6 @@ int main(int argc, char** argv)
             app.propagate();
 
 
-
-
             if(!noindex) 
             {
                 app.indexEvt();
@@ -64,13 +62,12 @@ int main(int argc, char** argv)
 
             if(save)
             {
-                app.downloadEvt();
+                app.saveEvt();
 
                 app.indexEvtOld();  // indexing that depends on downloading to host 
             }
         }
 
-        app.makeReport();
     }
     else if(load)
     {

@@ -87,7 +87,7 @@ class App {
   private: 
        void loadGeometryBase();
        void modifyGeometry();
-       void checkGeometry();
+       void fixGeometry();
        void registerGeometry();
        void configureGeometry(); 
 
@@ -110,15 +110,14 @@ class App {
 
        void preparePropagator();
        void propagate();
-       void downloadEvt();
+       void saveEvt();
        void indexEvt();
        void indexSequence();
        void indexPresentationPrep();
-       void indexBoundaries();
+       void indexBoundariesHost();
        void indexEvtOld();
   public:
        void prepareGUI();
-       void makeReport();
        void renderLoop();
        void render();
        void cleanup();

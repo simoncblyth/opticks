@@ -18,6 +18,7 @@ class PhotonsNPY ;
 
 class NumpyEvt {
    public:
+      static const char* PARAMETERS_NAME ;  
       static const char* TIMEFORMAT ;  
       static std::string timestamp();
    public:
@@ -34,6 +35,7 @@ class NumpyEvt {
        // from parameters
        unsigned int getBounceMax();
        unsigned int getRngMax();
+       std::string getTimeStamp();
    private:
        void init();
    public:
@@ -66,8 +68,10 @@ class NumpyEvt {
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
    public:
+       void setBoundaryIdx(Index* bndidx);
        void setHistorySeq(Index* seqhis);
        void setMaterialSeq(Index* seqmat);
+       Index* getBoundaryIdx();
        Index* getHistorySeq();
        Index* getMaterialSeq();
    public:
@@ -84,6 +88,7 @@ class NumpyEvt {
    public:
        void save(bool verbose=false);
        void saveIndex(bool verbose=false);
+       void loadIndex();
        void load(bool verbose=true);
    private:
        // invoked internally, as knock on from setGenstepData
@@ -205,6 +210,7 @@ class NumpyEvt {
 
        Index*          m_seqhis ; 
        Index*          m_seqmat ; 
+       Index*          m_bndidx ; 
 
 
 
@@ -254,7 +260,8 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_num_photons(0),
           m_maxrec(1),
           m_seqhis(NULL),
-          m_seqmat(NULL)
+          m_seqmat(NULL),
+          m_bndidx(NULL)
 {
     init();
 }
@@ -509,16 +516,21 @@ inline const glm::vec4& NumpyEvt::getWavelengthDomain()
     return m_wavelength_domain ; 
 }
 
-
-
+inline void NumpyEvt::setBoundaryIdx(Index* bndidx)
+{
+    m_bndidx = bndidx ; 
+}
 inline void NumpyEvt::setHistorySeq(Index* seqhis)
 {
     m_seqhis = seqhis ; 
 }
+
 inline void NumpyEvt::setMaterialSeq(Index* seqmat)
 {
     m_seqmat = seqmat ; 
 }
+
+
 inline Index* NumpyEvt::getHistorySeq()
 {
     return m_seqhis ; 
@@ -527,6 +539,13 @@ inline Index* NumpyEvt::getMaterialSeq()
 {
     return m_seqmat ; 
 } 
+inline Index* NumpyEvt::getBoundaryIdx()
+{
+    return m_bndidx ; 
+}
+
+
+
 
 inline Parameters* NumpyEvt::getParameters()
 {

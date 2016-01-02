@@ -196,6 +196,10 @@ EOU
 }
 
 
+ggv-times(){
+   local udet=${1:-rainbow}
+   find $LOCAL_BASE/env/opticks/$udet  -name t_delta.ini -exec grep -H ^propagate {} \;
+}
 
 ggv-rainbow()
 {

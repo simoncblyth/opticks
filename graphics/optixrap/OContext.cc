@@ -133,8 +133,7 @@ unsigned int OContext::getNumEntryPoint()
 
 
 
-
-void OContext::launch(unsigned int entry, unsigned int width, unsigned int height, OTimes* times)
+void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, OTimes* times )
 {
     if(!m_closed) close();
 
@@ -144,35 +143,59 @@ void OContext::launch(unsigned int entry, unsigned int width, unsigned int heigh
               << " height " << height 
               ;
 
-    double t0,t1,t2,t3,t4 ; 
 
-    t0 = getRealTime();
+    if(times) times->count     += 1 ; 
 
-    m_context->validate();
 
-    t1 = getRealTime();
-
-    m_context->compile();
-
-    t2 = getRealTime();
-
-    m_context->launch( entry, 0, 0); 
-
-    t3 = getRealTime();
-
-    m_context->launch( entry, width, height ); 
-
-    t4 = getRealTime();
-
-    if(times)
+    if(lmode & VALIDATE)
     {
-        times->count     += 1 ; 
-        times->validate  += t1 - t0 ;
-        times->compile   += t2 - t1 ; 
-        times->prelaunch += t3 - t2 ; 
-        times->launch    += t4 - t3 ; 
+        double t0, t1 ; 
+        t0 = getRealTime();
+
+        m_context->validate();
+
+        t1 = getRealTime();
+        if(times) times->validate  += t1 - t0 ;
     }
+
+    if(lmode & COMPILE)
+    {
+        double t0, t1 ; 
+        t0 = getRealTime();
+
+        m_context->compile();
+
+        t1 = getRealTime();
+        if(times) times->compile  += t1 - t0 ;
+    }
+
+
+    if(lmode & PRELAUNCH)
+    {
+        double t0, t1 ; 
+        t0 = getRealTime();
+
+        m_context->launch( entry, 0, 0); 
+
+        t1 = getRealTime();
+        if(times) times->prelaunch  += t1 - t0 ;
+    }
+
+
+    if(lmode & LAUNCH)
+    {
+        double t0, t1 ; 
+        t0 = getRealTime();
+
+        m_context->launch( entry, width, height ); 
+
+        t1 = getRealTime();
+        if(times) times->launch  += t1 - t0 ;
+    }
+
 }
+
+
 
 
 

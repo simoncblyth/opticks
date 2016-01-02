@@ -21,6 +21,14 @@ class OContext {
                 e_rayTypeCount 
              };
 
+
+        enum {
+                VALIDATE  = 0x1 << 1, 
+                COMPILE   = 0x1 << 2,
+                PRELAUNCH = 0x1 << 3,
+                LAUNCH    = 0x1 << 4
+             };
+
         typedef enum { COMPUTE, INTEROP } Mode_t ;   
         static const char* COMPUTE_ ; 
         static const char* INTEROP_ ; 
@@ -39,7 +47,7 @@ class OContext {
             void setDebugPhoton(unsigned int debug_photon);
             unsigned int getDebugPhoton();
      public:
-            void launch(unsigned int entry, unsigned int width, unsigned int height=1, OTimes* times=NULL);
+            void launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height=1, OTimes* times=NULL);
      public:
             // pass thru to OConfig
             optix::Program createProgram(const char* filename, const char* progname );

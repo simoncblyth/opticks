@@ -56,6 +56,7 @@ class GAttrSeq {
         //std::map<std::string, std::string>& getAbbrev();
 
         void setSequence(NSequence* seq);
+        bool hasSequence();
     public:
         std::string  getLabel(Index* index, const char* key, unsigned int& colorcode);
         std::string  getAbbr(const char* key);
@@ -110,5 +111,10 @@ inline std::map<std::string, unsigned int>&  GAttrSeq::getOrder()
 inline void GAttrSeq::setCtrl(unsigned char ctrl)
 {
     m_ctrl = ctrl ; 
+}
+
+inline bool GAttrSeq::hasSequence()
+{
+    return m_sequence != NULL ; 
 }
 

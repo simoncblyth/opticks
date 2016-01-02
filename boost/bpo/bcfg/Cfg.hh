@@ -76,12 +76,12 @@ public:
     bool hasError(); 
     std::string getErrorMessage(); 
 private:
-    const char* m_name ;    
+    const char*       m_name ;    
     std::vector<Cfg*> m_others ; 
-    std::string m_commandline ; 
-    bool m_live ; 
-    bool m_error ; 
-    std::string m_error_message ; 
+    std::string       m_commandline ; 
+    bool              m_live ; 
+    bool              m_error ; 
+    std::string       m_error_message ; 
 
 };
 

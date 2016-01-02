@@ -62,7 +62,7 @@ std::string Cfg::getDescString()
 void Cfg::commandline(int argc, char** argv)
 {
     std::stringstream ss ; 
-    for(unsigned int i=1 ; i < argc ; ++i ) ss << argv[i] ;
+    for(unsigned int i=1 ; i < argc ; ++i ) ss << argv[i] << " " ;
     m_commandline = ss.str();
 
     if(m_others.empty())

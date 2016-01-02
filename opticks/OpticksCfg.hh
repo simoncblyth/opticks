@@ -9,6 +9,7 @@ class OpticksCfg : public Cfg {
      void dump(const char* msg="OpticksCfg::dump");
 
 
+     std::string& getLogName();
      std::string& getConfigPath();
      std::string& getEventTag();
      std::string& getEventCat();
@@ -42,6 +43,7 @@ private:
      void init();
 private:
      Listener*   m_listener ; 
+     std::string m_logname ;
      std::string m_configpath ;
      std::string m_event_cat ;
      std::string m_event_tag ;
@@ -191,6 +193,10 @@ inline void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("torchdbg",  "dump details of torch config") ;
+
+   m_desc.add_options()
+       ("indexdbg",  "dump details of indexing") ;
+
 
 
    m_desc.add_options()
@@ -343,6 +349,10 @@ inline void OpticksCfg<Listener>::init()
    ///////////////
 
    m_desc.add_options()
+       ("logname",   boost::program_options::value<std::string>(&m_logname),
+         "name of logfile");
+
+   m_desc.add_options()
        ("config",   boost::program_options::value<std::string>(&m_configpath),
          "name of a file of a configuration.");
 
@@ -363,11 +373,19 @@ inline void OpticksCfg<Listener>::init()
 
 
 
+
+template <class Listener>
+inline std::string& OpticksCfg<Listener>::getLogName()
+{
+    return m_logname ;
+}
+
 template <class Listener>
 inline std::string& OpticksCfg<Listener>::getConfigPath()
 {
     return m_configpath ;
 }
+
 template <class Listener>
 inline std::string& OpticksCfg<Listener>::getEventTag()
 {

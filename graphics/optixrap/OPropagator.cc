@@ -53,7 +53,8 @@ void OPropagator::init()
     m_ocontext->setRayGenerationProgram( OContext::e_generate_entry, "generate.cu.ptx", raygenprg );
     m_ocontext->setExceptionProgram(     OContext::e_generate_entry, "generate.cu.ptx", "exception");
 
-    m_times = new OTimes ; 
+    m_launch_times = new OTimes ; 
+    m_prelaunch_times = new OTimes ; 
 
     const glm::vec4& ce = m_opticks->getSpaceDomain();
     const glm::vec4& td = m_opticks->getTimeDomain();
@@ -175,28 +176,47 @@ void OPropagator::initEvent(NumpyEvt* evt)
 }
 
 
-void OPropagator::propagate()
+void OPropagator::prelaunch()
 {
     if(!m_evt) return ;
 
     unsigned int numPhotons = m_evt->getNumPhotons();
     assert( numPhotons <= m_opticks->getRngMax() && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
 
-    unsigned int width  = numPhotons ;
-    unsigned int height = 1 ;
+    m_width  = numPhotons ;
+    m_height = 1 ;
 
-    LOG(info) << "OPropagator::propagate count " << m_count << " size(" <<  width << "," <<  height << ")";
+    LOG(info) << "OPropagator::prelaunch count " << m_count << " size(" <<  m_width << "," <<  m_height << ")";
 
     if(m_override > 0)
     {
-        width = m_override ; 
-        LOG(warning) << "OPropagator::generate OVERRIDE photon count for debugging to " << width ; 
+        m_width = m_override ; 
+        LOG(warning) << "OPropagator::generate OVERRIDE photon count for debugging to " << m_width ; 
     }
 
-    m_ocontext->launch( OContext::e_generate_entry,  width, height );
+    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,   OContext::e_generate_entry,  m_width, m_height, m_prelaunch_times);
 
     m_count += 1 ; 
+
+    m_prelaunch = true ; 
 }
+
+
+void OPropagator::launch()
+{
+    assert(m_prelaunch && "must prelaunch before launch");
+
+    m_ocontext->launch( OContext::LAUNCH,   OContext::e_generate_entry,  m_width, m_height, m_launch_times);
+}
+
+
+void OPropagator::dumpTimes(const char* msg)
+{
+    LOG(info) << msg ; 
+    LOG(info) << m_prelaunch_times->description("prelaunch_times");
+    LOG(info) << m_launch_times->description("launch_times");
+}
+
 
 
 void OPropagator::downloadEvent()

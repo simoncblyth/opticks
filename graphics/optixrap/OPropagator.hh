@@ -28,7 +28,8 @@ class OPropagator {
         void initRng();
     public:
         void initEvent();
-        void propagate();
+        void prelaunch();
+        void launch();
         void downloadEvent();
     public:
         void setNumpyEvt(NumpyEvt* evt);
@@ -43,6 +44,10 @@ class OPropagator {
         OBuf* getGenstepBuf();
         OBuf* getRecordBuf();
 
+        OTimes* getPrelaunchTimes();
+        OTimes* getLaunchTimes();
+        void dumpTimes(const char* msg="OPropagator::dumpTimes");
+
     private:
         void init();
         void initEvent(NumpyEvt* evt);
@@ -54,6 +59,9 @@ class OPropagator {
         Opticks*         m_opticks ; 
         optix::Context   m_context ;
         NumpyEvt*        m_evt ; 
+        OTimes*          m_prelaunch_times ; 
+        OTimes*          m_launch_times ; 
+        bool             m_prelaunch ;
 
     protected:
         optix::Buffer   m_genstep_buffer ; 
@@ -74,8 +82,9 @@ class OPropagator {
 
     private:
         bool             m_trivial ; 
-        OTimes*          m_times ; 
         unsigned int     m_count ; 
+        unsigned int     m_width ; 
+        unsigned int     m_height ; 
         double           m_prep ; 
         double           m_time ; 
 
@@ -91,14 +100,18 @@ inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks)
     m_ocontext(ocontext),
     m_opticks(opticks),
     m_evt(NULL),
+    m_prelaunch_times(NULL),
+    m_launch_times(NULL),
+    m_prelaunch(false),
     m_photon_buf(NULL),
     m_sequence_buf(NULL),
     m_genstep_buf(NULL),
     m_record_buf(NULL),
     m_rng_wrapper(NULL),
     m_trivial(false),
-    m_times(NULL),
     m_count(0),
+    m_width(0),
+    m_height(0),
     m_prep(0),
     m_time(0),
     m_override(0)
@@ -143,6 +156,14 @@ inline OBuf* OPropagator::getRecordBuf()
     return m_record_buf ; 
 }
 
+inline OTimes* OPropagator::getPrelaunchTimes()
+{
+    return m_prelaunch_times ; 
+}
 
+inline OTimes* OPropagator::getLaunchTimes()
+{
+    return m_launch_times ; 
+}
 
 

@@ -79,7 +79,7 @@ rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               photon_buffer;
 
 // TODO: find no-compromise way to flip these switches without recompilation 
-#define RECORD 1
+//#define RECORD 1
 #ifdef RECORD
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 

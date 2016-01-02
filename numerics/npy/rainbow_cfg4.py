@@ -66,6 +66,22 @@ Could create package without OpenGL dependencies if there is a need.
 * look at how time scales with photon count  
 
 
+Split the prelaunch from launch timings
+-----------------------------------------
+
+Kernel validation, compilation and prelaunch does not 
+need to be done for each event so can exclude it from 
+timings. 
+
+Doing this get::
+
+    Op (interop mode)         1.509 
+    Op (--compute)            0.290
+    Op (--compute --nostep)   0.294     
+
+Again skipping step recording has no impact.
+
+
 To do the nostep check
 ------------------------
 

@@ -31,6 +31,9 @@ const char* Opticks::scintillation_     = "scintillation" ;
 const char* Opticks::torch_             = "torch" ; 
 const char* Opticks::other_             = "other" ;
 
+const char* Opticks::BNDIDX_NAME_  = "Boundary_Index" ;
+const char* Opticks::SEQHIS_NAME_  = "History_Sequence" ;
+const char* Opticks::SEQMAT_NAME_  = "Material_Sequence" ;
 
 
 // formerly of GPropertyLib, now booted upstairs

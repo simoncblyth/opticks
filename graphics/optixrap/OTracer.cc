@@ -89,7 +89,8 @@ void OTracer::trace()
 
     double t1 = getRealTime();
 
-    m_ocontext->launch( OContext::e_pinhole_camera_entry,  width, height, m_trace_times );
+    unsigned int lmode = m_trace_count == 0 ? OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH|OContext::LAUNCH : OContext::LAUNCH ;
+    m_ocontext->launch( lmode, OContext::e_pinhole_camera_entry,  width, height, m_trace_times );
 
     double t2 = getRealTime();
 
