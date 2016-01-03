@@ -14,9 +14,13 @@
 #include <vector>
 #include <iomanip>
 
+#include "NLog.hpp"
 
-GLMFormat::GLMFormat(unsigned int prec)
+
+
+GLMFormat::GLMFormat(const char* delim, unsigned int prec)
 {
+    m_delim = delim ; 
     m_ss.precision(prec) ; 
     m_ss << std::fixed ; 
 }
@@ -68,6 +72,15 @@ std::string GLMFormat::format(const glm::mat4& m)
     vals.push_back(format(m[1]));
     vals.push_back(format(m[2]));
     vals.push_back(format(m[3]));
+    return boost::algorithm::join(vals, " ");
+}
+
+std::string GLMFormat::format(const glm::mat3& m)
+{
+    std::vector<std::string> vals ; 
+    vals.push_back(format(m[0]));
+    vals.push_back(format(m[1]));
+    vals.push_back(format(m[2]));
     return boost::algorithm::join(vals, " ");
 }
 
@@ -191,7 +204,11 @@ glm::vec4 GLMFormat::vec4(const std::string& s )
 glm::mat4 GLMFormat::mat4(const std::string& s, bool flip )
 {
     std::vector<std::string> tp; 
-    boost::split(tp, s, boost::is_any_of(","));
+
+    std::string c(s);
+    boost::trim(c); 
+    boost::split(tp, c, boost::is_any_of(m_delim), boost::token_compress_on);
+
     unsigned int size = tp.size();
     glm::mat4 m;
     for(unsigned int j=0 ; j < 4 ; j++) 
@@ -211,6 +228,44 @@ glm::mat4 GLMFormat::mat4(const std::string& s, bool flip )
     }
     return m ; 
 }
+
+
+
+
+glm::mat3 GLMFormat::mat3(const std::string& s, bool flip )
+{
+    std::vector<std::string> tp; 
+    std::string c(s);
+    boost::trim(c); 
+    boost::split(tp, c, boost::is_any_of(m_delim), boost::token_compress_on);
+
+    unsigned int size = tp.size();
+
+    //LOG(info) <<  "GLMFormat::mat3 size " << size ; 
+    //for(unsigned int i=0 ; i < size ; i++) LOG(info) << std::setw(4) << i << " [" << tp[i] << "]" << std::endl  ; 
+
+    glm::mat3 m;
+    for(unsigned int j=0 ; j < 3 ; j++) 
+    for(unsigned int k=0 ; k < 3 ; k++) 
+    {
+        unsigned int offset = j*3+k ;   
+        if(offset >= size) break ; 
+        float v = boost::lexical_cast<float>(tp[offset]) ;
+        if(flip)
+        {
+            m[j][k] = v ; 
+        }
+        else
+        {
+            m[k][j] = v ; 
+        }   
+    }
+    return m ; 
+}
+
+
+
+
 
 
 
@@ -337,6 +392,15 @@ std::string gformat(const glm::mat4& m )
     return fmt.format(m);
 }
 
+std::string gformat(const glm::mat3& m )
+{
+    GLMFormat fmt; 
+    return fmt.format(m);
+}
+
+
+
+
 
 std::string gpresent(const glm::vec4& v, unsigned int prec, unsigned int wid)
 {
@@ -411,10 +475,15 @@ glm::quat gquat(const std::string& s )
     GLMFormat fmt; 
     return fmt.quat(s);
 }
-glm::mat4 gmat4(const std::string& s, bool flip)
+glm::mat4 gmat4(const std::string& s, bool flip, const char* delim)
 {
-    GLMFormat fmt; 
+    GLMFormat fmt(delim); 
     return fmt.mat4(s, flip);
+}
+glm::mat3 gmat3(const std::string& s, bool flip, const char* delim)
+{
+    GLMFormat fmt(delim); 
+    return fmt.mat3(s, flip);
 }
 
 

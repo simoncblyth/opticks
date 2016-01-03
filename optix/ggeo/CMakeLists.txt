@@ -91,6 +91,7 @@ add_library(${name} SHARED
                 GParts.cc
                 GPmt.cc
                 GMaker.cc
+                GCIE.cc
                 GGeoTest.cc
                 GGeoTestConfig.cc
 )
@@ -142,6 +143,7 @@ GMeshFixer.hh
 GParts.hh
 GPmt.hh
 GMaker.hh
+GCIE.hh
 GGeoTest.hh
 GGeoTestConfig.hh
 )

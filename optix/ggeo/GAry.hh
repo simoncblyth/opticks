@@ -23,7 +23,10 @@ public:
    static T np_interp(const T z, GAry<T>* xp, GAry<T>* fp );
 public: 
    static GAry<T>* planck_spectral_radiance(GAry<T>* nm, T blackbody_temp_kelvin=6500.);
-
+   static GAry<T>* cie_weight(GAry<T>* nm, unsigned int component);
+   static GAry<T>* cie_X(GAry<T>* nm);
+   static GAry<T>* cie_Y(GAry<T>* nm);
+   static GAry<T>* cie_Z(GAry<T>* nm);
 public: 
    GAry<T>* copy();
    GAry(GAry<T>* other);

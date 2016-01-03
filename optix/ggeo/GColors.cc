@@ -10,11 +10,8 @@
 #include <sstream>
 #include <vector>
 
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
+#include "NSpectral.hpp"
+#include "NLog.hpp"
 
 using namespace std ; 
 
@@ -54,6 +51,11 @@ void GColors::sort()
         m_psychedelic_codes.push_back(code); 
     } 
 }
+
+//void GColors::make_spectral_codes()
+//{
+//    m_spectral_codes = NSpectral::make_colors();
+//}
 
 
 void GColors::dump(const char* msg)
@@ -133,6 +135,12 @@ std::vector<unsigned int>& GColors::getPsychedelicCodes()
 {
     if(m_psychedelic_codes.size() == 0) sort();
     return m_psychedelic_codes ;
+}
+
+std::vector<unsigned int>& GColors::getSpectralCodes()
+{
+    //if(m_spectral_codes.size() == 0) make_spectral_codes();
+    return m_spectral_codes ;
 }
 
 
@@ -337,8 +345,6 @@ void GColors::dump_uchar4_buffer( GBuffer* buffer )
 
 
 
-
-
 gfloat3 GColors::makeColor( unsigned int rgb )
 {
     unsigned int red   =  ( rgb & 0xFF0000 ) >> 16 ;  
@@ -362,14 +368,16 @@ guint4 GColors::getCompositeDomain()
 void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_codes, std::vector<unsigned int>& flag_codes)
 {
     std::vector<unsigned int>& psychedelic_codes = getPsychedelicCodes();
+    std::vector<unsigned int>& spectral_codes = getSpectralCodes();
 
-    unsigned int colormax = 256 ; 
+    unsigned int colormax = COLORMAX ; 
     initCompositeColorBuffer(colormax);
     assert( m_composite->getNumItems() == colormax );
 
     unsigned int material_color_offset = MATERIAL_COLOR_OFFSET ; 
     unsigned int flag_color_offset     = FLAG_COLOR_OFFSET ; 
     unsigned int psychedelic_color_offset = PSYCHEDELIC_COLOR_OFFSET ; 
+    unsigned int spectral_color_offset = SPECTRAL_COLOR_OFFSET ; 
 
     if(material_codes.size() > 0)
     {
@@ -383,9 +391,15 @@ void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_cod
     }
     if(psychedelic_codes.size() > 0)
     {
-        assert(psychedelic_color_offset + psychedelic_codes.size() < colormax );
+        assert(psychedelic_color_offset + psychedelic_codes.size() < spectral_color_offset );
         addColors(psychedelic_codes , psychedelic_color_offset ) ;  
     }
+    if(spectral_codes.size() > 0)
+    {
+        assert(spectral_color_offset + spectral_codes.size() < colormax );
+        addColors(spectral_codes , spectral_color_offset ) ;  
+    }
+
 
 
     m_composite_domain.x = 0 ; 
@@ -397,10 +411,7 @@ void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_cod
     //        optixrap-/cu/color_lookup.h 
     //        oglrap-/gl/fcolor.h
     //
-    //     frag_colour = texture(Colors, float(64 + gl_PrimitiveID % int(ColorDomain.z))/ColorDomain.y ) ;
+    //     fcolor = texture(Colors, (float(flq[0].x) + MATERIAL_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) 
     //
-
 }
-
-
 

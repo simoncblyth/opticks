@@ -8,7 +8,7 @@
 class GLMFormat {
 
    public:
-       GLMFormat(unsigned int precision=4);
+       GLMFormat(const char* delim="," , unsigned int precision=4);
     
    public:
        std::string format(float f);
@@ -21,6 +21,7 @@ class GLMFormat {
        std::string format(const glm::ivec3& v);
        std::string format(const glm::quat& q);
        std::string format(const glm::mat4& m);
+       std::string format(const glm::mat3& m);
 
    public:
        float         float_(const std::string& s );
@@ -33,9 +34,11 @@ class GLMFormat {
        glm::vec3 vec3(const std::string& s );
        glm::quat quat(const std::string& s );
        glm::mat4 mat4(const std::string& s, bool flip=false);
+       glm::mat3 mat3(const std::string& s, bool flip=false);
 
    private:
        std::ostringstream m_ss  ;
+       std::string        m_delim ; 
 
 };
 
@@ -52,6 +55,7 @@ std::string gformat(const glm::uvec4& v );
 std::string gformat(const glm::ivec3& v );
 std::string gformat(const glm::quat& q );
 std::string gformat(const glm::mat4& m );
+std::string gformat(const glm::mat3& m );
 
 float       gfloat_(const std::string& s );
 int           gint_(const std::string& s );
@@ -62,7 +66,8 @@ glm::ivec4  givec4(const std::string& s );
 glm::uvec4  guvec4(const std::string& s );
 glm::ivec3  givec3(const std::string& s );
 glm::quat   gquat(const std::string& s );
-glm::mat4   gmat4(const std::string& s, bool flip=false);
+glm::mat4   gmat4(const std::string& s, bool flip=false, const char* delim=",");
+glm::mat3   gmat3(const std::string& s, bool flip=false, const char* delim=",");
 
 std::string gpresent(const glm::vec4& v, unsigned int prec=3, unsigned int wid=10);
 

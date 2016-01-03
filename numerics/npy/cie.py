@@ -264,7 +264,7 @@ class Whitepoint(object):
         The Yint is hoped to provide a less adhoc way of doing the
         normalization. 
         """
-        assert w is not None:
+        assert w is not None
 
         X = np.sum(_cie.X(w))
         Y = np.sum(_cie.Y(w))
@@ -306,7 +306,7 @@ def whitepoint(wd):
 
 
 
-def compare_norms(wd):
+def compare_norms(wdom):
     """
     norm 0:X,1:Y 
              look almost identical  
@@ -322,7 +322,7 @@ def compare_norms(wd):
 
     for i, norm in enumerate([0,1,2,3]):
         ax = fig.add_subplot(1,nplot,i+1)
-        c.spectral_plot(ax, wd, norm)
+        c.spectral_plot(ax, wdom, norm)
 
         #ax = fig.add_subplot(1,nplot,2*i+2)
         #c.swatch_plot(wd, norm)
@@ -334,17 +334,17 @@ if __name__ == '__main__':
     plt.close()
     plt.ion()
 
-    wd = np.arange(350,720,20)
+    wdom = np.arange(350,720,20)
 
 
     fig = plt.figure()
 
-    compare_norms(wd)
+    compare_norms(wdom)
 
     plt.show()
 
 
-    wp = whitepoint(wd)
+    wp = whitepoint(wdom)
 
  
 

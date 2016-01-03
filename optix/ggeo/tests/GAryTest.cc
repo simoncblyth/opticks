@@ -4,6 +4,28 @@
 
 typedef GAry<float> A ;
 
+
+
+void test_cie()
+{
+   GDomain<float>* nmdom = new GDomain<float>(380.f, 780.f, 20.f );
+   nmdom->Summary("nmdom");
+
+   A* nm = A::from_domain(nmdom);
+   nm->Summary("nm from_domain");
+
+   A* X = A::cie_X( nm ); 
+   A* Y = A::cie_Y( nm ); 
+   A* Z = A::cie_Z( nm ); 
+
+   X->Summary("cie_X");
+   Y->Summary("cie_Y");
+   Z->Summary("cie_Z");
+
+
+}
+
+
 void test_planck()
 {
    GDomain<float>* nmdom = new GDomain<float>(60.f, 810.f, 20.f );
@@ -59,6 +81,7 @@ void test_sliced()
 int main(int argc, char** argv)
 {
     //test_sliced();   
-    test_planck();   
+    //test_planck();   
+    test_cie();   
     return 0 ;
 }

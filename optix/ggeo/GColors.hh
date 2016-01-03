@@ -45,7 +45,9 @@ class GColors {
         enum {
            MATERIAL_COLOR_OFFSET    = 0,  
            FLAG_COLOR_OFFSET        = 64,
-           PSYCHEDELIC_COLOR_OFFSET = 96
+           PSYCHEDELIC_COLOR_OFFSET = 96,
+           SPECTRAL_COLOR_OFFSET    = 256,
+           COLORMAX                 = 256
        };
    public:
        static const char* NAME ; 
@@ -69,6 +71,7 @@ class GColors {
        gfloat3 getColor(const char* name, unsigned int missing=0xFFFFFF);
        gfloat3 getPsychedelic(unsigned int num);
        std::vector<unsigned int>& getPsychedelicCodes() ;
+       std::vector<unsigned int>& getSpectralCodes() ;
 
        unsigned int getNumColors();
        unsigned int getNumBytes();
@@ -87,10 +90,12 @@ class GColors {
        void initCompositeColorBuffer(unsigned int max_colors);
        void addColors(std::vector<unsigned int>& codes, unsigned int offset=0 );
        void loadMaps(const char* dir);
+       //void make_spectral_codes();
 
    private:
        std::vector<std::string>            m_psychedelic_names ; 
        std::vector<unsigned int>           m_psychedelic_codes ;
+       std::vector<unsigned int>           m_spectral_codes ;
        std::map<std::string, std::string>  m_name2hex ; 
        GBuffer*                            m_composite ; 
        guint4                              m_composite_domain ; 

@@ -11,17 +11,13 @@
 
 #include "NPY.hpp"
 #include "NPlanck.hpp"
+#include "NCIE.hpp"
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
-
+#include "NLog.hpp"
 
 
 
@@ -330,6 +326,47 @@ GAry<T>* GAry<T>::planck_spectral_radiance(GAry<T>* nm, T blackbody_temp_kelvin)
     for(unsigned int i=0 ; i < ary->getLength(); i++) vals[i] = ::planck_spectral_radiance(nmv[i], blackbody_temp_kelvin) ;  
     return ary ;
 }
+
+template <typename T>
+GAry<T>* GAry<T>::cie_weight(GAry<T>* nm, unsigned int component)
+{
+    T* nmv = nm->getValues();
+    GAry<T>* ary = new GAry<T>( nm->getLength(), NULL );
+    T* vals = ary->getValues();
+    for(unsigned int i=0 ; i < ary->getLength(); i++) 
+    {
+        switch(component)
+        {
+            case 0:vals[i] = ::cie_X(nmv[i]) ;break;  
+            case 1:vals[i] = ::cie_Y(nmv[i]) ;break;  
+            case 2:vals[i] = ::cie_Z(nmv[i]) ;break;  
+        }
+    }
+    return ary ;
+}
+
+
+template <typename T>
+GAry<T>* GAry<T>::cie_X(GAry<T>* nm)
+{
+    return cie_weight(nm, 0);
+}
+template <typename T>
+GAry<T>* GAry<T>::cie_Y(GAry<T>* nm)
+{
+    return cie_weight(nm, 1);
+}
+template <typename T>
+GAry<T>* GAry<T>::cie_Z(GAry<T>* nm)
+{
+    return cie_weight(nm, 2);
+}
+
+
+
+
+
+
 
 
 

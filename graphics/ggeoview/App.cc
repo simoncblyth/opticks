@@ -1,19 +1,11 @@
 #include "App.hh"
 
-#include <unistd.h>
-#include <stdio.h>
-#include <algorithm>
-
-#include <boost/algorithm/string.hpp>  
-#include <boost/lexical_cast.hpp>
-
 #include "OptiXUtil.hh"
 #include "define.h"
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
 #define OPTIX 1
-
 
 // oglrap-
 #define GUI_ 1
@@ -63,16 +55,12 @@
 #include "Types.hpp"
 #include "Index.hpp"
 #include "stringutil.hpp"
-
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"
 #include "Parameters.hpp"
 #include "Report.hpp"
 #include "NSlice.hpp"
-
-// bregex-
-#include "regexsearch.hh"
 
 //opticks-
 #include "Opticks.hh"
@@ -99,20 +87,13 @@
 #include "GColors.hh"
 #include "GItemIndex.hh"
 #include "GAttrSeq.hh"
-#include "GTestBox.hh"
-
 
 // assimpwrap
 #include "AssimpGGeo.hh"
 
-
 // openmeshrap-
 #include "MFixer.hh"
 #include "MTool.hh"
-
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-
 
 // optixrap-
 #include "OContext.hh"
@@ -127,11 +108,6 @@ namespace fs = boost::filesystem;
 #include "OConfig.hh"
 #include "OTracer.hh"
 #include "OPropagator.hh"
-
-
-// optix-
-#include <optixu/optixpp_namespace.h>
-
 
 // opop-
 #include "OpIndexer.hh"
@@ -312,7 +288,7 @@ void App::prepareViz()
     m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)GColors::MATERIAL_COLOR_OFFSET );
     m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)GColors::FLAG_COLOR_OFFSET );
     m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)GColors::PSYCHEDELIC_COLOR_OFFSET );
-    // TODO: add spectral colors in wavelength bins to color texture
+    m_dd->add("SPECTRAL_COLOR_OFFSET", (unsigned int)GColors::SPECTRAL_COLOR_OFFSET );
 
 
     m_scene->write(m_dd);

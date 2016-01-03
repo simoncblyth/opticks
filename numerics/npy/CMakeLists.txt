@@ -78,6 +78,8 @@ add_library( ${name}  SHARED
     NTriangle.cpp
     NTrianglesNPY.cpp
     NPlanck.cpp
+    NCIE.cpp
+    NSpectral.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -139,6 +141,8 @@ NTesselate.hpp
 NTriangle.hpp
 NTrianglesNPY.hpp
 NPlanck.hpp
+NCIE.hpp
+NSpectral.hpp
 NLog.hpp
 Parameters.hpp
 md5digest.hpp
