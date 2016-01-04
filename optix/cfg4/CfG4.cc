@@ -10,6 +10,7 @@
 
 // npy-
 #include "Timer.hpp"
+#include "Parameters.hpp"
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "NLog.hpp"
@@ -42,6 +43,8 @@
 void CfG4::init()
 {
     m_opticks = new Opticks();
+    m_opticks->setMode( Opticks::CFG4_MODE );
+
     m_cfg = m_opticks->getCfg();
     m_cache = new GCache(m_prefix, "cfg4.log", "info");
 
@@ -60,6 +63,9 @@ void CfG4::configure(int argc, char** argv)
     m_detector  = new Detector(m_cache, m_testconfig) ; 
 
     m_evt = m_opticks->makeEvt();
+
+    Parameters* params = m_evt->getParameters() ;
+    params->add<std::string>("cmdline", m_cfg->getCommandLine() );
 
     m_torch = m_opticks->makeSimpleTorchStep();
     m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer

@@ -139,9 +139,7 @@ void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(info) << "OGeo::convert"
-              << " nmm " << nmm
-              ;
+    LOG(info) << "OGeo::convert" << " nmm " << nmm ;
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {
@@ -429,11 +427,14 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     if(pmt->getSolidBuffer() == NULL)
     {
-        LOG(warning) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry" ; 
+        LOG(debug) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry" ; 
         pmt->close();
+        LOG(debug) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry DONE" ; 
     }
 
-    pmt->Summary();
+
+    if(m_verbose)
+    pmt->Summary("OGeo::makeAnalyticGeometry pmt Summary");
 
     NPY<float>* partBuf = pmt->getPartBuffer();
     NPY<unsigned int>* solidBuf = pmt->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
@@ -441,11 +442,14 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     assert(partBuf);
     assert(solidBuf);
 
-    partBuf->dump("OGeo::makeAnalyticGeometry partBuf");
-    solidBuf->dump("OGeo::makeAnalyticGeometry solidBuf partOffset/numParts/solidIndex/0");
-    //partBuf->save("/tmp/partBuf.npy");
-    //solidBuf->save("/tmp/solidBuf.npy");
 
+    if(m_verbose)
+    {
+        partBuf->dump("OGeo::makeAnalyticGeometry partBuf");
+        solidBuf->dump("OGeo::makeAnalyticGeometry solidBuf partOffset/numParts/solidIndex/0");
+        //partBuf->save("/tmp/partBuf.npy");
+        //solidBuf->save("/tmp/solidBuf.npy");
+    }
 
     NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
     NPY<float>* itransforms = mm->getITransformsBuffer();
@@ -458,7 +462,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     assert( numSolids < 10 );  // expecting small number
 
 
-    LOG(warning) << "OGeo::makeAnalyticGeometry " 
+    LOG(debug)   << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
                  << " numSolids " << numSolids 
                  << " numParts " << numParts
@@ -491,45 +495,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     return geometry ; 
 }
-
-
-
-/*
-optix::Buffer OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, unsigned int numSolidsMesh)
-{
-    NPY<float>* itransforms = mm->getITransformsBuffer();
-    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
-
-    optix::Buffer identityBuffer ;
-    if(numITransforms > 0)
-    {
-        NPY<unsigned int>* id = mm->getInstancedIdentityBuffer();
-        assert(id);
-        LOG(info) << "OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer (Instanced)"
-                  << " iid items " << id->getNumItems() 
-                  << " numITransforms*numSolidsMesh " << numITransforms*numSolidsMesh
-                  ;
-
-        assert( id->getNumItems() == numITransforms*numSolidsMesh );
-        identityBuffer = createInputBuffer<optix::uint4, unsigned int>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
-    }
-    else
-    {
-        GBuffer* id = mm->getIdentityBuffer();
-        assert(id);
-        LOG(info) << "OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer (Global)"
-                  << " id items " << id->getNumItems() 
-                  << " numSolidsMesh " << numSolidsMesh
-                  ;
-        assert( id->getNumItems() == numSolidsMesh );
-        id->dump<unsigned int>("OGeo::PRIOR_makeAnalyticGeometryIdentityBuffer");
-        identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
-    }
-
-    return identityBuffer ;
-}
-*/
-
 
 
 
@@ -620,6 +585,8 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
 template <typename T>
 optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse)
 {
+   //TODO: eliminate use of this, moving to NPY buffers instead
+
    unsigned int bytes = buf->getNumBytes() ;
 
    unsigned int bit = buf->getNumItems() ; 
@@ -630,6 +597,8 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
+
+   if(m_verbose)
    LOG(info)<<"OGeo::createInputBuffer [GBuffer]"
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name
@@ -686,7 +655,7 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
    bool from_gl = buffer_id > -1 && reuse ;
 
-
+   if(m_verbose)
    LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name

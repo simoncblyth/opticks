@@ -36,6 +36,12 @@ const char* Opticks::SEQHIS_NAME_  = "History_Sequence" ;
 const char* Opticks::SEQMAT_NAME_  = "Material_Sequence" ;
 
 
+const char* Opticks::COMPUTE_MODE_  = "Compute" ;
+const char* Opticks::INTEROP_MODE_  = "Interop" ;
+const char* Opticks::CFG4_MODE_  = "CfG4" ;
+
+
+
 // formerly of GPropertyLib, now booted upstairs
 float        Opticks::DOMAIN_LOW  = 60.f ;
 float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
@@ -153,6 +159,18 @@ void Opticks::init()
 }
 
 
+std::string Opticks::getModeString()
+{
+    std::stringstream ss ; 
+
+    if(isCompute()) ss << COMPUTE_MODE_ ; 
+    if(isInterop()) ss << INTEROP_MODE_ ; 
+    if(isCfG4())    ss << CFG4_MODE_ ; 
+
+    return ss.str();
+}
+
+
 NumpyEvt* Opticks::makeEvt()
 {
     unsigned int code = getSourceCode();
@@ -181,6 +199,8 @@ NumpyEvt* Opticks::makeEvt()
     parameters->add<unsigned int>("RngMax",    rng_max );
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );
+
+    parameters->add<std::string>("mode", getModeString() ); 
 
     assert( parameters->get<unsigned int>("RngMax") == rng_max );
     assert( parameters->get<unsigned int>("BounceMax") == bounce_max );

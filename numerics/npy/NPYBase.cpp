@@ -153,15 +153,16 @@ std::string NPYBase::description(const char* msg)
         if( i < m_shape.size() - 1) ss << "," ;
     }
     ss << ") " ;
-    ss << " ni " << m_ni ;
-    ss << " nj " << m_nj ;
-    ss << " nk " << m_nk ;
-    ss << " nl " << m_nl ;
 
-    ss << " getNumBytes(0) " << getNumBytes(0) ;
-    ss << " getNumBytes(1) " << getNumBytes(1) ;
-    ss << " getNumValues(0) " << getNumValues(0) ;
-    ss << " getNumValues(1) " << getNumValues(1) ;
+    //ss << " ni " << m_ni ;
+    //ss << " nj " << m_nj ;
+    //ss << " nk " << m_nk ;
+    //ss << " nl " << m_nl ;
+
+    ss << " NumBytes(0) " << getNumBytes(0) ;
+    ss << " NumBytes(1) " << getNumBytes(1) ;
+    ss << " NumValues(0) " << getNumValues(0) ;
+    ss << " NumValues(1) " << getNumValues(1) ;
 
     ss << m_metadata  ;
 

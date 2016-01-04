@@ -145,12 +145,12 @@ void App::init(int argc, char** argv)
     // need to know whether compute mode is active prior to standard configuration is done, 
     // in order to skip the Viz methods, so do in the pre-configure here 
     bool compute = m_cache->isCompute();
-    m_opticks->setCompute(compute);
+    m_opticks->setMode( compute ? Opticks::COMPUTE_MODE : Opticks::INTEROP_MODE );
 
     std::string detector = m_cache->getDetector();
     m_opticks->setDetector(detector.c_str()); 
 
-    m_parameters = new Parameters ; 
+    m_parameters = new Parameters ;  // favor evt params over these, as evt params are persisted with the evt
     m_timer      = new Timer("App::");
     m_timer->setVerbose(true);
     m_timer->start();
@@ -238,7 +238,9 @@ void App::configure(int argc, char** argv)
 
         Parameters* params = m_evt->getParameters() ;
         params->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
-        params->add<std::string>("mode",    compute ? "compute" : "interop" ); 
+
+       //  params->add<std::string>("mode",    compute ? "compute" : "interop" );   mode now set in Opticks::makeEvt
+
     } 
 
 #ifdef NPYSERVER
@@ -521,8 +523,6 @@ void App::loadGenstep()
         {   
             m_g4step->setLookup(lookup);   
             m_g4step->applyLookup(0, 2);      
-            // translate materialIndex (1st quad, 3rd number) from chroma to GGeo 
-            //parameters->add<std::string>("genstepAfterLookup",   npy->getDigestString()  );
         }
     }
     else if(code == TORCH)

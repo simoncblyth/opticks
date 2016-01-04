@@ -268,13 +268,9 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
     } 
     else
     {
-        LOG(info) << "OContext::createIOBuffer (COMPUTE)"  
+        LOG(info) << "OContext::createIOBuffer" 
                   << " name " << name
-                  << " ni " << ni
-                  << " nj " << nj
-                  << " nk " << nk
-                  << " nl " << nl
-                  << " desc " << npy->description("createIOBuffer")
+                  << " desc " << npy->description("[COMPUTE]")
                   ;
         buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     }

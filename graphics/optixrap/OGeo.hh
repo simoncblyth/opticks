@@ -27,6 +27,7 @@ public:
 
     OGeo(OContext* ocontext, GGeo* gg, const char* builder=NULL, const char* traverser=NULL);
     void setTop(optix::Group top);
+    void setVerbose(bool verbose=true);
     const char* description(const char* msg="OGeo::description");
 public:
     void convert();
@@ -39,6 +40,7 @@ public:
 public:
     optix::Group   makeRepeatedGroup(GMergedMesh* mm);
     //optix::Group   PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
+
 
 private:
     optix::Acceleration     makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
@@ -70,6 +72,7 @@ private:
     optix::GeometryGroup m_geometry_group ; 
     optix::Group         m_repeated_group ; 
     RayTraceConfig*      m_cfg ; 
+    bool                 m_verbose ; 
 
 };
 
@@ -80,8 +83,15 @@ inline OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char*
            m_cache(NULL),
            m_builder(builder ? strdup(builder) : BUILDER),
            m_traverser(traverser ? strdup(traverser) : TRAVERSER),
-           m_description(NULL)
+           m_description(NULL),
+           m_verbose(false)
 {
     init();
+}
+
+
+inline void OGeo::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
 }
 

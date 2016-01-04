@@ -43,7 +43,7 @@ def json_(path):
         log.debug("return cached json for key %s" % path)
         return _json[path] 
     try: 
-        log.info("parsing json for key %s" % path)
+        log.debug("parsing json for key %s" % path)
         _json[path] = json.load(file(os.path.expandvars(os.path.expanduser(path))))
     except IOError:
         log.warning("failed to load json from %s" % path)

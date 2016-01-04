@@ -55,6 +55,7 @@ class GParts {
         GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib=NULL);
     public:
         void setBndLib(GBndLib* blib);
+        void setVerbose(bool verbose); 
         void add(GParts* other);
         void close();
         bool isClosed();
@@ -119,6 +120,7 @@ class GParts {
         NPY<unsigned int>* m_solid_buffer ; 
         bool               m_closed ; 
         std::map<unsigned int, unsigned int> m_parts_per_solid ;
+        bool               m_verbose ; 
 };
 
 
@@ -129,7 +131,8 @@ inline GParts::GParts(GBndLib* bndlib)
       m_bndspec(NULL),
       m_bndlib(bndlib),
       m_solid_buffer(NULL),
-      m_closed(false)
+      m_closed(false),
+      m_verbose(false)
 {
       init() ; 
 }
@@ -156,7 +159,10 @@ inline GParts::GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib)
       init() ; 
 }
 
-
+inline void GParts::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
 
 inline bool GParts::isClosed()
 {

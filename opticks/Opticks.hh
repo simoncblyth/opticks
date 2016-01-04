@@ -43,6 +43,16 @@ class Opticks {
        static const char* BNDIDX_NAME_ ;
        static const char* SEQHIS_NAME_ ;
        static const char* SEQMAT_NAME_ ;
+
+       static const char* COMPUTE_MODE_ ;
+       static const char* INTEROP_MODE_ ;
+       static const char* CFG4_MODE_ ;
+
+       enum {
+                COMPUTE_MODE = 0x1 << 1, 
+                INTEROP_MODE = 0x1 << 2, 
+                CFG4_MODE = 0x1 << 3
+            }; 
          
        static const char* SourceType(int code);
        static const char* SourceTypeLowercase(int code);
@@ -58,10 +68,13 @@ class Opticks {
        static glm::vec4    getDefaultDomainSpec();
    public:
        Opticks();
-       OpticksCfg<Opticks>* getCfg();
-       Parameters* getParameters();
+       void setMode(unsigned int mode);
        void setDetector(const char* detector); 
 
+   public:
+       OpticksCfg<Opticks>* getCfg();
+       Parameters* getParameters();
+       std::string getModeString();
        TorchStepNPY* makeSimpleTorchStep();
        NumpyEvt* makeEvt(); 
    public:
@@ -81,7 +94,8 @@ class Opticks {
        std::string getSourceType();
    public:
        bool isCompute();
-       void setCompute(bool compute=true);
+       bool isInterop();
+       bool isCfG4();
    public:
        // methods required by Cfg listener classes
        void configureF(const char* name, std::vector<float> values);
@@ -102,7 +116,7 @@ class Opticks {
        glm::ivec4       m_settings ; 
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
-       bool             m_compute ; 
+       unsigned int         m_mode ; 
 
 };
 
@@ -111,7 +125,7 @@ inline Opticks::Opticks()
     m_cfg(NULL),
     m_parameters(NULL),
     m_detector(NULL),
-    m_compute(false)
+    m_mode(0u)
 {
     init();
 }
@@ -125,14 +139,27 @@ inline OpticksCfg<Opticks>* Opticks::getCfg()
     return m_cfg ; 
 }
 
+
+
+inline void Opticks::setMode(unsigned int mode)
+{
+    m_mode = mode ; 
+}
+
+
 inline bool Opticks::isCompute()
 {
-    return m_compute ; 
+    return (m_mode & COMPUTE_MODE) != 0  ; 
 }
-inline void Opticks::setCompute(bool compute)
+inline bool Opticks::isInterop()
 {
-    m_compute = compute ; 
+    return (m_mode & INTEROP_MODE) != 0  ; 
 }
+inline bool Opticks::isCfG4()
+{
+    return (m_mode & CFG4_MODE) != 0  ; 
+}
+
 
 
 

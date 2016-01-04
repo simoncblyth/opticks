@@ -50,7 +50,7 @@
 #include <optixu/optixu_math_namespace.h>
 
 #include "define.h"
-#define DEBUG 1 
+//#define DEBUG 1 
 #include "PerRayData_propagate.h"
 
 using namespace optix;
@@ -131,10 +131,11 @@ rtDeclareVariable(rtObject,      top_object, , );
 { \
     p.flags.i.x = prd.boundary ;  \
     p.flags.u.y = s.identity.w ;  \
-    p.flags.u.z = s.index.x ;   \
     p.flags.u.w |= s.flag ; \
 } \
 
+
+//    p.flags.u.z = s.index.x ;   \
 
 
 RT_PROGRAM void trivial()
@@ -170,15 +171,12 @@ RT_PROGRAM void generate()
     } 
 #endif 
 
-
     curandState rng = rng_states[photon_id];
 
     // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
 
-
     State s ;   
     Photon p ;  
-    uifchar4 c4 ; 
 
 
     if(ghead.i.x == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
@@ -217,6 +215,7 @@ RT_PROGRAM void generate()
 
 
     // initial quadrant 
+    uifchar4 c4 ; 
     c4.uchar_.x = 
                   (  p.position.x > 0.f ? QX : 0u ) 
                    |
@@ -229,9 +228,11 @@ RT_PROGRAM void generate()
     c4.uchar_.z = 3u ; 
     c4.uchar_.w = 4u ; 
 
+    p.flags.f.z = c4.f ; 
+
+
     int bounce = 0 ; 
     int command = START ; 
-
     int slot = 0 ;
 
 #ifdef RECORD
@@ -258,6 +259,8 @@ RT_PROGRAM void generate()
         prd.identity.w = 0 ; // sensorIndex
         prd.boundary = 0 ;   // signed, 1-based
 
+
+        // TODO: minimize active stack across the rtTrace call
         rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
 
         if(prd.boundary == 0)
@@ -318,12 +321,10 @@ RT_PROGRAM void generate()
     }   // bounce < max_bounce
 
 
-
     FLAGS(p, s, prd); 
 
-
     // breakers and maxers saved here
-    psave(p, photon_buffer, photon_offset, c4 ); 
+    psave(p, photon_buffer, photon_offset ); 
 
 #ifdef RECORD
     slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  

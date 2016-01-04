@@ -199,12 +199,13 @@ void GParts::registerBoundaries()
        unsigned int boundary = m_bndlib->addBoundary(spec);
        setBoundary(i, boundary);
 
-      LOG(info) << "GParts::registerBoundaries " 
-                << std::setw(3) << i
-                << std::setw(30) << spec
+       if(m_verbose)
+       LOG(info) << "GParts::registerBoundaries " 
+                << std::setw(3) << i 
+                << " " << std::setw(30) << spec
                 << " --> "
                 << std::setw(4) << boundary 
-                << std::setw(30) << m_bndlib->shortname(boundary)
+                << " " << std::setw(30) << m_bndlib->shortname(boundary)
                 ;
 
    } 
