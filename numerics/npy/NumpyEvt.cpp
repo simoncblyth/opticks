@@ -435,6 +435,13 @@ void NumpyEvt::setPhotonData(NPY<float>* photon_data)
 void NumpyEvt::setAuxData(NPY<short>* aux_data)
 {
     m_aux_data = aux_data  ;
+
+    if(m_aux_data == NULL)
+    {
+       LOG(warning) << "NumpyEvt::setAuxData NULL";
+       return ;  
+    }
+
     m_aux_attr = new MultiViewNPY("aux_attr");
     //                                            j k l sz   type                  norm   iatt
     ViewNPY* ibnd = new ViewNPY("ibnd",m_aux_data,0,0,0,4,ViewNPY::SHORT          ,false,  true);
@@ -855,7 +862,7 @@ void NumpyEvt::load(bool verbose)
     unsigned int num_records = rx ? rx->getShape(0) : 0 ;
     unsigned int num_aux     = au ? au->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
-    assert(num_records == 0 || num_records == num_aux ); 
+    assert(num_records == 0 || num_aux == 0 || num_records == num_aux ); 
     assert(num_recsel == 0 || num_records == num_recsel );
 
     if(num_records == num_photons*m_maxrec)

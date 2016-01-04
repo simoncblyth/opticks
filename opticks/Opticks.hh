@@ -84,6 +84,7 @@ class Opticks {
        const glm::ivec4& getSettings();
    public:
        void setSpaceDomain(const glm::vec4& pd);
+       void dumpDomains(const char* msg="Opticks::dumpDomains");
    public:
        unsigned int getRngMax();
        unsigned int getBounceMax();
@@ -103,6 +104,7 @@ class Opticks {
        void configureS(const char* name, std::vector<std::string> values);
    private:
        void init();
+       void configureDomains();
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
        OpticksCfg<Opticks>* m_cfg ; 

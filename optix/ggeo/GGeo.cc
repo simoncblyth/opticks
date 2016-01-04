@@ -196,6 +196,7 @@ unsigned int GGeo::getMaterialLine(const char* shortname)
 
 void GGeo::loadGeometry()
 {
+    LOG(debug) << "GGeo::loadGeometry START" ; 
     const char* idpath = getIdPath() ;
     if(!isLoaded())
     {
@@ -210,11 +211,12 @@ void GGeo::loadGeometry()
     setupLookup();
     setupColors();
     setupTyp();
+    LOG(debug) << "GGeo::loadGeometry DONE" ; 
 }
 
 void GGeo::loadFromG4DAE()
 {
-    LOG(info) << "GGeo::loadFromG4DAE" ; 
+    LOG(debug) << "GGeo::loadFromG4DAE START" ; 
 
     int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
@@ -225,6 +227,8 @@ void GGeo::loadFromG4DAE()
     prepareMeshes();
 
     prepareVertexColors();
+
+    LOG(debug) << "GGeo::loadFromG4DAE DONE" ; 
 }
 
 void GGeo::afterConvertMaterials()
@@ -238,6 +242,8 @@ void GGeo::afterConvertMaterials()
 
 void GGeo::loadFromCache()
 {   
+    LOG(debug) << "GGeo::loadFromCache START" ; 
+
     m_geolib = GGeoLib::load(m_cache);
         
     const char* idpath = m_cache->getIdPath() ;
@@ -257,6 +263,8 @@ void GGeo::loadFromCache()
 
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
     m_sourcelib  = GSourceLib::load(m_cache);
+
+    LOG(debug) << "GGeo::loadFromCache DONE" ; 
 }
 
 void GGeo::setupLookup()

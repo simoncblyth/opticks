@@ -238,9 +238,6 @@ void App::configure(int argc, char** argv)
 
         Parameters* params = m_evt->getParameters() ;
         params->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
-
-       //  params->add<std::string>("mode",    compute ? "compute" : "interop" );   mode now set in Opticks::makeEvt
-
     } 
 
 #ifdef NPYSERVER
@@ -313,6 +310,8 @@ void App::prepareViz()
 
 void App::loadGeometry()
 {
+    LOG(info) << "App::loadGeometry START" ; 
+
     loadGeometryBase();
 
     if(hasOpt("test")) modifyGeometry() ;
@@ -328,6 +327,8 @@ void App::loadGeometry()
     }
 
     configureGeometry();
+
+    LOG(info) << "App::loadGeometry DONE" ; 
 }
 
 
@@ -376,6 +377,7 @@ void App::fixGeometry()
         LOG(debug) << "App::fixGeometry needs to be done precache " ;
         return ; 
     }
+    LOG(info) << "App::fixGeometry" ; 
 
     MFixer* fixer = new MFixer(m_ggeo);
     fixer->fixMesh();
@@ -396,6 +398,8 @@ void App::fixGeometry()
 
 void App::configureGeometry()
 {
+    LOG(info) << "App::configureGeometry" ; 
+
     int restrict_mesh = m_fcfg->getRestrictMesh() ;  
     int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
 
@@ -428,10 +432,11 @@ void App::configureGeometry()
 
 void App::registerGeometry()
 {
+    LOG(info) << "App::registerGeometry" ; 
 
-    for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
+    //for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
+
     m_mesh0 = m_ggeo->getMergedMesh(0); 
-
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
     m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
@@ -440,9 +445,9 @@ void App::registerGeometry()
 
     if(m_evt)
     {
-        m_evt->setTimeDomain(m_opticks->getTimeDomain());
+       // TODO: migrate npy-/NumpyEvt to opop-/OpEvent so this can happen at more specific level 
+        m_opticks->dumpDomains("App::registerGeometry copy Opticks domains to m_evt");
         m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
-        m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain());
     }
 
     LOG(debug) << "App::registerGeometry ce0: " 
@@ -451,12 +456,8 @@ void App::registerGeometry()
                       << " z " << ce0.z
                       << " w " << ce0.w
                       ;
-
-
  
 }
-
-
 
 
 

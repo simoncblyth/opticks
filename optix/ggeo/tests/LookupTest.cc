@@ -1,11 +1,15 @@
+// ggv --lookup
+// ggv --jpmt --lookup
+
 #include "GCache.hh"
 #include "GBndLib.hh"
 #include "Lookup.hpp"
 
 
-int main()
+int main(int argc, char** argv)
 {
     GCache* m_cache = new GCache("GGEOVIEW_");
+    m_cache->configure(argc, argv);
 
     GBndLib* blib = GBndLib::load(m_cache, true );
     blib->dump();

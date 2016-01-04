@@ -6,6 +6,7 @@
 #include "Parameters.hpp"
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
+#include "GLMFormat.hpp"
 #include "NLog.hpp"
 
 const char* Opticks::ZERO_              = "." ;
@@ -124,13 +125,15 @@ unsigned int Opticks::SourceCode(const char* type)
 }
 
 
-
-
 void Opticks::init()
 {
    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
    m_parameters = new Parameters ;  
+}
 
+
+void Opticks::configureDomains()
+{
    m_time_domain.x = 0.f  ;
    m_time_domain.y = m_cfg->getTimeMax() ;
    m_time_domain.z = m_cfg->getAnimTimeMax() ;
@@ -150,13 +153,24 @@ void Opticks::init()
    int x_rng_max = getRngMax() ;
 
    if(rng_max != x_rng_max)
-       LOG(fatal) << "Opticks::init"
+       LOG(fatal) << "Opticks::configureDomains"
                   << " CUDAWRAP_RNG_MAX " << rng_max 
                   << " x_rng_max " << x_rng_max 
                   ;
 
    assert(rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
 }
+
+void Opticks::dumpDomains(const char* msg)
+{
+    LOG(info) << msg << std::endl 
+              << " time " << gformat(m_time_domain)  
+              << " space " << gformat(m_space_domain) 
+              << " wavelength " << gformat(m_wavelength_domain) 
+              ;
+}
+
+
 
 
 std::string Opticks::getModeString()
@@ -173,6 +187,7 @@ std::string Opticks::getModeString()
 
 NumpyEvt* Opticks::makeEvt()
 {
+
     unsigned int code = getSourceCode();
     std::string typ = SourceTypeLowercase(code); // cerenkov, scintillation, torch
     std::string tag = m_cfg->getEventTag();
@@ -180,7 +195,14 @@ NumpyEvt* Opticks::makeEvt()
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
+
     NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
+
+    configureDomains();
+
+    evt->setTimeDomain(getTimeDomain());
+    evt->setSpaceDomain(getSpaceDomain());   // default, will be updated in App:registerGeometry following geometry loading
+    evt->setWavelengthDomain(getWavelengthDomain());
 
     bool nostep = m_cfg->hasOpt("nostep") ;
     evt->setStep(!nostep);

@@ -197,10 +197,10 @@ std::string GBndLib::description(const guint4& bnd)
     std::stringstream ss ; 
     ss 
        << " ("   << std::setw(3) << tag << ")" 
-       << " om:" << std::setw(25) << m_mlib->getName(bnd[OMAT]) 
+       << " om:" << std::setw(25) << (bnd[OMAT] == UNSET ? "OMAT-unset-ERROR" : m_mlib->getName(bnd[OMAT]))
        << " os:" << std::setw(25) << (bnd[OSUR] == UNSET ? "" : m_slib->getName(bnd[OSUR]))  
        << " is:" << std::setw(25) << (bnd[ISUR] == UNSET ? "" : m_slib->getName(bnd[ISUR])) 
-       << " im:" << std::setw(25) << m_mlib->getName(bnd[IMAT]) 
+       << " im:" << std::setw(25) << (bnd[IMAT] == UNSET ? "IMAT-unset-ERROR" : m_mlib->getName(bnd[IMAT])) 
        ;
     return ss.str();
 }

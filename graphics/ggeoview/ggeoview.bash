@@ -120,6 +120,28 @@ ggv-pmt-test(){
 #
 
 
+ggv-jpmt-usage(){ cat << EOU
+
+Propagating and viz in same invokation running out of GPU memory, so do compute and viz separately::
+
+    ggv --jpmt --cerenkov --compute --timemax 400 --save
+    ggv --jpmt --cerenkov --load
+    ggv --jpmt --cerenkov --load 
+
+EOU
+}
+
+
+ggv-jpmt-propagate(){
+    ggv --jpmt --cerenkov --compute --timemax 400 --animtimemax 200 --save
+}
+ggv-jpmt-viz(){
+    ggv --jpmt --cerenkov --animtimemax 200 --load
+}
+
+
+
+
 ggv-wavelength()
 {
     local color=${1:-white}

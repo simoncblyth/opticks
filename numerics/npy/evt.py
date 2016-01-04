@@ -357,9 +357,10 @@ if __name__ == '__main__':
 
     rec = True  
 
-    tag = "5"
+    #cat, src, tag = "rainbow", "torch", "5"
+    cat, src, tag = "juno", "cerenkov", "1"
 
-    evt = Evt(tag, "torch", "rainbow", label="tag %s" % tag, rec=rec)
+    evt = Evt(tag, src, cat, label="tag %s" % tag, rec=rec)
 
     evt.history_table()
 

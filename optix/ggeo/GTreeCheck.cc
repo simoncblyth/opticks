@@ -463,7 +463,7 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
             GNode* node = s == 0 ? base : progeny[s-1] ; 
             GSolid* solid = dynamic_cast<GSolid*>(node) ;
             NSensor* ss = solid->getSensor();
-            assert(ss);
+            //assert(ss); dont have JUNO sensor info
 
             unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
 

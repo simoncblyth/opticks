@@ -56,8 +56,9 @@ class NumpyEvt {
        void prepareForPrimaryRecording();
    public:
        Parameters* getParameters();
-       Timer* getTimer();
+       Timer*      getTimer();
        TimesTable* getTimesTable();
+   public:
        void makeReport();
        void saveReport();
        void loadReport();

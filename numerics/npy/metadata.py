@@ -160,6 +160,10 @@ if 1:
         ax.set_ylim(ylims[i])
         ax.legend(loc=loc)
     pass
+
+
+    ax.set_xlabel('All times from: MacBook Pro (2013), NVIDIA GeForce GT 750M 2048 MB (384 cores)')
+
     plt.show()
 
 
