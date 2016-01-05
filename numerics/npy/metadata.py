@@ -123,7 +123,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)    
 
     cat = "rainbow"
-    tag = "5"
+    tag = "6"
     title = "Propagate times (s) for 1M Photons with %s geometry, tag %s, [max/avg/min]" % (cat, tag)  
 
     catd = Catdir(cat)
