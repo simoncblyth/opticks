@@ -174,10 +174,10 @@ def a_scatter_plot_cf(ax, a_evt, b_evt, log_=False):
     return cnt, bns
 
 
-def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10]):
+def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10], sli=slice(0,10)):
 
-    tim_a = " ".join(map(lambda f:"%5.2f" % f, map(float, filter(None, evt_a.tdii['propagate']) )))
-    tim_b = " ".join(map(lambda f:"%5.2f" % f, map(float, filter(None, evt_b.tdii['propagate']) )))
+    tim_a = " ".join(map(lambda f:"%5.2f" % f, map(float, filter(None, evt_a.tdii['propagate']) )[sli]))
+    tim_b = " ".join(map(lambda f:"%5.2f" % f, map(float, filter(None, evt_b.tdii['propagate']) )[sli]))
 
     fig = plt.figure()
     fig.suptitle("Rainbow cfg4 " + label + "[" + tim_a + "] [" + tim_b + "]"  )
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     plt.close()
 
     rec = False
-    tag = "5"
+    tag = "6"
     src = "torch"
     det = "rainbow"
     log_ = True
@@ -272,7 +272,7 @@ if __name__ == '__main__':
 
 
     if 1:
-        cf_plot(evt_a, evt_b, label=str(seqs), log_=log_, ylim=[0.8,4e4],ylim2=None)
+        cf_plot(evt_a, evt_b, label=label, log_=log_, ylim=[0.8,4e4],ylim2=None)
 
 
 

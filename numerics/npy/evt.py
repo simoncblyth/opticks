@@ -357,8 +357,8 @@ if __name__ == '__main__':
 
     rec = True  
 
-    #cat, src, tag = "rainbow", "torch", "5"
-    cat, src, tag = "juno", "cerenkov", "1"
+    cat, src, tag = "rainbow", "torch", "-5"
+    #cat, src, tag = "juno", "cerenkov", "1"
 
     evt = Evt(tag, src, cat, label="tag %s" % tag, rec=rec)
 
@@ -372,7 +372,6 @@ if __name__ == '__main__':
     plt.hist(dv/deg, bins=360, log=True, histtype="step") 
 
     plt.show()
-
 
 
   

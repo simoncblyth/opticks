@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     cat = "rainbow"
     tag = "5"
-    title = "Propagate times (s) for 1M Photons with %s geometry, tag %s" % (cat, tag)  
+    title = "Propagate times (s) for 1M Photons with %s geometry, tag %s, [max/avg/min]" % (cat, tag)  
 
     catd = Catdir(cat)
     plt.close()
@@ -149,9 +149,14 @@ if 1:
     for i, msk in enumerate(msks):
         ax = fig.add_subplot(n,1,i+1)
         d = a[msk]
-        mn = d.propagate.min()
-        mx = d.propagate.max()
-        label = "%s %5.2f/%5.2f " % (labels[i], mx, mn)
+
+        t = d.propagate
+
+        mn = t.min()
+        mx = t.max()
+        av = np.average(t)        
+
+        label = "%s [%5.2f/%5.2f/%5.2f] " % (labels[i], mx,av,mn)
  
         loc = "lower right" if i == 0 else "upper right" 
 
