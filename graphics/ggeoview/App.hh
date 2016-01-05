@@ -51,7 +51,7 @@ class GBoundaryLibMetadata ;
 class GMergedMesh ; 
 class GItemIndex ; 
 
-// optixrap
+// optixrap-
 class OContext ; 
 class OGeo ; 
 class OBndLib ; 

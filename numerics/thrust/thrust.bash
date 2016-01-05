@@ -7,6 +7,10 @@ thrust-usage(){ cat << EOU
 Thrust
 =======
 
+The Thrust that comes with CUDA is used for Opticks, 
+no separate install needed. Any gets done below
+are just for the documentation and source/examples perusal.
+
 
 Examples
 ---------

@@ -233,6 +233,7 @@ void App::configure(int argc, char** argv)
 
     if(!hasOpt("noevent"))
     {
+        // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
 
@@ -380,6 +381,7 @@ void App::fixGeometry()
     LOG(info) << "App::fixGeometry" ; 
 
     MFixer* fixer = new MFixer(m_ggeo);
+    fixer->setVerbose(hasOpt("meshfixdbg"));
     fixer->fixMesh();
  
     bool zexplode = m_fcfg->hasOpt("zexplode");
@@ -589,10 +591,7 @@ void App::loadEvtFromFile()
     m_evt->load(true);
 
     if(m_evt->isNoLoad())
-    {
-        LOG(info) << "App::loadEvtFromFile LOAD FAILED " ;
-        return ; 
-    }
+        LOG(warning) << "App::loadEvtFromFile LOAD FAILED " ;
 }
 
 
@@ -623,7 +622,7 @@ void App::uploadEvtViz()
 
 void App::prepareOptiX()
 {
-    // TODO: move inside OGeo ? 
+    // TODO: move inside OGeo or new opop-/OpEngine ? 
 
     LOG(debug) << "App::prepareOptiX" ;  
 

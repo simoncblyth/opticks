@@ -6,11 +6,18 @@ ggv-d(){  ggeoview-depinstall ; }
 ggv-vi(){ ggeoview-vi ; }
 ggv-edit(){ ggeoview-edit ; }
 ggv--(){  ggeoview-depinstall ; }
-ggv-cd-jpmt(){ cd $(ggv --jpmt --idp) ; }
+
+ggv-jpmt-cd(){   cd $(ggv-jpmt-idp) ; }
+ggv-jpmt-idp(){  echo $(ggv --jpmt --idp 2>/dev/null) ; }
+
 
 ggv-ppmt(){   ggv.sh --analyticmesh 1 --target 3199 --torchconfig "radius=1500_zenithazimuth=0,1,0,1" $* ; }
 
 ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
+
+
+
+
 
 
 ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199_source=0,0,1000_target=0,0,0_radius=150_zenithazimuth=0,1,0,1" $* ; }

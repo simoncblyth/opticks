@@ -6,15 +6,12 @@ int main(int argc, char** argv)
 
     app.initViz();
 
-    // NumpyEvt created in App::config 
-    app.configure(argc, argv);  
+    app.configure(argc, argv);    // NumpyEvt created in App::config, 
     if(app.isExit()) exit(EXIT_SUCCESS);
 
-    // setup OpenGL shaders and creates OpenGL context (the window)
-    app.prepareViz();      
+    app.prepareViz();      // setup OpenGL shaders and creates OpenGL context (the window)
 
-    // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
-    app.loadGeometry();      
+    app.loadGeometry();    // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
     if(app.isExit()) exit(EXIT_SUCCESS);
 
     app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload

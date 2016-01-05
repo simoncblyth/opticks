@@ -197,6 +197,8 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("indexdbg",  "dump details of indexing") ;
 
+   m_desc.add_options()
+       ("meshfixdbg",  "dump details of meshfixing, only active when rebuilding geocache with -G option") ;
 
 
    m_desc.add_options()

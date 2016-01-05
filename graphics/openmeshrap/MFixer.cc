@@ -20,8 +20,8 @@ void MFixer::fixMesh()
     unsigned int nme = m_ggeo->getNumMeshes();
 
     LOG(info) << "MFixer::fixMesh" 
-              << " nso " << nso  
-              << " nme " << nme 
+              << " NumSolids " << nso  
+              << " NumMeshes " << nme 
               ; 
 
     typedef std::map<unsigned int, unsigned int> MUU ; 
@@ -64,7 +64,7 @@ void MFixer::fixMesh()
 
         const char* highlight = join ? "**" : "  " ; 
 
-        bool dump = noise > 0 || tc > 1 || join ;
+        bool dump = noise > 0 || tc > 1 || join || m_verbose ;
         //bool dump = true ; 
 
         if(dump)

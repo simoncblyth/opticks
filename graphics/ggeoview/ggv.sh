@@ -7,16 +7,17 @@ dump(){
   read -ra elements <<< "$*" 
   local elem 
   for elem in "${elements[@]}"; do
-      printf "   %s\n" $elem
+      >&2 printf "   %s\n" $elem
   done 
 }
 
 
-echo $0 dumping cmdline arguments
+>&2 echo $0 dumping cmdline arguments
+
 for arg in $cmdline 
 do
    if [ "${arg/=}" == "${arg}" ]; then  
-       printf "%s\n" $arg
+       >&2 printf "%s\n" $arg
    else
        dump _ $arg
    fi
