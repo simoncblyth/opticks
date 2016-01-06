@@ -1,3 +1,4 @@
+// oglrap-
 #include "Bookmarks.hh"
 #include "Composition.hh"
 #include "Camera.hh"
@@ -7,14 +8,10 @@
 #include "Interactor.hh"
 #include "Scene.hh"
 
-#include "string.h"
 
-#ifdef COMPLEX
-#include <boost/bind.hpp>
-#endif
+#include <cstring>
 
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/foreach.hpp>
+
 #include <string>
 #include <set>
 #include <exception>
@@ -26,15 +23,19 @@
 #endif
 
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+// npy-
+#include "jsonutil.hpp"
+#include "NLog.hpp"
+
+
+#ifdef OLD
+
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/foreach.hpp>
 
 namespace pt = boost::property_tree;
-
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-
 
 template<class Ptree>
 inline const Ptree &empty_ptree()
@@ -43,8 +44,13 @@ inline const Ptree &empty_ptree()
    return pt;
 }
 
+#endif
+
+
+
+
 unsigned int Bookmarks::N = 10 ; 
-const char* Bookmarks::filename = "bookmarks.ini" ; 
+const char* Bookmarks::FILENAME = "bookmark.ini" ; 
 
 Bookmarks::Bookmarks()  
        :
@@ -113,8 +119,9 @@ void Bookmarks::setCurrent(unsigned int num, bool create)
 
 void Bookmarks::load(const char* dir)
 {
+#ifdef OLD
     fs::path bookmarks(dir);
-    bookmarks /= filename ;
+    bookmarks /= FILENAME ;
 
     try
     {
@@ -124,6 +131,7 @@ void Bookmarks::load(const char* dir)
     {
         LOG(warning) << "Bookmarks::load ERROR " << e.what() ;
     }
+#endif
 
     update(); // existance
     apply();  // bookmarks may have been externally changed
@@ -131,8 +139,9 @@ void Bookmarks::load(const char* dir)
 
 void Bookmarks::save(const char* dir)
 {
+#ifdef OLD
     fs::path bookmarks(dir);
-    bookmarks /= filename ;
+    bookmarks /= FILENAME ;
 
     try
     {
@@ -142,7 +151,10 @@ void Bookmarks::save(const char* dir)
     {
         LOG(warning) << "Bookmarks::save ERROR " << e.what() ;
     }
+
+#endif
 }
+
 
 void Bookmarks::number_key_released(unsigned int num)
 {
@@ -233,6 +245,39 @@ void Bookmarks::apply()
 }
 
 
+void Bookmarks::apply(const char* key, const char* val)
+{
+    if(View::accepts(key) && m_view)
+    {
+        m_view->configure(key, val);
+    }
+    else if(Camera::accepts(key) && m_camera)
+    {
+        m_camera->configure(key, val);
+    } 
+    else if(Trackball::accepts(key) && m_trackball)
+    {
+        m_trackball->configure(key, val);
+    } 
+    else if(Clipper::accepts(key) && m_clipper)
+    {
+        m_clipper->configure(key, val);
+    }
+    else if(Scene::accepts(key) && m_scene)
+    {
+        m_scene->configure(key, val);
+    }
+    else
+    {
+        LOG(debug) << "Bookmarks::apply ignoring  " 
+                   << " key " << key  
+                   << " val " << val  ; 
+
+    }
+}
+
+
+
 void Bookmarks::apply(const char* name)
 {
     BOOST_FOREACH( pt::ptree::value_type const& mk, m_tree.get_child("") ) 
@@ -249,34 +294,7 @@ void Bookmarks::apply(const char* name)
             const char* key = itk.c_str();
             const char* val = itv.c_str();
 
-            if(View::accepts(key))
-            {
-                m_view->configure(key, val);
-            }
-            else if(Camera::accepts(key))
-            {
-                m_camera->configure(key, val);
-            } 
-            else if(Trackball::accepts(key))
-            {
-                m_trackball->configure(key, val);
-            } 
-            else if(Clipper::accepts(key))
-            {
-                m_clipper->configure(key, val);
-            }
-            else if(Scene::accepts(key) && m_scene)
-            {
-                m_scene->configure(key, val);
-            }
-            else
-            {
-                LOG(debug) << "Bookmarks::apply ignoring  " 
-                             << " name " << name 
-                             << " key " << key  
-                             << " val " << val  ; 
-
-            }
+            apply(key, val);
         }   
     }   
 }
@@ -333,6 +351,8 @@ unsigned int Bookmarks::collect(const char* name)
 
 unsigned int Bookmarks::collectConfigurable(const char* name, Configurable* configurable)
 {
+    // Configurable is an abstract get/set/getTags/accepts/configure protocol 
+
     std::string empty ;
     std::vector<std::string> tags = configurable->getTags();
 
@@ -386,10 +406,6 @@ void Bookmarks::dump(const char* name)
     }
 }
 
-
-
-
-
 void Bookmarks::update( const boost::property_tree::ptree& upt )
 {
     BOOST_FOREACH( pt::ptree::value_type const& up, upt.get_child("") ) 
@@ -400,55 +416,5 @@ void Bookmarks::update( const boost::property_tree::ptree& upt )
 }
 
 
-
-
-
-
-#ifdef COMPLEX
-// general soln not needed for simple ini format Bookmarks tree structure, 
-// but for future more complex structures...
-//
-// http://stackoverflow.com/questions/8154107/how-do-i-merge-update-a-boostproperty-treeptree 
-//
-// The only limitation is that it is possible to have several nodes with the same
-// path. Every one of them would be used, but only the last one will be merged.
-//
-// SO : restrict usage to unique key trees
-//
-
-void Bookmarks::complex_update(const boost::property_tree::ptree& pt) 
-{
-    traverse(pt, boost::bind(&Bookmarks::merge, this, _1, _2, _3));
-}
-
-template<typename T>
-void Bookmarks::_traverse(
-       const boost::property_tree::ptree &parent, 
-       const boost::property_tree::ptree::path_type &childPath, 
-       const boost::property_tree::ptree &child, 
-       T method
-       )
-{
-    method(parent, childPath, child);
-    for(pt::ptree::const_iterator it=child.begin() ; it!=child.end() ;++it ) 
-    {
-        pt::ptree::path_type curPath = childPath / pt::ptree::path_type(it->first);
-        _traverse(parent, curPath, it->second, method);
-    }
-}
-
-template<typename T>
-void Bookmarks::traverse(const boost::property_tree::ptree &parent, T method)
-{
-    _traverse(parent, "", parent, method);
-}
-
-void Bookmarks::merge(const boost::property_tree::ptree& parent, const boost::property_tree::ptree::path_type &childPath, const boost::property_tree::ptree &child) 
-{
-    LOG(info)<<"Bookmarks::merge " << childpath << " : " << child.data() ; 
-    m_tree.put(childPath, child.data());
-}    
-
-#endif
 
 

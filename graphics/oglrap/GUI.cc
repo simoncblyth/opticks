@@ -28,6 +28,7 @@
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "Bookmarks.hh"
+#include "State.hh"
 #include "Photons.hh"
 
 #include <imgui.h>
@@ -165,6 +166,14 @@ void GUI::show(bool* opened)
     {
         m_bookmarks->gui(); 
     }
+
+    ImGui::Spacing();
+    if (ImGui::CollapsingHeader("State"))
+    {
+        m_state->gui(); 
+    }
+
+
 
 
     ImGui::Spacing();

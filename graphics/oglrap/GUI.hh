@@ -19,6 +19,7 @@ class Camera ;
 class Clipper ;
 class Trackball ;
 class Bookmarks ;
+class State ; 
 class Photons ; 
 
 
@@ -41,6 +42,7 @@ class GUI {
        void setClipper(Clipper* clipper);
        void setTrackball(Trackball* trackball);
        void setBookmarks(Bookmarks* bookmarks);
+       void setState(State* state);
 
        void init(GLFWwindow* window);
        void newframe();
@@ -79,6 +81,7 @@ class GUI {
        Clipper*      m_clipper ; 
        Trackball*    m_trackball ; 
        Bookmarks*    m_bookmarks ; 
+       State*        m_state ; 
        Photons*      m_photons ; 
        //GLoader*      m_loader ; 
 
@@ -103,6 +106,7 @@ inline GUI::GUI(GGeo* ggeo)
    m_clipper(NULL),
    m_trackball(NULL),
    m_bookmarks(NULL),
+   m_state(NULL),
    m_photons(NULL)
 {
 }
@@ -135,6 +139,11 @@ inline void GUI::setBookmarks(Bookmarks* bookmarks)
 {
     m_bookmarks = bookmarks ; 
 }
+inline void GUI::setState(State* state)
+{
+    m_state = state ; 
+}
+
 
 
 inline void GUI::setupHelpText(const std::string& txt)

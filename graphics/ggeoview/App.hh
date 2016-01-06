@@ -30,6 +30,7 @@ class Opticks ;
 template <typename> class OpticksCfg ;
 
 // oglrap-
+class State ; 
 class Scene ; 
 class Composition ; 
 class Frame ; 
@@ -134,6 +135,7 @@ class App {
        Timer*       m_timer ; 
        GCache*      m_cache ; 
        DynamicDefine* m_dd ; 
+       State*       m_state ; 
        Scene*       m_scene ; 
        Composition* m_composition ;
        Frame*       m_frame ;
@@ -194,6 +196,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_timer(NULL),
       m_cache(NULL),
       m_dd(NULL),
+      m_state(NULL),
       m_scene(NULL),
       m_composition(NULL),
       m_frame(NULL),

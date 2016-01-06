@@ -4,7 +4,12 @@
 #include <string>
 #include <map>
 
+
+#define OLD 1
+
+#ifdef OLD
 #include <boost/property_tree/ptree.hpp>
+#endif
 
 class Composition ;
 class Camera ;
@@ -15,25 +20,14 @@ class Clipper ;
 class Scene ;
 class Configurable ; 
 
-// unclear how best to arrange 
-// maybe maintain maps of Camera and View 
-// constructed based on the bookmark values
-// and dispense those to the composition 
-
-
 /*
-
 Bookmarks:
 
 * do not initiate actions
-
 * record current state under a slot label 
-
 * provide way to return to prior labelled state
-
 * actions like navigating to a volume need to be implemented elsewhere 
   (Frame/Interactor/Scene)
-
 
 */
 
@@ -41,7 +35,7 @@ Bookmarks:
 class Bookmarks {
 public:
    static unsigned int N ; 
-   static const char* filename ; 
+   static const char* FILENAME ; 
 
 public:
    Bookmarks();
@@ -74,21 +68,10 @@ public:
    void save(const char* dir);       // write m_tree to the file
 
 public:
+#ifdef OLD
     void update( const boost::property_tree::ptree& upt );
-
-
-#ifdef COMPLEX
-public:
-    // general-ish ptree updating 
-    // http://stackoverflow.com/questions/8154107/how-do-i-merge-update-a-boostproperty-treeptree 
-    void complex_update(const boost::property_tree::ptree& pt);
-protected:
-    template<typename T>
-    void  _traverse(const boost::property_tree::ptree& parent, const boost::property_tree::ptree::path_type& childPath, const boost::property_tree::ptree& child, T method);
-
-    template<typename T>
-    void traverse(const boost::property_tree::ptree &parent, T method);
-    void merge(const boost::property_tree::ptree& parent, const boost::property_tree::ptree::path_type &childPath, const boost::property_tree::ptree &child);
+#else
+    void update( const std::map<std::string,std::string>& upt );
 #endif
 
 
@@ -99,6 +82,7 @@ private:
 private:
    void dump(const char* name);
    void apply(const char* name);
+   void apply(const char* key, const char* val);
    unsigned int collect(const char* name);
    unsigned int collectConfigurable(const char* name, Configurable* configurable);
 
@@ -106,7 +90,14 @@ private:
    int                           m_current ; 
    int                           m_current_gui ; 
 
+#ifdef OLD
    boost::property_tree::ptree   m_tree;
+#else
+   std::map<std::string, std::string> m_tree ;  
+#endif
+
+
+
    Composition*                  m_composition ;
    Scene*                        m_scene ;
    Camera*                       m_camera ;
@@ -120,15 +111,10 @@ private:
 };
 
 
-
-
-
-
 inline void Bookmarks::setScene(Scene* scene)
 {
     m_scene = scene ; 
 }
-
 
 inline unsigned int Bookmarks::getCurrent()
 {

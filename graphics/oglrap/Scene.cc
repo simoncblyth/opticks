@@ -37,6 +37,13 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+const char* Scene::PREFIX = "scene" ;
+const char* Scene::getPrefix()
+{
+   return PREFIX ; 
+}
+
+
 
 
 const char* Scene::AXIS   = "axis" ; 

@@ -22,6 +22,13 @@
 #endif
 
 
+const char* Clipper::PREFIX = "clipper" ;
+const char* Clipper::getPrefix()
+{
+   return PREFIX ; 
+}
+
+
 
 const char* Clipper::CUTMODE    = "cutmode" ;
 const char* Clipper::CUTPOINT   = "cutpoint" ;

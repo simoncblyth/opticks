@@ -14,6 +14,7 @@
 #endif
 
 #include "OpticksCfg.hh"
+#include "State.hh"
 #include "Scene.hh"
 #include "SceneCfg.hh"
 #include "Renderer.hh"
@@ -182,6 +183,7 @@ void App::initViz()
     m_composition = new Composition ; 
     m_frame       = new Frame ; 
     m_bookmarks   = new Bookmarks ; 
+
     m_interactor  = new Interactor ; 
 
     m_interactor->setFrame(m_frame);
@@ -190,6 +192,8 @@ void App::initViz()
     m_interactor->setBookmarks(m_bookmarks);
 
     m_composition->setScene(m_scene);
+    m_composition->setupConfigurableState();
+    m_state = m_composition->getState();
 
     m_bookmarks->setComposition(m_composition);
     m_bookmarks->setScene(m_scene);
@@ -1002,6 +1006,7 @@ void App::prepareGUI()
     m_gui->setPhotons(m_photons);
     m_gui->setComposition(m_composition);
     m_gui->setBookmarks(m_bookmarks);
+    m_gui->setState(m_state);
     m_gui->setInteractor(m_interactor);   // status line
     
     m_gui->init(m_window);

@@ -11,6 +11,9 @@
 
 class Clipper : public Configurable {
    public:
+        static const char* PREFIX ;
+        const char* getPrefix();
+    public:
         static const char* CUTPOINT ;
         static const char* CUTNORMAL ;
         static const char* CUTMODE  ;

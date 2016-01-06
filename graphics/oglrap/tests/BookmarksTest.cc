@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     if(argc < 2)
     {
-        printf("%s : requires path to folder containing %s \n", argv[0], Bookmarks::filename );
+        printf("%s : requires path to folder containing %s \n", argv[0], Bookmarks::FILENAME );
         return 1 ; 
     }
 

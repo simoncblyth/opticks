@@ -22,11 +22,18 @@
 #include <imgui.h>
 #endif
 
+const char* View::PREFIX = "view" ;
+const char* View::getPrefix()
+{
+   return PREFIX ; 
+}
 
 const char* View::EYE = "eye" ;
 const char* View::LOOK = "look" ;
 const char* View::UP = "up" ;
 
+
+/////////////// Configurable protocol START
 
 std::vector<std::string> View::getTags()
 {
@@ -37,7 +44,6 @@ std::vector<std::string> View::getTags()
     return tags ; 
 }
 
-
 bool View::accepts(const char* name)
 {
     return 
@@ -46,21 +52,11 @@ bool View::accepts(const char* name)
          strcmp(name,UP)==0 ;
 }
 
-
 void View::configure(const char* name, const char* value_)
 {
     std::string value(value_);
     set(name, value);
 }
-
-void View::configureS(const char* name, std::vector<std::string> values)
-{
-    if(values.empty()) return ;
-
-    std::string last = values.back();
-    set(name, last);
-}
-
 
 void View::set(const char* name, std::string& _xyz)
 {
@@ -84,6 +80,18 @@ std::string View::get(const char* name)
     glm::vec3 v3(v); 
     return gformat(v3);
 }
+
+/////////////// configurable protocol END
+
+
+void View::configureS(const char* name, std::vector<std::string> values)
+{
+    if(values.empty()) return ;
+    std::string last = values.back();
+    set(name, last);
+}
+
+
 
 
 void View::Print(const char* msg)

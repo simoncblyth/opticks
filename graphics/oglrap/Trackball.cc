@@ -27,6 +27,14 @@
 #endif
 
 
+const char* Trackball::PREFIX = "trackball" ;
+const char* Trackball::getPrefix()
+{
+   return PREFIX ; 
+}
+
+
+
 const char* Trackball::RADIUS = "radius" ;
 const char* Trackball::ORIENTATION = "orientation" ;
 const char* Trackball::TRANSLATE = "translate" ;

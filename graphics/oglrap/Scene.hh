@@ -32,7 +32,9 @@ class Colors ;
 
 
 class Scene : public Configurable {
-
+   public:
+        static const char* PREFIX ;
+        const char* getPrefix();
    public:
         static const char* PHOTON ;
         static const char* AXIS ;

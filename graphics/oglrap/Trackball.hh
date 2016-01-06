@@ -8,6 +8,9 @@
 
 class Trackball : public Configurable {
    public:
+       static const char* PREFIX ;
+       const char* getPrefix();
+   public:
        static const char* RADIUS ;
        static const char* ORIENTATION ;
        static const char* TRANSLATE ;

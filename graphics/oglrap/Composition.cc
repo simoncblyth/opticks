@@ -11,12 +11,15 @@
 
 
 // oglrap-
+#include "State.hh"
+
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "View.hh"
-#include "Light.hh"
 #include "Clipper.hh"
 #include "Scene.hh"
+
+#include "Light.hh"
 #include "Animator.hh"
 
 #include "CameraCfg.hh"
@@ -50,6 +53,15 @@
 #endif
 
 #include "limits.h"
+
+
+const char* Composition::PREFIX = "composition" ;
+const char* Composition::getPrefix()
+{
+   return PREFIX ; 
+}
+
+
 
 
 const char* Composition::PRINT = "print" ; 
@@ -115,18 +127,28 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 
 void Composition::init()
 {
+    m_state = new State(); 
+
     m_camera = new Camera() ;
     m_view   = new View() ;
-    m_light = new Light() ;
     m_trackball = new Trackball() ;
     m_clipper = new Clipper() ;
 
+    m_light = new Light() ;
     m_command.resize(m_command_length);
 
     initAxis();
 }
 
-
+void Composition::setupConfigurableState()
+{
+    m_state->addConfigurable(m_scene);
+    m_state->addConfigurable(m_trackball);
+    m_state->addConfigurable(m_view);
+    m_state->addConfigurable(m_camera);
+    m_state->addConfigurable(m_clipper);
+    //m_state->addConfigurable(m_light);
+}
 
 
 Composition::~Composition()
@@ -356,6 +378,9 @@ void Composition::gui()
        m_pick.y, 
        m_pick.z, 
        m_pick.w);
+
+    if(ImGui::Button("SaveState")) m_state->save();
+
 
 #endif    
 }

@@ -12,6 +12,9 @@
 
 class View : public Configurable {
 public:
+   static const char* PREFIX ; 
+   const char* getPrefix();
+
    static const char* EYE ; 
    static const char* LOOK ; 
    static const char* UP ; 
@@ -23,6 +26,7 @@ public:
 
  public:
    // Configurable
+   
    static bool accepts(const char* name);
    void configure(const char* name, const char* value);
    std::vector<std::string> getTags();

@@ -14,6 +14,15 @@
 #endif
 
 
+const char* Camera::PREFIX = "camera" ;
+const char* Camera::getPrefix()
+{
+   return PREFIX ; 
+}
+
+
+
+
 const char* Camera::PRINT    = "print" ;
 
 const char* Camera::NEAR     = "near" ;
