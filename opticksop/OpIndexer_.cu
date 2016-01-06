@@ -3,6 +3,7 @@
 #include <cassert>
 
 // npy-
+#include "Timer.hpp"  
 #include "NumpyEvt.hpp"  
 #include "NPY.hpp"  
 
@@ -17,6 +18,17 @@
 
 // thrust 
 #include <thrust/device_vector.h>
+
+
+#define TIMER(s) \
+    { \
+       if(m_evt)\
+       {\
+          Timer& t = *(m_evt->getTimer()) ;\
+          t((s)) ;\
+       }\
+    }
+
 
 void OpIndexer::indexSequenceViaThrust(
    TSparse<unsigned long long>& seqhis, 
@@ -63,6 +75,11 @@ void OpIndexer::indexSequenceImp(
    bool verbose 
 )
 {
+    // NB the make_lookup writes into constant GPU memory 
+    //    so must apply that lookup before doing another 
+    //    because of this cannot move the make_lookup prior
+    //    to this 
+
     TBuf tphosel("tphosel", rps );
     tphosel.zero();
 
@@ -70,17 +87,25 @@ void OpIndexer::indexSequenceImp(
 
     if(verbose) dump(tphosel, trecsel);
 
-    seqhis.make_lookup(); 
-
     // phosel buffer is shaped (num_photons, 1, 4)
     CBufSlice tp_his = tphosel.slice(4,0) ; // stride, begin  
     CBufSlice tp_mat = tphosel.slice(4,1) ; 
-  
+ 
+
+    TIMER("_seqhisMakeLookup");
+    seqhis.make_lookup(); 
+    TIMER("seqhisMakeLookup");
     seqhis.apply_lookup<unsigned char>(tp_his); 
+    TIMER("seqhisApplyLookup");
+
     if(verbose) dumpHis(tphosel, seqhis) ;
 
+    TIMER("_seqmatMakeLookup");
     seqmat.make_lookup();
+    TIMER("seqmatMakeLookup");
     seqmat.apply_lookup<unsigned char>(tp_mat);
+    TIMER("seqmatApplyLookup");
+
     if(verbose) dumpMat(tphosel, seqmat) ;
 
     tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), m_maxrec );  // other, stride, begin, end, repeats

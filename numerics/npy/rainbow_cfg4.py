@@ -223,8 +223,8 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    rec = False
-    tag = "6"
+    rec = True
+    tag = "5"
     src = "torch"
     det = "rainbow"
     log_ = True
