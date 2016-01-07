@@ -100,6 +100,8 @@ class Opticks {
        OpticksResource*     getResource(); 
        Parameters*          getParameters();
        std::string          getModeString();
+       const char*          getUDet();
+       std::string          getPreferenceDir(const char* type);
    public:
        TorchStepNPY*        makeSimpleTorchStep();
        NumpyEvt*            makeEvt(); 
@@ -131,22 +133,26 @@ class Opticks {
    private:
        void configureDomains();
        void setCfg(OpticksCfg<Opticks>* cfg);
+
+
    private:
        const char*      m_logname  ; 
        const char*      m_envprefix ;
        OpticksResource* m_resource ; 
- 
-       const char* m_loglevel  ; 
-       NLog*       m_log ; 
+       const char*      m_loglevel  ; 
+       NLog*            m_log ; 
    private:
-       bool        m_compute ; 
-       bool        m_geocache ; 
-       bool        m_instanced ; 
-       const char* m_lastarg ; 
+       bool             m_compute ; 
+       bool             m_geocache ; 
+       bool             m_instanced ; 
+       const char*      m_lastarg ; 
+
    private:
        OpticksCfg<Opticks>* m_cfg ; 
        Parameters*          m_parameters ; 
        const char*          m_detector ; 
+
+   private:
        glm::vec4            m_time_domain ; 
        glm::vec4            m_space_domain ; 
        glm::vec4            m_wavelength_domain ; 
@@ -192,34 +198,24 @@ inline OpticksCfg<Opticks>* Opticks::getCfg()
 {
     return m_cfg ; 
 }
-
 inline Parameters* Opticks::getParameters()
 {
     return m_parameters ; 
 }
-
 inline OpticksResource* Opticks::getResource()
 {
     return m_resource  ; 
 }
-
-
-
 inline const char* Opticks::getLastArg()
 {
    return m_lastarg ; 
 }
 
 
-
-
-
 inline void Opticks::setMode(unsigned int mode)
 {
     m_mode = mode ; 
 }
-
-
 inline bool Opticks::isCompute()
 {
     return (m_mode & COMPUTE_MODE) != 0  ; 
@@ -252,14 +248,6 @@ inline bool Opticks::isInstanced()
 {
    return m_instanced ; 
 }
-
-
-
-
-
-
-
-
 
 
 inline const glm::vec4& Opticks::getTimeDomain()

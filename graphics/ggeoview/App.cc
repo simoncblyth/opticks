@@ -14,6 +14,7 @@
 #endif
 
 // opticks-
+#include "Opticks.hh"
 #include "OpticksCfg.hh"
 #include "OpticksResource.hh"
 
@@ -166,6 +167,11 @@ void App::initViz()
     // dynamic define for use by GLSL shaders
 
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
+
+
+    // TODO: move state up here is it belongs above Composition
+    //m_state = new State ;
+
 
     m_composition = new Composition ; 
     m_frame       = new Frame ; 

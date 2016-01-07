@@ -12,9 +12,7 @@
 #include "GLMFormat.hpp"
 #include "NLog.hpp"
 
-
 const char* Opticks::COMPUTE = "--compute" ; 
-
 
 const char* Opticks::ZERO_              = "." ;
 const char* Opticks::CERENKOV_          = "CERENKOV" ;
@@ -137,15 +135,15 @@ unsigned int Opticks::SourceCode(const char* type)
 
 void Opticks::init(int argc, char** argv)
 {
-   m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
+    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
 
-   m_parameters = new Parameters ;  
+    m_parameters = new Parameters ;  
 
-   m_resource = new OpticksResource(m_envprefix);
+    m_resource = new OpticksResource(m_envprefix);
 
-   setDetector( m_resource->getDetector() );
+    setDetector( m_resource->getDetector() );
 
-   preconfigure(argc, argv);
+    preconfigure(argc, argv);
 }
 
 
@@ -182,7 +180,7 @@ void Opticks::preconfigure(int argc, char** argv)
 
 const char* Opticks::getIdPath()
 {
-   return m_resource ? m_resource->getIdPath() : NULL ; 
+    return m_resource ? m_resource->getIdPath() : NULL ; 
 }
 
 
@@ -272,6 +270,20 @@ std::string Opticks::getModeString()
     return ss.str();
 }
 
+const char* Opticks::getUDet()
+{
+    const char* det = m_detector ? m_detector : "" ;
+    const std::string& cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
+    const char* cat_ = cat.c_str();
+    return strlen(cat_) > 0 ? cat_ : det ;  
+}
+
+std::string Opticks::getPreferenceDir(const char* type)
+{
+    const char* udet = getUDet();
+    return m_resource->getPreferenceDir(type, udet);
+}
+
 
 NumpyEvt* Opticks::makeEvt()
 {
@@ -283,8 +295,8 @@ NumpyEvt* Opticks::makeEvt()
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
-
     NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
+    assert(strcmp(evt->getUDet(), getUDet()) == 0);
 
     configureDomains();
 

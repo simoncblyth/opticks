@@ -9,21 +9,21 @@ class OpticksCfg : public Cfg {
      void dump(const char* msg="OpticksCfg::dump");
 
 
-     std::string& getLogName();
-     std::string& getConfigPath();
-     std::string& getEventTag();
-     std::string& getEventCat();
-     std::string& getLiveLine();
-     std::string& getTorchConfig();
-     std::string& getTestConfig();
-     std::string& getZExplodeConfig();
-     std::string& getMeshVersion();
-     std::string& getISlice();
-     std::string& getFSlice();
-     std::string& getPSlice();
-     std::string& getPrintIndex();
-     std::string& getBuilder();
-     std::string& getTraverser();
+     const std::string& getLogName();
+     const std::string& getConfigPath();
+     const std::string& getEventTag();
+     const std::string& getEventCat();
+     const std::string& getLiveLine();
+     const std::string& getTorchConfig();
+     const std::string& getTestConfig();
+     const std::string& getZExplodeConfig();
+     const std::string& getMeshVersion();
+     const std::string& getISlice();
+     const std::string& getFSlice();
+     const std::string& getPSlice();
+     const std::string& getPrintIndex();
+     const std::string& getBuilder();
+     const std::string& getTraverser();
 
      float        getEpsilon(); 
      int          getRngMax(); 
@@ -377,25 +377,25 @@ inline void OpticksCfg<Listener>::init()
 
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getLogName()
+inline const std::string& OpticksCfg<Listener>::getLogName()
 {
     return m_logname ;
 }
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getConfigPath()
+inline const std::string& OpticksCfg<Listener>::getConfigPath()
 {
     return m_configpath ;
 }
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getEventTag()
+inline const std::string& OpticksCfg<Listener>::getEventTag()
 {
     if(m_event_tag.empty()) m_event_tag = "1" ;
     return m_event_tag ;
 }
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getEventCat()
+inline const std::string& OpticksCfg<Listener>::getEventCat()
 {
     if(m_event_cat.empty()) m_event_cat = "" ;
     return m_event_cat ;
@@ -403,44 +403,44 @@ inline std::string& OpticksCfg<Listener>::getEventCat()
 
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getLiveLine()
+inline const std::string& OpticksCfg<Listener>::getLiveLine()
 {
     return m_liveline ;
 }
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getTorchConfig()
+inline const std::string& OpticksCfg<Listener>::getTorchConfig()
 {
     return m_torchconfig ;
 }
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getTestConfig()
+inline const std::string& OpticksCfg<Listener>::getTestConfig()
 {
     return m_testconfig ;
 }
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getZExplodeConfig()
+inline const std::string& OpticksCfg<Listener>::getZExplodeConfig()
 {
     return m_zexplodeconfig ;
 }
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getMeshVersion()
+inline const std::string& OpticksCfg<Listener>::getMeshVersion()
 {
     return m_meshversion ;
 }
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getISlice()
+inline const std::string& OpticksCfg<Listener>::getISlice()
 {
     return m_islice ;
 }
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getFSlice()
+inline const std::string& OpticksCfg<Listener>::getFSlice()
 {
     return m_fslice ;
 }
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getPSlice()
+inline const std::string& OpticksCfg<Listener>::getPSlice()
 {
     return m_pslice ;
 }
@@ -448,7 +448,7 @@ inline std::string& OpticksCfg<Listener>::getPSlice()
 
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getPrintIndex()
+inline const std::string& OpticksCfg<Listener>::getPrintIndex()
 {
     return m_pindex ;
 }
@@ -456,12 +456,12 @@ inline std::string& OpticksCfg<Listener>::getPrintIndex()
 
 
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getBuilder()
+inline const std::string& OpticksCfg<Listener>::getBuilder()
 {
     return m_builder ;
 }
 template <class Listener>
-inline std::string& OpticksCfg<Listener>::getTraverser()
+inline const std::string& OpticksCfg<Listener>::getTraverser()
 {
     return m_traverser ;
 }

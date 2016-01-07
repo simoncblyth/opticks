@@ -10,7 +10,6 @@
 template<typename T>
 class NPY ; 
 
-
 class MultiViewNPY ; 
 
 class State ; 
@@ -321,6 +320,7 @@ class Composition : public Configurable {
       Camera*    m_camera ;
       Trackball* m_trackball ;
       View*      m_view ;
+
       Light*     m_light ;
       Clipper*   m_clipper ;
       unsigned int m_count ; 

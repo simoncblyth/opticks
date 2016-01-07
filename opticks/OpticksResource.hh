@@ -25,7 +25,7 @@ class OpticksResource {
        std::string getPmtPath(unsigned int index, bool relative=false);
        std::string getPropertyLibDir(const char* name);
     public:
-       std::string getPreferenceDir(const char* type);
+       std::string getPreferenceDir(const char* type, const char* udet=NULL);
        bool loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name);
        bool loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name);
     public:
@@ -36,9 +36,10 @@ class OpticksResource {
        const char* getPath();
        const char* getQuery();
        const char* getCtrl();
+    public:
        const char* getMeshfix();
        const char* getMeshfixCfg();
-       glm::vec4 getMeshfixFacePairingCriteria();
+       glm::vec4   getMeshfixFacePairingCriteria();
     public:
        const char* getDetector();
        bool        isJuno();

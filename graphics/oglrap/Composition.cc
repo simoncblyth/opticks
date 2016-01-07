@@ -1,5 +1,6 @@
 #include "Composition.hh"
 
+
 // npy-
 #include "NPY.hpp"
 #include "NumpyEvt.hpp"
@@ -127,6 +128,8 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 
 void Composition::init()
 {
+   // hmm state is very different, maybe keep in the App not here 
+
     m_state = new State(); 
 
     m_camera = new Camera() ;
