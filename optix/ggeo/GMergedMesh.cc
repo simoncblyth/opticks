@@ -4,6 +4,9 @@
 #include "GSolid.hh"
 #include "GParts.hh"
 
+// opticks-
+#include "OpticksResource.hh"
+
 // npy-
 #include "Timer.hpp"
 #include "NSensor.hpp"
@@ -452,7 +455,7 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 
 GMergedMesh* GMergedMesh::load(GCache* cache, unsigned int ridx, const char* version)
 {
-    std::string mmpath = cache->getMergedMeshPath(ridx);
+    std::string mmpath = cache->getResource()->getMergedMeshPath(ridx);
     GMergedMesh* mm = GMergedMesh::load(mmpath.c_str(), ridx, version);
     return mm ; 
 }

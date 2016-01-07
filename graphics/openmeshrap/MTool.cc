@@ -1,10 +1,11 @@
 #include "MTool.hh"
 
+// npy-
 #include "stringutil.hpp"
+#include "NLog.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+// opticks-
+#include "OpticksResource.hh"
 
 // ggeo-
 #include "GMesh.hh"
@@ -51,8 +52,10 @@ unsigned int MTool::countMeshComponents_(GMesh* gmesh)
 }
 
 
-GMesh* MTool::joinSplitUnion(GMesh* gmesh, GCache* config)
+GMesh* MTool::joinSplitUnion(GMesh* gmesh, GCache* cache)
 {
+    OpticksResource* resource = cache->getResource();
+
     // hmm this is pure static, could create an MTool instance
     // if find need to split this up a bit 
 
@@ -100,7 +103,7 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, GCache* config)
     // xyz delta maximum and w: minimal dot product of normals, -0.999 means very nearly back-to-back
     //glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
 
-    glm::vec4 delta = config->getMeshfixFacePairingCriteria();
+    glm::vec4 delta = resource->getMeshfixFacePairingCriteria();
 
     MWrap<MyMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
 

@@ -1,5 +1,8 @@
 #include "GAttrSeq.hh"
 
+//opticks-
+#include "OpticksResource.hh"
+
 // npy-
 #include "Index.hpp"
 #include "stringutil.hpp"
@@ -23,13 +26,15 @@ unsigned int GAttrSeq::ERROR_COLOR = 0xAAAAAA ;
 
 void GAttrSeq::loadPrefs()
 {
-    if(m_cache->loadPreference(m_color, m_type, "color.json"))
+    OpticksResource* resource = m_cache->getResource();
+
+    if(resource->loadPreference(m_color, m_type, "color.json"))
         LOG(debug) << "GAttrSeq::loadPrefs color " << m_type ;
 
-    if(m_cache->loadPreference(m_abbrev, m_type, "abbrev.json"))
+    if(resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
         LOG(debug) << "GAttrSeq::loadPrefs abbrev " << m_type ;
 
-    if(m_cache->loadPreference(m_order, m_type, "order.json"))
+    if(resource->loadPreference(m_order, m_type, "order.json"))
         LOG(debug) << "GAttrSeq::loadPrefs order " << m_type ;
 }
 

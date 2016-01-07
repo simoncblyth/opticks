@@ -9,12 +9,17 @@ template <typename> class OpticksCfg ;
 
 class TorchStepNPY ; 
 class NumpyEvt ;
+class NLog ;
 class Parameters ; 
+class OpticksResource ; 
 
 #include "OpticksPhoton.h"
 
 class Opticks {
        friend class OpticksCfg<Opticks> ; 
+   public:
+       static const char* COMPUTE ; 
+
    public:
        static const char* ZERO_ ;
        static const char* CERENKOV_ ;
@@ -66,17 +71,38 @@ class Opticks {
        static float        DOMAIN_HIGH ; 
        static float        DOMAIN_STEP ; 
        static glm::vec4    getDefaultDomainSpec();
+
    public:
-       Opticks();
+       Opticks(const char* envprefix="OPTICKS_", const char* logname="opticks.log", const char* loglevel="info");
+       void configure(int argc, char** argv);
+   private:
+       void init();
+       void preconfigure(int argc, char** argv);
+   public:
+       void Summary(const char* msg="Opticks::Summary");
+   public:
+       const char* getIdPath();
+       const char* getLastArg();
+       int         getLastArgInt();
+   public:
+       void setGeocache(bool geocache=true);
+       bool isGeocache();
+       void setInstanced(bool instanced=true);
+       bool isInstanced();
+   public:
+       std::string getRelativePath(const char* path); 
+   public:
        void setMode(unsigned int mode);
        void setDetector(const char* detector); 
 
    public:
        OpticksCfg<Opticks>* getCfg();
-       Parameters* getParameters();
-       std::string getModeString();
-       TorchStepNPY* makeSimpleTorchStep();
-       NumpyEvt* makeEvt(); 
+       OpticksResource*     getResource(); 
+       Parameters*          getParameters();
+       std::string          getModeString();
+   public:
+       TorchStepNPY*        makeSimpleTorchStep();
+       NumpyEvt*            makeEvt(); 
    public:
        const glm::vec4&  getTimeDomain();
        const glm::vec4&  getSpaceDomain();
@@ -103,9 +129,20 @@ class Opticks {
        void configureI(const char* name, std::vector<int> values);
        void configureS(const char* name, std::vector<std::string> values);
    private:
-       void init();
        void configureDomains();
        void setCfg(OpticksCfg<Opticks>* cfg);
+   private:
+       const char*      m_envprefix ;
+       OpticksResource* m_resource ; 
+ 
+       const char* m_logname  ; 
+       const char* m_loglevel  ; 
+       NLog*       m_log ; 
+   private:
+       bool        m_compute ; 
+       bool        m_geocache ; 
+       bool        m_instanced ; 
+       const char* m_lastarg ; 
    private:
        OpticksCfg<Opticks>* m_cfg ; 
        Parameters*          m_parameters ; 
@@ -122,14 +159,29 @@ class Opticks {
 
 };
 
-inline Opticks::Opticks() 
-   :
-    m_cfg(NULL),
-    m_parameters(NULL),
-    m_detector(NULL),
-    m_mode(0u)
+
+
+inline Opticks::Opticks(const char* envprefix, const char* logname, const char* loglevel)
+     :
+       m_envprefix(strdup(envprefix)),
+       m_resource(NULL),
+
+       m_logname(strdup(logname)),
+       m_loglevel(strdup(loglevel)),
+       m_log(NULL),
+
+       m_compute(false),
+       m_geocache(false),
+       m_instanced(true),
+
+       m_lastarg(NULL),
+
+       m_cfg(NULL),
+       m_parameters(NULL),
+       m_detector(NULL),
+       m_mode(0u)
 {
-    init();
+       init();
 }
 
 inline void Opticks::setCfg(OpticksCfg<Opticks>* cfg)
@@ -140,6 +192,25 @@ inline OpticksCfg<Opticks>* Opticks::getCfg()
 {
     return m_cfg ; 
 }
+
+inline Parameters* Opticks::getParameters()
+{
+    return m_parameters ; 
+}
+
+inline OpticksResource* Opticks::getResource()
+{
+    return m_resource  ; 
+}
+
+
+
+inline const char* Opticks::getLastArg()
+{
+   return m_lastarg ; 
+}
+
+
 
 
 
@@ -164,13 +235,31 @@ inline bool Opticks::isCfG4()
 
 
 
-
-
-
-inline Parameters* Opticks::getParameters()
+inline void Opticks::setGeocache(bool geocache)
 {
-    return m_parameters ; 
+    m_geocache = geocache ; 
 }
+inline bool Opticks::isGeocache()
+{
+    return m_geocache ;
+}
+
+inline void Opticks::setInstanced(bool instanced)
+{
+   m_instanced = instanced ;
+}
+inline bool Opticks::isInstanced()
+{
+   return m_instanced ; 
+}
+
+
+
+
+
+
+
+
 
 
 inline const glm::vec4& Opticks::getTimeDomain()

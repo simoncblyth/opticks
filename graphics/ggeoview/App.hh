@@ -27,6 +27,7 @@ class Lookup ;
 
 //opticks-
 class Opticks ; 
+class OpticksResource ; 
 template <typename> class OpticksCfg ;
 
 // oglrap-
@@ -129,19 +130,20 @@ class App {
        bool hasOpt(const char* name);
 
   private:
-       Opticks*     m_opticks ; 
-       const char*  m_prefix ; 
-       Parameters*  m_parameters ; 
-       Timer*       m_timer ; 
-       GCache*      m_cache ; 
-       DynamicDefine* m_dd ; 
-       State*       m_state ; 
-       Scene*       m_scene ; 
-       Composition* m_composition ;
-       Frame*       m_frame ;
-       GLFWwindow*  m_window ; 
-       Bookmarks*   m_bookmarks ;
-       Interactor*  m_interactor ;
+       Opticks*          m_opticks ; 
+       OpticksResource*  m_resource ; 
+       const char*       m_prefix ; 
+       Parameters*       m_parameters ; 
+       Timer*            m_timer ; 
+       GCache*           m_cache ; 
+       DynamicDefine*    m_dd ; 
+       State*            m_state ; 
+       Scene*            m_scene ; 
+       Composition*      m_composition ;
+       Frame*            m_frame ;
+       GLFWwindow*       m_window ; 
+       Bookmarks*        m_bookmarks ;
+       Interactor*       m_interactor ;
 #ifdef NPYSERVER
        numpydelegate* m_delegate ; 
        numpyserver<numpydelegate>* m_server ;
@@ -191,6 +193,7 @@ class App {
 inline App::App(const char* prefix, int argc, char** argv )
    : 
       m_opticks(NULL),
+      m_resource(NULL),
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),

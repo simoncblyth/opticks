@@ -5,7 +5,7 @@
 
 // opticks-
 #include "Opticks.hh"
-
+#include "OpticksResource.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -82,6 +82,8 @@ GDomain<float>* GPropertyLib::getDefaultDomain()
 
 void GPropertyLib::init()
 {
+    m_resource = m_cache->getResource();
+
     m_standard_domain = getDefaultDomain(); 
 
     unsigned int len = getStandardDomainLength() ;
@@ -120,11 +122,11 @@ std::map<unsigned int, std::string> GPropertyLib::getNamesMap()
 
 std::string GPropertyLib::getCacheDir()
 {
-    return m_cache->getPropertyLibDir(m_type);
+    return m_resource->getPropertyLibDir(m_type);
 }
 std::string GPropertyLib::getPreferenceDir()
 {
-    return m_cache->getPreferenceDir(m_type);
+    return m_resource->getPreferenceDir(m_type);
 }
 
 unsigned int GPropertyLib::getIndex(const char* shortname)

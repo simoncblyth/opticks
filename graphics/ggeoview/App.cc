@@ -13,7 +13,11 @@
 #include "GUI.hh"
 #endif
 
+// opticks-
 #include "OpticksCfg.hh"
+#include "OpticksResource.hh"
+
+// oglrap-
 #include "State.hh"
 #include "Scene.hh"
 #include "SceneCfg.hh"
@@ -129,6 +133,9 @@
 
 
 
+
+
+
 void App::init(int argc, char** argv)
 {
     const char* logname = NULL ; 
@@ -138,21 +145,10 @@ void App::init(int argc, char** argv)
         //std::cout << "App::init " << "[" << std::setw(2) << i << "]" << argv[i] << std::endl ;
     }
 
-    m_opticks = new Opticks(); 
-
     m_cache     = new GCache(m_prefix, logname ? logname : "ggeoview.log", "info");
     m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
-
-    // need to know whether compute mode is active prior to standard configuration is done, 
-    // in order to skip the Viz methods, so do in the pre-configure here 
-    bool compute = m_cache->isCompute();
-    m_opticks->setMode( compute ? Opticks::COMPUTE_MODE : Opticks::INTEROP_MODE );
-
-    std::string detector = m_cache->getDetector();
-    m_opticks->setDetector(detector.c_str()); 
-
-
-
+    m_opticks = m_cache->getOpticks();   
+    m_resource = m_cache->getResource();
 
     m_parameters = new Parameters ;  // favor evt params over these, as evt params are persisted with the evt
     m_timer      = new Timer("App::");
@@ -328,7 +324,7 @@ void App::loadGeometry()
 
     registerGeometry();
 
-    if(!m_cache->isGeocache())
+    if(!m_opticks->isGeocache())
     {
         LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 
         setExit(true); 
@@ -342,8 +338,9 @@ void App::loadGeometry()
 
 void App::loadGeometryBase()
 {
-    m_cache->setGeocache(!m_fcfg->hasOpt("nogeocache"));
-    m_cache->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
+    // hmm funny placement, move this just after config 
+    m_opticks->setGeocache(!m_fcfg->hasOpt("nogeocache"));
+    m_opticks->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
 
     m_ggeo = new GGeo(m_cache);
 
@@ -352,7 +349,7 @@ void App::loadGeometryBase()
 
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
-    m_ggeo->setMeshJoinCfg( m_cache->getMeshfix() );
+    m_ggeo->setMeshJoinCfg( m_resource->getMeshfix() );
 
     std::string meshversion = m_fcfg->getMeshVersion() ;;
     if(!meshversion.empty())
@@ -529,7 +526,7 @@ void App::loadGenstep()
         m_g4step = new G4StepNPY(npy);    
         m_g4step->relabel(code); // becomes the ghead.i.x used in cu/generate.cu
 
-        if(m_cache->isDayabay())
+        if(m_resource->isDayabay())
         {   
             m_g4step->setLookup(lookup);   
             m_g4step->applyLookup(0, 2);      

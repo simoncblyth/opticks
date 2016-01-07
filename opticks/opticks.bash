@@ -21,6 +21,8 @@ opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 opticks-name(){ echo Opticks ; }
 
+opticks-bin(){ echo $(opticks-idir)/bin/${1:-OpticksResourceTest} ; }
+
 
 opticks-wipe(){
    local bdir=$(opticks-bdir)

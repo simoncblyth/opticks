@@ -13,6 +13,7 @@
 template <typename T> class NPY ;
 class NPYBase ; 
 
+class OpticksResource ; 
 class GCache ; 
 class GItemList ; 
 class GAttrSeq ; 
@@ -96,6 +97,7 @@ class GPropertyLib {
         void         setNames(GItemList* names);
     protected:
         GCache*                              m_cache ; 
+        OpticksResource*                     m_resource ; 
         NPY<float>*                          m_buffer ; 
         GAttrSeq*                            m_attrnames ; // attributed name list 
         GItemList*                           m_names ;     // simple name list 
@@ -111,6 +113,7 @@ class GPropertyLib {
 inline GPropertyLib::GPropertyLib(GCache* cache, const char* type) 
      :
      m_cache(cache),
+     m_resource(NULL),
      m_buffer(NULL),
      m_attrnames(NULL),
      m_names(NULL),

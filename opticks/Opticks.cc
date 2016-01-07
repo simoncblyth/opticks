@@ -1,13 +1,20 @@
 #include "Opticks.hh"
+#include "OpticksResource.hh"
 #include "OpticksCfg.hh"
 #include "OpticksPhoton.h"
 
+// npy-
+#include "Map.hpp"
 #include "stringutil.hpp"
 #include "Parameters.hpp"
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NLog.hpp"
+
+
+const char* Opticks::COMPUTE = "--compute" ; 
+
 
 const char* Opticks::ZERO_              = "." ;
 const char* Opticks::CERENKOV_          = "CERENKOV" ;
@@ -71,7 +78,10 @@ float Opticks::getEpsilon()
 }
 
 
-
+std::string Opticks::getRelativePath(const char* path)
+{
+    return m_resource->getRelativePath(path);
+}
 
 
 glm::vec4 Opticks::getDefaultDomainSpec()
@@ -129,7 +139,84 @@ void Opticks::init()
 {
    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
    m_parameters = new Parameters ;  
+   m_resource = new OpticksResource(m_envprefix);
+   m_log = new NLog(m_logname, m_loglevel);
 }
+
+
+const char* Opticks::getIdPath()
+{
+   return m_resource ? m_resource->getIdPath() : NULL ; 
+}
+
+
+void Opticks::preconfigure(int argc, char** argv)
+{
+    // need to know whether compute mode is active prior to standard configuration is done, 
+    // in order to skip the Viz methods, so do in the pre-configure here 
+
+    bool compute = false ;
+    for(unsigned int i=1 ; i < argc ; i++ )
+    {
+        //printf("Opticks::preconfigure  %2d : %s \n", i, argv[i] );
+        if(strcmp(argv[i], COMPUTE) == 0) 
+        {
+            //printf("Opticks::configure setting compute \n");
+            compute = true ; 
+        }
+    }
+
+    setMode( compute ? COMPUTE_MODE : INTEROP_MODE );
+    setDetector( m_resource->getDetector() );
+
+    LOG(info) << "Opticks::preconfigure" 
+              << " mode " << getModeString() 
+              << " detector " << m_resource->getDetector()
+              ;
+}
+
+
+void Opticks::configure(int argc, char** argv)
+{
+    preconfigure(argc, argv);
+
+    m_log->configure(argc, argv);
+    m_log->init(getIdPath());
+
+    m_lastarg = argc > 1 ? strdup(argv[argc-1]) : NULL ;
+}
+
+void Opticks::Summary(const char* msg)
+{
+    LOG(info) << msg ; 
+    m_resource->Summary(msg);
+}
+
+
+int Opticks::getLastArgInt()
+{
+    int index(-1);
+    if(!m_lastarg) return index ;
+ 
+    try{ 
+        index = boost::lexical_cast<int>(m_lastarg) ;
+    }
+    catch (const boost::bad_lexical_cast& e ) {
+        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+    }
+    catch( ... ){
+        LOG(warning) << "Unknown exception caught!" ;
+    }
+    return index;
+}
+
+
+
+
+
+
+
+
 
 
 void Opticks::configureDomains()

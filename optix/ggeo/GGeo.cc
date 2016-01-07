@@ -45,6 +45,10 @@
 #include "Typ.hpp"
 
 
+// opticks-
+#include "Opticks.hh"
+#include "OpticksResource.hh"
+
 #include "assert.h"
 #include "stdio.h"
 #include "string.h"
@@ -54,14 +58,12 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+
+#include "NLog.hpp"
 
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-
 
 #define BSIZ 50
 
@@ -73,12 +75,15 @@ void GGeo::init()
 {
    m_cache->setGGeo(this); 
 
-   const char* idpath = m_cache->getIdPath() ;
+   Opticks* opticks = m_cache->getOpticks(); 
+   OpticksResource* resource = m_cache->getResource(); 
+
+   const char* idpath = resource->getIdPath() ;
 
    fs::path geocache(idpath); 
 
    bool gc_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
-   bool gc_request = m_cache->isGeocache() ; 
+   bool gc_request = opticks->isGeocache() ; 
 
    m_loaded = gc_exists && gc_request ;
 
@@ -89,7 +94,7 @@ void GGeo::init()
              << " m_loaded " << m_loaded 
              ;
 
-   const char* ctrl = m_cache->getCtrl() ;
+   const char* ctrl = resource->getCtrl() ;
 
    m_volnames = GGeo::ctrlHasKey(ctrl, "volnames");
  
@@ -107,7 +112,7 @@ void GGeo::init()
    m_geolib = new GGeoLib(m_cache);
 
    m_treecheck = new GTreeCheck(this) ;
-   if(m_cache->isJuno())
+   if(resource->isJuno())
        m_treecheck->setVertexMin(250);
 
    m_treepresent = new GTreePresent(this, 0, 100, 1000);   // top,depth_max,sibling_max
@@ -272,7 +277,7 @@ void GGeo::setupLookup()
     // see ggeo-/tests/LookupTest.cc
     m_lookup = new Lookup() ; 
 
-    m_lookup->loadA( m_cache->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
+    m_lookup->loadA( m_cache->getResource()->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
 
     m_bndlib->fillMaterialLineMap( m_lookup->getB() ) ;    
 
@@ -799,7 +804,7 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 
 void GGeo::prepareMeshes()
 {
-    bool instanced = m_cache->isInstanced();
+    bool instanced = m_cache->getOpticks()->isInstanced();
     if(instanced)
     { 
         bool deltacheck = true ; 

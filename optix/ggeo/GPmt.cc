@@ -7,6 +7,9 @@
 
 #include "GParts.hh"
 
+//opticks-
+#include "OpticksResource.hh"
+
 // npy-
 #include "NPY.hpp"
 #include "NSlice.hpp"
@@ -30,10 +33,13 @@ GPmt* GPmt::load(GCache* cache, GBndLib* bndlib, unsigned int index, NSlice* sli
 
 void GPmt::loadFromCache(NSlice* slice)
 {
-    std::string relpath = m_cache->getPmtPath(m_index, true); 
-    GItemList*  origSpec = GItemList::load(m_cache->getIdPath(), "GPmt", relpath.c_str() );
 
-    std::string path = m_cache->getPmtPath(m_index); 
+    OpticksResource* resource = m_cache->getResource();
+
+    std::string relpath = resource->getPmtPath(m_index, true); 
+    GItemList*  origSpec = GItemList::load(resource->getIdPath(), "GPmt", relpath.c_str() );
+
+    std::string path = resource->getPmtPath(m_index); 
     NPY<float>* origBuf = NPY<float>::load( path.c_str(), FILENAME );
 
     NPY<float>* partBuf(NULL);

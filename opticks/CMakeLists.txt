@@ -39,6 +39,7 @@ set(LIBRARIES
 
 
 add_library( ${name}  SHARED
+    OpticksResource.cc
     Opticks.cc
     OpticksCfg.cc
 )
@@ -47,6 +48,7 @@ add_library( ${name}  SHARED
 target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
+    OpticksResource.hh
     Opticks.hh
     OpticksCfg.hh
     OpticksPhoton.h

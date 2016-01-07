@@ -1685,7 +1685,7 @@ ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
 ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
 ggeoview-bindir(){  echo $(ggeoview-idir)/bin ; }
-ggeoview-bin(){ echo ${GGEOVIEW_BINARY:-$(ggeoview-idir)/bin/$(ggeoview-name)} ; }
+ggeoview-bin(){ echo ${OPTICKS_BINARY:-$(ggeoview-idir)/bin/$(ggeoview-name)} ; }
 
 
 #ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }  gets deleted too often for keeping RNG 
@@ -1800,12 +1800,14 @@ ggeoview-steal-bookmarks()
 
 ggeoview-export()
 {
+   local msg="=== $FUNCNAME :"
+
    export-
    export-export
 
-   [ "$GGEOVIEW_GEOKEY" == "" ] && echo $msg MISSING ENVVAR GGEOVIEW_GEOKEY && sleep 10000000
-   [ "$GGEOVIEW_QUERY"  == "" ] && echo $msg MISSING ENVVAR GGEOVIEW_QUERY && sleep 10000000
-   #[ "$GGEOVIEW_CTRL" == "" ]   && echo $msg MISSING ENVVAR GGEOVIEW_CTRL && sleep 10000000
+   [ "$OPTICKS_GEOKEY" == "" ] && echo $msg MISSING ENVVAR OPTICKS_GEOKEY && sleep 10000000
+   [ "$OPTICKS_QUERY"  == "" ] && echo $msg MISSING ENVVAR OPTICKS_QUERY && sleep 10000000
+   #[ "$OPTICKS_CTRL" == "" ]   && echo $msg MISSING ENVVAR OPTICKS_CTRL && sleep 10000000
 
    unset SHADER_DIR 
    unset SHADER_DYNAMIC_DIR 
@@ -1819,7 +1821,7 @@ ggeoview-export()
 
 ggeoview-export-dump()
 {
-   env | grep GGEOVIEW
+   env | grep OPTICKS
    env | grep SHADER
    env | grep RAYTRACE
    env | grep CUDAWRAP

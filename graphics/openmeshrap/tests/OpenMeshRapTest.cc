@@ -8,9 +8,11 @@
 
 #include <glm/glm.hpp>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+// opticks-
+#include "OpticksResource.hh"
+
+// npy-
+#include "NLog.hpp"
 
 // ggeo-
 #include "GCache.hh"
@@ -71,7 +73,9 @@ int main()
 
     // xyz delta maximum and w: minimal dot product of normals, -0.999 means very nearly back-to-back
     //glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
-    glm::vec4 delta = cache.getMeshfixFacePairingCriteria();
+
+    OpticksResource* resource = cache.getResource(); 
+    glm::vec4 delta = resource->getMeshfixFacePairingCriteria();
 
     MWrap<MyMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
 

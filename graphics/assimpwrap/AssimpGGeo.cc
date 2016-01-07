@@ -34,10 +34,13 @@
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 
+
+//opticks-
+#include "OpticksResource.hh"
+
+
 #include <boost/algorithm/string.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 
 /*
@@ -77,11 +80,12 @@ void AssimpGGeo::init()
 int AssimpGGeo::load(GGeo* ggeo)
 {
     GCache* cache = ggeo->getCache();
+    OpticksResource* resource = cache->getResource();
 
-    const char* idpath_ = cache->getIdPath() ;
-    const char* path = cache->getPath() ;
-    const char* query = cache->getQuery() ;
-    const char* ctrl = cache->getCtrl() ;
+    const char* idpath_ = resource->getIdPath() ;
+    const char* path = resource->getPath() ;
+    const char* query = resource->getQuery() ;
+    const char* ctrl = resource->getCtrl() ;
  
     LOG(info)<< "AssimpGGeo::load "  
              << " path " << path 
