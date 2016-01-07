@@ -14,8 +14,17 @@ class GGeo ;
 class Types ; 
 class Typ ; 
 
-// this is turning into GGeoConfig rather than just GCache 
-// TODO: handle logging here, for control from tests
+//
+// TODO: split according to dependencies (not semantics)
+//
+// Much of this belongs in Opticks
+//       
+// * high level config, prefs dir, environment access and logfile control 
+// * change envprefix to OPTICKS_ from GGEOVIEW_ 
+//
+// Only ggeo- required stuff belongs in GCache
+//
+//
 class GCache {
     public:
          static GCache* getInstance();
@@ -196,9 +205,6 @@ inline const char* GCache::getMeshfixCfg()
     return m_meshfixcfg ;
 }
 
-
-
-
 inline void GCache::setGGeo(GGeo* ggeo)
 {
     m_ggeo = ggeo ; 
@@ -207,10 +213,6 @@ inline GGeo* GCache::getGGeo()
 {
     return m_ggeo ;
 }
-
-
-
-
 
 inline void GCache::setGeocache(bool geocache)
 {
@@ -221,7 +223,6 @@ inline bool GCache::isGeocache()
     return m_geocache ;
 }
 
-
 inline void GCache::setInstanced(bool instanced)
 {
    m_instanced = instanced ;
@@ -230,7 +231,6 @@ inline bool GCache::isInstanced()
 {
    return m_instanced ; 
 }
-
 
 inline const char* GCache::getDetector()
 {
@@ -245,18 +245,12 @@ inline bool GCache::isDayabay()
    return m_dayabay ; 
 }
 
-
-
-
 inline bool GCache::idPathContains(const char* s)
 {
     std::string idp(m_idpath);
     std::string ss(s);
     return idp.find(ss) != std::string::npos ;
 }
-
-
-
 
 inline std::string GCache::getRelativePath(const char* path)
 {

@@ -221,9 +221,6 @@ void GCache::readEnvironment()
     m_digest = strdup(digest.c_str());
     std::string kfn = insertField( m_path, '.', -1 , m_digest );
 
-
-    
-
     m_idpath = strdup(kfn.c_str());
 
     m_idfold = strdup(m_idpath);
@@ -231,7 +228,6 @@ void GCache::readEnvironment()
     char* p = (char*)strrchr(m_idfold, '/');  // point to last slash 
     *p = '\0' ;                               // chop to give parent fold
  
-
 
     //Summary("GCache::readEnvironment");
 
@@ -279,21 +275,12 @@ std::string GCache::getObjectPath(const char* name, unsigned int index, bool rel
     return dir.string() ;
 }
 
-
-
-
-
 std::string GCache::getPropertyLibDir(const char* name)
 {
     fs::path cachedir(m_idpath);
     fs::path pld(cachedir/name );
     return pld.string() ;
 }
-
-
-
-
-
 
 void GCache::Summary(const char* msg)
 {

@@ -5,8 +5,20 @@
 #include <string>
 #include <vector>
 
-// think first about saving and restoring state of a collection of objects
+// Think first about saving and restoring state of a collection of objects
 // only after that works worry about bookmark-like jumping between states
+//
+// Main problem is the volume of state , impractical to include everything
+// need to pick 
+//
+// Storing into the geocache not really appropriate, better to go into prefs
+//
+//    ~/.opticks/dayabay/
+//    ~/.opticks/juno/
+//    ~/.opticks/rainbow/
+//
+//  but not everything needs the split, so need heirarchy search for prefs 
+//
 
 class Configurable ; 
 
@@ -16,11 +28,16 @@ class State {
        void addConfigurable(Configurable* configurable);
    public:
        void gui();
+
        void roundtrip();
        void save();
        void load();
-       void collect();
-       void apply();
+
+       void collect(); // collect state from configurables into m_kv
+       void apply();   // apply state from m_kv to configurables
+       void update();  // the state_string for GUI presentation
+
+       const std::string& getStateString(bool update=false);
    private:
        Configurable* getConfigurable(const char* prefix); 
        std::string get(const char* key);
@@ -33,12 +50,14 @@ class State {
        unsigned int collect(Configurable* configurable);
        void setNumChanges(unsigned int num_changes);
        unsigned int getNumChanges();
+       std::string stateString();
    private:
        const char*                           m_dir ; 
        const char*                           m_name ; 
        unsigned int                          m_num_changes ; 
        std::map<std::string, std::string>    m_kv ; 
        std::map<std::string, Configurable*>  m_configurables ; 
+       std::string                           m_state_string ; 
 
 };
 

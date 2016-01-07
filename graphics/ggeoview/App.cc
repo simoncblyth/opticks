@@ -151,6 +151,9 @@ void App::init(int argc, char** argv)
     std::string detector = m_cache->getDetector();
     m_opticks->setDetector(detector.c_str()); 
 
+
+
+
     m_parameters = new Parameters ;  // favor evt params over these, as evt params are persisted with the evt
     m_timer      = new Timer("App::");
     m_timer->setVerbose(true);
