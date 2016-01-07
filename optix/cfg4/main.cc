@@ -2,9 +2,8 @@
 
 int main(int argc, char** argv)
 {
-    CfG4* app = new CfG4("GGEOVIEW_") ; // TODO: change prefix to "OPTICKS_" to reflect generality 
+    CfG4* app = new CfG4(argc, argv) ;
 
-    app->configure(argc, argv);
     app->propagate();
     app->save();
 

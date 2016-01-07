@@ -2,6 +2,8 @@
 //  ggv --pmt 0:10
 //
 
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GBndLib.hh"
 #include "GPmt.hh"
@@ -12,8 +14,9 @@
 
 int main(int argc, char** argv)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "pmttest.log", "info");
-    cache->configure(argc, argv);
+    Opticks* opticks = new Opticks(argc, argv, "pmttest.log");
+
+    GCache* cache = new GCache(opticks);
 
     for(unsigned int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
     NSlice* slice = argc > 1 ? new NSlice(argv[1]) : NULL ;

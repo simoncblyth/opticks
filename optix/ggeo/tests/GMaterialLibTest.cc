@@ -1,5 +1,7 @@
 // ggv --mat
 
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GMaterialLib.hh"
 #include "GAttrSeq.hh"
@@ -73,8 +75,9 @@ void test_addTestMaterial(GMaterialLib* mlib)
 
 int main(int argc, char** argv)
 {
-    GCache gc("GGEOVIEW_","mats.log", "info");
-    gc.configure(argc, argv);
+    Opticks ok(argc, argv, "mats.log");
+
+    GCache gc(&ok);
 
     GMaterialLib* mlib = GMaterialLib::load(&gc);
 

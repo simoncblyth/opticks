@@ -6,6 +6,8 @@
 #include "RecordsNPY.hpp"
 #include "PhotonsNPY.hpp"
 
+#include "Opticks.hh"
+
 #include "GCache.cc"
 #include "GFlags.cc"
 #include "GBndLib.cc"
@@ -26,9 +28,9 @@ int main(int argc, char** argv)
 
     const char* src = "torch" ; 
     const char* tag = "2" ; 
+    Opticks* opticks = new Opticks(argc, argv, "recs.log");
 
-    GCache* cache = new GCache("GGEOVIEW_", "recs.log", "info");
-    cache->configure(argc, argv);
+    GCache* cache = new GCache(opticks);
     Types* types = cache->getTypes();
 
     GBndLib* blib = GBndLib::load(cache, true); 

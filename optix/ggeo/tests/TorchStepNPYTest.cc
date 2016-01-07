@@ -13,16 +13,17 @@
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 
+#include "Opticks.hh"
+
 //npy-
 #include "TorchStepNPY.hpp"
+#include "NLog.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 int main(int argc, char* argv[])
 {
-    GCache* m_cache = new GCache("GGEOVIEW_");
+    Opticks* opticks = new Opticks(argc, argv, "torch.log");
+    GCache* m_cache = new GCache(opticks);
 
     GGeo* m_ggeo = new GGeo(m_cache);
 

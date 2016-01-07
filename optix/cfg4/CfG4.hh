@@ -16,16 +16,15 @@ class G4RunManager ;
 class CfG4 
 {
    public:
-        CfG4(const char* prefix);
+        CfG4(int argc, char** argv);
         virtual ~CfG4();
    private:
-        void init();
-   public:
+        void init(int argc, char** argv);
         void configure(int argc, char** argv);
+   public:
         void propagate();
         void save();
    private:
-        const char*           m_prefix ;
         Opticks*              m_opticks ;  
         OpticksCfg<Opticks>*  m_cfg ;
         GGeoTestConfig*       m_testconfig ; 
@@ -42,9 +41,8 @@ class CfG4
 
 };
 
-inline CfG4::CfG4(const char* prefix) 
+inline CfG4::CfG4(int argc, char** argv) 
    :
-     m_prefix(strdup(prefix)),
      m_opticks(NULL),
      m_cfg(NULL),
      m_testconfig(NULL),
@@ -57,7 +55,8 @@ inline CfG4::CfG4(const char* prefix)
      m_num_g4event(0),
      m_num_photons(0)
 {
-    init();
+    init(argc, argv);
+    configure(argc, argv);
 }
 
 

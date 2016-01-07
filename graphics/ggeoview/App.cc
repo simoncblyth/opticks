@@ -132,23 +132,11 @@
     }
 
 
-
-
-
-
 void App::init(int argc, char** argv)
 {
-    const char* logname = NULL ; 
-    for(unsigned int i=1 ; i < argc ; i++ ) 
-    {
-        if(strcmp(argv[i], "--logname") == 0 && i+1 < argc ) logname = argv[i+1] ; // need logname prior to config, so do manually 
-        //std::cout << "App::init " << "[" << std::setw(2) << i << "]" << argv[i] << std::endl ;
-    }
-
-    m_cache     = new GCache(m_prefix, logname ? logname : "ggeoview.log", "info");
-    m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
-    m_opticks = m_cache->getOpticks();   
-    m_resource = m_cache->getResource();
+    m_opticks = new Opticks(argc, argv);
+    m_resource = m_opticks->getResource();
+    m_cache = new GCache(m_opticks);
 
     m_parameters = new Parameters ;  // favor evt params over these, as evt params are persisted with the evt
     m_timer      = new Timer("App::");

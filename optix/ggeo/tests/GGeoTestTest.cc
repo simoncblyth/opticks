@@ -1,5 +1,6 @@
 //  ggv --geotest
 
+#include "Opticks.hh"
 #include "GCache.hh"
 
 #include "GGeoTestConfig.hh"
@@ -44,9 +45,8 @@ int main(int argc, char** argv)
 {
     test_config();
 
-
-    GCache* cache = new GCache("GGEOVIEW_", "geotest.log", "info");
-    cache->configure(argc, argv);
+    Opticks* opticks = new Opticks(argc, argv, "geotest.log");
+    GCache* cache = new GCache(opticks);
 
     test_bib(cache);
 

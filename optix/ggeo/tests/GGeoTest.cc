@@ -1,12 +1,12 @@
+
+
 #include "GCache.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "Opticks.hh"
 
-
+#include "NLog.hpp"
 
 
 void misc(GGeo* m_ggeo)
@@ -43,15 +43,15 @@ void misc(GGeo* m_ggeo)
 
 int main(int argc, char* argv[])
 {
-    GCache* m_cache = new GCache("GGEOVIEW_");
+    Opticks* m_opticks = new Opticks(argc, argv);
+
+    GCache* m_cache = new GCache(m_opticks);
 
     GGeo* m_ggeo = new GGeo(m_cache);
 
     m_ggeo->loadFromCache();
 
-
     m_ggeo->dumpStats();
-
 
     return 0 ;
 }

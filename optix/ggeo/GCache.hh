@@ -13,6 +13,10 @@ class GGeo ;
 class Types ; 
 class Typ ; 
 
+// GCache is being usurped by Opticks, OpticksResource
+// but is used too widely to migrate all at once
+// so eat away from the inside whilst keeping some 
+// of the API working via passthrus
 
 class GCache {
     public:
@@ -21,11 +25,11 @@ class GCache {
          // singleton instance
          static GCache* g_instance ; 
     public:
-         GCache(const char* envprefix, const char* logname="ggeoview.log", const char* loglevel="info");
-         void configure(int argc, char** argv);
+         GCache(Opticks* opticks);
+    public:
          void Summary(const char* msg="GCache::Summary");
     private:
-         void init(const char* envprefix, const char* logname, const char* loglevel);
+         void init();
     public:
          GColors* getColors();
          GFlags*  getFlags();
@@ -33,14 +37,13 @@ class GCache {
          Typ*     getTyp();
          Opticks* getOpticks();
          OpticksResource* getResource();
+
     public:
          const char* getIdPath();
          const char* getIdFold();
          std::string getRelativePath(const char* path);
          const char* getLastArg();
          int getLastArgInt();
-
-    //    bool isCompute();  // need to know this prior to standard configuration is done, so do in the pre-configure here
 
     public:
          GGeo*    getGGeo();
@@ -64,17 +67,17 @@ inline GCache* GCache::getInstance()
    return g_instance ;  
 }
 
-inline GCache::GCache(const char* envprefix, const char* logname, const char* loglevel)
+inline GCache::GCache(Opticks* opticks)
        :
-       m_opticks(NULL),
+       m_opticks(opticks),
        m_resource(NULL),
        m_colors(NULL),
        m_flags(NULL),
        m_types(NULL),
        m_typ(NULL),
        m_ggeo(NULL)
-{
-       init(envprefix, logname, loglevel);
+{        
+       init();
 }
 
 

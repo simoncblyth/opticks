@@ -9,12 +9,13 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 
+#include "Opticks.hh"
 
 int main(int argc, char** argv)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "geolib.log", "info");
+    Opticks* ok = new Opticks(argc, argv, "geolib.log");
 
-    cache->configure(argc, argv);
+    GCache* cache = new GCache(ok);
 
     GGeoLib* geolib = GGeoLib::load(cache); 
 

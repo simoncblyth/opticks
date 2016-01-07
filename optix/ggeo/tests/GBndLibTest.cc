@@ -4,13 +4,16 @@
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
 
+#include "Opticks.hh"
+
 #include "NPY.hpp"
 
 // run this with:   ggv --bnd
 
 int main()
 {
-    GCache gc("GGEOVIEW_");
+    Opticks ok ;
+    GCache gc(&ok);
 
     GBndLib* blib = GBndLib::load(&gc);
     GMaterialLib* mlib = GMaterialLib::load(&gc);

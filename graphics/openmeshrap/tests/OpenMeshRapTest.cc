@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 
 // opticks-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 
 // npy-
@@ -25,9 +26,11 @@
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
-int main()
+int main(int argc, char** argv)
 {
-    GCache cache("GGEOVIEW_");
+    Opticks ok(argc, argv, "openmeshrap.log");
+
+    GCache cache(&ok);
 
     const char* idpath = cache.getIdPath();
     LOG(info) << "idpath " << idpath ; 

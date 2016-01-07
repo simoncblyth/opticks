@@ -40,20 +40,22 @@
     }
 
 
-void CfG4::init()
+void CfG4::init(int argc, char** argv)
 {
-    m_opticks = new Opticks();
-    m_opticks->setMode( Opticks::CFG4_MODE );
+    m_opticks = new Opticks(argc, argv, "cfg4.log");
+    
+    m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
+
+    m_cache = new GCache(m_opticks);
 
     m_cfg = m_opticks->getCfg();
-    m_cache = new GCache(m_prefix, "cfg4.log", "info");
 
     TIMER("init");
+
 }
 
 void CfG4::configure(int argc, char** argv)
 {
-    m_cache->configure(argc, argv);  // logging setup needs to happen before below general config
     m_cfg->commandline(argc, argv);  
 
     assert( m_cfg->hasOpt("test") && m_opticks->getSourceCode() == TORCH && "cfg4 only supports source type TORCH with test geometries" );

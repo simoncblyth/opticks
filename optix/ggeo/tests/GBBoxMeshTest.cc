@@ -1,13 +1,17 @@
+
+
 #include "GCache.hh"
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
 
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "NLog.hpp"
 
 int main(int argc, char** argv)
 {
-    GCache gc("GGEOVIEW_");
+    Opticks ok(argc, argv);
+    GCache gc(&ok);
     unsigned int ridx = 1 ;  
 
     OpticksResource* resource = gc.getResource();

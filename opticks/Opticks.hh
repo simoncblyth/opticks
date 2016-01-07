@@ -73,10 +73,10 @@ class Opticks {
        static glm::vec4    getDefaultDomainSpec();
 
    public:
-       Opticks(const char* envprefix="OPTICKS_", const char* logname="opticks.log", const char* loglevel="info");
-       void configure(int argc, char** argv);
+       Opticks(int argc=0, char** argv=NULL, const char* logname="opticks.log", const char* envprefix="OPTICKS_");
+
    private:
-       void init();
+       void init(int argc, char** argv);
        void preconfigure(int argc, char** argv);
    public:
        void Summary(const char* msg="Opticks::Summary");
@@ -132,10 +132,10 @@ class Opticks {
        void configureDomains();
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
+       const char*      m_logname  ; 
        const char*      m_envprefix ;
        OpticksResource* m_resource ; 
  
-       const char* m_logname  ; 
        const char* m_loglevel  ; 
        NLog*       m_log ; 
    private:
@@ -161,13 +161,13 @@ class Opticks {
 
 
 
-inline Opticks::Opticks(const char* envprefix, const char* logname, const char* loglevel)
+inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* envprefix)
      :
+       m_logname(strdup(logname)),
        m_envprefix(strdup(envprefix)),
        m_resource(NULL),
 
-       m_logname(strdup(logname)),
-       m_loglevel(strdup(loglevel)),
+       m_loglevel(NULL),
        m_log(NULL),
 
        m_compute(false),
@@ -181,7 +181,7 @@ inline Opticks::Opticks(const char* envprefix, const char* logname, const char* 
        m_detector(NULL),
        m_mode(0u)
 {
-       init();
+       init(argc, argv);
 }
 
 inline void Opticks::setCfg(OpticksCfg<Opticks>* cfg)

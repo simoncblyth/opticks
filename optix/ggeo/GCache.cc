@@ -18,19 +18,12 @@
 
 GCache* GCache::g_instance = NULL ; 
 
-void GCache::init(const char* envprefix, const char* logname, const char* loglevel)
-{
-    m_opticks = new Opticks(envprefix, logname, loglevel);
-    m_resource = m_opticks->getResource();
 
+void GCache::init()
+{
+    m_resource = m_opticks->getResource();
     assert(g_instance == NULL && "GCache::init only one instance is allowed");
     g_instance = this ; 
-}
-
-
-void GCache::configure(int argc, char** argv)
-{
-    m_opticks->configure(argc, argv);
 }
 
 

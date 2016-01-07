@@ -1,3 +1,4 @@
+#include "Opticks.hh"
 #include "GCache.hh"
 #include "GBuffer.hh"
 
@@ -50,7 +51,8 @@ void test_reshape_slice(GCache& gc)
 
 int main()
 {
-    GCache gc("GGEOVIEW_");
+    Opticks ok ; 
+    GCache gc(&ok);
 
     test_slice(gc);
     test_reshape(gc);

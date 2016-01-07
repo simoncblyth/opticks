@@ -1,4 +1,5 @@
 //  ggv --attr
+#include "Opticks.hh"
 
 #include "GCache.hh"
 #include "GFlags.hh"
@@ -65,8 +66,8 @@ void test_material_dump(GCache* cache)
 
 int main(int argc, char** argv)
 {
-    GCache gc("GGEOVIEW_", "attr.log");
-    gc.configure(argc, argv);
+    Opticks ok(argc, argv);
+    GCache gc(&ok);
 
     test_history_sequence(&gc);
     test_material_sequence(&gc);

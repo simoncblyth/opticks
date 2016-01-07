@@ -2,6 +2,8 @@
 //  ggv --gsrclib --debug
 //
 
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GSource.hh"
 #include "GSourceLib.hh"
@@ -11,9 +13,9 @@
 
 int main(int argc, char** argv)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "gsrclib.log", "info");
+    Opticks* opticks = new Opticks(argc, argv, "gsrclib.log");
 
-    cache->configure(argc, argv);
+    GCache* cache = new GCache(opticks);
 
     GSourceLib* sl = new GSourceLib(cache);
 

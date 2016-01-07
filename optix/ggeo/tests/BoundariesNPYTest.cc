@@ -1,3 +1,5 @@
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GBndLib.hh"
 #include "GAttrSeq.hh"
@@ -11,8 +13,8 @@
 
 int main(int argc, char** argv)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "BoundariesNPY.log", "info");
-    cache->configure(argc, argv);
+    Opticks* opticks = new Opticks(argc, argv);
+    GCache* cache = new GCache(opticks);
 
     GBndLib* blib = GBndLib::load(cache, true );
     GAttrSeq* qbnd = blib->getAttrNames();

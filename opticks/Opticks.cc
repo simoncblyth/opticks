@@ -135,18 +135,17 @@ unsigned int Opticks::SourceCode(const char* type)
 }
 
 
-void Opticks::init()
+void Opticks::init(int argc, char** argv)
 {
    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
+
    m_parameters = new Parameters ;  
+
    m_resource = new OpticksResource(m_envprefix);
-   m_log = new NLog(m_logname, m_loglevel);
-}
 
+   setDetector( m_resource->getDetector() );
 
-const char* Opticks::getIdPath()
-{
-   return m_resource ? m_resource->getIdPath() : NULL ; 
+   preconfigure(argc, argv);
 }
 
 
@@ -156,35 +155,37 @@ void Opticks::preconfigure(int argc, char** argv)
     // in order to skip the Viz methods, so do in the pre-configure here 
 
     bool compute = false ;
+    const char* logname = NULL ;
     for(unsigned int i=1 ; i < argc ; i++ )
     {
-        //printf("Opticks::preconfigure  %2d : %s \n", i, argv[i] );
-        if(strcmp(argv[i], COMPUTE) == 0) 
-        {
-            //printf("Opticks::configure setting compute \n");
-            compute = true ; 
-        }
+        if(strcmp(argv[i], COMPUTE) == 0) compute = true ; 
+        if(strcmp(argv[i], "--logname") == 0 && i+1 < argc ) logname = argv[i+1] ;
     }
 
     setMode( compute ? COMPUTE_MODE : INTEROP_MODE );
-    setDetector( m_resource->getDetector() );
 
     LOG(info) << "Opticks::preconfigure" 
               << " mode " << getModeString() 
               << " detector " << m_resource->getDetector()
               ;
-}
 
+    m_logname = logname ? logname : "opticks.log" ; 
+    m_loglevel = "info" ;  // default level
 
-void Opticks::configure(int argc, char** argv)
-{
-    preconfigure(argc, argv);
-
+    m_log = new NLog(m_logname, m_loglevel);
     m_log->configure(argc, argv);
     m_log->init(getIdPath());
 
     m_lastarg = argc > 1 ? strdup(argv[argc-1]) : NULL ;
 }
+
+
+const char* Opticks::getIdPath()
+{
+   return m_resource ? m_resource->getIdPath() : NULL ; 
+}
+
+
 
 void Opticks::Summary(const char* msg)
 {

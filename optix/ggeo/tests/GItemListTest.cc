@@ -1,4 +1,5 @@
 // ggv --itemlist
+#include "Opticks.hh"
 
 #include "GCache.hh"
 #include "GItemList.hh"
@@ -67,7 +68,8 @@ void test_makeSlice(GCache* cache)
 
 int main(int argc, char** argv)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "GItemList.log", "info");
+    Opticks* opticks = new Opticks(argc, argv, "GItemList.log");
+    GCache* cache = new GCache(opticks);
 
     //test_replaceFields(cache);
     test_makeSlice(cache);

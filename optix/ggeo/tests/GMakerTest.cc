@@ -1,5 +1,7 @@
 //  ggv --gmaker
 
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GMaker.hh"
 #include "GSolid.hh"
@@ -9,9 +11,9 @@
 
 int main(int argc, char** argv)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "gmaker.log", "info");
+    Opticks* opticks = new Opticks(argc, argv, "gmaker.log");
 
-    cache->configure(argc, argv);
+    GCache* cache = new GCache(opticks);
 
     GMaker* maker = new GMaker(cache);
 

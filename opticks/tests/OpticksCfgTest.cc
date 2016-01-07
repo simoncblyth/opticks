@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-    Opticks* opticks = new Opticks();
+    Opticks* opticks = new Opticks(argc, argv);
 
     Cfg* cfg  = new Cfg("umbrella", false) ;
 

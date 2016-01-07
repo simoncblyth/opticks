@@ -1,18 +1,18 @@
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GSource.hh"
 
 
 int main(int argc, char** argv)
 {
-    GCache* cache = new GCache("GGEOVIEW_", "source.log", "info");
+    Opticks* opticks = new Opticks(argc, argv, "source.log");
 
-    cache->configure(argc, argv);
+    GCache* cache = new GCache(opticks);
 
     GSource* source = GSource::make_blackbody_source("D65", 0, 6500.f );
 
     source->Summary();
-
-    
 
 
     return 0 ; 

@@ -1,3 +1,4 @@
+#include "Opticks.hh"
 #include "GCache.hh"
 #include "GFlags.hh"
 #include "GAttrSeq.hh"
@@ -5,7 +6,9 @@
 
 int main()
 {
-    GCache gc("GGEOVIEW_");
+    Opticks ok ; 
+
+    GCache gc(&ok);
 
     GFlags gf(&gc);
 

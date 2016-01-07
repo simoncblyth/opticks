@@ -1,5 +1,7 @@
 //  ggv --mm
 
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GVector.hh"
 #include "GMergedMesh.hh"
@@ -7,8 +9,9 @@
 
 int main(int argc, char** argv)
 {
-    GCache gc("GGEOVIEW_", "mm.log", "info");
-    gc.configure(argc, argv);
+    Opticks ok(argc, argv, "mm.log");
+
+    GCache gc(&ok);
 
     GMergedMesh* mm = GMergedMesh::load(&gc, 1);
 

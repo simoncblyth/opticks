@@ -18,14 +18,14 @@ Comparing with pycollada
 #include "GGeo.hh"
 
 #include "GMaterial.hh"
-//#include "GBoundaryLib.hh"
-
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
 
 #include "GMergedMesh.hh"
+
+#include "Opticks.hh"
 
 #include "NPY.hpp"
 
@@ -35,32 +35,16 @@ Comparing with pycollada
 #include <assert.h>
 
 
-
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/trivial.hpp>
-//#include <boost/log/utility/setup/file.hpp>
-#include "boost/log/utility/setup.hpp"
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
-void inilog()
-{
-    boost::log::core::get()->set_filter
-    (    
-        boost::log::trivial::severity >= boost::log::trivial::info
-    );   
-}
+#include "NLog.hpp"
 
 
 // cf with App::loadGeometry and GLoader::load where the below is canonically done  
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-    inilog();
+    Opticks ok(argc, argv, "assimpwrap.log");
 
-    GCache cache("GGEOVIEW_");
+    GCache cache(&ok);
     cache.Summary();
     
     GGeo* m_ggeo = new GGeo(&cache);

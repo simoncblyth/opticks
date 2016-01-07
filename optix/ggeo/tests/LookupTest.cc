@@ -1,6 +1,9 @@
 // ggv --lookup
 // ggv --jpmt --lookup
 
+
+#include "Opticks.hh"
+
 #include "GCache.hh"
 #include "GBndLib.hh"
 #include "Lookup.hpp"
@@ -8,8 +11,9 @@
 
 int main(int argc, char** argv)
 {
-    GCache* m_cache = new GCache("GGEOVIEW_");
-    m_cache->configure(argc, argv);
+    Opticks* opticks = new Opticks(argc, argv, "lookup.log");
+
+    GCache* m_cache = new GCache(opticks);
 
     GBndLib* blib = GBndLib::load(m_cache, true );
     blib->dump();

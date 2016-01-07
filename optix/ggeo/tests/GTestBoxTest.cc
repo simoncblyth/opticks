@@ -1,11 +1,12 @@
 //  ggv --testbox
 
+#include "Opticks.hh"
 #include "GCache.hh"
 
 int main(int argc, char** argv)
 {
-    GCache* m_cache = new GCache("GGEOVIEW_", "testbox.log", "info");
-    m_cache->configure(argc, argv);
+    Opticks* opticks = new Opticks(argc, argv, "testbox.log");
+    GCache* cache = new GCache(opticks);
 
     return 1 ;
 }
