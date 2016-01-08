@@ -143,7 +143,8 @@ ggv-jpmt-propagate(){
     ggv --jpmt --cerenkov --compute --timemax 400 --animtimemax 200 --save
 }
 ggv-jpmt-viz(){
-    ggv --jpmt --cerenkov --animtimemax 200 --load
+    ggv --jpmt --cerenkov --animtimemax 200 --load  $*
+      # --optixviz
 }
 
 

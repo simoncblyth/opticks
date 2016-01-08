@@ -3,6 +3,7 @@
 #include <boost/program_options.hpp>
 #include <string>
 #include <vector>
+#include <cstdio>
 #include <boost/bind.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
@@ -21,6 +22,11 @@ setter method as selected by the name.
 */
 
 class Cfg {
+
+public:
+     void dumpTree(const char* msg="Cfg::dumpTree");
+private:
+     void dumpTree_(unsigned int depth=0);
 
 protected:
     boost::program_options::variables_map       m_vm;
@@ -53,6 +59,7 @@ public:
     Cfg* operator [](const char* name);
 
 public:
+    void setVerbose(bool verbose=true);
     boost::program_options::options_description& getDesc();
     std::string getDescString();
 
@@ -82,18 +89,16 @@ private:
     bool              m_live ; 
     bool              m_error ; 
     std::string       m_error_message ; 
+    bool              m_verbose ; 
 
 };
 
 
-inline Cfg::Cfg(const char* name, bool live)
-    : 
-    m_desc(name), 
-    m_name(strdup(name)),
-    m_live(live),
-    m_error(false)
+inline void Cfg::setVerbose(bool verbose)
 {
+    m_verbose = verbose ; 
 }
+
 
 inline bool Cfg::hasError()
 {
@@ -162,6 +167,10 @@ void Cfg::addOptionI(Listener* listener, const char* name, const char* descripti
 template <class Listener>
 void Cfg::addOptionS(Listener* listener, const char* name, const char* description )
 {
+        if(m_verbose)
+        {
+             printf("Cfg::addOptionS %s %s \n", name, description);
+        }
         m_desc.add_options()(name, 
                              boost::program_options::value<std::vector<std::string> >()
                                 ->composing()

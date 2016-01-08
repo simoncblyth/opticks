@@ -3,11 +3,27 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <cstring>
 
-#include "string.h"
+typedef std::vector<std::string>::const_iterator VSI ; 
+
 #include <boost/tokenizer.hpp>
 
 namespace po = boost::program_options;
+
+
+
+Cfg::Cfg(const char* name, bool live)
+    : 
+    m_desc(name), 
+    m_name(strdup(name)),
+    m_live(live),
+    m_error(false),
+    m_verbose(false)
+{
+}
+
+
 
 bool Cfg::containsOthers()
 {
@@ -59,18 +75,40 @@ std::string Cfg::getDescString()
 }
 
 
+void Cfg::dumpTree(const char* msg)
+{
+    printf("Cfg::dumpTree %s \n", msg);
+    dumpTree_(0);
+}
+
+void Cfg::dumpTree_(unsigned int depth)
+{
+    unsigned int nchild = m_others.size() ;
+    printf("Cfg::dumpTree_ depth %d name %30s nchild %u \n", depth, m_name, nchild );  
+    for(size_t i=0 ; i < nchild ; i++)
+    {
+        Cfg* other = m_others[i];
+        other->dumpTree_(depth+1);
+    } 
+}
+
+
+
+
+
 void Cfg::commandline(int argc, char** argv)
 {
+    if(m_verbose)
+    std::cout << "Cfg::commandline " << m_name << std::endl ; 
+
     std::stringstream ss ; 
     for(unsigned int i=1 ; i < argc ; ++i ) ss << argv[i] << " " ;
     m_commandline = ss.str();
 
-    if(m_others.empty())
+    if(m_others.size() == 0)
     {
         std::vector<std::string> unrecognized = parse_commandline(argc, argv);
-#ifdef VERBOSE
-        dump(unrecognized, "unrecognized after parse_commandline"); 
-#endif
+        if(m_verbose) dump(unrecognized, "unrecognized after parse_commandline"); 
     }
     else
     {
@@ -87,10 +125,12 @@ void Cfg::liveline(const char* _line)
     if(m_others.empty())
     {
         std::vector<std::string> unrecognized = parse_liveline(_line);
-#ifdef VERBOSE
-        printf("Cfg::liveline %s \n", _line);
-        dump(unrecognized, "Cfg::liveline unrecognized "); 
-#endif
+
+        if(m_verbose)
+        {
+            printf("Cfg::liveline %s \n", _line);
+            dump(unrecognized, "Cfg::liveline unrecognized "); 
+        }
     }
     else
     {
@@ -110,9 +150,8 @@ void Cfg::configfile(const char* path)
     if(m_others.empty())
     {
         std::vector<std::string> unrecognized = parse_configfile(path);
-#ifdef VERBOSE
+        if(m_verbose)
         dump(unrecognized, "unrecognized after parse_configfile"); 
-#endif
     }
     else
     {
@@ -130,9 +169,8 @@ std::vector<std::string> Cfg::parse_liveline(const char* _line)
 {
    std::string line(_line);
 
-#ifdef VERBOSE
+   if(m_verbose)
    std::cout << "Cfg::parse_liveline [" << line << "]\n" ; 
-#endif
 
    boost::char_separator<char> sep(" ");
    boost::tokenizer<boost::char_separator<char> > tok(line, sep);
@@ -146,9 +184,11 @@ std::vector<std::string> Cfg::parse_liveline(const char* _line)
 
 std::vector<std::string> Cfg::parse_commandline(int argc, char** argv, bool verbose)
 {
-    if(verbose) std::cout << "Cfg::parse_commandline " << m_name << std::endl ;  
+    if(m_verbose || verbose) std::cout << "Cfg::parse_commandline " << m_name << std::endl ;  
+
     std::vector<std::string> unrecognized ; 
-    try {
+    try  
+    {
          po::command_line_parser parser(argc, argv);
          parser.options(m_desc);
          parser.allow_unregistered();
@@ -158,6 +198,7 @@ std::vector<std::string> Cfg::parse_commandline(int argc, char** argv, bool verb
          po::notify(m_vm);
 
          std::vector<std::string> unrec = po::collect_unrecognized(parsed.options, po::include_positional); 
+
          unrecognized.assign(unrec.begin(), unrec.end());
     }
     catch(std::exception& e)
@@ -167,10 +208,22 @@ std::vector<std::string> Cfg::parse_commandline(int argc, char** argv, bool verb
         std::cout << e.what() << "\n";
     }    
   
-    if(verbose) std::cout << "Cfg::parse_commandline " << m_name << " DONE " 
+    if(m_verbose || verbose) 
+              std::cout << "Cfg::parse_commandline " << m_name << " DONE " 
               << " error " << m_error
               << " error_message " << m_error_message
-              << std::endl ;  
+              << std::endl ;
+
+    
+
+    if(m_verbose || verbose)
+    {
+        std::cout << "Cfg::parse_commandline unrecognized by " << m_name << ": ";  
+        for(VSI it=unrecognized.begin() ; it != unrecognized.end() ; it++ ) std::cout << " " << *it ; 
+        std::cout << std::endl ; 
+    }
+  
+
     return unrecognized ; 
 }
 
@@ -251,9 +304,7 @@ void Cfg::dump(const char* msg)
 void Cfg::dump(std::vector<std::string>& ss, const char* msg )
 {
    std::cout << msg << " vec with " << ss.size() << " strings : " ; 
-#ifdef VERBOSE
-   for(auto s:ss) std::cout << "[" << s << "] " ; 
-#endif
+   for(VSI it=ss.begin() ; it != ss.end() ; it++) std::cout << "[" << *it << "]" ; 
    std::cout << std::endl ; 
 }
 

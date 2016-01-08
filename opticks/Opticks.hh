@@ -79,6 +79,7 @@ class Opticks {
        void init(int argc, char** argv);
        void preconfigure(int argc, char** argv);
    public:
+       void configure();  // invoked after commandline parsed
        void Summary(const char* msg="Opticks::Summary");
    public:
        const char* getIdPath();
@@ -111,6 +112,8 @@ class Opticks {
        const glm::vec4&  getWavelengthDomain();
        const glm::ivec4& getSettings();
    public:
+       const glm::uvec4& getSize();
+   public:
        void setSpaceDomain(const glm::vec4& pd);
        void dumpDomains(const char* msg="Opticks::dumpDomains");
    public:
@@ -133,8 +136,6 @@ class Opticks {
    private:
        void configureDomains();
        void setCfg(OpticksCfg<Opticks>* cfg);
-
-
    private:
        const char*      m_logname  ; 
        const char*      m_envprefix ;
@@ -162,6 +163,8 @@ class Opticks {
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
        unsigned int         m_mode ; 
+   private:
+       glm::uvec4           m_size ; 
 
 };
 
@@ -266,6 +269,13 @@ inline const glm::ivec4& Opticks::getSettings()
 {
     return m_settings ; 
 }
+
+
+inline const glm::uvec4& Opticks::getSize()
+{
+    return m_size ; 
+}
+
 
 
 inline void Opticks::setDetector(const char* detector)

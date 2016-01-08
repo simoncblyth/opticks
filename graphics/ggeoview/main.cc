@@ -17,6 +17,7 @@ int main(int argc, char** argv)
     app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
 
+    bool optixviz = app.hasOpt("optixviz");
     bool nooptix = app.hasOpt("nooptix");
     bool noindex = app.hasOpt("noindex");
     bool noevent = app.hasOpt("noevent");
@@ -32,7 +33,6 @@ int main(int argc, char** argv)
         app.targetViz();               // point Camera at gensteps 
 
         app.uploadEvtViz();            // allocates GPU buffers with OpenGL glBufferData
-
 
 
         app.prepareOptiX();            // places geometry into OptiX context with OGeo 
@@ -68,6 +68,14 @@ int main(int argc, char** argv)
     }
     else if(load)
     {
+
+        if(optixviz)
+        {
+            app.prepareOptiX();            // places geometry into OptiX context with OGeo 
+
+            app.prepareOptiXViz();         // creates ORenderer, OTracer
+        } 
+
         app.loadEvtFromFile();
 
         app.indexPresentationPrep();

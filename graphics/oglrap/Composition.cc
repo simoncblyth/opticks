@@ -422,7 +422,7 @@ unsigned int Composition::getPixelFactor()
 
 void Composition::setSize(glm::uvec4 size)
 {
-    LOG(debug) << "Composition::setSize "
+    LOG(info) << "Composition::setSize "
               << " x " << size.x 
               << " y " << size.y 
               << " z " << size.z

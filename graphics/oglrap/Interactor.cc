@@ -208,6 +208,7 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_O:
             m_optix_mode = !m_optix_mode ; 
+            LOG(info) << "Interactor::key_pressed optix_mode " << m_optix_mode ; 
             break;
         case GLFW_KEY_P:
             m_scene->nextPhotonStyle(); 

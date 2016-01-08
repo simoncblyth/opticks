@@ -18,6 +18,7 @@
 #include "OpticksCfg.hh"
 #include "OpticksResource.hh"
 
+
 // oglrap-
 #include "State.hh"
 #include "Scene.hh"
@@ -168,10 +169,8 @@ void App::initViz()
 
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
 
-
     // TODO: move state up here is it belongs above Composition
     //m_state = new State ;
-
 
     m_composition = new Composition ; 
     m_frame       = new Frame ; 
@@ -185,6 +184,8 @@ void App::initViz()
     m_interactor->setBookmarks(m_bookmarks);
 
     m_composition->setScene(m_scene);
+
+
     m_composition->setupConfigurableState();
     m_state = m_composition->getState();
 
@@ -199,15 +200,20 @@ void App::initViz()
     m_cfg->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
     m_cfg->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
+
     m_composition->addConfig(m_cfg); 
+
 }
 
 
 void App::configure(int argc, char** argv)
 {
-    m_cfg->commandline(argc, argv);
+    LOG(info) << "App:config" << argv[0] ; 
+    //m_cfg->dumpTree();
 
-    LOG(debug) << "App:config" << argv[0] ; 
+    m_cfg->commandline(argc, argv);
+    m_opticks->configure();        // hmm: m_cfg should live inside Opticks
+
 
     if(m_fcfg->hasError())
     {
@@ -262,10 +268,18 @@ void App::prepareViz()
 {
     if(m_opticks->isCompute()) return ; 
 
+     m_size = m_opticks->getSize();
+
+/*
     bool fullscreen = hasOpt("fullscreen");
-    if(hasOpt("size"))         m_size = m_frame->getSize() ;
+    if(hasOpt("size"))         m_size = m_frame->getSize() ;  // huh as if there was a FrameCfg listener, but there isnt one
     else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
     else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
+
+*/
+
+    LOG(info) << "App::prepareViz"
+              << " size " << gformat(m_size);
 
     m_scene->setNumpyEvt(m_evt);
 
@@ -275,7 +289,7 @@ void App::prepareViz()
     m_bookmarks->load(idpath); 
 
     m_frame->setTitle("GGeoView");
-    m_frame->setFullscreen(fullscreen);
+    m_frame->setFullscreen(hasOpt("fullscreen"));
 
     m_dd = new DynamicDefine();   // configuration used in oglrap- shaders
     m_dd->add("MAXREC",m_fcfg->getRecordMax());    

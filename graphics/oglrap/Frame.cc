@@ -103,8 +103,11 @@ void Frame::setSize(std::string str)
         unsigned int height = boost::lexical_cast<unsigned int>(whf[1]);  
         unsigned int coord2pixel  = boost::lexical_cast<unsigned int>(whf[2]);  
 
-        LOG(debug)<< "Frame::setSize" 
+        LOG(info)<< "Frame::setSize" 
                  << " str " << str 
+                 << " width " << width 
+                 << " height " << height 
+                 << " coord2pixel" << coord2pixel
                  ;
         setSize(width, height, coord2pixel);
     }
@@ -121,7 +124,7 @@ void Frame::setSize(std::string str)
 
 void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2pixel)
 {
-    LOG(debug) << "Frame::setSize "
+    LOG(info) << "Frame::setSize "
               << " width " << width 
               << " height " << height 
               << " coord2pixel " << coord2pixel 

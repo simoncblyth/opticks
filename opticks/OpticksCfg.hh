@@ -9,6 +9,7 @@ class OpticksCfg : public Cfg {
      void dump(const char* msg="OpticksCfg::dump");
 
 
+     const std::string& getSize();
      const std::string& getLogName();
      const std::string& getConfigPath();
      const std::string& getEventTag();
@@ -43,6 +44,7 @@ private:
      void init();
 private:
      Listener*   m_listener ; 
+     std::string m_size ;
      std::string m_logname ;
      std::string m_configpath ;
      std::string m_event_cat ;
@@ -80,6 +82,8 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        : 
        Cfg(name, live),
        m_listener(listener),
+       m_size(""),
+       m_logname(""),
        m_torchconfig(""),
        m_testconfig(""),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
@@ -139,6 +143,9 @@ inline void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("nooptix,O",  "inhibit use of OptiX") ;
+
+   m_desc.add_options()
+       ("optixviz",  "Enable OptiXViz, needed in load mode where ordinarily OptiX is not enabled as no propagation is done.") ;
 
    m_desc.add_options()
        ("noviz,V",  "just generate, propagate and save : no visualization") ;
@@ -350,6 +357,11 @@ inline void OpticksCfg<Listener>::init()
 
    ///////////////
 
+
+   m_desc.add_options()
+       ("size",  boost::program_options::value<std::string>(&m_size),
+            "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
+
    m_desc.add_options()
        ("logname",   boost::program_options::value<std::string>(&m_logname),
          "name of logfile");
@@ -362,9 +374,13 @@ inline void OpticksCfg<Listener>::init()
        ("liveline",  boost::program_options::value<std::string>(&m_liveline),
            "string with spaces to be live parsed, as test of composed overrides");
 
+
+
+    // the below formerly called size seems not to be working, so use simpler size above 
    addOptionS<Listener>(m_listener, 
-            "size", 
+            "livesize", 
             "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
+
    // this size is being overriden: 
    // the screen size is set by Opticks::init using size from composition 
 
@@ -381,6 +397,14 @@ inline const std::string& OpticksCfg<Listener>::getLogName()
 {
     return m_logname ;
 }
+
+template <class Listener>
+inline const std::string& OpticksCfg<Listener>::getSize()
+{
+    return m_size ;
+}
+
+
 
 template <class Listener>
 inline const std::string& OpticksCfg<Listener>::getConfigPath()
