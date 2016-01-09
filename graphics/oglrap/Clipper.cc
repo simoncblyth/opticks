@@ -147,19 +147,19 @@ void Clipper::setMode(int mode)
 }
 void Clipper::setAbsolute(bool absolute)
 {
-    LOG(info)<<"Clipper::setAbsolute m_absolute -> absolute " << m_absolute << " -> " << absolute ; 
+    LOG(debug)<<"Clipper::setAbsolute m_absolute -> absolute " << m_absolute << " -> " << absolute ; 
     m_absolute = absolute ;
 }
 
 void Clipper::setPoint(glm::vec3& point)
 {
-    LOG(info)<<"Clipper::setPoint m_abolute: " << m_absolute ; 
+    LOG(debug)<<"Clipper::setPoint m_abolute: " << m_absolute ; 
     m_point = point ;
     setAbsolute(false);
 }
 void Clipper::setNormal(glm::vec3& normal)
 {
-    LOG(info)<<"Clipper::setNormal m_abolute: " << m_absolute ; 
+    LOG(debug)<<"Clipper::setNormal m_abolute: " << m_absolute ; 
     m_normal = normal ;
     setAbsolute(false);
 }

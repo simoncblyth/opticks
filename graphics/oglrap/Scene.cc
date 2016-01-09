@@ -31,11 +31,10 @@
 #include <imgui.h>
 #endif
 
-
+#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
+
 
 const char* Scene::PREFIX = "scene" ;
 const char* Scene::getPrefix()
@@ -51,17 +50,19 @@ const char* Scene::PHOTON = "photon" ;
 const char* Scene::GENSTEP = "genstep" ; 
 const char* Scene::GLOBAL  = "global" ; 
 
-const char* Scene::INSTANCE0 = "instance0" ; 
-const char* Scene::INSTANCE1 = "instance1" ; 
-const char* Scene::INSTANCE2 = "instance2" ; 
-const char* Scene::INSTANCE3 = "instance3" ; 
-const char* Scene::INSTANCE4 = "instance4" ; 
+const char* Scene::_INSTANCE  = "in" ; 
+const char* Scene::INSTANCE0 = "in0" ; 
+const char* Scene::INSTANCE1 = "in1" ; 
+const char* Scene::INSTANCE2 = "in2" ; 
+const char* Scene::INSTANCE3 = "in3" ; 
+const char* Scene::INSTANCE4 = "in4" ; 
 
-const char* Scene::BBOX0     = "bbox0" ; 
-const char* Scene::BBOX1     = "bbox1" ; 
-const char* Scene::BBOX2     = "bbox2" ; 
-const char* Scene::BBOX3     = "bbox3" ; 
-const char* Scene::BBOX4     = "bbox4" ; 
+const char* Scene::_BBOX      = "bb" ; 
+const char* Scene::BBOX0     = "bb0" ; 
+const char* Scene::BBOX1     = "bb1" ; 
+const char* Scene::BBOX2     = "bb2" ; 
+const char* Scene::BBOX3     = "bb3" ; 
+const char* Scene::BBOX4     = "bb4" ; 
 
 const char* Scene::RECORD   = "record" ; 
 
@@ -189,6 +190,36 @@ void Scene::init()
 void Scene::write(DynamicDefine* dd)
 {
     dd->write( m_shader_dynamic_dir, "dynamic.h" );
+}
+
+
+void Scene::setRenderMode(const char* s)
+{
+    std::vector<std::string> elem ; 
+    boost::split(elem, s, boost::is_any_of(","));
+    
+    for(unsigned int i=0 ; i < elem.size() ; i++)
+    {
+        const char* el = elem[i].c_str();
+
+        if(strncmp(el, _BBOX, strlen(_BBOX))==0) 
+        {
+             unsigned int bbx = boost::lexical_cast<unsigned int>(el+strlen(_BBOX)) ;
+             if(bbx < MAX_INSTANCE_RENDERER)
+                  *(m_bbox_mode+bbx) = true ;  
+        } 
+        if(strncmp(el, _INSTANCE, strlen(_INSTANCE))==0) 
+        {
+             unsigned int ins = boost::lexical_cast<unsigned int>(el+strlen(_INSTANCE)) ;
+             if(ins < MAX_INSTANCE_RENDERER)
+                  *(m_instance_mode+ins) = true ;  
+        } 
+        if(strcmp(el, GLOBAL)==0)  m_global_mode = true ; 
+        if(strcmp(el, AXIS)==0)    m_axis_mode = true ; 
+        if(strcmp(el, GENSTEP)==0) m_genstep_mode = true ; 
+        if(strcmp(el, PHOTON)==0)  m_photon_mode = true ; 
+        if(strcmp(el, RECORD)==0)  m_record_mode = true ; 
+    }
 }
 
 

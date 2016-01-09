@@ -9,6 +9,22 @@
 #include "NLog.hpp"
 
 
+// bregex
+#include "regexsearch.hh"
+
+
+void NState::init()
+{
+    std::string dir = os_path_expandvars(m_dir);
+    if(strcmp(dir.c_str(),m_dir)!=0)
+    {
+        free((void*)m_dir);
+        m_dir = strdup(dir.c_str()); 
+        LOG(info) << "NState::init promoted m_dir to " << m_dir ; 
+    }
+}
+
+
 std::string NState::description(const char* msg)
 {
     std::stringstream ss ; 
@@ -16,11 +32,18 @@ std::string NState::description(const char* msg)
     return ss.str();
 }  
 
-void NState::setName(unsigned int num)
+
+std::string NState::FormName(unsigned int num)
 {
     char name[4];
     snprintf(name, 4, "%0.3u", num);
-    setName(name);    
+    return name ;     
+}
+
+void NState::setName(unsigned int num)
+{
+    std::string name = FormName(num);
+    setName(name.c_str());    
 }
 
 void NState::Summary(const char* msg)
@@ -69,6 +92,8 @@ unsigned int NState::splitKey(std::vector<std::string>& prefix_tag, const char* 
 
 void NState::collect()
 {
+    if(m_verbose) LOG(info) << "NState::collect" ; 
+
     unsigned int changes(0);
     typedef std::map<std::string, NConfigurable*>::const_iterator SCI ; 
     for(SCI it=m_configurables.begin() ; it != m_configurables.end() ; it++)
@@ -87,8 +112,9 @@ unsigned int NState::collect(NConfigurable* configurable)
     std::vector<std::string> tags = configurable->getTags();
 
     const char* prefix = configurable->getPrefix();
- 
-    LOG(debug) << "NState::collect" 
+    
+    if(m_verbose)
+    LOG(info) << "NState::collect" 
               << " prefix " << prefix 
               ; 
 
@@ -101,8 +127,9 @@ unsigned int NState::collect(NConfigurable* configurable)
         std::string key = formKey(prefix, tag);
         std::string val = configurable->get(tag);
         std::string prior = get(key.c_str());
-        
-        LOG(debug) << "NState::collect"
+       
+        if(m_verbose)  
+        LOG(info) << "NState::collect"
                   << " key " <<  key.c_str()
                   << " val " << val.c_str()
                   << " prior " << prior.c_str()
@@ -135,6 +162,9 @@ unsigned int NState::collect(NConfigurable* configurable)
 
 void NState::apply()
 {
+    if(m_verbose)
+    LOG(info) << "NState::apply " ;  
+
     typedef std::map<std::string, std::string>::const_iterator SSI ; 
     for(SSI it=m_kv.begin() ; it != m_kv.end() ; it++)
     {
@@ -155,13 +185,20 @@ void NState::apply()
              NConfigurable* configurable = getConfigurable(prefix.c_str());
              if(configurable)
              {
-                LOG(debug) << "NState::apply" 
-                          << " prefix " << prefix 
-                          << " tag " << tag 
-                          << " key " << key 
-                          << " val " << val 
-                          ;
-                configurable->configure(tag.c_str(), val.c_str());
+
+                std::string before = configurable->get(tag.c_str());
+                if(strcmp(before.c_str(), val.c_str())!=0)
+                {
+                    LOG(info) << "NState::apply " 
+                              << key 
+                              << " change " 
+                              << before  
+                              << " --> " 
+                              << val 
+                              ;
+
+                    configurable->configure(tag.c_str(), val.c_str());
+                } 
              }
              else
              {
@@ -224,6 +261,7 @@ std::string NState::getFileName()
    ss << m_name << ".ini" ; 
    return ss.str(); 
 }
+
 void NState::save()
 {
     update();
@@ -233,15 +271,16 @@ void NState::save()
     LOG(info) << "NState::save " << path ;  
     saveMap<std::string, std::string>(m_kv, m_dir, filename.c_str() ) ;
 }
-void NState::load()
+
+int NState::load()
 {
     std::string filename = getFileName();
     unsigned int depth = 1 ; 
-    loadMap<std::string, std::string>(m_kv, m_dir, filename.c_str(), depth ) ;
     std::string path = preparePath(m_dir, filename.c_str());
     LOG(info) << "NState::load " << path ;  
 
-    apply();
+    int rc = loadMap<std::string, std::string>(m_kv, m_dir, filename.c_str(), depth ) ;
+    return rc  ; 
 }
 
 

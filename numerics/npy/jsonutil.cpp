@@ -137,15 +137,16 @@ void saveTree(const pt::ptree& t , const char* path)
 
 
 
-void loadTree(pt::ptree& t , const char* path)
+int loadTree(pt::ptree& t , const char* path)
 {
     fs::path fpath(path);
     LOG(debug) << "jsonutil.loadTree: "
               << " load path: " << path;
+
     if ( not (fs::exists(fpath ) && fs::is_regular_file(fpath)) ) {
         LOG(warning) << "jsonutil.loadTree: "
                      << "can't find file " << path;
-        return;
+        return 1;
     }
     std::string ext = fpath.extension().string();
     if(ext.compare(".json")==0)
@@ -154,6 +155,8 @@ void loadTree(pt::ptree& t , const char* path)
         pt::read_ini(path, t );
     else
         LOG(warning) << "readTree cannot read path with extension " << ext ; 
+
+    return 0 ; 
 }
 
 
@@ -169,19 +172,22 @@ std::string prefixShorten( const char* path, const char* prefix_)
 
 
 template<typename A, typename B> 
-void loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth)
+int loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth)
 {
+
+    int rc(0) ; 
     std::string path = preparePath(dir, name, false);
     if(!path.empty())
     {
         std::string shortpath = prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
-        loadMap( mp, path.c_str(), depth );
+        rc = loadMap( mp, path.c_str(), depth );
     }
     else
     {
         LOG(fatal)<< "loadMap : no such directory " << dir ;
     }
+    return rc ;
 }
 
 
@@ -222,10 +228,10 @@ void loadList( typename std::vector<std::pair<A,B> > & vp, const char* path)
 }
 
 template<typename A, typename B> 
-void loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
+int loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
 {
     pt::ptree t;
-    loadTree(t, path );
+    int rc = loadTree(t, path );
 
     if(depth == 0)
     {
@@ -267,7 +273,7 @@ void loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
     else
         assert(0) ;
 
-
+    return rc ; 
 }
 
 
@@ -320,8 +326,8 @@ void dumpList( typename std::vector<std::pair<A,B> > & vp, const char* msg)
 template void saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name) ;
 template void saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path) ;
 
-template void loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
-template void loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path, unsigned int depth ) ;
+template int loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
+template int loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path, unsigned int depth ) ;
 
 template void dumpMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* msg) ;
 
@@ -332,8 +338,8 @@ template void dumpMap<unsigned int, std::string>(std::map<unsigned int, std::str
 template void saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name ) ;
 template void saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path) ;
 
-template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name, unsigned int depth) ;
-template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path, unsigned int depth ) ;
+template int loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name, unsigned int depth) ;
+template int loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path, unsigned int depth ) ;
 
 template void dumpMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* msg) ;
 
@@ -373,8 +379,8 @@ template void loadList<std::string, std::string>(std::vector<std::pair<std::stri
 template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
 template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;
 
-template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
-template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path, unsigned int depth) ;
+template int loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
+template int loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path, unsigned int depth) ;
 
 
 

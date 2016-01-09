@@ -41,7 +41,7 @@ void _update_fps_counter (GLFWwindow* window, const char* status) {
     previous_seconds = current_seconds;
     double fps = (double)frame_count / elapsed_seconds;
     char tmp[128];
-    sprintf (tmp, "opengl @ fps: %.2f  %s ", fps, status );
+    sprintf (tmp, "%s fps: %.2f ", status, fps );
     glfwSetWindowTitle (window, tmp);
     frame_count = 0;
   }

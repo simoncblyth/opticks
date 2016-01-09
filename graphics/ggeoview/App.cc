@@ -225,15 +225,20 @@ void App::configure(int argc, char** argv)
 
 
     m_state = m_opticks->getState();
+    m_state->setVerbose(false);
+
     LOG(info) << "App::configure " << m_state->description();
 
     if(m_composition)
         m_composition->setupConfigurableState(m_state);
 
     m_bookmarks   = new Bookmarks(m_state) ; 
-    if(m_interactor)
-        m_interactor->setBookmarks(m_bookmarks);
+    m_bookmarks->setVerbose();
 
+    if(m_interactor)
+    {
+        m_interactor->setBookmarks(m_bookmarks);
+    }
 
     if(!hasOpt("noevent"))
     {
@@ -283,6 +288,12 @@ void App::prepareViz()
               << " size " << gformat(m_size);
 
     m_scene->setNumpyEvt(m_evt);
+    if(m_resource->isJuno())
+    {
+        LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
+        m_scene->setNumGeometryStyle(Scene::WIRE); 
+    }
+
 
     m_composition->setSize( m_size );
 
@@ -480,6 +491,9 @@ void App::registerGeometry()
 void App::uploadGeometryViz()
 {
     if(m_opticks->isCompute()) return ; 
+
+
+
 
     GColors* colors = m_cache->getColors();
 
@@ -1003,6 +1017,8 @@ void App::indexEvtOld()
 void App::prepareGUI()
 {
     if(m_opticks->isCompute()) return ; 
+
+    m_bookmarks->create(0);
 
 #ifdef GUI_
 

@@ -23,6 +23,7 @@ class NState {
        void addConfigurable(NConfigurable* configurable);
        void setVerbose(bool verbose=true);
 
+       static std::string FormName(unsigned int num);
        void setName(const char* name);
        void setName(unsigned int num);
        const char* getName();
@@ -32,7 +33,7 @@ class NState {
    public:
        void roundtrip();
        void save();
-       void load();
+       int load();
 
        void collect(); // collect state from configurables into m_kv
        void apply();   // apply state from m_kv to configurables
@@ -40,6 +41,7 @@ class NState {
 
        const std::string& getStateString(bool update=false);
    private:
+       void init();
        NConfigurable* getConfigurable(const char* prefix); 
        std::string get(const char* key);
        void set(const char* key, const char* val);
@@ -70,6 +72,7 @@ inline NState::NState(const char* dir, const char* name)
     m_name(strdup(name)),
     m_num_changes(0)
 {
+    init();
 }
 
 

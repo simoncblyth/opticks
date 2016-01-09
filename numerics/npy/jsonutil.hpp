@@ -16,10 +16,10 @@ void saveMap( typename std::map<A,B>& mp, const char* path) ;
 
 
 template<typename A, typename B> 
-void loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth=0) ;
+int loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth=0) ;
 
 template<typename A, typename B>
-void loadMap( typename std::map<A,B>& mp, const char* path, unsigned int depth=0) ;
+int loadMap( typename std::map<A,B>& mp, const char* path, unsigned int depth=0) ;
 
 
 

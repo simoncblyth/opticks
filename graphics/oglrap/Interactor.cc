@@ -284,6 +284,35 @@ std::string Interactor::describeModifiers(unsigned int modifiers)
     return ss.str(); 
 }
 
+
+bool Interactor::isShift(unsigned int modifiers)
+{
+    return modifiers & e_shift ; 
+}
+
+
+bool Interactor::isOption(unsigned int modifiers)
+{
+    return modifiers & e_option ; 
+}
+
+
+bool Interactor::isCommand(unsigned int modifiers)
+{
+    return modifiers & e_command ; 
+}
+
+bool Interactor::isControl(unsigned int modifiers)
+{
+    return modifiers & e_control ; 
+}
+
+
+
+
+
+
+
 /*
 
  /usr/local/env/graphics/glfw/glfw-3.1.1/include/GLFW/glfw3.h 
@@ -336,7 +365,9 @@ void Interactor::number_key_released(unsigned int number)
 
 void Interactor::updateStatus()
 {
-    snprintf(m_status, STATUS_SIZE , "%s%s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
+    snprintf(m_status, STATUS_SIZE , "%s (%u) %s%s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
+           m_bookmarks->getTitle(),
+           m_bookmarks->getCurrent(),
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",
@@ -350,7 +381,7 @@ void Interactor::updateStatus()
            m_container,
            m_composition->getColorStyleName(),          
            m_composition->getGeometryStyleName(),          
-           m_scene->getRecordStyleName()          
+           m_scene->getRecordStyleName()
            );
 }
 

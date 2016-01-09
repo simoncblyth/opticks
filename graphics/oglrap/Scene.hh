@@ -54,16 +54,21 @@ class Scene : public NConfigurable {
         static const char* NORM_BBOX_ ; 
    public:
         enum { MAX_INSTANCE_RENDERER = 5 };  
+        static const char* _INSTANCE   ;
         static const char* INSTANCE0  ;
         static const char* INSTANCE1  ;
         static const char* INSTANCE2  ;
         static const char* INSTANCE3  ;
         static const char* INSTANCE4  ;
+        static const char* _BBOX   ;
         static const char* BBOX0  ;
         static const char* BBOX1  ;
         static const char* BBOX2  ;
         static const char* BBOX3  ;
         static const char* BBOX4  ;
+
+   public:
+        void setRenderMode(const char* s);
    public:
         typedef enum { REC, ALTREC, DEVREC, NUM_RECORD_STYLE } RecordStyle_t ;
         void setRecordStyle(Scene::RecordStyle_t style);
@@ -75,6 +80,8 @@ class Scene : public NConfigurable {
         // disabled styles after NUM_GEOMETRY_STYLE
         typedef enum { BBOX, NORM, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
         void setGeometryStyle(Scene::GeometryStyle_t style);
+        unsigned int getNumGeometryStyle(); // allows ro override the enum
+        void setNumGeometryStyle(unsigned int num_geometry_style); // used to disable WIRE style for JUNO
         void applyGeometryStyle();
         static const char* getGeometryStyleName(Scene::GeometryStyle_t style);
         const char* getGeometryStyleName();
@@ -209,10 +216,13 @@ class Scene : public NConfigurable {
    private:
         RecordStyle_t   m_record_style ; 
         GeometryStyle_t m_geometry_style ; 
+        unsigned int    m_num_geometry_style ; 
         GlobalStyle_t   m_global_style ; 
         InstanceStyle_t m_instance_style ; 
         bool            m_initialized ;  
         float           m_time_fraction ;  
+
+     
 
 
 };
@@ -252,6 +262,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_record_mode(true),
             m_record_style(REC),
             m_geometry_style(BBOX),
+            m_num_geometry_style(0),
             m_global_style(GVIS),
             m_instance_style(IVIS),
             m_initialized(false),
@@ -391,11 +402,19 @@ inline void Scene::nextPhotonStyle()
 
 
 
+inline unsigned int Scene::getNumGeometryStyle()
+{
+    return m_num_geometry_style == 0 ? NUM_GEOMETRY_STYLE : m_num_geometry_style ;
+}
+inline void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
+{
+    m_num_geometry_style = num_geometry_style ;
+}
 
 
 inline void Scene::nextGeometryStyle()
 {
-    int next = (m_geometry_style + 1) % NUM_GEOMETRY_STYLE ; 
+    int next = (m_geometry_style + 1) % getNumGeometryStyle(); 
     setGeometryStyle( (GeometryStyle_t)next );
 
     const char* stylename = getGeometryStyleName();
