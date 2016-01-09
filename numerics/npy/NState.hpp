@@ -3,6 +3,7 @@
 #include <map>
 #include <cstring>
 #include <string>
+#include <cstdlib>
 #include <vector>
 
 // Think first about saving and restoring state of a collection of objects
@@ -11,22 +12,21 @@
 // Main problem is the volume of state , impractical to include everything
 // need to pick 
 //
-// Storing into the geocache not really appropriate, better to go into prefs
-//
-//    ~/.opticks/dayabay/
-//    ~/.opticks/juno/
-//    ~/.opticks/rainbow/
-//
-//  but not everything needs the split, so need heirarchy search for prefs 
-//
 
 class NConfigurable ; 
 
 class NState {
    public:
        NState(const char* dir="/tmp", const char* name="state");
+       const char* getDir();
+
        void addConfigurable(NConfigurable* configurable);
        void setVerbose(bool verbose=true);
+
+       void setName(const char* name);
+       void setName(unsigned int num);
+       const char* getName();
+
        void Summary(const char* msg="NState::Summary");
        std::string description(const char* msg="NState::description");
    public:
@@ -77,6 +77,22 @@ inline void NState::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
 }
+
+inline void NState::setName(const char* name)
+{
+    free((void*)m_name);
+    m_name = strdup(name);
+}
+
+inline const char* NState::getName()
+{
+   return m_name ; 
+}
+inline const char* NState::getDir()
+{
+   return m_dir ; 
+}
+
 
 inline void NState::setNumChanges(unsigned int num_changes)
 {

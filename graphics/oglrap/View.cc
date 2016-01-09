@@ -33,7 +33,7 @@ const char* View::LOOK = "look" ;
 const char* View::UP = "up" ;
 
 
-/////////////// Configurable protocol START
+/////////////// NConfigurable protocol START
 
 std::vector<std::string> View::getTags()
 {
@@ -81,7 +81,7 @@ std::string View::get(const char* name)
     return gformat(v3);
 }
 
-/////////////// configurable protocol END
+/////////////// NConfigurable protocol END
 
 
 void View::configureS(const char* name, std::vector<std::string> values)

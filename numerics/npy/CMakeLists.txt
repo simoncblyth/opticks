@@ -42,6 +42,7 @@ add_library( ${name}  SHARED
     MultiViewNPY.cpp
     GLMPrint.cpp
     GLMFormat.cpp
+    dirutil.cpp
     stringutil.cpp
     jsonutil.cpp
     timeutil.cpp
@@ -118,6 +119,7 @@ SequenceNPY.hpp
 AxisNPY.hpp
 Counts.hpp
 numpy.hpp
+dirutil.hpp
 stringutil.hpp
 jsonutil.hpp
 timeutil.hpp

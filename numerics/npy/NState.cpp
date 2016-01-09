@@ -16,6 +16,12 @@ std::string NState::description(const char* msg)
     return ss.str();
 }  
 
+void NState::setName(unsigned int num)
+{
+    char name[4];
+    snprintf(name, 4, "%0.3u", num);
+    setName(name);    
+}
 
 void NState::Summary(const char* msg)
 {

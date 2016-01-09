@@ -172,20 +172,16 @@ void App::initViz()
 
     m_composition = new Composition ; 
     m_frame       = new Frame ; 
-    m_bookmarks   = new Bookmarks ; 
-
     m_interactor  = new Interactor ; 
+
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
     m_interactor->setComposition(m_composition);
-    m_interactor->setBookmarks(m_bookmarks);
 
     m_composition->setScene(m_scene);
 
 
-    m_bookmarks->setComposition(m_composition);
-    m_bookmarks->setScene(m_scene);
 
     m_frame->setInteractor(m_interactor);      
     m_frame->setComposition(m_composition);
@@ -229,8 +225,14 @@ void App::configure(int argc, char** argv)
 
 
     m_state = m_opticks->getState();
-    m_composition->setupConfigurableState(m_state);
     LOG(info) << "App::configure " << m_state->description();
+
+    if(m_composition)
+        m_composition->setupConfigurableState(m_state);
+
+    m_bookmarks   = new Bookmarks(m_state) ; 
+    if(m_interactor)
+        m_interactor->setBookmarks(m_bookmarks);
 
 
     if(!hasOpt("noevent"))
@@ -284,8 +286,8 @@ void App::prepareViz()
 
     m_composition->setSize( m_size );
 
-    const char* idpath = m_cache->getIdPath();
-    m_bookmarks->load(idpath); 
+    //const char* idpath = m_cache->getIdPath();
+    //m_bookmarks->load(idpath); 
 
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(hasOpt("fullscreen"));
