@@ -80,6 +80,8 @@ add_library( ${name}  SHARED
     NPlanck.cpp
     NCIE.cpp
     NSpectral.cpp
+    NState.cpp
+    NConfigurable.cpp
     Parameters.cpp
     Report.cpp
     md5digest.cpp
@@ -143,6 +145,8 @@ NTrianglesNPY.hpp
 NPlanck.hpp
 NCIE.hpp
 NSpectral.hpp
+NState.hpp
+NConfigurable.hpp
 NLog.hpp
 Parameters.hpp
 md5digest.hpp

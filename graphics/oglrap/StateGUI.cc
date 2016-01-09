@@ -1,5 +1,5 @@
 #include "StateGUI.hh"
-#include "State.hh"
+#include "NState.hpp"
 
 #ifdef GUI_
 #include <imgui.h>

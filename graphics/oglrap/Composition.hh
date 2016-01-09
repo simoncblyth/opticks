@@ -12,7 +12,7 @@ class NPY ;
 
 class MultiViewNPY ; 
 
-class State ; 
+class NState ; 
 class Camera ;
 class View ;
 class Light ;
@@ -23,11 +23,11 @@ class Clipper ;
 class Cfg ;
 class Animator ; 
 
-#include "Configurable.hh"
+#include "NConfigurable.hpp"
 
 
 
-class Composition : public Configurable {
+class Composition : public NConfigurable {
    public:
       static const char* PREFIX ;
       const char* getPrefix();
@@ -63,8 +63,7 @@ class Composition : public Configurable {
   public:
 
       Composition();
-      void setupConfigurableState();
-      State*     getState(); 
+      void setupConfigurableState(NState* state);
       virtual ~Composition();
    public:
       void nextAnimatorMode(unsigned int modifiers);
@@ -314,7 +313,6 @@ class Composition : public Configurable {
 
   private:
       // residents
-      State*      m_state ; 
       Animator*   m_animator ; 
       Animator*   m_rotator ; 
       Camera*    m_camera ;
@@ -391,7 +389,6 @@ inline Composition::Composition()
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
   m_param(25.f,0.030f,0.f,0.f),   // x: arbitrary scaling of genstep length, y: vector length dfrac
-  m_state(NULL),
   m_animator(NULL),
   m_rotator(NULL),
   m_camera(NULL),
@@ -416,10 +413,6 @@ inline Composition::Composition()
     init();
 }
 
-inline State* Composition::getState()
-{
-    return m_state ;
-}
 
 inline Camera* Composition::getCamera()
 {

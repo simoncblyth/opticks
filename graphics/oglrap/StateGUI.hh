@@ -1,17 +1,17 @@
 #pragma once
 
-class State ; 
+class NState ; 
 
 class StateGUI {
     public:
-         StateGUI(State* state);
+         StateGUI(NState* state);
          void gui();
     private:
-         State* m_state ; 
+         NState* m_state ; 
 };
 
 
-inline StateGUI::StateGUI(State* state) 
+inline StateGUI::StateGUI(NState* state) 
     :
     m_state(state)
 {

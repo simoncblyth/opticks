@@ -7,9 +7,9 @@
 
 // how to handle multiple planes ?
 
-#include "Configurable.hh"
+#include "NConfigurable.hpp"
 
-class Clipper : public Configurable {
+class Clipper : public NConfigurable {
    public:
         static const char* PREFIX ;
         const char* getPrefix();

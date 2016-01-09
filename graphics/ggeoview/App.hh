@@ -17,6 +17,7 @@ class Timer ;
 class Types ; 
 class Index ; 
 class Lookup ; 
+class NState ; 
 
 // numpyserver-
 #ifdef NPYSERVER
@@ -31,7 +32,6 @@ class OpticksResource ;
 template <typename> class OpticksCfg ;
 
 // oglrap-
-class State ; 
 class Scene ; 
 class Composition ; 
 class Frame ; 
@@ -137,7 +137,7 @@ class App {
        Timer*            m_timer ; 
        GCache*           m_cache ; 
        DynamicDefine*    m_dd ; 
-       State*            m_state ; 
+       NState*           m_state ; 
        Scene*            m_scene ; 
        Composition*      m_composition ;
        Frame*            m_frame ;

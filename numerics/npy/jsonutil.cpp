@@ -3,6 +3,7 @@
 #include "regexsearch.hh"
 
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 
@@ -156,10 +157,6 @@ void loadTree(pt::ptree& t , const char* path)
 
 
 
-
-
-
-
 std::string prefixShorten( const char* path, const char* prefix_)
 {
     std::string prefix = os_path_expandvars(prefix_);  
@@ -171,14 +168,14 @@ std::string prefixShorten( const char* path, const char* prefix_)
 
 
 template<typename A, typename B> 
-void loadMap( typename std::map<A,B> & mp, const char* dir, const char* name)
+void loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth)
 {
     std::string path = preparePath(dir, name, false);
     if(!path.empty())
     {
         std::string shortpath = prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
-        loadMap( mp, path.c_str() );
+        loadMap( mp, path.c_str(), depth );
     }
     else
     {
@@ -224,18 +221,58 @@ void loadList( typename std::vector<std::pair<A,B> > & vp, const char* path)
 }
 
 template<typename A, typename B> 
-void loadMap( typename std::map<A,B> & mp, const char* path)
+void loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
 {
     pt::ptree t;
     loadTree(t, path );
 
-    BOOST_FOREACH( pt::ptree::value_type const& ab, t.get_child("") )
+    if(depth == 0)
     {
-         A a = boost::lexical_cast<A>(ab.first.data());
-         B b = boost::lexical_cast<B>(ab.second.data());
-         mp[a] = b ;         
+        BOOST_FOREACH( pt::ptree::value_type const& ab, t.get_child("") )
+        {
+             A a = boost::lexical_cast<A>(ab.first.data());
+             B b = boost::lexical_cast<B>(ab.second.data());
+             mp[a] = b ; 
+        }
+    } 
+    else if(depth == 1)
+    {
+
+        BOOST_FOREACH( pt::ptree::value_type const& skv, t.get_child("") )
+        {
+            A s = boost::lexical_cast<A>(skv.first.data());
+
+            BOOST_FOREACH( pt::ptree::value_type const& kv, skv.second.get_child("") ) 
+            {   
+                std::string k = kv.first.data();
+                std::stringstream ss ; 
+                ss << s << "." << k ; 
+
+                A key = boost::lexical_cast<A>(ss.str()) ;  
+               // defer the problem if A is not std::string to runtime
+                B val = boost::lexical_cast<B>(kv.second.data()) ;  
+
+                LOG(debug) << "loadMap(1) " 
+                          << std::setw(15) << s  
+                          << std::setw(15) << k  
+                          << std::setw(30) << key 
+                          << std::setw(50) << val
+                          ;  
+
+                mp[key] = val ; 
+            }   
+        }
     }
+    else
+        assert(0) ;
+
+
 }
+
+
+
+
+
 
 
 
@@ -282,8 +319,8 @@ void dumpList( typename std::vector<std::pair<A,B> > & vp, const char* msg)
 template void saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name) ;
 template void saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path) ;
 
-template void loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name) ;
-template void loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path) ;
+template void loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
+template void loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path, unsigned int depth ) ;
 
 template void dumpMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* msg) ;
 
@@ -294,8 +331,8 @@ template void dumpMap<unsigned int, std::string>(std::map<unsigned int, std::str
 template void saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name ) ;
 template void saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path) ;
 
-template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name ) ;
-template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path) ;
+template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name, unsigned int depth) ;
+template void loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path, unsigned int depth ) ;
 
 template void dumpMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* msg) ;
 
@@ -335,8 +372,10 @@ template void loadList<std::string, std::string>(std::vector<std::pair<std::stri
 template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
 template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;
 
-template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
-template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;
+template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
+template void loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path, unsigned int depth) ;
+
+
 
 template void dumpMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* msg) ;
 

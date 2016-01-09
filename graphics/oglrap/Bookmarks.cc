@@ -10,8 +10,6 @@
 
 
 #include <cstring>
-
-
 #include <string>
 #include <set>
 #include <exception>
@@ -349,7 +347,7 @@ unsigned int Bookmarks::collect(const char* name)
 }
 
 
-unsigned int Bookmarks::collectConfigurable(const char* name, Configurable* configurable)
+unsigned int Bookmarks::collectConfigurable(const char* name, NConfigurable* configurable)
 {
     // Configurable is an abstract get/set/getTags/accepts/configure protocol 
 

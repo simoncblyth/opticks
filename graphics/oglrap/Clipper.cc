@@ -1,6 +1,7 @@
 #include "Clipper.hh"
 
 // npy-
+#include "NLog.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
@@ -8,10 +9,6 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>

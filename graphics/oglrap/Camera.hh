@@ -5,7 +5,7 @@
 #include "stdio.h"
 #include <vector>
 #include <string>
-#include "Configurable.hh"
+#include "NConfigurable.hpp"
 
 
 /*
@@ -106,7 +106,7 @@ zoom defined as apparent size of an object relative to the size for a 90 degree 
 */
 
 
-class Camera : public Configurable  {
+class Camera : public NConfigurable  {
    public:
        static const char* PREFIX ;
        const char* getPrefix();

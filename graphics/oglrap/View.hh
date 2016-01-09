@@ -6,11 +6,11 @@
 #include <cstdio>
 #include <math.h>
 
-#include "Configurable.hh"
+#include "NConfigurable.hpp"
 
 //#define VIEW_DEBUG
 
-class View : public Configurable {
+class View : public NConfigurable {
 public:
    static const char* PREFIX ; 
    const char* getPrefix();

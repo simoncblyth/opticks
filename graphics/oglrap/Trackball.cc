@@ -1,11 +1,12 @@
 #include "Trackball.hh"
 
-#include "stdio.h"
+#include <cstdio>
 #include <math.h>  
 
 // npy-
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
+#include "NLog.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -15,11 +16,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 
 #ifdef GUI_

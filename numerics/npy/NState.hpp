@@ -20,14 +20,16 @@
 //  but not everything needs the split, so need heirarchy search for prefs 
 //
 
-class Configurable ; 
+class NConfigurable ; 
 
-class State {
+class NState {
    public:
-       State(const char* dir="/tmp", const char* name="state");
-       void addConfigurable(Configurable* configurable);
+       NState(const char* dir="/tmp", const char* name="state");
+       void addConfigurable(NConfigurable* configurable);
+       void setVerbose(bool verbose=true);
+       void Summary(const char* msg="NState::Summary");
+       std::string description(const char* msg="NState::description");
    public:
-
        void roundtrip();
        void save();
        void load();
@@ -38,41 +40,50 @@ class State {
 
        const std::string& getStateString(bool update=false);
    private:
-       Configurable* getConfigurable(const char* prefix); 
+       NConfigurable* getConfigurable(const char* prefix); 
        std::string get(const char* key);
        void set(const char* key, const char* val);
        std::string getFileName();
        std::string formKey(const char* prefix, const char* tag);
-       void splitKey(std::vector<std::string>& prefix_tag, const char* key);
+       unsigned int splitKey(std::vector<std::string>& prefix_tag, const char* key);
 
        void apply(const char* k, const char* v);
-       unsigned int collect(Configurable* configurable);
+       unsigned int collect(NConfigurable* configurable);
        void setNumChanges(unsigned int num_changes);
        unsigned int getNumChanges();
        std::string stateString();
    private:
+       bool                                  m_verbose ; 
        const char*                           m_dir ; 
        const char*                           m_name ; 
        unsigned int                          m_num_changes ; 
        std::map<std::string, std::string>    m_kv ; 
-       std::map<std::string, Configurable*>  m_configurables ; 
+       std::map<std::string, NConfigurable*>  m_configurables ; 
        std::string                           m_state_string ; 
 
 };
 
-inline State::State(const char* dir, const char* name) 
+inline NState::NState(const char* dir, const char* name) 
     :
+    m_verbose(false),
     m_dir(strdup(dir)),
     m_name(strdup(name)),
     m_num_changes(0)
 {
 }
 
-inline void State::setNumChanges(unsigned int num_changes)
+
+inline void NState::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+
+inline void NState::setNumChanges(unsigned int num_changes)
 {
     m_num_changes = num_changes ; 
 }
-inline unsigned int State::getNumChanges()
+inline unsigned int NState::getNumChanges()
 {
     return m_num_changes ; 
 }
+

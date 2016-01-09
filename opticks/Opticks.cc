@@ -11,6 +11,7 @@
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NLog.hpp"
+#include "NState.hpp"
 
 const char* Opticks::COMPUTE = "--compute" ; 
 
@@ -53,33 +54,6 @@ float        Opticks::DOMAIN_LOW  = 60.f ;
 float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
 float        Opticks::DOMAIN_STEP = 20.f ; 
 unsigned int Opticks::DOMAIN_LENGTH = 39  ;
-
-void Opticks::configure()
-{
-    const std::string& ssize = m_cfg->getSize();
-
-    if(!ssize.empty()) 
-    {
-        m_size = guvec4(ssize);
-    }
-    else if(m_cfg->hasOpt("fullscreen"))
-    {
-        m_size = glm::uvec4(2880,1800,2,0) ;
-    } 
-    else
-    {
-        m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-    }
-
-    LOG(info) << "Opticks::configure " 
-              << " m_size " << gformat(m_size)
-              ;
- 
-    // formerly done in App as if
-    // there was a FrameCfg listener, but there isnt one
-    // TODO: revisit Cfg
-
-}
 
 
 
@@ -169,6 +143,7 @@ void Opticks::init(int argc, char** argv)
     setDetector( m_resource->getDetector() );
 
     preconfigure(argc, argv);
+
 }
 
 
@@ -203,11 +178,45 @@ void Opticks::preconfigure(int argc, char** argv)
 }
 
 
+
+void Opticks::configure()
+{
+    const std::string& ssize = m_cfg->getSize();
+
+    if(!ssize.empty()) 
+    {
+        m_size = guvec4(ssize);
+    }
+    else if(m_cfg->hasOpt("fullscreen"))
+    {
+        m_size = glm::uvec4(2880,1800,2,0) ;
+    } 
+    else
+    {
+        m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
+    }
+
+    LOG(info) << "Opticks::configure " 
+              << " m_size " << gformat(m_size)
+              ;
+ 
+    // formerly done in App as if
+    // there was a FrameCfg listener, but there isnt one
+    // TODO: revisit Cfg
+
+
+    std::string prefdir = getPreferenceDir("State");  
+
+    m_state = new NState(prefdir.c_str(), "state")  ;
+
+}
+
+
+
 const char* Opticks::getIdPath()
 {
     return m_resource ? m_resource->getIdPath() : NULL ; 
 }
-
 
 
 void Opticks::Summary(const char* msg)

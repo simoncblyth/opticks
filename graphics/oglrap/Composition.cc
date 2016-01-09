@@ -10,9 +10,10 @@
 #include "MultiViewNPY.hpp"
 #include "AxisNPY.hpp"
 
+#include "NState.hpp"
+
 
 // oglrap-
-#include "State.hh"
 
 #include "Camera.hh"
 #include "Trackball.hh"
@@ -130,8 +131,6 @@ void Composition::init()
 {
    // hmm state is very different, maybe keep in the App not here 
 
-    m_state = new State(); 
-
     m_camera = new Camera() ;
     m_view   = new View() ;
     m_trackball = new Trackball() ;
@@ -143,13 +142,13 @@ void Composition::init()
     initAxis();
 }
 
-void Composition::setupConfigurableState()
+void Composition::setupConfigurableState(NState* state)
 {
-    m_state->addConfigurable(m_scene);
-    m_state->addConfigurable(m_trackball);
-    m_state->addConfigurable(m_view);
-    m_state->addConfigurable(m_camera);
-    m_state->addConfigurable(m_clipper);
+    state->addConfigurable(m_scene);
+    state->addConfigurable(m_trackball);
+    state->addConfigurable(m_view);
+    state->addConfigurable(m_camera);
+    state->addConfigurable(m_clipper);
     //m_state->addConfigurable(m_light);
 }
 
@@ -382,7 +381,6 @@ void Composition::gui()
        m_pick.z, 
        m_pick.w);
 
-    if(ImGui::Button("SaveState")) m_state->save();
 
 
 #endif    

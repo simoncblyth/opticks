@@ -20,7 +20,6 @@
 
 
 // oglrap-
-#include "State.hh"
 #include "StateGUI.hh"
 #include "Scene.hh"
 #include "SceneCfg.hh"
@@ -46,6 +45,7 @@
 
 // npy-
 #include "NLog.hpp"
+#include "NState.hpp"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
@@ -170,8 +170,6 @@ void App::initViz()
 
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
 
-    // TODO: move state up here is it belongs above Composition
-
     m_composition = new Composition ; 
     m_frame       = new Frame ; 
     m_bookmarks   = new Bookmarks ; 
@@ -186,9 +184,6 @@ void App::initViz()
     m_composition->setScene(m_scene);
 
 
-    m_composition->setupConfigurableState();
-    m_state = m_composition->getState();
-
     m_bookmarks->setComposition(m_composition);
     m_bookmarks->setScene(m_scene);
 
@@ -200,9 +195,7 @@ void App::initViz()
     m_cfg->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
     m_cfg->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
-
     m_composition->addConfig(m_cfg); 
-
 }
 
 
@@ -233,6 +226,12 @@ void App::configure(int argc, char** argv)
         setExit(true);
         return ; 
     }
+
+
+    m_state = m_opticks->getState();
+    m_composition->setupConfigurableState(m_state);
+    LOG(info) << "App::configure " << m_state->description();
+
 
     if(!hasOpt("noevent"))
     {

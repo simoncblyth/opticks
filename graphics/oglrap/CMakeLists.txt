@@ -101,7 +101,6 @@ add_library( ${name}  SHARED
                 Clipper.cc
                 ClipperCfg.cc
                 Bookmarks.cc
-                State.cc
                 StateGUI.cc
                 Demo.cc
                 Prog.cc
@@ -138,14 +137,12 @@ SET(hdrs
         Clipper.hh
         ClipperCfg.hh
         Bookmarks.hh
-        State.hh
         StateGUI.hh
         Demo.hh
         gleq.h
         Prog.hh
         Shdr.hh
         Touchable.hh
-        Configurable.hh
         GUI.hh
         Photons.hh
         Animator.hh

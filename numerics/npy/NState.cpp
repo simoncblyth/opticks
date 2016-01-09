@@ -1,5 +1,5 @@
-#include "State.hh"
-#include "Configurable.hh"
+#include "NState.hpp"
+#include "NConfigurable.hpp"
 
 #include <sstream>
 #include <boost/algorithm/string.hpp>
@@ -9,48 +9,62 @@
 #include "NLog.hpp"
 
 
-void State::addConfigurable(Configurable* configurable)
+std::string NState::description(const char* msg)
+{
+    std::stringstream ss ; 
+    ss << msg << " " << m_dir << " " << m_name ; 
+    return ss.str();
+}  
+
+
+void NState::Summary(const char* msg)
+{
+    LOG(info) << description(msg);
+}
+
+
+void NState::addConfigurable(NConfigurable* configurable)
 {
     const char* prefix = configurable->getPrefix();
     m_configurables[prefix] = configurable ; 
 }
 
-Configurable* State::getConfigurable(const char* prefix)
+NConfigurable* NState::getConfigurable(const char* prefix)
 {
     return m_configurables.count(prefix) == 1 ? m_configurables[prefix] : NULL ;
 }
 
-std::string State::get(const char* key)
+std::string NState::get(const char* key)
 {
     std::string empty ;
     return m_kv.count(key) > 0 ? m_kv[key] : empty ; 
 }
 
-void State::set(const char* key, const char* val)
+void NState::set(const char* key, const char* val)
 {
     m_kv[key] = val ; 
 }
 
 
-std::string State::formKey(const char* prefix, const char* tag)
+std::string NState::formKey(const char* prefix, const char* tag)
 {
     char key[64];
     snprintf(key, 64, "%s.%s", prefix, tag );
     return key ;  
 }
 
-void State::splitKey(std::vector<std::string>& prefix_tag, const char* key)
+unsigned int NState::splitKey(std::vector<std::string>& prefix_tag, const char* key)
 {
     boost::split(prefix_tag, key, boost::is_any_of(".")); 
-    assert(prefix_tag.size() == 2 && "State::splitKey malformed key, expecting form \"prefix.tag\"" ); 
+    //assert(prefix_tag.size() == 2 && "NState::splitKey malformed key, expecting form \"prefix.tag\"" ); 
+    return prefix_tag.size() ; 
 }
 
 
-
-void State::collect()
+void NState::collect()
 {
     unsigned int changes(0);
-    typedef std::map<std::string, Configurable*>::const_iterator SCI ; 
+    typedef std::map<std::string, NConfigurable*>::const_iterator SCI ; 
     for(SCI it=m_configurables.begin() ; it != m_configurables.end() ; it++)
     {
        changes += collect(it->second) ;
@@ -58,9 +72,9 @@ void State::collect()
     setNumChanges(changes) ; 
 }
 
-unsigned int State::collect(Configurable* configurable)
+unsigned int NState::collect(NConfigurable* configurable)
 {
-    // Configurable is an abstract get/set/getTags/accepts/configure protocol 
+    // NConfigurable is an abstract get/set/getTags/accepts/configure protocol 
     if(!configurable) return 0 ; 
 
     std::string empty ;
@@ -68,7 +82,7 @@ unsigned int State::collect(Configurable* configurable)
 
     const char* prefix = configurable->getPrefix();
  
-    LOG(debug) << "State::collect" 
+    LOG(debug) << "NState::collect" 
               << " prefix " << prefix 
               ; 
 
@@ -82,7 +96,7 @@ unsigned int State::collect(Configurable* configurable)
         std::string val = configurable->get(tag);
         std::string prior = get(key.c_str());
         
-        LOG(debug) << "State::collect"
+        LOG(debug) << "NState::collect"
                   << " key " <<  key.c_str()
                   << " val " << val.c_str()
                   << " prior " << prior.c_str()
@@ -95,7 +109,7 @@ unsigned int State::collect(Configurable* configurable)
         }
         else if (strcmp(prior.c_str(), val.c_str())==0)
         {
-            LOG(debug) << "State::collect"
+            LOG(debug) << "NState::collect"
                       << " unchanged " 
                       << " key " <<  key.c_str()
                       << " val " << val.c_str()
@@ -113,7 +127,7 @@ unsigned int State::collect(Configurable* configurable)
 }
 
 
-void State::apply()
+void NState::apply()
 {
     typedef std::map<std::string, std::string>::const_iterator SSI ; 
     for(SSI it=m_kv.begin() ; it != m_kv.end() ; it++)
@@ -122,31 +136,43 @@ void State::apply()
          std::string val = it->second ;
 
          std::vector<std::string> prefix_tag ; 
-         splitKey(prefix_tag, key.c_str());
+         unsigned int n = splitKey(prefix_tag, key.c_str());
 
-         std::string prefix = prefix_tag[0] ; 
-         std::string tag = prefix_tag[1] ; 
+         if(m_verbose)
+         LOG(info) << "NState::apply " << key << "," << val << " n=" << n ;  
 
-         Configurable* configurable = getConfigurable(prefix.c_str());
-         if(configurable)
+         if(n == 2)
          {
-            LOG(debug) << "State::apply" 
-                      << " prefix " << prefix 
-                      << " tag " << tag 
-                      << " key " << key 
-                      << " val " << val 
-                      ;
-            configurable->configure(tag.c_str(), val.c_str());
+             std::string prefix = prefix_tag[0] ; 
+             std::string tag = prefix_tag[1] ; 
+
+             NConfigurable* configurable = getConfigurable(prefix.c_str());
+             if(configurable)
+             {
+                LOG(debug) << "NState::apply" 
+                          << " prefix " << prefix 
+                          << " tag " << tag 
+                          << " key " << key 
+                          << " val " << val 
+                          ;
+                configurable->configure(tag.c_str(), val.c_str());
+             }
+             else
+             {
+                LOG(warning) << "NState::apply no configurable for prefix " << prefix ;  
+             }
          }
          else
          {
-            LOG(warning) << "State::apply no configurable for prefix " << prefix ;  
+             LOG(warning) << "NState::apply skipped key " << key ;  
          }
+
+
     }
 }
 
 
-std::string State::stateString()
+std::string NState::stateString()
 {
     std::stringstream ss ; 
     typedef std::map<std::string, std::string>::const_iterator SSI ; 
@@ -156,8 +182,9 @@ std::string State::stateString()
          std::string val = it->second ;
 
          std::vector<std::string> prefix_tag ; 
-         splitKey(prefix_tag, key.c_str());
-
+         unsigned int n = splitKey(prefix_tag, key.c_str());
+         if(n!=2) continue ; 
+         
          std::string prefix = prefix_tag[0] ; 
          std::string tag = prefix_tag[1] ; 
 
@@ -170,7 +197,7 @@ std::string State::stateString()
 }
 
 
-const std::string& State::getStateString(bool update)
+const std::string& NState::getStateString(bool update)
 {
     if(m_state_string.empty() || update)
     {
@@ -179,39 +206,40 @@ const std::string& State::getStateString(bool update)
     return m_state_string ; 
 }
 
-void State::update()
+void NState::update()
 {
     collect();
     getStateString(true);
 }
 
-std::string State::getFileName()
+std::string NState::getFileName()
 {
    std::stringstream ss ; 
    ss << m_name << ".ini" ; 
    return ss.str(); 
 }
-void State::save()
+void NState::save()
 {
     update();
 
     std::string filename = getFileName();
     std::string path = preparePath(m_dir, filename.c_str());
-    LOG(info) << "State::save " << path ;  
+    LOG(info) << "NState::save " << path ;  
     saveMap<std::string, std::string>(m_kv, m_dir, filename.c_str() ) ;
 }
-void State::load()
+void NState::load()
 {
     std::string filename = getFileName();
-    loadMap<std::string, std::string>(m_kv, m_dir, filename.c_str() ) ;
+    unsigned int depth = 1 ; 
+    loadMap<std::string, std::string>(m_kv, m_dir, filename.c_str(), depth ) ;
     std::string path = preparePath(m_dir, filename.c_str());
-    LOG(info) << "State::load " << path ;  
+    LOG(info) << "NState::load " << path ;  
 
     apply();
 }
 
 
-void State::roundtrip()
+void NState::roundtrip()
 {
     save();
     load();

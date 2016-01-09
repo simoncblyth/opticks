@@ -1,7 +1,7 @@
 #include "Scene.hh"
 
 #include <GL/glew.h>
-#include "string.h"
+#include <cstring>
 
 // ggeo-
 #include "GMergedMesh.hh"

@@ -28,10 +28,10 @@ class Photons ;
 class Colors ; 
 
 
-#include "Configurable.hh"
+#include "NConfigurable.hpp"
 
 
-class Scene : public Configurable {
+class Scene : public NConfigurable {
    public:
         static const char* PREFIX ;
         const char* getPrefix();

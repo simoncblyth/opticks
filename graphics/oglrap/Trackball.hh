@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 
-#include "Configurable.hh"
+#include "NConfigurable.hpp"
 
-class Trackball : public Configurable {
+class Trackball : public NConfigurable {
    public:
        static const char* PREFIX ;
        const char* getPrefix();

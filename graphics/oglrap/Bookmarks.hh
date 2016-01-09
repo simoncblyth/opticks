@@ -18,7 +18,7 @@ class Trackball ;
 class Clipper ; 
 
 class Scene ;
-class Configurable ; 
+class NConfigurable ; 
 
 /*
 Bookmarks:
@@ -84,7 +84,7 @@ private:
    void apply(const char* name);
    void apply(const char* key, const char* val);
    unsigned int collect(const char* name);
-   unsigned int collectConfigurable(const char* name, Configurable* configurable);
+   unsigned int collectConfigurable(const char* name, NConfigurable* configurable);
 
 private:
    int                           m_current ; 

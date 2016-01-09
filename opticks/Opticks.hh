@@ -10,6 +10,7 @@ template <typename> class OpticksCfg ;
 class TorchStepNPY ; 
 class NumpyEvt ;
 class NLog ;
+class NState ;
 class Parameters ; 
 class OpticksResource ; 
 
@@ -100,6 +101,7 @@ class Opticks {
        OpticksCfg<Opticks>* getCfg();
        OpticksResource*     getResource(); 
        Parameters*          getParameters();
+       NState*              getState();
        std::string          getModeString();
        const char*          getUDet();
        std::string          getPreferenceDir(const char* type);
@@ -142,6 +144,7 @@ class Opticks {
        OpticksResource* m_resource ; 
        const char*      m_loglevel  ; 
        NLog*            m_log ; 
+       NState*          m_state ; 
    private:
        bool             m_compute ; 
        bool             m_geocache ; 
@@ -178,6 +181,7 @@ inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* 
 
        m_loglevel(NULL),
        m_log(NULL),
+       m_state(NULL),
 
        m_compute(false),
        m_geocache(false),
@@ -209,6 +213,11 @@ inline OpticksResource* Opticks::getResource()
 {
     return m_resource  ; 
 }
+inline NState* Opticks::getState()
+{
+    return m_state  ; 
+}
+
 inline const char* Opticks::getLastArg()
 {
    return m_lastarg ; 
