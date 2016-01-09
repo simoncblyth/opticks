@@ -28,8 +28,10 @@
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "Bookmarks.hh"
-#include "State.hh"
 #include "Photons.hh"
+
+
+#include "StateGUI.hh"
 
 #include <imgui.h>
 #include "imgui_impl_glfw_gl3.h"
@@ -170,7 +172,7 @@ void GUI::show(bool* opened)
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("State"))
     {
-        m_state->gui(); 
+        m_state_gui->gui(); 
     }
 
 

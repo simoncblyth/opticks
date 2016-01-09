@@ -21,6 +21,7 @@
 
 // oglrap-
 #include "State.hh"
+#include "StateGUI.hh"
 #include "Scene.hh"
 #include "SceneCfg.hh"
 #include "Renderer.hh"
@@ -170,7 +171,6 @@ void App::initViz()
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
 
     // TODO: move state up here is it belongs above Composition
-    //m_state = new State ;
 
     m_composition = new Composition ; 
     m_frame       = new Frame ; 
@@ -1014,7 +1014,7 @@ void App::prepareGUI()
     m_gui->setPhotons(m_photons);
     m_gui->setComposition(m_composition);
     m_gui->setBookmarks(m_bookmarks);
-    m_gui->setState(m_state);
+    m_gui->setStateGUI(new StateGUI(m_state));
     m_gui->setInteractor(m_interactor);   // status line
     
     m_gui->init(m_window);

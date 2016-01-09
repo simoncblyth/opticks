@@ -8,10 +8,6 @@
 #include "jsonutil.hpp"
 #include "NLog.hpp"
 
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
 
 void State::addConfigurable(Configurable* configurable)
 {
@@ -219,32 +215,6 @@ void State::roundtrip()
 {
     save();
     load();
-}
-
-
-
-void State::gui()
-{
-#ifdef GUI_
-
-    if(ImGui::Button("roundtrip")) roundtrip();
-    ImGui::SameLine();
-    if(ImGui::Button("save")) save();
-    ImGui::SameLine();
-    if(ImGui::Button("load")) load();
-    ImGui::SameLine();
-
-    //if(ImGui::Button("collect")) collect();
-    //ImGui::SameLine();
-    //if(ImGui::Button("apply")) apply();
-
-    if (ImGui::CollapsingHeader("StateString"))
-    {
-        ImGui::Text(m_state_string.c_str());
-        if(ImGui::Button("update")) update();
-    }
-
-#endif
 }
 
 

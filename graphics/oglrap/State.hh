@@ -27,7 +27,6 @@ class State {
        State(const char* dir="/tmp", const char* name="state");
        void addConfigurable(Configurable* configurable);
    public:
-       void gui();
 
        void roundtrip();
        void save();
