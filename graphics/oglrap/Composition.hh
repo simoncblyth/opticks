@@ -40,6 +40,7 @@ class Composition : public NConfigurable {
       static const char* PICKFACE ;  
       static const char* EYEW ; 
       static const char* LOOKW ; 
+      static const char* UPW ; 
 
       friend class Interactor ;   
       friend class Bookmarks ;   
@@ -68,6 +69,7 @@ class Composition : public NConfigurable {
    public:
       void nextAnimatorMode(unsigned int modifiers);
       void nextRotatorMode(unsigned int modifiers);
+      void nextViewMode(unsigned int modifiers);
       unsigned int tick();
       unsigned int getCount();
    private:
@@ -186,6 +188,9 @@ class Composition : public NConfigurable {
       void setEyeW(glm::vec4 eyew);
       void setEyeW(std::string eyew);
   public:
+      void setUpW(glm::vec4 upw);
+      void setUpW(std::string upw);
+  public:
       void setEyeGUI(glm::vec3 gui);
   public: 
       void home();
@@ -198,7 +203,9 @@ class Composition : public NConfigurable {
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
 
-  //private: 
+  private: 
+      // invoked from Interactor 
+      void commitView();
   public: 
       // private getters of residents : usable by friend class
 
@@ -212,6 +219,7 @@ class Composition : public NConfigurable {
       
       void setCamera(Camera* camera);
       void setView(View* view);
+      void setAltView(View* view);
 
   public: 
       // getters of inputs 
@@ -317,7 +325,10 @@ class Composition : public NConfigurable {
       Animator*   m_rotator ; 
       Camera*    m_camera ;
       Trackball* m_trackball ;
+
       View*      m_view ;
+      View*      m_altview ;
+      bool       m_alt ; 
 
       Light*     m_light ;
       Clipper*   m_clipper ;
@@ -394,6 +405,8 @@ inline Composition::Composition()
   m_camera(NULL),
   m_trackball(NULL),
   m_view(NULL),
+  m_altview(NULL),
+  m_alt(false),
   m_light(NULL),
   m_clipper(NULL),
   m_count(0),
@@ -444,6 +457,11 @@ inline void Composition::setView(View* view)
 {
     m_view = view ; 
 }
+inline void Composition::setAltView(View* altview)
+{
+    m_altview = altview ; 
+}
+
 inline Scene* Composition::getScene()
 {
     return m_scene ; 

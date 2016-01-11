@@ -29,6 +29,7 @@
 #include "InteractorCfg.hh"
 
 #include "Bookmarks.hh"
+#include "InterpolatedView.hh"
 #include "Composition.hh"
 #include "Rdr.hh"
 #include "Texture.hh"
@@ -232,7 +233,8 @@ void App::configure(int argc, char** argv)
     if(m_composition)
         m_composition->setupConfigurableState(m_state);
 
-    m_bookmarks   = new Bookmarks(m_state) ; 
+    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
+    m_bookmarks->setState(m_state);
     m_bookmarks->setVerbose();
 
     if(m_interactor)
@@ -291,14 +293,17 @@ void App::prepareViz()
     if(m_resource->isJuno())
     {
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
+
         m_scene->setNumGeometryStyle(Scene::WIRE); 
+        m_scene->setNumGlobalStyle(Scene::GVISVEC); 
+
+        m_scene->setRenderMode("bb0,bb1,-global");
+        std::string rmode = m_scene->getRenderMode();
+        LOG(info) << "App::prepareViz " << rmode ; 
     }
 
 
     m_composition->setSize( m_size );
-
-    //const char* idpath = m_cache->getIdPath();
-    //m_bookmarks->load(idpath); 
 
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(hasOpt("fullscreen"));
@@ -323,6 +328,15 @@ void App::prepareViz()
     m_window = m_frame->getWindow();
 
     m_scene->setComposition(m_composition);     // defer until renderers are setup 
+
+
+
+    InterpolatedView* iv = m_bookmarks->getInterpolatedView() ;
+
+    iv->Summary("App::prepareViz InterpolatedView");
+
+    m_composition->setAltView(iv);
+
 
     TIMER("prepareScene");
 

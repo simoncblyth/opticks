@@ -25,6 +25,7 @@ find_package(Boost REQUIRED)
 find_package(Cfg REQUIRED) 
 find_package(PPM REQUIRED) 
 find_package(NPY REQUIRED) 
+find_package(Bregex REQUIRED)
 
 find_package(ImGui REQUIRED)
 
@@ -40,6 +41,7 @@ set(INCLUDE_DIRS
    ${Cfg_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
+   ${Bregex_INCLUDE_DIRS} 
    ${ImGui_INCLUDE_DIRS}
 ) 
 
@@ -59,6 +61,7 @@ set(DEFINITIONS
    ${GLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
    ${Boost_DEFINITIONS}
+   ${Bregex_DEFINITIONS} 
    ${ImGui_DEFINITIONS}
    -DGUI_
 )
@@ -68,8 +71,10 @@ set(LIBRARIES
    ${GLFW_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${Boost_LIBRARIES}
+   ${Bregex_LIBRARIES}
    ${Cfg_LIBRARIES}
    ${NPY_LIBRARIES}
+   
    ${ImGui_LIBRARIES}
 )
 
@@ -96,6 +101,7 @@ add_library( ${name}  SHARED
                 Camera.cc
                 CameraCfg.cc
                 View.cc
+                InterpolatedView.cc
                 Light.cc
                 ViewCfg.cc
                 Clipper.cc
@@ -132,6 +138,7 @@ SET(hdrs
         Camera.hh
         CameraCfg.hh
         View.hh
+        InterpolatedView.hh
         Light.hh
         ViewCfg.hh
         Clipper.hh

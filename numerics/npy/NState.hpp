@@ -17,6 +17,8 @@ class NConfigurable ;
 
 class NState {
    public:
+       static NState* load(const char* dir, unsigned int num);
+   public:
        NState(const char* dir="/tmp", const char* name="state");
        const char* getDir();
 

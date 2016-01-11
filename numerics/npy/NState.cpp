@@ -13,6 +13,16 @@
 #include "regexsearch.hh"
 
 
+
+NState* NState::load(const char* dir, unsigned int num)
+{
+    std::string name = FormName(num) ;
+    NState* state = new NState(dir, name.c_str());
+    state->load();
+    return state ; 
+}
+
+
 void NState::init()
 {
     std::string dir = os_path_expandvars(m_dir);

@@ -121,6 +121,7 @@ void View::Summary(const char* msg)
 
 glm::mat4 View::getLookAt(const glm::mat4& m2w, bool debug)
 {
+    // no need to override in InterpolateView as invoked only other overridden methods
     glm::vec4 eye  = getEye(m2w); 
     glm::vec4 look = getLook(m2w); 
     glm::vec4 up   = getUp(m2w); 
@@ -345,6 +346,12 @@ glm::vec4 View::getGaze()
 {
     return glm::vec4( m_look.x - m_eye.x, m_look.y - m_eye.y , m_look.z - m_eye.z, 0.0f );
 }
+
+void View::tick()
+{
+   // do nothing default, overridden in InterpolatedView
+}
+
 
 glm::vec4 View::getGaze(const glm::mat4& m2w, bool debug)
 {

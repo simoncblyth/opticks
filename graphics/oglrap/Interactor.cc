@@ -41,10 +41,6 @@ void Interactor::gui()
 #endif    
 }
 
-
-
-
-
 void Interactor::configureF(const char* name, std::vector<float> values)
 {
     LOG(debug)<<"Interactor::configureF";
@@ -223,8 +219,13 @@ void Interactor::key_pressed(unsigned int key)
             m_scale_mode = !m_scale_mode ; 
             break;
         case GLFW_KEY_V:
-            m_composition->nextRotatorMode(getModifiers()) ; 
-            //m_view->nextMode(getModifiers()) ; 
+            {
+               unsigned int modifiers = getModifiers(); 
+               if(isCommand(modifiers))
+                   m_composition->nextViewMode(modifiers) ; 
+               else
+                   m_composition->nextRotatorMode(modifiers) ; 
+            }
             break;
         case GLFW_KEY_W:
             nextOptiXResolutionScale(getModifiers()); 
@@ -354,7 +355,15 @@ void Interactor::key_released(unsigned int key)
 void Interactor::number_key_pressed(unsigned int number)
 {
     m_bookmark_mode = true ; 
-    m_bookmarks->number_key_pressed(number, getModifiers());
+
+    unsigned int modifiers = getModifiers() ;
+    if(number == m_bookmarks->getCurrent() && isShift(modifiers))
+    {
+        LOG(info) << "Interactor::number_key_pressed repeating for existing bookmark with SHIFT modifier " << number ;   
+        m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
+    }
+
+    m_bookmarks->number_key_pressed(number, modifiers);
 }
 
 void Interactor::number_key_released(unsigned int number)

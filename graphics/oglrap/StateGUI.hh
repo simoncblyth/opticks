@@ -7,7 +7,7 @@ class StateGUI {
          StateGUI(NState* state);
          void gui();
     private:
-         NState* m_state ; 
+         NState*           m_state ; 
 };
 
 

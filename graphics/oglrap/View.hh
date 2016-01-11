@@ -13,7 +13,7 @@
 class View : public NConfigurable {
 public:
    static const char* PREFIX ; 
-   const char* getPrefix();
+   virtual const char* getPrefix();
 
    static const char* EYE ; 
    static const char* LOOK ; 
@@ -54,11 +54,15 @@ public:
    float* getLookPtr();
    float* getUpPtr();
 
-   glm::vec4 getEye(const glm::mat4& m2w);
-   glm::vec4 getLook(const glm::mat4& m2w);
-   glm::vec4 getUp(const glm::mat4& m2w);
-   glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
-
+public:
+   // methods overridden in InterpolateView
+   virtual glm::vec4 getEye(const glm::mat4& m2w);
+   virtual glm::vec4 getLook(const glm::mat4& m2w);
+   virtual glm::vec4 getUp(const glm::mat4& m2w);
+   virtual glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
+   virtual void tick();
+   virtual bool hasChanged();
+public:
    glm::mat4 getLookAt(const glm::mat4& m2w, bool debug=false);
 
    void Summary(const char* msg="View::Summary");
@@ -67,7 +71,6 @@ public:
    void getFocalBasis(const glm::mat4& m2w,  glm::vec3& e, glm::vec3& u, glm::vec3& v, glm::vec3& w);
    void getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze );
 public:
-   bool hasChanged();
    void setChanged(bool changed); 
 
 private:

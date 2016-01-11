@@ -1,9 +1,11 @@
 #include "StateGUI.hh"
 #include "NState.hpp"
+#include "NLog.hpp"
 
 #ifdef GUI_
 #include <imgui.h>
 #endif
+
 
 void StateGUI::gui()
 {
@@ -16,19 +18,16 @@ void StateGUI::gui()
     if(ImGui::Button("load")) m_state->load();
     ImGui::SameLine();
 
-    //if(ImGui::Button("collect")) m_state->collect();
-    //ImGui::SameLine();
-    //if(ImGui::Button("apply")) m_state->apply();
-
     if (ImGui::CollapsingHeader("StateString"))
     {
         ImGui::Text(m_state->getStateString().c_str());
         if(ImGui::Button("update")) m_state->update();
     }
 
+
+
 #endif
 }
-
 
 
 

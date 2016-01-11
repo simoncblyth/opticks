@@ -147,6 +147,13 @@ ggv-jpmt-viz(){
       # --optixviz
 }
 
+jpmt(){ 
+
+    
+
+    #ggv --jpmt --cerenkov --animtimemax 200 --load  --size 1024,768,2 $*
+    ggv --jpmt --cerenkov --animtimemax 200 --load   $*
+}
 
 
 

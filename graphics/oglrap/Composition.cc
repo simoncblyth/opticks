@@ -73,6 +73,7 @@ const char* Composition::PICKPHOTON = "pickphoton" ;
 const char* Composition::PICKFACE = "pickface" ; 
 const char* Composition::EYEW = "eyew" ;
 const char* Composition::LOOKW = "lookw" ;
+const char* Composition::UPW = "upw" ;
 
 
 const char* Composition::WHITE_ = "white" ; 
@@ -180,6 +181,7 @@ void Composition::set(const char* name, std::string& s)
     else if(strcmp(name,PICKFACE)==0) setPickFace(s);
     else if(strcmp(name,LOOKW)==0) setLookW(s);
     else if(strcmp(name,EYEW)==0) setEyeW(s);
+    else if(strcmp(name,UPW)==0) setUpW(s);
     else
          printf("Composition::set bad name %s\n", name);
 }
@@ -274,6 +276,21 @@ void Composition::nextRotatorMode(unsigned int modifiers)
     m_rotator->nextMode(modifiers);
 }
 
+void Composition::nextViewMode(unsigned int modifiers)
+{
+    View* alt = m_altview ; 
+    if(!alt) 
+    {
+        LOG(warning) << "Composition::nextViewMode there is no altview SKIPPING  " ; 
+        return ; 
+    } 
+    LOG(info) << "Composition::nextViewMode "
+              << ( m_alt ? "switch back to STANDARD view" : "switch to ALT view" )
+               ; 
+    m_altview = m_view ; 
+    m_view = alt ; 
+    m_alt = !m_alt ; 
+}
 
 
 unsigned int Composition::tick()
@@ -287,7 +304,7 @@ unsigned int Composition::tick()
     m_animator->step(bump);
     m_rotator->step(bump);
 
-    //m_view->tick();
+    m_view->tick();   // does nothing for standard view, animates for altview
 
     return m_count ; 
 }
@@ -298,7 +315,6 @@ void Composition::gui()
 {
 #ifdef GUI_
     if (!ImGui::CollapsingHeader("Composition")) return ;
-
 
 
     if(m_animator)
@@ -315,6 +331,7 @@ void Composition::gui()
 
 
     if(ImGui::Button("home")) home();
+    if(ImGui::Button("commit")) commitView();
 
     glm::vec4 eye  = m_view->getEye(m_model_to_world);
     glm::vec4 look = m_view->getLook(m_model_to_world);
@@ -385,7 +402,6 @@ void Composition::gui()
 
 #endif    
 }
-
 
 
 
@@ -639,7 +655,7 @@ void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToW
 
     m_extent = ce.w ; 
 
-    m_trackball->home();
+
     update();
 
     if(aim_)
@@ -658,6 +674,15 @@ void Composition::setEyeW(std::string eyew)
 {
     setEyeW(gvec4(eyew));
 }
+void Composition::setUpW(std::string upw)
+{
+    setUpW(gvec4(upw));
+}
+
+
+
+
+
 
 void Composition::setLookW(glm::vec4 lookw)
 {
@@ -686,6 +711,27 @@ void Composition::setEyeW(glm::vec4 eyew)
     m_view->setEye(eye);
 }
 
+void Composition::setUpW(glm::vec4 upw)
+{
+    upw.w = 0.0f ; 
+    glm::vec4 up = m_world_to_model * upw ; 
+
+    LOG(debug) << "Composition::setUpW" 
+               << " upw: " << gformat(upw)
+               << " up: " << gformat(up)
+               ;
+
+    m_view->setUp(up);
+}
+
+
+
+
+
+
+
+
+
 void Composition::setEyeGUI(glm::vec3 gui)
 {
     glm::vec4 eyew ;
@@ -701,7 +747,7 @@ void Composition::setEyeGUI(glm::vec3 gui)
     print(eyew, "eyew");
     print(eye, "eye");
 
-    m_view->setEye(eye);
+    m_view->setEye(eye); // model frame
 
 }
 
@@ -717,7 +763,7 @@ void Composition::aim(glm::vec4& ce, bool verbose)
          print(ce, "Composition::aim ce (world frame)"); 
          print(m_model_to_world, "Composition::aim m2w");
 
-         glm::vec4 eye  = m_view->getEye(m_model_to_world);
+         glm::vec4 eye  = m_view->getEye(m_model_to_world); // world frame
          glm::vec4 look = m_view->getLook(m_model_to_world);
          glm::vec4 gaze = m_view->getGaze(m_model_to_world);
 
@@ -893,6 +939,39 @@ void Composition::setChanged(bool changed)
 void Composition::setLookAngle(float phi)
 {
     m_lookphi = phi ; 
+}
+
+
+
+void Composition::commitView()
+{
+    // idea: 
+    //    change View state in conjunction with trackball and rotator homing
+    //    without changing the rendered view, 
+    //    ie folding trackball/rotator changes to viewpoint into the View
+
+    LOG(info) << "Composition::commitView " ; 
+
+    glm::vec4 viewpoint_eye(0.f, 0.f, 0.f, 1.f );
+    glm::vec4 viewpoint_world = m_eye2world * viewpoint_eye ; 
+
+    glm::vec4 lookpoint_eye(0.f, 0.f, -m_gazelength, 1.f );
+    glm::vec4 lookpoint_world = m_eye2world * lookpoint_eye ; 
+
+    glm::vec4 updir_eye(0.f, 1.f, 0.f, 0.f );
+    glm::vec4 updir_world = m_eye2world * updir_eye ; 
+
+    //  m_world_to_eye/m_eye_to_world incorporates the trackballing and rotation
+
+    setEyeW(viewpoint_world);
+    setLookW(lookpoint_world);
+    setUpW(updir_world);
+
+    m_trackball->home();
+    m_rotator->home();
+    assert(m_lookphi == 0.f );
+
+    update();
 }
 
 

@@ -192,7 +192,6 @@ void Scene::write(DynamicDefine* dd)
     dd->write( m_shader_dynamic_dir, "dynamic.h" );
 }
 
-
 void Scene::setRenderMode(const char* s)
 {
     std::vector<std::string> elem ; 
@@ -200,27 +199,58 @@ void Scene::setRenderMode(const char* s)
     
     for(unsigned int i=0 ; i < elem.size() ; i++)
     {
-        const char* el = elem[i].c_str();
+        const char* elem_ = elem[i].c_str();
+        const char* el ; 
+        bool setting = true ; 
+        if(elem_[0] == '-' || elem_[0] == '+')
+        {
+            setting = elem_[0] == '-' ? false : true ;
+            el = elem_ + 1 ; 
+        }
+        else
+        {
+            el = elem_ ; 
+        }
 
         if(strncmp(el, _BBOX, strlen(_BBOX))==0) 
         {
              unsigned int bbx = boost::lexical_cast<unsigned int>(el+strlen(_BBOX)) ;
              if(bbx < MAX_INSTANCE_RENDERER)
-                  *(m_bbox_mode+bbx) = true ;  
+                  *(m_bbox_mode+bbx) = setting ;  
         } 
         if(strncmp(el, _INSTANCE, strlen(_INSTANCE))==0) 
         {
              unsigned int ins = boost::lexical_cast<unsigned int>(el+strlen(_INSTANCE)) ;
              if(ins < MAX_INSTANCE_RENDERER)
-                  *(m_instance_mode+ins) = true ;  
+                  *(m_instance_mode+ins) = setting ;  
         } 
-        if(strcmp(el, GLOBAL)==0)  m_global_mode = true ; 
-        if(strcmp(el, AXIS)==0)    m_axis_mode = true ; 
-        if(strcmp(el, GENSTEP)==0) m_genstep_mode = true ; 
-        if(strcmp(el, PHOTON)==0)  m_photon_mode = true ; 
-        if(strcmp(el, RECORD)==0)  m_record_mode = true ; 
+        if(strcmp(el, GLOBAL)==0)  m_global_mode = setting ; 
+        if(strcmp(el, AXIS)==0)    m_axis_mode = setting ; 
+        if(strcmp(el, GENSTEP)==0) m_genstep_mode = setting ; 
+        if(strcmp(el, PHOTON)==0)  m_photon_mode = setting ; 
+        if(strcmp(el, RECORD)==0)  m_record_mode = setting ; 
     }
 }
+
+std::string Scene::getRenderMode()
+{
+    const char* delim = "," ; 
+
+    std::stringstream ss ; 
+
+    if(m_global_mode)  ss << GLOBAL << delim ; 
+    if(m_axis_mode)    ss << AXIS << delim ; 
+    if(m_genstep_mode) ss << GENSTEP << delim ; 
+    if(m_photon_mode) ss << PHOTON << delim ; 
+    if(m_record_mode) ss << RECORD << delim ; 
+
+    for(unsigned int i=0 ; i<MAX_INSTANCE_RENDERER ; i++) if(m_instance_mode[i]) ss << _INSTANCE << i << delim ; 
+    for(unsigned int i=0 ; i<MAX_INSTANCE_RENDERER ; i++) if(m_bbox_mode[i]) ss << _BBOX << i << delim ; 
+
+    return ss.str();
+}
+
+
 
 
 
@@ -689,9 +719,6 @@ void Scene::setTarget(unsigned int target, bool aim)
              ;
 
     m_composition->setCenterExtent(ce, aim); 
-
-
-
 }
 
 

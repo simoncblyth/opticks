@@ -1,10 +1,12 @@
 #pragma once
 
-#include "stdlib.h"
-#include "stdio.h"
-#include "assert.h"
-#include "string.h"
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+#include <cstring>
+#include <string>
 #include <vector>
+
 #include <glm/glm.hpp>
 
 
@@ -69,6 +71,7 @@ class Scene : public NConfigurable {
 
    public:
         void setRenderMode(const char* s);
+        std::string getRenderMode();
    public:
         typedef enum { REC, ALTREC, DEVREC, NUM_RECORD_STYLE } RecordStyle_t ;
         void setRecordStyle(Scene::RecordStyle_t style);
@@ -89,8 +92,10 @@ class Scene : public NConfigurable {
    public:
         void setWireframe(bool wire=true);
    public:
-        typedef enum { GVIS, GVISVEC, GVEC, GINVIS, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
-        void nextGlobalStyle();
+        typedef enum { GVIS, GINVIS, GVISVEC, GVEC, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
+        unsigned int getNumGlobalStyle(); 
+        void setNumGlobalStyle(unsigned int num_global_style); // used to disable GVISVEC GVEC styles for JUNO
+        void nextGlobalStyle();  // key Q (quiet)
         void applyGlobalStyle();
    public:
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
@@ -218,6 +223,7 @@ class Scene : public NConfigurable {
         GeometryStyle_t m_geometry_style ; 
         unsigned int    m_num_geometry_style ; 
         GlobalStyle_t   m_global_style ; 
+        unsigned int    m_num_global_style ; 
         InstanceStyle_t m_instance_style ; 
         bool            m_initialized ;  
         float           m_time_fraction ;  
@@ -264,6 +270,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_geometry_style(BBOX),
             m_num_geometry_style(0),
             m_global_style(GVIS),
+            m_num_global_style(0),
             m_instance_style(IVIS),
             m_initialized(false),
             m_time_fraction(0.f)
@@ -412,6 +419,21 @@ inline void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
 }
 
 
+
+inline unsigned int Scene::getNumGlobalStyle()
+{
+    return m_num_global_style == 0 ? NUM_GLOBAL_STYLE : m_num_global_style ;
+}
+inline void Scene::setNumGlobalStyle(unsigned int num_global_style)
+{
+    m_num_global_style = num_global_style ;
+}
+
+
+
+
+
+
 inline void Scene::nextGeometryStyle()
 {
     int next = (m_geometry_style + 1) % getNumGeometryStyle(); 
@@ -427,21 +449,24 @@ inline void Scene::setGeometryStyle(GeometryStyle_t style)
     applyGeometryStyle();
 }
 
-
-
-
 inline void Scene::nextGlobalStyle()
 {
-    int next = (m_global_style + 1) % NUM_GLOBAL_STYLE ; 
+    int next = (m_global_style + 1) % getNumGlobalStyle() ; 
     m_global_style = (GlobalStyle_t)next ; 
     applyGlobalStyle();
 }
 
 
 
-
 inline void Scene::applyGlobalStyle()
 {
+   // { GVIS, 
+   //   GINVIS, 
+   //   GVISVEC, 
+   //   GVEC, 
+   //   NUM_GLOBAL_STYLE }
+
+
     switch(m_global_style)
     {
         case GVIS:
@@ -460,8 +485,7 @@ inline void Scene::applyGlobalStyle()
                   m_global_mode = false ;    
                   m_globalvec_mode = false ;
                   break ; 
-
-         default:
+        default:
                   assert(0);
         
     }
@@ -477,7 +501,7 @@ inline void Scene::nextInstanceStyle()
     applyInstanceStyle();
 }
 
-inline void Scene::applyInstanceStyle()
+inline void Scene::applyInstanceStyle()  // I:key 
 {
     // hmm some overlap with GeometryStyle ... but that includes wireframe which can be very slow
     bool inst(false);
@@ -497,6 +521,7 @@ inline void Scene::applyInstanceStyle()
    for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
    {
        m_instance_mode[i] = inst ; 
+       m_bbox_mode[i] = !inst ; 
    } 
 
 }

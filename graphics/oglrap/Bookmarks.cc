@@ -1,14 +1,16 @@
 // oglrap-
 #include "Bookmarks.hh"
 #include "Interactor.hh"
+#include "InterpolatedView.hh"
 
 #include <cstring>
+#include <sstream>
 
 #ifdef GUI_
 #include <imgui.h>
 #endif
 
-
+#include "regexsearch.hh"
 #include <boost/lexical_cast.hpp>
 
 // npy-
@@ -16,20 +18,45 @@
 #include "NState.hpp"
 #include "NLog.hpp"
 
+typedef std::map<unsigned int, NState*>::const_iterator MUSI ; 
 
-Bookmarks::Bookmarks(NState* state)  
+
+Bookmarks::Bookmarks(const char* dir)  
        :
-       m_state(state),
+       m_dir(NULL),
+       m_state(NULL),
        m_current(UNSET),
        m_current_gui(UNSET),
+       m_view(NULL),
        m_verbose(false)
 {
+    std::string _dir = os_path_expandvars(dir) ;
+    m_dir = strdup(_dir.c_str());
     init();
 }
+
 
 void Bookmarks::init()
 {
     readdir();
+}
+
+void Bookmarks::setState(NState* state)
+{
+    m_state = state ; 
+}
+
+
+std::string Bookmarks::description(const char* msg)
+{
+    std::stringstream ss ; 
+    ss << msg << " " << getTitle() ; 
+    return ss.str();
+}
+
+void Bookmarks::Summary(const char* msg)
+{
+    LOG(info) << description(msg);
 }
 
 
@@ -40,45 +67,44 @@ void Bookmarks::updateTitle()
 }
 
 
+int Bookmarks::parseName(const std::string& basename)
+{
+    int num(UNSET);
+    try
+    { 
+        num = boost::lexical_cast<int>(basename) ;
+    }   
+    catch (const boost::bad_lexical_cast& e ) 
+    { 
+        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+    }   
+    catch( ... )
+    {
+        LOG(warning) << "Unknown exception caught!" ;
+    }   
+    return num ; 
+}
+
+
+
 void Bookmarks::readdir()
 {
     m_bookmarks.clear();
 
     typedef std::vector<std::string> VS ;
     VS basenames ; 
-    dirlist(basenames, m_state->getDir(), ".ini" );  // basenames do not include the .ini
+    dirlist(basenames, m_dir, ".ini" );  // basenames do not include the .ini
 
-    if(m_verbose)
-    LOG(info) << "Bookmarks::readdir " << m_state->getDir() ;
+    LOG(debug) << "Bookmarks::readdir " << m_dir ;
 
     for(VS::const_iterator it=basenames.begin() ; it != basenames.end() ; it++)
     {
         std::string basename = *it ; 
-
-        if(m_verbose)
-        LOG(info) << "Bookmarks::readdir basename " << basename ; 
-
-        int num(UNSET);
-        try
-        { 
-            num = boost::lexical_cast<int>(basename) ;
-        }   
-        catch (const boost::bad_lexical_cast& e ) 
-        { 
-            LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
-        }   
-        catch( ... )
-        {
-            LOG(warning) << "Unknown exception caught!" ;
-        }   
+        int num = parseName(basename); 
         if(num == UNSET) continue ; 
 
-        m_bookmarks[num] = basename ; 
-
-        if(m_verbose) 
-        LOG(info) << "Bookmarks::readdir " << num ;  
+        m_bookmarks[num] = NState::load(m_dir, num ) ; 
     }
-
 
     updateTitle();
 }
@@ -90,16 +116,27 @@ void Bookmarks::number_key_released(unsigned int num)
 
 void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
 {
+    LOG(debug) << "Bookmarks::number_key_pressed "
+               << " num "  << num 
+               << " modifiers " << Interactor::describeModifiers(modifiers) 
+               ; 
+
+    bool shift = Interactor::isShift(modifiers) ;
     bool exists_ = exists(num);
     if(exists_)
     {
-        LOG(debug) << "Bookmarks::number_key_pressed "
-                  << " num "  << num 
-                  << " modifiers " << Interactor::describeModifiers(modifiers) 
-                  ; 
-
-        setCurrent(num);
-        apply();
+        if(num == m_current && shift)
+        { 
+            // repeating pressing a num key when on that bookmark with shift down
+            LOG(info) << "Bookmarks::number_key_pressed repeat current book mark with shift" ;
+            m_state->save();
+        }
+        else
+        { 
+            // set m_state name from m_current, load and apply : ie set values of attached configurables
+            setCurrent(num);
+            apply();  
+        }
     }
     else
     {
@@ -163,12 +200,11 @@ void Bookmarks::gui()
     ImGui::SameLine();
     if(ImGui::Button("apply")) apply();
 
-    typedef std::map<unsigned int, std::string>::const_iterator MUSI ; 
 
     for(MUSI it=m_bookmarks.begin() ; it!=m_bookmarks.end() ; it++)
     {
          unsigned int num = it->first ; 
-         std::string name = it->second ; 
+         std::string name = NState::FormName(num) ; 
          ImGui::RadioButton(name.c_str(), &m_current_gui, num);
     }
 
@@ -179,7 +215,38 @@ void Bookmarks::gui()
         ImGui::Text(" changed : %d ", m_current);
         apply();
     }
+
+
+    if(ImGui::Button("interpolatedView")) getInterpolatedView();
+
 #endif
 }
+
+
+InterpolatedView* Bookmarks::makeInterpolatedView()
+{
+    LOG(info) << "Bookmarks::makeInterpolatedView" ; 
+    InterpolatedView* iv = new InterpolatedView ; 
+    for(MUSI it=m_bookmarks.begin() ; it!=m_bookmarks.end() ; it++)
+    {
+         unsigned int num = it->first ; 
+         NState* state = it->second ; 
+
+         View* v = new View ; 
+         state->addConfigurable(v);
+         state->apply();
+
+         iv->addView(v);
+    }
+    return iv ; 
+}
+
+InterpolatedView* Bookmarks::getInterpolatedView()
+{
+    if(!m_view) m_view = makeInterpolatedView();
+    return m_view ;             
+}
+
+
 
 

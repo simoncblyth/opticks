@@ -26,6 +26,7 @@ class Animator {
         Animator(float* target, unsigned int period, float low=0.f, float high=1.f);
         void setModeRestrict(Mode_t restrict_);
 
+        void home();
         void reset();
         bool step(bool& bump); 
         void Summary(const char* msg);
@@ -229,6 +230,15 @@ inline void Animator::reset()
 {
     m_count = 0 ; 
 }
+
+
+inline void Animator::home()
+{
+    m_count = 0 ; 
+    bool bump(false);
+    step(bump);
+}
+
 
 
 inline unsigned int Animator::find_closest_index(float f )
