@@ -331,11 +331,12 @@ void App::prepareViz()
 
 
 
-    InterpolatedView* iv = m_bookmarks->getInterpolatedView() ;
-
-    iv->Summary("App::prepareViz InterpolatedView");
+    InterpolatedView* iv = m_bookmarks->getInterpolatedView() ; // creates the interpolation based on initial bookmarks
 
     m_composition->setAltView(iv);
+
+    iv->Summary("App::prepareViz setting composition.altview to InterpolatedView");
+
 
 
     TIMER("prepareScene");

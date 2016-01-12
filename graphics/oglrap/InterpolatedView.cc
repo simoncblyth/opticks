@@ -3,8 +3,13 @@
 #include "NLog.hpp"
 
 #include <boost/lexical_cast.hpp>
-
 #include <sstream>
+
+#ifdef GUI_
+#include <imgui.h>
+#endif
+
+
 
 const char* InterpolatedView::PREFIX = "interpolatedview" ;
 const char* InterpolatedView::getPrefix()
@@ -15,7 +20,7 @@ const char* InterpolatedView::getPrefix()
 void InterpolatedView::init()
 {
     m_animator = new Animator(&m_fraction, m_period, 0.f, 1.f ); 
-    m_animator->setModeRestrict(Animator::NORM);  // only OFF and SLOW 
+    //m_animator->setModeRestrict(Animator::NORM);  // only OFF,SLOW,NORM,FAST, 
     m_animator->Summary("InterpolatedView::init");
     m_animator->setMode(Animator::SLOW);
 }
@@ -25,6 +30,18 @@ bool InterpolatedView::hasChanged()
     return m_count > 0 && m_animator->isActive() ;  
 }
 
+void InterpolatedView::nextMode(unsigned int modifiers)
+{
+    m_animator->nextMode(modifiers);
+}
+
+bool InterpolatedView::isActive()
+{
+    return m_animator->isActive();
+}
+
+
+
 void InterpolatedView::tick()
 {
     m_count++ ; 
@@ -33,12 +50,12 @@ void InterpolatedView::tick()
 
     m_animator->step(bump);
 
-    LOG(info) << description("IV::tick") << " : " << m_animator->description() ;
+    //LOG(info) << description("IV::tick") << " : " << m_animator->description() ;
 
     if(bump)
     {
-        LOG(info) << "InterpolatedView::tick BUMP " ; 
         nextPair();
+        LOG(info) << description("InterpolatedView::tick BUMP ") ; 
     }
 }
 
@@ -99,5 +116,22 @@ void InterpolatedView::Summary(const char* msg)
         v->Summary(vmsg.c_str());
     }
 }
+
+
+void InterpolatedView::gui()
+{
+#ifdef GUI_
+    if(m_animator)
+    {
+         m_animator->gui("InterpolatedView ", "%0.3f", 2.0f);
+         ImGui::Text(" fraction %10.3f ", m_fraction  );
+    }
+#endif    
+}
+
+
+
+
+
 
 

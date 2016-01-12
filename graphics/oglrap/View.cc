@@ -17,7 +17,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-
 #ifdef GUI_
 #include <imgui.h>
 #endif
@@ -347,10 +346,23 @@ glm::vec4 View::getGaze()
     return glm::vec4( m_look.x - m_eye.x, m_look.y - m_eye.y , m_look.z - m_eye.z, 0.0f );
 }
 
+
+
 void View::tick()
 {
    // do nothing default, overridden in InterpolatedView
 }
+void View::nextMode(unsigned int)
+{
+   // do nothing default, overridden in InterpolatedView
+}
+bool View::isActive()
+{
+   return false ; 
+}
+
+
+
 
 
 glm::vec4 View::getGaze(const glm::mat4& m2w, bool debug)

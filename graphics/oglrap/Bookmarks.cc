@@ -217,7 +217,8 @@ void Bookmarks::gui()
     }
 
 
-    if(ImGui::Button("interpolatedView")) getInterpolatedView();
+    InterpolatedView* iv = getInterpolatedView();
+    iv->gui();
 
 #endif
 }

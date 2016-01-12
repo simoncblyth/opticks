@@ -22,7 +22,6 @@ public:
    View();
 
    void configureS(const char* name, std::vector<std::string> values);
-   void gui();
 
  public:
    // Configurable
@@ -55,13 +54,16 @@ public:
    float* getUpPtr();
 
 public:
-   // methods overridden in InterpolateView
+   // methods overridden in InterpolatedView
    virtual glm::vec4 getEye(const glm::mat4& m2w);
    virtual glm::vec4 getLook(const glm::mat4& m2w);
    virtual glm::vec4 getUp(const glm::mat4& m2w);
    virtual glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
    virtual void tick();
+   virtual void nextMode(unsigned int modifiers);
+   virtual bool isActive(); // always false, used in InterpolatedView
    virtual bool hasChanged();
+   virtual void gui();
 public:
    glm::mat4 getLookAt(const glm::mat4& m2w, bool debug=false);
 

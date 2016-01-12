@@ -120,30 +120,39 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
 
 
 const char* Interactor::keys = 
-"\n A : Composition::nextMode     record animation, enable and control speed  "
-"\n B : Scene::nextGeometryStyle  bbox/norm/wire "
-"\n C : Clipper::next             toggle geometry clipping "
-"\n D : Camera::nextStyle         perspective/orthographic "
-"\n E : Composition::nextGeometryStyle  lightshader/normalshader/flatvertex/facecolor "
-"\n F : far mode toggle : swipe up/down change frustum far "
-"\n G : gui mode    toggle GUI "
-"\n H : Trackball::home  "
-"\n I : Scene::nextInstanceStyle style of instanced geometry eg PMT visibility  "
-"\n J : Scene::jump  "
-"\n K : Composition::nextPickPhotonStyle "
-"\n L : Composition::nextNormalStyle     flip normal in shaders "
-"\n M : Composition::nextColorStyle      m1/m2/f1/f2/p1/p2      "
-"\n N : near mode toggle : swipe up/down to change frustum near "  
-"\n O : OptiX render mode  toggle "
-"\n P : Scene::nextPhotonStyle       dot/longline/shortline  "
-"\n Q : Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
-"\n R : rotate mode toggle  drag around rotate around viewpoint " 
-"\n S : screen scale mode toggle  drag up/down to change screen scale " 
-"\n V : View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
-"\n W : decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
-"\n X : pan mode toggle "
-"\n Y : yfov mode toggle "
-"\n Z : zoom mode toggle   (actually z not zoom) " 
+"\n A: Composition::nextMode     record animation, enable and control speed  "
+"\n B: Scene::nextGeometryStyle  bbox/norm/wire "
+"\n C: Clipper::next             toggle geometry clipping "
+"\n D: Camera::nextStyle         perspective/orthographic "
+"\n E: Composition::nextGeometryStyle  lightshader/normalshader/flatvertex/facecolor "
+"\n F: far mode toggle : swipe up/down change frustum far "
+"\n G: gui mode    toggle GUI "
+"\n H: Trackball::home  "
+"\n I: Scene::nextInstanceStyle style of instanced geometry eg PMT visibility  "
+"\n J: Scene::jump  "
+"\n K: Composition::nextPickPhotonStyle "
+"\n L: Composition::nextNormalStyle     flip normal in shaders "
+"\n M: Composition::nextColorStyle      m1/m2/f1/f2/p1/p2      "
+"\n N: near mode toggle : swipe up/down to change frustum near "  
+"\n O: OptiX render mode  toggle "
+"\n P: Scene::nextPhotonStyle       dot/longline/shortline  "
+"\n Q: Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
+"\n R: rotate mode toggle  drag around rotate around viewpoint " 
+"\n S: screen scale mode toggle  drag up/down to change screen scale " 
+"\n T: Composition::nextViewMode " 
+"\n U: Composition::swapView, use to swap between view/altview : altview is InterpolatedView  " 
+"\n V: View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
+"\n W: decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
+"\n X: pan mode toggle "
+"\n Y: yfov mode toggle "
+"\n Z: zoom mode toggle   (actually z not zoom) " 
+"\n 0-9: jump to preexisting bookmark  " 
+"\n 0-9 + shift: create or update bookmark  " 
+"\n "
+"\n Holding shift whilst changing any of the Animator modes reverses Animation time direction "
+"\n A: event propagation "
+"\n V: geometry rotation "
+"\n T: interpolated navigation "
 "\n ";
 
 void Interactor::key_pressed(unsigned int key)
@@ -153,14 +162,15 @@ void Interactor::key_pressed(unsigned int key)
     if(key < NUM_KEYS) m_keys_down[key] = true ; 
 
     if(key > 245) printf("Interactor::key_pressed %u \n", key );
+    unsigned int modifiers = getModifiers(); 
 
     switch (key)
     {
         //  ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        //  *******************  *****
+        //  **************************
 
         case GLFW_KEY_A:
-            m_composition->nextAnimatorMode(getModifiers()) ; 
+            m_composition->nextAnimatorMode(modifiers) ; 
             break;
         case GLFW_KEY_B:
             m_scene->nextGeometryStyle(); 
@@ -182,7 +192,7 @@ void Interactor::key_pressed(unsigned int key)
             m_gui_mode = !m_gui_mode ; 
             break;
         case GLFW_KEY_H:
-            m_trackball->home(); 
+            m_composition->home(); 
             break;
         case GLFW_KEY_I:
             m_scene->nextInstanceStyle(); 
@@ -218,17 +228,17 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_S:
             m_scale_mode = !m_scale_mode ; 
             break;
+        case GLFW_KEY_T:
+            m_composition->nextViewMode(modifiers) ; 
+            break;
+        case GLFW_KEY_U:
+            m_composition->changeView(modifiers) ; 
+            break;
         case GLFW_KEY_V:
-            {
-               unsigned int modifiers = getModifiers(); 
-               if(isCommand(modifiers))
-                   m_composition->nextViewMode(modifiers) ; 
-               else
-                   m_composition->nextRotatorMode(modifiers) ; 
-            }
+            m_composition->nextRotatorMode(modifiers) ; 
             break;
         case GLFW_KEY_W:
-            nextOptiXResolutionScale(getModifiers()); 
+            nextOptiXResolutionScale(modifiers); 
             break;
         case _pan_mode_key:
             m_pan_mode = !m_pan_mode ; 

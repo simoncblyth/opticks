@@ -276,21 +276,32 @@ void Composition::nextRotatorMode(unsigned int modifiers)
     m_rotator->nextMode(modifiers);
 }
 
+
 void Composition::nextViewMode(unsigned int modifiers)
+{
+    if(!m_alt)
+    {
+       LOG(info) << "Composition::nextViewMode does nothing in standard view, switch to altview with U:changeView " ; 
+       return ;
+    }
+    m_view->nextMode(modifiers);    
+}
+
+
+
+void Composition::changeView(unsigned int /*modifiers*/)
 {
     View* alt = m_altview ; 
     if(!alt) 
     {
-        LOG(warning) << "Composition::nextViewMode there is no altview SKIPPING  " ; 
+        LOG(warning) << "Composition::changeView there is no altview SKIPPING  " ; 
         return ; 
     } 
-    LOG(info) << "Composition::nextViewMode "
-              << ( m_alt ? "switch back to STANDARD view" : "switch to ALT view" )
-               ; 
     m_altview = m_view ; 
     m_view = alt ; 
     m_alt = !m_alt ; 
 }
+
 
 
 unsigned int Composition::tick()
@@ -340,6 +351,15 @@ void Composition::gui()
     ImGui::Text(" eye  : %s ", gformat(eye).c_str()); 
     ImGui::Text(" look : %s ", gformat(look).c_str()); 
     ImGui::Text(" gaze : %s ", gformat(gaze).c_str()); 
+
+
+    glm::vec4 viewpoint = getViewpoint();
+    glm::vec4 lookpoint = getLookpoint();
+    glm::vec4 updir = getUpdir();
+
+    ImGui::Text(" viewpoint  : %s ", gformat(viewpoint).c_str()); 
+    ImGui::Text(" lookpoint  : %s ", gformat(lookpoint).c_str()); 
+    ImGui::Text(" updir      : %s ", gformat(updir).c_str()); 
 
 
    /*
@@ -403,13 +423,6 @@ void Composition::gui()
 #endif    
 }
 
-
-
-void Composition::home()
-{
-    m_view->home();
-    m_trackball->home();
-}
 
 
 unsigned int Composition::getWidth()
@@ -716,7 +729,7 @@ void Composition::setUpW(glm::vec4 upw)
     upw.w = 0.0f ; 
     glm::vec4 up = m_world_to_model * upw ; 
 
-    LOG(debug) << "Composition::setUpW" 
+    LOG(info) << "Composition::setUpW" 
                << " upw: " << gformat(upw)
                << " up: " << gformat(up)
                ;
@@ -943,29 +956,53 @@ void Composition::setLookAngle(float phi)
 
 
 
+glm::vec4 Composition::transformEyeToWorld(const glm::vec4& eye)
+{
+    //  m_world2eye/m_eye2world incorporates the trackballing and rotation
+    return m_eye2world * eye ; 
+}
+glm::vec4 Composition::getViewpoint()
+{
+    glm::vec4 viewpoint_eye(0.f, 0.f, 0.f, 1.f ); // viewpoint of observer
+    return transformEyeToWorld(viewpoint_eye);
+}
+glm::vec4 Composition::getLookpoint()   
+{
+    glm::vec4 lookpoint_eye(0.f, 0.f, -m_gazelength, 1.f ); // lookpoint observed
+    return transformEyeToWorld(lookpoint_eye);
+}
+glm::vec4 Composition::getUpdir()
+{
+    glm::vec4 updir_eye(0.f, 1.f, 0.f, 0.f );
+    return transformEyeToWorld(updir_eye);
+}
+
+
 void Composition::commitView()
 {
-    // idea: 
-    //    change View state in conjunction with trackball and rotator homing
-    //    without changing the rendered view, 
-    //    ie folding trackball/rotator changes to viewpoint into the View
+    // This is invoked by pressing shift+number_key (0-9) 
+    // whilst currently at that bookmark. 
+    // This can be used to update the bookmark
+    //
+    // fold trackball/rotator changes to viewpoint into the View
+    // and home the trackball and rotator
+    // without changing the rendered view 
+    //
+    //  TODO:
+    //     updir coming out 0,0,0 and having to change in the .ini
+    //     NState::apply view.up change 0.0000,0.0000,1.0000 --> 0.0000,0.0000,0.0000
+    //     
+    //
 
     LOG(info) << "Composition::commitView " ; 
 
-    glm::vec4 viewpoint_eye(0.f, 0.f, 0.f, 1.f );
-    glm::vec4 viewpoint_world = m_eye2world * viewpoint_eye ; 
+    glm::vec4 viewpoint = getViewpoint();
+    glm::vec4 lookpoint = getLookpoint();
+    glm::vec4 updir = getUpdir();
 
-    glm::vec4 lookpoint_eye(0.f, 0.f, -m_gazelength, 1.f );
-    glm::vec4 lookpoint_world = m_eye2world * lookpoint_eye ; 
-
-    glm::vec4 updir_eye(0.f, 1.f, 0.f, 0.f );
-    glm::vec4 updir_world = m_eye2world * updir_eye ; 
-
-    //  m_world_to_eye/m_eye_to_world incorporates the trackballing and rotation
-
-    setEyeW(viewpoint_world);
-    setLookW(lookpoint_world);
-    setUpW(updir_world);
+    setEyeW(viewpoint);
+    setLookW(lookpoint);
+    setUpW(updir);
 
     m_trackball->home();
     m_rotator->home();
@@ -973,6 +1010,16 @@ void Composition::commitView()
 
     update();
 }
+
+
+
+void Composition::home()
+{
+    //m_view->home();
+    m_trackball->home();
+    m_rotator->home();
+}
+
 
 
 void Composition::update()

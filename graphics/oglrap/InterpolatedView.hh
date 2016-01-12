@@ -10,7 +10,7 @@ class InterpolatedView :  public View {
         virtual const char* getPrefix();
     public:
         InterpolatedView();
-        void tick();
+        
         void addView(View* view);
         void Summary(const char* msg="View::Summary");
     public:
@@ -19,7 +19,11 @@ class InterpolatedView :  public View {
         glm::vec4 getLook(const glm::mat4& m2w);
         glm::vec4 getUp(const glm::mat4& m2w);
         glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
+        void tick();
+        bool isActive();
         bool hasChanged();
+        void nextMode(unsigned int modifiers);
+        void gui();
     public:
         unsigned int getNumViews();
         void setFraction(float fraction);

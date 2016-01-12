@@ -70,6 +70,7 @@ class Composition : public NConfigurable {
       void nextAnimatorMode(unsigned int modifiers);
       void nextRotatorMode(unsigned int modifiers);
       void nextViewMode(unsigned int modifiers);
+      void changeView(unsigned int modifiers);
       unsigned int tick();
       unsigned int getCount();
    private:
@@ -228,8 +229,12 @@ class Composition : public NConfigurable {
       float getExtent();
       float getNear();
       float getFar();
-
-
+  public:
+      // position of the observer "Viewpoint" and the observed "Lookpoint" using m_eye_to_world/m_world_to_eye
+      glm::vec4 transformEyeToWorld(const glm::vec4& eye);
+      glm::vec4 getLookpoint();
+      glm::vec4 getViewpoint();
+      glm::vec4 getUpdir();
   public: 
       unsigned int getWidth();
       unsigned int getHeight();
