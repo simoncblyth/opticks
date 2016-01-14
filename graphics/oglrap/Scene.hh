@@ -50,8 +50,9 @@ class Scene : public NConfigurable {
         static const char* ALTREC_ ; 
         static const char* DEVREC_ ; 
    public:
-        static const char* NORM_ ; 
         static const char* BBOX_ ; 
+        static const char* NORM_ ; 
+        static const char* NONE_ ; 
         static const char* WIRE_ ; 
         static const char* NORM_BBOX_ ; 
    public:
@@ -81,7 +82,7 @@ class Scene : public NConfigurable {
         void nextPhotonStyle();
    public:
         // disabled styles after NUM_GEOMETRY_STYLE
-        typedef enum { BBOX, NORM, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
+        typedef enum { BBOX, NORM, NONE, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
         void setGeometryStyle(Scene::GeometryStyle_t style);
         unsigned int getNumGeometryStyle(); // allows ro override the enum
         void setNumGeometryStyle(unsigned int num_geometry_style); // used to disable WIRE style for JUNO
@@ -521,7 +522,7 @@ inline void Scene::applyInstanceStyle()  // I:key
    for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
    {
        m_instance_mode[i] = inst ; 
-       m_bbox_mode[i] = !inst ; 
+       //m_bbox_mode[i] = !inst ; 
    } 
 
 }

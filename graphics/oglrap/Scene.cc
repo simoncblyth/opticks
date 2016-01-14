@@ -70,8 +70,9 @@ const char* Scene::REC_ = "point" ;
 const char* Scene::ALTREC_ = "line" ; 
 const char* Scene::DEVREC_ = "vector" ; 
 
-const char* Scene::NORM_ = "norm" ;   
 const char* Scene::BBOX_ = "bbox" ; 
+const char* Scene::NORM_ = "norm" ;   
+const char* Scene::NONE_ = "none" ;   
 const char* Scene::WIRE_ = "wire" ; 
 const char* Scene::NORM_BBOX_ = "norm_bbox" ; 
 
@@ -94,8 +95,9 @@ const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
 {
    switch(style)
    {
-      case NORM:return NORM_ ; break; 
       case BBOX:return BBOX_ ; break; 
+      case NORM:return NORM_ ; break; 
+      case NONE:return NONE_ ; break; 
       case WIRE:return WIRE_ ; break; 
       case NORM_BBOX:return NORM_BBOX_ ; break; 
       case NUM_GEOMETRY_STYLE:assert(0) ; break ; 
@@ -111,7 +113,7 @@ const char* Scene::getGeometryStyleName()
 
 
 
-void Scene::applyGeometryStyle()
+void Scene::applyGeometryStyle()  // B:key 
 {
     bool inst ; 
     bool bbox ; 
@@ -126,6 +128,11 @@ void Scene::applyGeometryStyle()
              break;
       case NORM:
              inst = true ;
+             bbox = false ; 
+             wire = false ; 
+             break;
+      case NONE:
+             inst = false ;
              bbox = false ; 
              wire = false ; 
              break;
