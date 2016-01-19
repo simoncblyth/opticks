@@ -15,6 +15,7 @@ class Clipper ;
 class Touchable ; 
 class Frame ;   
 class Scene ;   
+class Animator ; 
 
 
 class Interactor {
@@ -92,6 +93,7 @@ class Interactor {
        Touchable*   m_touchable ; 
        Frame*       m_frame; 
        Scene*       m_scene; 
+       Animator*    m_animator ; 
       
 
        bool m_zoom_mode ;
@@ -104,6 +106,7 @@ class Interactor {
        bool m_rotate_mode ;
        bool m_bookmark_mode ;
        bool m_gui_mode ;
+       bool m_scrub_mode ;
        bool m_keys_down[NUM_KEYS] ; 
 
        int  m_optix_mode ;
@@ -141,6 +144,7 @@ inline Interactor::Interactor()
    m_touchable(NULL),
    m_frame(NULL),
    m_scene(NULL),
+   m_animator(NULL),
    m_zoom_mode(false), 
    m_pan_mode(false), 
    m_near_mode(false), 
@@ -150,6 +154,7 @@ inline Interactor::Interactor()
    m_rotate_mode(false),
    m_bookmark_mode(false),
    m_gui_mode(false),
+   m_scrub_mode(false),
    m_optix_mode(0),
    m_optix_resolution_scale(1),
    m_dragfactor(1.f),

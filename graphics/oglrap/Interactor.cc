@@ -13,6 +13,7 @@
 #include "Clipper.hh"
 #include "Touchable.hh"
 #include "Scene.hh"
+#include "Animator.hh"
 
 
 #include <string>
@@ -72,6 +73,7 @@ void Interactor::setComposition(Composition* composition)
     m_view   = composition->getView();
     m_trackball = composition->getTrackball();
     m_clipper  = composition->getClipper();
+    m_animator = NULL ;  // defer
 }
 
 
@@ -110,6 +112,11 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     {
         m_trackball->drag_to(df*x,df*y,df*dx,df*dy);
     }
+    else if( m_scrub_mode )
+    {
+        if(!m_animator) m_animator = m_composition->getAnimator();
+        m_animator->scrub_to(df*x,df*y,df*dx,df*dy);
+    }
     else
     {
         m_frame->touch(ix, iy );  
@@ -130,7 +137,7 @@ const char* Interactor::keys =
 "\n H: Trackball::home  "
 "\n I: Scene::nextInstanceStyle style of instanced geometry eg PMT visibility  "
 "\n J: Scene::jump  "
-"\n K: Composition::nextPickPhotonStyle "
+"\n K: Composition::nextPickPhotonStyle OR toggle scrub mode "
 "\n L: Composition::nextNormalStyle     flip normal in shaders "
 "\n M: Composition::nextColorStyle      m1/m2/f1/f2/p1/p2      "
 "\n N: near mode toggle : swipe up/down to change frustum near "  
@@ -201,7 +208,8 @@ void Interactor::key_pressed(unsigned int key)
             m_scene->jump(); 
             break;
         case GLFW_KEY_K:
-            m_composition->nextPickPhotonStyle(); 
+            //m_composition->nextPickPhotonStyle(); 
+            m_scrub_mode = !m_scrub_mode ; 
             break;
         case GLFW_KEY_L:
             m_composition->nextNormalStyle(); 

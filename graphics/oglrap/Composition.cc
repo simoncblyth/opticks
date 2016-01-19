@@ -226,10 +226,6 @@ void Composition::configureI(const char* name, std::vector<int> values )
     }
 }
 
-
-
-
-
 void Composition::addConfig(Cfg* cfg)
 {
     // hmm problematic with bookmarks that swap out Camera, View, ...
@@ -239,8 +235,6 @@ void Composition::addConfig(Cfg* cfg)
     cfg->add(new TrackballCfg<Trackball>(    "trackball",   getTrackball(),true));
     cfg->add(new ClipperCfg<Clipper>(        "clipper",     getClipper(),  true));
 }
-
-
 
 void Composition::initAnimator()
 {
@@ -255,6 +249,14 @@ void Composition::initAnimator()
     m_animator->setModeRestrict(Animator::FAST);
     m_animator->Summary("Composition::gui setup Animation");
 }
+
+
+Animator* Composition::getAnimator()
+{
+    if(!m_animator) initAnimator() ;
+    return m_animator ; 
+}
+
 
 void Composition::initRotator()
 {

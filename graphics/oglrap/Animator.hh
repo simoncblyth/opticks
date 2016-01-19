@@ -30,6 +30,7 @@ class Animator {
         void reset();
         bool step(bool& bump); 
         void Summary(const char* msg);
+        void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
 
         float* getTarget(); 
         float getLow(); 
@@ -45,6 +46,10 @@ class Animator {
 
         char* description();
 
+    private:
+       // used for scrubbing
+        void          setTargetValue(float value);
+        void          setFraction(float f);
     private:
         void          modeTransition(float fraction);
         void          setTarget(float* target); // qty to be stepped
@@ -176,6 +181,31 @@ inline bool Animator::isActive()
 inline void Animator::setTarget(float* target)
 {
     m_target = target ;
+}
+
+inline void Animator::scrub_to(float x, float y, float dx, float dy) // Interactor:K scrub_mode
+{
+   // hmm maybe easier to make separate mostly transparent ImGui window with just the time scrubber
+   // to avoid wheel reinvention
+    if(m_mode == OFF) return ; 
+
+    float val = getValue();
+    val += 30.*dy ; 
+    setTargetValue(val);
+}
+
+inline void Animator::setTargetValue(float val)
+{
+    if(val < m_low)         val = m_high ;
+    else if( val > m_high ) val = m_low  ; 
+
+    float f = getFractionForValue(val);
+    setFraction(f);
+}
+
+inline void Animator::setFraction(float f)
+{
+    *m_target = m_low + (m_high-m_low)*f ; 
 }
 
 

@@ -67,6 +67,7 @@ class Composition : public NConfigurable {
       void setupConfigurableState(NState* state);
       virtual ~Composition();
    public:
+      Animator* getAnimator();
       void nextAnimatorMode(unsigned int modifiers);
       void nextRotatorMode(unsigned int modifiers);
       void nextViewMode(unsigned int modifiers);
@@ -76,6 +77,8 @@ class Composition : public NConfigurable {
    private:
       void initAnimator();
       void initRotator();
+   public:
+       void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
    public:
        typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLOR_STYLE } ColorStyle_t ;
        static const char* getColorStyleName(Composition::ColorStyle_t style);

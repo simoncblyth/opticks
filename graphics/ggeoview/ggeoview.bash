@@ -148,15 +148,15 @@ ggv-jpmt-viz(){
 }
 
 jpmt(){ 
-    local pt2px=1
+    local pt2px=2
     local vga=640,480,$pt2px
-    local ipad=1024,768,$pt2px 
+    local projector=1024,768,$pt2px 
     local retina=2880,1704,$pt2px
     local retina_full=2880,1800,$pt2px
 
     #local size="--size $retina_full"
     #local size="--size $vga"
-    #local size="--size $ipad"
+    #local size="--size $projector"
     local size=""
 
     ggv --jpmt --cerenkov --animtimemax 80 --load $size  $*
