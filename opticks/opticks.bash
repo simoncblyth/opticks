@@ -5,6 +5,276 @@ opticks-vi(){       vi $(opticks-source) ; }
 opticks-env(){      elocal- ; }
 opticks-usage(){ cat << EOU
 
+Brief History
+==============
+
+**Aug-Dec 2013**
+
+* study Geant4 and Chroma optical photon propagation
+* develop C++ Geant4 geometry exporter : G4DAE 
+* experiment with geometry visualizations (webgl, meshlab)
+
+**Jan-Feb 2014**
+
+* purchase Macbook Pro laptop GPU: NVIDIA GeForce GT 750M
+* integrate G4DAE geometry with Chroma 
+
+**Mar-Apr 2014**
+
+* forked Chroma, adding G4DAE integration and efficient interop buffers
+* develop g4daeview geometry viewer (based on pyopengl, glumpy)  
+
+**May 2014**
+
+* develop ChromaZMQRoot approach to transporting photons from NuWa to Chroma 
+
+**June/July 2014*
+
+* create GLSL shader visualizations of photon propagations 
+* reemission debug 
+
+**August 2014**
+
+* export Daya Bay PMT identifiers
+* develop non-graphical propagator
+
+**September 2014**
+
+* present G4DAE geometry exporter at: 19th Geant4 Collaboration Meeting, Okinawa, Sept 2014
+
+**October/November 2014**
+
+* develop G4DAEChroma (photon transport over ZMQ): Geant4 to Chroma runtime bridge 
+
+**December 2014**
+
+* realize photon transport has too much overhead
+* implement Cerenkov and Scintillation step transport and photon generation on GPU 
+
+**January/February 2015**
+
+* realize lack of multi-GPU support is showstopper for Chroma
+* find NVIDIA OptiX, initial tests suggest drastically 50x faster than Chroma
+* decide to create Opticks (replacing Chroma) based on NVIDIA OptiX  
+
+
+
+Development History
+====================
+
+July 2013 (surveying landscape)
+-----------------------------------
+
+Looked into muon simulation optimization techniques
+
+* photon weighting
+
+August 2013 (geometry exporter study)
+---------------------------------------
+
+* Geant4 Muon simulation profiling, fast-
+* studing Geant4 and Geant4/Chroma integration
+* looking into Geant4 exporters and visualization
+* study meshlab-
+* trying VRML exports
+* try blender
+* study Chroma operation
+
+* https://bitbucket.org/simoncblyth/env/commits/e7cb3c9353775de29bade841b171f7a7682cbe9c
+
+Sept 2013
+----------
+
+* sqlite3 based debugging of VRML exports 
+* try reality player VRML viewer
+* end Sept, start looking into GDML and COLLADA pycollada-
+ 
+Although VRML was a dead end, it provided the G4Polyhedron 
+triangulation approach used later in G4DAE.
+
+Sep 24 2013
+~~~~~~~~~~~~~
+
+The only real progress so far is with the geometry aspect
+where I have made Geant4 exports of VRML2 and GDML
+versions of the Dayabay geometry and examined how those
+exporters operate. From that experience, I think that
+development of a Geant4 Collada exporter (a common 3D file format)
+is the most convenient way to proceed in order to
+extract the Chroma needed triangles+materials from Geant4.
+For developing the new exporter, I need to learn the relevant
+parts of the Collada format and can borrow much code
+from the VRML2 and GDML exporters.
+
+Oct 2013 (G4DAE approach born)
+--------------------------------
+
+* translate Geant4 volume tree into COLLADA DAE
+* webpy server of DAE subtrees
+
+November 2013 (G4DAE visualization 1st try: webgl)
+----------------------------------------------------
+
+* webgl threejs daeserver.py 
+
+Status report coins G4DAE, were validating G4DAE against VRML2
+
+* https://bitbucket.org/simoncblyth/env/src/9f0c188a8bb2042eb9ad58d95dadf9338e08c634/muon_simulation/nov2013/nov2013_gpu_nuwa.txt?fileviewer=file-view-default
+
+December 2013 (G4DAE visualization 2nd try: meshlab)
+-------------------------------------------------------
+
+* meshlab- hijacked for COLLADA viewing
+* meshlab COLLADA import terribly slow, and meshlab code is a real mess 
+* forked meshlab https://bitbucket.org/simoncblyth/meshlab
+* investigate openscenegraph- colladadom- osg-
+  (clearly decided meshlab far to messy to be a basis for anything)
+ 
+January 2014
+-------------
+
+* purchase Macbook Pro laptop with NVIDIA GeForce GT 750M
+* https://bitbucket.org/simoncblyth/env/commits/6da96f0b3617b39bdfeb2bb4f70128335bac23a4
+* install CUDA, Chroma : succeed to propagate some photons on GPU
+
+February 2014 (getting Chroma to run)
+---------------------------------------
+
+* material and surface properties export into DAE 
+* G4DAE collada to chroma conversion
+
+March 2014 (integrating Chroma, geometry visualization 3rd try more fruitful)
+--------------------------------------------------------------------------------
+
+* integrate G4DAE with NuWa
+* collada to chroma debug
+* Chroma ray tracer, quaternion Arcball
+* Learning the graphics pipeline https://bitbucket.org/simoncblyth/env/commits/8095bf84c68d99209774af1e47784667351e99f9
+* pyopengl- glumpy- yield daeviewgl.py  
+* Learning OpenGL/CUDA Interop
+
+April 2014 (getting GPU interop buffers) 
+------------------------------------------
+
+* forked Chroma
+* standalone-ish render_pbo.py which uses chroma to raycast render to PBO, succeeds to strike geometry, using https://bitbucket.org/scb-/chroma/commits/3a4a443039899af17ca50938d19260cde60bb275
+* add orbiting/flyaround mode with DAEParametricView
+* rebranding to g4daeview to more accurately reflect the functionality and association with the G4DAE exporter
+  https://bitbucket.org/simoncblyth/env/commits/5f5e84fed11fb729e6cefbbcfa07373850005ae5
+
+May 2014 (bring on the photons)
+----------------------------------
+
+* ChromaPhotonList for getting photons from NuWa into Chroma
+* look into alternative serialization from TObject 
+* ChromaPhotonList/NuWa debug 
+* ChromaZMQRootTest czrt-
+* succeed to connect nuwa.py/geant4(N) with g4daeview.py/chroma(D) via zmq_broker.sh(N)
+  https://bitbucket.org/simoncblyth/env/commits/1635c3ffddc2262047a1185a73d5eb6db9c89dec
+* ZMQ debugging 
+
+June 2014 (photon visualization, discontent with ancient OpenGL forced by pyopengl)
+----------------------------------------------------------------------------------------
+
+* experiment with OpenGL geometry shaders, aiming to avoid vertex doubling up in the photons VBO just to present photon directions as lines
+  https://bitbucket.org/simoncblyth/env/commits/ebf0786b0d6f5caa0b7a0cedca7db4c7c4a0a3d2
+* photon visualizations using geometry shader 
+* migration of photon presentation to GLSL shaders ongoing
+* shader integer/bitwise handling remains mysterious, looks like can do almost nothing in glsl 120, maybe workarounf is to do mask selections in CUDA, and communicate results via floats
+  https://bitbucket.org/simoncblyth/env/commits/cfc0c38a73cae0f70b08f74343556a358de9b98f
+* first cut at VBO propagation, using propagate_vbo.cu in my chroma fork
+* resolve shader inflexibility by not trying to delete/recreate shaders but instead keep them around and swap between them
+
+July 2014
+-----------
+
+* reemission debug 
+* G4DAE explanation targetting non-Physicists : Why HEP Visualization is stuck in the 1990s
+  https://bitbucket.org/simoncblyth/env/commits/d0e4dc34b9534946e58c0ce3fe47bc730bdef567
+
+End July/August 2014 (intermission)
+---------------------------------------
+
+* migrate to bitbucket 
+
+August 2014
+-------------
+
+* Dayabay PMT identifier export
+* creating g4daechroma.sh non-graphical ChromaPhotonList responder, that just propagates and replies with no bells/whistles
+* looking into alternative numpy persistancy and C/C++ access techniques, cnpy- npyreader-
+* prepare presentation for Geant4 Collaboration Meeting
+  https://bitbucket.org/simoncblyth/env/commits/7c64db7a621bf07242b22fc47c2f52c75682271e
+
+September 2014
+----------------
+
+* present geometry exporter at: 19th Geant4 Collaboration Meeting, Okinawa, Sept 2014
+* adjusting to bitbucket 
+
+October 2014
+--------------
+
+* brief look into swift, scenekit for checking G4DAE exports
+* g4daescenekit.swift script to check SceneKit parsing of G4DAE exports from commandline 
+* add extra SkinSurface and OpticalSurface objects to DAE level geometry in order to be transformed into sensitive surfaces needed for chroma SURFACE_DETECT
+* G4DAEChroma : Geant4 to external bridge
+
+November 2014
+----------------
+ 
+* G4DAEChroma C++ bridge : fleshout, debug
+
+December 2014
+---------------
+
+* start attempt to parallelize Cerenkov and Scintillation photon generation, by persisting stacks from just before big photon generation for loops
+* debug Scintillation/Cerenkov
+
+January 2015
+-------------
+
+* https://bitbucket.org/simoncblyth/env/src/2373bb7245ca3c1b8fb06718d4add402805eab93/presentation/gpu_accelerated_geant4_simulation.txt?fileviewer=file-view-default
+
+  * G4 Geometry model implications 
+  * G4DAE Geometry Exporter
+  * G4DAEChroma bridge
+
+* first look at OptiX immediately after making the above presentation
+* investigate Assimp for geometry loading 
+* succeed to strike geometry with Assimp and OptiX
+
+February 2015
+----------------
+
+* fork Assimp https://github.com/simoncblyth/assimp/commits/master
+* benchmarks with using CUDA_VISIBLE_DEVICES to control how many K20m GPUs are used
+* fork Assimp for Opticks geometry loading
+* test OptiX scaling with IHEP GPU machine
+* great GGeo package, intermediary geometry model
+* experiment with GPU textures for interpolated material property access 
+
+March 2015
+-----------
+
+* encounter OptiX/cuRAND resource issue, workaround using pure CUDA to initialize and persist state
+* fail to find suitable C++ higher level OpenGL package, start own oglrap- on top of GLFW, GLEW
+* integrate ZMQ messaging with NPY serialization using Boost.ASIO ASIO-ZMQ to create NumpyServer
+
+April 2015
+------------
+
+* reuse NumpyServer infrastructure for UDP messaging allowing live reconfig of objects 
+  with boost::program_option text parsing 
+* add quaternion Trackball for interactive control
+* avoid duplication with OptiXRap
+* arrange OptiX output buffer to be a PBO which is rendered as texture by OpenGL
+* create OpenGL Prog/Shadr infrastructure in oglrap-  
+
+
+
+
+
 
 
 EOU
