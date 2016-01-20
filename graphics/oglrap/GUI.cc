@@ -29,6 +29,7 @@
 #include "Trackball.hh"
 #include "Bookmarks.hh"
 #include "Photons.hh"
+#include "Animator.hh"
 
 
 #include "StateGUI.hh"
@@ -44,6 +45,7 @@ void GUI::setComposition(Composition* composition)
     setView(composition->getView());
     setCamera(composition->getCamera());
     setTrackball(composition->getTrackball());
+    setAnimator(NULL); // defer
 }
 
 void GUI::setScene(Scene* scene)
@@ -81,6 +83,34 @@ void GUI::choose( unsigned int n, const char** choices, bool** selection )
     {
         ImGui::Checkbox(choices[i], selection[i]);
     }
+}
+
+
+
+void GUI::show_scrubber(bool* opened)
+{
+    if(!m_animator) m_animator = m_composition->getAnimator();
+
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar ;
+
+    if (!ImGui::Begin("Scrubber", opened, ImVec2(550,100), m_scrub_alpha, window_flags)) 
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return ; 
+    }
+
+    ImGui::PushItemWidth(-140);  
+
+    if(m_animator)
+    {
+        m_animator->gui("time (ns)", "%0.3f", 2.0f);
+    } 
+
+    //ImGui::SliderFloat("float", &m_scrub_alpha, 0.0f, 1.0f);
+
+    ImGui::End();
 }
 
 

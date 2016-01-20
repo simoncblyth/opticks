@@ -21,6 +21,7 @@ class Trackball ;
 class Bookmarks ;
 class StateGUI ; 
 class Photons ; 
+class Animator ; 
 
 
 class GUI {
@@ -42,11 +43,13 @@ class GUI {
        void setClipper(Clipper* clipper);
        void setTrackball(Trackball* trackball);
        void setBookmarks(Bookmarks* bookmarks);
+       void setAnimator(Animator* animator);
        void setStateGUI(StateGUI* state_gui);
 
        void init(GLFWwindow* window);
        void newframe();
        void show(bool* opened);
+       void show_scrubber(bool* opened);
        void render();
        void shutdown();
 
@@ -73,6 +76,7 @@ class GUI {
        GGeo*         m_ggeo ; 
        bool          m_show_test_window ;
        float         m_bg_alpha ; 
+       float         m_scrub_alpha ; 
        Interactor*   m_interactor ; 
        Scene*        m_scene ; 
        Composition*  m_composition ; 
@@ -83,7 +87,7 @@ class GUI {
        Bookmarks*    m_bookmarks ; 
        StateGUI*     m_state_gui ; 
        Photons*      m_photons ; 
-       //GLoader*      m_loader ; 
+       Animator*     m_animator ; 
 
        std::string   m_help ; 
        std::vector<std::string> m_stats ; 
@@ -98,6 +102,7 @@ inline GUI::GUI(GGeo* ggeo)
    m_ggeo(ggeo),
    m_show_test_window(false),
    m_bg_alpha(0.65f),
+   m_scrub_alpha(0.01f),
    m_interactor(NULL),
    m_scene(NULL),
    m_composition(NULL),
@@ -107,7 +112,8 @@ inline GUI::GUI(GGeo* ggeo)
    m_trackball(NULL),
    m_bookmarks(NULL),
    m_state_gui(NULL),
-   m_photons(NULL)
+   m_photons(NULL),
+   m_animator(NULL)
 {
 }
 
@@ -143,7 +149,10 @@ inline void GUI::setStateGUI(StateGUI* state_gui)
 {
     m_state_gui = state_gui ; 
 }
-
+inline void GUI::setAnimator(Animator* animator)
+{
+    m_animator = animator ; 
+}
 
 
 inline void GUI::setupHelpText(const std::string& txt)

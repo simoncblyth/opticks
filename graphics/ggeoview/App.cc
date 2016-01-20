@@ -1095,7 +1095,7 @@ void App::render()
 
 #ifdef GUI_
     m_gui->newframe();
-    bool* show_gui_window = m_interactor->getGuiModeAddress();
+    bool* show_gui_window = m_interactor->getGUIModeAddress();
     if(*show_gui_window)
     {
         m_gui->show(show_gui_window);
@@ -1117,6 +1117,11 @@ void App::render()
         // maybe imgui edit selection within the composition imgui, rather than shovelling ?
         // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
     }
+
+    bool* show_scrub_window = m_interactor->getScrubModeAddress();
+    if(*show_scrub_window)
+        m_gui->show_scrubber(show_scrub_window);
+
     m_gui->render();
 #endif
 

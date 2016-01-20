@@ -32,8 +32,11 @@ const unsigned int Interactor::_pan_mode_key = GLFW_KEY_X ;
 
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
-const char* Interactor::GUIMODE    = "gui" ; 
 
+/*
+const char* Interactor::GUIMODE    = "gui" ; 
+const char* Interactor::SCRUBMODE  = "scrub" ; 
+*/
 
 void Interactor::gui()
 {
@@ -112,11 +115,13 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     {
         m_trackball->drag_to(df*x,df*y,df*dx,df*dy);
     }
+    /*
     else if( m_scrub_mode )
     {
         if(!m_animator) m_animator = m_composition->getAnimator();
         m_animator->scrub_to(df*x,df*y,df*dx,df*dy);
     }
+    */
     else
     {
         m_frame->touch(ix, iy );  
@@ -196,7 +201,8 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_G:
             printf("Interactor:G\n");
-            m_gui_mode = !m_gui_mode ; 
+            //m_gui_mode = !m_gui_mode ; 
+            nextGUIStyle();
             break;
         case GLFW_KEY_H:
             m_composition->home(); 

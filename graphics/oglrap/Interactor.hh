@@ -38,7 +38,11 @@ class Interactor {
 
        static const char* DRAGFACTOR ; 
        static const char* OPTIXMODE ; 
+
+/*
        static const char* GUIMODE ; 
+       static const char* SCRUBMODE ; 
+*/
 
        Interactor(); 
        void gui();
@@ -59,8 +63,10 @@ class Interactor {
 
        Touchable*   getTouchable();
        Frame*       getFrame();
-       bool*        getGuiModeAddress();
-       bool*        getModeAddress(const char* name);
+       bool*        getScrubModeAddress();
+       bool*        getGUIModeAddress();
+
+       //bool*        getModeAddress(const char* name);
        unsigned int getContainer();
        bool         hasChanged();
        void         setChanged(bool changed);
@@ -68,6 +74,10 @@ class Interactor {
   public:
        void cursor_drag( float x, float y, float dx, float dy, int ix, int iy );
 
+   public:
+        typedef enum { NONE, SCRUB, FULL, NUM_GUI_STYLE } GUIStyle_t ;  
+        void nextGUIStyle();
+        void applyGUIStyle();
   public:
        void number_key_pressed(unsigned int number);
        void number_key_released(unsigned int number);
@@ -120,18 +130,12 @@ class Interactor {
        enum { STATUS_SIZE = 128 };
        char m_status[STATUS_SIZE] ; 
 
+       GUIStyle_t m_gui_style ; 
+
 };
 
-inline bool* Interactor::getGuiModeAddress()
-{
-    return getModeAddress(GUIMODE);
-}
 
-inline bool* Interactor::getModeAddress(const char* name)
-{
-    if(strcmp(name, GUIMODE)==0) return &m_gui_mode ;
-    return NULL ;
-}
+
 
 inline Interactor::Interactor() 
    :
@@ -159,12 +163,69 @@ inline Interactor::Interactor()
    m_optix_resolution_scale(1),
    m_dragfactor(1.f),
    m_container(0),
-   m_changed(true)
+   m_changed(true),
+   m_gui_style(NONE)
 {
    for(unsigned int i=0 ; i < NUM_KEYS ; i++) m_keys_down[i] = false ; 
    m_status[0] = '\0' ;
 }
 
+
+
+
+
+
+inline bool* Interactor::getGUIModeAddress()
+{
+    return &m_gui_mode ; 
+}
+
+inline bool* Interactor::getScrubModeAddress()
+{
+    return &m_scrub_mode ; 
+}
+
+inline void Interactor::nextGUIStyle()
+{
+    int next = (m_gui_style + 1) % NUM_GUI_STYLE ; 
+    m_gui_style = (GUIStyle_t)next ; 
+    applyGUIStyle();
+}
+
+inline void Interactor::applyGUIStyle()  // G:key 
+{
+    switch(m_gui_style)
+    {
+        case NONE:
+                  m_gui_mode = false ;    
+                  m_scrub_mode = false ;    
+                  break ; 
+        case SCRUB:
+                  m_gui_mode = false ;    
+                  m_scrub_mode = true ;    
+                  break ; 
+        case FULL:
+                  m_gui_mode = true ;    
+                  m_scrub_mode = true ;    
+                  break ; 
+        default:
+                  break ; 
+                   
+    }
+}
+
+
+
+
+
+
+/*
+inline bool* Interactor::getModeAddress(const char* name)
+{
+    if(strcmp(name, GUI_MODE)==0) return &m_gui_mode ;
+    return NULL ;
+}
+*/
 
 
 inline void Interactor::setScene(Scene* scene)
