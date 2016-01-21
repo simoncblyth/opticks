@@ -14,8 +14,7 @@ Brief History
 **Half Year Summary**
 
 Develop G4DAE Geant4 exporter that liberates tesselated G4 geometries
-into COLLADA DAE files, including all material and surface properties
-as a function of wavelength. 
+into COLLADA DAE files, including all material and surface properties.
 
 **Aug-Dec 2013**
 
@@ -25,6 +24,11 @@ as a function of wavelength.
 
 2014 
 ----------------------------------------------------------------------
+
+**Year Executive Summary**
+
+Get G4DAE exported geometries into Chroma and integrate Geant4 
+and Chroma event data via G4DAEChroma runtime bridge.  
 
 **Year Summary**
 
@@ -73,13 +77,27 @@ as a function of wavelength.
 * realize photon transport has too much overhead
 * implement Cerenkov and Scintillation step transport and photon generation on GPU 
 
-
 2015
 -----
 
+**Year Executive Summary**
+
+Develop Opticks based on the NVIDIA OptiX ray tracing framework, replacing Chroma.
+Achieve match between Opticks and Geant4 for simple geometries with speedup 
+factor of 200x with a mobile GPU. Performance factor expected to exceed 1000x 
+with multi-GPU workstations.  
+
+
 **Year Summary**
 
-* create Opticks (replacing Chroma) based on NVIDIA OptiX 
+* realize lack of multi-GPU is showstopper for Chroma 
+* find that NVIDIA OptiX ray tracing framework exposes accelerated geometry intersection 
+* develop Opticks (~15 C++ packages: GGeo, AssimpWrap, OptiXRap, ThrustRap, OGLRap,...) 
+  built around NVIDIA OptiX to replace Chroma : effectively 
+  recreating part of the Geant4 context on the GPU 
+* port Geant4 optical physics into Opticks
+* achieve match between Opticks and Geant4 for simple geometries, 
+  with speedup factor of 200x with laptop GPU with only 384 cores
 
 
 **January/February 2015**
