@@ -8,11 +8,33 @@ opticks-usage(){ cat << EOU
 Brief History
 ==============
 
+2013
+------
+
+**Half Year Summary**
+
+Develop G4DAE Geant4 exporter that liberates tesselated G4 geometries
+into COLLADA DAE files, including all material and surface properties
+as a function of wavelength. 
+
 **Aug-Dec 2013**
 
 * study Geant4 and Chroma optical photon propagation
 * develop C++ Geant4 geometry exporter : G4DAE 
 * experiment with geometry visualizations (webgl, meshlab)
+
+2014 
+----------------------------------------------------------------------
+
+**Year Summary**
+
+* Get Chroma to operate with G4DAE exported geometries. 
+* Develop G4DAEView visualization using CUDA/OpenGL interoperation techniques
+  and OpenGL shaders for geometry and photon visualization.
+* Develop G4DAEChroma runtime bridge interfacing Geant4 with external optical photon propagation.
+* Realize that photon transport is too large an overhead, so implement GPU Scintillation/Cerenkov
+  generation within Chroma based in transported gensteps
+   
 
 **Jan-Feb 2014**
 
@@ -51,11 +73,53 @@ Brief History
 * realize photon transport has too much overhead
 * implement Cerenkov and Scintillation step transport and photon generation on GPU 
 
+
+2015
+-----
+
+**Year Summary**
+
+* create Opticks (replacing Chroma) based on NVIDIA OptiX 
+
+
 **January/February 2015**
 
 * realize lack of multi-GPU support is showstopper for Chroma
 * find NVIDIA OptiX, initial tests suggest drastically 50x faster than Chroma
 * decide to create Opticks (replacing Chroma) based on NVIDIA OptiX  
+* fork Assimp for geometry loading into GGeo model
+
+**March/April 2015**
+
+* workaround OptiX/cuRAND initialization issue by loading persisted cuRAND state into OptiX process 
+* create OpenGL visualization package: OGLRap and OptiXEngine ray tracer
+
+**May/June 2015**
+
+* bring NPY persistency to GGeo, use for geocaching
+* Cerenkov and Scintillation generated photons match to Geant4 achieved within OptiX machinery
+* add GUI to ggeoview using ImGui
+* implement Fresnel reflection/refraction with OptiX
+
+**July/August 2015**
+
+* photon indexing using CUDA Thrust 
+* OpenGL/OptiX instancing to allow loading of JUNO geometry
+
+**Sept/October 2015**
+
+* finally nail majority of CUDA/Thrust/OpenGL/OptiX interop issues
+* photons become GPU resident, using Thrust 
+* uncover issue with cleaved meshes, develop fix using OpenMesh
+* develop analytic PMT approach 
+
+**November/December 2015** 
+
+* rejig GGeo boundary representation to allow dynamic creation, use for dynamic test geometry
+  (ie geometry configurable from commandline)
+* create *CfG4* for comparison of test geometries with Geant4
+* achieve Geant4/Opticks match with rainbow geometry
+* revive compute mode reveals 200x faster performance than Geant4 with only 384 CUDA cores 
 
 
 
@@ -270,7 +334,116 @@ April 2015
 * avoid duplication with OptiXRap
 * arrange OptiX output buffer to be a PBO which is rendered as texture by OpenGL
 * create OpenGL Prog/Shadr infrastructure in oglrap-  
+* OptiXEngine starting point for propagation, previously focussed on OptiX ray tracing 
+* ported Cerenkov generation from Chroma to OptiX
 
+May 2015
+----------
+
+* bring NPY persistency to GGeo
+* implement geocache loading to avoid XML parsing on every launch 
+  (turned out to be a luxury for DayaBay [saving only a few seconds per launch], 
+   but 6 months hence it is a necessity for JUNO [saving several minutes for every launch])
+* GSubstanceLib infrastructure
+* reemission handling, inverse CDF texture creation
+* Cerenkov and Scintillation generated photons match to Geant4 achieved within OptiX machinery
+* pick ImGui immediate mode GUI renderer
+* GUI adoption by the oglrap classes
+* prepare presentation 
+
+  * Why not Chroma ? Progress report on migrating to OptiX 
+  * http://simoncblyth.bitbucket.org/env/presentation/optical_photon_simulation_with_nvidia_optix.html
+
+June 2015
+-----------
+
+* efficient Fresnel using CG computation techniques
+* photon flag handling 
+* photon record compression
+* implement animation
+* investigate image space photon mapping ispm-
+* photon indexing using CPU
+* learning CUDA Thrust 
+* update OptiX to 3.8.0 and start interop from OptiX to Thrust 1.8 that comes with CUDA 7.0
+
+July 2015
+------------
+
+* create thrustrap- to hold indexing code
+* CUDA/Thrust/OpenGL/OptiX interop debugging
+* instancing : start implementation
+* modifications to get JUNO geometry to load
+* get OpenGL instancing operational
+
+August 2015
+------------
+
+* OptiX instancing 
+* introduce BBox rendering for speed
+* JUNO genstep debug 
+
+Sept 2015
+-----------
+
+* attacking the CUDA/Thrust/OpenGL/OptiX interop issues
+* demo code for stream compaction operational OptiXThrust::compaction
+  https://bitbucket.org/simoncblyth/env/commits/398811a731ffc4caef3f07fdc18362b842d98c37 
+* succeed to seed the OptiX photon buffer with genstep indices entirely on GPU, using Thrust based OBuf OBufPair
+* add pickphoton live option for pointing view at a single photon path and optionally hiding others
+* add TORCH genstep, a more controllable source of photons
+* add wireframe to Scene GeometryStyles, to see the mesh : detdesc spelunking IAV, 
+  looks like geometry issue is a split union solid maybe due to polycons with coincident z planes
+* add pickface option for selecting single or ranges of faces, use to identify internal faces of the split union solid 3158
+* learn OpenMesh, develop mesh surgery in openmeshrap-
+
+October 2015
+-------------
+
+* App::checkGeometry reveals the extent of the topological problems, about 10% of dyb meshes with issues,
+  fortunately only a few critical must fix ones
+* instanced identity handling 
+* analytic PMT description
+* OptiX analytic intersection code
+* split up OEngine monolith
+* Camera rejig that brings OpenGL orthographic and perspective projections closer and matches with OptiX raygen equivalents
+* dynamic boundary buffer creation with GBndLib
+* ggeo- refactoring 
+
+November 2015
+--------------
+
+* GTestBox making use of GBndLib dynamic boundary creation
+* rejig GMergedMesh in preparation for dynamic combination of GSolids with a GMergedMesh
+* Fresnel reflection S/P polz debug
+* tidy reflection check, moving focus away from triangulation cracks yields near perfect Fresnel S/P polarization reflection curve agreement
+* plan a more appropriate volume to surface translation of analytic PMT geometry
+* extract triangle subdivision functionality from icosahedron.cpp into NTesselate for application to other basis polyhedrons
+* geodesic subdiv of hemi octahedron creates tesselated hemi-sphere
+* prism deviation angle check
+* parse refractive index csv from http://refractiveindex.info into numpy arrays
+* investigate CIE XYZ determination from spectra using color matching functions and convertion into RGB color spaces
+
+December 2015
+----------------
+
+* numpy generation of wavelengths according to Planck 6500K blackbody formula, using binned cdf inversion
+* wavelength domain debug and rendering simulated 3M photon rainbows with ggv-rainbow and npy-/rainbow.py
+* cfg4 : new package for comparison against standalone geant4
+* workaround G4 limitation in number of primaries by splitting photon squadron across multiple events
+* creating opticks format photon/step/history records with cfg4-
+* try to duplicate G4 approach to polarization at boundaries in propagate_at_boundary_geant4_style
+* move seqhis and seqmat indices to NumpyEvt and persist their, allowing use of the indices with loaded NumpyEvt
+* enable loading of photons/records into ggv, allowing visualization of both Opticks and G4 cfg4- generated/propagated events
+* adjust cfg4- truncation to match Opticks, get chi2 match with rainbow_cfg4.py
+
+January 2016
+--------------
+
+* revive compute mode
+* split validation/compilation/prelaunch from launch timings, gets 1M rainbow down to 0.29s in compute mode
+* try a new tack on State control aiming to replace or drastically change the long broken Bookmarks
+* rework Bookmarks to handle just jumping between states, the state persisting and applying being done by NState
+* use State machinery to implement animated interpolated View, ie fly around geometry 
 
 
 
