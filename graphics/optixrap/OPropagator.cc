@@ -50,8 +50,11 @@ void OPropagator::init()
     const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
     LOG(debug) << "OPropagtor::init " << raygenprg ; 
 
-    m_ocontext->setRayGenerationProgram( OContext::e_generate_entry, "generate.cu.ptx", raygenprg );
-    m_ocontext->setExceptionProgram(     OContext::e_generate_entry, "generate.cu.ptx", "exception");
+    // OContext::e_generate_entry
+
+    m_entry_index = m_ocontext->addRayGenerationProgram( "generate.cu.ptx", raygenprg );
+    unsigned int exception_index = m_ocontext->addExceptionProgram( "generate.cu.ptx", "exception");
+    assert(m_entry_index == exception_index);
 
     m_launch_times = new OTimes ; 
     m_prelaunch_times = new OTimes ; 
@@ -194,7 +197,10 @@ void OPropagator::prelaunch()
         LOG(warning) << "OPropagator::generate OVERRIDE photon count for debugging to " << m_width ; 
     }
 
-    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,   OContext::e_generate_entry,  m_width, m_height, m_prelaunch_times);
+
+    // OContext::e_generate_entry
+
+    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  m_width, m_height, m_prelaunch_times);
 
     m_count += 1 ; 
 
@@ -206,7 +212,9 @@ void OPropagator::launch()
 {
     assert(m_prelaunch && "must prelaunch before launch");
 
-    m_ocontext->launch( OContext::LAUNCH,   OContext::e_generate_entry,  m_width, m_height, m_launch_times);
+    // OContext::e_generate_entry
+
+    m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, m_launch_times);
 }
 
 

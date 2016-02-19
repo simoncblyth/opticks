@@ -26,8 +26,11 @@ void OTracer::init()
 {
     m_context = m_ocontext->getContext();
 
-    m_ocontext->setRayGenerationProgram(  OContext::e_pinhole_camera_entry, "pinhole_camera.cu.ptx", "pinhole_camera" );
-    m_ocontext->setExceptionProgram(      OContext::e_pinhole_camera_entry, "pinhole_camera.cu.ptx", "exception");
+    // OContext::e_pinhole_camera_entry
+    m_entry_index = m_ocontext->addRayGenerationProgram(  "pinhole_camera.cu.ptx", "pinhole_camera" );
+    unsigned int exception_index = m_ocontext->addExceptionProgram( "pinhole_camera.cu.ptx", "exception");
+    assert(m_entry_index == exception_index);
+
     m_ocontext->setMissProgram(           OContext::e_radiance_ray , "constantbg.cu.ptx", "miss" );
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
@@ -82,6 +85,7 @@ void OTracer::trace()
 
     if(m_trace_count % 100 == 0) 
          LOG(info) << "OTracer::trace " 
+                   << " entry_index " << m_entry_index 
                    << " trace_count " << m_trace_count 
                    << " resolution_scale " << m_resolution_scale 
                    << " size(" <<  width << "," <<  height << ")";
@@ -90,7 +94,9 @@ void OTracer::trace()
     double t1 = getRealTime();
 
     unsigned int lmode = m_trace_count == 0 ? OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH|OContext::LAUNCH : OContext::LAUNCH ;
-    m_ocontext->launch( lmode, OContext::e_pinhole_camera_entry,  width, height, m_trace_times );
+
+    //OContext::e_pinhole_camera_entry
+    m_ocontext->launch( lmode,  m_entry_index,  width, height, m_trace_times );
 
     double t2 = getRealTime();
 

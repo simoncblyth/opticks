@@ -70,9 +70,11 @@ public:
     void dump(const char* msg="OConfig::dump");
 
     optix::Program createProgram(const char* filename, const char* progname );
-    void setRayGenerationProgram( unsigned int index , const char* filename, const char* progname, bool defer=false);
-    void setExceptionProgram( unsigned int index , const char* filename, const char* progname, bool defer=false);
-    void setMissProgram( unsigned int index , const char* filename, const char* progname, bool defer=false);
+
+    unsigned int addRayGenerationProgram( const char* filename, const char* progname, bool defer=false);
+    unsigned int addExceptionProgram( const char* filename, const char* progname, bool defer=false);
+
+    void setMissProgram( unsigned int raytype , const char* filename, const char* progname, bool defer=false);
     void apply();
     void addProg(OProg* prog, bool defer);
     void apply(OProg* prog);
@@ -82,6 +84,8 @@ private:
 
     optix::Context m_context ;
     int          m_index_max ; 
+    unsigned int m_raygen_index ;  
+    unsigned int m_exception_index ;  
 
     std::map<std::string,optix::Program> m_programs;
     std::vector<OProg*> m_progs ; 
@@ -92,7 +96,9 @@ private:
 inline OConfig::OConfig(optix::Context context )
         : 
         m_context(context),
-        m_index_max(-1)
+        m_index_max(-1),
+        m_raygen_index(0),
+        m_exception_index(0)
 {
 }
 

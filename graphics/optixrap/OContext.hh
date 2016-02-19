@@ -6,13 +6,20 @@ struct OTimes ;
 #include <optixu/optixpp_namespace.h>
 #include "NPY.hpp"
 
+//  problem in tracer mode is that context doesnt 
+//  compile when no generate program is attached
+//  dumb fix is to flip enum ordering, need better way
+
 class OContext {
     public:
+
+      /*
         enum { 
                e_generate_entry,
                e_pinhole_camera_entry,
                e_entryPointCount 
             };
+       */
 
         enum {
                 e_propagate_ray,
@@ -51,17 +58,17 @@ class OContext {
      public:
             // pass thru to OConfig
             optix::Program createProgram(const char* filename, const char* progname );
-            void setRayGenerationProgram( unsigned int index , const char* filename, const char* progname );
-            void setExceptionProgram( unsigned int index , const char* filename, const char* progname );
-            void setMissProgram( unsigned int index , const char* filename, const char* progname );
             void dump(const char* msg="OContext::dump");
             void close();
+     public:
+            unsigned int addRayGenerationProgram( const char* filename, const char* progname );
+            unsigned int addExceptionProgram( const char* filename, const char* progname );
+            void setMissProgram( unsigned int index, const char* filename, const char* progname );
      public:
             unsigned int      getNumEntryPoint();
             unsigned int      getNumRayType();
             optix::Context    getContext();
             optix::Group      getTop();
-
      public:
             static RTformat       getFormat(NPYBase::Type_t type);
 
@@ -82,7 +89,9 @@ class OContext {
             OConfig*          m_cfg ; 
             Mode_t            m_mode ; 
             int               m_debug_photon ; 
+            unsigned int      m_entry ; 
             bool              m_closed ; 
+           
 
 };
 
@@ -92,6 +101,7 @@ inline OContext::OContext(optix::Context context, Mode_t mode)
     m_context(context),
     m_mode(mode),
     m_debug_photon(-1),
+    m_entry(0),
     m_closed(false)
 {
     init();

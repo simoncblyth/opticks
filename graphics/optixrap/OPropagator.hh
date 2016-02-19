@@ -62,6 +62,7 @@ class OPropagator {
         OTimes*          m_prelaunch_times ; 
         OTimes*          m_launch_times ; 
         bool             m_prelaunch ;
+        int              m_entry_index ; 
 
     protected:
         optix::Buffer   m_genstep_buffer ; 
@@ -103,6 +104,7 @@ inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks)
     m_prelaunch_times(NULL),
     m_launch_times(NULL),
     m_prelaunch(false),
+    m_entry_index(-1),
     m_photon_buf(NULL),
     m_sequence_buf(NULL),
     m_genstep_buf(NULL),

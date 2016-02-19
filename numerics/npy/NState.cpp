@@ -200,6 +200,7 @@ void NState::apply()
                 if(strcmp(before.c_str(), val.c_str())!=0)
                 {
                     LOG(info) << "NState::apply " 
+                              << " [" << getName() << "] "
                               << key 
                               << " change " 
                               << before  
@@ -212,6 +213,7 @@ void NState::apply()
              }
              else
              {
+                if(m_verbose)
                 LOG(warning) << "NState::apply no configurable for prefix " << prefix ;  
              }
          }

@@ -29,6 +29,8 @@ class OTracer {
        double           m_trace_prep ; 
        double           m_trace_time ; 
 
+       int              m_entry_index ; 
+
 };
 
 
@@ -40,7 +42,8 @@ inline OTracer::OTracer(OContext* ocontext, Composition* composition)
     m_trace_times(NULL),
     m_trace_count(0),
     m_trace_prep(0),
-    m_trace_time(0)
+    m_trace_time(0),
+    m_entry_index(-1)
 {
     init();
 }

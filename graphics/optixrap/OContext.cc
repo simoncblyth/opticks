@@ -89,18 +89,23 @@ optix::Program OContext::createProgram(const char* filename, const char* prognam
     return m_cfg->createProgram(filename, progname);
 }
 
-void OContext::setRayGenerationProgram( unsigned int index , const char* filename, const char* progname )
+
+unsigned int OContext::addRayGenerationProgram( const char* filename, const char* progname )
 {
-    m_cfg->setRayGenerationProgram(index, filename, progname, true);
+    return m_cfg->addRayGenerationProgram(filename, progname, true);
 }
-void OContext::setExceptionProgram( unsigned int index , const char* filename, const char* progname )
+unsigned int OContext::addExceptionProgram( const char* filename, const char* progname )
 {
-    m_cfg->setExceptionProgram(index, filename, progname, true);
+    return m_cfg->addExceptionProgram(filename, progname, true);
 }
-void OContext::setMissProgram( unsigned int index , const char* filename, const char* progname )
+
+
+
+void OContext::setMissProgram( unsigned int index, const char* filename, const char* progname )
 {
     m_cfg->setMissProgram(index, filename, progname, true);
 }
+
 
 
 void OContext::close()
@@ -238,7 +243,7 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
     unsigned int ni = npy->getShape(0);
     unsigned int nj = npy->getShape(1);  
     unsigned int nk = npy->getShape(2);  
-    unsigned int nl = npy->getShape(3);  
+    //unsigned int nl = npy->getShape(3);  
 
     bool compute = isCompute();
 

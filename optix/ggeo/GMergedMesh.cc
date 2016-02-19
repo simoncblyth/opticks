@@ -34,6 +34,8 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* s
 
 GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
 {
+    LOG(info) << "GMergedMesh::combine num solids " << solids.size() ; 
+
     std::vector<GParts*> analytic ; 
     GMergedMesh* com = new GMergedMesh( index ); 
 
@@ -361,7 +363,15 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
     m_nodeinfo[m_cur_solid].w = parentIndex ; 
 
     if(isGlobal())
-         assert(nodeIndex == m_cur_solid);
+    {
+         if(nodeIndex != m_cur_solid)
+             LOG(fatal) << "GMergedMesh::mergeSolid mismatch " 
+                        <<  " nodeIndex " << nodeIndex 
+                        <<  " m_cur_solid " << m_cur_solid
+                        ; 
+
+         //assert(nodeIndex == m_cur_solid);  // trips ggv-pmt still needed ?
+    } 
 
     m_identity[m_cur_solid] = _identity ; 
 

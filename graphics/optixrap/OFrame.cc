@@ -281,7 +281,8 @@ unsigned int OFrame::touch(int ix_, int iy_)
     RTsize touch_height = 1u ; 
 
     // TODO: generalize touch to work with the active camera (eg could be orthographic)
-    m_context->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH|OContext::LAUNCH, OContext::e_pinhole_camera_entry , touch_width, touch_height );
+    assert(0); // this needs a rethink as no longer using the entry enum
+    // m_context->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH|OContext::LAUNCH, OContext::e_pinhole_camera_entry , touch_width, touch_height );
 
     Buffer touchBuffer = m_context[ "touch_buffer"]->getBuffer();
     m_context["touch_mode"]->setUint(0u);

@@ -14,14 +14,10 @@ const char* OConfig::RngDir()
     return RNGDIR ; 
 } 
 
-
-
 void OConfig::Print(const char* msg)
 {
     printf("%s \n", msg);
 }
-
-      
 
 optix::Program OConfig::createProgram(const char* filename, const char* progname )
 {
@@ -42,32 +38,38 @@ optix::Program OConfig::createProgram(const char* filename, const char* progname
 }
 
 
+unsigned int OConfig::addRayGenerationProgram( const char* filename, const char* progname, bool defer)
+{
+    OProg* prog = new OProg('R', m_raygen_index, filename, progname);
+    addProg(prog, defer);
+    unsigned int index = m_raygen_index ;  
+    m_raygen_index += 1 ;
+    return index ; 
+}
 
-void OConfig::setRayGenerationProgram( unsigned int index , const char* filename, const char* progname, bool defer)
+unsigned int OConfig::addExceptionProgram( const char* filename, const char* progname, bool defer)
 {
-    OProg* prog = new OProg('R', index, filename, progname);
+    OProg* prog = new OProg('E', m_exception_index, filename, progname);
     addProg(prog, defer);
+    unsigned int index = m_exception_index ;  
+    m_exception_index += 1 ;
+    return index ; 
 }
-void OConfig::setExceptionProgram( unsigned int index , const char* filename, const char* progname, bool defer)
+
+
+void OConfig::setMissProgram( unsigned int raytype , const char* filename, const char* progname, bool defer)
 {
-    OProg* prog = new OProg('E', index, filename, progname);
-    addProg(prog, defer);
-}
-void OConfig::setMissProgram( unsigned int index , const char* filename, const char* progname, bool defer)
-{
-    OProg* prog = new OProg('M', index, filename, progname);
+    OProg* prog = new OProg('M', raytype, filename, progname);
     addProg(prog, defer);
 }
 
 void OConfig::addProg(OProg* prog, bool defer)
 {
     int index = prog->index ; 
-    if(index > m_index_max) m_index_max = index ;
 
     LOG(info) << "OConfig::addProg"
               << " desc " << prog->description()
-              << " index " << index 
-              << " m_index_max " << m_index_max 
+              << " index/raytype " << index 
               ;
 
     m_progs.push_back(prog);
@@ -77,7 +79,14 @@ void OConfig::addProg(OProg* prog, bool defer)
     
 unsigned int OConfig::getNumEntryPoint()
 {
-    return m_index_max == -1 ? 0 : m_index_max + 1 ;  
+    assert(m_raygen_index == m_exception_index);
+
+    LOG(info) << "OConfig::getNumEntryPoint" 
+              << " m_raygen_index " << m_raygen_index
+              << " m_exception_index " << m_exception_index
+              ;
+
+    return m_raygen_index ;  // already post incremented in the add  
 }
 
 void OConfig::apply(OProg* prog)
@@ -112,7 +121,8 @@ void OConfig::apply()
 void OConfig::dump(const char* msg)
 {
     LOG(info) << msg 
-              << " m_index_max " << m_index_max 
+              << " m_raygen_index " << m_raygen_index 
+              << " m_exception_index " << m_exception_index 
               ;
     for(unsigned int i=0 ; i < m_progs.size() ; i++)
     {
