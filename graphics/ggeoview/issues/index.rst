@@ -10,5 +10,6 @@ issues
    leaky_box
    surface_hits
    union_splitting
+   box_asymmetry
    
 

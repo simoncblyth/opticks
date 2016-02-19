@@ -833,11 +833,12 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
           float3 p = ray.origin + tint*ray.direction - cen_ ; 
           float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
           float pmax = fmaxf(pa);
-          float3 n = make_float3(0.f);  
 
-          if(      pmax == pa.x) n.x = copysignf( 1.f , p.x ) ;              
-          else if (pmax == pa.y) n.y = copysignf( 1.f , p.y ) ;              
-          else if (pmax == pa.z) n.z = copysignf( 1.f , p.z ) ;              
+          float3 n = make_float3(0.f) ;
+          if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
+          else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
+          else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
+
 
           shading_normal = geometric_normal = n ;
           instanceIdentity = identity ;
@@ -852,11 +853,18 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
               float3 p = ray.origin + tmax*ray.direction - cen_ ; 
               float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
               float pmax = fmaxf(pa);
+
+
+              /*
               float3 n = make_float3(0.f);  
 
-              if(      pmax == pa.x) n.x = copysignf( 1.f , p.x ) ;              
-              else if (pmax == pa.y) n.y = copysignf( 1.f , p.y ) ;              
-              else if (pmax == pa.z) n.z = copysignf( 1.f , p.z ) ;              
+              if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
+              else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
+              else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
+              */
+
+              float3 n = make_float3(1.f,0.f,0.f);  
+
 
               shading_normal = geometric_normal = n ;
               instanceIdentity = identity ;
@@ -865,6 +873,79 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
       }
   }
 }
+
+
+
+
+
+
+
+
+static __device__
+void intersect_box(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
+{
+
+  const float3 min_ = make_float3(q0.f.x - q0.f.w, q0.f.y - q0.f.w, q0.f.z - q0.f.w ); 
+  const float3 max_ = make_float3(q0.f.x + q0.f.w, q0.f.y + q0.f.w, q0.f.z + q0.f.w ); 
+  const float3 cen_ = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+
+  float3 t0 = (min_ - ray.origin)/ray.direction;
+  float3 t1 = (max_ - ray.origin)/ray.direction;
+
+  // slab method 
+  float3 near = fminf(t0, t1);
+  float3 far = fmaxf(t0, t1);
+  float tmin = fmaxf( near );
+  float tmax = fminf( far );
+
+  if(tmin <= tmax && tmax > 0.f) 
+  {
+      bool check_second = true;
+      float tint = tmin > 0.f ? tmin : tmax ; 
+
+      if(rtPotentialIntersection(tint))
+      {
+          float3 p = ray.origin + tint*ray.direction - cen_ ; 
+          float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
+          float pmax = fmaxf(pa);
+
+          float3 n = make_float3(0.f) ;
+          if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
+          else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
+          else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
+
+
+          shading_normal = geometric_normal = n ;
+          instanceIdentity = identity ;
+          if(rtReportIntersection(0)) check_second = false ;   // material index 0 
+      } 
+
+      // handle when inside box, or are epsilon near clipped 
+      if(check_second)
+      {
+          if(rtPotentialIntersection(tmax))
+          {
+              float3 p = ray.origin + tmax*ray.direction - cen_ ; 
+              float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
+              float pmax = fmaxf(pa);
+
+              float3 n = make_float3(0.f);  
+
+              if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
+              else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
+              else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
+
+              shading_normal = geometric_normal = n ;
+              instanceIdentity = identity ;
+              rtReportIntersection(0);
+          } 
+      }
+  }
+}
+
+
+
+
 
 
 
@@ -1105,12 +1186,35 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
       identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
       unsigned int boundary = q1.u.z ; 
-      rtPrintf("bounds primIdx %u p %u partIdx %u boundary %u identity (%u,%u,%u,%u) \n", primIdx, p, partIdx, boundary, 
+      rtPrintf("bounds primIdx %u p %u partIdx %u boundary %u identity (%u,%u,%u,%u) partType %d \n", primIdx, p, partIdx, boundary,  
                   identity.x, 
                   identity.y, 
                   identity.z, 
-                  identity.w 
+                  identity.w,
+                  partType 
               );  
+
+
+      rtPrintf("q0 %10.4f %10.4f %10.4f %10.4f q1 %10.4f %10.4f %10.4f %10.4f \n",
+                  q0.f.x, 
+                  q0.f.y, 
+                  q0.f.z, 
+                  q0.f.w,
+                  q1.f.x, 
+                  q1.f.y, 
+                  q1.f.z, 
+                  q1.f.w);
+
+      rtPrintf("q2 %10.4f %10.4f %10.4f %10.4f q3 %10.4f %10.4f %10.4f %10.4f \n",
+                  q2.f.x, 
+                  q2.f.y, 
+                  q2.f.z, 
+                  q2.f.w,
+                  q3.f.x, 
+                  q3.f.y, 
+                  q3.f.z, 
+                  q3.f.w);
+
 
       if(partType == 4) 
       {
@@ -1175,7 +1279,7 @@ RT_PROGRAM void intersect(int primIdx)
                 intersect_ztubs(q0,q1,q2,q3,identity);
                 break ; 
           case 3:
-                intersect_aabb(q2,q3,identity);
+                intersect_box(q0,q1,q2,q3,identity);
                 break ; 
           case 4:
                 intersect_prism(q0,q1,q2,q3,identity);

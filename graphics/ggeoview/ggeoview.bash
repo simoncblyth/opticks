@@ -98,20 +98,56 @@ ggv-pmt-test(){
    local test_config=(
                  mode=PmtInBox
                  analytic=1
- 
                  shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil
-                 parameters=-1,1,0,300
+                 parameters=0,0,0,300
                    ) 
 
    ggv \
        --test --testconfig "$(join _ ${test_config[@]})" \
        --torch --torchconfig "$(join _ ${torch_config[@]})" \
        --animtimemax 10 \
+       --cat PmtInBox \
        --eye 0.5,0.5,0.0 \
        $* 
 
 }
+
+
+ggv-box-test(){
+   type $FUNCNAME
+
+   local torch_config=(
+                 type=disclin
+                 photons=500000
+                 wavelength=380 
+                 frame=1
+                 source=0,0,200
+                 target=0,0,0
+                 radius=100
+                 zenithazimuth=0,1,0,1
+                 material=Vacuum
+               )
+
+   local test_config=(
+                 mode=BoxInBox
+                 shape=box
+                 analytic=1
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 parameters=0,0,0,300
+                   ) 
+
+   ggv \
+       --test --testconfig "$(join _ ${test_config[@]})" \
+       --torch --torchconfig "$(join _ ${torch_config[@]})" \
+       --animtimemax 10 \
+       --cat BoxInBox \
+       --eye 0.5,0.5,0.0 \
+       $* 
+
+}
+
+
 
     
 # For invsphere and refltest "source" provides the
@@ -620,16 +656,6 @@ ggv-lens()
 
 
 
-
-ggv-box(){
-   type $FUNCNAME
-   ggv.sh --test \
-        --eye 0.5,0.5,0.0 \
-        --animtimemax 7 \
-        --testconfig "mode=PmtInBox_dimensions=3,0,0,0_boundary=Rock//perfectAbsorbSurface/MineralOil_" \
-        --torchconfig "source=0,0,400_target=0,0,0_radius=102_zenithazimuth=0,1,0,1" \
-         $*
-}
 
 
 ggv-lldb(){ 
