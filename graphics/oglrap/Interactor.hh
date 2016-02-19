@@ -83,6 +83,7 @@ class Interactor {
        void number_key_released(unsigned int number);
        void key_pressed(unsigned int key);
        void key_released(unsigned int key);
+       void space_pressed();
 
   public:
        void configureF(const char* name, std::vector<float> values);

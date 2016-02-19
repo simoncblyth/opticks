@@ -102,12 +102,18 @@ void Bookmarks::readdir()
         std::string basename = *it ; 
         int num = parseName(basename); 
         if(num == UNSET) continue ; 
-
-        m_bookmarks[num] = NState::load(m_dir, num ) ; 
+        readmark(num);
     }
-
     updateTitle();
 }
+
+
+void Bookmarks::readmark(unsigned int num)
+{
+    if(num == UNSET) return; 
+    m_bookmarks[num] = NState::load(m_dir, num ) ; 
+}
+
 
 void Bookmarks::number_key_released(unsigned int num)
 {
@@ -130,6 +136,7 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
             // repeating pressing a num key when on that bookmark with shift down
             LOG(info) << "Bookmarks::number_key_pressed repeat current book mark with shift" ;
             m_state->save();
+            // the save updates, prior to persisting
         }
         else
         { 
@@ -152,6 +159,8 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
 }
 
 
+
+
 void Bookmarks::create(unsigned int num)
 {
     setCurrent(num);
@@ -160,7 +169,20 @@ void Bookmarks::create(unsigned int num)
     readdir();   // updates existance 
 }
 
-
+void Bookmarks::updateCurrent()
+{
+    bool exists_ = exists(m_current);
+    if(exists_)
+    {
+        LOG(info) << "Bookmarks::updateCurrent persisting state " ;
+        collect();
+        readmark(m_current);
+    }
+    else
+    {
+        LOG(info) << "Bookmarks::updateCurrent m_current doesnt exist " << m_current ;
+    }
+}
 
 void Bookmarks::collect()
 {
@@ -247,7 +269,5 @@ InterpolatedView* Bookmarks::getInterpolatedView()
     if(!m_view) m_view = makeInterpolatedView();
     return m_view ;             
 }
-
-
 
 

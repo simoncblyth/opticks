@@ -466,6 +466,11 @@ January 2016
 
 
 
+Related
+========
+
+
+* http://www.nvidia.com/content/GTC/posters/40_AbuZayyad_Monte_Carlo_Simulation.pdf
 
 
 EOU

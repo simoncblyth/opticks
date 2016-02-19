@@ -6,11 +6,37 @@
 #include <cstdlib>
 #include <vector>
 
-// Think first about saving and restoring state of a collection of objects
-// only after that works worry about bookmark-like jumping between states
+//
+// *NState* 
+//       focusses on saving and restoring state of a collection of objects
+//       jumping between states is handled at a higher level by
+//       oglrap-/Bookmarks
 //
 // Main problem is the volume of state , impractical to include everything
 // need to pick 
+//
+// Single canonical current NState instance is instanciated in Opticks::configure
+// from App::configure and lodged into App::m_state
+//
+// Multiple NState instances corresponding to each ini files such as
+//  ~/.opticks/rainbow/State/001.ini are managed by oglrap-/Bookmarks
+//
+// NState holds state strings for a collection of NConfigurable objects, grouped
+// by prefix strings such as "camera" "clipper" "scene":: 
+//
+//        simon:State blyth$ cat 001.ini 
+//        [camera]
+//        far=6000.0000
+//        near=120.0000
+//        scale=120.0000
+//        zoom=1.0000
+//        [clipper]
+//        cutnormal=1.0000,0.0000,0.0000
+//        cutplane=1.0000,0.0000,0.0000,1.0000
+//        cutpoint=0.0000,0.0000,0.0000
+//        [scene]
+//        target=0
+//   
 //
 
 class NConfigurable ; 
@@ -25,7 +51,7 @@ class NState {
        void addConfigurable(NConfigurable* configurable);
        void setVerbose(bool verbose=true);
 
-       static std::string FormName(unsigned int num);
+       static std::string FormName(unsigned int num); // eg 001 002
        void setName(const char* name);
        void setName(unsigned int num);
        const char* getName();

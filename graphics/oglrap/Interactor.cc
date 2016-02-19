@@ -157,9 +157,10 @@ const char* Interactor::keys =
 "\n W: decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
 "\n X: pan mode toggle "
 "\n Y: yfov mode toggle "
-"\n Z: zoom mode toggle   (actually z not zoom) " 
+"\n Z: zoom mode toggle   (actually changes z position, not zoom) " 
 "\n 0-9: jump to preexisting bookmark  " 
 "\n 0-9 + shift: create or update bookmark  " 
+"\n SPACE: update the current bookmark, commiting trackballing into the view and persisting "
 "\n "
 "\n Holding shift whilst changing any of the Animator modes reverses Animation time direction "
 "\n A: event propagation "
@@ -281,6 +282,9 @@ void Interactor::key_pressed(unsigned int key)
         case GLFW_KEY_9:
             number_key_pressed(key - GLFW_KEY_0);
             break; 
+        case GLFW_KEY_SPACE:
+            space_pressed();
+            break;
     } 
     updateStatus();
 }
@@ -381,14 +385,28 @@ void Interactor::number_key_pressed(unsigned int number)
     m_bookmark_mode = true ; 
 
     unsigned int modifiers = getModifiers() ;
+
+/*
     if(number == m_bookmarks->getCurrent() && isShift(modifiers))
     {
         LOG(info) << "Interactor::number_key_pressed repeating for existing bookmark with SHIFT modifier " << number ;   
         m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
     }
+*/
 
     m_bookmarks->number_key_pressed(number, modifiers);
 }
+
+void Interactor::space_pressed()
+{
+    unsigned int current = m_bookmarks->getCurrent();
+    if(current == 0) return ; 
+    LOG(info) << "Interactor::space_pressed current " << current ;   
+
+    m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
+    m_bookmarks->updateCurrent();
+}
+
 
 void Interactor::number_key_released(unsigned int number)
 {

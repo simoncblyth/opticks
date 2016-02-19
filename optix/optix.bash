@@ -32,6 +32,34 @@ Conference Talks
   Many presentations (videos and pdfs) on OptiX
 
 
+Approximate Global Illumination using Voxel Cone Tracing, VXGI
+-----------------------------------------------------------------
+
+See vxgi-
+
+
+OptiX Release Notes regards multi-GPU and SLI
+-----------------------------------------------
+
+* https://en.wikipedia.org/wiki/Scalable_Link_Interface
+
+SLI is a multi-GPU technology developed by NVIDIA for linking two or more video
+cards together to produce a single output
+
+
+SLI is not required for OptiX to use multiple GPUs, and it interferes when
+OptiX uses either D3D or OpenGL interop. Disabling SLI will not degrade OptiX
+performance and will provide a more stable environment for OptiX applications
+to run. SLI is termed “Multi-GPU mode” in recent NVIDIA Control Panels, with
+the correct option being “Disable multi-GPU mode” to enable OptiX to freely use
+all system GPUs.
+
+::
+
+   SLI looks to cause significant complications
+
+
+
 OptiX CSG
 ----------
 

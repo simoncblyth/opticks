@@ -156,8 +156,8 @@ jpmt(){
 
     #local size="--size $retina_full"
     #local size="--size $vga"
-    #local size="--size $projector"
-    local size=""
+    local size="--size $projector"
+    #local size=""
 
     ggv --jpmt --cerenkov --animtimemax 80 --load $size  $*
 }

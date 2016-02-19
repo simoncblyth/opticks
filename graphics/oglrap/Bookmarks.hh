@@ -11,10 +11,21 @@ class NState ;
 class InterpolatedView ; 
 
 //
-//  role of Bookmarks
+//  *Bookmarks*
 //
-//  manage swapping between states, 
-//  states are persisted into .ini files within a directory 
+//       Manages swapping between states persisted into .ini files within a single *Bookmarks* directory
+//       details handled by npy-/NState
+//
+//       Instantiating *Bookmarks* reads all the .ini state files within the directory into NState 
+//       instances held in m_bookmarks std::map<unsigned int, NState*>
+//
+//       An InterpolatedView moving between Bookmarks can be created, to result in visible 
+//       changes the viewpoint needs to differ between the states. Currently camera only differences
+//       are not interpolated.
+//
+//       NB trackballed changes need to be collapsed into the view... 
+// 
+//
 //
 
 class Bookmarks {
@@ -32,6 +43,7 @@ public:
 private:
    void init();
    void readdir();
+   void readmark(unsigned int num);
    void updateTitle();
    InterpolatedView* makeInterpolatedView();
    int parseName(const std::string& basename);
@@ -39,6 +51,7 @@ public:
    // Interactor interface
    void number_key_pressed(unsigned int number, unsigned int modifiers=0);
    void number_key_released(unsigned int number);
+   void updateCurrent();
 public:
    bool exists(unsigned int num);
    unsigned int getCurrent(); 
