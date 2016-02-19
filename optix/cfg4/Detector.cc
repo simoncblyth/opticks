@@ -8,6 +8,7 @@
 // ggeo-
 #include "GMaker.hh"
 #include "GCache.hh"
+#include "GPmt.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -43,7 +44,17 @@ void Detector::init()
 
 G4VPhysicalVolume* Detector::Construct()
 {
-    return CreateBoxInBox();
+    // analogous to GGeoTest::create
+
+    const char* mode = m_config->getMode();
+    G4VPhysicalVolume* pv(NULL);
+ 
+    if(     strcmp(mode, "PmtInBox") == 0) pv = CreatePmtInBox(); 
+    else if(strcmp(mode, "BoxInBox") == 0) pv = CreateBoxInBox(); 
+    else  LOG(warning) << "Detector::Construct mode not recognized " << mode ; 
+    assert(pv);
+
+    return pv ; 
 }
 
 std::string Detector::LVName(const char* shapename)
@@ -205,6 +216,23 @@ G4Material* Detector::makeMaterial(unsigned int index)
     material->SetMaterialPropertiesTable(mpt);
 
     return material ; 
+}
+
+
+G4VPhysicalVolume* Detector::CreatePmtInBox()
+{
+   // analagous to ggeo-/GGeoTest::CreatePmtInBox
+    m_config->dump("Detector::CreatePmtInBox");
+
+    NSlice* slice = m_config->getSlice();
+    GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
+
+    // is there enough info to do the G4 boolean CSG creation   
+    // out of the GParts buffer ?
+    //
+    // as a learning step start with a convex lens : boolean intersection of two spheres
+
+    return NULL ; 
 }
 
 

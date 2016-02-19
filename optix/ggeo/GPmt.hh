@@ -15,13 +15,14 @@ class GPmt {
        static const char* FILENAME ;  
        static const char* GPMT ;  
    public:
+       // loads persisted GParts buffer and associates with the GPmt
        static GPmt* load(GCache* cache, GBndLib* bndlib, unsigned int index, NSlice* slice=NULL);
    public:
        GPmt(GCache* cache, GBndLib* bndlib, unsigned int index);
    public:
        void addContainer(gbbox& bb, const char* bnd );
    private:
-       void loadFromCache(NSlice* slice);   
+       void loadFromCache(NSlice* slice);    
        void setParts(GParts* parts);
    public:
        GParts* getParts();

@@ -17,6 +17,8 @@ class GGeoTest {
        void modifyGeometry();
     private:
        void init();
+    private:
+       GMergedMesh* create();
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
     private:

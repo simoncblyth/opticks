@@ -135,13 +135,12 @@ void GParts::init()
 
     assert(m_part_buffer->getNumItems() == m_bndspec->getNumItems() );
 }
+
 unsigned int GParts::getNumParts()
 {
     assert(m_part_buffer->getNumItems() == m_bndspec->getNumItems() );
     return m_part_buffer->getNumItems() ;
 }
-
-
 
 void GParts::add(GParts* other)
 {
