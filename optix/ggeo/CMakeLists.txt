@@ -89,6 +89,7 @@ add_library(${name} SHARED
                 GAttrSeq.cc
                 GMeshFixer.cc
                 GParts.cc
+                GCSG.cc
                 GPmt.cc
                 GMaker.cc
                 GCIE.cc
@@ -141,6 +142,7 @@ GItemList.hh
 GAttrSeq.hh
 GMeshFixer.hh
 GParts.hh
+GCSG.hh
 GPmt.hh
 GMaker.hh
 GCIE.hh

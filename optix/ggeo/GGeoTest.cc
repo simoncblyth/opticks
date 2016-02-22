@@ -1,3 +1,5 @@
+#include "GGeoTest.hh"
+#include "GGeoTestConfig.hh"
 
 #include "GVector.hh"
 #include "GCache.hh"

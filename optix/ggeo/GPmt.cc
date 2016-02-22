@@ -5,6 +5,7 @@
 #include "GItemList.hh"
 #include "GBndLib.hh"
 
+#include "GCSG.hh"
 #include "GParts.hh"
 
 //opticks-
@@ -22,6 +23,7 @@
 
 
 const char* GPmt::FILENAME = "GPmt.npy" ;  
+const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  
 
 
 GPmt* GPmt::load(GCache* cache, GBndLib* bndlib, unsigned int index, NSlice* slice)
@@ -37,31 +39,46 @@ void GPmt::loadFromCache(NSlice* slice)
     OpticksResource* resource = m_cache->getResource();
 
     std::string relpath = resource->getPmtPath(m_index, true); 
-    GItemList*  origSpec = GItemList::load(resource->getIdPath(), "GPmt", relpath.c_str() );
+    GItemList*  bndSpec_orig = GItemList::load(resource->getIdPath(), "GPmt", relpath.c_str() );
 
     std::string path = resource->getPmtPath(m_index); 
-    NPY<float>* origBuf = NPY<float>::load( path.c_str(), FILENAME );
 
+    NPY<float>* partBuf_orig = NPY<float>::load( path.c_str(), FILENAME );
+
+    NPY<float>* csgBuf_orig = NPY<float>::load( path.c_str(), FILENAME_CSG );
+
+    NPY<float>* csgBuf(NULL);
     NPY<float>* partBuf(NULL);
     GItemList* bndSpec(NULL);
+
     if(slice)
     {
-        partBuf = origBuf->make_slice(slice) ; 
-        bndSpec = origSpec->make_slice(slice);
+        partBuf = partBuf_orig->make_slice(slice) ; 
+        csgBuf = csgBuf_orig->make_slice(slice) ; 
+        bndSpec = bndSpec_orig->make_slice(slice);
         LOG(info) << "GPmt::loadFromCache slicing partBuf " 
-                  << " origBuf " << origBuf->getShapeString() 
+                  << " partBuf_orig " << partBuf_orig->getShapeString() 
                   << " partBuf " << partBuf->getShapeString()
                   ; 
 
     }
     else
     {
-        partBuf = origBuf ; 
-        bndSpec = origSpec ; 
+        partBuf = partBuf_orig ; 
+        csgBuf = csgBuf_orig ; 
+        bndSpec = bndSpec_orig ; 
     }
 
     GParts* parts = new GParts(partBuf, bndSpec, m_bndlib);
     setParts(parts);
+
+
+    GCSG* csg = new GCSG(csgBuf) ;
+    setCSG(csg);
+
+
+
+
 }
 
 

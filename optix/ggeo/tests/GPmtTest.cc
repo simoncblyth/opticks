@@ -8,6 +8,7 @@
 #include "GBndLib.hh"
 #include "GPmt.hh"
 #include "GParts.hh"
+#include "GCSG.hh"
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NLog.hpp"
@@ -34,8 +35,17 @@ int main(int argc, char** argv)
     ppmt->dump();
     ppmt->Summary();
 
-    NPY<unsigned int>* sb = ppmt->getSolidBuffer();
-    sb->dump("solidBuffer partOffset/numParts/solidIndex/0 ");
+    //NPY<unsigned int>* sb = ppmt->getSolidBuffer();
+    //sb->dump("solidBuffer partOffset/numParts/solidIndex/0 ");
+
+    GCSG* csg = pmt->getCSG();
+    NPY<float>* cb = csg->getCSGBuffer();
+    cb->dump("CSG Buffer");
+    LOG(info) << "CSG Buffer shape: " << cb->getShapeString() ;
+
+    csg->dump();
+
+
 
     return 0 ;
 }
