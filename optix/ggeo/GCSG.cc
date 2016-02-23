@@ -1,9 +1,25 @@
 #include "GCSG.hh"
 #include "NPY.hpp"
+#include "NLog.hpp"
 
-//#include <cassert>
-//#include <cstdio>
+const char* GCSG::SPHERE_ = "Sphere" ;
+const char* GCSG::TUBS_   = "Tubs" ;
+const char* GCSG::UNION_    = "Union" ;
+const char* GCSG::INTERSECTION_  = "Intersection" ;
 
+const char* GCSG::TypeName(unsigned int typecode)
+{
+    LOG(debug) << "GCSG::TypeName " << typecode ; 
+    switch(typecode)
+    {
+        case SPHERE:return SPHERE_ ; break ;
+        case   TUBS:return TUBS_   ; break ;
+        case  UNION:return UNION_    ; break ;
+        case  INTERSECTION:return INTERSECTION_  ; break ;
+        default:  assert(0) ; break ; 
+    }
+    return NULL ; 
+}
 
 unsigned int GCSG::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
@@ -37,14 +53,14 @@ void GCSG::dump(const char* msg)
 
     for(unsigned int i=0; i < ni; i++)
     {   
+       const char*  tn = getTypeName(i);
        unsigned int tc = getTypeCode(i);
        unsigned int id = getIndex(i);
-       unsigned int nc = getNumChild(i);
+       unsigned int nc = getNumChildren(i);
        unsigned int fc = getFirstChildIndex(i);
        unsigned int lc = getLastChildIndex(i);
 
-       //const char*  tn = getTypeName(i);
-       printf(" id %3d nc %3d fc %3d lc %3d \n", id, nc, fc, lc );  
+       printf(" id %3d nc %3d fc %3d lc %3d tc %3d : %s \n", id, nc, fc, lc, tc, tn );  
 
        for(unsigned int j=0 ; j < NJ ; j++)
        {   

@@ -1,4 +1,11 @@
 // cfg4-
+
+//
+//  ggv-;ggv-pmt-test --cfg4
+//  ggv-;ggv-pmt-test --cfg4 --load 1
+//
+
+
 #include "Detector.hh"
 
 // npy-
@@ -9,6 +16,7 @@
 #include "GMaker.hh"
 #include "GCache.hh"
 #include "GPmt.hh"
+#include "GCSG.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -42,20 +50,18 @@ void Detector::init()
 
 }
 
-G4VPhysicalVolume* Detector::Construct()
+bool Detector::isPmtInBox()
 {
-    // analogous to GGeoTest::create
-
     const char* mode = m_config->getMode();
-    G4VPhysicalVolume* pv(NULL);
- 
-    if(     strcmp(mode, "PmtInBox") == 0) pv = CreatePmtInBox(); 
-    else if(strcmp(mode, "BoxInBox") == 0) pv = CreateBoxInBox(); 
-    else  LOG(warning) << "Detector::Construct mode not recognized " << mode ; 
-    assert(pv);
-
-    return pv ; 
+    return strcmp(mode, "PmtInBox") == 0 ;
 }
+bool Detector::isBoxInBox()
+{
+    const char* mode = m_config->getMode();
+    return strcmp(mode, "BoxInBox") == 0 ;
+}
+
+
 
 std::string Detector::LVName(const char* shapename)
 {
@@ -219,29 +225,24 @@ G4Material* Detector::makeMaterial(unsigned int index)
 }
 
 
-G4VPhysicalVolume* Detector::CreatePmtInBox()
+
+
+G4VPhysicalVolume* Detector::Construct()
 {
-   // analagous to ggeo-/GGeoTest::CreatePmtInBox
-    m_config->dump("Detector::CreatePmtInBox");
+    // analogous to GGeoTest::create
 
-    NSlice* slice = m_config->getSlice();
-    GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
+    bool is_pib = isPmtInBox() ;
+    bool is_bib = isPmtInBox() ;
 
-    // is there enough info to do the G4 boolean CSG creation   
-    // out of the GParts buffer ?
-    //
-    // as a learning step start with a convex lens : boolean intersection of two spheres
+    assert( is_pib || is_bib && "Detector::Construct mode not recognized");
 
-    return NULL ; 
-}
-
-
-G4VPhysicalVolume* Detector::CreateBoxInBox()
-{
    // analagous to ggeo-/GGeoTest::CreateBoxInBox
    // but need to translate from a surface based geometry spec into a volume based one
    //
-    m_config->dump("Detector::CreateBoxInBox");
+   // creates Russian doll geometry layer by layer, starting from the outermost 
+   // hooking up mother volume to prior 
+   //
+    m_config->dump("Detector::Construct");
 
     unsigned int n = m_config->getNumElements();
 
@@ -278,7 +279,43 @@ G4VPhysicalVolume* Detector::CreateBoxInBox()
         }
         mother = lv ; 
     }   
+
+    if(is_pib)
+    {
+        makePMT(mother);
+    }
+
     return top ;  
 }
+
+void Detector::makePMT(G4LogicalVolume* mother)
+{
+    LOG(info) << "Detector::makePMT" ; 
+
+    NSlice* slice = m_config->getSlice();
+    GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
+    GCSG* csg = pmt->getCSG();
+
+    csg->dump();
+
+    unsigned int ni = csg->getNumItems();
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        unsigned int nc = csg->getNumChildren(i); 
+        unsigned int tc = csg->getTypeCode(i);
+        const char* tn = csg->getTypeName(i);
+
+        LOG(info) 
+           << "  i " << std::setw(2) << i  
+           << " tc " << std::setw(2) << tc 
+           << " nc " << std::setw(2) << nc 
+           << " tn " << tn  
+           ;
+    }
+
+
+}
+
 
 

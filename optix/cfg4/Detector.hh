@@ -58,8 +58,12 @@ class Detector : public G4VUserDetectorConstruction
   public:
     const glm::vec4& getCenterExtent();
     const glm::vec4& getBoundaryDomain();
-    G4VPhysicalVolume* CreateBoxInBox();
-    G4VPhysicalVolume* CreatePmtInBox();
+
+    G4VPhysicalVolume* Create();
+    void makePMT(G4LogicalVolume* mother);
+    bool isPmtInBox();
+    bool isBoxInBox();
+
   private:
     void init();
   private:
