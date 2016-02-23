@@ -6,6 +6,8 @@ class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GGeoTestConfig ; 
+class GMaterial ;
+class GCSG ; 
 
 // g4-
 class G4LogicalVolume;
@@ -64,6 +66,10 @@ class Detector : public G4VUserDetectorConstruction
     bool isPmtInBox();
     bool isBoxInBox();
 
+    G4LogicalVolume* makeLV(GCSG* csg, unsigned int i);
+    G4VSolid* makeSolid(GCSG* csg, unsigned int i);
+
+
   private:
     void init();
   private:
@@ -74,7 +80,12 @@ class Detector : public G4VUserDetectorConstruction
     G4Material* makeInnerMaterial(const char* spec);
     G4Material* makeMaterial(unsigned int mat);
   private:
+    G4MaterialPropertiesTable* makeMaterialPropertiesTable(GMaterial* kmat);
+    G4Material* makeMaterial(GMaterial* kmat);
+    G4Material* convertMaterial(GMaterial* kmat);
+  private:
     void setCenterExtent(float x, float y, float z, float w);
+    G4VSolid* makeSolid(GCSG* csg, unsigned int first, unsigned int last);
     G4VSolid* makeSolid(char shapecode, const glm::vec4& param);
     G4VSolid* makeBox(const glm::vec4& param);
     G4VSolid* makeSphere(const glm::vec4& param);

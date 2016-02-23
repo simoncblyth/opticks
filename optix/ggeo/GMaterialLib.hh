@@ -10,7 +10,7 @@ Contrary to initial thinking *GMaterialLib* now handles
 **only standardized material** collection. 
 General raw material handling is still done directly by *GGeo*.
  
-The *GPropertyLib* subclasses aim to replace *GBoundaryLib*.
+The below *GPropertyLib* subclasses replace the former *GBoundaryLib*.
 
 * *GMaterialLib* 
 * *GSurfaceLib*

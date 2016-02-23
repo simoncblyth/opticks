@@ -35,11 +35,15 @@ GPmt* GPmt::load(GCache* cache, GBndLib* bndlib, unsigned int index, NSlice* sli
 
 void GPmt::loadFromCache(NSlice* slice)
 {
-
     OpticksResource* resource = m_cache->getResource();
 
     std::string relpath = resource->getPmtPath(m_index, true); 
-    GItemList*  bndSpec_orig = GItemList::load(resource->getIdPath(), "GPmt", relpath.c_str() );
+
+    GItemList*  bndSpec_orig = GItemList::load(resource->getIdPath(), "GPmt_boundaries", relpath.c_str() );
+
+    GItemList*  materials = GItemList::load(resource->getIdPath(), "GPmt_materials", relpath.c_str() );
+    GItemList*  lvnames = GItemList::load(resource->getIdPath(), "GPmt_lvnames", relpath.c_str() );
+    GItemList*  pvnames = GItemList::load(resource->getIdPath(), "GPmt_pvnames", relpath.c_str() );
 
     std::string path = resource->getPmtPath(m_index); 
 
@@ -72,12 +76,8 @@ void GPmt::loadFromCache(NSlice* slice)
     GParts* parts = new GParts(partBuf, bndSpec, m_bndlib);
     setParts(parts);
 
-
-    GCSG* csg = new GCSG(csgBuf) ;
+    GCSG* csg = new GCSG(csgBuf, materials, lvnames, pvnames ) ;
     setCSG(csg);
-
-
-
 
 }
 

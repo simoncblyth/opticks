@@ -7,6 +7,7 @@
 
 
 #include "Detector.hh"
+#include <map>
 
 // npy-
 #include "NLog.hpp"
@@ -31,6 +32,7 @@
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4Sphere.hh"
+#include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
@@ -39,6 +41,11 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4RotationMatrix.hh"
+
+
+#include "G4UnionSolid.hh"
+#include "G4IntersectionSolid.hh"
+
 
 
 void Detector::init()
@@ -117,13 +124,18 @@ G4Material* Detector::makeInnerMaterial(const char* spec)
     return makeMaterial(im);
 }  
 
+
 G4MaterialPropertiesTable* Detector::makeMaterialPropertiesTable(unsigned int index)
 {
     GMaterial* kmat = m_mlib->getMaterial(index);
+    return makeMaterialPropertiesTable(kmat);
+}
+
+G4MaterialPropertiesTable* Detector::makeMaterialPropertiesTable(GMaterial* kmat)
+{
     unsigned int nprop = kmat->getNumProperties();
 
     LOG(info) << "Detector::makeMaterialPropertiesTable" 
-              << " index " << index
               << " nprop " << nprop 
               ;   
 
@@ -186,19 +198,39 @@ G4Material* Detector::makeWater(const char* name)
 
 G4Material* Detector::makeVacuum(const char* name)
 {
-   G4double z, a, density ;
+    G4double z, a, density ;
 
-   // Vacuum standard definition...
-   G4Material* material = new G4Material(name, z=1., a=1.01*g/mole, density=universe_mean_density );
+    // Vacuum standard definition...
+    G4Material* material = new G4Material(name, z=1., a=1.01*g/mole, density=universe_mean_density );
 
-   return material ; 
+    return material ; 
 }
 
 G4Material* Detector::makeMaterial(unsigned int index)
 {
     GMaterial* kmat = m_mlib->getMaterial(index);
-    //m_mlib->dump(kmat);
+    return makeMaterial(kmat);
+}
 
+G4Material* Detector::convertMaterial(GMaterial* kmat)
+{
+    G4double z, a, density ;
+
+    const char* name = kmat->getShortName();
+
+    LOG(warning) << "Detector::convertMaterial  " << name ;
+
+    G4Material* material = new G4Material(name, z=1., a=1.01*g/mole, density=universe_mean_density );
+
+    // presumably z, a and density are not relevant for optical photons 
+
+    return material ;  
+}
+
+
+G4Material* Detector::makeMaterial(GMaterial* kmat)
+{
+    //m_mlib->dump(kmat);
     const char* name = kmat->getShortName();
 
     G4Material* material(NULL);
@@ -213,18 +245,17 @@ G4Material* Detector::makeMaterial(unsigned int index)
     }
     else
     {
-        LOG(fatal) << "Detector::makeMaterial not implemented for " << name ;
-        assert(0);
+        material = convertMaterial(kmat) ;
+        //assert(0);
     }
 
-    G4MaterialPropertiesTable* mpt = makeMaterialPropertiesTable(index);
+    G4MaterialPropertiesTable* mpt = makeMaterialPropertiesTable(kmat);
     //mpt->DumpTable();
+
     material->SetMaterialPropertiesTable(mpt);
 
     return material ; 
 }
-
-
 
 
 G4VPhysicalVolume* Detector::Construct()
@@ -288,34 +319,216 @@ G4VPhysicalVolume* Detector::Construct()
     return top ;  
 }
 
-void Detector::makePMT(G4LogicalVolume* mother)
+
+
+
+
+void Detector::makePMT(G4LogicalVolume* container)
 {
-    LOG(info) << "Detector::makePMT" ; 
+    // try without creating an explicit node tree 
 
     NSlice* slice = m_config->getSlice();
     GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
     GCSG* csg = pmt->getCSG();
-
     csg->dump();
 
     unsigned int ni = csg->getNumItems();
 
+    LOG(info) << "Detector::makePMT" 
+              << " csg items " << ni 
+              ; 
+
+    G4LogicalVolume* mother = container ; 
+
+    std::map<unsigned int, G4LogicalVolume*> lvm ; 
+
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        unsigned int nc = csg->getNumChildren(i); 
-        unsigned int tc = csg->getTypeCode(i);
-        const char* tn = csg->getTypeName(i);
+        unsigned int ix = csg->getNodeIndex(i); 
+        unsigned int px = csg->getParentIndex(i); 
 
-        LOG(info) 
-           << "  i " << std::setw(2) << i  
-           << " tc " << std::setw(2) << tc 
-           << " nc " << std::setw(2) << nc 
-           << " tn " << tn  
-           ;
+        LOG(info) << "Detector::makePMT" 
+                  << " csg items " << ni 
+                  << " i " << std::setw(3) << i 
+                  << " ix " << std::setw(3) << ix 
+                  << " px " << std::setw(3) << px 
+                  ; 
+
+        if(ix > 0)
+        {
+             const char* pvn = csg->getPVName(ix-1);
+
+             G4LogicalVolume* logvol = makeLV(csg, i );
+
+             lvm[ix-1] = logvol ;
+
+             G4LogicalVolume* mother = NULL ; 
+
+             if(ix - 1 == 0)
+             { 
+                 mother = container ;
+             }
+             else
+             {
+                 assert( px > 0 && lvm.count(px-1) == 1  );
+                 mother = lvm[px-1] ;
+             }
+
+             G4VPhysicalVolume* physvol = new G4PVPlacement(0,G4ThreeVector(), logvol, pvn ,mother,false,0);
+        }
     }
-
-
 }
+
+
+G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
+{
+    unsigned int ix = csg->getNodeIndex(i); 
+    assert(ix > 0);
+
+    const char* matname = csg->getMaterialName(ix - 1) ;
+    const char* lvn = csg->getLVName(ix - 1)  ;  
+    GMaterial* kmat = m_mlib->getMaterial(matname) ;
+
+    LOG(info) 
+           << "Detector::makeLV "
+           << "  i " << std::setw(2) << i  
+           << " ix " << std::setw(2) << ix  
+           << " lvn " << std::setw(2) << lvn
+           << " matname " << matname  
+           ;
+
+    G4VSolid* solid = makeSolid(csg, i );
+    G4Material* material = makeMaterial(kmat);
+    G4LogicalVolume* logvol = new G4LogicalVolume(solid, material, lvn, 0,0,0);
+    return logvol ; 
+}
+
+
+G4VSolid* Detector::makeSolid(GCSG* csg, unsigned int i)
+{
+    unsigned int nc = csg->getNumChildren(i); 
+    unsigned int fc = csg->getFirstChildIndex(i); 
+    unsigned int lc = csg->getLastChildIndex(i); 
+    unsigned int tc = csg->getTypeCode(i);
+    const char* tn = csg->getTypeName(i);
+
+    LOG(info) 
+           << "Detector::makeSolid "
+           << "  i " << std::setw(2) << i  
+           << " nc " << std::setw(2) << nc 
+           << " fc " << std::setw(2) << fc 
+           << " lc " << std::setw(2) << lc 
+           << " tc " << std::setw(2) << tc 
+           << " tn " << tn 
+           ;
+
+   G4VSolid* solid = NULL ; 
+
+   // hmm this is somewhat tied to known structure of DYB PMT
+   if(csg->isUnion(i))
+   {
+       assert(nc == 2);
+       std::stringstream ss ; 
+       ss << "union-ab" 
+          << "-i-" << i 
+          << "-fc-" << fc 
+          << "-lc-" << lc 
+          ;
+       std::string ab_name = ss.str();
+
+       G4VSolid* asol = makeSolid(csg, fc );
+       G4VSolid* bsol = makeSolid(csg, lc );
+
+       G4UnionSolid* uso = new G4UnionSolid( ab_name.c_str(), asol, bsol  );
+       solid = uso ; 
+   }
+   else if(csg->isIntersection(i))
+   {
+       assert(nc == 3 && fc + 2 == lc );
+
+       std::string ij_name ;      
+       std::string ijk_name ;      
+
+       {
+          std::stringstream ss ; 
+          ss << "intersection-ij" 
+              << "-i-" << i 
+              << "-fc-" << fc 
+              << "-lc-" << lc 
+              ;
+          ij_name = ss.str();
+       }
+  
+       {
+          std::stringstream ss ; 
+          ss << "intersection-ijk" 
+              << "-i-" << i 
+              << "-fc-" << fc 
+              << "-lc-" << lc 
+              ;
+          ijk_name = ss.str();
+       }
+
+       G4VSolid* isol = makeSolid(csg, fc+0 );
+       G4VSolid* jsol = makeSolid(csg, fc+1 );
+       G4VSolid* ksol = makeSolid(csg, fc+2 );
+
+       G4IntersectionSolid* ij_sol = new G4IntersectionSolid( ij_name.c_str(), isol, jsol  );
+       G4IntersectionSolid* ijk_sol = new G4IntersectionSolid( ijk_name.c_str(), ij_sol, ksol  );
+
+       solid = ijk_sol ; 
+   } 
+   else if(csg->isSphere(i))
+   {
+        std::stringstream ss ; 
+        ss << "sphere" 
+              << "-i-" << i 
+              ; 
+
+       std::string sp_name = ss.str();
+
+       float inner = csg->getInnerRadius(i);
+       float outer = csg->getOuterRadius(i);
+
+       assert(outer > 0 ) ; 
+
+       float startPhi = 0.f ; 
+       float deltaPhi = 2.f*pi ; 
+
+       float startTheta = 0.f ; 
+       float deltaTheta = 1.f*pi ; 
+
+       solid = new G4Sphere( sp_name.c_str(), inner > 0 ? inner : 0.f , outer, startPhi, deltaPhi, startTheta, deltaTheta  );
+
+   }
+   else if(csg->isTubs(i))
+   {
+        std::stringstream ss ; 
+        ss << "tubs" 
+              << "-i-" << i 
+              ; 
+
+       std::string tb_name = ss.str();
+       float inner = 0.f ; // csg->getInnerRadius(i); kludge to avoid rejig as sizeZ occupies innerRadius spot
+       float outer = csg->getOuterRadius(i);
+       float sizeZ = csg->getSizeZ(i);   // half length
+       assert(sizeZ > 0 ) ; 
+
+       float startPhi = 0.f ; 
+       float deltaPhi = 2.f*pi ; 
+
+       solid = new G4Tubs( tb_name.c_str(), inner > 0 ? inner : 0.f , outer, sizeZ, startPhi, deltaPhi );
+
+   }
+   else
+   {
+       LOG(warning) << "Detector::makeSolid implementation missing " ; 
+   }
+
+   assert(solid) ; 
+   return solid ; 
+}
+
 
 
 

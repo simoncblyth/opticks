@@ -1,16 +1,16 @@
 #pragma once
 
 template <typename T> class NPY ;
+class GItemList ; 
 
 class GCSG {
     public:
-       // shapes with analytic intersection implementations 
-       static const char* SPHERE_ ;
-       static const char* TUBS_ ; 
-       static const char* UNION_ ; 
-       static const char* INTERSECTION_ ; 
-       static const char* TypeName(unsigned int typecode);
-
+        // shapes with analytic intersection implementations 
+        static const char* SPHERE_ ;
+        static const char* TUBS_ ; 
+        static const char* UNION_ ; 
+        static const char* INTERSECTION_ ; 
+        static const char* TypeName(unsigned int typecode);
 
     public:
         // buffer layout, must match locations in pmt-/csg.py
@@ -24,14 +24,33 @@ class GCSG {
             } ;
 
     public:
-        GCSG(NPY<float>* buffer);
+        GCSG(NPY<float>* buffer, GItemList* materials, GItemList* lvnames, GItemList* pvnames);
+
         NPY<float>* getCSGBuffer();
         void dump(const char* msg="GCSG::dump");
-
+    public:
+        const char* getMaterialName(unsigned int nodeindex);
+        const char* getLVName(unsigned int nodeindex);
+        const char* getPVName(unsigned int nodeindex);
     public:
         unsigned int getNumItems();
     public:
+        float getX(unsigned int i);
+        float getY(unsigned int i);
+        float getZ(unsigned int i);
+        float getOuterRadius(unsigned int i);
+        float getInnerRadius(unsigned int i);
+        float getSizeZ(unsigned int i);
+    public:
         unsigned int getTypeCode(unsigned int i);
+        bool isUnion(unsigned int i);
+        bool isIntersection(unsigned int i);
+        bool isSphere(unsigned int i);
+        bool isTubs(unsigned int i);
+
+        unsigned int getNodeIndex(unsigned int i);  // 1-based index, 0:unset
+        unsigned int getParentIndex(unsigned int i);  // 1-based index, 0:unset
+
         const char* getTypeName(unsigned int i);
     public:
         unsigned int getIndex(unsigned int i);
@@ -43,12 +62,19 @@ class GCSG {
 
     private:
         NPY<float>*        m_csg_buffer ; 
+        GItemList*         m_materials ; 
+        GItemList*         m_lvnames ; 
+        GItemList*         m_pvnames ; 
 };
 
 
-inline GCSG::GCSG(NPY<float>* buffer) 
+inline GCSG::GCSG(NPY<float>* buffer, GItemList* materials, GItemList* lvnames, GItemList* pvnames) 
       :
-      m_csg_buffer(buffer)
+      m_csg_buffer(buffer),
+      m_materials(materials),
+      m_lvnames(lvnames),
+      m_pvnames(pvnames)
+
 {
 }
       
@@ -63,6 +89,36 @@ inline unsigned int GCSG::getTypeCode(unsigned int i)
 {
     return getUInt(i, 2, 0);
 }
+inline bool GCSG::isUnion(unsigned int i)
+{
+    return getTypeCode(i) == UNION ; 
+}
+inline bool GCSG::isIntersection(unsigned int i)
+{
+    return getTypeCode(i) == INTERSECTION ; 
+}
+inline bool GCSG::isSphere(unsigned int i)
+{
+    return getTypeCode(i) == SPHERE ; 
+}
+inline bool GCSG::isTubs(unsigned int i)
+{
+    return getTypeCode(i) == TUBS ; 
+}
+
+
+
+inline unsigned int GCSG::getNodeIndex(unsigned int i) 
+{
+    return getUInt(i, 2, 1);
+}
+inline unsigned int GCSG::getParentIndex(unsigned int i) 
+{
+    return getUInt(i, 2, 2);
+}
+
+
+
 inline const char* GCSG::getTypeName(unsigned int i)
 {
     unsigned int tc = getTypeCode(i);
@@ -85,6 +141,7 @@ inline unsigned int GCSG::getLastChildIndex(unsigned int i)
 {
     return getUInt(i, 3, 3);
 }
+
 
 
 

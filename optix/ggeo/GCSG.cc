@@ -1,4 +1,5 @@
 #include "GCSG.hh"
+#include "GItemList.hh"
 #include "NPY.hpp"
 #include "NLog.hpp"
 
@@ -33,6 +34,62 @@ unsigned int GCSG::getNumItems()
     return m_csg_buffer->getNumItems() ;
 }
 
+const char* GCSG::getMaterialName(unsigned int nodeindex)
+{
+    assert(m_materials);
+    return m_materials->getKey(nodeindex) ;
+}
+
+const char* GCSG::getLVName(unsigned int nodeindex)
+{
+    assert(m_lvnames);
+    return m_lvnames->getKey(nodeindex) ;
+}
+
+const char* GCSG::getPVName(unsigned int nodeindex)
+{
+    assert(m_pvnames);
+    return m_pvnames->getKey(nodeindex) ;
+}
+
+
+
+
+
+float GCSG::getX(unsigned int i)
+{
+    return m_csg_buffer->getValue(i, 0, 0 );
+}
+float GCSG::getY(unsigned int i)
+{
+    return m_csg_buffer->getValue(i, 0, 1 );
+}
+float GCSG::getZ(unsigned int i)
+{
+    return m_csg_buffer->getValue(i, 0, 2 );
+}
+float GCSG::getOuterRadius(unsigned int i)
+{
+    return m_csg_buffer->getValue(i, 0, 3 );
+}
+float GCSG::getSizeZ(unsigned int i)
+{
+    return m_csg_buffer->getValue(i, 0, 3 );
+}
+
+
+float GCSG::getInnerRadius(unsigned int i)
+{
+    return m_csg_buffer->getValue(i, 1, 3 );
+}
+
+
+
+
+
+
+
+
 void GCSG::dump(const char* msg)
 {
     NPY<float>* buf = m_csg_buffer ; 
@@ -59,8 +116,14 @@ void GCSG::dump(const char* msg)
        unsigned int nc = getNumChildren(i);
        unsigned int fc = getFirstChildIndex(i);
        unsigned int lc = getLastChildIndex(i);
+       unsigned int ix = getNodeIndex(i);
+       unsigned int pr = getParentIndex(i);
 
-       printf(" id %3d nc %3d fc %3d lc %3d tc %3d : %s \n", id, nc, fc, lc, tc, tn );  
+       const char* mat = ix > 0 ? getMaterialName(ix - 1) : "" ; 
+       const char* lvn = ix > 0 ? getLVName(ix - 1) : "" ; 
+       const char* pvn = ix > 0 ? getPVName(ix - 1) : "" ; 
+
+       printf(" ix %3d id %3d pr %3d nc %3d fc %3d lc %3d tc %3d tn %s mat %s lvn %s pvn %s  \n", ix, id, pr, nc, fc, lc, tc, tn, mat, lvn, pvn );  
 
        for(unsigned int j=0 ; j < NJ ; j++)
        {   
@@ -73,7 +136,8 @@ void GCSG::dump(const char* msg)
        }   
        printf("\n");
     }   
-
 }
+
+
 
 
