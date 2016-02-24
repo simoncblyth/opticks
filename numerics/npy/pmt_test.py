@@ -35,6 +35,95 @@ Issues
 
   May need to compare against a correspondingly "fixed" G4 geometry
 
+* examining the sensdet/hit handling in LXe example observe
+  that its essentially a manual thing for optical photons, so 
+  the overhead of sensdet and hits is not useful for cfg4 purposes.
+  Instead just need to modify cfg4-/RecordStep to return done=true 
+  on walking onto the photocathode : but need to identify, and
+  need the EFFICIENCY ? 
+
+  * hmm what happened to to the EFFICIENCY ? 
+    transmogrified to GSurfaceLib "detect" property that gets
+    copied across to GPU texture
+
+
+assimpwrap-/AssimpGGeo.cc/AssimpGGeo::convertMaterials::
+
+     438             if(hasVectorProperty(mat, EFFICIENCY ))
+     439             {
+     440                 assert(gg->getCathode() == NULL && "only expecting one material with an EFFICIENCY property" );
+     441                 gg->setCathode(gmat) ;
+     442                 m_cathode = mat ;
+     443             }
+     ...
+     466 void AssimpGGeo::convertSensors(GGeo* gg)
+     467 {
+     468 /*
+     469 Opticks is a surface based simulation, as opposed to 
+     470 Geant4 which is CSG volume based. In Geant4 hits are formed 
+     471 on stepping into volumes with associated SensDet.
+     472 The Opticks equivalent is intersecting with a "SensorSurface", 
+     473 which are fabricated by AssimpGGeo::convertSensors.
+     474 */
+     475     convertSensors( gg, m_tree->getRoot(), 0);
+     476 
+
+
+
+G4 Efficiency
+~~~~~~~~~~~~~~~
+
+Where does the random check against EFFICIENCY as
+function of wavelength happen for G4 ? Need to get G4 to decide between
+absorb/detect and return status ? 
+
+* answer: G4OpBoundaryProcess::DoAbsorption
+
+::
+
+    simon:geant4.10.02 blyth$ find source -name '*.cc' -exec grep -H EFFICIENCY {} \;
+    source/global/HEPNumerics/src/G4ConvergenceTester.cc:   out << std::setw(20) << "EFFICIENCY = " << std::setw(13)  << efficiency << G4endl;
+    source/processes/optical/src/G4OpBoundaryProcess.cc:              aMaterialPropertiesTable->GetProperty("EFFICIENCY");
+    simon:geant4.10.02 blyth$ 
+
+
+    165 G4VParticleChange*
+    166 G4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+    167 {
+    ...
+    387               PropertyPointer =
+    388               aMaterialPropertiesTable->GetProperty("EFFICIENCY");
+    389               if (PropertyPointer) {
+    390                       theEfficiency =
+    391                       PropertyPointer->Value(thePhotonMomentum);
+    392               }
+
+
+    306 inline
+    307 void G4OpBoundaryProcess::DoAbsorption()
+    308 {
+    309               theStatus = Absorption;
+    310 
+    311               if ( G4BooleanRand(theEfficiency) ) {
+    312 
+    313                  // EnergyDeposited =/= 0 means: photon has been detected
+    314                  theStatus = Detection;
+    315                  aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
+    316               }
+    317               else {
+    318                  aParticleChange.ProposeLocalEnergyDeposit(0.0);
+    319               }
+    320 
+    321               NewMomentum = OldMomentum;
+    322               NewPolarization = OldPolarization;
+    323 
+    324 //              aParticleChange.ProposeEnergy(0.0);
+    325               aParticleChange.ProposeTrackStatus(fStopAndKill);
+    326 }
+
+
+
+
 
 
 Very different::

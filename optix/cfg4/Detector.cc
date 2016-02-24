@@ -55,7 +55,6 @@ void Detector::init()
     m_bndlib = GBndLib::load(m_cache, constituents=true);
     m_mlib = m_bndlib->getMaterialLib();
     m_slib = m_bndlib->getSurfaceLib();
-
 }
 
 bool Detector::isPmtInBox()
@@ -68,8 +67,6 @@ bool Detector::isBoxInBox()
     const char* mode = m_config->getMode();
     return strcmp(mode, "BoxInBox") == 0 ;
 }
-
-
 
 std::string Detector::LVName(const char* shapename)
 {
@@ -124,7 +121,6 @@ G4Material* Detector::makeInnerMaterial(const char* spec)
     unsigned int im = m_bndlib->getInnerMaterial(boundary);
     return makeMaterial(im);
 }  
-
 
 G4MaterialPropertiesTable* Detector::makeMaterialPropertiesTable(unsigned int index)
 {
@@ -212,6 +208,7 @@ G4Material* Detector::makeMaterial(unsigned int index)
     GMaterial* kmat = m_mlib->getMaterial(index);
     return makeMaterial(kmat);
 }
+
 
 G4Material* Detector::convertMaterial(GMaterial* kmat)
 {

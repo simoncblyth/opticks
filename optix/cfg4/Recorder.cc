@@ -250,6 +250,8 @@ bool Recorder::RecordStep(const G4Step* step)
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
+
+
     unsigned int preFlag ; 
     unsigned int postFlag ; 
 
@@ -346,6 +348,8 @@ void Recorder::RecordPhoton(const G4Step* step)
 
 bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label)
 {
+    // TODO: SURFACE_DETECT/SURFACE_ABSORB ?
+
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
@@ -354,7 +358,11 @@ bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
 
     if(m_step)
     {
-        unsigned int material = 0 ; 
+        // const G4Material* gmat = point->GetMaterial(); 
+        // TODO: at initialization create lookup map between G4Material 
+        //       pointers and GMaterialLib indices 
+
+        unsigned int material = 0 ;                // dummy for now
         unsigned long long shift = slot*4ull ;   
         unsigned long long msk = 0xFull << shift ; 
         unsigned long long his = ffs(flag) & 0xFull ; 
