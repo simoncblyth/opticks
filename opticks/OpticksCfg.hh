@@ -145,6 +145,10 @@ inline void OpticksCfg<Listener>::init()
        ("nooptix,O",  "inhibit use of OptiX") ;
 
    m_desc.add_options()
+       ("nonet,N",  "inhibit use of network") ;
+
+
+   m_desc.add_options()
        ("optixviz",  "Enable OptiXViz, needed in load mode where ordinarily OptiX is not enabled as no propagation is done.") ;
 
    m_desc.add_options()

@@ -253,16 +253,19 @@ void App::configure(int argc, char** argv)
     } 
 
 #ifdef NPYSERVER
-    m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
-    m_delegate->setNumpyEvt(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
-
-    try { 
-        m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
-    } 
-    catch( const std::exception& e)
+    if(!hasOpt("nonet"))
     {
-        LOG(fatal) << "App::config EXCEPTION " << e.what() ; 
-        LOG(fatal) << "App::config FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
+        m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
+        m_delegate->setNumpyEvt(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
+
+        try { 
+            m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
+        } 
+        catch( const std::exception& e)
+        {
+            LOG(fatal) << "App::config EXCEPTION " << e.what() ; 
+            LOG(fatal) << "App::config FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
+        }
     }
 #endif
 
@@ -1158,7 +1161,7 @@ void App::renderLoop()
     {
         m_frame->listen(); 
 #ifdef NPYSERVER
-        m_server->poll_one();  
+        if(m_server) m_server->poll_one();  
 #endif
         count = m_composition->tick();
 
