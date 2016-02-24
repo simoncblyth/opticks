@@ -165,7 +165,7 @@ inline void Animator::modeTransition(float fraction)
     int count = find_closest_index(fraction); 
 
 #ifdef ANIMATOR_DEBUG
-    printf("Animator::modeTransition fraction %10.3f closest count %d \n", fraction, count ); 
+    //printf("Animator::modeTransition fraction %10.3f closest count %d \n", fraction, count ); 
 #endif
 
     m_count = count ; 

@@ -9,7 +9,7 @@ class InterpolatedView :  public View {
         static const char* PREFIX ; 
         virtual const char* getPrefix();
     public:
-        InterpolatedView();
+        InterpolatedView(bool verbose=false);
         
         void addView(View* view);
         void Summary(const char* msg="View::Summary");
@@ -43,10 +43,11 @@ class InterpolatedView :  public View {
         float        m_fraction ; 
         Animator*    m_animator ;
         std::vector<View*>  m_views ; 
+        bool         m_verbose ; 
 
 };
 
-inline InterpolatedView::InterpolatedView() 
+inline InterpolatedView::InterpolatedView(bool verbose) 
      : 
      View(),
      m_i(0),
@@ -54,7 +55,8 @@ inline InterpolatedView::InterpolatedView()
      m_count(0),
      m_period(100),
      m_fraction(0.f),
-     m_animator(NULL)
+     m_animator(NULL),
+     m_verbose(verbose)
 {
     init();
 }

@@ -238,6 +238,14 @@ std::string Index::getPrefixedString(const char* tail)
     return prefix + tail + m_ext ; 
 }
 
+std::string Index::getPath(const char* idpath, const char* prefix)
+{
+     bool create_idpath_dir = true ; 
+     std::string path = preparePath(idpath, getPrefixedString(prefix).c_str(), create_idpath_dir);
+     return path;
+}
+
+
 
 bool Index::exists(const char* idpath)
 {
@@ -270,7 +278,12 @@ Index* Index::load(const char* idpath, const char* itemtype)
     }
     else
     {
-        LOG(warning) << "Index::load FAILED to load index for " << idpath << " " << itemtype ;
+        LOG(warning) << "Index::load FAILED to load index " 
+                     << " idpath " << idpath 
+                     << " itemtype " << itemtype 
+                     << " Source path " << idx->getPath(idpath, "Source")
+                     << " Local path " << idx->getPath(idpath, "Local")
+                     ;
         idx = NULL ;
     }
     return idx ; 

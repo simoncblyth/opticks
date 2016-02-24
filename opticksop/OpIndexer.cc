@@ -74,6 +74,13 @@ void OpIndexer::indexBoundaries()
     update();
 
     bool hexkey = false ; 
+
+    if(!m_pho)
+    {
+        LOG(warning) << "OpIndexer::indexBoundaries OBuf m_pho is NULL : SKIPPING " ; 
+        return ;  
+    }
+
     TSparse<int> boundaries(Opticks::BNDIDX_NAME_, m_pho->slice(4*4,4*3+0), hexkey); // stride,begin  hexkey effects Index and dumping only 
 
     m_evt->setBoundaryIdx(boundaries.getIndex());
@@ -182,7 +189,7 @@ void OpIndexer::indexSequenceLoaded()
     CBufSpec cph = make_bufspec<unsigned long long>(dph); 
 
     TBuf tph("tph", cph);
-    tph.dump<unsigned long long>("tph dump", 2, 0, 10 );  
+    tph.dump<unsigned long long>("OpIndexer::indexSequenceLoaded tph dump", 2, 0, 10 );  
     
     CBufSlice phh = tph.slice(2,0) ; // stride, begin  
     CBufSlice phm = tph.slice(2,1) ;

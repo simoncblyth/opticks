@@ -30,7 +30,7 @@ void NState::init()
     {
         free((void*)m_dir);
         m_dir = strdup(dir.c_str()); 
-        LOG(info) << "NState::init promoted m_dir to " << m_dir ; 
+        LOG(debug) << "NState::init promoted m_dir to " << m_dir ; 
     }
 }
 
@@ -199,6 +199,7 @@ void NState::apply()
                 std::string before = configurable->get(tag.c_str());
                 if(strcmp(before.c_str(), val.c_str())!=0)
                 {
+                    if(m_verbose)
                     LOG(info) << "NState::apply " 
                               << " [" << getName() << "] "
                               << key 
@@ -280,7 +281,7 @@ void NState::save()
 
     std::string filename = getFileName();
     std::string path = preparePath(m_dir, filename.c_str());
-    LOG(info) << "NState::save " << path ;  
+    LOG(debug) << "NState::save " << path ;  
     saveMap<std::string, std::string>(m_kv, m_dir, filename.c_str() ) ;
 }
 
@@ -289,7 +290,7 @@ int NState::load()
     std::string filename = getFileName();
     unsigned int depth = 1 ; 
     std::string path = preparePath(m_dir, filename.c_str());
-    LOG(info) << "NState::load " << path ;  
+    LOG(debug) << "NState::load " << path ;  
 
     int rc = loadMap<std::string, std::string>(m_kv, m_dir, filename.c_str(), depth ) ;
     return rc  ; 

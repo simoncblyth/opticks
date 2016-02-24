@@ -196,9 +196,9 @@ void Opticks::configure()
         m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
     }
 
-    LOG(info) << "Opticks::configure " 
-              << " m_size " << gformat(m_size)
-              ;
+    LOG(debug) << "Opticks::configure " 
+               << " m_size " << gformat(m_size)
+               ;
  
     // formerly done in App as if
     // there was a FrameCfg listener, but there isnt one

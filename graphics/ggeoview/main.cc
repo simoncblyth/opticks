@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     bool save    = app.hasOpt("save");
     bool load    = app.hasOpt("load");
 
-    if(load) save = false ; 
+    if(load) save = false ;    // "load" trumps "save" 
 
     if(!nooptix && !load)
     {
@@ -77,6 +77,12 @@ int main(int argc, char** argv)
         } 
 
         app.loadEvtFromFile();
+
+        // huh maybe need to indexEvt if the indices are not loaded, 
+        // eg when running with cfg4- no indices are persisted by the save as 
+        // do that without assuming OptiX available
+
+        app.indexEvt() ; // this skips if already indexed, and it handles loaded evt 
 
         app.indexPresentationPrep();
 

@@ -21,6 +21,9 @@ class Index : public NSequence {
         void save(const char* idpath);
         void save(const char* pfold, const char* rfold);
    public:
+       // debugging only
+        std::string getPath(const char* idpath, const char* prefix);
+   public:
         const char* getItemType();
         const char* getTitle();
         bool isOneBased();     

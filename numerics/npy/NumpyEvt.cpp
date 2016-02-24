@@ -700,12 +700,18 @@ void NumpyEvt::saveIndex(bool verbose)
 
     if(m_seqhis)
         m_seqhis->save(ixdir.c_str(), m_tag);        
+    else
+        LOG(warning) << "NumpyEvt::saveIndex no seqhis to save " ;
 
     if(m_seqmat)
         m_seqmat->save(ixdir.c_str(), m_tag);        
+    else
+        LOG(warning) << "NumpyEvt::saveIndex no seqmat to save " ;
 
     if(m_bndidx)
         m_bndidx->save(ixdir.c_str(), m_tag);        
+    else
+        LOG(warning) << "NumpyEvt::saveIndex no bndidx to save " ;
 
 }
 

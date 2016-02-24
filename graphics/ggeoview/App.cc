@@ -198,7 +198,7 @@ void App::initViz()
 
 void App::configure(int argc, char** argv)
 {
-    LOG(info) << "App:config" << argv[0] ; 
+    LOG(debug) << "App:configure " << argv[0] ; 
     //m_cfg->dumpTree();
 
     m_cfg->commandline(argc, argv);
@@ -276,17 +276,9 @@ void App::prepareViz()
 {
     if(m_opticks->isCompute()) return ; 
 
-     m_size = m_opticks->getSize();
+    m_size = m_opticks->getSize();
 
-/*
-    bool fullscreen = hasOpt("fullscreen");
-    if(hasOpt("size"))         m_size = m_frame->getSize() ;  // huh as if there was a FrameCfg listener, but there isnt one
-    else if(fullscreen)        m_size = glm::uvec4(2880,1800,2,0) ;
-    else                       m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-
-*/
-
-    LOG(info) << "App::prepareViz"
+    LOG(debug) << "App::prepareViz"
               << " size " << gformat(m_size);
 
     m_scene->setNumpyEvt(m_evt);
@@ -335,8 +327,7 @@ void App::prepareViz()
 
     m_composition->setAltView(iv);
 
-    iv->Summary("App::prepareViz setting composition.altview to InterpolatedView");
-
+    //iv->Summary("App::prepareViz setting composition.altview to InterpolatedView");
 
 
     TIMER("prepareScene");
@@ -855,60 +846,68 @@ void App::indexSequence()
 
 void App::indexPresentationPrep()
 {
+    LOG(info) << "App::indexPresentationPrep" ; 
+
     if(!m_evt) return ; 
 
     Index* seqhis = m_evt->getHistorySeq() ;
     Index* seqmat = m_evt->getMaterialSeq();
     Index* bndidx = m_evt->getBoundaryIdx();
 
-    if(!seqhis || !seqmat || !bndidx)
+
+    if(!seqhis)
     {
-         LOG(warning) << "App::indexPresentationPrep NULL index"
-                      << " seqhis " << seqhis 
-                      << " seqmat " << seqmat
-                      << " bndidx " << bndidx
-                      ; 
-         return ;
+         LOG(warning) << "App::indexPresentationPrep NULL seqhis" ;
+    }
+    else
+    {
+        GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
+        qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+        //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
+        m_seqhis = new GItemIndex(seqhis) ;  
+        m_seqhis->setTitle("Photon Flag Sequence Selection");
+        m_seqhis->setHandler(qflg);
+        m_seqhis->formTable();
     }
 
 
-    GBndLib* blib = m_ggeo->getBndLib();
-    GAttrSeq* qbnd = blib->getAttrNames();
-    if(!qbnd->hasSequence())
+    if(!seqmat)
     {
-        blib->close();
-        assert(qbnd->hasSequence());
+         LOG(warning) << "App::indexPresentationPrep NULL seqmat" ;
+    }
+    else
+    {
+        GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
+        qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+        //qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
+        m_seqmat = new GItemIndex(seqmat) ;  
+        m_seqmat->setTitle("Photon Material Sequence Selection");
+        m_seqmat->setHandler(qmat);
+        m_seqmat->formTable();
     }
 
 
-    GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
-    GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
+    if(!bndidx)
+    {
+         LOG(warning) << "App::indexPresentationPrep NULL bndidx" ;
+    }
+    else
+    {
+        GBndLib* blib = m_ggeo->getBndLib();
+        GAttrSeq* qbnd = blib->getAttrNames();
+        if(!qbnd->hasSequence())
+        {
+            blib->close();
+            assert(qbnd->hasSequence());
+        }
+        qbnd->setCtrl(GAttrSeq::VALUE_DEFAULTS);
+        //qbnd->dumpTable(bndidx, "App::indexPresentationPrep bndidx"); 
 
-    qbnd->setCtrl(GAttrSeq::VALUE_DEFAULTS);
-    //qbnd->dumpTable(bndidx, "App::indexPresentationPrep bndidx"); 
-
-    qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
-
-    qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-    //qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
-
-
-    m_seqhis = new GItemIndex(seqhis) ;  
-    m_seqmat = new GItemIndex(seqmat) ;  
-    m_boundaries = new GItemIndex(bndidx) ;  
-
-    m_seqhis->setTitle("Photon Flag Sequence Selection");
-    m_seqhis->setHandler(qflg);
-    m_seqhis->formTable();
-
-    m_seqmat->setTitle("Photon Material Sequence Selection");
-    m_seqmat->setHandler(qmat);
-    m_seqmat->formTable();
-
-    m_boundaries->setTitle("Photon Termination Boundaries");
-    m_boundaries->setHandler(qbnd);
-    m_boundaries->formTable();
+        m_boundaries = new GItemIndex(bndidx) ;  
+        m_boundaries->setTitle("Photon Termination Boundaries");
+        m_boundaries->setHandler(qbnd);
+        m_boundaries->formTable();
+    } 
 
 
     TIMER("indexPresentationPrep"); 
@@ -969,7 +968,15 @@ void App::indexEvt()
    */
 
     if(!m_evt) return ; 
-   
+  
+
+    if(m_evt->isIndexed())
+    {
+        LOG(info) << "App::indexEvt" 
+                  << " skip as already indexed "
+                  ;
+    }
+ 
     indexSequence();
 
     indexBoundariesHost();

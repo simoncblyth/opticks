@@ -263,7 +263,13 @@ G4VPhysicalVolume* Detector::Construct()
     // analogous to GGeoTest::create
 
     bool is_pib = isPmtInBox() ;
-    bool is_bib = isPmtInBox() ;
+    bool is_bib = isBoxInBox() ;
+
+    LOG(info) << "Detector::Construct"
+              << " pib " << is_pib
+              << " bib " << is_bib
+              ;
+     
 
     assert( is_pib || is_bib && "Detector::Construct mode not recognized");
 

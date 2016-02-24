@@ -67,7 +67,7 @@ T* NPY<T>::zero()
 template <typename T>
 T* NPY<T>::allocate()
 {
-    assert(m_data.size() == 0);
+    //assert(m_data.size() == 0);  tripped when indexing a loaded event
 
     setHasData(true);
     m_data.resize(getNumValues(0));
