@@ -1,8 +1,41 @@
 #!/usr/bin/env python
 """
+PmtInBox Opticks vs cfg4
+==================================
+
+Without and with cfg4 runs::
+
+   ggv-;ggv-pmt-test 
+   ggv-;ggv-pmt-test --cfg4 
+
 Visualize the cfg4 created evt in interop mode viewer::
 
    ggv-;ggv-pmt-test --cfg4 --load
+
+Issues
+-------
+
+* source issue in cfg4 (b), allmost all photons doing same thing, 
+  fixed by handling discLinear
+
+* different G4 geometry, photon interaction positions in the interop visualization 
+  show that primitives are there, but Z offsets not positioned correctly so the 
+  boolean processing produces a more complicated geometry 
+
+  * modify cfg4-/Detector to make just the Pyrex for simplification 
+
+* after first order fixing G4 geometry to look OK, 
+  still very different sequence histories because are missing surface/SD
+  handling that leads to great simplification for Opticks as most photons 
+  are absorbed/detected on the photocathode
+
+* suspect the DYB detdesc G4 positioning of the photocathode inside the vacuum 
+  with coincident surfaces will lead to comparison problems, as this "feature"
+  was fixed for the surface-based translation  
+
+  May need to compare against a correspondingly "fixed" G4 geometry
+
+
 
 Very different::
 
@@ -28,55 +61,24 @@ Very different::
                     7c6d            1       [4 ] TO SC BT SD
                               500000 
 
-    In [55]: b.his
-    b.history        b.history_table  
 
-    In [55]: b.history_table()
+    In [3]: b.history_table()
     Evt(-1,"torch","PmtInBox","", seqs="[]")
                               noname 
-                  8ccccd       480108       [6 ] TO BT BT BT BT SA
-              ccccccbccd        16934       [10] TO BT BT BR BT BT BT BT BT BT
-                   4cccd         1207       [5 ] TO BT BT BT AB
-              cccccbcccd          823       [10] TO BT BT BT BR BT BT BT BT BT
-              cbccccbccd          577       [10] TO BT BT BR BT BT BT BT BR BT
-                  4ccccd           89       [6 ] TO BT BT BT BT AB
-                 86ccccd           83       [7 ] TO BT BT BT BT SC SA
-              bcccccbccd           31       [10] TO BT BT BR BT BT BT BT BT BR
-              4cccccbccd           27       [10] TO BT BT BR BT BT BT BT BT AB
-                 8ccc6cd           23       [7 ] TO BT SC BT BT BT SA
-                8cbbcccd           23       [8 ] TO BT BT BT BR BR BT SA
-                 8cccc6d           15       [7 ] TO SC BT BT BT BT SA
-                      4d           12       [2 ] TO AB
-               8ccccc6cd           11       [9 ] TO BT SC BT BT BT BT BT SA
-              8cbc6ccccd           10       [10] TO BT BT BT BT SC BT BR BT SA
-              cccc6ccccd           10       [10] TO BT BT BT BT SC BT BT BT BT
-                     4cd            6       [3 ] TO BT AB
-              8ccccbc6cd            2       [10] TO BT SC BT BR BT BT BT BT SA
-              ccc6ccbccd            2       [10] TO BT BT BR BT BT SC BT BT BT
-                    4ccd            2       [4 ] TO BT BT AB
-                8cb6cccd            1       [8 ] TO BT BT BT SC BR BT SA
-              c6cccbcccd            1       [10] TO BT BT BT BR BT BT BT SC BT
-              cccc6cbccd            1       [10] TO BT BT BR BT SC BT BT BT BT
-                  4bcccd            1       [6 ] TO BT BT BT BR AB
-              ccccc6cccd            1       [10] TO BT BT BT SC BT BT BT BT BT
-                              500000 
+                8ccccccd       276675       [8 ] TO BT BT BT BT BT BT SA
+                 8ccbccd       157768       [7 ] TO BT BT BR BT BT SA
+              cccccccccd        14167       [10] TO BT BT BT BT BT BT BT BT BT
+              ccccbccccd        13398       [10] TO BT BT BT BT BR BT BT BT BT
+                     8bd         5397       [3 ] TO BR SA
+              cbcccccccd         5153       [10] TO BT BT BT BT BT BT BT BR BT
+              bbbbcccccd         4528       [10] TO BT BT BT BT BT BR BR BR BR
+                  8ccbcd         4033       [6 ] TO BT BR BT BT SA
+              cccbcccccd         3316       [10] TO BT BT BT BT BT BR BT BT BT
+               8cccccccd         2700       [9 ] TO BT BT BT BT BT BT BT SA
+              ccbcbcbccd         1895       [10] TO BT BT BR BT BR BT BR BT BT
+                     4cd         1741       [3 ] TO BT AB
 
 
-Looks like source issue in cfg4 (b), allmost all photons doing same thing::
-
-    In [56]: a.ox
-    Out[56]: 
-    A([[[  68.3786,   27.8457,  104.5609,    0.9754],
-            [  -0.0501,   -0.0204,   -0.9985,    1.    ],
-            [  -0.3772,    0.9262,    0.    ,  380.    ],
-            [      nan,    0.    ,    0.    ,    0.    ]],
-
-    In [57]: b.ox
-    Out[57]: 
-    A([[[   0.    ,    0.    , -300.    ,    1.3503],
-            [   0.    ,    0.    ,   -1.    ,    1.    ],
-            [   1.    ,    0.    ,    0.    ,  380.    ],
-            [   0.    ,    0.    ,    0.    ,    0.    ]],
 
 
 """

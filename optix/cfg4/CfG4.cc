@@ -71,6 +71,7 @@ void CfG4::configure(int argc, char** argv)
 
     m_torch = m_opticks->makeSimpleTorchStep();
     m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
+    m_torch->Summary("CfG4::configure TorchStepNPY::Summary");
 
     m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
     m_num_g4event = m_torch->getNumG4Event();
@@ -91,6 +92,10 @@ void CfG4::configure(int argc, char** argv)
 
 
     OpSource* generator = new OpSource(m_torch, m_recorder);
+
+    int verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
+    generator->SetVerbosity(verbosity);
+
     PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(generator) ;
     SteppingAction* sa = new SteppingAction(m_recorder);
 

@@ -41,6 +41,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4RotationMatrix.hh"
+#include "G4Transform3D.hh"
 
 
 #include "G4UnionSolid.hh"
@@ -340,6 +341,9 @@ void Detector::makePMT(G4LogicalVolume* container)
 
     unsigned int ni = csg->getNumItems();
 
+    // ni = 6 ; // just the Pyrex
+
+
     LOG(info) << "Detector::makePMT" 
               << " csg items " << ni 
               ; 
@@ -348,39 +352,56 @@ void Detector::makePMT(G4LogicalVolume* container)
 
     std::map<unsigned int, G4LogicalVolume*> lvm ; 
 
-    for(unsigned int i=0 ; i < ni ; i++)
+    for(unsigned int index=0 ; index < ni ; index++)
     {
-        unsigned int ix = csg->getNodeIndex(i); 
-        unsigned int px = csg->getParentIndex(i); 
+        unsigned int nix = csg->getNodeIndex(index); 
+        unsigned int pix = csg->getParentIndex(index); 
 
         LOG(info) << "Detector::makePMT" 
                   << " csg items " << ni 
-                  << " i " << std::setw(3) << i 
-                  << " ix " << std::setw(3) << ix 
-                  << " px " << std::setw(3) << px 
+                  << " index " << std::setw(3) << index 
+                  << " nix " << std::setw(3) << nix 
+                  << " pix " << std::setw(3) << pix 
                   ; 
 
-        if(ix > 0)
+        if(nix > 0)  // just the lv, as others are constituents of those that are recursed over
         {
-             const char* pvn = csg->getPVName(ix-1);
+             const char* pvn = csg->getPVName(nix-1);
 
-             G4LogicalVolume* logvol = makeLV(csg, i );
+             G4LogicalVolume* logvol = makeLV(csg, index );
 
-             lvm[ix-1] = logvol ;
+             lvm[nix-1] = logvol ;
 
              G4LogicalVolume* mother = NULL ; 
 
-             if(ix - 1 == 0)
+             if(nix - 1 == 0)
              { 
                  mother = container ;
              }
              else
              {
-                 assert( px > 0 && lvm.count(px-1) == 1  );
-                 mother = lvm[px-1] ;
+                 assert( pix > 0 && lvm.count(pix-1) == 1  );
+                 mother = lvm[pix-1] ;
              }
+              
 
-             G4VPhysicalVolume* physvol = new G4PVPlacement(0,G4ThreeVector(), logvol, pvn ,mother,false,0);
+             G4RotationMatrix* rot = 0 ; 
+             G4ThreeVector tlate(csg->getX(index), csg->getY(index), csg->getZ(index));  
+
+             // pv translation, for DYB PMT only non-zero for pvPmtHemiBottom, pvPmtHemiDynode
+             // suspect that G4DAE COLLADA export omits/messes this up somehow, for the Bottom at least
+
+             LOG(info) << "Detector::makePMT"
+                       << " index " << index 
+                       << " x " << tlate.x()
+                       << " y " << tlate.y()
+                       << " z " << tlate.z()
+                       ;
+
+             G4bool many = false ; 
+             G4int copyNo = 0 ; 
+
+             G4VPhysicalVolume* physvol = new G4PVPlacement(rot, tlate, logvol, pvn, mother, many, copyNo);
         }
     }
 }
@@ -405,22 +426,22 @@ G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
 
     G4VSolid* solid = makeSolid(csg, i );
     G4Material* material = makeMaterial(kmat);
-    G4LogicalVolume* logvol = new G4LogicalVolume(solid, material, lvn, 0,0,0);
+    G4LogicalVolume* logvol = new G4LogicalVolume(solid, material, lvn);
     return logvol ; 
 }
 
 
-G4VSolid* Detector::makeSolid(GCSG* csg, unsigned int i)
+G4VSolid* Detector::makeSolid(GCSG* csg, unsigned int index)
 {
-    unsigned int nc = csg->getNumChildren(i); 
-    unsigned int fc = csg->getFirstChildIndex(i); 
-    unsigned int lc = csg->getLastChildIndex(i); 
-    unsigned int tc = csg->getTypeCode(i);
-    const char* tn = csg->getTypeName(i);
+    unsigned int nc = csg->getNumChildren(index); 
+    unsigned int fc = csg->getFirstChildIndex(index); 
+    unsigned int lc = csg->getLastChildIndex(index); 
+    unsigned int tc = csg->getTypeCode(index);
+    const char* tn = csg->getTypeName(index);
 
     LOG(info) 
            << "Detector::makeSolid "
-           << "  i " << std::setw(2) << i  
+           << "  i " << std::setw(2) << index  
            << " nc " << std::setw(2) << nc 
            << " fc " << std::setw(2) << fc 
            << " lc " << std::setw(2) << lc 
@@ -431,24 +452,33 @@ G4VSolid* Detector::makeSolid(GCSG* csg, unsigned int i)
    G4VSolid* solid = NULL ; 
 
    // hmm this is somewhat tied to known structure of DYB PMT
-   if(csg->isUnion(i))
+   if(csg->isUnion(index))
    {
        assert(nc == 2);
        std::stringstream ss ; 
        ss << "union-ab" 
-          << "-i-" << i 
+          << "-i-" << index
           << "-fc-" << fc 
           << "-lc-" << lc 
           ;
        std::string ab_name = ss.str();
 
-       G4VSolid* asol = makeSolid(csg, fc );
-       G4VSolid* bsol = makeSolid(csg, lc );
+       int a = fc ; 
+       int b = lc ; 
 
-       G4UnionSolid* uso = new G4UnionSolid( ab_name.c_str(), asol, bsol  );
+       G4ThreeVector apos(csg->getX(a), csg->getY(a), csg->getZ(a)); 
+       G4ThreeVector bpos(csg->getX(b), csg->getY(b), csg->getZ(b));
+
+       G4RotationMatrix ab_rot ; 
+       G4Transform3D    ab_transform(ab_rot, bpos  );
+
+       G4VSolid* asol = makeSolid(csg, a );
+       G4VSolid* bsol = makeSolid(csg, b );
+
+       G4UnionSolid* uso = new G4UnionSolid( ab_name.c_str(), asol, bsol, ab_transform );
        solid = uso ; 
    }
-   else if(csg->isIntersection(i))
+   else if(csg->isIntersection(index))
    {
        assert(nc == 3 && fc + 2 == lc );
 
@@ -458,7 +488,7 @@ G4VSolid* Detector::makeSolid(GCSG* csg, unsigned int i)
        {
           std::stringstream ss ; 
           ss << "intersection-ij" 
-              << "-i-" << i 
+              << "-i-" << index 
               << "-fc-" << fc 
               << "-lc-" << lc 
               ;
@@ -468,33 +498,47 @@ G4VSolid* Detector::makeSolid(GCSG* csg, unsigned int i)
        {
           std::stringstream ss ; 
           ss << "intersection-ijk" 
-              << "-i-" << i 
+              << "-i-" << index 
               << "-fc-" << fc 
               << "-lc-" << lc 
               ;
           ijk_name = ss.str();
        }
 
-       G4VSolid* isol = makeSolid(csg, fc+0 );
-       G4VSolid* jsol = makeSolid(csg, fc+1 );
-       G4VSolid* ksol = makeSolid(csg, fc+2 );
 
-       G4IntersectionSolid* ij_sol = new G4IntersectionSolid( ij_name.c_str(), isol, jsol  );
-       G4IntersectionSolid* ijk_sol = new G4IntersectionSolid( ijk_name.c_str(), ij_sol, ksol  );
+       int i = fc + 0 ; 
+       int j = fc + 1 ; 
+       int k = fc + 2 ; 
+
+       G4ThreeVector ipos(csg->getX(i), csg->getY(i), csg->getZ(i)); // kinda assumed 0,0,0
+       G4ThreeVector jpos(csg->getX(j), csg->getY(j), csg->getZ(j));
+       G4ThreeVector kpos(csg->getX(k), csg->getY(k), csg->getZ(k));
+
+       G4VSolid* isol = makeSolid(csg, i );
+       G4VSolid* jsol = makeSolid(csg, j );
+       G4VSolid* ksol = makeSolid(csg, k );
+
+       G4RotationMatrix ij_rot ; 
+       G4Transform3D    ij_transform(ij_rot, jpos  );
+       G4IntersectionSolid* ij_sol = new G4IntersectionSolid( ij_name.c_str(), isol, jsol, ij_transform  );
+
+       G4RotationMatrix ijk_rot ; 
+       G4Transform3D ijk_transform(ijk_rot,  kpos );
+       G4IntersectionSolid* ijk_sol = new G4IntersectionSolid( ijk_name.c_str(), ij_sol, ksol, ijk_transform  );
 
        solid = ijk_sol ; 
    } 
-   else if(csg->isSphere(i))
+   else if(csg->isSphere(index))
    {
         std::stringstream ss ; 
         ss << "sphere" 
-              << "-i-" << i 
+              << "-i-" << index 
               ; 
 
        std::string sp_name = ss.str();
 
-       float inner = csg->getInnerRadius(i);
-       float outer = csg->getOuterRadius(i);
+       float inner = csg->getInnerRadius(index);
+       float outer = csg->getOuterRadius(index);
 
        assert(outer > 0 ) ; 
 
@@ -507,21 +551,35 @@ G4VSolid* Detector::makeSolid(GCSG* csg, unsigned int i)
        solid = new G4Sphere( sp_name.c_str(), inner > 0 ? inner : 0.f , outer, startPhi, deltaPhi, startTheta, deltaTheta  );
 
    }
-   else if(csg->isTubs(i))
+   else if(csg->isTubs(index))
    {
         std::stringstream ss ; 
         ss << "tubs" 
-              << "-i-" << i 
+              << "-i-" << index 
               ; 
 
        std::string tb_name = ss.str();
        float inner = 0.f ; // csg->getInnerRadius(i); kludge to avoid rejig as sizeZ occupies innerRadius spot
-       float outer = csg->getOuterRadius(i);
-       float sizeZ = csg->getSizeZ(i);   // half length
+       float outer = csg->getOuterRadius(index);
+       float sizeZ = csg->getSizeZ(index) ;   // half length   
+       sizeZ /= 2.0 ;   
+
+       // PMT base looks too long without the halfing (as seen by photon interaction position), 
+       // but tis contrary to manual http://lhcb-comp.web.cern.ch/lhcb-comp/Frameworks/DetDesc/Documents/Solids.pdf
+
        assert(sizeZ > 0 ) ; 
 
        float startPhi = 0.f ; 
        float deltaPhi = 2.f*pi ; 
+
+       LOG(info) << "Detector::makeSolid"
+                 << " name " << tb_name
+                 << " inner " << inner 
+                 << " outer " << outer 
+                 << " sizeZ " << sizeZ 
+                 << " startPhi " << startPhi
+                 << " deltaPhi " << deltaPhi
+                 ;
 
        solid = new G4Tubs( tb_name.c_str(), inner > 0 ? inner : 0.f , outer, sizeZ, startPhi, deltaPhi );
 

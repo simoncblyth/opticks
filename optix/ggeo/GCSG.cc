@@ -72,12 +72,12 @@ float GCSG::getOuterRadius(unsigned int i)
 {
     return m_csg_buffer->getValue(i, 0, 3 );
 }
+
+
 float GCSG::getSizeZ(unsigned int i)
 {
-    return m_csg_buffer->getValue(i, 0, 3 );
+    return m_csg_buffer->getValue(i, 1, 3 );
 }
-
-
 float GCSG::getInnerRadius(unsigned int i)
 {
     return m_csg_buffer->getValue(i, 1, 3 );

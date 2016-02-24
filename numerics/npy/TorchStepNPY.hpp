@@ -120,6 +120,7 @@ class TorchStepNPY {
        unsigned int getNumPhotonsPerG4Event(); 
        unsigned int getNumG4Event();
        bool isIncidentSphere();
+       bool isDiscLinear();
        bool isReflTest();
        bool isSPolarized();
        bool isPPolarized();
@@ -318,6 +319,12 @@ inline bool TorchStepNPY::isIncidentSphere()
 {
     ::Torch_t type = getType();
     return type == T_DISC_INTERSECT_SPHERE  ;
+}
+
+inline bool TorchStepNPY::isDiscLinear()
+{
+    ::Torch_t type = getType();
+    return type == T_DISCLIN  ;
 }
 
 inline bool TorchStepNPY::isReflTest()

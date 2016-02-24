@@ -96,14 +96,17 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
     part_prop_t& pp = m_pp.Get();
 
     bool incidentSphere = m_torch->isIncidentSphere() ;
+    bool discLin = m_torch->isDiscLinear() ;
     bool reflTest = m_torch->isReflTest() ;
 
     bool SPol =  m_torch->isSPolarized() ;
     bool PPol =  m_torch->isPPolarized() ;
 
     
-    LOG(debug) << "OpSource::GeneratePrimaryVertex"
+	if (m_verbosityLevel > 1)
+    LOG(info) << "OpSource::GeneratePrimaryVertex"
               << " incidentSphere " << incidentSphere
+              << " discLin " << discLin 
               << " reflTest " << reflTest
               << " SPol " << SPol 
               << " PPol " << PPol 
@@ -119,11 +122,24 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		pp.momentum_direction = m_angGen->GenerateOne();
 		pp.energy = m_eneGen->GenerateOne(m_definition);
 
+
+     /*
+        LOG(info) << "OpSource::GeneratePrimaryVertex"
+                  << " i " << std::setw(6) << i 
+                  << " posx " << pp.position.x()
+                  << " posy " << pp.position.y()
+                  << " posz " << pp.position.z()
+                  << " dirx " << pp.momentum_direction.x()
+                  << " diry " << pp.momentum_direction.y()
+                  << " dirz " << pp.momentum_direction.z()
+                  ;
+
+      */
+
 		if (m_verbosityLevel >= 2)
 			G4cout << "Creating primaries and assigning to vertex" << G4endl;
 		// create new primaries and set them to the vertex
 		G4double mass = m_definition->GetPDGMass();
-
 
 		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
 		particle->SetKineticEnergy(pp.energy );
@@ -218,6 +234,7 @@ void OpSource::configure()
 
     
     bool incidentSphere = m_torch->isIncidentSphere() ;
+    bool discLin = m_torch->isDiscLinear() ;
     bool reflTest = m_torch->isReflTest() ;
 
     // for sanity test geometries use standard X Y for 
@@ -228,7 +245,7 @@ void OpSource::configure()
     m_posGen->SetPosRot2(posY);
 
 
-    if(incidentSphere)  // "rainbow" geometry 
+    if(incidentSphere || discLin)  // used with "rainbow" geometry 
     {
         m_posGen->SetPosDisType("Plane");
         m_posGen->SetPosDisShape("Circle");
@@ -249,6 +266,10 @@ void OpSource::configure()
 
         m_angGen->SetAngDistType("focused");
         m_angGen->SetFocusPoint(cen); 
+    }
+    else
+    {
+        LOG(warning) << "OpSource::configure mode not handled, default position/direction generators will be used " ; 
     }
 
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(posGen->GenerateOne(), "posGen", 10) << G4endl ; 
