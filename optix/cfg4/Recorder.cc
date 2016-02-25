@@ -21,7 +21,9 @@
 #include "NPY.hpp"
 #include "NLog.hpp"
 
+// cfg4-
 #include "Recorder.h"
+#include "CPropLib.hh"
 
 
 
@@ -358,11 +360,9 @@ bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4Op
 
     if(m_step)
     {
-        // const G4Material* gmat = point->GetMaterial(); 
-        // TODO: at initialization create lookup map between G4Material 
-        //       pointers and GMaterialLib indices 
+        const G4Material* g4mat = point->GetMaterial(); 
+        unsigned int material = m_lib ? m_lib->getMaterialIndex(g4mat) + 1 : 0 ; 
 
-        unsigned int material = 0 ;                // dummy for now
         unsigned long long shift = slot*4ull ;   
         unsigned long long msk = 0xFull << shift ; 
         unsigned long long his = ffs(flag) & 0xFull ; 

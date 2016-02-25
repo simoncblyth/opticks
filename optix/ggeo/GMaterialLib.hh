@@ -104,7 +104,7 @@ class GMaterialLib : public GPropertyLib {
        GMaterial* getMaterial(unsigned int i); // zero based index
        const char* getNameCheck(unsigned int i);
        unsigned int getNumMaterials();
-       unsigned int getMaterialIndex(GMaterial* material);
+       unsigned int getMaterialIndex(const GMaterial* material);
    public:
        GMaterial*  createStandardMaterial(GMaterial* src);
    private:

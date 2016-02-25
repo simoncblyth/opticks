@@ -133,7 +133,7 @@ GItemList* GMaterialLib::createNames()
 }
 
 
-unsigned int GMaterialLib::getMaterialIndex(GMaterial* material)
+unsigned int GMaterialLib::getMaterialIndex(const GMaterial* material)
 {
     unsigned int ni = getNumMaterials();
     for(unsigned int i=0 ; i < ni ; i++)

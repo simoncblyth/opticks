@@ -354,7 +354,7 @@ std::vector<std::string>& GPropertyMap<T>::getKeys()
 }
 
 template <typename T>
-GProperty<T>* GPropertyMap<T>::getProperty(const char* pname)
+GProperty<T>* GPropertyMap<T>::getProperty(const char* pname) 
 {
    return (m_prop.find(pname) != m_prop.end()) ? m_prop[pname] : NULL ;
 }
@@ -380,7 +380,7 @@ bool GPropertyMap<T>::hasProperty(const char* pname)
 }
 
 template <typename T>
-GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index)
+GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index) 
 {
    if(index < 0) index += m_keys.size() ;
    std::string key = m_keys[index];
@@ -425,7 +425,7 @@ void GPropertyMap<T>::Summary(const char* msg, unsigned int nline)
 
 
 template <typename T>
-unsigned int GPropertyMap<T>::getNumProperties()
+unsigned int GPropertyMap<T>::getNumProperties() const 
 {
 
    if(m_prop.size() != m_keys.size())

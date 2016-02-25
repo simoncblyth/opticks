@@ -91,7 +91,7 @@ G4VPhysicalVolume* Detector::Construct()
     for(unsigned int i=0 ; i < n ; i++)
     {   
         const char* spec = m_config->getBoundary(i);
-        G4Material* material = m_lib->makeInnerMaterial(spec);
+        const G4Material* material = m_lib->makeInnerMaterial(spec);
 
         glm::vec4 param = m_config->getParameters(i);
         char shapecode = m_config->getShape(i) ;
@@ -110,7 +110,8 @@ G4VPhysicalVolume* Detector::Construct()
 
         G4VSolid* solid = m_maker->makeSolid(shapecode, param);  
 
-        G4LogicalVolume* lv = new G4LogicalVolume(solid, material, lvn.c_str(), 0,0,0);
+        G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn.c_str(), 0,0,0);
+
         G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
  
         if(top == NULL)
@@ -220,11 +221,11 @@ G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
 
     const char* lvn = csg->getLVName(ix - 1)  ;  
 
-    G4Material* material = m_lib->makeMaterial(matname) ;
+    const G4Material* material = m_lib->makeMaterial(matname) ;
 
     G4VSolid* solid = m_maker->makeSolid(csg, i );
 
-    G4LogicalVolume* logvol = new G4LogicalVolume(solid, material, lvn);
+    G4LogicalVolume* logvol = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn);
 
     LOG(info) 
            << "Detector::makeLV "

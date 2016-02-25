@@ -26,25 +26,25 @@ class CPropLib {
    private:
        void init();
    public:
-       G4Material* makeInnerMaterial(const char* spec);
-       G4Material* makeMaterial(const char* matname);
+       const G4Material* makeInnerMaterial(const char* spec);
+       const G4Material* makeMaterial(const char* matname);
        GCSG*       getPmtCSG(NSlice* slice);
-       unsigned int getMaterialIndex(G4Material* material);
+       unsigned int getMaterialIndex(const G4Material* material);
    public:
        void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
    private:
-       G4Material* convertMaterial(GMaterial* kmat);
+       const G4Material* convertMaterial(const GMaterial* kmat);
        G4Material* makeVacuum(const char* name);
        G4Material* makeWater(const char* name);
-       G4MaterialPropertiesTable* makeMaterialPropertiesTable(GMaterial* kmat);
+       G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
    private:
        GCache*            m_cache ; 
        GBndLib*           m_bndlib ; 
        GMaterialLib*      m_mlib ; 
        GSurfaceLib*       m_slib ; 
 
-       std::map<GMaterial*, G4Material*>   m_ggtog4 ; 
-       std::map<G4Material*, unsigned int> m_g4toix ; 
+       std::map<const GMaterial*, const G4Material*>   m_ggtog4 ; 
+       std::map<const G4Material*, unsigned int> m_g4toix ; 
 
 };
 

@@ -78,15 +78,15 @@ class GPropertyMap {
        // this one does not interpolate  
       void addProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
 
-      unsigned int getNumProperties();
+      unsigned int getNumProperties() const ;
 
   public:
-      GProperty<T>* getPropertyByIndex(int index);
-      const char* getPropertyNameByIndex(int index);
-      GProperty<T>* getProperty(const char* pname);
+      GProperty<T>* getPropertyByIndex(int index) ;
+      const char* getPropertyNameByIndex(int index) ;
+      GProperty<T>* getProperty(const char* pname)  ;
       GProperty<T>* getProperty(const char* pname, const char* prefix);
-      bool hasProperty(const char* pname);
-      std::vector<std::string>& getKeys();
+      bool hasProperty(const char* pname) ;
+      std::vector<std::string>& getKeys() ;
 
   private:
       std::string m_name ;

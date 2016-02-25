@@ -32,19 +32,19 @@ void CPropLib::init()
     m_slib = m_bndlib->getSurfaceLib();
 }
 
-G4Material* CPropLib::makeInnerMaterial(const char* spec)
+const G4Material* CPropLib::makeInnerMaterial(const char* spec)
 {
     unsigned int boundary = m_bndlib->addBoundary(spec);
     unsigned int imat = m_bndlib->getInnerMaterial(boundary);
     GMaterial* kmat = m_mlib->getMaterial(imat);
-    G4Material* material = convertMaterial(kmat);
+    const G4Material* material = convertMaterial(kmat);
     return material ; 
 }
 
-G4Material* CPropLib::makeMaterial(const char* matname)
+const G4Material* CPropLib::makeMaterial(const char* matname)
 {
     GMaterial* kmat = m_mlib->getMaterial(matname) ;
-    G4Material* material = convertMaterial(kmat);
+    const G4Material* material = convertMaterial(kmat);
     return material ; 
 }
 
@@ -56,10 +56,10 @@ GCSG* CPropLib::getPmtCSG(NSlice* slice)
 }
 
 
-G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(GMaterial* kmat)
+G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
-    const char* name = kmat->getShortName();
-    unsigned int nprop = kmat->getNumProperties();
+    const char* name = ggmat->getShortName();
+    unsigned int nprop = ggmat->getNumProperties();
 
     LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
               << " name " << name
@@ -68,14 +68,16 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(GMaterial* kmat
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
 
+    GMaterial* ggm = const_cast<GMaterial*>(ggmat) ; // not easily to do this properly 
+
     for(unsigned int i=0 ; i<nprop ; i++)
     {
-        const char* key = kmat->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
+        const char* key = ggm->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
         const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
 
         bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
 
-        GProperty<float>* prop = kmat->getPropertyByIndex(i);
+        GProperty<float>* prop = ggm->getPropertyByIndex(i);
         //prop->Summary(lkey);   
 
         unsigned int nval  = prop->getLength();
@@ -144,7 +146,7 @@ G4Material* CPropLib::makeVacuum(const char* name)
 
 
 
-G4Material* CPropLib::convertMaterial(GMaterial* kmat)
+const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
 {
     const char* name = kmat->getShortName();
     if(m_ggtog4.count(kmat) == 1)
@@ -191,7 +193,7 @@ G4Material* CPropLib::convertMaterial(GMaterial* kmat)
 }
 
 
-unsigned int CPropLib::getMaterialIndex(G4Material* material)
+unsigned int CPropLib::getMaterialIndex(const G4Material* material)
 {
     return m_g4toix[material] ;
 }
@@ -199,12 +201,12 @@ unsigned int CPropLib::getMaterialIndex(G4Material* material)
 
 void CPropLib::dumpMaterials(const char* msg)
 {
-    typedef std::map<G4Material*, unsigned int> MMU ; 
+    typedef std::map<const G4Material*, unsigned int> MMU ; 
     LOG(info) << msg << " g4toix" ; 
 
     for(MMU::const_iterator it=m_g4toix.begin() ; it != m_g4toix.end() ; it++)
     {
-        G4Material* mat = it->first ; 
+        const G4Material* mat = it->first ; 
         unsigned int idx = it->second ; 
 
         const G4String& name = mat->GetName();
@@ -215,11 +217,11 @@ void CPropLib::dumpMaterials(const char* msg)
     }
 
     LOG(info) << msg  << " ggtog4" ; 
-    typedef std::map<GMaterial*, G4Material*> MMM ; 
+    typedef std::map<const GMaterial*, const G4Material*> MMM ; 
     for(MMM::const_iterator it=m_ggtog4.begin() ; it != m_ggtog4.end() ; it++)
     {
-        GMaterial* ggmat = it->first ; 
-        G4Material* g4mat = it->second ; 
+        const GMaterial* ggmat = it->first ; 
+        const G4Material* g4mat = it->second ; 
 
         const G4String& name = g4mat->GetName();
         const char* ggname = ggmat->getShortName();
