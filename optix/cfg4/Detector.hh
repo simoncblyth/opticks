@@ -7,19 +7,26 @@ class GMaterialLib ;
 class GSurfaceLib ;
 class GGeoTestConfig ; 
 class GMaterial ;
+
 class GCSG ; 
+
+
+// cfg4-
+class CMaker ; 
 
 // g4-
 class G4LogicalVolume;
 class G4VPhysicalVolume;
-class G4VSolid;
 
 class G4Material ; 
 class G4MaterialPropertiesTable ; 
 
 #include <string>
-#include <glm/glm.hpp>
 #include "G4VUserDetectorConstruction.hh"
+
+
+class G4VSolid;
+#include <glm/glm.hpp>
 
 //
 // Hmm for fully controlled cfg4- testing need 
@@ -67,34 +74,28 @@ class Detector : public G4VUserDetectorConstruction
     bool isBoxInBox();
 
     G4LogicalVolume* makeLV(GCSG* csg, unsigned int i);
-    G4VSolid* makeSolid(GCSG* csg, unsigned int i);
-
 
   private:
     void init();
   private:
     G4Material* makeVacuum(const char* name);
     G4Material* makeWater(const char* name);
-    G4MaterialPropertiesTable* makeMaterialPropertiesTable(unsigned int index);
-    G4Material* makeOuterMaterial(const char* spec);
-    G4Material* makeInnerMaterial(const char* spec);
-    G4Material* makeMaterial(unsigned int mat);
+
   private:
     G4MaterialPropertiesTable* makeMaterialPropertiesTable(GMaterial* kmat);
-    G4Material* makeMaterial(GMaterial* kmat);
     G4Material* convertMaterial(GMaterial* kmat);
   private:
     void setCenterExtent(float x, float y, float z, float w);
+
     G4VSolid* makeSolid(GCSG* csg, unsigned int first, unsigned int last);
-    G4VSolid* makeSolid(char shapecode, const glm::vec4& param);
-    G4VSolid* makeBox(const glm::vec4& param);
-    G4VSolid* makeSphere(const glm::vec4& param);
+
   private:
     GCache*            m_cache ; 
     GGeoTestConfig*    m_config ; 
     GBndLib*           m_bndlib ; 
     GMaterialLib*      m_mlib ; 
     GSurfaceLib*       m_slib ; 
+    CMaker*            m_maker ; 
   private:
     glm::vec4          m_center_extent ; 
 
@@ -107,7 +108,8 @@ inline Detector::Detector(GCache* cache, GGeoTestConfig* config)
   m_config(config),
   m_bndlib(NULL),
   m_mlib(NULL),
-  m_slib(NULL)
+  m_slib(NULL),
+  m_maker(NULL)
 {
     init();
 }

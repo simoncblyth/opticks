@@ -132,6 +132,19 @@ GItemList* GMaterialLib::createNames()
     return names ;
 }
 
+
+unsigned int GMaterialLib::getMaterialIndex(GMaterial* material)
+{
+    unsigned int ni = getNumMaterials();
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GMaterial* mat = m_materials[i] ;
+        if(mat == material) return i  ;
+    }     
+    return UINT_MAX ;  
+}
+
+
 NPY<float>* GMaterialLib::createBuffer()
 {
     unsigned int ni = getNumMaterials();
