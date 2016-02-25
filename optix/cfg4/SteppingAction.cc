@@ -96,6 +96,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         if(done)
         {
             m_recorder->RecordPhoton(step);
+            m_recorder->Dump("SteppingAction::UserSteppingAction DONE");
             track->SetTrackStatus(fStopAndKill);
         } 
     }

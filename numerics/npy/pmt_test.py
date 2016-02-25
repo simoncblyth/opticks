@@ -95,6 +95,10 @@ absorb/detect and return status ?
 
 * answer: G4OpBoundaryProcess::DoAbsorption
 
+* but it seems that will never be called without an optical surface to 
+  set the EFFICIENCY to allow DoAbsorption to get called
+
+
 ::
 
     simon:geant4.10.02 blyth$ find source -name '*.cc' -exec grep -H EFFICIENCY {} \;
@@ -107,6 +111,7 @@ absorb/detect and return status ?
     166 G4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     167 {
     ...
+
     387               PropertyPointer =
     388               aMaterialPropertiesTable->GetProperty("EFFICIENCY");
     389               if (PropertyPointer) {
@@ -137,6 +142,172 @@ absorb/detect and return status ?
     325               aParticleChange.ProposeTrackStatus(fStopAndKill);
     326 }
 
+
+suspect g4dae export is missing some optical surfaces
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Huh DDDB/PMT/properties.xml appears to set EFFICIENCY and REFLECIVITY to zero 
+for PMT border surfaces
+
+
+/usr/local/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/properties.xml::
+
+
+     01 <?xml version='1.0' encoding='UTF-8'?>
+      2 <!DOCTYPE DDDB SYSTEM "../DTD/geometry.dtd">
+      3 
+      4 <DDDB>
+      5 
+      6   <catalog name="PmtSurfaces">
+      7     <surfaceref href="#PmtGlassPhoCatSurface"/>
+      8     <surfaceref href="#PmtGlassVacuumSurface"/>
+      9   </catalog>
+     10 
+     11   <catalog name="PmtSurfaceTabProperty">
+     12     <tabpropertyref href="#PmtGlassPhoCatReflectivity"/>
+     13     <tabpropertyref href="#PmtGlassPhoCatEfficiency"/>
+     14     <tabpropertyref href="#PmtGlassVacuumReflectivity"/>
+     15     <tabpropertyref href="#PmtGlassVacuumEfficiency"/>
+     16   </catalog>
+     17 
+     18   <!-- Surfaces -->
+     19 
+     20   <surface name="PmtGlassPhoCatSurface"
+     21        model="glisur"
+     22        finish="polished"
+     23        type="dielectric_dielectric"
+     24        value="0"
+     25        volfirst="/dd/Geometry/PMT/lvPmtHemiGlass"
+     26        volsecond="/dd/Geometry/PMT/lvPmtHemiCathode">
+     //
+     //   name lvPmtHemiGlass looks wrong would expect /dd/Geometry/PMT/lvPmtHemi
+     //   also the lvPmtHemiCathode is child of the lvPmtHemiVacuum ??
+     //
+     //
+     27     <tabprops address="/dd/Geometry/PMT/PmtSurfaceTabProperty/PmtGlassPhoCatReflectivity"/>
+     28     <tabprops address="/dd/Geometry/PMT/PmtSurfaceTabProperty/PmtGlassPhoCatEfficiency"/>
+     29   </surface>
+     30 
+     31   <surface name="PmtGlassVacuumSurface"
+     32        model="glishur"
+     //
+     //    typo but glisur is default anyhow
+     //
+     33        finish="polished"
+     34        type="dielectric_dielectric"
+     35        value="0"
+     36        volfirst="/dd/Geometry/PMT/lvPmtHemiGlass"
+     37        volsecond="/dd/Geometry/PMT/lvPmtHemiVacuum">
+     //
+     //   again name lvPmtHemiGlass looks wrong, would expect /dd/Geometry/PMT/lvPmtHemi
+     //   border surfaces work 
+     //
+     38     <tabprops address="/dd/Geometry/PMT/PmtSurfaceTabProperty/PmtGlassVacuumReflectivity"/>
+     39     <tabprops address="/dd/Geometry/PMT/PmtSurfaceTabProperty/PmtGlassVacuumEfficiency"/>
+     40   </surface>
+     41 
+     42   <!-- Tabled properties -->
+     43 
+     44   <tabproperty name="PmtGlassPhoCatReflectivity"
+     45            type="REFLECTIVITY"
+     46            xunit="eV"
+     47            xaxis="PhotonEnergy"
+     48            yaxis="Reflectivity">
+     49     1.0  0.0
+     50     2.0  0.0
+     51     3.0  0.0
+     52     4.0  0.0
+     53     5.0  0.0
+
+
+
+The above looks to be outdated, this one is better
+
+* /usr/local/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PmtPanel/properties.xml::
+
+::
+
+    simon:npy blyth$ diff /usr/local/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/properties.xml /usr/local/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PmtPanel/properties.xml
+    25c25
+    <      volfirst="/dd/Geometry/PMT/lvPmtHemiGlass"
+    ---
+    >      volfirst="/dd/Geometry/PMT/lvPmtHemi"
+    36c36
+    <      volfirst="/dd/Geometry/PMT/lvPmtHemiGlass"
+    ---
+    >      volfirst="/dd/Geometry/PMT/lvPmtHemi"
+    simon:npy blyth$ 
+
+
+
+With theReflectivity and theTransmittance set to zero via the logical border surface
+the DoAbsorption will always get called on the photocathode boundary::
+
+     483         else if (type == dielectric_dielectric) {
+     484 
+     485           if ( theFinish == polishedbackpainted ||
+     486                theFinish == groundbackpainted ) {
+     487              DielectricDielectric();
+     488           }
+     489           else {
+     490              G4double rand = G4UniformRand();
+     491              if ( rand > theReflectivity ) {
+     492                 if (rand > theReflectivity + theTransmittance) {
+     493                    DoAbsorption();
+     494                 } else {
+     495                    theStatus = Transmission;
+     496                    NewMomentum = OldMomentum;
+     497                    NewPolarization = OldPolarization;
+     498                 }
+     499              }
+
+
+
+names for breakpointing
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:env blyth$ nm /usr/local/env/g4/geant4.10.02.install/lib/libG4processes.dylib | c++filt | grep G4OpBoundaryProcess
+    0000000001390d00 unsigned short G4OpBoundaryProcess::DoAbsorption()
+    0000000001390de0 unsigned short G4OpBoundaryProcess::DoReflection()
+    0000000001391b70 unsigned short G4OpBoundaryProcess::IsApplicable(G4ParticleDefinition const&)
+    0000000001386f40 T G4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&)
+    000000000138afe0 T G4OpBoundaryProcess::DielectricLUT()
+    000000000138a4a0 T G4OpBoundaryProcess::DielectricMetal()
+    000000000138ee20 T G4OpBoundaryProcess::GetMeanFreePath(G4Track const&, double, G4ForceCondition*)
+    000000000138eef0 T G4OpBoundaryProcess::GetReflectivity(double, double, double, double, double)
+    0000000001391430 unsigned short G4OpBoundaryProcess::ChooseReflection()
+    000000000138ee50 T G4OpBoundaryProcess::GetIncidentAngle()
+    000000000138b920 T G4OpBoundaryProcess::DielectricDichroic()
+    000000000138c560 T G4OpBoundaryProcess::DielectricDielectric()
+    0000000001389ec0 T G4OpBoundaryProcess::CalculateReflectivity()
+    000000000138e470 T G4OpBoundaryProcess::InvokeSD(G4Step const*)
+    0000000001386e20 T G4OpBoundaryProcess::G4OpBoundaryProcess(G4String const&, G4ProcessType)
+    0000000001386a70 T G4OpBoundaryProcess::G4OpBoundaryProcess(G4String const&, G4ProcessType)
+    0000000001386f10 T G4OpBoundaryProcess::~G4OpBoundaryProcess()
+    0000000001386ef0 T G4OpBoundaryProcess::~G4OpBoundaryProcess()
+    0000000001386e50 T G4OpBoundaryProcess::~G4OpBoundaryProcess()
+    00000000013913f0 unsigned short G4OpBoundaryProcess::G4BooleanRand(double) const
+    000000000138e590 T G4OpBoundaryProcess::GetFacetNormal(CLHEP::Hep3Vector const&, CLHEP::Hep3Vector const&) const
+    0000000001389200 T G4OpBoundaryProcess::BoundaryProcessVerbose() const
+    000000000191a720 S typeinfo for G4OpBoundaryProcess
+    00000000017ba0c0 S typeinfo name for G4OpBoundaryProcess
+    000000000191a650 S vtable for G4OpBoundaryProcess
+    simon:env blyth$ 
+
+
+::
+
+
+    simon:env blyth$ ggv-;ggv-pmt-test --cfg4 --dbg
+
+    (lldb) b "G4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&)"
+    Breakpoint 1: no locations (pending).
+    WARNING:  Unable to resolve breakpoint to any actual locations.
+    (lldb) r
+    (lldb) expr verboseLevel = 1
+    (lldb) b "G4OpBoundaryProcess::DielectricDielectric()"
 
 
 

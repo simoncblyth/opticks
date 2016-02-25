@@ -89,9 +89,12 @@ ggv-pmt-test(){
         tag=-$tag  
     fi 
 
+   #local photons=500000
+   local photons=10000
+
    local torch_config=(
                  type=disclin
-                 photons=500000
+                 photons=$photons
                  wavelength=380 
                  frame=1
                  source=0,0,300

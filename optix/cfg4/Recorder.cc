@@ -270,7 +270,7 @@ bool Recorder::RecordStep(const G4Step* step)
         postFlag = getPointFlag(post, m_boundary_status) ;
     }
 
-    bool postLast = (postFlag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
+    bool postLast = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
     bool preSkip = m_prior_boundary_status == StepTooSmall ;
     bool done = false ; 
 
@@ -350,9 +350,7 @@ void Recorder::RecordPhoton(const G4Step* step)
 
 bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label)
 {
-    // TODO: SURFACE_DETECT/SURFACE_ABSORB ?
-
-    bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB)) != 0 ;
+    bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
 

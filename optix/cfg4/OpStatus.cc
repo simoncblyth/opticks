@@ -149,15 +149,18 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case StepTooSmall:
                                flag=NAN_ABORT;
                                break;
-
+        case Absorption:
+                               flag=SURFACE_ABSORB ; 
+                               break;
+        case Detection:
+                               flag=SURFACE_DETECT ; 
+                               break;
         case Undefined:
         case Transmission:
         case LambertianReflection:
         case LobeReflection:
         case SpikeReflection:
         case BackScattering:
-        case Absorption:
-        case Detection:
         case NotAtBoundary:
         case SameMaterial:
         case NoRINDEX:
