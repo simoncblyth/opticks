@@ -10,7 +10,6 @@
 #include "GPmt.hh"
 #include "GCSG.hh"
 
-
 // npy-
 #include "NLog.hpp"
 
@@ -22,7 +21,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
-
+const char* CPropLib::SENSOR_MATERIAL = "Bialkali" ;
 
 void CPropLib::init()
 {
@@ -30,6 +29,12 @@ void CPropLib::init()
     m_bndlib = GBndLib::load(m_cache, constituents=true);
     m_mlib = m_bndlib->getMaterialLib();
     m_slib = m_bndlib->getSurfaceLib();
+
+    m_sensor_surface = m_slib->getSensorSurface(0) ;
+
+    if(m_verbosity>2)
+    m_sensor_surface->Summary("CPropLib::init cathode_surface");
+
 }
 
 const G4Material* CPropLib::makeInnerMaterial(const char* spec)
@@ -59,61 +64,90 @@ GCSG* CPropLib::getPmtCSG(NSlice* slice)
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
     const char* name = ggmat->getShortName();
-    unsigned int nprop = ggmat->getNumProperties();
+    unsigned int mprop = ggmat->getNumProperties();
 
     LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
               << " name " << name
-              << " nprop " << nprop 
+              << " mprop " << mprop 
               ;   
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
 
     GMaterial* ggm = const_cast<GMaterial*>(ggmat) ; // not easily to do this properly 
 
-    for(unsigned int i=0 ; i<nprop ; i++)
+    for(unsigned int i=0 ; i<mprop ; i++)
     {
         const char* key = ggm->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
         const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
-
-        bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
-
         GProperty<float>* prop = ggm->getPropertyByIndex(i);
-        //prop->Summary(lkey);   
-
-        unsigned int nval  = prop->getLength();
-
-        LOG(debug) << "CPropLib::makeMaterialPropertiesTable" 
-                  << " i " << std::setw(3) << i
-                  << " key " << std::setw(40) << key
-                  << " lkey " << std::setw(40) << lkey
-                  << " nval " << nval 
-                 ;   
-
-        G4double* ddom = new G4double[nval] ;
-        G4double* dval = new G4double[nval] ;
-
-        for(unsigned int j=0 ; j < nval ; j++)
-        {
-            float fnm = prop->getDomain(j) ;
-            float fval = prop->getValue(j) ; 
-
-            G4double wavelength = G4double(fnm)*nm ; 
-            G4double energy = h_Planck*c_light/wavelength ;
-
-            G4double value = G4double(fval) ;
-            if(length) value *= mm ;    // TODO: check unit consistency, also check absolute-wise
-
-            ddom[nval-1-j] = G4double(energy) ; 
-            dval[nval-1-j] = G4double(value) ;
-        }
-
-        mpt->AddProperty(lkey, ddom, dval, nval)->SetSpline(true); 
-
-        delete [] ddom ; 
-        delete [] dval ; 
+        addProperty(mpt, lkey, prop );
     }
 
+
+    if(strcmp(name, SENSOR_MATERIAL)==0)
+    {
+        GPropertyMap<float>* surf = m_sensor_surface ; 
+        assert(surf);
+        unsigned int sprop = surf->getNumProperties() ;
+
+        LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
+                  << " material " << name
+                  << " adding sensor surface properties "
+                  << " from " << surf->getShortName()
+                  << " sprop " << sprop 
+                  ;   
+
+        for(unsigned int j=0 ; j<sprop ; j++)
+        {
+            const char* key = surf->getPropertyNameByIndex(j); 
+            const char* lkey = m_slib->getLocalKey(key) ; 
+            if(strcmp(lkey,"EFFICIENCY")==0)
+            {
+                GProperty<float>* prop = surf->getPropertyByIndex(j);
+                addProperty(mpt, lkey, prop );
+            }
+        }
+    }
     return mpt ;
+}
+
+
+void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop )
+{
+    bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
+    unsigned int nval  = prop->getLength();
+
+    if(m_verbosity>1)
+    prop->Summary(lkey);   
+
+    LOG(info) << "CPropLib::addProperty" 
+               << " lkey " << std::setw(40) << lkey
+               << " nval " << std::setw(10) << nval
+               << " length " << std::setw(10) << length
+               ;   
+
+    G4double* ddom = new G4double[nval] ;
+    G4double* dval = new G4double[nval] ;
+
+    for(unsigned int j=0 ; j < nval ; j++)
+    {
+        float fnm = prop->getDomain(j) ;
+        float fval = prop->getValue(j) ; 
+
+        G4double wavelength = G4double(fnm)*nm ; 
+        G4double energy = h_Planck*c_light/wavelength ;
+
+        G4double value = G4double(fval) ;
+        if(length) value *= mm ;    // TODO: check unit consistency, also check absolute-wise
+
+        ddom[nval-1-j] = G4double(energy) ; 
+        dval[nval-1-j] = G4double(value) ;
+    }
+
+    mpt->AddProperty(lkey, ddom, dval, nval)->SetSpline(true); 
+
+    delete [] ddom ; 
+    delete [] dval ; 
 }
 
 

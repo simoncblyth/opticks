@@ -12,7 +12,7 @@ class CMaker {
         static std::string PVName(const char* shapename);
         static std::string LVName(const char* shapename);
     public:
-        CMaker(GCache* cache);
+        CMaker(GCache* cache, int verbosity=0);
     public:
         G4VSolid* makeSolid(char shapecode, const glm::vec4& param);
         G4VSolid* makeBox(const glm::vec4& param);
@@ -21,12 +21,14 @@ class CMaker {
         G4VSolid* makeSolid(GCSG* csg, unsigned int i);
     private:
         GCache* m_cache ; 
+        int     m_verbosity ; 
 
 };
 
-inline CMaker::CMaker(GCache* cache) 
+inline CMaker::CMaker(GCache* cache, int verbosity) 
    :
-   m_cache(cache)
+   m_cache(cache),
+   m_verbosity(verbosity)
 {
 }   
 

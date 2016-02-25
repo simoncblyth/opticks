@@ -52,7 +52,7 @@ class G4VSolid;
 class Detector : public G4VUserDetectorConstruction
 {
  public:
-    Detector(GCache* cache, GGeoTestConfig* config);
+    Detector(GCache* cache, GGeoTestConfig* config, int verbosity=0);
   private:
     void init();
   public:
@@ -74,6 +74,7 @@ class Detector : public G4VUserDetectorConstruction
     GGeoTestConfig*    m_config ; 
     CPropLib*          m_lib ; 
     CMaker*            m_maker ; 
+    int                m_verbosity ; 
 
   private:
     glm::vec4          m_center_extent ; 
@@ -81,12 +82,13 @@ class Detector : public G4VUserDetectorConstruction
 };
 
 
-inline Detector::Detector(GCache* cache, GGeoTestConfig* config)
+inline Detector::Detector(GCache* cache, GGeoTestConfig* config, int verbosity)
   : 
   m_cache(cache),
   m_config(config),
   m_lib(NULL),
-  m_maker(NULL)
+  m_maker(NULL),
+  m_verbosity(verbosity)
 {
     init();
 }

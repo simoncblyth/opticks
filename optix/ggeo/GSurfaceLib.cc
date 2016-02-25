@@ -523,6 +523,29 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
               ; 
 }
 
+GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
+{
+    GPropertyMap<float>* surface = NULL ; 
+
+    unsigned int count = 0 ; 
+    for(unsigned int index=0 ; index < getNumSurfaces() ; index++)
+    {
+        const char* name = getName(index); 
+        if(isSensorSurface(index))
+        {
+             if(count == offset) surface = getSurface(index) ;
+             count += 1 ; 
+
+        } 
+        LOG(debug) << "GSurfaceLib::getSensorSurface" 
+                   << " name " << name
+                   << " index " << index
+                   << " count " << count 
+                  ;
+
+    }
+    return surface ; 
+}  
 
 bool GSurfaceLib::isSensorSurface(unsigned int surface)
 {
@@ -543,8 +566,6 @@ bool GSurfaceLib::isSensorSurface(unsigned int surface)
 
     return iss ; 
 }
-
-
 
 
 bool GSurfaceLib::hasSurface(const char* name)

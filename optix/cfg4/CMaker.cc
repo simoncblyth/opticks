@@ -79,6 +79,7 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
     unsigned int tc = csg->getTypeCode(index);
     const char* tn = csg->getTypeName(index);
 
+    if(m_verbosity>0)
     LOG(info) 
            << "CMaker::makeSolid "
            << "  i " << std::setw(2) << index  
@@ -211,6 +212,7 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
        float startPhi = 0.f ; 
        float deltaPhi = 2.f*pi ; 
 
+       if(m_verbosity>0)
        LOG(info) << "CMaker::makeSolid"
                  << " name " << tb_name
                  << " inner " << inner 

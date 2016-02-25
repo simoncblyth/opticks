@@ -74,6 +74,7 @@ G4VPhysicalVolume* Detector::Construct()
     bool is_pib = isPmtInBox() ;
     bool is_bib = isBoxInBox() ;
 
+    if(m_verbosity > 0)
     LOG(info) << "Detector::Construct"
               << " pib " << is_pib
               << " bib " << is_bib
@@ -81,6 +82,7 @@ G4VPhysicalVolume* Detector::Construct()
 
     assert( is_pib || is_bib && "Detector::Construct mode not recognized");
 
+    if(m_verbosity > 0)
     m_config->dump("Detector::Construct");
 
     unsigned int n = m_config->getNumElements();
@@ -100,6 +102,7 @@ G4VPhysicalVolume* Detector::Construct()
         std::string lvn = CMaker::LVName(shapename);
         std::string pvn = CMaker::PVName(shapename);
 
+        if(m_verbosity > 0)
         LOG(info) << "Detector::Construct" 
                   << std::setw(2) << i 
                   << std::setw(2) << shapecode 
@@ -139,12 +142,13 @@ void Detector::makePMT(G4LogicalVolume* container)
     NSlice* slice = m_config->getSlice();
 
     GCSG* csg = m_lib->getPmtCSG(slice);
-    
+    if(m_verbosity > 1)
     csg->dump();
 
     unsigned int ni = csg->getNumItems();
     // ni = 6 ; // just the Pyrex
 
+    if(m_verbosity > 0)
     LOG(info) << "Detector::makePMT" 
               << " csg items " << ni 
               ; 
@@ -158,6 +162,7 @@ void Detector::makePMT(G4LogicalVolume* container)
         unsigned int nix = csg->getNodeIndex(index); 
         unsigned int pix = csg->getParentIndex(index); 
 
+        if(m_verbosity > 0)
         LOG(info) << "Detector::makePMT" 
                   << " csg items " << ni 
                   << " index " << std::setw(3) << index 
@@ -192,6 +197,7 @@ void Detector::makePMT(G4LogicalVolume* container)
              // pv translation, for DYB PMT only non-zero for pvPmtHemiBottom, pvPmtHemiDynode
              // suspect that G4DAE COLLADA export omits/messes this up somehow, for the Bottom at least
 
+             if(m_verbosity > 0)
              LOG(info) << "Detector::makePMT"
                        << " index " << index 
                        << " x " << tlate.x()
@@ -227,6 +233,7 @@ G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
 
     G4LogicalVolume* logvol = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn);
 
+    if(m_verbosity > 0)
     LOG(info) 
            << "Detector::makeLV "
            << "  i " << std::setw(2) << i  

@@ -67,6 +67,7 @@ class GSurfaceLib : public GPropertyLib {
        guint4               getOpticalSurface(unsigned int index);  // zero based index
        GPropertyMap<float>* getSurface(unsigned int index);         // zero based index
        GPropertyMap<float>* getSurface(const char* name);        
+       GPropertyMap<float>* getSensorSurface(unsigned int offset=0);  // 0: first, 1:second 
        bool hasSurface(unsigned int index); 
        bool hasSurface(const char* name); 
    private:
