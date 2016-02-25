@@ -69,6 +69,22 @@ assimpwrap-/AssimpGGeo.cc/AssimpGGeo::convertMaterials::
      476 
 
 
+::
+
+    [2016-Feb-25 13:15:57.521542]:info: Detector::convertMaterial   name Pyrex materialIndex 13
+    [2016-Feb-25 13:15:57.523946]:info: Detector::convertMaterial   name Vacuum materialIndex 12
+    [2016-Feb-25 13:15:57.526100]:info: Detector::convertMaterial   name Bialkali materialIndex 4
+    [2016-Feb-25 13:15:57.527616]:info: Detector::convertMaterial   name OpaqueVacuum materialIndex 10
+    [2016-Feb-25 13:15:57.528817]:info: Detector::convertMaterial   name OpaqueVacuum materialIndex 10
+
+    simon:GMaterialLib blyth$ cat order.json 
+
+        "MineralOil": "4",
+        "Bialkali": "5",
+        "OpaqueVacuum": "11",
+        "Vacuum": "13",
+        "Pyrex": "14",
+
 
 G4 Efficiency
 ~~~~~~~~~~~~~~~

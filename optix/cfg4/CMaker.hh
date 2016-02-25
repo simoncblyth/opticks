@@ -1,12 +1,16 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <string>
 class GCache ; 
 class GCSG ; 
 
 class G4VSolid;
 
 class CMaker {
+    public:
+        static std::string PVName(const char* shapename);
+        static std::string LVName(const char* shapename);
     public:
         CMaker(GCache* cache);
     public:

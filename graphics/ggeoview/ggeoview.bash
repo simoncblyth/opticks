@@ -104,8 +104,8 @@ ggv-pmt-test(){
 
    #  slice=2:3  PMT front face only
  
-   #local material=MineralOil
-   local material=MainH2OHale
+   local material=MineralOil
+   #local material=MainH2OHale
 
    local test_config=(
                  mode=PmtInBox

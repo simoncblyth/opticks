@@ -22,6 +22,24 @@
 #include "NLog.hpp"
 
 
+
+
+std::string CMaker::LVName(const char* shapename)
+{
+    std::stringstream ss ; 
+    ss << shapename << "_log" ; 
+    return ss.str();
+}
+
+std::string CMaker::PVName(const char* shapename)
+{
+    std::stringstream ss ; 
+    ss << shapename << "_phys" ; 
+    return ss.str();
+}
+
+
+
 G4VSolid* CMaker::makeSphere(const glm::vec4& param)
 {
     G4double radius = param.w*mm ; 

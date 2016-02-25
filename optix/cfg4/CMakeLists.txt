@@ -65,6 +65,7 @@ OpStatus.cc
 PhysicsList.cc
 Detector.cc
 CMaker.cc
+CPropLib.cc
 PrimaryGeneratorAction.cc
 ActionInitialization.cc
 SteppingAction.cc
@@ -80,6 +81,7 @@ OpStatus.hh
 PhysicsList.hh
 Detector.hh
 CMaker.hh
+CPropLib.hh
 PrimaryGeneratorAction.hh
 ActionInitialization.hh
 SteppingAction.hh
