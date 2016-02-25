@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <map>
 
 // ggeo-
 class GCache ; 
@@ -28,6 +29,9 @@ class CPropLib {
        G4Material* makeInnerMaterial(const char* spec);
        G4Material* makeMaterial(const char* matname);
        GCSG*       getPmtCSG(NSlice* slice);
+       unsigned int getMaterialIndex(G4Material* material);
+   public:
+       void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
    private:
        G4Material* convertMaterial(GMaterial* kmat);
        G4Material* makeVacuum(const char* name);
@@ -38,6 +42,10 @@ class CPropLib {
        GBndLib*           m_bndlib ; 
        GMaterialLib*      m_mlib ; 
        GSurfaceLib*       m_slib ; 
+
+       std::map<GMaterial*, G4Material*>   m_ggtog4 ; 
+       std::map<G4Material*, unsigned int> m_g4toix ; 
+
 };
 
 inline CPropLib::CPropLib(GCache* cache)
@@ -49,5 +57,6 @@ inline CPropLib::CPropLib(GCache* cache)
 {
     init();
 }
+
 
 

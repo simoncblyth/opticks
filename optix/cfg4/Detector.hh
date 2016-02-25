@@ -63,7 +63,7 @@ class Detector : public G4VUserDetectorConstruction
     bool isPmtInBox();
     bool isBoxInBox();
     const glm::vec4& getCenterExtent();
-
+    CPropLib* getPropLib();
   private:
     void makePMT(G4LogicalVolume* mother);
     G4LogicalVolume* makeLV(GCSG* csg, unsigned int i);
@@ -105,6 +105,11 @@ inline const glm::vec4& Detector::getCenterExtent()
     return m_center_extent ; 
 }
 
+
+inline CPropLib* Detector::getPropLib()
+{
+    return m_lib ; 
+}
 
 inline Detector::~Detector()
 {

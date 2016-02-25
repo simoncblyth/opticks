@@ -1,19 +1,23 @@
 #pragma once
 
-#include "G4OpBoundaryProcess.hh"
-
 #include <climits>
 #include <cstring>
 #include <vector>
 #include <glm/glm.hpp>
 
+// g4-
+
+#include "G4OpBoundaryProcess.hh"
 class G4Run ;
 class G4Step ; 
 class G4PrimaryVertex ; 
 
+// cfg4-
+class CPropLib ; 
 
 #include "Recorder.h"
 
+// npy-
 #include "NumpyEvt.hpp"
 template <typename T> class NPY ;
 
@@ -33,6 +37,7 @@ class Recorder {
    public:
         Recorder(NumpyEvt* evt, unsigned int photons_per_g4event);
    public:
+        void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         bool RecordStep(const G4Step*);
@@ -79,6 +84,7 @@ class Recorder {
         void init();
    private:
         NumpyEvt*    m_evt ; 
+        CPropLib*    m_lib ; 
 
         unsigned int m_gen ; 
         unsigned int m_record_max ; 
@@ -122,6 +128,7 @@ class Recorder {
 inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event) 
    :
    m_evt(evt),
+   m_lib(NULL),
    m_gen(0),
    m_record_max(0),
    m_bounce_max(0),
@@ -153,6 +160,11 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
    
 }
 
+
+inline void Recorder::setPropLib(CPropLib* lib)
+{
+    m_lib = lib  ; 
+}
 
 
 inline NumpyEvt* Recorder::getEvt()

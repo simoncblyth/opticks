@@ -147,6 +147,14 @@ G4Material* CPropLib::makeVacuum(const char* name)
 G4Material* CPropLib::convertMaterial(GMaterial* kmat)
 {
     const char* name = kmat->getShortName();
+    if(m_ggtog4.count(kmat) == 1)
+    {
+        LOG(info) << "CPropLib::convertMaterial" 
+                  << " return preexisting " << name 
+                  ;
+        return m_ggtog4[kmat] ;
+    }
+
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
 
     LOG(info) << "CPropLib::convertMaterial  " 
@@ -175,9 +183,51 @@ G4Material* CPropLib::convertMaterial(GMaterial* kmat)
     //mpt->DumpTable();
 
     material->SetMaterialPropertiesTable(mpt);
+
+    m_ggtog4[kmat] = material ; 
+    m_g4toix[material] = materialIndex ; 
+
     return material ;  
 }
 
 
+unsigned int CPropLib::getMaterialIndex(G4Material* material)
+{
+    return m_g4toix[material] ;
+}
 
 
+void CPropLib::dumpMaterials(const char* msg)
+{
+    typedef std::map<G4Material*, unsigned int> MMU ; 
+    LOG(info) << msg << " g4toix" ; 
+
+    for(MMU::const_iterator it=m_g4toix.begin() ; it != m_g4toix.end() ; it++)
+    {
+        G4Material* mat = it->first ; 
+        unsigned int idx = it->second ; 
+
+        const G4String& name = mat->GetName();
+
+        std::cout << std::setw(40) << name 
+                  << std::setw(5) << idx 
+                  << std::endl ; 
+    }
+
+    LOG(info) << msg  << " ggtog4" ; 
+    typedef std::map<GMaterial*, G4Material*> MMM ; 
+    for(MMM::const_iterator it=m_ggtog4.begin() ; it != m_ggtog4.end() ; it++)
+    {
+        GMaterial* ggmat = it->first ; 
+        G4Material* g4mat = it->second ; 
+
+        const G4String& name = g4mat->GetName();
+        const char* ggname = ggmat->getShortName();
+
+
+        std::cout << std::setw(40) << name 
+                  << std::setw(40) << ggname 
+                  << std::endl ; 
+    }
+
+}

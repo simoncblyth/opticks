@@ -2,6 +2,8 @@
 #include "CfG4.hh"
 #include "PhysicsList.hh"
 #include "Detector.hh"
+#include "CPropLib.hh"
+
 #include "ActionInitialization.hh"
 #include "Recorder.hh"
 #include "PrimaryGeneratorAction.hh"
@@ -104,6 +106,8 @@ void CfG4::configure(int argc, char** argv)
 
     // compression domains set after runManager::Initialize, 
     // as extent only known after detector construction
+
+    m_recorder->setPropLib(m_detector->getPropLib());
 
     m_opticks->setSpaceDomain(m_detector->getCenterExtent());
 
