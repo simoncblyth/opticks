@@ -84,7 +84,6 @@ ggv-pmt-test(){
 
     local cmdline=$*
     local tag=1
-
     if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
@@ -103,18 +102,12 @@ ggv-pmt-test(){
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
-                 
-
-   #  slice=2:3  PMT front face only
- 
-   local material=MineralOil
-   #local material=MainH2OHale
 
    local test_config=(
                  mode=PmtInBox
                  analytic=1
                  shape=box
-                 boundary=Rock//perfectAbsorbSurface/$material
+                 boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=0,0,0,300
                    ) 
 
@@ -133,33 +126,40 @@ ggv-pmt-test(){
 
 
 ggv-box-test(){
-   type $FUNCNAME
+    type $FUNCNAME
 
-   local torch_config=(
+
+    local cmdline=$*
+    local tag=1
+    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+        tag=-$tag  
+    fi 
+
+    local torch_config=(
                  type=disclin
                  photons=500000
                  wavelength=380 
                  frame=1
-                 source=0,0,200
+                 source=0,0,300
                  target=0,0,0
                  radius=100
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
 
-   local test_config=(
+    local test_config=(
                  mode=BoxInBox
-                 shape=box
                  analytic=1
+                 shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=0,0,0,300
                    ) 
 
-   ggv \
+    ggv \
        --test --testconfig "$(join _ ${test_config[@]})" \
        --torch --torchconfig "$(join _ ${torch_config[@]})" \
        --animtimemax 10 \
-       --cat BoxInBox \
+       --cat BoxInBox --tag $tag --save  \
        --eye 0.5,0.5,0.0 \
        $* 
 

@@ -179,6 +179,7 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GP
                << " lkey " << std::setw(40) << lkey
                << " nval " << std::setw(10) << nval
                << " length " << std::setw(10) << length
+               << " mm " << std::setw(10) << mm 
                ;   
 
     G4double* ddom = new G4double[nval] ;
