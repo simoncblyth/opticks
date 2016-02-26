@@ -285,8 +285,6 @@ bool GPropertyMap<T>::isSurface()
 
 
 
-
-
 template <typename T>
 void GPropertyMap<T>::addConstantProperty(const char* pname, T value, const char* prefix)
 {

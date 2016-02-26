@@ -21,7 +21,6 @@
 #include "GMaker.hh"
 #include "GCache.hh"
 
-#include "GPmt.hh"
 #include "GCSG.hh"
 
 #include "GMaterial.hh"
@@ -116,6 +115,8 @@ G4VPhysicalVolume* Detector::Construct()
         G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn.c_str(), 0,0,0);
 
         G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
+        
+        m_pvm[pvn] = pv ;  
  
         if(top == NULL)
         {
@@ -146,7 +147,6 @@ void Detector::makePMT(G4LogicalVolume* container)
     csg->dump();
 
     unsigned int ni = csg->getNumItems();
-    // ni = 6 ; // just the Pyrex
 
     if(m_verbosity > 0)
     LOG(info) << "Detector::makePMT" 
@@ -160,7 +160,11 @@ void Detector::makePMT(G4LogicalVolume* container)
     for(unsigned int index=0 ; index < ni ; index++)
     {
         unsigned int nix = csg->getNodeIndex(index); 
+        if(nix == 0) continue ;
+        // skip non-lv with nix:0, as those are constituents of the lv that get recursed over
+
         unsigned int pix = csg->getParentIndex(index); 
+        const char* pvn = csg->getPVName(nix-1);
 
         if(m_verbosity > 0)
         LOG(info) << "Detector::makePMT" 
@@ -168,53 +172,79 @@ void Detector::makePMT(G4LogicalVolume* container)
                   << " index " << std::setw(3) << index 
                   << " nix " << std::setw(3) << nix 
                   << " pix " << std::setw(3) << pix 
+                  << " pvn " << pvn 
                   ; 
 
-        if(nix > 0)  // just the lv, as others are constituents of those that are recursed over
-        {
-             const char* pvn = csg->getPVName(nix-1);
+        G4LogicalVolume* logvol = makeLV(csg, index );
 
-             G4LogicalVolume* logvol = makeLV(csg, index );
+        lvm[nix-1] = logvol ;
 
-             lvm[nix-1] = logvol ;
+        G4LogicalVolume* mother = NULL ; 
 
-             G4LogicalVolume* mother = NULL ; 
-
-             if(nix - 1 == 0)
-             { 
-                 mother = container ;
-             }
-             else
-             {
-                 assert( pix > 0 && lvm.count(pix-1) == 1  );
-                 mother = lvm[pix-1] ;
-             }
-              
-
-             G4RotationMatrix* rot = 0 ; 
-             G4ThreeVector tlate(csg->getX(index), csg->getY(index), csg->getZ(index));  
-
-             // pv translation, for DYB PMT only non-zero for pvPmtHemiBottom, pvPmtHemiDynode
-             // suspect that G4DAE COLLADA export omits/messes this up somehow, for the Bottom at least
-
-             if(m_verbosity > 0)
-             LOG(info) << "Detector::makePMT"
-                       << " index " << index 
-                       << " x " << tlate.x()
-                       << " y " << tlate.y()
-                       << " z " << tlate.z()
-                       ;
-
-             G4bool many = false ; 
-             G4int copyNo = 0 ; 
-
-             G4VPhysicalVolume* physvol = new G4PVPlacement(rot, tlate, logvol, pvn, mother, many, copyNo);
+        if(nix - 1 == 0)
+        { 
+            mother = container ;
         }
+        else
+        {
+            assert( pix > 0 && lvm.count(pix-1) == 1  );
+            mother = lvm[pix-1] ;
+        }
+              
+        G4RotationMatrix* rot = 0 ; 
+        G4ThreeVector tlate(csg->getX(index), csg->getY(index), csg->getZ(index));  
+
+        // pv translation, for DYB PMT only non-zero for pvPmtHemiBottom, pvPmtHemiDynode
+        // suspect that G4DAE COLLADA export omits/messes this up somehow, for the Bottom at least
+
+        if(m_verbosity > 0)
+        LOG(info) << "Detector::makePMT"
+                  << " index " << index 
+                  << " x " << tlate.x()
+                  << " y " << tlate.y()
+                  << " z " << tlate.z()
+                  ;
+
+        G4bool many = false ; 
+        G4int copyNo = 0 ; 
+
+        G4VPhysicalVolume* physvol = new G4PVPlacement(rot, tlate, logvol, pvn, mother, many, copyNo);
+
+        m_pvm[pvn] = physvol ;  
+
     }
+
+    kludgePhotoCathode();
 }
 
 
+G4VPhysicalVolume* Detector::getPV(const char* name)
+{
+    return m_pvm.count(name) == 1 ? m_pvm[name] : NULL ; 
+}
 
+void Detector::kludgePhotoCathode()
+{
+    LOG(info) << "Detector::kludgePhotoCathode" ;
+
+    float effi = 0.f ; 
+    float refl = 0.f ; 
+    {
+        const char* name = "kludgePhotoCathode_PyrexBialkali" ; 
+        G4VPhysicalVolume* pv1 = getPV("pvPmtHemi") ; 
+        G4VPhysicalVolume* pv2 = getPV("pvPmtHemiCathode") ; 
+        assert(pv1 && pv2);
+        //G4LogicalBorderSurface* lbs = m_lib->makeCathodeSurface(name, pv1, pv2, effi, refl );
+        G4LogicalBorderSurface* lbs = m_lib->makeCathodeSurface(name, pv1, pv2);
+    }
+    {
+        const char* name = "kludgePhotoCathode_PyrexVacuum" ; 
+        G4VPhysicalVolume* pv1 = getPV("pvPmtHemi") ; 
+        G4VPhysicalVolume* pv2 = getPV("pvPmtHemiVacuum") ; 
+        assert(pv1 && pv2);
+        G4LogicalBorderSurface* lbs = m_lib->makeConstantSurface(name, pv1, pv2, effi, refl );
+    }
+}
 
 
 G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
@@ -244,4 +274,28 @@ G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
 
     return logvol ; 
 }
+
+
+void Detector::dumpPV(const char* msg)
+{
+    LOG(info) << msg ; 
+
+    typedef std::map<std::string, G4VPhysicalVolume*> MSV ; 
+
+    for(MSV::const_iterator it=m_pvm.begin() ; it != m_pvm.end() ; it++)
+    {
+         std::string pvn = it->first ; 
+         G4VPhysicalVolume* pv = it->second ;  
+
+         std::cout << std::setw(40) << pvn 
+                   << std::setw(40) << pv->GetName() 
+                   << std::endl 
+                   ;
+
+    }
+}
+
+
+
+
 

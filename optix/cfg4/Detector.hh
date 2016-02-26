@@ -1,8 +1,11 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <glm/glm.hpp>
+
 // ggeo-
 class GCache ;
-
 class GGeoTestConfig ; 
 class GMaterial ;
 class GCSG ; 
@@ -14,13 +17,8 @@ class CPropLib ;
 // g4-
 class G4LogicalVolume;
 class G4VPhysicalVolume;
-
-#include <string>
-#include "G4VUserDetectorConstruction.hh"
-
-
 class G4VSolid;
-#include <glm/glm.hpp>
+#include "G4VUserDetectorConstruction.hh"
 
 //
 // Hmm for fully controlled cfg4- testing need 
@@ -63,9 +61,14 @@ class Detector : public G4VUserDetectorConstruction
     bool isPmtInBox();
     bool isBoxInBox();
     const glm::vec4& getCenterExtent();
+    G4VPhysicalVolume* getPV(const char* name);
     CPropLib* getPropLib();
+
+
+    void dumpPV(const char* msg="Detector::dumpPV");
   private:
     void makePMT(G4LogicalVolume* mother);
+    void kludgePhotoCathode();
     G4LogicalVolume* makeLV(GCSG* csg, unsigned int i);
     void setCenterExtent(float x, float y, float z, float w);
 
@@ -78,6 +81,7 @@ class Detector : public G4VUserDetectorConstruction
 
   private:
     glm::vec4          m_center_extent ; 
+    std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
 
 };
 

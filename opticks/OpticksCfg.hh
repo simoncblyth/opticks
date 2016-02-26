@@ -206,6 +206,9 @@ inline void OpticksCfg<Listener>::init()
        ("torchdbg",  "dump details of torch config") ;
 
    m_desc.add_options()
+       ("steppingdbg",  "dump details of cfg4 stepping") ;
+
+   m_desc.add_options()
        ("indexdbg",  "dump details of indexing") ;
 
    m_desc.add_options()

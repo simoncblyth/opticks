@@ -99,7 +99,9 @@ void CfG4::configure(int argc, char** argv)
     generator->SetVerbosity(verbosity);
 
     PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(generator) ;
-    SteppingAction* sa = new SteppingAction(m_recorder);
+
+    int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
+    SteppingAction* sa = new SteppingAction(m_recorder, stepping_verbosity);
 
     m_runManager->SetUserInitialization(new ActionInitialization(pga, sa)) ;
     m_runManager->Initialize();
@@ -116,6 +118,7 @@ void CfG4::configure(int argc, char** argv)
     m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
 
     m_evt->dumpDomains("CfG4::configure dumpDomains");
+    m_detector->dumpPV("CfG4::configure dumpPV");
 
     TIMER("configure");
 }

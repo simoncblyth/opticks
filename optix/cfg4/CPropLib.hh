@@ -21,7 +21,9 @@ struct NSlice ;
 // g4-
 class G4Material ; 
 class G4MaterialPropertiesTable ; 
-
+class G4VPhysicalVolume ;
+class G4LogicalBorderSurface ;
+class G4OpticalSurface ;
 
 class CPropLib {
    public:
@@ -37,12 +39,18 @@ class CPropLib {
        unsigned int getMaterialIndex(const G4Material* material);
    public:
        void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
+   public:
+       G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi=0.f, float refl=0.f);
+       G4LogicalBorderSurface* makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2);
+   private:
+       G4OpticalSurface* makeOpticalSurface(const char* name);
    private:
        const G4Material* convertMaterial(const GMaterial* kmat);
        G4Material* makeVacuum(const char* name);
        G4Material* makeWater(const char* name);
        G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
        void addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop );
+
    private:
        GCache*            m_cache ; 
        int                m_verbosity ; 

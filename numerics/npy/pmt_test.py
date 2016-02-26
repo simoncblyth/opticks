@@ -310,12 +310,12 @@ names for breakpointing
     (lldb) b "G4OpBoundaryProcess::DielectricDielectric()"
 
 
+* a Opticks
+* b CFG4
 
+After kludge photocathode are getting closer to the ballpark::
 
-
-Very different::
-
-    In [54]: a.history_table()
+    In [7]: a.history_table()   
     Evt(1,"torch","PmtInBox","", seqs="[]")
                               noname 
                      8cd       375203       [3 ] TO BT SA
@@ -336,23 +336,42 @@ Very different::
                      4bd            1       [3 ] TO BR AB
                     7c6d            1       [4 ] TO SC BT SD
                               500000 
-
-
-    In [3]: b.history_table()
+    In [8]: b.history_table()
     Evt(-1,"torch","PmtInBox","", seqs="[]")
                               noname 
-                8ccccccd       276675       [8 ] TO BT BT BT BT BT BT SA
-                 8ccbccd       157768       [7 ] TO BT BT BR BT BT SA
-              cccccccccd        14167       [10] TO BT BT BT BT BT BT BT BT BT
-              ccccbccccd        13398       [10] TO BT BT BT BT BR BT BT BT BT
-                     8bd         5397       [3 ] TO BR SA
-              cbcccccccd         5153       [10] TO BT BT BT BT BT BT BT BR BT
-              bbbbcccccd         4528       [10] TO BT BT BT BT BT BR BR BR BR
-                  8ccbcd         4033       [6 ] TO BT BR BT BT SA
-              cccbcccccd         3316       [10] TO BT BT BT BT BT BR BT BT BT
-               8cccccccd         2700       [9 ] TO BT BT BT BT BT BT BT SA
-              ccbcbcbccd         1895       [10] TO BT BT BR BT BR BT BR BT BT
-                     4cd         1741       [3 ] TO BT AB
+                     8cd       337740       [3 ] TO BT SA
+                     7cd       106833       [3 ] TO BT SD
+                    8ccd        23119       [4 ] TO BT BT SA
+                      4d        19117       [2 ] TO AB
+                     86d         3199       [3 ] TO SC SA
+                     4cd         2174       [3 ] TO BT AB
+                8ccccbcd         1999       [8 ] TO BT BR BT BT BT BT SA
+                    4ccd         1693       [4 ] TO BT BT AB
+                     8bd         1267       [3 ] TO BR SA
+              ccccbccbcd          641       [10] TO BT BR BT BT BR BT BT BT BT
+              cbccbccbcd          458       [10] TO BT BR BT BT BR BT BT BR BT
+                    8c6d          405       [4 ] TO SC BT SA
+                   86ccd          285       [5 ] TO BT BT SC SA
+                  8cbbcd          198       [6 ] TO BT BR BR BT SA
+                     46d          179       [3 ] TO SC AB
+                4ccccbcd          136       [8 ] TO BT BR BT BT BT BT AB
+                    7c6d          115       [4 ] TO SC BT SD
+                     4bd          102       [3 ] TO BR AB
+
+
+Detection to absorb fraction matches efficiency fed in for 380nm::
+
+    A
+    375203+118603=493806
+    118603./493806.=0.24018
+
+    B
+    337740+106833=444573
+    106833./444573.=0.24030
+
+
+    ggv --surf 6    shows
+    380                0.24                0.76     
 
 
 

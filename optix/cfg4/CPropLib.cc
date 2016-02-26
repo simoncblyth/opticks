@@ -21,6 +21,10 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "G4OpticalSurface.hh"
+#include "G4LogicalBorderSurface.hh"
+
+
 const char* CPropLib::SENSOR_MATERIAL = "Bialkali" ;
 
 void CPropLib::init()
@@ -61,6 +65,50 @@ GCSG* CPropLib::getPmtCSG(NSlice* slice)
 }
 
 
+G4OpticalSurface* CPropLib::makeOpticalSurface(const char* name)
+{
+    G4OpticalSurface* os = new G4OpticalSurface(name);
+    os->SetModel(glisur);
+    os->SetType(dielectric_dielectric);
+    os->SetFinish(polished);
+
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+    os->SetMaterialPropertiesTable(mpt);
+
+    return os ; 
+}
+
+G4LogicalBorderSurface* CPropLib::makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi, float refl)
+{
+    G4OpticalSurface* os = makeOpticalSurface(name);
+
+    GProperty<float>* efficiency = m_mlib->makeConstantProperty(effi);
+    GProperty<float>* reflectivity = m_mlib->makeConstantProperty(refl);
+ 
+    G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
+    addProperty(mpt, "EFFICIENCY" , efficiency );
+    addProperty(mpt, "REFLECTIVITY" , reflectivity );
+
+    G4LogicalBorderSurface* lbs = new G4LogicalBorderSurface(name,pv1,pv2,os);
+    return lbs ; 
+}
+
+G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2)
+{
+    G4OpticalSurface* os = makeOpticalSurface(name);
+
+    GProperty<float>* detect = m_sensor_surface->getProperty("detect"); assert(detect);
+    GProperty<float>* reflectivity = m_mlib->makeConstantProperty(0.f);
+
+    G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
+    addProperty(mpt, "EFFICIENCY" , detect );
+    addProperty(mpt, "REFLECTIVITY" , reflectivity );
+
+    G4LogicalBorderSurface* lbs = new G4LogicalBorderSurface(name,pv1,pv2,os);
+    return lbs ; 
+}
+
+
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
     const char* name = ggmat->getShortName();
@@ -84,6 +132,8 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     }
 
 
+
+    // this was not enough, need optical surface to inject EFFICIENCY for optical photons
     if(strcmp(name, SENSOR_MATERIAL)==0)
     {
         GPropertyMap<float>* surf = m_sensor_surface ; 
@@ -108,8 +158,13 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
             }
         }
     }
+
+
     return mpt ;
 }
+
+
+
 
 
 void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop )

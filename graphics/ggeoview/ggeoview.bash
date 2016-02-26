@@ -89,8 +89,8 @@ ggv-pmt-test(){
         tag=-$tag  
     fi 
 
-   #local photons=500000
-   local photons=10000
+   local photons=500000
+   #local photons=10000
 
    local torch_config=(
                  type=disclin
