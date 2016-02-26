@@ -194,7 +194,8 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GP
         G4double energy = h_Planck*c_light/wavelength ;
 
         G4double value = G4double(fval) ;
-        if(length) value *= mm ;    // TODO: check unit consistency, also check absolute-wise
+        if(length) value *= mm ;    // mm=1 anyhow, 
+        // TODO: somehow check unit consistency, also check absolute-wise
 
         ddom[nval-1-j] = G4double(energy) ; 
         dval[nval-1-j] = G4double(value) ;

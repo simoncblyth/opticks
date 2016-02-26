@@ -23,7 +23,6 @@
 
 
 
-
 std::string CMaker::LVName(const char* shapename)
 {
     std::stringstream ss ; 
@@ -37,7 +36,6 @@ std::string CMaker::PVName(const char* shapename)
     ss << shapename << "_phys" ; 
     return ss.str();
 }
-
 
 
 G4VSolid* CMaker::makeSphere(const glm::vec4& param)
@@ -106,8 +104,8 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
        int a = fc ; 
        int b = lc ; 
 
-       G4ThreeVector apos(csg->getX(a), csg->getY(a), csg->getZ(a)); 
-       G4ThreeVector bpos(csg->getX(b), csg->getY(b), csg->getZ(b));
+       G4ThreeVector apos(csg->getX(a)*mm, csg->getY(a)*mm, csg->getZ(a)*mm); 
+       G4ThreeVector bpos(csg->getX(b)*mm, csg->getY(b)*mm, csg->getZ(b)*mm);
 
        G4RotationMatrix ab_rot ; 
        G4Transform3D    ab_transform(ab_rot, bpos  );
@@ -150,9 +148,9 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
        int j = fc + 1 ; 
        int k = fc + 2 ; 
 
-       G4ThreeVector ipos(csg->getX(i), csg->getY(i), csg->getZ(i)); // kinda assumed 0,0,0
-       G4ThreeVector jpos(csg->getX(j), csg->getY(j), csg->getZ(j));
-       G4ThreeVector kpos(csg->getX(k), csg->getY(k), csg->getZ(k));
+       G4ThreeVector ipos(csg->getX(i)*mm, csg->getY(i)*mm, csg->getZ(i)*mm); // kinda assumed 0,0,0
+       G4ThreeVector jpos(csg->getX(j)*mm, csg->getY(j)*mm, csg->getZ(j)*mm);
+       G4ThreeVector kpos(csg->getX(k)*mm, csg->getY(k)*mm, csg->getZ(k)*mm);
 
        G4VSolid* isol = makeSolid(csg, i );
        G4VSolid* jsol = makeSolid(csg, j );
@@ -177,8 +175,8 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 
        std::string sp_name = ss.str();
 
-       float inner = csg->getInnerRadius(index);
-       float outer = csg->getOuterRadius(index);
+       float inner = csg->getInnerRadius(index)*mm ;
+       float outer = csg->getOuterRadius(index)*mm ;
 
        assert(outer > 0 ) ; 
 
@@ -200,8 +198,8 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 
        std::string tb_name = ss.str();
        float inner = 0.f ; // csg->getInnerRadius(i); kludge to avoid rejig as sizeZ occupies innerRadius spot
-       float outer = csg->getOuterRadius(index);
-       float sizeZ = csg->getSizeZ(index) ;   // half length   
+       float outer = csg->getOuterRadius(index)*mm ;
+       float sizeZ = csg->getSizeZ(index)*mm ;   // half length   
        sizeZ /= 2.0 ;   
 
        // PMT base looks too long without the halfing (as seen by photon interaction position), 
@@ -220,6 +218,7 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
                  << " sizeZ " << sizeZ 
                  << " startPhi " << startPhi
                  << " deltaPhi " << deltaPhi
+                 << " mm " << mm
                  ;
 
        solid = new G4Tubs( tb_name.c_str(), inner > 0 ? inner : 0.f , outer, sizeZ, startPhi, deltaPhi );

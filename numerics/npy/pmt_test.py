@@ -313,41 +313,45 @@ names for breakpointing
 * a Opticks
 * b CFG4
 
-After kludge photocathode are getting closer to the ballpark::
+After kludge photocathode are getting closer to the ballpark
+::
 
-    In [7]: a.history_table()   
+    In [18]: a.history_table()
     Evt(1,"torch","PmtInBox","", seqs="[]")
                               noname 
-                     8cd       375203       [3 ] TO BT SA
-                     7cd       118603       [3 ] TO BT SD
-                     8bd         4458       [3 ] TO BR SA
-                     4cd         1471       [3 ] TO BT AB
-                      4d           87       [2 ] TO AB
-                 8cccccd           78       [7 ] TO BT BT BT BT BT SA
-                     86d           68       [3 ] TO SC SA
-                    8c6d           15       [4 ] TO SC BT SA
-                  8bcccd            5       [6 ] TO BT BT BT BR SA
-              ccccccbccd            3       [10] TO BT BT BR BT BT BT BT BT BT
-                    4ccd            2       [4 ] TO BT BT AB
-                    86bd            2       [4 ] TO BR SC SA
-               8cccbbccd            1       [9 ] TO BT BT BR BR BT BT BT SA
-                   8c6cd            1       [5 ] TO BT SC BT SA
-                  8c6ccd            1       [6 ] TO BT BT SC BT SA
-                     4bd            1       [3 ] TO BR AB
-                    7c6d            1       [4 ] TO SC BT SD
-                              500000 
-    In [8]: b.history_table()
+                     8cd       351558       [3 ] TO BT SA
+                     7cd       111189       [3 ] TO BT SD
+                      4d        18047       [2 ] TO AB
+                    8ccd        11661       [4 ] TO BT BT SA
+                     86d         3040       [3 ] TO SC SA
+                     4cd         1736       [3 ] TO BT AB
+                    4ccd          884       [4 ] TO BT BT AB
+                     8bd          742       [3 ] TO BR SA
+                    8c6d          394       [4 ] TO SC BT SA
+                     46d          187       [3 ] TO SC AB
+                   86ccd          140       [5 ] TO BT BT SC SA
+                    7c6d          103       [4 ] TO SC BT SD
+                     4bd           63       [3 ] TO BR AB
+               8cccccbcd           54       [9 ] TO BT BR BT BT BT BT BT SA
+                    866d           33       [4 ] TO SC SC SA
+
+
+    In [19]: b.history_table()
     Evt(-1,"torch","PmtInBox","", seqs="[]")
                               noname 
                      8cd       337740       [3 ] TO BT SA
                      7cd       106833       [3 ] TO BT SD
-                    8ccd        23119       [4 ] TO BT BT SA
+ 
+                    8ccd        23119       [4 ] TO BT BT SA   << CFG4 (vs 11661 for Opticks) : edge scims MO Py MO MO
+
                       4d        19117       [2 ] TO AB
                      86d         3199       [3 ] TO SC SA
                      4cd         2174       [3 ] TO BT AB
                 8ccccbcd         1999       [8 ] TO BT BR BT BT BT BT SA
-                    4ccd         1693       [4 ] TO BT BT AB
-                     8bd         1267       [3 ] TO BR SA
+
+                    4ccd         1693       [4 ] TO BT BT AB    << CFG4 (vs 884 for Opticks) ... scimmers again
+                     8bd         1267       [3 ] TO BR SA       << CFG4 (vs 742 for Opticks) ???
+
               ccccbccbcd          641       [10] TO BT BR BT BT BR BT BT BT BT
               cbccbccbcd          458       [10] TO BT BR BT BT BR BT BT BR BT
                     8c6d          405       [4 ] TO SC BT SA
@@ -356,7 +360,7 @@ After kludge photocathode are getting closer to the ballpark::
                      46d          179       [3 ] TO SC AB
                 4ccccbcd          136       [8 ] TO BT BR BT BT BT BT AB
                     7c6d          115       [4 ] TO SC BT SD
-                     4bd          102       [3 ] TO BR AB
+
 
 
 Detection to absorb fraction matches efficiency fed in for 380nm::
@@ -364,6 +368,11 @@ Detection to absorb fraction matches efficiency fed in for 380nm::
     A
     375203+118603=493806
     118603./493806.=0.24018
+
+    351558+111189=462747
+    111189./462747.=0.24028
+    
+
 
     B
     337740+106833=444573
