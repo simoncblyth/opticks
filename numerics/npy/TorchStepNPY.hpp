@@ -161,6 +161,7 @@ class TorchStepNPY {
        glm::vec3 getPosition();
        glm::vec3 getDirection();
        glm::vec3 getPolarization();
+       glm::vec4 getZenithAzimuth();
 
        float getTime();
        float getRadius();

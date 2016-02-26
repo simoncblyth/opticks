@@ -221,6 +221,8 @@ void OpSource::configure()
     glm::vec3 _pos = m_torch->getPosition();
     glm::vec3 _dir = m_torch->getDirection();
     float _radius = m_torch->getRadius();
+    glm::vec4 _zeaz = m_torch->getZenithAzimuth();
+
 
     SetParticleTime(_t*ns);
     G4ThreeVector pos(_pos.x*mm,_pos.y*mm,_pos.z*mm);
@@ -244,12 +246,40 @@ void OpSource::configure()
     m_posGen->SetPosRot1(posX);
     m_posGen->SetPosRot2(posY);
 
-
     if(incidentSphere || discLin)  // used with "rainbow" geometry 
     {
         m_posGen->SetPosDisType("Plane");
-        m_posGen->SetPosDisShape("Circle");
-        m_posGen->SetRadius(_radius*mm);
+
+       float ze_x = _zeaz.x ; 
+       float ze_y = _zeaz.y ; 
+       
+        if(ze_x == 0.f && ze_y == 1.f )
+        {
+            m_posGen->SetPosDisShape("Circle");
+            m_posGen->SetRadius(_radius*mm);
+            LOG(info) << "OpSource::configure posGen Circle"
+                      << " radius " << m_posGen->GetRadius()
+                      << " ze_x " << ze_x
+                      << " ze_y " << ze_y
+                      ;
+        }
+        else
+        {
+            m_posGen->SetPosDisShape("Annulus");
+            float radius0 = _radius*mm*ze_x ;
+
+            m_posGen->SetRadius0(radius0);
+            m_posGen->SetRadius( _radius*mm*ze_y);
+
+            LOG(info) << "OpSource::configure posGen Annulus"
+                      << " radius " << m_posGen->GetRadius()
+                      << " radius0 " << radius0
+                      << " ze_x " << ze_x
+                      << " ze_y " << ze_y
+                      ;
+
+        }
+ 
         m_posGen->SetCentreCoords(cen);
 
         m_angGen->SetAngDistType("planar");

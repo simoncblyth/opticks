@@ -172,6 +172,9 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("geocenter",  "center view on geometry rather than the default genstep centering") ;
 
+   m_desc.add_options()
+       ("g4ui",  "cfg4: start g4ui session") ;
+
 
    m_desc.add_options()("trace",  "loglevel");
    m_desc.add_options()("debug",  "loglevel");

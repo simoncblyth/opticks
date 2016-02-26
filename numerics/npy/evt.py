@@ -85,7 +85,9 @@ class Evt(object):
 
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
-        all_history = History(seqhis)  # full history without selection
+
+        cn = "%s:%s" % (str(tag), det)
+        all_history = History(seqhis, cnames=[cn])  # full history without selection
 
         self.rx = rx
         self.ph = ph

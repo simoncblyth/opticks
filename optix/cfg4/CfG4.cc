@@ -31,6 +31,11 @@
 #include "G4RunManager.hh"
 #include "G4String.hh"
 
+#include "G4VisExecutive.hh"
+#include "G4UImanager.hh"
+#include "G4UIExecutive.hh"
+
+
 
 #define TIMER(s) \
     { \
@@ -92,6 +97,7 @@ void CfG4::configure(int argc, char** argv)
     m_runManager->SetUserInitialization(new PhysicsList());
     m_runManager->SetUserInitialization(m_detector);
 
+    m_g4ui = m_cfg->hasOpt("g4ui");
 
     OpSource* generator = new OpSource(m_torch, m_recorder);
 
@@ -122,6 +128,22 @@ void CfG4::configure(int argc, char** argv)
 
     TIMER("configure");
 }
+
+
+void CfG4::interactive(int argc, char** argv)
+{
+    if(!m_g4ui) return ; 
+
+    m_visManager = new G4VisExecutive;
+    m_visManager->Initialize();
+
+    m_uiManager = G4UImanager::GetUIpointer();
+
+    m_ui = new G4UIExecutive(argc, argv);
+
+    m_ui->SessionStart();
+}
+
 
 void CfG4::propagate()
 {

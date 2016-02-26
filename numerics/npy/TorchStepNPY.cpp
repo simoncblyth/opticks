@@ -474,6 +474,10 @@ void TorchStepNPY::setZenithAzimuth(const char* s)
     std::string ss(s);
     m_zeaz = gvec4(ss) ;
 }
+glm::vec4 TorchStepNPY::getZenithAzimuth()
+{
+    return m_zeaz ; 
+}
 
 
 

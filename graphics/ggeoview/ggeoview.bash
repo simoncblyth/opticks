@@ -99,7 +99,7 @@ ggv-pmt-test(){
                  source=0,0,300
                  target=0,0,0
                  radius=100
-                 zenithazimuth=0,1,0,1
+                 zenithazimuth=0.9671,0.9709,0,1
                  material=Vacuum
                )
 

@@ -362,7 +362,6 @@ After kludge photocathode are getting closer to the ballpark
                     7c6d          115       [4 ] TO SC BT SD
 
 
-
 Detection to absorb fraction matches efficiency fed in for 380nm::
 
     A
@@ -372,69 +371,140 @@ Detection to absorb fraction matches efficiency fed in for 380nm::
     351558+111189=462747
     111189./462747.=0.24028
     
-
-
     B
     337740+106833=444573
     106833./444573.=0.24030
-
 
     ggv --surf 6    shows
     380                0.24                0.76     
 
 
-Bulk absorption depends on ABSLENGTH of the material::
 
-    simon:cfg4 blyth$ ggv --mat 3
-    /Users/blyth/env/bin/ggv.sh dumping cmdline arguments
-    --mat
-    3
-    [2016-02-26 13:32:52.162150] [0x000007fff7057a31] [info]    Opticks::preconfigure mode Interop detector dayabay
-    [2016-Feb-26 13:32:52.166179]:info: GMaterialLib::dump NumMaterials 38
-    [2016-Feb-26 13:32:52.166767]:info: GPropertyMap<T>::  3       material m:MineralOil k:refractive_index absorption_length scattering_length reemission_prob MineralOil
-                  domain    refractive_index   absorption_length   scattering_length     reemission_prob
-                      60               1.434                11.1                 850                   0
-                      80               1.434                11.1                 850                   0
-                     100               1.434                11.1                 850                   0
-                     120               1.434                11.1                 850                   0
-                     140             1.64207                11.1                 850                   0
-                     160             1.75844                11.1                 850                   0
-                     180             1.50693                11.1                 850                   0
-                     200             1.59558             10.7949             851.716                   0
-                     220             1.57716             10.6971             2201.56                   0
-                     240             1.55875                11.5             3551.41                   0
-                     260             1.54033             11.3937             4901.25                   0
-                     280             1.52192                10.9              6251.1                   0
-                     300              1.5035             39.6393             7602.84                   0
-                     320             1.49829             117.679               11675                   0
-                     340             1.49307             490.025             15747.2                   0
-                     360             1.48786              1078.9             19819.4                   0
-                     380             1.48264             4941.76             23891.6                   0
-                     400             1.47743             11655.2             27963.7                   0
-                     420             1.47458             24706.1             36028.8                   0
-                     440             1.47251             25254.7             45367.7                   0
-                     460             1.47063             24925.3               52039                   0
-                     480             1.46876               24277             58710.2                   0
-                     500             1.46734             23628.8               68425                   0
-                     520              1.4661             22980.5             81100.8                   0
-                     540             1.46487             22332.2             93776.7                   0
-                     560             1.46369             21277.4              117807                   0
-                     580             1.46252             18523.2              152790                   0
-                     600             1.46158             14966.4              181999                   0
-                     620             1.46081             7061.42              205618                   0
-                     640             1.46004             4159.07              229236                   0
-                     660             1.45928             5311.87              252855                   0
-                     680             1.45851             5615.17              276473                   0
-                     700             1.45796             4603.84              300155                   0
-                     720             1.45764             3697.27              340165                   0
-                     740             1.45733             1365.95              380175                   0
-                     760             1.45702              837.71              420184                   0
-                     780             1.45671             2274.95              460194                   0
-                     800              1.4564             2672.76              500000                   0
-                     820              1.4564             1614.62              500000                   0
+Agreement when avoid edges (reduce beam radius 100mm to 50mm)
+---------------------------------------------------------------
+
+::
+
+    In [1]: run pmt_test.py
+
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       363294       363027             0.10  [3 ] TO BT SA
+                 7cd       114962       114826             0.08  [3 ] TO BT SD
+                  4d        16924        17342             5.10  [2 ] TO AB
+                 86d         2798         2821             0.09  [3 ] TO SC SA
+                 4cd         1238         1198             0.66  [3 ] TO BT AB
+                8c6d          381          385             0.02  [4 ] TO SC BT SA
+                 46d          181          164             0.84  [3 ] TO SC AB
+                7c6d          110          111             0.00  [4 ] TO SC BT SD
+                 8bd           38           29             1.21  [3 ] TO BR SA
+                866d           32           34             0.06  [4 ] TO SC SC SA
+               8cc6d           28           24             0.31  [5 ] TO SC BT BT SA
+                8b6d            3           22             0.00  [4 ] TO SC BR SA
+                466d            0            4             0.00  [4 ] TO SC SC AB
+                4c6d            4            2             0.00  [4 ] TO SC BT AB
+               8c66d            3            3             0.00  [5 ] TO SC SC BT SA
+              8cbc6d            1            2             0.00  [6 ] TO SC BT BR BT SA
+               4cc6d            2            1             0.00  [5 ] TO SC BT BT AB
+                4b6d            0            1             0.00  [4 ] TO SC BR AB
+                86cd            0            1             0.00  [4 ] TO BT SC SA
+               8c6cd            1            0             0.00  [5 ] TO BT SC BT SA
+                 4bd            0            1             0.00  [3 ] TO BR AB
+             8cbc66d            0            1             0.00  [7 ] TO SC SC BT BR BT SA
+            8ccbc66d            0            1             0.00  [8 ] TO SC SC BT BR BT BT SA
+                          500000       500000         0.77 
 
 
 
+Annular beam zenith 0.9,1 with radius 100mm accentuates skimmers
+------------------------------------------------------------------
+
+::
+
+    INFO:env.numerics.npy.evt:rx shape (500000, 10, 2, 4) 
+                          1:PmtInBox   -1:PmtInBox           c2 
+                     8cd       252271       234626           639.45  [3 ] TO BT SA
+                    8ccd       117329       121978            90.32  [4 ] TO BT BT SA
+                     7cd        79667        74423           178.46  [3 ] TO BT SD
+                      4d        21673        21783             0.28  [2 ] TO AB
+
+                8ccccbcd          215        10721         10092.91  [8 ] TO BT BR BT BT BT BT SA
+
+                    4ccd         8795         9246            11.27  [4 ] TO BT BT AB
+                     8bd         6985         6500            17.44  [3 ] TO BR SA
+                     4cd         5116         4919             3.87  [3 ] TO BT AB
+                     86d         3623         3775             3.12  [3 ] TO SC SA
+
+              ccccbccbcd            0         3632          3632.00  [10] TO BT BR BT BT BR BT BT BT BT
+              cbccbccbcd            0         2448          2448.00  [10] TO BT BR BT BT BR BT BT BR BT
+
+                   86ccd         1415         1526             4.19  [5 ] TO BT BT SC SA
+                  8cbbcd            0          985           985.00  [6 ] TO BT BR BR BT SA
+                4ccccbcd            9          766           739.42  [8 ] TO BT BR BT BT BT BT AB
+               8cccccbcd          599            0           599.00  [9 ] TO BT BR BT BT BT BT BT SA
+
+
+
+Select skimmers with::
+
+    seqs=["TO BT BR BT BT BT BT SA"] 
+    see 215/10721 from Opticks/CfG4
+
+
+Note all the 10k CfG4 skimmers within ~0.4mm of radial range 96.71:97.1mm::
+    
+    In [25]: a0r.shape, a0r.min(), a0r.max(), b0r.shape,  b0r.min(), b0r.max()
+    Out[25]: 
+    ((215,),
+     97.090540043228771,
+     99.972196508157936,
+     (10721,),
+     96.710607829543051,
+     97.092838713641243)
+
+
+Focus on this range with zenith 0.9671,0.9709 radius 100mm
+See very differnt skimmer behavior within that annulus::
+
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       348896            0        348896.00  [3 ] TO BT SA
+            8ccccbcd            0       275990        275990.00  [8 ] TO BT BR BT BT BT BT SA
+                 7cd       110471            0        110471.00  [3 ] TO BT SD
+          ccccbccbcd            0        91652         91652.00  [10] TO BT BR BT BT BR BT BT BT BT
+          cbccbccbcd            0        61105         61105.00  [10] TO BT BR BT BT BR BT BT BR BT
+                  4d        22079        22258             0.72  [2 ] TO AB
+            4ccccbcd            0        19812         19812.00  [8 ] TO BT BR BT BT BT BT AB
+                 4cd         6553         6596             0.14  [3 ] TO BT AB
+                 8bd         4545         3895            50.06  [3 ] TO BR SA
+                 86d         3681         3653             0.11  [3 ] TO SC SA
+           86ccccbcd            0         3351          3351.00  [9 ] TO BT BR BT BT BT BT SC SA
+          cccccccbcd            1         3060          3057.00  [10] TO BT BR BT BT BT BT BT BT BT
+                8ccd         2183         2182             0.00  [4 ] TO BT BT SA
+            8ccbbbcd            0         1959          1959.00  [8 ] TO BT BR BR BR BT BT SA
+             4cccbcd            0          966           966.00  [7 ] TO BT BR BT BT BT AB
+                8c6d          489          420             5.24  [4 ] TO SC BT SA
+
+::
+
+    In [28]: a0r.shape, a0r.min(), a0r.max(), b0r.shape,  b0r.min(), b0r.max()
+    Out[28]: 
+    ((500000,),
+     96.704678194845826,
+     97.095561650354725,
+     (500000,),
+     96.704262560710802,
+     97.095972587881292)
+
+
+
+Attempt to get G4 vis operational to check the geometry
+
+* https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/AllResources/Control/UIcommands/_vis_ASCIITree_.html
+* https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/AllResources/Control/UIcommands/_vis_rayTracer_.html
+
+TODO: hookup G4DAE so can export and check the COLLADA
+
+* circularity of this is interesting as can then run Opticks running on 2nd generation geometry 
+* also visualization with my tools is much better than G4 
 
 
 """
@@ -456,9 +526,22 @@ if __name__ == '__main__':
     plt.close()
 
     tag = "1"
-    a = Evt(tag="%s" % tag, src="torch", det="PmtInBox")
-    b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox")
+
+    #seqs = ["TO BT BR BT BT BT BT SA"] 
+    seqs=[]
+
+    a = Evt(tag="%s" % tag, src="torch", det="PmtInBox", seqs=seqs)
+    b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)
 
 
+    cf = a.history.table.compare(b.history.table)
+    print cf
+
+
+    a0 = a.rpost_(0)
+    a0r = np.linalg.norm(a0[:,:2],2,1)
+
+    b0 = b.rpost_(0)
+    b0r = np.linalg.norm(b0[:,:2],2,1)
 
 
