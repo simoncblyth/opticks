@@ -567,6 +567,154 @@ OptiX OpenGL Compositing
 -------------------------
 
 * https://github.com/nvpro-samples/gl_optix_composite
+* http://rickarkin.blogspot.tw/2012/03/optix-is-ray-tracing-framework-it-can.html
+
+* to allow depth correct 3D compositing must calulate the OptiX clipDepth.
+  Raytracer alone does not need this, but to compostite with OpenGL lines etc.. it 
+  is necessary
+
+::
+
+    // http://rickarkin.blogspot.tw/2012/03/optix-is-ray-tracing-framework-it-can.html
+    // eyeDist:  distance from eye to the intersection point.
+    // n:           near clipping plane
+    // f:            far clipping plane
+    __device__ float computeClipDepth( float eyeDist, float n, float f )
+    {
+        float clipDepth = (f+n)/(f-n) - (1/eyeDist)*2.0f*f*n/(f-n);
+        clipDepth = clipDepth*0.5 + 0.5f;
+        return clipDepth;
+    }
+
+
+The second problem is to use the generated depth buffer of Optix into OpenGL.
+Actually it is totally OpenGL operations. But maybe its not a daily used
+process like draw a triangle or shading a scene object, so there is little
+resource could be found on the web.  My realization of the depth value
+construction is  also attached as below, where depthImg contains per pixel
+depth value, coloredImg contains per pixel color value.
+
+Hmm this is old OpenGL::
+
+    // http://rickarkin.blogspot.tw/2012/03/optix-is-ray-tracing-framework-it-can.html
+
+    glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
+    // these store the modes before dillying with them
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    //
+    // sets pixel storage modes that affect the operation of subsequent glReadPixels 
+    // as well as the unpacking of texture patterns (see glTexImage2D and glTexSubImage2D)
+    //
+    // GL_UNPACK_ALIGNMENT
+    // Specifies the alignment requirements for the start of each pixel row in memory. 
+    // The allowable values are 
+    // 1 (byte-alignment), 
+    // 2 (rows aligned to even-numbered bytes), 
+    // 4 (word-alignment)
+    // 8 (rows start on double-word boundaries).
+
+    // draw coloredImg pixels, skipping the depth 
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glDepthMask(GL_FALSE);    
+    glWindowPos2i(0, 0);
+    glDrawPixels(w, h, GL_RGBA , GL_FLOAT, coloredImg);
+
+    // draw depthImg pixels, just the depth 
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_ALWAYS);
+    glWindowPos2i(0, 0);
+    glDrawPixels(w, h, GL_DEPTH_COMPONENT , GL_FLOAT, depthImg);
+
+    // regain original stored state 
+    glPopClientAttrib();
+    glPopAttrib(); // GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+
+
+Whats the modern equivalent ?
+
+* https://open.gl/depthstencils
+
+
+Where to composite ?
+----------------------
+
+When compositing a pixel level mixture OpenGL render and OptiX texture is needed with depth 
+buffer control of which is frontmost.
+Currently either Scene::render or ORenderer::render get invoked.
+
+ggv-/main.cc::
+
+    1083 void App::render()
+    1084 {
+    1085     if(m_opticks->isCompute()) return ;
+    1086 
+    1087     m_frame->viewport();
+    1088     m_frame->clear();
+    1089 
+    1090 #ifdef OPTIX
+    1091     if(m_interactor->getOptiXMode()>0 && m_otracer && m_orenderer)
+    1092     {
+    1093         unsigned int scale = m_interactor->getOptiXResolutionScale() ;
+    1094         m_otracer->setResolutionScale(scale) ;
+    1095         m_otracer->trace();
+    1096         //LOG(debug) << m_ogeo->description("App::render ogeo");
+    1097 
+    1098         m_orenderer->render();
+    1099     }
+    1100     else
+    1101 #endif
+    1102     {
+    1103         m_scene->render();
+    1104     }
+
+
+OptiX geometry rendering
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Simply presents the OptiX derived texture 
+
+optixrap-/ORenderer::render invokes 
+
+* optixrap-/OFrame::push_PBO_to_Texture(m_texture_id)
+* oglrap-/Renderer::render "tex" pipeline 
+
+* gl/tex/vert.glsl just gets called on the 4 corners of the quad texture  
+
+gl/tex/frag.glsl just samples the texture::
+
+     04 in vec3 colour;
+      5 in vec2 texcoord;
+      6 
+      7 out vec4 frag_colour;
+      8 uniform sampler2D texSampler;
+      9 
+     10 void main () 
+     11 {
+     12    frag_colour = texture(texSampler, texcoord);
+
+
+OpenGL scene rendering
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Implemented in oglrap-/Scene.cc with multiple (order ~10) renderers
+for the constituents of the scene like 
+
+* nrm/nrmvec: global geometry (triangulated)
+* inrm: instanced geometry (triangulated)
+* axis: axis
+* p2l: genstep
+* pos: photons
+* rec/altrec/devrec: records 
+
+
+Composited rendering
+~~~~~~~~~~~~~~~~~~~~~~
+
+Makes most sense to add depth buffered OptiX geometry as another
+constituent of the OpenGL scene rendering, with one more renderer.
 
 
 

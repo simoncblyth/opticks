@@ -94,7 +94,10 @@ ggv-pmt-test(){
         photons=10000
     fi 
 
-   local torch_config=(
+    local skimmer=0.9671,0.9709
+    local zenith=0.97,1
+
+    local torch_config=(
                  type=disclin
                  photons=$photons
                  wavelength=380 
@@ -102,11 +105,11 @@ ggv-pmt-test(){
                  source=0,0,300
                  target=0,0,0
                  radius=100
-                 zenithazimuth=0.9671,0.9709,0,1
+                 zenithazimuth=$zenith,0,1
                  material=Vacuum
                )
 
-   local test_config=(
+    local test_config=(
                  mode=PmtInBox
                  analytic=1
                  shape=box
