@@ -177,15 +177,22 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 
        float inner = csg->getInnerRadius(index)*mm ;
        float outer = csg->getOuterRadius(index)*mm ;
+       float startTheta = csg->getStartTheta(index)*pi/180. ;
+       float deltaTheta = csg->getDeltaTheta(index)*pi/180. ;
 
        assert(outer > 0 ) ; 
 
        float startPhi = 0.f ; 
        float deltaPhi = 2.f*pi ; 
 
-       float startTheta = 0.f ; 
-       float deltaTheta = 1.f*pi ; 
-
+       LOG(info) << "CMaker::makeSolid csg Sphere"
+                 << " inner " << inner 
+                 << " outer " << outer
+                 << " startTheta " << startTheta
+                 << " deltaTheta " << deltaTheta
+                 << " endTheta " << startTheta + deltaTheta
+                 ;
+ 
        solid = new G4Sphere( sp_name.c_str(), inner > 0 ? inner : 0.f , outer, startPhi, deltaPhi, startTheta, deltaTheta  );
 
    }

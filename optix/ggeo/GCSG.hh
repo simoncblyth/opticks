@@ -41,6 +41,8 @@ class GCSG {
         float getOuterRadius(unsigned int i);
         float getInnerRadius(unsigned int i);
         float getSizeZ(unsigned int i);
+        float getStartTheta(unsigned int i);
+        float getDeltaTheta(unsigned int i);
     public:
         unsigned int getTypeCode(unsigned int i);
         bool isUnion(unsigned int i);
@@ -58,6 +60,7 @@ class GCSG {
         unsigned int getFirstChildIndex(unsigned int i);
         unsigned int getLastChildIndex(unsigned int i);
     private:
+        float        getFloat(unsigned int i, unsigned int j, unsigned int k);
         unsigned int getUInt(unsigned int i, unsigned int j, unsigned int k);
 
     private:
@@ -85,10 +88,6 @@ inline NPY<float>* GCSG::getCSGBuffer()
 
 
 
-inline unsigned int GCSG::getTypeCode(unsigned int i)
-{
-    return getUInt(i, 2, 0);
-}
 inline bool GCSG::isUnion(unsigned int i)
 {
     return getTypeCode(i) == UNION ; 
@@ -108,15 +107,6 @@ inline bool GCSG::isTubs(unsigned int i)
 
 
 
-inline unsigned int GCSG::getNodeIndex(unsigned int i) 
-{
-    return getUInt(i, 2, 1);
-}
-inline unsigned int GCSG::getParentIndex(unsigned int i) 
-{
-    return getUInt(i, 2, 2);
-}
-
 
 
 inline const char* GCSG::getTypeName(unsigned int i)
@@ -125,22 +115,28 @@ inline const char* GCSG::getTypeName(unsigned int i)
     return TypeName(tc) ;
 }
 
-inline unsigned int GCSG::getIndex(unsigned int i)
-{
-    return getUInt(i, 3, 0);
-}
-inline unsigned int GCSG::getNumChildren(unsigned int i)
-{
-    return getUInt(i, 3, 1);
-}
-inline unsigned int GCSG::getFirstChildIndex(unsigned int i)
-{
-    return getUInt(i, 3, 2);
-}
-inline unsigned int GCSG::getLastChildIndex(unsigned int i)
-{
-    return getUInt(i, 3, 3);
-}
+
+
+
+inline float GCSG::getX(unsigned int i){            return getFloat(i, 0, 0 ); }
+inline float GCSG::getY(unsigned int i){            return getFloat(i, 0, 1 ); }
+inline float GCSG::getZ(unsigned int i){            return getFloat(i, 0, 2 ); }
+inline float GCSG::getOuterRadius(unsigned int i){  return getFloat(i, 0, 3 ); }
+
+inline float GCSG::getStartTheta(unsigned int i) {  return getFloat(i, 1, 0 ); }
+inline float GCSG::getDeltaTheta(unsigned int i) {  return getFloat(i, 1, 1 ); }
+inline float GCSG::getSizeZ(unsigned int i) {       return getFloat(i, 1, 2 ); }
+inline float GCSG::getInnerRadius(unsigned int i) { return getFloat(i, 1, 3 ); }
+
+inline unsigned int GCSG::getTypeCode(unsigned int i){         return getUInt(i, 2, 0); }
+inline unsigned int GCSG::getNodeIndex(unsigned int i) {       return getUInt(i, 2, 1); }
+inline unsigned int GCSG::getParentIndex(unsigned int i) {     return getUInt(i, 2, 2); }
+
+inline unsigned int GCSG::getIndex(unsigned int i) {           return getUInt(i, 3, 0); }
+inline unsigned int GCSG::getNumChildren(unsigned int i) {     return getUInt(i, 3, 1); }
+inline unsigned int GCSG::getFirstChildIndex(unsigned int i) { return getUInt(i, 3, 2); }
+inline unsigned int GCSG::getLastChildIndex(unsigned int i) {  return getUInt(i, 3, 3); }
+
 
 
 

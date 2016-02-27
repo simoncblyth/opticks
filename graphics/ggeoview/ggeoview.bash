@@ -84,12 +84,15 @@ ggv-pmt-test(){
 
     local cmdline=$*
     local tag=1
+    local photons=500000
+
     if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
 
-   local photons=500000
-   #local photons=10000
+    if [ "${cmdline/--g4ui}" != "${cmdline}" ]; then
+        photons=10000
+    fi 
 
    local torch_config=(
                  type=disclin

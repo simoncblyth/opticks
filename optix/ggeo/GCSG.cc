@@ -29,6 +29,14 @@ unsigned int GCSG::getUInt(unsigned int i, unsigned int j, unsigned int k)
     return m_csg_buffer->getUInt(i,j,k,l);
 }
 
+float GCSG::getFloat(unsigned int i, unsigned int j, unsigned int k)
+{
+    assert(i < getNumItems() );
+    return m_csg_buffer->getValue(i,j,k);
+}
+
+
+
 unsigned int GCSG::getNumItems()
 {
     return m_csg_buffer->getNumItems() ;
@@ -51,38 +59,6 @@ const char* GCSG::getPVName(unsigned int nodeindex)
     assert(m_pvnames);
     return m_pvnames->getKey(nodeindex) ;
 }
-
-
-
-
-
-float GCSG::getX(unsigned int i)
-{
-    return m_csg_buffer->getValue(i, 0, 0 );
-}
-float GCSG::getY(unsigned int i)
-{
-    return m_csg_buffer->getValue(i, 0, 1 );
-}
-float GCSG::getZ(unsigned int i)
-{
-    return m_csg_buffer->getValue(i, 0, 2 );
-}
-float GCSG::getOuterRadius(unsigned int i)
-{
-    return m_csg_buffer->getValue(i, 0, 3 );
-}
-
-
-float GCSG::getSizeZ(unsigned int i)
-{
-    return m_csg_buffer->getValue(i, 1, 3 );
-}
-float GCSG::getInnerRadius(unsigned int i)
-{
-    return m_csg_buffer->getValue(i, 1, 3 );
-}
-
 
 
 

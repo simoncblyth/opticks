@@ -114,6 +114,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     const char* name = ggmat->getShortName();
     unsigned int mprop = ggmat->getNumProperties();
 
+    if(m_verbosity>1)
     LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
               << " name " << name
               << " mprop " << mprop 
@@ -172,9 +173,10 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GP
     bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
     unsigned int nval  = prop->getLength();
 
-    if(m_verbosity>1)
+    if(m_verbosity>2)
     prop->Summary(lkey);   
 
+    if(m_verbosity>1)
     LOG(info) << "CPropLib::addProperty" 
                << " lkey " << std::setw(40) << lkey
                << " nval " << std::setw(10) << nval

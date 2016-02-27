@@ -12,6 +12,11 @@ Visualize the cfg4 created evt in interop mode viewer::
 
    ggv-;ggv-pmt-test --cfg4 --load
 
+Use G4 ui for G4 viz::
+
+   ggv-;ggv-pmt-test --cfg4 --g4ui
+
+
 Issues
 -------
 
@@ -493,6 +498,32 @@ See very differnt skimmer behavior within that annulus::
      (500000,),
      96.704262560710802,
      97.095972587881292)
+
+
+After fixing photocathode shape (had omitted startTheta/deltaThera) 
+get better agreement for the 0.9671,0.9709 radius 100mm skimmers.
+Note still some difference in reflection off Pyrex, maybe dont have same 
+polarization distrib between Opticks/CFG4::
+
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       348896       349456             0.45  [3 ] TO BT SA
+                 7cd       110471       110351             0.07  [3 ] TO BT SD
+                  4d        22079        22131             0.06  [2 ] TO AB
+                 4cd         6553         6534             0.03  [3 ] TO BT AB
+                 8bd         4545         4002            34.50  [3 ] TO BR SA
+                 86d         3681         3819             2.54  [3 ] TO SC SA
+                8ccd         2183         2182             0.00  [4 ] TO BT BT SA
+                8c6d          489          423             4.78  [4 ] TO SC BT SA
+                 4bd          351          333             0.47  [3 ] TO BR AB
+                 46d          219          219             0.00  [3 ] TO SC AB
+                4ccd          139          153             0.67  [4 ] TO BT BT AB
+                7c6d          136          138             0.01  [4 ] TO SC BT SD
+                86bd           69           43             6.04  [4 ] TO BR SC SA
+               86ccd           42           26             3.76  [5 ] TO BT BT SC SA
+                8b6d            5           42            29.13  [4 ] TO SC BR SA
+               8cc6d           38           41             0.11  [5 ] TO SC BT BT SA
+
+
 
 
 
