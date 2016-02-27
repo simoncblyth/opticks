@@ -586,6 +586,58 @@ OptiX OpenGL Compositing
         return clipDepth;
     }
 
+* http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+* https://open.gl/depthstencils
+
+The default clear value for the depth is 1.0f, which is equal to the depth of
+your far clipping plane and thus the furthest depth that can be represented.
+All potentially visible fragments will be closer than that.
+
+
+* depth buffer contains values between 0.f to 1.f, 0.f/1.f corresponds to the closest/furthest distance
+
+Perspective Projection Matrix::
+
+    |  n/r   0     0              0          |
+    |   0    n/t   0              0          |
+    |   0    0    -(f+n)/(f-n)   -2fn/(f-n)  |
+    |   0    0    -1              0          |
+
+    |  n/r   0     0              0          |
+    |   0    n/t   0              0          |
+    |   0    0     A              B          |
+    |   0    0    -1              0          |
+
+
+    [ 0,0, z, 1]   = [ 0, 0, Az+B, -z ]
+
+
+    Perspective divide
+
+    Az + B
+    -------  =  -A - B/z   = (f+n)/(f-n) + 2*fn/(f-n)/dist
+      -z
+    
+    Hmm for eyeDist negative it matches above computeClipDepth
+
+
+* http://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
+
+::
+
+    varying float depth; // Linear depth, in world units
+    void main(void)
+    {
+        float A = gl_ProjectionMatrix[2].z;
+        float B = gl_ProjectionMatrix[3].z;
+        gl_FragDepth  = 0.5*(-A*depth + B) / depth + 0.5;
+    }
+
+
+
+
+
 
 The second problem is to use the generated depth buffer of Optix into OpenGL.
 Actually it is totally OpenGL operations. But maybe its not a daily used
