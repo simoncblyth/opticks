@@ -162,6 +162,12 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		       particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
 
         }
+        else if(discLin)
+        {
+            // match the adhoc (sinPhi, -cosPhi, 0) polarization from optixrap-/cu/torchstep.h:generate_torch_photon
+            G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
+		    particle->SetPolarization(tangent.unit()); 
+        }
         else
         {
 		    particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());

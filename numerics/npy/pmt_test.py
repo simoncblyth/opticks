@@ -524,8 +524,195 @@ polarization distrib between Opticks/CFG4::
                8cc6d           38           41             0.11  [5 ] TO SC BT BT SA
 
 
+After match polarization, are left with "TO SC BR SA". CFG4 is reflection prone 
+after a scatter ? But borderline stats. This is still just for the skimmers::
+
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       348896       349452             0.44  [3 ] TO BT SA
+                 7cd       110471       109961             1.18  [3 ] TO BT SD
+                  4d        22079        21915             0.61  [2 ] TO AB
+                 4cd         6553         6537             0.02  [3 ] TO BT AB
+                 8bd         4545         4643             1.05  [3 ] TO BR SA
+                 86d         3681         3571             1.67  [3 ] TO SC SA
+                8ccd         2183         2202             0.08  [4 ] TO BT BT SA
+                8c6d          489          513             0.57  [4 ] TO SC BT SA
+                 4bd          351          383             1.40  [3 ] TO BR AB
+                 46d          219          220             0.00  [3 ] TO SC AB
+                4ccd          139          180             5.27  [4 ] TO BT BT AB
+                7c6d          136          162             2.27  [4 ] TO SC BT SD
+                86bd           69           59             0.78  [4 ] TO BR SC SA
+               86ccd           42           30             2.00  [5 ] TO BT BT SC SA
+                866d           41           38             0.11  [4 ] TO SC SC SA
+
+                8b6d            5           40            27.22  [4 ] TO SC BR SA
+
+               8cc6d           38           33             0.35  [5 ] TO SC BT BT SA
+              8cbbcd            0           10             0.00  [6 ] TO BT BR BR BT SA
+           8cccccbcd            9            0             0.00  [9 ] TO BT BR BT BT BT BT BT SA
+                86cd            1            7             0.00  [4 ] TO BT SC SA
+        ...
+               4bcd             0            1             0.00  [4 ] TO BT BR AB
+              866ccd            1            1             0.00  [6 ] TO BT BT SC SC SA
+                          500000       500000         2.65 
 
 
+Inner half zenith 0,0.5 still in agreement::
+
+                     1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       363294       363351             0.00  [3 ] TO BT SA
+                 7cd       114962       114575             0.65  [3 ] TO BT SD
+                  4d        16924        17217             2.51  [2 ] TO AB
+                 86d         2798         2853             0.54  [3 ] TO SC SA
+                 4cd         1238         1214             0.23  [3 ] TO BT AB
+                8c6d          381          390             0.11  [4 ] TO SC BT SA
+                 46d          181          165             0.74  [3 ] TO SC AB
+                7c6d          110          125             0.96  [4 ] TO SC BT SD
+                 8bd           38           31             0.71  [3 ] TO BR SA
+                866d           32           28             0.27  [4 ] TO SC SC SA
+               8cc6d           28           23             0.49  [5 ] TO SC BT BT SA
+                8b6d            3           16             0.00  [4 ] TO SC BR SA
+                4c6d            4            2             0.00  [4 ] TO SC BT AB
+               8c66d            3            2             0.00  [5 ] TO SC SC BT SA
+                466d            0            2             0.00  [4 ] TO SC SC AB
+               4cc6d            2            2             0.00  [5 ] TO SC BT BT AB
+                4b6d            0            1             0.00  [4 ] TO SC BR AB
+               7c66d            0            1             0.00  [5 ] TO SC SC BT SD
+              8cbc6d            1            0             0.00  [6 ] TO SC BT BR BT SA
+               8c6cd            1            1             0.00  [5 ] TO BT SC BT SA
+                 4bd            0            1             0.00  [3 ] TO BR AB
+                          500000       500000         0.66 
+
+
+Pushing out to 0,0.9 "TO AB" starting to go awry.::
+
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       362427       362211             0.06  [3 ] TO BT SA
+                 7cd       114703       113770             3.81  [3 ] TO BT SD
+                  4d        17693        18680            26.78  [2 ] TO AB
+                 86d         2965         2916             0.41  [3 ] TO SC SA
+                 4cd         1379         1535             8.35  [3 ] TO BT AB
+                8c6d          392          400             0.08  [4 ] TO SC BT SA
+                 46d          186          177             0.22  [3 ] TO SC AB
+                7c6d          105          115             0.45  [4 ] TO SC BT SD
+                 8bd           73           92             2.19  [3 ] TO BR SA
+                866d           33           25             1.10  [4 ] TO SC SC SA
+               8cc6d           26           31             0.44  [5 ] TO SC BT BT SA
+                8b6d            3           25             0.00  [4 ] TO SC BR SA
+               8c66d            5            2             0.00  [5 ] TO SC SC BT SA
+                4c6d            5            1             0.00  [4 ] TO SC BT AB
+                 4bd            0            5             0.00  [3 ] TO BR AB
+               4cc6d            2            4             0.00  [5 ] TO SC BT BT AB
+                86bd            0            3             0.00  [4 ] TO BR SC SA
+                466d            0            2             0.00  [4 ] TO SC SC AB
+              86cc6d            1            0             0.00  [6 ] TO SC BT BT SC SA
+                4b6d            0            1             0.00  [4 ] TO SC BR AB
+              4cc66d            0            1             0.00  [6 ] TO SC SC BT BT AB
+            8cbc66bd            0            1             0.00  [8 ] TO BR SC SC BT BR BT SA
+              8cbc6d            1            1             0.00  [6 ] TO SC BT BR BT SA
+               8c6cd            1            1             0.00  [5 ] TO BT SC BT SA
+               7c66d            0            1             0.00  [5 ] TO SC SC BT SD
+                          500000       500000         3.99 
+
+::
+
+    94.995 97.005 94.995 97.005
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       352957       353582             0.55  [3 ] TO BT SA
+                 7cd       111793       111427             0.60  [3 ] TO BT SD
+                  4d        21816        21692             0.35  [2 ] TO AB
+                 4cd         5273         5198             0.54  [3 ] TO BT AB
+                 86d         3643         3594             0.33  [3 ] TO SC SA
+                 8bd         3299         3229             0.75  [3 ] TO BR SA
+                8c6d          482          474             0.07  [4 ] TO SC BT SA
+                 4bd          221          275             5.88  [3 ] TO BR AB
+                 46d          219          195             1.39  [3 ] TO SC AB
+                7c6d          133          157             1.99  [4 ] TO SC BT SD
+                86bd           50           42             0.70  [4 ] TO BR SC SA
+                866d           41           40             0.01  [4 ] TO SC SC SA
+               8cc6d           35           25             1.67  [5 ] TO SC BT BT SA
+                8b6d            5           34            21.56  [4 ] TO SC BR SA
+                4b6d            0            5             0.00  [4 ] TO SC BR AB
+             ...
+             8cbc66d            0            1             0.00  [7 ] TO SC SC BT BR BT SA
+             4ccc6bd            1            0             0.00  [7 ] TO BR SC BT BT BT AB
+                          500000       500000         2.60 
+
+
+Not too bad all way out to 97mm::
+
+    0.000 97.002  0.117 97.004
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       361978       361339             0.56  [3 ] TO BT SA
+                 7cd       114537       113731             2.85  [3 ] TO BT SD
+                  4d        17934        18876            24.11  [2 ] TO AB
+                 86d         3021         3015             0.01  [3 ] TO SC SA
+                 4cd         1571         1869            25.82  [3 ] TO BT AB
+                8c6d          390          415             0.78  [4 ] TO SC BT SA
+                 8bd          184          330            41.47  [3 ] TO BR SA
+                 46d          185          198             0.44  [3 ] TO SC AB
+                7c6d          104          102             0.02  [4 ] TO SC BT SD
+                866d           33           27             0.60  [4 ] TO SC SC SA
+                 4bd           20           30             2.00  [3 ] TO BR AB
+               8cc6d           22           20             0.10  [5 ] TO SC BT BT SA
+                8b6d            2           18             0.00  [4 ] TO SC BR SA
+              ...
+               8666d            0            1             0.00  [5 ] TO SC SC SC SA
+                          500000       500000         8.23 
+
+Goes belly up beyond 97mm::
+
+         96.995 100.005 96.995 100.005
+                      1:PmtInBox   -1:PmtInBox           c2 
+                8ccd       391394       391429             0.00  [4 ] TO BT BT SA
+                4ccd        29418        29306             0.21  [4 ] TO BT BT AB
+                  4d        22602        22571             0.02  [2 ] TO AB
+                 8bd        18671        19186             7.01  [3 ] TO BR SA
+                 8cd        10338        10116             2.41  [3 ] TO BT SA
+                 4cd         7554         7510             0.13  [3 ] TO BT AB
+               86ccd         4602         4626             0.06  [5 ] TO BT BT SC SA
+                 86d         3762         3729             0.15  [3 ] TO SC SA
+                 7cd         3233         3181             0.42  [3 ] TO BT SD
+                 4bd         1811         1662             6.39  [3 ] TO BR AB
+
+          Reordered to put discrepants together,
+          looks like edge geometry difference between Opticks analytic and CfG4 
+          is culprit. 
+
+              8cbbcd            0         3598          3598.00  [6 ] TO BT BR BR BT SA
+           8cccccbcd         1885            0          1885.00  [9 ] TO BT BR BT BT BT BT BT SA
+            8ccccbcd          762            0           762.00  [8 ] TO BT BR BT BT BT BT SA
+          8ccccccbcd          746            0           746.00  [10] TO BT BR BT BT BT BT BT BT SA
+            8ccc6ccd          386            2           380.04  [8 ] TO BT BT SC BT BT BT SA
+
+            8cbc6ccd           26          307           237.12  [8 ] TO BT BT SC BT BR BT SA
+              8c6ccd           20          296           241.06  [6 ] TO BT BT SC BT SA
+
+                8c6d          509          440             5.02  [4 ] TO SC BT SA
+               46ccd          275          310             2.09  [5 ] TO BT BT SC AB
+                86bd          287          271             0.46  [4 ] TO BR SC SA
+          cccccc6ccd          191          259            10.28  [10] TO BT BT SC BT BT BT BT BT BT
+                 46d          223          224             0.00  [3 ] TO SC AB
+              4cbbcd            0          211           211.00  [6 ] TO BT BR BR BT AB
+                7c6d          140          160             1.33  [4 ] TO SC BT SD
+          8ccccc6ccd          159            1           156.03  [10] TO BT BT SC BT BT BT BT BT SA
+             8cc6ccd           77           77             0.00  [7 ] TO BT BT SC BT BT SA
+             ....
+                          500000       500000       217.45 
+
+
+To see whats happening need to viz the real geometry (not triangulated standins) 
+together with the photon paths. 
+With Opticks that is difficult but probably not impossible: 
+
+* compositing OptiX rendered analytic geometry together with OpenGL lines, 
+  see optix- for notes on compositing 
+
+With Geant4 its probably impossible as only way to draw real geometry 
+(not triangulated standins) is with the G4RayTracer which doesnt do photon paths. 
+
+
+Geant4 viz
+--------------
 
 Attempt to get G4 vis operational to check the geometry
 
@@ -565,8 +752,6 @@ if __name__ == '__main__':
     b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)
 
 
-    cf = a.history.table.compare(b.history.table)
-    print cf
 
 
     a0 = a.rpost_(0)
@@ -574,5 +759,10 @@ if __name__ == '__main__':
 
     b0 = b.rpost_(0)
     b0r = np.linalg.norm(b0[:,:2],2,1)
+
+    print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max(),b0r.min(),b0r.max())))
+
+    cf = a.history.table.compare(b.history.table)
+    print cf
 
 

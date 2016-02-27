@@ -158,6 +158,9 @@ phi     =   acos( 2V-1 )
 
          =  norm_( [ -y , x,  0 ]  )     
 
+         = [ -sin(ph), cos(ph), 0 ]
+
+
     Where y and x are the coordinates generated on the original disc, using
     the aligned coordinate systems of sphere and disc
 
@@ -165,6 +168,8 @@ phi     =   acos( 2V-1 )
     is within the plane of incidence and defines the P-polarized direction.
 
              norm_( [  x,  y,  0 ] )     
+
+          = [  cos(ph), sin(ph), 0 ]
 
     The spherical geometry and alighment of the source disc and sphere
     means that it is straightforward to arrange S-pol and P-pol without 
