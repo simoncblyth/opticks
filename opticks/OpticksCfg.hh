@@ -161,6 +161,11 @@ inline void OpticksCfg<Listener>::init()
        ("noinstanced",  "inhibit instancing, use when debugging few volumes") ;
 
    m_desc.add_options()
+       ("zbuf",  "experimental: enable OptiX Z-buffer rendering with ORenderer, OFrame ... ") ;
+
+
+
+   m_desc.add_options()
        ("trivial",  "swap OptiX generate program with trivial standin for debugging") ;
 
    m_desc.add_options()

@@ -708,9 +708,16 @@ void App::prepareOptiXViz()
 
     optix::Context context = m_ocontext->getContext();
 
-    m_oframe = new OFrame(context, width, height );
+    bool zbuf = hasOpt("zbuf") ;
+
+    m_oframe = new OFrame(context, width, height, zbuf);
 
     context["output_buffer"]->set( m_oframe->getOutputBuffer() );
+
+    if(m_oframe->hasZBuffer())
+    {
+        context["depth_buffer"]->set( m_oframe->getDepthBuffer() );
+    }
 
     m_interactor->setTouchable(m_oframe);
 

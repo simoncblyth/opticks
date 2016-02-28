@@ -24,9 +24,9 @@ void OFrame::init(unsigned int width, unsigned int height)
     // generates the m_pbo and m_depth identifiers and buffers
     m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
 
-    if(m_zbuffer)
+    if(m_zbuf)
     {
-        m_depth_buffer = createOutputBuffer_PBO(m_depth, RT_FORMAT_FLOAT, width, height) ;
+        m_zoutput_buffer = createOutputBuffer_PBO(m_zpbo, RT_FORMAT_FLOAT, width, height, true ) ;
     } 
 
 
@@ -34,7 +34,6 @@ void OFrame::init(unsigned int width, unsigned int height)
 
     m_context["touch_buffer"]->set( m_touch_buffer );
     m_context["touch_mode" ]->setUint( 0u );
-
 }
 
 
@@ -55,7 +54,7 @@ void OFrame::setSize(unsigned int width, unsigned int height)
 // But the output requirements are very different ? Which would argue for a separate entry point.
 
 
-optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height)
+optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height, bool depth)
 {
     Buffer buffer;
 
@@ -88,9 +87,13 @@ optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, 
     return buffer;
 }
 
+
+/*
 void OFrame::associate_PBO_to_Texture(unsigned int texId)
 {
     printf("OFrame::associate_PBO_to_Texture texId %u \n", texId);
+
+    assert(0); // checking if this is used
 
     assert(m_pbo > 0);
     glBindBuffer( GL_PIXEL_UNPACK_BUFFER, m_pbo);
@@ -99,16 +102,26 @@ void OFrame::associate_PBO_to_Texture(unsigned int texId)
     // this kills the teapot
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, NULL );
 }
+*/
 
 
-void OFrame::push_PBO_to_Texture(unsigned int texId)
+
+void OFrame::push_PBO_to_Texture(unsigned int texture_id, unsigned int ztexture_id)
 {
     m_push_count += 1 ; 
-    push_Buffer_to_Texture( m_output_buffer, m_pbo, texId, false );    
+
+    // the order of these pushes matter ...
+
+    if(ztexture_id > 0 && m_zpbo > 0 )
+    {
+        push_Buffer_to_Texture( m_zoutput_buffer, m_zpbo, ztexture_id, true );    
+    }
+
+    push_Buffer_to_Texture( m_output_buffer, m_pbo, texture_id, false );    
 }
 
 
-void OFrame::push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int texture_id, bool zbuffer)
+void OFrame::push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int texture_id, bool depth)
 {
     RTsize buffer_width_rts, buffer_height_rts;
     buffer->getSize( buffer_width_rts, buffer_height_rts );
@@ -187,9 +200,25 @@ void OFrame::push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int te
         default:
             assert(0 && "Unknown buffer format");
     }
+  
 
-    
+    // (optix-pdf interop chapter):
+    //
+    //     Not all OpenGL texture formats are supported by OptiX. A table that lists the
+    //     supported texture formats can be found in Appendix A.
+    //
+    //     They include
+    //           GL_RGBA8
+    //           GL_R32F 
+    //
 
+    if(depth)
+    {
+      // guessing
+        internalFormat = GL_R32F ;
+        format = GL_DEPTH_COMPONENT ;  // means will be clamped into 0,1 (and may be scaled, biased with GL_DEPTH_SCALE, GL_DEPTH_BIAS)
+        type = GL_FLOAT ;
+    }
 
     glTexImage2D(target, level, internalFormat, buffer_width, buffer_height, border, format, type, data);
 

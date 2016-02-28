@@ -18,7 +18,7 @@ rtDeclareVariable(float,         scene_epsilon, , );
 rtDeclareVariable(unsigned int,  parallel, , );
 
 rtBuffer<uchar4, 2>              output_buffer;
-//rtBuffer<float, 2>               depth_buffer;
+rtBuffer<float, 2>               depth_buffer;
 
 
 rtDeclareVariable(rtObject,      top_object, , );
@@ -137,7 +137,7 @@ RT_PROGRAM void pinhole_camera()
   if( resolution_scale == 1)  
   { 
       output_buffer[launch_index] = color ; 
-      //depth_buffer[launch_index] = zHit_clip ; 
+      depth_buffer[launch_index] = zHit_clip ; 
   }
   else if( resolution_scale == 2)
   {
@@ -154,10 +154,10 @@ RT_PROGRAM void pinhole_camera()
       output_buffer[idx01] = color ; 
       output_buffer[idx11] = color ; 
 
-      //depth_buffer[idx00] = zHit_clip ; 
-      //depth_buffer[idx10] = zHit_clip ; 
-      //depth_buffer[idx01] = zHit_clip ; 
-      //depth_buffer[idx11] = zHit_clip ; 
+      depth_buffer[idx00] = zHit_clip ; 
+      depth_buffer[idx10] = zHit_clip ; 
+      depth_buffer[idx01] = zHit_clip ; 
+      depth_buffer[idx11] = zHit_clip ; 
 
   }
   else if( resolution_scale > 2)
@@ -168,7 +168,7 @@ RT_PROGRAM void pinhole_camera()
       for(unsigned int j=0 ; j < resolution_scale ; j++){
           uint2 idx = make_uint2(wx+i, wy+j) ; 
           output_buffer[idx] = color ; 
-          //depth_buffer[idx] = zHit_clip ; 
+          depth_buffer[idx] = zHit_clip ; 
       }
       }
   }

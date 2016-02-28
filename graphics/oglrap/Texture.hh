@@ -19,13 +19,13 @@ struct Tex {
 class Texture : public GMesh {
    public:
        Texture(bool zbuf=false);
+
        void loadPPM(const char* path);  // does not need OpenGL context
        void create();
        void cleanup();
    public:
        void setSize(unsigned int width, unsigned int height);
-       unsigned int getTextureId();
-       unsigned int getSamplerId();
+       unsigned int getId();
        unsigned int getWidth();
        unsigned int getHeight();
    private:
@@ -38,7 +38,6 @@ class Texture : public GMesh {
        unsigned int m_width ; 
        unsigned int m_height ; 
        unsigned int m_texture_id ; 
-       unsigned int m_sampler_id ; 
        Tex          m_tex ; 
 };
 
@@ -48,13 +47,9 @@ inline void Texture::setSize(unsigned int width, unsigned int height)
     m_width = width ; 
     m_height = height ; 
 }
-inline unsigned int Texture::getTextureId()
+inline unsigned int Texture::getId()
 {
     return m_texture_id ;
-}
-inline unsigned int Texture::getSamplerId()
-{
-    return m_sampler_id ;
 }
 inline unsigned int Texture::getWidth()
 {

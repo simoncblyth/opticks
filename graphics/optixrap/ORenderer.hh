@@ -17,25 +17,30 @@ class ORenderer {
 
     private:
         OFrame*          m_frame ;  
+        bool             m_zbuf ;  // set based on m_frame
         Renderer*        m_renderer ; 
+
         Texture*         m_texture ; 
         int              m_texture_id ; 
+
+        Texture*         m_ztexture ; 
+        int              m_ztexture_id ; 
 
         unsigned int     m_render_count ; 
         double           m_render_prep ; 
         double           m_render_time ; 
-
-
-
-
 };
+
 
 inline ORenderer::ORenderer(OFrame* frame, const char* dir, const char* incl_path)
     :
     m_frame(frame),
+    m_zbuf(false),
     m_renderer(NULL),
     m_texture(NULL),
     m_texture_id(-1),
+    m_ztexture(NULL),
+    m_ztexture_id(-1),
 
     m_render_count(0),
     m_render_prep(0),

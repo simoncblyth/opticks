@@ -101,6 +101,38 @@ void Renderer::upload(Texture* texture, bool debug)
     upload_buffers(islice, fslice);
 }
 
+void Renderer::upload(Texture* texture, Texture* ztexture, bool debug)
+{
+    if(texture)
+    {
+        m_texture = texture ;
+        m_texture_id = texture->getId();
+    }
+
+    if(ztexture)
+    {
+        m_ztexture = ztexture ;
+        m_ztexture_id = ztexture->getId();
+    }
+
+
+    assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
+
+    m_drawable = static_cast<GDrawable*>(m_texture);
+
+    NSlice* islice = NULL ; 
+    NSlice* fslice = NULL ; 
+
+    upload_buffers(islice, fslice);
+
+
+    // hmm unclear how to handle the z buffer too..
+    // seems that moving from 1 texture to 2 is not trivial
+    //
+    // http://stackoverflow.com/questions/10398965/passing-textures-to-shader
+}
+
+
 
 
 void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
@@ -322,6 +354,9 @@ void Renderer::check_uniforms()
     {
         // still being instanciated at least, TODO: check regards this cf the OptiXEngine internal renderer
         m_mv_location =  m_shader->uniform("ModelView",           required);    
+        m_colorTex_location = m_shader->uniform("ColorTex", required);
+        m_depthTex_location = m_shader->uniform("DepthTex", required);
+
     } 
     else
     {
@@ -390,13 +425,28 @@ void Renderer::update_uniforms()
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
     }
+
+
+    if(m_has_tex)
+    {
+
+        glUniform1i(m_colorTex_location, TEX_UNIT_0 );
+        glUniform1i(m_depthTex_location, TEX_UNIT_1 );
+    }
 }
 
 
 void Renderer::bind()
 {
     glBindVertexArray (m_vao);
+
+    glActiveTexture(GL_TEXTURE0 + TEX_UNIT_0 );
+    glBindTexture(GL_TEXTURE_2D,  m_texture_id );
+
+    glActiveTexture(GL_TEXTURE0 + TEX_UNIT_1 );
+    glBindTexture(GL_TEXTURE_2D, m_ztexture_id );
 }
+
 
 void Renderer::render()
 { 
@@ -409,7 +459,6 @@ void Renderer::render()
     // https://www.opengl.org/archives/resources/faq/technical/transparency.htm
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
     glEnable (GL_BLEND);
-
 
     if(m_wireframe)
     {

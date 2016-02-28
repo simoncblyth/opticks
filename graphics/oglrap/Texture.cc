@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "assert.h"
+#include "NLog.hpp"
 
 #define LOADPPM_IMPLEMENTATION
 #include "loadPPM.h"
@@ -58,7 +58,6 @@ Texture::Texture(bool zbuf) :
              (gfloat2*)&ptexcoord[0]
          ),
     m_texture_id(0),
-    m_sampler_id(0),
     m_tex(zbuf)
 {
     setColors( (gfloat3*)&pcolor[0] );
@@ -98,6 +97,7 @@ void Texture::loadPPM(const char* path)
 void Texture::create()
 {
     glGenTextures(1, &m_texture_id);
+
     glBindTexture( GL_TEXTURE_2D, m_texture_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -108,7 +108,8 @@ void Texture::create()
 
     GLenum target = GL_TEXTURE_2D ;
     GLint level = 0 ; 
-    GLint internalformat = GL_RGBA ;
+
+    GLint internalFormat = GL_RGBA ;
     GLint border = 0 ; 
     GLenum format = GL_RGBA ;
     GLenum type = GL_UNSIGNED_BYTE ;
@@ -124,7 +125,22 @@ void Texture::create()
         data = 0 ; 
     }
 
-    glTexImage2D(target, level, internalformat, m_width, m_height, border, format, type, data );
+
+    if(m_tex.zbuf)
+    {
+      // TODO: avoid duplication between here and optixrap-/OFrame 
+         internalFormat = GL_R32F ;
+         format = GL_DEPTH_COMPONENT ;
+         type = GL_FLOAT ;
+
+        LOG(info) << "Texture::create (depth style) " 
+                  << " id " << m_texture_id 
+                  ;
+
+    }
+
+
+    glTexImage2D(target, level, internalFormat, m_width, m_height, border, format, type, data );
 }
 
 
@@ -134,5 +150,4 @@ void Texture::cleanup()
     glDeleteTextures(1, &m_texture_id);
     m_texture_id = 0 ;
 }
-
 
