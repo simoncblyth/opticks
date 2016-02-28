@@ -20,7 +20,14 @@ void OFrame::init(unsigned int width, unsigned int height)
 {
     m_width = width ; 
     m_height = height ; 
+
+    // generates the m_pbo and m_depth identifiers and buffers
     m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
+
+    if(m_zbuffer)
+    {
+        m_depth_buffer = createOutputBuffer_PBO(m_depth, RT_FORMAT_FLOAT, width, height) ;
+    } 
 
 
     m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
@@ -38,29 +45,7 @@ void OFrame::setSize(unsigned int width, unsigned int height)
 
 
 
-/*
-124 void SampleScene::resize(unsigned int width, unsigned int height)
-125 {
-126   try {
-127     Buffer buffer = getOutputBuffer();
-128     buffer->setSize( width, height );
-129 
-130     if(m_use_vbo_buffer)
-131     {
-132       buffer->unregisterGLBuffer();
-133       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->getGLBOId());
-134       glBufferData(GL_PIXEL_UNPACK_BUFFER, buffer->getElementSize() * width * height, 0, GL_STREAM_DRAW);
-135       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-136       buffer->registerGLBuffer();
-137     }
-
-*/
-
 ///usr/local/env/cuda/OptiX_370b2_sdk/sutil/MeshScene.cpp
-
-
-
-
 
 // "touch" mode is tied to the active rendering (currently only e_pinhole_camera)
 // as the meaning of x,y mouse/trackpad touches depends on that rendering.  
@@ -79,6 +64,11 @@ optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, 
 
     size_t element_size ; 
     m_context->checkError(rtuGetSizeForRTformat(format, &element_size));
+
+    LOG(info) << "OFrame::createOutputBuffer_PBO" 
+              <<  " element_size " << element_size 
+              ;
+
     assert(element_size == 4);
 
     unsigned int nbytes = element_size * width * height ;
@@ -113,18 +103,20 @@ void OFrame::associate_PBO_to_Texture(unsigned int texId)
 
 void OFrame::push_PBO_to_Texture(unsigned int texId)
 {
-    //printf("OFrame::push_PBO_to_Texture texId %u \n", texId);
-   // see  GLUTDisplay::displayFrame() 
-
     m_push_count += 1 ; 
+    push_Buffer_to_Texture( m_output_buffer, m_pbo, texId, false );    
+}
 
+
+void OFrame::push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int texture_id, bool zbuffer)
+{
     RTsize buffer_width_rts, buffer_height_rts;
-    m_output_buffer->getSize( buffer_width_rts, buffer_height_rts );
+    buffer->getSize( buffer_width_rts, buffer_height_rts );
 
     int buffer_width  = static_cast<int>(buffer_width_rts);
     int buffer_height = static_cast<int>(buffer_height_rts);
 
-    RTformat buffer_format = m_output_buffer->getFormat();
+    RTformat buffer_format = buffer->getFormat();
 
     //
     // glTexImage2D specifies mutable texture storage characteristics and provides the data
@@ -140,45 +132,68 @@ void OFrame::push_PBO_to_Texture(unsigned int texId)
     //         initial source texel data layout which OpenGL will convert 
     //         to the internalFormat
     // 
+    // send pbo data to the texture
 
-   // send pbo to texture
+    assert(buffer_id > 0);
 
-    assert(m_pbo > 0);
+    glBindTexture(GL_TEXTURE_2D, texture_id );
 
-    glBindTexture(GL_TEXTURE_2D, texId );
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer_id);
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo);
-
-    RTsize elementSize = m_output_buffer->getElementSize();
+    RTsize elementSize = buffer->getElementSize();
     if      ((elementSize % 8) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
     else if ((elementSize % 4) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     else if ((elementSize % 2) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
     else                             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+
+    GLenum target = GL_TEXTURE_2D ;
+    GLint level = 0 ;            // level-of-detail number. Level 0 is the base image level
+    GLint internalFormat ;       // number of color components in the texture (1, 2, 3, or 4), or a symbolic constant like: GL_RGBA8 
+    GLint border = 0 ; 
+
+    // pixel data : format, type, data (offset)
+    // 
+    //    if a non-zero named buffer object is bound to the GL_PIXEL_UNPACK_BUFFER
+    //    target (see glBindBuffer) while a texture image is specified, data is treated
+    //    as a byte offset into the buffer object's data store. 
+    //
+    GLenum format ;
+    GLenum type ;
+    const GLvoid * data = 0 ;  
+
     switch(buffer_format) 
-    {   //               target   miplevl  internalFormat                     border  format   type           data  
+    {
         case RT_FORMAT_UNSIGNED_BYTE4:
-            //printf("OFrame::push_PBO_to_Texture RT_FORMAT_UNSIGNED_BYTE4 tex:%d \n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, buffer_width, buffer_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+            internalFormat = GL_RGBA8 ;  
+            format = GL_BGRA ;
+            type = GL_UNSIGNED_BYTE ;
             break ; 
         case RT_FORMAT_FLOAT4:
-            printf("OFrame::push_PBO_to_Texture RT_FORMAT_FLOAT4 tex:%d\n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F_ARB, buffer_width, buffer_height, 0, GL_RGBA, GL_FLOAT, 0);
+            internalFormat = GL_RGBA32F_ARB ;
+            format = GL_RGBA ;
+            type = GL_FLOAT ; 
             break;
         case RT_FORMAT_FLOAT3:
-            printf("OFrame::push_PBO_to_Texture RT_FORMAT_FLOAT3 tex:%d\n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F_ARB, buffer_width, buffer_height, 0, GL_RGB, GL_FLOAT, 0);
+            internalFormat = GL_RGBA32F_ARB ;
+            format = GL_RGB ;
+            type = GL_FLOAT ; 
             break;
         case RT_FORMAT_FLOAT:
-            printf("OFrame::push_PBO_to_Texture RT_FORMAT_FLOAT tex:%d\n", texId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE32F_ARB, buffer_width, buffer_height, 0, GL_LUMINANCE, GL_FLOAT, 0);
+            internalFormat = GL_LUMINANCE32F_ARB ;
+            format = GL_LUMINANCE ;
+            type = GL_FLOAT ; 
             break;
         default:
             assert(0 && "Unknown buffer format");
     }
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    
 
+
+    glTexImage2D(target, level, internalFormat, buffer_width, buffer_height, border, format, type, data);
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     //glBindTexture(GL_TEXTURE_2D, 0 );   get blank screen when do this here
 
 }
@@ -277,8 +292,8 @@ unsigned int OFrame::touch(int ix_, int iy_)
     m_context["touch_index"]->setUint(ix, iy ); // by inspection
     m_context["touch_dim"]->setUint(width, height);
 
-    RTsize touch_width = 1u ; 
-    RTsize touch_height = 1u ; 
+    //RTsize touch_width = 1u ; 
+    //RTsize touch_height = 1u ; 
 
     // TODO: generalize touch to work with the active camera (eg could be orthographic)
     assert(0); // this needs a rethink as no longer using the entry enum

@@ -613,13 +613,33 @@ Perspective Projection Matrix::
     [ 0,0, z, 1]   = [ 0, 0, Az+B, -z ]
 
 
-    Perspective divide
+    Perspective divide (division by w=-1) is done by the pipeline 
+    yielding Z value:
+
 
     Az + B
     -------  =  -A - B/z   = (f+n)/(f-n) + 2*fn/(f-n)/dist
       -z
-    
-    Hmm for eyeDist negative it matches above computeClipDepth
+   
+                             (f+n) + 2*fn/dist
+                            ----------------------
+                                 (f-n)
+
+                   dist = -f
+
+                             f - n
+                            -------  = 1.
+                             f - n 
+
+                  dist = -n
+ 
+                             (f+n) - 2f
+                           ------------- = -1.
+                              f - n  
+
+
+    n and f are +ve and f > n  
+    dist must be negative for proper NDC (ie in range -1:1) 
 
 
 * http://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer

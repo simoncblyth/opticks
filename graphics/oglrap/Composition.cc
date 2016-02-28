@@ -965,17 +965,17 @@ glm::vec4 Composition::transformEyeToWorld(const glm::vec4& eye)
 }
 glm::vec4 Composition::getViewpoint()
 {
-    glm::vec4 viewpoint_eye(0.f, 0.f, 0.f, 1.f ); // viewpoint of observer
+    glm::vec4 viewpoint_eye(0.f, 0.f, 0.f, 1.f ); // viewpoint, ie position of observer (origin in eye frame)
     return transformEyeToWorld(viewpoint_eye);
 }
 glm::vec4 Composition::getLookpoint()   
 {
-    glm::vec4 lookpoint_eye(0.f, 0.f, -m_gazelength, 1.f ); // lookpoint observed
+    glm::vec4 lookpoint_eye(0.f, 0.f, -m_gazelength, 1.f ); // lookpoint observed, looking towards -z in eye frame
     return transformEyeToWorld(lookpoint_eye);
 }
 glm::vec4 Composition::getUpdir()
 {
-    glm::vec4 updir_eye(0.f, 1.f, 0.f, 0.f );
+    glm::vec4 updir_eye(0.f, 1.f, 0.f, 0.f );  // convention: y is up in eye frame, x to the right, z outwards (RHS)
     return transformEyeToWorld(updir_eye);
 }
 
@@ -1044,11 +1044,11 @@ void Composition::update()
     // model_to_world matrix constructed from geometry center and extent
     // is used to construct the lookat matrix 
     //
-    //   eye frame
+    //   eye frame : centered on the eye
     //       eye  (0,0,0)
     //       look (0,0,-m_gazelength) 
     //
-    //   look frame
+    //   look frame : centered on where looking
     //       look (0,0,0) 
     //       eye  (0,0,m_gazelength)
     //
@@ -1172,16 +1172,14 @@ void Composition::dumpAxisData(const char* msg)
 }
 
 
-
-
-
-
-void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W)
+void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj )
 {
    update();
 
    float tanYfov = m_camera->getTanYfov();
    float aspect = m_camera->getAspect();
+
+   m_camera->fillZProjection(ZProj); // 3rd row of projection matrix
 
    float v_half_height = m_gazelength * tanYfov ; 
    float u_half_width  = v_half_height * aspect ; 
@@ -1244,9 +1242,11 @@ void Composition::test_getEyeUVW()
     glm::vec3 U ;
     glm::vec3 V ;
     glm::vec3 W ;
+    glm::vec4 ZProj ;
+
 
     printf("test_getEyeUVW\n");
-    getEyeUVW(eye,U,V,W);
+    getEyeUVW(eye,U,V,W,ZProj);
 
     print(eye, "eye");
     print(U,"U");

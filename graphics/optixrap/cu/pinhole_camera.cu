@@ -11,10 +11,14 @@ rtDeclareVariable(float3,        eye, , );
 rtDeclareVariable(float3,        U, , );
 rtDeclareVariable(float3,        V, , );
 rtDeclareVariable(float3,        W, , );
+rtDeclareVariable(float4,        ZProj, , );
+
 rtDeclareVariable(float3,        bad_color, , );
 rtDeclareVariable(float,         scene_epsilon, , );
 rtDeclareVariable(unsigned int,  parallel, , );
+
 rtBuffer<uchar4, 2>              output_buffer;
+//rtBuffer<float, 2>               depth_buffer;
 
 
 rtDeclareVariable(rtObject,      top_object, , );
@@ -23,6 +27,7 @@ rtDeclareVariable(unsigned int,  resolution_scale, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+rtDeclareVariable(float, t,            rtIntersectionDistance, );
 
 rtDeclareVariable(float, time_view_scale, , ) = 1e-6f;
 
@@ -65,6 +70,7 @@ RT_PROGRAM void pinhole_camera()
  
   float3 ray_origin ;
   float3 ray_direction ;   
+  float3 front = normalize(W) ;
 
   if(parallel == 0)
   {
@@ -105,6 +111,12 @@ RT_PROGRAM void pinhole_camera()
 
   rtTrace(top_object, ray, prd);
 
+  float zHit_eye = -t*dot(front, ray_direction) ;   // intersect z coordinate (eye frame), always -ve 
+  float zHit_ndc = parallel == 0 ? -ZProj.z - ZProj.w/zHit_eye : ZProj.z*zHit_eye + ZProj.w ;  // should be in range -1:1 for visibles
+  float zHit_clip = 0.5f*zHit_ndc + 0.5f ;   // 0:1 for visibles
+
+  //rtPrintf("pinhole_camera t %10.4f zHit_eye %10.4f  ZProj.z %10.4f ZProj.w %10.4f zHit_ndc %10.4f zHit_clip %10.4f \n", t, zHit_eye, ZProj.z, ZProj.w , zHit_ndc, zHit_clip );
+
 
 #if RAYTRACE_TIMEVIEW
   clock_t t1 = clock(); 
@@ -125,6 +137,7 @@ RT_PROGRAM void pinhole_camera()
   if( resolution_scale == 1)  
   { 
       output_buffer[launch_index] = color ; 
+      //depth_buffer[launch_index] = zHit_clip ; 
   }
   else if( resolution_scale == 2)
   {
@@ -140,6 +153,12 @@ RT_PROGRAM void pinhole_camera()
       output_buffer[idx10] = color ; 
       output_buffer[idx01] = color ; 
       output_buffer[idx11] = color ; 
+
+      //depth_buffer[idx00] = zHit_clip ; 
+      //depth_buffer[idx10] = zHit_clip ; 
+      //depth_buffer[idx01] = zHit_clip ; 
+      //depth_buffer[idx11] = zHit_clip ; 
+
   }
   else if( resolution_scale > 2)
   {
@@ -149,6 +168,7 @@ RT_PROGRAM void pinhole_camera()
       for(unsigned int j=0 ; j < resolution_scale ; j++){
           uint2 idx = make_uint2(wx+i, wy+j) ; 
           output_buffer[idx] = color ; 
+          //depth_buffer[idx] = zHit_clip ; 
       }
       }
   }

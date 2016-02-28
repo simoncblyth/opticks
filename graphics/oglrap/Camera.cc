@@ -183,6 +183,17 @@ glm::mat4 Camera::getProjection()
 {
     return m_parallel ? getOrtho() : getFrustum() ; 
 }
+
+
+void Camera::fillZProjection(glm::vec4& zProj)
+{
+    glm::mat4 proj = getProjection() ;
+    zProj.x = proj[0][2] ; 
+    zProj.y = proj[1][2] ; 
+    zProj.z = proj[2][2] ; 
+    zProj.w = proj[3][2] ; 
+}
+
 glm::mat4 Camera::getPerspective()
 {
     return glm::perspective(getYfov(), getAspect(), getNear(), getFar());

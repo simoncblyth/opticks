@@ -5,45 +5,65 @@
 #include "GMesh.hh"
 
 struct Tex {
-   Tex() : width(0), height(0), rgb(NULL), rgba(NULL) {}
+   Tex(bool zbuf_) : width(0), height(0), rgb(NULL), rgba(NULL), depth(NULL), zbuf(zbuf_) {}
+
    int width  ;
    int height ;
    unsigned char* rgb ;
    unsigned char* rgba ;
+   unsigned char* depth ;
+   bool zbuf ; 
 };
 
 // hmm Texture is too general, QuadTexture better
 class Texture : public GMesh {
    public:
+       Texture(bool zbuf=false);
+       void loadPPM(const char* path);  // does not need OpenGL context
+       void create();
+       void cleanup();
+   public:
+       void setSize(unsigned int width, unsigned int height);
+       unsigned int getTextureId();
+       unsigned int getSamplerId();
+       unsigned int getWidth();
+       unsigned int getHeight();
+   private:
       static const float pvertex[] ;
       static const float pnormal[] ;
       static const float pcolor[] ;
       static const unsigned int pindex[] ;
       static const float ptexcoord[] ;
-
-       Texture();
-       void setSize(unsigned int width, unsigned int height);
-       void loadPPM(const char* path);  // does not need OpenGL context
-       void create();
-       //void resize(unsigned int width, unsigned int height, unsigned char* data);
-       void cleanup();
-
-       unsigned int getTextureId();
-       unsigned int getSamplerId();
-       unsigned int getWidth();
-       unsigned int getHeight();
-
    private:
-       void setup();
-       void create_rgb(unsigned char* data);
-       void create_rgba(unsigned char* data);
-
        unsigned int m_width ; 
        unsigned int m_height ; 
        unsigned int m_texture_id ; 
        unsigned int m_sampler_id ; 
        Tex          m_tex ; 
-
 };
+
+
+inline void Texture::setSize(unsigned int width, unsigned int height)
+{
+    m_width = width ; 
+    m_height = height ; 
+}
+inline unsigned int Texture::getTextureId()
+{
+    return m_texture_id ;
+}
+inline unsigned int Texture::getSamplerId()
+{
+    return m_sampler_id ;
+}
+inline unsigned int Texture::getWidth()
+{
+    return m_width ;
+}
+inline unsigned int Texture::getHeight()
+{
+    return m_height ;
+}
+
 
 

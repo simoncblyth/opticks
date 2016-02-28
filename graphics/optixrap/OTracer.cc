@@ -57,8 +57,9 @@ void OTracer::trace()
     glm::vec3 U ;
     glm::vec3 V ;
     glm::vec3 W ;
+    glm::vec4 ZProj ;
 
-    m_composition->getEyeUVW(eye, U, V, W); // must setModelToWorld in composition first
+    m_composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
 
     bool parallel = m_composition->getParallel();
     float scene_epsilon = m_composition->getNear();
@@ -69,6 +70,8 @@ void OTracer::trace()
     m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
     m_context[ "V"  ]->setFloat( make_float3( V.x, V.y, V.z ) );
     m_context[ "W"  ]->setFloat( make_float3( W.x, W.y, W.z ) );
+
+    m_context[ "ZProj"  ]->setFloat( make_float4( ZProj.x, ZProj.y, ZProj.z, ZProj.w ) );
 
     Buffer buffer = m_context["output_buffer"]->getBuffer();
     RTsize buffer_width, buffer_height;
@@ -88,7 +91,9 @@ void OTracer::trace()
                    << " entry_index " << m_entry_index 
                    << " trace_count " << m_trace_count 
                    << " resolution_scale " << m_resolution_scale 
-                   << " size(" <<  width << "," <<  height << ")";
+                   << " size(" <<  width << "," <<  height << ")"
+                   << " ZProj.zw (" <<  ZProj.z << "," <<  ZProj.w << ")"
+                   ;
 
 
     double t1 = getRealTime();

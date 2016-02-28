@@ -127,6 +127,9 @@ class Camera : public NConfigurable  {
      glm::mat4 getOrtho();
      glm::mat4 getFrustum();
 
+     void fillZProjection(glm::vec4& zProj);
+
+
      bool hasChanged();
      void setChanged(bool changed); 
 

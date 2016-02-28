@@ -9,15 +9,10 @@
 #include "loadPPM.h"
 
 
-
 /*
    "1" (-1,1) [0,1]          "0" (1,1) [1,1]
-
-
-
    "2" (-1,-1) [0,0]         "3" (1,-1) [1,0]
 */
-
 
 const float Texture::pvertex[] = {  
      1.0f,  1.0f, 0.0f, 
@@ -47,16 +42,13 @@ const float Texture::ptexcoord[] = {
      1.0f, 0.0f 
 };
 
-
 const unsigned int Texture::pindex[] = {
       0,  1,  2 ,
       2,  3,  0 
 };
 
 
-
-
-Texture::Texture() : 
+Texture::Texture(bool zbuf) : 
     GMesh(0, 
              (gfloat3*)&pvertex[0],
              4, 
@@ -67,7 +59,7 @@ Texture::Texture() :
          ),
     m_texture_id(0),
     m_sampler_id(0),
-    m_tex()
+    m_tex(zbuf)
 {
     setColors( (gfloat3*)&pcolor[0] );
 }
@@ -102,14 +94,8 @@ void Texture::loadPPM(const char* path)
     }
 }
 
-void Texture::setSize(unsigned int width, unsigned int height)
-{
-    m_width = width ; 
-    m_height = height ; 
-}
 
-
-void Texture::setup()
+void Texture::create()
 {
     glGenTextures(1, &m_texture_id);
     glBindTexture( GL_TEXTURE_2D, m_texture_id);
@@ -117,69 +103,36 @@ void Texture::setup()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-}
 
-void Texture::create()
-{
-    setup();
     assert(m_width > 0 && m_height > 0 && "must setSize before create");
 
-    if( m_tex.rgba )  // ie have loaded from PPM
+    GLenum target = GL_TEXTURE_2D ;
+    GLint level = 0 ; 
+    GLint internalformat = GL_RGBA ;
+    GLint border = 0 ; 
+    GLenum format = GL_RGBA ;
+    GLenum type = GL_UNSIGNED_BYTE ;
+    const GLvoid * data ;
+
+    // ie have loaded from PPM (potentially prior to OpenGL context being alive) 
+    if( m_tex.rgba )  
     {
-        create_rgba(m_tex.rgba);
+        data = m_tex.rgba ;
     }
     else
     {
-        create_rgba(NULL);
+        data = 0 ; 
     }
+
+    glTexImage2D(target, level, internalformat, m_width, m_height, border, format, type, data );
 }
 
-void Texture::create_rgb(unsigned char* data)
-{
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
-}
 
-void Texture::create_rgba(unsigned char* data)
-{
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-}
 
 void Texture::cleanup()
 {
     glDeleteTextures(1, &m_texture_id);
     m_texture_id = 0 ;
 }
-
-
-/*
-void Texture::resize(unsigned int width, unsigned int height, unsigned char* data)
-{
-    if(width == m_width && height == m_height) return ;
-    cleanup();
-    create(data);
-}
-*/
-
-
-unsigned int Texture::getTextureId()
-{
-    return m_texture_id ;
-}
-unsigned int Texture::getSamplerId()
-{
-    return m_sampler_id ;
-}
-
-
-
-unsigned int Texture::getWidth()
-{
-    return m_width ;
-}
-unsigned int Texture::getHeight()
-{
-    return m_height ;
-}
-
 
 

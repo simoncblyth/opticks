@@ -31,6 +31,7 @@ void ORenderer::init(const char* dir, const char* incl_path)
 
     // TODO: reposition Renderer externally ...
     m_renderer = new Renderer("tex", dir, incl_path );
+
     m_texture = new Texture();   // QuadTexture would be better name
     m_texture->setSize(width, height);
     m_texture->create();
@@ -38,6 +39,7 @@ void ORenderer::init(const char* dir, const char* incl_path)
     m_texture_id = m_texture->getTextureId() ;
 
     LOG(debug) << "ORenderer::init size(" << width << "," << height << ")  texture_id " << m_texture_id ;
+
     m_renderer->upload(m_texture);
 }
 

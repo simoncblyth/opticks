@@ -203,7 +203,7 @@ class Composition : public NConfigurable {
   public: 
       void test_getEyeUVW();
       bool getParallel();
-      void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
+      void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj);
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
 
