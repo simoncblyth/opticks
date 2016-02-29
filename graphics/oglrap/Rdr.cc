@@ -293,6 +293,10 @@ void Rdr::check_uniforms()
     m_flags_location = m_shader->uniform("Flags", required );     
     m_pick_location = m_shader->uniform("Pick", required );     
     m_param_location = m_shader->uniform("Param", required );     
+
+    m_nrmparam_location = m_shader->uniform("NrmParam",  required); 
+    m_scanparam_location = m_shader->uniform("ScanParam",  required); 
+
     m_timedomain_location = m_shader->uniform("TimeDomain", required );     
     m_colordomain_location = m_shader->uniform("ColorDomain", required );     
     m_colors_location = m_shader->uniform("Colors", required );     
@@ -335,6 +339,20 @@ void Rdr::update_uniforms()
 
         glm::vec4 par = m_composition->getParam();
         glUniform4f(m_param_location, par.x, par.y, par.z, par.w  );    
+
+
+        glUniform4fv(m_scanparam_location, 1, m_composition->getScanParamPtr());
+        //glm::vec4 sp = m_composition->getScanParam(); 
+
+        glm::ivec4 np = m_composition->getNrmParam(); 
+        glUniform4i(m_nrmparam_location, np.x, np.y, np.z, np.w);
+
+        //LOG(info) << "Rdr::update_uniforms"
+        //          << " NrmParam " << gformat(np)
+        //          << " ScanParam " << gformat(sp)
+        //           ;
+
+
 
         glm::vec4 td = m_composition->getTimeDomain();
         glUniform4f(m_timedomain_location, td.x, td.y, td.z, td.w  );    

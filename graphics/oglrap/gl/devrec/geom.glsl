@@ -1,5 +1,5 @@
 #version 400
-// devrec/geom.glsl 
+// devrec/geom.glsl    shortline or vector presentation, control length with param.y
 
 #incl dynamic.h
 
@@ -40,7 +40,7 @@ void main ()
     vec4 p1 = gl_in[1].gl_Position  ;
     float tc = Param.w / TimeDomain.y ;  // as time comparisons done before un-snorming 
     //float ns = Param.y/TimeDomain.y ; 
-    float dfrac = Param.y ; 
+    float dfrac = Param.y ;   //  vector length control 
 
 
     uint valid  = (uint(p0.w > 0.)  << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
@@ -55,6 +55,8 @@ void main ()
         float frac = (tc - p0.w)/(p1.w - p0.w)  ;
         vec3 pt0 = mix( vec3(p0), vec3(p1), frac ); 
         gl_Position = ISNormModelViewProjection * vec4( pt0, 1.0 ) ; 
+
+
         EmitVertex();
 
         vec3 pt1 = mix( vec3(p0), vec3(p1), frac + dfrac ); 

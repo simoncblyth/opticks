@@ -308,6 +308,7 @@ void Renderer::check_uniforms()
         m_param_location = m_shader->uniform("Param",          required); 
         m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
         m_scanparam_location = m_shader->uniform("ScanParam",         required); 
+
         m_lightposition_location = m_shader->uniform("LightPosition",required); 
 
         m_colordomain_location = m_shader->uniform("ColorDomain", required );     
@@ -429,9 +430,6 @@ void Renderer::bind()
 
     glActiveTexture(GL_TEXTURE0 + TEX_UNIT_0 );
     glBindTexture(GL_TEXTURE_2D,  m_texture_id );
-
-    //glActiveTexture(GL_TEXTURE0 + TEX_UNIT_1 );
-    //glBindTexture(GL_TEXTURE_2D, m_ztexture_id );
 }
 
 

@@ -10,19 +10,14 @@ uniform  vec4 ScanParam ;
 uniform ivec4 NrmParam ;
 
 uniform sampler2D ColorTex ;
-//uniform sampler2D DepthTex ;
 
 void main () 
 {
-   //float depth = texture(DepthTex, texcoord).r ;
-
    frag_colour = texture(ColorTex, texcoord);
    float depth = frag_colour.w ;  // alpha is hijacked for depth in pinhole_camera.cu material1_radiance.cu
    frag_colour.w = 1.0 ; 
 
    gl_FragDepth = depth  ;
-
-   //if( depth > 0.9 ) discard ; 
 
    if(NrmParam.z == 1)
    {

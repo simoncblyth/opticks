@@ -84,6 +84,8 @@ class Rdr : public RendererBase  {
       GLint  m_flags_location ;
       GLint  m_pick_location ;
       GLint  m_param_location ;
+      GLint  m_nrmparam_location ;
+      GLint  m_scanparam_location ;
       GLint  m_timedomain_location ;
       GLint  m_colordomain_location ;
       GLint  m_colors_location ;
@@ -115,6 +117,8 @@ inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* in
     m_flags_location(-1),
     m_pick_location(-1),
     m_param_location(-1),
+    m_nrmparam_location(-1),
+    m_scanparam_location(-1),
     m_timedomain_location(-1),
     m_colordomain_location(-1),
     m_colors_location(-1),
