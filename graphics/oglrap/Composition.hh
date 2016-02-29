@@ -234,6 +234,7 @@ class Composition : public NConfigurable {
       float getFar();
   public:
       // position of the observer "Viewpoint" and the observed "Lookpoint" using m_eye_to_world/m_world_to_eye
+      glm::vec4 transformWorldToEye(const glm::vec4& world);
       glm::vec4 transformEyeToWorld(const glm::vec4& eye);
       glm::vec4 getLookpoint();
       glm::vec4 getViewpoint();

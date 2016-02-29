@@ -122,7 +122,8 @@ ggv-pmt-test(){
        --torch --torchconfig "$(join _ ${torch_config[@]})" \
        --animtimemax 10 \
        --cat PmtInBox --tag $tag --save \
-       --eye 0.5,0.5,0.0 \
+       --eye 0.0,0.5,0.0 \
+       --geocenter \
        $* 
 
 }

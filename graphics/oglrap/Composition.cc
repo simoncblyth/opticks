@@ -939,6 +939,10 @@ glm::vec3 Composition::unProject(unsigned int x, unsigned int y, float z)
 }
 
 
+
+
+
+
 bool Composition::hasChanged()
 {
     return m_rotator->isActive() || m_animator->isActive() || m_view->hasChanged() || m_camera->hasChanged() || m_trackball->hasChanged() ;
@@ -956,6 +960,13 @@ void Composition::setLookAngle(float phi)
     m_lookphi = phi ; 
 }
 
+
+
+
+glm::vec4 Composition::transformWorldToEye(const glm::vec4& world)
+{
+    return m_world2eye * world ; 
+}
 
 
 glm::vec4 Composition::transformEyeToWorld(const glm::vec4& eye)
@@ -1142,8 +1153,9 @@ void Composition::update()
 103     eye2world = property(_get_eye2world)
 */
 
-
 }
+
+
 
 
 

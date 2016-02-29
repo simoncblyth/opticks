@@ -1,7 +1,11 @@
 #include "Composition.hh"
+#include "Camera.hh"
+#include "View.hh"
 
+#include <iomanip>
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
 void test_rotate()
 {
@@ -83,11 +87,94 @@ void test_setCenterExtent()
 }
 
 
+void test_depth()
+{
+   Composition* comp = new Composition ;
+   View* view = comp->getView();
+   Camera* cam = comp->getCamera();
+
+   float s = 100.0 ; 
+
+   glm::vec4 ce(0.,0.,0.,s);
+
+    // extent normalized inputs to view
+   view->setEye(-1,0,0) ;   
+   view->setLook(0,0,0) ;
+   view->setUp(0,1,0) ;
+
+   bool autocam ;  
+   comp->setCenterExtent(ce, autocam=true );
+
+   cam->Summary("test_depth cam");
+   view->Summary("test_depth view");
+
+   glm::vec4 vp = comp->getViewpoint();
+   glm::vec4 lp = comp->getLookpoint();
+   glm::vec4 gaze = comp->getGaze();
+   glm::vec4 front = glm::normalize(gaze);
+
+   print(vp, "viewpoint");
+   print(lp, "lookpoint");
+   print(gaze, "gaze");
+   print(front, "front");
+
+   glm::vec4 zproj ; 
+   cam->fillZProjection(zproj);
+
+   print(zproj, "zproj");
+
+   unsigned int ix = cam->getWidth()/2 ;  
+   unsigned int iy = cam->getHeight()/2 ;  
+   float near = cam->getNear();
+   float far  = cam->getFar();
+
+   std::cout
+        << " near " << near 
+        << " far " << far
+        << std::endl ;  
+  
+
+   std::cout << " step along the gaze direction, from near to far  " << std::endl ; 
+   // (world frame : X axis from -100 to 0)
+   // (eye frame   : Z axis from    0 to -100 ) 
+
+   int N = 20 ;
+   for(int i=0 ; i <= N ; i++)
+   {
+       float t = near + (far - near)*float(i)/float(N)  ;
+       const glm::vec4 p_world = vp + front*t ;
+       const glm::vec4 p_eye = comp->transformWorldToEye(p_world);
+  
+       float eyeDist = p_eye.z ; assert(eyeDist <= 0.f ); 
+
+       float ndc_z = -zproj.z - zproj.w/eyeDist ;     // should be in range -1:1 for visibles
+       float clip_z = 0.5f*ndc_z + 0.5f ; 
+       float depth = clip_z ; 
+
+       glm::vec3 unp = comp->unProject(ix,iy,-depth);
+
+       std::cout << " t " << std::setw(5) << t
+                 << " p_world " << std::setw(30) << gformat(p_world)
+                 << " p_eye   " << std::setw(30) << gformat(p_eye)
+                 << " eyeDist " << std::setw(8) << eyeDist
+                 << " ndc_z " << std::setw(8) << ndc_z
+                 << " clip_z " << std::setw(8) << clip_z
+                 << " unp   " << std::setw(20) << gformat(unp)
+                 << std::endl ; 
+
+   } 
+
+
+
+}
+
+
 int main()
 {
    //test_center_extent();
    //test_setCenterExtent();
-   test_rotate();
+   //test_rotate();
+   test_depth();
 
     
    return 0 ;
