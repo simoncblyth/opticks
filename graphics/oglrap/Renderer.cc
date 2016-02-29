@@ -8,8 +8,9 @@
 // npy-
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 #include "NSlice.hpp"
-
+#include "NLog.hpp"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
@@ -23,13 +24,6 @@
 #include "GBBoxMesh.hh"
 #include "GDrawable.hh"
 
-#include "stdio.h"
-#include "stdlib.h"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
 
 const char* Renderer::PRINT = "print" ; 
 
@@ -42,8 +36,6 @@ void Renderer::configureI(const char* name, std::vector<int> values )
     if(values.empty()) return ; 
     if(strcmp(name, PRINT)==0) Print("Renderer::configureI");
 }
-
-
 
 
 template <typename B>
@@ -91,48 +83,28 @@ void Renderer::upload(GMergedMesh* geometry, bool debug)
     NSlice* fslice = m_geometry->getFaceSlice();
     upload_buffers(islice, fslice);
 }
+
 void Renderer::upload(Texture* texture, bool debug)
 {
-    m_texture = texture ;
-    assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
-    m_drawable = static_cast<GDrawable*>(m_texture);
+    setTexture(texture);
+
     NSlice* islice = NULL ; 
     NSlice* fslice = NULL ; 
     upload_buffers(islice, fslice);
 }
 
-void Renderer::upload(Texture* texture, Texture* ztexture, bool debug)
+void Renderer::setTexture(Texture* texture)
 {
-    if(texture)
-    {
-        m_texture = texture ;
-        m_texture_id = texture->getId();
-    }
-
-    if(ztexture)
-    {
-        m_ztexture = ztexture ;
-        m_ztexture_id = ztexture->getId();
-    }
-
-
+    m_texture = texture ;
+    m_texture_id = texture->getId();
     assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
-
     m_drawable = static_cast<GDrawable*>(m_texture);
-
-    NSlice* islice = NULL ; 
-    NSlice* fslice = NULL ; 
-
-    upload_buffers(islice, fslice);
-
-
-    // hmm unclear how to handle the z buffer too..
-    // seems that moving from 1 texture to 2 is not trivial
-    //
-    // http://stackoverflow.com/questions/10398965/passing-textures-to-shader
 }
 
-
+Texture* Renderer::getTexture()
+{
+    return m_texture ;
+}
 
 
 void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
@@ -335,6 +307,7 @@ void Renderer::check_uniforms()
         m_clip_location = m_shader->uniform("ClipPlane",          required); 
         m_param_location = m_shader->uniform("Param",          required); 
         m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
+        m_scanparam_location = m_shader->uniform("ScanParam",         required); 
         m_lightposition_location = m_shader->uniform("LightPosition",required); 
 
         m_colordomain_location = m_shader->uniform("ColorDomain", required );     
@@ -357,6 +330,9 @@ void Renderer::check_uniforms()
         m_colorTex_location = m_shader->uniform("ColorTex", required);
         m_depthTex_location = m_shader->uniform("DepthTex", required);
 
+        m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
+        m_scanparam_location = m_shader->uniform("ScanParam",         required); 
+
     } 
     else
     {
@@ -369,6 +345,7 @@ void Renderer::check_uniforms()
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 
               << " nrmparam " << m_nrmparam_location 
+              << " scanparam " << m_scanparam_location 
               << " clip " << m_clip_location 
               << " itransform " << m_itransform_location 
               ;
@@ -386,8 +363,16 @@ void Renderer::update_uniforms()
 
         glUniform4fv(m_param_location, 1, m_composition->getParamPtr());
 
+        glUniform4fv(m_scanparam_location, 1, m_composition->getScanParamPtr());
+        glm::vec4 sp = m_composition->getScanParam(); 
+
         glm::ivec4 np = m_composition->getNrmParam(); 
         glUniform4i(m_nrmparam_location, np.x, np.y, np.z, np.w);
+
+        LOG(info) << "Renderer::update_uniforms"
+                  << " NrmParam " << gformat(np)
+                  << " ScanParam " << gformat(sp)
+                   ;
 
         glUniform4fv(m_lightposition_location, 1, m_composition->getLightPositionPtr());
 
@@ -421,6 +406,8 @@ void Renderer::update_uniforms()
     } 
     else
     { 
+        LOG(warning) << "Renderer::update_uniforms without composition " ; 
+
         glm::mat4 identity ; 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));
@@ -443,8 +430,8 @@ void Renderer::bind()
     glActiveTexture(GL_TEXTURE0 + TEX_UNIT_0 );
     glBindTexture(GL_TEXTURE_2D,  m_texture_id );
 
-    glActiveTexture(GL_TEXTURE0 + TEX_UNIT_1 );
-    glBindTexture(GL_TEXTURE_2D, m_ztexture_id );
+    //glActiveTexture(GL_TEXTURE0 + TEX_UNIT_1 );
+    //glBindTexture(GL_TEXTURE_2D, m_ztexture_id );
 }
 
 

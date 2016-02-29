@@ -118,6 +118,9 @@ void test_depth()
    print(gaze, "gaze");
    print(front, "front");
 
+
+   comp->update();
+
    glm::vec4 zproj ; 
    cam->fillZProjection(zproj);
 
@@ -142,23 +145,34 @@ void test_depth()
    for(int i=0 ; i <= N ; i++)
    {
        float t = near + (far - near)*float(i)/float(N)  ;
+
        const glm::vec4 p_world = vp + front*t ;
        const glm::vec4 p_eye = comp->transformWorldToEye(p_world);
-  
-       float eyeDist = p_eye.z ; assert(eyeDist <= 0.f ); 
+       const glm::vec3 p_ndc = comp->getNDC(p_world); 
+       const glm::vec3 p_ndc2 = comp->getNDC2(p_world); 
 
-       float ndc_z = -zproj.z - zproj.w/eyeDist ;     // should be in range -1:1 for visibles
-       float clip_z = 0.5f*ndc_z + 0.5f ; 
+       float eyeDist = p_eye.z ;   // from eye frame definition, this is general
+       assert(eyeDist <= 0.f ); 
+       float ndc_z = -zproj.z - zproj.w/eyeDist ;     // range -1:1 for visibles
+       float ndc_z2 = comp->getNDCDepth(p_world); 
+
+
+       float clip_z = 0.5f*ndc_z + 0.5f ;             // range  0:1 
        float depth = clip_z ; 
+       float clip_z2 = comp->getClipDepth(p_world);
 
-       glm::vec3 unp = comp->unProject(ix,iy,-depth);
+       glm::vec3 unp = comp->unProject(0,0,-depth); // ix,iy ??
 
        std::cout << " t " << std::setw(5) << t
                  << " p_world " << std::setw(30) << gformat(p_world)
                  << " p_eye   " << std::setw(30) << gformat(p_eye)
+                 << " p_ndc " << std::setw(30) << gformat(p_ndc)
+                 << " p_ndc2 " << std::setw(30) << gformat(p_ndc2)
                  << " eyeDist " << std::setw(8) << eyeDist
                  << " ndc_z " << std::setw(8) << ndc_z
+                 << " ndc_z2 " << std::setw(8) << ndc_z2
                  << " clip_z " << std::setw(8) << clip_z
+                 << " clip_z2 " << std::setw(8) << clip_z2
                  << " unp   " << std::setw(20) << gformat(unp)
                  << std::endl ; 
 

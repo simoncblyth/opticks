@@ -23,48 +23,21 @@
 #include "Texture.hh"
 
 
-
 void ORenderer::init(const char* dir, const char* incl_path)
 {
-    unsigned int width  = m_frame->getWidth();
-    unsigned int height = m_frame->getHeight();
+    // TODO: move elsewhere ... diddling with another objects constituent
 
-    // TODO: reposition Renderer externally ...
-    m_renderer = new Renderer("tex", dir, incl_path );
-
-    m_texture = new Texture();   // QuadTexture would be better name
-    m_texture->setSize(width, height);
-    m_texture->create();
-    m_texture_id = m_texture->getId() ;
-
-    LOG(debug) << "ORenderer::init size(" << width << "," << height << ")  texture_id " << m_texture_id ;
-
-
-    // ggv-;ggv-pmt-test --tracer --zbuf 
-    if(m_frame->hasZBuffer())
-    {
-        m_zbuf = true ; 
-        m_ztexture = new Texture(m_zbuf);   
-        m_ztexture->setSize(width, height);
-        m_ztexture->create();
-        m_ztexture_id = m_ztexture->getId() ;
-
-        LOG(info) << "ORenderer::init size(" << width << "," << height << ")  ztexture_id " << m_ztexture_id ;
-    }
-
-    //m_renderer->upload(m_texture);
-    m_renderer->upload(m_texture, m_ztexture);
+    Texture* texture = m_frame->getTexture();
+    m_renderer->upload(texture);
 }
+
 
 void ORenderer::setSize(unsigned int width, unsigned int height)
 {
+    assert(0);
+
     m_frame->setSize( width, height) ;
 
-    if(m_texture)
-    m_texture->setSize(width, height);
-
-    if(m_ztexture)
-    m_ztexture->setSize(width, height);
 }
 
 
@@ -74,7 +47,7 @@ void ORenderer::render()
 
     double t0 = getRealTime();
 
-    m_frame->push_PBO_to_Texture(m_texture_id, m_ztexture_id);
+    m_frame->push_PBO_to_Texture();
 
     double t1 = getRealTime();
 

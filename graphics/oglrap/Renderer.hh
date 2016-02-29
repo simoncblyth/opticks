@@ -39,12 +39,14 @@ class Renderer : public RendererBase  {
       void upload(GMergedMesh* geometry, bool debug=false);
       void upload(GBBoxMesh* bboxmesh, bool debug=false);
       void upload(Texture* texture, bool debug=false);
-      void upload(Texture* texture, Texture* ztexture, bool debug=false);
   public: 
       void bind();
       void render();
       void setComposition(Composition* composition);
       Composition* getComposition(); 
+  public: 
+      void setTexture(Texture* texture);
+      Texture* getTexture(); 
   public: 
       void configureI(const char* name, std::vector<int> values);
       void dump(const char* msg="Renderer::dump");
@@ -83,6 +85,7 @@ class Renderer : public RendererBase  {
       GLint  m_mvp_location ;
       GLint  m_clip_location ;
       GLint  m_param_location ;
+      GLint  m_scanparam_location ;
       GLint  m_nrmparam_location ;
       GLint  m_lightposition_location ;
       GLint  m_itransform_location ;
@@ -101,8 +104,6 @@ class Renderer : public RendererBase  {
       GBBoxMesh*   m_bboxmesh ;
       Texture*     m_texture ;
       int          m_texture_id ; 
-      Texture*     m_ztexture ;
-      int          m_ztexture_id ; 
       Composition* m_composition ;
   private:
       bool m_has_tex ; 
@@ -120,6 +121,7 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_mvp_location(-1),
     m_clip_location(-1),
     m_param_location(-1),
+    m_scanparam_location(-1),
     m_nrmparam_location(-1),
     m_lightposition_location(-1),
     m_itransform_location(-1),
@@ -136,8 +138,6 @@ inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_pat
     m_bboxmesh(NULL),
     m_texture(NULL),
     m_texture_id(-1),
-    m_ztexture(NULL),
-    m_ztexture_id(-1),
     m_composition(NULL),
     m_has_tex(false),
     m_has_transforms(false),
@@ -163,6 +163,9 @@ inline Composition* Renderer::getComposition()
 {
     return m_composition ;
 }
+
+
+
 
 
  

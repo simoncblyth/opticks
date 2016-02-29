@@ -1,10 +1,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+// npy-
+#include "NLog.hpp"
 
+// oglrap-
+#include "Texture.hh"
+
+// optixrap-
 #include "OFrame.hh"
 #include "OContext.hh"
 
@@ -24,10 +27,14 @@ void OFrame::init(unsigned int width, unsigned int height)
     // generates the m_pbo and m_depth identifiers and buffers
     m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
 
-    //if(m_zbuf)
-    //{
-    //    m_zoutput_buffer = createOutputBuffer_PBO(m_zpbo, RT_FORMAT_FLOAT, width, height, true ) ;
-    //} 
+
+    m_texture = new Texture();   // QuadTexture would be better name
+    m_texture->setSize(width, height);
+    m_texture->create();
+
+    m_texture_id = m_texture->getId() ;
+
+    LOG(debug) << "OFrame::init size(" << width << "," << height << ")  texture_id " << m_texture_id ;
 
 
     m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
@@ -88,19 +95,10 @@ optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, 
 }
 
 
-
-void OFrame::push_PBO_to_Texture(unsigned int texture_id, unsigned int ztexture_id)
+void OFrame::push_PBO_to_Texture()
 {
     m_push_count += 1 ; 
-
-    // the order of these pushes matter ...
-
-    if(ztexture_id > 0 && m_zpbo > 0 )
-    {
-        push_Buffer_to_Texture( m_zoutput_buffer, m_zpbo, ztexture_id, true );    
-    }
-
-    push_Buffer_to_Texture( m_output_buffer, m_pbo, texture_id, false );    
+    push_Buffer_to_Texture( m_output_buffer, m_pbo, m_texture_id, false );    
 }
 
 

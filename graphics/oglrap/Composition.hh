@@ -95,7 +95,7 @@ class Composition : public NConfigurable {
        typedef enum { DEF_GEOMETRY, NRMCOL_GEOMETRY, VTXCOL_GEOMETRY, FACECOL_GEOMETRY, NUM_GEOMETRY_STYLE } GeometryStyle_t ;
        static const char* getGeometryStyleName(Composition::GeometryStyle_t style);
        const char* getGeometryStyleName();
-       void nextGeometryStyle();
+       void nextGeometryStyle();   // changes m_nrmparam
        void setGeometryStyle(Composition::GeometryStyle_t style);
        Composition::GeometryStyle_t getGeometryStyle();
    public:
@@ -157,12 +157,16 @@ class Composition : public NConfigurable {
       void setColorParam(std::string cp);
       glm::ivec4& getColorParam();
 
-
   public:
       void setParam(glm::vec4 par);
       void setParam(std::string par);
       glm::vec4&  getParam();
       float*      getParamPtr();
+
+  public:
+      glm::vec4&  getScanParam();
+      float*      getScanParamPtr();
+
   public:
       //void setNrmParam(glm::ivec4 par);
       //void setNrmParam(std::string par);
@@ -206,7 +210,11 @@ class Composition : public NConfigurable {
       void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj);
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
-
+  public: 
+      glm::vec3 getNDC(const glm::vec4& position_world);
+      glm::vec3 getNDC2(const glm::vec4& position_world);
+      float getNDCDepth(const glm::vec4& position_world);
+      float getClipDepth(const glm::vec4& position_world);
   private: 
       // invoked from Interactor 
       void commitView();
@@ -325,6 +333,7 @@ class Composition : public NConfigurable {
       glm::ivec4 m_pick ;
       glm::vec4  m_pick_f ; // for inputing pick using float slider 
       glm::vec4  m_param ;
+      glm::vec4  m_scanparam ;
       glm::ivec4  m_nrmparam ;
       bool       m_animated ; 
 
@@ -409,6 +418,7 @@ inline Composition::Composition()
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
   m_param(25.f,0.030f,0.f,0.f),   // x: arbitrary scaling of genstep length, y: vector length dfrac
+  m_scanparam(0.f,1.0f,0.5f,0.01f),   // ct scan  x:clip-z-cut y:slice-width
   m_animator(NULL),
   m_rotator(NULL),
   m_camera(NULL),

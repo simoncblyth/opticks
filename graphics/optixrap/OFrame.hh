@@ -1,25 +1,28 @@
 #pragma once
 
 #include <optixu/optixpp_namespace.h>
+
+class Texture ; 
+
 #include "Touchable.hh"
 
 class OFrame : public Touchable {
     public:
-       OFrame(optix::Context& context, unsigned int width, unsigned int height, bool zbuf=false); 
+       OFrame(optix::Context& context, unsigned int width, unsigned int height ); 
     public:
-       void push_PBO_to_Texture(unsigned int texture_id, unsigned int ztexture_id=0);
+       void push_PBO_to_Texture();
        void setSize(unsigned int width, unsigned int height);
     public:
        optix::Buffer& getOutputBuffer();
-       optix::Buffer& getDepthBuffer();
+       Texture* getTexture();
+       int getTextureId();
        unsigned int getWidth();
        unsigned int getHeight();
-       bool         hasZBuffer();
     public:
        // fulfil Touchable interface
        unsigned int touch(int ix, int iy);
     private: 
-         static void push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int texture_id, bool depth);
+         static void push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int texture_id, bool depth=false);
     private: 
         void init(unsigned int width, unsigned int height);
         //void associate_PBO_to_Texture(unsigned int texId);
@@ -36,26 +39,27 @@ class OFrame : public Touchable {
         optix::Context   m_context ;
         optix::Buffer    m_output_buffer ; 
         optix::Buffer    m_touch_buffer ; 
-        optix::Buffer    m_zoutput_buffer ; 
+
+        Texture*         m_texture ; 
+        int              m_texture_id ; 
+
         unsigned int     m_pbo ;
-        unsigned int     m_zpbo ;
         unsigned char*   m_pbo_data ; 
         unsigned int     m_width ; 
         unsigned int     m_height ; 
         unsigned int     m_push_count ; 
-        bool             m_zbuf ; 
 
 };
 
 
-inline OFrame::OFrame(optix::Context& context, unsigned int width, unsigned int height, bool zbuf)
+inline OFrame::OFrame(optix::Context& context, unsigned int width, unsigned int height)
      :
      m_context(context),
+     m_texture(NULL),
+     m_texture_id(-1),
      m_pbo(0),
-     m_zpbo(0),
      m_pbo_data(NULL),
-     m_push_count(0),
-     m_zbuf(zbuf)
+     m_push_count(0)
 {
     init(width, height);
 }
@@ -64,9 +68,15 @@ inline optix::Buffer& OFrame::getOutputBuffer()
 {
     return m_output_buffer ; 
 }
-inline optix::Buffer& OFrame::getDepthBuffer()
+
+inline Texture* OFrame::getTexture()
 {
-    return m_zoutput_buffer ; 
+    return m_texture ; 
+}
+
+inline int OFrame::getTextureId()
+{
+    return m_texture_id ; 
 }
 
 inline unsigned int OFrame::getWidth()
@@ -76,10 +86,6 @@ inline unsigned int OFrame::getWidth()
 inline unsigned int OFrame::getHeight()
 {
     return m_height ; 
-}
-inline bool OFrame::hasZBuffer()
-{
-    return m_zbuf ; 
 }
 
 

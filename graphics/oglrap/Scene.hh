@@ -170,6 +170,7 @@ class Scene : public NConfigurable {
         const char*   getShaderDir();
         const char*   getShaderInclPath();
         Renderer*     getGeometryRenderer();
+        Renderer*     getRaytraceRenderer();
         Renderer*     getInstanceRenderer(unsigned int i);
         unsigned int  getNumInstanceRenderer();
    public:
@@ -199,6 +200,7 @@ class Scene : public NConfigurable {
         Renderer*    m_bbox_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_global_renderer ; 
         Renderer*    m_globalvec_renderer ; 
+        Renderer*    m_raytrace_renderer ; 
    private:
         Rdr*         m_axis_renderer ; 
         Rdr*         m_genstep_renderer ; 
@@ -254,6 +256,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_geometry_renderer(NULL),
             m_global_renderer(NULL),
             m_globalvec_renderer(NULL),
+            m_raytrace_renderer(NULL),
             m_axis_renderer(NULL),
             m_genstep_renderer(NULL),
             m_photon_renderer(NULL),
@@ -347,6 +350,12 @@ inline Renderer* Scene::getGeometryRenderer()
 {
     return m_geometry_renderer ; 
 }
+
+inline Renderer* Scene::getRaytraceRenderer()
+{
+    return m_raytrace_renderer ; 
+}
+
 
 
 inline Rdr* Scene::getAxisRenderer()

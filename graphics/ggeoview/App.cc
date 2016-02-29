@@ -708,20 +708,16 @@ void App::prepareOptiXViz()
 
     optix::Context context = m_ocontext->getContext();
 
-    bool zbuf = hasOpt("zbuf") ;
 
-    m_oframe = new OFrame(context, width, height, zbuf);
+    m_oframe = new OFrame(context, width, height);
 
     context["output_buffer"]->set( m_oframe->getOutputBuffer() );
 
-    //if(m_oframe->hasZBuffer())
-    //{
-    //    context["depth_buffer"]->set( m_oframe->getDepthBuffer() );
-    //}
-
     m_interactor->setTouchable(m_oframe);
 
-    m_orenderer = new ORenderer(m_oframe, m_scene->getShaderDir(), m_scene->getShaderInclPath());
+    Renderer* rtr = m_scene->getRaytraceRenderer();
+
+    m_orenderer = new ORenderer(rtr, m_oframe, m_scene->getShaderDir(), m_scene->getShaderInclPath());
 
     m_otracer = new OTracer(m_ocontext, m_composition);
 
@@ -1095,27 +1091,20 @@ void App::render()
     m_frame->clear();
 
 
+#ifdef OPTIX
     if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
     {
-#ifdef OPTIX
         if(m_otracer && m_orenderer)
         {
             unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
             m_otracer->setResolutionScale(scale) ;
             m_otracer->trace();
-            m_orenderer->render();
+            m_oframe->push_PBO_to_Texture();           
         }
-
-        if(m_scene->isCompositeRender())
-        {
-            m_scene->render();
-        }
+    }
 #endif
-    }
-    else if(m_scene->isProjectiveRender())
-    {
-        m_scene->render();
-    }
+    m_scene->render();
+
 
 
 #ifdef GUI_

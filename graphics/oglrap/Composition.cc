@@ -399,7 +399,6 @@ void Composition::gui()
     float* ldir = m_light->getDirectionPtr() ;
     ImGui::SliderFloat3( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
 
-
     int* pick = glm::value_ptr(m_pick) ;
     ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
     ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
@@ -407,12 +406,29 @@ void Composition::gui()
     int* colpar = glm::value_ptr(m_colorparam) ;
     ImGui::SliderInt( "colorparam.x", colpar + 0,  0, NUM_COLOR_STYLE  );  // record color mode
     ImGui::Text(" colorstyle : %s ", getColorStyleName()); 
-    ImGui::Text(" geometrystyle : %s ", getGeometryStyleName()); 
 
 
     int* np = glm::value_ptr(m_nrmparam) ;
     ImGui::SliderInt( "nrmparam.x", np + 0,  0, 1  );  
-    ImGui::Text(" (nrm) normals : %s ",  *(np + 1) == 0 ? "NOT flipped" : "FLIPPED" );   
+    ImGui::Text(" (nrm) normals : %s ",  *(np + 0) == 0 ? "NOT flipped" : "FLIPPED" );   
+
+    ImGui::SliderInt( "nrmparam.z", np + 2,  0, 1  );  
+    ImGui::Text(" (nrm) scanmode : %s ",  *(np + 2) == 0 ? "DISABLED" : "ENABLED" );   
+
+
+    float* scanparam = glm::value_ptr(m_scanparam) ;
+    ImGui::SliderFloat( "scanparam.x", scanparam + 0,  0.f, 1.0f, "%0.3f", 2.0f );
+    ImGui::SliderFloat( "scanparam.y", scanparam + 1,  0.f, 1.0f, "%0.3f", 2.0f );
+    ImGui::SliderFloat( "scanparam.z", scanparam + 2,  0.f, 1.0f, "%0.3f", 2.0f );
+    ImGui::SliderFloat( "scanparam.w", scanparam + 3,  0.f, 1.0f, "%0.3f", 2.0f );
+
+    *(scanparam + 0) = fmaxf( 0.0f , *(scanparam + 2) - *(scanparam + 3) ) ; 
+    *(scanparam + 1) = fminf( 1.0f , *(scanparam + 2) + *(scanparam + 3) ) ; 
+
+    ImGui::Text(" nrmparam.y geometrystyle : %s ", getGeometryStyleName()); 
+
+
+
 
     ImGui::Text("pick %d %d %d %d ",
        m_pick.x, 
@@ -844,11 +860,21 @@ float* Composition::getParamPtr()
     return glm::value_ptr(m_param) ;
 }
 
+float* Composition::getScanParamPtr()  
+{
+    return glm::value_ptr(m_scanparam) ;
+}
+glm::vec4& Composition::getScanParam()  
+{
+    return m_scanparam  ;
+}
+
+
+
 int* Composition::getNrmParamPtr()  
 {
     return glm::value_ptr(m_nrmparam) ;
 }
-
 glm::ivec4& Composition::getNrmParam()  
 {
     return m_nrmparam  ;
@@ -1037,6 +1063,7 @@ void Composition::home()
 
 void Composition::update()
 {
+
     //   use like this:
     //
     //       if(!m_composition->hasChanged()) return   // dont bother updating renders, nothing changed
@@ -1092,6 +1119,16 @@ void Composition::update()
     m_projection = m_camera->getProjection();
 
     m_world2clip = m_projection * m_world2eye ;    //  ModelViewProjection
+
+
+    /*
+    LOG(info) << "Composition::update"
+              << " m_world2eye " << gformat(m_world2eye)
+              << " m_projection " << gformat(m_projection)
+              << " m_world2clip " << gformat(m_world2clip)
+              ;
+
+    */
 
     m_world2clip_isnorm = m_world2clip * m_domain_isnorm  ;   // inverse snorm (signed normalization)
 
@@ -1182,6 +1219,69 @@ void Composition::dumpAxisData(const char* msg)
     AxisNPY ax(m_axis_data);
     ax.dump(msg);
 }
+
+glm::vec3 Composition::getNDC(const glm::vec4& position_world)
+{
+    const glm::vec4 position_eye = transformWorldToEye(position_world);
+    glm::mat4 projection = m_camera->getProjection();
+    glm::vec4 ndc = projection * position_eye ; 
+    return glm::vec3(ndc.x/ndc.w, ndc.y/ndc.w, ndc.z/ndc.w) ; 
+}
+
+glm::vec3 Composition::getNDC2(const glm::vec4& position_world)
+{
+    glm::vec4 ndc = m_world2clip * position_world ; 
+    return glm::vec3(ndc.x/ndc.w, ndc.y/ndc.w, ndc.z/ndc.w) ; 
+}
+
+
+
+
+
+float Composition::getNDCDepth(const glm::vec4& position_world)
+{
+    const glm::vec4 position_eye = transformWorldToEye(position_world);
+    float eyeDist = position_eye.z ;   // from eye frame definition, this is general
+    assert(eyeDist <= 0.f ); 
+
+    bool parallel = m_camera->getParallel() ;
+    
+    // un-homogenizing divides by -z in perspective case
+
+    glm::vec4 zproj ; 
+    m_camera->fillZProjection(zproj);
+
+    float ndc_z = parallel ?
+                              zproj.z*eyeDist + zproj.w
+                           :
+                             -zproj.z - zproj.w/eyeDist
+                           ;     
+
+
+    if(0)
+    LOG(debug) << "Composition::getNDCDepth"
+              << " p_world " << gformat(position_world)
+              << " p_eye " << gformat(position_eye)
+              << " eyeDist " << eyeDist 
+              << " zproj " << gformat(zproj)
+              << " ndc_z " << ndc_z
+              << " proj " << gformat(m_projection)
+              ;
+
+
+
+
+    // range -1:1 for visibles
+    return ndc_z ; 
+}
+
+float Composition::getClipDepth(const glm::vec4& position_world)
+{
+    return getNDCDepth(position_world)*0.5f + 0.5f ; 
+}
+
+
+
 
 
 void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj )
