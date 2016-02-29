@@ -10,6 +10,7 @@
 
 // npy-
 #include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 #include "timeutil.hpp"
 
 // oglrap-
@@ -39,9 +40,8 @@ void OTracer::init()
     m_context[ "touch_ray_type"      ]->setUint( OContext::e_touch_ray );
     m_context[ "propagate_ray_type"  ]->setUint( OContext::e_propagate_ray );
 
-
-    m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
-    m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f );
+    m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f, 1.0f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
+    m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f, 1.0f );
 
     m_trace_times = new OTimes ; 
 }
@@ -64,13 +64,15 @@ void OTracer::trace()
     bool parallel = m_composition->getParallel();
     float scene_epsilon = m_composition->getNear();
 
+    const glm::vec3 front = glm::normalize(W); 
+
     m_context[ "parallel"]->setUint( parallel ? 1u : 0u); 
     m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
     m_context[ "eye"]->setFloat( make_float3( eye.x, eye.y, eye.z ) );
     m_context[ "U"  ]->setFloat( make_float3( U.x, U.y, U.z ) );
     m_context[ "V"  ]->setFloat( make_float3( V.x, V.y, V.z ) );
     m_context[ "W"  ]->setFloat( make_float3( W.x, W.y, W.z ) );
-
+    m_context[ "front"  ]->setFloat( make_float3( front.x, front.y, front.z ) );
     m_context[ "ZProj"  ]->setFloat( make_float4( ZProj.x, ZProj.y, ZProj.z, ZProj.w ) );
 
     Buffer buffer = m_context["output_buffer"]->getBuffer();
@@ -93,8 +95,8 @@ void OTracer::trace()
                    << " resolution_scale " << m_resolution_scale 
                    << " size(" <<  width << "," <<  height << ")"
                    << " ZProj.zw (" <<  ZProj.z << "," <<  ZProj.w << ")"
+                   << " front " <<  gformat(front) 
                    ;
-
 
     double t1 = getRealTime();
 
@@ -111,9 +113,7 @@ void OTracer::trace()
 
     LOG(debug) << m_trace_times->description("OTracer::trace m_trace_times") ;
 
-
 }
-
 
 
 void OTracer::report(const char* msg)

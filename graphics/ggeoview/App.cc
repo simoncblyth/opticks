@@ -714,10 +714,10 @@ void App::prepareOptiXViz()
 
     context["output_buffer"]->set( m_oframe->getOutputBuffer() );
 
-    if(m_oframe->hasZBuffer())
-    {
-        context["depth_buffer"]->set( m_oframe->getDepthBuffer() );
-    }
+    //if(m_oframe->hasZBuffer())
+    //{
+    //    context["depth_buffer"]->set( m_oframe->getDepthBuffer() );
+    //}
 
     m_interactor->setTouchable(m_oframe);
 
@@ -1094,21 +1094,29 @@ void App::render()
     m_frame->viewport();
     m_frame->clear();
 
-#ifdef OPTIX
-    if(m_interactor->getOptiXMode()>0 && m_otracer && m_orenderer)
-    { 
-        unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
-        m_otracer->setResolutionScale(scale) ;
-        m_otracer->trace();
-        //LOG(debug) << m_ogeo->description("App::render ogeo");
 
-        m_orenderer->render();
-    }
-    else
+    if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
+    {
+#ifdef OPTIX
+        if(m_otracer && m_orenderer)
+        {
+            unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
+            m_otracer->setResolutionScale(scale) ;
+            m_otracer->trace();
+            m_orenderer->render();
+        }
+
+        if(m_scene->isCompositeRender())
+        {
+            m_scene->render();
+        }
 #endif
+    }
+    else if(m_scene->isProjectiveRender())
     {
         m_scene->render();
     }
+
 
 #ifdef GUI_
     m_gui->newframe();

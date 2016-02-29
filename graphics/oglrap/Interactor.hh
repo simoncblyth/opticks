@@ -120,7 +120,7 @@ class Interactor {
        bool m_scrub_mode ;
        bool m_keys_down[NUM_KEYS] ; 
 
-       int  m_optix_mode ;
+       //int  m_optix_mode ;
        unsigned int m_optix_resolution_scale ;
 
        float m_dragfactor ;
@@ -160,7 +160,7 @@ inline Interactor::Interactor()
    m_bookmark_mode(false),
    m_gui_mode(false),
    m_scrub_mode(false),
-   m_optix_mode(0),
+   //m_optix_mode(0),
    m_optix_resolution_scale(1),
    m_dragfactor(1.f),
    m_container(0),
@@ -263,7 +263,7 @@ inline unsigned int Interactor::getContainer()
 }
 
 
-
+/*
 inline bool Interactor::isOptiXMode()
 { 
     return m_optix_mode > 0 ; 
@@ -277,6 +277,10 @@ inline int Interactor::getOptiXMode()
 { 
     return m_optix_mode ; 
 }
+*/
+
+
+
 inline unsigned int Interactor::getOptiXResolutionScale()
 { 
     return m_optix_resolution_scale  ; 

@@ -11,26 +11,24 @@ uniform sampler2D DepthTex ;
 
 void main () 
 {
-   float depth = texture(DepthTex, texcoord).r ;
-
-   //frag_colour = vec4( depth, depth, depth, 1.0 ); gives black 
+   //float depth = texture(DepthTex, texcoord).r ;
 
    frag_colour = texture(ColorTex, texcoord);
 
-   //frag_colour.r = 0.0 ; 
-   //frag_colour.r = depth ; 
-   //  with depth and with 0. look the same 
+   //float depth = frag_colour.w ;  // alpha is hijacked for depth in pinhole_camera.cu material1_radiance.cu
 
-   gl_FragDepth = depth ;
+   gl_FragDepth = frag_colour.w  ;
 
-   //gl_FragDepth = 1.1 ; // black
-   //gl_FragDepth = 1.0 ; // black
+   // frag_colour = vec4( depth, depth, depth, 1.0 );  
+   // vizualize fragment depth, the closer you get to geometry the darker it gets 
+   // reaching black just before being near clipped
+
+   frag_colour.w = 1.0 ; 
+
+   //gl_FragDepth = 1.1 ;   // black
+   //gl_FragDepth = 1.0 ;   // black
    //gl_FragDepth = 0.999 ; //  visible geometry
    //gl_FragDepth = 0.0   ; //  visible geometry 
-
-   //frag_colour = vec4 (colour, 1.0);
-   //frag_colour = vec4 (1.0,0.0,0.0, 1.0);
-
 }
 
 //

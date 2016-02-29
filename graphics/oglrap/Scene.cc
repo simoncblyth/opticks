@@ -646,8 +646,6 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr)
 }
 
 
-
-
 void Scene::render()
 {
     if(m_global_mode)    m_global_renderer->render();

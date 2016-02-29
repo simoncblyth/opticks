@@ -54,11 +54,14 @@ void Interactor::configureI(const char* name, std::vector<int> values)
 {
     LOG(debug) << "Interactor::configureI";
     if(values.empty()) return ;
+
+    /*
     if(strcmp(name, OPTIXMODE) == 0)
     {
         int last = values.back();
         setOptiXMode(last);
     }
+    */
 }
 
 
@@ -228,8 +231,9 @@ void Interactor::key_pressed(unsigned int key)
             m_near_mode = !m_near_mode ; 
             break;
         case GLFW_KEY_O:
-            m_optix_mode = !m_optix_mode ; 
-            LOG(info) << "Interactor::key_pressed optix_mode " << m_optix_mode ; 
+            //m_optix_mode = !m_optix_mode ; 
+            m_scene->nextRenderStyle();
+            LOG(info) << "Interactor::key_pressed O nextRenderStyle " ; 
             break;
         case GLFW_KEY_P:
             m_scene->nextPhotonStyle(); 
@@ -416,7 +420,7 @@ void Interactor::number_key_released(unsigned int number)
 
 void Interactor::updateStatus()
 {
-    snprintf(m_status, STATUS_SIZE , "%s (%u) %s%s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
+    snprintf(m_status, STATUS_SIZE , "%s (%u) %s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
            m_bookmarks->getTitle(),
            m_bookmarks->getCurrent(),
            m_zoom_mode ? "z" : "-",
@@ -426,7 +430,7 @@ void Interactor::updateStatus()
            m_yfov_mode ? "y" : "-",
            m_scale_mode ? "s" : "-",
            m_rotate_mode ? "r" : "-",
-           m_optix_mode ? "o" : "-",
+           //m_optix_mode ? "o" : "-",
            m_gui_mode ? "g" : "-",
            m_dragfactor,
            m_container,

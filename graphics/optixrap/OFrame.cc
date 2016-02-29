@@ -24,10 +24,10 @@ void OFrame::init(unsigned int width, unsigned int height)
     // generates the m_pbo and m_depth identifiers and buffers
     m_output_buffer = createOutputBuffer_PBO(m_pbo, RT_FORMAT_UNSIGNED_BYTE4, width, height) ;
 
-    if(m_zbuf)
-    {
-        m_zoutput_buffer = createOutputBuffer_PBO(m_zpbo, RT_FORMAT_FLOAT, width, height, true ) ;
-    } 
+    //if(m_zbuf)
+    //{
+    //    m_zoutput_buffer = createOutputBuffer_PBO(m_zpbo, RT_FORMAT_FLOAT, width, height, true ) ;
+    //} 
 
 
     m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
@@ -86,23 +86,6 @@ optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, 
   
     return buffer;
 }
-
-
-/*
-void OFrame::associate_PBO_to_Texture(unsigned int texId)
-{
-    printf("OFrame::associate_PBO_to_Texture texId %u \n", texId);
-
-    assert(0); // checking if this is used
-
-    assert(m_pbo > 0);
-    glBindBuffer( GL_PIXEL_UNPACK_BUFFER, m_pbo);
-    glBindTexture( GL_TEXTURE_2D, texId );
-
-    // this kills the teapot
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_BGRA, GL_UNSIGNED_BYTE, NULL );
-}
-*/
 
 
 

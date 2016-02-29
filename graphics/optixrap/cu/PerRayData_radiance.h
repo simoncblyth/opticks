@@ -4,7 +4,7 @@
 
 struct PerRayData_radiance
 {
-    float3 result;
+    float4 result;
     unsigned int flag ;
 };
 

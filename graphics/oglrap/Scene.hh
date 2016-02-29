@@ -99,6 +99,13 @@ class Scene : public NConfigurable {
         void nextGlobalStyle();  // key Q (quiet)
         void applyGlobalStyle();
    public:
+        typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
+        void nextRenderStyle();  // key O (formerly optix render mode toggle)
+        void applyRenderStyle();
+        bool isProjectiveRender();
+        bool isRaytracedRender();
+        bool isCompositeRender();
+   public:
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
         void nextInstanceStyle();
         void applyInstanceStyle();
@@ -226,6 +233,7 @@ class Scene : public NConfigurable {
         GlobalStyle_t   m_global_style ; 
         unsigned int    m_num_global_style ; 
         InstanceStyle_t m_instance_style ; 
+        RenderStyle_t   m_render_style ; 
         bool            m_initialized ;  
         float           m_time_fraction ;  
 
@@ -273,6 +281,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_global_style(GVIS),
             m_num_global_style(0),
             m_instance_style(IVIS),
+            m_render_style(R_PROJECTIVE),
             m_initialized(false),
             m_time_fraction(0.f)
 {
@@ -493,6 +502,37 @@ inline void Scene::applyGlobalStyle()
 }
 
 
+
+
+
+
+
+inline void Scene::nextRenderStyle()  // O:key
+{
+    int next = (m_render_style + 1) % NUM_RENDER_STYLE ; 
+    m_render_style = (RenderStyle_t)next ; 
+    applyRenderStyle();
+}
+
+inline void Scene::applyRenderStyle()   
+{
+    // nothing to do, style is honoured by  Scene::render
+}
+inline bool Scene::isProjectiveRender()
+{
+   return m_render_style == R_PROJECTIVE ;
+}
+inline bool Scene::isRaytracedRender()
+{
+   return m_render_style == R_RAYTRACED ;
+}
+inline bool Scene::isCompositeRender()
+{
+   return m_render_style == R_COMPOSITE ;
+}
+
+
+ 
 
 
 inline void Scene::nextInstanceStyle()
