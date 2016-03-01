@@ -708,7 +708,6 @@ void App::prepareOptiXViz()
 
     optix::Context context = m_ocontext->getContext();
 
-
     m_oframe = new OFrame(context, width, height);
 
     context["output_buffer"]->set( m_oframe->getOutputBuffer() );
@@ -1083,30 +1082,9 @@ void App::prepareGUI()
 
 }
 
-void App::render()
+
+void App::renderGUI()
 {
-    if(m_opticks->isCompute()) return ; 
-
-    m_frame->viewport();
-    m_frame->clear();
-
-
-#ifdef OPTIX
-    if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
-    {
-        if(m_otracer && m_orenderer)
-        {
-            unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
-            m_otracer->setResolutionScale(scale) ;
-            m_otracer->trace();
-            m_oframe->push_PBO_to_Texture();           
-        }
-    }
-#endif
-    m_scene->render();
-
-
-
 #ifdef GUI_
     m_gui->newframe();
     bool* show_gui_window = m_interactor->getGUIModeAddress();
@@ -1117,10 +1095,6 @@ void App::render()
         {
             if(m_boundaries)
             {
-                //glm::ivec4 sel = m_bnd->getSelection() ;
-                //m_composition->setSelection(sel); 
-                //m_composition->getPick().y = sel.x ;   //  1st boundary 
-
                 m_composition->getPick().y = m_boundaries->getSelected() ;   //  1st boundary 
             }
             glm::ivec4& recsel = m_composition->getRecSelect();
@@ -1138,7 +1112,38 @@ void App::render()
 
     m_gui->render();
 #endif
+}
 
+
+
+
+void App::render()
+{
+    if(m_opticks->isCompute()) return ; 
+
+    m_frame->viewport();
+    m_frame->clear();
+
+#ifdef OPTIX
+    if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
+    {
+        if(m_otracer && m_orenderer)
+        {
+            if(m_composition->hasChangedGeometry())
+            {
+                unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
+                m_otracer->setResolutionScale(scale) ;
+                m_otracer->trace();
+                m_oframe->push_PBO_to_Texture();           
+            }
+            else
+            {
+                // dont bother tracing when no change in geometry
+            }
+        }
+    }
+#endif
+    m_scene->render();
 }
 
 
@@ -1172,6 +1177,8 @@ void App::renderLoop()
         if( m_composition->hasChanged() || m_interactor->hasChanged() || count == 1)  
         {
             render();
+            renderGUI();
+
             glfwSwapBuffers(m_window);
 
             m_interactor->setChanged(false);  

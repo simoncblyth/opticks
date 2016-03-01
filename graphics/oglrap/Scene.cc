@@ -648,6 +648,34 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr)
 }
 
 
+
+
+void Scene::renderGeometry()
+{
+    if(m_global_mode)    m_global_renderer->render();
+    if(m_globalvec_mode) m_globalvec_renderer->render();
+
+    for(unsigned int i=0; i<m_num_instance_renderer; i++)
+    {
+        if(m_instance_mode[i]) m_instance_renderer[i]->render();
+        if(m_bbox_mode[i])     m_bbox_renderer[i]->render();
+    }
+    if(m_axis_mode)     m_axis_renderer->render();
+}
+
+
+void Scene::renderEvent()
+{
+    if(m_genstep_mode)  m_genstep_renderer->render();  
+    if(m_photon_mode)   m_photon_renderer->render();
+    if(m_record_mode)
+    {
+        Rdr* rdr = getRecordRenderer();
+        assert(rdr);
+        rdr->render();
+    }
+}
+
 void Scene::render()
 {
     bool raytraced = isRaytracedRender() ;
@@ -659,27 +687,9 @@ void Scene::render()
         if(raytraced) return ; 
     }
 
-
-    if(m_global_mode)    m_global_renderer->render();
-    if(m_globalvec_mode) m_globalvec_renderer->render();
-
-    for(unsigned int i=0; i<m_num_instance_renderer; i++)
-    {
-        if(m_instance_mode[i]) m_instance_renderer[i]->render();
-        if(m_bbox_mode[i])     m_bbox_renderer[i]->render();
-    }
-
-    if(m_axis_mode)     m_axis_renderer->render();
-    if(m_genstep_mode)  m_genstep_renderer->render();  
-    if(m_photon_mode)   m_photon_renderer->render();
-    if(m_record_mode)
-    {
-        Rdr* rdr = getRecordRenderer();
-        assert(rdr);
-        rdr->render();
-    }
+    renderGeometry();
+    renderEvent();
 }
-
 
 
 unsigned int Scene::touch(int ix, int iy, float depth)

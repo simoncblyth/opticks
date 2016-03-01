@@ -370,10 +370,13 @@ void Renderer::update_uniforms()
         glm::ivec4 np = m_composition->getNrmParam(); 
         glUniform4i(m_nrmparam_location, np.x, np.y, np.z, np.w);
 
+        
+/*
         LOG(info) << "Renderer::update_uniforms"
                   << " NrmParam " << gformat(np)
                   << " ScanParam " << gformat(sp)
                    ;
+*/
 
         glUniform4fv(m_lightposition_location, 1, m_composition->getLightPositionPtr());
 

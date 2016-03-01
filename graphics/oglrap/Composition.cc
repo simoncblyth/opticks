@@ -967,7 +967,10 @@ glm::vec3 Composition::unProject(unsigned int x, unsigned int y, float z)
 
 
 
-
+bool Composition::hasChangedGeometry()
+{
+    return m_rotator->isActive() || m_view->hasChanged() || m_camera->hasChanged() || m_trackball->hasChanged() ;
+}
 
 bool Composition::hasChanged()
 {

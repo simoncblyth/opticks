@@ -281,6 +281,7 @@ class Composition : public NConfigurable {
 
    public:
       bool hasChanged(); // based on View, Camera, Trackball
+      bool hasChangedGeometry(); // excludes event animation
       void setChanged(bool changed);
 
    public:

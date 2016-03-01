@@ -121,6 +121,7 @@ class App {
   public:
        void prepareGUI();
        void renderLoop();
+       void renderGUI();
        void render();
        void cleanup();
 

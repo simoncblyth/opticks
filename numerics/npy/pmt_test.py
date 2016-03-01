@@ -676,13 +676,28 @@ Goes belly up beyond 97mm::
 
           Reordered to put discrepants together,
           looks like edge geometry difference between Opticks analytic and CfG4 
-          is culprit. 
+          is culprit.
+
+          3598 G4 skimmers do a double internal reflect in Pyrex 
+          that puts them on path to transmit out and miss the 
+          rest of the PMT  "TO BT BR BR BT SA"  
+
+          Opticks analytic somehow manages to transmit after the 1st reflect 
+          leading to a path "TO BT BR BT BT BT BT SA" with many varying BT
+          May be material bug... need to get material codes going in CFG4.
+ 
 
               8cbbcd            0         3598          3598.00  [6 ] TO BT BR BR BT SA
-           8cccccbcd         1885            0          1885.00  [9 ] TO BT BR BT BT BT BT BT SA
+
             8ccccbcd          762            0           762.00  [8 ] TO BT BR BT BT BT BT SA
+           8cccccbcd         1885            0          1885.00  [9 ] TO BT BR BT BT BT BT BT SA
           8ccccccbcd          746            0           746.00  [10] TO BT BR BT BT BT BT BT BT SA
+               1885+762+746=3393
+
             8ccc6ccd          386            2           380.04  [8 ] TO BT BT SC BT BT BT SA
+          8ccccc6ccd          159            1           156.03  [10] TO BT BT SC BT BT BT BT BT SA
+          cccccc6ccd          191          259            10.28  [10] TO BT BT SC BT BT BT BT BT BT
+               1885+762+746+386=3779
 
             8cbc6ccd           26          307           237.12  [8 ] TO BT BT SC BT BR BT SA
               8c6ccd           20          296           241.06  [6 ] TO BT BT SC BT SA
@@ -690,11 +705,9 @@ Goes belly up beyond 97mm::
                 8c6d          509          440             5.02  [4 ] TO SC BT SA
                46ccd          275          310             2.09  [5 ] TO BT BT SC AB
                 86bd          287          271             0.46  [4 ] TO BR SC SA
-          cccccc6ccd          191          259            10.28  [10] TO BT BT SC BT BT BT BT BT BT
                  46d          223          224             0.00  [3 ] TO SC AB
               4cbbcd            0          211           211.00  [6 ] TO BT BR BR BT AB
                 7c6d          140          160             1.33  [4 ] TO SC BT SD
-          8ccccc6ccd          159            1           156.03  [10] TO BT BT SC BT BT BT BT BT SA
              8cc6ccd           77           77             0.00  [7 ] TO BT BT SC BT BT SA
              ....
                           500000       500000       217.45 

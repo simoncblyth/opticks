@@ -164,6 +164,8 @@ class Scene : public NConfigurable {
         void uploadRecordAttr(MultiViewNPY* attr);
    public:
         void render();
+        void renderGeometry();
+        void renderEvent();
 
 
    public:
