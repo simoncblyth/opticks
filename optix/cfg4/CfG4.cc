@@ -86,7 +86,10 @@ void CfG4::configure(int argc, char** argv)
 
     unsigned int photons_per_g4event = m_torch->getNumPhotonsPerG4Event();
 
-    m_recorder = new Recorder(m_evt , photons_per_g4event); 
+
+    
+    int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
+    m_recorder = new Recorder(m_evt , photons_per_g4event, stepping_verbosity > 0 ); 
 
     if(m_cfg->hasOpt("primary"))
     {
@@ -106,7 +109,6 @@ void CfG4::configure(int argc, char** argv)
 
     PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(generator) ;
 
-    int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
     SteppingAction* sa = new SteppingAction(m_recorder, stepping_verbosity);
 
     m_runManager->SetUserInitialization(new ActionInitialization(pga, sa)) ;

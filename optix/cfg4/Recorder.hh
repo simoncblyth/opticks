@@ -35,7 +35,7 @@ class Recorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        Recorder(NumpyEvt* evt, unsigned int photons_per_g4event);
+        Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool debug=false);
    public:
         void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
@@ -54,16 +54,20 @@ class Recorder {
    public:
         NumpyEvt* getEvt();
    public:
-        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, const char* label);
-        void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, const char* label);
+        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
+        void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
         void RecordQuadrant(const G4Step* step);
 
         void Clear();
-        void Collect(const G4StepPoint* point, unsigned int flag, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis);
+        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
         bool hasIssue();
    public:
+        bool isSelected(); 
+        bool isHistorySelected(); 
+        bool isMaterialSelected(); 
+
         void Dump(const char* msg="Recorder::Dump");
-        void Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status );
+        void Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname );
    public:
         void setEventId(unsigned int event_id);
         void setPhotonId(unsigned int photon_id);
@@ -84,14 +88,14 @@ class Recorder {
         void init();
    private:
         NumpyEvt*    m_evt ; 
-        CPropLib*    m_lib ; 
+        CPropLib*    m_clib ; 
 
         unsigned int m_gen ; 
         unsigned int m_record_max ; 
         unsigned int m_bounce_max ; 
         unsigned int m_steps_per_photon ; 
         unsigned int m_photons_per_g4event ; 
-
+        bool m_debug ; 
         unsigned int m_event_id ; 
         unsigned int m_photon_id ; 
         unsigned int m_step_id ; 
@@ -105,9 +109,10 @@ class Recorder {
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
 
-        unsigned long long m_seqhis_select ; 
         unsigned long long m_seqhis ; 
         unsigned long long m_seqmat ; 
+        unsigned long long m_seqhis_select ; 
+        unsigned long long m_seqmat_select ; 
         unsigned int       m_slot ; 
         bool               m_truncate ; 
         bool               m_step ; 
@@ -119,21 +124,24 @@ class Recorder {
 
         std::vector<const G4StepPoint*>         m_points ; 
         std::vector<unsigned int>               m_flags ; 
+        std::vector<unsigned int>               m_materials ; 
         std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
         std::vector<unsigned long long>         m_seqhis_dbg  ; 
+        std::vector<unsigned long long>         m_seqmat_dbg  ; 
 
 
 };
 
-inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event) 
+inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool debug) 
    :
    m_evt(evt),
-   m_lib(NULL),
+   m_clib(NULL),
    m_gen(0),
    m_record_max(0),
    m_bounce_max(0),
    m_steps_per_photon(0), 
    m_photons_per_g4event(photons_per_g4event),
+   m_debug(debug),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
    m_step_id(UINT_MAX),
@@ -145,8 +153,9 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
    m_seqhis(0),
-   m_seqhis_select(0),
    m_seqmat(0),
+   m_seqhis_select(0),
+   m_seqmat_select(0),
    m_slot(0),
    m_truncate(false),
    m_step(true),
@@ -161,9 +170,26 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event)
 }
 
 
-inline void Recorder::setPropLib(CPropLib* lib)
+inline bool Recorder::isHistorySelected()
 {
-    m_lib = lib  ; 
+   return m_seqhis_select == m_seqhis ; 
+}
+inline bool Recorder::isMaterialSelected()
+{
+   return m_seqmat_select == m_seqmat ; 
+}
+inline bool Recorder::isSelected()
+{
+   return isHistorySelected() || isMaterialSelected() ;
+}
+
+
+
+
+
+inline void Recorder::setPropLib(CPropLib* clib)
+{
+    m_clib = clib  ; 
 }
 
 

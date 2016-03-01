@@ -97,8 +97,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         {
             m_recorder->RecordPhoton(step);
 
-            if(m_verbosity > 1)
-            m_recorder->Dump("SteppingAction::UserSteppingAction DONE");
+            if(m_verbosity > 0)
+            {
+                if(m_recorder->isSelected())
+                { 
+                    m_recorder->Dump("SteppingAction::UserSteppingAction DONE");
+                }
+            }
 
             track->SetTrackStatus(fStopAndKill);
         } 

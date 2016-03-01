@@ -13,6 +13,7 @@ class NLog ;
 class NState ;
 class Parameters ; 
 class OpticksResource ; 
+class NPropNames ; 
 
 #include "OpticksPhoton.h"
 
@@ -65,6 +66,10 @@ class Opticks {
        static unsigned int SourceCode(const char* type);
        static const char* Flag(const unsigned int flag);
        static std::string FlagSequence(const unsigned long long seqhis);
+   public:
+       static NPropNames* G_MATERIAL_NAMES ;
+       static const char* Material(const unsigned int mat);
+       static std::string MaterialSequence(const unsigned long long seqmat);
    public:
        // wavelength domain
        static unsigned int DOMAIN_LENGTH ; 

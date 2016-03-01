@@ -12,6 +12,10 @@
 #include "GLMFormat.hpp"
 #include "NLog.hpp"
 #include "NState.hpp"
+#include "NPropNames.hpp"
+
+
+NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
 const char* Opticks::COMPUTE = "--compute" ; 
 
@@ -420,6 +424,8 @@ const char* Opticks::Flag(const unsigned int flag)
 }
 
 
+ 
+
 std::string Opticks::FlagSequence(const unsigned long long seqhis)
 {
     std::stringstream ss ;
@@ -429,6 +435,26 @@ std::string Opticks::FlagSequence(const unsigned long long seqhis)
         unsigned long long f = (seqhis >> i*4) & 0xF ; 
         unsigned int flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
         ss << Flag(flg) << " " ;
+    }
+    return ss.str();
+}
+
+
+
+const char* Opticks::Material(const unsigned int mat)
+{
+    if(G_MATERIAL_NAMES == NULL) G_MATERIAL_NAMES = new NPropNames("GMaterialLib") ;
+    return G_MATERIAL_NAMES->getLine(mat) ;
+}
+
+std::string Opticks::MaterialSequence(const unsigned long long seqmat)
+{
+    std::stringstream ss ;
+    assert(sizeof(unsigned long long)*8 == 16*4);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {
+        unsigned long long m = (seqmat >> i*4) & 0xF ; 
+        ss << Opticks::Material(m) << " " ;
     }
     return ss.str();
 }

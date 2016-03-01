@@ -738,6 +738,14 @@ TODO: hookup G4DAE so can export and check the COLLADA
 * also visualization with my tools is much better than G4 
 
 
+Material Debug
+---------------
+
+Opticks reflection "TO BR SA" has material assignment "MO MO", 
+hmm would be useful to see the seqmat for a choice of seqhis.
+
+
+
 """
 import os, logging, numpy as np
 log = logging.getLogger(__name__)

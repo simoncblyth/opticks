@@ -80,6 +80,8 @@ add_library( ${name}  SHARED
     NTrianglesNPY.cpp
     NPlanck.cpp
     NCIE.cpp
+    NTxt.cpp
+    NPropNames.cpp
     NSpectral.cpp
     NState.cpp
     NConfigurable.cpp
@@ -146,6 +148,8 @@ NTriangle.hpp
 NTrianglesNPY.hpp
 NPlanck.hpp
 NCIE.hpp
+NTxt.hpp
+NPropNames.hpp
 NSpectral.hpp
 NState.hpp
 NConfigurable.hpp

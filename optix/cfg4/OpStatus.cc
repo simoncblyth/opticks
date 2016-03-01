@@ -157,13 +157,14 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
                                break;
         case Undefined:
         case Transmission:
-        case LambertianReflection:
-        case LobeReflection:
-        case SpikeReflection:
         case BackScattering:
         case NotAtBoundary:
         case SameMaterial:
         case NoRINDEX:
+
+        case LambertianReflection:
+        case LobeReflection:
+        case SpikeReflection:
         case PolishedLumirrorAirReflection:
         case PolishedLumirrorGlueReflection:
         case PolishedAirReflection:

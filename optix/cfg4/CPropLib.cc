@@ -281,6 +281,7 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
 
     m_ggtog4[kmat] = material ; 
     m_g4toix[material] = materialIndex ; 
+    m_ixtoname[materialIndex] = name ;  
 
     return material ;  
 }
@@ -289,6 +290,26 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
 unsigned int CPropLib::getMaterialIndex(const G4Material* material)
 {
     return m_g4toix[material] ;
+}
+
+const char* CPropLib::getMaterialName(unsigned int index)
+{
+    return m_ixtoname[index].c_str() ;
+}
+
+
+
+std::string CPropLib::MaterialSequence(unsigned long long seqmat)
+{
+    std::stringstream ss ;
+    assert(sizeof(unsigned long long)*8 == 16*4);
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {   
+        unsigned long long m = (seqmat >> i*4) & 0xF ; 
+        ss << ( m > 0 ? getMaterialName(m - 1) : "-" ) << " " ;
+        // using 1-based material indices, so 0 represents None
+    }   
+    return ss.str();
 }
 
 
@@ -303,9 +324,11 @@ void CPropLib::dumpMaterials(const char* msg)
         unsigned int idx = it->second ; 
 
         const G4String& name = mat->GetName();
+        const char* name_2 = getMaterialName(idx) ; 
 
         std::cout << std::setw(40) << name 
                   << std::setw(5) << idx 
+                  << std::setw(40) << name_2
                   << std::endl ; 
     }
 
@@ -318,7 +341,6 @@ void CPropLib::dumpMaterials(const char* msg)
 
         const G4String& name = g4mat->GetName();
         const char* ggname = ggmat->getShortName();
-
 
         std::cout << std::setw(40) << name 
                   << std::setw(40) << ggname 

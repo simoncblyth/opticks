@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 #include <map>
 
 // ggeo-
@@ -36,7 +37,10 @@ class CPropLib {
        const G4Material* makeInnerMaterial(const char* spec);
        const G4Material* makeMaterial(const char* matname);
        GCSG*       getPmtCSG(NSlice* slice);
+   public:
        unsigned int getMaterialIndex(const G4Material* material);
+       const char*  getMaterialName(unsigned int index);
+       std::string MaterialSequence(unsigned long long seqmat);
    public:
        void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
    public:
@@ -61,6 +65,7 @@ class CPropLib {
 
        std::map<const GMaterial*, const G4Material*>   m_ggtog4 ; 
        std::map<const G4Material*, unsigned int> m_g4toix ; 
+       std::map<unsigned int, std::string> m_ixtoname ; 
 
 };
 
