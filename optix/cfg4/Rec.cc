@@ -9,6 +9,7 @@
 #include "OpticksPhoton.h"
 
 // npy-
+#include "NumpyEvt.hpp"
 #include "NLog.hpp"
 
 // g4-
@@ -17,8 +18,17 @@
 
 void Rec::init()
 {
-    m_genflag = TORCH ; 
+    m_record_max = m_evt->getNumPhotons(); 
+    m_bounce_max = m_evt->getBounceMax();
+    m_steps_per_photon = m_evt->getMaxRec() ;    
+
+    const char* typ = m_evt->getTyp();
+    assert(strcmp(typ,Opticks::torch_) == 0);
+    m_genflag = Opticks::SourceCode(typ);
+
+    assert( m_genflag == TORCH );
 }
+
 
 void Rec::add(const State* state)
 {
@@ -28,6 +38,9 @@ void Rec::add(const State* state)
 void Rec::Clear()
 {
     m_states.clear();
+    m_seqhis = 0ull ; 
+    m_seqmat = 0ull ; 
+    m_slot = 0  ; 
 }
 
 unsigned int Rec::getNumStates()
@@ -44,11 +57,11 @@ const State* Rec::getState(unsigned int i)
 G4OpBoundaryProcessStatus Rec::getBoundaryStatus(unsigned int i)
 {
     const State* state = getState(i) ;
-    return state->getBoundaryStatus();
+    return state ? state->getBoundaryStatus() : Undefined ;
 }
 
 
-unsigned int Rec::getFlag(unsigned int i, Flag_t type )
+Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsigned int i, Flag_t type )
 {
     // recast of Recorder::RecordStep flag assignment 
     // in after-recording-all-states way instead of live stepping
@@ -60,45 +73,107 @@ unsigned int Rec::getFlag(unsigned int i, Flag_t type )
     const G4StepPoint* pre = state->getPreStepPoint();
     const G4StepPoint* post = state->getPostStepPoint();
 
+    unsigned int preMat  = state->getPreMaterial();
+    unsigned int postMat = state->getPostMaterial();
+
     G4OpBoundaryProcessStatus boundary_status = state->getBoundaryStatus() ;
     G4OpBoundaryProcessStatus prior_boundary_status = prior ? prior->getBoundaryStatus() : Undefined ;
 
     unsigned int preFlag   = i == 0 ? m_genflag : OpPointFlag(pre,  prior_boundary_status) ; 
     unsigned int postFlag  = OpPointFlag(post, boundary_status) ;
-   
-    unsigned int flag ; 
+
+    bool preSkip = type == PRE && prior_boundary_status == StepTooSmall ; 
+    bool matSwap = boundary_status == StepTooSmall ;   // adhoc attempt  
+
+    if(preSkip) return SKIP_STS ; 
+
     switch(type)
     {
-       case  PRE: flag = preFlag ; break;
-       case POST: flag = postFlag ; break;
+       case  PRE: 
+                  flag = preFlag ; 
+                  material = matSwap ? postMat : preMat ;  
+                  break;
+       case POST: 
+                  flag = postFlag ; 
+                  material = matSwap ? preMat : postMat ;  
+                  break;
     }
-    return flag ; 
+
+    return OK ; 
+}
+
+void Rec::addFlagMaterial(unsigned int flag, unsigned int material)
+{
+    bool invalid = flag == NAN_ABORT ; 
+    bool truncate = m_slot > m_bounce_max  ;  
+
+    if(invalid || truncate) return ; 
+
+    unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
+    unsigned long long shift = slot*4ull ;   
+    unsigned long long msk = 0xFull << shift ; 
+    unsigned long long his = ffs(flag) & 0xFull ; 
+    unsigned long long mat = material < 0xFull ? material : 0xFull ; 
+
+    m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ;
+    m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
+
+    m_slot += 1 ; 
+}
+
+void Rec::sequence()
+{
+    unsigned int nstep = getNumStates();
+    unsigned int flag ;
+    unsigned int material ;
+    m_slot = 0 ;
+    Rec_t rc ; 
+    for(unsigned int i=0 ; i < nstep ; i++)
+    {
+        rc = getFlagMaterial(flag, material, i, PRE );
+        if(rc == OK)
+            addFlagMaterial(flag, material) ;
+    }
+    rc = getFlagMaterial(flag, material, nstep-1, POST );
+    if(rc == OK)
+        addFlagMaterial(flag, material) ;
 }
 
 
 
 void Rec::Dump(const char* msg)
 {
-
     unsigned int nstates = m_states.size();
     LOG(info) << msg 
               << " nstates " << nstates 
               ;
 
+    unsigned int preFlag ; 
+    unsigned int preMat ; 
+    unsigned int postFlag ;
+    unsigned int postMat ;
+
     for(unsigned int i=0 ; i < nstates ; i++)
     {
-        const State* state = m_states[i] ;
+        const State* state = getState(i) ;
+        const State* prior = i > 0 ? getState(i-1) : NULL ; 
 
-        const G4Step* step = state->m_step ;
-        const G4StepPoint* pre  = step->GetPreStepPoint() ; 
-        const G4StepPoint* post = step->GetPostStepPoint() ; 
+        const G4StepPoint* pre  = state->getPreStepPoint() ; 
+        const G4StepPoint* post = state->getPostStepPoint() ; 
 
-        unsigned int preFlag = getPreFlag(i);
-        unsigned int postFlag = getPostFlag(i);
+        getFlagMaterial(preFlag,  preMat, i, PRE );
+        getFlagMaterial(postFlag, postMat, i, POST );
 
-        const char* preMaterial  = state->m_premat == 0 ? "-" : m_clib->getMaterialName(state->m_premat - 1) ;
-        const char* postMaterial = state->m_postmat == 0 ? "-" : m_clib->getMaterialName(state->m_postmat - 1) ;
-    
+        unsigned int preMatRaw = state->getPreMaterial();
+        unsigned int postMatRaw = state->getPostMaterial();
+
+        const char* preMaterialRaw  = preMatRaw == 0 ? "-" : m_clib->getMaterialName(preMatRaw - 1) ;
+        const char* postMaterialRaw = postMatRaw == 0 ? "-" : m_clib->getMaterialName(postMatRaw - 1) ;
+   
+        
+        G4OpBoundaryProcessStatus boundary_status = getBoundaryStatus(i) ;
+        G4OpBoundaryProcessStatus prior_boundary_status = i > 0 ? getBoundaryStatus(i-1) : Undefined ;
+ 
         std::cout << "[" << std::setw(3) << i
                   << "/" << std::setw(3) << nstates
                   << "]"   
@@ -107,22 +182,27 @@ void Rec::Dump(const char* msg)
                   << std::endl
                   << ::Format("flag", Opticks::Flag(preFlag), Opticks::Flag(postFlag) )
                   << std::endl
-                  << " bs " 
-                  << OpBoundaryAbbrevString(state->m_boundary_status)
+                  << ::Format("bs pri/cur", OpBoundaryAbbrevString(prior_boundary_status),OpBoundaryAbbrevString(boundary_status))
                   << std::endl
-                  << " " << std::setw(15) << preMaterial
-                  << "/" << std::setw(15) << postMaterial
+                  << ::Format("material",  preMaterialRaw, postMaterialRaw )
                   << std::endl 
-                  << ::Format(state->m_step, "rec state" )
+                  << ::Format(state->getStep(), "rec state" )
                   << std::endl ; 
 
     }
 
+    std::cout << "(rec)FlagSequence "
+              << Opticks::FlagSequence(m_seqhis) 
+              << std::endl ;
+
+    std::cout << "(rec)MaterialSequence "
+              << m_clib->MaterialSequence(m_seqmat) 
+              << std::endl ;
+
+ 
+
+
 }
-
-
-
-
 
 
 

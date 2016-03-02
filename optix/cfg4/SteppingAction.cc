@@ -21,6 +21,8 @@
 #include "Format.hh"
 #include "CPropLib.hh"
 
+#include "Opticks.hh"
+
 #include "NLog.hpp"
 
 
@@ -114,16 +116,42 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
         if(done)
         {
+            m_rec->sequence();
+
+            unsigned long long rec_seqhis = m_rec->getSeqHis() ;
+            unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;
+            bool same_seqhis = rec_seqhis == rdr_seqhis ; 
+
+            unsigned long long rec_seqmat = m_rec->getSeqMat() ;
+            unsigned long long rdr_seqmat = m_recorder->getSeqMat() ;
+            bool same_seqmat = rec_seqmat == rdr_seqmat ; 
+
+            assert(same_seqhis);
+            assert(same_seqmat);
+
             m_recorder->RecordPhoton(step);
 
             if(m_verbosity > 0)
             {
-                if(m_recorder->isSelected())
-                { 
+                if(!same_seqmat || !same_seqhis || m_recorder->isSelected())
+                {
+                    std::cout << std::endl << std::endl << "----SteppingAction----" << std::endl  ; 
                     m_recorder->Dump("SteppingAction::UserSteppingAction DONE");
-
                     m_rec->Dump("SteppingAction::UserSteppingAction (Rec)DONE");
                 }
+
+                if(!same_seqhis)
+                { 
+                     std::cout << "(rec)" << Opticks::FlagSequence(rec_seqhis) << std::endl ;  
+                     std::cout << "(rdr)" << Opticks::FlagSequence(rdr_seqhis) << std::endl ;  
+                }
+                if(!same_seqmat)
+                { 
+                     std::cout << "(rec)" << m_clib->MaterialSequence(rec_seqmat) << std::endl ;  
+                     std::cout << "(rdr)" << m_clib->MaterialSequence(rdr_seqmat) << std::endl ;  
+                }
+
+
             }
 
             track->SetTrackStatus(fStopAndKill);

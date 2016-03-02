@@ -80,6 +80,9 @@ class Recorder {
         unsigned int defineRecordId();
         unsigned int getRecordId();
         unsigned int getRecordMax();
+
+        unsigned long long getSeqHis();
+        unsigned long long getSeqMat();
    public:
         //unsigned int getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
@@ -91,9 +94,11 @@ class Recorder {
         CPropLib*    m_clib ; 
 
         unsigned int m_gen ; 
+
         unsigned int m_record_max ; 
         unsigned int m_bounce_max ; 
         unsigned int m_steps_per_photon ; 
+
         unsigned int m_photons_per_g4event ; 
         bool m_debug ; 
         unsigned int m_event_id ; 
@@ -144,9 +149,11 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool 
    m_evt(evt),
    m_clib(NULL),
    m_gen(0),
+
    m_record_max(0),
    m_bounce_max(0),
    m_steps_per_photon(0), 
+
    m_photons_per_g4event(photons_per_g4event),
    m_debug(debug),
    m_event_id(UINT_MAX),
@@ -196,6 +203,16 @@ inline bool Recorder::isSelected()
 {
    return isHistorySelected() || isMaterialSelected() ;
 }
+
+inline unsigned long long Recorder::getSeqHis()
+{
+    return m_seqhis ; 
+}
+inline unsigned long long Recorder::getSeqMat()
+{
+    return m_seqmat ; 
+}
+
 
 
 

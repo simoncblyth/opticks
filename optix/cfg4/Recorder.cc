@@ -242,8 +242,13 @@ void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsi
                  .   . 
 
 
-               
+       At each step the former *post* becomes the *pre*.
+       So just taking the *pre* will get all points, if special case the 
+       last step to get *post* too (as no next step).
 
+       At a boundary (eg for BT or BR) the *pre* and *post* are exactly 
+       the same except the volume/material assigned. So need to skip to 
+       avoid repeating a point.
 
 
      Op:
@@ -259,26 +264,11 @@ bool Recorder::RecordStep(const G4Step* step)
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
-    const G4Material* preMat  = pre->GetMaterial() ;
-    const G4Material* postMat = post->GetMaterial() ;
-
-    /*
-    if(m_debug)
-    {
-       LOG(info) << "Recorder::RecordStep " 
-                 << " step_id " << m_step_id
-                 << " pre " << std::setw(20) << OpStepString(pre->GetStepStatus()) 
-                 << " post " << std::setw(20) << OpStepString(post->GetStepStatus()) 
-                 << " preMat " << std::setw(4) << preMat << std::setw(20)  << ( preMat == 0 ? "-" : m_clib->getMaterialName(preMat-1)  )
-                 << " postMat " << std::setw(4) << postMat << std::setw(20) << ( postMat == 0 ? "-" : m_clib->getMaterialName(postMat-1)  )
-                 << " preM " <<  ( preM ?  preM->GetName() : "nul" )
-                 << " postM " << ( postM ? postM->GetName() : "nul" )
-                 ;
-    }
-    */
-
     unsigned int preFlag ; 
     unsigned int postFlag ; 
+    unsigned int preMat ; 
+    unsigned int postMat ; 
+
 
     // shift flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
@@ -294,33 +284,35 @@ bool Recorder::RecordStep(const G4Step* step)
         postFlag = OpPointFlag(post, m_boundary_status) ;
     }
 
-    bool absorb   = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     bool preSkip = m_prior_boundary_status == StepTooSmall ;  
 
-    bool done = false ; 
+    bool matSwap = m_boundary_status == StepTooSmall ; 
 
+
+    preMat  = matSwap ? m_postmat : m_premat ;
+    postMat = matSwap ? m_premat  : m_postmat ;
+
+
+    bool done = false ; 
 
     // skip the pre, but the post becomes the pre at next step where will be taken 
     // 1-based material indices, so zero can represent None
     if(!preSkip)
     {
-       done = RecordStepPoint( pre, preFlag, m_prior_premat, m_prior_boundary_status, PRE ); 
+       done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE ); 
     }
 
-    if(absorb && !done)
+    if(lastPost && !done)
     {
-       done = RecordStepPoint( post, postFlag, m_postmat, m_boundary_status, POST ); 
+       done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
     }
 
     // when not *absorb* the post step will become the pre step at next RecordStep
 
     return done ;
 }
-
-
-
-
 
 
 bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
