@@ -6,6 +6,7 @@
 
 #include "ActionInitialization.hh"
 #include "Recorder.hh"
+#include "Rec.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "SteppingAction.hh"
 #include "OpSource.hh"
@@ -85,8 +86,6 @@ void CfG4::configure(int argc, char** argv)
     m_num_photons = m_evt->getNumPhotons();
 
     unsigned int photons_per_g4event = m_torch->getNumPhotonsPerG4Event();
-
-
     
     int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
     m_recorder = new Recorder(m_evt , photons_per_g4event, stepping_verbosity > 0 ); 
@@ -109,15 +108,19 @@ void CfG4::configure(int argc, char** argv)
 
     PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(generator) ;
 
-    SteppingAction* sa = new SteppingAction(m_recorder, stepping_verbosity);
+    CPropLib* clib = m_detector->getPropLib() ;
+
+    m_rec = new Rec(clib) ; 
+
+    SteppingAction* sa = new SteppingAction(clib, m_recorder, m_rec, stepping_verbosity);
 
     m_runManager->SetUserInitialization(new ActionInitialization(pga, sa)) ;
     m_runManager->Initialize();
 
+    m_recorder->setPropLib(clib);
+
     // compression domains set after runManager::Initialize, 
     // as extent only known after detector construction
-
-    m_recorder->setPropLib(m_detector->getPropLib());
 
     m_opticks->setSpaceDomain(m_detector->getCenterExtent());
 

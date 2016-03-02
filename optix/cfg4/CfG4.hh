@@ -11,6 +11,7 @@ class TorchStepNPY ;
 class NumpyEvt ; 
 class Detector ; 
 class Recorder ; 
+class Rec ; 
 
 class G4RunManager ; 
 class G4VisManager ; 
@@ -39,6 +40,7 @@ class CfG4
    private:
         Detector*             m_detector ; 
         Recorder*             m_recorder ; 
+        Rec*                  m_rec ; 
         G4RunManager*         m_runManager ;
    private:
         bool                  m_g4ui ; 
@@ -61,6 +63,7 @@ inline CfG4::CfG4(int argc, char** argv)
      m_evt(NULL),
      m_detector(NULL),
      m_recorder(NULL),
+     m_rec(NULL),
      m_runManager(NULL),
      m_g4ui(false),
      m_visManager(NULL),

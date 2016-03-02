@@ -81,8 +81,8 @@ class Recorder {
         unsigned int getRecordId();
         unsigned int getRecordMax();
    public:
-        unsigned int getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
-        void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
+        //unsigned int getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
+        void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         G4OpBoundaryProcessStatus getBoundaryStatus();
    private:
         void init();
@@ -108,6 +108,13 @@ class Recorder {
 
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
+
+        unsigned int m_premat ; 
+        unsigned int m_prior_premat ; 
+
+        unsigned int m_postmat ; 
+        unsigned int m_prior_postmat ; 
+
 
         unsigned long long m_seqhis ; 
         unsigned long long m_seqmat ; 
@@ -152,6 +159,13 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool 
 
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
+
+   m_premat(0),
+   m_prior_premat(0),
+
+   m_postmat(0),
+   m_prior_postmat(0),
+
    m_seqhis(0),
    m_seqmat(0),
    m_seqhis_select(0),

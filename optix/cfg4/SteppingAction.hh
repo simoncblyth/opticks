@@ -4,12 +4,14 @@
 #include "G4OpBoundaryProcess.hh"
 #include "globals.hh"
 
+class CPropLib ; 
 class Recorder ; 
+class Rec ; 
 
 class SteppingAction : public G4UserSteppingAction
 {
   public:
-    SteppingAction(Recorder* recorder, int verbosity=0);
+    SteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity=0);
     virtual ~SteppingAction();
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
@@ -19,14 +21,18 @@ class SteppingAction : public G4UserSteppingAction
     void init();
 
   private:
+    CPropLib*    m_clib ; 
     Recorder*    m_recorder   ; 
+    Rec*         m_rec   ; 
     int          m_verbosity ; 
 };
 
-inline SteppingAction::SteppingAction(Recorder* recorder, int verbosity)
+inline SteppingAction::SteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity)
    : 
    G4UserSteppingAction(),
+   m_clib(clib),
    m_recorder(recorder),
+   m_rec(rec),
    m_verbosity(verbosity)
 { 
    init();

@@ -60,6 +60,8 @@ add_library(${name} SHARED
 CfG4.cc
 Format.cc
 Recorder.cc
+Rec.cc
+State.cc
 OpSource.cc
 OpStatus.cc
 PhysicsList.cc
@@ -76,6 +78,8 @@ SET(hdrs
 CfG4.hh
 Format.hh
 Recorder.hh
+Rec.hh
+State.hh
 OpSource.hh
 OpStatus.hh
 PhysicsList.hh

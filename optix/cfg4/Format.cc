@@ -26,6 +26,28 @@ std::string Format(const G4ThreeVector& vec, const char* msg, unsigned int fwid)
     return ss.str();
 }
 
+
+
+
+std::string Format(const char* label, std::string pre, std::string post, unsigned int w)
+{
+    std::stringstream ss ; 
+
+    ss 
+       << " " 
+       << std::setw(w) << label 
+       << " ["
+       << std::setw(w) << pre
+       << "/" 
+       << std::setw(w) << post
+       << "]" 
+       ;
+
+    return ss.str();
+}
+
+
+
 std::string Format(const G4Track* track, const char* msg)
 {
     G4int tid = track->GetTrackID();
@@ -55,6 +77,9 @@ std::string Format(const G4StepPoint* point, const char* msg)
     const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
 
+    const G4Material* mat = point->GetMaterial() ;
+    const char* matName = mat ? mat->GetName() : "noMaterial" ; 
+
     G4VPhysicalVolume* pv  = point->GetPhysicalVolume();
     G4String pvName = pv ? pv->GetName() : "" ;   
 
@@ -68,8 +93,9 @@ std::string Format(const G4StepPoint* point, const char* msg)
     G4StepStatus status = point->GetStepStatus()  ;
 
     std::stringstream ss ; 
-    ss << msg  
+    ss << std::setw(4) << msg  
        << std::setw(15) << pvName 
+       << std::setw(15) << matName 
        << std::setw(15) << processName 
        << std::setw(20) << OpStepString(status)
        << Format(pos, "pos", 8)

@@ -4,6 +4,9 @@
 #include <sstream>
 #include "NLog.hpp"
 
+#include "G4StepPoint.hh"
+
+
 std::string OpStepString(const G4StepStatus status)
 {
     std::stringstream ss ;
@@ -193,6 +196,38 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
                       flag=0;
                       break;
     }
+    return flag ; 
+}
+
+
+unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst)
+{
+    G4StepStatus status = point->GetStepStatus()  ;
+    // TODO: cache the relevant process objects, so can just compare pointers ?
+    const G4VProcess* process = point->GetProcessDefinedStep() ;
+    const G4String& processName = process ? process->GetProcessName() : "NoProc" ; 
+
+    bool transportation = strcmp(processName,"Transportation") == 0 ;
+    bool scatter = strcmp(processName, "OpRayleigh") == 0 ; 
+    bool absorption = strcmp(processName, "OpAbsorption") == 0 ;
+
+    unsigned int flag(0);
+    if(absorption && status == fPostStepDoItProc )
+    {
+        flag = BULK_ABSORB ;
+    }
+    else if(scatter && status == fPostStepDoItProc )
+    {
+        flag = BULK_SCATTER ;
+    }
+    else if(transportation && status == fWorldBoundary )
+    {
+        flag = SURFACE_ABSORB ;   // kludge for fWorldBoundary - no surface handling yet 
+    }
+    else if(transportation && status == fGeomBoundary )
+    {
+        flag = OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT
+    } 
     return flag ; 
 }
 

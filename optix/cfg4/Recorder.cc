@@ -3,6 +3,7 @@
 
 #include "Opticks.hh"
 #include "OpticksFlags.h"
+
 #include "OpStatus.hh"
 
 #include "G4Track.hh"
@@ -122,6 +123,8 @@ void Recorder::init()
     const char* typ = m_evt->getTyp();
     assert(strcmp(typ,Opticks::torch_) == 0);
     m_gen = Opticks::SourceCode(typ);
+
+
     assert( m_gen == TORCH );
 }
 
@@ -137,8 +140,14 @@ void Recorder::startPhoton()
 
     m_c4.u = 0u ; 
 
-    m_prior_boundary_status = Undefined ; 
     m_boundary_status = Undefined ; 
+    m_prior_boundary_status = Undefined ; 
+
+    m_premat = 0 ; 
+    m_prior_premat = 0 ; 
+
+    m_postmat = 0 ; 
+    m_prior_postmat = 0 ; 
 
     m_seqmat = 0 ; 
     m_seqhis = 0 ; 
@@ -153,11 +162,17 @@ void Recorder::startPhoton()
 }
 
 
-void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status)
+void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
 {
     // this is invoked before RecordStep is called from SteppingAction
     m_prior_boundary_status = m_boundary_status ; 
+    m_prior_premat = m_premat ; 
+    m_prior_postmat = m_postmat ; 
+
     m_boundary_status = boundary_status ; 
+    m_premat = premat ; 
+    m_postmat = postmat ; 
+
 }
 
 
@@ -207,6 +222,30 @@ void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status)
          G4Step at boundary straddles the volumes, with post step point 
          in a volume that will not be entered. 
 
+         Schematic of the steps and points of a reflection
+
+
+        step1    step2    step3
+
+
+          *      .   .
+           \     .   .
+            \    .   .
+             \   .   . 
+              \  .   .  
+               * . * .
+                 . * .  *
+                 .   .   \
+                 .   .    \
+                 .   .     \
+                 .   .      * 
+                 .   . 
+
+
+               
+
+
+
      Op:
          m2 gets set to the material that will not be entered by the lookahead
          m1 always stays the material that photon is in 
@@ -220,8 +259,8 @@ bool Recorder::RecordStep(const G4Step* step)
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
-    const G4Material* preM = pre->GetMaterial() ;
-    const G4Material* postM = post->GetMaterial() ;
+    const G4Material* preMat  = pre->GetMaterial() ;
+    const G4Material* postMat = post->GetMaterial() ;
 
     /*
     if(m_debug)
@@ -247,73 +286,37 @@ bool Recorder::RecordStep(const G4Step* step)
     if(m_step_id == 0)
     {
         preFlag = m_gen ;         
-        postFlag = getPointFlag(post, m_boundary_status) ;
+        postFlag = OpPointFlag(post, m_boundary_status) ;
     }
     else
     {
-        preFlag  = getPointFlag(pre,  m_prior_boundary_status);
-        postFlag = getPointFlag(post, m_boundary_status) ;
+        preFlag  = OpPointFlag(pre,  m_prior_boundary_status);
+        postFlag = OpPointFlag(post, m_boundary_status) ;
     }
 
     bool absorb   = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
-    bool transmit =  preFlag == BOUNDARY_TRANSMIT ; 
 
-    // 1-based material indices, so zero can represent None
-    // for transmission record the material are entering 
-    // otherwise have no business looking at the postM
-    unsigned int mat  = transmit ? 
-                                    ( ( m_clib && postM ) ? m_clib->getMaterialIndex(postM) + 1 : 0  )
-                                 :
-                                    ( ( m_clib && preM ) ? m_clib->getMaterialIndex(preM) + 1 : 0  )
-                                 ;
+    bool preSkip = m_prior_boundary_status == StepTooSmall ;  
 
-    bool preSkip = m_prior_boundary_status == StepTooSmall ;
     bool done = false ; 
 
+
+    // skip the pre, but the post becomes the pre at next step where will be taken 
+    // 1-based material indices, so zero can represent None
     if(!preSkip)
-       done = RecordStepPoint( pre, preFlag, mat, m_prior_boundary_status, PRE ); 
+    {
+       done = RecordStepPoint( pre, preFlag, m_prior_premat, m_prior_boundary_status, PRE ); 
+    }
 
     if(absorb && !done)
-       done = RecordStepPoint( post, postFlag, mat, m_boundary_status, POST ); 
+    {
+       done = RecordStepPoint( post, postFlag, m_postmat, m_boundary_status, POST ); 
+    }
 
     // when not *absorb* the post step will become the pre step at next RecordStep
 
     return done ;
 }
-
-
-
-unsigned int Recorder::getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst)
-{
-    G4StepStatus status = point->GetStepStatus()  ;
-    // TODO: cache the relevant process objects, so can just compare pointers ?
-    const G4VProcess* process = point->GetProcessDefinedStep() ;
-    const G4String& processName = process ? process->GetProcessName() : "NoProc" ; 
-
-    bool transportation = strcmp(processName,"Transportation") == 0 ;
-    bool scatter = strcmp(processName, "OpRayleigh") == 0 ; 
-    bool absorption = strcmp(processName, "OpAbsorption") == 0 ;
-
-    unsigned int flag(0);
-    if(absorption && status == fPostStepDoItProc )
-    {
-        flag = BULK_ABSORB ;
-    }
-    else if(scatter && status == fPostStepDoItProc )
-    {
-        flag = BULK_SCATTER ;
-    }
-    else if(transportation && status == fWorldBoundary )
-    {
-        flag = SURFACE_ABSORB ;   // kludge for fWorldBoundary - no surface handling yet 
-    }
-    else if(transportation && status == fGeomBoundary )
-    {
-        flag = OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT
-    } 
-    return flag ; 
-}
-
 
 
 

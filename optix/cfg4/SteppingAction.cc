@@ -16,7 +16,10 @@
 #include "G4PhysicalConstants.hh"
 
 #include "Recorder.hh"
+#include "Rec.hh"
+#include "State.hh"
 #include "Format.hh"
+#include "CPropLib.hh"
 
 #include "NLog.hpp"
 
@@ -62,6 +65,14 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     G4int photon_id = track->GetTrackID() - 1;
     G4int step_id  = track->GetCurrentStepNumber() - 1 ;
 
+    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+    const G4Material* preMat  = pre->GetMaterial() ;
+    const G4Material* postMat = post->GetMaterial() ;
+    unsigned int preMaterial = preMat ? m_clib->getMaterialIndex(preMat) + 1 : 0 ;
+    unsigned int postMaterial = postMat ? m_clib->getMaterialIndex(postMat) + 1 : 0 ;
+
+
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
 
     m_recorder->setEventId(eid);
@@ -85,13 +96,21 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     {
         if(startPhoton)
         { 
+            m_rec->Clear();
+
             m_recorder->startPhoton();  // MUST be invoked from up here,  prior to setBoundaryStatus
             m_recorder->RecordQuadrant(step);
         }
+
+
+        G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
+
         m_recorder->setRecordId(record_id);
-        m_recorder->setBoundaryStatus(GetOpBoundaryProcessStatus());
+        m_recorder->setBoundaryStatus(boundary_status, preMaterial, postMaterial);
 
         bool done = m_recorder->RecordStep(step); 
+
+        m_rec->add(new State(step, boundary_status, preMaterial, postMaterial));
 
         if(done)
         {
@@ -102,6 +121,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
                 if(m_recorder->isSelected())
                 { 
                     m_recorder->Dump("SteppingAction::UserSteppingAction DONE");
+
+                    m_rec->Dump("SteppingAction::UserSteppingAction (Rec)DONE");
                 }
             }
 
