@@ -233,9 +233,14 @@ class Evt(object):
         flgs = np.empty( (len(m1), 4), dtype=np.int32)
         flgs[:,0] = m1
         flgs[:,1] = m2
-        flgs[:,2] = bd
+        flgs[:,2] = np.int8(bd)
         flgs[:,3] = fl
         return flgs
+
+    def rflgs_(self, irec, recs=None):
+        if recs is None:
+            recs = self.rx 
+        return self.recflags(recs,irec) 
 
     def post_center_extent(self):
         p_center = self.fdom[0,0,:W] 
@@ -359,6 +364,65 @@ class Evt(object):
         without assuming a bounce count
         """
         return self._deviation_angle(self.p_out, side=side, incident=incident)
+
+
+    def rsmry_(self, i):
+        flgs = self.rflgs_(i)
+
+        m1s = np.unique(flgs[:,0])
+        m2s = np.unique(flgs[:,1])
+        bns = np.unique(flgs[:,2])
+        fls = np.unique(flgs[:,3])
+
+        flab = self.histype.label
+        mlab = self.mattype.label
+
+        if len(m1s) == 1 and len(m2s) == 1 and len(bns) == 1 and len(fls) == 1:
+            m1 = m1s[0]
+            m2 = m2s[0]
+            bn = bns[0]
+            abn = abs(bn) - 1
+            fl = fls[0]
+            smry="m1/m2 %3d/%3d %2s/%2s %4d (%3d) %3d:%s " % (m1,m2,mlab(m1),mlab(m2),bn,abn,fl,flab(fl))
+        else:
+            smry=repr(flgs) 
+        pass
+        return smry
+
+
+    def zrt_profile(self, n):
+        zrt = np.zeros((n,9))
+        for i in range(n):
+            p = self.rpost_(i)
+            r = np.linalg.norm(p[:,:2],2,1)
+            z = p[:,2]
+            t = p[:,3]
+
+            assert len(r)>0
+            assert len(z)>0
+
+            rmin = r.min() 
+            rmax = r.max()
+            ravg = (rmin+rmax)/2.
+
+            zmin = z.min() 
+            zmax = z.max()
+            zavg = (zmin+zmax)/2.
+
+            tmin = t.min() 
+            tmax = t.max()
+            tavg = (tmin+tmax)/2.
+
+            zrt[i] = rmin,rmax,ravg,zmin,zmax,zavg,tmin,tmax,tavg
+
+            smry = self.rsmry_(i)
+            print "%3d z %10.3f %10.3f %10.3f r %10.3f %10.3f %10.3f  t %10.3f %10.3f %10.3f    smry %s " % (i, zmin, zmax,zavg, rmin, rmax, ravg, tmin, tmax, tavg, smry)
+
+        pass
+        return zrt 
+
+
+
 
 
 

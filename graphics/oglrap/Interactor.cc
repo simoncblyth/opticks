@@ -232,7 +232,7 @@ void Interactor::key_pressed(unsigned int key)
             break;
         case GLFW_KEY_O:
             //m_optix_mode = !m_optix_mode ; 
-            m_scene->nextRenderStyle();
+            m_scene->nextRenderStyle(modifiers);
             LOG(info) << "Interactor::key_pressed O nextRenderStyle " ; 
             break;
         case GLFW_KEY_P:

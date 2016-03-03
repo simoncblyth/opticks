@@ -984,6 +984,8 @@ void Composition::setChanged(bool changed)
     m_trackball->setChanged(changed);
 }
 
+
+
 void Composition::setLookAngle(float phi)
 {
     m_lookphi = phi ; 

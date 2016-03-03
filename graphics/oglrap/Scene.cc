@@ -18,6 +18,7 @@
 #include "Device.hh"
 #include "Rdr.hh"
 #include "Colors.hh"
+#include "Interactor.hh"
 
 // npy-
 #include "NumpyEvt.hpp"
@@ -766,5 +767,28 @@ void Scene::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index
     bool autocam = false ; 
     m_composition->setCenterExtent(ce, autocam );
 }
+
+
+
+
+void Scene::nextRenderStyle(unsigned int modifiers)  // O:key
+{
+    bool nudge = modifiers & Interactor::e_shift ;
+    if(nudge)
+    {
+        m_composition->setChanged(true) ;
+        return ; 
+    }
+
+    int next = (m_render_style + 1) % NUM_RENDER_STYLE ; 
+    m_render_style = (RenderStyle_t)next ; 
+    applyRenderStyle();
+}
+
+void Scene::applyRenderStyle()   
+{
+    // nothing to do, style is honoured by  Scene::render
+}
+
 
 

@@ -102,4 +102,4 @@ target_link_libraries(${name}test ${name} ${LIBRARIES})
 
 install(TARGETS ${name}test    DESTINATION bin)
 
-
+add_subdirectory(tests)

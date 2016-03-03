@@ -97,6 +97,8 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
     bool incidentSphere = m_torch->isIncidentSphere() ;
     bool discLin = m_torch->isDiscLinear() ;
+    bool ring = m_torch->isRing() ;
+    bool point = m_torch->isPoint() ;
     bool reflTest = m_torch->isReflTest() ;
 
     bool SPol =  m_torch->isSPolarized() ;
@@ -107,6 +109,7 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
     LOG(info) << "OpSource::GeneratePrimaryVertex"
               << " incidentSphere " << incidentSphere
               << " discLin " << discLin 
+              << " ring " << ring 
               << " reflTest " << reflTest
               << " SPol " << SPol 
               << " PPol " << PPol 
@@ -121,7 +124,6 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
 		pp.momentum_direction = m_angGen->GenerateOne();
 		pp.energy = m_eneGen->GenerateOne(m_definition);
-
 
      /*
         LOG(info) << "OpSource::GeneratePrimaryVertex"
@@ -168,11 +170,15 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
             G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
 		    particle->SetPolarization(tangent.unit()); 
         }
+        else if(point)
+        {
+            G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
+		    particle->SetPolarization(tangent.unit()); 
+        }
         else
         {
 		    particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
         }  
-
 
 		if (m_verbosityLevel > 1) {
 			G4cout << "Particle name: "
@@ -240,9 +246,10 @@ void OpSource::configure()
     G4ThreeVector pol(1.,0.,0.); 
     SetParticlePolarization(pol); // reset later for the custom configs 
 
-    
     bool incidentSphere = m_torch->isIncidentSphere() ;
     bool discLin = m_torch->isDiscLinear() ;
+    bool ring = m_torch->isRing() ;
+    bool point = m_torch->isPoint() ;
     bool reflTest = m_torch->isReflTest() ;
 
     // for sanity test geometries use standard X Y for 
@@ -252,7 +259,12 @@ void OpSource::configure()
     m_posGen->SetPosRot1(posX);
     m_posGen->SetPosRot2(posY);
 
-    if(incidentSphere || discLin)  // used with "rainbow" geometry 
+    if(point)
+    {
+        m_posGen->SetPosDisType("Point");
+        m_posGen->SetCentreCoords(cen);
+    }
+    else if(incidentSphere || discLin || ring)  // used with "rainbow" geometry 
     {
         m_posGen->SetPosDisType("Plane");
 

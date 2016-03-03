@@ -801,6 +801,12 @@ Agreement out to 97mm now includes material history::
 
 
 
+CFG4 Double Reflect
+--------------------
+
+* relocate to graphics/ggeoview/issues/cfg4_pmt_edge_double_reflect
+
+
 
 
 
@@ -824,11 +830,12 @@ if __name__ == '__main__':
     plt.close()
 
     #tag = "1"
-    tag = "2"
+    #tag = "2"
+    tag = "5"
 
     #seqs = ["TO BT BR BT BT BT BT SA"] 
-    seqs = ["TO BT BR BR BT SA"]
-    #seqs=[]
+    #seqs = ["TO BT BR BR BT SA"]
+    seqs=[]
 
     a = Evt(tag="%s" % tag, src="torch", det="PmtInBox", seqs=seqs)
     b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)

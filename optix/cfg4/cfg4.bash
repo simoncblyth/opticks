@@ -175,6 +175,8 @@ cfg4-env(){
 
 cfg4-name(){ echo cfg4test ; }
 cfg4-bin(){ echo ${CFG4_BINARY:-$(cfg4-idir)/bin/$(cfg4-name)} ; }
+cfg4-tbin(){ echo $(cfg4-idir)/bin/$1 ; }
+
 
 cfg4-idir(){ echo $(local-base)/env/optix/cfg4; } 
 cfg4-bdir(){ echo $(local-base)/env/optix/cfg4.build ; }

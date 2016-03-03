@@ -291,6 +291,21 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.polarization = photonPolarization ;
 
       }
+      else if( ts.type == T_RING )
+      {
+          p.direction = ts.p0 ;
+          float r = radius  ;   
+
+          float3 ringPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 
+          rotateUz(ringPosition, ts.p0);
+
+          p.position = ts.x0 + ringPosition ;
+          float3 photonPolarization = make_float3( sinPhi, -cosPhi, 0.f); // adhoc
+
+          rotateUz(photonPolarization, ts.p0);
+
+          p.polarization = photonPolarization ;
+      }
       else if( ts.type == T_DISC_INTERSECT_SPHERE )
       {
           p.direction = ts.p0 ;

@@ -13,6 +13,7 @@ typedef enum {
    T_INVSPHERE,
    T_REFLTEST,
    T_INVCYLINDER,
+   T_RING, 
    T_NUM_TYPE
 }               Torch_t ;
 
@@ -82,6 +83,7 @@ class TorchStepNPY {
        static const char* T_INVSPHERE_ ; 
        static const char* T_REFLTEST_ ; 
        static const char* T_INVCYLINDER_ ; 
+       static const char* T_RING_ ; 
 
        static const char* M_SPOL_ ; 
        static const char* M_PPOL_ ; 
@@ -121,6 +123,8 @@ class TorchStepNPY {
        unsigned int getNumG4Event();
        bool isIncidentSphere();
        bool isDiscLinear();
+       bool isRing();
+       bool isPoint();
        bool isReflTest();
        bool isSPolarized();
        bool isPPolarized();
@@ -322,11 +326,25 @@ inline bool TorchStepNPY::isIncidentSphere()
     return type == T_DISC_INTERSECT_SPHERE  ;
 }
 
+
 inline bool TorchStepNPY::isDiscLinear()
 {
     ::Torch_t type = getType();
     return type == T_DISCLIN  ;
 }
+
+inline bool TorchStepNPY::isRing()
+{
+    ::Torch_t type = getType();
+    return type == T_RING  ;
+}
+
+inline bool TorchStepNPY::isPoint()
+{
+    ::Torch_t type = getType();
+    return type == T_POINT  ;
+}
+
 
 inline bool TorchStepNPY::isReflTest()
 {

@@ -84,7 +84,7 @@ ggv-pmt-test(){
 
     local cmdline=$*
     local photons=500000
-    local tag=2
+    local tag=6
     local zenith 
 
     case $tag in
@@ -92,27 +92,43 @@ ggv-pmt-test(){
       2) zenith=0.97,1        ;;
       3) zenith=0.9671,0.9709 ;;
       4) zenith=0,1           ;;
+      5) zenith=0.99999,1     ;;
     esac
-
-    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
-        tag=-$tag  
-    fi 
 
     if [ "${cmdline/--g4ui}" != "${cmdline}" ]; then
         photons=10000
     fi 
 
+    local typ=disclin
+    local src=0,0,300
+    local tgt=0,0,0
+    local radius=100
+   
+    if [ "$tag" == "5" ]; then
+        typ=point
+        src=99,0,300
+        tgt=99,0,0
+
+    elif [ "$tag" == "6" ]; then
+
+        src=99,0,300
+        tgt=99,0,0
+        radius=0.5
+        zenith=0,1
+    fi  
+
     local torch_config=(
-                 type=disclin
+                 type=$typ
                  photons=$photons
                  wavelength=380 
                  frame=1
-                 source=0,0,300
-                 target=0,0,0
-                 radius=100
+                 source=$src
+                 target=$tgt
+                 radius=$radius
                  zenithazimuth=$zenith,0,1
                  material=Vacuum
                )
+
 
     local test_config=(
                  mode=PmtInBox
@@ -122,12 +138,16 @@ ggv-pmt-test(){
                  parameters=0,0,0,300
                    ) 
 
+    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+        tag=-$tag  
+    fi 
+
    ggv \
        --test --testconfig "$(join _ ${test_config[@]})" \
        --torch --torchconfig "$(join _ ${torch_config[@]})" \
        --animtimemax 10 \
        --cat PmtInBox --tag $tag --save \
-       --eye 0.0,0.5,0.0 \
+       --eye 0.0,-0.5,0.0 \
        --geocenter \
        $* 
 

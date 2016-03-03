@@ -45,6 +45,7 @@ const char* TorchStepNPY::T_DISCAXIAL_   = "discaxial" ;
 const char* TorchStepNPY::T_INVSPHERE_ = "invsphere" ; 
 const char* TorchStepNPY::T_REFLTEST_  = "refltest" ; 
 const char* TorchStepNPY::T_INVCYLINDER_ = "invcylinder" ; 
+const char* TorchStepNPY::T_RING_ = "ring" ; 
 
 Torch_t TorchStepNPY::parseType(const char* k)
 {
@@ -59,6 +60,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     else if(  strcmp(k,T_INVSPHERE_)==0) type = T_INVSPHERE ; 
     else if(  strcmp(k,T_INVCYLINDER_)==0) type = T_INVCYLINDER ; 
     else if(  strcmp(k,T_REFLTEST_)==0)  type = T_REFLTEST ; 
+    else if(  strcmp(k,T_RING_)==0)      type = T_RING ; 
     return type ;   
 }
 
@@ -79,6 +81,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
        case T_INVSPHERE:   type=T_INVSPHERE  ;break; 
        case T_REFLTEST:    type=T_REFLTEST   ;break; 
        case T_INVCYLINDER: type=T_INVCYLINDER;break; 
+       case T_RING:        type=T_RING       ;break; 
     }
     return type ; 
 }
@@ -99,6 +102,7 @@ const char* TorchStepNPY::getTypeName()
        case T_INVSPHERE:   name=T_INVSPHERE_  ;break; 
        case T_REFLTEST:    name=T_REFLTEST_   ;break; 
        case T_INVCYLINDER: name=T_INVCYLINDER_;break; 
+       case T_RING:        name=T_RING_       ;break; 
 
        case T_UNDEF:       name=T_UNDEF_      ;break; 
        default:    

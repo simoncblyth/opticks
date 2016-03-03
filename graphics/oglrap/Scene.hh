@@ -100,7 +100,7 @@ class Scene : public NConfigurable {
         void applyGlobalStyle();
    public:
         typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
-        void nextRenderStyle();  // key O (formerly optix render mode toggle)
+        void nextRenderStyle(unsigned int modifiers);  // key O (formerly optix render mode toggle)
         void applyRenderStyle();
         bool isProjectiveRender();
         bool isRaytracedRender();
@@ -518,17 +518,6 @@ inline void Scene::applyGlobalStyle()
 
 
 
-inline void Scene::nextRenderStyle()  // O:key
-{
-    int next = (m_render_style + 1) % NUM_RENDER_STYLE ; 
-    m_render_style = (RenderStyle_t)next ; 
-    applyRenderStyle();
-}
-
-inline void Scene::applyRenderStyle()   
-{
-    // nothing to do, style is honoured by  Scene::render
-}
 inline bool Scene::isProjectiveRender()
 {
    return m_render_style == R_PROJECTIVE ;

@@ -283,7 +283,6 @@ class Composition : public NConfigurable {
       bool hasChanged(); // based on View, Camera, Trackball
       bool hasChangedGeometry(); // excludes event animation
       void setChanged(bool changed);
-
    public:
       // ModelViewProjection including trackballing
       glm::mat4& getWorld2Clip();   
