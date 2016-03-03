@@ -743,6 +743,7 @@ Material Debug
 
 Opticks reflection "TO BR SA" has material assignment "MO MO", 
 hmm would be useful to see the seqmat for a choice of seqhis.
+CFG4 reflection 
 
 
 
@@ -773,8 +774,6 @@ if __name__ == '__main__':
     b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)
 
 
-
-
     a0 = a.rpost_(0)
     a0r = np.linalg.norm(a0[:,:2],2,1)
 
@@ -783,7 +782,9 @@ if __name__ == '__main__':
 
     print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max(),b0r.min(),b0r.max())))
 
-    cf = a.history.table.compare(b.history.table)
-    print cf
+    hcf = a.history.table.compare(b.history.table)
+    print hcf
 
+    mcf = a.material.table.compare(b.material.table)
+    print mcf
 

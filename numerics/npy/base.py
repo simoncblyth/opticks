@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
 ffs_ = lambda _:cpp.ffs(_)
+idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
 
 
 def ihex_(i):
@@ -50,6 +51,44 @@ def json_(path):
         _json[path] = {}
     pass
     return _json[path] 
+
+
+class Abbrev(object):
+    def __init__(self, path="~/.opticks/GFlags/abbrev.json"):
+        js = json_(path)
+
+        names = map(str,js.keys())
+        abbrs = map(str,js.values())
+
+        self.names = names
+        self.abbrs = abbrs
+        self.name2abbr = dict(zip(names, abbrs))
+        self.abbr2name = dict(zip(abbrs, names))
+
+
+class ListFlags(object):
+   def __init__(self, kls="GMaterialLib" ):
+        npath=idp_("GItemList/%(kls)s.txt" % locals())
+        names = map(lambda _:_[:-1],file(npath).readlines())
+        codes = map(lambda _:_ + 1, range(len(names)))
+        self.names = names
+        self.codes = codes
+        self.name2code = dict(zip(names, codes)) 
+        self.code2name = dict(zip(codes, names))
+
+class IniFlags(object):
+    def __init__(self, path="$IDPATH/GFlagsLocal.ini"):
+        ini = ini_(path)
+        ini = dict(zip(ini.keys(),map(int,ini.values())))  # convert values to int 
+        names = map(str,ini.keys())
+        codes = map(int,ini.values())
+
+        self.names = names
+        self.codes = codes
+        self.name2code = dict(zip(names, codes)) 
+        self.code2name = dict(zip(codes, names))
+
+
 
 
 

@@ -288,7 +288,6 @@ def seqhis_table_():
 
 
 
-
 class GFlags(Index):
     def __init__(self):
         self.mf = maskflags_()

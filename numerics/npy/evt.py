@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 from env.python.utils import *
 from env.numerics.npy.types import SeqHis, seqhis_int
 from env.numerics.npy.nload import A, I, II
-from env.numerics.npy.history import History
+from env.numerics.npy.seq import SeqAna
+from env.numerics.npy.history import HisType 
+from env.numerics.npy.material import MatType 
 
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
@@ -86,21 +88,34 @@ class Evt(object):
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
 
+        histype = HisType()
+        mattype = MatType()
+
         cn = "%s:%s" % (str(tag), det)
-        all_history = History(seqhis, cnames=[cn])  # full history without selection
+        # full history without selection
+        all_history = SeqAna(seqhis, histype , cnames=[cn])  
+        all_material = SeqAna(seqmat, mattype , cnames=[cn])  
 
         self.rx = rx
         self.ph = ph
+
         self.seqhis = seqhis
         self.seqmat = seqmat
+
         self.all_history = all_history
         self.history = all_history
+
+        self.all_material = all_material
+        self.material = all_material
+
+
+
 
     def init_selection(self, seqs, not_):
         if not self.rec or len(seqs) == 0:return  
 
         log.info("Evt seqs %s " % repr(seqs))
-        psel = self.all_history.seqhis_or(seqs, not_=not_)
+        psel = self.all_history.seq_or(seqs, not_=not_)
 
         self.ox = self.ox[psel]
         self.c4 = self.c4[psel]
