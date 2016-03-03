@@ -8,6 +8,9 @@ from env.numerics.npy.seq import SeqType, SeqAna
 from env.numerics.npy.PropLib import PropLib
 from env.numerics.npy.nload import A
 
+SEQHIS = 0
+SEQMAT = 1
+
 def test_roundtrip(mt):
     s = "MO Py MO MO Py OpaqueVacuum Vm MO"
     i = mt.code(s)
@@ -29,18 +32,13 @@ if __name__ == '__main__':
     test_roundtrip(af)
 
     src = "torch"
-    tag = "1"
+    tag = "-1"
     det = "PmtInBox"  
     ph = A.load_("ph"+src,tag,det)
     seqmat = ph[:,0,1]
 
-    ma = SeqAna.for_evt(af, tag, src, det, offset=1)
+    ma = SeqAna.for_evt(af, tag, src, det, offset=SEQMAT)
     print ma.table
-
-
-
-
-
 
 
 

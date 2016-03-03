@@ -59,6 +59,11 @@ void SteppingAction::init()
 }
 
 
+
+const unsigned long long SteppingAction::SEQHIS_TO_SA = 0x8dull ; 
+const unsigned long long SteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; 
+
+
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
@@ -113,17 +118,20 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         bool done = m_recorder->RecordStep(step); 
 
         m_rec->add(new State(step, boundary_status, preMaterial, postMaterial));
-
         if(done)
         {
+            unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;
+            unsigned long long rdr_seqmat = m_recorder->getSeqMat() ;
+
+            bool debug = rdr_seqmat == SEQMAT_MO_PY_BK && m_verbosity > 0 ;
+
+            m_rec->setDebug(debug);
             m_rec->sequence();
 
             unsigned long long rec_seqhis = m_rec->getSeqHis() ;
-            unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;
-            bool same_seqhis = rec_seqhis == rdr_seqhis ; 
-
             unsigned long long rec_seqmat = m_rec->getSeqMat() ;
-            unsigned long long rdr_seqmat = m_recorder->getSeqMat() ;
+
+            bool same_seqhis = rec_seqhis == rdr_seqhis ; 
             bool same_seqmat = rec_seqmat == rdr_seqmat ; 
 
             assert(same_seqhis);
@@ -133,7 +141,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
             if(m_verbosity > 0)
             {
-                if(!same_seqmat || !same_seqhis || m_recorder->isSelected())
+                if(!same_seqmat || !same_seqhis || debug )
                 {
                     std::cout << std::endl << std::endl << "----SteppingAction----" << std::endl  ; 
                     m_recorder->Dump("SteppingAction::UserSteppingAction DONE");

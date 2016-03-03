@@ -746,6 +746,64 @@ hmm would be useful to see the seqmat for a choice of seqhis.
 CFG4 reflection 
 
 
+Agreement out to 97mm now includes material history::
+
+0.000 97.002  0.117 97.004
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 8cd       361978       361339             0.56  [3 ] TO BT SA
+                 7cd       114537       113731             2.85  [3 ] TO BT SD
+                  4d        17934        18876            24.11  [2 ] TO AB
+                 86d         3021         3015             0.01  [3 ] TO SC SA
+                 4cd         1571         1869            25.82  [3 ] TO BT AB
+                8c6d          390          415             0.78  [4 ] TO SC BT SA
+                 8bd          184          330            41.47  [3 ] TO BR SA
+                 46d          185          198             0.44  [3 ] TO SC AB
+                7c6d          104          102             0.02  [4 ] TO SC BT SD
+                866d           33           27             0.60  [4 ] TO SC SC SA
+                 4bd           20           30             2.00  [3 ] TO BR AB
+               8cc6d           22           20             0.10  [5 ] TO SC BT BT SA
+                8b6d            2           18             0.00  [4 ] TO SC BR SA
+                86bd            4            7             0.00  [4 ] TO BR SC SA
+               8c66d            4            4             0.00  [5 ] TO SC SC BT SA
+                4c6d            2            4             0.00  [4 ] TO SC BT AB
+                4b6d            0            3             0.00  [4 ] TO SC BR AB
+                466d            0            3             0.00  [4 ] TO SC SC AB
+              8cbc6d            3            2             0.00  [6 ] TO SC BT BR BT SA
+               4cc6d            2            2             0.00  [5 ] TO SC BT BT AB
+             8cbc6bd            0            1             0.00  [7 ] TO BR SC BT BR BT SA
+              86cc6d            1            1             0.00  [6 ] TO SC BT BT SC SA
+                76cd            0            1             0.00  [4 ] TO BT SC SD
+          8cccccc6bd            0            1             0.00  [10] TO BR SC BT BT BT BT BT BT SA
+               8c6cd            1            0             0.00  [5 ] TO BT SC BT SA
+          bbbbbbbc6d            1            0             0.00  [10] TO SC BT BR BR BR BR BR BR BR
+             8ccbc6d            1            0             0.00  [7 ] TO SC BT BR BT BT SA
+               8666d            0            1             0.00  [5 ] TO SC SC SC SA
+                          500000       500000         8.23 
+
+                      1:PmtInBox   -1:PmtInBox           c2 
+                 ee4       478088       476939             1.38  [3 ] MO Py Py
+                  44        17934        18876            24.11  [2 ] MO MO
+                 444         3408         3573             3.90  [3 ] MO MO MO
+                ee44          481          521             1.60  [4 ] MO MO Py Py
+                4444           54           58             0.14  [4 ] MO MO MO MO
+               44e44           24           22             0.09  [5 ] MO MO Py MO MO
+               ee444            4            4             0.00  [5 ] MO MO MO Py Py
+              44ee44            3            2             0.00  [6 ] MO MO Py Py MO MO
+             44eee44            1            0             0.00  [7 ] MO MO Py Py Py MO MO
+          eeeeeeee44            1            0             0.00  [10] MO MO Py Py Py Py Py Py Py Py
+             44ee444            0            1             0.00  [7 ] MO MO MO Py Py MO MO
+          44e5dbe444            0            1             0.00  [10] MO MO MO Py OV Vm Bk Py MO MO
+               44444            0            1             0.00  [5 ] MO MO MO MO MO
+               44ee4            1            0             0.00  [5 ] MO Py Py MO MO
+              444e44            1            1             0.00  [6 ] MO MO Py MO MO MO
+                eee4            0            1             0.00  [4 ] MO Py Py Py
+                          500000       500000         5.20 
+
+
+
+
+
+
 
 """
 import os, logging, numpy as np
@@ -765,22 +823,25 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    tag = "1"
+    #tag = "1"
+    tag = "2"
 
     #seqs = ["TO BT BR BT BT BT BT SA"] 
-    seqs=[]
+    seqs = ["TO BT BR BR BT SA"]
+    #seqs=[]
 
     a = Evt(tag="%s" % tag, src="torch", det="PmtInBox", seqs=seqs)
     b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)
 
-
     a0 = a.rpost_(0)
     a0r = np.linalg.norm(a0[:,:2],2,1)
+    if len(a0r)>0:
+        print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max())))
 
     b0 = b.rpost_(0)
     b0r = np.linalg.norm(b0[:,:2],2,1)
-
-    print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max(),b0r.min(),b0r.max())))
+    if len(b0r)>0:
+        print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
     hcf = a.history.table.compare(b.history.table)
     print hcf

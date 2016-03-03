@@ -26,8 +26,6 @@
 #include "Recorder.h"
 #include "CPropLib.hh"
 
-
-
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
 #define iround(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
 
@@ -47,55 +45,8 @@ unsigned char uchar_( float f )  // f in range -1.:1.
     return ipol ; 
 }
 
-
-
-/*
-Truncation that matches optixrap-/cu/generate.cu::
-
-    generate...
-
-    int bounce = 0 ;
-    int slot = 0 ;
-    int slot_min = photon_id*MAXREC ;       // eg 0 for photon_id=0
-    int slot_max = slot_min + MAXREC - 1 ;  // eg 9 for photon_id=0, MAXREC=10
-    int slot_offset = 0 ;
-
-    while( bounce < bounce_max )
-    {
-        bounce++
-
-        rtTrace...
-
-        slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
-
-          // eg 0,1,2,3,4,5,6,7,8,9,9,9,9,9,....  if bounce_max were greater than MAXREC
-          //    0,1,2,3,4,5,6,7,8,9       for bounce_max = 9, MAXREC = 10 
-
-        RSAVE(..., slot, slot_offset)...
-        slot++ ;
-
-        propagate_to_boundary...
-        propagate_at_boundary... 
-    }
-
-    slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
-
-    RSAVE(..., slot, slot_offset)
-
-
-Consider truncated case with bounce_max = 9, MAXREC = 10 
-
-* last while loop starts at bounce = 8 
-* RSAVE inside the loop invoked with bounce=1:9 
-  and then once more beyond the while 
-  for a total of 10 RSAVEs 
-
-
-*/
-
 const char* Recorder::PRE  = "PRE" ; 
 const char* Recorder::POST = "POST" ; 
-
 
 void Recorder::init()
 {
@@ -172,93 +123,8 @@ void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsi
     m_boundary_status = boundary_status ; 
     m_premat = premat ; 
     m_postmat = postmat ; 
-
 }
-
-
-
-/*
-
-[2016-Mar-01 16:56:59.319217]:info: Recorder::RecordStep  step_id 0 pre            Undefined post         GeomBoundary
-[2016-Mar-01 16:56:59.319367]:info: Recorder::RecordStep  step_id 1 pre         GeomBoundary post         GeomBoundary
-[2016-Mar-01 16:56:59.319503]:info: Recorder::RecordStep  step_id 2 pre         GeomBoundary post        WorldBoundary
-[2016-Mar-01 16:56:59.319617]:info: SteppingAction::UserSteppingAction DONE record_id   17516 seqhis 8ccd TORCH BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT SURFACE_ABSORB . . . . . . . . . . . .  seqmat 14e4 13 12 12 8 0 0 0 0 0 0 0 0 0 0 0 0 
-      0 Und       box_phys         NoProc           Undefined pos[     2.48   -97.3     300]  dir[        0       0      -1]  pol[       -1 -0.0254       0]  ns  0.100 nm 380.000
-      1 FrT      pvPmtHemi Transportation        GeomBoundary pos[     2.48   -97.3    73.4]  dir[  0.00152 -0.0598  -0.998]  pol[       -1 -0.0254-6.65e-18]  ns  1.295 nm 380.000
-      2 FrT       box_phys Transportation        GeomBoundary pos[     2.52     -99    44.7]  dir[  0.00278  -0.109  -0.994]  pol[       -1 -0.02542.77e-17]  ns  1.435 nm 380.000
-      3 FrT                Transportation       WorldBoundary pos[     3.49    -137    -300]  dir[  0.00278  -0.109  -0.994]  pol[       -1 -0.02542.77e-17]  ns  3.265 nm 380.000
-*/
-
-
-
-/*
-  Mapping G4Step/G4StepPoint into Opticks records style is the point of *Recorder*
-
-
- Opticks records...
-
-       flag set to generation code
-       while(bounce < bounce_max)
-       {
-             rtTrace(..)     // look ahead to get boundary 
-
-             fill_state()    // interpret boundary into m1 m2 material codes based on photon direction
-
-             RSAVE()         
-
-                             // change photon position/direction/time/flag 
-             propagate_to_boundary
-             propagate_at_surface or at_boundary   
-
-             break/continue depending on flag
-       }
-
-       RSAVE()
-
-
-  Consider reflection
-
-     G4:
-         G4Step at boundary straddles the volumes, with post step point 
-         in a volume that will not be entered. 
-
-         Schematic of the steps and points of a reflection
-
-
-        step1    step2    step3
-
-
-          *      .   .
-           \     .   .
-            \    .   .
-             \   .   . 
-              \  .   .  
-               * . * .
-                 . * .  *
-                 .   .   \
-                 .   .    \
-                 .   .     \
-                 .   .      * 
-                 .   . 
-
-
-       At each step the former *post* becomes the *pre*.
-       So just taking the *pre* will get all points, if special case the 
-       last step to get *post* too (as no next step).
-
-       At a boundary (eg for BT or BR) the *pre* and *post* are exactly 
-       the same except the volume/material assigned. So need to skip to 
-       avoid repeating a point.
-
-
-     Op:
-         m2 gets set to the material that will not be entered by the lookahead
-         m1 always stays the material that photon is in 
-
-*/
-
-
-
+  
 bool Recorder::RecordStep(const G4Step* step)
 {
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
@@ -268,7 +134,6 @@ bool Recorder::RecordStep(const G4Step* step)
     unsigned int postFlag ; 
     unsigned int preMat ; 
     unsigned int postMat ; 
-
 
     // shift flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
@@ -285,15 +150,14 @@ bool Recorder::RecordStep(const G4Step* step)
     }
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+    bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     bool preSkip = m_prior_boundary_status == StepTooSmall ;  
 
     bool matSwap = m_boundary_status == StepTooSmall ; 
 
-
     preMat  = matSwap ? m_postmat : m_premat ;
-    postMat = matSwap ? m_premat  : m_postmat ;
-
+    postMat = ( matSwap || m_postmat == 0 || surfaceAbsorb )  ? m_premat  : m_postmat ;
 
     bool done = false ; 
 

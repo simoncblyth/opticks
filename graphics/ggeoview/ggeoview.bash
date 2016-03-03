@@ -83,8 +83,16 @@ ggv-pmt-test(){
     local msg="=== $FUNCNAME :"
 
     local cmdline=$*
-    local tag=1
     local photons=500000
+    local tag=2
+    local zenith 
+
+    case $tag in
+      1) zenith=0,0.97        ;;
+      2) zenith=0.97,1        ;;
+      3) zenith=0.9671,0.9709 ;;
+      4) zenith=0,1           ;;
+    esac
 
     if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
         tag=-$tag  
@@ -93,9 +101,6 @@ ggv-pmt-test(){
     if [ "${cmdline/--g4ui}" != "${cmdline}" ]; then
         photons=10000
     fi 
-
-    local skimmer=0.9671,0.9709
-    local zenith=0.97,1
 
     local torch_config=(
                  type=disclin

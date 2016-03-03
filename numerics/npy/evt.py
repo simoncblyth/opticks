@@ -108,6 +108,8 @@ class Evt(object):
         self.all_material = all_material
         self.material = all_material
 
+        self.histype = histype
+        self.mattype = mattype
 
 
 
@@ -121,7 +123,10 @@ class Evt(object):
         self.c4 = self.c4[psel]
         self.wl = self.wl[psel]
         self.rx = self.rx[psel]
-        self.history = History(self.seqhis[psel])   # history with selection applied
+
+        self.history = SeqAna(self.seqhis[psel], self.histype)   # history with selection applied
+
+        # TODO: material with history selection applied
  
 
     x = property(lambda self:self.ox[:,0,0])

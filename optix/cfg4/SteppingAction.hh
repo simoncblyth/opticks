@@ -10,6 +10,9 @@ class Rec ;
 
 class SteppingAction : public G4UserSteppingAction
 {
+  static const unsigned long long SEQHIS_TO_SA ; 
+  static const unsigned long long SEQMAT_MO_PY_BK ; 
+
   public:
     SteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity=0);
     virtual ~SteppingAction();

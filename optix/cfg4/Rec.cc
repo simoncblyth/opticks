@@ -82,8 +82,15 @@ Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsi
     unsigned int preFlag   = i == 0 ? m_genflag : OpPointFlag(pre,  prior_boundary_status) ; 
     unsigned int postFlag  = OpPointFlag(post, boundary_status) ;
 
+    // winging-it to match Opticks record logic, whilst iterating with pmt_test.py box_test.py 
+    // to compare seqmat and seqhis
+
+    bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+
     bool preSkip = type == PRE && prior_boundary_status == StepTooSmall ; 
-    bool matSwap = boundary_status == StepTooSmall ;   // adhoc attempt  
+
+    bool matSwap = boundary_status == StepTooSmall ;  
+
 
     if(preSkip) return SKIP_STS ; 
 
@@ -95,7 +102,10 @@ Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsi
                   break;
        case POST: 
                   flag = postFlag ; 
-                  material = matSwap ? preMat : postMat ;  
+                  material = ( matSwap || postMat == 0 || surfaceAbsorb) ? preMat : postMat ;  
+                 // avoid NoMaterial at last step with postMat == 0 causing to use preMat
+                 // avoid Bialkali at surfaceAbsorb as Opticks surface treatment never records that 
+                 // MAYBE:special case it to set Bialkali, as kinda useful
                   break;
     }
 
@@ -106,6 +116,14 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material)
 {
     bool invalid = flag == NAN_ABORT ; 
     bool truncate = m_slot > m_bounce_max  ;  
+
+    if(m_debug)
+    LOG(info) << "Rec::addFlagMaterial " 
+              << " flag " << std::hex << flag << std::dec
+              << " material " << std::hex << material << std::dec
+              << " invalid " << invalid 
+              << " truncate " << truncate
+              ; 
 
     if(invalid || truncate) return ; 
 
@@ -124,16 +142,24 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material)
 void Rec::sequence()
 {
     unsigned int nstep = getNumStates();
+
+    if(m_debug)
+    LOG(info) << "Rec::sequence" 
+              << " nstep " << nstep 
+              ;  
+
     unsigned int flag ;
     unsigned int material ;
     m_slot = 0 ;
     Rec_t rc ; 
+
     for(unsigned int i=0 ; i < nstep ; i++)
     {
         rc = getFlagMaterial(flag, material, i, PRE );
         if(rc == OK)
             addFlagMaterial(flag, material) ;
     }
+
     rc = getFlagMaterial(flag, material, nstep-1, POST );
     if(rc == OK)
         addFlagMaterial(flag, material) ;

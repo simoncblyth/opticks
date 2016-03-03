@@ -13,7 +13,6 @@ Visualize the cfg4 created evt in interop mode viewer::
    ggv-;ggv-box-test --cfg4 --load
 
 
-
 Issues
 -------
 
@@ -102,6 +101,50 @@ Bulk absorption depends on ABSLENGTH of the material::
 
 
 
+In [52]: np.unique(bhm[bhm[:,0] == 0x8d][:,1])
+Out[52]: array([0x4L], dtype=uint64)
+
+::
+
+ 0.000 100.004  0.129 100.002
+                      1:BoxInBox   -1:BoxInBox           c2 
+                  8d       432190       431510             0.54  [2 ] TO SA
+                  4d        56135        56764             3.50  [2 ] TO AB
+                 86d        10836        10828             0.00  [3 ] TO SC SA
+                 46d          695          723             0.55  [3 ] TO SC AB
+                866d          140          161             1.47  [4 ] TO SC SC SA
+                466d            3           10             0.00  [4 ] TO SC SC AB
+               8666d            0            3             0.00  [5 ] TO SC SC SC SA
+               4666d            0            1             0.00  [5 ] TO SC SC SC AB
+                  3d            1            0             0.00  [2 ] TO MI
+                          500000       500000         1.21 
+                      1:BoxInBox   -1:BoxInBox           c2 
+                  44       488325        67592        318422.10  [2 ] MO MO
+                   4            1       431510        431507.00  [1 ] MO
+                 444        11531          884          9130.78  [3 ] MO MO MO
+                4444          143           13           108.33  [4 ] MO MO MO MO
+               44444            0            1             0.00  [5 ] MO MO MO MO MO
+                          500000       500000    189792.05 
+ahm (Op)
+[[0x8dL 0x44L]
+ [0x8dL 0x44L]
+ [0x8dL 0x44L]
+ ..., 
+ [0x8dL 0x44L]
+ [0x8dL 0x44L]
+ [0x8dL 0x44L]]
+
+bhm (G4)
+[[0x8dL 0x4L]
+ [0x8dL 0x4L]
+ [0x8dL 0x4L]
+ ..., 
+ [0x8dL 0x4L]
+ [0x8dL 0x4L]
+ [0x8dL 0x4L]]
+
+
+
 
 """
 import os, logging, numpy as np
@@ -124,6 +167,28 @@ if __name__ == '__main__':
     tag = "1"
     a = Evt(tag="%s" % tag, src="torch", det="BoxInBox")
     b = Evt(tag="-%s" % tag , src="torch", det="BoxInBox")
+
+    a0 = a.rpost_(0)
+    a0r = np.linalg.norm(a0[:,:2],2,1)
+
+    b0 = b.rpost_(0)
+    b0r = np.linalg.norm(b0[:,:2],2,1)
+
+    print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max(),b0r.min(),b0r.max())))
+
+    hcf = a.history.table.compare(b.history.table)
+    print hcf
+
+    mcf = a.material.table.compare(b.material.table)
+    print mcf
+
+
+    np.set_printoptions(formatter={'int':hex})
+    ahm = np.dstack([a.seqhis,a.seqmat])[0]
+    bhm = np.dstack([b.seqhis,b.seqmat])[0]
+
+    print "ahm (Op)\n", ahm
+    print "bhm (G4)\n", bhm
 
 
 
