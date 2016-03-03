@@ -99,14 +99,9 @@ Bulk absorption depends on ABSLENGTH of the material::
                      820              1.4564             1614.62              500000                   0
 
 
-
-
-In [52]: np.unique(bhm[bhm[:,0] == 0x8d][:,1])
-Out[52]: array([0x4L], dtype=uint64)
-
 ::
 
- 0.000 100.004  0.129 100.002
+    0.000 100.004  0.129 100.002
                       1:BoxInBox   -1:BoxInBox           c2 
                   8d       432190       431510             0.54  [2 ] TO SA
                   4d        56135        56764             3.50  [2 ] TO AB
@@ -119,30 +114,12 @@ Out[52]: array([0x4L], dtype=uint64)
                   3d            1            0             0.00  [2 ] TO MI
                           500000       500000         1.21 
                       1:BoxInBox   -1:BoxInBox           c2 
-                  44       488325        67592        318422.10  [2 ] MO MO
-                   4            1       431510        431507.00  [1 ] MO
-                 444        11531          884          9130.78  [3 ] MO MO MO
-                4444          143           13           108.33  [4 ] MO MO MO MO
-               44444            0            1             0.00  [5 ] MO MO MO MO MO
-                          500000       500000    189792.05 
-ahm (Op)
-[[0x8dL 0x44L]
- [0x8dL 0x44L]
- [0x8dL 0x44L]
- ..., 
- [0x8dL 0x44L]
- [0x8dL 0x44L]
- [0x8dL 0x44L]]
-
-bhm (G4)
-[[0x8dL 0x4L]
- [0x8dL 0x4L]
- [0x8dL 0x4L]
- ..., 
- [0x8dL 0x4L]
- [0x8dL 0x4L]
- [0x8dL 0x4L]]
-
+                  44       488325       488274             0.00  [2 ] MO MO
+                 444        11531        11551             0.02  [3 ] MO MO MO
+                4444          143          171             2.50  [4 ] MO MO MO MO
+               44444            0            4             0.00  [5 ] MO MO MO MO MO
+                   4            1            0             0.00  [1 ] MO
+                          500000       500000         0.84 
 
 
 
