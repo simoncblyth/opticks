@@ -234,6 +234,8 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ; 
 
+
+
     const glm::vec4& sd = m_evt->getSpaceDomain() ; 
     const glm::vec4& td = m_evt->getTimeDomain() ; 
     const glm::vec4& wd = m_evt->getWavelengthDomain() ; 

@@ -1,7 +1,7 @@
 // cfg4-
 #include "CfG4.hh"
 #include "PhysicsList.hh"
-#include "Detector.hh"
+#include "CDetector.hh"
 #include "CPropLib.hh"
 
 #include "ActionInitialization.hh"
@@ -70,7 +70,7 @@ void CfG4::configure(int argc, char** argv)
 
     std::string testconfig = m_cfg->getTestConfig();
     m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-    m_detector  = new Detector(m_cache, m_testconfig) ; 
+    m_detector  = new CDetector(m_cache, m_testconfig) ; 
 
     m_evt = m_opticks->makeEvt();
 

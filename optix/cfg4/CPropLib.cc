@@ -130,6 +130,12 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
         const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
         GProperty<float>* prop = ggm->getPropertyByIndex(i);
         addProperty(mpt, lkey, prop );
+
+        if(m_groupvel_kludge && strcmp(lkey,"RINDEX")==0)
+        {
+            addProperty(mpt, "GROUPVEL", prop );
+        }
+
     }
 
 
@@ -171,6 +177,8 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop )
 {
     bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
+    bool groupvel = strcmp(lkey, "GROUPVEL") == 0 ; 
+
     unsigned int nval  = prop->getLength();
 
     if(m_verbosity>2)
@@ -196,8 +204,16 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GP
         G4double energy = h_Planck*c_light/wavelength ;
 
         G4double value = G4double(fval) ;
-        if(length) value *= mm ;    // mm=1 anyhow, 
-        // TODO: somehow check unit consistency, also check absolute-wise
+
+        if(groupvel && m_groupvel_kludge)
+        {        
+            // special cased addProperty with the RINDEX property
+            value = c_light/value ;  
+        }
+        else if(length)
+        {
+            value *= mm ;    // mm=1 anyhow, 
+        }
 
         ddom[nval-1-j] = G4double(energy) ; 
         dval[nval-1-j] = G4double(value) ;
@@ -263,10 +279,10 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     {
         material = makeWater(name) ;
     } 
-    else if(strcmp(name,"Vacuum")==0)
-    {
-        material = makeVacuum(name) ;
-    }
+    //else if(strcmp(name,"Vacuum")==0)
+    //{
+    //    material = makeVacuum(name) ;
+    //}
     else
     {
         G4double z, a, density ;

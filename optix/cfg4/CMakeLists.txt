@@ -65,9 +65,10 @@ State.cc
 OpSource.cc
 OpStatus.cc
 PhysicsList.cc
-Detector.cc
+CDetector.cc
 CMaker.cc
 CPropLib.cc
+CTraverser.cc
 PrimaryGeneratorAction.cc
 ActionInitialization.cc
 SteppingAction.cc
@@ -83,9 +84,10 @@ State.hh
 OpSource.hh
 OpStatus.hh
 PhysicsList.hh
-Detector.hh
+CDetector.hh
 CMaker.hh
 CPropLib.hh
+CTraverser.hh
 PrimaryGeneratorAction.hh
 ActionInitialization.hh
 SteppingAction.hh
@@ -97,9 +99,6 @@ target_link_libraries(${name} ${LIBRARIES})
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
 
-add_executable(${name}test main.cc)                  
-target_link_libraries(${name}test ${name} ${LIBRARIES})
-
-install(TARGETS ${name}test    DESTINATION bin)
-
 add_subdirectory(tests)
+
+

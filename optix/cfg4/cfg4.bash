@@ -173,7 +173,7 @@ cfg4-env(){
 }
 
 
-cfg4-name(){ echo cfg4test ; }
+cfg4-name(){ echo cfg4Test ; }
 cfg4-bin(){ echo ${CFG4_BINARY:-$(cfg4-idir)/bin/$(cfg4-name)} ; }
 cfg4-tbin(){ echo $(cfg4-idir)/bin/$1 ; }
 

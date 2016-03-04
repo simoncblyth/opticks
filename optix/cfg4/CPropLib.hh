@@ -67,6 +67,8 @@ class CPropLib {
        std::map<const G4Material*, unsigned int> m_g4toix ; 
        std::map<unsigned int, std::string> m_ixtoname ; 
 
+       bool              m_groupvel_kludge ; 
+
 };
 
 inline CPropLib::CPropLib(GCache* cache, int verbosity)
@@ -75,7 +77,8 @@ inline CPropLib::CPropLib(GCache* cache, int verbosity)
   m_verbosity(verbosity),
   m_bndlib(NULL),
   m_mlib(NULL),
-  m_slib(NULL)
+  m_slib(NULL),
+  m_groupvel_kludge(true)
 {
     init();
 }

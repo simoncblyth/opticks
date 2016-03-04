@@ -314,8 +314,16 @@ inline unsigned int TorchStepNPY::getNumG4Event()
 {
     unsigned int num_photons = getNumPhotons();
     unsigned int ppe = m_num_photons_per_g4event ; 
-    assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
-    unsigned int num_g4event = num_photons / ppe ; 
+    unsigned int num_g4event ; 
+    if(num_photons == 1)
+    {
+        num_g4event = 1 ; 
+    }
+    else
+    {
+        assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
+        num_g4event = num_photons / ppe ; 
+    }
     return num_g4event ; 
 }
 

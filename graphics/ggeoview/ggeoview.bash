@@ -167,9 +167,14 @@ ggv-box-test(){
         tag=-$tag  
     fi 
 
+    local photons=500000
+    if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
+        photons=1
+    fi
+
     local torch_config=(
                  type=disclin
-                 photons=500000
+                 photons=$photons
                  wavelength=380 
                  frame=1
                  source=0,0,300
@@ -182,15 +187,21 @@ ggv-box-test(){
     local test_config=(
                  mode=BoxInBox
                  analytic=1
+
                  shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=0,0,0,300
+
+                 shape=box
+                 boundary=MineralOil///Pyrex
+                 parameters=0,0,0,100
                    ) 
 
     ggv \
        --test --testconfig "$(join _ ${test_config[@]})" \
        --torch --torchconfig "$(join _ ${torch_config[@]})" \
        --animtimemax 10 \
+       --timemax 10 \
        --cat BoxInBox --tag $tag --save  \
        --eye 0.5,0.5,0.0 \
        $* 

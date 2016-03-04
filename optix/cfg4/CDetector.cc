@@ -6,7 +6,7 @@
 //
 
 
-#include "Detector.hh"
+#include "CDetector.hh"
 #include <map>
 
 // npy-
@@ -43,25 +43,25 @@
 #include "G4SystemOfUnits.hh"
 
 
-void Detector::init()
+void CDetector::init()
 {
     m_lib = new CPropLib(m_cache);
     m_maker = new CMaker(m_cache);
 }
 
-bool Detector::isPmtInBox()
+bool CDetector::isPmtInBox()
 {
     const char* mode = m_config->getMode();
     return strcmp(mode, "PmtInBox") == 0 ;
 }
-bool Detector::isBoxInBox()
+bool CDetector::isBoxInBox()
 {
     const char* mode = m_config->getMode();
     return strcmp(mode, "BoxInBox") == 0 ;
 }
 
 
-G4VPhysicalVolume* Detector::Construct()
+G4VPhysicalVolume* CDetector::Construct()
 {
    // analagous to ggeo-/GGeoTest::CreateBoxInBox
    // but need to translate from a surface based geometry spec into a volume based one
@@ -74,15 +74,15 @@ G4VPhysicalVolume* Detector::Construct()
     bool is_bib = isBoxInBox() ;
 
     if(m_verbosity > 0)
-    LOG(info) << "Detector::Construct"
+    LOG(info) << "CDetector::Construct"
               << " pib " << is_pib
               << " bib " << is_bib
               ;
 
-    assert( is_pib || is_bib && "Detector::Construct mode not recognized");
+    assert( is_pib || is_bib && "CDetector::Construct mode not recognized");
 
     if(m_verbosity > 0)
-    m_config->dump("Detector::Construct");
+    m_config->dump("CDetector::Construct");
 
     unsigned int n = m_config->getNumElements();
 
@@ -102,7 +102,7 @@ G4VPhysicalVolume* Detector::Construct()
         std::string pvn = CMaker::PVName(shapename);
 
         if(m_verbosity > 0)
-        LOG(info) << "Detector::Construct" 
+        LOG(info) << "CDetector::Construct" 
                   << std::setw(2) << i 
                   << std::setw(2) << shapecode 
                   << std::setw(15) << shapename
@@ -131,12 +131,12 @@ G4VPhysicalVolume* Detector::Construct()
         makePMT(mother);
     }
 
-    m_lib->dumpMaterials("Detector::Construct CPropLib::dumpMaterials");
+    m_lib->dumpMaterials("CDetector::Construct CPropLib::dumpMaterials");
     return top ;  
 }
 
 
-void Detector::makePMT(G4LogicalVolume* container)
+void CDetector::makePMT(G4LogicalVolume* container)
 {
     // try without creating an explicit node tree 
 
@@ -149,7 +149,7 @@ void Detector::makePMT(G4LogicalVolume* container)
     unsigned int ni = csg->getNumItems();
 
     if(m_verbosity > 0)
-    LOG(info) << "Detector::makePMT" 
+    LOG(info) << "CDetector::makePMT" 
               << " csg items " << ni 
               ; 
 
@@ -167,7 +167,7 @@ void Detector::makePMT(G4LogicalVolume* container)
         const char* pvn = csg->getPVName(nix-1);
 
         if(m_verbosity > 0)
-        LOG(info) << "Detector::makePMT" 
+        LOG(info) << "CDetector::makePMT" 
                   << " csg items " << ni 
                   << " index " << std::setw(3) << index 
                   << " nix " << std::setw(3) << nix 
@@ -198,7 +198,7 @@ void Detector::makePMT(G4LogicalVolume* container)
         // suspect that G4DAE COLLADA export omits/messes this up somehow, for the Bottom at least
 
         if(m_verbosity > 0)
-        LOG(info) << "Detector::makePMT"
+        LOG(info) << "CDetector::makePMT"
                   << " index " << index 
                   << " x " << tlate.x()
                   << " y " << tlate.y()
@@ -218,14 +218,14 @@ void Detector::makePMT(G4LogicalVolume* container)
 }
 
 
-G4VPhysicalVolume* Detector::getPV(const char* name)
+G4VPhysicalVolume* CDetector::getPV(const char* name)
 {
     return m_pvm.count(name) == 1 ? m_pvm[name] : NULL ; 
 }
 
-void Detector::kludgePhotoCathode()
+void CDetector::kludgePhotoCathode()
 {
-    LOG(info) << "Detector::kludgePhotoCathode" ;
+    LOG(info) << "CDetector::kludgePhotoCathode" ;
 
     float effi = 0.f ; 
     float refl = 0.f ; 
@@ -247,7 +247,7 @@ void Detector::kludgePhotoCathode()
 }
 
 
-G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
+G4LogicalVolume* CDetector::makeLV(GCSG* csg, unsigned int i)
 {
     unsigned int ix = csg->getNodeIndex(i); 
 
@@ -265,7 +265,7 @@ G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
 
     if(m_verbosity > 0)
     LOG(info) 
-           << "Detector::makeLV "
+           << "CDetector::makeLV "
            << "  i " << std::setw(2) << i  
            << " ix " << std::setw(2) << ix  
            << " lvn " << std::setw(2) << lvn
@@ -276,7 +276,7 @@ G4LogicalVolume* Detector::makeLV(GCSG* csg, unsigned int i)
 }
 
 
-void Detector::dumpPV(const char* msg)
+void CDetector::dumpPV(const char* msg)
 {
     LOG(info) << msg ; 
 

@@ -123,7 +123,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
             unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;
             unsigned long long rdr_seqmat = m_recorder->getSeqMat() ;
 
-            bool debug = rdr_seqmat == SEQMAT_MO_PY_BK && m_verbosity > 0 ;
+            //bool debug = rdr_seqmat == SEQMAT_MO_PY_BK && m_verbosity > 0 ;
+            bool debug = m_verbosity > 0 ;
 
             m_rec->setDebug(debug);
             m_rec->sequence();

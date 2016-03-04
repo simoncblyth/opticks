@@ -66,6 +66,11 @@ elif [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
 elif [ "${cmdline/--cproplib}" != "${cmdline}" ]; then
    cfg4-export
    export OPTICKS_BINARY=$(cfg4-tbin CPropLibTest)
+
+elif [ "${cmdline/--cdetector}" != "${cmdline}" ]; then
+   cfg4-export
+   export OPTICKS_BINARY=$(cfg4-tbin CDetectorTest)
+
 elif [ "${cmdline/--recs}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin RecordsNPYTest)
 elif [ "${cmdline/--tracer}" != "${cmdline}" ]; then
