@@ -288,7 +288,9 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     const float2 T = normalize(E2_t) ; 
     const float2 R = normalize(E2_r) ; 
 
-    const float TransCoeff =  tir ? 1.0f : n2c2*E2_total_t/n1c1 ; 
+    const float TransCoeff =  tir ? 0.0f : n2c2*E2_total_t/n1c1 ; 
+    //  above 0.0f was until 2016/3/4 incorrectly a 1.0f 
+    //  resulting in TIR yielding BT where BR is expected
 
     bool reflect = curand_uniform(&rng) > TransCoeff  ;
 

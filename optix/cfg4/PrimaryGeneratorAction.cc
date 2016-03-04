@@ -1,5 +1,5 @@
 #include "PrimaryGeneratorAction.hh"
-#include "OpSource.hh"
+#include "CSource.hh"
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {

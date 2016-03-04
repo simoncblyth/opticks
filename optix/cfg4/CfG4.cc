@@ -9,7 +9,7 @@
 #include "Rec.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "SteppingAction.hh"
-#include "OpSource.hh"
+#include "CSource.hh"
 
 // npy-
 #include "Timer.hpp"
@@ -101,7 +101,7 @@ void CfG4::configure(int argc, char** argv)
 
     m_g4ui = m_cfg->hasOpt("g4ui");
 
-    OpSource* generator = new OpSource(m_torch, m_recorder);
+    CSource* generator = new CSource(m_torch, m_recorder);
 
     int verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
     generator->SetVerbosity(verbosity);

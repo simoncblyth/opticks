@@ -84,14 +84,15 @@ ggv-pmt-test(){
 
     local cmdline=$*
     local photons=500000
-    local tag=6
+    local tag=4
     local zenith 
+    local note
 
     case $tag in
-      1) zenith=0,0.97        ;;
+      1) zenith=0,0.97  ; note="ok"      ;;
       2) zenith=0.97,1        ;;
       3) zenith=0.9671,0.9709 ;;
-      4) zenith=0,1           ;;
+      4) zenith=0.0001,1      ;;
       5) zenith=0.99999,1     ;;
     esac
 
@@ -99,15 +100,21 @@ ggv-pmt-test(){
         photons=10000
     fi 
 
-    local typ=disclin
+    #local typ=disclin
+    local typ=disc
     local src=0,0,300
     local tgt=0,0,0
     local radius=100
-   
+  
+    local mode=""
+    local polarization=""
+ 
     if [ "$tag" == "5" ]; then
         typ=point
         src=99,0,300
         tgt=99,0,0
+        mode=fixpol
+        polarization=0,1,0
 
     elif [ "$tag" == "6" ]; then
 
@@ -127,6 +134,9 @@ ggv-pmt-test(){
                  radius=$radius
                  zenithazimuth=$zenith,0,1
                  material=Vacuum
+
+                 mode=$mode
+                 polarization=$polarization
                )
 
 

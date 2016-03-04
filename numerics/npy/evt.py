@@ -25,10 +25,14 @@ X,Y,Z,W = 0,1,2,3
 
 
 class Evt(object):
-    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label="", nrec=10, rec=True):
+    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True):
 
         self.nrec = nrec
         self.seqs = seqs
+
+        if label is None:
+            label = "%s/%s/%s : %s" % (det, src, tag, ",".join(seqs)) 
+
         self.label = label
         self.rec = rec
 
@@ -390,10 +394,24 @@ class Evt(object):
         return smry
 
 
-    def zrt_profile(self, n):
-        zrt = np.zeros((n,9))
+    def zrt_profile(self, n, pol=True):
+        slab = "z r t"
+        if pol:
+            slab += " lx ly lz"
+
+        labs = slab.split()
+        nqwn = 3
+        zrt = np.zeros((n,len(labs)*nqwn))
+        tfmt = "%10.3f " * nqwn
+        fmt = " ".join(["%s: %s " % (lab, tfmt) for lab in labs])
+
         for i in range(n):
             p = self.rpost_(i)
+            l = self.rpol_(i)
+            lx = l[:,0]
+            ly = l[:,1]
+            lz = l[:,2]
+
             r = np.linalg.norm(p[:,:2],2,1)
             z = p[:,2]
             t = p[:,3]
@@ -401,29 +419,29 @@ class Evt(object):
             assert len(r)>0
             assert len(z)>0
 
-            rmin = r.min() 
-            rmax = r.max()
-            ravg = (rmin+rmax)/2.
+            zrt[i][0:3] = mmm(z)
+            zrt[i][3:6] = mmm(r)
+            zrt[i][6:9] = mmm(t)
 
-            zmin = z.min() 
-            zmax = z.max()
-            zavg = (zmin+zmax)/2.
-
-            tmin = t.min() 
-            tmax = t.max()
-            tavg = (tmin+tmax)/2.
-
-            zrt[i] = rmin,rmax,ravg,zmin,zmax,zavg,tmin,tmax,tavg
+            if pol:
+                zrt[i][9:12] = mmm(lx)
+                zrt[i][12:15] = mmm(ly)
+                zrt[i][15:18] = mmm(lz)
 
             smry = self.rsmry_(i)
-            print "%3d z %10.3f %10.3f %10.3f r %10.3f %10.3f %10.3f  t %10.3f %10.3f %10.3f    smry %s " % (i, zmin, zmax,zavg, rmin, rmax, ravg, tmin, tmax, tavg, smry)
+
+            szrt =  fmt % tuple(zrt[i].tolist())
+            print "%3d %s smry %s " % (i, szrt, smry )
 
         pass
         return zrt 
 
 
-
-
+def mmm(a):
+    amin = a.min()
+    amax = a.max()
+    amid = (amin+amax)/2.
+    return amin, amax, amid
 
 
 def check_wavelength(evt):

@@ -22,7 +22,7 @@ struct TorchStep
     float  weight ;
  
     // (3) m_polw
-    float3 pol ;
+    float3 pol ;   // hijacked for some torch types as surfaceNormal
     float  wavelength ;
 
     // (4) m_zeaz : zenith, azimuth 
@@ -369,7 +369,7 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           }
 
       }
-      else if( ts.type == T_POINT )
+      else if( ts.type == T_POINT  )
       {
           p.direction = ts.p0 ;
           p.position = ts.x0 ;
@@ -510,6 +510,14 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
 
           //p.wavelength = float(photon_id % 10)*70.f + 100.f ; // toothcomb wavelength distribution 
       }
+
+
+      if( ts.mode & M_FIXPOL )
+      {
+           p.polarization = ts.pol  ; 
+      }
+ 
+
 }
 
 

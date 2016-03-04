@@ -126,6 +126,7 @@ void TorchStepNPY::setType(const char* s)
 
 const char* TorchStepNPY::M_SPOL_ = "spol" ; 
 const char* TorchStepNPY::M_PPOL_ = "ppol" ; 
+const char* TorchStepNPY::M_FIXPOL_ = "fixpol" ; 
 const char* TorchStepNPY::M_FLAT_THETA_ = "flatTheta" ; 
 const char* TorchStepNPY::M_FLAT_COSTHETA_ = "flatCosTheta" ; 
 
@@ -136,6 +137,7 @@ Mode_t TorchStepNPY::parseMode(const char* k)
     else if(  strcmp(k,M_PPOL_)==0)      mode = M_PPOL ; 
     else if(  strcmp(k,M_FLAT_THETA_)==0)      mode = M_FLAT_THETA ; 
     else if(  strcmp(k,M_FLAT_COSTHETA_)==0)   mode = M_FLAT_COSTHETA ; 
+    else if(  strcmp(k,M_FIXPOL_)==0)          mode = M_FIXPOL ; 
     return mode ;   
 }
 
@@ -158,6 +160,7 @@ std::string TorchStepNPY::getModeString()
     if(mode & M_PPOL) ss << M_PPOL_ << " " ;
     if(mode & M_FLAT_THETA) ss << M_FLAT_THETA_ << " " ; 
     if(mode & M_FLAT_COSTHETA) ss << M_FLAT_COSTHETA_ << " " ; 
+    if(mode & M_FIXPOL) ss << M_FIXPOL_ << " " ; 
 
     return ss.str();
 } 
@@ -236,8 +239,19 @@ void TorchStepNPY::configure(const char* config_)
     LOG(debug) << "TorchStepNPY::configure " <<  config.c_str() ;
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
     {
-        LOG(debug) << std::setw(20) << it->first << ":" << it->second ; 
-        set(parseParam(it->first.c_str()), it->second.c_str());
+        const char* k = it->first.c_str() ;  
+        const char* v = it->second.c_str() ;  
+        Param_t p = parseParam(k) ;
+        LOG(debug) << std::setw(20) << k << ":" << v  ; 
+
+        if(strlen(v)==0)
+        {
+            LOG(warning) << "TorchStepNPY::configure skip empty value for key " << k ; 
+        }
+        else
+        {
+            set(p, v);
+        }
     }
     setGenstepId();
 }

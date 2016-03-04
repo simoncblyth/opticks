@@ -137,6 +137,50 @@ reflect.
 Make this explicit with pmt_skimmer.py 
 
 
+With CPropLib::m_groupvel_kludge=true 1st 4 recs agree, apart from 4th flag BT/BR::
+
+    INFO:env.numerics.npy.evt:Evt seqs ['TO BT BR BR BT SA'] 
+    A(Op)
+      0 z    300.000    300.000    300.000 r     98.999     98.999     98.999  t      0.098      0.098      0.098    smry m1/m2   4/ 14 MO/Py  -28 ( 27)  13:TO  
+      1 z     67.559     67.559     67.559 r     98.999     98.999     98.999  t      1.251      1.251      1.251    smry m1/m2  14/  4 Py/MO   28 ( 27)  12:BT  
+      2 z     50.832     50.832     50.832 r    100.372    100.372    100.372  t      1.331      1.331      1.331    smry m1/m2  14/ 11 Py/OV -125 (124)  11:BR  
+      3 z     35.551     35.551     35.551 r     93.176     93.176     93.176  t      1.416      1.416      1.416    smry m1/m2  14/  4 Py/MO   28 ( 27)  12:BT  
+
+      4 z      2.005      2.005      2.005 r     81.137     81.137     81.137  t      1.532      1.532      1.532    smry m1/m2   4/ 14 MO/Py  -28 ( 27)  12:BT  
+      5 z   -114.115   -114.115   -114.115 r     42.253     42.253     42.253  t      1.953      1.953      1.953    smry m1/m2  14/ 13 Py/Vm  -29 ( 28)  12:BT  
+      6 z   -123.875   -123.875   -123.875 r     39.250     39.250     39.250  t      1.990      1.990      1.990    smry m1/m2  14/ 13 Py/Vm  -29 ( 28)  12:BT  
+      7 z   -150.810   -150.810   -150.810 r     39.250     39.250     39.250  t      2.051      2.051      2.051    smry m1/m2   4/ 14 MO/Py  -28 ( 27)  12:BT  
+      8 z   -169.002   -169.002   -169.002 r     39.250     39.250     39.250  t      2.081      2.081      2.081    smry m1/m2   4/ 12 MO/Rk  124 (123)  12:BT  
+      9 z   -300.000   -300.000   -300.000 r     39.250     39.250     39.250  t      2.301      2.301      2.301    smry m1/m2   4/ 12 MO/Rk  124 (123)   8:SA  
+    B(G4)
+      0 z    300.000    300.000    300.000 r     98.999     98.999     98.999  t      0.098      0.098      0.098    smry m1/m2   4/  0 MO/?0?    0 ( -1)  13:TO  
+      1 z     67.559     67.559     67.559 r     98.999     98.999     98.999  t      1.251      1.251      1.251    smry m1/m2  14/  0 Py/?0?    0 ( -1)  12:BT  
+      2 z     50.832     50.832     50.832 r    100.372    100.372    100.372  t      1.331      1.331      1.331    smry m1/m2  14/  0 Py/?0?    0 ( -1)  11:BR  
+      3 z     35.551     35.551     35.551 r     93.176     93.176     93.176  t      1.416      1.416      1.416    smry m1/m2  14/  0 Py/?0?    0 ( -1)  11:BR  
+
+      4 z     19.181     19.181     19.181 r     89.001     89.001     89.001  t      1.495      1.495      1.495    smry m1/m2   4/  0 MO/?0?    0 ( -1)  12:BT  
+      5 z   -300.000   -300.000   -300.000 r     26.569     26.569     26.569  t      3.107      3.107      3.107    smry m1/m2   4/  0 MO/?0?    0 ( -1)   8:SA  
+
+
+
+Note that OpaqueVacuum arrives dynamically (from high boundary index), it differs from Vacuum on by 0.1*absorption length::
+
+    simon:npy blyth$ ggv --mat 10
+    [2016-Mar-04 17:36:56.130002]:info: GPropertyMap<T>:: 10       material m:OpaqueVacuum k:refractive_index absorption_length scattering_length reemission_prob OpaqueVacuum
+                  domain    refractive_index   absorption_length   scattering_length     reemission_prob
+                      60                   1               1e+06               1e+06                   0
+    simon:npy blyth$ ggv --mat 12
+    [2016-Mar-04 17:38:23.829733]:info: GPropertyMap<T>:: 12       material m:Vacuum k:refractive_index absorption_length scattering_length reemission_prob Vacuum
+                  domain    refractive_index   absorption_length   scattering_length     reemission_prob
+                      60                   1               1e+07               1e+06                   0
+
+
+
+
+FIXED : a TIR bug 
+---------------------
+
+* reported in npy-/pmt_skimmer.py 
 
 
 

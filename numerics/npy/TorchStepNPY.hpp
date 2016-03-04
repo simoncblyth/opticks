@@ -22,7 +22,8 @@ typedef enum {
    M_SPOL          = 0x1 << 0,
    M_PPOL          = 0x1 << 1,
    M_FLAT_THETA    = 0x1 << 2, 
-   M_FLAT_COSTHETA = 0x1 << 3
+   M_FLAT_COSTHETA = 0x1 << 3,
+   M_FIXPOL        = 0x1 << 4
 }              Mode_t ; 
 
 
@@ -89,6 +90,7 @@ class TorchStepNPY {
        static const char* M_PPOL_ ; 
        static const char* M_FLAT_THETA_ ; 
        static const char* M_FLAT_COSTHETA_ ; 
+       static const char* M_FIXPOL_ ; 
 
    public:  
        TorchStepNPY(unsigned int genstep_id, unsigned int num_step=1, const char* config=NULL); 
@@ -128,6 +130,7 @@ class TorchStepNPY {
        bool isReflTest();
        bool isSPolarized();
        bool isPPolarized();
+       bool isFixPolarized();
        void Summary(const char* msg="TorchStepNPY::Summary");
    public:
        // local positions/vectors, frame transform is applied in *update* yielding world frame m_post m_dirw 
@@ -371,6 +374,12 @@ inline bool TorchStepNPY::isPPolarized()
     ::Mode_t  mode = getMode();
     return (mode & M_PPOL) != 0  ;
 }
+inline bool TorchStepNPY::isFixPolarized()
+{
+    ::Mode_t  mode = getMode();
+    return (mode & M_FIXPOL) != 0  ;
+}
+
 
 
 

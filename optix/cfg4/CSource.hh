@@ -17,15 +17,15 @@ class Recorder ;
 
 
 
-class OpSource: public G4VPrimaryGenerator 
+class CSource: public G4VPrimaryGenerator 
 {
   public:
-    OpSource(TorchStepNPY* torch, Recorder* recorder);
+    CSource(TorchStepNPY* torch, Recorder* recorder);
   private:
     void init();
     void configure();
   public:
-    ~OpSource();
+    ~CSource();
     void GeneratePrimaryVertex(G4Event *evt);
   public:
     void SetVerbosity(G4int);
@@ -73,7 +73,7 @@ private:
 };
 
 
-inline OpSource::OpSource(TorchStepNPY* torch, Recorder* recorder)  
+inline CSource::CSource(TorchStepNPY* torch, Recorder* recorder)  
     :
     m_torch(torch),
     m_recorder(recorder),
@@ -92,19 +92,19 @@ inline OpSource::OpSource(TorchStepNPY* torch, Recorder* recorder)
 
 
 
-inline void OpSource::SetNumberOfParticles(G4int num) 
+inline void CSource::SetNumberOfParticles(G4int num) 
 {
     m_num = num;
 }
-inline void OpSource::SetParticleTime(G4double time) 
+inline void CSource::SetParticleTime(G4double time) 
 {
     m_time = time;
 }
-inline void OpSource::SetParticleCharge(G4double charge) 
+inline void CSource::SetParticleCharge(G4double charge) 
 {
     m_charge = charge;
 }
-inline void OpSource::SetParticlePolarization(G4ThreeVector polarization) 
+inline void CSource::SetParticlePolarization(G4ThreeVector polarization) 
 {
     m_polarization = polarization ;
 }
@@ -112,34 +112,34 @@ inline void OpSource::SetParticlePolarization(G4ThreeVector polarization)
 
 
 
-inline G4ParticleDefinition* OpSource::GetParticleDefinition() const 
+inline G4ParticleDefinition* CSource::GetParticleDefinition() const 
 {
     return m_definition;
 }
-inline G4int OpSource::GetNumberOfParticles() const 
+inline G4int CSource::GetNumberOfParticles() const 
 {
     return m_num ;
 }
-inline G4double OpSource::GetParticleTime() const 
+inline G4double CSource::GetParticleTime() const 
 {
     return m_time;
 }
-inline G4ThreeVector OpSource::GetParticlePolarization() const 
+inline G4ThreeVector CSource::GetParticlePolarization() const 
 {
     return m_polarization;
 }
 
 
 
-inline G4ThreeVector OpSource::GetParticlePosition() const 
+inline G4ThreeVector CSource::GetParticlePosition() const 
 {
     return m_pp.Get().position;
 }
-inline G4ThreeVector OpSource::GetParticleMomentumDirection() const 
+inline G4ThreeVector CSource::GetParticleMomentumDirection() const 
 {
     return m_pp.Get().momentum_direction;
 }
-inline G4double OpSource::GetParticleEnergy() const 
+inline G4double CSource::GetParticleEnergy() const 
 {
     return m_pp.Get().energy;
 }

@@ -62,7 +62,7 @@ Format.cc
 Recorder.cc
 Rec.cc
 State.cc
-OpSource.cc
+CSource.cc
 OpStatus.cc
 PhysicsList.cc
 CDetector.cc
@@ -81,7 +81,7 @@ Format.hh
 Recorder.hh
 Rec.hh
 State.hh
-OpSource.hh
+CSource.hh
 OpStatus.hh
 PhysicsList.hh
 CDetector.hh

@@ -5,12 +5,12 @@
 
 class G4VPrimaryGenerator ;
 class G4Event;
-class OpSource ; 
+class CSource ; 
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction(OpSource* generator);
+    PrimaryGeneratorAction(CSource* generator);
     virtual ~PrimaryGeneratorAction();
 
   public:
@@ -18,11 +18,11 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   private:
     //G4VPrimaryGenerator*  m_generator ;
-    OpSource*  m_generator ;
+    CSource*  m_generator ;
 
 };
 
-inline PrimaryGeneratorAction::PrimaryGeneratorAction(OpSource* generator)
+inline PrimaryGeneratorAction::PrimaryGeneratorAction(CSource* generator)
     : 
     G4VUserPrimaryGeneratorAction(), 
     m_generator(generator)

@@ -4,9 +4,10 @@
 // npy-
 #include "TorchStepNPY.hpp"
 #include "NLog.hpp"
+#include "GLMFormat.hpp"
 
 // cfg4-
-#include "OpSource.hh"
+#include "CSource.hh"
 #include "Recorder.hh"
 
 // g4-
@@ -31,14 +32,14 @@
 #include "G4SPSRandomGenerator.hh"
 
 
-OpSource::part_prop_t::part_prop_t() 
+CSource::part_prop_t::part_prop_t() 
 {
   momentum_direction = G4ParticleMomentum(0,0,-1);
   energy = 1.*MeV;
   position = G4ThreeVector();
 }
 
-void OpSource::init()
+void CSource::init()
 {
 	m_definition = G4Geantino::GeantinoDefinition();
 
@@ -60,7 +61,7 @@ void OpSource::init()
 }
 
 
-OpSource::~OpSource() 
+CSource::~CSource() 
 {
 	delete m_ranGen;
 	delete m_posGen;
@@ -70,7 +71,7 @@ OpSource::~OpSource()
     G4MUTEXDESTROY(m_mutex);
 }
 
-void OpSource::SetVerbosity(int vL) 
+void CSource::SetVerbosity(int vL) 
 {
     G4AutoLock l(&m_mutex);
 	m_verbosityLevel = vL;
@@ -79,13 +80,13 @@ void OpSource::SetVerbosity(int vL)
 	m_eneGen->SetVerbosity(vL);
 }
 
-void OpSource::SetParticleDefinition(G4ParticleDefinition* definition) 
+void CSource::SetParticleDefinition(G4ParticleDefinition* definition) 
 {
 	m_definition = definition;
 	m_charge = definition->GetPDGCharge();
 }
 
-void OpSource::GeneratePrimaryVertex(G4Event *evt) 
+void CSource::GeneratePrimaryVertex(G4Event *evt) 
 {
     assert(m_definition);
 
@@ -103,16 +104,19 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
     bool SPol =  m_torch->isSPolarized() ;
     bool PPol =  m_torch->isPPolarized() ;
+    bool fixpol =  m_torch->isFixPolarized() ;
+    glm::vec3 polarization = m_torch->getPolarization() ;
 
-    
 	if (m_verbosityLevel > 1)
-    LOG(info) << "OpSource::GeneratePrimaryVertex"
+    LOG(info) << "CSource::GeneratePrimaryVertex"
               << " incidentSphere " << incidentSphere
               << " discLin " << discLin 
               << " ring " << ring 
               << " reflTest " << reflTest
               << " SPol " << SPol 
               << " PPol " << PPol 
+              << " fixpol " << fixpol 
+              << " polarization " << gformat(polarization)
               << " num " << m_num 
               ;
 
@@ -126,7 +130,7 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		pp.energy = m_eneGen->GenerateOne(m_definition);
 
      /*
-        LOG(info) << "OpSource::GeneratePrimaryVertex"
+        LOG(info) << "CSource::GeneratePrimaryVertex"
                   << " i " << std::setw(6) << i 
                   << " posx " << pp.position.x()
                   << " posy " << pp.position.y()
@@ -180,6 +184,17 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 		    particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
         }  
 
+
+        if(m_torch->isFixPolarized())
+        {
+             //LOG(info) << "CSource::GeneratePrimaryVertex" 
+             //          << " fixpol override "
+             //          << gformat(polarization)
+             //          ; 
+		     particle->SetPolarization(polarization.x, polarization.y, polarization.z);
+        }
+
+
 		if (m_verbosityLevel > 1) {
 			G4cout << "Particle name: "
 					<< m_definition->GetParticleName() << G4endl;
@@ -202,9 +217,9 @@ void OpSource::GeneratePrimaryVertex(G4Event *evt)
 
 
 
-void OpSource::configure()
+void CSource::configure()
 {
-    m_torch->Summary("OpSource::configure");
+    m_torch->Summary("CSource::configure");
 
     unsigned int n = m_torch->getNumPhotonsPerG4Event();
     SetNumberOfParticles(n);
@@ -271,11 +286,11 @@ void OpSource::configure()
        float ze_x = _zeaz.x ; 
        float ze_y = _zeaz.y ; 
        
-        if(ze_x == 0.f && ze_y == 1.f )
+        if(ze_x == 0.f )
         {
             m_posGen->SetPosDisShape("Circle");
             m_posGen->SetRadius(_radius*mm);
-            LOG(info) << "OpSource::configure posGen Circle"
+            LOG(info) << "CSource::configure posGen Circle"
                       << " radius " << m_posGen->GetRadius()
                       << " ze_x " << ze_x
                       << " ze_y " << ze_y
@@ -289,7 +304,7 @@ void OpSource::configure()
             m_posGen->SetRadius0(radius0);
             m_posGen->SetRadius( _radius*mm*ze_y);
 
-            LOG(info) << "OpSource::configure posGen Annulus"
+            LOG(info) << "CSource::configure posGen Annulus"
                       << " radius " << m_posGen->GetRadius()
                       << " radius0 " << radius0
                       << " ze_x " << ze_x
@@ -317,7 +332,7 @@ void OpSource::configure()
     }
     else
     {
-        LOG(warning) << "OpSource::configure mode not handled, default position/direction generators will be used " ; 
+        LOG(warning) << "CSource::configure mode not handled, default position/direction generators will be used " ; 
     }
 
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(posGen->GenerateOne(), "posGen", 10) << G4endl ; 

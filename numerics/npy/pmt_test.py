@@ -724,6 +724,50 @@ With Geant4 its probably impossible as only way to draw real geometry
 (not triangulated standins) is with the G4RayTracer which doesnt do photon paths. 
 
 
+After TIR bug fix
+------------------
+
+Point beam at skimmer position (tag 5) in better agreement (maybe low level scatter difference remains)::
+
+     98.999 98.999
+     98.999 98.999
+                      5:PmtInBox   -5:PmtInBox           c2 
+                8ccd       404485       404018             0.27  [4 ] TO BT BT SA
+                4ccd        30537        30458             0.10  [4 ] TO BT BT AB
+                  4d        22743        23066             2.28  [2 ] TO AB
+                 8bd        18353        18369             0.01  [3 ] TO BR SA
+                 4cd         6282         6265             0.02  [3 ] TO BT AB
+               86ccd         4790         4865             0.58  [5 ] TO BT BT SC SA
+              8cbbcd         4157         4280             1.79  [6 ] TO BT BR BR BT SA
+                 86d         3709         3725             0.03  [3 ] TO SC SA
+                 4bd         1575         1672             2.90  [3 ] TO BR AB
+                8c6d          529          506             0.51  [4 ] TO SC BT SA
+            8cbc6ccd          497          301            48.14  [8 ] TO BT BT SC BT BR BT SA
+               46ccd          271          327             5.24  [5 ] TO BT BT SC AB
+              8c6ccd            0          295           295.00  [6 ] TO BT BT SC BT SA
+              4cbbcd          292          287             0.04  [6 ] TO BT BR BR BT AB
+                86bd          290          257             1.99  [4 ] TO BR SC SA
+                 46d          221          209             0.33  [3 ] TO SC AB
+          cccccc6ccd          134          219            20.47  [10] TO BT BT SC BT BT BT BT BT BT
+                7c6d          157          178             1.32  [4 ] TO SC BT SD
+          8ccccc6ccd          147            0           147.00  [10] TO BT BT SC BT BT BT BT BT SA
+                4bcd           84           68             1.68  [4 ] TO BT BR AB
+             8cc6ccd           67           77             0.69  [7 ] TO BT BT SC BT BT SA
+               4bbcd           58           54             0.14  [5 ] TO BT BR BR AB
+              866ccd           58           53             0.23  [6 ] TO BT BT SC SC SA
+           8ccbbbbcd            0           54            54.00  [9 ] TO BT BR BR BR BR BT BT SA
+               8cc6d           53           45             0.65  [5 ] TO SC BT BT SA
+          cbccbbbbcd           53            0            53.00  [10] TO BT BR BR BR BR BT BT BR BT
+                8b6d           46           38             0.76  [4 ] TO SC BR SA
+             86cbbcd           40           36             0.21  [7 ] TO BT BR BR BT SC SA
+                866d           37           39             0.05  [4 ] TO SC SC SA
+              8b6ccd           26           37             1.92  [6 ] TO BT BT SC BR SA
+            4cbc6ccd           34           20             3.63  [8 ] TO BT BT SC BT BR BT AB
+          bbbbcc6ccd           25            0             0.00  [10] TO BT BT SC BT BT BR BR BR BR
+                46bd           21           16             0.68  [4 ] TO BR SC AB
+
+
+
 Geant4 viz
 --------------
 
@@ -748,7 +792,8 @@ CFG4 reflection
 
 Agreement out to 97mm now includes material history::
 
-0.000 97.002  0.117 97.004
+0.000 97.002  
+0.117 97.004
                       1:PmtInBox   -1:PmtInBox           c2 
                  8cd       361978       361339             0.56  [3 ] TO BT SA
                  7cd       114537       113731             2.85  [3 ] TO BT SD
@@ -801,11 +846,119 @@ Agreement out to 97mm now includes material history::
 
 
 
-CFG4 Double Reflect
---------------------
+CFG4 skimmer Double Reflect, FIXED Opticks TIR bug 
+-----------------------------------------------------
 
 * relocate to graphics/ggeoview/issues/cfg4_pmt_edge_double_reflect
 
+
+After fix the PMT edge is agreeing rather well::
+
+   96.995 100.005
+   96.995 100.005
+                      2:PmtInBox   -2:PmtInBox           c2 
+                8ccd       391394       391429             0.00  [4 ] TO BT BT SA
+                4ccd        29418        29306             0.21  [4 ] TO BT BT AB
+                  4d        22602        22571             0.02  [2 ] TO AB
+                 8bd        18671        19186             7.01  [3 ] TO BR SA
+                 8cd        10338        10116             2.41  [3 ] TO BT SA
+                 4cd         7554         7510             0.13  [3 ] TO BT AB
+               86ccd         4602         4626             0.06  [5 ] TO BT BT SC SA
+                 86d         3762         3729             0.15  [3 ] TO SC SA
+              8cbbcd         3462         3598             2.62  [6 ] TO BT BR BR BT SA
+                 7cd         3233         3181             0.42  [3 ] TO BT SD
+                 4bd         1811         1662             6.39  [3 ] TO BR AB
+                8c6d          484          440             2.10  [4 ] TO SC BT SA
+            8cbc6ccd          477          307            36.86  [8 ] TO BT BT SC BT BR BT SA
+               46ccd          275          310             2.09  [5 ] TO BT BT SC AB
+              8c6ccd            1          296           293.01  [6 ] TO BT BT SC BT SA
+                86bd          287          271             0.46  [4 ] TO BR SC SA
+          cccccc6ccd          129          259            43.56  [10] TO BT BT SC BT BT BT BT BT BT
+              4cbbcd          251          211             3.46  [6 ] TO BT BR BR BT AB
+                 46d          223          224             0.00  [3 ] TO SC AB
+                7c6d          140          160             1.33  [4 ] TO SC BT SD
+          8ccccc6ccd          138            1           135.03  [10] TO BT BT SC BT BT BT BT BT SA
+             8cc6ccd           67           77             0.69  [7 ] TO BT BT SC BT BT SA
+                4bcd           68           50             2.75  [4 ] TO BT BR AB
+              866ccd           55           59             0.14  [6 ] TO BT BT SC SC SA
+               4bbcd           51           42             0.87  [5 ] TO BT BR BR AB
+                866d           42           33             1.08  [4 ] TO SC SC SA
+
+
+
+Full range not so good ? EXPLAINED : disc/disclin mismatch
+---------------------------------------------------------------
+
+Curious going full range 0:1 worse than would expect from pieces::
+
+    NFO:env.numerics.npy.evt:rx shape (500000, 10, 2, 4) 
+     0.000 100.004
+     0.187 100.004
+                          4:PmtInBox   -4:PmtInBox           c2 
+                     8cd       351558       340273           184.08  [3 ] TO BT SA
+                     7cd       111189       107251            70.99  [3 ] TO BT SD
+                    8ccd        11661        23260          3852.60  [4 ] TO BT BT SA
+                      4d        18047        19048            27.01  [2 ] TO AB
+                     86d         3040         3133             1.40  [3 ] TO SC SA
+                     4cd         1736         2249            66.04  [3 ] TO BT AB
+                    4ccd          884         1732           274.89  [4 ] TO BT BT AB
+                     8bd          742         1455           231.39  [3 ] TO BR SA
+                    8c6d          375          424             3.01  [4 ] TO SC BT SA
+                   86ccd          140          260            36.00  [5 ] TO BT BT SC SA
+                     46d          187          215             1.95  [3 ] TO SC AB
+                  8cbbcd           90          213            49.93  [6 ] TO BT BR BR BT SA
+                    7c6d          103          132             3.58  [4 ] TO SC BT SD
+                     4bd           63          125            20.45  [3 ] TO BR AB
+                    866d           33           38             0.35  [4 ] TO SC SC SA
+                   8cc6d           28           29             0.02  [5 ] TO SC BT BT SA
+                8cbc6ccd           20           22             0.10  [8 ] TO BT BT SC BT BR BT SA
+                    8b6d           21           20             0.02  [4 ] TO SC BR SA
+                   46ccd            8           19             0.00  [5 ] TO BT BT SC AB
+                    86bd           15           16             0.03  [4 ] TO BR SC SA
+                  8c6ccd            0           16             0.00  [6 ] TO BT BT SC BT SA
+                  4cbbcd           12            9             0.00  [6 ] TO BT BR BR BT AB
+
+
+Radial distrib of "TO BT BT SA" looks same for both. Too large a difference, must 
+be migration from "TO BT SA". Comparing those note different radial distrib
+
+* flat in r for (Op)
+* linear in r for CfG4, from 0 at center to twice Op at 100mm
+
+Maybe a difference of Annular and Circle regarding position distrib ?
+Nope tried using 0.0001,1 to use Annular for cicle and still getting
+the same.
+
+Aha, using disc for Op and disclin for CfG4 gets agreement, TODO:fix CSource bug?::
+
+    1.005 100.004
+    0.187 100.004
+                      4:PmtInBox   -4:PmtInBox           c2 
+                 8cd       340271       340273             0.00  [3 ] TO BT SA
+                 7cd       107598       107251             0.56  [3 ] TO BT SD
+                8ccd        23217        23260             0.04  [4 ] TO BT BT SA
+                  4d        18866        19048             0.87  [2 ] TO AB
+                 86d         3179         3133             0.34  [3 ] TO SC SA
+                 4cd         2204         2249             0.45  [3 ] TO BT AB
+                4ccd         1696         1732             0.38  [4 ] TO BT BT AB
+                 8bd         1446         1455             0.03  [3 ] TO BR SA
+                8c6d          382          424             2.19  [4 ] TO SC BT SA
+               86ccd          260          260             0.00  [5 ] TO BT BT SC SA
+                 46d          197          215             0.79  [3 ] TO SC AB
+              8cbbcd          190          213             1.31  [6 ] TO BT BR BR BT SA
+                 4bd          132          125             0.19  [3 ] TO BR AB
+                7c6d          111          132             1.81  [4 ] TO SC BT SD
+                866d           35           38             0.12  [4 ] TO SC SC SA
+               8cc6d           31           29             0.07  [5 ] TO SC BT BT SA
+            8cbc6ccd           31           22             1.53  [8 ] TO BT BT SC BT BR BT SA
+                8b6d           26           20             0.78  [4 ] TO SC BR SA
+              4cbbcd           24            9             6.82  [6 ] TO BT BR BR BT AB
+                86bd           19           16             0.26  [4 ] TO BR SC SA
+               46ccd           17           19             0.11  [5 ] TO BT BT SC AB
+              8c6ccd            0           16             0.00  [6 ] TO BT BT SC BT SA
+          cccccc6ccd            6           12             0.00  [10] TO BT BT SC BT BT BT BT BT BT
+          8ccccc6ccd            7            0             0.00  [10] TO BT BT SC BT BT BT BT BT SA
+          cbccbbbbcd            7            0             0.00  [10] TO BT BR BR BR BR BT BT BR BT
 
 
 
@@ -831,7 +984,8 @@ if __name__ == '__main__':
 
     #tag = "1"
     #tag = "2"
-    tag = "5"
+    tag = "4"
+    #tag = "5"
 
     #seqs = ["TO BT BR BT BT BT BT SA"] 
     #seqs = ["TO BT BR BR BT SA"]
