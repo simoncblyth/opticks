@@ -12,6 +12,8 @@
 
 #include "G4VPhysicalVolume.hh"
 
+#include "G4DAEParser.hh"
+
 
 #include "NLog.hpp"
 
@@ -41,17 +43,26 @@ int main(int argc, char** argv)
 
     CPropLib* clib = m_detector->getPropLib() ;
 
-    G4VPhysicalVolume* pv = m_detector->Construct();
+    G4VPhysicalVolume* world_pv = m_detector->Construct();
 
     clib->dumpMaterials();
 
-    CTraverser* m_traverser = new CTraverser(pv) ;
+    CTraverser* m_traverser = new CTraverser(world_pv) ;
 
     m_traverser->Traverse(); 
 
     m_traverser->dumpMaterials(); 
 
 
+    const G4String path = "/tmp/cfg4.dae" ;
+
+    G4DAEParser g4dae ;
+
+    G4bool refs = true ;
+    G4bool recreatePoly = false ; 
+    G4int nodeIndex = -1 ;   // so World is volume 0 
+
+    g4dae.Write(path, world_pv, refs, recreatePoly, nodeIndex );
 
     return 0 ; 
 }

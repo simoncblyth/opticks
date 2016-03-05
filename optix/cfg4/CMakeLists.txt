@@ -19,7 +19,8 @@ find_package(GGeo REQUIRED)
 find_package(Opticks REQUIRED)
 
 find_package(Geant4 REQUIRED)  
-
+find_package(EnvXercesC  REQUIRED)  
+find_package(G4DAE  REQUIRED)  
 
 set(INCLUDE_DIRS  
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -31,6 +32,8 @@ set(INCLUDE_DIRS
    ${GGeo_INCLUDE_DIRS}
    ${Opticks_INCLUDE_DIRS}
    ${Geant4_INCLUDE_DIRS}
+   ${XERCESC_INCLUDE_DIR}
+   ${G4DAE_INCLUDE_DIRS}
 )
 
 set(LIBRARIES
@@ -41,6 +44,8 @@ set(LIBRARIES
    ${GGeo_LIBRARIES}
    ${Opticks_LIBRARIES}
    ${Geant4_LIBRARIES}
+   ${XERCESC_LIBRARIES}
+   ${G4DAE_LIBRARIES}
 )
 
 set(DEFINITIONS
@@ -51,7 +56,14 @@ set(DEFINITIONS
    ${Cfg_DEFINITIONS} 
    ${Opticks_DEFINITIONS}
    ${Geant4_DEFINITIONS}
+   ${XERCESC_DEFINITIONS}
+   ${G4DAE_DEFINITIONS}
 )
+
+message(STATUS "XERCESC_INCLUDE_DIR  : ${XERCESC_INCLUDE_DIR}")
+message(STATUS "XERCESC_LIBRARIES    : ${XERCESC_LIBRARIES}")
+message(STATUS "XERCESC_DEFINITIONS  : ${XERCESC_DEFINITIONS}")
+
 
 include_directories(${INCLUDE_DIRS})   
 add_definitions(${DEFINITIONS})
