@@ -442,10 +442,15 @@ void App::fixGeometry()
 
 void App::configureGeometry()
 {
-    LOG(info) << "App::configureGeometry" ; 
-
     int restrict_mesh = m_fcfg->getRestrictMesh() ;  
     int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
+    unsigned int nmm = m_ggeo->getNumMergedMesh();
+
+    LOG(info) << "App::configureGeometry" 
+              << " restrict_mesh " << restrict_mesh
+              << " analytic_mesh " << analytic_mesh
+              << " nmm " << nmm
+              ;
 
     std::string instance_slice = m_fcfg->getISlice() ;;
     std::string face_slice = m_fcfg->getFSlice() ;;
@@ -455,7 +460,6 @@ void App::configureGeometry()
     NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
     NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
 
-    unsigned int nmm = m_ggeo->getNumMergedMesh();
     for(unsigned int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
