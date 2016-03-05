@@ -84,6 +84,9 @@ class GPropertyLib {
         void close();
         void setClosed(bool closed=true);
         bool isClosed();
+        void setValid(bool valid=true);
+        bool isValid();
+
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
         GItemList*   getNames();
@@ -108,6 +111,7 @@ class GPropertyLib {
         GPropertyMap<float>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   
         bool                                 m_closed ;  
+        bool                                 m_valid ;  
 };
 
 inline GPropertyLib::GPropertyLib(GCache* cache, const char* type) 
@@ -120,7 +124,8 @@ inline GPropertyLib::GPropertyLib(GCache* cache, const char* type)
      m_type(strdup(type)),
      m_standard_domain(NULL),
      m_defaults(NULL),
-     m_closed(false)
+     m_closed(false),
+     m_valid(true)
 {
      init();
 }
@@ -179,5 +184,17 @@ inline bool GPropertyLib::isClosed()
 {
     return m_closed ; 
 }
+
+inline void GPropertyLib::setValid(bool valid)
+{
+    m_valid = valid ; 
+}
+inline bool GPropertyLib::isValid()
+{
+    return m_valid ; 
+}
+
+
+
 
 

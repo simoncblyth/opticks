@@ -14,6 +14,7 @@ class GScintillatorLib : public GPropertyLib {
         static const char* keyspec ;
     public:
         void save();
+        void dump(const char* msg="GScintillatorLib::dump");
         static GScintillatorLib* load(GCache* cache);
     public:
         GScintillatorLib(GCache* cache, unsigned int icdf_length=4096);

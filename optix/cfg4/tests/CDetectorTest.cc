@@ -54,15 +54,26 @@ int main(int argc, char** argv)
     m_traverser->dumpMaterials(); 
 
 
-    const G4String path = "/tmp/cfg4.dae" ;
 
-    G4DAEParser g4dae ;
+    bool expo = m_cfg->hasOpt("export");
+    std::string expoconfig = m_cfg->getExportConfig();
 
-    G4bool refs = true ;
-    G4bool recreatePoly = false ; 
-    G4int nodeIndex = -1 ;   // so World is volume 0 
+    if(expo && expoconfig.size() > 0)
+    {  
+        const G4String path = expoconfig ; 
 
-    g4dae.Write(path, world_pv, refs, recreatePoly, nodeIndex );
+        LOG(info) << "export to " << expoconfig ; 
+
+        G4DAEParser* g4dae = new G4DAEParser ;
+
+        G4bool refs = true ;
+        G4bool recreatePoly = false ; 
+        G4int nodeIndex = -1 ;   // so World is volume 0 
+
+        g4dae->Write(path, world_pv, refs, recreatePoly, nodeIndex );
+
+    }
+
 
     return 0 ; 
 }

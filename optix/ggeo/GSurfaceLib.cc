@@ -376,6 +376,13 @@ NPY<float>* GSurfaceLib::createBuffer()
 
 void GSurfaceLib::import()
 {
+    if(m_buffer == NULL)
+    {
+        setValid(false);
+        LOG(warning) << "GSurfaceLib::import NULL buffer " ; 
+        return ;  
+    }
+
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
     unsigned int ni = m_buffer->getShape(0);

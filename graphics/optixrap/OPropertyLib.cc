@@ -7,12 +7,16 @@
 // trace/debug/info/warning/error/fatal
 
 
-optix::TextureSampler OPropertyLib::makeTexture(NPY<float>* buffer, RTformat format, unsigned int nx, unsigned int ny)
+optix::TextureSampler OPropertyLib::makeTexture(NPY<float>* buffer, RTformat format, unsigned int nx, unsigned int ny, bool empty)
 {
     unsigned int numBytes = buffer->getNumBytes(0) ;
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, format, nx, ny );
-    memcpy( optixBuffer->map(), buffer->getBytes(), numBytes );
-    optixBuffer->unmap(); 
+
+    if(!empty)
+    {
+        memcpy( optixBuffer->map(), buffer->getBytes(), numBytes );
+        optixBuffer->unmap(); 
+    }
 
     optix::TextureSampler sampler = m_context->createTextureSampler();
     sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 

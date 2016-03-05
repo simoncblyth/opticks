@@ -15,8 +15,11 @@ class OpticksCfg : public Cfg {
      const std::string& getEventTag();
      const std::string& getEventCat();
      const std::string& getLiveLine();
+
+     const std::string& getExportConfig();
      const std::string& getTorchConfig();
      const std::string& getTestConfig();
+
      const std::string& getZExplodeConfig();
      const std::string& getMeshVersion();
      const std::string& getISlice();
@@ -46,12 +49,15 @@ private:
      Listener*   m_listener ; 
      std::string m_size ;
      std::string m_logname ;
-     std::string m_configpath ;
      std::string m_event_cat ;
      std::string m_event_tag ;
      std::string m_liveline ;
+
+     std::string m_configpath ;
+     std::string m_exportconfig ;
      std::string m_torchconfig ;
      std::string m_testconfig ;
+
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;
      std::string m_islice ;
@@ -84,6 +90,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_listener(listener),
        m_size(""),
        m_logname(""),
+       m_exportconfig(""),
        m_torchconfig(""),
        m_testconfig(""),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
@@ -213,6 +220,9 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("torchdbg",  "dump details of torch config") ;
 
+
+
+
    m_desc.add_options()
        ("steppingdbg",  "dump details of cfg4 stepping") ;
 
@@ -228,6 +238,17 @@ inline void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("testconfig",   boost::program_options::value<std::string>(&m_testconfig), "dynamic test geometry configuration" );
+
+
+
+   m_desc.add_options()
+       ("export",  "cfg4: write geometry to file using exportconfig settings") ;
+
+   m_desc.add_options()
+       ("exportconfig",   boost::program_options::value<std::string>(&m_exportconfig), "export configuration" );
+
+
+
 
    m_desc.add_options()
        ("primary",  "Enable recording of primary vertices in cfg4-, stored in NumpyEvt primary ") ;
@@ -446,6 +467,9 @@ inline const std::string& OpticksCfg<Listener>::getLiveLine()
 {
     return m_liveline ;
 }
+
+
+
 template <class Listener>
 inline const std::string& OpticksCfg<Listener>::getTorchConfig()
 {
@@ -456,6 +480,13 @@ inline const std::string& OpticksCfg<Listener>::getTestConfig()
 {
     return m_testconfig ;
 }
+template <class Listener>
+inline const std::string& OpticksCfg<Listener>::getExportConfig()
+{
+    return m_exportconfig ;
+}
+
+
 
 template <class Listener>
 inline const std::string& OpticksCfg<Listener>::getZExplodeConfig()

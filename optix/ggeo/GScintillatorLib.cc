@@ -4,12 +4,7 @@
 #include "GItemList.hh"
 #include "NPY.hpp"
 
-#include <iomanip>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
+#include "NLog.hpp"
 
 const char* GScintillatorLib::slow_component    = "slow_component" ;
 const char* GScintillatorLib::fast_component    = "fast_component" ;
@@ -21,6 +16,12 @@ const char* GScintillatorLib::keyspec =
 "reemission_cdf:DUMMY," 
 ;
 
+void GScintillatorLib::dump(const char* msg)
+{
+   LOG(info) << msg 
+             << " num_scintillators " << getNumScintillators() 
+             ;
+}
 
 void GScintillatorLib::save()
 {

@@ -258,5 +258,17 @@ cfg4-dbg(){
 }
 
 
+cfg4-dpib()
+{
+   local msg="=== $FUNCNAME "
+
+   export-
+
+   local base=$(export-base dpib)
+   local path=$base.dae
+   [ -f "$path" ] && echo $msg path $path exists already : delete and rerun to recreate && return 
+
+   ggv-;ggv-pmt-test --cdetector --export --exportconfig $path
+}
 
 

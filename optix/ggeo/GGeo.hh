@@ -67,6 +67,7 @@ class GGeo {
         GGeo(GCache* cache); 
         GCache* getCache();
         const char* getIdPath();
+        bool isValid();
     public:
         void loadGeometry(); 
         void loadFromCache();

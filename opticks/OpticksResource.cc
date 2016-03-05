@@ -14,17 +14,25 @@ namespace fs = boost::filesystem;
 
 const char* OpticksResource::JUNO    = "juno" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
+const char* OpticksResource::DPIB    = "PmtInBox" ; 
+
 const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
 void OpticksResource::init()
 {
    readEnvironment();
+ 
+   // TODO: generalize by extracting the name beneath export dir
+
    m_juno     = idPathContains("env/geant4/geometry/export/juno") ;
    m_dayabay  = idPathContains("env/geant4/geometry/export/DayaBay") ;
-   assert( m_juno ^ m_dayabay ); // exclusive-or
+   m_dpib     = idPathContains("env/geant4/geometry/export/dpib") ;
+
+   assert( m_juno ^ m_dayabay ^ m_dpib ); // exclusive-or
 
    if(m_juno)    m_detector = JUNO ; 
    if(m_dayabay) m_detector = DAYABAY ; 
+   if(m_dpib)    m_detector = DPIB ; 
 }
 
 

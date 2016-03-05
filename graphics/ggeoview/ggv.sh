@@ -114,6 +114,9 @@ elif [ "${cmdline/--attr}" != "${cmdline}" ]; then
 elif [ "${cmdline/--surf}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GSurfaceLibTest)
    export OPTICKS_ARGS=${cmdline/--surf}
+elif [ "${cmdline/--scint}" != "${cmdline}" ]; then
+   export OPTICKS_BINARY=$(ggeo-bin GScintillatorLibTest)
+   export OPTICKS_ARGS=${cmdline/--scint}
 elif [ "${cmdline/--flags}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GFlagsTest)
 elif [ "${cmdline/--gbuffer}" != "${cmdline}" ]; then
@@ -174,6 +177,12 @@ elif [ "${cmdline/--jtst}" != "${cmdline}" ]; then
 
    export OPTICKS_GEOKEY=DAE_NAME_JTST
    export OPTICKS_QUERY="range:1:50000" 
+   export OPTICKS_CTRL=""
+
+elif [ "${cmdline/--dpib}" != "${cmdline}" ]; then
+
+   export OPTICKS_GEOKEY=DAE_NAME_DPIB
+   export OPTICKS_QUERY="range:1:5" 
    export OPTICKS_CTRL=""
 
 elif [ "${cmdline/--dyb}" != "${cmdline}" ]; then

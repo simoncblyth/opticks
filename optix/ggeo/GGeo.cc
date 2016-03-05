@@ -245,6 +245,11 @@ void GGeo::afterConvertMaterials()
 }
 
 
+bool GGeo::isValid()
+{
+    return m_bndlib->isValid() && m_materiallib->isValid() && m_surfacelib->isValid() ; 
+}
+
 void GGeo::loadFromCache()
 {   
     LOG(debug) << "GGeo::loadFromCache START" ; 
@@ -268,6 +273,8 @@ void GGeo::loadFromCache()
 
     m_scintillatorlib  = GScintillatorLib::load(m_cache);
     m_sourcelib  = GSourceLib::load(m_cache);
+
+
 
     LOG(debug) << "GGeo::loadFromCache DONE" ; 
 }
@@ -756,25 +763,37 @@ void GGeo::prepareSurfaceLib()
 }
 
 
+
+
+
 void GGeo::prepareScintillatorLib()
 {
     LOG(info) << "GGeo::prepareScintillatorLib " ; 
 
     findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
 
-    GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(getScintillatorMaterial(0));  
+    unsigned int nscint = getNumScintillatorMaterials() ;
 
-    GScintillatorLib* sclib = getScintillatorLib() ;
+    if(nscint == 0)
+    {
+        LOG(warning) << "GGeo::prepareScintillatorLib found no scintillator materials  " ; 
+    }
+    else
+    {
+        GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(getScintillatorMaterial(0));  
 
-    sclib->add(scint);
+        GScintillatorLib* sclib = getScintillatorLib() ;
 
-    sclib->close(); 
+        sclib->add(scint);
+
+        sclib->close(); 
+    }
 }
 
 void GGeo::findScintillatorMaterials(const char* props)
 {
     m_scintillators_raw = getRawMaterialsWithProperties(props, ",");
-    assert(m_scintillators_raw.size() > 0 );
+    //assert(m_scintillators_raw.size() > 0 );
 }
 
 void GGeo::dumpScintillatorMaterials(const char* msg)
@@ -799,6 +818,11 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 {
     return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
 }
+
+
+
+
+
 
 
 

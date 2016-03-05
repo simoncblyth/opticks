@@ -140,6 +140,8 @@ void App::init(int argc, char** argv)
 {
     m_opticks = new Opticks(argc, argv);
     m_resource = m_opticks->getResource();
+    m_resource->Summary("App::init OpticksResource::Summary");
+
     m_cache = new GCache(m_opticks);
 
     m_parameters = new Parameters ;  // favor evt params over these, as evt params are persisted with the evt
@@ -346,6 +348,13 @@ void App::loadGeometry()
     LOG(info) << "App::loadGeometry START" ; 
 
     loadGeometryBase();
+
+    if(!m_ggeo->isValid())
+    {
+        LOG(warning) << "App::loadGeometry finds invalid geometry, try creating geocache with --nogeocache/-G option " ; 
+        setExit(true); 
+        return ; 
+    }
 
     if(hasOpt("test")) modifyGeometry() ;
 

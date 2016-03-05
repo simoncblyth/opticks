@@ -7,7 +7,7 @@ class OPropertyLib  {
     public:
         OPropertyLib(optix::Context& ctx);
     public:
-        optix::TextureSampler makeTexture(NPY<float>* buffer, RTformat format, unsigned int nx, unsigned int ny);
+        optix::TextureSampler makeTexture(NPY<float>* buffer, RTformat format, unsigned int nx, unsigned int ny, bool empty=false);
     protected:
         optix::Context       m_context ; 
 

@@ -17,23 +17,33 @@ void OScintillatorLib::convert()
 
 void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
 {
+    assert(buf) ;  
+
     unsigned int ni = buf->getShape(0);
     unsigned int nj = buf->getShape(1);
     unsigned int nk = buf->getShape(2);
-    assert(ni == 1 && nj == 4096 && nk == 1);
 
-    unsigned int nx = nj ;
-    unsigned int ny = 1 ;
-
-    LOG(debug) << "OScintillatorLib::makeReemissionTexture "
-              << " nx " << nx
-              << " ny " << ny  
-              ;
-
+    bool empty = ni == 0 ;
+     
+    unsigned int nx = 4096 ; 
+    unsigned int ny = 1 ; 
     float step = 1.f/float(nx) ;
     optix::float4 domain = optix::make_float4(0.f , 1.f, step, 0.f );
-    optix::TextureSampler tex = makeTexture(buf, RT_FORMAT_FLOAT, nx, ny);
 
+    LOG(info) << "OScintillatorLib::makeReemissionTexture "
+              << " nx " << nx
+              << " ny " << ny  
+              << " ni " << ni  
+              << " nj " << nj  
+              << " nk " << nk
+              << " step " << step
+              << " empty " << empty
+              ;
+
+    if(empty)
+        LOG(warning) << "OScintillatorLib::makeReemissionTexture no scintillators, creating empty texture " ;
+
+    optix::TextureSampler tex = makeTexture(buf, RT_FORMAT_FLOAT, nx, ny, empty);
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);
 }

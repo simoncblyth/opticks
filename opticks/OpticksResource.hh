@@ -10,6 +10,7 @@ class OpticksResource {
     private:
        static const char* JUNO ; 
        static const char* DAYABAY ; 
+       static const char* DPIB ; 
        static const char* PREFERENCE_BASE  ;
     public:
        OpticksResource(const char* envprefix);
@@ -44,6 +45,7 @@ class OpticksResource {
        const char* getDetector();
        bool        isJuno();
        bool        isDayabay();
+       bool        isPmtInBox();
    private:
        const char* m_envprefix ; 
    private:
@@ -59,6 +61,7 @@ class OpticksResource {
        const char* m_digest ;
        bool        m_dayabay ; 
        bool        m_juno ; 
+       bool        m_dpib ; 
        const char* m_detector ;
 };
 
@@ -77,6 +80,7 @@ inline OpticksResource::OpticksResource(const char* envprefix)
        m_digest(NULL),
        m_dayabay(false),
        m_juno(false),
+       m_dpib(false),
        m_detector(NULL)
 {
     init();
@@ -131,6 +135,14 @@ inline bool OpticksResource::isDayabay()
 {
    return m_dayabay ; 
 }
+inline bool OpticksResource::isPmtInBox()
+{
+   return m_dpib ; 
+}
+
+
+
+
 
 inline bool OpticksResource::idPathContains(const char* s)
 {

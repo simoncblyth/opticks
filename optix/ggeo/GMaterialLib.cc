@@ -183,6 +183,13 @@ NPY<float>* GMaterialLib::createBuffer()
 
 void GMaterialLib::import()
 {
+    if(m_buffer == NULL)
+    {
+        setValid(false);
+        LOG(warning) << "GMaterialLib::import NULL buffer " ; 
+        return ;  
+    }
+
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
     unsigned int ni = m_buffer->getShape(0);
