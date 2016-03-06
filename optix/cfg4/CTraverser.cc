@@ -91,6 +91,7 @@ void CTraverser::dumpMaterial(const G4Material* material)
         G4String pname = it->first ; 
         G4MaterialPropertyVector* pvec = it->second ; 
         ss << pname << " " ;  
+        if(m_verbosity > 1 )
         dumpMaterialProperty(pname, pvec);
     }    
     std::string props = ss.str() ;

@@ -86,9 +86,16 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
 
 void GMesh::allocate()
 {
+
     unsigned int numVertices = getNumVertices();
     unsigned int numFaces = getNumFaces();
     unsigned int numSolids = getNumSolids();
+
+    LOG(info) << "GMesh::allocate"
+              << " numVertices " << numVertices
+              << " numFaces " << numFaces
+              << " numSolids " << numSolids
+              ;
 
     assert(numVertices > 0 && numFaces > 0 && numSolids > 0);
 
@@ -108,7 +115,6 @@ void GMesh::allocate()
     setBoundaries(   new unsigned int[numFaces]);
     setSensors(      new unsigned int[numFaces]);
 
-
     setCenterExtent(new gfloat4[numSolids]);
     setBBox(new gbbox[numSolids]);
     setMeshes(new unsigned int[numSolids]);
@@ -116,6 +122,7 @@ void GMesh::allocate()
     setIdentity(new guint4[numSolids]);
     setTransforms(new float[numSolids*16]);
 
+    LOG(info) << "GMesh::allocate DONE " ;
 }
 
 
@@ -226,6 +233,12 @@ void GMesh::setColorsBuffer(GBuffer* buffer)
 void GMesh::setCenterExtent(gfloat4* center_extent)  
 {
     m_center_extent = center_extent ;  
+
+    LOG(info) << "GMesh::setCenterExtent (creates buffer) " 
+              << " m_center_extent " << m_center_extent
+              << " m_num_solids " << m_num_solids 
+              ; 
+
     assert(m_num_solids > 0);
     m_center_extent_buffer = new GBuffer( sizeof(gfloat4)*m_num_solids, (void*)m_center_extent, sizeof(gfloat4), 4 ); 
     assert(sizeof(gfloat4) == sizeof(float)*4);
@@ -238,6 +251,14 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
     m_center_extent = (gfloat4*)buffer->getPointer();
     unsigned int numBytes = buffer->getNumBytes();
     m_num_solids = numBytes/sizeof(gfloat4) ;
+
+    LOG(info) << "GMesh::setCenterExtentBuffer  (creates array from buffer) " 
+              << " m_center_extent " << m_center_extent
+              << " m_num_solids " << m_num_solids 
+              ; 
+
+
+
 }
 
 

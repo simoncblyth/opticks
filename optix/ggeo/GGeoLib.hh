@@ -51,12 +51,6 @@ inline unsigned int GGeoLib::getNumMergedMesh()
     return m_merged_mesh.size();
 }
 
-inline GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
-{
-    if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
-    return m_merged_mesh[index] ;
-}
-
 
 
 

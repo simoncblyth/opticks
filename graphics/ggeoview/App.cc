@@ -386,6 +386,9 @@ void App::loadGeometryBase()
         m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
 
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+    m_ggeo->setLoaderVerbosity(m_fcfg->getLoaderVerbosity());    
+    m_ggeo->setMeshVerbosity(m_fcfg->getMeshVerbosity());    
+
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
     m_ggeo->setMeshJoinCfg( m_resource->getMeshfix() );
 

@@ -196,7 +196,8 @@ class GMesh : public GDrawable {
       void allocate();  // must first have set numVertices, numFaces, numSolids
       void deallocate(); 
       virtual ~GMesh();
-
+      void setVerbosity(unsigned int verbosity); 
+      unsigned int getVerbosity();
   private:
       void init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords);
   public:
@@ -503,6 +504,9 @@ class GMesh : public GDrawable {
       GBuffer* m_analytic_geometry_buffer ; 
 
       GParts*      m_parts ; 
+
+      unsigned int   m_verbosity ; 
+
 };
 
 
@@ -579,7 +583,8 @@ inline GMesh::GMesh(unsigned int index,
       m_facerepeated_iidentity_buffer(NULL),
       m_analytic_geometry_buffer(NULL),
 
-      m_parts(NULL)
+      m_parts(NULL),
+      m_verbosity(0)
 {
      init(vertices, faces, normals, texcoords);
 }
@@ -610,6 +615,16 @@ inline void GMesh::deallocate()
 inline GMesh::~GMesh()
 {
     deallocate();
+}
+
+inline void GMesh::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
+
+inline unsigned int GMesh::getVerbosity()
+{
+    return m_verbosity ; 
 }
 
 inline void GMesh::setName(const char* name)

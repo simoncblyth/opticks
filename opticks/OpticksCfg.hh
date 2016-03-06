@@ -43,6 +43,8 @@ class OpticksCfg : public Cfg {
      int          getDebugIdx(); 
      int          getStack(); 
      int          getNumPhotonsPerG4Event(); 
+     int          getLoaderVerbosity(); 
+     int          getMeshVerbosity(); 
 private:
      void init();
 private:
@@ -81,6 +83,8 @@ private:
      int         m_debugidx ; 
      int         m_stack ; 
      int         m_num_photons_per_g4event;
+     int         m_loaderverbosity ; 
+     int         m_meshverbosity ; 
 };
 
 template <class Listener>
@@ -114,7 +118,9 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_override(-1),
        m_debugidx(0),
        m_stack(2180),
-       m_num_photons_per_g4event(10000)
+       m_num_photons_per_g4event(10000),
+       m_loaderverbosity(0),
+       m_meshverbosity(0)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -389,6 +395,16 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("analyticmesh",  boost::program_options::value<int>(&m_analyticmesh), analyticmesh );
 
+   char loaderverbosity[128];
+   snprintf(loaderverbosity,128, "Geometry Loader Verbosity eg AssimpGGeo.  Default %d ", m_loaderverbosity);
+   m_desc.add_options()
+       ("loaderverbosity",  boost::program_options::value<int>(&m_loaderverbosity), loaderverbosity );
+
+   char meshverbosity[128];
+   snprintf(meshverbosity,128, "Mesh Operation Verbosity eg GMergedMesh::Create.  Default %d ", m_meshverbosity);
+   m_desc.add_options()
+       ("meshverbosity",  boost::program_options::value<int>(&m_meshverbosity), meshverbosity );
+
 
 
    ///////////////
@@ -623,5 +639,17 @@ inline int OpticksCfg<Listener>::getNumPhotonsPerG4Event()
     return m_num_photons_per_g4event ; 
 }
 
+template <class Listener>
+inline int OpticksCfg<Listener>::getLoaderVerbosity()
+{
+    return m_loaderverbosity ; 
+}
+
+
+template <class Listener>
+inline int OpticksCfg<Listener>::getMeshVerbosity()
+{
+    return m_meshverbosity ; 
+}
 
 

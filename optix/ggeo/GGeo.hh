@@ -53,6 +53,11 @@ class GGeo {
     public:
         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
         void setLoaderImp(GLoaderImpFunctionPtr imp);
+        void setLoaderVerbosity(unsigned int verbosity);
+        unsigned int getLoaderVerbosity();
+    public:
+        void setMeshVerbosity(unsigned int verbosity);
+        unsigned int getMeshVerbosity();
     public:
         typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, GCache*);
         void setMeshJoinImp(GJoinImpFunctionPtr imp);
@@ -313,6 +318,8 @@ class GGeo {
         const char*                        m_join_cfg ; 
         GJoinImpFunctionPtr                m_join_imp ;  
         GLoaderImpFunctionPtr              m_loader_imp ;  
+        unsigned int                       m_loader_verbosity ; 
+        unsigned int                       m_mesh_verbosity ; 
 
 };
 
@@ -340,7 +347,9 @@ inline GGeo::GGeo(GCache* cache) :
    m_sensitive_count(0),
    m_volnames(false),
    m_cathode(NULL),
-   m_join_cfg(NULL)
+   m_join_cfg(NULL),
+   m_loader_verbosity(0),
+   m_mesh_verbosity(0)
 {
    init(); 
 }
@@ -355,6 +364,28 @@ inline void GGeo::setLoaderImp(GLoaderImpFunctionPtr imp)
 {
     m_loader_imp = imp ; 
 }
+inline void GGeo::setLoaderVerbosity(unsigned int verbosity)
+{
+    m_loader_verbosity = verbosity  ; 
+}
+inline unsigned int GGeo::getLoaderVerbosity()
+{
+    return m_loader_verbosity ;
+}
+
+inline void GGeo::setMeshVerbosity(unsigned int verbosity)
+{
+    m_mesh_verbosity = verbosity  ; 
+}
+inline unsigned int GGeo::getMeshVerbosity()
+{
+    return m_mesh_verbosity ;
+}
+
+
+
+
+
 inline void GGeo::setMeshJoinImp(GJoinImpFunctionPtr imp)
 {
     m_join_imp = imp ; 

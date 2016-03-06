@@ -25,9 +25,38 @@ GGeoLib* GGeoLib::load(GCache* cache)
 }
 
 
+GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
+{
+    if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
+    GMergedMesh* mm = m_merged_mesh[index] ;
+
+    unsigned int meshverbosity = m_ggeo ? m_ggeo->getMeshVerbosity() : 0 ; 
+
+    LOG(info) << "GGeoLib::getMergedMesh"
+              << " index " << index 
+              << " m_ggeo " << m_ggeo
+              << " mm " << mm
+              << " meshverbosity " << meshverbosity
+              ;
+
+    if(mm)
+        mm->setVerbosity(meshverbosity);
+   
+    return mm ; 
+}
+
+
+
+
 void GGeoLib::loadFromCache()
 {
     const char* idpath = m_cache->getIdPath() ;
+
+    m_ggeo = m_cache->getGGeo();
+    LOG(info) << "GGeoLib::loadFromCache" 
+              << " ggeo " << m_ggeo 
+              ;
+
     loadMergedMeshes(idpath);
 }
 

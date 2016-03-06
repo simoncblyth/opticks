@@ -28,6 +28,7 @@ class GGeoTest {
        GGeoLib*         m_geolib ; 
        GBndLib*         m_bndlib ; 
        GMaker*          m_maker ; 
+       unsigned int     m_verbosity ;
 
 };
 
@@ -38,7 +39,8 @@ inline GGeoTest::GGeoTest(GCache* cache, GGeoTestConfig* config)
     m_ggeo(NULL),
     m_geolib(NULL),
     m_bndlib(NULL),
-    m_maker(NULL)
+    m_maker(NULL),
+    m_verbosity(0)
 {
     init();
 }

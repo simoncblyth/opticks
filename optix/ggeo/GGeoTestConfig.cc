@@ -25,6 +25,7 @@ const char* GGeoTestConfig::SHAPE_ = "shape";
 const char* GGeoTestConfig::SLICE_ = "slice"; 
 const char* GGeoTestConfig::ANALYTIC_ = "analytic"; 
 const char* GGeoTestConfig::DEBUG_ = "debug"; 
+const char* GGeoTestConfig::CONTROL_ = "control"; 
 
 void GGeoTestConfig::init(const char* config)
 {
@@ -61,6 +62,7 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,SLICE_)==0)      arg = SLICE ; 
     else if(strcmp(k,ANALYTIC_)==0)   arg = ANALYTIC ; 
     else if(strcmp(k,DEBUG_)==0)      arg = DEBUG ; 
+    else if(strcmp(k,CONTROL_)==0)    arg = CONTROL ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -80,6 +82,7 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case SLICE          : setSlice(s)          ;break;
         case ANALYTIC       : setAnalytic(s)       ;break;
         case DEBUG          : setDebug(s)          ;break;
+        case CONTROL        : setControl(s)        ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -149,6 +152,15 @@ void GGeoTestConfig::setDebug(const char* s)
     std::string ss(s);
     m_debug = gvec4(ss);
 }
+
+void GGeoTestConfig::setControl(const char* s)
+{
+    std::string ss(s);
+    m_control = givec4(ss);
+}
+
+
+
 void GGeoTestConfig::addParameters(const char* s)
 {
     std::string ss(s);

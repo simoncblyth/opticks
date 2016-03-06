@@ -41,6 +41,9 @@ int main(int argc, char** argv)
 
     CDetector* m_detector  = new CDetector(m_cache, m_testconfig) ; 
 
+    m_detector->setVerbosity(2) ;
+
+
     CPropLib* clib = m_detector->getPropLib() ;
 
     G4VPhysicalVolume* world_pv = m_detector->Construct();
@@ -50,6 +53,8 @@ int main(int argc, char** argv)
     CTraverser* m_traverser = new CTraverser(world_pv) ;
 
     m_traverser->Traverse(); 
+
+    m_traverser->setVerbosity(1); 
 
     m_traverser->dumpMaterials(); 
 

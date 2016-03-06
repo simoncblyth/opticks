@@ -34,10 +34,17 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* s
 
 GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
 {
-    LOG(info) << "GMergedMesh::combine num solids " << solids.size() ; 
+    unsigned int verbosity = mm ? mm->getVerbosity() : 0 ;     
+    LOG(info) << "GMergedMesh::combine"
+              << " making new mesh "
+              << " index " << index 
+              << " solids " << solids.size()
+              << " verbosity " << verbosity 
+               ; 
 
     std::vector<GParts*> analytic ; 
     GMergedMesh* com = new GMergedMesh( index ); 
+    com->setVerbosity(verbosity);
 
     if(mm)
     {
@@ -111,6 +118,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
     t.start();
 
     GMergedMesh* mm = new GMergedMesh( index ); 
+    mm->setVerbosity(ggeo->getMeshVerbosity());
 
     if(base == NULL)  // non-instanced global transforms
     {
@@ -209,7 +217,8 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
         countMesh( other ); 
     }
 
-    LOG(debug) << "GMergedMesh::count other GMergedMesh  " 
+    if(m_verbosity > 1)
+    LOG(info) << "GMergedMesh::count other GMergedMesh  " 
               << " selected " << selected
               << " num_solids " << m_num_solids 
               << " num_solids_selected " << m_num_solids_selected 
@@ -228,7 +237,8 @@ void GMergedMesh::countSolid( GSolid* solid, bool selected)
         countMesh( mesh ); 
     }
 
-    LOG(debug) << "GMergedMesh::count GSolid " 
+    if(m_verbosity > 1)
+    LOG(info) << "GMergedMesh::count GSolid " 
               << " selected " << selected
               << " num_solids " << m_num_solids 
               << " num_solids_selected " << m_num_solids_selected 
@@ -247,18 +257,38 @@ void GMergedMesh::countMesh( GMesh* mesh )
 }
 
 
-
-
-
 void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 {
     // solids are present irrespective of selection as prefer absolute solid indexing 
 
     unsigned int nsolid = other->getNumSolids();
+
+    if(m_verbosity > 1)
+    LOG(info) << "GMergedMesh::mergeMergedMesh"
+              << " m_cur_solid " << m_cur_solid
+              << " m_cur_vertices " << m_cur_vertices
+              << " m_cur_faces " << m_cur_faces
+              << " other nsolid " << nsolid 
+              << " selected " << selected
+              ; 
+
+
     for(unsigned int i=0 ; i < nsolid ; i++)
     {
-        m_bbox[m_cur_solid] = other->getBBox(i) ;  
-        m_center_extent[m_cur_solid] = other->getCenterExtent(i) ;
+        gbbox bb = other->getBBox(i) ;
+        gfloat4 ce = other->getCenterExtent(i) ;
+
+        if(m_verbosity > 2)
+        LOG(info) << "GMergedMesh::mergeMergedMesh"
+                   << " m_cur_solid " << m_cur_solid  
+                   << " i " << i
+                   << " ce " <<  ce.description() 
+                   << " bb " <<  bb.description() 
+                   ;
+
+
+        m_bbox[m_cur_solid] = bb ;  
+        m_center_extent[m_cur_solid] = ce ;
         m_nodeinfo[m_cur_solid] = other->getNodeInfo(i) ; 
         m_identity[m_cur_solid] = other->getIdentity(i) ; 
         m_meshes[m_cur_solid] = other->getMeshIndice(i) ; 
@@ -314,10 +344,32 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
     GMesh* mesh = solid->getMesh();
     unsigned int nvert = mesh->getNumVertices();
     unsigned int nface = mesh->getNumFaces();
+    guint4 _identity = solid->getIdentity();
 
     GNode* base = getCurrentBase();
     GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;    
     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
+
+    // needs to be outside the selection branch for the all solid center extent
+    gbbox bb = GMesh::findBBox(vertices, nvert) ;
+
+   if(m_verbosity > 1)
+   {
+
+        const char* pvn = solid->getPVName() ;
+        const char* lvn = solid->getLVName() ;
+
+        LOG(info) << "GMergedMesh::mergeSolid" 
+                  << " m_cur_solid " << m_cur_solid
+                  << " idx " << solid->getIndex()
+                  << " id " << _identity.description()
+                  << " pv " << ( pvn ? pvn : "-" )
+                  << " lv " << ( lvn ? lvn : "-" )
+                  << " bb " << bb.description()
+                  ;
+        transform->Summary("GMergedMesh::mergeSolid transform");
+   }   
+
 
     unsigned int boundary = solid->getBoundary();
     NSensor* sensor = solid->getSensor();
@@ -325,7 +377,6 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
     unsigned int nodeIndex = solid->getIndex();
     unsigned int meshIndex = mesh->getIndex();
     unsigned int sensorIndex = NSensor::RefIndex(sensor) ; 
-    guint4 _identity = solid->getIdentity();
     assert(_identity.x == nodeIndex);
     assert(_identity.y == meshIndex);
     assert(_identity.z == boundary);
@@ -342,8 +393,6 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
     GNode* parent = solid->getParent();
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
 
-    // needs to be outside the selection branch for the all solid center extent
-    gbbox bb = GMesh::findBBox(vertices, nvert) ;
 
     m_bbox[m_cur_solid] = bb ;  
     m_center_extent[m_cur_solid] = bb.center_extent() ;

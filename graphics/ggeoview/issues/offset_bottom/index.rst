@@ -28,3 +28,8 @@ G4DAE export with cfg4-dpib loaded back in via geocache DOES NOT SHOW THE OFFSET
 .. image:: /env/graphics/ggeoview/issues/offset_bottom/dpib-sliced-not-offset.png
    :width: 900px
    :align: center
+
+
+
+
+

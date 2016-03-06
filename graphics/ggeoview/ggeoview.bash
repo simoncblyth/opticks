@@ -105,7 +105,8 @@ ggv-pmt-test(){
     local src=0,0,300
     local tgt=0,0,0
     local radius=100
-  
+    local testverbosity=3 
+
     local mode=""
     local polarization=""
  
@@ -142,6 +143,7 @@ ggv-pmt-test(){
 
     local test_config=(
                  mode=PmtInBox
+                 control=$testverbosity,0,0,0
                  analytic=1
                  shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil

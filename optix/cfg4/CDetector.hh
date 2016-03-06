@@ -50,7 +50,7 @@ class G4VSolid;
 class CDetector : public G4VUserDetectorConstruction
 {
  public:
-    CDetector(GCache* cache, GGeoTestConfig* config, int verbosity=0);
+    CDetector(GCache* cache, GGeoTestConfig* config);
   private:
     void init();
   public:
@@ -58,6 +58,7 @@ class CDetector : public G4VUserDetectorConstruction
     virtual ~CDetector();
 
   public:
+    void setVerbosity(unsigned int verbosity);
     bool isPmtInBox();
     bool isBoxInBox();
     const glm::vec4& getCenterExtent();
@@ -86,13 +87,13 @@ class CDetector : public G4VUserDetectorConstruction
 };
 
 
-inline CDetector::CDetector(GCache* cache, GGeoTestConfig* config, int verbosity)
+inline CDetector::CDetector(GCache* cache, GGeoTestConfig* config)
   : 
   m_cache(cache),
   m_config(config),
   m_lib(NULL),
   m_maker(NULL),
-  m_verbosity(verbosity)
+  m_verbosity(0)
 {
     init();
 }
@@ -110,6 +111,12 @@ inline const glm::vec4& CDetector::getCenterExtent()
 {
     return m_center_extent ; 
 }
+
+inline void CDetector::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
+
 
 
 inline CPropLib* CDetector::getPropLib()

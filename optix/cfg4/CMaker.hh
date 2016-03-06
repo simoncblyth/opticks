@@ -7,6 +7,12 @@ class GCSG ;
 
 class G4VSolid;
 
+//
+// CMaker is a constitent of CDetector used
+// to convert GCSG geometry into G4 geometry in 
+// G4VPhysicalVolume* CDetector::Construct() 
+//
+
 class CMaker {
     public:
         static std::string PVName(const char* shapename);

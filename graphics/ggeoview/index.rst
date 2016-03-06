@@ -8,6 +8,7 @@ ggeoview
    progress
    issues/index
    enhancement/index
+   geometry_review
 
 
 

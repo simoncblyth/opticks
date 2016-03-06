@@ -24,6 +24,7 @@ private:
     void init();
 public:
     bool getVolNames();
+    void setVerbosity(unsigned int verbosity);
 public:
     static int load(GGeo* ggeo);
 
@@ -83,6 +84,8 @@ private:
     aiMaterial*      m_cathode ; 
     float            m_fake_efficiency ; 
 
+    unsigned int     m_verbosity ; 
+
 };
 
 
@@ -101,16 +104,20 @@ inline AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* sel
    m_no_surface(0),
    m_volnames(false),
    m_reverse(true),        // true: ascending wavelength ordering of properties
-   m_cathode(NULL)
+   m_cathode(NULL),
+   m_verbosity(0)
 {
     init();
 }
 
 
-
-
 inline bool AssimpGGeo::getVolNames()
 {
     return m_volnames ; 
+}
+
+inline void AssimpGGeo::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
 }
 

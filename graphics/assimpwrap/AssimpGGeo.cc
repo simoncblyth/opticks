@@ -86,11 +86,15 @@ int AssimpGGeo::load(GGeo* ggeo)
     const char* path = resource->getPath() ;
     const char* query = resource->getQuery() ;
     const char* ctrl = resource->getCtrl() ;
- 
+    unsigned int verbosity = ggeo->getLoaderVerbosity();
+
+
     LOG(info)<< "AssimpGGeo::load "  
              << " path " << path 
              << " query " << query 
-             << " ctrl " << ctrl ; 
+             << " ctrl " << ctrl 
+             << " verbosity " << verbosity 
+             ; 
 
     assert(path);
     assert(query);
@@ -107,6 +111,8 @@ int AssimpGGeo::load(GGeo* ggeo)
     AssimpSelection* selection = ageo.select(query);
 
     AssimpGGeo agg(ggeo, ageo.getTree(), selection); 
+
+    agg.setVerbosity(verbosity);
 
     int rc = agg.convert(ctrl);
 
@@ -785,11 +791,9 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     aiMatrix4x4 l = node->getLevelTransform(-2); // -1 is always identity 
     GMatrixF* ltransform = new GMATRIXF(l) ; 
-
-    //ltransform->Summary("ltransform");
-
     unsigned int msi = node->getMeshIndex();
     GMesh* mesh = gg->getMesh(msi);
+
     if(!mesh)
     {
        LOG(fatal) << "AssimpGGeo::convertStructureVisit NULL mesh"
@@ -800,7 +804,6 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     assert(mesh);
 
 
-
     unsigned int mti = node->getMaterialIndex() ;
     GMaterial* mt = gg->getMaterial(mti);
 
@@ -808,8 +811,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     GMaterial* mt_p = gg->getMaterial(mti_p);
 
     //printf("AssimpGGeo::convertStructureVisit nodeIndex %d (mti %u mt %p) (mti_p %u mt_p %p) (msi %u mesh %p) \n", nodeIndex, mti, mt, mti_p, mt_p,  msi, mesh  );
-    if(dbg)
-    LOG(debug) << "AssimpGGeo::convertStructureVisit" 
+    if(dbg || m_verbosity > 1)
+    LOG(info) << "AssimpGGeo::convertStructureVisit" 
                << " nodeIndex " << std::setw(6) << nodeIndex
                << " ( mti " << std::setw(4) << mti << " mt " << (void*)mt << " ) "
                << std::setw(20) << ( mt ? mt->getShortName() : "-" ) 
@@ -817,6 +820,13 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
                << std::setw(20) << ( mt_p ? mt_p->getShortName() : "-" )
                << " ( msi " << std::setw(4) << msi << " mesh " << (void*)mesh << " ) " << ( mesh ? mesh->getName() : "-" )
                ;  
+
+
+    if(m_verbosity > 1)
+    gtransform->Summary("AssimpGGeo::convertStructureVisit gtransform");
+
+    if(m_verbosity > 1)
+    ltransform->Summary("AssimpGGeo::convertStructureVisit ltransform");
 
 
     GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, UINT_MAX, NULL ); // sensor starts NULL

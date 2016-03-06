@@ -88,11 +88,18 @@ GMergedMesh* GGeoTest::create()
 
 GMergedMesh* GGeoTest::createPmtInBox()
 {
+    // somewhat dirtily associates analytic geometry with triangulated for the PMT 
+    //
+    //   * detdesc parsed analytic geometry in GPmt (see pmt-ecd dd.py tree.py etc..)
+    //   * instance-1 GMergedMesh 
+    //
+    //
     // ? assuming single container 
     char shapecode = m_config->getShape(0) ;
     const char* spec = m_config->getBoundary(0);
     glm::vec4 param = m_config->getParameters(0);
 
+    int verbosity = m_config->getVerbosity();
 
 
     LOG(info) << "GGeoTest::createPmtInBox " << shapecode << " : " << spec << " " << gformat(param)  ; 
@@ -102,14 +109,26 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
     GMergedMesh* mmpmt = m_geolib->getMergedMesh(1);  
 
+
+    if(verbosity > 1)
+    {
+        LOG(info) << "GGeoTest::createPmtInBox"
+                  << " verbosity " << verbosity 
+                  ;
+
+        mmpmt->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids (before:mmpmt) ");
+    }
+
+
+
     NSlice* slice = m_config->getSlice();
     GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
 
     // associating the analytic GPmt with the triangulated GMergedMesh 
 
     mmpmt->setParts(pmt->getParts());               
-
     unsigned int index = mmpmt->getNumSolids() ;
+
 
     std::vector<GSolid*> solids = m_maker->make( index, shapecode, param, spec) ;
 
@@ -119,7 +138,15 @@ GMergedMesh* GGeoTest::createPmtInBox()
         solid->getMesh()->setIndex(1000);
     }
 
+
+
     GMergedMesh* tri = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solids );   
+
+
+    if(verbosity > 1)
+        tri->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids (after:tri) ");
+
+
 
     GParts* anl = tri->getParts();
     const char* imat = m_bndlib->getInnerMaterialName(spec);

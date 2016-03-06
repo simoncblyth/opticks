@@ -15,6 +15,7 @@ class CTraverser {
     public:
         void Traverse();
         void dumpMaterials(const char* msg="CTraverser::dumpMaterials");
+        void setVerbosity(unsigned int verbosity);
     private:
         G4Transform3D TraverseVolumeTree(const G4LogicalVolume* const volumePtr, const G4int depth);
         void Visit(const G4LogicalVolume* const lv);
@@ -25,13 +26,20 @@ class CTraverser {
     private:
         G4VPhysicalVolume* m_top ; 
         std::vector<const G4Material*> m_materials; ;
+        unsigned int   m_verbosity ; 
 
 };
 
 
 inline CTraverser::CTraverser(G4VPhysicalVolume* top) 
    :
-   m_top(top)
+   m_top(top),
+   m_verbosity(1)
 {
 }
 
+
+inline void CTraverser::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
