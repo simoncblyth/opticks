@@ -268,6 +268,8 @@ class GMesh : public GDrawable {
   public:
       static GMesh* load(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
       static GMesh* load_deduped(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
+
+      // saves into basedir/typedir/instancedir, only basedir is required
       void save(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
 
   private:

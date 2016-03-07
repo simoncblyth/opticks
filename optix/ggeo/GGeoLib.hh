@@ -40,6 +40,7 @@ class GGeoLib {
 
 inline GGeoLib::GGeoLib(GCache* cache) 
      :
+     m_ggeo(NULL),
      m_cache(cache),
      m_mesh_version(NULL)
 {

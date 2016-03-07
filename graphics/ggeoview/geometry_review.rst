@@ -1,31 +1,54 @@
 Geometry Review
 ================
 
-
 Minature Dev Cycle, without the offset
 ---------------------------------------
 
-Export PmtInBox geometry::
+Export PmtInBox geometry 
 
    cfg4-dpib
 
-Import into ggv creating geocache::
+   # ie: ggv-pmt-test --cdetector --export --exportconfig $path
+
+Whats happening here
+
+* cfg4-/CDetector creates G4 geometry from the GPmt/GCSG derived 
+  analytic PMT description (which came from the standalone detdesc parse).
+
+* G4 geometry then exported by g4d-/G4DAE (built against G4 10.2) 
+
+
+Using Assimp/AssimpGGeo to parse the .dae creating geocache GMergedMesh etc::
 
     ggv --dpib -G 
     ggv --dpib -G --loaderverbosity 3 
 
-Normal run from geocache::
+Load geocache GMergedMesh etc and push to GPU for OpenGL etc..::
 
     ggv --dpib 
 
 
+The fact that this does not have the problem with Vacuum vertex sagging
+might indicate a problem with older G4 (or G4DAE) not present in current one.
 
-GGV test running
-------------------
+
+
+
+
+GGV test running ggeo-/GGeoTest
+---------------------------------
+
+::
+
+    ggv-;ggv-pmt-test --tracer
+
 
 ggv running with "--test" option loads standard geometry
 (in order to have all materials etc.. available) but 
-then modifies the geometry 
+then modifies the geometry based on GGeoTestConfig 
+command line args.
+
+**BUT** crucially this grabs PMT triangulated geometry from the standard IDP source.
 
 ::
 
@@ -42,18 +65,6 @@ then modifies the geometry
      349     m_geotest = new GGeoTest(m_cache, gtc);
      350     m_geotest->modifyGeometry();
      351 }
-
-
-ggeo-/GGeoTest
------------------
-
-PMT is created by GMaker
-
-::
-
-    ggv-;ggv-pmt-test --tracer
-
-
 
 
 cfg4-/CDetector 
@@ -74,13 +85,6 @@ cfg4-/CMaker
 
 CMaker is a constitent of CDetector used
 to convert GCSG geometry into G4 geometry.
-
-
-
-ggeo-/GMaker
--------------
-
-
 
 
 G4DAE Exports
@@ -349,7 +353,7 @@ Above bb z range looks correct -30 to 56.131, but the offset is stubbornly still
 
 
 With testverbosity enabled, it looks like GGeoTest::createPmtInBox is stomping on 
-preexisting solid 0. 
+preexisting solid 0. Yep, but this doesnt explain the offset.
 
 ::
 
@@ -368,8 +372,7 @@ preexisting solid 0.
         4 ce             gfloat4      0.000      0.000    -81.500     83.000  bb bb min    -27.500    -27.500   -164.500  max     27.500     27.500      1.500 
     [2016-Mar-06 16:57:34.904071]:info: GMergedMesh::combine making new mesh  index 1 solids 1 verbosity 3
     [2016-Mar-06 16:57:34.904192]:info: GMergedMesh::count other GMergedMesh   selected true num_solids 5 num_solids_selected 1
-    [2016-Mar-06 16:57:34.904336]:info: GMergedMesh::count GSolid  selected true num_solids 6 num_solids_selected 2
-    [2016-Mar-06 16:57:34.904465]:info: GMesh::allocate numVertices 1498 numFaces 2940 numSolids 6
+    [2016-Mar-06 16:57:34.904336]:info: GMergedMesh::count GSolid  selected true num_solids 6 num_solids_selected 2ar-06 16:57:34.904465]:info: GMesh::allocate numVertices 1498 numFaces 2940 numSolids 6
     [2016-Mar-06 16:57:34.904642]:info: GMesh::setCenterExtent (creates buffer)  m_center_extent 0x7fc678232fc0 m_num_solids 6
     [2016-Mar-06 16:57:34.904760]:info: GMesh::allocate DONE 
     [2016-Mar-06 16:57:34.904833]:info: GMergedMesh::mergeMergedMesh m_cur_solid 0 m_cur_vertices 0 m_cur_faces 0 other nsolid 5 selected true
@@ -396,6 +399,136 @@ preexisting solid 0.
     [2016-Mar-06 16:57:34.907054]:info: App::registerGeometry
     [2016-Mar-06 16:57:34.907133]:info: GGeoLib::getMergedMesh index 0 m_ggeo 0x7fc673736100 mm 0x7fc678232b40 meshverbosity 3
 
+
+With offset::
+
+    [2016-Mar-06 16:57:34.902965]:info: GGeoTest::createPmtInBox GMergedMesh::dumpSolids (before:mmpmt) 
+        0 ce             gfloat4      0.000      0.000    -18.997    149.997  bb bb min   -100.288   -100.288   -168.995  max    100.288    100.288    131.000 
+        1 ce             gfloat4      0.005     -0.003    -18.252    146.252  bb bb min    -98.995    -99.003   -164.504  max     99.005     98.997    128.000 
+        2 ce             gfloat4      0.005     -0.004     91.998     98.143  bb bb min    -98.138    -98.147     55.996  max     98.148     98.139    128.000 
+        3 ce             gfloat4      0.000      0.000     13.066     98.143  bb bb min    -98.143    -98.143    -30.000  max     98.143     98.143     56.131 
+        4 ce             gfloat4      0.000      0.000    -81.500     83.000  bb bb min    -27.500    -27.500   -164.500  max     27.500     27.500      1.500 
+ 
+Without offset::
+
+    ggv --dpib --meshverbosity 3
+
+    [2016-Mar-06 17:42:35.481308]:info: App::loadGeometryBase mesh0
+        0 ce             gfloat4      0.000      0.000    -18.997    149.997  bb bb min   -100.288   -100.288   -168.995  max    100.288    100.288    131.000 
+        1 ce             gfloat4      0.000      0.000    -18.997    149.997  bb bb min   -100.288   -100.288   -168.995  max    100.288    100.288    131.000 
+        2 ce             gfloat4      0.000      0.000    -18.247    146.247  bb bb min    -97.288    -97.288   -164.495  max     97.288     97.288    128.000 
+        3 ce             gfloat4      0.005      0.004     91.998     98.143  bb bb min    -98.138    -98.139     55.996  max     98.148     98.147    128.000 
+        4 ce             gfloat4      0.000      0.000     13.066     98.143  bb bb min    -98.143    -98.143    -30.000  max     98.143     98.143     56.131 
+        5 ce             gfloat4      0.000      0.000    -81.500     83.000  bb bb min    -27.500    -27.500   -164.500  max     27.500     27.500      1.500 
+    [2016-Mar-06 17:42:35.481514]:info: App:: loadGeometryBase
+
+    delta:ggeoview blyth$ mv /tmp/vbuf.npy /tmp/dpib_vbuf.npy
+
+
+
+Is there an offset by 1 mismatch ?
+
+
+::
+
+    In [1]: a = np.load("/tmp/dpib_vbuf.npy")
+
+    In [2]: b = np.load("/tmp/vbuf_modifyGeometry.npy")
+
+    In [3]: a.shape
+    Out[3]: (1494, 3)
+
+    In [4]: b.shape
+    Out[4]: (1498, 3)
+
+    In [5]: a
+    Out[5]: 
+    array([[   0.   ,    0.   ,  131.   ],
+           [  33.905,    0.   ,  126.536],
+           [  32.75 ,    8.775,  126.536],
+           ..., 
+           [   0.   ,   -0.   ,  -29.   ],
+           [   0.   ,   -0.   ,  -29.   ],
+           [   0.   ,   -0.   ,  -29.   ]], dtype=float32)
+
+    In [6]: b
+    Out[6]: 
+    array([[   0.   ,    0.   ,  131.   ],
+           [  33.905,    0.   ,  126.536],
+           [  32.75 ,    8.775,  126.536],
+           ..., 
+           [ 300.   ,  300.   , -300.   ],
+           [ 300.   , -300.   , -300.   ],
+           [-300.   , -300.   , -300.   ]], dtype=float32)
+
+
+
+npy-/mesh.py GMergedMesh check
+--------------------------------
+
+Combines PMT analytic plotting with vertices rz plotting, from GMergedMesh vertices 
+loaded from::
+
+    /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1/vertices.npy 
+     
+Contrary to prior, the problem is with the vacuum (solid 1), not the PMT bottom.
+
+
+
+dump the base and modified meshes from pmt test
+--------------------------------------------------
+
+::
+
+    ggv-;ggv-pmt-test --tracer --meshverbosity 3
+
+
+::
+
+    134     #base = os.path.expandvars("$IDPATH/GMergedMesh/1")
+    135     #base = "/tmp/GMergedMesh/baseGeometry"
+    136     #base = "/tmp/GMergedMesh/modifyGeometry"
+    137     base = os.path.expandvars("$IDPATH_DPIB/GMergedMesh/0")
+    138 
+    139     mm = MergedMesh(base=base)
+    140 
+    141     pmt = Pmt()
+    142     ALL, PYREX, VACUUM, CATHODE, BOTTOM, DYNODE = None,0,1,2,3,4
+    143     pts = pmt.parts(ALL)
+    144 
+    145     fig = plt.figure()
+    146     
+    147     #one_plot(fig, pmt, pts, axes=ZX, clip=True)
+    148     
+    149     solids_plot(fig, pmt, mm, solids=range(5))
+    150     
+    151     #plot_vertices(fig, mm)
+    152     
+    153     plt.show()
+
+
+Only "$IDPATH_DPIB/GMergedMesh/0" does not have the vacuum sagging vertices problem, 
+but needed to offset that by one. Plus it has other nodeinfo issues::
+
+::
+
+    In [4]: mm.nodeinfo
+    Out[4]: 
+    array([[         0,          0,          0, 4294967295],
+           [       720,        362,          1,          0],
+           [       720,        362,          2,          1],
+           [       960,        482,          3,          2],
+           [       576,        288,          4,          2],
+           [         0,          0,          5,          2]], dtype=uint32)
+
+    In [16]: mm.nodeinfo.view(np.int32)
+    Out[16]: 
+    array([[  0,   0,   0,  -1],
+           [720, 362,   1,   0],
+           [720, 362,   2,   1],
+           [960, 482,   3,   2],
+           [576, 288,   4,   2],
+           [  0,   0,   5,   2]], dtype=int32)
 
 
 

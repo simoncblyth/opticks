@@ -124,9 +124,7 @@ def zr_plot(data, neg=False):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-
     np.set_printoptions(precision=4, linewidth=200)
-
     plt.ion()
     plt.close()
 

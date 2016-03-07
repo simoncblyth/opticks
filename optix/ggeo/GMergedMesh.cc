@@ -286,7 +286,6 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
                    << " bb " <<  bb.description() 
                    ;
 
-
         m_bbox[m_cur_solid] = bb ;  
         m_center_extent[m_cur_solid] = ce ;
         m_nodeinfo[m_cur_solid] = other->getNodeInfo(i) ; 

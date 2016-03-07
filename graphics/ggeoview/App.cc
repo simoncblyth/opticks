@@ -400,6 +400,16 @@ void App::loadGeometryBase()
     }
 
     m_ggeo->loadGeometry();
+        
+    if(m_ggeo->getMeshVerbosity() > 2)
+    {
+        GMergedMesh* mesh1 = m_ggeo->getMergedMesh(1);
+        if(mesh1)
+        {
+            mesh1->dumpSolids("App::loadGeometryBase mesh1");
+            mesh1->save("/tmp", "GMergedMesh", "baseGeometry") ;
+        }
+    }
 
     TIMER("loadGeometryBase");
 }
@@ -411,6 +421,18 @@ void App::modifyGeometry()
 
     std::string testconf = m_fcfg->getTestConfig();
     m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
+
+
+    if(m_ggeo->getMeshVerbosity() > 2)
+    {
+        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
+        if(mesh0)
+        { 
+            mesh0->dumpSolids("App::modifyGeometry mesh0");
+            mesh0->save("/tmp", "GMergedMesh", "modifyGeometry") ;
+        }
+    }
+
 
     TIMER("modifyGeometry"); 
 }

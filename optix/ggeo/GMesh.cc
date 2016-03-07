@@ -801,6 +801,13 @@ void GMesh::updateBounds()
         // avoid stomping on position of array of center_extent in case of MergedMesh, 
         // instead just overwrite solid 0 
 
+        LOG(info) << "GMesh::updateBounds"
+                  << " overwrite solid 0 ce "
+                  <<  m_center_extent[0].description()
+                  << " with " 
+                  << ce.description()
+                  ;
+
         m_center_extent[0].x = ce.x ;
         m_center_extent[0].y = ce.y ;
         m_center_extent[0].z = ce.z ;

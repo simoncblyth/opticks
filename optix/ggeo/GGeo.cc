@@ -221,7 +221,7 @@ void GGeo::loadGeometry()
 
 void GGeo::loadFromG4DAE()
 {
-    LOG(debug) << "GGeo::loadFromG4DAE START" ; 
+    LOG(info) << "GGeo::loadFromG4DAE START" ; 
 
     int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
@@ -233,7 +233,7 @@ void GGeo::loadFromG4DAE()
 
     prepareVertexColors();
 
-    LOG(debug) << "GGeo::loadFromG4DAE DONE" ; 
+    LOG(info) << "GGeo::loadFromG4DAE DONE" ; 
 }
 
 void GGeo::afterConvertMaterials()
@@ -764,8 +764,6 @@ void GGeo::prepareSurfaceLib()
 
 
 
-
-
 void GGeo::prepareScintillatorLib()
 {
     LOG(info) << "GGeo::prepareScintillatorLib " ; 
@@ -829,6 +827,11 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 void GGeo::prepareMeshes()
 {
     bool instanced = m_cache->getOpticks()->isInstanced();
+
+    LOG(info) << "GGeo::prepareMeshes START" 
+              << " instanced " << instanced 
+              ;
+
     if(instanced)
     { 
         bool deltacheck = true ; 
@@ -839,6 +842,7 @@ void GGeo::prepareMeshes()
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
         makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     }
+    LOG(info) << "GGeo::prepareMeshes DONE" ;
 }
 
 
