@@ -12,14 +12,9 @@
 #include "NSensor.hpp"
 #include "Counts.hpp"
 #include "Timer.hpp"
+#include "NLog.hpp"
 
 #include <glm/glm.hpp>
-
-#include <iomanip>
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 void GTreeCheck::init()
 {
@@ -48,50 +43,19 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
     labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
     t("labelTree"); 
 
-
     GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+    makeInstancedBuffers(mergedmesh, 0);  // ? instanced global too, for common structure
+
     //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
-
-
-    bool itransforms_check = false ; 
-    bool iidentity_check = false ; 
 
     unsigned int numRepeats = getNumRepeats();
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
          GNode*   rbase          = getRepeatExample(ridx) ; 
          GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
-         mergedmesh->dumpSolids("GTreeCheck::createInstancedMergedMeshes dumpSolids");
 
-
-         NPY<float>* itransforms = makeInstanceTransformsBuffer(ridx);
-         mergedmesh->setITransformsBuffer(itransforms);
-
-         if(itransforms_check)
-         {
-             GBuffer* itransforms_old    = PRIOR_makeInstanceTransformsBuffer(ridx);
-             itransforms->save("/tmp/itransforms.npy");
-             itransforms_old->save<float>("/tmp/itransforms_old.npy");
-             assert(itransforms->isEqualTo(itransforms_old->getPointer(), itransforms_old->getNumBytes()));
-         }
-
-
-         NPY<unsigned int>* iidentity  = makeInstanceIdentityBuffer(ridx);
-         mergedmesh->setInstancedIdentityBuffer(iidentity);
-
-         if(iidentity_check)
-         {
-             GBuffer* iidentity_old       = PRIOR_makeInstanceIdentityBuffer(ridx);
-             iidentity->save("/tmp/iidentity.npy");
-             iidentity_old->save<unsigned int>("/tmp/iidentity_old.npy");
-             assert(iidentity->isEqualTo(iidentity_old->getPointer(), iidentity_old->getNumBytes()));
-         }
-
-
-         NPY<unsigned int>* aii   = makeAnalyticInstanceIdentityBuffer(ridx);
-         mergedmesh->setAnalyticInstancedIdentityBuffer(aii);
-
-
+         makeInstancedBuffers(mergedmesh, ridx);
+     
          //mergedmesh->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }
     t("makeRepeatTransforms"); 
@@ -107,6 +71,40 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
 
     t.stop();
     t.dump();
+}
+
+
+void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
+{
+     mergedmesh->dumpSolids("GTreeCheck::makeInstancedBuffers dumpSolids");
+
+     NPY<float>* itransforms = makeInstanceTransformsBuffer(ridx);
+     mergedmesh->setITransformsBuffer(itransforms);
+
+     NPY<unsigned int>* iidentity  = makeInstanceIdentityBuffer(ridx);
+     mergedmesh->setInstancedIdentityBuffer(iidentity);
+
+     NPY<unsigned int>* aii   = makeAnalyticInstanceIdentityBuffer(ridx);
+     mergedmesh->setAnalyticInstancedIdentityBuffer(aii);
+}
+
+
+void GTreeCheck::checkInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
+{
+    NPY<float>* itransforms = mergedmesh->getITransformsBuffer();
+    itransforms->save("/tmp/itransforms.npy");
+
+    GBuffer* itransforms_old    = PRIOR_makeInstanceTransformsBuffer(ridx);
+    itransforms_old->save<float>("/tmp/itransforms_old.npy");
+    assert(itransforms->isEqualTo(itransforms_old->getPointer(), itransforms_old->getNumBytes()));
+    
+    NPY<unsigned int>* iidentity  = mergedmesh->getInstancedIdentityBuffer();
+    iidentity->save("/tmp/iidentity.npy");
+
+    GBuffer* iidentity_old       = PRIOR_makeInstanceIdentityBuffer(ridx);
+    iidentity_old->save<unsigned int>("/tmp/iidentity_old.npy");
+    assert(iidentity->isEqualTo(iidentity_old->getPointer(), iidentity_old->getNumBytes()));
+
 }
 
 
@@ -367,15 +365,21 @@ void GTreeCheck::labelTree( GNode* node, unsigned int ridx)
 }
 
 
-
-
-
 std::vector<GNode*> GTreeCheck::getPlacements(unsigned int ridx)
 {
-    assert(ridx >= 1); // ridx is a 1-based index
-    assert(ridx-1 < m_repeat_candidates.size()); 
-    std::string pdig = m_repeat_candidates[ridx-1];
-    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+    std::vector<GNode*> placements ;
+    if(ridx == 0)
+    {
+        placements.push_back(m_root);
+    }
+    else
+    {
+        assert(ridx >= 1); // ridx is a 1-based index
+        assert(ridx-1 < m_repeat_candidates.size()); 
+        std::string pdig = m_repeat_candidates[ridx-1];
+        placements = m_root->findAllProgenyDigest(pdig);
+        placements = m_root->findAllProgenyDigest(pdig);
+    } 
     return placements ; 
 }
 
@@ -422,6 +426,9 @@ NPY<float>* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
     // collecting transforms from the instances into a buffer
     std::vector<GNode*> placements = getPlacements(ridx);
     unsigned int ni = placements.size(); 
+    if(ridx == 0)
+        assert(ni == 1);
+
     NPY<float>* buf = NPY<float>::make(0, 4, 4);
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -433,13 +440,14 @@ NPY<float>* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
     return buf ; 
 }
 
-
-
-
 NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int ridx) 
 {
     std::vector<GNode*> placements = getPlacements(ridx);
     unsigned int ni = placements.size() ;
+    if(ridx == 0)
+        assert(ni == 1);
+
+
     NPY<unsigned int>* buf = NPY<unsigned int>::make(ni, 1, 4);
     buf->zero(); 
 
@@ -455,7 +463,6 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
         assert( numProgeny == base->getProgenyCount() );  // repeated geometry for the instances, so the progeny counts must match 
         std::vector<GNode*>& progeny = base->getProgeny();
         assert( progeny.size() == numProgeny );
-
       
         NSensor* sensor = NULL ;  
         for(unsigned int s=0 ; s < numSolids ; s++ )

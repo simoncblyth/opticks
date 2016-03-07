@@ -17,7 +17,6 @@ TODO
 * check with simple box-in-box geometry with planar reflection
 
 
-
 ::
 
     ---- P ----- 

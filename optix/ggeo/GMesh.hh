@@ -492,14 +492,16 @@ class GMesh : public GDrawable {
       GBuffer* m_boundaries_buffer ;
       GBuffer* m_sensors_buffer ;
       GBuffer* m_transforms_buffer ;
-      NPY<float>* m_itransforms_buffer ;
       GBuffer* m_meshes_buffer ;
       GBuffer* m_nodeinfo_buffer ;
       GBuffer* m_identity_buffer ;
+  private:
+      // instancing related  buffers created by GTreeCheck 
+      NPY<float>*        m_itransforms_buffer ;
       NPY<unsigned int>* m_iidentity_buffer ;
-
       NPY<unsigned int>* m_aiidentity_buffer ; 
 
+  private:
       // transients
       GBuffer* m_facerepeated_identity_buffer ;
       GBuffer* m_facerepeated_iidentity_buffer ;
@@ -574,10 +576,11 @@ inline GMesh::GMesh(unsigned int index,
       m_boundaries_buffer(NULL),
       m_sensors_buffer(NULL),
       m_transforms_buffer(NULL),
-      m_itransforms_buffer(NULL),
       m_meshes_buffer(NULL),
       m_nodeinfo_buffer(NULL),
       m_identity_buffer(NULL),
+
+      m_itransforms_buffer(NULL),
       m_iidentity_buffer(NULL),
       m_aiidentity_buffer(NULL),
 

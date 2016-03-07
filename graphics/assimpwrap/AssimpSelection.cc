@@ -9,10 +9,8 @@
 
 // npy-
 #include "stringutil.hpp"
+#include "NLog.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 void AssimpSelection::init()
 {
@@ -85,9 +83,20 @@ void AssimpSelection::addToSelection(AssimpNode* node)
 
 void AssimpSelection::parseQuery(const char* query)
 {
+   // "name:helo,index:yo,range:10"
+   // split at "," and then extract values beyond the "token:" 
+
    std::vector<std::string> elem ; 
    split(elem, query, ',');
+
+   LOG(info) << "AssimpSelection::parseQuery [" << query << "] elements: " << elem.size() ; 
    for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
+
+   if(elem.size() == 0)
+   {
+      m_no_selection = true ; 
+   }
+
 }
 
 void AssimpSelection::parseQueryElement(const char* query)
@@ -124,23 +133,9 @@ void AssimpSelection::parseQueryElement(const char* query)
        {
            m_query_range.push_back( atoi(elem[i].c_str()) ) ;
        }
-       m_is_flat_selection = true ; 
+       m_flat_selection = true ; 
   } 
 }
-
-int AssimpSelection::getQueryMerge()
-{
-    return m_query_merge ;  
-}
-int AssimpSelection::getQueryDepth()
-{
-    return m_query_depth == 0 ? 100 : m_query_depth ;  
-}
-bool AssimpSelection::isFlatSelection()
-{
-    return m_is_flat_selection ; 
-}
-
 
 
 
@@ -165,8 +160,11 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
                 ;
    } 
 
-
-   if(m_query_name)
+   if(m_no_selection)
+   {
+       m_selection.push_back(node); 
+   }
+   else if(m_query_name)
    {
        if(strncmp(name,m_query_name,strlen(m_query_name)) == 0)
        {

@@ -819,11 +819,6 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 
 
 
-
-
-
-
-
 void GGeo::prepareMeshes()
 {
     bool instanced = m_cache->getOpticks()->isInstanced();

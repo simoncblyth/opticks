@@ -1,6 +1,148 @@
 Geometry Review
 ================
 
+Related Issue
+-------------
+
+Issue :doc:`/graphics/ggeoview/issues/offset_bottom/index`
+
+
+Immediate solution to bad G4DAE export of PMT vacuum
+-----------------------------------------------------
+
+Modify dpib geocache using "OPTICKS_QUERY=range:1:6" 
+to exclude the box, then can treat it like the original 5 solid.
+The query controls the AssimpSelection, used on making the geocache.
+
+ggv.sh::
+
+    188 elif [ "${cmdline/--dpmt}" != "${cmdline}" ]; then
+    189 
+    190    export OPTICKS_GEOKEY=DAE_NAME_DPIB
+    191    export OPTICKS_QUERY="range:1:6"   # de-select the box slot 0
+    192    export OPTICKS_CTRL=""
+
+
+Create PMT only geocache from DPIB geometry (ie with box excluded) then visual check, then combination check ::
+
+    ggv --dpmt -G 
+
+    ggv --dpmt --tracer
+
+    ggv-;ggv-pmt-test --tracer
+
+Make some ini labels for the paths::
+
+    47 export IDPATH_DPIB_ALL=/usr/local/env/geant4/geometry/export/dpib/cfg4.d41d8cd98f00b204e9800998ecf8427e.dae
+    48 export IDPATH_DPIB_PMT=/usr/local/env/geant4/geometry/export/dpib/cfg4.6f627a3ec05405cbcfff6bd479fbdd37.dae
+
+
+Load this geometry into GGeoTest rather than grabbing the standard mergedmesh
+by setting pmtpath parameter.::
+
+     144     local test_config=(
+     145                  mode=PmtInBox
+     146                  pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0
+     147                  control=$testverbosity,0,0,0
+     148                  analytic=1
+     149                  shape=box
+     150                  boundary=Rock//perfectAbsorbSurface/MineralOil
+     151                  parameters=0,0,0,300
+     152                    )
+
+Somewhat logistically dirty, but this is just an interim solution anyhow, so OK.
+
+::
+
+     89 GMergedMesh* GGeoTest::createPmtInBox()
+     90 {
+     91     // somewhat dirtily associates analytic geometry with triangulated for the PMT 
+     92     //
+     93     //   * detdesc parsed analytic geometry in GPmt (see pmt-ecd dd.py tree.py etc..)
+     94     //   * instance-1 GMergedMesh 
+     95     //
+     96     //
+
+
+
+
+Longterm solution
+-------------------
+
+Eventually will need to rerun the full geometry export 
+and update the standard. 
+
+
+Problem avoidance 
+-------------------
+
+Why not do ggv-pmt-test using dpib geometry ? 
+
+* not so easy, as need to associate analytic
+* also that removes flexibility from the test 
+
+
+Pie in the sky solution
+-------------------------
+
+It would be cleaner to directly derive triangulated geometry from GCSG
+within cfg4- using G4 capabilities just like G4DAE does. Then have a single 
+source.
+
+Getting that to work would be a rabbithole though, 
+G4DAE/Assimp/AssimpWrap/GGeo is a lot of code that are aiming to shortcircuit. 
+
+
+
+
+Geometry Pools
+----------------
+
+pmt-/partial detdesc parse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+pmt- *hemi-pmt.xml* detdesc used as source for analytic PMT parsing,
+leading to GPmt and GCSG 
+
+GPmt partitioned analytic geometry 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* partitioned analytic geometry with support for going GPU side with opticks-/cu/hemi-pmt.cu
+  
+GCSG analytic geometry 
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* created together with (and paired with) GPmt, 
+  contains CSG tree allowing reconstruction of G4 geometry, as 
+  is done by cfg4-/CDetector::makePMT
+
+::
+
+    139 void CDetector::makePMT(G4LogicalVolume* container)
+    140 {
+    141     // try without creating an explicit node tree 
+    142 
+    143     NSlice* slice = m_config->getSlice();
+    144 
+    145     GCSG* csg = m_lib->getPmtCSG(slice);
+    146     if(m_verbosity > 1)
+    147     csg->dump();
+    148 
+    149     unsigned int ni = csg->getNumItems();
+    150 
+    151     if(m_verbosity > 0)
+    152     LOG(info) << "CDetector::makePMT"
+    153               << " csg items " << ni
+    154               ;
+    155 
+    156     G4LogicalVolume* mother = container ;
+    157 
+    158     std::map<unsigned int, G4LogicalVolume*> lvm ;
+    159 
+    160     for(unsigned int index=0 ; index < ni ; index++)
+
+
+
 Minature Dev Cycle, without the offset
 ---------------------------------------
 
@@ -27,12 +169,8 @@ Load geocache GMergedMesh etc and push to GPU for OpenGL etc..::
 
     ggv --dpib 
 
-
 The fact that this does not have the problem with Vacuum vertex sagging
 might indicate a problem with older G4 (or G4DAE) not present in current one.
-
-
-
 
 
 GGV test running ggeo-/GGeoTest
@@ -352,7 +490,7 @@ ggeo-/GMergedMesh
 Above bb z range looks correct -30 to 56.131, but the offset is stubbornly still there::
 
 
-With testverbosity enabled, it looks like GGeoTest::createPmtInBox is stomping on 
+With testverbosity enabled, it looks like `GGeoTest::createPmtInBox` is stomping on 
 preexisting solid 0. Yep, but this doesnt explain the offset.
 
 ::
@@ -463,18 +601,6 @@ Is there an offset by 1 mismatch ?
 
 
 
-npy-/mesh.py GMergedMesh check
---------------------------------
-
-Combines PMT analytic plotting with vertices rz plotting, from GMergedMesh vertices 
-loaded from::
-
-    /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1/vertices.npy 
-     
-Contrary to prior, the problem is with the vacuum (solid 1), not the PMT bottom.
-
-
-
 dump the base and modified meshes from pmt test
 --------------------------------------------------
 
@@ -508,27 +634,117 @@ dump the base and modified meshes from pmt test
 
 
 Only "$IDPATH_DPIB/GMergedMesh/0" does not have the vacuum sagging vertices problem, 
-but needed to offset that by one. Plus it has other nodeinfo issues::
+but needed to offset that by one. 
+
+
+npy-/mesh.py GMergedMesh check
+--------------------------------
+
+
+
+High level comparison of GMergedMesh read into python.
 
 ::
 
-    In [4]: mm.nodeinfo
-    Out[4]: 
-    array([[         0,          0,          0, 4294967295],
-           [       720,        362,          1,          0],
-           [       720,        362,          2,          1],
-           [       960,        482,          3,          2],
-           [       576,        288,          4,          2],
-           [         0,          0,          5,          2]], dtype=uint32)
+    In [11]: run mesh.py
+    INFO:__main__:base /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 
+    nodeinfo
+    [[ 720  362 3199 3155]
+     [ 672  338 3200 3199]
+     [ 960  482 3201 3200]
+     [ 480  242 3202 3200]
+     [  96   50 3203 3200]]
+    nvert  1474 v.shape (1474, 3) 
+    INFO:__main__:base /tmp/GMergedMesh/baseGeometry 
+    nodeinfo
+    [[ 720  362 3199 3155]
+     [ 672  338 3200 3199]
+     [ 960  482 3201 3200]
+     [ 480  242 3202 3200]
+     [  96   50 3203 3200]]
+    nvert  1474 v.shape (1474, 3) 
+    WARNING:__main__:NO PATH /tmp/GMergedMesh/modifyGeometry/iidentity.npy 
+    INFO:__main__:base /tmp/GMergedMesh/modifyGeometry 
+    nodeinfo
+    [[ 720  362 3199 3155]
+     [ 672  338 3200 3199]
+     [ 960  482 3201 3200]
+     [ 480  242 3202 3200]
+     [  96   50 3203 3200]
+     [  12   24    0   -1]]
+    nvert  1498 v.shape (1498, 3) 
+    WARNING:__main__:NO PATH /usr/local/env/geant4/geometry/export/dpib/cfg4.f7ba6061a8e024189e641c86eb847ee4.dae/GMergedMesh/0/aiidentity.npy 
+    WARNING:__main__:NO PATH /usr/local/env/geant4/geometry/export/dpib/cfg4.f7ba6061a8e024189e641c86eb847ee4.dae/GMergedMesh/0/iidentity.npy 
+    WARNING:__main__:NO PATH /usr/local/env/geant4/geometry/export/dpib/cfg4.f7ba6061a8e024189e641c86eb847ee4.dae/GMergedMesh/0/itransforms.npy 
+    INFO:__main__:base /usr/local/env/geant4/geometry/export/dpib/cfg4.f7ba6061a8e024189e641c86eb847ee4.dae/GMergedMesh/0 
+    nodeinfo
+    [[  0   0   0  -1]
+     [720 362   1   0]
+     [720 362   2   1]
+     [960 482   3   2]
+     [576 288   4   2]
+     [  0   0   5   2]]
+    nvert  1494 v.shape (1494, 3) 
 
-    In [16]: mm.nodeinfo.view(np.int32)
-    Out[16]: 
-    array([[  0,   0,   0,  -1],
-           [720, 362,   1,   0],
-           [720, 362,   2,   1],
-           [960, 482,   3,   2],
-           [576, 288,   4,   2],
-           [  0,   0,   5,   2]], dtype=int32)
+
+
+Fixed GGeoTest nodeinfo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    ggv --dpib -G 
+
+::
+
+    diff -r 51d44e61e625 graphics/ggeoview/ggv.sh
+    --- a/graphics/ggeoview/ggv.sh  Mon Mar 07 15:16:07 2016 +0800
+    +++ b/graphics/ggeoview/ggv.sh  Mon Mar 07 16:58:36 2016 +0800
+    @@ -182,7 +182,8 @@
+     elif [ "${cmdline/--dpib}" != "${cmdline}" ]; then
+     
+        export OPTICKS_GEOKEY=DAE_NAME_DPIB
+    -   export OPTICKS_QUERY="range:1:5" 
+    +   #export OPTICKS_QUERY="range:1:5" 
+    +   export OPTICKS_QUERY="" 
+        export OPTICKS_CTRL=""
+     
+
+After changing OPTICKS_QUERY and getting AssimpSelection to support empty queries
+the dropouts are fixed, following IDPATH_DPIB update::
+
+    INFO:__main__:base /usr/local/env/geant4/geometry/export/dpib/cfg4.d41d8cd98f00b204e9800998ecf8427e.dae/GMergedMesh/0 
+    nodeinfo
+    [[ 12   8   0  -1]
+     [720 362   1   0]
+     [720 362   2   1]
+     [960 482   3   2]
+     [576 288   4   2]
+     [ 96  50   5   2]]
+    nvert  1552 v.shape (1552, 3) 
+
+
+npy-/analytic_cf_triangulated.py
+----------------------------------
+
+
+Contrary to prior invalid assumption, the problem is with the vacuum (solid 1), not the PMT bottom.
+
+Analytic shapes plotted together with triangulated vertices in zr projection.
+All apart from /usr/local/env/geant4/geometry/export/dpib/cfg4.d41d8cd98f00b204e9800998ecf8427e.dae/GMergedMesh/0/vertices.npy
+have the vacuum offset.
+
+npy-/vacuum_offset.py
+----------------------
+
+DAE level comparison plot of zr vertices from standard old export and PmtInBox recent export (g4d-).
+That makes offset very clear.::
+
+    In [1]: run vacuum_offset.py
+    /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+    /usr/local/env/geant4/geometry/export/dpib/cfg4.dae
+    -46.992 128.0
+    -20.9888 128.0
 
 
 

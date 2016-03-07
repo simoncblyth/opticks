@@ -20,6 +20,7 @@ class GGeoTestConfig {
                       ANALYTIC, 
                       DEBUG,
                       CONTROL,
+                      PMTPATH,
                       UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -34,6 +35,7 @@ class GGeoTestConfig {
        static const char* ANALYTIC_ ; 
        static const char* DEBUG_ ; 
        static const char* CONTROL_ ; 
+       static const char* PMTPATH_ ; 
     public:
        GGeoTestConfig(const char* config);
        int getVerbosity();
@@ -49,6 +51,7 @@ class GGeoTestConfig {
        void setAnalytic(const char* s);
        void setDebug(const char* s);
        void setControl(const char* s);
+       void setPmtPath(const char* s);
     private:
        void addShape(const char* s);
        void addBoundary(const char* s);
@@ -61,6 +64,7 @@ class GGeoTestConfig {
        NSlice*   getSlice();
        bool      getAnalytic();
        const char* getMode();
+       const char* getPmtPath();
        unsigned int getNumElements();
 
        std::vector<std::pair<std::string, std::string> >& getCfg();
@@ -72,6 +76,7 @@ class GGeoTestConfig {
    private:
        const char*  m_config ; 
        const char*  m_mode ; 
+       const char*  m_pmtpath ; 
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;
@@ -87,6 +92,7 @@ inline GGeoTestConfig::GGeoTestConfig(const char* config)
     : 
     m_config(NULL),
     m_mode(NULL),
+    m_pmtpath(NULL),
     m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
@@ -125,6 +131,10 @@ inline bool GGeoTestConfig::getAnalytic()
 inline const char* GGeoTestConfig::getMode()
 {
     return m_mode ; 
+}
+inline const char* GGeoTestConfig::getPmtPath()
+{
+    return m_pmtpath ; 
 }
 
 inline int GGeoTestConfig::getVerbosity()

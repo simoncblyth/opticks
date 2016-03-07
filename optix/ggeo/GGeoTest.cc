@@ -85,35 +85,35 @@ GMergedMesh* GGeoTest::create()
     return tmm ; 
 }
 
-
-GMergedMesh* GGeoTest::createPmtInBox()
+GMergedMesh* GGeoTest::loadPmt()
 {
-    // somewhat dirtily associates analytic geometry with triangulated for the PMT 
-    //
-    //   * detdesc parsed analytic geometry in GPmt (see pmt-ecd dd.py tree.py etc..)
-    //   * instance-1 GMergedMesh 
-    //
-    //
-    // ? assuming single container 
-    char shapecode = m_config->getShape(0) ;
-    const char* spec = m_config->getBoundary(0);
-    glm::vec4 param = m_config->getParameters(0);
+    GMergedMesh* mmpmt = NULL ; 
 
+    const char* pmtpath = m_config->getPmtPath();
     int verbosity = m_config->getVerbosity();
 
+    if(pmtpath == NULL)
+    {
+        LOG(info) << "GGeoTest::loadPmt"
+                  << " hijacking geolib mesh-1 (assumed to be PMT) "
+                  ;
 
-    LOG(info) << "GGeoTest::createPmtInBox " << shapecode << " : " << spec << " " << gformat(param)  ; 
-
-    // this is using prior DYB specific knowledge...
-    // mergedMesh-repeat-candidate-1 is the triangulated PMT 5-solids 
-
-    GMergedMesh* mmpmt = m_geolib->getMergedMesh(1);  
-
+        mmpmt = m_geolib->getMergedMesh(1);  
+    }
+    else
+    {
+        LOG(info) << "GGeoTest::loadPmt"
+                  << " from mesh "
+                  << pmtpath
+                  ;
+        mmpmt = GMergedMesh::load(pmtpath);  
+    }
 
     if(verbosity > 1)
     {
         LOG(info) << "GGeoTest::createPmtInBox"
                   << " verbosity " << verbosity 
+                  << " numSolids " << mmpmt->getNumSolids()
                   ;
 
         mmpmt->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids (before:mmpmt) ");
@@ -125,40 +125,76 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
 
     // associating the analytic GPmt with the triangulated GMergedMesh 
-
     mmpmt->setParts(pmt->getParts());               
+
+    return mmpmt ; 
+}
+
+
+GMergedMesh* GGeoTest::createPmtInBox()
+{
+    // somewhat dirtily associates analytic geometry with triangulated for the PMT 
+    //
+    //   * detdesc parsed analytic geometry in GPmt (see pmt-ecd dd.py tree.py etc..)
+    //   * instance-1 GMergedMesh 
+    //
+    // using prior DYB specific knowledge...
+    // mergedMesh-repeat-candidate-1 is the triangulated PMT 5-solids 
+    //
+    // assumes single container 
+
+    char shapecode = m_config->getShape(0) ;
+    const char* spec = m_config->getBoundary(0);
+    glm::vec4 param = m_config->getParameters(0);
+    const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
+
+    int verbosity = m_config->getVerbosity();
+
+    LOG(info) << "GGeoTest::createPmtInBox " 
+              << " shapecode " << shapecode 
+              << " spec " << spec 
+              << " container_inner_material " << container_inner_material
+              << " param " << gformat(param) 
+              ; 
+
+    GMergedMesh* mmpmt = loadPmt();
     unsigned int index = mmpmt->getNumSolids() ;
 
-
     std::vector<GSolid*> solids = m_maker->make( index, shapecode, param, spec) ;
-
     for(unsigned int j=0 ; j < solids.size() ; j++)
     {
         GSolid* solid = solids[j];
         solid->getMesh()->setIndex(1000);
     }
 
-
-
-    GMergedMesh* tri = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solids );   
-
+    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solids );   
 
     if(verbosity > 1)
-        tri->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids (after:tri) ");
+        triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
 
 
+    GParts* analytic = triangulated->getParts();
+    analytic->setContainingMaterial(container_inner_material);    // match outer material of PMT with inner material of the box
+    analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
+    analytic->close();
 
-    GParts* anl = tri->getParts();
-    const char* imat = m_bndlib->getInnerMaterialName(spec);
-    anl->setContainingMaterial(imat);   // match outer material of PMT with inner material of the box
-    anl->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
-    anl->close();
+    // needed by OGeo::makeAnalyticGeometry
 
-    tri->setAnalyticInstancedIdentityBuffer(mmpmt->getAnalyticInstancedIdentityBuffer());
-    tri->setITransformsBuffer(mmpmt->getITransformsBuffer());
+    NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();
+    NPY<float>* itransforms = mmpmt->getITransformsBuffer();
 
-    return tri ; 
+    assert(idBuf);
+    assert(itransforms);
+
+    triangulated->setAnalyticInstancedIdentityBuffer(idBuf);
+    triangulated->setITransformsBuffer(itransforms);
+
+    return triangulated ; 
 }
+
+
+
+
 
 
 GMergedMesh* GGeoTest::createBoxInBox()

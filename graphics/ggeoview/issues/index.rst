@@ -5,6 +5,7 @@ issues
 .. toctree::
 
    offset_bottom/index
+   cfg4_pmt_edge_double_reflect
    pmttest
    stratification
    leaky_sphere

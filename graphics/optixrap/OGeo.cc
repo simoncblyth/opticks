@@ -452,6 +452,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     }
 
     NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
+    assert(idBuf);
+
     NPY<float>* itransforms = mm->getITransformsBuffer();
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
     assert(idBuf->getNumItems() == numITransforms );

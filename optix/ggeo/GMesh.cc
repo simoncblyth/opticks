@@ -970,6 +970,14 @@ void GMesh::saveNPYBuffer(const char* path, const char* name)
     {
         buf->save(path);
     }
+    else
+    {
+        LOG(warning) << "GMesh::saveNPYBuffer"
+                     << " NULL buffer not saving "
+                     << " path " << path
+                     << " name " << name 
+        ;
+    } 
 }
 
 NPYBase* GMesh::getNPYBuffer(const char* name)
@@ -984,6 +992,12 @@ NPYBase* GMesh::getNPYBuffer(const char* name)
 
 void GMesh::loadNPYBuffer(const char* path, const char* name)
 {
+
+    LOG(info) << "GMesh::loadNPYBuffer" 
+              << " name " << name
+              << " path " << path 
+              ; 
+
     if(strcmp(name, aiidentity) == 0)
     {
         NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
@@ -1004,8 +1018,6 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
         assert(0);
     }
 }
-
-
 
 
 void GMesh::loadBuffer(const char* path, const char* name)

@@ -19,8 +19,10 @@ class GGeoTest {
        void init();
     private:
        GMergedMesh* create();
+    private:
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
+       GMergedMesh* loadPmt();
     private:
        GCache*          m_cache ; 
        GGeoTestConfig*  m_config ; 

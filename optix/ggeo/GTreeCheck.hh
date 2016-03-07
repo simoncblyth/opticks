@@ -9,9 +9,10 @@ class GGeoLib ;
 class GNode ; 
 class GSolid ; 
 class GBuffer ;
+class GMergedMesh ;
+
 template<class T> class Counts ;
 template<class T> class NPY ;
-
 
 
 // *createInstancedMergedMeshes* is canonically invoked by GGeo::loadFromG4DAE GGeo::prepareMeshes
@@ -32,14 +33,15 @@ class GTreeCheck {
         void labelTree();
         unsigned int getNumRepeats(); 
         GNode* getRepeatExample(unsigned int ridx);
-
-        // canonically invoked by GTreeCheck::createInstancedMergedMeshes
-        GBuffer* PRIOR_makeInstanceTransformsBuffer(unsigned int ridx);
-        NPY<float>* makeInstanceTransformsBuffer(unsigned int ridx);
-
+   private:
         GBuffer* PRIOR_makeInstanceIdentityBuffer(unsigned int ridx) ;
+        GBuffer* PRIOR_makeInstanceTransformsBuffer(unsigned int ridx);
+        void checkInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx);
+   private:
+        // canonically invoked by GTreeCheck::createInstancedMergedMeshes
+        void makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx);
+        NPY<float>*        makeInstanceTransformsBuffer(unsigned int ridx);
         NPY<unsigned int>* makeInstanceIdentityBuffer(unsigned int ridx);
-
         NPY<unsigned int>* makeAnalyticInstanceIdentityBuffer(unsigned int ridx);
    public:
         bool operator()(const std::string& dig) ;

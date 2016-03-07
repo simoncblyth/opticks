@@ -32,9 +32,8 @@ if __name__ == '__main__':
     plt.close()
     plt.ion()
 
-    iddir = os.path.dirname(os.path.expandvars("$IDPATH"))
-    path_0 = os.path.join(iddir, "g4_00.dae")
-    path_1 = os.path.join(os.path.dirname(iddir), "dpib", "cfg4.dae")
+    path_0 = DAE.standardpath()
+    path_1 = DAE.path("dpib", "cfg4.dae")
 
     print path_0
     print path_1

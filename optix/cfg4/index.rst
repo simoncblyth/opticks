@@ -1,10 +1,8 @@
 
-optix
+cfg4
 =========================
 
 .. toctree::
 
-   optix
-   cfg4/index
-
+   cfg4
 

@@ -11,7 +11,7 @@ however the boundary positions look correct.
     ggv-;ggv-pmt-test --cfg4 --load --optixviz
 
 
-.. image:: /env/graphics/ggeoview/issues/cfg4-pyrex-br-br.png
+.. image:: //env/graphics/ggeoview/issues/cfg4-pyrex-br-br.png
    :width: 900px
    :align: center
 
@@ -46,7 +46,7 @@ however the boundary positions look correct.
 
 
 
-.. image:: /env/graphics/ggeoview/issues/pmt_edge_geometry.png
+.. image:: //env/graphics/ggeoview/issues/pmt_edge_geometry.png
    :width: 900px
    :align: center
 
@@ -120,7 +120,7 @@ Use circular beam of radous 0.5mm centered in the point (tag 6) for better visib
 Visualize the optix equivalent process "TO BT BR BT BT BT BT BT BT SA" with a single
 reflect.
 
-.. image:: /env/graphics/ggeoview/issues/op_pmt_edge_reflect_transmit_closeup.png
+.. image:: //env/graphics/ggeoview/issues/op_pmt_edge_reflect_transmit_closeup.png
    :width: 900px
    :align: center
 

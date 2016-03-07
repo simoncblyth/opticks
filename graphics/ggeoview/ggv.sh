@@ -182,7 +182,13 @@ elif [ "${cmdline/--jtst}" != "${cmdline}" ]; then
 elif [ "${cmdline/--dpib}" != "${cmdline}" ]; then
 
    export OPTICKS_GEOKEY=DAE_NAME_DPIB
-   export OPTICKS_QUERY="range:1:5" 
+   export OPTICKS_QUERY="" 
+   export OPTICKS_CTRL=""
+
+elif [ "${cmdline/--dpmt}" != "${cmdline}" ]; then
+
+   export OPTICKS_GEOKEY=DAE_NAME_DPIB
+   export OPTICKS_QUERY="range:1:6"   # exclude the box at first slot   
    export OPTICKS_CTRL=""
 
 elif [ "${cmdline/--dyb}" != "${cmdline}" ]; then

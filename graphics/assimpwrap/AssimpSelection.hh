@@ -20,6 +20,7 @@ public:
     unsigned int getNumSelected();
     AssimpNode* getSelectedNode(unsigned int i);
     bool isFlatSelection();
+    bool isNoSelection();
     int getQueryMerge();
     int getQueryDepth();
     bool contains(AssimpNode* node);
@@ -57,7 +58,9 @@ private:
 
     std::vector<int> m_query_range ; 
 
-    bool m_is_flat_selection ; 
+    bool m_flat_selection ; 
+
+    bool m_no_selection ; 
 
     std::vector<AssimpNode*> m_selection ; 
 
@@ -99,7 +102,8 @@ inline AssimpSelection::AssimpSelection(AssimpNode* root, const char* query)
     m_query_index(0), 
     m_query_merge(0), 
     m_query_depth(0), 
-    m_is_flat_selection(false),
+    m_flat_selection(false),
+    m_no_selection(false),
     m_low(NULL),
     m_high(NULL),
     m_center(NULL),
@@ -107,6 +111,24 @@ inline AssimpSelection::AssimpSelection(AssimpNode* root, const char* query)
     m_up(NULL)
 {
     init();
+}
+
+
+inline int AssimpSelection::getQueryMerge()
+{
+    return m_query_merge ;  
+}
+inline int AssimpSelection::getQueryDepth()
+{
+    return m_query_depth == 0 ? 100 : m_query_depth ;  
+}
+inline bool AssimpSelection::isFlatSelection()
+{
+    return m_flat_selection ; 
+}
+inline bool AssimpSelection::isNoSelection()
+{
+    return m_no_selection ; 
 }
 
 

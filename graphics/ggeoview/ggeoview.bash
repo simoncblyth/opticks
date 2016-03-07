@@ -143,6 +143,7 @@ ggv-pmt-test(){
 
     local test_config=(
                  mode=PmtInBox
+                 pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0
                  control=$testverbosity,0,0,0
                  analytic=1
                  shape=box
@@ -1920,7 +1921,7 @@ ggeoview-export()
    export-export
 
    [ "$OPTICKS_GEOKEY" == "" ] && echo $msg MISSING ENVVAR OPTICKS_GEOKEY && sleep 10000000
-   [ "$OPTICKS_QUERY"  == "" ] && echo $msg MISSING ENVVAR OPTICKS_QUERY && sleep 10000000
+   #[ "$OPTICKS_QUERY"  == "" ] && echo $msg MISSING ENVVAR OPTICKS_QUERY && sleep 10000000
    #[ "$OPTICKS_CTRL" == "" ]   && echo $msg MISSING ENVVAR OPTICKS_CTRL && sleep 10000000
 
    unset SHADER_DIR 
