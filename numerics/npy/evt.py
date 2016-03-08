@@ -25,7 +25,7 @@ X,Y,Z,W = 0,1,2,3
 
 
 class Evt(object):
-    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True):
+    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False):
 
         self.nrec = nrec
         self.seqs = seqs
@@ -36,27 +36,27 @@ class Evt(object):
         self.label = label
         self.rec = rec
 
-        self.init_metadata(tag, src, det)
-        self.init_photons(tag, src, det)
+        self.init_metadata(tag, src, det, dbg)
+        self.init_photons(tag, src, det, dbg)
 
         if rec:
-            self.init_records(tag, src, det)
+            self.init_records(tag, src, det, dbg)
             self.init_selection(seqs, not_ )
         else:
             self.history = None
         pass
 
-    def init_metadata(self, tag, src, det):
+    def init_metadata(self, tag, src, det, dbg):
         self.tag = str(tag)
         self.src = src
         self.det = det  
 
-        fdom = A.load_("fdom"+src,tag,det) 
-        idom = A.load_("idom"+src,tag,det) 
+        fdom = A.load_("fdom"+src,tag,det, dbg=dbg) 
+        idom = A.load_("idom"+src,tag,det, dbg=dbg) 
         assert idom[0,0,3] == self.nrec
 
-        td = I.load_("md"+src,tag,det, name="t_delta.ini")
-        tdii = II.load_("md"+src,tag,det, name="t_delta.ini")
+        td = I.load_("md"+src,tag,det, name="t_delta.ini", dbg=dbg)
+        tdii = II.load_("md"+src,tag,det, name="t_delta.ini", dbg=dbg)
 
         self.td = td
         self.tdii = tdii
@@ -64,7 +64,7 @@ class Evt(object):
         self.fdom = fdom
         self.idom = idom
 
-    def init_photons(self, tag, src, det):
+    def init_photons(self, tag, src, det, dbg):
         """
         #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
         """
@@ -72,7 +72,7 @@ class Evt(object):
         wl = ox[:,2,W] 
         c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
 
-        log.info("ox shape %s " % str(ox.shape))
+        log.debug("ox shape %s " % str(ox.shape))
 
         self.c4 = c4
         self.ox = ox
@@ -82,12 +82,12 @@ class Evt(object):
         self.polw = ox[:,2]
         self.flags = ox.view(np.uint32)[:,3,3]
 
-    def init_records(self, tag, src, det):
+    def init_records(self, tag, src, det, dbg):
 
-        rx = A.load_("rx"+src,tag,det).reshape(-1, self.nrec, 2, 4)
-        ph = A.load_("ph"+src,tag,det)
+        rx = A.load_("rx"+src,tag,det,dbg).reshape(-1, self.nrec, 2, 4)
+        ph = A.load_("ph"+src,tag,det,dbg)
 
-        log.info("rx shape %s " % str(rx.shape))
+        log.debug("rx shape %s " % str(rx.shape))
 
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
@@ -120,7 +120,7 @@ class Evt(object):
     def init_selection(self, seqs, not_):
         if not self.rec or len(seqs) == 0:return  
 
-        log.info("Evt seqs %s " % repr(seqs))
+        log.debug("Evt seqs %s " % repr(seqs))
         psel = self.all_history.seq_or(seqs, not_=not_)
 
         self.ox = self.ox[psel]
@@ -252,6 +252,9 @@ class Evt(object):
 
         t_center = self.fdom[1,0,X]
         t_extent = self.fdom[1,0,Y]
+
+        self.t_center = t_center
+        self.t_extent = t_extent
        
         center = np.zeros(4)
         center[:W] = p_center 
@@ -264,6 +267,21 @@ class Evt(object):
         return center, extent 
 
     def rpost_(self, irec, recs=None):
+        """
+        Record compression can be regarded as a very early choice of binning, 
+        as cannot use other binnings without suffering from artifacts
+        so need to access the "compression bins" somehow::
+
+            In [24]: cf.a.rx[:,1,0,3].min()
+            Out[24]: A(16, dtype=int16)
+
+            In [25]: cf.a.rx[:,1,0,3].max()
+            Out[25]: A(208, dtype=int16)
+
+        The range within some selection is irrelevant, what matters is the 
+        domain of the compression, need to find that binning then throw
+        away unused edge bins according to the plotted range. 
+        """
         if recs is None:
             recs = self.rx 
         center, extent = self.post_center_extent()

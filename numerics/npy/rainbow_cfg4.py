@@ -9,6 +9,8 @@ Disabling step-by-step recording has large improvement
 factor for Opticks of about x3 but not much impact on cfg4-.
 The result match between G4 and Op remains unchanged.
 
+
+
 Seems like reducing the number and size of 
 buffers in context is a big win for Opticks.
 
@@ -21,6 +23,18 @@ Just final photon recording::
 
    Op    1.8 
    G4   47.9
+
+
+
+CAVEAT: above Op is Op/INTEROP
+--------------------------------
+
+Actually this behavior is for Opticks INTEROP mode using OpenGL
+buffers, in compute mode with OptiX buffers there is almost no
+difference between enabling step-by-step recording and not. 
+It seems like OpenGL constrains performance once
+total buffer size gets too big.
+
 
 
 Matching curand buffer to requirement

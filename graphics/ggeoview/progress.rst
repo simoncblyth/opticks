@@ -33,6 +33,19 @@ October
 * analytic geometry description of DYB PMT via detdesc parsing and geometrical partitioning
 * flexible boundary creation
 
+November
+---------
+
+* overhaul material/surface/boundary handling to allow dynamic boundary creation post geocache
+* implement dynamic test geometry creation controlled by commandline argument, using "--test" option 
+* npy analysis for Fresnel reflection testing
+* adopt more rational PMT partitioning surfaces (not a direct translation)
+
+
+
+
+
+
 
 
 

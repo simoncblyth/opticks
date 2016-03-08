@@ -29,12 +29,13 @@ def tpaths_(typ, tag, det="dayabay", name=None):
 
 class A(np.ndarray):
     @classmethod
-    def load_(cls, typ, tag, det="dayabay"):
+    def load_(cls, typ, tag, det="dayabay", dbg=False):
         path = path_(typ,tag, det)
         a = None
         if os.path.exists(path):
             log.debug("loading %s " % path )
-            os.system("ls -l %s " % path)
+            if dbg: 
+                os.system("ls -l %s " % path)
             arr = np.load(path)
             a = arr.view(cls)
             a.path = path 
@@ -48,10 +49,12 @@ class A(np.ndarray):
 
 class I(dict):
     @classmethod
-    def loadpath_(cls, path):
+    def loadpath_(cls, path, dbg=False):
         if os.path.exists(path):
             log.debug("loading %s " % path )
-            os.system("ls -l %s " % path)
+            if dbg: 
+                os.system("ls -l %s " % path)
+            pass
             d = ini_(path)
         else:
             log.warning("cannot load %s " % path)
@@ -59,13 +62,13 @@ class I(dict):
         return d  
 
     @classmethod
-    def load_(cls, typ, tag, det="dayabay", name="t_delta.ini"):
+    def load_(cls, typ, tag, det="dayabay", name="t_delta.ini", dbg=False):
         path = path_(typ, tag, det, name=name)
         i = cls(path, typ=typ, tag=tag, det=det, name=name)
         return i
 
-    def __init__(self, path, typ=None, tag=None, det=None, name=None):
-        d = self.loadpath_(path)
+    def __init__(self, path, typ=None, tag=None, det=None, name=None, dbg=False):
+        d = self.loadpath_(path,dbg=dbg)
         dict.__init__(self, d)
         self.path = path
         self.fold = os.path.basename(os.path.dirname(path))
@@ -84,9 +87,9 @@ class II(list):
     event metadata
     """
     @classmethod
-    def load_(cls, typ, tag, det="dayabay", name="t_delta.ini"):
+    def load_(cls, typ, tag, det="dayabay", name="t_delta.ini", dbg=False):
         tpaths = tpaths_(typ, tag, det, name=name)
-        ii = map(lambda path:I(path, typ=typ, tag=tag, det=det, name=name), tpaths) 
+        ii = map(lambda path:I(path, typ=typ, tag=tag, det=det, name=name, dbg=dbg), tpaths) 
         return cls(ii)
 
     def __init__(self, ii):
