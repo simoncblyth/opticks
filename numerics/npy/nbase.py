@@ -37,4 +37,45 @@ def chi2(a, b, cut=30):
     return c2, len(a[msk]) 
  
 
+def decompression_bins(cbins, *vals):
+    """
+    :param cbins: full range decompressed bins 
+    :param vals:
+
+    Compression can be considered to be a very early (primordial) binning.  
+    To avoid artifacts all subsequent binning needs to be
+    use bins that correspond to these originals. 
+
+    This provides a subset of full range decompression bins, 
+    corresponding to a value range.
+    """
+    vmin = min(map(lambda _:_.min(), vals))
+    vmax = max(map(lambda _:_.max(), vals))
+    width = (vmax - vmin)
+    widen = width*0.1
+
+    vmin = vmin-widen
+    vmax = vmax+widen
+    imin = np.where(cbins>=vmin)[0][0]
+    imax = np.where(cbins<=vmax)[0][-1]
+    pass
+    inum = imax - imin  
+    if inum == 0:
+        log.warning("special case handling of all values the same")
+        bins = np.linspace(vmin-1,vmax+1,3)
+    else:
+        bins = np.linspace(vmin,vmax,inum)
+    return bins
+
+if __name__ == '__main__':
+
+    cbins = np.linspace(-300,300,10)
+    avals = np.repeat(300,1000)
+    bvals = np.repeat(300,1000)
+
+    rbins = decompression_bins(cbins, avals, bvals)
+
+
+
+
 

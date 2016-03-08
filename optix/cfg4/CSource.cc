@@ -97,6 +97,7 @@ void CSource::GeneratePrimaryVertex(G4Event *evt)
     part_prop_t& pp = m_pp.Get();
 
     bool incidentSphere = m_torch->isIncidentSphere() ;
+    bool disc = m_torch->isDisc() ;
     bool discLin = m_torch->isDiscLinear() ;
     bool ring = m_torch->isRing() ;
     bool point = m_torch->isPoint() ;
@@ -110,6 +111,7 @@ void CSource::GeneratePrimaryVertex(G4Event *evt)
 	if (m_verbosityLevel > 1)
     LOG(info) << "CSource::GeneratePrimaryVertex"
               << " incidentSphere " << incidentSphere
+              << " disc " << disc 
               << " discLin " << discLin 
               << " ring " << ring 
               << " reflTest " << reflTest
@@ -168,7 +170,7 @@ void CSource::GeneratePrimaryVertex(G4Event *evt)
 		       particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
 
         }
-        else if(discLin)
+        else if(discLin || disc)
         {
             // match the adhoc (sinPhi, -cosPhi, 0) polarization from optixrap-/cu/torchstep.h:generate_torch_photon
             G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
@@ -262,6 +264,7 @@ void CSource::configure()
     SetParticlePolarization(pol); // reset later for the custom configs 
 
     bool incidentSphere = m_torch->isIncidentSphere() ;
+    bool disc = m_torch->isDisc() ;
     bool discLin = m_torch->isDiscLinear() ;
     bool ring = m_torch->isRing() ;
     bool point = m_torch->isPoint() ;
@@ -279,7 +282,7 @@ void CSource::configure()
         m_posGen->SetPosDisType("Point");
         m_posGen->SetCentreCoords(cen);
     }
-    else if(incidentSphere || discLin || ring)  // used with "rainbow" geometry 
+    else if(incidentSphere || discLin || disc || ring)  // used with "rainbow" geometry 
     {
         m_posGen->SetPosDisType("Plane");
 

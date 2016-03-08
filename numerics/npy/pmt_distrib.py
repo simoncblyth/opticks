@@ -12,15 +12,18 @@ Visualize the cfg4 created evt in interop mode viewer::
 
    ggv-;ggv-pmt-test --cfg4 --load
 
-Use G4 ui for G4 viz::
-
-   ggv-;ggv-pmt-test --cfg4 --g4ui
-
 Issues
 -------
 
 See pmt_test.py for the history of getting flags and materials into agreement.
 
+TODO
+-----
+
+* push out to more sequences
+* auto-handling records for the sequence
+* creating multiple pages...
+* polx,y,z wavelength  
 
 """
 import os, logging, numpy as np
@@ -30,9 +33,8 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from env.numerics.npy.evt import Evt
-from env.numerics.npy.nbase import chi2
-
-X,Y,Z,W = 0,1,2,3
+from env.numerics.npy.nbase import chi2, decompression_bins
+from env.numerics.npy.cfplot import cfplot
 
 
 class CF(object):
@@ -43,7 +45,9 @@ class CF(object):
         self.det = det
         self.seqs = seqs
 
-        suptitle = "%s %s %s " % (det, src, tag )
+        seqlab = ",".join(seqs) 
+        suptitle = "(%s) %s %s %s " % (tag, det, src, seqlab )
+
         a = Evt(tag="%s" % tag, src=src, det=det, seqs=seqs)
         b = Evt(tag="-%s" % tag , src=src, det=det, seqs=seqs)
 
@@ -78,7 +82,6 @@ class CF(object):
     def spawn(self, seqs):
         return CF(self.tag, self.src, self.det, seqs)
 
-
     def dump_ranges(self, i):
         log.info("%s : dump_ranges %s " % (repr(self), i) )
 
@@ -103,14 +106,77 @@ class CF(object):
         self.dump_ranges(0)
         self.dump_histories()
 
+    def rpost(self, qwn, irec): 
+        a = self.a
+        b = self.b
+        lval = "%s[%d]" % (qwn.lower(), irec)
+        labels = ["Op : %s" % lval, "G4 : %s" % lval]
+        if qwn in Evt.RPOST:
+            q = Evt.RPOST[qwn]
+            aval = a.rpost_(irec)[:,q]
+            bval = b.rpost_(irec)[:,q]
+            if qwn == "T":
+                cbins = a.tbins()
+            else:
+                cbins = a.pbins()
+        else:
+            assert 0, "qwn %s unknown " % qwn 
+        pass
+        return cbins, aval, bval, labels
+ 
 
-def cf_plot(ax, aval, bval,  bins, label, log_=False):
-    cnt = {}
-    bns = {}
-    ptc = {}
-    cnt[0], bns[0], ptc[0] = ax.hist(aval, bins=bins,  log=log_, histtype='step', label=label)
-    cnt[1], bns[1], ptc[1] = ax.hist(bval, bins=bins,  log=log_, histtype='step', label=label)
-    return cnt, bns
+
+def qwns_plot(scf, qwns, irec, log_=False):
+
+    fig = plt.figure()
+    fig.suptitle(scf.suptitle)
+
+    nx = len(qwns)
+    gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
+
+    for ix in range(nx):
+
+        gss = [gs[ix], gs[nx+ix]]
+
+        qwn = qwns[ix]
+
+        binscale = Evt.RPOST_BINSCALE[qwn]
+
+        cbins, aval, bval, labels = scf.rpost(qwn, irec)
+
+        log.info("%s %s " % (qwns[ix], repr(labels) ))
+
+        rbins = decompression_bins(cbins, aval, bval)
+        if len(rbins) > binscale:
+            bins = rbins[::binscale]
+        else:
+            bins = rbins
+
+        cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+    pass
+
+
+def qwn_plot(scf, qwn, irec, log_=False):
+
+    cbins, aval, bval, labels = scf.rpost(qwn, irec)
+
+    rbins = decompression_bins(cbins, aval, bval)
+    binscale = Evt.RPOST_BINSCALE[qwn]
+
+    if len(rbins) > binscale:
+        bins = rbins[::binscale]
+    else:
+        bins = rbins
+
+    fig = plt.figure()
+    fig.suptitle(scf.suptitle)
+
+    nx,ix = 1,0
+    gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
+    gss = [gs[ix], gs[nx+ix]]
+
+    cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+
 
 
 if __name__ == '__main__':
@@ -121,58 +187,15 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    tag = "4"
-
-    subselect = None
-    subselect = slice(0,3)
-
-    cf = CF(tag=tag, src="torch", det="PmtInBox", subselect=subselect )
+    cf = CF(tag="4", src="torch", det="PmtInBox", subselect=slice(0,3) )
     cf.dump()
 
+    iss = 1   # selection index
 
-    aval = cf.ss[0].a.rpost_(1)[:,3]
-    bval = cf.ss[0].b.rpost_(1)[:,3]
+    scf = cf.ss[iss] 
+    irec = 2
 
-    # how to choose bins that avoid compression artifacts 
-    # timerange probably 0:100
-
-    bins = np.linspace(min(aval.min(),bval.min()),max(aval.max(),bval.max()),128)
-
-    fig = plt.figure()
-
-    fig.suptitle(cf.suptitle)
-
-    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
-
-    ax = fig.add_subplot(gs[0])
-
-    ylim = [0,70000]
-    ylim2 = [0, 10]
-    label = "rec1 time"
-    log_ = True
-    c, bns = cf_plot(ax, aval, bval, bins=bins, label=label, log_=log_)
-    assert len(c) == 2
-
-    ax.set_ylim(ylim)
-    ax.legend()
-
-    xlim = ax.get_xlim()
-    ax = fig.add_subplot(gs[1])
-
-    a,b = c[0],c[1]
-
-    c2, c2n = chi2(a, b, cut=30)
-    c2p = c2.sum()/c2n
-       
-    label = "chi2/ndf %4.2f" % c2p
- 
-    plt.plot( bins[:-1], c2, drawstyle='steps', label=label )
-
-    ax.set_xlim(xlim) 
-    ax.legend()
-
-    ax.set_ylim(ylim2) 
-
-
+    #qwn_plot( scf, "T", irec)
+    qwns_plot( scf, ["X","Y","Z","T"], irec)
 
 

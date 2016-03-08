@@ -21,10 +21,14 @@ deg = np.pi/180.
 
 log = logging.getLogger(__name__)
 
-X,Y,Z,W = 0,1,2,3
+X,Y,Z,W,T = 0,1,2,3,3
 
 
 class Evt(object):
+
+    RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
+    RPOST_BINSCALE = {"X":100,"Y":100,"Z":100,"W":10,"T":10} 
+
     def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False):
 
         self.nrec = nrec
@@ -253,9 +257,6 @@ class Evt(object):
         t_center = self.fdom[1,0,X]
         t_extent = self.fdom[1,0,Y]
 
-        self.t_center = t_center
-        self.t_extent = t_extent
-       
         center = np.zeros(4)
         center[:W] = p_center 
         center[W] = t_center
@@ -265,6 +266,20 @@ class Evt(object):
         extent[W] = t_extent
 
         return center, extent 
+
+    def tbins(self):
+        t_center = self.fdom[1,0,X]
+        t_extent = self.fdom[1,0,Y]
+        assert(t_center == 0.)
+        tb = np.linspace(t_center, t_center + t_extent, 32767+1)
+        return tb 
+
+    def pbins(self):
+        p_center = self.fdom[0,0,:W]
+        p_extent = self.fdom[0,0,W]
+        assert p_center[0] == p_center[1] == p_center[2] == 0., p_center
+        pb = np.linspace(p_center[0] - p_extent, p_center[1] + p_extent, 2*32767+1)
+        return pb 
 
     def rpost_(self, irec, recs=None):
         """

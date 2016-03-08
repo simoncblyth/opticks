@@ -158,6 +158,7 @@ ggv-pmt-test(){
    ggv \
        --test --testconfig "$(join _ ${test_config[@]})" \
        --torch --torchconfig "$(join _ ${torch_config[@]})" \
+       --timemax 10 \
        --animtimemax 10 \
        --cat PmtInBox --tag $tag --save \
        --eye 0.0,-0.5,0.0 \

@@ -124,6 +124,7 @@ class TorchStepNPY {
        unsigned int getNumPhotonsPerG4Event(); 
        unsigned int getNumG4Event();
        bool isIncidentSphere();
+       bool isDisc();
        bool isDiscLinear();
        bool isRing();
        bool isPoint();
@@ -338,6 +339,12 @@ inline bool TorchStepNPY::isIncidentSphere()
 }
 
 
+
+inline bool TorchStepNPY::isDisc()
+{
+    ::Torch_t type = getType();
+    return type == T_DISC  ;
+}
 inline bool TorchStepNPY::isDiscLinear()
 {
     ::Torch_t type = getType();
