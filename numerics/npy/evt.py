@@ -27,7 +27,10 @@ X,Y,Z,W,T = 0,1,2,3,3
 class Evt(object):
 
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
-    RPOST_BINSCALE = {"X":100,"Y":100,"Z":100,"W":10,"T":10} 
+    RPOL = {"A":X,"B":Y,"C":Z} 
+
+    RQWN_BINSCALE = {"X":100,"Y":100,"Z":100,"W":10,"T":10,"A":1,"B":1,"C":1} 
+
 
     def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False):
 
@@ -228,6 +231,28 @@ class Evt(object):
         pol[:,2] = pz
 
         return pol
+
+    def rpol_bins(self):
+        """
+        Avoiding artifacts for char compressed, means 
+        using the compression binning.
+
+        Suspect one bin difference in handling somewhere ?
+
+        :: 
+
+              py = ipy/127. - 1.
+              plt.hist(py, bins=np.linspace(-1,1,255) )
+              plt.show()
+              plt.hist(py, bins=np.linspace(-1,1,255) )
+              hist -n
+
+        """
+        #lo = np.uint16(0x0)/127. - 1. 
+        #hi = np.uint16(0xFF)/127. - 1.  # 1.0078740157480315 
+        #lb = np.linspace(lo, hi, 255+1+1)
+        lb = np.linspace(-1, 1, 255+1)   # 
+        return lb 
 
     def recflags(self, recs, irec):
         m1m2 = recs[:,irec,1,2]

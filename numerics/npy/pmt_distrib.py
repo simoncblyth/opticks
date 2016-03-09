@@ -47,8 +47,6 @@ class CF(object):
         self.det = det
         self.seqs = seqs
 
-        seqlab = ",".join(seqs) 
-        suptitle = "(%s) %s %s %s " % (tag, det, src, seqlab )
 
         a = Evt(tag="%s" % tag, src=src, det=det, seqs=seqs)
         b = Evt(tag="-%s" % tag , src=src, det=det, seqs=seqs)
@@ -58,7 +56,6 @@ class CF(object):
         his = a.history.table.compare(b.history.table)
         mat = a.material.table.compare(b.material.table)
 
-        self.suptitle = suptitle
         self.a = a
         self.b = b 
         self.his = his
@@ -67,6 +64,30 @@ class CF(object):
         self.ss = []
         if subselect is not None:
             self.init_subselect(subselect)
+
+    def suptitle(self, irec=-1):
+        lab = self.seqlab(irec)
+        title = "(%s) %s/%s  :  %s " % (self.tag, self.det, self.src, lab )
+        return title
+
+    def seqlab(self, irec=1):
+        """
+        Sequence label with single record highlighted with a bracket 
+        eg  TO BT [BR] BR BT SA 
+
+        """
+        nseq = len(self.seqs) 
+        if nseq == 1 and irec > -1: 
+            seq = self.seqs[0]
+            eseq = seq.split()
+            if irec < len(eseq):
+                eseq[irec] = "[%s]" % eseq[irec]
+            pass
+            lab = " ".join(eseq) 
+        else:
+            lab = ",".join(seqs) 
+        pass
+        return lab 
 
     def init_subselect(self, sli):
         """
@@ -108,11 +129,12 @@ class CF(object):
         self.dump_ranges(0)
         self.dump_histories()
 
-    def rpost(self, qwn, irec): 
+    def rqwn(self, qwn, irec): 
         a = self.a
         b = self.b
         lval = "%s[%d]" % (qwn.lower(), irec)
         labels = ["Op : %s" % lval, "G4 : %s" % lval]
+
         if qwn in Evt.RPOST:
             q = Evt.RPOST[qwn]
             aval = a.rpost_(irec)[:,q]
@@ -121,19 +143,38 @@ class CF(object):
                 cbins = a.tbins()
             else:
                 cbins = a.pbins()
+        elif qwn in Evt.RPOL:
+            q = Evt.RPOL[qwn]
+            aval = a.rpol_(irec)[:,q]
+            bval = b.rpol_(irec)[:,q]
+            cbins = a.rpol_bins()
         else:
             assert 0, "qwn %s unknown " % qwn 
         pass
-        return cbins, aval, bval, labels
- 
+
+        if qwn in "ABC":
+            # polarization is char compressed so have to use primordial bins
+            bins = cbins
+        else: 
+            rbins = decompression_bins(cbins, aval, bval)
+            binscale = Evt.RQWN_BINSCALE[qwn]
+            if len(rbins) > binscale:
+                bins = rbins[::binscale]
+            else:
+                bins = rbins
+            pass
+
+        return bins, aval, bval, labels
 
 
 def qwns_plot(scf, qwns, irec, log_=False):
 
     fig = plt.figure()
-    fig.suptitle(scf.suptitle)
+
+    fig.suptitle(scf.suptitle(irec))
 
     nx = len(qwns)
+
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
 
     for ix in range(nx):
@@ -142,42 +183,30 @@ def qwns_plot(scf, qwns, irec, log_=False):
 
         qwn = qwns[ix]
 
-        binscale = Evt.RPOST_BINSCALE[qwn]
+        bins, aval, bval, labels = scf.rqwn(qwn, irec)
 
-        cbins, aval, bval, labels = scf.rpost(qwn, irec)
-
-        log.info("%s %s " % (qwns[ix], repr(labels) ))
-
-        rbins = decompression_bins(cbins, aval, bval)
-        if len(rbins) > binscale:
-            bins = rbins[::binscale]
-        else:
-            bins = rbins
+        log.info("%s %s " % (qwn, repr(labels) ))
 
         cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
     pass
 
 
+
+
 def qwn_plot(scf, qwn, irec, log_=False):
 
-    cbins, aval, bval, labels = scf.rpost(qwn, irec)
-
-    rbins = decompression_bins(cbins, aval, bval)
-    binscale = Evt.RPOST_BINSCALE[qwn]
-
-    if len(rbins) > binscale:
-        bins = rbins[::binscale]
-    else:
-        bins = rbins
+    bins, aval, bval, labels = scf.rqwn(qwn, irec)
 
     fig = plt.figure()
-    fig.suptitle(scf.suptitle)
+    fig.suptitle(scf.suptitle(irec))
 
     nx,ix = 1,0
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
     gss = [gs[ix], gs[nx+ix]]
 
     cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+
+
 
 
 
@@ -193,11 +222,12 @@ if __name__ == '__main__':
     cf.dump()
 
     iss = 1   # selection index
+    irec = 1
 
     scf = cf.ss[iss] 
-    irec = 2
 
-    #qwn_plot( scf, "T", irec)
-    qwns_plot( scf, ["X","Y","Z","T"], irec)
+    #qwn_plot( scf, "A", irec)
+    #qwns_plot( scf, ["X","Y","Z","T"], irec)
+    qwns_plot( scf, ["A","B","C"], irec)
 
 
