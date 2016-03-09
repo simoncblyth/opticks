@@ -213,6 +213,8 @@ void GGeo::loadGeometry()
         loadFromCache();
     } 
 
+    loadAnalyticPmt();
+
     setupLookup();
     setupColors();
     setupTyp();
@@ -279,6 +281,8 @@ void GGeo::loadFromCache()
     LOG(debug) << "GGeo::loadFromCache DONE" ; 
 }
 
+
+
 void GGeo::setupLookup()
 {
     // see ggeo-/tests/LookupTest.cc
@@ -336,6 +340,26 @@ void GGeo::save(const char* idpath)
 }
 
 
+void GGeo::loadAnalyticPmt()
+{
+    NSlice* slice = NULL ;
+
+    unsigned int pmtIndex = 0 ;  
+
+    m_pmt = GPmt::load( m_cache, m_bndlib, pmtIndex, slice ); 
+
+    if(m_pmt)
+    {
+        LOG(info) << "GGeo::loadAnalyticPmt SUCCEEDED"
+                  << m_pmt->getPath()   
+                   ;
+    }
+
+}
+
+
+
+
 void GGeo::modifyGeometry(const char* config)
 {
     // NB only invoked with test option : "ggv --test" 
@@ -349,6 +373,11 @@ void GGeo::modifyGeometry(const char* config)
     m_geotest = new GGeoTest(m_cache, gtc);
     m_geotest->modifyGeometry();
 }
+
+
+
+
+
 
 const char* GGeo::getPVName(unsigned int index)
 {

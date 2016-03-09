@@ -91,6 +91,7 @@
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GPmt.hh"
 #include "GFlags.hh"
 
 #include "GColors.hh"
@@ -469,6 +470,7 @@ void App::configureGeometry()
 {
     int restrict_mesh = m_fcfg->getRestrictMesh() ;  
     int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
+
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
     LOG(info) << "App::configureGeometry" 
@@ -489,7 +491,13 @@ void App::configureGeometry()
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(Opticks::GEOCODE_SKIP);      
-        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) mm->setGeoCode(Opticks::GEOCODE_ANALYTIC);      
+        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) 
+        {
+            GPmt* pmt = m_ggeo->getPmt(); 
+            assert(pmt && "analyticmesh requires PMT resource");
+            mm->setGeoCode(Opticks::GEOCODE_ANALYTIC);      
+            mm->setParts(pmt->getParts());  
+        }
         if(i>0) mm->setInstanceSlice(islice);
 
         // restrict to non-global for now

@@ -25,6 +25,7 @@ class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
 class GSourceLib ;
+class GPmt ; 
 
 class GTreeCheck ;
 class GTreePresent ;
@@ -85,6 +86,9 @@ class GGeo {
         void setupLookup();
         void setupColors();
         void setupTyp();
+    public:
+        // configureGeometry stage additions
+        void loadAnalyticPmt();
     public:
         void prepareMaterialLib();
         void prepareSurfaceLib();
@@ -192,6 +196,7 @@ class GGeo {
         GSurfaceLib*       getSurfaceLib();
         GScintillatorLib*  getScintillatorLib();
         GSourceLib*        getSourceLib();
+        GPmt*              getPmt(); 
         Lookup*            getLookup(); 
     public:
         GColorizer*        getColorizer();
@@ -291,6 +296,7 @@ class GGeo {
         GSurfaceLib*                  m_surfacelib ; 
         GScintillatorLib*             m_scintillatorlib ; 
         GSourceLib*                   m_sourcelib ; 
+        GPmt*                         m_pmt ; 
 
         GColorizer*                   m_colorizer ; 
         GGeoTest*                     m_geotest ;  
@@ -336,6 +342,7 @@ inline GGeo::GGeo(GCache* cache) :
    m_surfacelib(NULL),
    m_scintillatorlib(NULL),
    m_sourcelib(NULL),
+   m_pmt(NULL),
    m_colorizer(NULL),
    m_geotest(NULL),
    m_sensor_list(NULL),
@@ -495,11 +502,15 @@ inline GSourceLib* GGeo::getSourceLib()
 {
     return m_sourcelib ; 
 }
-
+inline GPmt* GGeo::getPmt()
+{
+    return m_pmt ; 
+}
 inline Lookup* GGeo::getLookup()
 {
     return m_lookup ; 
 }
+
 inline GColorizer* GGeo::getColorizer()
 {
     return m_colorizer ; 

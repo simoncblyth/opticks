@@ -425,7 +425,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
     GParts* pmt = mm->getParts();
-    assert(pmt && "GMergedMesh with GeoCode A must have associated GParts, see GGeo::modifyGeometry "); 
+    assert(pmt && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
 
     if(pmt->getSolidBuffer() == NULL)
     {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstddef>
+#include <cstring>
 
 class GCache ; 
 class GParts ; 
@@ -21,21 +21,25 @@ class GPmt {
        static GPmt* load(GCache* cache, GBndLib* bndlib, unsigned int index, NSlice* slice=NULL);
    public:
        GPmt(GCache* cache, GBndLib* bndlib, unsigned int index);
+       void setPath(const char* path);
    public:
        void addContainer(gbbox& bb, const char* bnd );
    private:
        void loadFromCache(NSlice* slice);    
        void setParts(GParts* parts);
        void setCSG(GCSG* csg);
+ 
    public:
        GParts* getParts();
        GCSG*   getCSG();
+       const char* getPath();
    private:
        GCache*            m_cache ; 
        GBndLib*           m_bndlib ; 
        unsigned int       m_index ;
        GParts*            m_parts ;
        GCSG*              m_csg ;
+       const char*        m_path ;
 };
 
 
@@ -45,7 +49,8 @@ inline GPmt::GPmt(GCache* cache, GBndLib* bndlib, unsigned int index)
     m_bndlib(bndlib),
     m_index(index),
     m_parts(NULL),
-    m_csg(NULL)
+    m_csg(NULL),
+    m_path(NULL)
 {
 }
 
@@ -65,6 +70,16 @@ inline void GPmt::setCSG(GCSG* csg)
 inline GCSG* GPmt::getCSG()
 {
     return m_csg ; 
+}
+
+
+inline void GPmt::setPath(const char* path)
+{
+    m_path = path ? strdup(path) : NULL  ; 
+}
+inline const char* GPmt::getPath()
+{
+    return m_path ; 
 }
 
 

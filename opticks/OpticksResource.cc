@@ -198,7 +198,23 @@ bool OpticksResource::loadPreference(std::map<std::string, unsigned int>& msu, c
 }
 
 
+bool OpticksResource::existsFile(const char* path)
+{
+    fs::path fpath(path);
+    return fs::exists(fpath ) && fs::is_regular_file(fpath) ;
+}
 
+bool OpticksResource::existsFile(const char* dir, const char* name)
+{
+    fs::path fpath(dir);
+    fpath /= name ; 
+    return fs::exists(fpath ) && fs::is_regular_file(fpath) ;
+}
 
+bool OpticksResource::existsDir(const char* path)
+{
+    fs::path fpath(path);
+    return fs::exists(fpath ) && fs::is_directory(fpath) ;
+}
 
 

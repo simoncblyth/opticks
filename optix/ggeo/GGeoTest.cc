@@ -125,9 +125,14 @@ GMergedMesh* GGeoTest::loadPmt()
     }
 
 
-
     NSlice* slice = m_config->getSlice();
-    GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
+
+    GPmt* pmt = slice == NULL ? 
+                                 m_ggeo->getPmt() 
+                              : 
+                                 GPmt::load( m_cache, m_bndlib, 0, slice )  // pmtIndex:0
+                              ;  
+
 
     // associating the analytic GPmt with the triangulated GMergedMesh 
     mmpmt->setParts(pmt->getParts());               
