@@ -20,12 +20,15 @@ def _cf_plot(ax, aval, bval,  bins, labels,  log_=False):
 def _chi2_plot(ax, bins, counts, cut=30):
     a,b = counts[0],counts[1]
 
-    c2, c2n = chi2(a, b, cut=cut)
+    c2, c2n, c2c = chi2(a, b, cut=cut)
     c2p = c2.sum()/c2n
        
-    label = "chi2/ndf %4.2f" % c2p
+    label = "chi2/ndf %4.2f [%d]" % (c2p, c2c)
 
     ax.plot( bins[:-1], c2, drawstyle='steps', label=label )
+
+    return c2p
+
 
 
 def cfplot(fig, gss, bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, c2_ymax=10, logyfac=3., linyfac=1.3): 
@@ -45,12 +48,13 @@ def cfplot(fig, gss, bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, 
 
     ax = fig.add_subplot(gss[1])
 
-    _chi2_plot(ax, bins, counts_dict, cut=c2_cut)  
+    c2p = _chi2_plot(ax, bins, counts_dict, cut=c2_cut)  
 
     ax.set_xlim(xlim) 
     ax.legend()
     ax.set_ylim([0,c2_ymax]) 
 
+    return c2p  
 
 
 if __name__ == '__main__':

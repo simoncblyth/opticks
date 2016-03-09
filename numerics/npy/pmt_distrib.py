@@ -20,8 +20,8 @@ See pmt_test.py for the history of getting flags and materials into agreement.
 TODO
 -----
 
-* XY radius plotting
-* polx,y,z wavelength  
+* wavelength  
+
 * push out to more sequences
 * auto-handling records for the sequence
 * creating multiple pages...
@@ -29,24 +29,27 @@ TODO
 
 """
 import os, logging, numpy as np
+from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize'] = 18,10.2   # plt.gcf().get_size_inches()   after maximize
 import matplotlib.gridspec as gridspec
 
 from env.numerics.npy.evt import Evt
 from env.numerics.npy.nbase import chi2, decompression_bins
 from env.numerics.npy.cfplot import cfplot
+from env.doc.make_rst_table import recarray_as_rst
 
 
 class CF(object):
-    def __init__(self, tag="4", src="torch", det="PmtInBox", seqs=[], subselect=None ):
+    def __init__(self, tag="4", src="torch", det="PmtInBox", seqs=[], select=None ):
 
         self.tag = tag
         self.src = src
         self.det = det
         self.seqs = seqs
-
+        self.select = select
 
         a = Evt(tag="%s" % tag, src=src, det=det, seqs=seqs)
         b = Evt(tag="-%s" % tag , src=src, det=det, seqs=seqs)
@@ -62,13 +65,33 @@ class CF(object):
         self.mat = mat
 
         self.ss = []
-        if subselect is not None:
-            self.init_subselect(subselect)
+        if select is not None:
+            self.init_select(select)
+
+    def a_count(self, line=0):
+        """subselects usually have only one sequence line""" 
+        return self.his.cu[line,1]
+
+    def b_count(self, line=0):
+        return self.his.cu[line,2]
+
+    def ab_count(self, line=0):
+        ac = self.a_count(line)
+        bc = self.b_count(line)
+        return "%d/%d" % (ac,bc)
 
     def suptitle(self, irec=-1):
+        abc = self.ab_count()
         lab = self.seqlab(irec)
-        title = "(%s) %s/%s  :  %s " % (self.tag, self.det, self.src, lab )
+        title = "(%s) %s/%s : %s  :  %s " % (self.tag, self.det, self.src, abc, lab )
         return title
+
+    def nrec(self):
+        nseq = len(self.seqs) 
+        if nseq != 1:return -1
+        seq = self.seqs[0]
+        eseq = seq.split()
+        return len(eseq)
 
     def seqlab(self, irec=1):
         """
@@ -89,14 +112,15 @@ class CF(object):
         pass
         return lab 
 
-    def init_subselect(self, sli):
+    def init_select(self, sli):
         """
-        Spawn CF for each of the subselections, according to 
+        Spawn CF for each of the selections, according to 
         slices of the history sequences.
         """
         for label in self.his.labels[sli]:
             seqs = [label]
             ss = self.spawn(seqs)
+            #ss.cfc = self.his.labels2cfcount[label]  #   {'TO AB': array([18866, 19048], dtype=uint64), ... 
             self.ss.append(ss) 
 
     def __repr__(self):
@@ -121,9 +145,14 @@ class CF(object):
         if len(br)>0:
             print " ".join(map(lambda _:"%6.3f" % _, (br.min(),br.max())))
 
-    def dump_histories(self):
-        print self.his
-        #print self.mat
+    def dump_histories(self, lmx=20):
+        if len(self.his.lines) > lmx:
+            self.his.sli = slice(0,lmx)
+        if len(self.mat.lines) > lmx:
+            self.mat.sli = slice(0,lmx)
+
+        print "\n",self.his
+        print "\n",self.mat
 
     def dump(self):
         self.dump_ranges(0)
@@ -134,8 +163,14 @@ class CF(object):
         b = self.b
         lval = "%s[%d]" % (qwn.lower(), irec)
         labels = ["Op : %s" % lval, "G4 : %s" % lval]
-
-        if qwn in Evt.RPOST:
+ 
+        if qwn == "R":
+            apost = a.rpost_(irec)
+            bpost = b.rpost_(irec)
+            aval = np.linalg.norm(apost[:,:2],2,1)
+            bval = np.linalg.norm(bpost[:,:2],2,1)
+            cbins = a.pbins()
+        elif qwn in Evt.RPOST:
             q = Evt.RPOST[qwn]
             aval = a.rpost_(irec)[:,q]
             bval = b.rpost_(irec)[:,q]
@@ -177,6 +212,7 @@ def qwns_plot(scf, qwns, irec, log_=False):
 
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
 
+    c2ps = []
     for ix in range(nx):
 
         gss = [gs[ix], gs[nx+ix]]
@@ -187,10 +223,13 @@ def qwns_plot(scf, qwns, irec, log_=False):
 
         log.info("%s %s " % (qwn, repr(labels) ))
 
-        cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+        c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+
+        c2ps.append(c2p) 
     pass
 
-
+    qd = odict(zip(list(qwns),c2ps))
+    return qd
 
 
 def qwn_plot(scf, qwn, irec, log_=False):
@@ -204,7 +243,10 @@ def qwn_plot(scf, qwn, irec, log_=False):
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
     gss = [gs[ix], gs[nx+ix]]
 
-    cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+    c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+
+    qd = odict(zip(list(qwn),list(c2p)))
+    return qd
 
 
 
@@ -218,16 +260,55 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    cf = CF(tag="4", src="torch", det="PmtInBox", subselect=slice(0,3) )
+    cf = CF(tag="4", src="torch", det="PmtInBox", select=slice(0,4) )
     cf.dump()
+    
+    qwns = "XYZTABCR"
+    dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
 
-    iss = 1   # selection index
-    irec = 1
+    tval = 0
+    for isel in range(16)[cf.select]:
+        scf = cf.ss[isel] 
+        nrec = scf.nrec()
+        tval += nrec 
 
-    scf = cf.ss[iss] 
+    stat = np.recarray((tval,), dtype=dtype)
+
+    ival = 0 
+    for isel in range(16)[cf.select]:
+        scf = cf.ss[isel] 
+        nrec = scf.nrec()
+        for irec in range(nrec):
+            key = scf.suptitle(irec)
+
+            od = odict()
+            od.update(key=key) 
+            qd = qwns_plot( scf, "XYZT", irec)
+            od.update(qd)
+            qd = qwns_plot( scf, "ABCR", irec)
+            od.update(qd)
+
+            stat[ival] = tuple(od.values())
+            ival += 1
+        pass
+    pass
+
+    np.save("/tmp/stat.npy",stat)
+
+    rst = recarray_as_rst(stat)
+    print rst 
 
     #qwn_plot( scf, "A", irec)
-    #qwns_plot( scf, ["X","Y","Z","T"], irec)
-    qwns_plot( scf, ["A","B","C"], irec)
+    #qwn_plot( scf, "R", irec)
+    #qwns_plot( scf, "XYZT", irec)
+    #qwns_plot( scf, "ABCR", irec)
+
+
+
+
+
+
+
+
 
 

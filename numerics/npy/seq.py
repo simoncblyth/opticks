@@ -57,13 +57,15 @@ class SeqTable(object):
         if ncol == 2:
             a = cu[:,1].astype(np.float64)
             b = cu[:,2].astype(np.float64)
-            c2, c2n = chi2(a, b, cut=30)
+            c2, c2n, c2c = chi2(a, b, cut=30)
             c2p = c2.sum()/c2n
             cnames += ["c2"]
             tots += ["%10.2f" % c2p ]
+            cfcount = cu[:,1:]
         else:
             c2 = None
             c2p = None
+            cfcount = None
 
         self.c2 = c2
         self.c2p = c2p
@@ -85,6 +87,9 @@ class SeqTable(object):
         self.label2count = dict(zip(labels, counts))
         self.label2line = dict(zip(labels, lines))
         self.label2code = dict(zip(labels, seqs))
+
+        if cfcount is not None:
+            self.label2cfcount = dict(zip(labels, cfcount))
 
         self.cnames = cnames
         self.tots = tots

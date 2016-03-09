@@ -1004,9 +1004,15 @@ if __name__ == '__main__':
     if len(b0r)>0:
         print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
+    lmx = 20 
     hcf = a.history.table.compare(b.history.table)
+    if len(hcf.lines) > lmx:
+        hcf.sli = slice(0,lmx)
     print hcf
 
     mcf = a.material.table.compare(b.material.table)
+    if len(mcf.lines) > lmx:
+        mcf.sli = slice(0,lmx)
+ 
     print mcf
 

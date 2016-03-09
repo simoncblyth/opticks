@@ -34,7 +34,7 @@ def chi2(a, b, cut=30):
     msk = a+b > cut
     c2 = np.zeros_like(a)
     c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]
-    return c2, len(a[msk]) 
+    return c2, len(a[msk]), len(a[~msk]) 
  
 
 def decompression_bins(cbins, *vals):

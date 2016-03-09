@@ -29,8 +29,7 @@ class Evt(object):
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
     RPOL = {"A":X,"B":Y,"C":Z} 
 
-    RQWN_BINSCALE = {"X":100,"Y":100,"Z":100,"W":10,"T":10,"A":1,"B":1,"C":1} 
-
+    RQWN_BINSCALE = {"X":100,"Y":100,"Z":100,"W":10,"R":100, "T":10,"A":1,"B":1,"C":1} 
 
     def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False):
 
