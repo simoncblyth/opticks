@@ -17,6 +17,7 @@
 
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
+
 const char* Opticks::COMPUTE = "--compute" ; 
 
 const char* Opticks::ZERO_              = "." ;

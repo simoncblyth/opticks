@@ -17,13 +17,18 @@
 #include "GTransforms.hh"
 #include "GIds.hh"
 
+
+// npy-
 #include "NLog.hpp"
 #include "NSlice.hpp"
 #include "GLMFormat.hpp"
 #include "stringutil.hpp"
 
-#include <iomanip>
+// opticks-
+#include "Opticks.hh"
 
+
+#include <iomanip>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -60,8 +65,8 @@ void GGeoTest::modifyGeometry()
 
     GMergedMesh* tmm = create();
 
-    tmm->setGeoCode( analytic ? 'A' : 'T' );  // to OGeo
-    if(tmm->getGeoCode() == 'T') 
+    tmm->setGeoCode( analytic ? Opticks::GEOCODE_ANALYTIC : Opticks::GEOCODE_TRIANGULATED );  // to OGeo
+    if(tmm->isTriangulated()) 
     { 
         tmm->setITransformsBuffer(NULL); // avoiding FaceRepeated complications 
     } 

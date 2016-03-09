@@ -20,10 +20,12 @@ See pmt_test.py for the history of getting flags and materials into agreement.
 TODO
 -----
 
+* XY radius plotting
+* polx,y,z wavelength  
 * push out to more sequences
 * auto-handling records for the sequence
 * creating multiple pages...
-* polx,y,z wavelength  
+
 
 """
 import os, logging, numpy as np

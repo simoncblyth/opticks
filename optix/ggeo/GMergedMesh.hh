@@ -50,6 +50,11 @@ public:
     GNode* getCurrentBase(); 
     bool   isGlobal(); 
     bool   isInstanced(); 
+public:
+    // geocodes used to communicate between ggv- oglrap- optixrap-
+    bool   isSkip(); 
+    bool   isAnalytic(); 
+    bool   isTriangulated(); 
 private:
     // transients that do not need persisting, persistables are down in GMesh
     unsigned int m_cur_vertices ;

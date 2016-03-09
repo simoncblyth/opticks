@@ -5,6 +5,7 @@
 #include "GParts.hh"
 
 // opticks-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 
 // npy-
@@ -16,13 +17,28 @@
 #include <iostream>
 #include <iomanip>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+
+
+bool GMergedMesh::isSkip()
+{
+   return m_geocode == Opticks::GEOCODE_SKIP ;  
+}
+bool GMergedMesh::isAnalytic()
+{
+   return m_geocode == Opticks::GEOCODE_ANALYTIC ;  
+}
+bool GMergedMesh::isTriangulated()
+{
+   return m_geocode == Opticks::GEOCODE_TRIANGULATED ;  
+}
+
+
+
 
 
 GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* solid)

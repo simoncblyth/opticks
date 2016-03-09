@@ -485,8 +485,7 @@ void Scene::uploadGeometry()
     for(unsigned int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-
-        bool skip = mm->getGeoCode() == 'K' ;
+        bool skip = mm->isSkip() ;
         LOG(debug) << "Scene::uploadGeometry " 
                   << i 
                   << " geoCode " << mm->getGeoCode() ; 

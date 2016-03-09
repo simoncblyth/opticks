@@ -488,8 +488,8 @@ void App::configureGeometry()
     for(unsigned int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode('K');      
-        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) mm->setGeoCode('S');      
+        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(Opticks::GEOCODE_SKIP);      
+        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) mm->setGeoCode(Opticks::GEOCODE_ANALYTIC);      
         if(i>0) mm->setInstanceSlice(islice);
 
         // restrict to non-global for now

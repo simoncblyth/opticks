@@ -4,11 +4,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-
 #include <algorithm>
 #include <iomanip>
 
 #include <optix_world.h>
+
+// opticks-
+#include "Opticks.hh"
 
 // optixrap-
 #include "OContext.hh"
@@ -146,7 +148,7 @@ void OGeo::convert()
         GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
         assert(mm);
 
-        if( mm->getGeoCode() == 'K')
+        if( mm->isSkip())
         {
             LOG(warning) << "OGeo::convert"
                          << " skipping mesh " << i 
@@ -399,17 +401,17 @@ optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, opt
 optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 {
     optix::Geometry geometry ; 
-    char geocode = mergedmesh->getGeoCode();
+    const char geocode = mergedmesh->getGeoCode();
     switch(geocode)
     { 
-        case 'T':
+        case Opticks::GEOCODE_TRIANGULATED:
                    geometry = makeTriangulatedGeometry(mergedmesh);
                    break ; 
-        case 'A':
+        case Opticks::GEOCODE_ANALYTIC:
                    geometry = makeAnalyticGeometry(mergedmesh);
                    break ; 
         default:
-                   LOG(fatal) << "OGeo::makeGeometry geocode must be T or A, not [" << (char)geocode  << "]" ;
+                   LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
                    assert(0);
                    break ; 
     }
