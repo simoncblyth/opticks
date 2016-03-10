@@ -7,6 +7,7 @@ in vec2 texcoord;
 out vec4 frag_colour;
 
 uniform  vec4 ScanParam ;
+uniform vec4 ClipPlane ;
 uniform ivec4 NrmParam ;
 
 uniform sampler2D ColorTex ;
@@ -23,6 +24,9 @@ void main ()
    {
         if(depth < ScanParam.x || depth > ScanParam.y ) discard ;
    }
+
+   
+
  
 }
 

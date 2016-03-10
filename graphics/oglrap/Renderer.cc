@@ -333,6 +333,7 @@ void Renderer::check_uniforms()
 
         m_nrmparam_location = m_shader->uniform("NrmParam",         required); 
         m_scanparam_location = m_shader->uniform("ScanParam",         required); 
+        m_clip_location = m_shader->uniform("ClipPlane",          required); 
 
     } 
     else
