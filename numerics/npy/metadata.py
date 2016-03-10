@@ -1,10 +1,15 @@
 #!/usr/bin/env python
+"""
+
+"""
 
 import os, re, logging
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 from base import ini_, json_
+
+log = logging.getLogger(__name__)
 
 class DateParser(object):
     ptn = re.compile("(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})")
@@ -48,11 +53,12 @@ class Metadata(object):
 
     propagate = property(lambda self:float(self.times.get('propagate','-1')))
 
+    # parameter accessors (from the json)
     mode = property(lambda self:self.parameters.get('mode',"no-mode") )
     photonData = property(lambda self:self.parameters.get('photonData',"no-photonData") )
     recordData = property(lambda self:self.parameters.get('recordData',"no-recordData") )
     sequenceData = property(lambda self:self.parameters.get('sequenceData',"no-sequenceData") )
-    numPhotons = property(lambda self:self.parameters.get('NumPhotons',"no-NumPhotons") )
+    numPhotons = property(lambda self:int(self.parameters.get('NumPhotons',"-1")) )
 
     def _flags(self):
         flgs = 0 
@@ -67,16 +73,42 @@ class Metadata(object):
     flags = property(_flags)
 
     def __repr__(self):
-        return "%s %32s %32s %s %s " % (self.path, self.photonData, self.recordData, self.propagate, self.mode )
+        return "%60s %32s %32s %7d %10.4f %s " % (self.path, self.photonData, self.recordData, self.numPhotons, self.propagate, self.mode )
 
 
 class Catdir(object):
+    """
+    Reads in metadata from dated folders corresponding to runs of::
+
+          ggv 
+          ggv --compute
+          ggv --cfg4
+
+    ::
+
+        INFO:__main__:Catdir searching for date stamped folders beneath : /usr/local/env/opticks/rainbow 
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-5/20160104_141234
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-5/20160104_144620
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-5/20160104_150114
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-5/20160105_155311
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-5/20160107_201949
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-5/20160224_120049
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-6/20160105_172431
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/-6/20160105_172538
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/5/20160103_165049
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/5/20160103_165114
+        INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/5/20160104_111515
+
+    """
     def __init__(self, cat):
         path = os.path.expandvars("$LOCAL_BASE/env/opticks/%s" % cat )
         df = DatedFolder()
 
+        log.info("Catdir searching for date stamped folders beneath : %s " % path)
         metadata = {}
         for p in finddir(path, df):
+             
+            log.debug("%s", p)
             md = Metadata(p)
             tag = md.tag
             if tag not in metadata:
@@ -86,30 +118,36 @@ class Catdir(object):
         self.metadata = metadata
         self.path = path
 
+        self.dump()
+
+
+    def dump(self):
+        log.info("Catdir %s tags: %s beneath %s " % ( len(self.metadata), repr(self.metadata.keys()), self.path))
+        for tag, mds in self.metadata.items():
+            print "%5s : %d " % (tag, len(mds)) 
 
     def times(self, tag):
         """
-        ::
-
-            a[a.flgs & (0x1 << 1) != 0]
-
+        :param tag: event tag, eg 1,2 (be negated to get cfg4 tags)
+        :return: recarray with propagate times and corresponding flags indicating cfg4/interop/compute
         """
         tags = [tag, "-%s" % tag]   # convention, negate to get equivalent cfg4 tag
         mds = []
         for tag in tags:
             mds.extend(self.metadata.get(tag, [])) 
 
-        print "\n".join(map(str,mds))
+        log.info("times metadata for tag %s " % tag + "\n".join(map(str,mds)))
 
         n = len(mds)
-        a = np.recarray((n,), dtype=[("index", np.int32), ("time", "|O8"), ("propagate", np.float32), ("flgs", np.uint32 )])
+        a = np.recarray((n,), dtype=[("index", np.int32), ("time", "|O8"), ("propagate", np.float32), ("flgs", np.uint32 ), ("numphotons",np.uint32)])
 
         for i in range(n):
             md = mds[i]
-            dat = (i, md.timestamp, md.propagate, md.flags )
+            dat = (i, md.timestamp, md.propagate, md.flags, md.numPhotons )
             print dat 
             a[i] = dat
         pass
+
         return a 
 
     def __repr__(self):
@@ -119,62 +157,23 @@ class Catdir(object):
 
 
 
+
+
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)    
 
-    cat = "rainbow"
-    tag = "6"
-    title = "Propagate times (s) for 1M Photons with %s geometry, tag %s, [max/avg/min]" % (cat, tag)  
+    #cat, tag= "rainbow", "6"
+    cat, tag= "PmtInBox", "4"
 
     catd = Catdir(cat)
+
     plt.close()
     plt.ion()
 
     a = catd.times(tag)
-
-
-if 1:
-    fig = plt.figure()
-    fig.suptitle(title)
-
-    compute = a.flgs & Metadata.COMPUTE != 0 
-    interop = a.flgs & Metadata.INTEROP != 0 
-    cfg4    = a.flgs & Metadata.CFG4 != 0 
-
-    msks = [cfg4, interop, compute]
-    ylims = [[0,60],[0,5],[0,1]]
-    labels = ["CfGeant4", "Opticks Interop", "Opticks Compute"]
-
-    n = len(msks)
-    for i, msk in enumerate(msks):
-        ax = fig.add_subplot(n,1,i+1)
-        d = a[msk]
-
-        t = d.propagate
-
-        mn = t.min()
-        mx = t.max()
-        av = np.average(t)        
-
-        label = "%s [%5.2f/%5.2f/%5.2f] " % (labels[i], mx,av,mn)
- 
-        loc = "lower right" if i == 0 else "upper right" 
-
-        ax.plot( d.index, d.propagate, "o")
-        ax.plot( d.index, d.propagate, drawstyle="steps", label=label)
-        ax.set_ylim(ylims[i])
-        ax.legend(loc=loc)
-    pass
-
-
-    ax.set_xlabel('All times from: MacBook Pro (2013), NVIDIA GeForce GT 750M 2048 MB (384 cores)')
-
-    plt.show()
-
-
-
-
-    
 
 
 

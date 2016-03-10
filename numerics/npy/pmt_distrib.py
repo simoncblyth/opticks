@@ -83,7 +83,7 @@ class CF(object):
     def suptitle(self, irec=-1):
         abc = self.ab_count()
         lab = self.seqlab(irec)
-        title = "(%s) %s/%s : %s  :  %s " % (self.tag, self.det, self.src, abc, lab )
+        title = "%s/%s/%s : %s  :  %s " % (self.tag, self.det, self.src, abc, lab )
         return title
 
     def nrec(self):
