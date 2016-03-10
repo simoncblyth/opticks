@@ -17,6 +17,19 @@ Issues
 
 See pmt_test.py for the history of getting flags and materials into agreement.
 
+Usage
+-------
+
+As this can create many tens of plot windows, a way of wading through them 
+without getting finger stain is to resize the invoking ipython window very 
+small and then repeatedly run::
+
+   plt.close()
+
+To close each window in turn.
+
+
+
 TODO
 -----
 
@@ -202,7 +215,7 @@ class CF(object):
         return bins, aval, bval, labels
 
 
-def qwns_plot(scf, qwns, irec, log_=False):
+def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
 
     fig = plt.figure()
 
@@ -223,7 +236,7 @@ def qwns_plot(scf, qwns, irec, log_=False):
 
         log.info("%s %s " % (qwn, repr(labels) ))
 
-        c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+        c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut )
 
         c2ps.append(c2p) 
     pass
@@ -232,7 +245,7 @@ def qwns_plot(scf, qwns, irec, log_=False):
     return qd
 
 
-def qwn_plot(scf, qwn, irec, log_=False):
+def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30):
 
     bins, aval, bval, labels = scf.rqwn(qwn, irec)
 
@@ -243,7 +256,7 @@ def qwn_plot(scf, qwn, irec, log_=False):
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
     gss = [gs[ix], gs[nx+ix]]
 
-    c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_ )
+    c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut)
 
     qd = odict(zip(list(qwn),list(c2p)))
     return qd
@@ -260,11 +273,15 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    cf = CF(tag="4", src="torch", det="PmtInBox", select=slice(0,4) )
+    cf = CF(tag="4", src="torch", det="PmtInBox", select=slice(0,8) )
     cf.dump()
     
     qwns = "XYZTABCR"
     dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
+
+    log_ = False
+    c2_cut = 0.
+
 
     tval = 0
     for isel in range(16)[cf.select]:
@@ -283,9 +300,9 @@ if __name__ == '__main__':
 
             od = odict()
             od.update(key=key) 
-            qd = qwns_plot( scf, "XYZT", irec)
+            qd = qwns_plot( scf, "XYZT", irec, log_, c2_cut)
             od.update(qd)
-            qd = qwns_plot( scf, "ABCR", irec)
+            qd = qwns_plot( scf, "ABCR", irec, log_, c2_cut)
             od.update(qd)
 
             stat[ival] = tuple(od.values())
