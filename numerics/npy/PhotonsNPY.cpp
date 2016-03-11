@@ -50,7 +50,16 @@ void PhotonsNPY::dumpPhotons(const char* msg, unsigned int ndump)
 void PhotonsNPY::dumpPhotonRecord(unsigned int photon_id, const char* msg)
 {
     printf("%s\n", msg);
-    for(unsigned int r=0 ; r<m_maxrec ; r++) m_recs->dumpRecord(photon_id, r);
+
+    for(unsigned int r=0 ; r<m_maxrec ; r++) 
+    {
+         unsigned int record_id = photon_id*m_maxrec + r ;
+         unsigned int i = m_flat ? record_id : photon_id ;
+         unsigned int j = m_flat ? 0         : r ;
+         m_recs->dumpRecord(i, j, "PhotonsNPY::dumpPhotonRecord (i,j)");
+    }
+
+
     dumpPhoton(photon_id);
     printf("\n");
 

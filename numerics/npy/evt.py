@@ -202,6 +202,33 @@ class Evt(object):
 
     def rpol_(self, irec, recs=None):
         """
+        TODO: rearrange to go direct from recs to the 
+              result without resorting to new allocation
+              (maybe by viewing as recarray of appropriate types)
+
+              This then allows irec to be a slice
+
+        In [80]: evt.rx[:,0,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
+        Out[80]: 
+        A([[-0.378,  0.929,  0.   , -0.157],
+               [-0.244,  0.969,  0.   , -0.157],
+               [-1.   ,  0.   ,  0.   , -0.157],
+               ..., 
+               [-0.992,  0.094,  0.   , -0.157],
+               [-0.78 , -0.63 ,  0.   , -0.157],
+               [ 0.969, -0.244,  0.   , -0.157]], dtype=float32)
+
+        In [81]: evt.rpol_(0)
+        Out[81]: 
+        array([[-0.378,  0.929,  0.   ],
+               [-0.244,  0.969,  0.   ],
+               [-1.   ,  0.   ,  0.   ],
+               ..., 
+               [-0.992,  0.094,  0.   ],
+               [-0.78 , -0.63 ,  0.   ],
+               [ 0.969, -0.244,  0.   ]])
+
+
         """ 
         if recs is None:
             recs = self.rx
@@ -307,6 +334,8 @@ class Evt(object):
 
     def rpost_(self, irec, recs=None):
         """
+        NB irec can be a slice, eg slice(0,5)
+
         Record compression can be regarded as a very early choice of binning, 
         as cannot use other binnings without suffering from artifacts
         so need to access the "compression bins" somehow::
@@ -518,8 +547,9 @@ if __name__ == '__main__':
 
     rec = True  
 
-    cat, src, tag = "rainbow", "torch", "-5"
+    #cat, src, tag = "rainbow", "torch", "-5"
     #cat, src, tag = "juno", "cerenkov", "1"
+    cat, src, tag = "PmtInBox", "torch", "4"
 
     evt = Evt(tag, src, cat, label="tag %s" % tag, rec=rec)
 

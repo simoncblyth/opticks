@@ -86,11 +86,25 @@ void RecordsNPY::unpack_position_time(glm::vec4& post, unsigned int i, unsigned 
 
 void RecordsNPY::unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1)
 {
+
     ucharfour v = m_records->getUChar4( i, j, k, l0, l1 ); 
+
     polw.x =  uncharnorm_polarization(v.x);  
     polw.y =  uncharnorm_polarization(v.y);  
     polw.z =  uncharnorm_polarization(v.z);  
     polw.w =  uncharnorm_wavelength(v.w);  
+
+
+    /*
+    LOG(info) << "RecordsNPY::unpack_polarization_wavelength" 
+              << " ijk (" << i << "," <<  j << "," << k << ")"
+              << " l0l1 [" << l0 << "," << l1 << "]"
+              << " v.xyzw " << int(v.x) << "," << int(v.y) << "," << int(v.z)  << "," << int(v.w)  
+              << " polw " << gformat(polw) 
+              ; 
+
+    */
+
 }
 
 void RecordsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1)
@@ -155,6 +169,7 @@ float RecordsNPY::uncharnorm_wavelength(unsigned char value)
 void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distance, float& duration )
 {
     std::vector<glm::vec4> posts ; 
+
     for(unsigned int r=0 ; r < m_maxrec ; r++ )
     {
         unsigned int record_id = photon_id*m_maxrec + r ; 
@@ -162,7 +177,6 @@ void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distanc
         unsigned int j = m_flat ? 0         : r ;
 
         bool unset = m_records->isUnsetItem(i, j);
-
         if(unset) continue ; 
 
         glm::vec4 post ; 
@@ -267,11 +281,48 @@ void RecordsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int photon_id 
     bool unset = m_records->isUnsetItem(i, j);
     assert(!unset);
 
-    unpack_material_flags(flag, i,j,  1, 2, 3);  // i,j,k0,k1
+    //unpack_material_flags(flag, i,j,1, 2, 3);  // i,j,k0,k1
+    unpack_material_flags(flag, i,1,0, 2, 3);  // i,j,k0,k1
 }
 
 
 
+
+/*
+
+
+App::indexEvtOld dpho 0
+rec        0 (       79.68      32.45     300.00         0.10) (    0.70  -0.90   1.01   438.51) flag.x/m1 72:                        ? flag.y/m2  1:                GdDopedLS iflag.z [ 79]  
+rec        0 (      -25.06     251.95      32.85         1.09) (    0.00  -0.16  -0.97   101.73) flag.x/m1 228:                        ? flag.y/m2 13:                   Vacuum iflag.z [ -1]  
+rec        0 (       79.68      32.45      97.79         1.10) (    0.70  -0.90   0.46   182.20) flag.x/m1 21:                 Nitrogen flag.y/m2 14:                    Pyrex iflag.z [ 79]  
+rec        0 (      -25.06     251.95      11.85         0.98) (    0.00  -0.16  -0.89    74.90) flag.x/m1 130:                        ? flag.y/m2 12:                     Rock iflag.z [ 16]  
+rec        0 (       79.84      32.51      91.68         1.13) (    0.76  -0.90  -0.76   176.24) flag.x/m1 118:                        ? flag.y/m2 14:                    Pyrex iflag.z [ 79]  
+rec        0 (      -25.06     251.95      11.85         0.66) (    0.00  -0.16  -0.89    74.90) flag.x/m1 130:                        ? flag.y/m2  8:                DeadWater iflag.z [  0]  
+[2016-Mar-11 11:28:34.840599]:fatal: RecordsNPY::getSequenceString bitpos out of range 72 bitmax 40 record 0 photon_id 0 flag 72,1,79,245 etype 1
+[2016-Mar-11 11:28:34.840811]:fatal: RecordsNPY::getSequenceString bitpos out of range 118 bitmax 40 record 2 photon_id 0 flag 118,14,79,245 etype 1
+[2016-Mar-11 11:28:34.840955]:fatal: RecordsNPY::getSequenceString bitpos out of range 245 bitmax 32 record 0 photon_id 0 flag 72,1,79,245 etype 0
+[2016-Mar-11 11:28:34.841101]:fatal: RecordsNPY::getSequenceString bitpos out of range 245 bitmax 32 record 1 photon_id 0 flag 21,14,79,245 etype 0
+[2016-Mar-11 11:28:34.841257]:fatal: RecordsNPY::getSequenceString bitpos out of range 245 bitmax 32 record 2 photon_id 0 flag 118,14,79,245 etype 0
+pho        0 (       79.84      32.51      91.68         1.13) (   -0.38   0.93  -0.00   380.00)                    ERRERR                 ERRERRERR  
+
+
+
+In [18]: evt.rpost_(slice(0,5)).shape
+Out[18]: (500000, 5, 4)
+
+In [19]: evt.rpost_(slice(0,5))[0]
+Out[19]: 
+A(    [[  79.681,   32.447,  300.   ,    0.1  ],
+       [  79.681,   32.447,   97.79 ,    1.1  ],
+       [  79.836,   32.511,   91.684,    1.13 ],
+       [   0.   ,    0.   ,    0.   ,    0.   ],
+       [   0.   ,    0.   ,    0.   ,    0.   ]])
+
+
+
+
+
+*/
 
 void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
 {
@@ -283,22 +334,37 @@ void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
     glm::uvec4 flag ; 
     glm::ivec4 iflag ; 
 
+    // flat records means that the photon_id and record number occupy the i slot 
     // formerly records was flat 
 
-    unpack_position_time(           post, i, j, 0 );       // i,j
-    unpack_polarization_wavelength( polw, i, j, 1, 0, 1 ); // i,j,k0,k1
-    unpack_material_flags(          flag, i, j, 1, 2, 3);  // i,j,k0,k1
-    unpack_material_flags_i(       iflag, i, j, 1, 2, 3);  // i,j,k0,k1
+    //assert(j == 0) ; // when flat ??? otherwise this has the rec index 
 
-    std::string m1 = m_typ->findMaterialName(flag.x) ;
-    std::string m2 = m_typ->findMaterialName(flag.y) ;
+    if(j != 0)
+    {
+       LOG(info) << "RecordsNPY::dumpRecord ij " << i  << "," << j ;
+    }
+
+    unpack_position_time(           post, i, 0, 0 );       // i,j,k
+
+   // unpack_polarization_wavelength( polw, i, j, 1, 0, 1 ); // i,j,k,l0,l1
+   // unpack_material_flags(          flag, i, j, 1, 2, 3);  // i,j,k,l0,l1
+   // unpack_material_flags_i(       iflag, i, j, 1, 2, 3);  // i,j,k,l0,l1
+
+    unpack_polarization_wavelength( polw, i, 1, 0, 0, 1 ); // i,j,k,l0,l1
+
+    unpack_material_flags(          flag, i, 1, 0, 2, 3);  // i,j,k,l0,l1
+    unpack_material_flags_i(       iflag, i, 1, 0, 2, 3);  // i,j,k,l0,l1
+
+
+    std::string m1 = m_typ ? m_typ->findMaterialName(flag.x) : "notyp" ;
+    std::string m2 = m_typ ? m_typ->findMaterialName(flag.y) : "notyp" ;
 
     // flag.w is the result of ffs on a single set bit field, returning a 1-based bit position
-    std::string history = m_types->getHistoryString( 1 << (flag.w-1) ); 
+    std::string history = m_types ? m_types->getHistoryString( 1 << (flag.w-1) ) : "notyps" ; 
 
     //assert(flag.z == 0);  now set to bounday integer for debug 
 
-    printf("%s %8u %s %s flag.x/m1 %2d:%25s flag.y/m2 %2d:%25s iflag.z [%3d] %s \n", 
+    printf("%s %8u post %s polw %s flag.x/m1 %2d:%25s flag.y/m2 %2d:%25s iflag.z [%3d] %s \n", 
                 msg,
                 i, 
                 gpresent(post,2,11).c_str(),

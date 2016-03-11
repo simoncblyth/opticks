@@ -874,6 +874,7 @@ void NumpyEvt::load(bool verbose)
     if(num_records == num_photons*m_maxrec)
     {
         LOG(info) << "NumpyEvt::load flat records (Opticks style) detected " ;
+        setFlat(true);
     } 
     else if(num_records == num_photons)
     {
@@ -907,6 +908,7 @@ void NumpyEvt::load(bool verbose)
             au->reshape(ni*nj, nk, nl, 0);       
             if(verbose) au->Summary("au reshaped");
         }
+        setFlat(true);
     }
     else
     {
