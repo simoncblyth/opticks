@@ -146,6 +146,7 @@ ggv-pmt-test(){
                  pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0
                  control=$testverbosity,0,0,0
                  analytic=1
+                 groupvel=1
                  shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=0,0,0,300

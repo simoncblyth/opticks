@@ -27,6 +27,7 @@ const char* GGeoTestConfig::ANALYTIC_ = "analytic";
 const char* GGeoTestConfig::DEBUG_ = "debug"; 
 const char* GGeoTestConfig::CONTROL_ = "control"; 
 const char* GGeoTestConfig::PMTPATH_ = "pmtpath"; 
+const char* GGeoTestConfig::GROUPVEL_ = "groupvel"; 
 
 void GGeoTestConfig::init(const char* config)
 {
@@ -65,6 +66,7 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,DEBUG_)==0)      arg = DEBUG ; 
     else if(strcmp(k,CONTROL_)==0)    arg = CONTROL ; 
     else if(strcmp(k,PMTPATH_)==0)    arg = PMTPATH ; 
+    else if(strcmp(k,GROUPVEL_)==0)   arg = GROUPVEL ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -86,6 +88,7 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case DEBUG          : setDebug(s)          ;break;
         case CONTROL        : setControl(s)        ;break;
         case PMTPATH        : setPmtPath(s)        ;break;
+        case GROUPVEL       : setGroupvel(s)       ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -153,6 +156,12 @@ void GGeoTestConfig::setAnalytic(const char* s)
     std::string ss(s);
     m_analytic = givec4(ss);
 }
+void GGeoTestConfig::setGroupvel(const char* s)
+{
+    std::string ss(s);
+    m_groupvel = givec4(ss);
+}
+
 
 void GGeoTestConfig::setDebug(const char* s)
 {

@@ -130,11 +130,14 @@ class CF(object):
         Spawn CF for each of the selections, according to 
         slices of the history sequences.
         """
+        totrec = 0 
         for label in self.his.labels[sli]:
             seqs = [label]
-            ss = self.spawn(seqs)
-            #ss.cfc = self.his.labels2cfcount[label]  #   {'TO AB': array([18866, 19048], dtype=uint64), ... 
-            self.ss.append(ss) 
+            scf = self.spawn(seqs)
+            totrec += scf.nrec() 
+            self.ss.append(scf) 
+        pass
+        self.totrec = totrec
 
     def __repr__(self):
         return "CF(%s,%s,%s,%s) " % (self.tag, self.src, self.det, repr(self.seqs))
@@ -219,6 +222,9 @@ def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
 
     fig = plt.figure()
 
+    if irec < 0:
+         irec += scf.nrec() 
+
     fig.suptitle(scf.suptitle(irec))
 
     nx = len(qwns)
@@ -245,7 +251,10 @@ def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
     return qd
 
 
-def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30):
+def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30, c2_ymax=10):
+
+    if irec < 0:
+         irec += scf.nrec() 
 
     bins, aval, bval, labels = scf.rqwn(qwn, irec)
 
@@ -256,11 +265,50 @@ def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30):
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
     gss = [gs[ix], gs[nx+ix]]
 
-    c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut)
+    c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut, c2_ymax=c2_ymax)
+    c2ps = [c2p]
 
-    qd = odict(zip(list(qwn),list(c2p)))
+    #print "c2p", c2p
+
+    qd = odict(zip(list(qwn),c2ps))
     return qd
 
+
+
+
+def multiplot(cf, pages=["XYZT","ABCR"]):
+
+    qwns = "".join(pages)
+    dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
+
+    log_ = False
+    c2_cut = 0.
+
+    stat = np.recarray((cf.totrec,), dtype=dtype)
+
+    ival = 0 
+    for scf in cf.ss:
+        nrec = scf.nrec()
+        for irec in range(nrec):
+            key = scf.suptitle(irec)
+
+            od = odict()
+            od.update(key=key) 
+
+            for page in pages:
+                qd = qwns_plot( scf, page, irec, log_, c2_cut)
+                od.update(qd)
+            pass
+
+            stat[ival] = tuple(od.values())
+            ival += 1
+        pass
+    pass
+
+    np.save("/tmp/stat.npy",stat)
+
+    rst = recarray_as_rst(stat)
+    print rst 
 
 
 
@@ -273,49 +321,17 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    cf = CF(tag="4", src="torch", det="PmtInBox", select=slice(0,8) )
+
+    select = slice(1,2)
+    #select = slice(0,8)
+
+    cf = CF(tag="4", src="torch", det="PmtInBox", select=select )
     cf.dump()
     
-    qwns = "XYZTABCR"
-    dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
+    #multiplot(cf, pages=["XYZT","ABCR"])
+  
+    qwn_plot( cf.ss[0], "T", -1, c2_ymax=2000)
 
-    log_ = False
-    c2_cut = 0.
-
-
-    tval = 0
-    for isel in range(16)[cf.select]:
-        scf = cf.ss[isel] 
-        nrec = scf.nrec()
-        tval += nrec 
-
-    stat = np.recarray((tval,), dtype=dtype)
-
-    ival = 0 
-    for isel in range(16)[cf.select]:
-        scf = cf.ss[isel] 
-        nrec = scf.nrec()
-        for irec in range(nrec):
-            key = scf.suptitle(irec)
-
-            od = odict()
-            od.update(key=key) 
-            qd = qwns_plot( scf, "XYZT", irec, log_, c2_cut)
-            od.update(qd)
-            qd = qwns_plot( scf, "ABCR", irec, log_, c2_cut)
-            od.update(qd)
-
-            stat[ival] = tuple(od.values())
-            ival += 1
-        pass
-    pass
-
-    np.save("/tmp/stat.npy",stat)
-
-    rst = recarray_as_rst(stat)
-    print rst 
-
-    #qwn_plot( scf, "A", irec)
     #qwn_plot( scf, "R", irec)
     #qwns_plot( scf, "XYZT", irec)
     #qwns_plot( scf, "ABCR", irec)

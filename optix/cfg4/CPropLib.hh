@@ -41,6 +41,7 @@ class CPropLib {
        unsigned int getMaterialIndex(const G4Material* material);
        const char*  getMaterialName(unsigned int index);
        std::string MaterialSequence(unsigned long long seqmat);
+       void setGroupvelKludge(bool gk=true);
    public:
        void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
    public:
@@ -83,5 +84,10 @@ inline CPropLib::CPropLib(GCache* cache, int verbosity)
     init();
 }
 
+
+inline void CPropLib::setGroupvelKludge(bool gvk)
+{
+   m_groupvel_kludge = gvk ; 
+}
 
 

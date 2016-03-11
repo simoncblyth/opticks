@@ -133,6 +133,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 
         if(m_groupvel_kludge && strcmp(lkey,"RINDEX")==0)
         {
+            LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
             addProperty(mpt, "GROUPVEL", prop );
         }
 
@@ -224,6 +225,12 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GP
     delete [] ddom ; 
     delete [] dval ; 
 }
+
+
+
+
+
+
 
 
 
@@ -361,6 +368,16 @@ void CPropLib::dumpMaterials(const char* msg)
         std::cout << std::setw(40) << name 
                   << std::setw(40) << ggname 
                   << std::endl ; 
+
+        G4MaterialPropertiesTable* mpt = g4mat->GetMaterialPropertiesTable();
+        mpt->DumpTable();
+
     }
+
+
+
+
+
+
 
 }

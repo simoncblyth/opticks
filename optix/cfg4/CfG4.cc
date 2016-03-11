@@ -110,6 +110,9 @@ void CfG4::configure(int argc, char** argv)
 
     CPropLib* clib = m_detector->getPropLib() ;
 
+    
+
+
     m_rec = new Rec(clib, m_evt) ; 
 
     SteppingAction* sa = new SteppingAction(clib, m_recorder, m_rec, stepping_verbosity);

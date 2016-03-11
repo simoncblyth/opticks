@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
     m_traverser->Traverse(); 
 
-    m_traverser->setVerbosity(1); 
+    m_traverser->setVerbosity(10); 
 
     m_traverser->dumpMaterials(); 
 

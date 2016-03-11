@@ -156,17 +156,20 @@ GProperty<T>* GProperty<T>::make_addition(GProperty<T>* a, GProperty<T>* b, GPro
     return new GProperty<T>( vals, doms );
 }
 
+
 template <typename T>
 std::string GProperty<T>::make_table(
        GProperty<T>* a, const char* atitle, 
        GProperty<T>* b, const char* btitle, 
        GProperty<T>* c, const char* ctitle, 
        GProperty<T>* d, const char* dtitle, 
+       GProperty<T>* e, const char* etitle, 
        int fw)
 {
     if(a && b) assert(hasSameDomain(a,b));
     if(a && c) assert(hasSameDomain(a,c));
     if(a && d) assert(hasSameDomain(a,d));
+    if(a && e) assert(hasSameDomain(a,e));
 
 
     std::stringstream ss ; 
@@ -175,6 +178,7 @@ std::string GProperty<T>::make_table(
     if(b) ss << std::setw(fw) << btitle ; 
     if(c) ss << std::setw(fw) << ctitle ; 
     if(d) ss << std::setw(fw) << dtitle ; 
+    if(e) ss << std::setw(fw) << etitle ; 
     ss << std::endl ; 
 
     GAry<T>* doms = a ? a->getDomain() : NULL ;
@@ -184,6 +188,7 @@ std::string GProperty<T>::make_table(
         GAry<T>* bb = b ? b->getValues() : NULL ;  
         GAry<T>* cc = c ? c->getValues() : NULL ;  
         GAry<T>* dd = d ? d->getValues() : NULL ;  
+        GAry<T>* ee = e ? d->getValues() : NULL ;  
 
         for(unsigned int i=0 ; i < doms->getLength() ; i++)
         {
@@ -192,6 +197,7 @@ std::string GProperty<T>::make_table(
             ss << std::setw(fw) << ( bb ? bb->getValue(i) : -2. ) ; 
             ss << std::setw(fw) << ( cc ? cc->getValue(i) : -2. ) ; 
             ss << std::setw(fw) << ( dd ? dd->getValue(i) : -2. ) ; 
+            ss << std::setw(fw) << ( ee ? ee->getValue(i) : -2. ) ; 
             ss << std::endl ; 
         }
     }
@@ -202,6 +208,12 @@ std::string GProperty<T>::make_table(
 
     return ss.str();
 }
+
+
+
+
+
+
 
 
 

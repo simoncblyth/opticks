@@ -46,6 +46,8 @@
 void CDetector::init()
 {
     m_lib = new CPropLib(m_cache);
+    m_lib->setGroupvelKludge(m_config->getGroupvel());
+
     m_maker = new CMaker(m_cache);
 }
 
