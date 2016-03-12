@@ -14,9 +14,12 @@ import matplotlib.pyplot as plt
 log = logging.getLogger(__name__)
 
 COLLADA_NS='http://www.collada.org/2005/11/COLLADASchema'
-tag = lambda _:str(ET.QName(COLLADA_NS,_))
+tag_ = lambda _:str(ET.QName(COLLADA_NS,_))
 xmlparse_ = lambda _:ET.parse(os.path.expandvars(_)).getroot()
 tostring_ = lambda _:ET.tostring(_)
+array_ = lambda e:np.loadtxt(StringIO(e.text))
+
+
 
 class DAE(object):
     @classmethod
@@ -37,20 +40,37 @@ class DAE(object):
         path_1 = os.path.join(cls.idfold(), fold, name)
         return path_1
 
+    @classmethod
+    def deref(cls, id_):
+        ox = id_.find('0x')
+        return id_[0:ox] if ox > -1 else id_
+
 
     def __init__(self, path):
         self.x = xmlparse_(path)
 
     def elem_(self, elem, id_):
-        q = ".//%s[@id='%s']" % ((tag(elem)), id_)
+        q = ".//%s[@id='%s']" % ((tag_(elem)), id_)
         e = self.x.find(q)
         return e
+
+    def elems_(self, elem):
+        q = ".//%s" % tag_(elem)
+        es = self.x.findall(q)
+        return es
 
     def float_array(self, id_):
         e = self.elem_("float_array", id_ )
         s = StringIO(e.text)
         a = np.loadtxt(s) 
         return a
+
+
+
+
+    def material(self, id_):
+        e = self.elem_("material", id_ )
+        return e
 
 
 
