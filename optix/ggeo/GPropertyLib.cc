@@ -72,11 +72,7 @@ array([ 200.,  220.,  240.,  260.,  280.,  300.,  320.,  340.,  360.,
 
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 
 unsigned int GPropertyLib::NUM_QUAD = 4  ;    // not a good name refers to the four species om-os-is-im for which props are stored   
-
-
-
-//unsigned int GPropertyLib::NUM_PROP = 8  ; 
-unsigned int GPropertyLib::NUM_PROP = 4  ; 
+unsigned int GPropertyLib::NUM_PROP = BOUNDARY_NUM_PROP  ; 
 
 
 GDomain<float>* GPropertyLib::getDefaultDomain()
@@ -311,10 +307,12 @@ void GPropertyLib::setKeyMap(const char* spec)
 
 
 
-NPY<unsigned int>* GPropertyLib::createUint4Buffer(std::vector<guint4>& vec)
+NPY<unsigned int>* GPropertyLib::createUint4Buffer(std::vector<guint4>& vec )
 {
     unsigned int ni = vec.size() ;
-    unsigned int nj = 4 ;  
+    unsigned int nj = 4  ; 
+
+ 
     NPY<unsigned int>* ibuf = NPY<unsigned int>::make( ni, nj) ;
     ibuf->zero();
     unsigned int* idat = ibuf->getValues();
@@ -341,6 +339,7 @@ void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>
     unsigned int* idat = ibuf->getValues();
     unsigned int ni = ibuf->getShape(0);
     unsigned int nj = ibuf->getShape(1);
+
     assert(nj == 4); 
 
     for(unsigned int i=0 ; i < ni ; i++)

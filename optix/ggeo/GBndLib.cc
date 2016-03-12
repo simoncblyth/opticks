@@ -17,9 +17,8 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+
+#include "NLog.hpp"
 
 void GBndLib::save()
 {
@@ -71,6 +70,11 @@ void GBndLib::createDynamicBuffers()
 
     NPY<unsigned int>* optical_buffer = createOpticalBuffer();
     setOpticalBuffer(optical_buffer);
+
+    LOG(info) << "GBndLib::createDynamicBuffers" 
+              << " buf " << buf->getShapeString()
+              << " optical_buffer  " << optical_buffer->getShapeString()
+               ;
 }
 
 
@@ -82,7 +86,7 @@ NPY<unsigned int>* GBndLib::createIndexBuffer()
 
 void GBndLib::importIndexBuffer()
 {
-    LOG(debug) << "GBndLib::importIndexBuffer" ; 
+    LOG(info) << "GBndLib::importIndexBuffer" ; 
 
     NPY<unsigned int>* ibuf = getIndexBuffer();
     importUint4Buffer(m_bnd, ibuf );

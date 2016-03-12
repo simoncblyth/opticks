@@ -1,6 +1,8 @@
 #pragma once
 
 #include "define.h"
+#include "GPropertyLib.hh"
+
 
 #define NM_BLUE   475.f
 #define NM_GREEN  510.f
@@ -117,9 +119,9 @@ static __device__ __inline__ void wavelength_check()
   {
   for(unsigned int jqwn=0 ; jqwn < 1 ; ++jqwn)
   { 
-     unsigned int line = isub*BNUMQUAD + jqwn ; 
+     unsigned int line = isub*BOUNDARY_NUM_PROP + jqwn ; 
      float4 props = wavelength_lookup( wavelength, line ) ;
-     rtPrintf("wavelength_check BNUMQUAD %10.3f nm isub %2u jqwn %u line %3u  props  %13.4f %13.4f %13.4f %13.4f \n",
+     rtPrintf("wavelength_check BOUNDARY_NUM_PROP %10.3f nm isub %2u jqwn %u line %3u  props  %13.4f %13.4f %13.4f %13.4f \n",
           wavelength,
           isub,
           jqwn, 

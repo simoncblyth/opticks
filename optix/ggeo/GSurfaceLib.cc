@@ -402,12 +402,13 @@ NPY<float>* GSurfaceLib::createBuffer()
             data[offset+1] = p1->getValue(j) ;
             data[offset+2] = p2->getValue(j) ;
             data[offset+3] = p3->getValue(j) ;
+
             if(nk > 4)
             {
-                data[offset+4] = p4->getValue(j) ;
-                data[offset+5] = p5->getValue(j) ;
-                data[offset+6] = p6->getValue(j) ;
-                data[offset+7] = p7->getValue(j) ;
+                data[offset+4] = p4 ? p4->getValue(j) : SURFACE_UNSET ;
+                data[offset+5] = p5 ? p5->getValue(j) : SURFACE_UNSET ;
+                data[offset+6] = p6 ? p6->getValue(j) : SURFACE_UNSET ;
+                data[offset+7] = p7 ? p7->getValue(j) : SURFACE_UNSET ;
             }
         } 
     }

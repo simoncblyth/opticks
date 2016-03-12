@@ -197,5 +197,4 @@ install(FILES ${cuptxs} DESTINATION ptx)
 install(FILES ${hdrs}   DESTINATION include)
 install(FILES ${cuhdrs} DESTINATION include/cu)
 
-
-
+add_subdirectory(tests)

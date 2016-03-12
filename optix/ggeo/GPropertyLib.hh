@@ -1,5 +1,12 @@
 #pragma once
 
+// for all (non-CUDA and CUDA) compilation
+#define BOUNDARY_NUM_PROP 4
+
+
+#ifndef __CUDACC__
+// only non-CUDA compilation
+
 #include <map>
 #include <string>
 
@@ -195,6 +202,6 @@ inline bool GPropertyLib::isValid()
 }
 
 
-
+#endif
 
 

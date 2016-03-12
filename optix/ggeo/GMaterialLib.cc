@@ -3,13 +3,9 @@
 #include "GMaterial.hh"
 #include "GItemList.hh"
 #include "NPY.hpp"
+#include "NLog.hpp"
 
-
-#include <iomanip>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
+const float GMaterialLib::MATERIAL_UNSET   = 0.0f  ;
 
 const char* GMaterialLib::refractive_index  = "refractive_index" ;
 const char* GMaterialLib::absorption_length = "absorption_length" ;
@@ -59,10 +55,10 @@ void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
 
     if(NUM_PROP > 4)
     {
-        defaults->addConstantProperty( group_velocity,        0.f  );
-        defaults->addConstantProperty( extra_y,               0.f  );
-        defaults->addConstantProperty( extra_z,               0.f  );
-        defaults->addConstantProperty( extra_w,               0.f  );
+        defaults->addConstantProperty( group_velocity,   MATERIAL_UNSET  );
+        defaults->addConstantProperty( extra_y,          MATERIAL_UNSET  );
+        defaults->addConstantProperty( extra_z,          MATERIAL_UNSET  );
+        defaults->addConstantProperty( extra_w,          MATERIAL_UNSET  );
     }
 }
 
@@ -226,10 +222,10 @@ NPY<float>* GMaterialLib::createBuffer()
 
             if(nk > 4)
             {
-                data[offset+4] = p4->getValue(j) ;
-                data[offset+5] = p5->getValue(j) ;
-                data[offset+6] = p6->getValue(j) ;
-                data[offset+7] = p7->getValue(j) ;
+                data[offset+4] = p4 ? p4->getValue(j) : MATERIAL_UNSET ;
+                data[offset+5] = p5 ? p5->getValue(j) : MATERIAL_UNSET ;
+                data[offset+6] = p6 ? p6->getValue(j) : MATERIAL_UNSET ;
+                data[offset+7] = p7 ? p7->getValue(j) : MATERIAL_UNSET ;
             } 
         } 
     }
@@ -250,6 +246,21 @@ void GMaterialLib::import()
     unsigned int ni = m_buffer->getShape(0);
     unsigned int nj = m_buffer->getShape(1);
     unsigned int nk = m_buffer->getShape(2);
+
+
+    if(nk != NUM_PROP)
+    {
+        LOG(fatal) << " GMaterialLib::import "    
+                   << " ni " << ni 
+                   << " nj " << nj 
+                   << " nk " << nk
+                   << " NUM_PROP " << NUM_PROP
+                   << " loading library with last dimension inconsistent with GPropLib::NUM_PROP " 
+                   << " resolve by recreating the geocache, run with -G "
+                   ;
+
+    }
+    assert(nk == NUM_PROP);
 
     LOG(debug) << " GMaterialLib::import "    
               << " ni " << ni 

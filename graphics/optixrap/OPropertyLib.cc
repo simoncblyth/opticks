@@ -1,16 +1,21 @@
 #include "OPropertyLib.hh"
 
 #include "NPY.hpp"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 
 optix::TextureSampler OPropertyLib::makeTexture(NPY<float>* buffer, RTformat format, unsigned int nx, unsigned int ny, bool empty)
 {
     unsigned int numBytes = buffer->getNumBytes(0) ;
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, format, nx, ny );
+
+    LOG(info) << "OPropertyLib::makeTexture"
+              << " bufShape " << buffer->getShapeString()
+              << " numBytes " << numBytes 
+              << " nx " << nx
+              << " ny " << ny
+              << " empty " << empty 
+              ;
 
     if(!empty)
     {

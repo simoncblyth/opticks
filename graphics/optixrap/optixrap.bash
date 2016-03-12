@@ -267,7 +267,7 @@ optixrap-install(){
    optixrap-make install
 }
 
-optixrap-bin(){ echo $(optixrap-idir)/bin/$(optixrap-name)Test ; }
+optixrap-bin(){ echo $(optixrap-idir)/bin/${1:-OptiXRapTest} ; }
 optixrap-export()
 {
    echo -n

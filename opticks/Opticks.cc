@@ -168,7 +168,8 @@ void Opticks::preconfigure(int argc, char** argv)
     setMode( compute ? COMPUTE_MODE : INTEROP_MODE );
 
     LOG(info) << "Opticks::preconfigure" 
-              << " argv[0] " << argv[0]
+              << " argc " << argc 
+              << " argv[0] " << ( argv ? argv[0] : "NULL" )
               << " mode " << getModeString() 
               << " detector " << m_resource->getDetector()
               ;

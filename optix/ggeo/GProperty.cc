@@ -188,7 +188,7 @@ std::string GProperty<T>::make_table(
         GAry<T>* bb = b ? b->getValues() : NULL ;  
         GAry<T>* cc = c ? c->getValues() : NULL ;  
         GAry<T>* dd = d ? d->getValues() : NULL ;  
-        GAry<T>* ee = e ? d->getValues() : NULL ;  
+        GAry<T>* ee = e ? e->getValues() : NULL ;  
 
         for(unsigned int i=0 ; i < doms->getLength() ; i++)
         {

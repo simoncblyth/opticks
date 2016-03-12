@@ -62,6 +62,7 @@ class GItemList ;
 class GMaterialLib : public GPropertyLib {
    public:
        // 4 standard material property names : interleaved into float4 wavelength texture
+       static const float MATERIAL_UNSET ; 
        static const char* propertyName(unsigned int k);
    public:
        static const char* refractive_index ; 

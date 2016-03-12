@@ -20,6 +20,7 @@ void OBndLib::convert()
     makeBoundaryOptical(m_lib->getOpticalBuffer());
 }
 
+
 void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 {
     //  eg (123, 4, 39, 4)   boundary, imat-omat-isur-osur, wavelength-samples, 4-props
@@ -51,7 +52,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int wmin = 0 ; 
     unsigned int wmax = nk - 1 ; 
     unsigned int lmin = m_lib->getLineMin() ;
-    unsigned int lmax = m_lib->getLineMax() ;
+    unsigned int lmax = m_lib->getLineMax() ;   // huh factor of 2 somewhere ???
 
     LOG(info) << "OBndLib::makeBoundaryTexture"
               << " lmin " << lmin 
@@ -87,9 +88,10 @@ void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
     unsigned int numBnd = numBytes/(GPropertyLib::NUM_QUAD*GPropertyLib::NUM_PROP*sizeof(unsigned int)) ;
     unsigned int nx = numBnd*GPropertyLib::NUM_QUAD ;
 
-    LOG(debug) << "OBndLib::makeBoundaryOptical obuf " 
+    LOG(info) << "OBndLib::makeBoundaryOptical obuf " 
               << obuf->getShapeString() 
               << " numBnd " << numBnd 
+              << " numBytes " << numBytes 
               << " nx " << nx
               ;
 
@@ -98,6 +100,7 @@ void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
     optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, nx );
     memcpy( optical_buffer->map(), obuf->getBytes(), numBytes );
     optical_buffer->unmap();
+
     m_context["optical_buffer"]->setBuffer(optical_buffer);
 }
 

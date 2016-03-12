@@ -67,7 +67,7 @@ NPY<float>* GScintillatorLib::createBuffer()
     unsigned int nj = m_icdf_length ;
     unsigned int nk = 1 ; 
 
-    LOG(debug) << "GScintillatorLib::createBuffer " 
+    LOG(info) << "GScintillatorLib::createBuffer " 
               << " ni " << ni 
               << " nj " << nj 
               << " nk " << nk 

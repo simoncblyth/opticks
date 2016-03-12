@@ -33,6 +33,7 @@ assimpwrap-
 openmeshrap-
 cfg4-
 opticks-
+optixrap-
 
 
 dbg=0
@@ -117,6 +118,10 @@ elif [ "${cmdline/--surf}" != "${cmdline}" ]; then
 elif [ "${cmdline/--scint}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GScintillatorLibTest)
    export OPTICKS_ARGS=${cmdline/--scint}
+elif [ "${cmdline/--oscint}" != "${cmdline}" ]; then
+   export OPTICKS_BINARY=$(optixrap-bin OScintillatorLibTest)
+   export OPTICKS_ARGS=${cmdline/--oscint}
+
 elif [ "${cmdline/--flags}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GFlagsTest)
 elif [ "${cmdline/--gbuffer}" != "${cmdline}" ]; then
