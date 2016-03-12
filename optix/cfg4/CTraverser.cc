@@ -13,6 +13,9 @@
 
 #include "NLog.hpp"
 
+
+const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
+
 void CTraverser::Traverse()
 {
      G4LogicalVolume* lv = m_top->GetLogicalVolume() ;
@@ -72,6 +75,28 @@ void CTraverser::dumpMaterials(const char* msg)
         dumpMaterial(material);
     } 
 }
+
+
+void CTraverser::createGroupVel()
+{
+    // First get of GROUPVEL property creates it 
+    // based on RINDEX property
+
+    for(unsigned int i=0 ; i < m_materials.size() ; i++)
+    {
+        const G4Material* material = m_materials[i];
+        G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
+        assert(mpt);
+        G4MaterialPropertyVector* gv = mpt->GetProperty(GROUPVEL);  
+        unsigned int len = gv->GetVectorLength() ;
+        if(m_verbosity > 1 )
+        LOG(info) << "CTraverser::createGroupVel" 
+                  << " material " << material->GetName()
+                  << " groupvel len " << len
+                  ;
+    } 
+}
+
 
 void CTraverser::dumpMaterial(const G4Material* material)
 {

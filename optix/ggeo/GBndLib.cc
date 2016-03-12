@@ -396,25 +396,27 @@ NPY<float>* GBndLib::createBuffer()
     NPY<float>* sur = m_slib->getBuffer();
 
     unsigned int ni = getNumBnd();
-    unsigned int nj = NUM_QUAD ;       // im-om-is-os
+    unsigned int nj = NUM_QUAD ;       // im-om-is-os hmm NUM_QUAD not a good name, NUM_SPECIES ?
     unsigned int nk = Opticks::DOMAIN_LENGTH ; 
-    unsigned int nl = NUM_PROP ;       // 4 interweaved props
+    unsigned int nl = NUM_PROP ;       // 4/8 interweaved props
+
+    assert( nl == 4 || nl == 8);
 
     assert(nk = getStandardDomainLength()) ;
     assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
     assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
 
     NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl ) ;
-    wav->fill(-1.0f);   // match GBoundaryLib::SURFACE_UNSET
+    wav->fill( GSurfaceLib::SURFACE_UNSET ); 
 
     float* mdat = mat->getValues();
     float* sdat = sur->getValues();
-    float* wdat = wav->getValues();
+    float* wdat = wav->getValues(); // destination
 
     for(unsigned int i=0 ; i < ni ; i++)      // over bnd
     {
         const guint4& bnd = m_bnd[i] ;
-        for(unsigned int j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
+        for(unsigned int j=0 ; j < nj ; j++)  // over imat/omat/isur/osur species
         {
             unsigned int wof = nj*nk*nl*i + nk*nl*j ;
 
@@ -422,7 +424,7 @@ NPY<float>* GBndLib::createBuffer()
             {
                 unsigned int midx = bnd[j] ;
                 assert(midx != UNSET);
-                unsigned int mof = nk*nl*midx ;  
+                unsigned int mof = nk*nl*midx ; 
                 memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl );  
             }
             else if(j == ISUR || j == OSUR)  // isur/osur
@@ -447,6 +449,10 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
     unsigned int nj = NUM_QUAD ;    // im-om-is-os
     unsigned int nk = NUM_PROP ;      
 
+    assert( nk == 4 || nk == 8); 
+    // using same layout as the wavelenth buffer (for sanity)
+    // even though half unused
+
     NPY<unsigned int>* optical = NPY<unsigned int>::make( ni, nj, nk) ;
     optical->zero(); 
     unsigned int* odat = optical->getValues();
@@ -465,6 +471,15 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
                 odat[offset+1] = 0u ; 
                 odat[offset+2] = 0u ; 
                 odat[offset+3] = 0u ; 
+
+                if(nk > 4)
+                {
+                    odat[offset+4] = 0u ;
+                    odat[offset+5] = 0u ; 
+                    odat[offset+6] = 0u ; 
+                    odat[offset+7] = 0u ; 
+                }
+
             }
             else if(j == ISUR || j == OSUR)  
             {
@@ -478,6 +493,14 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
                     odat[offset+1] = os.y ; 
                     odat[offset+2] = os.z ; 
                     odat[offset+3] = os.w ; 
+
+                    if(nk > 4)
+                    {
+                        odat[offset+4] = 0u ;
+                        odat[offset+5] = 0u ; 
+                        odat[offset+6] = 0u ; 
+                        odat[offset+7] = 0u ; 
+                    }
                 }
             }
         } 

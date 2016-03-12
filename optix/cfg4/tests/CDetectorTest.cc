@@ -1,4 +1,5 @@
 // ggv-;ggv-pmt-test --cdetector
+// ggv-;ggv-pmt-test --cdetector --export --exportconfig /tmp/test.dae
 
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
@@ -21,16 +22,10 @@ int main(int argc, char** argv)
 {
     LOG(info) << "klop " ;
 
-
-
     Opticks* m_opticks = new Opticks(argc, argv, "CPropLibTest.log");
-    
     m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
-
     GCache* m_cache = new GCache(m_opticks);
-
     OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
-
     m_cfg->commandline(argc, argv);  
 
     assert( m_cfg->hasOpt("test") && m_opticks->getSourceCode() == TORCH && "cfg4 only supports source type TORCH with test geometries" );
@@ -53,6 +48,8 @@ int main(int argc, char** argv)
     CTraverser* m_traverser = new CTraverser(world_pv) ;
 
     m_traverser->Traverse(); 
+
+    m_traverser->createGroupVel(); 
 
     m_traverser->setVerbosity(10); 
 

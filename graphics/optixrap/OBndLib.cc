@@ -24,22 +24,26 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 {
     //  eg (123, 4, 39, 4)   boundary, imat-omat-isur-osur, wavelength-samples, 4-props
 
-    unsigned int ni = buf->getShape(0);
-    unsigned int nj = buf->getShape(1);
-    unsigned int nk = buf->getShape(2);
-    unsigned int nl = buf->getShape(3);
+    unsigned int ni = buf->getShape(0);  // number of boundaries
+    unsigned int nj = buf->getShape(1);  // number of species:4  omat/osur/isur/imat 
+    unsigned int nk = buf->getShape(2);  // number of wavelength samples 
+    unsigned int nl = buf->getShape(3);  // number of properties
 
     assert(ni == m_lib->getNumBnd()) ;
     assert(nj == GPropertyLib::NUM_QUAD && nk == Opticks::DOMAIN_LENGTH && nl == GPropertyLib::NUM_PROP );
 
-    unsigned int nx = nk ;
-    unsigned int ny = ni*nj ;   // not nl as using float4
+    assert(nl == 4 || nl == 8);
+    unsigned int n_float4 = nl/4 ; 
 
-    LOG(debug) << "OBndLib::makeBoundaryTexture buf " 
+    unsigned int nx = nk ;               // wavelength samples
+    unsigned int ny = ni*nj*n_float4 ;   //
+   
+    LOG(info) << "OBndLib::makeBoundaryTexture buf " 
               << buf->getShapeString() 
               << " ---> "  
               << " nx " << nx
               << " ny " << ny  
+              << " n_float4 " << n_float4  
               ;
 
     optix::TextureSampler tex = makeTexture(buf, RT_FORMAT_FLOAT4, nx, ny);
@@ -48,6 +52,14 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int wmax = nk - 1 ; 
     unsigned int lmin = m_lib->getLineMin() ;
     unsigned int lmax = m_lib->getLineMax() ;
+
+    LOG(info) << "OBndLib::makeBoundaryTexture"
+              << " lmin " << lmin 
+              << " lmax " << lmax
+              << " ni " << ni
+              << " nj " << nj
+             ;
+ 
     assert(lmin == 0 && lmax == ni*nj - 1);
 
     optix::uint4 bounds = optix::make_uint4(wmin, wmax, lmin, lmax );

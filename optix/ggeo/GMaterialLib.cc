@@ -16,6 +16,11 @@ const char* GMaterialLib::absorption_length = "absorption_length" ;
 const char* GMaterialLib::scattering_length = "scattering_length" ;
 const char* GMaterialLib::reemission_prob   = "reemission_prob" ;
 
+const char* GMaterialLib::group_velocity   = "group_velocity" ;
+const char* GMaterialLib::extra_y          = "extra_y" ;
+const char* GMaterialLib::extra_z          = "extra_z" ;
+const char* GMaterialLib::extra_w          = "extra_w" ;
+
 const char* GMaterialLib::refractive_index_local  = "RINDEX" ;
 
 const char* GMaterialLib::keyspec = 
@@ -23,6 +28,7 @@ const char* GMaterialLib::keyspec =
 "absorption_length:ABSLENGTH,"
 "scattering_length:RAYLEIGH,"
 "reemission_prob:REEMISSIONPROB," 
+"group_velocity:GROUPVEL,"
 ;
 
 
@@ -50,16 +56,33 @@ void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( absorption_length,     1e6  );
     defaults->addConstantProperty( scattering_length,     1e6  );
     defaults->addConstantProperty( reemission_prob,       0.f  );
+
+    if(NUM_PROP > 4)
+    {
+        defaults->addConstantProperty( group_velocity,        0.f  );
+        defaults->addConstantProperty( extra_y,               0.f  );
+        defaults->addConstantProperty( extra_z,               0.f  );
+        defaults->addConstantProperty( extra_w,               0.f  );
+    }
 }
 
 
-const char* GMaterialLib::propertyName(unsigned int i)
+const char* GMaterialLib::propertyName(unsigned int k)
 {
-    assert(i < 4);
-    if(i == 0) return refractive_index ;
-    if(i == 1) return absorption_length ;
-    if(i == 2) return scattering_length ;
-    if(i == 3) return reemission_prob ;
+    assert(k < NUM_PROP);
+    if(k == 0) return refractive_index ;
+    if(k == 1) return absorption_length ;
+    if(k == 2) return scattering_length ;
+    if(k == 3) return reemission_prob ;
+
+    if(NUM_PROP > 4)
+    {
+        if(k == 4) return group_velocity ;
+        if(k == 5) return extra_y ;
+        if(k == 6) return extra_z ;
+        if(k == 7) return extra_w ;
+    }
+
     return "?" ;
 }
 
@@ -67,6 +90,7 @@ void GMaterialLib::Summary(const char* msg)
 {
     LOG(info) << msg  
               << " NumMaterials " << getNumMaterials() 
+              << " NumProp " << NUM_PROP
               ;
 }
 void GMaterialLib::add(GMaterial* raw)
@@ -92,6 +116,14 @@ GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
     dst->addProperty(absorption_length,getPropertyOrDefault( src, absorption_length ));
     dst->addProperty(scattering_length,getPropertyOrDefault( src, scattering_length ));
     dst->addProperty(reemission_prob  ,getPropertyOrDefault( src, reemission_prob ));
+
+    if(NUM_PROP > 4)
+    {
+        dst->addProperty(group_velocity, getPropertyOrDefault( src, group_velocity));
+        dst->addProperty(extra_y       , getPropertyOrDefault( src, extra_y));
+        dst->addProperty(extra_z       , getPropertyOrDefault( src, extra_z));
+        dst->addProperty(extra_w       , getPropertyOrDefault( src, extra_w));
+    }
 
     return dst ; 
 }
@@ -149,15 +181,18 @@ NPY<float>* GMaterialLib::createBuffer()
 {
     unsigned int ni = getNumMaterials();
     unsigned int nj = getStandardDomain()->getLength();
-    unsigned int nk = 4 ; 
+    unsigned int nk = NUM_PROP ;  // 4 or 8 
+
+    assert(nk == 4 || nk == 8); 
     assert(ni > 0 && nj > 0);
 
-    NPY<float>* mbuf = NPY<float>::make(ni, nj, nk); 
+    NPY<float>* mbuf = NPY<float>::make(ni, nj, nk);  // materials/wavelength-samples/properties
     mbuf->zero();
 
     float* data = mbuf->getValues();
 
     GProperty<float> *p0,*p1,*p2,*p3 ; 
+    GProperty<float> *p4,*p5,*p6,*p7 ; 
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -168,14 +203,34 @@ NPY<float>* GMaterialLib::createBuffer()
         p2 = mat->getPropertyByIndex(2);
         p3 = mat->getPropertyByIndex(3);
 
-        for( unsigned int j = 0; j < nj; j++ ) // interleave 4 properties into the buffer
-        {   
+        if(nk > 4)
+        {  
+            p4 = mat->getPropertyByIndex(4);
+            p5 = mat->getPropertyByIndex(5);
+            p6 = mat->getPropertyByIndex(6);
+            p7 = mat->getPropertyByIndex(7);
+        }
+
+
+        for( unsigned int j = 0; j < nj; j++ )    // over wavelength-samples
+        {  
+            // serialize in interleaved fashion the
+            // 4 or 8 (NUM_PROP) properties into the buffer
+
             unsigned int offset = i*nj*nk + j*nk ;  
 
             data[offset+0] = p0->getValue(j) ;
             data[offset+1] = p1->getValue(j) ;
             data[offset+2] = p2->getValue(j) ;
             data[offset+3] = p3->getValue(j) ;
+
+            if(nk > 4)
+            {
+                data[offset+4] = p4->getValue(j) ;
+                data[offset+5] = p5->getValue(j) ;
+                data[offset+6] = p6->getValue(j) ;
+                data[offset+7] = p7->getValue(j) ;
+            } 
         } 
     }
     return mbuf ; 
@@ -224,7 +279,7 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigne
     for(unsigned int k = 0 ; k < nk ; k++)
     {
         float* values = new float[nj] ; 
-        for(unsigned int j = 0 ; j < nj ; j++) values[j] = data[j*nk+k]; 
+        for(unsigned int j = 0 ; j < nj ; j++) values[j] = data[j*nk+k];   // un-interleaving 
         GProperty<float>* prop = new GProperty<float>( values, domain, nj );
         mat->addProperty(propertyName(k), prop);
     } 
@@ -274,6 +329,7 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
     GProperty<float>* _absorption_length = mat->getProperty(absorption_length);
     GProperty<float>* _scattering_length = mat->getProperty(scattering_length);
     GProperty<float>* _reemission_prob = mat->getProperty(reemission_prob);
+    GProperty<float>* _group_velocity = mat->getProperty(group_velocity);
 
 
     std::string table = GProperty<float>::make_table( 
@@ -281,6 +337,7 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
                             _absorption_length, "absorption_length",  
                             _scattering_length, "scattering_length",  
                             _reemission_prob, "reemission_prob", 
+                            _group_velocity, "group_velocity", 
                             20 );
     
     LOG(info) << msg << " " 

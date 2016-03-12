@@ -21,6 +21,13 @@ const char* GSurfaceLib::absorb            = "absorb" ;
 const char* GSurfaceLib::reflect_specular  = "reflect_specular" ;
 const char* GSurfaceLib::reflect_diffuse   = "reflect_diffuse" ;
 
+const char* GSurfaceLib::extra_x          = "extra_x" ;
+const char* GSurfaceLib::extra_y          = "extra_y" ;
+const char* GSurfaceLib::extra_z          = "extra_z" ;
+const char* GSurfaceLib::extra_w          = "extra_w" ;
+
+
+
 const char* GSurfaceLib::REFLECTIVITY = "REFLECTIVITY" ;
 const char* GSurfaceLib::EFFICIENCY   = "EFFICIENCY" ;
 const char* GSurfaceLib::SENSOR_SURFACE = "SensorSurface" ;
@@ -69,11 +76,20 @@ void GSurfaceLib::saveOpticalBuffer()
 
 const char* GSurfaceLib::propertyName(unsigned int k)
 {
-    assert(k < 4);
+    assert(k < NUM_PROP);
     if(k == 0) return detect ;
     if(k == 1) return absorb ;
     if(k == 2) return reflect_specular;
     if(k == 3) return reflect_diffuse ;
+
+    if(NUM_PROP > 4)
+    {
+        if(k == 4) return extra_x ;
+        if(k == 5) return extra_y ;
+        if(k == 6) return extra_z ;
+        if(k == 7) return extra_w ;
+    }
+
     return "?" ;
 }
 
@@ -81,6 +97,7 @@ void GSurfaceLib::Summary(const char* msg)
 {
     LOG(info) << msg  
               << " NumSurfaces " << getNumSurfaces() 
+              << " NumProp " << NUM_PROP
               ;
 }
 
@@ -90,6 +107,15 @@ void GSurfaceLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( absorb          ,      SURFACE_UNSET );
     defaults->addConstantProperty( reflect_specular,      SURFACE_UNSET );
     defaults->addConstantProperty( reflect_diffuse ,      SURFACE_UNSET );
+
+    if(NUM_PROP > 4)
+    {
+        defaults->addConstantProperty( extra_x,     SURFACE_UNSET  );
+        defaults->addConstantProperty( extra_y,     SURFACE_UNSET  );
+        defaults->addConstantProperty( extra_z,     SURFACE_UNSET  );
+        defaults->addConstantProperty( extra_w,     SURFACE_UNSET  );
+    }
+
 }
 
 void GSurfaceLib::init()
@@ -342,7 +368,8 @@ NPY<float>* GSurfaceLib::createBuffer()
 {
     unsigned int ni = getNumSurfaces();
     unsigned int nj = getStandardDomain()->getLength();
-    unsigned int nk = 4 ; 
+    unsigned int nk = NUM_PROP  ;  // 4 or 8  
+    assert( nk == 4 || nk == 8 ); 
     assert(ni > 0 && nj > 0);
 
     NPY<float>* buf = NPY<float>::make(ni, nj, nk); 
@@ -351,6 +378,7 @@ NPY<float>* GSurfaceLib::createBuffer()
     float* data = buf->getValues();
 
     GProperty<float> *p0,*p1,*p2,*p3 ; 
+    GProperty<float> *p4,*p5,*p6,*p7 ; 
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -359,14 +387,28 @@ NPY<float>* GSurfaceLib::createBuffer()
         p1 = surf->getPropertyByIndex(1);
         p2 = surf->getPropertyByIndex(2);
         p3 = surf->getPropertyByIndex(3);
+        if(nk > 4)
+        {
+            p4 = surf->getPropertyByIndex(4);
+            p5 = surf->getPropertyByIndex(5);
+            p6 = surf->getPropertyByIndex(6);
+            p7 = surf->getPropertyByIndex(7);
+        }
 
-        for( unsigned int j = 0; j < nj; j++ ) // interleave 4 properties into the buffer
+        for( unsigned int j = 0; j < nj; j++ ) // interleave 4/8 properties into the buffer
         {   
             unsigned int offset = i*nj*nk + j*nk ;  
             data[offset+0] = p0->getValue(j) ;
             data[offset+1] = p1->getValue(j) ;
             data[offset+2] = p2->getValue(j) ;
             data[offset+3] = p3->getValue(j) ;
+            if(nk > 4)
+            {
+                data[offset+4] = p4->getValue(j) ;
+                data[offset+5] = p5->getValue(j) ;
+                data[offset+6] = p6->getValue(j) ;
+                data[offset+7] = p7->getValue(j) ;
+            }
         } 
     }
     return buf ; 
@@ -511,6 +553,7 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
     GProperty<float>* _absorb = surf->getProperty(absorb);
     GProperty<float>* _reflect_specular = surf->getProperty(reflect_specular);
     GProperty<float>* _reflect_diffuse  = surf->getProperty(reflect_diffuse);
+    GProperty<float>* _extra_x  = surf->getProperty(extra_x);
 
     assert(_detect);
     assert(_absorb);
@@ -522,6 +565,7 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
                             _absorb, "absorb",  
                             _reflect_specular, "reflect_specular",
                             _reflect_diffuse , "reflect_diffuse", 
+                            _extra_x ,  "extra_x", 
                             20 );
     
     LOG(info) << msg << " " 

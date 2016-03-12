@@ -11,9 +11,12 @@ class G4Material ;
 
 class CTraverser {
     public:
+        static const char* GROUPVEL ; 
+    public:
         CTraverser(G4VPhysicalVolume* top);
     public:
         void Traverse();
+        void createGroupVel();
         void dumpMaterials(const char* msg="CTraverser::dumpMaterials");
         void setVerbosity(unsigned int verbosity);
     private:

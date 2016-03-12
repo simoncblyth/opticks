@@ -76,7 +76,7 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
 
 void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
 {
-     mergedmesh->dumpSolids("GTreeCheck::makeInstancedBuffers dumpSolids");
+     //mergedmesh->dumpSolids("GTreeCheck::makeInstancedBuffers dumpSolids");
 
      NPY<float>* itransforms = makeInstanceTransformsBuffer(ridx);
      mergedmesh->setITransformsBuffer(itransforms);
@@ -457,6 +457,12 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
     // observe that each instance has only one sensor, so not need 
     // to repeat over the number of solids just one entry per instance
 
+    LOG(info) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
+              << " ridx " << ridx
+              << " numPlacements " << ni
+              << " numSolids " << numSolids      
+              ;
+
     for(unsigned int i=0 ; i < ni ; i++) // over instances of the same geometry
     {
         GNode* base = placements[i] ;
@@ -474,13 +480,14 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
 
             unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
 
+            if(sid > 0)
             LOG(debug) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
                       << " s " << std::setw(3) << s 
                       << " sid " << std::setw(10) << std::hex << sid << std::dec 
                       << " ss " << (ss ? ss->description() : "NULL" )
                       ;
 
-            if(sid > 0)
+            if(sid > 0 && ridx > 0)
             {
                 assert(sensor == NULL && "not expecting more than one sensor solid with non-zero id within an instance of repeated geometry");
                 sensor = ss ; 

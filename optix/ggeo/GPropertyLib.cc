@@ -71,8 +71,13 @@ array([ 200.,  220.,  240.,  260.,  280.,  300.,  320.,  340.,  360.,
 
 
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 
-unsigned int GPropertyLib::NUM_QUAD = 4  ; 
+unsigned int GPropertyLib::NUM_QUAD = 4  ;    // not a good name refers to the four species om-os-is-im for which props are stored   
+
+
+
+//unsigned int GPropertyLib::NUM_PROP = 8  ; 
 unsigned int GPropertyLib::NUM_PROP = 4  ; 
+
 
 GDomain<float>* GPropertyLib::getDefaultDomain()
 {

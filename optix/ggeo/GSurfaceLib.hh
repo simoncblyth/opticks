@@ -19,10 +19,16 @@ class GSurfaceLib : public GPropertyLib {
    public:
        static const char* propertyName(unsigned int k);
        // 4 standard surface property names : interleaved into float4 wavelength texture
+  public:
        static const char* detect ;
        static const char* absorb ;
        static const char* reflect_specular ;
        static const char* reflect_diffuse ;
+  public:
+       static const char* extra_x ; 
+       static const char* extra_y ; 
+       static const char* extra_z ; 
+       static const char* extra_w ; 
   public:
        // some model-mismatch translation required for surface properties
        static const char* EFFICIENCY ; 

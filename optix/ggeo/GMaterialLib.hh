@@ -63,10 +63,16 @@ class GMaterialLib : public GPropertyLib {
    public:
        // 4 standard material property names : interleaved into float4 wavelength texture
        static const char* propertyName(unsigned int k);
+   public:
        static const char* refractive_index ; 
        static const char* absorption_length ; 
        static const char* scattering_length ; 
        static const char* reemission_prob ; 
+   public:
+       static const char* group_velocity ; 
+       static const char* extra_y ; 
+       static const char* extra_z ; 
+       static const char* extra_w ; 
    public:
        static const char* refractive_index_local ; 
    public:
