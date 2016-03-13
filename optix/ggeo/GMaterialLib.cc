@@ -55,7 +55,7 @@ void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
 
     if(NUM_FLOAT4 > 1)
     {
-        defaults->addConstantProperty( group_velocity,   MATERIAL_UNSET  );
+        defaults->addConstantProperty( group_velocity,   300.f  );
         defaults->addConstantProperty( extra_y,          MATERIAL_UNSET  );
         defaults->addConstantProperty( extra_z,          MATERIAL_UNSET  );
         defaults->addConstantProperty( extra_w,          MATERIAL_UNSET  );

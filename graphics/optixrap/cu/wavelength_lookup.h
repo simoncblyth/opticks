@@ -116,7 +116,7 @@ static __device__ __inline__ void wavelength_check()
 {
   unsigned int ibnd=13 ; 
 
-  unsigned int jqwn=0 ; 
+  unsigned int jqwn=0 ;  //OMAT
  
   for(int i=0 ; i < 39 ; i++ )
   {
@@ -124,19 +124,22 @@ static __device__ __inline__ void wavelength_check()
 
      unsigned int line = ibnd*BOUNDARY_NUM_MATSUR + jqwn ; 
 
-     float4 props = wavelength_lookup( nm, line, 0 ) ;
+     float4 pr0 = wavelength_lookup( nm, line, 0 ) ;
+     float4 pr1 = wavelength_lookup( nm, line, 1 ) ;
 
-     rtPrintf("wavelength_check nm:%10.3f MATSUR %2u NF4 %2u ibnd %2u jqwn %u line %3u  props  %13.4f %13.4f %13.4f %13.4f \n",
+     rtPrintf("wavelength_check nm:%10.3f ibnd %2u jqwn %u line %3u  pr0  %13.4f %13.4f %13.4f %13.4f pr1  %13.4f %13.4f %13.4f %13.4f \n",
           nm, 
-          BOUNDARY_NUM_MATSUR,
-          BOUNDARY_NUM_FLOAT4,
           ibnd,
           jqwn, 
           line,
-          props.x, 
-          props.y, 
-          props.z, 
-          props.w
+          pr0.x, 
+          pr0.y, 
+          pr0.z, 
+          pr0.w,
+          pr1.x, 
+          pr1.y, 
+          pr1.z, 
+          pr1.w
      ); 
   }
 }
