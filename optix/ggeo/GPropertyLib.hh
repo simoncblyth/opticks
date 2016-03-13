@@ -2,6 +2,9 @@
 
 // for all (non-CUDA and CUDA) compilation
 #define BOUNDARY_NUM_PROP 8
+#define BOUNDARY_NUM_FLOAT4 2
+
+#define BOUNDARY_NUM_MATSUR 4
 
 
 #ifndef __CUDACC__
@@ -42,8 +45,9 @@ GSurfaceLib.hh     :class GSurfaceLib : public GPropertyLib {
 class GPropertyLib {
     public:
         static unsigned int UNSET ; 
-        static unsigned int NUM_QUAD ; 
+        static unsigned int NUM_MATSUR ;    // number of material/surfaces in the boundary 
         static unsigned int NUM_PROP ; 
+        static unsigned int NUM_FLOAT4 ; 
     public:
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);

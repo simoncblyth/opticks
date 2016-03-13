@@ -53,7 +53,7 @@ void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( scattering_length,     1e6  );
     defaults->addConstantProperty( reemission_prob,       0.f  );
 
-    if(NUM_PROP > 4)
+    if(NUM_FLOAT4 > 1)
     {
         defaults->addConstantProperty( group_velocity,   MATERIAL_UNSET  );
         defaults->addConstantProperty( extra_y,          MATERIAL_UNSET  );
@@ -65,13 +65,14 @@ void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
 
 const char* GMaterialLib::propertyName(unsigned int k)
 {
-    assert(k < NUM_PROP);
+    assert(k < 4*NUM_FLOAT4);
+
     if(k == 0) return refractive_index ;
     if(k == 1) return absorption_length ;
     if(k == 2) return scattering_length ;
     if(k == 3) return reemission_prob ;
 
-    if(NUM_PROP > 4)
+    if(NUM_FLOAT4 > 1)
     {
         if(k == 4) return group_velocity ;
         if(k == 5) return extra_y ;
@@ -86,7 +87,7 @@ void GMaterialLib::Summary(const char* msg)
 {
     LOG(info) << msg  
               << " NumMaterials " << getNumMaterials() 
-              << " NumProp " << NUM_PROP
+              << " NumFloat4 " << NUM_FLOAT4
               ;
 }
 void GMaterialLib::add(GMaterial* raw)
@@ -113,7 +114,7 @@ GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
     dst->addProperty(scattering_length,getPropertyOrDefault( src, scattering_length ));
     dst->addProperty(reemission_prob  ,getPropertyOrDefault( src, reemission_prob ));
 
-    if(NUM_PROP > 4)
+    if(NUM_FLOAT4 > 1)
     {
         dst->addProperty(group_velocity, getPropertyOrDefault( src, group_velocity));
         dst->addProperty(extra_y       , getPropertyOrDefault( src, extra_y));
@@ -173,11 +174,63 @@ unsigned int GMaterialLib::getMaterialIndex(const GMaterial* material)
 }
 
 
+
+
 NPY<float>* GMaterialLib::createBuffer()
+{
+    return createBufferForTex2d() ; 
+}
+
+
+NPY<float>* GMaterialLib::createBufferForTex2d()
+{
+    // trying to arrange the memory layout of this buffer to 
+    // match the requirements of tex2d<float4>
+
+    unsigned int ni = getNumMaterials();
+    unsigned int nj = NUM_FLOAT4 ; 
+    unsigned int nk = getStandardDomain()->getLength();
+    unsigned int nl = 4 ;
+
+    assert(ni > 0 && nj > 0);
+
+    NPY<float>* mbuf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
+    mbuf->zero();
+    float* data = mbuf->getValues();
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GMaterial* mat = m_materials[i] ;
+        GProperty<float> *p0,*p1,*p2,*p3 ; 
+
+        for(unsigned int j=0 ; j < nj ; j++)
+        {
+            p0 = mat->getPropertyByIndex(j*4+0);
+            p1 = mat->getPropertyByIndex(j*4+1);
+            p2 = mat->getPropertyByIndex(j*4+2);
+            p3 = mat->getPropertyByIndex(j*4+3);
+
+            for( unsigned int k = 0; k < nk; k++ )    // over wavelength-samples
+            {  
+                unsigned int offset = i*nj*nk*nl + j*nk*nl + k*nl ;  
+
+                data[offset+0] = p0 ? p0->getValue(k) : MATERIAL_UNSET ;
+                data[offset+1] = p1 ? p1->getValue(k) : MATERIAL_UNSET ;
+                data[offset+2] = p2 ? p2->getValue(k) : MATERIAL_UNSET ;
+                data[offset+3] = p3 ? p3->getValue(k) : MATERIAL_UNSET ;
+            }
+        }
+    }
+    return mbuf ; 
+}
+
+
+
+NPY<float>* GMaterialLib::createBufferOld()
 {
     unsigned int ni = getNumMaterials();
     unsigned int nj = getStandardDomain()->getLength();
-    unsigned int nk = NUM_PROP ;  // 4 or 8 
+    unsigned int nk = NUM_PROP ;  // 4 or 8
 
     assert(nk == 4 || nk == 8); 
     assert(ni > 0 && nj > 0);
@@ -232,6 +285,7 @@ NPY<float>* GMaterialLib::createBuffer()
     return mbuf ; 
 }
 
+
 void GMaterialLib::import()
 {
     if(m_buffer == NULL)
@@ -243,34 +297,69 @@ void GMaterialLib::import()
 
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
+    LOG(info) << " GMaterialLib::import "    
+              << m_buffer->getShapeString()
+              ;
+
+    importForTex2d();
+    //importOld();
+}
+
+
+void GMaterialLib::importForTex2d()
+{
+    unsigned int ni = m_buffer->getShape(0);
+    unsigned int nj = m_buffer->getShape(1);
+    unsigned int nk = m_buffer->getShape(2);
+    unsigned int nl = m_buffer->getShape(3);
+
+    assert(m_standard_domain->getLength() == nk );
+
+    float* data = m_buffer->getValues();
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        const char* key = m_names->getKey(i);
+        LOG(debug) << std::setw(3) << i 
+                   << " " << key ;
+
+        GMaterial* mat = new GMaterial(key, i);
+
+        for(unsigned int j=0 ; j < nj ; j++)
+        {
+            import(mat, data + i*nj*nk*nl + j*nk*nl, nk, nl , j);
+        }
+        m_materials.push_back(mat);
+    } 
+}
+
+
+void GMaterialLib::importOld()
+{
     unsigned int ni = m_buffer->getShape(0);
     unsigned int nj = m_buffer->getShape(1);
     unsigned int nk = m_buffer->getShape(2);
 
     checkBufferCompatibility(nk, "GMaterialLib::import");
 
-    LOG(debug) << " GMaterialLib::import "    
-              << " ni " << ni 
-              << " nj " << nj 
-              << " nk " << nk
-              ;
+    assert(m_standard_domain->getLength() == nj );
 
-   assert(m_standard_domain->getLength() == nj );
-   float* data = m_buffer->getValues();
-   for(unsigned int i=0 ; i < ni ; i++)
-   {
-       const char* key = m_names->getKey(i);
-       LOG(debug) << std::setw(3) << i 
-                 << " " << key ;
+    float* data = m_buffer->getValues();
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        const char* key = m_names->getKey(i);
+        LOG(debug) << std::setw(3) << i 
+                   << " " << key ;
 
-       GMaterial* mat = new GMaterial(key, i);
-       import(mat, data + i*nj*nk, nj, nk );
+        GMaterial* mat = new GMaterial(key, i);
+        import(mat, data + i*nj*nk, nj, nk );
 
-       m_materials.push_back(mat);
-   }  
+        m_materials.push_back(mat);
+    }  
 }
 
-void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk )
+
+void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk, unsigned int jcat )
 {
     float* domain = m_standard_domain->getValues();
 
@@ -279,7 +368,7 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigne
         float* values = new float[nj] ; 
         for(unsigned int j = 0 ; j < nj ; j++) values[j] = data[j*nk+k];   // un-interleaving 
         GProperty<float>* prop = new GProperty<float>( values, domain, nj );
-        mat->addProperty(propertyName(k), prop);
+        mat->addProperty(propertyName(k+4*jcat), prop);
     } 
 }
 

@@ -56,6 +56,9 @@ class GSurfaceLib : public GPropertyLib {
        NPY<float>* createBuffer();
        GItemList*  createNames();
    public:
+       NPY<float>* createBufferForTex2d();
+       NPY<float>* createBufferOld();
+   public:
       // methods for debug
        void setFakeEfficiency(float fake_efficiency);
        GPropertyMap<float>* makePerfect(const char* name, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_);
@@ -94,7 +97,9 @@ class GSurfaceLib : public GPropertyLib {
    public:
        void import();
    private:
-       void import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk );
+       void importOld();
+       void importForTex2d();
+       void import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
    private:
        std::vector<GPropertyMap<float>*>       m_surfaces ; 
        float                                   m_fake_efficiency ; 

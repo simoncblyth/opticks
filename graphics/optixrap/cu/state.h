@@ -29,8 +29,13 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
     // >0 outward going photon
     // <0 inward going photon
+    //
+    // NB the line is above the details of the payload (ie how many float4 per matsur) 
+    //    it is just 
+    //                boundaryIndex*4  + 0/1/2/3     for OMAT/OSUR/ISUR/IMAT 
+    //
 
-    int line = boundary > 0 ? (boundary - 1)*BOUNDARY_NUM_PROP : (-boundary - 1)*BOUNDARY_NUM_PROP  ; 
+    int line = boundary > 0 ? (boundary - 1)*BOUNDARY_NUM_MATSUR : (-boundary - 1)*BOUNDARY_NUM_MATSUR  ; 
 
     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
     // 
@@ -43,9 +48,9 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
     //
     //  boundary sign will be -ve : so line+3 outer-surface is the relevant one
 
-    s.material1 = wavelength_lookup( wavelength, m1_line );  
-    s.material2 = wavelength_lookup( wavelength, m2_line ) ;
-    s.surface   = wavelength_lookup( wavelength, su_line );                 
+    s.material1 = wavelength_lookup( wavelength, m1_line, 0);  
+    s.material2 = wavelength_lookup( wavelength, m2_line, 0);
+    s.surface   = wavelength_lookup( wavelength, su_line, 0);                 
 
     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
 

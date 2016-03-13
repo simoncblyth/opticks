@@ -372,32 +372,47 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
         const char* omat = m_mlib->getName(bnd[OMAT]);
         const char* imat = m_mlib->getName(bnd[IMAT]);
         assert(imat && omat);
-        if(msu.count(imat) == 0) msu[imat] = getLine(i, 0) ;
-        if(msu.count(omat) == 0) msu[omat] = getLine(i, 1) ;
+        if(msu.count(imat) == 0) msu[imat] = getLine(i, IMAT) ; // incorrectly 0 until 2016/3/13
+        if(msu.count(omat) == 0) msu[omat] = getLine(i, OMAT) ; // incorrectly 1 until 2016/3/13
     }
     dumpMaterialLineMap(msu, "GBndLib::fillMaterialLineMap");
 }
 
 
-
-
 unsigned int GBndLib::getMaterialLine(const char* shortname)
 {
+    // used by App::loadGenstep for setting material line in TorchStep
     unsigned int ni = getNumBnd();
+    unsigned int line = 0 ; 
     for(unsigned int i=0 ; i < ni ; i++)    
     {
         const guint4& bnd = m_bnd[i] ;
         const char* omat = m_mlib->getName(bnd[OMAT]);
         const char* imat = m_mlib->getName(bnd[IMAT]);
-        if(strncmp(imat, shortname, strlen(shortname))==0) return getLine(i, 0);
-        if(strncmp(omat, shortname, strlen(shortname))==0) return getLine(i, 1);
+
+        if(strncmp(imat, shortname, strlen(shortname))==0)
+        { 
+            line = getLine(i, IMAT);  // was incorrectly 0 until 2016/3/13
+            break ;
+        }
+        if(strncmp(omat, shortname, strlen(shortname))==0) 
+        { 
+            line=getLine(i, OMAT);  // was incorrectly 1 until 2016/3/13
+            break ;
+        } 
     }
-    return 0 ;
+
+    LOG(info) << "GBndLib::getMaterialLine"
+              << " shortname " << shortname 
+              << " line " << line 
+              ; 
+
+    return line ;
 }
-unsigned int GBndLib::getLine(unsigned int ibnd, unsigned int iquad)
+unsigned int GBndLib::getLine(unsigned int ibnd, unsigned int imatsur)
 {
-    assert(iquad < NUM_QUAD);
-    return ibnd*NUM_QUAD + iquad ;   
+    assert(imatsur < NUM_MATSUR);
+    return ibnd*NUM_MATSUR + imatsur ;   
 }
 unsigned int GBndLib::getLineMin()
 {
@@ -407,11 +422,73 @@ unsigned int GBndLib::getLineMin()
 unsigned int GBndLib::getLineMax()
 {
     unsigned int numBnd = getNumBnd() ; 
-    unsigned int lineMax = getLine(numBnd - 1, NUM_QUAD-1);
+    unsigned int lineMax = getLine(numBnd - 1, NUM_MATSUR-1);   
+    assert(lineMax == numBnd*NUM_MATSUR - 1 );
     return lineMax ; 
 }
 
 NPY<float>* GBndLib::createBuffer()
+{
+    return createBufferForTex2d() ;
+}
+
+NPY<float>* GBndLib::createBufferForTex2d()
+{
+    NPY<float>* mat = m_mlib->getBuffer();
+    NPY<float>* sur = m_slib->getBuffer();
+
+    unsigned int ni = getNumBnd();
+    unsigned int nj = NUM_MATSUR ;    // om-os-is-im
+
+    // the klm matches the Materials and Surface buffer layouts, so can memcpy in 
+    unsigned int nk = NUM_FLOAT4 ;    
+    unsigned int nl = Opticks::DOMAIN_LENGTH ; 
+    unsigned int nm = 4 ; 
+
+    assert(nl = getStandardDomainLength()) ;
+    assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
+    assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
+
+    NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl, nm) ;
+    wav->fill( GSurfaceLib::SURFACE_UNSET ); 
+
+    float* mdat = mat->getValues();
+    float* sdat = sur->getValues();
+    float* wdat = wav->getValues(); // destination
+
+    for(unsigned int i=0 ; i < ni ; i++)      // over bnd
+    {
+        const guint4& bnd = m_bnd[i] ;
+        for(unsigned int j=0 ; j < nj ; j++)     // over imat/omat/isur/osur species
+        {
+            unsigned int wof = nj*nk*nl*nm*i + nk*nl*nm*j ;
+
+            if(j == IMAT || j == OMAT)    
+            {
+                unsigned int midx = bnd[j] ;
+                assert(midx != UNSET);
+                unsigned int mof = nk*nl*nm*midx ; 
+                memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl*nm );  
+            }
+            else if(j == ISUR || j == OSUR) 
+            {
+                unsigned int sidx = bnd[j] ;
+                if(sidx != UNSET)
+                {
+                    unsigned int sof = nk*nl*nm*sidx ;  
+                    memcpy( wdat+wof, sdat+sof, sizeof(float)*nk*nl*nm );  
+                }
+            }
+
+         }     // j
+    }          // i
+    return wav ; 
+}
+
+
+
+
+NPY<float>* GBndLib::createBufferOld()
 {
     /*
     GBndLib float buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
@@ -423,7 +500,7 @@ NPY<float>* GBndLib::createBuffer()
     NPY<float>* sur = m_slib->getBuffer();
 
     unsigned int ni = getNumBnd();
-    unsigned int nj = NUM_QUAD ;       // im-om-is-os hmm NUM_QUAD not a good name, NUM_SPECIES ?
+    unsigned int nj = NUM_MATSUR ;       // im-om-is-os 
     unsigned int nk = Opticks::DOMAIN_LENGTH ; 
     unsigned int nl = NUM_PROP ;       // 4/8 interweaved props
 
@@ -483,7 +560,7 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
  
     bool one_based = true ; // surface and material indices 1-based, so 0 can stand for unset
     unsigned int ni = getNumBnd();
-    unsigned int nj = NUM_QUAD ;    // om-os-is-im
+    unsigned int nj = NUM_MATSUR ;    // om-os-is-im
     unsigned int nk = 4 ;           // THIS 4 IS NOT RELATED TO NUM_PROP
 
     NPY<unsigned int>* optical = NPY<unsigned int>::make( ni, nj, nk) ;

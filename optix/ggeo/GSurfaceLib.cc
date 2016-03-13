@@ -76,13 +76,13 @@ void GSurfaceLib::saveOpticalBuffer()
 
 const char* GSurfaceLib::propertyName(unsigned int k)
 {
-    assert(k < NUM_PROP);
+    assert(k < 4*NUM_FLOAT4);
     if(k == 0) return detect ;
     if(k == 1) return absorb ;
     if(k == 2) return reflect_specular;
     if(k == 3) return reflect_diffuse ;
 
-    if(NUM_PROP > 4)
+    if(NUM_FLOAT4 > 1)
     {
         if(k == 4) return extra_x ;
         if(k == 5) return extra_y ;
@@ -97,7 +97,7 @@ void GSurfaceLib::Summary(const char* msg)
 {
     LOG(info) << msg  
               << " NumSurfaces " << getNumSurfaces() 
-              << " NumProp " << NUM_PROP
+              << " NumFloat4 " << NUM_FLOAT4
               ;
 }
 
@@ -108,7 +108,7 @@ void GSurfaceLib::defineDefaults(GPropertyMap<float>* defaults)
     defaults->addConstantProperty( reflect_specular,      SURFACE_UNSET );
     defaults->addConstantProperty( reflect_diffuse ,      SURFACE_UNSET );
 
-    if(NUM_PROP > 4)
+    if(NUM_FLOAT4 > 1)
     {
         defaults->addConstantProperty( extra_x,     SURFACE_UNSET  );
         defaults->addConstantProperty( extra_y,     SURFACE_UNSET  );
@@ -364,7 +364,58 @@ GItemList* GSurfaceLib::createNames()
     return names ; 
 }
 
+
 NPY<float>* GSurfaceLib::createBuffer()
+{
+    return createBufferForTex2d() ; 
+}
+
+
+NPY<float>* GSurfaceLib::createBufferForTex2d()
+{
+    // trying to arrange the memory layout of this buffer to 
+    // match the requirements of tex2d<float4>
+
+    unsigned int ni = getNumSurfaces();
+    unsigned int nj = NUM_FLOAT4 ; 
+    unsigned int nk = getStandardDomain()->getLength();
+    unsigned int nl = 4 ;
+
+    assert(ni > 0 && nj > 0);
+
+    NPY<float>* buf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
+    buf->zero();
+    float* data = buf->getValues();
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GPropertyMap<float>* surf = m_surfaces[i] ;
+        GProperty<float> *p0,*p1,*p2,*p3 ; 
+
+        for(unsigned int j=0 ; j < nj ; j++)
+        {
+            p0 = surf->getPropertyByIndex(j*4+0);
+            p1 = surf->getPropertyByIndex(j*4+1);
+            p2 = surf->getPropertyByIndex(j*4+2);
+            p3 = surf->getPropertyByIndex(j*4+3);
+
+            for( unsigned int k = 0; k < nk; k++ )    // over wavelength-samples
+            {  
+                unsigned int offset = i*nj*nk*nl + j*nk*nl + k*nl ;  
+
+                data[offset+0] = p0 ? p0->getValue(k) : SURFACE_UNSET ;
+                data[offset+1] = p1 ? p1->getValue(k) : SURFACE_UNSET ;
+                data[offset+2] = p2 ? p2->getValue(k) : SURFACE_UNSET ;
+                data[offset+3] = p3 ? p3->getValue(k) : SURFACE_UNSET ;
+            }
+        }
+    }
+    return buf ; 
+}
+
+
+
+NPY<float>* GSurfaceLib::createBufferOld()
 {
     unsigned int ni = getNumSurfaces();
     unsigned int nj = getStandardDomain()->getLength();
@@ -415,8 +466,6 @@ NPY<float>* GSurfaceLib::createBuffer()
     return buf ; 
 }
 
-
-
 void GSurfaceLib::import()
 {
     if(m_buffer == NULL)
@@ -426,22 +475,60 @@ void GSurfaceLib::import()
         return ;  
     }
 
+    LOG(info) << "GSurfaceLib::import "    
+               << m_buffer->getShapeString()
+             ;
+
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
+    importForTex2d();
+    //importOld();
+}
+
+
+
+void GSurfaceLib::importForTex2d()
+{
+    unsigned int ni = m_buffer->getShape(0); // surfaces
+    unsigned int nj = m_buffer->getShape(1); // payload categories 
+    unsigned int nk = m_buffer->getShape(2); // wavelength samples
+    unsigned int nl = m_buffer->getShape(3); // 4 props
+
+    assert(m_standard_domain->getLength() == nk );
+
+    float* data = m_buffer->getValues();
+
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        const char* key = m_names->getKey(i);
+        LOG(debug) << std::setw(3) << i 
+                   << " " << key ;
+
+        GOpticalSurface* os = NULL ;
+        GPropertyMap<float>* surf = new GPropertyMap<float>(key,i,"surface", os);
+
+        for(unsigned int j=0 ; j < nj ; j++)
+        {
+            import(surf, data + i*nj*nk*nl + j*nk*nl , nk, nl, j );
+        }
+
+        m_surfaces.push_back(surf);
+    }  
+}
+
+
+
+void GSurfaceLib::importOld()
+{
     unsigned int ni = m_buffer->getShape(0);
     unsigned int nj = m_buffer->getShape(1);
     unsigned int nk = m_buffer->getShape(2);
 
     checkBufferCompatibility(nk, "GSurfaceLib::import");
 
-    LOG(debug) << "GSurfaceLib::import "    
-              << " ni " << ni 
-              << " nj " << nj 
-              << " nk " << nk
-              ;
-
    assert(m_standard_domain->getLength() == nj );
    float* data = m_buffer->getValues();
+
    for(unsigned int i=0 ; i < ni ; i++)
    {
        const char* key = m_names->getKey(i);
@@ -456,7 +543,7 @@ void GSurfaceLib::import()
    }  
 }
 
-void GSurfaceLib::import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk )
+void GSurfaceLib::import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk, unsigned int jcat )
 {
     float* domain = m_standard_domain->getValues();
 
@@ -465,7 +552,8 @@ void GSurfaceLib::import( GPropertyMap<float>* surf, float* data, unsigned int n
         float* values = new float[nj] ; 
         for(unsigned int j = 0 ; j < nj ; j++) values[j] = data[j*nk+k]; 
         GProperty<float>* prop = new GProperty<float>( values, domain, nj );
-        surf->addProperty(propertyName(k), prop);
+
+        surf->addProperty(propertyName(k+4*jcat), prop);
     } 
 }
 

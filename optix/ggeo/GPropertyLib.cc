@@ -22,58 +22,13 @@
 #include <iomanip>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
-/*
-
-
-
-In [120]: np.arange(60,820.1,20)
-Out[120]: 
-array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
-        240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
-        420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
-        600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
-        780.,  800.,  820.])
-
-In [121]: np.linspace(60,820,39)
-Out[121]: 
-array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
-        240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
-        420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
-        600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
-        780.,  800.,  820.])
-
-
-
-TODO: try moving 60nm (extreme UV) up to smth more reasonable like 200nm (far UV)
-
-In [126]: np.linspace(200,800,31)
-Out[126]: 
-array([ 200.,  220.,  240.,  260.,  280.,  300.,  320.,  340.,  360.,
-        380.,  400.,  420.,  440.,  460.,  480.,  500.,  520.,  540.,
-        560.,  580.,  600.,  620.,  640.,  660.,  680.,  700.,  720.,
-        740.,  760.,  780.,  800.])
-
-In [128]: np.arange(200,800.1,20)
-Out[128]: 
-array([ 200.,  220.,  240.,  260.,  280.,  300.,  320.,  340.,  360.,
-        380.,  400.,  420.,  440.,  460.,  480.,  500.,  520.,  540.,
-        560.,  580.,  600.,  620.,  640.,  660.,  680.,  700.,  720.,
-        740.,  760.,  780.,  800.])
-
-
-
-*/
+#include "NLog.hpp"
 
 
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 
-unsigned int GPropertyLib::NUM_QUAD = 4  ;    // not a good name refers to the four species om-os-is-im for which props are stored   
+unsigned int GPropertyLib::NUM_MATSUR = BOUNDARY_NUM_MATSUR  ;    // 4 material/surfaces that comprise a boundary om-os-is-im 
 unsigned int GPropertyLib::NUM_PROP = BOUNDARY_NUM_PROP  ; 
-
+unsigned int GPropertyLib::NUM_FLOAT4 = BOUNDARY_NUM_FLOAT4  ; 
 
 void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
 {

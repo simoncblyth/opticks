@@ -147,9 +147,9 @@ __device__ void cscheck(CerenkovStep& cs)
 
     rtPrintf("cscheck sample wavelength lo/mi/hi   %f %f %f \n", nmlo,nmmi,nmhi);   
 
-    float4 prlo = wavelength_lookup(nmlo, cs.MaterialIndex);
-    float4 prmi = wavelength_lookup(nmmi, cs.MaterialIndex);
-    float4 prhi = wavelength_lookup(nmhi, cs.MaterialIndex);
+    float4 prlo = wavelength_lookup(nmlo, cs.MaterialIndex, 0);
+    float4 prmi = wavelength_lookup(nmmi, cs.MaterialIndex, 0);
+    float4 prhi = wavelength_lookup(nmhi, cs.MaterialIndex, 0);
 
     rtPrintf("cscheck sample rindex lo/mi/hi   %f %f %f \n", prlo.x,prmi.x,prhi.x);   
     rtPrintf("cscheck sample abslen lo/mi/hi   %f %f %f \n", prlo.y,prmi.y,prhi.y);   
@@ -223,7 +223,7 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
         wavelength = sample_reciprocal_domain(curand_uniform(&rng));   
 
-        float4 props = wavelength_lookup(wavelength, cs.MaterialIndex);
+        float4 props = wavelength_lookup(wavelength, cs.MaterialIndex, 0);
 
         sampledRI = props.x ; 
 

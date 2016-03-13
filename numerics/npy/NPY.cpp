@@ -428,6 +428,22 @@ NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned
     return make(shape);
 }
 
+template <typename T>
+NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm)
+{
+    std::vector<int> shape ; 
+    shape.push_back(ni);
+    shape.push_back(nj);
+    shape.push_back(nk);
+    shape.push_back(nl);
+    shape.push_back(nm);
+    return make(shape);
+}
+
+
+
+
+
 
 template <typename T>
 NPY<T>* NPY<T>::make(std::vector<int>& shape)

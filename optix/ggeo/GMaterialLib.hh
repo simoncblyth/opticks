@@ -97,6 +97,11 @@ class GMaterialLib : public GPropertyLib {
        void import();
        NPY<float>* createBuffer();
        GItemList*  createNames();
+   private:
+       void importForTex2d();
+       void importOld();
+       NPY<float>* createBufferForTex2d();
+       NPY<float>* createBufferOld();
    public:
        // lifecycle
        void add(GMaterial* material);
@@ -116,7 +121,7 @@ class GMaterialLib : public GPropertyLib {
        GMaterial*  createStandardMaterial(GMaterial* src);
    private:
        // post-cache
-       void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk );
+       void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
    private:
        std::vector<GMaterial*>       m_materials ; 
 

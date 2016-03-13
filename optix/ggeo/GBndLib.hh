@@ -108,6 +108,9 @@ class GBndLib : public GPropertyLib {
        unsigned int getLineMax();
   public:
        void createDynamicBuffers();
+   public:
+       NPY<float>* createBufferForTex2d();
+       NPY<float>* createBufferOld();
   public:
        GItemList* createNames();
        NPY<float>* createBuffer();

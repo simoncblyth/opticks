@@ -70,6 +70,7 @@ class NPY : public NPYBase {
        static NPY<T>* make(unsigned int ni, unsigned int nj );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl );
+       static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm);
 
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
 

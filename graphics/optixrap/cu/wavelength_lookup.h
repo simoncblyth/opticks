@@ -59,7 +59,7 @@ source_check nm_a     60.000    506.041    820.000
 
 
 
-static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int line )
+static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int line, unsigned int offset )
 {
     // x:low y:high z:step w:mid   tex coords are offset by 0.5 
     // texture lookups benefit from hardware interpolation 
@@ -71,7 +71,7 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
     }
 
     return line <= boundary_bounds.w ? 
-                  tex2D(boundary_texture, nmi, line + 0.5f ) : 
+                  tex2D(boundary_texture, nmi, BOUNDARY_NUM_FLOAT4*line + offset + 0.5f ) : 
                   make_float4(1.123456789f, 123456789.f, 123456789.f, 1.0f )    ;    // some obnoxious values for debug 
 
     // refractive_index, absorption_length, scattering_length, reemission_prob
@@ -98,7 +98,7 @@ static __device__ __inline__ void wavelength_dump(unsigned int line, unsigned in
   for(int i=-5 ; i < 45 ; i+=step )
   { 
      float nm = boundary_domain.x + boundary_domain.z*i ; 
-     float4 lookup = wavelength_lookup( nm, line ); 
+     float4 lookup = wavelength_lookup( nm, line, 0 ); 
      rtPrintf("wavelength_dump i %2d nm %10.3f line %u  lookup  %10.3f %10.3f %10.3f %10.3f \n", 
         i,
         nm,
@@ -114,16 +114,23 @@ static __device__ __inline__ void wavelength_dump(unsigned int line, unsigned in
 
 static __device__ __inline__ void wavelength_check()
 {
-  float wavelength = NM_GREEN ;  
-  for(unsigned int isub=0 ; isub < 100 ; ++isub)
+  unsigned int ibnd=13 ; 
+
+  unsigned int jqwn=0 ; 
+ 
+  for(int i=0 ; i < 39 ; i++ )
   {
-  for(unsigned int jqwn=0 ; jqwn < 1 ; ++jqwn)
-  { 
-     unsigned int line = isub*BOUNDARY_NUM_PROP + jqwn ; 
-     float4 props = wavelength_lookup( wavelength, line ) ;
-     rtPrintf("wavelength_check BOUNDARY_NUM_PROP %10.3f nm isub %2u jqwn %u line %3u  props  %13.4f %13.4f %13.4f %13.4f \n",
-          wavelength,
-          isub,
+     float nm = boundary_domain.x + boundary_domain.z*i ; 
+
+     unsigned int line = ibnd*BOUNDARY_NUM_MATSUR + jqwn ; 
+
+     float4 props = wavelength_lookup( nm, line, 0 ) ;
+
+     rtPrintf("wavelength_check nm:%10.3f MATSUR %2u NF4 %2u ibnd %2u jqwn %u line %3u  props  %13.4f %13.4f %13.4f %13.4f \n",
+          nm, 
+          BOUNDARY_NUM_MATSUR,
+          BOUNDARY_NUM_FLOAT4,
+          ibnd,
           jqwn, 
           line,
           props.x, 
@@ -131,8 +138,6 @@ static __device__ __inline__ void wavelength_check()
           props.z, 
           props.w
      ); 
-  }
-
   }
 }
 

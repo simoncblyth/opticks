@@ -1160,8 +1160,11 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // but this is great place to dump things checking GPU side state
   // as only run once
 
-
-  source_check(); 
+  if(primIdx == 0)
+  { 
+      source_check(); 
+      wavelength_check(); 
+  }
 
   const uint4& solid    = solidBuffer[primIdx]; 
   uint4 identity = identityBuffer[instance_index] ; 
