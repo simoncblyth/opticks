@@ -434,6 +434,27 @@ NPY<float>* GBndLib::createBuffer()
 
 NPY<float>* GBndLib::createBufferForTex2d()
 {
+    /*
+
+    GBndLib float buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
+    pulling together data based on the indices for the materials and surfaces 
+    from the m_bnd guint4 buffer
+
+    Typical dimensions : (128, 4, 2, 39, 4)   
+
+               128 : boundaries, 
+                 4 : mat-or-sur for each boundary  
+                 2 : payload-categries corresponding to NUM_FLOAT4
+                39 : wavelength samples
+                 4 : float4-values
+
+     The only dimension that can easily be extended is the middle payload-categories one, 
+     the low side is constrained by layout needed to OptiX tex2d<float4> as this 
+     buffer is memcpy into the texture buffer
+     high side is constained by not wanting to change texture line indices 
+
+    */
+
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();
 
@@ -490,11 +511,6 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
 NPY<float>* GBndLib::createBufferOld()
 {
-    /*
-    GBndLib float buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
-    pulling together data based on the indices for the materials and surfaces 
-    from the m_bnd guint4 buffer
-    */
 
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();
