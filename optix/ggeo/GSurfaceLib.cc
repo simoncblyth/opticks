@@ -432,6 +432,8 @@ void GSurfaceLib::import()
     unsigned int nj = m_buffer->getShape(1);
     unsigned int nk = m_buffer->getShape(2);
 
+    checkBufferCompatibility(nk, "GSurfaceLib::import");
+
     LOG(debug) << "GSurfaceLib::import "    
               << " ni " << ni 
               << " nj " << nj 

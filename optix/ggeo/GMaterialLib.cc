@@ -247,20 +247,7 @@ void GMaterialLib::import()
     unsigned int nj = m_buffer->getShape(1);
     unsigned int nk = m_buffer->getShape(2);
 
-
-    if(nk != NUM_PROP)
-    {
-        LOG(fatal) << " GMaterialLib::import "    
-                   << " ni " << ni 
-                   << " nj " << nj 
-                   << " nk " << nk
-                   << " NUM_PROP " << NUM_PROP
-                   << " loading library with last dimension inconsistent with GPropLib::NUM_PROP " 
-                   << " resolve by recreating the geocache, run with -G "
-                   ;
-
-    }
-    assert(nk == NUM_PROP);
+    checkBufferCompatibility(nk, "GMaterialLib::import");
 
     LOG(debug) << " GMaterialLib::import "    
               << " ni " << ni 

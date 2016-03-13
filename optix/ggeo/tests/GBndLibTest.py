@@ -18,9 +18,10 @@ this was due to the move from digest based identity to shortname based identity.
 import os
 import numpy as np
 
-load_ = lambda _:np.load(os.path.expandvars("$IDPATH/%s" % _)) 
+path_ = lambda _:os.path.expandvars("$IDPATH/%s" % _)
+load_ = lambda _:np.load(path_(_))
 
-def test_boundary_buffer():
+def test_old_boundary_buffer():
     w = load_("wavelength.npy").reshape(-1,4,39,4)
     b = load_("GBndLib/GBndLib.npy")
     assert w.shape == b.shape , ( w.shape, b.shape )
@@ -32,7 +33,8 @@ def test_boundary_buffer():
         pass
     assert np.all( w == b ) == True 
 
-def test_optical_buffer():
+
+def test_old_optical_buffer():
     # huh indices in optical.npy 1-based ? Yep npy- Index::add sets local indices like this
     w = load_("optical.npy").reshape(-1,4,4)  
     b = load_("GBndLib/GBndLibOptical.npy")
@@ -48,9 +50,21 @@ def test_optical_buffer():
     assert np.all( w == b ) == True 
 
 
+def test_buffers():
+    names = ["GBndLib/GBndLib.npy","GBndLib/GBndLibIndex.npy","GBndLib/GBndLibOptical.npy"]
+    for name in names:
+        path = path_(name)
+        if os.path.exists(path):
+            os.system("ls -l %s " % path)
+    for name in names:
+        path = path_(name)
+        if os.path.exists(path):
+            buf = np.load(path)
+            print "%40s %s " % (name, repr(buf.shape))
+            print buf 
+
 
 if __name__ == '__main__':
-    test_boundary_buffer()
-    test_optical_buffer()
+    test_buffers()
 
 

@@ -23,6 +23,14 @@
 void GBndLib::save()
 {
     // NB bndlib exists for deferred boundary buffer creation,  
+    //
+    // NB only the Index buffer (persisted m_bnd vector of guint4 with omat-osur-isur-imat indices)
+    //    is "-G" saved into the geocache
+    //
+    //    The float and optical buffers are regarded as dynamic 
+    //    (although they are still persisted for debugging/record keeping)
+    // 
+
     saveIndexBuffer();  
 }
 
@@ -46,14 +54,21 @@ void GBndLib::loadIndexBuffer()
 {
     std::string dir = getCacheDir(); 
     std::string name = getBufferName("Index");
-    setIndexBuffer(NPY<unsigned int>::load(dir.c_str(), name.c_str())); 
+    NPY<unsigned int>* indexBuf = NPY<unsigned int>::load(dir.c_str(), name.c_str()); 
+
+    LOG(info) << "GBndLib::loadIndexBuffer"
+              << " shape " << indexBuf->getShapeString()
+              ;
+
+    setIndexBuffer(indexBuf); 
 }
 
 void GBndLib::saveIndexBuffer()
 {
-    NPY<unsigned int>* index_buffer = createIndexBuffer();
-    setIndexBuffer(index_buffer);
-    saveToCache(index_buffer, "Index") ; 
+    NPY<unsigned int>* indexBuf = createIndexBuffer();
+    setIndexBuffer(indexBuf);
+
+    saveToCache(indexBuf, "Index") ; 
 }
 
 void GBndLib::saveOpticalBuffer()
@@ -62,6 +77,8 @@ void GBndLib::saveOpticalBuffer()
     setOpticalBuffer(optical_buffer);
     saveToCache(optical_buffer, "Optical") ; 
 }
+
+
 
 void GBndLib::createDynamicBuffers()
 {
@@ -396,6 +413,12 @@ unsigned int GBndLib::getLineMax()
 
 NPY<float>* GBndLib::createBuffer()
 {
+    /*
+    GBndLib float buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
+    pulling together data based on the indices for the materials and surfaces 
+    from the m_bnd guint4 buffer
+    */
+
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();
 
@@ -448,14 +471,20 @@ NPY<float>* GBndLib::createBuffer()
 
 NPY<unsigned int>* GBndLib::createOpticalBuffer()
 {
+    /*
+    m_bnd vector of guint4 is persisted in the optical buffer
+
+    Optical buffer contains omat-osur-isur-imat info, 
+    for materials just the material one based index, for 
+    surfaces the one based surface index and other optical 
+    surface parameters. 
+
+    */
+ 
     bool one_based = true ; // surface and material indices 1-based, so 0 can stand for unset
     unsigned int ni = getNumBnd();
-    unsigned int nj = NUM_QUAD ;    // im-om-is-os
-    unsigned int nk = NUM_PROP ;      
-
-    assert( nk == 4 || nk == 8); 
-    // using same layout as the wavelenth buffer (for sanity)
-    // even though half unused
+    unsigned int nj = NUM_QUAD ;    // om-os-is-im
+    unsigned int nk = 4 ;           // THIS 4 IS NOT RELATED TO NUM_PROP
 
     NPY<unsigned int>* optical = NPY<unsigned int>::make( ni, nj, nk) ;
     optical->zero(); 
@@ -464,6 +493,7 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
     for(unsigned int i=0 ; i < ni ; i++)      // over bnd
     {
         const guint4& bnd = m_bnd[i] ;
+
         for(unsigned int j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
         {
             unsigned int offset = nj*nk*i+nk*j ;
@@ -471,18 +501,11 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
             {
                 unsigned int midx = bnd[j] ;
                 assert(midx != UNSET);
+
                 odat[offset+0] = one_based ? midx + 1 : midx  ; 
                 odat[offset+1] = 0u ; 
                 odat[offset+2] = 0u ; 
                 odat[offset+3] = 0u ; 
-
-                if(nk > 4)
-                {
-                    odat[offset+4] = 0u ;
-                    odat[offset+5] = 0u ; 
-                    odat[offset+6] = 0u ; 
-                    odat[offset+7] = 0u ; 
-                }
 
             }
             else if(j == ISUR || j == OSUR)  
@@ -492,19 +515,13 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
                 {
       
                     guint4 os = m_slib->getOpticalSurface(sidx) ;
+
                     odat[offset+0] = one_based ? sidx + 1 : sidx  ; 
                  // TODO: enum these
                     odat[offset+1] = os.y ; 
                     odat[offset+2] = os.z ; 
                     odat[offset+3] = os.w ; 
 
-                    if(nk > 4)
-                    {
-                        odat[offset+4] = 0u ;
-                        odat[offset+5] = 0u ; 
-                        odat[offset+6] = 0u ; 
-                        odat[offset+7] = 0u ; 
-                    }
                 }
             }
         } 
@@ -520,6 +537,7 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
 void GBndLib::import()
 {
     LOG(debug) << "GBndLib::import" ; 
+    // does nothing as GBndLib needs dynamic buffers
 }
 void GBndLib::sort()
 {

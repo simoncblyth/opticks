@@ -85,7 +85,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
 {
     unsigned int numBytes = obuf->getNumBytes(0) ;
-    unsigned int numBnd = numBytes/(GPropertyLib::NUM_QUAD*GPropertyLib::NUM_PROP*sizeof(unsigned int)) ;
+    unsigned int numBnd = numBytes/(GPropertyLib::NUM_QUAD*4*sizeof(unsigned int)) ;  // this 4 is not NUM_PROP
     unsigned int nx = numBnd*GPropertyLib::NUM_QUAD ;
 
     LOG(info) << "OBndLib::makeBoundaryOptical obuf " 

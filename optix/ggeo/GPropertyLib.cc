@@ -75,6 +75,25 @@ unsigned int GPropertyLib::NUM_QUAD = 4  ;    // not a good name refers to the f
 unsigned int GPropertyLib::NUM_PROP = BOUNDARY_NUM_PROP  ; 
 
 
+void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
+{
+
+    if(nk != NUM_PROP)
+    {
+        LOG(fatal) << " GPropertyLib::checkBufferCompatibility "
+                   << msg     
+                   << " nk " << nk
+                   << " NUM_PROP " << NUM_PROP
+                   << " loading GPropertyLib with last dimension inconsistent with GPropLib::NUM_PROP " 
+                   << " resolve by recreating the geocache, run with -G "
+                   ;
+
+    }
+    assert(nk == NUM_PROP);
+}
+
+
+
 GDomain<float>* GPropertyLib::getDefaultDomain()
 {
    return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 

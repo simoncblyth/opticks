@@ -1,7 +1,7 @@
 #pragma once
 
 // for all (non-CUDA and CUDA) compilation
-#define BOUNDARY_NUM_PROP 4
+#define BOUNDARY_NUM_PROP 8
 
 
 #ifndef __CUDACC__
@@ -28,6 +28,15 @@ class GAttrSeq ;
 
 /*
 See GMaterialLib.hh for description of lifecycle of all GPropertyLib subclasses
+
+delta:ggeo blyth$ grep public\ GPropertyLib *.hh
+
+GBndLib.hh         :class GBndLib : public GPropertyLib {
+GMaterialLib.hh    :class GMaterialLib : public GPropertyLib {
+GScintillatorLib.hh:class GScintillatorLib : public GPropertyLib {
+GSourceLib.hh      :class GSourceLib : public GPropertyLib {
+GSurfaceLib.hh     :class GSurfaceLib : public GPropertyLib {
+
 */
 
 class GPropertyLib {
@@ -77,6 +86,7 @@ class GPropertyLib {
         void setKeyMap(const char* spec);
         const char* getLocalKey(const char* dkey); // map standard -> local keys 
     public:
+        void checkBufferCompatibility(unsigned int nk, const char* msg="GPropertyLib::checkBufferCompatibility");
     public:
         std::map<unsigned int, std::string> getNamesMap(); 
     public:
