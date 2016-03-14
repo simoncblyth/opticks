@@ -334,6 +334,25 @@ Extra props could then be accessed at::
 
     int m1x_line = m1_line + 4 ;
     
+This approach did not work as the buffer layout must did not match that of the 2d float4 texture, 
+instead used float buffer shape with the 2 in the middle::
+
+    (128, 4, 2, 39, 4)
+
+
+
+How to handle GROUPVEL in comparison against cfg4- ?
+-------------------------------------------------------
+
+* have extended the texture to accomodate GROUPVEL property, but 
+  without redoing the original G4DAE export only have placeholder GROUPVEL property values 
+  in the materials buffer (and hence bnd buffer and texture) 
+
+* could just live with the GROUPVEL kludge of using phase velocity for now 
+
+
+
+
 
 
 

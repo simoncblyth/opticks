@@ -16,11 +16,16 @@ void OBndLib::convert()
     m_lib->createDynamicBuffers();
 
     NPY<float>* buf = m_lib->getBuffer() ;
-    buf->save("/tmp/OBndLib_convert_bndbuf.npy");
-
+    //buf->save("/tmp/OBndLib_convert_bndbuf.npy");
+    //  (128, 4, 2, 39, 4)
     makeBoundaryTexture( buf );
 
-    makeBoundaryOptical(m_lib->getOpticalBuffer());
+
+    NPY<unsigned int>* obuf = m_lib->getOpticalBuffer() ;
+    //obuf->save("/tmp/OBndLib_convert_obuf.npy");
+    // (128, 4, 4)
+
+    makeBoundaryOptical(obuf);
 }
 
 
