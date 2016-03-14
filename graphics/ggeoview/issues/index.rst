@@ -4,6 +4,7 @@ issues
 
 .. toctree::
 
+   geocache_versioning
    pmt_distrib
    offset_bottom/index
    cfg4_pmt_edge_double_reflect

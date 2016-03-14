@@ -313,7 +313,20 @@ void GMaterialLib::importForTex2d()
     unsigned int nk = m_buffer->getShape(2);
     unsigned int nl = m_buffer->getShape(3);
 
-    assert(m_standard_domain->getLength() == nk );
+    unsigned int domLen = m_standard_domain->getLength() ;
+
+    bool expected = domLen == nk && nj == NUM_FLOAT4 && nl == 4 ; 
+
+    if(!expected )
+        LOG(fatal) << "GMaterialLib::importForTex2d"
+                   << " UNEXPECTED BUFFER SHAPE " 
+                   << m_buffer->getShapeString()
+                   << " domLen " << domLen 
+                   << " nk " << nk 
+                   << " (recreate geocache by running with -G)" 
+                   ;
+
+    assert(expected);
 
     float* data = m_buffer->getValues();
 

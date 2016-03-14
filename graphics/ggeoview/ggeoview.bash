@@ -170,6 +170,62 @@ ggv-pmt-test(){
 
 
 
+ggv-dpib-test()
+{
+    type $FUNCNAME
+
+    local msg="=== $FUNCNAME :"
+
+    local cmdline=$*
+    local photons=500000
+    local tag=4
+    local zenith 
+    local note
+
+    case $tag in
+      1) zenith=0,0.97  ; note="ok"      ;;
+      2) zenith=0.97,1        ;;
+      3) zenith=0.9671,0.9709 ;;
+      4) zenith=0.0001,1      ;;
+      5) zenith=0.99999,1     ;;
+    esac
+
+
+    local typ=disc
+    local src=0,0,300
+    local tgt=0,0,0
+    local radius=100
+
+    local mode=""
+    local polarization=""
+ 
+    local torch_config=(
+                 type=$typ
+                 photons=$photons
+                 wavelength=380 
+                 frame=1
+                 source=$src
+                 target=$tgt
+                 radius=$radius
+                 zenithazimuth=$zenith,0,1
+                 material=Vacuum
+
+                 mode=$mode
+                 polarization=$polarization
+               )
+
+   ggv \
+       --dpib \
+       --torch --torchconfig "$(join _ ${torch_config[@]})" \
+       --timemax 10 \
+       --animtimemax 10 \
+       --cat DPIB --tag $tag --save \
+       --eye 0.0,-0.5,0.0 \
+       --geocenter \
+       $* 
+
+}
+
 
 
 ggv-box-test(){
