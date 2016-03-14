@@ -1217,10 +1217,12 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     for(unsigned int s=0 ; s < numSolids ; s++)
     {
         unsigned int nf = (nodeinfo + s)->x ;
+        if(m_verbosity > 3)
         printf(" s %u nf %3d  i0 %d:%d  i1 %d:%d   il %d:%d \n", s, nf, offset, offset+nf, i1+offset, i1+offset+nf, il+offset, il+offset+nf ); 
         nftot += nf ;
         offset += nf ; 
     }
+    if(m_verbosity > 3)
     printf(" ----- %d \n", nftot);
     assert( numFaces == nftot );
 

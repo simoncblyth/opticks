@@ -92,6 +92,7 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GPmt.hh"
+#include "GParts.hh"
 #include "GFlags.hh"
 
 #include "GColors.hh"
@@ -495,8 +496,16 @@ void App::configureGeometry()
         {
             GPmt* pmt = m_ggeo->getPmt(); 
             assert(pmt && "analyticmesh requires PMT resource");
+
+            GParts* analytic = pmt->getParts() ;
+            // TODO: the strings should come from config, as detector specific
+
+            analytic->setVerbose(true); 
+            analytic->setContainingMaterial("MineralOil");       
+            analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface");
+
             mm->setGeoCode(Opticks::GEOCODE_ANALYTIC);      
-            mm->setParts(pmt->getParts());  
+            mm->setParts(analytic);  
         }
         if(i>0) mm->setInstanceSlice(islice);
 
@@ -706,40 +715,53 @@ void App::prepareOptiX()
 {
     // TODO: move inside OGeo or new opop-/OpEngine ? 
 
-    LOG(debug) << "App::prepareOptiX" ;  
-
-    OContext::Mode_t mode = m_opticks->isCompute() ? OContext::COMPUTE : OContext::INTEROP ; 
-
-    optix::Context context = optix::Context::create();
-
-    m_ocontext = new OContext(context, mode); 
-    m_ocontext->setStackSize(m_fcfg->getStack());
-    m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
-    m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
-
-    m_ocolors = new OColors(context, m_cache->getColors() );
-    m_ocolors->convert();
-
-    m_olib = new OBndLib(context,m_ggeo->getBndLib());
-    m_olib->convert(); 
-
-    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
-    m_oscin->convert(); 
-
-    m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
-    m_osrc->convert(); 
-
+    LOG(info) << "App::prepareOptiX START" ;  
 
     std::string builder_   = m_fcfg->getBuilder(); 
     std::string traverser_ = m_fcfg->getTraverser(); 
     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
+
+    OContext::Mode_t mode = m_opticks->isCompute() ? OContext::COMPUTE : OContext::INTEROP ; 
+
+    optix::Context context = optix::Context::create();
+
+    LOG(info) << "App::prepareOptiX (OContext)" ;
+    m_ocontext = new OContext(context, mode); 
+    m_ocontext->setStackSize(m_fcfg->getStack());
+    m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
+    m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
+
+    LOG(info) << "App::prepareOptiX (OColors)" ;
+    m_ocolors = new OColors(context, m_cache->getColors() );
+    m_ocolors->convert();
+
+    // formerly did OBndLib here, too soon
+
+    LOG(info) << "App::prepareOptiX (OScintillatorLib)" ;
+    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
+    m_oscin->convert(); 
+
+    LOG(info) << "App::prepareOptiX (OSourceLib)" ;
+    m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
+    m_osrc->convert(); 
+
+    LOG(info) << "App::prepareOptiX (OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
     m_ogeo->setTop(m_ocontext->getTop());
     m_ogeo->convert(); 
 
+
+    LOG(info) << "App::prepareOptiX (OBndLib)" ;
+    m_olib = new OBndLib(context,m_ggeo->getBndLib());
+    m_olib->convert(); 
+    // this creates the BndLib dynamic buffers, which needs to be after OGeo
+    // as that may add boundaries when using analytic geometry
+
+
     LOG(debug) << m_ogeo->description("App::prepareOptiX ogeo");
+    LOG(info) << "App::prepareOptiX DONE" ;  
 
     TIMER("prepareOptiX"); 
 }

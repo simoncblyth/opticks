@@ -107,7 +107,13 @@ void GItemList::save(const char* idpath)
 void GItemList::dump(const char* msg)
 {
     LOG(info) << msg ; 
-    std::copy( m_list.begin(),m_list.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+    //std::copy( m_list.begin(),m_list.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+
+    for(unsigned int i=0 ; i < m_list.size() ; i++)
+         std::cout << std::setw(4) << i 
+                   << " : "
+                   << m_list[i]
+                   << std::endl ;
 }
 
 

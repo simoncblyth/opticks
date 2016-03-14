@@ -108,8 +108,13 @@ unsigned int GPropertyLib::getIndex(const char* shortname)
 {
     if(!isClosed())
     {
-        LOG(debug) << "GPropertyLib::getIndex type " << m_type 
-                     << " TRIGGERED A CLOSE " << ( shortname ? shortname : "" ) ;
+        LOG(info) << "GPropertyLib::getIndex type " << m_type 
+                     << " TRIGGERED A CLOSE " 
+                     << " shortname [" << ( shortname ? shortname : "" ) << "]"  
+                     ;
+
+        //assert(0);
+
         close();
     }
     assert(m_names);
@@ -142,6 +147,13 @@ void GPropertyLib::close()
 
     GItemList* names = createNames();
     NPY<float>* buf = createBuffer() ;
+
+    LOG(info) << "GPropertyLib::close"
+              << " type " << m_type 
+              << " buf " << buf->getShapeString()
+              ; 
+
+    //names->dump("GPropertyLib::close") ;
 
     setNames(names);
     setBuffer(buf);

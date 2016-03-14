@@ -92,6 +92,9 @@ void GBndLib::createDynamicBuffers()
               << " buf " << buf->getShapeString()
               << " optical_buffer  " << optical_buffer->getShapeString()
                ;
+
+    // declare closed here ? 
+
 }
 
 
@@ -103,10 +106,19 @@ NPY<unsigned int>* GBndLib::createIndexBuffer()
 
 void GBndLib::importIndexBuffer()
 {
-    LOG(info) << "GBndLib::importIndexBuffer" ; 
-
     NPY<unsigned int>* ibuf = getIndexBuffer();
+
+    LOG(info) << "GBndLib::importIndexBuffer BEFORE IMPORT" 
+              << " ibuf " << ibuf->getShapeString()
+              << " m_bnd.size() " << m_bnd.size()
+             ; 
+
     importUint4Buffer(m_bnd, ibuf );
+
+    LOG(info) << "GBndLib::importIndexBuffer AFTER IMPORT" 
+              << " ibuf " << ibuf->getShapeString()
+              << " m_bnd.size() " << m_bnd.size()
+             ; 
 }
 
 
@@ -237,13 +249,13 @@ std::string GBndLib::shortname(const guint4& bnd)
 {
     std::stringstream ss ; 
     ss 
-       << m_mlib->getName(bnd[OMAT]) 
+       << (bnd[OMAT] == UNSET ? "OMAT-unset-error" : m_mlib->getName(bnd[OMAT])) 
        << "/"
        << (bnd[OSUR] == UNSET ? "" : m_slib->getName(bnd[OSUR])) 
        << "/" 
        << (bnd[ISUR] == UNSET ? "" : m_slib->getName(bnd[ISUR]))  
        << "/" 
-       << m_mlib->getName(bnd[IMAT]) 
+       << (bnd[IMAT] == UNSET ? "IMAT-unset-error" : m_mlib->getName(bnd[IMAT]))
        ;
     return ss.str();
 }
@@ -466,12 +478,19 @@ NPY<float>* GBndLib::createBufferForTex2d()
     unsigned int nl = Opticks::DOMAIN_LENGTH ; 
     unsigned int nm = 4 ; 
 
+
     assert(nl = getStandardDomainLength()) ;
     assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
     assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
 
     NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl, nm) ;
     wav->fill( GSurfaceLib::SURFACE_UNSET ); 
+
+    LOG(info) << "GBndLib::createBufferForTex2d"
+               << " mat " << mat->getShapeString()
+               << " sur " << sur->getShapeString()
+               << " wav " << wav->getShapeString()
+               ; 
 
     float* mdat = mat->getValues();
     float* sdat = sur->getValues();
@@ -487,9 +506,19 @@ NPY<float>* GBndLib::createBufferForTex2d()
             if(j == IMAT || j == OMAT)    
             {
                 unsigned int midx = bnd[j] ;
-                assert(midx != UNSET);
-                unsigned int mof = nk*nl*nm*midx ; 
-                memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl*nm );  
+                if(midx != UNSET)
+                { 
+                    unsigned int mof = nk*nl*nm*midx ; 
+                    memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl*nm );  
+                }
+                else
+                {
+                    LOG(warning) << "GBndLib::createBufferForTex2d"
+                                 << " ERROR IMAT/OMAT with UNSET MATERIAL "
+                                 << " i " << i  
+                                 << " j " << j 
+                                 ; 
+                }
             }
             else if(j == ISUR || j == OSUR) 
             {

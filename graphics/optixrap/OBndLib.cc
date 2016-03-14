@@ -93,13 +93,14 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               << " nk " << nk
               << " nl " << nl
               << " nm " << nm
+              << " ni*nj " << ni*nj
              ;
  
     assert(lmin == 0 && lmax == ni*nj - 1);
 
     optix::uint4 bounds = optix::make_uint4(wmin, wmax, lmin, lmax );
 
-    LOG(debug) << "OBndLib::makeBoundaryTexture bounds (not including the num_float4) " 
+    LOG(info) << "OBndLib::makeBoundaryTexture bounds (not including the num_float4) " 
               << " x " << bounds.x 
               << " y " << bounds.y
               << " z " << bounds.z 

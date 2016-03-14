@@ -297,7 +297,7 @@ void GMaterialLib::import()
 
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
-    LOG(info) << " GMaterialLib::import "    
+    LOG(info) << "GMaterialLib::import"    
               << m_buffer->getShapeString()
               ;
 

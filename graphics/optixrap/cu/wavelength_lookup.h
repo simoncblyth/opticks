@@ -67,7 +67,19 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
 
     if( line > boundary_bounds.w )
     {
-        rtPrintf("wavelength_lookup OUT OF BOUNDS line %4d nmi %10.4f \n", line, nmi );
+        rtPrintf("wavelength_lookup OUT OF BOUNDS nm %10.4f nmi %10.4f line %4d offset %4d boundary_bounds (%4u,%4u,%4u,%4u) boundary_domain (%10.4f,%10.4f,%10.4f,%10.4f) \n", 
+            nm,
+            nmi,
+            line,
+            offset,
+            boundary_bounds.x,
+            boundary_bounds.y,
+            boundary_bounds.z,
+            boundary_bounds.w,
+            boundary_domain.x,
+            boundary_domain.y,
+            boundary_domain.z,
+            boundary_domain.w);
     }
 
     return line <= boundary_bounds.w ? 
