@@ -331,6 +331,20 @@ jpmt(){
 }
 
 
+ggv-dyb()
+{
+    local pt2px=2
+    local projector=1024,768,$pt2px 
+    local retina=2880,1704,$pt2px
+    local retina_full=2880,1800,$pt2px
+
+    local size="--size $retina"
+    #local size="--size $projector"
+
+    ggv --analyticmesh 1 --cerenkov --animtimemax 80 $size $*
+}
+
+
 
 ggv-wavelength()
 {
