@@ -1160,7 +1160,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // but this is great place to dump things checking GPU side state
   // as only run once
 
-  if(primIdx == 0)
+  if(primIdx == -1)
   { 
       source_check(); 
       wavelength_check(); 

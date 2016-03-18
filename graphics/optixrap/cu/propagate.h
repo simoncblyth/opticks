@@ -56,6 +56,7 @@ Returns:
 
 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 {
+    float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index
     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
 
@@ -63,7 +64,7 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     {
         if (absorption_distance <= s.distance_to_boundary) 
         {
-            p.time += absorption_distance/(SPEED_OF_LIGHT/s.material1.x);    // .x:refractive_index
+            p.time += absorption_distance/speed ;   
             p.position += absorption_distance*p.direction;
 
             float uniform_sample_reemit = curand_uniform(&rng);
@@ -92,7 +93,7 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     {
         if (scattering_distance <= s.distance_to_boundary) 
         {
-            p.time += scattering_distance/(SPEED_OF_LIGHT/s.material1.x);  // .x:refractive_index
+            p.time += scattering_distance/speed ; 
             p.position += scattering_distance*p.direction;
 
             rayleigh_scatter(p, rng);
@@ -109,7 +110,7 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 
 
     p.position += s.distance_to_boundary*p.direction;
-    p.time += s.distance_to_boundary/(SPEED_OF_LIGHT/s.material1.x);   // .x:refractive_index
+    p.time += s.distance_to_boundary/speed ;   // .x:refractive_index
 
     return PASS;
 
