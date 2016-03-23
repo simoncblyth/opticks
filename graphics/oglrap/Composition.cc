@@ -442,7 +442,6 @@ void Composition::gui()
 }
 
 
-
 unsigned int Composition::getWidth()
 {
    return m_camera->getWidth();

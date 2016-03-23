@@ -203,8 +203,21 @@ void Opticks::configure()
         m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
     }
 
+
+    const std::string& sposition = m_cfg->getPosition();
+    if(!sposition.empty()) 
+    {
+        m_position = guvec4(sposition);
+    }
+    else
+    {
+        m_position = glm::uvec4(200,200,0,0) ;  // top left
+    }
+
+
     LOG(debug) << "Opticks::configure " 
                << " m_size " << gformat(m_size)
+               << " m_position " << gformat(m_position)
                ;
  
     // formerly done in App as if

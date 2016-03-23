@@ -321,39 +321,85 @@ ggv-jpmt-viz(){
 }
 
 jpmt(){ 
+    ggv --jpmt --cerenkov --animtimemax 80 --load $(ggv-size-position hd)  $*
+}
+
+
+
+ggv-vid-x(){ echo 100 ; }
+ggv-vid-y(){ echo 100 ; }
+ggv-vid-w(){ echo 1920 ; }
+ggv-vid-h(){ echo 1080 ; }
+
+ggv-size-position()
+{
+    local arg=${1:-hd}
     local pt2px=2
+
+    local position=100,100
+
     local vga=640,480,$pt2px
     local projector=1024,768,$pt2px 
     local retina=2880,1704,$pt2px
     local retina_full=2880,1800,$pt2px
     local projector_wide=1920,1080,$pt2px 
 
-    #local size="--size $retina_full"
-    #local size="--size $vga"
-    #local size="--size $projector"
-    local size="--size $projector_wide"
-    #local size=""
-
-    local proc="cerenkov"
-    #local proc="scintillation"
-
-    ggv --jpmt --$proc --animtimemax 80 --load $size  $*
+    local size=$retina
+ 
+    if [ "$arg" == "hd" ];  then
+        size=$(ggv-vid-w),$(ggv-vid-h),$pt2px 
+        position=$(ggv-vid-x),$(ggv-vid-y)
+    elif [ "$arg" == "retina_full" ];  then
+        size=$retina_full
+    elif [ "$arg" == "retina" ];  then
+        size=$retina
+    elif [ "$arg" == "projector" ];  then
+        size=$projector
+    elif [ "$arg" == "projector_wide" ];  then
+        size=$projector_wide
+    elif [ "$arg" == "vga" ];  then
+        size=$vga
+    fi
+    echo --size $size --position $position
 }
 
+ggv-vidtest-info(){ cat << EOU
 
+Running::
+
+    ggv-vidtest
+    ggv-vidtest-capture
+
+Succeeds to create 
+
+   Format H.264   1920x1080
+   FPS            60
+   Data rate      25.92 Mbit/s
+   Current Size   960x540 (half)  
+
+
+EOU
+}
+
+ggv-hd-test()
+{
+    ggv --tracer $(ggv-size-position hd)
+}
+
+ggv-hd-capture()
+{
+    local x=$(ggv-vid-x)
+    local y=$(ggv-vid-y)
+    local w=$(( $(ggv-vid-w)/2 ))
+    local h=$(( $(ggv-vid-h)/2 ))
+
+    caperture.swift -x $x -y $y -w $w -h $h 
+}
 
 
 ggv-dyb()
 {
-    local pt2px=2
-    local projector=1024,768,$pt2px 
-    local retina=2880,1704,$pt2px
-    local retina_full=2880,1800,$pt2px
-
-    local size="--size $retina"
-    #local size="--size $projector"
-
-    ggv --analyticmesh 1 --cerenkov --animtimemax 80 $size $*
+    ggv --analyticmesh 1 --cerenkov --animtimemax 80 $(ggv-size-position hd)
 }
 
 

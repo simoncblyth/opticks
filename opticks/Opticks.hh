@@ -124,7 +124,9 @@ class Opticks {
        const glm::vec4&  getWavelengthDomain();
        const glm::ivec4& getSettings();
    public:
+       // screen frame 
        const glm::uvec4& getSize();
+       const glm::uvec4& getPosition();
    public:
        void setSpaceDomain(const glm::vec4& pd);
        void dumpDomains(const char* msg="Opticks::dumpDomains");
@@ -178,6 +180,7 @@ class Opticks {
        unsigned int         m_mode ; 
    private:
        glm::uvec4           m_size ; 
+       glm::uvec4           m_position ; 
 
 };
 
@@ -294,6 +297,11 @@ inline const glm::uvec4& Opticks::getSize()
 {
     return m_size ; 
 }
+inline const glm::uvec4& Opticks::getPosition()
+{
+    return m_position ; 
+}
+
 
 
 

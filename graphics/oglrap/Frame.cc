@@ -189,6 +189,10 @@ void Frame::init()
         ::exit(EXIT_FAILURE);
     }
 
+
+    glm::uvec4& position = m_composition->getFramePosition();
+    glfwSetWindowPos(m_window, position.x, position.y );
+
     glfwMakeContextCurrent(m_window);
 
     initContext();  

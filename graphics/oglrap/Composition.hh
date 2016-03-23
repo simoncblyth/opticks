@@ -255,7 +255,8 @@ class Composition : public NConfigurable {
       unsigned int getPixelFactor();
       void setSize(unsigned int width, unsigned int height, unsigned int pixelfactor=1);
       void setSize(glm::uvec4 size); // x, y will be scaled down by the pixelfactor
-
+      void setFramePosition(const glm::uvec4& position);
+      glm::uvec4& getFramePosition();
   public:
       glm::vec3 unProject(unsigned int x, unsigned int y, float z);
 
@@ -397,6 +398,10 @@ class Composition : public NConfigurable {
       std::string   m_command ; 
       unsigned int  m_command_length ; 
 
+  private:
+      glm::uvec4 m_frame_position ; 
+
+
   public: 
       void Summary(const char* msg);
       void Details(const char* msg);
@@ -440,9 +445,20 @@ inline Composition::Composition()
   m_axis_x_color(1.f,0.f,0.f,1.f),
   m_axis_y_color(0.f,1.f,0.f,1.f),
   m_axis_z_color(0.f,0.f,1.f,1.f),
-  m_command_length(256) 
+  m_command_length(256),
+  m_frame_position(0,0,0,0)
 {
     init();
+}
+
+
+inline void Composition::setFramePosition(const glm::uvec4& position)
+{
+    m_frame_position = position ; 
+}
+inline glm::uvec4& Composition::getFramePosition()
+{
+    return m_frame_position ; 
 }
 
 

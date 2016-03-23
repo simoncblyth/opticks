@@ -122,7 +122,8 @@ class Frame : public Touchable {
        unsigned int  m_width ; 
        unsigned int  m_height ; 
        unsigned int  m_width_prior ; 
-       unsigned int  m_height_prior ; 
+       unsigned int  m_height_prior ;
+
 
        unsigned int  m_coord2pixel ; 
        const char*   m_title ;
@@ -142,7 +143,6 @@ class Frame : public Touchable {
        // updated by getCursorPos
        int           m_pos_x ;
        int           m_pos_y ;
-
 
 };
 
@@ -180,7 +180,6 @@ inline unsigned int Frame::getCoord2pixel()
 { 
    return m_coord2pixel ; 
 } 
-
 
 
 inline void Frame::setInteractor(Interactor* interactor)

@@ -284,9 +284,12 @@ void App::prepareViz()
     if(m_opticks->isCompute()) return ; 
 
     m_size = m_opticks->getSize();
+    glm::uvec4 position = m_opticks->getPosition() ;
 
-    LOG(debug) << "App::prepareViz"
-              << " size " << gformat(m_size);
+    LOG(info) << "App::prepareViz"
+              << " size " << gformat(m_size)
+              << " position " << gformat(position)
+              ;
 
     m_scene->setNumpyEvt(m_evt);
     if(m_resource->isJuno())
@@ -303,6 +306,7 @@ void App::prepareViz()
 
 
     m_composition->setSize( m_size );
+    m_composition->setFramePosition( position );
 
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(hasOpt("fullscreen"));

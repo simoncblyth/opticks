@@ -10,6 +10,7 @@ class OpticksCfg : public Cfg {
 
 
      const std::string& getSize();
+     const std::string& getPosition();
      const std::string& getLogName();
      const std::string& getConfigPath();
      const std::string& getEventTag();
@@ -50,6 +51,7 @@ private:
 private:
      Listener*   m_listener ; 
      std::string m_size ;
+     std::string m_position ;
      std::string m_logname ;
      std::string m_event_cat ;
      std::string m_event_tag ;
@@ -93,6 +95,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        Cfg(name, live),
        m_listener(listener),
        m_size(""),
+       m_position(""),
        m_logname(""),
        m_exportconfig(""),
        m_torchconfig(""),
@@ -409,10 +412,17 @@ inline void OpticksCfg<Listener>::init()
 
    ///////////////
 
-
    m_desc.add_options()
        ("size",  boost::program_options::value<std::string>(&m_size),
             "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
+
+   m_desc.add_options()
+       ("position",  boost::program_options::value<std::string>(&m_position),
+            "Comma delimited screen window upper left coordinate x,y,-,- eg 100,100  "
+            "NB although 0,0 is screen top left the application title bar prevents positioning of the window over pixels 0:20 (approx) in y. " 
+            "Also when the frame size is large positioning is constrained"
+       );
+
 
    m_desc.add_options()
        ("logname",   boost::program_options::value<std::string>(&m_logname),
@@ -454,6 +464,13 @@ template <class Listener>
 inline const std::string& OpticksCfg<Listener>::getSize()
 {
     return m_size ;
+}
+
+
+template <class Listener>
+inline const std::string& OpticksCfg<Listener>::getPosition()
+{
+    return m_position ;
 }
 
 
