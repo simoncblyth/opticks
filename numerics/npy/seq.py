@@ -66,7 +66,17 @@ class SeqTable(object):
             c2 = None
             c2p = None
             cfcount = None
+        pass
 
+
+        if len(tots) == 1:
+            total = tots[0]           
+            tots += ["%10.2f" % 1.0 ]
+        else:
+            total = None 
+        pass
+
+        self.total = total
         self.c2 = c2
         self.c2p = c2p
 
@@ -108,7 +118,14 @@ class SeqTable(object):
             sc2 = ""
         pass
 
-        return " ".join([xs] + vals + ["   "]+ [sc2, nstep, label]) 
+        if self.total is not None:
+             frac = float(self.cu[n,1])/float(self.total)
+             frac = " %10.3f   " % frac
+        else:
+             frac = ""
+        pass
+
+        return " ".join([xs] + [frac] + vals + ["   "]+ [sc2, nstep, label]) 
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 

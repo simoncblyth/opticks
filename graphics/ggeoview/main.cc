@@ -1,4 +1,5 @@
 #include "App.hh"
+#include <cstdio>
 
 int main(int argc, char** argv)
 {
@@ -7,7 +8,11 @@ int main(int argc, char** argv)
     app.initViz();
 
     app.configure(argc, argv);    // NumpyEvt created in App::config, 
-    if(app.isExit()) exit(EXIT_SUCCESS);
+    if(app.isExit()) 
+    {
+        printf("app exit after configure\n");        
+        exit(EXIT_SUCCESS);
+    }
 
     app.prepareViz();      // setup OpenGL shaders and creates OpenGL context (the window)
 

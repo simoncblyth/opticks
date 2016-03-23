@@ -307,9 +307,14 @@ EOU
 }
 
 
-ggv-jpmt-propagate(){
-    ggv --jpmt --cerenkov --compute --timemax 400 --animtimemax 200 --save
+ggv-jpmt-propagate-cerenkov(){
+    ggv --jpmt --cerenkov --tag 1_check --compute --timemax 400 --animtimemax 200 --save
 }
+ggv-jpmt-propagate-scintillation(){
+    ggv --jpmt --scintillation --tag 1_mod1000 --compute --timemax 400 --animtimemax 200 --save
+}
+
+
 ggv-jpmt-viz(){
     ggv --jpmt --cerenkov --animtimemax 200 --load  --size 1024,768,2 $*
       # --optixviz
@@ -322,13 +327,18 @@ jpmt(){
     local retina=2880,1704,$pt2px
     local retina_full=2880,1800,$pt2px
 
-    #local size="--size $retina_full"
+    local size="--size $retina_full"
     #local size="--size $vga"
-    local size="--size $projector"
+    #local size="--size $projector"
     #local size=""
 
-    ggv --jpmt --cerenkov --animtimemax 80 --load $size  $*
+    #local proc="cerenkov"
+    local proc="scintillation"
+
+    ggv --jpmt --$proc --animtimemax 80 --load $size  $*
 }
+
+
 
 
 ggv-dyb()
@@ -1959,8 +1969,8 @@ ggeoview-accelcache-rm()
 ggeoview-rng-max()
 {
    # maximal number of photons that can be handled : move to cudawrap- ?
-    #echo $(( 1000*1000*3 ))
-    echo $(( 1000*1000*1 ))
+    echo $(( 1000*1000*3 ))
+    #echo $(( 1000*1000*1 ))
 }
 
 ggeoview-rng-prep()

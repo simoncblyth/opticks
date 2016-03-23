@@ -70,8 +70,14 @@ void OPropagator::init()
 void OPropagator::initRng()
 {
     unsigned int rng_max = m_opticks->getRngMax();
-
-    if(rng_max == 0 ) return ;
+    if(rng_max == 0 )
+    {
+        LOG(warning) << "OPropagator::initRng"   
+                     << " EARLY EXIT "
+                     << " rng_max " << rng_max
+                     ;
+        return ;
+    }
 
     unsigned int num_photons = m_evt->getNumPhotons();
     const char* rngCacheDir = OConfig::RngDir() ;
@@ -184,7 +190,19 @@ void OPropagator::prelaunch()
     if(!m_evt) return ;
 
     unsigned int numPhotons = m_evt->getNumPhotons();
-    assert( numPhotons <= m_opticks->getRngMax() && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
+
+    bool enoughRng = numPhotons <= m_opticks->getRngMax() ;
+
+    if(!enoughRng)
+    {
+        LOG(info) << "OPropagator::prelaunch"
+                  << " not enoughRng "
+                  << " numPhotons " << numPhotons 
+                  << " rngMax " << m_opticks->getRngMax()
+                  ;  
+    } 
+
+    assert( enoughRng  && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
 
     m_width  = numPhotons ;
     m_height = 1 ;

@@ -620,8 +620,40 @@ void NumpyEvt::save(bool verbose)
               << " udet: " << udet 
               ;    
 
-    // genstep normally not saved as it exists already coming from elsewhere,
-    //  but for TorchStep that insnt the case
+   // genstep normally not saved as it exists already coming from elsewhere,
+   //  but for TorchStep that insnt the case
+   //
+   //
+   //  no-prefix
+   //     (float) genstep data : eg cerenkov or scintillation
+   //
+   //  pr 
+   //     (float)primaryData 
+   //     (not yet used, intended to allow use of exactly the same initial photons
+   //     between simulations under comparison)
+   //   
+   //  ox
+   //     (float)photonData 
+   //
+   //  rx 
+   //     (short)recordData
+   //
+   //  ph
+   //     (unsigned long long)sequenceData
+   //  
+   //  ps
+   //
+   //  rs
+   //
+   //  au
+   //     (short)auxData
+   //
+   //  fdom 
+   //     (float) FDomain
+   //
+   //  idom
+   //     (int) IDomain
+   //
 
     NPY<float>* pr = getPrimaryData();
     if(pr)

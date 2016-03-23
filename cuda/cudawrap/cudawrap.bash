@@ -11,6 +11,59 @@ cudawrap-usage(){ cat << EOU
 CUDAWrap
 ==========
 
+CUDAWRAP usage
+----------------
+
+::
+
+    bogon:env blyth$ find . -name '*.*' -exec grep -H CUDAWRAP {} \; 
+    ./cuda/cudawrap/cudawrap.bash:   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
+    ./cuda/cudawrap/cudawrap.bash:   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
+    ./cuda/cudawrap/cuRANDWrapperTest.cc:    unsigned int work              = getenvvar("CUDAWRAP_RNG_MAX", WORK) ;
+    ./cuda/cudawrap/cuRANDWrapperTest.cc:    char* cachedir = getenv("CUDAWRAP_RNG_DIR") ;
+    ./graphics/ggeoview/ggeoview.bash:   CUDAWRAP_RNG_DIR=$(ggeoview-rng-dir) CUDAWRAP_RNG_MAX=$(ggeoview-rng-max) $(cudawrap-ibin)
+
+    ./graphics/ggeoview/ggeoview.bash:   export CUDAWRAP_RNG_MAX=$(ggeoview-rng-max)
+
+    ./graphics/ggeoview/ggeoview.bash:   env | grep CUDAWRAP
+    grep: ./offline/tg/OfflineDB/OfflineDB.egg-info: Is a directory
+    ./opticks/Opticks.cc:   int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1); 
+    ./opticks/Opticks.cc:                  << " CUDAWRAP_RNG_MAX " << rng_max 
+    ./opticks/Opticks.cc:   assert(rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
+    ./opticks/OpticksCfg.hh:"Value must match envvar CUDAWRAP_RNG_MAX and corresponding pre-cooked seeds, see cudawrap- for details. "
+
+
+::
+
+    1964 ggeoview-rng-max()
+    1965 {
+    1966    # maximal number of photons that can be handled : move to cudawrap- ?
+    1967     #echo $(( 1000*1000*3 ))
+    1968     echo $(( 1000*1000*1 ))
+    1969 }
+
+
+
+
+census
+-------
+
+::
+
+    bogon:ggeo blyth$ cudawrap-ccd
+    bogon:rngcache blyth$ l
+    total 179840
+    -rw-r--r--  1 blyth  staff  57024000 Mar 23  2015 cuRANDWrapper_1296000_0_0.bin
+    -rw-r--r--  1 blyth  staff    450560 Mar 23  2015 cuRANDWrapper_10240_0_0.bin
+    -rw-r--r--  1 blyth  staff  34603008 Mar 23  2015 cuRANDWrapper_786432_0_0.bin
+
+    bogon:rngcache blyth$ echo $(( 1024*768 ))
+    786432
+    bogon:rngcache blyth$ echo $(( 1440*900 ))
+    1296000
+
+
+
 CUDA prior to 7.0 needs libstdc++ how is CUDAWrap working with libc++ ?
 --------------------------------------------------------------------------------
 
@@ -286,6 +339,7 @@ cudawrap-rng(){  ls -l $(cudawrap-rng-dir) ; }
 cudawrap-cd(){   cd $(cudawrap-sdir); }
 cudawrap-scd(){  cd $(cudawrap-sdir); }
 cudawrap-bcd(){  cd $(cudawrap-bdir); }
+cudawrap-ccd(){  cd $(cudawrap-rng-dir); }
 
 
 cudawrap-wipe(){

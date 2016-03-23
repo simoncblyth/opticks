@@ -39,9 +39,10 @@ if __name__ == '__main__':
 
      af = HisType()
 
-     src = "torch"
-     tag = "5"
-     det = "rainbow"  
+     #src, tag, det = "torch", "5", "rainbow"
+     src, tag, det = "cerenkov", "1", "juno"
+
+
      ph = A.load_("ph"+src,tag,det)
      seqhis = ph[:,0,0]
 
