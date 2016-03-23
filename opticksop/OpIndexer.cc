@@ -55,13 +55,27 @@ void OpIndexer::update()
 
     OBuf* pho = m_propagator ? m_propagator->getPhotonBuf() : NULL ;
     setPho(pho);
+
 }
 
 
 
 void OpIndexer::setNumPhotons(unsigned int num_photons)
 {
-    assert(num_photons == m_evt->getSequenceData()->getShape(0));
+    NPY<unsigned long long>* seq = m_evt->getSequenceData() ;
+    unsigned int x_num_photons = seq ? seq->getShape(0) : 0 ; 
+    bool expected = num_photons == x_num_photons ;
+
+    if(!expected)
+    {
+        LOG(fatal) << "OpIndexer::setNumPhotons"
+                   << " discrepancy with sequence data length " 
+                   << " num_photons " << num_photons
+                   << " x_num_photons " << x_num_photons
+                   ; 
+    }
+
+    assert(expected);
     m_num_photons = num_photons ; 
 }
 
@@ -129,6 +143,10 @@ void OpIndexer::indexSequenceCompute()
 {
     update();
 
+    if(!m_seq)
+        LOG(fatal) << "OpIndexer::indexSequenceCompute"
+                   << " m_seq NULL " ; 
+
     assert(m_seq);
 
     LOG(info) << "OpIndexer::indexSequenceCompute" ; 
@@ -158,6 +176,10 @@ void OpIndexer::indexSequenceInterop()
     update();
     if(m_evt->isIndexed()) return ;  
 
+    if(!m_seq)
+        LOG(fatal) << "OpIndexer::indexSequenceInterop"
+                   << " m_seq NULL " ; 
+
     assert(m_seq);
 
     LOG(info) << "OpIndexer::indexSequenceInterop" ; 
@@ -185,6 +207,14 @@ void OpIndexer::indexSequenceLoaded()
     if(m_evt->isIndexed()) return ;  
 
     NPY<unsigned long long>* ph = m_evt->getSequenceData(); 
+
+    if(!ph)
+        LOG(fatal) << "OpIndexer::indexSequenceLoaded"
+                   << " ph NULL " ; 
+
+    assert(ph);
+
+
     thrust::device_vector<unsigned long long> dph(ph->begin(),ph->end());
     CBufSpec cph = make_bufspec<unsigned long long>(dph); 
 
