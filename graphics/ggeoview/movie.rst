@@ -9,7 +9,7 @@ Experience with g4daeview
 
 With g4daeview created movie using `QuickTime Player.app` 
 
-* `File > New Screen Recording` 
+* `File > New Screen Recording` or command+control+N
 
    * dialog pops up : click to record entire screen, drag to record part of screen
    * creates a very large .mov (~1GB for ~2min) 
@@ -55,23 +55,38 @@ Retina full is: 2880x1800 dividing by 2: 1440x900
     Out[3]: 1.7777777777777777
 
 
-Aspect 
---------
+Aspect Ratio
+---------------
 
 ::
 
     1:1   1.0 
     5:4   1.25    
-    4:3   1.333   
+    4:3   1.333     Standard 4:3: 320x240, 640x480, 800x600, 1024x768
     8:5   1.6 
-    16:9  1.777
+    16:9  1.777     Widescreen 16:9: 640x360, 800x450, 960x540, 1024x576, 1280x720, and 1920x1080
+
 
 
 What size video ?
 ---------------------------------------------
 
+* GTC provides projector : 1920x1080p @ 60hz
+
 * what size ggv window to record ?
-* when dragging a region, resulting video seems to be twice the pixel size selected 
+* when dragging a region, resulting video seems to be twice the pixel size selected, 
+  but seems no way to get a precise pixel dimension
+
+* https://forums.creativecow.net/thread/335/37515
+
+* https://www.techsmith.com/tutorial-camtasia-mac-aspect-ratio-current.html
+
+
+Automated Screen Capture
+-------------------------
+
+* http://apple.stackexchange.com/questions/176555/how-do-i-make-multiple-screen-recordings-with-the-exact-same-portion-of-the-scre
+
 
 
 

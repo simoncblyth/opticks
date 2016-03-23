@@ -326,14 +326,16 @@ jpmt(){
     local projector=1024,768,$pt2px 
     local retina=2880,1704,$pt2px
     local retina_full=2880,1800,$pt2px
+    local projector_wide=1920,1080,$pt2px 
 
-    local size="--size $retina_full"
+    #local size="--size $retina_full"
     #local size="--size $vga"
     #local size="--size $projector"
+    local size="--size $projector_wide"
     #local size=""
 
-    #local proc="cerenkov"
-    local proc="scintillation"
+    local proc="cerenkov"
+    #local proc="scintillation"
 
     ggv --jpmt --$proc --animtimemax 80 --load $size  $*
 }
