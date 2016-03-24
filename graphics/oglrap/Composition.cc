@@ -19,6 +19,7 @@
 #include "Trackball.hh"
 #include "View.hh"
 #include "InterpolatedView.hh"
+#include "OrbitalView.hh"
 #include "Clipper.hh"
 #include "Scene.hh"
 #include "Bookmarks.hh"
@@ -283,9 +284,9 @@ void Composition::nextRotatorMode(unsigned int modifiers)
 
 void Composition::nextViewMode(unsigned int modifiers)  
 {
-    if(!m_alt)
+    if(m_view->isStandard())
     {
-       LOG(info) << "Composition::nextViewMode(KEY_T) does nothing in standard view, switch to altview with U:changeView " ; 
+       LOG(info) << "Composition::nextViewMode(KEY_T) does nothing in standard view, switch to alt views with U:nextViewType " ; 
        return ;
     }
     m_view->nextMode(modifiers);    
@@ -293,17 +294,25 @@ void Composition::nextViewMode(unsigned int modifiers)
 
 
 
-void Composition::changeView(unsigned int /*modifiers*/)  
-{
-    assert(m_bookmarks);
 
-    if(m_alt)  
+OrbitalView* Composition::makeOrbitalView()
+{
+    View* basis = m_view->isStandard() ? m_view : m_standard_view ; 
+    return new OrbitalView(basis, 100, true );
+}
+
+
+void Composition::applyViewType()
+{
+    if(m_viewtype == View::STANDARD)
     {
-        LOG(warning) << "Composition::changeView(KEY_U) switching back to standard view " ; 
+        LOG(warning) << "Composition::applyViewType(KEY_U) switching to standard view " ; 
+        resetView();
     }
-    else
+    else if(m_viewtype == View::INTERPOLATED)
     {
-        LOG(warning) << "Composition::changeView(KEY_U) switching to altview " ; 
+        LOG(warning) << "Composition::applyViewType(KEY_U) switching to interpolated view " ; 
+        assert(m_bookmarks);
 
         m_bookmarks->refreshInterpolatedView();
 
@@ -319,23 +328,37 @@ void Composition::changeView(unsigned int /*modifiers*/)
 
         iv->Summary("Composition::changeView(KEY_U)");
 
-        setAltView(iv);
-    }
+        setView(iv); 
 
-    swapView();
+    }
+    else if(m_viewtype == View::ORBITAL)
+    {
+        LOG(warning) << "Composition::applyViewType(KEY_U) switching to orbital view " ; 
+
+        OrbitalView* ov = makeOrbitalView();
+
+        setView(ov);
+
+    }
 }
 
-
-void Composition::swapView()
+void Composition::setView(View* view)
 {
-    assert(m_altview);
+    if(m_view->isStandard())
+    {
+        m_standard_view = m_view ;   // keep track of last standard view
+    }
+    m_view = view ; 
+}
 
-    View* altview = m_altview ;     
-
-    m_altview = m_view ; 
-    m_view = altview ;
- 
-    m_alt = !m_alt ;  // starts false, then gets flipped as go in/out of the alt view
+void Composition::resetView()
+{
+    if(!m_standard_view)
+    {
+        LOG(warning) << "Composition::resetView NULL standard_view" ;
+        return ; 
+    }
+    m_view = m_standard_view ; 
 }
 
 

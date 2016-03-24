@@ -12,6 +12,8 @@
 
 class View : public NConfigurable {
 public:
+   typedef enum { STANDARD, INTERPOLATED, ORBITAL, NUM_VIEW_TYPE } View_t ; 
+
    static const char* PREFIX ; 
    virtual const char* getPrefix();
 
@@ -19,7 +21,10 @@ public:
    static const char* LOOK ; 
    static const char* UP ; 
 
-   View();
+   View(View_t type=STANDARD);
+   bool isStandard();
+   bool isInterpolated();
+   bool isOrbital();
 
    void configureS(const char* name, std::vector<std::string> values);
 
@@ -76,6 +81,7 @@ public:
    void setChanged(bool changed); 
 
 private:
+   View_t    m_type ; 
    glm::vec3 m_eye ; 
    glm::vec3 m_look ; 
    glm::vec3 m_up ; 
@@ -85,7 +91,7 @@ private:
 };
 
 
-inline View::View() 
+inline View::View(View_t type)  : m_type(type) 
 {
     home();
 
@@ -93,6 +99,25 @@ inline View::View()
     m_axes.push_back(glm::vec4(0,0,1,0));
     m_axes.push_back(glm::vec4(1,0,0,0));
 }
+
+
+inline bool View::isStandard()
+{
+    return m_type == STANDARD ; 
+}
+inline bool View::isInterpolated()
+{
+    return m_type == INTERPOLATED ; 
+}
+inline bool View::isOrbital()
+{
+    return m_type == ORBITAL ; 
+}
+
+
+
+
+
 
 inline bool View::hasChanged()
 {

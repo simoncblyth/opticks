@@ -5,6 +5,14 @@
 class Animator ; 
 
 // created by Bookmarks::makeInterpolatedView
+//
+// operates from Composition via base class method View::getTransforms 
+// which invokes the overriden getEye, getLook, getUp
+// updating w2c c2w gaze
+//
+// void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
+//
+//
 
 class InterpolatedView :  public View {
     public:
@@ -21,6 +29,7 @@ class InterpolatedView :  public View {
         glm::vec4 getLook(const glm::mat4& m2w);
         glm::vec4 getUp(const glm::mat4& m2w);
         glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
+    public:
         void tick();
         bool isActive();
         bool hasChanged();
@@ -51,7 +60,7 @@ class InterpolatedView :  public View {
 
 inline InterpolatedView::InterpolatedView(unsigned int period, bool verbose) 
      : 
-     View(),
+     View(INTERPOLATED),
      m_i(0),
      m_j(1),
      m_count(0),

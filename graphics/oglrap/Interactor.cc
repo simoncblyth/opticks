@@ -155,7 +155,7 @@ const char* Interactor::keys =
 "\n R: rotate mode toggle  drag around rotate around viewpoint " 
 "\n S: screen scale mode toggle  drag up/down to change screen scale " 
 "\n T: Composition::nextViewMode " 
-"\n U: Composition::changeView, use to cycle thru view/altview : altview is InterpolatedView  " 
+"\n U: Composition::nextViewType, use to cycle thru view/altview : altview is InterpolatedView  " 
 "\n V: View::nextMode      rotate view, with shift modifier rotates in opposite direction "    
 "\n W: decrease(increase with shift modifier) OptiX rendering resolution by multiples of 2, up to 16x"
 "\n X: pan mode toggle "
@@ -257,7 +257,7 @@ void Interactor::key_pressed(unsigned int key)
             m_composition->nextViewMode(modifiers) ; 
             break;
         case GLFW_KEY_U:
-            m_composition->changeView(modifiers) ; 
+            m_composition->nextViewType(modifiers) ; 
             break;
         case GLFW_KEY_V:
             m_composition->nextRotatorMode(modifiers) ; 

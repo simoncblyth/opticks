@@ -7,6 +7,9 @@
 // ggeo-
 #include "GVector.hh"
 
+
+
+
 template<typename T>
 class NPY ; 
 
@@ -14,12 +17,14 @@ class MultiViewNPY ;
 
 class NState ; 
 class Camera ;
-class View ;
+class OrbitalView ; 
 class Light ;
 class Trackball ; 
 class Scene ; 
 class Clipper ; 
 class Bookmarks ; 
+
+#include "View.hh"
 
 class Cfg ;
 class Animator ; 
@@ -63,7 +68,6 @@ class Composition : public NConfigurable {
       static const glm::vec3 Y ; 
       static const glm::vec3 Z ; 
   public:
-
       Composition();
       void setupConfigurableState(NState* state);
       virtual ~Composition();
@@ -80,7 +84,15 @@ class Composition : public NConfigurable {
       void initAnimator();
       void initRotator();
    public:
+      OrbitalView* makeOrbitalView();
+   public:
        void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
+   public:
+      void nextViewType(unsigned int modifiers);
+      void setViewType(View::View_t type);
+      View::View_t getViewType();
+   private:
+       void applyViewType();
    public:
        typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLOR_STYLE } ColorStyle_t ;
        static const char* getColorStyleName(Composition::ColorStyle_t style);
@@ -233,7 +245,7 @@ class Composition : public NConfigurable {
       
       void setCamera(Camera* camera);
       void setView(View* view);
-      void setAltView(View* view);
+      void resetView();
       void setBookmarks(Bookmarks* bookmarks);
 
   public: 
@@ -350,8 +362,8 @@ class Composition : public NConfigurable {
       Bookmarks* m_bookmarks ; 
 
       View*      m_view ;
-      View*      m_altview ;
-      bool       m_alt ; 
+      View*      m_standard_view ;
+      View::View_t  m_viewtype ; 
 
       Light*     m_light ;
       Clipper*   m_clipper ;
@@ -434,8 +446,8 @@ inline Composition::Composition()
   m_trackball(NULL),
   m_bookmarks(NULL),
   m_view(NULL),
-  m_altview(NULL),
-  m_alt(false),
+  m_standard_view(NULL),
+  m_viewtype(View::STANDARD),
   m_light(NULL),
   m_clipper(NULL),
   m_count(0),
@@ -493,14 +505,8 @@ inline void Composition::setCamera(Camera* camera)
 {
     m_camera = camera ; 
 }
-inline void Composition::setView(View* view)
-{
-    m_view = view ; 
-}
-inline void Composition::setAltView(View* altview)
-{
-    m_altview = altview ; 
-}
+
+
 inline void Composition::setBookmarks(Bookmarks* bookmarks)
 {
     m_bookmarks = bookmarks ; 
@@ -666,6 +672,26 @@ inline const char* Composition::getGeometryStyleName()
     return Composition::getGeometryStyleName(getGeometryStyle());
 }
 
+
+
+
+
+inline void Composition::nextViewType(unsigned int modifiers)
+{
+    int next = (getViewType() + 1) % View::NUM_VIEW_TYPE ; 
+    setViewType( (View::View_t)next ) ; 
+}
+
+inline void Composition::setViewType(View::View_t type)
+{
+    m_viewtype = type ;
+    applyViewType();
+}
+
+inline View::View_t Composition::getViewType()
+{
+    return m_viewtype ;
+}
 
 
 
