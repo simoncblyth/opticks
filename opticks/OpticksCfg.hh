@@ -20,6 +20,7 @@ class OpticksCfg : public Cfg {
      const std::string& getExportConfig();
      const std::string& getTorchConfig();
      const std::string& getTestConfig();
+     const std::string& getStateTag();
 
      const std::string& getZExplodeConfig();
      const std::string& getMeshVersion();
@@ -61,6 +62,7 @@ private:
      std::string m_exportconfig ;
      std::string m_torchconfig ;
      std::string m_testconfig ;
+     std::string m_state_tag ;
 
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;
@@ -100,6 +102,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_exportconfig(""),
        m_torchconfig(""),
        m_testconfig(""),
+       m_state_tag(""),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
        m_islice(""),
@@ -318,6 +321,10 @@ inline void OpticksCfg<Listener>::init()
        ("cat",   boost::program_options::value<std::string>(&m_event_cat), "event category for organization of event files, typically used instead of detector for test geometries such as prism and lens" );
 
 
+   m_desc.add_options()
+       ("state",   boost::program_options::value<std::string>(&m_state_tag), "Bookmarks state tag, allowing use of multiple collections of bookmarks." );
+
+
 
    m_desc.add_options()
        ("meshversion",   boost::program_options::value<std::string>(&m_meshversion), "debug only option for testing alternate mesh versions" );
@@ -487,11 +494,19 @@ inline const std::string& OpticksCfg<Listener>::getEventTag()
     if(m_event_tag.empty()) m_event_tag = "1" ;
     return m_event_tag ;
 }
+
 template <class Listener>
 inline const std::string& OpticksCfg<Listener>::getEventCat()
 {
     if(m_event_cat.empty()) m_event_cat = "" ;
     return m_event_cat ;
+}
+
+
+template <class Listener>
+inline const std::string& OpticksCfg<Listener>::getStateTag()
+{
+    return m_state_tag ;
 }
 
 

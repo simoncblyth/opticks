@@ -18,8 +18,10 @@
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "View.hh"
+#include "InterpolatedView.hh"
 #include "Clipper.hh"
 #include "Scene.hh"
+#include "Bookmarks.hh"
 
 #include "Light.hh"
 #include "Animator.hh"
@@ -279,11 +281,11 @@ void Composition::nextRotatorMode(unsigned int modifiers)
 }
 
 
-void Composition::nextViewMode(unsigned int modifiers)
+void Composition::nextViewMode(unsigned int modifiers)  
 {
     if(!m_alt)
     {
-       LOG(info) << "Composition::nextViewMode does nothing in standard view, switch to altview with U:changeView " ; 
+       LOG(info) << "Composition::nextViewMode(KEY_T) does nothing in standard view, switch to altview with U:changeView " ; 
        return ;
     }
     m_view->nextMode(modifiers);    
@@ -291,19 +293,42 @@ void Composition::nextViewMode(unsigned int modifiers)
 
 
 
-void Composition::changeView(unsigned int /*modifiers*/)
+void Composition::changeView(unsigned int /*modifiers*/)  
 {
-    View* alt = m_altview ; 
-    if(!alt) 
+    assert(m_bookmarks);
+
+    if(m_alt)  
     {
-        LOG(warning) << "Composition::changeView there is no altview SKIPPING  " ; 
-        return ; 
-    } 
-    m_altview = m_view ; 
-    m_view = alt ; 
-    m_alt = !m_alt ; 
+        LOG(warning) << "Composition::changeView(KEY_U) switching back to standard view " ; 
+    }
+    else
+    {
+        LOG(warning) << "Composition::changeView(KEY_U) switching to altview " ; 
+
+        m_bookmarks->refreshInterpolatedView();
+
+        InterpolatedView* iv = m_bookmarks->getInterpolatedView();     
+
+        iv->Summary("Composition::changeView(KEY_U)");
+
+        setAltView(iv);
+    }
+
+    swapView();
 }
 
+
+void Composition::swapView()
+{
+    assert(m_altview);
+
+    View* altview = m_altview ;     
+
+    m_altview = m_view ; 
+    m_view = altview ;
+ 
+    m_alt = !m_alt ;  // starts false, then gets flipped as go in/out of the alt view
+}
 
 
 unsigned int Composition::tick()
@@ -340,7 +365,7 @@ void Composition::gui()
 
     ImGui::SliderFloat( "lookPhi", &m_lookphi,  -180.f, 180.0f, "%0.3f");
     ImGui::SameLine();
-    if(ImGui::Button("zeroPhi")) m_lookphi = 0.f ;
+    if(ImGui::Button("zeroPhi")) setLookAngle(0.f) ;
 
 
     if(ImGui::Button("home")) home();
@@ -683,6 +708,13 @@ void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToW
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
     m_world_to_model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);   // see tests/CompositionTest.cc
 
+
+    LOG(info) << "Composition::setCenterExtent"
+              << " ce " << gformat(m_center_extent) 
+              << " model_to_world " << gformat(m_model_to_world)
+              << " world_to_model " << gformat(m_world_to_model)
+              ;
+
     m_extent = ce.w ; 
 
 
@@ -720,6 +752,7 @@ void Composition::setLookW(glm::vec4 lookw)
     glm::vec4 look = m_world_to_model * lookw ; 
 
     LOG(debug) << "Composition::setLookW" 
+               << " world_to_model " << gformat(m_world_to_model) 
                << " lookw: " << gformat(lookw)
                << " look: " << gformat(look)
                ;
@@ -733,6 +766,7 @@ void Composition::setEyeW(glm::vec4 eyew)
     glm::vec4 eye = m_world_to_model * eyew ; 
 
     LOG(debug) << "Composition::setEyeW" 
+               << " world_to_model " << gformat(m_world_to_model) 
                << " eyew: " << gformat(eyew)
                << " eye: " << gformat(eye)
                ;
@@ -744,14 +778,20 @@ void Composition::setEyeW(glm::vec4 eyew)
 void Composition::setUpW(glm::vec4 upw)
 {
     upw.w = 0.0f ; 
-    glm::vec4 up = m_world_to_model * upw ; 
+    upw *= m_extent ; // scale length of up vector
 
-    LOG(info) << "Composition::setUpW" 
+    glm::vec4 up = m_world_to_model * upw ; 
+    glm::vec4 upn = glm::normalize(up) ;
+
+    LOG(info)  << "Composition::setUpW" 
+               << " world_to_model " << gformat(m_world_to_model) 
                << " upw: " << gformat(upw)
                << " up: " << gformat(up)
+               << " upn: " << gformat(upn)
                ;
 
-    m_view->setUp(up);
+
+    m_view->setUp(upn);
 }
 
 
@@ -1037,11 +1077,15 @@ void Composition::commitView()
     //     
     //
 
-    LOG(info) << "Composition::commitView " ; 
-
     glm::vec4 viewpoint = getViewpoint();
     glm::vec4 lookpoint = getLookpoint();
     glm::vec4 updir = getUpdir();
+
+    LOG(info) << "Composition::commitView " 
+              << " viewpoint " << gformat(viewpoint)
+              << " lookpoint " << gformat(lookpoint)
+              << " updir " << gformat(updir)
+              ; 
 
     setEyeW(viewpoint);
     setLookW(lookpoint);
@@ -1061,6 +1105,8 @@ void Composition::home()
     //m_view->home();
     m_trackball->home();
     m_rotator->home();
+
+    setLookAngle(0.f);
 }
 
 

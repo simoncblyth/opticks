@@ -215,17 +215,22 @@ void Opticks::configure()
     }
 
 
-    LOG(debug) << "Opticks::configure " 
+
+    const char* type = "State" ; 
+    const std::string& stag = m_cfg->getStateTag();
+    const char* subtype = stag.empty() ? NULL : stag.c_str() ; 
+
+    std::string prefdir = getPreferenceDir(type, subtype);  
+
+    LOG(info) << "Opticks::configure " 
                << " m_size " << gformat(m_size)
                << " m_position " << gformat(m_position)
+               << " prefdir " << prefdir
                ;
  
-    // formerly done in App as if
-    // there was a FrameCfg listener, but there isnt one
-    // TODO: revisit Cfg
 
-
-    std::string prefdir = getPreferenceDir("State");  
+    // Below "state" is a placeholder name of the current state that never gets persisted, 
+    // names like 001 002 are used for persisted states : ie the .ini files within the prefdir
 
     m_state = new NState(prefdir.c_str(), "state")  ;
 
@@ -332,10 +337,10 @@ const char* Opticks::getUDet()
     return strlen(cat_) > 0 ? cat_ : det ;  
 }
 
-std::string Opticks::getPreferenceDir(const char* type)
+std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
 {
     const char* udet = getUDet();
-    return m_resource->getPreferenceDir(type, udet);
+    return m_resource->getPreferenceDir(type, udet, subtype);
 }
 
 

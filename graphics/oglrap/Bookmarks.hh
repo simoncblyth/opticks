@@ -37,6 +37,7 @@ public:
    void setVerbose(bool verbose=true);
    void create(unsigned int num);
    void gui();
+   void refreshInterpolatedView();
    InterpolatedView* getInterpolatedView();
    std::string description(const char* msg="Bk");
    void Summary(const char* msg="Bookmarks::Summary");

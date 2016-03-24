@@ -19,6 +19,7 @@ class Light ;
 class Trackball ; 
 class Scene ; 
 class Clipper ; 
+class Bookmarks ; 
 
 class Cfg ;
 class Animator ; 
@@ -75,6 +76,7 @@ class Composition : public NConfigurable {
       unsigned int tick();
       unsigned int getCount();
    private:
+      void swapView();
       void initAnimator();
       void initRotator();
    public:
@@ -232,6 +234,7 @@ class Composition : public NConfigurable {
       void setCamera(Camera* camera);
       void setView(View* view);
       void setAltView(View* view);
+      void setBookmarks(Bookmarks* bookmarks);
 
   public: 
       // getters of inputs 
@@ -344,6 +347,7 @@ class Composition : public NConfigurable {
       Animator*   m_rotator ; 
       Camera*    m_camera ;
       Trackball* m_trackball ;
+      Bookmarks* m_bookmarks ; 
 
       View*      m_view ;
       View*      m_altview ;
@@ -428,6 +432,7 @@ inline Composition::Composition()
   m_rotator(NULL),
   m_camera(NULL),
   m_trackball(NULL),
+  m_bookmarks(NULL),
   m_view(NULL),
   m_altview(NULL),
   m_alt(false),
@@ -496,6 +501,13 @@ inline void Composition::setAltView(View* altview)
 {
     m_altview = altview ; 
 }
+inline void Composition::setBookmarks(Bookmarks* bookmarks)
+{
+    m_bookmarks = bookmarks ; 
+}
+
+
+
 
 inline Scene* Composition::getScene()
 {

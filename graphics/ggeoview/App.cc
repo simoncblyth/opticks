@@ -333,12 +333,14 @@ void App::prepareViz()
     m_scene->setComposition(m_composition);     // defer until renderers are setup 
 
 
-
-    InterpolatedView* iv = m_bookmarks->getInterpolatedView() ; // creates the interpolation based on initial bookmarks
-
-    m_composition->setAltView(iv);
-
+    //InterpolatedView* iv = m_bookmarks->getInterpolatedView() ; // creates the interpolation based on initial bookmarks
+    //m_composition->setAltView(iv);
     //iv->Summary("App::prepareViz setting composition.altview to InterpolatedView");
+
+    // defer creation of the altview to Interactor KEY_U so newly created bookmarks are included
+    m_composition->setBookmarks(m_bookmarks);
+
+
 
 
     TIMER("prepareScene");

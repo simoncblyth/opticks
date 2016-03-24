@@ -166,7 +166,7 @@ void Bookmarks::create(unsigned int num)
     setCurrent(num);
     LOG(info) << "Bookmarks::create : persisting state to slot " << m_current ; 
     collect();
-    readdir();   // updates existance 
+    readdir();   // clears and reloads all bookmarks, updating existance/states from the persisted files 
 }
 
 void Bookmarks::updateCurrent()
@@ -262,6 +262,12 @@ InterpolatedView* Bookmarks::makeInterpolatedView()
          iv->addView(v);
     }
     return iv ; 
+}
+
+void Bookmarks::refreshInterpolatedView()
+{
+    delete m_view ; 
+    m_view = NULL ; 
 }
 
 InterpolatedView* Bookmarks::getInterpolatedView()

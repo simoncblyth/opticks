@@ -168,13 +168,21 @@ std::string OpticksResource::getPropertyLibDir(const char* name)
     return pld.string() ;
 }
 
-std::string OpticksResource::getPreferenceDir(const char* type, const char* udet )
+std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
 {
+    /*
     std::stringstream ss ; 
     ss << PREFERENCE_BASE ; 
     if(udet) ss << "/" << udet ; 
     ss << "/" << type ; 
-    return ss.str();
+    */
+
+    fs::path prefdir(PREFERENCE_BASE) ;
+    if(udet) prefdir /= udet ;
+    prefdir /= type ; 
+    if(subtype) prefdir /= subtype ; 
+
+    return prefdir.string() ;
 }
 
 bool OpticksResource::loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name)

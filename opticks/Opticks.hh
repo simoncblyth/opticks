@@ -114,7 +114,7 @@ class Opticks {
        NState*              getState();
        std::string          getModeString();
        const char*          getUDet();
-       std::string          getPreferenceDir(const char* type);
+       std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        TorchStepNPY*        makeSimpleTorchStep();
        NumpyEvt*            makeEvt(); 

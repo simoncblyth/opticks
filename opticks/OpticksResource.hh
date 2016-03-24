@@ -30,7 +30,7 @@ class OpticksResource {
        std::string getPmtPath(unsigned int index, bool relative=false);
        std::string getPropertyLibDir(const char* name);
     public:
-       std::string getPreferenceDir(const char* type, const char* udet=NULL);
+       std::string getPreferenceDir(const char* type, const char* udet=NULL, const char* subtype=NULL);
        bool loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name);
        bool loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name);
     public:
