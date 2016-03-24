@@ -28,7 +28,8 @@ Bookmarks::Bookmarks(const char* dir)
        m_current(UNSET),
        m_current_gui(UNSET),
        m_view(NULL),
-       m_verbose(false)
+       m_verbose(false),
+       m_ivperiod(100)
 {
     std::string _dir = os_path_expandvars(dir) ;
     m_dir = strdup(_dir.c_str());
@@ -222,6 +223,7 @@ void Bookmarks::gui()
     ImGui::SameLine();
     if(ImGui::Button("apply")) apply();
 
+    ImGui::SliderInt( "IVperiod", &m_ivperiod,  50, 400 ); 
 
     for(MUSI it=m_bookmarks.begin() ; it!=m_bookmarks.end() ; it++)
     {
@@ -248,8 +250,16 @@ void Bookmarks::gui()
 
 InterpolatedView* Bookmarks::makeInterpolatedView()
 {
-    LOG(info) << "Bookmarks::makeInterpolatedView" ; 
-    InterpolatedView* iv = new InterpolatedView ; 
+    if(m_bookmarks.size() < 2)
+    {
+        LOG(warning) << "Bookmarks::makeInterpolatedView" 
+                     << " requires at least 2 bookmarks "
+                     ;
+
+        return NULL ; 
+    }
+
+    InterpolatedView* iv = new InterpolatedView(m_ivperiod) ; 
     for(MUSI it=m_bookmarks.begin() ; it!=m_bookmarks.end() ; it++)
     {
          unsigned int num = it->first ; 

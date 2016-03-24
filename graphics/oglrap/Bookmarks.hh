@@ -35,6 +35,7 @@ public:
    Bookmarks(const char* dir);
    void setState(NState* state);
    void setVerbose(bool verbose=true);
+   void setInterpolatedViewPeriod(unsigned int ivperiod); 
    void create(unsigned int num);
    void gui();
    void refreshInterpolatedView();
@@ -71,6 +72,7 @@ private:
    int                                  m_current_gui ; 
    std::map<unsigned int, NState*>      m_bookmarks ;  
    bool                                 m_verbose ; 
+   int                                  m_ivperiod ; 
 
 };
 
@@ -85,6 +87,11 @@ inline void Bookmarks::setVerbose(bool verbose)
 {
    m_verbose = verbose ; 
 }
+inline void Bookmarks::setInterpolatedViewPeriod(unsigned int ivperiod)
+{
+   m_ivperiod = ivperiod ; 
+}
+
 
 inline bool Bookmarks::exists(unsigned int num)
 {

@@ -401,7 +401,7 @@ ggv-hd-capture()
 
 ggv-dyb()
 {
-    ggv --analyticmesh 1 --cerenkov --animtimemax 80 $(ggv-size-position hd)
+    ggv --analyticmesh 1 --cerenkov --animtimemax 80 $(ggv-size-position hd) --load --optixviz --state fly0 --ivperiod 250 $*
 }
 
 

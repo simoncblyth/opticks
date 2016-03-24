@@ -165,10 +165,16 @@ const char* Interactor::keys =
 "\n 0-9 + shift: create or update bookmark  " 
 "\n SPACE: update the current bookmark, commiting trackballing into the view and persisting "
 "\n "
-"\n Holding shift whilst changing any of the Animator modes reverses Animation time direction "
+"\n Animator modes are changed by pressing keys A,V,T"
+"\n "
 "\n A: event propagation "
 "\n V: geometry rotation "
 "\n T: interpolated navigation "
+"\n "
+"\n Holding SHIFT with A,V,T reverses animation time direction "
+"\n Holding OPTION with A,V,T changes to previous animation mode, instead of next  "
+"\n Holding CONTROL with A,V,T sets animation mode to OFF  "
+"\n "
 "\n ";
 
 void Interactor::key_pressed(unsigned int key)
@@ -390,13 +396,7 @@ void Interactor::number_key_pressed(unsigned int number)
 
     unsigned int modifiers = getModifiers() ;
 
-/*
-    if(number == m_bookmarks->getCurrent() && isShift(modifiers))
-    {
-        LOG(info) << "Interactor::number_key_pressed repeating for existing bookmark with SHIFT modifier " << number ;   
-        m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
-    }
-*/
+    m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
 
     m_bookmarks->number_key_pressed(number, modifiers);
 }

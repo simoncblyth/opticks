@@ -308,6 +308,14 @@ void Composition::changeView(unsigned int /*modifiers*/)
         m_bookmarks->refreshInterpolatedView();
 
         InterpolatedView* iv = m_bookmarks->getInterpolatedView();     
+        if(!iv)
+        {
+            LOG(warning) << "Composition::changeView"
+                         << " FAILED "
+                         << " interpolated view requires at least 2 bookmarks " 
+                         ;
+            return  ;
+        }
 
         iv->Summary("Composition::changeView(KEY_U)");
 
@@ -1093,7 +1101,7 @@ void Composition::commitView()
 
     m_trackball->home();
     m_rotator->home();
-    assert(m_lookphi == 0.f );
+    //assert(m_lookphi == 0.f );
 
     update();
 }

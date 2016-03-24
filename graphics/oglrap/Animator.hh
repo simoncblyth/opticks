@@ -153,9 +153,18 @@ inline void Animator::nextMode(unsigned int modifiers)
 {
     if(modifiers & Interactor::e_shift) m_increment = -m_increment ;
 
+    bool option = modifiers & Interactor::e_option ;    
+    bool control = modifiers & Interactor::e_control ;    
+
     unsigned int num_mode = getNumMode();
-    int next = (m_mode + 1) % num_mode ; 
-    setMode((Mode_t)next) ; 
+
+    int mode = ( option ? m_mode - 1 : m_mode + 1) % num_mode ; 
+
+    if(mode < 0) mode = num_mode - 1 ;  
+
+    if(control) mode = OFF ; 
+
+    setMode((Mode_t)mode) ; 
 }
 
 inline void Animator::modeTransition(float fraction)

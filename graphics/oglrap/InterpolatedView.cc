@@ -70,8 +70,10 @@ std::string InterpolatedView::description(const char* msg)
 
 glm::vec4 InterpolatedView::getEye(const glm::mat4& m2w) 
 { 
-    glm::vec3 a = glm::vec3(getCurrentView()->getEye(m2w)) ; 
-    glm::vec3 b = glm::vec3(getNextView()->getEye(m2w)) ; 
+    View* curr = getCurrentView() ;
+    View* next = getNextView() ;
+    glm::vec3 a = glm::vec3(curr->getEye(m2w)) ; 
+    glm::vec3 b = glm::vec3(next->getEye(m2w)) ; 
     glm::vec3 m = glm::mix(a,b,m_fraction); 
 
     return glm::vec4(m.x, m.y, m.z, 1.0f ) ; 
@@ -79,16 +81,20 @@ glm::vec4 InterpolatedView::getEye(const glm::mat4& m2w)
 
 glm::vec4 InterpolatedView::getLook(const glm::mat4& m2w) 
 { 
-    glm::vec3 a = glm::vec3(getCurrentView()->getLook(m2w)) ; 
-    glm::vec3 b = glm::vec3(getNextView()->getLook(m2w)) ; 
+    View* curr = getCurrentView() ;
+    View* next = getNextView() ;
+    glm::vec3 a = glm::vec3(curr->getLook(m2w)) ; 
+    glm::vec3 b = glm::vec3(next->getLook(m2w)) ; 
     glm::vec3 m = glm::mix(a,b,m_fraction); 
     return glm::vec4(m.x, m.y, m.z, 1.0f ) ; 
 } 
 
 glm::vec4 InterpolatedView::getUp(const glm::mat4& m2w) 
 { 
-    glm::vec3 a = glm::vec3(getCurrentView()->getUp(m2w)) ; 
-    glm::vec3 b = glm::vec3(getNextView()->getUp(m2w)) ; 
+    View* curr = getCurrentView() ;
+    View* next = getNextView() ;
+    glm::vec3 a = glm::vec3(curr->getUp(m2w)) ; 
+    glm::vec3 b = glm::vec3(next->getUp(m2w)) ; 
     glm::vec3 m = glm::mix(a,b,m_fraction); 
     return glm::vec4(m.x, m.y, m.z, 0.0f ) ; // w=0 as direction
 } 

@@ -240,6 +240,7 @@ void App::configure(int argc, char** argv)
     m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
     m_bookmarks->setState(m_state);
     m_bookmarks->setVerbose();
+    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
 
     if(m_interactor)
     {

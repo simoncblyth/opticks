@@ -4,12 +4,14 @@
 #include "View.hh"
 class Animator ; 
 
+// created by Bookmarks::makeInterpolatedView
+
 class InterpolatedView :  public View {
     public:
         static const char* PREFIX ; 
         virtual const char* getPrefix();
     public:
-        InterpolatedView(bool verbose=false);
+        InterpolatedView(unsigned int period=100, bool verbose=false);
         
         void addView(View* view);
         void Summary(const char* msg="View::Summary");
@@ -47,13 +49,13 @@ class InterpolatedView :  public View {
 
 };
 
-inline InterpolatedView::InterpolatedView(bool verbose) 
+inline InterpolatedView::InterpolatedView(unsigned int period, bool verbose) 
      : 
      View(),
      m_i(0),
      m_j(1),
      m_count(0),
-     m_period(100),
+     m_period(period),
      m_fraction(0.f),
      m_animator(NULL),
      m_verbose(verbose)
