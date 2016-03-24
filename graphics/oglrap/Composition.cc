@@ -298,7 +298,7 @@ void Composition::nextViewMode(unsigned int modifiers)
 OrbitalView* Composition::makeOrbitalView()
 {
     View* basis = m_view->isStandard() ? m_view : m_standard_view ; 
-    return new OrbitalView(basis, 100, true );
+    return new OrbitalView(basis, m_ovperiod, true );
 }
 
 

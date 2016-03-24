@@ -234,13 +234,16 @@ void App::configure(int argc, char** argv)
 
     LOG(info) << "App::configure " << m_state->description();
 
-    if(m_composition)
-        m_composition->setupConfigurableState(m_state);
+    assert(m_composition);
+    m_composition->setupConfigurableState(m_state);
+    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
 
     m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
     m_bookmarks->setState(m_state);
     m_bookmarks->setVerbose();
     m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
+
+
 
     if(m_interactor)
     {

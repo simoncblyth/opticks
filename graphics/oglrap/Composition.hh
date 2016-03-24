@@ -84,6 +84,7 @@ class Composition : public NConfigurable {
       void initAnimator();
       void initRotator();
    public:
+      void setOrbitalViewPeriod(int ovperiod);
       OrbitalView* makeOrbitalView();
    public:
        void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
@@ -364,6 +365,7 @@ class Composition : public NConfigurable {
       View*      m_view ;
       View*      m_standard_view ;
       View::View_t  m_viewtype ; 
+      int         m_ovperiod ; 
 
       Light*     m_light ;
       Clipper*   m_clipper ;
@@ -448,6 +450,7 @@ inline Composition::Composition()
   m_view(NULL),
   m_standard_view(NULL),
   m_viewtype(View::STANDARD),
+  m_ovperiod(180),
   m_light(NULL),
   m_clipper(NULL),
   m_count(0),
@@ -548,7 +551,10 @@ inline glm::vec4& Composition::getLightDirection()
     return m_light_direction ; 
 }
 
-
+inline void Composition::setOrbitalViewPeriod(int ovperiod)
+{
+    m_ovperiod = ovperiod ; 
+}
 
 
 

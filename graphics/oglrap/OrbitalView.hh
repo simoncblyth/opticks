@@ -37,6 +37,7 @@ class OrbitalView :  public View {
         std::string description(const char* msg="OV");
     private:
         void init();
+        void update();
     private:
         View*        m_basis ;
         unsigned int m_count ; 
@@ -44,6 +45,12 @@ class OrbitalView :  public View {
         float        m_fraction ; 
         Animator*    m_animator ;
         bool         m_verbose ; 
+
+    private:
+        glm::vec4 m_orb_eye ; 
+        glm::vec4 m_orb_look ; 
+        glm::vec4 m_orb_up ; 
+
 
 };
 

@@ -38,6 +38,7 @@ class OpticksCfg : public Cfg {
      int          getTimeMax(); 
      int          getAnimTimeMax(); 
      int          getInterpolatedViewPeriod(); 
+     int          getOrbitalViewPeriod(); 
      int          getRepeatIndex(); 
      int          getRestrictMesh(); 
      int          getAnalyticMesh(); 
@@ -81,6 +82,7 @@ private:
      int         m_timemax ; 
      int         m_animtimemax ; 
      int         m_ivperiod ; 
+     int         m_ovperiod ; 
      int         m_repeatidx ; 
      int         m_restrictmesh; 
      int         m_analyticmesh; 
@@ -120,6 +122,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_timemax(200),
        m_animtimemax(50),
        m_ivperiod(100),
+       m_ovperiod(180),
        m_repeatidx(-1),
        m_restrictmesh(-1),
        m_analyticmesh(-1),
@@ -397,6 +400,11 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("ivperiod",  boost::program_options::value<int>(&m_ivperiod), ivperiod);
 
+   char ovperiod[128];
+   snprintf(ovperiod,128, "Orbital View Period, typically in range 180 to 360 controlling the number of steps of the animation. Default %d ", m_ovperiod);
+   m_desc.add_options()
+       ("ovperiod",  boost::program_options::value<int>(&m_ovperiod), ovperiod);
+
 
    char repeatidx[128];
    snprintf(repeatidx,128, "Repeat index used in development of instanced geometry, -1:flat full geometry. Default %d ", m_repeatidx);
@@ -635,6 +643,14 @@ inline int OpticksCfg<Listener>::getInterpolatedViewPeriod()
 {
     return m_ivperiod ; 
 }
+
+template <class Listener>
+inline int OpticksCfg<Listener>::getOrbitalViewPeriod()
+{
+    return m_ovperiod ; 
+}
+
+
 
 template <class Listener>
 inline int OpticksCfg<Listener>::getRepeatIndex()

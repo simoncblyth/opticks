@@ -1,6 +1,7 @@
 #include "OrbitalView.hh"
 #include "Animator.hh"
 #include "NLog.hpp"
+#include "GLMFormat.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <sstream>
@@ -40,7 +41,6 @@ bool OrbitalView::isActive()
 }
 
 
-
 void OrbitalView::tick()
 {
     m_count++ ; 
@@ -55,6 +55,8 @@ void OrbitalView::tick()
     {
         LOG(info) << description("OrbitalView::tick BUMP ") ; 
     }
+
+    update();
 }
 
 
@@ -69,19 +71,55 @@ std::string OrbitalView::description(const char* msg)
 }
 
 
+void OrbitalView::update()
+{
+    glm::vec4 base_m = m_basis->getEye() ;
+    glm::vec3 tmp(base_m);
+    tmp.z = 0.f ;  // hmm should dot product with up direction ?
+    float r = glm::length(tmp) ; 
+
+    float phi = m_fraction*float(M_PI)*2.0f  ;
+    float sinphi = sin(phi);
+    float cosphi = cos(phi);
+
+    glm::vec4 hub = glm::vec4( 0.f , 0.f, base_m.z, 1.f );
+    glm::vec4 gaze = glm::vec4( -r*sinphi, r*cosphi, 0.f, 0.f ) ;
+
+    m_orb_eye  = glm::vec4( r*cosphi, r*sinphi, base_m.z, 1.f ) ;
+    m_orb_look = m_orb_eye + gaze ; 
+    m_orb_up = hub - m_orb_eye ; 
+
+    LOG(debug) << "OrbitalView::update"
+              << " base_m " << gformat(base_m)
+              << " m_orb_eye " << gformat(m_orb_eye)
+              << " m_orb_look " << gformat(m_orb_look)
+              << " m_orb_up " << gformat(m_orb_up)
+              << " r " << r 
+              << " phi " << phi 
+              << " fraction " << m_fraction
+              ;
+}
+
+
 glm::vec4 OrbitalView::getEye(const glm::mat4& m2w) 
 { 
-    return m_basis->getEye(m2w);
+    if(m_count == 0) update();
+    glm::vec4 eye_w = m2w * m_orb_eye ; 
+    return eye_w ;  
 } 
 
 glm::vec4 OrbitalView::getLook(const glm::mat4& m2w) 
 { 
-    return m_basis->getLook(m2w);
+    if(m_count == 0) update();
+    glm::vec4 look_w = m2w * m_orb_look ; 
+    return look_w ;  
 } 
 
 glm::vec4 OrbitalView::getUp(const glm::mat4& m2w) 
 { 
-    return m_basis->getUp(m2w);
+    if(m_count == 0) update();
+    glm::vec4 up_w = m2w * m_orb_up ; 
+    return up_w ;  
 } 
 
 glm::vec4 OrbitalView::getGaze(const glm::mat4& m2w, bool debug)
