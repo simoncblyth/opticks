@@ -323,7 +323,7 @@ ggv-jpmt-viz(){
 jpmt(){ 
     #local spa=retina
     local spa=hd
-    ggv --jpmt --cerenkov --animtimemax 80 --load $(ggv-size-position $spa)  $*
+    ggv --jpmt --cerenkov --animtimemax 80 --load $(ggv-size-position $spa)  --state fly0 --ivperiod 250 --ovperiod 360 $*
 }
 
 

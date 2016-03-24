@@ -77,8 +77,8 @@ void OrbitalView::update()
     glm::vec3 tmp(base_m);
     tmp.z = 0.f ;  // hmm should dot product with up direction ?
     float r = glm::length(tmp) ; 
-
-    float phi = m_fraction*float(M_PI)*2.0f  ;
+    float phase = atan2( tmp.y, tmp.x ) ;  // hmm, tis tangential view anyhow so a jump is inevitable
+    float phi = phase + m_fraction*float(M_PI)*2.0f  ;
     float sinphi = sin(phi);
     float cosphi = cos(phi);
 
