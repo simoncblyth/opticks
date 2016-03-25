@@ -237,7 +237,7 @@ void App::configure(int argc, char** argv)
     assert(m_composition);
     m_composition->setupConfigurableState(m_state);
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
-
+    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 
     m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
     m_bookmarks->setState(m_state);
@@ -305,11 +305,15 @@ void App::prepareViz()
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
 
         m_scene->setNumGeometryStyle(Scene::WIRE); 
-        m_scene->setNumGlobalStyle(Scene::GVISVEC); 
+        m_scene->setNumGlobalStyle(Scene::GVISVEC); // disable GVISVEC, GVEC debug styles
 
         m_scene->setRenderMode("bb0,bb1,-global");
         std::string rmode = m_scene->getRenderMode();
         LOG(info) << "App::prepareViz " << rmode ; 
+    }
+    else if(m_resource->isDayabay())
+    {
+        m_scene->setNumGlobalStyle(Scene::GVISVEC);   // disable GVISVEC, GVEC debug styles
     }
 
 

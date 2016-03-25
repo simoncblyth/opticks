@@ -246,7 +246,8 @@ void Composition::initAnimator()
 {
     // must defer creation (to render time) as domain_time not set at initialization
     float* target = glm::value_ptr(m_param) + 3 ;
-    m_animator = new Animator(target, 200, m_domain_time.x, m_domain_time.z ); 
+
+    m_animator = new Animator(target, m_animator_period, m_domain_time.x, m_domain_time.z ); 
     //
     //  m_domain_time.x  start                       (0ns)
     //  m_domain_time.y  end      getTimeMax()       (200ns ) 
@@ -1103,8 +1104,32 @@ glm::vec3 Composition::unProject(unsigned int x, unsigned int y, float z)
 
 bool Composition::hasChangedGeometry()
 {
-    return m_rotator->isActive() || m_view->hasChanged() || m_camera->hasChanged() || m_trackball->hasChanged() ;
+    // used from App::render to determine if a trace needs to be done
+
+    bool view_changed(false) ;
+
+    if(m_view->isTrack())
+    {
+         TrackView* tv = dynamic_cast<TrackView*>(m_view) ;
+         view_changed = tv->hasChanged();
+    } 
+    else if(m_view->isOrbital())
+    {
+         OrbitalView* ov = dynamic_cast<OrbitalView*>(m_view) ;
+         view_changed = ov->hasChanged();
+    }
+    else if(m_view->isInterpolated())
+    {
+         InterpolatedView* iv = dynamic_cast<InterpolatedView*>(m_view) ;
+         view_changed = iv->hasChanged();
+    }
+    else if(m_view->isStandard())
+    {
+         view_changed = m_view->hasChanged();
+    }
+    return m_rotator->isActive() || view_changed || m_camera->hasChanged() || m_trackball->hasChanged() ;
 }
+
 
 bool Composition::hasChanged()
 {

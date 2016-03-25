@@ -58,10 +58,12 @@ void TrackView::init()
               ;
 }
 
+
 bool TrackView::hasChanged()
 {
     Animator* animator = getAnimator();
-    return m_count > 0 && animator->isActive() ;  
+    bool changed = m_external ? animator->isActive() : m_count > 0 && animator->isActive() ;
+    return changed ;  
 }
 
 void TrackView::nextMode(unsigned int modifiers)

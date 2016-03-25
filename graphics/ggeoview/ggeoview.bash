@@ -16,10 +16,6 @@ ggv-ppmt(){   ggv.sh --analyticmesh 1 --target 3199 --torchconfig "radius=1500_z
 ggv-allpmt(){ ggv.sh --tracer --restrictmesh 1 --analyticmesh 1 $* ; }
 
 
-
-
-
-
 ggv-torpedo(){ ggv.sh --analyticmesh 1 --torchconfig "frame=3199_source=0,0,1000_target=0,0,0_radius=150_zenithazimuth=0,1,0,1" $* ; }
 
 join(){ local IFS="$1"; shift; echo "$*"; }
@@ -367,18 +363,7 @@ ggv-size-position()
 
 ggv-hd-info(){ cat << EOU
 
-Running::
-
-    ggv-hd-test
-    ggv-hd-capture
-
-Succeeds to create 
-
-   Format H.264   1920x1080
-   FPS            60
-   Data rate      25.92 Mbit/s
-   Current Size   960x540 (half)  
-
+See vids-vi
 
 EOU
 }
@@ -390,18 +375,22 @@ ggv-hd-test()
 
 ggv-hd-capture()
 {
+    ggv-hd-info
+
     local x=$(ggv-vid-x)
     local y=$(ggv-vid-y)
     local w=$(( $(ggv-vid-w)/2 ))
     local h=$(( $(ggv-vid-h)/2 ))
 
-    caperture.swift -x $x -y $y -w $w -h $h 
+    local cmd="caperture.swift -x $x -y $y -w $w -h $h "
+    echo $cmd
+    eval $cmd
 }
 
 
 ggv-dyb()
 {
-    ggv --analyticmesh 1 --cerenkov --animtimemax 80 $(ggv-size-position hd) --load --optixviz --state fly0 --ivperiod 250 --ovperiod 360 $*
+    ggv --analyticmesh 1 --cerenkov --animtimemax 80 $(ggv-size-position hd) --load --optixviz --state fly0 --ivperiod 250 --ovperiod 360 --evperiod 400 $*
 }
 
 

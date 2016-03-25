@@ -73,6 +73,7 @@ class Composition : public NConfigurable {
       void setupConfigurableState(NState* state);
       virtual ~Composition();
    public:
+      void setAnimatorPeriod(int period);
       Animator* getAnimator();
       void nextAnimatorMode(unsigned int modifiers);
       void nextRotatorMode(unsigned int modifiers);
@@ -370,6 +371,7 @@ class Composition : public NConfigurable {
       View*      m_view ;
       View*      m_standard_view ;
       View::View_t  m_viewtype ; 
+      int         m_animator_period ; 
       int         m_ovperiod ; 
       int         m_tvperiod ; 
       NPY<float>* m_track ; 
@@ -444,7 +446,7 @@ inline Composition::Composition()
   m_pickphoton(0,0,0,0), 
   m_pickface(0,0,0,0), 
   m_recselect(), 
-  m_colorparam(), 
+  m_colorparam(int(POL1),0,0,0), 
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
   m_param(25.f,0.030f,0.f,0.f),   // x: arbitrary scaling of genstep length, y: vector length dfrac
@@ -457,6 +459,7 @@ inline Composition::Composition()
   m_view(NULL),
   m_standard_view(NULL),
   m_viewtype(View::STANDARD),
+  m_animator_period(200),
   m_ovperiod(180),
   m_tvperiod(100),
   m_track(NULL), 
@@ -564,6 +567,12 @@ inline void Composition::setOrbitalViewPeriod(int ovperiod)
 {
     m_ovperiod = ovperiod ; 
 }
+inline void Composition::setAnimatorPeriod(int period)
+{
+    m_animator_period = period ; 
+}
+
+
 inline void Composition::setTrackViewPeriod(int tvperiod)
 {
     m_tvperiod = tvperiod ; 

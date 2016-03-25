@@ -40,6 +40,7 @@ class OpticksCfg : public Cfg {
      int          getInterpolatedViewPeriod(); 
      int          getOrbitalViewPeriod(); 
      int          getTrackViewPeriod(); 
+     int          getAnimatorPeriod(); 
      int          getRepeatIndex(); 
      int          getRestrictMesh(); 
      int          getAnalyticMesh(); 
@@ -82,6 +83,7 @@ private:
      int         m_recordmax ; 
      int         m_timemax ; 
      int         m_animtimemax ; 
+     int         m_animator_period ; 
      int         m_ivperiod ; 
      int         m_ovperiod ; 
      int         m_tvperiod ; 
@@ -123,6 +125,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_recordmax(10),
        m_timemax(200),
        m_animtimemax(50),
+       m_animator_period(200),
        m_ivperiod(100),
        m_ovperiod(180),
        m_tvperiod(100),
@@ -397,6 +400,10 @@ inline void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("animtimemax",  boost::program_options::value<int>(&m_animtimemax), animtimemax );
 
+   char animator_period[128];
+   snprintf(animator_period,128, "Event Animator Period, typically in range 200 to 400 controlling the number of steps of the animation. Default %d ", m_animator_period);
+   m_desc.add_options()
+       ("evperiod",  boost::program_options::value<int>(&m_animator_period), animator_period);
 
    char ivperiod[128];
    snprintf(ivperiod,128, "Interpolated View Period, typically in range 50 to 400 controlling the number of steps of the animation. Default %d ", m_ivperiod);
@@ -657,11 +664,18 @@ inline int OpticksCfg<Listener>::getOrbitalViewPeriod()
 {
     return m_ovperiod ; 
 }
+
 template <class Listener>
 inline int OpticksCfg<Listener>::getTrackViewPeriod()
 {
     return m_tvperiod ; 
 }
+template <class Listener>
+inline int OpticksCfg<Listener>::getAnimatorPeriod()
+{
+    return m_animator_period ; 
+}
+
 
 
 template <class Listener>

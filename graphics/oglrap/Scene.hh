@@ -280,7 +280,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_genstep_mode(true),
             m_photon_mode(true),
             m_record_mode(true),
-            m_record_style(REC),
+            m_record_style(ALTREC),
             m_geometry_style(BBOX),
             m_num_geometry_style(0),
             m_global_style(GVIS),

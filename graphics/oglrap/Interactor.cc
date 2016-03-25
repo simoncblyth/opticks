@@ -237,7 +237,6 @@ void Interactor::key_pressed(unsigned int key)
             m_near_mode = !m_near_mode ; 
             break;
         case GLFW_KEY_O:
-            //m_optix_mode = !m_optix_mode ; 
             m_scene->nextRenderStyle(modifiers);
             LOG(info) << "Interactor::key_pressed O nextRenderStyle " ; 
             break;
