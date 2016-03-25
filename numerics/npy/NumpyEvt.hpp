@@ -49,6 +49,7 @@ class NumpyEvt {
        static const char* aux ;
    public:
        NPY<float>* loadGenstepFromFile(int modulo=0);
+       NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track");
        void setGenstepData(NPY<float>* genstep_data);
        void zero();
        void dumpDomains(const char* msg="NumpyEvt::dumpDomains");

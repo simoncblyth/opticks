@@ -103,6 +103,7 @@ add_library( ${name}  SHARED
                 View.cc
                 InterpolatedView.cc
                 OrbitalView.cc
+                TrackView.cc
                 Light.cc
                 ViewCfg.cc
                 Clipper.cc
@@ -141,6 +142,7 @@ SET(hdrs
         View.hh
         InterpolatedView.hh
         OrbitalView.hh
+        TrackView.hh
         Light.hh
         ViewCfg.hh
         Clipper.hh

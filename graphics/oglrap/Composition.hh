@@ -18,6 +18,7 @@ class MultiViewNPY ;
 class NState ; 
 class Camera ;
 class OrbitalView ; 
+class TrackView ; 
 class Light ;
 class Trackball ; 
 class Scene ; 
@@ -85,7 +86,10 @@ class Composition : public NConfigurable {
       void initRotator();
    public:
       void setOrbitalViewPeriod(int ovperiod);
+      void setTrackViewPeriod(int tvperiod);
+      void setTrack(NPY<float>* track);
       OrbitalView* makeOrbitalView();
+      TrackView* makeTrackView();
    public:
        void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
    public:
@@ -366,6 +370,8 @@ class Composition : public NConfigurable {
       View*      m_standard_view ;
       View::View_t  m_viewtype ; 
       int         m_ovperiod ; 
+      int         m_tvperiod ; 
+      NPY<float>* m_track ; 
 
       Light*     m_light ;
       Clipper*   m_clipper ;
@@ -451,6 +457,8 @@ inline Composition::Composition()
   m_standard_view(NULL),
   m_viewtype(View::STANDARD),
   m_ovperiod(180),
+  m_tvperiod(100),
+  m_track(NULL), 
   m_light(NULL),
   m_clipper(NULL),
   m_count(0),
@@ -555,6 +563,17 @@ inline void Composition::setOrbitalViewPeriod(int ovperiod)
 {
     m_ovperiod = ovperiod ; 
 }
+inline void Composition::setTrackViewPeriod(int tvperiod)
+{
+    m_tvperiod = tvperiod ; 
+}
+inline void Composition::setTrack(NPY<float>* track)
+{
+    m_track = track ; 
+}
+
+
+
 
 
 

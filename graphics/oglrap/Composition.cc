@@ -17,9 +17,12 @@
 
 #include "Camera.hh"
 #include "Trackball.hh"
+
 #include "View.hh"
 #include "InterpolatedView.hh"
 #include "OrbitalView.hh"
+#include "TrackView.hh"
+
 #include "Clipper.hh"
 #include "Scene.hh"
 #include "Bookmarks.hh"
@@ -301,6 +304,12 @@ OrbitalView* Composition::makeOrbitalView()
     return new OrbitalView(basis, m_ovperiod, true );
 }
 
+TrackView* Composition::makeTrackView()
+{
+    return m_track ? new TrackView(m_track, m_tvperiod, true ) : NULL ;
+}
+
+
 
 void Composition::applyViewType()
 {
@@ -340,6 +349,22 @@ void Composition::applyViewType()
         setView(ov);
 
     }
+    else if(m_viewtype == View::TRACK)
+    {
+        LOG(warning) << "Composition::applyViewType(KEY_U) switching to track view " ; 
+
+        TrackView* tv = makeTrackView();
+
+        if(tv == NULL)
+        {
+            LOG(warning) << "Composition::applyViewType(KEY_U) requires track information ";
+            return ;
+        }
+
+        setView(tv);
+    } 
+
+
 }
 
 void Composition::setView(View* view)
@@ -491,6 +516,30 @@ void Composition::gui()
        m_pick.y, 
        m_pick.z, 
        m_pick.w);
+
+//
+    if (!ImGui::CollapsingHeader("CompositionView")) return ;
+
+
+    if(m_view->isTrack())
+    {
+         TrackView* tv = dynamic_cast<TrackView*>(m_view) ;
+         tv->gui();
+    } 
+    else if(m_view->isOrbital())
+    {
+         OrbitalView* ov = dynamic_cast<OrbitalView*>(m_view) ;
+         ov->gui();
+    }
+    else if(m_view->isInterpolated())
+    {
+         InterpolatedView* iv = dynamic_cast<InterpolatedView*>(m_view) ;
+         iv->gui();
+    }
+    else if(m_view->isStandard())
+    {
+         m_view->gui();
+    }
 
 
 

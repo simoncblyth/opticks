@@ -7,13 +7,36 @@
 #include <cassert>
 #include <iostream>
 
+
+void test_genstep_derivative()
+{
+    NumpyEvt evt("cerenkov", "1", "dayabay", "") ;
+
+    NPY<float>* trk = evt.loadGenstepDerivativeFromFile("track");
+    assert(trk);
+
+    LOG(info) << trk->getShapeString();
+
+    glm::vec4 origin    = trk->getQuad(0,0) ;
+    glm::vec4 direction = trk->getQuad(0,1) ;
+    glm::vec4 range     = trk->getQuad(0,2) ;
+
+    print(origin,"origin");
+    print(direction,"direction");
+    print(range,"range");
+
+
+}
+
+
 void test_genstep()
 {   
-    NumpyEvt evt("cerenkov", "1", "dayabay") ;
+    NumpyEvt evt("cerenkov", "1", "dayabay", "") ;
 
     evt.setGenstepData(evt.loadGenstepFromFile());
 
     evt.dumpPhotonData();
+
 }
 
 void test_load()
@@ -68,7 +91,8 @@ int main(int argc, char** argv)
     NLog nl("NumpyEvtTest.log","info");
     nl.configure(argc, argv, "/tmp"); 
 
+    test_genstep_derivative();
     //test_genstep();
-    test_load();
+    //test_load();
     return 0 ;
 }

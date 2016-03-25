@@ -4,7 +4,7 @@
 #include "View.hh"
 class Animator ; 
 
-// created by Bookmarks::makeOrbitalView
+// created by Composition::makeOrbitalView
 //
 // operates from Composition via base class method View::getTransforms 
 // which invokes the overriden getEye, getLook, getUp

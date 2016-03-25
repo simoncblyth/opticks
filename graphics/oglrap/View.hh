@@ -12,7 +12,7 @@
 
 class View : public NConfigurable {
 public:
-   typedef enum { STANDARD, INTERPOLATED, ORBITAL, NUM_VIEW_TYPE } View_t ; 
+   typedef enum { STANDARD, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 
 
    static const char* PREFIX ; 
    virtual const char* getPrefix();
@@ -25,6 +25,7 @@ public:
    bool isStandard();
    bool isInterpolated();
    bool isOrbital();
+   bool isTrack();
 
    void configureS(const char* name, std::vector<std::string> values);
 
@@ -113,6 +114,11 @@ inline bool View::isOrbital()
 {
     return m_type == ORBITAL ; 
 }
+inline bool View::isTrack()
+{
+    return m_type == TRACK ; 
+}
+
 
 
 

@@ -238,11 +238,11 @@ void App::configure(int argc, char** argv)
     m_composition->setupConfigurableState(m_state);
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
 
+
     m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
     m_bookmarks->setState(m_state);
     m_bookmarks->setVerbose();
     m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
-
 
 
     if(m_interactor)
@@ -255,6 +255,10 @@ void App::configure(int argc, char** argv)
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
+
+        m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
+        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track");
+        m_composition->setTrack(track);
 
         Parameters* params = m_evt->getParameters() ;
         params->add<std::string>("cmdline", m_cfg->getCommandLine() ); 

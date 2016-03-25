@@ -45,7 +45,24 @@ class A(np.ndarray):
         else:
             log.warning("cannot load %s " % path)
         pass
-        return a 
+        return a
+
+    def __repr__(self):
+        return "A(%s,%s,%s)" % (self.typ, self.tag, self.det)
+ 
+    def derivative_path(self, postfix="track"):
+        tag = "%s_%s" % (self.tag, postfix)
+        return path_(self.typ, tag, self.det )
+
+    def derivative_save(self, drv, postfix="track"): 
+        path = self.derivative_path(postfix)
+        if os.path.exists(path):
+            log.warning("derivative of %s at path %s exists already, delete and rerun to update" % (repr(self),path) )
+        else:
+            log.info("saving derivative of %s to %s " % (repr(self), path ))
+            np.save( path, drv )    
+
+
 
 class I(dict):
     @classmethod

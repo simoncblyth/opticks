@@ -980,6 +980,22 @@ bool NumpyEvt::isIndexed()
 
 
 
+NPY<float>* NumpyEvt::loadGenstepDerivativeFromFile(const char* postfix)
+{
+    char tag[128];
+    snprintf(tag, 128, "%s_%s", m_tag, postfix );
+
+    LOG(info) << "NumpyEvt::loadGenstepDerivativeFromFile  "
+              << " typ " << m_typ
+              << " tag " << tag
+              << " det " << m_det
+              ;
+
+    NPY<float>* npy = NPY<float>::load(m_typ, tag, m_det ) ;
+    npy->dump("NumpyEvt::loadGenstepDerivativeFromFile");
+    return npy ; 
+}
+
 
 NPY<float>* NumpyEvt::loadGenstepFromFile(int modulo)
 {
