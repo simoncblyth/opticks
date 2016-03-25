@@ -12,6 +12,13 @@ with time parameter.::
     [[ -16390.518 -802295.938   -7059.101]
      [   -162.573     251.993       0.172]]
 
+::
+
+    In [1]: run genstep.py
+    [[[   0.177   -1.583    4.94     1.   ]
+      [-252.339  -45.677 -155.278    0.   ]
+      [   0.      82.83     0.       0.   ]]]
+    INFO:env.numerics.npy.nload:saving derivative of A(cerenkov,1,juno) to /usr/local/env/opticks/juno/cerenkov/1_track.npy 
 
 ::
 
@@ -36,7 +43,8 @@ X,Y,Z,W,T = 0,1,2,3,3
 
 if __name__ == '__main__':
 
-    a = A.load_("cerenkov","1","dayabay")
+    #a = A.load_("cerenkov","1","dayabay")
+    a = A.load_("cerenkov","1","juno")
 
     xyzt = a[:,1]
     #print xyzt

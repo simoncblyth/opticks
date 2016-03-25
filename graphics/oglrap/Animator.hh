@@ -33,6 +33,8 @@ class Animator {
         void scrub_to(float x, float y, float dx, float dy); // Interactor:K scrub_mode
 
         float* getTarget(); 
+        float getFraction();
+        float getFractionFromTarget();
         float getLow(); 
         float getHigh(); 
         bool isActive();
@@ -54,7 +56,6 @@ class Animator {
         void          modeTransition(float fraction);
         void          setTarget(float* target); // qty to be stepped
         unsigned int  getIndex();
-        float         getFraction();
         float         getValue();
         float         getFractionForValue(float value);
         unsigned int  find_closest_index(float f);
@@ -230,7 +231,8 @@ inline unsigned int Animator::getIndex()
 
 inline float Animator::getFraction()
 {
-    return m_fractions[m_mode][getIndex()] ;
+    unsigned int index = getIndex();
+    return m_fractions[m_mode][index] ;
 }
 inline float Animator::getValue()
 {
@@ -239,6 +241,11 @@ inline float Animator::getValue()
 inline float Animator::getFractionForValue(float value)
 {
     return (value - m_low)/(m_high - m_low) ;  
+}
+ 
+inline float Animator::getFractionFromTarget()
+{
+    return getFractionForValue(*m_target);
 }
 
 

@@ -361,6 +361,16 @@ void Composition::applyViewType()
             return ;
         }
 
+        //bool external = false ; 
+        bool external = true ; 
+        if(external)
+        { 
+           // idea is to tie the TrackView interpolated position with the event animator
+           // but needs debug : scoots view off to infinity very quickly 
+            Animator* animator = getAnimator();
+            tv->setAnimator(animator);    
+        }
+
         setView(tv);
     } 
 
@@ -518,9 +528,16 @@ void Composition::gui()
        m_pick.w);
 
 //
-    if (!ImGui::CollapsingHeader("CompositionView")) return ;
 
 
+#endif    
+}
+
+
+
+void Composition::viewgui()
+{
+#ifdef GUI_
     if(m_view->isTrack())
     {
          TrackView* tv = dynamic_cast<TrackView*>(m_view) ;
@@ -540,11 +557,9 @@ void Composition::gui()
     {
          m_view->gui();
     }
-
-
-
 #endif    
 }
+
 
 
 unsigned int Composition::getWidth()

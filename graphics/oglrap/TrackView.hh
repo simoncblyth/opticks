@@ -28,6 +28,10 @@ class TrackView :  public View {
     public:
         TrackView(NPY<float>* track, unsigned int period=100, bool verbose=false);
         void Summary(const char* msg="TrackView::Summary");
+        void setAnimator(Animator* animator);
+    private:
+        void initAnimator();
+        Animator* getAnimator();
     public:
         // View overrides 
         glm::vec4 getEye(const glm::mat4& m2w);
@@ -60,9 +64,12 @@ class TrackView :  public View {
         glm::vec4    m_direction ; 
         glm::vec4    m_range ; 
     private:
-        glm::vec4    m_start ; 
-        glm::vec4    m_end ; 
-        float        m_time_ahead ; // ns ahead of the genstep 
+        float        m_teye_offset ; // ns ahead of the genstep 
+        float        m_tlook_offset ; // ns ahead of the genstep 
+        float        m_tmin_offset ; 
+        float        m_tmax_offset ; 
+        float        m_fraction_scale ; 
+        bool         m_external ; 
 
 };
 
@@ -75,7 +82,12 @@ inline TrackView::TrackView(NPY<float>* track, unsigned int period, bool verbose
      m_animator(NULL),
      m_verbose(verbose),
      m_track(track),
-     m_time_ahead(10.f)
+     m_teye_offset(10.f),
+     m_tlook_offset(0.f),
+     m_tmin_offset(0.f),
+     m_tmax_offset(0.f),
+     m_fraction_scale(1.f),
+     m_external(false)
 {
     init();
 }

@@ -172,7 +172,8 @@ void GUI::show(bool* opened)
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("View"))
     {
-        m_view->gui(); 
+        m_composition->viewgui(); 
+        //m_view->gui(); 
     }
 
     ImGui::Spacing();
