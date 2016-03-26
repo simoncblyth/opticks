@@ -1,7 +1,6 @@
 Movie
 ======
 
-
 Experience with g4daeview
 ----------------------------
 
@@ -86,8 +85,6 @@ Automated Screen Capture
 -------------------------
 
 * http://apple.stackexchange.com/questions/176555/how-do-i-make-multiple-screen-recordings-with-the-exact-same-portion-of-the-scre
-
-
 
 
 QuickTime Applescript

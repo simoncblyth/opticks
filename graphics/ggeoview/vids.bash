@@ -8,6 +8,8 @@ vids-usage(){ cat << EOU
 GGeoView Video Captures 
 =============================
 
+* See Also :doc:`graphics/ggeoview/movie`
+
 Capture Procedure
 --------------------
 
