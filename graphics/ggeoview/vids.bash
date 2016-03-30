@@ -55,8 +55,8 @@ Observations
 -----------------
 
 * it takes a while for recording to start, 
-  so start well before the desired entry for 
-  editing the precise start
+  so start well before the desired entry and later
+  use iMovie to set the precise clip start/end points
 
 Issues
 --------
@@ -68,6 +68,17 @@ Issues
 
 Vids
 -----
+
+::
+
+    simon:Movies blyth$ du -h *.mov
+
+    209M    dyb_geometry.mov
+     63M    dyb_geometry_event_01.mov
+    101M    dyb_track_01.mov
+    147M    jpmt_iv_02.mov
+     67M    jpmt_tv_01.mov
+
 
 1. dyb_geometry.mov
 
@@ -93,25 +104,9 @@ Vids
 
    B: PMTs
    E: normal shader 
-   U3 : track viewa 
+   U3 : track view
 
-3. dyb_orbital_01.mov
-
-   B: PMTs
-   E: normal shader 
-   4: bookmark 4 (AD target view, udp.py --target 3154)
-   U2: orbital view
-   G2: adjust camera near to around 40mm, zoom 3.2 to avoid AD deadspace
-   xz: arrange tangential view just above PMT faces
- 
-   too jerky 
-
-   C: cut away
-   I: invisible PMTs
-   Q: invisible global
-   O: optix 
-
-4. jpmt_iv_01.mov jpmt_iv_02.mov
+4. jpmt_iv_02.mov
 
    Version 02 uses full PMT all the way for constant speedup
    of entire clip in iMovie
@@ -135,11 +130,6 @@ Vids
    r: adjust direction down to left
    G/View: fraction scale:1.7 get ahead track gfront
 
-6. jpmt_ov_01.mov
-
-   E,Q
-   2: inside bookmark
-   U2: orbital
 
 
 Thoughts for more vids
@@ -174,6 +164,14 @@ Chinese eqivalent tudou works with chrome translation
 
 * http://www.tudou.com
 * http://www.youku.com
+
+
+YouKou 
+---------
+
+* http://yktips.com/how-to-create-youku-account-and-register/
+
+* seems youku requires a chinese phone number to register
 
 
 
