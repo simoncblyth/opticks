@@ -2,6 +2,39 @@ Ideas
 =======
 
 
+Sampling
+---------
+
+From CHEP 2015 Proceedings 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* http://iopscience.iop.org/issue/1742-6596/664/9
+* http://iopscience.iop.org/article/10.1088/1742-6596/664/9/092013
+
+First experience of vectorizing electromagnetic physics models for detector simulation
+
+Alias sampling is suggested as better for parallelisation than acceptance-rejection 
+method.
+
+::
+
+   This may well be the case, but the elephant in the room (for optical physics anyhow)
+   is geometrical intersection, not rng sampling
+
+
+Alias Method
+~~~~~~~~~~~~~~
+
+* https://en.wikipedia.org/wiki/Alias_method
+* http://apps.jcns.fz-juelich.de/doku/sc/ransampl
+
+
+* http://www.keithschwarz.com/darts-dice-coins/
+
+  Extensive explanation of alias method
+
+
 Geometry
 ----------
 

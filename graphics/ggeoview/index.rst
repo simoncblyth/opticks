@@ -11,6 +11,9 @@ ggeoview
    geometry_review
    movie
    usage
+   conferences
+   others
+
 
 
 
