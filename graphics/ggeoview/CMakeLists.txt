@@ -65,14 +65,13 @@ find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(OpenMesh REQUIRED)
 find_package(OpenMeshRap REQUIRED)
-find_package(OptiXRap REQUIRED)
 find_package(GGeo REQUIRED)
-find_package(CUDAWrap REQUIRED)
-
 find_package(ImGui REQUIRED)
 find_package(Bregex REQUIRED)
-find_package(ThrustRap REQUIRED)
 
+find_package(OptiXRap REQUIRED)
+find_package(CUDAWrap REQUIRED)
+find_package(ThrustRap REQUIRED)
 find_package(OpticksOp REQUIRED)
 
 
@@ -93,13 +92,14 @@ set(INCLUDE_DIRS
    ${AssimpWrap_INCLUDE_DIRS}  
    ${OpenMesh_INCLUDE_DIRS}  
    ${OpenMeshRap_INCLUDE_DIRS}  
+   ${GGeo_INCLUDE_DIRS}  
+   ${ImGui_INCLUDE_DIRS}
+   ${Bregex_INCLUDE_DIRS}
+
    ${CUDA_INCLUDE_DIRS}
    ${OptiX_INCLUDE}  
    ${OptiXRap_INCLUDE_DIRS}  
-   ${GGeo_INCLUDE_DIRS}  
    ${CUDAWrap_INCLUDE_DIRS}  
-   ${ImGui_INCLUDE_DIRS}
-   ${Bregex_INCLUDE_DIRS}
    ${ThrustRap_INCLUDE_DIRS}
    ${OpticksOp_INCLUDE_DIRS} 
 )
@@ -114,14 +114,15 @@ set(DEFINITIONS
    ${AssimpWrap_DEFINITIONS}  
    ${OpenMesh_DEFINITIONS}  
    ${OpenMeshRap_DEFINITIONS}  
-   ${OptiX_DEFINITIONS} 
-   ${OptiXRap_DEFINITIONS} 
    ${Boost_DEFINITIONS} 
-   ${CUDAWrap_DEFINITIONS}
    ${ImGui_DEFINITIONS}
    ${Bregex_DEFINITIONS}
-   ${ThrustRap_DEFINITIONS}
    ${Opticks_DEFINITIONS}
+
+   ${OptiX_DEFINITIONS} 
+   ${OptiXRap_DEFINITIONS} 
+   ${CUDAWrap_DEFINITIONS}
+   ${ThrustRap_DEFINITIONS}
    ${OpticksOp_DEFINITIONS}
 )
 
@@ -148,12 +149,12 @@ set(LIBRARIES
       ${OpenMeshRap_LIBRARIES} 
 
       ${GGeo_LIBRARIES} 
-      ${OptiXRap_LIBRARIES}
-      ${GGeo_LIBRARIES}
-      ${CUDA_LIBRARIES}
-      ${CUDAWrap_LIBRARIES}
       ${ImGui_LIBRARIES}
       ${Bregex_LIBRARIES}
+
+      ${OptiXRap_LIBRARIES}
+      ${CUDA_LIBRARIES}
+      ${CUDAWrap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
       ${OpticksOp_LIBRARIES}
 
