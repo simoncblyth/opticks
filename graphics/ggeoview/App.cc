@@ -256,6 +256,8 @@ void App::configure(int argc, char** argv)
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
 
+
+
         m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
         NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track");
         m_composition->setTrack(track);

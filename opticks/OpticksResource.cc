@@ -18,6 +18,10 @@ const char* OpticksResource::DPIB    = "PmtInBox" ;
 
 const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
+const char* OpticksResource::DEFAULT_GEOKEY = "DAE_NAME_DYB" ; 
+const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
+const char* OpticksResource::DEFAULT_CTRL = "volnames" ; 
+
 void OpticksResource::init()
 {
    readEnvironment();
@@ -62,16 +66,40 @@ void OpticksResource::readEnvironment()
 */
 
     m_geokey = getenvvar(m_envprefix, "GEOKEY" );
-    m_path = getenv(m_geokey);
-    m_query = getenvvar(m_envprefix, "QUERY");
-    m_ctrl = getenvvar(m_envprefix, "CTRL");
 
-    if(m_query == NULL || m_path == NULL || m_geokey == NULL )
+    if(m_geokey == NULL)
     {
-        printf("OpticksResource::readEnvironment geokey %s path %s query %s ctrl %s \n", m_geokey, m_path, m_query, m_ctrl );
-        printf("OpticksResource::readEnvironment  m_envprefix[%s] missing required envvars ", m_envprefix );
+        m_geokey = DEFAULT_GEOKEY ;  
+        printf("OpticksResource::readEnvironment USING DEFAULT geokey %s \n", m_geokey );
+    }
+
+    m_path = getenv(m_geokey);
+
+    if(m_path == NULL)
+    {
+        printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s path %s \n", m_geokey, m_path );
         assert(0);
     }
+
+
+    m_query = getenvvar(m_envprefix, "QUERY");
+
+    if(m_query == NULL)
+    {
+        m_query = DEFAULT_QUERY ;  
+        printf("OpticksResource::readEnvironment USING DEFAULT geo query %s \n", m_query );
+    }
+
+
+    m_ctrl = getenvvar(m_envprefix, "CTRL");
+    if(m_ctrl == NULL)
+    {
+        m_ctrl = DEFAULT_CTRL ;  
+        printf("OpticksResource::readEnvironment USING DEFAULT geo ctrl %s \n", m_ctrl );
+    }
+
+
+
 
     m_meshfix = getenvvar(m_envprefix, "MESHFIX");
     m_meshfixcfg = getenvvar(m_envprefix, "MESHFIX_CFG");

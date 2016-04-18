@@ -293,17 +293,20 @@ void Opticks::configureDomains()
 
    m_wavelength_domain = getDefaultDomainSpec() ;  
 
-   int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1); 
+   int e_rng_max = getenvint("CUDAWRAP_RNG_MAX",-1); 
 
    int x_rng_max = getRngMax() ;
 
-   if(rng_max != x_rng_max)
+   if(e_rng_max != x_rng_max)
        LOG(fatal) << "Opticks::configureDomains"
-                  << " CUDAWRAP_RNG_MAX " << rng_max 
+                  << " CUDAWRAP_RNG_MAX " << e_rng_max 
                   << " x_rng_max " << x_rng_max 
                   ;
 
-   assert(rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
+   //assert(e_rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
+
+
+
 }
 
 void Opticks::dumpDomains(const char* msg)

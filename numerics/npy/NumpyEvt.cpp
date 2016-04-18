@@ -992,7 +992,10 @@ NPY<float>* NumpyEvt::loadGenstepDerivativeFromFile(const char* postfix)
               ;
 
     NPY<float>* npy = NPY<float>::load(m_typ, tag, m_det ) ;
-    npy->dump("NumpyEvt::loadGenstepDerivativeFromFile");
+    if(npy)
+    {
+        npy->dump("NumpyEvt::loadGenstepDerivativeFromFile");
+    }
     return npy ; 
 }
 

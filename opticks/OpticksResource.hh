@@ -13,6 +13,10 @@ class OpticksResource {
        static const char* DPIB ; 
        static const char* PREFERENCE_BASE  ;
     public:
+       static const char* DEFAULT_GEOKEY ;
+       static const char* DEFAULT_QUERY ;
+       static const char* DEFAULT_CTRL ;
+    public:
        static bool existsFile(const char* path);
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
