@@ -71,6 +71,8 @@ class GUI {
        void interpolated_view(InterpolatedView* iv);
        bool animator_gui(Animator* animator, const char* label, const char* fmt, float power);
 
+       void camera_gui(Camera* camera);
+
    public:
        //static void gui_item_index(GItemIndex* ii);
        static void gui_item_index(GAttrSeq* al);

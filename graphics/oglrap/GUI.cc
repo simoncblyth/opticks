@@ -236,9 +236,16 @@ void GUI::viewgui()
 }
 
 
-
-
-
+void GUI::camera_gui(Camera* camera)
+{
+    float power = 2.0f ; 
+    ImGui::SliderFloat("near", camera->getNearPtr(), camera->getNearMin(), camera->getNearMax(), "%.3f", power );  
+    ImGui::SliderFloat("far",  camera->getFarPtr(),  camera->getFarMin(),  camera->getFarMax() , "%.3f", power );
+    ImGui::SliderFloat("zoom", camera->getZoomPtr(), camera->getZoomMin(), camera->getZoomMax(), "%.3f", power);
+    ImGui::SliderFloat("scale",camera->getScalePtr(),camera->getScaleMin(),camera->getScaleMax(), "%.3f", power);
+    ImGui::Checkbox("parallel", camera->getParallelPtr() );
+    if (ImGui::Button("Camera Summary")) camera->Summary();
+}
 
 
 
@@ -319,7 +326,7 @@ void GUI::show(bool* opened)
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Camera"))
     {
-        m_camera->gui(); 
+        camera_gui(m_camera); 
     }
 
     ImGui::Spacing();

@@ -145,7 +145,6 @@ class Camera : public NConfigurable  {
      void set(const char* name, std::string& xyz);
      std::string get(const char* name);
 
-     void gui();
 
      static bool accepts(const char* name);
 
@@ -200,6 +199,21 @@ class Camera : public NConfigurable  {
      float getFar();
      float getZoom();
      float getScale();
+  public:
+     float getNearMin();
+     float getNearMax();
+     float getFarMin();
+     float getFarMax();
+     float getZoomMin();
+     float getZoomMax();
+     float getScaleMin();
+     float getScaleMax();
+  public:
+     float* getNearPtr();
+     float* getFarPtr();
+     float* getZoomPtr();
+     float* getScalePtr();
+     bool* getParallelPtr();
   public:
      float getDepth();
   public:
@@ -401,6 +415,11 @@ inline float Camera::getNear(){  return m_near ; }
 inline float Camera::getFar(){   return m_far ;  }
 inline float Camera::getZoom(){  return m_zoom ; } 
 
+
+
+
+
+
 inline float Camera::getScale(){ return m_parallel ? m_scale  : m_near ; }
 
 inline float Camera::getDepth(){   return m_far - m_near ; }
@@ -450,5 +469,72 @@ inline void Camera::setScaleClip(float _min, float _max)
     m_scaleclip[0] = _min ;  
     m_scaleclip[1] = _max ;  
 }
+
+
+
+
+
+inline float* Camera::getNearPtr()
+{
+    return &m_near ;
+}
+inline float* Camera::getFarPtr()
+{
+    return &m_far ;
+}
+inline float* Camera::getZoomPtr()
+{
+    return &m_zoom ;
+}
+inline float* Camera::getScalePtr()
+{
+    return &m_scale ;
+}
+inline bool* Camera::getParallelPtr()
+{
+    return &m_parallel ;
+}
+
+
+
+inline float Camera::getNearMin()
+{
+    return m_nearclip[0];
+}
+inline float Camera::getNearMax()
+{
+    return std::min(m_far, m_nearclip[1]);
+}
+
+
+inline float Camera::getFarMin()
+{
+    return std::max(m_near, m_farclip[0]);
+}
+inline float Camera::getFarMax()
+{
+    return m_farclip[1];
+}
+
+
+inline float Camera::getZoomMin()
+{
+    return m_zoomclip[0];
+}
+inline float Camera::getZoomMax()
+{
+    return m_zoomclip[1];
+}
+
+
+inline float Camera::getScaleMin()
+{
+    return m_scaleclip[0];
+}
+inline float Camera::getScaleMax()
+{
+    return m_scaleclip[1];
+}
+
 
 

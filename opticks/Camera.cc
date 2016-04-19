@@ -9,18 +9,12 @@
 #include <glm/gtx/transform.hpp>
 #include <boost/lexical_cast.hpp>
 
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
 
 const char* Camera::PREFIX = "camera" ;
 const char* Camera::getPrefix()
 {
    return PREFIX ; 
 }
-
-
 
 
 const char* Camera::PRINT    = "print" ;
@@ -131,21 +125,6 @@ void Camera::configureF(const char* name, std::vector<float> values)
      }
 }
  
-
-
-void Camera::gui()
-{
-#ifdef GUI_
-    float power = 2.0f ; 
-    ImGui::SliderFloat("near",  &m_near, m_nearclip[0], std::min(m_far, m_nearclip[1]), "%.3f", power );  
-    ImGui::SliderFloat("far",   &m_far,  std::max(m_near,m_farclip[0]),  m_farclip[1], "%.3f", power );
-    ImGui::SliderFloat("zoom",  &m_zoom, m_zoomclip[0], m_zoomclip[1], "%.3f", power);
-    ImGui::SliderFloat("scale", &m_scale, m_scaleclip[0], m_scaleclip[1], "%.3f", power);
-    ImGui::Checkbox("parallel", &m_parallel);
-    if (ImGui::Button("Camera Summary")) Summary();
-#endif  
- }
-
 
 
 

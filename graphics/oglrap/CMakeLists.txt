@@ -109,9 +109,6 @@ add_library( ${name}  SHARED
                 Rdr.cc
                 Trackball.cc
                 TrackballCfg.cc
-                Camera.cc
-                CameraCfg.cc
-
 
                 Light.cc
                 Clipper.cc
@@ -144,9 +141,6 @@ SET(hdrs
         RendererCfg.hh
         Trackball.hh
         TrackballCfg.hh
-        Camera.hh
-        CameraCfg.hh
-
 
         Light.hh
         Clipper.hh
