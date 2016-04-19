@@ -20,7 +20,7 @@ class InterpolatedView :  public View {
         virtual const char* getPrefix();
     public:
         InterpolatedView(unsigned int period=100, bool verbose=false);
-        
+        Animator* getAnimator();
         void addView(View* view);
         void Summary(const char* msg="View::Summary");
     public:
@@ -34,7 +34,6 @@ class InterpolatedView :  public View {
         bool isActive();
         bool hasChanged();
         void nextMode(unsigned int modifiers);
-        void gui();
     public:
         unsigned int getNumViews();
         void setFraction(float fraction);
@@ -74,6 +73,10 @@ inline InterpolatedView::InterpolatedView(unsigned int period, bool verbose)
 
 
 
+inline Animator* InterpolatedView::getAnimator()
+{
+    return m_animator ; 
+}
 
 inline void InterpolatedView::addView(View* view)
 {

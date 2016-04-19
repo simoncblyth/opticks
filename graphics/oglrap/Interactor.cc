@@ -4,6 +4,9 @@
 #include "Frame.hh"
 //#include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
 
+
+#include "Opticks.hh"
+
 #include "Composition.hh"
 #include "Bookmarks.hh"
 
@@ -19,10 +22,8 @@
 #include <string>
 #include <sstream>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
+#include "NLog.hpp"
 
 #ifdef GUI_
 #include <imgui.h>
@@ -32,6 +33,19 @@ const unsigned int Interactor::_pan_mode_key = GLFW_KEY_X ;
 
 const char* Interactor::DRAGFACTOR = "dragfactor" ; 
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
+
+
+
+void Interactor::nextOptiXResolutionScale(unsigned int modifiers)
+{
+    if(modifiers & Opticks::e_shift)
+        setOptiXResolutionScale(getOptiXResolutionScale()/2);
+    else
+        setOptiXResolutionScale(getOptiXResolutionScale()*2);
+}
+
+
+
 
 /*
 const char* Interactor::GUIMODE    = "gui" ; 
@@ -304,10 +318,10 @@ void Interactor::key_pressed(unsigned int key)
 unsigned int Interactor::getModifiers()
 {
     unsigned int modifiers = 0 ;
-    if( m_keys_down[GLFW_KEY_LEFT_SHIFT]   || m_keys_down[GLFW_KEY_RIGHT_SHIFT] )    modifiers += e_shift ;
-    if( m_keys_down[GLFW_KEY_LEFT_CONTROL] || m_keys_down[GLFW_KEY_RIGHT_CONTROL] )  modifiers += e_control ;
-    if( m_keys_down[GLFW_KEY_LEFT_ALT]     || m_keys_down[GLFW_KEY_RIGHT_ALT] )      modifiers += e_option ;
-    if( m_keys_down[GLFW_KEY_LEFT_SUPER]   || m_keys_down[GLFW_KEY_RIGHT_SUPER] )    modifiers += e_command ;
+    if( m_keys_down[GLFW_KEY_LEFT_SHIFT]   || m_keys_down[GLFW_KEY_RIGHT_SHIFT] )    modifiers += Opticks::e_shift ;
+    if( m_keys_down[GLFW_KEY_LEFT_CONTROL] || m_keys_down[GLFW_KEY_RIGHT_CONTROL] )  modifiers += Opticks::e_control ;
+    if( m_keys_down[GLFW_KEY_LEFT_ALT]     || m_keys_down[GLFW_KEY_RIGHT_ALT] )      modifiers += Opticks::e_option ;
+    if( m_keys_down[GLFW_KEY_LEFT_SUPER]   || m_keys_down[GLFW_KEY_RIGHT_SUPER] )    modifiers += Opticks::e_command ;
     return modifiers ; 
 }
 
@@ -315,34 +329,34 @@ unsigned int Interactor::getModifiers()
 std::string Interactor::describeModifiers(unsigned int modifiers)
 {
     std::stringstream ss ; 
-    if(modifiers & e_shift)   ss << "shift " ; 
-    if(modifiers & e_control) ss << "control " ; 
-    if(modifiers & e_option)  ss << "option " ; 
-    if(modifiers & e_command) ss << "command " ;
+    if(modifiers & Opticks::e_shift)   ss << "shift " ; 
+    if(modifiers & Opticks::e_control) ss << "control " ; 
+    if(modifiers & Opticks::e_option)  ss << "option " ; 
+    if(modifiers & Opticks::e_command) ss << "command " ;
     return ss.str(); 
 }
 
 
 bool Interactor::isShift(unsigned int modifiers)
 {
-    return modifiers & e_shift ; 
+    return modifiers & Opticks::e_shift ; 
 }
 
 
 bool Interactor::isOption(unsigned int modifiers)
 {
-    return modifiers & e_option ; 
+    return modifiers & Opticks::e_option ; 
 }
 
 
 bool Interactor::isCommand(unsigned int modifiers)
 {
-    return modifiers & e_command ; 
+    return modifiers & Opticks::e_command ; 
 }
 
 bool Interactor::isControl(unsigned int modifiers)
 {
-    return modifiers & e_control ; 
+    return modifiers & Opticks::e_control ; 
 }
 
 

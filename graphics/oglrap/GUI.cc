@@ -7,6 +7,10 @@
 // npy-
 #include "Index.hpp"
 
+
+// opticks-
+#include "Opticks.hh"
+
 // ggeo-
 #include "GGeo.hh"
 #include "GSurfaceLib.hh"
@@ -24,12 +28,18 @@
 #include "Scene.hh"
 #include "Composition.hh"
 #include "Clipper.hh"
-#include "View.hh"
 #include "Camera.hh"
 #include "Trackball.hh"
 #include "Bookmarks.hh"
 #include "Photons.hh"
 #include "Animator.hh"
+
+
+#include "View.hh"
+#include "TrackView.hh"
+#include "OrbitalView.hh"
+#include "InterpolatedView.hh"
+
 
 
 #include "StateGUI.hh"
@@ -47,6 +57,8 @@ void GUI::setComposition(Composition* composition)
     setTrackball(composition->getTrackball());
     setAnimator(NULL); // defer
 }
+
+
 
 void GUI::setScene(Scene* scene)
 {
@@ -105,13 +117,129 @@ void GUI::show_scrubber(bool* opened)
 
     if(m_animator)
     {
-        m_animator->gui("time (ns)", "%0.3f", 2.0f);
+        animator_gui(m_animator, "time (ns)", "%0.3f", 2.0f);
     } 
 
     //ImGui::SliderFloat("float", &m_scrub_alpha, 0.0f, 1.0f);
 
     ImGui::End();
 }
+
+
+
+bool GUI::animator_gui(Animator* animator, const char* label, const char* fmt, float power)
+{
+    Animator::Mode_t prior = animator->getMode() ;
+
+    float* target = animator->getTarget();
+    float low = animator->getLow();
+    float high = animator->getHigh();
+    float fraction = animator->getFractionForValue(*target);
+    int* mode = animator->getModePtr() ;   // address of enum cast to int*
+
+    ImGui::SliderFloat( label, target, low, high , fmt, power);
+    ImGui::Text("animation mode: ");
+
+    ImGui::RadioButton( Animator::OFF_ , mode, Animator::OFF); ImGui::SameLine();
+
+    if(animator->isSlowEnabled())
+    {
+        ImGui::RadioButton(Animator::SLOW_, mode, Animator::SLOW);
+        ImGui::SameLine(); 
+    }
+    if(animator->isNormEnabled())
+    {
+        ImGui::RadioButton(Animator::NORM_, mode, Animator::NORM);
+        ImGui::SameLine();
+    }
+    if(animator->isFastEnabled())
+    {
+        ImGui::RadioButton(Animator::FAST_, mode, Animator::FAST); //ImGui::SameLine();
+    }
+
+    
+    if(animator->isModeChanged(prior))
+    {
+       animator->modeTransition(fraction);
+    }
+
+    return animator->isActive() ;
+}
+
+
+void GUI::standard_view(View* view)
+{
+    if(ImGui::Button("home")) view->home();
+    ImGui::SliderFloat3("eye",  view->getEyePtr(),  -1.0f, 1.0f);
+    ImGui::SliderFloat3("look", view->getLookPtr(), -1.0f, 1.0f);
+    ImGui::SliderFloat3("up",   view->getUpPtr(), -1.0f, 1.0f);
+}
+
+void GUI::track_view(TrackView* tv)
+{
+    Animator* animator = tv->getAnimator();
+    if(animator)
+    {   
+         animator_gui(animator, "TrackView ", "%0.3f", 2.0f);
+    }   
+    ImGui::SliderFloat("tmin offset (ns)", tv->getTMinOffsetPtr(), -20.0f, 20.0f);
+    ImGui::SliderFloat("tmax offset (ns)", tv->getTMaxOffsetPtr(), -20.0f, 20.0f);
+    ImGui::SliderFloat("teye offset (ns)", tv->getTEyeOffsetPtr(), -20.0f, 50.0f);
+    ImGui::SliderFloat("tlook offset (ns)",tv->getTLookOffsetPtr(), -20.0f, 50.0f);
+    ImGui::SliderFloat("fraction scale",   tv->getFractionScalePtr(), 1.0f, 2.0f);
+}
+
+void GUI::orbital_view(OrbitalView* ov)
+{
+    Animator* animator = ov->getAnimator();
+    if(animator)
+    {   
+         animator_gui(animator, "OrbitalView ", "%0.3f", 2.0f);
+         ImGui::Text(" fraction %10.3f ", animator->getFractionFromTarget()  );  
+    }   
+}
+
+void GUI::interpolated_view(InterpolatedView* iv)
+{
+    Animator* animator = iv->getAnimator();
+    if(animator)
+    {
+         animator_gui(animator, "InterpolatedView ", "%0.3f", 2.0f);
+         ImGui::Text(" fraction %10.3f ", animator->getFractionFromTarget()  );
+    }
+}
+
+
+
+
+void GUI::viewgui()
+{
+    if(m_view->isTrack())
+    {
+         TrackView* tv = dynamic_cast<TrackView*>(m_view) ;
+         track_view(tv);
+    } 
+    else if(m_view->isOrbital())
+    {
+         OrbitalView* ov = dynamic_cast<OrbitalView*>(m_view) ;
+         orbital_view(ov);
+    }
+    else if(m_view->isInterpolated())
+    {
+         InterpolatedView* iv = dynamic_cast<InterpolatedView*>(m_view) ;
+         interpolated_view(iv); 
+    }
+    else if(m_view->isStandard())
+    {
+         standard_view(m_view); 
+    }
+}
+
+
+
+
+
+
 
 
 // follow pattern of ImGui::ShowTestWindow
@@ -167,13 +295,25 @@ void GUI::show(bool* opened)
     }
 
     ImGui::Spacing();
-    m_composition->gui(); 
+
+    {
+       m_composition->gui(); 
+       Animator* animator = m_composition->getAnimator(); 
+
+       if(animator)
+       {
+           animator_gui(animator, "time (ns)", "%0.3f", 2.0f);
+           float* target = animator->getTarget();
+           ImGui::Text(" time (ns) * %10.3f (mm/ns) : %10.3f mm ", Opticks::F_SPEED_OF_LIGHT, *target * Opticks::F_SPEED_OF_LIGHT );
+       }  
+    }
+
+
 
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("View"))
     {
-        m_composition->viewgui(); 
-        //m_view->gui(); 
+        viewgui(); 
     }
 
     ImGui::Spacing();

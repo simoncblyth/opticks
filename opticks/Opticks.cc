@@ -17,6 +17,7 @@
 
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
+const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
 
 const char* Opticks::COMPUTE = "--compute" ; 
 

@@ -6,10 +6,6 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
 
 const char* OrbitalView::PREFIX = "orbitalview" ;
 const char* OrbitalView::getPrefix()
@@ -139,18 +135,6 @@ void OrbitalView::Summary(const char* msg)
 
     m_basis->Summary(msg); 
 
-}
-
-
-void OrbitalView::gui()
-{
-#ifdef GUI_
-    if(m_animator)
-    {
-         m_animator->gui("OrbitalView ", "%0.3f", 2.0f);
-         ImGui::Text(" fraction %10.3f ", m_fraction  );
-    }
-#endif    
 }
 
 

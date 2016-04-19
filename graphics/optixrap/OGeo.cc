@@ -1,8 +1,10 @@
 #include "OGeo.hh"
 #include "OContext.hh"
 
+#ifdef WITH_OPENGL
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#endif
 
 #include <algorithm>
 #include <iomanip>
@@ -598,7 +600,6 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    unsigned int nel = buf->getNumElements();
    unsigned int mul = OConfig::getMultiplicity(format) ;
 
-   int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
 
@@ -624,8 +625,9 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
 
    if(buffer_id > -1 && reuse)
    {
+#ifdef WITH_OPENGL
        //Reuse attempt fails, with:  Caught exception: GL error: Invalid enum
-
+        int buffer_target = buf->getBufferTarget();
         glBindBuffer(buffer_target, buffer_id) ;
 
         buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, buffer_id);
@@ -633,6 +635,9 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
         buffer->setSize(nit);
 
         glBindBuffer(buffer_target, 0) ;
+#else
+        assert(0); // not compiled WITH_OPENGL 
+#endif
    } 
    else
    {
@@ -654,7 +659,6 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
    unsigned int nit = bit/fold ; 
    unsigned int mul = OConfig::getMultiplicity(format) ; // eg multiplicity of FLOAT4 is 4
 
-   int buffer_target = buf->getBufferTarget();
    int buffer_id = buf->getBufferId() ;
 
    bool from_gl = buffer_id > -1 && reuse ;
@@ -684,8 +688,9 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
    if(from_gl)
    {
+#ifdef WITH_OPENGL
        // Reuse attempt fails, getting: Caught exception: GL error: Invalid enum
-
+        int buffer_target = buf->getBufferTarget();
         glBindBuffer(buffer_target, buffer_id) ;
 
         buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT, buffer_id);
@@ -693,6 +698,11 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
         buffer->setSize(nit);
 
         glBindBuffer(buffer_target, 0) ;
+#else
+        assert(0); // not compiled WITH_OPENGL 
+#endif
+
+
    } 
    else
    {

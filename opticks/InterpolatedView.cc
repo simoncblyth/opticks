@@ -5,10 +5,6 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
 
 
 const char* InterpolatedView::PREFIX = "interpolatedview" ;
@@ -122,22 +118,5 @@ void InterpolatedView::Summary(const char* msg)
         v->Summary(vmsg.c_str());
     }
 }
-
-
-void InterpolatedView::gui()
-{
-#ifdef GUI_
-    if(m_animator)
-    {
-         m_animator->gui("InterpolatedView ", "%0.3f", 2.0f);
-         ImGui::Text(" fraction %10.3f ", m_fraction  );
-    }
-#endif    
-}
-
-
-
-
-
 
 

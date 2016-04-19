@@ -29,9 +29,9 @@ class TrackView :  public View {
         TrackView(NPY<float>* track, unsigned int period=100, bool verbose=false);
         void Summary(const char* msg="TrackView::Summary");
         void setAnimator(Animator* animator);
+        Animator* getAnimator();
     private:
         void initAnimator();
-        Animator* getAnimator();
     public:
         // View overrides 
         glm::vec4 getEye(const glm::mat4& m2w);
@@ -39,11 +39,16 @@ class TrackView :  public View {
         glm::vec4 getUp(const glm::mat4& m2w);
         glm::vec4 getGaze(const glm::mat4& m2w, bool debug=false);
     public:
+        float* getTEyeOffsetPtr();
+        float* getTLookOffsetPtr();
+        float* getTMinOffsetPtr();
+        float* getTMaxOffsetPtr();
+        float* getFractionScalePtr();
+    public:
         void tick();
         void nextMode(unsigned int modifiers);
         bool isActive();
         bool hasChanged();
-        void gui();
     public:
         void setFraction(float fraction);
         std::string description(const char* msg="OV");
@@ -72,6 +77,34 @@ class TrackView :  public View {
         bool         m_external ; 
 
 };
+
+
+
+
+inline float* TrackView::getTEyeOffsetPtr()
+{
+    return &m_teye_offset ; 
+}
+inline float* TrackView::getTLookOffsetPtr()
+{
+    return &m_tlook_offset ; 
+}
+inline float* TrackView::getTMinOffsetPtr()
+{
+    return &m_tmin_offset ; 
+}
+
+inline float* TrackView::getTMaxOffsetPtr()
+{
+    return &m_tmax_offset ; 
+}
+inline float* TrackView::getFractionScalePtr()
+{
+    return &m_fraction_scale ; 
+}
+
+
+
 
 inline TrackView::TrackView(NPY<float>* track, unsigned int period, bool verbose) 
      : 

@@ -14,14 +14,15 @@ add_subdirectory(graphics/assimpwrap)
 add_subdirectory(graphics/openmeshrap)
 add_subdirectory(graphics/oglrap)
 
-find_package(OptiX QUIET)
-if(OptiX_FOUND)
-    add_subdirectory(cuda/cudawrap)
-    add_subdirectory(numerics/thrustrap)
-    add_subdirectory(graphics/optixrap)
-    add_subdirectory(opticksop)
-endif()
+#find_package(OptiX QUIET)
+#if(OptiX_FOUND)
 
+add_subdirectory(cuda/cudawrap)
+add_subdirectory(numerics/thrustrap)
+add_subdirectory(graphics/optixrap)
+add_subdirectory(opticksop)
+
+#endif()
 
 add_subdirectory(graphics/ggeoview)
 

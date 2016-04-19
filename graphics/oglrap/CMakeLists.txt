@@ -17,12 +17,15 @@ include(EnvBuildOptions)
 ###
 
 ########### using env/cmake/Modules/*.cmake #####
+
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
-find_package(GGeo REQUIRED)  
 find_package(Boost REQUIRED) 
 find_package(Cfg REQUIRED) 
+find_package(Opticks REQUIRED)
+
+find_package(GGeo REQUIRED)  
 find_package(PPM REQUIRED) 
 find_package(NPY REQUIRED) 
 find_package(Bregex REQUIRED)
@@ -39,6 +42,7 @@ set(INCLUDE_DIRS
    ${GGeo_INCLUDE_DIRS} 
    ${Boost_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS}
+   ${Opticks_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
    ${Bregex_INCLUDE_DIRS} 
@@ -60,6 +64,7 @@ set(DEFINITIONS
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
+   ${Opticks_DEFINITIONS}
    ${Boost_DEFINITIONS}
    ${Bregex_DEFINITIONS} 
    ${ImGui_DEFINITIONS}
@@ -69,6 +74,7 @@ set(DEFINITIONS
 set(LIBRARIES
    ${GLEW_LIBRARIES}
    ${GLFW_LIBRARIES}
+   ${Opticks_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${Boost_LIBRARIES}
    ${Bregex_LIBRARIES}
@@ -81,6 +87,11 @@ set(LIBRARIES
 
 include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
+
+# TODO: 
+#    start migrating classes that do not depend on OpenGL 
+#    elsewhere ... eg into opticks
+#
 
 add_library( ${name}  SHARED
                 Composition.cc
@@ -100,12 +111,9 @@ add_library( ${name}  SHARED
                 TrackballCfg.cc
                 Camera.cc
                 CameraCfg.cc
-                View.cc
-                InterpolatedView.cc
-                OrbitalView.cc
-                TrackView.cc
+
+
                 Light.cc
-                ViewCfg.cc
                 Clipper.cc
                 ClipperCfg.cc
                 Bookmarks.cc
@@ -116,7 +124,6 @@ add_library( ${name}  SHARED
                 Touchable.cc
                 GUI.cc
                 Photons.cc
-                Animator.cc
                 Colors.cc
                 DynamicDefine.cc
 )
@@ -139,12 +146,9 @@ SET(hdrs
         TrackballCfg.hh
         Camera.hh
         CameraCfg.hh
-        View.hh
-        InterpolatedView.hh
-        OrbitalView.hh
-        TrackView.hh
+
+
         Light.hh
-        ViewCfg.hh
         Clipper.hh
         ClipperCfg.hh
         Bookmarks.hh
@@ -156,7 +160,6 @@ SET(hdrs
         Touchable.hh
         GUI.hh
         Photons.hh
-        Animator.hh
         Colors.hh
         DynamicDefine.hh
 )

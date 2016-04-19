@@ -2,10 +2,10 @@ ggv-(){   ggeoview- ; }
 ggv-cd(){ ggeoview-cd $1 ; }
 ggv-cdi(){ ggv-cd issues ; }
 ggv-i(){  ggeoview-install ; }
-ggv-d(){  ggeoview-depinstall ; }
+ggv-d(){  ggeoview-dep-install ; }
 ggv-vi(){ ggeoview-vi ; }
 ggv-edit(){ ggeoview-edit ; }
-ggv--(){  ggeoview-depinstall ; }
+ggv--(){  ggeoview-dep-install ; }
 
 ggv-jpmt-cd(){   cd $(ggv-jpmt-idp) ; }
 ggv-jpmt-idp(){  echo $(ggv --jpmt --idp 2>/dev/null) ; }
@@ -2105,57 +2105,35 @@ ggeoview--()
 }
 
 
-ggeoview-depinstall()
+ggeoview-dep-action()
 {
-    bcfg-
-    bcfg-install
-    bregex-
-    bregex-install
-    npy-
-    npy-install
-    opticks-
-    opticks-install
-    ggeo-
-    ggeo-install
-    assimpwrap- 
-    assimpwrap-install
-    openmeshrap- 
-    openmeshrap-install
-    oglrap-
-    oglrap-install
-    cudawrap-
-    cudawrap-install 
-    thrustrap-
-    thrustrap-install 
-    optixrap-
-    optixrap-install 
-    opop-
-    opop-install
-    ggeoview-
-    ggeoview-install  
+    local action=${1:-install}
+    ggeoview-deps- | while read dep 
+    do
+        $dep-
+        $dep-$action
+    done
 }
 
-ggeoview-depcmake()
-{
-   local dep
-   ggeoview-deps- | while read dep ; do
-       $dep-
-       $dep-cmake
-   done
-}
+ggeoview-dep-cmake(){   ggeoview-dep-action cmake ; }
+ggeoview-dep-install(){ ggeoview-dep-action install ; }
+ggeoview-dep-wipe(){    ggeoview-dep-action wipe ; }
 
 ggeoview-deps-(){ cat << EOD
 bcfg
 bregex
 npy
+opticks
 ggeo
 assimpwrap
+openmeshrap
+ppm
 oglrap
-optixrap
 cudawrap
 thrustrap
-opticks
+optixrap
 opop
+ggeoview
 EOD
 }
 

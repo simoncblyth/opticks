@@ -42,6 +42,13 @@ add_library( ${name}  SHARED
     OpticksResource.cc
     Opticks.cc
     OpticksCfg.cc
+    View.cc
+    ViewCfg.cc
+
+    InterpolatedView.cc
+    OrbitalView.cc
+    TrackView.cc
+    Animator.cc
 )
 
 
@@ -51,8 +58,16 @@ SET(hdrs
     OpticksResource.hh
     Opticks.hh
     OpticksCfg.hh
+    View.hh
+    ViewCfg.hh
     OpticksPhoton.h
     OpticksFlags.h
+
+    InterpolatedView.hh
+    OrbitalView.hh
+    TrackView.hh
+    Animator.hh
+
 )
 
 install(TARGETS ${name}  DESTINATION lib)

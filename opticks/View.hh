@@ -69,7 +69,7 @@ public:
    virtual void nextMode(unsigned int modifiers);
    virtual bool isActive(); // always false, used in InterpolatedView
    virtual bool hasChanged();
-   virtual void gui();
+
 public:
    glm::mat4 getLookAt(const glm::mat4& m2w, bool debug=false);
 

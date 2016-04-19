@@ -28,6 +28,14 @@ class Opticks {
                GEOCODE_SKIP = 'K'
             } ;
    public:
+       enum { 
+              e_shift   = 1 << 0,  
+              e_control = 1 << 1,  
+              e_option  = 1 << 2,  
+              e_command = 1 << 3 
+            } ; 
+   public:
+       static const float F_SPEED_OF_LIGHT ;  // mm/ns
        static const char* ZERO_ ;
        static const char* CERENKOV_ ;
        static const char* SCINTILLATION_ ;

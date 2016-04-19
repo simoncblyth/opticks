@@ -4,13 +4,17 @@
 #include <math.h>
 #include <stdio.h>
 #include "assert.h"
-#include "Interactor.hh"
+
+#include "Opticks.hh"
+
 
 #define ANIMATOR_DEBUG 1
 
 // TODO: try to support live changing of the range 
 
 class Animator {
+    public:
+        friend class GUI ; 
     public:
         static const int period_low ; 
         static const int period_high ; 
@@ -25,6 +29,12 @@ class Animator {
 
         Animator(float* target, unsigned int period, float low=0.f, float high=1.f);
         void setModeRestrict(Mode_t restrict_);
+        bool isModeChanged(Mode_t prior);    
+        void modeTransition(float fraction);
+
+        bool isSlowEnabled();
+        bool isNormEnabled();
+        bool isFastEnabled();
 
         void home();
         void reset();
@@ -39,8 +49,8 @@ class Animator {
         float getHigh(); 
         bool isActive();
 
-        bool gui(const char* label, const char* fmt, float power=1.0f);
-
+        Mode_t getMode();
+        int* getModePtr();
         unsigned int getNumMode();
         void setMode( Mode_t mode);
         void nextMode(unsigned int modifiers);
@@ -53,7 +63,6 @@ class Animator {
         void          setTargetValue(float value);
         void          setFraction(float f);
     private:
-        void          modeTransition(float fraction);
         void          setTarget(float* target); // qty to be stepped
         unsigned int  getIndex();
         float         getValue();
@@ -101,6 +110,42 @@ inline Animator::Animator(float* target, unsigned int period, float low, float h
     m_fractions[NORM] = make_fractions(m_period[NORM]) ;
     m_fractions[FAST] = make_fractions(m_period[FAST]) ;
 }
+
+
+inline Animator::Mode_t Animator::getMode()
+{
+    return m_mode ; 
+}
+
+inline bool Animator::isModeChanged(Mode_t prior)
+{
+    return m_mode != prior ; 
+}
+
+
+inline int* Animator::getModePtr()
+{
+    int* mode = (int*)&m_mode ;   // address of enum cast to int*
+    return mode ; 
+}
+
+
+inline bool Animator::isSlowEnabled()
+{
+    return SLOW < m_restrict ; 
+}
+inline bool Animator::isNormEnabled()
+{
+    return NORM < m_restrict ; 
+}
+inline bool Animator::isFastEnabled()
+{
+    return FAST < m_restrict ; 
+}
+
+
+
+
 
 
 
@@ -152,10 +197,10 @@ inline unsigned int Animator::getNumMode()
 
 inline void Animator::nextMode(unsigned int modifiers)
 {
-    if(modifiers & Interactor::e_shift) m_increment = -m_increment ;
+    if(modifiers & Opticks::e_shift) m_increment = -m_increment ;
 
-    bool option = modifiers & Interactor::e_option ;    
-    bool control = modifiers & Interactor::e_control ;    
+    bool option = modifiers & Opticks::e_option ;    
+    bool control = modifiers & Opticks::e_control ;    
 
     unsigned int num_mode = getNumMode();
 

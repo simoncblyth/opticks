@@ -9,10 +9,6 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
 
 const char* TrackView::PREFIX = "trackview" ;
 const char* TrackView::getPrefix()
@@ -167,23 +163,5 @@ void TrackView::Summary(const char* msg)
     m_track->dump(msg); 
 }
 
-
-void TrackView::gui()
-{
-#ifdef GUI_
-    Animator* animator = getAnimator();
-    if(animator)
-    {
-         animator->gui("TrackView ", "%0.3f", 2.0f);
-         //ImGui::Text(" fraction %10.3f ", m_fraction  );
-    }
-    ImGui::SliderFloat("tmin offset (ns)", &m_tmin_offset, -20.0f, 20.0f);
-    ImGui::SliderFloat("tmax offset (ns)", &m_tmax_offset, -20.0f, 20.0f);
-    ImGui::SliderFloat("teye offset (ns)", &m_teye_offset, -20.0f, 50.0f);
-    ImGui::SliderFloat("tlook offset (ns)", &m_tlook_offset, -20.0f, 50.0f);
-    ImGui::SliderFloat("fraction scale",    &m_fraction_scale, 1.0f, 2.0f);
-
-#endif    
-}
 
 

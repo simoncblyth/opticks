@@ -1,6 +1,5 @@
 #include "View.hh"
 
-
 // npy-
 #include "NLog.hpp"
 #include "GLMPrint.hpp"
@@ -16,10 +15,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-
-#ifdef GUI_
-#include <imgui.h>
-#endif
 
 const char* View::PREFIX = "view" ;
 const char* View::getPrefix()
@@ -98,16 +93,6 @@ void View::Print(const char* msg)
     print(getEye(), getLook(), getUp() , "eye/look/up");
 }
 
-
-void View::gui()
-{
-#ifdef GUI_
-    if(ImGui::Button("home")) home();
-    ImGui::SliderFloat3("eye",  getEyePtr(),  -1.0f, 1.0f);
-    ImGui::SliderFloat3("look", getLookPtr(), -1.0f, 1.0f);
-    ImGui::SliderFloat3("up",   getUpPtr(), -1.0f, 1.0f);
-#endif    
-}
 
 
 void View::Summary(const char* msg)

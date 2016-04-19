@@ -136,7 +136,6 @@ class Composition : public NConfigurable {
       void configureI(const char* name, std::vector<int> values );
       void configureS(const char* name, std::vector<std::string> values);
       void gui();
-      void viewgui();
 
   public: 
       void aim(glm::vec4& ce, bool verbose=false);

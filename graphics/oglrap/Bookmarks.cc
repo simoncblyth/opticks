@@ -241,8 +241,8 @@ void Bookmarks::gui()
     }
 
 
-    InterpolatedView* iv = getInterpolatedView();
-    iv->gui();
+    //InterpolatedView* iv = getInterpolatedView();
+    //iv->gui();
 
 #endif
 }

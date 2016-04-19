@@ -14,7 +14,12 @@ class GAttrSeq ;
 class Interactor ; 
 class Scene ; 
 class Composition ;
+
 class View ;
+class TrackView ; 
+class InterpolatedView ; 
+class OrbitalView ; 
+
 class Camera ;
 class Clipper ;
 class Trackball ;
@@ -56,6 +61,15 @@ class GUI {
        void setupHelpText(const std::string& txt);
        void setupStats(const std::vector<std::string>& stats);
        void setupParams(const std::vector<std::string>& params);
+
+
+   public:
+       void viewgui();
+       void standard_view(View* view);
+       void track_view(TrackView* tv);
+       void orbital_view(OrbitalView* ov);
+       void interpolated_view(InterpolatedView* iv);
+       bool animator_gui(Animator* animator, const char* label, const char* fmt, float power);
 
    public:
        //static void gui_item_index(GItemIndex* ii);
@@ -125,10 +139,12 @@ inline void GUI::setPhotons(Photons* photons)
 {
     m_photons = photons ; 
 }
+
 inline void GUI::setView(View* view)
 {
     m_view = view ; 
 }
+
 inline void GUI::setCamera(Camera* camera)
 {
     m_camera = camera ; 

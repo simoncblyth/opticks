@@ -1,5 +1,8 @@
 #include "Composition.hh"
 
+// opticks-
+#include "View.hh"
+
 
 // npy-
 #include "NPY.hpp"
@@ -18,7 +21,6 @@
 #include "Camera.hh"
 #include "Trackball.hh"
 
-#include "View.hh"
 #include "InterpolatedView.hh"
 #include "OrbitalView.hh"
 #include "TrackView.hh"
@@ -47,14 +49,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-// TODO: rearrange defines to avoid duplicating this
-// mm/ns
-#define SPEED_OF_LIGHT 299.792458f
-
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 #ifdef GUI_
 #include <imgui.h>
@@ -422,14 +417,6 @@ void Composition::gui()
     if (!ImGui::CollapsingHeader("Composition")) return ;
 
 
-    if(m_animator)
-    {
-         m_animator->gui("time (ns)", "%0.3f", 2.0f);
-
-         float* target = m_animator->getTarget();
-         ImGui::Text(" time (ns) * %10.3f (mm/ns) : %10.3f mm ", SPEED_OF_LIGHT, *target * SPEED_OF_LIGHT );
-    }
-
     ImGui::SliderFloat( "lookPhi", &m_lookphi,  -180.f, 180.0f, "%0.3f");
     ImGui::SameLine();
     if(ImGui::Button("zeroPhi")) setLookAngle(0.f) ;
@@ -535,31 +522,6 @@ void Composition::gui()
 }
 
 
-
-void Composition::viewgui()
-{
-#ifdef GUI_
-    if(m_view->isTrack())
-    {
-         TrackView* tv = dynamic_cast<TrackView*>(m_view) ;
-         tv->gui();
-    } 
-    else if(m_view->isOrbital())
-    {
-         OrbitalView* ov = dynamic_cast<OrbitalView*>(m_view) ;
-         ov->gui();
-    }
-    else if(m_view->isInterpolated())
-    {
-         InterpolatedView* iv = dynamic_cast<InterpolatedView*>(m_view) ;
-         iv->gui();
-    }
-    else if(m_view->isStandard())
-    {
-         m_view->gui();
-    }
-#endif    
-}
 
 
 

@@ -36,9 +36,18 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-p
 
 
 find_package(Boost REQUIRED)
+
+
+# OFrame,ORenderer force the OpenGL dependency
+#
+# OTracer depends on Composition forcing OGLRap dependency
+#    TODO: drop Composition down to Opticks to avoid OpenGL dependency here
+
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
+
+
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(Opticks REQUIRED)
@@ -52,14 +61,19 @@ find_package(ThrustRap REQUIRED)
 
 include(EnvBuildOptions)
 
+
+
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
     ${Boost_INCLUDE_DIRS} 
+
     ${GLEW_INCLUDE_DIRS} 
     ${GLFW_INCLUDE_DIRS} 
     ${OGLRap_INCLUDE_DIRS}
+
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
     ${Opticks_INCLUDE_DIRS} 
@@ -76,9 +90,11 @@ include_directories(
 
 set(LIBRARIES
       ${Boost_LIBRARIES}
+
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
       ${OGLRap_LIBRARIES}
+
       ${Assimp_LIBRARIES}
       ${AssimpWrap_LIBRARIES}
       ${GGeo_LIBRARIES}
@@ -93,9 +109,11 @@ set(LIBRARIES
 
 add_definitions(
     ${Boost_DEFINITIONS}
+
     ${GLEW_DEFINITIONS}
     ${GLFW_DEFINITIONS}
     ${OGLRap_DEFINITIONS}
+
     ${Opticks_DEFINITIONS} 
 
     ${Assimp_DEFINITIONS} 
@@ -113,8 +131,11 @@ optixthrust_add_library( ${name}
        OProg.cc
        OTimes.cc
        OGeo.cc
+
        OFrame.cc
        ORenderer.cc
+       OTracer.cc
+
        OColors.cc
        OBndLib.cc
        OScintillatorLib.cc
@@ -122,7 +143,6 @@ optixthrust_add_library( ${name}
        OPropertyLib.cc
        OConfig.cc
        OAccel.cc
-       OTracer.cc
        OPropagator.cc
 
        cu/pinhole_camera.cu
@@ -167,15 +187,17 @@ set(hdrs
   OProg.hh
   OTimes.hh
   OGeo.hh
+
   OFrame.hh
   ORenderer.hh
+  OTracer.hh
+
   OColors.hh
   OBndLib.hh
   OScintillatorLib.hh
   OSourceLib.hh
   OPropertyLib.hh
   OAccel.hh
-  OTracer.hh
   OPropagator.hh
   define.h
 

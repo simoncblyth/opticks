@@ -3,6 +3,9 @@
 #include <GL/glew.h>
 #include <cstring>
 
+// opticks-
+#include "Opticks.hh"
+
 // ggeo-
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
@@ -774,7 +777,7 @@ void Scene::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index
 
 void Scene::nextRenderStyle(unsigned int modifiers)  // O:key
 {
-    bool nudge = modifiers & Interactor::e_shift ;
+    bool nudge = modifiers & Opticks::e_shift ;
     if(nudge)
     {
         m_composition->setChanged(true) ;

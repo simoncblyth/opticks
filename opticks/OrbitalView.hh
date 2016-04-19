@@ -20,6 +20,7 @@ class OrbitalView :  public View {
     public:
         OrbitalView(View* basis, unsigned int period=100, bool verbose=false);
         void Summary(const char* msg="OrbitalView::Summary");
+        Animator* getAnimator();
     public:
         // View overrides 
         glm::vec4 getEye(const glm::mat4& m2w);
@@ -31,7 +32,6 @@ class OrbitalView :  public View {
         void nextMode(unsigned int modifiers);
         bool isActive();
         bool hasChanged();
-        void gui();
     public:
         void setFraction(float fraction);
         std::string description(const char* msg="OV");
@@ -67,8 +67,10 @@ inline OrbitalView::OrbitalView(View* basis, unsigned int period, bool verbose)
     init();
 }
 
-
-
+inline Animator* OrbitalView::getAnimator()
+{
+    return m_animator ; 
+}
 
 inline void OrbitalView::setFraction(float fraction)
 {
