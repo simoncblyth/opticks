@@ -5,9 +5,7 @@
 #include <glm/glm.hpp>  
 
 // ggeo-
-#include "GVector.hh"
-
-
+//#include "GVector.hh"
 
 
 template<typename T>
@@ -142,15 +140,15 @@ class Composition : public NConfigurable {
 
   public: 
       void aim(glm::vec4& ce, bool verbose=false);
-      void setCenterExtent(gfloat4 ce, bool aim=false); // effectively points at what you want to look at 
-      void setCenterExtent(glm::vec4& ce, bool aim=false); // effectively points at what you want to look at 
+
+      //void setCenterExtent(gfloat4 ce, bool aim=false); // effectively points at what you want to look at 
+      //void setColorDomain(guint4 cd);
+
+      void setCenterExtent(const glm::vec4& ce, bool aim=false); // effectively points at what you want to look at 
+      void setColorDomain(const glm::uvec4& cd);
 
       void setDomainCenterExtent(const glm::vec4& ce);               // typically whole geometry domain
       void setTimeDomain(const glm::vec4& td);
-
-
-      void setColorDomain(guint4 cd);
-      //void setLightPositionEye(gfloat4 lp);
 
   public:
       // avaiable as uniform inside shaders allowing GPU-side selections 

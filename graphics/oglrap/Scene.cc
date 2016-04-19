@@ -733,7 +733,9 @@ void Scene::setTarget(unsigned int target, bool aim)
     }
     m_target = target ; 
 
-    gfloat4 ce = m_mesh0->getCenterExtent(target);
+    gfloat4 ce_ = m_mesh0->getCenterExtent(target);
+
+    glm::vec4 ce(ce_.x, ce_.y, ce_.z, ce_.w ); 
 
     LOG(info)<<"Scene::setTarget " 
              << " target " << target 

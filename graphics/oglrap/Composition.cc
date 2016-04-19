@@ -760,10 +760,22 @@ void Composition::setTimeDomain(const glm::vec4& td)
     m_domain_time = glm::vec4(td.x, td.y, td.z, td.w); 
 }
 
+#ifdef GVECTOR
 void Composition::setColorDomain(guint4 cd)
 {
     m_domain_color = glm::uvec4(cd.x, cd.y, cd.z, cd.w); 
 }
+#endif
+
+
+void Composition::setColorDomain(const glm::uvec4& cd)
+{
+    m_domain_color = glm::uvec4(cd.x, cd.y, cd.z, cd.w); 
+}
+
+
+
+
 
 
 void Composition::setDomainCenterExtent(const glm::vec4& ce)
@@ -780,16 +792,10 @@ void Composition::setDomainCenterExtent(const glm::vec4& ce)
     // inverse signed normalize , ie letting coords out of signed unit box 
 }
 
-void Composition::setCenterExtent(glm::vec4& ce, bool autocam)
+void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
 {
-    setCenterExtent(gfloat4(ce.x,ce.y,ce.z,ce.w), autocam);
-}
-
-void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToWorld
-{ 
     // this is invoked by App::uploadGeometry/Scene::setTarget
 
-    //assert(0); 
     m_center_extent.x = ce.x ;
     m_center_extent.y = ce.y ;
     m_center_extent.z = ce.z ;
@@ -816,7 +822,7 @@ void Composition::setCenterExtent(gfloat4 ce, bool aim_) // replaces setModelToW
 
     update();
 
-    if(aim_)
+    if(autocam)
     {
         aim(ce_);
     }

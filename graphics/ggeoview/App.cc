@@ -106,24 +106,8 @@
 #include "MFixer.hh"
 #include "MTool.hh"
 
-// optixrap-
-#include "OContext.hh"
-#include "OColors.hh"
-#include "OFrame.hh"
-#include "ORenderer.hh"
-#include "OGeo.hh"
-#include "OBndLib.hh"
-#include "OScintillatorLib.hh"
-#include "OSourceLib.hh"
-#include "OBuf.hh"
-#include "OConfig.hh"
-#include "OTracer.hh"
-#include "OPropagator.hh"
-
 // opop-
-#include "OpIndexer.hh"
-#include "OpSeeder.hh"
-#include "OpZeroer.hh"
+#include "OpEngine.hh"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -185,7 +169,7 @@ void App::initViz()
     m_interactor->setComposition(m_composition);
 
     m_composition->setScene(m_scene);
-
+    m_scene->setInteractor(m_interactor);      
 
 
     m_frame->setInteractor(m_interactor);      
@@ -577,11 +561,12 @@ void App::uploadGeometryViz()
     if(m_opticks->isCompute()) return ; 
 
 
-
-
     GColors* colors = m_cache->getColors();
 
-    m_composition->setColorDomain( colors->getCompositeDomain() ); 
+    guint4 cd = colors->getCompositeDomain() ; 
+    glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
+  
+    m_composition->setColorDomain(cd_); 
 
     m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
@@ -731,146 +716,39 @@ void App::uploadEvtViz()
 
 
 
+
+
 void App::prepareOptiX()
 {
-    // TODO: move inside OGeo or new opop-/OpEngine ? 
-
-    LOG(info) << "App::prepareOptiX START" ;  
-
-    std::string builder_   = m_fcfg->getBuilder(); 
-    std::string traverser_ = m_fcfg->getTraverser(); 
-    const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
-    const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
-
-
-    OContext::Mode_t mode = m_opticks->isCompute() ? OContext::COMPUTE : OContext::INTEROP ; 
-
-    optix::Context context = optix::Context::create();
-
-    LOG(info) << "App::prepareOptiX (OContext)" ;
-    m_ocontext = new OContext(context, mode); 
-    m_ocontext->setStackSize(m_fcfg->getStack());
-    m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
-    m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
-
-    LOG(info) << "App::prepareOptiX (OColors)" ;
-    m_ocolors = new OColors(context, m_cache->getColors() );
-    m_ocolors->convert();
-
-    // formerly did OBndLib here, too soon
-
-    LOG(info) << "App::prepareOptiX (OScintillatorLib)" ;
-    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
-    m_oscin->convert(); 
-
-    LOG(info) << "App::prepareOptiX (OSourceLib)" ;
-    m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
-    m_osrc->convert(); 
-
-    LOG(info) << "App::prepareOptiX (OGeo)" ;
-    m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
-    m_ogeo->setTop(m_ocontext->getTop());
-    m_ogeo->convert(); 
-
-
-    LOG(info) << "App::prepareOptiX (OBndLib)" ;
-    m_olib = new OBndLib(context,m_ggeo->getBndLib());
-    m_olib->convert(); 
-    // this creates the BndLib dynamic buffers, which needs to be after OGeo
-    // as that may add boundaries when using analytic geometry
-
-
-    LOG(debug) << m_ogeo->description("App::prepareOptiX ogeo");
-    LOG(info) << "App::prepareOptiX DONE" ;  
-
-    TIMER("prepareOptiX"); 
+    m_ope = new OpEngine(m_opticks, m_ggeo);
+    m_ope->prepareOptiX();
 }
-
 
 void App::prepareOptiXViz()
 {
-    if(m_opticks->isCompute()) return ; 
-
-    unsigned int width  = m_composition->getPixelWidth();
-    unsigned int height = m_composition->getPixelHeight();
-
-    optix::Context context = m_ocontext->getContext();
-
-    m_oframe = new OFrame(context, width, height);
-
-    context["output_buffer"]->set( m_oframe->getOutputBuffer() );
-
-    m_interactor->setTouchable(m_oframe);
-
-    Renderer* rtr = m_scene->getRaytraceRenderer();
-
-    m_orenderer = new ORenderer(rtr, m_oframe, m_scene->getShaderDir(), m_scene->getShaderInclPath());
-
-    m_otracer = new OTracer(m_ocontext, m_composition);
-
-    LOG(info) << "App::prepareOptiXViz DONE "; 
-
-    m_ocontext->dump("App::prepareOptiX");
-
-    TIMER("prepareOptiXViz"); 
+    if(!m_ope) return ; 
+    m_ope->setScene(m_scene);
+    m_ope->prepareOptiXViz();
 }
-
 
 void App::preparePropagator()
 {
-    bool noevent    = m_fcfg->hasOpt("noevent");
-    bool trivial    = m_fcfg->hasOpt("trivial");
-    int  override   = m_fcfg->getOverride();
-
-    assert(!noevent);
-
-    m_opropagator = new OPropagator(m_ocontext, m_opticks);
-
-    m_opropagator->setNumpyEvt(m_evt);
-
-    m_opropagator->setTrivial(trivial);
-    m_opropagator->setOverride(override);
-
-    m_opropagator->initRng();
-    m_opropagator->initEvent();
-
-    LOG(info) << "App::preparePropagator DONE "; 
-
-    TIMER("preparePropagator"); 
+    if(!m_ope) return ; 
+    m_ope->setEvent(m_evt);
+    m_ope->preparePropagator();
 }
-
 
 void App::seedPhotonsFromGensteps()
 {
-    if(!m_evt) return ; 
-
-    OpSeeder* seeder = new OpSeeder(m_ocontext) ; 
-
-    seeder->setEvt(m_evt);
-    seeder->setPropagator(m_opropagator);  // only used in compute mode
-
-    seeder->seedPhotonsFromGensteps();
+    if(!m_ope) return ; 
+    m_ope->seedPhotonsFromGensteps();
 }
-
 
 void App::initRecords()
 {
-    if(!m_evt) return ; 
-
-    if(!m_evt->isStep())
-    {
-        LOG(info) << "App::initRecords --nostep mode skipping " ;
-        return ; 
-    }
-
-    OpZeroer* zeroer = new OpZeroer(m_ocontext) ; 
-
-    zeroer->setEvt(m_evt);
-    zeroer->setPropagator(m_opropagator);  // only used in compute mode
-
-    zeroer->zeroRecords();
+    if(!m_ope) return ; 
+    m_ope->initRecords();
 }
-
 
 
 void App::propagate()
@@ -881,60 +759,29 @@ void App::propagate()
         return ;
     }
 
-    LOG(info)<< "App::propagate" ;
-
-    m_opropagator->prelaunch();     
-    TIMER("prelaunch"); 
-
-    m_opropagator->launch();     
-    TIMER("propagate"); 
-
-    m_opropagator->dumpTimes("App::propagate");
+    if(!m_ope) return ; 
+    m_ope->propagate();
 }
-
 
 
 void App::saveEvt()
 {
-    if(!m_evt) return ; 
-
-    if(m_opticks->isCompute())
-    {
-        m_opropagator->downloadEvent();
-    }
-    else
-    {
-        Rdr::download(m_evt);
-    }
-
-    TIMER("downloadEvt"); 
-
-    m_evt->dumpDomains("App::saveEvt dumpDomains");
-    m_evt->save(true);
- 
-    TIMER("saveEvt"); 
+    if(!m_ope) return ; 
+    m_ope->saveEvt();
 }
-
 
 void App::indexSequence()
 {
-    if(!m_evt) return ; 
-    if(!m_evt->isStep())
-    {
-        LOG(info) << "App::indexSequence --nostep mode skipping " ;
-        return ; 
-    }
-
-    OpIndexer* indexer = new OpIndexer(m_ocontext);
-    indexer->setVerbose(hasOpt("indexdbg"));
-    indexer->setEvt(m_evt);
-    indexer->setPropagator(m_opropagator);
-
-    indexer->indexSequence();
-    indexer->indexBoundaries();
-
-    TIMER("indexSequence"); 
+    if(!m_ope) return ; 
+    m_ope->indexSequence();
 }
+
+
+
+
+
+
+
 
 
 void App::indexPresentationPrep()
@@ -1215,20 +1062,7 @@ void App::render()
 #ifdef OPTIX
     if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
     {
-        if(m_otracer && m_orenderer)
-        {
-            if(m_composition->hasChangedGeometry())
-            {
-                unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
-                m_otracer->setResolutionScale(scale) ;
-                m_otracer->trace();
-                m_oframe->push_PBO_to_Texture();           
-            }
-            else
-            {
-                // dont bother tracing when no change in geometry
-            }
-        }
+        if(m_ope) m_ope->render();
     }
 #endif
     m_scene->render();
@@ -1279,10 +1113,8 @@ void App::renderLoop()
 
 void App::cleanup()
 {
+    if(m_ope) m_ope->cleanup();
 
-#ifdef OPTIX
-    if(m_ocontext) m_ocontext->cleanUp();
-#endif
 #ifdef NPYSERVER
     if(m_server) m_server->stop();
 #endif

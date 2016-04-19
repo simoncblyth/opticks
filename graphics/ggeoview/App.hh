@@ -53,17 +53,9 @@ class GBoundaryLibMetadata ;
 class GMergedMesh ; 
 class GItemIndex ; 
 
-// optixrap-
-class OContext ; 
-class OGeo ; 
-class OBndLib ; 
-class OScintillatorLib ; 
-class OSourceLib ; 
-class OFrame ;
-class ORenderer ; 
-class OTracer ; 
-class OPropagator ; 
-class OColors ; 
+
+// opop-
+class OpEngine ; 
 
 
 #include <map>
@@ -156,16 +148,8 @@ class App {
        Types*           m_types ; 
        GGeo*            m_ggeo ; 
        GMergedMesh*     m_mesh0 ;  
-       OContext*        m_ocontext ; 
-       OColors*         m_ocolors ; 
-       OGeo*            m_ogeo ; 
-       OBndLib*          m_olib ; 
-       OScintillatorLib* m_oscin ; 
-       OSourceLib*       m_osrc ; 
-       OFrame*          m_oframe ; 
-       ORenderer*       m_orenderer ; 
-       OTracer*         m_otracer ; 
-       OPropagator*     m_opropagator ; 
+
+       OpEngine*        m_ope ; 
 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
@@ -217,16 +201,9 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_types(NULL),
       m_ggeo(NULL),
       m_mesh0(NULL),
-      m_ocontext(NULL),
-      m_ocolors(NULL),
-      m_ogeo(NULL),
-      m_olib(NULL),
-      m_oscin(NULL),
-      m_osrc(NULL),
-      m_oframe(NULL),
-      m_orenderer(NULL),
-      m_otracer(NULL),
-      m_opropagator(NULL),
+
+      m_ope(NULL),
+
       m_bnd(NULL),
       m_pho(NULL),
       m_hit(NULL),

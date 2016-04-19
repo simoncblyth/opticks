@@ -5,6 +5,8 @@ template <typename T> class NPY ;
 class NPYBase ; 
 class GParts ; 
 
+// TODO: move over to glm
+//#include <glm/glm.hpp>
 
 #include "GMatrix.hh"
 #include "GDrawable.hh"
@@ -232,6 +234,7 @@ class GMesh : public GDrawable {
   public:
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
       gfloat4  getCenterExtent(unsigned int index);
+      //glm::vec4 getCenterExtent(unsigned int index);
 
 
       gbbox    getBBox(unsigned int index);
@@ -767,6 +770,9 @@ inline gfloat4 GMesh::getCenterExtent(unsigned int index)
 {
     return m_center_extent[index] ;
 }
+
+
+
 inline gbbox GMesh::getBBox(unsigned int index)
 {
     return m_bbox[index] ;

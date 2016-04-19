@@ -14,9 +14,17 @@ find_package(CUDA 2.3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Cfg REQUIRED)
 find_package(Opticks REQUIRED)
+find_package(GGeo  REQUIRED)
 
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
+
+find_package(GLEW REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(OGLRap REQUIRED) 
+
+# OptiXRap has the OpenGL dependency, so cannot avoid it here too
+# would be better to avoid, perhaps via a core just compute package
 
 find_package(OptiXRap REQUIRED)
 find_package(CUDAWrap REQUIRED)
@@ -30,11 +38,16 @@ include_directories(
    ${NPY_INCLUDE_DIRS}  
    ${Cfg_INCLUDE_DIRS}  
    ${Opticks_INCLUDE_DIRS} 
+   ${GGeo_INCLUDE_DIRS} 
    ${CUDA_INCLUDE_DIRS}
    ${OptiX_INCLUDE} 
    ${OptiXRap_INCLUDE_DIRS}  
    ${CUDAWrap_INCLUDE_DIRS} 
    ${ThrustRap_INCLUDE_DIRS}
+
+   ${GLEW_INCLUDE_DIRS} 
+   ${GLFW_INCLUDE_DIRS} 
+   ${OGLRap_INCLUDE_DIRS}  
 )
 
 add_definitions( 
@@ -43,10 +56,15 @@ add_definitions(
    ${NPY_DEFINITIONS} 
    ${Cfg_DEFINITIONS} 
    ${OptiX_DEFINITIONS} 
+   ${GGeo_DEFINITIONS} 
    ${OptiXRap_DEFINITIONS} 
    ${CUDAWrap_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
    ${Opticks_DEFINITIONS}
+
+   ${GLEW_DEFINITIONS}
+   ${GLFW_DEFINITIONS}
+   ${OGLRap_DEFINITIONS}  
     -DVERBOSE 
 )
 
@@ -58,6 +76,7 @@ set(LIBRARIES
    ${Boost_LIBRARIES}
    ${Cfg_LIBRARIES}
    ${Opticks_LIBRARIES}
+   ${GGeo_LIBRARIES}
 
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
@@ -66,6 +85,10 @@ set(LIBRARIES
    ${OptiXRap_LIBRARIES}
    ${CUDAWrap_LIBRARIES}
    ${ThrustRap_LIBRARIES}
+
+   ${GLEW_LIBRARIES}
+   ${GLFW_LIBRARIES}
+   ${OGLRap_LIBRARIES}  
 
    ssl
    crypto 
@@ -76,6 +99,7 @@ set(LIBRARIES
 
 CUDA_ADD_LIBRARY( ${name} SHARED
     OpIndexerApp.cc
+    OpEngine.cc
     OpIndexer.cc
     OpSeeder.cc
     OpZeroer.cc
@@ -88,6 +112,7 @@ target_link_libraries( ${name} ${LIBRARIES} )
 
 
 SET(hdrs 
+    OpEngine.hh
     OpIndexer.hh
     OpSeeder.hh
     OpZeroer.hh

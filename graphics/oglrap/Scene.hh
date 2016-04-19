@@ -28,6 +28,7 @@ class Device ;
 class Composition ; 
 class Photons ; 
 class Colors ; 
+class Interactor ; 
 
 
 #include "NConfigurable.hpp"
@@ -167,10 +168,12 @@ class Scene : public NConfigurable {
         void renderGeometry();
         void renderEvent();
 
-
+   public:
+        void setInteractor(Interactor* interactor);
    public:
         const char*   getShaderDir();
         const char*   getShaderInclPath();
+        Interactor*   getInteractor();
         Renderer*     getGeometryRenderer();
         Renderer*     getRaytraceRenderer();
         Renderer*     getInstanceRenderer(unsigned int i);
@@ -195,6 +198,7 @@ class Scene : public NConfigurable {
         char*        m_shader_incl_path ; 
         Device*      m_device ; 
         Colors*      m_colors ; 
+        Interactor*  m_interactor ; 
    private:
         unsigned int m_num_instance_renderer ; 
         Renderer*    m_geometry_renderer ; 
@@ -254,6 +258,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
             m_device(NULL),
             m_colors(NULL),
+            m_interactor(NULL),
             m_num_instance_renderer(0),
             m_geometry_renderer(NULL),
             m_global_renderer(NULL),
@@ -323,6 +328,21 @@ inline GGeo* Scene::getGeometry()
     return m_ggeo ; 
 }
 
+inline void Scene::setInteractor(Interactor* interactor)
+{
+    m_interactor = interactor ;
+}
+inline Interactor* Scene::getInteractor()
+{
+    return m_interactor ; 
+}
+
+
+
+
+
+
+
 inline unsigned int Scene::getNumInstanceRenderer()
 {
     return m_num_instance_renderer ; 
@@ -375,10 +395,17 @@ inline Rdr* Scene::getPhotonRenderer()
 
 
 
+
+inline Composition* Scene::getComposition()
+{
+    return m_composition ; 
+}
+
 inline NumpyEvt* Scene::getNumpyEvt()
 {
     return m_evt ; 
 }
+
 inline Photons* Scene::getPhotons()
 {
     return m_photons ; 

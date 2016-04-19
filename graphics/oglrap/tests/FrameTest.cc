@@ -33,7 +33,12 @@ int main(int argc, char** argv)
     frame.init(); // creates OpenGL context 
 
     //composition.setModelToWorld(texture.getModelToWorldPtr(0));   // point at the geometry 
-    composition.setCenterExtent(texture.getCenterExtent(0));   // point at the geometry 
+
+    gfloat4 ce = texture.getCenterExtent(0);
+
+    glm::vec4 ce_(ce.x, ce.y, ce.z, ce.w);
+    composition.setCenterExtent(ce_); // point at the geometry 
+
     composition.update();
     composition.Details("Composition::details");
 
