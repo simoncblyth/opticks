@@ -4,9 +4,6 @@
 #include <vector>
 #include <glm/glm.hpp>  
 
-// ggeo-
-//#include "GVector.hh"
-
 
 template<typename T>
 class NPY ; 
@@ -14,9 +11,14 @@ class NPY ;
 class MultiViewNPY ; 
 
 class NState ; 
+
+
+// opticks-
 class Camera ;
 class OrbitalView ; 
 class TrackView ; 
+
+
 class Light ;
 class Trackball ; 
 class Scene ; 
@@ -29,7 +31,6 @@ class Cfg ;
 class Animator ; 
 
 #include "NConfigurable.hpp"
-
 
 
 class Composition : public NConfigurable {
@@ -202,7 +203,7 @@ class Composition : public NConfigurable {
       glm::ivec4& getPick();
 
   public:
-      void setTarget(unsigned int target);
+      // void setTarget(unsigned int target);  // pass thru to Scene, trying to eliminate that 
       void setScene(Scene* scene);
       void addConfig(Cfg* cfg);
   public:
@@ -244,7 +245,8 @@ class Composition : public NConfigurable {
       View*      getView(); 
       Light*     getLight(); 
       Clipper*   getClipper(); 
-      Scene*     getScene(); 
+
+      Scene*     getScene();   // Scene has heavy dependency on OpenGL : try to eliminate 
 
       
       void setCamera(Camera* camera);

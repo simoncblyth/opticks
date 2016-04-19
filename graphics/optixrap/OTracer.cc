@@ -12,13 +12,11 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "timeutil.hpp"
+#include "NLog.hpp"
 
 // oglrap-
 #include "Composition.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 using namespace optix ; 
 

@@ -25,23 +25,13 @@ class Interactor {
        enum { NUM_KEYS = 512 } ;
 
        unsigned int getModifiers();
-       static std::string describeModifiers(unsigned int modifiers);
-       static bool isShift(unsigned int modifiers);
-       static bool isControl(unsigned int modifiers);
-       static bool isCommand(unsigned int modifiers);
-       static bool isOption(unsigned int modifiers);
 
        static const char* keys ; 
-
        static const char* DRAGFACTOR ; 
        static const char* OPTIXMODE ; 
 
-/*
-       static const char* GUIMODE ; 
-       static const char* SCRUBMODE ; 
-*/
-
        Interactor(); 
+
        void gui();
        void setComposition(Composition* composition);
        void setBookmarks(Bookmarks* bookmarks);

@@ -14,11 +14,6 @@
 #include <boost/lexical_cast.hpp>
 
 
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
-
 const char* Clipper::PREFIX = "clipper" ;
 const char* Clipper::getPrefix()
 {
@@ -181,20 +176,6 @@ float* Clipper::getNormalPtr()
 float* Clipper::getPlanePtr()
 {
     return glm::value_ptr(m_absplane);
-}
-
-
-void Clipper::gui()
-{
-#ifdef GUI_
-    // TODO: cut 2 degrees of freedom 
-    // point and direction overspecifies plane, causing whacky interface
-    // just need a scalar along the normal 
-
-    ImGui::SliderFloat3("point",  getPointPtr(),  -1.0f, 1.0f);
-    ImGui::SliderFloat3("normal", getNormalPtr(), -1.0f, 1.0f);
-    //ImGui::SliderFloat3("absplane", getPlanePtr(), -1.0f, 1.0f);
-#endif    
 }
 
 

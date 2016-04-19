@@ -1,6 +1,6 @@
 // oglrap-
 #include "Bookmarks.hh"
-#include "Interactor.hh"
+
 #include "InterpolatedView.hh"
 
 #include <cstring>
@@ -125,10 +125,10 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
 {
     LOG(debug) << "Bookmarks::number_key_pressed "
                << " num "  << num 
-               << " modifiers " << Interactor::describeModifiers(modifiers) 
+               << " modifiers " << Opticks::describeModifiers(modifiers) 
                ; 
 
-    bool shift = Interactor::isShift(modifiers) ;
+    bool shift = Opticks::isShift(modifiers) ;
     bool exists_ = exists(num);
     if(exists_)
     {
@@ -148,7 +148,7 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
     }
     else
     {
-        if(Interactor::isShift(modifiers))
+        if(Opticks::isShift(modifiers))
         {
             create(num);
         }

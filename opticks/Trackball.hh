@@ -56,10 +56,23 @@ class Trackball : public NConfigurable {
      bool hasChanged();
      void setChanged(bool changed); 
 
+   public:
+       float* getTranslationPtr();
+       float getTranslationMin();
+       float getTranslationMax();
+   public:
+       float* getRadiusPtr();
+       float getRadiusMin();
+       float getRadiusMax();
+  public:
+       float* getTFactorPtr();
+       float getTFactorMin();
+       float getTFactorMax();
   public:
        float getRadius();
        float getTranslateFactor(); 
        glm::quat getOrientation();
+       std::string getOrientationString();
        glm::vec3 getTranslation();
 
        glm::mat4 getOrientationMatrix();
@@ -67,7 +80,6 @@ class Trackball : public NConfigurable {
        glm::mat4 getCombinedMatrix();
 
        float* getOrientationPtr();
-       float* getTranslationPtr();
 
        void getCombinedMatrices(glm::mat4& rt, glm::mat4& irt);
        void getOrientationMatrices(glm::mat4& rot, glm::mat4& irot);
@@ -103,6 +115,50 @@ class Trackball : public NConfigurable {
 
 
 };
+
+
+
+inline float Trackball::getTranslationMin()
+{
+    return -m_translate_max ; 
+}
+
+inline float Trackball::getTranslationMax()
+{
+    return m_translate_max ; 
+}
+
+
+inline float* Trackball::getRadiusPtr()
+{
+    return &m_radius ;
+}
+inline float Trackball::getRadiusMin()
+{
+    return m_radius_clip[0] ; 
+}
+inline float Trackball::getRadiusMax()
+{
+    return m_radius_clip[1] ; 
+}
+
+
+
+inline float* Trackball::getTFactorPtr()
+{
+    return &m_translatefactor ;
+}
+inline float Trackball::getTFactorMin()
+{
+    return m_translatefactor_clip[0] ; 
+}
+inline float Trackball::getTFactorMax()
+{
+    return m_translatefactor_clip[1] ; 
+}
+
+
+
 
 
 
@@ -173,7 +229,7 @@ inline void Trackball::home()
     m_translate.x = 0.f ; 
     m_translate.y = 0.f ; 
     m_translate.z = 0.f ; 
-   setOrientation(0.f, 0.f);
+    setOrientation(0.f, 0.f);
     m_changed = true ; 
 }
 inline void Trackball::zoom_to(float x, float y, float dx, float dy)

@@ -8,12 +8,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
 // npy-
 #include "timeutil.hpp"
+#include "NLog.hpp"
 
 // optixrap-
 #include "OFrame.hh"

@@ -326,39 +326,6 @@ unsigned int Interactor::getModifiers()
 }
 
 
-std::string Interactor::describeModifiers(unsigned int modifiers)
-{
-    std::stringstream ss ; 
-    if(modifiers & Opticks::e_shift)   ss << "shift " ; 
-    if(modifiers & Opticks::e_control) ss << "control " ; 
-    if(modifiers & Opticks::e_option)  ss << "option " ; 
-    if(modifiers & Opticks::e_command) ss << "command " ;
-    return ss.str(); 
-}
-
-
-bool Interactor::isShift(unsigned int modifiers)
-{
-    return modifiers & Opticks::e_shift ; 
-}
-
-
-bool Interactor::isOption(unsigned int modifiers)
-{
-    return modifiers & Opticks::e_option ; 
-}
-
-
-bool Interactor::isCommand(unsigned int modifiers)
-{
-    return modifiers & Opticks::e_command ; 
-}
-
-bool Interactor::isControl(unsigned int modifiers)
-{
-    return modifiers & Opticks::e_control ; 
-}
-
 
 
 

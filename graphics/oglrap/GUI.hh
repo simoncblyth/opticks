@@ -72,6 +72,8 @@ class GUI {
        bool animator_gui(Animator* animator, const char* label, const char* fmt, float power);
 
        void camera_gui(Camera* camera);
+       void trackball_gui(Trackball* trackball);
+       void clipper_gui(Clipper* clipper);
 
    public:
        //static void gui_item_index(GItemIndex* ii);

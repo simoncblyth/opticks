@@ -38,10 +38,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-p
 find_package(Boost REQUIRED)
 
 
-# OFrame,ORenderer force the OpenGL dependency
+# OFrame,ORenderer inevitable OpenGL dependency
+# maybe split those off into OOGL
 #
-# OTracer depends on Composition forcing OGLRap dependency
-#    TODO: drop Composition down to Opticks to avoid OpenGL dependency here
+# OTracer depends on Composition for the viewpoint matrices 
+#    currently that forces OGLRap dependency
+#    TODO: drop Composition down to Opticks to avoiding OpenGL dependency
 
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
@@ -60,8 +62,6 @@ find_package(ThrustRap REQUIRED)
 
 
 include(EnvBuildOptions)
-
-
 
 
 include_directories(

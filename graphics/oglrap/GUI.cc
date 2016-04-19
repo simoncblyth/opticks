@@ -248,6 +248,34 @@ void GUI::camera_gui(Camera* camera)
 }
 
 
+void GUI::trackball_gui(Trackball* trackball)
+{
+    if (ImGui::Button("Home")) trackball->home();
+    if (ImGui::Button("Summary")) trackball->Summary();
+    ImGui::SliderFloat3("translate",  trackball->getTranslationPtr(), trackball->getTranslationMin(), trackball->getTranslationMax() );
+    ImGui::SliderFloat("radius",   trackball->getRadiusPtr(), trackball->getRadiusMin(), trackball->getRadiusMax() );
+    ImGui::SliderFloat("tfactor",  trackball->getTFactorPtr(),  trackball->getTFactorMin(), trackball->getTFactorMax() );
+    ImGui::Text(" quat: %s", trackball->getOrientationString().c_str() );
+}
+
+
+
+void GUI::clipper_gui(Clipper* clipper)
+{
+    // TODO: cut 2 degrees of freedom 
+    // point and direction overspecifies plane, causing whacky interface
+    // just need a scalar along the normal 
+
+    ImGui::SliderFloat3("point",  clipper->getPointPtr(),  -1.0f, 1.0f);
+    ImGui::SliderFloat3("normal", clipper->getNormalPtr(), -1.0f, 1.0f);
+    //ImGui::SliderFloat3("absplane", getPlanePtr(), -1.0f, 1.0f);
+}
+
+
+
+
+
+
 
 // follow pattern of ImGui::ShowTestWindow
 void GUI::show(bool* opened)
@@ -332,13 +360,13 @@ void GUI::show(bool* opened)
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Clipper"))
     {
-        m_clipper->gui(); 
+        clipper_gui(m_clipper); 
     }
 
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Trackball"))
     {
-        m_trackball->gui(); 
+        trackball_gui(m_trackball); 
     }
 
     ImGui::Spacing();

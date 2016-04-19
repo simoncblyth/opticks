@@ -528,4 +528,32 @@ TorchStepNPY* Opticks::makeSimpleTorchStep()
 
 
 
+std::string Opticks::describeModifiers(unsigned int modifiers)
+{
+    std::stringstream ss ; 
+    if(modifiers & e_shift)   ss << "shift " ; 
+    if(modifiers & e_control) ss << "control " ; 
+    if(modifiers & e_option)  ss << "option " ; 
+    if(modifiers & e_command) ss << "command " ;
+    return ss.str(); 
+}
+
+bool Opticks::isShift(unsigned int modifiers)
+{
+    return modifiers & e_shift ; 
+}
+bool Opticks::isOption(unsigned int modifiers)
+{
+    return modifiers & e_option ; 
+}
+bool Opticks::isCommand(unsigned int modifiers)
+{
+    return modifiers & e_command ; 
+}
+bool Opticks::isControl(unsigned int modifiers)
+{
+    return modifiers & e_control ; 
+}
+
+
 

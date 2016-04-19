@@ -34,6 +34,12 @@ class Opticks {
               e_option  = 1 << 2,  
               e_command = 1 << 3 
             } ; 
+       static std::string describeModifiers(unsigned int modifiers);
+       static bool isShift(unsigned int modifiers);
+       static bool isControl(unsigned int modifiers);
+       static bool isCommand(unsigned int modifiers);
+       static bool isOption(unsigned int modifiers);
+
    public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
        static const char* ZERO_ ;

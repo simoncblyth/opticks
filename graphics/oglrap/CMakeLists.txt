@@ -107,12 +107,7 @@ add_library( ${name}  SHARED
                 RendererCfg.cc
                 Device.cc
                 Rdr.cc
-                Trackball.cc
-                TrackballCfg.cc
 
-                Light.cc
-                Clipper.cc
-                ClipperCfg.cc
                 Bookmarks.cc
                 StateGUI.cc
                 Demo.cc
@@ -139,12 +134,7 @@ SET(hdrs
         Rdr.hh
         Renderer.hh
         RendererCfg.hh
-        Trackball.hh
-        TrackballCfg.hh
 
-        Light.hh
-        Clipper.hh
-        ClipperCfg.hh
         Bookmarks.hh
         StateGUI.hh
         Demo.hh

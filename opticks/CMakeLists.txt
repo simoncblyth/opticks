@@ -42,15 +42,21 @@ add_library( ${name}  SHARED
     OpticksResource.cc
     Opticks.cc
     OpticksCfg.cc
+
     View.cc
     ViewCfg.cc
     Camera.cc
     CameraCfg.cc
+    Trackball.cc
+    TrackballCfg.cc
+    Clipper.cc
+    ClipperCfg.cc
 
     InterpolatedView.cc
     OrbitalView.cc
     TrackView.cc
     Animator.cc
+    Light.cc
 )
 
 
@@ -65,6 +71,10 @@ SET(hdrs
     ViewCfg.hh
     Camera.hh
     CameraCfg.hh
+    Trackball.hh
+    TrackballCfg.hh
+    Clipper.hh
+    ClipperCfg.hh
 
     OpticksPhoton.h
     OpticksFlags.h
@@ -73,6 +83,7 @@ SET(hdrs
     OrbitalView.hh
     TrackView.hh
     Animator.hh
+    Light.hh
 
 )
 

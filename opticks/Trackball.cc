@@ -18,17 +18,11 @@
 #include <boost/lexical_cast.hpp>
 
 
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
-
 const char* Trackball::PREFIX = "trackball" ;
 const char* Trackball::getPrefix()
 {
    return PREFIX ; 
 }
-
 
 
 const char* Trackball::RADIUS = "radius" ;
@@ -64,6 +58,10 @@ float* Trackball::getOrientationPtr()
     return glm::value_ptr(m_orientation);
 }
 
+std::string Trackball::getOrientationString()
+{
+    return gformat(m_orientation) ;
+}
 
 
 
@@ -114,30 +112,8 @@ void Trackball::getTranslationMatrices(glm::mat4& tra, glm::mat4& itra)
 } 
 
 
-void Trackball::gui()
-{
-#ifdef GUI_
-    if (ImGui::Button("Home")) home();
-    if (ImGui::Button("Summary")) Summary();
-    ImGui::SliderFloat3("translate",  getTranslationPtr(),  -m_translate_max, m_translate_max );
-    ImGui::SliderFloat("radius",   &m_radius,  m_radius_clip[0], m_radius_clip[1] );
-    ImGui::SliderFloat("tfactor",  &m_translatefactor,  m_translatefactor_clip[0], m_translatefactor_clip[1] );
-    ImGui::Text(" quat: %s", gformat(m_orientation).c_str() ) ;
-
-    float theta_deg = m_theta_deg ; 
-    float phi_deg = m_theta_deg ; 
 
 
-    ImGui::SliderFloat("theta",   &m_theta_deg, 0.f, 360.f );
-    ImGui::SliderFloat("phi",     &m_phi_deg,   0.f, 360.f );
-
-    // slightly dodgy as these are input qtys that yield the real state quaternion
-    if(m_theta_deg != theta_deg  || m_phi_deg != phi_deg) setOrientation(); 
-
-
-   // whats the range of values of the quat ?
-#endif    
-}
 
 
 void Trackball::configureF(const char* name, std::vector<float> values)
@@ -175,8 +151,8 @@ void Trackball::configureS(const char* name, std::vector<std::string> values)
          std::string  vlast = values.back() ;
 #ifdef VERBOSE
          printf("Trackball::configureS %s : %lu values : ", name, values.size());
-         for(size_t i=0 ; i < values.size() ; i++ ) printf("%20s ", values[i]);
-         printf(" : vlast %20s \n", vlast );
+         for(size_t i=0 ; i < values.size() ; i++ ) printf("%20s ", values[i].c_str());
+         printf(" : vlast %20s \n", vlast.c_str() );
 #endif
          set(name, vlast);
     }

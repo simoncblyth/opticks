@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-
 // how to handle multiple planes ?
 
 #include "NConfigurable.hpp"
@@ -65,7 +64,7 @@ class Clipper : public NConfigurable {
         void setAbsolute(bool absolute);
         void update(glm::mat4& model_to_world);
 
-   private:
+   public:
         float* getPointPtr();
         float* getNormalPtr();
         float* getPlanePtr();

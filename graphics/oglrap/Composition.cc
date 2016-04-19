@@ -2,7 +2,19 @@
 
 // opticks-
 #include "View.hh"
+#include "ViewCfg.hh"
+#include "Camera.hh"
+#include "CameraCfg.hh"
+#include "Trackball.hh"
+#include "TrackballCfg.hh"
+#include "Clipper.hh"
+#include "ClipperCfg.hh"
 
+#include "InterpolatedView.hh"
+#include "OrbitalView.hh"
+#include "TrackView.hh"
+#include "Animator.hh"
+#include "Light.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -15,29 +27,11 @@
 
 #include "NState.hpp"
 
-
 // oglrap-
-
-#include "Camera.hh"
-#include "Trackball.hh"
-
-#include "InterpolatedView.hh"
-#include "OrbitalView.hh"
-#include "TrackView.hh"
-
-#include "Clipper.hh"
 #include "Scene.hh"
 #include "Bookmarks.hh"
-
-#include "Light.hh"
-#include "Animator.hh"
-
-#include "CameraCfg.hh"
-#include "TrackballCfg.hh"
-#include "ViewCfg.hh"
-#include "ClipperCfg.hh"
-
 #include "CompositionCfg.hh"
+
 
 // npy-
 #include "GLMPrint.hpp"
@@ -146,6 +140,8 @@ void Composition::init()
 
 void Composition::setupConfigurableState(NState* state)
 {
+   // TODO: handle externally ? m_scene is odd-man-out here 
+
     state->addConfigurable(m_scene);
     state->addConfigurable(m_trackball);
     state->addConfigurable(m_view);
@@ -563,8 +559,12 @@ void Composition::setSize(unsigned int width, unsigned int height, unsigned int 
 }
 
 
+
+/*
 void Composition::setTarget(unsigned int target)
 {
+    assert(0);
+
     if(!m_scene)
     {
         LOG(warning) << "Composition::setTarget requires composition.setScene(scene) " ; 
@@ -572,6 +572,8 @@ void Composition::setTarget(unsigned int target)
     }
     m_scene->setTarget(target);
 }
+*/
+
 
 void Composition::setSelection(std::string selection)
 {
