@@ -1,16 +1,17 @@
 #pragma once
 
-
-
+// npy-
+class Timer ; 
+class NumpyEvt ; 
 
 // opticks-
 class Opticks ; 
 template <typename> class OpticksCfg ;
+class Composition ; 
 
 // ggeo-
 class GGeo ; 
 class GCache ; 
-
 
 // optixrap-
 class OContext ; 
@@ -18,20 +19,9 @@ class OGeo ;
 class OBndLib ; 
 class OScintillatorLib ; 
 class OSourceLib ; 
-class OFrame ;
-class ORenderer ; 
 class OTracer ; 
 class OPropagator ; 
 class OColors ; 
-
-// oglrap-
-class Scene ; 
-class Composition ; 
-class Interactor ; 
-
-// npy-
-class Timer ; 
-class NumpyEvt ; 
 
 
 class OpEngine {
@@ -39,12 +29,11 @@ class OpEngine {
        OpEngine(Opticks* opticks, GGeo* ggeo);
     private:
        void init();
-       void postSetScene();
     public:
+       Opticks* getOpticks();
+       OContext* getOContext();
+
        void prepareOptiX();
-       void setScene(Scene* scene);
-       void prepareOptiXViz();
-       void render();
        void setEvent(NumpyEvt* evt);
        void preparePropagator();
        void seedPhotonsFromGensteps();
@@ -53,6 +42,7 @@ class OpEngine {
        void saveEvt();
        void indexSequence();
        void cleanup();
+
     private:
        Timer*               m_timer ; 
        Opticks*             m_opticks ; 
@@ -61,9 +51,7 @@ class OpEngine {
        GGeo*                m_ggeo ; 
        GCache*              m_cache ; 
     private:
-       Scene*               m_scene ; 
        Composition*         m_composition ; 
-       Interactor*          m_interactor ; 
     private:
        NumpyEvt*            m_evt ; 
     private:
@@ -73,8 +61,6 @@ class OpEngine {
        OBndLib*          m_olib ; 
        OScintillatorLib* m_oscin ; 
        OSourceLib*       m_osrc ; 
-       OFrame*          m_oframe ; 
-       ORenderer*       m_orenderer ; 
        OTracer*         m_otracer ; 
        OPropagator*     m_opropagator ; 
 
@@ -89,17 +75,13 @@ inline OpEngine::OpEngine(Opticks* opticks, GGeo* ggeo)
       m_fcfg(NULL),
       m_ggeo(ggeo),
       m_cache(NULL),
-      m_scene(NULL),
       m_evt(NULL),
-
       m_ocontext(NULL),
       m_ocolors(NULL),
       m_ogeo(NULL),
       m_olib(NULL),
       m_oscin(NULL),
       m_osrc(NULL),
-      m_oframe(NULL),
-      m_orenderer(NULL),
       m_otracer(NULL),
       m_opropagator(NULL)
 {
@@ -107,11 +89,16 @@ inline OpEngine::OpEngine(Opticks* opticks, GGeo* ggeo)
 }
 
 
-inline void OpEngine::setScene(Scene* scene)
+inline Opticks* OpEngine::getOpticks()
 {
-    m_scene = scene ; 
-    postSetScene();
+    return m_opticks ; 
 }
+inline OContext* OpEngine::getOContext()
+{
+    return m_ocontext ; 
+}
+
+
 
 inline void OpEngine::setEvent(NumpyEvt* evt)
 {

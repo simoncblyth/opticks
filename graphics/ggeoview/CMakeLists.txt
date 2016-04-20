@@ -73,6 +73,7 @@ find_package(OptiXRap REQUIRED)
 find_package(CUDAWrap REQUIRED)
 find_package(ThrustRap REQUIRED)
 find_package(OpticksOp REQUIRED)
+find_package(OpticksGL REQUIRED)
 
 
 set(INCLUDE_DIRS
@@ -102,6 +103,7 @@ set(INCLUDE_DIRS
    ${CUDAWrap_INCLUDE_DIRS}  
    ${ThrustRap_INCLUDE_DIRS}
    ${OpticksOp_INCLUDE_DIRS} 
+   ${OpticksGL_INCLUDE_DIRS} 
 )
 
 
@@ -124,6 +126,7 @@ set(DEFINITIONS
    ${CUDAWrap_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
    ${OpticksOp_DEFINITIONS}
+   ${OpticksGL_DEFINITIONS}
 )
 
 
@@ -157,6 +160,7 @@ set(LIBRARIES
       ${CUDAWrap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
       ${OpticksOp_LIBRARIES}
+      ${OpticksGL_LIBRARIES}
 
       ssl
       crypto 

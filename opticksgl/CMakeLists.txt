@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 
-set(name OptiXRap)
+set(name OpticksGL)
 project(${name})
-
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
                       "$ENV{OPTIX_SDK_DIR}/CMake"
@@ -36,23 +35,36 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-p
 
 
 find_package(Boost REQUIRED)
+
+
+find_package(GLEW REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(OGLRap REQUIRED)
+
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(Opticks REQUIRED)
+
 find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
 find_package(ThrustRap REQUIRED)
-
+find_package(OptiXRap REQUIRED)
+find_package(OpticksOp REQUIRED)
 
 include(EnvBuildOptions)
+
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
     ${Boost_INCLUDE_DIRS} 
+
+    ${GLEW_INCLUDE_DIRS} 
+    ${GLFW_INCLUDE_DIRS} 
+    ${OGLRap_INCLUDE_DIRS}
 
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
@@ -65,11 +77,18 @@ include_directories(
     ${GGeo_INCLUDE_DIRS}  
     ${CUDAWrap_INCLUDE_DIRS}  
     ${ThrustRap_INCLUDE_DIRS}  
+
+    ${OptiXRap_INCLUDE_DIRS}
+    ${OpticksOp_INCLUDE_DIRS}
 )
 
 
 set(LIBRARIES
       ${Boost_LIBRARIES}
+
+      ${GLEW_LIBRARIES}
+      ${GLFW_LIBRARIES}
+      ${OGLRap_LIBRARIES}
 
       ${Assimp_LIBRARIES}
       ${AssimpWrap_LIBRARIES}
@@ -81,107 +100,47 @@ set(LIBRARIES
       optixu
       ${CUDAWrap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
+      ${OptiXRap_LIBRARIES}
+      ${OpticksOp_LIBRARIES}
 )
 
 add_definitions(
     ${Boost_DEFINITIONS}
+
+    ${GLEW_DEFINITIONS}
+    ${GLFW_DEFINITIONS}
+    ${OGLRap_DEFINITIONS}
+
     ${Opticks_DEFINITIONS} 
+
     ${Assimp_DEFINITIONS} 
     ${OptiX_DEFINITIONS} 
     ${CUDAWrap_DEFINITIONS} 
+    ${OptiXRap_DEFINITIONS} 
+    ${OpticksOp_DEFINITIONS}
 )
 
 
 
+# NB only for classes with OpenGL dependency 
+#    for others use opop- not opgl-
 
-# OptiX prog within subdir "cu/" Thrust/CUDA not in subdir 
-optixthrust_add_library( ${name} 
-       OptiXUtil.cc
-       OContext.cc
-       OProg.cc
-       OTimes.cc
-       OGeo.cc
-
-       OTracer.cc
-
-       OColors.cc
-       OBndLib.cc
-       OScintillatorLib.cc
-       OSourceLib.cc
-       OPropertyLib.cc
-       OConfig.cc
-       OAccel.cc
-       OPropagator.cc
-
-       cu/pinhole_camera.cu
-       cu/constantbg.cu
-       cu/material1_radiance.cu 
-       cu/material1_propagate.cu 
-       cu/TriangleMesh.cu 
-       cu/sphere.cu 
-       cu/hemi-pmt.cu 
-       cu/generate.cu
-
-       OBuf_.cu     
-       OBufBase_.cu     
-       OBufPair_.cu     
-
-      OPTIONS 
-          -gencode=arch=compute_30,code=sm_30
+add_library( ${name}  SHARED
+       OFrame.cc
+       ORenderer.cc
+       OpViz.cc
 ) 
 
-set(cuptxs
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_pinhole_camera.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_constantbg.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_radiance.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_propagate.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_TriangleMesh.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_sphere.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_hemi-pmt.cu.ptx
-)
-
-set(cuhdrs
-    cu/enums.h
-    cu/photon.h
-)
-
-
-
 set(hdrs 
-  OptiXUtil.hh
-  OContext.hh
-  OConfig.hh
-  OProg.hh
-  OTimes.hh
-  OGeo.hh
-  OTracer.hh
-
-  OColors.hh
-  OBndLib.hh
-  OScintillatorLib.hh
-  OSourceLib.hh
-  OPropertyLib.hh
-  OAccel.hh
-  OPropagator.hh
-  define.h
-
-  OBuf.hh
-  OBufBase.hh
-  OBufPair.hh 
+  OFrame.hh
+  ORenderer.hh
+  OpViz.hh
 )
  
 target_link_libraries( ${name} ${LIBRARIES} )
 
-set(TARGET    "${name}")
-set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/ptx")
-set(RNGDIR    "$ENV{LOCAL_BASE}/env/graphics/ggeoview/cache/rng")  # TODO: move into optixrap- OR cudawrap- fiefdom
-configure_file(Config.hh.in inc/Config.hh)
-
-
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${cuptxs} DESTINATION ptx)
-install(FILES ${hdrs}   DESTINATION include)
-install(FILES ${cuhdrs} DESTINATION include/cu)
 
-add_subdirectory(tests)
+install(FILES ${hdrs}    DESTINATION include)
+
+#add_subdirectory(tests)

@@ -2133,6 +2133,7 @@ cudawrap
 thrustrap
 optixrap
 opop
+opgl
 ggeoview
 EOD
 }

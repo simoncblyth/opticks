@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name OpticksOp)
+set(name OpticksOp) # opop-
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -23,13 +23,12 @@ find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED) 
 
-# OptiXRap has the OpenGL dependency, so cannot avoid it here too
-# would be better to avoid, perhaps via a core just compute package
-
 find_package(OptiXRap REQUIRED)
 find_package(CUDAWrap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
+# NB no OpenGL/GLEW/GLFW 
+#    use opgl- not opop- for viz things 
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}

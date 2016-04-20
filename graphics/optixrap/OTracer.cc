@@ -14,7 +14,8 @@
 #include "timeutil.hpp"
 #include "NLog.hpp"
 
-// oglrap-
+
+// opticks-
 #include "Composition.hh"
 
 

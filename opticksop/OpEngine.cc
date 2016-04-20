@@ -2,6 +2,7 @@
 // opticks-
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
+#include "Composition.hh"
 
 // npy-
 #include "NLog.hpp"
@@ -12,7 +13,6 @@
 #include "GGeo.hh"
 #include "GCache.hh"
 
-
 // opop-
 #include "OpEngine.hh"
 #include "OpIndexer.hh"
@@ -22,8 +22,6 @@
 // optixrap-
 #include "OContext.hh"
 #include "OColors.hh"
-#include "OFrame.hh"
-#include "ORenderer.hh"
 #include "OGeo.hh"
 #include "OBndLib.hh"
 #include "OScintillatorLib.hh"
@@ -32,17 +30,6 @@
 #include "OConfig.hh"
 #include "OTracer.hh"
 #include "OPropagator.hh"
-
-// oglrap-
-// oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
-//   TODO: partition to avoid OpenGL dependency from raw OptiX compute
-#include "Frame.hh"
-#include "Scene.hh"
-#include "Composition.hh"
-#include "Interactor.hh"
-#include "Renderer.hh"
-#include "Rdr.hh"
-
 
 
 #define TIMER(s) \
@@ -121,60 +108,6 @@ void OpEngine::prepareOptiX()
 
 }
 
-
-void OpEngine::postSetScene()
-{
-    m_composition = m_scene->getComposition();
-    m_interactor = m_scene->getInteractor();
-}
-
-
-void OpEngine::prepareOptiXViz()
-{
-    if(m_opticks->isCompute()) return ; 
-
-    if(!m_scene) return ; 
-
-    unsigned int width  = m_composition->getPixelWidth();
-    unsigned int height = m_composition->getPixelHeight();
-
-    optix::Context context = m_ocontext->getContext();
-
-    m_oframe = new OFrame(context, width, height);
-
-    context["output_buffer"]->set( m_oframe->getOutputBuffer() );
-
-    m_interactor->setTouchable(m_oframe);
-
-    Renderer* rtr = m_scene->getRaytraceRenderer();
-
-    m_orenderer = new ORenderer(rtr, m_oframe, m_scene->getShaderDir(), m_scene->getShaderInclPath());
-
-    m_otracer = new OTracer(m_ocontext, m_composition);
-
-    LOG(info) << "OpEngine::prepareOptiXViz DONE "; 
-
-    m_ocontext->dump("OpEngine::prepareOptiXVix");
-}
-
-
-void OpEngine::render()
-{
-    if(m_otracer && m_orenderer)
-    {
-        if(m_composition->hasChangedGeometry())
-        {
-            unsigned int scale = m_interactor->getOptiXResolutionScale() ; 
-            m_otracer->setResolutionScale(scale) ;
-            m_otracer->trace();
-            m_oframe->push_PBO_to_Texture();           
-        }
-        else
-        {
-            // dont bother tracing when no change in geometry
-        }
-    }
-}
 
 
 
@@ -260,7 +193,7 @@ void OpEngine::saveEvt()
     }
     else
     {
-        Rdr::download(m_evt);
+        //Rdr::download(m_evt);   now done from App::saveEvt
     }
 
     TIMER("downloadEvt"); 

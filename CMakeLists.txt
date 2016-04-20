@@ -20,6 +20,7 @@ add_subdirectory(graphics/oglrap)
 add_subdirectory(cuda/cudawrap)
 add_subdirectory(numerics/thrustrap)
 add_subdirectory(graphics/optixrap)
+add_subdirectory(graphics/optixgl)
 add_subdirectory(opticksop)
 
 #endif()

@@ -16,8 +16,11 @@
 // opticks-
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
+#include "OpticksPhoton.h"
 #include "OpticksResource.hh"
-
+#include "Bookmarks.hh"
+#include "Composition.hh"
+#include "InterpolatedView.hh"
 
 // oglrap-
 #include "StateGUI.hh"
@@ -27,10 +30,6 @@
 #include "RendererCfg.hh"
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
-
-#include "Bookmarks.hh"
-#include "InterpolatedView.hh"
-#include "Composition.hh"
 #include "Rdr.hh"
 #include "Texture.hh"
 #include "Photons.hh"
@@ -71,11 +70,6 @@
 #include "Report.hpp"
 #include "NSlice.hpp"
 
-//opticks-
-#include "Opticks.hh"
-#include "OpticksCfg.hh"
-#include "OpticksPhoton.h"
-
 // glm-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -86,7 +80,6 @@
 #include "GCache.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
@@ -94,7 +87,6 @@
 #include "GPmt.hh"
 #include "GParts.hh"
 #include "GFlags.hh"
-
 #include "GColors.hh"
 #include "GItemIndex.hh"
 #include "GAttrSeq.hh"
@@ -108,6 +100,11 @@
 
 // opop-
 #include "OpEngine.hh"
+
+// optixgl-
+#include "OpViz.hh"
+
+
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -733,8 +730,8 @@ void App::prepareOptiX()
 void App::prepareOptiXViz()
 {
     if(!m_ope) return ; 
-    m_ope->setScene(m_scene);
-    m_ope->prepareOptiXViz();
+
+    m_opv = new OpViz(m_ope, m_scene); 
 }
 
 void App::preparePropagator()
@@ -773,6 +770,12 @@ void App::propagate()
 void App::saveEvt()
 {
     if(!m_ope) return ; 
+
+    if(!m_opticks->isCompute()) 
+    {
+        Rdr::download(m_evt);
+    }
+
     m_ope->saveEvt();
 }
 
@@ -1068,7 +1071,7 @@ void App::render()
 #ifdef OPTIX
     if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
     {
-        if(m_ope) m_ope->render();
+        if(m_opv) m_opv->render();
     }
 #endif
     m_scene->render();

@@ -30,12 +30,12 @@ class NState ;
 class Opticks ; 
 class OpticksResource ; 
 template <typename> class OpticksCfg ;
+class Composition ; 
+class Bookmarks ; 
 
 // oglrap-
 class Scene ; 
-class Composition ; 
 class Frame ; 
-class Bookmarks ; 
 class Interactor ; 
 class GUI ; 
 class Photons ; 
@@ -53,9 +53,12 @@ class GBoundaryLibMetadata ;
 class GMergedMesh ; 
 class GItemIndex ; 
 
-
 // opop-
 class OpEngine ; 
+
+// optixgl-
+class OpViz ; 
+
 
 
 #include <map>
@@ -150,6 +153,7 @@ class App {
        GMergedMesh*     m_mesh0 ;  
 
        OpEngine*        m_ope ; 
+       OpViz*           m_opv ; 
 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
@@ -203,6 +207,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_mesh0(NULL),
 
       m_ope(NULL),
+      m_opv(NULL),
 
       m_bnd(NULL),
       m_pho(NULL),
