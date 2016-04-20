@@ -5,9 +5,11 @@
 #include <string>
 #include <cstdio>
 
+// npy-
 class NConfigurable ; 
 class NState ; 
 
+// opticks-
 class InterpolatedView ; 
 
 //
@@ -31,17 +33,22 @@ class InterpolatedView ;
 class Bookmarks {
 public:
    enum { UNSET = -1, N=10 };
+   typedef std::map<unsigned int, NState*>::const_iterator MUSI ; 
 public:
    Bookmarks(const char* dir);
    void setState(NState* state);
    void setVerbose(bool verbose=true);
-   void setInterpolatedViewPeriod(unsigned int ivperiod); 
    void create(unsigned int num);
-   void gui();
-   void refreshInterpolatedView();
-   InterpolatedView* getInterpolatedView();
    std::string description(const char* msg="Bk");
    void Summary(const char* msg="Bookmarks::Summary");
+public:
+   unsigned int getNumBookmarks();
+   MUSI begin();
+   MUSI end();
+public:
+   void setInterpolatedViewPeriod(unsigned int ivperiod); 
+   void refreshInterpolatedView();
+   InterpolatedView* getInterpolatedView();
 private:
    void init();
    void readdir();
@@ -62,7 +69,10 @@ public:
 
    void collect();  // update state and persist to current slot, writing eg 001.ini
    void apply();    // instruct m_state to apply config setting to associated objects 
-
+public:
+   int* getIVPeriodPtr();
+   int* getCurrentGuiPtr();
+   int* getCurrentPtr();
 private:
    const char*                          m_dir ; 
    char                                 m_title[N+1] ;
@@ -75,6 +85,40 @@ private:
    int                                  m_ivperiod ; 
 
 };
+
+
+inline int* Bookmarks::getIVPeriodPtr()
+{
+    return &m_ivperiod ; 
+}
+inline int* Bookmarks::getCurrentGuiPtr()
+{
+    return &m_current_gui ; 
+}
+inline int* Bookmarks::getCurrentPtr()
+{
+    return &m_current ; 
+}
+
+
+inline unsigned int Bookmarks::getNumBookmarks()
+{
+    return m_bookmarks.size(); 
+}
+inline Bookmarks::MUSI Bookmarks::begin()
+{
+    return m_bookmarks.begin();
+}
+inline Bookmarks::MUSI Bookmarks::end()
+{
+    return m_bookmarks.end();
+}
+
+
+
+
+
+
 
 
 

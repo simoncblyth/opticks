@@ -6,10 +6,18 @@
 
 // npy-
 #include "Index.hpp"
-
+#include "NState.hpp"
 
 // opticks-
 #include "Opticks.hh"
+#include "Clipper.hh"
+#include "Camera.hh"
+#include "Animator.hh"
+#include "Trackball.hh"
+#include "View.hh"
+#include "TrackView.hh"
+#include "OrbitalView.hh"
+#include "InterpolatedView.hh"
 
 // ggeo-
 #include "GGeo.hh"
@@ -17,32 +25,19 @@
 #include "GMaterialLib.hh"
 #include "GFlags.hh"
 #include "GAttrSeq.hh"
-
-// on way out
-//#include "GLoader.hh"
 #include "GItemIndex.hh"
-
 
 // oglrap-
 #include "Interactor.hh"
 #include "Scene.hh"
+
 #include "Composition.hh"
-#include "Clipper.hh"
-#include "Camera.hh"
-#include "Trackball.hh"
 #include "Bookmarks.hh"
+
 #include "Photons.hh"
-#include "Animator.hh"
-
-
-#include "View.hh"
-#include "TrackView.hh"
-#include "OrbitalView.hh"
-#include "InterpolatedView.hh"
-
-
-
 #include "StateGUI.hh"
+
+
 
 #include <imgui.h>
 #include "imgui_impl_glfw_gl3.h"
@@ -273,7 +268,33 @@ void GUI::clipper_gui(Clipper* clipper)
 
 
 
+void GUI::bookmarks_gui(Bookmarks* bookmarks)
+{ 
+    ImGui::SameLine();
+    if(ImGui::Button("collect")) bookmarks->collect();
+    ImGui::SameLine();
+    if(ImGui::Button("apply")) bookmarks->apply();
 
+    ImGui::SliderInt( "IVperiod", bookmarks->getIVPeriodPtr(),  50, 400 ); 
+
+    int* curr = bookmarks->getCurrentPtr();
+    int* curr_gui = bookmarks->getCurrentGuiPtr();
+
+    for(Bookmarks::MUSI it=bookmarks->begin() ; it!=bookmarks->end() ; it++)
+    {
+         unsigned int num = it->first ; 
+         std::string name = NState::FormName(num) ; 
+         ImGui::RadioButton(name.c_str(), curr_gui, num);
+    }
+
+    // not directly setting m_current as need to notice a change
+    if(*curr_gui != *curr ) 
+    {
+        bookmarks->setCurrent(*curr_gui);
+        ImGui::Text(" changed : %d ", bookmarks->getCurrent());
+        bookmarks->apply();
+    }
+}
 
 
 
@@ -372,7 +393,7 @@ void GUI::show(bool* opened)
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Bookmarks"))
     {
-        m_bookmarks->gui(); 
+        bookmarks_gui(m_bookmarks); 
     }
 
     ImGui::Spacing();

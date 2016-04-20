@@ -74,6 +74,7 @@ class GUI {
        void camera_gui(Camera* camera);
        void trackball_gui(Trackball* trackball);
        void clipper_gui(Clipper* clipper);
+       void bookmarks_gui(Bookmarks* bookmarks);
 
    public:
        //static void gui_item_index(GItemIndex* ii);

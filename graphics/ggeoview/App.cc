@@ -168,7 +168,8 @@ void App::initViz()
     m_interactor->setScene(m_scene);
     m_interactor->setComposition(m_composition);
 
-    m_composition->setScene(m_scene);
+    //m_composition->setScene(m_scene);
+
     m_scene->setInteractor(m_interactor);      
 
 
@@ -219,7 +220,10 @@ void App::configure(int argc, char** argv)
     LOG(info) << "App::configure " << m_state->description();
 
     assert(m_composition);
-    m_composition->setupConfigurableState(m_state);
+
+    m_state->addConfigurable(m_scene);
+    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
+
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 
@@ -240,7 +244,7 @@ void App::configure(int argc, char** argv)
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
 
-
+        m_composition->setEvt(m_evt);
 
         m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
         NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track");
@@ -531,6 +535,8 @@ void App::registerGeometry()
     //for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
 
     m_mesh0 = m_ggeo->getMergedMesh(0); 
+
+    m_composition->setGeometry(m_ggeo);
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
     m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );

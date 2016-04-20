@@ -13,6 +13,7 @@ find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 find_package(Cfg REQUIRED)
+find_package(Bregex REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -20,6 +21,7 @@ include_directories(
    ${GLM_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
    ${Cfg_INCLUDE_DIRS}  
+   ${Bregex_INCLUDE_DIRS}  
 )
 
 add_definitions( 
@@ -27,14 +29,16 @@ add_definitions(
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
    ${Cfg_DEFINITIONS} 
+   ${Bregex_DEFINITIONS} 
     -DVERBOSE 
 )
 
 set(LIBRARIES
       ${Boost_LIBRARIES}
-      ${Cfg_LIBRARIES}
       ${GLM_LIBRARIES}
       ${NPY_LIBRARIES}
+      ${Cfg_LIBRARIES}
+      ${Bregex_LIBRARIES}
 )
 
 
@@ -56,6 +60,7 @@ add_library( ${name}  SHARED
     OrbitalView.cc
     TrackView.cc
     Animator.cc
+    Bookmarks.cc
     Light.cc
 )
 
@@ -83,6 +88,7 @@ SET(hdrs
     OrbitalView.hh
     TrackView.hh
     Animator.hh
+    Bookmarks.hh
     Light.hh
 
 )

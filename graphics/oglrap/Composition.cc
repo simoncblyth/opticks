@@ -9,7 +9,6 @@
 #include "TrackballCfg.hh"
 #include "Clipper.hh"
 #include "ClipperCfg.hh"
-
 #include "InterpolatedView.hh"
 #include "OrbitalView.hh"
 #include "TrackView.hh"
@@ -24,32 +23,31 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "AxisNPY.hpp"
-
 #include "NState.hpp"
-
-// oglrap-
-#include "Scene.hh"
-#include "Bookmarks.hh"
-#include "CompositionCfg.hh"
-
-
-// npy-
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
+#include "NLog.hpp"
+
+// ggeo-
+#include "GGeo.hh"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/gtc/type_ptr.hpp>
 
+#include "limits.h"
 
-#include "NLog.hpp"
 
+
+
+// oglrap-
+#include "Bookmarks.hh"
+#include "CompositionCfg.hh"
 #ifdef GUI_
 #include <imgui.h>
 #endif
 
-#include "limits.h"
 
 
 const char* Composition::PREFIX = "composition" ;
@@ -138,16 +136,13 @@ void Composition::init()
     initAxis();
 }
 
-void Composition::setupConfigurableState(NState* state)
+void Composition::addConstituentConfigurables(NState* state)
 {
-   // TODO: handle externally ? m_scene is odd-man-out here 
-
-    state->addConfigurable(m_scene);
     state->addConfigurable(m_trackball);
     state->addConfigurable(m_view);
     state->addConfigurable(m_camera);
     state->addConfigurable(m_clipper);
-    //m_state->addConfigurable(m_light);
+    //state->addConfigurable(m_light);
 }
 
 
@@ -474,6 +469,9 @@ void Composition::gui()
     float* ldir = m_light->getDirectionPtr() ;
     ImGui::SliderFloat3( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
 
+
+
+
     int* pick = glm::value_ptr(m_pick) ;
     ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
     ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
@@ -501,8 +499,6 @@ void Composition::gui()
     *(scanparam + 1) = fminf( 1.0f , *(scanparam + 2) + *(scanparam + 3) ) ; 
 
     ImGui::Text(" nrmparam.y geometrystyle : %s ", getGeometryStyleName()); 
-
-
 
 
     ImGui::Text("pick %d %d %d %d ",
@@ -559,22 +555,6 @@ void Composition::setSize(unsigned int width, unsigned int height, unsigned int 
 }
 
 
-
-/*
-void Composition::setTarget(unsigned int target)
-{
-    assert(0);
-
-    if(!m_scene)
-    {
-        LOG(warning) << "Composition::setTarget requires composition.setScene(scene) " ; 
-        return ; 
-    }
-    m_scene->setTarget(target);
-}
-*/
-
-
 void Composition::setSelection(std::string selection)
 {
     setSelection(givec4(selection));
@@ -612,15 +592,16 @@ void Composition::setPickPhoton(glm::ivec4 pickphoton)
     {
         print(m_pickphoton, "Composition::setPickPhoton single photon targetting");
         unsigned int photon_id = m_pickphoton.x ;
-        NumpyEvt* evt = m_scene ? m_scene->getNumpyEvt() : NULL ; 
-        RecordsNPY* recs = evt ? evt->getRecordsNPY() : NULL ; 
+
+        RecordsNPY* recs = m_evt ? m_evt->getRecordsNPY() : NULL ; 
         if(recs)
         {
             glm::vec4 ce = recs->getCenterExtent(photon_id);
             print(ce, "Composition::setPickPhoton single photon center extent");
             setCenterExtent(ce);
         }
-        PhotonsNPY* pho  = evt ? evt->getPhotonsNPY() : NULL ; 
+
+        PhotonsNPY* pho  = m_evt ? m_evt->getPhotonsNPY() : NULL ; 
         if(pho)
         {
             pho->dump(photon_id, "Composition::setPickPhoton");
@@ -645,19 +626,19 @@ void Composition::setPickFace(glm::ivec4 pickface)
     if(m_pickface.x > 0)
     {
         print(m_pickface, "Composition::setPickFace face targetting");
-        if(m_scene)
+        if(m_ggeo)
         {
             unsigned int face_index0= m_pickface.x ;
             unsigned int face_index1= m_pickface.y ;
             unsigned int solid_index= m_pickface.z ;
             unsigned int mesh_index = m_pickface.w ;
 
-            //m_scene->setFaceTarget(face_index, solid_index, mesh_index);
-            m_scene->setFaceRangeTarget(face_index0, face_index1, solid_index, mesh_index);
+            //setFaceTarget(face_index, solid_index, mesh_index);
+            setFaceRangeTarget(face_index0, face_index1, solid_index, mesh_index);
         }
         else
         {
-            LOG(warning) << "Composition::setPickFace requires Scene lodged in Composition " ;
+            LOG(warning) << "Composition::setPickFace requires m_ggeo lodged in Composition " ;
         }
     }
     else
@@ -665,6 +646,28 @@ void Composition::setPickFace(glm::ivec4 pickface)
         LOG(warning) << "Composition::setPickFace IGNORING " << gformat(pickface) ;   
     }
 }
+
+
+
+void Composition::setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index)
+{
+    assert(m_ggeo && "must setGeometry first");
+    glm::vec4 ce = m_ggeo->getFaceCenterExtent(face_index, solid_index, mesh_index);
+
+    bool autocam = false ; 
+    setCenterExtent(ce, autocam );
+}
+
+
+void Composition::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index)
+{
+    assert(m_ggeo && "must setGeometry first");
+    glm::vec4 ce = m_ggeo->getFaceRangeCenterExtent(face_index0, face_index1, solid_index, mesh_index);
+
+    bool autocam = false ; 
+    setCenterExtent(ce, autocam );
+}
+
 
 
 

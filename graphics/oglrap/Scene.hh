@@ -137,8 +137,7 @@ class Scene : public NConfigurable {
    public:
         void setGeometry(GGeo* gg);
         GGeo* getGeometry();
-        void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
-        void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
+
         void uploadGeometry(); 
    public:
         void uploadColorBuffer(GBuffer* colorbuffer);

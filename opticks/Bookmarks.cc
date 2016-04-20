@@ -1,24 +1,19 @@
-// oglrap-
-#include "Bookmarks.hh"
-
-#include "InterpolatedView.hh"
-
 #include <cstring>
 #include <sstream>
-
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
-#include "regexsearch.hh"
 #include <boost/lexical_cast.hpp>
+
+// bregex-
+#include "regexsearch.hh"
 
 // npy-
 #include "dirutil.hpp"
 #include "NState.hpp"
 #include "NLog.hpp"
 
-typedef std::map<unsigned int, NState*>::const_iterator MUSI ; 
+// opticks-
+#include "Opticks.hh"
+#include "InterpolatedView.hh"
+#include "Bookmarks.hh"
 
 
 Bookmarks::Bookmarks(const char* dir)  
@@ -215,37 +210,6 @@ void Bookmarks::apply()
 }
 
 
-void Bookmarks::gui()
-{
-#ifdef GUI_
-    ImGui::SameLine();
-    if(ImGui::Button("collect")) collect();
-    ImGui::SameLine();
-    if(ImGui::Button("apply")) apply();
-
-    ImGui::SliderInt( "IVperiod", &m_ivperiod,  50, 400 ); 
-
-    for(MUSI it=m_bookmarks.begin() ; it!=m_bookmarks.end() ; it++)
-    {
-         unsigned int num = it->first ; 
-         std::string name = NState::FormName(num) ; 
-         ImGui::RadioButton(name.c_str(), &m_current_gui, num);
-    }
-
-    // not directly setting m_current as need to notice a change
-    if(m_current_gui != m_current ) 
-    {
-        setCurrent(m_current_gui);
-        ImGui::Text(" changed : %d ", m_current);
-        apply();
-    }
-
-
-    //InterpolatedView* iv = getInterpolatedView();
-    //iv->gui();
-
-#endif
-}
 
 
 InterpolatedView* Bookmarks::makeInterpolatedView()

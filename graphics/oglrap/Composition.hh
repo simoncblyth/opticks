@@ -4,33 +4,32 @@
 #include <vector>
 #include <glm/glm.hpp>  
 
+// bcfg-
+class Cfg ;
 
-template<typename T>
-class NPY ; 
-
+// npy-
+template<typename T> class NPY ; 
 class MultiViewNPY ; 
-
 class NState ; 
-
+class NumpyEvt ; 
+#include "NConfigurable.hpp"
 
 // opticks-
 class Camera ;
 class OrbitalView ; 
 class TrackView ; 
-
-
 class Light ;
 class Trackball ; 
-class Scene ; 
 class Clipper ; 
-class Bookmarks ; 
-
+class Animator ; 
 #include "View.hh"
 
-class Cfg ;
-class Animator ; 
+// ggeo-
+class GGeo ; 
 
-#include "NConfigurable.hpp"
+// oglrap-
+class Bookmarks ; 
+
 
 
 class Composition : public NConfigurable {
@@ -69,7 +68,7 @@ class Composition : public NConfigurable {
       static const glm::vec3 Z ; 
   public:
       Composition();
-      void setupConfigurableState(NState* state);
+      void addConstituentConfigurables(NState* state);
       virtual ~Composition();
    public:
       void setAnimatorPeriod(int period);
@@ -140,16 +139,13 @@ class Composition : public NConfigurable {
 
   public: 
       void aim(glm::vec4& ce, bool verbose=false);
-
-      //void setCenterExtent(gfloat4 ce, bool aim=false); // effectively points at what you want to look at 
-      //void setColorDomain(guint4 cd);
-
       void setCenterExtent(const glm::vec4& ce, bool aim=false); // effectively points at what you want to look at 
+      void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
+      void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
+  public: 
+      void setDomainCenterExtent(const glm::vec4& ce); // typically whole geometry domain
       void setColorDomain(const glm::uvec4& cd);
-
-      void setDomainCenterExtent(const glm::vec4& ce);               // typically whole geometry domain
       void setTimeDomain(const glm::vec4& td);
-
   public:
       // avaiable as uniform inside shaders allowing GPU-side selections 
       void setSelection(glm::ivec4 sel);
@@ -201,10 +197,12 @@ class Composition : public NConfigurable {
       void setPick(glm::ivec4 pick);
       void setPick(std::string pick);
       glm::ivec4& getPick();
-
   public:
-      // void setTarget(unsigned int target);  // pass thru to Scene, trying to eliminate that 
-      void setScene(Scene* scene);
+      void setEvt(NumpyEvt* evt);
+      NumpyEvt* getEvt();
+      void setGeometry(GGeo* ggeo);
+      GGeo* getGeometry();
+  public:
       void addConfig(Cfg* cfg);
   public:
       void setLookAngle(float phi);
@@ -246,7 +244,6 @@ class Composition : public NConfigurable {
       Light*     getLight(); 
       Clipper*   getClipper(); 
 
-      Scene*     getScene();   // Scene has heavy dependency on OpenGL : try to eliminate 
 
       
       void setCamera(Camera* camera);
@@ -382,8 +379,10 @@ class Composition : public NConfigurable {
       MultiViewNPY* m_axis_attr ;
       bool          m_changed ; 
 
+  private:
       // visitors
-      Scene*       m_scene ; 
+      NumpyEvt*     m_evt ; 
+      GGeo*         m_ggeo ; 
 
   private:
       // updated by *update* based on inputs and residents
@@ -468,7 +467,8 @@ inline Composition::Composition()
   m_axis_data(NULL),
   m_axis_attr(NULL),
   m_changed(true), 
-  m_scene(NULL),
+  m_evt(NULL), 
+  m_ggeo(NULL), 
   m_lookphi(0.f), 
   m_axis_x(1000.f,    0.f,    0.f, 0.f),
   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
@@ -528,15 +528,27 @@ inline void Composition::setBookmarks(Bookmarks* bookmarks)
 
 
 
+inline NumpyEvt* Composition::getEvt()
+{
+    return m_evt ; 
+}
+inline void Composition::setEvt(NumpyEvt* evt)
+{
+    m_evt = evt ; 
+}
 
-inline Scene* Composition::getScene()
+
+
+inline GGeo* Composition::getGeometry()
 {
-    return m_scene ; 
+    return m_ggeo ; 
 }
-inline void Composition::setScene(Scene* scene)
+inline void Composition::setGeometry(GGeo* ggeo)
 {
-    m_scene = scene ; 
+    m_ggeo = ggeo ; 
 }
+
+
 inline glm::vec4& Composition::getCenterExtent()
 {
     return m_center_extent ; 

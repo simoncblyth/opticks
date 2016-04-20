@@ -108,7 +108,6 @@ add_library( ${name}  SHARED
                 Device.cc
                 Rdr.cc
 
-                Bookmarks.cc
                 StateGUI.cc
                 Demo.cc
                 Prog.cc
@@ -135,7 +134,6 @@ SET(hdrs
         Renderer.hh
         RendererCfg.hh
 
-        Bookmarks.hh
         StateGUI.hh
         Demo.hh
         gleq.h
