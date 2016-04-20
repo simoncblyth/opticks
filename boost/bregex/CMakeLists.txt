@@ -39,19 +39,6 @@ regexsearch.hh
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
 
-
-
 add_subdirectory(tests)
-
-#add_executable(${name} search.cc regexsearch.cc )
-#add_executable(${name}_enum enum.cc regexsearch.cc )
-
-#target_link_libraries(${name} ${LIBRARIES})
-#target_link_libraries(${name}_enum ${LIBRARIES})
-
-#install(TARGETS ${name} DESTINATION bin)
-#install(TARGETS ${name}_enum DESTINATION bin)
-
-
 
 

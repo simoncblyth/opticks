@@ -85,6 +85,15 @@ set(LIBRARIES
 )
 
 
+message( "Opticks_LIBRARIES ${Opticks_LIBRARIES} ")
+message( "GGeo_LIBRARIES ${GGeo_LIBRARIES} ")
+message( "Bregex_LIBRARIES ${Bregex_LIBRARIES} ")
+message( "Cfg_LIBRARIES ${Cfg_LIBRARIES} ")
+message( "NPY_LIBRARIES ${NPY_LIBRARIES} ")
+
+
+
+
 include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
