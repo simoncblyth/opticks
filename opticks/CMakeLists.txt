@@ -14,6 +14,7 @@ find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 find_package(Cfg REQUIRED)
 find_package(Bregex REQUIRED)
+find_package(GGeo  REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -22,6 +23,7 @@ include_directories(
    ${NPY_INCLUDE_DIRS}  
    ${Cfg_INCLUDE_DIRS}  
    ${Bregex_INCLUDE_DIRS}  
+   ${GGeo_INCLUDE_DIRS}  
 )
 
 add_definitions( 
@@ -30,6 +32,7 @@ add_definitions(
    ${NPY_DEFINITIONS} 
    ${Cfg_DEFINITIONS} 
    ${Bregex_DEFINITIONS} 
+   ${GGeo_DEFINITIONS} 
     -DVERBOSE 
 )
 
@@ -39,6 +42,7 @@ set(LIBRARIES
       ${NPY_LIBRARIES}
       ${Cfg_LIBRARIES}
       ${Bregex_LIBRARIES}
+      ${GGeo_LIBRARIES}
 )
 
 
@@ -47,6 +51,8 @@ add_library( ${name}  SHARED
     Opticks.cc
     OpticksCfg.cc
 
+    Composition.cc
+    CompositionCfg.cc
     View.cc
     ViewCfg.cc
     Camera.cc
@@ -55,10 +61,10 @@ add_library( ${name}  SHARED
     TrackballCfg.cc
     Clipper.cc
     ClipperCfg.cc
-
     InterpolatedView.cc
     OrbitalView.cc
     TrackView.cc
+
     Animator.cc
     Bookmarks.cc
     Light.cc
@@ -72,6 +78,8 @@ SET(hdrs
     Opticks.hh
     OpticksCfg.hh
 
+    Composition.hh
+    CompositionCfg.hh
     View.hh
     ViewCfg.hh
     Camera.hh
@@ -80,17 +88,16 @@ SET(hdrs
     TrackballCfg.hh
     Clipper.hh
     ClipperCfg.hh
-
-    OpticksPhoton.h
-    OpticksFlags.h
-
     InterpolatedView.hh
     OrbitalView.hh
     TrackView.hh
+
     Animator.hh
     Bookmarks.hh
     Light.hh
 
+    OpticksPhoton.h
+    OpticksFlags.h
 )
 
 install(TARGETS ${name}  DESTINATION lib)

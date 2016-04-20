@@ -94,8 +94,6 @@ add_definitions(${DEFINITIONS})
 #
 
 add_library( ${name}  SHARED
-                Composition.cc
-                CompositionCfg.cc
                 Texture.cc
                 Frame.cc
                 Interactor.cc
@@ -120,8 +118,6 @@ add_library( ${name}  SHARED
 )
 
 SET(hdrs 
-        Composition.hh
-        CompositionCfg.hh
         Texture.hh
         Frame.hh
         Interactor.hh

@@ -22,17 +22,18 @@ class Light ;
 class Trackball ; 
 class Clipper ; 
 class Animator ; 
+class Bookmarks ; 
 #include "View.hh"
 
 // ggeo-
 class GGeo ; 
 
 // oglrap-
-class Bookmarks ; 
-
 
 
 class Composition : public NConfigurable {
+   public:
+      friend class GUI ; 
    public:
       static const char* PREFIX ;
       const char* getPrefix();
@@ -135,7 +136,6 @@ class Composition : public NConfigurable {
       // for cli/live updating 
       void configureI(const char* name, std::vector<int> values );
       void configureS(const char* name, std::vector<std::string> values);
-      void gui();
 
   public: 
       void aim(glm::vec4& ce, bool verbose=false);
@@ -161,7 +161,7 @@ class Composition : public NConfigurable {
       void setPickPhoton(glm::ivec4 pp);
       void setPickPhoton(std::string pp);
       glm::ivec4& getPickPhoton();
-
+      int* getPickPtr();
   public:
       void setPickFace(glm::ivec4 pf);
       void setPickFace(std::string pf);
@@ -171,7 +171,7 @@ class Composition : public NConfigurable {
       void setColorParam(glm::ivec4 cp);
       void setColorParam(std::string cp);
       glm::ivec4& getColorParam();
-
+      int* getColorParamPtr();
   public:
       void setParam(glm::vec4 par);
       void setParam(std::string par);
@@ -206,6 +206,7 @@ class Composition : public NConfigurable {
       void addConfig(Cfg* cfg);
   public:
       void setLookAngle(float phi);
+      float* getLookAnglePtr();
   public:
       void setLookW(glm::vec4 lookw);
       void setLookW(std::string lookw);
@@ -297,7 +298,10 @@ class Composition : public NConfigurable {
       glm::mat4& getCamera2World();
       glm::mat4& getEye2Look();
       glm::mat4& getLook2Eye();
-
+   public:
+      std::string getEyeString();
+      std::string getLookString();
+      std::string getGazeString();
    public:
       bool hasChanged(); // based on View, Camera, Trackball
       bool hasChangedGeometry(); // excludes event animation
@@ -770,5 +774,19 @@ inline const char* Composition::getColorStyleName()
 {
     return Composition::getColorStyleName(getColorStyle());
 }
+
+
+
+
+inline void Composition::setLookAngle(float phi)
+{
+    m_lookphi = phi ; 
+}
+inline float* Composition::getLookAnglePtr()
+{
+    return &m_lookphi ; 
+}
+
+
 
 

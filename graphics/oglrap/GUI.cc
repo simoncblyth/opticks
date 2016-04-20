@@ -7,6 +7,7 @@
 // npy-
 #include "Index.hpp"
 #include "NState.hpp"
+#include "GLMFormat.hpp"
 
 // opticks-
 #include "Opticks.hh"
@@ -297,6 +298,103 @@ void GUI::bookmarks_gui(Bookmarks* bookmarks)
 }
 
 
+void GUI::composition_gui(Composition* composition)
+{
+    ImGui::SliderFloat( "lookPhi", composition->getLookAnglePtr(),  -180.f, 180.0f, "%0.3f");
+    ImGui::SameLine();
+    if(ImGui::Button("zeroPhi")) composition->setLookAngle(0.f) ;
+
+    if(ImGui::Button("home")) composition->home();
+    if(ImGui::Button("commit")) composition->commitView();
+
+
+    std::string eye = composition->getEyeString();
+    std::string look = composition->getLookString();
+    std::string gaze = composition->getGazeString();
+ 
+    ImGui::Text(" eye  : %s ", eye.c_str()); 
+    ImGui::Text(" look : %s ", look.c_str()); 
+    ImGui::Text(" gaze : %s ", gaze.c_str()); 
+
+    glm::vec4 viewpoint = composition->getViewpoint();
+    glm::vec4 lookpoint = composition->getLookpoint();
+    glm::vec4 updir = composition->getUpdir();
+
+    ImGui::Text(" viewpoint  : %s ", gformat(viewpoint).c_str()); 
+    ImGui::Text(" lookpoint  : %s ", gformat(lookpoint).c_str()); 
+    ImGui::Text(" updir      : %s ", gformat(updir).c_str()); 
+
+
+    ImGui::Text(" setEyeGUI ");
+    if(ImGui::Button(" +X")) composition->setEyeGUI(glm::vec3(1,0,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" -X")) composition->setEyeGUI(glm::vec3(-1,0,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" +Y")) composition->setEyeGUI(glm::vec3(0,1,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" -Y")) composition->setEyeGUI(glm::vec3(0,-1,0));
+    ImGui::SameLine();
+    if(ImGui::Button(" +Z")) composition->setEyeGUI(glm::vec3(0,0,1));
+    ImGui::SameLine();
+    if(ImGui::Button(" -Z")) composition->setEyeGUI(glm::vec3(0,0,-1));
+
+
+    float* param = composition->getParamPtr() ;
+    ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
+    ImGui::SliderFloat( "param.y", param + 1,  0.f, 1.0f, "%0.3f", 2.0f );
+    ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
+
+
+    float* lpos = composition->getLightPositionPtr() ;
+    ImGui::SliderFloat3( "lightposition", lpos,  -2.0f, 2.0f, "%0.3f");
+
+    float* ldir = composition->getLightDirectionPtr() ;
+    ImGui::SliderFloat3( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
+
+    int* pickp = composition->getPickPtr() ;
+    ImGui::SliderInt( "pick.x", pickp + 0,  1, 100 );  // modulo scale down
+    ImGui::SliderInt( "pick.w", pickp + 3,  0, 1e6 );  // single photon pick
+
+    int* colpar = composition->getColorParamPtr() ;
+    ImGui::SliderInt( "colorparam.x", colpar + 0,  0, Composition::NUM_COLOR_STYLE  );  // record color mode
+    ImGui::Text(" colorstyle : %s ", composition->getColorStyleName()); 
+
+    int* np = composition->getNrmParamPtr() ;
+    ImGui::SliderInt( "nrmparam.x", np + 0,  0, 1  );  
+    ImGui::Text(" (nrm) normals : %s ",  *(np + 0) == 0 ? "NOT flipped" : "FLIPPED" );   
+
+    ImGui::SliderInt( "nrmparam.z", np + 2,  0, 1  );  
+    ImGui::Text(" (nrm) scanmode : %s ",  *(np + 2) == 0 ? "DISABLED" : "ENABLED" );   
+
+    float* scanparam = composition->getScanParamPtr() ;
+    ImGui::SliderFloat( "scanparam.x", scanparam + 0,  0.f, 1.0f, "%0.3f", 2.0f );
+    ImGui::SliderFloat( "scanparam.y", scanparam + 1,  0.f, 1.0f, "%0.3f", 2.0f );
+    ImGui::SliderFloat( "scanparam.z", scanparam + 2,  0.f, 1.0f, "%0.3f", 2.0f );
+    ImGui::SliderFloat( "scanparam.w", scanparam + 3,  0.f, 1.0f, "%0.3f", 2.0f );
+
+    *(scanparam + 0) = fmaxf( 0.0f , *(scanparam + 2) - *(scanparam + 3) ) ; 
+    *(scanparam + 1) = fminf( 1.0f , *(scanparam + 2) + *(scanparam + 3) ) ; 
+
+    ImGui::Text(" nrmparam.y geometrystyle : %s ", composition->getGeometryStyleName()); 
+
+    glm::ivec4& pick = composition->getPick();
+    ImGui::Text("pick %d %d %d %d ",
+       pick.x, 
+       pick.y, 
+       pick.z, 
+       pick.w);
+
+}
+
+
+
+
+
+
+
+
+
+
 
 // follow pattern of ImGui::ShowTestWindow
 void GUI::show(bool* opened)
@@ -352,8 +450,11 @@ void GUI::show(bool* opened)
 
     ImGui::Spacing();
 
+
+    if (ImGui::CollapsingHeader("Composition"))
     {
-       m_composition->gui(); 
+       composition_gui(m_composition);
+ 
        Animator* animator = m_composition->getAnimator(); 
 
        if(animator)

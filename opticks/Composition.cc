@@ -14,6 +14,7 @@
 #include "TrackView.hh"
 #include "Animator.hh"
 #include "Light.hh"
+#include "Bookmarks.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -38,16 +39,8 @@
 
 #include "limits.h"
 
-
-
-
 // oglrap-
-#include "Bookmarks.hh"
 #include "CompositionCfg.hh"
-#ifdef GUI_
-#include <imgui.h>
-#endif
-
 
 
 const char* Composition::PREFIX = "composition" ;
@@ -55,8 +48,6 @@ const char* Composition::getPrefix()
 {
    return PREFIX ; 
 }
-
-
 
 
 const char* Composition::PRINT = "print" ; 
@@ -402,118 +393,25 @@ unsigned int Composition::tick()
 
 
 
-void Composition::gui()
+
+
+std::string Composition::getEyeString()
 {
-#ifdef GUI_
-    if (!ImGui::CollapsingHeader("Composition")) return ;
-
-
-    ImGui::SliderFloat( "lookPhi", &m_lookphi,  -180.f, 180.0f, "%0.3f");
-    ImGui::SameLine();
-    if(ImGui::Button("zeroPhi")) setLookAngle(0.f) ;
-
-
-    if(ImGui::Button("home")) home();
-    if(ImGui::Button("commit")) commitView();
-
     glm::vec4 eye  = m_view->getEye(m_model_to_world);
-    glm::vec4 look = m_view->getLook(m_model_to_world);
-    glm::vec4 gaze = m_view->getGaze(m_model_to_world);
-
-    ImGui::Text(" eye  : %s ", gformat(eye).c_str()); 
-    ImGui::Text(" look : %s ", gformat(look).c_str()); 
-    ImGui::Text(" gaze : %s ", gformat(gaze).c_str()); 
-
-
-    glm::vec4 viewpoint = getViewpoint();
-    glm::vec4 lookpoint = getLookpoint();
-    glm::vec4 updir = getUpdir();
-
-    ImGui::Text(" viewpoint  : %s ", gformat(viewpoint).c_str()); 
-    ImGui::Text(" lookpoint  : %s ", gformat(lookpoint).c_str()); 
-    ImGui::Text(" updir      : %s ", gformat(updir).c_str()); 
-
-
-   /*
-    // problem with keyboard input is just about all keys are taken already as shortcuts
-    // so are unable to enter anything 
-    ImGui::InputText(" command ", (char*)m_command.c_str(), m_command_length ); 
-    ImGui::SameLine();
-    ImGui::Text(" : %s ", m_command.c_str()) ; 
-   */
-
-
-    ImGui::Text(" setEyeGUI ");
-    if(ImGui::Button(" +X")) setEyeGUI(glm::vec3(1,0,0));
-    ImGui::SameLine();
-    if(ImGui::Button(" -X")) setEyeGUI(glm::vec3(-1,0,0));
-    ImGui::SameLine();
-    if(ImGui::Button(" +Y")) setEyeGUI(glm::vec3(0,1,0));
-    ImGui::SameLine();
-    if(ImGui::Button(" -Y")) setEyeGUI(glm::vec3(0,-1,0));
-    ImGui::SameLine();
-    if(ImGui::Button(" +Z")) setEyeGUI(glm::vec3(0,0,1));
-    ImGui::SameLine();
-    if(ImGui::Button(" -Z")) setEyeGUI(glm::vec3(0,0,-1));
-
-
-    float* param = glm::value_ptr(m_param) ;
-    ImGui::SliderFloat( "param.x", param + 0,  0.f, 1000.0f, "%0.3f", 2.0f);
-    ImGui::SliderFloat( "param.y", param + 1,  0.f, 1.0f, "%0.3f", 2.0f );
-    ImGui::SliderFloat( "z:alpha", param + 2,  0.f, 1.0f, "%0.3f");
-
-
-    float* lpos = m_light->getPositionPtr() ;
-    ImGui::SliderFloat3( "lightposition", lpos,  -2.0f, 2.0f, "%0.3f");
-
-    float* ldir = m_light->getDirectionPtr() ;
-    ImGui::SliderFloat3( "lightdirection", ldir,  -2.0f, 2.0f, "%0.3f");
-
-
-
-
-    int* pick = glm::value_ptr(m_pick) ;
-    ImGui::SliderInt( "pick.x", pick + 0,  1, 100 );  // modulo scale down
-    ImGui::SliderInt( "pick.w", pick + 3,  0, 1e6 );  // single photon pick
-
-    int* colpar = glm::value_ptr(m_colorparam) ;
-    ImGui::SliderInt( "colorparam.x", colpar + 0,  0, NUM_COLOR_STYLE  );  // record color mode
-    ImGui::Text(" colorstyle : %s ", getColorStyleName()); 
-
-
-    int* np = glm::value_ptr(m_nrmparam) ;
-    ImGui::SliderInt( "nrmparam.x", np + 0,  0, 1  );  
-    ImGui::Text(" (nrm) normals : %s ",  *(np + 0) == 0 ? "NOT flipped" : "FLIPPED" );   
-
-    ImGui::SliderInt( "nrmparam.z", np + 2,  0, 1  );  
-    ImGui::Text(" (nrm) scanmode : %s ",  *(np + 2) == 0 ? "DISABLED" : "ENABLED" );   
-
-
-    float* scanparam = glm::value_ptr(m_scanparam) ;
-    ImGui::SliderFloat( "scanparam.x", scanparam + 0,  0.f, 1.0f, "%0.3f", 2.0f );
-    ImGui::SliderFloat( "scanparam.y", scanparam + 1,  0.f, 1.0f, "%0.3f", 2.0f );
-    ImGui::SliderFloat( "scanparam.z", scanparam + 2,  0.f, 1.0f, "%0.3f", 2.0f );
-    ImGui::SliderFloat( "scanparam.w", scanparam + 3,  0.f, 1.0f, "%0.3f", 2.0f );
-
-    *(scanparam + 0) = fmaxf( 0.0f , *(scanparam + 2) - *(scanparam + 3) ) ; 
-    *(scanparam + 1) = fminf( 1.0f , *(scanparam + 2) + *(scanparam + 3) ) ; 
-
-    ImGui::Text(" nrmparam.y geometrystyle : %s ", getGeometryStyleName()); 
-
-
-    ImGui::Text("pick %d %d %d %d ",
-       m_pick.x, 
-       m_pick.y, 
-       m_pick.z, 
-       m_pick.w);
-
-//
-
-
-#endif    
+    return gformat(eye) ;
 }
 
+std::string Composition::getLookString()
+{
+    glm::vec4 look  = m_view->getLook(m_model_to_world);
+    return gformat(look) ;
+}
 
+std::string Composition::getGazeString()
+{
+    glm::vec4 gaze  = m_view->getGaze(m_model_to_world);
+    return gformat(gaze) ;
+}
 
 
 
@@ -968,6 +866,18 @@ float* Composition::getParamPtr()
     return glm::value_ptr(m_param) ;
 }
 
+int* Composition::getPickPtr()  
+{
+    return glm::value_ptr(m_pick) ;
+}
+int* Composition::getColorParamPtr()  
+{
+    return glm::value_ptr(m_colorparam) ;
+}
+
+
+
+
 float* Composition::getScanParamPtr()  
 {
     return glm::value_ptr(m_scanparam) ;
@@ -1116,12 +1026,6 @@ void Composition::setChanged(bool changed)
     m_trackball->setChanged(changed);
 }
 
-
-
-void Composition::setLookAngle(float phi)
-{
-    m_lookphi = phi ; 
-}
 
 
 

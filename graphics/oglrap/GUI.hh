@@ -75,6 +75,7 @@ class GUI {
        void trackball_gui(Trackball* trackball);
        void clipper_gui(Clipper* clipper);
        void bookmarks_gui(Bookmarks* bookmarks);
+       void composition_gui(Composition* composition);
 
    public:
        //static void gui_item_index(GItemIndex* ii);

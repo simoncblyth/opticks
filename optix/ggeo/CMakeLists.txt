@@ -18,7 +18,6 @@ find_package(NPY REQUIRED)
 find_package(Opticks REQUIRED)
 
 
-
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS}
