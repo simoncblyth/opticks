@@ -331,15 +331,8 @@ void App::prepareViz()
 
     m_scene->setComposition(m_composition);     // defer until renderers are setup 
 
-
-    //InterpolatedView* iv = m_bookmarks->getInterpolatedView() ; // creates the interpolation based on initial bookmarks
-    //m_composition->setAltView(iv);
-    //iv->Summary("App::prepareViz setting composition.altview to InterpolatedView");
-
     // defer creation of the altview to Interactor KEY_U so newly created bookmarks are included
     m_composition->setBookmarks(m_bookmarks);
-
-
 
 
     TIMER("prepareScene");
@@ -533,7 +526,9 @@ void App::registerGeometry()
 
     m_mesh0 = m_ggeo->getMergedMesh(0); 
 
-    m_composition->setGeometry(m_ggeo);
+    //m_composition->setGeometry(m_ggeo);
+    m_ggeo->setComposition(m_composition);
+
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
     m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );

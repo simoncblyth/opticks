@@ -30,7 +30,7 @@
 #include "NLog.hpp"
 
 // ggeo-
-#include "GGeo.hh"
+//#include "GGeo.hh"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>
@@ -54,7 +54,6 @@ const char* Composition::PRINT = "print" ;
 const char* Composition::SELECT = "select" ; 
 const char* Composition::RECSELECT = "recselect" ; 
 const char* Composition::PICKPHOTON = "pickphoton" ; 
-const char* Composition::PICKFACE = "pickface" ; 
 const char* Composition::EYEW = "eyew" ;
 const char* Composition::LOOKW = "lookw" ;
 const char* Composition::UPW = "upw" ;
@@ -133,7 +132,6 @@ void Composition::addConstituentConfigurables(NState* state)
     state->addConfigurable(m_view);
     state->addConfigurable(m_camera);
     state->addConfigurable(m_clipper);
-    //state->addConfigurable(m_light);
 }
 
 
@@ -161,7 +159,6 @@ void Composition::set(const char* name, std::string& s)
     if(     strcmp(name,SELECT)==0) setSelection(s);
     else if(strcmp(name,RECSELECT)==0) setRecSelect(s);
     else if(strcmp(name,PICKPHOTON)==0) setPickPhoton(s);
-    else if(strcmp(name,PICKFACE)==0) setPickFace(s);
     else if(strcmp(name,LOOKW)==0) setLookW(s);
     else if(strcmp(name,EYEW)==0) setEyeW(s);
     else if(strcmp(name,UPW)==0) setUpW(s);
@@ -176,7 +173,6 @@ std::string Composition::get(const char* name)
    if(     strcmp(name,SELECT)==0)    s = gformat(getSelection()) ;
    else if(strcmp(name,RECSELECT)==0) s = gformat(getRecSelect()) ;
    else if(strcmp(name,PICKPHOTON)==0) s = gformat(getPickPhoton()) ;
-   else if(strcmp(name,PICKFACE)==0) s = gformat(getPickFace()) ;
    else
          printf("Composition::get bad name %s\n", name);
 
@@ -479,8 +475,6 @@ void Composition::setPickPhoton(std::string pickphoton)
 
 
 
-
-
 void Composition::setPickPhoton(glm::ivec4 pickphoton) 
 {
    // currently this relies on photon/record data being downloaded to host
@@ -510,61 +504,15 @@ void Composition::setPickPhoton(glm::ivec4 pickphoton)
 
 
 
-void Composition::setPickFace(std::string pickface)
-{
-    setPickFace(givec4(pickface));
-}
 
 
 void Composition::setPickFace(glm::ivec4 pickface) 
 {
-    // gets called on recieving udp messages via boost bind done in CompositionCfg 
     m_pickface = pickface ;  
-    LOG(info) << "Composition::setPickFace " << gformat(pickface) ;   
-    if(m_pickface.x > 0)
-    {
-        print(m_pickface, "Composition::setPickFace face targetting");
-        if(m_ggeo)
-        {
-            unsigned int face_index0= m_pickface.x ;
-            unsigned int face_index1= m_pickface.y ;
-            unsigned int solid_index= m_pickface.z ;
-            unsigned int mesh_index = m_pickface.w ;
-
-            //setFaceTarget(face_index, solid_index, mesh_index);
-            setFaceRangeTarget(face_index0, face_index1, solid_index, mesh_index);
-        }
-        else
-        {
-            LOG(warning) << "Composition::setPickFace requires m_ggeo lodged in Composition " ;
-        }
-    }
-    else
-    {
-        LOG(warning) << "Composition::setPickFace IGNORING " << gformat(pickface) ;   
-    }
+    // the aiming is done by GGeo::setPickFace
 }
 
 
-
-void Composition::setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index)
-{
-    assert(m_ggeo && "must setGeometry first");
-    glm::vec4 ce = m_ggeo->getFaceCenterExtent(face_index, solid_index, mesh_index);
-
-    bool autocam = false ; 
-    setCenterExtent(ce, autocam );
-}
-
-
-void Composition::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index)
-{
-    assert(m_ggeo && "must setGeometry first");
-    glm::vec4 ce = m_ggeo->getFaceRangeCenterExtent(face_index0, face_index1, solid_index, mesh_index);
-
-    bool autocam = false ; 
-    setCenterExtent(ce, autocam );
-}
 
 
 

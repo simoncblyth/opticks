@@ -25,11 +25,6 @@ class Animator ;
 class Bookmarks ; 
 #include "View.hh"
 
-// ggeo-
-class GGeo ; 
-
-// oglrap-
-
 
 class Composition : public NConfigurable {
    public:
@@ -43,7 +38,6 @@ class Composition : public NConfigurable {
       static const char* SELECT ;  
       static const char* RECSELECT ;  
       static const char* PICKPHOTON ;  
-      static const char* PICKFACE ;  
       static const char* EYEW ; 
       static const char* LOOKW ; 
       static const char* UPW ; 
@@ -126,7 +120,7 @@ class Composition : public NConfigurable {
       void init();
       void initAxis();
   public:
-      // Configurable : for bookmarking 
+      // NConfigurable : for bookmarking 
       static bool accepts(const char* name);
       void configure(const char* name, const char* value);
       std::vector<std::string> getTags();
@@ -140,8 +134,8 @@ class Composition : public NConfigurable {
   public: 
       void aim(glm::vec4& ce, bool verbose=false);
       void setCenterExtent(const glm::vec4& ce, bool aim=false); // effectively points at what you want to look at 
-      void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
-      void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
+      //void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
+      //void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
   public: 
       void setDomainCenterExtent(const glm::vec4& ce); // typically whole geometry domain
       void setColorDomain(const glm::uvec4& cd);
@@ -200,8 +194,6 @@ class Composition : public NConfigurable {
   public:
       void setEvt(NumpyEvt* evt);
       NumpyEvt* getEvt();
-      void setGeometry(GGeo* ggeo);
-      GGeo* getGeometry();
   public:
       void addConfig(Cfg* cfg);
   public:
@@ -386,7 +378,6 @@ class Composition : public NConfigurable {
   private:
       // visitors
       NumpyEvt*     m_evt ; 
-      GGeo*         m_ggeo ; 
 
   private:
       // updated by *update* based on inputs and residents
@@ -472,7 +463,6 @@ inline Composition::Composition()
   m_axis_attr(NULL),
   m_changed(true), 
   m_evt(NULL), 
-  m_ggeo(NULL), 
   m_lookphi(0.f), 
   m_axis_x(1000.f,    0.f,    0.f, 0.f),
   m_axis_y(0.f   , 1000.f,    0.f, 0.f),
@@ -539,17 +529,6 @@ inline NumpyEvt* Composition::getEvt()
 inline void Composition::setEvt(NumpyEvt* evt)
 {
     m_evt = evt ; 
-}
-
-
-
-inline GGeo* Composition::getGeometry()
-{
-    return m_ggeo ; 
-}
-inline void Composition::setGeometry(GGeo* ggeo)
-{
-    m_ggeo = ggeo ; 
 }
 
 

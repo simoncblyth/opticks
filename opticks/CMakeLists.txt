@@ -14,7 +14,6 @@ find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 find_package(Cfg REQUIRED)
 find_package(Bregex REQUIRED)
-find_package(GGeo  REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -23,7 +22,6 @@ include_directories(
    ${NPY_INCLUDE_DIRS}  
    ${Cfg_INCLUDE_DIRS}  
    ${Bregex_INCLUDE_DIRS}  
-   ${GGeo_INCLUDE_DIRS}  
 )
 
 add_definitions( 
@@ -32,7 +30,6 @@ add_definitions(
    ${NPY_DEFINITIONS} 
    ${Cfg_DEFINITIONS} 
    ${Bregex_DEFINITIONS} 
-   ${GGeo_DEFINITIONS} 
     -DVERBOSE 
 )
 
@@ -42,7 +39,6 @@ set(LIBRARIES
       ${NPY_LIBRARIES}
       ${Cfg_LIBRARIES}
       ${Bregex_LIBRARIES}
-      ${GGeo_LIBRARIES}
 )
 
 

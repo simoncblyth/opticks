@@ -10,6 +10,12 @@
 #include "GDomain.hh"
 #include "GPropertyMap.hh"
 
+
+// opticks-
+class Composition ; 
+
+
+// ggeo-
 class GCache; 
 
 class GMesh ; 
@@ -36,21 +42,32 @@ class GGeoTest ;
 
 class GItemIndex ; 
 class GItemList ; 
-
 class GMergedMesh ;
+
+
+// npy-
+#include "NConfigurable.hpp"
 class NSensorList ; 
-
 class Lookup ; 
-
 class TorchStepNPY ; 
 
 //
 // NB GGeo is a dumb substrate from which the geometry model is created,
 //    eg by AssimpGGeo::convert 
 //
-class GGeo {
+class GGeo : public NConfigurable {
     public:
         static const char* CATHODE_MATERIAL ; 
+    public:
+        // see GGeoCfg.hh
+        static const char* PICKFACE ;   
+        static const char* PREFIX ;
+    public:
+        const char* getPrefix();
+        void configure(const char* name, const char* value);
+        std::vector<std::string> getTags();
+        void set(const char* name, std::string& s);
+        std::string get(const char* name);
     public:
         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
         void setLoaderImp(GLoaderImpFunctionPtr imp);
@@ -68,12 +85,14 @@ class GGeo {
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
         static bool ctrlHasKey(const char* ctrl, const char* key);
-
     public:
         GGeo(GCache* cache); 
         GCache* getCache();
         const char* getIdPath();
         bool isValid();
+    public:
+        Composition* getComposition();
+        void setComposition(Composition* composition);
     public:
         void loadGeometry(); 
         void loadFromCache();
@@ -266,8 +285,15 @@ class GGeo {
     public:
         GTreeCheck* getTreeCheck();
         GTreePresent* getTreePresent();
+    public:
+        void setPickFace(std::string pickface);
+        void setPickFace(glm::ivec4 pickface);
+        void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
+        void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
+        glm::ivec4& getPickFace(); 
     private:
         GCache*                       m_cache ; 
+        Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
         GTreePresent*                 m_treepresent ; 
         bool                          m_loaded ;  
@@ -332,6 +358,7 @@ class GGeo {
 
 inline GGeo::GGeo(GCache* cache) :
    m_cache(cache), 
+   m_composition(NULL), 
    m_treecheck(NULL), 
    m_treepresent(NULL), 
    m_loaded(false), 
@@ -379,6 +406,17 @@ inline unsigned int GGeo::getLoaderVerbosity()
 {
     return m_loader_verbosity ;
 }
+
+inline void GGeo::setComposition(Composition* composition)
+{
+    m_composition = composition ; 
+}
+inline Composition* GGeo::getComposition()
+{
+    return m_composition ; 
+}
+
+
 
 inline void GGeo::setMeshVerbosity(unsigned int verbosity)
 {

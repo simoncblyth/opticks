@@ -48,6 +48,7 @@
 // opticks-
 #include "Opticks.hh"
 #include "OpticksResource.hh"
+#include "Composition.hh"
 
 #include "assert.h"
 #include "stdio.h"
@@ -68,7 +69,7 @@ namespace fs = boost::filesystem;
 #define BSIZ 50
 
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
-
+const char* GGeo::PICKFACE = "pickface" ;
 
 
 void GGeo::init()
@@ -140,6 +141,11 @@ void GGeo::init()
        m_lvlist = new GItemList("LVNames") ; 
    }
 }
+
+
+
+
+
 
 
 
@@ -1388,6 +1394,103 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
     }
     return result ; 
 }
+
+
+
+
+
+
+
+// pickface machinery must be here as GGeo cannot live in Opticks
+
+void GGeo::setPickFace(std::string pickface)
+{
+    setPickFace(givec4(pickface));
+}
+
+glm::ivec4& GGeo::getPickFace()
+{
+    return m_composition->getPickFace();
+}
+
+void GGeo::setPickFace(glm::ivec4 pickface) 
+{
+    m_composition->setPickFace(pickface);
+
+    // gets called on recieving udp messages via boost bind done in CompositionCfg 
+    LOG(info) << "GGeo::setPickFace " << gformat(pickface) ;    
+    if(pickface.x > 0) 
+    {    
+        print(pickface, "GGeo::setPickFace face targetting");
+        unsigned int face_index0= pickface.x ;
+        unsigned int face_index1= pickface.y ;
+        unsigned int solid_index= pickface.z ;
+        unsigned int mesh_index = pickface.w ;
+
+        //setFaceTarget(face_index, solid_index, mesh_index);
+        setFaceRangeTarget(face_index0, face_index1, solid_index, mesh_index);
+    }    
+    else 
+    {    
+        LOG(warning) << "GGeo::setPickFace IGNORING " << gformat(pickface) ;    
+    }    
+}
+
+void GGeo::setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index)
+{
+    glm::vec4 ce = getFaceCenterExtent(face_index, solid_index, mesh_index);
+    bool autocam = false ; 
+    m_composition->setCenterExtent(ce, autocam );
+}
+
+
+void GGeo::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index)
+{
+    glm::vec4 ce = getFaceRangeCenterExtent(face_index0, face_index1, solid_index, mesh_index);
+    bool autocam = false ;
+    m_composition->setCenterExtent(ce, autocam );
+}
+
+
+
+void GGeo::set(const char* name, std::string& s)
+{
+    if(strcmp(name,PICKFACE)==0) setPickFace(s);
+    else 
+        printf("GGeo::set bad name %s\n", name);
+}
+
+std::string GGeo::get(const char* name)
+{
+   std::string s ;  
+   if(strcmp(name,PICKFACE)==0) s = gformat(getPickFace()) ;
+   else 
+       printf("GGeo::get bad name %s\n", name);
+
+   return s ;  
+}
+
+void GGeo::configure(const char* name, const char* value_)
+{
+    std::string value(value_);
+    set(name, value);
+}
+
+const char* GGeo::PREFIX = "ggeo" ;
+const char* GGeo::getPrefix()
+{
+   return PREFIX ;
+}
+
+std::vector<std::string> GGeo::getTags()
+{
+    std::vector<std::string> tags ;
+    //tags.push_back(PICKFACE);
+    return tags ;
+}
+
+
+
 
 
 

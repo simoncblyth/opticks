@@ -13,6 +13,7 @@ include(EnvBuildOptions)
 
 find_package(Boost REQUIRED)
 find_package(Bregex REQUIRED)
+find_package(Cfg REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 find_package(Opticks REQUIRED)
@@ -23,6 +24,7 @@ set(INCLUDE_DIRS
    ${Boost_INCLUDE_DIRS}
    ${Bregex_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
+   ${Cfg_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
    ${Opticks_INCLUDE_DIRS}
 )
@@ -30,6 +32,7 @@ set(INCLUDE_DIRS
 set(LIBRARIES
    ${Boost_LIBRARIES}
    ${Bregex_LIBRARIES}
+   ${Cfg_LIBRARIES}
    ${NPY_LIBRARIES}
    ${Opticks_LIBRARIES}
 )
@@ -37,6 +40,7 @@ set(LIBRARIES
 set(DEFINITIONS
    ${Boost_DEFINITIONS} 
    ${Bregex_DEFINITIONS} 
+   ${Cfg_DEFINITIONS} 
    ${Opticks_DEFINITIONS} 
 )
 
@@ -66,6 +70,7 @@ add_library(${name} SHARED
                 GMesh.cc
                 GMergedMesh.cc
                 GGeo.cc
+                GGeoCfg.cc
                 GVector.cc
                 GMatrix.cc
                 GIds.cc
@@ -100,6 +105,7 @@ add_library(${name} SHARED
 
 SET(hdrs 
 GGeo.hh
+GGeoCfg.hh
 GMaterial.hh
 GSource.hh
 GMesh.hh
