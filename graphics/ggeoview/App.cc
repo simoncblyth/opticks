@@ -1,11 +1,10 @@
 #include "App.hh"
 
-#include "OptiXUtil.hh"
-#include "define.h"
+
+
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
-#define OPTIX 1
 
 // oglrap-
 #define GUI_ 1
@@ -98,11 +97,23 @@
 #include "MFixer.hh"
 #include "MTool.hh"
 
-// opop-
-#include "OpEngine.hh"
+
+#ifdef WITH_OPTIX
+
+// optixrap- 
+// TODO: eliminate 
+#include "OptiXUtil.hh"
+#include "define.h"
 
 // optixgl-
 #include "OpViz.hh"
+
+// opop-
+#include "OpEngine.hh"
+
+#endif
+
+
 
 
 
@@ -715,79 +726,6 @@ void App::uploadEvtViz()
 
 
 
-
-void App::prepareOptiX()
-{
-    m_ope = new OpEngine(m_opticks, m_ggeo);
-    m_ope->prepareOptiX();
-}
-
-void App::prepareOptiXViz()
-{
-    if(!m_ope) return ; 
-
-    m_opv = new OpViz(m_ope, m_scene); 
-}
-
-void App::preparePropagator()
-{
-    if(!m_ope) return ; 
-    m_ope->setEvent(m_evt);
-    m_ope->preparePropagator();
-}
-
-void App::seedPhotonsFromGensteps()
-{
-    if(!m_ope) return ; 
-    m_ope->seedPhotonsFromGensteps();
-}
-
-void App::initRecords()
-{
-    if(!m_ope) return ; 
-    m_ope->initRecords();
-}
-
-
-void App::propagate()
-{
-    if(hasOpt("nooptix|noevent|nopropagate")) 
-    {
-        LOG(warning) << "App::propagate skip due to --nooptix/--noevent/--nopropagate " ;
-        return ;
-    }
-
-    if(!m_ope) return ; 
-    m_ope->propagate();
-}
-
-
-void App::saveEvt()
-{
-    if(!m_ope) return ; 
-
-    if(!m_opticks->isCompute()) 
-    {
-        Rdr::download(m_evt);
-    }
-
-    m_ope->saveEvt();
-}
-
-void App::indexSequence()
-{
-    if(!m_ope) return ; 
-    m_ope->indexSequence();
-}
-
-
-
-
-
-
-
-
-
 void App::indexPresentationPrep()
 {
     LOG(info) << "App::indexPresentationPrep" ; 
@@ -920,8 +858,11 @@ void App::indexEvt()
                   << " skip as already indexed "
                   ;
     }
- 
+
+
+#ifdef WITH_OPTIX 
     indexSequence();
+#endif
 
     indexBoundariesHost();
 
@@ -1063,7 +1004,7 @@ void App::render()
     m_frame->viewport();
     m_frame->clear();
 
-#ifdef OPTIX
+#ifdef WITH_OPTIX
     if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
     {
         if(m_opv) m_opv->render();
@@ -1117,7 +1058,9 @@ void App::renderLoop()
 
 void App::cleanup()
 {
+#ifdef WITH_OPTIX
     if(m_ope) m_ope->cleanup();
+#endif
 
 #ifdef NPYSERVER
     if(m_server) m_server->stop();
@@ -1133,4 +1076,79 @@ bool App::hasOpt(const char* name)
 {
     return m_fcfg->hasOpt(name);
 }
+
+
+
+
+
+
+
+
+#ifdef WITH_OPTIX
+void App::prepareOptiX()
+{
+    m_ope = new OpEngine(m_opticks, m_ggeo);
+    m_ope->prepareOptiX();
+}
+
+void App::prepareOptiXViz()
+{
+    if(!m_ope) return ; 
+    m_opv = new OpViz(m_ope, m_scene); 
+}
+
+void App::preparePropagator()
+{
+    if(!m_ope) return ; 
+    m_ope->setEvent(m_evt);
+    m_ope->preparePropagator();
+}
+
+void App::seedPhotonsFromGensteps()
+{
+    if(!m_ope) return ; 
+    m_ope->seedPhotonsFromGensteps();
+}
+
+void App::initRecords()
+{
+    if(!m_ope) return ; 
+    m_ope->initRecords();
+}
+void App::propagate()
+{
+    if(hasOpt("nooptix|noevent|nopropagate")) 
+    {
+        LOG(warning) << "App::propagate skip due to --nooptix/--noevent/--nopropagate " ;
+        return ;
+    }
+
+    if(!m_ope) return ; 
+    m_ope->propagate();
+}
+
+void App::saveEvt()
+{
+    if(!m_ope) return ; 
+
+    if(!m_opticks->isCompute()) 
+    {
+        Rdr::download(m_evt);
+    }
+
+    m_ope->saveEvt();
+}
+
+void App::indexSequence()
+{
+    if(!m_ope) return ; 
+    m_ope->indexSequence();
+}
+
+#endif
+
+
+
+
+
 

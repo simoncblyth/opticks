@@ -53,11 +53,16 @@ class GBoundaryLibMetadata ;
 class GMergedMesh ; 
 class GItemIndex ; 
 
+
+#ifdef WITH_OPTIX
+
 // opop-
 class OpEngine ; 
 
 // optixgl-
 class OpViz ; 
+
+#endif
 
 
 
@@ -99,17 +104,21 @@ class App {
 
        void uploadEvtViz();
 
-       void seedPhotonsFromGensteps();
-       void initRecords();
+
+#ifdef WITH_OPTIX
   public:
        void prepareOptiX();
        void prepareOptiXViz();
 
        void preparePropagator();
+       void seedPhotonsFromGensteps();
+       void initRecords();
        void propagate();
        void saveEvt();
-       void indexEvt();
        void indexSequence();
+#endif
+
+       void indexEvt();
        void indexPresentationPrep();
        void indexBoundariesHost();
        void indexEvtOld();
@@ -152,8 +161,10 @@ class App {
        GGeo*            m_ggeo ; 
        GMergedMesh*     m_mesh0 ;  
 
+#ifdef WITH_OPTIX
        OpEngine*        m_ope ; 
        OpViz*           m_opv ; 
+#endif
 
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
@@ -206,8 +217,10 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_ggeo(NULL),
       m_mesh0(NULL),
 
+#ifdef WITH_OPTIX
       m_ope(NULL),
       m_opv(NULL),
+#endif
 
       m_bnd(NULL),
       m_pho(NULL),

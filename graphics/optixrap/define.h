@@ -1,5 +1,4 @@
 
-
 #define PNUMQUAD 4  // quads per photon  
 #define RNUMQUAD 2  // quads per record  
 

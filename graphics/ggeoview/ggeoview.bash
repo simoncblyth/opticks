@@ -1923,20 +1923,46 @@ ggeoview-options()
     esac
 }
 
+
+ggeoview-optix-install-dir()
+{
+    #echo $(optix-install-dir) 
+    echo /tmp/$FUNCNAME
+}
+
 ggeoview-cmake(){
    local iwd=$PWD
-
    local bdir=$(ggeoview-bdir)
    mkdir -p $bdir
   
    ggeoview-bcd 
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(ggeoview-idir) \
-       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
-       -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
-       $(ggeoview-options) \
-       $(ggeoview-sdir)
+
+   local optix_idir=$(ggeoview-optix-install-dir)
+   echo $msg optix_idir $optix_idir
+
+   if [ -d "$optix_idir" ]; then 
+
+
+       cmake \
+           -DOPTIX:BOOL=ON \
+           -DNPYSERVER:BOOL=OFF \
+           -DCMAKE_BUILD_TYPE=Debug \
+           -DCMAKE_INSTALL_PREFIX=$(ggeoview-idir) \
+           -DOptiX_INSTALL_DIR=${optix_idir} \
+           -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
+           $(ggeoview-options) \
+           $(ggeoview-sdir)
+
+    else
+       cmake \
+           -DOPTIX:BOOL=OFF \
+           -DNPYSERVER:BOOL=OFF \
+           -DCMAKE_BUILD_TYPE=Debug \
+           -DCMAKE_INSTALL_PREFIX=$(ggeoview-idir) \
+           $(ggeoview-options) \
+           $(ggeoview-sdir)
+
+   fi
 
    cd $iwd
 }

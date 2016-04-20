@@ -1,11 +1,9 @@
-#include "cu/photon.h"
 #include <iostream>
 #include <iomanip>
 #include <strings.h>
 
-//#define PLACE(name, bounce)  ((unsigned long long)ffs((name))) << (((bounce) - 1)*4) 
 
-
+#ifdef WITH_OPTIX
 
 #define DUMP(name) \
 { \
@@ -23,8 +21,9 @@
 } \
 
 
+#include "cu/photon.h"
 
-int main()
+void dumpflags()
 {
     printf("sizeof(unsigned long long)*8 = %lu \n", sizeof(unsigned long long)*8 );
 
@@ -41,7 +40,6 @@ int main()
     DUMP(BOUNDARY_REFLECT);
     DUMP(BOUNDARY_TRANSMIT);
     DUMP(NAN_ABORT);
-
 
 
     for(unsigned int bounce=1 ; bounce < 20 ; bounce++ )
@@ -61,12 +59,21 @@ int main()
        mask = mask | y ;
        printf(" %2u : %2u : %20llu     %20llx  %20llx  \n",  bounce,shift,  y, y, mask );
     }
-
-
-
-    return 0 ;
 }
 
+#else
+
+void dumpflags()
+{
+    printf("klop\n");
+}
+
+#endif
 
 
+
+int main()
+{
+    dumpflags();
+}
 

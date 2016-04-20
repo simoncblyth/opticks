@@ -40,8 +40,7 @@ int main(int argc, char** argv)
         app.uploadEvtViz();            // allocates GPU buffers with OpenGL glBufferData
 
 
-
-
+#ifdef WITH_OPTIX
         app.prepareOptiX();            // places geometry into OptiX context with OGeo 
 
         app.prepareOptiXViz();         // creates ORenderer, OTracer
@@ -55,7 +54,6 @@ int main(int argc, char** argv)
             app.initRecords();             // zero records buffer
 
             app.propagate();
-
 
             if(!noindex) 
             {
@@ -71,17 +69,20 @@ int main(int argc, char** argv)
                 app.indexEvtOld();  // indexing that depends on downloading to host 
             }
         }
+#endif
 
     }
     else if(load)
     {
 
+#ifdef WITH_OPTIX
         if(optixviz)
         {
             app.prepareOptiX();            // places geometry into OptiX context with OGeo 
 
             app.prepareOptiXViz();         // creates ORenderer, OTracer
         } 
+#endif
 
         app.loadEvtFromFile();
 
