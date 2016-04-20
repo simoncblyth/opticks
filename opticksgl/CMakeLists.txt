@@ -35,13 +35,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-p
 
 
 find_package(Boost REQUIRED)
-
+find_package(GLM  REQUIRED)
 
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(OGLRap REQUIRED)
 
-find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(Opticks REQUIRED)
 

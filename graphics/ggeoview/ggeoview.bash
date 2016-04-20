@@ -2119,6 +2119,15 @@ ggeoview-dep-cmake(){   ggeoview-dep-action cmake ; }
 ggeoview-dep-install(){ ggeoview-dep-action install ; }
 ggeoview-dep-wipe(){    ggeoview-dep-action wipe ; }
 
+
+ggeoview-full()
+{
+   ggeoview-dep-wipe
+   ggeoview-dep-cmake
+   ggeoview-dep-install
+}
+
+
 ggeoview-deps-(){ cat << EOD
 bcfg
 bregex

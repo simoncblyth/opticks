@@ -56,11 +56,18 @@ void GBndLib::loadIndexBuffer()
     std::string name = getBufferName("Index");
     NPY<unsigned int>* indexBuf = NPY<unsigned int>::load(dir.c_str(), name.c_str()); 
 
-    LOG(info) << "GBndLib::loadIndexBuffer"
-              << " shape " << indexBuf->getShapeString()
-              ;
-
     setIndexBuffer(indexBuf); 
+
+    if(indexBuf == NULL) 
+    {
+        LOG(warning) << "GBndLib::loadIndexBuffer setting invalid " ; 
+        setValid(false);
+    }
+    else
+    {
+        LOG(info) << "GBndLib::loadIndexBuffer"
+                  << " shape " << indexBuf->getShapeString() ;
+    }
 }
 
 void GBndLib::saveIndexBuffer()
@@ -107,6 +114,13 @@ NPY<unsigned int>* GBndLib::createIndexBuffer()
 void GBndLib::importIndexBuffer()
 {
     NPY<unsigned int>* ibuf = getIndexBuffer();
+
+    if(ibuf == NULL)
+    {
+         LOG(warning) << "GBndLib::importIndexBuffer NULL buffer setting invalid" ; 
+         setValid(false);
+         return ;
+    }
 
     LOG(info) << "GBndLib::importIndexBuffer BEFORE IMPORT" 
               << " ibuf " << ibuf->getShapeString()

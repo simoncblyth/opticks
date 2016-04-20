@@ -102,6 +102,7 @@ class Opticks {
 
    private:
        void init(int argc, char** argv);
+       void preargs(int argc, char** argv);
        void preconfigure(int argc, char** argv);
    public:
        void configure();  // invoked after commandline parsed

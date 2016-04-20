@@ -15,6 +15,7 @@ namespace fs = boost::filesystem;
 const char* OpticksResource::JUNO    = "juno" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
 const char* OpticksResource::DPIB    = "PmtInBox" ; 
+const char* OpticksResource::OTHER   = "other" ; 
 
 const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
@@ -26,17 +27,19 @@ void OpticksResource::init()
 {
    readEnvironment();
  
-   // TODO: generalize by extracting the name beneath export dir
+   // TODO: somehow extract detector name from the exported file metadata or sidecar
 
    m_juno     = idPathContains("env/geant4/geometry/export/juno") ;
    m_dayabay  = idPathContains("env/geant4/geometry/export/DayaBay") ;
    m_dpib     = idPathContains("env/geant4/geometry/export/dpib") ;
+   m_other    =  m_juno == false && m_dayabay == false && m_dpib == false ; 
 
-   assert( m_juno ^ m_dayabay ^ m_dpib ); // exclusive-or
-
+   assert( m_juno ^ m_dayabay ^ m_dpib ^ m_other ); // exclusive-or
+   
    if(m_juno)    m_detector = JUNO ; 
    if(m_dayabay) m_detector = DAYABAY ; 
    if(m_dpib)    m_detector = DPIB ; 
+   if(m_other)   m_detector = OTHER ; 
 }
 
 
@@ -77,9 +80,18 @@ void OpticksResource::readEnvironment()
 
     if(m_path == NULL)
     {
+        if(m_lastarg && existsFile(m_lastarg))
+        {
+            m_path = m_lastarg ; 
+            printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s but lastarg is a path %s \n", m_geokey, m_path );
+        }
+    }
+
+    if(m_path == NULL)
+    {
         printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s path %s \n", m_geokey, m_path );
         assert(0);
-    }
+    } 
 
 
     m_query = getenvvar(m_envprefix, "QUERY");

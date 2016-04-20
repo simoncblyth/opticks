@@ -12,17 +12,12 @@ include(EnvBuildOptions)
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
 find_package(Boost REQUIRED)
+find_package(GLM REQUIRED)
+
 find_package(Cfg REQUIRED)
 find_package(Opticks REQUIRED)
 find_package(GGeo  REQUIRED)
-
-find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
-
-find_package(GLEW REQUIRED)
-find_package(GLFW REQUIRED)
-find_package(OGLRap REQUIRED) 
-
 find_package(OptiXRap REQUIRED)
 find_package(CUDAWrap REQUIRED)
 find_package(ThrustRap REQUIRED)
@@ -43,10 +38,6 @@ include_directories(
    ${OptiXRap_INCLUDE_DIRS}  
    ${CUDAWrap_INCLUDE_DIRS} 
    ${ThrustRap_INCLUDE_DIRS}
-
-   ${GLEW_INCLUDE_DIRS} 
-   ${GLFW_INCLUDE_DIRS} 
-   ${OGLRap_INCLUDE_DIRS}  
 )
 
 add_definitions( 
@@ -61,9 +52,6 @@ add_definitions(
    ${ThrustRap_DEFINITIONS}
    ${Opticks_DEFINITIONS}
 
-   ${GLEW_DEFINITIONS}
-   ${GLFW_DEFINITIONS}
-   ${OGLRap_DEFINITIONS}  
     -DVERBOSE 
 )
 
@@ -84,10 +72,6 @@ set(LIBRARIES
    ${OptiXRap_LIBRARIES}
    ${CUDAWrap_LIBRARIES}
    ${ThrustRap_LIBRARIES}
-
-   ${GLEW_LIBRARIES}
-   ${GLFW_LIBRARIES}
-   ${OGLRap_LIBRARIES}  
 
    ssl
    crypto 

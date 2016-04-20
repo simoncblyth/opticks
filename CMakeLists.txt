@@ -5,9 +5,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
-add_subdirectory(boost/bpo/bcfg)  # Cfg  : Boost
-add_subdirectory(boost/bregex)    # bregex : Boost
-add_subdirectory(numerics/npy)    # NPY    : Boost Bregex GLM
+add_subdirectory(boost/bpo/bcfg)  
+add_subdirectory(boost/bregex)    
+add_subdirectory(numerics/npy)   
 
 add_subdirectory(opticks)         # Opticks : Boost GLM NPY Cfg Bregex GGeo 
 add_subdirectory(optix/ggeo)      # GGeo    : Boost Bregex GLM NPY Opticks

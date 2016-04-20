@@ -11,6 +11,8 @@ class OpticksResource {
        static const char* JUNO ; 
        static const char* DAYABAY ; 
        static const char* DPIB ; 
+       static const char* OTHER ; 
+    private:
        static const char* PREFERENCE_BASE  ;
     public:
        static const char* DEFAULT_GEOKEY ;
@@ -21,7 +23,7 @@ class OpticksResource {
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
     public:
-       OpticksResource(const char* envprefix);
+       OpticksResource(const char* envprefix, const char* lastarg);
     private:
        void init();
        void readEnvironment();
@@ -54,8 +56,10 @@ class OpticksResource {
        bool        isJuno();
        bool        isDayabay();
        bool        isPmtInBox();
+       bool        isOther();
    private:
        const char* m_envprefix ; 
+       const char* m_lastarg ; 
    private:
        // results of readEnvironment
        const char* m_geokey ;
@@ -70,13 +74,15 @@ class OpticksResource {
        bool        m_dayabay ; 
        bool        m_juno ; 
        bool        m_dpib ; 
+       bool        m_other ; 
        const char* m_detector ;
 };
 
 
-inline OpticksResource::OpticksResource(const char* envprefix) 
+inline OpticksResource::OpticksResource(const char* envprefix, const char* lastarg) 
     :
        m_envprefix(strdup(envprefix)),
+       m_lastarg(lastarg ? strdup(lastarg) : NULL),
        m_geokey(NULL),
        m_path(NULL),
        m_query(NULL),
@@ -89,6 +95,7 @@ inline OpticksResource::OpticksResource(const char* envprefix)
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),
+       m_other(false),
        m_detector(NULL)
 {
     init();
@@ -146,6 +153,10 @@ inline bool OpticksResource::isDayabay()
 inline bool OpticksResource::isPmtInBox()
 {
    return m_dpib ; 
+}
+inline bool OpticksResource::isOther()
+{
+   return m_other ; 
 }
 
 

@@ -12,9 +12,9 @@ include(EnvBuildOptions)
 
 
 find_package(Boost REQUIRED)
+find_package(GLM REQUIRED)
 find_package(Bregex REQUIRED)
 find_package(Cfg REQUIRED)
-find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 find_package(Opticks REQUIRED)
 

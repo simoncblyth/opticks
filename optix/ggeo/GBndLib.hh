@@ -93,6 +93,7 @@ class GBndLib : public GPropertyLib {
        NPY<unsigned int>* createIndexBuffer();
        NPY<unsigned int>* createOpticalBuffer();
   public:
+       bool hasIndexBuffer();
        NPY<unsigned int>* getIndexBuffer();
        NPY<unsigned int>* getOpticalBuffer();
   public:
@@ -173,6 +174,12 @@ inline NPY<unsigned int>* GBndLib::getIndexBuffer()
 {
     return m_index_buffer ;
 }
+
+inline bool GBndLib::hasIndexBuffer()
+{
+    return m_index_buffer != NULL ; 
+}
+
 inline void GBndLib::setIndexBuffer(NPY<unsigned int>* index_buffer)
 {
     m_index_buffer = index_buffer ;

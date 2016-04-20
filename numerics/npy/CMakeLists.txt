@@ -18,8 +18,8 @@ endif ()
 
 
 find_package(Boost  REQUIRED)
-find_package(Bregex REQUIRED)
 find_package(GLM    REQUIRED)
+find_package(Bregex REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}

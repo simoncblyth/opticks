@@ -209,6 +209,7 @@ void GGeo::loadGeometry()
 {
     LOG(debug) << "GGeo::loadGeometry START" ; 
     const char* idpath = getIdPath() ;
+
     if(!isLoaded())
     {
         loadFromG4DAE();
@@ -274,6 +275,9 @@ void GGeo::loadFromCache()
     }
 
     m_bndlib = GBndLib::load(m_cache);  // GBndLib is persisted via index buffer, not float buffer
+
+    
+
     m_materiallib = GMaterialLib::load(m_cache);
     m_surfacelib  = GSurfaceLib::load(m_cache);
     m_bndlib->setMaterialLib(m_materiallib);

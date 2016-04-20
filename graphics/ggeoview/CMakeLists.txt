@@ -45,10 +45,13 @@ endif ()
 
 ########### using env/cmake/Modules/*.cmake #####
 
+find_package(Boost REQUIRED)
+find_package(GLM  REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
+
+
 find_package(OGLRap REQUIRED)
-find_package(Boost REQUIRED)
 
 if (NPYSERVER)
 find_package(ZMQ REQUIRED)  
@@ -56,7 +59,6 @@ find_package(AsioZMQ REQUIRED)
 find_package(NumpyServer REQUIRED)
 endif()
 
-find_package(GLM  REQUIRED)
 find_package(NPY   REQUIRED)
 find_package(Cfg REQUIRED)
 find_package(Opticks REQUIRED)
