@@ -8,6 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 include(EnvBuildOptions)
+include(EnvCompilationFlags)   
 
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)

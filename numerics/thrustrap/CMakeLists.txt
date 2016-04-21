@@ -6,16 +6,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
-set(BUILD_SHARED_LIBS ON)
+include(EnvBuildOptions)
+include(EnvCompilationFlags)
 
 # http://www.cmake.org/cmake/help/v3.0/module/FindCUDA.html
 find_package(CUDA 2.3 REQUIRED)
-
-include(EnvBuildOptions)
-
-# TODO: see if can improve compilation speed by changing nvcc options to 
-# target just needed device ?
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
 
 message("CMAKE_CXX_COMPILER_ID:" ${CMAKE_CXX_COMPILER_ID})
 
@@ -44,7 +39,6 @@ set(LIBRARIES
       ${CUDAWrap_LIBRARIES}
 )
 
-
 CUDA_ADD_LIBRARY( ${name}  
        TBuf_.cu
        TBufPair_.cu
@@ -54,7 +48,6 @@ CUDA_ADD_LIBRARY( ${name}
 )
  
 target_link_libraries( ${name} ${LIBRARIES})
-
 
 SET(hdrs 
   TBuf.hh

@@ -7,17 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 include(EnvBuildOptions)
-
-
-## c++11 forced by AsioZMQ
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -stdlib=libc++")
-else ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
-endif ()
-
-
-########### using env/cmake/Modules/*.cmake #####
+include(EnvCompilationFlags)
 
 find_package(Boost REQUIRED)
 
@@ -25,13 +15,11 @@ include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS} 
 )
-
 add_definitions(
+   ${Boost_DEFINITIONS} 
 )
 
-add_library( ${name}  SHARED
-   Cfg.cc
-)
+add_library( ${name}  SHARED  Cfg.cc )
 
 target_link_libraries( ${name} 
       ${Boost_LIBRARIES}
@@ -39,9 +27,7 @@ target_link_libraries( ${name}
 
 install(TARGETS ${name}     DESTINATION lib)
 
-SET(hdrs 
-Cfg.hh
-)
+SET(hdrs  Cfg.hh)
 
 install(FILES ${hdrs} DESTINATION include)
 

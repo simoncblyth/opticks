@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
-
 set(name OptiXRap)
 project(${name})
-
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
                       "$ENV{OPTIX_SDK_DIR}/CMake"
@@ -12,9 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
-set(BUILD_SHARED_LIBS ON)
-
-########################## for OptiX
+########################## from OPTIX_SDK_DIR/CMake
 include(Macros)
 include(CompilerInfo)
 include(ConfigCompilerFlags)
@@ -28,16 +24,7 @@ find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 
-
-## c++11 forced by AsioZMQ : AsioZMQ not used here, but expect best to use same compiler options as far as possible
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -stdlib=libc++")
-else ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
-endif ()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-private-field")
-
+include(EnvCompilationFlags)   
 
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)

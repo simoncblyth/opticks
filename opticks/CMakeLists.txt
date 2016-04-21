@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 include(EnvBuildOptions)
+include(EnvCompilationFlags)
 
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
@@ -40,7 +41,6 @@ set(LIBRARIES
       ${Bregex_LIBRARIES}
 )
 
-
 add_library( ${name}  SHARED
     OpticksResource.cc
     Opticks.cc
@@ -64,9 +64,6 @@ add_library( ${name}  SHARED
     Bookmarks.cc
     Light.cc
 )
-
-
-target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
     OpticksResource.hh
@@ -95,6 +92,7 @@ SET(hdrs
     OpticksFlags.h
 )
 
+target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${hdrs}    DESTINATION include)
 

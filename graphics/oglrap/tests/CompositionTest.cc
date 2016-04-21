@@ -126,8 +126,8 @@ void test_depth()
 
    print(zproj, "zproj");
 
-   unsigned int ix = cam->getWidth()/2 ;  
-   unsigned int iy = cam->getHeight()/2 ;  
+   //unsigned int ix = cam->getWidth()/2 ;  
+   //unsigned int iy = cam->getHeight()/2 ;  
    float near = cam->getNear();
    float far  = cam->getFar();
 

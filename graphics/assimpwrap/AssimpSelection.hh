@@ -44,59 +44,30 @@ public:
     void findBounds();
     void findBounds(AssimpNode* node, aiVector3D& low, aiVector3D& high );
 
-
 private:
     char* m_query ; 
-
     char* m_query_name ;
-
     int m_query_index ; 
-
     int m_query_merge ; 
-
     int m_query_depth ; 
-
     std::vector<int> m_query_range ; 
-
     bool m_flat_selection ; 
-
     bool m_no_selection ; 
-
     std::vector<AssimpNode*> m_selection ; 
-
 private:
-
    unsigned int m_count ; 
-
    unsigned int m_index ; 
-
    AssimpNode*  m_root ; 
-
-
 private:
-
    aiVector3D* m_low ; 
-
    aiVector3D* m_high ; 
-
    aiVector3D* m_center ; 
-
    aiVector3D* m_extent ; 
-
    aiVector3D* m_up ; 
-
-
-
 };
-
-
-
 
 inline AssimpSelection::AssimpSelection(AssimpNode* root, const char* query) 
     : 
-    m_count(0),
-    m_index(0),
-    m_root(root),    
     m_query(strdup(query)),
     m_query_name(NULL),
     m_query_index(0), 
@@ -104,6 +75,11 @@ inline AssimpSelection::AssimpSelection(AssimpNode* root, const char* query)
     m_query_depth(0), 
     m_flat_selection(false),
     m_no_selection(false),
+
+    m_count(0),
+    m_index(0),
+    m_root(root),    
+
     m_low(NULL),
     m_high(NULL),
     m_center(NULL),

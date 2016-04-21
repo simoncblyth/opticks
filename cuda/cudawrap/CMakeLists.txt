@@ -2,19 +2,14 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 set(name CUDAWrap)
 project(${name})
 
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
-set(BUILD_SHARED_LIBS ON)
-
-
 include(EnvBuildOptions)
-
+include(EnvCompilationFlags)
 
 find_package(CUDA 2.3 REQUIRED)
-
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -39,6 +34,8 @@ set (LIBRARIES
  #   crypt
 )
 
+
+# TODO: adopt standard tests approach 
 add_executable( LaunchSequenceTest LaunchSequenceTest.cc )
 target_link_libraries( LaunchSequenceTest ${LIBRARIES} )
 

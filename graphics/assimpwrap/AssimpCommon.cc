@@ -7,8 +7,6 @@
 //#include <sstream>
 
 
-
-
 aiNode* findNode(const char* query, aiNode* node, unsigned int depth ){
    const char* name = node->mName.C_Str(); 
    if(strncmp(name,query,strlen(query)) == 0) return node;
@@ -22,8 +20,8 @@ aiNode* findNode(const char* query, aiNode* node, unsigned int depth ){
 bool selectNode( aiNode* node, unsigned int depth, unsigned int index )
 {
    if(!node) return false ;
-   unsigned int NumMeshes = node->mNumMeshes ;
-   unsigned int NumChildren = node->mNumChildren ;
+   //unsigned int NumMeshes = node->mNumMeshes ;
+   //unsigned int NumChildren = node->mNumChildren ;
 
    //if(NumMeshes > 1)                       //      0 with m>1 : all nodes have 0 or 1 meshes
    //if(NumMeshes == 0 && NumChildren == 1)   //  12231 pv m:0 c:1 

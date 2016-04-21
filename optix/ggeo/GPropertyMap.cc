@@ -21,10 +21,10 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other)
       : 
       m_name(other ? other->getName() : NOT_DEFINED ),
       m_shortname(NULL),
+      m_type(other ? other->getType() : "" ),
       m_index(other ? other->getIndex() : UINT_MAX ),
       m_sensor(other ? other->isSensor() : false),
       m_valid(other ? other->isValid() : false),
-      m_type(other ? other->getType() : "" ),
       m_standard_domain(NULL),
       m_optical_surface(other ? other->getOpticalSurface() : NULL )
 {

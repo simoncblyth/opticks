@@ -18,14 +18,14 @@ GBBoxMesh* GBBoxMesh::create(GMergedMesh* mergedmesh)
 
 GBBoxMesh::GBBoxMesh(GMergedMesh* mergedmesh)
        : 
-       m_mergedmesh(mergedmesh),
        GMesh(mergedmesh->getIndex(),
              new gfloat3[NUM_VERTICES],    // vertices
              NUM_VERTICES,  
              new guint3[NUM_FACES],        // faces
              NUM_FACES,    
              new gfloat3[NUM_VERTICES],    // normals
-             NULL )                        // texcoords
+             NULL ),                        // texcoords
+       m_mergedmesh(mergedmesh)
      // backing buffers are created by the GMesh ctor
 {
       twentyfour();

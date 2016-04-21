@@ -29,11 +29,7 @@
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
+#include "NLog.hpp"
 
 using namespace Assimp ; 
 
@@ -55,22 +51,16 @@ public:
 };
 
 
-AssimpGeometry::AssimpGeometry(const char* path)
-          : 
-          m_path(NULL),
-          m_importer(new Assimp::Importer()),
-          m_aiscene(NULL),
-          m_tree(NULL),
-          m_process_flags(0),
-          m_index(0)
+void AssimpGeometry::init(const char* path)
 {
     if(!path) return ;          
+
+    m_importer = new Assimp::Importer() ;
+
     //printf("AssimpGeometry::AssimpGeometry ctor path %s  \n", path);
     m_path = strdup(path);
 
-
     m_importer->SetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION,1);
-
 
     DefaultLogger::create("",Logger::VERBOSE);
 
@@ -81,6 +71,7 @@ AssimpGeometry::AssimpGeometry(const char* path)
 
     DefaultLogger::get()->info("this is my info-call");
 }
+
 
 AssimpGeometry::~AssimpGeometry()
 {

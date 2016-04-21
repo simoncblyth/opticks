@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     GBndLib* blib = GBndLib::load(cache, true); 
     GMaterialLib* mlib = blib->getMaterialLib();
-    GSurfaceLib*  slib = blib->getSurfaceLib();
+    //GSurfaceLib*  slib = blib->getSurfaceLib();
 
     // see GGeo::setupTyp
     Typ* typ = cache->getTyp();
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 
     const char* idpath = cache->getIdPath();
     NPY<float>* fdom = NPY<float>::load(idpath, "OPropagatorF.npy");
-    NPY<int>*   idom = NPY<int>::load(idpath, "OPropagatorI.npy");
+    //NPY<int>*   idom = NPY<int>::load(idpath, "OPropagatorI.npy");
 
     // array([[[9, 0, 0, 0]]], dtype=int32)     ??? no 10 for maxrec 
     // NumpyEvt::load to do this ?

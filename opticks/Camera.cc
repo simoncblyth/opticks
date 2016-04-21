@@ -50,7 +50,7 @@ std::vector<std::string> Camera::getTags()
 
 std::string Camera::get(const char* name)
 {
-    float v ; 
+    float v(0.f) ; 
 
     if(     strcmp(name,NEAR)==0)     v = getNear();
     else if(strcmp(name,FAR)== 0 )    v = getFar();

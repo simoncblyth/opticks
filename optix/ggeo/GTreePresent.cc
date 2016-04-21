@@ -32,7 +32,7 @@ void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSi
     int numChildren = node->getNumChildren() ;
     int nodeIndex   = node->getIndex() ; 
     unsigned int ridx = node->getRepeatIndex();   
-    const char* name = node->getName() ; 
+    //const char* name = node->getName() ; 
 
     //GSolid* solid = dynamic_cast<GSolid*>(node) ;
     //bool selected = solid->isSelected();

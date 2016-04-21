@@ -94,9 +94,9 @@ class Clipper : public NConfigurable {
 
 inline Clipper::Clipper() :
    m_mode(-1),
+   m_absolute(false), 
    m_point(0,0,0),
    m_normal(1,0,0),
-   m_absolute(false), 
    m_absplane(1,0,0,1),   // placeholder 
    m_float3(NULL)
 {

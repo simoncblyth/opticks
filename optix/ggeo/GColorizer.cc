@@ -127,7 +127,7 @@ gfloat3* GColorizer::getSurfaceColor_PRIOR(GNode* node)
 gfloat3* GColorizer::getSurfaceColor(GNode* node)
 {
 
-    gfloat3* nodecolor(NULL) ; 
+    //gfloat3* nodecolor(NULL) ; 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
     unsigned int boundary = solid->getBoundary();

@@ -150,7 +150,7 @@ GBuffer* GBuffer::make_slice(NSlice* slice)
         slice = new NSlice(0, ni, 1);
         LOG(warning) << "GBuffer::make_slice NULL slice, defaulting to full copy " << slice->description() ;
     }
-    unsigned int nk = getNumElements(); 
+    //unsigned int nk = getNumElements(); 
     unsigned int size = getItemSize(); 
 
     char* src = (char*)getPointer();

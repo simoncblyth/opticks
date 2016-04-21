@@ -16,24 +16,10 @@
 #include "Bookmarks.hh"
 
 
-Bookmarks::Bookmarks(const char* dir)  
-       :
-       m_dir(NULL),
-       m_state(NULL),
-       m_current(UNSET),
-       m_current_gui(UNSET),
-       m_view(NULL),
-       m_verbose(false),
-       m_ivperiod(100)
+void Bookmarks::init(const char* dir)
 {
     std::string _dir = os_path_expandvars(dir) ;
     m_dir = strdup(_dir.c_str());
-    init();
-}
-
-
-void Bookmarks::init()
-{
     readdir();
 }
 
@@ -226,7 +212,6 @@ InterpolatedView* Bookmarks::makeInterpolatedView()
     InterpolatedView* iv = new InterpolatedView(m_ivperiod) ; 
     for(MUSI it=m_bookmarks.begin() ; it!=m_bookmarks.end() ; it++)
     {
-         unsigned int num = it->first ; 
          NState* state = it->second ; 
 
          View* v = new View ; 

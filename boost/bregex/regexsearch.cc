@@ -294,7 +294,7 @@ void regexsearch( pairs_t& pairs, std::istream& is, boost::regex& e )
    const char* next_pos = buf + sizeof(buf);  // end of buf
 
    bool more = true;
-   unsigned int count = 0;
+   //unsigned int count = 0;
 
    while(more)
    {

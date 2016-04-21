@@ -7,6 +7,12 @@
 #     location beneath which some opticks external packages
 #     are installed, system type packages may be elsewhere
 #     as specified by the FindX.cmake
+#
+# The distinction between what to consider external/internal
+# (assuming you have the source) boils down to how often you want 
+# to recompile. Once a package has solidified promoting it to be 
+# an external allows to skip from everyday project rebuilding.
+#
 
 message("${name}")
 
@@ -15,6 +21,7 @@ set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/env")
 
 set(OPTICKS_EXTERNAL_PREFIX "$ENV{LOCAL_BASE}/env")
 
+set(BUILD_SHARED_LIBS ON)
 
 OPTION(WITH_NPYSERVER  "using the numpyserver." OFF)
 OPTION(WITH_OPTIX      "using OPTIX." OFF)

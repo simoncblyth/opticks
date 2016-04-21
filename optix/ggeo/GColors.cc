@@ -202,7 +202,7 @@ unsigned int GColors::getBufferEntry(unsigned char* colors)
     unsigned int red   = colors[0] ;
     unsigned int green = colors[1] ;
     unsigned int blue  = colors[2] ;
-    unsigned int alpha = colors[3] ;
+    //unsigned int alpha = colors[3] ;
 
     unsigned int rgb = red << 16 | green << 8 | blue  ; 
     return rgb ; 
@@ -232,7 +232,7 @@ GBuffer* GColors::make_uchar4_buffer()
 {
     std::vector<unsigned int> codes ; 
     typedef std::map<std::string, std::string> MSS ; 
-    unsigned int count(0);
+    //unsigned int count(0);
     for(MSS::iterator it=m_name2hex.begin() ; it != m_name2hex.end() ; it++ ) 
     {
         unsigned int code = getCode(it->first.c_str());

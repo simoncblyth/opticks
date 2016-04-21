@@ -9,8 +9,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
-set(BUILD_SHARED_LIBS ON)
-
 #####################  for OptiX
 
 include(Macros)
@@ -22,6 +20,9 @@ OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot 
 if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
+
+include(EnvCompilationFlags)   
+
 
 ########### OPTICKS #####
 
@@ -75,20 +76,12 @@ else()
    set(WITH_OPTIX_LIBRARIES) 
 endif()
 
-########### COMPILER FIXUP AFTER OPTIX 
-## c++11 forced by AsioZMQ   needs to come after OptiX
-
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -stdlib=libc++")
-else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
-endif ()
-
 
 ########### BASE #####
 
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
+
 find_package(Cfg REQUIRED)
 find_package(Bregex REQUIRED)
 find_package(NPY   REQUIRED)

@@ -6,7 +6,6 @@ class LaunchSequence ;
 #include "cuda.h"
 #include "curand_kernel.h"
 
-
 /*
 
   OptiX interop issues
@@ -16,7 +15,6 @@ class LaunchSequence ;
   with OptiX is fraught with difficulties.  However cannot
   get rid of this as need this to setup the RNG caches that raytrace
   consumes.
-
 
   [SOLVED] Inconsistent save/load digests
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

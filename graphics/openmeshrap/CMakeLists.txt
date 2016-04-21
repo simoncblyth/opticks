@@ -7,8 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 include(EnvBuildOptions)
-
-########### using env/cmake/Modules/*.cmake #####
+include(EnvCompilationFlags)
 
 find_package(Boost REQUIRED)
 find_package(GLM    REQUIRED)

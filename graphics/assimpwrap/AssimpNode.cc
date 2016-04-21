@@ -11,19 +11,23 @@ AssimpNode::~AssimpNode()
 
 AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree) 
    : 
-   m_parent(NULL),
-   m_tree(tree),
-   m_nodepath(nodepath),
-   m_raw(nodepath.back()),
    m_index(0),
+   m_depth(0),
+   m_raw(nodepath.back()),
+   m_nodepath(nodepath),
    m_digest(0),
    m_pdigest(0),
+
    m_meshes(NULL),
    m_numMeshes(0),
+
    m_low(NULL),
    m_high(NULL),
    m_center(NULL),
-   m_extent(NULL)
+   m_extent(NULL),
+
+   m_tree(tree),
+   m_parent(NULL)
 {
 
    unsigned int leafdepth = nodepath.size() ;
@@ -31,15 +35,6 @@ AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree)
    if( leafdepth > 2 ) m_pdigest = hash(0,leafdepth-2);
 
    setDepth(leafdepth);
-}
-
-std::size_t AssimpNode::getDigest()
-{
-   return m_digest ;
-}
-std::size_t AssimpNode::getParentDigest()
-{
-   return m_pdigest ;
 }
 
 
@@ -71,11 +66,11 @@ aiMatrix4x4 AssimpNode::getLevelTransform(int level)
 
 
 
-
 aiNode* AssimpNode::getRawNode()
 {
    return m_raw ; 
 }
+
 aiNode* AssimpNode::getRawNode(unsigned int iback)
 {
     unsigned int size = m_nodepath.size() ;
@@ -113,46 +108,6 @@ std::size_t AssimpNode::hash(unsigned int pyfirst, unsigned int pylast)
 }
 
 
-
-
-
-void AssimpNode::setParent(AssimpNode* parent){
-    m_parent = parent ;
-}
-void AssimpNode::setIndex(unsigned int index){
-    m_index = index ; 
-}
-void AssimpNode::setDepth(unsigned int depth){
-    m_depth = depth ; 
-}
-
-void AssimpNode::addChild(AssimpNode* child)
-{
-    m_children.push_back(child); 
-}
-
-
-
-AssimpNode* AssimpNode::getParent(){
-    return m_parent ;  
-}
-unsigned int AssimpNode::getIndex(){
-    return m_index ; 
-}
-unsigned int AssimpNode::getDepth(){
-    return m_depth ; 
-}
-
-unsigned int AssimpNode::getNumChildren(){
-    return m_children.size(); 
-}
-AssimpNode* AssimpNode::getChild(unsigned int n){
-    return n < getNumChildren() ? m_children[n] : NULL ;
-}
-
-
-
-
 void AssimpNode::traverse()
 {
    summary("AssimpNode::traverse");
@@ -168,14 +123,10 @@ void AssimpNode::summary(const char* msg)
 }
 
 
-
-
-
-
 void AssimpNode::dump()
 {
     unsigned int nchild = getNumChildren();
-    unsigned int nprog = progeny();
+    //unsigned int nprog = progeny();
     unsigned int nmesh = getNumMeshes() ;
 
     if(nchild > 8)
@@ -274,25 +225,6 @@ void AssimpNode::updateBounds(aiVector3D& low, aiVector3D& high)
         high.z = std::max( high.z, m_high->z);
    } 
 }
-
-
-aiVector3D* AssimpNode::getLow()
-{
-    return m_low ; 
-}
-aiVector3D* AssimpNode::getHigh()
-{
-    return m_high ; 
-}
-aiVector3D* AssimpNode::getCenter()
-{
-    return m_center ; 
-}
-aiVector3D* AssimpNode::getExtent()
-{
-    return m_extent ; 
-}
-
 
 
 
@@ -404,9 +336,6 @@ unsigned int AssimpNode::progeny()
    for(unsigned int i=0 ; i < nchild ; i++ ) tot += getChild(i)->progeny(); 
    return tot ; 
 }
-
-
-
 
 
 

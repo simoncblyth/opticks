@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
     LOG(info) << "mm numSolids " << numSolids  ;
 
-    GBBoxMesh* bb = GBBoxMesh::create(mm);
+    //GBBoxMesh* bb = GBBoxMesh::create(mm);
 
 
     return 0 ;

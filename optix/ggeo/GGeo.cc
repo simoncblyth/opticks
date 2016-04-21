@@ -1262,7 +1262,7 @@ void GGeo::dumpVolume(unsigned int index, const char* msg)
         glm::vec3 p0(v0->x, v0->y, v0->z);
         glm::vec3 p1(v1->x, v1->y, v1->z);
         glm::vec3 p2(v2->x, v2->y, v2->z);
-        glm::vec3 pc = (p0 + p1 + p2)/3.f ;
+        //glm::vec3 pc = (p0 + p1 + p2)/3.f ;
         glm::vec3 e0 = p1 - p0;
         glm::vec3 e1 = p0 - p2;
         glm::vec3 no = glm::normalize(glm::cross( e1, e0 ));

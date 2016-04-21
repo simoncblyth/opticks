@@ -1,6 +1,5 @@
 #include "App.hh"
 
-
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
 
@@ -32,14 +31,12 @@
 #include "Photons.hh"
 #include "DynamicDefine.hh"
 
-
 // numpyserver-
 #ifdef WITH_NPYSERVER
 #include "numpydelegate.hpp"
 #include "numpydelegateCfg.hpp"
 #include "numpyserver.hpp"
 #endif
-
 
 // npy-
 #include "NLog.hpp"
@@ -96,23 +93,12 @@
 #include "MFixer.hh"
 #include "MTool.hh"
 
-
 #ifdef WITH_OPTIX
-
-// optixrap- 
-// TODO: eliminate 
-#include "OptiXUtil.hh"
-#include "define.h"
-
 // optixgl-
 #include "OpViz.hh"
-
 // opop-
 #include "OpEngine.hh"
-
 #endif
-
-
 
 
 
@@ -539,14 +525,10 @@ void App::registerGeometry()
 
     m_mesh0 = m_ggeo->getMergedMesh(0); 
 
-    //m_composition->setGeometry(m_ggeo);
     m_ggeo->setComposition(m_composition);
-
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
     m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
-
-    // treat opticks as the common authority 
 
     if(m_evt)
     {

@@ -4,18 +4,15 @@
 #include "RendererBase.hh"
 #include "Prog.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
+#include "NLog.hpp"
 
 RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_path)
     :
     m_shader(NULL),
+    m_program(-1),
     m_shaderdir(dir ? strdup(dir) : getenv("SHADER_DIR")),
-    m_incl_path(incl_path ? strdup(incl_path) : getenv("SHADER_INCL_PATH")),
     m_shadertag(strdup(tag)),
-    m_program(-1)
+    m_incl_path(incl_path ? strdup(incl_path) : getenv("SHADER_INCL_PATH"))
 {
     // no OpenGL context needed, just reads sources
     m_shader = new Prog(m_shaderdir, m_shadertag, m_incl_path ); 

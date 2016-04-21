@@ -239,7 +239,7 @@ bool AssimpGGeo::hasVectorProperty(aiMaterial* material, const char* propname)
 aiMaterialProperty* AssimpGGeo::getVectorProperty(aiMaterial* material, const char* propname )
 {
     aiMaterialProperty* ret = NULL ;
-    unsigned int numProperties = material->mNumProperties ;
+    //unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
     {
         aiMaterialProperty* property = material->mProperties[i] ;
@@ -263,7 +263,7 @@ aiMaterialProperty* AssimpGGeo::getVectorProperty(aiMaterial* material, const ch
 
 void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material )
 {
-    unsigned int numProperties = material->mNumProperties ;
+    //unsigned int numProperties = material->mNumProperties ;
     for(unsigned int i = 0; i < material->mNumProperties; i++)
     {
         aiMaterialProperty* property = material->mProperties[i] ;
@@ -284,7 +284,7 @@ void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material )
         {
             aiString val ; 
             material->Get(k,0,0,val);
-            const char* v = val.C_Str();
+            //const char* v = val.C_Str();
             //printf("skip k %s v %s \n", k, v ); needs props are plucked elsewhere
         }
         else
@@ -641,7 +641,7 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query
             gnormals[v].z = normals[v].z;
         }
 
-        aiFace* faces = mesh->mFaces ; 
+        //aiFace* faces = mesh->mFaces ; 
         guint3*  gfaces = new guint3[numFaces];
 
         for(unsigned int f = 0; f < mesh->mNumFaces; f++)
@@ -779,7 +779,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     //
 
 
-    AssimpNode* cnode = node->getChild(0);   // first child, if any
+    //AssimpNode* cnode = node->getChild(0);   // first child, if any
     AssimpNode* pnode = node->getParent();
     if(!pnode) pnode=node ; 
 
@@ -867,8 +867,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     GPropertyMap<float>* isurf  = NULL ; 
     GPropertyMap<float>* osurf  = NULL ; 
-    GPropertyMap<float>* iextra = NULL ; 
-    GPropertyMap<float>* oextra = NULL ; 
+    //GPropertyMap<float>* iextra = NULL ; 
+    //GPropertyMap<float>* oextra = NULL ; 
 
     if(sks)
     {

@@ -7,14 +7,11 @@ class RendererBase {
       RendererBase(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
       char* getShaderDir(); 
       char* getShaderTag(); 
-
   public:
       void make_shader();   
-
   protected:
       Prog*   m_shader ;
       GLuint  m_program ;
-
   private:
       char* m_shaderdir ; 
       char* m_shadertag ; 

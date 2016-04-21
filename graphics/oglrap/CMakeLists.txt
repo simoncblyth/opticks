@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 include(EnvBuildOptions)
+include(EnvCompilationFlags)
 
 ###
 ### CAUTION: this is still not using C++11 but  
@@ -16,7 +17,6 @@ include(EnvBuildOptions)
 ###          that had before : dont recall exactly where)   
 ###
 
-########### using env/cmake/Modules/*.cmake #####
 
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
@@ -83,7 +83,6 @@ set(LIBRARIES
    ${ImGui_LIBRARIES}
 )
 
-
 #message( "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ")
 #message( "Opticks_LIBRARIES ${Opticks_LIBRARIES} ")
 #message( "GGeo_LIBRARIES ${GGeo_LIBRARIES} ")
@@ -91,15 +90,10 @@ set(LIBRARIES
 #message( "Cfg_LIBRARIES ${Cfg_LIBRARIES} ")
 #message( "NPY_LIBRARIES ${NPY_LIBRARIES} ")
 
-
 include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
-# TODO: 
-#    start migrating classes that do not depend on OpenGL 
-#    elsewhere ... eg into opticks
-#
-
+## NB only classes needing OpenGL should be here 
 add_library( ${name}  SHARED
                 Texture.cc
                 Frame.cc
@@ -156,9 +150,6 @@ install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include)
 install(DIRECTORY gl/ DESTINATION gl)
 
-
 add_subdirectory(tests)
-
-
 
 

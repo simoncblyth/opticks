@@ -85,23 +85,23 @@ GMatrix<T>::GMatrix(T* buf) :
       GBuffer( sizeof(T)*16, NULL, sizeof(T), 1 ),
 
       a1(buf[0]),
-      b1(buf[1]),
-      c1(buf[2]),
-      d1(buf[3]),
-
       a2(buf[4]),
-      b2(buf[5]),
-      c2(buf[6]),
-      d2(buf[7]),
-
       a3(buf[8]),
-      b3(buf[9]),
-      c3(buf[10]),
-      d3(buf[11]),
-
       a4(buf[12]),
+
+      b1(buf[1]),
+      b2(buf[5]),
+      b3(buf[9]),
       b4(buf[13]),
+
+      c1(buf[2]),
+      c2(buf[6]),
+      c3(buf[10]),
       c4(buf[14]),
+
+      d1(buf[3]),
+      d2(buf[7]),
+      d3(buf[11]),
       d4(buf[15])
 {
 }

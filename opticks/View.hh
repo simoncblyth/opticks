@@ -22,6 +22,8 @@ public:
    static const char* UP ; 
 
    View(View_t type=STANDARD);
+   virtual ~View();
+
    bool isStandard();
    bool isInterpolated();
    bool isOrbital();
@@ -99,6 +101,11 @@ inline View::View(View_t type)  : m_type(type)
     m_axes.push_back(glm::vec4(0,1,0,0));
     m_axes.push_back(glm::vec4(0,0,1,0));
     m_axes.push_back(glm::vec4(1,0,0,0));
+}
+
+
+inline View::~View()
+{
 }
 
 

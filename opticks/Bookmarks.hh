@@ -50,7 +50,7 @@ public:
    void refreshInterpolatedView();
    InterpolatedView* getInterpolatedView();
 private:
-   void init();
+   void init(const char* dir);
    void readdir();
    void readmark(unsigned int num);
    void updateTitle();
@@ -85,6 +85,21 @@ private:
    int                                  m_ivperiod ; 
 
 };
+
+
+
+inline Bookmarks::Bookmarks(const char* dir)  
+       :
+       m_dir(NULL),
+       m_state(NULL),
+       m_view(NULL),
+       m_current(UNSET),
+       m_current_gui(UNSET),
+       m_verbose(false),
+       m_ivperiod(100)
+{
+    init(dir);
+}
 
 
 inline int* Bookmarks::getIVPeriodPtr()

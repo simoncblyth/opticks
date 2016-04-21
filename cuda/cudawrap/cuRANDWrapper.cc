@@ -6,17 +6,17 @@
 #include "curand_kernel.h"
 #include "md5digest.hh"
 #include "stdio.h"
-#include "assert.h"
+#include <cassert>
 
 
 cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset )
            :
-           m_launchseq(launchseq),
            m_seed(seed),
            m_offset(offset),
            m_dev_rng_states(0),
            m_host_rng_states(0),
            m_test(0),
+           m_launchseq(launchseq),
            m_imod(100000),
            m_cache_dir(0),
            m_cache_enabled(true),
@@ -265,6 +265,7 @@ int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int
             printf("cuRANDWrapper::LoadIntoHostBuffer : loading from cache %s \n", path);
 
             int rc = Load(path);
+            assert(rc == 0);
             char* load_digest = digest() ;
             printf("cuRANDWrapper::LoadIntoHostBuffer %u items from %s load_digest %s \n", getItems(), path, load_digest);
             memcpy((void*)host_rng_states, (void*)m_host_rng_states, sizeof(curandState)*getItems());

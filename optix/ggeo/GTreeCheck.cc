@@ -155,7 +155,7 @@ void GTreeCheck::deltacheck( GNode* node, unsigned int depth)
     //      aiMatrix4x4 AssimpNode::getLevelTransform(int level)
     //  looks to correspond to the placement of the LV within its PV  
 
-    GMatrixF* ltransform = solid->getLevelTransform();  
+    //GMatrixF* ltransform = solid->getLevelTransform();  
     GMatrixF* ctransform = solid->calculateTransform();
     float delta = gtransform->largestDiff(*ctransform);
     unsigned int nprogeny = node->getProgenyCount() ;
