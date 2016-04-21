@@ -28,7 +28,7 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
     if(level.compare("error") == 0)  ll = boost::log::trivial::error ; 
     if(level.compare("fatal") == 0)  ll = boost::log::trivial::fatal ; 
 
-    fs::path logdir(ldir);
+    fs::path logdir(ldir ? ldir : fs::current_path());
     if(!fs::exists(logdir))
     {    
         if (fs::create_directories(logdir))

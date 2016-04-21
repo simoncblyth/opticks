@@ -108,6 +108,13 @@ class Opticks {
        void configure();  // invoked after commandline parsed
        void Summary(const char* msg="Opticks::Summary");
    public:
+       // from OpticksResource
+       bool isJuno();
+       bool isDayabay();
+       bool isPmtInBox();
+       bool isOther();
+       bool isValid();
+   public:
        const char* getIdPath();
        const char* getLastArg();
        int         getLastArgInt();
@@ -340,4 +347,9 @@ inline void Opticks::configureS(const char* name, std::vector<std::string> value
 inline void Opticks::configureI(const char* name, std::vector<int> values)
 {
 }
+
+
+
+
+
  

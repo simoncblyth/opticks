@@ -133,8 +133,7 @@
 void App::init(int argc, char** argv)
 {
     m_opticks = new Opticks(argc, argv);
-    m_resource = m_opticks->getResource();
-    m_resource->Summary("App::init OpticksResource::Summary");
+    m_opticks->Summary("App::init OpticksResource::Summary");
 
     m_cache = new GCache(m_opticks);
 
@@ -142,6 +141,8 @@ void App::init(int argc, char** argv)
     m_timer      = new Timer("App::");
     m_timer->setVerbose(true);
     m_timer->start();
+
+    m_composition = new Composition ;   // Composition no longer Viz only
 
     m_cfg  = new Cfg("umbrella", false) ; 
     m_fcfg = m_opticks->getCfg();
@@ -158,28 +159,20 @@ void App::initViz()
 {
     if(m_opticks->isCompute()) return ; 
 
-    // the envvars are normally not defined, using 
-    // cmake configure_file values instead
-    const char* shader_dir = getenv("SHADER_DIR"); 
-    const char* shader_incl_path = getenv("SHADER_INCL_PATH"); 
-    const char* shader_dynamic_dir = getenv("SHADER_DYNAMIC_DIR"); 
-    // dynamic define for use by GLSL shaders
+    // envvars normally not defined, using cmake configure_file values instead
+    const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
+    const char* shader_incl_path = getenv("OPTICKS_SHADER_INCL_PATH"); 
+    const char* shader_dynamic_dir = getenv("OPTICKS_SHADER_DYNAMIC_DIR"); 
 
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
-
-    m_composition = new Composition ; 
     m_frame       = new Frame ; 
     m_interactor  = new Interactor ; 
-
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
     m_interactor->setComposition(m_composition);
 
-    //m_composition->setScene(m_scene);
-
     m_scene->setInteractor(m_interactor);      
-
 
     m_frame->setInteractor(m_interactor);      
     m_frame->setComposition(m_composition);
@@ -189,13 +182,14 @@ void App::initViz()
     m_cfg->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
     m_cfg->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
-    m_composition->addConfig(m_cfg); 
 }
 
 
 void App::configure(int argc, char** argv)
 {
     LOG(debug) << "App:configure " << argv[0] ; 
+
+    m_composition->addConfig(m_cfg); 
     //m_cfg->dumpTree();
 
     m_cfg->commandline(argc, argv);
@@ -221,6 +215,12 @@ void App::configure(int argc, char** argv)
         return ; 
     }
 
+    if(!m_opticks->isValid())
+    {
+        // defer death til after getting help
+        LOG(fatal) << "App::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
+        assert(0);
+    }
 
     m_state = m_opticks->getState();
     m_state->setVerbose(false);
@@ -298,7 +298,7 @@ void App::prepareViz()
               ;
 
     m_scene->setNumpyEvt(m_evt);
-    if(m_resource->isJuno())
+    if(m_opticks->isJuno())
     {
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
 
@@ -309,7 +309,7 @@ void App::prepareViz()
         std::string rmode = m_scene->getRenderMode();
         LOG(info) << "App::prepareViz " << rmode ; 
     }
-    else if(m_resource->isDayabay())
+    else if(m_opticks->isDayabay())
     {
         m_scene->setNumGlobalStyle(Scene::GVISVEC);   // disable GVISVEC, GVEC debug styles
     }
@@ -391,6 +391,8 @@ void App::loadGeometryBase()
     m_opticks->setGeocache(!m_fcfg->hasOpt("nogeocache"));
     m_opticks->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
 
+    OpticksResource* resource = m_opticks->getResource();
+
     m_ggeo = new GGeo(m_cache);
 
     if(hasOpt("qe1"))
@@ -400,8 +402,9 @@ void App::loadGeometryBase()
     m_ggeo->setLoaderVerbosity(m_fcfg->getLoaderVerbosity());    
     m_ggeo->setMeshVerbosity(m_fcfg->getMeshVerbosity());    
 
+
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
-    m_ggeo->setMeshJoinCfg( m_resource->getMeshfix() );
+    m_ggeo->setMeshJoinCfg( resource->getMeshfix() );
 
     std::string meshversion = m_fcfg->getMeshVersion() ;;
     if(!meshversion.empty())
@@ -627,7 +630,7 @@ void App::loadGenstep()
         m_g4step = new G4StepNPY(npy);    
         m_g4step->relabel(code); // becomes the ghead.i.x used in cu/generate.cu
 
-        if(m_resource->isDayabay())
+        if(m_opticks->isDayabay())
         {   
             m_g4step->setLookup(lookup);   
             m_g4step->applyLookup(0, 2);      
@@ -814,7 +817,7 @@ void App::indexBoundariesHost()
     std::map<unsigned int, std::string> boundary_names = qbnd->getNamesMap(GAttrSeq::ONEBASED) ;
 
     NPY<float>* dpho = m_evt->getPhotonData();
-    if(dpho->hasData())
+    if(dpho && dpho->hasData())
     {
         // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
         LOG(info) << "App::indexBoundaries host based " ;
@@ -822,6 +825,11 @@ void App::indexBoundariesHost()
         m_bnd->setBoundaryNames(boundary_names); 
         m_bnd->indexBoundaries();     
     } 
+    else
+    {
+        LOG(warning) << "App::indexBoundaries dpho NULL or no data " ;
+    }
+
 
     TIMER("indexBoundariesHost"); 
 }

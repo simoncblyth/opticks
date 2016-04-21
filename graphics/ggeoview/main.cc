@@ -22,14 +22,12 @@ int main(int argc, char** argv)
     app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
 
-    bool optixviz = app.hasOpt("optixviz");
+
     bool nooptix = app.hasOpt("nooptix");
-    bool noindex = app.hasOpt("noindex");
-    bool noevent = app.hasOpt("noevent");
     bool save    = app.hasOpt("save");
     bool load    = app.hasOpt("load");
-
     if(load) save = false ;    // "load" trumps "save" 
+
 
     if(!nooptix && !load)
     {
@@ -45,7 +43,7 @@ int main(int argc, char** argv)
 
         app.prepareOptiXViz();         // creates ORenderer, OTracer
 
-        if(!noevent)
+        if(!app.hasOpt("noevent"))
         {
             app.preparePropagator();       // creates OptiX buffers and OBuf wrappers as members of OPropagator
 
@@ -55,7 +53,7 @@ int main(int argc, char** argv)
 
             app.propagate();
 
-            if(!noindex) 
+            if(!app.hasOpt("noindex")) 
             {
                 app.indexEvt();
 
@@ -76,7 +74,7 @@ int main(int argc, char** argv)
     {
 
 #ifdef WITH_OPTIX
-        if(optixviz)
+        if(app.hasOpt("optixviz"))
         {
             app.prepareOptiX();            // places geometry into OptiX context with OGeo 
 

@@ -136,7 +136,7 @@ class App {
 
   private:
        Opticks*          m_opticks ; 
-       OpticksResource*  m_resource ; 
+       //OpticksResource*  m_resource ; 
        const char*       m_prefix ; 
        Parameters*       m_parameters ; 
        Timer*            m_timer ; 
@@ -193,7 +193,7 @@ class App {
 inline App::App(const char* prefix, int argc, char** argv )
    : 
       m_opticks(NULL),
-      m_resource(NULL),
+    //  m_resource(NULL),
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),

@@ -840,6 +840,18 @@ Start from glfwtest- and add in OptiX functionality from optixrap-
 * NB raytrace- is another user of optixwrap- 
 
 
+
+cmake cycling
+--------------
+
+::
+
+   ggeoview-wipe;ggeoview-cmake;ggeoview-make;ggeoview-install
+
+
+
+
+
 Tips for Geometry Debug
 --------------------------
 

@@ -280,13 +280,6 @@ int Opticks::getLastArgInt()
 
 
 
-
-
-
-
-
-
-
 void Opticks::configureDomains()
 {
    m_time_domain.x = 0.f  ;
@@ -562,6 +555,30 @@ bool Opticks::isCommand(unsigned int modifiers)
 bool Opticks::isControl(unsigned int modifiers)
 {
     return modifiers & e_control ; 
+}
+
+
+
+
+bool Opticks::isJuno()
+{
+    return m_resource->isJuno();
+}
+bool Opticks::isDayabay()
+{
+    return m_resource->isDayabay();
+}
+bool Opticks::isPmtInBox()
+{
+    return m_resource->isPmtInBox();
+}
+bool Opticks::isOther()
+{
+    return m_resource->isOther();
+}
+bool Opticks::isValid()
+{
+    return m_resource->isValid();
 }
 
 

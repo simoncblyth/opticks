@@ -23,6 +23,11 @@ namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
 
+bool existsPath(const char* path )
+{
+    fs::path fpath(path);
+    return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
+}
 
 bool existsPath(const char* dir_, const char* name )
 {

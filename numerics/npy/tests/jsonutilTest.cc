@@ -41,6 +41,13 @@ void test_loadMap()
    dumpMap<unsigned int, std::string>(index);
 }
 
+void test_loadIni()
+{
+   std::map<std::string, std::string> md ;
+   loadMap<std::string, std::string>(md, "/tmp/g4_00.ini" );
+   dumpMap<std::string, std::string>(md);
+}
+
 
 void test_saveList()
 {
@@ -68,13 +75,12 @@ void test_loadList()
 int main()
 {
     //test_saveMap();
-    test_loadMap();
+    //test_loadMap();
 
-    //test_saveMap2();
-    //test_loadMap2();
+    //test_saveList();
+    //test_loadList();
 
-    test_saveList();
-    test_loadList();
+    test_loadIni();
 
     return 0 ; 
 }

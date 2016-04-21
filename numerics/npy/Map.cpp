@@ -19,10 +19,27 @@ Map<K,V>* Map<K,V>::load(const char* dir, const char* name)
 }
 
 template <typename K, typename V>
+Map<K,V>* Map<K,V>::load(const char* path)
+{
+    if(!existsPath(path)) return NULL ;  
+    Map* m = new Map<K,V>() ; 
+    m->loadFromCache(path);
+    return m ; 
+}
+
+
+template <typename K, typename V>
 void Map<K,V>::loadFromCache(const char* dir, const char* name )
 {
     loadMap<K, V>( m_map, dir, name );  
 }
+
+template <typename K, typename V>
+void Map<K,V>::loadFromCache(const char* path )
+{
+    loadMap<K, V>( m_map, path );  
+}
+
 
 template <typename K, typename V>
 void Map<K,V>::add(K key, V value)

@@ -24,9 +24,13 @@ class OpticksResource {
        static bool existsDir(const char* path);
     public:
        OpticksResource(const char* envprefix, const char* lastarg);
+       bool isValid();
     private:
        void init();
        void readEnvironment();
+       void readMetadata();
+       void identifyGeometry();
+       void setValid(bool valid);
     public:
        const char* getIdPath();
        const char* getIdFold();  // parent directory of idpath
@@ -40,6 +44,11 @@ class OpticksResource {
        bool loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name);
        bool loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name);
     public:
+       bool loadMetadata(std::map<std::string, std::string>& mdd, const char* path);
+       void dumpMetadata(std::map<std::string, std::string>& mdd);
+       bool hasMetaKey(const char* key);
+       const char* getMetaValue(const char* key);
+    public:
        const char* getEnvPrefix();
        bool idPathContains(const char* s); 
        void Summary(const char* msg="OpticksResource::Summary");
@@ -47,6 +56,10 @@ class OpticksResource {
        const char* getPath();
        const char* getQuery();
        const char* getCtrl();
+    private:
+       std::string makeMetaPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
+    public:
+       const char* getMetaPath();
     public:
        const char* getMeshfix();
        const char* getMeshfixCfg();
@@ -66,16 +79,22 @@ class OpticksResource {
        const char* m_path ;
        const char* m_query ;
        const char* m_ctrl ;
+       const char* m_metapath ;
        const char* m_meshfix ;
        const char* m_meshfixcfg ;
        const char* m_idpath ;
        const char* m_idfold ;
        const char* m_digest ;
+       bool        m_valid ; 
+   private:
+       // results of identifyGeometry
        bool        m_dayabay ; 
        bool        m_juno ; 
        bool        m_dpib ; 
        bool        m_other ; 
        const char* m_detector ;
+   private:
+      std::map<std::string, std::string> m_metadata ;  
 };
 
 
@@ -87,11 +106,13 @@ inline OpticksResource::OpticksResource(const char* envprefix, const char* lasta
        m_path(NULL),
        m_query(NULL),
        m_ctrl(NULL),
+       m_metapath(NULL),
        m_meshfix(NULL),
        m_meshfixcfg(NULL),
        m_idpath(NULL),
        m_idfold(NULL),
        m_digest(NULL),
+       m_valid(true),
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),
@@ -102,6 +123,14 @@ inline OpticksResource::OpticksResource(const char* envprefix, const char* lasta
 }
 
 
+inline void OpticksResource::setValid(bool valid)
+{
+    m_valid = valid ; 
+}
+inline bool OpticksResource::isValid()
+{
+   return m_valid ; 
+}
 inline const char* OpticksResource::getIdPath()
 {
     return m_idpath ;
@@ -118,6 +147,13 @@ inline const char* OpticksResource::getPath()
 {
     return m_path ;
 }
+inline const char* OpticksResource::getMetaPath()
+{
+    return m_metapath ;
+}
+
+
+
 inline const char* OpticksResource::getQuery()
 {
     return m_query ;
@@ -134,8 +170,6 @@ inline const char* OpticksResource::getMeshfixCfg()
 {
     return m_meshfixcfg ;
 }
-
-
 
 
 inline const char* OpticksResource::getDetector()
@@ -161,13 +195,16 @@ inline bool OpticksResource::isOther()
 
 
 
-
-
 inline bool OpticksResource::idPathContains(const char* s)
 {
-    std::string idp(m_idpath);
-    std::string ss(s);
-    return idp.find(ss) != std::string::npos ;
+    bool ret = false ; 
+    if(m_idpath)
+    {
+        std::string idp(m_idpath);
+        std::string ss(s);
+        ret = idp.find(ss) != std::string::npos ;
+    }
+    return ret ; 
 }
 
 inline std::string OpticksResource::getRelativePath(const char* path)
