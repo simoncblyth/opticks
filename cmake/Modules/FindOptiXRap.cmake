@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(OptiXRap_PREFIX "$ENV{LOCAL_BASE}/env/graphics/OptiXRap")
+set(OptiXRap_PREFIX "${OPTICKS_PREFIX}/graphics/OptiXRap")
 
 find_library( OptiXRap_LIBRARIES 
               NAMES OptiXRap

@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(OpenMeshRap_PREFIX "$ENV{LOCAL_BASE}/env/graphics/openmeshrap")
+set(OpenMeshRap_PREFIX "${OPTICKS_PREFIX}/graphics/openmeshrap")
 
 find_library( OpenMeshRap_LIBRARY 
               NAMES OpenMeshRap

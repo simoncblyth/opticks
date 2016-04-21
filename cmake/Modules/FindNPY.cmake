@@ -1,5 +1,5 @@
-
-set(NPY_PREFIX "$ENV{LOCAL_BASE}/env/numerics/npy")
+#include(OPTICKSCfg)
+set(NPY_PREFIX "${OPTICKS_PREFIX}/numerics/npy")
 
 find_library( NPY_LIBRARIES 
               NAMES NPY

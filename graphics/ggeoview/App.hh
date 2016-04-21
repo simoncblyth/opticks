@@ -15,20 +15,10 @@ class HitsNPY ;
 class Parameters ; 
 class Timer ; 
 class Types ; 
-class Index ; 
-class Lookup ; 
 class NState ; 
-
-// numpyserver-
-#ifdef NPYSERVER
-#include "numpydelegate.hpp"
-#include "numpydelegateCfg.hpp"
-#include "numpyserver.hpp"
-#endif
 
 //opticks-
 class Opticks ; 
-class OpticksResource ; 
 template <typename> class OpticksCfg ;
 class Composition ; 
 class Bookmarks ; 
@@ -47,30 +37,31 @@ struct GLFWwindow ;
 // ggeo-
 class GCache ;
 class GGeo ;
-class GLoader ; 
-class GBoundaryLib ; 
-class GBoundaryLibMetadata ;
 class GMergedMesh ; 
 class GItemIndex ; 
 
 
-#ifdef WITH_OPTIX
-
-// opop-
-class OpEngine ; 
-
-// optixgl-
-class OpViz ; 
-
+#ifdef WITH_NPYSERVER
+// numpyserver-
+#include "numpydelegate.hpp"
+#include "numpydelegateCfg.hpp"
+#include "numpyserver.hpp"
 #endif
 
 
+#ifdef WITH_OPTIX
+// opop-
+class OpEngine ; 
+// optixgl-
+class OpViz ; 
+#endif
 
 #include <map>
 #include <string>
 
 // glm-
 #include <glm/glm.hpp>
+
 
 class App {
   public:
@@ -136,7 +127,6 @@ class App {
 
   private:
        Opticks*          m_opticks ; 
-       //OpticksResource*  m_resource ; 
        const char*       m_prefix ; 
        Parameters*       m_parameters ; 
        Timer*            m_timer ; 
@@ -149,7 +139,7 @@ class App {
        GLFWwindow*       m_window ; 
        Bookmarks*        m_bookmarks ;
        Interactor*       m_interactor ;
-#ifdef NPYSERVER
+#ifdef WITH_NPYSERVER
        numpydelegate* m_delegate ; 
        numpyserver<numpydelegate>* m_server ;
 #endif
@@ -193,7 +183,6 @@ class App {
 inline App::App(const char* prefix, int argc, char** argv )
    : 
       m_opticks(NULL),
-    //  m_resource(NULL),
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),
@@ -206,7 +195,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_window(NULL),
       m_bookmarks(NULL),
       m_interactor(NULL),
-#ifdef NPYSERVER
+#ifdef WITH_NPYSERVER
       m_delegate(NULL),
       m_server(NULL),
 #endif

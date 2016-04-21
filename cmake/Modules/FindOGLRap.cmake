@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(OGLRap_PREFIX "$ENV{LOCAL_BASE}/env/graphics/oglrap")
+set(OGLRap_PREFIX "${OPTICKS_PREFIX}/graphics/oglrap")
 
 find_library( OGLRap_LIBRARIES 
               NAMES OGLRap

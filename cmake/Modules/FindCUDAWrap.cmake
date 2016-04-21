@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(CUDAWrap_PREFIX "$ENV{LOCAL_BASE}/env/cuda/CUDAWrap")
+set(CUDAWrap_PREFIX "${OPTICKS_PREFIX}/cuda/CUDAWrap")
 
 find_library( CUDAWrap_LIBRARIES 
               NAMES CUDAWrap

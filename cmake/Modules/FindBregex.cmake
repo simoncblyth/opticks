@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(Bregex_PREFIX "$ENV{LOCAL_BASE}/env/boost/bregex")
+set(Bregex_PREFIX "${OPTICKS_PREFIX}/boost/bregex")
 
 find_library( Bregex_LIBRARIES 
               NAMES bregex

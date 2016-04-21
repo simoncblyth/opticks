@@ -9,12 +9,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
+
+include(EnvBuildOptions)
+
 set(BUILD_SHARED_LIBS ON)
 
 ########################## for OptiX
 include(Macros)
-include (CompilerInfo)
-include (ConfigCompilerFlags)
+include(CompilerInfo)
+include(ConfigCompilerFlags)
+
 OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
 if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
@@ -45,8 +49,6 @@ find_package(GGeo REQUIRED)
 find_package(CUDAWrap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
-
-include(EnvBuildOptions)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -145,7 +147,6 @@ set(cuhdrs
     cu/enums.h
     cu/photon.h
 )
-
 
 
 set(hdrs 

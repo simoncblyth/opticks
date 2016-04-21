@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(Cfg_PREFIX "$ENV{LOCAL_BASE}/env/boost/bpo/bcfg")
+set(Cfg_PREFIX "${OPTICKS_PREFIX}/boost/bpo/bcfg")
 
 find_library( Cfg_LIBRARIES 
               NAMES Cfg

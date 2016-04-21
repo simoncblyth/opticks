@@ -1,8 +1,6 @@
 #include "App.hh"
 
 
-
-
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
 
@@ -36,11 +34,12 @@
 
 
 // numpyserver-
-#ifdef NPYSERVER
+#ifdef WITH_NPYSERVER
 #include "numpydelegate.hpp"
 #include "numpydelegateCfg.hpp"
 #include "numpyserver.hpp"
 #endif
+
 
 // npy-
 #include "NLog.hpp"
@@ -149,7 +148,7 @@ void App::init(int argc, char** argv)
 
     m_cfg->add(m_fcfg);
 
-#ifdef NPYSERVER
+#ifdef WITH_NPYSERVER
     m_delegate    = new numpydelegate ; 
     m_cfg->add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
 #endif
@@ -262,7 +261,7 @@ void App::configure(int argc, char** argv)
         params->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
     } 
 
-#ifdef NPYSERVER
+#ifdef WITH_NPYSERVER
     if(!hasOpt("nonet"))
     {
         m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
@@ -1044,7 +1043,7 @@ void App::renderLoop()
     while (!glfwWindowShouldClose(m_window))
     {
         m_frame->listen(); 
-#ifdef NPYSERVER
+#ifdef WITH_NPYSERVER
         if(m_server) m_server->poll_one();  
 #endif
         count = m_composition->tick();
@@ -1070,7 +1069,7 @@ void App::cleanup()
     if(m_ope) m_ope->cleanup();
 #endif
 
-#ifdef NPYSERVER
+#ifdef WITH_NPYSERVER
     if(m_server) m_server->stop();
 #endif
 #ifdef GUI_

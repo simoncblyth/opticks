@@ -1,5 +1,3 @@
-#cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
-#cmake_minimum_required(VERSION 3.2.1 FATAL_ERROR)
 cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 set(name ThrustRap)
 project(${name})

@@ -24,9 +24,7 @@ if(APPLE)
                ${CoreFoundation_LIBRARY} 
                ${CoreVideo_LIBRARY} )
    message("FindImGUI APPLE")
-endif(APPLE)
-
-if(UNIX)
+else()
     find_library( OpenGL_LIBRARY NAMES GL )
 
     set( ImGui_LIBRARIES 
@@ -34,8 +32,8 @@ if(UNIX)
                ${GLFW_LIBRARIES} 
                ${OpenGL_LIBRARY}
                )
-   message("FindImGUI UNIX")
-endif(UNIX)
+   message("FindImGUI not-APPLE")
+endif(APPLE)
 
 set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")
 set(ImGui_DEFINITIONS "")

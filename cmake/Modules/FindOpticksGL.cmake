@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(OpticksGL_PREFIX "$ENV{LOCAL_BASE}/env/opticksgl")
+set(OpticksGL_PREFIX "${OPTICKS_PREFIX}/opticksgl")
 
 find_library( OpticksGL_LIBRARIES 
               NAMES OpticksGL

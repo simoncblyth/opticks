@@ -58,7 +58,6 @@ set(OGLRAP_SHADER_INCL_PATH   "${CMAKE_INSTALL_PREFIX}/gl")
 configure_file( Config.hh.in inc/Config.hh )
 
 
-message( "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ")
 
 set(DEFINITIONS
    ${GLEW_DEFINITIONS}
@@ -85,13 +84,12 @@ set(LIBRARIES
 )
 
 
-message( "Opticks_LIBRARIES ${Opticks_LIBRARIES} ")
-message( "GGeo_LIBRARIES ${GGeo_LIBRARIES} ")
-message( "Bregex_LIBRARIES ${Bregex_LIBRARIES} ")
-message( "Cfg_LIBRARIES ${Cfg_LIBRARIES} ")
-message( "NPY_LIBRARIES ${NPY_LIBRARIES} ")
-
-
+#message( "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ")
+#message( "Opticks_LIBRARIES ${Opticks_LIBRARIES} ")
+#message( "GGeo_LIBRARIES ${GGeo_LIBRARIES} ")
+#message( "Bregex_LIBRARIES ${Bregex_LIBRARIES} ")
+#message( "Cfg_LIBRARIES ${Cfg_LIBRARIES} ")
+#message( "NPY_LIBRARIES ${NPY_LIBRARIES} ")
 
 
 include_directories(${INCLUDE_DIRS})

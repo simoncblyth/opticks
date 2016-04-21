@@ -1,7 +1,4 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-#cmake_policy(SET CMP0054 OLD)
-# unfortunately this doesnt suppress the warnings, despite being advertised to do so
-# http://www.cmake.org/Wiki/CMake/Policies
 set(name GGeoView)
 project(${name})
 
@@ -9,10 +6,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{ENV_HOME}/cmake/Modules"
                       "$ENV{OPTIX_SDK_DIR}/CMake"
           ) 
-
-
-OPTION(NPYSERVER "using the numpyserver." OFF)
-OPTION(OPTIX     "using OPTIX." OFF)
 
 include(EnvBuildOptions)
 
@@ -32,7 +25,8 @@ endif()
 
 ########### OPTICKS #####
 
-if(OPTIX)
+if(EXISTS $ENV{OPTIX_SDK_DIR}/CMake AND WITH_OPTIX)
+
     add_definitions(-DWITH_OPTIX)
 
     find_package(CUDA 2.3 REQUIRED)
@@ -43,7 +37,7 @@ if(OPTIX)
     find_package(OpticksOp REQUIRED)
     find_package(OpticksGL REQUIRED)
 
-    set(OPTICKS_INCLUDES
+    set(WITH_OPTIX_INCLUDES
        ${CUDA_INCLUDE_DIRS}
        ${CUDAWrap_INCLUDE_DIRS}  
        ${OptiX_INCLUDE}  
@@ -52,7 +46,7 @@ if(OPTIX)
        ${OpticksOp_INCLUDE_DIRS} 
        ${OpticksGL_INCLUDE_DIRS} 
     )
-    set(OPTICKS_DEFINITIONS
+    set(WITH_OPTIX_DEFINITIONS
        ${CUDA_DEFINITIONS} 
        ${CUDAWrap_DEFINITIONS}
        ${OptiX_DEFINITIONS} 
@@ -61,7 +55,7 @@ if(OPTIX)
        ${OpticksOp_DEFINITIONS}
        ${OpticksGL_DEFINITIONS}
     )
-    set(OPTICKS_LIBRARIES
+    set(WITH_OPTIX_LIBRARIES
       ${CUDA_LIBRARIES}
       ${CUDAWrap_LIBRARIES}
       optix
@@ -76,9 +70,9 @@ if(OPTIX)
 
 else()
    message("Operating without OPTIX ")
-   set(OPTICKS_INCLUDES) 
-   set(OPTICKS_DEFINITIONS) 
-   set(OPTICKS_LIBRARIES) 
+   set(WITH_OPTIX_INCLUDES) 
+   set(WITH_OPTIX_DEFINITIONS) 
+   set(WITH_OPTIX_LIBRARIES) 
 endif()
 
 ########### COMPILER FIXUP AFTER OPTIX 
@@ -184,31 +178,32 @@ set(OPENGL_DEFINITIONS
 
 ########### NPYSERVER #####
 
-if (NPYSERVER)
-    message("with NPYSERVER") 
-    add_definitions(-DNPYSERVER)
+if (WITH_NPYSERVER)
+    message("WITH_NPYSERVER") 
+    add_definitions(-DWITH_NPYSERVER)
+
     find_package(ZMQ REQUIRED)  
     find_package(AsioZMQ REQUIRED)
     find_package(NumpyServer REQUIRED)
 
-    set(NPYSERVER_INCLUDES
+    set(WITH_NPYSERVER_INCLUDES
        ${ZMQ_INCLUDE_DIRS} 
        ${AsioZMQ_INCLUDE_DIRS} 
        ${NumpyServer_INCLUDE_DIRS} 
     )
-    set(NPYSERVER_DEFINITIONS
+    set(WITH_NPYSERVER_DEFINITIONS
       ${ZMQ_DEFINITIONS}
       ${NumpyServer_DEFINITIONS} 
     )
-    set(NPYSERVER_LIBRARIES
+    set(WITH_NPYSERVER_LIBRARIES
       ${ZMQ_LIBRARIES}
       ${NumpyServer_LIBRARIES}
    )
 else()
-    message("without NPYSERVER") 
-    set(NPYSERVER_INCLUDES)
-    set(NPYSERVER_DEFINITIONS)
-    set(NPYSERVER_LIBRARIES)
+    message("NOT WITH_NPYSERVER") 
+    set(WITH_NPYSERVER_INCLUDES)
+    set(WITH_NPYSERVER_DEFINITIONS)
+    set(WITH_NPYSERVER_LIBRARIES)
 endif()
 
 ########### ALL #####
@@ -218,27 +213,27 @@ set(INCLUDES
    ${BASE_INCLUDES}
    ${GEOMETRY_INCLUDES}
    ${OPENGL_INCLUDES}
-   ${NPYSERVER_INCLUDES}
-   ${OPTIONAL_INCLUDES}
+   ${WITH_NPYSERVER_INCLUDES}
+   ${WITH_OPTIX_INCLUDES}
 )
 set(DEFINITIONS 
    ${BASE_DEFINITIONS}
    ${GEOMETRY_DEFINITIONS}
    ${OPENGL_DEFINITIONS}
-   ${NPYSERVER_DEFINITIONS}
-   ${OPTIONAL_DEFINITIONS}
+   ${WITH_NPYSERVER_DEFINITIONS}
+   ${WITH_OPTIX_DEFINITIONS}
 )
 set(LIBRARIES 
    ${BASE_LIBRARIES}
    ${GEOMETRY_LIBRARIES}
    ${OPENGL_LIBRARIES}
-   ${NPYSERVER_LIBRARIES}
-   ${OPTIONAL_LIBRARIES}
+   ${WITH_NPYSERVER_LIBRARIES}
+   ${WITH_OPTIX_LIBRARIES}
 )
 
 
 
-
+#message("INCLUDES:${INCLUDES}")
 
 
 include_directories(${INCLUDES})

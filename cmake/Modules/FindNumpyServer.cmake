@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(NumpyServer_PREFIX "$ENV{LOCAL_BASE}/env/boost/basio/numpyserver")
+set(NumpyServer_PREFIX "${OPTICKS_PREFIX}/boost/basio/numpyserver")
 
 find_library( NumpyServer_LIBRARIES 
               NAMES NumpyServer

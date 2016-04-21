@@ -1,7 +1,6 @@
+#include(OPTICKSCfg)
 
-# testing library-ization of combined OptiX/Thrust package 
-
-set(OptiXThrust_PREFIX "$ENV{LOCAL_BASE}/env/graphics/optixthrust")
+set(OptiXThrust_PREFIX "${OPTICKS_PREFIX}/graphics/optixthrust")
 
 find_library( OptiXThrust_LIBRARIES 
               NAMES OptiXThrustMinimalLib

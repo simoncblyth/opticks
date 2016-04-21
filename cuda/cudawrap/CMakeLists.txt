@@ -2,15 +2,19 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 set(name CUDAWrap)
 project(${name})
 
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
                       "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
 set(BUILD_SHARED_LIBS ON)
 
-find_package(CUDA 2.3 REQUIRED)
 
 include(EnvBuildOptions)
+
+
+find_package(CUDA 2.3 REQUIRED)
+
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

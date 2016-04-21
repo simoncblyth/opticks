@@ -1,5 +1,6 @@
+#include(OPTICKSCfg)
 
-set(ThrustRap_PREFIX "$ENV{LOCAL_BASE}/env/numerics/ThrustRap")
+set(ThrustRap_PREFIX "${OPTICKS_PREFIX}/numerics/ThrustRap")
 
 find_library( ThrustRap_LIBRARIES 
               NAMES ThrustRap

@@ -22,7 +22,7 @@ macro(OPTIXTHRUST_GET_SOURCES_AND_OPTIONS _optix_sources _non_optix_sources _cma
   set( ${_options} )
   set( _found_options FALSE )
   foreach(arg ${ARGN})
-    message(${arg})
+    #message("OPTIXTHRUST:${arg}")
     if(arg STREQUAL "OPTIONS")
       set( _found_options TRUE )
     elseif(
@@ -68,15 +68,15 @@ function(optixthrust_add_executable target_name)
 
     OPTIXTHRUST_GET_SOURCES_AND_OPTIONS(optix_source_files non_optix_source_files cmake_options options ${ARGN})
 
-    message( "optix_source_files= " "${optix_source_files}" )  
-    message( "non_optix_source_files= "  "${non_optix_source_files}" )  
+    #message( "OPTIXTHRUST:optix_source_files= " "${optix_source_files}" )  
+    #message( "OPTIXTHRUST:non_optix_source_files= "  "${non_optix_source_files}" )  
 
     # Create the rules to build the OBJ from the CUDA files.
-    message( "OBJ options = " "${options}" )  
+    #message( "OPTIXTHRUST:OBJ options = " "${options}" )  
     CUDA_WRAP_SRCS( ${target_name} OBJ non_optix_generated_files ${non_optix_source_files} ${cmake_options} OPTIONS ${options} )
 
     # Create the rules to build the PTX from the CUDA files.
-    message( "PTX options = " "${options}" )  
+    #message( "OPTIXTHRUST:PTX options = " "${options}" )  
     CUDA_WRAP_SRCS( ${target_name} PTX optix_generated_files ${optix_source_files} ${cmake_options} OPTIONS ${options} )
 
     add_executable(${target_name}
@@ -105,15 +105,15 @@ function(optixthrust_add_library target_name)
 
     OPTIXTHRUST_GET_SOURCES_AND_OPTIONS(optix_source_files non_optix_source_files cmake_options options ${ARGN})
 
-    message( "optix_source_files= " "${optix_source_files}" )  
-    message( "non_optix_source_files= "  "${non_optix_source_files}" )  
+    #message( "OPTIXTHRUST:optix_source_files= " "${optix_source_files}" )  
+    #message( "OPTIXTHRUST:non_optix_source_files= "  "${non_optix_source_files}" )  
 
     # Create the rules to build the OBJ from the CUDA files.
-    message( "OBJ options = " "${options}" )  
+    #message( "OPTIXTHRUST:OBJ options = " "${options}" )  
     CUDA_WRAP_SRCS( ${target_name} OBJ non_optix_generated_files ${non_optix_source_files} ${cmake_options} OPTIONS ${options} )
 
     # Create the rules to build the PTX from the CUDA files.
-    message( "PTX options = " "${options}" )  
+    #message( "OPTIXTHRUST:PTX options = " "${options}" )  
     CUDA_WRAP_SRCS( ${target_name} PTX optix_generated_files ${optix_source_files} ${cmake_options} OPTIONS ${options} )
 
     add_library(${target_name}

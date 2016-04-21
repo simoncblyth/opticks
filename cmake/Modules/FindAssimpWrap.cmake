@@ -1,5 +1,5 @@
-
-set(AssimpWrap_PREFIX "$ENV{LOCAL_BASE}/env/graphics/assimpwrap")
+#include(OPTICKSCfg)
+set(AssimpWrap_PREFIX "${OPTICKS_PREFIX}/graphics/assimpwrap")
 
 find_library( AssimpWrap_LIBRARIES 
               NAMES AssimpWrap
