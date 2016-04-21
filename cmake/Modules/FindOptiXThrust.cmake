@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(OptiXThrust_PREFIX "${OPTICKS_PREFIX}/graphics/optixthrust")
 

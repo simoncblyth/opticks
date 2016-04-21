@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 set(NPY_PREFIX "${OPTICKS_PREFIX}/numerics/npy")
 
 find_library( NPY_LIBRARIES 

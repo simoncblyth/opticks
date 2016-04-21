@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(OpticksOp_PREFIX "${OPTICKS_PREFIX}/opticksop")
 

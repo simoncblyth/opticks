@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(AsioZMQ_PREFIX "${OPTICKS_PREFIX}/network/asiozmq")
 set(AsioZMQ_LIBRARIES "" )

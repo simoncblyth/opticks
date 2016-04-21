@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(OGLRap_PREFIX "${OPTICKS_PREFIX}/graphics/oglrap")
 

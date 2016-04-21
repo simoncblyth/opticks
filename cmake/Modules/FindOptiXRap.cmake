@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(OptiXRap_PREFIX "${OPTICKS_PREFIX}/graphics/OptiXRap")
 

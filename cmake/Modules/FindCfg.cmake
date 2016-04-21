@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(Cfg_PREFIX "${OPTICKS_PREFIX}/boost/bpo/bcfg")
 

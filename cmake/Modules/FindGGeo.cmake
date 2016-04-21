@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(GGeo_PREFIX "${OPTICKS_PREFIX}/optix/ggeo")
 

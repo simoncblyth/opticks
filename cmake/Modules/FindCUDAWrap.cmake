@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(CUDAWrap_PREFIX "${OPTICKS_PREFIX}/cuda/CUDAWrap")
 

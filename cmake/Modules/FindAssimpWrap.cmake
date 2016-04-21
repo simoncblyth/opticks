@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 set(AssimpWrap_PREFIX "${OPTICKS_PREFIX}/graphics/assimpwrap")
 
 find_library( AssimpWrap_LIBRARIES 

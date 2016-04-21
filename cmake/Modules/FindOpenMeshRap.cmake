@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(OpenMeshRap_PREFIX "${OPTICKS_PREFIX}/graphics/openmeshrap")
 

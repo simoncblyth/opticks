@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(NumpyServer_PREFIX "${OPTICKS_PREFIX}/boost/basio/numpyserver")
 

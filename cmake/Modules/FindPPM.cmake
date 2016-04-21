@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(PPM_PREFIX "${OPTICKS_PREFIX}/graphics/ppm")
 set(PPM_LIBRARIES    "" )

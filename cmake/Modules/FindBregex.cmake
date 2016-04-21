@@ -1,4 +1,3 @@
-#include(OPTICKSCfg)
 
 set(Bregex_PREFIX "${OPTICKS_PREFIX}/boost/bregex")
 
