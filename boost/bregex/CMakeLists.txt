@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name bregex)
+set(name Bregex)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -37,7 +37,7 @@ SET(hdrs
 
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 add_subdirectory(tests)
 

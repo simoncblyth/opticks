@@ -169,7 +169,7 @@ configure_file(Config.hh.in inc/Config.hh)
 
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${cuptxs} DESTINATION ptx)
-install(FILES ${hdrs}   DESTINATION include)
-install(FILES ${cuhdrs} DESTINATION include/cu)
+install(FILES ${hdrs}   DESTINATION include/${name})
+install(FILES ${cuhdrs} DESTINATION include/${name}/cu)
 
 add_subdirectory(tests)

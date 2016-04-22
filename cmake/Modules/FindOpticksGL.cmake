@@ -1,10 +1,8 @@
-
-set(OpticksGL_PREFIX "${OPTICKS_PREFIX}/opticksgl")
-
 find_library( OpticksGL_LIBRARIES 
               NAMES OpticksGL
-              PATHS ${OpticksGL_PREFIX}/lib )
+              PATHS ${OPTICKS_PREFIX}/lib )
 
-set(OpticksGL_INCLUDE_DIRS "${OpticksGL_PREFIX}/include")
+#set(OpticksGL_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/OpticksGL")
+set(OpticksGL_INCLUDE_DIRS "${OPTICKS_HOME}/opticksgl")
 set(OpticksGL_DEFINITIONS "")
 

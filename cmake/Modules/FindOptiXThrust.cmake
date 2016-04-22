@@ -1,10 +1,9 @@
 
-set(OptiXThrust_PREFIX "${OPTICKS_PREFIX}/graphics/optixthrust")
-
 find_library( OptiXThrust_LIBRARIES 
-              NAMES OptiXThrustMinimalLib
-              PATHS ${OptiXThrust_PREFIX}/lib )
+              NAMES OptiXThrust
+              PATHS ${OPTICKS_PREFIX}/lib )
 
-set(OptiXThrust_INCLUDE_DIRS "${OptiXThrust_PREFIX}/include")
+#set(OptiXThrust_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/OptiXThrust")
+set(OptiXThrust_INCLUDE_DIRS "${OPTICKS_HOME}/optix/optixthrust")
 set(OptiXThrust_DEFINITIONS "")
 

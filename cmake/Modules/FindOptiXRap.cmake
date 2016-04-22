@@ -1,10 +1,8 @@
-
-set(OptiXRap_PREFIX "${OPTICKS_PREFIX}/graphics/OptiXRap")
-
 find_library( OptiXRap_LIBRARIES 
               NAMES OptiXRap
-              PATHS ${OptiXRap_PREFIX}/lib )
+              PATHS ${OPTICKS_PREFIX}/lib )
 
-set(OptiXRap_INCLUDE_DIRS "${OptiXRap_PREFIX}/include")
+#set(OptiXRap_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/OptiXRap")
+set(OptiXRap_INCLUDE_DIRS "${OPTICKS_HOME}/graphics/optixrap")
 set(OptiXRap_DEFINITIONS "")
 

@@ -21,8 +21,9 @@ find_package(Opticks REQUIRED)
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS}
-   ${Bregex_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
+
+   ${Bregex_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
    ${Opticks_INCLUDE_DIRS}
@@ -157,7 +158,7 @@ GGeoTestConfig.hh
 target_link_libraries(${name} ${LIBRARIES})
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 add_subdirectory(tests)
 

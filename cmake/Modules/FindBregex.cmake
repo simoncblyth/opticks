@@ -1,10 +1,9 @@
-
-set(Bregex_PREFIX "${OPTICKS_PREFIX}/boost/bregex")
-
 find_library( Bregex_LIBRARIES 
-              NAMES bregex
-              PATHS ${Bregex_PREFIX}/lib )
+              NAMES Bregex
+              PATHS ${OPTICKS_PREFIX}/lib )
 
-set(Bregex_INCLUDE_DIRS "${Bregex_PREFIX}/include")
+#set(Bregex_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/Bregex")
+set(Bregex_INCLUDE_DIRS "${OPTICKS_HOME}/boost/bregex")
+
 set(Bregex_DEFINITIONS "")
 

@@ -16,8 +16,9 @@
 
 message("${name}")
 
-set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/env")
-#set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
+#set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/env")
+set(OPTICKS_HOME   "$ENV{ENV_HOME}")
+set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
 
 set(OPTICKS_EXTERNAL_PREFIX "$ENV{LOCAL_BASE}/env")
 

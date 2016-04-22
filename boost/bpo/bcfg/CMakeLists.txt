@@ -25,10 +25,10 @@ target_link_libraries( ${name}
       ${Boost_LIBRARIES}
 )
 
-install(TARGETS ${name}     DESTINATION lib)
 
 SET(hdrs  Cfg.hh)
 
-install(FILES ${hdrs} DESTINATION include)
+install(TARGETS ${name}     DESTINATION lib)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 

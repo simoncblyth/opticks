@@ -246,7 +246,8 @@ add_executable( ${name} main.cc )
 target_link_libraries( ${name} ${LIBRARIES} ${name}Lib )
 
 install(TARGETS ${name}Lib DESTINATION lib)
-install(FILES ${hdrs}      DESTINATION include)
 install(TARGETS ${name}    DESTINATION bin)
+install(FILES ${hdrs}   DESTINATION include/${name})
+
 
 add_subdirectory(tests)

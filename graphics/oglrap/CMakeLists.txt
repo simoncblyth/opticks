@@ -9,15 +9,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-###
-### CAUTION: this is still not using C++11 but  
-###          most other packages are 
-###          there is potential for interface difficulties
-###          (this might be the cause of std::string in interface problems
-###          that had before : dont recall exactly where)   
-###
-
-
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
@@ -49,14 +40,12 @@ set(INCLUDE_DIRS
    ${ImGui_INCLUDE_DIRS}
 ) 
 
-
 # generate define header for hardcoding in the library 
 set(OGLRAP_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
 set(OGLRAP_SHADER_DIR         "${CMAKE_INSTALL_PREFIX}/gl")
 set(OGLRAP_SHADER_DYNAMIC_DIR "${CMAKE_INSTALL_PREFIX}/gl")
 set(OGLRAP_SHADER_INCL_PATH   "${CMAKE_INSTALL_PREFIX}/gl")
 configure_file( Config.hh.in inc/Config.hh )
-
 
 
 set(DEFINITIONS
@@ -147,7 +136,7 @@ SET(hdrs
 target_link_libraries( ${name} ${LIBRARIES})
 
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include)
+install(FILES ${hdrs} DESTINATION include/${name})
 install(DIRECTORY gl/ DESTINATION gl)
 
 add_subdirectory(tests)

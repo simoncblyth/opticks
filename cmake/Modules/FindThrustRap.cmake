@@ -1,9 +1,8 @@
-set(ThrustRap_PREFIX "${OPTICKS_PREFIX}/numerics/ThrustRap")
-
 find_library( ThrustRap_LIBRARIES 
               NAMES ThrustRap
-              PATHS ${ThrustRap_PREFIX}/lib )
+              PATHS ${OPTICKS_PREFIX}/lib )
 
-set(ThrustRap_INCLUDE_DIRS "${ThrustRap_PREFIX}/include")
+#set(ThrustRap_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/ThrustRap")
+set(ThrustRap_INCLUDE_DIRS "${OPTICKS_HOME}/numerics/thrustrap")
 set(ThrustRap_DEFINITIONS "")
 

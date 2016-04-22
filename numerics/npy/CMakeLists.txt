@@ -11,19 +11,21 @@ include(EnvCompilationFlags)
 
 find_package(Boost  REQUIRED)
 find_package(GLM    REQUIRED)
+
 find_package(Bregex REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS} 
-   ${Bregex_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
+
+   ${Bregex_INCLUDE_DIRS} 
 )
 
 add_definitions( 
    ${Boost_DEFINITIONS} 
-   ${Bregex_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
+   ${Bregex_DEFINITIONS} 
 )
 
 add_library( ${name}  SHARED
@@ -86,7 +88,8 @@ set(LIBRARIES
       ${Boost_LIBRARIES}
       ${Bregex_LIBRARIES}
       ${GLM_LIBRARIES}
-      -lssl -lcrypto
+      ssl 
+      crypto
 )
 
 target_link_libraries( ${name} ${LIBRARIES} )
@@ -151,7 +154,7 @@ md5digest.hpp
 )
 
 install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${hdrs}    DESTINATION include)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 add_subdirectory(tests)
 

@@ -147,8 +147,6 @@ fi
 
 #echo OPTICKS_BINARY $OPTICKS_BINARY
 
-
-
 ggeoview_defaults_dyb(){
 
    export OPTICKS_GEOKEY=DAE_NAME_DYB

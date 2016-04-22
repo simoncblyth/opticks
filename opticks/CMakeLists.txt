@@ -11,6 +11,7 @@ include(EnvCompilationFlags)
 
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
+
 find_package(Bregex REQUIRED)
 find_package(Cfg REQUIRED)
 find_package(NPY REQUIRED)
@@ -19,9 +20,10 @@ include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
-   ${NPY_INCLUDE_DIRS}  
-   ${Cfg_INCLUDE_DIRS}  
+
    ${Bregex_INCLUDE_DIRS}  
+   ${Cfg_INCLUDE_DIRS}  
+   ${NPY_INCLUDE_DIRS}  
 )
 
 add_definitions( 
@@ -94,7 +96,7 @@ SET(hdrs
 
 target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${hdrs}    DESTINATION include)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 add_subdirectory(tests)
 

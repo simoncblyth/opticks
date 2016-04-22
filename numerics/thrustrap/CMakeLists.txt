@@ -12,7 +12,7 @@ include(EnvCompilationFlags)
 # http://www.cmake.org/cmake/help/v3.0/module/FindCUDA.html
 find_package(CUDA 2.3 REQUIRED)
 
-message("CMAKE_CXX_COMPILER_ID:" ${CMAKE_CXX_COMPILER_ID})
+#message("CMAKE_CXX_COMPILER_ID:" ${CMAKE_CXX_COMPILER_ID})
 
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
@@ -58,6 +58,6 @@ SET(hdrs
   iexpand.h 
 )
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 add_subdirectory(tests)

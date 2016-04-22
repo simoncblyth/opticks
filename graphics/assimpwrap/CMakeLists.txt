@@ -63,9 +63,9 @@ set(hdrs
 
 target_link_libraries(${name} ${LIBRARIES})
 
-install(FILES  ${hdrs} DESTINATION include) 
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 add_subdirectory(tests)
 

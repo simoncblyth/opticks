@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name OptiXThrustMinimal)
+set(name OptiXThrust)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -8,8 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
           ) 
 
 
-include(EnvBuildOptions)       # OSX RPATH variable config : possibly no longer needed in current CMake version ?
-set(BUILD_SHARED_LIBS ON)
+include(EnvBuildOptions)   
 
 ################################ includes from /Developer/OptiX/SDK/CMake
 include(Macros)                # string, message handling and CUDA compilation macros 
@@ -29,14 +28,7 @@ find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY   REQUIRED)
 
-## c++11 forced by AsioZMQ   needs to come after OptiX
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ ")
-else ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
-endif ()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-private-field")
+include(EnvCompilationFlags)  
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -73,8 +65,7 @@ message("CMAKE_CURRENT_BINARY_DIR:" ${CMAKE_CURRENT_BINARY_DIR})
 message("CUDA_GENERATED_OUTPUT_DIR:" ${CUDA_GENERATED_OUTPUT_DIR})  
 
 
-
-optixthrust_add_library( ${name}Lib 
+optixthrust_add_library( ${name}
       optixthrust.cpp
       optixthrust_.cu     
       cu/minimal_float4.cu
@@ -82,9 +73,9 @@ optixthrust_add_library( ${name}Lib
        -arch sm_30
 ) 
 
-list(APPEND LIBRARIES ${name}Lib )
+list(APPEND LIBRARIES ${name} )
 
-optixthrust_add_executable( ${name} 
+optixthrust_add_executable( ${name}Test
       main.cpp
 )
 
@@ -102,15 +93,8 @@ set(TARGET    "${name}")
 set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/ptx")
 configure_file(Config.hh.in inc/Config.hh) 
 
-install(FILES ${cuptxs}    DESTINATION ptx)
-install(FILES ${hdrs}      DESTINATION include)
-install(TARGETS ${name}Lib DESTINATION lib)
-install(TARGETS ${name}    DESTINATION bin)
-
-
-
-
-
-
-
+install(FILES ${cuptxs}     DESTINATION ptx)
+install(FILES ${hdrs}       DESTINATION include/${name})
+install(TARGETS ${name}     DESTINATION lib)
+install(TARGETS ${name}Test DESTINATION bin)
 

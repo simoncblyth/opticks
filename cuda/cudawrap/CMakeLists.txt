@@ -57,6 +57,6 @@ CBufSpec.hh
 CBufSlice.hh
 )
 
-install(FILES ${hdrs} DESTINATION include)
+install(FILES ${hdrs} DESTINATION include/${name})
 
 

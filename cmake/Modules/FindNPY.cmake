@@ -1,9 +1,9 @@
-set(NPY_PREFIX "${OPTICKS_PREFIX}/numerics/npy")
-
 find_library( NPY_LIBRARIES 
               NAMES NPY
-              PATHS ${NPY_PREFIX}/lib )
+              PATHS ${OPTICKS_PREFIX}/lib )
 
-set(NPY_INCLUDE_DIRS "${NPY_PREFIX}/include")
+#set(NPY_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/NPY")
+set(NPY_INCLUDE_DIRS "${OPTICKS_HOME}/numerics/npy")
+
 set(NPY_DEFINITIONS "")
 

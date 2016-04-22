@@ -1,10 +1,8 @@
-
-set(NumpyServer_PREFIX "${OPTICKS_PREFIX}/boost/basio/numpyserver")
-
 find_library( NumpyServer_LIBRARIES 
               NAMES NumpyServer
-              PATHS ${NumpyServer_PREFIX}/lib )
+              PATHS ${OPTICKS_PREFIX}/lib )
 
-set(NumpyServer_INCLUDE_DIRS "${NumpyServer_PREFIX}/include")
+#set(NumpyServer_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/NumpyServer")
+set(NumpyServer_INCLUDE_DIRS "${OPTICKS_HOME}/boost/basio/numpyserver")
 set(NumpyServer_DEFINITIONS "")
 
