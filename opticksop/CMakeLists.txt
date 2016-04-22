@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name OpticksOp) # opop-
+set(name OpticksOp) 
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
@@ -24,7 +24,7 @@ find_package(CUDAWrap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
 # NB no OpenGL/GLEW/GLFW 
-#    use opgl- not opop- for viz things 
+#    use opticksgl- not opticksop- for viz things 
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -79,8 +79,6 @@ set(LIBRARIES
 )
 
 
-
-
 CUDA_ADD_LIBRARY( ${name} SHARED
     OpIndexerApp.cc
     OpEngine.cc
@@ -94,7 +92,6 @@ CUDA_ADD_LIBRARY( ${name} SHARED
 
 target_link_libraries( ${name} ${LIBRARIES} )
 
-
 SET(hdrs 
     OpEngine.hh
     OpIndexer.hh
@@ -104,8 +101,6 @@ SET(hdrs
 )
 
 install(TARGETS ${name}  DESTINATION lib)
-
 install(FILES ${hdrs}   DESTINATION include/${name})
-
 add_subdirectory(tests)
 

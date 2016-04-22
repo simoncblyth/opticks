@@ -18,6 +18,7 @@ find_package(Opticks REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+
     ${Boost_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
@@ -28,7 +29,25 @@ include_directories(
 
 add_definitions(
     ${Boost_DEFINITIONS}  
+    ${Assimp_DEFINITIONS} 
+    ${GGeo_DEFINITIONS} 
+    ${GLM_DEFINITIONS} 
+    ${NPY_DEFINITIONS} 
+    ${Opticks_DEFINITIONS} 
 )
+
+set(LIBRARIES
+    ${Boost_LIBRARIES} 
+    ${Assimp_LIBRARIES} 
+    ${GGeo_LIBRARIES} 
+    ${NPY_LIBRARIES} 
+    ${Opticks_LIBRARIES} 
+
+    ssl
+    crypto
+)
+
+# TODO: tidy up ssl and crypto : maybe in NPY_LIBRARIES 
 
 add_library(${name} SHARED 
     AssimpGeometry.cc
@@ -38,16 +57,6 @@ add_library(${name} SHARED
     AssimpRegistry.cc
     AssimpGGeo.cc
     AssimpSelection.cc
-)
-
-set(LIBRARIES
-    ${Boost_LIBRARIES} 
-    ${Assimp_LIBRARIES} 
-    ${GGeo_LIBRARIES} 
-    ${NPY_LIBRARIES} 
-    ${Opticks_LIBRARIES} 
-    ssl
-    crypto
 )
 
 set(hdrs
@@ -60,9 +69,7 @@ set(hdrs
     AssimpTree.hh
 )
 
-
 target_link_libraries(${name} ${LIBRARIES})
-
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include/${name})

@@ -27,6 +27,7 @@ find_package(ImGui REQUIRED)
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/inc
+
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
@@ -132,7 +133,6 @@ SET(hdrs
         DynamicDefine.hh
 )
 
-
 target_link_libraries( ${name} ${LIBRARIES})
 
 install(TARGETS ${name} DESTINATION lib)
@@ -140,5 +140,4 @@ install(FILES ${hdrs} DESTINATION include/${name})
 install(DIRECTORY gl/ DESTINATION gl)
 
 add_subdirectory(tests)
-
 

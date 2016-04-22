@@ -18,6 +18,7 @@ find_package(OpenMesh REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
+
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS} 
@@ -35,6 +36,15 @@ add_definitions(
    ${Boost_DEFINITIONS}
 )
 
+set(LIBRARIES
+   ${OpenMesh_LIBRARIES}
+   ${GLM_LIBRARIES}
+   ${NPY_LIBRARIES}
+   ${Opticks_LIBRARIES}
+   ${GGeo_LIBRARIES}
+   ${Boost_LIBRARIES}
+)
+
 add_library( ${name}  SHARED
      MWrap.cc
      MTool.cc
@@ -47,18 +57,7 @@ set(hdrs
      MFixer.hh
 )
 
-
-set(LIBRARIES
-    ${OpenMesh_LIBRARIES}
-    ${GLM_LIBRARIES}
-    ${NPY_LIBRARIES}
-    ${Opticks_LIBRARIES}
-    ${GGeo_LIBRARIES}
-    ${Boost_LIBRARIES}
-)
-
 target_link_libraries( ${name}  ${LIBRARIES})
-
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include/${name})

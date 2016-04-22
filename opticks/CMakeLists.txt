@@ -36,12 +36,12 @@ add_definitions(
 )
 
 set(LIBRARIES
-      ${Boost_LIBRARIES}
-      ${GLM_LIBRARIES}
+   ${Boost_LIBRARIES}
+   ${GLM_LIBRARIES}
 
-      NPY
-      Cfg
-      Bregex
+   ${NPY_LIBRARIES}
+   ${Cfg_LIBRARIES}
+   ${Bregex_LIBRARIES}
 )
 
 add_library( ${name}  SHARED

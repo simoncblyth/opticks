@@ -114,7 +114,7 @@ add_definitions(
 
 
 # NB only for classes with OpenGL dependency 
-#    for others use opop- not opgl-
+#    for others use opticksop- not opticksgl-
 
 add_library( ${name}  SHARED
        OFrame.cc
@@ -131,7 +131,6 @@ set(hdrs
 target_link_libraries( ${name} ${LIBRARIES} )
 
 install(TARGETS ${name} DESTINATION lib)
-
 install(FILES ${hdrs}   DESTINATION include/${name})
 
 #add_subdirectory(tests)

@@ -15,9 +15,9 @@ find_package(Bregex REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
+
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
-
    ${Bregex_INCLUDE_DIRS} 
 )
 
@@ -25,6 +25,14 @@ add_definitions(
    ${Boost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${Bregex_DEFINITIONS} 
+)
+
+set(LIBRARIES
+   ${Boost_LIBRARIES}
+   ${GLM_LIBRARIES}
+   ${Bregex_LIBRARIES}
+   ssl 
+   crypto
 )
 
 add_library( ${name}  SHARED
@@ -83,14 +91,6 @@ add_library( ${name}  SHARED
     md5digest.cpp
 )
 
-set(LIBRARIES
-      ${Boost_LIBRARIES}
-      ${GLM_LIBRARIES}
-      ssl 
-      crypto
-
-      ${Bregex_LIBRARIES}
-)
 
 target_link_libraries( ${name} ${LIBRARIES} )
 

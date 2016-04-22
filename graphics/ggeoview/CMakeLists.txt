@@ -224,10 +224,7 @@ set(LIBRARIES
    ${WITH_OPTIX_LIBRARIES}
 )
 
-
-
 #message("INCLUDES:${INCLUDES}")
-
 
 include_directories(${INCLUDES})
 add_definitions(${DEFINITIONS})

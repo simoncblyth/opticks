@@ -156,7 +156,7 @@ GGeoTestConfig.hh
 )
 
 
-message("GGEO:LIBRARIES:${LIBRARIES}")
+#message("GGEO:LIBRARIES:${LIBRARIES}")
 target_link_libraries(${name} ${LIBRARIES})
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
