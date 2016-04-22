@@ -12,15 +12,9 @@ include(EnvCompilationFlags)
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
 
-if(SUPERBUILD)
-    include(FindBregex)
-    include(FindCfg)
-    include(FindNPY)
-else()
-    find_package(Bregex REQUIRED)
-    find_package(Cfg REQUIRED)
-    find_package(NPY REQUIRED)
-endif(SUPERBUILD)
+find_package(Bregex REQUIRED)
+find_package(Cfg REQUIRED)
+find_package(NPY REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
