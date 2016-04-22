@@ -12,9 +12,15 @@ include(EnvCompilationFlags)
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
 
-find_package(Bregex REQUIRED)
-find_package(Cfg REQUIRED)
-find_package(NPY REQUIRED)
+if(SUPERBUILD)
+    include(FindBregex)
+    include(FindCfg)
+    include(FindNPY)
+else()
+    find_package(Bregex REQUIRED)
+    find_package(Cfg REQUIRED)
+    find_package(NPY REQUIRED)
+endif(SUPERBUILD)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -38,9 +44,10 @@ add_definitions(
 set(LIBRARIES
       ${Boost_LIBRARIES}
       ${GLM_LIBRARIES}
-      ${NPY_LIBRARIES}
-      ${Cfg_LIBRARIES}
-      ${Bregex_LIBRARIES}
+
+      NPY
+      Cfg
+      Bregex
 )
 
 add_library( ${name}  SHARED

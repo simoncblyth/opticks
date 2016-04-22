@@ -2,7 +2,15 @@ find_library( AssimpWrap_LIBRARIES
               NAMES AssimpWrap
               PATHS ${OPTICKS_PREFIX}/lib )
 
-#set(AssimpWrap_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/AssimpWrap")
-set(AssimpWrap_INCLUDE_DIRS "${OPTICKS_HOME}/graphics/assimpwrap")
+
+if(SUPERBUILD)
+    if(NOT AssimpWrap_LIBRARIES)
+       set(AssimpWrap_LIBRARIES AssimpWrap)
+    endif()
+endif(SUPERBUILD)
+
+
+
+set(AssimpWrap_INCLUDE_DIRS "${AssimpWrap_SOURCE_DIR}")
 set(AssimpWrap_DEFINITIONS "")
 

@@ -7,11 +7,11 @@
 #include <iomanip>
 
 #include <boost/lexical_cast.hpp>
+
+// cannot NLog.hpp this as bregex- is below NPY
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
-
-
 
 void dump( pairs_t& pairs, const char* msg)
 {
@@ -26,7 +26,6 @@ void dump( pairs_t& pairs, const char* msg)
                  << std::endl ; 
     } 
 }
-
 
 
 //template <typename T>

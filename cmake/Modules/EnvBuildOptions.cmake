@@ -17,7 +17,6 @@
 message("${name}")
 
 #set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/env")
-set(OPTICKS_HOME   "$ENV{ENV_HOME}")
 set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
 
 set(OPTICKS_EXTERNAL_PREFIX "$ENV{LOCAL_BASE}/env")
@@ -26,6 +25,24 @@ set(BUILD_SHARED_LIBS ON)
 
 OPTION(WITH_NPYSERVER  "using the numpyserver." OFF)
 OPTION(WITH_OPTIX      "using OPTIX." OFF)
+
+set(OPTICKS_HOME   "$ENV{ENV_HOME}")
+set(AssimpWrap_SOURCE_DIR  "${OPTICKS_HOME}/graphics/assimpwrap")
+set(Bregex_SOURCE_DIR      "${OPTICKS_HOME}/boost/bregex")
+set(CUDAWrap_SOURCE_DIR    "${OPTICKS_HOME}/cuda/cudawrap")
+set(Cfg_SOURCE_DIR         "${OPTICKS_HOME}/boost/bpo/bcfg")
+set(GGeo_SOURCE_DIR        "${OPTICKS_HOME}/optix/ggeo")
+set(NPY_SOURCE_DIR         "${OPTICKS_HOME}/numerics/npy")
+set(NumpyServer_SOURCE_DIR "${OPTICKS_HOME}/boost/basio/numpyserver")
+set(OGLRap_SOURCE_DIR      "${OPTICKS_HOME}/graphics/oglrap")
+set(OpenMeshRap_SOURCE_DIR "${OPTICKS_HOME}/graphics/openmeshrap")
+set(OptiXRap_SOURCE_DIR    "${OPTICKS_HOME}/graphics/optixrap")
+set(OptiXThrust_SOURCE_DIR "${OPTICKS_HOME}/optix/optixthrust")
+set(Opticks_SOURCE_DIR     "${OPTICKS_HOME}/opticks")
+set(OpticksGL_SOURCE_DIR   "${OPTICKS_HOME}/opticksgl")
+set(OpticksOp_SOURCE_DIR   "${OPTICKS_HOME}/opticksop")
+set(PPM_SOURCE_DIR         "${OPTICKS_HOME}/graphics/ppm")
+set(ThrustRap_SOURCE_DIR   "${OPTICKS_HOME}/numerics/thrustrap")
 
 
 # /usr/local/env/chroma_env/src/root-v5.34.14/cmake/modules/RootBuildOptions.cmake

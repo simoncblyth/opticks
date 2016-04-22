@@ -6,11 +6,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
                       "$ENV{OPTIX_SDK_DIR}/CMake"
           ) 
 
+set(SUPERBUILD ON)
+
 include(EnvBuildOptions)
 
 add_subdirectory(boost/bpo/bcfg)  
 add_subdirectory(boost/bregex)    
 add_subdirectory(numerics/npy)   
+
 add_subdirectory(opticks)         
 add_subdirectory(optix/ggeo)     
 add_subdirectory(graphics/assimpwrap)   

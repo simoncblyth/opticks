@@ -1,12 +1,14 @@
-find_library( OpenMeshRap_LIBRARY 
+find_library( OpenMeshRap_LIBRARIES
               NAMES OpenMeshRap
               PATHS ${OPTICKS_PREFIX}/lib )
 
-set( OpenMeshRap_LIBRARIES 
-             ${OpenMeshRap_LIBRARY} 
-)
+if(SUPERBUILD)
+    if(NOT OpenMeshRap_LIBRARIES)
+       set(OpenMeshRap_LIBRARIES OpenMeshRap)
+    endif()
+endif(SUPERBUILD)
 
-#set(OpenMeshRap_INCLUDE_DIRS "${OPTICKS_PREFIX}/include/OpenMeshRap")
-set(OpenMeshRap_INCLUDE_DIRS "${OPTICKS_HOME}/graphics/openmeshrap")
+
+set(OpenMeshRap_INCLUDE_DIRS "${OpenMeshRap_SOURCE_DIR}")
 set(OpenMeshRap_DEFINITIONS "")
 

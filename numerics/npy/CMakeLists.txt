@@ -11,7 +11,6 @@ include(EnvCompilationFlags)
 
 find_package(Boost  REQUIRED)
 find_package(GLM    REQUIRED)
-
 find_package(Bregex REQUIRED)
 
 include_directories(
@@ -86,10 +85,11 @@ add_library( ${name}  SHARED
 
 set(LIBRARIES
       ${Boost_LIBRARIES}
-      ${Bregex_LIBRARIES}
       ${GLM_LIBRARIES}
       ssl 
       crypto
+
+      ${Bregex_LIBRARIES}
 )
 
 target_link_libraries( ${name} ${LIBRARIES} )
