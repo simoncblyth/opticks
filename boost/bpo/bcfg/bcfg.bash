@@ -1,5 +1,6 @@
 # === func-gen- : boost/bpo/bcfg/bcfg fgp boost/bpo/bcfg/bcfg.bash fgn bcfg fgh boost/bpo/bcfg
-bcfg-src(){      echo boost/bpo/bcfg/bcfg.bash ; }
+bcfg-rel(){      echo boost/bpo/bcfg ; }
+bcfg-src(){      echo $(bcfg-rel)/bcfg.bash ; }
 bcfg-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bcfg-src)} ; }
 bcfg-vi(){       vi $(bcfg-source) ; }
 bcfg-usage(){ cat << EOU
@@ -144,56 +145,29 @@ Requirements for listeners
      16      static const char* YFOV ;
      17      static const char* PARALLEL ;
 
-
-
-
-
-
-
-
-
 EOU
 }
 
 
-bcfg-sdir(){ echo $(env-home)/boost/bpo/bcfg ; }
+bcfg-sdir(){ echo $(env-home)/$(bcfg-rel) ; }
 bcfg-env(){      elocal- ; OPTICKS- ;  }
 
 bcfg-idir(){ echo $(OPTICKS-idir) ; }
-bcfg-bdir(){ echo $(OPTICKS-bdir Cfg) ; }
-
-#bcfg-idir(){ echo $(local-base)/env/boost/bpo/bcfg ; }
-#bcfg-bdir(){ echo $(bcfg-idir).build ; }
-
+bcfg-bdir(){ echo $(OPTICKS-bdir)/$(bcfg-rel) ; }
 
 bcfg-scd(){  cd $(bcfg-sdir); }
 bcfg-cd(){  cd $(bcfg-sdir); }
 
 bcfg-icd(){  cd $(bcfg-idir); }
 bcfg-bcd(){  cd $(bcfg-bdir); }
-bcfg-name(){ echo CfgTest ; }
 
+bcfg-name(){ echo CfgTest ; }
 
 bcfg-wipe(){
    local bdir=$(bcfg-bdir)
    rm -rf $bdir
 }
 
-
-bcfg-cmake(){
-   local iwd=$PWD
-
-   local bdir=$(bcfg-bdir)
-   mkdir -p $bdir
-
-   bcfg-bcd
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(bcfg-idir) \
-       $(bcfg-sdir)
-
-   cd $iwd
-}
 
 bcfg-make(){
    local iwd=$PWD
@@ -239,9 +213,8 @@ EOC
 
 bcfg--()
 {
-    bcfg-wipe
-    bcfg-cmake
-    bcfg-make
+    bcfg-make clean
+    bcfg-make 
     bcfg-install
 }
 

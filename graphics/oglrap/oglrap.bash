@@ -1,4 +1,5 @@
 # === func-gen- : graphics/oglrap/oglrap fgp graphics/oglrap/oglrap.bash fgn oglrap fgh graphics/oglrap
+oglrap-rel(){      echo graphics/oglrap ; }
 oglrap-src(){      echo graphics/oglrap/oglrap.bash ; }
 oglrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(oglrap-src)} ; }
 oglrap-vi(){       vi $(oglrap-source) ; }
@@ -273,12 +274,8 @@ oglrap-env(){      elocal- ; OPTICKS- ; }
 
 oglrap-sdir(){ echo $(env-home)/graphics/oglrap ; }
 
-#oglrap-idir(){ echo $(local-base)/env/graphics/oglrap ; }
-#oglrap-bdir(){ echo $(oglrap-idir).build ; }
-
 oglrap-idir(){ echo $(OPTICKS-idir) ; }
-oglrap-bdir(){ echo $(OPTICKS-bdir OGLRap) ; }
-
+oglrap-bdir(){ echo $(OPTICKS-bdir)/$(oglrap-rel) ; }
 
 oglrap-bindir(){ echo $(oglrap-idir)/bin ; }
 
@@ -294,21 +291,6 @@ oglrap-wipe(){
    rm -rf $bdir
 }
 
-
-oglrap-cmake(){
-   local iwd=$PWD
-
-   local bdir=$(oglrap-bdir)
-   mkdir -p $bdir
-  
-   oglrap-bcd 
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(oglrap-idir) \
-       $(oglrap-sdir)
-
-   cd $iwd
-}
 
 oglrap-make(){
    local iwd=$PWD
@@ -327,7 +309,7 @@ oglrap-install(){
 
 oglrap--()
 {
-    oglrap-cmake
+    oglrap-make clean
     oglrap-make
     oglrap-install
 

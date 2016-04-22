@@ -1,4 +1,5 @@
 # === func-gen- : boost/bregex/bregex fgp boost/bregex/bregex.bash fgn bregex fgh boost/bregex
+bregex-rel(){      echo boost/bregex ; }
 bregex-src(){      echo boost/bregex/bregex.bash ; }
 bregex-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bregex-src)} ; }
 bregex-vi(){       vi $(bregex-source) ; }
@@ -63,10 +64,8 @@ bregex-env(){      elocal- ; OPTICKS- ;  }
 bregex-name(){ echo Bregex ; }
 bregex-sdir(){ echo $(env-home)/boost/bregex ; }
 
-#bregex-idir(){ echo $(local-base)/env/boost/bregex ; }
-#bregex-bdir(){ echo $(bregex-idir).build ; }
 bregex-idir(){ echo $(OPTICKS-idir); }
-bregex-bdir(){ echo $(OPTICKS-bdir Bregex); }
+bregex-bdir(){ echo $(OPTICKS-bdir)/$(bregex-rel) ; }
 
 bregex-scd(){  cd $(bregex-sdir); }
 bregex-cd(){  cd $(bregex-sdir); }
@@ -76,28 +75,9 @@ bregex-bcd(){  cd $(bregex-bdir); }
 
 bregex-flags(){ $(bregex-idir)/bin/enum_regexsearchTest $* ; }
 
-
 bregex-wipe(){
    local bdir=$(bregex-bdir)
    rm -rf $bdir
-}
-bregex-env(){    
-    elocal- 
-}
-
-bregex-cmake(){
-   local iwd=$PWD
-
-   local bdir=$(bregex-bdir)
-   mkdir -p $bdir
-  
-   bregex-bcd 
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(bregex-idir) \
-       $(bregex-sdir)
-
-   cd $iwd
 }
 
 bregex-make(){
@@ -134,13 +114,10 @@ bregex-lldb()
 
 bregex--()
 {
-    bregex-wipe
-    bregex-cmake
+    bregex-make clean
     bregex-make
     bregex-install
 }
-
-
 
 
 bregex-hello()

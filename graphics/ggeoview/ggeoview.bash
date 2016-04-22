@@ -825,6 +825,7 @@ ggv-lldb(){
 }
 
 
+ggeoview-rel(){      echo graphics/ggeoview ; }
 ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
 ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }
 ggeoview-vi(){       vi $(ggeoview-source) ; }
@@ -1907,7 +1908,7 @@ ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
 #ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
 
 ggeoview-idir(){ echo $(OPTICKS-idir) ; }
-ggeoview-bdir(){ echo $(OPTICKS-bdir GGeoView) ; }
+ggeoview-bdir(){ echo $(OPTICKS-bdir)/$(ggeoview-rel) ; }
 
 ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
 ggeoview-bindir(){  echo $(ggeoview-idir)/bin ; }
@@ -1943,7 +1944,7 @@ ggeoview-options()
 }
 
 
-ggeoview-cmake(){
+ggeoview-cmake-deprecated(){
    local iwd=$PWD
    local bdir=$(ggeoview-bdir)
    mkdir -p $bdir
@@ -1962,7 +1963,7 @@ ggeoview-cmake(){
    cd $iwd
 }
 
-ggeoview-cmake-nooptix(){
+ggeoview-cmake-deprecated-nooptix(){
 
    local bdir=$(ggeoview-bdir)
    mkdir -p $bdir
@@ -1988,13 +1989,8 @@ ggeoview-make(){
 }
 
 ggeoview-install(){
-   printf "********************** $FUNCNAME "
    ggeoview-make install
 }
-
-
-
-
 
 
 ggeoview-accelcache()
@@ -2135,8 +2131,7 @@ ggeoview-dbg()
 
 ggeoview--()
 {
-    ggeoview-wipe
-    ggeoview-cmake
+    ggeoview-make clean
     ggeoview-make
     ggeoview-install
 }
@@ -2159,9 +2154,13 @@ ggeoview-dep-wipe(){    ggeoview-dep-action wipe ; }
 
 ggeoview-full()
 {
+
    ggeoview-dep-wipe
-   ggeoview-dep-cmake
-   ggeoview-dep-install
+
+   OPTICKS-cmake
+   OPTICKS-install
+
+   #ggeoview-dep-install
 }
 
 
@@ -2178,8 +2177,8 @@ oglrap
 cudawrap
 thrustrap
 optixrap
-opop
-opgl
+opticksop
+opticksgl
 ggeoview
 EOD
 }
@@ -2233,3 +2232,6 @@ ggeoview-linux-install() {
         $dep--
     done
 }
+
+
+

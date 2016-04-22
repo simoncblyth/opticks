@@ -1,4 +1,5 @@
 # === func-gen- : cuda/cudawrap/cudawrap fgp cuda/cudawrap/cudawrap.bash fgn cudawrap fgh cuda/cudawrap
+cudawrap-rel(){      echo cuda/cudawrap ; }
 cudawrap-src(){      echo cuda/cudawrap/cudawrap.bash ; }
 cudawrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudawrap-src)} ; }
 cudawrap-vi(){       vi $(cudawrap-source) ; }
@@ -332,12 +333,8 @@ cudawrap-env(){
 
 cudawrap-name(){ echo CUDAWrap ; }
 
-#cudawrap-bdir(){ echo $(local-base)/env/cuda/CUDAWrap.build ; }
-#cudawrap-idir(){ echo $(local-base)/env/cuda/CUDAWrap ; }
-
 cudawrap-idir(){ echo $(OPTICKS-idir); }
-cudawrap-bdir(){ echo $(OPTICKS-bdir CUDAWrap); }
-
+cudawrap-bdir(){ echo $(OPTICKS-bdir)/$(cudawrap-rel) ; }
 
 
 cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
@@ -360,7 +357,7 @@ cudawrap-wipe(){
 }
 
 
-cudawrap-cmake(){
+cudawrap-cmake-deprecated(){
    local iwd=$PWD
 
    [ -n "$WIPE" ] && cudawrap-wipe
@@ -417,7 +414,7 @@ cudawrap-run(){
 
 
 cudawrap--(){
-  cudawrap-cmake
+  cudawrap-make clean
   cudawrap-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
   cudawrap-install $*

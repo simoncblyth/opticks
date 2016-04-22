@@ -1,4 +1,5 @@
 # === func-gen- : numerics/thrustrap/thrustrap fgp numerics/thrustrap/thrustrap.bash fgn thrustrap fgh numerics/thrustrap
+thrustrap-rel(){      echo numerics/thrustrap ; }
 thrustrap-src(){      echo numerics/thrustrap/thrustrap.bash ; }
 thrustrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(thrustrap-src)} ; }
 thrustrap-vi(){       vi $(thrustrap-source) ; }
@@ -276,11 +277,9 @@ EOU
 thrustrap-env(){      elocal- ; OPTICKS- ; }
 thrustrap-sdir(){ echo $(env-home)/numerics/thrustrap ; }
 
-#thrustrap-idir(){ echo $(local-base)/env/numerics/ThrustRap ; }
-#thrustrap-bdir(){ echo $(thrustrap-idir).build ; }
 
 thrustrap-idir(){ echo $(OPTICKS-idir) ; }
-thrustrap-bdir(){ echo $(OPTICKS-bdir ThrustRap) ; }
+thrustrap-bdir(){ echo $(OPTICKS-bdir)/$(thrustrap-rel) ; }
 
 
 thrustrap-scd(){  cd $(thrustrap-sdir); }
@@ -305,7 +304,7 @@ thrustrap-env(){
    thrust-export 
 }
 
-thrustrap-cmake(){
+thrustrap-cmake-deprecated(){
    local iwd=$PWD
    local msg="=== $FUNCNAME : "
    local bdir=$(thrustrap-bdir)
@@ -350,10 +349,9 @@ thrustrap-run(){
 }
 
 
-
 thrustrap--()
 {
-    thrustrap-cmake
+    thrustrap-make clean
     thrustrap-make
     thrustrap-install
 

@@ -1,4 +1,5 @@
 # === func-gen- : graphics/optixrap/optixrap fgp graphics/optixrap/optixrap.bash fgn optixrap fgh graphics/optixrap
+optixrap-rel(){      echo graphics/optixrap  ; }
 optixrap-src(){      echo graphics/optixrap/optixrap.bash ; }
 optixrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixrap-src)} ; }
 optixrap-vi(){       vi $(optixrap-source) ; }
@@ -223,11 +224,9 @@ optixrap-env(){
 
 
 optixrap-sdir(){ echo $(env-home)/graphics/optixrap ; }
-#optixrap-idir(){ echo $(local-base)/env/graphics/OptiXRap ; }
-#optixrap-bdir(){ echo $(optixrap-idir).build ; }
 
 optixrap-idir(){ echo $(OPTICKS-idir); }
-optixrap-bdir(){ echo $(OPTICKS-bdir OptiXRap); }
+optixrap-bdir(){ echo $(OPTICKS-bdir)/$(optixrap-rel) ; }
 
 
 optixrap-scd(){  cd $(optixrap-sdir); }
@@ -242,7 +241,7 @@ optixrap-wipe(){
    rm -rf $bdir
 }
 
-optixrap-cmake(){
+optixrap-cmake-deprecated(){
    local iwd=$PWD
 
    local bdir=$(optixrap-bdir)
@@ -289,10 +288,9 @@ optixrap-run(){
 
 optixrap--()
 {
-    optixrap-cmake
+    optixrap-make clean
     optixrap-make
     optixrap-install
-
 }
 
 

@@ -1,4 +1,5 @@
 # === func-gen- : graphics/openmeshrap/openmeshrap fgp graphics/openmeshrap/openmeshrap.bash fgn openmeshrap fgh graphics/openmeshrap
+openmeshrap-rel(){      echo graphics/openmeshrap ; }
 openmeshrap-src(){      echo graphics/openmeshrap/openmeshrap.bash ; }
 openmeshrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmeshrap-src)} ; }
 openmeshrap-vi(){       vi $(openmeshrap-source) ; }
@@ -141,11 +142,9 @@ EOU
 openmeshrap-env(){      elocal- ; OPTICKS- ;  }
 openmeshrap-dir(){  echo $(env-home)/graphics/openmeshrap ; }
 
-#openmeshrap-idir(){ echo $(local-base)/env/graphics/openmeshrap ; }
-#openmeshrap-bdir(){ echo $(openmeshrap-idir).build ; }
 
 openmeshrap-idir(){ echo $(OPTICKS-idir) ; }
-openmeshrap-bdir(){ echo $(OPTICKS-bdir OpenMeshRap) ; }
+openmeshrap-bdir(){ echo $(OPTICKS-bdir)/$(openmeshrap-rel) ; }
 
 openmeshrap-cd(){   cd $(openmeshrap-dir); }
 openmeshrap-icd(){  cd $(openmeshrap-idir); }
@@ -156,19 +155,6 @@ openmeshrap-wipe(){
   local bdir=$(openmeshrap-bdir)
   rm -rf $bdir 
 
-}
-
-openmeshrap-cmake(){
-  local iwd=$PWD
-  local bdir=$(openmeshrap-bdir)
-  mkdir -p $bdir
-  openmeshrap-bcd
-
-  cmake $(openmeshrap-dir) \
-      -DCMAKE_BUILD_TYPE=Debug \
-      -DCMAKE_INSTALL_PREFIX=$(openmeshrap-idir) 
-
-  cd $iwd
 }
 
 openmeshrap-make(){
@@ -183,7 +169,7 @@ openmeshrap-install(){
 }
 
 openmeshrap--(){
-  openmeshrap-cmake
+  openmeshrap-make clean
   openmeshrap-make
   openmeshrap-install
 }

@@ -1,4 +1,5 @@
 # === func-gen- : graphics/assimpwrap/assimpwrap fgp graphics/assimpwrap/assimpwrap.bash fgn assimpwrap fgh graphics/assimpwrap
+assimpwrap-rel(){      echo graphics/assimpwrap ; }
 assimpwrap-src(){      echo graphics/assimpwrap/assimpwrap.bash ; }
 assimpwrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimpwrap-src)} ; }
 assimpwrap-vi(){       vi $(assimpwrap-source) ; }
@@ -177,13 +178,9 @@ EOU
 }
 assimpwrap-env(){      elocal- ; OPTICKS- ;  }
 
-#assimpwrap-idir(){ echo $(local-base)/env/graphics/assimpwrap ; }  # prefix
-#assimpwrap-bdir(){ echo $(local-base)/env/graphics/assimpwrap.build ; }
-
 assimpwrap-sdir(){ echo $(env-home)/graphics/assimpwrap ; }
 assimpwrap-idir(){ echo $(OPTICKS-idir); }
-assimpwrap-bdir(){ echo $(OPTICKS-bdir AssimpWrap); }
-
+assimpwrap-bdir(){ echo $(OPTICKS-bdir)/$(assimpwrap-rel) ; }
 
 assimpwrap-icd(){  cd $(assimpwrap-idir); }
 assimpwrap-bcd(){  cd $(assimpwrap-bdir); }
@@ -196,16 +193,6 @@ assimpwrap-wipe(){
     rm -rf $bdir
 }
 
-assimpwrap-cmake(){
-   local iwd=$PWD
-   local bdir=$(assimpwrap-bdir)
-   mkdir -p $bdir
-   assimpwrap-bcd
-
-   cmake $(assimpwrap-sdir) -DCMAKE_INSTALL_PREFIX=$(assimpwrap-idir) -DCMAKE_BUILD_TYPE=Debug 
-
-   cd $iwd
-}
 
 assimpwrap-make(){
     local iwd=$PWD
@@ -261,7 +248,7 @@ assimpwrap-run(){
 }
 
 assimpwrap--(){
-    assimpwrap-cmake
+    assimpwrap-make clean
     assimpwrap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
     assimpwrap-install $*

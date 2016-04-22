@@ -1,4 +1,5 @@
 # === func-gen- : opticks/opticks fgp opticks/opticks.bash fgn opticks fgh opticks
+opticks-rel(){      echo opticks ; }
 opticks-src(){      echo opticks/opticks.bash ; }
 opticks-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticks-src)} ; }
 opticks-vi(){       vi $(opticks-source) ; }
@@ -479,20 +480,14 @@ opticks-env(){      elocal- ; OPTICKS- ;  }
 opticks-sdir(){ echo $(env-home)/opticks ; }
 
 
-#opticks-idir(){ echo $(local-base)/env/opticks ; }
-#opticks-bdir(){ echo $(opticks-idir).build ; }
-
 opticks-idir(){ echo $(OPTICKS-idir) ; }
-opticks-bdir(){ echo $(OPTICKS-bdir Opticks) ; }
-
+opticks-bdir(){ echo $(OPTICKS-bdir)/$(opticks-rel) ; }
 
 opticks-scd(){  cd $(opticks-sdir); }
 opticks-cd(){  cd $(opticks-sdir); }
 
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
-
-
 
 opticks-name(){ echo Opticks ; }
 
@@ -502,22 +497,6 @@ opticks-bin(){ echo $(opticks-idir)/bin/${1:-OpticksResourceTest} ; }
 opticks-wipe(){
    local bdir=$(opticks-bdir)
    rm -rf $bdir
-}
-
-
-opticks-cmake(){
-   local iwd=$PWD
-
-   local bdir=$(opticks-bdir)
-   mkdir -p $bdir
-
-   opticks-bcd
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(opticks-idir) \
-       $(opticks-sdir)
-
-   cd $iwd
 }
 
 opticks-make(){
@@ -533,11 +512,9 @@ opticks-install(){
    opticks-make install
 }
 
-
 opticks--()
 {
-    opticks-wipe
-    opticks-cmake
+    opticks-make clean
     opticks-make
     opticks-install
 }

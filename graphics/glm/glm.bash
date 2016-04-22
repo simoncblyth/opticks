@@ -21,6 +21,11 @@ This project isn't limited to GLSL features. An extension system, based on the
 GLSL extension conventions, provides extended capabilities: matrix
 transformations, quaternions, data packing, random numbers, noise, etc...
 
+See also
+---------
+
+* env/cmake/Modules/FindGLM.cmake
+
 
 Compare glm::frustum and glm::ortho sources
 --------------------------------------------
@@ -97,14 +102,6 @@ might bring things closer.
     ///    |    0      0         -1           0            |
     ///
 
-
-
-
-
-See also
----------
-
-* env/cmake/Modules/FindGLM.cmake
 
 EOU
 }

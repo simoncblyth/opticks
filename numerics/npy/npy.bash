@@ -1,5 +1,5 @@
-# === func-gen- : numerics/npy/npy fgp numerics/npy/npy.bash fgn npy fgh numerics/npy
 npy-src(){      echo numerics/npy/npy.bash ; }
+npy-src(){      echo numerics/npy ; }
 npy-source(){   echo ${BASH_SOURCE:-$(env-home)/$(npy-src)} ; }
 npy-vi(){       vi $(npy-source) ; }
 npy-env(){      elocal- ; }
@@ -133,15 +133,14 @@ EOU
 
 npy-sdir(){ echo $(env-home)/numerics/npy ; }
 
-#npy-idir(){ echo $(local-base)/env/numerics/npy ; }
-#npy-bdir(){ echo $(local-base)/env/numerics/npy.build ; }
 npy-idir(){ echo $(OPTICKS-idir) ; }
-npy-bdir(){ echo $(OPTICKS-bdir NPY) ; }
+npy-bdir(){ echo $(OPTICKS-bdir)/$(npy-rel) ; }
 
 npy-cd(){   cd $(npy-sdir); }
 npy-scd(){  cd $(npy-sdir); }
 npy-icd(){  cd $(npy-idir); }
 npy-bcd(){  cd $(npy-bdir); }
+
 
 npy-i(){
    npy-cd
@@ -154,21 +153,6 @@ npy-bin(){    echo $(npy-bindir)/$1 ; }
 npy-wipe(){
    local bdir=$(npy-bdir)
    rm -rf $bdir
-}
-
-npy-cmake(){
-   local iwd=$PWD
-
-   local bdir=$(npy-bdir)
-   mkdir -p $bdir
-
-   npy-bcd
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(npy-idir) \
-       $(npy-sdir)
-
-   cd $iwd
 }
 
 npy-make(){
@@ -186,7 +170,7 @@ npy-install(){
 
 npy--()
 {
-    npy-cmake
+    npy-make clean
     npy-make
     npy-install
 }
