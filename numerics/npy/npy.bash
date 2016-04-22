@@ -132,8 +132,11 @@ EOU
 }
 
 npy-sdir(){ echo $(env-home)/numerics/npy ; }
-npy-idir(){ echo $(local-base)/env/numerics/npy ; }
-npy-bdir(){ echo $(local-base)/env/numerics/npy.build ; }
+
+#npy-idir(){ echo $(local-base)/env/numerics/npy ; }
+#npy-bdir(){ echo $(local-base)/env/numerics/npy.build ; }
+npy-idir(){ echo $(OPTICKS-idir) ; }
+npy-bdir(){ echo $(OPTICKS-bdir NPY) ; }
 
 npy-cd(){   cd $(npy-sdir); }
 npy-scd(){  cd $(npy-sdir); }

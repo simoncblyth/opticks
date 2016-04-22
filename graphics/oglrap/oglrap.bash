@@ -2,7 +2,6 @@
 oglrap-src(){      echo graphics/oglrap/oglrap.bash ; }
 oglrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(oglrap-src)} ; }
 oglrap-vi(){       vi $(oglrap-source) ; }
-oglrap-env(){      elocal- ; }
 oglrap-usage(){ cat << EOU
 
 Featherweight OpenGL wrapper
@@ -270,10 +269,16 @@ ClipperCfg
 EOU
 }
 
+oglrap-env(){      elocal- ; OPTICKS- ; }
 
 oglrap-sdir(){ echo $(env-home)/graphics/oglrap ; }
-oglrap-idir(){ echo $(local-base)/env/graphics/oglrap ; }
-oglrap-bdir(){ echo $(oglrap-idir).build ; }
+
+#oglrap-idir(){ echo $(local-base)/env/graphics/oglrap ; }
+#oglrap-bdir(){ echo $(oglrap-idir).build ; }
+
+oglrap-idir(){ echo $(OPTICKS-idir) ; }
+oglrap-bdir(){ echo $(OPTICKS-bdir OGLRap) ; }
+
 
 oglrap-bindir(){ echo $(oglrap-idir)/bin ; }
 

@@ -2,7 +2,6 @@
 opticks-src(){      echo opticks/opticks.bash ; }
 opticks-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticks-src)} ; }
 opticks-vi(){       vi $(opticks-source) ; }
-opticks-env(){      elocal- ; }
 opticks-usage(){ cat << EOU
 
 Brief History
@@ -476,15 +475,25 @@ Related
 EOU
 }
 
+opticks-env(){      elocal- ; OPTICKS- ;  }
 opticks-sdir(){ echo $(env-home)/opticks ; }
-opticks-idir(){ echo $(local-base)/env/opticks ; }
-opticks-bdir(){ echo $(opticks-idir).build ; }
+
+
+#opticks-idir(){ echo $(local-base)/env/opticks ; }
+#opticks-bdir(){ echo $(opticks-idir).build ; }
+
+opticks-idir(){ echo $(OPTICKS-idir) ; }
+opticks-bdir(){ echo $(OPTICKS-bdir Opticks) ; }
+
 
 opticks-scd(){  cd $(opticks-sdir); }
 opticks-cd(){  cd $(opticks-sdir); }
 
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
+
+
+
 opticks-name(){ echo Opticks ; }
 
 opticks-bin(){ echo $(opticks-idir)/bin/${1:-OpticksResourceTest} ; }

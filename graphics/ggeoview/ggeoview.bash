@@ -1893,11 +1893,22 @@ With each cmd equivalent to::
 EOU
 }
 
+ggeoview-env(){     
+    elocal- 
+    optix-
+    optix-export
+    OPTICKS-
+}
+
 
 ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
-ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 
-ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
+#ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
+#ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
+
+ggeoview-idir(){ echo $(OPTICKS-idir) ; }
+ggeoview-bdir(){ echo $(OPTICKS-bdir GGeoView) ; }
+
 ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
 ggeoview-bindir(){  echo $(ggeoview-idir)/bin ; }
 ggeoview-bin(){ echo ${OPTICKS_BINARY:-$(ggeoview-idir)/bin/$(ggeoview-name)} ; }
@@ -1923,19 +1934,13 @@ ggeoview-wipe(){
    local bdir=$(ggeoview-bdir)
    rm -rf $bdir
 }
-ggeoview-env(){     
-    elocal- 
-    optix-
-    optix-export
-}
 
 ggeoview-options()
 {
     case $NODE_TAG in 
-      D) echo -DNPYSERVER=ON ;;
+      NONE) echo -DWITH_NPYSERVER:BOOL=OFF ;;
     esac
 }
-
 
 
 ggeoview-cmake(){

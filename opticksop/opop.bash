@@ -21,9 +21,23 @@ Opticks Operations
 EOU
 }
 
+
+
+opop-env(){
+    elocal-
+    optix-
+    optix-export
+    OPTICKS-
+}
+
 opop-sdir(){ echo $(env-home)/opticksop ; }
-opop-idir(){ echo $(local-base)/env/opticksop ; }
-opop-bdir(){ echo $(opop-idir).build ; }
+#opop-idir(){ echo $(local-base)/env/opticksop ; }
+#opop-bdir(){ echo $(opop-idir).build ; }
+
+opop-idir(){ echo $(OPTICKS-idir); }
+opop-bdir(){ echo $(OPTICKS-bdir OpticksOp); }
+
+
 opop-bin(){  echo $(opop-idir)/bin/${1:-OpIndexerTest} ; }
 
 opop-scd(){  cd $(opop-sdir); }
@@ -36,12 +50,6 @@ opop-name(){ echo OpticksOp ; }
 opop-wipe(){
    local bdir=$(opop-bdir)
    rm -rf $bdir
-}
-
-opop-env(){
-    elocal-
-    optix-
-    optix-export
 }
 
 opop-options(){

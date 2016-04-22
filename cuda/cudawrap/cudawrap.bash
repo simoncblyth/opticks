@@ -2,10 +2,6 @@
 cudawrap-src(){      echo cuda/cudawrap/cudawrap.bash ; }
 cudawrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudawrap-src)} ; }
 cudawrap-vi(){       vi $(cudawrap-source) ; }
-cudawrap-env(){      
-  elocal-  
-  cuda-
-}
 cudawrap-usage(){ cat << EOU
 
 CUDAWrap
@@ -327,9 +323,23 @@ was loaded from cache as opposed to being curand_init::
 EOU
 }
 
-cudawrap-name(){ echo CUDAEnv ; }
-cudawrap-bdir(){ echo $(local-base)/env/cuda/CUDAWrap.build ; }
-cudawrap-idir(){ echo $(local-base)/env/cuda/CUDAWrap ; }
+
+cudawrap-env(){      
+  elocal-  
+  cuda-
+  OPTICKS-
+}
+
+cudawrap-name(){ echo CUDAWrap ; }
+
+#cudawrap-bdir(){ echo $(local-base)/env/cuda/CUDAWrap.build ; }
+#cudawrap-idir(){ echo $(local-base)/env/cuda/CUDAWrap ; }
+
+cudawrap-idir(){ echo $(OPTICKS-idir); }
+cudawrap-bdir(){ echo $(OPTICKS-bdir CUDAWrap); }
+
+
+
 cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
 cudawrap-ibin(){ echo $(cudawrap-idir)/bin/cuRANDWrapperTest ; }
 

@@ -214,9 +214,21 @@ EOU
 }
 
 
+optixrap-env(){  
+   elocal- 
+   optix-
+   optix-export 
+   OPTICKS-
+}
+
+
 optixrap-sdir(){ echo $(env-home)/graphics/optixrap ; }
-optixrap-idir(){ echo $(local-base)/env/graphics/OptiXRap ; }
-optixrap-bdir(){ echo $(optixrap-idir).build ; }
+#optixrap-idir(){ echo $(local-base)/env/graphics/OptiXRap ; }
+#optixrap-bdir(){ echo $(optixrap-idir).build ; }
+
+optixrap-idir(){ echo $(OPTICKS-idir); }
+optixrap-bdir(){ echo $(OPTICKS-bdir OptiXRap); }
+
 
 optixrap-scd(){  cd $(optixrap-sdir); }
 optixrap-cd(){   cd $(optixrap-sdir); }
@@ -228,12 +240,6 @@ optixrap-name(){ echo OptiXRap ; }
 optixrap-wipe(){
    local bdir=$(optixrap-bdir)
    rm -rf $bdir
-}
-
-optixrap-env(){  
-   elocal- 
-   optix-
-   optix-export 
 }
 
 optixrap-cmake(){

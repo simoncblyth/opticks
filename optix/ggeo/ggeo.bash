@@ -2,7 +2,6 @@
 ggeo-src(){      echo optix/ggeo/ggeo.bash ; }
 ggeo-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeo-src)} ; }
 ggeo-vi(){       vi $(ggeo-source) ; }
-ggeo-env(){      elocal- ; }
 ggeo-usage(){ cat << EOU
 
 GGEO : Intermediary Geometry Model
@@ -1011,8 +1010,14 @@ For the major component GdDopedLS.Acrylic the sign coming out
 EOU
 }
 
-ggeo-idir(){ echo $(local-base)/env/optix/ggeo; }  # prefix
-ggeo-bdir(){ echo $(local-base)/env/optix/ggeo.build ; }
+ggeo-env(){      elocal- ; OPTICKS- ; }
+
+#ggeo-idir(){ echo $(local-base)/env/optix/ggeo; }  # prefix
+#ggeo-bdir(){ echo $(local-base)/env/optix/ggeo.build ; }
+
+ggeo-idir(){ echo $(OPTICKS-idir); } 
+ggeo-bdir(){ echo $(OPTICKS-bdir GGeo); }  
+
 ggeo-sdir(){ echo $(env-home)/optix/ggeo ; }
 ggeo-tdir(){ echo $(env-home)/optix/ggeo/tests ; }
 
@@ -1022,13 +1027,10 @@ ggeo-scd(){  cd $(ggeo-sdir); }
 
 ggeo-cd(){  cd $(ggeo-sdir); }
 
-ggeo-mate(){ mate $(ggeo-dir) ; }
-
 ggeo-wipe(){
     local bdir=$(ggeo-bdir)
     rm -rf $bdir
 }
-
 
 ggeo-cmake(){
    local iwd=$PWD

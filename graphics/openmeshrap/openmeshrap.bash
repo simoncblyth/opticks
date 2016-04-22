@@ -2,7 +2,6 @@
 openmeshrap-src(){      echo graphics/openmeshrap/openmeshrap.bash ; }
 openmeshrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmeshrap-src)} ; }
 openmeshrap-vi(){       vi $(openmeshrap-source) ; }
-openmeshrap-env(){      elocal- ; }
 openmeshrap-usage(){ cat << EOU
 
 OpenMeshRap
@@ -139,9 +138,14 @@ mesh.
 
 EOU
 }
+openmeshrap-env(){      elocal- ; OPTICKS- ;  }
 openmeshrap-dir(){  echo $(env-home)/graphics/openmeshrap ; }
-openmeshrap-idir(){ echo $(local-base)/env/graphics/openmeshrap ; }
-openmeshrap-bdir(){ echo $(openmeshrap-idir).build ; }
+
+#openmeshrap-idir(){ echo $(local-base)/env/graphics/openmeshrap ; }
+#openmeshrap-bdir(){ echo $(openmeshrap-idir).build ; }
+
+openmeshrap-idir(){ echo $(OPTICKS-idir) ; }
+openmeshrap-bdir(){ echo $(OPTICKS-bdir OpenMeshRap) ; }
 
 openmeshrap-cd(){   cd $(openmeshrap-dir); }
 openmeshrap-icd(){  cd $(openmeshrap-idir); }

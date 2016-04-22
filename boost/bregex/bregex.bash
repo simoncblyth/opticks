@@ -2,7 +2,6 @@
 bregex-src(){      echo boost/bregex/bregex.bash ; }
 bregex-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bregex-src)} ; }
 bregex-vi(){       vi $(bregex-source) ; }
-bregex-env(){      elocal- ; }
 bregex-usage(){ cat << EOU
 
 *bregex-test*
@@ -59,12 +58,15 @@ EOU
 bregex-dir(){ echo $(env-home)/boost/bregex ; }
 bregex-cd(){  cd $(bregex-dir); }
 
+bregex-env(){      elocal- ; OPTICKS- ;  }
 
-bregex-name(){ echo bregex ; }
-
+bregex-name(){ echo Bregex ; }
 bregex-sdir(){ echo $(env-home)/boost/bregex ; }
-bregex-idir(){ echo $(local-base)/env/boost/bregex ; }
-bregex-bdir(){ echo $(bregex-idir).build ; }
+
+#bregex-idir(){ echo $(local-base)/env/boost/bregex ; }
+#bregex-bdir(){ echo $(bregex-idir).build ; }
+bregex-idir(){ echo $(OPTICKS-idir); }
+bregex-bdir(){ echo $(OPTICKS-bdir Bregex); }
 
 bregex-scd(){  cd $(bregex-sdir); }
 bregex-cd(){  cd $(bregex-sdir); }

@@ -2,7 +2,6 @@
 ppm-src(){      echo graphics/ppm/ppm.bash ; }
 ppm-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ppm-src)} ; }
 ppm-vi(){       vi $(ppm-source) ; }
-ppm-env(){      elocal- ; }
 ppm-usage(){ cat << EOU
 
 PPM Image Loading
@@ -31,8 +30,15 @@ EOU
 
 
 ppm-sdir(){ echo $(env-home)/graphics/ppm ; }
-ppm-idir(){ echo $(local-base)/env/graphics/ppm ; }
-ppm-bdir(){ echo $(ppm-idir).build ; }
+
+ppm-env(){      elocal- ; OPTICKS- ; }
+
+#ppm-idir(){ echo $(local-base)/env/graphics/ppm ; }
+#ppm-bdir(){ echo $(ppm-idir).build ; }
+
+ppm-idir(){ echo $(OPTICKS-idir) ; }
+ppm-bdir(){ echo $(OPTICKS-bdir PPM) ; }
+
 
 ppm-scd(){  cd $(ppm-sdir); }
 ppm-cd(){   cd $(ppm-sdir); }

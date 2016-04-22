@@ -2,7 +2,6 @@
 bcfg-src(){      echo boost/bpo/bcfg/bcfg.bash ; }
 bcfg-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bcfg-src)} ; }
 bcfg-vi(){       vi $(bcfg-source) ; }
-bcfg-env(){      elocal- ; }
 bcfg-usage(){ cat << EOU
 
 Boost Bind Based Configuration
@@ -158,8 +157,14 @@ EOU
 
 
 bcfg-sdir(){ echo $(env-home)/boost/bpo/bcfg ; }
-bcfg-idir(){ echo $(local-base)/env/boost/bpo/bcfg ; }
-bcfg-bdir(){ echo $(bcfg-idir).build ; }
+bcfg-env(){      elocal- ; OPTICKS- ;  }
+
+bcfg-idir(){ echo $(OPTICKS-idir) ; }
+bcfg-bdir(){ echo $(OPTICKS-bdir Cfg) ; }
+
+#bcfg-idir(){ echo $(local-base)/env/boost/bpo/bcfg ; }
+#bcfg-bdir(){ echo $(bcfg-idir).build ; }
+
 
 bcfg-scd(){  cd $(bcfg-sdir); }
 bcfg-cd(){  cd $(bcfg-sdir); }

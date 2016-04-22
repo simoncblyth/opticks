@@ -2,7 +2,6 @@
 thrustrap-src(){      echo numerics/thrustrap/thrustrap.bash ; }
 thrustrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(thrustrap-src)} ; }
 thrustrap-vi(){       vi $(thrustrap-source) ; }
-thrustrap-env(){      elocal- ; }
 thrustrap-usage(){ cat << EOU
 
 ThrustRap
@@ -274,9 +273,15 @@ and unregistration calls are expensive and should be avoided if possible.
 EOU
 }
 
+thrustrap-env(){      elocal- ; OPTICKS- ; }
 thrustrap-sdir(){ echo $(env-home)/numerics/thrustrap ; }
-thrustrap-idir(){ echo $(local-base)/env/numerics/ThrustRap ; }
-thrustrap-bdir(){ echo $(thrustrap-idir).build ; }
+
+#thrustrap-idir(){ echo $(local-base)/env/numerics/ThrustRap ; }
+#thrustrap-bdir(){ echo $(thrustrap-idir).build ; }
+
+thrustrap-idir(){ echo $(OPTICKS-idir) ; }
+thrustrap-bdir(){ echo $(OPTICKS-bdir ThrustRap) ; }
+
 
 thrustrap-scd(){  cd $(thrustrap-sdir); }
 thrustrap-cd(){   cd $(thrustrap-sdir); }

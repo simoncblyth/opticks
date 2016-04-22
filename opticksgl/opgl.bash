@@ -1,7 +1,6 @@
 opgl-src(){      echo opticksgl/opgl.bash ; }
 opgl-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opgl-src)} ; }
 opgl-vi(){       vi $(opgl-source) ; }
-opgl-env(){      elocal- ; }
 opgl-usage(){ cat << EOU
 
 OptiXGL
@@ -14,10 +13,15 @@ EOU
 }
 
 
+opgl-env(){      elocal- ; OPTICKS- ; }
 
 opgl-sdir(){ echo $(env-home)/opticksgl ; }
-opgl-idir(){ echo $(local-base)/env/opticksgl ; }
-opgl-bdir(){ echo $(opgl-idir).build ; }
+#opgl-idir(){ echo $(local-base)/env/opticksgl ; }
+#opgl-bdir(){ echo $(opgl-idir).build ; }
+
+opgl-idir(){ echo $(OPTICKS-idir) ; }
+opgl-bdir(){ echo $(OPTICKS-bdir OpticksGL) ; }
+
 
 opgl-scd(){  cd $(opgl-sdir); }
 opgl-cd(){   cd $(opgl-sdir); }

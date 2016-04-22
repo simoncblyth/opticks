@@ -2,7 +2,6 @@
 assimpwrap-src(){      echo graphics/assimpwrap/assimpwrap.bash ; }
 assimpwrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimpwrap-src)} ; }
 assimpwrap-vi(){       vi $(assimpwrap-source) ; }
-assimpwrap-env(){      elocal- ; }
 assimpwrap-usage(){ cat << EOU
 
 AssimpWrap
@@ -176,9 +175,15 @@ Border Surfaces Looking Reasonable with expected AD symmetry
 
 EOU
 }
-assimpwrap-idir(){ echo $(local-base)/env/graphics/assimpwrap ; }  # prefix
-assimpwrap-bdir(){ echo $(local-base)/env/graphics/assimpwrap.build ; }
+assimpwrap-env(){      elocal- ; OPTICKS- ;  }
+
+#assimpwrap-idir(){ echo $(local-base)/env/graphics/assimpwrap ; }  # prefix
+#assimpwrap-bdir(){ echo $(local-base)/env/graphics/assimpwrap.build ; }
+
 assimpwrap-sdir(){ echo $(env-home)/graphics/assimpwrap ; }
+assimpwrap-idir(){ echo $(OPTICKS-idir); }
+assimpwrap-bdir(){ echo $(OPTICKS-bdir AssimpWrap); }
+
 
 assimpwrap-icd(){  cd $(assimpwrap-idir); }
 assimpwrap-bcd(){  cd $(assimpwrap-bdir); }
