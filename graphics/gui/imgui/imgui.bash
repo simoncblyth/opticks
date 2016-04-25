@@ -2,7 +2,6 @@
 imgui-src(){      echo graphics/gui/imgui/imgui.bash ; }
 imgui-source(){   echo ${BASH_SOURCE:-$(env-home)/$(imgui-src)} ; }
 imgui-vi(){       vi $(imgui-source) ; }
-imgui-env(){      elocal- ; }
 imgui-usage(){ cat << EOU
 
 ImGUI (MIT) : Immediate Mode GUI
@@ -15,7 +14,6 @@ ImGUI (MIT) : Immediate Mode GUI
 These *imgui-* functions add cmake building to ImGui
 that allows usage of env/cmake/Modules/FindImGui.cmake 
 This is tested by imguitest-
-
 
 
 Issues
@@ -66,6 +64,58 @@ Thoughts
   would like everything to be doable from console and over UDP messaging 
 
 
+SEGV
+-----
+
+::
+
+    (lldb) f 4
+    frame #4: 0x0000000101a72253 libGGeoViewLib.dylib`App::renderGUI(this=0x00007fff5fbfed18) + 35 at App.cc:958
+       955  void App::renderGUI()
+       956  {
+       957  #ifdef GUI_
+    -> 958      m_gui->newframe();
+       959      bool* show_gui_window = m_interactor->getGUIModeAddress();
+       960      if(*show_gui_window)
+       961      {
+    (lldb) p m_gui
+    (GUI *) $0 = 0x000000013e0f2bb0
+    (lldb) f 3
+    frame #3: 0x0000000101c6b4d1 libOGLRap.dylib`GUI::newframe(this=0x000000013e0f2bb0) + 17 at GUI.cc:76
+       73   
+       74   void GUI::newframe()
+       75   {
+    -> 76       ImGui_ImplGlfwGL3_NewFrame();
+       77   }
+       78   
+       79   void GUI::choose( std::vector<std::pair<int, std::string> >* choices, bool* selection )
+    (lldb) f 2
+    frame #2: 0x00000001017c4c20 libImGui.dylib`ImGui_ImplGlfwGL3_NewFrame() + 32 at imgui_impl_glfw_gl3.cpp:325
+       322  void ImGui_ImplGlfwGL3_NewFrame()
+       323  {
+       324      if (!g_FontTexture)
+    -> 325          ImGui_ImplGlfwGL3_CreateDeviceObjects();
+       326  
+       327      ImGuiIO& io = ImGui::GetIO();
+       328  
+    (lldb) f 1
+    frame #1: 0x00000001017c3f7d libImGui.dylib`ImGui_ImplGlfwGL3_CreateDeviceObjects() + 525 at imgui_impl_glfw_gl3.cpp:215
+       212          "   Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
+       213          "}\n";
+       214  
+    -> 215      g_ShaderHandle = glCreateProgram();
+       216      g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
+       217      g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
+       218      glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
+    (lldb) f 0
+    frame #0: 0x0000000000000000
+    error: memory read failed for 0x0
+    (lldb) 
+
+
+
+
+
 FUNCTIONS
 -----------
 
@@ -91,6 +141,20 @@ Build opengl3 example
     ---
     >   CXXFLAGS = -I../../ -I../libs/gl3w -I/usr/local/Cellar/glew/1.10.0/include -I/usr/local/include -I$(GLFW_PREFIX)/include
     simon:opengl3_example blyth$ 
+
+
+
+April 2016 : imgui fix
+-------------------------
+
+::
+
+    simon:imgui.build blyth$ grep gl3w.h /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
+    #include <GL/gl3w.h>
+    simon:imgui.build blyth$ perl -pi -e 's,gl3w.h,glew.h,' /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
+    simon:imgui.build blyth$ grep gl3w.h /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
+
+
 
 
 ggeoview integration example
@@ -151,12 +215,28 @@ GUI photon selector, so can display only certain boundaries
 EOU
 }
 
+imgui-env(){      elocal- ; opticks- ;  }
 
-imgui-edir(){ echo $(env-home)/graphics/gui/imgui ; }
-imgui-idir(){ echo $(local-base)/env/graphics/gui/imgui.install ; }
-imgui-bdir(){ echo $(local-base)/env/graphics/gui/imgui.build   ; }
-imgui-sdir(){ echo $(local-base)/env/graphics/gui/imgui ; }
-imgui-dir(){  echo $(local-base)/env/graphics/gui/imgui ; }
+imgui-edir(){ echo $(opticks-home)/graphics/gui/imgui ; }
+
+imgui-oldbase(){ echo $(local-base)/env/graphics/gui ; }
+
+imgui-base(){ echo $(opticks-prefix)/externals/imgui ; }
+#imgui-base(){ echo $(imgui-oldbase) ; }
+
+imgui-diff(){
+  # diff --brief  $(imgui-oldbase) $(imgui-base)/imgui 
+
+   diff /usr/local/env/graphics/gui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp \
+       /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp 
+
+}
+
+
+imgui-idir(){ echo $(imgui-base)/imgui.install ; }
+imgui-bdir(){ echo $(imgui-base)/imgui.build   ; }
+imgui-sdir(){ echo $(imgui-base)/imgui ; }
+imgui-dir(){  echo $(imgui-base)/imgui ; }
 
 imgui-ecd(){  cd $(imgui-edir); }
 imgui-icd(){  cd $(imgui-idir); }
@@ -168,11 +248,24 @@ imgui-cd(){  cd $(imgui-dir)/$1; }
 imgui-get(){
    local dir=$(dirname $(imgui-dir)) &&  mkdir -p $dir && cd $dir
    [ ! -d "imgui" ] && git clone https://github.com/ocornut/imgui.git 
+
+   imgui-fix 
+}
+
+imgui-fix(){
+   local msg="=== $FUNCNAME :"
+   local name=imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
+
+   [ ! -f "$name" ] && echo $msg from pwd $(pwd) see no $name && return 
+   
+   perl -pi.orig -e 's,gl3w.h,glew.h,' $name
+
+   diff $name.orig $name
 }
 
 
-imgui-demo(){ vi $(imgui-dir)/imgui.cpp +9757 ; }
 
+imgui-demo(){ vi $(imgui-dir)/imgui.cpp +9757 ; }
 
 imgui-wipe(){
    local bdir=$(imgui-bdir)
@@ -202,6 +295,8 @@ imgui-install(){
 }
 
 imgui--(){
+   imgui-get
+
    imgui-wipe
    imgui-cmake-ize
    imgui-cmake

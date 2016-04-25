@@ -1,6 +1,6 @@
 # http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
 
-set(GLEW_PREFIX "$ENV{LOCAL_BASE}/env/graphics/glew/1.12.0")
+set(GLEW_PREFIX "${OPTICKS_PREFIX}/externals/glew/glew")
 
 LINK_DIRECTORIES(${GLEW_PREFIX}/lib)
 

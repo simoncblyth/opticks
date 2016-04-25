@@ -1,6 +1,6 @@
 # http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
 
-set(GLFW_PREFIX "$ENV{LOCAL_BASE}/env/graphics/glfw/3.1.1")
+set(GLFW_PREFIX "${OPTICKS_PREFIX}/externals/glfw/glfw")
 
 find_library( GLFW_LIBRARY 
               NAMES glfw3 glfw

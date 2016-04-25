@@ -15,7 +15,7 @@ find_package(CUDA 2.3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
 
-find_package(Cfg REQUIRED)
+find_package(BCfg REQUIRED)
 find_package(OpticksCore REQUIRED)
 find_package(GGeo  REQUIRED)
 find_package(NPY REQUIRED)
@@ -32,7 +32,7 @@ include_directories(
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
-   ${Cfg_INCLUDE_DIRS}  
+   ${BCfg_INCLUDE_DIRS}  
    ${OpticksCore_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
    ${CUDA_INCLUDE_DIRS}
@@ -46,7 +46,7 @@ add_definitions(
    ${Boost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
-   ${Cfg_DEFINITIONS} 
+   ${BCfg_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS}
    ${GGeo_DEFINITIONS} 
    ${CUDA_DEFINITIONS} 
@@ -67,7 +67,7 @@ set(LIBRARIES
    ${Boost_LIBRARIES}
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
-   ${Cfg_LIBRARIES}
+   ${BCfg_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${CUDA_LIBRARIES}

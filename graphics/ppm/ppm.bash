@@ -24,20 +24,17 @@ Convert PPM to PNG
     delta:ppm blyth$ cp /System/Library/Frameworks/Tk.framework/Versions/8.5/Resources/Scripts/demos/images/teapot.ppm /tmp/teapot.ppm
 
 
-
 EOU
 }
 
 
 ppm-sdir(){ echo $(env-home)/graphics/ppm ; }
 
-ppm-env(){      elocal- ; OPTICKS- ; }
+ppm-env(){      elocal- ; opticks- ; }
 
-#ppm-idir(){ echo $(local-base)/env/graphics/ppm ; }
-#ppm-bdir(){ echo $(ppm-idir).build ; }
 
-ppm-idir(){ echo $(OPTICKS-idir) ; }
-ppm-bdir(){ echo $(OPTICKS-bdir PPM) ; }
+ppm-idir(){ echo $(opticks-idir) ; }
+ppm-bdir(){ echo $(opticks-bdir PPM) ; }
 
 
 ppm-scd(){  cd $(ppm-sdir); }

@@ -16,7 +16,6 @@
 
 message("${name}")
 
-#set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/env")
 set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
 
 set(OPTICKS_EXTERNAL_PREFIX "$ENV{LOCAL_BASE}/env")
@@ -25,27 +24,33 @@ set(BUILD_SHARED_LIBS ON)
 
 OPTION(WITH_NPYSERVER  "using the numpyserver." OFF)
 OPTION(WITH_OPTIX      "using OPTIX." OFF)
+OPTION(GLFW_VERSION    "GLFW Version" 3.1.1)
 
 set(OPTICKS_HOME   "$ENV{ENV_HOME}")
 
-# TODO: suspect the _SOURCE_DIR might be auto set ? investigate
+# The _SOURCE_DIR are auto set for the superbuild
+# but presumably not for individual buils. 
+# Can see in cache::
 #
-set(AssimpRap_SOURCE_DIR   "${OPTICKS_HOME}/graphics/assimprap")
-set(Bregex_SOURCE_DIR      "${OPTICKS_HOME}/boost/bregex")
-set(CUDARap_SOURCE_DIR     "${OPTICKS_HOME}/cuda/cudarap")
-set(Cfg_SOURCE_DIR         "${OPTICKS_HOME}/boost/bpo/bcfg")
-set(GGeo_SOURCE_DIR        "${OPTICKS_HOME}/optix/ggeo")
-set(NPY_SOURCE_DIR         "${OPTICKS_HOME}/numerics/npy")
-set(NumpyServer_SOURCE_DIR "${OPTICKS_HOME}/boost/basio/numpyserver")
-set(OGLRap_SOURCE_DIR      "${OPTICKS_HOME}/graphics/oglrap")
-set(OpenMeshRap_SOURCE_DIR "${OPTICKS_HOME}/graphics/openmeshrap")
-set(OptiXRap_SOURCE_DIR    "${OPTICKS_HOME}/graphics/optixrap")
-set(OptiXThrust_SOURCE_DIR "${OPTICKS_HOME}/optix/optixthrust")
-set(Opticks_SOURCE_DIR     "${OPTICKS_HOME}/opticks")
-set(OpticksGL_SOURCE_DIR   "${OPTICKS_HOME}/opticksgl")
-set(OpticksOp_SOURCE_DIR   "${OPTICKS_HOME}/opticksop")
-set(PPM_SOURCE_DIR         "${OPTICKS_HOME}/graphics/ppm")
-set(ThrustRap_SOURCE_DIR   "${OPTICKS_HOME}/numerics/thrustrap")
+#     simon:build blyth$ grep _SOURCE_DIR CMakeCache.txt
+#
+#
+#set(AssimpRap_SOURCE_DIR   "${OPTICKS_HOME}/graphics/assimprap")
+#set(BRegex_SOURCE_DIR      "${OPTICKS_HOME}/boost/bregex")
+#set(CUDARap_SOURCE_DIR     "${OPTICKS_HOME}/cuda/cudarap")
+#set(BCfg_SOURCE_DIR        "${OPTICKS_HOME}/boost/bpo/bcfg")
+#set(GGeo_SOURCE_DIR        "${OPTICKS_HOME}/optix/ggeo")
+#set(NPY_SOURCE_DIR         "${OPTICKS_HOME}/numerics/npy")
+#set(NumpyServer_SOURCE_DIR "${OPTICKS_HOME}/boost/basio/numpyserver")
+#set(OGLRap_SOURCE_DIR      "${OPTICKS_HOME}/graphics/oglrap")
+#set(OpenMeshRap_SOURCE_DIR "${OPTICKS_HOME}/graphics/openmeshrap")
+#set(OptiXRap_SOURCE_DIR    "${OPTICKS_HOME}/graphics/optixrap")
+#set(OptiXThrust_SOURCE_DIR "${OPTICKS_HOME}/optix/optixthrust")
+#set(Opticks_SOURCE_DIR     "${OPTICKS_HOME}/opticks")
+#set(OpticksGL_SOURCE_DIR   "${OPTICKS_HOME}/opticksgl")
+#set(OpticksOp_SOURCE_DIR   "${OPTICKS_HOME}/opticksop")
+#set(PPM_SOURCE_DIR         "${OPTICKS_HOME}/graphics/ppm")
+#set(ThrustRap_SOURCE_DIR   "${OPTICKS_HOME}/numerics/thrustrap")
 
 
 # /usr/local/env/chroma_env/src/root-v5.34.14/cmake/modules/RootBuildOptions.cmake

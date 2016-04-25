@@ -13,13 +13,13 @@ find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(Boost REQUIRED) 
-find_package(Cfg REQUIRED) 
+find_package(BCfg REQUIRED) 
 find_package(OpticksCore REQUIRED)
 
 find_package(GGeo REQUIRED)  
 find_package(PPM REQUIRED) 
 find_package(NPY REQUIRED) 
-find_package(Bregex REQUIRED)
+find_package(BRegex REQUIRED)
 
 find_package(ImGui REQUIRED)
 
@@ -33,11 +33,11 @@ set(INCLUDE_DIRS
    ${GLM_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
    ${Boost_INCLUDE_DIRS} 
-   ${Cfg_INCLUDE_DIRS}
+   ${BCfg_INCLUDE_DIRS}
    ${OpticksCore_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
-   ${Bregex_INCLUDE_DIRS} 
+   ${BRegex_INCLUDE_DIRS} 
    ${ImGui_INCLUDE_DIRS}
 ) 
 
@@ -55,7 +55,7 @@ set(DEFINITIONS
    ${GGeo_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}
    ${Boost_DEFINITIONS}
-   ${Bregex_DEFINITIONS} 
+   ${BRegex_DEFINITIONS} 
    ${ImGui_DEFINITIONS}
    -DGUI_
 )
@@ -66,8 +66,8 @@ set(LIBRARIES
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${Boost_LIBRARIES}
-   ${Bregex_LIBRARIES}
-   ${Cfg_LIBRARIES}
+   ${BRegex_LIBRARIES}
+   ${BCfg_LIBRARIES}
    ${NPY_LIBRARIES}
    
    ${ImGui_LIBRARIES}
@@ -76,8 +76,8 @@ set(LIBRARIES
 #message( "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ")
 #message( "OpticksCore_LIBRARIES ${OpticksCore_LIBRARIES} ")
 #message( "GGeo_LIBRARIES ${GGeo_LIBRARIES} ")
-#message( "Bregex_LIBRARIES ${Bregex_LIBRARIES} ")
-#message( "Cfg_LIBRARIES ${Cfg_LIBRARIES} ")
+#message( "BRegex_LIBRARIES ${BRegex_LIBRARIES} ")
+#message( "BCfg_LIBRARIES ${BCfg_LIBRARIES} ")
 #message( "NPY_LIBRARIES ${NPY_LIBRARIES} ")
 
 include_directories(${INCLUDE_DIRS})

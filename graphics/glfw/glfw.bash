@@ -2,7 +2,6 @@
 glfw-src(){      echo graphics/glfw/glfw.bash ; }
 glfw-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glfw-src)} ; }
 glfw-vi(){       vi $(glfw-source) ; }
-glfw-env(){      elocal- ; }
 glfw-usage(){ cat << EOU
 
 GLFW
@@ -162,10 +161,16 @@ keeps the callbacks out of sight.
 
 EOU
 }
-glfw-sdir(){ echo $(env-home)/graphics/glfw ; }
-glfw-dir(){  echo $(local-base)/env/graphics/glfw/$(glfw-name) ; }
+
+
+glfw-env(){      opticks- ;  }
+
+glfw-sdir(){ echo $(opticks-home)/graphics/glfw ; }
+glfw-dir(){  echo $(opticks-prefix)/externals/glfw/$(glfw-name) ; }
 glfw-bdir(){ echo $(glfw-dir).build ; }
-glfw-idir(){ echo $(local-base)/env/graphics/glfw/$(glfw-version) ; }
+
+#glfw-idir(){ echo $(local-base)/env/graphics/glfw/$(glfw-version) ; }
+glfw-idir(){ echo $(opticks-prefix)/externals/glfw/glfw ; }
 
 glfw-scd(){ cd $(glfw-sdir); }
 glfw-cd(){  cd $(glfw-dir); }
@@ -195,6 +200,9 @@ glfw-version(){ echo 3.1.1 ; }
 glfw-name(){ echo glfw-$(glfw-version) ; }
 glfw-url(){  echo http://downloads.sourceforge.net/project/glfw/glfw/$(glfw-version)/$(glfw-name).zip ; }
 
+glfw-edit(){  vi $(opticks-home)/cmake/Modules/FindGLFW.cmake ; }
+
+
 glfw-get(){
    local dir=$(dirname $(glfw-dir)) &&  mkdir -p $dir && cd $dir
 
@@ -204,6 +212,8 @@ glfw-get(){
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $zip 
 
+   #ln -sfnv $nam glfw
+   # try to avoid having to pass the version around via symbolic link
 }
 
 
@@ -217,10 +227,13 @@ glfw-cmake(){
   local iwd=$PWD
 
   local bdir=$(glfw-bdir)
-  mkdir -p $bdir
-
-  glfw-bcd
-  cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-idir) $(glfw-dir)
+  if [ -d "$bdir" ]; then
+      glfw-bcd
+  else
+      mkdir -p $bdir
+      glfw-bcd
+      cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-idir) $(glfw-dir)
+  fi 
 
   cd $iwd
 }
@@ -240,6 +253,7 @@ glfw-install(){
 }
 
 glfw--(){
+   glfw-get
    glfw-cmake
    glfw-make
    glfw-install

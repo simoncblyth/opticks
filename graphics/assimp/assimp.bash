@@ -2,7 +2,6 @@
 assimp-src(){      echo graphics/assimp/assimp.bash ; }
 assimp-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimp-src)} ; }
 assimp-vi(){       vi $(assimp-source) ; }
-assimp-env(){      elocal- ; }
 assimp-usage(){ cat << EOU
 
 Open Asset Import Library
@@ -33,10 +32,6 @@ Mesh Processing Flags
     aiProcess_Triangulate            : triangulate any quads
 
 
-
-
-
-
 Development Cycle Adding Extra Material/Surface Handling
 ---------------------------------------------------------
 
@@ -45,8 +40,8 @@ Development Cycle Adding Extra Material/Surface Handling
     assimp-cd
     assimp-build
 
-    assimpwrap-
-    assimpwrap-test extra
+    assimprap-
+    assimprap-test extra
 
 
 How to add extra material and surface properties ?
@@ -293,14 +288,18 @@ install test
 EOU
 }
 
+assimp-env(){      elocal- ; opticks- ;  }
 assimp-fork-name(){ echo assimp-fork ; }
 assimp-name(){ echo $(assimp-fork-name) ; }
 assimp-release-name(){ echo assimp-3.1.1 ; }
 assimp-url(){ echo http://downloads.sourceforge.net/project/assimp/assimp-3.1/assimp-3.1.1_no_test_models.zip ; }
 
 assimp-fold(){ echo $(dirname $(assimp-dir)); }
-assimp-dir(){ echo $(local-base)/env/graphics/assimp/$(assimp-name) ; }
-assimp-prefix(){ echo $(local-base)/env/graphics ; }
+
+assimp-base(){ echo $(opticks-prefix)/externals/assimp ; }
+assimp-dir(){ echo $(assimp-base)/$(assimp-name) ; }
+assimp-prefix(){ echo $(assimp-base)/assimp ; }
+
 assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
 assimp-bdir(){ echo $(assimp-dir)_build ; }
 assimp-cd(){  cd $(assimp-dir); }

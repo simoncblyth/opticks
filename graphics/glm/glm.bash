@@ -1,8 +1,6 @@
-# === func-gen- : graphics/glm/glm fgp graphics/glm/glm.bash fgn glm fgh graphics/glm
 glm-src(){      echo graphics/glm/glm.bash ; }
-glm-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glm-src)} ; }
+glm-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glm-src)} ; }
 glm-vi(){       vi $(glm-source) ; }
-glm-env(){      elocal- ; }
 glm-usage(){ cat << EOU
 
 GLM : OpenGL Mathematics
@@ -105,14 +103,17 @@ might bring things closer.
 
 EOU
 }
-glm-dir(){  echo $(local-base)/env/graphics/glm/$(glm-name) ; }
+glm-env(){     opticks- ;  }
+glm-dir(){  echo $(opticks-prefix)/externals/glm/$(glm-name) ; }
 glm-idir(){  echo $(glm-dir)/glm ; }
-glm-sdir(){  echo $(env-home)/graphics/glm ; }
+glm-sdir(){  echo $(opticks-home)/graphics/glm ; }
 glm-tdir(){ echo $(glm-dir)/_test ; }
 glm-cd(){   cd $(glm-dir); }
 glm-tcd(){  cd $(glm-tdir); }
 glm-icd(){  cd $(glm-idir); }
 glm-scd(){  cd $(glm-sdir) ; }
+
+glm-edit(){  vi $(opticks-home)/cmake/Modules/FindGLM.cmake ; }
 
 glm-version(){ echo 0.9.6.3 ; }
 glm-name(){    echo glm-$(glm-version) ; }
@@ -126,7 +127,7 @@ glm-get(){
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $zip
    ln -sfnv $nam $(glm-name) 
-   echo WARNING : symbolic link workaround for non-standard unziping to unversioned glm directory 
+   echo symbolic link to take note of the version
 }
 
 glm-doc(){ open file://$(glm-dir)/doc/api/modules.html ; }
@@ -158,6 +159,10 @@ glm-test-make(){
 
 glm--()
 {
+   glm-get
+}
+
+glm-test(){
    glm-test-cmake
    glm-test-make
    #glm-test-make test

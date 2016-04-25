@@ -2,7 +2,6 @@
 glew-src(){      echo graphics/glew/glew.bash ; }
 glew-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glew-src)} ; }
 glew-vi(){       vi $(glew-source) ; }
-glew-env(){      elocal- ; }
 glew-usage(){ cat << EOU
 
 GLEW : The OpenGL Extension Wrangler Library
@@ -39,12 +38,16 @@ glew-cmake fails
 
 EOU
 }
-glew-dir(){  echo $(local-base)/env/graphics/glew/$(glew-name) ; }
-glew-idir(){ echo $(local-base)/env/graphics/glew/$(glew-version) ; }
+glew-env(){      elocal- ; opticks- ;  }
+
+glew-fold(){ echo $(opticks-prefix)/externals/glew ; }
+glew-dir(){  echo $(glew-fold)/$(glew-name) ; }
+glew-idir(){ echo $(glew-fold)/$(glew-version) ; }
 glew-sdir(){ echo $(glew-dir) ; }
 glew-bdir(){ echo $(glew-dir).build ; }
-glew-edir(){ echo $(env-home)/graphics/glew ; }
+glew-edir(){ echo $(opticks-home)/graphics/glew ; }
 
+glew-cd(){   cd $(glew-sdir); }
 glew-scd(){  cd $(glew-sdir); }
 glew-bcd(){  cd $(glew-bdir); }
 glew-icd(){  cd $(glew-idir); }
@@ -52,6 +55,7 @@ glew-ecd(){  cd $(glew-edir); }
 
 glew-version(){ echo 1.12.0 ; }
 glew-name(){ echo glew-$(glew-version) ;}
+
 glew-url(){ echo http://downloads.sourceforge.net/project/glew/glew/$(glew-version)/$(glew-name).zip ; }
 
 glew-get(){
@@ -64,6 +68,7 @@ glew-get(){
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $zip 
 
+   ln -sfnv $nam glew
 }
 
 glew-export (){ 

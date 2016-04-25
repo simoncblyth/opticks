@@ -12,8 +12,8 @@ include(EnvCompilationFlags)
 
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
-find_package(Bregex REQUIRED)
-find_package(Cfg REQUIRED)
+find_package(BRegex REQUIRED)
+find_package(BCfg REQUIRED)
 find_package(NPY REQUIRED)
 find_package(OpticksCore REQUIRED)
 
@@ -23,24 +23,24 @@ set(INCLUDE_DIRS
    ${Boost_INCLUDE_DIRS}
    ${GLM_INCLUDE_DIRS} 
 
-   ${Bregex_INCLUDE_DIRS} 
-   ${Cfg_INCLUDE_DIRS} 
+   ${BRegex_INCLUDE_DIRS} 
+   ${BCfg_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
    ${OpticksCore_INCLUDE_DIRS}
 )
 
 set(LIBRARIES
    ${Boost_LIBRARIES}
-   ${Bregex_LIBRARIES}
-   ${Cfg_LIBRARIES}
+   ${BRegex_LIBRARIES}
+   ${BCfg_LIBRARIES}
    ${NPY_LIBRARIES}
    ${OpticksCore_LIBRARIES}
 )
 
 set(DEFINITIONS
    ${Boost_DEFINITIONS} 
-   ${Bregex_DEFINITIONS} 
-   ${Cfg_DEFINITIONS} 
+   ${BRegex_DEFINITIONS} 
+   ${BCfg_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS} 
 )
 

@@ -12,8 +12,8 @@ include(EnvCompilationFlags)
 find_package(Boost REQUIRED)
 find_package(GLM REQUIRED)
 
-find_package(Bregex REQUIRED)
-find_package(Cfg REQUIRED)
+find_package(BRegex REQUIRED)
+find_package(BCfg REQUIRED)
 find_package(NPY REQUIRED)
 
 include_directories(
@@ -21,8 +21,8 @@ include_directories(
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
 
-   ${Bregex_INCLUDE_DIRS}  
-   ${Cfg_INCLUDE_DIRS}  
+   ${BRegex_INCLUDE_DIRS}  
+   ${BCfg_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
 )
 
@@ -30,8 +30,8 @@ add_definitions(
    ${Boost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
-   ${Cfg_DEFINITIONS} 
-   ${Bregex_DEFINITIONS} 
+   ${BCfg_DEFINITIONS} 
+   ${BRegex_DEFINITIONS} 
     -DVERBOSE 
 )
 
@@ -40,8 +40,8 @@ set(LIBRARIES
    ${GLM_LIBRARIES}
 
    ${NPY_LIBRARIES}
-   ${Cfg_LIBRARIES}
-   ${Bregex_LIBRARIES}
+   ${BCfg_LIBRARIES}
+   ${BRegex_LIBRARIES}
 )
 
 add_library( ${name}  SHARED
@@ -66,6 +66,10 @@ add_library( ${name}  SHARED
     Animator.cc
     Bookmarks.cc
     Light.cc
+
+
+    Demo.cc
+    DemoCfg.cc
 )
 
 SET(hdrs 

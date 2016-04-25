@@ -21,7 +21,12 @@ set(LIBRARIES
    ${GLFW_LIBRARIES}
 )
 
+message("GLEW_LIBRARIES:${GLEW_LIBRARIES}")
+message("GLFW_LIBRARIES:${GLFW_LIBRARIES}")
+
+
 if(APPLE)
+    message("APPLE")
     find_library( Cocoa_LIBRARY NAMES Cocoa )
     find_library( OpenGL_LIBRARY NAMES OpenGL )
     find_library( IOKit_LIBRARY NAMES IOKit )
@@ -37,7 +42,8 @@ if(APPLE)
                ${CoreVideo_LIBRARY} )
 endif(APPLE)
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
+    message("UNIX AND NOT APPLE")
     find_library( OpenGL_LIBRARY NAMES GL )
 
     set( LIBRARIES 
@@ -45,24 +51,31 @@ if(UNIX)
                ${GLFW_LIBRARIES} 
                ${OpenGL_LIBRARY}
                )
-   message("LINUX")
-endif(UNIX)
+endif(UNIX AND NOT APPLE)
 
-include_directories(
+
+
+set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
+
    ${ImGui_SOURCE_DIR}/examples/opengl3_example
    #${ImGui_SOURCE_DIR}/examples/libs/gl3w
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
-
 )
 
-add_definitions(
+set(DEFINITIONS
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
 )
 
 
+
+
+message("INCLUDE_DIRS:${INCLUDE_DIRS}")
+
+include_directories(${INCLUDE_DIRS})
+add_definitions(${DEFINTIONS})
 add_library(${name} SHARED 
 imgui.cpp
 examples/opengl3_example/imgui_impl_glfw_gl3.cpp

@@ -11,26 +11,26 @@ include(EnvCompilationFlags)
 
 find_package(Boost  REQUIRED)
 find_package(GLM    REQUIRED)
-find_package(Bregex REQUIRED)
+find_package(BRegex REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
-   ${Bregex_INCLUDE_DIRS} 
+   ${BRegex_INCLUDE_DIRS} 
 )
 
 add_definitions( 
    ${Boost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
-   ${Bregex_DEFINITIONS} 
+   ${BRegex_DEFINITIONS} 
 )
 
 set(LIBRARIES
    ${Boost_LIBRARIES}
    ${GLM_LIBRARIES}
-   ${Bregex_LIBRARIES}
+   ${BRegex_LIBRARIES}
    ssl 
    crypto
 )
