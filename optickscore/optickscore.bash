@@ -1,9 +1,9 @@
-# === func-gen- : opticks/opticks fgp opticks/opticks.bash fgn opticks fgh opticks
-opticks-rel(){      echo opticks ; }
-opticks-src(){      echo opticks/opticks.bash ; }
-opticks-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticks-src)} ; }
-opticks-vi(){       vi $(opticks-source) ; }
-opticks-usage(){ cat << EOU
+# === func-gen- : optickscore/optickscore fgp optickscore/optickscore.bash fgn optickscore fgh optickscore
+optickscore-rel(){      echo optickscore ; }
+optickscore-src(){      echo optickscore/optickscore.bash ; }
+optickscore-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optickscore-src)} ; }
+optickscore-vi(){       vi $(optickscore-source) ; }
+optickscore-usage(){ cat << EOU
 
 Brief History
 ==============
@@ -476,46 +476,46 @@ Related
 EOU
 }
 
-opticks-env(){      elocal- ; OPTICKS- ;  }
-opticks-sdir(){ echo $(env-home)/opticks ; }
+optickscore-env(){      elocal- ; OPTICKS- ;  }
+optickscore-sdir(){ echo $(env-home)/optickscore ; }
 
 
-opticks-idir(){ echo $(OPTICKS-idir) ; }
-opticks-bdir(){ echo $(OPTICKS-bdir)/$(opticks-rel) ; }
+optickscore-idir(){ echo $(OPTICKS-idir) ; }
+optickscore-bdir(){ echo $(OPTICKS-bdir)/$(optickscore-rel) ; }
 
-opticks-scd(){  cd $(opticks-sdir); }
-opticks-cd(){  cd $(opticks-sdir); }
+optickscore-scd(){  cd $(optickscore-sdir); }
+optickscore-cd(){  cd $(optickscore-sdir); }
 
-opticks-icd(){  cd $(opticks-idir); }
-opticks-bcd(){  cd $(opticks-bdir); }
+optickscore-icd(){  cd $(optickscore-idir); }
+optickscore-bcd(){  cd $(optickscore-bdir); }
 
-opticks-name(){ echo Opticks ; }
+optickscore-name(){ echo OpticksCore ; }
 
-opticks-bin(){ echo $(opticks-idir)/bin/${1:-OpticksResourceTest} ; }
+optickscore-bin(){ echo $(optickscore-idir)/bin/${1:-OpticksResourceTest} ; }
 
 
-opticks-wipe(){
-   local bdir=$(opticks-bdir)
+optickscore-wipe(){
+   local bdir=$(optickscore-bdir)
    rm -rf $bdir
 }
 
-opticks-make(){
+optickscore-make(){
    local iwd=$PWD
 
-   opticks-bcd
+   optickscore-bcd
    make $*
 
    cd $iwd
 }
 
-opticks-install(){
-   opticks-make install
+optickscore-install(){
+   optickscore-make install
 }
 
-opticks--()
+optickscore--()
 {
-    opticks-make clean
-    opticks-make
-    opticks-install
+    optickscore-make clean
+    optickscore-make
+    optickscore-install
 }
 

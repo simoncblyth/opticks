@@ -14,7 +14,7 @@ add_subdirectory(boost/bpo/bcfg)
 add_subdirectory(boost/bregex)    
 add_subdirectory(numerics/npy)   
 
-add_subdirectory(opticks)         
+add_subdirectory(optickscore)         
 add_subdirectory(optix/ggeo)     
 add_subdirectory(graphics/assimpwrap)   
 add_subdirectory(graphics/openmeshrap)  

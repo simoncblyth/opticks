@@ -29,7 +29,7 @@ include(EnvCompilationFlags)
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
-find_package(Opticks REQUIRED)
+find_package(OpticksCore REQUIRED)
 find_package(Assimp REQUIRED)
 find_package(AssimpWrap REQUIRED)
 find_package(GGeo REQUIRED)
@@ -45,7 +45,7 @@ include_directories(
 
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
-    ${Opticks_INCLUDE_DIRS} 
+    ${OpticksCore_INCLUDE_DIRS} 
 
     ${OptiX_INCLUDE}  
     ${CUDA_INCLUDE_DIRS}
@@ -65,7 +65,7 @@ set(LIBRARIES
       ${GGeo_LIBRARIES}
       ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
-      ${Opticks_LIBRARIES} 
+      ${OpticksCore_LIBRARIES} 
       optix
       optixu
       ${CUDAWrap_LIBRARIES}
@@ -74,7 +74,7 @@ set(LIBRARIES
 
 add_definitions(
     ${Boost_DEFINITIONS}
-    ${Opticks_DEFINITIONS} 
+    ${OpticksCore_DEFINITIONS} 
     ${Assimp_DEFINITIONS} 
     ${OptiX_DEFINITIONS} 
     ${CUDAWrap_DEFINITIONS} 

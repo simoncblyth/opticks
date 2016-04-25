@@ -14,7 +14,7 @@ find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(Boost REQUIRED) 
 find_package(Cfg REQUIRED) 
-find_package(Opticks REQUIRED)
+find_package(OpticksCore REQUIRED)
 
 find_package(GGeo REQUIRED)  
 find_package(PPM REQUIRED) 
@@ -34,7 +34,7 @@ set(INCLUDE_DIRS
    ${GGeo_INCLUDE_DIRS} 
    ${Boost_INCLUDE_DIRS} 
    ${Cfg_INCLUDE_DIRS}
-   ${Opticks_INCLUDE_DIRS}
+   ${OpticksCore_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
    ${Bregex_INCLUDE_DIRS} 
@@ -53,7 +53,7 @@ set(DEFINITIONS
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
-   ${Opticks_DEFINITIONS}
+   ${OpticksCore_DEFINITIONS}
    ${Boost_DEFINITIONS}
    ${Bregex_DEFINITIONS} 
    ${ImGui_DEFINITIONS}
@@ -63,7 +63,7 @@ set(DEFINITIONS
 set(LIBRARIES
    ${GLEW_LIBRARIES}
    ${GLFW_LIBRARIES}
-   ${Opticks_LIBRARIES}
+   ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${Boost_LIBRARIES}
    ${Bregex_LIBRARIES}
@@ -74,7 +74,7 @@ set(LIBRARIES
 )
 
 #message( "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ")
-#message( "Opticks_LIBRARIES ${Opticks_LIBRARIES} ")
+#message( "OpticksCore_LIBRARIES ${OpticksCore_LIBRARIES} ")
 #message( "GGeo_LIBRARIES ${GGeo_LIBRARIES} ")
 #message( "Bregex_LIBRARIES ${Bregex_LIBRARIES} ")
 #message( "Cfg_LIBRARIES ${Cfg_LIBRARIES} ")

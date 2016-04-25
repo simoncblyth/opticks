@@ -13,7 +13,7 @@ find_package(Boost REQUIRED)
 find_package(GLM    REQUIRED)
 find_package(NPY REQUIRED)
 find_package(GGeo REQUIRED)
-find_package(Opticks REQUIRED)
+find_package(OpticksCore REQUIRED)
 find_package(OpenMesh REQUIRED)
 
 include_directories(
@@ -22,7 +22,7 @@ include_directories(
    ${Boost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS} 
-   ${Opticks_INCLUDE_DIRS} 
+   ${OpticksCore_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
    ${OpenMesh_INCLUDE_DIRS} 
 )
@@ -31,7 +31,7 @@ add_definitions(
    ${OpenMesh_DEFINITIONS}
    ${GLM_DEFINITIONS}
    ${NPY_DEFINITIONS}
-   ${Opticks_DEFINITIONS}
+   ${OpticksCore_DEFINITIONS}
    ${GGeo_DEFINITIONS}
    ${Boost_DEFINITIONS}
 )
@@ -40,7 +40,7 @@ set(LIBRARIES
    ${OpenMesh_LIBRARIES}
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
-   ${Opticks_LIBRARIES}
+   ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${Boost_LIBRARIES}
 )

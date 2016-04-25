@@ -14,7 +14,7 @@ find_package(Assimp REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
-find_package(Opticks REQUIRED)
+find_package(OpticksCore REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -24,7 +24,7 @@ include_directories(
     ${GGeo_INCLUDE_DIRS}  
     ${GLM_INCLUDE_DIRS}  
     ${NPY_INCLUDE_DIRS}  
-    ${Opticks_INCLUDE_DIRS}  
+    ${OpticksCore_INCLUDE_DIRS}  
 )
 
 add_definitions(
@@ -33,7 +33,7 @@ add_definitions(
     ${GGeo_DEFINITIONS} 
     ${GLM_DEFINITIONS} 
     ${NPY_DEFINITIONS} 
-    ${Opticks_DEFINITIONS} 
+    ${OpticksCore_DEFINITIONS} 
 )
 
 set(LIBRARIES
@@ -41,7 +41,7 @@ set(LIBRARIES
     ${Assimp_LIBRARIES} 
     ${GGeo_LIBRARIES} 
     ${NPY_LIBRARIES} 
-    ${Opticks_LIBRARIES} 
+    ${OpticksCore_LIBRARIES} 
 
     ssl
     crypto
