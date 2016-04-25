@@ -13,6 +13,13 @@ int main(int argc, char** argv)
 {
     const char* flags = "/tmp/GFlagIndexLocal.ini";
     std::ifstream fs(flags, std::ios::in);
+
+    if(!fs.is_open())
+    {
+         std::cout << argv[0] << " " << "missing input file " << flags << std::endl ;
+         return 1 ; 
+    } 
+
     std::string line = ""; 
 
     std::vector<std::string> names ; 

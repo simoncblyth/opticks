@@ -35,10 +35,15 @@ Only needed whilst making sweeping changes::
 TODO
 -----
 
-* tidy up ssl and crypto : maybe in NPY_LIBRARIES 
-* CUDAWrap: adopt standard tests approach 
 * standardize names: Cfg Bcfg bcfg- cfg-
-* standardize package names, Wrap to Rap for AssimpWrap and CUDAWrap
+* tidy up ssl and crypto : maybe in NPY_LIBRARIES 
+* tidy up optix optixu FindOptiX from the SDK doesnt set OPTIX_LIBRARIES
+
+* get NPY tests to pass
+* role out CTest-ing to all packages, get the tests to pass 
+
+
+* check OptiX 4.0 beta for cmake changes 
 * externalize or somehow exclude from standard building the Rap pkgs, as fairly stable
 * look into isolating Assimp dependency usage
 * machinery for getting externals
@@ -46,7 +51,8 @@ TODO
 * adopt single level directories 
 * split ggv- usage from ggeoview- building
 
-* investigate cpack
+* investigate CPack, CTest
+
 
 
 Dependencies of internals
@@ -273,6 +279,8 @@ opticks-wipe(){
 
 opticks-optix-install-dir(){ echo /Developer/OptiX ; }
 
+
+
 opticks-cmake(){
    local msg="=== $FUNCNAME : "
    local iwd=$PWD
@@ -312,12 +320,16 @@ opticks-install(){
 
 opticks--()
 {
+    local msg="$FUNCNAME :"
+    echo $msg START $(date)
+
     opticks-wipe
     opticks-cmake
     #opticks-make
     opticks-install
-
     # -install seems to duplicate -make ? maybe can do with just -install
+
+    echo $msg DONE $(date)
 }
 
 opticks-run()
