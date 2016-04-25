@@ -176,11 +176,11 @@ Border Surfaces Looking Reasonable with expected AD symmetry
 
 EOU
 }
-assimpwrap-env(){      elocal- ; OPTICKS- ;  }
+assimpwrap-env(){      elocal- ; opticks- ;  }
 
 assimpwrap-sdir(){ echo $(env-home)/graphics/assimpwrap ; }
-assimpwrap-idir(){ echo $(OPTICKS-idir); }
-assimpwrap-bdir(){ echo $(OPTICKS-bdir)/$(assimpwrap-rel) ; }
+assimpwrap-idir(){ echo $(opticks-idir); }
+assimpwrap-bdir(){ echo $(opticks-bdir)/$(assimpwrap-rel) ; }
 
 assimpwrap-icd(){  cd $(assimpwrap-idir); }
 assimpwrap-bcd(){  cd $(assimpwrap-bdir); }

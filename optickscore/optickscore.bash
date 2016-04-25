@@ -476,12 +476,12 @@ Related
 EOU
 }
 
-optickscore-env(){      elocal- ; OPTICKS- ;  }
+optickscore-env(){      elocal- ; opticks- ;  }
 optickscore-sdir(){ echo $(env-home)/optickscore ; }
 
 
-optickscore-idir(){ echo $(OPTICKS-idir) ; }
-optickscore-bdir(){ echo $(OPTICKS-bdir)/$(optickscore-rel) ; }
+optickscore-idir(){ echo $(opticks-idir) ; }
+optickscore-bdir(){ echo $(opticks-bdir)/$(optickscore-rel) ; }
 
 optickscore-scd(){  cd $(optickscore-sdir); }
 optickscore-cd(){  cd $(optickscore-sdir); }

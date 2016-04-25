@@ -1898,7 +1898,7 @@ ggeoview-env(){
     elocal- 
     optix-
     optix-export
-    OPTICKS-
+    opticks-
 }
 
 
@@ -1907,8 +1907,8 @@ ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
 #ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
 #ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
 
-ggeoview-idir(){ echo $(OPTICKS-idir) ; }
-ggeoview-bdir(){ echo $(OPTICKS-bdir)/$(ggeoview-rel) ; }
+ggeoview-idir(){ echo $(opticks-idir) ; }
+ggeoview-bdir(){ echo $(opticks-bdir)/$(ggeoview-rel) ; }
 
 ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
 ggeoview-bindir(){  echo $(ggeoview-idir)/bin ; }
@@ -2157,8 +2157,8 @@ ggeoview-full()
 
    ggeoview-dep-wipe
 
-   OPTICKS-cmake
-   OPTICKS-install
+   opticks-cmake
+   opticks-install
 
    #ggeoview-dep-install
 }
@@ -2168,7 +2168,7 @@ ggeoview-deps-(){ cat << EOD
 bcfg
 bregex
 npy
-opticks
+optickscore
 ggeo
 assimpwrap
 openmeshrap

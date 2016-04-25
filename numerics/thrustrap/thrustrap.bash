@@ -274,12 +274,12 @@ and unregistration calls are expensive and should be avoided if possible.
 EOU
 }
 
-thrustrap-env(){      elocal- ; OPTICKS- ; }
+thrustrap-env(){      elocal- ; opticks- ; }
 thrustrap-sdir(){ echo $(env-home)/numerics/thrustrap ; }
 
 
-thrustrap-idir(){ echo $(OPTICKS-idir) ; }
-thrustrap-bdir(){ echo $(OPTICKS-bdir)/$(thrustrap-rel) ; }
+thrustrap-idir(){ echo $(opticks-idir) ; }
+thrustrap-bdir(){ echo $(opticks-bdir)/$(thrustrap-rel) ; }
 
 
 thrustrap-scd(){  cd $(thrustrap-sdir); }

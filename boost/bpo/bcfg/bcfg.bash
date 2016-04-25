@@ -150,10 +150,10 @@ EOU
 
 
 bcfg-sdir(){ echo $(env-home)/$(bcfg-rel) ; }
-bcfg-env(){      elocal- ; OPTICKS- ;  }
+bcfg-env(){      elocal- ; opticks- ;  }
 
-bcfg-idir(){ echo $(OPTICKS-idir) ; }
-bcfg-bdir(){ echo $(OPTICKS-bdir)/$(bcfg-rel) ; }
+bcfg-idir(){ echo $(opticks-idir) ; }
+bcfg-bdir(){ echo $(opticks-bdir)/$(bcfg-rel) ; }
 
 bcfg-scd(){  cd $(bcfg-sdir); }
 bcfg-cd(){  cd $(bcfg-sdir); }

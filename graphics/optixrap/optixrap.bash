@@ -219,14 +219,14 @@ optixrap-env(){
    elocal- 
    optix-
    optix-export 
-   OPTICKS-
+   opticks-
 }
 
 
 optixrap-sdir(){ echo $(env-home)/graphics/optixrap ; }
 
-optixrap-idir(){ echo $(OPTICKS-idir); }
-optixrap-bdir(){ echo $(OPTICKS-bdir)/$(optixrap-rel) ; }
+optixrap-idir(){ echo $(opticks-idir); }
+optixrap-bdir(){ echo $(opticks-bdir)/$(optixrap-rel) ; }
 
 
 optixrap-scd(){  cd $(optixrap-sdir); }

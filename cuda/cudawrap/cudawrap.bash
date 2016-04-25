@@ -328,13 +328,13 @@ EOU
 cudawrap-env(){      
   elocal-  
   cuda-
-  OPTICKS-
+  opticks-
 }
 
 cudawrap-name(){ echo CUDAWrap ; }
 
-cudawrap-idir(){ echo $(OPTICKS-idir); }
-cudawrap-bdir(){ echo $(OPTICKS-bdir)/$(cudawrap-rel) ; }
+cudawrap-idir(){ echo $(opticks-idir); }
+cudawrap-bdir(){ echo $(opticks-bdir)/$(cudawrap-rel) ; }
 
 
 cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }

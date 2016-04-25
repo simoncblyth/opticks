@@ -133,8 +133,8 @@ EOU
 
 npy-sdir(){ echo $(env-home)/numerics/npy ; }
 
-npy-idir(){ echo $(OPTICKS-idir) ; }
-npy-bdir(){ echo $(OPTICKS-bdir)/$(npy-rel) ; }
+npy-idir(){ echo $(opticks-idir) ; }
+npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
 
 npy-cd(){   cd $(npy-sdir); }
 npy-scd(){  cd $(npy-sdir); }

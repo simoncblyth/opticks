@@ -1011,10 +1011,10 @@ For the major component GdDopedLS.Acrylic the sign coming out
 EOU
 }
 
-ggeo-env(){      elocal- ; OPTICKS- ; }
+ggeo-env(){      elocal- ; opticks- ; }
 
-ggeo-idir(){ echo $(OPTICKS-idir); } 
-ggeo-bdir(){ echo $(OPTICKS-bdir)/$(opticks-rel) ; }  
+ggeo-idir(){ echo $(opticks-idir); } 
+ggeo-bdir(){ echo $(opticks-bdir)/$(opticks-rel) ; }  
 
 ggeo-sdir(){ echo $(env-home)/optix/ggeo ; }
 ggeo-tdir(){ echo $(env-home)/optix/ggeo/tests ; }

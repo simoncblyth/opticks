@@ -14,12 +14,12 @@ EOU
 }
 
 
-opticksgl-env(){      elocal- ; OPTICKS- ; }
+opticksgl-env(){      elocal- ; opticks- ; }
 
 opticksgl-sdir(){ echo $(env-home)/opticksgl ; }
 
-opticksgl-idir(){ echo $(OPTICKS-idir) ; }
-opticksgl-bdir(){ echo $(OPTICKS-bdir)/$(opticksgl-rel) ; }
+opticksgl-idir(){ echo $(opticks-idir) ; }
+opticksgl-bdir(){ echo $(opticks-bdir)/$(opticksgl-rel) ; }
 
 
 opticksgl-scd(){  cd $(opticksgl-sdir); }

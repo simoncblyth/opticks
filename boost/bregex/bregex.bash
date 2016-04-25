@@ -59,13 +59,13 @@ EOU
 bregex-dir(){ echo $(env-home)/boost/bregex ; }
 bregex-cd(){  cd $(bregex-dir); }
 
-bregex-env(){      elocal- ; OPTICKS- ;  }
+bregex-env(){      elocal- ; opticks- ;  }
 
 bregex-name(){ echo Bregex ; }
 bregex-sdir(){ echo $(env-home)/boost/bregex ; }
 
-bregex-idir(){ echo $(OPTICKS-idir); }
-bregex-bdir(){ echo $(OPTICKS-bdir)/$(bregex-rel) ; }
+bregex-idir(){ echo $(opticks-idir); }
+bregex-bdir(){ echo $(opticks-bdir)/$(bregex-rel) ; }
 
 bregex-scd(){  cd $(bregex-sdir); }
 bregex-cd(){  cd $(bregex-sdir); }

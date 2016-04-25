@@ -28,12 +28,12 @@ opticksop-env(){
     elocal-
     optix-
     optix-export
-    OPTICKS-
+    opticks-
 }
 
 opticksop-sdir(){ echo $(env-home)/opticksop ; }
-opticksop-idir(){ echo $(OPTICKS-idir); }
-opticksop-bdir(){ echo $(OPTICKS-bdir)/$(opticksop-rel) ; }
+opticksop-idir(){ echo $(opticks-idir); }
+opticksop-bdir(){ echo $(opticks-bdir)/$(opticksop-rel) ; }
 
 
 opticksop-bin(){  echo $(opticksop-idir)/bin/${1:-OpIndexerTest} ; }

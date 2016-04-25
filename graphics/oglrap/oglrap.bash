@@ -270,12 +270,12 @@ ClipperCfg
 EOU
 }
 
-oglrap-env(){      elocal- ; OPTICKS- ; }
+oglrap-env(){      elocal- ; opticks- ; }
 
 oglrap-sdir(){ echo $(env-home)/graphics/oglrap ; }
 
-oglrap-idir(){ echo $(OPTICKS-idir) ; }
-oglrap-bdir(){ echo $(OPTICKS-bdir)/$(oglrap-rel) ; }
+oglrap-idir(){ echo $(opticks-idir) ; }
+oglrap-bdir(){ echo $(opticks-bdir)/$(oglrap-rel) ; }
 
 oglrap-bindir(){ echo $(oglrap-idir)/bin ; }
 

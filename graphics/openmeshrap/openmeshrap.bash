@@ -139,12 +139,12 @@ mesh.
 
 EOU
 }
-openmeshrap-env(){      elocal- ; OPTICKS- ;  }
+openmeshrap-env(){      elocal- ; opticks- ;  }
 openmeshrap-dir(){  echo $(env-home)/graphics/openmeshrap ; }
 
 
-openmeshrap-idir(){ echo $(OPTICKS-idir) ; }
-openmeshrap-bdir(){ echo $(OPTICKS-bdir)/$(openmeshrap-rel) ; }
+openmeshrap-idir(){ echo $(opticks-idir) ; }
+openmeshrap-bdir(){ echo $(opticks-bdir)/$(openmeshrap-rel) ; }
 
 openmeshrap-cd(){   cd $(openmeshrap-dir); }
 openmeshrap-icd(){  cd $(openmeshrap-idir); }
